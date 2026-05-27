@@ -5,7 +5,7 @@ import vue from '@astrojs/vue'
 
 export default defineConfig({
   site: 'https://fanquanpp.github.io',
-  base: '/MyNotebook',
+  base: '/MyNotebook/',
   integrations: [
     mdx(),
     sitemap(),

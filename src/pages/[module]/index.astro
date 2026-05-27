@@ -1,6 +1,7 @@
 ---
 import Layout from '@/components/Layout.astro'
 import SEO from '@/components/SEO.astro'
+import Sidebar from '@/components/Sidebar.astro'
 import Breadcrumb from '@/components/Breadcrumb.astro'
 import { getModule } from '@/lib/modules'
 import { getCollection } from 'astro:content'
@@ -14,22 +15,26 @@ const { module } = Astro.params as { module: string }
 const meta = getModule(module || '')
 
 if (!meta) {
-  return Astro.redirect('/MyNotebook/404')
+  return Astro.redirect(`${import.meta.env.BASE_URL}404`)
 }
 
 const docs = await getCollection('docs', ({ data }) => data.module === module)
+const sortedDocs = docs.sort((a, b) => (a.data.order || 0) - (b.data.order || 0))
 function slug(id: string) { return (id.split('/').pop() || id).replace(/\.md$/, '') }
 
 const breadcrumb = [
-  { label: '首页', href: '/MyNotebook/' },
+  { label: '首页', href: `${import.meta.env.BASE_URL}` },
   { label: meta.title },
 ]
 ---
 
 <Layout title={meta.title}>
   <SEO slot="head" title={meta.title} description={meta.description} canonical={`${Astro.site}${Astro.url.pathname}`} />
+  <Sidebar slot="sidebar" moduleId={module} />
+
   <div class="module-page">
     <Breadcrumb items={breadcrumb} />
+
     <div class="module-header">
       <span class="header-bar" style={`background:${meta.color}`}></span>
       <div class="header-body">
@@ -37,38 +42,127 @@ const breadcrumb = [
         <p class="header-desc">{meta.description}</p>
       </div>
     </div>
-    <table class="file-table">
-      <thead>
-        <tr>
-          <th>标题</th>
-        </tr>
-      </thead>
-      <tbody>
-        {docs.sort((a, b) => (a.data.order || 0) - (b.data.order || 0)).map(doc => (
-          <tr class="file-row">
-            <td>
-              <a href={`${import.meta.env.BASE_URL}${module}/${slug(doc.id)}`} class="file-link">
-                {doc.data.title}
-              </a>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+
+    <ul class="doc-list">
+      {sortedDocs.map(doc => (
+        <li class="doc-list-item">
+          <a href={`${import.meta.env.BASE_URL}${module}/${slug(doc.id)}`} class="doc-list-link">
+            <span class="doc-list-icon" style={`background:${meta.color}`}>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.5">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+            </span>
+            <span class="doc-list-title">{doc.data.title}</span>
+            {doc.data.description && (
+              <span class="doc-list-desc">{doc.data.description}</span>
+            )}
+          </a>
+        </li>
+      ))}
+    </ul>
   </div>
 </Layout>
 
 <style>
-.module-page { padding: var(--spacing-md) var(--spacing-lg); max-width: var(--content-width); margin: 0 auto; }
-.module-header { display: flex; margin-bottom: var(--spacing-lg); background: var(--color-bg-card); border: 1px solid var(--color-border-light); }
-.header-bar { width: 5px; flex-shrink: 0; }
-.header-body { padding: var(--spacing-lg); }
-.header-title { font-family: var(--font-display); font-size: 1.4em; margin: 0 0 var(--spacing-xs); }
-.header-desc { font-size: 0.88em; color: var(--color-text-secondary); margin: 0; }
-.file-table { width: 100%; border-collapse: collapse; border: 1px solid var(--color-border-light); }
-.file-table th { padding: var(--spacing-sm) var(--spacing-md); text-align: left; font-size: 0.75em; font-weight: 700; color: #fff; background: var(--color-text); font-family: var(--font-display); }
-.file-table td { padding: var(--spacing-sm) var(--spacing-md); border-bottom: 1px solid var(--color-border-light); }
-.file-row:hover { background: var(--color-bg-hover); }
-.file-link { color: var(--color-text); display: block; }
-.file-link:hover { color: var(--color-primary); }
+.module-page {
+  padding: var(--spacing-md) var(--spacing-lg);
+  max-width: var(--content-width);
+  margin: 0 auto;
+}
+
+.module-header {
+  display: flex;
+  margin-bottom: var(--spacing-lg);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-light);
+}
+
+.header-bar {
+  width: 5px;
+  flex-shrink: 0;
+}
+
+.header-body {
+  padding: var(--spacing-lg);
+}
+
+.header-title {
+  font-family: var(--font-display);
+  font-size: 1.4em;
+  margin: 0 0 var(--spacing-xs);
+}
+
+.header-desc {
+  font-size: 0.88em;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.doc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  border: 1px solid var(--color-border-light);
+}
+
+.doc-list-item {
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.doc-list-item:last-child {
+  border-bottom: none;
+}
+
+.doc-list-link {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+  padding: var(--spacing-md);
+  color: var(--color-text);
+  text-decoration: none;
+  transition: background var(--transition-fast);
+}
+
+.doc-list-link:hover {
+  background: var(--color-bg-hover);
+}
+
+.doc-list-icon {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.doc-list-title {
+  font-family: var(--font-display);
+  font-size: 0.88em;
+  font-weight: 500;
+  flex-shrink: 0;
+  min-width: 120px;
+}
+
+.doc-list-desc {
+  font-size: 0.78em;
+  color: var(--color-text-tertiary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .doc-list-link {
+    flex-wrap: wrap;
+  }
+
+  .doc-list-desc {
+    width: 100%;
+    padding-left: 44px;
+  }
+}
 </style>

@@ -3,7 +3,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: local('JetBrains Mono'), url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400') format('woff2');
+  src: url('https://fonts.gstatic.com/s/jetbrainsmono/v20/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8yKxTOlOV.woff2') format('woff2');
 }
 
 @font-face {
@@ -11,7 +11,7 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: local('JetBrains Mono'), url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@700') format('woff2');
+  src: url('https://fonts.gstatic.com/s/jetbrainsmono/v20/tDbY2o-flEEny0FZhsfKu5WU4zr3E_BX0PnT8RD8-qxTOlOV.woff2') format('woff2');
 }
 
 @font-face {
@@ -19,7 +19,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: local('Noto Sans SC'), url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400') format('woff2');
+  src: url('https://fonts.gstatic.com/s/notosanssc/v37/k3kCo84MPvpLmixcA63oeALhI4iJ-Q7m8w.woff2') format('woff2');
 }
 
 @font-face {
@@ -27,7 +27,7 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: local('Noto Sans SC'), url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@500') format('woff2');
+  src: url('https://fonts.gstatic.com/s/notosanssc/v37/k3kCo84MPvpLmixcA63oeALhI4iJ-Q7m8w.woff2') format('woff2');
 }
 
 @font-face {
@@ -35,5 +35,5 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: local('Noto Sans SC'), url('https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@700') format('woff2');
+  src: url('https://fonts.gstatic.com/s/notosanssc/v37/k3kCo84MPvpLmixcA63oeALhI4iJ-Q7m8w.woff2') format('woff2');
 }

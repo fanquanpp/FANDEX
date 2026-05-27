@@ -1,20 +1,152 @@
 ---
 const { headings } = Astro.props as { headings: { depth: number; slug: string; text: string }[] }
+const visibleHeadings = headings.filter((h) => h.depth <= 3)
 ---
 
-<nav class="toc">
-  <h4 class="toc-title">目录</h4>
-  <ul class="toc-list">
-    {headings.filter((h: any) => h.depth <= 3).map((h: any) => (
-      <li style={`padding-left: ${(h.depth - 1) * 12}px`}>
-        <a href={`#${h.slug}`} class="toc-link">{h.text}</a>
-      </li>
-    ))}
-  </ul>
+<nav class="toc" id="toc-nav">
+  <button class="toc-toggle" id="toc-toggle" aria-expanded="false">
+    <span>目录</span>
+    <svg class="toc-toggle-icon" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <polyline points="6 9 12 15 18 9" />
+    </svg>
+  </button>
+  <div class="toc-content" id="toc-content">
+    <ul class="toc-list">
+      {visibleHeadings.map((h) => (
+        <li style={`padding-left: ${(h.depth - 1) * 12}px`}>
+          <a href={`#${h.slug}`} class="toc-link" data-toc-slug={h.slug}>{h.text}</a>
+        </li>
+      ))}
+    </ul>
+  </div>
 </nav>
 
 <style>
-.toc { margin-bottom: var(--spacing-lg); }
-.toc-title { font-family: var(--font-display); font-size: 0.85em; margin: 0 0 var(--spacing-sm); color: var(--color-text-secondary); }
-.toc-list { list-style: none; padding: 0; }
+.toc {
+  margin-bottom: var(--spacing-lg);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-card);
+}
+
+.toc-toggle {
+  display: none;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.85em;
+  cursor: pointer;
+}
+
+.toc-toggle-icon {
+  transition: transform var(--transition-fast);
+}
+
+.toc-toggle[aria-expanded="true"] .toc-toggle-icon {
+  transform: rotate(180deg);
+}
+
+.toc-content {
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-md);
+}
+
+.toc-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.toc-link {
+  display: block;
+  padding: 3px 0;
+  color: var(--color-text-secondary);
+  font-size: 0.85em;
+  line-height: 1.6;
+  transition: color var(--transition-fast);
+}
+
+.toc-link:hover {
+  color: var(--color-primary);
+}
+
+.toc-link.active {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+@media (max-width: 768px) {
+  .toc-toggle {
+    display: flex;
+  }
+
+  .toc-content {
+    display: none;
+  }
+
+  .toc-content.open {
+    display: block;
+  }
+}
 </style>
+
+<script>
+  function initTOC() {
+    const tocLinks = document.querySelectorAll('.toc-link[data-toc-slug]')
+    if (tocLinks.length === 0) return
+
+    const headingElements: HTMLElement[] = []
+    tocLinks.forEach(link => {
+      const slug = link.getAttribute('data-toc-slug')
+      if (slug) {
+        const el = document.getElementById(slug)
+        if (el) headingElements.push(el)
+      }
+    })
+
+    if (headingElements.length === 0) return
+
+    let activeSlug = ''
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            activeSlug = entry.target.id
+          }
+        })
+
+        tocLinks.forEach(link => {
+          const slug = link.getAttribute('data-toc-slug')
+          if (slug === activeSlug) {
+            link.classList.add('active')
+            link.scrollIntoView({ block: 'nearest', behavior: 'smooth' })
+          } else {
+            link.classList.remove('active')
+          }
+        })
+      },
+      {
+        rootMargin: '-80px 0px -60% 0px',
+        threshold: 0,
+      }
+    )
+
+    headingElements.forEach(el => observer.observe(el))
+  }
+
+  const tocToggle = document.getElementById('toc-toggle')
+  const tocContent = document.getElementById('toc-content')
+
+  if (tocToggle && tocContent) {
+    tocToggle.addEventListener('click', () => {
+      const isOpen = tocContent.classList.toggle('open')
+      tocToggle.setAttribute('aria-expanded', String(isOpen))
+    })
+  }
+
+  initTOC()
+</script>

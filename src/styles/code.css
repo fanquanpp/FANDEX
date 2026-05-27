@@ -1,6 +1,28 @@
+.astro-code {
+  margin: 1em 0;
+  padding: 1.25em 1em;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-code) !important;
+  font-family: var(--font-code);
+  font-size: 0.875em;
+  line-height: 1.6;
+  overflow-x: auto;
+  position: relative;
+}
+
+:not(pre) > code {
+  font-family: var(--font-code);
+  background: var(--color-bg-code);
+  color: var(--color-text);
+  padding: 0.15em 0.4em;
+  font-size: 0.875em;
+  border: 1px solid var(--color-border-light);
+}
+
 .code-block {
   margin: 1em 0;
   border: 1px solid var(--color-border);
+  position: relative;
 }
 
 .code-block-header {
@@ -31,14 +53,109 @@
   font-family: var(--font-display);
   font-size: 0.85em;
   cursor: pointer;
-  transition: all var(--transition-fast);
+  transition: all var(--transition-base);
 }
 
-.copy-btn:hover { background: var(--color-text-inverse); color: var(--color-primary); }
-.copy-btn.copied { background: var(--color-tertiary); color: var(--color-text); border-color: var(--color-tertiary); }
+.copy-btn:hover {
+  background: var(--color-text-inverse);
+  color: var(--color-primary);
+  transform: scale(1.05);
+}
+
+.copy-btn.copied {
+  background: var(--color-tertiary);
+  color: var(--color-text);
+  border-color: var(--color-tertiary);
+}
+
+.code-block:not(.code-block-header *) .copy-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 2;
+  opacity: 0;
+  transition: opacity var(--transition-base), all var(--transition-base);
+  border-color: var(--color-border-light);
+  color: var(--color-text-secondary);
+  background: var(--color-bg-card);
+}
+
+.code-block:hover .copy-btn {
+  opacity: 1;
+}
+
+.code-block:not(.code-block-header *) .copy-btn:hover {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary);
+}
+
+.code-block pre {
+  margin: 0;
+  padding: 1.25em 1em;
+  overflow-x: auto;
+  font-family: var(--font-code);
+  font-size: 0.875em;
+  line-height: 1.6;
+  background: var(--color-bg-code);
+}
+
+.code-block pre code {
+  background: none;
+  padding: 0;
+  border: none;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+.code-block[data-lang]::before {
+  content: attr(data-lang);
+  position: absolute;
+  top: 0;
+  right: 0;
+  padding: 0.2em 0.75em;
+  font-family: var(--font-display);
+  font-size: 0.7em;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+  background: var(--color-bg-card);
+  border-bottom-left-radius: 6px;
+  opacity: 0.5;
+  transition: opacity var(--transition-base);
+  z-index: 1;
+}
+
+.code-block[data-lang]:hover::before {
+  opacity: 0;
+}
 
 html[data-theme='dark'] .astro-code,
-html[data-theme='dark'] .astro-code span { color: var(--shiki-dark) !important; background-color: var(--shiki-dark-bg) !important; }
+html[data-theme='dark'] .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+}
 
 html[data-theme='light'] .astro-code,
-html[data-theme='light'] .astro-code span { color: var(--shiki-light) !important; background-color: var(--shiki-light-bg) !important; }
+html[data-theme='light'] .astro-code span {
+  color: var(--shiki-light) !important;
+  background-color: var(--shiki-light-bg) !important;
+}
+
+@media (max-width: 768px) {
+  .astro-code {
+    padding: 1em 0.75em;
+    font-size: 0.8em;
+  }
+
+  .code-block pre {
+    padding: 1em 0.75em;
+    font-size: 0.8em;
+  }
+
+  .copy-btn {
+    padding: 3px 8px;
+    font-size: 0.78em;
+  }
+}

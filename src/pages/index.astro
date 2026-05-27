@@ -3,6 +3,14 @@ import Layout from '@/components/Layout.astro'
 import SEO from '@/components/SEO.astro'
 import ModuleCard from '@/components/ModuleCard.astro'
 import { modules, categoryLabels, getModulesByCategory, categoryOrder } from '@/lib/modules'
+import { getCollection } from 'astro:content'
+
+const allDocs = await getCollection('docs')
+const docCountMap: Record<string, number> = {}
+allDocs.forEach(doc => {
+  const m = doc.data.module
+  docCountMap[m] = (docCountMap[m] || 0) + 1
+})
 
 const grouped = categoryOrder
   .map(cat => ({
@@ -20,19 +28,32 @@ const grouped = categoryOrder
     <section class="home-header">
       <h1 class="site-title">CODEX</h1>
       <p class="site-subtitle">开发者知识库</p>
+      <div class="search-wrapper">
+        <input
+          type="text"
+          id="module-search"
+          class="search-input"
+          placeholder="搜索模块..."
+          autocomplete="off"
+        />
+      </div>
       <div class="stats">
         <span><strong>{modules.length}</strong> 模块</span>
+        <span class="stats-sep">·</span>
+        <span><strong>{allDocs.length}</strong> 文档</span>
       </div>
     </section>
 
     {grouped.map(group => (
-      <section class="category-section">
+      <section class="category-section" data-category={group.key}>
         <div class="category-header">
           <span class="category-tag">{group.label}</span>
           <span class="category-count">{group.modules.length}</span>
         </div>
         <div class="module-grid">
-          {group.modules.map(mod => <ModuleCard mod={mod} />)}
+          {group.modules.map(mod => (
+            <ModuleCard mod={mod} />
+          ))}
         </div>
       </section>
     ))}
@@ -40,14 +61,139 @@ const grouped = categoryOrder
 </Layout>
 
 <style>
-.home-page { max-width: 960px; margin: 0 auto; padding: var(--spacing-xl) var(--spacing-lg); }
-.home-header { text-align: center; padding: var(--spacing-xl) 0 var(--spacing-lg); border-bottom: 1px solid var(--color-border-light); margin-bottom: var(--spacing-lg); }
-.site-title { font-family: var(--font-display); font-size: 2rem; font-weight: 700; letter-spacing: 0.2em; margin: 0; }
-.site-subtitle { font-size: 0.9rem; color: var(--color-text-secondary); margin: var(--spacing-xs) 0 var(--spacing-md); }
-.stats { font-family: var(--font-display); font-size: 0.78rem; color: var(--color-text-tertiary); }
-.stats strong { color: var(--color-text); }
-.category-section { margin-bottom: var(--spacing-lg); }
-.category-header { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm) var(--spacing-md); background: var(--color-bg-card); margin-bottom: 0; }
-.category-tag { font-family: var(--font-display); font-size: 0.72rem; font-weight: 700; color: #6366f1; }
-.category-count { font-family: var(--font-display); font-size: 0.72rem; color: var(--color-text-tertiary); }
+.home-page {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--spacing-xl) var(--spacing-lg);
+}
+
+.home-header {
+  text-align: center;
+  padding: var(--spacing-xl) 0 var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: var(--spacing-lg);
+}
+
+.site-title {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  margin: 0;
+}
+
+.site-subtitle {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: var(--spacing-xs) 0 var(--spacing-md);
+}
+
+.search-wrapper {
+  margin: var(--spacing-md) auto;
+  max-width: 360px;
+}
+
+.search-input {
+  width: 100%;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 0.82em;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.search-input:focus {
+  border-color: var(--color-primary);
+}
+
+.search-input::placeholder {
+  color: var(--color-text-tertiary);
+}
+
+.stats {
+  font-family: var(--font-display);
+  font-size: 0.78rem;
+  color: var(--color-text-tertiary);
+}
+
+.stats strong {
+  color: var(--color-text);
+}
+
+.stats-sep {
+  margin: 0 var(--spacing-sm);
+}
+
+.category-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+.category-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-card);
+  margin-bottom: 0;
+}
+
+.category-tag {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.category-count {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  color: var(--color-text-tertiary);
+}
+
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--color-border-light);
+  border: 1px solid var(--color-border-light);
+}
+
+.module-grid.hidden {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .module-grid {
+    grid-template-columns: 1fr;
+  }
+}
 </style>
+
+<script>
+  const searchInput = document.getElementById('module-search') as HTMLInputElement | null
+  if (searchInput) {
+    searchInput.addEventListener('input', () => {
+      const query = searchInput.value.trim().toLowerCase()
+      const sections = document.querySelectorAll('.category-section')
+      const cards = document.querySelectorAll('.module-card')
+
+      sections.forEach(section => {
+        const sectionCards = section.querySelectorAll('.module-card')
+        let visibleCount = 0
+
+        sectionCards.forEach(card => {
+          const title = card.querySelector('.card-title')?.textContent?.toLowerCase() || ''
+          const desc = card.querySelector('.card-desc')?.textContent?.toLowerCase() || ''
+          const matches = !query || title.includes(query) || desc.includes(query)
+          ;(card as HTMLElement).style.display = matches ? '' : 'none'
+          if (matches) visibleCount++
+        })
+
+        ;(section as HTMLElement).style.display = visibleCount > 0 ? '' : 'none'
+      })
+    })
+  }
+</script>

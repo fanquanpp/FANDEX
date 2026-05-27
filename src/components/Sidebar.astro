@@ -1,36 +1,175 @@
 ---
 import { getCollection } from 'astro:content'
+import { getModule } from '@/lib/modules'
 
-const { moduleId } = Astro.props
+const { moduleId, currentSlug } = Astro.props as { moduleId: string; currentSlug?: string }
 
 const docs = await getCollection('docs', ({ data }) => data.module === moduleId)
 const sorted = docs.sort((a, b) => (a.data.order || 0) - (b.data.order || 0))
+const meta = getModule(moduleId)
+
 function docSlug(id: string) { return (id.split('/').pop() || id).replace(/\.md$/, '') }
+
+const currentPath = Astro.url.pathname
 ---
 
-<aside class="app-sidebar">
+<aside class="app-sidebar sidebar-component" id="module-sidebar">
+  <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="关闭侧边栏">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  </button>
+
   <nav class="sidebar-nav">
+    <div class="sidebar-module-header">
+      <span class="sidebar-module-color-bar" style={`background:${meta?.color || '#6366f1'}`}></span>
+      <span class="sidebar-module-title">{meta?.title || moduleId}</span>
+    </div>
+
     <a href={`${import.meta.env.BASE_URL}${moduleId}`} class="sidebar-back">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
         <polyline points="18 6 6 12 18 18" />
       </svg>
       <span>返回模块</span>
     </a>
+
     <ul class="file-list">
-      {sorted.map(doc => (
-        <li>
-          <a href={`${import.meta.env.BASE_URL}${moduleId}/${docSlug(doc.id)}`} class="sidebar-file-link">
-            {doc.data.title}
-          </a>
-        </li>
-      ))}
+      {sorted.map(doc => {
+        const slug = docSlug(doc.id)
+        const href = `${import.meta.env.BASE_URL}${moduleId}/${slug}`
+        const isActive = currentPath === href || currentPath === href + '/' || (currentSlug && currentSlug === slug)
+        return (
+          <li>
+            <a href={href} class={`sidebar-file-link${isActive ? ' active' : ''}`}>
+              {doc.data.title}
+            </a>
+          </li>
+        )
+      })}
     </ul>
   </nav>
 </aside>
 
 <style>
-.sidebar-nav { display: flex; flex-direction: column; gap: 2px; }
-.sidebar-back { display: flex; align-items: center; gap: var(--spacing-sm); padding: var(--spacing-sm); margin-bottom: var(--spacing-sm); color: var(--color-text-secondary); font-size: 0.85em; }
-.sidebar-back:hover { color: var(--color-primary); }
-.file-list { list-style: none; padding: 0; margin: 0; }
+.sidebar-component {
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-close-btn {
+  display: none;
+  align-self: flex-end;
+  background: none;
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 0;
+}
+
+.sidebar-close-btn:hover {
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.sidebar-module-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+.sidebar-module-color-bar {
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+}
+
+.sidebar-module-title {
+  font-family: var(--font-display);
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+.sidebar-back {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-text-secondary);
+  font-size: 0.8em;
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: var(--spacing-xs);
+}
+
+.sidebar-back:hover {
+  color: var(--color-primary);
+}
+
+.file-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .sidebar-component {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 280px;
+    height: 100vh;
+    height: 100dvh;
+    z-index: 200;
+    display: none;
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
+    padding: var(--spacing-md);
+    padding-top: var(--spacing-md);
+  }
+
+  .sidebar-close-btn {
+    display: block;
+  }
+
+  body.sidebar-open .sidebar-component {
+    display: flex;
+    transform: translateX(0);
+  }
+
+  body.sidebar-open::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.4);
+    z-index: 199;
+    pointer-events: auto;
+  }
+}
 </style>
+
+<style is:global>
+@media (max-width: 768px) {
+  body.sidebar-open {
+    overflow: hidden;
+  }
+}
+</style>
+
+<script>
+  const closeBtn = document.getElementById('sidebar-close-btn')
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      document.body.classList.remove('sidebar-open')
+    })
+  }
+</script>

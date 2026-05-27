@@ -1,13 +1,40 @@
 ---
-const { title, description, canonical, type = 'article' } = Astro.props
-const fullTitle = `${title} | CODEX`
 import { SITE } from '@/lib/constants'
+
+const { title, description, canonical, type = 'article' } = Astro.props
+const fullTitle = `${title} | ${SITE.title}`
+const pageUrl = canonical || SITE.url
+const pageDescription = description || SITE.subtitle
+
+const ldJson = type === 'article' ? {
+  '@context': 'https://schema.org',
+  '@type': 'Article',
+  headline: title,
+  description: pageDescription,
+  url: pageUrl,
+  author: {
+    '@type': 'Person',
+    name: SITE.author,
+  },
+  publisher: {
+    '@type': 'Organization',
+    name: SITE.title,
+  },
+} : {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: SITE.title,
+  url: SITE.url,
+  description: SITE.subtitle,
+}
 ---
+
 <title>{fullTitle}</title>
-<meta name="description" content={description || SITE.subtitle} />
+<meta name="description" content={pageDescription} />
 <meta property="og:title" content={fullTitle} />
-<meta property="og:description" content={description || SITE.subtitle} />
+<meta property="og:description" content={pageDescription} />
 <meta property="og:type" content={type} />
-<meta property="og:url" content={canonical || SITE.url} />
+<meta property="og:url" content={pageUrl} />
 <meta name="twitter:card" content="summary_large_image" />
-<link rel="canonical" href={canonical || SITE.url} />
+<link rel="canonical" href={pageUrl} />
+<script type="application/ld+json" set:html={JSON.stringify(ldJson)}></script>

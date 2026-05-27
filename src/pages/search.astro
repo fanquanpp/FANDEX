@@ -1,0 +1,30 @@
+---
+import Layout from '@/components/Layout.astro'
+import SEO from '@/components/SEO.astro'
+---
+
+<Layout title="搜索">
+  <SEO slot="head" title="搜索" description="搜索知识库文章" type="website" />
+  <div class="search-page">
+    <h1 class="search-title">搜索</h1>
+    <p class="search-subtitle">全文搜索功能将在 Phase 2 上线</p>
+    <div class="search-placeholder">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" opacity="0.3">
+        <circle cx="11" cy="11" r="7"/>
+        <line x1="21" y1="21" x2="16" y2="16"/>
+      </svg>
+      <p>使用 Pagefind 构建时索引，支持中文全文搜索、模糊匹配和 Ctrl+K 快捷唤起</p>
+      <a href={`${import.meta.env.BASE_URL}`}>返回首页</a>
+    </div>
+  </div>
+</Layout>
+
+<style>
+.search-page { max-width: var(--content-width); margin: 0 auto; padding: var(--spacing-3xl) var(--spacing-lg); text-align: center; }
+.search-title { font-family: var(--font-display); font-size: 2em; margin-bottom: var(--spacing-sm); }
+.search-subtitle { color: var(--color-text-secondary); margin-bottom: var(--spacing-2xl); }
+.search-placeholder { display: flex; flex-direction: column; align-items: center; gap: var(--spacing-md); padding: var(--spacing-2xl); border: 1px dashed var(--color-border-light); }
+.search-placeholder p { color: var(--color-text-tertiary); max-width: 400px; font-size: 0.9em; }
+.search-placeholder a { display: inline-block; padding: var(--spacing-sm) var(--spacing-lg); border: 1px solid var(--color-primary); color: var(--color-primary); font-family: var(--font-display); font-size: 0.85em; }
+.search-placeholder a:hover { background: var(--color-primary); color: #fff; }
+</style>

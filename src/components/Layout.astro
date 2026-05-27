@@ -7,20 +7,38 @@ import ThemeToggle from '@/islands/ThemeToggle.vue'
 import { SITE } from '@/lib/constants'
 
 const { title } = Astro.props
+const base = import.meta.env.BASE_URL
 ---
 
 <html lang={SITE.lang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="/MyNotebook/fonts/fonts.css" />
+    <link rel="stylesheet" href={`${base}fonts/fonts.css`} />
+    <script is:inline>
+      (function() {
+        var t = localStorage.getItem('codex-theme');
+        if (t === 'dark' || (!t && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.setAttribute('data-theme', 'dark');
+        }
+      })();
+    </script>
     <slot name="head" />
   </head>
   <body>
+    <div class="read-progress" id="read-progress"></div>
+    <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
     <div class="app-layout">
       <header class="app-nav">
         <div class="nav-left">
-          <a href={import.meta.env.BASE_URL} class="nav-logo">
+          <button class="nav-toggle" id="nav-toggle" aria-label="菜单">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <line x1="3" y1="6" x2="21" y2="6" />
+              <line x1="3" y1="12" x2="21" y2="12" />
+              <line x1="3" y1="18" x2="21" y2="18" />
+            </svg>
+          </button>
+          <a href={base} class="nav-logo">
             <span class="logo-mark"></span>
             <span class="logo-text">{SITE.title}</span>
           </a>
@@ -30,21 +48,194 @@ const { title } = Astro.props
         </div>
       </header>
       <slot name="sidebar" />
-      <main class="app-main">
+      <main class="app-main" id="app-main">
         <slot />
       </main>
     </div>
+    <nav class="mobile-nav">
+      <a href={base} class="mobile-nav-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span>首页</span>
+      </a>
+      <a href={`${base}search`} class="mobile-nav-link">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8" />
+          <line x1="21" y1="21" x2="16.65" y2="16.65" />
+        </svg>
+        <span>搜索</span>
+      </a>
+      <button class="mobile-nav-link" id="mobile-sidebar-btn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+          <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+        </svg>
+        <span>模块</span>
+      </button>
+    </nav>
   </body>
 </html>
+
+<script>
+  const layout = document.querySelector('.app-layout')
+  const backdrop = document.getElementById('sidebar-backdrop')
+  const toggle = document.getElementById('nav-toggle')
+  const mobileBtn = document.getElementById('mobile-sidebar-btn')
+  const main = document.getElementById('app-main')
+  const progress = document.getElementById('read-progress')
+
+  function openSidebar() {
+    if (layout) layout.classList.add('sidebar-open')
+    if (backdrop) backdrop.classList.add('visible')
+  }
+
+  function closeSidebar() {
+    if (layout) layout.classList.remove('sidebar-open')
+    if (backdrop) backdrop.classList.remove('visible')
+  }
+
+  if (toggle) toggle.addEventListener('click', () => {
+    if (layout?.classList.contains('sidebar-open')) {
+      closeSidebar()
+    } else {
+      openSidebar()
+    }
+  })
+
+  if (mobileBtn) mobileBtn.addEventListener('click', () => {
+    if (layout?.classList.contains('sidebar-open')) {
+      closeSidebar()
+    } else {
+      openSidebar()
+    }
+  })
+
+  if (backdrop) backdrop.addEventListener('click', closeSidebar)
+
+  if (main && progress) {
+    main.addEventListener('scroll', () => {
+      const h = main.scrollHeight - main.clientHeight
+      progress.style.width = h > 0 ? `${(main.scrollTop / h) * 100}%` : '0%'
+    })
+  }
+
+  document.addEventListener('astro:page-load', closeSidebar)
+
+  function updateSidebarActive() {
+    const current = window.location.pathname
+    document.querySelectorAll('.sidebar-file-link').forEach(link => {
+      const href = link.getAttribute('href')
+      link.classList.toggle('active', href && current.endsWith(href.replace(/\/$/, '')))
+    })
+  }
+
+  document.addEventListener('astro:page-load', updateSidebarActive)
+  updateSidebarActive()
+</script>
 
 <style>
 .nav-left { display: flex; align-items: center; gap: var(--spacing-sm); }
 .nav-right { display: flex; align-items: center; gap: var(--spacing-sm); }
 .nav-logo { display: flex; align-items: center; cursor: pointer; }
+.nav-logo:hover { opacity: 0.85; }
 .logo-mark { display: inline-block; width: 8px; height: 28px; background: var(--color-primary); }
 .logo-text {
   display: flex; align-items: center; height: 28px; padding: 0 8px;
   background: var(--color-text); color: var(--color-bg);
   font-weight: 700; font-size: 0.8em; font-family: var(--font-display); letter-spacing: 0.1em;
 }
+
+.nav-toggle {
+  display: none;
+  align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+.nav-toggle:hover { background: var(--color-bg-hover); color: var(--color-primary); }
+
+@media (max-width: 768px) {
+  .nav-toggle { display: flex; }
+  .app-sidebar {
+    position: fixed;
+    top: var(--nav-height);
+    left: 0;
+    width: var(--sidebar-width);
+    max-width: 80vw;
+    height: calc(100vh - var(--nav-height));
+    z-index: 200;
+    transform: translateX(-100%);
+    transition: transform var(--transition-base);
+    display: block !important;
+  }
+  .sidebar-open .app-sidebar {
+    transform: translateX(0);
+    box-shadow: 4px 0 20px rgba(0,0,0,0.15);
+  }
+  [data-theme='dark'] .sidebar-open .app-sidebar {
+    box-shadow: 4px 0 20px rgba(0,0,0,0.5);
+  }
+  .app-main {
+    padding-bottom: 56px;
+  }
+}
+
+.sidebar-backdrop {
+  display: none;
+  position: fixed;
+  inset: 0;
+  top: var(--nav-height);
+  background: rgba(0,0,0,0.3);
+  z-index: 150;
+}
+.sidebar-backdrop.visible { display: block; }
+
+.read-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 2px;
+  background: var(--color-primary);
+  z-index: 200;
+  width: 0%;
+  transition: width 0.1s linear;
+}
+
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 56px;
+  background: var(--color-nav-bg);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid var(--color-border);
+  z-index: 100;
+  justify-content: space-around;
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .mobile-nav { display: flex; }
+}
+
+.mobile-nav-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  padding: 4px 12px;
+  font-size: 0.65em;
+  color: var(--color-text-tertiary);
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-family: inherit;
+}
+.mobile-nav-link:hover { color: var(--color-primary); }
 </style>

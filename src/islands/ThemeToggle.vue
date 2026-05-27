@@ -8,6 +8,8 @@ onMounted(() => {
   if (saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
     theme.value = 'dark'
     document.documentElement.setAttribute('data-theme', 'dark')
+  } else {
+    document.documentElement.setAttribute('data-theme', 'light')
   }
 })
 

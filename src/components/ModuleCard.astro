@@ -3,7 +3,7 @@ const { mod } = Astro.props as { mod: { id: string; title: string; description: 
 ---
 
 <a href={`${import.meta.env.BASE_URL}${mod.id}`} class="module-card">
-  <span class="card-icon" style={`background:${mod.color}`}>#</span>
+  <span class="card-icon" style={`background:${mod.color}`}>{mod.title.charAt(0)}</span>
   <div class="card-body">
     <h3 class="card-title">{mod.title}</h3>
     <p class="card-desc">{mod.description}</p>
@@ -12,13 +12,55 @@ const { mod } = Astro.props as { mod: { id: string; title: string; description: 
 
 <style>
 .module-card {
-  padding: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
   text-decoration: none;
-  transition: background var(--transition-fast);
-  display: flex; flex-direction: column; gap: var(--spacing-sm);
+  background: var(--color-bg);
+  transition: transform var(--transition-fast), background var(--transition-fast);
 }
-.module-card:hover { background: var(--color-bg-hover); }
-.card-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; color: #fff; font-family: var(--font-display); font-weight: 700; font-size: 0.75rem; }
-.card-title { font-family: var(--font-display); font-size: 0.9rem; color: var(--color-text); margin: 0; }
-.card-desc { font-size: 0.78rem; color: var(--color-text-secondary); margin: 0; line-height: 1.4; }
+
+.module-card:hover {
+  background: var(--color-bg-hover);
+  transform: translateY(-2px);
+}
+
+.card-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.card-body {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-xs);
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 0.9rem;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.card-desc {
+  font-size: 0.78rem;
+  color: var(--color-text-secondary);
+  margin: 0;
+  line-height: 1.4;
+}
+
+@media (max-width: 768px) {
+  .module-card {
+    width: 100%;
+  }
+}
 </style>

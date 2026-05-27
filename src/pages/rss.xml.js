@@ -12,7 +12,7 @@ export async function GET(context) {
       title: doc.data.title,
       description: doc.data.description,
       pubDate: doc.data.updated || doc.data.created,
-      link: `/MyNotebook/${doc.data.module}/${doc.slug}`,
+      link: `${import.meta.env.BASE_URL}${doc.data.module}/${doc.slug}`,
     })),
   })
 }

@@ -21,9 +21,18 @@ export async function getStaticPaths() {
 }
 
 const { doc } = Astro.props as any
-const { module } = Astro.params as { module: string; slug: string }
+const { module, slug } = Astro.params as { module: string; slug: string }
 const { Content, headings } = await doc.render()
 const meta = getModule(module || '')
+
+function computeReadingTime(body: string, readingTime?: number): number {
+  if (readingTime && readingTime > 0) return readingTime
+  const stripped = body.replace(/```[\s\S]*?```/g, '').replace(/[#*`~\[\]()>_\-!|]/g, '')
+  const chars = stripped.replace(/\s/g, '').length
+  return Math.max(1, Math.ceil(chars / 300))
+}
+
+const readingTime = computeReadingTime(doc.body || '', doc.data.readingTime)
 
 const breadcrumb = [
   { label: '首页', href: `${import.meta.env.BASE_URL}` },
@@ -39,19 +48,39 @@ const breadcrumb = [
     description={doc.data.description}
     canonical={`${Astro.site}${Astro.url.pathname}`}
   />
-  <Sidebar slot="sidebar" moduleId={module} />
+  <Sidebar slot="sidebar" moduleId={module} currentSlug={slug} />
 
   <div class="doc-page">
     <Breadcrumb items={breadcrumb} />
     <article class="prose">
+      <header class="doc-header">
+        <h1 class="doc-title">{doc.data.title}</h1>
+        <span class="doc-reading-time">{readingTime} 分钟阅读</span>
+      </header>
       <TOC headings={headings} />
       <Content />
     </article>
-    <DocNav />
+    <DocNav moduleId={module} currentSlug={slug} />
     <BackToTop />
   </div>
 </Layout>
 
 <style>
-.doc-page { padding: var(--spacing-md) var(--spacing-lg) var(--spacing-2xl); }
+.doc-page {
+  padding: var(--spacing-md) var(--spacing-lg) var(--spacing-2xl);
+}
+
+.doc-header {
+  margin-bottom: var(--spacing-md);
+}
+
+.doc-title {
+  margin-bottom: var(--spacing-xs);
+}
+
+.doc-reading-time {
+  font-family: var(--font-display);
+  font-size: 0.78em;
+  color: var(--color-text-tertiary);
+}
 </style>
