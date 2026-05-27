@@ -1,0 +1,16 @@
+{
+  "backlink": true,
+  "canvas": true,
+  "command-palette": true,
+  "daily-notes": false,
+  "file-explorer": true,
+  "graph-view": true,
+  "markdown-importer": false,
+  "outgoing-link": true,
+  "outline": true,
+  "search": true,
+  "slash-command": true,
+  "tag-pane": true,
+  "templates": true,
+  "word-count": true
+}
