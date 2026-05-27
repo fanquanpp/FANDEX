@@ -72,20 +72,18 @@ const totalFiles = computed(() => modules.value.reduce((s, m) => s + m.files.len
 <template>
   <div class="home-page">
     <section class="home-header">
-      <div class="header-content">
-        <h1 class="site-title">CODEX</h1>
-        <p class="site-subtitle">开发者知识库</p>
-        <div class="search-box">
-          <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16" y2="16"/></svg>
-          <input v-model="searchQuery" type="text" placeholder="搜索模块..." class="search-input" />
-        </div>
-        <div class="stats-row">
-          <span class="stat"><strong>{{ modules.length }}</strong> 模块</span>
-          <span class="stat-sep">|</span>
-          <span class="stat"><strong>{{ totalFiles }}</strong> 文档</span>
-          <span class="stat-sep">|</span>
-          <span class="stat"><strong>{{ totalProgress }}%</strong> 进度</span>
-        </div>
+      <h1 class="site-title">CODEX</h1>
+      <p class="site-subtitle">开发者知识库</p>
+      <div class="search-box">
+        <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16" y2="16"/></svg>
+        <input v-model="searchQuery" type="text" placeholder="搜索模块..." class="search-input" />
+      </div>
+      <div class="stats-row">
+        <span class="stat"><strong>{{ modules.length }}</strong> 模块</span>
+        <span class="stat-sep">|</span>
+        <span class="stat"><strong>{{ totalFiles }}</strong> 文档</span>
+        <span class="stat-sep">|</span>
+        <span class="stat"><strong>{{ totalProgress }}%</strong> 进度</span>
       </div>
     </section>
 
@@ -100,10 +98,9 @@ const totalFiles = computed(() => modules.value.reduce((s, m) => s + m.files.len
             v-for="mod in group.modules"
             :key="mod.id"
             class="module-card"
-            :style="{ '--cat-color': group.color }"
             @click="navigateToModule(mod.id)"
           >
-            <div class="card-icon-block" :style="{ background: group.color }">
+            <div class="card-icon" :style="{ background: group.color }">
               <span class="card-icon-text">{{ mod.icon }}</span>
             </div>
             <div class="card-body">
@@ -127,53 +124,45 @@ const totalFiles = computed(() => modules.value.reduce((s, m) => s + m.files.len
 <style scoped>
 .home-page {
   width: 100%;
-  max-width: 1100px;
+  max-width: 960px;
   margin: 0 auto;
   padding: 0 var(--spacing-lg) var(--spacing-3xl);
 }
 
 .home-header {
-  padding: var(--spacing-2xl) 0 var(--spacing-lg);
-  border-bottom: 2px solid var(--color-border);
+  padding: var(--spacing-xl) 0 var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border-light);
   margin-bottom: var(--spacing-lg);
-}
-
-.header-content {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--spacing-sm);
+  text-align: center;
 }
 
 .site-title {
   font-family: var(--font-display);
-  font-size: 2.4rem;
+  font-size: 2rem;
   font-weight: 700;
   color: var(--color-text);
   letter-spacing: 0.2em;
-  margin: 0;
-  line-height: 1;
+  margin: 0 0 var(--spacing-xs) 0;
 }
 
 .site-subtitle {
-  font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
   font-weight: 400;
-  color: var(--color-text-tertiary);
+  color: var(--color-text-secondary);
   margin: 0 0 var(--spacing-md) 0;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
 }
 
 .search-box {
   position: relative;
   width: 100%;
-  max-width: 420px;
-  margin-bottom: var(--spacing-md);
+  max-width: 400px;
+  margin: 0 auto var(--spacing-md) auto;
 }
 
 .search-icon {
   position: absolute;
-  left: 12px;
+  left: 10px;
   top: 50%;
   transform: translateY(-50%);
   color: var(--color-text-tertiary);
@@ -182,15 +171,15 @@ const totalFiles = computed(() => modules.value.reduce((s, m) => s + m.files.len
 
 .search-input {
   width: 100%;
-  padding: 10px 16px 10px 38px;
-  border: 2px solid var(--color-border);
+  padding: 8px 14px 8px 34px;
+  border: 1px solid var(--color-border);
   background: var(--color-bg-card);
   color: var(--color-text);
   font-family: var(--font-body);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   outline: none;
   box-sizing: border-box;
-  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: border-color var(--transition-fast);
 }
 
 .search-input::placeholder {
@@ -199,14 +188,14 @@ const totalFiles = computed(() => modules.value.reduce((s, m) => s + m.files.len
 
 .search-input:focus {
   border-color: var(--color-primary);
-  box-shadow: 4px 4px 0 var(--color-primary);
 }
 
 .stats-row {
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: var(--spacing-sm);
-  font-size: 0.82rem;
+  font-size: 0.78rem;
   color: var(--color-text-tertiary);
   font-family: var(--font-display);
 }
@@ -219,10 +208,6 @@ const totalFiles = computed(() => modules.value.reduce((s, m) => s + m.files.len
   opacity: 0.3;
 }
 
-.categories {
-  padding: 0;
-}
-
 .category-section {
   margin-bottom: var(--spacing-lg);
 }
@@ -232,64 +217,61 @@ const totalFiles = computed(() => modules.value.reduce((s, m) => s + m.files.len
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
-  border-left: 4px solid var(--color-border);
+  border-left: 3px solid var(--color-border);
   background: var(--color-bg-card);
   margin-bottom: var(--spacing-sm);
 }
 
 .category-tag {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
   color: #fff;
-  padding: 4px 12px;
-  letter-spacing: 0.08em;
+  padding: 3px 10px;
+  letter-spacing: 0.06em;
 }
 
 .category-count {
   font-family: var(--font-display);
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 400;
   color: var(--color-text-tertiary);
 }
 
 .module-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 0;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--color-border-light);
+  border: 1px solid var(--color-border-light);
 }
 
 .module-card {
-  border: 2px solid var(--color-border);
-  border-top: none;
-  border-left: none;
+  background: var(--color-bg);
   padding: var(--spacing-md);
   cursor: pointer;
   display: flex;
   flex-direction: column;
   gap: var(--spacing-sm);
-  background: var(--color-bg);
   transition: background var(--transition-fast);
-  position: relative;
 }
 
 .module-card:hover {
   background: var(--color-bg-hover);
-  z-index: 1;
 }
 
-.card-icon-block {
-  width: 40px;
-  height: 40px;
+.card-icon {
+  width: 36px;
+  height: 36px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px solid var(--color-border);
+  border: 1px solid var(--color-border);
 }
 
 .card-icon-text {
   font-family: var(--font-display);
-  font-size: 0.8rem;
+  font-size: 0.75rem;
   font-weight: 700;
   color: #fff;
   line-height: 1;
@@ -301,20 +283,18 @@ const totalFiles = computed(() => modules.value.reduce((s, m) => s + m.files.len
 
 .card-title {
   font-family: var(--font-display);
-  font-size: 0.9rem;
+  font-size: 0.88rem;
   font-weight: 700;
   color: var(--color-text);
   margin: 0 0 2px 0;
-  letter-spacing: 0.03em;
 }
 
 .card-desc {
-  font-family: var(--font-body);
-  font-size: 0.78rem;
+  font-size: 0.76rem;
   font-weight: 400;
   color: var(--color-text-secondary);
   margin: 0;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .card-meta {
@@ -325,16 +305,15 @@ const totalFiles = computed(() => modules.value.reduce((s, m) => s + m.files.len
 
 .card-files {
   font-family: var(--font-display);
-  font-size: 0.68rem;
-  font-weight: 400;
+  font-size: 0.66rem;
   color: var(--color-text-tertiary);
   white-space: nowrap;
 }
 
 .progress-track {
   flex: 1;
-  height: 8px;
-  border: 2px solid var(--color-border);
+  height: 6px;
+  border: 1px solid var(--color-border-light);
   background: var(--color-bg-card);
   overflow: hidden;
 }
@@ -346,11 +325,11 @@ const totalFiles = computed(() => modules.value.reduce((s, m) => s + m.files.len
 
 .progress-pct {
   font-family: var(--font-display);
-  font-size: 0.68rem;
+  font-size: 0.66rem;
   font-weight: 700;
   color: var(--color-text);
   white-space: nowrap;
-  min-width: 28px;
+  min-width: 26px;
   text-align: right;
 }
 
@@ -360,16 +339,11 @@ const totalFiles = computed(() => modules.value.reduce((s, m) => s + m.files.len
   }
 
   .site-title {
-    font-size: 1.6rem;
-    letter-spacing: 0.12em;
+    font-size: 1.4rem;
   }
 
   .module-grid {
     grid-template-columns: 1fr;
-  }
-
-  .module-card {
-    border-left: 2px solid var(--color-border);
   }
 }
 </style>

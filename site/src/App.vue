@@ -27,7 +27,6 @@ watch(() => router.currentRoute.value, (to) => {
     currentFiles.value = []
     currentDocPath.value = ''
   }
-  sidebarOpen.value = false
 }, { immediate: true })
 
 async function fetchModuleData(moduleId: string) {
@@ -57,18 +56,14 @@ function goHome() {
 function toggleSidebar() {
   sidebarOpen.value = !sidebarOpen.value
 }
-
-function closeSidebar() {
-  sidebarOpen.value = false
-}
 </script>
 
 <template>
-  <div class="app-layout">
+  <div class="app-layout" :class="{ 'sidebar-collapsed': !sidebarOpen }">
     <header class="app-nav">
       <div class="nav-left">
-        <button v-if="currentModule" class="sidebar-toggle" @click="toggleSidebar" :title="sidebarOpen ? '收起目录' : '展开目录'">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+        <button class="sidebar-toggle" @click="toggleSidebar" :disabled="!currentModule">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <line x1="3" y1="6" x2="21" y2="6" />
             <line x1="3" y1="12" x2="21" y2="12" />
             <line x1="3" y1="18" x2="21" y2="18" />
@@ -80,7 +75,7 @@ function closeSidebar() {
         </div>
       </div>
       <div class="nav-right">
-        <button class="theme-toggle" @click="toggleTheme" :title="theme === 'dark' ? '亮色模式' : '暗色模式'">
+        <button class="theme-toggle" @click="toggleTheme">
           <svg v-if="theme === 'dark'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <circle cx="12" cy="12" r="5" />
             <line x1="12" y1="1" x2="12" y2="3" />
@@ -99,42 +94,39 @@ function closeSidebar() {
       </div>
     </header>
 
-    <Teleport to="body">
-      <div v-if="sidebarOpen" class="sidebar-backdrop" @click="closeSidebar"></div>
-      <aside class="app-sidebar" :class="{ open: sidebarOpen }">
-        <div class="sidebar-header" v-if="moduleMeta">
-          <div class="sidebar-color-bar" :style="{ background: moduleMeta.color }"></div>
-          <div class="sidebar-module-info">
-            <span class="module-icon-block" :style="{ background: moduleMeta.color }">{{ moduleMeta.icon }}</span>
-            <div class="module-info-text">
-              <h3 class="module-name">{{ moduleMeta.title }}</h3>
-              <span class="module-desc">{{ moduleMeta.description }}</span>
-            </div>
+    <aside v-if="currentModule" class="app-sidebar">
+      <div class="sidebar-header" v-if="moduleMeta">
+        <div class="sidebar-color-bar" :style="{ background: moduleMeta.color }"></div>
+        <div class="sidebar-module-info">
+          <span class="module-icon-block" :style="{ background: moduleMeta.color }">{{ moduleMeta.icon }}</span>
+          <div class="module-info-text">
+            <h3 class="module-name">{{ moduleMeta.title }}</h3>
+            <span class="module-desc">{{ moduleMeta.description }}</span>
           </div>
         </div>
-        <nav class="sidebar-nav">
-          <button class="sidebar-back" @click="goHome">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-              <polyline points="18 6 6 12 18 18" />
-            </svg>
-            <span>返回首页</span>
-          </button>
-          <ul class="file-list">
-            <li
-              v-for="file in currentFiles"
-              :key="file.slug"
-              class="file-item"
-              :class="{ active: currentDocPath === file.path, read: isRead(file.path) }"
-            >
-              <button @click="navigateToDoc(currentModule!.id, file.slug)" class="file-link">
-                <span class="file-status-block" :class="{ read: isRead(file.path) }"></span>
-                <span class="file-title">{{ file.title }}</span>
-              </button>
-            </li>
-          </ul>
-        </nav>
-      </aside>
-    </Teleport>
+      </div>
+      <nav class="sidebar-nav">
+        <button class="sidebar-back" @click="goHome">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+            <polyline points="18 6 6 12 18 18" />
+          </svg>
+          <span>返回首页</span>
+        </button>
+        <ul class="file-list">
+          <li
+            v-for="file in currentFiles"
+            :key="file.slug"
+            class="file-item"
+            :class="{ active: currentDocPath === file.path, read: isRead(file.path) }"
+          >
+            <button @click="navigateToDoc(currentModule!.id, file.slug)" class="file-link">
+              <span class="file-status-block" :class="{ read: isRead(file.path) }"></span>
+              <span class="file-title">{{ file.title }}</span>
+            </button>
+          </li>
+        </ul>
+      </nav>
+    </aside>
 
     <main class="app-main">
       <router-view />
@@ -144,12 +136,19 @@ function closeSidebar() {
 
 <style scoped>
 .app-layout {
+  display: grid;
+  grid-template-rows: var(--nav-height) 1fr;
+  grid-template-columns: var(--sidebar-width) 1fr;
   min-height: 100vh;
-  display: flex;
-  flex-direction: column;
+  transition: grid-template-columns var(--transition-base);
+}
+
+.app-layout.sidebar-collapsed {
+  grid-template-columns: 0 1fr;
 }
 
 .app-nav {
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -161,7 +160,6 @@ function closeSidebar() {
   top: 0;
   z-index: 100;
   height: var(--nav-height);
-  flex-shrink: 0;
 }
 
 .nav-left {
@@ -174,20 +172,26 @@ function closeSidebar() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 2px solid var(--color-border);
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border);
   border-radius: 0;
   background: var(--color-bg-card);
   color: var(--color-text-secondary);
   cursor: pointer;
   transition: all var(--transition-fast);
+  flex-shrink: 0;
 }
 
-.sidebar-toggle:hover {
+.sidebar-toggle:hover:not(:disabled) {
   background: var(--color-bg-hover);
   color: var(--color-text);
   border-color: var(--color-primary);
+}
+
+.sidebar-toggle:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
 }
 
 .nav-logo {
@@ -233,9 +237,9 @@ function closeSidebar() {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 32px;
-  height: 32px;
-  border: 2px solid var(--color-border);
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border);
   border-radius: 0;
   background: var(--color-bg-card);
   color: var(--color-text-secondary);
@@ -249,41 +253,24 @@ function closeSidebar() {
   border-color: var(--color-primary);
 }
 
-.sidebar-backdrop {
-  position: fixed;
-  inset: 0;
-  background: var(--color-overlay);
-  z-index: 200;
-  animation: fadeIn var(--transition-fast) ease;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-
 .app-sidebar {
-  position: fixed;
-  left: 0;
-  top: 0;
-  bottom: 0;
-  width: var(--sidebar-width);
-  background: var(--color-sidebar-bg);
+  grid-row: 2;
+  grid-column: 1;
+  background: var(--color-bg-sidebar);
   border-right: 2px solid var(--color-border);
+  overflow: hidden;
   overflow-y: auto;
-  z-index: 210;
-  transform: translateX(-100%);
-  transition: transform var(--transition-base) ease;
+  transition: opacity var(--transition-base);
 }
 
-.app-sidebar.open {
-  transform: translateX(0);
+.sidebar-collapsed .app-sidebar {
+  opacity: 0;
+  pointer-events: none;
 }
 
 .sidebar-header {
   position: relative;
   padding: var(--spacing-md);
-  padding-top: calc(var(--nav-height) + var(--spacing-md));
   border-bottom: 2px solid var(--color-border);
 }
 
@@ -435,8 +422,9 @@ function closeSidebar() {
 }
 
 .app-main {
-  flex: 1;
-  min-height: calc(100vh - var(--nav-height));
-  width: 100%;
+  grid-row: 2;
+  grid-column: 2;
+  overflow-y: auto;
+  min-height: 0;
 }
 </style>

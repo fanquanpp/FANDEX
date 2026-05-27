@@ -71,20 +71,20 @@ watch([moduleId, slug], () => { loadDoc() })
 <template>
   <div class="doc-page" v-if="meta">
     <nav class="breadcrumb">
-      <router-link :to="{ name: 'home' }" class="breadcrumb-link">首页</router-link>
-      <span class="breadcrumb-sep">/</span>
-      <router-link :to="{ name: 'module', params: { id: moduleId } }" class="breadcrumb-link">{{ meta.title }}</router-link>
-      <span class="breadcrumb-sep">/</span>
-      <span class="breadcrumb-current">{{ slug }}</span>
+      <router-link :to="{ name: 'home' }" class="bc-link">首页</router-link>
+      <span class="bc-sep">/</span>
+      <router-link :to="{ name: 'module', params: { id: moduleId } }" class="bc-link">{{ meta.title }}</router-link>
+      <span class="bc-sep">/</span>
+      <span class="bc-current">{{ slug }}</span>
     </nav>
 
     <div class="doc-content" v-if="!loading">
       <MarkdownRenderer :content="content" />
     </div>
     <div v-else class="doc-loading">
-      <div class="loading-block"></div>
-      <div class="loading-block"></div>
-      <div class="loading-block short"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton"></div>
+      <div class="skeleton short"></div>
       <span class="loading-text">加载中...</span>
     </div>
 
@@ -94,30 +94,26 @@ watch([moduleId, slug], () => { loadDoc() })
         :class="{ active: isRead(docPath) }"
         @click="toggleRead(docPath)"
       >
-        <span class="read-indicator" :class="{ read: isRead(docPath) }"></span>
+        <span class="read-box" :class="{ checked: isRead(docPath) }"></span>
         {{ isRead(docPath) ? '已读' : '标记已读' }}
       </button>
     </div>
 
     <nav class="doc-nav" v-if="prevDoc || nextDoc">
-      <button v-if="prevDoc" class="nav-btn nav-prev" @click="navigateToDoc(prevDoc.slug)">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-          <polyline points="18 6 6 12 18 18" />
-        </svg>
-        <div class="nav-btn-text">
-          <span class="nav-btn-label">上一篇</span>
-          <span class="nav-btn-title">{{ prevDoc.title }}</span>
+      <button v-if="prevDoc" class="nav-btn" @click="navigateToDoc(prevDoc.slug)">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 6 6 12 18 18"/></svg>
+        <div class="nav-text">
+          <span class="nav-label">上一篇</span>
+          <span class="nav-title">{{ prevDoc.title }}</span>
         </div>
       </button>
       <div v-else class="nav-spacer"></div>
-      <button v-if="nextDoc" class="nav-btn nav-next" @click="navigateToDoc(nextDoc.slug)">
-        <div class="nav-btn-text">
-          <span class="nav-btn-label">下一篇</span>
-          <span class="nav-btn-title">{{ nextDoc.title }}</span>
+      <button v-if="nextDoc" class="nav-btn" @click="navigateToDoc(nextDoc.slug)">
+        <div class="nav-text right">
+          <span class="nav-label">下一篇</span>
+          <span class="nav-title">{{ nextDoc.title }}</span>
         </div>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-          <polyline points="6 6 18 12 6 18" />
-        </svg>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 6 18 12 6 18"/></svg>
       </button>
     </nav>
   </div>
@@ -136,28 +132,28 @@ watch([moduleId, slug], () => { loadDoc() })
   gap: var(--spacing-xs);
   padding: var(--spacing-sm) 0;
   margin-bottom: var(--spacing-md);
-  font-size: 0.8em;
+  font-size: 0.78em;
   color: var(--color-text-tertiary);
   border-bottom: 1px solid var(--color-border-light);
 }
 
-.breadcrumb-link {
+.bc-link {
   color: var(--color-text-secondary);
   border-bottom: none;
   transition: color var(--transition-fast);
 }
 
-.breadcrumb-link:hover {
+.bc-link:hover {
   color: var(--color-primary);
 }
 
-.breadcrumb-sep {
+.bc-sep {
   color: var(--color-text-tertiary);
   opacity: 0.4;
   font-family: var(--font-display);
 }
 
-.breadcrumb-current {
+.bc-current {
   color: var(--color-text);
   font-weight: 500;
   font-family: var(--font-display);
@@ -175,21 +171,22 @@ watch([moduleId, slug], () => { loadDoc() })
   color: var(--color-text-tertiary);
 }
 
-.loading-block {
+.skeleton {
   height: 14px;
   background: var(--color-bg-card);
-  border: 2px solid var(--color-border-light);
+  border: 1px solid var(--color-border-light);
   width: 100%;
 }
 
-.loading-block.short {
+.skeleton.short {
   width: 60%;
 }
 
 .loading-text {
   margin-top: var(--spacing-md);
   font-family: var(--font-display);
-  font-size: 0.8em;
+  font-size: 0.78em;
+  color: var(--color-text-tertiary);
   letter-spacing: 0.05em;
 }
 
@@ -204,11 +201,10 @@ watch([moduleId, slug], () => { loadDoc() })
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-xs) var(--spacing-md);
-  border: 2px solid var(--color-border);
-  border-radius: 0;
+  border: 1px solid var(--color-border);
   background: var(--color-bg-card);
   color: var(--color-text-secondary);
-  font-size: 0.8em;
+  font-size: 0.78em;
   font-family: var(--font-display);
   cursor: pointer;
   transition: all var(--transition-fast);
@@ -221,21 +217,20 @@ watch([moduleId, slug], () => { loadDoc() })
 }
 
 .read-toggle.active {
-  background: var(--color-secondary);
-  border-color: var(--color-secondary);
+  background: var(--color-success);
+  border-color: var(--color-success);
   color: #fff;
 }
 
-.read-indicator {
+.read-box {
   display: inline-block;
-  width: 8px;
-  height: 8px;
+  width: 10px;
+  height: 10px;
   border: 2px solid var(--color-border-light);
-  border-radius: 0;
   transition: all var(--transition-fast);
 }
 
-.read-indicator.read {
+.read-box.checked {
   background: #fff;
   border-color: #fff;
 }
@@ -254,8 +249,7 @@ watch([moduleId, slug], () => { loadDoc() })
   align-items: center;
   gap: var(--spacing-sm);
   padding: var(--spacing-sm) var(--spacing-md);
-  border: 2px solid var(--color-border);
-  border-radius: 0;
+  border: 1px solid var(--color-border);
   background: var(--color-bg-card);
   color: var(--color-text-secondary);
   cursor: pointer;
@@ -267,30 +261,29 @@ watch([moduleId, slug], () => { loadDoc() })
 .nav-btn:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
-  box-shadow: 4px 4px 0 var(--color-primary);
 }
 
-.nav-btn-text {
+.nav-text {
   display: flex;
   flex-direction: column;
   gap: 2px;
   text-align: left;
 }
 
-.nav-next .nav-btn-text {
+.nav-text.right {
   text-align: right;
 }
 
-.nav-btn-label {
-  font-size: 0.65em;
+.nav-label {
+  font-size: 0.62em;
   color: var(--color-text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   font-family: var(--font-display);
 }
 
-.nav-btn-title {
-  font-size: 0.8em;
+.nav-title {
+  font-size: 0.78em;
   font-weight: 500;
   color: var(--color-text);
   overflow: hidden;

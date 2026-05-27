@@ -7,7 +7,7 @@ import type { Module, ModuleFile } from '@/types'
 
 const route = useRoute()
 const router = useRouter()
-const { isRead, toggleRead, getProgressPercent } = useProgress()
+const { isRead, getProgressPercent } = useProgress()
 const moduleId = computed(() => route.params.id as string)
 const meta = computed(() => getModuleMeta(moduleId.value))
 const files = ref<ModuleFile[]>([])
@@ -48,8 +48,8 @@ const categoryInfo = computed(() => {
 <template>
   <div class="module-page" v-if="meta">
     <div class="module-header">
-      <div class="header-color-bar" :style="{ background: meta.color }"></div>
-      <div class="header-content">
+      <div class="header-bar" :style="{ background: meta.color }"></div>
+      <div class="header-body">
         <div class="header-top">
           <span class="header-icon" :style="{ background: meta.color }">{{ meta.icon }}</span>
           <div class="header-text">
@@ -60,7 +60,7 @@ const categoryInfo = computed(() => {
         </div>
         <div class="header-progress">
           <span class="progress-label">{{ readCount }} / {{ files.length }} 篇已读</span>
-          <div class="progress-bar">
+          <div class="progress-track">
             <div class="progress-fill" :style="{ width: progress + '%', background: meta.color }"></div>
           </div>
           <span class="progress-pct">{{ progress }}%</span>
@@ -68,7 +68,7 @@ const categoryInfo = computed(() => {
       </div>
     </div>
 
-    <div class="file-table-wrapper">
+    <div class="file-table-wrap">
       <table class="file-table">
         <thead>
           <tr>
@@ -86,7 +86,7 @@ const categoryInfo = computed(() => {
             @click="navigateToDoc(file.slug)"
           >
             <td class="col-status">
-              <span class="status-block" :class="{ read: isRead(file.path) }"></span>
+              <span class="status-dot" :class="{ read: isRead(file.path) }"></span>
             </td>
             <td class="col-title">{{ file.title }}</td>
             <td class="col-size">{{ formatSize(file.size) }}</td>
@@ -95,7 +95,7 @@ const categoryInfo = computed(() => {
       </table>
     </div>
   </div>
-  <div v-else class="module-not-found">
+  <div v-else class="not-found">
     <h2>模块未找到</h2>
     <button @click="router.push({ name: 'home' })">返回首页</button>
   </div>
@@ -110,19 +110,18 @@ const categoryInfo = computed(() => {
 
 .module-header {
   background: var(--color-bg-card);
-  border: 2px solid var(--color-border);
-  border-radius: 0;
+  border: 1px solid var(--color-border-light);
   margin-bottom: var(--spacing-lg);
   display: flex;
   overflow: hidden;
 }
 
-.header-color-bar {
-  width: 6px;
+.header-bar {
+  width: 5px;
   flex-shrink: 0;
 }
 
-.header-content {
+.header-body {
   flex: 1;
   padding: var(--spacing-lg);
 }
@@ -133,19 +132,18 @@ const categoryInfo = computed(() => {
   gap: var(--spacing-md);
   margin-bottom: var(--spacing-md);
   padding-bottom: var(--spacing-md);
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .header-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
-  border-radius: 0;
+  width: 44px;
+  height: 44px;
   color: #fff;
   font-weight: 700;
-  font-size: 1.1em;
+  font-size: 1em;
   font-family: var(--font-display);
   flex-shrink: 0;
 }
@@ -157,7 +155,7 @@ const categoryInfo = computed(() => {
 .header-tag {
   display: inline-block;
   padding: 2px 8px;
-  font-size: 0.65em;
+  font-size: 0.62em;
   font-weight: 700;
   color: #fff;
   font-family: var(--font-display);
@@ -167,7 +165,7 @@ const categoryInfo = computed(() => {
 }
 
 .header-title {
-  font-size: 1.5em;
+  font-size: 1.4em;
   font-weight: 700;
   color: var(--color-text);
   margin: 0 0 var(--spacing-xs) 0;
@@ -175,7 +173,7 @@ const categoryInfo = computed(() => {
 }
 
 .header-desc {
-  font-size: 0.9em;
+  font-size: 0.88em;
   color: var(--color-text-secondary);
   margin: 0;
 }
@@ -187,17 +185,16 @@ const categoryInfo = computed(() => {
 }
 
 .progress-label {
-  font-size: 0.8em;
+  font-size: 0.78em;
   color: var(--color-text-secondary);
   font-family: var(--font-display);
   white-space: nowrap;
 }
 
-.progress-bar {
+.progress-track {
   flex: 1;
-  height: 10px;
-  border: 2px solid var(--color-border);
-  border-radius: 0;
+  height: 8px;
+  border: 1px solid var(--color-border-light);
   background: var(--color-bg);
   overflow: hidden;
 }
@@ -208,17 +205,16 @@ const categoryInfo = computed(() => {
 }
 
 .progress-pct {
-  font-size: 0.85em;
+  font-size: 0.82em;
   font-weight: 700;
   color: var(--color-text);
   font-family: var(--font-display);
-  min-width: 40px;
+  min-width: 38px;
   text-align: right;
 }
 
-.file-table-wrapper {
-  border: 2px solid var(--color-border);
-  border-radius: 0;
+.file-table-wrap {
+  border: 1px solid var(--color-border-light);
   overflow: hidden;
 }
 
@@ -230,14 +226,14 @@ const categoryInfo = computed(() => {
 .file-table th {
   padding: var(--spacing-sm) var(--spacing-md);
   text-align: left;
-  font-size: 0.72em;
+  font-size: 0.7em;
   font-weight: 700;
   color: #fff;
   text-transform: uppercase;
   letter-spacing: 0.08em;
   background: var(--color-text);
   font-family: var(--font-display);
-  border-bottom: 2px solid var(--color-border);
+  border-bottom: 1px solid var(--color-border);
 }
 
 .file-table td {
@@ -263,29 +259,28 @@ const categoryInfo = computed(() => {
 }
 
 .col-status {
-  width: 40px;
+  width: 36px;
 }
 
 .col-size {
-  width: 90px;
+  width: 80px;
   text-align: right;
-  font-size: 0.82em;
+  font-size: 0.78em;
   color: var(--color-text-tertiary);
   font-family: var(--font-display);
 }
 
-.status-block {
+.status-dot {
   display: inline-block;
   width: 8px;
   height: 8px;
   border: 2px solid var(--color-border-light);
-  border-radius: 0;
   transition: all var(--transition-fast);
 }
 
-.status-block.read {
-  background: var(--color-secondary);
-  border-color: var(--color-secondary);
+.status-dot.read {
+  background: var(--color-success);
+  border-color: var(--color-success);
 }
 
 .col-title {
@@ -297,31 +292,30 @@ const categoryInfo = computed(() => {
   color: var(--color-text-tertiary);
 }
 
-.module-not-found {
+.not-found {
   text-align: center;
   padding: var(--spacing-3xl);
   color: var(--color-text-secondary);
 }
 
-.module-not-found h2 {
+.not-found h2 {
   margin-bottom: var(--spacing-md);
   font-family: var(--font-display);
 }
 
-.module-not-found button {
+.not-found button {
   padding: var(--spacing-sm) var(--spacing-lg);
-  border: 2px solid var(--color-primary);
-  border-radius: 0;
+  border: 1px solid var(--color-primary);
   background: transparent;
   color: var(--color-primary);
   cursor: pointer;
   font-family: var(--font-display);
-  font-size: 0.85em;
+  font-size: 0.82em;
   letter-spacing: 0.05em;
   transition: all var(--transition-fast);
 }
 
-.module-not-found button:hover {
+.not-found button:hover {
   background: var(--color-primary);
   color: #fff;
 }

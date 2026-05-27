@@ -98,25 +98,25 @@ function toggleToc() {
 <template>
   <div class="doc-renderer" @click="handleClick">
     <div class="doc-body">
-      <div v-if="toc.length > 2" class="toc-toggle-bar">
-        <button class="toc-toggle-btn" @click="toggleToc">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <div v-if="toc.length > 2" class="toc-section">
+        <button class="toc-toggle" @click="toggleToc">
+          <svg class="toc-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
             <line x1="3" y1="6" x2="21" y2="6" />
             <line x1="3" y1="12" x2="15" y2="12" />
             <line x1="3" y1="18" x2="18" y2="18" />
           </svg>
           <span>{{ tocExpanded ? '收起目录' : '展开目录' }}</span>
-          <svg class="toc-chevron" :class="{ expanded: tocExpanded }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <svg class="toc-chevron" :class="{ up: tocExpanded }" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <polyline points="6 9 12 15 18 9" />
           </svg>
         </button>
-      </div>
-      <div v-if="toc.length > 2 && tocExpanded" class="toc-panel">
-        <ul class="toc-list">
-          <li v-for="h in toc" :key="h.id" class="toc-item" :class="'toc-h' + h.level">
-            <a :href="'#' + h.id" class="toc-link" @click="tocExpanded = false">{{ h.text }}</a>
-          </li>
-        </ul>
+        <div class="toc-panel" :class="{ expanded: tocExpanded }">
+          <ul class="toc-list">
+            <li v-for="h in toc" :key="h.id" class="toc-item" :class="'toc-h' + h.level">
+              <a :href="'#' + h.id" class="toc-link" @click="tocExpanded = false">{{ h.text }}</a>
+            </li>
+          </ul>
+        </div>
       </div>
       <div class="markdown-body" v-html="rendered"></div>
     </div>
@@ -132,19 +132,16 @@ function toggleToc() {
   width: 100%;
 }
 
-.toc-toggle-bar {
-  margin-bottom: var(--spacing-md);
-  border-bottom: 1px solid var(--color-border-light);
-  padding-bottom: var(--spacing-sm);
+.toc-section {
+  margin-bottom: var(--spacing-lg);
 }
 
-.toc-toggle-btn {
+.toc-toggle {
   display: inline-flex;
   align-items: center;
   gap: var(--spacing-xs);
   padding: var(--spacing-xs) var(--spacing-sm);
-  border: 2px solid var(--color-border);
-  border-radius: 0;
+  border: 1px solid var(--color-border);
   background: var(--color-bg-card);
   color: var(--color-text-secondary);
   font-size: 0.78em;
@@ -154,27 +151,37 @@ function toggleToc() {
   letter-spacing: 0.03em;
 }
 
-.toc-toggle-btn:hover {
+.toc-toggle:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
 }
 
-.toc-chevron {
-  transition: transform var(--transition-fast);
+.toc-icon {
+  flex-shrink: 0;
 }
 
-.toc-chevron.expanded {
+.toc-chevron {
+  transition: transform 0.2s ease;
+  flex-shrink: 0;
+}
+
+.toc-chevron.up {
   transform: rotate(180deg);
 }
 
 .toc-panel {
+  max-height: 0;
+  overflow: hidden;
+  padding: 0 var(--spacing-md);
   background: var(--color-bg-card);
-  border: 2px solid var(--color-border);
-  border-radius: 0;
-  padding: var(--spacing-sm) var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
-  max-height: 300px;
+  border: 1px solid var(--color-border-light);
+  transition: max-height 0.3s ease, padding 0.3s ease;
+}
+
+.toc-panel.expanded {
+  max-height: 400px;
   overflow-y: auto;
+  padding: var(--spacing-sm) var(--spacing-md);
 }
 
 .toc-list {
