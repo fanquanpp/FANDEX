@@ -187,4 +187,11 @@
  FalseVue3 带来了许多新特性和改进，使前端开发更加高效和愉快。通过本章节的学习，你已经了解了 Vue3 的基本概念和环境搭建方法，为后续的学习打下了基础。
  False
  False接下来，我们将深入学习 Vue3 的组合式 API、响应式系统、组件系统等核心特性，帮助你构建更加复杂和功能丰富的 Vue3 应用。
+
+## 延伸阅读
+
+- [[javascript/overview|JavaScript]]
+- [[typescript/overview|TypeScript]]
+- [[html5/overview-and-semantics|HTML5]]
+- [[css/overview-and-syntax|CSS]]
  False

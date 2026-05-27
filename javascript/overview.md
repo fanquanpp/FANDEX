@@ -484,4 +484,8 @@
  False
  False- 2026-04-05: 整合 JS 概述与运行环境知识
  False- 2026-04-05: 扩写内容，增加详细的发展历程、核心特点、运行环境、ECMAScript 标准、开发工具和最佳实践
+
+## 延伸阅读
+
+- [[typescript/overview|TypeScript]]
  False

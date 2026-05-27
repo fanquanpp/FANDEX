@@ -879,4 +879,8 @@
  False
  False- 2026-04-05: 细化 Canvas 绘图基础与 SVG 对比。
  False- 2026-04-05: 扩写内容，增加详细的音视频支持、Canvas 绘图、SVG 绘图的概念、示例和最佳实践，以及实际应用示例。
+
+## 延伸阅读
+
+- [[javascript/overview|JavaScript]]
  False

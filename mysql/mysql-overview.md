@@ -368,4 +368,9 @@
  False- 2026-05-27: 拆分为独立文件，添加元数据，版本升级至 v4.0.0
  False- 2026-04-30: 大幅细化内容，添加 MySQL 架构详解、数据类型详解、电商系统完整设计示例等
  False- 2026-04-05: 整合 MySQL 概述与环境配置
+
+## 延伸阅读
+
+- [[data-analysis/overview|数据分析]]
+- [[java/overview|Java]]
  False

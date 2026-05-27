@@ -707,4 +707,8 @@
  False
  False- 2026-05-27: v4.0.0 大幅扩充——新增 BFC 详解、圣杯/双飞翼布局、居中方案汇总、z-index 层叠上下文、sticky 注意事项
  False- 2026-04-05: 整合传统布局与现代定位技巧
+
+## 延伸阅读
+
+- [[html5/tags-and-attributes|HTML 标签]]
  False

@@ -551,4 +551,8 @@
  False
  False- 2026-04-05: 整合 Python 概述与环境配置。
  False- 2026-04-05: 扩写内容，增加详细的 Python 版本历史、应用领域、环境搭建、工具推荐、最佳实践和学习资源等内容。
+
+## 延伸阅读
+
+- [[data-analysis/overview|数据分析]]
  False

@@ -691,3 +691,7 @@ result = stats.descstats(data)
 - Practical Statistics for Data Scientists (Peter Bruce)
 - scipy.stats 官方文档：https://docs.scipy.org/doc/scipy/reference/stats.html
 - Statistical Inference (George Casella)
+
+### 跨模块关联
+
+- [[algorithm/overview|算法]]

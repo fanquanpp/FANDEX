@@ -484,4 +484,8 @@
  False|------|------|----------|--------|
  False| 2026-04-05 | 1.0 | 初始创建 | fanquanpp |
  False| 2026-04-05 | 1.1 | 扩写内容，增加详细的安装配置、命令示例、工作流程和最佳实践 | fanquanpp |
+
+## 延伸阅读
+
+- [[github/account-and-security|GitHub 账户]]
  False

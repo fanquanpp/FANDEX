@@ -497,4 +497,9 @@
  False- Jupyter Notebook 官方文档：https://jupyter.org/documentation
  False- Kaggle Learn：https://www.kaggle.com/learn
  False- Python Data Science Handbook (Jake VanderPlas)：https://jakevdp.github.io/PythonDataScienceHandbook/
+
+### 跨模块关联
+
+- [[python/overview|Python]]
+- [[mysql/mysql-overview|MySQL]]
  False

@@ -519,4 +519,9 @@
  False组合式 API 的核心优势在于它允许你根据逻辑关注点组织代码，而不是根据选项类型。这使得代码更加模块化、可复用，并且更易于理解和维护。
  False
  False在实际开发中，建议使用 `script setup` 语法糖，它使组合式 API 的使用更加简洁明了。同时，要善于使用组合函数来复用逻辑，提高代码的可维护性。
+
+## 延伸阅读
+
+- [[javascript/functions-and-scope|JS 函数与作用域]]
+- [[javascript/async-programming|JS 异步编程]]
  False

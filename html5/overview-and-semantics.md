@@ -573,4 +573,9 @@
  False
  False- 2026-04-05: 整合 HTML5 概述与语义化知识
  False- 2026-04-05: 扩写内容，增加详细的发展历程、核心特性、语义化标签使用示例、最佳实践和实际应用示例
+
+## 延伸阅读
+
+- [[css/overview-and-syntax|CSS]]
+- [[javascript/overview|JavaScript]]
  False

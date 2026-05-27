@@ -1105,6 +1105,10 @@
  False
  FalseTypeScript 的类型系统是一个强大的工具，掌握它可以帮助开发者构建更加可靠、可维护的应用程序，提高开发效率和代码质量。
  False
+ False## 延伸阅读
+ False
+ False- [[javascript/variables-and-data-types|JS 数据类型]]
+ False
  False---
  False
  False### 更新日志 (Changelog)

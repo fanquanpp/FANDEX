@@ -224,4 +224,9 @@
  False
  False- 2026-04-05: 初始版本创建。
  False- 2026-04-05: 详细扩写内容，增加了发展背景、核心特点详解、应用领域细分、学习建议和第一个C程序示例。
+
+## 延伸阅读
+
+- [[cpp/overview-and-standards|C++]]
+- [[algorithm/overview|算法]]
  False

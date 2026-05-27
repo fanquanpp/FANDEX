@@ -790,8 +790,14 @@
  False
  False---
  False
- False### 更新日志 (Changelog)
- False
- False- 2026-05-27: v4.0.0 大幅扩充——新增 AMD/CMD 历史方案、Webpack/Vite 打包工具、循环依赖详解、Live Binding 对比、Barrel Export、副作用控制、路径别名、模块化检查清单
- False- 2026-04-06: 新增「模块化」知识点，补充 CJS/ESM 对比与工程实践要点
+ False##### 延伸阅读
+
+- [[typescript/type-declarations-and-module-resolution|TS 模块解析]]
+
+---
+
+### 更新日志 (Changelog)
+
+- 2026-05-27: v4.0.0 大幅扩充——新增 AMD/CMD 历史方案、Webpack/Vite 打包工具、循环依赖详解、Live Binding 对比、Barrel Export、副作用控制、路径别名、模块化检查清单
+- 2026-04-06: 新增「模块化」知识点，补充 CJS/ESM 对比与工程实践要点
  False

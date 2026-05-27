@@ -593,3 +593,9 @@
  False- Kleinberg & Tardos, *Algorithm Design*, Chapter 2-3
  False
  False> 跨模块引用：算法的实现语言基础参见 [[cpp/overview|C++基础]] 和 [[python/overview|Python基础]]。
+
+### 跨模块关联
+
+- [[c/overview|C语言]]
+- [[cpp/overview-and-standards|C++]]
+- [[python/overview|Python]]

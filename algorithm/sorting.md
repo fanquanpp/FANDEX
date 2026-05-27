@@ -949,3 +949,7 @@
  False- Sedgewick, "Analysis of Shellsort and Related Algorithms", 1996
  False
  False> 跨模块引用：排序算法在搜索预处理中广泛应用，参见 [[algorithm/searching|搜索算法]]。C++ STL排序实现参见 [[cpp/overview|C++基础]]。
+
+### 跨模块关联
+
+- [[cpp/cpp-stl-algorithms|STL 算法]]

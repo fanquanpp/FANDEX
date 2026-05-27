@@ -806,4 +806,8 @@
  False
  False- 2026-04-05: 整合 CSS 基础语法与优先级规则。
  False- 2026-04-06: 扩写详细内容，增加 CSS3 的历史与发展、模块化结构、CSS 变量、CSS 函数、浏览器兼容性、最佳实践等章节。
+
+## 延伸阅读
+
+- [[html5/overview-and-semantics|HTML5]]
  False
