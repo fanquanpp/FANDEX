@@ -258,8 +258,10 @@ function toggleSidebar() {
   grid-column: 1;
   background: var(--color-bg-sidebar);
   border-right: 2px solid var(--color-border);
-  overflow: hidden;
   overflow-y: auto;
+  position: sticky;
+  top: var(--nav-height);
+  height: calc(100vh - var(--nav-height));
   transition: opacity var(--transition-base);
 }
 
