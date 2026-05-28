@@ -13,10 +13,10 @@ tags:
   - 'web-api'
   - 'devops'
 difficulty: 'advanced'
-title: '01-性能优化 | Performance Optimization'
+title: '01-性能优化'
 module: 'vue3'
 category: 'Vue3 Basics'
-description: '01-性能优化 | Performance Optimization'
+description: 'Vue3应用性能优化策略与实践'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

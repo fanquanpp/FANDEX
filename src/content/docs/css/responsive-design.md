@@ -6,10 +6,10 @@ tags:
   - 'css-layout'
   - 'devops'
 difficulty: 'intermediate'
-title: '响应式设计 | Responsive Design'
+title: '响应式设计'
 module: 'css'
 category: 'CSS Basics'
-description: '响应式设计 | Responsive Design'
+description: 'CSS响应式设计与媒体查询实践'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

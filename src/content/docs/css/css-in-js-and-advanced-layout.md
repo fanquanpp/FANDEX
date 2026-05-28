@@ -8,10 +8,10 @@ tags:
   - 'css-layout'
   - 'devops'
 difficulty: 'advanced'
-title: 'CSS-in-JS 与高级布局技巧 | CSS-in-JS and Advanced Layouts'
+title: 'CSS-in-JS 与高级布局技巧'
 module: 'css'
 category: 'CSS Basics'
-description: 'CSS-in-JS 与高级布局技巧 | CSS-in-JS and Advanced Layouts'
+description: 'CSS-in-JS方案与Grid高级布局'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

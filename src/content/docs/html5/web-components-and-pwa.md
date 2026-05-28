@@ -10,10 +10,10 @@ tags:
   - 'web-api'
   - 'devops'
 difficulty: 'intermediate'
-title: 'Web Components 与 PWA 开发 | Web Components and PWA'
+title: 'Web Components 与 PWA 开发'
 module: 'html5'
 category: 'HTML5 Basics'
-description: 'Web Components 与 PWA 开发 | Web Components and PWA'
+description: 'Web组件与渐进式Web应用开发'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---
@@ -217,8 +217,7 @@ PWA 是一种结合了 Web 和原生应用优点的应用程序，具有安装�
 ### 7.2 注册 Manifest
 
 ```html
-<link rel="manifest" href="/manifest.json" />
-<meta name="theme-color" content="#4A90E2" />
+<link rel="manifest" href="/manifest.json" /> <meta name="theme-color" content="#4A90E2" />
 ```
 
 ## 8. Service Worker

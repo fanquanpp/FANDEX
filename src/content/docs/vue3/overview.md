@@ -8,10 +8,10 @@ tags:
   - 'reactive'
   - 'css-layout'
 difficulty: 'beginner'
-title: '01-概述与环境 | Overview & Environment'
+title: '01-概述与环境'
 module: 'vue3'
 category: 'Vue3 Basics'
-description: '01-概述与环境 | Overview & Environment'
+description: 'Vue3概述与开发环境搭建'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

@@ -6,10 +6,10 @@ tags:
   - 'design-patterns'
   - 'data-structure'
 difficulty: 'intermediate'
-title: 'Java Swing 图形界面 | Swing GUI'
+title: 'Java Swing 图形界面'
 module: 'java'
 category: 'Java Basics'
-description: 'Java Swing 图形界面 | Swing GUI'
+description: 'Swing图形界面开发与事件处理'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

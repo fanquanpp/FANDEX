@@ -9,10 +9,10 @@ tags:
   - 'reactive'
   - 'css-layout'
 difficulty: 'intermediate'
-title: '02-TypeScript 集成 | TypeScript Integration'
+title: '02-TypeScript 集成'
 module: 'vue3'
 category: 'Vue3 Basics'
-description: '02-TypeScript 集成 | TypeScript Integration'
+description: 'Vue3中TypeScript的集成与使用'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

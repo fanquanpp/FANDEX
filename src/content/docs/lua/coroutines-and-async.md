@@ -5,10 +5,10 @@ tags:
   - 'async'
   - 'networking'
 difficulty: 'intermediate'
-title: '05-协程与异步 | Coroutines and Asynchronous Programming'
+title: '05-协程与异步'
 module: 'lua'
 category: 'Lua Basics'
-description: '05-协程与异步 | Coroutines and Asynchronous Programming'
+description: 'Lua协程机制与异步编程实践'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

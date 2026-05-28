@@ -7,10 +7,10 @@ tags:
   - 'css-layout'
   - 'devops'
 difficulty: 'intermediate'
-title: '02-组合式 API | Composition API'
+title: '02-组合式 API'
 module: 'vue3'
 category: 'Vue3 Basics'
-description: '02-组合式 API | Composition API'
+description: 'Vue3组合式API核心用法详解'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

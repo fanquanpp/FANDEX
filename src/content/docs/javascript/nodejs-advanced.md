@@ -13,10 +13,10 @@ tags:
   - 'data-structure'
   - 'web-api'
 difficulty: 'advanced'
-title: 'Node.js 高级特性与性能优化 | Advanced Node.js Features and Performance Optimization'
+title: 'Node.js 高级特性与性能优化'
 module: 'javascript'
 category: 'JavaScript Basics'
-description: 'Node.js 高级特性与性能优化 | Advanced Node.js Features and Performance Optimization'
+description: '异步编程模式、流处理、集群与 Worker、性能调优与安全实践。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

@@ -5,10 +5,10 @@ tags:
   - 'networking'
   - 'git-workflow'
 difficulty: 'advanced'
-title: 'Git 钩子与 Git LFS | Git Hooks and Git LFS'
+title: 'Git 钩子与 Git LFS'
 module: 'git'
 category: 'Git Basics'
-description: 'Git 钩子与 Git LFS | Git Hooks and Git LFS'
+description: 'Git钩子自动化与大文件管理'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

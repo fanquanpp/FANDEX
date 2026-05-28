@@ -9,10 +9,10 @@ tags:
   - 'data-structure'
   - 'web-api'
 difficulty: 'intermediate'
-title: '04-组件系统 | Component System'
+title: '04-组件系统'
 module: 'vue3'
 category: 'Vue3 Basics'
-description: '04-组件系统 | Component System'
+description: 'Vue3组件系统与通信机制'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

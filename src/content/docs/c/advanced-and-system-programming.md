@@ -7,10 +7,10 @@ tags:
   - 'concurrency'
   - 'data-structure'
 difficulty: 'advanced'
-title: 'C 语言高级特性与系统编程 | C Language Advanced Features and System Programming'
+title: 'C 语言高级特性与系统编程'
 module: 'c'
 category: 'C Basics'
-description: 'C 语言高级特性与系统编程 | C Language Advanced Features and System Programming'
+description: '高级数据结构、内存管理、文件系统、网络编程与并发模型。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

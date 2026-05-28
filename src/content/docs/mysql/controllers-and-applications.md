@@ -8,10 +8,10 @@ tags:
   - 'networking'
   - 'data-structure'
 difficulty: 'intermediate'
-title: 'MySQL 控制器与应用 | Controllers and Applications'
+title: 'MySQL 控制器与应用'
 module: 'mysql'
 category: 'MySQL Basics'
-description: 'MySQL 控制器与应用 | Controllers and Applications'
+description: 'MySQL控制器设计模式与应用实践'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

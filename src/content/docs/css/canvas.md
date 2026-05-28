@@ -6,10 +6,10 @@ tags:
   - 'networking'
   - 'web-api'
 difficulty: 'intermediate'
-title: 'CSS Canvas 绘图 | Canvas Drawing'
+title: 'CSS Canvas 绘图'
 module: 'css'
 category: 'CSS Basics'
-description: 'CSS Canvas 绘图 | Canvas Drawing'
+description: 'Canvas绘图API与动画实战'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

@@ -4,10 +4,10 @@ tags:
   - 'lua'
   - 'async'
 difficulty: 'intermediate'
-title: '02-模块与包 | Modules and Packages'
+title: '02-模块与包'
 module: 'lua'
 category: 'Lua Basics'
-description: '02-模块与包 | Modules and Packages'
+description: 'Lua模块系统与包管理详解'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

@@ -5,10 +5,10 @@ tags:
   - 'networking'
   - 'git-workflow'
 difficulty: 'advanced'
-title: 'Markdown 高级语法与文档自动化 | Advanced Markdown Syntax and Documentation Automation'
+title: 'Markdown 高级语法与文档自动化'
 module: 'markdown'
 category: 'Markdown Basics'
-description: 'Markdown 高级语法与文档自动化 | Advanced Markdown Syntax and Documentation Automation'
+description: '扩展语法、数学公式、流程图、自动化文档工作流。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

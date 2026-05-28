@@ -6,10 +6,10 @@ tags:
   - 'performance'
   - 'functional'
 difficulty: 'intermediate'
-title: '04-函数与闭包 | Functions and Closures'
+title: '04-函数与闭包'
 module: 'lua'
 category: 'Lua Basics'
-description: '04-函数与闭包 | Functions and Closures'
+description: 'Lua函数定义、闭包与高阶函数'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

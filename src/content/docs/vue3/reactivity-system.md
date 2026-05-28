@@ -7,10 +7,10 @@ tags:
   - 'typescript'
   - 'reactive'
 difficulty: 'intermediate'
-title: '03-响应式系统 | Reactive System'
+title: '03-响应式系统'
 module: 'vue3'
 category: 'Vue3 Basics'
-description: '03-响应式系统 | Reactive System'
+description: 'Vue3响应式原理与API详解'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

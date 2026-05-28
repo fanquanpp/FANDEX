@@ -8,10 +8,10 @@ tags:
   - 'devops'
   - 'math'
 difficulty: 'intermediate'
-title: 'Spring Cloud 微服务开发 | Spring Cloud Microservices'
+title: 'Spring Cloud 微服务开发'
 module: 'java'
 category: 'Java Basics'
-description: 'Spring Cloud 微服务开发 | Spring Cloud Microservices'
+description: 'Spring Cloud微服务架构与开发'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---
