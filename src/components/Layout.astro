@@ -31,7 +31,6 @@ const base = import.meta.env.BASE_URL
       html { height: 100%; }
       body { height: 100vh; height: 100dvh; overflow: hidden; }
     </style>
-    <div class="read-progress" id="read-progress"></div>
     <div class="sidebar-backdrop" id="sidebar-backdrop"></div>
     <div class="app-layout">
       <header class="app-nav">
@@ -88,7 +87,6 @@ const base = import.meta.env.BASE_URL
   const toggle = document.getElementById('nav-toggle')
   const mobileBtn = document.getElementById('mobile-sidebar-btn')
   const main = document.getElementById('app-main')
-  const progress = document.getElementById('read-progress')
 
   if (main) {
     let savedScrollTop = 0
@@ -144,13 +142,6 @@ const base = import.meta.env.BASE_URL
   })
 
   if (backdrop) backdrop.addEventListener('click', closeSidebar)
-
-  if (main && progress) {
-    main.addEventListener('scroll', () => {
-      const h = main.scrollHeight - main.clientHeight
-      progress.style.width = h > 0 ? `${(main.scrollTop / h) * 100}%` : '0%'
-    })
-  }
 
   document.addEventListener('astro:page-load', closeSidebar)
 
@@ -291,18 +282,6 @@ const base = import.meta.env.BASE_URL
   z-index: 150;
 }
 body.sidebar-open .sidebar-backdrop { display: block; }
-
-.read-progress {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 2px;
-  background: var(--color-primary);
-  z-index: 200;
-  width: 0%;
-  transition: width 0.1s linear;
-  pointer-events: none;
-}
 
 .mobile-nav {
   display: none;

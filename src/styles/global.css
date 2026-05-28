@@ -33,7 +33,6 @@
   --font-code: 'JetBrains Mono', monospace;
   --transition-fast: 0.12s ease;
   --transition-base: 0.22s ease;
-  --read-progress-bar: 0%;
 }
 
 [data-theme='dark'] {
