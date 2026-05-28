@@ -1,19 +1,12 @@
 ---
-order: 110
+order: 150
 tags:
   - 'javascript'
   - 'project'
-  - 'async'
-  - 'database'
-  - 'networking'
-  - 'functional'
-  - 'memory'
-  - 'css-layout'
-  - 'web-api'
-  - 'devops'
 difficulty: 'intermediate'
 title: 'JavaScript 项目示例：待办事项应用'
 module: 'javascript'
+description: '综合运用 DOM 操作、事件处理与本地存储的待办事项应用。'
 ---
 
 | 完成任务 | 点击切换完成状态，视觉反馈 |

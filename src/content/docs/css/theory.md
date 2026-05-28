@@ -1,7 +1,7 @@
 ---
 title: 'CSS 理论知识点'
 module: 'css'
-order: 110
+order: 100
 tags:
   - 'css'
   - 'theory'
@@ -10,6 +10,7 @@ tags:
   - 'data-structure'
   - 'devops'
 difficulty: 'intermediate'
+description: '层叠规则、包含块、格式化上下文与渲染原理。'
 ---
 
          |

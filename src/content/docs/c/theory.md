@@ -1,14 +1,14 @@
 ---
-order: 130
+order: 120
 tags:
   - 'c'
   - 'theory'
-  - 'oop'
   - 'memory'
   - 'data-structure'
 difficulty: 'intermediate'
 title: 'C 语言理论知识点'
 module: 'c'
+description: '编译流程、内存模型、链接与加载等核心理论知识。'
 ---
 
 源文件(.c) --> 预处理器(cpp) --> 预处理后的源文件(.i)

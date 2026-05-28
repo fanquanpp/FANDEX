@@ -1,16 +1,13 @@
 ---
 title: 'Java 理论知识点'
 module: 'java'
-order: 190
+order: 220
 tags:
   - 'java'
   - 'theory'
-  - 'async'
-  - 'design-patterns'
-  - 'security'
   - 'performance'
-  - 'concurrency'
 difficulty: 'intermediate'
+description: 'JVM 原理、类加载机制与内存管理核心知识。'
 ---
 
                     +-- 验证(Verification)

@@ -1,16 +1,12 @@
 ---
-order: 160
+order: 30
 tags:
   - 'javascript'
-  - 'database'
-  - 'networking'
-  - 'typescript'
-  - 'css-layout'
 difficulty: 'beginner'
-title: '变量与数据类型 (Variables & Data Types)'
+title: '变量与数据类型'
 module: 'javascript'
 category: 'JS Basics'
-description: 'JS 引入方式、注释、标识符命名、变量声明及严格模式。 | JS inclusion, comments, naming, declarations, and Strict Mode.'
+description: 'var/let/const、原始类型、引用类型与类型转换。'
 author: 'Anonymous'
 ---
 

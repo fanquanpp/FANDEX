@@ -1,12 +1,12 @@
 ---
-order: 150
+order: 10
 tags:
   - 'c'
 difficulty: 'beginner'
-title: 'C 语言概述 (C Language Overview)'
+title: 'C 语言概述'
 module: 'c'
 category: 'C Basics'
-description: 'C 语言的发展历史、特点及应用领域，包含备考复习要点。 | Overview of C language history, features, and applications with exam preparation points.'
+description: 'C 语言的发展历史、特点及应用领域，包含备考复习要点。'
 author: 'Anonymous'
 ---
 

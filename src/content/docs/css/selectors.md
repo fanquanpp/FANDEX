@@ -1,15 +1,15 @@
 ---
-order: 100
+order: 30
 tags:
   - 'css'
   - 'memory'
   - 'css-layout'
   - 'devops'
 difficulty: 'intermediate'
-title: 'CSS3 选择器系统 (Selectors System)'
+title: 'CSS3 选择器系统'
 module: 'css'
 category: 'CSS Basics'
-description: '基础选择器、组合选择器、伪类与伪元素深度解析。 | Basic, combinator, pseudo-class, and pseudo-element selectors.'
+description: '基础选择器、组合选择器、伪类伪元素与优先级。'
 author: 'Anonymous'
 ---
 

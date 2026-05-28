@@ -1,12 +1,12 @@
 ---
-order: 90
+order: 40
 tags:
   - 'markdown'
 difficulty: 'intermediate'
 title: 'Markdown 基础文本格式'
 module: 'markdown'
 category: 'Markdown Basics'
-description: 'Markdown 基础文本格式：斜体、粗体、删除线等。 | Markdown text formatting: italic, bold, strikethrough.'
+description: 'Markdown 基础文本格式：斜体、粗体、删除线等。'
 author: 'fanquanpp'
 updated: 2026-04-05
 ---

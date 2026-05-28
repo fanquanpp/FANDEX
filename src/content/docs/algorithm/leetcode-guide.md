@@ -4,7 +4,7 @@ module: 'algorithm'
 category: 'Algorithm/LeetCode'
 description: '系统化刷题方法论、题型分类与解题模板、时间管理与面试策略。'
 author: 'fanquanpp'
-order: 60
+order: 100
 tags:
   - 'algorithm'
   - 'algorithm-leetcode'

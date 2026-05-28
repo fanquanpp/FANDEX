@@ -1,14 +1,13 @@
 ---
-order: 10
+order: 120
 tags:
   - 'java'
   - 'oop'
-  - 'design-patterns'
 difficulty: 'intermediate'
-title: '抽象类与接口 (Abstract Classes & Interfaces)'
+title: '抽象类与接口'
 module: 'java'
 category: 'Java Basics'
-description: '抽象类、接口定义、默认方法、静态方法及二者对比。 | Abstract classes, interfaces, default methods, static methods, and comparison.'
+description: '抽象类设计、接口定义、默认方法与函数式接口。'
 author: 'Anonymous'
 ---
 

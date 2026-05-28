@@ -7,10 +7,10 @@ tags:
   - 'networking'
   - 'git-workflow'
 difficulty: 'intermediate'
-title: '协作开发规范：Commit Message、PR 模板、Code Review、CLA 与 DCO'
+title: '协作开发规范'
 module: 'github'
 category: 'GitHub Advanced'
-description: '协作开发规范：Commit Message、PR 模板、代码审查清单、CLA/DCO 合规。 | Collaboration guidelines: commit messages, PR templates, code review, CLA/DCO compliance.'
+description: '协作开发规范：Commit Message、PR 模板、代码审查清单、CLA/DCO 合规。'
 author: 'Anonymous'
 ---
 

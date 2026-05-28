@@ -1,15 +1,15 @@
 ---
-order: 20
+order: 90
 tags:
   - 'python'
   - 'database'
   - 'networking'
   - 'functional'
 difficulty: 'intermediate'
-title: '推导式与生成器 (Comprehensions & Generators)'
+title: '推导式与生成器'
 module: 'python'
 category: 'Python Basics'
-description: '列表/字典推导式、迭代器、生成器及 Lazy Evaluation。 | Comprehensions, Iterators, Generators, and Lazy Evaluation.'
+description: '列表推导、字典推导、生成器表达式与迭代器。'
 author: 'Anonymous'
 ---
 

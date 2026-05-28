@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 100
 tags:
   - 'vue3'
   - 'typescript'

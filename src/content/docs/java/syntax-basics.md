@@ -1,15 +1,13 @@
 ---
-order: 180
+order: 30
 tags:
   - 'java'
   - 'oop'
-  - 'networking'
-  - 'typescript'
 difficulty: 'beginner'
-title: '程序结构与基本语法 (Program Structure & Basic Syntax)'
+title: '程序结构与基本语法'
 module: 'java'
 category: 'Java Basics'
-description: 'Java 程序的组成、注释规范、标识符命名及键盘录入。 | Components of Java programs, comments, naming conventions, and Scanner.'
+description: 'Java 程序结构、注释、标识符与关键字。'
 author: 'Anonymous'
 ---
 

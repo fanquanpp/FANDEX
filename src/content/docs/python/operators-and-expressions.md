@@ -1,12 +1,12 @@
 ---
-order: 110
+order: 50
 tags:
   - 'python'
 difficulty: 'intermediate'
-title: '运算符与表达式 (Operators & Expressions)'
+title: '运算符与表达式'
 module: 'python'
 category: 'Python Basics'
-description: '算术、逻辑、位运算及成员/身份运算符详解。 | Detailed guide on Python operators, logic, bitwise, and membership.'
+description: '算术、比较、逻辑、位运算与运算符优先级。'
 author: 'Anonymous'
 ---
 

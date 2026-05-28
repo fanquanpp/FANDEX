@@ -1,18 +1,15 @@
 ---
-order: 10
+order: 100
 tags:
   - 'javascript'
   - 'async'
-  - 'security'
-  - 'database'
-  - 'networking'
   - 'data-structure'
   - 'web-api'
 difficulty: 'intermediate'
-title: '异步编程 (Asynchronous JS)'
+title: '异步编程'
 module: 'javascript'
 category: 'JS Basics'
-description: '事件循环、Callback、Promise、Async/Await 及 Fetch。 | Event Loop, Promises, and Async/Await.'
+description: '回调、Promise、async/await 与事件循环。'
 author: 'Anonymous'
 ---
 

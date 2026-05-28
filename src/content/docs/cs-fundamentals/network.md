@@ -4,7 +4,7 @@ module: 'cs-fundamentals'
 category: 'Computer Science / Networking'
 description: '计算机网络核心原理：协议栈、TCP/IP、路由、应用层协议、网络安全。'
 author: 'fanquanpp'
-order: 60
+order: 40
 tags:
   - 'cs-fundamentals'
   - 'computer-science---networking'

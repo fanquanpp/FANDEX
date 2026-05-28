@@ -1,21 +1,13 @@
 ---
-order: 40
+order: 80
 tags:
   - 'javascript'
-  - 'oop'
-  - 'async'
-  - 'security'
-  - 'database'
-  - 'networking'
-  - 'typescript'
-  - 'reactive'
   - 'web-api'
-  - 'devops'
 difficulty: 'intermediate'
-title: 'DOM 操作与事件 (DOM Manipulation & Events)'
+title: 'DOM 操作与事件'
 module: 'javascript'
 category: 'JS Basics'
-description: '讲解 DOM 树、查询/创建/插入节点、事件模型与事件委托，并覆盖性能与安全要点。 | DOM APIs, events, delegation, performance and security notes.'
+description: 'DOM 树操作、事件模型与事件委托。'
 author: 'Anonymous'
 ---
 
@@ -347,8 +339,7 @@ el.dataset.newField = 'value';
 ### 4.4 布尔属性
 
 ```html
-<input type="checkbox" checked disabled />
-<button disabled>Click</button>
+<input type="checkbox" checked disabled /> <button disabled>Click</button>
 ```
 
 ```js

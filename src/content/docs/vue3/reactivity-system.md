@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 60
 tags:
   - 'vue3'
   - 'oop'
@@ -7,7 +7,7 @@ tags:
   - 'typescript'
   - 'reactive'
 difficulty: 'intermediate'
-title: '03-响应式系统'
+title: '响应式系统'
 module: 'vue3'
 category: 'Vue3 Basics'
 description: 'Vue3响应式原理与API详解'

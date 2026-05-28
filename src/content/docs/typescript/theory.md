@@ -1,7 +1,7 @@
 ---
 title: 'TypeScript 理论知识点'
 module: 'typescript'
-order: 100
+order: 130
 tags:
   - 'typescript'
   - 'theory'
@@ -9,6 +9,7 @@ tags:
   - 'design-patterns'
   - 'devops'
 difficulty: 'intermediate'
+description: '类型系统原理、编译流程与结构化类型机制。'
 ---
 
 y: number;

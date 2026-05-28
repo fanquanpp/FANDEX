@@ -4,7 +4,7 @@ module: 'cs-fundamentals'
 category: 'Computer Science / Discrete Mathematics'
 description: '离散数学核心：逻辑与证明、集合与关系、图论、组合计数、代数结构、形式语言与自动机。'
 author: 'fanquanpp'
-order: 40
+order: 50
 tags:
   - 'cs-fundamentals'
   - 'computer-science---discrete-mathematics'

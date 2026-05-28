@@ -1,13 +1,13 @@
 ---
-order: 40
+order: 50
 tags:
   - 'cpp'
   - 'memory'
 difficulty: 'intermediate'
-title: 'C++ 指针 (C++ Pointers)'
+title: 'C++ 指针'
 module: 'cpp'
 category: 'C++ Basics'
-description: 'C++ 指针基础、指针运算、指针与函数、指针数组与数组指针。 | C++ pointer basics, arithmetic, functions, pointer arrays.'
+description: '智能指针、原始指针、指针运算与内存安全。'
 author: 'Anonymous'
 ---
 

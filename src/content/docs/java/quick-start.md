@@ -1,12 +1,12 @@
 ---
-order: 210
+order: 20
 tags:
   - 'java'
 difficulty: 'beginner'
-title: '00-快速入门 (Java)'
+title: '快速入门'
 module: 'java'
 category: 'Java Basics'
-description: '00-快速入门'
+description: '第一个 Java 程序、编译运行与基本概念。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

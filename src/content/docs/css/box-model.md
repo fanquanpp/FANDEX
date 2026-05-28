@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 20
 tags:
   - 'css'
   - 'database'
@@ -7,10 +7,10 @@ tags:
   - 'css-layout'
   - 'devops'
 difficulty: 'intermediate'
-title: 'CSS3 盒模型详解 (Box Model In-depth)'
+title: 'CSS3 盒模型详解'
 module: 'css'
 category: 'CSS Basics'
-description: '标准盒模型与 IE 盒模型、外边距塌陷及布局应用。 | Standard vs. Quirks box models, margin collapse, and layout.'
+description: 'content/padding/border/margin、box-sizing 与视觉格式化。'
 author: 'Anonymous'
 ---
 

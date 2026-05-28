@@ -1,12 +1,12 @@
 ---
-order: 30
+order: 60
 tags:
   - 'c'
 difficulty: 'intermediate'
-title: '控制流 (Control Flow)'
+title: '控制流'
 module: 'c'
 category: 'C Basics'
-description: '条件判断、循环结构及其控制语句。 | Conditional branches, loop structures, and control statements.'
+description: '条件判断、循环结构及其控制语句。'
 author: 'Anonymous'
 ---
 

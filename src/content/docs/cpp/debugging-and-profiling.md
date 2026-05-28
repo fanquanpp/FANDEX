@@ -1,17 +1,12 @@
 ---
-order: 110
+order: 130
 tags:
   - 'cpp'
-  - 'async'
-  - 'database'
-  - 'networking'
-  - 'concurrency'
-  - 'data-structure'
 difficulty: 'advanced'
 title: 'C++ 调试与性能分析'
 module: 'cpp'
 category: 'C++ Basics'
-description: 'C++ 调试与性能分析'
+description: 'GDB/LLDB 调试、性能剖析工具与内存泄漏检测。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

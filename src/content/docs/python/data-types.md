@@ -4,10 +4,10 @@ tags:
   - 'python'
   - 'database'
 difficulty: 'beginner'
-title: '基础数据类型 (Basic Data Types)'
+title: '基础数据类型'
 module: 'python'
 category: 'Python Basics'
-description: 'Python 核心内置类型：数字、字符串、布尔及 None。 | Core built-in types: Numbers, Strings, Booleans, and None.'
+description: '数值、字符串、布尔类型与类型转换。'
 author: 'Anonymous'
 ---
 

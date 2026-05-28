@@ -1,16 +1,12 @@
 ---
-order: 140
+order: 20
 tags:
   - 'javascript'
-  - 'database'
-  - 'networking'
-  - 'typescript'
-  - 'css-layout'
 difficulty: 'beginner'
-title: '程序结构与基本语法 (Program Structure & Basic Syntax)'
+title: '程序结构与基本语法'
 module: 'javascript'
 category: 'JS Basics'
-description: 'JS 引入方式、注释、标识符命名、变量声明及严格模式。 | JS inclusion, comments, naming, declarations, and Strict Mode.'
+description: 'JavaScript 语法基础、语句与表达式。'
 author: 'Anonymous'
 ---
 

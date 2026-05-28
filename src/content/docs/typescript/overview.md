@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 10
 tags:
   - 'typescript'
   - 'oop'
@@ -7,10 +7,10 @@ tags:
   - 'database'
   - 'functional'
 difficulty: 'beginner'
-title: 'TypeScript 概述与环境配置 (TS Overview & Environment)'
+title: 'TypeScript 概述与环境配置'
 module: 'typescript'
 category: 'TS Advanced'
-description: 'TS 的起源、核心价值、与 JS 的关系及编译器配置。 | TS history, value, relation to JS, and compiler setup.'
+description: 'TypeScript 发展历程、与 JavaScript 的关系与开发环境搭建。'
 author: 'Anonymous'
 ---
 

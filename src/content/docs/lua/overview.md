@@ -1,14 +1,14 @@
 ---
-order: 70
+order: 10
 tags:
   - 'lua'
   - 'networking'
   - 'memory'
 difficulty: 'beginner'
-title: 'Lua 概述与环境配置 (Lua Overview & Environment)'
+title: 'Lua 概述与环境配置'
 module: 'lua'
 category: 'Lua Basics'
-description: 'Lua 的设计哲学、轻量级特性、应用场景及环境搭建。 | Lua design philosophy, lightweight features, applications, and setup.'
+description: 'Lua 语言特点、应用场景与开发环境搭建。'
 author: 'Anonymous'
 ---
 

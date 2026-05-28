@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 40
 tags:
   - 'css'
   - 'database'
@@ -7,10 +7,10 @@ tags:
   - 'css-layout'
   - 'devops'
 difficulty: 'intermediate'
-title: '传统布局技术 (Traditional Layouts)'
+title: '传统布局技术'
 module: 'css'
 category: 'CSS Basics'
-description: '浮动布局、定位、清除浮动及 Legacy 浏览器兼容方案。 | Float, positioning, clear-fix, and legacy solutions.'
+description: '浮动、定位、BFC 与经典布局方案。'
 author: 'Anonymous'
 ---
 

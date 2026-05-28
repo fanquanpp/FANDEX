@@ -2,15 +2,13 @@
 order: 90
 tags:
   - 'c'
-  - 'async'
   - 'memory'
-  - 'typescript'
   - 'data-structure'
 difficulty: 'intermediate'
-title: '指针深度解析 (Pointers In-depth)'
+title: '指针深度解析'
 module: 'c'
 category: 'C Basics'
-description: '指针概念、指针运算、数组与指针、函数指针及多级指针。 | Pointer concepts, arithmetic, array-pointer, function-pointer, and multi-level pointers.'
+description: '指针概念、指针运算、数组与指针、函数指针及多级指针。'
 author: 'Anonymous'
 ---
 

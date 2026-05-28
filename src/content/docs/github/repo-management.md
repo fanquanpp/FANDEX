@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 20
 tags:
   - 'github'
   - 'networking'
@@ -8,7 +8,7 @@ difficulty: 'intermediate'
 title: '仓库创建、克隆、归档、删除'
 module: 'github'
 category: 'GitHub Basics'
-description: 'GitHub 仓库创建、克隆、归档、删除的完整操作指南。 | Complete guide for GitHub repository creation, cloning, archiving, and deletion.'
+description: 'GitHub 仓库创建、克隆、归档、删除的完整操作指南。'
 author: 'Anonymous'
 ---
 

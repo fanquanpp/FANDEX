@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 40
 tags:
   - 'algorithm'
   - 'data-structure'

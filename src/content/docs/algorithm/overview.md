@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 10
 tags:
   - 'algorithm'
   - 'performance'
@@ -189,9 +189,9 @@ f(n) = omega(g(n)) 当且仅当对任意正常数c，存在n0，使得对所有 
 ### 4.2 主定理（Master Theorem）
 
 对于递推式 T(n) = aT(n/b) + f(n)，其中 a >= 1, b > 1：
-**情形1**：若 f(n) = O(n^(log_b(a) - epsilon))（对某个epsilon > 0），则 T(n) = Theta(n^log_b(a))。
+**情形1**：若 f(n) = O(n^(log*b(a) - epsilon))（对某个epsilon > 0），则 T(n) = Theta(n^log_b(a))。
 直觉：叶子节点的总工作量支配根节点的工作量。
-**情形2**：若 f(n) = Theta(n^log_b(a) _ (log n)^k)（k >= 0），则 T(n) = Theta(n^log_b(a) _ (log n)^(k+1))。
+**情形2**：若 f(n) = Theta(n^log_b(a) * (log n)^k)（k >= 0），则 T(n) = Theta(n^log*b(a) * (log n)^(k+1))。
 特殊情况k=0：若 f(n) = Theta(n^log_b(a))，则 T(n) = Theta(n^log_b(a) * log n)。
 直觉：各层工作量大致相等。
 **情形3**：若 f(n) = Omega(n^(log_b(a) + epsilon))（对某个epsilon > 0），且正则条件 a*f(n/b) <= c\*f(n)（对某个c < 1和足够大的n），则 T(n) = Theta(f(n))。

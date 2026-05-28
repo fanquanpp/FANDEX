@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 120
 tags:
   - 'typescript'
   - 'exercises'
@@ -7,6 +7,7 @@ tags:
 difficulty: 'intermediate'
 title: 'TypeScript 练习题'
 module: 'typescript'
+description: 'TypeScript 核心知识点配套练习，涵盖类型系统与泛型。'
 ---
 
 <summary>查看答案</summary>

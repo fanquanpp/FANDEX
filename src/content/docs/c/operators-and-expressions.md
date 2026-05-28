@@ -1,13 +1,13 @@
 ---
-order: 80
+order: 50
 tags:
   - 'c'
   - 'memory'
 difficulty: 'intermediate'
-title: '运算符与表达式 (Operators & Expressions)'
+title: '运算符与表达式'
 module: 'c'
 category: 'C Basics'
-description: '算术、关系、逻辑、位运算及运算符优先级详解。 | Detailed guide on arithmetic, relational, logical, bitwise operators, and precedence.'
+description: '算术、关系、逻辑、位运算及运算符优先级详解。'
 author: 'Anonymous'
 ---
 

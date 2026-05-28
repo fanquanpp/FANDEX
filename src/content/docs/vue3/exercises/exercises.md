@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 140
 tags:
   - 'vue3'
   - 'exercises'
@@ -10,6 +10,7 @@ tags:
 difficulty: 'intermediate'
 title: 'Vue3 练习题'
 module: 'vue3'
+description: 'Vue3 核心知识点配套练习，涵盖响应式、组件与路由。'
 ---
 
 <summary>查看答案</summary>

@@ -1,7 +1,7 @@
 ---
 title: 'MySQL 项目示例：电商数据库设计'
 module: 'mysql'
-order: 110
+order: 180
 tags:
   - 'mysql'
   - 'project'
@@ -9,6 +9,7 @@ tags:
   - 'database'
   - 'data-structure'
 difficulty: 'intermediate'
+description: '综合运用表设计、索引优化与事务的电商数据库项目。'
 ---
 
 | 商品管理 | SPU/SKU、分类、品牌、属性 |

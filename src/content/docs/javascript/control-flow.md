@@ -1,14 +1,12 @@
 ---
-order: 20
+order: 50
 tags:
   - 'javascript'
-  - 'oop'
-  - 'functional'
 difficulty: 'intermediate'
-title: '控制流 (Control Flow)'
+title: '控制流'
 module: 'javascript'
 category: 'JS Basics'
-description: '条件分支、循环结构、异常处理及现代迭代器。 | Conditionals, loops, error handling, and iterators.'
+description: '条件判断、循环结构与迭代方法。'
 author: 'Anonymous'
 ---
 

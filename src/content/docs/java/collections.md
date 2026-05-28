@@ -1,18 +1,13 @@
 ---
-order: 30
+order: 100
 tags:
   - 'java'
-  - 'oop'
-  - 'async'
-  - 'design-patterns'
-  - 'functional'
-  - 'concurrency'
   - 'data-structure'
 difficulty: 'intermediate'
-title: '集合框架详解 (Collections Framework)'
+title: '集合框架详解'
 module: 'java'
 category: 'Java Basics'
-description: 'List, Set, Map 的继承体系、常用实现类及性能分析。 | Inheritance, implementations, and performance of List, Set, and Map.'
+description: 'List、Set、Map 体系及迭代器与比较器。'
 author: 'Anonymous'
 ---
 

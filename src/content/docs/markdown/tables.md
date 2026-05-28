@@ -3,10 +3,10 @@ order: 80
 tags:
   - 'markdown'
 difficulty: 'intermediate'
-title: 'Markdown 表格 (Tables)'
+title: 'Markdown 表格'
 module: 'markdown'
 category: 'Markdown Basics'
-description: 'Markdown 表格'
+description: '表格语法、对齐方式与复杂表格处理。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

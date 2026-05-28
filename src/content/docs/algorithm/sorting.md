@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 20
 tags:
   - 'algorithm'
   - 'git-workflow'

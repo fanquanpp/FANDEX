@@ -1,12 +1,12 @@
 ---
-order: 50
+order: 160
 tags:
   - 'javascript'
   - 'exercises'
-  - 'async'
 difficulty: 'intermediate'
 title: 'JavaScript 练习题'
 module: 'javascript'
+description: 'JavaScript 核心知识点配套练习，涵盖闭包、异步与 DOM。'
 ---
 
 A. 0, 1, 2

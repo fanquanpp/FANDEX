@@ -1,13 +1,13 @@
 ---
-order: 140
+order: 50
 tags:
   - 'mysql'
   - 'database'
 difficulty: 'intermediate'
-title: 'SQL 数据操作与查询 (SQL DML & DQL)'
+title: 'SQL 数据操作与查询'
 module: 'mysql'
 category: 'MySQL Basics'
-description: 'SQL 概述、DML 数据操作语言（INSERT/UPDATE/DELETE）及 DQL 数据查询语言详解。 | SQL overview, DML (INSERT/UPDATE/DELETE), and DQL (SELECT) in detail.'
+description: 'INSERT/UPDATE/DELETE、SELECT 基础与条件查询。'
 author: 'Anonymous'
 ---
 

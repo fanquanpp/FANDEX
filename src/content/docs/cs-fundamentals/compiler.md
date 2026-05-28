@@ -4,7 +4,7 @@ module: 'cs-fundamentals'
 category: 'Computer Science / Compiler'
 description: '编译原理核心：词法分析、语法分析、语义分析、中间代码生成、优化、目标代码生成。'
 author: 'fanquanpp'
-order: 20
+order: 60
 tags:
   - 'cs-fundamentals'
   - 'computer-science---compiler'

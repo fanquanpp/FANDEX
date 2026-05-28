@@ -4,10 +4,10 @@ tags:
   - 'mysql'
   - 'database'
 difficulty: 'intermediate'
-title: '多表联查详解 (Mastering Multi-Table Joins)'
+title: '多表联查详解'
 module: 'mysql'
 category: 'MySQL Advanced'
-description: '深入理解 MySQL 多表联查机制、执行原理与优化策略。 | Deep dive into MySQL multi-table join mechanisms, execution principles, and optimization strategies.'
+description: '内连接、外连接、交叉连接与自连接。'
 author: 'Anonymous'
 ---
 

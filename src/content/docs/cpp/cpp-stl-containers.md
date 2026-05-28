@@ -1,13 +1,13 @@
 ---
-order: 70
+order: 90
 tags:
   - 'cpp'
   - 'data-structure'
 difficulty: 'intermediate'
-title: 'C++ STL 容器与迭代器 (C++ STL Containers & Iterators)'
+title: 'C++ STL 容器与迭代器'
 module: 'cpp'
 category: 'C++ Basics'
-description: 'STL 序列容器、关联容器、无序容器、容器适配器及迭代器。 | STL sequence containers, associative containers, unordered containers, container adapters, and iterators.'
+description: '顺序容器、关联容器、无序容器及迭代器体系。'
 author: 'Anonymous'
 ---
 

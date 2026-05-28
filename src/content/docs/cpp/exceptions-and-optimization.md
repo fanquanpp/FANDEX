@@ -3,14 +3,11 @@ order: 120
 tags:
   - 'cpp'
   - 'performance'
-  - 'database'
-  - 'concurrency'
-  - 'css-layout'
 difficulty: 'advanced'
-title: 'C++ 异常处理与性能优化 (Exceptions & Performance)'
+title: 'C++ 异常处理与性能优化'
 module: 'cpp'
 category: 'C++ Basics'
-description: '异常捕获机制、性能分析、内联函数及编译器优化。 | Exception handling, profiling, inline, and optimization.'
+description: '异常机制、错误处理策略、性能分析与优化技巧。'
 author: 'Anonymous'
 ---
 

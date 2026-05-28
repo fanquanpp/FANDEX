@@ -1,14 +1,13 @@
 ---
-order: 30
+order: 60
 tags:
   - 'cpp'
   - 'oop'
-  - 'typescript'
 difficulty: 'intermediate'
-title: 'C++ 面向对象基础 (C++ OOP Basics)'
+title: 'C++ 面向对象基础'
 module: 'cpp'
 category: 'C++ Basics'
-description: '类与对象、封装、继承、多态及虚函数原理。 | Class, Object, Encapsulation, Inheritance, Polymorphism, and VTable.'
+description: '类与对象、封装、继承、多态与虚函数。'
 author: 'Anonymous'
 ---
 

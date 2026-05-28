@@ -4,7 +4,7 @@ module: 'algorithm'
 category: 'Algorithm/DynamicProgramming'
 description: '动态规划核心思想、状态定义与转移方程推导，涵盖背包、LCS、编辑距离、子序列等经典问题，附复杂度分析与多语言实现。'
 author: 'fanquanpp'
-order: 10
+order: 90
 tags:
   - 'algorithm'
   - 'algorithm-dynamicprogramming'

@@ -1,16 +1,13 @@
 ---
-order: 20
+order: 70
 tags:
   - 'cpp'
-  - 'database'
-  - 'css-layout'
   - 'data-structure'
-  - 'devops'
 difficulty: 'advanced'
-title: 'C++ 面向对象进阶 (C++ OOP Advanced)'
+title: 'C++ 面向对象进阶'
 module: 'cpp'
 category: 'C++ Basics'
-description: '构造/析构函数、操作符重载、模板与泛型编程、STL 概览及 OOP 最佳实践。 | Constructors, destructors, operator overloading, templates, STL overview, and OOP best practices.'
+description: '多重继承、虚继承、RTTI 与面向对象设计原则。'
 author: 'Anonymous'
 ---
 

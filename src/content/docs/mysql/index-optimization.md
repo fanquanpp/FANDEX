@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 100
 tags:
   - 'mysql'
   - 'performance'
@@ -7,10 +7,10 @@ tags:
   - 'devops'
   - 'math'
 difficulty: 'advanced'
-title: '索引原理与性能优化 (Index & Optimization)'
+title: '索引原理与性能优化'
 module: 'mysql'
 category: 'MySQL Advanced'
-description: 'B+ 树索引原理、聚簇索引、执行计划 (Explain) 及慢查询优化。 | B+ Tree, Clustered Index, Explain, and Slow Query.'
+description: '索引结构、覆盖索引、最左前缀与查询调优。'
 author: 'Anonymous'
 ---
 

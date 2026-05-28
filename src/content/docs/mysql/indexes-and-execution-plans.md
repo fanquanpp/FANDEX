@@ -1,14 +1,14 @@
 ---
-order: 60
+order: 90
 tags:
   - 'mysql'
   - 'design-patterns'
   - 'database'
 difficulty: 'intermediate'
-title: 'MySQL 索引与执行计划 (Indexing & EXPLAIN)'
+title: 'MySQL 索引与执行计划'
 module: 'mysql'
 category: 'MySQL Basics'
-description: '讲清索引的作用与代价、B+Tree 基础、组合索引规则与 EXPLAIN 的读法，并给出可落地的建索引策略。 | Index fundamentals and how to read EXPLAIN in practice.'
+description: 'B+Tree 索引、EXPLAIN 分析与索引优化策略。'
 author: 'Anonymous'
 ---
 

@@ -1,14 +1,13 @@
 ---
-order: 40
+order: 30
 tags:
   - 'c'
   - 'memory'
-  - 'typescript'
 difficulty: 'beginner'
-title: '数据类型详解 (Data Types In-depth)'
+title: '数据类型详解'
 module: 'c'
 category: 'C Basics'
-description: "C 语言的基本类型、派生类型、空类型及其内存布局，包含备考复习要点。 | In-depth look at C's basic, derived, and void types, and memory layout with exam preparation points."
+description: 'C 语言的基本类型、派生类型、空类型及其内存布局，包含备考复习要点。'
 author: 'Anonymous'
 ---
 

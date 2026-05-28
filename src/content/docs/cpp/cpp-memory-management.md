@@ -1,16 +1,14 @@
 ---
-order: 10
+order: 80
 tags:
   - 'cpp'
   - 'memory'
-  - 'concurrency'
   - 'data-structure'
-  - 'devops'
 difficulty: 'advanced'
-title: 'C++ 内存管理 (C++ Memory Management)'
+title: 'C++ 内存管理'
 module: 'cpp'
 category: 'C++ Basics'
-description: '动态内存分配、RAII 及智能指针、内存池与高级内存管理。 | Dynamic memory, RAII, smart pointers, memory pools, and advanced memory management.'
+description: '栈与堆、RAII、智能指针、内存池与自定义分配器。'
 author: 'Anonymous'
 ---
 

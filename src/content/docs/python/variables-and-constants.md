@@ -1,12 +1,12 @@
 ---
-order: 150
+order: 30
 tags:
   - 'python'
 difficulty: 'beginner'
-title: '变量与常量 (Variables & Constants)'
+title: '变量与常量'
 module: 'python'
 category: 'Python Basics'
-description: '变量定义、动态类型、作用域、生命周期及常量约定。 | Definitions, dynamic typing, scope, lifecycle, and constants.'
+description: '变量命名、动态类型、常量约定与作用域。'
 author: 'Anonymous'
 ---
 

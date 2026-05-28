@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 140
 tags:
   - 'python'
   - 'project'
@@ -12,6 +12,7 @@ tags:
 difficulty: 'intermediate'
 title: 'Python 项目示例：网页爬虫与数据分析'
 module: 'python'
+description: '综合运用 requests、BeautifulSoup 与 pandas 的爬虫项目。'
 ---
 
 | HTML 解析 | 使用 BeautifulSoup 提取结构化数据 |

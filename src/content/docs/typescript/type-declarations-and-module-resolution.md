@@ -1,13 +1,13 @@
 ---
-order: 110
+order: 70
 tags:
   - 'typescript'
   - 'oop'
 difficulty: 'intermediate'
-title: 'TypeScript 类型声明与模块解析 (Declarations & Module Resolution)'
+title: 'TypeScript 类型声明与模块解析'
 module: 'typescript'
 category: 'TypeScript Advanced'
-description: '讲清 `.d.ts`、全局声明、第三方类型管理，以及 Node/打包器场景下的模块解析与 ESM/CJS 互操作。 | Declarations and module resolution in TypeScript.'
+description: '.d.ts 文件、声明合并、模块解析策略与路径映射。'
 author: 'Anonymous'
 ---
 

@@ -1,14 +1,12 @@
 ---
-order: 80
+order: 150
 tags:
   - 'java'
-  - 'oop'
-  - 'data-structure'
 difficulty: 'intermediate'
-title: 'I/O 流与文件操作 (I/O Streams & File Ops)'
+title: 'I/O 流与文件操作'
 module: 'java'
 category: 'Java Basics'
-description: '字节流、字符流、缓冲流、对象序列化及 NIO 简介。 | Byte, Character, Buffered streams, Serialization, and NIO overview.'
+description: '字节流、字符流、NIO 与文件操作。'
 author: 'Anonymous'
 ---
 

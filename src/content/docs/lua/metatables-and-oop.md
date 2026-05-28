@@ -1,15 +1,15 @@
 ---
-order: 40
+order: 50
 tags:
   - 'lua'
   - 'async'
   - 'database'
   - 'typescript'
 difficulty: 'intermediate'
-title: '元表与面向对象编程 (Metatables & OOP)'
+title: '元表与面向对象编程'
 module: 'lua'
 category: 'Lua Advanced'
-description: '元表、元方法、面向对象模拟及协程。 | Metatables, Metamethods, OOP simulation, and Coroutines.'
+description: '元表机制、元方法与面向对象设计模式。'
 author: 'Anonymous'
 ---
 

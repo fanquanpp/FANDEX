@@ -1,14 +1,14 @@
 ---
-order: 50
+order: 60
 tags:
   - 'css'
   - 'css-layout'
   - 'devops'
 difficulty: 'intermediate'
-title: 'CSS3 Grid 网格布局 (Grid Layout)'
+title: 'CSS3 Grid 网格布局'
 module: 'css'
 category: 'CSS Basics'
-description: '二维网格布局系统、网格线、区域划分及现代布局方案。 | 2D Grid layout system, lines, areas, and modern solutions.'
+description: '网格容器与项目属性、区域命名与响应式网格。'
 author: 'Anonymous'
 ---
 

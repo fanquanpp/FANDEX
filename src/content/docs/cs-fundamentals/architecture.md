@@ -4,7 +4,7 @@ module: 'cs-fundamentals'
 category: 'Computer Science / Architecture'
 description: '计算机体系结构核心原理：冯诺依曼模型、指令集设计、流水线、存储层次、并行体系。'
 author: 'fanquanpp'
-order: 10
+order: 20
 tags:
   - 'cs-fundamentals'
   - 'computer-science---architecture'

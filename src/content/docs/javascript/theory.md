@@ -1,17 +1,14 @@
 ---
 title: 'JavaScript 理论知识点'
 module: 'javascript'
-order: 150
+order: 170
 tags:
   - 'javascript'
   - 'theory'
-  - 'async'
-  - 'design-patterns'
   - 'performance'
-  - 'networking'
   - 'data-structure'
-  - 'web-api'
 difficulty: 'intermediate'
+description: '执行上下文、作用域链、事件循环与内存管理。'
 ---
 
 └──────────┬───────────────┘

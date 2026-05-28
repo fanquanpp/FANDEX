@@ -1,12 +1,12 @@
 ---
-order: 110
+order: 100
 tags:
   - 'c'
 difficulty: 'intermediate'
-title: '结构体与联合体 (Structures & Unions)'
+title: '结构体与联合体'
 module: 'c'
 category: 'C Basics'
-description: '结构体定义、内存对齐、联合体应用及枚举类型。 | Structures, memory alignment, union applications, and enum types.'
+description: '结构体定义、内存对齐、联合体应用及枚举类型。'
 author: 'Anonymous'
 ---
 

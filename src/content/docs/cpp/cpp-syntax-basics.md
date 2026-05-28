@@ -1,12 +1,12 @@
 ---
-order: 80
+order: 20
 tags:
   - 'cpp'
 difficulty: 'beginner'
-title: 'C++ 基础语法 (C++ Syntax Basics)'
+title: 'C++ 基础语法'
 module: 'cpp'
 category: 'C++ Basics'
-description: 'C++ 基础数据类型、控制流、输入输出、命名空间及作用域。 | C++ primitive types, control flow, I/O, namespace, and scope.'
+description: 'C++ 基本语法、注释、标识符与关键字。'
 author: 'Anonymous'
 ---
 

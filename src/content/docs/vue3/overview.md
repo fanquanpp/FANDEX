@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 10
 tags:
   - 'vue3'
   - 'networking'
@@ -8,10 +8,10 @@ tags:
   - 'reactive'
   - 'css-layout'
 difficulty: 'beginner'
-title: '01-概述与环境'
+title: '概述与环境'
 module: 'vue3'
 category: 'Vue3 Basics'
-description: 'Vue3概述与开发环境搭建'
+description: 'Vue3 发展历程、新特性与开发环境搭建。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 80
 tags:
   - 'vue3'
   - 'oop'
@@ -9,7 +9,7 @@ tags:
   - 'reactive'
   - 'css-layout'
 difficulty: 'intermediate'
-title: '02-TypeScript 集成'
+title: 'TypeScript 集成'
 module: 'vue3'
 category: 'Vue3 Basics'
 description: 'Vue3中TypeScript的集成与使用'

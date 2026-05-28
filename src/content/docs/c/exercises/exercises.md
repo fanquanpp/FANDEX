@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 150
 tags:
   - 'c'
   - 'exercises'
@@ -7,6 +7,7 @@ tags:
 difficulty: 'intermediate'
 title: 'C 语言练习题'
 module: 'c'
+description: 'C 语言核心知识点配套练习，涵盖指针、内存、控制流等。'
 ---
 
 A. 5

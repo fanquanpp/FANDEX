@@ -1,13 +1,12 @@
 ---
-order: 100
+order: 30
 tags:
   - 'cpp'
-  - 'devops'
 difficulty: 'intermediate'
-title: 'C++ 类型系统 (C++ Type System)'
+title: 'C++ 类型系统'
 module: 'cpp'
 category: 'C++ Basics'
-description: 'C++ 常量、类型推导、类型别名、最佳实践及代码示例。 | C++ constants, type deduction, type aliases, best practices, and code examples.'
+description: 'C++ 基本类型、类型推导、类型转换与类型安全。'
 author: 'Anonymous'
 ---
 

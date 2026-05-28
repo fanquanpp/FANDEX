@@ -1,17 +1,13 @@
 ---
-order: 70
+order: 140
 tags:
   - 'java'
   - 'oop'
-  - 'design-patterns'
-  - 'security'
-  - 'functional'
-  - 'typescript'
 difficulty: 'intermediate'
-title: '泛型详解 (Generics In-depth)'
+title: '泛型详解'
 module: 'java'
 category: 'Java Basics'
-description: '泛型类、方法、类型擦除机制及通配符边界。 | Generic classes, methods, type erasure, and wildcards.'
+description: '泛型类、泛型方法、通配符与类型擦除。'
 author: 'Anonymous'
 ---
 

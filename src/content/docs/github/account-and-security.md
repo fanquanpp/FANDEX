@@ -9,7 +9,7 @@ difficulty: 'intermediate'
 title: '账户注册与双因素认证（2FA）'
 module: 'github'
 category: 'GitHub Basics'
-description: 'GitHub 账户注册、邮箱验证、密码策略与双因素认证（2FA）配置指南。 | GitHub account registration, email verification, password policy, and 2FA configuration guide.'
+description: 'GitHub 账户注册、邮箱验证、密码策略与双因素认证（2FA）配置指南。'
 author: 'Anonymous'
 ---
 

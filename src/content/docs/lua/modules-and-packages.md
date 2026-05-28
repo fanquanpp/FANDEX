@@ -1,10 +1,10 @@
 ---
-order: 50
+order: 60
 tags:
   - 'lua'
   - 'async'
 difficulty: 'intermediate'
-title: '02-模块与包'
+title: '模块与包'
 module: 'lua'
 category: 'Lua Basics'
 description: 'Lua模块系统与包管理详解'

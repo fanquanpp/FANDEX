@@ -1,12 +1,12 @@
 ---
-order: 60
+order: 30
 tags:
   - 'markdown'
 difficulty: 'intermediate'
 title: 'Markdown 段落与换行'
 module: 'markdown'
 category: 'Markdown Basics'
-description: 'Markdown 段落与换行的基本语法和最佳实践。 | Markdown paragraph and line break syntax.'
+description: 'Markdown 段落与换行的基本语法和最佳实践。'
 author: 'fanquanpp'
 updated: 2026-04-05
 ---

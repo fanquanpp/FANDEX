@@ -1,13 +1,13 @@
 ---
-order: 10
+order: 80
 tags:
   - 'python'
   - 'database'
 difficulty: 'intermediate'
-title: '内置数据结构 (Built-in Data Structures)'
+title: '内置数据结构'
 module: 'python'
 category: 'Python Basics'
-description: '列表、元组、集合、字典的底层实现与常用操作。 | Detailed guide on List, Tuple, Set, and Dictionary.'
+description: '列表、元组、字典、集合的操作与性能特征。'
 author: 'Anonymous'
 ---
 

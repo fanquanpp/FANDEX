@@ -1,12 +1,12 @@
 ---
-order: 50
+order: 40
 tags:
   - 'cpp'
 difficulty: 'intermediate'
-title: 'C++ 引用 (C++ References)'
+title: 'C++ 引用'
 module: 'cpp'
 category: 'C++ Basics'
-description: 'C++ 引用基础、引用与函数、常量引用及指针与引用的区别。 | C++ reference basics, functions, const references, and pointer vs reference.'
+description: '左值引用、右值引用、引用与指针的区别及应用场景。'
 author: 'Anonymous'
 ---
 

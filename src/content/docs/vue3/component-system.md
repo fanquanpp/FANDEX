@@ -1,5 +1,5 @@
 ---
-order: 20
+order: 70
 tags:
   - 'vue3'
   - 'async'
@@ -9,7 +9,7 @@ tags:
   - 'data-structure'
   - 'web-api'
 difficulty: 'intermediate'
-title: '04-组件系统'
+title: '组件系统'
 module: 'vue3'
 category: 'Vue3 Basics'
 description: 'Vue3组件系统与通信机制'

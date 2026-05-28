@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 40
 tags:
   - 'typescript'
   - 'oop'
@@ -9,10 +9,10 @@ tags:
   - 'data-structure'
   - 'devops'
 difficulty: 'intermediate'
-title: '函数与泛型 (Functions & Generics)'
+title: '函数与泛型'
 module: 'typescript'
 category: 'TS Advanced'
-description: '函数重载、泛型约束、泛型类及泛型方法深度解析。 | Function overloading, Generics, constraints, and classes.'
+description: '函数类型签名、泛型约束、条件类型与推断。'
 author: 'Anonymous'
 ---
 

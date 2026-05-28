@@ -1,11 +1,12 @@
 ---
 title: '算法理论知识点'
 module: 'algorithm'
-order: 100
+order: 110
 tags:
   - 'algorithm'
   - 'theory'
 difficulty: 'intermediate'
+description: '算法复杂度理论、NP 问题与近似算法。'
 ---
 
 典型 P 类问题：

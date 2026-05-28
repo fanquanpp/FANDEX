@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 110
 tags:
   - 'css'
   - 'project'
@@ -15,6 +15,7 @@ tags:
 difficulty: 'intermediate'
 title: 'CSS 项目示例：响应式个人主页'
 module: 'css'
+description: '综合运用 Flexbox、Grid 与媒体查询的响应式主页。'
 ---
 
 | 英雄区 | 全屏背景，打字机效果，向下滚动指示 |

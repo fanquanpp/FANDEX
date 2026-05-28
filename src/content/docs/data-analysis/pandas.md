@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 30
 tags:
   - 'data-analysis'
   - 'database'

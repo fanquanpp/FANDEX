@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 30
 tags:
   - 'github'
   - 'security'
@@ -7,7 +7,7 @@ difficulty: 'intermediate'
 title: 'SSH 与 HTTPS 远程配置'
 module: 'github'
 category: 'GitHub Basics'
-description: 'SSH 与 HTTPS 远程配置对比、公钥配置、HTTPS+PAT 配置指南。 | Comparison of SSH vs HTTPS, public key configuration, HTTPS+PAT setup guide.'
+description: 'SSH 与 HTTPS 远程配置对比、公钥配置、HTTPS+PAT 配置指南。'
 author: 'Anonymous'
 ---
 

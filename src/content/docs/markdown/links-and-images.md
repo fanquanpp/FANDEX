@@ -1,12 +1,12 @@
 ---
-order: 40
+order: 60
 tags:
   - 'markdown'
 difficulty: 'intermediate'
-title: 'Markdown 链接与图片 (Links and Images)'
+title: 'Markdown 链接与图片'
 module: 'markdown'
 category: 'Markdown Basics'
-description: 'Markdown 中的链接和图片语法。 | Links and images syntax in Markdown.'
+description: '行内链接、引用链接、图片嵌入与脚注。'
 author: 'Anonymous'
 ---
 

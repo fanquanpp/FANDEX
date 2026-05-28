@@ -1,12 +1,12 @@
 ---
-order: 30
+order: 40
 tags:
   - 'lua'
   - 'async'
   - 'performance'
   - 'functional'
 difficulty: 'intermediate'
-title: '04-函数与闭包'
+title: '函数与闭包'
 module: 'lua'
 category: 'Lua Basics'
 description: 'Lua函数定义、闭包与高阶函数'

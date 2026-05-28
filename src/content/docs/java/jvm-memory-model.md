@@ -1,13 +1,12 @@
 ---
 title: 'JVM 内存模型'
 module: 'java'
-order: 90
+order: 170
 tags:
   - 'java'
   - 'memory'
-  - 'concurrency'
 difficulty: 'advanced'
-description: 'JVM 运行时数据区、内存分区与垃圾回收机制'
+description: '运行时数据区、垃圾回收算法与内存调优。'
 ---
 
 ## 前置知识

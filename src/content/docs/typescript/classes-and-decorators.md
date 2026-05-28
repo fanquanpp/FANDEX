@@ -1,5 +1,5 @@
 ---
-order: 20
+order: 50
 tags:
   - 'typescript'
   - 'oop'
@@ -9,10 +9,10 @@ tags:
   - 'css-layout'
   - 'data-structure'
 difficulty: 'intermediate'
-title: '类与装饰器 (Classes & Decorators)'
+title: '类与装饰器'
 module: 'typescript'
 category: 'TS Advanced'
-description: '类成员访问修饰符、抽象类、静态成员及装饰器原理。 | Access modifiers, Abstract classes, Statics, and Decorators.'
+description: '类定义、访问修饰符、装饰器模式与元数据。'
 author: 'Anonymous'
 ---
 

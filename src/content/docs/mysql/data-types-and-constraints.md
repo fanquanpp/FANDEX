@@ -4,10 +4,10 @@ tags:
   - 'mysql'
   - 'database'
 difficulty: 'beginner'
-title: 'MySQL 数据类型与约束 (Data Types & Constraints)'
+title: 'MySQL 数据类型与约束'
 module: 'mysql'
 category: 'MySQL Basics'
-description: '梳理 MySQL 常用数据类型选择策略与约束设计，并给出建表最佳实践与常见坑。 | Practical guidance on data types and constraints in MySQL.'
+description: '数值、字符串、日期类型及主键、外键、唯一约束。'
 author: 'Anonymous'
 ---
 

@@ -1,12 +1,12 @@
 ---
-order: 40
+order: 70
 tags:
   - 'java'
 difficulty: 'intermediate'
-title: '控制流 (Control Flow)'
+title: '控制流'
 module: 'java'
 category: 'Java Basics'
-description: '条件分支、循环结构、跳转语句及 Java 12+ 新特性。 | Conditional branches, loops, jumps, and Java 12+ Switch features.'
+description: '条件判断、循环结构与跳转语句。'
 author: 'Anonymous'
 ---
 

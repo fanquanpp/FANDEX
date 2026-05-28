@@ -1,13 +1,13 @@
 ---
-order: 10
+order: 30
 tags:
   - 'git'
   - 'git-workflow'
 difficulty: 'beginner'
-title: 'Git 基本操作 (Git Basic Operations)'
+title: 'Git 基本操作'
 module: 'git'
 category: 'Git Basics'
-description: 'Git 基本操作：工作区、暂存区、提交、历史查看、标签管理与撤销操作。 | Git basic operations: working directory, staging, commits, history, tags, and undo.'
+description: 'add、commit、diff、log 与撤销操作。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

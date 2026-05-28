@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 170
 tags:
   - 'mysql'
   - 'oop'
@@ -10,10 +10,10 @@ tags:
   - 'networking'
   - 'functional'
 difficulty: 'advanced'
-title: 'SQL 注入防御策略 (SQL Injection Defense Strategies)'
+title: 'SQL 注入防御策略'
 module: 'mysql'
 category: 'MySQL Advanced'
-description: 'SQL 注入防御策略、最佳实践、常见问题及总结。 | SQL Injection defense strategies, best practices, FAQ, and summary.'
+description: '参数化查询、ORM 防御、WAF 与安全编码实践。'
 author: 'Anonymous'
 ---
 

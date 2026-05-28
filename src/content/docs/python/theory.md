@@ -1,7 +1,7 @@
 ---
 title: 'Python 理论知识点'
 module: 'python'
-order: 140
+order: 160
 tags:
   - 'python'
   - 'theory'
@@ -13,6 +13,7 @@ tags:
   - 'memory'
   - 'concurrency'
 difficulty: 'intermediate'
+description: 'GIL 机制、内存管理、字节码与运行时模型。'
 ---
 
 1. 线程获取 GIL

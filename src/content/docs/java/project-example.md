@@ -1,16 +1,13 @@
 ---
-order: 140
+order: 210
 tags:
   - 'java'
   - 'project'
   - 'oop'
-  - 'database'
-  - 'networking'
-  - 'functional'
-  - 'math'
 difficulty: 'intermediate'
 title: 'Java 项目示例：图书管理系统'
 module: 'java'
+description: '综合运用面向对象、集合框架与文件 I/O 的图书管理系统。'
 ---
 
 | 用户管理 | 注册、登录、用户信息维护 |

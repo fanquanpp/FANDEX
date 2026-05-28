@@ -1,13 +1,13 @@
 ---
-order: 30
+order: 60
 tags:
   - 'python'
   - 'css-layout'
 difficulty: 'intermediate'
-title: '控制流 (Control Flow)'
+title: '控制流'
 module: 'python'
 category: 'Python Basics'
-description: '条件分支、循环结构、异常捕获及 Match-Case 特性。 | Conditional branches, loops, exceptions, and Match-Case features.'
+description: '条件判断、循环结构与推导式。'
 author: 'Anonymous'
 ---
 

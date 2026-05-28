@@ -1,13 +1,13 @@
 ---
 title: 'C 语言项目示例：学生成绩管理系统'
 module: 'c'
-order: 100
+order: 140
 tags:
   - 'c'
   - 'project'
   - 'memory'
-  - 'math'
 difficulty: 'intermediate'
+description: '综合运用结构体、文件 I/O 和动态内存管理的学生成绩管理系统。'
 ---
 
 | 查询学生 | 按学号或姓名精确/模糊查询 |

@@ -7,10 +7,10 @@ tags:
   - 'networking'
   - 'git-workflow'
 difficulty: 'intermediate'
-title: '常见问题排查：Permission denied、大文件、LF/CRLF、Submodule、GPG、Actions'
+title: '常见问题排查'
 module: 'github'
 category: 'GitHub Advanced'
-description: 'GitHub 常见问题排查：权限问题、大文件、换行符、子模块、GPG 签名、Actions 配额。 | Troubleshooting GitHub issues: permission, large files, line endings, submodules, GPG, Actions.'
+description: 'GitHub 常见问题排查：权限问题、大文件、换行符、子模块、GPG 签名、Actions 配额。'
 author: 'Anonymous'
 ---
 

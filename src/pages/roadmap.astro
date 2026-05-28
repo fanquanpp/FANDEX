@@ -139,23 +139,25 @@ const roadmap = [
 
 <style>
 .roadmap-page {
-  padding: var(--spacing-lg) var(--spacing-xl);
-  max-width: var(--content-width);
+  padding: var(--spacing-2xl) var(--spacing-2xl);
+  max-width: 960px;
   margin: 0 auto;
 }
 
 .roadmap-header {
   margin-bottom: var(--spacing-2xl);
+  text-align: center;
 }
 
 .roadmap-title {
   font-family: var(--font-display);
-  font-size: 1.4em;
-  margin: 0 0 var(--spacing-xs);
+  font-size: 1.8em;
+  margin: 0 0 var(--spacing-sm);
+  letter-spacing: 0.02em;
 }
 
 .roadmap-subtitle {
-  font-size: 0.88em;
+  font-size: 0.95em;
   color: var(--color-text-secondary);
   margin: 0;
 }
@@ -165,43 +167,56 @@ const roadmap = [
   flex-direction: column;
   gap: 0;
   position: relative;
-  padding-left: 80px;
+  padding-left: 100px;
 }
 
 .roadmap-timeline::before {
   content: '';
   position: absolute;
-  left: 30px;
+  left: 36px;
   top: 0;
   bottom: 0;
   width: 2px;
-  background: var(--color-border-light);
+  background: linear-gradient(to bottom, var(--color-primary), var(--color-border-light));
 }
 
 .timeline-phase {
   display: flex;
   position: relative;
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
 }
 
 .phase-marker {
   position: absolute;
-  left: -80px;
+  left: -100px;
   top: 0;
-  width: 60px;
-  text-align: right;
+  width: 72px;
+  text-align: center;
+}
+
+.phase-marker::after {
+  content: '';
+  position: absolute;
+  right: -18px;
+  top: 6px;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  border: 2px solid var(--color-bg);
+  box-shadow: 0 0 0 2px var(--color-primary);
 }
 
 .phase-number {
   display: inline-block;
-  padding: 2px 8px;
-  background: var(--color-bg-card);
-  border: 1px solid var(--color-border-light);
+  padding: 4px 10px;
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
   font-family: var(--font-display);
-  font-size: 0.7em;
-  font-weight: 600;
-  color: var(--color-text-secondary);
+  font-size: 0.72em;
+  font-weight: 700;
   white-space: nowrap;
+  letter-spacing: 0.04em;
 }
 
 .phase-content {
@@ -210,26 +225,30 @@ const roadmap = [
 
 .phase-header {
   margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .phase-label {
   font-family: var(--font-display);
-  font-size: 1.1em;
-  font-weight: 600;
-  margin: 0 0 4px;
+  font-size: 1.2em;
+  font-weight: 700;
+  margin: 0 0 6px;
+  color: var(--color-text);
 }
 
 .phase-desc {
-  font-size: 0.82em;
+  font-size: 0.9em;
   color: var(--color-text-secondary);
   margin: 0;
+  line-height: 1.6;
 }
 
 .phase-modules {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
 }
 
 .roadmap-module-row {
@@ -246,37 +265,39 @@ const roadmap = [
   text-decoration: none;
   transition: all var(--transition-fast);
   overflow: hidden;
+  min-width: 160px;
 }
 
 .roadmap-module-card:hover {
   border-color: var(--module-color);
-  transform: translateY(-1px);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .rm-color-bar {
-  width: 4px;
+  width: 5px;
   align-self: stretch;
   background: var(--module-color);
 }
 
 .rm-body {
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .rm-title {
   font-family: var(--font-display);
-  font-size: 0.88em;
-  font-weight: 600;
+  font-size: 0.95em;
+  font-weight: 700;
   color: var(--color-text);
 }
 
 .rm-desc {
-  font-size: 0.72em;
+  font-size: 0.8em;
   color: var(--color-text-tertiary);
+  line-height: 1.5;
 }
 
 .rm-arrow {
@@ -287,29 +308,37 @@ const roadmap = [
 
 .roadmap-legend {
   margin-top: var(--spacing-2xl);
-  padding: var(--spacing-lg);
+  padding: var(--spacing-lg) var(--spacing-xl);
   border: 1px solid var(--color-border-light);
   background: var(--color-bg-card);
 }
 
 .legend-title {
   font-family: var(--font-display);
-  font-size: 0.95em;
-  font-weight: 600;
-  margin: 0 0 var(--spacing-sm);
+  font-size: 1em;
+  font-weight: 700;
+  margin: 0 0 var(--spacing-md);
 }
 
 .legend-list {
   padding-left: var(--spacing-lg);
   margin: 0;
-  font-size: 0.85em;
+  font-size: 0.9em;
   color: var(--color-text-secondary);
-  line-height: 1.8;
+  line-height: 2;
 }
 
 @media (max-width: 768px) {
   .roadmap-page {
     padding: var(--spacing-md);
+  }
+
+  .roadmap-header {
+    text-align: left;
+  }
+
+  .roadmap-title {
+    font-size: 1.4em;
   }
 
   .roadmap-timeline {
@@ -339,6 +368,10 @@ const roadmap = [
 
   .rm-desc {
     display: none;
+  }
+
+  .rm-body {
+    padding: var(--spacing-sm) var(--spacing-md);
   }
 }
 </style>

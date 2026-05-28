@@ -1,14 +1,13 @@
 ---
-order: 100
+order: 40
 tags:
   - 'javascript'
-  - 'functional'
   - 'data-structure'
 difficulty: 'intermediate'
-title: '数据类型与运算符 (Data Types & Operators)'
+title: '数据类型与运算符'
 module: 'javascript'
 category: 'JS Basics'
-description: 'JS 原始类型、引用类型、类型检测及运算符优先级。 | Primitive, Reference types, type checking, and operators.'
+description: '算术、比较、逻辑、位运算及运算符优先级。'
 author: 'Anonymous'
 ---
 

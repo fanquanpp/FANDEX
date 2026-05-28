@@ -1,20 +1,13 @@
 ---
-order: 30
+order: 120
 tags:
   - 'javascript'
-  - 'oop'
-  - 'async'
   - 'performance'
-  - 'database'
-  - 'networking'
-  - 'memory'
-  - 'css-layout'
-  - 'web-api'
 difficulty: 'advanced'
-title: '03-调试与性能优化 (JavaScript)'
+title: '调试与性能优化'
 module: 'javascript'
 category: 'JavaScript Basics'
-description: '03-调试与性能优化'
+description: '浏览器 DevTools、性能分析与内存泄漏排查。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

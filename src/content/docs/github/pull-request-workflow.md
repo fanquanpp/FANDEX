@@ -8,7 +8,7 @@ difficulty: 'intermediate'
 title: 'Pull Request 完整协作流程'
 module: 'github'
 category: 'GitHub Advanced'
-description: 'Pull Request 完整生命周期：Fork、分支、提交、推送、审查、合并到同步上游。 | Complete PR lifecycle: Fork, branch, commit, push, review, merge, and sync.'
+description: 'Pull Request 完整生命周期：Fork、分支、提交、推送、审查、合并到同步上游。'
 author: 'Anonymous'
 ---
 

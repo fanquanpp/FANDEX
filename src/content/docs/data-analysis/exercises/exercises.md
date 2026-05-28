@@ -1,11 +1,12 @@
 ---
-order: 20
+order: 90
 tags:
   - 'exercises'
   - 'data-analysis'
 difficulty: 'intermediate'
 title: '数据分析练习题'
 module: 'data-analysis'
+description: '数据分析核心知识点配套练习，涵盖 NumPy、Pandas 与可视化。'
 ---
 
 <summary>查看答案</summary>

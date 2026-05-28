@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 30
 tags:
   - 'html5'
   - 'security'
@@ -10,10 +10,10 @@ tags:
   - 'web-api'
   - 'devops'
 difficulty: 'intermediate'
-title: 'HTML5 表单与验证 (Forms & Validation)'
+title: 'HTML5 表单与验证'
 module: 'html5'
 category: 'HTML5 Basics'
-description: '新增输入类型、表单属性及原生客户端验证。 | Input types, form attributes, and native validation.'
+description: '表单控件、输入类型、内建验证与自定义校验。'
 author: 'Anonymous'
 ---
 

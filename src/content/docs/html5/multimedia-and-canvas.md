@@ -1,5 +1,5 @@
 ---
-order: 20
+order: 40
 tags:
   - 'html5'
   - 'database'
@@ -9,10 +9,10 @@ tags:
   - 'web-api'
   - 'devops'
 difficulty: 'intermediate'
-title: 'HTML5 多媒体与 Canvas 绘图 (Multimedia & Canvas)'
+title: 'HTML5 多媒体与 Canvas 绘图'
 module: 'html5'
 category: 'HTML5 Basics'
-description: '原生音视频支持、Canvas 2D 绘图基础。 | Video, Audio, and Canvas 2D drawing.'
+description: 'audio/video 元素、Canvas API 与 SVG 基础。'
 author: 'Anonymous'
 ---
 

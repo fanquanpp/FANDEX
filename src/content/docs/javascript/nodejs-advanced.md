@@ -1,17 +1,9 @@
 ---
-order: 80
+order: 140
 tags:
   - 'javascript'
-  - 'async'
-  - 'testing'
-  - 'security'
-  - 'database'
-  - 'networking'
-  - 'functional'
-  - 'concurrency'
-  - 'typescript'
+  - 'performance'
   - 'data-structure'
-  - 'web-api'
 difficulty: 'advanced'
 title: 'Node.js 高级特性与性能优化'
 module: 'javascript'

@@ -1,17 +1,14 @@
 ---
-order: 70
+order: 90
 tags:
   - 'javascript'
-  - 'async'
   - 'performance'
-  - 'database'
-  - 'typescript'
   - 'web-api'
 difficulty: 'intermediate'
-title: 'JavaScript 模块化 (Modularity)'
+title: 'JavaScript 模块化'
 module: 'javascript'
 category: 'JS Basics'
-description: '对比 CommonJS 与 ES Modules，讲清导入导出、默认/具名、动态加载、循环依赖与工程化落地。 | CommonJS vs ESM, exports/imports, dynamic import, circular deps, and practical tooling notes.'
+description: 'CommonJS、ES Modules 与模块打包工具。'
 author: 'Anonymous'
 ---
 

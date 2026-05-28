@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 150
 tags:
   - 'mysql'
   - 'security'
@@ -8,10 +8,10 @@ tags:
   - 'networking'
   - 'functional'
 difficulty: 'intermediate'
-title: 'SQL 注入基础与检测 (SQL Injection Basics & Detection)'
+title: 'SQL 注入基础与检测'
 module: 'mysql'
 category: 'MySQL Advanced'
-description: 'SQL 注入概述、原理详解及检测方法。 | SQL Injection overview, principles, and detection methods.'
+description: '注入原理、检测方法与防御策略入门。'
 author: 'Anonymous'
 ---
 

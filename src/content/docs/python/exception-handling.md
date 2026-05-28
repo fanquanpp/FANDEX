@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 120
 tags:
   - 'python'
   - 'oop'
@@ -8,10 +8,10 @@ tags:
   - 'networking'
   - 'memory'
 difficulty: 'intermediate'
-title: '异常处理 (Error & Exception Handling)'
+title: '异常处理'
 module: 'python'
 category: 'Python Basics'
-description: '异常体系结构、Try-Except-Finally 捕获及自定义异常。 | Exception hierarchy, try-except-finally, and custom exceptions.'
+description: '异常体系、try-except、自定义异常与上下文管理器。'
 author: 'Anonymous'
 ---
 

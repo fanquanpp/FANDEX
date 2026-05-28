@@ -1,13 +1,13 @@
 ---
-order: 70
+order: 130
 tags:
   - 'python'
   - 'css-layout'
 difficulty: 'intermediate'
-title: '文件 I/O 与上下文管理器 (File I/O & Context Manager)'
+title: '文件 I/O 与上下文管理器'
 module: 'python'
 category: 'Python Basics'
-description: '文件读写模式、二进制处理、编码及 Context Manager (With)。 | File modes, binary handling, encoding, and Context Manager.'
+description: '文件读写、路径操作、with 语句与上下文管理。'
 author: 'Anonymous'
 ---
 

@@ -3,14 +3,11 @@ order: 140
 tags:
   - 'cpp'
   - 'project'
-  - 'database'
-  - 'networking'
-  - 'concurrency'
 difficulty: 'intermediate'
 title: 'C++ 项目实战'
 module: 'cpp'
 category: 'C++ Basics'
-description: 'C++ 项目实战'
+description: '综合运用面向对象、模板与 STL 的实战项目。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

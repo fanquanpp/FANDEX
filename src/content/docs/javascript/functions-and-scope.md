@@ -4,10 +4,10 @@ tags:
   - 'javascript'
   - 'functional'
 difficulty: 'intermediate'
-title: '函数、作用域与闭包 (Functions & Scope)'
+title: '函数、作用域与闭包'
 module: 'javascript'
 category: 'JS Basics'
-description: '函数定义、箭头函数、作用域链、闭包及 This 指向。 | Definitions, arrow functions, scope, closures, and This.'
+description: '函数声明、箭头函数、作用域链与闭包原理。'
 author: 'Anonymous'
 ---
 

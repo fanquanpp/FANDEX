@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 150
 tags:
   - 'vue3'
   - 'theory'
@@ -8,6 +8,7 @@ tags:
 difficulty: 'intermediate'
 title: 'Vue3 理论知识点'
 module: 'vue3'
+description: '虚拟 DOM、响应式原理、编译策略与性能模型。'
 ---
 
 Object.defineProperty(obj, key, {

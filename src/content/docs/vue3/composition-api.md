@@ -1,5 +1,5 @@
 ---
-order: 30
+order: 50
 tags:
   - 'vue3'
   - 'typescript'
@@ -7,7 +7,7 @@ tags:
   - 'css-layout'
   - 'devops'
 difficulty: 'intermediate'
-title: '02-组合式 API'
+title: '组合式 API'
 module: 'vue3'
 category: 'Vue3 Basics'
 description: 'Vue3组合式API核心用法详解'

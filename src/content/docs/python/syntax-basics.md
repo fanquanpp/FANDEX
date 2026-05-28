@@ -1,15 +1,15 @@
 ---
-order: 130
+order: 20
 tags:
   - 'python'
   - 'async'
   - 'testing'
   - 'networking'
 difficulty: 'beginner'
-title: '程序结构与基本语法 (Program Structure & Basic Syntax)'
+title: '程序结构与基本语法'
 module: 'python'
 category: 'Python Basics'
-description: 'Python 程序的组成、缩进规则、注释规范及标识符。 | Components of Python programs, indentation, comments, and identifiers.'
+description: 'Python 缩进规则、语句、注释与编码规范。'
 author: 'Anonymous'
 ---
 
@@ -321,13 +321,13 @@ Python 允许在需要时将长语句分成多行，提高代码可读性。
 
 ### 5.1 换行方式
 
-| 方式           | 语法                     | 示例                |
-| :------------- | :----------------------- | :------------------ |
-| **显式换行**   | 使用反斜杠 `\`           | `result = a + b + \ |
+| 方式           | 语法                     | 示例                 |
+| :------------- | :----------------------- | :------------------- |
+| **显式换行**   | 使用反斜杠 `\`           | `result = a + b + \  |
 | c + d`         |
-| **隐式换行**   | 在 `()`, `[]`, `{}` 内部 | `result = (a + b +  |
+| **隐式换行**   | 在 `()`, `[]`, `{}` 内部 | `result = (a + b +   |
 | c + d)`        |
-| **逗号后换行** | 在逗号后换行             | `items = [          |
+| **逗号后换行** | 在逗号后换行             | `items = [           |
 
 'apple',
 'banana',

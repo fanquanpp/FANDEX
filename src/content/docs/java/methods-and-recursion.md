@@ -1,14 +1,12 @@
 ---
-order: 100
+order: 80
 tags:
   - 'java'
-  - 'oop'
-  - 'data-structure'
 difficulty: 'intermediate'
-title: '方法详解 (Methods In-depth)'
+title: '方法详解'
 module: 'java'
 category: 'Java Basics'
-description: '方法定义、参数传递、重载、递归及可变参数。 | Method definitions, parameter passing, overloading, recursion, and variadic arguments.'
+description: '方法定义、参数传递、方法重载与递归。'
 author: 'Anonymous'
 ---
 

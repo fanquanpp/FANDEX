@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 10
 tags:
   - 'cs-fundamentals'
   - 'oop'

@@ -1,13 +1,13 @@
 ---
-order: 90
+order: 100
 tags:
   - 'python'
   - 'networking'
 difficulty: 'intermediate'
-title: '模块、包与工程化 (Modules, Packages & Engineering)'
+title: '模块、包与工程化'
 module: 'python'
 category: 'Python Basics'
-description: '模块导入、包结构、命名空间及 pip 虚拟环境管理。 | Import mechanisms, package structures, namespaces, and env management.'
+description: '模块导入、包结构、虚拟环境与依赖管理。'
 author: 'Anonymous'
 ---
 

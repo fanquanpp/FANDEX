@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 20
 tags:
   - 'typescript'
   - 'oop'
@@ -8,10 +8,10 @@ tags:
   - 'web-api'
   - 'devops'
 difficulty: 'intermediate'
-title: '基础类型系统 (Basic Types)'
+title: '基础类型系统'
 module: 'typescript'
 category: 'TS Advanced'
-description: 'TS 基础类型、字面量类型、联合类型及 Any/Unknown/Never。 | Primitive, Literal, Union types, Any, Unknown, and Never.'
+description: '原始类型、联合类型、字面量类型与类型推断。'
 author: 'Anonymous'
 ---
 

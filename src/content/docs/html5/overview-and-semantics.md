@@ -1,5 +1,5 @@
 ---
-order: 30
+order: 10
 tags:
   - 'html5'
   - 'database'
@@ -7,10 +7,10 @@ tags:
   - 'css-layout'
   - 'web-api'
 difficulty: 'beginner'
-title: 'HTML5 概述与核心特性 (HTML5 Overview & Features)'
+title: 'HTML5 概述与核心特性'
 module: 'html5'
 category: 'HTML5 Basics'
-description: 'HTML5 的发展历程、新特性、文档结构及语义化。 | HTML5 history, new features, structure, and semantics.'
+description: 'HTML5 新特性、语义化标签与浏览器兼容性。'
 author: 'Anonymous'
 ---
 

@@ -1,20 +1,14 @@
 ---
-order: 170
+order: 10
 tags:
   - 'javascript'
-  - 'async'
-  - 'security'
-  - 'database'
-  - 'networking'
-  - 'typescript'
-  - 'css-layout'
   - 'data-structure'
   - 'web-api'
 difficulty: 'beginner'
-title: 'JavaScript 概述与运行环境 (JS Overview & Environment)'
+title: 'JavaScript 概述与运行环境'
 module: 'javascript'
 category: 'JS Basics'
-description: 'JS 的发展、核心特点、运行环境 (Browser/Node) 及开发工具。 | JS history, features, environments, and tools.'
+description: 'JavaScript 发展历程、ECMAScript 标准与运行环境。'
 author: 'Anonymous'
 ---
 

@@ -1,16 +1,13 @@
 ---
-order: 90
+order: 70
 tags:
   - 'javascript'
-  - 'oop'
-  - 'database'
-  - 'functional'
   - 'data-structure'
 difficulty: 'intermediate'
-title: '对象与数组 (Objects & Arrays)'
+title: '对象与数组'
 module: 'javascript'
 category: 'JS Basics'
-description: '对象字面量、原型链、数组常用方法及解构赋值。 | Object literals, prototype, array methods, and destructuring.'
+description: '对象操作、数组方法与解构赋值。'
 author: 'Anonymous'
 ---
 

@@ -1,13 +1,13 @@
 ---
-order: 90
+order: 110
 tags:
   - 'cpp'
   - 'memory'
 difficulty: 'intermediate'
-title: 'C++ 模板 (C++ Templates)'
+title: 'C++ 模板'
 module: 'cpp'
 category: 'C++ Basics'
-description: '函数模板、类模板、可变参数模板、模板元编程及类型 traits。 | Function templates, class templates, variadic templates, template metaprogramming, and type traits.'
+description: '函数模板、类模板、模板特化、SFINAE 与概念。'
 author: 'Anonymous'
 ---
 

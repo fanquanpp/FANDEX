@@ -1,22 +1,13 @@
 ---
-order: 120
+order: 130
 tags:
   - 'javascript'
   - 'project'
-  - 'async'
-  - 'testing'
-  - 'security'
-  - 'database'
-  - 'networking'
-  - 'functional'
-  - 'css-layout'
-  - 'web-api'
-  - 'devops'
 difficulty: 'intermediate'
-title: '04-典型项目实战 (JavaScript)'
+title: '典型项目实战'
 module: 'javascript'
 category: 'JavaScript Basics'
-description: '04-典型项目实战'
+description: '综合运用 DOM、异步与模块化的项目实践。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

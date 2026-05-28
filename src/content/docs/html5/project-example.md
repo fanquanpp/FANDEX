@@ -1,5 +1,5 @@
 ---
-order: 40
+order: 70
 tags:
   - 'html5'
   - 'project'
@@ -14,6 +14,7 @@ tags:
 difficulty: 'intermediate'
 title: 'HTML5 项目示例：交互式表单应用'
 module: 'html5'
+description: '综合运用表单验证、Canvas 与本地存储的交互式应用。'
 ---
 
 | 实时验证 | 内置验证 + 自定义验证逻辑 |

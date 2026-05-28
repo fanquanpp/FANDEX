@@ -1,12 +1,12 @@
 ---
-order: 200
+order: 50
 tags:
   - 'java'
 difficulty: 'beginner'
-title: '变量与常量 (Variables & Constants)'
+title: '变量与常量'
 module: 'java'
 category: 'Java Basics'
-description: '变量定义、生命周期、作用域、存储类及常量。 | Definitions, lifecycle, scope of variables, and constants.'
+description: '变量声明、作用域、常量定义与命名规范。'
 author: 'Anonymous'
 ---
 

@@ -1,15 +1,15 @@
 ---
-order: 80
+order: 70
 tags:
   - 'python'
   - 'design-patterns'
   - 'functional'
   - 'css-layout'
 difficulty: 'intermediate'
-title: '函数详解 (Functions In-depth)'
+title: '函数详解'
 module: 'python'
 category: 'Python Basics'
-description: '函数定义、参数传递、匿名函数、装饰器及作用域。 | Function definitions, parameters, lambda, decorators, and scope.'
+description: '函数定义、参数类型、lambda 表达式与高阶函数。'
 author: 'Anonymous'
 ---
 

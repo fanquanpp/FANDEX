@@ -4,10 +4,10 @@ tags:
   - 'github'
   - 'networking'
 difficulty: 'intermediate'
-title: 'Issues 模板、标签、里程碑与自动化'
+title: 'Issues 模板、标签与里程碑'
 module: 'github'
 category: 'GitHub Advanced'
-description: 'Issues 模板配置、Labels、Milestones、自动化关闭关键词与项目板衔接。 | Issue templates, labels, milestones, auto-close keywords, and project board integration.'
+description: 'Issues 模板配置、Labels、Milestones、自动化关闭关键词与项目板衔接。'
 author: 'Anonymous'
 ---
 

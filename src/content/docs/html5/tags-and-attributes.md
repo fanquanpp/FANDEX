@@ -1,15 +1,15 @@
 ---
-order: 60
+order: 20
 tags:
   - 'html5'
   - 'database'
   - 'css-layout'
   - 'devops'
 difficulty: 'intermediate'
-title: 'HTML5 基础标签与全局属性 (Basic Tags & Global Attributes)'
+title: 'HTML5 基础标签与全局属性'
 module: 'html5'
 category: 'HTML5 Basics'
-description: '常用 HTML 标签、超链接、图像及全局属性详解。 | Common tags, links, images, and global attributes.'
+description: '文本、列表、表格标签与全局属性详解。'
 author: 'Anonymous'
 ---
 

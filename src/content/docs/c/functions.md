@@ -2,13 +2,12 @@
 order: 70
 tags:
   - 'c'
-  - 'async'
   - 'memory'
 difficulty: 'intermediate'
-title: '函数详解 (Functions In-depth)'
+title: '函数详解'
 module: 'c'
 category: 'C Basics'
-description: '函数定义、参数传递、作用域、递归及函数指针。 | Function definitions, parameter passing, scope, recursion, and function pointers.'
+description: '函数定义、参数传递、作用域、递归及函数指针。'
 author: 'Anonymous'
 ---
 

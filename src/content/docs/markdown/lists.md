@@ -3,10 +3,10 @@ order: 50
 tags:
   - 'markdown'
 difficulty: 'intermediate'
-title: 'Markdown 列表语法 (Markdown List Syntax)'
+title: 'Markdown 列表语法'
 module: 'markdown'
 category: 'Markdown Basics'
-description: 'Markdown 列表语法：无序列表、有序列表、任务列表及嵌套列表。 | Markdown list syntax: unordered, ordered, task lists, and nested lists.'
+description: '有序列表、无序列表、任务列表与嵌套规则。'
 author: 'fanquanpp'
 updated: 2026-04-06
 ---

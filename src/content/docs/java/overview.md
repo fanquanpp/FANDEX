@@ -1,18 +1,15 @@
 ---
-order: 220
+order: 10
 tags:
   - 'java'
   - 'oop'
-  - 'testing'
-  - 'networking'
   - 'memory'
   - 'data-structure'
-  - 'devops'
 difficulty: 'beginner'
-title: 'Java 概述与开发环境 (Java Overview & Development Environment)'
+title: 'Java 概述与开发环境'
 module: 'java'
 category: 'Java Basics'
-description: 'Java 语言的发展、核心特点、应用领域及开发环境搭建。 | Java development history, key features, applications, and environment setup.'
+description: 'Java 发展历史、平台体系与开发环境搭建。'
 author: 'Anonymous'
 ---
 

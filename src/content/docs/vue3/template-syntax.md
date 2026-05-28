@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 30
 tags:
   - 'vue3'
   - 'database'

@@ -1,15 +1,12 @@
 ---
-order: 170
+order: 200
 tags:
   - 'java'
-  - 'oop'
-  - 'design-patterns'
-  - 'data-structure'
 difficulty: 'intermediate'
 title: 'Java Swing 图形界面'
 module: 'java'
 category: 'Java Basics'
-description: 'Swing图形界面开发与事件处理'
+description: 'Swing 组件体系、事件驱动与 GUI 应用开发。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

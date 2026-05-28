@@ -1,14 +1,14 @@
 ---
-order: 20
+order: 30
 tags:
   - 'lua'
   - 'async'
   - 'data-structure'
 difficulty: 'beginner'
-title: '数据类型与 Table 详解 (Data Types & Tables)'
+title: '数据类型与 Table 详解'
 module: 'lua'
 category: 'Lua Basics'
-description: "Lua 8 种基础类型及核心数据结构 Table 的深度解析。 | Lua's 8 basic types and in-depth look at Tables."
+description: '基本类型、Table 操作、元方法与面向对象实现。'
 author: 'Anonymous'
 ---
 

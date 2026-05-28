@@ -1,12 +1,12 @@
 ---
-order: 30
+order: 20
 tags:
   - 'markdown'
 difficulty: 'intermediate'
 title: 'Markdown 标题语法'
 module: 'markdown'
 category: 'Markdown Basics'
-description: 'Markdown 标题语法与最佳实践。 | Markdown heading syntax.'
+description: 'ATX 与 Setext 风格标题与目录生成。'
 author: 'fanquanpp'
 updated: 2026-04-05
 ---

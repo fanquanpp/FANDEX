@@ -1,15 +1,14 @@
 ---
-order: 130
+order: 110
 tags:
   - 'javascript'
   - 'oop'
-  - 'typescript'
   - 'data-structure'
 difficulty: 'intermediate'
-title: 'JavaScript 原型与继承 (Prototypes and Inheritance)'
+title: 'JavaScript 原型与继承'
 module: 'javascript'
 category: 'JS Basics'
-description: '解释原型、原型链、构造函数与 new；梳理常见继承模式与 ES6 class 的本质，并给出工程实践与安全注意事项。 | Prototypes, prototype chain, constructors, inheritance patterns, and practical guidance.'
+description: '原型链、构造函数、class 语法与继承模式。'
 author: 'Anonymous'
 ---
 

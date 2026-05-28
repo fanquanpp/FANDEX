@@ -1,13 +1,12 @@
 ---
-order: 50
+order: 40
 tags:
   - 'java'
-  - 'oop'
 difficulty: 'beginner'
-title: '数据类型与类型转换 (Data Types & Type Conversion)'
+title: '数据类型与类型转换'
 module: 'java'
 category: 'Java Basics'
-description: 'Java 基本类型、引用类型及类型转换的底层机制。 | Java primitive, reference types, and conversion mechanisms.'
+description: '基本类型、引用类型、自动装箱与类型转换规则。'
 author: 'Anonymous'
 ---
 

@@ -1,15 +1,15 @@
 ---
-order: 90
+order: 20
 tags:
   - 'mysql'
   - 'database'
   - 'networking'
   - 'devops'
 difficulty: 'beginner'
-title: 'MySQL 环境搭建 (MySQL Environment Setup)'
+title: 'MySQL 环境搭建'
 module: 'mysql'
 category: 'MySQL Basics'
-description: 'MySQL 安装部署、环境变量配置、配置文件详解及管理工具。 | MySQL installation, environment variables, configuration files, and management tools.'
+description: 'MySQL 安装、配置、启动与客户端工具使用。'
 author: 'Anonymous'
 ---
 

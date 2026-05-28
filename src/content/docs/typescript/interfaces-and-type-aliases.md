@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 30
 tags:
   - 'typescript'
   - 'oop'
@@ -7,10 +7,10 @@ tags:
   - 'functional'
   - 'css-layout'
 difficulty: 'intermediate'
-title: '接口与类型别名 (Interfaces vs. Type Aliases)'
+title: '接口与类型别名'
 module: 'typescript'
 category: 'TS Advanced'
-description: '接口定义、只读/可选属性、接口继承及与 Type 的对比。 | Interface, Readonly, Optional, Inheritance, and Type comparison.'
+description: 'interface 与 type 的定义、扩展、交叉与合并。'
 author: 'Anonymous'
 ---
 

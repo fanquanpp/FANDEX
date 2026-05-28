@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 10
 tags:
   - 'mysql'
   - 'security'
@@ -8,10 +8,10 @@ tags:
   - 'memory'
   - 'data-structure'
 difficulty: 'beginner'
-title: 'MySQL 概述与数据库设计 (MySQL Overview & Database Design)'
+title: 'MySQL 概述与数据库设计'
 module: 'mysql'
 category: 'MySQL Basics'
-description: '关系型数据库概念、MySQL 架构、版本特性、数据库设计原则与数据类型。 | RDBMS concepts, MySQL architecture, version features, database design principles and data types.'
+description: 'MySQL 发展历程、体系结构与数据库设计范式。'
 author: 'Anonymous'
 ---
 

@@ -1,15 +1,15 @@
 ---
-order: 160
+order: 10
 tags:
   - 'python'
   - 'database'
   - 'networking'
   - 'devops'
 difficulty: 'beginner'
-title: 'Python 概述与环境配置 (Python Overview & Environment)'
+title: 'Python 概述与环境配置'
 module: 'python'
 category: 'Python Basics'
-description: 'Python 的历史、特点、应用场景及开发环境搭建。 | Python history, features, applications, and environment setup.'
+description: 'Python 发展历程、版本特性与开发环境搭建。'
 author: 'Anonymous'
 ---
 

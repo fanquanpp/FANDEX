@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 110
 tags:
   - 'typescript'
   - 'project'
@@ -12,6 +12,7 @@ tags:
 difficulty: 'intermediate'
 title: 'TypeScript 项目示例：类型安全的 API 客户端'
 module: 'typescript'
+description: '综合运用泛型、装饰器与类型体操的类型安全 API 客户端。'
 ---
 
 | 请求拦截器 | 请求前添加认证头、日志等 |

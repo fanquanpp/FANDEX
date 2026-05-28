@@ -1,12 +1,12 @@
 ---
-order: 140
+order: 40
 tags:
   - 'c'
 difficulty: 'beginner'
-title: '变量与常量 (Variables & Constants)'
+title: '变量与常量'
 module: 'c'
 category: 'C Basics'
-description: '变量的定义、生命周期、作用域以及常量的多种实现方式。 | Definitions, lifecycle, scope of variables, and ways to define constants.'
+description: '变量的定义、生命周期、作用域以及常量的多种实现方式。'
 author: 'Anonymous'
 ---
 

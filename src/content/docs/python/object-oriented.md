@@ -1,15 +1,15 @@
 ---
-order: 100
+order: 110
 tags:
   - 'python'
   - 'oop'
   - 'design-patterns'
   - 'typescript'
 difficulty: 'intermediate'
-title: '面向对象编程 (OOP Basics)'
+title: '面向对象编程'
 module: 'python'
 category: 'Python Basics'
-description: '类与对象、属性/方法、继承、多态及特殊方法 (Magic Methods)。 | Class, Object, Properties, Methods, Inheritance, and Magic Methods.'
+description: '类与对象、继承、多态、魔术方法与描述符。'
 author: 'Anonymous'
 ---
 

@@ -1,13 +1,13 @@
 ---
-order: 130
+order: 40
 tags:
   - 'mysql'
   - 'database'
 difficulty: 'intermediate'
-title: 'SQL 数据定义与高级对象 (SQL DDL & Advanced Objects)'
+title: 'SQL 数据定义与高级对象'
 module: 'mysql'
 category: 'MySQL Basics'
-description: 'DDL 数据定义语言、索引、约束、事务、视图、存储过程及触发器详解。 | DDL, indexes, constraints, transactions, views, stored procedures, and triggers.'
+description: 'CREATE/ALTER/DROP、视图、索引与存储过程。'
 author: 'Anonymous'
 ---
 

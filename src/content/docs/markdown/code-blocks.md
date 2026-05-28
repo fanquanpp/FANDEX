@@ -1,13 +1,13 @@
 ---
-order: 20
+order: 70
 tags:
   - 'markdown'
   - 'database'
 difficulty: 'intermediate'
-title: 'Markdown 代码块与语法高亮 (Code Blocks and Syntax Highlighting)'
+title: 'Markdown 代码块与语法高亮'
 module: 'markdown'
 category: 'Markdown Basics'
-description: 'Markdown 中的代码块和语法高亮功能。 | Code blocks and syntax highlighting in Markdown.'
+description: '行内代码、围栏代码块、语言标注与高亮配置。'
 author: 'Anonymous'
 ---
 

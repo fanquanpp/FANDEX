@@ -1,16 +1,15 @@
 ---
-order: 60
+order: 130
 tags:
   - 'java'
   - 'oop'
-  - 'database'
   - 'memory'
   - 'data-structure'
 difficulty: 'intermediate'
-title: '异常处理机制 (Exception Handling)'
+title: '异常处理机制'
 module: 'java'
 category: 'Java Basics'
-description: '异常体系结构、捕获处理、抛出异常及自定义异常。 | Exception hierarchy, try-catch-finally, throw/throws, and custom exceptions.'
+description: '异常体系、try-catch-finally、自定义异常与最佳实践。'
 author: 'Anonymous'
 ---
 

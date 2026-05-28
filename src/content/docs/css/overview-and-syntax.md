@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 10
 tags:
   - 'css'
   - 'database'
@@ -7,10 +7,10 @@ tags:
   - 'css-layout'
   - 'devops'
 difficulty: 'beginner'
-title: 'CSS3 概述与基本语法 (CSS3 Overview & Syntax)'
+title: 'CSS3 概述与基本语法'
 module: 'css'
 category: 'CSS Basics'
-description: 'CSS3 的核心特性、引入方式、基本语法结构及优先级。 | CSS3 core features, inclusion methods, syntax, and specificity.'
+description: 'CSS 发展历程、语法结构与层叠规则。'
 author: 'Anonymous'
 ---
 

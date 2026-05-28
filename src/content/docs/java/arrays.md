@@ -1,14 +1,13 @@
 ---
-order: 20
+order: 90
 tags:
   - 'java'
-  - 'memory'
   - 'data-structure'
 difficulty: 'intermediate'
-title: '数组详解 (Arrays In-depth)'
+title: '数组详解'
 module: 'java'
 category: 'Java Basics'
-description: '一维、二维数组、动态/静态初始化、内存布局及常用工具类。 | One-dimensional, 2D arrays, initialization, memory layout, and Utilities.'
+description: '一维与多维数组、数组操作与 Arrays 工具类。'
 author: 'Anonymous'
 ---
 

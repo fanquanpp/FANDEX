@@ -13,7 +13,19 @@ for (const doc of allDocs) {
 }
 
 const sortedTags = Array.from(tagMap.entries()).sort((a, b) => b[1] - a[1])
+const maxCount = sortedTags.length > 0 ? sortedTags[0][1] : 1
+const hotThreshold = Math.max(2, Math.ceil(maxCount * 0.6))
+const normalThreshold = Math.max(1, Math.ceil(maxCount * 0.25))
+const hotTags = sortedTags.filter(([, c]) => c >= hotThreshold)
+const normalTags = sortedTags.filter(([, c]) => c >= normalThreshold && c < hotThreshold)
+const otherTags = sortedTags.filter(([, c]) => c < normalThreshold)
 const base = import.meta.env.BASE_URL
+
+function tagLevel(count: number): string {
+  if (count >= hotThreshold) return 'hot'
+  if (count >= normalThreshold) return 'normal'
+  return 'other'
+}
 ---
 
 <Layout title="标签索引">
@@ -25,63 +37,139 @@ const base = import.meta.env.BASE_URL
       <p class="tags-subtitle">跨模块知识检索 | {sortedTags.length} 个标签 | {allDocs.length} 篇文档</p>
     </div>
 
-    <div class="tag-cloud">
-      {sortedTags.map(([tag, count]) => (
-        <a href={`${base}tags/${tag}`} class="tag-item" data-count={count}>
-          <span class="tag-name">{tag}</span>
-          <span class="tag-count">{count}</span>
-        </a>
-      ))}
-    </div>
+    {hotTags.length > 0 && (
+      <div class="tag-group">
+        <h2 class="tag-group-title">热门标签</h2>
+        <div class="tag-cloud">
+          {hotTags.map(([tag, count]) => (
+            <a href={`${base}tags/${tag}`} class="tag-item hot" data-count={count}>
+              <span class="tag-name">{tag}</span>
+              <span class="tag-count">{count}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {normalTags.length > 0 && (
+      <div class="tag-group">
+        <h2 class="tag-group-title">常用标签</h2>
+        <div class="tag-cloud">
+          {normalTags.map(([tag, count]) => (
+            <a href={`${base}tags/${tag}`} class="tag-item normal" data-count={count}>
+              <span class="tag-name">{tag}</span>
+              <span class="tag-count">{count}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
+
+    {otherTags.length > 0 && (
+      <div class="tag-group">
+        <h2 class="tag-group-title">更多标签</h2>
+        <div class="tag-cloud">
+          {otherTags.map(([tag, count]) => (
+            <a href={`${base}tags/${tag}`} class="tag-item other" data-count={count}>
+              <span class="tag-name">{tag}</span>
+              <span class="tag-count">{count}</span>
+            </a>
+          ))}
+        </div>
+      </div>
+    )}
   </div>
 </Layout>
 
 <style>
 .tags-page {
-  padding: var(--spacing-lg) var(--spacing-xl);
-  max-width: var(--content-width);
+  padding: var(--spacing-2xl) var(--spacing-2xl);
+  max-width: 960px;
   margin: 0 auto;
 }
 
 .tags-header {
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: var(--spacing-2xl);
+  text-align: center;
 }
 
 .tags-title {
   font-family: var(--font-display);
-  font-size: 1.4em;
-  margin: 0 0 var(--spacing-xs);
+  font-size: 1.8em;
+  margin: 0 0 var(--spacing-sm);
+  letter-spacing: 0.02em;
 }
 
 .tags-subtitle {
-  font-size: 0.88em;
+  font-size: 0.95em;
   color: var(--color-text-secondary);
   margin: 0;
+}
+
+.tag-group {
+  margin-bottom: var(--spacing-xl);
+}
+
+.tag-group-title {
+  font-family: var(--font-display);
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin: 0 0 var(--spacing-md);
+  padding-bottom: var(--spacing-xs);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
 .tag-cloud {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-sm);
+  gap: var(--spacing-md);
 }
 
 .tag-item {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 8px;
+  padding: 10px 18px;
   border: 1px solid var(--color-border-light);
   background: var(--color-bg-card);
   color: var(--color-text-secondary);
   text-decoration: none;
-  font-size: 0.85em;
   transition: all var(--transition-fast);
+}
+
+.tag-item.hot {
+  font-size: 1.05em;
+  padding: 12px 22px;
+  border-color: var(--color-primary);
+  border-width: 2px;
+  background: var(--color-bg-card);
+}
+
+.tag-item.hot .tag-name {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+.tag-item.normal {
+  font-size: 0.95em;
+  padding: 10px 18px;
+}
+
+.tag-item.other {
+  font-size: 0.85em;
+  padding: 7px 14px;
+  border-style: dashed;
 }
 
 .tag-item:hover {
   border-color: var(--color-primary);
   color: var(--color-primary);
   background: var(--color-bg-hover);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0,0,0,0.06);
 }
 
 .tag-name {
@@ -89,11 +177,18 @@ const base = import.meta.env.BASE_URL
 }
 
 .tag-count {
-  font-size: 0.8em;
+  font-size: 0.78em;
   color: var(--color-text-tertiary);
   background: var(--color-bg);
-  padding: 1px 6px;
+  padding: 2px 8px;
   border: 1px solid var(--color-border-light);
+  font-family: var(--font-display);
+}
+
+.tag-item.hot .tag-count {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary);
 }
 
 @media (max-width: 768px) {
@@ -101,13 +196,31 @@ const base = import.meta.env.BASE_URL
     padding: var(--spacing-md);
   }
 
-  .tag-cloud {
-    gap: 6px;
+  .tags-header {
+    text-align: left;
   }
 
-  .tag-item {
-    padding: 4px 10px;
+  .tags-title {
+    font-size: 1.4em;
+  }
+
+  .tag-cloud {
+    gap: var(--spacing-sm);
+  }
+
+  .tag-item.hot {
+    font-size: 0.95em;
+    padding: 8px 14px;
+  }
+
+  .tag-item.normal {
+    font-size: 0.88em;
+    padding: 7px 12px;
+  }
+
+  .tag-item.other {
     font-size: 0.8em;
+    padding: 5px 10px;
   }
 }
 </style>

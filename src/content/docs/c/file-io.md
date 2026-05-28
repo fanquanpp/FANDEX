@@ -1,13 +1,12 @@
 ---
-order: 60
+order: 110
 tags:
   - 'c'
-  - 'css-layout'
 difficulty: 'intermediate'
-title: '文件 I/O 操作 (File Input/Output)'
+title: '文件 I/O 操作'
 module: 'c'
 category: 'C Basics'
-description: '标准文件流操作、二进制文件及错误处理。 | Standard file stream operations, binary files, and error handling.'
+description: '标准文件流操作、二进制文件及错误处理。'
 author: 'Anonymous'
 ---
 

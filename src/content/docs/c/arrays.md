@@ -1,13 +1,13 @@
 ---
-order: 20
+order: 80
 tags:
   - 'c'
   - 'memory'
 difficulty: 'intermediate'
-title: '数组详解 (Arrays In-depth)'
+title: '数组详解'
 module: 'c'
 category: 'C Basics'
-description: '一维、多维数组、字符数组、数组与指针的关系及内存布局。 | One-dimensional, multi-dimensional, character arrays, and array-pointer relationships.'
+description: '一维、多维数组、字符数组、数组与指针的关系及内存布局。'
 author: 'Anonymous'
 ---
 

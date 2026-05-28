@@ -1,13 +1,13 @@
 ---
-order: 40
+order: 80
 tags:
   - 'typescript'
   - 'oop'
 difficulty: 'intermediate'
-title: 'TypeScript 工程化配置 (Engineering Configuration)'
+title: 'TypeScript 工程化配置'
 module: 'typescript'
 category: 'TypeScript Advanced'
-description: '以 tsconfig 为核心，梳理编译目标、模块系统、严格模式、增量构建与项目分层的工程化配置实践。 | Practical tsconfig and build configuration for real projects.'
+description: 'tsconfig 详解、项目引用、增量编译与 monorepo 配置。'
 author: 'Anonymous'
 ---
 

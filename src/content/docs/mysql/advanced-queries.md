@@ -1,13 +1,13 @@
 ---
-order: 10
+order: 80
 tags:
   - 'mysql'
   - 'database'
 difficulty: 'advanced'
-title: '进阶查询与多表操作 (Advanced Queries & Joins)'
+title: '进阶查询与多表操作'
 module: 'mysql'
 category: 'MySQL Basics'
-description: '多表联查、子查询、分组统计及窗口函数。 | Joins, Subqueries, Grouping, and Window Functions.'
+description: '复杂查询优化、分组聚合与结果集处理。'
 author: 'Anonymous'
 ---
 

@@ -1,11 +1,12 @@
 ---
-order: 50
+order: 80
 tags:
   - 'exercises'
   - 'cs-fundamentals'
 difficulty: 'intermediate'
 title: '计算机基础练习题'
 module: 'cs-fundamentals'
+description: '计算机基础核心知识点配套练习，涵盖体系结构、操作系统与网络。'
 ---
 
 ## 选择题

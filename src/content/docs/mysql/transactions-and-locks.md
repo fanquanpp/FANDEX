@@ -1,14 +1,14 @@
 ---
-order: 200
+order: 110
 tags:
   - 'mysql'
   - 'database'
   - 'concurrency'
 difficulty: 'intermediate'
-title: '事务与锁机制 (Transactions & Locks)'
+title: '事务与锁机制'
 module: 'mysql'
 category: 'MySQL Advanced'
-description: 'ACID 特性、隔离级别、MVCC 原理及死锁排查。 | ACID, Isolation levels, MVCC, and Deadlocks.'
+description: 'ACID 特性、隔离级别、MVCC 与锁类型。'
 author: 'Anonymous'
 ---
 

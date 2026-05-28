@@ -12,10 +12,10 @@ tags:
   - 'web-api'
   - 'devops'
 difficulty: 'intermediate'
-title: 'HTML5 离线存储与 Web API (Storage & Web APIs)'
+title: 'HTML5 离线存储与 Web API'
 module: 'html5'
 category: 'HTML5 Basics'
-description: 'Web Storage、Geolocation、Web Worker 及 Fetch API。 | Web Storage, Geolocation, Workers, and Fetch.'
+description: 'localStorage、sessionStorage、IndexedDB 与 Web Workers。'
 author: 'Anonymous'
 ---
 

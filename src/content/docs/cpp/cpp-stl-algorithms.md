@@ -1,16 +1,14 @@
 ---
-order: 60
+order: 100
 tags:
   - 'cpp'
   - 'memory'
-  - 'css-layout'
   - 'data-structure'
-  - 'devops'
 difficulty: 'intermediate'
-title: 'C++ STL 算法与函数对象 (C++ STL Algorithms & Functors)'
+title: 'C++ STL 算法与函数对象'
 module: 'cpp'
 category: 'C++ Basics'
-description: 'STL 算法、仿函数、lambda 表达式、智能指针与 STL 及最佳实践。 | STL algorithms, functors, lambda expressions, smart pointers with STL, and best practices.'
+description: '标准算法、lambda 表达式、函数对象与范围库。'
 author: 'Anonymous'
 ---
 

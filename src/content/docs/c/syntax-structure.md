@@ -1,14 +1,12 @@
 ---
-order: 120
+order: 20
 tags:
   - 'c'
-  - 'concurrency'
-  - 'typescript'
 difficulty: 'beginner'
-title: '程序结构与基本语法 (Program Structure & Basic Syntax)'
+title: '程序结构与基本语法'
 module: 'c'
 category: 'C Basics'
-description: 'C 程序的组成部分、注释规范、标识符规则及关键字。 | Components of C programs, comments, identifiers, and keywords.'
+description: 'C 程序的组成部分、注释规范、标识符规则及关键字。'
 author: 'Anonymous'
 ---
 

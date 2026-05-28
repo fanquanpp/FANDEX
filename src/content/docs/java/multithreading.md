@@ -1,18 +1,14 @@
 ---
-order: 110
+order: 160
 tags:
   - 'java'
-  - 'oop'
-  - 'async'
-  - 'design-patterns'
-  - 'database'
   - 'concurrency'
   - 'data-structure'
 difficulty: 'advanced'
-title: '多线程基础 (Multithreading Basics)'
+title: '多线程基础'
 module: 'java'
 category: 'Java Basics'
-description: '线程创建、生命周期、同步机制及 Java 线程池。 | Thread creation, lifecycle, synchronization, and pools.'
+description: '线程创建、同步机制、线程池与并发工具。'
 author: 'Anonymous'
 ---
 

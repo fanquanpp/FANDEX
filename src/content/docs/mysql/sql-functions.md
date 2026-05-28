@@ -1,13 +1,13 @@
 ---
-order: 150
+order: 60
 tags:
   - 'mysql'
   - 'database'
 difficulty: 'intermediate'
-title: 'SQL 函数与高级查询 (SQL Functions & Advanced Queries)'
+title: 'SQL 函数与高级查询'
 module: 'mysql'
 category: 'MySQL Basics'
-description: '内置函数详解、子查询、多表查询、最佳实践及常见问题。 | Built-in functions, subqueries, multi-table queries, best practices, and troubleshooting.'
+description: '聚合函数、窗口函数、子查询与公用表表达式。'
 author: 'Anonymous'
 ---
 

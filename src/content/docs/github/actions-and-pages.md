@@ -1,15 +1,15 @@
 ---
-order: 20
+order: 90
 tags:
   - 'github'
   - 'design-patterns'
   - 'networking'
   - 'devops'
 difficulty: 'intermediate'
-title: 'GitHub Actions 语法、市场与 CI/CD 完整示例'
+title: 'GitHub Actions 与 CI/CD'
 module: 'github'
 category: 'GitHub Advanced'
-description: 'GitHub Actions workflow 语法、市场使用、CI/CD 示例（Node/Java/Python）。 | GitHub Actions workflow syntax, marketplace usage, CI/CD examples.'
+description: 'GitHub Actions workflow 语法、市场使用、CI/CD 示例（Node/Java/Python）。'
 author: 'Anonymous'
 ---
 

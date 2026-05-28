@@ -1,12 +1,12 @@
 ---
-order: 60
+order: 20
 tags:
   - 'lua'
 difficulty: 'beginner'
-title: '程序结构与基本语法 (Program Structure & Basic Syntax)'
+title: '程序结构与基本语法'
 module: 'lua'
 category: 'Lua Basics'
-description: 'Lua 的变量声明、注释、作用域及控制流。 | Variable declarations, comments, scope, and control flow in Lua.'
+description: 'Lua 语法基础、变量、运算符与控制结构。'
 author: 'Anonymous'
 ---
 

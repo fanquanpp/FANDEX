@@ -1,17 +1,15 @@
 ---
-order: 130
+order: 10
 tags:
   - 'cpp'
-  - 'async'
   - 'performance'
   - 'memory'
-  - 'concurrency'
   - 'devops'
 difficulty: 'beginner'
-title: 'C++ 概述与现代标准 (C++ Overview & Modern Standards)'
+title: 'C++ 概述与现代标准'
 module: 'cpp'
 category: 'C++ Basics'
-description: 'C++ 的历史、核心优势、应用场景及现代 C++ 标准演进。 | C++ history, strengths, applications, and standard evolution.'
+description: 'C++ 发展历程、标准演进与现代 C++ 核心特性概览。'
 author: 'Anonymous'
 ---
 

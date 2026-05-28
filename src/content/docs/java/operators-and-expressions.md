@@ -1,12 +1,12 @@
 ---
-order: 130
+order: 60
 tags:
   - 'java'
 difficulty: 'intermediate'
-title: '运算符与表达式 (Operators & Expressions)'
+title: '运算符与表达式'
 module: 'java'
 category: 'Java Basics'
-description: '算术、关系、逻辑、位运算及三元运算符详解。 | Detailed guide on Java operators, logic, bitwise, and ternary.'
+description: '算术、关系、逻辑、位运算及运算符优先级。'
 author: 'Anonymous'
 ---
 

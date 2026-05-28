@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 80
 tags:
   - 'github'
   - 'database'
@@ -8,10 +8,10 @@ tags:
   - 'web-api'
   - 'devops'
 difficulty: 'intermediate'
-title: 'GitHub Pages 多站点方案（Jekyll、VitePress、Hugo）'
+title: 'GitHub Pages 多站点方案'
 module: 'github'
 category: 'GitHub Advanced'
-description: 'GitHub Pages 静态站点部署方案：Jekyll、VitePress、Hugo 构建与发布。 | Static site deployment on GitHub Pages with Jekyll, VitePress, Hugo.'
+description: 'GitHub Pages 静态站点部署方案：Jekyll、VitePress、Hugo 构建与发布。'
 author: 'Anonymous'
 ---
 

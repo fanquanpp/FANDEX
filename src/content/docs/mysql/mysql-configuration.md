@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 120
 tags:
   - 'mysql'
   - 'security'
@@ -7,10 +7,10 @@ tags:
   - 'memory'
   - 'concurrency'
 difficulty: 'intermediate'
-title: 'MySQL 配置与运维 (MySQL Configuration & Operations)'
+title: 'MySQL 配置与运维'
 module: 'mysql'
 category: 'MySQL Basics'
-description: 'MySQL 基本操作、性能优化、安全配置、常见问题及监控维护。 | MySQL basic operations, performance optimization, security, troubleshooting, and monitoring.'
+description: '参数调优、日志管理、备份恢复与监控。'
 author: 'Anonymous'
 ---
 

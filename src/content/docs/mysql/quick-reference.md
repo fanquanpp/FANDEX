@@ -1,14 +1,14 @@
 ---
-order: 120
+order: 130
 tags:
   - 'mysql'
   - 'database'
   - 'math'
 difficulty: 'intermediate'
-title: 'MySQL 快速查阅 (Quick Reference)'
+title: 'MySQL 快速查阅'
 module: 'mysql'
 category: 'MySQL Reference'
-description: 'MySQL 常用指令速查手册 | Quick reference for common MySQL commands.'
+description: '常用 SQL 语句、函数与配置参数速查。'
 author: 'Anonymous'
 ---
 

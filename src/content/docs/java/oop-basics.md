@@ -1,15 +1,15 @@
 ---
-order: 120
+order: 110
 tags:
   - 'java'
   - 'oop'
   - 'memory'
   - 'data-structure'
 difficulty: 'intermediate'
-title: '面向对象编程 (OOP Concepts)'
+title: '面向对象编程'
 module: 'java'
 category: 'Java Basics'
-description: '面向对象编程'
+description: '类与对象、封装、继承、多态与抽象类。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

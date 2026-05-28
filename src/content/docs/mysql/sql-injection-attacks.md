@@ -6,10 +6,10 @@ tags:
   - 'database'
   - 'networking'
 difficulty: 'advanced'
-title: 'SQL 注入攻击类型与实战 (SQL Injection Attacks & Practice)'
+title: 'SQL 注入攻击类型与实战'
 module: 'mysql'
 category: 'MySQL Advanced'
-description: 'SQL 注入攻击类型详解、实战案例及攻防演练。 | SQL Injection attack types, practical cases, and hands-on exercises.'
+description: '联合注入、盲注、报错注入与绕过技巧。'
 author: 'Anonymous'
 ---
 

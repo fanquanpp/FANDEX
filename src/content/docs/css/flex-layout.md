@@ -1,15 +1,15 @@
 ---
-order: 40
+order: 50
 tags:
   - 'css'
   - 'memory'
   - 'css-layout'
   - 'devops'
 difficulty: 'intermediate'
-title: 'CSS3 Flexbox 弹性布局 (Flexbox Layout)'
+title: 'CSS3 Flexbox 弹性布局'
 module: 'css'
 category: 'CSS Basics'
-description: '弹性盒子模型核心概念、容器属性及项目属性全解析。 | Flexbox core concepts, container, and item properties.'
+description: 'flex 容器与项目属性、对齐方式与常见布局模式。'
 author: 'Anonymous'
 ---
 

@@ -1,15 +1,15 @@
 ---
-order: 10
+order: 60
 tags:
   - 'typescript'
   - 'oop'
   - 'networking'
   - 'data-structure'
 difficulty: 'advanced'
-title: '高级类型与类型演算 (Advanced Types & Manipulation)'
+title: '高级类型与类型演算'
 module: 'typescript'
 category: 'TS Advanced'
-description: '条件类型、映射类型、类型断言、非空断言及类型守卫。 | Conditional types, Mapping, Assertions, and Type Guards.'
+description: '映射类型、条件类型、模板字面量类型与类型体操。'
 author: 'Anonymous'
 ---
 

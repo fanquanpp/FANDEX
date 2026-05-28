@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 10
 tags:
   - 'markdown'
   - 'networking'
@@ -7,7 +7,7 @@ difficulty: 'beginner'
 title: 'Markdown 语法指南'
 module: 'markdown'
 category: 'Markdown Basics'
-description: 'Markdown 概述与核心特点。 | Markdown overview and key features.'
+description: 'Markdown 概述与核心特点。'
 author: 'fanquanpp'
 updated: 2026-04-05
 ---

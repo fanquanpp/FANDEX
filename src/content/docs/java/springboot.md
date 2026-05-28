@@ -1,13 +1,12 @@
 ---
-order: 150
+order: 180
 tags:
   - 'java'
-  - 'database'
 difficulty: 'intermediate'
-title: 'Spring Boot 学习笔记（Spring Boot Learning Notes）'
+title: 'Spring Boot 学习笔记'
 module: 'java'
 category: 'Java Basics'
-description: 'Spring Boot 学习笔记'
+description: 'Spring Boot 核心特性、自动配置与快速开发。'
 author: 'fanquanpp'
 updated: 2026-05-03
 ---

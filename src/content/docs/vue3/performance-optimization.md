@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 110
 tags:
   - 'vue3'
   - 'async'
@@ -13,7 +13,7 @@ tags:
   - 'web-api'
   - 'devops'
 difficulty: 'advanced'
-title: '01-性能优化'
+title: '性能优化'
 module: 'vue3'
 category: 'Vue3 Basics'
 description: 'Vue3应用性能优化策略与实践'
