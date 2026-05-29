@@ -35,45 +35,47 @@ allDocs.forEach(doc => {
       <div class="hero-sticky-inner">
         <div class="hero-badge">KNOWLEDGE BASE</div>
         <h1 class="hero-title">FANDEX</h1>
-        <div class="hero-search">
-          <svg class="hero-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-          <input
-            type="text"
-            id="module-search"
-            class="hero-search-input"
-            placeholder="搜索模块名称或描述..."
-            autocomplete="off"
-          />
-        </div>
-        <div class="hero-stats">
-          <div class="stat-item">
-            <span class="stat-num">{modules.length}</span>
-            <span class="stat-label">模块</span>
-          </div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-num">{allDocs.length}</span>
-            <span class="stat-label">文档</span>
-          </div>
-          <div class="stat-divider"></div>
-          <div class="stat-item">
-            <span class="stat-num">{totalTags.size}</span>
-            <span class="stat-label">标签</span>
-          </div>
-          <div class="stat-divider"></div>
-          <a href={`${import.meta.env.BASE_URL}roadmap/`} class="stat-link">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            学习路线
-          </a>
-          <div class="stat-divider"></div>
-          <a href={`${import.meta.env.BASE_URL}tags/`} class="stat-link">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
-            标签索引
-          </a>
-        </div>
       </div>
     </div>
     <div class="hero-sticky-spacer" id="hero-sticky-spacer"></div>
+    <section class="hero">
+      <div class="hero-search">
+        <svg class="hero-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          type="text"
+          id="module-search"
+          class="hero-search-input"
+          placeholder="搜索模块名称或描述..."
+          autocomplete="off"
+        />
+      </div>
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num">{modules.length}</span>
+          <span class="stat-label">模块</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num">{allDocs.length}</span>
+          <span class="stat-label">文档</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num">{totalTags.size}</span>
+          <span class="stat-label">标签</span>
+        </div>
+        <div class="stat-divider"></div>
+        <a href={`${import.meta.env.BASE_URL}roadmap/`} class="stat-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          学习路线
+        </a>
+        <div class="stat-divider"></div>
+        <a href={`${import.meta.env.BASE_URL}tags/`} class="stat-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          标签索引
+        </a>
+      </div>
+    </section>
 
     <section class="category-section" data-category="basic-tools">
       <div class="category-header">
@@ -162,7 +164,7 @@ allDocs.forEach(doc => {
   max-width: 960px;
   margin: 0 auto;
   text-align: center;
-  padding: var(--spacing-lg) 0 var(--spacing-xl);
+  padding: var(--spacing-lg) 0 var(--spacing-md);
   position: relative;
 }
 
@@ -182,28 +184,15 @@ allDocs.forEach(doc => {
   opacity: 0;
 }
 
-.hero-sticky.scrolled .hero-stats {
-  opacity: 0;
-  transform: translateY(-20px);
-  pointer-events: none;
-}
-
-.hero-sticky.scrolled-deep .hero-search {
-  opacity: 0;
-  transform: translateY(-20px);
-  pointer-events: none;
-}
-
-.hero-stats {
-  transition: opacity 0.3s ease, transform 0.3s ease;
-}
-
-.hero-search {
-  transition: opacity 0.3s ease, transform 0.3s ease, border-color var(--transition-fast);
-}
-
 .hero-sticky-spacer {
   height: 0;
+}
+
+.hero {
+  text-align: center;
+  padding: var(--spacing-lg) 0 var(--spacing-xl);
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: var(--spacing-xl);
 }
 
 .hero-badge {
@@ -234,6 +223,7 @@ allDocs.forEach(doc => {
   margin: 0 auto var(--spacing-lg);
   border: 1px solid var(--color-border);
   background: var(--color-bg-card);
+  transition: border-color var(--transition-fast);
 }
 
 .hero-search:focus-within {
@@ -430,16 +420,10 @@ allDocs.forEach(doc => {
     if (scrollTicking) return
     scrollTicking = true
     requestAnimationFrame(() => {
-      const y = window.scrollY
-      if (y > 10) {
+      if (window.scrollY > 10) {
         heroSticky.classList.add('scrolled')
       } else {
         heroSticky.classList.remove('scrolled')
-      }
-      if (y > 60) {
-        heroSticky.classList.add('scrolled-deep')
-      } else {
-        heroSticky.classList.remove('scrolled-deep')
       }
       scrollTicking = false
     })
