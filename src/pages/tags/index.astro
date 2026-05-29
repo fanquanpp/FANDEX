@@ -32,14 +32,40 @@ const moduleMapJson = JSON.stringify(
   <SEO slot="head" title="标签索引" description="按知识标签跨模块检索文档" />
 
   <div class="tags-page">
-    <div class="tags-header">
-      <h1 class="tags-title">标签索引</h1>
-      <a href={`${base}`} class="back-home-btn">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 6 6 12 18 18"/></svg>
-        返回主页
-      </a>
+    <div class="tags-top-bar">
+      <div class="tags-header">
+        <h1 class="tags-title">标签索引</h1>
+        <a href={`${base}`} class="back-home-btn">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 6 6 12 18 18"/></svg>
+          返回主页
+        </a>
+      </div>
+      <p class="tags-subtitle">跨模块知识检索 | {sortedTags.length} 个标签 | {allDocs.length} 篇文档</p>
+      <div class="search-section" id="search-section" data-modules={moduleMapJson}>
+        <div class="search-controls">
+          <input
+            id="search-input"
+            type="text"
+            class="search-input"
+            placeholder="搜索文档标题、描述或标签..."
+            autocomplete="off"
+          />
+          <select id="filter-module" class="search-select">
+            <option value="">全部模块</option>
+            {moduleList.map((m) => (
+              <option value={m.id}>{m.title}</option>
+            ))}
+          </select>
+          <div class="sort-toggle" id="sort-toggle">
+            <button class="sort-btn active" data-sort="relevance">相关度</button>
+            <button class="sort-btn" data-sort="date">更新日期</button>
+          </div>
+        </div>
+        <div id="search-status" class="search-status"></div>
+      </div>
     </div>
-    <p class="tags-subtitle">跨模块知识检索 | {sortedTags.length} 个标签 | {allDocs.length} 篇文档</p>
+
+    <div id="search-results" class="search-results"></div>
 
     {hotTags.length > 0 && (
       <div class="tag-group">
@@ -83,30 +109,6 @@ const moduleMapJson = JSON.stringify(
       </div>
     )}
 
-    <div class="search-section" id="search-section" data-modules={moduleMapJson}>
-      <h2 class="search-section-title">文档搜索</h2>
-      <div class="search-controls">
-        <input
-          id="search-input"
-          type="text"
-          class="search-input"
-          placeholder="搜索文档标题、描述或标签..."
-          autocomplete="off"
-        />
-        <select id="filter-module" class="search-select">
-          <option value="">全部模块</option>
-          {moduleList.map((m) => (
-            <option value={m.id}>{m.title}</option>
-          ))}
-        </select>
-        <div class="sort-toggle" id="sort-toggle">
-          <button class="sort-btn active" data-sort="relevance">相关度</button>
-          <button class="sort-btn" data-sort="date">更新日期</button>
-        </div>
-      </div>
-      <div id="search-status" class="search-status"></div>
-      <div id="search-results" class="search-results"></div>
-    </div>
   </div>
 </Layout>
 
@@ -117,17 +119,21 @@ const moduleMapJson = JSON.stringify(
   margin: 0 auto;
 }
 
-.tags-header {
-  margin-bottom: var(--spacing-2xl);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+.tags-top-bar {
   position: sticky;
   top: 0;
   z-index: 20;
   background: var(--color-bg);
   padding: var(--spacing-md) 0;
   border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: var(--spacing-xl);
+}
+
+.tags-header {
+  margin-bottom: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 
 .tags-title {
@@ -248,16 +254,7 @@ const moduleMapJson = JSON.stringify(
 }
 
 .search-section {
-  margin-top: var(--spacing-3xl);
-  border-top: 2px solid var(--color-border-light);
-  padding-top: var(--spacing-xl);
-}
-
-.search-section-title {
-  font-family: var(--font-display);
-  font-size: 1.1em;
-  margin: 0 0 var(--spacing-lg);
-  color: var(--color-text);
+  margin-top: var(--spacing-sm);
 }
 
 .search-controls {
@@ -297,8 +294,12 @@ const moduleMapJson = JSON.stringify(
   font-family: var(--font-display);
   font-size: 0.88em;
   cursor: pointer;
-  appearance: auto;
   outline: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 10px center;
+  padding-right: 28px;
 }
 
 .search-select:focus {
@@ -352,8 +353,9 @@ const moduleMapJson = JSON.stringify(
 
 .result-card {
   display: block;
-  padding: var(--spacing-md);
+  padding: var(--spacing-md) var(--spacing-lg);
   border: 1px solid var(--color-border-light);
+  border-left: 3px solid transparent;
   background: var(--color-bg-card);
   text-decoration: none;
   color: inherit;
@@ -361,9 +363,9 @@ const moduleMapJson = JSON.stringify(
 }
 
 .result-card:hover {
-  border-color: var(--color-primary);
+  border-color: var(--color-border);
+  border-left-color: var(--color-primary);
   background: var(--color-bg-hover);
-  transform: translateX(4px);
 }
 
 .result-header {
@@ -384,7 +386,6 @@ const moduleMapJson = JSON.stringify(
   font-family: var(--font-display);
   font-size: 0.75em;
   color: var(--color-text-tertiary);
-  text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
@@ -492,25 +493,32 @@ const moduleMapJson = JSON.stringify(
   }
 
   .search-controls {
-    flex-direction: column;
+    flex-wrap: nowrap;
+    gap: 4px;
   }
 
   .search-input {
-    width: 100%;
+    flex: 1;
     min-width: 0;
+    padding: 8px 10px;
+    font-size: 0.85em;
   }
 
   .search-select {
-    width: 100%;
+    flex: none;
+    width: auto;
+    padding: 8px 6px;
+    font-size: 0.82em;
   }
 
   .sort-toggle {
-    width: 100%;
+    flex: none;
+    width: auto;
   }
 
   .sort-btn {
-    flex: 1;
-    text-align: center;
+    padding: 7px 10px;
+    font-size: 0.78em;
   }
 
   .result-header {
@@ -533,7 +541,10 @@ const moduleMapJson = JSON.stringify(
     const sortToggle = document.getElementById('sort-toggle')!;
     const statusEl = document.getElementById('search-status')!;
     const resultsEl = document.getElementById('search-results')!;
+    const tagGroups = document.querySelectorAll<HTMLElement>('.tag-group');
     const base = import.meta.env.BASE_URL;
+
+    resultsEl.style.display = 'none';
 
     const DIFFICULTY_LABELS: Record<string, string> = {
       beginner: '入门',
@@ -602,6 +613,7 @@ const moduleMapJson = JSON.stringify(
               if (titleLower.includes(term)) score += 10;
               if (tagsLower.some((t: string) => t.includes(term))) score += 5;
               if (descLower.includes(term)) score += 2;
+              if (d.slug.toLowerCase().includes(term)) score += 3;
             }
             return { ...d, score };
           })
@@ -631,7 +643,14 @@ const moduleMapJson = JSON.stringify(
     }
 
     function renderResults(docs: any[], query: string) {
-      if (!query && !moduleSelect.value) {
+      const hasActiveSearch = query || moduleSelect.value;
+
+      tagGroups.forEach((g) => {
+        g.style.display = hasActiveSearch ? 'none' : '';
+      });
+      resultsEl.style.display = hasActiveSearch ? 'flex' : 'none';
+
+      if (!hasActiveSearch) {
         statusEl.textContent = '';
         resultsEl.innerHTML = '';
         return;

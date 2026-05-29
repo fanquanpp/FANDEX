@@ -31,11 +31,14 @@ allDocs.forEach(doc => {
   <SEO slot="head" title="FANDEX - 开发者知识库" description="18个模块的技术学习笔记，覆盖前端/后端/基础/工具全栈知识体系" type="website" />
 
   <div class="home-page">
-    <section class="hero">
-      <div class="hero-sticky">
+    <div class="hero-sticky" id="hero-sticky">
+      <div class="hero-sticky-inner">
         <div class="hero-badge">KNOWLEDGE BASE</div>
         <h1 class="hero-title">FANDEX</h1>
       </div>
+    </div>
+    <div class="hero-sticky-spacer" id="hero-sticky-spacer"></div>
+    <section class="hero">
       <div class="hero-search">
         <svg class="hero-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input
@@ -148,20 +151,48 @@ allDocs.forEach(doc => {
   padding: 0 var(--spacing-lg) var(--spacing-2xl);
 }
 
-.hero {
-  text-align: center;
-  padding: 0;
-  border-bottom: 1px solid var(--color-border-light);
-  margin-bottom: var(--spacing-xl);
-}
-
 .hero-sticky {
-  position: sticky;
+  position: fixed;
   top: var(--nav-height);
+  left: 0;
+  right: 0;
   z-index: 50;
   background: var(--color-bg);
-  padding: var(--spacing-xl) 0 var(--spacing-lg);
+}
+
+.hero-sticky-inner {
+  max-width: 960px;
+  margin: 0 auto;
+  text-align: center;
+  padding: var(--spacing-lg) 0 var(--spacing-md);
+  position: relative;
+}
+
+.hero-sticky-inner::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40%;
+  height: 1px;
+  background: var(--color-border-light);
+  transition: opacity 0.3s ease;
+}
+
+.hero-sticky.scrolled .hero-sticky-inner::after {
+  opacity: 0;
+}
+
+.hero-sticky-spacer {
+  height: 0;
+}
+
+.hero {
+  text-align: center;
+  padding: var(--spacing-lg) 0 var(--spacing-xl);
   border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: var(--spacing-xl);
 }
 
 .hero-badge {
@@ -234,7 +265,8 @@ allDocs.forEach(doc => {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 2px;
+  gap: 4px;
+  padding-bottom: 4px;
 }
 
 .stat-num {
@@ -244,10 +276,9 @@ allDocs.forEach(doc => {
 }
 
 .stat-label {
-  font-size: 0.72em;
-  color: var(--color-text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+  font-size: 0.78em;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.04em;
 }
 
 .stat-divider {
@@ -325,13 +356,24 @@ allDocs.forEach(doc => {
     padding: 0 var(--spacing-md) var(--spacing-2xl);
   }
 
-  .hero {
-    padding: var(--spacing-xl) 0 var(--spacing-lg);
+  .hero-sticky-inner {
+    padding: var(--spacing-sm) 0 var(--spacing-xs);
+  }
+
+  .hero-badge {
+    font-size: 0.55em;
+    padding: 2px 10px;
+    margin-bottom: var(--spacing-xs);
   }
 
   .hero-title {
-    font-size: 2rem;
-    letter-spacing: 0.15em;
+    font-size: 1.5rem;
+    letter-spacing: 0.12em;
+    margin: 0;
+  }
+
+  .hero-search {
+    max-width: 100%;
   }
 
   .hero-stats {
@@ -363,6 +405,27 @@ allDocs.forEach(doc => {
 </style>
 
 <script>
+  const heroSticky = document.getElementById('hero-sticky')
+  const heroSpacer = document.getElementById('hero-sticky-spacer')
+  if (heroSticky && heroSpacer) {
+    const sync = () => {
+      heroSpacer.style.height = heroSticky.offsetHeight + 'px'
+    }
+    sync()
+    window.addEventListener('resize', sync)
+  }
+
+  const homeMain = document.querySelector('.home-main') as HTMLElement | null
+  if (homeMain && heroSticky) {
+    homeMain.addEventListener('scroll', () => {
+      if (homeMain.scrollTop > 10) {
+        heroSticky.classList.add('scrolled')
+      } else {
+        heroSticky.classList.remove('scrolled')
+      }
+    })
+  }
+
   const searchInput = document.getElementById('module-search') as HTMLInputElement | null
   if (searchInput) {
     searchInput.addEventListener('input', () => {

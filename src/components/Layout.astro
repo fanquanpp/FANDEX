@@ -107,11 +107,17 @@ const hasSidebar = Astro.slots.has('sidebar')
   }
 
   if (toggle) toggle.addEventListener('click', () => {
-    document.body.classList.contains('sidebar-open') ? closeSidebar() : openSidebar()
+    if (document.body.classList.contains('sidebar-open')) {
+      closeSidebar()
+    } else {
+      document.dispatchEvent(new CustomEvent('fandex-switch-chapters'))
+      openSidebar()
+    }
   })
 
   if (mobileBtn) mobileBtn.addEventListener('click', () => {
-    document.body.classList.contains('sidebar-open') ? closeSidebar() : openSidebar()
+    document.dispatchEvent(new CustomEvent('fandex-switch-modules'))
+    openSidebar()
   })
 
   if (backdrop) backdrop.addEventListener('click', closeSidebar)

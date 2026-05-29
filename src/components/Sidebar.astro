@@ -35,12 +35,14 @@ const hasHeadings = visibleHeadings.length > 0
           <span class="sidebar-module-color-bar" style={`background:${meta?.color || '#6366f1'}`}></span>
           <span class="sidebar-module-title">{meta?.title || moduleId}</span>
         </div>
-        {hasHeadings && (
-          <div class="sidebar-toggle-group" id="sidebar-toggle-group">
+        <div class="sidebar-toggle-group" id="sidebar-toggle-group">
+          {hasHeadings && (
             <button class="sidebar-toggle-btn active" id="sidebar-toggle-chapters" data-panel="chapters">章节</button>
+          )}
+          {hasHeadings && (
             <button class="sidebar-toggle-btn" id="sidebar-toggle-outline" data-panel="outline">资料</button>
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       <a href={base} class="sidebar-back">
@@ -92,22 +94,34 @@ const hasHeadings = visibleHeadings.length > 0
           知识地图
         </a>
       </div>
-
-      <div class="sidebar-all-modules">
-        <div class="all-modules-title">全部模块</div>
-        <ul class="all-modules-list">
-          {modules.map(m => (
-            <li>
-              <a href={`${base}${m.id}`} class={`all-module-link${m.id === moduleId ? ' current' : ''}`}>
-                <span class="all-module-dot" style={`background:${m.color}`}></span>
-                <span class="all-module-name">{m.title}</span>
-              </a>
-            </li>
-          ))}
-        </ul>
-      </div>
     </div>
   </nav>
+
+  <div class="sidebar-all-modules" id="sidebar-all-modules">
+    <div class="all-modules-header">
+      <div class="all-modules-current">
+        <span class="all-modules-current-bar" style={`background:${meta?.color || '#6366f1'}`}></span>
+        <span class="all-modules-current-name">{meta?.title || moduleId}</span>
+      </div>
+      <button class="all-modules-back-btn" id="all-modules-back-btn">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+          <polyline points="18 6 6 12 18 18" />
+        </svg>
+        返回
+      </button>
+    </div>
+    <div class="all-modules-section-title">全部模块</div>
+    <ul class="all-modules-list">
+      {modules.map(m => (
+        <li>
+          <a href={`${base}${m.id}`} class={`all-module-link${m.id === moduleId ? ' current' : ''}`}>
+            <span class="all-module-dot" style={`background:${m.color}`}></span>
+            <span class="all-module-name">{m.title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
 </aside>
 
 <style>
@@ -196,8 +210,12 @@ const hasHeadings = visibleHeadings.length > 0
   white-space: nowrap;
 }
 
-.sidebar-toggle-btn:first-child {
-  border-right: none;
+.sidebar-toggle-modules {
+  display: none;
+}
+
+.sidebar-toggle-btn:not(:first-child) {
+  border-left: none;
 }
 
 .sidebar-toggle-btn.active {
@@ -212,6 +230,22 @@ const hasHeadings = visibleHeadings.length > 0
 
 .sidebar-toggle-btn:not(.active):hover {
   color: var(--color-primary);
+}
+
+.sidebar-all-modules {
+  display: none;
+  padding: var(--spacing-md) 0;
+  flex-shrink: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.sidebar-component.is-modules-view .sidebar-nav {
+  display: none;
+}
+
+.sidebar-component.is-modules-view .sidebar-all-modules {
+  display: block;
 }
 
 .sidebar-back {
@@ -265,20 +299,60 @@ const hasHeadings = visibleHeadings.length > 0
   padding-top: var(--spacing-xs);
 }
 
-.sidebar-all-modules {
-  padding-top: var(--spacing-md);
-  margin-top: var(--spacing-md);
-  border-top: 1px solid var(--color-border-light);
+.all-modules-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border-light);
 }
 
-.all-modules-title {
+.all-modules-current {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.all-modules-current-bar {
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+.all-modules-current-name {
+  font-family: var(--font-display);
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.all-modules-section-title {
   font-family: var(--font-display);
   font-size: 0.72em;
-  font-weight: 700;
+  font-weight: 600;
   color: var(--color-text-tertiary);
   letter-spacing: 0.05em;
-  padding: 0 var(--spacing-md);
-  margin-bottom: var(--spacing-xs);
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-xs);
+}
+
+.all-modules-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.78em;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: color var(--transition-fast), border-color var(--transition-fast);
+}
+
+.all-modules-back-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
 }
 
 .all-modules-list {
@@ -356,12 +430,56 @@ const hasHeadings = visibleHeadings.length > 0
 </style>
 
 <script>
+  const sidebar = document.getElementById('module-sidebar') as HTMLElement | null
   const closeBtn = document.getElementById('sidebar-close-btn')
+  const chaptersBtn = document.getElementById('sidebar-toggle-chapters')
+  const outlineBtn = document.getElementById('sidebar-toggle-outline')
+  const chaptersPanel = document.getElementById('sidebar-panel-chapters')
+  const outlinePanel = document.getElementById('sidebar-panel-outline')
+  const allModulesBackBtn = document.getElementById('all-modules-back-btn')
+
+  function showChapterView() {
+    if (sidebar) sidebar.classList.remove('is-modules-view')
+    if (chaptersPanel) chaptersPanel.style.display = ''
+    if (outlinePanel) outlinePanel.style.display = 'none'
+    if (chaptersBtn) chaptersBtn.classList.add('active')
+    if (outlineBtn) outlineBtn.classList.remove('active')
+  }
+
+  function showOutlineView() {
+    if (sidebar) sidebar.classList.remove('is-modules-view')
+    if (chaptersPanel) chaptersPanel.style.display = 'none'
+    if (outlinePanel) outlinePanel.style.display = ''
+    if (chaptersBtn) chaptersBtn.classList.remove('active')
+    if (outlineBtn) outlineBtn.classList.add('active')
+  }
+
+  function showModulesView() {
+    if (sidebar) sidebar.classList.add('is-modules-view')
+  }
+
   if (closeBtn) {
     closeBtn.addEventListener('click', () => {
       document.body.classList.remove('sidebar-open')
     })
   }
+
+  if (chaptersBtn) chaptersBtn.addEventListener('click', showChapterView)
+  if (outlineBtn) outlineBtn.addEventListener('click', showOutlineView)
+
+  if (allModulesBackBtn) {
+    allModulesBackBtn.addEventListener('click', () => {
+      showChapterView()
+    })
+  }
+
+  document.addEventListener('fandex-switch-modules', () => {
+    showModulesView()
+  })
+
+  document.addEventListener('fandex-switch-chapters', () => {
+    showChapterView()
+  })
 
   function updateSidebarProgress() {
     let progress: Record<string, { status: string }> = {}
@@ -385,31 +503,6 @@ const hasHeadings = visibleHeadings.length > 0
   updateSidebarProgress()
   document.addEventListener('fandex-progress-change', updateSidebarProgress)
   document.addEventListener('astro:page-load', updateSidebarProgress)
-
-  const toggleGroup = document.getElementById('sidebar-toggle-group')
-  const chaptersBtn = document.getElementById('sidebar-toggle-chapters')
-  const outlineBtn = document.getElementById('sidebar-toggle-outline')
-  const chaptersPanel = document.getElementById('sidebar-panel-chapters')
-  const outlinePanel = document.getElementById('sidebar-panel-outline')
-
-  if (toggleGroup && chaptersBtn && outlineBtn && chaptersPanel && outlinePanel) {
-    function switchPanel(panel: string) {
-      if (panel === 'chapters') {
-        chaptersPanel.style.display = ''
-        outlinePanel.style.display = 'none'
-        chaptersBtn.classList.add('active')
-        outlineBtn.classList.remove('active')
-      } else {
-        chaptersPanel.style.display = 'none'
-        outlinePanel.style.display = ''
-        outlineBtn.classList.add('active')
-        chaptersBtn.classList.remove('active')
-      }
-    }
-
-    chaptersBtn.addEventListener('click', () => switchPanel('chapters'))
-    outlineBtn.addEventListener('click', () => switchPanel('outline'))
-  }
 
   const outlineLinks = document.querySelectorAll('.outline-link[data-outline-slug]')
   if (outlineLinks.length > 0) {

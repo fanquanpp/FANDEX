@@ -75,35 +75,33 @@ const breadcrumb = [
       data-pagefind-body
       data-pagefind-filter={`difficulty:${doc.data.difficulty || 'intermediate'}, module:${module}${doc.data.category ? ', category:' + doc.data.category : ''}`}
     >
+      <div class="doc-title-row">
+        <h1 class="doc-title">{doc.data.title}</h1>
+        <ProgressToggle client:load slug={`${module}/${slug}`} />
+      </div>
       <header class="doc-header">
-        <div class="doc-sticky-bar">
-          <div class="doc-title-row">
-            <h1 class="doc-title">{doc.data.title}</h1>
-            <ProgressToggle client:load slug={`${module}/${slug}`} />
-          </div>
-          <div class="doc-meta">
-            <span class="doc-meta-item doc-reading-time">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-              {readingTime} min
+        <div class="doc-meta">
+          <span class="doc-meta-item doc-reading-time">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            {readingTime} min
+          </span>
+          <span class={`doc-meta-item doc-difficulty diff-${doc.data.difficulty || 'intermediate'}`}>
+            {doc.data.difficulty === 'beginner' ? 'Beginner' : doc.data.difficulty === 'advanced' ? 'Advanced' : 'Intermediate'}
+          </span>
+          {doc.data.updated && (
+            <span class="doc-meta-item doc-updated">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              {new Date(doc.data.updated).toLocaleDateString('zh-CN')}
             </span>
-            <span class={`doc-meta-item doc-difficulty diff-${doc.data.difficulty || 'intermediate'}`}>
-              {doc.data.difficulty === 'beginner' ? 'Beginner' : doc.data.difficulty === 'advanced' ? 'Advanced' : 'Intermediate'}
-            </span>
-            {doc.data.updated && (
-              <span class="doc-meta-item doc-updated">
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                {new Date(doc.data.updated).toLocaleDateString('zh-CN')}
-              </span>
-            )}
-          </div>
-          {doc.data.tags && doc.data.tags.length > 0 && (
-            <div class="doc-tags">
-              {doc.data.tags.map((tag: string) => (
-                <a href={`${import.meta.env.BASE_URL}tags/${tag}`} class="doc-tag">{tag}</a>
-              ))}
-            </div>
           )}
         </div>
+        {doc.data.tags && doc.data.tags.length > 0 && (
+          <div class="doc-tags">
+            {doc.data.tags.map((tag: string) => (
+              <a href={`${import.meta.env.BASE_URL}tags/${tag}`} class="doc-tag">{tag}</a>
+            ))}
+          </div>
+        )}
         {doc.data.description && (
           <p class="doc-description">{doc.data.description}</p>
         )}
@@ -153,29 +151,32 @@ const breadcrumb = [
   border-bottom: 1px solid var(--color-border-light);
 }
 
-.doc-sticky-bar {
+.doc-title-row {
   position: sticky;
   top: 0;
   z-index: 20;
   background: var(--color-bg);
-  padding-bottom: var(--spacing-sm);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: var(--spacing-sm);
+}
+
+.doc-header {
+  margin-bottom: var(--spacing-xl);
+}
+
+.doc-title-row .doc-title {
+  margin-bottom: 0;
 }
 
 .doc-title {
   margin-bottom: var(--spacing-sm);
   font-size: 1.6em;
   line-height: 1.3;
-}
-
-.doc-title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--spacing-sm);
-}
-
-.doc-title-row .doc-title {
-  margin-bottom: 0;
 }
 
 .doc-meta {
