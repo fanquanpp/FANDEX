@@ -177,6 +177,11 @@ allDocs.forEach(doc => {
   width: 40%;
   height: 1px;
   background: var(--color-border-light);
+  transition: opacity 0.3s ease;
+}
+
+.hero-sticky.scrolled .hero-sticky-inner::after {
+  opacity: 0;
 }
 
 .hero-sticky-spacer {
@@ -409,6 +414,20 @@ allDocs.forEach(doc => {
     sync()
     window.addEventListener('resize', sync)
   }
+
+  let scrollTicking = false
+  window.addEventListener('scroll', () => {
+    if (scrollTicking) return
+    scrollTicking = true
+    requestAnimationFrame(() => {
+      if (window.scrollY > 10) {
+        heroSticky.classList.add('scrolled')
+      } else {
+        heroSticky.classList.remove('scrolled')
+      }
+      scrollTicking = false
+    })
+  })
 
   const searchInput = document.getElementById('module-search') as HTMLInputElement | null
   if (searchInput) {
