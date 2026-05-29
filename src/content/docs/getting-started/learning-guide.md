@@ -76,4 +76,4 @@ Phase 3C: C -> C++ -> Java
 Phase 4: 算法 -> CS基础
 ```
 
-详细路径请查看[学习路线图](/FANDEX/roadmap).
+详细路径请查看[学习路线图](/FANDEX/roadmap/).

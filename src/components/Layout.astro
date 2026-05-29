@@ -17,6 +17,9 @@ const hasSidebar = Astro.slots.has('sidebar')
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+
     <link rel="stylesheet" href={`${base}fonts/fonts.css`} />
     <link rel="preload" href={`${base}fonts/jetbrains-mono-400.woff2`} as="font" type="font/woff2" crossorigin />
     <link rel="preload" href={`${base}fonts/jetbrains-mono-700.woff2`} as="font" type="font/woff2" crossorigin />
@@ -76,7 +79,7 @@ const hasSidebar = Astro.slots.has('sidebar')
         </svg>
         <span>首页</span>
       </a>
-      <a href={`${base}search`} class="mobile-nav-link">
+      <a href={`${base}search/`} class="mobile-nav-link">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <circle cx="11" cy="11" r="8" />
           <line x1="21" y1="21" x2="16.65" y2="16.65" />
@@ -223,10 +226,10 @@ const hasSidebar = Astro.slots.has('sidebar')
     const mermaidBlocks = document.querySelectorAll('pre[data-language="mermaid"] code, code.language-mermaid')
     if (mermaidBlocks.length === 0) return
 
-    const script = document.createElement('script')
-    script.src = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js'
-    script.onload = () => {
-      (window as any).mermaid.initialize({
+    const render = () => {
+      const mermaid = (window as any).mermaid
+      if (!mermaid) return
+      mermaid.initialize({
         startOnLoad: false,
         theme: document.documentElement.getAttribute('data-theme') === 'dark' ? 'dark' : 'default',
         securityLevel: 'loose',
@@ -237,7 +240,7 @@ const hasSidebar = Astro.slots.has('sidebar')
         const code = block.textContent || ''
         const id = `mermaid-svg-${i}`
         try {
-          const { svg } = await (window as any).mermaid.render(id, code)
+          const { svg } = await mermaid.render(id, code)
           const container = document.createElement('div')
           container.className = 'mermaid-output'
           container.innerHTML = svg
@@ -250,7 +253,31 @@ const hasSidebar = Astro.slots.has('sidebar')
         }
       })
     }
-    document.head.appendChild(script)
+
+    if ((window as any).mermaid) {
+      render()
+      return
+    }
+
+    let script = document.getElementById('mermaid-script') as HTMLScriptElement | null
+    if (!script) {
+      script = document.createElement('script')
+      script.id = 'mermaid-script'
+      script.src = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.min.js'
+      script.onload = () => {
+        script!.dataset.loaded = '1'
+        render()
+      }
+      document.head.appendChild(script)
+      return
+    }
+
+    if (script.dataset.loaded === '1') {
+      render()
+      return
+    }
+
+    script.addEventListener('load', render, { once: true })
   }
 
   document.addEventListener('astro:page-load', initMermaid)
@@ -300,7 +327,7 @@ const hasSidebar = Astro.slots.has('sidebar')
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault()
       const base = document.querySelector('a.nav-logo')?.getAttribute('href') || '/'
-      window.location.href = base + 'search'
+      window.location.href = base + 'search/'
     }
   })
 </script>

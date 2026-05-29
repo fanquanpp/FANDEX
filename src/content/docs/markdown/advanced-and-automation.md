@@ -64,12 +64,12 @@ function hello() {
 
 #### 1.2.2 行号和高亮
 
-```javascript{1,3-5}
- function hello() {
+```javascript
+function hello() {
   console.log('Hello, Markdown!');
   return true;
- }
- hello();
+}
+hello();
 ```
 
 ### 1.3 脚注

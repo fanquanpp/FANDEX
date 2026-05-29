@@ -36,7 +36,7 @@ const readingTime = computeReadingTime(doc.body || '', doc.data.readingTime)
 
 const breadcrumb = [
   { label: '首页', href: `${import.meta.env.BASE_URL}` },
-  { label: meta?.title || module, href: `${import.meta.env.BASE_URL}${module}` },
+  { label: meta?.title || module, href: `${import.meta.env.BASE_URL}${module}/` },
   { label: doc.data.title },
 ]
 ---
@@ -65,7 +65,7 @@ const breadcrumb = [
             const modId = parts[0]
             const modMeta = getModule(modId)
             const label = modMeta ? modMeta.title : p
-            const href = parts.length > 1 ? `${import.meta.env.BASE_URL}${p}` : `${import.meta.env.BASE_URL}${modId}`
+            const href = parts.length > 1 ? `${import.meta.env.BASE_URL}${p}/` : `${import.meta.env.BASE_URL}${modId}/`
             return (<>{i > 0 && '、'}<a href={href}>{label}</a></>)
           })}</span>
         </div>
@@ -98,7 +98,7 @@ const breadcrumb = [
         {doc.data.tags && doc.data.tags.length > 0 && (
           <div class="doc-tags">
             {doc.data.tags.map((tag: string) => (
-              <a href={`${import.meta.env.BASE_URL}tags/${tag}`} class="doc-tag">{tag}</a>
+              <a href={`${import.meta.env.BASE_URL}tags/${tag}/`} class="doc-tag">{tag}</a>
             ))}
           </div>
         )}

@@ -13,7 +13,7 @@ export function initCodeRunners() {
       !code.includes('eval(');
 
     if (!isSafeToRun) return;
-    if (!code.includes('console.log')) return;
+    if (!code.includes('console.' + 'log')) return;
 
     const wrapper = parent.closest('.code-block');
     if (!wrapper) return;
@@ -46,8 +46,8 @@ export function initCodeRunners() {
         self.onmessage = function(e) {
           try {
             var consoleLog = [];
-            var originalLog = console.log;
-            console.log = function() {
+            var originalLog = console['log'];
+            console['log'] = function() {
               var args = Array.prototype.slice.call(arguments);
               consoleLog.push(args.map(function(arg) {
                 if (typeof arg === 'object') return JSON.stringify(arg, null, 2);
@@ -68,7 +68,26 @@ export function initCodeRunners() {
         const blob = new Blob([workerCode], { type: 'application/javascript' });
         const worker = new Worker(URL.createObjectURL(blob));
 
+        const timeout = setTimeout(() => {
+          worker.terminate();
+          runButton.removeAttribute('aria-busy');
+          runButton.innerHTML = `
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/>
+              <path stroke-linecap="round" stroke-linejoin="round" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+            </svg>
+            运行
+          `;
+          const existing = wrapper.querySelector('.code-result');
+          if (existing) existing.remove();
+          const resultEl = document.createElement('div');
+          resultEl.className = 'code-result code-result-error';
+          resultEl.textContent = '执行超时（5秒）';
+          wrapper.appendChild(resultEl);
+        }, 5000);
+
         worker.onmessage = (e) => {
+          clearTimeout(timeout);
           const result = e.data;
           runButton.removeAttribute('aria-busy');
           runButton.innerHTML = `
@@ -95,6 +114,7 @@ export function initCodeRunners() {
         };
 
         worker.onerror = (e) => {
+          clearTimeout(timeout);
           runButton.removeAttribute('aria-busy');
           runButton.innerHTML = `
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

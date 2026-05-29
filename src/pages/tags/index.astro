@@ -72,7 +72,7 @@ const moduleMapJson = JSON.stringify(
         <h2 class="tag-group-title">热门标签</h2>
         <div class="tag-cloud">
           {hotTags.map(([tag, count]) => (
-            <a href={`${base}tags/${tag}`} class="tag-item hot" data-count={count}>
+            <a href={`${base}tags/${tag}/`} class="tag-item hot" data-count={count}>
               <span class="tag-name">{tag}</span>
               <span class="tag-count">{count}</span>
             </a>
@@ -86,7 +86,7 @@ const moduleMapJson = JSON.stringify(
         <h2 class="tag-group-title">常用标签</h2>
         <div class="tag-cloud">
           {normalTags.map(([tag, count]) => (
-            <a href={`${base}tags/${tag}`} class="tag-item normal" data-count={count}>
+            <a href={`${base}tags/${tag}/`} class="tag-item normal" data-count={count}>
               <span class="tag-name">{tag}</span>
               <span class="tag-count">{count}</span>
             </a>
@@ -100,7 +100,7 @@ const moduleMapJson = JSON.stringify(
         <h2 class="tag-group-title">更多标签</h2>
         <div class="tag-cloud">
           {otherTags.map(([tag, count]) => (
-            <a href={`${base}tags/${tag}`} class="tag-item other" data-count={count}>
+            <a href={`${base}tags/${tag}/`} class="tag-item other" data-count={count}>
               <span class="tag-name">{tag}</span>
               <span class="tag-count">{count}</span>
             </a>
@@ -771,7 +771,7 @@ const moduleMapJson = JSON.stringify(
             .map((t: string) => `<span class="result-tag-chip">${t}</span>`)
             .join('');
 
-          return `<a href="${base}${d.slug}" class="result-card">
+          return `<a href="${base}${d.slug}/" class="result-card">
             <div class="result-header">
               <span class="result-module-dot" style="background:${mod.color}"></span>
               <span class="result-module-name">${mod.title}</span>

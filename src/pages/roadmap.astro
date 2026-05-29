@@ -165,7 +165,7 @@ const careerPaths = [
             <div class="path-flow">
               {path.steps.map((step, i) => (
                 <>
-                  <a href={`${base}${step.id}`} class="path-node" style={`border-color:${path.color}30`}>{step.label}</a>
+                  <a href={`${base}${step.id}/`} class="path-node" style={`border-color:${path.color}30`}>{step.label}</a>
                   {i < path.steps.length - 1 && <span class="path-arrow">&rarr;</span>}
                 </>
               ))}
@@ -192,7 +192,7 @@ const careerPaths = [
                 if (!m) return null
                 return (
                   <div class="roadmap-module-row">
-                    <a href={`${base}${m.id}`} class="roadmap-module-card" style={`--module-color:${phase.color}`} data-progress-module={m.id}>
+                    <a href={`${base}${m.id}/`} class="roadmap-module-card" style={`--module-color:${phase.color}`} data-progress-module={m.id}>
                       <span class="rm-color-bar"></span>
                       <div class="rm-body">
                         <span class="rm-title">{m.title}</span>

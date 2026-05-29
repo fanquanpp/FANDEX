@@ -58,7 +58,7 @@ const hasHeadings = visibleHeadings.length > 0
         <ul class="file-list">
           {sorted.map(doc => {
             const slug = docSlug(doc.id)
-            const href = `${base}${moduleId}/${slug}`
+            const href = `${base}${moduleId}/${slug}/`
             const isActive = currentPath === href || currentPath === href + '/' || (currentSlug && currentSlug === slug)
             return (
               <li>
@@ -85,12 +85,12 @@ const hasHeadings = visibleHeadings.length > 0
       )}
 
       <div class="sidebar-glossary-link">
-        <a href={`${base}${moduleId}/glossary`} class="sidebar-file-link">
+        <a href={`${base}${moduleId}/glossary/`} class="sidebar-file-link">
           术语表
         </a>
       </div>
       <div class="sidebar-kmap-link">
-        <a href={`${base}${moduleId}/map`} class="sidebar-file-link">
+        <a href={`${base}${moduleId}/map/`} class="sidebar-file-link">
           知识地图
         </a>
       </div>
@@ -114,7 +114,7 @@ const hasHeadings = visibleHeadings.length > 0
     <ul class="all-modules-list">
       {modules.map(m => (
         <li>
-          <a href={`${base}${m.id}`} class={`all-module-link${m.id === moduleId ? ' current' : ''}`}>
+          <a href={`${base}${m.id}/`} class={`all-module-link${m.id === moduleId ? ' current' : ''}`}>
             <span class="all-module-dot" style={`background:${m.color}`}></span>
             <span class="all-module-name">{m.title}</span>
           </a>

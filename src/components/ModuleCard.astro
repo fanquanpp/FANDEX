@@ -3,7 +3,7 @@ const { mod, color } = Astro.props as { mod: { id: string; title: string; descri
 const iconColor = color || mod.color
 ---
 
-<a href={`${import.meta.env.BASE_URL}${mod.id}`} class="module-card">
+<a href={`${import.meta.env.BASE_URL}${mod.id}/`} class="module-card">
   <span class="card-icon" style={`background:${iconColor}`}>{mod.title.charAt(0)}</span>
   <div class="card-body">
     <h3 class="card-title">{mod.title}</h3>

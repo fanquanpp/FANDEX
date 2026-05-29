@@ -32,7 +32,7 @@ const glossaryEntries = await Promise.all(sortedGlossary.map(async g => {
 
 const breadcrumb = [
   { label: '首页', href: `${import.meta.env.BASE_URL}` },
-  { label: meta.title, href: `${import.meta.env.BASE_URL}${module}` },
+  { label: meta.title, href: `${import.meta.env.BASE_URL}${module}/` },
   { label: '术语表' },
 ]
 ---
@@ -53,7 +53,7 @@ const breadcrumb = [
     </div>
 
     <div class="glossary-nav">
-      <a href={`${import.meta.env.BASE_URL}${module}`} class="glossary-back">
+      <a href={`${import.meta.env.BASE_URL}${module}/`} class="glossary-back">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="18 6 6 12 18 18"/></svg>
         <span>返回文档列表</span>
       </a>

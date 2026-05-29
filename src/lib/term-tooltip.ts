@@ -68,7 +68,7 @@ function showTermModal(term: string, data: { module: string; def: string; slug: 
 
   const link = document.createElement('a');
   link.className = 'term-modal-link';
-  link.href = `${import.meta.env.BASE_URL}${data.slug}`;
+  link.href = `${import.meta.env.BASE_URL}${data.slug}/`;
   link.textContent = '查看详情 →';
 
   content.appendChild(header);
@@ -83,6 +83,14 @@ function showTermModal(term: string, data: { module: string; def: string; slug: 
   overlay.addEventListener('click', (e) => {
     if (e.target === overlay) closeTermModal();
   });
+
+  const escHandler = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') {
+      closeTermModal();
+      document.removeEventListener('keydown', escHandler);
+    }
+  };
+  document.addEventListener('keydown', escHandler);
 }
 
 function createTooltip(
@@ -109,7 +117,7 @@ function createTooltip(
 
   const link = document.createElement('a');
   link.className = 'term-popup-link';
-  link.href = `${import.meta.env.BASE_URL}${data.slug}`;
+  link.href = `${import.meta.env.BASE_URL}${data.slug}/`;
   link.textContent = '查看详情';
   popup.appendChild(link);
 
@@ -227,6 +235,8 @@ function walkTextNodes(
 }
 
 export async function initTermTooltip() {
+  closeTermModal();
+
   const data = await loadGlossary();
   if (!data || Object.keys(data).length === 0) return;
 

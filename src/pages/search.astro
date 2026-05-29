@@ -5,7 +5,7 @@ import { modules } from '@/lib/modules'
 ---
 
 <Layout title="搜索">
-  <SEO slot="head" title="搜索 - CODEX" description="全文搜索知识库" type="website" />
+  <SEO slot="head" title="搜索 - FANDEX" description="全文搜索知识库" type="website" />
   <div class="search-page">
     <h1 class="search-title">搜索</h1>
     <div class="search-filters">
@@ -89,8 +89,14 @@ import { modules } from '@/lib/modules'
     const searchEl = document.getElementById('search')
     if (!searchEl) return
 
+    if (import.meta.env.DEV) {
+      searchEl.innerHTML = '<p style="color:var(--color-text-tertiary);text-align:center;padding:2em;">开发模式下未生成搜索索引，请运行 npm.cmd run build 后使用。</p>'
+      return
+    }
+
     try {
       const pagefind = await import(/* @vite-ignore */ `${base}pagefind/pagefind.js`)
+      await pagefind.options({ baseUrl: base, basePath: `${base}pagefind/` })
       await pagefind.init()
 
       const ui = new (pagefind as any).UI({

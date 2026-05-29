@@ -37,7 +37,7 @@ function slug(id: string) { return (id.split('/').pop() || id).replace(/\.md$/, 
 
 const breadcrumb = [
   { label: '首页', href: `${base}` },
-  { label: '标签', href: `${base}tags` },
+  { label: '标签', href: `${base}tags/` },
   { label: tag },
 ]
 ---
@@ -60,13 +60,13 @@ const breadcrumb = [
           <section class="tag-group">
             <h2 class="tag-group-title">
               <span class="group-bar" style={`background:${meta?.color || '#6366f1'}`}></span>
-              <a href={`${base}${mod}`} class="group-link">{meta?.title || mod}</a>
+              <a href={`${base}${mod}/`} class="group-link">{meta?.title || mod}</a>
               <span class="group-count">{modDocs.length}</span>
             </h2>
             <ul class="tag-doc-list">
               {modDocs.map(doc => (
                 <li>
-                  <a href={`${base}${mod}/${slug(doc.id)}`} class="tag-doc-link">
+                  <a href={`${base}${mod}/${slug(doc.id)}/`} class="tag-doc-link">
                     {doc.data.title}
                   </a>
                 </li>

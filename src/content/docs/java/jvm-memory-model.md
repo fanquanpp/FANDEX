@@ -140,5 +140,5 @@ Java 内存模型 (Java Memory Model) 是 Java 虚拟机规范中定义的一种
 
 ## 知识延伸
 
-- [Java 多线程与并发](/FANDEX/java/multithreading)
-- [Java 概述](/FANDEX/java/overview)
+- [Java 多线程与并发](/FANDEX/java/multithreading/)
+- [Java 概述](/FANDEX/java/overview/)

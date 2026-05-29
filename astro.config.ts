@@ -30,6 +30,12 @@ export default defineConfig({
       themes: { light: 'github-light', dark: 'github-dark' },
       defaultColor: false,
       wrap: true,
+      langAlias: {
+        gitignore: 'bash',
+        sshconfig: 'plaintext',
+        gitattributes: 'plaintext',
+        text: 'plaintext',
+      },
     },
   },
   trailingSlash: 'always',
