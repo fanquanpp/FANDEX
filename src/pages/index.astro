@@ -39,16 +39,6 @@ allDocs.forEach(doc => {
     </div>
     <div class="hero-sticky-spacer" id="hero-sticky-spacer"></div>
     <section class="hero">
-      <div class="hero-search" id="hero-search">
-        <svg class="hero-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
-        <input
-          type="text"
-          id="module-search"
-          class="hero-search-input"
-          placeholder="搜索模块名称或描述..."
-          autocomplete="off"
-        />
-      </div>
       <div class="hero-stats">
         <div class="stat-item">
           <span class="stat-num">{modules.length}</span>
@@ -74,6 +64,16 @@ allDocs.forEach(doc => {
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
           标签索引
         </a>
+      </div>
+      <div class="hero-search" id="hero-search">
+        <svg class="hero-search-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input
+          type="text"
+          id="module-search"
+          class="hero-search-input"
+          placeholder="搜索模块名称或描述..."
+          autocomplete="off"
+        />
       </div>
     </section>
 
@@ -224,23 +224,9 @@ allDocs.forEach(doc => {
   border: 1px solid var(--color-border);
   background: var(--color-bg-card);
   transition: border-color var(--transition-fast);
-}
-
-.hero-search.is-fixed {
-  position: fixed;
-  left: 50%;
-  transform: translateX(-50%);
+  position: sticky;
+  top: var(--hero-sticky-bottom, 148px);
   z-index: 40;
-  width: min(420px, calc(100% - var(--spacing-lg) * 2));
-  margin: 0;
-}
-
-.hero-search.is-releasing {
-  position: fixed;
-  left: 50%;
-  z-index: 40;
-  width: min(420px, calc(100% - var(--spacing-lg) * 2));
-  margin: 0;
 }
 
 .hero-search:focus-within {
@@ -425,24 +411,18 @@ allDocs.forEach(doc => {
   const heroSticky = document.getElementById('hero-sticky')
   const heroSpacer = document.getElementById('hero-sticky-spacer')
   const heroSearch = document.getElementById('hero-search')
-  const heroStats = document.querySelector('.hero-stats')
 
   if (heroSticky && heroSpacer) {
     const sync = () => {
       heroSpacer.style.height = heroSticky.offsetHeight + 'px'
+      if (heroSearch) {
+        const navEl = document.querySelector('.app-nav')
+        const navH = navEl ? navEl.offsetHeight : 56
+        heroSearch.style.setProperty('--hero-sticky-bottom', (navH + heroSticky.offsetHeight) + 'px')
+      }
     }
     sync()
     window.addEventListener('resize', sync)
-  }
-
-  let searchState = 'normal'
-  let releaseScrollY = 0
-  let searchPlaceholder: HTMLDivElement | null = null
-
-  function getStickyTop() {
-    const navEl = document.querySelector('.app-nav')
-    const navH = navEl ? navEl.offsetHeight : 56
-    return navH + (heroSticky ? heroSticky.offsetHeight : 0)
   }
 
   let scrollTicking = false
@@ -457,59 +437,6 @@ allDocs.forEach(doc => {
           heroSticky.classList.remove('scrolled')
         }
       }
-
-      if (heroSearch && heroStats) {
-        const stickyTop = getStickyTop()
-
-        if (searchState === 'normal') {
-          const rect = heroSearch.getBoundingClientRect()
-          if (rect.top <= stickyTop) {
-            searchState = 'fixed'
-            heroSearch.classList.add('is-fixed')
-            heroSearch.style.top = stickyTop + 'px'
-            if (!searchPlaceholder) {
-              searchPlaceholder = document.createElement('div')
-              searchPlaceholder.style.height = heroSearch.offsetHeight + 'px'
-              heroSearch.parentNode!.insertBefore(searchPlaceholder, heroSearch.nextSibling)
-            }
-          }
-        }
-
-        if (searchState === 'fixed') {
-          const statsRect = heroStats.getBoundingClientRect()
-          const searchRect = heroSearch.getBoundingClientRect()
-          if (statsRect.top + statsRect.height / 2 < searchRect.bottom) {
-            searchState = 'releasing'
-            releaseScrollY = window.scrollY
-            heroSearch.classList.remove('is-fixed')
-            heroSearch.classList.add('is-releasing')
-            heroSearch.style.top = stickyTop + 'px'
-          }
-          if (window.scrollY <= 0) {
-            searchState = 'normal'
-            heroSearch.classList.remove('is-fixed')
-            heroSearch.style.top = ''
-            heroSearch.style.transform = ''
-            if (searchPlaceholder) {
-              searchPlaceholder.remove()
-              searchPlaceholder = null
-            }
-          }
-        }
-
-        if (searchState === 'releasing') {
-          const delta = window.scrollY - releaseScrollY
-          if (delta <= 0) {
-            searchState = 'fixed'
-            heroSearch.classList.remove('is-releasing')
-            heroSearch.classList.add('is-fixed')
-            heroSearch.style.transform = ''
-          } else {
-            heroSearch.style.transform = `translateX(-50%) translateY(-${delta}px)`
-          }
-        }
-      }
-
       scrollTicking = false
     })
   })
