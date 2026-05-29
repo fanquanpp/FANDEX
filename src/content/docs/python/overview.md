@@ -10,6 +10,33 @@ description: 'Python 发展历程、版本特性与开发环境搭建。'
 author: 'Anonymous'
 ---
 
+## 知识地图
+
+```mermaid
+graph TD
+    A[Python 概述] --> B[环境配置]
+    A --> C[基础语法]
+    C --> C1[变量与数据类型]
+    C --> C2[运算符]
+    C --> C3[字符串操作]
+    A --> D[流程控制]
+    D --> D1[条件语句]
+    D --> D2[循环语句]
+    D --> D3[推导式]
+    A --> E[数据结构]
+    E --> E1[列表 List]
+    E --> E2[元组 Tuple]
+    E --> E3[字典 Dict]
+    E --> E4[集合 Set]
+    A --> F[函数与模块]
+    F --> F1[函数定义]
+    F --> F2[Lambda表达式]
+    F --> F3[模块与包]
+    A --> G[面向对象]
+    A --> H[文件与异常]
+    A --> I[标准库]
+```
+
 ## 1. Python 概述 (Overview)
 
 Python 是由 **Guido van Rossum** 于 1989 年圣诞节期间开始设计的一种高级脚本语言。它以英国电视喜剧《Monty Python's Flying Circus》命名，于 1991 年发布第一个正式版本。Python 的设计哲学强调代码可读性和简洁性，提倡 "优雅"、"明确"、"简单" 的编程风格。

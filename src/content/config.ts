@@ -16,6 +16,32 @@ const docs = defineCollection({
     readingTime: z.number().optional(),
     related: z.array(z.string()).default([]),
     prerequisites: z.array(z.string()).default([]),
+    quiz: z
+      .array(
+        z.union([
+          z.object({
+            type: z.literal('fill'),
+            question: z.string(),
+            answer: z.string(),
+            hint: z.string().optional(),
+          }),
+          z.object({
+            type: z.literal('choice'),
+            question: z.string(),
+            options: z.array(z.string()),
+            answer: z.number(),
+            explanation: z.string().optional(),
+          }),
+          z.object({
+            type: z.literal('fix'),
+            question: z.string(),
+            code: z.string().optional(),
+            answer: z.string(),
+            explanation: z.string().optional(),
+          }),
+        ])
+      )
+      .default([]),
   }),
 });
 

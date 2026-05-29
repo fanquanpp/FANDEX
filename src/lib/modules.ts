@@ -8,6 +8,13 @@ export const categoryLabels: Record<string, string> = {
 
 export const modules = [
   {
+    id: 'getting-started',
+    title: '入门指南',
+    description: '零基础环境搭建与学习规划',
+    category: 'basic-tools',
+    color: '#6366f1',
+  },
+  {
     id: 'git',
     title: 'Git',
     description: '版本控制与分支管理',

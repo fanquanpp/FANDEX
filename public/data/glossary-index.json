@@ -1,0 +1,397 @@
+{
+  "Git": {
+    "module": "git",
+    "def": "Git 是由 Linus Torvalds 于 2005 年创建的分布式版本控制系统，用于追踪文件变化、协调多人协作开发。",
+    "slug": "git/glossary"
+  },
+  "Linus Torvalds": {
+    "module": "git",
+    "def": "Linus Torvalds 是芬兰计算机科学家，Git 的创始人和主要开发者，同时也是 Linux 内核的创建者。",
+    "slug": "git/glossary"
+  },
+  "版本控制": {
+    "module": "git",
+    "def": "版本控制是管理文件随时间变化的系统，允许追踪修改历史、恢复到早期版本、比较不同版本差异。",
+    "slug": "git/glossary"
+  },
+  "仓库": {
+    "module": "git",
+    "def": "仓库是 Git 存储项目历史和元数据的目录，包含所有文件的完整历史记录。",
+    "slug": "git/glossary"
+  },
+  "工作目录": {
+    "module": "git",
+    "def": "工作目录是仓库中检出（checkout）到本地的某个版本的文件，用户实际编辑文件的位置。",
+    "slug": "git/glossary"
+  },
+  "Git 对象": {
+    "module": "git",
+    "def": "Git 使用四种类型的对象存储数据：blob（二进制文件内容）、tree（目录结构）、commit（提交快照）、tag（标签引用）。",
+    "slug": "git/glossary"
+  },
+  "暂存区": {
+    "module": "git",
+    "def": "暂存区是 Git 的核心概念之一，是 .git/index 文件，记录下次提交将包含的文件信息。",
+    "slug": "git/glossary"
+  },
+  "HEAD": {
+    "module": "git",
+    "def": "HEAD 是 Git 的特殊指针，指向当前分支的最新提交，标识你正在工作的提交位置。",
+    "slug": "git/glossary"
+  },
+  "分支": {
+    "module": "git",
+    "def": "分支是指向提交对象的可变指针，Git 的分支是轻量级且高效的，允许在同一仓库中并行开发。",
+    "slug": "git/glossary"
+  },
+  "标签": {
+    "module": "git",
+    "def": "标签是对特定提交的永久引用，通常用于标记版本发布点，如 v1.0.0。",
+    "slug": "git/glossary"
+  },
+  "git init": {
+    "module": "git",
+    "def": "git init 命令在当前目录创建一个新的 Git 仓库，生成 .git 子目录和必要的配置文件。",
+    "slug": "git/glossary"
+  },
+  "git clone": {
+    "module": "git",
+    "def": "git clone 复制远程仓库到本地，创建工作目录并自动配置 remote 指向远程仓库。",
+    "slug": "git/glossary"
+  },
+  "git add": {
+    "module": "git",
+    "def": "git add 将工作目录中的变更添加到暂存区，决定哪些更改将包含在下一次提交中。",
+    "slug": "git/glossary"
+  },
+  "git commit": {
+    "module": "git",
+    "def": "git commit 创建新提交，将暂存区内容永久记录为仓库历史中的一个节点。",
+    "slug": "git/glossary"
+  },
+  "git status": {
+    "module": "git",
+    "def": "git status 显示工作目录和暂存区的当前状态，包括已修改、已暂存、未追踪的文件。",
+    "slug": "git/glossary"
+  },
+  "git diff": {
+    "module": "git",
+    "def": "git diff 显示文件之间的差异，用于查看未暂存的修改或已暂存与提交的差异。",
+    "slug": "git/glossary"
+  },
+  "git log": {
+    "module": "git",
+    "def": "git log 显示仓库的提交历史，默认从最新到最早显示各提交的哈希、作者、日期和提交信息。",
+    "slug": "git/glossary"
+  },
+  "git stash": {
+    "module": "git",
+    "def": "git stash 临时保存工作目录和暂存区的变更，让工作目录回到干净状态，以便切换分支或进行其他操作。",
+    "slug": "git/glossary"
+  },
+  "git branch": {
+    "module": "git",
+    "def": "git branch 命令用于创建、列出、删除和重命名分支。",
+    "slug": "git/glossary"
+  },
+  "git checkout": {
+    "module": "git",
+    "def": "git checkout 切换分支或恢复工作目录文件，是 Git 最常用的命令之一。",
+    "slug": "git/glossary"
+  },
+  "git merge": {
+    "module": "git",
+    "def": "git merge 将一个分支的更改合并到当前分支，创建新的提交（合并提交）表示合并操作。",
+    "slug": "git/glossary"
+  },
+  "git rebase": {
+    "module": "git",
+    "def": "git rebase 将提交在另一分支基础上重新应用，产生更线性的历史记录。",
+    "slug": "git/glossary"
+  },
+  "合并冲突": {
+    "module": "git",
+    "def": "合并冲突发生于 Git 无法自动合并时，同一文件的同一位置被不同分支修改。",
+    "slug": "git/glossary"
+  },
+  "git remote": {
+    "module": "git",
+    "def": "remote 是本地仓库与远程仓库之间的连接，通过名称和 URL 定义，常见名称为 origin。",
+    "slug": "git/glossary"
+  },
+  "git push": {
+    "module": "git",
+    "def": "git push 将本地分支提交发送到远程仓库，同步本地仓库的更改到远程。",
+    "slug": "git/glossary"
+  },
+  "git fetch": {
+    "module": "git",
+    "def": "git fetch 从远程仓库获取最新提交到本地，更新远程跟踪分支，但不自动合并。",
+    "slug": "git/glossary"
+  },
+  "git pull": {
+    "module": "git",
+    "def": "git pull 从远程仓库获取并合并到当前分支，是 fetch 和 merge 的组合操作。",
+    "slug": "git/glossary"
+  },
+  "origin": {
+    "module": "git",
+    "def": "origin 是克隆仓库时 Git 自动创建的默认远程仓库名称，指向被克隆的仓库 URL。",
+    "slug": "git/glossary"
+  },
+  "git reset": {
+    "module": "git",
+    "def": "git reset 移动分支指针和 HEAD 位置，可以选择性地修改暂存区和工作目录。",
+    "slug": "git/glossary"
+  },
+  "git revert": {
+    "module": "git",
+    "def": "git revert 创建一个新提交，撤销指定提交引入的更改，是安全的撤销方式。",
+    "slug": "git/glossary"
+  },
+  "git restore": {
+    "module": "git",
+    "def": "git restore 是 Git 2.23 引入的新命令，用于恢复工作目录或暂存区文件，比 checkout -- 更明确。",
+    "slug": "git/glossary"
+  },
+  ".gitignore": {
+    "module": "git",
+    "def": ".gitignore 文件指定 Git 应忽略的文件和目录，这些文件不会被跟踪、暂存或提交。",
+    "slug": "git/glossary"
+  },
+  "git cherry-pick": {
+    "module": "git",
+    "def": "git cherry-pick 将指定提交（一个或多个）在当前分支上重新应用，产生新的提交。",
+    "slug": "git/glossary"
+  },
+  "git submodule": {
+    "module": "git",
+    "def": "submodule 允许在一个 Git 仓库中嵌入另一个独立的 Git 仓库，保持子仓库的版本独立控制。",
+    "slug": "git/glossary"
+  },
+  "Git Hooks": {
+    "module": "git",
+    "def": "Git Hooks 是在特定 Git 操作（如 commit、push、merge）前后自动执行的脚本，用于自动化检查或处理。",
+    "slug": "git/glossary"
+  },
+  "Git LFS": {
+    "module": "git",
+    "def": "Git LFS 是 Git 扩展，用于高效管理仓库中的大文件，将大文件内容存储在 LFS 服务器，仓库只保存指针引用。",
+    "slug": "git/glossary"
+  },
+  "git config": {
+    "module": "git",
+    "def": "git config 用于设置 Git 配置选项，包括用户信息、行为偏好、别名等。",
+    "slug": "git/glossary"
+  },
+  "SSH 配置": {
+    "module": "git",
+    "def": "SSH 配置文件用于配置 SSH 连接参数、多账户、密钥文件等，Git 远程操作常用 SSH 协议。",
+    "slug": "git/glossary"
+  },
+  "Fork": {
+    "module": "git",
+    "def": "Fork 是在 GitHub/GitLab 等平台创建他人仓库的副本到自己的账户下。",
+    "slug": "git/glossary"
+  },
+  "Pull Request": {
+    "module": "git",
+    "def": "Pull Request 是向原仓库提交代码审查和合并请求的机制，是开源协作的核心流程。",
+    "slug": "git/glossary"
+  },
+  "Git Flow": {
+    "module": "git",
+    "def": "Git Flow 是一种 Git 分支管理策略，通过主分支、开发分支、功能分支、发布分支、热修复分支组织开发流程。",
+    "slug": "git/glossary"
+  },
+  "Markdown": {
+    "module": "markdown",
+    "def": "Markdown 是 John Gruber 于 2004 年创建的轻量级标记语言，使用简洁的语法编写格式化文本，可转换为 HTML 或其他格式。",
+    "slug": "markdown/glossary"
+  },
+  "John Gruber": {
+    "module": "markdown",
+    "def": "John Gruber 是美国程序员和作家，Markdown 的创始人，与 Aaron Swartz 共同创建了该语言。",
+    "slug": "markdown/glossary"
+  },
+  "轻量级标记语言": {
+    "module": "markdown",
+    "def": "轻量级标记语言使用简单直观的语法，比 XML/HTML 等传统标记语言更易于人类读写。",
+    "slug": "markdown/glossary"
+  },
+  "纯文本": {
+    "module": "markdown",
+    "def": "纯文本是只包含标准字符集（字母、数字、标点、符号）的文本文件，不包含任何格式信息。",
+    "slug": "markdown/glossary"
+  },
+  "标题": {
+    "module": "markdown",
+    "def": "标题用于创建文档的层级结构，Markdown 使用 # 符号表示不同级别的标题。",
+    "slug": "markdown/glossary"
+  },
+  "段落": {
+    "module": "markdown",
+    "def": "段落是文本的基本组成单位，Markdown 中以空行分隔的连续文本被视为一个段落。",
+    "slug": "markdown/glossary"
+  },
+  "换行": {
+    "module": "markdown",
+    "def": "Markdown 中的换行表示文本在同一段落内另起一行。",
+    "slug": "markdown/glossary"
+  },
+  "强调": {
+    "module": "markdown",
+    "def": "Markdown 使用 * 或 _ 创建斜体，使用 ** 或 __ 创建粗体，使用 ~~ 创建删除线。",
+    "slug": "markdown/glossary"
+  },
+  "引用": {
+    "module": "markdown",
+    "def": "引用块用于标注引用的文本，Markdown 使用 > 符号创建引用块。",
+    "slug": "markdown/glossary"
+  },
+  "水平线": {
+    "module": "markdown",
+    "def": "水平线用于分隔文档内容，Markdown 使用三个以上的 -、* 或 _ 创建水平线。",
+    "slug": "markdown/glossary"
+  },
+  "无序列表": {
+    "module": "markdown",
+    "def": "无序列表使用 -、* 或 + 创建项目符号列表。",
+    "slug": "markdown/glossary"
+  },
+  "有序列表": {
+    "module": "markdown",
+    "def": "有序列表使用数字加句点创建带顺序编号的列表。",
+    "slug": "markdown/glossary"
+  },
+  "任务列表": {
+    "module": "markdown",
+    "def": "任务列表（Todo List）是 GFM 扩展，支持创建可勾选的任务项。",
+    "slug": "markdown/glossary"
+  },
+  "嵌套列表": {
+    "module": "markdown",
+    "def": "列表可以嵌套以创建层级结构，子列表比父列表缩进更深。",
+    "slug": "markdown/glossary"
+  },
+  "行内代码": {
+    "module": "markdown",
+    "def": "行内代码用于在段落中标记简短的代码或命令，使用反引号 ` 包裹。",
+    "slug": "markdown/glossary"
+  },
+  "代码块": {
+    "module": "markdown",
+    "def": "代码块用于标记多行代码或文本，GFM 使用三个反引号创建围栏代码块。",
+    "slug": "markdown/glossary"
+  },
+  "语法高亮": {
+    "module": "markdown",
+    "def": "语法高亮是根据代码语言对代码块进行着色，提高可读性。",
+    "slug": "markdown/glossary"
+  },
+  "转义字符": {
+    "module": "markdown",
+    "def": "转义字符用于在 Markdown 中显示被语法占用的特殊字符。",
+    "slug": "markdown/glossary"
+  },
+  "链接": {
+    "module": "markdown",
+    "def": "Markdown 链接用于创建可点击的链接，链接目标可以是 URL、文件路径或锚点。",
+    "slug": "markdown/glossary"
+  },
+  "图片": {
+    "module": "markdown",
+    "def": "Markdown 图片语法与链接类似，但前方加 !，图片不会内联显示而是渲染为图片。",
+    "slug": "markdown/glossary"
+  },
+  "引用式链接": {
+    "module": "markdown",
+    "def": "引用式链接将 URL 定义在文档其他位置，链接处使用引用标记。",
+    "slug": "markdown/glossary"
+  },
+  "锚点": {
+    "module": "markdown",
+    "def": "锚点用于链接到页面内的特定位置，常用于长文档的目录导航。",
+    "slug": "markdown/glossary"
+  },
+  "表格": {
+    "module": "markdown",
+    "def": "表格是 GFM 扩展功能，使用管道符 | 和横杠 - 创建表格结构。",
+    "slug": "markdown/glossary"
+  },
+  "单元格": {
+    "module": "markdown",
+    "def": "单元格是表格的基本单元，每行用 | 分隔的文本构成单元格。",
+    "slug": "markdown/glossary"
+  },
+  "对齐": {
+    "module": "markdown",
+    "def": "表格支持左对齐、居中对齐、右对齐三种对齐方式。",
+    "slug": "markdown/glossary"
+  },
+  "GFM": {
+    "module": "markdown",
+    "def": "GFM 是 GitHub 对标准 Markdown 的扩展，增加了任务列表、围栏代码块、表格、自动链接等特性。",
+    "slug": "markdown/glossary"
+  },
+  "自动链接": {
+    "module": "markdown",
+    "def": "GFM 自动将 URL 和邮箱地址转换为可点击链接，无需使用方括号语法。",
+    "slug": "markdown/glossary"
+  },
+  "删除线": {
+    "module": "markdown",
+    "def": "删除线是 GFM 扩展，使用 ~~ 包裹文本显示删除线效果。",
+    "slug": "markdown/glossary"
+  },
+  "脚注": {
+    "module": "markdown",
+    "def": "脚注用于在文档中添加注释或引用说明，在页面底部显示。",
+    "slug": "markdown/glossary"
+  },
+  "定义列表": {
+    "module": "markdown",
+    "def": "定义列表用于展示术语及其定义，常见于词典或术语表。",
+    "slug": "markdown/glossary"
+  },
+  "数学公式": {
+    "module": "markdown",
+    "def": "Markdown 可通过 MathJax、KaTeX 等渲染器支持数学公式。",
+    "slug": "markdown/glossary"
+  },
+  "UML 图": {
+    "module": "markdown",
+    "def": "Markdown 可嵌入 Mermaid、PlantUML 等工具绘制 UML 类图、流程图等。",
+    "slug": "markdown/glossary"
+  },
+  "目录生成": {
+    "module": "markdown",
+    "def": "Markdown 文档工具可以自动从标题生成目录导航。",
+    "slug": "markdown/glossary"
+  },
+  "CommonMark": {
+    "module": "markdown",
+    "def": "CommonMark 是 Markdown 的标准化实现，由 John MacFarlane 发起，旨在消除 Markdown 实现的混乱。",
+    "slug": "markdown/glossary"
+  },
+  "Pandoc": {
+    "module": "markdown",
+    "def": "Pandoc 是强大的文档格式转换器，支持 Markdown、HTML、LaTeX、DOCX、PDF 等多种格式互转。",
+    "slug": "markdown/glossary"
+  },
+  "VS Code Markdown 扩展": {
+    "module": "markdown",
+    "def": "VS Code 提供丰富的 Markdown 扩展，支持预览、目录生成、拼写检查等功能。",
+    "slug": "markdown/glossary"
+  },
+  "Markdown 风格指南": {
+    "module": "markdown",
+    "def": "Markdown 风格指南提供一致性和可读性的写作规范。",
+    "slug": "markdown/glossary"
+  },
+  "可移植性": {
+    "module": "markdown",
+    "def": "Markdown 的可移植性指 Markdown 文件在不同工具和平台间的兼容程度。",
+    "slug": "markdown/glossary"
+  }
+}

@@ -7,6 +7,14 @@ const base = import.meta.env.BASE_URL
 
 const roadmap = [
   {
+    phase: 'Phase 0',
+    label: '零基础准备',
+    desc: '从未接触过编程? 从这里开始',
+    items: [
+      { id: 'getting-started', arrow: null },
+    ],
+  },
+  {
     phase: 'Phase 1',
     label: '基础工具',
     desc: '所有开发者的必备技能，建议最先掌握',
@@ -101,11 +109,12 @@ const roadmap = [
                 if (!m) return null
                 return (
                   <div class="roadmap-module-row">
-                    <a href={`${base}${m.id}`} class="roadmap-module-card" style={`--module-color:${m.color}`}>
+                    <a href={`${base}${m.id}`} class="roadmap-module-card" style={`--module-color:${m.color}`} data-progress-module={m.id}>
                       <span class="rm-color-bar"></span>
                       <div class="rm-body">
                         <span class="rm-title">{m.title}</span>
                         <span class="rm-desc">{m.description}</span>
+                        <span class="rm-progress" data-progress-bar></span>
                       </div>
                     </a>
                     {item.arrow && (
@@ -300,6 +309,25 @@ const roadmap = [
   line-height: 1.5;
 }
 
+.rm-progress {
+  display: block;
+  height: 3px;
+  margin-top: 6px;
+  background: var(--color-border-light);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.rm-progress::after {
+  content: '';
+  display: block;
+  height: 100%;
+  width: var(--progress-pct, 0%);
+  background: var(--module-color);
+  border-radius: 2px;
+  transition: width 0.3s ease;
+}
+
 .rm-arrow {
   color: var(--color-text-tertiary);
   display: flex;
@@ -375,3 +403,30 @@ const roadmap = [
   }
 }
 </style>
+
+<script>
+  function updateRoadmapProgress() {
+    let progress: Record<string, { status: string }> = {}
+    try {
+      const raw = localStorage.getItem('codex-progress')
+      if (raw) progress = JSON.parse(raw)
+    } catch { /* ignore */ }
+
+    document.querySelectorAll('[data-progress-module]').forEach(card => {
+      const el = card as HTMLElement
+      const moduleId = el.getAttribute('data-progress-module')
+      const bar = el.querySelector('[data-progress-bar]') as HTMLElement
+      if (!moduleId || !bar) return
+
+      const allKeys = Object.keys(progress).filter(k => k.startsWith(moduleId + '/'))
+      const total = allKeys.length || 1
+      const done = allKeys.filter(k => progress[k]?.status === 'done').length
+      const pct = allKeys.length > 0 ? Math.round((done / total) * 100) : 0
+      bar.style.setProperty('--progress-pct', `${pct}%`)
+    })
+  }
+
+  updateRoadmapProgress()
+  document.addEventListener('codex-progress-change', updateRoadmapProgress)
+  document.addEventListener('astro:page-load', updateRoadmapProgress)
+</script>

@@ -217,6 +217,23 @@ const base = import.meta.env.BASE_URL
   document.addEventListener('astro:page-load', initMermaid)
   initMermaid()
 
+  async function initTermTooltip() {
+    const article = document.querySelector('article.prose')
+    if (!article) return
+    try {
+      const { initTermTooltip: init } = await import('@/lib/term-tooltip')
+      await init()
+    } catch { /* ignore */ }
+  }
+
+  document.addEventListener('astro:page-load', initTermTooltip)
+  initTermTooltip()
+
+  if ('serviceWorker' in navigator) {
+    const base = import.meta.env.BASE_URL
+    navigator.serviceWorker.register(base + 'sw.js').catch(() => {})
+  }
+
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
       e.preventDefault()

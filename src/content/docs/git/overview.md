@@ -12,6 +12,37 @@ author: 'fanquanpp'
 updated: 2026-05-03
 ---
 
+## 知识地图
+
+```mermaid
+graph TD
+    A[Git 概述] --> B[核心特点]
+    A --> C[基础概念]
+    C --> D[仓库 Repository]
+    C --> E[工作区 Working Directory]
+    C --> F[暂存区 Staging Area]
+    C --> G[版本库 Repository]
+    C --> H[提交 Commit]
+    C --> I[分支 Branch]
+    C --> J[合并 Merge]
+    C --> K[远程 Remote]
+    A --> L[安装与配置]
+    A --> M[基本命令]
+    M --> N[仓库操作]
+    M --> O[暂存与提交]
+    M --> P[分支管理]
+    M --> Q[远程操作]
+    M --> R[历史查看]
+    M --> S[撤销操作]
+    A --> T[工作流程]
+    T --> U[集中式工作流]
+    T --> V[功能分支工作流]
+    T --> W[GitFlow 工作流]
+    T --> X[Forking 工作流]
+    A --> Y[最佳实践]
+    A --> Z[常见问题]
+```
+
 ## 2 . Git 概述
 
 Git 是一个分布式版本控制系统，用于跟踪文件的变化，协调多人之间的工作。它是由 Linux 创始人 Linus Torvalds 于 2005 年创建的，现在被广泛用于软件开发和其他需要版本控制的场景。

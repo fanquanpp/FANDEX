@@ -5,6 +5,7 @@ import Sidebar from '@/components/Sidebar.astro'
 import Breadcrumb from '@/components/Breadcrumb.astro'
 import DocNav from '@/components/DocNav.astro'
 import ProgressToggle from '@/islands/ProgressToggle.vue'
+import QuizBlock from '@/islands/QuizBlock.vue'
 import { getModule, modulePrerequisites } from '@/lib/modules'
 import { getCollection } from 'astro:content'
 
@@ -107,6 +108,7 @@ const breadcrumb = [
       </header>
       <Content />
     </article>
+    <QuizBlock client:load quiz={doc.data.quiz || []} />
     <DocNav moduleId={module} currentSlug={slug} />
   </div>
 </Layout>

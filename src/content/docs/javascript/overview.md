@@ -10,6 +10,33 @@ description: 'JavaScript 发展历程、ECMAScript 标准与运行环境。'
 author: 'Anonymous'
 ---
 
+## 知识地图
+
+```mermaid
+graph TD
+    A[JavaScript 概述] --> B[运行环境]
+    B --> B1[浏览器]
+    B --> B2[Node.js]
+    A --> C[基础语法]
+    C --> C1[变量与数据类型]
+    C --> C2[运算符与表达式]
+    C --> C3[流程控制]
+    A --> D[函数]
+    D --> D1[函数声明与表达式]
+    D --> D2[箭头函数]
+    D --> D3[闭包]
+    A --> E[对象与数组]
+    E --> E1[对象操作]
+    E --> E2[数组方法]
+    E --> E3[解构赋值]
+    A --> F[异步编程]
+    F --> F1[Promise]
+    F --> F2[async/await]
+    F --> F3[事件循环]
+    A --> G[DOM与事件]
+    A --> H[ES6+新特性]
+```
+
 ## 1. JavaScript 概述 (Overview)
 
 JavaScript 是一门具有函数优先特性的轻量级、解释型或即时编译型 (JIT) 的编程语言。最初由 **Brendan Eich** 在 1995 年为 Netscape 浏览器设计，最初名为 LiveScript，后因与 Sun Microsystems 的合作更名为 JavaScript。

@@ -348,3 +348,53 @@
 .app-sidebar::-webkit-scrollbar-track {
   background: transparent;
 }
+
+.term-tip {
+  position: relative;
+  display: inline;
+}
+
+.term-abbr {
+  text-decoration: underline dotted var(--color-primary);
+  text-underline-offset: 3px;
+  cursor: help;
+  color: var(--color-primary);
+}
+
+.term-popup {
+  display: none;
+  position: absolute;
+  bottom: calc(100% + 6px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  min-width: 200px;
+  max-width: 320px;
+  padding: 8px 12px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  font-size: 0.85em;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  white-space: normal;
+}
+
+.term-tip:hover .term-popup {
+  display: block;
+}
+
+.term-popup-def {
+  display: block;
+  margin-bottom: 6px;
+}
+
+.term-popup-link {
+  color: var(--color-primary);
+  font-size: 0.9em;
+  text-decoration: none;
+}
+
+.term-popup-link:hover {
+  text-decoration: underline;
+}
