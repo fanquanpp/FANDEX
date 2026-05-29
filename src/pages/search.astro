@@ -1,12 +1,25 @@
 ---
 import Layout from '@/components/Layout.astro'
 import SEO from '@/components/SEO.astro'
+import { modules } from '@/lib/modules'
 ---
 
 <Layout title="搜索">
   <SEO slot="head" title="搜索 - CODEX" description="全文搜索知识库" type="website" />
   <div class="search-page">
     <h1 class="search-title">搜索</h1>
+    <div class="search-filters">
+      <select id="filter-module" class="search-filter-select">
+        <option value="">全部模块</option>
+        {modules.map(m => <option value={m.id}>{m.title}</option>)}
+      </select>
+      <select id="filter-difficulty" class="search-filter-select">
+        <option value="">全部难度</option>
+        <option value="beginner">Beginner</option>
+        <option value="intermediate">Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+    </div>
     <div id="search" class="search-container"></div>
     <noscript>
       <p class="search-noscript">需要启用 JavaScript 才能使用搜索功能</p>
@@ -25,6 +38,24 @@ import SEO from '@/components/SEO.astro'
   font-family: var(--font-display);
   font-size: 1.4em;
   margin-bottom: var(--spacing-lg);
+}
+
+.search-filters {
+  display: flex;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-md);
+}
+
+.search-filter-select {
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  font-family: var(--font-display);
+  font-size: 0.85em;
+  cursor: pointer;
+  appearance: auto;
 }
 
 .search-container {
@@ -67,6 +98,23 @@ import SEO from '@/components/SEO.astro'
         showSubResults: true,
         showImages: false,
       })
+
+      const filterModule = document.getElementById('filter-module') as HTMLSelectElement
+      const filterDifficulty = document.getElementById('filter-difficulty') as HTMLSelectElement
+
+      function applyFilters() {
+        const filters: Record<string, string> = {}
+        if (filterModule?.value) filters.module = filterModule.value
+        if (filterDifficulty?.value) filters.difficulty = filterDifficulty.value
+        if (Object.keys(filters).length > 0) {
+          ui.filter(filters)
+        } else {
+          ui.filter({})
+        }
+      }
+
+      filterModule?.addEventListener('change', applyFilters)
+      filterDifficulty?.addEventListener('change', applyFilters)
 
       const params = new URLSearchParams(window.location.search)
       const q = params.get('q')

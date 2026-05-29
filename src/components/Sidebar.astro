@@ -60,7 +60,8 @@ const hasHeadings = visibleHeadings.length > 0
             const isActive = currentPath === href || currentPath === href + '/' || (currentSlug && currentSlug === slug)
             return (
               <li>
-                <a href={href} class={`sidebar-file-link${isActive ? ' active' : ''}`}>
+                <a href={href} class={`sidebar-file-link${isActive ? ' active' : ''}`} data-progress-slug={`${moduleId}/${slug}`}>
+                  <span class="progress-indicator"></span>
                   {doc.data.title}
                 </a>
               </li>
@@ -248,6 +249,26 @@ const hasHeadings = visibleHeadings.length > 0
   -webkit-overflow-scrolling: touch;
 }
 
+.progress-indicator {
+  display: inline-block;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-border);
+  margin-right: 6px;
+  flex-shrink: 0;
+  vertical-align: middle;
+  transition: background var(--transition-fast);
+}
+
+.sidebar-file-link.progress-done .progress-indicator {
+  background: #10b981;
+}
+
+.sidebar-file-link.progress-reading .progress-indicator {
+  background: #f59e0b;
+}
+
 @media (max-width: 768px) {
   .sidebar-close-btn {
     display: block;
@@ -262,6 +283,29 @@ const hasHeadings = visibleHeadings.length > 0
       document.body.classList.remove('sidebar-open')
     })
   }
+
+  function updateSidebarProgress() {
+    let progress: Record<string, { status: string }> = {}
+    try {
+      const raw = localStorage.getItem('codex-progress')
+      if (raw) progress = JSON.parse(raw)
+    } catch { /* ignore */ }
+
+    document.querySelectorAll('.sidebar-file-link[data-progress-slug]').forEach(link => {
+      const el = link as HTMLElement
+      const slug = el.getAttribute('data-progress-slug')
+      el.classList.remove('progress-done', 'progress-reading')
+      if (slug && progress[slug]) {
+        const status = progress[slug].status
+        if (status === 'done') el.classList.add('progress-done')
+        else if (status === 'reading') el.classList.add('progress-reading')
+      }
+    })
+  }
+
+  updateSidebarProgress()
+  document.addEventListener('codex-progress-change', updateSidebarProgress)
+  document.addEventListener('astro:page-load', updateSidebarProgress)
 
   const toggleGroup = document.getElementById('sidebar-toggle-group')
   const chaptersBtn = document.getElementById('sidebar-toggle-chapters')

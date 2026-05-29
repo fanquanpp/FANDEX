@@ -1,4 +1,4 @@
-import { defineCollection, z } from 'astro:content'
+import { defineCollection, z } from 'astro:content';
 
 const docs = defineCollection({
   type: 'content',
@@ -15,8 +15,9 @@ const docs = defineCollection({
     description: z.string().optional(),
     readingTime: z.number().optional(),
     related: z.array(z.string()).default([]),
+    prerequisites: z.array(z.string()).default([]),
   }),
-})
+});
 
 const glossary = defineCollection({
   type: 'content',
@@ -25,6 +26,6 @@ const glossary = defineCollection({
     module: z.string(),
     updated: z.coerce.date().optional(),
   }),
-})
+});
 
-export const collections = { docs, glossary }
+export const collections = { docs, glossary };

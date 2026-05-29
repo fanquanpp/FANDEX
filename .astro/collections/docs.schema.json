@@ -81,6 +81,13 @@
           },
           "default": []
         },
+        "prerequisites": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "default": []
+        },
         "$schema": {
           "type": "string"
         }
