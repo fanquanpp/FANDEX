@@ -29,59 +29,63 @@ const hasHeadings = visibleHeadings.length > 0
   </button>
 
   <nav class="sidebar-nav">
-    <div class="sidebar-module-header">
-      <div class="sidebar-module-title-group">
-        <span class="sidebar-module-color-bar" style={`background:${meta?.color || '#6366f1'}`}></span>
-        <span class="sidebar-module-title">{meta?.title || moduleId}</span>
-      </div>
-      {hasHeadings && (
-        <div class="sidebar-toggle-group" id="sidebar-toggle-group">
-          <button class="sidebar-toggle-btn active" id="sidebar-toggle-chapters" data-panel="chapters">章节</button>
-          <button class="sidebar-toggle-btn" id="sidebar-toggle-outline" data-panel="outline">资料</button>
+    <div class="sidebar-top">
+      <div class="sidebar-module-header">
+        <div class="sidebar-module-title-group">
+          <span class="sidebar-module-color-bar" style={`background:${meta?.color || '#6366f1'}`}></span>
+          <span class="sidebar-module-title">{meta?.title || moduleId}</span>
         </div>
-      )}
+        {hasHeadings && (
+          <div class="sidebar-toggle-group" id="sidebar-toggle-group">
+            <button class="sidebar-toggle-btn active" id="sidebar-toggle-chapters" data-panel="chapters">章节</button>
+            <button class="sidebar-toggle-btn" id="sidebar-toggle-outline" data-panel="outline">资料</button>
+          </div>
+        )}
+      </div>
+
+      <a href={base} class="sidebar-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <polyline points="18 6 6 12 18 18" />
+        </svg>
+        <span>返回首页</span>
+      </a>
     </div>
 
-    <a href={base} class="sidebar-back">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
-        <polyline points="18 6 6 12 18 18" />
-      </svg>
-      <span>返回首页</span>
-    </a>
-
-    <div class="sidebar-panel" id="sidebar-panel-chapters">
-      <ul class="file-list">
-        {sorted.map(doc => {
-          const slug = docSlug(doc.id)
-          const href = `${base}${moduleId}/${slug}`
-          const isActive = currentPath === href || currentPath === href + '/' || (currentSlug && currentSlug === slug)
-          return (
-            <li>
-              <a href={href} class={`sidebar-file-link${isActive ? ' active' : ''}`}>
-                {doc.data.title}
-              </a>
-            </li>
-          )
-        })}
-      </ul>
-    </div>
-
-    {hasHeadings && (
-      <div class="sidebar-panel" id="sidebar-panel-outline" style="display:none">
-        <ul class="outline-list">
-          {visibleHeadings.map((h) => (
-            <li style={`padding-left: ${(h.depth - 2) * 12}px`}>
-              <a href={`#${h.slug}`} class="outline-link" data-outline-slug={h.slug}>{h.text}</a>
-            </li>
-          ))}
+    <div class="sidebar-scroll">
+      <div class="sidebar-panel" id="sidebar-panel-chapters">
+        <ul class="file-list">
+          {sorted.map(doc => {
+            const slug = docSlug(doc.id)
+            const href = `${base}${moduleId}/${slug}`
+            const isActive = currentPath === href || currentPath === href + '/' || (currentSlug && currentSlug === slug)
+            return (
+              <li>
+                <a href={href} class={`sidebar-file-link${isActive ? ' active' : ''}`}>
+                  {doc.data.title}
+                </a>
+              </li>
+            )
+          })}
         </ul>
       </div>
-    )}
 
-    <div class="sidebar-glossary-link">
-      <a href={`${base}${moduleId}/glossary`} class="sidebar-file-link">
-        术语表
-      </a>
+      {hasHeadings && (
+        <div class="sidebar-panel" id="sidebar-panel-outline" style="display:none">
+          <ul class="outline-list">
+            {visibleHeadings.map((h) => (
+              <li style={`padding-left: ${(h.depth - 2) * 12}px`}>
+                <a href={`#${h.slug}`} class="outline-link" data-outline-slug={h.slug}>{h.text}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <div class="sidebar-glossary-link">
+        <a href={`${base}${moduleId}/glossary`} class="sidebar-file-link">
+          术语表
+        </a>
+      </div>
     </div>
   </nav>
 </aside>
@@ -90,6 +94,7 @@ const hasHeadings = visibleHeadings.length > 0
 .sidebar-component {
   display: flex;
   flex-direction: column;
+  height: 100%;
 }
 
 .sidebar-close-btn {
@@ -111,7 +116,13 @@ const hasHeadings = visibleHeadings.length > 0
 .sidebar-nav {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  height: 100%;
+  min-height: 0;
+}
+
+.sidebar-top {
+  flex-shrink: 0;
+  background: var(--color-bg-sidebar);
 }
 
 .sidebar-module-header {
@@ -226,9 +237,15 @@ const hasHeadings = visibleHeadings.length > 0
 }
 
 .sidebar-glossary-link {
-  margin-top: auto;
   padding-top: var(--spacing-md);
   border-top: 1px solid var(--color-border-light);
+}
+
+.sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 @media (max-width: 768px) {

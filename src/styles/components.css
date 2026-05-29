@@ -79,10 +79,9 @@
   grid-column: 1;
   background: var(--color-bg-sidebar);
   border-right: 1px solid var(--color-border);
-  overflow-y: auto;
+  overflow: hidden;
   padding: var(--spacing-md);
   z-index: 90;
-  -webkit-overflow-scrolling: touch;
 }
 
 @media (max-width: 768px) {
