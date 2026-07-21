@@ -1,0 +1,96 @@
+{
+  "name": "mysql",
+  "generatedAt": "2026-07-20T06:22:46.679Z",
+  "items": [
+    {
+      "group": "数据库与表操作",
+      "description": "创建数据库",
+      "code": "CREATE DATABASE mydb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据库与表操作",
+      "description": "查看数据库列表",
+      "code": "SHOW DATABASES;",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据库与表操作",
+      "description": "删除数据库",
+      "code": "DROP DATABASE IF EXISTS mydb;",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据库与表操作",
+      "description": "创建表",
+      "code": "CREATE TABLE users (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  username VARCHAR(50) NOT NULL,\n  email VARCHAR(100) NOT NULL UNIQUE,\n  age INT DEFAULT 0,\n  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据库与表操作",
+      "description": "查看表结构",
+      "code": "DESC users;",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据查询",
+      "description": "基本查询",
+      "code": "SELECT id, username, email FROM users;",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据查询",
+      "description": "条件查询",
+      "code": "SELECT id, username, email FROM users WHERE age >= 18 AND username LIKE '张%';",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据查询",
+      "description": "排序查询",
+      "code": "SELECT id, username, age FROM users ORDER BY age DESC, id ASC;",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据查询",
+      "description": "限制结果数量",
+      "code": "SELECT id, username FROM users ORDER BY id DESC LIMIT 10 OFFSET 20;",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据查询",
+      "description": "聚合函数",
+      "code": "SELECT COUNT(*) AS total, AVG(age) AS avg_age, MAX(age) AS max_age, MIN(age) AS min_age FROM users;",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    }
+  ]
+}

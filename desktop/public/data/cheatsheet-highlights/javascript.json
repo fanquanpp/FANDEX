@@ -1,0 +1,87 @@
+{
+  "name": "javascript",
+  "generatedAt": "2026-07-20T06:22:46.543Z",
+  "items": [
+    {
+      "group": "基础语法",
+      "description": "变量声明",
+      "code": "const name = \"张三\";\nlet age = 25;\nage = 26; // let 可重新赋值\n// name = \"李四\"; // TypeError: Assignment to constant variable",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "基础语法",
+      "description": "函数定义",
+      "code": "// 函数声明\nfunction greet(name) {\n  return `你好, ${name}!`;\n}\n\n// 箭头函数\nconst add = (a, b) => a + b;\n\n// 默认参数\nfunction createUser(name, role = \"用户\") {\n  return { name, role };\n}",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "基础语法",
+      "description": "条件判断",
+      "code": "const score = 85;\n\nif (score >= 90) {\n  console.log(\"优秀\");\n} else if (score >= 60) {\n  console.log(\"及格\");\n} else {\n  console.log(\"不及格\");\n}\n\n// 三元运算符\nconst result = score >= 60 ? \"通过\" : \"未通过\";",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "基础语法",
+      "description": "循环",
+      "code": "// for 循环\nfor (let i = 0; i < 5; i++) {\n  console.log(i);\n}\n\n// for...of 遍历数组\nconst fruits = [\"苹果\", \"香蕉\", \"橙子\"];\nfor (const fruit of fruits) {\n  console.log(fruit);\n}\n\n// for...in 遍历对象键\nconst user = { name: \"张三\", age: 25 };\nfor (const key in user) {\n  console.log(`${key}: ${user[key]}`);\n}",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "基础语法",
+      "description": "数组方法",
+      "code": "const nums = [1, 2, 3, 4, 5];\n\n// map - 映射新数组\nconst doubled = nums.map(n => n * 2);\n\n// filter - 过滤\nconst evens = nums.filter(n => n % 2 === 0);\n\n// reduce - 累积\nconst sum = nums.reduce((acc, n) => acc + n, 0);\n\n// find - 查找第一个匹配\nconst found = nums.find(n => n > 3);\n\n// some/every - 判断\nconst hasEven = nums.some(n => n % 2 === 0);",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "DOM 操作",
+      "description": "查询元素",
+      "code": "// 查询单个元素\nconst btn = document.querySelector('.submit-btn');\nconst title = document.querySelector('#page-title');\n\n// 查询多个元素\nconst items = document.querySelectorAll('.list-item');\nitems.forEach(item => console.log(item.textContent));",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "DOM 操作",
+      "description": "创建与插入元素",
+      "code": "// 创建元素\nconst li = document.createElement('li');\nli.textContent = '新项目';\nli.setAttribute('class', 'list-item');\n\n// 插入到页面\nconst list = document.querySelector('.list');\nlist.appendChild(li);\n\n// 在指定位置插入\nlist.insertBefore(li, list.firstChild);",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "DOM 操作",
+      "description": "事件监听",
+      "code": "const btn = document.querySelector('.btn');\n\nfunction handleClick(event) {\n  console.log('按钮被点击', event.target);\n}\n\nbtn.addEventListener('click', handleClick);\n\n// 移除事件监听\nbtn.removeEventListener('click', handleClick);",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "DOM 操作",
+      "description": "classList 样式操作",
+      "code": "const el = document.querySelector('.box');\n\n// 添加类名\nel.classList.add('active');\n\n// 移除类名\nel.classList.remove('hidden');\n\n// 切换类名\nel.classList.toggle('dark-mode');\n\n// 判断是否包含类名\nif (el.classList.contains('active')) {\n  console.log('元素处于激活状态');\n}",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    }
+  ]
+}

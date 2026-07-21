@@ -1,0 +1,226 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fandex.local/schemas/manifest.schema.json",
+  "title": "FANDEX Content Manifest",
+  "description": "FANDEX 文档内容清单 Schema（Desktop / Android 共享）。manifest 是热更新机制的权威数据源，由 tools/generate-manifest 生成，由 tools/sign-manifest 进行 Ed25519 签名，由客户端 updater 在启动时与手动检查时拉取并校验。manifest 分为两类：full（Web+Desktop 共用，对应 content/full/）与 mobile（Android 重编排专用，对应 content/mobile/）。",
+  "type": "object",
+  "required": [
+    "manifest_version",
+    "manifest_type",
+    "generated_at",
+    "app_compat_version",
+    "modules",
+    "docs",
+    "signature"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "manifest_version": {
+      "type": "string",
+      "description": "本 Schema 的版本号（语义化版本）。当前为 1.0.0。若 manifest 结构发生破坏性变更，需递增主版本号，客户端通过此字段判断是否拒绝解析。",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["1.0.0"]
+    },
+    "manifest_type": {
+      "type": "string",
+      "description": "manifest 类型。full 对应 content/full/（Web + Desktop 共用基线内容）；mobile 对应 content/mobile/（Android 端重编排专用内容）。两类 manifest 独立分发、独立签名、独立归档。",
+      "enum": ["full", "mobile"]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "manifest 生成时间（ISO 8601 UTC，精度到秒）。由 generate-manifest 工具在生成时写入。客户端用于判断本地缓存是否过期，以及归档清理时判断版本新旧。"
+    },
+    "app_compat_version": {
+      "type": "string",
+      "description": "此 manifest 兼容的应用最低版本（语义化版本）。客户端在拉取 manifest 后，将自身版本号与此字段比较：若客户端版本 < app_compat_version，则跳过本次文档热更新并提示用户升级应用；若客户端版本 >= app_compat_version，则正常应用文档更新。此机制实现应用更新与文档热更的联动。",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["3.1.0"]
+    },
+    "modules": {
+      "type": "array",
+      "description": "模块列表。每个模块对应一个内容分类（如 Java、Python、React）。模块 ID 一旦分配永不复用，模块删除后其 ID 进入 id-registry 的 retired 段，不再分配给新模块。",
+      "items": {
+        "$ref": "#/$defs/module"
+      },
+      "minItems": 0
+    },
+    "docs": {
+      "type": "array",
+      "description": "文档列表。每篇文档以 doc_id 为唯一锚点，doc_id 一旦分配永不复用。文档改名时 doc_id 保持不变，仅 title 与 source_path 字段变化，客户端以 doc_id 为准进行增量更新，避免新旧文件并存。",
+      "items": {
+        "$ref": "#/$defs/doc"
+      },
+      "minItems": 0
+    },
+    "archive_of": {
+      "type": "string",
+      "description": "归档来源版本（仅归档 manifest 存在此字段）。当 manifest 被 newer 版本替代后，旧版本会被 tools/archive-cleanup 移动到 archive/ 目录并附加此字段记录原版本号。客户端仅下载最新 manifest，归档 manifest 仅用于版本追溯。归档清理策略：仅保留最近 5 个版本。",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$"
+    },
+    "signature": {
+      "type": "object",
+      "description": "Ed25519 签名信息。签名对象为 manifest 中除 signature 字段外的所有字段的规范化 JSON（按 key 字典序排序、无空白字符）。客户端使用内置公钥验签，验签失败拒绝应用更新。私钥仅存于本地，远程仓库仅存储公钥。",
+      "$ref": "#/$defs/signature"
+    }
+  },
+  "$defs": {
+    "module": {
+      "type": "object",
+      "description": "单个模块定义。模块 ID 采用 4 段格式：Model_<EnglishShort>_<NN>，其中 EnglishShort 为英文简称（小写），NN 为两位数字编号（00-99）。",
+      "required": [
+        "module_id",
+        "name",
+        "english_short",
+        "sequence",
+        "docs_count"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "module_id": {
+          "type": "string",
+          "description": "模块唯一标识符。格式：Model_<EnglishShort>_<NN>。示例：Model_Java_00、Model_Python_01、Model_React_02。一旦分配，永久归属此模块，即使模块被删除也不复用。",
+          "pattern": "^Model_[A-Za-z][A-Za-z0-9]*_\\d{2}$",
+          "examples": ["Model_Java_00", "Model_Python_01"]
+        },
+        "name": {
+          "type": "string",
+          "description": "模块显示名称（中文）。示例：Java、Python、React、高等数学。此字段用于 UI 展示。",
+          "minLength": 1,
+          "examples": ["Java", "Python", "高等数学"]
+        },
+        "english_short": {
+          "type": "string",
+          "description": "模块英文简称（小写）。用于构成 doc_id 的第二段。示例：java、python、react。一旦分配不可变更。",
+          "pattern": "^[a-z][a-z0-9]*$",
+          "minLength": 1,
+          "examples": ["java", "python", "react"]
+        },
+        "sequence": {
+          "type": "integer",
+          "description": "模块两位数字编号（0-99）。用于构成 module_id 的第三段。一旦分配不可变更。",
+          "minimum": 0,
+          "maximum": 99,
+          "examples": [0, 1, 2]
+        },
+        "docs_count": {
+          "type": "integer",
+          "description": "此模块下的文档数量。由 generate-manifest 在生成时统计，需与此模块下 docs 数组长度一致。",
+          "minimum": 0,
+          "examples": [25, 38]
+        },
+        "icon": {
+          "type": "string",
+          "description": "模块图标标识（可选）。用于 UI 展示模块图标。值含义由客户端约定（如 lucide icon name 或自定义图标 key）。",
+          "examples": ["java", "python", "react"]
+        },
+        "color": {
+          "type": "string",
+          "description": "模块主题色（可选，hex 格式）。用于 UI 展示模块标识色。",
+          "pattern": "^#[0-9A-Fa-f]{6}$",
+          "examples": ["#007396", "#3776AB"]
+        },
+        "description": {
+          "type": "string",
+          "description": "模块简介（可选）。用于 UI 展示模块卡片描述。"
+        }
+      }
+    },
+    "doc": {
+      "type": "object",
+      "description": "单篇文档定义。文档 ID 采用 4 段格式：Doc_<EnglishShort>_<NN>_<NNN>，其中 EnglishShort 与模块一致，NN 为模块编号，NNN 为三位文档编号（001-999）。",
+      "required": [
+        "doc_id",
+        "module_id",
+        "title",
+        "source_path",
+        "sha256",
+        "size",
+        "updated_at"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "doc_id": {
+          "type": "string",
+          "description": "文档唯一标识符。格式：Doc_<EnglishShort>_<NN>_<NNN>。示例：Doc_Java_00_001、Doc_Python_01_038。一旦分配，永久归属此文档。文档改名时 doc_id 不变，仅 title/source_path 变化，客户端以 doc_id 为锚点执行增量更新（先删旧文件再下载新文件），避免新旧文件并存。",
+          "pattern": "^Doc_[A-Za-z][A-Za-z0-9]*_\\d{2}_\\d{3}$",
+          "examples": ["Doc_Java_00_001", "Doc_Python_01_038"]
+        },
+        "module_id": {
+          "type": "string",
+          "description": "所属模块 ID。必须与 modules 数组中某个 module_id 一致。",
+          "pattern": "^Model_[A-Za-z][A-Za-z0-9]*_\\d{2}$",
+          "examples": ["Model_Java_00"]
+        },
+        "title": {
+          "type": "string",
+          "description": "文档显示标题（中文）。此字段可随文档改名而变化，doc_id 保持不变。",
+          "minLength": 1,
+          "examples": ["快速入门", "并发编程详解"]
+        },
+        "source_path": {
+          "type": "string",
+          "description": "文档相对路径（相对于 content/full/ 或 content/mobile/）。此字段可随文档改名而变化。客户端通过此路径拼接下载 URL（CDN 默认 + GitHub Raw 备选）。",
+          "pattern": "^[^/].*\\.md$",
+          "examples": ["java/快速入门.md", "python/装饰器.md"]
+        },
+        "sha256": {
+          "type": "string",
+          "description": "文档文件内容的 SHA-256 哈希值（小写 hex）。客户端下载文件后校验此值，不匹配则丢弃并回滚到上一版本（事务化更新：先下载到临时文件，校验通过后原子替换）。",
+          "pattern": "^[a-f0-9]{64}$",
+          "examples": ["e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"]
+        },
+        "size": {
+          "type": "integer",
+          "description": "文档文件大小（字节）。客户端可用于预估下载耗时与存储占用。",
+          "minimum": 0,
+          "examples": [12580, 45672]
+        },
+        "updated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "文档最近更新时间（ISO 8601 UTC）。由 generate-manifest 在生成时取文件 mtime。客户端用于 UI 展示文档更新时间。"
+        },
+        "compat_version": {
+          "type": "string",
+          "description": "此文档兼容的应用最低版本（可选，语义化版本）。若某文档需要新版应用才能正确渲染（如使用新 Markdown 语法、新组件），则填写此字段。客户端若版本低于此值，则跳过此文档的更新并提示用户升级应用。",
+          "pattern": "^\\d+\\.\\d+\\.\\d+$",
+          "examples": ["3.1.0"]
+        },
+        "tags": {
+          "type": "array",
+          "description": "文档标签（可选）。用于 UI 展示与筛选。标签值由编辑者约定，无强制枚举。",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["基础", "入门"], ["并发", "进阶"]]
+        }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "description": "Ed25519 签名信息。签名对象为 manifest 中除 signature 字段外的所有字段，按 JSON key 字典序递归排序后序列化为紧凑 JSON（无空白），再对 UTF-8 字节流做 Ed25519 签名。",
+      "required": ["algorithm", "public_key_fingerprint", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "description": "签名算法。固定为 EdDSA（Ed25519）。",
+          "enum": ["EdDSA"]
+        },
+        "public_key_fingerprint": {
+          "type": "string",
+          "description": "公钥指纹（SHA-256，hex 前 16 字符）。客户端内置公钥列表，通过此指纹快速匹配验签公钥。指纹变更意味着密钥轮换。",
+          "pattern": "^[a-f0-9]{16}$",
+          "examples": ["a1b2c3d4e5f60718"]
+        },
+        "value": {
+          "type": "string",
+          "description": "签名值（base64 编码）。客户端使用对应公钥验签，失败则拒绝应用此 manifest。",
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$",
+          "examples": ["MEUCIQD...签名示例..."]
+        }
+      }
+    }
+  }
+}

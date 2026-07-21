@@ -1,0 +1,159 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fandex.local/schemas/id-registry.schema.json",
+  "title": "FANDEX ID Registry",
+  "description": "FANDEX ID 注册表 Schema。id-registry 是工具链内部使用的本地状态文件（不公开分发，不进入客户端），用于追踪已分配的所有 module_id 与 doc_id，防止 ID 复用。分配规则：模块编号 00-99，文档编号 001-999；一旦分配永不复用；模块/文档删除后，对应 ID 进入 retired 段，永久封存。id-registry 由 tools/allocate-id 维护，由 tools/generate-manifest 在生成 manifest 时读取以校验 ID 唯一性。",
+  "type": "object",
+  "required": [
+    "registry_version",
+    "updated_at",
+    "modules",
+    "docs"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "registry_version": {
+      "type": "string",
+      "description": "本 Schema 的版本号（语义化版本）。当前为 1.0.0。",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["1.0.0"]
+    },
+    "updated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "注册表最后更新时间（ISO 8601 UTC）。每次 allocate-id 工具分配或退役 ID 时更新。"
+    },
+    "next_module_sequence": {
+      "type": "integer",
+      "description": "下一个待分配的模块编号（0-99）。allocate-id 工具从此值开始扫描首个未占用的编号。当此值达到 100 时，模块编号空间耗尽（需扩容编号位数或迁移到新 ID 体系）。",
+      "minimum": 0,
+      "maximum": 100,
+      "examples": [42]
+    },
+    "modules": {
+      "type": "array",
+      "description": "已分配的模块 ID 完整列表（包含 active 与 retired）。每条记录代表一个永久占用的 module_id。",
+      "items": {
+        "$ref": "#/$defs/moduleRecord"
+      },
+      "minItems": 0
+    },
+    "docs": {
+      "type": "array",
+      "description": "已分配的文档 ID 完整列表（包含 active 与 retired）。每条记录代表一个永久占用的 doc_id。",
+      "items": {
+        "$ref": "#/$defs/docRecord"
+      },
+      "minItems": 0
+    }
+  },
+  "$defs": {
+    "moduleRecord": {
+      "type": "object",
+      "description": "模块 ID 记录。记录 module_id 的分配时间、当前状态与关联元数据。",
+      "required": [
+        "module_id",
+        "english_short",
+        "sequence",
+        "name",
+        "allocated_at",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "module_id": {
+          "type": "string",
+          "description": "模块唯一标识符。格式：Model_<EnglishShort>_<NN>。",
+          "pattern": "^Model_[A-Za-z][A-Za-z0-9]*_\\d{2}$",
+          "examples": ["Model_Java_00"]
+        },
+        "english_short": {
+          "type": "string",
+          "description": "模块英文简称（小写）。与 module_id 第二段一致。",
+          "pattern": "^[a-z][a-z0-9]*$",
+          "examples": ["java"]
+        },
+        "sequence": {
+          "type": "integer",
+          "description": "模块两位数字编号（0-99）。与 module_id 第三段一致。",
+          "minimum": 0,
+          "maximum": 99
+        },
+        "name": {
+          "type": "string",
+          "description": "模块显示名称（中文）。",
+          "minLength": 1,
+          "examples": ["Java"]
+        },
+        "allocated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "module_id 分配时间（ISO 8601 UTC）。"
+        },
+        "status": {
+          "type": "string",
+          "description": "模块状态。active：当前 manifest 中存在；retired：模块已被删除，ID 永久封存不复用。",
+          "enum": ["active", "retired"]
+        },
+        "retired_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "模块退役时间（仅 status=retired 时存在）。"
+        }
+      }
+    },
+    "docRecord": {
+      "type": "object",
+      "description": "文档 ID 记录。记录 doc_id 的分配时间、当前状态、所属模块与编号。",
+      "required": [
+        "doc_id",
+        "module_id",
+        "sequence",
+        "title",
+        "allocated_at",
+        "status"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "doc_id": {
+          "type": "string",
+          "description": "文档唯一标识符。格式：Doc_<EnglishShort>_<NN>_<NNN>。",
+          "pattern": "^Doc_[A-Za-z][A-Za-z0-9]*_\\d{2}_\\d{3}$",
+          "examples": ["Doc_Java_00_001"]
+        },
+        "module_id": {
+          "type": "string",
+          "description": "所属模块 ID。",
+          "pattern": "^Model_[A-Za-z][A-Za-z0-9]*_\\d{2}$",
+          "examples": ["Model_Java_00"]
+        },
+        "sequence": {
+          "type": "integer",
+          "description": "文档三位数字编号（1-999）。与 doc_id 第四段一致。",
+          "minimum": 1,
+          "maximum": 999
+        },
+        "title": {
+          "type": "string",
+          "description": "文档标题（首次分配时的标题，可能随后续 modify-doc 操作而变化，此字段仅作分配记录）。",
+          "minLength": 1
+        },
+        "allocated_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "doc_id 分配时间（ISO 8601 UTC）。"
+        },
+        "status": {
+          "type": "string",
+          "description": "文档状态。active：当前 manifest 中存在；retired：文档已被删除，ID 永久封存不复用。",
+          "enum": ["active", "retired"]
+        },
+        "retired_at": {
+          "type": "string",
+          "format": "date-time",
+          "description": "文档退役时间（仅 status=retired 时存在）。"
+        }
+      }
+    }
+  }
+}

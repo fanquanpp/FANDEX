@@ -1,0 +1,39 @@
+# ===== Prettier 忽略清单 =====
+# 作用：避免 Prettier 解析 markdown 代码块与 .astro 模板时
+#       因伪代码/简化示例/HTML 注释触发 SyntaxError 导致 CI 阻断
+
+# ----- 构建产物与依赖 -----
+dist/
+node_modules/
+.astro/
+coverage/
+reports/
+.pagefind/
+
+# ----- 任务临时工作区（不纳入 Prettier 检查） -----
+.task8-workspace/
+.tmp-task11/
+task9-release-drafter/
+docs/governance-templates/
+scripts/classify-starred.cjs
+scripts/print-report.cjs
+
+# ----- 锁文件与自动生成产物 -----
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+CHANGELOG.md
+
+# ----- 文档目录（由 remark lint 负责检查）-----
+src/content/docs/
+src/data/cheatsheets/
+src/services/README.md
+docs/
+
+# ----- prettier-plugin-astro 0.14.1 已知 Bug -----
+# 这 3 个 .astro 文件中 JSX 表达式紧邻 HTML 注释，
+# 触发 prettier-plugin-astro 解析失败（SyntaxError: Unexpected token）
+# 待 prettier-plugin-astro 发布修复版本后可移除以下忽略
+src/components/PerformanceMonitor.astro
+src/components/Sidebar.astro
+src/pages/index.astro

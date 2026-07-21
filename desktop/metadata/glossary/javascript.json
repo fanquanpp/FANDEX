@@ -1,0 +1,2395 @@
+{
+  "moduleId": "javascript",
+  "terms": [
+    {
+      "name": "抽象语法树",
+      "definition": "JavaScript 代码编译后的树形表示，每个节点代表代码的语法结构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "访问器属性",
+      "definition": "通过 getter 和 setter 方法访问的属性",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "活动对象",
+      "definition": "函数执行时创建的变量对象，存储函数参数和局部变量",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "聚合赋值",
+      "definition": "复合赋值运算符如 `+=`、`-=`、`*=` 等",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "自动分号插入",
+      "definition": "JavaScript 引擎自动在特定位置添加分号的机制",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "辅助功能",
+      "definition": "使网页对残障人士可用的技术和实践",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "断言",
+      "definition": "测试中验证条件是否为真的语句",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Babel",
+      "definition": "JavaScript 编译器，将新版本语法转换为旧版本兼容代码",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "块级作用域",
+      "definition": "用 `let` 或 `const` 在 `{}` 中声明的变量作用域",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "布尔类型",
+      "definition": "值只能为 `true` 或 `false` 的数据类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "BOM",
+      "definition": "浏览器对象模型，提供操作浏览器窗口的 API",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "断点",
+      "definition": "调试器中暂停代码执行的位置",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "构建工具",
+      "definition": "自动完成代码打包、压缩、转换等任务的工具",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "字节码",
+      "definition": "解释器执行的中间代码形式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "回调函数",
+      "definition": "作为参数传递给另一个函数的函数，在特定时机被调用",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "调用栈",
+      "definition": "存储函数调用上下文的数据结构，后进先出",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "捕获阶段",
+      "definition": "事件从根节点向下传播到目标节点的阶段",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类",
+      "definition": "创建对象的模板，使用 `class` 关键字定义",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类字段",
+      "definition": "类中直接定义的属性，无需在构造函数中声明",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "闭包",
+      "definition": "函数与其引用的词法环境的组合，能访问创建时的作用域变量",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "代码分割",
+      "definition": "将代码分成多个块，按需加载的技术",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "代码块",
+      "definition": "用 `{}` 包裹的语句组",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "比较运算符",
+      "definition": "`==`、`===`、`!=`、`!==` 等比较运算符号",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "编译时",
+      "definition": "代码被编译的阶段",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "复合语句",
+      "definition": "包含其他语句的语句，如 `if`、`for`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "条件表达式",
+      "definition": "三元运算符 `condition ? value1 : value2`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "构造函数",
+      "definition": "初始化对象实例的函数，用 `new` 调用",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "上下文",
+      "definition": "`this` 绑定的对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "可迭代对象",
+      "definition": "实现了迭代器协议的对象，可用 `for...of` 遍历",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "柯里化",
+      "definition": "将多参数函数转换为一系列单参数函数的技术",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "客户端",
+      "definition": "请求服务的用户端程序，如浏览器",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "数据类型",
+      "definition": "值的种类，决定可执行的操作",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "调试器",
+      "definition": "检查和修复代码错误的工具",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "解构赋值",
+      "definition": "将数组或对象值提取到变量的语法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "文档对象模型",
+      "definition": "将 HTML/XML 文档表示为树形结构，JavaScript 可操作",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "动态类型",
+      "definition": "变量类型在运行时确定，无需声明",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "动态导入",
+      "definition": "使用 `import()` 语法按需加载模块",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "ECMA 国际",
+      "definition": "制定 JavaScript 语言标准的组织",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "ECMAScript",
+      "definition": "JavaScript 的语言规范标准",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "编辑器",
+      "definition": "编写代码的文本编辑器",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "提升",
+      "definition": "元素在文档流中的视觉位置",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "编码",
+      "definition": "字符到字节的映射规则",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "环境对象",
+      "definition": "存储变量绑定的对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "环境闭包",
+      "definition": "闭包捕获的词法环境",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "同等优先",
+      "definition": "同一优先级的运算从左到右执行",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "ES Modules",
+      "definition": "使用 `import`/`export` 的模块系统",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "eval",
+      "definition": "将字符串作为代码执行的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "事件循环",
+      "definition": "持续运行的事件分发机制，处理异步回调",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "执行上下文",
+      "definition": "代码运行时的环境，包含变量和作用域信息",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "执行栈",
+      "definition": "管理执行上下文的栈结构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "表达式",
+      "definition": "求值后产生值的代码片段",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "表达式语句",
+      "definition": "以表达式构成的语句",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "扩展运算符",
+      "definition": "`...` 展开可迭代对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "可选链",
+      "definition": "`?.` 安全访问深层属性",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "假值",
+      "definition": "在布尔上下文中被视为 `False` 的值，如 `0`、`\"\"`、`null`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "字段",
+      "definition": "对象的属性或类成员",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "文件对象",
+      "definition": "通过 `<input type=\"file\">` 获取的文件信息对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "过滤器",
+      "definition": "数组方法，从元素中筛选满足条件的",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "浮点数",
+      "definition": "带小数点的数字类型，IEEE 754 标准",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "折叠",
+      "definition": "将数组元素累积为单个值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "for...in",
+      "definition": "遍历对象可枚举属性的循环",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "for...of",
+      "definition": "遍历可迭代对象元素的循环",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "前端",
+      "definition": "用户界面和用户交互的部分",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "函数声明",
+      "definition": "用 `function` 关键字声明的函数，存在提升",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "函数表达式",
+      "definition": "将函数赋值给变量的表达式，不提升",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "函数式编程",
+      "definition": "以函数为核心的编程范式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "函数提升",
+      "definition": "函数声明被提升到作用域顶部",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "生成器函数",
+      "definition": "用 `function*` 定义，可暂停和恢复执行的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "getter",
+      "definition": "获取属性值的访问器方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "全局对象",
+      "definition": "全局范围内可用的对象，浏览器中是 `window`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "全局作用域",
+      "definition": "所有代码都可访问的作用域",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "全局变量",
+      "definition": "在全局作用域声明的变量",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "哈希表",
+      "definition": "通过键直接访问值的数据结构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "高阶函数",
+      "definition": "接收函数为参数或返回函数的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "宿主对象",
+      "definition": "运行环境提供的对象，如 `window`、`document`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "宿主环境",
+      "definition": "JavaScript 运行的环境，如浏览器、Node.js",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "标识符",
+      "definition": "变量、函数、类的命名",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "标识",
+      "definition": "`===` 比较，检查是否为同一对象引用",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "if 语句",
+      "definition": "条件分支语句",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "立即执行函数",
+      "definition": "定义后立即执行的函数表达式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "不可修改",
+      "definition": "创建后不能更改的数据",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "不可变对象",
+      "definition": "创建后属性不能修改的对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "导入",
+      "definition": "从模块获取导出的变量",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "索引",
+      "definition": "数组中元素的位置，从 0 开始",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "索引属性",
+      "definition": "通过数字索引访问的属性",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "惰性求值",
+      "definition": "表达式在需要时才求值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "词法环境",
+      "definition": "代码结构决定的变量作用域",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "词法作用域",
+      "definition": "根据源代码位置确定的作用域",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "字面量",
+      "definition": "直接写出的固定值，如 `42`、`\"hello\"`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "逻辑运算符",
+      "definition": "`&&`、`\\",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "循环",
+      "definition": "重复执行代码的控制结构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "JIT 编译",
+      "definition": "运行时将热点代码编译为机器码",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "JSON",
+      "definition": "轻量级数据交换格式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "JSDoc",
+      "definition": "JavaScript 文档注释语法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "关键字",
+      "definition": "JavaScript 保留的单词，如 `if`、`for`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "键值对",
+      "definition": "键和值一一对应的数据项",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "lambda 表达式",
+      "definition": "箭头函数的另一种称呼",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "后期绑定",
+      "definition": "运行时确定 `this` 指向",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "链表",
+      "definition": "通过指针连接的数据结构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Map",
+      "definition": "键值对集合，任意类型键都可",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "映射函数",
+      "definition": "对数组每个元素执行函数并返回新数组",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "方法",
+      "definition": "绑定到对象的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "方法链",
+      "definition": "连续调用多个方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "mixin",
+      "definition": "提供方法供其他类组合使用的类",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "模块",
+      "definition": "独立的功能单元，用 `import`/`export` 组织",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "模块模式",
+      "definition": "用闭包实现私有成员的编程模式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "猴子补丁",
+      "definition": "运行时动态修改对象或类的行为",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Mozilla 开发者网络",
+      "definition": "Mozilla 维护的 Web 技术文档网站",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "命名空间",
+      "definition": "避免命名冲突的容器",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "NaN",
+      "definition": "非数字，表示无效的数学运算结果",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "本地存储",
+      "definition": "浏览器中持久存储数据的机制",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Node.js",
+      "definition": "服务端 JavaScript 运行时",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "对象",
+      "definition": "键值对的集合，是 JavaScript 的核心数据结构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "对象字面量",
+      "definition": "用 `{}` 直接创建对象的语法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "目标阶段",
+      "definition": "事件到达目标节点的阶段",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "模板字面量",
+      "definition": "用反引号 `` ` `` 创建的字符串，支持嵌入表达式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "暂存死区",
+      "definition": "`let`/`const` 声明前不可访问的区域",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "this",
+      "definition": "指向当前执行上下文的对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "抛出",
+      "definition": "产生异常，中断代码执行",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "触发",
+      "definition": "导致事件发生",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "真值",
+      "definition": "在布尔上下文中被视为 `True` 的值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类型转换",
+      "definition": "将值从一种类型转换为另一种类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类型推断",
+      "definition": "根据上下文自动推断变量类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "typeof",
+      "definition": "返回值类型的运算符",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "参数",
+      "definition": "函数定义时声明的变量",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "形参",
+      "definition": "函数定义的输入",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "形参默认值",
+      "definition": "函数参数的默认值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "解析",
+      "definition": "将文本分解为 Token 的过程",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "路径",
+      "definition": "文件系统中的位置",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "管道",
+      "definition": "将函数输出作为下一个函数输入",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "泊位脚本",
+      "definition": "阻止页面解析的脚本",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "polyfill",
+      "definition": "为旧浏览器提供新 API 兼容的代码",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "优先级",
+      "definition": "运算符执行顺序",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "私有字段",
+      "definition": "用 `#` 开头只能在类内部访问的字段",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "过程",
+      "definition": "执行特定任务的代码块",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "原型",
+      "definition": "对象继承属性和方法的来源",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "原型链",
+      "definition": "对象查找属性的链条",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "代理对象",
+      "definition": "包装另一个对象，控制对其属性的访问",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "伪数组",
+      "definition": "类似数组但不是真正的数组",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "发布订阅模式",
+      "definition": "观察者模式的一种，事件发布和订阅机制",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "查询选择器",
+      "definition": "通过 CSS 选择器获取元素的方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "限定名称",
+      "definition": "带命名空间前缀的名称",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "可读流",
+      "definition": "逐步读取数据的数据流",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "只读属性",
+      "definition": "无法修改的属性",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "规约函数",
+      "definition": "将数组元素累积为单个值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "引用",
+      "definition": "指向值的内存地址",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "引用计数",
+      "definition": "跟踪对象被引用次数的垃圾回收策略",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "正则表达式",
+      "definition": "描述文本模式的字符串",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "相关性",
+      "definition": "搜索结果与查询的匹配程度",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "剩余参数",
+      "definition": "用 `...` 收集剩余参数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "运行时",
+      "definition": "代码实际执行的阶段",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "运行时错误",
+      "definition": "代码执行时才发生的错误",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "沙箱",
+      "definition": "隔离的安全运行环境",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "作用域",
+      "definition": "变量可见的区域",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "作用域链",
+      "definition": "从内到外查找变量的链条",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Script 标签",
+      "definition": "HTML 中引入 JavaScript 的标签",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "脚本加载策略",
+      "definition": "正常、defer、async 加载方式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "搜索路径",
+      "definition": "模块解析时查找文件的目录列表",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "种子",
+      "definition": "随机数生成器的初始值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "自引用",
+      "definition": "引用自身",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "语义化",
+      "definition": "表达清晰含义的",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "序列化",
+      "definition": "将对象转换为可存储/传输格式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "服务器",
+      "definition": "提供服务的后端程序",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "服务器端",
+      "definition": "在服务器上执行的处理",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "服务工作者",
+      "definition": "在后台运行的 Web Worker",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "setter",
+      "definition": "设置属性值的访问器方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "阴影",
+      "definition": "内层变量遮蔽外层同名变量",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "简短求值",
+      "definition": "逻辑运算符在结果确定时停止计算",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "单线程",
+      "definition": "同一时刻只执行一个任务",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "源码",
+      "definition": "程序员编写的原始代码",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "源代码映射",
+      "definition": "将压缩代码映射回源码的文件",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "特殊方法",
+      "definition": "双下划线开头的方法，如 `__init__`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "栈",
+      "definition": "后进先出的数据结构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "静态方法",
+      "definition": "类上而非实例上调用的方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "严格模式",
+      "definition": "使用更严格规则执行代码的模式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "字符串",
+      "definition": "字符序列",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "结构化克隆",
+      "definition": "复制对象和值的算法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "子类",
+      "definition": "继承其他类的类",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "超级代理",
+      "definition": "HTTP 请求库",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "super",
+      "definition": "访问父类属性和方法的关键字",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "可交换",
+      "definition": "可以替换实现",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "符号",
+      "definition": "ES6 新增的原始类型，唯一标识符",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "语法错误",
+      "definition": "代码结构不符合语法规则",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "语法糖",
+      "definition": "让代码更简洁的语法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Token",
+      "definition": "词法分析后的最小语法单元",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "追踪",
+      "definition": "记录代码执行的日志",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Try 语句",
+      "definition": "捕获异常的代码结构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类型数组",
+      "definition": "处理二进制数据的数组类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类型注解",
+      "definition": "标注变量或函数期望的类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类型强制转换",
+      "definition": "自动或手动转换值类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类型错误",
+      "definition": "操作类型不匹配时发生的错误",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Unicode",
+      "definition": "字符编码标准",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "统一资源定位符",
+      "definition": "资源的地址",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "未捕获异常",
+      "definition": "没有被 try-catch 处理的异常",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "底层平台",
+      "definition": "JavaScript 运行的基础环境",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "不可枚举属性",
+      "definition": "无法用 `for...in` 遍历的属性",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "唯一标识符",
+      "definition": "唯一的值，用于标识对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "解包",
+      "definition": "将数组或对象值提取到变量",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "解构",
+      "definition": "非结构化的",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "无符号整数",
+      "definition": "没有正负号的整数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "值",
+      "definition": "数据的内容",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "值类型",
+      "definition": "传递时复制值的类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "var",
+      "definition": "ES5 的变量声明关键字",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "变量",
+      "definition": "存储值的命名容器",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "变量声明",
+      "definition": "声明变量的语句",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "变量提升",
+      "definition": "var 声明被提升的行为",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "供应商前缀",
+      "definition": "浏览器厂商添加的实验性属性前缀",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "供应商特定",
+      "definition": "特定浏览器实现",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "虚拟 DOM",
+      "definition": "内存中 DOM 的轻量级表示",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "可视化",
+      "definition": "将数据以图形方式展示",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Web API",
+      "definition": "浏览器提供的编程接口",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Web Worker",
+      "definition": "后台线程中运行脚本的机制",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "while 循环",
+      "definition": "条件为真时重复执行的循环",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "通配符",
+      "definition": "匹配任意字符的符号，如 `*`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "with 语句",
+      "definition": "扩展作用域的语句（严格模式禁用）",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Worker",
+      "definition": "在独立线程运行的脚本",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "XMLHttpRequest",
+      "definition": "浏览器中发起 HTTP 请求的 API",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "yield",
+      "definition": "在生成器函数中暂停执行并返回值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "零值",
+      "definition": "类型的默认值或零",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Array",
+      "definition": "有序元素集合，用 `[]` 创建",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "ArrayBuffer",
+      "definition": "存储原始二进制数据的对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Boolean",
+      "definition": "布尔值 `true` 和 `false`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "console",
+      "definition": "控制台输出对象，提供 `log`、`error` 等方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "DataView",
+      "definition": "操作 ArrayBuffer 数据的视图",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Date",
+      "definition": "日期和时间对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Error",
+      "definition": "错误对象，包含 message、name 等属性",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Fetch API",
+      "definition": "替代 XMLHttpRequest 的网络请求 API",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Float32Array",
+      "definition": "32 位浮点数数组",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Float64Array",
+      "definition": "64 位浮点数数组",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Function",
+      "definition": "函数对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "globalThis",
+      "definition": "全局 `this` 的标准引用",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Int8Array",
+      "definition": "8 位有符号整数数组",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Int16Array",
+      "definition": "16 位有符号整数数组",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Int32Array",
+      "definition": "32 位有符号整数数组",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Math",
+      "definition": "数学常量和函数对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Number",
+      "definition": "数值对象，提供 `MAX_VALUE`、`NaN` 等",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Object",
+      "definition": "基础对象类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Promise",
+      "definition": "异步操作最终结果的对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Proxy",
+      "definition": "对象访问代理",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Reflect",
+      "definition": "操作对象元编程的 API",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "RegExp",
+      "definition": "正则表达式对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Set",
+      "definition": "不重复值的集合",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "String",
+      "definition": "字符串对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Symbol",
+      "definition": "唯一标识符类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "TypedArray",
+      "definition": "二进制数据数组类型统称",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Uint8Array",
+      "definition": "8 位无符号整数数组",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Uint16Array",
+      "definition": "16 位无符号整数数组",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Uint32Array",
+      "definition": "32 位无符号整数数组",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "URL",
+      "definition": "URL 处理对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "WeakMap",
+      "definition": "键为对象的弱引用 Map",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "WeakSet",
+      "definition": "对象的弱引用 Set",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "异步生成器",
+      "definition": "包含 `await` 和 `yield` 的异步函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "异步函数",
+      "definition": "返回 Promise 的函数，用 `async` 定义",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "异步迭代器",
+      "definition": "实现异步迭代协议的对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "await",
+      "definition": "等待 Promise 解决的运算符",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "平衡树",
+      "definition": "自动调整保持平衡的树结构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "绑定",
+      "definition": "将标识符关联到特定值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "位运算符",
+      "definition": "`&`、`\\",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "位字段",
+      "definition": "用单个数值存储多个布尔标志",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "位掩码",
+      "definition": "用位运算操作标志组合",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "缓冲区",
+      "definition": "临时存储数据的内存区域",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "回调地狱",
+      "definition": "过多嵌套回调导致的难以维护的代码",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "组合子",
+      "definition": "组合多个函数的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "尾调用优化",
+      "definition": "优化递归调用避免栈增长",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "代码覆盖率",
+      "definition": "测试覆盖代码的比例",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "代码点",
+      "definition": "Unicode 字符的唯一数值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "组合",
+      "definition": "从集合中选出一部分的所有方式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "组合函数",
+      "definition": "将多个函数组合成新函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "计算属性名",
+      "definition": "用表达式计算属性名",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "约束",
+      "definition": "限制条件的规则",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "上下文管理器",
+      "definition": "管理资源的对象，用 `with` 使用",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "协程",
+      "definition": "可暂停和恢复执行的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "跨域资源共享",
+      "definition": "允许跨域请求的机制",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "覆盖率",
+      "definition": "测试覆盖代码的比例",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "守护程序",
+      "definition": "后台运行的程序",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "数据属性",
+      "definition": "存储值的普通属性",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "声明提升",
+      "definition": "声明被提升到作用域顶部",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "解码",
+      "definition": "将编码数据还原为原始形式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "延迟初始化",
+      "definition": "首次使用时才初始化",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "依赖注入",
+      "definition": "将依赖作为参数传入的模式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "依赖图",
+      "definition": "模块间依赖关系的图结构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "派生类",
+      "definition": "继承父类的子类",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "解构绑定",
+      "definition": "解构赋值时创建的变量绑定",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "检测",
+      "definition": "检测特性是否可用的方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "直接量",
+      "definition": "传递给解释器的指令字符串",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "派发",
+      "definition": "根据类型选择处理方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "文档碎片",
+      "definition": "内存中的 DOM 节点集合",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "DOM 事件",
+      "definition": "文档或窗口发生的动作通知",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "领域特定语言",
+      "definition": "特定领域的问题求解语言",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "动态作用域",
+      "definition": "根据调用链确定作用域",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "动态类型检查",
+      "definition": "运行时检查类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "ECMAScript 国际标准",
+      "definition": "ECMAScript 规范正式名称",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "端点",
+      "definition": "API 的访问地址",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "环境变量",
+      "definition": "操作系统中的配置变量",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "错误边界",
+      "definition": "捕获子组件错误的 React 概念",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "错误处理",
+      "definition": "捕获和处理异常",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "eval 代码",
+      "definition": "通过 eval 执行的代码",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "事件冒泡",
+      "definition": "事件从子元素向上传播到父元素",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "事件委托",
+      "definition": "在父元素上处理子元素事件",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "事件监听器",
+      "definition": "响应事件的处理函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "事件处理器",
+      "definition": "处理事件的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "事件传播",
+      "definition": "事件在 DOM 树中传播的过程",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "事件队列",
+      "definition": "待处理事件的队列",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "异常",
+      "definition": "导致程序中断的错误",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "异常传播",
+      "definition": "异常向外层传播的过程",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "显式多态",
+      "definition": "手动实现的多态",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "表达式闭包",
+      "definition": "省略 `return` 的函数简写",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "扩展",
+      "definition": "浏览器增强功能",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "外部函数接口",
+      "definition": "JavaScript 调用其他语言函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "文件上传",
+      "definition": "上传文件到服务器",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "filter 回调",
+      "definition": "筛选数组元素的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "find 回调",
+      "definition": "查找数组元素的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "first-class",
+      "definition": "可作为参数传递",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "第一类公民",
+      "definition": "可像变量一样使用",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "固定小数",
+      "definition": "小数位数固定的数字",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "扁平化",
+      "definition": "将嵌套结构转为单层",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "流控制",
+      "definition": "控制代码执行顺序",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "forEach 回调",
+      "definition": "遍历数组的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "前端框架",
+      "definition": "构建 UI 的框架",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "函数绑定",
+      "definition": "将函数绑定到特定 `this`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "函数组合",
+      "definition": "组合多个函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "生成器",
+      "definition": "可暂停的函数，用 `yield` 返回值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Getter",
+      "definition": "读取属性的方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "握手",
+      "definition": "建立连接的过程",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "硬编码",
+      "definition": "直接写入代码的值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "哈希",
+      "definition": "数据的数字指纹",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "哈希冲突",
+      "definition": "不同数据有相同哈希值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "头等函数",
+      "definition": "可作为值传递的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "超类",
+      "definition": "元类的实例",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "幂等",
+      "definition": "多次执行结果相同",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "标识符名称",
+      "definition": "标识符的文本",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "隐式类型转换",
+      "definition": "自动进行的类型转换",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "导入映射",
+      "definition": "映射模块名称到 URL",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "增量更新",
+      "definition": "只更新变化部分",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "索引签名",
+      "definition": "动态属性名的类型定义",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "信息隐藏",
+      "definition": "隐藏实现细节",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "继承",
+      "definition": "从父类获取属性和方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "实例化",
+      "definition": "创建类的实例",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "中间件",
+      "definition": "处理请求/响应的中间层",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "内部函数",
+      "definition": "在函数内部定义的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "内部属性",
+      "definition": "无法从外部访问的属性",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "解释器",
+      "definition": "逐行执行代码的程序",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "调用",
+      "definition": "执行函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "迭代器协议",
+      "definition": "定义如何遍历对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "JAMstack",
+      "definition": "JavaScript、API、Markup 架构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "JITs",
+      "definition": "即时编译器",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Join",
+      "definition": "连接多个数据源",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "JSONP",
+      "definition": "跨域数据获取技术",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "KISS 原则",
+      "definition": "Keep It Simple, Stupid，保持简单",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "键盘事件",
+      "definition": "键盘输入事件",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "关键词",
+      "definition": "保留的特殊单词",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "标签模板",
+      "definition": "带函数的模板字符串",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "尾调用",
+      "definition": "函数末尾的函数调用",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "方法重写",
+      "definition": "子类重新定义父类方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "混入",
+      "definition": "提供方法组合的类",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "多分派",
+      "definition": "根据参数类型选择方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "多态",
+      "definition": "同一接口不同实现",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "名称修饰",
+      "definition": "编译器修改内部名称",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "本地代理",
+      "definition": "直接代理原生对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "导航",
+      "definition": "页面间的跳转",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "嵌套函数",
+      "definition": "在函数内部定义的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "网络请求",
+      "definition": "HTTP 请求",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "非阻塞 I/O",
+      "definition": "不等待 I/O 完成",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "null",
+      "definition": "表示无值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "数字分隔符",
+      "definition": "`_` 分隔大数字",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "对象冻结",
+      "definition": "防止对象修改",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "对象初始化器",
+      "definition": "创建对象的语法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "对象键控",
+      "definition": "用对象作为键",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "对象映射",
+      "definition": "用对象存储键值对",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "观察者模式",
+      "definition": "订阅-发布模式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "一次性事件",
+      "definition": "只触发一次的事件",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "开放封闭原则",
+      "definition": "对扩展开放，对修改封闭",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "运算符",
+      "definition": "执行操作的符号",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "运算符优先级",
+      "definition": "运算顺序",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "可选参数",
+      "definition": "可以省略的参数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "原始类型",
+      "definition": "基础数据类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "私有成员",
+      "definition": "类内部才能访问的成员",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "生产者消费者",
+      "definition": "生产和消费数据的模式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "属性描述符",
+      "definition": "定义属性行为",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "属性链",
+      "definition": "访问嵌套属性",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "原型继承",
+      "definition": "基于原型的继承",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "伪协议",
+      "definition": "自定义的 URL 协议",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "纯函数",
+      "definition": "无副作用、引用透明的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "限定",
+      "definition": "限制作用域",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "队列",
+      "definition": "先进先出的数据结构",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "随机访问",
+      "definition": "直接访问任意位置",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Range",
+      "definition": "文本选择范围",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "读取属性",
+      "definition": "获取属性值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "重新导出",
+      "definition": "导出导入的内容",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "引用类型",
+      "definition": "通过引用访问的类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "关系运算符",
+      "definition": "比较大小",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "渲染",
+      "definition": "生成可视化输出",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "渲染引擎",
+      "definition": "解析 HTML/CSS 的引擎",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "可重入",
+      "definition": "可在执行中重新进入",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "注册处理器",
+      "definition": "注册的事件处理函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "正则表达式标志",
+      "definition": "如 `g`、`i`、`m`",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "相关事件",
+      "definition": "与另一事件相关的补充事件",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "结果缓存",
+      "definition": "缓存计算结果",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "运行时类型",
+      "definition": "实际类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "方案",
+      "definition": "数据结构定义",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "作用域决议",
+      "definition": "查找变量的过程",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "作用域安全",
+      "definition": "正确的作用域使用",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "脚本类型",
+      "definition": "`<script>` 的类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "选择器",
+      "definition": "CSS 选择器",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "语义化版本",
+      "definition": "`主.次.补丁` 版本号",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "串行化",
+      "definition": "对象转字符串",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "服务器渲染",
+      "definition": "在服务器生成 HTML",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Setter",
+      "definition": "设置属性的方法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "阴影 DOM",
+      "definition": "封装的 DOM 树",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "阴影属性",
+      "definition": "遮蔽父类属性",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "壳",
+      "definition": "命令行界面",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "单例",
+      "definition": "只有一个实例",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "源代码",
+      "definition": "原始代码",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "源映射",
+      "definition": "源码映射",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "特定平台",
+      "definition": "特定平台实现",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "拆分",
+      "definition": "代码分割",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "稳定排序",
+      "definition": "相等元素保持原顺序",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "栈帧",
+      "definition": "函数调用的记录",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "状态机",
+      "definition": "状态转换模型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "静态成员",
+      "definition": "类上而非实例上的成员",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "静态作用域",
+      "definition": "编译时确定的作用域",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "STOR",
+      "definition": "存储",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "流",
+      "definition": "数据流",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "字符串化",
+      "definition": "转字符串",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "强类型",
+      "definition": "严格类型检查",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "样式表",
+      "definition": "CSS 样式定义",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "下标",
+      "definition": "用 `[]` 访问",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "替代语法",
+      "definition": "另一种写法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "超文本",
+      "definition": "上标文字",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "合成事件",
+      "definition": "React 包装的事件",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "系统命令",
+      "definition": "操作系统命令",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "表单数据",
+      "definition": "表单数据对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "标签函数",
+      "definition": "处理模板字符串的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Tap",
+      "definition": "调试用的副作用函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "目标对象",
+      "definition": "被代理的对象",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "任务队列",
+      "definition": "待执行的异步任务",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "技术报告",
+      "definition": "技术文档",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "模板",
+      "definition": "生成内容的框架",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "模板字符串",
+      "definition": "带插值的字符串",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "测试框架",
+      "definition": "测试工具集合",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "测试运行器",
+      "definition": "执行测试的程序",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "文本节点",
+      "definition": "包含文本的 DOM 节点",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "this 绑定",
+      "definition": "确定 `this` 值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Throw",
+      "definition": "抛出异常",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "时间戳",
+      "definition": "日期时间值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "事务",
+      "definition": "一组原子操作",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "转换",
+      "definition": "改变数据格式",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "触发器",
+      "definition": "触发条件的规则",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类型强制",
+      "definition": "类型转换",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类型检查",
+      "definition": "验证类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类型定义",
+      "definition": "类型声明",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类型运算符",
+      "definition": "typeof 等运算符",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Unicode 转义",
+      "definition": "Unicode 字符表示",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "统一码",
+      "definition": "字符编码标准",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "唯一键",
+      "definition": "唯一标识",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "单例模式",
+      "definition": "只产生一个实例",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "未知类型",
+      "definition": "未知的数据类型",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "解链",
+      "definition": "移除引用",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "非限定名称",
+      "definition": "无前缀的名称",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "非限制函数",
+      "definition": "无 `this` 绑定的函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "顶层作用域",
+      "definition": "最外层作用域",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "变换",
+      "definition": "状态平滑过渡",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "树摇",
+      "definition": "删除未用代码",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "真值表",
+      "definition": "逻辑运算结果表",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "类型化语言",
+      "definition": "有类型检查的语言",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "URL 编码",
+      "definition": "转义 URL 特殊字符",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "用户代理",
+      "definition": "浏览器标识字符串",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "用户交互事件",
+      "definition": "用户操作触发的事件",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "验证",
+      "definition": "验证数据有效性",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "值域",
+      "definition": "可能的取值范围",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "变量声明符",
+      "definition": "声明变量的语法",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "等待队列",
+      "definition": "等待资源的队列",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Web 组件",
+      "definition": "可复用自定义元素",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "工作池",
+      "definition": "任务队列",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "写入属性",
+      "definition": "设置属性值",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Async Generator",
+      "definition": "包含 `await` 和 `yield` 的异步函数",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Async Function",
+      "definition": "返回 Promise 的函数，用 `async` 定义",
+      "slug": "javascript/glossary"
+    },
+    {
+      "name": "Async Iterator",
+      "definition": "实现异步迭代协议的对象",
+      "slug": "javascript/glossary"
+    }
+  ]
+}

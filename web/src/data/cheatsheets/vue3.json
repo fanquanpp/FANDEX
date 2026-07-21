@@ -1,0 +1,236 @@
+{
+  "元数据": {
+    "模块名称": "Vue 3",
+    "版本": "1.0.0",
+    "最后更新": "2026-06-15",
+    "前置知识": ["掌握 HTML、CSS 和 JavaScript 基础", "了解前端框架的基本概念"],
+    "推荐学习顺序": [
+      "先学习【模板语法】分组，掌握模板中的数据绑定与指令",
+      "再学习【组合式 API】分组，掌握响应式数据与生命周期"
+    ]
+  },
+  "分组": [
+    {
+      "分组名": "模板语法",
+      "分组说明": "Vue 模板是声明式渲染的核心。本组内容涵盖插值、指令和表单绑定，是构建 Vue 组件界面的基础。",
+      "条目": [
+        {
+          "描述": "插值表达式",
+          "代码": "<template>\n  <p>{{ message }}</p>\n  <p>{{ count + 1 }}</p>\n  <p>{{ ok ? '是' : '否' }}</p>\n</template>",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#22863A\">template</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">p</span><span style=\"color:#24292E\">>{{ message }}&#x3C;/</span><span style=\"color:#22863A\">p</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">p</span><span style=\"color:#24292E\">>{{ count + 1 }}&#x3C;/</span><span style=\"color:#22863A\">p</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">p</span><span style=\"color:#24292E\">>{{ ok ? '是' : '否' }}&#x3C;/</span><span style=\"color:#22863A\">p</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">&#x3C;/</span><span style=\"color:#22863A\">template</span><span style=\"color:#24292E\">></span></span></code></pre>",
+          "预期输出": "页面渲染出 message 的值、count+1 的结果和条件表达式的结果",
+          "使用场景": "在模板中输出响应式数据。双花括号内支持 JavaScript 表达式，但不支持语句（如 if/for）。",
+          "常见错误": [
+            {
+              "错误示例": "{{ if (ok) { return '是' } }}",
+              "错误信息": "编译错误：插值中不能使用语句",
+              "解决方法": "使用三元表达式：{{ ok ? '是' : '否' }}，或将逻辑移到计算属性中"
+            },
+            {
+              "错误示例": "{{ new Date() }}（在插值中创建对象）",
+              "错误信息": "每次渲染都创建新对象，可能导致不必要的更新",
+              "解决方法": "在 setup 中定义计算属性，避免在模板中执行复杂逻辑"
+            }
+          ],
+          "进阶提示": "v-once 指令可使插值只渲染一次，后续数据变化不会更新该节点，可用于优化性能。",
+          "搜索关键词": ["插值", "模板表达式", "双花括号"]
+        },
+        {
+          "描述": "属性绑定 v-bind",
+          "代码": "<template>\n  <img :src=\"imageUrl\" :alt=\"imageAlt\" />\n  <div :class=\"{ active: isActive, 'text-danger': hasError }\"></div>\n  <button :disabled=\"isLoading\">提交</button>\n</template>",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#22863A\">template</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">img</span><span style=\"color:#6F42C1\"> :src</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"imageUrl\"</span><span style=\"color:#6F42C1\"> :alt</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"imageAlt\"</span><span style=\"color:#24292E\"> /></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">div</span><span style=\"color:#6F42C1\"> :class</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"{ active: isActive, 'text-danger': hasError }\"</span><span style=\"color:#24292E\">>&#x3C;/</span><span style=\"color:#22863A\">div</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">button</span><span style=\"color:#6F42C1\"> :disabled</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"isLoading\"</span><span style=\"color:#24292E\">>提交&#x3C;/</span><span style=\"color:#22863A\">button</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">&#x3C;/</span><span style=\"color:#22863A\">template</span><span style=\"color:#24292E\">></span></span></code></pre>",
+          "预期输出": "img 标签的 src 和 alt 属性动态绑定，div 的 class 根据条件切换，button 根据 isLoading 状态禁用",
+          "使用场景": "动态绑定 HTML 属性。:src 是 v-bind:src 的简写。支持对象语法绑定 class 和 style，布尔值属性（如 disabled）会根据值的真假自动添加或移除。",
+          "常见错误": [
+            {
+              "错误示例": "<img src=\"{{ imageUrl }}\" />",
+              "错误信息": "属性值不会被 Vue 解析，输出原始字符串 {{ imageUrl }}",
+              "解决方法": "属性绑定必须使用 v-bind 指令：<img :src=\"imageUrl\" />"
+            },
+            {
+              "错误示例": "<div :class=\"active: isActive\"></div>",
+              "错误信息": "编译错误：对象语法格式不正确",
+              "解决方法": "对象语法需要花括号：:class=\"{ active: isActive }\""
+            }
+          ],
+          "进阶提示": ":class 支持数组语法绑定多个类：:class=\"[baseClass, isActive ? 'active' : '']\"。:style 支持数组语法合并多个样式对象。",
+          "搜索关键词": ["属性绑定", "v-bind", "动态属性"]
+        },
+        {
+          "描述": "事件绑定 v-on",
+          "代码": "<template>\n  <button @click=\"handleClick\">点击</button>\n  <form @submit.prevent=\"handleSubmit\">提交</form>\n  <input @keyup.enter=\"handleEnter\" />\n</template>",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#22863A\">template</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">button</span><span style=\"color:#6F42C1\"> @click</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"handleClick\"</span><span style=\"color:#24292E\">>点击&#x3C;/</span><span style=\"color:#22863A\">button</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">form</span><span style=\"color:#6F42C1\"> @submit.prevent</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"handleSubmit\"</span><span style=\"color:#24292E\">>提交&#x3C;/</span><span style=\"color:#22863A\">form</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">input</span><span style=\"color:#6F42C1\"> @keyup.enter</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"handleEnter\"</span><span style=\"color:#24292E\"> /></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">&#x3C;/</span><span style=\"color:#22863A\">template</span><span style=\"color:#24292E\">></span></span></code></pre>",
+          "预期输出": "点击按钮触发 handleClick，表单提交时阻止默认行为并调用 handleSubmit，回车键触发 handleEnter",
+          "使用场景": "绑定 DOM 事件。@click 是 v-on:click 的简写。支持修饰符：.prevent 阻止默认行为，.stop 阻止冒泡，.enter 等按键修饰符。",
+          "常见错误": [
+            {
+              "错误示例": "@click=\"handleClick()\"（需要事件对象时）",
+              "错误信息": "事件对象被丢弃，无法在处理函数中获取 event",
+              "解决方法": "不传参数时 Vue 自动传入事件对象：@click=\"handleClick\"；如需传参同时获取事件：@click=\"handleClick($event, arg)\""
+            },
+            {
+              "错误示例": "@click=\"handleClick\"（在组件上监听原生事件）",
+              "错误信息": "事件未触发，因为组件默认监听自定义事件",
+              "解决方法": "在 Vue 3 中组件上的事件默认即为自定义事件，需在子组件中通过 emit 触发"
+            }
+          ],
+          "进阶提示": "修饰符可链式使用：@click.stop.prevent。Vue 3 新增了 .exact 修饰符，仅在指定按键组合时触发。",
+          "搜索关键词": ["事件", "v-on", "事件绑定", "修饰符"]
+        },
+        {
+          "描述": "双向绑定 v-model",
+          "代码": "<template>\n  <input v-model=\"username\" placeholder=\"请输入用户名\" />\n  <textarea v-model=\"content\"></textarea>\n  <select v-model=\"selected\">\n    <option value=\"A\">选项A</option>\n    <option value=\"B\">选项B</option>\n  </select>\n</template>",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#22863A\">template</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">input</span><span style=\"color:#6F42C1\"> v-model</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"username\"</span><span style=\"color:#6F42C1\"> placeholder</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"请输入用户名\"</span><span style=\"color:#24292E\"> /></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">textarea</span><span style=\"color:#6F42C1\"> v-model</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"content\"</span><span style=\"color:#24292E\">>&#x3C;/</span><span style=\"color:#22863A\">textarea</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">select</span><span style=\"color:#6F42C1\"> v-model</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"selected\"</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">    &#x3C;</span><span style=\"color:#22863A\">option</span><span style=\"color:#6F42C1\"> value</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"A\"</span><span style=\"color:#24292E\">>选项A&#x3C;/</span><span style=\"color:#22863A\">option</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">    &#x3C;</span><span style=\"color:#22863A\">option</span><span style=\"color:#6F42C1\"> value</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"B\"</span><span style=\"color:#24292E\">>选项B&#x3C;/</span><span style=\"color:#22863A\">option</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;/</span><span style=\"color:#22863A\">select</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">&#x3C;/</span><span style=\"color:#22863A\">template</span><span style=\"color:#24292E\">></span></span></code></pre>",
+          "预期输出": "输入框的值与 username 变量双向同步，选择器的值与 selected 变量双向同步",
+          "使用场景": "在表单元素上创建双向数据绑定。v-model 是 :value 和 @input 的语法糖，自动处理输入和更新。",
+          "常见错误": [
+            {
+              "错误示例": "<input :value=\"username\" @input=\"username = $event.target.value\" />（手动实现双向绑定）",
+              "错误信息": "功能正确但代码冗余",
+              "解决方法": "直接使用 v-model=\"username\" 即可，它是上述写法的语法糖"
+            },
+            {
+              "错误示例": "<input v-model=\"username\" />（username 是 props）",
+              "错误信息": "不能直接修改 props，会触发警告",
+              "解决方法": "使用 computed 的 get/set 模式，或通过 emit 通知父组件更新"
+            }
+          ],
+          "进阶提示": "v-model 支持修饰符：.lazy 在 change 事件后更新（而非 input），.number 自动转为数字类型，.trim 自动去除首尾空格。",
+          "搜索关键词": ["双向绑定", "v-model", "表单绑定"]
+        },
+        {
+          "描述": "条件渲染 v-if / v-show",
+          "代码": "<template>\n  <div v-if=\"type === 'A'\">类型A</div>\n  <div v-else-if=\"type === 'B'\">类型B</div>\n  <div v-else>其他类型</div>\n\n  <p v-show=\"isVisible\">可见段落</p>\n</template>",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#22863A\">template</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">div</span><span style=\"color:#6F42C1\"> v-if</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"type === 'A'\"</span><span style=\"color:#24292E\">>类型A&#x3C;/</span><span style=\"color:#22863A\">div</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">div</span><span style=\"color:#6F42C1\"> v-else-if</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"type === 'B'\"</span><span style=\"color:#24292E\">>类型B&#x3C;/</span><span style=\"color:#22863A\">div</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">div</span><span style=\"color:#6F42C1\"> v-else</span><span style=\"color:#24292E\">>其他类型&#x3C;/</span><span style=\"color:#22863A\">div</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">  &#x3C;</span><span style=\"color:#22863A\">p</span><span style=\"color:#6F42C1\"> v-show</span><span style=\"color:#24292E\">=</span><span style=\"color:#032F62\">\"isVisible\"</span><span style=\"color:#24292E\">>可见段落&#x3C;/</span><span style=\"color:#22863A\">p</span><span style=\"color:#24292E\">></span></span>\n<span class=\"line\"><span style=\"color:#24292E\">&#x3C;/</span><span style=\"color:#22863A\">template</span><span style=\"color:#24292E\">></span></span></code></pre>",
+          "预期输出": "根据 type 的值渲染对应分支，isVisible 为 false 时段落隐藏但仍存在于 DOM",
+          "使用场景": "v-if 根据条件决定是否渲染元素（销毁和重建 DOM），v-show 通过 CSS display 属性切换可见性。频繁切换用 v-show，条件很少变化用 v-if。",
+          "常见错误": [
+            {
+              "错误示例": "<div v-if=\"show\" /><p v-else>内容</p>",
+              "错误信息": "编译错误：v-else 必须紧跟在 v-if 或 v-else-if 后面",
+              "解决方法": "v-else 元素必须紧跟在 v-if 元素之后，中间不能有其他元素"
+            },
+            {
+              "错误示例": "对频繁切换的元素使用 v-if",
+              "错误信息": "频繁的 DOM 创建和销毁导致性能问题",
+              "解决方法": "频繁切换显示/隐藏应使用 v-show，它只切换 CSS display 属性"
+            }
+          ],
+          "进阶提示": "v-if 与 template 标签配合可对多个元素进行条件渲染而不产生额外 DOM 节点。v-show 不支持 template 标签。",
+          "搜索关键词": ["条件渲染", "v-if", "v-show", "显示隐藏"]
+        }
+      ]
+    },
+    {
+      "分组名": "组合式 API",
+      "分组说明": "Vue 3 的核心编程范式。本组内容涵盖响应式数据、计算属性、侦听器和生命周期钩子，是构建复杂逻辑的基础。",
+      "条目": [
+        {
+          "描述": "ref 响应式引用",
+          "代码": "import { ref } from 'vue'\n\nconst count = ref(0)\nconst message = ref('你好')\n\n// 修改值\ncount.value++\nmessage.value = '世界'\n\n// 在模板中自动解包，无需 .value\n// <p>{{ count }}</p>",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">import { ref } from 'vue'</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">const count = ref(0)</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">const message = ref('你好')</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">// 修改值</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">count.value++</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">message.value = '世界'</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">// 在模板中自动解包，无需 .value</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">// &#x3C;</span><span style=\"color:#22863A\">p</span><span style=\"color:#24292E\">>{{ count }}&#x3C;/</span><span style=\"color:#22863A\">p</span><span style=\"color:#24292E\">></span></span></code></pre>",
+          "预期输出": "count 的值为 1，message 的值为 '世界'",
+          "使用场景": "创建响应式的基本类型或对象数据。ref 包装后的值通过 .value 访问和修改，在模板中自动解包无需 .value。",
+          "常见错误": [
+            {
+              "错误示例": "const count = ref(0)\ncount++（直接修改 ref 对象而非 .value）",
+              "错误信息": "响应性丢失，界面不会更新",
+              "解决方法": "必须通过 .value 修改：count.value++"
+            },
+            {
+              "错误示例": "const { value } = ref(0)\nvalue++（解构后丢失响应性）",
+              "错误信息": "修改解构后的变量不会触发响应式更新",
+              "解决方法": "不要解构 ref，始终通过 .value 访问：count.value++"
+            }
+          ],
+          "进阶提示": "ref 可包装任意类型值（包括对象），内部对对象类型会自动调用 reactive。shallowRef 只追踪 .value 的替换，不深度追踪对象内部变化。",
+          "搜索关键词": ["响应式", "ref", "引用"]
+        },
+        {
+          "描述": "reactive 响应式对象",
+          "代码": "import { reactive } from 'vue'\n\nconst user = reactive({\n  name: '张三',\n  age: 25\n})\n\n// 直接访问和修改，无需 .value\nuser.name = '李四'\nuser.age++",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">import { reactive } from 'vue'</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">const user = reactive({</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  name: '张三',</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  age: 25</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">})</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">// 直接访问和修改，无需 .value</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">user.name = '李四'</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">user.age++</span></span></code></pre>",
+          "预期输出": "user.name 为 '李四'，user.age 为 26",
+          "使用场景": "创建响应式的对象数据。reactive 直接返回响应式代理对象，访问和修改无需 .value。适合管理复杂的对象状态。",
+          "常见错误": [
+            {
+              "错误示例": "const { name, age } = reactive({ name: '张三', age: 25 })",
+              "错误信息": "解构后丢失响应性，修改变量不会触发更新",
+              "解决方法": "使用 toRefs 保持响应性：const { name, age } = toRefs(user)"
+            },
+            {
+              "错误示例": "let state = reactive({ count: 0 })\nstate = reactive({ count: 1 })",
+              "错误信息": "重新赋值后丢失响应性，原代理对象与新对象断开连接",
+              "解决方法": "使用 ref 包装对象，或直接修改属性：state.count = 1"
+            }
+          ],
+          "进阶提示": "reactive 的局限性：不能替换整个对象、不能用于基本类型、解构会丢失响应性。对于简单场景优先使用 ref。",
+          "搜索关键词": ["响应式对象", "reactive", "对象响应式"]
+        },
+        {
+          "描述": "computed 计算属性",
+          "代码": "import { ref, computed } from 'vue'\n\nconst firstName = ref('张')\nconst lastName = ref('三')\n\nconst fullName = computed(() => {\n  return firstName.value + lastName.value\n})\n\n// 只读，修改 fullName 会警告",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">import { ref, computed } from 'vue'</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">const firstName = ref('张')</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">const lastName = ref('三')</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">const fullName = computed(() => {</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  return firstName.value + lastName.value</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">})</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">// 只读，修改 fullName 会警告</span></span></code></pre>",
+          "预期输出": "fullName 的值为 '张三'，且随 firstName 或 lastName 变化自动更新",
+          "使用场景": "定义依赖其他响应式数据的计算值。computed 具有缓存性，只有依赖变化时才重新计算。适合派生状态的场景。",
+          "常见错误": [
+            {
+              "错误示例": "const fullName = computed(() => firstName.value + lastName.value)\nfullName.value = '李四'（修改只读计算属性）",
+              "错误信息": "Write operation failed: computed value is readonly",
+              "解决方法": "如需可写计算属性，使用 get/set 语法：computed({ get() {...}, set(val) {...} })"
+            },
+            {
+              "错误示例": "computed(() => { sideEffect() })（在计算属性中执行副作用）",
+              "错误信息": "副作用可能在不期望的时机执行，导致难以追踪的 bug",
+              "解决方法": "计算属性应只做纯计算，副作用放在 watch 或生命周期钩子中"
+            }
+          ],
+          "进阶提示": "computed 与方法的区别：computed 有缓存，依赖不变时不会重新计算；方法每次调用都执行。优先使用 computed。",
+          "搜索关键词": ["计算属性", "computed", "派生状态"]
+        },
+        {
+          "描述": "watch 侦听器",
+          "代码": "import { ref, watch } from 'vue'\n\nconst keyword = ref('')\n\nwatch(keyword, (newVal, oldVal) => {\n  console.log(`搜索关键词从 ${oldVal} 变为 ${newVal}`)\n}, { immediate: true })",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">import { ref, watch } from 'vue'</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">const keyword = ref('')</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">watch(keyword, (newVal, oldVal) => {</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  console.log(`搜索关键词从 ${oldVal} 变为 ${newVal}`)</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}, { immediate: true })</span></span></code></pre>",
+          "预期输出": "keyword 变化时输出日志，immediate 选项使回调在创建时立即执行一次",
+          "使用场景": "监听响应式数据的变化并执行副作用。支持 immediate（立即执行）和 deep（深度监听）选项。适合异步操作和副作用逻辑。",
+          "常见错误": [
+            {
+              "错误示例": "watch(user, (val) => { ... })（直接监听 reactive 对象的属性）",
+              "错误信息": "监听不生效，因为 user.age 不是响应式引用",
+              "解决方法": "使用 getter 函数：watch(() => user.age, (val) => { ... })，或监听整个 reactive 对象并加 deep: true"
+            },
+            {
+              "错误示例": "watch(data, handler, { deep: true })（对大对象使用深度监听）",
+              "错误信息": "性能问题，深度遍历大对象消耗大量资源",
+              "解决方法": "避免对大对象使用深度监听，改为监听具体属性：watch(() => data.specificField, handler)"
+            }
+          ],
+          "进阶提示": "watchEffect 是 watch 的简化版，自动追踪回调中使用的响应式依赖，无需指定监听源。适合不关心旧值的场景。",
+          "搜索关键词": ["侦听器", "watch", "监听变化"]
+        },
+        {
+          "描述": "onMounted 生命周期钩子",
+          "代码": "import { onMounted, onUnmounted } from 'vue'\n\nonMounted(() => {\n  console.log('组件已挂载，可访问 DOM')\n  startTimer()\n})\n\nonUnmounted(() => {\n  console.log('组件已卸载，清理资源')\n  stopTimer()\n})",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">import { onMounted, onUnmounted } from 'vue'</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">onMounted(() => {</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  console.log('组件已挂载，可访问 DOM')</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  startTimer()</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">})</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">onUnmounted(() => {</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  console.log('组件已卸载，清理资源')</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  stopTimer()</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">})</span></span></code></pre>",
+          "预期输出": "组件挂载后输出日志并启动定时器，卸载后清理定时器",
+          "使用场景": "在组件挂载后执行初始化逻辑（如获取数据、操作 DOM、启动定时器），在卸载时清理资源（如清除定时器、取消订阅）。",
+          "常见错误": [
+            {
+              "错误示例": "onMounted(() => { ... })（在异步函数中调用）",
+              "错误信息": "生命周期钩子未注册，因为当前实例已丢失",
+              "解决方法": "生命周期钩子必须在 setup 同步阶段调用，不能放在 setTimeout 或 async 函数中"
+            },
+            {
+              "错误示例": "onMounted(() => { startTimer() })（忘记清理）",
+              "错误信息": "组件卸载后定时器仍在运行，导致内存泄漏",
+              "解决方法": "在 onUnmounted 中清理所有副作用：清除定时器、取消事件监听、断开 WebSocket 连接"
+            }
+          ],
+          "进阶提示": "Vue 3 的完整生命周期：onBeforeMount -> onMounted -> onBeforeUpdate -> onUpdated -> onBeforeUnmount -> onUnmounted。还有 onErrorCaptured 用于捕获子组件错误。",
+          "搜索关键词": ["生命周期", "onMounted", "onUnmounted", "挂载"]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,1025 @@
+/**
+ * FANDEX 排版样式（Design Tokens 系统 + 现有 .prose 规则）
+ *
+ * 功能概述：
+ * 本文件包含两部分：
+ *   1. 【新增】基于 --fandex-* 设计令牌的全局元素排版规则（h1-h6、p、ul/ol、
+ *      blockquote、table、hr、img、code、数学公式等），适用于非 .prose 容器。
+ *   2. 【存量】.prose 容器作用域下的 Markdown 渲染排版规则，使用旧 --color-*
+ *      令牌，保持现有功能不变，将在后续阶段迁移至新令牌。
+ *
+ * 兼容策略：
+ * - 新规则使用元素选择器（h1、p 等），特异性较低（0,0,0,1）
+ * - .prose 规则使用 .prose 后代选择器，特异性较高（0,0,1,1），在 .prose 容器内优先
+ * - 因此新规则不会影响现有 .prose 内容的渲染，仅作用于 .prose 外部的元素
+ */
+
+/* ###################################################################
+   第一部分：Design Tokens 全局排版规则（新增）
+   ################################################################### */
+
+/* ========== 中英文混排优化 ==========
+   启用字距、连字、上下文替换；中文标点挤压（渐进增强）。 */
+body {
+  font-feature-settings:
+    'kern' 1,
+    'liga' 1,
+    'calt' 1; /* 西文字距与连字 */
+  font-variant-east-asian: proportional-width; /* 中日韩字符等比例宽度 */
+  text-spacing-trim: space-all; /* 标点挤压（CSS Text 4，渐进增强） */
+  hanging-punctuation: first last; /* 首尾标点悬挂 */
+}
+
+/* ========== 标题样式 ==========
+   使用 display 字族、紧凑行高、负字距，营造层次感。 */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--fandex-font-display);
+  font-weight: var(--fandex-font-weight-bold);
+  line-height: var(--fandex-line-height-tight);
+  letter-spacing: var(--fandex-letter-spacing-tight);
+  color: var(--fandex-color-text-primary);
+  margin-top: 1.5em;
+  margin-bottom: 0.5em;
+  scroll-margin-top: 6rem; /* 锚点滚动偏移，避免被固定导航栏遮挡 */
+  text-wrap: balance; /* 标题文本平衡换行 */
+}
+
+h1 {
+  font-size: var(--fandex-font-size-4xl);
+  font-weight: var(--fandex-font-weight-extrabold);
+  letter-spacing: var(--fandex-letter-spacing-tighter);
+  margin-top: 0.8em;
+  margin-bottom: 0.6em;
+}
+
+h2 {
+  font-size: var(--fandex-font-size-3xl);
+  font-weight: var(--fandex-font-weight-bold);
+  margin-top: 1.4em;
+  margin-bottom: 0.5em;
+}
+
+h3 {
+  font-size: var(--fandex-font-size-2xl);
+  margin-top: 1.3em;
+  margin-bottom: 0.4em;
+}
+
+h4 {
+  font-size: var(--fandex-font-size-xl);
+  margin-top: 1.2em;
+  margin-bottom: 0.4em;
+}
+
+h5 {
+  font-size: var(--fandex-font-size-lg);
+  color: var(--fandex-color-text-secondary);
+}
+
+h6 {
+  font-size: var(--fandex-font-size-base);
+  color: var(--fandex-color-text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: var(--fandex-letter-spacing-wider);
+}
+
+/* 首个标题去除顶部间距 */
+h1:first-child,
+h2:first-child,
+h3:first-child {
+  margin-top: 0;
+}
+
+/* ========== 段落样式 ========== */
+p {
+  margin: var(--fandex-paragraph-spacing-md) 0;
+  line-height: var(--fandex-line-height-relaxed);
+  color: var(--fandex-color-text-primary);
+  text-align: justify; /* 中文两端对齐 */
+  text-justify: inter-character; /* CJK 字符间距调整 */
+}
+
+/* ========== 列表样式 ========== */
+ul,
+ol {
+  margin: var(--fandex-paragraph-spacing-md) 0;
+  padding-left: var(--fandex-spacing-6);
+  color: var(--fandex-color-text-primary);
+}
+
+ul {
+  list-style: disc; /* 无序列表圆点 */
+}
+
+ol {
+  list-style: decimal; /* 有序列表数字 */
+}
+
+li {
+  margin: var(--fandex-spacing-1) 0;
+  padding-left: var(--fandex-spacing-1);
+}
+
+li::marker {
+  color: var(--fandex-color-primary-500); /* 列表标记使用主色 */
+}
+
+/* 嵌套列表缩小缩进 */
+ul ul,
+ol ol,
+ul ol,
+ol ul {
+  margin: var(--fandex-spacing-1) 0;
+}
+
+/* ========== 引用样式 ========== */
+blockquote {
+  margin: var(--fandex-spacing-6) 0;
+  padding: var(--fandex-spacing-3) var(--fandex-spacing-5);
+  border-left: 4px solid var(--fandex-color-primary-500);
+  background-color: var(--fandex-color-bg-surface);
+  border-radius: 0 var(--fandex-radius-md) var(--fandex-radius-md) 0;
+  color: var(--fandex-color-text-secondary);
+  font-style: italic; /* 引用斜体，区分正文 */
+  position: relative;
+}
+
+blockquote p {
+  margin: var(--fandex-spacing-2) 0;
+}
+
+blockquote > :first-child {
+  margin-top: 0;
+}
+
+blockquote > :last-child {
+  margin-bottom: 0;
+}
+
+/* 引用来源（cite 或 footer） */
+blockquote footer,
+blockquote cite {
+  display: block;
+  margin-top: var(--fandex-spacing-2);
+  font-size: var(--fandex-font-size-sm);
+  font-style: normal;
+  color: var(--fandex-color-text-tertiary);
+}
+
+blockquote footer::before,
+blockquote cite::before {
+  content: '— '; /* 引用来源前缀破折号 */
+}
+
+/* ========== 行内代码样式 ========== */
+code,
+kbd,
+samp {
+  font-family: var(--fandex-font-mono);
+  font-size: 0.875em; /* 相对于父元素略小 */
+}
+
+:not(pre) > code,
+:not(pre) > kbd,
+:not(pre) > samp {
+  padding: 0.15em 0.4em;
+  background-color: var(--fandex-color-bg-sunken);
+  color: var(--fandex-color-primary-700);
+  border: 1px solid var(--fandex-color-border-default);
+  border-radius: var(--fandex-radius-default);
+  word-break: break-word; /* 长代码标识符可断行 */
+}
+
+/* 暗色模式下行内代码文字色提亮 */
+[data-theme='dark'] :not(pre) > code,
+[data-theme='dark'] :not(pre) > kbd,
+[data-theme='dark'] :not(pre) > samp {
+  color: var(--fandex-color-primary-300);
+}
+
+/* ========== 代码块样式 ========== */
+pre {
+  margin: var(--fandex-spacing-6) 0;
+  padding: var(--fandex-spacing-4) var(--fandex-spacing-5);
+  background-color: var(--fandex-color-code-bg);
+  border: 1px solid var(--fandex-color-border-default);
+  border-radius: var(--fandex-radius-lg);
+  overflow-x: auto; /* 长代码横向滚动 */
+  font-family: var(--fandex-font-mono);
+  font-size: var(--fandex-font-size-sm);
+  line-height: var(--fandex-line-height-normal);
+  color: var(--fandex-color-code-text);
+}
+
+pre code {
+  background: none; /* pre 内的 code 不重复背景 */
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  color: inherit;
+  font-size: inherit;
+  line-height: inherit;
+}
+
+/* ========== 键盘按键样式（kbd） ========== */
+kbd {
+  display: inline-block;
+  padding: 0.15em 0.4em;
+  background-color: var(--fandex-color-bg-elevated);
+  border: 1px solid var(--fandex-color-border-strong);
+  border-bottom-width: 2px; /* 底部加粗，模拟物理按键立体感 */
+  border-radius: var(--fandex-radius-default);
+  font-family: var(--fandex-font-mono);
+  font-size: 0.85em;
+  color: var(--fandex-color-text-primary);
+  box-shadow: var(--fandex-shadow-xs);
+}
+
+/* ========== 表格样式 ========== */
+table {
+  width: 100%;
+  margin: var(--fandex-spacing-6) 0;
+  border-collapse: collapse;
+  border: 1px solid var(--fandex-color-border-default);
+  border-radius: var(--fandex-radius-md);
+  overflow: hidden;
+  font-size: var(--fandex-font-size-sm);
+  background-color: var(--fandex-color-bg-base);
+}
+
+th,
+td {
+  padding: var(--fandex-spacing-3) var(--fandex-spacing-4);
+  text-align: left;
+  border-bottom: 1px solid var(--fandex-color-border-default);
+  vertical-align: top;
+}
+
+/* 表头：主色背景 + 反色文字 */
+th {
+  background-color: var(--fandex-color-primary-600);
+  color: var(--fandex-color-text-inverse);
+  font-weight: var(--fandex-font-weight-semibold);
+  font-family: var(--fandex-font-display);
+  white-space: nowrap; /* 表头不换行 */
+}
+
+/* 暗色模式下表头使用稍浅的主色 */
+[data-theme='dark'] th {
+  background-color: var(--fandex-color-primary-700);
+}
+
+/* 斑马纹：偶数行使用 surface 背景 */
+tbody tr:nth-child(even) {
+  background-color: var(--fandex-color-bg-surface);
+}
+
+/* 行悬停高亮 */
+tbody tr:hover {
+  background-color: var(--fandex-color-bg-hover);
+  transition: background-color var(--fandex-duration-fast) var(--fandex-ease-out);
+}
+
+/* 表格底部边框去除（避免与容器边框重叠） */
+tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* ========== 水平分割线 ========== */
+hr {
+  margin: var(--fandex-spacing-8) 0;
+  border: none;
+  border-top: 1px solid var(--fandex-color-border-default);
+  height: 0;
+}
+
+/* 分割线变体：装饰性虚线 */
+hr.dashed {
+  border-top-style: dashed;
+}
+
+/* 分割线变体：渐变（淡入淡出） */
+hr.gradient {
+  border: none;
+  height: 1px;
+  background: linear-gradient(
+    to right,
+    transparent,
+    var(--fandex-color-border-default),
+    transparent
+  );
+}
+
+/* ========== 图片样式 ========== */
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: var(--fandex-spacing-6) auto;
+  border-radius: var(--fandex-radius-lg);
+  box-shadow: var(--fandex-shadow-md);
+}
+
+figure {
+  margin: var(--fandex-spacing-8) 0;
+  text-align: center;
+}
+
+figure img {
+  margin: 0 auto;
+}
+
+/* 图片标题（figcaption） */
+figcaption {
+  margin-top: var(--fandex-spacing-2);
+  font-size: var(--fandex-font-size-sm);
+  color: var(--fandex-color-text-secondary);
+  font-style: italic;
+}
+
+/* ========== 强调与标记 ========== */
+strong,
+b {
+  font-weight: var(--fandex-font-weight-semibold);
+  color: var(--fandex-color-text-primary);
+}
+
+em,
+i {
+  font-style: italic;
+}
+
+mark {
+  padding: 0.1em 0.3em;
+  background-color: var(--fandex-color-accent-200);
+  color: var(--fandex-color-accent-900);
+  border-radius: var(--fandex-radius-sm);
+}
+
+[data-theme='dark'] mark {
+  background-color: var(--fandex-color-accent-500);
+  color: var(--fandex-color-text-inverse);
+}
+
+/* 删除线 */
+del {
+  color: var(--fandex-color-text-tertiary);
+  text-decoration: line-through;
+}
+
+/* 插入线 */
+ins {
+  color: var(--fandex-color-success);
+  text-decoration: underline;
+  text-decoration-color: var(--fandex-color-success);
+}
+
+/* 上标与下标 */
+sup,
+sub {
+  font-size: 0.75em;
+  line-height: 0;
+  position: relative;
+  vertical-align: baseline;
+}
+
+sup {
+  top: -0.5em;
+}
+
+sub {
+  bottom: -0.25em;
+}
+
+/* ========== 缩写与定义 ========== */
+abbr[title] {
+  cursor: help; /* 鼠标悬停显示帮助光标 */
+  text-decoration: underline dotted;
+  text-underline-offset: 0.15em;
+  text-decoration-color: var(--fandex-color-text-tertiary);
+}
+
+/* 定义术语 */
+dfn {
+  font-style: italic;
+  font-weight: var(--fandex-font-weight-medium);
+}
+
+/* ========== 数学公式样式（KaTeX） ========== */
+/* KaTeX 容器：行内与块级公式统一处理 */
+.katex {
+  font-size: 1.1em; /* 数学公式略大于正文，提升可读性 */
+}
+
+/* 块级公式：居中 + 横向滚动 */
+.katex-display {
+  margin: var(--fandex-spacing-6) 0;
+  overflow-x: auto; /* 长公式横向滚动 */
+  overflow-y: hidden;
+  padding: var(--fandex-spacing-2) 0;
+  text-align: center; /* 公式居中 */
+}
+
+/* 块级公式内的 KaTeX 容器 */
+.katex-display > .katex {
+  text-align: center;
+}
+
+/* 公式编号右对齐 */
+.katex-display > .katex > .katex-mathml {
+  display: none; /* MathML 隐藏，仅显示渲染后的公式 */
+}
+
+/* 暗色模式下公式文字色 */
+[data-theme='dark'] .katex {
+  color: var(--fandex-color-text-primary);
+}
+
+/* ========== 响应式排版 ========== */
+@media (max-width: 768px) {
+  /* 移动端标题字号递减 */
+  h1 {
+    font-size: var(--fandex-font-size-3xl);
+  }
+  h2 {
+    font-size: var(--fandex-font-size-2xl);
+  }
+  h3 {
+    font-size: var(--fandex-font-size-xl);
+  }
+  h4 {
+    font-size: var(--fandex-font-size-lg);
+  }
+
+  /* 移动端段落左对齐（两端对齐在窄屏下效果差） */
+  p {
+    text-align: left;
+  }
+
+  /* 移动端列表缩进减小 */
+  ul,
+  ol {
+    padding-left: var(--fandex-spacing-4);
+  }
+
+  /* 移动端引用块间距缩小 */
+  blockquote {
+    padding: var(--fandex-spacing-2) var(--fandex-spacing-4);
+    margin: var(--fandex-spacing-4) 0;
+  }
+
+  /* 移动端表格支持横向滚动 */
+  table {
+    display: block;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    white-space: nowrap;
+  }
+
+  th,
+  td {
+    padding: var(--fandex-spacing-2) var(--fandex-spacing-3);
+  }
+}
+
+/* ###################################################################
+   第二部分：.prose 容器排版规则（存量，待后续迁移）
+   --------------------------------------------------------------------
+   以下规则为现有 .prose 容器作用域下的 Markdown 渲染样式，
+   使用旧 --color-* 令牌，保持现有功能不变。
+   特异性高于上方全局规则（.prose h1 = 0,0,1,1 > h1 = 0,0,0,1），
+   因此 .prose 容器内的元素仍按以下规则渲染，不受新规则影响。
+   ################################################################### */
+
+/**
+ * FANDEX 排版样式
+ *
+ * 功能概述：
+ * 定义 .prose 容器下所有 Markdown 渲染内容的排版规则，包括标题层级、
+ * 段落、链接、列表、引用、表格、代码、Mermaid 图表、提示块（Admonition）
+ * 等元素的样式。支持亮色/暗色主题和移动端响应式适配。
+ */
+
+/* ========== 基础容器 ========== */
+.prose {
+  max-width: 100%;
+  margin: 0 auto;
+  line-height: 1.9; /* 中文排版行高略大，提升可读性 */
+}
+
+/* ========== 标题通用样式 ========== */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4,
+.prose h5,
+.prose h6 {
+  font-family: var(--font-body);
+  font-weight: 700;
+  line-height: 1.35; /* 标题行高较紧凑，增强层级感 */
+  color: var(--color-text);
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+  scroll-margin-top: calc(var(--nav-height) + 24px); /* 锚点滚动偏移，避免被导航栏遮挡 */
+}
+
+/* h1：左侧竖线 + 底部边框，突出章节入口 */
+.prose h1 {
+  font-size: 1.7em;
+  border-left: 3px solid var(--module-color, var(--color-primary));
+  border-bottom: 1px solid var(--color-border-light);
+  padding-left: 0.5em;
+  padding-bottom: 0.35em;
+}
+
+/* h2：底部彩色边框，区分主要章节 */
+.prose h2 {
+  font-size: 1.35em;
+  border-bottom: 2px solid var(--module-color, var(--color-secondary));
+  padding-bottom: 0.3em;
+}
+
+/* h3：左侧竖线，轻量级小节标记 */
+.prose h3 {
+  font-size: 1.15em;
+  border-left: 3px solid var(--module-color, var(--color-tertiary));
+  padding-left: 0.5em;
+}
+
+/* h4：下划线装饰，最细的标题层级 */
+.prose h4 {
+  font-size: 1.05em;
+  text-decoration: underline;
+  text-underline-offset: 0.25em; /* 下划线与文字间距 */
+  text-decoration-color: var(--color-border-light); /* 浅色下划线，避免过于突兀 */
+}
+
+/* h5：与正文等大，仅靠加粗区分 */
+.prose h5 {
+  font-size: 1em;
+}
+
+/* h6：略小于正文，使用二级文字色弱化 */
+.prose h6 {
+  font-size: 0.95em;
+  color: var(--color-text-secondary);
+}
+
+/* 首个标题去除顶部间距，避免页面顶部空白过大 */
+.prose h1:first-child {
+  margin-top: 0;
+}
+
+/* ========== 段落 ========== */
+.prose p {
+  margin: 0.9em 0;
+  text-align: justify; /* 两端对齐，中文排版更整齐 */
+}
+
+/* ========== 链接 ========== */
+.prose a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-decoration-style: dotted; /* 点状下划线，区分普通文字 */
+  text-underline-offset: 0.15em; /* 下划线偏移，避免与文字底部粘连 */
+  text-decoration-thickness: 1px;
+  transition:
+    color var(--transition-fast),
+    text-decoration-style var(--transition-fast);
+}
+
+/* 链接悬停：颜色加深 + 下划线变实线 */
+.prose a:hover {
+  color: var(--color-primary-hover);
+  text-decoration-style: solid;
+}
+
+/* ========== 列表 ========== */
+.prose ul,
+.prose ol {
+  padding-left: 2em;
+  margin: 0.8em 0;
+}
+
+/* 无序列表：移除默认圆点，使用自定义圆点 */
+.prose ul {
+  list-style: none;
+}
+
+.prose ul > li {
+  position: relative;
+  padding-left: 0.5em;
+}
+
+/* 自定义圆点：小圆点 + 半透明主色 */
+.prose ul > li::before {
+  content: '';
+  position: absolute;
+  left: -1.2em;
+  top: 0.65em;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--color-primary);
+  opacity: 0.6;
+}
+
+/* 有序列表：自定义计数器样式 */
+.prose ol {
+  counter-reset: prose-ol; /* 重置计数器 */
+  list-style: none;
+}
+
+.prose ol > li {
+  position: relative;
+  padding-left: 0.5em;
+  counter-increment: prose-ol; /* 计数器递增 */
+}
+
+/* 自定义序号：主色 + 加粗 + 右对齐 */
+.prose ol > li::before {
+  content: counter(prose-ol) '.';
+  position: absolute;
+  left: -2em;
+  width: 1.5em;
+  text-align: right;
+  font-family: var(--font-display);
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--color-primary);
+}
+
+/* 列表项间距 */
+.prose li {
+  margin: 0.35em 0;
+}
+
+/* ========== 引用块 ========== */
+.prose blockquote {
+  border-left: 3px solid var(--color-primary);
+  padding: 0.85em 1.25em;
+  margin: 1.2em 0;
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  position: relative;
+}
+
+/* 引用块内首尾段落去除多余间距 */
+.prose blockquote > p:first-child {
+  margin-top: 0;
+}
+.prose blockquote > p:last-child {
+  margin-bottom: 0;
+}
+
+/* 警告引用块：橙色左边框 + 暖色背景 */
+.prose blockquote.warning {
+  border-left-color: var(--color-tertiary);
+  background: #fff8e1;
+}
+
+/* 危险引用块：红色左边框 + 粉色背景 */
+.prose blockquote.danger {
+  border-left-color: #c62828;
+  background: #fce4ec;
+}
+
+/* 提示引用块：绿色左边框 + 浅绿背景 */
+.prose blockquote.tip {
+  border-left-color: var(--color-success);
+  background: #e8f5e9;
+}
+
+/* 引用块暗色主题适配 */
+[data-theme='dark'] .prose blockquote.warning {
+  background: #3e2723;
+}
+
+[data-theme='dark'] .prose blockquote.danger {
+  background: #3b1010;
+}
+
+[data-theme='dark'] .prose blockquote.tip {
+  background: #1b3a1b;
+}
+
+/* ========== 表格 ========== */
+/* 表格包裹层：承担横向滚动能力，规避 display:table 与 overflow-x:auto 同元素冲突 */
+.prose .table-wrap {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch; /* iOS 惯性滚动 */
+  margin: var(--spacing-lg) 0;
+}
+
+/* 包裹层内的表格取消自身外边距，避免与包裹层双重留白 */
+.prose .table-wrap table {
+  margin: 0;
+}
+
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  border: 1px solid var(--color-border);
+  font-size: 0.92em; /* 表格字号略小，容纳更多数据 */
+}
+
+.prose th,
+.prose td {
+  padding: 0.7em 1em;
+  text-align: left;
+  border: 1px solid var(--color-border-light);
+}
+
+/* 表头：主色背景 + 反色文字 */
+.prose th {
+  background: var(--color-primary);
+  color: var(--color-text-inverse);
+  font-family: var(--font-display);
+  font-size: 0.9em;
+  font-weight: 600;
+  white-space: nowrap; /* 表头不换行 */
+}
+
+/* 暗色模式下表头使用深蓝色，避免过亮 */
+[data-theme='dark'] .prose th {
+  background: #1a3a5c;
+  color: #b3d4fc;
+}
+
+/* 偶数行斑马纹 */
+.prose tr:nth-child(even) td {
+  background: var(--color-bg-card);
+}
+
+/* 行悬停高亮 */
+.prose tr:hover td {
+  background: var(--color-bg-hover);
+}
+
+/* ========== 图片 ========== */
+.prose img {
+  max-width: 100%;
+  border: 1px solid var(--color-border);
+}
+
+/* ========== 分割线 ========== */
+.prose hr {
+  border: none;
+  border-top: 3px solid var(--color-border);
+  margin: 2.5em 0;
+}
+
+/* ========== 强调文字 ========== */
+.prose strong {
+  color: var(--color-primary); /* 加粗文字使用主色，增强视觉权重 */
+  font-weight: 700;
+}
+
+/* ========== 高亮标记 ========== */
+.prose mark {
+  background: var(--color-tertiary);
+  color: var(--color-text-inverse);
+  padding: 0.1em 0.3em;
+}
+
+/* ========== 折叠面板（details/summary） ========== */
+.prose details {
+  margin: 1em 0;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-card);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.prose summary {
+  padding: 0.7em 1em;
+  cursor: pointer;
+  font-weight: 600;
+  font-family: var(--font-display);
+  font-size: 0.9em;
+  color: var(--color-primary);
+  user-select: none; /* 禁止选中标题文字，避免误操作 */
+  transition: background var(--transition-fast);
+}
+
+.prose summary:hover {
+  background: var(--color-bg-hover);
+}
+
+/* 展开状态下标题底部添加分割线 */
+.prose details[open] summary {
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+/* 折叠面板内容区域统一内边距 */
+.prose details > *:not(summary) {
+  padding: 0.7em 1em;
+  margin: 0;
+}
+
+/* ========== 行内代码 ========== */
+.prose code {
+  font-family: var(--font-code);
+  background: var(--color-bg-code);
+  padding: 0.15em 0.4em;
+  font-size: 0.875em;
+  border: 1px solid var(--color-border-light);
+  border-radius: 3px;
+}
+
+/* ========== 代码块容器 ========== */
+.prose pre {
+  margin: 1em 0;
+  overflow-x: auto; /* 长代码横向滚动 */
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+}
+
+/* 代码块内的行内代码：去除独立样式，继承 pre 的样式 */
+.prose pre code {
+  background: none;
+  padding: 0;
+  border: none;
+  border-radius: 0;
+  font-size: 0.875em;
+  line-height: 1.6;
+}
+
+/* ========== 来源标注（上标链接） ========== */
+.prose sup.source {
+  font-size: 0.7em;
+  vertical-align: super;
+  margin-left: 2px;
+}
+
+.prose sup.source a {
+  color: var(--color-text-tertiary);
+  text-decoration: none;
+  font-family: var(--font-display);
+}
+
+.prose sup.source a:hover {
+  color: var(--color-primary);
+}
+
+/* ========== Mermaid 图表输出 ========== */
+.prose .mermaid-output {
+  margin: 1em 0;
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-card);
+  border-radius: 4px;
+  overflow-x: auto;
+  text-align: center; /* 图表居中显示 */
+}
+
+.prose .mermaid-output svg {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Mermaid 渲染错误提示 */
+.prose .mermaid-error {
+  margin: 1em 0;
+  padding: var(--spacing-md);
+  border: 1px dashed #c62828;
+  background: #fce4ec;
+  color: #c62828;
+  font-family: var(--font-display);
+  font-size: 0.85em;
+  text-align: center;
+}
+
+/* Mermaid 错误暗色适配 */
+[data-theme='dark'] .prose .mermaid-error {
+  background: #3b1010;
+}
+
+/* ========== 提示块（Admonition） ========== */
+.prose .admonition {
+  margin: 1.2em 0;
+  padding: 0.85em 1.25em;
+  border-left: 4px solid var(--color-primary);
+  background: var(--color-bg-card);
+  border-radius: 0 4px 4px 0;
+}
+
+.prose .admonition-title {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 0.88em;
+  margin-bottom: 0.4em;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* --- note 提示块：蓝色 --- */
+.prose .admonition-note {
+  border-left-color: var(--color-primary);
+}
+
+.prose .admonition-note .admonition-title {
+  color: var(--color-primary);
+}
+
+/* --- tip 提示块：绿色 --- */
+.prose .admonition-tip {
+  border-left-color: var(--color-success);
+  background: #e8f5e9;
+}
+
+.prose .admonition-tip .admonition-title {
+  color: var(--color-success);
+}
+
+/* --- warning 提示块：橙色 --- */
+.prose .admonition-warning {
+  border-left-color: var(--color-tertiary);
+  background: #fff8e1;
+}
+
+.prose .admonition-warning .admonition-title {
+  color: var(--color-tertiary);
+}
+
+/* --- danger 提示块：红色 --- */
+.prose .admonition-danger {
+  border-left-color: #c62828;
+  background: #fce4ec;
+}
+
+.prose .admonition-danger .admonition-title {
+  color: #c62828;
+}
+
+/* 提示块暗色主题适配 */
+[data-theme='dark'] .prose .admonition-tip {
+  background: #1b3a1b;
+}
+[data-theme='dark'] .prose .admonition-warning {
+  background: #3e2723;
+}
+[data-theme='dark'] .prose .admonition-danger {
+  background: #3b1010;
+}
+
+/* ========== 移动端响应式适配 ========== */
+@media (max-width: 768px) {
+  .prose {
+    padding: 0 var(--spacing-md);
+    font-size: 0.88em; /* 移动端字号缩小 */
+  }
+
+  /* 移动端标题字号递减 */
+  .prose h1 {
+    font-size: 1.35em;
+  }
+  .prose h2 {
+    font-size: 1.15em;
+  }
+  .prose h3 {
+    font-size: 1.05em;
+  }
+  .prose h4 {
+    font-size: 1em;
+  }
+
+  /* 移动端段落左对齐（两端对齐在窄屏下效果差） */
+  .prose p {
+    text-align: left;
+  }
+
+  /* 移动端列表缩进减小 */
+  .prose ul,
+  .prose ol {
+    padding-left: 1.5em;
+  }
+
+  /* 移动端引用块间距缩小 */
+  .prose blockquote {
+    padding: 0.65em 1em;
+    margin: 1em 0;
+  }
+
+  /* 移动端表格单元格间距缩小 */
+  .prose th,
+  .prose td {
+    padding: 0.5em 0.65em;
+    font-size: 0.9em;
+  }
+
+  /* 移动端表格基础样式（横向滚动由 .table-wrap 包裹层承担，避免 display:table 与 overflow-x:auto 冲突） */
+  .prose table {
+    display: table;
+    width: 100%;
+    border-collapse: collapse;
+    margin: var(--spacing-lg) 0;
+    font-size: 0.9em;
+  }
+}

@@ -1,0 +1,74 @@
+﻿
+=== FANDEX Content Quality Audit ===
+
+Summary: 1566 issues (HIGH: 0, MEDIUM: 643, LOW: 923)
+
+
+[MISSING_ORDER] (466 issues)
+  [MEDIUM] src\content\docs\agent\A2A协议.md: MISSING_ORDER
+  [MEDIUM] src\content\docs\agent\A2A协议深入.md: MISSING_ORDER
+  [MEDIUM] src\content\docs\agent\Agent可观测性平台.md: MISSING_ORDER
+  [MEDIUM] src\content\docs\agent\Agent失败模式.md: MISSING_ORDER
+  [MEDIUM] src\content\docs\agent\Agent工作台为何模型失败.md: MISSING_ORDER
+  [MEDIUM] src\content\docs\agent\Agent工作台项目.md: MISSING_ORDER
+  [MEDIUM] src\content\docs\agent\Agent循环.md: MISSING_ORDER
+  [MEDIUM] src\content\docs\agent\Agent经济体与声誉.md: MISSING_ORDER
+  [MEDIUM] src\content\docs\agent\Agno与Mastra生产运行时.md: MISSING_ORDER
+  [MEDIUM] src\content\docs\agent\AI-Scientist-v2自主研究.md: MISSING_ORDER
+  ... and 456 more
+
+[MISSING_DIFFICULTY] (67 issues)
+  [MEDIUM] src\content\docs\agent\A2A协议深入.md: MISSING_DIFFICULTY
+  [MEDIUM] src\content\docs\agent\Agent可观测性平台.md: MISSING_DIFFICULTY
+  [MEDIUM] src\content\docs\agent\Agent失败模式.md: MISSING_DIFFICULTY
+  [MEDIUM] src\content\docs\agent\Agent经济体与声誉.md: MISSING_DIFFICULTY
+  [MEDIUM] src\content\docs\agent\Agno与Mastra生产运行时.md: MISSING_DIFFICULTY
+  [MEDIUM] src\content\docs\agent\AI-Scientist-v2自主研究.md: MISSING_DIFFICULTY
+  [MEDIUM] src\content\docs\agent\AlphaEvolve进化编码.md: MISSING_DIFFICULTY
+  [MEDIUM] src\content\docs\agent\Anthropic工作流模式.md: MISSING_DIFFICULTY
+  [MEDIUM] src\content\docs\agent\AutoGen-Actor模型与Agent框架.md: MISSING_DIFFICULTY
+  [MEDIUM] src\content\docs\agent\CAIS-CAISI与社会规模风险.md: MISSING_DIFFICULTY
+  ... and 57 more
+
+[WIKILINK] (110 issues)
+  [MEDIUM] src\content\docs\ai-engineering\优化器.md: WIKILINK: [[x, y]]
+  [MEDIUM] src\content\docs\ai-engineering\优化器.md: WIKILINK: [[dx, dy]]
+  [MEDIUM] src\content\docs\ai-engineering\反欺骗与音频水印.md: WIKILINK: [[1, 0, 1, 1, 0, 1, 0, 0, 1, 1, 0, 1, 0, 1, 1, 0]]
+  [MEDIUM] src\content\docs\ai-engineering\向量与矩阵运算.md: WIKILINK: [[10, 20, 30]]
+  [MEDIUM] src\content\docs\ai-engineering\朴素贝叶斯.md: WIKILINK: [[1, 0, 2, 0, 0]]
+  [MEDIUM] src\content\docs\ai-engineering\线性系统.md: WIKILINK: [[col, max_row]]
+  [MEDIUM] src\content\docs\ai-engineering\线性系统.md: WIKILINK: [[max_row, col]]
+  [MEDIUM] src\content\docs\ai-engineering\线性系统.md: WIKILINK: [[col, max_row]]
+  [MEDIUM] src\content\docs\ai-engineering\线性系统.md: WIKILINK: [[max_row, col]]
+  [MEDIUM] src\content\docs\c\C23与C2y新标准.md: WIKILINK: [[attribute]]
+  ... and 100 more
+
+[MISSING_PREAMBLE] (320 issues)
+  [LOW] src\content\docs\agent\Agent安全与沙盒.md: MISSING_PREAMBLE: 长文档(34061字符)缺少前置知识/学习目标
+  [LOW] src\content\docs\agent\Agent核心模块详解.md: MISSING_PREAMBLE: 长文档(25613字符)缺少前置知识/学习目标
+  [LOW] src\content\docs\agent\Agent框架.md: MISSING_PREAMBLE: 长文档(12378字符)缺少前置知识/学习目标
+  [LOW] src\content\docs\agent\Agent评估与安全.md: MISSING_PREAMBLE: 长文档(16710字符)缺少前置知识/学习目标
+  [LOW] src\content\docs\agent\MCP与A2A协议.md: MISSING_PREAMBLE: 长文档(33928字符)缺少前置知识/学习目标
+  [LOW] src\content\docs\agent\多Agent系统.md: MISSING_PREAMBLE: 长文档(11157字符)缺少前置知识/学习目标
+  [LOW] src\content\docs\agent\实战项目.md: MISSING_PREAMBLE: 长文档(21008字符)缺少前置知识/学习目标
+  [LOW] src\content\docs\agent\工具使用与Function Calling.md: MISSING_PREAMBLE: 长文档(11661字符)缺少前置知识/学习目标
+  [LOW] src\content\docs\agent\记忆与规划.md: MISSING_PREAMBLE: 长文档(13142字符)缺少前置知识/学习目标
+  [LOW] src\content\docs\algorithm\LeetCode刷题指南.md: MISSING_PREAMBLE: 长文档(16123字符)缺少前置知识/学习目标
+  ... and 310 more
+
+[INTERNAL_LINK] (603 issues)
+  [LOW] src\content\docs\agent\实战项目.md: INTERNAL_LINK: **func_args
+  [LOW] src\content\docs\agent\工具使用与Function Calling.md: INTERNAL_LINK: **func_args
+  [LOW] src\content\docs\agent\概述与架构.md: INTERNAL_LINK: ./多Agent系统.md
+  [LOW] src\content\docs\algorithm\LeetCode刷题指南.md: INTERNAL_LINK: algorithm/overview
+  [LOW] src\content\docs\algorithm\LeetCode刷题指南.md: INTERNAL_LINK: int start, int remaining
+  [LOW] src\content\docs\algorithm\LeetCode刷题指南.md: INTERNAL_LINK: algorithm/sorting
+  [LOW] src\content\docs\algorithm\LeetCode刷题指南.md: INTERNAL_LINK: algorithm/searching
+  [LOW] src\content\docs\algorithm\LeetCode刷题指南.md: INTERNAL_LINK: algorithm/dynamic-programming
+  [LOW] src\content\docs\algorithm\LeetCode刷题指南.md: INTERNAL_LINK: algorithm/greedy
+  [LOW] src\content\docs\algorithm\LeetCode刷题指南.md: INTERNAL_LINK: algorithm/graph
+  ... and 593 more
+
+Total issues: 1566
+
+✅ No HIGH severity issues found.

@@ -1,0 +1,215 @@
+{
+  "元数据": {
+    "模块名称": "TypeScript",
+    "版本": "1.0.0",
+    "最后更新": "2026-06-15",
+    "前置知识": ["掌握 JavaScript 基础语法", "了解类型系统的基本概念"],
+    "推荐学习顺序": [
+      "先学习【类型系统】分组，掌握基础类型、接口和联合类型",
+      "再学习【泛型】分组，掌握泛型函数、泛型约束和条件类型"
+    ]
+  },
+  "分组": [
+    {
+      "分组名": "类型系统",
+      "分组说明": "TypeScript 的核心价值。本组内容涵盖基础类型、接口、类型别名、联合类型和枚举，是编写类型安全代码的基础。",
+      "条目": [
+        {
+          "描述": "基础类型",
+          "代码": "let username: string = \"张三\";\nlet age: number = 25;\nlet isActive: boolean = true;\nlet items: string[] = [\"苹果\", \"香蕉\"];\nlet id: number | string = 1001;\n\n// 函数类型注解\nfunction greet(name: string): string {\n  return `你好, ${name}`;\n}",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">let</span><span style=\"color:#24292E\"> username</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#032F62\"> \"张三\"</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">let</span><span style=\"color:#24292E\"> age</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> number</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#005CC5\"> 25</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">let</span><span style=\"color:#24292E\"> isActive</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> boolean</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#005CC5\"> true</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">let</span><span style=\"color:#24292E\"> items</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#24292E\">[] </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> [</span><span style=\"color:#032F62\">\"苹果\"</span><span style=\"color:#24292E\">, </span><span style=\"color:#032F62\">\"香蕉\"</span><span style=\"color:#24292E\">];</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">let</span><span style=\"color:#24292E\"> id</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> number</span><span style=\"color:#D73A49\"> |</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#005CC5\"> 1001</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\">// 函数类型注解</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">function</span><span style=\"color:#6F42C1\"> greet</span><span style=\"color:#24292E\">(</span><span style=\"color:#E36209\">name</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#24292E\">)</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">  return</span><span style=\"color:#032F62\"> `你好, ${</span><span style=\"color:#24292E\">name</span><span style=\"color:#032F62\">}`</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span></code></pre>",
+          "预期输出": "所有变量具有明确的类型约束，编译时检查类型错误",
+          "使用场景": "为变量、函数参数和返回值添加类型注解。TypeScript 的基础类型包括 string、number、boolean、array、tuple、enum、void、null、undefined、never 等。",
+          "常见错误": [
+            {
+              "错误示例": "let age: number = \"25\";",
+              "错误信息": "Type 'string' is not assignable to type 'number'",
+              "解决方法": "确保赋值类型与声明类型一致：let age: number = 25"
+            },
+            {
+              "错误示例": "let items = [];（空数组推断为 never[]）",
+              "错误信息": "后续 push 字符串时报错：Argument of type 'string' is not assignable to parameter of type 'never'",
+              "解决方法": "声明时指定类型：let items: string[] = []"
+            }
+          ],
+          "进阶提示": "TypeScript 支持类型推断，变量初始化时可省略类型注解。但函数参数必须显式注解，返回值通常可推断。",
+          "搜索关键词": ["基础类型", "类型注解", "string", "number", "boolean"]
+        },
+        {
+          "描述": "接口",
+          "代码": "interface User {\n  id: number;\n  name: string;\n  email: string;\n  age?: number;\n  readonly createdAt: Date;\n}\n\nconst user: User = {\n  id: 1,\n  name: \"张三\",\n  email: \"zhangsan@mail.com\",\n  createdAt: new Date()\n};",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">interface</span><span style=\"color:#6F42C1\"> User</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#E36209\">  id</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> number</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#E36209\">  name</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#E36209\">  email</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#E36209\">  age</span><span style=\"color:#D73A49\">?:</span><span style=\"color:#005CC5\"> number</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">  readonly</span><span style=\"color:#E36209\"> createdAt</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> Date</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#D73A49\">const</span><span style=\"color:#005CC5\"> user</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> User</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  id: </span><span style=\"color:#005CC5\">1</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  name: </span><span style=\"color:#032F62\">\"张三\"</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  email: </span><span style=\"color:#032F62\">\"zhangsan@mail.com\"</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  createdAt: </span><span style=\"color:#D73A49\">new</span><span style=\"color:#6F42C1\"> Date</span><span style=\"color:#24292E\">()</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">};</span></span></code></pre>",
+          "预期输出": "user 对象符合 User 接口的类型约束，缺少必填字段会报错",
+          "使用场景": "定义对象的形状（shape）。接口描述了对象应该有哪些属性及其类型。? 标记可选属性，readonly 标记只读属性。接口可扩展和实现。",
+          "常见错误": [
+            {
+              "错误示例": "const user: User = { id: 1, name: \"张三\" };",
+              "错误信息": "Property 'email' is missing in type '{ id: number; name: string; }' but required in type 'User'",
+              "解决方法": "必须包含所有非可选属性，或将 email 标记为可选：email?: string"
+            },
+            {
+              "错误示例": "user.createdAt = new Date();（修改只读属性）",
+              "错误信息": "Cannot assign to 'createdAt' because it is a read-only property",
+              "解决方法": "readonly 属性只能在初始化时赋值，之后不可修改"
+            }
+          ],
+          "进阶提示": "接口可继承：interface Admin extends User { permissions: string[] }。接口也可描述函数类型和可索引类型。",
+          "搜索关键词": ["接口", "interface", "对象类型", "类型约束"]
+        },
+        {
+          "描述": "类型别名",
+          "代码": "type ID = number | string;\ntype Point = { x: number; y: number };\ntype Callback = (data: string) => void;\n\nconst userId: ID = 1001;\nconst point: Point = { x: 10, y: 20 };\nconst handler: Callback = (data) => console.log(data);",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> ID</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#005CC5\"> number</span><span style=\"color:#D73A49\"> |</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> Point</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#24292E\"> { </span><span style=\"color:#E36209\">x</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> number</span><span style=\"color:#24292E\">; </span><span style=\"color:#E36209\">y</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> number</span><span style=\"color:#24292E\"> };</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> Callback</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#24292E\"> (</span><span style=\"color:#E36209\">data</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#24292E\">) </span><span style=\"color:#D73A49\">=></span><span style=\"color:#005CC5\"> void</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#D73A49\">const</span><span style=\"color:#005CC5\"> userId</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> ID</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#005CC5\"> 1001</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">const</span><span style=\"color:#005CC5\"> point</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> Point</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#24292E\"> { x: </span><span style=\"color:#005CC5\">10</span><span style=\"color:#24292E\">, y: </span><span style=\"color:#005CC5\">20</span><span style=\"color:#24292E\"> };</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">const</span><span style=\"color:#6F42C1\"> handler</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> Callback</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#24292E\"> (</span><span style=\"color:#E36209\">data</span><span style=\"color:#24292E\">) </span><span style=\"color:#D73A49\">=></span><span style=\"color:#24292E\"> console.</span><span style=\"color:#6F42C1\">log</span><span style=\"color:#24292E\">(data);</span></span></code></pre>",
+          "预期输出": "各变量使用类型别名进行约束，类型检查通过",
+          "使用场景": "为类型创建别名。与接口类似但更灵活：可给联合类型、交叉类型、基本类型等创建别名。适合复杂类型的复用和简化。",
+          "常见错误": [
+            {
+              "错误示例": "type User = { name: string } & { name: number };（冲突的交叉类型）",
+              "错误信息": "name 属性类型为 never，因为 string 和 number 无法同时满足",
+              "解决方法": "交叉类型的同名属性类型必须兼容，否则合并为 never"
+            },
+            {
+              "错误示例": "type Point = { x: number; y: number };\ninterface Point { z: number; }（类型别名与接口同名）",
+              "错误信息": "Duplicate identifier 'Point'",
+              "解决方法": "类型别名不能像接口那样声明合并，改用接口或使用不同的名称"
+            }
+          ],
+          "进阶提示": "接口和类型别名的主要区别：接口可声明合并（同名自动合并），类型别名更灵活（支持联合/交叉/映射类型）。定义对象形状优先用接口，其他场景用类型别名。",
+          "搜索关键词": ["类型别名", "type", "自定义类型"]
+        },
+        {
+          "描述": "联合类型",
+          "代码": "// 联合类型\ntype Status = \"pending\" | \"active\" | \"inactive\";\nlet currentStatus: Status = \"active\";\n\n// 可辨识联合\ntype SuccessResponse = { status: \"success\"; data: string };\ntype ErrorResponse = { status: \"error\"; message: string };\ntype ApiResponse = SuccessResponse | ErrorResponse;\n\nfunction handleResponse(res: ApiResponse) {\n  if (res.status === \"success\") {\n    console.log(res.data); // TypeScript 知道此处是 SuccessResponse\n  } else {\n    console.log(res.message); // TypeScript 知道此处是 ErrorResponse\n  }\n}",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6A737D\">// 联合类型</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> Status</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#032F62\"> \"pending\"</span><span style=\"color:#D73A49\"> |</span><span style=\"color:#032F62\"> \"active\"</span><span style=\"color:#D73A49\"> |</span><span style=\"color:#032F62\"> \"inactive\"</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">let</span><span style=\"color:#24292E\"> currentStatus</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> Status</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#032F62\"> \"active\"</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\">// 可辨识联合</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> SuccessResponse</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#24292E\"> { </span><span style=\"color:#E36209\">status</span><span style=\"color:#D73A49\">:</span><span style=\"color:#032F62\"> \"success\"</span><span style=\"color:#24292E\">; </span><span style=\"color:#E36209\">data</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#24292E\"> };</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> ErrorResponse</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#24292E\"> { </span><span style=\"color:#E36209\">status</span><span style=\"color:#D73A49\">:</span><span style=\"color:#032F62\"> \"error\"</span><span style=\"color:#24292E\">; </span><span style=\"color:#E36209\">message</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#24292E\"> };</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> ApiResponse</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#6F42C1\"> SuccessResponse</span><span style=\"color:#D73A49\"> |</span><span style=\"color:#6F42C1\"> ErrorResponse</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#D73A49\">function</span><span style=\"color:#6F42C1\"> handleResponse</span><span style=\"color:#24292E\">(</span><span style=\"color:#E36209\">res</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> ApiResponse</span><span style=\"color:#24292E\">) {</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">  if</span><span style=\"color:#24292E\"> (res.status </span><span style=\"color:#D73A49\">===</span><span style=\"color:#032F62\"> \"success\"</span><span style=\"color:#24292E\">) {</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">    console.</span><span style=\"color:#6F42C1\">log</span><span style=\"color:#24292E\">(res.data); </span><span style=\"color:#6A737D\">// TypeScript 知道此处是 SuccessResponse</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  } </span><span style=\"color:#D73A49\">else</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">    console.</span><span style=\"color:#6F42C1\">log</span><span style=\"color:#24292E\">(res.message); </span><span style=\"color:#6A737D\">// TypeScript 知道此处是 ErrorResponse</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  }</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span></code></pre>",
+          "预期输出": "currentStatus 只能赋值为三个字符串之一，handleResponse 中通过 status 字段自动收窄类型",
+          "使用场景": "联合类型允许一个值是多种类型之一。字面量联合类型可限制为特定的值（类似枚举），可辨识联合通过公共属性实现类型收窄。",
+          "常见错误": [
+            {
+              "错误示例": "type Result = string | number;\nconst result: Result = \"hello\";\nresult.toUpperCase();（直接调用字符串方法）",
+              "错误信息": "Property 'toUpperCase' does not exist on type 'number'",
+              "解决方法": "需要先收窄类型：if (typeof result === 'string') { result.toUpperCase(); }"
+            },
+            {
+              "错误示例": "type Status = \"active\" | \"inactive\";\nlet s: Status = \"pending\";",
+              "错误信息": "Type '\"pending\"' is not assignable to type 'Status'",
+              "解决方法": "只能赋值为联合类型中列出的字面量：\"active\" 或 \"inactive\""
+            }
+          ],
+          "进阶提示": "可辨识联合（Discriminated Union）是 TypeScript 中强大的模式，通过公共的字面量类型属性（如 status、type）实现类型安全的状态机。",
+          "搜索关键词": ["联合类型", "可辨识联合", "类型收窄", "字面量类型"]
+        },
+        {
+          "描述": "枚举",
+          "代码": "enum Direction {\n  Up = \"UP\",\n  Down = \"DOWN\",\n  Left = \"LEFT\",\n  Right = \"RIGHT\"\n}\n\nlet dir: Direction = Direction.Up;\n\n// 数字枚举（自动递增）\nenum HttpStatus {\n  OK = 200,\n  NotFound = 404,\n  InternalError = 500\n}",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">enum</span><span style=\"color:#6F42C1\"> Direction</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">  Up</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#032F62\"> \"UP\"</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">  Down</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#032F62\"> \"DOWN\"</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">  Left</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#032F62\"> \"LEFT\"</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">  Right</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#032F62\"> \"RIGHT\"</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#D73A49\">let</span><span style=\"color:#24292E\"> dir</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> Direction</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#24292E\"> Direction.Up;</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\">// 数字枚举（自动递增）</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">enum</span><span style=\"color:#6F42C1\"> HttpStatus</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">  OK</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#005CC5\"> 200</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">  NotFound</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#005CC5\"> 404</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">  InternalError</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#005CC5\"> 500</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span></code></pre>",
+          "预期输出": "dir 的值为 \"UP\"，HttpStatus.OK 的值为 200",
+          "使用场景": "定义一组命名常量。字符串枚举需要显式赋值，数字枚举支持自动递增。枚举提高代码可读性，避免使用魔法数字或字符串。",
+          "常见错误": [
+            {
+              "错误示例": "enum Color { Red, Green, Blue }\nlet c: Color = \"Red\";",
+              "错误信息": "Type '\"Red\"' is not assignable to type 'Color'",
+              "解决方法": "枚举值通过枚举名访问：Color.Red，而非字符串 \"Red\""
+            },
+            {
+              "错误示例": "enum Mix { A = \"hello\", B = 42 }（混合枚举）",
+              "错误信息": "虽然语法允许，但混合字符串和数字枚举值会导致反向映射失效",
+              "解决方法": "建议统一使用字符串枚举或数字枚举，避免混用"
+            }
+          ],
+          "进阶提示": "const enum 在编译时会被内联替换，不会生成额外 JavaScript 代码，适合性能敏感场景。但 const enum 在跨模块使用时可能有兼容性问题。",
+          "搜索关键词": ["枚举", "enum", "常量集合"]
+        }
+      ]
+    },
+    {
+      "分组名": "泛型",
+      "分组说明": "TypeScript 的高级特性。本组内容涵盖泛型函数、泛型接口、泛型约束和条件类型，是编写可复用类型安全代码的关键。",
+      "条目": [
+        {
+          "描述": "泛型函数",
+          "代码": "function identity<T>(value: T): T {\n  return value;\n}\n\nconst num = identity<number>(42);\nconst str = identity(\"hello\"); // 类型推断，无需显式指定\n\n// 实用示例：数组工具函数\nfunction first<T>(arr: T[]): T | undefined {\n  return arr[0];\n}",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">function</span><span style=\"color:#6F42C1\"> identity</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">T</span><span style=\"color:#24292E\">>(</span><span style=\"color:#E36209\">value</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#24292E\">)</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">  return</span><span style=\"color:#24292E\"> value;</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#D73A49\">const</span><span style=\"color:#005CC5\"> num</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#6F42C1\"> identity</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#005CC5\">number</span><span style=\"color:#24292E\">>(</span><span style=\"color:#005CC5\">42</span><span style=\"color:#24292E\">);</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">const</span><span style=\"color:#005CC5\"> str</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#6F42C1\"> identity</span><span style=\"color:#24292E\">(</span><span style=\"color:#032F62\">\"hello\"</span><span style=\"color:#24292E\">); </span><span style=\"color:#6A737D\">// 类型推断，无需显式指定</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\">// 实用示例：数组工具函数</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">function</span><span style=\"color:#6F42C1\"> first</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">T</span><span style=\"color:#24292E\">>(</span><span style=\"color:#E36209\">arr</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#24292E\">[])</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#D73A49\"> |</span><span style=\"color:#005CC5\"> undefined</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">  return</span><span style=\"color:#24292E\"> arr[</span><span style=\"color:#005CC5\">0</span><span style=\"color:#24292E\">];</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span></code></pre>",
+          "预期输出": "num 类型为 number，str 类型为 string，first 返回数组第一个元素或 undefined",
+          "使用场景": "泛型函数允许在调用时指定类型参数，使函数可复用于多种类型，同时保持类型安全。T 是最常用的类型参数名。",
+          "常见错误": [
+            {
+              "错误示例": "function identity<T>(value: T): T {\n  return value;\n}\nconst result: string = identity(42);",
+              "错误信息": "Type 'number' is not assignable to type 'string'",
+              "解决方法": "泛型会根据传入参数推断类型，identity(42) 推断 T 为 number，不能赋值给 string"
+            },
+            {
+              "错误示例": "function print<T>(value: T): void {\n  console.log(value.length);",
+              "错误信息": "Property 'length' does not exist on type 'T'",
+              "解决方法": "T 上不能调用任意属性，需使用泛型约束限制 T 必须有 length 属性"
+            }
+          ],
+          "进阶提示": "泛型支持多个类型参数：function map<T, U>(arr: T[], fn: (item: T) => U): U[]。默认类型参数：function createArray<T = string>(): T[]。",
+          "搜索关键词": ["泛型函数", "泛型", "类型参数", "generic"]
+        },
+        {
+          "描述": "泛型接口",
+          "代码": "interface ApiResponse<T> {\n  code: number;\n  message: string;\n  data: T;\n}\n\ninterface User {\n  id: number;\n  name: string;\n}\n\nconst userRes: ApiResponse<User> = {\n  code: 200,\n  message: \"成功\",\n  data: { id: 1, name: \"张三\" }\n};\n\nconst listRes: ApiResponse<User[]> = {\n  code: 200,\n  message: \"成功\",\n  data: [{ id: 1, name: \"张三\" }]\n};",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">interface</span><span style=\"color:#6F42C1\"> ApiResponse</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">T</span><span style=\"color:#24292E\">> {</span></span>\n<span class=\"line\"><span style=\"color:#E36209\">  code</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> number</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#E36209\">  message</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#E36209\">  data</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#D73A49\">interface</span><span style=\"color:#6F42C1\"> User</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#E36209\">  id</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> number</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#E36209\">  name</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#D73A49\">const</span><span style=\"color:#005CC5\"> userRes</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> ApiResponse</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">User</span><span style=\"color:#24292E\">> </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  code: </span><span style=\"color:#005CC5\">200</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  message: </span><span style=\"color:#032F62\">\"成功\"</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  data: { id: </span><span style=\"color:#005CC5\">1</span><span style=\"color:#24292E\">, name: </span><span style=\"color:#032F62\">\"张三\"</span><span style=\"color:#24292E\"> }</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">};</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#D73A49\">const</span><span style=\"color:#005CC5\"> listRes</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> ApiResponse</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">User</span><span style=\"color:#24292E\">[]> </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  code: </span><span style=\"color:#005CC5\">200</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  message: </span><span style=\"color:#032F62\">\"成功\"</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  data: [{ id: </span><span style=\"color:#005CC5\">1</span><span style=\"color:#24292E\">, name: </span><span style=\"color:#032F62\">\"张三\"</span><span style=\"color:#24292E\"> }]</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">};</span></span></code></pre>",
+          "预期输出": "userRes.data 类型为 User，listRes.data 类型为 User[]",
+          "使用场景": "泛型接口使接口可复用于不同的数据类型。常见于 API 响应、容器类、工具类型等场景，data 字段的类型由泛型参数决定。",
+          "常见错误": [
+            {
+              "错误示例": "const res: ApiResponse = { code: 200, message: \"ok\", data: null };",
+              "错误信息": "Generic type 'ApiResponse<T>' requires 1 type argument(s)",
+              "解决方法": "泛型接口使用时必须指定类型参数：ApiResponse<User> 或 ApiResponse<null>"
+            },
+            {
+              "错误示例": "interface Container<T> { value: T }\nconst c: Container = { value: 42 };",
+              "错误信息": "Generic type 'Container<T>' requires 1 type argument(s)",
+              "解决方法": "指定类型参数：Container<number>，或为泛型参数设置默认值：interface Container<T = unknown>"
+            }
+          ],
+          "进阶提示": "泛型接口支持多个类型参数和默认值：interface Map<K = string, V = unknown> { get(key: K): V; set(key: K, value: V): void; }。",
+          "搜索关键词": ["泛型接口", "接口泛型", "ApiResponse"]
+        },
+        {
+          "描述": "泛型约束",
+          "代码": "interface HasLength {\n  length: number;\n}\n\nfunction logLength<T extends HasLength>(value: T): void {\n  console.log(value.length);\n}\n\nlogLength(\"hello\");    // 字符串有 length\nlogLength([1, 2, 3]); // 数组有 length\n// logLength(123);    // 数字没有 length，编译报错\n\n// keyof 约束\nfunction getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {\n  return obj[key];\n}",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">interface</span><span style=\"color:#6F42C1\"> HasLength</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#E36209\">  length</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> number</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#D73A49\">function</span><span style=\"color:#6F42C1\"> logLength</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">T</span><span style=\"color:#D73A49\"> extends</span><span style=\"color:#6F42C1\"> HasLength</span><span style=\"color:#24292E\">>(</span><span style=\"color:#E36209\">value</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#24292E\">)</span><span style=\"color:#D73A49\">:</span><span style=\"color:#005CC5\"> void</span><span style=\"color:#24292E\"> {</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  console.</span><span style=\"color:#6F42C1\">log</span><span style=\"color:#24292E\">(value.</span><span style=\"color:#005CC5\">length</span><span style=\"color:#24292E\">);</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6F42C1\">logLength</span><span style=\"color:#24292E\">(</span><span style=\"color:#032F62\">\"hello\"</span><span style=\"color:#24292E\">);    </span><span style=\"color:#6A737D\">// 字符串有 length</span></span>\n<span class=\"line\"><span style=\"color:#6F42C1\">logLength</span><span style=\"color:#24292E\">([</span><span style=\"color:#005CC5\">1</span><span style=\"color:#24292E\">, </span><span style=\"color:#005CC5\">2</span><span style=\"color:#24292E\">, </span><span style=\"color:#005CC5\">3</span><span style=\"color:#24292E\">]); </span><span style=\"color:#6A737D\">// 数组有 length</span></span>\n<span class=\"line\"><span style=\"color:#6A737D\">// logLength(123);    // 数字没有 length，编译报错</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\">// keyof 约束</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">function</span><span style=\"color:#6F42C1\"> getProperty</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">T</span><span style=\"color:#24292E\">, </span><span style=\"color:#6F42C1\">K</span><span style=\"color:#D73A49\"> extends</span><span style=\"color:#D73A49\"> keyof</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#24292E\">>(</span><span style=\"color:#E36209\">obj</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#24292E\">, </span><span style=\"color:#E36209\">key</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> K</span><span style=\"color:#24292E\">)</span><span style=\"color:#D73A49\">:</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#24292E\">[</span><span style=\"color:#6F42C1\">K</span><span style=\"color:#24292E\">] {</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">  return</span><span style=\"color:#24292E\"> obj[key];</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">}</span></span></code></pre>",
+          "预期输出": "logLength(\"hello\") 输出 5，logLength([1,2,3]) 输出 3，getProperty 可安全访问对象属性",
+          "使用场景": "使用 extends 限制泛型参数必须满足特定条件。T extends HasLength 表示 T 必须有 length 属性。keyof T 约束参数为 T 的键名。",
+          "常见错误": [
+            {
+              "错误示例": "function logLength<T extends HasLength>(value: T): void {\n  console.log(value.length);\n}\nlogLength(123);",
+              "错误信息": "Argument of type 'number' is not assignable to parameter of type 'HasLength'",
+              "解决方法": "number 类型没有 length 属性，不满足约束。传入字符串、数组等有 length 属性的值"
+            },
+            {
+              "错误示例": "function getProp<T, K>(obj: T, key: K): T[K] {",
+              "错误信息": "Type 'K' cannot be used to index type 'T'",
+              "解决方法": "添加 keyof 约束：K extends keyof T，确保 K 是 T 的合法键名"
+            }
+          ],
+          "进阶提示": "new() 约束可限制泛型必须可实例化：T extends { new(): T }。泛型约束可组合：T extends A & B 表示 T 必须同时满足 A 和 B。",
+          "搜索关键词": ["泛型约束", "extends", "keyof", "类型限制"]
+        },
+        {
+          "描述": "条件类型",
+          "代码": "// 基本条件类型\ntype IsString<T> = T extends string ? \"yes\" : \"no\";\ntype A = IsString<string>;  // \"yes\"\ntype B = IsString<number>;  // \"no\"\n\n// 实用示例：提取 Promise 内部类型\ntype UnwrapPromise<T> = T extends Promise<infer U> ? U : T;\ntype Result = UnwrapPromise<Promise<string>>; // string\n\n// 内置工具类型\ntype ReadonlyUser = Readonly<User>;\ntype PartialUser = Partial<User>;\ntype RequiredUser = Required<User>;\ntype PickUser = Pick<User, \"id\" | \"name\">;\ntype OmitUser = Omit<User, \"email\">;",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6A737D\">// 基本条件类型</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> IsString</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">T</span><span style=\"color:#24292E\">> </span><span style=\"color:#D73A49\">=</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#D73A49\"> extends</span><span style=\"color:#005CC5\"> string</span><span style=\"color:#D73A49\"> ?</span><span style=\"color:#032F62\"> \"yes\"</span><span style=\"color:#D73A49\"> :</span><span style=\"color:#032F62\"> \"no\"</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> A</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#6F42C1\"> IsString</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#005CC5\">string</span><span style=\"color:#24292E\">>;  </span><span style=\"color:#6A737D\">// \"yes\"</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> B</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#6F42C1\"> IsString</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#005CC5\">number</span><span style=\"color:#24292E\">>;  </span><span style=\"color:#6A737D\">// \"no\"</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\">// 实用示例：提取 Promise 内部类型</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> UnwrapPromise</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">T</span><span style=\"color:#24292E\">> </span><span style=\"color:#D73A49\">=</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#D73A49\"> extends</span><span style=\"color:#6F42C1\"> Promise</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#D73A49\">infer</span><span style=\"color:#6F42C1\"> U</span><span style=\"color:#24292E\">> </span><span style=\"color:#D73A49\">?</span><span style=\"color:#6F42C1\"> U</span><span style=\"color:#D73A49\"> :</span><span style=\"color:#6F42C1\"> T</span><span style=\"color:#24292E\">;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> Result</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#6F42C1\"> UnwrapPromise</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">Promise</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#005CC5\">string</span><span style=\"color:#24292E\">>>; </span><span style=\"color:#6A737D\">// string</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\">// 内置工具类型</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> ReadonlyUser</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#6F42C1\"> Readonly</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">User</span><span style=\"color:#24292E\">>;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> PartialUser</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#6F42C1\"> Partial</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">User</span><span style=\"color:#24292E\">>;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> RequiredUser</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#6F42C1\"> Required</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">User</span><span style=\"color:#24292E\">>;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> PickUser</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#6F42C1\"> Pick</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">User</span><span style=\"color:#24292E\">, </span><span style=\"color:#032F62\">\"id\"</span><span style=\"color:#D73A49\"> |</span><span style=\"color:#032F62\"> \"name\"</span><span style=\"color:#24292E\">>;</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">type</span><span style=\"color:#6F42C1\"> OmitUser</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#6F42C1\"> Omit</span><span style=\"color:#24292E\">&#x3C;</span><span style=\"color:#6F42C1\">User</span><span style=\"color:#24292E\">, </span><span style=\"color:#032F62\">\"email\"</span><span style=\"color:#24292E\">>;</span></span></code></pre>",
+          "预期输出": "A 类型为 \"yes\"，B 类型为 \"no\"，Result 类型为 string",
+          "使用场景": "条件类型根据类型条件选择不同的类型结果。infer 关键字可在条件类型中推断类型。TypeScript 内置了多个基于条件类型的工具类型。",
+          "常见错误": [
+            {
+              "错误示例": "type Unwrap<T> = T extends Promise<infer U> ? U : T;\ntype R = Unwrap<string>;",
+              "错误信息": "R 类型为 string 而非报错，因为 string 不 extends Promise，走 else 分支返回 T 本身",
+              "解决方法": "这是正确行为，非 Promise 类型直接返回自身。如需仅处理 Promise 可加约束：T extends Promise<any>"
+            },
+            {
+              "错误示例": "type Check<T> = T extends string ? T extends number ? \"both\" : \"string\" : \"other\";\n（嵌套条件类型过于复杂）",
+              "错误信息": "类型定义难以阅读和维护",
+              "解决方法": "避免深层嵌套条件类型，拆分为多个命名类型别名以提高可读性"
+            }
+          ],
+          "进阶提示": "分布式条件类型：当 T 为联合类型时，条件类型会自动分发。type ToArray<T> = T extends any ? T[] : never; ToArray<string | number> 结果为 string[] | number[]。",
+          "搜索关键词": ["条件类型", "infer", "工具类型", "Partial", "Pick", "Omit"]
+        }
+      ]
+    }
+  ]
+}

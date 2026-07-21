@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    AndroidManifest 全局配置
+
+    权限说明：
+    - INTERNET                更新自检功能访问 GitHub Releases API 与 CDN
+    - ACCESS_NETWORK_STATE    检测网络状态，离线时跳过更新检查
+    - REQUEST_INSTALL_PACKAGES 调用系统 PackageInstaller 安装下载的 APK
+    - FOREGROUND_SERVICE      下载流程使用前台服务（带通知栏，避免被系统回收）
+    - FOREGROUND_SERVICE_DATA_SYNC  Android 14+ 前台服务类型声明（数据同步）
+    - POST_NOTIFICATIONS      Android 13+ 通知权限（下载进度通知）
+    - VIBRATE                 下载完成 / 新版本可用时的轻量反馈
+
+    网络安全：
+    - usesCleartextTraffic="false" 全局禁用明文流量
+    - networkSecurityConfig 指向 res/xml/network_security_config.xml
+      仅放行 GitHub 相关域名（api.github.com / github.com /
+      objects.githubusercontent.com），其余域名一律拒绝
+
+    FileProvider：
+    - 用于将下载的 APK 文件安全地共享给系统 PackageInstaller
+    - authority = "${applicationId}.fileprovider"
+    - 仅授予临时读权限，避免文件被第三方应用持久化访问
+-->
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <!-- 更新自检功能所需的网络权限 -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+
+    <!-- APK 安装权限（Android 8.0+ 必需） -->
+    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
+
+    <!-- 前台服务（下载流程） -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
+    <!-- 通知权限（Android 13+ 需运行时申请；下载进度通知） -->
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+    <!-- 轻量触感反馈（下载完成 / 新版本可用提示） -->
+    <uses-permission android:name="android.permission.VIBRATE" />
+
+    <application
+        android:allowBackup="true"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.FANDEX"
+        android:usesCleartextTraffic="false"
+        android:networkSecurityConfig="@xml/network_security_config">
+
+        <!-- 启动页 Activity（LAUNCHER 入口） -->
+        <activity
+            android:name=".home.SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.FANDEX">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+        <!-- 主页 Activity（非 LAUNCHER，由 SplashActivity 跳转，不应导出） -->
+        <activity
+            android:name=".home.HomeActivity"
+            android:exported="false"
+            android:theme="@style/Theme.FANDEX" />
+
+        <!--
+            FileProvider：用于将下载的 APK 安全共享给系统 PackageInstaller
+
+            - authority 必须唯一，使用 applicationId 作为前缀避免冲突
+            - grantResults 仅授予临时读权限
+            - export=false 防止被外部应用直接调用
+            - paths 通过 res/xml/file_paths.xml 限定可共享目录
+        -->
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="${applicationId}.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/file_paths" />
+        </provider>
+
+    </application>
+
+</manifest>

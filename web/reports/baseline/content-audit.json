@@ -1,0 +1,122 @@
+{
+  "timestamp": "2026-07-18T00:00:00+08:00",
+  "phase": "Phase 0.2 现状基线审计",
+  "scope": "src/content/docs/**/*.md(x)",
+  "summary": {
+    "totalDocs": 2013,
+    "moduleCount": 52,
+    "totalChars": 13373319,
+    "avgCharsPerDoc": 6643.48,
+    "totalIssues": 1566,
+    "highSeverity": 0,
+    "mediumSeverity": 643,
+    "lowSeverity": 923
+  },
+  "modules": [
+    "agent",
+    "ai-engineering",
+    "ai-ethics",
+    "algorithm",
+    "big-data",
+    "c",
+    "calculus",
+    "cloud-computing",
+    "computer-vision",
+    "cpp",
+    "cs-fundamentals",
+    "csharp",
+    "css",
+    "cybersecurity",
+    "data-analysis",
+    "deep-learning",
+    "devops",
+    "discrete-math",
+    "engineering-practices",
+    "english",
+    "generative-ai",
+    "getting-started",
+    "git",
+    "github",
+    "go",
+    "harmonyos",
+    "html5",
+    "iot",
+    "java",
+    "javascript",
+    "kotlin",
+    "linear-algebra",
+    "llm",
+    "lua",
+    "machine-learning",
+    "markdown",
+    "multimodal",
+    "mysql",
+    "networking",
+    "nlp",
+    "postgresql",
+    "probability-statistics",
+    "python",
+    "react",
+    "redis",
+    "software-architecture",
+    "software-engineering",
+    "software-testing",
+    "sql",
+    "svg",
+    "typescript",
+    "vue3"
+  ],
+  "issuesByType": [
+    {
+      "type": "MISSING_ORDER",
+      "severity": "medium",
+      "count": 466,
+      "description": "frontmatter 缺少 order 字段，影响模块内文档排序"
+    },
+    {
+      "type": "MISSING_DIFFICULTY",
+      "severity": "medium",
+      "count": 67,
+      "description": "frontmatter 缺少 difficulty 字段，影响难度标识"
+    },
+    {
+      "type": "WIKILINK",
+      "severity": "medium",
+      "count": 110,
+      "description": "存在 Obsidian 风格 [[...]] 链接，应转换为标准 Markdown 链接；部分为数学矩阵语法误判"
+    },
+    {
+      "type": "MISSING_PREAMBLE",
+      "severity": "low",
+      "count": 320,
+      "description": "长文档（>10000 字符）缺少『前置知识』或『学习目标』章节"
+    },
+    {
+      "type": "INTERNAL_LINK",
+      "severity": "low",
+      "count": 603,
+      "description": "内部链接格式不规范（非 http/#/mailto 开头），含代码片段误判"
+    }
+  ],
+  "frontmatterCompleteness": {
+    "title": {
+      "missing": 0,
+      "passRate": 1.0
+    },
+    "module": {
+      "missing": 0,
+      "passRate": 1.0
+    },
+    "order": {
+      "missing": 466,
+      "passRate": 0.7684
+    },
+    "difficulty": {
+      "missing": 67,
+      "passRate": 0.9667
+    }
+  },
+  "highSeverityBlocking": false,
+  "auditScript": "scripts/content-audit.mjs",
+  "exitCode": 0
+}

@@ -1,0 +1,42 @@
+{
+  "timestamp": "2026-07-18T23:51:32+08:00",
+  "phase": "Phase 0.2 现状基线审计",
+  "buildTimeSeconds": 152.86,
+  "totalSizeBytes": 456175952,
+  "htmlCount": 3782,
+  "jsSizeBytes": 146578746,
+  "cssSizeBytes": 201104,
+  "astroVersion": "5.18.2",
+  "pagefindVersion": "1.5.2",
+  "pagefindPages": 2005,
+  "pagefindWords": 62563,
+  "pagefindIndexedHtmlFiles": 3782,
+  "warnings": [
+    "[WARN] [glob-loader] No contents found for csharp/C#12与C#13新特性.md",
+    "[WARN] [glob-loader] No contents found for csharp/C#与Blazor.md",
+    "[WARN] [glob-loader] No contents found for csharp/C#与EF Core.md",
+    "[WARN] [glob-loader] No contents found for csharp/C#与MAUI.md",
+    "[WARN] [glob-loader] No contents found for csharp/C#与依赖注入.md",
+    "[WARN] [glob-loader] No contents found for csharp/C#与Unity游戏开发.md",
+    "[WARN] [glob-loader] No contents found for csharp/C#与反射.md",
+    "[WARN] [glob-loader] No contents found for csharp/C#与最小API.md"
+  ],
+  "warningCount": 8,
+  "errorCount": 19,
+  "errorSummary": "C# 文件名包含 # 号被 glob-loader 误解析为路径分隔符，导致 8 个 csharp 模块文档读取失败（ENOENT）",
+  "buildExitCode": 0,
+  "buildCommand": "npm run build",
+  "buildPipeline": [
+    "prebuild: node scripts/generate-cheatsheet-highlights.js",
+    "node scripts/build-glossary-index.mjs (79 terms)",
+    "node scripts/build-search-index.mjs (2004 docs, 540.9KB)",
+    "astro build",
+    "pagefind --site dist (6.297s, 2005 pages, 62563 words)"
+  ],
+  "sizeBreakdown": {
+    "totalMB": 435.06,
+    "jsMB": 139.78,
+    "cssMB": 0.19,
+    "otherMB": 295.09
+  }
+}

@@ -1,0 +1,312 @@
+{
+  "frontend": {
+    "name": "前端工程师",
+    "description": "专注于 Web 前端开发，掌握 HTML、CSS、JavaScript 三大基石与现代框架，构建用户界面与交互体验",
+    "icon": "FE",
+    "modules": [
+      {
+        "moduleId": "getting-started",
+        "estimatedHours": 8,
+        "priority": "required",
+        "dependsOn": []
+      },
+      { "moduleId": "markdown", "estimatedHours": 6, "priority": "required", "dependsOn": [] },
+      { "moduleId": "git", "estimatedHours": 12, "priority": "required", "dependsOn": [] },
+      {
+        "moduleId": "github",
+        "estimatedHours": 8,
+        "priority": "recommended",
+        "dependsOn": ["git"]
+      },
+      {
+        "moduleId": "html5",
+        "estimatedHours": 20,
+        "priority": "required",
+        "dependsOn": ["markdown"]
+      },
+      { "moduleId": "css", "estimatedHours": 30, "priority": "required", "dependsOn": ["html5"] },
+      {
+        "moduleId": "svg",
+        "estimatedHours": 10,
+        "priority": "recommended",
+        "dependsOn": ["html5"]
+      },
+      {
+        "moduleId": "javascript",
+        "estimatedHours": 50,
+        "priority": "required",
+        "dependsOn": ["html5", "css"]
+      },
+      {
+        "moduleId": "typescript",
+        "estimatedHours": 25,
+        "priority": "required",
+        "dependsOn": ["javascript"]
+      },
+      {
+        "moduleId": "vue3",
+        "estimatedHours": 35,
+        "priority": "required",
+        "dependsOn": ["javascript", "html5", "css"]
+      },
+      {
+        "moduleId": "react",
+        "estimatedHours": 35,
+        "priority": "optional",
+        "dependsOn": ["javascript", "html5", "css"]
+      },
+      {
+        "moduleId": "algorithm",
+        "estimatedHours": 40,
+        "priority": "recommended",
+        "dependsOn": ["javascript"]
+      }
+    ]
+  },
+  "backend": {
+    "name": "后端工程师",
+    "description": "专注于服务端开发，掌握编程语言、数据库、网络与系统设计，构建可扩展的后端服务",
+    "icon": "BE",
+    "modules": [
+      {
+        "moduleId": "getting-started",
+        "estimatedHours": 8,
+        "priority": "required",
+        "dependsOn": []
+      },
+      { "moduleId": "git", "estimatedHours": 12, "priority": "required", "dependsOn": [] },
+      { "moduleId": "linux", "estimatedHours": 20, "priority": "required", "dependsOn": [] },
+      { "moduleId": "python", "estimatedHours": 40, "priority": "required", "dependsOn": [] },
+      { "moduleId": "java", "estimatedHours": 50, "priority": "recommended", "dependsOn": [] },
+      { "moduleId": "go", "estimatedHours": 30, "priority": "optional", "dependsOn": [] },
+      { "moduleId": "sql", "estimatedHours": 15, "priority": "required", "dependsOn": [] },
+      { "moduleId": "mysql", "estimatedHours": 25, "priority": "required", "dependsOn": ["sql"] },
+      {
+        "moduleId": "postgresql",
+        "estimatedHours": 20,
+        "priority": "recommended",
+        "dependsOn": ["sql"]
+      },
+      { "moduleId": "redis", "estimatedHours": 15, "priority": "required", "dependsOn": [] },
+      { "moduleId": "networking", "estimatedHours": 25, "priority": "required", "dependsOn": [] },
+      {
+        "moduleId": "devops",
+        "estimatedHours": 30,
+        "priority": "recommended",
+        "dependsOn": ["git"]
+      },
+      {
+        "moduleId": "algorithm",
+        "estimatedHours": 40,
+        "priority": "required",
+        "dependsOn": ["python"]
+      }
+    ]
+  },
+  "fullstack": {
+    "name": "全栈工程师",
+    "description": "兼具前端与后端能力，独立完成产品全链路开发，掌握现代 Web 开发的完整技术栈",
+    "icon": "FS",
+    "modules": [
+      {
+        "moduleId": "getting-started",
+        "estimatedHours": 8,
+        "priority": "required",
+        "dependsOn": []
+      },
+      { "moduleId": "markdown", "estimatedHours": 6, "priority": "required", "dependsOn": [] },
+      { "moduleId": "git", "estimatedHours": 12, "priority": "required", "dependsOn": [] },
+      {
+        "moduleId": "html5",
+        "estimatedHours": 20,
+        "priority": "required",
+        "dependsOn": ["markdown"]
+      },
+      { "moduleId": "css", "estimatedHours": 30, "priority": "required", "dependsOn": ["html5"] },
+      {
+        "moduleId": "javascript",
+        "estimatedHours": 50,
+        "priority": "required",
+        "dependsOn": ["html5", "css"]
+      },
+      {
+        "moduleId": "typescript",
+        "estimatedHours": 25,
+        "priority": "required",
+        "dependsOn": ["javascript"]
+      },
+      {
+        "moduleId": "vue3",
+        "estimatedHours": 35,
+        "priority": "required",
+        "dependsOn": ["javascript"]
+      },
+      { "moduleId": "python", "estimatedHours": 40, "priority": "required", "dependsOn": [] },
+      { "moduleId": "sql", "estimatedHours": 15, "priority": "required", "dependsOn": [] },
+      { "moduleId": "mysql", "estimatedHours": 25, "priority": "required", "dependsOn": ["sql"] },
+      { "moduleId": "redis", "estimatedHours": 15, "priority": "required", "dependsOn": [] },
+      {
+        "moduleId": "devops",
+        "estimatedHours": 30,
+        "priority": "recommended",
+        "dependsOn": ["git"]
+      },
+      {
+        "moduleId": "algorithm",
+        "estimatedHours": 40,
+        "priority": "recommended",
+        "dependsOn": ["javascript"]
+      }
+    ]
+  },
+  "algorithm": {
+    "name": "算法工程师",
+    "description": "专注于算法设计与优化，扎实的数学基础与编程能力，应对复杂计算与工程化挑战",
+    "icon": "AL",
+    "modules": [
+      {
+        "moduleId": "getting-started",
+        "estimatedHours": 8,
+        "priority": "required",
+        "dependsOn": []
+      },
+      { "moduleId": "c", "estimatedHours": 30, "priority": "required", "dependsOn": [] },
+      { "moduleId": "cpp", "estimatedHours": 50, "priority": "required", "dependsOn": ["c"] },
+      { "moduleId": "python", "estimatedHours": 40, "priority": "required", "dependsOn": [] },
+      {
+        "moduleId": "discrete-math",
+        "estimatedHours": 35,
+        "priority": "required",
+        "dependsOn": []
+      },
+      { "moduleId": "calculus", "estimatedHours": 50, "priority": "required", "dependsOn": [] },
+      {
+        "moduleId": "linear-algebra",
+        "estimatedHours": 30,
+        "priority": "required",
+        "dependsOn": []
+      },
+      {
+        "moduleId": "probability-statistics",
+        "estimatedHours": 30,
+        "priority": "required",
+        "dependsOn": []
+      },
+      {
+        "moduleId": "algorithm",
+        "estimatedHours": 60,
+        "priority": "required",
+        "dependsOn": ["cpp", "discrete-math"]
+      },
+      {
+        "moduleId": "cs-fundamentals",
+        "estimatedHours": 40,
+        "priority": "recommended",
+        "dependsOn": []
+      }
+    ]
+  },
+  "datascience": {
+    "name": "数据科学家",
+    "description": "整合统计学、机器学习与业务理解，从数据中提炼价值，驱动产品与决策",
+    "icon": "DS",
+    "modules": [
+      {
+        "moduleId": "getting-started",
+        "estimatedHours": 8,
+        "priority": "required",
+        "dependsOn": []
+      },
+      { "moduleId": "python", "estimatedHours": 40, "priority": "required", "dependsOn": [] },
+      { "moduleId": "sql", "estimatedHours": 15, "priority": "required", "dependsOn": [] },
+      {
+        "moduleId": "mysql",
+        "estimatedHours": 25,
+        "priority": "recommended",
+        "dependsOn": ["sql"]
+      },
+      { "moduleId": "calculus", "estimatedHours": 50, "priority": "required", "dependsOn": [] },
+      {
+        "moduleId": "linear-algebra",
+        "estimatedHours": 30,
+        "priority": "required",
+        "dependsOn": []
+      },
+      {
+        "moduleId": "probability-statistics",
+        "estimatedHours": 30,
+        "priority": "required",
+        "dependsOn": []
+      },
+      {
+        "moduleId": "data-analysis",
+        "estimatedHours": 35,
+        "priority": "required",
+        "dependsOn": ["python", "probability-statistics"]
+      },
+      {
+        "moduleId": "machine-learning",
+        "estimatedHours": 50,
+        "priority": "required",
+        "dependsOn": ["linear-algebra", "probability-statistics"]
+      },
+      {
+        "moduleId": "big-data",
+        "estimatedHours": 30,
+        "priority": "recommended",
+        "dependsOn": ["python"]
+      },
+      {
+        "moduleId": "deep-learning",
+        "estimatedHours": 45,
+        "priority": "optional",
+        "dependsOn": ["machine-learning"]
+      }
+    ]
+  },
+  "devops": {
+    "name": "DevOps 工程师",
+    "description": "打通开发与运维全流程，掌握自动化、云原生与可观测性，构建高效稳定的交付体系",
+    "icon": "DO",
+    "modules": [
+      {
+        "moduleId": "getting-started",
+        "estimatedHours": 8,
+        "priority": "required",
+        "dependsOn": []
+      },
+      { "moduleId": "git", "estimatedHours": 12, "priority": "required", "dependsOn": [] },
+      { "moduleId": "github", "estimatedHours": 8, "priority": "required", "dependsOn": ["git"] },
+      { "moduleId": "linux", "estimatedHours": 20, "priority": "required", "dependsOn": [] },
+      { "moduleId": "python", "estimatedHours": 30, "priority": "recommended", "dependsOn": [] },
+      { "moduleId": "go", "estimatedHours": 30, "priority": "recommended", "dependsOn": [] },
+      { "moduleId": "networking", "estimatedHours": 25, "priority": "required", "dependsOn": [] },
+      {
+        "moduleId": "devops",
+        "estimatedHours": 40,
+        "priority": "required",
+        "dependsOn": ["git", "linux"]
+      },
+      {
+        "moduleId": "cloud-computing",
+        "estimatedHours": 35,
+        "priority": "required",
+        "dependsOn": ["devops"]
+      },
+      { "moduleId": "redis", "estimatedHours": 15, "priority": "recommended", "dependsOn": [] },
+      { "moduleId": "mysql", "estimatedHours": 20, "priority": "recommended", "dependsOn": [] },
+      {
+        "moduleId": "cybersecurity",
+        "estimatedHours": 25,
+        "priority": "recommended",
+        "dependsOn": ["networking"]
+      },
+      {
+        "moduleId": "software-testing",
+        "estimatedHours": 20,
+        "priority": "recommended",
+        "dependsOn": []
+      }
+    ]
+  }
+}

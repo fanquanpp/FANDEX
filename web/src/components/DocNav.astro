@@ -1,0 +1,151 @@
+---
+/**
+ * 文档底部导航组件
+ * 显示当前文档的上一篇/下一篇链接，方便用户按顺序浏览文档
+ * 通过 props 接收预计算的 prev/next 文档条目，避免组件内部直接查询 Content Collection
+ * 由 [slug].astro 在 getStaticPaths 阶段通过 getDocNavigation 预计算后传递
+ */
+import { docSlug, type DocEntry } from '@/services';
+
+const { prev, next } = Astro.props as { prev: DocEntry | null; next: DocEntry | null };
+---
+
+<!-- 底部导航：仅有一篇时使用单按钮布局 -->
+<nav class="doc-nav" class:list={{ 'single-btn': !prev || !next }}>
+  {
+    prev ? (
+      <a
+        href={`${import.meta.env.BASE_URL}${prev.data.module}/${docSlug(prev.id)}/`}
+        class="nav-btn"
+      >
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <polyline points="18 6 6 12 18 18" />
+        </svg>
+        <div>
+          <span class="nav-label">上一篇</span>
+          <span class="nav-title">{prev.data.title}</span>
+        </div>
+      </a>
+    ) : (
+      <div />
+    )
+  }
+  {
+    next ? (
+      <a
+        href={`${import.meta.env.BASE_URL}${next.data.module}/${docSlug(next.id)}/`}
+        class="nav-btn"
+        style="text-align:right"
+      >
+        <div>
+          <span class="nav-label">下一篇</span>
+          <span class="nav-title">{next.data.title}</span>
+        </div>
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <polyline points="6 6 18 12 6 18" />
+        </svg>
+      </a>
+    ) : (
+      <div />
+    )
+  }
+</nav>
+
+<style>
+  /* 底部导航容器：左右分布上一篇/下一篇 */
+  .doc-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-lg);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border-light);
+    max-width: var(--content-width);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* 导航按钮 */
+  .nav-btn {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-card);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    flex: 1;
+    min-width: 0;
+  }
+
+  .nav-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  /* 仅有一个按钮时的布局 */
+  .doc-nav.single-btn {
+    justify-content: flex-start;
+  }
+
+  .doc-nav.single-btn .nav-btn {
+    flex: none;
+  }
+
+  /* "上一篇/下一篇"标签 */
+  .nav-label {
+    font-size: 0.68em;
+    color: var(--color-text-tertiary);
+    display: block;
+  }
+
+  /* 文档标题：单行省略 */
+  .nav-title {
+    font-size: 0.82em;
+    font-weight: 500;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+  }
+
+  /* 移动端适配 */
+  @media (max-width: 768px) {
+    .doc-nav {
+      flex-direction: row;
+      gap: var(--spacing-sm);
+    }
+
+    .doc-nav.single-btn {
+      justify-content: flex-start;
+    }
+
+    .doc-nav.single-btn .nav-btn {
+      flex: none;
+    }
+
+    .nav-btn {
+      padding: var(--spacing-xs) var(--spacing-sm);
+      flex-direction: row;
+    }
+
+    .nav-title {
+      font-size: 0.75em;
+    }
+  }
+</style>

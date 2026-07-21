@@ -1,0 +1,205 @@
+{
+  "元数据": {
+    "模块名称": "Git",
+    "版本": "1.0.0",
+    "最后更新": "2026-06-15",
+    "前置知识": ["了解版本控制的基本概念", "已完成 Git 安装并配置用户信息"],
+    "推荐学习顺序": [
+      "先学习【基础操作】分组，掌握仓库初始化与提交",
+      "再学习【分支管理】分组，掌握分支创建与合并"
+    ]
+  },
+  "分组": [
+    {
+      "分组名": "基础操作",
+      "分组说明": "Git 使用的第一步。本组命令用于初始化仓库、跟踪文件变更和提交代码。",
+      "条目": [
+        {
+          "描述": "初始化仓库",
+          "代码": "git init",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> init</span></span></code></pre>",
+          "预期输出": "Initialized empty Git repository in /path/to/project/.git/",
+          "使用场景": "在本地新建一个 Git 仓库时使用。执行后会在当前目录生成 .git 隐藏文件夹，标志着仓库创建成功。",
+          "常见错误": [
+            {
+              "错误示例": "在已有 .git 的目录中再次执行 git init",
+              "错误信息": "Reinitialized existing Git repository in /path/to/project/.git/",
+              "解决方法": "仓库已存在无需重复初始化，如需重建应先删除 .git 目录"
+            }
+          ],
+          "进阶提示": "git init --bare 可创建裸仓库（无工作区），常用于服务器端共享仓库。",
+          "搜索关键词": ["初始化", "新建仓库", "git init"]
+        },
+        {
+          "描述": "克隆远程仓库",
+          "代码": "git clone https://github.com/user/repo.git",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> clone</span><span style=\"color:#032F62\"> https://github.com/user/repo.git</span></span></code></pre>",
+          "预期输出": "Cloning into 'repo'...\nremote: Enumerating objects: 120, done.\nReceiving objects: 100% (120/120), done.",
+          "使用场景": "需要从远程服务器获取已有项目代码时使用。克隆会自动创建目录并初始化仓库，同时关联远程地址。",
+          "常见错误": [
+            {
+              "错误示例": "git clone https://github.com/user/private-repo.git",
+              "错误信息": "fatal: could not read Username for 'https://github.com': terminal prompts disabled",
+              "解决方法": "私有仓库需要配置认证信息，可使用 SSH 地址或配置凭据缓存：git config --global credential.helper cache"
+            },
+            {
+              "错误示例": "git clone https://github.com/user/repo.git",
+              "错误信息": "fatal: destination path 'repo' already exists and is not an empty directory",
+              "解决方法": "目标目录已存在，更换克隆目录或先删除已有目录"
+            }
+          ],
+          "进阶提示": "git clone --depth 1 可进行浅克隆，只获取最近一次提交，适用于仅需最新代码的场景，可大幅减少下载量。",
+          "搜索关键词": ["克隆", "下载仓库", "git clone"]
+        },
+        {
+          "描述": "查看工作区状态",
+          "代码": "git status",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> status</span></span></code></pre>",
+          "预期输出": "On branch main\nChanges not staged for commit:\n  modified:   README.md\n\nUntracked files:\n  newfile.txt",
+          "使用场景": "需要查看当前工作区哪些文件被修改、哪些文件已暂存、哪些文件未被跟踪时使用。是 Git 中最常用的命令之一。",
+          "常见错误": [
+            {
+              "错误示例": "修改文件后直接执行 git commit，跳过 git add",
+              "错误信息": "nothing to commit, working tree clean（因为未暂存更改）",
+              "解决方法": "先使用 git add 暂存更改，再执行 git commit 提交"
+            }
+          ],
+          "进阶提示": "git status -s 可输出简洁格式，每行一个文件，适合在文件较多时快速浏览。",
+          "搜索关键词": ["状态", "查看变更", "git status"]
+        },
+        {
+          "描述": "暂存文件更改",
+          "代码": "git add README.md",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> add</span><span style=\"color:#032F62\"> README.md</span></span></code></pre>",
+          "预期输出": "（无输出，表示成功）",
+          "使用场景": "将工作区的文件修改添加到暂存区，为下一次提交做准备。可指定单个文件或使用 git add . 暂存所有更改。",
+          "常见错误": [
+            {
+              "错误示例": "git add .（在包含敏感文件的目录中执行）",
+              "错误信息": "将 .env 等敏感文件意外暂存",
+              "解决方法": "使用 .gitignore 文件排除敏感文件，或使用 git add 指定具体文件名"
+            },
+            {
+              "错误示例": "git add file.txt（修改后再次修改 file.txt 但未重新 add）",
+              "错误信息": "提交时只包含第一次 add 时的内容，第二次修改未被提交",
+              "解决方法": "每次修改后需重新执行 git add，或使用 git commit -a 跳过手动暂存"
+            }
+          ],
+          "进阶提示": "git add -p 可交互式选择部分修改进行暂存（暂存区补丁模式），适合将一个文件的修改拆分为多次提交。",
+          "搜索关键词": ["暂存", "添加文件", "git add"]
+        },
+        {
+          "描述": "提交更改",
+          "代码": "git commit -m \"feat: 添加用户登录功能\"",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> commit</span><span style=\"color:#005CC5\"> -m</span><span style=\"color:#032F62\"> \"feat: 添加用户登录功能\"</span></span></code></pre>",
+          "预期输出": "[main abc1234] feat: 添加用户登录功能\n 2 files changed, 50 insertions(+), 3 deletions(-)",
+          "使用场景": "将暂存区的更改永久记录到版本历史中。每次提交应包含一个清晰描述本次更改的提交信息。",
+          "常见错误": [
+            {
+              "错误示例": "git commit -m \"修改\"（提交信息过于简略）",
+              "错误信息": "提交成功但信息不清晰，后续难以定位问题",
+              "解决方法": "使用约定式提交格式，如 feat: / fix: / docs: 等前缀，并附上简要说明"
+            },
+            {
+              "错误示例": "git commit（未提供 -m 参数）",
+              "错误信息": "进入编辑器等待输入提交信息，可能因不熟悉操作而困惑",
+              "解决方法": "始终使用 -m 参数附带提交信息，或提前配置默认编辑器"
+            }
+          ],
+          "进阶提示": "git commit -am \"消息\" 可跳过 git add 直接提交已跟踪文件的修改（不包括新文件）。git commit --amend 可修改最近一次提交。",
+          "搜索关键词": ["提交", "保存更改", "git commit"]
+        }
+      ]
+    },
+    {
+      "分组名": "分支管理",
+      "分组说明": "分支是 Git 的核心特性。本组命令用于创建、切换和合并分支，支持多人协作与并行开发。",
+      "条目": [
+        {
+          "描述": "查看与创建分支",
+          "代码": "git branch\n# 创建新分支\ngit branch feature-login",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> branch</span></span>\n<span class=\"line\"><span style=\"color:#6A737D\"># 创建新分支</span></span>\n<span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> branch</span><span style=\"color:#032F62\"> feature-login</span></span></code></pre>",
+          "预期输出": "* main\n  develop\n\n# 创建后无输出，通过 git branch 可看到新分支",
+          "使用场景": "查看当前仓库所有本地分支，或创建新分支。带 * 号的为当前所在分支。创建分支不会自动切换。",
+          "常见错误": [
+            {
+              "错误示例": "git branch feature login",
+              "错误信息": "fatal: not a valid object name: 'feature'",
+              "解决方法": "分支名不能包含空格，应使用连字符：feature-login"
+            },
+            {
+              "错误示例": "git branch feature-login（在错误的分支上创建）",
+              "错误信息": "新分支基于当前分支的最新提交创建，起点不符合预期",
+              "解决方法": "创建前先确认当前分支，或使用 git branch feature-login develop 指定基于哪个分支创建"
+            }
+          ],
+          "进阶提示": "git branch -a 可查看所有分支（含远程分支），git branch -d 可删除已合并的分支，git branch -D 强制删除分支。",
+          "搜索关键词": ["分支", "创建分支", "git branch"]
+        },
+        {
+          "描述": "切换分支",
+          "代码": "git checkout develop\n# 或使用新命令\ngit switch develop",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> checkout</span><span style=\"color:#032F62\"> develop</span></span>\n<span class=\"line\"><span style=\"color:#6A737D\"># 或使用新命令</span></span>\n<span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> switch</span><span style=\"color:#032F62\"> develop</span></span></code></pre>",
+          "预期输出": "Switched to branch 'develop'",
+          "使用场景": "需要在不同分支之间切换工作时使用。切换前应确保工作区是干净的，否则可能产生冲突。",
+          "常见错误": [
+            {
+              "错误示例": "git checkout develop（工作区有未提交的修改且与目标分支冲突）",
+              "错误信息": "error: Your local changes to the following files would be overwritten by checkout",
+              "解决方法": "先提交或暂存修改：git stash，切换后再用 git stash pop 恢复"
+            },
+            {
+              "错误示例": "git checkout develop（拼写错误的分支名）",
+              "错误信息": "error: pathspec 'develp' did not match any file(s) known to git",
+              "解决方法": "先用 git branch 确认分支名称是否正确"
+            }
+          ],
+          "进阶提示": "git checkout -b feature-login 可创建并切换到新分支，等同于 git branch feature-login && git checkout feature-login。Git 2.23+ 推荐使用 git switch -c。",
+          "搜索关键词": ["切换分支", "git checkout", "git switch"]
+        },
+        {
+          "描述": "合并分支",
+          "代码": "git checkout main\ngit merge feature-login",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> checkout</span><span style=\"color:#032F62\"> main</span></span>\n<span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> merge</span><span style=\"color:#032F62\"> feature-login</span></span></code></pre>",
+          "预期输出": "Merge made by the 'ort' strategy.\n login.py | 50 +++++++++++++++++++++++++++++\n 1 file changed, 50 insertions(+)",
+          "使用场景": "将指定分支的修改合并到当前分支。通常在功能开发完成后，将功能分支合并回主分支。",
+          "常见错误": [
+            {
+              "错误示例": "git merge feature-login（存在冲突时）",
+              "错误信息": "CONFLICT (content): Merge conflict in login.py\nAutomatic merge failed; fix conflicts and then commit the result.",
+              "解决方法": "手动打开冲突文件，编辑 <<<<<<< 与 >>>>>>> 之间的内容，保留需要的代码后执行 git add 和 git commit"
+            },
+            {
+              "错误示例": "在 feature 分支上执行 git merge main（方向反了）",
+              "错误信息": "合并成功但 main 分支未获得 feature 的修改",
+              "解决方法": "应先切换到目标分支（如 main），再执行 git merge feature-login"
+            }
+          ],
+          "进阶提示": "git merge --no-ff feature-login 可禁用快进合并，保留分支合并记录，便于回溯功能分支的完整历史。",
+          "搜索关键词": ["合并", "merge", "合并分支"]
+        },
+        {
+          "描述": "变基操作",
+          "代码": "git checkout feature-login\ngit rebase main",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> checkout</span><span style=\"color:#032F62\"> feature-login</span></span>\n<span class=\"line\"><span style=\"color:#6F42C1\">git</span><span style=\"color:#032F62\"> rebase</span><span style=\"color:#032F62\"> main</span></span></code></pre>",
+          "预期输出": "Successfully rebased and updated refs/heads/feature-login.",
+          "使用场景": "将当前分支的提交重新应用到目标分支的最新提交之上，使提交历史更加线性整洁。与 merge 不同，rebase 不会产生合并提交。",
+          "常见错误": [
+            {
+              "错误示例": "git rebase main（在公共分支上执行 rebase）",
+              "错误信息": "导致其他协作者的提交历史混乱，产生重复提交",
+              "解决方法": "永远不要在已推送到远程的公共分支上执行 rebase，仅在本地个人分支上使用"
+            },
+            {
+              "错误示例": "git rebase main（存在冲突时中断操作）",
+              "错误信息": "CONFLICT (content): Rebase conflict in file.py",
+              "解决方法": "解决冲突后执行 git add file.py && git rebase --continue，或使用 git rebase --abort 放弃变基"
+            }
+          ],
+          "进阶提示": "git rebase -i HEAD~3 可交互式修改最近 3 次提交（合并、修改、重排），常用于整理提交历史后再推送。",
+          "搜索关键词": ["变基", "rebase", "重置基点"]
+        }
+      ]
+    }
+  ]
+}

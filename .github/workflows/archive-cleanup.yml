@@ -1,0 +1,142 @@
+name: Archive Cleanup
+
+# ============================================================================
+# 职责：清理 gh-pages 分支上的归档 manifest，仅保留最近 5 个版本
+# ============================================================================
+# 触发条件：
+# - 定时：每日 UTC 03:00（北京时间 11:00）执行
+# - 手动触发
+#
+# 最小化约束原则：
+# - 仅清理归档目录（archives/），不影响最新 manifest（manifests/）
+# - 仅保留最近 5 个版本，超过的删除
+# - 不影响应用构建与发布
+# ============================================================================
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # 每日 UTC 03:00 执行
+  workflow_dispatch:
+    inputs:
+      keep_count:
+        description: '保留的归档版本数量（默认 5）'
+        required: false
+        type: string
+        default: '5'
+      dry_run:
+        description: '试运行（仅输出将删除的文件，不实际删除）'
+        required: false
+        type: boolean
+        default: false
+
+# 同一时间仅允许一个清理任务运行
+concurrency:
+  group: archive-cleanup
+  cancel-in-progress: false
+
+permissions:
+  contents: write      # 需要推送清理后的 gh-pages 分支
+
+jobs:
+  cleanup:
+    name: Cleanup Old Manifest Archives
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+
+    steps:
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages
+          fetch-depth: 0
+
+      - name: Determine keep count
+        id: config
+        shell: bash
+        run: |
+          KEEP_COUNT="${{ github.event.inputs.keep_count || '5' }}"
+          DRY_RUN="${{ github.event.inputs.dry_run || 'false' }}"
+          echo "keep_count=$KEEP_COUNT" >> $GITHUB_OUTPUT
+          echo "dry_run=$DRY_RUN" >> $GITHUB_OUTPUT
+          echo "[archive-cleanup] 保留版本数: $KEEP_COUNT, 试运行: $DRY_RUN"
+
+      - name: Cleanup archives directory
+        shell: bash
+        run: |
+          KEEP_COUNT=${{ steps.config.outputs.keep_count }}
+          DRY_RUN=${{ steps.config.outputs.dry_run }}
+
+          if [ ! -d "archives" ]; then
+            echo "[archive-cleanup] archives/ 目录不存在，无需清理"
+            exit 0
+          fi
+
+          # 按类型分组清理
+          for type in full mobile; do
+            echo "[archive-cleanup] 清理 archives/${type}.*.json ..."
+
+            # 列出所有归档文件，按时间戳降序排序，保留前 KEEP_COUNT 个
+            ARCHIVES=$(ls -1 archives/${type}.manifest.*.json 2>/dev/null | sort -r)
+            TOTAL=$(echo "$ARCHIVES" | grep -c . || echo 0)
+
+            if [ "$TOTAL" -le "$KEEP_COUNT" ]; then
+              echo "[archive-cleanup] archives/${type} 仅 $TOTAL 个版本，无需清理（阈值 $KEEP_COUNT）"
+              continue
+            fi
+
+            # 保留前 KEEP_COUNT 个，删除其余
+            COUNT=0
+            for file in $ARCHIVES; do
+              COUNT=$((COUNT + 1))
+              if [ $COUNT -le $KEEP_COUNT ]; then
+                echo "[archive-cleanup]   保留: $file"
+              else
+                if [ "$DRY_RUN" = "true" ]; then
+                  echo "[archive-cleanup]   待删除（试运行）: $file"
+                else
+                  rm -f "$file"
+                  echo "[archive-cleanup]   已删除: $file"
+                fi
+              fi
+            done
+          done
+
+          # 更新 index.json 中的 archives 列表
+          if [ -f "manifests/index.json" ] && [ "$DRY_RUN" != "true" ]; then
+            node -e "
+              const fs = require('fs');
+              const index = JSON.parse(fs.readFileSync('manifests/index.json', 'utf-8'));
+              index.archives = { full: [], mobile: [] };
+              for (const type of ['full', 'mobile']) {
+                const files = fs.readdirSync('archives').filter(f => f.startsWith(\`\${type}.manifest.\`) && f.endsWith('.json'));
+                files.sort().reverse();
+                index.archives[type] = files.map(f => {
+                  const ts = f.match(/\\.manifest\\.(\\d+)\\.json/)[1];
+                  return { filename: f, timestamp: ts };
+                });
+              }
+              index.last_cleanup = new Date().toISOString();
+              fs.writeFileSync('manifests/index.json', JSON.stringify(index, null, 2));
+              console.log('[archive-cleanup] manifests/index.json 已更新');
+            "
+          fi
+
+      - name: Commit cleanup
+        if: steps.config.outputs.dry_run != 'true'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          git add archives/ manifests/index.json 2>/dev/null || true
+
+          if git diff --cached --quiet; then
+            echo "[archive-cleanup] 无变更，跳过提交"
+          else
+            git commit -m "chore(archive): cleanup old manifest archives [skip ci]
+
+            Keep last ${{ steps.config.outputs.keep_count }} versions
+            Cleanup at: $(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+            git push origin gh-pages
+            echo "[archive-cleanup] 已提交清理"
+          fi

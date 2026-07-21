@@ -1,0 +1,185 @@
+{
+  "moduleId": "discrete-math",
+  "terms": [
+    {
+      "name": "闭包",
+      "definition": "集合在某种运算下封闭的最小扩充，如自反闭包、对称闭包、传递闭包",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "并查集",
+      "definition": "维护不相交集合合并与查询的数据结构，常用于等价关系的动态维护",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "域",
+      "definition": "同时满足加法和乘法群性质且满足分配律的代数结构，如有理数域、有限域",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "粗糙集",
+      "definition": "通过上近似和下近似处理不精确或不完整信息的数学工具",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "容斥原理",
+      "definition": "计算多个集合并集大小的公式：",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "代数系统",
+      "definition": "由集合及其上定义的运算构成的数学结构，如群、环、域",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "等价关系",
+      "definition": "满足自反性、对称性和传递性的二元关系，将集合划分为等价类",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "等价类",
+      "definition": "等价关系下与给定元素等价的所有元素组成的子集",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "二部图",
+      "definition": "顶点集可划分为两个独立集，且每条边的两端分属不同集合的图",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "范式",
+      "definition": "命题公式或谓词公式的标准形式，如析取范式（DNF）和合取范式（CNF）",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "分配格",
+      "definition": "满足分配律的格，即交对并和并对交都满足分配性",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "命题",
+      "definition": "可以判断真假的陈述句，是命题逻辑的基本研究对象",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "格",
+      "definition": "任意两个元素都有上确界和下确界的偏序集",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "哈斯图",
+      "definition": "偏序关系的简化图形表示，省略自环、传递边和方向箭头",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "哈密顿图",
+      "definition": "包含经过每个顶点恰好一次的回路（哈密顿回路）的图",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "环",
+      "definition": "具有加法群和乘法半群结构且满足分配律的代数系统",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "基数",
+      "definition": "集合中元素的数量，分为有限基数和无限基数（如可数集与不可数集）",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "极小项",
+      "definition": "包含所有变量的布尔乘积项，用于构造析取范式",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "可满足性",
+      "definition": "命题公式是否存在一组真值指派使其为真的性质，SAT 问题是经典 NP 完全问题",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "量词",
+      "definition": "谓词逻辑中表示数量范围的符号，包括全称量词 ∀ 和存在量词 ∃",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "连通图",
+      "definition": "任意两个顶点之间都存在路径的图",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "满射",
+      "definition": "值域中每个元素都有原像的映射，即 f(A) = B",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "欧拉图",
+      "definition": "包含经过每条边恰好一次的回路（欧拉回路）的图，当且仅当所有顶点度数为偶数",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "偏序",
+      "definition": "满足自反性、反对称性和传递性的二元关系，常用 ≤ 表示",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "平面图",
+      "definition": "可以在平面上画出且边不相交的图，满足欧拉公式 V-E+F=2",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "匹配",
+      "definition": "图中一组没有公共顶点的边集合，最大匹配是边数最多的匹配",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "谓词",
+      "definition": "描述个体性质或个体间关系的函数，取值为真或假",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "群",
+      "definition": "具有封闭性、结合律、单位元和逆元的代数结构，如整数加法群",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "圈",
+      "definition": "起点和终点相同的路径，且除端点外无重复顶点",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "树",
+      "definition": "无回路的连通图，n 个顶点的树恰有 n-1 条边",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "生成函数",
+      "definition": "将序列 {aₙ} 编码为幂级数 Σaₙxⁿ 的函数，用于求解递推关系和计数问题",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "着色",
+      "definition": "为图的顶点或边分配颜色使得相邻元素颜色不同的过程，最小颜色数为色数",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "同构",
+      "definition": "两个代数结构或图之间保持结构的一一对应映射",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "图",
+      "definition": "由顶点集和边集组成的数学结构 G=(V,E)，用于建模离散对象间的关系",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "网络流",
+      "definition": "在带权有向图中从源点到汇点的流量分配问题，最大流最小割定理是核心结论",
+      "slug": "discrete-math/glossary"
+    },
+    {
+      "name": "自同构",
+      "definition": "结构到自身的同构映射，保持所有运算和关系不变",
+      "slug": "discrete-math/glossary"
+    }
+  ]
+}

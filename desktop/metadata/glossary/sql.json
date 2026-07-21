@@ -1,0 +1,140 @@
+{
+  "moduleId": "sql",
+  "terms": [
+    {
+      "name": "候选键",
+      "definition": "关系中能唯一标识元组的最小属性集，一个关系可有多个候选键",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "CTE",
+      "definition": "使用 WITH 子句定义的临时命名结果集，支持递归查询和提升复杂查询的可读性",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "触发器",
+      "definition": "在表上发生指定事件（INSERT/UPDATE/DELETE）时自动执行的存储过程",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "递归查询",
+      "definition": "利用递归 CTE 实现的层次或图遍历查询，由锚点成员和递归成员组成",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "动态 SQL",
+      "definition": "在运行时构造并执行的 SQL 语句字符串，常用于需要灵活拼接条件的场景",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "死锁",
+      "definition": "两个或多个事务互相等待对方持有的锁，导致都无法继续执行的状态",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "范式",
+      "definition": "关系数据库设计的规范化等级，包括 1NF、2NF、3NF、BCNF 等，用于消除数据冗余和异常",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "分区表",
+      "definition": "将大表按分区键拆分为多个物理存储单元的表，提升查询性能和管理效率",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "关系",
+      "definition": "关系模型中二维表的形式化术语，由属性和元组组成",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "行锁",
+      "definition": "数据库在行级别施加的锁，允许并发事务操作同一表中不同行",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "JOIN",
+      "definition": "将两个或多个表按连接条件组合的查询操作，包括 INNER、LEFT、RIGHT、FULL、CROSS 等类型",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "空值",
+      "definition": "表示缺失或未知数据的特殊标记，与零或空字符串不同，需要用 IS NULL 判断",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "物化视图",
+      "definition": "将查询结果物理存储的数据库对象，适合频繁查询但底层数据变化不频繁的场景",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "谓词",
+      "definition": "SQL 中评估为 TRUE、FALSE 或 UNKNOWN 的条件表达式，用于 WHERE/HAVING 子句",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "事务",
+      "definition": "作为单个逻辑工作单元执行的一组操作，具有 ACID（原子性、一致性、隔离性、持久性）特性",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "索引",
+      "definition": "对表列创建的辅助数据结构，加速数据检索但会增加写入开销和存储空间",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "视图",
+      "definition": "存储的查询定义，表现为虚拟表，简化复杂查询并提供数据访问的抽象层",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "死锁检测",
+      "definition": "数据库自动识别死锁并选择牺牲者回滚的机制",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "审计",
+      "definition": "记录数据库操作日志的安全功能，用于合规审查和安全追踪",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "窗口函数",
+      "definition": "在与当前行相关的行集合上执行计算的函数，如 ROW_NUMBER、RANK、SUM OVER",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "外键",
+      "definition": "引用另一个表主键的约束，确保引用完整性，维护表间关系一致性",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "限流",
+      "definition": "数据库对并发请求数量或频率进行限制的机制，防止系统过载",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "游标",
+      "definition": "逐行处理查询结果集的机制，允许在结果集中定位和操作单行数据",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "隔离级别",
+      "definition": "定义事务间可见性的标准，包括 READ UNCOMMITTED、READ COMMITTED、REPEATABLE READ、SERIALIZABLE",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "执行计划",
+      "definition": "查询优化器生成的数据处理步骤描述，展示索引使用、连接方法和扫描策略",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "存储过程",
+      "definition": "预编译并存储在数据库服务器上的一组 SQL 语句，支持参数化和流程控制",
+      "slug": "sql/glossary"
+    },
+    {
+      "name": "序列",
+      "definition": "生成唯一递增数值的数据库对象，常用于自动生成主键值",
+      "slug": "sql/glossary"
+    }
+  ]
+}

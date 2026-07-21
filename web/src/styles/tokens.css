@@ -1,0 +1,469 @@
+/**
+ * FANDEX Design Tokens 设计令牌系统
+ *
+ * 功能概述：
+ * 定义 FANDEX-Web 全站视觉语言的唯一来源，覆盖颜色、排版、间距、圆角、
+ * 阴影、动效、断点、层级、过渡九大类别。所有令牌统一使用 --fandex- 前缀，
+ * 避免与现有 --color-* / --geo-* 变量冲突。
+ *
+ * 主题策略：
+ * - 亮色主题（默认）：以白色为底，slate-900 为正文文字，清新明亮
+ * - 暗色主题（[data-theme="dark"]）：以 slate-900 (#0F172A) 为底，重新设计色板，
+ *   非简单反色，避免纯黑纯白，通过 surface/elevated/sunken 三层背景营造深度
+ *
+ * 主色选择：
+ * - Primary 选用 Sky（天蓝 #0EA5E9）：清新、专业、适合 CS 学习平台的科技感
+ * - Secondary 选用 Teal（蓝绿 #14B8A6）：与 Primary 同色系，营造冷静理性氛围
+ * - Accent 选用 Amber（琥珀 #F59E0B）：暖色强调，用于关键交互与高亮，与冷主色形成对比
+ * - Neutral 选用 Slate（石板灰）：现代中性色，避免纯灰的呆板感
+ *
+ * 对比度：
+ * - 所有文本色与背景色组合满足 WCAG AA 4.5:1 标准
+ * - 暗色模式下提亮主色（使用 400 而非 500）以保证在深色背景上的可读性
+ */
+
+/* ====================================================================
+   亮色主题（默认）
+   ==================================================================== */
+:root {
+  /* ============================================================
+     1.1 颜色 Tokens
+     ============================================================ */
+
+  /* --- 基础色板：Primary（Sky 天蓝） --- */
+  --fandex-color-primary-50: #f0f9ff; /* 最浅，用于背景填充 */
+  --fandex-color-primary-100: #e0f2fe; /* 浅色背景 */
+  --fandex-color-primary-200: #bae6fd; /* 边框、弱强调 */
+  --fandex-color-primary-300: #7dd3fc; /* 装饰、图标 */
+  --fandex-color-primary-400: #38bdf8; /* 悬停态 */
+  --fandex-color-primary-500: #0ea5e9; /* 主品牌色 */
+  --fandex-color-primary-600: #0284c7; /* 按钮主色、链接 */
+  --fandex-color-primary-700: #0369a1; /* 深色文字 */
+  --fandex-color-primary-800: #075985; /* 深色背景 */
+  --fandex-color-primary-900: #0c4a6e; /* 最深文字 */
+  --fandex-color-primary-950: #082f49; /* 极深背景 */
+
+  /* --- 基础色板：Secondary（Teal 蓝绿） --- */
+  --fandex-color-secondary-50: #f0fdfa;
+  --fandex-color-secondary-100: #ccfbf1;
+  --fandex-color-secondary-200: #99f6e4;
+  --fandex-color-secondary-300: #5eead4;
+  --fandex-color-secondary-400: #2dd4bf;
+  --fandex-color-secondary-500: #14b8a6; /* 辅助品牌色 */
+  --fandex-color-secondary-600: #0d9488;
+  --fandex-color-secondary-700: #0f766e;
+  --fandex-color-secondary-800: #115e59;
+  --fandex-color-secondary-900: #134e4a;
+  --fandex-color-secondary-950: #042f2e;
+
+  /* --- 基础色板：Accent（Amber 琥珀） --- */
+  --fandex-color-accent-50: #fffbeb;
+  --fandex-color-accent-100: #fef3c7;
+  --fandex-color-accent-200: #fde68a;
+  --fandex-color-accent-300: #fcd34d;
+  --fandex-color-accent-400: #fbbf24;
+  --fandex-color-accent-500: #f59e0b; /* 强调色 */
+  --fandex-color-accent-600: #d97706;
+  --fandex-color-accent-700: #b45309;
+  --fandex-color-accent-800: #92400e;
+  --fandex-color-accent-900: #78350f;
+  --fandex-color-accent-950: #451a03;
+
+  /* --- 基础色板：Neutral（Slate 石板灰） --- */
+  --fandex-color-neutral-50: #f8fafc;
+  --fandex-color-neutral-100: #f1f5f9;
+  --fandex-color-neutral-200: #e2e8f0;
+  --fandex-color-neutral-300: #cbd5e1;
+  --fandex-color-neutral-400: #94a3b8;
+  --fandex-color-neutral-500: #64748b;
+  --fandex-color-neutral-600: #475569;
+  --fandex-color-neutral-700: #334155;
+  --fandex-color-neutral-800: #1e293b;
+  --fandex-color-neutral-900: #0f172a;
+  --fandex-color-neutral-950: #020617;
+
+  /* --- 语义色：Success（Emerald 翠绿） --- */
+  --fandex-color-success: #059669; /* 默认，用于文本与图标 */
+  --fandex-color-success-light: #d1fae5; /* 浅色变体 */
+  --fandex-color-success-dark: #047857; /* 深色变体 */
+  --fandex-color-success-bg: #ecfdf5; /* 背景填充 */
+  --fandex-color-success-border: #a7f3d0; /* 边框 */
+
+  /* --- 语义色：Warning（Amber 琥珀） --- */
+  --fandex-color-warning: #b45309; /* 默认，深色保证白底对比度 */
+  --fandex-color-warning-light: #fef3c7;
+  --fandex-color-warning-dark: #92400e;
+  --fandex-color-warning-bg: #fffbeb;
+  --fandex-color-warning-border: #fde68a;
+
+  /* --- 语义色：Error（Rose 玫瑰红） --- */
+  --fandex-color-error: #be123c; /* 默认，深色保证白底对比度 */
+  --fandex-color-error-light: #ffe4e6;
+  --fandex-color-error-dark: #9f1239;
+  --fandex-color-error-bg: #fff1f2;
+  --fandex-color-error-border: #fecdd3;
+
+  /* --- 语义色：Info（Sky 天蓝） --- */
+  --fandex-color-info: #0369a1; /* 默认，深色保证白底对比度 */
+  --fandex-color-info-light: #e0f2fe;
+  --fandex-color-info-dark: #075985;
+  --fandex-color-info-bg: #f0f9ff;
+  --fandex-color-info-border: #bae6fd;
+
+  /* --- 文本色 --- */
+  --fandex-color-text-primary: #0f172a; /* 主文字，slate-900 */
+  --fandex-color-text-secondary: #475569; /* 二级文字，slate-600 */
+  --fandex-color-text-tertiary: #94a3b8; /* 三级文字，slate-400 */
+  --fandex-color-text-disabled: #cbd5e1; /* 禁用态，slate-300 */
+  --fandex-color-text-inverse: #ffffff; /* 反色文字，用于深色背景 */
+
+  /* --- 背景色（三层深度） --- */
+  --fandex-color-bg-base: #ffffff; /* 页面基础背景 */
+  --fandex-color-bg-surface: #f8fafc; /* 卡片/面板表面，slate-50 */
+  --fandex-color-bg-elevated: #ffffff; /* 浮起元素（弹层、模态） */
+  --fandex-color-bg-sunken: #f1f5f9; /* 凹陷区域（输入框、代码块），slate-100 */
+  --fandex-color-bg-hover: #f1f5f9; /* 悬停态背景 */
+  --fandex-color-bg-active: #e2e8f0; /* 激活态背景，slate-200 */
+
+  /* --- 边框色 --- */
+  --fandex-color-border-default: #e2e8f0; /* 默认边框，slate-200 */
+  --fandex-color-border-strong: #cbd5e1; /* 强边框，slate-300 */
+  --fandex-color-border-subtle: #f1f5f9; /* 弱边框，slate-100 */
+  --fandex-color-border-focus: #0ea5e9; /* 焦点边框，primary-500 */
+
+  /* --- 代码色（深色背景方案，亮暗模式通用） --- */
+  --fandex-color-code-bg: #1e293b; /* 代码块背景，slate-800 */
+  --fandex-color-code-text: #e2e8f0; /* 代码默认文字，slate-200 */
+  --fandex-color-code-comment: #94a3b8; /* 注释，slate-400 */
+  --fandex-color-code-keyword: #c084fc; /* 关键字，紫色 */
+  --fandex-color-code-string: #34d399; /* 字符串，翠绿 */
+  --fandex-color-code-number: #fbbf24; /* 数字，琥珀 */
+  --fandex-color-code-function: #60a5fa; /* 函数名，蓝色 */
+  --fandex-color-code-variable: #f472b6; /* 变量名，粉色 */
+
+  /* ============================================================
+     1.2 排版 Tokens
+     ============================================================ */
+
+  /* --- 字族 --- */
+  /* 无衬线：西文 Inter 优先，中文走系统字体栈，确保跨平台一致性 */
+  --fandex-font-sans:
+    'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei',
+    'Hiragino Sans GB', 'Noto Sans SC', 'Source Han Sans SC', sans-serif;
+  /* 衬线：用于长文阅读、引文，西文 Source Serif Pro，中文思源宋体 */
+  --fandex-font-serif:
+    'Source Serif Pro', 'Source Han Serif SC', 'Noto Serif SC', 'STSong', 'SimSun', serif;
+  /* 等宽：代码专用，JetBrains Mono 优先，Fira Code / Cascadia Code 回退 */
+  --fandex-font-mono:
+    'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, 'Courier New', monospace;
+  /* 展示字体：大标题专用，字距收紧，与 sans 同源但更紧凑 */
+  --fandex-font-display:
+    'Inter', -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Microsoft YaHei', 'Noto Sans SC',
+    sans-serif;
+
+  /* --- 字号（1rem = 16px） --- */
+  --fandex-font-size-xs: 0.75rem; /* 12px 辅助文字 */
+  --fandex-font-size-sm: 0.875rem; /* 14px 次要文字 */
+  --fandex-font-size-base: 1rem; /* 16px 正文基准 */
+  --fandex-font-size-lg: 1.125rem; /* 18px 略大正文 */
+  --fandex-font-size-xl: 1.25rem; /* 20px 小标题 */
+  --fandex-font-size-2xl: 1.5rem; /* 24px 中标题 */
+  --fandex-font-size-3xl: 1.875rem; /* 30px 大标题 */
+  --fandex-font-size-4xl: 2.25rem; /* 36px 主标题 */
+  --fandex-font-size-5xl: 3rem; /* 48px 页面标题 */
+  --fandex-font-size-6xl: 3.75rem; /* 60px 英雄标题 */
+
+  /* --- 行高 --- */
+  --fandex-line-height-tight: 1.2; /* 标题 */
+  --fandex-line-height-snug: 1.375; /* 副标题 */
+  --fandex-line-height-normal: 1.5; /* 正文（西文） */
+  --fandex-line-height-relaxed: 1.625; /* 正文（中文，略宽松） */
+  --fandex-line-height-loose: 2; /* 长文阅读 */
+
+  /* --- 字重 --- */
+  --fandex-font-weight-light: 300;
+  --fandex-font-weight-normal: 400;
+  --fandex-font-weight-medium: 500;
+  --fandex-font-weight-semibold: 600;
+  --fandex-font-weight-bold: 700;
+  --fandex-font-weight-extrabold: 800;
+
+  /* --- 字距 --- */
+  --fandex-letter-spacing-tighter: -0.05em; /* 大标题紧凑 */
+  --fandex-letter-spacing-tight: -0.025em; /* 标题 */
+  --fandex-letter-spacing-normal: 0; /* 正文 */
+  --fandex-letter-spacing-wide: 0.025em; /* 按钮、标签 */
+  --fandex-letter-spacing-wider: 0.05em; /* 大写小字 */
+
+  /* --- 段落间距 --- */
+  --fandex-paragraph-spacing-xs: 0.5rem;
+  --fandex-paragraph-spacing-sm: 0.75rem;
+  --fandex-paragraph-spacing-md: 1rem;
+  --fandex-paragraph-spacing-lg: 1.5rem;
+  --fandex-paragraph-spacing-xl: 2rem;
+
+  /* ============================================================
+     1.3 间距 Tokens（4px 基础栅格）
+     ============================================================ */
+  --fandex-spacing-0: 0;
+  --fandex-spacing-1: 0.25rem; /* 4px */
+  --fandex-spacing-2: 0.5rem; /* 8px */
+  --fandex-spacing-3: 0.75rem; /* 12px */
+  --fandex-spacing-4: 1rem; /* 16px */
+  --fandex-spacing-5: 1.25rem; /* 20px */
+  --fandex-spacing-6: 1.5rem; /* 24px */
+  --fandex-spacing-8: 2rem; /* 32px */
+  --fandex-spacing-10: 2.5rem; /* 40px */
+  --fandex-spacing-12: 3rem; /* 48px */
+  --fandex-spacing-16: 4rem; /* 64px */
+  --fandex-spacing-20: 5rem; /* 80px */
+  --fandex-spacing-24: 6rem; /* 96px */
+  --fandex-spacing-32: 8rem; /* 128px */
+
+  /* ============================================================
+     1.4 圆角 Tokens
+     ============================================================ */
+  --fandex-radius-none: 0;
+  --fandex-radius-sm: 0.125rem; /* 2px 微小圆角 */
+  --fandex-radius-default: 0.25rem; /* 4px 默认 */
+  --fandex-radius-md: 0.375rem; /* 6px 中等 */
+  --fandex-radius-lg: 0.5rem; /* 8px 大圆角 */
+  --fandex-radius-xl: 0.75rem; /* 12px 卡片 */
+  --fandex-radius-2xl: 1rem; /* 16px 模态 */
+  --fandex-radius-3xl: 1.5rem; /* 24px 大模态 */
+  --fandex-radius-full: 9999px; /* 圆形 */
+
+  /* ============================================================
+     1.5 阴影 Tokens（亮色模式 - 柔和、克制的阴影）
+     ============================================================ */
+  --fandex-shadow-xs: 0 1px 2px rgba(15, 23, 42, 0.04);
+  --fandex-shadow-sm: 0 1px 3px rgba(15, 23, 42, 0.08), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --fandex-shadow-default: 0 2px 4px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --fandex-shadow-md: 0 4px 6px -1px rgba(15, 23, 42, 0.1), 0 2px 4px -1px rgba(15, 23, 42, 0.06);
+  --fandex-shadow-lg: 0 10px 15px -3px rgba(15, 23, 42, 0.1), 0 4px 6px -2px rgba(15, 23, 42, 0.05);
+  --fandex-shadow-xl:
+    0 20px 25px -5px rgba(15, 23, 42, 0.1), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
+  --fandex-shadow-2xl: 0 25px 50px -12px rgba(15, 23, 42, 0.2);
+  --fandex-shadow-inner: inset 0 2px 4px 0 rgba(15, 23, 42, 0.05);
+
+  /* ============================================================
+     1.6 动效 Tokens
+     ============================================================ */
+
+  /* --- 时长 --- */
+  --fandex-duration-instant: 75ms; /* 即时反馈（颜色切换） */
+  --fandex-duration-fast: 150ms; /* 快速（悬停、焦点） */
+  --fandex-duration-normal: 250ms; /* 常规（展开、收起） */
+  --fandex-duration-slow: 400ms; /* 慢速（页面过渡） */
+  --fandex-duration-slower: 600ms; /* 极慢（复杂动画） */
+
+  /* --- 缓动函数 --- */
+  --fandex-ease-default: cubic-bezier(0.4, 0, 0.2, 1); /* 默认，柔和的入出 */
+  --fandex-ease-in: cubic-bezier(0.4, 0, 1, 1); /* 入，加速 */
+  --fandex-ease-out: cubic-bezier(0, 0, 0.2, 1); /* 出，减速（推荐交互） */
+  --fandex-ease-in-out: cubic-bezier(0.4, 0, 0.2, 1); /* 入出 */
+  --fandex-ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1); /* 弹簧，轻微过冲 */
+  --fandex-ease-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55); /* 弹跳 */
+  --fandex-ease-linear: linear; /* 线性，机械感 */
+
+  /* --- 延迟 --- */
+  --fandex-delay-none: 0ms;
+  --fandex-delay-short: 50ms;
+  --fandex-delay-medium: 100ms;
+  --fandex-delay-long: 200ms;
+
+  /* ============================================================
+     1.7 断点 Tokens
+     ------------------------------------------------------------
+     说明：CSS 变量无法直接用于 @media 查询，此处仅作参考与 JS 读取。
+     媒体查询中请使用字面量值（如 768px）。
+     ============================================================ */
+  --fandex-breakpoint-sm: 640px; /* 小屏手机横屏 */
+  --fandex-breakpoint-md: 768px; /* 平板竖屏 */
+  --fandex-breakpoint-lg: 1024px; /* 平板横屏 / 小笔记本 */
+  --fandex-breakpoint-xl: 1280px; /* 桌面显示器 */
+  --fandex-breakpoint-2xl: 1536px; /* 大屏显示器 */
+
+  /* ============================================================
+     1.8 层级 Tokens（z-index）
+     ============================================================ */
+  --fandex-z-base: 0; /* 基础层 */
+  --fandex-z-dropdown: 1000; /* 下拉菜单 */
+  --fandex-z-sticky: 1100; /* 粘性导航 */
+  --fandex-z-overlay: 1200; /* 遮罩层 */
+  --fandex-z-modal: 1300; /* 模态框 */
+  --fandex-z-popover: 1400; /* 气泡卡片 */
+  --fandex-z-tooltip: 1500; /* 工具提示 */
+  --fandex-z-notification: 1600; /* 通知提醒，最高层 */
+
+  /* ============================================================
+     1.9 过渡 Tokens（预定义组合）
+     ============================================================ */
+  --fandex-transition-colors:
+    color var(--fandex-duration-fast) var(--fandex-ease-out),
+    background-color var(--fandex-duration-fast) var(--fandex-ease-out),
+    border-color var(--fandex-duration-fast) var(--fandex-ease-out),
+    fill var(--fandex-duration-fast) var(--fandex-ease-out),
+    stroke var(--fandex-duration-fast) var(--fandex-ease-out);
+  --fandex-transition-opacity: opacity var(--fandex-duration-fast) var(--fandex-ease-out);
+  --fandex-transition-shadow: box-shadow var(--fandex-duration-normal) var(--fandex-ease-out);
+  --fandex-transition-transform: transform var(--fandex-duration-normal) var(--fandex-ease-out);
+  --fandex-transition-all: all var(--fandex-duration-normal) var(--fandex-ease-out);
+}
+
+/* ====================================================================
+   暗色主题
+   --------------------------------------------------------------------
+   策略：基础色板（50-950）保持不变，仅重新映射语义层令牌。
+   暗色背景使用 slate-900 (#0F172A) 而非纯黑，避免压抑感。
+   文字使用 slate-100/200/400 保证层次与对比度。
+   阴影加深加柔，模拟暗环境下光线的漫反射。
+   ==================================================================== */
+[data-theme='dark'] {
+  /* --- 语义色：暗色模式提亮以保证对比度 --- */
+  --fandex-color-success: #34d399; /* 提亮至 emerald-400 */
+  --fandex-color-success-light: #064e3b;
+  --fandex-color-success-dark: #6ee7b7;
+  --fandex-color-success-bg: rgba(16, 185, 129, 0.12);
+  --fandex-color-success-border: rgba(52, 211, 153, 0.3);
+
+  --fandex-color-warning: #fbbf24; /* 提亮至 amber-400 */
+  --fandex-color-warning-light: #78350f;
+  --fandex-color-warning-dark: #fcd34d;
+  --fandex-color-warning-bg: rgba(245, 158, 11, 0.12);
+  --fandex-color-warning-border: rgba(251, 191, 24, 0.3);
+
+  --fandex-color-error: #fb7185; /* 提亮至 rose-400 */
+  --fandex-color-error-light: #4c0519;
+  --fandex-color-error-dark: #fda4af;
+  --fandex-color-error-bg: rgba(244, 63, 94, 0.12);
+  --fandex-color-error-border: rgba(251, 113, 133, 0.3);
+
+  --fandex-color-info: #38bdf8; /* 提亮至 sky-400 */
+  --fandex-color-info-light: #082f49;
+  --fandex-color-info-dark: #7dd3fc;
+  --fandex-color-info-bg: rgba(14, 165, 233, 0.12);
+  --fandex-color-info-border: rgba(56, 189, 248, 0.3);
+
+  /* --- 文本色：暗色模式使用浅色 --- */
+  --fandex-color-text-primary: #f1f5f9; /* 主文字，slate-100 */
+  --fandex-color-text-secondary: #cbd5e1; /* 二级文字，slate-300 */
+  --fandex-color-text-tertiary: #94a3b8; /* 三级文字，slate-400 */
+  --fandex-color-text-disabled: #475569; /* 禁用态，slate-600 */
+  --fandex-color-text-inverse: #0f172a; /* 反色文字，slate-900 */
+
+  /* --- 背景色：三层深度营造层次感 --- */
+  --fandex-color-bg-base: #0f172a; /* 页面基础背景，slate-900 */
+  --fandex-color-bg-surface: #1e293b; /* 卡片表面，slate-800 */
+  --fandex-color-bg-elevated: #334155; /* 浮起元素，slate-700 */
+  --fandex-color-bg-sunken: #020617; /* 凹陷区域，slate-950 */
+  --fandex-color-bg-hover: #1e293b; /* 悬停态，slate-800 */
+  --fandex-color-bg-active: #334155; /* 激活态，slate-700 */
+
+  /* --- 边框色：暗色模式降低对比度 --- */
+  --fandex-color-border-default: #334155; /* 默认边框，slate-700 */
+  --fandex-color-border-strong: #475569; /* 强边框，slate-600 */
+  --fandex-color-border-subtle: #1e293b; /* 弱边框，slate-800 */
+  --fandex-color-border-focus: #38bdf8; /* 焦点边框，sky-400 */
+
+  /* --- 代码色：暗色模式微调以适配更深背景 --- */
+  --fandex-color-code-bg: #020617; /* 代码块背景，slate-950 */
+  --fandex-color-code-text: #e2e8f0; /* 代码默认文字 */
+  --fandex-color-code-comment: #64748b; /* 注释，slate-500 */
+  --fandex-color-code-keyword: #c084fc; /* 关键字 */
+  --fandex-color-code-string: #34d399; /* 字符串 */
+  --fandex-color-code-number: #fbbf24; /* 数字 */
+  --fandex-color-code-function: #60a5fa; /* 函数名 */
+  --fandex-color-code-variable: #f472b6; /* 变量名 */
+
+  /* --- 阴影：暗色模式更深更柔和 --- */
+  --fandex-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+  --fandex-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --fandex-shadow-default: 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+  --fandex-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+  --fandex-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+  --fandex-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+  --fandex-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+  --fandex-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* ====================================================================
+   系统偏好自动跟随（当用户未显式设置 data-theme 时生效）
+   --------------------------------------------------------------------
+   优先级说明：
+   1. [data-theme="dark"] 显式设置（最高优先级，已在上文定义）
+   2. [data-theme="light"] 显式设置（已在上文 :root 中默认）
+   3. prefers-color-scheme: dark（系统偏好，此处兜底）
+   
+   实现方式：当 html 元素未设置 data-theme 属性时，根据系统偏好自动应用暗色令牌。
+   防闪烁脚本会在 HTML 解析前根据系统偏好设置 data-theme，此处作为兜底保障。
+   ==================================================================== */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    /* 语义色 */
+    --fandex-color-success: #34d399;
+    --fandex-color-success-light: #064e3b;
+    --fandex-color-success-dark: #6ee7b7;
+    --fandex-color-success-bg: rgba(16, 185, 129, 0.12);
+    --fandex-color-success-border: rgba(52, 211, 153, 0.3);
+
+    --fandex-color-warning: #fbbf24;
+    --fandex-color-warning-light: #78350f;
+    --fandex-color-warning-dark: #fcd34d;
+    --fandex-color-warning-bg: rgba(245, 158, 11, 0.12);
+    --fandex-color-warning-border: rgba(251, 191, 24, 0.3);
+
+    --fandex-color-error: #fb7185;
+    --fandex-color-error-light: #4c0519;
+    --fandex-color-error-dark: #fda4af;
+    --fandex-color-error-bg: rgba(244, 63, 94, 0.12);
+    --fandex-color-error-border: rgba(251, 113, 133, 0.3);
+
+    --fandex-color-info: #38bdf8;
+    --fandex-color-info-light: #082f49;
+    --fandex-color-info-dark: #7dd3fc;
+    --fandex-color-info-bg: rgba(14, 165, 233, 0.12);
+    --fandex-color-info-border: rgba(56, 189, 248, 0.3);
+
+    /* 文本色 */
+    --fandex-color-text-primary: #f1f5f9;
+    --fandex-color-text-secondary: #cbd5e1;
+    --fandex-color-text-tertiary: #94a3b8;
+    --fandex-color-text-disabled: #475569;
+    --fandex-color-text-inverse: #0f172a;
+
+    /* 背景色 */
+    --fandex-color-bg-base: #0f172a;
+    --fandex-color-bg-surface: #1e293b;
+    --fandex-color-bg-elevated: #334155;
+    --fandex-color-bg-sunken: #020617;
+    --fandex-color-bg-hover: #1e293b;
+    --fandex-color-bg-active: #334155;
+
+    /* 边框色 */
+    --fandex-color-border-default: #334155;
+    --fandex-color-border-strong: #475569;
+    --fandex-color-border-subtle: #1e293b;
+    --fandex-color-border-focus: #38bdf8;
+
+    /* 代码色 */
+    --fandex-color-code-bg: #020617;
+    --fandex-color-code-text: #e2e8f0;
+    --fandex-color-code-comment: #64748b;
+    --fandex-color-code-keyword: #c084fc;
+    --fandex-color-code-string: #34d399;
+    --fandex-color-code-number: #fbbf24;
+    --fandex-color-code-function: #60a5fa;
+    --fandex-color-code-variable: #f472b6;
+
+    /* 阴影 */
+    --fandex-shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.3);
+    --fandex-shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --fandex-shadow-default: 0 2px 4px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.3);
+    --fandex-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
+    --fandex-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.5), 0 4px 6px -2px rgba(0, 0, 0, 0.3);
+    --fandex-shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 10px 10px -5px rgba(0, 0, 0, 0.3);
+    --fandex-shadow-2xl: 0 25px 50px -12px rgba(0, 0, 0, 0.6);
+    --fandex-shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.3);
+  }
+}

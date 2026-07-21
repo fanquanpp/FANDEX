@@ -1,0 +1,100 @@
+---
+/**
+ * 模块卡片组件
+ * 用于首页展示各学习模块的入口卡片
+ * 包含模块图标、标题和描述，点击跳转到对应模块首页
+ */
+const { mod, color } = Astro.props as {
+  mod: {
+    id: string;
+    title: string;
+    icon: string;
+    description: string;
+    categories: readonly string[];
+  };
+  color: string;
+};
+---
+
+<!-- 模块卡片：点击跳转到模块首页 -->
+<a href={`${import.meta.env.BASE_URL}${mod.id}/`} class="module-card">
+  <!-- 模块图标：背景色由分类颜色决定 -->
+  <span class="card-icon" style={`background:${color}`}>{mod.icon}</span>
+  <div class="card-body">
+    <h3 class="card-title">{mod.title}</h3>
+    <p class="card-desc">{mod.description}</p>
+  </div>
+</a>
+
+<style>
+  /* 卡片容器：纵向布局，悬停时上浮 */
+  .module-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-lg);
+    text-decoration: none;
+    background: var(--color-bg);
+    transition:
+      transform var(--transition-fast),
+      background var(--transition-fast);
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .module-card:hover {
+    background: var(--color-bg-hover);
+    transform: translateY(-2px);
+  }
+
+  /* 模块图标：居中显示，白色文字 */
+  .card-icon {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 0.75rem;
+  }
+
+  /* 卡片内容区 */
+  .card-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+  }
+
+  /* 卡片标题：单行省略 */
+  .card-title {
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    color: var(--color-text);
+    margin: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 卡片描述：最多显示两行，超出省略 */
+  .card-desc {
+    font-size: 0.78rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+
+  /* 移动端卡片撑满宽度 */
+  @media (max-width: 768px) {
+    .module-card {
+      width: 100%;
+    }
+  }
+</style>

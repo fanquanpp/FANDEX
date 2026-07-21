@@ -1,0 +1,26 @@
+# FANDEX 复习卡片 - Git 模块
+# 人工补充的复习卡片，与自动从 frontmatter 生成的卡片合并
+# 卡片 ID 必须全局唯一，格式：{moduleId}-{sanitizedTerm}
+
+module: git
+cards:
+  - term: "暂存区"
+    question: "Git 暂存区（Index/Staging Area）的作用是什么？"
+    answer: "暂存区是工作目录和版本库之间的缓冲层，通过 git add 将修改添加到暂存区，git commit 将暂存区内容提交到版本库，实现精细化提交控制"
+    difficulty: beginner
+    interval: 2
+  - term: "rebase"
+    question: "git rebase 与 git merge 的区别及适用场景？"
+    answer: "rebase 将当前分支的提交重新应用到目标分支顶端，保持线性历史；merge 创建合并提交，保留分支历史。公共分支用 merge，私有分支用 rebase"
+    difficulty: intermediate
+    interval: 5
+  - term: "reset"
+    question: "git reset 的三种模式（--soft/--mixed/--hard）分别影响哪些区域？"
+    answer: "--soft 仅移动 HEAD 指针，暂存区和工作目录不变；--mixed 移动 HEAD 并重置暂存区，工作目录不变（默认）；--hard 移动 HEAD 并重置暂存区和工作目录"
+    difficulty: intermediate
+    interval: 5
+  - term: "cherry-pick"
+    question: "git cherry-pick 的作用和使用场景？"
+    answer: "将指定提交的修改应用到当前分支。场景：将某个修复提交同步到多个发布分支、选择性合并非连续的提交"
+    difficulty: intermediate
+    interval: 7

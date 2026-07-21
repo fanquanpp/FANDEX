@@ -1,0 +1,206 @@
+name: Desktop Release
+
+# ============================================================================
+# 职责：构建 Tauri Windows 安装包，签名并发布到 GitHub Release
+# ============================================================================
+# 触发条件：
+# - 手动触发（workflow_dispatch）+ 指定版本号
+# - tag 推送 v*.*.* （自动触发）
+#
+# 最小化约束原则：
+# - 仅在显式发布时触发（手动或 tag），不影响日常推送
+# - 不做 PR 检查
+# - 平台仅 Windows（Mac/Linux 旧版归档，不再构建）
+# ============================================================================
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: '版本号（如 3.1.0，不带 v 前缀）'
+        required: true
+        type: string
+      prerelease:
+        description: '标记为预发布'
+        required: false
+        type: boolean
+        default: false
+      update_manifest:
+        description: '同时更新 manifest 的 app_compat_version'
+        required: false
+        type: boolean
+        default: true
+  push:
+    tags:
+      - 'v*.*.*'
+
+# 同一版本仅允许一个发布任务
+concurrency:
+  group: desktop-release-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions:
+  contents: write      # 创建 Release 与上传资源
+  packages: write      # Tauri updater 需要
+
+jobs:
+  build-windows:
+    name: Build Windows Installer
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Determine version
+        id: version
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            VERSION="${{ github.event.inputs.version }}"
+          else
+            VERSION="${GITHUB_REF#refs/tags/v}"
+          fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "tag=v$VERSION" >> $GITHUB_OUTPUT
+          echo "[desktop-release] 版本: $VERSION"
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'pnpm'
+          cache-dependency-path: 'desktop/pnpm-lock.yaml'
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: '10'
+
+      - name: Setup Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: x86_64-pc-windows-msvc
+
+      - name: Rust cache
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: 'desktop/src-tauri -> target'
+
+      - name: Install desktop dependencies
+        working-directory: desktop
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Sync content from content/full/ to desktop content
+        shell: bash
+        run: |
+          # 同步 content/full/ 到 desktop 的内容目录
+          # （具体路径由 desktop/src/content.config.ts 决定）
+          if [ -d "content/full" ]; then
+            echo "[desktop-release] content/full/ 存在，将通过 content.config.ts 引用"
+          fi
+
+      - name: Update tauri.conf.json version
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          # 更新 tauri.conf.json 中的 version 字段
+          node -e "
+            const fs = require('fs');
+            const path = 'desktop/src-tauri/tauri.conf.json';
+            const conf = JSON.parse(fs.readFileSync(path, 'utf-8'));
+            conf.version = '${VERSION}';
+            fs.writeFileSync(path, JSON.stringify(conf, null, 2));
+            console.log('[desktop-release] tauri.conf.json version 已更新为 ${VERSION}');
+          "
+
+      - name: Build Tauri app
+        working-directory: desktop
+        env:
+          # Tauri updater 签名密钥（私钥，用于签名更新包）
+          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+          TAURI_KEY_PASSWORD: ${{ secrets.TAURI_KEY_PASSWORD }}
+        run: pnpm tauri:build
+
+      - name: List build artifacts
+        shell: bash
+        run: |
+          echo "[desktop-release] 构建产物清单："
+          find desktop/src-tauri/target/release/bundle -type f 2>/dev/null || true
+
+      - name: Prepare release assets
+        id: assets
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          mkdir -p release-assets
+
+          # NSIS 安装包
+          NSIS=$(find desktop/src-tauri/target/release/bundle/nsis -name "*.exe" 2>/dev/null | head -1)
+          if [ -n "$NSIS" ]; then
+            cp "$NSIS" "release-assets/FANDEX-v${VERSION}-windows-x64-setup.exe"
+            echo "nsis_path=release-assets/FANDEX-v${VERSION}-windows-x64-setup.exe" >> $GITHUB_OUTPUT
+          fi
+
+          # Tauri updater 签名文件
+          SIG=$(find desktop/src-tauri/target/release -name "*.sig" 2>/dev/null | head -1)
+          if [ -n "$SIG" ]; then
+            cp "$SIG" "release-assets/FANDEX-v${VERSION}-windows-x64-setup.exe.sig"
+            echo "sig_path=release-assets/FANDEX-v${VERSION}-windows-x64-setup.exe.sig" >> $GITHUB_OUTPUT
+          fi
+
+          # latest.json（Tauri updater 协议要求）
+          if [ -n "$NSIS" ]; then
+            SHA256=$(sha256sum "$NSIS" | cut -d' ' -f1)
+            cat > release-assets/latest.json <<EOF
+          {
+            "version": "${VERSION}",
+            "notes": "FANDEX Desktop v${VERSION}",
+            "pub_date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "platforms": {
+              "windows-x86_64": {
+                "signature": "$(cat "$SIG" 2>/dev/null || echo "")",
+                "url": "https://github.com/${{ github.repository }}/releases/download/v${VERSION}/FANDEX-v${VERSION}-windows-x64-setup.exe"
+              }
+            }
+          }
+          EOF
+            echo "latest_json_path=release-assets/latest.json" >> $GITHUB_OUTPUT
+          fi
+
+          ls -la release-assets/
+
+      - name: Create or Update GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.version.outputs.tag }}
+          name: FANDEX Desktop v${{ steps.version.outputs.version }}
+          body: |
+            # FANDEX Desktop v${{ steps.version.outputs.version }}
+
+            ## 下载
+
+            - Windows x64 安装包：`FANDEX-v${{ steps.version.outputs.version }}-windows-x64-setup.exe`
+
+            ## 更新说明
+
+            - 见 [CHANGELOG](https://github.com/${{ github.repository }}/blob/main/desktop/CHANGELOG.md)
+          prerelease: ${{ github.event.inputs.prerelease || false }}
+          files: |
+            release-assets/FANDEX-v${{ steps.version.outputs.version }}-windows-x64-setup.exe
+            release-assets/FANDEX-v${{ steps.version.outputs.version }}-windows-x64-setup.exe.sig
+            release-assets/latest.json
+
+      - name: Update manifest app_compat_version
+        if: github.event_name == 'workflow_dispatch' && github.event.inputs.update_manifest == 'true'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          VERSION="${{ steps.version.outputs.version }}"
+          echo "[desktop-release] 提示：manifest 的 app_compat_version 在 content-manifest workflow 中由参数控制"
+          echo "[desktop-release] 如需同步更新，请在 content-manifest.yml 中调整 --app-compat-version 参数"
+          echo "[desktop-release] 当前版本：$VERSION"

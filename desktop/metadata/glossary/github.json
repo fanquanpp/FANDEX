@@ -1,0 +1,4180 @@
+{
+  "moduleId": "github",
+  "terms": [
+    {
+      "name": "分配",
+      "definition": "将 Issue 指派给某人",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "分支",
+      "definition": "独立开发的工作线",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "克隆",
+      "definition": "下载远程仓库到本地",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "提交",
+      "definition": "保存工作快照到本地仓库",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "协作者",
+      "definition": "有仓库读写权限的人",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "比较",
+      "definition": "比较两个分支或提交",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "贡献者",
+      "definition": "为项目贡献代码的人",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "派生",
+      "definition": "创建仓库的个人副本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Git",
+      "definition": "分布式版本控制系统",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "GitHub",
+      "definition": "代码托管和协作平台",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "问题",
+      "definition": "跟踪任务、缺陷、想法",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "主分支",
+      "definition": "仓库的默认主分支",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "合并",
+      "definition": "整合不同分支的更改",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "通知",
+      "definition": "关于活动更新的提醒",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "开放",
+      "definition": "正在活跃的 Issue 或 PR",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "组织",
+      "definition": "团队账户和仓库集合",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "所有者",
+      "definition": "对仓库有完全控制权的人",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "私有仓库",
+      "definition": "仅限授权人员访问",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "公开仓库",
+      "definition": "任何人都可查看",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "拉取",
+      "definition": "获取并合并远程更改",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "拉取请求",
+      "definition": "请求合并代码的请求",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "推送",
+      "definition": "上传本地提交到远程",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "仓库",
+      "definition": "存储项目文件和历史的容器",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "审阅",
+      "definition": "检查代码更改",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "分支命名",
+      "definition": "分支的命名规范",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "提交消息",
+      "definition": "描述更改的说明",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "追踪",
+      "definition": "监控进度",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "里程碑",
+      "definition": "组织和追踪 Issue",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "标签",
+      "definition": "标记和分类 Issue",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "受让人",
+      "definition": "Issue 被分配的人",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "作者",
+      "definition": "提交或 PR 的创建者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "添加远程",
+      "definition": "连接本地仓库到远程",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "原子提交",
+      "definition": "不可分割的更改单元",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "自动合并",
+      "definition": "自动合并满足条件的 PR",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "基底分支",
+      "definition": "PR 要合并到的目标分支",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "双因素认证",
+      "definition": "双因素身份验证",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "变更",
+      "definition": "代码修改",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "检查",
+      "definition": "验证代码质量的测试",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "检查套件",
+      "definition": "相关检查的集合",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "关闭",
+      "definition": "结束 Issue 或 PR",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "代码审查",
+      "definition": "检查代码质量和正确性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "代码所有者",
+      "definition": "自动请求审查的人",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "评论",
+      "definition": "对代码或 Issue 的反馈",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "提交哈希",
+      "definition": "提交的唯一点标识",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "比较分支",
+      "definition": "PR 的源分支",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "截止日期",
+      "definition": "任务完成的期限",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "起草 PR",
+      "definition": "标记为草稿的 PR",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "空提交",
+      "definition": "没有实际更改的提交",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "探索",
+      "definition": "发现有趣项目",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "特功能分支",
+      "definition": "开发新功能的分支",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "文件历史",
+      "definition": "文件的修改记录",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "强制推送",
+      "definition": "覆盖远程历史",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Fork 同步",
+      "definition": "同步 Fork 与上游",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "获取",
+      "definition": "下载远程数据不合并",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Gist",
+      "definition": "代码片段分享",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "全速前进",
+      "definition": "直接移动分支指针",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "GitHub Actions",
+      "definition": "CI/CD 工作流",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "GitHub CLI",
+      "definition": "命令行工具",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "GitHub Pages",
+      "definition": "静态网站托管",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "GitHub API",
+      "definition": "编程接口",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "GPG 密钥",
+      "definition": "签名验证密钥",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "交互式变基",
+      "definition": "交互式整理提交",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Issue 模板",
+      "definition": "预设的 Issue 格式",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "语言",
+      "definition": "编程语言",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "语言比例",
+      "definition": "仓库语言占比",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "许可协议",
+      "definition": "开源许可证",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "个人访问令牌",
+      "definition": "个人 API 令牌",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "个人资料",
+      "definition": "用户信息页",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Pinned",
+      "definition": "固定显示的项目",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "平台",
+      "definition": "GitHub 平台",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "协议",
+      "definition": "通信规则",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "版本",
+      "definition": "软件版本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "版本控制",
+      "definition": "管理代码版本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "版本历史",
+      "definition": "版本变更记录",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Wiki",
+      "definition": "项目文档",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "工作流",
+      "definition": "工作流程",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "工作流运行",
+      "definition": "工作流执行实例",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "星标",
+      "definition": "收藏仓库",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "追随者",
+      "definition": "关注者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "正在关注",
+      "definition": "关注的用户",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "访问令牌",
+      "definition": "API 认证令牌",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "访问控制列表",
+      "definition": "权限控制列表",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "操作",
+      "definition": "GitHub Actions 工作流",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "应用",
+      "definition": "GitHub 应用程序",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "应用安装",
+      "definition": "应用授权安装",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "归档",
+      "definition": "归档仓库",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "已归档仓库",
+      "definition": "设为只读的项目",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "审计日志",
+      "definition": "安全审计记录",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "自动链接",
+      "definition": "自动链接关键字",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "大文件存储",
+      "definition": "Git 大文件存储扩展",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "行为规范",
+      "definition": "项目行为准则",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "分支保护规则",
+      "definition": "保护分支的规则",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "构建矩阵",
+      "definition": "多环境构建配置",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "构建步骤",
+      "definition": "构建过程中的步骤",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "缓存依赖",
+      "definition": "缓存依赖项",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "变更日志",
+      "definition": "版本变更记录",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "检查运行",
+      "definition": "外部检查服务",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "代码空间",
+      "definition": "云端开发环境",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "命令",
+      "definition": "命令指令",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "提交签名",
+      "definition": "提交的 GPG 签名",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "提交状态",
+      "definition": "CI 检查状态",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "约定式提交",
+      "definition": "提交消息规范",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "持续部署",
+      "definition": "持续部署",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "持续集成",
+      "definition": "持续集成",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "持续交付",
+      "definition": "持续交付",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "贡献者指南",
+      "definition": "贡献规范",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "控制台",
+      "definition": "命令行界面",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "跨仓库",
+      "definition": "跨仓库操作",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "自定义角色",
+      "definition": "自定义权限角色",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "仪表板",
+      "definition": "信息展示面板",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "默认分支",
+      "definition": "仓库的默认分支",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "部署",
+      "definition": "部署应用",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "部署环境",
+      "definition": "部署目标环境",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "部署历史",
+      "definition": "部署记录",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "部署状态",
+      "definition": "部署结果状态",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "开发环境",
+      "definition": "开发环境",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "直接消息",
+      "definition": "私信",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "目录",
+      "definition": "文件夹",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "域模型",
+      "definition": "领域模型",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "下载",
+      "definition": "下载",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "动态内容",
+      "definition": "动态生成内容",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "端到端测试",
+      "definition": "端到端测试",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "电子邮件通知",
+      "definition": "邮件通知",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "端点",
+      "definition": "API 端点",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "环境变量",
+      "definition": "环境配置",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "错误处理",
+      "definition": "处理错误",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "事件类型",
+      "definition": "事件分类",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "执行时间",
+      "definition": "运行时间",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "探索页面",
+      "definition": "发现页面",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "表达式",
+      "definition": "表达式",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "扩展",
+      "definition": "浏览器扩展",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "外部贡献者",
+      "definition": "外部贡献者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "特性标志",
+      "definition": "功能开关",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "文件变更",
+      "definition": "文件修改",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "文件差异",
+      "definition": "文件变化对比",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "首次提交",
+      "definition": "第一个提交",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "模糊搜索",
+      "definition": "模糊匹配搜索",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Git 命令",
+      "definition": "Git 命令",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Git 配置",
+      "definition": "Git 设置",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Git 钩子",
+      "definition": "Git 事件钩子",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Gitignore",
+      "definition": "忽略文件配置",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "全局设置",
+      "definition": "全局配置",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "GPG 签名",
+      "definition": "GPG 加密签名",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "GraphQL API",
+      "definition": "GraphQL 接口",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "图表视图",
+      "definition": "仓库数据图表",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "硬件",
+      "definition": "硬件设备",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "哈希",
+      "definition": "哈希值",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "帮助文档",
+      "definition": "帮助文档",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "钩子",
+      "definition": "Webhook 钩子",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "HTTP",
+      "definition": "超文本传输协议",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "HTTPS",
+      "definition": "安全超文本传输协议",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "忽略规则",
+      "definition": "忽略规则",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "导入仓库",
+      "definition": "导入的仓库",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "增量",
+      "definition": "增量",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "集成应用",
+      "definition": "集成应用",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "意图",
+      "definition": "意图",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "中间件",
+      "definition": "中间人",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "内部贡献者",
+      "definition": "内部贡献者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Issue 评论",
+      "definition": "Issue 评论",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Issue 里程碑",
+      "definition": "Issue 里程碑",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Issue 链接",
+      "definition": "关联 Issue",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Jira",
+      "definition": "项目管理工具",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "JSON 格式",
+      "definition": "JSON 格式",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "Kubernetes",
+      "definition": "容器编排平台",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "最后访问",
+      "definition": "最后访问时间",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "许可证",
+      "definition": "许可证",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "生命周期",
+      "definition": "生命周期",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "限制",
+      "definition": "限制",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "链接的 PR",
+      "definition": "关联的 PR",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "加载时间",
+      "definition": "加载时间",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "本地分支",
+      "definition": "本地分支",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "本地配置",
+      "definition": "本地配置",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "本地开发",
+      "definition": "本地开发",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "日志条目",
+      "definition": "日志条目",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "长期支持",
+      "definition": "长期支持版本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "合并冲突",
+      "definition": "合并冲突",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "合并策略",
+      "definition": "合并策略",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "合并队列",
+      "definition": "合并队列",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "元数据",
+      "definition": "元数据",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "镜像仓库",
+      "definition": "镜像仓库",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "修订版本",
+      "definition": "修订版本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "修订追踪",
+      "definition": "版本追踪",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "多包仓库",
+      "definition": "单仓库多包",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "多发布者",
+      "definition": "多发布者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "多仓库",
+      "definition": "多仓库",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "多用户",
+      "definition": "多用户",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "命名空间",
+      "definition": "命名空间",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "导航",
+      "definition": "导航",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "近实时",
+      "definition": "近实时",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "需要审查",
+      "definition": "需要审查",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "网络错误",
+      "definition": "网络错误",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "新建分支",
+      "definition": "新建分支",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "新闻提要",
+      "definition": "新闻动态",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "下一个主要版本",
+      "definition": "下一个主版本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "节点版本",
+      "definition": "Node 版本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "通知设置",
+      "definition": "通知设置",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "通知订阅",
+      "definition": "通知订阅",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "打开",
+      "definition": "打开",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "开放源代码",
+      "definition": "开源",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "优化",
+      "definition": "优化",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "原始文件",
+      "definition": "原始文件",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "路径冲突",
+      "definition": "路径冲突",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "权限级别",
+      "definition": "权限级别",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "个人仓库",
+      "definition": "个人仓库",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "计划限制",
+      "definition": "计划限制",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "点",
+      "definition": "点",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "策略规则",
+      "definition": "策略规则",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "轮询",
+      "definition": "轮询",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "负载均衡",
+      "definition": "负载均衡",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "帖子",
+      "definition": "帖子",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "预发布",
+      "definition": "预发布版本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "预测",
+      "definition": "预测",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "预览模式",
+      "definition": "预览模式",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "价格",
+      "definition": "价格",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "隐私政策",
+      "definition": "隐私政策",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "发布者",
+      "definition": "发布者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "拉取请求模板",
+      "definition": "PR 模板",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "查询字符串",
+      "definition": "查询字符串",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "快速入门",
+      "definition": "快速入门",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "速率限制",
+      "definition": "速率限制",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "真实用户监控",
+      "definition": "真实用户监控",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "刷新令牌",
+      "definition": "刷新令牌",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "区域",
+      "definition": "区域",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "正则",
+      "definition": "正则",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "相对路径",
+      "definition": "相对路径",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "释放说明",
+      "definition": "发布说明",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "释放标签",
+      "definition": "发布标签",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "远程名称",
+      "definition": "远程名称",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "远程 URL",
+      "definition": "远程 URL",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "可重用操作",
+      "definition": "可重用 Action",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "可重用工作流",
+      "definition": "可重用工作流",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "审查者",
+      "definition": "审查者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "规则集",
+      "definition": "规则集",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "运行时错误",
+      "definition": "运行时错误",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "安全公告",
+      "definition": "安全公告",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "安全更新",
+      "definition": "安全更新",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "安全令牌",
+      "definition": "安全令牌",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "共享运行器",
+      "definition": "共享运行器",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "快捷方式",
+      "definition": "快捷方式",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "信号",
+      "definition": "信号",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "签名密钥",
+      "definition": "签名密钥",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "显著",
+      "definition": "重要的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "类似仓库",
+      "definition": "类似仓库",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "简单工作流",
+      "definition": "简单工作流",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "故事点",
+      "definition": "故事点",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "严格模式",
+      "definition": "严格模式",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "样式",
+      "definition": "样式",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "替换",
+      "definition": "替换",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "成功状态",
+      "definition": "成功状态",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "支持的版本",
+      "definition": "支持的版本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "符号",
+      "definition": "符号",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "系统错误",
+      "definition": "系统错误",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "表格视图",
+      "definition": "表格展示",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "目标版本",
+      "definition": "目标版本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "团队成员",
+      "definition": "团队成员",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "团队权限",
+      "definition": "团队权限",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "技术细节",
+      "definition": "技术细节",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "临时文件",
+      "definition": "临时文件",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "租户",
+      "definition": "租户",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "测试覆盖",
+      "definition": "测试覆盖",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "测试框架",
+      "definition": "测试框架",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "测试运行",
+      "definition": "测试运行",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "文本编辑器",
+      "definition": "文本编辑器",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "线程安全",
+      "definition": "线程安全",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "威胁建模",
+      "definition": "威胁建模",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "吞吐量",
+      "definition": "吞吐量",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "时间戳",
+      "definition": "时间戳",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "切换",
+      "definition": "切换",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "工具链",
+      "definition": "工具链",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "主题标签",
+      "definition": "主题标签",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "追踪器",
+      "definition": "追踪器",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "传统",
+      "definition": "传统的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "流量",
+      "definition": "流量",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "训练",
+      "definition": "培训",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "事务",
+      "definition": "事务",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "传输层",
+      "definition": "传输层",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "趋势主题",
+      "definition": "热门话题",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "试验",
+      "definition": "试用",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "双重认证",
+      "definition": "双重认证",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "徽章",
+      "definition": "徽章",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "批量操作",
+      "definition": "批量操作",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "业务逻辑",
+      "definition": "业务逻辑",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "计算",
+      "definition": "计算",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "调用",
+      "definition": "调用",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "容量",
+      "definition": "容量",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "证书",
+      "definition": "证书",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "通道",
+      "definition": "通道",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "图表",
+      "definition": "图表",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "检查点",
+      "definition": "检查点",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "客户端",
+      "definition": "客户端",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "代码片段",
+      "definition": "代码片段",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "通信",
+      "definition": "通信",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "公司",
+      "definition": "公司",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "编译",
+      "definition": "编译",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "完整",
+      "definition": "完整",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "复杂性",
+      "definition": "复杂性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "组成",
+      "definition": "组成",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "概念",
+      "definition": "概念",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "条件",
+      "definition": "条件",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "连接",
+      "definition": "连接",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "一致性",
+      "definition": "一致性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "约束",
+      "definition": "约束",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "消费者",
+      "definition": "消费者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "上下文",
+      "definition": "上下文",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "合同",
+      "definition": "合同",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "控制",
+      "definition": "控制",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "转换",
+      "definition": "转换",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "副本",
+      "definition": "副本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "对应",
+      "definition": "对应",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "临界值",
+      "definition": "临界值",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "当前版本",
+      "definition": "当前版本",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "客户",
+      "definition": "客户",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "自定义",
+      "definition": "自定义",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "数据库",
+      "definition": "数据库",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "日期时间",
+      "definition": "日期时间",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "死锁",
+      "definition": "死锁",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "决策",
+      "definition": "决策",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "默认值",
+      "definition": "默认值",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "定义",
+      "definition": "定义",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "交付",
+      "definition": "交付",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "需求",
+      "definition": "需求",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "演示",
+      "definition": "演示",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "依赖",
+      "definition": "依赖",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "部署管道",
+      "definition": "部署管道",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "描述",
+      "definition": "描述",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "设计",
+      "definition": "设计",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "桌面",
+      "definition": "桌面",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "细节",
+      "definition": "细节",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "检测",
+      "definition": "检测",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "开发者",
+      "definition": "开发者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "开发",
+      "definition": "开发",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "设备",
+      "definition": "设备",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "对话框",
+      "definition": "对话框",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "字典",
+      "definition": "字典",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "难度",
+      "definition": "难度",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "维度",
+      "definition": "维度",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "直接",
+      "definition": "直接的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "发现",
+      "definition": "发现",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "领域",
+      "definition": "领域",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "域名",
+      "definition": "网站域名",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "持续时间",
+      "definition": "持续时间",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "动态",
+      "definition": "动态的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "早期",
+      "definition": "早期的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "编码",
+      "definition": "编码",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "效果",
+      "definition": "效果",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "效率",
+      "definition": "效率",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "电子",
+      "definition": "电子的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "元素",
+      "definition": "元素",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "启用",
+      "definition": "启用",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "加密",
+      "definition": "加密",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "工程",
+      "definition": "工程",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "企业",
+      "definition": "企业",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "企业级",
+      "definition": "企业级",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "环境",
+      "definition": "环境",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "等于",
+      "definition": "等于",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "方程",
+      "definition": "方程",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "估计",
+      "definition": "估计",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "事件",
+      "definition": "事件",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "演变",
+      "definition": "演进",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "异常",
+      "definition": "异常",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "交换",
+      "definition": "交换",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "执行",
+      "definition": "执行",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "现有",
+      "definition": "现有的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "退出",
+      "definition": "退出",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "经验",
+      "definition": "经验",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "专家",
+      "definition": "专家",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "表达",
+      "definition": "表达",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "提取",
+      "definition": "提取",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "因子",
+      "definition": "因子",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "失败",
+      "definition": "失败",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "公平",
+      "definition": "公平",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "家属",
+      "definition": "家属",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "特性",
+      "definition": "特性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "反馈",
+      "definition": "反馈",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "文件",
+      "definition": "文件",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "筛选",
+      "definition": "筛选",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "最终",
+      "definition": "最终的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "财务",
+      "definition": "财务",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "完成",
+      "definition": "完成",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "固定",
+      "definition": "固定的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "标志",
+      "definition": "标志",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "灵活性",
+      "definition": "灵活性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "浮动",
+      "definition": "浮动的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "关注",
+      "definition": "关注",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "跟随",
+      "definition": "跟随",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "走向",
+      "definition": "走向",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "治理",
+      "definition": "治理",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "梯度",
+      "definition": "梯度",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "图形",
+      "definition": "图形",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "群组",
+      "definition": "群组",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "增长",
+      "definition": "增长",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "指导",
+      "definition": "指导",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "黑客",
+      "definition": "黑客",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "半",
+      "definition": "半",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "处理",
+      "definition": "处理",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "头",
+      "definition": "头",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "健康",
+      "definition": "健康",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "帮助",
+      "definition": "帮助",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "层级",
+      "definition": "层级",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "高",
+      "definition": "高的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "历史",
+      "definition": "历史",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "持有",
+      "definition": "持有",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "主机",
+      "definition": "主机",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "主机名",
+      "definition": "主机名",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "热门",
+      "definition": "热门的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "小时",
+      "definition": "小时",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "人类",
+      "definition": "人类",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "想法",
+      "definition": "想法",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "理想",
+      "definition": "理想的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "识别",
+      "definition": "识别",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "身份",
+      "definition": "身份",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "图像",
+      "definition": "图像",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "镜像",
+      "definition": "镜像",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "影响",
+      "definition": "影响",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "实现",
+      "definition": "实现",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "隐含",
+      "definition": "隐含",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "重要性",
+      "definition": "重要性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "改进",
+      "definition": "改进",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "增加",
+      "definition": "增加",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "指标",
+      "definition": "指标",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "间接",
+      "definition": "间接的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "个体",
+      "definition": "个体",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "行业",
+      "definition": "行业",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "惯性",
+      "definition": "惯性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "推理",
+      "definition": "推理",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "影响力",
+      "definition": "影响力",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "信息",
+      "definition": "信息",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "基础设施",
+      "definition": "基础设施",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "初始",
+      "definition": "初始的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "初始化",
+      "definition": "初始化",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "注入",
+      "definition": "注入",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "输入",
+      "definition": "输入",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "实例",
+      "definition": "实例",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "指令",
+      "definition": "指令",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "整数",
+      "definition": "整数",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "集成",
+      "definition": "集成",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "完整性",
+      "definition": "完整性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "智能",
+      "definition": "智能",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "交互",
+      "definition": "交互",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "兴趣",
+      "definition": "兴趣",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "接口",
+      "definition": "接口",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "中间",
+      "definition": "中间的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "国际的",
+      "definition": "国际的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "互联网",
+      "definition": "互联网",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "解释",
+      "definition": "解释",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "间隔",
+      "definition": "间隔",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "干预",
+      "definition": "干预",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "介绍",
+      "definition": "介绍",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "逆向",
+      "definition": "逆向的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "岛屿",
+      "definition": "岛屿",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "迭代",
+      "definition": "迭代",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "工作",
+      "definition": "工作的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "关节",
+      "definition": "关节",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "跳",
+      "definition": "跳",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "正当",
+      "definition": "正当的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "保活",
+      "definition": "保活",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "核",
+      "definition": "核心",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "键盘",
+      "definition": "键盘",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "关键词",
+      "definition": "关键词",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "知识",
+      "definition": "知识",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "实验室",
+      "definition": "实验室",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "景观",
+      "definition": "景观",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "大小写",
+      "definition": "大小写",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "级别",
+      "definition": "级别",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "许可",
+      "definition": "许可",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "提升",
+      "definition": "提升",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "灯",
+      "definition": "灯",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "似然",
+      "definition": "似然",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "线性",
+      "definition": "线性的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "链接",
+      "definition": "链接",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "列表",
+      "definition": "列表",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "负载",
+      "definition": "负载",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "本地化",
+      "definition": "本地化",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "位置",
+      "definition": "位置",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "日志",
+      "definition": "日志",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "逻辑",
+      "definition": "逻辑",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "长期",
+      "definition": "长期的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "循环",
+      "definition": "循环",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "损耗",
+      "definition": "损耗",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "机器",
+      "definition": "机器",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "宏观",
+      "definition": "宏观",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "杂志",
+      "definition": "杂志",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "维护",
+      "definition": "维护",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "主要的",
+      "definition": "主要的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "管理",
+      "definition": "管理",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "手册",
+      "definition": "手册",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "制造",
+      "definition": "制造",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "地图",
+      "definition": "地图",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "映射",
+      "definition": "映射",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "保证金",
+      "definition": "保证金",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "市场",
+      "definition": "市场",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "营销",
+      "definition": "营销",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "标记",
+      "definition": "标记",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "意义",
+      "definition": "有意义的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "措施",
+      "definition": "措施",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "机械",
+      "definition": "机械的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "机制",
+      "definition": "机制",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "会议",
+      "definition": "会议",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "成员资格",
+      "definition": "成员资格",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "记忆",
+      "definition": "记忆",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "心理健康",
+      "definition": "心理健康",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "菜单",
+      "definition": "菜单",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "消息",
+      "definition": "消息",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "元",
+      "definition": "元",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "方法",
+      "definition": "方法",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "微观",
+      "definition": "微观的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "迁移",
+      "definition": "迁移",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "最小",
+      "definition": "最小的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "少数民族",
+      "definition": "少数民族",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "分钟",
+      "definition": "分钟",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "失误",
+      "definition": "失误",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "任务",
+      "definition": "任务",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "错误",
+      "definition": "错误",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "混合",
+      "definition": "混合",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "模式",
+      "definition": "模式",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "建模",
+      "definition": "建模",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "修正",
+      "definition": "修正",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "模块",
+      "definition": "模块",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "分子",
+      "definition": "分子",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "瞬间",
+      "definition": "瞬间",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "货币",
+      "definition": "货币",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "监控",
+      "definition": "监控",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "每月",
+      "definition": "每月的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "形态",
+      "definition": "形态",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "动机",
+      "definition": "动机",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "移动",
+      "definition": "移动",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "多",
+      "definition": "多个的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "多路复用",
+      "definition": "多路复用",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "多线程",
+      "definition": "多线程",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "音乐",
+      "definition": "音乐",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "名字",
+      "definition": "名字",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "命名",
+      "definition": "命名",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "本国的",
+      "definition": "本国的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "本地",
+      "definition": "本地",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "邻近",
+      "definition": "邻近",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "网络",
+      "definition": "网络",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "节点",
+      "definition": "节点",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "噪音",
+      "definition": "噪音",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "正常的",
+      "definition": "正常的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "注释",
+      "definition": "注释",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "注意",
+      "definition": "注意",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "编号",
+      "definition": "编号",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "目标",
+      "definition": "目标",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "可观察的",
+      "definition": "可观察的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "观察",
+      "definition": "观察",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "观察者",
+      "definition": "观察者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "职业",
+      "definition": "职业",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "发生",
+      "definition": "发生",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "奇数",
+      "definition": "奇数的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "提供",
+      "definition": "提供",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "办公室",
+      "definition": "办公室",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "离线",
+      "definition": "离线的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "对",
+      "definition": "对",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "观点",
+      "definition": "观点",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "机会",
+      "definition": "机会",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "相反",
+      "definition": "相反的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "选项",
+      "definition": "选项",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "轨道",
+      "definition": "轨道",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "起源",
+      "definition": "起源",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "原始的",
+      "definition": "原始的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "其他",
+      "definition": "其他",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "我们的",
+      "definition": "我们的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "轮廓",
+      "definition": "轮廓",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "输出",
+      "definition": "输出",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "总体",
+      "definition": "总体的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "覆盖",
+      "definition": "覆盖",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "透支",
+      "definition": "透支",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "包装",
+      "definition": "包装",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "页面",
+      "definition": "分页",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "绘画",
+      "definition": "绘画",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "配对",
+      "definition": "配对",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "面板",
+      "definition": "面板",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "纸张",
+      "definition": "纸张",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "段落",
+      "definition": "段落",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "并行",
+      "definition": "并行的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "参数",
+      "definition": "参数化",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "父母",
+      "definition": "父母",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "部分",
+      "definition": "部分的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "参与",
+      "definition": "参与",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "粒子",
+      "definition": "粒子",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "伙伴",
+      "definition": "伙伴",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "通行证",
+      "definition": "通行证",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "通过",
+      "definition": "通过",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "密码",
+      "definition": "密码",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "路径",
+      "definition": "路径",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "支付",
+      "definition": "支付",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "峰值",
+      "definition": "峰值",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "性能",
+      "definition": "性能",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "期间",
+      "definition": "期间",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "周期的",
+      "definition": "周期的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "永久的",
+      "definition": "永久的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "权限",
+      "definition": "权限",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "允许",
+      "definition": "允许",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "坚持",
+      "definition": "坚持",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "个人",
+      "definition": "个人的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "人",
+      "definition": "人",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "视角",
+      "definition": "视角",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "哲学",
+      "definition": "哲学",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "电话",
+      "definition": "电话",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "摄影",
+      "definition": "摄影",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "物理",
+      "definition": "物理的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "拾取",
+      "definition": "拾取",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "图片",
+      "definition": "图片",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "饼图",
+      "definition": "饼图",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "计划",
+      "definition": "计划",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "工厂",
+      "definition": "工厂",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "播放",
+      "definition": "播放",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "插件",
+      "definition": "插件",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "插头",
+      "definition": "插头",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "口袋",
+      "definition": "口袋",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "指针",
+      "definition": "指针",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "毒",
+      "definition": "毒",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "政策",
+      "definition": "政策",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "政治",
+      "definition": "政治",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "轮",
+      "definition": "轮",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "多边形",
+      "definition": "多边形",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "池",
+      "definition": "池",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "流行",
+      "definition": "流行",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "端口",
+      "definition": "端口",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "正数",
+      "definition": "正数",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "可能的",
+      "definition": "可能的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "潜力",
+      "definition": "潜力",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "盆栽",
+      "definition": "盆栽",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "电源",
+      "definition": "电源",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "实践",
+      "definition": "实践",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "先行",
+      "definition": "先例",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "精密",
+      "definition": "精密",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "首选",
+      "definition": "首选",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "怀孕",
+      "definition": "怀孕",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "准备",
+      "definition": "准备",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "存在",
+      "definition": "存在",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "保留",
+      "definition": "保留",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "预设",
+      "definition": "预设",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "压力",
+      "definition": "压力",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "假定",
+      "definition": "假定",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "底漆",
+      "definition": "底漆",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "校长",
+      "definition": "校长",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "原则",
+      "definition": "原则",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "打印",
+      "definition": "打印",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "先前的",
+      "definition": "先前的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "隐私",
+      "definition": "隐私",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "私人",
+      "definition": "私人的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "特权",
+      "definition": "特权",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "概率",
+      "definition": "概率",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "程序",
+      "definition": "程序",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "过程",
+      "definition": "过程",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "生产者",
+      "definition": "生产者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "产品",
+      "definition": "产品",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "生产",
+      "definition": "生产",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "配置文件",
+      "definition": "配置文件",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "利润",
+      "definition": "利润",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "编程",
+      "definition": "编程",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "进步",
+      "definition": "进步",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "项目",
+      "definition": "项目",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "投射",
+      "definition": "投射",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "延长",
+      "definition": "延长",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "促销",
+      "definition": "促销",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "证明",
+      "definition": "证明",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "属性",
+      "definition": "属性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "建议",
+      "definition": "建议",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "提议",
+      "definition": "提议",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "保护",
+      "definition": "保护",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "代理",
+      "definition": "代理",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "心理",
+      "definition": "心理的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "公共的",
+      "definition": "公共的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "公共关系",
+      "definition": "公共关系",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "拉",
+      "definition": "拉",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "惩罚",
+      "definition": "惩罚",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "购买",
+      "definition": "购买",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "目的",
+      "definition": "目的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "象限",
+      "definition": "象限",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "资质",
+      "definition": "资质",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "质量",
+      "definition": "质量",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "数量",
+      "definition": "数量",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "查询",
+      "definition": "查询",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "队列",
+      "definition": "队列",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "引用",
+      "definition": "引用",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "报价",
+      "definition": "报价",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "雷达",
+      "definition": "雷达",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "半径",
+      "definition": "半径",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "随机",
+      "definition": "随机的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "范围",
+      "definition": "范围",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "排名",
+      "definition": "排名",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "率",
+      "definition": "率",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "比率",
+      "definition": "比率",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "原料",
+      "definition": "原料",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "读者",
+      "definition": "读者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "读取",
+      "definition": "读取",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "现实",
+      "definition": "现实",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "真实",
+      "definition": "真实的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "理由",
+      "definition": "理由",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "接收",
+      "definition": "接收",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "配方",
+      "definition": "配方",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "最近",
+      "definition": "最近的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "记录",
+      "definition": "记录",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "恢复",
+      "definition": "恢复",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "递归",
+      "definition": "递归",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "红色",
+      "definition": "红色",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "参考",
+      "definition": "参考",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "参考文献",
+      "definition": "参考文献",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "推荐",
+      "definition": "推荐",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "回收",
+      "definition": "回收",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "减少",
+      "definition": "减少",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "反思",
+      "definition": "反思",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "刷新",
+      "definition": "刷新",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "拒绝",
+      "definition": "拒绝",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "关于",
+      "definition": "关于",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "注册",
+      "definition": "注册",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "规则",
+      "definition": "规则",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "监管",
+      "definition": "监管的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "康复",
+      "definition": "康复",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "强化",
+      "definition": "强化",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "关系",
+      "definition": "关系",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "亲戚",
+      "definition": "亲戚",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "释放",
+      "definition": "释放",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "可靠性",
+      "definition": "可靠性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "缓解",
+      "definition": "缓解",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "宗教",
+      "definition": "宗教",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "救济",
+      "definition": "救济",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "记住",
+      "definition": "记住",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "提醒",
+      "definition": "提醒",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "远程",
+      "definition": "远程的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "可移动",
+      "definition": "可移动的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "删除",
+      "definition": "删除",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "重命名",
+      "definition": "重命名",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "修复",
+      "definition": "修复",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "重复",
+      "definition": "重复",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "复制",
+      "definition": "复制",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "报告",
+      "definition": "报告",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "表示",
+      "definition": "表示",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "代表",
+      "definition": "代表",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "要求",
+      "definition": "要求",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "研究",
+      "definition": "研究",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "居住",
+      "definition": "居住",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "抵抗",
+      "definition": "抵抗",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "分辨率",
+      "definition": "分辨率",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "解决",
+      "definition": "解决",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "资源",
+      "definition": "资源",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "回应",
+      "definition": "回应",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "责任",
+      "definition": "责任",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "休息",
+      "definition": "休息",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "结果",
+      "definition": "结果",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "概要",
+      "definition": "概要",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "摘要",
+      "definition": "摘要",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "安全感",
+      "definition": "安全感",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "选择",
+      "definition": "选择",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "语义",
+      "definition": "语义的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "敏感性",
+      "definition": "敏感性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "传感器",
+      "definition": "传感器",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "句子",
+      "definition": "句子",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "分离",
+      "definition": "分离",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "序列",
+      "definition": "序列",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "系列",
+      "definition": "系列",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "服务",
+      "definition": "服务",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "会话",
+      "definition": "会话",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "设置",
+      "definition": "设置",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "严重性",
+      "definition": "严重性",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "阴影",
+      "definition": "阴影",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "形状",
+      "definition": "形状",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "分享",
+      "definition": "分享",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "壳",
+      "definition": "壳",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "转移",
+      "definition": "转移",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "发货",
+      "definition": "发货",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "冲击",
+      "definition": "冲击",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "购物",
+      "definition": "购物",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "简短",
+      "definition": "简短的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "缩短",
+      "definition": "缩短",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "镜头",
+      "definition": "镜头",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "节目",
+      "definition": "节目",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "边",
+      "definition": "边",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "签名",
+      "definition": "签名",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "类似",
+      "definition": "类似",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "简单",
+      "definition": "简单",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "模拟",
+      "definition": "模拟",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "模拟的",
+      "definition": "模拟的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "单",
+      "definition": "单",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "大小",
+      "definition": "大小",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "骨架",
+      "definition": "骨架",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "跳过",
+      "definition": "跳过",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "睡眠",
+      "definition": "睡眠",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "滑动",
+      "definition": "滑动",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "斜率",
+      "definition": "斜率",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "缓慢",
+      "definition": "缓慢的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "平滑",
+      "definition": "平滑",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "快照",
+      "definition": "快照",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "社交",
+      "definition": "社交的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "社会",
+      "definition": "社会",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "软件",
+      "definition": "软件",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "解决方案",
+      "definition": "解决方案",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "一些",
+      "definition": "一些",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "某种",
+      "definition": "某种",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "排序",
+      "definition": "排序",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "声音",
+      "definition": "声音",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "来源",
+      "definition": "来源",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "空间",
+      "definition": "空间",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "西班牙",
+      "definition": "西班牙",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "稀疏",
+      "definition": "稀疏",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "讲话",
+      "definition": "讲话",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "特殊",
+      "definition": "特殊",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "专门的",
+      "definition": "专门的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "物种",
+      "definition": "物种",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "规格",
+      "definition": "规格",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "速记",
+      "definition": "速记",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "分割",
+      "definition": "分割",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "赞助",
+      "definition": "赞助",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "运动",
+      "definition": "运动",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "展开",
+      "definition": "展开",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "稳定",
+      "definition": "稳定",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "堆栈",
+      "definition": "堆栈",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "阶段",
+      "definition": "阶段",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "暂存",
+      "definition": "暂存",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "赌注",
+      "definition": "赌注",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "利益相关者",
+      "definition": "利益相关者",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "标准",
+      "definition": "标准",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "启动",
+      "definition": "启动",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "状态",
+      "definition": "状态",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "静态",
+      "definition": "静态的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "统计",
+      "definition": "统计",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "稳态",
+      "definition": "稳态",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "楼梯",
+      "definition": "楼梯",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "污点",
+      "definition": "污点",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "立场",
+      "definition": "立场",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "陈述",
+      "definition": "陈述",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "静态的",
+      "definition": "静态的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "统计的",
+      "definition": "统计的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "法定人数",
+      "definition": "法定人数",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "快速",
+      "definition": "快速的",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "对称",
+      "definition": "对称",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "症状",
+      "definition": "症状",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "综合",
+      "definition": "综合",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "系统",
+      "definition": "系统",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "表格",
+      "definition": "表格",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "卷",
+      "definition": "卷",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "警告",
+      "definition": "警告",
+      "slug": "github/glossary"
+    },
+    {
+      "name": "保证",
+      "definition": "保证",
+      "slug": "github/glossary"
+    }
+  ]
+}

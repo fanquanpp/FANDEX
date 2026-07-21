@@ -1,0 +1,401 @@
+---
+/**
+ * Toc 目录大纲组件（Table of Contents）
+ *
+ * 功能概述：
+ * - 在文档右侧显示当前页面的标题大纲（h2 / h3）
+ * - sticky 定位，跟随滚动保持在视口内（top-20 避让 Header）
+ * - IntersectionObserver 监听主内容区标题可见性，高亮当前章节
+ * - 点击大纲项平滑滚动到对应标题
+ * - h2 作为分组标题，点击折叠按钮可收起/展开其下所有 h3
+ * - 折叠状态持久化到 localStorage（按页面 URL 隔离）
+ * - 仅在传入标题数量 >= 3 时显示（避免短文档出现冗余大纲）
+ * - 完整无障碍：nav[aria-label]、aria-current="location"、aria-expanded
+ * - 基于 Tailwind v4 工具类实现样式
+ *
+ * Props:
+ *   headings - 标题数组（来自 Astro 执行 getHeadings() / Markdown headings）
+ *              字段：{ depth: number; slug: string; text: string }
+ *   maxDepth - 显示的最大标题深度（默认 3，即 h2 与 h3）
+ */
+interface TocHeading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  headings: readonly TocHeading[];
+  maxDepth?: number;
+}
+
+const { headings, maxDepth = 3 } = Astro.props;
+
+/** 过滤可见标题：depth 在 [2, maxDepth] 区间 */
+const visibleHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= maxDepth);
+
+/** 是否显示大纲（标题数 >= 3 才显示） */
+const shouldRender = visibleHeadings.length >= 3;
+
+/**
+ * 构建大纲分组结构：h2 作为组头，后续 h3 归入该组
+ * 用于在模板中按组渲染，便于客户端按组折叠
+ *
+ * @returns 数组，每项包含 { type: 'h2', heading } 或 { type: 'h3-group', parent, items }
+ */
+type TocGroup =
+  | { type: 'h2'; heading: TocHeading }
+  | { type: 'h3-group'; parent: TocHeading; items: TocHeading[] };
+
+const groups: TocGroup[] = [];
+{
+  let currentH2: TocHeading | null = null;
+  let currentGroup: { type: 'h3-group'; parent: TocHeading; items: TocHeading[] } | null = null;
+
+  for (const h of visibleHeadings) {
+    if (h.depth === 2) {
+      // 输出上一个未闭合的 h3-group
+      if (currentGroup) {
+        groups.push(currentGroup);
+        currentGroup = null;
+      }
+      currentH2 = h;
+      groups.push({ type: 'h2', heading: h });
+    } else if (h.depth === 3) {
+      if (!currentH2) {
+        // 没有 h2 父级的孤立 h3，单独成组（parent 为占位）
+        groups.push({ type: 'h3-group', parent: { depth: 2, slug: '', text: '' }, items: [h] });
+      } else {
+        if (!currentGroup) {
+          currentGroup = { type: 'h3-group', parent: currentH2, items: [h] };
+        } else {
+          currentGroup.items.push(h);
+        }
+      }
+    }
+  }
+  if (currentGroup) groups.push(currentGroup);
+}
+---
+
+{
+  shouldRender && (
+    <aside
+      class="hidden w-56 flex-shrink-0 lg:block xl:w-64"
+      aria-label="本页目录"
+    >
+      <nav
+        id="toc-nav"
+        class="sticky top-20 max-h-[calc(100vh-6rem)] overflow-y-auto pb-8"
+      >
+        <h2 class="mb-3 text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+          本页目录
+        </h2>
+        <ul class="space-y-0.5 text-sm">
+          {groups.map((group) => {
+            if (group.type === 'h2') {
+              return (
+                <li class="min-w-0" data-toc-group={group.heading.slug}>
+                  <div class="flex items-center">
+                    <a
+                      href={`#${group.heading.slug}`}
+                      data-toc-slug={group.heading.slug}
+                      class="toc-link block flex-1 truncate border-l-2 border-transparent py-1 pl-3 -ml-px text-muted-foreground transition-colors hover:text-foreground"
+                    >
+                      {group.heading.text}
+                    </a>
+                  </div>
+                </li>
+              );
+            }
+            // h3-group：渲染父级 h2 折叠按钮 + h3 列表
+            const parentSlug = group.parent.slug;
+            return (
+              <li class="min-w-0" data-toc-group={parentSlug || 'orphan'}>
+                <div class="flex items-center">
+                  {parentSlug ? (
+                    <>
+                      <a
+                        href={`#${parentSlug}`}
+                        data-toc-slug={parentSlug}
+                        class="toc-link block flex-1 truncate border-l-2 border-transparent py-1 pl-3 -ml-px text-muted-foreground transition-colors hover:text-foreground"
+                      >
+                        {group.parent.text}
+                      </a>
+                      <button
+                        type="button"
+                        class="toc-collapse-btn ml-1 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded text-muted-foreground/60 transition-colors hover:bg-accent hover:text-foreground"
+                        aria-label="折叠子目录"
+                        aria-expanded="true"
+                        data-toc-collapse={parentSlug}
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="toc-collapse-arrow h-3 w-3 transition-transform"
+                          aria-hidden="true"
+                        >
+                          <polyline points="6 9 12 15 18 9" />
+                        </svg>
+                      </button>
+                    </>
+                  ) : (
+                    <span class="block flex-1 truncate py-1 pl-3 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/70">
+                      其他
+                    </span>
+                  )}
+                </div>
+                <ul class="toc-children space-y-0.5 pl-2">
+                  {group.items.map((h) => (
+                    <li class="min-w-0">
+                      <a
+                        href={`#${h.slug}`}
+                        data-toc-slug={h.slug}
+                        class="toc-link block truncate border-l-2 border-transparent py-1 pl-3 -ml-px text-muted-foreground transition-colors hover:text-foreground"
+                        style="padding-left:0.75rem"
+                      >
+                        {h.text}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </aside>
+  )
+}
+
+<style is:global>
+  /**
+   * 当前章节高亮样式（由 JS 在 IntersectionObserver 回调中切换）
+   * - 左侧色条显示
+   * - 文字颜色变为主色
+   * - 字重加粗
+   */
+  .toc-link.is-active {
+    border-left-color: var(--primary);
+    color: var(--primary);
+    font-weight: 500;
+  }
+
+  /**
+   * 折叠状态样式
+   * - .is-collapsed 类添加到 .toc-children 时隐藏子目录
+   * - .toc-collapse-arrow 旋转 -90deg 表示已折叠
+   */
+  .toc-children.is-collapsed {
+    display: none;
+  }
+
+  .toc-collapse-btn.is-collapsed .toc-collapse-arrow {
+    transform: rotate(-90deg);
+  }
+</style>
+
+<script>
+  /**
+   * 目录大纲滚动监听与折叠逻辑
+   *
+   * 实现说明：
+   * - 通过 IntersectionObserver 监听主内容区标题进入视口
+   * - 当标题进入视口底部 60% 区域时，标记为当前章节
+   * - 同步高亮对应的大纲链接（添加 is-active 类）
+   * - 点击大纲项时阻止默认跳转，改为平滑滚动到标题位置
+   * - 点击折叠按钮时切换子目录显隐，并持久化到 localStorage
+   * - 兼容 View Transitions：监听 astro:page-load 事件重新初始化
+   */
+
+  /** localStorage 键名前缀：TOC 折叠状态（按页面 URL 隔离） */
+  const TOC_COLLAPSE_PREFIX = 'fandex-toc-collapsed:';
+
+  /** 获取当前页面的折叠状态存储键 */
+  function getTocStorageKey(): string {
+    return TOC_COLLAPSE_PREFIX + window.location.pathname;
+  }
+
+  /** 读取已折叠的 h2 slug 集合 */
+  function readCollapsedSet(): Set<string> {
+    try {
+      const raw = localStorage.getItem(getTocStorageKey());
+      if (!raw) return new Set();
+      const arr = JSON.parse(raw) as string[];
+      return new Set(Array.isArray(arr) ? arr : []);
+    } catch {
+      return new Set();
+    }
+  }
+
+  /** 写入已折叠的 h2 slug 集合 */
+  function writeCollapsedSet(set: Set<string>): void {
+    try {
+      localStorage.setItem(getTocStorageKey(), JSON.stringify(Array.from(set)));
+    } catch {
+      /* localStorage 不可用时静默降级 */
+    }
+  }
+
+  /** 初始化 TOC 高亮 + 折叠交互 */
+  function initTocHighlight(): void {
+    const tocLinks = document.querySelectorAll<HTMLAnchorElement>('a[data-toc-slug]');
+    if (tocLinks.length === 0) return;
+
+    const mainEl = document.getElementById('app-main') || document.documentElement;
+
+    /** 收集对应的标题 DOM */
+    const headingElements: HTMLElement[] = [];
+    tocLinks.forEach((link) => {
+      const slug = link.getAttribute('data-toc-slug');
+      if (!slug) return;
+      const target = document.getElementById(slug);
+      if (target) headingElements.push(target);
+    });
+
+    /** 当前激活的 slug */
+    let activeSlug = '';
+
+    /** 高亮指定 slug 对应的大纲链接，移除其他链接的高亮 */
+    function highlightActive(slug: string): void {
+      if (slug === activeSlug) return;
+      activeSlug = slug;
+      tocLinks.forEach((link) => {
+        const linkSlug = link.getAttribute('data-toc-slug');
+        if (linkSlug === slug) {
+          link.classList.add('is-active');
+          link.setAttribute('aria-current', 'location');
+        } else {
+          link.classList.remove('is-active');
+          link.removeAttribute('aria-current');
+        }
+      });
+    }
+
+    /** 点击大纲项时平滑滚动到标题 */
+    tocLinks.forEach((link) => {
+      // 避免重复绑定
+      if (link.dataset.bound === '1') return;
+      link.dataset.bound = '1';
+
+      link.addEventListener('click', (event) => {
+        const slug = link.getAttribute('data-toc-slug');
+        if (!slug) return;
+        const target = document.getElementById(slug);
+        if (!target) return;
+
+        event.preventDefault();
+        const mainRect = mainEl.getBoundingClientRect();
+        const targetRect = target.getBoundingClientRect();
+        const offset = targetRect.top - mainRect.top + mainEl.scrollTop - 80;
+
+        mainEl.scrollTo({ top: offset, behavior: 'smooth' });
+        history.replaceState(null, '', `#${slug}`);
+      });
+    });
+
+    /** IntersectionObserver：监听标题可见性 */
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+
+        if (visible.length > 0) {
+          const target = visible[0];
+          if (target.target.id) {
+            highlightActive(target.target.id);
+          }
+        }
+      },
+      {
+        root: mainEl === document.documentElement ? null : mainEl,
+        rootMargin: '0px 0px -60% 0px',
+        threshold: 0,
+      },
+    );
+
+    headingElements.forEach((el) => observer.observe(el));
+
+    /** 初始化折叠按钮交互 */
+    initTocCollapse();
+
+    /** 恢复持久化的折叠状态 */
+    restoreTocCollapseState();
+  }
+
+  /** 初始化 TOC 折叠按钮交互 */
+  function initTocCollapse(): void {
+    const buttons = document.querySelectorAll<HTMLButtonElement>('.toc-collapse-btn[data-toc-collapse]');
+    buttons.forEach((btn) => {
+      if (btn.dataset.bound === '1') return;
+      btn.dataset.bound = '1';
+
+      btn.addEventListener('click', (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const parentSlug = btn.getAttribute('data-toc-collapse');
+        if (!parentSlug) return;
+
+        const li = btn.closest('[data-toc-group]') as HTMLElement | null;
+        if (!li) return;
+
+        const children = li.querySelector<HTMLUListElement>('.toc-children');
+        if (!children) return;
+
+        const willCollapse = !children.classList.contains('is-collapsed');
+        if (willCollapse) {
+          children.classList.add('is-collapsed');
+          btn.classList.add('is-collapsed');
+          btn.setAttribute('aria-expanded', 'false');
+          btn.setAttribute('aria-label', '展开子目录');
+        } else {
+          children.classList.remove('is-collapsed');
+          btn.classList.remove('is-collapsed');
+          btn.setAttribute('aria-expanded', 'true');
+          btn.setAttribute('aria-label', '折叠子目录');
+        }
+
+        // 持久化
+        const collapsedSet = readCollapsedSet();
+        if (willCollapse) {
+          collapsedSet.add(parentSlug);
+        } else {
+          collapsedSet.delete(parentSlug);
+        }
+        writeCollapsedSet(collapsedSet);
+      });
+    });
+  }
+
+  /** 恢复 TOC 折叠状态 */
+  function restoreTocCollapseState(): void {
+    const collapsedSet = readCollapsedSet();
+    if (collapsedSet.size === 0) return;
+
+    const groups = document.querySelectorAll<HTMLElement>('[data-toc-group]');
+    groups.forEach((li) => {
+      const parentSlug = li.getAttribute('data-toc-group');
+      if (!parentSlug || !collapsedSet.has(parentSlug)) return;
+
+      const children = li.querySelector<HTMLUListElement>('.toc-children');
+      const btn = li.querySelector<HTMLButtonElement>('.toc-collapse-btn');
+      if (!children || !btn) return;
+
+      children.classList.add('is-collapsed');
+      btn.classList.add('is-collapsed');
+      btn.setAttribute('aria-expanded', 'false');
+      btn.setAttribute('aria-label', '展开子目录');
+    });
+  }
+
+  // 初始化（首屏与 View Transitions 跳转后均触发）
+  initTocHighlight();
+  document.addEventListener('astro:page-load', initTocHighlight);
+</script>

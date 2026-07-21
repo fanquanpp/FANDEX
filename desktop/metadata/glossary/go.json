@@ -1,0 +1,140 @@
+{
+  "moduleId": "go",
+  "terms": [
+    {
+      "name": "闭包",
+      "definition": "捕获并持有外部变量的匿名函数，Go 中匿名函数天然支持闭包语义",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "包",
+      "definition": "Go 代码组织的基本单元，同一目录下的所有文件必须属于同一个包",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "变参函数",
+      "definition": "接受可变数量参数的函数，使用 ...T 语法声明",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "channel",
+      "definition": "goroutine 间通信的管道，通过 send/receive 操作实现同步与数据传递",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "select",
+      "definition": "同时监听多个 channel 操作的控制结构，随机执行就绪的 case 分支",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "defer",
+      "definition": "延迟执行语句，在函数返回前按 LIFO 顺序调用，常用于资源释放",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "读写互斥锁",
+      "definition": "支持多读单写锁定的同步原语，允许并发读取但独占写入",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "逃逸分析",
+      "definition": "编译器决定变量分配在栈还是堆上的分析过程，影响垃圾回收压力",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "方法",
+      "definition": "绑定到特定类型的函数，通过接收者参数声明，支持值接收者和指针接收者",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "goroutine",
+      "definition": "Go 运行时管理的轻量级并发执行单元，初始栈仅 2KB 且可动态增长",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "构建标签",
+      "definition": "源文件头部注释中的编译约束指令，控制文件在特定条件下才参与编译",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "管道",
+      "definition": "通过 channel 将多个 goroutine 串联形成的数据处理流水线模式",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "缓冲通道",
+      "definition": "带有内部缓冲区的 channel，在缓冲区满前发送操作不会阻塞",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "接口",
+      "definition": "定义方法签名的抽象类型，Go 中接口是隐式实现的（鸭子类型）",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "竞态检测",
+      "definition": "Go 内置的并发竞态条件检测工具，通过 -race 标志启用",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "可变参数",
+      "definition": "函数最后一个参数使用 ...T 声明，允许传入零个或多个该类型参数",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "垃圾回收",
+      "definition": "Go 运行时自动回收不再使用的堆内存，采用并发三色标记清除算法",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "map",
+      "definition": "Go 内置的哈希表类型，通过 make 创建，支持增删查改操作",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "模块",
+      "definition": "Go 1.11+ 的依赖管理单元，由 go.mod 文件定义，包含模块路径和版本信息",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "切片",
+      "definition": "对底层数组的动态视图引用，支持自动扩容，是 Go 中最常用的数据结构",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "指针",
+      "definition": "存储变量内存地址的类型，使用 & 取地址、\\* 解引用，但不支持指针运算",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "上下文",
+      "definition": "携带截止时间、取消信号和请求作用域值的接口，用于控制 goroutine 生命周期",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "结构体",
+      "definition": "由一组命名字段组成的复合数据类型，Go 中面向对象编程的基础",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "互斥锁",
+      "definition": "提供独占锁定的同步原语，保护共享资源在并发访问时的安全性",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "错误包装",
+      "definition": "使用 fmt.Errorf 的 %w 动词将错误嵌套包装，配合 errors.Is/As 进行错误链检查",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "延迟调用",
+      "definition": "通过 defer 注册的函数调用，确保在外层函数退出时执行清理逻辑",
+      "slug": "go/glossary"
+    },
+    {
+      "name": "泛型",
+      "definition": "Go 1.18 引入的类型参数化特性，支持函数和类型的类型参数声明与约束",
+      "slug": "go/glossary"
+    }
+  ]
+}

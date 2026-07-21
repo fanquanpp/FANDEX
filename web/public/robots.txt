@@ -1,0 +1,13 @@
+User-agent: *
+Allow: /
+
+# 工具页与开发文档页不希望被搜索引擎索引：
+# - dashboard：用户个人进度面板，无内容价值
+# - design-system：内部开发文档，非学习内容
+# - search：搜索弹窗的独立页面版本，搜索入口由主搜索弹窗承担
+Disallow: /FANDEX-web/dashboard/
+Disallow: /FANDEX-web/design-system/
+Disallow: /FANDEX-web/search/
+
+# 站点地图：通过 @astrojs/sitemap 自动生成 sitemap-index.xml
+Sitemap: https://fanquanpp.github.io/FANDEX-web/sitemap-index.xml

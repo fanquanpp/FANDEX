@@ -1,0 +1,410 @@
+{
+  "moduleId": "data-analysis",
+  "terms": [
+    {
+      "name": "异常值",
+      "definition": "显著偏离其他观测值的数据点，可能由测量误差或真实极端现象导致",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "A/B测试",
+      "definition": "通过随机分组对比两种方案效果的实验方法，是因果推断的金标准",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "聚合",
+      "definition": "对数据按组计算统计量(均值、求和、计数等)的操作，Pandas中用groupby+agg实现",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "广播",
+      "definition": "NumPy中不同形状数组自动扩展以进行元素级运算的机制",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "条形图",
+      "definition": "用矩形条的高度/长度表示分类数据数值的图表，适合类别比较",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "箱线图",
+      "definition": "展示数据分布五数概括(最小值、Q1、中位数、Q3、最大值)的统计图表",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "分类变量",
+      "definition": "取值为有限个离散类别的变量，如性别、城市",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "置信区间",
+      "definition": "以给定概率(置信水平)包含总体参数真值的区间估计",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "相关分析",
+      "definition": "衡量两个变量之间线性关系强度和方向的统计方法",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "交叉表",
+      "definition": "两个分类变量的频数统计表，Pandas中用pd.crosstab()生成",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "DataFrame",
+      "definition": "Pandas的核心二维表格数据结构，由行索引、列索引和数据值组成",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "数据清洗",
+      "definition": "识别和修正数据中缺失值、异常值、格式错误等质量问题的过程",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "描述统计",
+      "definition": "用统计量(均值、标准差等)和图表总结描述已有数据的分支",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "诊断性分析",
+      "definition": "解释\"为什么发生\"的分析层次，通过相关分析和假设检验建立因果逻辑",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "dtype",
+      "definition": "NumPy数组中元素的数据类型，如int64、float64、bool等",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "去重",
+      "definition": "删除数据集中重复记录的操作，Pandas中用drop_duplicates()实现",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "探索性数据分析",
+      "definition": "在建模之前通过统计图表和摘要统计量了解数据分布特征和异常模式的过程",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "插值",
+      "definition": "用已知数据点的值估计未知位置值的数学方法，Pandas中用interpolate()实现",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "FacetGrid",
+      "definition": "Seaborn中按分类变量分面绘制多子图的网格系统",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "填充缺失值",
+      "definition": "用特定值(均值、中位数、前向填充等)替代NaN的操作，Pandas中用fillna()实现",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "假阳性",
+      "definition": "统计检验中原假设为真却被拒绝的错误，也称第一类错误",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "假阴性",
+      "definition": "统计检验中原假设为假却未被拒绝的错误，也称第二类错误",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "分组聚合",
+      "definition": "将数据按一个或多个变量分组后对每组计算统计量的操作",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "直方图",
+      "definition": "将连续数据划分为若干区间(bin)并统计各区间的频数或密度的图表",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "热力图",
+      "definition": "用颜色深浅表示矩阵数值大小的可视化图表，常用于相关系数矩阵展示",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "hue参数",
+      "definition": "Seaborn中将分类变量映射为不同颜色的语义映射参数",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "索引",
+      "definition": "Pandas中用于定位和对齐数据的标签，Series和DataFrame均支持行索引和列索引",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "插值法",
+      "definition": "用估计值填充缺失数据的方法，包括均值插补、中位数插补、KNN插补等",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "Jupyter Notebook",
+      "definition": "数据分析标准交互环境，由代码单元格和Markdown单元格组成的.ipynb文档",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "连接",
+      "definition": "根据键列将两个DataFrame合并的操作，包括内连接、左连接、右连接、外连接",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "核密度估计",
+      "definition": "用核函数估计概率密度函数的非参数方法，Seaborn中用kde=True绘制",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "核",
+      "definition": "KDE中用于平滑估计的窗口函数，常用高斯核",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "线性回归",
+      "definition": "用线性函数拟合自变量与因变量关系的统计方法，最小二乘法估计参数",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "线图",
+      "definition": "用线段连接数据点展示趋势变化的图表，适合时间序列数据",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "Matplotlib",
+      "definition": "Python底层绘图库，提供Figure/Axes面向对象接口和Pyplot函数式接口",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "中位数",
+      "definition": "将数据从小到大排列后位于中间位置的值，对异常值比均值更稳健",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "缺失值",
+      "definition": "数据集中未被记录的值，在Pandas中表示为NaN(Not a Number)",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "多重共线性",
+      "definition": "回归模型中自变量之间高度相关的现象，会导致系数估计不稳定",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "Magic命令",
+      "definition": "IPython/Jupyter提供的特殊指令，以%(行级)或%%(单元格级)开头",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "ndarray",
+      "definition": "NumPy的核心多维数组对象，连续内存布局，固定数据类型，支持向量化运算",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "NumPy",
+      "definition": "Python科学计算基础库，提供高效的多维数组对象和数值计算函数",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "正态分布",
+      "definition": "又称高斯分布，由均值mu和标准差sigma决定的钟形对称概率分布",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "非参数检验",
+      "definition": "不假设数据服从特定分布的统计检验方法，如Mann-Whitney U检验、Kruskal-Wallis检验",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "零假设",
+      "definition": "统计检验中默认成立的假设，通常表示\"无效果\"或\"无差异\"，记为H0",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "OLS",
+      "definition": "普通最小二乘法，通过最小化残差平方和估计线性回归参数",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "异常值检测",
+      "definition": "识别显著偏离正常模式的数据点的方法，包括IQR法、Z-score法、孤立森林等",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "Pandas",
+      "definition": "Python表格数据处理库，核心数据结构为Series和DataFrame",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "p值",
+      "definition": "在零假设成立下观察到当前或更极端结果的概率，p<alpha则拒绝零假设",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "透视表",
+      "definition": "按多个维度对数据进行交叉汇总的表格，Pandas中用pivot_table()生成",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "预测性分析",
+      "definition": "预测\"未来可能发生什么\"的分析层次，使用回归模型和时间序列等方法",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "总体",
+      "definition": "研究对象的全体，如全校学生；参数是描述总体特征的数量",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "参数",
+      "definition": "描述总体特征的数量，如总体均值mu、总体标准差sigma",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "参数估计",
+      "definition": "用样本统计量推断总体参数的方法，包括点估计和区间估计",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "假设检验",
+      "definition": "通过样本数据判断关于总体的某个假设是否成立的统计方法",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "饼图",
+      "definition": "用扇形面积表示各部分占整体比例的图表，适合展示构成关系",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "四分位数",
+      "definition": "将排序数据四等分的值，Q1(25%)、Q2(中位数50%)、Q3(75%)",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "四分位距",
+      "definition": "Interquartile Range，Q3与Q1的差值，衡量数据离散程度，常用于异常值检测",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "随机种子",
+      "definition": "控制随机数生成器初始状态以确保结果可复现的数值，NumPy中用np.random.seed()设置",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "重塑",
+      "definition": "改变数组或DataFrame形状的操作，NumPy中用reshape()，Pandas中用melt()/pivot()",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "回归分析",
+      "definition": "研究自变量与因变量之间数量关系的统计方法，包括线性回归和逻辑回归",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "散点图",
+      "definition": "用二维坐标点展示两个连续变量关系的图表",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "Seaborn",
+      "definition": "基于Matplotlib的高级统计可视化库，提供面向DataFrame的API和美观默认样式",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "Series",
+      "definition": "Pandas的一维带标签数组，由索引和数据值组成",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "样本",
+      "definition": "从总体中抽取的子集，统计量是描述样本特征的数量",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "统计量",
+      "definition": "描述样本特征的数量，如样本均值x-bar、样本标准差s",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "标准差",
+      "definition": "衡量数据离散程度的统计量，方差的正平方根",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "标准化",
+      "definition": "将数据转换为均值为0、标准差为1的分布，z=(x-mu)/sigma",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "SciPy",
+      "definition": "基于NumPy的科学计算库，提供统计检验、优化、插值等高级算法",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "Statsmodels",
+      "definition": "Python统计建模库，提供回归分析、时间序列分析、假设检验等功能",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "幸存者偏差",
+      "definition": "只分析可见/存活数据而忽略缺失数据导致的系统性偏差",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "显著性水平",
+      "definition": "统计检验中拒绝零假设的阈值，通常取0.05或0.01，记为alpha",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "小提琴图",
+      "definition": "结合箱线图和核密度估计的图表，同时展示数据分布和统计摘要",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "时间序列",
+      "definition": "按时间顺序排列的数据序列，Pandas中用DatetimeIndex支持时间序列操作",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "t检验",
+      "definition": "比较两组均值差异是否显著的参数检验方法，包括单样本、独立样本、配对样本t检验",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "类型转换",
+      "definition": "将数据从一种类型转换为另一种类型的操作，Pandas中用astype()实现",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "通用函数",
+      "definition": "NumPy中对数组逐元素运算的函数，支持广播和向量化，如np.add、np.sqrt",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "向量化",
+      "definition": "用数组级运算替代显式循环的编程模式，利用NumPy底层C实现获得高性能",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "方差",
+      "definition": "衡量数据离散程度的统计量，各观测值与均值之差的平方的平均值",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "方差分析",
+      "definition": "比较两组及以上均值差异是否显著的统计方法，分为单因素和双因素方差分析",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "Z-score",
+      "definition": "标准化得分，表示观测值偏离均值多少个标准差，z=(x-mu)/sigma，常用于异常值检测",
+      "slug": "data-analysis/glossary"
+    },
+    {
+      "name": "中心极限定理",
+      "definition": "当样本量足够大时，样本均值的抽样分布近似服从正态分布，无论总体分布如何",
+      "slug": "data-analysis/glossary"
+    }
+  ]
+}

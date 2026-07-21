@@ -1,0 +1,150 @@
+{
+  "moduleId": "iot",
+  "terms": [
+    {
+      "name": "ADC",
+      "definition": "模数转换器，将模拟信号（如传感器电压）转换为数字信号的硬件模块",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "ACK",
+      "definition": "消息确认机制，接收方通知发送方消息已成功接收的应答信号",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "边缘计算",
+      "definition": "在靠近数据源的边缘节点执行计算任务，减少云端传输延迟和带宽消耗",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "传感器",
+      "definition": "感知物理环境（温度、湿度、光照等）并将其转换为电信号的器件",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "低功耗",
+      "definition": "设备在极低能耗下运行的设计目标，对电池供电的 IoT 设备至关重要",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "数字孪生",
+      "definition": "物理设备或系统的虚拟映射模型，用于仿真、监控和预测性维护",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "短距通信",
+      "definition": "覆盖范围有限的无线通信技术，如蓝牙、Zigbee、Wi-Fi",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "嵌入式",
+      "definition": "为特定控制功能设计的专用计算机系统，资源受限且实时性要求高",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "固件",
+      "definition": "嵌入式设备中存储在非易失性存储器上的底层控制软件",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "泛在计算",
+      "definition": "计算能力无处不在地嵌入日常环境和物品中的计算范式",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "GPIO",
+      "definition": "通用输入输出引脚，可通过软件配置为输入或输出模式，用于与外部设备交互",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "网关",
+      "definition": "连接不同网络协议和通信标准的桥梁设备，实现 IoT 设备与云端的互通",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "I2C",
+      "definition": "双线制串行通信协议，使用 SDA 数据线和 SCL 时钟线，支持一主多从拓扑",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "机对机通信",
+      "definition": "设备之间无需人工干预自动交换数据和执行操作的通信模式",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "LoRa",
+      "definition": "低功耗广域网通信技术，传输距离可达数公里，适用于远距离低频数据上报",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "LoRaWAN",
+      "definition": "基于 LoRa 物理层的媒体访问控制层协议，定义设备类别和网络架构",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "MQTT",
+      "definition": "轻量级发布/订阅消息协议，专为带宽有限和网络不稳定的 IoT 场景设计",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "NB-IoT",
+      "definition": "基于蜂窝网络的窄带物联网技术，覆盖广、功耗低，适用于地下和远距离场景",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "OTA 更新",
+      "definition": "通过无线网络远程更新设备固件或软件的机制，无需物理接触设备",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "频段",
+      "definition": "无线通信使用的频率范围，不同 IoT 技术工作在不同频段（如 Sub-GHz、2.4GHz）",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "RTOS",
+      "definition": "实时操作系统，保证任务在确定时间内完成，广泛用于嵌入式 IoT 设备",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "SPI",
+      "definition": "高速同步串行通信协议，使用四线制（SCLK、MOSI、MISO、CS），适合短距高速传输",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "设备影子",
+      "definition": "云端维护的设备状态缓存，记录设备期望状态和实际状态，支持离线同步",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "时序数据库",
+      "definition": "专门存储和查询带时间戳数据的数据库，适合 IoT 传感器数据的持续写入和聚合查询",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "UART",
+      "definition": "通用异步收发器，实现设备间串行通信的硬件协议，只需 TX 和 RX 两根信号线",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "物联网平台",
+      "definition": "提供设备接入、数据采集、规则引擎和应用使能的中间层云服务",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "协议转换",
+      "definition": "将一种通信协议的数据格式转换为另一种，实现异构设备间的互操作",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "Zigbee",
+      "definition": "基于 IEEE 802.15.4 的低功耗无线网状网络协议，适用于家庭自动化和传感器网络",
+      "slug": "iot/glossary"
+    },
+    {
+      "name": "执行器",
+      "definition": "接收控制信号并执行物理动作（如开关阀门、驱动电机）的器件",
+      "slug": "iot/glossary"
+    }
+  ]
+}

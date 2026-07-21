@@ -1,0 +1,368 @@
+/**
+ * 打印样式表
+ *
+ * 功能概述：
+ * - 优化文档打印输出，移除交互元素
+ * - 调整字体大小、行高、页边距以适应纸张
+ * - 显示链接 URL 便于参考
+ * - 避免代码块、表格等在分页时被截断
+ * - 强制使用亮色主题，确保打印可读性
+ *
+ * 使用方式：在 Layout.astro 中通过 <link rel="stylesheet" media="print"> 引入
+ * 或在 globals.css 中通过 @import 引入
+ */
+
+@media print {
+  /* ========== 1. 全局打印优化 ========== */
+  html,
+  body {
+    background: white;
+    color: black;
+    font-size: 11pt;
+    line-height: 1.5;
+    text-rendering: optimizeLegibility;
+  }
+
+  /** 强制使用亮色主题变量，确保打印对比度 */
+  :root {
+    --background: white;
+    --foreground: black;
+    --card: white;
+    --card-foreground: black;
+    --primary: #0066cc;
+    --border: #ccc;
+    --muted-foreground: #555;
+  }
+
+  /** 移除暗色模式 */
+  .dark {
+    --background: white;
+    --foreground: black;
+    --card: white;
+    --card-foreground: black;
+    --primary: #0066cc;
+    --border: #ccc;
+    --muted-foreground: #555;
+  }
+
+  /* ========== 2. 页面边距与分页 ========== */
+  @page {
+    margin: 1.5cm 2cm;
+    size: A4 portrait;
+  }
+
+  /** 避免标题、引用、图片被分页截断 */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    page-break-after: avoid;
+    break-after: avoid;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /** 段落不与后续标题分离 */
+  h1,
+  h2,
+  h3 {
+    page-break-before: auto;
+  }
+
+  /** 图片、表格、代码块整体不分页 */
+  img,
+  table,
+  pre,
+  figure,
+  blockquote {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ========== 3. 隐藏交互与装饰元素 ========== */
+  /** 顶部导航栏 */
+  .app-nav,
+  nav.app-nav,
+  header[role="banner"],
+  .navbar {
+    display: none;
+  }
+
+  /** 侧边栏 */
+  aside.sidebar,
+  .sidebar,
+  [class*="sidebar"],
+  .app-sidebar {
+    display: none;
+  }
+
+  /** 移动端导航 */
+  .mobile-nav,
+  .mobile-bottom-nav {
+    display: none;
+  }
+
+  /** 侧边栏遮罩 */
+  .sidebar-backdrop,
+  .backdrop {
+    display: none;
+  }
+
+  /** 浮动按钮、工具栏、回到顶部 */
+  .floating-btn,
+  .back-to-top,
+  #nav-back-to-top,
+  .toolbar {
+    display: none;
+  }
+
+  /** 主题切换按钮 */
+  .theme-toggle,
+  #theme-toggle,
+  button[aria-label*="主题"],
+  button[aria-label*="theme" i] {
+    display: none;
+  }
+
+  /** 评论、广告、分享按钮 */
+  .giscus,
+  .giscus-frame,
+  .comments,
+  .advertisement,
+  .share-buttons,
+  .social-share {
+    display: none;
+  }
+
+  /** 安装提示、PWA 元素 */
+  .install-prompt,
+  #install-prompt {
+    display: none;
+  }
+
+  /** 焦点模式指示器 */
+  .focus-mode-indicator,
+  #focus-mode-indicator {
+    display: none;
+  }
+
+  /** Pagefind 搜索组件 */
+  .pagefind-ui,
+  #search,
+  [class*="search-"] {
+    display: none;
+  }
+
+  /* ========== 4. 链接显示 URL ========== */
+  /**
+   * 在打印输出中显示链接 URL，便于参考
+   * 仅对外部链接（http:// 或 https://）生效
+   */
+  a[href^="http"]::after {
+    content: " (" attr(href) ")";
+    font-size: 0.85em;
+    color: #666;
+    text-decoration: none;
+    word-break: break-all;
+    overflow-wrap: break-all;
+  }
+
+  /** 链接本身保持颜色 */
+  a,
+  a:link,
+  a:visited {
+    color: #0066cc;
+    text-decoration: underline;
+    text-decoration-color: #ccc;
+  }
+
+  /** 锚点链接（# 开头）不显示 URL */
+  a[href^="#"]::after,
+  a[href^="javascript:"]::after {
+    content: "";
+  }
+
+  /* ========== 5. 代码块打印优化 ========== */
+  pre,
+  .astro-code,
+  .code-block {
+    border: 1px solid #ccc;
+    background-color: #f6f8fa;
+    color: #24292f;
+    font-size: 9pt;
+    line-height: 1.4;
+    page-break-inside: avoid;
+    break-inside: avoid;
+    overflow: visible;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-all;
+  }
+
+  /** 代码块内 span 颜色重置为黑色 */
+  pre span,
+  .astro-code span {
+    color: #24292f;
+  }
+
+  /** 复制按钮隐藏 */
+  .copy-btn {
+    display: none;
+  }
+
+  /** 代码块容器边框调整 */
+  .code-block {
+    border-radius: 4px;
+    margin: 0.5cm 0;
+  }
+
+  /* ========== 6. 表格打印优化 ========== */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10pt;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  th,
+  td {
+    border: 1px solid #ccc;
+    padding: 0.3em 0.5em;
+    text-align: left;
+  }
+
+  th {
+    background-color: #f6f8fa;
+    font-weight: 600;
+  }
+
+  tr:nth-child(even) {
+    background-color: #fafafa;
+  }
+
+  /* ========== 7. 字体大小调整 ========== */
+  h1 {
+    font-size: 22pt;
+    margin-top: 0;
+    page-break-before: auto;
+  }
+
+  h2 {
+    font-size: 18pt;
+    margin-top: 1.2em;
+  }
+
+  h3 {
+    font-size: 14pt;
+    margin-top: 1em;
+  }
+
+  h4 {
+    font-size: 12pt;
+  }
+
+  h5,
+  h6 {
+    font-size: 11pt;
+  }
+
+  p,
+  li {
+    font-size: 11pt;
+    line-height: 1.5;
+  }
+
+  /** 减少段落间距 */
+  p {
+    margin: 0.5em 0;
+  }
+
+  /* ========== 8. 主内容区域全宽 ========== */
+  main,
+  .app-main,
+  #app-main,
+  article,
+  .prose,
+  .container-prose {
+    width: 100%;
+    max-width: 100%;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+  }
+
+  /** 移除 body 高度限制 */
+  body {
+    height: auto;
+    overflow: visible;
+  }
+
+  html {
+    height: auto;
+    overflow: visible;
+  }
+
+  /* ========== 9. 颜色与背景重置 ========== */
+  /**
+   * 强制黑色文字与白色背景，节省墨水
+   * 保留必要的颜色区分（如代码块）
+   */
+  * {
+    box-shadow: none;
+    text-shadow: none;
+  }
+
+  /** 移除背景图片 */
+  body,
+  div,
+  section {
+    background-image: none;
+  }
+
+  /* ========== 10. 引用块样式 ========== */
+  blockquote {
+    margin: 0.5cm 0;
+    padding: 0.3cm 0.5cm;
+    border-left: 3px solid #ccc;
+    background-color: #fafafa;
+    font-style: italic;
+  }
+
+  /* ========== 11. 提示框（admonition）打印样式 ========== */
+  .admonition,
+  [class*="admonition-"] {
+    border: 1px solid #ccc;
+    background-color: #fafafa;
+    padding: 0.3cm 0.5cm;
+    margin: 0.3cm 0;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ========== 12. Mermaid 图表 ========== */
+  .mermaid,
+  svg.mermaid {
+    max-width: 100%;
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+
+  /* ========== 13. 最后页打印信息（可选） ========== */
+  /**
+   * 可选：在打印末尾添加版权信息
+   * 取消注释以启用
+   */
+  /*
+  body::after {
+    content: '打印自 FANDEX - ' attr(data-printed-at);
+    display: block;
+    margin-top: 2cm;
+    text-align: center;
+    font-size: 9pt;
+    color: #999;
+  }
+  */
+}

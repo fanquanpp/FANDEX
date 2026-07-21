@@ -1,0 +1,120 @@
+{
+  "moduleId": "csharp",
+  "terms": [
+    {
+      "name": "async/await",
+      "definition": "C# 异步编程的核心语法，async 标记异步方法，await 异步等待任务完成而不阻塞线程",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "表达式树",
+      "definition": "将代码表示为数据结构的树形对象，常用于 LINQ 提供程序的查询翻译",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "程序集",
+      "definition": ".NET 编译输出的基本部署单元，包含 IL 代码、元数据和资源",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "特性",
+      "definition": "以声明方式为代码元素附加元数据的机制，运行时通过反射读取",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "委托",
+      "definition": "类型安全的函数指针类型，定义方法签名，支持多播和异步调用",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "动态绑定",
+      "definition": "使用 dynamic 类型在运行时而非编译时解析成员访问，支持与动态语言互操作",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "事件",
+      "definition": "基于委托的发布-订阅机制，允许对象在状态变化时通知订阅者",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "反射",
+      "definition": "在运行时检查和操作类型元数据的能力，支持动态创建实例和调用方法",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "泛型约束",
+      "definition": "使用 where 子句限制泛型类型参数必须满足的条件，如实现特定接口或具有无参构造函数",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "感知迭代器",
+      "definition": "使用 yield return 实现的延迟执行序列生成方法，编译器自动生成状态机",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "互操作",
+      "definition": "C# 与非托管代码（如 Win32 API、COM 组件）交互的能力，通过 P/Invoke 和 COM 互操作实现",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "记录类型",
+      "definition": "C# 9.0 引入的引用类型，基于值的相等性语义，自动生成 With 表达式支持和不可变性",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "可空引用类型",
+      "definition": "C# 8.0 引入的编译期安全特性，区分可空与不可空引用类型以防止 NullReferenceException",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "LINQ",
+      "definition": "C# 内置的统一查询语法，支持对集合、数据库、XML 等数据源的声明式查询操作",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "模式匹配",
+      "definition": "使用 is、switch 表达式等对数据形状进行条件匹配和解构的语言特性",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "属性",
+      "definition": "封装字段的访问器机制，通过 get/set 访问器控制对私有字段的读写",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "顶级语句",
+      "definition": "C# 9.0 引入的简化程序入口写法，无需显式声明 Main 方法和命名空间",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "垃圾回收",
+      "definition": ".NET 运行时自动管理堆内存的机制，采用分代回收策略回收不再使用的对象",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "Source Generator",
+      "definition": "C# 9.0 引入的编译时代码生成器，在编译期间分析用户代码并自动生成附加源代码",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "Span",
+      "definition": "提供对连续内存区域的安全且零分配视图的类型，支持栈分配和托管/非托管内存",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "值元组",
+      "definition": "C# 7.0 引入的值类型元组，支持命名元素和解构，比 System.Tuple 性能更优",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "扩展方法",
+      "definition": "在不修改原始类型的情况下向其添加方法的静态类语法糖，通过 this 修饰第一个参数",
+      "slug": "csharp/glossary"
+    },
+    {
+      "name": "应用域",
+      "definition": ".NET Framework 中的隔离边界，提供程序集加载和卸载的轻量级隔离单元",
+      "slug": "csharp/glossary"
+    }
+  ]
+}

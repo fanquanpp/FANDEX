@@ -1,0 +1,297 @@
+/**
+ * FANDEX 全局基础样式
+ *
+ * 功能概述：
+ * 定义全局重置、根元素、body、链接、选区、滚动条、触控设备适配、
+ * 减弱动画偏好、以及提示块（Admonition）组件的完整样式系统。
+ * 提示块支持 7 种语义类型（note/tip/warning/danger/caution/info/important），
+ * 并包含暗色主题适配。
+ */
+
+/* ========== KaTeX 数学公式样式导入 ========== */
+@import 'katex/dist/katex.min.css';
+
+/* ========== 全局重置 ========== */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* 统一盒模型，宽高包含内边距和边框 */
+}
+
+/* ========== 根元素 ========== */
+html {
+  font-size: 16px; /* 基准字号 */
+  overscroll-behavior: none; /* 禁止过度滚动（如橡皮筋效果），避免页面级滚动传播 */
+}
+
+/* ========== 页面主体 ========== */
+body {
+  min-height: 100vh;
+  min-height: 100dvh; /* 动态视口高度，适配移动端地址栏收缩 */
+  font-family: var(--font-body);
+  font-size: 1.0625rem; /* 17px，略大于基准字号，提升中文可读性 */
+  line-height: 1.85;
+  color: var(--color-text);
+  background: var(--color-bg);
+  transition:
+    background var(--transition-base),
+    color var(--transition-base); /* 主题切换时背景和文字色平滑过渡 */
+  -webkit-font-smoothing: antialiased; /* macOS 字体抗锯齿 */
+  -moz-osx-font-smoothing: grayscale; /* Firefox 字体抗锯齿 */
+  overflow-wrap: break-word; /* 长单词自动换行 */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  user-select: none; /* 默认禁止选中，避免误操作 */
+  overscroll-behavior: none; /* 禁止过度滚动 */
+}
+
+/* ========== 全局链接 ========== */
+a {
+  color: var(--color-primary);
+  text-decoration: none;
+}
+a:hover {
+  color: var(--color-primary-hover);
+}
+
+/* ========== 文字选区 ========== */
+::selection {
+  background: var(--color-primary);
+  color: var(--color-text-inverse); /* 选中文字使用主色背景 + 反色文字 */
+}
+
+/* ========== 可选中元素覆盖（代码、输入框等需要允许复制） ========== */
+code,
+pre,
+input,
+textarea,
+.copy-btn {
+  -webkit-user-select: text;
+  -moz-user-select: text;
+  user-select: text;
+}
+
+/* ========== 自定义滚动条 ========== */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent; /* 滚动条轨道透明 */
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-light); /* 滚动条滑块使用浅边框色 */
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-border); /* 悬停时滑块变深 */
+}
+
+/* 暗色模式下滚动条颜色加深 */
+html[data-theme='dark'] ::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+}
+html[data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+/* ========== 触控设备适配：移除悬停效果 ========== */
+/* 触屏设备上悬停状态不可控，统一移除以避免"粘滞悬停"问题 */
+@media (hover: none) and (pointer: coarse) {
+  a:hover,
+  button:hover,
+  .nav-btn:hover,
+  .nav-link:hover,
+  .sidebar-file-link:hover,
+  .module-card:hover,
+  .tag-item:hover,
+  .path-node:hover,
+  .stat-link:hover,
+  .nav-logo:hover,
+  .nav-back-to-top:hover,
+  .progress-export:hover,
+  .progress-import:hover,
+  .quiz-submit-btn:hover,
+  .quiz-option:not(:disabled):hover,
+  .doc-tag:hover,
+  .roadmap-module-card:hover {
+    color: inherit;
+    border-color: inherit;
+    background: inherit;
+    transform: none;
+    box-shadow: none;
+    opacity: inherit;
+    text-decoration: none;
+  }
+}
+
+/* ========== 减弱动画偏好：尊重用户系统设置 ========== */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ===== 提示块（Admonition）组件 ===== */
+
+/* 基础提示块样式 */
+.admonition {
+  --admonition-bg: var(--color-bg-card);
+  --admonition-border: var(--color-border-light);
+  --admonition-text: var(--color-text);
+  --admonition-title-text: var(--color-text);
+
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin: var(--spacing-lg) 0;
+  border-left: 4px solid var(--admonition-border);
+  border-radius: 6px;
+  background: var(--admonition-bg);
+  color: var(--admonition-text);
+  font-size: 0.95em;
+  line-height: 1.75;
+}
+
+/* 提示块标题 */
+.admonition .admonition-title {
+  font-weight: 700;
+  font-size: 0.95em;
+  margin-bottom: var(--spacing-sm);
+  padding-bottom: var(--spacing-xs);
+  color: var(--admonition-title-text);
+}
+
+/* 标题前缀图标 */
+.admonition .admonition-title::before {
+  margin-right: 6px;
+  font-style: normal;
+}
+
+/* 最后一个段落去除底部间距 */
+.admonition p:last-child {
+  margin-bottom: 0;
+}
+
+/* 嵌套提示块间距调整 */
+.admonition .admonition {
+  margin-top: var(--spacing-md);
+  margin-bottom: 0;
+}
+
+/* --- note 提示块：蓝色系，用于一般说明 --- */
+.admonition-note {
+  --admonition-border: #448aff;
+  --admonition-bg: #e8f0fe;
+  --admonition-title-text: #1a56db;
+}
+.admonition-note .admonition-title::before {
+  content: '\2139\FE0E'; /* ℹ 信息图标 */
+}
+
+/* --- tip 提示块：绿色系，用于实用技巧 --- */
+.admonition-tip {
+  --admonition-border: #00c853;
+  --admonition-bg: #e8f5e9;
+  --admonition-title-text: #1b8a3e;
+}
+.admonition-tip .admonition-title::before {
+  content: '\1F4A1'; /* 💡 灯泡图标 */
+}
+
+/* --- warning 提示块：橙色系，用于注意事项 --- */
+.admonition-warning {
+  --admonition-border: #ff9100;
+  --admonition-bg: #fff3e0;
+  --admonition-title-text: #c56200;
+}
+.admonition-warning .admonition-title::before {
+  content: '\26A0\FE0E'; /* ⚠ 警告图标 */
+}
+
+/* --- danger 提示块：红色系，用于危险操作警告 --- */
+.admonition-danger {
+  --admonition-border: #ff1744;
+  --admonition-bg: #ffebee;
+  --admonition-title-text: #c41234;
+}
+.admonition-danger .admonition-title::before {
+  content: '\1F6D1'; /* 🛑 停止图标 */
+}
+
+/* --- caution 提示块：深橙色系，用于谨慎操作 --- */
+.admonition-caution {
+  --admonition-border: #ff6d00;
+  --admonition-bg: #fff8e1;
+  --admonition-title-text: #bf5600;
+}
+.admonition-caution .admonition-title::before {
+  content: '\1F525'; /* 🔥 火焰图标 */
+}
+
+/* --- info 提示块：蓝色系，用于补充信息 --- */
+.admonition-info {
+  --admonition-border: #2979ff;
+  --admonition-bg: #e3f2fd;
+  --admonition-title-text: #1565c0;
+}
+.admonition-info .admonition-title::before {
+  content: '\2139\FE0E'; /* ℹ 信息图标 */
+}
+
+/* --- important 提示块：紫色系，用于重要强调 --- */
+.admonition-important {
+  --admonition-border: #aa00ff;
+  --admonition-bg: #f3e5f5;
+  --admonition-title-text: #7b1fa2;
+}
+.admonition-important .admonition-title::before {
+  content: '\2757'; /* ❗ 感叹号图标 */
+}
+
+/* ===== 暗色主题提示块适配 ===== */
+[data-theme='dark'] .admonition-note {
+  --admonition-border: #6ea8fe;
+  --admonition-bg: #1a2744;
+  --admonition-title-text: #93b5ff;
+}
+
+[data-theme='dark'] .admonition-tip {
+  --admonition-border: #55efc4;
+  --admonition-bg: #122e20;
+  --admonition-title-text: #6ee7b7;
+}
+
+[data-theme='dark'] .admonition-warning {
+  --admonition-border: #ffb74d;
+  --admonition-bg: #2e2214;
+  --admonition-title-text: #ffcc80;
+}
+
+[data-theme='dark'] .admonition-danger {
+  --admonition-border: #ef5350;
+  --admonition-bg: #2e1416;
+  --admonition-title-text: #ff8a80;
+}
+
+[data-theme='dark'] .admonition-caution {
+  --admonition-border: #ffa726;
+  --admonition-bg: #2e2010;
+  --admonition-title-text: #ffcc80;
+}
+
+[data-theme='dark'] .admonition-info {
+  --admonition-border: #64b5f6;
+  --admonition-bg: #142438;
+  --admonition-title-text: #90caf9;
+}
+
+[data-theme='dark'] .admonition-important {
+  --admonition-border: #ce93d8;
+  --admonition-bg: #261430;
+  --admonition-title-text: #e1bee7;
+}

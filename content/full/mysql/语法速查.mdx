@@ -1,0 +1,28 @@
+---
+title: 'MySQL 语法速查'
+description: '常用 MySQL 命令速查表，含使用场景、常见错误，支持搜索和复制'
+module: mysql
+category: 'MySQL Reference'
+difficulty: beginner
+order: 5
+tags:
+  - mysql
+  - database
+  - cheatsheet
+related:
+  - mysql/概述与数据库设计
+  - mysql/环境搭建
+prerequisites: []
+---
+
+import CheatSheet from '@/islands/CheatSheet';
+import mysqlData from '@/data/cheatsheets/mysql.json';
+
+<CheatSheet
+  数据={mysqlData}
+  模块名="MySQL"
+  搜索框占位符="例如：创建数据库、查询..."
+  允许分组折叠={true}
+  显示学习指引={true}
+  client:load
+/>

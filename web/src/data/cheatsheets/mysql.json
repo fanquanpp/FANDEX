@@ -1,0 +1,225 @@
+{
+  "元数据": {
+    "模块名称": "MySQL",
+    "版本": "1.0.0",
+    "最后更新": "2026-06-15",
+    "前置知识": ["掌握数据库基本概念（表、字段、记录）", "已完成 MySQL 本地安装"],
+    "推荐学习顺序": [
+      "先学习【数据库与表操作】分组，掌握建库建表",
+      "再学习【数据查询】分组，掌握增删改查"
+    ]
+  },
+  "分组": [
+    {
+      "分组名": "数据库与表操作",
+      "分组说明": "这是 SQL 的第一步。本组命令用于管理数据库和表结构。",
+      "条目": [
+        {
+          "描述": "创建数据库",
+          "代码": "CREATE DATABASE mydb DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci;",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">CREATE</span><span style=\"color:#D73A49\"> DATABASE</span><span style=\"color:#6F42C1\"> mydb</span><span style=\"color:#D73A49\"> DEFAULT</span><span style=\"color:#D73A49\"> CHARACTER</span><span style=\"color:#D73A49\"> SET</span><span style=\"color:#24292E\"> utf8mb4 </span><span style=\"color:#D73A49\">COLLATE</span><span style=\"color:#24292E\"> utf8mb4_general_ci;</span></span></code></pre>",
+          "预期输出": "Query OK, 1 row affected (0.01 sec)",
+          "使用场景": "需要新建一个数据库来存储业务数据时使用。建议始终指定字符集为 utf8mb4 以支持中文和表情符号。",
+          "常见错误": [
+            {
+              "错误示例": "CREATE DATABASE mydb;",
+              "错误信息": "数据库创建成功但字符集为默认的 latin1，导致中文乱码",
+              "解决方法": "始终显式指定 CHARACTER SET utf8mb4，不要依赖服务器默认字符集"
+            },
+            {
+              "错误示例": "CREATE DATABASE mydb;",
+              "错误信息": "ERROR 1007 (HY000): Can't create database 'mydb'; database exists",
+              "解决方法": "使用 CREATE DATABASE IF NOT EXISTS mydb ... 避免重复创建报错"
+            }
+          ],
+          "进阶提示": "生产环境中建议同时指定 COLLATE 排序规则。utf8mb4_general_ci 不区分大小写，utf8mb4_bin 区分大小写。",
+          "搜索关键词": ["建库", "新建数据库", "create database"]
+        },
+        {
+          "描述": "查看数据库列表",
+          "代码": "SHOW DATABASES;",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">SHOW DATABASES;</span></span></code></pre>",
+          "预期输出": "+--------------------+\n| Database           |\n+--------------------+\n| information_schema |\n| mydb               |\n| mysql              |\n| performance_schema |\n| sys                |\n+--------------------+\n5 rows in set (0.00 sec)",
+          "使用场景": "需要确认数据库是否创建成功，或查看当前 MySQL 服务器上有哪些数据库时使用。",
+          "常见错误": [
+            {
+              "错误示例": "SHOW DATABASE;",
+              "错误信息": "ERROR 1064 (42000): You have an error in your SQL syntax",
+              "解决方法": "关键字是 DATABASES（复数形式），不是 DATABASE"
+            }
+          ],
+          "搜索关键词": ["查看数据库", "列出数据库", "show databases"]
+        },
+        {
+          "描述": "删除数据库",
+          "代码": "DROP DATABASE IF EXISTS mydb;",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">DROP</span><span style=\"color:#D73A49\"> DATABASE</span><span style=\"color:#D73A49\"> IF</span><span style=\"color:#D73A49\"> EXISTS</span><span style=\"color:#24292E\"> mydb;</span></span></code></pre>",
+          "预期输出": "Query OK, 0 rows affected (0.02 sec)",
+          "使用场景": "需要彻底删除一个数据库及其所有数据时使用。此操作不可逆，务必谨慎。",
+          "常见错误": [
+            {
+              "错误示例": "DROP DATABASE mydb;",
+              "错误信息": "ERROR 1008 (HY000): Can't drop database 'mydb'; database doesn't exist",
+              "解决方法": "使用 DROP DATABASE IF EXISTS mydb 避免数据库不存在时报错"
+            },
+            {
+              "错误示例": "DROP DATABASE production_db;",
+              "错误信息": "数据库被误删，所有数据永久丢失",
+              "解决方法": "执行删除前务必确认数据库名称，生产环境建议先备份再删除"
+            }
+          ],
+          "进阶提示": "删除前可用 mysqldump -u root -p mydb > backup.sql 备份整个数据库。",
+          "搜索关键词": ["删除数据库", "drop database", "删库"]
+        },
+        {
+          "描述": "创建表",
+          "代码": "CREATE TABLE users (\n  id INT AUTO_INCREMENT PRIMARY KEY,\n  username VARCHAR(50) NOT NULL,\n  email VARCHAR(100) NOT NULL UNIQUE,\n  age INT DEFAULT 0,\n  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP\n) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">CREATE</span><span style=\"color:#D73A49\"> TABLE</span><span style=\"color:#6F42C1\"> users</span><span style=\"color:#24292E\"> (</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  id </span><span style=\"color:#D73A49\">INT</span><span style=\"color:#24292E\"> AUTO_INCREMENT </span><span style=\"color:#D73A49\">PRIMARY KEY</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  username </span><span style=\"color:#D73A49\">VARCHAR</span><span style=\"color:#24292E\">(</span><span style=\"color:#005CC5\">50</span><span style=\"color:#24292E\">) </span><span style=\"color:#D73A49\">NOT NULL</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  email </span><span style=\"color:#D73A49\">VARCHAR</span><span style=\"color:#24292E\">(</span><span style=\"color:#005CC5\">100</span><span style=\"color:#24292E\">) </span><span style=\"color:#D73A49\">NOT NULL</span><span style=\"color:#D73A49\"> UNIQUE</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  age </span><span style=\"color:#D73A49\">INT</span><span style=\"color:#D73A49\"> DEFAULT</span><span style=\"color:#005CC5\"> 0</span><span style=\"color:#24292E\">,</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">  created_at </span><span style=\"color:#D73A49\">TIMESTAMP</span><span style=\"color:#D73A49\"> DEFAULT</span><span style=\"color:#24292E\"> CURRENT_TIMESTAMP</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">) ENGINE</span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\">InnoDB </span><span style=\"color:#D73A49\">DEFAULT</span><span style=\"color:#24292E\"> CHARSET</span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\">utf8mb4;</span></span></code></pre>",
+          "预期输出": "Query OK, 0 rows affected (0.03 sec)",
+          "使用场景": "在数据库中创建新表来存储结构化数据时使用。需要先通过 USE 命令选择数据库。",
+          "常见错误": [
+            {
+              "错误示例": "CREATE TABLE users (id INT, name VARCHAR);",
+              "错误信息": "ERROR 1064 (42000): You have an error in your SQL syntax",
+              "解决方法": "VARCHAR 必须指定长度，如 VARCHAR(50)"
+            },
+            {
+              "错误示例": "CREATE TABLE users (...);",
+              "错误信息": "ERROR 1046 (3D000): No database selected",
+              "解决方法": "先执行 USE mydb; 选择数据库，再创建表"
+            }
+          ],
+          "进阶提示": "ENGINE=InnoDB 支持事务和外键，是 MySQL 5.5 以后的默认存储引擎。每个表都应定义主键。",
+          "搜索关键词": ["建表", "新建表", "create table"]
+        },
+        {
+          "描述": "查看表结构",
+          "代码": "DESC users;",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">DESC</span><span style=\"color:#24292E\"> users;</span></span></code></pre>",
+          "预期输出": "+------------+--------------+------+-----+-------------------+----------------+\n| Field      | Type         | Null | Key | Default           | Extra          |\n+------------+--------------+------+-----+-------------------+----------------+\n| id         | int          | NO   | PRI | NULL              | auto_increment |\n| username   | varchar(50)  | NO   |     | NULL              |                |\n| email      | varchar(100) | NO   | UNI | NULL              |                |\n| age        | int          | YES  |     | 0                 |                |\n| created_at | timestamp    | YES  |     | CURRENT_TIMESTAMP |                |\n+------------+--------------+------+-----+-------------------+----------------+\n5 rows in set (0.00 sec)",
+          "使用场景": "需要查看表的字段名、数据类型、是否允许为空、主键、默认值等信息时使用。",
+          "常见错误": [
+            {
+              "错误示例": "DESCRIBE nonexistent_table;",
+              "错误信息": "ERROR 1146 (42S02): Table 'mydb.nonexistent_table' doesn't exist",
+              "解决方法": "先用 SHOW TABLES; 确认表名是否正确"
+            }
+          ],
+          "进阶提示": "DESC 是 DESCRIBE 的简写，两者等价。也可使用 SHOW CREATE TABLE users; 查看完整的建表语句。",
+          "搜索关键词": ["表结构", "字段信息", "desc", "describe"]
+        }
+      ]
+    },
+    {
+      "分组名": "数据查询",
+      "分组说明": "查询是 SQL 最核心的能力。本组命令用于从表中检索数据，是日常开发中使用频率最高的操作。",
+      "条目": [
+        {
+          "描述": "基本查询",
+          "代码": "SELECT id, username, email FROM users;",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">SELECT</span><span style=\"color:#24292E\"> id, username, email </span><span style=\"color:#D73A49\">FROM</span><span style=\"color:#24292E\"> users;</span></span></code></pre>",
+          "预期输出": "+----+----------+--------------------+\n| id | username | email              |\n+----+----------+--------------------+\n|  1 | zhangsan | zhangsan@mail.com  |\n|  2 | lisi     | lisi@mail.com      |\n+----+----------+--------------------+\n2 rows in set (0.00 sec)",
+          "使用场景": "需要查看表中指定列的数据时使用。避免使用 SELECT *，只查询需要的列可提升性能。",
+          "常见错误": [
+            {
+              "错误示例": "SELECT * FORM users;",
+              "错误信息": "ERROR 1064 (42000): You have an error in your SQL syntax",
+              "解决方法": "关键字是 FROM，不是 FORM，注意拼写"
+            },
+            {
+              "错误示例": "SELECT username FROM Users;",
+              "错误信息": "ERROR 1146 (42S02): Table 'mydb.Users' doesn't exist",
+              "解决方法": "Linux 系统下 MySQL 表名区分大小写，需与建表时一致；Windows 下不区分"
+            }
+          ],
+          "进阶提示": "SELECT * FROM users; 可查询所有列，但在生产环境中不建议使用，因为会增加网络传输和内存消耗。",
+          "搜索关键词": ["查询", "select", "基础查询"]
+        },
+        {
+          "描述": "条件查询",
+          "代码": "SELECT id, username, email FROM users WHERE age >= 18 AND username LIKE '张%';",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">SELECT</span><span style=\"color:#24292E\"> id, username, email </span><span style=\"color:#D73A49\">FROM</span><span style=\"color:#24292E\"> users </span><span style=\"color:#D73A49\">WHERE</span><span style=\"color:#24292E\"> age </span><span style=\"color:#D73A49\">>=</span><span style=\"color:#005CC5\"> 18</span><span style=\"color:#D73A49\"> AND</span><span style=\"color:#24292E\"> username </span><span style=\"color:#D73A49\">LIKE</span><span style=\"color:#032F62\"> '张%'</span><span style=\"color:#24292E\">;</span></span></code></pre>",
+          "预期输出": "+----+----------+--------------------+\n| id | username | email              |\n+----+----------+--------------------+\n|  1 | 张三     | zhangsan@mail.com  |\n+----+----------+--------------------+\n1 row in set (0.00 sec)",
+          "使用场景": "需要根据条件筛选数据时使用。WHERE 子句支持 =, !=, <, >, <=, >=, LIKE, IN, BETWEEN 等运算符。",
+          "常见错误": [
+            {
+              "错误示例": "SELECT * FROM users WHERE age = 18 OR 20;",
+              "错误信息": "返回所有 age=18 的记录以及 20 被当作真值导致返回全部记录",
+              "解决方法": "正确写法为 age = 18 OR age = 20，或使用 IN: age IN (18, 20)"
+            },
+            {
+              "错误示例": "SELECT * FROM users WHERE username = '%张%';",
+              "错误信息": "查询结果为空，因为 = 不支持通配符",
+              "解决方法": "模糊匹配必须使用 LIKE：username LIKE '%张%'"
+            }
+          ],
+          "进阶提示": "LIKE 中 % 匹配任意多个字符，_ 匹配单个字符。BETWEEN 10 AND 20 包含两端值。",
+          "搜索关键词": ["条件查询", "where", "筛选", "过滤"]
+        },
+        {
+          "描述": "排序查询",
+          "代码": "SELECT id, username, age FROM users ORDER BY age DESC, id ASC;",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">SELECT</span><span style=\"color:#24292E\"> id, username, age </span><span style=\"color:#D73A49\">FROM</span><span style=\"color:#24292E\"> users </span><span style=\"color:#D73A49\">ORDER BY</span><span style=\"color:#24292E\"> age </span><span style=\"color:#D73A49\">DESC</span><span style=\"color:#24292E\">, id </span><span style=\"color:#D73A49\">ASC</span><span style=\"color:#24292E\">;</span></span></code></pre>",
+          "预期输出": "+----+----------+-----+\n| id | username | age |\n+----+----------+-----+\n|  3 | wangwu   |  30 |\n|  1 | zhangsan |  25 |\n|  2 | lisi     |  20 |\n+----+----------+-----+\n3 rows in set (0.00 sec)",
+          "使用场景": "需要按指定字段对查询结果排序时使用。ASC 为升序（默认），DESC 为降序。支持多字段排序，优先级从左到右。",
+          "常见错误": [
+            {
+              "错误示例": "SELECT * FROM users ORDER age DESC;",
+              "错误信息": "ERROR 1064 (42000): You have an error in your SQL syntax",
+              "解决方法": "关键字是 ORDER BY，不是 ORDER，必须带上 BY"
+            },
+            {
+              "错误示例": "SELECT * FROM users WHERE age > 18 ORDER BY name;",
+              "错误信息": "排序使用了不存在的列名，导致报错",
+              "解决方法": "确保 ORDER BY 后的列名在表中存在，或使用列的别名"
+            }
+          ],
+          "进阶提示": "对大量数据排序时，在排序字段上建立索引可显著提升性能。NULL 值在升序中排在最前，降序中排在最后。",
+          "搜索关键词": ["排序", "order by", "升序", "降序"]
+        },
+        {
+          "描述": "限制结果数量",
+          "代码": "SELECT id, username FROM users ORDER BY id DESC LIMIT 10 OFFSET 20;",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">SELECT</span><span style=\"color:#24292E\"> id, username </span><span style=\"color:#D73A49\">FROM</span><span style=\"color:#24292E\"> users </span><span style=\"color:#D73A49\">ORDER BY</span><span style=\"color:#24292E\"> id </span><span style=\"color:#D73A49\">DESC</span><span style=\"color:#D73A49\"> LIMIT</span><span style=\"color:#005CC5\"> 10</span><span style=\"color:#24292E\"> OFFSET </span><span style=\"color:#005CC5\">20</span><span style=\"color:#24292E\">;</span></span></code></pre>",
+          "预期输出": "+----+----------+\n| id | username |\n+----+----------+\n| 80 | user80   |\n| 79 | user79   |\n| 78 | user78   |\n+----+----------+\n10 rows in set (0.00 sec)",
+          "使用场景": "分页查询时使用。LIMIT 指定返回的行数，OFFSET 指定跳过的行数。常与 ORDER BY 配合使用。",
+          "常见错误": [
+            {
+              "错误示例": "SELECT * FROM users LIMIT 10, 20;",
+              "错误信息": "返回的结果与预期不符，混淆了偏移量和数量",
+              "解决方法": "LIMIT offset, count 中 offset 是跳过的行数，count 是返回的行数。建议使用 LIMIT count OFFSET offset 写法更清晰"
+            },
+            {
+              "错误示例": "SELECT * FROM users LIMIT 10;",
+              "错误信息": "没有配合 ORDER BY 导致每次返回的结果顺序不确定",
+              "解决方法": "分页查询必须配合 ORDER BY 确保结果顺序稳定"
+            }
+          ],
+          "进阶提示": "大数据量分页时，OFFSET 值过大会导致性能问题。可用 WHERE id > last_id LIMIT 10 的方式优化深分页。",
+          "搜索关键词": ["分页", "limit", "offset", "限制数量"]
+        },
+        {
+          "描述": "聚合函数",
+          "代码": "SELECT COUNT(*) AS total, AVG(age) AS avg_age, MAX(age) AS max_age, MIN(age) AS min_age FROM users;",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">SELECT</span><span style=\"color:#005CC5\"> COUNT</span><span style=\"color:#24292E\">(</span><span style=\"color:#D73A49\">*</span><span style=\"color:#24292E\">) </span><span style=\"color:#D73A49\">AS</span><span style=\"color:#24292E\"> total, </span><span style=\"color:#005CC5\">AVG</span><span style=\"color:#24292E\">(age) </span><span style=\"color:#D73A49\">AS</span><span style=\"color:#24292E\"> avg_age, </span><span style=\"color:#005CC5\">MAX</span><span style=\"color:#24292E\">(age) </span><span style=\"color:#D73A49\">AS</span><span style=\"color:#24292E\"> max_age, </span><span style=\"color:#005CC5\">MIN</span><span style=\"color:#24292E\">(age) </span><span style=\"color:#D73A49\">AS</span><span style=\"color:#24292E\"> min_age </span><span style=\"color:#D73A49\">FROM</span><span style=\"color:#24292E\"> users;</span></span></code></pre>",
+          "预期输出": "+-------+---------+---------+---------+\n| total | avg_age | max_age | min_age |\n+-------+---------+---------+---------+\n|   100 |  25.30  |      60 |      18 |\n+-------+---------+---------+---------+\n1 row in set (0.00 sec)",
+          "使用场景": "需要对数据进行统计计算时使用。常用聚合函数：COUNT（计数）、SUM（求和）、AVG（平均值）、MAX（最大值）、MIN（最小值）。",
+          "常见错误": [
+            {
+              "错误示例": "SELECT username, COUNT(*) FROM users;",
+              "错误信息": "返回结果中 username 只显示第一条记录的值，COUNT 为总数，逻辑错误",
+              "解决方法": "非聚合列必须出现在 GROUP BY 中：SELECT username, COUNT(*) FROM users GROUP BY username;"
+            },
+            {
+              "错误示例": "SELECT COUNT(username) FROM users;",
+              "错误信息": "统计结果不包含 username 为 NULL 的记录",
+              "解决方法": "统计总行数使用 COUNT(*)，统计某列非空值数量使用 COUNT(列名)"
+            }
+          ],
+          "进阶提示": "聚合函数可与 GROUP BY 配合进行分组统计，HAVING 用于过滤分组后的结果（WHERE 在分组前过滤）。",
+          "搜索关键词": ["聚合", "统计", "count", "sum", "avg", "max", "min"]
+        }
+      ]
+    }
+  ]
+}

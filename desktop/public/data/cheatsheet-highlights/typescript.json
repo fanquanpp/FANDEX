@@ -1,0 +1,87 @@
+{
+  "name": "typescript",
+  "generatedAt": "2026-07-20T06:22:46.734Z",
+  "items": [
+    {
+      "group": "类型系统",
+      "description": "基础类型",
+      "code": "let username: string = \"张三\";\nlet age: number = 25;\nlet isActive: boolean = true;\nlet items: string[] = [\"苹果\", \"香蕉\"];\nlet id: number | string = 1001;\n\n// 函数类型注解\nfunction greet(name: string): string {\n  return `你好, ${name}`;\n}",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "类型系统",
+      "description": "接口",
+      "code": "interface User {\n  id: number;\n  name: string;\n  email: string;\n  age?: number;\n  readonly createdAt: Date;\n}\n\nconst user: User = {\n  id: 1,\n  name: \"张三\",\n  email: \"zhangsan@mail.com\",\n  createdAt: new Date()\n};",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "类型系统",
+      "description": "类型别名",
+      "code": "type ID = number | string;\ntype Point = { x: number; y: number };\ntype Callback = (data: string) => void;\n\nconst userId: ID = 1001;\nconst point: Point = { x: 10, y: 20 };\nconst handler: Callback = (data) => console.log(data);",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "类型系统",
+      "description": "联合类型",
+      "code": "// 联合类型\ntype Status = \"pending\" | \"active\" | \"inactive\";\nlet currentStatus: Status = \"active\";\n\n// 可辨识联合\ntype SuccessResponse = { status: \"success\"; data: string };\ntype ErrorResponse = { status: \"error\"; message: string };\ntype ApiResponse = SuccessResponse | ErrorResponse;\n\nfunction handleResponse(res: ApiResponse) {\n  if (res.status === \"success\") {\n    console.log(res.data); // TypeScript 知道此处是 SuccessResponse\n  } else {\n    console.log(res.message); // TypeScript 知道此处是 ErrorResponse\n  }\n}",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "类型系统",
+      "description": "枚举",
+      "code": "enum Direction {\n  Up = \"UP\",\n  Down = \"DOWN\",\n  Left = \"LEFT\",\n  Right = \"RIGHT\"\n}\n\nlet dir: Direction = Direction.Up;\n\n// 数字枚举（自动递增）\nenum HttpStatus {\n  OK = 200,\n  NotFound = 404,\n  InternalError = 500\n}",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "泛型",
+      "description": "泛型函数",
+      "code": "function identity<T>(value: T): T {\n  return value;\n}\n\nconst num = identity<number>(42);\nconst str = identity(\"hello\"); // 类型推断，无需显式指定\n\n// 实用示例：数组工具函数\nfunction first<T>(arr: T[]): T | undefined {\n  return arr[0];\n}",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "泛型",
+      "description": "泛型接口",
+      "code": "interface ApiResponse<T> {\n  code: number;\n  message: string;\n  data: T;\n}\n\ninterface User {\n  id: number;\n  name: string;\n}\n\nconst userRes: ApiResponse<User> = {\n  code: 200,\n  message: \"成功\",\n  data: { id: 1, name: \"张三\" }\n};\n\nconst listRes: ApiResponse<User[]> = {\n  code: 200,\n  message: \"成功\",\n  data: [{ id: 1, name: \"张三\" }]\n};",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "泛型",
+      "description": "泛型约束",
+      "code": "interface HasLength {\n  length: number;\n}\n\nfunction logLength<T extends HasLength>(value: T): void {\n  console.log(value.length);\n}\n\nlogLength(\"hello\");    // 字符串有 length\nlogLength([1, 2, 3]); // 数组有 length\n// logLength(123);    // 数字没有 length，编译报错\n\n// keyof 约束\nfunction getProperty<T, K extends keyof T>(obj: T, key: K): T[K] {\n  return obj[key];\n}",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "泛型",
+      "description": "条件类型",
+      "code": "// 基本条件类型\ntype IsString<T> = T extends string ? \"yes\" : \"no\";\ntype A = IsString<string>;  // \"yes\"\ntype B = IsString<number>;  // \"no\"\n\n// 实用示例：提取 Promise 内部类型\ntype UnwrapPromise<T> = T extends Promise<infer U> ? U : T;\ntype Result = UnwrapPromise<Promise<string>>; // string\n\n// 内置工具类型\ntype ReadonlyUser = Readonly<User>;\ntype PartialUser = Partial<User>;\ntype RequiredUser = Required<User>;\ntype PickUser = Pick<User, \"id\" | \"name\">;\ntype OmitUser = Omit<User, \"email\">;",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    }
+  ]
+}

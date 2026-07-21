@@ -1,0 +1,222 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://fandex.local/schemas/op-list.schema.json",
+  "title": "FANDEX Hot Update Operation List",
+  "description": "FANDEX 热更新操作列表 Schema（Desktop / Android 共享）。op-list 描述两个 manifest 版本之间的差异，客户端 updater 拉取最新 manifest 后，对比本地 manifest 生成 op-list（或由服务端预生成），按 op-list 顺序执行增量更新。op-list 同样需要 Ed25519 签名以防篡改。op-list 支持五种操作：add-module（新增模块）、modify-doc（修改文档，含改名）、add-doc（模块内新增文档）、remove-doc（删除文档）、remove-module（删除模块）。",
+  "type": "object",
+  "required": [
+    "op_list_version",
+    "manifest_type",
+    "from_manifest_version",
+    "to_manifest_version",
+    "generated_at",
+    "ops",
+    "signature"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "op_list_version": {
+      "type": "string",
+      "description": "本 Schema 的版本号（语义化版本）。当前为 1.0.0。",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["1.0.0"]
+    },
+    "manifest_type": {
+      "type": "string",
+      "description": "对应 manifest 类型。full 类 op-list 操作 content/full/ 内容；mobile 类 op-list 操作 content/mobile/ 内容。两类 op-list 独立签名、独立分发。",
+      "enum": ["full", "mobile"]
+    },
+    "from_manifest_version": {
+      "type": "string",
+      "description": "起始 manifest 版本号（即客户端当前持有的 manifest 版本）。客户端在请求 op-list 时需带上本地版本号，服务端据此返回对应区间的 op-list。若客户端版本过旧（超出服务端保留的最近 5 个归档版本），则需先下载完整 manifest 再做全量同步。",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["3.0.0"]
+    },
+    "to_manifest_version": {
+      "type": "string",
+      "description": "目标 manifest 版本号（即服务端最新 manifest 版本）。客户端应用此 op-list 后，本地内容应与 to_manifest_version 一致。",
+      "pattern": "^\\d+\\.\\d+\\.\\d+$",
+      "examples": ["3.1.0"]
+    },
+    "generated_at": {
+      "type": "string",
+      "format": "date-time",
+      "description": "op-list 生成时间（ISO 8601 UTC）。用于客户端判断 op-list 新鲜度。"
+    },
+    "ops": {
+      "type": "array",
+      "description": "操作列表。按数组顺序执行。每个操作描述一个原子变更（新增/修改/删除一个模块或文档）。客户端应将每个操作视为一个事务：成功则提交，失败则回滚此操作（不回滚已成功的操作，仅跳过失败操作并记录错误）。",
+      "items": {
+        "$ref": "#/$defs/op"
+      },
+      "minItems": 0
+    },
+    "signature": {
+      "type": "object",
+      "description": "Ed25519 签名信息。签名对象为 op-list 中除 signature 字段外的所有字段，按 JSON key 字典序递归排序后序列化为紧凑 JSON（无空白），再对 UTF-8 字节流做 Ed25519 签名。客户端验签失败拒绝执行任何操作。",
+      "$ref": "#/$defs/signature"
+    }
+  },
+  "$defs": {
+    "op": {
+      "type": "object",
+      "description": "单个热更新操作。op_type 决定操作的字段集合。",
+      "required": ["op_type", "op_id"],
+      "additionalProperties": false,
+      "properties": {
+        "op_type": {
+          "type": "string",
+          "description": "操作类型。add-module：新增模块（同时可能携带此模块下的初始文档）；modify-doc：修改文档（含改名、内容更新、标签变更等）；add-doc：在已有模块内新增文档；remove-doc：删除文档；remove-module：删除模块（同时删除此模块下所有文档）。",
+          "enum": ["add-module", "modify-doc", "add-doc", "remove-doc", "remove-module"]
+        },
+        "op_id": {
+          "type": "string",
+          "description": "操作唯一标识符（UUID v4）。客户端用于幂等性去重：若某 op_id 已执行过，则跳过此操作。避免网络重试导致的重复执行。",
+          "pattern": "^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$",
+          "examples": ["550e8400-e29b-41d4-a716-446655440000"]
+        }
+      },
+      "oneOf": [
+        {
+          "title": "add-module",
+          "description": "新增模块操作。携带新模块的完整定义及初始文档列表（若有）。",
+          "required": ["op_type", "op_id", "module"],
+          "properties": {
+            "op_type": { "const": "add-module" },
+            "op_id": { "$ref": "#/$defs/op/properties/op_id" },
+            "module": {
+              "$ref": "manifest.schema.json#/$defs/module",
+              "description": "新模块的完整定义。需符合 manifest.schema.json 中 module 定义。"
+            },
+            "docs": {
+              "type": "array",
+              "description": "新模块下的初始文档列表（可选）。每篇文档需符合 manifest.schema.json 中 doc 定义，且 module_id 必须与 module.module_id 一致。",
+              "items": {
+                "$ref": "manifest.schema.json#/$defs/doc"
+              },
+              "minItems": 0
+            }
+          }
+        },
+        {
+          "title": "modify-doc",
+          "description": "修改文档操作。以 doc_id 为锚点，更新文档的 title/source_path/sha256/size/updated_at/compat_version/tags 等字段。改名场景下 source_path 变化但 doc_id 不变，客户端需先删除旧 source_path 文件再下载新 source_path 文件（事务化：先下载新文件到临时位置，校验 sha256 通过后删除旧文件并原子重命名）。",
+          "required": ["op_type", "op_id", "doc_id", "changes"],
+          "properties": {
+            "op_type": { "const": "modify-doc" },
+            "op_id": { "$ref": "#/$defs/op/properties/op_id" },
+            "doc_id": {
+              "type": "string",
+              "description": "待修改文档的 doc_id。必须已存在于客户端本地 manifest 中。",
+              "pattern": "^Doc_[A-Za-z][A-Za-z0-9]*_\\d{2}_\\d{3}$"
+            },
+            "changes": {
+              "type": "object",
+              "description": "待变更的字段集合。仅包含发生变化的字段，未变化的字段不在此对象中。客户端应用变更时，仅更新此对象中指定的字段。",
+              "required": ["sha256", "size", "updated_at"],
+              "additionalProperties": false,
+              "properties": {
+                "title": {
+                  "type": "string",
+                  "description": "新标题（可选，仅改名时存在）。",
+                  "minLength": 1
+                },
+                "source_path": {
+                  "type": "string",
+                  "description": "新源路径（可选，仅改名或移动时存在）。客户端需处理旧文件删除与新文件下载。",
+                  "pattern": "^[^/].*\\.md$"
+                },
+                "sha256": {
+                  "type": "string",
+                  "description": "新内容 SHA-256（必填，内容变更必然伴随 sha256 变更）。",
+                  "pattern": "^[a-f0-9]{64}$"
+                },
+                "size": {
+                  "type": "integer",
+                  "description": "新文件大小（必填）。",
+                  "minimum": 0
+                },
+                "updated_at": {
+                  "type": "string",
+                  "format": "date-time",
+                  "description": "新更新时间（必填）。"
+                },
+                "compat_version": {
+                  "type": ["string", "null"],
+                  "description": "新兼容版本（可选）。设为 null 表示取消兼容版本限制。",
+                  "pattern": "^\\d+\\.\\d+\\.\\d+$"
+                },
+                "tags": {
+                  "type": "array",
+                  "description": "新标签列表（可选）。整体替换原标签列表。",
+                  "items": { "type": "string" }
+                }
+              }
+            }
+          }
+        },
+        {
+          "title": "add-doc",
+          "description": "在已有模块内新增文档操作。模块必须已存在于客户端本地 manifest 中。",
+          "required": ["op_type", "op_id", "doc"],
+          "properties": {
+            "op_type": { "const": "add-doc" },
+            "op_id": { "$ref": "#/$defs/op/properties/op_id" },
+            "doc": {
+              "$ref": "manifest.schema.json#/$defs/doc",
+              "description": "新文档的完整定义。需符合 manifest.schema.json 中 doc 定义，且 module_id 必须指向已存在的模块。"
+            }
+          }
+        },
+        {
+          "title": "remove-doc",
+          "description": "删除文档操作。客户端删除对应 doc_id 的文件，并从本地 manifest 中移除该条目。doc_id 进入 id-registry 的 retired 段，永不复用。",
+          "required": ["op_type", "op_id", "doc_id"],
+          "properties": {
+            "op_type": { "const": "remove-doc" },
+            "op_id": { "$ref": "#/$defs/op/properties/op_id" },
+            "doc_id": {
+              "type": "string",
+              "description": "待删除文档的 doc_id。",
+              "pattern": "^Doc_[A-Za-z][A-Za-z0-9]*_\\d{2}_\\d{3}$"
+            }
+          }
+        },
+        {
+          "title": "remove-module",
+          "description": "删除模块操作。客户端删除该模块下所有文档，并从本地 manifest 中移除模块条目。module_id 进入 id-registry 的 retired 段，永不复用。",
+          "required": ["op_type", "op_id", "module_id"],
+          "properties": {
+            "op_type": { "const": "remove-module" },
+            "op_id": { "$ref": "#/$defs/op/properties/op_id" },
+            "module_id": {
+              "type": "string",
+              "description": "待删除模块的 module_id。",
+              "pattern": "^Model_[A-Za-z][A-Za-z0-9]*_\\d{2}$"
+            }
+          }
+        }
+      ]
+    },
+    "signature": {
+      "type": "object",
+      "description": "Ed25519 签名信息。结构与 manifest.schema.json 中 signature 一致。",
+      "required": ["algorithm", "public_key_fingerprint", "value"],
+      "additionalProperties": false,
+      "properties": {
+        "algorithm": {
+          "type": "string",
+          "enum": ["EdDSA"]
+        },
+        "public_key_fingerprint": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{16}$"
+        },
+        "value": {
+          "type": "string",
+          "pattern": "^[A-Za-z0-9+/]+={0,2}$"
+        }
+      }
+    }
+  }
+}

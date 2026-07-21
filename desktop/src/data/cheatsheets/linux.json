@@ -1,0 +1,231 @@
+{
+  "元数据": {
+    "模块名称": "Linux",
+    "版本": "1.0.0",
+    "最后更新": "2026-06-15",
+    "前置知识": ["了解操作系统的基本概念", "已安装 Linux 系统或可通过终端访问 Linux 环境"],
+    "推荐学习顺序": [
+      "先学习【文件与目录操作】分组，掌握基本文件管理",
+      "再学习【权限与用户管理】分组，掌握系统安全管理"
+    ]
+  },
+  "分组": [
+    {
+      "分组名": "文件与目录操作",
+      "分组说明": "Linux 最基础的操作。本组命令用于浏览、创建、删除和移动文件与目录，是日常使用频率最高的命令。",
+      "条目": [
+        {
+          "描述": "列出目录内容",
+          "代码": "ls -la /home",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">ls</span><span style=\"color:#005CC5\"> -la</span><span style=\"color:#032F62\"> /home</span></span></code></pre>",
+          "预期输出": "total 32\ndrwxr-xr-x  4 root root 4096 Jun 15 10:00 .\ndrwxr-xr-x 18 root root 4096 Jun 15 09:00 ..\ndrwxr-xr-x  3 user user 4096 Jun 15 10:00 user",
+          "使用场景": "查看指定目录下的文件和子目录。加 -l 显示详细信息（权限、所有者、大小等），加 -a 显示隐藏文件。",
+          "常见错误": [
+            {
+              "错误示例": "ls /hom（路径拼写错误）",
+              "错误信息": "ls: cannot access '/hom': No such file or directory",
+              "解决方法": "使用 Tab 键自动补全路径，避免手动输入错误"
+            }
+          ],
+          "进阶提示": "ls -lh 以人类可读格式显示文件大小（如 4K、2M），ls -lt 按修改时间排序，ls -lS 按文件大小排序。",
+          "搜索关键词": ["列出文件", "查看目录", "ls"]
+        },
+        {
+          "描述": "切换目录",
+          "代码": "cd /var/log",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#005CC5\">cd</span><span style=\"color:#032F62\"> /var/log</span></span></code></pre>",
+          "预期输出": "（无输出，命令行提示符变为当前目录）",
+          "使用场景": "切换当前工作目录。cd ~ 回到用户主目录，cd - 返回上一次所在目录，cd .. 返回上级目录。",
+          "常见错误": [
+            {
+              "错误示例": "cd /var/loog",
+              "错误信息": "bash: cd: /var/loog: No such file or directory",
+              "解决方法": "先用 ls 确认目录名，或使用 Tab 键补全"
+            },
+            {
+              "错误示例": "cd log（未使用绝对路径且当前目录不对）",
+              "错误信息": "bash: cd: log: No such file or directory",
+              "解决方法": "确认当前所在目录，或使用绝对路径 cd /var/log"
+            }
+          ],
+          "进阶提示": "cd 不带参数直接回到用户主目录，等同于 cd ~。pushd 和 popd 可实现目录栈操作，适合在多个目录间频繁切换。",
+          "搜索关键词": ["切换目录", "进入目录", "cd"]
+        },
+        {
+          "描述": "创建目录",
+          "代码": "mkdir -p /data/project/src",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">mkdir</span><span style=\"color:#005CC5\"> -p</span><span style=\"color:#032F62\"> /data/project/src</span></span></code></pre>",
+          "预期输出": "（无输出，表示成功）",
+          "使用场景": "创建新目录。加 -p 可递归创建多级目录，即父目录不存在时自动创建，不会报错。",
+          "常见错误": [
+            {
+              "错误示例": "mkdir /data/project/src（父目录 /data/project 不存在且未加 -p）",
+              "错误信息": "mkdir: cannot create directory '/data/project/src': No such file or directory",
+              "解决方法": "使用 mkdir -p 递归创建，或先逐级创建父目录"
+            },
+            {
+              "错误示例": "mkdir /existing_dir",
+              "错误信息": "mkdir: cannot create directory '/existing_dir': File exists",
+              "解决方法": "目录已存在，使用 ls 确认后再决定是否需要创建"
+            }
+          ],
+          "进阶提示": "mkdir -m 755 project 可在创建目录时直接设置权限，等同于创建后执行 chmod 755 project。",
+          "搜索关键词": ["创建目录", "新建文件夹", "mkdir"]
+        },
+        {
+          "描述": "删除文件或目录",
+          "代码": "rm -rf /tmp/old_project",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">rm</span><span style=\"color:#005CC5\"> -rf</span><span style=\"color:#032F62\"> /tmp/old_project</span></span></code></pre>",
+          "预期输出": "（无输出，表示成功）",
+          "使用场景": "删除文件或目录。-r 递归删除目录及其内容，-f 强制删除不提示确认。此操作不可逆，务必谨慎使用。",
+          "常见错误": [
+            {
+              "错误示例": "rm -rf / tmp/old_project（路径前多了空格）",
+              "错误信息": "系统根目录被删除，导致系统崩溃",
+              "解决方法": "路径中不要有多余空格，建议先使用 ls 确认路径后再删除"
+            },
+            {
+              "错误示例": "rm file.txt（误删重要文件）",
+              "错误信息": "文件被永久删除，无法通过回收站恢复",
+              "解决方法": "重要操作前先备份，可使用 alias rm='rm -i' 设置删除前确认"
+            }
+          ],
+          "进阶提示": "可安装 trash-cli 工具，使用 trash-put 代替 rm，文件会被移到回收站而非永久删除，支持 trash-restore 恢复。",
+          "搜索关键词": ["删除", "删除文件", "删除目录", "rm"]
+        },
+        {
+          "描述": "复制文件或目录",
+          "代码": "cp -r /data/project /backup/project",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">cp</span><span style=\"color:#005CC5\"> -r</span><span style=\"color:#032F62\"> /data/project</span><span style=\"color:#032F62\"> /backup/project</span></span></code></pre>",
+          "预期输出": "（无输出，表示成功）",
+          "使用场景": "复制文件或目录。-r 用于递归复制整个目录，不加 -r 只能复制文件。目标路径不存在时会自动创建。",
+          "常见错误": [
+            {
+              "错误示例": "cp /data/project /backup/project（project 是目录但未加 -r）",
+              "错误信息": "cp: omitting directory '/data/project'",
+              "解决方法": "复制目录必须加 -r 参数：cp -r /data/project /backup/project"
+            },
+            {
+              "错误示例": "cp file.txt /existing_dir/（目标目录中已有同名文件）",
+              "错误信息": "静默覆盖同名文件，可能导致数据丢失",
+              "解决方法": "使用 cp -i 启用覆盖前确认提示"
+            }
+          ],
+          "进阶提示": "cp -a 可完整复制文件及目录，保留权限、所有者、时间戳等所有属性，常用于备份。",
+          "搜索关键词": ["复制", "拷贝", "cp"]
+        },
+        {
+          "描述": "移动或重命名文件",
+          "代码": "mv old_name.txt new_name.txt",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">mv</span><span style=\"color:#032F62\"> old_name.txt</span><span style=\"color:#032F62\"> new_name.txt</span></span></code></pre>",
+          "预期输出": "（无输出，表示成功）",
+          "使用场景": "移动文件到其他目录，或对文件进行重命名。源路径和目标路径在同一目录下时为重命名，不同目录下为移动。",
+          "常见错误": [
+            {
+              "错误示例": "mv file.txt /nonexistent_dir/file.txt",
+              "错误信息": "mv: cannot move 'file.txt' to '/nonexistent_dir/file.txt': No such file or directory",
+              "解决方法": "确保目标目录存在，或先创建目标目录"
+            },
+            {
+              "错误示例": "mv file.txt existing_file.txt",
+              "错误信息": "静默覆盖 existing_file.txt 的内容",
+              "解决方法": "使用 mv -i 启用覆盖前确认提示"
+            }
+          ],
+          "进阶提示": "mv 命令在同一个文件系统内操作时几乎是瞬时的（只修改目录项），跨文件系统时才会实际复制数据。",
+          "搜索关键词": ["移动", "重命名", "mv"]
+        }
+      ]
+    },
+    {
+      "分组名": "权限与用户管理",
+      "分组说明": "Linux 安全体系的核心。本组命令用于管理文件权限和用户账户，确保系统安全与合理的访问控制。",
+      "条目": [
+        {
+          "描述": "修改文件权限",
+          "代码": "chmod 755 script.sh",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">chmod</span><span style=\"color:#005CC5\"> 755</span><span style=\"color:#032F62\"> script.sh</span></span></code></pre>",
+          "预期输出": "（无输出，表示成功）",
+          "使用场景": "修改文件或目录的访问权限。755 表示所有者可读写执行，组用户和其他用户可读和执行。也可使用符号模式：chmod u+x script.sh。",
+          "常见错误": [
+            {
+              "错误示例": "chmod 777 /etc/passwd",
+              "错误信息": "系统关键文件权限过于开放，存在严重安全风险",
+              "解决方法": "系统文件不应设置 777 权限，应遵循最小权限原则"
+            },
+            {
+              "错误示例": "chmod 755 dir/（未加 -R 递归修改目录内文件）",
+              "错误信息": "目录权限修改但内部文件权限未变",
+              "解决方法": "使用 chmod -R 755 dir/ 递归修改目录及内部所有文件的权限"
+            }
+          ],
+          "进阶提示": "数字模式中：4=读(r)，2=写(w)，1=执行(x)。755 = 所有者(4+2+1) + 组(4+1) + 其他(4+1)。符号模式更直观：chmod u+rwx,g+rx,o+rx script.sh。",
+          "搜索关键词": ["权限", "修改权限", "chmod"]
+        },
+        {
+          "描述": "修改文件所有者",
+          "代码": "chown user:group file.txt",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">chown</span><span style=\"color:#032F62\"> user:group</span><span style=\"color:#032F62\"> file.txt</span></span></code></pre>",
+          "预期输出": "（无输出，表示成功）",
+          "使用场景": "修改文件或目录的所有者和所属组。普通用户只能修改自己拥有的文件，root 用户可修改任何文件的所有者。",
+          "常见错误": [
+            {
+              "错误示例": "chown otheruser file.txt（当前用户不是 root 且不是文件所有者）",
+              "错误信息": "chown: changing ownership of 'file.txt': Operation not permitted",
+              "解决方法": "只有 root 用户或文件所有者才能修改所有者，需使用 sudo 提权"
+            },
+            {
+              "错误示例": "chown user file.txt（只改了所有者未改组）",
+              "错误信息": "文件所属组未变更，可能导致权限问题",
+              "解决方法": "使用 user:group 格式同时修改所有者和组，或用 chgrp 单独修改组"
+            }
+          ],
+          "进阶提示": "chown -R user:group directory/ 可递归修改目录及内部所有文件的所有者和组。",
+          "搜索关键词": ["所有者", "修改所有者", "chown"]
+        },
+        {
+          "描述": "以管理员权限执行",
+          "代码": "sudo apt update",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">sudo</span><span style=\"color:#032F62\"> apt</span><span style=\"color:#032F62\"> update</span></span></code></pre>",
+          "预期输出": "[sudo] password for user:\nHit:1 http://archive.ubuntu.com/ubuntu focal InRelease",
+          "使用场景": "以超级用户权限执行命令。当普通用户权限不足时，在命令前加 sudo 可临时获取管理员权限。首次使用需输入当前用户密码。",
+          "常见错误": [
+            {
+              "错误示例": "sudo rm -rf /（误操作）",
+              "错误信息": "系统被彻底删除，无法恢复",
+              "解决方法": "执行 sudo 命令前务必仔细核对命令内容，避免使用危险的通配符和路径"
+            },
+            {
+              "错误示例": "user is not in the sudoers file",
+              "错误信息": "user is not in the sudoers file. This incident will be reported.",
+              "解决方法": "需要 root 用户将该用户添加到 sudo 组：usermod -aG sudo username"
+            }
+          ],
+          "进阶提示": "sudo -i 可切换到 root 用户的交互式 shell，sudo -u username command 可以指定用户身份执行命令。",
+          "搜索关键词": ["管理员", "提权", "sudo"]
+        },
+        {
+          "描述": "创建新用户",
+          "代码": "sudo useradd -m -s /bin/bash newuser",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6F42C1\">sudo</span><span style=\"color:#032F62\"> useradd</span><span style=\"color:#005CC5\"> -m</span><span style=\"color:#005CC5\"> -s</span><span style=\"color:#032F62\"> /bin/bash</span><span style=\"color:#032F62\"> newuser</span></span></code></pre>",
+          "预期输出": "（无输出，表示成功）",
+          "使用场景": "创建新的系统用户。-m 自动创建用户主目录，-s 指定默认 shell。创建后需用 passwd 命令设置密码。",
+          "常见错误": [
+            {
+              "错误示例": "sudo useradd newuser（未加 -m 参数）",
+              "错误信息": "用户创建成功但没有主目录，登录后可能出现异常",
+              "解决方法": "使用 useradd -m 创建用户并自动生成主目录，或手动 mkdir /home/newuser"
+            },
+            {
+              "错误示例": "sudo useradd newuser（未设置密码）",
+              "错误信息": "用户无法通过密码登录",
+              "解决方法": "创建用户后执行 sudo passwd newuser 设置初始密码"
+            }
+          ],
+          "进阶提示": "adduser 命令是 useradd 的交互式版本，会自动创建主目录、设置密码和拷贝配置文件，对新手更友好。",
+          "搜索关键词": ["创建用户", "新建用户", "useradd"]
+        }
+      ]
+    }
+  ]
+}

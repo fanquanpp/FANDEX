@@ -1,0 +1,320 @@
+{
+  "generatedAt": "2026-07-20T06:22:48.883Z",
+  "totalDocs": 1996,
+  "modules": [
+    {
+      "module": "ai-engineering",
+      "docCount": 149
+    },
+    {
+      "module": "agent",
+      "docCount": 134
+    },
+    {
+      "module": "mysql",
+      "docCount": 78
+    },
+    {
+      "module": "java",
+      "docCount": 70
+    },
+    {
+      "module": "python",
+      "docCount": 68
+    },
+    {
+      "module": "cpp",
+      "docCount": 66
+    },
+    {
+      "module": "go",
+      "docCount": 59
+    },
+    {
+      "module": "cs-fundamentals",
+      "docCount": 57
+    },
+    {
+      "module": "kotlin",
+      "docCount": 52
+    },
+    {
+      "module": "javascript",
+      "docCount": 52
+    },
+    {
+      "module": "typescript",
+      "docCount": 52
+    },
+    {
+      "module": "c",
+      "docCount": 51
+    },
+    {
+      "module": "css",
+      "docCount": 45
+    },
+    {
+      "module": "react",
+      "docCount": 45
+    },
+    {
+      "module": "probability-statistics",
+      "docCount": 45
+    },
+    {
+      "module": "postgresql",
+      "docCount": 44
+    },
+    {
+      "module": "llm",
+      "docCount": 41
+    },
+    {
+      "module": "machine-learning",
+      "docCount": 41
+    },
+    {
+      "module": "deep-learning",
+      "docCount": 40
+    },
+    {
+      "module": "git",
+      "docCount": 40
+    },
+    {
+      "module": "sql",
+      "docCount": 39
+    },
+    {
+      "module": "linear-algebra",
+      "docCount": 37
+    },
+    {
+      "module": "vue3",
+      "docCount": 36
+    },
+    {
+      "module": "github",
+      "docCount": 36
+    },
+    {
+      "module": "csharp",
+      "docCount": 35
+    },
+    {
+      "module": "cybersecurity",
+      "docCount": 35
+    },
+    {
+      "module": "devops",
+      "docCount": 33
+    },
+    {
+      "module": "harmonyos",
+      "docCount": 33
+    },
+    {
+      "module": "lua",
+      "docCount": 31
+    },
+    {
+      "module": "ai-ethics",
+      "docCount": 30
+    },
+    {
+      "module": "algorithm",
+      "docCount": 30
+    },
+    {
+      "module": "html5",
+      "docCount": 30
+    },
+    {
+      "module": "nlp",
+      "docCount": 29
+    },
+    {
+      "module": "cloud-computing",
+      "docCount": 29
+    },
+    {
+      "module": "computer-vision",
+      "docCount": 28
+    },
+    {
+      "module": "markdown",
+      "docCount": 27
+    },
+    {
+      "module": "multimodal",
+      "docCount": 25
+    },
+    {
+      "module": "redis",
+      "docCount": 24
+    },
+    {
+      "module": "getting-started",
+      "docCount": 23
+    },
+    {
+      "module": "data-analysis",
+      "docCount": 22
+    },
+    {
+      "module": "networking",
+      "docCount": 22
+    },
+    {
+      "module": "software-testing",
+      "docCount": 22
+    },
+    {
+      "module": "iot",
+      "docCount": 19
+    },
+    {
+      "module": "calculus",
+      "docCount": 19
+    },
+    {
+      "module": "generative-ai",
+      "docCount": 15
+    },
+    {
+      "module": "english",
+      "docCount": 13
+    },
+    {
+      "module": "big-data",
+      "docCount": 12
+    },
+    {
+      "module": "software-engineering",
+      "docCount": 10
+    },
+    {
+      "module": "software-architecture",
+      "docCount": 8
+    },
+    {
+      "module": "discrete-math",
+      "docCount": 8
+    },
+    {
+      "module": "engineering-practices",
+      "docCount": 7
+    }
+  ],
+  "missingFields": [],
+  "lengthDistribution": {
+    "<1k": 73,
+    "1k-5k": 858,
+    "5k-10k": 729,
+    ">10k": 336
+  },
+  "difficultyDistribution": {
+    "beginner": 221,
+    "intermediate": 1087,
+    "advanced": 621
+  },
+  "topTags": [
+    {
+      "tag": "java",
+      "count": 25
+    },
+    {
+      "tag": "mysql",
+      "count": 22
+    },
+    {
+      "tag": "database",
+      "count": 21
+    },
+    {
+      "tag": "javascript",
+      "count": 20
+    },
+    {
+      "tag": "python",
+      "count": 19
+    },
+    {
+      "tag": "vue3",
+      "count": 18
+    },
+    {
+      "tag": "c",
+      "count": 17
+    },
+    {
+      "tag": "cpp",
+      "count": 17
+    },
+    {
+      "tag": "algorithm",
+      "count": 16
+    },
+    {
+      "tag": "performance",
+      "count": 16
+    },
+    {
+      "tag": "typescript",
+      "count": 16
+    },
+    {
+      "tag": "css",
+      "count": 13
+    },
+    {
+      "tag": "project",
+      "count": 12
+    },
+    {
+      "tag": "github",
+      "count": 11
+    },
+    {
+      "tag": "分类",
+      "count": 10
+    },
+    {
+      "tag": "markdown",
+      "count": 10
+    },
+    {
+      "tag": "react",
+      "count": 10
+    },
+    {
+      "tag": "cheatsheet",
+      "count": 9
+    },
+    {
+      "tag": "html5",
+      "count": 9
+    },
+    {
+      "tag": "theory",
+      "count": 9
+    }
+  ],
+  "quizCount": 383,
+  "prerequisitesCount": 1691,
+  "updatedTimeDistribution": [
+    {
+      "month": "2026-04",
+      "count": 5
+    },
+    {
+      "month": "2026-05",
+      "count": 44
+    },
+    {
+      "month": "2026-06",
+      "count": 1324
+    }
+  ]
+}

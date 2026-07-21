@@ -1,0 +1,96 @@
+{
+  "name": "linux",
+  "generatedAt": "2026-07-20T06:22:46.673Z",
+  "items": [
+    {
+      "group": "文件与目录操作",
+      "description": "列出目录内容",
+      "code": "ls -la /home",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "文件与目录操作",
+      "description": "切换目录",
+      "code": "cd /var/log",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "文件与目录操作",
+      "description": "创建目录",
+      "code": "mkdir -p /data/project/src",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "文件与目录操作",
+      "description": "删除文件或目录",
+      "code": "rm -rf /tmp/old_project",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "文件与目录操作",
+      "description": "复制文件或目录",
+      "code": "cp -r /data/project /backup/project",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "文件与目录操作",
+      "description": "移动或重命名文件",
+      "code": "mv old_name.txt new_name.txt",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "权限与用户管理",
+      "description": "修改文件权限",
+      "code": "chmod 755 script.sh",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "权限与用户管理",
+      "description": "修改文件所有者",
+      "code": "chown user:group file.txt",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "权限与用户管理",
+      "description": "以管理员权限执行",
+      "code": "sudo apt update",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "权限与用户管理",
+      "description": "创建新用户",
+      "code": "sudo useradd -m -s /bin/bash newuser",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    }
+  ]
+}

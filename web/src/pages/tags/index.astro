@@ -1,0 +1,784 @@
+---
+import Layout from '@/components/Layout.astro';
+import SEO from '@/components/SEO.astro';
+import GeoBgDecor from '@/components/GeoBgDecor.astro';
+// 通过 tag-service 和 module-service 获取数据，UI 层禁止直接调用 getCollection
+import { getAllTags, getTagStats, getAllModules } from '@/services';
+import { categoryColors, getPrimaryCategory } from '@/lib/modules';
+
+// 通过 tag-service 获取所有标签（按文档数量降序排序）和标签统计信息
+const allTags = await getAllTags();
+const tagStats = await getTagStats();
+
+// 将 TagWithCount[] 转为 [tag, count] 元组数组，保持原有模板兼容
+const sortedTags = allTags.map((t) => [t.tag, t.count] as [string, number]);
+const maxCount = tagStats.maxCount || 1;
+const hotThreshold = Math.max(2, Math.ceil(maxCount * 0.6));
+const normalThreshold = Math.max(1, Math.ceil(maxCount * 0.25));
+const hotTags = sortedTags.filter(([, c]) => c >= hotThreshold);
+const normalTags = sortedTags.filter(([, c]) => c >= normalThreshold && c < hotThreshold);
+const otherTags = sortedTags.filter(([, c]) => c < normalThreshold);
+const base = import.meta.env.BASE_URL;
+
+// 通过 module-service 获取全部模块，构建模块列表和映射表（供客户端搜索使用）
+const allModules = getAllModules();
+const moduleList = allModules.map((m) => ({
+  id: m.id,
+  title: m.title,
+  color: categoryColors[getPrimaryCategory(m)],
+}));
+const moduleMapJson = JSON.stringify(
+  Object.fromEntries(
+    allModules.map((m) => [m.id, { title: m.title, color: categoryColors[getPrimaryCategory(m)] }])
+  )
+);
+---
+
+<Layout title="标签索引">
+  <SEO slot="head" title="标签索引" description="按知识标签跨模块检索文档" />
+
+  <div class="tags-page">
+    <!-- 几何背景装饰层 · list 变体：列表页装饰 -->
+    <GeoBgDecor variant="list" />
+    <div class="tags-top-bar">
+      <div class="tags-header">
+        <h1 class="tags-title">标签索引</h1>
+        <a href={`${base}`} class="back-home-btn">
+          <svg
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"><polyline points="18 6 6 12 18 18"></polyline></svg
+          >
+          返回主页
+        </a>
+      </div>
+      <p class="tags-subtitle">
+        跨模块知识检索 | {sortedTags.length} 个标签 | {tagStats.totalDocs} 篇文档
+      </p>
+      <div
+        class="search-section"
+        id="search-section"
+        data-modules={moduleMapJson}
+        data-fallback-color={categoryColors.toolchain}
+      >
+        <div class="search-controls">
+          <input
+            id="search-input"
+            type="text"
+            class="search-input"
+            placeholder="搜索文档标题、描述或标签..."
+            autocomplete="off"
+            aria-label="搜索文档标题、描述或标签"
+          />
+          <select id="filter-module" class="search-select" aria-label="按模块筛选">
+            <option value="">全部模块</option>
+            {moduleList.map((m) => <option value={m.id}>{m.title}</option>)}
+          </select>
+        </div>
+        <div id="search-status" class="search-status"></div>
+      </div>
+    </div>
+
+    <div id="search-results" class="search-results"></div>
+
+    {
+      hotTags.length > 0 && (
+        <div class="tag-group">
+          <h2 class="tag-group-title">热门标签</h2>
+          <div class="tag-cloud">
+            {hotTags.map(([tag, count]) => (
+              <a href={`${base}tags/${tag}/`} class="tag-item hot" data-count={count}>
+                <span class="tag-name">{tag}</span>
+                <span class="tag-count">{count}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      normalTags.length > 0 && (
+        <div class="tag-group">
+          <h2 class="tag-group-title">常用标签</h2>
+          <div class="tag-cloud">
+            {normalTags.map(([tag, count]) => (
+              <a href={`${base}tags/${tag}/`} class="tag-item normal" data-count={count}>
+                <span class="tag-name">{tag}</span>
+                <span class="tag-count">{count}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    {
+      otherTags.length > 0 && (
+        <div class="tag-group">
+          <h2 class="tag-group-title">更多标签</h2>
+          <div class="tag-cloud">
+            {otherTags.map(([tag, count]) => (
+              <a href={`${base}tags/${tag}/`} class="tag-item other" data-count={count}>
+                <span class="tag-name">{tag}</span>
+                <span class="tag-count">{count}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+  </div>
+</Layout>
+
+<style>
+  .tags-page {
+    position: relative;
+    padding: var(--spacing-2xl) var(--spacing-2xl);
+    max-width: var(--content-width, 1280px);
+    margin: 0 auto;
+  }
+
+  /* 确保内容层在几何装饰层之上 */
+  .tags-page > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .tags-top-bar {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--color-bg);
+    padding: var(--spacing-md) 0;
+    border-bottom: 1px solid var(--color-border-light);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .tags-header {
+    margin-bottom: var(--spacing-sm);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .tags-title {
+    font-family: var(--font-display);
+    font-size: 1.8em;
+    margin: 0 0 var(--spacing-sm);
+    letter-spacing: 0.02em;
+  }
+
+  .back-home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 12px;
+    color: var(--color-text-secondary);
+    font-size: 0.85em;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-card);
+    text-decoration: none;
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+    flex-shrink: 0;
+  }
+
+  .back-home-btn:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .tags-subtitle {
+    font-size: 0.95em;
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .tag-group {
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .tag-group-title {
+    font-family: var(--font-display);
+    font-size: 0.85em;
+    font-weight: 600;
+    color: var(--color-text-tertiary);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 0 0 var(--spacing-md);
+    padding-bottom: var(--spacing-xs);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-md);
+  }
+
+  .tag-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-card);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .tag-item.hot {
+    font-size: 1.05em;
+    padding: 12px 22px;
+    border-color: var(--color-primary);
+    border-width: 2px;
+    background: var(--color-bg-card);
+  }
+
+  .tag-item.hot .tag-name {
+    color: var(--color-primary);
+    font-weight: 600;
+  }
+
+  .tag-item.normal {
+    font-size: 0.95em;
+    padding: 10px 18px;
+  }
+
+  .tag-item.other {
+    font-size: 0.85em;
+    padding: 7px 14px;
+    border-style: dashed;
+  }
+
+  .tag-item:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+    background: var(--color-bg-hover);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+  }
+
+  .tag-name {
+    font-family: var(--font-display);
+  }
+
+  .tag-count {
+    font-size: 0.78em;
+    color: var(--color-text-tertiary);
+    background: var(--color-bg);
+    padding: 2px 8px;
+    border: 1px solid var(--color-border-light);
+    font-family: var(--font-display);
+  }
+
+  .tag-item.hot .tag-count {
+    background: var(--color-primary);
+    color: var(--color-text-inverse);
+    border-color: var(--color-primary);
+  }
+
+  .search-section {
+    margin-top: var(--spacing-sm);
+  }
+
+  .search-controls {
+    display: flex;
+    gap: var(--spacing-sm);
+    align-items: center;
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-md);
+  }
+
+  .search-input {
+    flex: 1;
+    min-width: 200px;
+    padding: 10px 14px;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-card);
+    color: var(--color-text);
+    font-family: var(--font-body);
+    font-size: 0.95em;
+    outline: none;
+    transition: border-color var(--transition-fast);
+  }
+
+  .search-input:focus {
+    border-color: var(--color-primary);
+  }
+
+  .search-input::placeholder {
+    color: var(--color-text-tertiary);
+  }
+
+  .search-select {
+    padding: 10px 12px;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-card);
+    color: var(--color-text);
+    font-family: var(--font-display);
+    font-size: 0.88em;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg width='10' height='6' viewBox='0 0 10 6' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%236b7280' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+  }
+
+  .search-select:focus {
+    border-color: var(--color-primary);
+  }
+
+  .search-status {
+    font-size: 0.85em;
+    color: var(--color-text-tertiary);
+    margin-bottom: var(--spacing-md);
+    font-family: var(--font-display);
+    min-height: 1.4em;
+  }
+
+  .search-results {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .result-card {
+    display: block;
+    padding: var(--spacing-md) var(--spacing-lg);
+    border: 1px solid var(--color-border-light);
+    border-left: 3px solid transparent;
+    background: var(--color-bg-card);
+    text-decoration: none;
+    color: inherit;
+    transition: all var(--transition-fast);
+  }
+
+  .result-card:hover {
+    border-color: var(--color-border);
+    border-left-color: var(--color-primary);
+    background: var(--color-bg-hover);
+  }
+
+  .result-header {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: 6px;
+  }
+
+  .result-module-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .result-module-name {
+    font-family: var(--font-display);
+    font-size: 0.75em;
+    color: var(--color-text-tertiary);
+    letter-spacing: 0.04em;
+  }
+
+  .result-title {
+    font-family: var(--font-display);
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--color-text);
+    flex: 1;
+  }
+
+  .result-difficulty {
+    font-family: var(--font-display);
+    font-size: 0.7em;
+    padding: 2px 8px;
+    border: 1px solid var(--color-border-light);
+    color: var(--color-text-tertiary);
+    white-space: nowrap;
+  }
+
+  .result-difficulty.beginner {
+    border-color: var(--color-success);
+    color: var(--color-success);
+  }
+
+  .result-difficulty.intermediate {
+    border-color: var(--color-tertiary);
+    color: var(--color-tertiary);
+  }
+
+  .result-difficulty.advanced {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  .result-desc {
+    font-size: 0.88em;
+    color: var(--color-text-secondary);
+    margin: 0 0 8px;
+    line-height: 1.5;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .result-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .result-tag-chip {
+    font-family: var(--font-display);
+    font-size: 0.7em;
+    padding: 1px 7px;
+    border: 1px solid var(--color-border-light);
+    color: var(--color-text-tertiary);
+    background: var(--color-bg);
+  }
+
+  .search-empty {
+    text-align: center;
+    padding: var(--spacing-2xl);
+    color: var(--color-text-tertiary);
+    font-size: 0.95em;
+  }
+
+  .search-empty svg {
+    display: block;
+    margin: 0 auto var(--spacing-md);
+    opacity: 0.4;
+  }
+
+  @media (max-width: 768px) {
+    .tags-page {
+      padding: var(--spacing-md);
+    }
+
+    .tags-header {
+      text-align: left;
+    }
+
+    .tags-title {
+      font-size: 1.4em;
+    }
+
+    .tag-cloud {
+      gap: var(--spacing-sm);
+    }
+
+    .tag-item.hot {
+      font-size: 0.95em;
+      padding: 8px 14px;
+    }
+
+    .tag-item.normal {
+      font-size: 0.88em;
+      padding: 7px 12px;
+    }
+
+    .tag-item.other {
+      font-size: 0.8em;
+      padding: 5px 10px;
+    }
+
+    .search-controls {
+      flex-wrap: nowrap;
+      gap: 4px;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 0;
+      padding: 8px 10px;
+      font-size: 0.85em;
+    }
+
+    .search-select {
+      flex: none;
+      width: auto;
+      padding: 8px 6px;
+      font-size: 0.82em;
+    }
+
+    .result-header {
+      flex-wrap: wrap;
+    }
+  }
+</style>
+
+<script>
+  // 类型导入：Fuse 类作为类型注解使用，编译期擦除不影响运行时
+  import type Fuse from 'fuse.js';
+  // 通过 external-loader 异步加载 DOMPurify，避免重复 CDN 加载逻辑
+  import('@/lib/external-loader').then(({ loadDOMPurify }) => {
+    loadDOMPurify().catch(() => {
+      /* DOMPurify 加载失败时回退到 escapeHtml 处理 */
+    });
+  });
+
+  /** 搜索索引条目类型（与 search-worker.ts 中的 SearchEntry 保持一致） */
+  interface SearchEntry {
+    slug: string;
+    title: string;
+    description?: string;
+    tags?: string[];
+    module: string;
+    difficulty?: string;
+    updated?: string;
+  }
+
+  /** Fuse.js 搜索结果条目（含评分） */
+  interface ScoredEntry extends SearchEntry {
+    score: number;
+  }
+
+  const searchSection = document.getElementById('search-section')!;
+  const MODULE_MAP: Record<string, { title: string; color: string }> = JSON.parse(
+    searchSection.dataset.modules || '{}'
+  );
+  /** 回退颜色：从 data 属性读取，避免在客户端脚本中引用服务端变量 */
+  const FALLBACK_COLOR = searchSection.dataset.fallbackColor || '#3b82f6';
+
+  (() => {
+    let index: SearchEntry[] | null = null;
+    let worker: Worker | null = null;
+    let useWorker = false;
+    let fuse: Fuse<SearchEntry> | null = null;
+
+    const input = document.getElementById('search-input') as HTMLInputElement;
+    const moduleSelect = document.getElementById('filter-module') as HTMLSelectElement;
+    const statusEl = document.getElementById('search-status')!;
+    const resultsEl = document.getElementById('search-results')!;
+    const tagGroups = document.querySelectorAll<HTMLElement>('.tag-group');
+    const base = import.meta.env.BASE_URL;
+
+    resultsEl.style.display = 'none';
+
+    const DIFFICULTY_LABELS: Record<string, string> = {
+      beginner: '入门',
+      intermediate: '进阶',
+      advanced: '高级',
+    };
+
+    let debounceTimer: ReturnType<typeof setTimeout>;
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(doSearch, 150);
+    });
+    moduleSelect.addEventListener('change', doSearch);
+
+    async function loadIndex() {
+      if (index) return;
+      try {
+        const res = await fetch(`${base}data/search-index.json`);
+        index = (await res.json()) as SearchEntry[];
+      } catch {
+        statusEl.textContent = '搜索索引加载失败，请先运行 npm run build';
+        index = [];
+        return;
+      }
+      initSearchBackend();
+    }
+
+    async function initSearchBackend() {
+      if (!index) return;
+      try {
+        const FuseModule = await import('fuse.js');
+        const FuseClass: typeof Fuse = FuseModule.default || FuseModule;
+
+        try {
+          worker = new Worker(new URL('../../workers/search-worker.ts', import.meta.url), {
+            type: 'module',
+          });
+          worker.onmessage = (e: MessageEvent) => {
+            if (e.data.type === 'ready') {
+              useWorker = true;
+            }
+            if (e.data.type === 'results') {
+              renderResults(e.data.payload.results as ScoredEntry[], e.data.payload.query);
+            }
+          };
+          worker.onerror = () => {
+            worker = null;
+            fallbackToFuse(FuseClass);
+          };
+          worker.postMessage({ type: 'init', payload: { index } });
+          setTimeout(() => {
+            if (!useWorker) {
+              worker?.terminate();
+              worker = null;
+              fallbackToFuse(FuseClass);
+            }
+          }, 3000);
+        } catch {
+          fallbackToFuse(FuseClass);
+        }
+      } catch {
+        // Fuse.js not available, use basic search
+      }
+    }
+
+    function fallbackToFuse(FuseClass: typeof Fuse) {
+      if (!index) return;
+      fuse = new FuseClass(index, {
+        keys: [
+          { name: 'title', weight: 0.4 },
+          { name: 'tags', weight: 0.25 },
+          { name: 'slug', weight: 0.15 },
+          { name: 'description', weight: 0.2 },
+        ],
+        threshold: 0.4,
+        distance: 200,
+        minMatchCharLength: 2,
+        includeScore: true,
+      });
+    }
+
+    function doSearch() {
+      if (!index) {
+        loadIndex().then(performSearch);
+        return;
+      }
+      performSearch();
+    }
+
+    function performSearch() {
+      if (!index) return;
+      const query = input.value.trim();
+      const moduleFilter = moduleSelect.value;
+
+      if (useWorker && worker) {
+        worker.postMessage({
+          type: 'search',
+          payload: { query, moduleFilter },
+        });
+        return;
+      }
+
+      if (fuse && query) {
+        let results = fuse.search(query);
+        if (moduleFilter) {
+          results = results.filter((r) => r.item.module === moduleFilter);
+        }
+        const items: ScoredEntry[] = results.map((r) => ({
+          ...r.item,
+          score: r.score ? 1 - r.score : 1,
+        }));
+        renderResults(items.slice(0, 50), query);
+        return;
+      }
+
+      performBasicSearch(query, moduleFilter);
+    }
+
+    function performBasicSearch(query: string, moduleFilter: string) {
+      if (!index) return;
+      let results: ScoredEntry[] = index.map((d) => ({ ...d, score: 0 }));
+
+      if (moduleFilter) {
+        results = results.filter((d) => d.module === moduleFilter);
+      }
+
+      if (query) {
+        const terms = query.toLowerCase().split(/\s+/).filter(Boolean);
+        const scored = results
+          .map((d) => {
+            let score = 0;
+            const titleLower = d.title.toLowerCase();
+            const descLower = (d.description || '').toLowerCase();
+            const tagsLower = (d.tags || []).map((t) => t.toLowerCase());
+
+            for (const term of terms) {
+              if (titleLower.includes(term)) score += 10;
+              if (tagsLower.some((t) => t.includes(term))) score += 5;
+              if (descLower.includes(term)) score += 2;
+              if (d.slug.toLowerCase().includes(term)) score += 3;
+            }
+            return { ...d, score };
+          })
+          .filter((d) => d.score > 0);
+
+        scored.sort((a, b) => b.score - a.score);
+        results = scored;
+      }
+
+      renderResults(results, query);
+    }
+
+    function escapeHtml(str: string): string {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+    }
+
+    function renderResults(docs: ScoredEntry[], query: string) {
+      const hasActiveSearch = query || moduleSelect.value;
+
+      tagGroups.forEach((g) => {
+        g.style.display = hasActiveSearch ? 'none' : '';
+      });
+      resultsEl.style.display = hasActiveSearch ? 'flex' : 'none';
+
+      if (!hasActiveSearch) {
+        statusEl.textContent = '';
+        resultsEl.innerHTML = '';
+        return;
+      }
+
+      statusEl.textContent = `找到 ${docs.length} 篇文档`;
+
+      if (docs.length === 0) {
+        resultsEl.innerHTML = `
+          <div class="search-empty">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            没有找到匹配的文档
+          </div>`;
+        return;
+      }
+
+      const html = docs
+        .slice(0, 50)
+        .map((d) => {
+          const mod = MODULE_MAP[d.module] || { title: d.module, color: FALLBACK_COLOR };
+          const diff = d.difficulty || '';
+          const diffLabel = DIFFICULTY_LABELS[diff] || diff;
+          const tags = (d.tags || [])
+            .map((t) => `<span class="result-tag-chip">${escapeHtml(t)}</span>`)
+            .join('');
+
+          return `<a href="${base}${escapeHtml(d.slug)}/" class="result-card">
+            <div class="result-header">
+              <span class="result-module-dot" style="background:${mod.color}"></span>
+              <span class="result-module-name">${escapeHtml(mod.title)}</span>
+              <span class="result-title">${escapeHtml(d.title)}</span>
+              ${diff ? `<span class="result-difficulty ${diff}">${escapeHtml(diffLabel)}</span>` : ''}
+            </div>
+            ${d.description ? `<p class="result-desc">${escapeHtml(d.description)}</p>` : ''}
+            ${tags ? `<div class="result-tags">${tags}</div>` : ''}
+          </a>`;
+        })
+        .join('');
+
+      // 安全降级策略：所有动态内容（title/slug/description/tags 等）已在上游通过 escapeHtml() 转义，
+      // 即使 DOMPurify 未加载，html 字符串中的用户可控数据均已转义为安全文本，不会触发 XSS。
+      // DOMPurify 作为纵深防御层启用；escapeHtml 是首要防线（见第 499 行 loadDOMPurify 的 catch 注释）。
+      const purify = window.DOMPurify;
+      resultsEl.innerHTML = purify ? purify.sanitize(html) : html;
+    }
+  })();
+</script>

@@ -1,0 +1,84 @@
+{
+  "name": "FANDEX - 现代化知识图谱学习平台",
+  "short_name": "FANDEX",
+  "description": "FANDEX 是一个涵盖编程语言、前端、后端、计算机科学、人工智能、大数据、云计算、数据库、DevOps 等 51 个模块的渐进式自学平台，提供 1900+ 篇结构化文档、术语表、速查表与测验。",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#ffffff",
+  "theme_color": "#0ea5e9",
+  "categories": ["education", "productivity"],
+  "lang": "zh-CN",
+  "dir": "ltr",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-maskable-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "icons/icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "搜索",
+      "short_name": "搜索",
+      "description": "搜索文档、术语、代码",
+      "url": "./search/",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "仪表盘",
+      "short_name": "仪表盘",
+      "description": "查看学习进度与统计",
+      "url": "./dashboard/",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "学习路线",
+      "short_name": "路线",
+      "description": "按学习路线浏览模块",
+      "url": "./roadmap/",
+      "icons": [
+        {
+          "src": "icons/icon-192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "screenshots": []
+}

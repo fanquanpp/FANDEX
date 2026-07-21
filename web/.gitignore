@@ -1,0 +1,54 @@
+node_modules/
+dist/
+.astro/
+.trae/
+.DS_Store
+Thumbs.db
+*.local
+.env
+.env.local
+.env.*
+!.env.example
+*.log
+npm-debug.log*
+yarn-debug.log*
+coverage/
+.obsidian/
+.uploads/
+.cache/
+
+# 构建生成的数据文件（纳入版本控制以保证 content-update.yml 工作流可用）
+
+# IDE / 编辑器
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS 生成文件
+Desktop.ini
+ehthumbs.db
+
+# 压缩包 / 二进制产物
+*.zip
+*.tar
+*.tar.gz
+*.rar
+*.7z
+
+# 测试与调试产物（Playwright artifacts、调试脚本、构建报告）
+test-results/
+reports/bundle-stats.html
+
+# 任务临时工作区（已完成任务的中间产物，不纳入版本控制）
+.task8-workspace/
+.tmp-task11/
+task9-release-drafter/
+docs/governance-templates/
+scripts/classify-starred.cjs
+scripts/print-report.cjs
+
+# Code Wiki (generated)
+CODE_WIKI.md
+Code-Wiki.md

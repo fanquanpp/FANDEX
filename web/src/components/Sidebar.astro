@@ -1,0 +1,639 @@
+---
+/**
+ * 侧边栏组件
+ * 文档页面的左侧导航面板，包含章节列表、大纲目录、术语表和知识地图入口
+ * 支持章节/资料视图切换、全部模块切换、进度标记、大纲高亮跟踪等功能
+ */
+// categoryColors 和 getPrimaryCategory 为静态样式数据，保留从 @/lib/modules 导入
+import { categoryColors, getPrimaryCategory } from '@/lib/modules'
+// 通过 doc-service 和 module-service 获取数据，UI 层禁止直接调用 getCollection
+import { getModule, getAllModules, getDocsByModule, docSlug, type DocEntry } from '@/services'
+
+const { moduleId, currentSlug, headings, sortedDocs } = Astro.props as {
+  moduleId: string
+  currentSlug?: string
+  headings?: { depth: number; slug: string; text: string }[]
+  sortedDocs?: DocEntry[]
+}
+
+// 通过 doc-service 获取当前模块文档列表，支持外部传入已排序列表以避免重复查询
+const sorted = sortedDocs || await getDocsByModule(moduleId)
+const meta = getModule(moduleId)
+// 通过 module-service 获取全部模块，用于底部"全部模块"面板
+const allModules = getAllModules()
+
+const base = import.meta.env.BASE_URL
+// 过滤出 h2-h3 级别的标题用于大纲显示
+const visibleHeadings = (headings || []).filter((h) => h.depth >= 2 && h.depth <= 3)
+const hasHeadings = visibleHeadings.length > 0
+---
+
+<aside class="app-sidebar sidebar-component" id="module-sidebar">
+  <!-- 移动端关闭按钮 -->
+  <button class="sidebar-close-btn" id="sidebar-close-btn" aria-label="关闭侧边栏">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  </button>
+
+  <nav class="sidebar-nav">
+    <!-- 侧边栏顶部：模块标题和视图切换 -->
+    <div class="sidebar-top">
+      <div class="sidebar-module-header">
+        <div class="sidebar-module-title-group">
+          <!-- 模块分类颜色条 -->
+          <span class="sidebar-module-color-bar" style={`background:${meta ? categoryColors[getPrimaryCategory(meta)] : categoryColors.toolchain}`}></span>
+          <span class="sidebar-module-title">{meta?.title || moduleId}</span>
+        </div>
+        <!-- 章节/资料视图切换按钮组 -->
+        <div class="sidebar-toggle-group" id="sidebar-toggle-group">
+          {hasHeadings && (
+            <button class="sidebar-toggle-btn active" id="sidebar-toggle-chapters" data-panel="chapters">章节</button>
+          )}
+          {hasHeadings && (
+            <button class="sidebar-toggle-btn" id="sidebar-toggle-outline" data-panel="outline">资料</button>
+          )}
+        </div>
+      </div>
+
+      <!-- 返回首页链接 -->
+      <a href={base} class="sidebar-back">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <polyline points="18 6 6 12 18 18" />
+        </svg>
+        <span>返回首页</span>
+      </a>
+    </div>
+
+    <!-- 可滚动内容区域 -->
+    <div class="sidebar-scroll">
+      <!-- 章节列表面板 -->
+      <div class="sidebar-panel" id="sidebar-panel-chapters">
+        <ul class="file-list">
+          {sorted.map(doc => {
+            const slug = docSlug(doc.id)
+            const href = `${base}${moduleId}/${slug}/`
+            const isActive = currentSlug && currentSlug === slug
+            return (
+              <li>
+                <a href={href} class={`sidebar-file-link${isActive ? ' active' : ''}`} data-progress-slug={`${moduleId}/${slug}`}>
+                  <!-- 进度指示器圆点 -->
+                  <span class="progress-indicator"></span>
+                  {doc.data.title}
+                </a>
+              </li>
+            )
+          })}
+        </ul>
+      </div>
+
+      <!-- 大纲目录面板：显示当前文档的标题结构 -->
+      {hasHeadings && (
+        <div class="sidebar-panel" id="sidebar-panel-outline" style="display:none">
+          <ul class="outline-list">
+            {visibleHeadings.map((h) => (
+              <li style={`padding-left: ${(h.depth - 2) * 12}px`}>
+                <a href={`#${h.slug}`} class="outline-link" data-outline-slug={h.slug}>{h.text}</a>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <!-- 术语表入口 -->
+      <div class="sidebar-glossary-link">
+        <a href={`${base}${moduleId}/glossary/`} class="sidebar-file-link">
+          术语表
+        </a>
+      </div>
+      <!-- 知识地图入口 -->
+      <div class="sidebar-kmap-link">
+        <a href={`${base}${moduleId}/map/`} class="sidebar-file-link">
+          知识地图
+        </a>
+      </div>
+    </div>
+  </nav>
+
+  <!-- 全部模块切换面板 -->
+  <div class="sidebar-all-modules" id="sidebar-all-modules">
+    <div class="all-modules-header">
+      <div class="all-modules-current">
+        <!-- 当前模块标识 -->
+        <span class="all-modules-current-bar" style={`background:${meta ? categoryColors[getPrimaryCategory(meta)] : categoryColors.toolchain}`}></span>
+        <span class="all-modules-current-name">{meta?.title || moduleId}</span>
+      </div>
+    </div>
+    <div class="all-modules-section-title">全部模块</div>
+    <ul class="all-modules-list">
+      {allModules.map(m => (
+        <li>
+          <a href={`${base}${m.id}/`} class={`all-module-link${m.id === moduleId ? ' current' : ''}`}>
+            <!-- 模块分类颜色圆点 -->
+            <span class="all-module-dot" style={`background:${categoryColors[m.categories[0]]}`}></span>
+            <span class="all-module-name">{m.title}</span>
+          </a>
+        </li>
+      ))}
+    </ul>
+  </div>
+</aside>
+
+<style>
+/* 侧边栏整体布局 */
+.sidebar-component {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+/* 移动端关闭按钮：默认隐藏 */
+.sidebar-close-btn {
+  display: none;
+  align-self: flex-end;
+  background: none;
+  border: 1px solid var(--color-border-light);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 4px;
+  line-height: 0;
+}
+
+.sidebar-close-btn:hover {
+  color: var(--color-text);
+  border-color: var(--color-border);
+}
+
+/* 侧边栏导航区域 */
+.sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+}
+
+/* 顶部固定区域：模块标题和返回链接 */
+.sidebar-top {
+  flex-shrink: 0;
+  background: var(--color-bg-sidebar);
+}
+
+/* 模块标题行：标题与切换按钮并排 */
+.sidebar-module-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* 模块标题组：颜色条 + 标题文字 */
+.sidebar-module-title-group {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  min-width: 0;
+}
+
+/* 分类颜色条 */
+.sidebar-module-color-bar {
+  width: 4px;
+  height: 18px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* 模块标题文字 */
+.sidebar-module-title {
+  font-family: var(--font-display);
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--color-text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 视图切换按钮组 */
+.sidebar-toggle-group {
+  display: flex;
+  gap: 0;
+  flex-shrink: 0;
+}
+
+/* 切换按钮样式 */
+.sidebar-toggle-btn {
+  padding: 2px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.75em;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+/* 模块切换按钮：暂未使用 */
+.sidebar-toggle-modules {
+  display: none;
+}
+
+/* 相邻按钮共享边框 */
+.sidebar-toggle-btn:not(:first-child) {
+  border-left: none;
+}
+
+/* 激活状态的切换按钮 */
+.sidebar-toggle-btn.active {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+.sidebar-toggle-btn.active + .sidebar-toggle-btn {
+  border-left-color: var(--color-primary);
+}
+
+.sidebar-toggle-btn:not(.active):hover {
+  color: var(--color-primary);
+}
+
+/* 全部模块面板：默认隐藏，切换到模块视图时显示 */
+.sidebar-all-modules {
+  display: none;
+  padding: var(--spacing-md) 0;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 模块视图下隐藏章节导航，显示模块列表 */
+.sidebar-component.is-modules-view .sidebar-nav {
+  display: none;
+}
+
+.sidebar-component.is-modules-view .sidebar-all-modules {
+  display: block;
+}
+
+/* 返回首页链接 */
+.sidebar-back {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  color: var(--color-text-secondary);
+  font-size: 0.8em;
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: var(--spacing-xs);
+}
+
+.sidebar-back:hover {
+  color: var(--color-primary);
+}
+
+/* 大纲列表 */
+.outline-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* 大纲链接：根据标题层级缩进 */
+.outline-link {
+  display: block;
+  padding: 3px var(--spacing-md);
+  color: var(--color-text-secondary);
+  font-size: 0.82em;
+  line-height: 1.6;
+  transition: color var(--transition-fast);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.outline-link:hover {
+  color: var(--color-primary);
+}
+
+/* 当前可见标题高亮 */
+.outline-link.active {
+  color: var(--color-primary);
+  font-weight: 500;
+}
+
+/* 术语表链接区域 */
+.sidebar-glossary-link {
+  padding-top: var(--spacing-md);
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* 知识地图链接区域 */
+.sidebar-kmap-link {
+  padding-top: var(--spacing-xs);
+}
+
+/* 全部模块面板头部 */
+.all-modules-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+/* 当前模块标识 */
+.all-modules-current {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* 当前模块颜色条 */
+.all-modules-current-bar {
+  display: inline-block;
+  width: 4px;
+  height: 16px;
+  border-radius: 2px;
+}
+
+/* 当前模块名称 */
+.all-modules-current-name {
+  font-family: var(--font-display);
+  font-size: 0.85em;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+/* "全部模块"标题 */
+.all-modules-section-title {
+  font-family: var(--font-display);
+  font-size: 0.72em;
+  font-weight: 600;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.05em;
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-xs);
+}
+
+/* 模块列表 */
+.all-modules-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+/* 模块链接 */
+.all-module-link {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px var(--spacing-md);
+  color: var(--color-text-secondary);
+  font-size: 0.82em;
+  text-decoration: none;
+  transition: color var(--transition-fast), background var(--transition-fast);
+}
+
+.all-module-link:hover {
+  color: var(--color-primary);
+  background: var(--color-bg-hover);
+}
+
+/* 当前模块高亮 */
+.all-module-link.current {
+  color: var(--color-primary);
+  font-weight: 600;
+}
+
+/* 模块分类颜色圆点 */
+.all-module-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* 模块名称：单行省略 */
+.all-module-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* 侧边栏滚动区域 */
+.sidebar-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* 进度指示器：默认隐藏，由 JS 控制 */
+.progress-indicator {
+  display: none;
+}
+
+/* 当前激活的文档链接 */
+.sidebar-file-link.active {
+  color: var(--color-primary);
+  background: var(--color-bg-hover);
+  font-weight: 600;
+}
+
+/* 移动端显示关闭按钮 */
+@media (max-width: 768px) {
+  .sidebar-close-btn {
+    display: block;
+  }
+}
+</style>
+
+<script>
+  // ========== 侧边栏视图切换逻辑 ==========
+  const sidebar = document.getElementById('module-sidebar') as HTMLElement | null
+  const closeBtn = document.getElementById('sidebar-close-btn')
+  const chaptersBtn = document.getElementById('sidebar-toggle-chapters')
+  const outlineBtn = document.getElementById('sidebar-toggle-outline')
+  const chaptersPanel = document.getElementById('sidebar-panel-chapters')
+  const outlinePanel = document.getElementById('sidebar-panel-outline')
+
+  /** 切换到章节视图 */
+  function showChapterView() {
+    if (sidebar) sidebar.classList.remove('is-modules-view')
+    if (chaptersPanel) chaptersPanel.style.display = ''
+    if (outlinePanel) outlinePanel.style.display = 'none'
+    if (chaptersBtn) chaptersBtn.classList.add('active')
+    if (outlineBtn) outlineBtn.classList.remove('active')
+  }
+
+  /** 切换到大纲视图 */
+  function showOutlineView() {
+    if (sidebar) sidebar.classList.remove('is-modules-view')
+    if (chaptersPanel) chaptersPanel.style.display = 'none'
+    if (outlinePanel) outlinePanel.style.display = ''
+    if (chaptersBtn) chaptersBtn.classList.remove('active')
+    if (outlineBtn) outlineBtn.classList.add('active')
+  }
+
+  /** 切换到全部模块视图 */
+  function showModulesView() {
+    if (sidebar) sidebar.classList.add('is-modules-view')
+  }
+
+  // 关闭按钮事件
+  if (closeBtn) {
+    closeBtn.addEventListener('click', () => {
+      document.body.classList.remove('sidebar-open')
+    })
+  }
+
+  // 视图切换按钮事件
+  if (chaptersBtn) chaptersBtn.addEventListener('click', showChapterView)
+  if (outlineBtn) outlineBtn.addEventListener('click', showOutlineView)
+
+  // 监听来自 Layout 的自定义事件
+  document.addEventListener('fandex-switch-modules', () => {
+    showModulesView()
+  })
+
+  document.addEventListener('fandex-switch-chapters', () => {
+    showChapterView()
+  })
+
+  // ========== 进度标记更新 ==========
+  /** 从 localStorage 读取进度数据并更新侧边栏中的进度指示 */
+  function updateSidebarProgress() {
+    let progress: Record<string, { status: string }> = {}
+    try {
+      const raw = localStorage.getItem('fandex-progress')
+      if (raw) progress = JSON.parse(raw)
+    } catch { /* ignore */ }
+
+    document.querySelectorAll('.sidebar-file-link[data-progress-slug]').forEach(link => {
+      const el = link as HTMLElement
+      const slug = el.getAttribute('data-progress-slug')
+      el.classList.remove('progress-done', 'progress-reading')
+      if (slug && progress[slug]) {
+        const status = progress[slug].status
+        if (status === 'done') el.classList.add('progress-done')
+        else if (status === 'reading') el.classList.add('progress-reading')
+      }
+    })
+  }
+
+  updateSidebarProgress()
+  document.addEventListener('fandex-progress-change', updateSidebarProgress)
+  document.addEventListener('astro:page-load', updateSidebarProgress)
+
+  // ========== 侧边栏滚动位置保持 ==========
+  const sidebarScroll = document.querySelector('.sidebar-scroll') as HTMLElement | null
+  const sidebarFileLinks = document.querySelectorAll('.sidebar-file-link[href]')
+
+  /** 导航前保存滚动位置到 sessionStorage */
+  function saveSidebarScroll() {
+    if (sidebarScroll) {
+      sessionStorage.setItem('fandex-sidebar-scroll', String(sidebarScroll.scrollTop))
+    }
+  }
+
+  sidebarFileLinks.forEach(link => {
+    link.addEventListener('click', saveSidebarScroll)
+  })
+
+  /** 页面加载后恢复侧边栏滚动位置 */
+  function restoreSidebarScroll() {
+    if (sidebarScroll) {
+      const saved = sessionStorage.getItem('fandex-sidebar-scroll')
+      if (saved) {
+        sidebarScroll.scrollTop = Number(saved)
+        sessionStorage.removeItem('fandex-sidebar-scroll')
+      }
+    }
+  }
+
+  restoreSidebarScroll()
+  document.addEventListener('astro:page-load', restoreSidebarScroll)
+
+  // ========== 大纲链接点击与滚动跟踪 ==========
+  const outlineLinks = document.querySelectorAll('.outline-link[data-outline-slug]')
+  if (outlineLinks.length > 0) {
+    // 收集大纲对应的标题 DOM 元素
+    const headingElements: HTMLElement[] = []
+    outlineLinks.forEach(link => {
+      const slug = link.getAttribute('data-outline-slug')
+      if (slug) {
+        const el = document.getElementById(slug)
+        if (el) headingElements.push(el)
+      }
+    })
+
+    // 点击大纲链接时，滚动主内容区到对应标题位置
+    outlineLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault()
+        const slug = (link as HTMLElement).getAttribute('data-outline-slug')
+        if (!slug) return
+        const target = document.getElementById(slug)
+        if (!target) return
+        const main = document.getElementById('app-main')
+        if (main) {
+          const mainRect = main.getBoundingClientRect()
+          const targetRect = target.getBoundingClientRect()
+          main.scrollTo({
+            top: main.scrollTop + targetRect.top - mainRect.top,
+            behavior: 'smooth',
+          })
+        }
+      })
+    })
+
+    // 使用 IntersectionObserver 追踪当前可见标题，高亮对应大纲链接
+    if (headingElements.length > 0) {
+      let activeSlug = ''
+      const mainEl = document.getElementById('app-main')
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach(entry => {
+            if (entry.isIntersecting) {
+              activeSlug = entry.target.id
+            }
+          })
+          outlineLinks.forEach(link => {
+            const slug = link.getAttribute('data-outline-slug')
+            if (slug === activeSlug) {
+              link.classList.add('active')
+            } else {
+              link.classList.remove('active')
+            }
+          })
+        },
+        {
+          // exactOptionalPropertyTypes：IntersectionObserverInit.root 不接受 undefined
+          // 使用 ?? null 将 undefined 转为 null（root 字段类型为 Element | Document | null）
+          root: mainEl ?? null,
+          rootMargin: '0px 0px -60% 0px',
+          threshold: 0,
+        }
+      )
+      headingElements.forEach(el => observer.observe(el))
+
+      // ========== 监听器与 Observer 清理 ==========
+      // View Transitions 切换页面时，旧 Sidebar 实例的 observer 与监听器不会被自动清除，
+      // 导致 observer 累积、heading 元素无法被 GC 回收、回调重复执行。
+      // 在 astro:before-swap 时统一 disconnect 并移除所有监听器。
+      document.addEventListener('astro:before-swap', () => {
+        observer.disconnect()
+        document.removeEventListener('fandex-switch-modules', showModulesView)
+        document.removeEventListener('fandex-switch-chapters', showChapterView)
+        document.removeEventListener('fandex-progress-change', updateSidebarProgress)
+        document.removeEventListener('astro:page-load', updateSidebarProgress)
+        document.removeEventListener('astro:page-load', restoreSidebarScroll)
+        sidebarFileLinks.forEach(link => link.removeEventListener('click', saveSidebarScroll))
+      }, { once: true })
+    }
+  }
+</script>

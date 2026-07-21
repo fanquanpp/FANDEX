@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- FANDEX 程序图标：字母 F -->
+  <!-- 圆角方形背景，使用主品牌色 #3366cc -->
+  <rect width="32" height="32" rx="6" fill="#3366cc"/>
+  <!-- 字母 F 路径：白色，居中 -->
+  <path d="M 8 5 L 8 27 L 12 27 L 12 18 L 22 18 L 22 14 L 12 14 L 12 9 L 24 9 L 24 5 Z" fill="#ffffff"/>
+</svg>

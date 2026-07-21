@@ -1,0 +1,2135 @@
+{
+  "moduleId": "python",
+  "terms": [
+    {
+      "name": "抽象语法树",
+      "definition": "Python 源代码编译后的树形表示，每个节点代表一个语法结构",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "异步生成器",
+      "definition": "用 `async def` 定义且包含 `yield` 的函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "异步迭代器",
+      "definition": "实现 `__aiter__` 和 `__anext__` 的对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "异步迭代",
+      "definition": "用 `async for` 遍历异步可迭代对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "异步上下文管理器",
+      "definition": "实现 `__aenter__` 和 `__aexit__` 的对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "异步函数",
+      "definition": "用 `async def` 定义的协程函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "asyncio 事件循环",
+      "definition": "asyncio 模块的核心调度器，管理协程和任务的执行",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "asyncio.gather",
+      "definition": "并发运行多个协程并收集结果",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "asyncio.create_task",
+      "definition": "将协程包装为可独立调度的任务",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "原子操作",
+      "definition": "不可中断的操作，在多线程中保证一致性",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "属性描述符",
+      "definition": "实现 `__get__`、`__set__`、`__delete__` 的类，用于自定义属性访问",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "后台任务",
+      "definition": "在后台异步执行的任务，不阻塞主流程",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "断点调试",
+      "definition": "在代码中设置断点，暂停执行检查状态",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "缓冲区协议",
+      "definition": "Python 对象内存视图接口，支持高效数据交换",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "构建器",
+      "definition": "创建者模式，将复杂对象构建与表示分离",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "回调",
+      "definition": "作为参数传递的函数，在特定事件发生时被调用",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "协程",
+      "definition": "用 `async def` 定义的可以在执行中暂停和恢复的函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "协程函数",
+      "definition": "返回协程对象的函数，用 `async def` 定义",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "协程对象",
+      "definition": "协程函数返回的对象，需要通过事件循环运行",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "CPython",
+      "definition": "Python 的 C 语言实现，官方参考解释器",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "猴子补丁",
+      "definition": "运行时动态修改模块、类或函数的行为",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "闭包",
+      "definition": "记住创建时环境变量的函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "代码对象",
+      "definition": "编译后的字节码表示，可执行",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "协程调度",
+      "definition": "事件循环决定何时执行哪个协程",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "容器推导",
+      "definition": "用推导式创建容器，如 `{x for x in range(10)}`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "上下文管理器",
+      "definition": "实现 `__enter__` 和 `__exit__` 的对象，管理资源",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "控制流",
+      "definition": "程序执行顺序，if/for/while/try 等控制语句",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "数据类",
+      "definition": "用 `@dataclass` 装饰器自动生成 `__init__` 等方法的类",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "调试",
+      "definition": "查找和修复程序错误的过程",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "反汇编",
+      "definition": "将字节码转换为人类可读的指令",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "描述符",
+      "definition": "定义 `__get__`、`__set__`、`__delete__` 的类",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "字典视图",
+      "definition": "字典的 keys()、values()、items() 返回的动态视图",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "字典解包",
+      "definition": "用 `**dict` 将字典展开为关键字参数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "分布式锁",
+      "definition": "跨进程的同步机制",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "动态属性",
+      "definition": "在运行时创建和访问的属性",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "EAFP 原则",
+      "definition": "先执行后处理异常的编码风格",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "早期绑定",
+      "definition": "编译时确定变量或函数的引用",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "编码检测",
+      "definition": "自动检测文件或字符串的字符编码",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "评估顺序",
+      "definition": "表达式中子表达式从左到右的求值顺序",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "事件循环",
+      "definition": "持续运行的循环，分发事件到处理器",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "执行框架",
+      "definition": "Python 运行时栈帧，包含执行上下文",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "显式多态",
+      "definition": "手动实现多态，而非依赖继承",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "futures",
+      "definition": "concurrent.futures 模块，并发执行抽象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "Future 对象",
+      "definition": "代表异步操作最终结果的对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "函数注解",
+      "definition": "用 `->` 标注的函数返回类型",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "函数工厂",
+      "definition": "根据参数返回不同函数的函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "函数组合",
+      "definition": "将多个函数组合成新函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "垃圾回收",
+      "definition": "自动回收不再使用的内存",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "生成器",
+      "definition": "用 `yield` 产生值的迭代器函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "生成器迭代",
+      "definition": "遍历生成器，每次产生一个值",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "生成器表达式",
+      "definition": "类似列表推导但用圆括号，结果为生成器",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "gettext",
+      "definition": "国际化翻译模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "哈希冲突",
+      "definition": "不同对象有相同哈希值的罕见情况",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "哈希探查",
+      "definition": "哈希表中处理冲突的探查方法",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "头等函数",
+      "definition": "函数作为值可以赋值、传递、返回",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "惰性求值",
+      "definition": "表达式在需要时才求值",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "晚期绑定",
+      "definition": "运行时确定变量引用",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "链表",
+      "definition": "通过指针连接的数据结构",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "本地变量表",
+      "definition": "存储函数局部变量的数组",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "锁",
+      "definition": "线程同步原语，同一时刻只允许一个线程持有",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "日志级别",
+      "definition": "日志重要程度：DEBUG、INFO、WARNING、ERROR、CRITICAL",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "日志处理器",
+      "definition": "日志输出目的地，如文件、控制台",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "日志格式化器",
+      "definition": "日志输出格式模板",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "元编程",
+      "definition": "程序操作自身代码的技术，如装饰器、类装饰器",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "元类",
+      "definition": "类的类，控制类的创建行为",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "mixin 混入",
+      "definition": "提供额外方法的类，用于多重继承",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "混合方法",
+      "definition": "在多个 MRO 位置都能找到的方法",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "内存视图",
+      "definition": "共享另一对象内存的只读或读写视图",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "元组解包",
+      "definition": "将元组值分配给多个变量",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "命名元组",
+      "definition": "带命名字段的元组子类",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "名称修饰",
+      "definition": "双下划线开头属性被重命名为 `_ClassName__attr`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "命名空间包",
+      "definition": "Python 3.3+ 无 `__init__.py` 的包",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "不可达代码",
+      "definition": "永远不会被执行的代码",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "Numpy 数组",
+      "definition": "NumPy 的核心多维数组对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "Numpy 广播",
+      "definition": "不同形状数组进行运算时的自动扩展机制",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "对象代理",
+      "definition": "转发所有操作到另一个对象的对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "观察者模式",
+      "definition": "发布-订阅模式，一对多依赖关系",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "开放授权",
+      "definition": "第三方授权开放标准",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "路径协议",
+      "definition": "实现 `__fspath__` 的对象，返回文件系统路径",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "管道",
+      "definition": "进程间通信的通道",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "轮询",
+      "definition": "定期检查状态变化而非等待通知",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "池化",
+      "definition": "复用有限资源的技术，如连接池、线程池",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "预取",
+      "definition": "提前加载可能需要的数据",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "优先级队列",
+      "definition": "按优先级排序的队列",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "进程池",
+      "definition": "预创建的工作进程集合",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "程序分析",
+      "definition": "分析程序性能，识别瓶颈",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "属性访问拦截",
+      "definition": "通过 `__getattr__` 等拦截属性访问",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "代理对象",
+      "definition": "转发请求到另一个对象的对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "RLock",
+      "definition": "可重入锁，同一线程可多次获取",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "原始字符串",
+      "definition": "不转义反斜杠的字符串 `r\"path\\to\\file\"`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "引用计数",
+      "definition": "Python 主要的内存管理机制",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "引用循环",
+      "definition": "对象间的循环引用，可能导致内存泄漏",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "正则编译",
+      "definition": "用 `re.compile()` 预编译正则表达式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "可重入",
+      "definition": "可以在未完成时重新进入的性质",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "可重入锁",
+      "definition": "同一线程可多次获取的锁",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "资源管理",
+      "definition": "正确获取和释放系统资源",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "调度器",
+      "definition": "决定任务执行顺序的组件",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "秘密生成",
+      "definition": "生成加密安全随机数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "自省",
+      "definition": "程序运行时检查自身结构的能力",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "Semaphore",
+      "definition": "控制资源访问数量的计数器",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "序列化",
+      "definition": "将对象转换为可存储/传输格式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "服务定位器",
+      "definition": "集中管理服务实例的全局对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "集合原子操作",
+      "definition": "线程安全的集合操作",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "集合推导",
+      "definition": "用 `{x for x in iterable}` 创建集合",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "集合解包",
+      "definition": "用 `*set` 将集合展开",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "影子变量",
+      "definition": "内层作用域变量遮蔽外层同名变量",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "信号处理",
+      "definition": "响应 Unix 信号",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "单例模式",
+      "definition": "类只有一个实例的设计模式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "切片赋值",
+      "definition": "用切片修改序列部分内容",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "槽",
+      "definition": "类中预定义的固定属性集合",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "槽限制",
+      "definition": "只有 `__slots__` 定义的属性才可添加",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "软件事务内存",
+      "definition": "用事务方式管理内存并发访问",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "源码检查",
+      "definition": "运行时检查源代码",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "源码字符串",
+      "definition": "对象的源代码文本表示",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "弱引用",
+      "definition": "不阻止对象被回收的引用",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "任务",
+      "definition": "asyncio 中包装协程的执行单元",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "任务取消",
+      "definition": "取消正在运行的任务",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "临时文件",
+      "definition": "临时存储数据的文件，自动清理",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "线程安全",
+      "definition": "多线程环境下正确工作的性质",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "线程池",
+      "definition": "预创建的工作线程集合",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "时间戳",
+      "definition": "表示日期时间的数值",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "token",
+      "definition": "词法分析的最小语法单元",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "traceback",
+      "definition": "异常传播的函数调用栈信息",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "类型变体",
+      "definition": "泛型中不同类型参数的具体类型",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "Unicode 数据库",
+      "definition": "Unicode 字符属性数据库",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "Unicode 转义",
+      "definition": "`\\uXXXX` 或 `\\UXXXXXXXX` 表示 Unicode 字符",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "未绑定方法",
+      "definition": "类中定义但未绑定到实例的方法",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "验证器",
+      "definition": "验证数据合法性的函数或对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "变体类型",
+      "definition": "泛型类型之间的子类型关系",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "协变",
+      "definition": "泛型中 `List[Derived]` 可替代 `List[Base]`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "逆变",
+      "definition": "泛型中 `List[Base]` 可替代 `List[Derived]`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "虚拟环境",
+      "definition": "隔离的 Python 运行环境",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "等待集",
+      "definition": "线程等待特定条件的集合",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "等待超时",
+      "definition": "等待操作的最长时间",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "watcher",
+      "definition": "监控文件或目录变化",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "XML-RPC",
+      "definition": "基于 XML 的远程过程调用协议",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "yield from",
+      "definition": "在生成器中委托给另一个生成器",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "yield 表达式",
+      "definition": "产生值并暂停的表达式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "零拷贝",
+      "definition": "避免不必要数据复制的技术",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "抽象基类",
+      "definition": "用 `abc` 模块定义的基类，通过 `@abstractmethod` 强制子类实现特定方法",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "聚合赋值",
+      "definition": "复合赋值运算符如 `+=`、`-=`、`*=` 等",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "参数",
+      "definition": "函数调用时传递给函数的具体值",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "属性",
+      "definition": "绑定到对象的变量，访问方式为 `obj.attr`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "匿名函数",
+      "definition": "使用 `lambda` 关键字定义的简短函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "块",
+      "definition": "用缩进组织的代码语句组",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "布尔类型",
+      "definition": "值只能为 `True` 或 `False` 的数据类型",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "断点",
+      "definition": "调试器中暂停程序执行的点",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "字节码",
+      "definition": "Python 源代码编译后的中间形式，`.pyc` 文件存储",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "按字节",
+      "definition": "多字节数据的存储顺序，大端或小端",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "类",
+      "definition": "面向对象编程中定义对象结构的模板",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "类属性",
+      "definition": "定义在类级别、所有实例共享的属性",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "类方法",
+      "definition": "用 `@classmethod` 装饰的方法，接收 `cls` 参数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "代码块",
+      "definition": "用缩进组织的代码语句组",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "比较运算符",
+      "definition": "`==`、`!=`、`<`、`>`、`<=`、`>=` 等用于比较的运算符",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "复合语句",
+      "definition": "包含其他语句的语句，如 `if`、`for`、`while`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "条件表达式",
+      "definition": "三元运算符 `x if condition else y`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "常量",
+      "definition": "值不可改变的变量，Python 约定全大写命名",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "数据类型",
+      "definition": "值的种类，决定可执行的操作，如 `int`、`str`、`list`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "解包",
+      "definition": "将可迭代对象分解为多个变量的操作",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "字典",
+      "definition": "键值对映射的容器类型，`dict`，无序可变",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "docstring",
+      "definition": "模块、函数、类的文档字符串",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "动态类型",
+      "definition": "变量类型在运行时确定，无需声明",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "编码",
+      "definition": "字符到字节的映射规则，如 UTF-8",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "可枚举",
+      "definition": "可以用 `for` 循环遍历的对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "枚举类型",
+      "definition": "用 `enum` 模块定义的命名常量集合",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "等价性",
+      "definition": "`==` 比较两个值是否相等",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "求值",
+      "definition": "将表达式计算为结果值的过程",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "可执行语句",
+      "definition": "执行时产生效果的语句，如赋值、函数调用",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "表达式",
+      "definition": "求值后产生值的代码片段",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "扩展解包",
+      "definition": "使用 `*` 或 `**` 收集或展开可迭代对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "f-string",
+      "definition": "Python 3.6+ 的格式化字符串字面量，`f\"value={x}\"`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "假值",
+      "definition": "在布尔上下文中被视为 `False` 的值，如 `0`、`\"\"`、`None`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "文件对象",
+      "definition": "打开文件后返回的对象，用于读写操作",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "过滤器",
+      "definition": "从序列中筛选满足条件的元素",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "浮点数",
+      "definition": "带小数点的数字类型，双精度 IEEE 754 标准",
+      "slug": "python/glossary"
+    },
+    {
+      "name": ".floor()",
+      "definition": "向下取整函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "格式规范",
+      "definition": "f-string 或 `format()` 中的 `:width.precision` 等格式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "格式化字符串",
+      "definition": "支持嵌入表达式的字符串字面量",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "全局解释器锁",
+      "definition": "CPython 机制，同一时刻只允许一个线程执行 Python 字节码",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "全局变量",
+      "definition": "函数外定义的变量，可在函数内用 `global` 修改",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "哈希",
+      "definition": "对象的整数标识，用于字典和集合的键查找",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "哈希表",
+      "definition": "通过哈希函数实现 O(1) 查找的数据结构",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "高阶函数",
+      "definition": "接收函数作为参数或返回函数的函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "标识符",
+      "definition": "变量、函数、类的命名",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "标识",
+      "definition": "对象的唯一身份，用 `id()` 获取，通常是内存地址",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "if 语句",
+      "definition": "条件分支语句",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "不可变对象",
+      "definition": "创建后不能修改的对象，如 `tuple`、`str`、`int`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "导入",
+      "definition": "将模块加载到当前命名空间供使用",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "实例",
+      "definition": "类的具体对象",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "实例属性",
+      "definition": "每个实例独立拥有的属性",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "实例化",
+      "definition": "通过 `Class()` 创建类的实例",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "整数",
+      "definition": "任意精度的整数值",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "接口",
+      "definition": "类必须实现的方法集合",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "解释器",
+      "definition": "逐行执行代码的程序",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "JSON",
+      "definition": "JavaScript Object Notation，轻量级数据交换格式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "关键字",
+      "definition": "Python 保留的单词，如 `if`、`for`、`class`，不能用做标识符",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "关键字参数",
+      "definition": "用参数名指定值的函数参数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "lambda 表达式",
+      "definition": "创建匿名函数的表达式，`lambda x: x**2`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "LEGB 规则",
+      "definition": "变量查找顺序：Local → Enclosing → Global → Built-in",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "列表",
+      "definition": "有序可变序列，`[]` 或 `list()` 创建",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "列表推导",
+      "definition": "用表达式创建列表的简洁语法 `[x for x in items]`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "字面量",
+      "definition": "直接写出的固定值，如 `42`、`\"hello\"`、`[1,2,3]`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "循环",
+      "definition": "重复执行代码的控制结构",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "映射",
+      "definition": "键值对容器类型，如 `dict`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "映射函数",
+      "definition": "对序列每个元素应用函数的 `map()` 函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "方法",
+      "definition": "绑定到对象的函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "方法解析顺序",
+      "definition": "多继承时查找方法顺序，用 `ClassName.__mro__` 查看",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "模块",
+      "definition": "包含 Python 代码的 `.py` 文件",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "多态",
+      "definition": "同一操作对不同对象有不同行为",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "命名参数",
+      "definition": "调用函数时用 `name=value` 形式传递的参数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "命名空间",
+      "definition": "变量名到对象的映射",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "空值",
+      "definition": "表示无或缺失的特殊值",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "非局部变量",
+      "definition": "嵌套函数中引用的外层函数变量",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "范数",
+      "definition": "向量长度的度量，如 L1、L2 范数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "面向对象编程",
+      "definition": "以对象为中心的编程范式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "对象",
+      "definition": "Python 中一切皆对象，包括数据和方法",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "八进制",
+      "definition": "以 0o 开头的进制表示",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "运算顺序",
+      "definition": "表达式求值时运算符的执行先后顺序",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "可选参数",
+      "definition": "有默认值的函数参数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "解析",
+      "definition": "将文本分解为 Token 的过程",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "pass 语句",
+      "definition": "空操作占位符",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "路径",
+      "definition": "文件系统中的位置",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "位置参数",
+      "definition": "按顺序传递的函数参数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "后置条件",
+      "definition": "函数执行完毕后必须满足的条件",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "前置条件",
+      "definition": "函数执行前必须满足的条件",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "主程序",
+      "definition": "脚本直接运行时执行的代码",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "谓词",
+      "definition": "返回布尔值的函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "限定名称",
+      "definition": "带模块前缀的名称，如 `module.function`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "range 对象",
+      "definition": "不可变的整数序列生成器",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "递归",
+      "definition": "函数调用自身的编程技术",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "递归深度",
+      "definition": "递归调用的最大层数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "规约函数",
+      "definition": "将序列元素累积为单个值的 `functools.reduce()`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "引用传递",
+      "definition": "Python 参数传递方式，传递对象引用而非副本",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "正则表达式",
+      "definition": "描述文本模式的字符串，用 `re` 模块处理",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "关系运算符",
+      "definition": "比较大小的运算符",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "保留字",
+      "definition": "Python 语言保留的单词",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "作用域",
+      "definition": "变量可见的区域",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "脚本",
+      "definition": "可直接运行的 Python 程序文件",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "自变量",
+      "definition": "实例方法的第一个参数，指向当前实例",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "序列",
+      "definition": "按顺序排列的元素集合",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "集合",
+      "definition": "无序不重复元素的可变容器",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "切片",
+      "definition": "用 `start:stop:step` 截取序列部分",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "源码",
+      "definition": "程序员编写的原始 Python 文本",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "特殊方法",
+      "definition": "双下划线开头结尾的方法，如 `__init__`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "字符串",
+      "definition": "不可变的字符序列",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "结构模式匹配",
+      "definition": "Python 3.10+ 的 `match...case` 语法",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "副作用",
+      "definition": "函数执行后对外部状态的改变",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "三元运算符",
+      "definition": "`x if condition else y`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "Token",
+      "definition": "词法分析后得到的最小语法单元",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "真值",
+      "definition": "在布尔上下文中被视为 `True` 的值",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "元组",
+      "definition": "有序不可变序列",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "类型注解",
+      "definition": "变量和函数参数的类型提示语法",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "类型检查",
+      "definition": "验证变量类型是否正确",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "类型提示",
+      "definition": "用 `:` 和 `->` 标注的类型信息",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "统一码",
+      "definition": "字符编码标准，支持全球文字系统",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "值",
+      "definition": "表达式计算的结果",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "变量",
+      "definition": "引用对象的命名标签",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "可变对象",
+      "definition": "创建后可以修改的对象，如 `list`、`dict`、`set`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "可变参数",
+      "definition": "用 `*args` 接收任意数量参数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "while 循环",
+      "definition": "条件为真时重复执行的循环",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "with 语句",
+      "definition": "上下文管理器，自动管理资源",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "XDR",
+      "definition": "外部数据表示格式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "yield 语句",
+      "definition": "生成器函数中产生值并暂停执行",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "zip 函数",
+      "definition": "将多个序列打包为元组列表",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "零值",
+      "definition": "数值类型的零值 `0` 或空值",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "argparse",
+      "definition": "命令行参数解析模块，支持位置参数和选项参数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "array 模块",
+      "definition": "高效存储单一类型数据的序列，类似列表但更省内存",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "asyncio 模块",
+      "definition": "异步 I/O 编程模块，支持协程、事件循环、异步任务",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "ast 模块",
+      "definition": "Python 抽象语法树解析模块，用于代码分析和转换",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "base64 模块",
+      "definition": "Base64 编码解码模块，用于二进制与文本转换",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "bisect 模块",
+      "definition": "有序列表二分查找和插入模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "builtins 模块",
+      "definition": "Python 内置函数和异常的模块，如 `print`、`len`、`Exception`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "bz2 模块",
+      "definition": "BZIP2 压缩解压模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "calendar 模块",
+      "definition": "日历相关功能模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "cmath 模块",
+      "definition": "复数数学运算模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "collections 模块",
+      "definition": "容器数据类型模块，提供 namedtuple、deque、Counter、OrderedDict 等",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "collections.defaultdict",
+      "definition": "带默认值的字典，访问不存在的键时自动创建默认值",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "collections.Counter",
+      "definition": "元素计数容器，用于统计可哈希对象出现次数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "collections.deque",
+      "definition": "双端队列，支持两端高效插入删除",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "collections.namedtuple",
+      "definition": "创建带命名字段的元组子类的工厂函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "concurrent.futures 模块",
+      "definition": "异步并行执行模块，提供 ThreadPoolExecutor 和 ProcessPoolExecutor",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "copy 模块",
+      "definition": "对象拷贝模块，`copy.copy()` 浅拷贝，`copy.deepcopy()` 深拷贝",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "csv 模块",
+      "definition": "CSV 文件读写模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "curses 模块",
+      "definition": "终端文本界面编程模块（Unix）",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "dataclasses 模块",
+      "definition": "Python 3.7+ 的数据类装饰器模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "datetime 模块",
+      "definition": "日期时间处理模块，提供 date、time、datetime、timedelta 类",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "dbm 模块",
+      "definition": "Unix 数据库模块，提供简单的键值存储",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "decimal 模块",
+      "definition": "十进制精确运算模块，避免浮点数精度问题",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "difflib 模块",
+      "definition": "序列差异计算模块，用于文本比较和合并",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "dis 模块",
+      "definition": "Python 字节码反汇编模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "encodings 模块",
+      "definition": "字符编码转换模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "enum 模块",
+      "definition": "枚举类型定义模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "errno 模块",
+      "definition": "标准 errno 系统错误码模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "fcntl 模块",
+      "definition": "Unix 文件控制模块，用于文件描述符操作",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "filecmp 模块",
+      "definition": "文件和目录比较模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "fnmatch 模块",
+      "definition": "Unix 文件名模式匹配模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "fractions 模块",
+      "definition": "有理数运算模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "functools 模块",
+      "definition": "函数式编程工具模块，提供 lru_cache、partial、wraps 等",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "functools.lru_cache",
+      "definition": "Least Recently Used 缓存装饰器，缓存函数调用结果",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "functools.partial",
+      "definition": "函数柯里化工具，创建带预设参数的函数副本",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "functools.reduce",
+      "definition": "函数式规约操作，将序列元素累积为单个值",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "gc 模块",
+      "definition": "Python 垃圾回收器接口模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "gdbm 模块",
+      "definition": "GNU dbm 数据库接口模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "getopt 模块",
+      "definition": "Unix 风格命令行选项解析模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "getpass 模块",
+      "definition": "安全密码输入模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "glob 模块",
+      "definition": "Unix 风格路径名模式匹配模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "hashlib 模块",
+      "definition": "安全哈希和消息摘要模块，支持 md5、sha1、sha256 等",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "heapq 模块",
+      "definition": "堆队列算法模块，实现最小堆",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "history",
+      "definition": "命令行历史记录",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "inspect 模块",
+      "definition": "运行时检查对象源码、签名、类型的模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "io 模块",
+      "definition": "I/O 流处理模块，提供 StringIO、BytesIO 等",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "itertools 模块",
+      "definition": "迭代器工具模块，提供无限迭代器、组合迭代器等",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "itertools.chain",
+      "definition": "将多个迭代器连接成单一迭代器",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "itertools.groupby",
+      "definition": "按键分组迭代器元素的函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "itertools.islice",
+      "definition": "迭代器切片工具",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "itertools.permutations",
+      "definition": "生成序列的全排列",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "itertools.product",
+      "definition": "生成多个序列的笛卡尔积",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "itertools.repeat",
+      "definition": "无限重复值迭代器",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "itertools.combinations",
+      "definition": "生成序列的组合",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "json 模块",
+      "definition": "JSON 编码解码模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "zipimport",
+      "definition": "ZIP 压缩包导入模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "locale 模块",
+      "definition": "区域设置和格式化模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "logging 模块",
+      "definition": "日志记录模块，支持多级别、多处理器",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "lzma 模块",
+      "definition": "LZMA 压缩解压模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "mailbox 模块",
+      "definition": "邮件格式读写模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "math 模块",
+      "definition": "数学运算模块，提供 sin、cos、sqrt、log 等函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "mimetypes 模块",
+      "definition": "MIME 类型猜测模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "mmap 模块",
+      "definition": "内存映射文件模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "multiprocessing 模块",
+      "definition": "多进程并行处理模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "multiprocessing.Pool",
+      "definition": "多进程工作池，简化并行任务分发",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "netrc 模块",
+      "definition": ".netrc 配置文件解析模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "numbers 模块",
+      "definition": "数字抽象基类模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "operator 模块",
+      "definition": "运算符函数化模块，如 `operator.add`、`operator.itemgetter`",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "optparse 模块",
+      "definition": "命令行选项解析模块（旧版）",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "os 模块",
+      "definition": "操作系统接口模块，提供文件、目录、进程操作",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "os.path 模块",
+      "definition": "路径操作模块，提供 join、split、exists 等函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "os.environ",
+      "definition": "操作系统环境变量字典",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "zipfile",
+      "definition": "ZIP 压缩包读写模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "pathlib 模块",
+      "definition": "面向对象路径操作模块，Python 3.4+",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "pickle 模块",
+      "definition": "Python 对象序列化模块，将对象转换为字节流",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "pipes 模块",
+      "definition": "Shell 管道接口模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "platform 模块",
+      "definition": "平台信息查询模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "plistlib 模块",
+      "definition": "Apple plist 文件读写模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "pprint 模块",
+      "definition": "格式化打印模块，美化输出",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "profile 模块",
+      "definition": "代码性能分析模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "pstats 模块",
+      "definition": "性能统计结果格式模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "pty 模块",
+      "definition": "伪终端编程模块（Unix）",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "pwd 模块",
+      "definition": "Unix 用户密码数据库模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "py_compile 模块",
+      "definition": "Python 源码编译模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "pyclbr 模块",
+      "definition": "Python 类浏览器信息模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "queue 模块",
+      "definition": "线程安全队列模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "quopri 模块",
+      "definition": "MIME Quoted-Printable 编码解码模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "random 模块",
+      "definition": "伪随机数生成模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "re 模块",
+      "definition": "正则表达式匹配和处理模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "re.match",
+      "definition": "从字符串开头匹配模式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "re.search",
+      "definition": "在字符串任意位置搜索模式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "re.findall",
+      "definition": "返回所有匹配的非重叠子串",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "re.sub",
+      "definition": "替换匹配的模式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "re.compile",
+      "definition": "预编译正则表达式模式",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "readline 模块",
+      "definition": "GNU readline 接口模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "resource 模块",
+      "definition": "系统资源使用查询模块（Unix）",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "rlcompleter 模块",
+      "definition": "命令行自动补全模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "runpy 模块",
+      "definition": "模块定位和执行模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "sched 模块",
+      "definition": "事件调度模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "secrets 模块",
+      "definition": "密码学安全随机数模块，生成安全令牌",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "select 模块",
+      "definition": "I/O 多路复用模块（Unix）",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "selectors 模块",
+      "definition": "高级 I/O 多路复用模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "shlex 模块",
+      "definition": "Shell 词法分析模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "shutil 模块",
+      "definition": "高级文件操作模块，提供复制、移动、删除等功能",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "signal 模块",
+      "definition": "Unix 信号处理模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "smtpd 模块",
+      "definition": "SMTP 邮件服务器模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "smtplib 模块",
+      "definition": "SMTP 邮件发送模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "sndhdr 模块",
+      "definition": "声音文件类型检测模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "socket 模块",
+      "definition": "网络套接字编程模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "socketserver 模块",
+      "definition": "网络服务器框架模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "spwd 模块",
+      "definition": "Unix shadow 密码数据库模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "sqlite3 模块",
+      "definition": "SQLite 数据库接口模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "ssl 模块",
+      "definition": "SSL/TLS 加密套接字模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "stat 模块",
+      "definition": "文件状态解析模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "statistics 模块",
+      "definition": "统计数学模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "string 模块",
+      "definition": "字符串常量和工具模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "struct 模块",
+      "definition": "二进制数据结构打包解包模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "subprocess 模块",
+      "definition": "子进程创建和管理模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "sunau 模块",
+      "definition": "Sun AU 音频文件模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "symbol 模块",
+      "definition": "Python 语法符号常量模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "sys 模块",
+      "definition": "Python 解释器系统接口模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "sys.argv",
+      "definition": "命令行参数列表",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "sys.path",
+      "definition": "模块搜索路径列表",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "sys.modules",
+      "definition": "已导入模块缓存字典",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "sys.exit",
+      "definition": "退出解释器函数",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "tarfile 模块",
+      "definition": "TAR 压缩包读写模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "telnetlib 模块",
+      "definition": "Telnet 协议客户端模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "tempfile 模块",
+      "definition": "临时文件和目录创建模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "textwrap 模块",
+      "definition": "文本包装和填充模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "threading 模块",
+      "definition": "多线程编程模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "threading.Lock",
+      "definition": "线程同步互斥锁",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "threading.RLock",
+      "definition": "可重入互斥锁",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "time 模块",
+      "definition": "时间访问和转换模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "timeit 模块",
+      "definition": "代码片段执行时间测量模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "tkinter 模块",
+      "definition": "Tcl/Tk GUI 图形界面模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "tokenize 模块",
+      "definition": "Python 源代码词法分析模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "traceback 模块",
+      "definition": "异常栈回溯模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "tracemalloc 模块",
+      "definition": "内存分配追踪模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "tty 模块",
+      "definition": "终端控制模块（Unix）",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "turtle 模块",
+      "definition": "海龟绘图模块，适合教学",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "unittest 模块",
+      "definition": "单元测试框架模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "urllib 模块",
+      "definition": "URL 处理模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "urllib.parse 模块",
+      "definition": "URL 解析和构造模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "urllib.request 模块",
+      "definition": "URL 请求模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "urllib.robotparser 模块",
+      "definition": "robots.txt 解析模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "uselect 模块",
+      "definition": "非阻塞 I/O 多路复用模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "uu 模块",
+      "definition": "UU 编码解码模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "venv 模块",
+      "definition": "虚拟环境创建模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "venv/virtualenv",
+      "definition": "虚拟环境隔离工具",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "wave 模块",
+      "definition": "WAV 音频文件读写模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "weakref 模块",
+      "definition": "弱引用模块，不阻止对象被垃圾回收",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "webbrowser 模块",
+      "definition": "系统默认浏览器控制模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "winsound 模块",
+      "definition": "Windows 声音播放模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "xml 模块",
+      "definition": "XML 处理模块总称",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "xml.etree.ElementTree",
+      "definition": "XML 元素树解析模块，轻量级 XML 处理",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "xml.dom 模块",
+      "definition": "DOM 风格 XML 处理模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "xml.sax 模块",
+      "definition": "SAX 风格流式 XML 解析模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "xxdiff 模块",
+      "definition": "文件差异比较模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "yaml 模块",
+      "definition": "YAML 数据序列化模块（需安装 pyyaml）",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "zipapp 模块",
+      "definition": "Python 应用打包模块",
+      "slug": "python/glossary"
+    },
+    {
+      "name": "zlib 模块",
+      "definition": "zlib 压缩解压模块",
+      "slug": "python/glossary"
+    }
+  ]
+}

@@ -1,0 +1,210 @@
+{
+  "moduleId": "git",
+  "terms": [
+    {
+      "name": "Git",
+      "definition": "Git 是由 Linus Torvalds 于 2005 年创建的分布式版本控制系统，用于追踪文件变化、协调多人协作开发。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "Linus Torvalds",
+      "definition": "Linus Torvalds 是芬兰计算机科学家，Git 的创始人和主要开发者，同时也是 Linux 内核的创建者。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "版本控制",
+      "definition": "版本控制是管理文件随时间变化的系统，允许追踪修改历史、恢复到早期版本、比较不同版本差异。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "仓库",
+      "definition": "仓库是 Git 存储项目历史和元数据的目录，包含所有文件的完整历史记录。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "工作目录",
+      "definition": "工作目录是仓库中检出（checkout）到本地的某个版本的文件，用户实际编辑文件的位置。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "Git 对象",
+      "definition": "Git 使用四种类型的对象存储数据：blob（二进制文件内容）、tree（目录结构）、commit（提交快照）、tag（标签引用）。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "暂存区",
+      "definition": "暂存区是 Git 的核心概念之一，是 .git/index 文件，记录下次提交将包含的文件信息。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "HEAD",
+      "definition": "HEAD 是 Git 的特殊指针，指向当前分支的最新提交，标识你正在工作的提交位置。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "分支",
+      "definition": "分支是指向提交对象的可变指针，Git 的分支是轻量级且高效的，允许在同一仓库中并行开发。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "标签",
+      "definition": "标签是对特定提交的永久引用，通常用于标记版本发布点，如 v1.0.0。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git init",
+      "definition": "git init 命令在当前目录创建一个新的 Git 仓库，生成 .git 子目录和必要的配置文件。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git clone",
+      "definition": "git clone 复制远程仓库到本地，创建工作目录并自动配置 remote 指向远程仓库。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git add",
+      "definition": "git add 将工作目录中的变更添加到暂存区，决定哪些更改将包含在下一次提交中。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git commit",
+      "definition": "git commit 创建新提交，将暂存区内容永久记录为仓库历史中的一个节点。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git status",
+      "definition": "git status 显示工作目录和暂存区的当前状态，包括已修改、已暂存、未追踪的文件。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git diff",
+      "definition": "git diff 显示文件之间的差异，用于查看未暂存的修改或已暂存与提交的差异。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git log",
+      "definition": "git log 显示仓库的提交历史，默认从最新到最早显示各提交的哈希、作者、日期和提交信息。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git stash",
+      "definition": "git stash 临时保存工作目录和暂存区的变更，让工作目录回到干净状态，以便切换分支或进行其他操作。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git branch",
+      "definition": "git branch 命令用于创建、列出、删除和重命名分支。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git checkout",
+      "definition": "git checkout 切换分支或恢复工作目录文件，是 Git 最常用的命令之一。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git merge",
+      "definition": "git merge 将一个分支的更改合并到当前分支，创建新的提交（合并提交）表示合并操作。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git rebase",
+      "definition": "git rebase 将提交在另一分支基础上重新应用，产生更线性的历史记录。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "合并冲突",
+      "definition": "合并冲突发生于 Git 无法自动合并时，同一文件的同一位置被不同分支修改。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git remote",
+      "definition": "remote 是本地仓库与远程仓库之间的连接，通过名称和 URL 定义，常见名称为 origin。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git push",
+      "definition": "git push 将本地分支提交发送到远程仓库，同步本地仓库的更改到远程。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git fetch",
+      "definition": "git fetch 从远程仓库获取最新提交到本地，更新远程跟踪分支，但不自动合并。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git pull",
+      "definition": "git pull 从远程仓库获取并合并到当前分支，是 fetch 和 merge 的组合操作。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "origin",
+      "definition": "origin 是克隆仓库时 Git 自动创建的默认远程仓库名称，指向被克隆的仓库 URL。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git reset",
+      "definition": "git reset 移动分支指针和 HEAD 位置，可以选择性地修改暂存区和工作目录。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git revert",
+      "definition": "git revert 创建一个新提交，撤销指定提交引入的更改，是安全的撤销方式。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git restore",
+      "definition": "git restore 是 Git 2.23 引入的新命令，用于恢复工作目录或暂存区文件，比 checkout -- 更明确。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": ".gitignore",
+      "definition": ".gitignore 文件指定 Git 应忽略的文件和目录，这些文件不会被跟踪、暂存或提交。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git cherry-pick",
+      "definition": "git cherry-pick 将指定提交（一个或多个）在当前分支上重新应用，产生新的提交。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git submodule",
+      "definition": "submodule 允许在一个 Git 仓库中嵌入另一个独立的 Git 仓库，保持子仓库的版本独立控制。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "Git Hooks",
+      "definition": "Git Hooks 是在特定 Git 操作（如 commit、push、merge）前后自动执行的脚本，用于自动化检查或处理。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "Git LFS",
+      "definition": "Git LFS 是 Git 扩展，用于高效管理仓库中的大文件，将大文件内容存储在 LFS 服务器，仓库只保存指针引用。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "git config",
+      "definition": "git config 用于设置 Git 配置选项，包括用户信息、行为偏好、别名等。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "SSH 配置",
+      "definition": "SSH 配置文件用于配置 SSH 连接参数、多账户、密钥文件等，Git 远程操作常用 SSH 协议。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "Fork",
+      "definition": "Fork 是在 GitHub/GitLab 等平台创建他人仓库的副本到自己的账户下。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "Pull Request",
+      "definition": "Pull Request 是向原仓库提交代码审查和合并请求的机制，是开源协作的核心流程。",
+      "slug": "git/glossary"
+    },
+    {
+      "name": "Git Flow",
+      "definition": "Git Flow 是一种 Git 分支管理策略，通过主分支、开发分支、功能分支、发布分支、热修复分支组织开发流程。",
+      "slug": "git/glossary"
+    }
+  ]
+}

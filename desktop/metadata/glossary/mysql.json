@@ -1,0 +1,1935 @@
+{
+  "moduleId": "mysql",
+  "terms": [
+    {
+      "name": "聚合函数",
+      "definition": "COUNT、SUM、AVG、MAX、MIN 等汇总数据函数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "别名",
+      "definition": "列或表的临时名称，用 AS 指定",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ALTER",
+      "definition": "修改表结构的 SQL 语句",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "AND",
+      "definition": "逻辑与运算符",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "注释",
+      "definition": "SQL 代码中的说明文本",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CREATE",
+      "definition": "创建数据库对象的语句",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "数据类型",
+      "definition": "值的种类，如 INT、VARCHAR、DATE",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "数据库",
+      "definition": "存储数据的容器",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "删除",
+      "definition": "从表中删除数据行",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "删除表",
+      "definition": "删除整个表或数据库",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "插入",
+      "definition": "向表中添加新数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "主键",
+      "definition": "唯一标识每行数据的列",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "查询",
+      "definition": "从数据库获取数据的语句",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "关系",
+      "definition": "表之间的关联关系",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "模式",
+      "definition": "数据库的结构定义",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SELECT",
+      "definition": "查询数据的 SQL 语句",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SQL",
+      "definition": "结构化查询语言",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "表",
+      "definition": "由行和列组成的数据集合",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "更新",
+      "definition": "修改表中现有数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "值",
+      "definition": "存储在单元格中的数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "WHERE",
+      "definition": "过滤结果的条件子句",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ABS",
+      "definition": "返回数值的绝对值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ACID",
+      "definition": "原子性、一致性、隔离性、持久性",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ADD COLUMN",
+      "definition": "向表中添加新列",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "AES_DECRYPT",
+      "definition": "AES 解密函数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "AES_ENCRYPT",
+      "definition": "AES 加密函数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ALTER TABLE",
+      "definition": "修改表结构",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ANALYZE TABLE",
+      "definition": "分析表用于优化",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "AS",
+      "definition": "定义别名",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ASC",
+      "definition": "升序排列",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "AVG",
+      "definition": "计算平均值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "BEGIN",
+      "definition": "开启事务",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "BETWEEN",
+      "definition": "范围查询运算符",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "BIN",
+      "definition": "十进制转二进制",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "BINARY",
+      "definition": "二进制数据类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "BLOB",
+      "definition": "二进制大对象类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CASE",
+      "definition": "条件表达式",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CAST",
+      "definition": "类型转换函数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CEILING",
+      "definition": "向上取整",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CHAR",
+      "definition": "定长字符类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CHAR_LENGTH",
+      "definition": "字符数量",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CHECK",
+      "definition": "约束检查条件",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "COALESCE",
+      "definition": "返回第一个非 NULL 值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "COLUMN",
+      "definition": "表中的列",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "COMMIT",
+      "definition": "提交事务",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CONCAT",
+      "definition": "连接字符串",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CONSTRAINT",
+      "definition": "约束条件",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CONVERT",
+      "definition": "类型转换",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "COUNT",
+      "definition": "统计行数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CREATE DATABASE",
+      "definition": "创建数据库",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CREATE INDEX",
+      "definition": "创建索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CREATE TABLE",
+      "definition": "创建表",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CREATE VIEW",
+      "definition": "创建视图",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CURDATE",
+      "definition": "返回当前日期",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CURRENT_DATE",
+      "definition": "当前日期",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CURRENT_TIME",
+      "definition": "当前时间",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CURRENT_TIMESTAMP",
+      "definition": "当前时间戳",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DATABASE",
+      "definition": "数据库名称",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DATE",
+      "definition": "日期类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DATEDIFF",
+      "definition": "日期差值计算",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DATE_FORMAT",
+      "definition": "日期格式化",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DAY",
+      "definition": "提取日期的天",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DAYNAME",
+      "definition": "日期对应的星期名",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DAYOFMONTH",
+      "definition": "月份中的第几天",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DAYOFWEEK",
+      "definition": "星期中的第几天",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DAYOFYEAR",
+      "definition": "年份中的第几天",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DECIMAL",
+      "definition": "精确小数类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DEFAULT",
+      "definition": "默认值约束",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DELETE FROM",
+      "definition": "删除数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DESC",
+      "definition": "降序排列",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DISTINCT",
+      "definition": "去重查询",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DOUBLE",
+      "definition": "双精度浮点数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DROP COLUMN",
+      "definition": "删除列",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DROP DATABASE",
+      "definition": "删除数据库",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DROP INDEX",
+      "definition": "删除索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DROP TABLE",
+      "definition": "删除表",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DROP VIEW",
+      "definition": "删除视图",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ENUM",
+      "definition": "枚举类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "EXISTS",
+      "definition": "检查子查询是否存在",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "EXPLAIN",
+      "definition": "分析查询执行计划",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "EXPORT",
+      "definition": "导出数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "EXTRACT",
+      "definition": "提取日期部分",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FIELD",
+      "definition": "字段名称",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FLOAT",
+      "definition": "单精度浮点数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FLOOR",
+      "definition": "向下取整",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FOR",
+      "definition": "循环语句",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FOREIGN KEY",
+      "definition": "外键约束",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FORMAT",
+      "definition": "格式化数字或日期",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FROM",
+      "definition": "指定查询来源表",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FULL OUTER JOIN",
+      "definition": "完全外连接",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FULLTEXT INDEX",
+      "definition": "全文索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FUNCTION",
+      "definition": "存储函数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "GET_LOCK",
+      "definition": "获取命名锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "GROUP BY",
+      "definition": "分组查询",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "GROUP_CONCAT",
+      "definition": "连接分组内的值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "HAVING",
+      "definition": "分组后过滤",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "HEX",
+      "definition": "十六进制转换",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "HOUR",
+      "definition": "提取小时",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "IFNULL",
+      "definition": "NULL 时返回替代值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "IGNORE",
+      "definition": "忽略错误继续执行",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "IMPORT",
+      "definition": "导入数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "IN",
+      "definition": "在列表中查询",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "INDEX",
+      "definition": "索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "INNER JOIN",
+      "definition": "内连接",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "INSERT INTO",
+      "definition": "插入数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "INSERT IGNORE",
+      "definition": "忽略重复插入",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "INSERT ON DUPLICATE KEY",
+      "definition": "键冲突时更新",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "INT",
+      "definition": "整数类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "INTEGER",
+      "definition": "整数类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "INTERVAL",
+      "definition": "时间间隔",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "IS NULL",
+      "definition": "检查 NULL 值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "IS NOT NULL",
+      "definition": "检查非 NULL 值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "JOIN",
+      "definition": "连接表",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "JSON",
+      "definition": "JSON 数据类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "JSON_ARRAY",
+      "definition": "创建 JSON 数组",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "JSON_OBJECT",
+      "definition": "创建 JSON 对象",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "KEY",
+      "definition": "索引关键字",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LAST_INSERT_ID",
+      "definition": "最后插入的 ID",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LEADING",
+      "definition": "去除前导字符",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LEFT",
+      "definition": "提取左侧字符",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LEFT JOIN",
+      "definition": "左外连接",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LENGTH",
+      "definition": "字节长度",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LIKE",
+      "definition": "模式匹配",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LIMIT",
+      "definition": "限制返回行数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LOAD DATA",
+      "definition": "批量导入数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LOCATE",
+      "definition": "查找子串位置",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LOCK",
+      "definition": "表锁或行锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LOWER",
+      "definition": "转换为小写",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LPAD",
+      "definition": "左填充字符串",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LTRIM",
+      "definition": "去除左侧空格",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "MAX",
+      "definition": "返回最大值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "MD5",
+      "definition": "MD5 哈希值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "MID",
+      "definition": "提取子串",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "MIN",
+      "definition": "返回最小值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "MINUTE",
+      "definition": "提取分钟",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "MOD",
+      "definition": "取模运算",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "MONTH",
+      "definition": "提取月份",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "MONTHNAME",
+      "definition": "月份名称",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "NATURAL JOIN",
+      "definition": "自然连接",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "NOT",
+      "definition": "逻辑非",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "NOT NULL",
+      "definition": "非空约束",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "NOW",
+      "definition": "当前日期时间",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "NULL",
+      "definition": "空值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "NUMERIC",
+      "definition": "数值类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "OFFSET",
+      "definition": "结果偏移量",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ON",
+      "definition": "连接条件",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ON DELETE",
+      "definition": "删除时级联操作",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ON UPDATE",
+      "definition": "更新时级联操作",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "OPTIMIZE TABLE",
+      "definition": "优化表碎片",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "OR",
+      "definition": "逻辑或",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ORDER BY",
+      "definition": "结果排序",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "OUTER JOIN",
+      "definition": "外连接",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "OUTFILE",
+      "definition": "导出到文件",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "OVER",
+      "definition": "窗口函数定义",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "PASSWORD",
+      "definition": "密码哈希函数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "POSITION",
+      "definition": "子串位置",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "POW",
+      "definition": "幂运算",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "PREPARE",
+      "definition": "预处理语句",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "PRIMARY KEY",
+      "definition": "主键约束",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "PROCEDURE",
+      "definition": "存储过程",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "QUARTER",
+      "definition": "季度",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "RAND",
+      "definition": "随机数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "RANK",
+      "definition": "排名函数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "READ",
+      "definition": "读取锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "READ UNCOMMITTED",
+      "definition": "读取未提交",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "READ COMMITTED",
+      "definition": "读取已提交",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "READ ONLY",
+      "definition": "只读模式",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "REAL",
+      "definition": "浮点类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "REFERENCES",
+      "definition": "外键引用",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "RENAME",
+      "definition": "重命名",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "RENAME TABLE",
+      "definition": "重命名表",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "REPEAT",
+      "definition": "重复字符串",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "REPLACE",
+      "definition": "替换字符串或数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "REPLACE INTO",
+      "definition": "替换或插入",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "REVOKE",
+      "definition": "撤销权限",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "RIGHT",
+      "definition": "提取右侧字符",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "RIGHT JOIN",
+      "definition": "右外连接",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ROLLBACK",
+      "definition": "回滚事务",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ROUND",
+      "definition": "四舍五入",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ROW",
+      "definition": "数据行",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ROW_NUMBER",
+      "definition": "行号函数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "RPAD",
+      "definition": "右填充字符串",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "RTRIM",
+      "definition": "去除右侧空格",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SCHEMA",
+      "definition": "数据库模式",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SECOND",
+      "definition": "提取秒",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SELECT DISTINCT",
+      "definition": "去重查询",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SERIALIZABLE",
+      "definition": "可串行化隔离级别",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SESSION",
+      "definition": "会话",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SET",
+      "definition": "设置变量或值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SHOW",
+      "definition": "显示数据库信息",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SIGN",
+      "definition": "返回符号",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SILENT",
+      "definition": "静默模式",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SMALLINT",
+      "definition": "小整数类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SOME",
+      "definition": "与 ANY 相同",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SOUNDEX",
+      "definition": "语音编码",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SPACE",
+      "definition": "生成空格字符串",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SQRT",
+      "definition": "平方根",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "START TRANSACTION",
+      "definition": "开始事务",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "STD",
+      "definition": "标准差",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "STDDEV",
+      "definition": "标准差",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "STOP",
+      "definition": "停止语句",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "STORED",
+      "definition": "物化视图",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "STRAIGHT_JOIN",
+      "definition": "强制顺序连接",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "STRING",
+      "definition": "字符串类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SUBDATE",
+      "definition": "减去日期",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SUBSTRING",
+      "definition": "提取子串",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SUM",
+      "definition": "求和",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SWITCH",
+      "definition": "条件分支",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SYSDATE",
+      "definition": "系统当前日期",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SYSTEM",
+      "definition": "系统用户",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "TABLE",
+      "definition": "表",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "TABLE NAME",
+      "definition": "表名",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "TEMPORARY",
+      "definition": "临时表",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "TEXT",
+      "definition": "文本类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "THEN",
+      "definition": "CASE 条件分支",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "TINYINT",
+      "definition": "微整数类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "TO",
+      "definition": "目标位置",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "TRAILING",
+      "definition": "去除尾部字符",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "TRANSACTION",
+      "definition": "事务",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "TRIM",
+      "definition": "去除首尾空格",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "TRUNCATE",
+      "definition": "清空表",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "UNICODE",
+      "definition": "统一码",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "UNION",
+      "definition": "合并结果集",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "UNION ALL",
+      "definition": "合并包含重复",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "UNIQUE",
+      "definition": "唯一约束",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "UNLOCK",
+      "definition": "解除锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "UNSIGNED",
+      "definition": "无符号整数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "UPDATE",
+      "definition": "更新数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "UPPER",
+      "definition": "转换为大写",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "USE",
+      "definition": "选择数据库",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "USER",
+      "definition": "用户名",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "USING",
+      "definition": "连接方式",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "UUID",
+      "definition": "通用唯一标识符",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "VALUES",
+      "definition": "插入的值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "VARCHAR",
+      "definition": "变长字符类型",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "VARIANCE",
+      "definition": "方差",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "VIEW",
+      "definition": "视图",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "VIRTUAL",
+      "definition": "虚拟列",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "WEEK",
+      "definition": "一年中的周",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "WEEKDAY",
+      "definition": "星期几",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "WITH",
+      "definition": "公共表达式",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "WRITE",
+      "definition": "写入锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "YEAR",
+      "definition": "提取年份",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "访问路径",
+      "definition": "查询使用的索引和扫描方式",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "会计",
+      "definition": "资源使用记录",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ACID 属性",
+      "definition": "事务的四个特性",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "聚集索引",
+      "definition": "数据按索引顺序物理存储",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "覆盖索引",
+      "definition": "包含查询所有列的索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "死锁",
+      "definition": "两个事务相互等待对方释放锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "可序列化",
+      "definition": "最高的隔离级别",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "脏读",
+      "definition": "读取未提交的数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "事件调度器",
+      "definition": "定时执行任务的调度器",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "交换分区",
+      "definition": "交换表和分区的数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "EXPLAIN ANALYZE",
+      "definition": "执行并分析查询",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "表达式索引",
+      "definition": "基于表达式的索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "外部连接",
+      "definition": "外连接",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "函数索引",
+      "definition": "存储函数结果的索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "间隙锁",
+      "definition": "索引间隙上的锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "全表扫描",
+      "definition": "读取整个表的扫描",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "全局事务标识符",
+      "definition": "全局唯一事务 ID",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "哈希连接",
+      "definition": "使用哈希表的连接",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "隐式事务",
+      "definition": "自动提交的事务",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "索引提示",
+      "definition": "强制使用特定索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "索引合并",
+      "definition": "合并多个索引结果",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "InnoDB",
+      "definition": "MySQL 默认存储引擎",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "隔离级别",
+      "definition": "并发事务的隔离程度",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "连接池",
+      "definition": "复用数据库连接",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "锁定读取",
+      "definition": "加锁的读取操作",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "日志文件组",
+      "definition": "重做日志的文件组",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "主从复制",
+      "definition": "主库到从库的复制",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "物化视图",
+      "definition": "预先计算并存储的结果",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "内存表",
+      "definition": "存储在内存中的表",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "Merge",
+      "definition": "合并存储引擎",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "MRR",
+      "definition": "范围查询优化",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "多源复制",
+      "definition": "多个主库的复制",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "MyISAM",
+      "definition": "MySQL 旧版存储引擎",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "非聚集索引",
+      "definition": "数据与索引分离存储",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "非阻塞 DDL",
+      "definition": "在线表结构变更",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "乐观锁",
+      "definition": "假设冲突少，用版本号控制",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "优化器提示",
+      "definition": "指导优化器决策",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "排序合并连接",
+      "definition": "先排序再合并的连接",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "分区",
+      "definition": "将表水平拆分",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "分区裁剪",
+      "definition": "只读取相关分区",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "主从切换",
+      "definition": "主库故障时切换到从库",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "悲观锁",
+      "definition": "假设冲突多，提前加锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "预读",
+      "definition": "预测性读取数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "记录锁",
+      "definition": "行级别的锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "正则表达式",
+      "definition": "模式匹配",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "重复读",
+      "definition": "事务期间读取一致",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "复制过滤器",
+      "definition": "过滤复制的数据库或表",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "复制延迟",
+      "definition": "从库落后主库的时间",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "回滚段",
+      "definition": "存储撤销信息",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "行锁",
+      "definition": "行级别的锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SAVEPOINT",
+      "definition": "事务保存点",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "二级索引",
+      "definition": "除主键外的其他索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "半连接",
+      "definition": "只返回匹配行的列",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "序列",
+      "definition": "自动生成序列号",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "顺序读",
+      "definition": "按顺序读取数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "快照隔离",
+      "definition": "基于快照的隔离",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SQL 模式",
+      "definition": "SQL 执行规则配置",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "语句级触发器",
+      "definition": "语句级别触发器",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "存储程序",
+      "definition": "存储过程、函数、触发器",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "存储引擎",
+      "definition": "数据存储和读取的引擎",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "子查询",
+      "definition": "嵌套在查询中的查询",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "表锁",
+      "definition": "表级别的锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "表空间",
+      "definition": "存储表数据的文件",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "触发器",
+      "definition": "事件自动执行的操作",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "唯一索引",
+      "definition": "值必须唯一的索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "虚拟列",
+      "definition": "计算得出的列",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "无锁读取",
+      "definition": "不加锁的读取",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "行级触发器",
+      "definition": "每行触发一次",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "延迟复制",
+      "definition": "从库延迟复制",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "游标",
+      "definition": "逐行处理结果集",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "预处理语句",
+      "definition": "预编译的 SQL 语句",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "XA 事务",
+      "definition": "分布式事务",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "脏页",
+      "definition": "已修改未写入磁盘的页",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "缓冲池",
+      "definition": "InnoDB 缓存数据和索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "自适应哈希索引",
+      "definition": "InnoDB 自动构建的哈希索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "双写缓冲区",
+      "definition": "防止部分写入",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "Change Buffer",
+      "definition": "缓存二级索引更新",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "Redo Log",
+      "definition": "重做日志，确保持久性",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "Undo Log",
+      "definition": "回滚日志，支持回滚和 MVCC",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "MVCC",
+      "definition": "多版本并发控制",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "组提交",
+      "definition": "合并多个提交一次写入",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "刷新邻居",
+      "definition": "刷新相邻脏页",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "逻辑备份",
+      "definition": "导出 SQL 语句",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "物理备份",
+      "definition": "复制数据文件",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "增量备份",
+      "definition": "只备份变更部分",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "时间点恢复",
+      "definition": "恢复到特定时间点",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "二进制日志",
+      "definition": "记录数据变更",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "中继日志",
+      "definition": "从库接收的复制事件",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "GTID",
+      "definition": "全局事务标识符",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "延迟关联",
+      "definition": "优化 GROUP BY",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "紧凑索引",
+      "definition": "行格式的一种",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "动态行格式",
+      "definition": "动态行格式",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "行溢出",
+      "definition": "大列存储在溢出页",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "全文索引",
+      "definition": "文本内容搜索",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "中文分词",
+      "definition": "中文词语切分",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "INFORMATION_SCHEMA",
+      "definition": "元数据数据库",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "PERFORMANCE_SCHEMA",
+      "definition": "性能监控数据库",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "慢查询日志",
+      "definition": "记录执行慢的查询",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "通用查询日志",
+      "definition": "记录所有查询",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "审计日志",
+      "definition": "安全审计日志",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "连接属性",
+      "definition": "连接时的元信息",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "可切换授权",
+      "definition": "可插拔认证",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "密码过期",
+      "definition": "强制密码更新",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "密码验证",
+      "definition": "验证密码强度",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "角色",
+      "definition": "权限集合",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "资源组",
+      "definition": "限制资源使用",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "锁监控",
+      "definition": "监控锁状态",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "死锁检测",
+      "definition": "自动检测死锁",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "事务隔离级别",
+      "definition": "设置事务隔离程度",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "只读事务",
+      "definition": "只读事务优化",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "自动提交",
+      "definition": "每条语句自动提交",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "多语句",
+      "definition": "一条语句执行多条",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "参数化查询",
+      "definition": "使用占位符的查询",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "语句重写",
+      "definition": "重写 SQL 语句",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "条件推入",
+      "definition": "条件下推到存储引擎",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "索引条件下推",
+      "definition": "索引条件下推",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "批量插入",
+      "definition": "批量导入数据",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "延迟插入",
+      "definition": "延迟插入到队列",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "IGNORE ROW",
+      "definition": "忽略重复行",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LOW_PRIORITY",
+      "definition": "低优先级操作",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "HIGH_PRIORITY",
+      "definition": "高优先级操作",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FORCE INDEX",
+      "definition": "强制使用索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "IGNORE INDEX",
+      "definition": "忽略某些索引",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SQL_CACHE",
+      "definition": "缓存查询结果",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SQL_NO_CACHE",
+      "definition": "不缓存结果",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SQL_SMALL_RESULT",
+      "definition": "小结果集优化",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SQL_BIG_RESULT",
+      "definition": "大结果集优化",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "SQL_BUFFER_RESULT",
+      "definition": "缓冲结果集",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LIMIT OFFSET",
+      "definition": "分页查询",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FOUND_ROWS",
+      "definition": "总行数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "ROW_COUNT",
+      "definition": "影响行数",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "DENSE_RANK",
+      "definition": "密集排名",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LEAD",
+      "definition": "下一行值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LAG",
+      "definition": "上一行值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "FIRST_VALUE",
+      "definition": "第一行值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "LAST_VALUE",
+      "definition": "最后一行值",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "NTILE",
+      "definition": "分桶",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "CUME_DIST",
+      "definition": "累积分布",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "PERCENT_RANK",
+      "definition": "百分比排名",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "OVER PARTITION",
+      "definition": "窗口分区",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "OVER ORDER BY",
+      "definition": "窗口排序",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "OVER ROWS",
+      "definition": "窗口行范围",
+      "slug": "mysql/glossary"
+    },
+    {
+      "name": "OVER RANGE",
+      "definition": "窗口值范围",
+      "slug": "mysql/glossary"
+    }
+  ]
+}

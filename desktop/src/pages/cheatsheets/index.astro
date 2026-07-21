@@ -1,0 +1,370 @@
+---
+import Breadcrumb from '@/components/Breadcrumb.astro';
+/**
+ * 速查表索引页路由（Phase 8b 新建）
+ *
+ * 功能概述：
+ * - 从 data/cheatsheets/*.json 加载所有速查表（共 9 个）
+ * - 卡片网格布局：每张卡片显示模块名、最后更新日期、章节数、条目数
+ * - 顶部头部：标题 + 速查表总数 + 总条目数
+ * - 卡片点击跳转 /cheatsheets/{name}/
+ *
+ * 数据源：
+ * - data/cheatsheets/*.json：使用 import.meta.glob 同步加载所有 JSON 文件
+ * - 文件名（如 `javascript`）作为速查表标识符（name）
+ * - JSON 内 `元数据.模块名称` 作为标题
+ * - JSON 内 `分组` 数组作为章节，`分组[].条目` 作为条目
+ *
+ * 设计要点：
+ * - import.meta.glob 的 eager:true 选项直接返回模块对象，避免异步加载
+ * - 字段映射：中文 key → 英文 props（与 CheatsheetData 接口对齐）
+ * - 卡片图标使用速查表对应模块的颜色（与 modules.json 中模块颜色一致）
+ *
+ * Skill 偏差报备：
+ * 无对应 Skill 完全匹配此场景。已参考 astro-framework Skill 中
+ * "import.meta.glob 模式加载多文件"最佳实践。
+ */
+import Layout from '@/components/Layout.astro';
+import SEO from '@/components/SEO.astro';
+import { getModule } from '@/lib/modules';
+import { withBase } from '@/lib/url';
+
+/**
+ * 速查表卡片信息（简化结构，用于列表展示）
+ */
+interface CheatsheetCard {
+  /** 速查表标识（文件名，如 `javascript`） */
+  name: string;
+  /** 模块名称（来自 JSON 元数据.模块名称） */
+  title: string;
+  /** 最后更新日期 */
+  updatedAt: string;
+  /** 章节数量 */
+  sectionCount: number;
+  /** 条目总数（所有章节条目数之和） */
+  itemCount: number;
+  /** 前置知识列表 */
+  prerequisites: string[];
+  /** 关联模块颜色（用于卡片视觉标识） */
+  color: string;
+  /** 关联模块图标 */
+  icon: string;
+}
+
+/**
+ * 加载所有速查表 JSON 文件
+ *
+ * 实现说明：
+ * - import.meta.glob 第一个参数为相对当前文件的 glob 模式
+ * - eager:true 直接返回模块对象（非 Promise）
+ * - as 'json' 告诉 Astro 这是 JSON 模块
+ */
+const cheatsheetModules = import.meta.glob<{
+  default: {
+    元数据?: {
+      模块名称?: string;
+      版本?: string;
+      最后更新?: string;
+      前置知识?: string[];
+      推荐学习顺序?: string[];
+    };
+    分组?: Array<{
+      分组名?: string;
+      分组说明?: string;
+      条目?: Array<{ 描述?: string; 代码?: string }>;
+    }>;
+  };
+}>('../data/cheatsheets/*.json', { eager: true, import: 'default' });
+
+/**
+ * 构建速查表卡片列表
+ *
+ * 实现说明：
+ * - 从 glob 返回的对象中提取 path 与数据
+ * - path 形如 `../data/cheatsheets/javascript.json`，提取中间的 `javascript` 作为 name
+ * - 章节数 = 分组.length
+ * - 条目数 = 所有分组中条目数之和
+ * - 颜色与图标优先从 modules.json 中匹配（按 name 查找模块）
+ */
+const cheatsheets: CheatsheetCard[] = Object.entries(cheatsheetModules)
+  .map(([path, data]) => {
+    // 从路径中提取 name：../data/cheatsheets/javascript.json → javascript
+    const name =
+      path
+        .split('/')
+        .pop()
+        ?.replace(/\.json$/, '') ?? 'unknown';
+    const meta = data.元数据;
+    const sections = data.分组 ?? [];
+
+    /** 累计条目数 */
+    const itemCount = sections.reduce((sum, section) => sum + (section.条目?.length ?? 0), 0);
+
+    /** 尝试从模块注册表匹配颜色与图标 */
+    const moduleMeta = getModule(name);
+
+    return {
+      name,
+      title: meta?.模块名称 ?? name,
+      updatedAt: meta?.最后更新 ?? '',
+      sectionCount: sections.length,
+      itemCount,
+      prerequisites: meta?.前置知识 ?? [],
+      color: moduleMeta?.color ?? '#4f5bd5',
+      icon: moduleMeta?.icon ?? name.charAt(0).toUpperCase(),
+    };
+  })
+  .sort((a, b) => a.title.localeCompare(b.title, 'zh-CN'));
+
+/** 速查表总数 */
+const totalCheatsheets = cheatsheets.length;
+
+/** 总条目数 */
+const totalItems = cheatsheets.reduce((sum, c) => sum + c.itemCount, 0);
+
+/** 面包屑导航项 */
+const breadcrumb = [{ label: '首页', href: withBase('/') }, { label: '速查表' }];
+
+/** SEO 面包屑 */
+const seoBreadcrumbs = [
+  { label: '首页', href: '/' },
+  { label: '速查表', href: '/cheatsheets/' },
+];
+---
+
+<Layout
+  title="速查表 - FANDEX"
+  description="编程语言与工具语法速查表集合，快速查阅常用代码片段"
+  canonical={withBase('/cheatsheets/')}
+>
+  <SEO
+    slot="head"
+    title="速查表 - FANDEX"
+    description="编程语言与工具语法速查表集合，快速查阅常用代码片段"
+    type="website"
+    breadcrumbs={seoBreadcrumbs}
+  />
+
+  <div class="mx-auto w-full max-w-5xl px-4 pb-12 md:px-8">
+    {/* 面包屑导航 */}
+    <Breadcrumb items={breadcrumb} />
+
+    {/* ============================================================
+     * 页面头部：标题 + 速查表总数 + 总条目数
+     * ============================================================ */}
+    <header
+      class="relative overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+    >
+      <span
+        class="absolute inset-x-0 top-0 h-1 bg-primary"
+        aria-hidden="true"
+      />
+      <div class="flex flex-col gap-2 p-6 md:p-8">
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="text-2xl font-bold text-foreground md:text-3xl">
+            速查表
+          </h1>
+          <span
+            class="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+          >
+            {totalCheatsheets} 张速查表
+          </span>
+        </div>
+        <p class="text-sm text-muted-foreground md:text-base">
+          编程语言与工具语法速查表集合 · 共 {totalItems} 个代码片段 · 按字母排序
+        </p>
+      </div>
+    </header>
+
+    {/* ============================================================
+     * 速查表卡片网格
+     * ============================================================ */}
+    {totalCheatsheets === 0 ? (
+      <div
+        class="mt-6 rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground"
+      >
+        暂无速查表数据
+      </div>
+    ) : (
+      <ul class="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {cheatsheets.map((card) => (
+          <li>
+            <a
+              href={withBase(`/cheatsheets/${card.name}/`)}
+              class="group flex h-full flex-col overflow-hidden rounded-xl border border-border bg-card shadow-sm transition-all hover:-translate-y-1 hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            >
+              {/* 顶部色条 */}
+              <span
+                class="h-1.5 w-full"
+                style={`background-color:${card.color}`}
+                aria-hidden="true"
+              />
+
+              {/* 卡片头部：图标 + 标题 */}
+              <div class="flex items-start gap-3 p-5">
+                <span
+                  class="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white shadow-sm"
+                  style={`background-color:${card.color}`}
+                  aria-hidden="true"
+                >
+                  {card.icon}
+                </span>
+                <div class="min-w-0 flex-1">
+                  <h2 class="truncate text-base font-semibold text-foreground transition-colors group-hover:text-primary">
+                    {card.title}
+                  </h2>
+                  <p class="mt-0.5 text-xs text-muted-foreground">
+                    {card.name}.json
+                  </p>
+                </div>
+              </div>
+
+              {/* 统计数据 */}
+              <div class="flex items-center gap-3 px-5 pb-3 text-xs text-muted-foreground">
+                <span class="inline-flex items-center gap-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-3.5 w-3.5"
+                    aria-hidden="true"
+                  >
+                    <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+                    <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+                  </svg>
+                  <span class="tabular-nums">{card.sectionCount} 章节</span>
+                </span>
+                <span class="inline-flex items-center gap-1">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    stroke-width="2"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    class="h-3.5 w-3.5"
+                    aria-hidden="true"
+                  >
+                    <polyline points="16 18 22 12 16 6" />
+                    <polyline points="8 6 2 12 8 18" />
+                  </svg>
+                  <span class="tabular-nums">{card.itemCount} 条目</span>
+                </span>
+                {card.updatedAt && (
+                  <span class="ml-auto inline-flex items-center gap-1">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="2"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="h-3.5 w-3.5"
+                      aria-hidden="true"
+                    >
+                      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                      <line x1="16" y1="2" x2="16" y2="6" />
+                      <line x1="8" y1="2" x2="8" y2="6" />
+                      <line x1="3" y1="10" x2="21" y2="10" />
+                    </svg>
+                    <span class="tabular-nums">{card.updatedAt}</span>
+                  </span>
+                )}
+              </div>
+
+              {/* 前置知识 */}
+              {card.prerequisites.length > 0 && (
+                <div class="border-t border-border px-5 py-3">
+                  <p class="mb-1.5 text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                    前置知识
+                  </p>
+                  <ul class="flex flex-wrap gap-1">
+                    {card.prerequisites.slice(0, 3).map((p) => (
+                      <li class="rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                        {p}
+                      </li>
+                    ))}
+                    {card.prerequisites.length > 3 && (
+                      <li class="rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                        +{card.prerequisites.length - 3}
+                      </li>
+                    )}
+                  </ul>
+                </div>
+              )}
+
+              {/* 卡片底部：查看按钮 */}
+              <div class="mt-auto flex items-center justify-between border-t border-border bg-muted/20 px-5 py-2.5">
+                <span class="text-xs font-medium text-foreground">
+                  查看速查表
+                </span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="h-4 w-4 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+                  aria-hidden="true"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </div>
+            </a>
+          </li>
+        ))}
+      </ul>
+    )}
+
+    {/* 底部：返回首页 */}
+    <nav class="mt-12 flex flex-wrap gap-3" aria-label="页面导航">
+      <a
+        href={withBase('/')}
+        class="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent/50"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-4 w-4"
+          aria-hidden="true"
+        >
+          <polyline points="18 6 6 12 18 18" />
+        </svg>
+        返回首页
+      </a>
+      <a
+        href={withBase('/search/')}
+        class="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent/50"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-4 w-4"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        全文搜索
+      </a>
+    </nav>
+  </div>
+</Layout>

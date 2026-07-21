@@ -1,0 +1,282 @@
+---
+import Layout from '@/components/Layout.astro';
+import SEO from '@/components/SEO.astro';
+import Sidebar from '@/components/Sidebar.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import { render } from 'astro:content';
+import { getModule, categoryColors, getPrimaryCategory } from '@/lib/modules';
+// 通过 glossary-service 获取术语表数据，UI 层禁止直接调用 getCollection
+import { getAllGlossaryTerms, getGlossaryByModule } from '@/services';
+
+export async function getStaticPaths() {
+  // 通过 glossary-service 获取全部术语条目，提取模块集合生成静态路径
+  const allGlossary = await getAllGlossaryTerms();
+  const moduleSet = new Set<string>();
+  allGlossary.forEach((g) => {
+    if (g.data.module) moduleSet.add(g.data.module);
+  });
+  return Array.from(moduleSet).map((m) => ({ params: { module: m } }));
+}
+
+const { module } = Astro.params as { module: string };
+const meta = getModule(module || '');
+
+if (!meta) {
+  return Astro.redirect(`${import.meta.env.BASE_URL}404`);
+}
+
+// 通过 glossary-service 获取当前模块的术语条目（已按标题 localeCompare 排序）
+const sortedGlossary = await getGlossaryByModule(module);
+
+const glossaryEntries = await Promise.all(
+  sortedGlossary.map(async (g) => {
+    const { Content } = await render(g);
+    return { title: g.data.title, Content };
+  })
+);
+
+const breadcrumb = [
+  { label: '首页', href: `${import.meta.env.BASE_URL}` },
+  { label: meta.title, href: `${import.meta.env.BASE_URL}${module}/` },
+  { label: '术语表' },
+];
+---
+
+<Layout title={`${meta.title} 术语表`}>
+  <SEO
+    slot="head"
+    title={`${meta.title} 术语表`}
+    description={`${meta.title} 专有名词注释查阅表`}
+    type="article"
+  />
+  <Sidebar slot="sidebar" moduleId={module} />
+
+  <div class="glossary-page">
+    <Breadcrumb items={breadcrumb} hasSidebar />
+
+    <div class="glossary-header">
+      <span class="header-bar" style={`background:${categoryColors[getPrimaryCategory(meta)]}`}
+      ></span>
+      <div class="header-body">
+        <h1 class="glossary-title">{meta.title} 术语表</h1>
+        <p class="glossary-subtitle">专有名词注释查阅表 | {sortedGlossary.length} 个分类</p>
+      </div>
+    </div>
+
+    <div class="glossary-nav">
+      <a href={`${import.meta.env.BASE_URL}${module}/`} class="glossary-back">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"><polyline points="18 6 6 12 18 18"></polyline></svg
+        >
+        <span>返回文档列表</span>
+      </a>
+    </div>
+
+    {
+      glossaryEntries.length === 0 ? (
+        <div class="glossary-empty">
+          <p>该模块暂无术语表内容</p>
+        </div>
+      ) : (
+        <div class="glossary-sections">
+          {glossaryEntries.map((entry) => (
+            <section class="glossary-section">
+              <h2 class="glossary-section-title">{entry.title}</h2>
+              <div class="prose glossary-content">
+                <entry.Content />
+              </div>
+            </section>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</Layout>
+
+<style>
+  .glossary-page {
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-2xl);
+  }
+
+  .glossary-header {
+    display: flex;
+    margin-bottom: var(--spacing-lg);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-light);
+  }
+
+  .header-bar {
+    width: 5px;
+    flex-shrink: 0;
+  }
+
+  .header-body {
+    padding: var(--spacing-lg);
+  }
+
+  .glossary-title {
+    font-family: var(--font-display);
+    font-size: 1.4em;
+    margin: 0 0 var(--spacing-xs);
+  }
+
+  .glossary-subtitle {
+    font-size: 0.88em;
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .glossary-nav {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .glossary-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--color-text-secondary);
+    font-size: 0.85em;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-card);
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+  }
+
+  .glossary-back:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .glossary-empty {
+    text-align: center;
+    padding: var(--spacing-3xl);
+    color: var(--color-text-tertiary);
+    border: 1px dashed var(--color-border-light);
+  }
+
+  .glossary-sections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xl);
+  }
+
+  .glossary-section {
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg);
+  }
+
+  .glossary-section-title {
+    font-family: var(--font-display);
+    font-size: 0.9em;
+    font-weight: 600;
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin: 0;
+    background: var(--color-bg-card);
+    border-bottom: 1px solid var(--color-border-light);
+    color: var(--color-text);
+  }
+
+  .glossary-content {
+    padding: 0 var(--spacing-md) var(--spacing-md);
+    max-width: 100%;
+  }
+
+  .glossary-content :global(p strong:first-child) {
+    display: inline-block;
+    margin-bottom: 4px;
+  }
+
+  .glossary-content :global(table) {
+    table-layout: fixed;
+    width: 100%;
+  }
+
+  .glossary-content :global(table th:nth-child(1)),
+  .glossary-content :global(table td:nth-child(1)) {
+    width: 20%;
+    font-weight: 500;
+    white-space: nowrap;
+  }
+
+  .glossary-content :global(table th:nth-child(2)),
+  .glossary-content :global(table td:nth-child(2)) {
+    width: 25%;
+    font-family: var(--font-display);
+    font-size: 0.88em;
+    color: var(--color-text-secondary);
+  }
+
+  .glossary-content :global(table th:nth-child(3)),
+  .glossary-content :global(table td:nth-child(3)) {
+    width: 55%;
+    line-height: 1.6;
+  }
+
+  .glossary-content :global(h2) {
+    font-size: 1.1em;
+    border-bottom: 1px solid var(--color-border-light);
+    padding-bottom: var(--spacing-xs);
+    margin-top: var(--spacing-lg);
+    margin-bottom: var(--spacing-sm);
+    border-left: none;
+  }
+
+  .glossary-content :global(h2:first-child) {
+    margin-top: 0;
+  }
+
+  @media (max-width: 768px) {
+    .glossary-page {
+      padding: var(--spacing-md) var(--spacing-md) var(--spacing-2xl);
+    }
+
+    .glossary-content :global(table) {
+      display: block;
+    }
+
+    .glossary-content :global(thead) {
+      display: none;
+    }
+
+    .glossary-content :global(tbody) {
+      display: block;
+    }
+
+    .glossary-content :global(tr) {
+      display: block;
+      padding: var(--spacing-sm) 0;
+      border-bottom: 1px solid var(--color-border-light);
+    }
+
+    .glossary-content :global(td) {
+      display: block;
+      padding: 2px 0;
+      border: none;
+      text-align: left;
+      width: 100% !important;
+    }
+
+    .glossary-content :global(td:nth-child(1)) {
+      font-weight: 600;
+      font-size: 0.95em;
+      color: var(--color-text);
+    }
+
+    .glossary-content :global(td:nth-child(2)) {
+      font-size: 0.8em;
+      color: var(--color-text-tertiary);
+    }
+
+    .glossary-content :global(td:nth-child(3)) {
+      line-height: 1.7;
+      font-size: 0.9em;
+    }
+  }
+</style>

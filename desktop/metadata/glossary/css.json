@@ -1,0 +1,885 @@
+{
+  "moduleId": "css",
+  "terms": [
+    {
+      "name": "@layer",
+      "definition": "CSS 层级（Cascade Layers），控制样式表的层叠优先级，先声明的层优先级更低",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "aspect-ratio",
+      "definition": "宽高比属性，如 `16 / 9`，自动计算缺失的宽度或高度",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "backdrop-filter",
+      "definition": "元素后方区域的滤镜效果，常用于毛玻璃效果 `backdrop-filter: blur(10px)`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "block-size",
+      "definition": "逻辑属性，块轴方向尺寸，水平书写模式等同 `height`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "inline-size",
+      "definition": "逻辑属性，行内轴方向尺寸，水平书写模式等同 `width`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "CSS 变量",
+      "definition": "`--var-name` 定义，`var(--var-name)` 引用，运行时可动态修改",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "calc()",
+      "definition": "计算函数，支持加减乘除混合单位运算，如 `calc(100% - 20px)`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "clamp()",
+      "definition": "限制值范围函数，`clamp(min, preferred, max)`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "容器查询",
+      "definition": "`@container` 根据容器尺寸而非视口应用样式，组件级响应式",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "容器查询单位",
+      "definition": "`cqw`（容器宽度 1%）、`cqh`（容器高度 1%）等",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "content-visibility",
+      "definition": "渲染性能优化属性，`auto` 跳过屏幕外内容的渲染",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "counter()",
+      "definition": "CSS 计数器函数，配合 `counter-reset` 和 `counter-increment` 自动编号",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "@document",
+      "definition": "根据文档 URL 应用样式的规则（仅 Firefox 支持）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "env()",
+      "definition": "环境变量函数，访问用户代理定义的变量，如 `env(safe-area-inset-top)`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "@font-face",
+      "definition": "自定义字体规则，加载外部字体文件",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "min()",
+      "definition": "取多个值中的最小值，如 `min(100vw, 800px)`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "max()",
+      "definition": "取多个值中的最大值，如 `max(50vw, 300px)`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "@supports",
+      "definition": "特性查询，检测浏览器是否支持某 CSS 属性后应用样式",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "grid-auto-flow",
+      "definition": "自动放置算法：`row`（逐行）、`column`（逐列）、`dense`（紧凑填充）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "grid-auto-rows",
+      "definition": "隐式行轨道大小",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "grid-auto-columns",
+      "definition": "隐式列轨道大小",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "subgrid",
+      "definition": "子网格，嵌套网格继承父网格的轨道定义",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "image-set()",
+      "definition": "根据设备像素比选择不同分辨率图片",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "逻辑属性",
+      "definition": "不依赖书写方向的属性，如 `margin-block-start` 替代 `margin-top`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "逻辑值",
+      "definition": "不依赖书写方向的值，如 `start`/`end` 替代 `left`/`right`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "@layer 顺序",
+      "definition": "层级声明顺序决定优先级，后声明的层优先级更高；未分层的样式优先级最高",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "minmax()",
+      "definition": "Grid 轨道尺寸函数，`minmax(200px, 1fr)` 定义最小和最大值",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "margin-block",
+      "definition": "逻辑属性，块轴方向外边距",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "margin-inline",
+      "definition": "逻辑属性，行内轴方向外边距",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "padding-block",
+      "definition": "逻辑属性，块轴方向内边距",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "padding-inline",
+      "definition": "逻辑属性，行内轴方向内边距",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "object-fit",
+      "definition": "替换元素内容适应方式：`fill`、`contain`、`cover`、`none`、`scale-down`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "object-position",
+      "definition": "替换元素内容在框内的对齐位置",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "@property",
+      "definition": "CSS Houdini 自定义属性注册，定义变量类型、初始值和继承性",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "paint()",
+      "definition": "CSS Houdini Paint API，使用 JavaScript 绘制自定义图形",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "repeat()",
+      "definition": "Grid 轨道重复函数，`repeat(3, 1fr)` 或 `repeat(auto-fill, minmax(200px, 1fr))`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "scroll-snap",
+      "definition": "滚动捕捉，`scroll-snap-type` 定义捕捉轴和严格度",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "scroll-behavior",
+      "definition": "滚动行为：`auto`（立即）、`smooth`（平滑）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "scroll-margin",
+      "definition": "滚动捕捉偏移量，调整捕捉位置",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "scroll-padding",
+      "definition": "滚动容器视口内边距，影响捕捉区域",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "scrollbar-width",
+      "definition": "滚动条宽度：`auto`、`thin`、`none`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "scrollbar-color",
+      "definition": "滚动条颜色：`thumb-color track-color`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "touch-action",
+      "definition": "控制触摸手势行为：`auto`、`none`、`pan-x`、`pan-y`、`manipulation`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "单位",
+      "definition": "CSS 单位：绝对（px、pt、cm）、相对（em、rem、vw、vh、%、cqw）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "unset",
+      "definition": "CSS 全局关键字，继承属性等同 `inherit`，非继承属性等同 `initial`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "var()",
+      "definition": "引用 CSS 自定义属性的函数，支持默认值 `var(--color, red)`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "视口单位",
+      "definition": "`vw`（视口宽度 1%）、`vh`（视口高度 1%）、`vmin`、`vmax`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "will-change",
+      "definition": "性能提示属性，告知浏览器元素将发生的变化，如 `transform`、`opacity`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "writing-mode",
+      "definition": "书写模式：`horizontal-tb`、`vertical-rl`、`vertical-lr`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "absolute 定位",
+      "definition": "`position: absolute`，相对于最近的已定位祖先元素定位，脱离文档流",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "align-content",
+      "definition": "多行弹性容器中各行在侧轴方向的对齐方式",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "align-items",
+      "definition": "弹性容器中所有项目在侧轴方向的对齐方式",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "align-self",
+      "definition": "单个弹性项目在侧轴方向的对齐方式，覆盖 `align-items`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "盒模型",
+      "definition": "CSS 布局基础，由 Content、Padding、Border、Margin 四层组成",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "标准盒模型",
+      "definition": "`box-sizing: content-box`，width/height 只含内容区",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "IE 盒模型",
+      "definition": "`box-sizing: border-box`，width/height 包含内容+内边距+边框",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "border",
+      "definition": "边框属性，简写 `border: width style color`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "BFC",
+      "definition": "块级格式化上下文，独立的渲染区域，内部布局不影响外部",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "块级元素",
+      "definition": "独占一行的元素，如 `div`、`p`、`h1`，可设置宽高",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "层叠",
+      "definition": "多个样式规则应用于同一元素时的优先级计算机制",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "层叠顺序",
+      "definition": "样式优先级：内联 > ID > 类/属性/伪类 > 标签/伪元素",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "clear",
+      "definition": "清除浮动，`left`/`right`/`both` 指定元素哪侧不允许浮动",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "类选择器",
+      "definition": "以 `.` 开头的选择器，匹配具有指定 class 的元素",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "包含块",
+      "definition": "定位元素的参考矩形，由最近已定位祖先的 padding 边界构成",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "display",
+      "definition": "定义元素的显示类型：`block`、`inline`、`flex`、`grid`、`none` 等",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "文档流",
+      "definition": "元素默认的布局方式，块级元素垂直排列，行内元素水平排列",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "子代选择器",
+      "definition": "`>` 组合器，选择直接子元素",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "Flexbox",
+      "definition": "一维弹性布局模型，`display: flex` 创建弹性容器",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "flex-direction",
+      "definition": "定义主轴方向：`row`（默认）、`row-reverse`、`column`、`column-reverse`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "flex-wrap",
+      "definition": "控制项目是否换行：`nowrap`（默认）、`wrap`、`wrap-reverse`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "flex-flow",
+      "definition": "`flex-direction` 和 `flex-wrap` 的简写",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "flex-grow",
+      "definition": "项目放大比例，默认 0（不放大），分配剩余空间",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "flex-shrink",
+      "definition": "项目缩小比例，默认 1（等比缩小），0 不缩小",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "flex-basis",
+      "definition": "项目在主轴上的初始大小，优先于 width/height",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "float",
+      "definition": "浮动定位，`left`/`right` 使元素脱离文档流，向指定方向浮动",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "fixed 定位",
+      "definition": "`position: fixed`，相对于视口定位，不随滚动移动",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "Grid",
+      "definition": "二维网格布局模型，`display: grid` 创建网格容器",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "grid-template-columns",
+      "definition": "定义网格的列轨道大小",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "grid-template-rows",
+      "definition": "定义网格的行轨道大小",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "grid-template-areas",
+      "definition": "使用命名区域定义网格布局",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "grid-gap",
+      "definition": "网格间距的简写属性（已弃用，推荐 `gap`）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "gap",
+      "definition": "行间距和列间距的简写，适用于 Flex 和 Grid",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "后代选择器",
+      "definition": "空格组合器，选择所有后代元素（不限层级）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "ID 选择器",
+      "definition": "以 `#` 开头的选择器，匹配具有指定 id 的元素，优先级最高",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "行内元素",
+      "definition": "不独占一行的元素，如 `span`、`a`、`em`，不可设置宽高",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "行内块元素",
+      "definition": "`display: inline-block`，行内排列但可设置宽高",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "justify-content",
+      "definition": "弹性/网格容器中项目在主轴方向的对齐方式",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "margin",
+      "definition": "外边距，元素与其他元素之间的间距",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "margin 塌陷",
+      "definition": "垂直方向相邻外边距合并为较大值的特性",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "媒体查询",
+      "definition": "`@media` 根据设备特征（宽度、分辨率等）应用不同样式",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "order",
+      "definition": "Flex/Grid 项目排序，数值越小越靠前，默认 0",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "overflow",
+      "definition": "内容溢出处理：`visible`（默认）、`hidden`、`scroll`、`auto`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "opacity",
+      "definition": "不透明度，0（完全透明）到 1（完全不透明）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "padding",
+      "definition": "内边距，内容与边框之间的间距",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "position",
+      "definition": "定位方式：`static`、`relative`、`absolute`、`fixed`、`sticky`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "伪类",
+      "definition": "以 `:` 前缀的选择器，匹配元素的特殊状态，如 `:hover`、`:first-child`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "伪元素",
+      "definition": "以 `::` 前缀的选择器，匹配元素的虚拟子元素，如 `::before`、`::after`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "优先级",
+      "definition": "CSS 选择器权重计算：内联(1000) > ID(100) > 类(10) > 标签(1)",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "relative 定位",
+      "definition": "`position: relative`，相对于自身原始位置偏移，不脱离文档流",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "响应式设计",
+      "definition": "通过媒体查询、弹性布局等技术使页面适配不同屏幕尺寸",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "选择器",
+      "definition": "CSS 规则中匹配目标元素的模式",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "属性选择器",
+      "definition": "`[attr]`、`[attr=val]` 等，根据属性匹配元素",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "sticky 定位",
+      "definition": "`position: sticky`，滚动到阈值前为 relative，超过后为 fixed",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "通用选择器",
+      "definition": "`*` 匹配所有元素",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "通用兄弟选择器",
+      "definition": "`~` 组合器，选择后续所有同级元素",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "相邻兄弟选择器",
+      "definition": "`+` 组合器，选择紧邻的下一个同级元素",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "特异性",
+      "definition": "同优先级，衡量选择器匹配精确度的数值",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "visibility",
+      "definition": "元素可见性：`visible`、`hidden`（占位但不可见）、`collapse`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "viewport",
+      "definition": "浏览器可视区域，`vw`/`vh` 单位基于视口尺寸",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "z-index",
+      "definition": "定位元素的堆叠顺序，数值越大越靠前，仅对已定位元素有效",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "animation",
+      "definition": "动画简写属性：`name duration timing-function delay iteration-count direction fill-mode play-state`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "animation-delay",
+      "definition": "动画延迟开始时间，支持负值（从动画中间开始）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "animation-direction",
+      "definition": "动画方向：`normal`、`reverse`、`alternate`、`alternate-reverse`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "animation-duration",
+      "definition": "动画一个周期的持续时间",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "animation-fill-mode",
+      "definition": "动画执行前后样式状态：`none`、`forwards`、`backwards`、`both`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "animation-iteration-count",
+      "definition": "动画播放次数，`infinite` 无限循环",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "animation-name",
+      "definition": "绑定的 `@keyframes` 动画名称",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "animation-play-state",
+      "definition": "动画播放状态：`running`、`paused`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "animation-timing-function",
+      "definition": "动画速度曲线：`ease`、`linear`、`ease-in`、`ease-out`、`ease-in-out`、`cubic-bezier()`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "background",
+      "definition": "背景简写属性，包含 color、image、repeat、position、size 等",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "background-attachment",
+      "definition": "背景滚动方式：`scroll`（默认）、`fixed`、`local`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "background-clip",
+      "definition": "背景绘制区域：`border-box`、`padding-box`、`content-box`、`text`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "background-color",
+      "definition": "背景颜色",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "background-image",
+      "definition": "背景图片，支持多背景叠加和渐变",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "background-origin",
+      "definition": "背景定位区域：`border-box`、`padding-box`、`content-box`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "background-position",
+      "definition": "背景图片位置，支持关键字、百分比、长度值",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "background-repeat",
+      "definition": "背景重复方式：`repeat`、`no-repeat`、`repeat-x`、`repeat-y`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "background-size",
+      "definition": "背景图片大小：`cover`（覆盖）、`contain`（包含）、具体尺寸",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "border-radius",
+      "definition": "圆角边框，四个值分别对应左上、右上、右下、左下",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "box-shadow",
+      "definition": "盒子阴影：`h-offset v-offset blur spread color inset`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "color",
+      "definition": "前景（文本）颜色，支持关键字、HEX、RGB、HSL 等格式",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "currentColor",
+      "definition": "CSS 关键字，引用当前元素的 `color` 属性值",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "线性渐变",
+      "definition": "`linear-gradient()` 沿直线方向的颜色渐变",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "径向渐变",
+      "definition": "`radial-gradient()` 从中心向外辐射的颜色渐变",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "锥形渐变",
+      "definition": "`conic-gradient()` 围绕中心点旋转的颜色渐变",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "cubic-bezier",
+      "definition": "贝塞尔曲线函数，自定义动画速度曲线，参数为两个控制点坐标",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "渐变",
+      "definition": "CSS 渐变是 `<image>` 类型，不是颜色，可用于 `background-image`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "filter",
+      "definition": "图形滤镜：`blur()`、`brightness()`、`contrast()`、`grayscale()`、`drop-shadow()` 等",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "font",
+      "definition": "字体简写属性：`style variant weight size/line-height family`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "font-family",
+      "definition": "字体族，可指定多个备选字体，以逗号分隔",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "font-size",
+      "definition": "字体大小，推荐使用 `rem`、`em`、`px` 单位",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "font-style",
+      "definition": "字体样式：`normal`、`italic`、`oblique`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "font-weight",
+      "definition": "字体粗细：`normal`(400)、`bold`(700) 或 100-900 数值",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "font-variant",
+      "definition": "字体变体：`normal`、`small-caps`（小型大写字母）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "光标",
+      "definition": "鼠标指针样式：`default`、`pointer`、`text`、`move`、自定义 URL",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "HEX 颜色",
+      "definition": "十六进制颜色值，如 `#ff0000` 或简写 `#f00`，支持 8 位含透明度 `#ff000080`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "HSL 颜色",
+      "definition": "色相-饱和度-亮度颜色模型，`hsl(0, 100%, 50%)`，直观调整颜色",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "HSLA 颜色",
+      "definition": "HSL 加透明度通道，`hsla(0, 100%, 50%, 0.5)`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "@keyframes",
+      "definition": "定义动画关键帧序列，`from`/`to` 或百分比指定各阶段样式",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "letter-spacing",
+      "definition": "字符间距，正值增大、负值缩小",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "line-height",
+      "definition": "行高，影响文本垂直对齐，推荐使用无单位数值（如 1.5）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "mix-blend-mode",
+      "definition": "元素内容与下层内容的混合模式：`multiply`、`screen`、`overlay` 等",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "outline",
+      "definition": "轮廓线，不占布局空间，常用于焦点指示，`outline-offset` 控制偏移",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "perspective",
+      "definition": "3D 变换的透视距离，值越小透视效果越强",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "perspective-origin",
+      "definition": "透视消失点位置，默认 `50% 50%`（中心）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "RGB 颜色",
+      "definition": "红-绿-蓝颜色模型，`rgb(255, 0, 0)`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "RGBA 颜色",
+      "definition": "RGB 加透明度通道，`rgba(255, 0, 0, 0.5)`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "text-align",
+      "definition": "文本水平对齐：`left`、`right`、`center`、`justify`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "text-decoration",
+      "definition": "文本装饰线：`underline`、`overline`、`line-through`、`none`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "text-shadow",
+      "definition": "文本阴影：`h-offset v-offset blur color`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "text-transform",
+      "definition": "文本大小写转换：`uppercase`、`lowercase`、`capitalize`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "text-overflow",
+      "definition": "文本溢出处理：`clip`、`ellipsis`（省略号），需配合 `overflow: hidden`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "transform",
+      "definition": "变换属性：`translate()`、`rotate()`、`scale()`、`skew()`、`matrix()`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "transform-origin",
+      "definition": "变换原点，默认 `50% 50%`（元素中心）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "transform-style",
+      "definition": "3D 空间表现：`flat`（2D）、`preserve-3d`（3D）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "transition",
+      "definition": "过渡简写：`property duration timing-function delay`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "transition-property",
+      "definition": "参与过渡的 CSS 属性名",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "transition-duration",
+      "definition": "过渡持续时间",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "transition-timing-function",
+      "definition": "过渡速度曲线",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "transition-delay",
+      "definition": "过渡延迟时间",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "white-space",
+      "definition": "空白处理方式：`normal`、`nowrap`、`pre`、`pre-wrap`、`pre-line`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "word-break",
+      "definition": "单词断行规则：`normal`、`break-all`、`keep-all`",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "word-spacing",
+      "definition": "单词间距",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "线性渐变角度",
+      "definition": "`linear-gradient(45deg, ...)` 指定渐变方向角度，0deg 从下到上",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "阴影",
+      "definition": "`box-shadow`（盒子阴影）和 `text-shadow`（文本阴影）",
+      "slug": "css/glossary"
+    },
+    {
+      "name": "字体回退",
+      "definition": "`font-family` 中指定多个字体，浏览器依次尝试直到找到可用字体",
+      "slug": "css/glossary"
+    }
+  ]
+}

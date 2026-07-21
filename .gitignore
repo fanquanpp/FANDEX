@@ -1,0 +1,249 @@
+# =============================================================================
+# FANDEX 单仓库根 .gitignore
+# =============================================================================
+# 设计原则：
+# 1. 根 .gitignore 负责共享规则与跨子项目的敏感文件排除
+# 2. 各子项目（web/desktop/android）保留各自的 .gitignore 作为独立构建时的兜底
+# 3. 敏感文件（私钥/密钥库/本地配置）采用最严格策略，前置排除避免误提交
+# =============================================================================
+
+
+# -----------------------------------------------------------------------------
+# 密钥与签名材料（最高优先级，严禁入库）
+# -----------------------------------------------------------------------------
+
+# Ed25519 manifest 签名密钥（tools/ 阶段8 生成的密钥对存放目录）
+tools/keys/
+*.private-key.hex
+*.public-key.hex
+*.private-key.pem
+*.public-key.pem
+
+# Tauri updater 签名密钥
+*.tauri-key
+tauri-private-key.*
+
+# Android 签名密钥库与本地配置
+android/fandex-release.jks
+android/*.jks
+android/*.keystore
+android/local.properties
+
+# 通用密钥与证书文件
+*.pem
+*.key
+*.p12
+*.pfx
+*.cer
+*.crt
+id_rsa
+id_rsa.pub
+id_ed25519
+id_ed25519.pub
+secrets.json
+secrets.*.json
+
+
+# -----------------------------------------------------------------------------
+# 环境变量文件
+# -----------------------------------------------------------------------------
+.env
+.env.local
+.env.*.local
+!.env.example
+
+
+# -----------------------------------------------------------------------------
+# 依赖目录
+# -----------------------------------------------------------------------------
+node_modules/
+.pnpm-store/
+.yarn/cache/
+.yarn/install-state.gz
+
+# Astro 缓存
+.astro/
+
+# Gradle 缓存
+.gradle/
+android/.gradle/
+
+# Kotlin 编译日志
+android/.kotlin/
+
+
+# -----------------------------------------------------------------------------
+# 构建产物
+# -----------------------------------------------------------------------------
+
+# 通用构建输出
+dist/
+dist-mobile/
+build/
+out/
+.output/
+
+# Rust / Tauri 编译产物
+target/
+src-tauri/target/
+desktop/src-tauri/target/
+*.rs.bk
+
+# Android 构建产物
+android/app/build/
+android/build/
+android/app/.cxx/
+*.apk
+*.aab
+*.ap_
+*.dex
+
+# Tauri 打包产物（CI 直接上传到 Release，不入库）
+*.nsis.zip
+*.app-image.tar.gz
+*.app.tar.gz
+*.dmg
+*.exe
+*.msi
+*.sig
+
+# 工具链产物
+tools/dist/
+tools/manifests/
+tools/archives/
+
+# 测试覆盖率
+coverage/
+*.lcov
+.nyc_output/
+
+# Pagefind 索引（构建生成）
+public/pagefind/
+desktop/public/pagefind/
+
+# TypeScript 增量编译缓存
+*.tsbuildinfo
+
+
+# -----------------------------------------------------------------------------
+# IDE / 编辑器
+# -----------------------------------------------------------------------------
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.sublime-workspace
+*.sublime-project
+.project
+.classpath
+.settings/
+
+# Trae IDE 工作区
+.trae/
+
+# Cursor
+.cursor/
+.cursorignore
+
+
+# -----------------------------------------------------------------------------
+# 操作系统生成文件
+# -----------------------------------------------------------------------------
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+
+# -----------------------------------------------------------------------------
+# 日志文件
+# -----------------------------------------------------------------------------
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.android-debug.log
+
+
+# -----------------------------------------------------------------------------
+# 压缩包与二进制产物
+# -----------------------------------------------------------------------------
+*.zip
+*.tar
+*.tar.gz
+*.tgz
+*.bz2
+*.xz
+*.rar
+*.7z
+
+
+# -----------------------------------------------------------------------------
+# 临时工作区与调试产物
+# -----------------------------------------------------------------------------
+
+# 任务临时工作区
+.task8-workspace/
+.tmp-task*/
+task*-workspace/
+
+# 调试输出文件
+tsc_output*.txt
+*.tsc-output
+
+# 构建报告
+build-report.*
+audit-*.log
+astro_check*.log
+
+# Playwright 测试产物
+test-results/
+playwright-report/
+playwright/.cache/
+
+
+# -----------------------------------------------------------------------------
+# 生成的内容索引（CI 产物，不入库）
+# -----------------------------------------------------------------------------
+
+# manifest 分发目录（由 content-manifest.yml 在 gh-pages 分支维护）
+manifest/dist/
+manifest/archives/
+manifest/index.json
+
+# doc-id-map（包含本地路径映射，可能含敏感路径信息）
+tools/doc-id-map.json
+
+
+# -----------------------------------------------------------------------------
+# 自动生成文档
+# -----------------------------------------------------------------------------
+CODE_WIKI.md
+Code-Wiki.md
+
+
+# -----------------------------------------------------------------------------
+# 其他
+# -----------------------------------------------------------------------------
+
+# Husky 内部目录（保留 .husky/pre-commit 等钩子，忽略内部脚本）
+.husky/_/
+
+# 变更集临时文件
+.changeset/*.md
+!.changeset/README.md
+!.changeset/config.json
+
+# pnpm 调试
+pnpm-debug.log*
+
+# Vitest 临时文件
+.vitest/

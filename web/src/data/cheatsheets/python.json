@@ -1,0 +1,194 @@
+{
+  "元数据": {
+    "模块名称": "Python",
+    "版本": "1.0.0",
+    "最后更新": "2026-06-15",
+    "前置知识": ["了解编程的基本概念", "已完成 Python 3.x 安装"],
+    "推荐学习顺序": [
+      "先学习【基础语法】分组，掌握变量、条件和循环",
+      "再学习【数据结构】分组，掌握列表、字典等核心数据类型"
+    ]
+  },
+  "分组": [
+    {
+      "分组名": "基础语法",
+      "分组说明": "Python 编程的起点。本组内容涵盖变量定义、条件判断、循环和函数，是编写任何 Python 程序的基础。",
+      "条目": [
+        {
+          "描述": "变量与类型",
+          "代码": "name = \"张三\"\nage = 25\nheight = 1.75\nis_student = True\nprint(type(name))  # <class 'str'>",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">name </span><span style=\"color:#D73A49\">=</span><span style=\"color:#032F62\"> \"张三\"</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">age </span><span style=\"color:#D73A49\">=</span><span style=\"color:#005CC5\"> 25</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">height </span><span style=\"color:#D73A49\">=</span><span style=\"color:#005CC5\"> 1.75</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">is_student </span><span style=\"color:#D73A49\">=</span><span style=\"color:#005CC5\"> True</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">print</span><span style=\"color:#24292E\">(</span><span style=\"color:#005CC5\">type</span><span style=\"color:#24292E\">(name))  </span><span style=\"color:#6A737D\"># &#x3C;class 'str'></span></span></code></pre>",
+          "预期输出": "<class 'str'>",
+          "使用场景": "定义变量存储数据。Python 是动态类型语言，变量无需声明类型，赋值即定义。type() 函数可查看变量类型。",
+          "常见错误": [
+            {
+              "错误示例": "name = 张三",
+              "错误信息": "NameError: name '张三' is not defined",
+              "解决方法": "字符串必须用引号包裹：name = \"张三\""
+            },
+            {
+              "错误示例": "10 = age",
+              "错误信息": "SyntaxError: cannot assign to literal",
+              "解决方法": "变量名必须在等号左侧：age = 10"
+            }
+          ],
+          "进阶提示": "Python 支持类型注解：name: str = \"张三\"，便于 IDE 提示和代码可读性，但不影响运行时行为。",
+          "搜索关键词": ["变量", "数据类型", "type"]
+        },
+        {
+          "描述": "条件判断",
+          "代码": "score = 85\nif score >= 90:\n    print(\"优秀\")\nelif score >= 60:\n    print(\"及格\")\nelse:\n    print(\"不及格\")",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">score </span><span style=\"color:#D73A49\">=</span><span style=\"color:#005CC5\"> 85</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">if</span><span style=\"color:#24292E\"> score </span><span style=\"color:#D73A49\">>=</span><span style=\"color:#005CC5\"> 90</span><span style=\"color:#24292E\">:</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">    print</span><span style=\"color:#24292E\">(</span><span style=\"color:#032F62\">\"优秀\"</span><span style=\"color:#24292E\">)</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">elif</span><span style=\"color:#24292E\"> score </span><span style=\"color:#D73A49\">>=</span><span style=\"color:#005CC5\"> 60</span><span style=\"color:#24292E\">:</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">    print</span><span style=\"color:#24292E\">(</span><span style=\"color:#032F62\">\"及格\"</span><span style=\"color:#24292E\">)</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">else</span><span style=\"color:#24292E\">:</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">    print</span><span style=\"color:#24292E\">(</span><span style=\"color:#032F62\">\"不及格\"</span><span style=\"color:#24292E\">)</span></span></code></pre>",
+          "预期输出": "及格",
+          "使用场景": "根据条件执行不同的代码逻辑。if-elif-else 结构支持多条件分支判断，条件表达式不需要括号。",
+          "常见错误": [
+            {
+              "错误示例": "if score = 85:",
+              "错误信息": "SyntaxError: invalid syntax（误用赋值运算符 = 代替比较运算符 ==）",
+              "解决方法": "比较使用 ==，赋值使用 =。条件判断中应使用 score == 85"
+            },
+            {
+              "错误示例": "if score >= 60\n    print(\"及格\")",
+              "错误信息": "SyntaxError: expected ':'",
+              "解决方法": "if 语句末尾必须加冒号 :"
+            }
+          ],
+          "进阶提示": "Python 支持三元表达式：result = \"及格\" if score >= 60 else \"不及格\"，适合简单的条件赋值。",
+          "搜索关键词": ["条件", "判断", "if", "elif", "else"]
+        },
+        {
+          "描述": "循环",
+          "代码": "# for 循环\nfor i in range(5):\n    print(i)\n\n# while 循环\ncount = 0\nwhile count < 3:\n    print(f\"count = {count}\")\n    count += 1",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#6A737D\"># for 循环</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">for</span><span style=\"color:#24292E\"> i </span><span style=\"color:#D73A49\">in</span><span style=\"color:#005CC5\"> range</span><span style=\"color:#24292E\">(</span><span style=\"color:#005CC5\">5</span><span style=\"color:#24292E\">):</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">    print</span><span style=\"color:#24292E\">(i)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\"># while 循环</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">count </span><span style=\"color:#D73A49\">=</span><span style=\"color:#005CC5\"> 0</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">while</span><span style=\"color:#24292E\"> count </span><span style=\"color:#D73A49\">&#x3C;</span><span style=\"color:#005CC5\"> 3</span><span style=\"color:#24292E\">:</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">    print</span><span style=\"color:#24292E\">(</span><span style=\"color:#D73A49\">f</span><span style=\"color:#032F62\">\"count = </span><span style=\"color:#005CC5\">{</span><span style=\"color:#24292E\">count</span><span style=\"color:#005CC5\">}</span><span style=\"color:#032F62\">\"</span><span style=\"color:#24292E\">)</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">    count </span><span style=\"color:#D73A49\">+=</span><span style=\"color:#005CC5\"> 1</span></span></code></pre>",
+          "预期输出": "0\n1\n2\n3\n4\ncount = 0\ncount = 1\ncount = 2",
+          "使用场景": "for 循环用于遍历序列或指定次数的迭代，while 循环用于条件满足时持续执行。break 可提前退出循环，continue 可跳过当前迭代。",
+          "常见错误": [
+            {
+              "错误示例": "for i in range(5) print(i)",
+              "错误信息": "SyntaxError: expected ':'",
+              "解决方法": "for 语句末尾必须加冒号，循环体需要缩进"
+            },
+            {
+              "错误示例": "while True: pass（缺少退出条件）",
+              "错误信息": "程序无限循环，无法终止",
+              "解决方法": "while 循环必须包含使条件为 False 的逻辑或 break 语句"
+            }
+          ],
+          "进阶提示": "for-else 语法：当循环正常结束（未被 break 中断）时执行 else 块，常用于搜索场景。",
+          "搜索关键词": ["循环", "for", "while", "遍历"]
+        },
+        {
+          "描述": "函数定义",
+          "代码": "def greet(name: str, greeting: str = \"你好\") -> str:\n    return f\"{greeting}, {name}!\"\n\nresult = greet(\"张三\")\nprint(result)",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#D73A49\">def</span><span style=\"color:#6F42C1\"> greet</span><span style=\"color:#24292E\">(name: </span><span style=\"color:#005CC5\">str</span><span style=\"color:#24292E\">, greeting: </span><span style=\"color:#005CC5\">str</span><span style=\"color:#D73A49\"> =</span><span style=\"color:#032F62\"> \"你好\"</span><span style=\"color:#24292E\">) -> </span><span style=\"color:#005CC5\">str</span><span style=\"color:#24292E\">:</span></span>\n<span class=\"line\"><span style=\"color:#D73A49\">    return</span><span style=\"color:#D73A49\"> f</span><span style=\"color:#032F62\">\"</span><span style=\"color:#005CC5\">{</span><span style=\"color:#24292E\">greeting</span><span style=\"color:#005CC5\">}</span><span style=\"color:#032F62\">, </span><span style=\"color:#005CC5\">{</span><span style=\"color:#24292E\">name</span><span style=\"color:#005CC5\">}</span><span style=\"color:#032F62\">!\"</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#24292E\">result </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> greet(</span><span style=\"color:#032F62\">\"张三\"</span><span style=\"color:#24292E\">)</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">print</span><span style=\"color:#24292E\">(result)</span></span></code></pre>",
+          "预期输出": "你好, 张三!",
+          "使用场景": "将可复用的代码封装为函数。def 关键字定义函数，支持默认参数、关键字参数和返回值。函数是代码组织和复用的基本单元。",
+          "常见错误": [
+            {
+              "错误示例": "def greet(name, greeting=\"你好\", title):",
+              "错误信息": "SyntaxError: non-default argument follows default argument",
+              "解决方法": "默认参数必须放在非默认参数之后：def greet(name, title, greeting=\"你好\")"
+            },
+            {
+              "错误示例": "def add(a, b):\n    a + b（缺少 return）",
+              "错误信息": "函数返回 None 而非计算结果",
+              "解决方法": "需要返回值时必须使用 return 语句：return a + b"
+            }
+          ],
+          "进阶提示": "使用 *args 和 **kwargs 可定义可变参数函数。*args 接收任意数量的位置参数，**kwargs 接收任意数量的关键字参数。",
+          "搜索关键词": ["函数", "定义函数", "def"]
+        }
+      ]
+    },
+    {
+      "分组名": "数据结构",
+      "分组说明": "Python 内置的核心数据结构。本组内容涵盖列表、字典、集合和元组，是处理和组织数据的基础工具。",
+      "条目": [
+        {
+          "描述": "列表",
+          "代码": "fruits = [\"苹果\", \"香蕉\", \"橙子\"]\nfruits.append(\"葡萄\")\nfruits.remove(\"香蕉\")\nprint(fruits[0])  # 苹果\nprint(len(fruits))  # 3",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">fruits </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> [</span><span style=\"color:#032F62\">\"苹果\"</span><span style=\"color:#24292E\">, </span><span style=\"color:#032F62\">\"香蕉\"</span><span style=\"color:#24292E\">, </span><span style=\"color:#032F62\">\"橙子\"</span><span style=\"color:#24292E\">]</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">fruits.append(</span><span style=\"color:#032F62\">\"葡萄\"</span><span style=\"color:#24292E\">)</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">fruits.remove(</span><span style=\"color:#032F62\">\"香蕉\"</span><span style=\"color:#24292E\">)</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">print</span><span style=\"color:#24292E\">(fruits[</span><span style=\"color:#005CC5\">0</span><span style=\"color:#24292E\">])  </span><span style=\"color:#6A737D\"># 苹果</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">print</span><span style=\"color:#24292E\">(</span><span style=\"color:#005CC5\">len</span><span style=\"color:#24292E\">(fruits))  </span><span style=\"color:#6A737D\"># 3</span></span></code></pre>",
+          "预期输出": "苹果\n3",
+          "使用场景": "列表是有序的可变序列，用于存储一组相关数据。支持索引访问、切片、添加、删除和排序等操作，是最常用的数据结构。",
+          "常见错误": [
+            {
+              "错误示例": "fruits[3]（索引超出范围）",
+              "错误信息": "IndexError: list index out of range",
+              "解决方法": "列表索引从 0 开始，最大索引为 len(list)-1，访问前检查长度"
+            },
+            {
+              "错误示例": "fruits.remove(\"西瓜\")（元素不存在）",
+              "错误信息": "ValueError: list.remove(x): x not in list",
+              "解决方法": "删除前先判断：if \"西瓜\" in fruits: fruits.remove(\"西瓜\")"
+            }
+          ],
+          "进阶提示": "列表推导式可简洁地创建列表：[x**2 for x in range(10) if x % 2 == 0]，比循环更高效且更 Pythonic。",
+          "搜索关键词": ["列表", "list", "数组"]
+        },
+        {
+          "描述": "字典",
+          "代码": "user = {\"name\": \"张三\", \"age\": 25}\nuser[\"email\"] = \"zhangsan@mail.com\"\nage = user.get(\"age\", 0)\nprint(user.keys())\nprint(user.values())",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">user </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> {</span><span style=\"color:#032F62\">\"name\"</span><span style=\"color:#24292E\">: </span><span style=\"color:#032F62\">\"张三\"</span><span style=\"color:#24292E\">, </span><span style=\"color:#032F62\">\"age\"</span><span style=\"color:#24292E\">: </span><span style=\"color:#005CC5\">25</span><span style=\"color:#24292E\">}</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">user[</span><span style=\"color:#032F62\">\"email\"</span><span style=\"color:#24292E\">] </span><span style=\"color:#D73A49\">=</span><span style=\"color:#032F62\"> \"zhangsan@mail.com\"</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">age </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> user.get(</span><span style=\"color:#032F62\">\"age\"</span><span style=\"color:#24292E\">, </span><span style=\"color:#005CC5\">0</span><span style=\"color:#24292E\">)</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">print</span><span style=\"color:#24292E\">(user.keys())</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">print</span><span style=\"color:#24292E\">(user.values())</span></span></code></pre>",
+          "预期输出": "dict_keys(['name', 'age', 'email'])\ndict_values(['张三', 25, 'zhangsan@mail.com'])",
+          "使用场景": "字典是键值对的无序可变集合，用于通过键快速查找值。查找时间复杂度为 O(1)，适合存储和检索结构化数据。",
+          "常见错误": [
+            {
+              "错误示例": "user[\"phone\"]（键不存在）",
+              "错误信息": "KeyError: 'phone'",
+              "解决方法": "使用 get 方法设置默认值：user.get(\"phone\", \"未设置\")"
+            },
+            {
+              "错误示例": "for key, value in user:（直接遍历字典）",
+              "错误信息": "ValueError: too many values to unpack",
+              "解决方法": "使用 user.items() 遍历键值对：for key, value in user.items()"
+            }
+          ],
+          "进阶提示": "字典推导式：{k: v for k, v in items if v > 0}。Python 3.7+ 字典保持插入顺序。setdefault() 可在键不存在时设置默认值。",
+          "搜索关键词": ["字典", "dict", "键值对", "映射"]
+        },
+        {
+          "描述": "集合",
+          "代码": "a = {1, 2, 3, 4}\nb = {3, 4, 5, 6}\nprint(a & b)  # 交集\nprint(a | b)  # 并集\nprint(a - b)  # 差集",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">a </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> {</span><span style=\"color:#005CC5\">1</span><span style=\"color:#24292E\">, </span><span style=\"color:#005CC5\">2</span><span style=\"color:#24292E\">, </span><span style=\"color:#005CC5\">3</span><span style=\"color:#24292E\">, </span><span style=\"color:#005CC5\">4</span><span style=\"color:#24292E\">}</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">b </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> {</span><span style=\"color:#005CC5\">3</span><span style=\"color:#24292E\">, </span><span style=\"color:#005CC5\">4</span><span style=\"color:#24292E\">, </span><span style=\"color:#005CC5\">5</span><span style=\"color:#24292E\">, </span><span style=\"color:#005CC5\">6</span><span style=\"color:#24292E\">}</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">print</span><span style=\"color:#24292E\">(a </span><span style=\"color:#D73A49\">&#x26;</span><span style=\"color:#24292E\"> b)  </span><span style=\"color:#6A737D\"># 交集</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">print</span><span style=\"color:#24292E\">(a </span><span style=\"color:#D73A49\">|</span><span style=\"color:#24292E\"> b)  </span><span style=\"color:#6A737D\"># 并集</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">print</span><span style=\"color:#24292E\">(a </span><span style=\"color:#D73A49\">-</span><span style=\"color:#24292E\"> b)  </span><span style=\"color:#6A737D\"># 差集</span></span></code></pre>",
+          "预期输出": "{3, 4}\n{1, 2, 3, 4, 5, 6}\n{1, 2}",
+          "使用场景": "集合是无序且不重复的元素集合，适合去重和集合运算（交集、并集、差集）。元素必须是可哈希类型。",
+          "常见错误": [
+            {
+              "错误示例": "s = {}（试图创建空集合）",
+              "错误信息": "创建的是空字典而非空集合",
+              "解决方法": "空集合必须使用 set()：s = set()，{} 创建的是空字典"
+            },
+            {
+              "错误示例": "s = {[1, 2], [3, 4]}（列表作为集合元素）",
+              "错误信息": "TypeError: unhashable type: 'list'",
+              "解决方法": "集合元素必须是不可变类型，可将列表转为元组：{(1, 2), (3, 4)}"
+            }
+          ],
+          "进阶提示": "集合的 in 操作时间复杂度为 O(1)，远快于列表的 O(n)，适合用于成员检测和去重场景。",
+          "搜索关键词": ["集合", "set", "去重", "交集", "并集"]
+        },
+        {
+          "描述": "元组",
+          "代码": "point = (3, 4)\nx, y = point  # 解包\nprint(f\"x={x}, y={y}\")\n\n# 单元素元组必须加逗号\nsingle = (42,)",
+          "高亮代码": "<pre class=\"shiki github-light\" style=\"background-color:#fff;color:#24292e\" tabindex=\"0\"><code><span class=\"line\"><span style=\"color:#24292E\">point </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> (</span><span style=\"color:#005CC5\">3</span><span style=\"color:#24292E\">, </span><span style=\"color:#005CC5\">4</span><span style=\"color:#24292E\">)</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">x, y </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> point  </span><span style=\"color:#6A737D\"># 解包</span></span>\n<span class=\"line\"><span style=\"color:#005CC5\">print</span><span style=\"color:#24292E\">(</span><span style=\"color:#D73A49\">f</span><span style=\"color:#032F62\">\"x=</span><span style=\"color:#005CC5\">{</span><span style=\"color:#24292E\">x</span><span style=\"color:#005CC5\">}</span><span style=\"color:#032F62\">, y=</span><span style=\"color:#005CC5\">{</span><span style=\"color:#24292E\">y</span><span style=\"color:#005CC5\">}</span><span style=\"color:#032F62\">\"</span><span style=\"color:#24292E\">)</span></span>\n<span class=\"line\"></span>\n<span class=\"line\"><span style=\"color:#6A737D\"># 单元素元组必须加逗号</span></span>\n<span class=\"line\"><span style=\"color:#24292E\">single </span><span style=\"color:#D73A49\">=</span><span style=\"color:#24292E\"> (</span><span style=\"color:#005CC5\">42</span><span style=\"color:#24292E\">,)</span></span></code></pre>",
+          "预期输出": "x=3, y=4",
+          "使用场景": "元组是不可变的有序序列，一旦创建不可修改。适合存储不应被改变的数据，如坐标、配置项等。也常用于函数返回多个值。",
+          "常见错误": [
+            {
+              "错误示例": "point[0] = 5（尝试修改元组元素）",
+              "错误信息": "TypeError: 'tuple' object does not support item assignment",
+              "解决方法": "元组不可修改，如需修改应使用列表，或重新创建元组"
+            },
+            {
+              "错误示例": "single = (42)（试图创建单元素元组）",
+              "错误信息": "single 的类型是 int 而非 tuple",
+              "解决方法": "单元素元组必须加逗号：single = (42,)"
+            }
+          ],
+          "进阶提示": "元组可作为字典的键（因为不可变且可哈希），而列表不行。命名元组 namedtuple 可通过名称访问元素，比索引更清晰。",
+          "搜索关键词": ["元组", "tuple", "不可变序列"]
+        }
+      ]
+    }
+  ]
+}

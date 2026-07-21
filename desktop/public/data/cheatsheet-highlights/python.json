@@ -1,0 +1,78 @@
+{
+  "name": "python",
+  "generatedAt": "2026-07-20T06:22:46.708Z",
+  "items": [
+    {
+      "group": "基础语法",
+      "description": "变量与类型",
+      "code": "name = \"张三\"\nage = 25\nheight = 1.75\nis_student = True\nprint(type(name))  # <class 'str'>",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "基础语法",
+      "description": "条件判断",
+      "code": "score = 85\nif score >= 90:\n    print(\"优秀\")\nelif score >= 60:\n    print(\"及格\")\nelse:\n    print(\"不及格\")",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "基础语法",
+      "description": "循环",
+      "code": "# for 循环\nfor i in range(5):\n    print(i)\n\n# while 循环\ncount = 0\nwhile count < 3:\n    print(f\"count = {count}\")\n    count += 1",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "基础语法",
+      "description": "函数定义",
+      "code": "def greet(name: str, greeting: str = \"你好\") -> str:\n    return f\"{greeting}, {name}!\"\n\nresult = greet(\"张三\")\nprint(result)",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据结构",
+      "description": "列表",
+      "code": "fruits = [\"苹果\", \"香蕉\", \"橙子\"]\nfruits.append(\"葡萄\")\nfruits.remove(\"香蕉\")\nprint(fruits[0])  # 苹果\nprint(len(fruits))  # 3",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据结构",
+      "description": "字典",
+      "code": "user = {\"name\": \"张三\", \"age\": 25}\nuser[\"email\"] = \"zhangsan@mail.com\"\nage = user.get(\"age\", 0)\nprint(user.keys())\nprint(user.values())",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据结构",
+      "description": "集合",
+      "code": "a = {1, 2, 3, 4}\nb = {3, 4, 5, 6}\nprint(a & b)  # 交集\nprint(a | b)  # 并集\nprint(a - b)  # 差集",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    },
+    {
+      "group": "数据结构",
+      "description": "元组",
+      "code": "point = (3, 4)\nx, y = point  # 解包\nprint(f\"x={x}, y={y}\")\n\n# 单元素元组必须加逗号\nsingle = (42,)",
+      "highlight": {
+        "light": {},
+        "dark": {}
+      }
+    }
+  ]
+}

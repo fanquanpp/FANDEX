@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    网络安全配置
+
+    设计原则：
+    1. 默认禁止所有明文流量（usesCleartextTraffic="false"）
+    2. 仅放行更新自检功能所需的 GitHub 域名白名单
+    3. 白名单域名强制走 HTTPS，确保传输安全
+    4. 应用主体内容为离线本地资源，无需联网
+
+    域名说明：
+    - api.github.com         GitHub Releases API（获取最新版本元数据）
+    - github.com             GitHub 仓库页面（备用入口）
+    - objects.githubusercontent.com  GitHub Releases 资源 CDN（APK 下载地址）
+
+    安全约束：
+    - 不使用 <trust-anchors> 自定义 CA，避免中间人攻击风险
+    - 不使用 <debug-overrides>，确保 release 与 debug 配置一致
+-->
+<network-security-config>
+    <!-- 默认配置：禁止明文流量 -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <!-- 仅信任系统预装 CA 证书 -->
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!--
+        域名白名单配置
+
+        仅放行更新自检功能所需的三个 GitHub 域名。
+        每个域名都强制使用 HTTPS（cleartextTrafficPermitted="false"）。
+    -->
+    <domain-config cleartextTrafficPermitted="false">
+        <!-- GitHub API：获取 Releases 列表与最新版本元数据 -->
+        <domain includeSubdomains="false">api.github.com</domain>
+        <!-- GitHub 主站：备用入口与仓库页面 -->
+        <domain includeSubdomains="false">github.com</domain>
+        <!-- GitHub Releases 资源 CDN：APK 文件实际下载地址 -->
+        <domain includeSubdomains="false">objects.githubusercontent.com</domain>
+    </domain-config>
+</network-security-config>

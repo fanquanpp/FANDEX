@@ -1,0 +1,3325 @@
+{
+  "moduleId": "c",
+  "terms": [
+    {
+      "name": "抽象语法树",
+      "definition": "代码编译后的树形表示",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "访问器",
+      "definition": "读取结构体成员",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "聚合初始化",
+      "definition": "用大括号初始化数组或结构体",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "别名",
+      "definition": "用 `typedef` 创建的类型别名",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "赋值",
+      "definition": "将值存储到变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "赋值运算符",
+      "definition": "`=` 用于赋值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "位",
+      "definition": "二进制数字，基本存储单位",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "位字段",
+      "definition": "结构体中用指定位数存储的成员",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "位运算",
+      "definition": "对二进制位进行操作",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "块",
+      "definition": "用 `{}` 包裹的代码语句组",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "布尔类型",
+      "definition": "表示真假的类型，C99 中为 `_Bool`",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "缓冲区",
+      "definition": "临时存储数据的内存区域",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字节",
+      "definition": "8 位组成的数据单位",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字符",
+      "definition": "单个字符，用 `char` 类型表示",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字符常量",
+      "definition": "用单引号括起的字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字符数组",
+      "definition": "存储字符的数组",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "注释",
+      "definition": "被编译器忽略的说明文本",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "编译",
+      "definition": "将源代码转换为目标代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "编译器",
+      "definition": "将 C 代码转换为机器码的程序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "复合语句",
+      "definition": "用 `{}` 包裹的语句块",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "常量",
+      "definition": "程序中不可改变的值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "continue 语句",
+      "definition": "跳过本次循环迭代",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "控制流",
+      "definition": "程序执行顺序的控制",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "数据抽象",
+      "definition": "隐藏实现细节",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "数据成员",
+      "definition": "结构体或类的变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "数据类型",
+      "definition": "值的种类和可执行的操作",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "调试",
+      "definition": "查找和修复程序错误",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "解引用",
+      "definition": "通过指针访问其指向的值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "声明",
+      "definition": "引入变量或函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "默认参数",
+      "definition": "未提供时使用的参数值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "定义",
+      "definition": "创建变量或函数的实体",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "退化",
+      "definition": "数组退化为指针",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "do-while 循环",
+      "definition": "先执行后判断的循环",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "动态分配",
+      "definition": "程序运行时分配内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "枚举",
+      "definition": "一组命名整数值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "枚举常量",
+      "definition": "枚举类型的成员",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "转义序列",
+      "definition": "表示特殊字符的序列",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "表达式",
+      "definition": "求值后产生结果的代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "外部链接",
+      "definition": "可被其他文件访问",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "extern 存储类",
+      "definition": "声明外部变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "假值",
+      "definition": "布尔值为 0",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "文件作用域",
+      "definition": "整个文件可见",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标志",
+      "definition": "表示状态的布尔变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "浮点常量",
+      "definition": "带小数点的数字",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "格式化输出",
+      "definition": "用 printf 格式化打印",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "格式化输入",
+      "definition": "用 scanf 格式化读取",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "for 循环",
+      "definition": "计数循环",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "函数",
+      "definition": "完成特定任务的代码块",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "函数调用",
+      "definition": "执行函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "函数定义",
+      "definition": "函数的完整实现",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "函数原型",
+      "definition": "函数声明",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "垃圾值",
+      "definition": "未初始化的变量值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "生成目标文件",
+      "definition": "编译产生的 `.o` 文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "全局变量",
+      "definition": "文件作用域变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "goto 语句",
+      "definition": "无条件跳转",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "头文件",
+      "definition": "包含声明的 `.h` 文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "十六进制",
+      "definition": "以 16 为基数的计数系统",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "高级语言",
+      "definition": "接近人类语言的语言",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标识符",
+      "definition": "变量、函数、标签的名字",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "if 语句",
+      "definition": "条件分支",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "隐式类型转换",
+      "definition": "自动类型转换",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "包含指令",
+      "definition": "`#include` 预处理器指令",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "增量运算符",
+      "definition": "`++`",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "索引",
+      "definition": "数组中元素的位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "间接寻址",
+      "definition": "通过指针访问内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "初始化",
+      "definition": "声明时赋初值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内联",
+      "definition": "请求编译器内联展开",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内联函数",
+      "definition": "在调用处展开的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "输入",
+      "definition": "从外部获取数据",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "整数常量",
+      "definition": "整数值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内部链接",
+      "definition": "只在当前文件可见",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "中断",
+      "definition": "暂停程序执行",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "关键字",
+      "definition": "语言保留的特殊单词",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "左值",
+      "definition": "可以赋值的位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标签",
+      "definition": "标记代码位置的标识符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "链接",
+      "definition": "合并目标文件生成可执行文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字面量",
+      "definition": "代码中直接写出的值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "本地变量",
+      "definition": "函数内部变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "逻辑运算符",
+      "definition": "`&&`、`",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "长整数",
+      "definition": "比 int 更大范围的整数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "循环",
+      "definition": "重复执行的代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "宏",
+      "definition": "`#define` 定义的替换文本",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "强制类型转换",
+      "definition": "用 `(type)` 显式转换类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标记",
+      "definition": "标记数据位置的符号",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内存地址",
+      "definition": "数据在内存中的位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内存分配",
+      "definition": "分配内存空间",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内存泄漏",
+      "definition": "分配的内存未释放",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "修饰符",
+      "definition": "改变类型含义的关键字",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "多维数组",
+      "definition": "嵌套数组",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "空字符",
+      "definition": "`\\0`，字符串结束标志",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "空指针",
+      "definition": "值为 `NULL` 的指针",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "数值范围",
+      "definition": "类型可表示的值范围",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "八进制",
+      "definition": "以 8 为基数的计数系统",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "操作数",
+      "definition": "运算符作用的对象",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "运算符",
+      "definition": "执行操作的符号",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "输出",
+      "definition": "向外部发送数据",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "重写",
+      "definition": "覆盖原有数据",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "参数",
+      "definition": "函数定义时的变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "参数传递",
+      "definition": "传递数据给函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "指针",
+      "definition": "存储内存地址的变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "指针运算",
+      "definition": "对指针地址的算术运算",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "多态",
+      "definition": "不同类型使用相同接口",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "前置声明",
+      "definition": "提前声明标识符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "前置增量",
+      "definition": "`++x` 先增后用",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "预处理",
+      "definition": "编译前处理指令",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "预处理器",
+      "definition": "处理 `#` 开头的指令",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "主函数",
+      "definition": "程序入口 `main()`",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "printf",
+      "definition": "格式化输出函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "程序",
+      "definition": "完成特定功能的代码集合",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "程序计数器",
+      "definition": "记录下一条指令地址",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "限定符",
+      "definition": "`const`、`volatile`",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "随机存取",
+      "definition": "直接访问任意元素",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "读取",
+      "definition": "从输入获取数据",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "递归",
+      "definition": "函数调用自身",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "引用",
+      "definition": "变量的别名",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "寄存器变量",
+      "definition": "建议存储在寄存器的变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "关系运算符",
+      "definition": "比较运算符号",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "限制符",
+      "definition": "指针独占访问优化提示",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "返回语句",
+      "definition": "函数返回结果",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "右值",
+      "definition": "表达式的值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标量类型",
+      "definition": "单值类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "scanf",
+      "definition": "格式化输入函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "作用域",
+      "definition": "标识符可见的区域",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "副作用",
+      "definition": "修改外部状态",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "signed",
+      "definition": "有符号类型修饰符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "单目运算符",
+      "definition": "只有一个操作数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "sizeof",
+      "definition": "获取类型或变量大小",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "源代码",
+      "definition": "程序员编写的代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "源文件",
+      "definition": "包含源代码的 `.c` 文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标准输入",
+      "definition": "默认输入源",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标准输出",
+      "definition": "默认输出目的地",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标准错误",
+      "definition": "错误输出流",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "静态变量",
+      "definition": "生命周期贯穿程序的变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "stdio.h",
+      "definition": "标准输入输出头文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "stdlib.h",
+      "definition": "标准库头文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "string.h",
+      "definition": "字符串处理头文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "结构体",
+      "definition": "组合不同类型的数据",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "结构体标签",
+      "definition": "结构体的类型名",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "结构体成员",
+      "definition": "结构体的字段",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "子串",
+      "definition": "字符串的一部分",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "switch 语句",
+      "definition": "多分支选择",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "符号表",
+      "definition": "存储标识符信息",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "三字母词",
+      "definition": "表示特殊字符的三字符序列",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "真值",
+      "definition": "布尔值为非 0",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型",
+      "definition": "数据的分类",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型定义",
+      "definition": "用 `typedef` 创建别名",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型限定符",
+      "definition": "`const`、`volatile`",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型转换",
+      "definition": "转换数据类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "无条件分支",
+      "definition": "总是跳转的语句",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "未定义行为",
+      "definition": "语言规范未定义的行为",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "无符号",
+      "definition": "非负整数类型修饰符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "更新",
+      "definition": "修改变量值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "用户定义函数",
+      "definition": "程序员编写的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "变量",
+      "definition": "存储数据的命名位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "变量声明",
+      "definition": "引入变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "变量定义",
+      "definition": "创建变量并分配空间",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "可变参数",
+      "definition": "参数个数不确定的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "warning",
+      "definition": "编译警告信息",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "while 循环",
+      "definition": "先判断后执行的循环",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "宽度",
+      "definition": "类型的位数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "写入",
+      "definition": "输出数据到目标",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "abort",
+      "definition": "异常终止程序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "abs",
+      "definition": "整数绝对值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "assert",
+      "definition": "运行时断言检查",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "atexit",
+      "definition": "注册程序退出回调",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "atof",
+      "definition": "字符串转浮点数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "atoi",
+      "definition": "字符串转整数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "atol",
+      "definition": "字符串转长整数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "BSEARCH",
+      "definition": "二分查找",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "BSEARCH_S",
+      "definition": "安全版本二分查找",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "btowc",
+      "definition": "单字节转宽字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "calloc",
+      "definition": "分配并初始化内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "ceil",
+      "definition": "向上取整",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "clearerr",
+      "definition": "清除文件错误标志",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "clock",
+      "definition": "获取程序运行时间",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "cos",
+      "definition": "余弦函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "div",
+      "definition": "整数除法，返回商和余数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "exit",
+      "definition": "正常终止程序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "exp",
+      "definition": "指数函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fabs",
+      "definition": "浮点数绝对值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fclose",
+      "definition": "关闭文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "feof",
+      "definition": "检查文件结束标志",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "ferror",
+      "definition": "检查文件错误标志",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fflush",
+      "definition": "刷新输出缓冲区",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fgetc",
+      "definition": "读取单个字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fgetpos",
+      "definition": "获取文件位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fgets",
+      "definition": "读取一行字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "floor",
+      "definition": "向下取整",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fmod",
+      "definition": "浮点数取余",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fopen",
+      "definition": "打开文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fprintf",
+      "definition": "格式化输出到文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fputc",
+      "definition": "输出单个字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fputs",
+      "definition": "输出字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fread",
+      "definition": "二进制读取",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "free",
+      "definition": "释放动态内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "freopen",
+      "definition": "重新打开文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "frexp",
+      "definition": "分解浮点数为尾数和指数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fscanf",
+      "definition": "格式化从文件读取",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fseek",
+      "definition": "移动文件指针",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fsetpos",
+      "definition": "设置文件位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "ftell",
+      "definition": "获取文件位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "fwrite",
+      "definition": "二进制写入",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "getc",
+      "definition": "读取字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "getchar",
+      "definition": "从标准输入读取",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "getenv",
+      "definition": "获取环境变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "gets",
+      "definition": "读取一行（不安全，不推荐）",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "getw",
+      "definition": "读取一个字",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "gmtime",
+      "definition": "UTC 时间转结构体",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "isalnum",
+      "definition": "检查字母或数字",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "isalpha",
+      "definition": "检查字母",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "iscntrl",
+      "definition": "检查控制字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "isdigit",
+      "definition": "检查数字",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "isgraph",
+      "definition": "检查可显示字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "islower",
+      "definition": "检查小写字母",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "isprint",
+      "definition": "检查可打印字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "ispunct",
+      "definition": "检查标点符号",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "isspace",
+      "definition": "检查空白字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "isupper",
+      "definition": "检查大写字母",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "isxdigit",
+      "definition": "检查十六进制数字",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "labs",
+      "definition": "长整数绝对值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "ldexp",
+      "definition": "尾数和指数合成浮点数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "ldiv",
+      "definition": "长整数除法",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "localeconv",
+      "definition": "获取本地格式信息",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "localtime",
+      "definition": "转换为本地时间结构体",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "log",
+      "definition": "自然对数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "log10",
+      "definition": "以 10 为底对数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "longjmp",
+      "definition": "非局部跳转",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "malloc",
+      "definition": "分配内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "mblen",
+      "definition": "多字节字符字节数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "mbstowcs",
+      "definition": "多字节转宽字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "mbtowc",
+      "definition": "单个多字节转宽字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "memchr",
+      "definition": "内存中查找字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "memcmp",
+      "definition": "比较内存区域",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "memcpy",
+      "definition": "复制内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "memmove",
+      "definition": "移动内存区域",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "memset",
+      "definition": "填充内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "mktime",
+      "definition": "时间结构体转时间戳",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "modf",
+      "definition": "分解浮点数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "perror",
+      "definition": "输出错误信息",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "pow",
+      "definition": "幂函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "putc",
+      "definition": "输出字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "putchar",
+      "definition": "输出字符到标准输出",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "puts",
+      "definition": "输出字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "qsort",
+      "definition": "快速排序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "raise",
+      "definition": "发送信号",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "rand",
+      "definition": "生成伪随机数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "realloc",
+      "definition": "重新分配内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "remove",
+      "definition": "删除文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "rename",
+      "definition": "重命名文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "rewind",
+      "definition": "重置文件位置到开头",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "setbuf",
+      "definition": "设置缓冲区",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "setjmp",
+      "definition": "设置跳转点",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "setlocale",
+      "definition": "设置本地化",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "setvbuf",
+      "definition": "设置缓冲区及大小",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "signal",
+      "definition": "设置信号处理",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "sin",
+      "definition": "正弦函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "sprintf",
+      "definition": "格式化输出到字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "sqrt",
+      "definition": "平方根",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "srand",
+      "definition": "设置随机数种子",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "sscanf",
+      "definition": "从字符串格式化读取",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strcat",
+      "definition": "连接字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strchr",
+      "definition": "查找字符首次出现",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strcmp",
+      "definition": "比较字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strcoll",
+      "definition": "基于本地比较字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strcpy",
+      "definition": "复制字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strcspn",
+      "definition": "查找首个匹配字符位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strerror",
+      "definition": "获取错误信息字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strftime",
+      "definition": "格式化时间",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strlen",
+      "definition": "字符串长度",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strncat",
+      "definition": "连接指定长度字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strncmp",
+      "definition": "比较指定长度字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strncpy",
+      "definition": "复制指定长度字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strpbrk",
+      "definition": "查找字符集中任一字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strrchr",
+      "definition": "查找字符最后一次出现",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strspn",
+      "definition": "连续匹配字符数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strstr",
+      "definition": "查找子串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strtod",
+      "definition": "字符串转双精度",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strtof",
+      "definition": "字符串转浮点数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strtoimax",
+      "definition": "字符串转最大整数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strtok",
+      "definition": "字符串分割",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strtol",
+      "definition": "字符串转长整数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strtold",
+      "definition": "字符串转长双精度",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strtoll",
+      "definition": "字符串转 long long",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strtoul",
+      "definition": "字符串转无符号长整数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strtoull",
+      "definition": "字符串转无符号 long long",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strtoumax",
+      "definition": "字符串转无符号最大整数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "strxfrm",
+      "definition": "字符串转换比较",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "system",
+      "definition": "执行系统命令",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "tan",
+      "definition": "正切函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "time",
+      "definition": "获取当前时间戳",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "tmpfile",
+      "definition": "创建临时文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "tmpnam",
+      "definition": "生成临时文件名",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "tolower",
+      "definition": "转为小写",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "toupper",
+      "definition": "转为大写",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "ungetc",
+      "definition": "将字符推回流",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "va_arg",
+      "definition": "获取可变参数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "va_copy",
+      "definition": "复制可变参数列表",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "va_end",
+      "definition": "结束可变参数处理",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "va_start",
+      "definition": "初始化可变参数列表",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "vfprintf",
+      "definition": "可变参数格式化输出到文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "vfscanf",
+      "definition": "可变参数格式化从文件读取",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "vprintf",
+      "definition": "可变参数格式化输出",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "vscanf",
+      "definition": "可变参数格式化输入",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "vsprintf",
+      "definition": "可变参数格式化输出到字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "vsscanf",
+      "definition": "可变参数从字符串读取",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcrtomb",
+      "definition": "宽字符转多字节",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcscat",
+      "definition": "连接宽字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcschr",
+      "definition": "查找宽字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcscmp",
+      "definition": "比较宽字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcscpy",
+      "definition": "复制宽字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcscspn",
+      "definition": "不匹配字符数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcslen",
+      "definition": "宽字符串长度",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcsncat",
+      "definition": "连接指定长度宽字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcsncmp",
+      "definition": "比较指定长度宽字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcsncpy",
+      "definition": "复制指定长度宽字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcspbrk",
+      "definition": "查找宽字符集",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcsrchr",
+      "definition": "最后一次出现位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcsspn",
+      "definition": "连续匹配宽字符数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcsstr",
+      "definition": "查找宽字符串子串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcstod",
+      "definition": "宽字符串转双精度",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcstof",
+      "definition": "宽字符串转浮点",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcstoi",
+      "definition": "宽字符串转整数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcstok",
+      "definition": "宽字符串分割",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcstol",
+      "definition": "宽字符串转长整数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcstold",
+      "definition": "宽字符串转长双精度",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcstoll",
+      "definition": "宽字符串转 long long",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcstombs",
+      "definition": "宽字符串转多字节",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcstoul",
+      "definition": "宽字符串转无符号长整数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcstoull",
+      "definition": "宽字符串转无符号 long long",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wcsrtombs",
+      "definition": "宽字符串转多字节串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wctob",
+      "definition": "宽字符转单字节",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wmemchr",
+      "definition": "宽字符内存查找",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wmemcmp",
+      "definition": "比较宽字符内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wmemcpy",
+      "definition": "复制宽字符内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wmemmove",
+      "definition": "移动宽字符内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "wmemset",
+      "definition": "填充宽字符内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "抽象数据类型",
+      "definition": "只通过接口访问的数据类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "地址运算符",
+      "definition": "`&` 获取变量地址",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "别名机制",
+      "definition": "同一内存多个引用",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "应用二进制接口",
+      "definition": "二进制层面的接口约定",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "参数求值顺序",
+      "definition": "函数参数计算顺序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "原子操作",
+      "definition": "不可中断的操作",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "自动变量",
+      "definition": "函数内的局部变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "自动存储期",
+      "definition": "块作用域结束时释放",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "后向引用",
+      "definition": "正则表达式中引用前面分组",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "绑定",
+      "definition": "将标识符关联到实体",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "位图",
+      "definition": "用位表示的状态数组",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "布尔表达式",
+      "definition": "结果为真或假的表达式",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "边界检查",
+      "definition": "检查数组下标是否越界",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "缓冲区溢出",
+      "definition": "写入超出缓冲区边界",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字节序",
+      "definition": "多字节数据的存储顺序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "调用约定",
+      "definition": "函数调用参数传递规则",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "调用栈",
+      "definition": "函数调用的栈结构",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "案例标签",
+      "definition": "switch 中的分支标签",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字符编码",
+      "definition": "字符到数值的映射",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字符集",
+      "definition": "可用的字符集合",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字符分类",
+      "definition": "判断字符类型的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "闭合",
+      "definition": "函数及其引用的环境",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "代码生成",
+      "definition": "编译阶段生成目标代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "代码优化",
+      "definition": "改进生成代码效率",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "组合赋值运算符",
+      "definition": "运算并赋值 `+=`、`-=` 等",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "计算图",
+      "definition": "表达计算依赖的有向图",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "连接器",
+      "definition": "合并目标文件生成可执行文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "常量表达式",
+      "definition": "编译时可求值的表达式",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "常量指针",
+      "definition": "指向常量的指针",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "约束",
+      "definition": "运算符必须满足的条件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "控制字符",
+      "definition": "影响文本处理的字符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "控制流图",
+      "definition": "表示程序执行路径的图",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "转换说明符",
+      "definition": "printf/scanf 格式符号",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "转换函数",
+      "definition": "类型转换的操作",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "协程",
+      "definition": "可暂停和恢复的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "耦合",
+      "definition": "模块间依赖程度",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "覆盖",
+      "definition": "测试覆盖的代码范围",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "CPU 寄存器",
+      "definition": "处理器内部的高速存储",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "交叉编译",
+      "definition": "在一种平台编译另一种平台代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "密码学安全随机数",
+      "definition": "密码学安全的随机数生成器",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "数据竞争",
+      "definition": "多线程同时访问同一数据",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "数据流分析",
+      "definition": "分析数据在程序中的传递",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "死代码",
+      "definition": "永远不会被执行的代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "死锁",
+      "definition": "多个进程相互等待对方释放资源",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "调试符号",
+      "definition": "帮助调试的额外信息",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "解构",
+      "definition": "将数据分解为组件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "默认参数提升",
+      "definition": "函数参数的类型提升规则",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "默认初始化",
+      "definition": "编译器执行的默认初始化",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "定义性声明",
+      "definition": "创建实体的声明",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "延迟求值",
+      "definition": "表达式在需要时才求值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "删除运算符",
+      "definition": "释放动态分配的内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "依赖",
+      "definition": "两个计算之间的顺序关系",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "依赖注入",
+      "definition": "将依赖作为参数传入",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "派生类型",
+      "definition": "从基本类型构造的类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "目标文件",
+      "definition": "编译产生的 `.o` 文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "动态内存分配",
+      "definition": "程序运行时分配内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "动态调度",
+      "definition": "运行时决定调用哪个函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "动态作用域",
+      "definition": "根据调用链确定作用域",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "动态类型",
+      "definition": "运行时确定的类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "端序",
+      "definition": "字节在内存中的顺序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "入口点",
+      "definition": "程序开始执行的位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "环境指针",
+      "definition": "`envp`，指向环境变量数组",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "环境变量",
+      "definition": "操作系统的配置变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "EOF",
+      "definition": "文件结束标志，通常为 -1",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "平等性检查",
+      "definition": "`==` 比较是否相等",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "等价类型",
+      "definition": "可互换的类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "错误恢复",
+      "definition": "处理错误后的恢复机制",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "错误处理",
+      "definition": "检测和处理错误",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "估计值",
+      "definition": "近似计算的结果",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "可执行文件",
+      "definition": "可直接运行的程序文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "执行环境",
+      "definition": "程序运行的环境",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "执行路径",
+      "definition": "程序可能的执行流程",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "执行时",
+      "definition": "程序实际运行的阶段",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "显式类型转换",
+      "definition": "用强制转换的类型转换",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "表达式语句",
+      "definition": "以表达式结尾的语句",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "表达式树",
+      "definition": "表达式的树形表示",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "外部变量",
+      "definition": "全局作用域变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "故障容错",
+      "definition": "系统出错时的应对能力",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "特征",
+      "definition": "语言提供的功能",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "文件偏移量",
+      "definition": "相对于文件开头的字节数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "文件指针",
+      "definition": "指向文件流的指针",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "有限状态机",
+      "definition": "表示有限状态和转换的模型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "固定宽度整数",
+      "definition": "指定位数的整数类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "浮点异常",
+      "definition": "浮点运算错误",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "格式字符串",
+      "definition": "printf/scanf 的格式描述",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "前向声明",
+      "definition": "提前声明标识符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "前向引用",
+      "definition": "引用尚未定义的标识符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "片段",
+      "definition": "内存块的组成部分",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "函数指针",
+      "definition": "指向函数的指针",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "函数对象",
+      "definition": "可像函数一样调用的对象",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "函数式编程",
+      "definition": "以函数为核心的编程范式",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "函数签名",
+      "definition": "函数的参数和返回类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "函数模板",
+      "definition": "参数化的函数定义",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "垃圾收集",
+      "definition": "自动回收无用内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "生成器",
+      "definition": "产生序列值的对象",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "泛型",
+      "definition": "适用于多种类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "泛型编程",
+      "definition": "编写与类型无关的代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "全局对象",
+      "definition": "程序启动时创建的对象",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "全局构造函数",
+      "definition": "程序启动时调用的构造函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "全局析构函数",
+      "definition": "程序结束时调用的析构函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "goto 标签",
+      "definition": "goto 跳转的目标位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "图着色寄存器分配",
+      "definition": "寄存器分配算法",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "守卫",
+      "definition": "保护临界区的同步机制",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "汉明距离",
+      "definition": "两个数对应位不同的数量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "硬编码",
+      "definition": "直接写入代码的值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "哈希表",
+      "definition": "通过哈希函数实现查找的数据结构",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "头文件保护",
+      "definition": "防止头文件重复包含",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "堆",
+      "definition": "动态分配的内存区域",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "层次结构",
+      "definition": "类型的继承层次",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "热路径",
+      "definition": "频繁执行的代码路径",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "大小写折叠",
+      "definition": "不区分大小写的比较",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标识符名称",
+      "definition": "标识符的拼写",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "即时编译",
+      "definition": "运行时编译为机器码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "不可达代码",
+      "definition": "执行不到的代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "不透明指针",
+      "definition": "隐藏实现细节的指针",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "增量编译",
+      "definition": "只编译改动的部分",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "间接调用",
+      "definition": "通过函数指针调用",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "间接成员访问",
+      "definition": "通过指针访问成员 `->`",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "间接寻址级别",
+      "definition": "指针的嵌套层数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "推断",
+      "definition": "自动推导类型或值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "继承",
+      "definition": "类型获取另一个类型的成员",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内联汇编",
+      "definition": "在 C 代码中嵌入汇编",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内联展开",
+      "definition": "将函数调用替换为函数体",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "输入缓冲区",
+      "definition": "存储输入数据的缓冲区",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "输入参数",
+      "definition": "传递数据给函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "实例化",
+      "definition": "创建模板的具体版本",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "整数提升",
+      "definition": "小整数类型提升为 int",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "整数溢出",
+      "definition": "整数运算超出范围",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "交互式程序",
+      "definition": "与用户实时交互的程序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "接口",
+      "definition": "与其他代码交互的方式",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "中断处理程序",
+      "definition": "处理硬件中断的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "中断向量",
+      "definition": "中断处理程序的地址表",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "反汇编",
+      "definition": "将机器码转为汇编代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "迭代器",
+      "definition": "遍历容器的对象",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "链接器脚本",
+      "definition": "控制链接过程的文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字面量池",
+      "definition": "存储常量的内存区域",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "本地变量表",
+      "definition": "函数局部变量的列表",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "逻辑与",
+      "definition": "`&&` 运算符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "逻辑非",
+      "definition": "`!` 运算符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "逻辑或",
+      "definition": "`",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "长跳转",
+      "definition": "跨函数跳转",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "循环不变代码",
+      "definition": "循环中不变的值可以外提",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "循环展开",
+      "definition": "减少循环次数增加每次工作量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "宏展开",
+      "definition": "预处理器替换宏",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "主调函数",
+      "definition": "调用其他函数的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "被调函数",
+      "definition": "被其他函数调用的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "映射",
+      "definition": "类型到另一类型的对应关系",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标记解析",
+      "definition": "将源代码分解为 Token",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标记粘贴",
+      "definition": "预处理器拼接标识符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "记忆化",
+      "definition": "缓存计算结果",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内存对齐",
+      "definition": "数据地址的倍数要求",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内存屏障",
+      "definition": "防止内存操作重排序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内存模型",
+      "definition": "程序对内存的抽象",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内存排序",
+      "definition": "多线程内存访问顺序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "内存分配器",
+      "definition": "管理内存分配和释放",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "消息传递",
+      "definition": "进程间通信机制",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "元编程",
+      "definition": "程序生成或操作程序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "方法",
+      "definition": "关联到对象的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "方法调度",
+      "definition": "确定调用哪个方法",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "最小生成树",
+      "definition": "连接所有节点的最小边集合",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "混合语言编程",
+      "definition": "多种语言混合编程",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "移动语义",
+      "definition": "转移资源所有权",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "多线程",
+      "definition": "并行执行多个线程",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "名称查找",
+      "definition": "查找标识符声明的过程",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "命名空间",
+      "definition": "避免命名冲突的机制",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "命名管道",
+      "definition": "有名字的进程间通信通道",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "本征函数",
+      "definition": "编译器内置的特殊函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "空语句",
+      "definition": "不做任何事的 `;`",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "目标代码",
+      "definition": "编译器生成的二进制代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "对象文件",
+      "definition": "编译产生的文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "对象生命周期",
+      "definition": "对象从创建到销毁的时间",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "观察者模式",
+      "definition": "订阅-发布模式",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "开地址法",
+      "definition": "解决哈希冲突的线性探测",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "操作数求值顺序",
+      "definition": "操作数计算的顺序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "操作符",
+      "definition": "表示操作的符号",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "可选参数",
+      "definition": "可以省略的参数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "原始类型",
+      "definition": "语言内置的基本类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "过程",
+      "definition": "执行特定任务的代码块",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "过程调用",
+      "definition": "调用函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "处理函数",
+      "definition": "处理事件的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "进程",
+      "definition": "运行的程序实例",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "程序头",
+      "definition": "可执行文件的段信息",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "程序分析",
+      "definition": "检查程序性质",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "程序验证",
+      "definition": "证明程序正确性",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "投影",
+      "definition": "提取类型的部分属性",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "属性",
+      "definition": "附加在声明上的修饰符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "纯函数",
+      "definition": "无副作用的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "限定作用域",
+      "definition": "带限定的名称",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "限定名称",
+      "definition": "带作用域的名称",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "队列",
+      "definition": "先进先出的数据结构",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "随机数生成器",
+      "definition": "生成随机数的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "范围",
+      "definition": "取值区间",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "等级",
+      "definition": "类型的大小顺序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "只读存储器",
+      "definition": "只能读取的存储器",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "只读变量",
+      "definition": "不能修改的变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "只读权限",
+      "definition": "只允许读取",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "只读字符串",
+      "definition": "存储在只读内存的字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "读写权限",
+      "definition": "允许读取和写入",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "重新定义",
+      "definition": "同一作用域多次定义",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "寄存器分配",
+      "definition": "决定变量存储位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "相关性",
+      "definition": "两个值的关系",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "相对地址",
+      "definition": "相对于基址的偏移",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "释放序列",
+      "definition": "原子释放后的所有操作",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "资源获取即初始化",
+      "definition": "资源管理与对象生命周期绑定",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "结果",
+      "definition": "函数返回的值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "返回值",
+      "definition": "函数返回的结果",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "逆波兰表示法",
+      "definition": "后缀表达式的另一种名称",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "行缓冲",
+      "definition": "遇到换行符刷新缓冲区",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "行号",
+      "definition": "源代码的行计数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "运行时",
+      "definition": "程序执行的阶段",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "运行时错误",
+      "definition": "程序执行时才发生的错误",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "运行时库",
+      "definition": "支持程序运行的基础库",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "运行时类型信息",
+      "definition": "运行时类型识别",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "调度",
+      "definition": "分配 CPU 时间给线程",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "调度器",
+      "definition": "决定线程执行顺序的组件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "段错误",
+      "definition": "访问无效内存地址",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "自旋锁",
+      "definition": "忙等待的锁",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "喷雾",
+      "definition": "填充内存区域",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "栈",
+      "definition": "后进先出的数据结构",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "栈帧",
+      "definition": "函数调用的栈区域",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "栈指针",
+      "definition": "指向栈顶的指针",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标准",
+      "definition": "语言规范文档",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "标准模板库",
+      "definition": "C++ 的模板库",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "起始地址",
+      "definition": "数据或代码的起始位置",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "状态机",
+      "definition": "状态和转换的模型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "静态初始化",
+      "definition": "程序启动时的初始化",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "静态链接",
+      "definition": "链接时合并库代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "存储类",
+      "definition": "变量和函数的存储特性",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "存储期",
+      "definition": "变量存在的时间长度",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字符串常量",
+      "definition": "双引号括起的字符序列",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字符串化",
+      "definition": "将标记转为字符串",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "结构化编程",
+      "definition": "使用控制结构的编程范式",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "子类型",
+      "definition": "类型的子集",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "超类型",
+      "definition": "类型的父集",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "替代",
+      "definition": "用实参替换形参",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "符号",
+      "definition": "标识符的内部表示",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "同步",
+      "definition": "协调多个执行单元",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "同步原语",
+      "definition": "实现同步的机制",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "语法",
+      "definition": "代码的结构规则",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "语法错误",
+      "definition": "违反语法规则的错误",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "语法糖",
+      "definition": "简化语法的表示",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "系统调用",
+      "definition": "请求操作系统服务",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "系统头文件",
+      "definition": "操作系统提供的头文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "T 类型",
+      "definition": "所有类型的集合",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "尾调用",
+      "definition": "函数末尾的调用",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "尾调用优化",
+      "definition": "消除尾调用的栈帧",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "技术规格",
+      "definition": "详细的技术说明",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "模板参数",
+      "definition": "模板的类型或值参数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "模板特化",
+      "definition": "为特定类型的模板定义",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "临时对象",
+      "definition": "表达式创建的临时变量",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "终止条件",
+      "definition": "循环结束的条件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "终止状态",
+      "definition": "没有转换的最终状态",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "测试覆盖",
+      "definition": "测试覆盖的代码比例",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "测试框架",
+      "definition": "辅助测试的工具",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "测试用例",
+      "definition": "测试的具体场景",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "文本模式",
+      "definition": "以文本方式处理文件",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "线程",
+      "definition": "执行的最小单位",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "线程本地存储",
+      "definition": "每个线程独立的变量副本",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "线程安全",
+      "definition": "多线程环境下正确行为",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "线程池",
+      "definition": "复用线程的机制",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "投针算法",
+      "definition": "字符串匹配算法",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "追踪",
+      "definition": "记录程序执行",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "追踪调试",
+      "definition": "记录执行路径",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "传统 C",
+      "definition": "早期的 C 语言风格",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "传统语法",
+      "definition": "函数定义的旧语法",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "传输控制",
+      "definition": "管理数据传输",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "陷阱",
+      "definition": "CPU 异常处理机制",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "陷阱指令",
+      "definition": "引发陷阱的指令",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型兼容性",
+      "definition": "类型是否可互换",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型泛化",
+      "definition": "从具体类型抽象",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型检查",
+      "definition": "验证类型正确性",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型等价",
+      "definition": "类型是否相同",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型层次",
+      "definition": "类型的继承关系",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型推断",
+      "definition": "自动推导类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型特化",
+      "definition": "从泛化类型具体化",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "类型化语言",
+      "definition": "有类型系统的语言",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "未定义",
+      "definition": "语言规范未定义的行为",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "统一类型",
+      "definition": "多种类型的公共类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "联合",
+      "definition": "可存储不同类型的重叠内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "联合标签",
+      "definition": "联合的类型标识",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "唯一标识",
+      "definition": "唯一的标识符",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "单元",
+      "definition": "编译的基本单位",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "单元测试",
+      "definition": "测试最小可测单元",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "顶层设计",
+      "definition": "整体架构设计",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "展开",
+      "definition": "将宏或函数调用展开",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "外部定义",
+      "definition": "函数的完整定义",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "外部声明",
+      "definition": "声明标识符存在",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "外延",
+      "definition": "添加的额外成员",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "变参函数",
+      "definition": "参数个数可变的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "变量参数",
+      "definition": "可变数量的参数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "变体",
+      "definition": "可存储不同类型的值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "版本",
+      "definition": "软件的迭代版本",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "向量化",
+      "definition": "使用 SIMD 指令",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "虚函数",
+      "definition": "可被重写的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "虚表",
+      "definition": "实现虚函数调用的表",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "警告",
+      "definition": "提示可能的问题",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "位置参数",
+      "definition": "按位置传递的参数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "无参函数",
+      "definition": "无参数的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "无类型",
+      "definition": "没有类型的值",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "析构函数",
+      "definition": "销毁对象的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "系统抽象层",
+      "definition": "硬件抽象层",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "线程安全函数",
+      "definition": "多线程下安全的函数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "有符号",
+      "definition": "可表示负数",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "预处理指令",
+      "definition": "`#` 开头的编译指示",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "预处理器宏",
+      "definition": "`#define` 定义的宏",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "增量开发",
+      "definition": "逐步添加功能",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "正则表达式",
+      "definition": "文本模式匹配",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "指针常量",
+      "definition": "值不变的指针",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "指令集",
+      "definition": "CPU 支持的指令集合",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "指令调度",
+      "definition": "重新排列指令顺序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "指令级并行",
+      "definition": "同时执行多条指令",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "智能指针",
+      "definition": "自动管理内存的指针",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "中间表示",
+      "definition": "编译中间阶段的表示",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "中间代码",
+      "definition": "编译中间产生的代码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "主存",
+      "definition": "CPU 直接访问的内存",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "主函数参数",
+      "definition": "argc、argv、envp",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字节码",
+      "definition": "解释器执行的中间码",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字节序转换",
+      "definition": "改变数据的字节顺序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "资源限制",
+      "definition": "系统资源的使用限制",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "原子类型",
+      "definition": "不可分割的类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "字",
+      "definition": "CPU一次处理的数据单位",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "最小正规格",
+      "definition": "最小的完整程序",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "最终类型",
+      "definition": "去除 typedef 后的类型",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "最短路径",
+      "definition": "两点间的最短距离",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "左值表达式",
+      "definition": "表示存储位置的表达式",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "作用范围",
+      "definition": "标识符可见的区域",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "作用域限定符",
+      "definition": "`::` 访问作用域",
+      "slug": "c/glossary"
+    },
+    {
+      "name": "作用域解析",
+      "definition": "查找标识符声明",
+      "slug": "c/glossary"
+    }
+  ]
+}

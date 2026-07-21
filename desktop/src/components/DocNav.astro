@@ -1,0 +1,130 @@
+---
+/**
+ * DocNav 文档底部导航组件
+ *
+ * 功能概述：
+ * - 在文档正文末尾显示"上一篇 / 下一篇"导航按钮
+ * - 根据当前文档在模块中的 order 排序，计算前后文档
+ * - 上一篇靠左、下一篇靠右；仅有一篇时单按钮布局
+ * - 完整无障碍：nav[aria-label]、rel 属性、键盘可达
+ * - 基于 Tailwind v4 工具类实现样式
+ *
+ * Props:
+ *   moduleId    - 当前模块 ID（如 `frontend/javascript`）
+ *   currentSlug - 当前文档 slug（不含模块前缀）
+ *   sortedDocs  - 已排序的文档集合（可选，避免外部重复查询）
+ */
+import { type CollectionEntry, getCollection } from 'astro:content';
+import { withBase } from '@/lib/url';
+
+interface Props {
+  moduleId: string;
+  currentSlug: string;
+  sortedDocs?: readonly CollectionEntry<'docs'>[];
+}
+
+const { moduleId, currentSlug, sortedDocs } = Astro.props;
+
+/** 获取当前模块的文档列表，支持外部传入已排序列表以避免重复查询 */
+const docs = sortedDocs ?? (await getCollection('docs', ({ data }) => data.module === moduleId));
+const sorted = sortedDocs
+  ? docs
+  : [...docs].sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+
+/** 从文档 ID 中提取 slug（去除目录前缀和 .md 后缀） */
+function docSlug(id: string): string {
+  const last = id.split('/').pop() ?? id;
+  return last.replace(/\.(md|mdx)$/, '');
+}
+
+/** 当前文档在排序列表中的索引 */
+const currentIndex = sorted.findIndex((doc) => docSlug(doc.id) === currentSlug);
+
+/** 上一篇文档（currentIndex - 1） */
+const prev = currentIndex > 0 ? sorted[currentIndex - 1] : null;
+
+/** 下一篇文档（currentIndex + 1） */
+const next =
+  currentIndex >= 0 && currentIndex < sorted.length - 1 ? sorted[currentIndex + 1] : null;
+
+/** 构建文档链接（withBase 兼容 Tauri/Web） */
+function docHref(doc: CollectionEntry<'docs'>): string {
+  return withBase(`/${moduleId}/${docSlug(doc.id)}/`);
+}
+
+/** 是否仅有单侧导航 */
+const isSingle = !prev || !next;
+---
+
+{
+  (prev || next) && (
+    <nav
+      aria-label="文档导航"
+      class={`mt-12 flex gap-3 border-t border-border pt-6 ${isSingle ? 'justify-start' : 'justify-between'}`}
+    >
+      {prev ? (
+        <a
+          href={docHref(prev)}
+          rel="prev"
+          class="group flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-border bg-card p-3 transition-colors hover:border-primary/40 hover:bg-accent/50 sm:p-4"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform group-hover:-translate-x-0.5"
+            aria-hidden="true"
+          >
+            <polyline points="15 18 9 12 15 6" />
+          </svg>
+          <div class="min-w-0 flex-1">
+            <span class="block text-[10px] uppercase tracking-wide text-muted-foreground">
+              上一篇
+            </span>
+            <span class="block truncate text-sm font-medium text-foreground">
+              {prev.data.title}
+            </span>
+          </div>
+        </a>
+      ) : (
+        !isSingle && <div class="hidden flex-1 sm:block" aria-hidden="true" />
+      )}
+
+      {next ? (
+        <a
+          href={docHref(next)}
+          rel="next"
+          class="group flex min-w-0 flex-1 items-center gap-3 rounded-lg border border-border bg-card p-3 text-right transition-colors hover:border-primary/40 hover:bg-accent/50 sm:p-4"
+        >
+          <div class="min-w-0 flex-1">
+            <span class="block text-[10px] uppercase tracking-wide text-muted-foreground">
+              下一篇
+            </span>
+            <span class="block truncate text-sm font-medium text-foreground">
+              {next.data.title}
+            </span>
+          </div>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-4 w-4 flex-shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5"
+            aria-hidden="true"
+          >
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </a>
+      ) : (
+        !isSingle && <div class="hidden flex-1 sm:block" aria-hidden="true" />
+      )}
+    </nav>
+  )
+}

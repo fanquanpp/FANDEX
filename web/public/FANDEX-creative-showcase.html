@@ -1,0 +1,1632 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>FANDEX · 从零基础到本科毕业的计算机科学自学平台 · 学习工作 · 社会公益</title>
+    <meta
+      name="description"
+      content="FANDEX 是一套面向零基础学习者的计算机科学自学平台，由 Web、桌面、移动三端构成完整学习生态。完全开源，降低教育门槛。"
+    />
+    <style>
+      /* ========== 设计令牌 ========== */
+      :root {
+        --ink: #0a0e1a; /* 墨色主背景 */
+        --ink-2: #131826; /* 次级背景 */
+        --ink-3: #1c2333; /* 卡片背景 */
+        --paper: #f5f1e8; /* 米白主文字 */
+        --paper-dim: #c9c3b3; /* 次级文字 */
+        --paper-mute: #8b8579; /* 弱化文字 */
+        --amber: #d97706; /* 琥珀强调色 */
+        --amber-glow: #f59e0b; /* 琥珀高光 */
+        --ember: #f97316; /* 暖橙 */
+        --azure: #0ea5e9; /* 青蓝辅色 */
+        --line: rgba(245, 241, 232, 0.12);
+        --serif: 'Source Han Serif SC', 'Noto Serif CJK SC', 'Songti SC', 'STSong', serif;
+        --sans: system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+        --mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', Consolas, monospace;
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background: var(--ink);
+        color: var(--paper);
+        font-family: var(--sans);
+        line-height: 1.7;
+        overflow-x: hidden;
+        -webkit-font-smoothing: antialiased;
+      }
+
+      /* ========== 导航 ========== */
+      nav {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 100;
+        padding: 1.25rem 2.5rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: rgba(10, 14, 26, 0.7);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border-bottom: 1px solid var(--line);
+        transition: padding 0.3s ease;
+      }
+      nav.scrolled {
+        padding: 0.85rem 2.5rem;
+      }
+      .brand {
+        font-family: var(--serif);
+        font-size: 1.5rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        color: var(--paper);
+      }
+      .brand span {
+        color: var(--amber-glow);
+      }
+      .nav-links {
+        display: flex;
+        gap: 2rem;
+      }
+      .nav-links a {
+        color: var(--paper-dim);
+        text-decoration: none;
+        font-size: 0.9rem;
+        letter-spacing: 0.03em;
+        transition: color 0.2s;
+      }
+      .nav-links a:hover {
+        color: var(--amber-glow);
+      }
+
+      /* ========== Hero ========== */
+      .hero {
+        min-height: 100vh;
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 8rem 2.5rem 4rem;
+        overflow: hidden;
+      }
+      .hero-canvas {
+        position: absolute;
+        inset: 0;
+        z-index: 0;
+      }
+      .hero-content {
+        position: relative;
+        z-index: 2;
+        max-width: 1200px;
+        margin: 0 auto;
+        width: 100%;
+      }
+      .hero-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        color: var(--amber-glow);
+        letter-spacing: 0.15em;
+        text-transform: uppercase;
+        margin-bottom: 2rem;
+        opacity: 0;
+        animation: fadeUp 0.8s ease 0.2s forwards;
+      }
+      .hero-tag::before {
+        content: '';
+        width: 32px;
+        height: 1px;
+        background: var(--amber-glow);
+      }
+      .hero h1 {
+        font-family: var(--serif);
+        font-size: clamp(3.5rem, 9vw, 7.5rem);
+        font-weight: 900;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        margin-bottom: 1.5rem;
+        opacity: 0;
+        animation: fadeUp 1s ease 0.4s forwards;
+      }
+      .hero h1 .accent {
+        background: linear-gradient(
+          135deg,
+          var(--amber) 0%,
+          var(--ember) 50%,
+          var(--amber-glow) 100%
+        );
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        display: inline-block;
+      }
+      .hero-sub {
+        font-size: clamp(1.05rem, 1.5vw, 1.35rem);
+        color: var(--paper-dim);
+        max-width: 640px;
+        margin-bottom: 3rem;
+        line-height: 1.6;
+        opacity: 0;
+        animation: fadeUp 1s ease 0.6s forwards;
+      }
+      .hero-sub strong {
+        color: var(--paper);
+        font-weight: 500;
+      }
+      .hero-meta {
+        display: flex;
+        align-items: center;
+        gap: 1.25rem;
+        flex-wrap: wrap;
+        font-size: 0.95rem;
+        color: var(--paper-dim);
+        margin-top: 0.5rem;
+        opacity: 0;
+        animation: fadeUp 1s ease 0.8s forwards;
+      }
+      .hero-meta-item strong {
+        color: var(--amber-glow);
+        font-weight: 600;
+        margin-right: 0.4rem;
+      }
+      .hero-meta-divider {
+        width: 1px;
+        height: 16px;
+        background: var(--line);
+      }
+      .hero-stats {
+        position: absolute;
+        bottom: 3rem;
+        left: 2.5rem;
+        right: 2.5rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 2rem;
+        flex-wrap: wrap;
+        z-index: 2;
+        opacity: 0;
+        animation: fadeUp 1s ease 1s forwards;
+      }
+      .hero-stat {
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+      }
+      .hero-stat-num {
+        font-family: var(--serif);
+        font-size: 2rem;
+        font-weight: 700;
+        color: var(--amber-glow);
+        line-height: 1;
+      }
+      .hero-stat-label {
+        font-size: 0.8rem;
+        color: var(--paper-mute);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+      }
+
+      /* ========== 通用章节 ========== */
+      section {
+        padding: 8rem 2.5rem;
+        position: relative;
+      }
+      .section-inner {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .section-label {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--amber-glow);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+      }
+      .section-label::before {
+        content: '';
+        width: 24px;
+        height: 1px;
+        background: var(--amber-glow);
+      }
+      .section-title {
+        font-family: var(--serif);
+        font-size: clamp(2rem, 4vw, 3.2rem);
+        font-weight: 700;
+        line-height: 1.15;
+        margin-bottom: 1.5rem;
+        letter-spacing: -0.01em;
+      }
+      .section-lead {
+        font-size: 1.1rem;
+        color: var(--paper-dim);
+        max-width: 720px;
+        line-height: 1.7;
+      }
+
+      /* ========== 痛点章节 ========== */
+      .pain {
+        background: var(--ink-2);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .pain-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 4rem;
+        margin-top: 4rem;
+        align-items: start;
+      }
+      .pain-card {
+        border-left: 2px solid var(--line);
+        padding-left: 1.5rem;
+        transition: border-color 0.3s;
+      }
+      .pain-card:hover {
+        border-left-color: var(--amber-glow);
+      }
+      .pain-card-num {
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        color: var(--paper-mute);
+        margin-bottom: 0.5rem;
+      }
+      .pain-card h3 {
+        font-family: var(--serif);
+        font-size: 1.35rem;
+        color: var(--paper);
+        margin-bottom: 0.75rem;
+        font-weight: 600;
+      }
+      .pain-card p {
+        color: var(--paper-dim);
+        font-size: 0.98rem;
+        line-height: 1.7;
+      }
+
+      /* ========== 三端协同 ========== */
+      .triad-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        margin-top: 4rem;
+      }
+      .triad-card {
+        background: var(--ink-3);
+        border: 1px solid var(--line);
+        padding: 2.5rem 2rem;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.3s ease;
+      }
+      .triad-card::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: linear-gradient(90deg, transparent, var(--amber-glow), transparent);
+        transform: scaleX(0);
+        transition: transform 0.4s ease;
+      }
+      .triad-card:hover::before {
+        transform: scaleX(1);
+      }
+      .triad-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(245, 158, 11, 0.3);
+      }
+      .triad-icon {
+        width: 48px;
+        height: 48px;
+        margin-bottom: 1.5rem;
+        color: var(--amber-glow);
+      }
+      .triad-card h3 {
+        font-family: var(--serif);
+        font-size: 1.5rem;
+        margin-bottom: 0.5rem;
+        font-weight: 700;
+      }
+      .triad-card .role {
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--amber-glow);
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+        margin-bottom: 1rem;
+      }
+      .triad-card p {
+        color: var(--paper-dim);
+        font-size: 0.95rem;
+        margin-bottom: 1.5rem;
+      }
+      .triad-meta {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding-top: 1rem;
+        border-top: 1px solid var(--line);
+      }
+      .triad-meta-row {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.85rem;
+      }
+      .triad-meta-label {
+        color: var(--paper-mute);
+      }
+      .triad-meta-val {
+        color: var(--paper);
+        font-family: var(--mono);
+      }
+
+      /* ========== 知识体系可视化 ========== */
+      .system {
+        background: var(--ink-2);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .system-stats {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 2rem;
+        margin: 4rem 0;
+        padding: 3rem 0;
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .stat-block {
+        text-align: left;
+      }
+      .stat-num {
+        font-family: var(--serif);
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 900;
+        line-height: 1;
+        background: linear-gradient(135deg, var(--amber) 0%, var(--amber-glow) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 0.5rem;
+      }
+      .stat-label {
+        font-size: 0.9rem;
+        color: var(--paper-dim);
+        letter-spacing: 0.05em;
+      }
+
+      .category-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1rem;
+        margin-top: 3rem;
+      }
+      .category-card {
+        padding: 1.5rem;
+        background: var(--ink-3);
+        border-left: 3px solid var(--cat-color, var(--amber));
+        transition: transform 0.2s;
+      }
+      .category-card:hover {
+        transform: translateX(4px);
+      }
+      .category-card h4 {
+        font-family: var(--serif);
+        font-size: 1.15rem;
+        margin-bottom: 0.5rem;
+        color: var(--paper);
+      }
+      .category-card .cat-count {
+        font-family: var(--mono);
+        font-size: 0.8rem;
+        color: var(--cat-color, var(--amber-glow));
+        margin-bottom: 0.75rem;
+      }
+      .category-card p {
+        font-size: 0.85rem;
+        color: var(--paper-dim);
+        line-height: 1.6;
+      }
+
+      /* ========== AI 理念 ========== */
+      .ai-philosophy {
+        position: relative;
+      }
+      .ai-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 5rem;
+        margin-top: 4rem;
+        align-items: center;
+      }
+      .ai-quote {
+        font-family: var(--serif);
+        font-size: clamp(1.5rem, 2.5vw, 2.2rem);
+        line-height: 1.4;
+        font-weight: 500;
+        color: var(--paper);
+      }
+      .ai-quote .highlight {
+        color: var(--amber-glow);
+        font-style: italic;
+      }
+      .ai-quote::before {
+        content: '"';
+        font-size: 4rem;
+        color: var(--amber);
+        line-height: 0;
+        vertical-align: -0.4em;
+        margin-right: 0.2rem;
+      }
+      .ai-list {
+        list-style: none;
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .ai-list li {
+        display: flex;
+        gap: 1rem;
+        padding: 1rem 0;
+        border-bottom: 1px solid var(--line);
+        align-items: flex-start;
+      }
+      .ai-list li:last-child {
+        border-bottom: none;
+      }
+      .ai-list-num {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        color: var(--amber-glow);
+        padding-top: 0.25rem;
+        min-width: 30px;
+      }
+      .ai-list-content strong {
+        display: block;
+        color: var(--paper);
+        margin-bottom: 0.25rem;
+        font-weight: 600;
+      }
+      .ai-list-content span {
+        color: var(--paper-dim);
+        font-size: 0.9rem;
+      }
+
+      /* ========== 社会公益 ========== */
+      .public {
+        background: var(--ink);
+        position: relative;
+      }
+      .public::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at top, rgba(14, 165, 233, 0.06) 0%, transparent 50%);
+        pointer-events: none;
+      }
+      .public .section-inner {
+        position: relative;
+        z-index: 1;
+      }
+      .public-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-top: 4rem;
+      }
+      .public-card {
+        padding: 2rem 1.5rem;
+        background: var(--ink-2);
+        border: 1px solid var(--line);
+        text-align: left;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+      }
+      .public-card::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(90deg, var(--azure), var(--amber-glow));
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.4s ease;
+      }
+      .public-card:hover::after {
+        transform: scaleX(1);
+      }
+      .public-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(14, 165, 233, 0.3);
+      }
+      .public-icon {
+        width: 44px;
+        height: 44px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: var(--ink-3);
+        border: 1px solid var(--line);
+        color: var(--azure);
+        font-family: var(--serif);
+        font-size: 1.3rem;
+        font-weight: 700;
+        margin-bottom: 1.25rem;
+        border-radius: 2px;
+      }
+      .public-card h3 {
+        font-family: var(--serif);
+        font-size: 1.15rem;
+        color: var(--paper);
+        margin-bottom: 0.6rem;
+        font-weight: 600;
+      }
+      .public-card p {
+        color: var(--paper-dim);
+        font-size: 0.88rem;
+        line-height: 1.65;
+      }
+
+      /* ========== 技术架构 ========== */
+      .arch {
+        background: var(--ink-2);
+        border-top: 1px solid var(--line);
+        border-bottom: 1px solid var(--line);
+      }
+      .arch-diagram {
+        margin-top: 4rem;
+        padding: 3rem;
+        background: var(--ink);
+        border: 1px solid var(--line);
+        font-family: var(--mono);
+        font-size: 0.85rem;
+        line-height: 1.8;
+        color: var(--paper-dim);
+        overflow-x: auto;
+      }
+      .arch-diagram .layer {
+        margin-bottom: 1.5rem;
+        padding-left: 1rem;
+        border-left: 2px solid var(--line);
+      }
+      .arch-diagram .layer:last-child {
+        margin-bottom: 0;
+      }
+      .arch-diagram .layer-name {
+        color: var(--amber-glow);
+        font-weight: 700;
+      }
+      .arch-diagram .layer-desc {
+        color: var(--paper-mute);
+        font-size: 0.8rem;
+      }
+      .arch-diagram .arrow {
+        color: var(--ember);
+      }
+
+      .tech-stack {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1rem;
+        margin-top: 3rem;
+      }
+      .tech-item {
+        padding: 1.25rem;
+        background: var(--ink-3);
+        border: 1px solid var(--line);
+        text-align: center;
+        transition: all 0.2s;
+      }
+      .tech-item:hover {
+        border-color: var(--amber-glow);
+        transform: translateY(-2px);
+      }
+      .tech-item .tech-name {
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        color: var(--paper);
+        font-weight: 600;
+        margin-bottom: 0.25rem;
+      }
+      .tech-item .tech-role {
+        font-size: 0.75rem;
+        color: var(--paper-mute);
+      }
+
+      /* ========== 学习路径 ========== */
+      .path-flow {
+        margin-top: 4rem;
+        position: relative;
+      }
+      .path-line {
+        position: absolute;
+        left: 24px;
+        top: 0;
+        bottom: 0;
+        width: 2px;
+        background: linear-gradient(180deg, var(--amber) 0%, var(--ember) 50%, var(--azure) 100%);
+      }
+      .path-step {
+        position: relative;
+        padding-left: 70px;
+        margin-bottom: 2.5rem;
+      }
+      .path-step:last-child {
+        margin-bottom: 0;
+      }
+      .path-dot {
+        position: absolute;
+        left: 16px;
+        top: 4px;
+        width: 18px;
+        height: 18px;
+        border-radius: 50%;
+        background: var(--ink);
+        border: 3px solid var(--amber-glow);
+        z-index: 2;
+      }
+      .path-step h4 {
+        font-family: var(--serif);
+        font-size: 1.2rem;
+        color: var(--paper);
+        margin-bottom: 0.4rem;
+      }
+      .path-step .phase {
+        font-family: var(--mono);
+        font-size: 0.75rem;
+        color: var(--amber-glow);
+        letter-spacing: 0.1em;
+        margin-bottom: 0.5rem;
+      }
+      .path-step p {
+        color: var(--paper-dim);
+        font-size: 0.95rem;
+      }
+
+      /* ========== Final CTA ========== */
+      .final {
+        text-align: center;
+        padding: 10rem 2.5rem;
+        background: var(--ink);
+        position: relative;
+        overflow: hidden;
+      }
+      .final::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(ellipse at center, rgba(217, 119, 6, 0.08) 0%, transparent 60%);
+      }
+      .final-content {
+        position: relative;
+        z-index: 2;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .final h2 {
+        font-family: var(--serif);
+        font-size: clamp(2.5rem, 5vw, 4rem);
+        font-weight: 900;
+        line-height: 1.2;
+        margin-bottom: 1.5rem;
+      }
+      .final h2 .accent {
+        background: linear-gradient(135deg, var(--amber) 0%, var(--ember) 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+      .final p {
+        font-size: 1.15rem;
+        color: var(--paper-dim);
+        margin-bottom: 3rem;
+        max-width: 680px;
+        margin-left: auto;
+        margin-right: auto;
+      }
+      .final-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-family: var(--mono);
+        font-size: 0.78rem;
+        color: var(--amber-glow);
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        margin-bottom: 1.5rem;
+      }
+      .final-pillars {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 1.5rem;
+        margin-top: 2rem;
+      }
+      .pillar {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 1.25rem;
+        background: var(--ink-2);
+        border: 1px solid var(--line);
+        border-radius: 2px;
+        transition: all 0.3s ease;
+      }
+      .pillar:hover {
+        border-color: rgba(245, 158, 11, 0.4);
+        transform: translateY(-3px);
+      }
+      .pillar-icon {
+        width: 42px;
+        height: 42px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, var(--amber) 0%, var(--ember) 100%);
+        color: var(--ink);
+        font-family: var(--serif);
+        font-size: 1.3rem;
+        font-weight: 900;
+        border-radius: 2px;
+        flex-shrink: 0;
+      }
+      .pillar-text {
+        display: flex;
+        flex-direction: column;
+        gap: 0.15rem;
+        text-align: left;
+      }
+      .pillar-text strong {
+        font-size: 0.95rem;
+        color: var(--paper);
+        font-weight: 600;
+      }
+      .pillar-text span {
+        font-size: 0.78rem;
+        color: var(--paper-mute);
+        font-family: var(--mono);
+      }
+
+      /* ========== 页脚 ========== */
+      footer {
+        padding: 3rem 2.5rem;
+        border-top: 1px solid var(--line);
+        text-align: center;
+        color: var(--paper-mute);
+        font-size: 0.85rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+      .footer-repo {
+        color: var(--paper);
+        font-family: var(--mono);
+        font-size: 0.9rem;
+        letter-spacing: 0.08em;
+      }
+      .footer-tagline {
+        color: var(--paper-dim);
+        font-size: 0.88rem;
+      }
+      .footer-meta {
+        color: var(--paper-mute);
+        font-size: 0.78rem;
+        letter-spacing: 0.03em;
+      }
+
+      /* ========== 动画 ========== */
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(30px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+      .reveal {
+        opacity: 0;
+        transform: translateY(40px);
+        transition:
+          opacity 0.8s ease,
+          transform 0.8s ease;
+      }
+      .reveal.visible {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      /* ========== 响应式 ========== */
+      @media (max-width: 900px) {
+        nav {
+          padding: 1rem 1.25rem;
+        }
+        nav.scrolled {
+          padding: 0.75rem 1.25rem;
+        }
+        .nav-links {
+          display: none;
+        }
+        .hero {
+          padding: 6rem 1.25rem 2rem;
+        }
+        .hero-stats {
+          position: static;
+          margin-top: 3rem;
+        }
+        section {
+          padding: 5rem 1.25rem;
+        }
+        .pain-grid,
+        .ai-grid {
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
+        .triad-grid {
+          grid-template-columns: 1fr;
+        }
+        .system-stats {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1.5rem;
+        }
+        .category-grid {
+          grid-template-columns: 1fr;
+        }
+        .tech-stack {
+          grid-template-columns: repeat(2, 1fr);
+        }
+        .public-grid {
+          grid-template-columns: 1fr;
+        }
+        .final {
+          padding: 6rem 1.25rem;
+        }
+        .final-pillars {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 1rem;
+        }
+        .hero-meta {
+          font-size: 0.85rem;
+        }
+        .hero-meta-divider {
+          display: none;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- ========== 导航 ========== -->
+    <nav id="nav">
+      <div class="brand">FAN<span>DEX</span></div>
+      <div class="nav-links">
+        <a href="#pain">痛点</a>
+        <a href="#triad">三端协同</a>
+        <a href="#system">知识体系</a>
+        <a href="#ai">学习理念</a>
+        <a href="#public">社会公益</a>
+        <a href="#arch">技术架构</a>
+        <a href="#path">学习路径</a>
+      </div>
+    </nav>
+
+    <!-- ========== Hero ========== -->
+    <header class="hero">
+      <canvas class="hero-canvas" id="heroCanvas"></canvas>
+      <div class="hero-content">
+        <div class="hero-tag">学习工作 · 社会公益 · 计算机科学自学平台</div>
+        <h1>从零基础<br />到<span class="accent">本科毕业</span></h1>
+        <p class="hero-sub">
+          FANDEX 是一套面向零基础学习者的计算机科学自学平台，由
+          <strong>Web</strong>、<strong>桌面</strong>、<strong>移动</strong> 三端构成完整学习生态。
+          <strong>51 个模块</strong>、<strong>1995 篇结构化文档</strong
+          >，以系统化的知识组织，陪伴每一位自学者走完从第一行代码到精通的完整旅程。
+        </p>
+        <div class="hero-meta">
+          <span class="hero-meta-item"><strong>学习工作赛道</strong> · 系统化自学路径</span>
+          <span class="hero-meta-divider"></span>
+          <span class="hero-meta-item"><strong>社会公益</strong> · 完全开源 · 降低教育门槛</span>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div class="hero-stat">
+          <div class="hero-stat-num">51</div>
+          <div class="hero-stat-label">知识模块</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">1995</div>
+          <div class="hero-stat-label">结构化文档</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">3</div>
+          <div class="hero-stat-label">全端覆盖</div>
+        </div>
+        <div class="hero-stat">
+          <div class="hero-stat-num">100%</div>
+          <div class="hero-stat-label">完全开源</div>
+        </div>
+      </div>
+    </header>
+
+    <!-- ========== 痛点章节 ========== -->
+    <section class="pain" id="pain">
+      <div class="section-inner">
+        <div class="section-label reveal">问题 · The Problem</div>
+        <h2 class="section-title reveal">零基础学习者的三重困境</h2>
+        <p class="section-lead reveal">
+          计算机科学的学习门槛，从来不在于知识本身的难度，而在于路径的缺失、体系的碎片、与信心的崩塌。
+          FANDEX 想做的，是为每一位从零起步的学习者，铺设一条可以走完的路。
+        </p>
+        <div class="pain-grid">
+          <div class="pain-card reveal">
+            <div class="pain-card-num">01 · 入门无门</div>
+            <h3>不知从何入手</h3>
+            <p>
+              面对庞杂的计算机知识图谱，零基础学习者常陷入"该学什么"的反复追问。教程林立却各自为战，前端后端、语言框架、理论实践彼此割裂，无法形成连续的学习路径，最终使人在起跑线前停滞不前。
+            </p>
+          </div>
+          <div class="pain-card reveal">
+            <div class="pain-card-num">02 · 知识碎片</div>
+            <h3>体系难以建立</h3>
+            <p>
+              散落于收藏夹的文章、视频、问答构成虚假的"学习进度"。缺乏前置知识衔接与模块依赖关系，学习者反复跳入超出当前能力的领域，挫败感累积，最终放弃系统化学习的尝试。
+            </p>
+          </div>
+          <div class="pain-card reveal">
+            <div class="pain-card-num">03 · 场景断裂</div>
+            <h3>离线即失能</h3>
+            <p>
+              在线学习平台依赖网络，一旦处于通勤、出差、弱网或离线环境，学习被迫中断。而编程实践中的语法速查、函数签名确认等高频需求，在移动场景下缺乏即时可查的离线工具。
+            </p>
+          </div>
+          <div class="pain-card reveal">
+            <div class="pain-card-num">04 · AI 错位</div>
+            <h3>工具与能力脱节</h3>
+            <p>
+              AI 时代来临，学习者或被平台内置
+              AI"投喂"答案失去思考，或面对强大工具却不知如何用于学习。如何让 AI
+              成为学习助力而非依赖，是当代自学者必须面对的新课题。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 三端协同 ========== -->
+    <section id="triad">
+      <div class="section-inner">
+        <div class="section-label reveal">方案 · The Solution</div>
+        <h2 class="section-title reveal">一个知识体系，三种学习形态</h2>
+        <p class="section-lead reveal">
+          FANDEX 不做又一个孤立的学习网站，而是以 FANDEX-Web
+          为内容基准，延伸出桌面端离线学习平台与移动端语法速查应用，
+          让同一套知识体系在不同场景下以最合适的形态呈现。
+        </p>
+        <div class="triad-grid">
+          <div class="triad-card reveal">
+            <svg
+              class="triad-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="2" y="3" width="20" height="14" rx="2" />
+              <line x1="8" y1="21" x2="16" y2="21" />
+              <line x1="12" y1="17" x2="12" y2="21" />
+            </svg>
+            <h3>FANDEX-Web</h3>
+            <div class="role">线上学习平台 · 内容基准</div>
+            <p>
+              面向零基础学习者的完整在线自学平台。浏览器直接访问，无需安装。系统化概念讲解、代码示例、交互测验、知识地图，构建从入门到精通的完整闭环。
+            </p>
+            <div class="triad-meta">
+              <div class="triad-meta-row">
+                <span class="triad-meta-label">技术栈</span
+                ><span class="triad-meta-val">Astro 5 + Vue 3</span>
+              </div>
+              <div class="triad-meta-row">
+                <span class="triad-meta-label">文档数</span
+                ><span class="triad-meta-val">1995 篇</span>
+              </div>
+              <div class="triad-meta-row">
+                <span class="triad-meta-label">访问方式</span
+                ><span class="triad-meta-val">浏览器在线</span>
+              </div>
+            </div>
+          </div>
+          <div class="triad-card reveal">
+            <svg
+              class="triad-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="3" y="4" width="18" height="16" rx="2" />
+              <line x1="3" y1="9" x2="21" y2="9" />
+              <circle cx="7" cy="6.5" r="0.5" fill="currentColor" />
+              <circle cx="9" cy="6.5" r="0.5" fill="currentColor" />
+            </svg>
+            <h3>FANDEX-exe</h3>
+            <div class="role">桌面离线平台 · 深度学习</div>
+            <p>
+              Windows
+              桌面端离线学习应用。完全离线运行，内置静态服务器，系统菜单与多窗口支持。在无网络环境下提供与在线版一致的完整学习体验，并具备桌面级特殊能力。
+            </p>
+            <div class="triad-meta">
+              <div class="triad-meta-row">
+                <span class="triad-meta-label">技术栈</span
+                ><span class="triad-meta-val">Electron 33 + Astro</span>
+              </div>
+              <div class="triad-meta-row">
+                <span class="triad-meta-label">文档数</span
+                ><span class="triad-meta-val">1996 篇</span>
+              </div>
+              <div class="triad-meta-row">
+                <span class="triad-meta-label">架构</span
+                ><span class="triad-meta-val">四层分离 monorepo</span>
+              </div>
+            </div>
+          </div>
+          <div class="triad-card reveal">
+            <svg
+              class="triad-icon"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.5"
+            >
+              <rect x="5" y="2" width="14" height="20" rx="2" />
+              <line x1="12" y1="18" x2="12" y2="18.01" />
+            </svg>
+            <h3>FANDEX-App</h3>
+            <div class="role">移动速查应用 · 实践伴侣</div>
+            <p>
+              Android
+              原生离线速查应用。聚焦编程语法、函数签名、控制结构的即时查阅，公式化呈现语法签名与代码示例。通勤、午休、实践间隙，即开即查。
+            </p>
+            <div class="triad-meta">
+              <div class="triad-meta-row">
+                <span class="triad-meta-label">技术栈</span
+                ><span class="triad-meta-val">Kotlin + Compose</span>
+              </div>
+              <div class="triad-meta-row">
+                <span class="triad-meta-label">文档数</span
+                ><span class="triad-meta-val">207 篇</span>
+              </div>
+              <div class="triad-meta-row">
+                <span class="triad-meta-label">渲染方式</span
+                ><span class="triad-meta-val">原生 Compose</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 知识体系 ========== -->
+    <section class="system" id="system">
+      <div class="section-inner">
+        <div class="section-label reveal">体系 · The Knowledge</div>
+        <h2 class="section-title reveal">六大领域，环环相扣</h2>
+        <p class="section-lead reveal">
+          工具链奠定操作基础，开发语言打开编程世界，数据库承载持久化能力，计算机科学构建理论根基，
+          工程基础设施连接理论与实践，数据技术与 AI 延伸至前沿应用。模块间通过前置知识自然衔接。
+        </p>
+
+        <div class="system-stats">
+          <div class="stat-block reveal">
+            <div class="stat-num" data-target="51">0</div>
+            <div class="stat-label">知识模块</div>
+          </div>
+          <div class="stat-block reveal">
+            <div class="stat-num" data-target="1995">0</div>
+            <div class="stat-label">结构化文档</div>
+          </div>
+          <div class="stat-block reveal">
+            <div class="stat-num" data-target="6">0</div>
+            <div class="stat-label">核心领域</div>
+          </div>
+          <div class="stat-block reveal">
+            <div class="stat-num" data-target="27">0</div>
+            <div class="stat-label">术语表</div>
+          </div>
+        </div>
+
+        <div class="category-grid">
+          <div class="category-card reveal" style="--cat-color: #4f5bd5">
+            <h4>工具链</h4>
+            <div class="cat-count">4 模块</div>
+            <p>入门指南、Markdown、Git、GitHub —— 从环境搭建与文档写作起步，奠定协作基础。</p>
+          </div>
+          <div class="category-card reveal" style="--cat-color: #d63031">
+            <h4>开发语言</h4>
+            <div class="cat-count">17 模块</div>
+            <p>
+              HTML5、CSS、JavaScript、TypeScript、Vue、React、C、C++、Java、Kotlin、Python、Go、Lua、HarmonyOS
+              等。
+            </p>
+          </div>
+          <div class="category-card reveal" style="--cat-color: #00b894">
+            <h4>数据库</h4>
+            <div class="cat-count">4 模块</div>
+            <p>SQL、MySQL、PostgreSQL、Redis —— 从标准语法到生产实践，覆盖关系与键值两大范式。</p>
+          </div>
+          <div class="category-card reveal" style="--cat-color: #8854d0">
+            <h4>计算机科学</h4>
+            <div class="cat-count">8 模块</div>
+            <p>
+              算法与数据结构、计算机基础、高等数学、离散数学、线性代数、概率论、英语 —— 理论根基。
+            </p>
+          </div>
+          <div class="category-card reveal" style="--cat-color: #e05a2b">
+            <h4>工程与基础设施</h4>
+            <div class="cat-count">11 模块</div>
+            <p>
+              运维、网络、安全、云计算、IoT、软件测试、AI Agent、软件工程、架构、工程实践 ——
+              连接理论与实践。
+            </p>
+          </div>
+          <div class="category-card reveal" style="--cat-color: #f9a825">
+            <h4>数据技术</h4>
+            <div class="cat-count">12 模块</div>
+            <p>
+              数据分析、大数据、机器学习、深度学习、AI 工程、CV、NLP、LLM、生成式 AI、多模态、AI
+              伦理。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== AI 理念 ========== -->
+    <section class="ai-philosophy" id="ai">
+      <div class="section-inner">
+        <div class="section-label reveal">理念 · The Philosophy</div>
+        <h2 class="section-title reveal">不内置 AI，而是教会你与 AI 共学</h2>
+        <div class="ai-grid">
+          <div class="reveal">
+            <p class="ai-quote">
+              在 AI 时代，学习者应当学会<span class="highlight">运用 AI 工具</span
+              >进行自主学习，而非依赖特定平台内置的 AI。 FANDEX 保留完整的非 AI 学习路径，同时为 AI
+              辅助学习预留广阔空间。
+            </p>
+          </div>
+          <ul class="ai-list reveal">
+            <li>
+              <div class="ai-list-num">01</div>
+              <div class="ai-list-content">
+                <strong>概念理解</strong>
+                <span>将文档概念粘贴到任意外部 AI 工具，请求更通俗的解释或类比</span>
+              </div>
+            </li>
+            <li>
+              <div class="ai-list-num">02</div>
+              <div class="ai-list-content">
+                <strong>代码学习</strong>
+                <span>让 AI 解释代码示例的执行流程，或生成变体练习巩固理解</span>
+              </div>
+            </li>
+            <li>
+              <div class="ai-list-num">03</div>
+              <div class="ai-list-content">
+                <strong>疑难解答</strong>
+                <span>遇到不理解的内容时，向 AI 提问获取多角度解答与延伸阅读</span>
+              </div>
+            </li>
+            <li>
+              <div class="ai-list-num">04</div>
+              <div class="ai-list-content">
+                <strong>路径规划</strong>
+                <span>让 AI 根据个人情况推荐学习顺序、重点与节奏</span>
+              </div>
+            </li>
+            <li>
+              <div class="ai-list-num">05</div>
+              <div class="ai-list-content">
+                <strong>知识关联</strong>
+                <span>请 AI 解释当前概念与其他模块知识之间的深层关联</span>
+              </div>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 社会公益章节 ========== -->
+    <section class="public" id="public">
+      <div class="section-inner">
+        <div class="section-label reveal">公益 · The Public Good</div>
+        <h2 class="section-title reveal">降低教育门槛，让学习不再有围墙</h2>
+        <p class="section-lead reveal">
+          FANDEX
+          选择完全开源，不设付费墙、不绑注册、不收集数据。无论身处教育资源匮乏地区，还是经济受限的自学者，都能无差别获取与名校相当的系统化计算机科学学习路径。
+        </p>
+        <div class="public-grid">
+          <div class="public-card reveal">
+            <div class="public-icon">免</div>
+            <h3>免费无门槛</h3>
+            <p>
+              Web 端浏览器即用、桌面端离线安装、移动端 APK
+              直接下载。不设账号、不设付费、不设设备限制。
+            </p>
+          </div>
+          <div class="public-card reveal">
+            <div class="public-icon">离</div>
+            <h3>离线可达</h3>
+            <p>
+              桌面端与移动端完全离线运行，覆盖网络基础设施薄弱的偏远地区、乡村学校、发展中地区学习者。
+            </p>
+          </div>
+          <div class="public-card reveal">
+            <div class="public-icon">开</div>
+            <h3>开源共享</h3>
+            <p>
+              所有内容允许任何用途，包括商业用途。教育者可基于此构建本地化课程，机构可部署为内部培训平台。
+            </p>
+          </div>
+          <div class="public-card reveal">
+            <div class="public-icon">普</div>
+            <h3>普惠共学</h3>
+            <p>
+              不绑定特定 AI 服务商，学习者可使用任意外部 AI
+              工具辅助学习，避免数字鸿沟因平台壁垒而扩大。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 技术架构 ========== -->
+    <section class="arch" id="arch">
+      <div class="section-inner">
+        <div class="section-label reveal">架构 · The Architecture</div>
+        <h2 class="section-title reveal">四层分离，单向依赖</h2>
+        <p class="section-lead reveal">
+          FANDEX-exe 采用严格的 monorepo 四层分离架构，关注点分离，依赖方向单向向下。
+          内容源与代码逻辑解耦，知识工程数据独立管理，能力层插件可复用，应用层职责单一。
+        </p>
+
+        <div class="arch-diagram reveal">
+          <div class="layer">
+            <div class="layer-name">content/ · 内容层</div>
+            <div class="layer-desc">Markdown 文档源 · 8 分类 51 模块 · 全部项目的根本内容源</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="layer">
+            <div class="layer-name">metadata/ · 知识工程层</div>
+            <div class="layer-desc">术语表 · 路线图 · 标签索引 · 复习卡片 · 模块注册表</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="layer">
+            <div class="layer-name">packages/ · 能力层</div>
+            <div class="layer-desc">Remark/Rehype 插件 · 共享数据 · 术语搜索 · 可复用能力封装</div>
+          </div>
+          <div class="arrow">↓</div>
+          <div class="layer">
+            <div class="layer-name">apps/web/ · 应用层</div>
+            <div class="layer-desc">
+              Astro 5 SSG 项目 · 页面组件 · 布局 · 服务层 · Electron 桌面支持
+            </div>
+          </div>
+        </div>
+
+        <div class="tech-stack">
+          <div class="tech-item reveal">
+            <div class="tech-name">Astro 5</div>
+            <div class="tech-role">SSG 框架</div>
+          </div>
+          <div class="tech-item reveal">
+            <div class="tech-name">Vue 3</div>
+            <div class="tech-role">交互组件</div>
+          </div>
+          <div class="tech-item reveal">
+            <div class="tech-name">Electron 33</div>
+            <div class="tech-role">桌面应用</div>
+          </div>
+          <div class="tech-item reveal">
+            <div class="tech-name">Kotlin</div>
+            <div class="tech-role">Android 原生</div>
+          </div>
+          <div class="tech-item reveal">
+            <div class="tech-name">Jetpack Compose</div>
+            <div class="tech-role">声明式 UI</div>
+          </div>
+          <div class="tech-item reveal">
+            <div class="tech-name">Pagefind</div>
+            <div class="tech-role">全文搜索</div>
+          </div>
+          <div class="tech-item reveal">
+            <div class="tech-name">Shiki</div>
+            <div class="tech-role">代码高亮</div>
+          </div>
+          <div class="tech-item reveal">
+            <div class="tech-name">Mermaid 11</div>
+            <div class="tech-role">知识图谱</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 学习路径 ========== -->
+    <section id="path">
+      <div class="section-inner">
+        <div class="section-label reveal">路径 · The Journey</div>
+        <h2 class="section-title reveal">一条可以走完的路</h2>
+        <p class="section-lead reveal">
+          从第一行代码到本科毕业水平，FANDEX
+          通过模块间前置知识关系，为学习者铺设一条循序渐进的完整路径。
+          每一步都建立在前一步的基础上，每一个概念都有据可循。
+        </p>
+
+        <div class="path-flow">
+          <div class="path-line"></div>
+          <div class="path-step reveal">
+            <div class="path-dot"></div>
+            <div class="phase">阶段一 · 起步</div>
+            <h4>工具链奠基</h4>
+            <p>
+              从环境搭建、Markdown 写作、Git
+              版本控制开始，建立协作开发的基础能力。不预设任何编程经验，每个概念都有通俗解释。
+            </p>
+          </div>
+          <div class="path-step reveal">
+            <div class="path-dot"></div>
+            <div class="phase">阶段二 · 入门</div>
+            <h4>开发语言启程</h4>
+            <p>
+              HTML5/CSS/JavaScript 打开前端世界，TypeScript 强化类型思维，进阶至 Vue 3、React
+              等现代框架。同步学习 Python、Go 等后端语言。
+            </p>
+          </div>
+          <div class="path-step reveal">
+            <div class="path-dot"></div>
+            <div class="phase">阶段三 · 深化</div>
+            <h4>数据持久化与理论根基</h4>
+            <p>
+              SQL
+              与数据库承载持久化能力，算法与数据结构、计算机基础、数学课程构建理论根基，从"会写代码"走向"理解计算机"。
+            </p>
+          </div>
+          <div class="path-step reveal">
+            <div class="path-dot"></div>
+            <div class="phase">阶段四 · 拓展</div>
+            <h4>工程实践与基础设施</h4>
+            <p>
+              运维、网络、安全、云计算、IoT、软件工程、架构设计 ——
+              连接理论与实践，培养工程化思维与生产级开发能力。
+            </p>
+          </div>
+          <div class="path-step reveal">
+            <div class="path-dot"></div>
+            <div class="phase">阶段五 · 前沿</div>
+            <h4>数据技术与 AI</h4>
+            <p>
+              数据分析、大数据、机器学习、深度学习、NLP、LLM、生成式 AI、多模态 ——
+              延伸至当代最前沿的技术领域，抵达本科毕业的完整知识体系。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== Final 总结 ========== -->
+    <section class="final">
+      <div class="final-content">
+        <div class="final-tag">创意总结 · The Vision</div>
+        <h2>让每一个零基础学习者<br />都能走完<span class="accent">完整的学习旅程</span></h2>
+        <p>
+          FANDEX 以三端协同的完整生态、系统化的知识体系、与 AI
+          共学的理念，为计算机科学自学提供一条人人可走、循序渐进的路径。完全开源，降低教育门槛，让学习不再受网络、平台、地域限制。
+        </p>
+        <div class="final-pillars">
+          <div class="pillar">
+            <div class="pillar-icon">三</div>
+            <div class="pillar-text">
+              <strong>三端协同</strong>
+              <span>Web · 桌面 · 移动</span>
+            </div>
+          </div>
+          <div class="pillar">
+            <div class="pillar-icon">系</div>
+            <div class="pillar-text">
+              <strong>系统体系</strong>
+              <span>51 模块 · 1995 文档</span>
+            </div>
+          </div>
+          <div class="pillar">
+            <div class="pillar-icon">公</div>
+            <div class="pillar-text">
+              <strong>社会公益</strong>
+              <span>完全开源 · 降低门槛</span>
+            </div>
+          </div>
+          <div class="pillar">
+            <div class="pillar-icon">智</div>
+            <div class="pillar-text">
+              <strong>AI 共学</strong>
+              <span>教会运用 · 而非依赖</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== 页脚 ========== -->
+    <footer>
+      <p class="footer-repo">FANDEX-Web · FANDEX-exe · FANDEX-App</p>
+      <p class="footer-tagline">
+        从零基础到本科毕业的计算机科学自学平台 · 完全开源 · 学习工作 · 社会公益
+      </p>
+      <p class="footer-meta">本页面为参赛创意说明 · 三个仓库构成一个完整的整体项目</p>
+    </footer>
+
+    <script>
+      /* ========== 导航滚动效果 ========== */
+      const nav = document.getElementById('nav');
+      window.addEventListener('scroll', () => {
+        if (window.scrollY > 30) nav.classList.add('scrolled');
+        else nav.classList.remove('scrolled');
+      });
+
+      /* ========== Hero Canvas 知识节点连线 ========== */
+      const canvas = document.getElementById('heroCanvas');
+      const ctx = canvas.getContext('2d');
+      let nodes = [];
+      let mouse = { x: -1000, y: -1000 };
+
+      function resizeCanvas() {
+        canvas.width = canvas.offsetWidth;
+        canvas.height = canvas.offsetHeight;
+        initNodes();
+      }
+
+      function initNodes() {
+        nodes = [];
+        const count = Math.floor((canvas.width * canvas.height) / 18000);
+        for (let i = 0; i < count; i++) {
+          nodes.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            vx: (Math.random() - 0.5) * 0.3,
+            vy: (Math.random() - 0.5) * 0.3,
+            r: Math.random() * 1.5 + 0.5,
+          });
+        }
+      }
+
+      function drawNodes() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        const maxDist = 140;
+
+        /* 绘制连线 */
+        for (let i = 0; i < nodes.length; i++) {
+          for (let j = i + 1; j < nodes.length; j++) {
+            const dx = nodes[i].x - nodes[j].x;
+            const dy = nodes[i].y - nodes[j].y;
+            const dist = Math.sqrt(dx * dx + dy * dy);
+            if (dist < maxDist) {
+              const opacity = (1 - dist / maxDist) * 0.15;
+              ctx.strokeStyle = `rgba(245, 158, 11, ${opacity})`;
+              ctx.lineWidth = 0.5;
+              ctx.beginPath();
+              ctx.moveTo(nodes[i].x, nodes[i].y);
+              ctx.lineTo(nodes[j].x, nodes[j].y);
+              ctx.stroke();
+            }
+          }
+
+          /* 鼠标连线 */
+          const mdx = nodes[i].x - mouse.x;
+          const mdy = nodes[i].y - mouse.y;
+          const mdist = Math.sqrt(mdx * mdx + mdy * mdy);
+          if (mdist < 180) {
+            const opacity = (1 - mdist / 180) * 0.4;
+            ctx.strokeStyle = `rgba(249, 115, 22, ${opacity})`;
+            ctx.lineWidth = 0.8;
+            ctx.beginPath();
+            ctx.moveTo(nodes[i].x, nodes[i].y);
+            ctx.lineTo(mouse.x, mouse.y);
+            ctx.stroke();
+          }
+        }
+
+        /* 绘制节点 */
+        nodes.forEach((n) => {
+          n.x += n.vx;
+          n.y += n.vy;
+          if (n.x < 0 || n.x > canvas.width) n.vx *= -1;
+          if (n.y < 0 || n.y > canvas.height) n.vy *= -1;
+
+          ctx.fillStyle = 'rgba(245, 158, 11, 0.5)';
+          ctx.beginPath();
+          ctx.arc(n.x, n.y, n.r, 0, Math.PI * 2);
+          ctx.fill();
+        });
+
+        requestAnimationFrame(drawNodes);
+      }
+
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        mouse.x = e.clientX - rect.left;
+        mouse.y = e.clientY - rect.top;
+      });
+      canvas.addEventListener('mouseleave', () => {
+        mouse.x = -1000;
+        mouse.y = -1000;
+      });
+
+      window.addEventListener('resize', resizeCanvas);
+      resizeCanvas();
+      drawNodes();
+
+      /* ========== 滚动揭示动画 ========== */
+      const revealEls = document.querySelectorAll('.reveal');
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1, rootMargin: '0px 0px -50px 0px' }
+      );
+
+      revealEls.forEach((el) => observer.observe(el));
+
+      /* ========== 数字滚动计数 ========== */
+      const statNums = document.querySelectorAll('.stat-num');
+      const statObserver = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              const el = entry.target;
+              const target = parseInt(el.dataset.target);
+              const duration = 1800;
+              const start = performance.now();
+
+              function update(now) {
+                const elapsed = now - start;
+                const progress = Math.min(elapsed / duration, 1);
+                const eased = 1 - Math.pow(1 - progress, 3);
+                el.textContent = Math.floor(eased * target);
+                if (progress < 1) requestAnimationFrame(update);
+                else el.textContent = target;
+              }
+              requestAnimationFrame(update);
+              statObserver.unobserve(el);
+            }
+          });
+        },
+        { threshold: 0.5 }
+      );
+
+      statNums.forEach((el) => statObserver.observe(el));
+    </script>
+  </body>
+</html>

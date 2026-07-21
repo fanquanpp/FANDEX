@@ -1,0 +1,302 @@
+---
+import { getCollection } from 'astro:content';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+/**
+ * 标签索引页路由（Phase 8b 重写）
+ *
+ * 功能概述：
+ * - 从 getCollection('docs') 聚合所有 tags，统计每个标签出现的文档数
+ * - 按热度分组：热门标签 / 常用标签 / 更多标签
+ * - 标签大小映射：根据文档数量映射 text-xs → text-2xl 字号
+ * - 标签云布局：flex-wrap + gap，点击跳转 /tags/{tag}/
+ * - 顶部统计：标签总数 + 文档总数
+ *
+ * 数据源：
+ * - docs: astro:content 的 getCollection('docs')，遍历 doc.data.tags 聚合
+ *
+ * Skill 偏差报备：
+ * 旧版集成了一整套搜索功能（搜索框、Worker、Fuse.js、DOMPurify 等），
+ * 超出 Phase 8b "标签云" 范围，且引用了 @fandex/shared 与旧版 CSS 变量。
+ * 本版简化为纯标签云页面，搜索功能由独立 /search 页面承担（与 Phase 8a 首页一致）。
+ * 旧版从 metadata/tags/tag-index.json 读取预生成索引，本版改为运行时从 docs 集合聚合，
+ * 减少构建依赖与外部数据源耦合。
+ */
+import Layout from '@/components/Layout.astro';
+import SEO from '@/components/SEO.astro';
+import { withBase } from '@/lib/url';
+
+/** 获取所有文档集合 */
+const allDocs = await getCollection('docs');
+
+/** 聚合标签使用次数：tag → 文档数 */
+const tagMap = new Map<string, number>();
+/** 聚合标签涉及的模块集合：tag → Set<moduleId> */
+const tagModules = new Map<string, Set<string>>();
+
+for (const doc of allDocs) {
+  const tags = doc.data.tags || [];
+  for (const tag of tags) {
+    tagMap.set(tag, (tagMap.get(tag) || 0) + 1);
+    if (!tagModules.has(tag)) tagModules.set(tag, new Set());
+    tagModules.get(tag)?.add(doc.data.module);
+  }
+}
+
+/** 按热度降序排序 */
+const sortedTags = Array.from(tagMap.entries()).sort((a, b) => b[1] - a[1]);
+
+/** 标签总数 */
+const totalTags = sortedTags.length;
+
+/** 最大热度值（用于计算字号映射） */
+const maxCount = sortedTags.length > 0 ? sortedTags[0][1] : 1;
+
+/** 热度分组阈值 */
+const hotThreshold = Math.max(2, Math.ceil(maxCount * 0.6));
+const normalThreshold = Math.max(1, Math.ceil(maxCount * 0.25));
+
+/** 热门标签：高热度 */
+const hotTags = sortedTags.filter(([, c]) => c >= hotThreshold);
+/** 常用标签：中热度 */
+const normalTags = sortedTags.filter(([, c]) => c >= normalThreshold && c < hotThreshold);
+/** 更多标签：低热度 */
+const otherTags = sortedTags.filter(([, c]) => c < normalThreshold);
+
+/**
+ * 根据热度映射标签字号（Tailwind 类名）
+ *
+ * @param count - 标签文档数
+ * @returns Tailwind 字号类
+ */
+function sizeForCount(count: number): string {
+  const ratio = count / maxCount;
+  if (ratio >= 0.85) return 'text-2xl';
+  if (ratio >= 0.7) return 'text-xl';
+  if (ratio >= 0.55) return 'text-lg';
+  if (ratio >= 0.4) return 'text-base';
+  if (ratio >= 0.25) return 'text-sm';
+  return 'text-xs';
+}
+
+/**
+ * 根据热度映射标签字重
+ *
+ * @param count - 标签文档数
+ * @returns Tailwind 字重类
+ */
+function weightForCount(count: number): string {
+  const ratio = count / maxCount;
+  if (ratio >= 0.7) return 'font-bold';
+  if (ratio >= 0.4) return 'font-semibold';
+  if (ratio >= 0.25) return 'font-medium';
+  return 'font-normal';
+}
+
+/** 面包屑导航项 */
+const breadcrumb = [{ label: '首页', href: withBase('/') }, { label: '标签' }];
+
+/** SEO 面包屑 */
+const seoBreadcrumbs = [
+  { label: '首页', href: '/' },
+  { label: '标签', href: '/tags/' },
+];
+---
+
+<Layout
+  title="标签索引 - FANDEX"
+  description="按知识标签跨模块检索文档"
+  canonical={withBase('/tags/')}
+>
+  <SEO
+    slot="head"
+    title="标签索引 - FANDEX"
+    description="按知识标签跨模块检索文档"
+    type="website"
+    breadcrumbs={seoBreadcrumbs}
+  />
+
+  <div class="mx-auto w-full max-w-5xl px-4 pb-12 md:px-8">
+    {/* 面包屑导航 */}
+    <Breadcrumb items={breadcrumb} />
+
+    {/* ============================================================
+     * 页面头部：标题 + 统计数据
+     * ============================================================ */}
+    <header
+      class="relative overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+    >
+      <span
+        class="absolute inset-x-0 top-0 h-1 bg-primary"
+        aria-hidden="true"
+      />
+      <div class="flex flex-col gap-2 p-6 md:p-8">
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="text-2xl font-bold text-foreground md:text-3xl">
+            标签索引
+          </h1>
+          <span
+            class="inline-flex items-center rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary"
+          >
+            {totalTags} 个标签
+          </span>
+        </div>
+        <p class="text-sm text-muted-foreground md:text-base">
+          跨模块知识检索 · 共 {allDocs.length} 篇文档 · 按热度分组排列
+        </p>
+      </div>
+    </header>
+
+    {/* 标签云主体 */}
+    {totalTags === 0 ? (
+      <div
+        class="mt-6 rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground"
+      >
+        暂无标签数据
+      </div>
+    ) : (
+      <div class="mt-6 flex flex-col gap-8">
+        {/* 热门标签 */}
+        {hotTags.length > 0 && (
+          <section class="flex flex-col gap-3" aria-label="热门标签">
+            <h2 class="flex items-center gap-2 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <span
+                class="inline-flex h-2 w-2 rounded-full bg-rose-500"
+                aria-hidden="true"
+              />
+              热门标签
+              <span class="ml-auto text-muted-foreground/70">{hotTags.length}</span>
+            </h2>
+            <ul class="flex flex-wrap items-center gap-3 md:gap-4">
+              {hotTags.map(([tag, count]) => {
+                const moduleCount = tagModules.get(tag)?.size ?? 0;
+                return (
+                  <li>
+                    <a
+                      href={withBase(`/tags/${tag}/`)}
+                      class={`group inline-flex items-baseline gap-1.5 rounded-lg border border-primary/30 bg-card px-3 py-1.5 text-primary transition-all hover:-translate-y-0.5 hover:border-primary hover:bg-primary/5 hover:shadow-sm ${sizeForCount(count)} ${weightForCount(count)}`}
+                      title={`${count} 篇文档 · ${moduleCount} 个模块`}
+                    >
+                      <span>#{tag}</span>
+                      <span class="text-[10px] font-normal text-muted-foreground tabular-nums">
+                        {count}
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+
+        {/* 常用标签 */}
+        {normalTags.length > 0 && (
+          <section class="flex flex-col gap-3" aria-label="常用标签">
+            <h2 class="flex items-center gap-2 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <span
+                class="inline-flex h-2 w-2 rounded-full bg-amber-500"
+                aria-hidden="true"
+              />
+              常用标签
+              <span class="ml-auto text-muted-foreground/70">{normalTags.length}</span>
+            </h2>
+            <ul class="flex flex-wrap items-center gap-2 md:gap-3">
+              {normalTags.map(([tag, count]) => {
+                const moduleCount = tagModules.get(tag)?.size ?? 0;
+                return (
+                  <li>
+                    <a
+                      href={withBase(`/tags/${tag}/`)}
+                      class={`group inline-flex items-baseline gap-1.5 rounded-lg border border-border bg-card px-3 py-1.5 text-foreground transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary hover:shadow-sm ${sizeForCount(count)} ${weightForCount(count)}`}
+                      title={`${count} 篇文档 · ${moduleCount} 个模块`}
+                    >
+                      <span>#{tag}</span>
+                      <span class="text-[10px] font-normal text-muted-foreground tabular-nums">
+                        {count}
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+
+        {/* 更多标签 */}
+        {otherTags.length > 0 && (
+          <section class="flex flex-col gap-3" aria-label="更多标签">
+            <h2 class="flex items-center gap-2 border-b border-border pb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+              <span
+                class="inline-flex h-2 w-2 rounded-full bg-muted-foreground/40"
+                aria-hidden="true"
+              />
+              更多标签
+              <span class="ml-auto text-muted-foreground/70">{otherTags.length}</span>
+            </h2>
+            <ul class="flex flex-wrap items-center gap-2 md:gap-2.5">
+              {otherTags.map(([tag, count]) => {
+                const moduleCount = tagModules.get(tag)?.size ?? 0;
+                return (
+                  <li>
+                    <a
+                      href={withBase(`/tags/${tag}/`)}
+                      class={`group inline-flex items-baseline gap-1 rounded-md border border-dashed border-border bg-card px-2 py-1 text-muted-foreground transition-all hover:-translate-y-0.5 hover:border-primary/40 hover:text-primary hover:bg-accent/50 ${sizeForCount(count)} ${weightForCount(count)}`}
+                      title={`${count} 篇文档 · ${moduleCount} 个模块`}
+                    >
+                      <span>#{tag}</span>
+                      <span class="text-[10px] font-normal text-muted-foreground/70 tabular-nums">
+                        {count}
+                      </span>
+                    </a>
+                  </li>
+                );
+              })}
+            </ul>
+          </section>
+        )}
+      </div>
+    )}
+
+    {/* 底部：返回首页 */}
+    <nav class="mt-12 flex flex-wrap gap-3" aria-label="页面导航">
+      <a
+        href={withBase('/')}
+        class="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent/50"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-4 w-4"
+          aria-hidden="true"
+        >
+          <polyline points="18 6 6 12 18 18" />
+        </svg>
+        返回首页
+      </a>
+      <a
+        href={withBase('/search/')}
+        class="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent/50"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-4 w-4"
+          aria-hidden="true"
+        >
+          <circle cx="11" cy="11" r="8" />
+          <path d="m21 21-4.3-4.3" />
+        </svg>
+        全文搜索
+      </a>
+    </nav>
+  </div>
+</Layout>

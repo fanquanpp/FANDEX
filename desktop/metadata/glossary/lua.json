@@ -1,0 +1,1175 @@
+{
+  "moduleId": "lua",
+  "terms": [
+    {
+      "name": "匿名函数",
+      "definition": "没有名字的函数，常用作回调：`function(x) return x * 2 end`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "尾调用优化",
+      "definition": "函数最后一步调用另一函数时复用当前栈帧，避免栈溢出，用于实现尾递归",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "类",
+      "definition": "面向对象中的模板/类型，Lua 通过表和元表模拟类的概念",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "类对象",
+      "definition": "类的具体实例，通过调用类的构造函数创建",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "闭包",
+      "definition": "捕获外层局部变量的函数，即使外层函数已返回，闭包仍能访问这些变量",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "协程",
+      "definition": "可挂起和恢复执行的函数，非抢占式多任务，适合异步编程和迭代器",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "协程池",
+      "definition": "预创建协程的集合，复用协程减少创建开销",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "深度复制",
+      "definition": "递归复制表及其嵌套表，避免共享引用导致的数据修改问题",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "依赖注入",
+      "definition": "将依赖对象传入而非内部创建的编程模式，提高模块可测试性",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "设计模式",
+      "definition": "解决特定问题的可复用代码结构，如单例、工厂、观察者等",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "封装",
+      "definition": "将数据和操作封装在对象中，Lua 可通过闭包和下划线约定实现",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "事件系统",
+      "definition": "基于发布-订阅的设计模式，组件注册监听器响应事件",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "文件对象",
+      "definition": "`io.open` 返回的句柄，提供 `read`、`write`、`close` 等方法",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "函数工厂",
+      "definition": "返回函数的函数，根据参数生成不同行为的函数",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "函数记忆化",
+      "definition": "缓存函数调用结果避免重复计算，提升递归函数性能",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "工厂模式",
+      "definition": "通过工厂函数创建对象，隐藏具体实现细节",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "垃圾回收",
+      "definition": "自动内存管理机制，回收不再引用的表和对象，Lua 内置增量式 GC",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "生成器",
+      "definition": "使用协程实现的迭代器，通过 `coroutine.wrap` 简化创建",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "高阶函数",
+      "definition": "接受函数为参数或返回函数的函数，如 `map`、`filter`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "继承",
+      "definition": "子类获得父类属性和方法，Lua 通过元表链实现单继承和多继承",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "迭代器",
+      "definition": "返回序列值对象，每次调用返回下一个值，Lua 通过协程轻松实现迭代器",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "不可变对象",
+      "definition": "创建后状态不可改变的对象，Lua 通过只读元表实现",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "LuaRocks",
+      "definition": "Lua 的包管理器，用于安装和管理第三方库，类似 pip/npm",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "元方法",
+      "definition": "元表中的特殊方法，如 `__add`、`__index`、`__call`，定义表的操作行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "元表",
+      "definition": "附加在表上改变其行为的表，通过 `setmetatable` 设置",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "元编程",
+      "definition": "代码操作代码的技术，Lua 通过元表和 `load` 函数实现简单的元编程",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "模块",
+      "definition": "组织代码的单元，将相关函数和变量封装在表中，避免全局污染",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "模块缓存",
+      "definition": "`package.loaded` 表存储已加载模块，避免重复加载",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "多继承",
+      "definition": "类继承多个父类，Lua 通过多索引查找实现多继承",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "多返回值",
+      "definition": "函数返回多个值，如 `function() return 1, 2, 3 end`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "对象",
+      "definition": "拥有状态（属性）和行为（方法）的实体，Lua 中表就是对象",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "面向对象编程",
+      "definition": "以对象为中心的编程范式，核心概念：封装、继承、多态",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "openresty",
+      "definition": "基于 Nginx 的高性能 Web 平台，通过 Lua 扩展实现动态 Web 服务",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "包",
+      "definition": "一组相关模块的集合，发布和分发的单位",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "包路径",
+      "definition": "`package.path` 定义 Lua 模块搜索路径，包含通配符 `?`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "管道模式",
+      "definition": "将数据通过一系列处理函数传递，类似 Unix 管道",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "多态",
+      "definition": "同一操作作用于不同对象产生不同行为，Lua 通过方法覆盖实现",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "私有变量",
+      "definition": "类内部使用不对外公开的变量，Lua 通过闭包或下划线约定实现",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "生产者-消费者模式",
+      "definition": "一方生产数据一方消费数据，通过协程或队列协调",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "require",
+      "definition": "加载模块的标准函数，检查缓存并调用搜索器加载模块",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "读写锁",
+      "definition": "允许多读单写的并发控制模式，通过元表模拟实现",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "沙箱",
+      "definition": "限制代码执行权限的环境，防止恶意或危险操作",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "浅复制",
+      "definition": "只复制表第一层，嵌套表仍共享引用",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "单例模式",
+      "definition": "类只有一个实例，全局唯一访问点",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "弱表",
+      "definition": "值为弱引用的表，垃圾回收可自动清理其中的对象，用于缓存和避免循环引用",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "弱引用",
+      "definition": "不阻止垃圾回收的引用类型，弱表中的键或值为弱引用时可不阻止 GC",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "表引用",
+      "definition": "变量存储的是表的引用而非副本，多个变量可指向同一表",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "尾递归",
+      "definition": "函数最后一步是调用自身，适合被尾调用优化，避免栈溢出",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "Upvalue",
+      "definition": "闭包捕获的外层局部变量，提供闭包访问和持久化状态的能力",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "向量",
+      "definition": "表示方向或点的数据结构，Lua 中用 `{x, y}` 或表模拟二维/三维向量",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "工作池",
+      "definition": "预创建工作线程/协程的集合，任务分发给空闲工作器处理",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "Yield",
+      "definition": "协程挂起点，`coroutine.yield()` 暂停执行并返回值给 `resume` 调用者",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_add 元方法",
+      "definition": "定义表加法操作 `+` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_call 元方法",
+      "definition": "使表可像函数一样调用 `table()`，定义表的\"调用\"行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_concat 元方法",
+      "definition": "定义表连接操作 `..` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_div 元方法",
+      "definition": "定义表除法操作 `/` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_eq 元方法",
+      "definition": "定义表相等比较 `==` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_gc 元方法",
+      "definition": "对象被垃圾回收前调用，用于清理资源（如关闭文件）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_index 元方法",
+      "definition": "访问表不存在的键时调用，可用于实现继承和默认值",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_le 元方法",
+      "definition": "定义表小于等于比较 `<=` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_len 元方法",
+      "definition": "定义表长度操作 `#` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_lt 元方法",
+      "definition": "定义表小于比较 `<` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_metatable 元方法",
+      "definition": "保护元表，阻止获取和修改元表",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_mod 元方法",
+      "definition": "定义表取模操作 `%` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_mul 元方法",
+      "definition": "定义表乘法操作 `*` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_newindex 元方法",
+      "definition": "对表不存在的键赋值时调用，可实现只读表或自动创建嵌套表",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_pow 元方法",
+      "definition": "定义表幂运算 `^` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_pairs 元方法",
+      "definition": "定义 `pairs()` 的遍历行为（Lua 5.3+）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_sub 元方法",
+      "definition": "定义表减法操作 `-` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_tostring 元方法",
+      "definition": "定义 `tostring()` 和 `print()` 的输出格式",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_unm 元方法",
+      "definition": "定义表负号操作 `-table` 的行为",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_\\_ipairs 元方法",
+      "definition": "定义 `ipairs()` 的遍历行为（Lua 5.3+）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "算术运算符",
+      "definition": "Lua 的算术运算符：`+`（加）、`-`（减）、`*`（乘）、`/`（除）、`^`（幂）、`%`（取模）、`-`（负号）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "赋值语句",
+      "definition": "将值赋给变量的操作，Lua 支持多重赋值 `a, b = b, a`（交换变量）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "块作用域",
+      "definition": "由 `do...end` 包裹的代码块，局部变量在其中有效",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "布尔值",
+      "definition": "Lua 的布尔类型，只有 `true` 和 `false`，注意 `0` 和空字符串也是真",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "注释",
+      "definition": "代码中的说明文字，单行注释 `--`，多行注释 `--[[...]]`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "continue 语句",
+      "definition": "Lua 5.2+ 支持的循环控制语句，跳过本次迭代继续下一次",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "条件分支",
+      "definition": "根据条件选择执行路径的结构，使用 `if...then...elseif...else...end`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "数据类型",
+      "definition": "Lua 变量的类型系统，包括 nil、boolean、number、string、function、table、thread、userdata",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "do...end 块",
+      "definition": "Lua 的代码块语法，用于创建作用域",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "跳出语句",
+      "definition": "退出循环的关键字，如 `break` 跳出循环",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "false",
+      "definition": "布尔假值，与 `nil` 一起被视为假",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "for 循环",
+      "definition": "数值 for 循环 `for i=start, end, step do...end` 和泛型 for 循环 `for k, v in pairs(t) do...end`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "函数",
+      "definition": "Lua 中的一等公民，可存储在变量中、作为参数传递、作为返回值，支持多返回值和可变参数",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "函数定义",
+      "definition": "使用 `function name()...end` 或 `local name = function()...end` 定义函数",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "函数调用",
+      "definition": "执行函数的操作，使用 `func(args)` 调用",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "全局变量",
+      "definition": "未使用 `local` 声明的变量，存储在全局表 `_G` 中，建议尽量使用局部变量",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "goto 语句",
+      "definition": "Lua 5.2+ 支持的跳转语句，跳转到指定标签位置",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "if 语句",
+      "definition": "条件分支语句，语法 `if condition then...end`，可配合 `elseif` 和 `else`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "整数",
+      "definition": "Lua 5.3+ 支持的整数类型，与浮点数区分，如 `42`、`0xFF`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "ipairs",
+      "definition": "遍历数组风格表的迭代器，按整数索引 1 开始顺序遍历，遇到 nil 停止",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "局部变量",
+      "definition": "使用 `local` 关键字声明的变量，作用域限于声明的块内，访问速度比全局变量快",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "逻辑运算符",
+      "definition": "Lua 的逻辑运算符：`and`（与）、`or`（或）、`not`（非），支持短路求值",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "循环结构",
+      "definition": "重复执行代码的结构，包括 while、for、repeat-until 三种",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "多重赋值",
+      "definition": "同时给多个变量赋值，如 `a, b = 1, 2`，Lua 会先计算右侧再赋值",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "nil",
+      "definition": "表示\"不存在\"或\"无效值\"，未初始化变量默认为 nil，从表中删除键设为 nil",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "数值 for 循环",
+      "definition": "`for i = start, stop, step do...end`，自动控制循环次数",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "运算符",
+      "definition": "用于操作的符号，包括算术、关系、逻辑、字符串连接、表访问运算符",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "pairs",
+      "definition": "遍历表（字典风格）的迭代器，无序遍历所有键值对，包括 nil 值",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "参数",
+      "definition": "函数定义时的占位符，分为形参和实参",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "repeat-until 循环",
+      "definition": "`repeat...until condition`，循环体至少执行一次，条件为真时结束",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "关系运算符",
+      "definition": "比较运算符：`==`（等于）、`~=`（不等于）、`<`（小于）、`>`（大于）、`<=`（小于等于）、`>=`（大于等于）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "字符串",
+      "definition": "Lua 的文本类型，支持单引号、双引号、长字符串 `[[...]]`，字符串不可变",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "字符串连接",
+      "definition": "使用 `..` 运算符连接字符串，如 `\"Hello\" .. \" Lua\"`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "短路求值",
+      "definition": "逻辑运算符的优化策略，`a and b` 在 a 为假时直接返回 a，不计算 b",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "作用域",
+      "definition": "变量可见性和生存时间的范围，Lua 有全局作用域和局部（块）作用域",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "语句",
+      "definition": "Lua 程序的基本执行单元，包括赋值、函数调用、控制结构等",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "table",
+      "definition": "Lua 唯一的容器类型，可表示数组、字典、对象等，是引用类型",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "true",
+      "definition": "布尔真值，除 `false` 和 `nil` 外的所有值都为真",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "类型判断",
+      "definition": "使用 `type()` 函数判断变量类型，返回字符串如 \"string\"、\"number\"",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "类型转换",
+      "definition": "使用 `tonumber()` 和 `tostring()` 在数值和字符串间转换",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "标识符",
+      "definition": "变量、函数、表的命名，须以字母或下划线开头，后跟字母、数字、下划线",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "upvalue",
+      "definition": "闭包中捕获的外层局部变量，闭包通过 upvalue 访问和保持状态",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "值",
+      "definition": "Lua 表达式计算的结果，包括 8 种基本类型的具体值",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "变量",
+      "definition": "存储值的命名位置，使用 `local` 声明为局部变量，不声明为全局变量",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "可变参数",
+      "definition": "使用 `...` 表示的函数参数，可接受任意数量的实参，在函数内用 `{...}` 转为表",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "while 循环",
+      "definition": "`while condition do...end`，条件为真时重复执行循环体",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "协程状态",
+      "definition": "协程的运行状态：`suspended`（暂停）、`running`（运行）、`normal`（正常）、`dead`（结束）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "# 运算符",
+      "definition": "一元运算符，获取字符串长度 `#str` 或数组长度 `#arr`，表长度不定义时返回最大整数索引",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "collectgarbage",
+      "definition": "手动触发垃圾回收的函数，`collectgarbage(\"collect\")` 强制回收，`collectgarbage(\"stop\")` 暂停",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "coroutine.create",
+      "definition": "创建协程的函数，参数为要执行的函数，返回协程对象",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "coroutine.resume",
+      "definition": "启动或恢复协程执行，参数为协程和传递给协程的值，返回执行状态和返回值",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "coroutine.status",
+      "definition": "查询协程状态的函数，返回 \"running\"、\"suspended\"、\"normal\" 或 \"dead\"",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "coroutine.wrap",
+      "definition": "创建协程包装函数，返回一个函数，调用该函数等同于 `resume` 协程",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "coroutine.yield",
+      "definition": "挂起协程并返回值，调用 `resume` 时可传递值给协程",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "debug.debug",
+      "definition": "进入交互式调试器的函数，输入 Lua 代码执行",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "debug.getinfo",
+      "definition": "获取函数或调用栈信息的函数，可获取函数定义位置、调用者等",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "debug.traceback",
+      "definition": "获取调用栈的字符串表示，常用于错误处理中生成堆栈跟踪",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "dofile",
+      "definition": "执行文件的函数，`dofile(\"script.lua\")` 读取并执行文件，无错误保护",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "dongetmetatable",
+      "definition": "获取表的元表（需设置 `__metatable` 字段才可获取）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "error",
+      "definition": "抛出错误的函数，`error(\"message\", level)` 可指定错误层级",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "\\_G",
+      "definition": "全局环境表，存储所有全局变量，`_G._G == _G`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "getmetatable",
+      "definition": "获取对象的元表，如元表设置了 `__metatable` 则返回该值而非元表",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "io.close",
+      "definition": "关闭文件，`file:close()` 或 `io.close(file)`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "io.flush",
+      "definition": "刷新输出缓冲区，将缓冲数据写入文件或标准输出",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "io.input",
+      "definition": "设置默认输入文件，`io.input(filename)` 打开文件，`io.input():read()` 读取",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "io.lines",
+      "definition": "返回文件行的迭代器，`for line in io.lines(\"file.txt\") do...end`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "io.open",
+      "definition": "打开文件的函数，返回文件对象，模式：\"r\"（读）、\"w\"（写）、\"a\"（追加）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "io.output",
+      "definition": "设置默认输出文件，类似 `io.input`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "io.popen",
+      "definition": "执行系统命令并返回可读写的文件对象（部分环境支持）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "io.read",
+      "definition": "从标准输入读取，`io.read(\"*all\")`、`io.read(\"*line\")`、`io.read(\"*n\")`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "io.tmpfile",
+      "definition": "返回临时文件的读写句柄，程序结束时自动删除",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "io.type",
+      "definition": "检查对象是否为合法文件句柄，返回 \"file\"、\"closed file\" 或 nil",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "io.write",
+      "definition": "向标准输出或文件写入，等同于 `io.output():write()`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "load",
+      "definition": "加载代码字符串或函数的函数，返回编译后的函数或错误，可指定环境",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "loadfile",
+      "definition": "从文件加载代码，类似 `load`，但从文件读取",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "loadstring",
+      "definition": "加载代码字符串，`loadstring(\"code\")` 已废弃，推荐使用 `load`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.abs",
+      "definition": "返回绝对值 `math.abs(-5)` → 5",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.acos",
+      "definition": "返回反余弦值（弧度），`math.acos(x)`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.asin",
+      "definition": "返回反正弦值（弧度），`math.asin(x)`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.atan",
+      "definition": "返回反正切值（弧度），`math.atan(y, x)` 返回 y/x 的反正切",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.ceil",
+      "definition": "向上取整，`math.ceil(3.2)` → 4",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.cos",
+      "definition": "余弦函数（弧度），`math.cos(math.pi)`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.deg",
+      "definition": "弧度转角度，`math.deg(math.pi)` → 180",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.exp",
+      "definition": "返回 e 的 x 次方，`math.exp(1)` → 2.718...",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.floor",
+      "definition": "向下取整，`math.floor(3.8)` → 3",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.fmod",
+      "definition": "浮点数取模，`math.fmod(10, 3)` → 1",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.huge",
+      "definition": "无穷大常量，比任何数值都大",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.idiv",
+      "definition": "整数除法，`math.idiv(10, 3)` → 3",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.inf",
+      "definition": "正无穷常量",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.log",
+      "definition": "自然对数，`math.log(math.exp(2))` → 2",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.max",
+      "definition": "返回最大值，`math.max(1, 5, 3)` → 5",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.maxinteger",
+      "definition": "平台最大整数",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.min",
+      "definition": "返回最小值，`math.min(1, 5, 3)` → 1",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.mininteger",
+      "definition": "平台最小整数",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.modf",
+      "definition": "返回整数和小数部分，`math.modf(3.5)` → 3, 0.5",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.pi",
+      "definition": "圆周率常量，约等于 3.1415926535898",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.rad",
+      "definition": "角度转弧度，`math.rad(180)` → π",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.random",
+      "definition": "生成伪随机数，无参数返回 [0,1)，可指定范围 `math.random(1, 100)`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.randomseed",
+      "definition": "设置随机数种子，`math.randomseed(os.time())` 确保每次运行不同",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.sin",
+      "definition": "正弦函数（弧度），`math.sin(math.pi/2)` → 1",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.sqrt",
+      "definition": "平方根，`math.sqrt(16)` → 4",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.tan",
+      "definition": "正切函数（弧度），`math.tan(math.pi/4)` → 1",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.tointeger",
+      "definition": "转换为整数，`math.tointeger(\"42\")` → 42，无效返回 nil",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.type",
+      "definition": "返回 \"integer\" 或 \"float\"，`math.type(42)` → \"integer\"",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "math.ult",
+      "definition": "无符号整数比较，用于处理整数溢出情况",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "os.clock",
+      "definition": "返回程序消耗的 CPU 时间（秒）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "os.date",
+      "definition": "返回日期时间表或格式化字符串，`os.date(\"*t\")` 返回年月日时分秒",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "os.difftime",
+      "definition": "计算两个时间的差（秒），`os.difftime(t2, t1)`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "os.execute",
+      "definition": "执行系统命令，返回退出状态",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "os.exit",
+      "definition": "终止程序执行，可指定退出码 `os.exit(0)`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "os.getenv",
+      "definition": "获取环境变量值，`os.getenv(\"PATH\")`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "os.remove",
+      "definition": "删除文件，`os.remove(\"temp.txt\")`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "os.rename",
+      "definition": "重命名文件，`os.rename(\"old.txt\", \"new.txt\")`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "os.setlocale",
+      "definition": "设置程序区域，影响日期格式等",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "os.time",
+      "definition": "返回当前或指定时间的 Unix 时间戳（秒）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "os.tmpname",
+      "definition": "返回临时文件的文件名（需后续创建）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "package.config",
+      "definition": "包路径配置字符串，包含路径分隔符等信息",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "package.cpath",
+      "definition": "C 库搜索路径，用于 `require` 加载 C 模块",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "package.loaded",
+      "definition": "已加载模块表，存储 `require` 返回的模块对象",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "package.loaders",
+      "definition": "模块加载器列表（Lua 5.1 兼容）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "package.loading",
+      "definition": "正在加载的模块表，用于循环依赖检测",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "package.path",
+      "definition": "Lua 模块搜索路径，`require` 用于查找 .lua 文件",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "package.preload",
+      "definition": "预加载模块表，可手动注册模块加载函数",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "package.searchers",
+      "definition": "模块搜索器列表（Lua 5.2+）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "package.searchpath",
+      "definition": "在给定路径中搜索模块文件",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "pcall",
+      "definition": "受保护的函数调用，捕获错误不终止程序，`pcall(func, ...)`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "rawequal",
+      "definition": "原始相等比较，不调用元方法，`rawequal(a, b)`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "rawget",
+      "definition": "原始表读取，不调用 `__index` 元方法",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "rawlen",
+      "definition": "原始长度获取，不调用 `__len` 元方法",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "rawset",
+      "definition": "原始表写入，不调用 `__newindex` 元方法",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "select",
+      "definition": "获取可变参数，`select(\"#\", ...)` 返回参数个数，`select(i, ...)` 返回第 i 个及之后参数",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "setmetatable",
+      "definition": "设置表的元表，返回该表",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.byte",
+      "definition": "返回字符的数值编码，`string.byte(\"A\")` → 65",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.char",
+      "definition": "数值编码转换为字符，`string.char(65)` → \"A\"",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.dump",
+      "definition": "将函数编译为二进制字符串（序列化）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.find",
+      "definition": "查找子串，返回起始和结束位置，`string.find(\"hello\", \"ll\")` → 3, 4",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.format",
+      "definition": "格式化字符串，类似 C 的 `printf`：`string.format(\"%.2f\", 3.1415)`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.gmatch",
+      "definition": "返回匹配迭代器，`for w in string.gmatch(text, \"%w+\") do...end`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.gsub",
+      "definition": "全局替换，`string.gsub(s, pattern, repl)` 返回新字符串和替换次数",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.len",
+      "definition": "返回字符串长度，`string.len(\"hello\")` → 5",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.lower",
+      "definition": "转换为小写，`string.lower(\"HELLO\")` → \"hello\"",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.match",
+      "definition": "返回第一个匹配，`string.match(\"hello\", \"%a+\")` → \"hello\"",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.pack",
+      "definition": "将值打包为二进制字符串",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.packsize",
+      "definition": "返回打包后的字节数",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.rep",
+      "definition": "重复字符串，`string.rep(\"ab\", 3)` → \"ababab\"",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.reverse",
+      "definition": "反转字符串",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.sub",
+      "definition": "截取子串，`string.sub(\"hello\", 2, 4)` → \"ell\"",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.unpack",
+      "definition": "从二进制字符串解包值",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "string.upper",
+      "definition": "转换为大写，`string.upper(\"hello\")` → \"HELLO\"",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "table.concat",
+      "definition": "连接表元素为字符串，`table.concat(t, \", \")`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "table.insert",
+      "definition": "在表指定位置插入元素，默认末尾插入",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "table.move",
+      "definition": "移动表元素，`table.move(a, f, e, t)` 将 a[f..e] 移动到位置 t",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "table.pack",
+      "definition": "将参数打包为表，`table.pack(...)` 返回带 `n` 字段的表",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "table.remove",
+      "definition": "删除表指定位置元素，默认删除末尾元素",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "table.sort",
+      "definition": "排序表元素，`table.sort(t, comp)` 可提供比较函数",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "table.unpack",
+      "definition": "解包表为多个值，`table.unpack(t)` 等同于 `unpack(t)`",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "tonumber",
+      "definition": "转换为数值，`tonumber(\"42\")` → 42，失败返回 nil",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "tostring",
+      "definition": "转换为字符串，调用 `__tostring` 元方法，无则返回类型描述",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "type",
+      "definition": "返回值类型的字符串：`\"nil\"`、`\"number\"`、`\"string\"` 等",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "unpack",
+      "definition": "解包表为多个返回值（全局函数，已废弃，推荐 `table.unpack`）",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "vararg",
+      "definition": "可变参数，使用 `...` 表示，在函数内用 `{...}` 访问",
+      "slug": "lua/glossary"
+    },
+    {
+      "name": "xpcall",
+      "definition": "带错误处理器的受保护调用，`xpcall(func, err_handler)`",
+      "slug": "lua/glossary"
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /search/
+Disallow: /dashboard/
+
+Sitemap: https://fanquanpp.github.io/FANDEX-exe/sitemap-index.xml

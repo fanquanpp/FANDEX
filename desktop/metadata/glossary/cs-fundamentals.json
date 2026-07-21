@@ -1,0 +1,505 @@
+{
+  "moduleId": "cs-fundamentals",
+  "terms": [
+    {
+      "name": "ABI",
+      "definition": "应用二进制接口，定义编译后的程序在二进制层面的调用约定和数据布局",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "AOV网",
+      "definition": "顶点表示活动的有向图，拓扑排序确定活动执行顺序",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "AOE网",
+      "definition": "边表示活动的有向图，用于关键路径分析",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "抽象层级",
+      "definition": "从晶体管到应用的分层模型，每层定义接口契约并隐藏实现细节",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "自动机理论",
+      "definition": "研究抽象计算模型（DFA/NFA/图灵机）的理论，是编译原理和计算理论的数学基础",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "自动机",
+      "definition": "根据输入在状态间转移的抽象计算模型，包括有限自动机、下推自动机、图灵机",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "布尔代数",
+      "definition": "基于真值0和1的代数系统，是数字逻辑设计的数学基础",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "总线",
+      "definition": "连接CPU、内存和I/O设备的共享通信通道，分为地址总线、数据总线、控制总线",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "分支预测",
+      "definition": "CPU预测条件分支走向以减少流水线气泡的技术，预测失败导致流水线冲刷",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "缓存一致性",
+      "definition": "多核处理器中保证各核缓存数据一致的协议，如MESI协议",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "Chomsky层次",
+      "definition": "将形式语言分为0型(递归可枚举)、1型(上下文有关)、2型(上下文无关)、3型(正则)的层次体系",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "丘奇-图灵论题",
+      "definition": "任何\"可有效计算\"的函数都可以被图灵机计算的论题，是计算理论的基础假设",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "编译器",
+      "definition": "将源代码翻译为目标代码的程序，分为前端(词法/语法/语义分析)和后端(优化/代码生成)",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "复杂性类",
+      "definition": "按计算资源需求对问题分类，如P、NP、NP-Complete、NP-Hard、PSPACE",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "上下文无关文法",
+      "definition": "产生式左部为单个非终结符的文法，2型文法，是大多数编程语言语法分析的基础",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "CPU调度",
+      "definition": "操作系统决定哪个就绪进程获得CPU使用权的机制，常见算法有FCFS、SJF、RR",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "临界区",
+      "definition": "访问共享资源的代码段，同一时刻只允许一个进程/线程进入",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "死锁",
+      "definition": "两个或多个进程互相等待对方释放资源而永久阻塞的状态",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "设备驱动",
+      "definition": "操作系统中管理特定硬件设备的内核模块，提供统一的设备访问接口",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "DFA",
+      "definition": "确定性有限自动机，每个状态对每个输入有唯一转移，与NFA等价",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "离散数学",
+      "definition": "研究离散结构的数学分支，包括逻辑、集合、关系、图论、组合计数、代数结构",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "DNS",
+      "definition": "将域名映射为IP地址的分布式命名系统，采用层次化递归/迭代查询",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "动态链接",
+      "definition": "程序运行时才将库代码与程序链接的机制，共享库(.so/.dll)节省内存",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "早期发射",
+      "definition": "流水线中指令在完成前就开始下一条指令执行的技术，提高吞吐率",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "文件系统",
+      "definition": "操作系统中管理持久数据的子系统，提供文件的创建、读写、删除等操作",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "文件控制块",
+      "definition": "文件系统中存储文件元数据(权限、大小、位置)的数据结构",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "有限状态机",
+      "definition": "有限个状态之间根据输入进行转移的数学模型，FSM=(Q, Sigma, delta, q0, F)",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "Fork",
+      "definition": "Unix系统调用，创建当前进程的副本(子进程)，子进程获得父进程地址空间的副本",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "形式语言",
+      "definition": "由字母表上满足特定规则的字符串组成的集合，由文法生成",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "语法分析",
+      "definition": "编译器前端阶段，根据文法规则将Token流组织为语法树(AST)",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "门",
+      "definition": "实现布尔运算的基本数字电路元件，包括与门、或门、非门等",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "哈佛体系",
+      "definition": "指令和数据存储在不同存储器中的体系结构，可同时取指和取数",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "停机问题",
+      "definition": "判断任意程序在给定输入上是否停机的问题，已被证明不可判定",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "HTTP",
+      "definition": "Web应用层协议，基于请求-响应模型，定义了资源获取和提交的方式",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "超线程",
+      "definition": "在一个物理核上模拟两个逻辑核的技术，提高资源利用率",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "ISA",
+      "definition": "指令集体系结构，定义了软件和硬件之间的接口，如x86-64、ARMv8、RISC-V",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "中断",
+      "definition": "硬件或软件发出的信号，使CPU暂停当前执行转去处理紧急事件",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "接口契约",
+      "definition": "每个抽象层向上提供的功能承诺，只要接口不变下层实现可任意替换",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "进程",
+      "definition": "操作系统资源分配的基本单位，拥有独立的地址空间和资源",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "进程控制块",
+      "definition": "操作系统中存储进程元数据(状态、寄存器、内存信息)的数据结构",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "进程调度",
+      "definition": "操作系统从就绪队列中选择进程分配CPU的机制",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "进程间通信",
+      "definition": "进程之间交换数据的机制，包括管道、消息队列、共享内存、信号量",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "内核",
+      "definition": "操作系统的核心部分，运行在内核态，管理硬件资源和提供系统服务",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "关键路径",
+      "definition": "AOE网中从源点到汇点的最长路径，决定工程最短完成时间",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "关键字",
+      "definition": "编程语言预定义的保留字，不可用作标识符",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "Lambda演算",
+      "definition": "Alonzo Church提出的函数式计算模型，与图灵机等价，是函数式编程的理论基础",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "词法分析",
+      "definition": "编译器前端第一阶段，将字符流分解为Token流，通常用DFA实现",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "链接器",
+      "definition": "将多个目标文件和库合并为可执行文件的程序，解析符号引用和地址重定位",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "宏内核",
+      "definition": "所有操作系统服务运行在内核态的架构，如Linux，性能高但耦合度高",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "微内核",
+      "definition": "仅最基本服务在内核态，其他服务在用户态的架构，如seL4，安全性高",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "内存管理",
+      "definition": "操作系统管理物理和虚拟内存的子系统，包括分页、分段、虚拟内存",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "内存映射",
+      "definition": "将文件或设备映射到进程地址空间的机制，支持高效文件访问",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "MESI协议",
+      "definition": "多核缓存一致性协议，定义Modified/Exclusive/Shared/Invalid四种缓存行状态",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "互斥",
+      "definition": "保证同一时刻只有一个进程/线程进入临界区的同步机制",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "NFA",
+      "definition": "非确定性有限自动机，一个状态对同一输入可有多个转移，与DFA等价",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "网络层",
+      "definition": "OSI模型第3层，负责数据包从源到目的端的转发和路由，核心协议为IP",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "操作系统",
+      "definition": "硬件与应用之间的中间层，提供进程、虚拟内存、文件三大抽象",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "OSI模型",
+      "definition": "开放系统互连七层参考模型，从物理层到应用层的分层网络架构",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "优化",
+      "definition": "编译器后端对中间代码进行等价变换以提高执行效率的过程",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "流水线",
+      "definition": "将指令执行分为取指、译码、执行、访存、写回等阶段重叠执行的技术",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "分页",
+      "definition": "将虚拟地址空间划分为固定大小的页，按需映射到物理页框的内存管理方案",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "物理层",
+      "definition": "OSI模型第1层，定义电气信号、光纤等物理传输介质的规范",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "多态",
+      "definition": "同一操作作用于不同对象产生不同行为的特性，面向对象核心概念之一",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "进程状态机",
+      "definition": "进程在创建、就绪、运行、阻塞、终止等状态间转移的模型",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "信号量",
+      "definition": "Dijkstra提出的同步原语，用整数计数器控制对共享资源的访问",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "请求分页",
+      "definition": "仅在访问页面时才将其调入内存的虚拟内存管理策略",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "命题逻辑",
+      "definition": "以命题为基本单位的逻辑系统，包含否定、合取、析取、蕴含、等价等联结词",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "RISC",
+      "definition": "精简指令集计算机，指令简单规整，便于流水线执行，如ARM、RISC-V",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "路由",
+      "definition": "网络层功能，选择数据包从源到目的端的传输路径，常见协议有OSPF、BGP",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "正则表达式",
+      "definition": "描述正则语言的表达式，与DFA/NFA等价，广泛用于文本匹配和词法分析",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "正则语言",
+      "definition": "3型语言，可被DFA/NFA识别，可用正则表达式描述",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "系统调用",
+      "definition": "用户程序请求操作系统服务的接口，是用户态进入内核态的唯一合法途径",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "语义分析",
+      "definition": "编译器前端阶段，检查类型一致性、作用域规则等语义约束，构建符号表",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "SOLID原则",
+      "definition": "面向对象设计的五个基本原则：单一职责、开闭、里氏替换、接口隔离、依赖反转",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "设计模式",
+      "definition": "面向对象软件设计中可复用的解决方案，分为创建型、结构型、行为型",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "单一职责原则",
+      "definition": "一个类只有一个引起变化的原因，每个类只做一件事",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "开闭原则",
+      "definition": "对扩展开放对修改关闭，通过抽象和多态实现",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "里氏替换原则",
+      "definition": "子类对象必须能替换父类对象而不破坏正确性",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "套接字",
+      "definition": "网络通信的端点抽象，提供应用层到传输层的接口",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "信号",
+      "definition": "Unix系统中进程间异步通知机制，如SIGINT、SIGKILL",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "自旋锁",
+      "definition": "忙等待的锁实现，适用于临界区执行时间极短的场景",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "存储程序",
+      "definition": "冯诺依曼体系的核心思想，指令和数据存储在同一存储器中",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "TCP",
+      "definition": "面向连接的可靠传输层协议，通过三次握手建立连接，提供流量控制和拥塞控制",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "TCP状态机",
+      "definition": "TCP连接在各状态(CLOSED/SYN_SENT/ESTABLISHED等)间转移的模型",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "线程",
+      "definition": "CPU调度的基本单位，同一进程的线程共享地址空间和资源",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "三次握手",
+      "definition": "TCP连接建立过程，客户端发送SYN，服务端回复SYN+ACK，客户端确认ACK",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "令牌",
+      "definition": "词法分析中将字符流按规则切分后的最小语法单位",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "传递闭包",
+      "definition": "判断图中任意两点是否可达的布尔矩阵，可用Floyd-Warshall求解",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "传输层",
+      "definition": "OSI模型第4层，提供端到端的数据传输服务，核心协议为TCP和UDP",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "UDP",
+      "definition": "无连接的不可靠传输层协议，开销小速度快，适用于实时应用",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "虚拟内存",
+      "definition": "操作系统提供的地址空间间接映射机制，每个进程拥有独立的虚拟地址空间",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "虚拟文件系统",
+      "definition": "操作系统中为不同文件系统提供统一接口的抽象层",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "写时复制",
+      "definition": "fork时子进程共享父进程页面，仅在实际修改时才复制页面的优化技术",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "信息论",
+      "definition": "Claude Shannon创立的数学理论，量化信息的度量(熵)和传输极限(信道容量)",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "协议栈",
+      "definition": "网络通信中分层协议的集合，每层添加头部/尾部形成封装-传输-解封流水线",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "页面替换",
+      "definition": "物理内存不足时选择淘汰哪个页面的策略，常见算法有LRU、FIFO、Clock",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "中间表示",
+      "definition": "编译器前端与后端之间的中间代码表示，如三地址码、SSA形式",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "子网",
+      "definition": "将IP网络进一步划分的更小网络单元，通过子网掩码确定网络和主机部分",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "状态机主线",
+      "definition": "贯穿CS的核心主线之一，关注动态行为如何建模为状态转移图",
+      "slug": "cs-fundamentals/glossary"
+    },
+    {
+      "name": "体系结构主线",
+      "definition": "贯穿CS的核心主线之一，关注硬件资源如何被组织、寻址、调度",
+      "slug": "cs-fundamentals/glossary"
+    }
+  ]
+}

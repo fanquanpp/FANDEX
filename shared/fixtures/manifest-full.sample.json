@@ -1,0 +1,75 @@
+{
+  "manifest_version": "1.0.0",
+  "manifest_type": "full",
+  "generated_at": "2026-07-21T10:00:00.000Z",
+  "app_compat_version": "3.1.0",
+  "modules": [
+    {
+      "module_id": "Model_Java_00",
+      "name": "Java",
+      "english_short": "java",
+      "sequence": 0,
+      "docs_count": 2,
+      "icon": "java",
+      "color": "#007396",
+      "description": "Java 编程语言知识库"
+    },
+    {
+      "module_id": "Model_Python_01",
+      "name": "Python",
+      "english_short": "python",
+      "sequence": 1,
+      "docs_count": 2,
+      "icon": "python",
+      "color": "#3776AB",
+      "description": "Python 编程语言知识库"
+    }
+  ],
+  "docs": [
+    {
+      "doc_id": "Doc_Java_00_001",
+      "module_id": "Model_Java_00",
+      "title": "快速入门",
+      "source_path": "java/快速入门.md",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "size": 12580,
+      "updated_at": "2026-07-20T08:30:00.000Z",
+      "tags": ["基础", "入门"]
+    },
+    {
+      "doc_id": "Doc_Java_00_002",
+      "module_id": "Model_Java_00",
+      "title": "并发编程详解",
+      "source_path": "java/并发编程详解.md",
+      "sha256": "a1b2c3d4e5f60718a1b2c3d4e5f60718a1b2c3d4e5f60718a1b2c3d4e5f60718",
+      "size": 45672,
+      "updated_at": "2026-07-19T14:20:00.000Z",
+      "compat_version": "3.1.0",
+      "tags": ["并发", "进阶"]
+    },
+    {
+      "doc_id": "Doc_Python_01_001",
+      "module_id": "Model_Python_01",
+      "title": "装饰器",
+      "source_path": "python/装饰器.md",
+      "sha256": "f1e2d3c4b5a697887766554433221100ffeeddccbbaa99887766554433221100",
+      "size": 8930,
+      "updated_at": "2026-07-18T09:15:00.000Z",
+      "tags": ["进阶", "函数"]
+    },
+    {
+      "doc_id": "Doc_Python_01_002",
+      "module_id": "Model_Python_01",
+      "title": "变量与常量",
+      "source_path": "python/变量与常量.md",
+      "sha256": "1234567890abcdef1234567890abcdef1234567890abcdef1234567890abcdef",
+      "size": 5240,
+      "updated_at": "2026-07-17T16:45:00.000Z"
+    }
+  ],
+  "signature": {
+    "algorithm": "EdDSA",
+    "public_key_fingerprint": "a1b2c3d4e5f60718",
+    "value": "MEUCIQDSAMPLE_SIGNATURE_VALUE_FOR_FIXTURE_TESTING_ONLY_NOT_REAL_aaaa"
+  }
+}

@@ -1,0 +1,480 @@
+---
+import { type CollectionEntry, getCollection } from 'astro:content';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+/**
+ * 模块详情页路由（Phase 8b 重写）
+ *
+ * 功能概述：
+ * - 动态路由 [module]，为 51 个模块生成独立详情页
+ * - 模块头部：图标 + 名称 + 描述 + 类别 Badge + 难度 Badge + 文档数 + 预计学习时间
+ * - 面包屑：首页 / 类别 / 模块名
+ * - 进度统计：已完成 / 在读 / 未读（SSR 渲染骨架，客户端由 Sidebar 进度指示器填充）
+ * - 文档列表：按 order 排序，每项含标题、描述、阅读时间、难度、阅读状态
+ * - 侧边栏 Sidebar：传入 moduleId 与已排序文档列表，高亮当前模块
+ *
+ * 数据源：
+ * - modules: @/lib/modules 的 MODULES / getModule
+ * - docs: astro:content 的 getCollection('docs')，按 module 过滤
+ * - 路径处理：withBase() 兼容 Tauri/Web 双环境
+ *
+ * SEO：
+ * - type='website'
+ * - title=模块名 - FANDEX
+ * - description=模块描述
+ */
+import Layout from '@/components/Layout.astro';
+import SEO from '@/components/SEO.astro';
+import Sidebar from '@/components/Sidebar.astro';
+import { getModule, MODULE_CATEGORIES, MODULES } from '@/lib/modules';
+import { withBase } from '@/lib/url';
+
+/**
+ * 生成静态路径：为每个模块生成一个详情页
+ *
+ * 实现说明：
+ * - 从 MODULES 静态注册表生成 51 个路径
+ * - params.module 取模块 ID（单段 slug，如 `javascript`）
+ */
+export async function getStaticPaths() {
+  return MODULES.map((m) => ({ params: { module: m.id } }));
+}
+
+/** 路由参数：当前模块 ID */
+const { module } = Astro.params as { module: string };
+const meta = getModule(module);
+
+/** 模块不存在时跳转 404 */
+if (!meta) {
+  return Astro.redirect(withBase('/404'));
+}
+
+/** 获取该模块下所有文档，按 order 升序排列 */
+const docs = await getCollection('docs', ({ data }) => data.module === module);
+const sortedDocs: CollectionEntry<'docs'>[] = docs.sort(
+  (a, b) => (a.data.order || 0) - (b.data.order || 0),
+);
+
+/**
+ * 从文档 ID 中提取 slug
+ *
+ * @param id - 文档 ID（如 `javascript/概述`）
+ * @returns slug（如 `概述`）
+ */
+function slug(id: string): string {
+  return (id.split('/').pop() || id).replace(/\.(md|mdx)$/, '');
+}
+
+/** 难度标签文案映射 */
+const difficultyLabel: Record<'beginner' | 'intermediate' | 'advanced', string> = {
+  beginner: '入门',
+  intermediate: '进阶',
+  advanced: '高级',
+};
+
+/** 难度标签样式（Tailwind 类名） */
+const difficultyClass: Record<'beginner' | 'intermediate' | 'advanced', string> = {
+  beginner: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300',
+  intermediate: 'bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300',
+  advanced: 'bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300',
+};
+
+/** 当前模块所属分类元数据（用于面包屑） */
+const categoryMeta = MODULE_CATEGORIES.find((c) => c.id === meta.category);
+
+/** 模块总预计阅读时间（分钟，取所有文档 readingTime 之和） */
+const totalReadingTime = sortedDocs.reduce((sum, doc) => sum + (doc.data.readingTime || 0), 0);
+
+/** 面包屑导航项 */
+const breadcrumb = [
+  { label: '首页', href: withBase('/') },
+  ...(categoryMeta ? [{ label: categoryMeta.name, href: withBase(`/#${categoryMeta.id}`) }] : []),
+  { label: meta.name },
+];
+
+/** SEO 面包屑（用于结构化数据） */
+const seoBreadcrumbs = [
+  { label: '首页', href: '/' },
+  ...(categoryMeta ? [{ label: categoryMeta.name, href: `/#${categoryMeta.id}` }] : []),
+  { label: meta.name, href: `/${module}/` },
+];
+---
+
+<Layout
+  title={`${meta.name} - FANDEX`}
+  description={meta.description}
+  canonical={withBase(`/${module}/`)}
+  hasSidebar
+>
+  <SEO
+    slot="head"
+    title={`${meta.name} - FANDEX`}
+    description={meta.description}
+    type="website"
+    breadcrumbs={seoBreadcrumbs}
+  />
+  <Sidebar slot="sidebar" moduleId={module} sortedDocs={sortedDocs} />
+
+  <div class="flex flex-col gap-6 pb-12">
+    {/* 面包屑导航 */}
+    <Breadcrumb items={breadcrumb} hasSidebar />
+
+    {/* ============================================================
+     * 模块头部：图标 + 名称 + 描述 + 类别 Badge + 难度 Badge + 文档数 + 预计学习时间
+     * ============================================================ */}
+    <header
+      class="relative overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+    >
+      {/* 顶部色条：模块主色 */}
+      <span
+        class="absolute inset-x-0 top-0 h-1"
+        style={`background-color:${meta.color}`}
+        aria-hidden="true"
+      />
+
+      <div class="flex flex-col gap-4 p-6 md:flex-row md:items-start md:gap-6 md:p-8">
+        {/* 模块图标 */}
+        <span
+          class="flex h-14 w-14 flex-shrink-0 items-center justify-center rounded-xl text-base font-bold text-white shadow-sm md:h-16 md:w-16 md:text-lg"
+          style={`background-color:${meta.color}`}
+          aria-hidden="true"
+        >
+          {meta.icon}
+        </span>
+
+        {/* 模块主信息 */}
+        <div class="min-w-0 flex-1">
+          <div class="flex flex-wrap items-center gap-2">
+            <h1 class="text-2xl font-bold text-foreground md:text-3xl">
+              {meta.name}
+            </h1>
+            {/* 类别 Badge */}
+            {categoryMeta && (
+              <span
+                class="inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-xs font-medium"
+                style={`background-color:${meta.color}20;color:${meta.color}`}
+              >
+                <span
+                  class="h-1.5 w-1.5 rounded-full"
+                  style={`background-color:${meta.color}`}
+                  aria-hidden="true"
+                />
+                {categoryMeta.name}
+              </span>
+            )}
+            {/* 难度 Badge */}
+            <span
+              class={`inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium ${difficultyClass[meta.difficulty]}`}
+            >
+              {difficultyLabel[meta.difficulty]}
+            </span>
+          </div>
+
+          <p class="mt-2 text-sm text-muted-foreground md:text-base">
+            {meta.description}
+          </p>
+
+          {/* 统计数据：文档数 + 预计学习时间 */}
+          <div class="mt-4 flex flex-wrap items-center gap-4 text-xs text-muted-foreground">
+            <span class="inline-flex items-center gap-1.5">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="h-3.5 w-3.5"
+                aria-hidden="true"
+              >
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                <polyline points="14 2 14 8 20 8" />
+              </svg>
+              <span class="tabular-nums">{sortedDocs.length} 篇文档</span>
+            </span>
+            {totalReadingTime > 0 && (
+              <span class="inline-flex items-center gap-1.5">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="h-3.5 w-3.5"
+                  aria-hidden="true"
+                >
+                  <circle cx="12" cy="12" r="10" />
+                  <polyline points="12 6 12 12 16 14" />
+                </svg>
+                <span class="tabular-nums">预计 {totalReadingTime} 分钟</span>
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    {/* ============================================================
+     * 进度统计：已完成 / 在读 / 未读
+     * SSR 阶段无 localStorage，仅渲染骨架；客户端由 Sidebar 进度指示器同步填充
+     * ============================================================ */}
+    <section
+      class="grid grid-cols-3 gap-3 rounded-xl border border-border bg-card p-4 md:gap-4 md:p-6"
+      aria-label="阅读进度统计"
+    >
+      <div class="flex flex-col gap-1">
+        <span class="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          已完成
+        </span>
+        <span
+          class="text-xl font-bold text-emerald-600 tabular-nums md:text-2xl dark:text-emerald-400"
+          data-progress-stat="read"
+        >
+          0
+        </span>
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          在读
+        </span>
+        <span
+          class="text-xl font-bold text-amber-600 tabular-nums md:text-2xl dark:text-amber-400"
+          data-progress-stat="reading"
+        >
+          0
+        </span>
+      </div>
+      <div class="flex flex-col gap-1">
+        <span class="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+          未读
+        </span>
+        <span
+          class="text-xl font-bold text-muted-foreground tabular-nums md:text-2xl"
+          data-progress-stat="unread"
+        >
+          {sortedDocs.length}
+        </span>
+      </div>
+    </section>
+
+    {/* ============================================================
+     * 文档列表：按 order 排序，每项含标题、描述、阅读时间、难度、阅读状态
+     * ============================================================ */}
+    {sortedDocs.length === 0 ? (
+      <div
+        class="rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground"
+      >
+        该模块暂无文档内容
+      </div>
+    ) : (
+      <ul class="flex flex-col gap-2">
+        {sortedDocs.map((doc, idx) => {
+          const docSlug = slug(doc.id);
+          const docDifficulty = doc.data.difficulty || 'intermediate';
+          return (
+            <li>
+              <a
+                href={withBase(`/${module}/${docSlug}/`)}
+                class="group flex items-start gap-3 rounded-lg border border-border bg-card p-4 transition-all duration-200 hover:-translate-y-0.5 hover:border-primary/40 hover:shadow-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:p-5"
+                data-progress-slug={`${module}/${docSlug}`}
+              >
+                {/* 序号 */}
+                <span
+                  class="mt-0.5 inline-flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-md bg-muted text-[11px] font-medium text-muted-foreground tabular-nums"
+                  aria-hidden="true"
+                >
+                  {String(idx + 1).padStart(2, '0')}
+                </span>
+
+                {/* 阅读状态指示器（客户端由 Sidebar 脚本同步更新颜色） */}
+                <span
+                  class="progress-indicator mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-border transition-colors"
+                  aria-hidden="true"
+                />
+
+                {/* 文档主信息 */}
+                <div class="min-w-0 flex-1">
+                  <div class="flex flex-wrap items-center gap-2">
+                    <h3 class="text-sm font-semibold text-foreground transition-colors group-hover:text-primary md:text-base">
+                      {doc.data.title}
+                    </h3>
+                    {/* 难度 Badge */}
+                    <span
+                      class={`inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium ${difficultyClass[docDifficulty]}`}
+                    >
+                      {difficultyLabel[docDifficulty]}
+                    </span>
+                  </div>
+
+                  {doc.data.description && (
+                    <p class="mt-1 line-clamp-2 text-xs text-muted-foreground md:text-sm">
+                      {doc.data.description}
+                    </p>
+                  )}
+
+                  {/* 元信息：阅读时间 */}
+                  <div class="mt-2 flex flex-wrap items-center gap-3 text-[11px] text-muted-foreground">
+                    {doc.data.readingTime && doc.data.readingTime > 0 && (
+                      <span class="inline-flex items-center gap-1">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          stroke-width="2"
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          class="h-3 w-3"
+                          aria-hidden="true"
+                        >
+                          <circle cx="12" cy="12" r="10" />
+                          <polyline points="12 6 12 12 16 14" />
+                        </svg>
+                        <span class="tabular-nums">{doc.data.readingTime} min</span>
+                      </span>
+                    )}
+                    {doc.data.tags && doc.data.tags.length > 0 && (
+                      <ul class="flex flex-wrap gap-1">
+                        {doc.data.tags.slice(0, 3).map((tag) => (
+                          <li class="rounded-md bg-muted px-1.5 py-0.5 text-[10px] text-muted-foreground">
+                            #{tag}
+                          </li>
+                        ))}
+                      </ul>
+                    )}
+                  </div>
+                </div>
+
+                {/* 右侧箭头 */}
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  class="mt-1 h-4 w-4 flex-shrink-0 text-muted-foreground/60 transition-transform group-hover:translate-x-0.5 group-hover:text-primary"
+                  aria-hidden="true"
+                >
+                  <polyline points="9 18 15 12 9 6" />
+                </svg>
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+    )}
+
+    {/* 底部：术语表 + 知识地图 入口 */}
+    {sortedDocs.length > 0 && (
+      <nav
+        class="mt-4 flex flex-wrap gap-3"
+        aria-label="模块其他视图"
+      >
+        <a
+          href={withBase(`/${module}/glossary/`)}
+          class="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent/50"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-4 w-4"
+            aria-hidden="true"
+          >
+            <path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z" />
+            <path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z" />
+          </svg>
+          术语表
+        </a>
+        <a
+          href={withBase(`/${module}/map/`)}
+          class="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent/50"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            class="h-4 w-4"
+            aria-hidden="true"
+          >
+            <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+            <line x1="8" y1="2" x2="8" y2="18" />
+            <line x1="16" y1="6" x2="16" y2="22" />
+          </svg>
+          知识地图
+        </a>
+      </nav>
+    )}
+  </div>
+</Layout>
+
+<script>
+  /**
+   * 模块详情页客户端脚本
+   *
+   * 功能：从 localStorage 读取阅读进度数据，更新页面顶部进度统计数字
+   * 兼容 Astro ClientRouter：监听 astro:page-load 事件重新初始化
+   */
+  function initModuleProgressStats(): void {
+    const statRead = document.querySelector<HTMLElement>('[data-progress-stat="read"]');
+    const statReading = document.querySelector<HTMLElement>('[data-progress-stat="reading"]');
+    const statUnread = document.querySelector<HTMLElement>('[data-progress-stat="unread"]');
+    if (!statRead || !statReading || !statUnread) return;
+
+    // 收集当前模块下所有文档的 slug 标识
+    const docLinks = document.querySelectorAll<HTMLElement>('[data-progress-slug]');
+    if (docLinks.length === 0) return;
+
+    const slugs: string[] = [];
+    docLinks.forEach((link) => {
+      const s = link.getAttribute('data-progress-slug');
+      if (s) slugs.push(s);
+    });
+
+    let read = 0;
+    let reading = 0;
+    let unread = 0;
+
+    try {
+      const raw = localStorage.getItem('fandex-progress');
+      if (raw) {
+        const parsed = JSON.parse(raw) as {
+          state?: { progress?: Record<string, { status?: string }> };
+          progress?: Record<string, { status?: string }>;
+        };
+        const progressMap = parsed.state?.progress ?? parsed.progress ?? {};
+        for (const slug of slugs) {
+          const entry = progressMap[slug];
+          const status = entry?.status ?? 'unread';
+          if (status === 'read') read++;
+          else if (status === 'reading') reading++;
+          else unread++;
+        }
+      } else {
+        unread = slugs.length;
+      }
+    } catch {
+      unread = slugs.length;
+    }
+
+    statRead.textContent = String(read);
+    statReading.textContent = String(reading);
+    statUnread.textContent = String(unread);
+  }
+
+  initModuleProgressStats();
+  document.addEventListener('astro:page-load', initModuleProgressStats);
+  document.addEventListener('fandex-progress-change', initModuleProgressStats);
+</script>

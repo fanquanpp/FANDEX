@@ -1,0 +1,166 @@
+---
+/**
+ * 面包屑导航组件
+ * 显示当前页面的层级路径，支持移动端省略中间层级
+ * 包含侧边栏开关按钮（仅在有侧边栏时显示）
+ */
+const { items, hasSidebar = false } = Astro.props as {
+  items: { label: string; href?: string }[];
+  hasSidebar?: boolean;
+};
+---
+
+<nav class="breadcrumb">
+  <!-- 侧边栏开关按钮：仅文档页显示 -->
+  {
+    hasSidebar && (
+      <button class="nav-toggle" id="nav-toggle" aria-label="菜单">
+        <svg
+          width="18"
+          height="18"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+        >
+          <line x1="3" y1="6" x2="21" y2="6" />
+          <line x1="3" y1="12" x2="21" y2="12" />
+          <line x1="3" y1="18" x2="21" y2="18" />
+        </svg>
+      </button>
+    )
+  }
+  {
+    items.map((item, i) => {
+      // 当层级超过2时，移动端隐藏中间层级，显示省略号
+      const isMobileHidden = items.length > 2 && i > 0 && i < items.length - 1;
+      return (
+        <>
+          {i > 0 && <span class="bc-sep">/</span>}
+          {isMobileHidden ? (
+            <>
+              <span class="bc-ellipsis" aria-hidden="true">
+                ...
+              </span>
+              <span class="bc-sep bc-sep-mobile" aria-hidden="true">
+                /
+              </span>
+            </>
+          ) : null}
+          {item.href ? (
+            <a href={item.href} class={`bc-link${isMobileHidden ? ' bc-mobile-hide' : ''}`}>
+              {item.label}
+            </a>
+          ) : (
+            <span class={`bc-current${isMobileHidden ? ' bc-mobile-hide' : ''}`}>{item.label}</span>
+          )}
+        </>
+      );
+    })
+  }
+</nav>
+
+<style>
+  /* 菜单切换按钮：默认隐藏，移动端显示 */
+  .nav-toggle {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    border-radius: 6px;
+    flex-shrink: 0;
+    margin-right: calc(var(--spacing-xs) * -1);
+  }
+
+  .nav-toggle:hover {
+    background: var(--color-bg-tertiary);
+    color: var(--color-text);
+  }
+
+  @media (max-width: 768px) {
+    .nav-toggle {
+      display: inline-flex;
+    }
+  }
+
+  /* 面包屑容器 */
+  .breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-sm) 0;
+    margin-bottom: var(--spacing-lg);
+    font-size: 0.82em;
+    border-bottom: 1px solid var(--color-border-light);
+    max-width: var(--content-width);
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* 分隔符 */
+  .bc-sep {
+    color: var(--color-text-tertiary);
+    opacity: 0.4;
+    font-family: var(--font-display);
+  }
+
+  /* 省略号：移动端折叠中间层级时显示 */
+  .bc-ellipsis {
+    display: none;
+    color: var(--color-text-tertiary);
+    font-family: var(--font-display);
+  }
+
+  /* 移动端分隔符 */
+  .bc-sep-mobile {
+    display: none;
+  }
+
+  /* 面包屑链接 */
+  .bc-link {
+    color: var(--color-text-secondary);
+  }
+
+  .bc-link:hover {
+    color: var(--color-primary);
+  }
+
+  /* 当前层级（不可点击） */
+  .bc-current {
+    color: var(--color-text);
+    font-weight: 500;
+    font-family: var(--font-display);
+  }
+
+  /* 移动端适配：粘性定位，折叠中间层级 */
+  /* 修复 z-index 冲突：面包屑粘在导航栏下方，层级低于导航栏(100)避免覆盖 */
+  @media (max-width: 768px) {
+    .breadcrumb {
+      position: sticky;
+      top: var(--nav-height, 56px);
+      z-index: 90;
+      background: var(--color-bg);
+      padding: var(--spacing-sm) var(--spacing-md);
+      margin-bottom: 0;
+    }
+
+    .bc-ellipsis {
+      display: inline;
+    }
+
+    .bc-sep-mobile {
+      display: inline;
+    }
+
+    /* 隐藏移动端被折叠的层级 */
+    .bc-mobile-hide {
+      display: none;
+    }
+  }
+</style>

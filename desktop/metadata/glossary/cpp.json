@@ -1,0 +1,5010 @@
+{
+  "moduleId": "cpp",
+  "terms": [
+    {
+      "name": "抽象类",
+      "definition": "包含纯虚函数的类，不能直接实例化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "抽象数据类型",
+      "definition": "只通过接口访问的实现类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "访问控制",
+      "definition": "public、private、protected 控制成员访问",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "访问说明符",
+      "definition": "public、private、protected 关键字",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "聚合",
+      "definition": "数组或无构造函数的结构体",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "别名声明",
+      "definition": "用 `using` 创建类型别名",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "匿名联合",
+      "definition": "无名的联合体",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "申请-获取语义",
+      "definition": "内存同步操作语义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "参数包",
+      "definition": "可变参数模板的参数集合",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "算术类型",
+      "definition": "整数和浮点类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "数组",
+      "definition": "固定大小同类型元素序列",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "断言",
+      "definition": "验证条件的调试工具",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "赋值运算符",
+      "definition": "`=` 重载实现赋值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "自动类型推导",
+      "definition": "用 `auto` 自动推断类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "后置返回类型",
+      "definition": "函数签名末尾的返回类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "基础类",
+      "definition": "被继承的类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "二进制兼容性",
+      "definition": "不同版本间的二进制可替换性",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "位域",
+      "definition": "结构体中指定位数的成员",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "位运算",
+      "definition": "对二进制位操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "bool",
+      "definition": "布尔类型，true 或 false",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "边界检查",
+      "definition": "检查数组下标是否越界",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "缓冲区",
+      "definition": "临时存储数据的内存区域",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "内建类型",
+      "definition": "语言内置的基本类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "字节",
+      "definition": "8 位组成的数据单位",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "转换构造函数",
+      "definition": "可用于隐式转换的单参数构造函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "转换函数",
+      "definition": "`operator Type()` 定义类型转换",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "调用约定",
+      "definition": "函数调用参数传递规则",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "捕获列表",
+      "definition": "lambda 表达式捕获的变量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类",
+      "definition": "定义对象的结构和行为",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类模板",
+      "definition": "参数化的类定义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "闭包",
+      "definition": "lambda 表达式及其捕获的环境",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "代码块",
+      "definition": "用 `{}` 包裹的语句组",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "注释",
+      "definition": "被编译器忽略的说明文本",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "编译",
+      "definition": "将源代码转换为目标代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "编译期计算",
+      "definition": "编译时执行的计算",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "常量表达式",
+      "definition": "编译时可求值的表达式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "const",
+      "definition": "不可修改的修饰符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "consteval",
+      "definition": "强制编译期求值的说明符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "constexpr",
+      "definition": "编译期常量的说明符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "const_cast",
+      "definition": "移除 const 限定符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "构造函数",
+      "definition": "初始化对象的成员函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "契约",
+      "definition": "函数的输入输出条件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "控制流",
+      "definition": "程序执行顺序控制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "协程",
+      "definition": "可暂停和恢复的函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "CRTP",
+      "definition": "奇异递归模板模式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "切片",
+      "definition": "赋值时丢失派生类部分",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "数据抽象",
+      "definition": "隐藏实现细节只暴露接口",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "数据成员",
+      "definition": "类中的变量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "数据类型",
+      "definition": "值的种类和可执行的操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "调试",
+      "definition": "查找和修复程序错误",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "声明",
+      "definition": "引入名称",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "默认参数",
+      "definition": "未提供时使用的参数值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "默认构造函数",
+      "definition": "无参或全缺省的构造函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "默认成员初始化器",
+      "definition": "成员声明时的默认值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "定义",
+      "definition": "创建实体",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "删除的函数",
+      "definition": "用 `= delete` 禁用函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "委托构造函数",
+      "definition": "在构造函数中调用另一构造函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "解引用",
+      "definition": "通过指针或迭代器访问元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "派生类",
+      "definition": "继承其他类的类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "析构函数",
+      "definition": "对象销毁前调用的清理函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "解构",
+      "definition": "分解聚合为各个部分",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "双重分发",
+      "definition": "根据两个对象类型选择方法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "动态内存",
+      "definition": "程序运行时分配的内存",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "动态类型",
+      "definition": "运行时确定的对象类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "异常",
+      "definition": "程序执行中的错误情况",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "异常规范",
+      "definition": "函数可能抛出异常的声明",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "noexcept",
+      "definition": "声明函数不抛异常的说明符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "explicit",
+      "definition": "禁止隐式转换的构造函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "表达式",
+      "definition": "求值产生结果的代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "表达式模板",
+      "definition": "延迟计算表达式的数据结构",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "扩展",
+      "definition": "添加的功能",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "友元",
+      "definition": "授权访问 private 成员的机制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "函数",
+      "definition": "完成特定任务的代码块",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "函数对象",
+      "definition": "重载 `operator()` 的类实例",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "函数重载",
+      "definition": "同名不同参数的多个函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "函数模板",
+      "definition": "参数化的函数定义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "泛型编程",
+      "definition": "编写与类型无关的代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "预演",
+      "definition": "预演检查而不执行",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "goto",
+      "definition": "无条件跳转语句",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "哈希函数",
+      "definition": "将数据映射到哈希值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "头文件",
+      "definition": "包含声明的 `.h` 或 `.hpp` 文件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "层次结构",
+      "definition": "类的继承层次",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "if constexpr",
+      "definition": "编译期条件分支",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "包含指令",
+      "definition": "`#include` 预处理器指令",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "增量运算符",
+      "definition": "`++`",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "索引",
+      "definition": "容器中元素的位置",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "继承",
+      "definition": "从基类获取成员",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "初始化列表",
+      "definition": "用大括号初始化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "内联",
+      "definition": "建议编译器内联展开",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "内联命名空间",
+      "definition": "版本切换的命名空间",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "内联变量",
+      "definition": "每个翻译单元内联定义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "实例化",
+      "definition": "从模板创建具体类型或函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "int",
+      "definition": "整数类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "接口",
+      "definition": "类的公共行为抽象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "内部链接",
+      "definition": "只在当前翻译单元可见",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "lambda",
+      "definition": "匿名函数对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "左值",
+      "definition": "可标识存储位置的表达式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "库",
+      "definition": "可复用的代码集合",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "链接",
+      "definition": "合并目标文件生成可执行文件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "字面量",
+      "definition": "代码中直接写出的值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "main",
+      "definition": "程序入口函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "宏",
+      "definition": "`#define` 定义的替换",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "强制转换",
+      "definition": "用 `(type)` 或 `cast<>` 转换类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "成员",
+      "definition": "类或结构体的变量和函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "成员函数",
+      "definition": "类的成员方法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "方法",
+      "definition": "成员函数的另一种称呼",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "多态",
+      "definition": "不同类型对象相同接口不同行为",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "多重继承",
+      "definition": "从多个基类继承",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "命名空间",
+      "definition": "组织代码避免命名冲突",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "new",
+      "definition": "动态分配内存并构造对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "嵌套类",
+      "definition": "在另一类内部定义的类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "nullptr",
+      "definition": "空指针字面量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "数值范围",
+      "definition": "类型可表示的值范围",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "对象",
+      "definition": "类的实例",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "对象切片",
+      "definition": "派生类赋值给基类时丢失派生部分",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "运算符重载",
+      "definition": "重定义运算符行为",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "可选参数",
+      "definition": "可省略的参数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "原始指针",
+      "definition": "普通的指针类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "外部链接",
+      "definition": "可被其他文件访问",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "参数",
+      "definition": "函数定义的输入变量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "参数包展开",
+      "definition": "展开可变参数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "纯虚函数",
+      "definition": "`= 0` 声明的虚函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "指针",
+      "definition": "存储内存地址的变量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "私有成员",
+      "definition": "只有类内可访问",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "程序",
+      "definition": "完成特定功能的代码集合",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "protected",
+      "definition": "派生类可访问的成员",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "public",
+      "definition": "公开可访问的成员",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "限定符",
+      "definition": "const、volatile 等修饰符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "限定名称",
+      "definition": "带作用域前缀的名称",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "RAII",
+      "definition": "资源获取即初始化，资源管理模式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "随机访问迭代器",
+      "definition": "支持 O(1) 随机访问",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "读取",
+      "definition": "从输入获取数据",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "递归",
+      "definition": "函数调用自身",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "引用",
+      "definition": "变量的别名",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "寄存器变量",
+      "definition": "建议存储在寄存器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "正则表达式",
+      "definition": "文本模式匹配",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "reinterpert_cast",
+      "definition": "重新解释位模式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "关系运算符",
+      "definition": "比较运算符号",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "return",
+      "definition": "函数返回语句",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "右值引用",
+      "definition": "`T&&` 绑定临时对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "作用域",
+      "definition": "标识符可见的区域",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "作用域解析运算符",
+      "definition": "`::`",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "序列点",
+      "definition": "所有副作用完成的点",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "阴影",
+      "definition": "内层作用域遮蔽外层同名",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "共享指针",
+      "definition": "引用计数的智能指针",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "sizeof",
+      "definition": "获取类型或变量大小",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "源文件",
+      "definition": "包含代码的 `.cpp` 文件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "特殊成员函数",
+      "definition": "构造函数、析构函数等",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "static",
+      "definition": "静态成员或内部链接",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "static_cast",
+      "definition": "编译期类型转换",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "存储期",
+      "definition": "对象存在的时间",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "流",
+      "definition": "数据输入输出的抽象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "字符串",
+      "definition": "字符序列",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "结构体",
+      "definition": "成员默认 public 的类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "子类",
+      "definition": "派生类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "替代",
+      "definition": "用实参替换模板参数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "switch",
+      "definition": "多分支选择语句",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "符号表",
+      "definition": "存储标识符信息",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "模板",
+      "definition": "参数化代码的机制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "模板参数",
+      "definition": "模板的类型或值参数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "模板实参",
+      "definition": "实例化时的具体参数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "this",
+      "definition": "指向当前对象的指针",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "线程",
+      "definition": "执行的最小单位",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "thread_local",
+      "definition": "线程局部存储",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "throw",
+      "definition": "抛出异常",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "try",
+      "definition": "捕获异常的代码块",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型",
+      "definition": "数据的分类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型特征",
+      "definition": "查询类型性质的模板",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型转换",
+      "definition": "转换数据类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "歧义",
+      "definition": "多个可能解释",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "联合",
+      "definition": "成员共享同一内存",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "唯一指针",
+      "definition": "独占所有权的智能指针",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "统一初始化",
+      "definition": "用大括号初始化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "别名模板",
+      "definition": "参数化的类型别名",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "未定义行为",
+      "definition": "语言规范未定义的行为",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "不使用变量",
+      "definition": "声明但未使用的变量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "用户定义字面量",
+      "definition": "后缀运算符重载",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "变量",
+      "definition": "存储数据的命名位置",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "虚函数",
+      "definition": "可被重写的成员函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "虚继承",
+      "definition": "虚基类解决菱形继承",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "虚表",
+      "definition": "实现虚函数调度的表",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "可变成员",
+      "definition": "const 对象中可修改的成员",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "变参模板",
+      "definition": "可变数量参数的模板",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "warning",
+      "definition": "编译器警告信息",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "while",
+      "definition": "循环语句",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "弱指针",
+      "definition": "不影响引用计数的智能指针",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "写入",
+      "definition": "输出数据",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "algorithm",
+      "definition": "算法库，sort、find 等",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "allocator",
+      "definition": "内存分配器接口",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "any",
+      "definition": "可存储任意类型的容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "array",
+      "definition": "固定大小数组容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "atomic",
+      "definition": "原子操作库",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "barrier",
+      "definition": "线程同步障碍",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "bicut",
+      "definition": "二分切断算法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "bitset",
+      "definition": "位向量容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "byte",
+      "definition": "字节类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "callable",
+      "definition": "可调用对象类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "capacity",
+      "definition": "容器大小操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "cassert",
+      "definition": "断言头文件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "cctype",
+      "definition": "字符分类函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "chrono",
+      "definition": "时间Duration和时钟",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "cin",
+      "definition": "标准输入流",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "clear",
+      "definition": "清除容器内容",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "cmp_chMag_order",
+      "definition": "比较三个值的中值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "codecvt",
+      "definition": "字符编码转换",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "codevt_byname",
+      "definition": "本地化编码转换",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "collate",
+      "definition": "字符串比较",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "collate_byname",
+      "definition": "本地化字符串比较",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "common_type",
+      "definition": "公共类型特征",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "compare",
+      "definition": "三路比较库",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "complex",
+      "definition": "复数类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "condition_variable",
+      "definition": "条件变量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "cout",
+      "definition": "标准输出流",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "cerr",
+      "definition": "标准错误流",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "clamp",
+      "definition": "限制值在范围内",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "count",
+      "definition": "计数算法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "count_if",
+      "definition": "条件计数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "condition_any",
+      "definition": "任意类型条件变量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "cstdio",
+      "definition": "C 标准输入输出",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "cstdlib",
+      "definition": "C 标准库",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "cstring",
+      "definition": "C 字符串函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "ctime",
+      "definition": "C 时间函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "deadvalue_t",
+      "definition": "死亡值标签类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "deque",
+      "definition": "双端队列容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "destroy",
+      "definition": "销毁对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "destroy_at",
+      "definition": "在地址销毁",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "distance",
+      "definition": "迭代器距离",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "div",
+      "definition": "整数除法结构体",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "emplace",
+      "definition": "原位构造",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "empty",
+      "definition": "检查容器是否为空",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "enable_shared_from_this",
+      "definition": "从 shared_ptr 创建 this",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "end",
+      "definition": "指向末尾的迭代器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "endl",
+      "definition": "换行并刷新",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "erase",
+      "definition": "删除元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "exception",
+      "definition": "异常类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "execution",
+      "definition": "执行策略",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "exit",
+      "definition": "程序退出",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "expected",
+      "definition": "携带错误值的类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "fenv",
+      "definition": "浮点环境",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "filesystem",
+      "definition": "文件系统库",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "float_denorm_style",
+      "definition": "浮点非规格化风格",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "float_round_style",
+      "definition": "浮点舍入风格",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "flow倡\\_n",
+      "definition": "流动倡 n 个元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "for_each",
+      "definition": "对范围每个元素执行",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "format",
+      "definition": "格式化库",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "forward",
+      "definition": "转发参数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "forward_list",
+      "definition": "单向链表容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "fpos",
+      "definition": "文件位置类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "front",
+      "definition": "访问第一个元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "functional",
+      "definition": "函数对象和绑定",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "future",
+      "definition": "异步结果",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "gcd",
+      "definition": "最大公约数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "generate",
+      "definition": "生成元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "generate_n",
+      "definition": "生成 n 个元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "get",
+      "definition": "获取 tuple 元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "handle",
+      "definition": "句柄概念",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "hash",
+      "definition": "哈希函数对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "hypot",
+      "definition": "欧几里得距离函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "includes",
+      "definition": "检查包含关系",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "initializer_list",
+      "definition": "初始化列表类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "inner_product",
+      "definition": "内积算法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "in_place_t",
+      "definition": "原位构造标签",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "insert",
+      "definition": "插入元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "inplace_merge",
+      "definition": "原地合并有序范围",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "invoke",
+      "definition": "调用可调用对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "iomanip",
+      "definition": "输入输出格式化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "ios",
+      "definition": "输入输出基类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "ios_base",
+      "definition": "流基类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "iostream",
+      "definition": "输入输出流",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "istream",
+      "definition": "输入流",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "istringstream",
+      "definition": "字符串输入流",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "iter_swap",
+      "definition": "交换迭代器指向",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "iterator",
+      "definition": "迭代器抽象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "iterator_traits",
+      "definition": "迭代器特征",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "joinable",
+      "definition": "检查线程是否可加入",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "layout_left_t",
+      "definition": "左布局标签",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "layout_right_t",
+      "definition": "右布局标签",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "lcm",
+      "definition": "最小公倍数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "less",
+      "definition": "小于函数对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "lexically_normal",
+      "definition": "词法正规化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "lexically_compare",
+      "definition": "字典序比较",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "list",
+      "definition": "双向链表容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "locale",
+      "definition": "本地化支持",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "localtime",
+      "definition": "转换时间结构",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "lock_guard",
+      "definition": "简单锁封装",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "logical_and",
+      "definition": "逻辑与函数对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "logical_not",
+      "definition": "逻辑非函数对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "logical_or",
+      "definition": "逻辑或函数对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "lower_bound",
+      "definition": "下界查找",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "make_exception_ptr",
+      "definition": "创建异常指针",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "make_heap",
+      "definition": "生成堆",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "make_pair",
+      "definition": "创建 pair",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "make_reverse_iterator",
+      "definition": "创建反向迭代器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "make_shared",
+      "definition": "创建 shared_ptr",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "make_tuple",
+      "definition": "创建 tuple",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "make_weak_ptr",
+      "definition": "创建 weak_ptr",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "map",
+      "definition": "有序键值对容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "match_results",
+      "definition": "正则匹配结果",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "materialization",
+      "definition": "实体化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "max",
+      "definition": "最大值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "max_element",
+      "definition": "最大元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "mem_fn",
+      "definition": "成员函数绑定器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "merge",
+      "definition": "合并有序范围",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "message",
+      "definition": "错误消息",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "min",
+      "definition": "最小值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "min_element",
+      "definition": "最小元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "minmax",
+      "definition": "最小最大值对",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "minmax_element",
+      "definition": "最小最大元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "mktime",
+      "definition": "时间结构转时间戳",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "modulus",
+      "definition": "取模函数对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "move",
+      "definition": "移动语义工具",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "move_backward",
+      "definition": "向后移动范围",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "move_if_noexcept",
+      "definition": "有条件移动",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "multimap",
+      "definition": "多重映射容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "multiset",
+      "definition": "多重集合容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "negate",
+      "definition": "取负函数对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "nested_exception",
+      "definition": "嵌套异常",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "next",
+      "definition": "前进迭代器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "next_permutation",
+      "definition": "下一个排列",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "none",
+      "definition": "无操作流",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "norm",
+      "definition": "复数模长",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "not1",
+      "definition": "一元取反函数适配器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "not2",
+      "definition": "二元取反函数适配器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "not_fn",
+      "definition": "函数取反",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "nth_element",
+      "definition": "快速选择算法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "nullopt_t",
+      "definition": "空选项标签",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "nullptr_t",
+      "definition": "空指针类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "numeric",
+      "definition": "数值算法库",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "object",
+      "definition": "对象概念",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "oct",
+      "definition": "八进制格式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "ofstream",
+      "definition": "文件输出流",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "ostream",
+      "definition": "输出流基类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "ostringstream",
+      "definition": "字符串输出流",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "atomic_flag",
+      "definition": "原子标志",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "atomic_ref",
+      "definition": "原子引用",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "back",
+      "definition": "访问最后一个元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "bad_alloc",
+      "definition": "内存分配失败异常",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "bad_cast",
+      "definition": "类型转换失败异常",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "bad_typeid",
+      "definition": "typeid 空指针异常",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "bad_weak_ptr",
+      "definition": "weak_ptr 过期异常",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "basic_istream",
+      "definition": "输入流模板",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "basic_ostream",
+      "definition": "输出流模板",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "basic_fstream",
+      "definition": "文件流模板",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "basic_stringstream",
+      "definition": "字符串流模板",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "basic_syncbuf",
+      "definition": "同步缓冲区",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "basic_spanstream",
+      "definition": "span 流模板",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "pair",
+      "definition": "两个值的组合",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "panic",
+      "definition": "恐慌错误处理",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "partial_sort",
+      "definition": "部分排序",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "partial_sort_copy",
+      "definition": "部分排序复制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "partial_sum",
+      "definition": "部分累加和",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "partition",
+      "definition": "划分算法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "partition_point",
+      "definition": "划分点",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "plus",
+      "definition": "加法函数对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "pop",
+      "definition": "弹出元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "pop_heap",
+      "definition": "弹出堆顶",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "pow",
+      "definition": "幂函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "prev",
+      "definition": "后退迭代器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "priority_queue",
+      "definition": "优先队列容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "product",
+      "definition": "乘积算法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "promise",
+      "definition": "异步提供者",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "ptr_fun",
+      "definition": "函数指针适配器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "push",
+      "definition": "推入元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "push_heap",
+      "definition": "推入堆",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "put",
+      "definition": "输出字符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "queue",
+      "definition": "先进先出队列",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "random",
+      "definition": "随机数库",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "random_device",
+      "definition": "真随机数生成器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "range",
+      "definition": "范围概念",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "ratio",
+      "definition": "编译期有理数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "raw_storage_iterator",
+      "definition": "原始存储迭代器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "rbegin",
+      "definition": "反向开始迭代器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "ref",
+      "definition": "reference_wrapper 工厂",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "remove",
+      "definition": "移除元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "remove_copy",
+      "definition": "移除复制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "remove_copy_if",
+      "definition": "条件移除复制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "remove_if",
+      "definition": "条件移除",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "rend",
+      "definition": "反向结束迭代器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "replace",
+      "definition": "替换元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "replace_copy",
+      "definition": "替换复制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "replace_copy_if",
+      "definition": "条件替换复制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "replace_if",
+      "definition": "条件替换",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "reset",
+      "definition": "重置智能指针",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "resize",
+      "definition": "调整大小",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "resolve",
+      "definition": "解析路径",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "result_of",
+      "definition": "调用结果类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "retain",
+      "definition": "保留元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "return_temporary_buffer",
+      "definition": "返回临时缓冲区",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "reverse",
+      "definition": "反转元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "reverse_copy",
+      "definition": "反转复制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "rotate",
+      "definition": "旋转范围",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "rotate_copy",
+      "definition": "旋转复制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "sample",
+      "definition": "随机采样",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "scoped_lock",
+      "definition": "多个锁的 RAII 封装",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "search",
+      "definition": "搜索子范围",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "search_n",
+      "definition": "搜索连续元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "set",
+      "definition": "有序集合容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "set_difference",
+      "definition": "集合差集",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "set_intersection",
+      "definition": "集合交集",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "set_symmetric_difference",
+      "definition": "集合对称差",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "set_union",
+      "definition": "集合并集",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "shared_future",
+      "definition": "共享异步结果",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "shared_lock",
+      "definition": "共享锁 RAII",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "shared_mutex",
+      "definition": "读写锁",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "signal",
+      "definition": "信号处理",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "sin",
+      "definition": "正弦函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "single",
+      "definition": "单个值发射器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "size",
+      "definition": "元素个数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "skip",
+      "definition": "跳过元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "slice",
+      "definition": "数组切片",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "sort",
+      "definition": "排序算法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "sort_heap",
+      "definition": "堆排序",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "sorted_uses",
+      "definition": "已排序使用",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "span",
+      "definition": "非拥有视图",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "spanbuf",
+      "definition": "span 缓冲区",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "spanstream",
+      "definition": "span 流",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "splice",
+      "definition": "链表拼接",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "split",
+      "definition": "分裂范围",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "sqrt",
+      "definition": "平方根函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "srand",
+      "definition": "设置随机种子",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "stable_partition",
+      "definition": "稳定划分",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "stable_sort",
+      "definition": "稳定排序",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "stack",
+      "definition": "栈容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "stop_callback",
+      "definition": "停止回调",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "stop_source",
+      "definition": "停止源",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "stop_token",
+      "definition": "停止令牌",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "strstreambuf",
+      "definition": "字符串缓冲区",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "substr",
+      "definition": "子字符串",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "swap",
+      "definition": "交换值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "swap_ranges",
+      "definition": "交换范围",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "synchronized",
+      "definition": "同步代码块",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "system_category",
+      "definition": "系统错误类别",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "tan",
+      "definition": "正切函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "terminate",
+      "definition": "终止程序",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "terminate_handler",
+      "definition": "终止处理函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "text_format",
+      "definition": "文本格式化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "this_thread",
+      "definition": "当前线程命名空间",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "thread",
+      "definition": "线程类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "throw_on",
+      "definition": "错误时抛出",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "time",
+      "definition": "获取当前时间",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "time_get",
+      "definition": "时间解析",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "time_put",
+      "definition": "时间格式化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "timed_mutex",
+      "definition": "超时互斥锁",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "timespec",
+      "definition": "时间规格结构",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "tm",
+      "definition": "日历时间结构",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "to_address",
+      "definition": "转换为裸地址",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "to_array",
+      "definition": "转换为数组",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "transform",
+      "definition": "变换算法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "transform_exclusive_scan",
+      "definition": "互斥变换扫描",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "transform_inclusive_scan",
+      "definition": "包容变换扫描",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "transform_reduce",
+      "definition": "变换规约",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "try_lock",
+      "definition": "尝试加锁",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "tuple",
+      "definition": "固定大小异构集合",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "tuple_element",
+      "definition": "tuple 元素类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "tuple_size",
+      "definition": "tuple 元素个数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "type_info",
+      "definition": "类型信息类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "typed_span",
+      "definition": "带类型 span",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "unbias",
+      "definition": "去除偏差",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "unexpected",
+      "definition": "不预期的异常处理器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "uninitialized_copy",
+      "definition": "未初始化复制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "uninitialized_copy_n",
+      "definition": "未初始化复制 n 个",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "uninitialized_fill",
+      "definition": "未初始化填充",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "uninitialized_fill_n",
+      "definition": "未初始化填充 n 个",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "unique",
+      "definition": "去除相邻重复",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "unique_copy",
+      "definition": "去除重复复制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "unique_lock",
+      "definition": "灵活锁 RAII",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "unwind",
+      "definition": "栈展开",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "upper_bound",
+      "definition": "上界查找",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "url",
+      "definition": "统一资源定位符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "uses_allocator",
+      "definition": "使用分配器特征",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "valarray",
+      "definition": "值数组模板",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "variant",
+      "definition": "类型安全联合",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "vector",
+      "definition": "动态数组容器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "version",
+      "definition": "库版本信息",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "view",
+      "definition": "视图概念",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "weak_ptr",
+      "definition": "弱引用智能指针",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "write",
+      "definition": "输出字符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "wstring",
+      "definition": "宽字符串类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "yield",
+      "definition": "让出执行权",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "绝对虚拟",
+      "definition": "必须实现的纯虚函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "访问序列",
+      "definition": "内存访问顺序",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "获取-释放语义",
+      "definition": "内存同步操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "适应器",
+      "definition": "改变接口的类或函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "地址运算符",
+      "definition": "`&` 获取地址",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "ADL",
+      "definition": "参数依赖查找",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "别名",
+      "definition": "using 或 typedef 创建的类型名",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "歧义解析",
+      "definition": "解决多重继承歧义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "友元类",
+      "definition": "授予访问权限的类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "应用二进制接口",
+      "definition": "二进制层面约定",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "匿名命名空间",
+      "definition": "文件内匿名作用域",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "参数展开",
+      "definition": "展开参数包",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "数组退化",
+      "definition": "数组退化为指针",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "原子操作",
+      "definition": "不可中断的操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "自动存储期",
+      "definition": "块作用域结束时释放",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "后置条件",
+      "definition": "函数执行后的保证",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "后置递增",
+      "definition": "`x++` 先用后增",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "基础子对象",
+      "definition": "基类子对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "双向迭代器",
+      "definition": "可前后移动的迭代器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "二进制运算符",
+      "definition": "需要两个操作数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "绑定",
+      "definition": "建立引用或绑定",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "特化",
+      "definition": "为特定类型的模板定义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "特化模板",
+      "definition": "具体化的模板",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "块",
+      "definition": "`{}` 包裹的语句组",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "bool 转换",
+      "definition": "转 bool 的上下文",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "边界检查数组",
+      "definition": "带边界检查的数组",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "桥接模式",
+      "definition": "分离抽象与实现",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "浏览器",
+      "definition": "浏览实体",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "缓冲区溢出",
+      "definition": "写入超出边界",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "构建函数",
+      "definition": "构建对象的函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "字节码",
+      "definition": "解释器执行的中间码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "字节序",
+      "definition": "多字节存储顺序",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "候选函数集",
+      "definition": "重载解析的候选",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "基类子对象",
+      "definition": "继承的基类部分",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "捕获",
+      "definition": "lambda 捕获的变量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "捕获模式",
+      "definition": "by value 或 by reference",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "捕获语义",
+      "definition": "值或引用捕获",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "载具",
+      "definition": "携带对象的实体",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "目录",
+      "definition": "实体集合",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "category",
+      "definition": "类型类别",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "链式调用",
+      "definition": "连续调用方法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "链式比较",
+      "definition": "`a < b < c` 形式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "检查",
+      "definition": "验证条件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "检查类型",
+      "definition": "带检查的类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "闭色",
+      "definition": "lambda 闭包类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "代码生成",
+      "definition": "编译时生成代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "代码路径",
+      "definition": "执行的可能路径",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "代码质量",
+      "definition": "代码质量指标",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "编码",
+      "definition": "编写代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "颜色",
+      "definition": "类型标签",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "列挙",
+      "definition": "列位置",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "列式",
+      "definition": "按列组织",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "列式存储",
+      "definition": "按列存储数据",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "组合",
+      "definition": "组合多个值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "组合数",
+      "definition": "组合的数量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "组合函数",
+      "definition": "组合多个函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "组合器",
+      "definition": "合并操作结果",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "命令式",
+      "definition": "命令对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "命令模式",
+      "definition": "请求封装为对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "评论",
+      "definition": "代码注释",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "提交",
+      "definition": "持久化变更",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "公共类",
+      "definition": "公共类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "公共类型",
+      "definition": "公共可替换类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "比较器",
+      "definition": "比较函数对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "兼容性",
+      "definition": "兼容性要求",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "编译单元",
+      "definition": "预处理后的源文件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "编译时",
+      "definition": "编译阶段",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "编译时常量",
+      "definition": "编译时可求值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "编译期多态",
+      "definition": "模板实现的静态多态",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "完全平凡类型",
+      "definition": "可平凡复制的类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "完全类型",
+      "definition": "完整定义类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "组件",
+      "definition": "组成整体的部分",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "复合赋值",
+      "definition": "`+=` 等运算符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "计算",
+      "definition": "计算过程",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "计算图",
+      "definition": "依赖关系图",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "计算密集",
+      "definition": "CPU 密集型任务",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "概念",
+      "definition": "模板约束的抽象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "条件求值",
+      "definition": "三元运算符条件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "条件显式",
+      "definition": "条件 explicit 构造函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "条件模板",
+      "definition": "条件选择类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "配置",
+      "definition": "配置参数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "连接",
+      "definition": "连接关系",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "构造",
+      "definition": "创建对象过程",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "构造语义",
+      "definition": "对象构造规则",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "消费者",
+      "definition": "消费数据的一方",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "容器",
+      "definition": "存储多个元素的对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "内容",
+      "definition": "内容部分",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "上下文",
+      "definition": "使用环境",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "上下文无关",
+      "definition": "不依赖上下文",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "相关",
+      "definition": "相关的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "契约式设计",
+      "definition": "契约式编程",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "相关性",
+      "definition": "相关程度",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "对应",
+      "definition": "对应关系",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "耦合",
+      "definition": "模块间依赖",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "覆盖",
+      "definition": "覆盖范围",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "覆盖定义",
+      "definition": "覆盖声明的定义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "覆盖虚函数",
+      "definition": "重写基类虚函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "创造者模式",
+      "definition": "创建对象模式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "跨度",
+      "definition": "非拥有视图",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "跨度缓冲",
+      "definition": "span 缓冲区",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "临界区",
+      "definition": "访问共享资源的代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "跨平台",
+      "definition": "跨不同平台",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "当前对象",
+      "definition": "当前处理对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "自定义删除器",
+      "definition": "智能指针的删除器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "客户",
+      "definition": "客户代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "数据成员指针",
+      "definition": "指向成员的指针",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "数据竞争",
+      "definition": "并发访问冲突",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "日期时间",
+      "definition": "日期时间类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "日期时间库",
+      "definition": "日期时间处理库",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "死代码",
+      "definition": "永不执行的代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "死亡值",
+      "definition": "生命周期结束的值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "调试版本",
+      "definition": "调试构建",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "声明说明符",
+      "definition": "声明的类型说明符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "声明式",
+      "definition": "声明式编程",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "声明式代码",
+      "definition": "声明式代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "声明式编程",
+      "definition": "描述期望结果",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "声明优先",
+      "definition": "先声明后使用",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "解构赋值",
+      "definition": "分解聚合赋值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "默认捕获",
+      "definition": "lambda 默认捕获模式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "默认比较",
+      "definition": "默认比较运算符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "默认构造",
+      "definition": "默认初始化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "默认删除器",
+      "definition": "默认删除器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "默认行为",
+      "definition": "未覆盖时的行为",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "默认模板参数",
+      "definition": "模板参数默认值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "默认类型",
+      "definition": "默认类型选择",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "递推",
+      "definition": "类型推导",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "递推引导",
+      "definition": "类型推导引导",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "递延",
+      "definition": "延迟执行",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "延迟",
+      "definition": "延迟操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "延迟加载",
+      "definition": "延迟加载资源",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "委托",
+      "definition": "委托给其他",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "委托模式",
+      "definition": "委托模式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "依赖",
+      "definition": "依赖关系",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "依赖反转",
+      "definition": "依赖抽象而非具体",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "依赖查找",
+      "definition": "查找依赖",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "部署",
+      "definition": "部署应用",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "派生",
+      "definition": "继承",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "析构语义",
+      "definition": "对象析构规则",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "解构器",
+      "definition": "析构函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "开发版本",
+      "definition": "开发构建",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "设备",
+      "definition": "设备对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "诊断",
+      "definition": "诊断信息",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "对角线",
+      "definition": "对角线元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "对话框",
+      "definition": "对话框对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "有向图",
+      "definition": "有向图",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "有向无环图",
+      "definition": "有向无环图",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "维度",
+      "definition": "维度数量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "直接初始化",
+      "definition": "直接构造初始化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "直接列表初始化",
+      "definition": "直接花括号初始化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "目录迭代器",
+      "definition": "遍历目录",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "禁用",
+      "definition": "禁用功能",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "分离编译",
+      "definition": "分开编译",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "分配策略",
+      "definition": "内存分配策略",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "分析",
+      "definition": "分析过程",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "分析器",
+      "definition": "分析工具",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "动态初始化",
+      "definition": "运行时初始化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "动态调度",
+      "definition": "运行时多态",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "动态多态",
+      "definition": "运行时多态",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "动态\\_cast",
+      "definition": "运行时类型转换",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "编辑",
+      "definition": "编辑操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "编辑模式",
+      "definition": "编辑状态",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "效果",
+      "definition": "效果作用",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "有效",
+      "definition": "有效的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "效率",
+      "definition": "效率性能",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "特征",
+      "definition": "功能特征",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "元素",
+      "definition": "元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "元素类型",
+      "definition": "元素类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "元素访问",
+      "definition": "访问元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "嵌入式",
+      "definition": "嵌入式系统",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "紧急停止",
+      "definition": "紧急停止",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "空基类优化",
+      "definition": "空基类优化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "空指针检查",
+      "definition": "检查空指针",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "空类型",
+      "definition": "无成员类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "启用",
+      "definition": "启用功能",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "启用\\_if",
+      "definition": "条件启用",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "端点",
+      "definition": "端点",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "端到端",
+      "definition": "端到端",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "端到端加密",
+      "definition": "端到端加密",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "端用户",
+      "definition": "终端用户",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "环境",
+      "definition": "运行环境",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "环境变量",
+      "definition": "环境变量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "历元",
+      "definition": "时间起点",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "相等性",
+      "definition": "相等比较",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "相等性检查",
+      "definition": "检查相等",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "等价",
+      "definition": "等价关系",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "等价类型",
+      "definition": "等价类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "错误",
+      "definition": "错误情况",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "错误类别",
+      "definition": "错误分类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "错误码",
+      "definition": "错误代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "错误处理",
+      "definition": "错误处理",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "错误消息",
+      "definition": "错误消息",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "错误条件",
+      "definition": "错误条件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "错误状态",
+      "definition": "错误状态",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "逃逸分析",
+      "definition": "分析变量逃逸",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "评估",
+      "definition": "求值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "求值顺序",
+      "definition": "求值顺序",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "事件",
+      "definition": "事件对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "事件处理",
+      "definition": "处理事件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "事件循环",
+      "definition": "事件循环",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "事件源",
+      "definition": "事件源",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "事件驱动",
+      "definition": "事件驱动",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "异常传播",
+      "definition": "异常传播",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "异常安全",
+      "definition": "异常时保证",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "异常规格",
+      "definition": "异常说明",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "异常类型",
+      "definition": "异常类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "展开",
+      "definition": "参数包展开",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "显式构造",
+      "definition": "explicit 构造函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "显式转换",
+      "definition": "显式类型转换",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "显式实例化",
+      "definition": "显式实例化模板",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "显式重载",
+      "definition": "override 说明符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "表达式求值",
+      "definition": "求表达式值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "表达式类型",
+      "definition": "表达式类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "扩展名",
+      "definition": "文件扩展名",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "外部变量",
+      "definition": "外部变量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "提取",
+      "definition": "提取元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "面",
+      "definition": "面对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "门面模式",
+      "definition": "门面模式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "工厂",
+      "definition": "工厂对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "工厂函数",
+      "definition": "创建对象的函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "特性",
+      "definition": "特性",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "特性测试宏",
+      "definition": "特性测试宏",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "反馈",
+      "definition": "反馈信息",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "字段",
+      "definition": "字段",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "文件描述符",
+      "definition": "文件描述符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "文件结束",
+      "definition": "文件结束",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "文件结束标志",
+      "definition": "EOF 标志",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "文件系统",
+      "definition": "文件系统",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "文件系统路径",
+      "definition": "文件路径",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "筛选",
+      "definition": "筛选操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "最终",
+      "definition": "最终的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "最终覆盖",
+      "definition": "final 说明符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "查找",
+      "definition": "查找操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "首次适配",
+      "definition": "首次适配算法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "固定",
+      "definition": "固定的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "固定大小",
+      "definition": "固定大小",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "标志",
+      "definition": "标志位",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "翻转",
+      "definition": "翻转操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "浮动小数",
+      "definition": "浮点",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "浮动类型",
+      "definition": "浮点类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "流程",
+      "definition": "流程控制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "流程图",
+      "definition": "流程图",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "流控制",
+      "definition": "流程控制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "流导向",
+      "definition": "面向流",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "折叠表达式",
+      "definition": "参数包折叠",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "为向前",
+      "definition": "前向声明",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "为向量",
+      "definition": "正向迭代器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "碎片化",
+      "definition": "内存碎片化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "框架",
+      "definition": "框架",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "频率",
+      "definition": "频率",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "前置条件",
+      "definition": "函数前置条件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "前置递增",
+      "definition": "`++x` 先增后用",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "前驱",
+      "definition": "前驱元素",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "前缀",
+      "definition": "前缀",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "前序",
+      "definition": "前序遍历",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "前序遍历",
+      "definition": "前序遍历",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "预备",
+      "definition": "准备阶段",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "优先级",
+      "definition": "优先级",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "优先级队列",
+      "definition": "优先队列",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "处理",
+      "definition": "处理",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "生产者",
+      "definition": "生产者",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "生产者消费者",
+      "definition": "生产者消费者",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "产品类型",
+      "definition": "积类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "剖析",
+      "definition": "性能分析",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "剖析器",
+      "definition": "性能分析工具",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "进展",
+      "definition": "进度",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "投影",
+      "definition": "投影操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "Promise",
+      "definition": "承诺对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "属性",
+      "definition": "属性",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "属性说明符",
+      "definition": "属性说明符",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "协议",
+      "definition": "协议",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "提供者",
+      "definition": "提供者",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "代理",
+      "definition": "代理对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "代理模式",
+      "definition": "代理模式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "公共基类",
+      "definition": "公共基类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "纯类型",
+      "definition": "纯类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "限定",
+      "definition": "限定",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "限定类型",
+      "definition": "限定类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "查询",
+      "definition": "查询操作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "查询函数",
+      "definition": "查询函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "范围",
+      "definition": "范围",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "范围\\_for",
+      "definition": "基于范围的 for",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "范围库",
+      "definition": "范围库",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "率",
+      "definition": "速率",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "原始类型",
+      "definition": "原始类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "只读",
+      "definition": "只读",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "就绪",
+      "definition": "就绪状态",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "实时",
+      "definition": "实时",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "重新分配",
+      "definition": "重新分配",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "重新解释\\_cast",
+      "definition": "位重新解释",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "关系",
+      "definition": "关系",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "相对",
+      "definition": "相对的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "相对路径",
+      "definition": "相对路径",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "释放语义",
+      "definition": "释放语义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "可靠性",
+      "definition": "可靠性",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "剩余",
+      "definition": "余数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "剩余参数",
+      "definition": "剩余参数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "远程",
+      "definition": "远程",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "可替换",
+      "definition": "可移除",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "重排",
+      "definition": "重排",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "引用语义",
+      "definition": "引用语义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "反射",
+      "definition": "运行时自省",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "刷新",
+      "definition": "刷新",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "规则",
+      "definition": "规则",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "调度",
+      "definition": "调度",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "调度器",
+      "definition": "调度器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "作用域规则",
+      "definition": "作用域规则",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "搜索",
+      "definition": "搜索",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "搜索算法",
+      "definition": "搜索算法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "安全",
+      "definition": "安全性",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "安全类型",
+      "definition": "安全类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "选择",
+      "definition": "选择",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "选择器",
+      "definition": "选择器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "语义",
+      "definition": "语义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "语义版本",
+      "definition": "语义版本",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "发送",
+      "definition": "发送",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "敏感",
+      "definition": "敏感的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "序列化",
+      "definition": "序列化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "服务",
+      "definition": "服务",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "服务质量",
+      "definition": "服务质量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "集合",
+      "definition": "集合",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "设置",
+      "definition": "设置",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "设置语义",
+      "definition": "设置语义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "共享",
+      "definition": "共享",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "共享锁",
+      "definition": "共享锁",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "共享互斥",
+      "definition": "共享互斥",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "共享状态",
+      "definition": "共享状态",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "共享类型",
+      "definition": "共享类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "壳",
+      "definition": "外壳",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "简写",
+      "definition": "简写",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "短路求值",
+      "definition": "短路求值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "简明",
+      "definition": "简明的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "签名",
+      "definition": "签名",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "签名匹配",
+      "definition": "签名匹配",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "符号",
+      "definition": "符号",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类似",
+      "definition": "相似的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "模拟",
+      "definition": "模拟",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "单一",
+      "definition": "单一的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "单例",
+      "definition": "单例",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "单例模式",
+      "definition": "单例模式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "大小写",
+      "definition": "大小写",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "大小写不敏感",
+      "definition": "不区分大小写",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "大小写敏感",
+      "definition": "区分大小写",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "跳过",
+      "definition": "跳过",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "滑动窗口",
+      "definition": "滑动窗口",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "插槽",
+      "definition": "插槽",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "智能",
+      "definition": "智能",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "智能指针",
+      "definition": "智能指针",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "排序",
+      "definition": "排序",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "排序算法",
+      "definition": "排序算法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "源",
+      "definition": "源",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "源代码",
+      "definition": "源代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "空间",
+      "definition": "空间",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "稀疏",
+      "definition": "稀疏的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "规格",
+      "definition": "规格",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "拆分",
+      "definition": "拆分",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "稳定性",
+      "definition": "稳定性",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "稳定排序",
+      "definition": "稳定排序",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "栈分配",
+      "definition": "栈分配",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "栈展开",
+      "definition": "栈展开",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "标准",
+      "definition": "标准",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "标准布局",
+      "definition": "标准布局",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "标准库",
+      "definition": "标准库",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "起始",
+      "definition": "起始",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "起始位置",
+      "definition": "起始位置",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "状态",
+      "definition": "状态",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "状态机",
+      "definition": "状态机",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "静态",
+      "definition": "静态",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "静态断言",
+      "definition": "编译时断言",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "静态调度",
+      "definition": "编译时调度",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "静态多态",
+      "definition": "编译时多态",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "静态类型",
+      "definition": "编译时类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "静态\\_cast",
+      "definition": "编译时类型转换",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "统计数据",
+      "definition": "统计数据",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "std::terminate",
+      "definition": "终止函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "std::terminate_handler",
+      "definition": "终止处理函数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "std::unexpected",
+      "definition": "不预期异常处理",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "std::uncaught_exceptions",
+      "definition": "未捕获异常计数",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "存储",
+      "definition": "存储",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "存储类",
+      "definition": "存储类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "存储持续",
+      "definition": "存储持续期",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "存储位置",
+      "definition": "存储位置",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "字符串化",
+      "definition": "字符串化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "字符串视图",
+      "definition": "字符串视图",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "强类型",
+      "definition": "强类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "强类型枚举",
+      "definition": "强类型枚举",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "结构",
+      "definition": "结构",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "结构化绑定",
+      "definition": "结构化绑定",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "结构化编程",
+      "definition": "结构化编程",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "样式",
+      "definition": "样式",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "子",
+      "definition": "子",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "子对象",
+      "definition": "子对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "子范围",
+      "definition": "子范围",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "子集",
+      "definition": "子集",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "子类型",
+      "definition": "子类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "总结",
+      "definition": "总结",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "监督",
+      "definition": "监督",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "监督者",
+      "definition": "监督者",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "补充",
+      "definition": "补充",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "支持",
+      "definition": "支持",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "抑制",
+      "definition": "抑制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "对称",
+      "definition": "对称的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "同步",
+      "definition": "同步",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "同步队列",
+      "definition": "同步队列",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "句法",
+      "definition": "句法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "系统",
+      "definition": "系统",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "系统错误",
+      "definition": "系统错误",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "表",
+      "definition": "表",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "表格",
+      "definition": "表格",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "标记",
+      "definition": "标记",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "标记类型",
+      "definition": "标记类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "目标",
+      "definition": "目标",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "目标代码",
+      "definition": "目标代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "任务",
+      "definition": "任务",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "任务图",
+      "definition": "任务图",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "临时对象",
+      "definition": "临时对象",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "临时量",
+      "definition": "临时量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "终止",
+      "definition": "终止",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "终止条件",
+      "definition": "终止条件",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "测试",
+      "definition": "测试",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "测试驱动开发",
+      "definition": "测试驱动开发",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "测试框架",
+      "definition": "测试框架",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "测试用例",
+      "definition": "测试用例",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "文本",
+      "definition": "文本",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "文本编码",
+      "definition": "文本编码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "主题",
+      "definition": "主题",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "线程安全",
+      "definition": "线程安全",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "线程局部",
+      "definition": "线程局部",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "线程池",
+      "definition": "线程池",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "吞吐量",
+      "definition": "吞吐量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "时间",
+      "definition": "时间",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "时间复杂度",
+      "definition": "时间复杂度",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "时间点",
+      "definition": "时间点",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "超时",
+      "definition": "超时",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "时间戳",
+      "definition": "时间戳",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "提示",
+      "definition": "提示",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "标题",
+      "definition": "标题",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "令牌",
+      "definition": "令牌",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "工具",
+      "definition": "工具",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "追踪",
+      "definition": "追踪",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "追踪器",
+      "definition": "追踪器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "传统",
+      "definition": "传统的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "传统类型",
+      "definition": "传统类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "培训",
+      "definition": "培训",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "特征类",
+      "definition": "特征类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "事务",
+      "definition": "事务",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "事务内存",
+      "definition": "事务内存",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "变换",
+      "definition": "变换",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "转换",
+      "definition": "转换",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "平铺",
+      "definition": "平铺",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "时间线",
+      "definition": "时间线",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "工具链",
+      "definition": "工具链",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "拓扑",
+      "definition": "拓扑",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "拓扑排序",
+      "definition": "拓扑排序",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "总量",
+      "definition": "总量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "追踪日志",
+      "definition": "追踪日志",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "传统代码",
+      "definition": "遗留代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "生命周期",
+      "definition": "生命周期",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型别名",
+      "definition": "类型别名",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型检查",
+      "definition": "类型检查",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型类",
+      "definition": "类型类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型相容性",
+      "definition": "类型相容",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型约束",
+      "definition": "类型约束",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型识别",
+      "definition": "类型识别",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型推断",
+      "definition": "类型推断",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型信息",
+      "definition": "类型信息",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型不安全",
+      "definition": "类型不安全",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型化",
+      "definition": "类型化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "类型化语言",
+      "definition": "类型化语言",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "典型",
+      "definition": "典型的",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "未定义",
+      "definition": "未定义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "未初始化",
+      "definition": "未初始化",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "统一",
+      "definition": "统一",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "统一类型",
+      "definition": "统一类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "唯一",
+      "definition": "唯一",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "唯一锁",
+      "definition": "唯一锁",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "唯一性",
+      "definition": "唯一性",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "单位",
+      "definition": "单位",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "单元测试",
+      "definition": "单元测试",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "通用",
+      "definition": "通用",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "未知",
+      "definition": "未知",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "不安全",
+      "definition": "不安全",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "非资源",
+      "definition": "无关联",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "非别名",
+      "definition": "非别名",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "未使用",
+      "definition": "未使用",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "更新",
+      "definition": "更新",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "上传",
+      "definition": "上传",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "用法",
+      "definition": "用法",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "用户",
+      "definition": "用户",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "用户定义",
+      "definition": "用户定义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "用户异常",
+      "definition": "用户异常",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "用户代码",
+      "definition": "用户代码",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "用户空间",
+      "definition": "用户空间",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "验证",
+      "definition": "验证",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "验证器",
+      "definition": "验证器",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "值",
+      "definition": "值",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "值语义",
+      "definition": "值语义",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "值类型",
+      "definition": "值类型",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "值类别",
+      "definition": "值类别",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "可变",
+      "definition": "可变",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "变体",
+      "definition": "变体",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "向量",
+      "definition": "向量",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "版本",
+      "definition": "版本",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "版本控制",
+      "definition": "版本控制",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "顶点",
+      "definition": "顶点",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "视图",
+      "definition": "视图",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "虚拟",
+      "definition": "虚拟",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "虚拟继承",
+      "definition": "虚拟继承",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "虚拟基类",
+      "definition": "虚拟基类",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "可见性",
+      "definition": "可见性",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "警告",
+      "definition": "警告",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "水印",
+      "definition": "水印",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "弱",
+      "definition": "弱",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "弱顺序",
+      "definition": "弱顺序",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "宽度",
+      "definition": "宽度",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "工作",
+      "definition": "工作",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "工作队列",
+      "definition": "工作队列",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "工作窃取",
+      "definition": "工作窃取",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "工作线程",
+      "definition": "工作线程",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "世界",
+      "definition": "世界",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "写入权限",
+      "definition": "写入权限",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "年",
+      "definition": "年",
+      "slug": "cpp/glossary"
+    },
+    {
+      "name": "区域",
+      "definition": "区域",
+      "slug": "cpp/glossary"
+    }
+  ]
+}

@@ -1,0 +1,232 @@
+{
+  "phases": [
+    {
+      "phase": "Phase 1",
+      "label": "Web 基础",
+      "desc": "前端开发核心技术，按 HTML → CSS → SVG → JS 顺序学习",
+      "color": "dev-lang",
+      "items": [
+        { "id": "html5", "arrow": "right" },
+        { "id": "css", "arrow": "right" },
+        { "id": "svg", "arrow": "right" },
+        { "id": "javascript", "arrow": null }
+      ]
+    },
+    {
+      "phase": "Phase 2",
+      "label": "前端工程化",
+      "desc": "JavaScript 之后的进阶路线：静态类型 + 现代框架",
+      "color": "dev-lang",
+      "items": [
+        { "id": "typescript", "arrow": "right" },
+        { "id": "vue3", "arrow": "right" },
+        { "id": "react", "arrow": null }
+      ]
+    },
+    {
+      "phase": "Phase 3",
+      "label": "系统编程",
+      "desc": "从底层硬件到企业级应用，理解计算机运行本质",
+      "color": "dev-lang",
+      "items": [
+        { "id": "c", "arrow": "right" },
+        { "id": "cpp", "arrow": "right" },
+        { "id": "java", "arrow": "right" },
+        { "id": "kotlin", "arrow": "right" },
+        { "id": "csharp", "arrow": null }
+      ]
+    },
+    {
+      "phase": "Phase 4",
+      "label": "脚本与云原生",
+      "desc": "通用脚本语言与云原生系统编程",
+      "color": "dev-lang",
+      "items": [
+        { "id": "python", "arrow": "right" },
+        { "id": "go", "arrow": "right" },
+        { "id": "lua", "arrow": null }
+      ]
+    },
+    {
+      "phase": "Phase 5",
+      "label": "移动与物联网",
+      "desc": "移动端开发与嵌入式边缘计算",
+      "color": "dev-lang",
+      "items": [
+        { "id": "harmonyos", "arrow": "right" },
+        { "id": "iot", "arrow": null }
+      ]
+    },
+    {
+      "phase": "Phase 6",
+      "label": "数据库",
+      "desc": "关系型数据库、查询语言与内存缓存",
+      "color": "database",
+      "items": [
+        { "id": "mysql", "arrow": "right" },
+        { "id": "sql", "arrow": "right" },
+        { "id": "postgresql", "arrow": "right" },
+        { "id": "redis", "arrow": null }
+      ]
+    },
+    {
+      "phase": "Phase 7",
+      "label": "编程准备",
+      "desc": "零基础入门：环境搭建、工具配置与学习路线规划",
+      "color": "toolchain",
+      "items": [{ "id": "getting-started", "arrow": null }]
+    },
+    {
+      "phase": "Phase 8",
+      "label": "开发工具链",
+      "desc": "文档写作与版本控制是所有协作开发的基础，建议最先掌握",
+      "color": "toolchain",
+      "items": [
+        { "id": "markdown", "arrow": "right" },
+        { "id": "git", "arrow": "right" },
+        { "id": "github", "arrow": null }
+      ]
+    },
+    {
+      "phase": "Phase 9",
+      "label": "计算机科学",
+      "desc": "数据结构、算法、数学基础——构建完整理论体系",
+      "color": "comp-sci",
+      "items": [
+        { "id": "algorithm", "arrow": "right" },
+        { "id": "cs-fundamentals", "arrow": "right" },
+        { "id": "calculus", "arrow": "right" },
+        { "id": "discrete-math", "arrow": null }
+      ]
+    },
+    {
+      "phase": "Phase 10",
+      "label": "工程与基础设施",
+      "desc": "运维、网络、安全、云架构与质量保障",
+      "color": "eng-infra",
+      "items": [
+        { "id": "devops", "arrow": "right" },
+        { "id": "networking", "arrow": "right" },
+        { "id": "cybersecurity", "arrow": "right" },
+        { "id": "cloud-computing", "arrow": "right" },
+        { "id": "software-testing", "arrow": null }
+      ]
+    },
+    {
+      "phase": "Phase 11",
+      "label": "AI 与数据",
+      "desc": "智能体架构与数据驱动决策",
+      "color": "data",
+      "items": [
+        { "id": "agent", "arrow": "right" },
+        { "id": "data-analysis", "arrow": null }
+      ]
+    }
+  ],
+  "careerPaths": [
+    {
+      "label": "全栈入门",
+      "color": "toolchain",
+      "steps": [
+        { "id": "getting-started", "label": "入门指南" },
+        { "id": "markdown", "label": "Markdown" },
+        { "id": "git", "label": "Git" },
+        { "id": "github", "label": "GitHub" },
+        { "id": "html5", "label": "HTML5" },
+        { "id": "css", "label": "CSS" },
+        { "id": "svg", "label": "SVG" },
+        { "id": "javascript", "label": "JavaScript" }
+      ]
+    },
+    {
+      "label": "前端工程师",
+      "color": "dev-lang",
+      "steps": [
+        { "id": "javascript", "label": "JavaScript" },
+        { "id": "typescript", "label": "TypeScript" },
+        { "id": "vue3", "label": "Vue 3" },
+        { "id": "react", "label": "React" }
+      ]
+    },
+    {
+      "label": "后端工程师",
+      "color": "dev-lang",
+      "steps": [
+        { "id": "python", "label": "Python" },
+        { "id": "java", "label": "Java" },
+        { "id": "go", "label": "Go" },
+        { "id": "mysql", "label": "MySQL" },
+        { "id": "redis", "label": "Redis" }
+      ]
+    },
+    {
+      "label": "系统开发者",
+      "color": "dev-lang",
+      "steps": [
+        { "id": "c", "label": "C" },
+        { "id": "cpp", "label": "C++" },
+        { "id": "java", "label": "Java" },
+        { "id": "kotlin", "label": "Kotlin" }
+      ]
+    },
+    {
+      "label": "数据工程师",
+      "color": "database",
+      "steps": [
+        { "id": "python", "label": "Python" },
+        { "id": "mysql", "label": "MySQL" },
+        { "id": "sql", "label": "SQL" },
+        { "id": "data-analysis", "label": "数据分析" }
+      ]
+    },
+    {
+      "label": "DevOps 工程师",
+      "color": "eng-infra",
+      "steps": [
+        { "id": "git", "label": "Git" },
+        { "id": "devops", "label": "DevOps" },
+        { "id": "cloud-computing", "label": "云计算" },
+        { "id": "networking", "label": "网络技术" }
+      ]
+    },
+    {
+      "label": "安全工程师",
+      "color": "eng-infra",
+      "steps": [
+        { "id": "networking", "label": "网络技术" },
+        { "id": "cybersecurity", "label": "网络安全" },
+        { "id": "software-testing", "label": "软件测试" }
+      ]
+    },
+    {
+      "label": "AI 工程师",
+      "color": "eng-infra",
+      "steps": [
+        { "id": "python", "label": "Python" },
+        { "id": "agent", "label": "AI Agent" },
+        { "id": "data-analysis", "label": "数据分析" }
+      ]
+    },
+    {
+      "label": "移动开发",
+      "color": "dev-lang",
+      "steps": [
+        { "id": "javascript", "label": "JavaScript" },
+        { "id": "typescript", "label": "TypeScript" },
+        { "id": "harmonyos", "label": "鸿蒙开发" },
+        { "id": "kotlin", "label": "Kotlin" },
+        { "id": "react", "label": "React" }
+      ]
+    },
+    {
+      "label": "CS 理论",
+      "color": "comp-sci",
+      "steps": [
+        { "id": "algorithm", "label": "算法" },
+        { "id": "cs-fundamentals", "label": "CS基础" },
+        { "id": "calculus", "label": "高等数学" },
+        { "id": "discrete-math", "label": "离散数学" }
+      ]
+    }
+  ]
+}

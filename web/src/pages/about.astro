@@ -1,0 +1,709 @@
+---
+/**
+ * 关于页面
+ * 介绍 FANDEX 项目的背景、理念、关联生态、技术栈与参赛信息
+ * 使用 HomeLayout 布局，保持与首页一致的视觉风格
+ */
+import HomeLayout from '@/components/HomeLayout.astro';
+import SEO from '@/components/SEO.astro';
+import GeoBgDecor from '@/components/GeoBgDecor.astro';
+import { SITE } from '@/lib/constants';
+
+const base = import.meta.env.BASE_URL;
+const currentYear = new Date().getFullYear();
+---
+
+<HomeLayout title="关于">
+  <SEO
+    slot="head"
+    title="关于 FANDEX"
+    description="FANDEX 是协助零基础学习者迈出计算机科学学习第一步的完整自学平台，涵盖 51 个模块、1995 篇文档，从工具链到数据技术与 AI 全领域覆盖。"
+    canonical={`${SITE.url}${base}about/`}
+    type="website"
+  />
+
+  <div class="info-page">
+    <!-- 几何背景装饰层 · docs 变体：克制装饰 -->
+    <GeoBgDecor variant="docs" />
+
+    <!-- 页面头部 -->
+    <header class="info-header">
+      <a href={base} class="back-home-btn">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"><polyline points="18 6 6 12 18 18"></polyline></svg
+        >
+        返回首页
+      </a>
+      <h1 class="info-title">关于 FANDEX</h1>
+      <p class="info-subtitle">循序渐进，从第一行代码到理解整个世界</p>
+    </header>
+
+    <!-- 项目背景 -->
+    <section class="info-section">
+      <h2 class="section-title">项目背景</h2>
+      <p class="section-text">
+        FANDEX
+        项目的创立初衷在于：协助零基础学习者迈出计算机科学学习的第一步。众多零基础学习者在接触计算机科学时，常面临不知从何入手、学习路径不清晰、知识体系碎片化等问题。FANDEX
+        通过系统化的知识组织与前置知识链路，为学习者构建一条从零基础到计算机专业本科毕业生水平的完整学习路径。
+      </p>
+    </section>
+
+    <!-- 核心理念 -->
+    <section class="info-section">
+      <h2 class="section-title">核心理念</h2>
+      <ul class="section-list">
+        <li><strong>零基础友好</strong>：不预设任何编程经验，从环境搭建与 Markdown 写作起步</li>
+        <li>
+          <strong>AI 辅助学习</strong>：鼓励学习者运用 AI 工具（ChatGPT、Claude、Gemini
+          等任意外部工具）辅助学习
+        </li>
+        <li><strong>学习过程引导</strong>：内容编排遵循学习认知规律，模块间通过前置知识自然衔接</li>
+        <li><strong>专业性保障</strong>：知识体系覆盖计算机专业本科核心内容，确保学习深度</li>
+      </ul>
+    </section>
+
+    <!-- 知识体系 -->
+    <section class="info-section">
+      <h2 class="section-title">知识体系</h2>
+      <p class="section-text">
+        FANDEX-web 是 FANDEX
+        知识体系的线上学习平台与内容基准仓库。每篇文档均经过结构化编排，包含概念讲解、代码示例与实践要点。模块之间通过前置知识关系自然衔接：
+      </p>
+      <div class="eco-grid">
+        <div class="eco-item">
+          <span class="eco-tag" style="color:#2563eb">工具链</span>
+          <span class="eco-desc">奠定操作基础</span>
+        </div>
+        <div class="eco-item">
+          <span class="eco-tag" style="color:#16a34a">开发语言</span>
+          <span class="eco-desc">打开编程世界</span>
+        </div>
+        <div class="eco-item">
+          <span class="eco-tag" style="color:#ea580c">数据库</span>
+          <span class="eco-desc">承载持久化能力</span>
+        </div>
+        <div class="eco-item">
+          <span class="eco-tag" style="color:#9333ea">计算机科学</span>
+          <span class="eco-desc">构建理论根基</span>
+        </div>
+        <div class="eco-item">
+          <span class="eco-tag" style="color:#0891b2">工程与基础设施</span>
+          <span class="eco-desc">连接理论与实践</span>
+        </div>
+        <div class="eco-item">
+          <span class="eco-tag" style="color:#dc2626">数据技术与 AI</span>
+          <span class="eco-desc">延伸至前沿应用</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 关联项目 -->
+    <section class="info-section">
+      <h2 class="section-title">FANDEX 生态</h2>
+      <p class="section-text">
+        FANDEX 生态包含以下关联仓库，各仓库代码互相独立、内容互相关联，内容基准统一以本仓库为准：
+      </p>
+      <div class="project-cards">
+        <article class="project-card">
+          <div class="project-card-header">
+            <h3 class="project-card-title">FANDEX-web</h3>
+            <span class="project-card-badge project-card-badge-current">当前站点</span>
+          </div>
+          <p class="project-card-positioning">线上学习平台 · 内容基准仓库</p>
+          <p class="project-card-detail">
+            全部项目的根本内容源，51 模块 1995 篇文档，浏览器直接访问，交互测验与知识地图
+          </p>
+          <div class="project-card-tech">Astro 5 + Vue 3 + Pagefind</div>
+          <a
+            href="https://fanquanpp.github.io/FANDEX-web/"
+            class="project-card-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>在线阅读</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg
+            >
+          </a>
+        </article>
+
+        <article class="project-card">
+          <div class="project-card-header">
+            <h3 class="project-card-title">FANDEX-exe</h3>
+            <span class="project-card-badge">下载</span>
+          </div>
+          <p class="project-card-positioning">Windows 桌面端 · 离线学习平台</p>
+          <p class="project-card-detail">
+            完全离线访问，内置静态服务器，桌面级系统集成，离线 ZIP 包与移动端导出产物
+          </p>
+          <div class="project-card-tech">Electron 33 + Astro 5 + TypeScript</div>
+          <a
+            href="https://github.com/fanquanpp/FANDEX-exe/releases"
+            class="project-card-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>下载桌面端</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline
+                points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"
+              ></line></svg
+            >
+          </a>
+        </article>
+
+        <article class="project-card">
+          <div class="project-card-header">
+            <h3 class="project-card-title">FANDEX-App</h3>
+            <span class="project-card-badge">下载</span>
+          </div>
+          <p class="project-card-positioning">Android 移动端 · 离线速查应用</p>
+          <p class="project-card-detail">
+            完全离线，17 模块 207 篇语法速查文档，Kotlin + Jetpack Compose 原生渲染，中英日三语界面
+          </p>
+          <div class="project-card-tech">Kotlin + Jetpack Compose + Material 3</div>
+          <a
+            href="https://fanquanpp.github.io/FANDEX-App/"
+            class="project-card-link"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            <span>下载 APP</span>
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              ><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline
+                points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"
+              ></line></svg
+            >
+          </a>
+        </article>
+      </div>
+    </section>
+
+    <!-- 技术栈 -->
+    <section class="info-section">
+      <h2 class="section-title">技术栈</h2>
+      <div class="tech-table">
+        <div class="tech-row tech-row-header">
+          <span class="tech-cell">层级</span>
+          <span class="tech-cell">技术</span>
+          <span class="tech-cell">说明</span>
+        </div>
+        <div class="tech-row">
+          <span class="tech-cell">框架</span>
+          <span class="tech-cell">Astro 5</span>
+          <span class="tech-cell">静态站点生成 (SSG)，岛屿架构</span>
+        </div>
+        <div class="tech-row">
+          <span class="tech-cell">交互</span>
+          <span class="tech-cell">Vue 3</span>
+          <span class="tech-cell">按需水合</span>
+        </div>
+        <div class="tech-row">
+          <span class="tech-cell">高亮</span>
+          <span class="tech-cell">Shiki</span>
+          <span class="tech-cell">双主题代码高亮，构建时零 JS</span>
+        </div>
+        <div class="tech-row">
+          <span class="tech-cell">搜索</span>
+          <span class="tech-cell">Pagefind + Fuse.js</span>
+          <span class="tech-cell">构建后索引 + Web Worker 模糊搜索</span>
+        </div>
+        <div class="tech-row">
+          <span class="tech-cell">离线</span>
+          <span class="tech-cell">Service Worker</span>
+          <span class="tech-cell">Cache First + Network First + SWR</span>
+        </div>
+        <div class="tech-row">
+          <span class="tech-cell">质量</span>
+          <span class="tech-cell">Husky + lint-staged</span>
+          <span class="tech-cell">Pre-commit 自动格式化</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 开源协议 -->
+    <section class="info-section">
+      <h2 class="section-title">开源协议</h2>
+      <p class="section-text">
+        本项目基于 <strong>MIT 协议</strong
+        >开源。任何个人或机构均可自由获取、使用、修改和分发本项目的全部内容，包括但不限于学习、研究、修改、分发及商业用途，无需获得作者授权。
+      </p>
+      <p class="section-text">
+        详细协议文本请参阅 <a
+          href={`https://github.com/fanquanpp/FANDEX-web/blob/main/LICENSE`}
+          target="_blank"
+          rel="noopener noreferrer"
+          class="inline-link">LICENSE 文件</a
+        >。使用本项目内容即表示您已阅读并接受 <a href={`${base}disclaimer/`} class="inline-link"
+          >免责声明</a
+        > 与 <a href={`${base}privacy/`} class="inline-link">隐私政策</a> 的全部条款。
+      </p>
+    </section>
+
+    <!-- 参赛信息 -->
+    <section class="info-section">
+      <h2 class="section-title">参赛信息</h2>
+      <p class="section-text">
+        FANDEX 项目参加 TRAE Work 创作大赛，以三端协同的完整生态、系统化的知识体系、与 AI
+        共学的理念，为计算机科学自学提供一条人人可走、循序渐进的路径。完全开源，降低教育门槛，让学习不再受网络、平台、地域限制。
+      </p>
+      <div class="contest-info">
+        <div class="contest-row">
+          <span class="contest-label">报名赛道</span>
+          <span class="contest-value">学习工作（主赛道）· 社会公益（附加赛题）</span>
+        </div>
+        <div class="contest-row">
+          <span class="contest-label">创意名称</span>
+          <span class="contest-value">FANDEX — 从零基础到本科毕业的计算机科学自学平台</span>
+        </div>
+        <div class="contest-row">
+          <span class="contest-label">项目构成</span>
+          <span class="contest-value"
+            >FANDEX-Web（线上平台）· FANDEX-exe（桌面端）· FANDEX-App（移动端）</span
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- 页脚 -->
+    <footer class="info-footer">
+      <div class="footer-links">
+        <a href={`${base}disclaimer/`} class="footer-link">免责声明</a>
+        <span class="footer-divider">|</span>
+        <a href={`${base}privacy/`} class="footer-link">隐私政策</a>
+        <span class="footer-divider">|</span>
+        <a
+          href="https://github.com/fanquanpp/FANDEX-web"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="footer-link">GitHub</a
+        >
+      </div>
+      <div class="footer-copyright">
+        Copyright (c) 2024-{currentYear} fanquanpp · MIT License
+      </div>
+    </footer>
+  </div>
+</HomeLayout>
+
+<style>
+  /* 信息页容器：作为装饰层的定位上下文 */
+  .info-page {
+    position: relative;
+    width: 100%;
+    max-width: var(--content-width, 1280px);
+    margin: 0 auto;
+    padding: 0 var(--spacing-lg) var(--spacing-2xl);
+    min-height: calc(100vh - var(--nav-height));
+    min-height: calc(100dvh - var(--nav-height));
+  }
+
+  /* 确保内容层在几何装饰层之上 */
+  .info-page > section,
+  .info-page > header,
+  .info-page > footer {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 返回首页按钮 */
+  .back-home-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-xs);
+    padding: 4px 10px;
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-card);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: 0.8em;
+    font-family: var(--font-display);
+    transition:
+      border-color var(--transition-fast),
+      color var(--transition-fast);
+  }
+
+  .back-home-btn:hover {
+    border-color: var(--color-primary);
+    color: var(--color-primary);
+  }
+
+  /* 页面头部 */
+  .info-header {
+    padding: var(--spacing-xl) 0 var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border-light);
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .info-title {
+    font-family: var(--font-display);
+    font-size: 2rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    margin: var(--spacing-sm) 0 var(--spacing-xs);
+    color: var(--color-text);
+  }
+
+  .info-subtitle {
+    font-size: 0.9rem;
+    color: var(--color-text-secondary);
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+
+  /* 信息区块 */
+  .info-section {
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .section-title {
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--color-text);
+    margin: 0 0 var(--spacing-md);
+    padding-left: var(--spacing-sm);
+    border-left: 3px solid var(--color-primary);
+  }
+
+  .section-text {
+    font-size: 0.88rem;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--spacing-sm);
+  }
+
+  .section-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  .section-list li {
+    font-size: 0.88rem;
+    line-height: 1.8;
+    color: var(--color-text-secondary);
+    padding: var(--spacing-xs) 0;
+    padding-left: var(--spacing-md);
+    position: relative;
+  }
+
+  .section-list li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.85em;
+    width: 6px;
+    height: 6px;
+    background: var(--color-primary);
+    border-radius: 50%;
+  }
+
+  .section-list strong {
+    color: var(--color-text);
+    font-weight: 600;
+  }
+
+  /* 知识体系网格 */
+  .eco-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+    background: var(--color-border-light);
+    border: 1px solid var(--color-border-light);
+    margin-top: var(--spacing-md);
+  }
+
+  .eco-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--spacing-md);
+    background: var(--color-bg);
+  }
+
+  .eco-tag {
+    font-family: var(--font-display);
+    font-size: 0.82em;
+    font-weight: 600;
+  }
+
+  .eco-desc {
+    font-size: 0.78em;
+    color: var(--color-text-tertiary);
+  }
+
+  /* 关联项目卡片 */
+  .project-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-md);
+  }
+
+  .project-card {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    border: 1px solid var(--color-border);
+    background: var(--color-bg-card);
+    transition: border-color var(--transition-fast);
+  }
+
+  .project-card:hover {
+    border-color: var(--color-primary);
+  }
+
+  .project-card-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-xs);
+  }
+
+  .project-card-title {
+    font-family: var(--font-display);
+    font-size: 0.95em;
+    font-weight: 700;
+    margin: 0;
+    color: var(--color-text);
+  }
+
+  .project-card-badge {
+    font-family: var(--font-display);
+    font-size: 0.65em;
+    font-weight: 600;
+    padding: 2px 8px;
+    background: var(--color-bg-hover);
+    color: var(--color-text-secondary);
+    letter-spacing: 0.02em;
+  }
+
+  .project-card-badge-current {
+    background: var(--color-primary);
+    color: #fff;
+  }
+
+  .project-card-positioning {
+    font-family: var(--font-display);
+    font-size: 0.72em;
+    color: var(--color-primary);
+    margin: 0;
+    font-weight: 500;
+  }
+
+  .project-card-detail {
+    font-size: 0.8em;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    margin: 0;
+    flex: 1;
+  }
+
+  .project-card-tech {
+    font-family: var(--font-display);
+    font-size: 0.68em;
+    color: var(--color-text-tertiary);
+    padding-top: var(--spacing-xs);
+    border-top: 1px solid var(--color-border-light);
+  }
+
+  .project-card-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.8em;
+    font-weight: 500;
+    color: var(--color-primary);
+    text-decoration: none;
+    margin-top: var(--spacing-xs);
+  }
+
+  .project-card-link:hover {
+    text-decoration: underline;
+  }
+
+  /* 技术栈表格 */
+  .tech-table {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border-light);
+    margin-top: var(--spacing-md);
+  }
+
+  .tech-row {
+    display: grid;
+    grid-template-columns: 80px 160px 1fr;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .tech-row:last-child {
+    border-bottom: none;
+  }
+
+  .tech-row-header {
+    background: var(--color-bg-hover);
+    font-family: var(--font-display);
+    font-size: 0.75em;
+    font-weight: 600;
+    color: var(--color-text);
+    letter-spacing: 0.02em;
+  }
+
+  .tech-cell {
+    font-size: 0.82em;
+    color: var(--color-text-secondary);
+    line-height: 1.5;
+  }
+
+  .tech-cell:nth-child(2) {
+    font-weight: 500;
+    color: var(--color-text);
+  }
+
+  /* 内联链接 */
+  .inline-link {
+    color: var(--color-primary);
+    text-decoration: none;
+    border-bottom: 1px dashed var(--color-primary);
+  }
+
+  .inline-link:hover {
+    text-decoration: none;
+    border-bottom-style: solid;
+  }
+
+  /* 参赛信息 */
+  .contest-info {
+    border: 1px solid var(--color-border-light);
+    margin-top: var(--spacing-md);
+  }
+
+  .contest-row {
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-md);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .contest-row:last-child {
+    border-bottom: none;
+  }
+
+  .contest-label {
+    font-family: var(--font-display);
+    font-size: 0.78em;
+    font-weight: 600;
+    color: var(--color-text);
+  }
+
+  .contest-value {
+    font-size: 0.82em;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  /* 页脚 */
+  .info-footer {
+    margin-top: var(--spacing-2xl);
+    padding-top: var(--spacing-lg);
+    border-top: 1px solid var(--color-border-light);
+    text-align: center;
+  }
+
+  .footer-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-sm);
+    flex-wrap: wrap;
+  }
+
+  .footer-link {
+    font-family: var(--font-display);
+    font-size: 0.78em;
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition: color var(--transition-fast);
+  }
+
+  .footer-link:hover {
+    color: var(--color-primary);
+  }
+
+  .footer-divider {
+    color: var(--color-text-tertiary);
+    font-size: 0.78em;
+  }
+
+  .footer-copyright {
+    font-family: var(--font-display);
+    font-size: 0.72em;
+    color: var(--color-text-tertiary);
+    letter-spacing: 0.02em;
+  }
+
+  /* 移动端适配 */
+  @media (max-width: 768px) {
+    .info-page {
+      padding: 0 var(--spacing-md) var(--spacing-2xl);
+    }
+
+    .info-title {
+      font-size: 1.5rem;
+    }
+
+    .eco-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+
+    .project-cards {
+      grid-template-columns: 1fr;
+    }
+
+    .tech-row {
+      grid-template-columns: 60px 1fr;
+    }
+
+    .tech-cell:nth-child(3) {
+      grid-column: 1 / -1;
+      padding-top: 2px;
+    }
+
+    .tech-row-header .tech-cell:nth-child(3) {
+      display: none;
+    }
+
+    .contest-row {
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+  }
+</style>

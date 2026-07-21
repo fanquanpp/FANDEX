@@ -1,0 +1,31 @@
+# FANDEX 复习卡片 - Redis 模块
+# 人工补充的复习卡片，与自动从 frontmatter 生成的卡片合并
+# 卡片 ID 必须全局唯一，格式：{moduleId}-{sanitizedTerm}
+
+module: redis
+cards:
+  - term: RDB
+    question: "Redis RDB 持久化的触发条件有哪些？"
+    answer: "save 配置触发、BGSAVE 命令、SHUTDOWN 时触发、主从复制时触发"
+    difficulty: intermediate
+    interval: 3
+  - term: AOF
+    question: "Redis AOF 持久化的三种 fsync 策略及各自特点？"
+    answer: "always（每条命令刷盘，最安全最慢）、everysec（每秒刷盘，推荐）、no（由OS决定，最快最不安全）"
+    difficulty: intermediate
+    interval: 3
+  - term: "缓存穿透"
+    question: "什么是缓存穿透？如何解决？"
+    answer: "查询不存在的数据，缓存和数据库都无命中。解决方案：布隆过滤器、缓存空值、接口校验"
+    difficulty: intermediate
+    interval: 5
+  - term: "缓存雪崩"
+    question: "什么是缓存雪崩？如何预防？"
+    answer: "大量缓存同时失效，请求全部打到数据库。预防：过期时间加随机偏移、多级缓存、熔断降级"
+    difficulty: intermediate
+    interval: 5
+  - term: "缓存击穿"
+    question: "什么是缓存击穿？与缓存穿透的区别？"
+    answer: "热点Key过期瞬间大量请求穿透到数据库。区别：穿透是数据不存在，击穿是数据存在但过期。解决：互斥锁、永不过期策略"
+    difficulty: advanced
+    interval: 7

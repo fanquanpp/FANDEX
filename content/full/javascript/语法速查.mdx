@@ -1,0 +1,29 @@
+---
+title: 'JavaScript 语法速查'
+description: '常用 JavaScript 语法速查表，含使用场景、常见错误，支持搜索和复制'
+module: javascript
+category: 'JavaScript Reference'
+difficulty: beginner
+order: 5
+tags:
+  - javascript
+  - cheatsheet
+related:
+  - javascript/概述与运行环境
+  - javascript/程序结构与基本语法
+  - html5/概述与核心特性
+  - css/概述与基本语法
+prerequisites: []
+---
+
+import CheatSheet from '@/islands/CheatSheet';
+import data from '@/data/cheatsheets/javascript.json';
+
+<CheatSheet
+  数据={data}
+  模块名="JavaScript"
+  搜索框占位符="例如：querySelector、async..."
+  允许分组折叠={true}
+  显示学习指引={true}
+  client:load
+/>

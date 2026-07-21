@@ -1,0 +1,30 @@
+---
+title: 'Linux 语法速查'
+description: '常用 Linux 命令速查表，含使用场景、常见错误，支持搜索和复制'
+module: devops
+category: 'Linux Reference'
+difficulty: beginner
+order: 5
+tags:
+  - linux
+  - devops
+  - cheatsheet
+related:
+  - devops/Kubernetes容器编排
+  - 'devops/CI-CD流水线'
+  - devops/监控与可观测性
+  - devops/基础设施即代码
+prerequisites: []
+---
+
+import CheatSheet from '@/islands/CheatSheet';
+import data from '@/data/cheatsheets/linux.json';
+
+<CheatSheet
+  数据={data}
+  模块名="Linux"
+  搜索框占位符="例如：ls、chmod、grep..."
+  允许分组折叠={true}
+  显示学习指引={true}
+  client:load
+/>

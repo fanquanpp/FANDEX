@@ -1,0 +1,243 @@
+---
+import Layout from '@/components/Layout.astro';
+import SEO from '@/components/SEO.astro';
+import Sidebar from '@/components/Sidebar.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import { getModule, categoryColors, getPrimaryCategory } from '@/lib/modules';
+// 通过 doc-service 获取模块文档列表，UI 层禁止直接调用 getCollection
+// docSlug 由 modules.ts 唯一定义，通过 services 桶文件统一导出
+import { getDocsByModule, docSlug } from '@/services';
+
+export async function getStaticPaths() {
+  const { modules } = await import('@/lib/modules');
+  return modules.map((m) => ({ params: { module: m.id } }));
+}
+
+const { module } = Astro.params as { module: string };
+const meta = getModule(module || '');
+
+if (!meta) {
+  return Astro.redirect(`${import.meta.env.BASE_URL}404`);
+}
+
+// 通过 doc-service 获取当前模块的文档列表（已按 order 升序排序）
+const sortedDocs = await getDocsByModule(module);
+
+const breadcrumb = [{ label: '首页', href: `${import.meta.env.BASE_URL}` }, { label: meta.title }];
+---
+
+<Layout title={meta.title}>
+  <SEO
+    slot="head"
+    title={meta.title}
+    description={meta.description}
+    canonical={`${Astro.site}${Astro.url.pathname}`}
+  />
+  <Sidebar slot="sidebar" moduleId={module} />
+
+  <div class="module-page">
+    <Breadcrumb items={breadcrumb} hasSidebar />
+
+    <div class="module-header">
+      <span class="header-bar" style={`background:${categoryColors[getPrimaryCategory(meta)]}`}
+      ></span>
+      <div class="header-body">
+        <h1 class="header-title">{meta.title}</h1>
+        <p class="header-desc">{meta.description}</p>
+      </div>
+    </div>
+
+    <ul class="doc-list">
+      {
+        sortedDocs.map((doc, idx) => (
+          <li class="doc-list-item">
+            <a
+              href={`${import.meta.env.BASE_URL}${module}/${docSlug(doc.id)}/`}
+              class="doc-list-link"
+            >
+              <span
+                class="doc-list-icon"
+                style={`background:${categoryColors[getPrimaryCategory(meta)]}`}
+              >
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#fff"
+                  stroke-width="2.5"
+                >
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
+                  <polyline points="14 2 14 8 20 8" />
+                  <line x1="16" y1="13" x2="8" y2="13" />
+                  <line x1="16" y1="17" x2="8" y2="17" />
+                </svg>
+              </span>
+              <span class="doc-list-seq">{String(idx + 1).padStart(3, '0')}</span>
+              <span class={`doc-list-difficulty diff-${doc.data.difficulty || 'intermediate'}`}>
+                {doc.data.difficulty === 'beginner'
+                  ? '入门'
+                  : doc.data.difficulty === 'advanced'
+                    ? '进阶'
+                    : '中级'}
+              </span>
+              <span class="doc-list-title">{doc.data.title}</span>
+              {doc.data.description && <span class="doc-list-desc">{doc.data.description}</span>}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </div>
+</Layout>
+
+<style>
+  .module-page {
+    padding: var(--spacing-md) var(--spacing-lg);
+    width: 100%;
+  }
+
+  .module-header {
+    display: flex;
+    margin-bottom: var(--spacing-lg);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-light);
+  }
+
+  .header-bar {
+    width: 5px;
+    flex-shrink: 0;
+  }
+
+  .header-body {
+    padding: var(--spacing-lg);
+  }
+
+  .header-title {
+    font-family: var(--font-display);
+    font-size: 1.4em;
+    margin: 0 0 var(--spacing-xs);
+  }
+
+  .header-desc {
+    font-size: 0.88em;
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .doc-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    border: 1px solid var(--color-border-light);
+  }
+
+  .doc-list-item {
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .doc-list-item:last-child {
+    border-bottom: none;
+  }
+
+  .doc-list-link {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-md);
+    color: var(--color-text);
+    text-decoration: none;
+    transition: background var(--transition-fast);
+  }
+
+  .doc-list-link:hover {
+    background: var(--color-bg-hover);
+  }
+
+  .doc-list-icon {
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .doc-list-seq {
+    font-family: var(--font-display);
+    font-size: 0.72em;
+    color: var(--color-text-tertiary);
+    flex-shrink: 0;
+    min-width: 2em;
+  }
+
+  .doc-list-title {
+    font-family: var(--font-display);
+    font-size: 0.88em;
+    font-weight: 500;
+    flex-shrink: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .doc-list-difficulty {
+    font-size: 0.7em;
+    padding: 2px 8px;
+    border-radius: 3px;
+    flex-shrink: 0;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+    white-space: nowrap;
+  }
+
+  .diff-beginner {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  .diff-intermediate {
+    background: #fff3e0;
+    color: #e65100;
+  }
+
+  .diff-advanced {
+    background: #fce4ec;
+    color: #c62828;
+  }
+
+  :root[data-theme='dark'] .diff-beginner {
+    background: #1b3a1b;
+    color: #81c784;
+  }
+
+  :root[data-theme='dark'] .diff-intermediate {
+    background: #3e2723;
+    color: #ffb74d;
+  }
+
+  :root[data-theme='dark'] .diff-advanced {
+    background: #3b1010;
+    color: #ef9a9a;
+  }
+
+  .doc-list-desc {
+    font-size: 0.78em;
+    color: var(--color-text-tertiary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .doc-list-link {
+      flex-wrap: wrap;
+    }
+
+    .doc-list-desc {
+      width: 100%;
+      padding-left: 44px;
+    }
+  }
+</style>

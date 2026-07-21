@@ -1,0 +1,112 @@
+---
+import type { Module, ModuleProgress } from '@/lib/modules';
+/**
+ * ModuleCard 模块卡片组件
+ *
+ * 功能概述：
+ * - 首页/分类页模块入口卡片，展示模块图标、标题、描述、文档数与进度
+ * - 点击跳转到对应模块首页（withBase 兼容 Tauri/Web 双环境）
+ * - 悬停微交互：卡片上浮 + 阴影加深 + 图标放大（CSS transition 实现）
+ * - 进度条基于 localStorage 阅读进度数据，无 JS 时优雅降级（仅显示无进度）
+ * - 完整无障碍：role="link"、aria-label、键盘 Tab 可达
+ * - 基于 Tailwind v4 工具类
+ *
+ * Props:
+ *   mod      - 模块对象（来自 @/lib/modules 的 Module 接口）
+ *   progress - 模块进度（可选，来自 getModuleProgress）
+ */
+import { withBase } from '@/lib/url';
+
+interface Props {
+  mod: Module;
+  progress?: ModuleProgress;
+}
+
+const { mod, progress } = Astro.props;
+
+/** 模块首页相对路径（mod.id 形如 `frontend/javascript`） */
+const moduleHref = `/${mod.id}/`;
+
+/** 进度百分比（0-100），无进度数据时为 null */
+const percent = progress && progress.total > 0 ? progress.percent : null;
+
+/** 难度标签文案 */
+const difficultyLabel: Record<Module['difficulty'], string> = {
+  beginner: '入门',
+  intermediate: '进阶',
+  advanced: '高级',
+};
+
+/** 难度标签样式：对齐 FANDEX-Web 语义色（success/warning/destructive） */
+const difficultyClass: Record<Module['difficulty'], string> = {
+  beginner: 'bg-success-500/15 text-success-700 dark:bg-success-500/20 dark:text-success-500',
+  intermediate: 'bg-warning-500/15 text-warning-700 dark:bg-warning-500/20 dark:text-warning-500',
+  advanced: 'bg-destructive/15 text-destructive dark:bg-destructive/20 dark:text-destructive',
+};
+---
+
+<a
+  href={withBase(moduleHref)}
+  class="group relative flex flex-col gap-3 overflow-hidden rounded-xl border border-border bg-card p-5 text-left shadow-sm transition-all duration-200 hover:-translate-y-1 hover:border-primary/40 hover:shadow-md focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+  aria-label={`进入 ${mod.name} 模块`}
+>
+  <!-- 顶部色条：分类颜色，悬停时延伸 -->
+  <span
+    class="absolute inset-x-0 top-0 h-1 origin-left scale-x-100 transition-transform duration-300 group-hover:scale-x-100"
+    style={`background-color:${mod.color}`}
+    aria-hidden="true"
+  />
+
+  <!-- 悬停渐变装饰：Sky→Teal 双色径向光晕（对齐 FANDEX-Web 品牌色系） -->
+  <span
+    class="pointer-events-none absolute inset-0 bg-gradient-to-br from-primary/0 via-secondary/0 to-accent/0 opacity-0 transition-opacity duration-300 group-hover:from-primary/5 group-hover:via-secondary/5 group-hover:to-accent/5 group-hover:opacity-100"
+    aria-hidden="true"
+  />
+
+  <!-- 头部：图标 + 标题 + 难度标签 -->
+  <div class="flex items-start gap-3">
+    <!-- 模块图标：分类颜色背景，悬停时轻微放大 -->
+    <span
+      class="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg text-sm font-bold text-white transition-transform duration-200 group-hover:scale-110"
+      style={`background-color:${mod.color}`}
+      aria-hidden="true"
+    >
+      {mod.icon}
+    </span>
+
+    <div class="min-w-0 flex-1">
+      <h3 class="truncate text-sm font-semibold text-foreground">
+        {mod.name}
+      </h3>
+      <span
+        class={`mt-1 inline-flex items-center rounded-md px-1.5 py-0.5 text-[10px] font-medium ${difficultyClass[mod.difficulty]}`}
+      >
+        {difficultyLabel[mod.difficulty]}
+      </span>
+    </div>
+  </div>
+
+  <!-- 描述：两行省略 -->
+  <p class="line-clamp-2 text-xs leading-relaxed text-muted-foreground">
+    {mod.description}
+  </p>
+
+  <!-- 底部：文档数 + 进度条 -->
+  <div class="mt-auto flex flex-col gap-1.5 pt-2">
+    <div class="flex items-center justify-between text-[11px] text-muted-foreground">
+      <span>{mod.docsCount > 0 ? `${mod.docsCount} 篇文档` : '即将上线'}</span>
+      {percent !== null && <span class="tabular-nums">{percent}%</span>}
+    </div>
+
+    {
+      percent !== null && (
+        <div class="h-1 w-full overflow-hidden rounded-full bg-muted">
+          <div
+            class="h-full rounded-full transition-all duration-500"
+            style={`width:${percent}%;background-color:${mod.color}`}
+          />
+        </div>
+      )
+    }
+  </div>
+</a>

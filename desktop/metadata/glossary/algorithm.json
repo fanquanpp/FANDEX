@@ -1,0 +1,490 @@
+{
+  "moduleId": "algorithm",
+  "terms": [
+    {
+      "name": "摊还分析",
+      "definition": "评估数据结构上一系列操作的平均代价，不依赖概率，保证对任意操作序列成立",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "聚合分析",
+      "definition": "摊还分析的一种方法，计算n个操作的总代价上界T(n)，则每个操作摊还代价为T(n)/n",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "ASL",
+      "definition": "平均查找长度，衡量查找算法效率的指标，分为查找成功ASL和查找失败ASL",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "AVL树",
+      "definition": "最早的平衡二叉搜索树，任意节点的左右子树高度差不超过1，查找/插入/删除均为O(log n)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "回溯",
+      "definition": "系统搜索解空间并在不满足约束时回退的策略，本质是DFS加剪枝，适用于N皇后、子集生成等问题",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "Bellman-Ford算法",
+      "definition": "单源最短路径算法，支持负权边，对所有边执行V-1轮松弛，时间O(VE)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "大O符号",
+      "definition": "渐进上界符号，f(n)=O(g(n))表示f(n)的增长速率不超过g(n)的某个常数倍",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "大Omega符号",
+      "definition": "渐进下界符号，f(n)=Omega(g(n))表示f(n)的增长速率至少为g(n)的某个常数倍",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "大Theta符号",
+      "definition": "渐进紧界符号，f(n)=Theta(g(n))表示f(n)与g(n)同阶增长",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "二分搜索",
+      "definition": "在有序数组中每次将搜索范围缩小一半的查找算法，时间O(log n)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "分支限界",
+      "definition": "BFS搜索加下界剪枝的策略，适用于TSP、整数规划等优化问题",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "广度优先搜索",
+      "definition": "按层次逐步扩展的图遍历算法，使用队列实现，天然保证无权图最短路径",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "桶排序",
+      "definition": "将元素分配到有限数量的桶中，桶内单独排序后合并，平均O(n+k)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "布隆过滤器",
+      "definition": "用位数组近似表示集合的概率数据结构，查询O(k)，存在假阳性但无假阴性",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "链表",
+      "definition": "通过指针连接的离散内存线性数据结构，插入删除O(1)，随机访问O(n)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "循环链表",
+      "definition": "尾节点的next指向头节点的链表，适合循环队列等场景",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "计数排序",
+      "definition": "统计每个值出现次数的非比较排序，时间O(n+k)，适用于整数范围有限的场景",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "竞争分析",
+      "definition": "将在线算法代价与最优离线算法代价比较来评估性能，竞争比越接近1越好",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "连通分量",
+      "definition": "无向图中的极大连通子图，可通过BFS/DFS求解",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "割点",
+      "definition": "删除该顶点后图不再连通的节点，可用Tarjan算法在O(V+E)时间内求解",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "桥",
+      "definition": "删除该边后图不再连通的边，判定条件为low[v] > dfn[u]",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "冒泡排序",
+      "definition": "相邻比较交换的排序算法，平均O(n^2)，稳定，可提前终止优化",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "鸡尾酒排序",
+      "definition": "双向冒泡排序，交替从左到右和从右到左遍历",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "深度优先搜索",
+      "definition": "沿一条路径尽可能深入再回溯的图遍历算法，使用栈/递归实现，适用于环检测、拓扑排序",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "Dijkstra算法",
+      "definition": "非负权图单源最短路径算法，贪心策略加松弛操作，二叉堆实现O(E log V)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "动态规划",
+      "definition": "通过记忆化避免重复计算的算法范式，依赖最优子结构和无后效性",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "动态数组",
+      "definition": "容量满时自动扩容的数组，append操作摊还O(1)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "度",
+      "definition": "与顶点关联的边数，有向图分为入度和出度",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "稠密图",
+      "definition": "边数接近V^2的图，适合用邻接矩阵表示",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "编辑距离",
+      "definition": "将一个字符串转换为另一个字符串所需的最少操作次数，允许插入、删除、替换",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "边的分类",
+      "definition": "DFS中将边分为树边、回边、前向边、横叉边，回边表示存在环",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "斐波那契堆",
+      "definition": "通过延迟合并和级联剪切实现高效操作的堆，插入O(1)摊还，删除最小O(log n)摊还",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "Floyd-Warshall算法",
+      "definition": "全源最短路径算法，基于DP，时间O(V^3)，支持负权边",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "贪心算法",
+      "definition": "每步取局部最优的算法范式，依赖贪心选择性质和最优子结构",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "图",
+      "definition": "由顶点集V和边集E组成的数据结构，分为有向图、无向图、加权图等",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "邻接矩阵",
+      "definition": "用二维数组adj[i][j]表示顶点i到j的边，适合稠密图，空间O(V^2)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "邻接表",
+      "definition": "每个顶点维护链表存储邻接点，适合稀疏图，空间O(V+E)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "哈希表",
+      "definition": "通过哈希函数将键映射到数组下标实现O(1)平均查找的数据结构",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "哈希函数",
+      "definition": "将键映射到有限槽位的函数，设计目标是均匀分布、减少冲突",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "哈希冲突",
+      "definition": "不同键映射到同一槽位的现象，处理方法包括链地址法和开放寻址法",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "负载因子",
+      "definition": "哈希表中元素数量与槽位数的比值alpha=n/m，通常控制在0.75以下",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "堆",
+      "definition": "满足堆序性质的完全二叉树，最大堆父节点>=子节点，最小堆反之",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "堆排序",
+      "definition": "利用堆数据结构排序，先建堆再反复取堆顶，时间O(n log n)，空间O(1)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "霍尔分区",
+      "definition": "快速排序的双指针分区方案，从两端向中间扫描交换逆序对",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "哈夫曼编码",
+      "definition": "贪心算法构造的最优前缀编码，频率高的字符用短编码",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "插入排序",
+      "definition": "将元素逐个插入已排序部分的排序算法，最好O(n)，稳定，适合小规模或近乎有序数据",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "内省排序",
+      "definition": "C++ STL的sort实现，先快速排序，递归过深时切换堆排序，小规模切换插入排序",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "原地排序",
+      "definition": "仅需O(1)额外空间的排序算法",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "Kruskal算法",
+      "definition": "基于并查集的贪心最小生成树算法，按边权从小到大选取，时间O(E log E)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "Kadane算法",
+      "definition": "求最大子数组和的线性时间算法，维护当前和与最大和",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "线性搜索",
+      "definition": "逐个比较的朴素查找算法，时间O(n)，适用于无序小规模数据",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "Lomuto分区",
+      "definition": "快速排序的分区方案，以最后一个元素为pivot，维护分界指针",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "最长公共子序列",
+      "definition": "两个序列中最长的不要求连续的公共子序列，DP求解时间O(mn)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "最长递增子序列",
+      "definition": "数组中最长的严格递增子序列，O(n log n)解法使用贪心加二分",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "LRU缓存",
+      "definition": "最近最少使用缓存替换策略，k-竞争，使用哈希表加双向链表实现",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "主定理",
+      "definition": "分析分治递推式T(n)=aT(n/b)+f(n)的通用定理，分三种情形",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "归并排序",
+      "definition": "分治排序算法，递归分成两半分别排序后合并，时间O(n log n)，稳定",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "最小生成树",
+      "definition": "连通加权无向图中权值之和最小的生成树，Kruskal和Prim为经典算法",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "记忆化搜索",
+      "definition": "自顶向下的DP实现，用数组/哈希表缓存已计算结果避免重复计算",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "多重背包",
+      "definition": "第i个物品有s[i]个可用的背包问题，二进制拆分优化至O(nW log S)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "NP类",
+      "definition": "可在非确定性图灵机上多项式时间求解的判定问题类，等价于多项式时间可验证",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "NP完全",
+      "definition": "既在NP中又是NP-Hard的问题，NP中最难的问题",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "NP困难",
+      "definition": "至少和NP中最难的问题一样难的问题，不一定是NP问题",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "非比较排序",
+      "definition": "不通过比较元素大小来排序的算法，如计数排序、基数排序，可突破O(n log n)下界",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "在线算法",
+      "definition": "在不知道未来输入的情况下逐步做出不可撤销决策的算法",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "最优子结构",
+      "definition": "问题的最优解包含子问题最优解的性质，是贪心和DP正确性的基础",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "0-1背包",
+      "definition": "每个物品只能选0或1个的背包问题，DP求解时间O(nW)，为伪多项式时间",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "P类",
+      "definition": "确定性图灵机上多项式时间可解的判定问题类",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "Prim算法",
+      "definition": "从任一顶点出发贪心扩展的最小生成树算法，二叉堆实现O(E log V)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "快速排序",
+      "definition": "分治排序算法，选择pivot分区后递归排序，平均O(n log n)，原地但不稳定",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "快速选择",
+      "definition": "在无序数组中找第k小元素，基于快速排序分区思想，平均O(n)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "基数排序",
+      "definition": "按位排序的非比较算法，从最低位到最高位使用稳定排序，时间O(d(n+b))",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "递归树",
+      "definition": "将递推式展开为树形结构分析复杂度的直观工具",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "松弛",
+      "definition": "最短路径算法中的核心操作：若dist[u]+w(u,v)<dist[v]则更新dist[v]",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "选择排序",
+      "definition": "每轮选出最小元素放到已排序部分末尾的排序算法，时间O(n^2)，不稳定",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "Shell排序",
+      "definition": "间隔递减的插入排序变体，间隔序列选择影响性能",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "稳定排序",
+      "definition": "相等元素的相对顺序在排序后保持不变的排序算法",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "SPFA算法",
+      "definition": "队列优化的Bellman-Ford，只对发生松弛的顶点邻接边松弛，平均O(E)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "强连通分量",
+      "definition": "有向图中任意两点互相可达的极大子图，Tarjan算法O(V+E)求解",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "状态压缩DP",
+      "definition": "用整数二进制位表示集合状态，将多维状态压缩为一维的DP技术",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "拓扑排序",
+      "definition": "对DAG顶点线性排序使每条边(u,v)中u排在v之前，Kahn算法或DFS后序逆序",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "树",
+      "definition": "n个节点的有限集合，连通无环图，n个节点有n-1条边",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "二叉搜索树",
+      "definition": "左子树所有值<根<右子树所有值的二叉树，查找/插入/删除平均O(log n)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "字典树",
+      "definition": "多叉树结构用于字符串集合的高效前缀匹配，查找时间与字符串长度相关",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "Timsort",
+      "definition": "Python和Java默认排序算法，结合归并排序和插入排序，最好O(n)最坏O(n log n)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "旅行商问题",
+      "definition": "求经过所有城市恰好一次并返回起点的最短回路，NP-Hard问题",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "无后效性",
+      "definition": "一旦状态确定，未来决策只依赖当前状态值而不依赖到达路径的性质",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "小o符号",
+      "definition": "非紧上界符号，f(n)=o(g(n))表示f(n)的增长速率严格小于g(n)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "小omega符号",
+      "definition": "非紧下界符号，f(n)=omega(g(n))表示f(n)的增长速率严格大于g(n)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "一致性哈希",
+      "definition": "分布式系统中减少节点增减时数据迁移量的哈希方案",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "优先队列",
+      "definition": "支持按优先级取出元素的抽象数据类型，通常用堆实现",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "时空权衡",
+      "definition": "算法设计中时间与空间此消彼长的关系，常见策略为以空间换时间",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "自底向上DP",
+      "definition": "按依赖顺序填表消除递归开销的DP实现方式",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "并查集",
+      "definition": "支持合并集合和查询元素所属集合的数据结构，路径压缩加按秩合并接近O(1)",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "完全背包",
+      "definition": "物品可无限选取的背包问题，内层循环从小到大",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "核算法",
+      "definition": "摊还分析的一种方法，为不同操作分配不同摊还代价，用存款支付昂贵操作",
+      "slug": "algorithm/glossary"
+    },
+    {
+      "name": "势能法",
+      "definition": "摊还分析的一种方法，定义势能函数将数据结构状态映射为非负实数",
+      "slug": "algorithm/glossary"
+    }
+  ]
+}

@@ -1,0 +1,45 @@
+[package]
+name = "fandex"
+version = "3.1.0"
+description = "FANDEX - 零基础到本科毕业的渐进式自学平台桌面版"
+authors = ["fanquanpp"]
+edition = "2021"
+rust-version = "1.82"
+
+# 说明：原 [lib] 段已移除，合并为单一 binary crate（main.rs）。
+# 背景：Tauri 2 默认 crate-type = ["staticlib", "cdylib", "rlib"]，在 Windows 上
+#       libfandex_lib.rlib 体积膨胀至 5.7GB，导致 rustc 读取元数据时触发 E0786 错误。
+#       合并 lib.rs 到 main.rs 后，Cargo 仅构建 binary crate，不再生成 rlib。
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = ["protocol-asset", "image-png", "image-ico"] }
+tauri-plugin-fs = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-updater = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-os = "2"
+tauri-plugin-window-state = "2"
+tauri-plugin-http = "2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+tokio = { version = "1", features = ["full"] }
+anyhow = "1"
+thiserror = "1"
+log = "0.4"
+env_logger = "0.11"
+
+[features]
+default = ["custom-protocol"]
+custom-protocol = ["tauri/custom-protocol"]
+
+# Release 编译配置：优化产物体积与编译时间
+[profile.release]
+opt-level = "s"      # 体积优先
+codegen-units = 16   # 并行代码生成单元
+lto = false          # 禁用 LTO，缩短编译时间
+strip = true         # 移除调试符号
+debug = false        # 不生成调试信息
+

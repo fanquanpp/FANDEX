@@ -1,0 +1,91 @@
+{
+  "registry_version": "1.0.0",
+  "updated_at": "2026-07-21T10:00:00.000Z",
+  "next_module_sequence": 3,
+  "modules": [
+    {
+      "module_id": "Model_Java_00",
+      "english_short": "java",
+      "sequence": 0,
+      "name": "Java",
+      "allocated_at": "2026-01-15T08:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "module_id": "Model_Python_01",
+      "english_short": "python",
+      "sequence": 1,
+      "name": "Python",
+      "allocated_at": "2026-01-15T08:05:00.000Z",
+      "status": "active"
+    },
+    {
+      "module_id": "Model_React_02",
+      "english_short": "react",
+      "sequence": 2,
+      "name": "React",
+      "allocated_at": "2026-07-21T09:00:00.000Z",
+      "status": "active"
+    },
+    {
+      "module_id": "Model_Cobol_03",
+      "english_short": "cobol",
+      "sequence": 3,
+      "name": "COBOL",
+      "allocated_at": "2026-03-10T12:00:00.000Z",
+      "status": "retired",
+      "retired_at": "2026-06-01T10:00:00.000Z"
+    }
+  ],
+  "docs": [
+    {
+      "doc_id": "Doc_Java_00_001",
+      "module_id": "Model_Java_00",
+      "sequence": 1,
+      "title": "快速入门",
+      "allocated_at": "2026-01-15T08:10:00.000Z",
+      "status": "active"
+    },
+    {
+      "doc_id": "Doc_Java_00_002",
+      "module_id": "Model_Java_00",
+      "sequence": 2,
+      "title": "并发编程详解",
+      "allocated_at": "2026-01-15T08:15:00.000Z",
+      "status": "active"
+    },
+    {
+      "doc_id": "Doc_Java_00_003",
+      "module_id": "Model_Java_00",
+      "sequence": 3,
+      "title": "JVM 调优",
+      "allocated_at": "2026-07-21T07:30:00.000Z",
+      "status": "active"
+    },
+    {
+      "doc_id": "Doc_Python_01_001",
+      "module_id": "Model_Python_01",
+      "sequence": 1,
+      "title": "装饰器",
+      "allocated_at": "2026-01-15T08:20:00.000Z",
+      "status": "active"
+    },
+    {
+      "doc_id": "Doc_Python_01_002",
+      "module_id": "Model_Python_01",
+      "sequence": 2,
+      "title": "变量与常量",
+      "allocated_at": "2026-01-15T08:25:00.000Z",
+      "status": "retired",
+      "retired_at": "2026-07-21T10:00:00.000Z"
+    },
+    {
+      "doc_id": "Doc_React_02_001",
+      "module_id": "Model_React_02",
+      "sequence": 1,
+      "title": "状态与事件",
+      "allocated_at": "2026-07-21T09:00:00.000Z",
+      "status": "active"
+    }
+  ]
+}

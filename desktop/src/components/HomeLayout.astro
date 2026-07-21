@@ -1,0 +1,225 @@
+---
+/**
+ * HomeLayout 首页布局组件
+ *
+ * 功能概述：
+ * - 首页 HTML 骨架：BaseHead + Header + main + InstallPrompt + ShortcutHelp
+ * - 使用 Astro 7 `<ClientRouter />` 替代旧版 `<ViewTransitions />`，实现 SPA 式导航
+ * - 完全移除 Vue 引用，所有交互岛屿改用 React 19 + shadcn/ui
+ * - Tailwind v4 工具类实现布局与样式，移除旧 CSS 变量引用
+ * - Tauri 兼容：路径通过 withBase() 处理（BaseHead / Header 已配置）
+ * - 与 Layout.astro 的区别：无 Sidebar / Toc / MobileNavBar / Comments，首页专用
+ * - 保留全屏切换（移动端浮动按钮）、Service Worker 注册等功能
+ *
+ * Props:
+ *   title       - 页面标题（必填）
+ *   description - 页面描述（透传给 BaseHead / SEO）
+ *   image       - 社交分享图
+ *   noindex     - 是否禁止搜索引擎索引
+ *   canonical   - 规范链接
+ *
+ * Slots:
+ *   default - 主内容区（含 Hero / 分类模块网格 / 页脚等）
+ *   head    - 追加到 <head> 的额外元素（如 SEO 组件）
+ *
+ * React 岛屿水合：
+ * - ThemeToggle / SearchModal：client:load（在 Header 内）
+ * - ShortcutHelp：client:idle（在 HomeLayout 末尾）
+ * - InstallPrompt：client:idle
+ */
+import '@/styles/globals.css';
+import '@/styles/code.css';
+import '@/styles/print.css';
+
+/**
+ * View Transitions 增强脚本
+ * - 注册 astro:before-swap 钩子，在 DOM 替换前保留 dark class 到 newDocument
+ * - 配合 BaseHead.astro 的 data-astro-rerun FOUC 脚本形成 defense-in-depth
+ * - 修复 ClientRouter 导航后主题被强制重置为亮色的 bug
+ */
+import '@/scripts/view-transitions';
+
+import { ClientRouter } from 'astro:transitions';
+import BaseHead from '@/components/BaseHead.astro';
+import Header from '@/components/Header.astro';
+import InstallPrompt from '@/islands/InstallPrompt';
+import ShortcutHelp from '@/islands/ShortcutHelp';
+import { SITE } from '@/lib/constants';
+
+interface Props {
+  title: string;
+  description?: string;
+  image?: string;
+  noindex?: boolean;
+  canonical?: string;
+}
+
+const { title, description, image, noindex, canonical } = Astro.props;
+
+/** localStorage 持久化键：全屏状态 */
+const FULLSCREEN_KEY = 'fandex-fullscreen';
+---
+
+<!doctype html>
+<html lang={SITE.locale}>
+  <head>
+    <BaseHead
+      title={title}
+      description={description}
+      image={image}
+      noindex={noindex}
+      canonical={canonical}
+    />
+    <!-- Astro 7 ClientRouter：替代旧版 ViewTransitions，提供 SPA 式导航过渡 -->
+    <ClientRouter />
+    <slot name="head" />
+  </head>
+  <body class="min-h-screen bg-background text-foreground antialiased">
+    <!-- 无障碍：跳转到主内容 -->
+    <a
+      href="#app-main"
+      class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-[100] focus:rounded-md focus:border focus:border-border focus:bg-background focus:px-4 focus:py-2 focus:text-sm focus:font-medium focus:shadow-lg"
+    >
+      跳转到主内容
+    </a>
+
+    <!-- 顶部导航栏（sticky 顶部，含 SearchModal / ThemeToggle / ShortcutHelp / GitHub） -->
+    <Header />
+
+    <!-- PWA 安装提示（延迟弹出，已安装或永久关闭后不渲染） -->
+    <InstallPrompt client:idle />
+
+    <!-- 首页主内容区：撑满剩余视口高度，支持移动端动态视口 -->
+    <main
+      id="app-main"
+      class="min-h-[calc(100vh-3.5rem)] min-h-[calc(100dvh-3.5rem)]"
+      tabindex="-1"
+    >
+      <slot />
+    </main>
+
+    <!-- 移动端全屏切换浮动按钮（仅 md 以下显示，避免遮挡内容） -->
+    <button
+      type="button"
+      id="home-fullscreen-btn"
+      class="fixed bottom-4 right-4 z-30 inline-flex h-10 w-10 items-center justify-center rounded-full border border-border bg-background/80 text-muted-foreground shadow-lg backdrop-blur-md transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring md:hidden"
+      aria-label="切换全屏"
+      title="切换全屏"
+      data-fullscreen-key={FULLSCREEN_KEY}
+    >
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="18"
+        height="18"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        aria-hidden="true"
+      >
+        <path
+          d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
+        />
+      </svg>
+    </button>
+
+    <!-- 快捷键帮助面板（Ctrl+/ 触发，client:idle 等待主线程空闲） -->
+    <ShortcutHelp client:idle />
+
+    <script>
+      /**
+       * HomeLayout 客户端脚本
+       *
+       * 功能模块：
+       * 1. Service Worker 注册：PWA 离线支持
+       * 2. 全屏模式切换：移动端浮动按钮触发，状态持久化到 localStorage
+       *
+       * 兼容 Astro ClientRouter：监听 astro:page-load 事件重新初始化
+       */
+
+      /** localStorage 持久化键：全屏状态 */
+      const FULLSCREEN_KEY = 'fandex-fullscreen';
+
+      /** 注册 Service Worker 支持 PWA 离线访问 */
+      function registerServiceWorker(): void {
+        if (!('serviceWorker' in navigator)) return;
+        const base = import.meta.env.BASE_URL;
+        navigator.serviceWorker.register(`${base}sw.js`).catch(() => {
+          /* Service Worker 注册失败时静默降级到在线模式 */
+        });
+      }
+
+      /**
+       * 初始化全屏切换按钮
+       *
+       * 流程：
+       * 1. 绑定按钮点击事件，切换全屏状态
+       * 2. 监听 fullscreenchange 事件，持久化状态到 localStorage
+       * 3. 页面加载时恢复上次的全屏状态
+       *
+       * 安全说明：
+       * - requestFullscreen / exitFullscreen 返回 Promise，可能被拒绝（如非用户手势触发）
+       * - 使用 catch 静默处理，避免控制台报错
+       */
+      function initFullscreenToggle(): void {
+        const btn = document.getElementById('home-fullscreen-btn');
+        if (!btn) return;
+
+        /** 已绑定标记，避免重复添加监听器 */
+        if (btn.dataset.bound === 'true') return;
+        btn.dataset.bound = 'true';
+
+        btn.addEventListener('click', () => {
+          if (!document.fullscreenElement) {
+            document.documentElement.requestFullscreen().catch(() => {
+              /* 用户未触发手势或浏览器拒绝时静默处理 */
+            });
+          } else {
+            document.exitFullscreen().catch(() => {
+              /* 退出全屏失败时静默处理 */
+            });
+          }
+        });
+
+        /** 监听全屏状态变化并持久化 */
+        document.addEventListener('fullscreenchange', () => {
+          try {
+            if (document.fullscreenElement) {
+              localStorage.setItem(FULLSCREEN_KEY, 'true');
+            } else {
+              localStorage.removeItem(FULLSCREEN_KEY);
+            }
+          } catch {
+            /* localStorage 不可用时静默降级 */
+          }
+        });
+
+        /** 恢复上次的全屏状态（需用户曾主动启用且未退出） */
+        try {
+          if (
+            localStorage.getItem(FULLSCREEN_KEY) === 'true' &&
+            !document.fullscreenElement
+          ) {
+            document.documentElement.requestFullscreen().catch(() => {
+              /* 非用户手势触发可能被浏览器拒绝，静默处理 */
+            });
+          }
+        } catch {
+          /* localStorage 不可用时静默降级 */
+        }
+      }
+
+      /** 初始化所有模块 */
+      function initHomeLayout(): void {
+        initFullscreenToggle();
+      }
+
+      // 首屏初始化 + ClientRouter 跳转后重新初始化
+      initHomeLayout();
+      registerServiceWorker();
+      document.addEventListener('astro:page-load', initHomeLayout);
+    </script>
+  </body>
+</html>

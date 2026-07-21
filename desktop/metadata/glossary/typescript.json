@@ -1,0 +1,2160 @@
+{
+  "moduleId": "typescript",
+  "terms": [
+    {
+      "name": "断言",
+      "definition": "强制将值视为特定类型，用 `as` 或 `<Type>` 语法",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "自动类型检测",
+      "definition": "TypeScript 自动推断变量类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型别名",
+      "definition": "用 `type` 关键字为复杂类型创建简短的名称",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "字面量类型",
+      "definition": "精确到具体值的类型，如 `\"success\"` 或 `123`",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "变量声明",
+      "definition": "用 `let`、`const` 声明带类型的变量",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "基元类型",
+      "definition": "如 `string`、`number`、`boolean` 的基础类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "绑定",
+      "definition": "将值与标识符关联",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类别名",
+      "definition": "类型别名定义中的类型名称",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类别",
+      "definition": "术语分类",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "编译错误",
+      "definition": "代码无法通过 TypeScript 编译器检查",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "编译器选项",
+      "definition": "tsconfig.json 中的编译配置项",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "条件类型",
+      "definition": "根据条件选择类型的语法 `T extends U ? X : Y`",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "控制流分析",
+      "definition": "追踪变量类型在代码中的变化",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型声明",
+      "definition": "定义类型结构的语法",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "声明合并",
+      "definition": "多个声明自动合并为单一类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "声明文件",
+      "definition": "`.d.ts` 文件，用于为 JavaScript 库提供类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "推断类型",
+      "definition": "TypeScript 自动推断出的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "默认类型参数",
+      "definition": "泛型参数未指定时的默认类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "可调用的",
+      "definition": "可以像函数一样调用的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "维度",
+      "definition": "数组或元组的嵌套层数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "枚举",
+      "definition": "一组命名常量的集合",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "枚举成员",
+      "definition": "枚举中的单个常量",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "环境声明",
+      "definition": "用 `declare` 声明变量或模块的存在",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "显式类型注解",
+      "definition": "手动添加的类型标注",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "字段",
+      "definition": "类或接口中的属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "函数类型",
+      "definition": "描述函数参数和返回值的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "函数签名",
+      "definition": "函数的参数和返回类型定义",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型参数",
+      "definition": "泛型尖括号中的类型变量",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型约束",
+      "definition": "用 `extends` 限制泛型参数的范围",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "字面量",
+      "definition": "直接写出的固定值",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "层级",
+      "definition": "类型继承的层级结构",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "顶级类型",
+      "definition": "可接受任何值的类型，如 `unknown`",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "底层类型",
+      "definition": "不可能存在的类型，如 `never`",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "索引签名",
+      "definition": "`[key: string]: valueType` 动态属性类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "索引类型",
+      "definition": "用 `T[K]` 获取属性类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "推断",
+      "definition": "TypeScript 自动推导类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "继承",
+      "definition": "类型从父类获取结构",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "接口",
+      "definition": "定义对象结构的类型契约",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "不可调用的",
+      "definition": "不能作为函数调用的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "JSX",
+      "definition": "JavaScript 中的 XML 语法扩展",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "JSON 类型",
+      "definition": "JSON 数据结构的 TypeScript 类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "关键字",
+      "definition": "TypeScript 保留的特殊单词",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "级别",
+      "definition": "类型系统的层级",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "字面量推断",
+      "definition": "从字面量值推断精确类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "映射类型",
+      "definition": "从现有类型创建新类型，如 `Partial<T>`",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "成员",
+      "definition": "类、接口或类型的属性或方法",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "元组",
+      "definition": "固定长度和类型的数组",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "多态类型",
+      "definition": "泛型类的实例类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "命名空间",
+      "definition": "组织代码的类型和命名",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "命名类型",
+      "definition": "有名称的类型别名或接口",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "嵌套",
+      "definition": "嵌套在其他类型中的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "新建类型",
+      "definition": "可以用 `new` 调用的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "非空断言",
+      "definition": "用 `!` 断言值不为 null/undefined",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "数字枚举",
+      "definition": "值为数字的枚举",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "可实例化",
+      "definition": "可创建实例的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "对象类型",
+      "definition": "非原始类型的复合类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "可选属性",
+      "definition": "用 `?` 标记的可选属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "可选链",
+      "definition": "`?.` 安全访问可能为 null 的属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "原始类型",
+      "definition": "string/number/boolean 等基础类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "纯字符串枚举",
+      "definition": "普通字符串值的枚举",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "解析类型",
+      "definition": "最终解析后的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "参数类型",
+      "definition": "函数参数的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "父类型",
+      "definition": "被扩展或实现的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "部分类型",
+      "definition": "所有属性变为可选的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "路径映射",
+      "definition": "tsconfig.json 中的路径别名配置",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "混入",
+      "definition": "组合多个类功能的模式",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "缺少属性",
+      "definition": "预期存在但缺失的属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "混入类",
+      "definition": "用混入模式创建的类",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "限定名",
+      "definition": "带命名空间前缀的名称",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "只读属性",
+      "definition": "用 `readonly` 标记的不可修改属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "只读数组",
+      "definition": "不能修改内容的数组",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "只读元组",
+      "definition": "不能修改内容的元组",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "只读类型",
+      "definition": "所有属性变为只读的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "递归类型",
+      "definition": "引用自身的类型定义",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "引用类型",
+      "definition": "引用其他类型定义的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "必需属性",
+      "definition": "不可省略的属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "只读",
+      "definition": "标记属性或数组不可修改",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "语义",
+      "definition": "类型的含义",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "集合类型",
+      "definition": "描述集合操作的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "形状",
+      "definition": "对象的结构",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "签名",
+      "definition": "函数或方法的类型定义",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "单一类型",
+      "definition": "不是联合类型的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "源码映射",
+      "definition": "`.map` 文件，用于调试",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "静态类型",
+      "definition": "编译时确定的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "严格空值检查",
+      "definition": "严格检查 null/undefined 的配置",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "结构化类型",
+      "definition": "只关心结构而非名称的类型系统",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "下层类型",
+      "definition": "类型层级中的子类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型注解",
+      "definition": "用 `:` 标注的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型断言",
+      "definition": "强制将值视为特定类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型分支",
+      "definition": "联合类型中的一种可能类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型链",
+      "definition": "连续的类型操作链",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型兼容性",
+      "definition": "一个类型能否赋值给另一个类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型推断",
+      "definition": "从上下文自动推导类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型名称",
+      "definition": "类型定义中的名称",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型运算符",
+      "definition": "`keyof`、`typeof` 等类型操作符",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型谓词",
+      "definition": "用 `is Type` 标注的函数返回类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型脚本",
+      "definition": "JavaScript 的超集，增加静态类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型守卫",
+      "definition": "在条件中缩小类型范围",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "并集类型",
+      "definition": "多种类型之一，`T",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "唯一成员枚举",
+      "definition": "枚举中唯一的成员",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "唯一符号",
+      "definition": "唯一的符号类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "未知类型",
+      "definition": "顶级类型，必须先检查才能使用",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "非空类型",
+      "definition": "排除 null 和 undefined 的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "验证",
+      "definition": "检查类型是否满足约束",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "弱类型",
+      "definition": "有可选属性的对象类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "整体类型",
+      "definition": "不是部分类型的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "任意类型",
+      "definition": "绕过类型检查的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "数组类型",
+      "definition": "同类型元素集合的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "BigInt",
+      "definition": "大整数类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Boolean",
+      "definition": "布尔类型 true/false",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "构造函数",
+      "definition": "描述构造函数的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "函子",
+      "definition": "可映射的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "交集类型",
+      "definition": "多个类型合并，`T & U`",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Never",
+      "definition": "不可能到达的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Null",
+      "definition": "空值类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Number",
+      "definition": "数字类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Object",
+      "definition": "非原始类型的对象类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "装饰器元数据",
+      "definition": "装饰器相关的类型定义",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "记录类型",
+      "definition": "键值对类型 `Record<K, V>`",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "正则表达式类型",
+      "definition": "正则表达式类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Require 至少有一个",
+      "definition": "至少包含一个属性的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Require 只这些",
+      "definition": "只允许特定属性的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "String",
+      "definition": "字符串类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Symbol",
+      "definition": "唯一符号类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "This 类型",
+      "definition": "表示 this 的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "三元运算符",
+      "definition": "`condition ? trueType : falseType`",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Tuple",
+      "definition": "固定长度数组类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "TypeScript",
+      "definition": "JavaScript 超集语言",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Undefined",
+      "definition": "未定义类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Void",
+      "definition": "无返回值函数的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "抽象类",
+      "definition": "不能直接实例化，只能被继承的类",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "抽象语法树",
+      "definition": "代码的树形表示",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "访问器",
+      "definition": "getter 和 setter 方法",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "访问器属性",
+      "definition": "用存取器定义的属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "累计参数",
+      "definition": "在回调中累积值的参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "聚合操作",
+      "definition": "组合多个值的操作",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "聚合类型",
+      "definition": "组合多个类型的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "全部为真",
+      "definition": "联合类型所有成员",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "分析器",
+      "definition": "分析代码类型的工具",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "注解",
+      "definition": "类型标注",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "API 表面",
+      "definition": "模块对外暴露的接口",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "应用程序接口",
+      "definition": "模块间交互的接口定义",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "编译时",
+      "definition": "代码被编译的阶段",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "编译步骤",
+      "definition": "编译过程中的一个阶段",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "编译器",
+      "definition": "将 TypeScript 转换为 JavaScript 的工具",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "条件编译",
+      "definition": "根据条件选择性编译代码",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "条件导出",
+      "definition": "根据条件决定导出的模块",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "条件扩展",
+      "definition": "根据类型条件选择扩展",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "构造签名",
+      "definition": "用 `new` 调用的函数签名",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "消费者",
+      "definition": "使用类型的一方",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "上下文类型",
+      "definition": "根据上下文推断的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "契约",
+      "definition": "接口定义的约束",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "协变",
+      "definition": "类型方向一致的变化",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "覆盖",
+      "definition": "类型覆盖代码的比例",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "关键类型",
+      "definition": "类型检查的关键点",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "自定义可调用类型",
+      "definition": "用户定义的函数类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "数据属性",
+      "definition": "存储值的属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "装饰器",
+      "definition": "`@expression` 语法，用于修改类或属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "装饰器工厂",
+      "definition": "返回装饰器函数的函数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "默认类型",
+      "definition": "未指定时的默认类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "延迟类型",
+      "definition": "等待进一步推断的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "派生子类型",
+      "definition": "从基类派生的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "派生类型",
+      "definition": "基于现有类型创建的新类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "检测函数",
+      "definition": "检测某个类型是否存在",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "检测签名",
+      "definition": "用于类型检测的签名",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "检测类型",
+      "definition": "用于条件类型的检测类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "可分发条件类型",
+      "definition": "联合类型自动分发的条件类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "声明",
+      "definition": "定义类型的语法",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "双重断言",
+      "definition": "用 `as unknown as T` 的断言",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "动态导入",
+      "definition": "`import()` 语法按需加载",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "动态类型",
+      "definition": "运行时确定的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "编辑器集成",
+      "definition": "IDE 对 TypeScript 的支持",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "元素类型",
+      "definition": "数组元素的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "空类型",
+      "definition": "没有任何成员的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "空值安全",
+      "definition": "处理 null/undefined 的安全方式",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "枚举映射",
+      "definition": "枚举值到类型的映射",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "环境模块声明",
+      "definition": "声明外部模块的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "等价",
+      "definition": "类型 A 等价于类型 B",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "错误类型",
+      "definition": "表示编译错误的特殊类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "真实子类型",
+      "definition": "真正的子类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "导出",
+      "definition": "从模块暴露类型或值",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "显式类型",
+      "definition": "明确标注的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "表达式类型",
+      "definition": "表达式的结果类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "扩展",
+      "definition": "继承或实现",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "扩展类型",
+      "definition": "被扩展的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "外部模块",
+      "definition": "有明确导入/导出的模块",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "回退类型",
+      "definition": "类型推断失败时的备选类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "特征",
+      "definition": "语言特性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "文件声明",
+      "definition": "对整个文件的声明",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "固有的",
+      "definition": "语言内置的，无法用 TypeScript 模拟",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "渐进式",
+      "definition": "逐步添加类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "渐进式类型",
+      "definition": "从 any 开始逐步具体化",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "泛型",
+      "definition": "参数化的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "泛型参数",
+      "definition": "传递给泛型的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "泛型约束",
+      "definition": "限制泛型参数的范围",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "泛型声明",
+      "definition": "包含类型参数的声明",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "全局声明",
+      "definition": "全局作用域的声明",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "全局模块",
+      "definition": "包含全局声明的文件",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "全局类型",
+      "definition": "全局可用的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型",
+      "definition": "数据的分类",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型层级",
+      "definition": "类型的继承关系",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型检查",
+      "definition": "验证类型正确性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型保护",
+      "definition": "缩小类型范围的条件",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型别名声明",
+      "definition": "定义类型别名的声明",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型折叠",
+      "definition": "简化嵌套类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型函数",
+      "definition": "接受类型返回类型的函数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型操作",
+      "definition": "操作类型创建新类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型操作符",
+      "definition": "操作类型的运算符",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型参数声明",
+      "definition": "声明类型参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型参数作用域",
+      "definition": "类型参数可见的范围",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "类型引用",
+      "definition": "引用已定义的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "统一类型",
+      "definition": "多种类型的共同父类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "联合类型",
+      "definition": "多种可能类型的组合",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "特殊类型",
+      "definition": "如 any、unknown、never",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "状态参数",
+      "definition": "携带状态的参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "严格模式",
+      "definition": "启用所有严格类型检查",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "字符串枚举",
+      "definition": "字符串值的枚举",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "结构类型",
+      "definition": "只关心结构不关心名称",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "结构化类型系统",
+      "definition": "基于结构的类型系统",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "替代签名",
+      "definition": "用于类型替换的签名",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "符号类型",
+      "definition": "Symbol 原始类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "语法",
+      "definition": "代码的结构规则",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "语法糖",
+      "definition": "简化代码的语法",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "目标类型",
+      "definition": "类型操作的目标",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "模板字面量类型",
+      "definition": "模板字符串形式的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "this 参数",
+      "definition": "函数中 this 的类型标注",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "this 类型",
+      "definition": "引用当前类型的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "工具类型",
+      "definition": "TypeScript 内置的类型工具",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "变换",
+      "definition": "编译时的代码转换",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "变换步骤",
+      "definition": "编译转换的一个步骤",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "未推断的类型",
+      "definition": "没有类型注解的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "上层类型",
+      "definition": "类型层级中的父类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "可辨识联合",
+      "definition": "有公共字面量属性的联合类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "变体",
+      "definition": "类型参数的方向关系",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "协变参数",
+      "definition": "只能输出的参数位置",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "逆变参数",
+      "definition": "只能输入的参数位置",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "双重变体",
+      "definition": "输入输出都可以的参数位置",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "视图",
+      "definition": "数据的只读表示",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "虚拟类型",
+      "definition": "不实际存在仅用于类型运算的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "弱类型检测",
+      "definition": "检测弱类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "词法作用域",
+      "definition": "编译时确定的作用域",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "生命周期",
+      "definition": "值的有效时间范围",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "宏",
+      "definition": "编译时执行的代码转换",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "映射",
+      "definition": "从一种类型创建另一种类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "标记接口",
+      "definition": "仅用于标记的空接口",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "标记类型",
+      "definition": "仅用于类型标记的特殊类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "成员类型",
+      "definition": "联合或交叉类型的成员",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "元类型",
+      "definition": "描述类型的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "方法签名",
+      "definition": "方法的类型定义",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "模块",
+      "definition": "有独立作用域的代码单元",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "模块脚",
+      "definition": "模块导出的部分",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "模块头",
+      "definition": "模块导入的部分",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "名字类型",
+      "definition": "可以有名称的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "命名空间路径",
+      "definition": "如 `A.B.C` 的路径",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "自然类型",
+      "definition": "变量本来的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "next 类型",
+      "definition": "下一个版本中的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "节点",
+      "definition": "语法树中的节点",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "对象解构",
+      "definition": "从对象提取属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "对象字面量",
+      "definition": "`{}` 直接创建的对象",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Omit",
+      "definition": "排除部分属性的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "One",
+      "definition": "非空类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "仅导出类型",
+      "definition": "只导出类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "操作符重载",
+      "definition": "为不同类型定义同名操作",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "可选参数",
+      "definition": "可以省略的参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "可选性质",
+      "definition": "是否可选",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "排序键",
+      "definition": "排序的依据",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "覆盖类型",
+      "definition": "覆盖的属性类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "参数属性",
+      "definition": "在构造函数参数中声明属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Passkey",
+      "definition": "确保参数唯一的类型技巧",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "范型",
+      "definition": "参数化类型的概念",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "范型约束",
+      "definition": "限制泛型参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "范型实例",
+      "definition": "具体化的泛型类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "平面化",
+      "definition": "简化嵌套类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "多重类型参数",
+      "definition": "多个泛型参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Pick",
+      "definition": "选取部分属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "多态",
+      "definition": "同一接口多种实现",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "位置参数",
+      "definition": "按位置传递的参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Postfix",
+      "definition": "类型操作的后缀",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Prefix",
+      "definition": "类型操作的前缀",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "前置条件",
+      "definition": "函数执行前的条件",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "主类型",
+      "definition": "主要的类型分类",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Producer",
+      "definition": "产生数据的代码",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "产品类型",
+      "definition": "交叉类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Project",
+      "definition": "编译单位",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "投影",
+      "definition": "从高维度到低维度",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Promise",
+      "definition": "异步操作的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Promise 类型",
+      "definition": "Promise 的泛型类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "属性类型",
+      "definition": "属性值的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "防护",
+      "definition": "访问控制修饰符",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "协议",
+      "definition": "接口的另一个名称",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "提供者",
+      "definition": "提供数据的代码",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "记录",
+      "definition": "键值对集合类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "递归",
+      "definition": "类型引用自身",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "引用",
+      "definition": "指向已定义类型的名称",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "引用参数",
+      "definition": "引用传递的参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Region",
+      "definition": "代码区域标记",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "关系运算符",
+      "definition": "比较运算符",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Relection",
+      "definition": "运行时获取类型信息",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "重载",
+      "definition": "多个同名的类型签名",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "重载解析",
+      "definition": "选择匹配的重载签名",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "重载签名",
+      "definition": "重载函数的类型定义",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Package",
+      "definition": "npm 包",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "参数",
+      "definition": "实际传递的值",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "参数列表",
+      "definition": "函数参数的列表",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "参数化",
+      "definition": "带有类型参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Parent",
+      "definition": "父节点或父类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Parse",
+      "definition": "解析代码为 AST",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Partial",
+      "definition": "可选所有属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "权限",
+      "definition": "访问控制",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Permitted",
+      "definition": "允许的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Picked",
+      "definition": "Pick 后的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "位置类型",
+      "definition": "元组中特定位置的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "正向",
+      "definition": "确保非空",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "预测类型",
+      "definition": "类型谓词",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Primary",
+      "definition": "基础类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Product",
+      "definition": "交叉类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Program",
+      "definition": "编译单位",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Projection",
+      "definition": "类型投影",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Promised",
+      "definition": "Promise 包装后的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Property",
+      "definition": "对象属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Protection",
+      "definition": "访问保护",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Provider",
+      "definition": "数据提供者",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "纯类型",
+      "definition": "纯粹的类型操作",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Qualified",
+      "definition": "限定的名称",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Qualifier",
+      "definition": "限定符",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "范围类型",
+      "definition": "取值范围的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Readonly",
+      "definition": "只读属性标记",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Record",
+      "definition": "Record 类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Recoverable",
+      "definition": "可恢复的错误",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Recursive",
+      "definition": "递归类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Reduced",
+      "definition": "reduce 后的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Refined",
+      "definition": "缩小范围后的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Regular",
+      "definition": "正则表达式",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Related",
+      "definition": "相关的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Required",
+      "definition": "必需属性类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Rest",
+      "definition": "剩余参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Result",
+      "definition": "结果类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Return",
+      "definition": "返回类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Reusable",
+      "definition": "可重用的泛型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Rewriter",
+      "definition": "AST 重写器",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Safe",
+      "definition": "类型安全的",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Schema",
+      "definition": "类型模式",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Scope",
+      "definition": "作用域",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Secondary",
+      "definition": "次要类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Selector",
+      "definition": "选择器类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Semantic",
+      "definition": "语义类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Semigroup",
+      "definition": "代数结构",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Sense",
+      "definition": "类型方向",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Separated",
+      "definition": "分离的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Sequence",
+      "definition": "序列类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Series",
+      "definition": "连续的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Service",
+      "definition": "服务类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Session",
+      "definition": "会话类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Setter",
+      "definition": "设置器",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Shape",
+      "definition": "类型结构",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Signature",
+      "definition": "函数签名",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Simplified",
+      "definition": "简化后的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Source",
+      "definition": "源类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Specialized",
+      "definition": "特化的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Split",
+      "definition": "分割类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Spread",
+      "definition": "展开类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "State",
+      "definition": "状态类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Static",
+      "definition": "静态成员",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Step",
+      "definition": "编译步骤",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Storage",
+      "definition": "存储类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Strategy",
+      "definition": "策略类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Stream",
+      "definition": "流类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "String Literal",
+      "definition": "字符串字面量类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "String Mapping",
+      "definition": "字符串映射",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Structural",
+      "definition": "结构类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Sub",
+      "definition": "子类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Subject",
+      "definition": "主题类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Substituted",
+      "definition": "替换后的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Subtype",
+      "definition": "子类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Sum",
+      "definition": "和类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Sum Type",
+      "definition": "联合类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Super",
+      "definition": "父类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Super type",
+      "definition": "超类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Supply",
+      "definition": "提供类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Tagged",
+      "definition": "标记类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Tagged Union",
+      "definition": "可辨识联合",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Target",
+      "definition": "目标类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Task",
+      "definition": "任务类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Template",
+      "definition": "模板",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Template Literal",
+      "definition": "模板字面量",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Term",
+      "definition": "类型项",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Token",
+      "definition": "词法单元",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Transform",
+      "definition": "类型变换",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Transitive",
+      "definition": "可传递的",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Transitive Type",
+      "definition": "传递类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Transparent",
+      "definition": "透明类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Transposed",
+      "definition": "转置类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type",
+      "definition": "类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Alias",
+      "definition": "类型别名",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Argument",
+      "definition": "类型参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Checking",
+      "definition": "类型检查",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Constructor",
+      "definition": "类型构造器",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Expression",
+      "definition": "类型表达式",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Function",
+      "definition": "类型函数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Guard",
+      "definition": "类型守卫",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Inference",
+      "definition": "类型推断",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Manipulation",
+      "definition": "类型操作",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Operator",
+      "definition": "类型操作符",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Parameter",
+      "definition": "类型参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Predicate",
+      "definition": "类型谓词",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Query",
+      "definition": "类型查询 typeof",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Reference",
+      "definition": "类型引用",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Type Variable",
+      "definition": "类型变量",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Typestate",
+      "definition": "基于状态类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Unary",
+      "definition": "一元",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Unconstrained",
+      "definition": "无约束的",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Union",
+      "definition": "联合类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Unknown",
+      "definition": "未知类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Unordered",
+      "definition": "无序类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Unsafe",
+      "definition": "不安全的",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Upper",
+      "definition": "上界",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Upper Bound",
+      "definition": "类型上界",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Usage",
+      "definition": "类型使用",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Valid",
+      "definition": "有效类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Validation",
+      "definition": "类型验证",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Value",
+      "definition": "值",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Value Type",
+      "definition": "值类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Variance",
+      "definition": "变型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Variant",
+      "definition": "变体",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Variadic",
+      "definition": "可变参数",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Visibility",
+      "definition": "可见性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Widen",
+      "definition": "拓宽类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Widened",
+      "definition": "拓宽后的类型",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Wildcard",
+      "definition": "通配符",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "With",
+      "definition": "添加属性",
+      "slug": "typescript/glossary"
+    },
+    {
+      "name": "Zero",
+      "definition": "零类型",
+      "slug": "typescript/glossary"
+    }
+  ]
+}

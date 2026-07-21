@@ -1,0 +1,19 @@
+{
+  "status": "skipped",
+  "reason": "Lighthouse CI 集成将在 Phase 3.7 完成",
+  "timestamp": "2026-07-18T23:55:00+08:00",
+  "phase": "Phase 0.2 现状基线审计",
+  "note": "基线性能数据将通过 Playwright 或手动 Chrome DevTools 测量后补全。当前阶段未启动预览服务器，无法执行 Lighthouse 测量，避免影响基线审计流程的稳定性。",
+  "plannedMetrics": {
+    "performance": "待 Phase 3.7 测量",
+    "accessibility": "待 Phase 3.7 测量",
+    "bestPractices": "待 Phase 3.7 测量",
+    "seo": "待 Phase 3.7 测量"
+  },
+  "plannedTargets": {
+    "performance": ">= 90",
+    "accessibility": ">= 95",
+    "bestPractices": ">= 95",
+    "seo": ">= 95"
+  }
+}
