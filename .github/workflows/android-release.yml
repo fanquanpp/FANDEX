@@ -91,11 +91,12 @@ jobs:
       - name: Install Android SDK packages
         # 单独步骤安装 SDK 包：android-actions/setup-android@v3 的 packages 多行参数
         # 与新版 cmdline-tools 16.0 不兼容（包名被换行符拼接为单个字符串）
-        # SDK 36 (Android 16) 为当前 stable 渠道最新正式版；SDK 37 尚未进入 stable 渠道
+        # SDK 37 (Android 17) 需要通过 --channel=1 (beta) 渠道安装，stable 渠道尚未发布
+        # core-ktx 1.19.0 要求 compileSdk >= 37，不能降级到 SDK 36
         shell: bash
         run: |
           yes | sdkmanager --licenses > /dev/null 2>&1 || true
-          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          sdkmanager --channel=1 "platforms;android-37" "build-tools;37.0.0"
           echo "[android-release] SDK 包安装完成"
 
       - name: Setup Gradle

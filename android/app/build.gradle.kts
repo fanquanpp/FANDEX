@@ -20,12 +20,12 @@ val appVersionCode = 13
 
 android {
     namespace = "com.fandex.app"
-    compileSdk = 36
+    compileSdk = 37
 
     defaultConfig {
         applicationId = "com.fandex.app"
         minSdk = 26
-        targetSdk = 36
+        targetSdk = 37
         versionCode = appVersionCode
         versionName = appVersionName
 
