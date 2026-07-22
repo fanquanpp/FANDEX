@@ -1,0 +1,10 @@
+# pnpm 11+ 设置文件
+# pnpm 11 将 package.json 中的 pnpm 字段迁移到 pnpm-workspace.yaml
+# 参考: https://pnpm.io/settings
+
+# 允许执行 build scripts 的包白名单
+# - esbuild: 需要下载平台原生二进制文件
+# - vue-demi: 需要 postinstall 脚本切换 Vue 版本
+onlyBuiltDependencies:
+  - esbuild
+  - vue-demi
