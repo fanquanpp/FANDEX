@@ -8,9 +8,9 @@
  */
 
 /** @type {string} 缓存版本号，更新时修改以清除旧缓存 */
-const CACHE_NAME = 'fandex-v6';
-/** @type {string} 站点基础路径 */
-const BASE = '/FANDEX-web/';
+const CACHE_NAME = 'fandex-v7';
+/** @type {string} 站点基础路径（与 astro.config.ts base 一致） */
+const BASE = '/FANDEX/';
 
 /** @type {string[]} 预缓存资源列表（仅静态资源，不含 HTML） */
 const PRECACHE_URLS = [BASE + 'data/glossary-index.json'];
