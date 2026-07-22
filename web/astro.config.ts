@@ -44,6 +44,12 @@ export default defineConfig({
   },
   // Vite 构建选项：控制 Rollup 输出文件名格式
   vite: {
+    // 扩展名解析：在 Vite 默认扩展名基础上添加 .vue，
+    // 使共享 mdx 文件中不带扩展名的 import '@/islands/CheatSheet'
+    // 能正确解析到 web/ 端的 CheatSheet.vue（desktop/ 端解析到 CheatSheet.tsx）
+    resolve: {
+      extensions: ['.vue', '.mjs', '.js', '.mts', '.ts', '.jsx', '.tsx', '.json'],
+    },
     plugins: [
       // Tailwind CSS v4 Vite 插件：CSS-first 配置，自动扫描源码生成工具类
       // 配置文件位于 src/styles/tailwind.css（通过 @import "tailwindcss" 引入）
