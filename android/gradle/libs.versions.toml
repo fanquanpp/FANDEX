@@ -4,9 +4,16 @@
 # 使用：在 build.gradle.kts 中通过 libs.* 引用
 # 规范：所有版本号必须在此声明，禁止在 build.gradle.kts 中硬编码版本
 #
-# 版本基线（2026-07-19 联网验证为最新稳定版）：
+# 版本基线（2026-07-22 调整）：
 #   Gradle 9.6.1 / AGP 9.3.0 / Kotlin 2.4.10 / Compose BOM 2026.06.01
-#   JDK 21 / compileSdk 37 / targetSdk 37 / minSdk 26
+#   JDK 21 / compileSdk 36 / targetSdk 36 / minSdk 26
+#
+# SDK 36 (Android 16) 选型说明：
+#   SDK 37 (Android 17) 截至 2026-07-22 尚未进入 sdkmanager stable/beta 渠道，
+#   CI 环境无法通过 sdkmanager 安装 platforms;android-37。
+#   core-ktx 1.19.0 要求 compileSdk >= 37，与 CI 环境不兼容。
+#   降级到 core-ktx 1.18.0（针对 Android 16 API）+ SDK 36，保证 CI 可构建。
+#   后续 SDK 37 进入 stable 渠道后可升级回 core-ktx 1.19.0 + SDK 37。
 
 [versions]
 # 构建工具与插件
@@ -31,7 +38,7 @@ datastorePreferences = "1.2.1"
 gson = "2.14.0"
 
 # AndroidX Core
-coreKtx = "1.19.0"
+coreKtx = "1.18.0"
 androidxAnnotation = "1.9.1"
 
 # 后台任务（WorkManager，用于更新检查后台任务）
