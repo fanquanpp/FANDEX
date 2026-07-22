@@ -87,10 +87,15 @@ jobs:
 
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
-        with:
-          packages: |
-            platforms;android-37
-            build-tools;37.0.0
+
+      - name: Install Android SDK packages
+        # 单独步骤安装 SDK 包：android-actions/setup-android@v3 的 packages 多行参数
+        # 与新版 cmdline-tools 16.0 不兼容（包名被换行符拼接为单个字符串）
+        shell: bash
+        run: |
+          yes | sdkmanager --licenses > /dev/null 2>&1 || true
+          sdkmanager "platforms;android-37" "build-tools;37.0.0"
+          echo "[android-release] SDK 包安装完成"
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v4
