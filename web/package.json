@@ -78,6 +78,12 @@
     "uuid": ">=11.1.1",
     "tmp": "^0.2.4"
   },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "vue-demi"
+    ]
+  },
   "lint-staged": {
     "*.{astro,ts,js,mjs,css,json,md}": [
       "prettier --write"
