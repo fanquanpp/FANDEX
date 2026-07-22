@@ -11,9 +11,10 @@
 # SDK 36 (Android 16) 选型说明：
 #   SDK 37 (Android 17) 截至 2026-07-22 尚未进入 sdkmanager stable/beta 渠道，
 #   CI 环境无法通过 sdkmanager 安装 platforms;android-37。
-#   core-ktx 1.19.0 要求 compileSdk >= 37，与 CI 环境不兼容。
-#   降级到 core-ktx 1.18.0（针对 Android 16 API）+ SDK 36，保证 CI 可构建。
-#   后续 SDK 37 进入 stable 渠道后可升级回 core-ktx 1.19.0 + SDK 37。
+#   以下依赖的最新版要求 compileSdk >= 37，与 CI 环境不兼容：
+#     - core-ktx 1.19.0 → 降级到 1.18.0（针对 Android 16 API）
+#     - lifecycle 2.11.0 → 降级到 2.10.0（针对 Android 16 API）
+#   后续 SDK 37 进入 stable 渠道后可升级回 core-ktx 1.19.0 + lifecycle 2.11.0 + SDK 37。
 
 [versions]
 # 构建工具与插件
@@ -25,8 +26,8 @@ composeBom = "2026.06.01"
 activityCompose = "1.13.0"
 navigationCompose = "2.9.8"
 
-# Lifecycle
-lifecycle = "2.11.0"
+# Lifecycle（2.11.0 要求 compileSdk >= 37，降级到 2.10.0 兼容 SDK 36）
+lifecycle = "2.10.0"
 
 # Markdown 解析
 commonmark = "0.29.0"
