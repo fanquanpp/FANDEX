@@ -41,6 +41,9 @@ importers:
       fuse.js:
         specifier: ^7.5.0
         version: 7.5.0
+      katex:
+        specifier: ^0.16.47
+        version: 0.16.47
       radix-vue:
         specifier: ^1.9.17
         version: 1.9.17(vue@3.5.40(typescript@6.0.3))
