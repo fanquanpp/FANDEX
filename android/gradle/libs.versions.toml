@@ -6,7 +6,7 @@
 #
 # 版本基线（2026-07-19 联网验证为最新稳定版）：
 #   Gradle 9.6.1 / AGP 9.3.0 / Kotlin 2.4.10 / Compose BOM 2026.06.01
-#   JDK 21 / compileSdk 37 / targetSdk 37 / minSdk 26
+#   JDK 21 / compileSdk 36 / targetSdk 36 / minSdk 26
 
 [versions]
 # 构建工具与插件
