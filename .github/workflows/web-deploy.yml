@@ -65,7 +65,9 @@ jobs:
         env:
           # CI 环境跳过 husky prepare 脚本（husky 在子目录找不到 .git 会报错）
           HUSKY: '0'
-        run: pnpm install --no-frozen-lockfile
+        run: |
+          pnpm install --no-frozen-lockfile --ignore-scripts
+          pnpm rebuild esbuild vue-demi
 
       - name: Sync content from content/full/ to web/src/content/docs/
         # 单仓库扁平化方案：content/full/ 为权威内容源
