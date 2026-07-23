@@ -1,0 +1,59 @@
+{
+  "$description": "FANDEX 语义颜色令牌（浅色主题）— ark 家族黑/白/青工业信息系统，引用 primitive/color.json",
+  "color": {
+    "$type": "color",
+    "bg": {
+      "primary": { "$value": "{color.neutral.1050}", "$description": "主背景（白色）" },
+      "secondary": { "$value": "{color.neutral.1000}", "$description": "次背景（浅灰）" },
+      "tertiary": { "$value": "{color.neutral.950}", "$description": "三级背景" },
+      "elevated": { "$value": "{color.neutral.1050}", "$description": "浮起元素背景（弹层、模态）" },
+      "sunken": { "$value": "{color.neutral.950}", "$description": "凹陷区域背景（输入框、代码块）" },
+      "hover": { "$value": "{color.neutral.1000}", "$description": "悬停态背景" },
+      "active": { "$value": "{color.neutral.950}", "$description": "激活态背景" }
+    },
+    "fg": {
+      "primary": { "$value": "{color.neutral.50}", "$description": "主文字（近黑）" },
+      "secondary": { "$value": "{color.neutral.500}", "$description": "二级文字" },
+      "tertiary": { "$value": "{color.neutral.600}", "$description": "三级文字" },
+      "disabled": { "$value": "{color.neutral.800}", "$description": "禁用态文字" },
+      "inverse": { "$value": "{color.neutral.1050}", "$description": "反色文字（用于深色背景）" }
+    },
+    "accent": {
+      "base": { "$value": "{color.cyan.300}", "$description": "强调色基准（青色）" },
+      "hover": { "$value": "{color.cyan.200}", "$description": "强调色悬停（中深青）" },
+      "active": { "$value": "{color.cyan.100}", "$description": "强调色激活（深青）" },
+      "fg": { "$value": "{color.neutral.1050}", "$description": "强调色上的文字（白色）" }
+    },
+    "success": {
+      "base": { "$value": "{color.success.light}", "$description": "成功色" },
+      "bg": { "$value": "{color.success.light}", "$description": "成功色背景（需降低不透明度，运行时处理）" },
+      "fg": { "$value": "{color.neutral.1050}", "$description": "成功色上的文字" }
+    },
+    "warning": {
+      "base": { "$value": "{color.warning.light}", "$description": "警告色" },
+      "bg": { "$value": "{color.warning.light}", "$description": "警告色背景" },
+      "fg": { "$value": "{color.neutral.1050}", "$description": "警告色上的文字" }
+    },
+    "danger": {
+      "base": { "$value": "{color.danger.light}", "$description": "危险色" },
+      "bg": { "$value": "{color.danger.light}", "$description": "危险色背景" },
+      "fg": { "$value": "{color.neutral.1050}", "$description": "危险色上的文字" }
+    },
+    "info": {
+      "base": { "$value": "{color.info.light}", "$description": "信息色（同青色基准）" },
+      "bg": { "$value": "{color.info.light}", "$description": "信息色背景" },
+      "fg": { "$value": "{color.neutral.1050}", "$description": "信息色上的文字" }
+    },
+    "border": {
+      "default": { "$value": "{color.neutral.900}", "$description": "默认边框" },
+      "strong": { "$value": "{color.neutral.800}", "$description": "强边框" },
+      "subtle": { "$value": "{color.neutral.950}", "$description": "弱边框" },
+      "focus": { "$value": "{color.cyan.300}", "$description": "焦点边框（青色）" }
+    },
+    "code": {
+      "bg": { "$value": "{color.neutral.50}", "$description": "代码块背景（近黑）" },
+      "text": { "$value": "{color.neutral.900}", "$description": "代码默认文字（浅灰）" },
+      "comment": { "$value": "{color.neutral.600}", "$description": "代码注释" }
+    }
+  }
+}

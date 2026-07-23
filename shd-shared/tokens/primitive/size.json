@@ -1,0 +1,33 @@
+{
+  "$description": "FANDEX 原始尺寸令牌 — 元素宽高、图标尺寸、容器宽度原值，无语义",
+  "size": {
+    "$type": "dimension",
+    "icon": {
+      "xs": { "$value": "0.75rem", "$description": "图标超小 12px" },
+      "sm": { "$value": "1rem", "$description": "图标小 16px" },
+      "md": { "$value": "1.25rem", "$description": "图标中 20px" },
+      "lg": { "$value": "1.5rem", "$description": "图标大 24px" },
+      "xl": { "$value": "2rem", "$description": "图标超大 32px" }
+    },
+    "control": {
+      "sm": { "$value": "2rem", "$description": "控件小高 32px" },
+      "md": { "$value": "2.5rem", "$description": "控件中高 40px" },
+      "lg": { "$value": "3rem", "$description": "控件大高 48px" }
+    },
+    "container": {
+      "sm": { "$value": "40rem", "$description": "容器小宽 640px" },
+      "md": { "$value": "48rem", "$description": "容器中宽 768px" },
+      "lg": { "$value": "64rem", "$description": "容器大宽 1024px" },
+      "xl": { "$value": "80rem", "$description": "容器超大宽 1280px" },
+      "2xl": { "$value": "96rem", "$description": "容器极大宽 1536px" }
+    },
+    "sidebar": {
+      "sm": { "$value": "16rem", "$description": "侧边栏小宽 256px" },
+      "md": { "$value": "20rem", "$description": "侧边栏中宽 320px" }
+    },
+    "header": {
+      "md": { "$value": "4rem", "$description": "头部高度 64px" },
+      "lg": { "$value": "5rem", "$description": "头部大高度 80px" }
+    }
+  }
+}

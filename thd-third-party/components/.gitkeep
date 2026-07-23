@@ -1,0 +1,3 @@
+# 此目录存放第三方 React 组件包（每个组件一个子目录，含 package.json）
+# pnpm-workspace.yaml 中 thd-third-party/components/* 已纳入 workspace
+# 后续阶段 N 填充实际组件

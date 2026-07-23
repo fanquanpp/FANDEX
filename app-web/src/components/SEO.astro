@@ -1,0 +1,174 @@
+---
+/**
+ * SEO 组件
+ *
+ * 功能概述：
+ * 生成页面的 SEO 元数据，包括 title / description / Open Graph / Twitter Card /
+ * JSON-LD 结构化数据（Article 或 WebSite）以及 BreadcrumbList 面包屑结构化数据。
+ *
+ * 设计要点：
+ * - Article schema 补全 datePublished / dateModified / image / mainEntityOfPage 字段，
+ *   满足 Google 富结果（Rich Results）对文章类型的字段要求
+ *   参考：https://developers.google.com/search/docs/appearance/structured-data/article
+ * - BreadcrumbList schema 由调用方通过 breadcrumb prop 传入面包屑数组，
+ *   组件内部转换为符合 schema.org/BreadcrumbList 规范的 JSON-LD
+ * - OG image 缺省指向站点 favicon（社交平台对 SVG 支持有限，未来应替换为 1200x630 PNG）
+ * - is:inline 声明确保 Astro 不对 JSON-LD 脚本做二次处理
+ *
+ * 使用方式：
+ *   <SEO title="..." description="..." canonical="..." type="article"
+ *        publishedDate="2026-01-01" breadcrumb={[{label:'首页', href:'/'}, ...]} />
+ */
+import { SITE } from '@/lib/constants';
+// 统一资产引用：favicon 从 @fandex/shared-assets 共享包导入，用于 OG 图片缺省值
+import faviconUrl from '@fandex/shared-assets/icons/favicon.svg';
+
+interface BreadcrumbItem {
+  /** 面包屑项显示文本 */
+  label: string;
+  /** 面包屑项链接地址（最后一项可省略） */
+  href?: string;
+}
+
+interface Props {
+  /** 页面标题（不含站点后缀） */
+  title: string;
+  /** 页面描述（用于 meta description 与 OG/Twitter） */
+  description?: string | undefined;
+  /** 规范链接（页面完整 URL） */
+  canonical?: string;
+  /** 页面类型：article 文章页 | website 网站/列表页 */
+  type?: 'article' | 'website';
+  /** 文章发布日期（ISO 字符串或 Date 对象，仅 type='article' 时生效） */
+  publishedDate?: string | Date | undefined;
+  /** 文章更新日期（ISO 字符串或 Date 对象，仅 type='article' 时生效） */
+  modifiedDate?: string | Date | undefined;
+  /** 面包屑导航项（传入则生成 BreadcrumbList JSON-LD） */
+  breadcrumb?: BreadcrumbItem[];
+}
+
+const {
+  title,
+  description,
+  canonical,
+  type = 'article',
+  publishedDate,
+  modifiedDate,
+  breadcrumb,
+} = Astro.props;
+
+const base = import.meta.env.BASE_URL;
+const fullTitle = `${title} | ${SITE.title}`;
+const pageUrl = canonical || SITE.url;
+const pageDescription = description || SITE.subtitle;
+
+// OG 图片：当前使用 favicon 作为缺省图（SVG），未来应替换为 1200x630 PNG 以获得最佳社交平台兼容性
+// favicon 来源统一为 @fandex/shared-assets 共享资产，通过 Vite 构建处理生成带哈希的 URL
+const ogImageUrl = new URL(faviconUrl, SITE.url).href;
+
+// 文章日期：优先使用传入的 modifiedDate，回退到 publishedDate，再回退到当前时间
+// 统一将 string | Date 转换为 ISO 字符串以兼容 JSON-LD 规范
+// 注：对无效日期字符串（如 frontmatter 错误输入）需捕获 RangeError，避免 SSG 构建中断
+const toIso = (d: string | Date | undefined): string | undefined => {
+  if (d === undefined) return undefined;
+  try {
+    const date = new Date(d);
+    // 校验日期有效性：Invalid Date 调用 getTime() 返回 NaN
+    if (Number.isNaN(date.getTime())) return undefined;
+    return date.toISOString();
+  } catch {
+    return undefined;
+  }
+};
+const datePublished = toIso(publishedDate) || new Date().toISOString();
+const dateModified = toIso(modifiedDate) || toIso(publishedDate) || new Date().toISOString();
+
+// 根据页面类型生成不同的 JSON-LD 结构化数据
+const ldJson =
+  type === 'article'
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'Article',
+        headline: title,
+        description: pageDescription,
+        url: pageUrl,
+        // mainEntityOfPage：标记本页主体内容（Google 推荐字段）
+        mainEntityOfPage: {
+          '@type': 'WebPage',
+          '@id': pageUrl,
+        },
+        image: ogImageUrl,
+        datePublished,
+        dateModified,
+        author: {
+          '@type': 'Person',
+          name: SITE.author,
+          url: `https://github.com/${SITE.author}`,
+        },
+        publisher: {
+          '@type': 'Organization',
+          name: SITE.title,
+          url: SITE.url,
+          logo: {
+            '@type': 'ImageObject',
+            url: ogImageUrl,
+          },
+        },
+      }
+    : {
+        '@context': 'https://schema.org',
+        '@type': 'WebSite',
+        name: SITE.title,
+        url: SITE.url,
+        description: SITE.subtitle,
+        publisher: {
+          '@type': 'Organization',
+          name: SITE.title,
+          url: SITE.url,
+        },
+      };
+
+// BreadcrumbList JSON-LD：仅当传入 breadcrumb 数组时生成
+const breadcrumbJson =
+  breadcrumb && breadcrumb.length > 0
+    ? {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        itemListElement: breadcrumb.map((item, index) => ({
+          '@type': 'ListItem',
+          position: index + 1,
+          name: item.label,
+          ...(item.href ? { item: new URL(item.href, SITE.url).href } : {}),
+        })),
+      }
+    : null;
+---
+
+<title>{fullTitle}</title>
+<meta name="description" content={pageDescription} />
+
+<!-- Open Graph 元数据 -->
+<meta property="og:title" content={fullTitle} />
+<meta property="og:description" content={pageDescription} />
+<meta property="og:type" content={type} />
+<meta property="og:url" content={pageUrl} />
+<meta property="og:site_name" content={SITE.title} />
+<meta property="og:image" content={ogImageUrl} />
+<meta property="og:locale" content="zh_CN" />
+
+<!-- Twitter Card 元数据 -->
+<meta name="twitter:card" content="summary" />
+<meta name="twitter:title" content={fullTitle} />
+<meta name="twitter:description" content={pageDescription} />
+<meta name="twitter:image" content={ogImageUrl} />
+
+<!-- 规范链接 -->
+<link rel="canonical" href={pageUrl} />
+
+<!-- 结构化数据（JSON-LD）：is:inline 声明，避免 Astro 误判为需处理的脚本 -->
+<script type="application/ld+json" is:inline set:html={JSON.stringify(ldJson)} />
+{
+  breadcrumbJson && (
+    <script type="application/ld+json" is:inline set:html={JSON.stringify(breadcrumbJson)} />
+  )
+}

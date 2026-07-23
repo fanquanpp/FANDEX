@@ -1,0 +1,22 @@
+{
+  "name": "@fandex/styles",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FANDEX 共享样式 — @layer 分层体系（reset/tokens/base/components/islands/utilities）",
+  "exports": {
+    ".": "./index.css",
+    "./layers.css": "./layers.css",
+    "./reset.css": "./reset.css",
+    "./base.css": "./base.css",
+    "./typography.css": "./typography.css",
+    "./layout.css": "./layout.css",
+    "./layout-components.css": "./layout-components.css",
+    "./motion.css": "./motion.css",
+    "./components.css": "./components.css",
+    "./theme.css": "./theme.css",
+    "./responsive.css": "./responsive.css",
+    "./container-queries.css": "./container-queries.css",
+    "./tokens.css": "./tokens.css"
+  }
+}

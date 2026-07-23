@@ -1,0 +1,137 @@
+/* =============================================================================
+ * FANDEX 元素级基础样式 — base 层
+ * -----------------------------------------------------------------------------
+ * 职责：为 HTML 元素提供统一的默认视觉表现，引用 tokens.css 语义令牌
+ * 1. body 背景/前景/字体/行高
+ * 2. 链接默认样式与交互态
+ * 3. 表单元素基础样式
+ * 4. 焦点环（无障碍）
+ * 5. 减少动画偏好覆盖
+ * -----------------------------------------------------------------------------
+ * 引用：spec.md 第三章 3.3.1 base.css / 第七章 7.3 无障碍焦点样式
+ * =============================================================================
+ */
+
+@layer base {
+  /* === 文档主体 === */
+  body {
+    background-color: var(--color-bg-primary);
+    color: var(--color-fg-primary);
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-body, 1rem);
+    font-weight: var(--font-weight-body);
+    line-height: var(--font-line-height-body);
+    letter-spacing: var(--font-letter-spacing-body);
+    /* 过渡：主题切换时颜色平滑过渡 */
+    transition: background-color var(--motion-duration-fast) var(--motion-easing-out),
+                color var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  /* === 链接 === */
+  a {
+    color: var(--color-accent-base);
+    text-decoration: none;
+    transition: color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  a:hover {
+    color: var(--color-accent-hover);
+  }
+
+  a:active {
+    color: var(--color-accent-active);
+  }
+
+  /* === 段落 === */
+  p {
+    margin-block: var(--space-2);
+  }
+
+  /* === 标题：字号由 typography.css 细化，此处仅统一 margin === */
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-family-heading);
+    font-weight: var(--font-weight-heading);
+    line-height: var(--font-line-height-heading);
+    letter-spacing: var(--font-letter-spacing-heading);
+    color: var(--color-fg-primary);
+    margin-block: var(--space-4);
+  }
+
+  /* === 代码元素 === */
+  code, kbd, samp, pre {
+    font-family: var(--font-family-code);
+    font-size: var(--font-size-secondary);
+  }
+
+  code {
+    background-color: var(--color-code-bg);
+    color: var(--color-code-text);
+    padding: 0.125em 0.375em;
+    border-radius: var(--radius-sm);
+  }
+
+  pre {
+    background-color: var(--color-code-bg);
+    color: var(--color-code-text);
+    padding: var(--space-4);
+    border-radius: var(--radius-lg);
+    overflow-x: auto;
+  }
+
+  pre code {
+    background: none;
+    padding: 0;
+    border-radius: 0;
+    font-size: inherit;
+  }
+
+  /* === 引用 === */
+  blockquote {
+    border-inline-start: 3px solid var(--color-border-strong);
+    padding-inline-start: var(--space-4);
+    color: var(--color-fg-secondary);
+    font-family: var(--font-family-quote);
+  }
+
+  /* === 分隔线 === */
+  hr {
+    border: none;
+    border-block-start: 1px solid var(--color-border-default);
+    margin-block: var(--space-6);
+  }
+
+  /* === 表单元素 === */
+  input, textarea, select {
+    background-color: var(--color-bg-sunken);
+    color: var(--color-fg-primary);
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-control);
+    padding: var(--space-2) var(--space-3);
+    transition: border-color var(--motion-duration-instant) var(--motion-easing-out),
+                box-shadow var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--color-fg-tertiary);
+  }
+
+  /* === 焦点环（无障碍） === */
+  :focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-sm);
+  }
+
+  /* === 禁用态 === */
+  [disabled] {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+
+  /* === 图片懒加载占位 === */
+  img[loading='lazy'] {
+    background-color: var(--color-bg-secondary);
+  }
+}

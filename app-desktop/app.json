@@ -1,0 +1,35 @@
+{
+  "expo": {
+    "name": "FANDEX Desktop",
+    "slug": "fandex-desktop",
+    "version": "2.0.0",
+    "orientation": "default",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "platforms": ["web", "ios", "android"],
+    "icon": "../shd-shared/assets/icons/app-icon-512.png",
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "../shd-shared/assets/icons/favicon.svg"
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.fandex.desktop"
+    },
+    "android": {
+      "package": "com.fandex.desktop",
+      "adaptiveIcon": {
+        "foregroundImage": "../shd-shared/assets/icons/app-icon-maskable-512.png",
+        "backgroundColor": "#0a0a0f"
+      }
+    },
+    "scheme": "fandex",
+    "plugins": ["expo-router"],
+    "extra": {
+      "eas": {
+        "projectId": ""
+      }
+    }
+  }
+}

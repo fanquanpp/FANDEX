@@ -1,0 +1,42 @@
+{
+  "$description": "FANDEX 语义间距令牌 — 引用 primitive/space.json，赋予布局语义",
+  "space": {
+    "$type": "dimension",
+    "page": {
+      "x": { "$value": "{space.4}", "$description": "页面水平内边距（移动端）" },
+      "x-lg": { "$value": "{space.8}", "$description": "页面水平内边距（桌面端）" },
+      "y": { "$value": "{space.6}", "$description": "页面垂直内边距" }
+    },
+    "section": {
+      "y": { "$value": "{space.16}", "$description": "区块垂直间距" },
+      "y-lg": { "$value": "{space.24}", "$description": "大区块垂直间距" }
+    },
+    "card": {
+      "padding": { "$value": "{space.4}", "$description": "卡片内边距" },
+      "padding-lg": { "$value": "{space.6}", "$description": "大卡片内边距" },
+      "gap": { "$value": "{space.3}", "$description": "卡片内元素间距" }
+    },
+    "stack": {
+      "xs": { "$value": "{space.1}", "$description": "堆栈超小间距" },
+      "sm": { "$value": "{space.2}", "$description": "堆栈小间距" },
+      "md": { "$value": "{space.4}", "$description": "堆栈中间距" },
+      "lg": { "$value": "{space.6}", "$description": "堆栈大间距" },
+      "xl": { "$value": "{space.8}", "$description": "堆栈超大间距" }
+    },
+    "inline": {
+      "xs": { "$value": "{space.1}", "$description": "行内超小间距" },
+      "sm": { "$value": "{space.2}", "$description": "行内小间距" },
+      "md": { "$value": "{space.3}", "$description": "行内中间距" },
+      "lg": { "$value": "{space.4}", "$description": "行内大间距" }
+    },
+    "grid": {
+      "gap": { "$value": "{space.4}", "$description": "网格间距" },
+      "gap-lg": { "$value": "{space.6}", "$description": "大网格间距" }
+    },
+    "control": {
+      "padding-x": { "$value": "{space.3}", "$description": "控件水平内边距" },
+      "padding-y": { "$value": "{space.2}", "$description": "控件垂直内边距" },
+      "gap": { "$value": "{space.2}", "$description": "控件内元素间距" }
+    }
+  }
+}

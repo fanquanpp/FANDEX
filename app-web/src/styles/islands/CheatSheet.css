@@ -1,0 +1,58 @@
+/* 重置速查表内 pre/code 的默认样式，避免与全局样式冲突 */
+/* 原 Vue scoped :deep() 已移除，非 scoped 全局样式自然穿透子元素 */
+.cheatsheet pre {
+  margin: 0;
+}
+
+/* 代码字体和大小设置 */
+.cheatsheet code {
+  font-family: var(--font-code);
+  font-size: 0.85em;
+}
+
+/* 分组标题：紧凑布局，加粗显示 */
+.cheatsheet .group-header h3 {
+  margin: 0;
+  font-size: 1em;
+  font-weight: 700;
+}
+
+/* 分组说明文字：较小字号，辅助色，与标题同行显示 */
+.cheatsheet .group-desc {
+  font-size: 0.82em;
+  color: var(--color-text-tertiary);
+  margin-left: var(--spacing-sm);
+  font-weight: 400;
+}
+
+/* 学习指引区域样式 */
+.cheatsheet .learning-guide summary {
+  cursor: pointer;
+  font-weight: 700;
+  margin-bottom: var(--spacing-sm);
+  font-family: var(--font-display);
+}
+
+.cheatsheet .learning-guide ul,
+.cheatsheet .learning-guide ol {
+  padding-left: var(--spacing-lg);
+  margin: var(--spacing-xs) 0;
+}
+
+.cheatsheet .learning-guide li {
+  margin-bottom: 2px;
+}
+
+/* 常见错误列表样式 */
+.cheatsheet .common-errors ul {
+  padding-left: var(--spacing-lg);
+  margin: var(--spacing-xs) 0 0;
+}
+
+/* 错误示例中的行内代码：等宽字体 + 背景色高亮 */
+.cheatsheet .common-errors code {
+  font-family: var(--font-code);
+  font-size: 0.9em;
+  background: var(--color-bg-code);
+  padding: 1px 4px;
+}

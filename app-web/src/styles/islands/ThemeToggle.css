@@ -1,0 +1,31 @@
+/* 主题切换按钮：方形图标按钮，居中对齐 */
+.theme-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  /* SSR 阶段透明占位，避免水合后图标突然出现造成 CLS */
+  opacity: 0;
+  pointer-events: none;
+  transition:
+    opacity 200ms ease,
+    background 150ms ease,
+    color 150ms ease;
+}
+
+/* 客户端挂载完成：淡入并启用交互 */
+.theme-toggle--ready {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* 悬停效果：背景变浅，图标变为主题色 */
+.theme-toggle:hover {
+  background: var(--color-bg-hover);
+  color: var(--color-primary);
+}

@@ -1,0 +1,131 @@
+---
+/**
+ * Footer 组件 — 统一底部信息区（desktop 端）
+ * -----------------------------------------------------------------------------
+ * 职责：
+ *   1. 渲染跨页面统一的页脚内容（生态链接、导航链接、版权信息）
+ *   2. 通过 variant 控制显示模式：full（首页完整版）/ compact（精简版）
+ *   3. 通过 currentPath 标记当前所在页面的导航链接高亮
+ *   4. 消费 @fandex/styles 中 .fndx-footer 命名规范，与 web 端样式统一
+ *
+ * 使用方式：
+ *   <Footer variant="full" stats={stats} />           // 首页
+ *   <Footer variant="compact" currentPath="about" />   // 信息页
+ *
+ * 引用：
+ *   - shd-shared/styles/layout-components.css  .fndx-footer 系列样式
+ *   - spec.md 第八章 ark-ui 美术风格 / tasks.md 阶段 D.2.2
+ */
+import { SITE } from '@/lib/constants';
+import { withBase } from '@/lib/url';
+
+interface Props {
+  /** 显示模式：full 为完整版（含生态链接/统计/技术信息/注意事项），compact 为精简版 */
+  variant?: 'full' | 'compact';
+  /** 统计数据，仅 full 模式使用 */
+  stats?: {
+    totalDocs: number;
+    totalModules: number;
+    totalTags: number;
+  };
+  /** 当前页面标识，用于高亮对应导航链接 */
+  currentPath?: string;
+}
+
+const { variant = 'compact', stats, currentPath } = Astro.props;
+const currentYear = new Date().getFullYear();
+
+/** 导航链接配置：与 web 端保持一致，仅路径生成方式不同（withBase 适配 Tauri/Web 双环境）
+ *  偏差报备：原免责声明/隐私政策链接指向 /getting-started/ 下内容页面，但该目录实际无对应文件，
+ *  产生 404。仓库级文档已在 docs/ 统一管理，故移除这两个失效链接。 */
+const navLinks = [
+  { label: '标签索引', href: withBase('/tags/'), key: 'tags' },
+  { label: 'RSS', href: withBase('/rss.xml'), key: 'rss' },
+  {
+    label: 'GitHub',
+    href: 'https://github.com/fanquanpp/FANDEX-exe',
+    key: 'github',
+    external: true,
+  },
+];
+
+/** 生态联动链接：跨平台入口 */
+const ecoLinks = [
+  {
+    label: 'FANDEX-exe · 桌面应用',
+    href: 'https://github.com/fanquanpp/FANDEX-exe',
+    current: true,
+  },
+];
+
+/** 居中布局修饰符：两种模式均使用居中布局 */
+const footerClass = 'fndx-footer fndx-footer--centered';
+---
+
+<footer class={footerClass} role="contentinfo" aria-label="站点页脚">
+  <div class="fndx-footer__container">
+    {/* 生态联动链接区（仅 full 模式显示） */}
+    {variant === 'full' && (
+      <div class="fndx-footer__eco-links">
+        {ecoLinks.map((link) => (
+          <a
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            class={`fndx-footer__eco-link${link.current ? ' is-current' : ''}`}
+          >
+            {link.label}
+          </a>
+        ))}
+      </div>
+    )}
+
+    {/* 导航链接组 */}
+    <nav class="fndx-footer__nav" aria-label="页脚导航">
+      {navLinks.map((link, idx) => (
+        <>
+          {idx > 0 && <span class="fndx-footer__divider" aria-hidden="true">|</span>}
+          <a
+            href={link.href}
+            class={`fndx-footer__nav-link${currentPath === link.key ? ' is-current' : ''}`}
+            {...(link.external ? { target: '_blank', rel: 'noopener noreferrer' } : {})}
+          >
+            {link.label}
+          </a>
+        </>
+      ))}
+    </nav>
+
+    {/* 统计数据区（仅 full 模式显示） */}
+    {variant === 'full' && stats && (
+      <div class="fndx-footer__stats">
+        <span>{stats.totalDocs} 篇文档</span>
+        <span class="fndx-footer__divider" aria-hidden="true">·</span>
+        <span>{stats.totalModules} 个模块</span>
+        <span class="fndx-footer__divider" aria-hidden="true">·</span>
+        <span>{stats.totalTags} 个标签</span>
+      </div>
+    )}
+
+    {/* 技术信息（仅 full 模式显示） */}
+    {variant === 'full' && (
+      <div class="fndx-footer__tech">
+        Built with Astro 7 SSG · Tauri 2 Compatible
+      </div>
+    )}
+
+    {/* 注意事项（仅 full 模式显示） */}
+    {variant === 'full' && (
+      <p class="fndx-footer__notice">
+        内容由人工与 AI 共同编撰，可能存在遗漏或错误，请结合官方资料独立验证
+      </p>
+    )}
+
+    {/* 底部版权区 */}
+    <div class="fndx-footer__bottom">
+      <p class="fndx-footer__copyright">
+        Copyright (c) 2024-{currentYear} {SITE.author} · MIT License
+      </p>
+    </div>
+  </div>
+</footer>

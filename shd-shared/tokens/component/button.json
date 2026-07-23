@@ -1,0 +1,144 @@
+{
+  "$description": "FANDEX 按钮组件令牌 — 引用 semantic 层令牌，定义按钮专属视觉变量。ark 家族按钮特征：小圆角、克制阴影、青色强调",
+  "button": {
+    "radius": { "$value": "{radius.control}", "$description": "按钮圆角（4px，ark 家族偏好小圆角）" },
+    "borderWidth": { "$value": "1px", "$description": "按钮边框宽度" },
+    "fontWeight": { "$value": "{font.weight.emphasis}", "$description": "按钮字重（medium）" },
+    "letterSpacing": { "$value": "{font.letterSpacing.label}", "$description": "按钮字距（略宽）" },
+    "lineHeight": { "$value": "1", "$description": "按钮行高（单行紧凑）" },
+    "minWidth": { "$value": "{space.20}", "$description": "按钮最小宽度（80px）" },
+    "transition": {
+      "$type": "transition",
+      "$value": {
+        "duration": "{motion.duration.fast}",
+        "delay": "{motion.delay.none}",
+        "timingFunction": "{motion.easing.out}"
+      },
+      "$description": "按钮过渡预设（颜色/阴影统一 150ms 减速）"
+    },
+
+    "size": {
+      "sm": {
+        "height": { "$value": "{size.control.sm}", "$description": "小按钮高（32px）" },
+        "paddingX": { "$value": "{space.3}", "$description": "小按钮水平内边距（12px）" },
+        "fontSize": { "$value": "{font.size.secondary}", "$description": "小按钮字号（14px）" },
+        "iconSize": { "$value": "{size.icon.sm}", "$description": "小按钮图标尺寸" },
+        "gap": { "$value": "{space.inline.xs}", "$description": "小按钮图标与文字间距" }
+      },
+      "md": {
+        "height": { "$value": "{size.control.md}", "$description": "中按钮高（40px，默认）" },
+        "paddingX": { "$value": "{space.4}", "$description": "中按钮水平内边距（16px）" },
+        "fontSize": { "$value": "{font.size.body}", "$description": "中按钮字号（16px）" },
+        "iconSize": { "$value": "{size.icon.md}", "$description": "中按钮图标尺寸" },
+        "gap": { "$value": "{space.inline.sm}", "$description": "中按钮图标与文字间距" }
+      },
+      "lg": {
+        "height": { "$value": "{size.control.lg}", "$description": "大按钮高（48px）" },
+        "paddingX": { "$value": "{space.6}", "$description": "大按钮水平内边距（24px）" },
+        "fontSize": { "$value": "{font.size.body-lg}", "$description": "大按钮字号（18px）" },
+        "iconSize": { "$value": "{size.icon.lg}", "$description": "大按钮图标尺寸" },
+        "gap": { "$value": "{space.inline.md}", "$description": "大按钮图标与文字间距" }
+      }
+    },
+
+    "primary": {
+      "default": {
+        "bg": { "$value": "{color.accent.base}", "$description": "主按钮背景（青色）" },
+        "fg": { "$value": "{color.accent.fg}", "$description": "主按钮文字（白色）" },
+        "border": { "$value": "{color.accent.base}", "$description": "主按钮边框（同背景）" }
+      },
+      "hover": {
+        "bg": { "$value": "{color.accent.hover}", "$description": "主按钮悬停背景（中深青）" },
+        "border": { "$value": "{color.accent.hover}", "$description": "主按钮悬停边框" }
+      },
+      "active": {
+        "bg": { "$value": "{color.accent.active}", "$description": "主按钮激活背景（深青）" },
+        "border": { "$value": "{color.accent.active}", "$description": "主按钮激活边框" }
+      },
+      "focus": {
+        "border": { "$value": "{color.border.focus}", "$description": "主按钮焦点边框（青色）" },
+        "shadow": { "$value": "{shadow.focus-ring}", "$description": "主按钮焦点内阴影" }
+      },
+      "disabled": {
+        "bg": { "$value": "{color.bg.tertiary}", "$description": "主按钮禁用背景" },
+        "fg": { "$value": "{color.fg.disabled}", "$description": "主按钮禁用文字" },
+        "border": { "$value": "{color.border.subtle}", "$description": "主按钮禁用边框" }
+      }
+    },
+
+    "secondary": {
+      "default": {
+        "bg": { "$value": "{color.bg.elevated}", "$description": "次按钮背景（白色浮起）" },
+        "fg": { "$value": "{color.fg.primary}", "$description": "次按钮文字（近黑）" },
+        "border": { "$value": "{color.border.default}", "$description": "次按钮边框" }
+      },
+      "hover": {
+        "bg": { "$value": "{color.bg.hover}", "$description": "次按钮悬停背景" },
+        "border": { "$value": "{color.border.strong}", "$description": "次按钮悬停边框" }
+      },
+      "active": {
+        "bg": { "$value": "{color.bg.active}", "$description": "次按钮激活背景" },
+        "border": { "$value": "{color.border.strong}", "$description": "次按钮激活边框" }
+      },
+      "focus": {
+        "border": { "$value": "{color.border.focus}", "$description": "次按钮焦点边框" },
+        "shadow": { "$value": "{shadow.focus-ring}", "$description": "次按钮焦点内阴影" }
+      },
+      "disabled": {
+        "bg": { "$value": "{color.bg.tertiary}", "$description": "次按钮禁用背景" },
+        "fg": { "$value": "{color.fg.disabled}", "$description": "次按钮禁用文字" },
+        "border": { "$value": "{color.border.subtle}", "$description": "次按钮禁用边框" }
+      }
+    },
+
+    "ghost": {
+      "default": {
+        "bg": { "$value": "transparent", "$description": "幽灵按钮背景（透明）" },
+        "fg": { "$value": "{color.fg.primary}", "$description": "幽灵按钮文字" },
+        "border": { "$value": "transparent", "$description": "幽灵按钮边框（透明）" }
+      },
+      "hover": {
+        "bg": { "$value": "{color.bg.hover}", "$description": "幽灵按钮悬停背景" },
+        "border": { "$value": "transparent", "$description": "幽灵按钮悬停边框" }
+      },
+      "active": {
+        "bg": { "$value": "{color.bg.active}", "$description": "幽灵按钮激活背景" },
+        "border": { "$value": "transparent", "$description": "幽灵按钮激活边框" }
+      },
+      "focus": {
+        "border": { "$value": "{color.border.focus}", "$description": "幽灵按钮焦点边框" },
+        "shadow": { "$value": "{shadow.focus-ring}", "$description": "幽灵按钮焦点内阴影" }
+      },
+      "disabled": {
+        "bg": { "$value": "transparent", "$description": "幽灵按钮禁用背景" },
+        "fg": { "$value": "{color.fg.disabled}", "$description": "幽灵按钮禁用文字" },
+        "border": { "$value": "transparent", "$description": "幽灵按钮禁用边框" }
+      }
+    },
+
+    "danger": {
+      "default": {
+        "bg": { "$value": "{color.danger.base}", "$description": "危险按钮背景" },
+        "fg": { "$value": "{color.danger.fg}", "$description": "危险按钮文字" },
+        "border": { "$value": "{color.danger.base}", "$description": "危险按钮边框" }
+      },
+      "hover": {
+        "bg": { "$value": "{color.danger.base}", "$description": "危险按钮悬停背景（运行时降透明度）" },
+        "border": { "$value": "{color.danger.base}", "$description": "危险按钮悬停边框" }
+      },
+      "active": {
+        "bg": { "$value": "{color.danger.base}", "$description": "危险按钮激活背景" },
+        "border": { "$value": "{color.danger.base}", "$description": "危险按钮激活边框" }
+      },
+      "focus": {
+        "border": { "$value": "{color.border.focus}", "$description": "危险按钮焦点边框" },
+        "shadow": { "$value": "{shadow.focus-ring}", "$description": "危险按钮焦点内阴影" }
+      },
+      "disabled": {
+        "bg": { "$value": "{color.bg.tertiary}", "$description": "危险按钮禁用背景" },
+        "fg": { "$value": "{color.fg.disabled}", "$description": "危险按钮禁用文字" },
+        "border": { "$value": "{color.border.subtle}", "$description": "危险按钮禁用边框" }
+      }
+    }
+  }
+}

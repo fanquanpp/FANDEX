@@ -1,0 +1,294 @@
+/* 根容器：纵向排列工具栏 + 渲染区 + 图例 */
+.kmap-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-light);
+}
+
+/* 工具栏：水平排列缩放按钮 */
+.kmap-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-bg);
+}
+
+/* 工具栏按钮：方形小按钮 */
+.kmap-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast, 0.15s),
+    border-color var(--transition-fast, 0.15s);
+}
+
+.kmap-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* 当前缩放比例显示 */
+.kmap-scale {
+  font-size: 0.82em;
+  color: var(--color-text-secondary);
+  min-width: 48px;
+  text-align: center;
+  font-variant-numeric: tabular-nums;
+}
+
+.kmap-reset-btn {
+  margin-left: var(--spacing-xs, 4px);
+}
+
+/* 渲染容器：响应式高度 + 布局隔离，避免固定高度导致移动端 CLS 与可视区浪费
+   - clamp() 根据视口高度自适应：小屏 380px / 中屏跟随 60vh / 上限 600px
+   - contain 隔离子树布局/绘制/样式，防止 SVG 缩放引起父级 reflow 造成 CLS */
+.kmap-container {
+  position: relative;
+  width: 100%;
+  height: clamp(380px, 60vh, 600px);
+  overflow: hidden;
+  background: var(--color-bg);
+  cursor: grab;
+  user-select: none;
+  contain: layout style paint;
+}
+
+.kmap-container.is-dragging {
+  cursor: grabbing;
+}
+
+.kmap-container.is-empty {
+  cursor: default;
+}
+
+/* SVG wrapper：可变换 */
+.kmap-svg-wrapper {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform-origin: 0 0;
+  /* 通过 inline style 设置实际 transform */
+  will-change: transform;
+}
+
+/* 兼容暗色模式：SVG 文本颜色继承（原 Vue :deep() 已去除 scoped 修饰） */
+.kmap-svg-wrapper svg {
+  max-width: none;
+  display: block;
+}
+
+.kmap-svg-wrapper svg .node text {
+  fill: var(--color-text);
+}
+
+.kmap-svg-wrapper svg .edgeLabel {
+  background: var(--color-bg);
+}
+
+/* 加载状态 */
+.kmap-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md, 16px);
+  color: var(--color-text-secondary);
+}
+
+.kmap-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid var(--color-border);
+  border-top-color: var(--color-primary);
+  border-radius: 50%;
+  animation: kmap-spin 0.8s linear infinite;
+}
+
+@keyframes kmap-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.kmap-loading-text {
+  font-size: 0.88em;
+  margin: 0;
+}
+
+/* 错误状态 */
+.kmap-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm, 8px);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-lg, 24px);
+  text-align: center;
+}
+
+.kmap-error-title {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: var(--spacing-sm, 8px) 0 0;
+}
+
+.kmap-error-detail {
+  font-size: 0.82em;
+  color: var(--color-text-tertiary);
+  margin: 0;
+  max-width: 480px;
+  word-break: break-word;
+}
+
+.kmap-retry-btn {
+  margin-top: var(--spacing-md, 16px);
+  padding: 6px 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  font-size: 0.88em;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast, 0.15s),
+    border-color var(--transition-fast, 0.15s);
+}
+
+.kmap-retry-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* 空状态 */
+.kmap-empty {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm, 8px);
+  color: var(--color-text-tertiary);
+}
+
+.kmap-empty-text {
+  font-size: 0.9em;
+  margin: 0;
+}
+
+/* 图例区 */
+.kmap-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  border-top: 1px solid var(--color-border-light);
+  background: var(--color-bg);
+  font-size: 0.8em;
+  color: var(--color-text-secondary);
+}
+
+.kmap-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kmap-legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 1px solid var(--color-border);
+}
+
+.kmap-legend-module {
+  background: #dbeafe;
+  border-color: #2563eb;
+}
+
+.kmap-legend-beginner {
+  background: #dcfce7;
+  border-color: #16a34a;
+}
+
+.kmap-legend-intermediate {
+  background: #fef9c3;
+  border-color: #ca8a04;
+}
+
+.kmap-legend-advanced {
+  background: #fee2e2;
+  border-color: #dc2626;
+}
+
+.kmap-legend-line {
+  display: inline-block;
+  width: 20px;
+  height: 0;
+  border-top: 2px solid var(--color-text-secondary);
+}
+
+.kmap-legend-line-dashed {
+  border-top-style: dashed;
+}
+
+.kmap-legend-tip {
+  margin-left: auto;
+  font-style: italic;
+  color: var(--color-text-tertiary);
+}
+
+/* 暗色模式下的图例颜色（保持可读性）（原 Vue :global() 已去除 scoped 修饰） */
+html[data-theme='dark'] .kmap-legend-module {
+  background: #1e3a8a;
+  border-color: #60a5fa;
+}
+
+html[data-theme='dark'] .kmap-legend-beginner {
+  background: #14532d;
+  border-color: #4ade80;
+}
+
+html[data-theme='dark'] .kmap-legend-intermediate {
+  background: #713f12;
+  border-color: #facc15;
+}
+
+html[data-theme='dark'] .kmap-legend-advanced {
+  background: #7f1d1d;
+  border-color: #f87171;
+}
+
+/* 移动端适配：缩小容器高度 */
+@media (max-width: 768px) {
+  .kmap-container {
+    height: 420px;
+  }
+
+  .kmap-legend {
+    gap: var(--spacing-sm, 8px);
+    font-size: 0.75em;
+  }
+
+  .kmap-legend-tip {
+    display: none;
+  }
+}

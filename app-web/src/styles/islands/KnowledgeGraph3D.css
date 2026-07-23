@@ -1,0 +1,282 @@
+/* 根容器：纵向排列工具栏 + 渲染区 + 图例 */
+.kg3d-root {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-light);
+}
+
+/* 工具栏：水平排列控制按钮 */
+.kg3d-toolbar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm, 8px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  border-bottom: 1px solid var(--color-border-light);
+  background: var(--color-bg);
+}
+
+/* 工具栏按钮 */
+.kg3d-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition:
+    color var(--transition-fast, 0.15s),
+    border-color var(--transition-fast, 0.15s);
+}
+
+.kg3d-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.kg3d-btn.is-active {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* 渲染区包裹层：作为定位上下文，承载 canvas 容器与 loading/error 覆盖层
+   - position: relative 让 absolute 子元素锚定于此
+   - clamp() 根据视口高度自适应：小屏 480px / 中屏跟随 75vh / 上限 800px
+   - contain 隔离子树布局/绘制/样式，防止 ThreeJS canvas 缩放引起父级 reflow */
+.kg3d-canvas-wrap {
+  position: relative;
+  width: 100%;
+  height: clamp(480px, 75vh, 800px);
+  overflow: hidden;
+  background: #0f172a;
+  contain: layout style paint;
+}
+
+/* 3d-force-graph 渲染容器：子节点完全由库管理，React 永远不 patch 其内部 */
+.kg3d-container {
+  position: absolute;
+  inset: 0;
+  cursor: grab;
+}
+
+.kg3d-container:active {
+  cursor: grabbing;
+}
+
+/* 加载状态：覆盖在 canvas 之上（与 .kg3d-container 平级） */
+.kg3d-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md, 16px);
+  color: #e5e7eb;
+  pointer-events: none;
+  z-index: 10;
+}
+
+.kg3d-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(255, 255, 255, 0.2);
+  border-top-color: #60a5fa;
+  border-radius: 50%;
+  animation: kg3d-spin 0.8s linear infinite;
+}
+
+@keyframes kg3d-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.kg3d-loading-text {
+  font-size: 0.88em;
+  margin: 0;
+  text-align: center;
+  padding: 0 var(--spacing-md, 16px);
+}
+
+/* 错误状态 */
+.kg3d-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-sm, 8px);
+  color: var(--color-text-secondary);
+  padding: var(--spacing-lg, 24px);
+  text-align: center;
+  z-index: 10;
+}
+
+.kg3d-error-title {
+  font-size: 1em;
+  font-weight: 600;
+  color: var(--color-text);
+  margin: var(--spacing-sm, 8px) 0 0;
+}
+
+.kg3d-error-detail {
+  font-size: 0.82em;
+  color: var(--color-text-tertiary);
+  margin: 0;
+  max-width: 480px;
+  word-break: break-word;
+}
+
+.kg3d-retry-btn {
+  margin-top: var(--spacing-md, 16px);
+  padding: 6px 16px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text);
+  font-size: 0.88em;
+  cursor: pointer;
+  transition:
+    color var(--transition-fast, 0.15s),
+    border-color var(--transition-fast, 0.15s);
+}
+
+.kg3d-retry-btn:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* 图例区 */
+.kg3d-legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--spacing-md, 16px);
+  padding: var(--spacing-sm, 8px) var(--spacing-md, 16px);
+  border-top: 1px solid var(--color-border-light);
+  background: var(--color-bg);
+  font-size: 0.8em;
+  color: var(--color-text-secondary);
+}
+
+.kg3d-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.kg3d-legend-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 1px solid var(--color-border);
+}
+
+.kg3d-legend-module {
+  background: #2563eb;
+  border-color: #1e40af;
+}
+
+.kg3d-legend-beginner {
+  background: #16a34a;
+  border-color: #14532d;
+}
+
+.kg3d-legend-intermediate {
+  background: #ca8a04;
+  border-color: #713f12;
+}
+
+.kg3d-legend-advanced {
+  background: #dc2626;
+  border-color: #7f1d1d;
+}
+
+.kg3d-legend-default {
+  background: #6b7280;
+  border-color: #374151;
+}
+
+.kg3d-legend-line {
+  display: inline-block;
+  width: 20px;
+  height: 0;
+  border-top: 2px solid var(--color-text-secondary);
+}
+
+.kg3d-legend-line-dashed {
+  border-top-style: dashed;
+}
+
+.kg3d-legend-tip {
+  margin-left: auto;
+  font-style: italic;
+  color: var(--color-text-tertiary);
+}
+
+/* 暗色模式下的图例颜色（保持可读性）（原 Vue :global() 已去除 scoped 修饰） */
+html[data-theme='dark'] .kg3d-legend-module {
+  background: #60a5fa;
+  border-color: #1e3a8a;
+}
+
+html[data-theme='dark'] .kg3d-legend-beginner {
+  background: #4ade80;
+  border-color: #14532d;
+}
+
+html[data-theme='dark'] .kg3d-legend-intermediate {
+  background: #facc15;
+  border-color: #713f12;
+}
+
+html[data-theme='dark'] .kg3d-legend-advanced {
+  background: #f87171;
+  border-color: #7f1d1d;
+}
+
+html[data-theme='dark'] .kg3d-legend-default {
+  background: #9ca3af;
+  border-color: #374151;
+}
+
+/* 移动端适配：缩小容器高度，简化图例 */
+@media (max-width: 768px) {
+  .kg3d-canvas-wrap {
+    height: 520px;
+  }
+
+  .kg3d-legend {
+    gap: var(--spacing-sm, 8px);
+    font-size: 0.75em;
+  }
+
+  .kg3d-legend-tip {
+    display: none;
+  }
+}
+
+/* 3d-force-graph tooltip 全局样式
+   3d-force-graph 在节点 hover 时自动注入 .graph-tooltip DOM，
+   因不属于组件 shadow DOM，必须用全局选择器穿透 */
+.graph-tooltip {
+  position: absolute;
+  z-index: 100;
+  padding: 6px 10px;
+  font-size: 0.82em;
+  line-height: 1.4;
+  color: #f8fafc;
+  background: rgba(15, 23, 42, 0.92);
+  border: 1px solid rgba(96, 165, 250, 0.4);
+  border-radius: 4px;
+  pointer-events: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  max-width: 280px;
+  word-break: break-word;
+}

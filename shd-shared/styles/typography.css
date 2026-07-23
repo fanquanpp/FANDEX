@@ -1,0 +1,144 @@
+/* =============================================================================
+ * FANDEX 排版样式 — base 层
+ * -----------------------------------------------------------------------------
+ * 职责：定义标题、正文、代码、标签等排版元素的字号/字重/行高/字距
+ * 1. 标题层级 h1-h6（引用 font.size/weight/lineHeight 语义令牌）
+ * 2. 正文与辅助文字
+ * 3. 代码块语法高亮基础色
+ * 4. 标签/标记/徽章排版
+ * -----------------------------------------------------------------------------
+ * 引用：spec.md 第三章 3.3.1 typography.css
+ * =============================================================================
+ */
+
+@layer base {
+  /* === 标题层级 === */
+  /* 一级标题：页面主标题 */
+  h1 {
+    font-size: var(--font-size-heading-1);
+    font-weight: var(--font-weight-heading);
+    line-height: var(--font-line-height-heading);
+    letter-spacing: var(--font-letter-spacing-display);
+  }
+
+  /* 二级标题：章节标题 */
+  h2 {
+    font-size: var(--font-size-heading-2);
+    font-weight: var(--font-weight-heading);
+    line-height: var(--font-line-height-heading);
+    letter-spacing: var(--font-letter-spacing-heading);
+  }
+
+  /* 三级标题：子章节 */
+  h3 {
+    font-size: var(--font-size-heading-3);
+    font-weight: var(--font-weight-heading);
+    line-height: var(--font-line-height-subheading);
+  }
+
+  /* 四级标题：段落小标题 */
+  h4 {
+    font-size: var(--font-size-heading-4);
+    font-weight: var(--font-weight-emphasis);
+    line-height: var(--font-line-height-subheading);
+  }
+
+  /* 五级标题 */
+  h5 {
+    font-size: var(--font-size-body-lg);
+    font-weight: var(--font-weight-emphasis);
+    line-height: var(--font-line-height-subheading);
+  }
+
+  /* 六级标题 */
+  h6 {
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-emphasis);
+    line-height: var(--font-line-height-subheading);
+  }
+
+  /* === 展示标题：用于英雄区，需手动添加 .fndx-display 类 === */
+  .fndx-display {
+    font-size: var(--font-size-display);
+    font-weight: var(--font-weight-display);
+    line-height: var(--font-line-height-heading);
+    letter-spacing: var(--font-letter-spacing-display);
+  }
+
+  /* === 英雄标题：最大字号 === */
+  .fndx-hero {
+    font-size: var(--font-size-hero);
+    font-weight: var(--font-weight-display);
+    line-height: var(--font-line-height-heading);
+    letter-spacing: var(--font-letter-spacing-display);
+  }
+
+  /* === 正文文字 === */
+  .fndx-text-body {
+    font-size: var(--font-size-body);
+    line-height: var(--font-line-height-body);
+  }
+
+  .fndx-text-body-lg {
+    font-size: var(--font-size-body-lg);
+    line-height: var(--font-line-height-body);
+  }
+
+  /* === 次要文字 === */
+  .fndx-text-secondary {
+    font-size: var(--font-size-secondary);
+    color: var(--color-fg-secondary);
+  }
+
+  /* === 说明文字（最小字号） === */
+  .fndx-caption {
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+  }
+
+  /* === 标签文字（大写、字距加宽） === */
+  .fndx-label {
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-emphasis);
+    letter-spacing: var(--font-letter-spacing-label);
+    text-transform: uppercase;
+  }
+
+  /* === 代码块语法高亮基础 === */
+  .fndx-code-block {
+    font-family: var(--font-family-code);
+    font-size: var(--font-size-secondary);
+    line-height: var(--font-line-height-body);
+  }
+
+  /* 代码注释 */
+  .fndx-code-comment {
+    color: var(--color-code-comment);
+    font-style: italic;
+  }
+
+  /* 代码关键字 */
+  .fndx-code-keyword {
+    color: var(--color-accent-base);
+  }
+
+  /* 代码字符串 */
+  .fndx-code-string {
+    color: var(--color-success-base);
+  }
+
+  /* === 文字截断 === */
+  .fndx-truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 多行截断：--fndx-line-clamp 控制行数 */
+  .fndx-line-clamp {
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: var(--fndx-line-clamp, 2);
+    overflow: hidden;
+  }
+}

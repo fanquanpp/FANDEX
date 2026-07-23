@@ -1,0 +1,221 @@
+---
+/**
+ * 模块术语表页面
+ *
+ * 数据源：shd-shared/metadata/glossary/{module}.json
+ * 通过 Astro Content Collection (glob loader) 加载 JSON 文件，
+ * 每个条目的 data 结构为 { moduleId, terms: [{ name, definition, slug }] }
+ *
+ * 偏差报备（仓库整理后格式变更）：
+ * - 原：从 markdown 集合渲染每篇术语的 Content 组件
+ * - 新：从 JSON 集合读取 terms 数组，直接渲染术语名 + 定义的结构化列表
+ * - 迁移依据：glossary 已从 markdown 表格迁移为 JSON 结构化数据
+ */
+import Layout from '@/components/Layout.astro';
+import SEO from '@/components/SEO.astro';
+import Sidebar from '@/components/Sidebar.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import { getModule, categoryColors, getPrimaryCategory } from '@/lib/modules';
+// 通过 glossary-service 获取术语表数据，UI 层禁止直接调用 getCollection
+import { getGlossaryByModule } from '@/services';
+import type { GlossaryCollectionEntry } from '@/services';
+
+/**
+ * 静态路径生成
+ *
+ * 从 Content Collection 获取全部术语集合条目，
+ * 提取 moduleId 集合生成静态路径。
+ */
+export async function getStaticPaths() {
+  const { getAllGlossaryTerms } = await import('@/services');
+  const allGlossary = await getAllGlossaryTerms();
+  const moduleSet = new Set<string>();
+  allGlossary.forEach((g) => {
+    if (g.data.moduleId) moduleSet.add(g.data.moduleId);
+  });
+  return Array.from(moduleSet).map((m) => ({ params: { module: m } }));
+}
+
+const { module } = Astro.params as { module: string };
+const meta = getModule(module || '');
+
+if (!meta) {
+  return Astro.redirect(`${import.meta.env.BASE_URL}404`);
+}
+
+// 通过 glossary-service 获取当前模块的术语集合条目
+const glossaryEntries: GlossaryCollectionEntry[] = await getGlossaryByModule(module);
+
+// 从集合条目中提取全部术语，按名称 localeCompare 排序
+type GlossaryTermItem = { name: string; definition: string; slug?: string };
+const allTerms: GlossaryTermItem[] = glossaryEntries.flatMap((g) =>
+  g.data.terms.map((t) => ({ name: t.name, definition: t.definition, slug: t.slug })),
+);
+allTerms.sort((a, b) => a.name.localeCompare(b.name, 'zh-Hans-CN'));
+
+const breadcrumb = [
+  { label: '首页', href: `${import.meta.env.BASE_URL}` },
+  { label: meta.title, href: `${import.meta.env.BASE_URL}${module}/` },
+  { label: '术语表' },
+];
+---
+
+<Layout title={`${meta.title} 术语表`}>
+  <SEO
+    slot="head"
+    title={`${meta.title} 术语表`}
+    description={`${meta.title} 专有名词注释查阅表`}
+    type="article"
+  />
+  <Sidebar slot="sidebar" moduleId={module} />
+
+  <div class="glossary-page">
+    <Breadcrumb items={breadcrumb} hasSidebar />
+
+    <div class="glossary-header">
+      <span class="header-bar" style={`background:${categoryColors[getPrimaryCategory(meta)]}`}
+      ></span>
+      <div class="header-body">
+        <h1 class="glossary-title">{meta.title} 术语表</h1>
+        <p class="glossary-subtitle">专有名词注释查阅表 | {allTerms.length} 个术语</p>
+      </div>
+    </div>
+
+    <div class="glossary-nav">
+      <a href={`${import.meta.env.BASE_URL}${module}/`} class="glossary-back">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"><polyline points="18 6 6 12 18 18"></polyline></svg
+        >
+        <span>返回文档列表</span>
+      </a>
+    </div>
+
+    {
+      allTerms.length === 0 ? (
+        <div class="glossary-empty">
+          <p>该模块暂无术语表内容</p>
+        </div>
+      ) : (
+        <div class="glossary-sections">
+          {allTerms.map((term) => (
+            <section class="glossary-section">
+              <h2 class="glossary-section-title">{term.name}</h2>
+              <div class="glossary-content">
+                <p>{term.definition}</p>
+              </div>
+            </section>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</Layout>
+
+<style>
+  .glossary-page {
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-2xl);
+  }
+
+  .glossary-header {
+    display: flex;
+    margin-bottom: var(--spacing-lg);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-light);
+  }
+
+  .header-bar {
+    width: 5px;
+    flex-shrink: 0;
+  }
+
+  .header-body {
+    padding: var(--spacing-lg);
+  }
+
+  .glossary-title {
+    font-family: var(--font-display);
+    font-size: 1.4em;
+    margin: 0 0 var(--spacing-xs);
+  }
+
+  .glossary-subtitle {
+    font-size: 0.88em;
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .glossary-nav {
+    margin-bottom: var(--spacing-lg);
+  }
+
+  .glossary-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--color-text-secondary);
+    font-size: 0.85em;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-card);
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+  }
+
+  .glossary-back:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .glossary-empty {
+    text-align: center;
+    padding: var(--spacing-3xl);
+    color: var(--color-text-tertiary);
+    border: 1px dashed var(--color-border-light);
+  }
+
+  .glossary-sections {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-sm);
+  }
+
+  .glossary-section {
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg);
+  }
+
+  .glossary-section-title {
+    font-family: var(--font-display);
+    font-size: 0.9em;
+    font-weight: 600;
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin: 0;
+    background: var(--color-bg-card);
+    border-bottom: 1px solid var(--color-border-light);
+    color: var(--color-text);
+  }
+
+  .glossary-content {
+    padding: var(--spacing-sm) var(--spacing-md);
+    max-width: 100%;
+  }
+
+  .glossary-content p {
+    margin: 0;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+    font-size: 0.9em;
+  }
+
+  @media (max-width: 768px) {
+    .glossary-page {
+      padding: var(--spacing-md) var(--spacing-md) var(--spacing-2xl);
+    }
+  }
+</style>

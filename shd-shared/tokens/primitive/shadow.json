@@ -1,0 +1,131 @@
+{
+  "$description": "FANDEX 原始阴影令牌 — 复合 shadow 类型，ark 家族克制阴影，无语义",
+  "shadow": {
+    "$type": "shadow",
+    "xs": {
+      "$value": {
+        "color": "#0000000A",
+        "offsetX": { "value": 0, "unit": "px" },
+        "offsetY": { "value": 1, "unit": "px" },
+        "blur": { "value": 2, "unit": "px" },
+        "spread": { "value": 0, "unit": "px" }
+      },
+      "$description": "微小阴影（4% 不透明度）"
+    },
+    "sm": {
+      "$value": [
+        {
+          "color": "#00000014",
+          "offsetX": { "value": 0, "unit": "px" },
+          "offsetY": { "value": 1, "unit": "px" },
+          "blur": { "value": 3, "unit": "px" },
+          "spread": { "value": 0, "unit": "px" }
+        },
+        {
+          "color": "#0000000A",
+          "offsetX": { "value": 0, "unit": "px" },
+          "offsetY": { "value": 1, "unit": "px" },
+          "blur": { "value": 2, "unit": "px" },
+          "spread": { "value": 0, "unit": "px" }
+        }
+      ],
+      "$description": "小阴影（双层 8%/4%）"
+    },
+    "default": {
+      "$value": [
+        {
+          "color": "#0000000F",
+          "offsetX": { "value": 0, "unit": "px" },
+          "offsetY": { "value": 2, "unit": "px" },
+          "blur": { "value": 4, "unit": "px" },
+          "spread": { "value": 0, "unit": "px" }
+        },
+        {
+          "color": "#0000000A",
+          "offsetX": { "value": 0, "unit": "px" },
+          "offsetY": { "value": 1, "unit": "px" },
+          "blur": { "value": 2, "unit": "px" },
+          "spread": { "value": 0, "unit": "px" }
+        }
+      ],
+      "$description": "默认阴影（6%/4%）"
+    },
+    "md": {
+      "$value": [
+        {
+          "color": "#0000001A",
+          "offsetX": { "value": 0, "unit": "px" },
+          "offsetY": { "value": 4, "unit": "px" },
+          "blur": { "value": 6, "unit": "px" },
+          "spread": { "value": -1, "unit": "px" }
+        },
+        {
+          "color": "#0000000F",
+          "offsetX": { "value": 0, "unit": "px" },
+          "offsetY": { "value": 2, "unit": "px" },
+          "blur": { "value": 4, "unit": "px" },
+          "spread": { "value": -1, "unit": "px" }
+        }
+      ],
+      "$description": "中等阴影（10%/6%）"
+    },
+    "lg": {
+      "$value": [
+        {
+          "color": "#0000001A",
+          "offsetX": { "value": 0, "unit": "px" },
+          "offsetY": { "value": 10, "unit": "px" },
+          "blur": { "value": 15, "unit": "px" },
+          "spread": { "value": -3, "unit": "px" }
+        },
+        {
+          "color": "#0000000D",
+          "offsetX": { "value": 0, "unit": "px" },
+          "offsetY": { "value": 4, "unit": "px" },
+          "blur": { "value": 6, "unit": "px" },
+          "spread": { "value": -2, "unit": "px" }
+        }
+      ],
+      "$description": "大阴影（10%/5%）"
+    },
+    "xl": {
+      "$value": [
+        {
+          "color": "#0000001A",
+          "offsetX": { "value": 0, "unit": "px" },
+          "offsetY": { "value": 20, "unit": "px" },
+          "blur": { "value": 25, "unit": "px" },
+          "spread": { "value": -5, "unit": "px" }
+        },
+        {
+          "color": "#0000000A",
+          "offsetX": { "value": 0, "unit": "px" },
+          "offsetY": { "value": 10, "unit": "px" },
+          "blur": { "value": 10, "unit": "px" },
+          "spread": { "value": -5, "unit": "px" }
+        }
+      ],
+      "$description": "超大阴影（10%/4%）"
+    },
+    "2xl": {
+      "$value": {
+        "color": "#00000033",
+        "offsetX": { "value": 0, "unit": "px" },
+        "offsetY": { "value": 25, "unit": "px" },
+        "blur": { "value": 50, "unit": "px" },
+        "spread": { "value": -12, "unit": "px" }
+      },
+      "$description": "极大阴影（20%）"
+    },
+    "inner": {
+      "$value": {
+        "color": "#0000000D",
+        "offsetX": { "value": 0, "unit": "px" },
+        "offsetY": { "value": 2, "unit": "px" },
+        "blur": { "value": 4, "unit": "px" },
+        "spread": { "value": 0, "unit": "px" }
+      },
+      "$description": "内阴影（5%，inset）"
+    }
+  }
+}

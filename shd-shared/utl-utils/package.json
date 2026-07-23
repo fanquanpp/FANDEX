@@ -1,0 +1,21 @@
+{
+  "name": "@fandex/utils",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FANDEX L3 纯函数工具层 — 零框架依赖，三端共享（search-history/favorites/keyboard-shortcuts 等）",
+  "exports": {
+    ".": "./index.ts",
+    "./search-history": "./search-history.ts",
+    "./favorites": "./favorites.ts",
+    "./keyboard-shortcuts": "./keyboard-shortcuts.ts",
+    "./metadata": "./metadata.ts",
+    "./modules": "./modules.ts"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:"
+  }
+}

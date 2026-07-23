@@ -1,0 +1,339 @@
+/**
+ * FANDEX Design Tokens 兼容层（ark 家族令牌体系）
+ *
+ * 功能概述：
+ * 本文件作为 --fandex-* 命名兼容层，将原有 Sky/Teal/Amber/Slate 色系的令牌
+ * 迁移为引用 shd-shared/styles/tokens.css 中定义的 ark 家族语义令牌。
+ *
+ * 迁移策略：
+ * - 色阶令牌（primary-50~950 等）：保留原硬编码值，确保 bg-primary-500 等
+ *   工具类在迁移过渡期视觉一致
+ * - 语义令牌（text/bg/border/success/warning/error/info）：完全映射到 ark
+ *   语义令牌，通过 light-dark() 实现双主题自动切换
+ * - 非颜色令牌（font/radius/shadow/spacing/duration/ease）：映射到 ark 令牌
+ * - z-index 令牌：保留原值（ark 未定义层级体系）
+ *
+ * 主题切换机制：
+ * - ark 令牌使用 CSS light-dark() 函数，由 :root 的 color-scheme 驱动
+ * - shd-shared/styles/theme.css 管理 color-scheme 声明
+ * - [data-theme="dark"] 强制深色，[data-theme="light"] 强制浅色
+ * - 本文件不再需要 [data-theme='dark'] 和 @media (prefers-color-scheme: dark)
+ *   重复定义，主题切换由 ark 令牌的 light-dark() 自动处理
+ *
+ * 引用链路：
+ * 组件 var(--fandex-color-text-primary)
+ *   → ark var(--color-fg-primary)
+ *   → light-dark(var(--color-neutral-50), var(--color-neutral-1050))
+ *   → #0A0A0A (浅色) / #FFFFFF (深色)
+ */
+
+/* ====================================================================
+   兼容层令牌定义
+   --------------------------------------------------------------------
+   所有令牌在 :root 中定义，值引用 ark 语义令牌或保留原值。
+   无需 [data-theme='dark'] 覆盖，由 ark 的 light-dark() 自动处理。
+   ==================================================================== */
+:root {
+  /* ============================================================
+     1.1 颜色 Tokens — 色阶层（保留原值，过渡期兼容）
+     ------------------------------------------------------------
+     说明：色阶令牌保留原硬编码值，确保使用 bg-primary-500 等工具类
+     的组件在迁移过渡期视觉一致。后续可逐步替换为 ark 语义令牌。
+     ============================================================ */
+
+  /* --- 基础色板：Primary（Sky 天蓝，过渡期保留） --- */
+  --fandex-color-primary-50: #f0f9ff;
+  --fandex-color-primary-100: #e0f2fe;
+  --fandex-color-primary-200: #bae6fd;
+  --fandex-color-primary-300: #7dd3fc;
+  --fandex-color-primary-400: #38bdf8;
+  --fandex-color-primary-500: #0ea5e9;
+  --fandex-color-primary-600: #0284c7;
+  --fandex-color-primary-700: #0369a1;
+  --fandex-color-primary-800: #075985;
+  --fandex-color-primary-900: #0c4a6e;
+  --fandex-color-primary-950: #082f49;
+
+  /* --- 基础色板：Secondary（Teal 蓝绿，过渡期保留） --- */
+  --fandex-color-secondary-50: #f0fdfa;
+  --fandex-color-secondary-100: #ccfbf1;
+  --fandex-color-secondary-200: #99f6e4;
+  --fandex-color-secondary-300: #5eead4;
+  --fandex-color-secondary-400: #2dd4bf;
+  --fandex-color-secondary-500: #14b8a6;
+  --fandex-color-secondary-600: #0d9488;
+  --fandex-color-secondary-700: #0f766e;
+  --fandex-color-secondary-800: #115e59;
+  --fandex-color-secondary-900: #134e4a;
+  --fandex-color-secondary-950: #042f2e;
+
+  /* --- 基础色板：Accent（Amber 琥珀，过渡期保留） --- */
+  --fandex-color-accent-50: #fffbeb;
+  --fandex-color-accent-100: #fef3c7;
+  --fandex-color-accent-200: #fde68a;
+  --fandex-color-accent-300: #fcd34d;
+  --fandex-color-accent-400: #fbbf24;
+  --fandex-color-accent-500: #f59e0b;
+  --fandex-color-accent-600: #d97706;
+  --fandex-color-accent-700: #b45309;
+  --fandex-color-accent-800: #92400e;
+  --fandex-color-accent-900: #78350f;
+  --fandex-color-accent-950: #451a03;
+
+  /* --- 基础色板：Neutral（Slate 石板灰，过渡期保留） --- */
+  --fandex-color-neutral-50: #f8fafc;
+  --fandex-color-neutral-100: #f1f5f9;
+  --fandex-color-neutral-200: #e2e8f0;
+  --fandex-color-neutral-300: #cbd5e1;
+  --fandex-color-neutral-400: #94a3b8;
+  --fandex-color-neutral-500: #64748b;
+  --fandex-color-neutral-600: #475569;
+  --fandex-color-neutral-700: #334155;
+  --fandex-color-neutral-800: #1e293b;
+  --fandex-color-neutral-900: #0f172a;
+  --fandex-color-neutral-950: #020617;
+
+  /* ============================================================
+     1.2 颜色 Tokens — 语义层（映射 ark 语义令牌）
+     ------------------------------------------------------------
+     通过引用 ark 语义令牌，实现双主题自动切换。
+     ark 令牌使用 light-dark() 函数，由 color-scheme 驱动。
+     ============================================================ */
+
+  /* --- 语义色：Success（映射 ark success） --- */
+  --fandex-color-success: var(--color-success-base);
+  --fandex-color-success-light: var(--color-success-light);
+  --fandex-color-success-dark: var(--color-success-dark);
+  --fandex-color-success-bg: var(--color-success-bg);
+  --fandex-color-success-border: var(--color-success-base);
+
+  /* --- 语义色：Warning（映射 ark warning） --- */
+  --fandex-color-warning: var(--color-warning-base);
+  --fandex-color-warning-light: var(--color-warning-light);
+  --fandex-color-warning-dark: var(--color-warning-dark);
+  --fandex-color-warning-bg: var(--color-warning-bg);
+  --fandex-color-warning-border: var(--color-warning-base);
+
+  /* --- 语义色：Error（映射 ark danger） --- */
+  --fandex-color-error: var(--color-danger-base);
+  --fandex-color-error-light: var(--color-danger-light);
+  --fandex-color-error-dark: var(--color-danger-dark);
+  --fandex-color-error-bg: var(--color-danger-bg);
+  --fandex-color-error-border: var(--color-danger-base);
+
+  /* --- 语义色：Info（映射 ark info） --- */
+  --fandex-color-info: var(--color-info-base);
+  --fandex-color-info-light: var(--color-info-light);
+  --fandex-color-info-dark: var(--color-info-dark);
+  --fandex-color-info-bg: var(--color-info-bg);
+  --fandex-color-info-border: var(--color-info-base);
+
+  /* --- 文本色（映射 ark fg 令牌） --- */
+  --fandex-color-text-primary: var(--color-fg-primary);
+  --fandex-color-text-secondary: var(--color-fg-secondary);
+  --fandex-color-text-tertiary: var(--color-fg-tertiary);
+  --fandex-color-text-disabled: var(--color-fg-disabled);
+  --fandex-color-text-inverse: var(--color-fg-inverse);
+
+  /* --- 背景色（映射 ark bg 令牌） --- */
+  --fandex-color-bg-base: var(--color-bg-primary);
+  --fandex-color-bg-surface: var(--color-bg-secondary);
+  --fandex-color-bg-elevated: var(--color-bg-elevated);
+  --fandex-color-bg-sunken: var(--color-bg-sunken);
+  --fandex-color-bg-hover: var(--color-bg-hover);
+  --fandex-color-bg-active: var(--color-bg-active);
+
+  /* --- 边框色（映射 ark border 令牌） --- */
+  --fandex-color-border-default: var(--color-border-default);
+  --fandex-color-border-strong: var(--color-border-strong);
+  --fandex-color-border-subtle: var(--color-border-subtle);
+  --fandex-color-border-focus: var(--color-border-focus);
+
+  /* --- 代码色（映射 ark code 令牌） --- */
+  --fandex-color-code-bg: var(--color-code-bg);
+  --fandex-color-code-text: var(--color-code-text);
+  --fandex-color-code-comment: var(--color-code-comment);
+  --fandex-color-code-keyword: #c084fc; /* 关键字，紫色（ark 未定义，保留原值） */
+  --fandex-color-code-string: #34d399; /* 字符串，翠绿（ark 未定义，保留原值） */
+  --fandex-color-code-number: #fbbf24; /* 数字，琥珀（ark 未定义，保留原值） */
+  --fandex-color-code-function: #60a5fa; /* 函数名，蓝色（ark 未定义，保留原值） */
+  --fandex-color-code-variable: #f472b6; /* 变量名，粉色（ark 未定义，保留原值） */
+
+  /* ============================================================
+     1.3 排版 Tokens（映射 ark 排版令牌）
+     ============================================================ */
+
+  /* --- 字族（映射 ark font-family 令牌） --- */
+  --fandex-font-sans: var(--font-family-sans);
+  --fandex-font-serif: var(--font-family-serif);
+  --fandex-font-mono: var(--font-family-mono);
+  --fandex-font-display: var(--font-family-display);
+
+  /* --- 字号（映射 ark font-size 令牌） --- */
+  --fandex-font-size-xs: var(--font-size-xs);
+  --fandex-font-size-sm: var(--font-size-sm);
+  --fandex-font-size-base: var(--font-size-base);
+  --fandex-font-size-lg: var(--font-size-lg);
+  --fandex-font-size-xl: var(--font-size-xl);
+  --fandex-font-size-2xl: var(--font-size-2xl);
+  --fandex-font-size-3xl: var(--font-size-3xl);
+  --fandex-font-size-4xl: var(--font-size-4xl);
+  --fandex-font-size-5xl: var(--font-size-5xl);
+  --fandex-font-size-6xl: var(--font-size-6xl);
+
+  /* --- 行高（映射 ark font-line-height 令牌） --- */
+  --fandex-line-height-tight: var(--font-line-height-tight);
+  --fandex-line-height-snug: var(--font-line-height-snug);
+  --fandex-line-height-normal: var(--font-line-height-normal);
+  --fandex-line-height-relaxed: var(--font-line-height-relaxed);
+  --fandex-line-height-loose: var(--font-line-height-loose);
+
+  /* --- 字重（映射 ark font-weight 令牌） --- */
+  --fandex-font-weight-light: var(--font-weight-light);
+  --fandex-font-weight-normal: var(--font-weight-normal);
+  --fandex-font-weight-medium: var(--font-weight-medium);
+  --fandex-font-weight-semibold: var(--font-weight-semibold);
+  --fandex-font-weight-bold: var(--font-weight-bold);
+  --fandex-font-weight-extrabold: var(--font-weight-extrabold);
+
+  /* --- 字距（映射 ark font-letter-spacing 令牌） --- */
+  --fandex-letter-spacing-tighter: var(--font-letter-spacing-tighter);
+  --fandex-letter-spacing-tight: var(--font-letter-spacing-tight);
+  --fandex-letter-spacing-normal: var(--font-letter-spacing-normal);
+  --fandex-letter-spacing-wide: var(--font-letter-spacing-wide);
+  --fandex-letter-spacing-wider: var(--font-letter-spacing-wider);
+
+  /* --- 段落间距（映射 ark space 令牌） --- */
+  --fandex-paragraph-spacing-xs: var(--space-2);
+  --fandex-paragraph-spacing-sm: var(--space-3);
+  --fandex-paragraph-spacing-md: var(--space-4);
+  --fandex-paragraph-spacing-lg: var(--space-6);
+  --fandex-paragraph-spacing-xl: var(--space-8);
+
+  /* ============================================================
+     1.4 间距 Tokens（映射 ark space 令牌，4px 基础栅格）
+     ============================================================ */
+  --fandex-spacing-0: var(--space-0);
+  --fandex-spacing-1: var(--space-1);
+  --fandex-spacing-2: var(--space-2);
+  --fandex-spacing-3: var(--space-3);
+  --fandex-spacing-4: var(--space-4);
+  --fandex-spacing-5: var(--space-5);
+  --fandex-spacing-6: var(--space-6);
+  --fandex-spacing-8: var(--space-8);
+  --fandex-spacing-10: var(--space-10);
+  --fandex-spacing-12: var(--space-12);
+  --fandex-spacing-16: var(--space-16);
+  --fandex-spacing-20: var(--space-20);
+  --fandex-spacing-24: var(--space-24);
+  --fandex-spacing-32: var(--space-32);
+
+  /* ============================================================
+     1.5 圆角 Tokens（映射 ark radius 令牌）
+     ============================================================ */
+  --fandex-radius-none: var(--radius-none);
+  --fandex-radius-sm: var(--radius-sm);
+  --fandex-radius-default: var(--radius-default);
+  --fandex-radius-md: var(--radius-md);
+  --fandex-radius-lg: var(--radius-lg);
+  --fandex-radius-xl: var(--radius-xl);
+  --fandex-radius-2xl: var(--radius-2xl);
+  --fandex-radius-3xl: var(--radius-3xl);
+  --fandex-radius-full: var(--radius-full);
+
+  /* ============================================================
+     1.6 阴影 Tokens（映射 ark shadow 令牌）
+     ------------------------------------------------------------
+     ark 阴影令牌已包含 light-dark() 双主题处理，
+     无需在此处为暗色模式单独定义。
+     ============================================================ */
+  --fandex-shadow-xs: var(--shadow-xs);
+  --fandex-shadow-sm: var(--shadow-sm);
+  --fandex-shadow-default: var(--shadow-default);
+  --fandex-shadow-md: var(--shadow-md);
+  --fandex-shadow-lg: var(--shadow-lg);
+  --fandex-shadow-xl: var(--shadow-xl);
+  --fandex-shadow-2xl: var(--shadow-2xl);
+  --fandex-shadow-inner: var(--shadow-inner);
+
+  /* ============================================================
+     1.7 动效 Tokens（映射 ark motion 令牌）
+     ============================================================ */
+
+  /* --- 时长（映射 ark motion-duration 令牌） --- */
+  --fandex-duration-instant: var(--motion-duration-instant);
+  --fandex-duration-fast: var(--motion-duration-fast);
+  --fandex-duration-normal: var(--motion-duration-normal);
+  --fandex-duration-slow: var(--motion-duration-slow);
+  --fandex-duration-slower: var(--motion-duration-slower);
+
+  /* --- 缓动函数（映射 ark motion-easing 令牌） --- */
+  --fandex-ease-default: var(--motion-easing-default);
+  --fandex-ease-in: var(--motion-easing-in);
+  --fandex-ease-out: var(--motion-easing-out);
+  --fandex-ease-in-out: var(--motion-easing-in-out);
+  --fandex-ease-spring: var(--motion-easing-spring);
+  --fandex-ease-bounce: var(--motion-easing-bounce);
+  --fandex-ease-linear: linear;
+
+  /* --- 延迟（映射 ark motion-delay 令牌） --- */
+  --fandex-delay-none: var(--motion-delay-none);
+  --fandex-delay-short: var(--motion-delay-short);
+  --fandex-delay-medium: var(--motion-delay-medium);
+  --fandex-delay-long: var(--motion-delay-long);
+
+  /* ============================================================
+     1.8 断点 Tokens（映射 ark size-breakpoint 令牌）
+     ------------------------------------------------------------
+     说明：CSS 变量无法直接用于 @media 查询，此处仅作参考与 JS 读取。
+     媒体查询中请使用字面量值（如 768px）。
+     ============================================================ */
+  --fandex-breakpoint-sm: 640px;
+  --fandex-breakpoint-md: 768px;
+  --fandex-breakpoint-lg: 1024px;
+  --fandex-breakpoint-xl: 1280px;
+  --fandex-breakpoint-2xl: 1536px;
+
+  /* ============================================================
+     1.9 层级 Tokens（z-index）
+     ------------------------------------------------------------
+     ark 未定义 z-index 层级体系，保留原值。
+     ============================================================ */
+  --fandex-z-base: 0;
+  --fandex-z-dropdown: 1000;
+  --fandex-z-sticky: 1100;
+  --fandex-z-overlay: 1200;
+  --fandex-z-modal: 1300;
+  --fandex-z-popover: 1400;
+  --fandex-z-tooltip: 1500;
+  --fandex-z-notification: 1600;
+
+  /* ============================================================
+     1.10 过渡 Tokens（预定义组合，引用 ark 动效令牌）
+     ============================================================ */
+  --fandex-transition-colors:
+    color var(--motion-duration-fast) var(--motion-easing-out),
+    background-color var(--motion-duration-fast) var(--motion-easing-out),
+    border-color var(--motion-duration-fast) var(--motion-easing-out),
+    fill var(--motion-duration-fast) var(--motion-easing-out),
+    stroke var(--motion-duration-fast) var(--motion-easing-out);
+  --fandex-transition-opacity: opacity var(--motion-duration-fast) var(--motion-easing-out);
+  --fandex-transition-shadow: box-shadow var(--motion-duration-normal) var(--motion-easing-out);
+  --fandex-transition-transform: transform var(--motion-duration-normal) var(--motion-easing-out);
+  --fandex-transition-all: all var(--motion-duration-normal) var(--motion-easing-out);
+}
+
+/* ====================================================================
+   主题切换说明
+   --------------------------------------------------------------------
+   本文件不再需要 [data-theme='dark'] 和 @media (prefers-color-scheme: dark)
+   的重复定义。主题切换由 ark 令牌的 light-dark() 函数自动处理：
+
+   1. shd-shared/styles/theme.css 在 :root 声明 color-scheme: light dark
+   2. ark 语义令牌使用 light-dark(lightVal, darkVal) 自动取值
+   3. [data-theme="dark"] 覆盖 color-scheme 为 dark，强制取深色值
+   4. [data-theme="light"] 覆盖 color-scheme 为 light，强制取浅色值
+
+   因此本兼容层的所有语义令牌（text/bg/border/success/warning/error/info）
+   会自动响应主题切换，无需在此处重复定义暗色模式值。
+   ==================================================================== */

@@ -1,0 +1,418 @@
+---
+/**
+ * 文档详情页路由
+ * 动态路由 [module]/[slug]，为每篇文档生成独立页面
+ * 包含面包屑导航、前置知识提示、文档内容、知识检测、上下篇导航
+ */
+import Layout from '@/components/Layout.astro';
+import SEO from '@/components/SEO.astro';
+import Sidebar from '@/components/Sidebar.astro';
+import TableOfContents from '@fandex/astro-components/TableOfContents.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import DocNav from '@/components/DocNav.astro';
+import GeoBgDecor from '@/components/GeoBgDecor.astro';
+import ProgressToggle from '@/islands/ProgressToggle';
+import QuizBlock from '@/islands/QuizBlock';
+import { render } from 'astro:content';
+import { getModule, modulePrerequisites, categoryColors, getPrimaryCategory } from '@/lib/modules';
+// 通过 doc-service 获取文档数据与导航信息，UI 层禁止直接调用 getCollection
+// docSlug/computeReadingTime/getDocNavigation 均由 Service 层统一提供
+import {
+  getAllDocs,
+  getDocsByModule,
+  getDocNavigation,
+  computeReadingTime,
+  docSlug,
+  type DocEntry,
+} from '@/services';
+
+/** 生成静态路径：为每篇文档创建一个页面 */
+export async function getStaticPaths() {
+  // 通过 doc-service 获取全部文档（已按模块和 order 排序）
+  const docs = await getAllDocs();
+  return docs.map((doc) => {
+    const slug = docSlug(doc.id);
+    return {
+      params: { module: doc.data.module, slug },
+      props: { doc },
+    };
+  });
+}
+
+const { doc } = Astro.props as { doc: DocEntry };
+const { module, slug } = Astro.params as { module: string; slug: string };
+// 渲染 Markdown 内容并获取标题列表
+const { Content, headings } = await render(doc);
+const meta = getModule(module || '');
+
+// 通过 doc-service 获取当前模块排序后的文档列表，传递给 Sidebar 避免重复查询
+const sortedDocs = await getDocsByModule(module);
+
+// 通过 doc-service 计算预计阅读时间（优先使用 frontmatter 中的值）
+const readingTime = computeReadingTime(doc.body || '', doc.data.readingTime);
+
+// 通过 doc-service 获取上下篇导航信息，预计算后传递给 DocNav 组件
+const navigation = await getDocNavigation(module, slug);
+
+// 面包屑导航数据
+const breadcrumb = [
+  { label: '首页', href: `${import.meta.env.BASE_URL}` },
+  { label: meta?.title || module, href: `${import.meta.env.BASE_URL}${module}/` },
+  { label: doc.data.title },
+];
+---
+
+<Layout title={doc.data.title}>
+  <SEO
+    slot="head"
+    title={doc.data.title}
+    description={doc.data.description}
+    canonical={`${Astro.site}${Astro.url.pathname}`}
+    publishedDate={doc.data.updated || undefined}
+    modifiedDate={doc.data.updated || undefined}
+    breadcrumb={breadcrumb}
+  />
+  <Sidebar
+    slot="sidebar"
+    moduleId={module}
+    currentSlug={slug}
+    sortedDocs={sortedDocs}
+  />
+
+  <!-- 目录大纲：通过 toc 插槽渲染到 Layout 右侧栏，由 TableOfContents 共享组件控制显隐 -->
+  <TableOfContents slot="toc" headings={headings} />
+
+  <div class="doc-page">
+    <!-- 几何背景装饰层 · docs 变体：网格底纹 + 品牌光晕 + 几何线条（克制 8 项） -->
+    <GeoBgDecor variant="docs" />
+    <!-- 面包屑导航 -->
+    <Breadcrumb items={breadcrumb} hasSidebar />
+    <!-- 前置知识提示 -->
+    {
+      (() => {
+        const prereqs =
+          doc.data.prerequisites?.length > 0
+            ? doc.data.prerequisites
+            : modulePrerequisites[module] || [];
+        if (prereqs.length === 0) return null;
+        return (
+          <div class="prereq-notice">
+            <svg
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <>
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
+              </>
+            </svg>
+            <span>
+              前置知识:{' '}
+              {prereqs.map((p: string, i: number) => {
+                const parts = p.split('/');
+                const modId = parts[0] || ''; // noUncheckedIndexedAccess：数组访问可能返回 undefined，提供兜底
+                const modMeta = getModule(modId);
+                const label = modMeta ? modMeta.title : p;
+                const href =
+                  parts.length > 1
+                    ? `${import.meta.env.BASE_URL}${p}/`
+                    : `${import.meta.env.BASE_URL}${modId}/`;
+                return (
+                  <>
+                    {i > 0 && '、'}
+                    <a href={href}>{label}</a>
+                  </>
+                );
+              })}
+            </span>
+          </div>
+        );
+      })()
+    }
+    <!-- 文章主体 -->
+    <article
+      class="prose"
+      data-pagefind-body
+      data-pagefind-filter={`difficulty:${doc.data.difficulty || 'intermediate'}, module:${module}${doc.data.category ? ', category:' + doc.data.category : ''}`}
+      style={`--module-color:${categoryColors[meta ? getPrimaryCategory(meta) : 'tools']}`}
+    >
+      <!-- 标题行：标题 + 进度追踪按钮 -->
+      <div class="doc-title-row">
+        <h1 class="doc-title">{doc.data.title}</h1>
+        <ProgressToggle client:load slug={`${module}/${slug}`} />
+      </div>
+      <!-- 文档元信息：阅读时间、难度、更新日期 -->
+      <header class="doc-header">
+        <div class="doc-meta">
+          <span class="doc-meta-item doc-reading-time">
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              ><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"
+              ></polyline></svg
+            >
+            {readingTime} min
+          </span>
+          <span
+            class={`doc-meta-item doc-difficulty diff-${doc.data.difficulty || 'intermediate'}`}
+          >
+            {
+              doc.data.difficulty === 'beginner'
+                ? 'Beginner'
+                : doc.data.difficulty === 'advanced'
+                  ? 'Advanced'
+                  : 'Intermediate'
+            }
+          </span>
+          {
+            doc.data.updated && (
+              <span class="doc-meta-item doc-updated">
+                <svg
+                  width="14"
+                  height="14"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  stroke-width="2"
+                >
+                  <>
+                    <rect x="3" y="4" width="18" height="18" rx="2" />
+                    <line x1="16" y1="2" x2="16" y2="6" />
+                    <line x1="8" y1="2" x2="8" y2="6" />
+                    <line x1="3" y1="10" x2="21" y2="10" />
+                  </>
+                </svg>
+                {new Date(doc.data.updated).toLocaleDateString('zh-CN')}
+              </span>
+            )
+          }
+        </div>
+        <!-- 标签列表 -->
+        {
+          doc.data.tags && doc.data.tags.length > 0 && (
+            <div class="doc-tags">
+              {doc.data.tags.map((tag: string) => (
+                <a href={`${import.meta.env.BASE_URL}tags/${tag}/`} class="doc-tag">
+                  {tag}
+                </a>
+              ))}
+            </div>
+          )
+        }
+        <!-- 文档描述 -->
+        {doc.data.description && <p class="doc-description">{doc.data.description}</p>}
+      </header>
+      <!-- 文档正文内容 -->
+      <Content />
+    </article>
+    <!-- 知识检测组件：进入视口时加载 -->
+    <QuizBlock client:visible quiz={doc.data.quiz || []} />
+    <!-- 上下篇导航：传递预计算的 prev/next，避免组件内部重复查询 -->
+    <DocNav prev={navigation.prev} next={navigation.next} />
+  </div>
+</Layout>
+
+<style>
+  /* 文档页面容器：作为装饰层的定位上下文
+   注：不设置 overflow:hidden，以保留 .doc-title-row 的 sticky 定位 */
+  .doc-page {
+    position: relative;
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-2xl);
+    width: 100%;
+    /* 限制内容最大宽度并居中，避免宽屏下行宽过长影响阅读体验 */
+    /* fallback 与 --content-width 保持一致，防止变量未加载时回退到较窄值 */
+    max-width: var(--content-width, 1280px);
+    margin-inline: auto;
+    min-height: 100%;
+  }
+
+  /* 确保文档内容层在几何装饰层之上 */
+  .doc-page > :not(.geo-bg-decor) {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* 前置知识提示条 */
+  .prereq-notice {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-light);
+    border-left: 3px solid #f59e0b;
+    font-size: 0.85em;
+    color: var(--color-text-secondary);
+  }
+
+  .prereq-notice svg {
+    flex-shrink: 0;
+    color: #f59e0b;
+  }
+
+  .prereq-notice a {
+    color: var(--color-primary);
+    text-decoration: none;
+  }
+
+  .prereq-notice a:hover {
+    text-decoration: underline;
+  }
+
+  /* 文档头部元信息区域 */
+  .doc-header {
+    margin-bottom: var(--spacing-lg);
+    padding-bottom: var(--spacing-lg);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  /* 标题行：粘性定位，包含标题和进度按钮 */
+  .doc-title-row {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--color-bg);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) 0;
+    border-bottom: 1px solid var(--color-border-light);
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .doc-header {
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .doc-title-row .doc-title {
+    margin-bottom: 0;
+  }
+
+  /* 文档标题 */
+  .doc-title {
+    margin-bottom: var(--spacing-sm);
+    font-size: 1.6em;
+    line-height: 1.3;
+  }
+
+  /* 元信息行 */
+  .doc-meta {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    flex-wrap: wrap;
+    margin-bottom: var(--spacing-sm);
+  }
+
+  .doc-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-display);
+    font-size: 0.78em;
+    color: var(--color-text-tertiary);
+  }
+
+  /* 难度标签：不同难度使用不同颜色 */
+  .doc-difficulty {
+    padding: 2px 8px;
+    border-radius: 3px;
+    font-weight: 500;
+    letter-spacing: 0.02em;
+  }
+
+  /* 入门级：绿色 */
+  .diff-beginner {
+    background: #e8f5e9;
+    color: #2e7d32;
+  }
+
+  /* 中级：橙色 */
+  .diff-intermediate {
+    background: #fff3e0;
+    color: #e65100;
+  }
+
+  /* 高级：红色 */
+  .diff-advanced {
+    background: #fce4ec;
+    color: #c62828;
+  }
+
+  /* 暗色模式下的难度标签颜色 */
+  :root[data-theme='dark'] .diff-beginner {
+    background: #1b3a1b;
+    color: #81c784;
+  }
+
+  :root[data-theme='dark'] .diff-intermediate {
+    background: #3e2723;
+    color: #ffb74d;
+  }
+
+  :root[data-theme='dark'] .diff-advanced {
+    background: #3b1010;
+    color: #ef9a9a;
+  }
+
+  /* 标签列表 */
+  .doc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: var(--spacing-sm);
+  }
+
+  /* 单个标签 */
+  .doc-tag {
+    display: inline-block;
+    padding: 2px 10px;
+    font-size: 0.72em;
+    font-family: var(--font-display);
+    color: var(--color-text-secondary);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-light);
+    text-decoration: none;
+    transition: all var(--transition-fast);
+  }
+
+  .doc-tag:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+    background: var(--color-bg-hover);
+  }
+
+  /* 文档描述 */
+  .doc-description {
+    margin-top: var(--spacing-sm);
+    font-size: 0.92em;
+    color: var(--color-text-secondary);
+    line-height: 1.6;
+  }
+
+  /* 移动端适配 */
+  @media (max-width: 768px) {
+    .doc-page {
+      padding: var(--spacing-sm) var(--spacing-md) var(--spacing-2xl);
+    }
+
+    .doc-title {
+      font-size: 1.3em;
+    }
+
+    .doc-meta {
+      gap: 6px;
+    }
+  }
+</style>

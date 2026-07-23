@@ -1,0 +1,78 @@
+{
+  "$description": "FANDEX 卡片组件令牌 — 引用 semantic 层令牌，定义卡片专属视觉变量。ark 家族卡片特征：8px 圆角、克制阴影、清晰边框",
+  "card": {
+    "radius": { "$value": "{radius.card}", "$description": "卡片圆角（8px）" },
+    "borderWidth": { "$value": "1px", "$description": "卡片边框宽度" },
+    "bg": { "$value": "{color.bg.elevated}", "$description": "卡片背景（白色浮起）" },
+    "fg": { "$value": "{color.fg.primary}", "$description": "卡片内文字" },
+    "border": { "$value": "{color.border.default}", "$description": "卡片边框" },
+
+    "size": {
+      "default": {
+        "padding": { "$value": "{space.card.padding}", "$description": "默认卡片内边距（16px）" },
+        "gap": { "$value": "{space.card.gap}", "$description": "默认卡片内元素间距（12px）" }
+      },
+      "lg": {
+        "padding": { "$value": "{space.card.padding-lg}", "$description": "大卡片内边距（24px）" },
+        "gap": { "$value": "{space.card.gap}", "$description": "大卡片内元素间距（12px）" }
+      }
+    },
+
+    "shadow": {
+      "default": { "$value": "{shadow.card}", "$description": "卡片默认阴影（克制）" },
+      "hover": { "$value": "{shadow.card-hover}", "$description": "卡片悬停阴影（加深）" }
+    },
+
+    "state": {
+      "default": {
+        "bg": { "$value": "{color.bg.elevated}", "$description": "默认状态背景" },
+        "border": { "$value": "{color.border.default}", "$description": "默认状态边框" }
+      },
+      "hover": {
+        "bg": { "$value": "{color.bg.elevated}", "$description": "悬停状态背景（不变，仅阴影变化）" },
+        "border": { "$value": "{color.border.strong}", "$description": "悬停状态边框（加深）" }
+      },
+      "selected": {
+        "bg": { "$value": "{color.bg.elevated}", "$description": "选中状态背景" },
+        "border": { "$value": "{color.accent.base}", "$description": "选中状态边框（青色强调）" }
+      },
+      "disabled": {
+        "bg": { "$value": "{color.bg.tertiary}", "$description": "禁用状态背景" },
+        "border": { "$value": "{color.border.subtle}", "$description": "禁用状态边框" },
+        "fg": { "$value": "{color.fg.disabled}", "$description": "禁用状态文字" }
+      }
+    },
+
+    "header": {
+      "paddingX": { "$value": "{space.card.padding}", "$description": "卡片头部水平内边距" },
+      "paddingY": { "$value": "{space.3}", "$description": "卡片头部垂直内边距（12px）" },
+      "borderBottom": { "$value": "{color.border.subtle}", "$description": "卡片头部底部分隔线" },
+      "fontSize": { "$value": "{font.size.heading-4}", "$description": "卡片头部字号（20px）" },
+      "fontWeight": { "$value": "{font.weight.heading}", "$description": "卡片头部字重（bold）" },
+      "lineHeight": { "$value": "{font.lineHeight.heading}", "$description": "卡片头部行高" }
+    },
+
+    "body": {
+      "padding": { "$value": "{space.card.padding}", "$description": "卡片主体内边距（16px）" },
+      "fontSize": { "$value": "{font.size.body}", "$description": "卡片主体字号（16px）" },
+      "lineHeight": { "$value": "{font.lineHeight.body}", "$description": "卡片主体行高" }
+    },
+
+    "footer": {
+      "paddingX": { "$value": "{space.card.padding}", "$description": "卡片底部水平内边距" },
+      "paddingY": { "$value": "{space.3}", "$description": "卡片底部垂直内边距（12px）" },
+      "borderTop": { "$value": "{color.border.subtle}", "$description": "卡片底部顶部分隔线" },
+      "gap": { "$value": "{space.inline.md}", "$description": "卡片底部按钮间距（12px）" }
+    },
+
+    "transition": {
+      "$type": "transition",
+      "$value": {
+        "duration": "{motion.duration.normal}",
+        "delay": "{motion.delay.none}",
+        "timingFunction": "{motion.easing.out}"
+      },
+      "$description": "卡片过渡预设（阴影/边框 250ms 减速）"
+    }
+  }
+}

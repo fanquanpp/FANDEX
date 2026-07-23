@@ -3,8 +3,9 @@
 # =============================================================================
 # 设计原则：
 # 1. 根 .gitignore 负责共享规则与跨子项目的敏感文件排除
-# 2. 各子项目（web/desktop/android）保留各自的 .gitignore 作为独立构建时的兜底
+# 2. 各子项目（app-web/app-desktop/app-android）保留各自的 .gitignore 作为独立构建时的兜底
 # 3. 敏感文件（私钥/密钥库/本地配置）采用最严格策略，前置排除避免误提交
+# 4. 目录命名遵循英文简写前缀约定：app-（应用）/cnt-（内容）/shd-（共享）/tls-（工具）/thd-（第三方）/dcs-（文档）
 # =============================================================================
 
 
@@ -12,8 +13,8 @@
 # 密钥与签名材料（最高优先级，严禁入库）
 # -----------------------------------------------------------------------------
 
-# Ed25519 manifest 签名密钥（tools/ 阶段8 生成的密钥对存放目录）
-tools/keys/
+# Ed25519 manifest 签名密钥（tls-tools/ 生成的密钥对存放目录）
+tls-tools/keys/
 *.private-key.hex
 *.public-key.hex
 *.private-key.pem
@@ -24,10 +25,10 @@ tools/keys/
 tauri-private-key.*
 
 # Android 签名密钥库与本地配置
-android/fandex-release.jks
-android/*.jks
-android/*.keystore
-android/local.properties
+app-android/fandex-release.jks
+app-android/*.jks
+app-android/*.keystore
+app-android/local.properties
 
 # 通用密钥与证书文件
 *.pem
@@ -66,10 +67,10 @@ node_modules/
 
 # Gradle 缓存
 .gradle/
-android/.gradle/
+app-android/.gradle/
 
 # Kotlin 编译日志
-android/.kotlin/
+app-android/.kotlin/
 
 
 # -----------------------------------------------------------------------------
@@ -86,13 +87,13 @@ out/
 # Rust / Tauri 编译产物
 target/
 src-tauri/target/
-desktop/src-tauri/target/
+app-desktop/src-tauri/target/
 *.rs.bk
 
 # Android 构建产物
-android/app/build/
-android/build/
-android/app/.cxx/
+app-android/app/build/
+app-android/build/
+app-android/app/.cxx/
 *.apk
 *.aab
 *.ap_
@@ -108,9 +109,9 @@ android/app/.cxx/
 *.sig
 
 # 工具链产物
-tools/dist/
-tools/manifests/
-tools/archives/
+tls-tools/dist/
+tls-tools/manifests/
+tls-tools/archives/
 
 # 测试覆盖率
 coverage/
@@ -119,17 +120,17 @@ coverage/
 
 # Pagefind 索引（构建生成）
 public/pagefind/
-desktop/public/pagefind/
+app-desktop/public/pagefind/
 
-# web/reports/baseline 构建基线报告（CI 产物，不入库）
-web/reports/baseline/
+# app-web/reports/baseline 构建基线报告（CI 产物，不入库）
+app-web/reports/baseline/
 
-# web/public/data 与 desktop/public/data 构建产物（由 scripts/ 生成，不入库）
-web/public/data/
-desktop/public/data/
+# app-web/public/data 与 app-desktop/public/data 构建产物（由 scripts/ 生成，不入库）
+app-web/public/data/
+app-desktop/public/data/
 
-# web/src/content/docs/ markdown 副本（由 content/full/ 同步生成，不入库）
-web/src/content/docs/
+# app-web/src/content/docs/ markdown 副本（由 cnt-content/full/ 同步生成，不入库）
+app-web/src/content/docs/
 
 # TypeScript 增量编译缓存
 *.tsbuildinfo
@@ -230,11 +231,13 @@ manifest/archives/
 manifest/index.json
 
 # doc-id-map（包含本地路径映射，可能含敏感路径信息）
-tools/doc-id-map.json
+tls-tools/doc-id-map.json
 
-# 根目录 doc-id-map 映射文件（含本地绝对路径，禁止入库）
-/doc-id-map-full.json
-/doc-id-map-mobile.json
+# 内容层 ID 映射文件（含本地绝对路径，禁止入库）
+# _id-registry.json 与 _archived-ids.json 入库（共享数据）
+# _doc-id-map*.json 不入库（含本地路径）
+cnt-content/full/_doc-id-map.json
+cnt-content/full/_doc-id-map-mobile.archived.json
 
 
 # -----------------------------------------------------------------------------

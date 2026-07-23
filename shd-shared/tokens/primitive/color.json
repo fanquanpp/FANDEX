@@ -1,0 +1,49 @@
+{
+  "$description": "FANDEX 原始颜色令牌 — ark 家族（黑/白/青工业信息系统）色板原值，无语义",
+  "color": {
+    "$type": "color",
+    "neutral": {
+      "0": { "$value": "#000000", "$description": "纯黑" },
+      "50": { "$value": "#0A0A0A", "$description": "近黑（ark 深色主背景）" },
+      "100": { "$value": "#141414", "$description": "深色次背景" },
+      "200": { "$value": "#1F1F1F", "$description": "深色三级背景" },
+      "300": { "$value": "#2A2A2A", "$description": "深色边框" },
+      "400": { "$value": "#404040", "$description": "深色强边框" },
+      "500": { "$value": "#525252", "$description": "深色次级文字" },
+      "600": { "$value": "#737373", "$description": "三级文字" },
+      "700": { "$value": "#A3A3A3", "$description": "深色模式次级文字" },
+      "800": { "$value": "#D4D4D4", "$description": "浅色强边框" },
+      "900": { "$value": "#E5E5E5", "$description": "浅色边框" },
+      "950": { "$value": "#EBEBEB", "$description": "浅色三级背景" },
+      "1000": { "$value": "#F5F5F5", "$description": "浅色次背景" },
+      "1050": { "$value": "#FFFFFF", "$description": "纯白（ark 浅色主背景）" }
+    },
+    "cyan": {
+      "100": { "$value": "#004F5C", "$description": "深青（active 态）" },
+      "200": { "$value": "#006978", "$description": "中深青（hover 态，浅色模式）" },
+      "300": { "$value": "#00838F", "$description": "青色基准（浅色模式强调色）" },
+      "400": { "$value": "#00BCD4", "$description": "中亮青（active 态，深色模式）" },
+      "500": { "$value": "#00E5FF", "$description": "亮青（深色模式强调色）" },
+      "600": { "$value": "#4FF2FF", "$description": "极亮青（hover 态，深色模式）" }
+    },
+    "success": {
+      "light": { "$value": "#16A34A", "$description": "成功色（浅色模式）" },
+      "dark": { "$value": "#22C55E", "$description": "成功色（深色模式，提亮）" }
+    },
+    "warning": {
+      "light": { "$value": "#EA580C", "$description": "警告色（浅色模式）" },
+      "dark": { "$value": "#F97316", "$description": "警告色（深色模式，提亮）" }
+    },
+    "danger": {
+      "light": { "$value": "#DC2626", "$description": "危险色（浅色模式）" },
+      "dark": { "$value": "#EF4444", "$description": "危险色（深色模式，提亮）" }
+    },
+    "info": {
+      "light": { "$value": "#00838F", "$description": "信息色（浅色模式，同青色基准）" },
+      "dark": { "$value": "#00E5FF", "$description": "信息色（深色模式，同亮青）" }
+    },
+    "shadow": {
+      "black": { "$value": "#000000", "$description": "阴影色（黑色基底）" }
+    }
+  }
+}

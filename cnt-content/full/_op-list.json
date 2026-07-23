@@ -1,0 +1,15 @@
+{
+  "$schema": "../../shd-shared/op-list.schema.json",
+  "op_list_version": "1.0.0",
+  "manifest_type": "full",
+  "from_manifest_version": "2.0.0",
+  "to_manifest_version": "2.0.0",
+  "generated_at": "2026-07-23T00:00:00Z",
+  "description": "FANDEX 热更新操作列表 — 描述两个 manifest 版本间的增量差异。初始状态为空（from===to），后续由 shd-shared/tls-tools/generate-op-list 在内容变更时生成。客户端通过对比本地版本与服务端最新版本拉取对应 op-list 执行增量更新。",
+  "ops": [],
+  "signature": {
+    "algorithm": "EdDSA",
+    "public_key_fingerprint": "",
+    "value": ""
+  }
+}

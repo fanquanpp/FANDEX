@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<resources>
-    <!--
-        暗色模式启动窗口背景色覆盖（v3.6.0 新增）
-        - 系统夜间模式时覆盖 values/colors.xml 的 window_background
-        - 与 SplashActivity 暗色主题背景对齐，避免冷启动闪白
-    -->
-    <color name="window_background">#FF0D0D0D</color>
-</resources>

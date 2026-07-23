@@ -1,0 +1,46 @@
+{
+  "$description": "FANDEX 语义字体令牌 — 引用 primitive/font.json，赋予排版语义",
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "body": { "$value": "{font.family.sans}", "$description": "正文字族" },
+      "heading": { "$value": "{font.family.display}", "$description": "标题字族" },
+      "code": { "$value": "{font.family.mono}", "$description": "代码字族" },
+      "quote": { "$value": "{font.family.serif}", "$description": "引文字族" }
+    },
+    "size": {
+      "$type": "dimension",
+      "caption": { "$value": "{font.size.xs}", "$description": "说明文字 12px" },
+      "secondary": { "$value": "{font.size.sm}", "$description": "次要文字 14px" },
+      "body": { "$value": "{font.size.base}", "$description": "正文 16px" },
+      "body-lg": { "$value": "{font.size.lg}", "$description": "大正文 18px" },
+      "heading-4": { "$value": "{font.size.xl}", "$description": "四级标题 20px" },
+      "heading-3": { "$value": "{font.size.2xl}", "$description": "三级标题 24px" },
+      "heading-2": { "$value": "{font.size.3xl}", "$description": "二级标题 30px" },
+      "heading-1": { "$value": "{font.size.4xl}", "$description": "一级标题 36px" },
+      "display": { "$value": "{font.size.5xl}", "$description": "展示标题 48px" },
+      "hero": { "$value": "{font.size.6xl}", "$description": "英雄标题 60px" }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "body": { "$value": "{font.weight.normal}", "$description": "正文字重" },
+      "emphasis": { "$value": "{font.weight.medium}", "$description": "强调字重" },
+      "heading": { "$value": "{font.weight.bold}", "$description": "标题字重" },
+      "display": { "$value": "{font.weight.extrabold}", "$description": "展示字重" }
+    },
+    "lineHeight": {
+      "$type": "number",
+      "heading": { "$value": "{font.lineHeight.tight}", "$description": "标题行高" },
+      "subheading": { "$value": "{font.lineHeight.snug}", "$description": "副标题行高" },
+      "body": { "$value": "{font.lineHeight.relaxed}", "$description": "正文行高（中文优化）" },
+      "reading": { "$value": "{font.lineHeight.loose}", "$description": "长文阅读行高" }
+    },
+    "letterSpacing": {
+      "$type": "dimension",
+      "heading": { "$value": "{font.letterSpacing.tight}", "$description": "标题字距" },
+      "display": { "$value": "{font.letterSpacing.tighter}", "$description": "展示字距" },
+      "body": { "$value": "{font.letterSpacing.normal}", "$description": "正文字距" },
+      "label": { "$value": "{font.letterSpacing.wide}", "$description": "标签字距" }
+    }
+  }
+}

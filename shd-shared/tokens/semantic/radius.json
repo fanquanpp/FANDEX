@@ -1,0 +1,13 @@
+{
+  "$description": "FANDEX 语义圆角令牌 — 引用 primitive/radius.json，ark 家族偏好小圆角",
+  "radius": {
+    "$type": "dimension",
+    "none": { "$value": "{radius.none}", "$description": "直角" },
+    "control": { "$value": "{radius.default}", "$description": "控件圆角（4px）" },
+    "card": { "$value": "{radius.lg}", "$description": "卡片圆角（8px）" },
+    "modal": { "$value": "{radius.xl}", "$description": "模态圆角（12px）" },
+    "badge": { "$value": "{radius.default}", "$description": "徽章圆角（4px）" },
+    "pill": { "$value": "{radius.full}", "$description": "药丸形（圆形）" },
+    "tooltip": { "$value": "{radius.sm}", "$description": "工具提示圆角（2px）" }
+  }
+}

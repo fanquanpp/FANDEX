@@ -1,0 +1,99 @@
+{
+  "$description": "FANDEX 输入框组件令牌 — 引用 semantic 层令牌，定义输入框专属视觉变量。ark 家族输入框特征：凹陷背景、青色焦点、清晰反馈",
+  "input": {
+    "radius": { "$value": "{radius.control}", "$description": "输入框圆角（4px）" },
+    "borderWidth": { "$value": "1px", "$description": "输入框边框宽度" },
+    "caretColor": { "$value": "{color.accent.base}", "$description": "光标颜色（青色）" },
+    "selectionBg": { "$value": "{color.accent.base}", "$description": "选中文本背景（青色）" },
+    "selectionFg": { "$value": "{color.accent.fg}", "$description": "选中文本文字（白色）" },
+
+    "size": {
+      "sm": {
+        "height": { "$value": "{size.control.sm}", "$description": "小输入框高（32px）" },
+        "paddingX": { "$value": "{space.3}", "$description": "小输入框水平内边距（12px）" },
+        "fontSize": { "$value": "{font.size.secondary}", "$description": "小输入框字号（14px）" },
+        "iconSize": { "$value": "{size.icon.sm}", "$description": "小输入框图标尺寸" }
+      },
+      "md": {
+        "height": { "$value": "{size.control.md}", "$description": "中输入框高（40px，默认）" },
+        "paddingX": { "$value": "{space.4}", "$description": "中输入框水平内边距（16px）" },
+        "fontSize": { "$value": "{font.size.body}", "$description": "中输入框字号（16px）" },
+        "iconSize": { "$value": "{size.icon.md}", "$description": "中输入框图标尺寸" }
+      },
+      "lg": {
+        "height": { "$value": "{size.control.lg}", "$description": "大输入框高（48px）" },
+        "paddingX": { "$value": "{space.5}", "$description": "大输入框水平内边距（20px）" },
+        "fontSize": { "$value": "{font.size.body-lg}", "$description": "大输入框字号（18px）" },
+        "iconSize": { "$value": "{size.icon.lg}", "$description": "大输入框图标尺寸" }
+      }
+    },
+
+    "default": {
+      "bg": { "$value": "{color.bg.sunken}", "$description": "输入框默认背景（凹陷）" },
+      "fg": { "$value": "{color.fg.primary}", "$description": "输入框默认文字" },
+      "border": { "$value": "{color.border.default}", "$description": "输入框默认边框" },
+      "placeholder": { "$value": "{color.fg.tertiary}", "$description": "输入框占位文字" }
+    },
+
+    "hover": {
+      "bg": { "$value": "{color.bg.sunken}", "$description": "输入框悬停背景（不变）" },
+      "border": { "$value": "{color.border.strong}", "$description": "输入框悬停边框（加深）" }
+    },
+
+    "focus": {
+      "bg": { "$value": "{color.bg.elevated}", "$description": "输入框焦点背景（浮起白色）" },
+      "border": { "$value": "{color.border.focus}", "$description": "输入框焦点边框（青色）" },
+      "shadow": { "$value": "{shadow.focus-ring}", "$description": "输入框焦点内阴影" }
+    },
+
+    "disabled": {
+      "bg": { "$value": "{color.bg.tertiary}", "$description": "输入框禁用背景" },
+      "fg": { "$value": "{color.fg.disabled}", "$description": "输入框禁用文字" },
+      "border": { "$value": "{color.border.subtle}", "$description": "输入框禁用边框" },
+      "placeholder": { "$value": "{color.fg.disabled}", "$description": "输入框禁用占位文字" }
+    },
+
+    "error": {
+      "border": { "$value": "{color.danger.base}", "$description": "输入框错误态边框（红色）" },
+      "fg": { "$value": "{color.danger.base}", "$description": "输入框错误态文字（用于错误提示）" },
+      "focus": {
+        "border": { "$value": "{color.danger.base}", "$description": "输入框错误态焦点边框" },
+        "shadow": { "$value": "{shadow.focus-ring}", "$description": "输入框错误态焦点阴影" }
+      }
+    },
+
+    "label": {
+      "fontSize": { "$value": "{font.size.secondary}", "$description": "标签字号（14px）" },
+      "fontWeight": { "$value": "{font.weight.emphasis}", "$description": "标签字重（medium）" },
+      "fg": { "$value": "{color.fg.primary}", "$description": "标签文字颜色" },
+      "marginBottom": { "$value": "{space.2}", "$description": "标签与输入框间距（8px）" }
+    },
+
+    "helperText": {
+      "fontSize": { "$value": "{font.size.caption}", "$description": "辅助文字字号（12px）" },
+      "fg": { "$value": "{color.fg.secondary}", "$description": "辅助文字颜色" },
+      "marginTop": { "$value": "{space.2}", "$description": "辅助文字与输入框间距（8px）" }
+    },
+
+    "icon": {
+      "leading": {
+        "color": { "$value": "{color.fg.tertiary}", "$description": "前导图标颜色" },
+        "marginRight": { "$value": "{space.2}", "$description": "前导图标右间距（8px）" }
+      },
+      "trailing": {
+        "color": { "$value": "{color.fg.tertiary}", "$description": "后导图标颜色" },
+        "marginLeft": { "$value": "{space.2}", "$description": "后导图标左间距（8px）" }
+      }
+    },
+
+    "transition": {
+      "$type": "transition",
+      "$value": {
+        "duration": "{motion.duration.fast}",
+        "delay": "{motion.delay.none}",
+        "timingFunction": "{motion.easing.out}"
+      },
+      "$description": "输入框过渡预设（边框/背景 150ms 减速）"
+    }
+  }
+}

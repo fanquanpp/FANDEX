@@ -1,0 +1,885 @@
+/* =============================================================================
+ * FANDEX 基础组件样式 — @layer components
+ * -----------------------------------------------------------------------------
+ * 职责：消费 ark 设计令牌，实现 FANDEX 设计系统的基础组件视觉样式
+ * 1. .fndx-button   按钮（primary/secondary/ghost/danger × sm/md/lg + 状态）
+ * 2. .fndx-card     卡片（基础结构 + header/body/footer + hover/selected/disabled）
+ * 3. .fndx-input    输入框（默认 + sm/md/lg + focus/error/disabled + 标签/辅助文字）
+ * 4. .fndx-badge    徽章（neutral/primary/success/warning/danger + 实心/描边）
+ * 5. .fndx-toast    通知提醒（info/success/warning/danger + 进入动画）
+ * 6. .fndx-skeleton 骨架屏（占位 + shimmer 微光动画）
+ * -----------------------------------------------------------------------------
+ * 设计原则：
+ * - 严格消费 tokens.css 中已定义的 component 令牌，不重复硬编码颜色
+ * - 双主题由 light-dark() 与 color-scheme 自动切换，无需手动 .dark 分支
+ * - 状态切换平滑（hover/active/focus/disabled 统一 transition 预设）
+ * - 焦点环使用 :focus-visible，仅键盘导航时显示
+ * - 触屏设备禁用 hover 状态，避免粘性 hover（@media (hover: hover)）
+ * - 留白未来扩展：每个组件预留 __icon / __label 子元素类，便于增强
+ * -----------------------------------------------------------------------------
+ * 引用：spec.md 第三章 3.3.1 components.css / 第八章 ark-ui 美术风格
+ *       tasks.md 阶段 D.1 基础组件样式实现
+ * =============================================================================
+ */
+
+@layer components {
+
+  /* ============================================================
+   * 1. 按钮 .fndx-button
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <button class="fndx-button fndx-button--primary fndx-button--md">
+   *     <span class="fndx-button__icon">…</span>
+   *     <span class="fndx-button__label">主按钮</span>
+   *   </button>
+   *
+   * 变体（必选其一）：--primary / --secondary / --ghost / --danger
+   * 尺寸（可选）：--sm / --md（默认）/ --lg
+   * 状态修饰（可选）：is-disabled / is-loading
+   * ============================================================ */
+  .fndx-button {
+    /* 布局：inline-flex 居中对齐，方便搭配图标 */
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--button-size-md-gap);
+    /* 尺寸（默认 md） */
+    min-width: var(--button-min-width);
+    height: var(--button-size-md-height);
+    padding-inline: var(--button-size-md-padding-x);
+    /* 排版 */
+    font-family: var(--font-family-body);
+    font-size: var(--button-size-md-font-size);
+    font-weight: var(--button-font-weight);
+    letter-spacing: var(--button-letter-spacing);
+    line-height: var(--button-line-height);
+    text-decoration: none;
+    white-space: nowrap;
+    /* 视觉：边框 + 圆角 + 光标 */
+    border-width: var(--button-border-width);
+    border-style: solid;
+    border-radius: var(--button-radius);
+    cursor: pointer;
+    user-select: none;
+    /* 过渡：颜色 + 阴影 + 变换统一 150ms 减速 */
+    transition:
+      background-color var(--button-transition),
+      border-color var(--button-transition),
+      color var(--button-transition),
+      box-shadow var(--motion-duration-fast) var(--motion-easing-out),
+      transform var(--motion-duration-instant) var(--motion-easing-out);
+    /* 触摸目标尺寸：移动端最小 44px，已满足 */
+  }
+
+  /* 子元素：图标默认尺寸跟随按钮尺寸（md） */
+  .fndx-button__icon {
+    display: inline-flex;
+    flex-shrink: 0;
+    width: var(--button-size-md-icon-size);
+    height: var(--button-size-md-icon-size);
+  }
+
+  .fndx-button__label {
+    display: inline-block;
+  }
+
+  /* --- 尺寸变体：sm --- */
+  .fndx-button--sm {
+    gap: var(--button-size-sm-gap);
+    height: var(--button-size-sm-height);
+    padding-inline: var(--button-size-sm-padding-x);
+    font-size: var(--button-size-sm-font-size);
+  }
+
+  .fndx-button--sm .fndx-button__icon {
+    width: var(--button-size-sm-icon-size);
+    height: var(--button-size-sm-icon-size);
+  }
+
+  /* --- 尺寸变体：lg --- */
+  .fndx-button--lg {
+    gap: var(--button-size-lg-gap);
+    height: var(--button-size-lg-height);
+    padding-inline: var(--button-size-lg-padding-x);
+    font-size: var(--button-size-lg-font-size);
+  }
+
+  .fndx-button--lg .fndx-button__icon {
+    width: var(--button-size-lg-icon-size);
+    height: var(--button-size-lg-icon-size);
+  }
+
+  /* --- 颜色变体：primary 主按钮（青色强调） --- */
+  .fndx-button--primary {
+    background-color: var(--button-primary-default-bg);
+    color: var(--button-primary-default-fg);
+    border-color: var(--button-primary-default-border);
+  }
+
+  /* --- 颜色变体：secondary 次按钮（白/黑中性） --- */
+  .fndx-button--secondary {
+    background-color: var(--button-secondary-default-bg);
+    color: var(--button-secondary-default-fg);
+    border-color: var(--button-secondary-default-border);
+  }
+
+  /* --- 颜色变体：ghost 幽灵按钮（透明） --- */
+  .fndx-button--ghost {
+    background-color: var(--button-ghost-default-bg);
+    color: var(--button-ghost-default-fg);
+    border-color: var(--button-ghost-default-border);
+  }
+
+  /* --- 颜色变体：danger 危险按钮（红色） --- */
+  .fndx-button--danger {
+    background-color: var(--button-danger-default-bg);
+    color: var(--button-danger-default-fg);
+    border-color: var(--button-danger-default-border);
+  }
+
+  /* --- 状态：hover（仅在支持 hover 的设备生效，避免触屏粘性 hover） --- */
+  @media (hover: hover) {
+    .fndx-button--primary:hover {
+      background-color: var(--button-primary-hover-bg);
+      border-color: var(--button-primary-hover-border);
+    }
+
+    .fndx-button--secondary:hover {
+      background-color: var(--button-secondary-hover-bg);
+      border-color: var(--button-secondary-hover-border);
+    }
+
+    .fndx-button--ghost:hover {
+      background-color: var(--button-ghost-hover-bg);
+      border-color: var(--button-ghost-hover-border);
+    }
+
+    /* danger 悬停：使用降透明度效果（依赖 color-mix，现代浏览器支持） */
+    .fndx-button--danger:hover {
+      background-color: var(--button-danger-hover-bg);
+      border-color: var(--button-danger-hover-border);
+      /* 颜色保持，仅降低透明度营造 hover 反馈 */
+      filter: brightness(1.08);
+    }
+  }
+
+  /* --- 状态：active 按下（所有设备生效） --- */
+  .fndx-button--primary:active {
+    background-color: var(--button-primary-active-bg);
+    border-color: var(--button-primary-active-border);
+  }
+
+  .fndx-button--secondary:active {
+    background-color: var(--button-secondary-active-bg);
+    border-color: var(--button-secondary-active-border);
+  }
+
+  .fndx-button--ghost:active {
+    background-color: var(--button-ghost-active-bg);
+    border-color: var(--button-ghost-active-border);
+  }
+
+  .fndx-button--danger:active {
+    background-color: var(--button-danger-active-bg);
+    border-color: var(--button-danger-active-border);
+    filter: brightness(0.95);
+  }
+
+  /* 按下统一缩放反馈 */
+  .fndx-button:active {
+    transform: scale(0.97);
+    transition-duration: var(--motion-duration-instant);
+  }
+
+  /* --- 状态：focus-visible（键盘导航焦点环） --- */
+  .fndx-button--primary:focus-visible,
+  .fndx-button--secondary:focus-visible,
+  .fndx-button--ghost:focus-visible,
+  .fndx-button--danger:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  /* --- 状态：disabled / is-disabled --- */
+  .fndx-button:disabled,
+  .fndx-button.is-disabled {
+    cursor: not-allowed;
+    pointer-events: none;
+    transform: none;
+  }
+
+  .fndx-button--primary:disabled,
+  .fndx-button--primary.is-disabled {
+    background-color: var(--button-primary-disabled-bg);
+    color: var(--button-primary-disabled-fg);
+    border-color: var(--button-primary-disabled-border);
+  }
+
+  .fndx-button--secondary:disabled,
+  .fndx-button--secondary.is-disabled {
+    background-color: var(--button-secondary-disabled-bg);
+    color: var(--button-secondary-disabled-fg);
+    border-color: var(--button-secondary-disabled-border);
+  }
+
+  .fndx-button--ghost:disabled,
+  .fndx-button--ghost.is-disabled {
+    background-color: var(--button-ghost-disabled-bg);
+    color: var(--button-ghost-disabled-fg);
+    border-color: var(--button-ghost-disabled-border);
+  }
+
+  .fndx-button--danger:disabled,
+  .fndx-button--danger.is-disabled {
+    background-color: var(--button-danger-disabled-bg);
+    color: var(--button-danger-disabled-fg);
+    border-color: var(--button-danger-disabled-border);
+    filter: none;
+  }
+
+  /* --- 加载态：is-loading 显示旋转图标占位 --- */
+  .fndx-button.is-loading {
+    position: relative;
+    pointer-events: none;
+    color: transparent;
+  }
+
+  .fndx-button.is-loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: var(--button-size-sm-icon-size);
+    height: var(--button-size-sm-icon-size);
+    margin-top: calc(-1 * var(--button-size-sm-icon-size) / 2);
+    margin-left: calc(-1 * var(--button-size-sm-icon-size) / 2);
+    border: 2px solid currentColor;
+    border-top-color: transparent;
+    border-radius: var(--radius-full);
+    /* 继承原按钮文字色 */
+    color: var(--button-primary-default-fg);
+    animation: fndx-spin var(--motion-duration-normal) linear infinite;
+  }
+
+  /* ============================================================
+   * 2. 卡片 .fndx-card
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <article class="fndx-card">
+   *     <header class="fndx-card__header">
+   *       <h3 class="fndx-card__title">标题</h3>
+   *     </header>
+   *     <div class="fndx-card__body">内容</div>
+   *     <footer class="fndx-card__footer">底部</footer>
+   *   </article>
+   *
+   * 变体：--lg（大卡片内边距）/ --flat（无阴影）
+   * 状态：is-selected / is-disabled
+   * ============================================================ */
+  .fndx-card {
+    /* 布局：flex 纵向 */
+    display: flex;
+    flex-direction: column;
+    /* 尺寸 */
+    padding: var(--card-size-default-padding);
+    gap: var(--card-size-default-gap);
+    /* 视觉：边框 + 圆角 + 阴影 */
+    background-color: var(--card-bg);
+    color: var(--card-fg);
+    border: var(--card-border-width) solid var(--card-border);
+    border-radius: var(--card-radius);
+    box-shadow: var(--card-shadow-default);
+    /* 过渡：阴影 + 边框 + 变换统一 250ms 减速 */
+    transition:
+      box-shadow var(--card-transition),
+      border-color var(--card-transition),
+      transform var(--motion-duration-normal) var(--motion-easing-spring);
+  }
+
+  /* --- 尺寸变体：lg 大卡片 --- */
+  .fndx-card--lg {
+    padding: var(--card-size-lg-padding);
+    gap: var(--card-size-lg-gap);
+  }
+
+  /* --- 变体：flat 无阴影（用于内嵌场景） --- */
+  .fndx-card--flat {
+    box-shadow: none;
+  }
+
+  /* --- 卡片头部 --- */
+  .fndx-card__header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-sm);
+    padding: var(--card-header-padding-y) var(--card-header-padding-x);
+    /* 头部内边距抵消卡片外层 padding（通过负 margin） */
+    margin: calc(-1 * var(--card-size-default-padding));
+    margin-bottom: 0;
+    border-bottom: 1px solid var(--card-header-border-bottom);
+    font-size: var(--card-header-font-size);
+    font-weight: var(--card-header-font-weight);
+    line-height: var(--card-header-line-height);
+  }
+
+  .fndx-card__title {
+    flex: 1 1 auto;
+    margin: 0;
+    font: inherit;
+    color: inherit;
+  }
+
+  .fndx-card__header .fndx-card__action {
+    flex: 0 0 auto;
+  }
+
+  /* --- 卡片主体 --- */
+  .fndx-card__body {
+    flex: 1 1 auto;
+    font-size: var(--card-body-font-size);
+    line-height: var(--card-body-line-height);
+    color: var(--color-fg-primary);
+  }
+
+  /* --- 卡片底部 --- */
+  .fndx-card__footer {
+    display: flex;
+    align-items: center;
+    gap: var(--card-footer-gap);
+    padding: var(--card-footer-padding-y) var(--card-footer-padding-x);
+    margin: calc(-1 * var(--card-size-default-padding));
+    margin-top: 0;
+    border-top: 1px solid var(--card-footer-border-top);
+  }
+
+  /* --- 状态：hover（仅在支持 hover 的设备生效） --- */
+  @media (hover: hover) {
+    .fndx-card:hover {
+      border-color: var(--card-state-hover-border);
+      box-shadow: var(--card-shadow-hover);
+      transform: translateY(-2px);
+    }
+  }
+
+  /* --- 状态：is-selected 选中 --- */
+  .fndx-card.is-selected {
+    border-color: var(--card-state-selected-border);
+    box-shadow: var(--card-shadow-default);
+  }
+
+  /* --- 状态：is-disabled / [aria-disabled] 禁用 --- */
+  .fndx-card.is-disabled,
+  .fndx-card[aria-disabled='true'] {
+    background-color: var(--card-state-disabled-bg);
+    border-color: var(--card-state-disabled-border);
+    color: var(--card-state-disabled-fg);
+    box-shadow: none;
+    pointer-events: none;
+  }
+
+  /* ============================================================
+   * 3. 输入框 .fndx-input
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <label class="fndx-input-wrapper">
+   *     <span class="fndx-input__label">标签</span>
+   *     <span class="fndx-input__field">
+   *       <span class="fndx-input__icon-leading">…</span>
+   *       <input class="fndx-input" placeholder="占位" />
+   *       <span class="fndx-input__icon-trailing">…</span>
+   *     </span>
+   *     <span class="fndx-input__helper">辅助文字</span>
+   *   </label>
+   *
+   * 尺寸：--sm / --md（默认）/ --lg
+   * 状态：focus / .has-error / :disabled
+   * ============================================================ */
+  .fndx-input {
+    /* 尺寸（默认 md） */
+    height: var(--input-size-md-height);
+    padding-inline: var(--input-size-md-padding-x);
+    /* 排版 */
+    font-family: var(--font-family-body);
+    font-size: var(--input-size-md-font-size);
+    color: var(--input-default-fg);
+    /* 视觉 */
+    background-color: var(--input-default-bg);
+    border: var(--input-border-width) solid var(--input-default-border);
+    border-radius: var(--input-radius);
+    /* 光标与选区 */
+    caret-color: var(--input-caret-color);
+    /* 过渡 */
+    transition:
+      background-color var(--input-transition),
+      border-color var(--input-transition),
+      box-shadow var(--motion-duration-fast) var(--motion-easing-out);
+    /* 占位文字 */
+    &::placeholder {
+      color: var(--input-default-placeholder);
+    }
+    /* 选中文本 */
+    &::selection {
+      background-color: var(--input-selection-bg);
+      color: var(--input-selection-fg);
+    }
+  }
+
+  /* 尺寸：sm */
+  .fndx-input--sm {
+    height: var(--input-size-sm-height);
+    padding-inline: var(--input-size-sm-padding-x);
+    font-size: var(--input-size-sm-font-size);
+  }
+
+  /* 尺寸：lg */
+  .fndx-input--lg {
+    height: var(--input-size-lg-height);
+    padding-inline: var(--input-size-lg-padding-x);
+    font-size: var(--input-size-lg-font-size);
+  }
+
+  /* 状态：hover */
+  @media (hover: hover) {
+    .fndx-input:hover {
+      border-color: var(--input-hover-border);
+    }
+  }
+
+  /* 状态：focus */
+  .fndx-input:focus {
+    background-color: var(--input-focus-bg);
+    border-color: var(--input-focus-border);
+    box-shadow: 0 0 0 3px light-dark(rgba(0, 131, 143, 0.18), rgba(0, 229, 255, 0.22));
+    outline: none;
+  }
+
+  /* 状态：focus-visible（键盘焦点，保留 outline 兼容旧浏览器） */
+  .fndx-input:focus-visible {
+    outline: 2px solid var(--input-focus-border);
+    outline-offset: 2px;
+  }
+
+  /* 状态：error（错误态，通过容器 .has-error 触发） */
+  .fndx-input-wrapper.has-error .fndx-input,
+  .fndx-input.has-error {
+    border-color: var(--input-error-border);
+  }
+
+  .fndx-input-wrapper.has-error .fndx-input:focus,
+  .fndx-input.has-error:focus {
+    border-color: var(--input-error-focus-border);
+    box-shadow: 0 0 0 3px light-dark(rgba(220, 38, 38, 0.18), rgba(239, 68, 68, 0.22));
+  }
+
+  /* 状态：disabled */
+  .fndx-input:disabled,
+  .fndx-input[aria-disabled='true'] {
+    background-color: var(--input-disabled-bg);
+    color: var(--input-disabled-fg);
+    border-color: var(--input-disabled-border);
+    cursor: not-allowed;
+  }
+
+  .fndx-input:disabled::placeholder {
+    color: var(--input-disabled-placeholder);
+  }
+
+  /* --- 输入框包装器（含标签/辅助文字/图标） --- */
+  .fndx-input-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-xs);
+  }
+
+  /* 标签 */
+  .fndx-input__label {
+    font-size: var(--input-label-font-size);
+    font-weight: var(--input-label-font-weight);
+    color: var(--input-label-fg);
+    margin-bottom: var(--input-label-margin-bottom);
+  }
+
+  /* 辅助文字 */
+  .fndx-input__helper {
+    margin-top: var(--input-helper-text-margin-top);
+    font-size: var(--input-helper-text-font-size);
+    color: var(--input-helper-text-fg);
+  }
+
+  /* 错误提示（在 has-error 容器内） */
+  .fndx-input-wrapper.has-error .fndx-input__helper {
+    color: var(--input-error-fg);
+  }
+
+  /* 输入框字段容器（含前导/后导图标） */
+  .fndx-input__field {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .fndx-input__field .fndx-input {
+    width: 100%;
+  }
+
+  /* 前导图标 */
+  .fndx-input__icon-leading {
+    position: absolute;
+    left: var(--input-size-md-padding-x);
+    display: inline-flex;
+    color: var(--input-icon-leading-color);
+    pointer-events: none;
+  }
+
+  .fndx-input__icon-leading + .fndx-input {
+    padding-left: calc(var(--input-size-md-padding-x) + var(--size-icon-md) + var(--input-icon-leading-margin-right));
+  }
+
+  /* 后导图标 */
+  .fndx-input__icon-trailing {
+    position: absolute;
+    right: var(--input-size-md-padding-x);
+    display: inline-flex;
+    color: var(--input-icon-trailing-color);
+  }
+
+  /* ============================================================
+   * 4. 徽章 .fndx-badge
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <span class="fndx-badge fndx-badge--primary">主要</span>
+   *
+   * 颜色：--neutral / --primary / --success / --warning / --danger / --info
+   * 形态：默认实心 / --outline 描边 / --soft 软填充
+   * ============================================================ */
+  .fndx-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    padding: 2px var(--space-2);
+    /* 排版 */
+    font-family: var(--font-family-body);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-emphasis);
+    letter-spacing: var(--font-letter-spacing-label);
+    line-height: 1.4;
+    /* 视觉 */
+    border-radius: var(--radius-badge);
+    border: 1px solid transparent;
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  /* 子元素：圆点指示 */
+  .fndx-badge__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: var(--radius-full);
+    background-color: currentColor;
+    flex-shrink: 0;
+  }
+
+  /* --- 默认形态：实心（Solid） --- */
+  .fndx-badge--neutral {
+    background-color: var(--color-bg-tertiary);
+    color: var(--color-fg-secondary);
+    border-color: var(--color-border-subtle);
+  }
+
+  .fndx-badge--primary {
+    background-color: var(--color-accent-base);
+    color: var(--color-accent-fg);
+    border-color: var(--color-accent-base);
+  }
+
+  .fndx-badge--success {
+    background-color: var(--color-success-base);
+    color: var(--color-success-fg);
+    border-color: var(--color-success-base);
+  }
+
+  .fndx-badge--warning {
+    background-color: var(--color-warning-base);
+    color: var(--color-warning-fg);
+    border-color: var(--color-warning-base);
+  }
+
+  .fndx-badge--danger {
+    background-color: var(--color-danger-base);
+    color: var(--color-danger-fg);
+    border-color: var(--color-danger-base);
+  }
+
+  .fndx-badge--info {
+    background-color: var(--color-info-base);
+    color: var(--color-info-fg);
+    border-color: var(--color-info-base);
+  }
+
+  /* --- 形态：outline 描边（背景透明，仅边框与文字着色） --- */
+  .fndx-badge--outline.neutral,
+  .fndx-badge--outline.fndx-badge--neutral {
+    background-color: transparent;
+    color: var(--color-fg-secondary);
+    border-color: var(--color-border-default);
+  }
+
+  .fndx-badge--outline.fndx-badge--primary {
+    background-color: transparent;
+    color: var(--color-accent-base);
+    border-color: var(--color-accent-base);
+  }
+
+  .fndx-badge--outline.fndx-badge--success {
+    background-color: transparent;
+    color: var(--color-success-base);
+    border-color: var(--color-success-base);
+  }
+
+  .fndx-badge--outline.fndx-badge--warning {
+    background-color: transparent;
+    color: var(--color-warning-base);
+    border-color: var(--color-warning-base);
+  }
+
+  .fndx-badge--outline.fndx-badge--danger {
+    background-color: transparent;
+    color: var(--color-danger-base);
+    border-color: var(--color-danger-base);
+  }
+
+  /* --- 形态：soft 软填充（低饱和度背景） --- */
+  /* 使用 color-mix 派生软背景，现代浏览器支持；不支持时回退为透明 */
+  .fndx-badge--soft.fndx-badge--primary {
+    background-color: light-dark(rgba(0, 131, 143, 0.12), rgba(0, 229, 255, 0.16));
+    color: var(--color-accent-base);
+    border-color: transparent;
+  }
+
+  .fndx-badge--soft.fndx-badge--success {
+    background-color: light-dark(rgba(22, 163, 74, 0.12), rgba(34, 197, 94, 0.16));
+    color: var(--color-success-base);
+    border-color: transparent;
+  }
+
+  .fndx-badge--soft.fndx-badge--warning {
+    background-color: light-dark(rgba(234, 88, 12, 0.12), rgba(249, 115, 22, 0.16));
+    color: var(--color-warning-base);
+    border-color: transparent;
+  }
+
+  .fndx-badge--soft.fndx-badge--danger {
+    background-color: light-dark(rgba(220, 38, 38, 0.12), rgba(239, 68, 68, 0.16));
+    color: var(--color-danger-base);
+    border-color: transparent;
+  }
+
+  /* --- 药丸形态（圆角变 full） --- */
+  .fndx-badge--pill {
+    border-radius: var(--radius-pill);
+  }
+
+  /* ============================================================
+   * 5. 通知提醒 .fndx-toast
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <div class="fndx-toast fndx-toast--success" role="alert">
+   *     <span class="fndx-toast__icon">…</span>
+   *     <div class="fndx-toast__content">
+   *       <p class="fndx-toast__title">标题</p>
+   *       <p class="fndx-toast__message">消息</p>
+   *     </div>
+   *     <button class="fndx-toast__close">关闭</button>
+   *   </div>
+   *
+   * 颜色：--info / --success / --warning / --danger
+   * 状态：is-entering / is-leaving（由 JS 添加触发动画）
+   * ============================================================ */
+  .fndx-toast {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-inline-sm);
+    /* 尺寸 */
+    min-width: 280px;
+    max-width: 420px;
+    padding: var(--space-3) var(--space-4);
+    /* 视觉 */
+    background-color: var(--color-bg-elevated);
+    color: var(--color-fg-primary);
+    border: 1px solid var(--color-border-default);
+    border-left-width: 4px;
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-notification);
+    /* 字体 */
+    font-size: var(--font-size-secondary);
+    line-height: var(--font-line-height-body);
+    /* 过渡 */
+    transition:
+      transform var(--motion-duration-normal) var(--motion-easing-spring),
+      opacity var(--motion-duration-normal) var(--motion-easing-out);
+  }
+
+  /* 子元素：图标 */
+  .fndx-toast__icon {
+    flex-shrink: 0;
+    width: var(--size-icon-md);
+    height: var(--size-icon-md);
+    color: var(--color-fg-secondary);
+  }
+
+  /* 子元素：内容区 */
+  .fndx-toast__content {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  .fndx-toast__title {
+    margin: 0;
+    font-size: var(--font-size-secondary);
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-primary);
+  }
+
+  .fndx-toast__message {
+    margin: var(--space-stack-xs) 0 0;
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-secondary);
+  }
+
+  /* 子元素：关闭按钮 */
+  .fndx-toast__close {
+    flex-shrink: 0;
+    width: var(--size-icon-sm);
+    height: var(--size-icon-sm);
+    padding: 0;
+    background: transparent;
+    border: none;
+    color: var(--color-fg-tertiary);
+    cursor: pointer;
+    transition: color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-toast__close:hover {
+      color: var(--color-fg-primary);
+    }
+  }
+
+  /* --- 颜色变体（左侧强调边框 + 图标颜色） --- */
+  .fndx-toast--info {
+    border-left-color: var(--color-info-base);
+  }
+
+  .fndx-toast--info .fndx-toast__icon {
+    color: var(--color-info-base);
+  }
+
+  .fndx-toast--success {
+    border-left-color: var(--color-success-base);
+  }
+
+  .fndx-toast--success .fndx-toast__icon {
+    color: var(--color-success-base);
+  }
+
+  .fndx-toast--warning {
+    border-left-color: var(--color-warning-base);
+  }
+
+  .fndx-toast--warning .fndx-toast__icon {
+    color: var(--color-warning-base);
+  }
+
+  .fndx-toast--danger {
+    border-left-color: var(--color-danger-base);
+  }
+
+  .fndx-toast--danger .fndx-toast__icon {
+    color: var(--color-danger-base);
+  }
+
+  /* --- 进入动画：从右侧滑入并淡入 --- */
+  .fndx-toast.is-entering {
+    animation: fndx-slide-in-right var(--motion-duration-normal) var(--motion-easing-spring);
+  }
+
+  /* --- 离开动画：向右滑出并淡出 --- */
+  .fndx-toast.is-leaving {
+    animation: fndx-slide-out-right var(--motion-duration-fast) var(--motion-easing-in) forwards;
+  }
+
+  /* --- Toast 容器（固定在右上角） --- */
+  .fndx-toast-container {
+    position: fixed;
+    top: var(--space-4);
+    right: var(--space-4);
+    z-index: 300;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-sm);
+    pointer-events: none;
+  }
+
+  .fndx-toast-container .fndx-toast {
+    pointer-events: auto;
+  }
+
+  /* ============================================================
+   * 6. 骨架屏 .fndx-skeleton
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <div class="fndx-skeleton fndx-skeleton--text"></div>
+   *   <div class="fndx-skeleton fndx-skeleton--circle"></div>
+   *   <div class="fndx-skeleton fndx-skeleton--rect" style="width:120px;height:80px"></div>
+   *
+   * 形态：--text（文字行）/ --circle（圆形头像）/ --rect（矩形块，默认）
+   * ============================================================ */
+  .fndx-skeleton {
+    /* 视觉：渐变背景 + shimmer 动画 */
+    background: linear-gradient(
+      90deg,
+      var(--color-bg-secondary) 25%,
+      var(--color-bg-tertiary) 50%,
+      var(--color-bg-secondary) 75%
+    );
+    background-size: 200% 100%;
+    border-radius: var(--radius-default);
+    /* 动画 */
+    animation: fndx-shimmer var(--motion-duration-slower) linear infinite;
+  }
+
+  /* 形态：text（文字行，圆角更小） */
+  .fndx-skeleton--text {
+    height: var(--font-size-body);
+    border-radius: var(--radius-sm);
+  }
+
+  /* 形态：circle（圆形头像/图标占位） */
+  .fndx-skeleton--circle {
+    border-radius: var(--radius-full);
+    width: var(--size-icon-lg);
+    height: var(--size-icon-lg);
+  }
+
+  /* 形态：rect（矩形块，默认即 rect，显式声明便于语义化） */
+  .fndx-skeleton--rect {
+    width: 100%;
+    height: var(--space-12);
+  }
+
+  /* 尊重 prefers-reduced-motion：禁用 shimmer 动画，改为静态色块 */
+  @media (prefers-reduced-motion: reduce) {
+    .fndx-skeleton {
+      animation: none;
+      background: var(--color-bg-tertiary);
+    }
+  }
+}
+
+/* =============================================================================
+ * Toast 进入/离开关键帧说明
+ * -----------------------------------------------------------------------------
+ * fndx-slide-in-right / fndx-slide-out-right 已迁移至 motion.css 统一管理
+ * 此处仅保留说明，避免 keyframes 重复定义导致维护困难
+ * =============================================================================
+ */

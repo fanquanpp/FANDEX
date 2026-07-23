@@ -1,0 +1,17 @@
+{
+  "name": "@fandex/shared-assets",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FANDEX 统一资产层 — 应用图标、SVG 图标库、按钮素材，三端共享引用源",
+  "exports": {
+    "./icons/*": "./icons/*",
+    "./svg/*": "./svg/*",
+    "./buttons/*": "./buttons/*"
+  },
+  "files": [
+    "icons",
+    "svg",
+    "buttons"
+  ]
+}

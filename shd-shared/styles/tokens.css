@@ -1,0 +1,833 @@
+/**
+ * FANDEX 设计令牌（自动生成，请勿手动修改）
+ *
+ * 生成来源：shd-shared/tokens/ 下的 W3C DTCG JSON 令牌
+ * 生成脚本：shd-shared/tokens/scripts/generate-tokens-css.ts
+ * 生成时间：2026-07-23T12:01:21.286Z
+ *
+ * 令牌分层：
+ * - primitive：原始值（颜色、间距、尺寸等原值，无语义）
+ * - semantic：语义层（引用 primitive，含 light/dark 主题）
+ * - component：组件层（引用 semantic，定义组件专属令牌）
+ *
+ * 主题策略：
+ * - 颜色语义令牌使用 CSS light-dark() 函数实现双主题
+ * - 需在 :root 设置 color-scheme: light dark 以启用 light-dark()
+ * - 通过 [data-theme="dark"] 覆盖 color-scheme 可强制深色模式
+ */
+
+@layer tokens {
+  :root {
+    color-scheme: light dark;
+
+    /* ============================================================
+       1. Primitive 层 — 原始令牌值
+       ============================================================ */
+    /* 纯黑 */
+    --color-neutral-0: #000000;
+    /* 近黑（ark 深色主背景） */
+    --color-neutral-50: #0A0A0A;
+    /* 深色次背景 */
+    --color-neutral-100: #141414;
+    /* 深色三级背景 */
+    --color-neutral-200: #1F1F1F;
+    /* 深色边框 */
+    --color-neutral-300: #2A2A2A;
+    /* 深色强边框 */
+    --color-neutral-400: #404040;
+    /* 深色次级文字 */
+    --color-neutral-500: #525252;
+    /* 三级文字 */
+    --color-neutral-600: #737373;
+    /* 深色模式次级文字 */
+    --color-neutral-700: #A3A3A3;
+    /* 浅色强边框 */
+    --color-neutral-800: #D4D4D4;
+    /* 浅色边框 */
+    --color-neutral-900: #E5E5E5;
+    /* 浅色三级背景 */
+    --color-neutral-950: #EBEBEB;
+    /* 浅色次背景 */
+    --color-neutral-1000: #F5F5F5;
+    /* 纯白（ark 浅色主背景） */
+    --color-neutral-1050: #FFFFFF;
+    /* 深青（active 态） */
+    --color-cyan-100: #004F5C;
+    /* 中深青（hover 态，浅色模式） */
+    --color-cyan-200: #006978;
+    /* 青色基准（浅色模式强调色） */
+    --color-cyan-300: #00838F;
+    /* 中亮青（active 态，深色模式） */
+    --color-cyan-400: #00BCD4;
+    /* 亮青（深色模式强调色） */
+    --color-cyan-500: #00E5FF;
+    /* 极亮青（hover 态，深色模式） */
+    --color-cyan-600: #4FF2FF;
+    /* 成功色（浅色模式） */
+    --color-success-light: #16A34A;
+    /* 成功色（深色模式，提亮） */
+    --color-success-dark: #22C55E;
+    /* 警告色（浅色模式） */
+    --color-warning-light: #EA580C;
+    /* 警告色（深色模式，提亮） */
+    --color-warning-dark: #F97316;
+    /* 危险色（浅色模式） */
+    --color-danger-light: #DC2626;
+    /* 危险色（深色模式，提亮） */
+    --color-danger-dark: #EF4444;
+    /* 信息色（浅色模式，同青色基准） */
+    --color-info-light: #00838F;
+    /* 信息色（深色模式，同亮青） */
+    --color-info-dark: #00E5FF;
+    /* 阴影色（黑色基底） */
+    --color-shadow-black: #000000;
+    /* 无衬线字族（正文）— 西文 Inter 优先，中文走系统字体栈 */
+    --font-family-sans: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, Hiragino Sans GB, Noto Sans SC, Source Han Sans SC, sans-serif;
+    /* 衬线字族（长文阅读、引文） */
+    --font-family-serif: Source Serif Pro, Source Han Serif SC, Noto Serif SC, STSong, SimSun, serif;
+    /* 等宽字族（代码专用）— JetBrains Mono 优先 */
+    --font-family-mono: JetBrains Mono, Fira Code, Cascadia Code, Consolas, Courier New, monospace;
+    /* 展示字族（大标题，字距收紧） */
+    --font-family-display: Inter, -apple-system, BlinkMacSystemFont, PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif;
+    /* 12px 辅助文字 */
+    --font-size-xs: 0.75rem;
+    /* 14px 次要文字 */
+    --font-size-sm: 0.875rem;
+    /* 16px 正文基准 */
+    --font-size-base: 1rem;
+    /* 18px 略大正文 */
+    --font-size-lg: 1.125rem;
+    /* 20px 小标题 */
+    --font-size-xl: 1.25rem;
+    /* 24px 中标题 */
+    --font-size-2xl: 1.5rem;
+    /* 30px 大标题 */
+    --font-size-3xl: 1.875rem;
+    /* 36px 主标题 */
+    --font-size-4xl: 2.25rem;
+    /* 48px 页面标题 */
+    --font-size-5xl: 3rem;
+    /* 60px 英雄标题 */
+    --font-size-6xl: 3.75rem;
+    /* 细体 */
+    --font-weight-light: 300;
+    /* 常规 */
+    --font-weight-normal: 400;
+    /* 中等 */
+    --font-weight-medium: 500;
+    /* 半粗 */
+    --font-weight-semibold: 600;
+    /* 粗体 */
+    --font-weight-bold: 700;
+    /* 特粗 */
+    --font-weight-extrabold: 800;
+    /* 标题行高 */
+    --font-line-height-tight: 1.2;
+    /* 副标题行高 */
+    --font-line-height-snug: 1.375;
+    /* 正文行高（西文） */
+    --font-line-height-normal: 1.5;
+    /* 正文行高（中文，略宽松） */
+    --font-line-height-relaxed: 1.625;
+    /* 长文阅读行高 */
+    --font-line-height-loose: 2;
+    /* 大标题紧凑 */
+    --font-letter-spacing-tighter: -0.05em;
+    /* 标题 */
+    --font-letter-spacing-tight: -0.025em;
+    /* 正文 */
+    --font-letter-spacing-normal: 0;
+    /* 按钮、标签 */
+    --font-letter-spacing-wide: 0.025em;
+    /* 大写小字 */
+    --font-letter-spacing-wider: 0.05em;
+    /* 即时反馈（颜色切换） */
+    --motion-duration-instant: 75ms;
+    /* 快速（悬停、焦点） */
+    --motion-duration-fast: 150ms;
+    /* 常规（展开、收起） */
+    --motion-duration-normal: 250ms;
+    /* 慢速（页面过渡） */
+    --motion-duration-slow: 400ms;
+    /* 极慢（复杂动画） */
+    --motion-duration-slower: 600ms;
+    /* 默认柔和入出 */
+    --motion-easing-default: cubic-bezier(0.4, 0, 0.2, 1);
+    /* 入，加速 */
+    --motion-easing-in: cubic-bezier(0.4, 0, 1, 1);
+    /* 出，减速（推荐交互） */
+    --motion-easing-out: cubic-bezier(0, 0, 0.2, 1);
+    /* 入出 */
+    --motion-easing-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+    /* 弹簧，轻微过冲 */
+    --motion-easing-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+    /* 弹跳 */
+    --motion-easing-bounce: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+    /* 无延迟 */
+    --motion-delay-none: 0ms;
+    /* 短延迟 */
+    --motion-delay-short: 50ms;
+    /* 中延迟 */
+    --motion-delay-medium: 100ms;
+    /* 长延迟 */
+    --motion-delay-long: 200ms;
+    /* 直角（ark 家族常用） */
+    --radius-none: 0;
+    /* 2px 微小圆角 */
+    --radius-sm: 0.125rem;
+    /* 4px 默认圆角 */
+    --radius-default: 0.25rem;
+    /* 6px 中等圆角 */
+    --radius-md: 0.375rem;
+    /* 8px 大圆角 */
+    --radius-lg: 0.5rem;
+    /* 12px 卡片圆角 */
+    --radius-xl: 0.75rem;
+    /* 16px 模态圆角 */
+    --radius-2xl: 1rem;
+    /* 24px 大模态圆角 */
+    --radius-3xl: 1.5rem;
+    /* 圆形 */
+    --radius-full: 9999px;
+    /* 微小阴影（4% 不透明度） */
+    --shadow-xs: 0px 1px 2px 0px #0000000A;
+    /* 小阴影（双层 8%/4%） */
+    --shadow-sm: 0px 1px 3px 0px #00000014, 0px 1px 2px 0px #0000000A;
+    /* 默认阴影（6%/4%） */
+    --shadow-default: 0px 2px 4px 0px #0000000F, 0px 1px 2px 0px #0000000A;
+    /* 中等阴影（10%/6%） */
+    --shadow-md: 0px 4px 6px -1px #0000001A, 0px 2px 4px -1px #0000000F;
+    /* 大阴影（10%/5%） */
+    --shadow-lg: 0px 10px 15px -3px #0000001A, 0px 4px 6px -2px #0000000D;
+    /* 超大阴影（10%/4%） */
+    --shadow-xl: 0px 20px 25px -5px #0000001A, 0px 10px 10px -5px #0000000A;
+    /* 极大阴影（20%） */
+    --shadow-2xl: 0px 25px 50px -12px #00000033;
+    /* 内阴影（5%，inset） */
+    --shadow-inner: 0px 2px 4px 0px #0000000D;
+    /* 图标超小 12px */
+    --size-icon-xs: 0.75rem;
+    /* 图标小 16px */
+    --size-icon-sm: 1rem;
+    /* 图标中 20px */
+    --size-icon-md: 1.25rem;
+    /* 图标大 24px */
+    --size-icon-lg: 1.5rem;
+    /* 图标超大 32px */
+    --size-icon-xl: 2rem;
+    /* 控件小高 32px */
+    --size-control-sm: 2rem;
+    /* 控件中高 40px */
+    --size-control-md: 2.5rem;
+    /* 控件大高 48px */
+    --size-control-lg: 3rem;
+    /* 容器小宽 640px */
+    --size-container-sm: 40rem;
+    /* 容器中宽 768px */
+    --size-container-md: 48rem;
+    /* 容器大宽 1024px */
+    --size-container-lg: 64rem;
+    /* 容器超大宽 1280px */
+    --size-container-xl: 80rem;
+    /* 容器极大宽 1536px */
+    --size-container-2xl: 96rem;
+    /* 侧边栏小宽 256px */
+    --size-sidebar-sm: 16rem;
+    /* 侧边栏中宽 320px */
+    --size-sidebar-md: 20rem;
+    /* 头部高度 64px */
+    --size-header-md: 4rem;
+    /* 头部大高度 80px */
+    --size-header-lg: 5rem;
+    /* 无间距 */
+    --space-0: 0;
+    /* 4px */
+    --space-1: 0.25rem;
+    /* 8px */
+    --space-2: 0.5rem;
+    /* 12px */
+    --space-3: 0.75rem;
+    /* 16px */
+    --space-4: 1rem;
+    /* 20px */
+    --space-5: 1.25rem;
+    /* 24px */
+    --space-6: 1.5rem;
+    /* 32px */
+    --space-8: 2rem;
+    /* 40px */
+    --space-10: 2.5rem;
+    /* 48px */
+    --space-12: 3rem;
+    /* 64px */
+    --space-16: 4rem;
+    /* 80px */
+    --space-20: 5rem;
+    /* 96px */
+    --space-24: 6rem;
+    /* 128px */
+    --space-32: 8rem;
+
+    /* ============================================================
+       2. Semantic 层 — 语义令牌（含 light-dark() 主题合并）
+       ============================================================ */
+    /* 主背景（白色） */
+    --color-bg-primary: light-dark(var(--color-neutral-1050), var(--color-neutral-50));
+    /* 次背景（浅灰） */
+    --color-bg-secondary: light-dark(var(--color-neutral-1000), var(--color-neutral-100));
+    /* 三级背景 */
+    --color-bg-tertiary: light-dark(var(--color-neutral-950), var(--color-neutral-200));
+    /* 浮起元素背景（弹层、模态） */
+    --color-bg-elevated: light-dark(var(--color-neutral-1050), var(--color-neutral-200));
+    /* 凹陷区域背景（输入框、代码块） */
+    --color-bg-sunken: light-dark(var(--color-neutral-950), var(--color-neutral-0));
+    /* 悬停态背景 */
+    --color-bg-hover: light-dark(var(--color-neutral-1000), var(--color-neutral-100));
+    /* 激活态背景 */
+    --color-bg-active: light-dark(var(--color-neutral-950), var(--color-neutral-200));
+    /* 主文字（近黑） */
+    --color-fg-primary: light-dark(var(--color-neutral-50), var(--color-neutral-1050));
+    /* 二级文字 */
+    --color-fg-secondary: light-dark(var(--color-neutral-500), var(--color-neutral-700));
+    /* 三级文字 */
+    --color-fg-tertiary: light-dark(var(--color-neutral-600), var(--color-neutral-600));
+    /* 禁用态文字 */
+    --color-fg-disabled: light-dark(var(--color-neutral-800), var(--color-neutral-400));
+    /* 反色文字（用于深色背景） */
+    --color-fg-inverse: light-dark(var(--color-neutral-1050), var(--color-neutral-50));
+    /* 强调色基准（青色） */
+    --color-accent-base: light-dark(var(--color-cyan-300), var(--color-cyan-500));
+    /* 强调色悬停（中深青） */
+    --color-accent-hover: light-dark(var(--color-cyan-200), var(--color-cyan-600));
+    /* 强调色激活（深青） */
+    --color-accent-active: light-dark(var(--color-cyan-100), var(--color-cyan-400));
+    /* 强调色上的文字（白色） */
+    --color-accent-fg: light-dark(var(--color-neutral-1050), var(--color-neutral-0));
+    /* 成功色 */
+    --color-success-base: light-dark(var(--color-success-light), var(--color-success-dark));
+    /* 成功色背景（需降低不透明度，运行时处理） */
+    --color-success-bg: light-dark(var(--color-success-light), var(--color-success-dark));
+    /* 成功色上的文字 */
+    --color-success-fg: light-dark(var(--color-neutral-1050), var(--color-neutral-0));
+    /* 警告色 */
+    --color-warning-base: light-dark(var(--color-warning-light), var(--color-warning-dark));
+    /* 警告色背景 */
+    --color-warning-bg: light-dark(var(--color-warning-light), var(--color-warning-dark));
+    /* 警告色上的文字 */
+    --color-warning-fg: light-dark(var(--color-neutral-1050), var(--color-neutral-0));
+    /* 危险色 */
+    --color-danger-base: light-dark(var(--color-danger-light), var(--color-danger-dark));
+    /* 危险色背景 */
+    --color-danger-bg: light-dark(var(--color-danger-light), var(--color-danger-dark));
+    /* 危险色上的文字 */
+    --color-danger-fg: light-dark(var(--color-neutral-1050), var(--color-neutral-0));
+    /* 信息色（同青色基准） */
+    --color-info-base: light-dark(var(--color-info-light), var(--color-info-dark));
+    /* 信息色背景 */
+    --color-info-bg: light-dark(var(--color-info-light), var(--color-info-dark));
+    /* 信息色上的文字 */
+    --color-info-fg: light-dark(var(--color-neutral-1050), var(--color-neutral-0));
+    /* 默认边框 */
+    --color-border-default: light-dark(var(--color-neutral-900), var(--color-neutral-300));
+    /* 强边框 */
+    --color-border-strong: light-dark(var(--color-neutral-800), var(--color-neutral-400));
+    /* 弱边框 */
+    --color-border-subtle: light-dark(var(--color-neutral-950), var(--color-neutral-100));
+    /* 焦点边框（青色） */
+    --color-border-focus: light-dark(var(--color-cyan-300), var(--color-cyan-500));
+    /* 代码块背景（近黑） */
+    --color-code-bg: light-dark(var(--color-neutral-50), var(--color-neutral-0));
+    /* 代码默认文字（浅灰） */
+    --color-code-text: light-dark(var(--color-neutral-900), var(--color-neutral-900));
+    /* 代码注释 */
+    --color-code-comment: light-dark(var(--color-neutral-600), var(--color-neutral-500));
+    /* 正文字族 */
+    --font-family-body: var(--font-family-sans);
+    /* 标题字族 */
+    --font-family-heading: var(--font-family-display);
+    /* 代码字族 */
+    --font-family-code: var(--font-family-mono);
+    /* 引文字族 */
+    --font-family-quote: var(--font-family-serif);
+    /* 说明文字 12px */
+    --font-size-caption: var(--font-size-xs);
+    /* 次要文字 14px */
+    --font-size-secondary: var(--font-size-sm);
+    /* 正文 16px */
+    --font-size-body: var(--font-size-base);
+    /* 大正文 18px */
+    --font-size-body-lg: var(--font-size-lg);
+    /* 四级标题 20px */
+    --font-size-heading-4: var(--font-size-xl);
+    /* 三级标题 24px */
+    --font-size-heading-3: var(--font-size-2xl);
+    /* 二级标题 30px */
+    --font-size-heading-2: var(--font-size-3xl);
+    /* 一级标题 36px */
+    --font-size-heading-1: var(--font-size-4xl);
+    /* 展示标题 48px */
+    --font-size-display: var(--font-size-5xl);
+    /* 英雄标题 60px */
+    --font-size-hero: var(--font-size-6xl);
+    /* 正文字重 */
+    --font-weight-body: var(--font-weight-normal);
+    /* 强调字重 */
+    --font-weight-emphasis: var(--font-weight-medium);
+    /* 标题字重 */
+    --font-weight-heading: var(--font-weight-bold);
+    /* 展示字重 */
+    --font-weight-display: var(--font-weight-extrabold);
+    /* 标题行高 */
+    --font-line-height-heading: var(--font-line-height-tight);
+    /* 副标题行高 */
+    --font-line-height-subheading: var(--font-line-height-snug);
+    /* 正文行高（中文优化） */
+    --font-line-height-body: var(--font-line-height-relaxed);
+    /* 长文阅读行高 */
+    --font-line-height-reading: var(--font-line-height-loose);
+    /* 标题字距 */
+    --font-letter-spacing-heading: var(--font-letter-spacing-tight);
+    /* 展示字距 */
+    --font-letter-spacing-display: var(--font-letter-spacing-tighter);
+    /* 正文字距 */
+    --font-letter-spacing-body: var(--font-letter-spacing-normal);
+    /* 标签字距 */
+    --font-letter-spacing-label: var(--font-letter-spacing-wide);
+    /* 即时反馈（颜色切换） */
+    --motion-duration-feedback: var(--motion-duration-instant);
+    /* 悬停过渡 */
+    --motion-duration-hover: var(--motion-duration-fast);
+    /* 展开收起 */
+    --motion-duration-expand: var(--motion-duration-normal);
+    /* 页面过渡 */
+    --motion-duration-page: var(--motion-duration-slow);
+    /* 复杂动画 */
+    --motion-duration-complex: var(--motion-duration-slower);
+    /* 进入动画（加速） */
+    --motion-easing-enter: var(--motion-easing-in);
+    /* 退出动画（减速，推荐交互） */
+    --motion-easing-exit: var(--motion-easing-out);
+    /* 短错峰延迟 */
+    --motion-delay-stagger-short: var(--motion-delay-short);
+    /* 中错峰延迟 */
+    --motion-delay-stagger-medium: var(--motion-delay-medium);
+    /* 长错峰延迟 */
+    --motion-delay-stagger-long: var(--motion-delay-long);
+    /* 颜色过渡预设（color/background/border） */
+    --motion-transition-colors: var(--motion-duration-fast) var(--motion-delay-none) var(--motion-easing-out);
+    /* 透明度过渡预设 */
+    --motion-transition-opacity: var(--motion-duration-fast) var(--motion-delay-none) var(--motion-easing-out);
+    /* 变换过渡预设 */
+    --motion-transition-transform: var(--motion-duration-normal) var(--motion-delay-none) var(--motion-easing-out);
+    /* 阴影过渡预设 */
+    --motion-transition-shadow: var(--motion-duration-normal) var(--motion-delay-none) var(--motion-easing-out);
+    /* 控件圆角（4px） */
+    --radius-control: var(--radius-default);
+    /* 卡片圆角（8px） */
+    --radius-card: var(--radius-lg);
+    /* 模态圆角（12px） */
+    --radius-modal: var(--radius-xl);
+    /* 徽章圆角（4px） */
+    --radius-badge: var(--radius-default);
+    /* 药丸形（圆形） */
+    --radius-pill: var(--radius-full);
+    /* 工具提示圆角（2px） */
+    --radius-tooltip: var(--radius-sm);
+    /* 控件阴影（悬停态） */
+    --shadow-control: var(--shadow-xs);
+    /* 卡片阴影 */
+    --shadow-card: var(--shadow-sm);
+    /* 卡片悬停阴影 */
+    --shadow-card-hover: var(--shadow-default);
+    /* 下拉菜单阴影 */
+    --shadow-dropdown: var(--shadow-md);
+    /* 气泡卡片阴影 */
+    --shadow-popover: var(--shadow-lg);
+    /* 模态框阴影 */
+    --shadow-modal: var(--shadow-xl);
+    /* 通知提醒阴影 */
+    --shadow-notification: var(--shadow-2xl);
+    /* 焦点内阴影 */
+    --shadow-focus-ring: var(--shadow-inner);
+    /* 正文内容容器宽（1024px） */
+    --size-container-content: var(--size-container-lg);
+    /* 宽容器（1280px） */
+    --size-container-wide: var(--size-container-xl);
+    /* 全宽容器（1536px） */
+    --size-container-full: var(--size-container-2xl);
+    /* 侧边栏宽（256px） */
+    --size-sidebar-width: var(--size-sidebar-sm);
+    /* 大侧边栏宽（320px） */
+    --size-sidebar-width-lg: var(--size-sidebar-md);
+    /* 头部高度（64px） */
+    --size-header-height: var(--size-header-md);
+    /* 小屏断点 640px */
+    --size-breakpoint-sm: 40rem;
+    /* 中屏断点 768px */
+    --size-breakpoint-md: 48rem;
+    /* 大屏断点 1024px */
+    --size-breakpoint-lg: 64rem;
+    /* 超大屏断点 1280px */
+    --size-breakpoint-xl: 80rem;
+    /* 极大屏断点 1536px */
+    --size-breakpoint-2xl: 96rem;
+    /* 页面水平内边距（移动端） */
+    --space-page-x: var(--space-4);
+    /* 页面水平内边距（桌面端） */
+    --space-page-x-lg: var(--space-8);
+    /* 页面垂直内边距 */
+    --space-page-y: var(--space-6);
+    /* 区块垂直间距 */
+    --space-section-y: var(--space-16);
+    /* 大区块垂直间距 */
+    --space-section-y-lg: var(--space-24);
+    /* 卡片内边距 */
+    --space-card-padding: var(--space-4);
+    /* 大卡片内边距 */
+    --space-card-padding-lg: var(--space-6);
+    /* 卡片内元素间距 */
+    --space-card-gap: var(--space-3);
+    /* 堆栈超小间距 */
+    --space-stack-xs: var(--space-1);
+    /* 堆栈小间距 */
+    --space-stack-sm: var(--space-2);
+    /* 堆栈中间距 */
+    --space-stack-md: var(--space-4);
+    /* 堆栈大间距 */
+    --space-stack-lg: var(--space-6);
+    /* 堆栈超大间距 */
+    --space-stack-xl: var(--space-8);
+    /* 行内超小间距 */
+    --space-inline-xs: var(--space-1);
+    /* 行内小间距 */
+    --space-inline-sm: var(--space-2);
+    /* 行内中间距 */
+    --space-inline-md: var(--space-3);
+    /* 行内大间距 */
+    --space-inline-lg: var(--space-4);
+    /* 网格间距 */
+    --space-grid-gap: var(--space-4);
+    /* 大网格间距 */
+    --space-grid-gap-lg: var(--space-6);
+    /* 控件水平内边距 */
+    --space-control-padding-x: var(--space-3);
+    /* 控件垂直内边距 */
+    --space-control-padding-y: var(--space-2);
+    /* 控件内元素间距 */
+    --space-control-gap: var(--space-2);
+
+    /* ============================================================
+       3. Component 层 — 组件级令牌
+       ============================================================ */
+    /* 按钮圆角（4px，ark 家族偏好小圆角） */
+    --button-radius: var(--radius-control);
+    /* 按钮边框宽度 */
+    --button-border-width: 1px;
+    /* 按钮字重（medium） */
+    --button-font-weight: var(--font-weight-emphasis);
+    /* 按钮字距（略宽） */
+    --button-letter-spacing: var(--font-letter-spacing-label);
+    /* 按钮行高（单行紧凑） */
+    --button-line-height: 1;
+    /* 按钮最小宽度（80px） */
+    --button-min-width: var(--space-20);
+    /* 按钮过渡预设（颜色/阴影统一 150ms 减速） */
+    --button-transition: var(--motion-duration-fast) var(--motion-delay-none) var(--motion-easing-out);
+    /* 小按钮高（32px） */
+    --button-size-sm-height: var(--size-control-sm);
+    /* 小按钮水平内边距（12px） */
+    --button-size-sm-padding-x: var(--space-3);
+    /* 小按钮字号（14px） */
+    --button-size-sm-font-size: var(--font-size-secondary);
+    /* 小按钮图标尺寸 */
+    --button-size-sm-icon-size: var(--size-icon-sm);
+    /* 小按钮图标与文字间距 */
+    --button-size-sm-gap: var(--space-inline-xs);
+    /* 中按钮高（40px，默认） */
+    --button-size-md-height: var(--size-control-md);
+    /* 中按钮水平内边距（16px） */
+    --button-size-md-padding-x: var(--space-4);
+    /* 中按钮字号（16px） */
+    --button-size-md-font-size: var(--font-size-body);
+    /* 中按钮图标尺寸 */
+    --button-size-md-icon-size: var(--size-icon-md);
+    /* 中按钮图标与文字间距 */
+    --button-size-md-gap: var(--space-inline-sm);
+    /* 大按钮高（48px） */
+    --button-size-lg-height: var(--size-control-lg);
+    /* 大按钮水平内边距（24px） */
+    --button-size-lg-padding-x: var(--space-6);
+    /* 大按钮字号（18px） */
+    --button-size-lg-font-size: var(--font-size-body-lg);
+    /* 大按钮图标尺寸 */
+    --button-size-lg-icon-size: var(--size-icon-lg);
+    /* 大按钮图标与文字间距 */
+    --button-size-lg-gap: var(--space-inline-md);
+    /* 主按钮背景（青色） */
+    --button-primary-default-bg: var(--color-accent-base);
+    /* 主按钮文字（白色） */
+    --button-primary-default-fg: var(--color-accent-fg);
+    /* 主按钮边框（同背景） */
+    --button-primary-default-border: var(--color-accent-base);
+    /* 主按钮悬停背景（中深青） */
+    --button-primary-hover-bg: var(--color-accent-hover);
+    /* 主按钮悬停边框 */
+    --button-primary-hover-border: var(--color-accent-hover);
+    /* 主按钮激活背景（深青） */
+    --button-primary-active-bg: var(--color-accent-active);
+    /* 主按钮激活边框 */
+    --button-primary-active-border: var(--color-accent-active);
+    /* 主按钮焦点边框（青色） */
+    --button-primary-focus-border: var(--color-border-focus);
+    /* 主按钮焦点内阴影 */
+    --button-primary-focus-shadow: var(--shadow-focus-ring);
+    /* 主按钮禁用背景 */
+    --button-primary-disabled-bg: var(--color-bg-tertiary);
+    /* 主按钮禁用文字 */
+    --button-primary-disabled-fg: var(--color-fg-disabled);
+    /* 主按钮禁用边框 */
+    --button-primary-disabled-border: var(--color-border-subtle);
+    /* 次按钮背景（白色浮起） */
+    --button-secondary-default-bg: var(--color-bg-elevated);
+    /* 次按钮文字（近黑） */
+    --button-secondary-default-fg: var(--color-fg-primary);
+    /* 次按钮边框 */
+    --button-secondary-default-border: var(--color-border-default);
+    /* 次按钮悬停背景 */
+    --button-secondary-hover-bg: var(--color-bg-hover);
+    /* 次按钮悬停边框 */
+    --button-secondary-hover-border: var(--color-border-strong);
+    /* 次按钮激活背景 */
+    --button-secondary-active-bg: var(--color-bg-active);
+    /* 次按钮激活边框 */
+    --button-secondary-active-border: var(--color-border-strong);
+    /* 次按钮焦点边框 */
+    --button-secondary-focus-border: var(--color-border-focus);
+    /* 次按钮焦点内阴影 */
+    --button-secondary-focus-shadow: var(--shadow-focus-ring);
+    /* 次按钮禁用背景 */
+    --button-secondary-disabled-bg: var(--color-bg-tertiary);
+    /* 次按钮禁用文字 */
+    --button-secondary-disabled-fg: var(--color-fg-disabled);
+    /* 次按钮禁用边框 */
+    --button-secondary-disabled-border: var(--color-border-subtle);
+    /* 幽灵按钮背景（透明） */
+    --button-ghost-default-bg: transparent;
+    /* 幽灵按钮文字 */
+    --button-ghost-default-fg: var(--color-fg-primary);
+    /* 幽灵按钮边框（透明） */
+    --button-ghost-default-border: transparent;
+    /* 幽灵按钮悬停背景 */
+    --button-ghost-hover-bg: var(--color-bg-hover);
+    /* 幽灵按钮悬停边框 */
+    --button-ghost-hover-border: transparent;
+    /* 幽灵按钮激活背景 */
+    --button-ghost-active-bg: var(--color-bg-active);
+    /* 幽灵按钮激活边框 */
+    --button-ghost-active-border: transparent;
+    /* 幽灵按钮焦点边框 */
+    --button-ghost-focus-border: var(--color-border-focus);
+    /* 幽灵按钮焦点内阴影 */
+    --button-ghost-focus-shadow: var(--shadow-focus-ring);
+    /* 幽灵按钮禁用背景 */
+    --button-ghost-disabled-bg: transparent;
+    /* 幽灵按钮禁用文字 */
+    --button-ghost-disabled-fg: var(--color-fg-disabled);
+    /* 幽灵按钮禁用边框 */
+    --button-ghost-disabled-border: transparent;
+    /* 危险按钮背景 */
+    --button-danger-default-bg: var(--color-danger-base);
+    /* 危险按钮文字 */
+    --button-danger-default-fg: var(--color-danger-fg);
+    /* 危险按钮边框 */
+    --button-danger-default-border: var(--color-danger-base);
+    /* 危险按钮悬停背景（运行时降透明度） */
+    --button-danger-hover-bg: var(--color-danger-base);
+    /* 危险按钮悬停边框 */
+    --button-danger-hover-border: var(--color-danger-base);
+    /* 危险按钮激活背景 */
+    --button-danger-active-bg: var(--color-danger-base);
+    /* 危险按钮激活边框 */
+    --button-danger-active-border: var(--color-danger-base);
+    /* 危险按钮焦点边框 */
+    --button-danger-focus-border: var(--color-border-focus);
+    /* 危险按钮焦点内阴影 */
+    --button-danger-focus-shadow: var(--shadow-focus-ring);
+    /* 危险按钮禁用背景 */
+    --button-danger-disabled-bg: var(--color-bg-tertiary);
+    /* 危险按钮禁用文字 */
+    --button-danger-disabled-fg: var(--color-fg-disabled);
+    /* 危险按钮禁用边框 */
+    --button-danger-disabled-border: var(--color-border-subtle);
+    /* 卡片圆角（8px） */
+    --card-radius: var(--radius-card);
+    /* 卡片边框宽度 */
+    --card-border-width: 1px;
+    /* 卡片背景（白色浮起） */
+    --card-bg: var(--color-bg-elevated);
+    /* 卡片内文字 */
+    --card-fg: var(--color-fg-primary);
+    /* 卡片边框 */
+    --card-border: var(--color-border-default);
+    /* 默认卡片内边距（16px） */
+    --card-size-default-padding: var(--space-card-padding);
+    /* 默认卡片内元素间距（12px） */
+    --card-size-default-gap: var(--space-card-gap);
+    /* 大卡片内边距（24px） */
+    --card-size-lg-padding: var(--space-card-padding-lg);
+    /* 大卡片内元素间距（12px） */
+    --card-size-lg-gap: var(--space-card-gap);
+    /* 卡片默认阴影（克制） */
+    --card-shadow-default: var(--shadow-card);
+    /* 卡片悬停阴影（加深） */
+    --card-shadow-hover: var(--shadow-card-hover);
+    /* 默认状态背景 */
+    --card-state-default-bg: var(--color-bg-elevated);
+    /* 默认状态边框 */
+    --card-state-default-border: var(--color-border-default);
+    /* 悬停状态背景（不变，仅阴影变化） */
+    --card-state-hover-bg: var(--color-bg-elevated);
+    /* 悬停状态边框（加深） */
+    --card-state-hover-border: var(--color-border-strong);
+    /* 选中状态背景 */
+    --card-state-selected-bg: var(--color-bg-elevated);
+    /* 选中状态边框（青色强调） */
+    --card-state-selected-border: var(--color-accent-base);
+    /* 禁用状态背景 */
+    --card-state-disabled-bg: var(--color-bg-tertiary);
+    /* 禁用状态边框 */
+    --card-state-disabled-border: var(--color-border-subtle);
+    /* 禁用状态文字 */
+    --card-state-disabled-fg: var(--color-fg-disabled);
+    /* 卡片头部水平内边距 */
+    --card-header-padding-x: var(--space-card-padding);
+    /* 卡片头部垂直内边距（12px） */
+    --card-header-padding-y: var(--space-3);
+    /* 卡片头部底部分隔线 */
+    --card-header-border-bottom: var(--color-border-subtle);
+    /* 卡片头部字号（20px） */
+    --card-header-font-size: var(--font-size-heading-4);
+    /* 卡片头部字重（bold） */
+    --card-header-font-weight: var(--font-weight-heading);
+    /* 卡片头部行高 */
+    --card-header-line-height: var(--font-line-height-heading);
+    /* 卡片主体内边距（16px） */
+    --card-body-padding: var(--space-card-padding);
+    /* 卡片主体字号（16px） */
+    --card-body-font-size: var(--font-size-body);
+    /* 卡片主体行高 */
+    --card-body-line-height: var(--font-line-height-body);
+    /* 卡片底部水平内边距 */
+    --card-footer-padding-x: var(--space-card-padding);
+    /* 卡片底部垂直内边距（12px） */
+    --card-footer-padding-y: var(--space-3);
+    /* 卡片底部顶部分隔线 */
+    --card-footer-border-top: var(--color-border-subtle);
+    /* 卡片底部按钮间距（12px） */
+    --card-footer-gap: var(--space-inline-md);
+    /* 卡片过渡预设（阴影/边框 250ms 减速） */
+    --card-transition: var(--motion-duration-normal) var(--motion-delay-none) var(--motion-easing-out);
+    /* 输入框圆角（4px） */
+    --input-radius: var(--radius-control);
+    /* 输入框边框宽度 */
+    --input-border-width: 1px;
+    /* 光标颜色（青色） */
+    --input-caret-color: var(--color-accent-base);
+    /* 选中文本背景（青色） */
+    --input-selection-bg: var(--color-accent-base);
+    /* 选中文本文字（白色） */
+    --input-selection-fg: var(--color-accent-fg);
+    /* 小输入框高（32px） */
+    --input-size-sm-height: var(--size-control-sm);
+    /* 小输入框水平内边距（12px） */
+    --input-size-sm-padding-x: var(--space-3);
+    /* 小输入框字号（14px） */
+    --input-size-sm-font-size: var(--font-size-secondary);
+    /* 小输入框图标尺寸 */
+    --input-size-sm-icon-size: var(--size-icon-sm);
+    /* 中输入框高（40px，默认） */
+    --input-size-md-height: var(--size-control-md);
+    /* 中输入框水平内边距（16px） */
+    --input-size-md-padding-x: var(--space-4);
+    /* 中输入框字号（16px） */
+    --input-size-md-font-size: var(--font-size-body);
+    /* 中输入框图标尺寸 */
+    --input-size-md-icon-size: var(--size-icon-md);
+    /* 大输入框高（48px） */
+    --input-size-lg-height: var(--size-control-lg);
+    /* 大输入框水平内边距（20px） */
+    --input-size-lg-padding-x: var(--space-5);
+    /* 大输入框字号（18px） */
+    --input-size-lg-font-size: var(--font-size-body-lg);
+    /* 大输入框图标尺寸 */
+    --input-size-lg-icon-size: var(--size-icon-lg);
+    /* 输入框默认背景（凹陷） */
+    --input-default-bg: var(--color-bg-sunken);
+    /* 输入框默认文字 */
+    --input-default-fg: var(--color-fg-primary);
+    /* 输入框默认边框 */
+    --input-default-border: var(--color-border-default);
+    /* 输入框占位文字 */
+    --input-default-placeholder: var(--color-fg-tertiary);
+    /* 输入框悬停背景（不变） */
+    --input-hover-bg: var(--color-bg-sunken);
+    /* 输入框悬停边框（加深） */
+    --input-hover-border: var(--color-border-strong);
+    /* 输入框焦点背景（浮起白色） */
+    --input-focus-bg: var(--color-bg-elevated);
+    /* 输入框焦点边框（青色） */
+    --input-focus-border: var(--color-border-focus);
+    /* 输入框焦点内阴影 */
+    --input-focus-shadow: var(--shadow-focus-ring);
+    /* 输入框禁用背景 */
+    --input-disabled-bg: var(--color-bg-tertiary);
+    /* 输入框禁用文字 */
+    --input-disabled-fg: var(--color-fg-disabled);
+    /* 输入框禁用边框 */
+    --input-disabled-border: var(--color-border-subtle);
+    /* 输入框禁用占位文字 */
+    --input-disabled-placeholder: var(--color-fg-disabled);
+    /* 输入框错误态边框（红色） */
+    --input-error-border: var(--color-danger-base);
+    /* 输入框错误态文字（用于错误提示） */
+    --input-error-fg: var(--color-danger-base);
+    /* 输入框错误态焦点边框 */
+    --input-error-focus-border: var(--color-danger-base);
+    /* 输入框错误态焦点阴影 */
+    --input-error-focus-shadow: var(--shadow-focus-ring);
+    /* 标签字号（14px） */
+    --input-label-font-size: var(--font-size-secondary);
+    /* 标签字重（medium） */
+    --input-label-font-weight: var(--font-weight-emphasis);
+    /* 标签文字颜色 */
+    --input-label-fg: var(--color-fg-primary);
+    /* 标签与输入框间距（8px） */
+    --input-label-margin-bottom: var(--space-2);
+    /* 辅助文字字号（12px） */
+    --input-helper-text-font-size: var(--font-size-caption);
+    /* 辅助文字颜色 */
+    --input-helper-text-fg: var(--color-fg-secondary);
+    /* 辅助文字与输入框间距（8px） */
+    --input-helper-text-margin-top: var(--space-2);
+    /* 前导图标颜色 */
+    --input-icon-leading-color: var(--color-fg-tertiary);
+    /* 前导图标右间距（8px） */
+    --input-icon-leading-margin-right: var(--space-2);
+    /* 后导图标颜色 */
+    --input-icon-trailing-color: var(--color-fg-tertiary);
+    /* 后导图标左间距（8px） */
+    --input-icon-trailing-margin-left: var(--space-2);
+    /* 输入框过渡预设（边框/背景 150ms 减速） */
+    --input-transition: var(--motion-duration-fast) var(--motion-delay-none) var(--motion-easing-out);
+  }
+
+  /* 强制深色模式：覆盖 color-scheme 使 light-dark() 取深色值 */
+  [data-theme='dark'] {
+    color-scheme: dark;
+  }
+
+  /* 强制浅色模式 */
+  [data-theme='light'] {
+    color-scheme: light;
+  }
+}

@@ -1,0 +1,238 @@
+/* 测验区域整体样式：与上方内容分隔 */
+.quiz-block {
+  margin-top: var(--spacing-xl);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border-light);
+}
+
+/* 标题样式 */
+.quiz-title {
+  font-family: var(--font-display);
+  font-size: 1.1em;
+  font-weight: 700;
+  margin-bottom: var(--spacing-md);
+}
+
+/* 题目列表：垂直排列，间距适中 */
+.quiz-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+/* 单个题目卡片：带边框和背景 */
+.quiz-item {
+  padding: var(--spacing-md);
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg-card);
+}
+
+/* 答对时边框变绿 */
+.quiz-item.result-correct {
+  border-color: #10b981;
+}
+
+/* 答错时边框变红 */
+.quiz-item.result-wrong {
+  border-color: #ef4444;
+}
+
+/* 题目文字：适当行高，便于阅读 */
+.quiz-question {
+  font-size: 0.92em;
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.6;
+}
+
+/* 题号圆圈：主题色背景，白色文字 */
+.quiz-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--color-primary);
+  color: #fff;
+  font-size: 0.75em;
+  font-weight: 700;
+  margin-right: 6px;
+  flex-shrink: 0;
+}
+
+/* 题型标签：小号文字，浅色背景 */
+.quiz-type-badge {
+  display: inline-block;
+  padding: 1px 6px;
+  background: var(--color-bg-hover);
+  font-size: 0.75em;
+  color: var(--color-text-secondary);
+  margin-right: 6px;
+}
+
+/* 答案输入区域：水平排列输入框和提交按钮 */
+.quiz-answer-area {
+  display: flex;
+  gap: var(--spacing-sm);
+  align-items: flex-start;
+  margin-top: var(--spacing-sm);
+}
+
+/* 填空输入框：自适应宽度 */
+.quiz-input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 0.88em;
+  font-family: var(--font-display);
+  outline: none;
+}
+
+/* 输入框聚焦效果 */
+.quiz-input:focus {
+  border-color: var(--color-primary);
+}
+
+/* 修正题文本域：等宽字体，支持垂直调整大小 */
+.quiz-textarea {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 0.85em;
+  font-family: var(--font-mono, monospace);
+  outline: none;
+  resize: vertical;
+}
+
+/* 文本域聚焦效果 */
+.quiz-textarea:focus {
+  border-color: var(--color-primary);
+}
+
+/* 修正题代码展示区：等宽字体，支持横向滚动 */
+.quiz-code {
+  width: 100%;
+  padding: var(--spacing-sm);
+  background: var(--color-bg);
+  border: 1px solid var(--color-border-light);
+  font-size: 0.82em;
+  margin-bottom: var(--spacing-xs);
+  overflow-x: auto;
+}
+
+/* 提交按钮：透明背景，悬停时变为主题色 */
+.quiz-submit-btn {
+  padding: 6px 14px;
+  border: 1px solid var(--color-border);
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.85em;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.quiz-submit-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* 选择题选项列表：垂直排列 */
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: var(--spacing-sm);
+}
+
+/* 单个选项按钮：左对齐，带边框 */
+.quiz-option {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: 6px 10px;
+  border: 1px solid var(--color-border-light);
+  background: var(--color-bg);
+  color: var(--color-text);
+  font-size: 0.88em;
+  cursor: pointer;
+  text-align: left;
+  transition: all var(--transition-fast);
+}
+
+/* 选项悬停效果：边框变为主题色 */
+.quiz-option:hover:not(:disabled) {
+  border-color: var(--color-primary);
+}
+
+/* 选中状态：边框和背景高亮 */
+.quiz-option.selected {
+  border-color: var(--color-primary);
+  background: var(--color-bg-hover);
+}
+
+/* 正确选项高亮：绿色边框和浅绿背景 */
+.quiz-option.correct {
+  border-color: #10b981;
+  background: rgba(16, 185, 129, 0.08);
+  color: #10b981;
+}
+
+/* 错误选项高亮：红色边框和浅红背景 */
+.quiz-option.wrong {
+  border-color: #ef4444;
+  background: rgba(239, 68, 68, 0.08);
+  color: #ef4444;
+}
+
+/* 选项字母标识：小方框内显示 A/B/C/D */
+.option-letter {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border: 1px solid var(--color-border);
+  font-size: 0.78em;
+  font-weight: 600;
+  flex-shrink: 0;
+}
+
+/* 反馈区域：水平排列，自动换行 */
+.quiz-feedback {
+  margin-top: var(--spacing-sm);
+  font-size: 0.85em;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+  align-items: baseline;
+}
+
+/* 正确标记：绿色加粗 */
+.feedback-correct {
+  color: #10b981;
+  font-weight: 600;
+}
+
+/* 错误标记：红色加粗 */
+.feedback-wrong {
+  color: #ef4444;
+  font-weight: 600;
+}
+
+/* 参考答案：辅助色 */
+.feedback-answer {
+  color: var(--color-text-secondary);
+}
+
+/* 解析说明：辅助色 */
+.feedback-explanation {
+  color: var(--color-text-secondary);
+}
+
+/* 提示文字：琥珀色，仅在答错时显示 */
+.feedback-hint {
+  color: #f59e0b;
+}

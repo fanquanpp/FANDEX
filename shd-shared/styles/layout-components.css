@@ -1,0 +1,1515 @@
+/* =============================================================================
+ * FANDEX 布局组件样式 — @layer tokens 扩展 + @layer components
+ * -----------------------------------------------------------------------------
+ * 职责：
+ * 1. 布局专用令牌定义（nav-height / sidebar-width / toc-width / z-index 层级）
+ * 2. .fndx-header          顶部导航（sticky + 毛玻璃背景 + logo + 操作区）
+ * 3. .fndx-footer          底部信息区（版权 + 链接 + 分隔线）
+ * 4. .fndx-sidebar         左侧文档导航（模块列表 + 文档树 + 折叠展开）
+ * 5. .fndx-toc             右侧目录大纲（标题列表 + 滚动高亮 + 折叠）
+ * 6. .fndx-reading-progress 顶部阅读进度条（fixed + 渐变填充）
+ * 7. .fndx-mobile-nav      移动端底部导航（5 按钮 + safe-area 适配）
+ * 8. .fndx-breadcrumb      面包屑导航（分隔符 + 当前页高亮）
+ * 9. .fndx-doc-nav         文档上下页导航（上一篇/下一篇 + 键盘快捷键提示）
+ * -----------------------------------------------------------------------------
+ * 设计原则：
+ * - 严格消费 tokens.css 中已定义的令牌，布局专用令牌在此文件 tokens 层扩展
+ * - 双主题由 light-dark() 与 color-scheme 自动切换
+ * - 响应式：桌面三栏布局，移动端折叠为单栏 + 底部导航
+ * - 可访问性：focus-visible 焦点环、aria-current 当前页标识、prefers-reduced-motion 降级
+ * - 留白未来扩展：每个组件预留 __title / __action / __icon 子元素类
+ * -----------------------------------------------------------------------------
+ * 引用：spec.md 第四章 4.3 核心功能矩阵 / 第八章 ark-ui 美术风格
+ *       tasks.md 阶段 D.2 布局组件样式实现
+ * =============================================================================
+ */
+
+/* === 布局专用令牌（tokens 层扩展） === */
+@layer tokens {
+  :root {
+    /* ---------- 导航栏尺寸 ---------- */
+    /** 顶部导航栏高度（桌面 56px，移动 52px） */
+    --nav-height: var(--size-control-md);
+    --nav-height-mobile: 3.25rem;
+
+    /** 底部移动导航栏高度（含 safe-area） */
+    --mobile-nav-height: var(--size-control-md);
+
+    /** 阅读进度条高度 */
+    --reading-progress-height: 3px;
+
+    /* ---------- 侧边栏尺寸 ---------- */
+    /** 左侧 Sidebar 宽度（桌面 280px，大屏 320px） */
+    --sidebar-width: 17.5rem;
+    --sidebar-width-xl: 20rem;
+
+    /** 右侧 TOC 宽度（桌面 224px，大屏 256px） */
+    --toc-width: 14rem;
+    --toc-width-xl: 16rem;
+
+    /* ---------- 内容区约束 ---------- */
+    /** 文档内容最大宽度（阅读优化 48rem = 768px） */
+    --content-max-width: var(--size-container-md);
+
+    /** 布局间距 */
+    --layout-gap: var(--space-8);
+    --layout-gap-lg: var(--space-12);
+
+    /* ---------- 层级 z-index ---------- */
+    --z-header: 40;
+    --z-sidebar: 30;
+    --z-toc: 20;
+    --z-mobile-nav: 40;
+    --z-reading-progress: 50;
+    --z-backdrop: 150;
+    --z-modal: 200;
+    --z-toast: 300;
+
+    /* ---------- 导航栏视觉令牌 ---------- */
+    --header-bg: light-dark(
+      color-mix(in oklch, var(--color-bg-primary) 85%, transparent),
+      color-mix(in oklch, var(--color-bg-primary) 80%, transparent)
+    );
+    --header-border: var(--color-border-default);
+    --header-blur: 12px;
+
+    /** Sidebar 背景 */
+    --sidebar-bg: light-dark(
+      color-mix(in oklch, var(--color-bg-secondary) 50%, transparent),
+      color-mix(in oklch, var(--color-bg-secondary) 40%, transparent)
+    );
+    --sidebar-border: var(--color-border-default);
+
+    /** TOC 背景 */
+    --toc-bg: transparent;
+    --toc-border: var(--color-border-subtle);
+
+    /** 移动导航背景 */
+    --mobile-nav-bg: light-dark(
+      color-mix(in oklch, var(--color-bg-primary) 95%, transparent),
+      color-mix(in oklch, var(--color-bg-primary) 90%, transparent)
+    );
+
+    /** 阅读进度条渐变 */
+    --reading-progress-gradient: linear-gradient(
+      90deg,
+      var(--color-accent-base),
+      var(--color-secondary-base, var(--color-accent-hover))
+    );
+  }
+}
+
+/* === 布局组件样式（components 层） === */
+@layer components {
+
+  /* ============================================================
+   * 1. 顶部导航 .fndx-header
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <header class="fndx-header" role="banner">
+   *     <div class="fndx-header__left">
+   *       <a class="fndx-header__logo" href="/">
+   *         <span class="fndx-header__logo-mark">F</span>
+   *         <span class="fndx-header__logo-text">FANDEX</span>
+   *       </a>
+   *     </div>
+   *     <div class="fndx-header__right">
+   *       <button class="fndx-header__action">…</button>
+   *     </div>
+   *   </header>
+   * ============================================================ */
+  .fndx-header {
+    position: sticky;
+    top: 0;
+    z-index: var(--z-header);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-inline-md);
+    height: var(--nav-height);
+    padding-inline: var(--space-page-x);
+    background-color: var(--header-bg);
+    backdrop-filter: blur(var(--header-blur));
+    -webkit-backdrop-filter: blur(var(--header-blur));
+    border-bottom: 1px solid var(--header-border);
+    transition: background-color var(--motion-duration-fast) var(--motion-easing-out),
+                border-color var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  @media (min-width: 1024px) {
+    .fndx-header {
+      padding-inline: var(--space-page-x-lg);
+    }
+  }
+
+  /* 左/右区域 */
+  .fndx-header__left,
+  .fndx-header__right {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-sm);
+  }
+
+  /* 中部区域（搜索触发器、导航链接等）
+   * 默认 flex: 1 占满剩余空间，并限制最大宽度避免搜索框过宽
+   * 移动端：缩小为自适应内容，避免压缩左右操作区 */
+  .fndx-header__center {
+    flex: 1 1 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-inline-sm);
+    min-width: 0;
+    max-width: 28rem;
+  }
+
+  @media (max-width: 640px) {
+    .fndx-header__center {
+      max-width: 100%;
+    }
+  }
+
+  /* 汉堡菜单按钮（移动端文档页可见）
+   * 复用 .fndx-header__action 基础样式，此处仅覆盖可见性 */
+  .fndx-header__menu-toggle {
+    display: none;
+  }
+
+  @media (max-width: 767px) {
+    .fndx-header__menu-toggle {
+      display: inline-flex;
+    }
+  }
+
+  /* Logo 文字在窄屏下隐藏（仅显示 Logo 标记） */
+  .fndx-header__logo-text {
+    display: inline-block;
+  }
+
+  @media (max-width: 640px) {
+    .fndx-header__logo-text {
+      display: none;
+    }
+  }
+
+  /* Logo 容器 */
+  .fndx-header__logo {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    color: var(--color-fg-primary);
+    text-decoration: none;
+    font-family: var(--font-family-display);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-body-lg);
+    letter-spacing: var(--font-letter-spacing-wide);
+  }
+
+  /* Logo 标记（渐变方块） */
+  .fndx-header__logo-mark {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-icon-md);
+    height: var(--size-icon-md);
+    border-radius: var(--radius-control);
+    background-image: linear-gradient(
+      135deg,
+      var(--color-accent-base),
+      var(--color-secondary-base, var(--color-accent-hover))
+    );
+    color: var(--color-accent-fg);
+    font-weight: var(--font-weight-bold);
+    font-size: var(--font-size-secondary);
+  }
+
+  /* 操作按钮（图标按钮） */
+  .fndx-header__action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-control-sm);
+    height: var(--size-control-sm);
+    border-radius: var(--radius-control);
+    background-color: transparent;
+    color: var(--color-fg-secondary);
+    border: none;
+    cursor: pointer;
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
+                color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-header__action:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-fg-primary);
+    }
+  }
+
+  .fndx-header__action:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  /* 操作链接（文字按钮） */
+  .fndx-header__action-link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    padding: var(--space-1) var(--space-3);
+    border-radius: var(--radius-control);
+    color: var(--color-fg-secondary);
+    border: 1px solid var(--color-border-default);
+    background-color: transparent;
+    text-decoration: none;
+    font-size: var(--font-size-secondary);
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
+                color var(--motion-duration-instant) var(--motion-easing-out),
+                border-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-header__action-link:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-fg-primary);
+      border-color: var(--color-border-strong);
+    }
+  }
+
+  /* ============================================================
+   * 2. 底部信息区 .fndx-footer
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <footer class="fndx-footer" role="contentinfo">
+   *     <div class="fndx-footer__container">
+   *       <div class="fndx-footer__section">…</div>
+   *       <div class="fndx-footer__bottom">
+   *         <p class="fndx-footer__copyright">© 2026 FANDEX</p>
+   *       </div>
+   *     </div>
+   *   </footer>
+   * ============================================================ */
+  .fndx-footer {
+    border-top: 1px solid var(--color-border-default);
+    background-color: var(--color-bg-secondary);
+    color: var(--color-fg-secondary);
+    padding-block: var(--space-12) var(--space-8);
+    margin-top: auto;
+  }
+
+  .fndx-footer__container {
+    width: 100%;
+    max-width: var(--size-container-content);
+    margin-inline: auto;
+    padding-inline: var(--space-page-x);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-lg);
+  }
+
+  @media (min-width: 1024px) {
+    .fndx-footer__container {
+      padding-inline: var(--space-page-x-lg);
+    }
+  }
+
+  /* 分区组（多列布局） */
+  .fndx-footer__sections {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-stack-lg);
+  }
+
+  @media (min-width: 768px) {
+    .fndx-footer__sections {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .fndx-footer__sections {
+      grid-template-columns: repeat(3, 1fr);
+    }
+  }
+
+  .fndx-footer__section {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-sm);
+  }
+
+  .fndx-footer__section-title {
+    font-size: var(--font-size-secondary);
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-primary);
+    margin: 0;
+  }
+
+  .fndx-footer__link {
+    color: var(--color-fg-secondary);
+    text-decoration: none;
+    font-size: var(--font-size-secondary);
+    line-height: var(--font-line-height-body);
+    transition: color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-footer__link:hover {
+      color: var(--color-accent-base);
+    }
+  }
+
+  /* 底部版权区 */
+  .fndx-footer__bottom {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-stack-sm);
+    padding-top: var(--space-6);
+    border-top: 1px solid var(--color-border-subtle);
+    text-align: center;
+  }
+
+  @media (min-width: 768px) {
+    .fndx-footer__bottom {
+      flex-direction: row;
+      justify-content: space-between;
+      text-align: left;
+    }
+  }
+
+  .fndx-footer__copyright {
+    margin: 0;
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+  }
+
+  /* 居中单列布局变体（首页等简约 footer 使用）
+   * 通过 .fndx-footer--centered 修饰符切换为居中布局 */
+  .fndx-footer--centered .fndx-footer__container {
+    align-items: center;
+    text-align: center;
+  }
+
+  /* 生态联动链接区（跨平台入口） */
+  .fndx-footer__eco-links {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-inline-sm);
+    padding-bottom: var(--space-2);
+    border-bottom: 1px dashed var(--color-border-subtle);
+  }
+
+  .fndx-footer__eco-link {
+    font-family: var(--font-family-display);
+    font-size: var(--font-size-secondary);
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-tertiary);
+    text-decoration: none;
+    transition: color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-footer__eco-link:hover {
+      color: var(--color-fg-secondary);
+    }
+  }
+
+  .fndx-footer__eco-link.is-current {
+    color: var(--color-accent-base);
+  }
+
+  /* 导航链接组（居中布局） */
+  .fndx-footer__nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: var(--space-inline-sm);
+  }
+
+  .fndx-footer__nav-link {
+    color: var(--color-fg-secondary);
+    text-decoration: none;
+    font-size: var(--font-size-secondary);
+    transition: color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-footer__nav-link:hover {
+      color: var(--color-accent-base);
+    }
+  }
+
+  /* 统计数据区 */
+  .fndx-footer__stats {
+    color: var(--color-fg-tertiary);
+    font-size: var(--font-size-secondary);
+  }
+
+  /* 技术信息 */
+  .fndx-footer__tech {
+    color: var(--color-fg-tertiary);
+    opacity: 0.7;
+    font-size: var(--font-size-secondary);
+  }
+
+  /* 注意事项/免责声明文字 */
+  .fndx-footer__notice {
+    color: var(--color-fg-tertiary);
+    opacity: 0.5;
+    font-size: var(--font-size-caption);
+    line-height: var(--font-line-height-body);
+  }
+
+  /* 分隔符 */
+  .fndx-footer__divider {
+    opacity: 0.4;
+    color: var(--color-fg-tertiary);
+  }
+
+  /* ============================================================
+   * 3. 左侧文档导航 .fndx-sidebar
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <aside class="fndx-sidebar" aria-label="文档导航">
+   *     <div class="fndx-sidebar__top">
+   *       <h2 class="fndx-sidebar__title">模块名</h2>
+   *     </div>
+   *     <nav class="fndx-sidebar__scroll">
+   *       <ul class="fndx-sidebar__list">
+   *         <li><a class="fndx-sidebar__link is-active" href="…">文档</a></li>
+   *       </ul>
+   *     </nav>
+   *   </aside>
+   * ============================================================ */
+  .fndx-sidebar {
+    display: flex;
+    flex-direction: column;
+    width: var(--sidebar-width);
+    height: 100%;
+    background-color: var(--sidebar-bg);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-right: 1px solid var(--sidebar-border);
+    overflow: hidden;
+  }
+
+  @media (min-width: 1280px) {
+    .fndx-sidebar {
+      width: var(--sidebar-width-xl);
+    }
+  }
+
+  /* 顶部标题区 */
+  .fndx-sidebar__top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-inline-sm);
+    padding: var(--space-4) var(--space-page-x);
+    border-bottom: 1px solid var(--color-border-subtle);
+    flex-shrink: 0;
+  }
+
+  .fndx-sidebar__title {
+    margin: 0;
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-primary);
+    font-family: var(--font-family-display);
+  }
+
+  /* 折叠/切换按钮 */
+  .fndx-sidebar__toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-icon-md);
+    height: var(--size-icon-md);
+    border-radius: var(--radius-control);
+    background-color: transparent;
+    color: var(--color-fg-secondary);
+    border: none;
+    cursor: pointer;
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-sidebar__toggle:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-fg-primary);
+    }
+  }
+
+  /* 滚动区 */
+  .fndx-sidebar__scroll {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: var(--space-3) var(--space-page-x);
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-border-strong) transparent;
+  }
+
+  /* 文档列表 */
+  .fndx-sidebar__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-xs);
+  }
+
+  /* 模块分组 */
+  .fndx-sidebar__group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-xs);
+  }
+
+  .fndx-sidebar__group-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    padding: var(--space-2) var(--space-3);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-tertiary);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-label);
+    cursor: pointer;
+    user-select: none;
+    border-radius: var(--radius-control);
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-sidebar__group-title:hover {
+      background-color: var(--color-bg-hover);
+    }
+  }
+
+  .fndx-sidebar__group-arrow {
+    display: inline-flex;
+    transition: transform var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .fndx-sidebar__group.is-collapsed .fndx-sidebar__group-arrow {
+    transform: rotate(-90deg);
+  }
+
+  .fndx-sidebar__group.is-collapsed .fndx-sidebar__list {
+    display: none;
+  }
+
+  /* 文档链接 */
+  .fndx-sidebar__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    padding: var(--space-2) var(--space-3);
+    border-radius: var(--radius-control);
+    color: var(--color-fg-secondary);
+    text-decoration: none;
+    font-size: var(--font-size-secondary);
+    line-height: var(--font-line-height-body);
+    border-left: 2px solid transparent;
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
+                color var(--motion-duration-instant) var(--motion-easing-out),
+                border-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-sidebar__link:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-fg-primary);
+    }
+  }
+
+  .fndx-sidebar__link.is-active,
+  .fndx-sidebar__link[aria-current='page'] {
+    background-color: var(--color-bg-hover);
+    color: var(--color-accent-base);
+    border-left-color: var(--color-accent-base);
+    font-weight: var(--font-weight-emphasis);
+  }
+
+  .fndx-sidebar__link:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: -2px;
+  }
+
+  /* 进度指示器 */
+  .fndx-sidebar__progress {
+    flex-shrink: 0;
+    width: var(--size-icon-xs);
+    height: var(--size-icon-xs);
+    border-radius: var(--radius-full);
+    border: 2px solid var(--color-border-default);
+  }
+
+  .fndx-sidebar__progress.is-completed {
+    background-color: var(--color-success-base);
+    border-color: var(--color-success-base);
+  }
+
+  /* 进度状态：阅读中（amber 实心） */
+  .fndx-sidebar__progress.is-reading {
+    background-color: var(--color-warning-base, #f59e0b);
+    border-color: var(--color-warning-base, #f59e0b);
+  }
+
+  /* 关闭按钮（移动端抽屉模式可见） */
+  .fndx-sidebar__close {
+    position: absolute;
+    top: var(--space-2);
+    right: var(--space-2);
+    z-index: 2;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-control-sm);
+    height: var(--size-control-sm);
+    border-radius: var(--radius-control);
+    background-color: transparent;
+    color: var(--color-fg-secondary);
+    border: none;
+    cursor: pointer;
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
+                color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-sidebar__close:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-fg-primary);
+    }
+  }
+
+  .fndx-sidebar__close:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 767px) {
+    .fndx-sidebar__close {
+      display: inline-flex;
+    }
+  }
+
+  /* 顶部标题行：颜色条 + 标题 + 视图切换 */
+  .fndx-sidebar__header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-inline-sm);
+    min-width: 0;
+  }
+
+  /* 标题组：颜色条 + 标题文字 */
+  .fndx-sidebar__title-group {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  /* 模块分类颜色条（左侧竖条） */
+  .fndx-sidebar__color-bar {
+    flex-shrink: 0;
+    width: 3px;
+    height: var(--size-icon-md);
+    border-radius: var(--radius-full);
+    background-color: var(--color-accent-base);
+  }
+
+  /* 视图切换按钮组（章节 / 资料） */
+  .fndx-sidebar__view-tabs {
+    display: inline-flex;
+    flex-shrink: 0;
+    border: 1px solid var(--color-border-default);
+    border-radius: var(--radius-control);
+    overflow: hidden;
+  }
+
+  .fndx-sidebar__view-tab {
+    padding: var(--space-1) var(--space-2);
+    border: none;
+    background-color: transparent;
+    color: var(--color-fg-tertiary);
+    font-size: var(--font-size-caption);
+    font-family: var(--font-family-display);
+    cursor: pointer;
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
+                color var(--motion-duration-instant) var(--motion-easing-out);
+    white-space: nowrap;
+  }
+
+  .fndx-sidebar__view-tab + .fndx-sidebar__view-tab {
+    border-left: 1px solid var(--color-border-default);
+  }
+
+  @media (hover: hover) {
+    .fndx-sidebar__view-tab:hover:not(.is-active) {
+      color: var(--color-fg-primary);
+      background-color: var(--color-bg-hover);
+    }
+  }
+
+  .fndx-sidebar__view-tab.is-active {
+    background-image: linear-gradient(
+      90deg,
+      var(--color-accent-base),
+      var(--color-secondary-base, var(--color-accent-hover))
+    );
+    color: var(--color-accent-fg);
+    font-weight: var(--font-weight-emphasis);
+  }
+
+  .fndx-sidebar__view-tab:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: -2px;
+  }
+
+  /* 返回首页链接（顶部标题区底部） */
+  .fndx-sidebar__back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    margin-top: var(--space-2);
+    color: var(--color-fg-tertiary);
+    text-decoration: none;
+    font-size: var(--font-size-caption);
+    transition: color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-sidebar__back:hover {
+      color: var(--color-accent-base);
+    }
+  }
+
+  .fndx-sidebar__back:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-control);
+  }
+
+  /* 面板（视图容器）：章节 / 资料 / 全部模块互斥显示 */
+  .fndx-sidebar__panel {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .fndx-sidebar__panel.is-hidden {
+    display: none;
+  }
+
+  /* 面板内独立顶部（用于全部模块面板） */
+  .fndx-sidebar__panel-top {
+    flex-shrink: 0;
+    padding: var(--space-3) var(--space-page-x);
+    border-bottom: 1px solid var(--color-border-subtle);
+  }
+
+  .fndx-sidebar__subtitle {
+    margin: var(--space-1) 0 0;
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+  }
+
+  /* 文档链接文本（与进度指示器并排） */
+  .fndx-sidebar__link-text {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+
+  /* 图标链接变体（术语表 / 知识地图入口） */
+  .fndx-sidebar__link--icon {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .fndx-sidebar__link--icon svg {
+    flex-shrink: 0;
+    width: var(--size-icon-sm);
+    height: var(--size-icon-sm);
+  }
+
+  /* 大纲链接：根据层级缩进 */
+  .fndx-sidebar__link--level-2 {
+    padding-left: var(--space-3);
+  }
+
+  .fndx-sidebar__link--level-3 {
+    padding-left: var(--space-6);
+  }
+
+  /* 子文档链接（更小字号 + 缩进） */
+  .fndx-sidebar__link--sub {
+    padding: var(--space-1) var(--space-3);
+    padding-left: var(--space-6);
+    font-size: var(--font-size-caption);
+  }
+
+  /* 底部固定入口区（术语表 / 知识地图） */
+  .fndx-sidebar__footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-xs);
+    margin-top: var(--space-4);
+    padding-top: var(--space-3);
+    border-top: 1px solid var(--color-border-subtle);
+  }
+
+  /* 模块行（全部模块视图）：链接 + 展开按钮 */
+  .fndx-sidebar__module-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+  }
+
+  .fndx-sidebar__module-row .fndx-sidebar__link {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+
+  /* 模块展开按钮 */
+  .fndx-sidebar__module-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    width: var(--size-icon-md);
+    height: var(--size-icon-md);
+    border-radius: var(--radius-control);
+    background-color: transparent;
+    color: var(--color-fg-tertiary);
+    border: none;
+    cursor: pointer;
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
+                color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-sidebar__module-arrow:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-fg-primary);
+    }
+  }
+
+  .fndx-sidebar__module-arrow:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  /* 箭头图标旋转（展开状态） */
+  .fndx-sidebar__module-arrow-icon {
+    display: inline-flex;
+    transition: transform var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .fndx-sidebar__module-arrow[aria-expanded='true'] .fndx-sidebar__module-arrow-icon {
+    transform: rotate(90deg);
+  }
+
+  /* 模块子文档列表（默认折叠） */
+  .fndx-sidebar__module-docs {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    padding-left: var(--space-4);
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-xs);
+  }
+
+  .fndx-sidebar__module-docs.is-collapsed {
+    display: none;
+  }
+
+  /* 模块分类圆点（小尺寸） */
+  .fndx-sidebar__module-dot {
+    flex-shrink: 0;
+    width: var(--size-icon-xs);
+    height: var(--size-icon-xs);
+    border-radius: var(--radius-full);
+  }
+
+  /* 分组标题圆点（全部模块视图分类标识） */
+  .fndx-sidebar__group-dot {
+    display: inline-flex;
+    width: var(--size-icon-xs);
+    height: var(--size-icon-xs);
+    border-radius: var(--radius-full);
+    flex-shrink: 0;
+  }
+
+  /* 移动端：Sidebar 变为滑入抽屉 */
+  @media (max-width: 767px) {
+    .fndx-sidebar {
+      position: fixed;
+      top: var(--nav-height);
+      left: 0;
+      bottom: 0;
+      z-index: var(--z-sidebar);
+      width: 80vw;
+      max-width: var(--sidebar-width);
+      transform: translateX(-100%);
+      transition: transform var(--motion-duration-normal) var(--motion-easing-spring);
+    }
+
+    .fndx-sidebar.is-open {
+      transform: translateX(0);
+    }
+
+    /* 侧边栏打开时锁定页面滚动（body.sidebar-open 由 Layout.astro 脚本控制） */
+    body.sidebar-open {
+      overflow: hidden;
+    }
+  }
+
+  /* 遮罩层（移动端 Sidebar 打开时） */
+  .fndx-sidebar-backdrop {
+    position: fixed;
+    inset: 0;
+    top: var(--nav-height);
+    background-color: rgba(0, 0, 0, 0.4);
+    z-index: var(--z-backdrop);
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity var(--motion-duration-normal) var(--motion-easing-out),
+                visibility var(--motion-duration-normal);
+  }
+
+  .fndx-sidebar-backdrop.is-visible {
+    opacity: 1;
+    visibility: visible;
+  }
+
+  /* ============================================================
+   * 4. 右侧目录大纲 .fndx-toc
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <aside class="fndx-toc" aria-label="本页目录">
+   *     <nav class="fndx-toc__nav">
+   *       <h2 class="fndx-toc__title">目录</h2>
+   *       <ul class="fndx-toc__list">
+   *         <li><a class="fndx-toc__link is-active" href="#section-1">章节</a></li>
+   *       </ul>
+   *     </nav>
+   *   </aside>
+   * ============================================================ */
+  .fndx-toc {
+    display: flex;
+    flex-direction: column;
+    width: var(--toc-width);
+    flex-shrink: 0;
+    background-color: var(--toc-bg);
+    overflow: hidden;
+  }
+
+  @media (min-width: 1280px) {
+    .fndx-toc {
+      width: var(--toc-width-xl);
+    }
+  }
+
+  /* 桌面端 sticky 定位 */
+  @media (min-width: 1024px) {
+    .fndx-toc {
+      position: sticky;
+      top: calc(var(--nav-height) + var(--space-6));
+      max-height: calc(100vh - var(--nav-height) - var(--space-12));
+      max-height: calc(100dvh - var(--nav-height) - var(--space-12));
+    }
+  }
+
+  /* 移动端隐藏（由底部弹层替代） */
+  @media (max-width: 1023px) {
+    .fndx-toc {
+      display: none;
+    }
+  }
+
+  .fndx-toc__nav {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-sm);
+    padding: var(--space-4) var(--space-page-x);
+  }
+
+  .fndx-toc__title {
+    margin: 0;
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-tertiary);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-label);
+  }
+
+  .fndx-toc__list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-xs);
+    border-left: 1px solid var(--toc-border);
+  }
+
+  .fndx-toc__link {
+    display: block;
+    padding: var(--space-1) var(--space-3);
+    border-left: 2px solid transparent;
+    margin-left: -1px;
+    color: var(--color-fg-secondary);
+    text-decoration: none;
+    font-size: var(--font-size-caption);
+    line-height: var(--font-line-height-body);
+    transition: color var(--motion-duration-instant) var(--motion-easing-out),
+                border-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-toc__link:hover {
+      color: var(--color-fg-primary);
+    }
+  }
+
+  .fndx-toc__link.is-active {
+    color: var(--color-accent-base);
+    border-left-color: var(--color-accent-base);
+    font-weight: var(--font-weight-emphasis);
+  }
+
+  .fndx-toc__link:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: -2px;
+  }
+
+  /* TOC 层级缩进 */
+  .fndx-toc__link--level-2 {
+    padding-left: var(--space-6);
+  }
+
+  .fndx-toc__link--level-3 {
+    padding-left: var(--space-8);
+  }
+
+  .fndx-toc__link--level-4 {
+    padding-left: var(--space-10);
+  }
+
+  /* 折叠按钮 */
+  .fndx-toc__collapse {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    padding: var(--space-1) var(--space-2);
+    background: transparent;
+    border: none;
+    color: var(--color-fg-tertiary);
+    font-size: var(--font-size-caption);
+    cursor: pointer;
+    border-radius: var(--radius-control);
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-toc__collapse:hover {
+      background-color: var(--color-bg-hover);
+      color: var(--color-fg-primary);
+    }
+  }
+
+  .fndx-toc__collapse-arrow {
+    display: inline-flex;
+    transition: transform var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .fndx-toc__collapse.is-collapsed .fndx-toc__collapse-arrow {
+    transform: rotate(-90deg);
+  }
+
+  .fndx-toc__children.is-collapsed {
+    display: none;
+  }
+
+  /* TOC 列表项（无额外样式，保留语义占位便于未来扩展） */
+  .fndx-toc__item {
+    min-width: 0;
+  }
+
+  /* 分组头部：父级 h2 链接 + 折叠按钮 */
+  .fndx-toc__group-header {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+  }
+
+  /* 父级 h2 链接：占据剩余空间，与折叠按钮并排 */
+  .fndx-toc__link--parent {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* 孤立 h3（无 h2 父级）的占位标签 */
+  .fndx-toc__orphan-label {
+    display: block;
+    flex: 1 1 auto;
+    padding: var(--space-1) var(--space-3);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-tertiary);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-label);
+    opacity: 0.7;
+  }
+
+  /* ============================================================
+   * 5. 阅读进度条 .fndx-reading-progress
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <div class="fndx-reading-progress" role="progressbar"
+   *        aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">
+   *     <div class="fndx-reading-progress__bar" style="width: 35%"></div>
+   *   </div>
+   *
+   * 由 JS 监听 scroll 事件更新 width 与 aria-valuenow
+   * ============================================================ */
+  .fndx-reading-progress {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: var(--z-reading-progress);
+    height: var(--reading-progress-height);
+    background-color: transparent;
+    pointer-events: none;
+  }
+
+  .fndx-reading-progress__bar {
+    height: 100%;
+    width: 0;
+    background-image: var(--reading-progress-gradient);
+    transition: width var(--motion-duration-instant) linear;
+    border-radius: 0 var(--radius-full) var(--radius-full) 0;
+  }
+
+  /* 尊重 prefers-reduced-motion：禁用过渡 */
+  @media (prefers-reduced-motion: reduce) {
+    .fndx-reading-progress__bar {
+      transition: none;
+    }
+  }
+
+  /* ============================================================
+   * 6. 移动端底部导航 .fndx-mobile-nav
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <nav class="fndx-mobile-nav" aria-label="底部导航">
+   *     <a class="fndx-mobile-nav__item is-active" href="/">
+   *       <span class="fndx-mobile-nav__icon">…</span>
+   *       <span class="fndx-mobile-nav__label">首页</span>
+   *     </a>
+   *   </nav>
+   * ============================================================ */
+  .fndx-mobile-nav {
+    position: fixed;
+    inset-inline: 0;
+    bottom: 0;
+    z-index: var(--z-mobile-nav);
+    display: flex;
+    align-items: stretch;
+    height: var(--mobile-nav-height);
+    padding-bottom: env(safe-area-inset-bottom);
+    background-color: var(--mobile-nav-bg);
+    backdrop-filter: blur(var(--header-blur));
+    -webkit-backdrop-filter: blur(var(--header-blur));
+    border-top: 1px solid var(--header-border);
+  }
+
+  /* 仅移动端显示 */
+  @media (min-width: 768px) {
+    .fndx-mobile-nav {
+      display: none;
+    }
+  }
+
+  .fndx-mobile-nav__item {
+    flex: 1 1 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-stack-xs);
+    padding: var(--space-1);
+    color: var(--color-fg-tertiary);
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-mobile-nav__item:hover {
+      color: var(--color-fg-primary);
+    }
+  }
+
+  .fndx-mobile-nav__item.is-active,
+  .fndx-mobile-nav__item[aria-current='page'] {
+    color: var(--color-accent-base);
+  }
+
+  .fndx-mobile-nav__icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-icon-md);
+    height: var(--size-icon-md);
+  }
+
+  .fndx-mobile-nav__label {
+    font-size: var(--font-size-caption);
+    line-height: 1;
+  }
+
+  /* ============================================================
+   * 7. 面包屑导航 .fndx-breadcrumb
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <nav class="fndx-breadcrumb" aria-label="面包屑">
+   *     <ol class="fndx-breadcrumb__list">
+   *       <li class="fndx-breadcrumb__item">
+   *         <a class="fndx-breadcrumb__link" href="/">首页</a>
+   *       </li>
+   *       <li class="fndx-breadcrumb__item is-current">
+   *         <span class="fndx-breadcrumb__current">当前页</span>
+   *       </li>
+   *     </ol>
+   *   </nav>
+   * ============================================================ */
+  .fndx-breadcrumb {
+    display: flex;
+  }
+
+  .fndx-breadcrumb__list {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  .fndx-breadcrumb__item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-secondary);
+  }
+
+  /* 分隔符 */
+  .fndx-breadcrumb__item:not(:last-child)::after {
+    content: '/';
+    color: var(--color-fg-tertiary);
+    margin-inline: var(--space-inline-xs);
+  }
+
+  .fndx-breadcrumb__link {
+    color: var(--color-fg-secondary);
+    text-decoration: none;
+    transition: color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-breadcrumb__link:hover {
+      color: var(--color-accent-base);
+    }
+  }
+
+  .fndx-breadcrumb__link:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+    border-radius: var(--radius-control);
+  }
+
+  .fndx-breadcrumb__item.is-current {
+    color: var(--color-fg-primary);
+    font-weight: var(--font-weight-emphasis);
+  }
+
+  .fndx-breadcrumb__current {
+    /* 继承父级样式 */
+  }
+
+  /* ============================================================
+   * 8. 文档上下页导航 .fndx-doc-nav
+   * ------------------------------------------------------------
+   * 使用方式：
+   *   <nav class="fndx-doc-nav" aria-label="文档导航">
+   *     <a class="fndx-doc-nav__link fndx-doc-nav__link--prev" href="…">
+   *       <span class="fndx-doc-nav__direction">上一篇</span>
+   *       <span class="fndx-doc-nav__title">文档标题</span>
+   *     </a>
+   *     <a class="fndx-doc-nav__link fndx-doc-nav__link--next" href="…">
+   *       <span class="fndx-doc-nav__direction">下一篇</span>
+   *       <span class="fndx-doc-nav__title">文档标题</span>
+   *     </a>
+   *   </nav>
+   * ============================================================ */
+  .fndx-doc-nav {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-inline-md);
+    margin-block: var(--space-12) var(--space-8);
+    padding-block: var(--space-6);
+    border-top: 1px solid var(--color-border-default);
+    border-bottom: 1px solid var(--color-border-default);
+  }
+
+  @media (max-width: 640px) {
+    .fndx-doc-nav {
+      flex-direction: column;
+      gap: var(--space-stack-sm);
+    }
+  }
+
+  .fndx-doc-nav__link {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-stack-xs);
+    padding: var(--space-3) var(--space-4);
+    border-radius: var(--radius-card);
+    border: 1px solid var(--color-border-default);
+    background-color: var(--color-bg-elevated);
+    color: var(--color-fg-primary);
+    text-decoration: none;
+    min-width: 0;
+    flex: 1 1 0;
+    transition: border-color var(--motion-duration-fast) var(--motion-easing-out),
+                background-color var(--motion-duration-fast) var(--motion-easing-out),
+                transform var(--motion-duration-normal) var(--motion-easing-spring);
+  }
+
+  @media (hover: hover) {
+    .fndx-doc-nav__link:hover {
+      border-color: var(--color-accent-base);
+      background-color: var(--color-bg-hover);
+      transform: translateY(-1px);
+    }
+  }
+
+  .fndx-doc-nav__link:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  /* 上一篇：左对齐 */
+  .fndx-doc-nav__link--prev {
+    text-align: left;
+  }
+
+  /* 下一篇：右对齐 */
+  .fndx-doc-nav__link--next {
+    text-align: right;
+    align-items: flex-end;
+  }
+
+  @media (max-width: 640px) {
+    .fndx-doc-nav__link--next {
+      text-align: left;
+      align-items: flex-start;
+    }
+  }
+
+  .fndx-doc-nav__direction {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-inline-xs);
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+    text-transform: uppercase;
+    letter-spacing: var(--font-letter-spacing-label);
+  }
+
+  .fndx-doc-nav__title {
+    font-size: var(--font-size-body);
+    font-weight: var(--font-weight-emphasis);
+    color: var(--color-fg-primary);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  /* ============================================================
+   * 9. 文档主内容区 .fndx-doc-content
+   * ------------------------------------------------------------
+   * 文档阅读容器，限制最大宽度提升可读性
+   * ============================================================ */
+  .fndx-doc-content {
+    width: 100%;
+    max-width: var(--content-max-width);
+    margin-inline: auto;
+    padding-block: var(--space-page-y);
+  }
+
+  .fndx-doc-content > :first-child {
+    margin-top: 0;
+  }
+
+  .fndx-doc-content > :last-child {
+    margin-bottom: 0;
+  }
+
+  /* ============================================================
+   * 10. 三栏文档布局 .fndx-doc-layout
+   * ------------------------------------------------------------
+   * 桌面：Header + [Sidebar | Content | TOC] + Footer
+   * 移动：Header + [Content] + MobileNav
+   * ============================================================ */
+  .fndx-doc-layout {
+    display: flex;
+    flex: 1 1 auto;
+    min-height: 0;
+    gap: var(--layout-gap);
+    padding-inline: var(--space-page-x);
+  }
+
+  @media (min-width: 1024px) {
+    .fndx-doc-layout {
+      padding-inline: var(--space-page-x-lg);
+    }
+  }
+
+  .fndx-doc-layout__main {
+    flex: 1 1 0%;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* 无 Sidebar 变体（首页、设置页等） */
+  .fndx-doc-layout--no-sidebar {
+    /* Sidebar 隐藏时，内容区自动占满 */
+  }
+
+  .fndx-doc-layout--no-toc {
+    /* TOC 隐藏时，内容区自动占满 */
+  }
+}

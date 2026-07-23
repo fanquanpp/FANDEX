@@ -1,0 +1,92 @@
+/* =============================================================================
+ * FANDEX 响应式适配样式 — 视口级响应式（mobile-first）
+ * -----------------------------------------------------------------------------
+ * 设计原则：
+ * 1. mobile-first：默认样式针对小屏，通过 min-width 媒体查询渐进增强
+ * 2. 流体优先：优先使用 clamp() 实现平滑缩放，减少断点硬切换
+ * 3. 触摸友好：通过 (hover: none) and (pointer: coarse) 精准适配触摸设备
+ * 4. 组件级响应式见 container-queries.css，本文件仅处理视口级布局
+ * -----------------------------------------------------------------------------
+ * 引用：spec.md 第十三章「移动端文档合并与响应式适配方案」13.2.2 / 13.2.3 / 13.2.4
+ * =============================================================================
+ */
+
+/* === 断点令牌与流体排版（base 层） === */
+@layer base {
+  :root {
+    /* mobile-first 断点定义
+       --bp-sm:  小屏手机 → 大屏手机分界
+       --bp-md:  大屏手机 → 平板分界
+       --bp-lg:  平板 → 小屏桌面分界
+       --bp-xl:  小屏桌面 → 大屏桌面分界
+       --bp-2xl: 大屏桌面 → 超宽屏分界 */
+    --bp-sm: 640px;
+    --bp-md: 768px;
+    --bp-lg: 1024px;
+    --bp-xl: 1280px;
+    --bp-2xl: 1536px;
+
+    /* 流体排版：clamp(min, preferred, max)
+       preferred 使用 vw 单位实现视口比例缩放 */
+    --font-size-body: clamp(0.875rem, 0.8rem + 0.3vw, 1rem);
+    --font-size-h1: clamp(1.5rem, 1rem + 2vw, 2.5rem);
+    --font-size-h2: clamp(1.25rem, 1rem + 1vw, 1.75rem);
+    --font-size-h3: clamp(1.125rem, 1rem + 0.5vw, 1.375rem);
+    --font-size-code: clamp(0.8125rem, 0.75rem + 0.2vw, 0.875rem);
+
+    /* 流体间距：页面边距与章节间距随视口平滑缩放 */
+    --space-page-x: clamp(1rem, 0.5rem + 2vw, 3rem);
+    --space-section-y: clamp(2rem, 1.5rem + 2vw, 4rem);
+  }
+}
+
+/* === 视口级响应式布局（components 层） === */
+@layer components {
+  /* 文档页三栏布局：默认单栏（手机），平板双栏，桌面三栏
+     参考 spec.md 13.2.4 响应式断点行为矩阵 */
+  .fndx-doc-layout {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: var(--space-4, 1rem);
+  }
+
+  /* 平板（≥768px）：左侧目录 + 正文，隐藏右侧 TOC */
+  @media (min-width: 768px) {
+    .fndx-doc-layout {
+      grid-template-columns: 200px 1fr;
+    }
+    .fndx-doc-layout__toc {
+      display: none;
+    }
+  }
+
+  /* 桌面（≥1024px）：三栏布局（左侧目录 + 正文 + 右侧 TOC） */
+  @media (min-width: 1024px) {
+    .fndx-doc-layout {
+      grid-template-columns: 240px 1fr 200px;
+    }
+    .fndx-doc-layout__toc {
+      display: block;
+    }
+  }
+
+  /* 模块网格：auto-fit + minmax 自适应列数
+     无需 media query，网格自动根据容器宽度调整列数 */
+  .fndx-module-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: clamp(0.75rem, 0.5rem + 1vw, 1.5rem);
+  }
+
+  /* 触摸设备适配：禁用 hover 上浮效果，保证触摸目标最小尺寸
+     (hover: none) and (pointer: coarse) 精准匹配纯触摸设备 */
+  @media (hover: none) and (pointer: coarse) {
+    .fndx-card:hover {
+      transform: none;
+    }
+    .fndx-button {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+}

@@ -1,0 +1,62 @@
+{
+  "$description": "FANDEX 原始字体令牌 — 字族、字号、字重、行高、字距原值，无语义",
+  "font": {
+    "family": {
+      "$type": "fontFamily",
+      "sans": {
+        "$value": ["Inter", "-apple-system", "BlinkMacSystemFont", "Segoe UI", "PingFang SC", "Microsoft YaHei", "Hiragino Sans GB", "Noto Sans SC", "Source Han Sans SC", "sans-serif"],
+        "$description": "无衬线字族（正文）— 西文 Inter 优先，中文走系统字体栈"
+      },
+      "serif": {
+        "$value": ["Source Serif Pro", "Source Han Serif SC", "Noto Serif SC", "STSong", "SimSun", "serif"],
+        "$description": "衬线字族（长文阅读、引文）"
+      },
+      "mono": {
+        "$value": ["JetBrains Mono", "Fira Code", "Cascadia Code", "Consolas", "Courier New", "monospace"],
+        "$description": "等宽字族（代码专用）— JetBrains Mono 优先"
+      },
+      "display": {
+        "$value": ["Inter", "-apple-system", "BlinkMacSystemFont", "PingFang SC", "Microsoft YaHei", "Noto Sans SC", "sans-serif"],
+        "$description": "展示字族（大标题，字距收紧）"
+      }
+    },
+    "size": {
+      "$type": "dimension",
+      "xs": { "$value": "0.75rem", "$description": "12px 辅助文字" },
+      "sm": { "$value": "0.875rem", "$description": "14px 次要文字" },
+      "base": { "$value": "1rem", "$description": "16px 正文基准" },
+      "lg": { "$value": "1.125rem", "$description": "18px 略大正文" },
+      "xl": { "$value": "1.25rem", "$description": "20px 小标题" },
+      "2xl": { "$value": "1.5rem", "$description": "24px 中标题" },
+      "3xl": { "$value": "1.875rem", "$description": "30px 大标题" },
+      "4xl": { "$value": "2.25rem", "$description": "36px 主标题" },
+      "5xl": { "$value": "3rem", "$description": "48px 页面标题" },
+      "6xl": { "$value": "3.75rem", "$description": "60px 英雄标题" }
+    },
+    "weight": {
+      "$type": "fontWeight",
+      "light": { "$value": 300, "$description": "细体" },
+      "normal": { "$value": 400, "$description": "常规" },
+      "medium": { "$value": 500, "$description": "中等" },
+      "semibold": { "$value": 600, "$description": "半粗" },
+      "bold": { "$value": 700, "$description": "粗体" },
+      "extrabold": { "$value": 800, "$description": "特粗" }
+    },
+    "lineHeight": {
+      "$type": "number",
+      "tight": { "$value": 1.2, "$description": "标题行高" },
+      "snug": { "$value": 1.375, "$description": "副标题行高" },
+      "normal": { "$value": 1.5, "$description": "正文行高（西文）" },
+      "relaxed": { "$value": 1.625, "$description": "正文行高（中文，略宽松）" },
+      "loose": { "$value": 2, "$description": "长文阅读行高" }
+    },
+    "letterSpacing": {
+      "$type": "dimension",
+      "tighter": { "$value": "-0.05em", "$description": "大标题紧凑" },
+      "tight": { "$value": "-0.025em", "$description": "标题" },
+      "normal": { "$value": "0", "$description": "正文" },
+      "wide": { "$value": "0.025em", "$description": "按钮、标签" },
+      "wider": { "$value": "0.05em", "$description": "大写小字" }
+    }
+  }
+}

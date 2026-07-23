@@ -1,0 +1,309 @@
+---
+import { getCollection } from 'astro:content';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+/**
+ * 模块术语表路由（Phase 8b 重写，适配 JSON 结构化数据）
+ *
+ * 功能概述：
+ * - 动态路由 [module]/glossary，为每个模块生成术语表页面
+ * - 顶部字母索引（A-Z 锚点导航）
+ * - 客户端搜索过滤（input + 内联脚本）
+ * - 术语列表：从 getCollection('glossary') 筛选 data.moduleId === moduleId
+ *   直接渲染 terms 数组中的结构化术语（name + definition），不再依赖 Markdown render()
+ * - 完全移除 Vue 引用，使用 Tailwind v4 工具类
+ *
+ * 数据源：
+ * - modules: @/lib/modules 的 MODULES / getModule
+ * - glossary: astro:content 的 getCollection('glossary')，schema 含 moduleId / terms[]
+ *   每个 JSON 文件对应一个模块，terms 为 { name, definition, slug? } 数组
+ *
+ * 偏差报备：
+ * 旧版引用 @fandex/shared 已废弃，改用 @/lib/modules。
+ * 旧版使用 hsl(var(--card)) 等旧 CSS 变量，本版改为 Tailwind v4 工具类与 bg-card/border-border 等语义类。
+ * 旧版通过 render(g) 渲染 Markdown Content，现改为直接渲染 JSON 结构化数据。
+ */
+import Layout from '@/components/Layout.astro';
+import SEO from '@/components/SEO.astro';
+import Sidebar from '@/components/Sidebar.astro';
+import { getModule, MODULES } from '@/lib/modules';
+import { withBase } from '@/lib/url';
+
+/**
+ * 生成静态路径：为每个模块生成一个术语表页面
+ *
+ * 实现说明：
+ * - 从 MODULES 静态注册表生成路径
+ * - 即使该模块暂无术语表内容，也生成页面（页面内会显示"暂无术语表内容"占位）
+ */
+export async function getStaticPaths() {
+  return MODULES.map((m) => ({ params: { module: m.id } }));
+}
+
+/** 路由参数：当前模块 ID */
+const { module } = Astro.params as { module: string };
+const meta = getModule(module);
+
+/** 模块不存在时跳转 404 */
+if (!meta) {
+  return Astro.redirect(withBase('/404'));
+}
+
+/**
+ * 获取该模块的术语表数据
+ *
+ * 实现说明：
+ * - 通过 moduleId 筛选 glossary collection（每个模块对应一个 JSON 文件）
+ * - 取第一个匹配条目（理论上每个模块只有一个 JSON 文件）
+ * - 提取 terms 数组，按 name localeCompare 排序
+ */
+const glossaryFiles = await getCollection('glossary', ({ data }) => data.moduleId === module);
+const glossaryData = glossaryFiles[0]?.data;
+const terms = (glossaryData?.terms ?? [])
+  .slice()
+  .sort((a, b) => a.name.localeCompare(b.name, 'zh-CN'));
+
+/** 提取所有术语首字母（用于字母索引） */
+const initialSet = new Set<string>();
+terms.forEach((term) => {
+  const first = term.name.charAt(0).toUpperCase();
+  // 仅收集 A-Z 字母，中文字符不加入字母索引
+  if (/^[A-Z]$/.test(first)) {
+    initialSet.add(first);
+  }
+});
+const letters = Array.from(initialSet).sort();
+
+/** 面包屑导航项 */
+const breadcrumb = [
+  { label: '首页', href: withBase('/') },
+  { label: meta.name, href: withBase(`/${module}/`) },
+  { label: '术语表' },
+];
+
+/** SEO 面包屑 */
+const seoBreadcrumbs = [
+  { label: '首页', href: '/' },
+  { label: meta.name, href: `/${module}/` },
+  { label: '术语表', href: `/${module}/glossary/` },
+];
+---
+
+<Layout
+  title={`术语表 - ${meta.name} - FANDEX`}
+  description={`${meta.name} 模块专有名词注释查阅表`}
+  canonical={withBase(`/${module}/glossary/`)}
+  hasSidebar
+>
+  <SEO
+    slot="head"
+    title={`术语表 - ${meta.name} - FANDEX`}
+    description={`${meta.name} 模块专有名词注释查阅表`}
+    type="website"
+    breadcrumbs={seoBreadcrumbs}
+  />
+  <Sidebar slot="sidebar" moduleId={module} />
+
+  <div class="flex flex-col gap-6 pb-12">
+    {/* 面包屑导航 */}
+    <Breadcrumb items={breadcrumb} hasSidebar />
+
+    {/* ============================================================
+     * 页面头部：标题 + 描述 + 统计
+     * ============================================================ */}
+    <header
+      class="relative overflow-hidden rounded-xl border border-border bg-card shadow-sm"
+    >
+      <span
+        class="absolute inset-x-0 top-0 h-1"
+        style={`background-color:${meta.color}`}
+        aria-hidden="true"
+      />
+      <div class="flex flex-col gap-2 p-6 md:p-8">
+        <div class="flex flex-wrap items-center gap-2">
+          <h1 class="text-2xl font-bold text-foreground md:text-3xl">
+            术语表 - {meta.name}
+          </h1>
+          <span
+            class="inline-flex items-center rounded-md px-2 py-0.5 text-xs font-medium"
+            style={`background-color:${meta.color}20;color:${meta.color}`}
+          >
+            {terms.length} 个术语
+          </span>
+        </div>
+        <p class="text-sm text-muted-foreground md:text-base">
+          {meta.name} 模块专有名词注释查阅表，按字母顺序排列。
+        </p>
+      </div>
+    </header>
+
+    {/* ============================================================
+     * 搜索框：客户端过滤术语（input + 内联脚本）
+     * ============================================================ */}
+    <div class="relative">
+      <input
+        id="glossary-search"
+        type="search"
+        placeholder="搜索术语..."
+        autocomplete="off"
+        class="w-full rounded-lg border border-border bg-card px-4 py-2.5 text-sm text-foreground shadow-sm outline-none transition-colors placeholder:text-muted-foreground focus:border-primary focus:ring-2 focus:ring-ring/30"
+        aria-label="搜索术语"
+      />
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="2"
+        stroke-linecap="round"
+        stroke-linejoin="round"
+        class="pointer-events-none absolute right-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground"
+        aria-hidden="true"
+      >
+        <circle cx="11" cy="11" r="8" />
+        <line x1="21" y1="21" x2="16.65" y2="16.65" />
+      </svg>
+    </div>
+
+    {/* 字母索引（A-Z 锚点导航） */}
+    {letters.length > 0 && (
+      <nav
+        class="flex flex-wrap items-center gap-1.5 rounded-lg border border-border bg-card p-3"
+        aria-label="字母索引"
+      >
+        {letters.map((letter) => (
+          <a
+            href={`#letter-${letter}`}
+            class="inline-flex h-7 w-7 items-center justify-center rounded-md text-xs font-medium text-muted-foreground transition-colors hover:bg-accent hover:text-primary"
+          >
+            {letter}
+          </a>
+        ))}
+      </nav>
+    )}
+
+    {/* ============================================================
+     * 术语列表：按字母分组渲染（结构化数据，非 Markdown）
+     * ============================================================ */}
+    {terms.length === 0 ? (
+      <div
+        class="rounded-xl border border-dashed border-border p-12 text-center text-sm text-muted-foreground"
+      >
+        该模块暂无术语表内容
+      </div>
+    ) : (
+      <div class="flex flex-col gap-3">
+        {terms.map((term) => {
+          const initial = term.name.charAt(0).toUpperCase();
+          const isLetter = /^[A-Z]$/.test(initial);
+          return (
+            <section
+              class="glossary-section rounded-lg border border-border bg-card p-4 transition-colors hover:border-primary/30"
+              data-glossary-name={term.name}
+              data-glossary-text={term.definition}
+            >
+              <div class="flex items-start gap-3">
+                <span
+                  class="inline-flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-md text-[11px] font-bold text-white"
+                  style={`background-color:${meta.color}`}
+                  aria-hidden="true"
+                >
+                  {isLetter ? initial : '#'}
+                </span>
+                <div class="min-w-0 flex-1">
+                  <h2
+                    id={isLetter ? `letter-${initial}` : undefined}
+                    class="scroll-mt-20 text-sm font-semibold text-foreground md:text-base"
+                  >
+                    {term.name}
+                  </h2>
+                  <p class="mt-1 text-sm leading-relaxed text-muted-foreground">
+                    {term.definition}
+                  </p>
+                </div>
+              </div>
+            </section>
+          );
+        })}
+      </div>
+    )}
+
+    {/* 底部：返回模块入口 */}
+    <nav class="mt-4 flex flex-wrap gap-3" aria-label="模块导航">
+      <a
+        href={withBase(`/${module}/`)}
+        class="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent/50"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-4 w-4"
+          aria-hidden="true"
+        >
+          <polyline points="18 6 6 12 18 18" />
+        </svg>
+        返回文档列表
+      </a>
+      <a
+        href={withBase(`/${module}/map/`)}
+        class="inline-flex items-center gap-2 rounded-lg border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-colors hover:border-primary/40 hover:bg-accent/50"
+      >
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          class="h-4 w-4"
+          aria-hidden="true"
+        >
+          <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" />
+          <line x1="8" y1="2" x2="8" y2="18" />
+          <line x1="16" y1="6" x2="16" y2="22" />
+        </svg>
+        知识地图
+      </a>
+    </nav>
+  </div>
+</Layout>
+
+<script>
+  /**
+   * 术语表客户端搜索过滤
+   *
+   * 功能：
+   * - 监听 #glossary-search 输入事件
+   * - 根据术语名称（data-glossary-name）与定义（data-glossary-text）进行不区分大小写匹配
+   * - 隐藏不匹配的 .glossary-section
+   * - 兼容 Astro ClientRouter：监听 astro:page-load 事件重新初始化
+   */
+  function initGlossarySearch(): void {
+    const input = document.getElementById('glossary-search') as HTMLInputElement | null;
+    if (!input) return;
+
+    const sections = document.querySelectorAll<HTMLElement>('.glossary-section');
+
+    let debounceTimer: ReturnType<typeof setTimeout>;
+    input.addEventListener('input', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        const query = input.value.trim().toLowerCase();
+        sections.forEach((section) => {
+          const name = (section.getAttribute('data-glossary-name') || '').toLowerCase();
+          const text = (section.getAttribute('data-glossary-text') || '').toLowerCase();
+          const visible = !query || name.includes(query) || text.includes(query);
+          section.style.display = visible ? '' : 'none';
+        });
+      }, 120);
+    });
+  }
+
+  initGlossarySearch();
+  document.addEventListener('astro:page-load', initGlossarySearch);
+</script>

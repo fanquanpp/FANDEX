@@ -1,0 +1,186 @@
+/* =============================================================================
+ * FANDEX 动效预设样式 — utilities 层 + keyframes 全局定义
+ * -----------------------------------------------------------------------------
+ * 职责：
+ * 1. 关键帧动画定义（fade、slide、scale、rotate、shimmer、slide-in/out-right）
+ * 2. 动画工具类（引用 motion 语义令牌）
+ * 3. 滚动触发动画（纯 CSS，零 JS，依赖 animation-timeline）
+ * 4. 链接下划线微交互（components 层）
+ * -----------------------------------------------------------------------------
+ * 重构说明（阶段 D.1）：
+ * - 移除原 components 层中的 .fndx-button / .fndx-card / .fndx-skeleton 定义
+ *   原因：这些组件级样式已迁移至 components.css 统一管理，避免重复选择器
+ * - 新增 fndx-slide-in-right / fndx-slide-out-right keyframes
+ *   原因：从 components.css 迁入，统一在 motion.css 管理 keyframes
+ * - 保留 .fndx-link-underline 微交互（components.css 未覆盖）
+ * -----------------------------------------------------------------------------
+ * 引用：spec.md 第六章 6.3 滚动触发动画 / 6.3.3 微交互动画
+ *       tasks.md 阶段 D.1 基础组件样式实现（重构 motion.css 避免重复选择器）
+ * =============================================================================
+ */
+
+/* === 关键帧动画定义（无层，全局可用） === */
+@keyframes fndx-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes fndx-fade-out {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes fndx-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(var(--space-2, 0.5rem));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fndx-slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(calc(-1 * var(--space-2, 0.5rem)));
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fndx-scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fndx-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+@keyframes fndx-spin {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes fndx-shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Toast 进入/离开关键帧（供 components.css 的 .fndx-toast 消费） */
+@keyframes fndx-slide-in-right {
+  from {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fndx-slide-out-right {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}
+
+/* === 动画工具类（utilities 层） === */
+@layer utilities {
+  /* 淡入 */
+  .fndx-animate-fade-in {
+    animation: fndx-fade-in var(--motion-duration-normal) var(--motion-easing-out);
+  }
+
+  /* 淡出 */
+  .fndx-animate-fade-out {
+    animation: fndx-fade-out var(--motion-duration-normal) var(--motion-easing-in);
+  }
+
+  /* 上滑入场 */
+  .fndx-animate-slide-up {
+    animation: fndx-slide-up var(--motion-duration-normal) var(--motion-easing-out);
+  }
+
+  /* 下滑入场 */
+  .fndx-animate-slide-down {
+    animation: fndx-slide-down var(--motion-duration-normal) var(--motion-easing-out);
+  }
+
+  /* 缩放入场 */
+  .fndx-animate-scale-in {
+    animation: fndx-scale-in var(--motion-duration-fast) var(--motion-easing-spring);
+  }
+
+  /* 脉冲（加载指示器） */
+  .fndx-animate-pulse {
+    animation: fndx-pulse var(--motion-duration-slow) var(--motion-easing-in-out) infinite;
+  }
+
+  /* 旋转（加载器） */
+  .fndx-animate-spin {
+    animation: fndx-spin var(--motion-duration-slow) linear infinite;
+  }
+
+  /* === 滚动触发动画（纯 CSS，零 JS） === */
+  /* 依赖 animation-timeline: view()，浏览器不支持时无动画（渐进增强） */
+  @supports (animation-timeline: view()) {
+    .fndx-scroll-reveal {
+      animation: fndx-slide-up var(--motion-duration-slow) var(--motion-easing-out) both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 50%;
+    }
+
+    .fndx-scroll-reveal-fade {
+      animation: fndx-fade-in var(--motion-duration-slow) var(--motion-easing-out) both;
+      animation-timeline: view();
+      animation-range: entry 0% entry 50%;
+    }
+
+    /* 视差滚动：元素在滚动过程中轻微位移 */
+    .fndx-parallax {
+      animation: parallax linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
+    }
+
+    @keyframes parallax {
+      from { transform: translateY(var(--space-16, 4rem)); }
+      to { transform: translateY(calc(-1 * var(--space-16, 4rem))); }
+    }
+  }
+}
+
+/* === 组件级微交互（components 层） === */
+/* 注意：.fndx-button / .fndx-card / .fndx-skeleton 已迁移至 components.css 统一管理 */
+@layer components {
+  /* 链接下划线动画：从左到右展开 */
+  .fndx-link-underline {
+    background-image: linear-gradient(currentColor, currentColor);
+    background-size: 0% 1px;
+    background-repeat: no-repeat;
+    background-position: 0 100%;
+    transition: background-size var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .fndx-link-underline:hover {
+      background-size: 100% 1px;
+    }
+  }
+}

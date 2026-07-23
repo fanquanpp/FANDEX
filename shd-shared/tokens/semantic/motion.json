@@ -1,0 +1,62 @@
+{
+  "$description": "FANDEX 语义动效令牌 — 引用 primitive/motion.json，赋予交互语义",
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "feedback": { "$value": "{motion.duration.instant}", "$description": "即时反馈（颜色切换）" },
+      "hover": { "$value": "{motion.duration.fast}", "$description": "悬停过渡" },
+      "expand": { "$value": "{motion.duration.normal}", "$description": "展开收起" },
+      "page": { "$value": "{motion.duration.slow}", "$description": "页面过渡" },
+      "complex": { "$value": "{motion.duration.slower}", "$description": "复杂动画" }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "default": { "$value": "{motion.easing.default}", "$description": "默认柔和入出" },
+      "enter": { "$value": "{motion.easing.in}", "$description": "进入动画（加速）" },
+      "exit": { "$value": "{motion.easing.out}", "$description": "退出动画（减速，推荐交互）" },
+      "spring": { "$value": "{motion.easing.spring}", "$description": "弹簧（轻微过冲）" }
+    },
+    "delay": {
+      "$type": "duration",
+      "none": { "$value": "{motion.delay.none}", "$description": "无延迟" },
+      "stagger-short": { "$value": "{motion.delay.short}", "$description": "短错峰延迟" },
+      "stagger-medium": { "$value": "{motion.delay.medium}", "$description": "中错峰延迟" },
+      "stagger-long": { "$value": "{motion.delay.long}", "$description": "长错峰延迟" }
+    },
+    "transition": {
+      "$type": "transition",
+      "colors": {
+        "$value": {
+          "duration": "{motion.duration.fast}",
+          "delay": "{motion.delay.none}",
+          "timingFunction": "{motion.easing.out}"
+        },
+        "$description": "颜色过渡预设（color/background/border）"
+      },
+      "opacity": {
+        "$value": {
+          "duration": "{motion.duration.fast}",
+          "delay": "{motion.delay.none}",
+          "timingFunction": "{motion.easing.out}"
+        },
+        "$description": "透明度过渡预设"
+      },
+      "transform": {
+        "$value": {
+          "duration": "{motion.duration.normal}",
+          "delay": "{motion.delay.none}",
+          "timingFunction": "{motion.easing.out}"
+        },
+        "$description": "变换过渡预设"
+      },
+      "shadow": {
+        "$value": {
+          "duration": "{motion.duration.normal}",
+          "delay": "{motion.delay.none}",
+          "timingFunction": "{motion.easing.out}"
+        },
+        "$description": "阴影过渡预设"
+      }
+    }
+  }
+}

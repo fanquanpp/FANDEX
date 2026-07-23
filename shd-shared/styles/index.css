@@ -1,0 +1,40 @@
+/* =============================================================================
+ * FANDEX 共享样式主入口 — @fandex/styles
+ * -----------------------------------------------------------------------------
+ * 导入顺序说明：
+ * 1. layers.css   — @layer 声明（必须最先，定义层优先级顺序）
+ * 2. reset.css    — 跨浏览器重置（reset 层）
+ * 3. tokens.css   — 设计令牌（tokens 层，由 JSON 自动生成）
+ * 4. theme.css    — 主题切换机制（tokens 层扩展）
+ * 5. base.css     — 元素级基础样式（base 层）
+ * 6. typography.css — 排版（base 层）
+ * 7. responsive.css — 视口级响应式（base + components 层）
+ * 8. container-queries.css — 组件级响应式（components 层）
+ * 9. motion.css   — 动效预设（utilities + components 层，仅 keyframes + 动画工具类）
+ * 10. components.css — 基础组件样式（components 层，消费 ark 令牌实现 fndx-* 组件）
+ * 11. layout-components.css — 布局组件样式（components 层扩展，header/sidebar/toc 等布局组件）
+ * 12. layout.css  — 布局工具（utilities 层）
+ * -----------------------------------------------------------------------------
+ * CSS @layer 特性：层声明顺序决定优先级，与 @import 出现位置无关
+ * 但保持逻辑顺序有助于可读性与维护
+ * -----------------------------------------------------------------------------
+ * 注意：components.css 必须在 motion.css 之后导入
+ *   原因：components.css 中的 .fndx-button/.fndx-card 等会消费 motion.css
+ *   定义的 keyframes（如 fndx-spin、fndx-shimmer），keyframes 需先声明
+ * 注意：layout-components.css 必须在 components.css 之后导入
+ *   原因：layout-components.css 扩展 components 层，消费 components.css 中定义的令牌
+ * =============================================================================
+ */
+
+@import './layers.css';
+@import './reset.css';
+@import './tokens.css';
+@import './theme.css';
+@import './base.css';
+@import './typography.css';
+@import './responsive.css';
+@import './container-queries.css';
+@import './motion.css';
+@import './components.css';
+@import './layout-components.css';
+@import './layout.css';

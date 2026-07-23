@@ -1,0 +1,33 @@
+{
+  "name": "fandex",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FANDEX 单仓库 monorepo — 三端统一 React 生态（web/desktop/android）+ 共享内容层",
+  "license": "MIT",
+  "engines": {
+    "node": ">=22.0.0",
+    "pnpm": ">=10.0.0"
+  },
+  "packageManager": "pnpm@11.15.1+sha512.81350b07e53c9538a02f1f2303b4290fa2d7be04e56e2a970c4cc4b417dc761de196edabd49d55c7dc9580db81007c44143e4e3d7e462b3000d23c255122d065",
+  "scripts": {
+    "dev:web": "pnpm --filter @fandex/web dev",
+    "dev:desktop": "pnpm --filter @fandex/desktop dev",
+    "build:web": "pnpm --filter @fandex/web build",
+    "build:desktop": "pnpm --filter @fandex/desktop build",
+    "build:all": "pnpm -r --parallel build",
+    "typecheck": "pnpm -r --parallel typecheck",
+    "validate-ids": "pnpm --filter @fandex/tools validate-ids",
+    "allocate-id": "pnpm --filter @fandex/tools allocate-id",
+    "generate-manifest": "pnpm --filter @fandex/tools generate-manifest",
+    "sign-manifest": "pnpm --filter @fandex/tools sign-manifest",
+    "verify-manifest": "pnpm --filter @fandex/tools verify-manifest",
+    "clean": "pnpm -r exec rm -rf dist .astro node_modules/.cache && rm -rf node_modules",
+    "install:all": "pnpm install --frozen-lockfile"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.0"
+  }
+}

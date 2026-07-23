@@ -1,0 +1,35 @@
+{
+  "$description": "FANDEX 语义尺寸令牌 — 引用 primitive/size.json，赋予组件尺寸语义",
+  "size": {
+    "$type": "dimension",
+    "icon": {
+      "sm": { "$value": "{size.icon.sm}", "$description": "小图标（行内）" },
+      "md": { "$value": "{size.icon.md}", "$description": "中图标（默认）" },
+      "lg": { "$value": "{size.icon.lg}", "$description": "大图标（装饰）" }
+    },
+    "control": {
+      "sm": { "$value": "{size.control.sm}", "$description": "小控件高（按钮、输入框）" },
+      "md": { "$value": "{size.control.md}", "$description": "中控件高（默认）" },
+      "lg": { "$value": "{size.control.lg}", "$description": "大控件高" }
+    },
+    "container": {
+      "content": { "$value": "{size.container.lg}", "$description": "正文内容容器宽（1024px）" },
+      "wide": { "$value": "{size.container.xl}", "$description": "宽容器（1280px）" },
+      "full": { "$value": "{size.container.2xl}", "$description": "全宽容器（1536px）" }
+    },
+    "sidebar": {
+      "width": { "$value": "{size.sidebar.sm}", "$description": "侧边栏宽（256px）" },
+      "width-lg": { "$value": "{size.sidebar.md}", "$description": "大侧边栏宽（320px）" }
+    },
+    "header": {
+      "height": { "$value": "{size.header.md}", "$description": "头部高度（64px）" }
+    },
+    "breakpoint": {
+      "sm": { "$value": "40rem", "$description": "小屏断点 640px" },
+      "md": { "$value": "48rem", "$description": "中屏断点 768px" },
+      "lg": { "$value": "64rem", "$description": "大屏断点 1024px" },
+      "xl": { "$value": "80rem", "$description": "超大屏断点 1280px" },
+      "2xl": { "$value": "96rem", "$description": "极大屏断点 1536px" }
+    }
+  }
+}

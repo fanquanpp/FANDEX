@@ -1,0 +1,21 @@
+{
+  "name": "@fandex/shared",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FANDEX 共享层聚合包 — 统一导出 tokens/styles/utils/astro-components，三端共享",
+  "exports": {
+    "./tokens": "./tokens/index.ts",
+    "./styles/*": "./styles/*",
+    "./utils": "./utl-utils/index.ts",
+    "./astro-components/*": "./asc-astro-components/*",
+    "./assets/*": "./assets/*"
+  },
+  "dependencies": {
+    "@fandex/tokens": "workspace:*",
+    "@fandex/styles": "workspace:*",
+    "@fandex/utils": "workspace:*",
+    "@fandex/astro-components": "workspace:*",
+    "@fandex/shared-assets": "workspace:*"
+  }
+}

@@ -1,0 +1,234 @@
+/* ============================================================================
+   TermTooltip 局部样式
+   ----------------------------------------------------------------------------
+   样式策略：
+   - 桌面端 Tooltip 视觉风格对齐 shadcn-vue Tooltip（elevated 背景、阴影、圆角）
+   - 移动端 Dialog 使用 shadcn-vue 默认样式，仅微调内部布局
+   ============================================================================ */
+
+/* ----- 桌面端 Tooltip 浮层 ----- */
+.term-tooltip-floating {
+  position: fixed;
+  z-index: 9999; /* 高于普通内容，低于 modal */
+  background: var(--color-bg-elevated, #1f2937);
+  color: var(--color-text-inverse, #ffffff);
+  border: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.12));
+  border-radius: var(--radius-md, 6px);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.18),
+    0 1px 4px rgba(0, 0, 0, 0.12);
+  padding: 0;
+  overflow: visible;
+  pointer-events: auto;
+  animation: term-tooltip-fade-in 0.15s ease-out;
+}
+
+@keyframes term-tooltip-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.term-tooltip-body {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  max-height: 320px;
+  overflow-y: auto;
+}
+
+/* 头部：术语（粗体）+ 英文（次要色，斜体） */
+.term-tooltip-header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.term-tooltip-term {
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--color-text-inverse, #ffffff);
+}
+
+.term-tooltip-english {
+  font-family: var(--font-display, ui-monospace, monospace);
+  font-size: 11px;
+  font-style: italic;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* 词源段落 */
+.term-tooltip-etymology {
+  margin: 0;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.7);
+  border-left: 2px solid rgba(255, 255, 255, 0.2);
+  padding-left: 6px;
+  line-height: 1.5;
+}
+
+/* 定义段落 */
+.term-tooltip-definition {
+  margin: 0;
+  color: var(--color-text-inverse, #ffffff);
+}
+
+/* 参考链接区 */
+.term-tooltip-refs {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 4px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.term-tooltip-ref-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10.5px;
+  color: #93c5fd;
+  text-decoration: none;
+  word-break: break-all;
+  transition: color 0.15s;
+}
+
+.term-tooltip-ref-link:hover {
+  color: #bfdbfe;
+  text-decoration: underline;
+}
+
+/* 小箭头 */
+.term-tooltip-arrow {
+  position: absolute;
+  width: 8px;
+  height: 8px;
+  background: var(--color-bg-elevated, #1f2937);
+  border: 1px solid var(--color-border-subtle, rgba(255, 255, 255, 0.12));
+  transform: rotate(45deg);
+}
+
+/* 箭头位置：下方时位于顶部边缘 */
+.term-tooltip-arrow-bottom {
+  top: -5px;
+  left: 16px;
+  border-right: none;
+  border-bottom: none;
+}
+
+/* 箭头位置：上方时位于底部边缘 */
+.term-tooltip-arrow-top {
+  bottom: -5px;
+  left: 16px;
+  border-left: none;
+  border-top: none;
+}
+
+/* ----- 移动端 Dialog 内容 ----- */
+.term-dialog-content {
+  max-width: 540px;
+}
+
+.term-dialog-title {
+  font-size: 1.4em;
+  font-weight: 700;
+  color: var(--color-text-primary, #1f2937);
+}
+
+.term-dialog-english {
+  font-family: var(--font-display, ui-monospace, monospace);
+  font-style: italic;
+  color: var(--color-text-secondary, #6b7280);
+  font-size: 0.95em;
+}
+
+.term-dialog-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+.term-dialog-section {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.term-dialog-section-title {
+  font-size: 0.85em;
+  font-weight: 600;
+  color: var(--color-text-tertiary, #9ca3af);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0;
+}
+
+.term-dialog-section-text {
+  font-size: 0.95em;
+  line-height: 1.7;
+  color: var(--color-text-primary, #1f2937);
+  margin: 0;
+}
+
+.term-dialog-ref-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.term-dialog-ref-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.88em;
+  color: var(--color-primary-600, #2563eb);
+  text-decoration: none;
+  word-break: break-all;
+  transition: color 0.15s;
+}
+
+.term-dialog-ref-link:hover {
+  color: var(--color-primary-700, #1d4ed8);
+  text-decoration: underline;
+}
+
+/* ============================================================================
+   暗色模式适配
+   ============================================================================ */
+
+[data-theme='dark'] .term-dialog-title {
+  color: var(--color-text-primary, #f9fafb);
+}
+
+[data-theme='dark'] .term-dialog-english {
+  color: var(--color-text-secondary, #9ca3af);
+}
+
+[data-theme='dark'] .term-dialog-section-text {
+  color: var(--color-text-primary, #f9fafb);
+}
+
+/* ============================================================================
+   响应式
+   ============================================================================ */
+
+@media (max-width: 640px) {
+  .term-dialog-content {
+    width: calc(100vw - 2rem);
+    max-width: calc(100vw - 2rem);
+  }
+}

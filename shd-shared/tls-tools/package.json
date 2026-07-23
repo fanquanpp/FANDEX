@@ -1,0 +1,22 @@
+{
+  "name": "@fandex/shared-tools",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FANDEX 共享工具 — op-list 增量更新工具（generate/validate/apply）",
+  "scripts": {
+    "generate-op-list": "tsx generate-op-list.ts",
+    "validate-op-list": "tsx validate-op-list.ts",
+    "apply-op-list": "tsx apply-op-list.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "fast-glob": "catalog:",
+    "ajv": "catalog:",
+    "ajv-formats": "catalog:"
+  },
+  "devDependencies": {
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

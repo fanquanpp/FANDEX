@@ -1,0 +1,29 @@
+{
+  "$description": "FANDEX 原始动效令牌 — duration、easing、keyframes 原值，无语义",
+  "motion": {
+    "duration": {
+      "$type": "duration",
+      "instant": { "$value": "75ms", "$description": "即时反馈（颜色切换）" },
+      "fast": { "$value": "150ms", "$description": "快速（悬停、焦点）" },
+      "normal": { "$value": "250ms", "$description": "常规（展开、收起）" },
+      "slow": { "$value": "400ms", "$description": "慢速（页面过渡）" },
+      "slower": { "$value": "600ms", "$description": "极慢（复杂动画）" }
+    },
+    "easing": {
+      "$type": "cubicBezier",
+      "default": { "$value": [0.4, 0, 0.2, 1], "$description": "默认柔和入出" },
+      "in": { "$value": [0.4, 0, 1, 1], "$description": "入，加速" },
+      "out": { "$value": [0, 0, 0.2, 1], "$description": "出，减速（推荐交互）" },
+      "in-out": { "$value": [0.4, 0, 0.2, 1], "$description": "入出" },
+      "spring": { "$value": [0.34, 1.56, 0.64, 1], "$description": "弹簧，轻微过冲" },
+      "bounce": { "$value": [0.68, -0.55, 0.265, 1.55], "$description": "弹跳" }
+    },
+    "delay": {
+      "$type": "duration",
+      "none": { "$value": "0ms", "$description": "无延迟" },
+      "short": { "$value": "50ms", "$description": "短延迟" },
+      "medium": { "$value": "100ms", "$description": "中延迟" },
+      "long": { "$value": "200ms", "$description": "长延迟" }
+    }
+  }
+}

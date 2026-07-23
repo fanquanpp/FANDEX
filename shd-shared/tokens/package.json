@@ -1,0 +1,23 @@
+{
+  "name": "@fandex/tokens",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FANDEX 设计令牌 — W3C Design Tokens Format Module（primitive/semantic/component 三层）",
+  "exports": {
+    ".": "./index.ts",
+    "./primitive/*": "./primitive/*",
+    "./semantic/*": "./semantic/*",
+    "./component/*": "./component/*"
+  },
+  "scripts": {
+    "build:css": "tsx scripts/generate-tokens-css.ts",
+    "build:ts": "tsx scripts/generate-tokens-ts.ts",
+    "build": "pnpm run build:css && pnpm run build:ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "tsx": "catalog:",
+    "typescript": "catalog:"
+  }
+}

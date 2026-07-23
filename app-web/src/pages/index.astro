@@ -1,0 +1,612 @@
+---
+/**
+ * 首页
+ * 展示所有学习模块，按分类分组显示
+ * 包含 Hero 区域（统计信息）、分类模块网格、页脚
+ */
+import HomeLayout from '@/components/HomeLayout.astro'
+import SEO from '@/components/SEO.astro'
+import ModuleCard from '@/components/ModuleCard.astro'
+import GeoBgDecor from '@/components/GeoBgDecor.astro'
+import Footer from '@/components/Footer.astro'
+// 通过 Service 层获取数据，UI 层禁止直接调用 getCollection
+import { getDocStats, getAllModules, getCategories, getModulesByCategory } from '@/services'
+
+// 通过 doc-service 获取文档统计（总数、模块数、分类数、标签数）
+const stats = await getDocStats()
+// 通过 module-service 获取全部模块（只读数组），用于首页模块计数
+const allModules = getAllModules()
+const base = import.meta.env.BASE_URL
+
+// 通过 module-service 获取分类信息并按分类分组模块
+// getCategories() 已按 categoryOrder 顺序返回 { id, label, color }
+const grouped = getCategories()
+  .map(cat => ({
+    key: cat.id,
+    label: cat.label,
+    color: cat.color,
+    modules: getModulesByCategory(cat.id),
+  }))
+  .filter(g => g.modules.length > 0)
+---
+
+<HomeLayout title="首页">
+  <SEO slot="head" title="FANDEX" description="循序渐进的自学之旅，从第一行代码到理解整个世界。覆盖工具链、开发语言、数据库、计算机科学、工程基础设施与数据技术六大领域" type="website" />
+
+  <div class="home-page">
+    <!-- 几何背景装饰层 · home 变体：品牌光晕 + S 曲线 + 涟漪环 + 三角切片等 -->
+    <GeoBgDecor variant="home" />
+    <!-- Hero 区域：站点标题和统计信息 -->
+    <section class="hero">
+      <div class="hero-badge">Zero to Mastery</div>
+      <h1 class="hero-title"><span class="hero-title-fan">FAN</span>DEX</h1>
+      <p class="hero-desc">循序渐进，从第一行代码到理解整个世界</p>
+      <!-- 统计数据栏 -->
+      <div class="hero-stats">
+        <div class="stat-item">
+          <span class="stat-num">{allModules.length}</span>
+          <span class="stat-label">模块</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num">{stats.totalDocs}</span>
+          <span class="stat-label">文档</span>
+        </div>
+        <div class="stat-divider"></div>
+        <div class="stat-item">
+          <span class="stat-num">{stats.totalTags}</span>
+          <span class="stat-label">标签</span>
+        </div>
+        <div class="stat-divider"></div>
+        <a href={`${import.meta.env.BASE_URL}roadmap/`} class="stat-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          学习路线
+        </a>
+        <div class="stat-divider"></div>
+        <a href={`${import.meta.env.BASE_URL}tags/`} class="stat-link">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"/><line x1="7" y1="7" x2="7.01" y2="7"/></svg>
+          标签索引
+        </a>
+      </div>
+    </section>
+
+    <!-- 项目定位区域 -->
+    <section class="ecosystem-section">
+      <div class="ecosystem-grid">
+        <!-- FANDEX-Web 当前站点 -->
+        <article class="eco-card eco-card-current">
+          <div class="eco-card-header">
+            <div class="eco-icon eco-icon-web">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="2" y1="12" x2="22" y2="12"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/>
+              </svg>
+            </div>
+            <div class="eco-card-title-group">
+              <h3 class="eco-card-title">FANDEX-web</h3>
+              <span class="eco-card-badge">当前站点</span>
+            </div>
+          </div>
+          <p class="eco-card-positioning">线上学习平台 · 内容基准仓库</p>
+          <p class="eco-card-detail">全部项目的根本内容源，51 模块 1995 篇文档，浏览器直接访问，交互测验与知识地图</p>
+          <div class="eco-card-tech">Astro 5 + Vue 3 + Pagefind</div>
+          <a href="https://fanquanpp.github.io/FANDEX-web/" class="eco-card-link eco-card-link-current" target="_blank" rel="noopener noreferrer">
+            <span>在线阅读</span>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+          </a>
+        </article>
+      </div>
+    </section>
+
+    <!-- 按分类展示模块卡片 -->
+    {grouped.map(group => (
+      <section class="category-section" data-category={group.key}>
+        <div class="category-header" data-toggle>
+          <span class="category-tag" style={`color:${group.color}`}>{group.label}</span>
+          <!-- 折叠/展开按钮 -->
+          <button class="category-toggle" aria-label="折叠/展开" title="折叠/展开">
+            <svg class="toggle-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="6 9 12 15 18 9"/></svg>
+          </button>
+        </div>
+        <!-- 模块卡片网格 -->
+        <div class="feature-grid">
+          {group.modules.map(mod => (
+            <ModuleCard mod={mod} color={group.color} />
+          ))}
+        </div>
+      </section>
+    ))}
+
+    <!-- 页脚：使用统一 Footer 组件（full 模式含生态链接/统计/注意事项） -->
+    <Footer variant="full" stats={{
+      totalDocs: stats.totalDocs,
+      totalModules: allModules.length,
+      totalTags: stats.totalTags,
+    }} />
+  </div>
+</HomeLayout>
+
+<style>
+/* 首页容器：作为装饰层的定位上下文
+   注：不设置 overflow:hidden，避免破坏内部子元素的 sticky 定位行为；
+   装饰层的溢出裁切由 .geo-bg-decor 自身的 overflow:hidden 负责 */
+.home-page {
+  position: relative;
+  width: 100%;
+  min-height: calc(100vh - var(--nav-height));
+  min-height: calc(100dvh - var(--nav-height));
+  margin: 0 auto;
+  padding: 0 var(--spacing-lg) var(--spacing-2xl);
+}
+
+/* 确保首页内容层在几何装饰层之上 */
+.home-page > section,
+.home-page > footer {
+  position: relative;
+  z-index: 1;
+}
+
+/* Hero 区域：居中展示 */
+.hero {
+  text-align: center;
+  padding: var(--spacing-xl) 0 var(--spacing-xl);
+  border-bottom: 1px solid var(--color-border-light);
+  margin-bottom: var(--spacing-xl);
+}
+
+/* "Zero to Mastery" 徽章 */
+.hero-badge {
+  display: inline-block;
+  font-family: var(--font-display);
+  font-size: 0.65em;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 3px 14px;
+  margin-bottom: var(--spacing-md);
+}
+
+/* 站点标题：FAN 部分使用主题色 */
+.hero-title {
+  font-family: var(--font-display);
+  font-size: 3rem;
+  font-weight: 800;
+  letter-spacing: 0.25em;
+  margin: 0 0 var(--spacing-sm);
+  color: var(--color-text);
+}
+
+.hero-title-fan {
+  color: var(--color-primary);
+}
+
+/* 站点描述 */
+.hero-desc {
+  font-size: 0.9rem;
+  color: var(--color-text-secondary);
+  margin: 0 0 var(--spacing-md);
+  font-weight: 400;
+  letter-spacing: 0.02em;
+  /* 显式声明水平居中，避免被任何父级或继承样式覆盖，确保桌面端与移动端均居中显示 */
+  text-align: center;
+  margin-inline: auto;
+  max-width: 600px;
+}
+
+/* 统计数据栏 */
+.hero-stats {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--spacing-md);
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding-bottom: 4px;
+}
+
+.stat-num {
+  font-size: 1.3em;
+  font-weight: 700;
+  color: var(--color-text);
+}
+
+.stat-label {
+  font-size: 0.78em;
+  color: var(--color-text-secondary);
+  letter-spacing: 0.04em;
+}
+
+/* 统计项之间的分隔线 */
+.stat-divider {
+  width: 1px;
+  height: 24px;
+  background: var(--color-border-light);
+}
+
+/* 快捷链接（学习路线、标签索引） */
+.stat-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--color-primary);
+  text-decoration: none;
+  font-weight: 500;
+  transition: opacity var(--transition-fast);
+}
+
+.stat-link:hover {
+  opacity: 0.8;
+}
+
+/* ========== FANDEX 生态区域 ========== */
+.ecosystem-section {
+  margin-bottom: var(--spacing-lg);
+  padding: var(--spacing-sm) 0;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+/* 生态卡片网格 */
+.ecosystem-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1px;
+  background: var(--color-border-light);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+}
+
+/* 生态卡片 */
+.eco-card {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-card);
+  transition: background var(--transition-fast);
+}
+
+.eco-card:hover {
+  background: var(--color-bg-hover, rgba(128,128,128,0.04));
+}
+
+/* 当前站点卡片高亮 */
+.eco-card-current {
+  background: var(--color-bg-card);
+  border-left: 2px solid var(--color-primary);
+}
+
+.eco-card-header {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  margin-bottom: 2px;
+}
+
+.eco-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  color: var(--color-text-secondary);
+  background: var(--color-bg-hover, rgba(128,128,128,0.08));
+}
+
+.eco-icon-web { color: var(--color-primary); }
+.eco-icon-exe { color: #47848f; }
+.eco-icon-app { color: #42b883; }
+
+.eco-card-title-group {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.eco-card-title {
+  font-family: var(--font-display);
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--color-text);
+  margin: 0;
+}
+
+.eco-card-badge {
+  font-family: var(--font-display);
+  font-size: 0.58rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: var(--color-primary);
+  border: 1px solid var(--color-primary);
+  padding: 1px 5px;
+  border-radius: 3px;
+}
+
+.eco-card-badge-download {
+  color: var(--color-text-tertiary);
+  border-color: var(--color-border);
+}
+
+.eco-card-positioning {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  margin: 0;
+}
+
+.eco-card-detail {
+  font-size: 0.72rem;
+  color: var(--color-text-tertiary);
+  margin: 0;
+  line-height: 1.4;
+  flex: 1;
+}
+
+.eco-card-tech {
+  font-family: var(--font-display);
+  font-size: 0.62rem;
+  color: var(--color-text-tertiary);
+  opacity: 0.7;
+  padding: 2px 0;
+  border-top: 1px dashed var(--color-border-light);
+}
+
+.eco-card-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4px;
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding: 4px 8px;
+  border: 1px solid var(--color-border);
+  border-radius: 4px;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+  margin-top: 2px;
+}
+
+.eco-card-link:hover {
+  color: var(--color-text);
+  border-color: var(--color-text-secondary);
+  background: var(--color-bg-hover, rgba(128,128,128,0.06));
+}
+
+.eco-card-link-current {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+.eco-card-link-current:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+  background: var(--color-bg-hover, rgba(128,128,128,0.06));
+}
+
+/* 分类区域 */
+.category-section {
+  margin-bottom: var(--spacing-lg);
+}
+
+/* 分类标题栏：可点击折叠 */
+.category-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-light);
+  border-bottom: none;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* 分类标签文字 */
+.category-tag {
+  font-family: var(--font-display);
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--color-primary);
+  letter-spacing: 0.05em;
+}
+
+.category-count {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  color: var(--color-text-tertiary);
+}
+
+/* 模块卡片网格：1px 间距形成分割线效果 */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 1px;
+  background: var(--color-border-light);
+  border: 1px solid var(--color-border-light);
+  overflow: hidden;
+}
+
+.feature-grid.hidden {
+  display: none;
+}
+
+/* 折叠/展开按钮 */
+.category-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  padding: 4px;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  transition: color var(--transition-fast);
+}
+
+.category-toggle:hover {
+  color: var(--color-text-secondary);
+}
+
+/* 折叠箭头旋转动画 */
+.toggle-icon {
+  transition: transform 0.2s ease;
+}
+
+.category-header.collapsed .toggle-icon {
+  transform: rotate(-90deg);
+}
+
+/* 折叠状态下隐藏网格 */
+.category-header.collapsed + .feature-grid {
+  display: none;
+}
+
+/* 注：旧 .home-footer / .footer-* 系列样式已废弃，
+ * 页脚由 @fandex/styles 的 .fndx-footer 命名规范统一控制。
+ * 见 components/Footer.astro 与 shd-shared/styles/layout-components.css
+ */
+
+/* 移动端适配（768px 以下） */
+@media (max-width: 768px) {
+  .home-page {
+    padding: 0 var(--spacing-md) var(--spacing-2xl);
+  }
+
+  .hero-badge {
+    font-size: 0.55em;
+    padding: 2px 10px;
+    margin-bottom: var(--spacing-xs);
+  }
+
+  .hero-title {
+    font-size: 1.5rem;
+    letter-spacing: 0.12em;
+    margin: 0;
+  }
+
+  .hero-stats {
+    gap: var(--spacing-sm);
+  }
+
+  .stat-num {
+    font-size: 1.1em;
+  }
+
+  /* 生态区域移动端：单列布局 */
+  .ecosystem-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .eco-card {
+    padding: var(--spacing-xs) var(--spacing-sm);
+  }
+
+  .eco-card-detail {
+    font-size: 0.68rem;
+  }
+
+  .feature-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1px;
+  }
+
+  .module-card {
+    padding: var(--spacing-sm);
+    gap: var(--spacing-xs);
+  }
+
+  .card-icon {
+    width: 28px;
+    height: 28px;
+    font-size: 0.65rem;
+  }
+
+  .card-title {
+    font-size: 0.82rem;
+  }
+
+  .card-desc {
+    font-size: 0.72rem;
+  }
+}
+
+/* 小屏幕适配（480px 以下） */
+@media (max-width: 480px) {
+  .feature-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+  }
+
+  .module-card {
+    padding: var(--spacing-xs);
+    gap: 4px;
+  }
+
+  .card-icon {
+    width: 24px;
+    height: 24px;
+    font-size: 0.6rem;
+  }
+
+  .card-title {
+    font-size: 0.75rem;
+  }
+
+  .card-desc {
+    font-size: 0.65rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  /* 小屏幕隐藏统计分隔线 */
+  .stat-divider {
+    display: none;
+  }
+
+  .hero-stats {
+    gap: var(--spacing-md);
+  }
+}
+
+/* 480px 以下超小屏：hero-stats 改为纵向堆叠，分隔线隐藏，避免统计项挤压错位 */
+@media (max-width: 480px) {
+  .hero-stats {
+    flex-direction: column;
+    gap: var(--spacing-sm);
+    align-items: center;
+  }
+}
+
+/* 超小屏幕回退（360px 以下）：单列布局，避免卡片过度挤压 */
+@media (max-width: 360px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+
+<script>
+// 分类区域折叠/展开
+document.querySelectorAll('.category-header[data-toggle]').forEach(header => {
+  header.addEventListener('click', () => {
+    header.classList.toggle('collapsed')
+  })
+})
+</script>

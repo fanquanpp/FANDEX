@@ -1,0 +1,69 @@
+/* =============================================================================
+ * FANDEX 容器查询样式 — 组件级响应式
+ * -----------------------------------------------------------------------------
+ * 设计原则：
+ * 1. 组件级响应式：基于父容器尺寸而非视口，组件可在任意容器中复用
+ * 2. 与 responsive.css 互补：视口级布局用 @media，组件级布局用 @container
+ * 3. container-type: inline-size 仅监听容器宽度，性能优于 block-size
+ * 4. 浏览器支持：Chrome 105+、Safari 16+、Firefox 110+
+ * -----------------------------------------------------------------------------
+ * 引用：spec.md 第十三章 13.2.3「组件级响应式（Container Queries）」
+ * =============================================================================
+ */
+
+@layer components {
+  /* === 模块卡片：容器查询自适应 ===
+     卡片根据自身容器宽度切换垂直/水平布局 */
+  .fndx-module-card {
+    container-type: inline-size;
+    container-name: module-card;
+  }
+
+  /* 窄容器（≤300px，手机场景）：垂直紧凑布局
+     图标缩小，内容纵向排列 */
+  @container module-card (max-width: 300px) {
+    .fndx-module-card__content {
+      flex-direction: column;
+      gap: var(--space-2, 0.5rem);
+    }
+    .fndx-module-card__icon {
+      width: 32px;
+      height: 32px;
+    }
+  }
+
+  /* 宽容器（≥301px，平板/桌面场景）：水平展开布局
+     图标放大，内容横向排列 */
+  @container module-card (min-width: 301px) {
+    .fndx-module-card__content {
+      flex-direction: row;
+      gap: var(--space-4, 1rem);
+    }
+    .fndx-module-card__icon {
+      width: 48px;
+      height: 48px;
+    }
+  }
+
+  /* === 代码块：容器查询控制滚动行为 ===
+     窄容器下强制水平滚动，宽容器下优先自动换行 */
+  .fndx-code-block {
+    container-type: inline-size;
+    container-name: code-block;
+  }
+
+  @container code-block (max-width: 480px) {
+    .fndx-code-block pre {
+      overflow-x: auto;
+      white-space: pre;
+    }
+  }
+
+  @container code-block (min-width: 481px) {
+    .fndx-code-block pre {
+      overflow-x: auto;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+  }
+}

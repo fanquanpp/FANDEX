@@ -1,0 +1,14 @@
+{
+  "$description": "FANDEX 语义阴影令牌 — 引用 primitive/shadow.json，ark 家族克制阴影",
+  "shadow": {
+    "$type": "shadow",
+    "control": { "$value": "{shadow.xs}", "$description": "控件阴影（悬停态）" },
+    "card": { "$value": "{shadow.sm}", "$description": "卡片阴影" },
+    "card-hover": { "$value": "{shadow.default}", "$description": "卡片悬停阴影" },
+    "dropdown": { "$value": "{shadow.md}", "$description": "下拉菜单阴影" },
+    "popover": { "$value": "{shadow.lg}", "$description": "气泡卡片阴影" },
+    "modal": { "$value": "{shadow.xl}", "$description": "模态框阴影" },
+    "notification": { "$value": "{shadow.2xl}", "$description": "通知提醒阴影" },
+    "focus-ring": { "$value": "{shadow.inner}", "$description": "焦点内阴影" }
+  }
+}

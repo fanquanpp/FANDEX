@@ -1,0 +1,89 @@
+/* =============================================================================
+ * FANDEX 主题切换样式 — tokens 层扩展
+ * -----------------------------------------------------------------------------
+ * 职责：管理 light/dark 主题切换的 CSS 机制
+ * 1. color-scheme 声明（启用 CSS light-dark() 函数）
+ * 2. [data-theme] 属性选择器（用户手动切换主题）
+ * 3. prefers-color-scheme 媒体查询（跟随系统主题）
+ * 4. 主题切换过渡（平滑颜色变化）
+ * -----------------------------------------------------------------------------
+ * 主题策略：
+ * - 默认跟随系统（prefers-color-scheme）
+ * - [data-theme="light"] 强制浅色
+ * - [data-theme="dark"] 强制深色
+ * - color-scheme 控制浏览器原生控件（滚动条、表单）主题
+ * - light-dark() 函数控制自定义颜色令牌
+ * -----------------------------------------------------------------------------
+ * 引用：spec.md 第三章 3.2 主题策略 / 第三章 3.3.1 theme.css
+ * =============================================================================
+ */
+
+@layer tokens {
+  /* === 默认：跟随系统主题 === */
+  :root {
+    color-scheme: light dark;
+  }
+
+  /* === 强制浅色模式 === */
+  [data-theme='light'] {
+    color-scheme: light;
+  }
+
+  /* === 强制深色模式 === */
+  [data-theme='dark'] {
+    color-scheme: dark;
+  }
+
+  /* === 跟随系统：当未设置 data-theme 时，由 prefers-color-scheme 决定 === */
+  /* 注意：light-dark() 函数已内置响应 color-scheme，
+     此处仅用于需要 JS 无法覆盖的场景（极少使用） */
+
+  /* === 主题切换过渡 === */
+  /* 应用到所有元素，确保主题切换时颜色平滑过渡 */
+  /* 仅在未声明 prefers-reduced-motion 时生效 */
+  :root:not([data-no-transition]) * {
+    transition: background-color var(--motion-duration-fast) var(--motion-easing-out),
+                border-color var(--motion-duration-fast) var(--motion-easing-out),
+                color var(--motion-duration-fast) var(--motion-easing-out),
+                fill var(--motion-duration-fast) var(--motion-easing-out),
+                stroke var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  /* === 主题切换瞬间禁用过渡（防止首次加载闪烁） === */
+  /* 在 <html> 添加 data-theme-loading 属性可临时禁用所有过渡 */
+  [data-theme-loading] * {
+    transition: none !important;
+  }
+}
+
+/* === 主题指示器（components 层） === */
+@layer components {
+  /* 主题切换按钮容器 */
+  .fndx-theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: var(--size-control-sm);
+    height: var(--size-control-sm);
+    border-radius: var(--radius-control);
+    background-color: transparent;
+    color: var(--color-fg-secondary);
+    cursor: pointer;
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
+                color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .fndx-theme-toggle:hover {
+    background-color: var(--color-bg-hover);
+    color: var(--color-fg-primary);
+  }
+
+  /* 浅色模式下显示太阳图标，深色模式下显示月亮图标 */
+  .fndx-theme-toggle__icon--sun {
+    display: light-dark(block, none);
+  }
+
+  .fndx-theme-toggle__icon--moon {
+    display: light-dark(none, block);
+  }
+}

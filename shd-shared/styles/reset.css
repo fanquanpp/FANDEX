@@ -1,0 +1,146 @@
+/* =============================================================================
+ * FANDEX 跨浏览器重置样式 — reset 层
+ * -----------------------------------------------------------------------------
+ * 基于 modern-normalize 理念，结合 ark 家族极简风格：
+ * 1. box-sizing 统一为 border-box，消除盒模型差异
+ * 2. margin/padding 归零，移除浏览器默认间距
+ * 3. 字体继承机制，确保表单元素使用统一字族
+ * 4. 媒体元素 block 化，避免行内空白间隙
+ * 5. 触摸高亮禁用，由 :active 自定义反馈替代
+ * -----------------------------------------------------------------------------
+ * 引用：spec.md 第三章 3.3.1 reset.css
+ * =============================================================================
+ */
+
+@layer reset {
+  /* === 盒模型与间距归零 === */
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* === 文档根元素 === */
+  html {
+    /* 禁用 iOS 横屏字体缩放 */
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+    /* 平滑滚动（尊重 prefers-reduced-motion） */
+    scroll-behavior: smooth;
+  }
+
+  /* === 文档主体 === */
+  body {
+    /* 占满视口最小高度，便于 sticky footer 布局 */
+    min-height: 100vh;
+    /* 消除移动端默认字体缩放 */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    /* 文字换行优化：长单词不溢出 */
+    overflow-wrap: break-word;
+    word-break: break-word;
+    /* 字体回退到系统栈，tokens.css 加载后由 --font-family-body 覆盖 */
+    font-family: system-ui, -apple-system, sans-serif;
+  }
+
+  /* === 标题重置：由 typography.css 统一管理字号 === */
+  h1, h2, h3, h4, h5, h6 {
+    font-size: inherit;
+    font-weight: inherit;
+  }
+
+  /* === 列表重置 === */
+  ul, ol, menu {
+    list-style: none;
+  }
+
+  /* === 链接重置：颜色与下划线由 base.css 管理 === */
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  /* === 媒体元素 block 化，消除行内基线间隙 === */
+  img, picture, video, canvas, svg {
+    display: block;
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* === 表单元素继承字体 === */
+  input, button, textarea, select {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* === 按钮重置：移除浏览器默认样式 === */
+  button {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+
+  /* === 表格重置：边框合并由 components.css 管理 === */
+  table {
+    border-collapse: collapse;
+    border-spacing: 0;
+  }
+
+  /* === 触摸设备禁用默认高亮 === */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* === 隐藏可访问性辅助文本 === */
+  [hidden] {
+    display: none !important;
+  }
+
+  /* === 焦点可见性：由 base.css 细化焦点样式 === */
+  :focus {
+    outline: none;
+  }
+
+  /* === 选中文本配色（ark 家族青色强调） === */
+  ::selection {
+    background: var(--color-accent-base, #00838F);
+    color: var(--color-accent-fg, #FFFFFF);
+  }
+
+  /* === 滚动条美化（WebKit 内核） === */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: var(--color-bg-sunken, transparent);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-border-default, #E5E5E5);
+    border-radius: var(--radius-default, 4px);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-border-strong, #D4D4D4);
+  }
+
+  /* === 减少动画偏好：尊重无障碍设置 === */
+  @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
+
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "$schema": "../../shd-shared/id-registry.schema.json",
+  "archive_version": "1.0.0",
+  "updated_at": "2026-07-23T00:00:00Z",
+  "description": "FANDEX 已归档 ID 记录 — 记录已删除模块/文档的 ID 历史，防止 ID 复用。与 _id-registry.json 的 retired 状态互补：id-registry 标记 status=retired，本文件额外记录归档原因与归档时间。",
+  "archived_modules": [],
+  "archived_docs": []
+}

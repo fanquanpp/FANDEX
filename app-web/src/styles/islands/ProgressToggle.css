@@ -1,0 +1,135 @@
+/* 进度追踪容器：水平排列主按钮和导出/导入按钮 */
+.progress-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 主按钮：显示当前状态文字和切换操作 */
+.progress-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.78em;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+  box-sizing: border-box;
+}
+
+/* 主按钮悬停效果：边框和文字变为主题色 */
+.progress-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* 默认状态和中间状态的容器：水平排列图标和文字 */
+.progress-default,
+.progress-busy {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* 已保存状态的淡入淡出动画：0.8秒内完成显示和消失 */
+.progress-saved {
+  animation: progress-fade-in-out 0.8s forwards;
+}
+
+/* 错误状态文字颜色：红色 */
+.progress-error {
+  color: #ef4444;
+}
+
+/* 状态圆点：8px 圆形，颜色随阅读状态变化（通过下方状态类控制） */
+.progress-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-border);
+  flex-shrink: 0;
+  transition: background var(--transition-fast);
+}
+
+/* 未读状态：灰色圆点（默认边框色） */
+.status-unread .progress-dot {
+  background: var(--color-border);
+}
+
+/* 在读状态：黄色圆点（#f59e0b 琥珀色） */
+.status-reading .progress-dot {
+  background: #f59e0b;
+}
+
+/* 已读状态：绿色圆点（#10b981 翠绿色） */
+.status-done .progress-dot {
+  background: #10b981;
+}
+
+/* 已读状态：按钮边框和文字也变为绿色 */
+.status-done .progress-btn {
+  color: #10b981;
+  border-color: #10b981;
+}
+
+/* 导出/导入按钮：方形图标按钮，与主按钮等高 */
+.progress-export,
+.progress-import {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--color-border);
+  border-radius: 0;
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* 导出/导入按钮悬停效果 */
+.progress-export:hover,
+.progress-import:hover {
+  color: var(--color-primary);
+  border-color: var(--color-primary);
+}
+
+/* 保存中旋转动画：360度无限循环 */
+@keyframes progress-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.progress-spin-icon {
+  animation: progress-spin 1s linear infinite;
+}
+
+/* 已保存淡入淡出动画：先淡入再淡出，0.8秒完成 */
+@keyframes progress-fade-in-out {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 1;
+  }
+  75% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}

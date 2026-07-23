@@ -1,0 +1,281 @@
+---
+/**
+ * 模块知识地图页
+ * 通过 knowledge-map-service 在服务端构建当前模块的 KnowledgeMap 数据，
+ * 传递给 KnowledgeMap Vue 岛屿组件，由客户端渲染 Mermaid 图
+ *
+ * 数据流：
+ * - getStaticPaths: 从 docs collection 提取全部模块 ID 生成静态路径
+ * - 服务端：getModuleMap(moduleId) → KnowledgeMap 数据
+ * - 客户端：KnowledgeMap.vue 接收 map 数据，渲染 Mermaid + 缩放/拖拽/点击跳转
+ */
+import Layout from '@/components/Layout.astro';
+import SEO from '@/components/SEO.astro';
+import Sidebar from '@/components/Sidebar.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import KnowledgeMap from '@/islands/KnowledgeMap';
+import { getModule, categoryColors, getPrimaryCategory } from '@/lib/modules';
+// 通过 services 桶文件统一导入：UI 层禁止直接调用 services 内部模块
+import { getAllDocs, getDocsByModule, docSlug, getModuleMap, toMermaidGraph } from '@/services';
+import type { KnowledgeMap as KnowledgeMapData } from '@/services';
+
+/**
+ * 生成静态路径：扫描全部文档，提取出现的模块 ID 作为路由参数
+ */
+export async function getStaticPaths() {
+  const docs = await getAllDocs();
+  const moduleSet = new Set<string>();
+  docs.forEach((d) => {
+    if (d.data.module) moduleSet.add(d.data.module);
+  });
+  return Array.from(moduleSet).map((m) => ({ params: { module: m } }));
+}
+
+const { module } = Astro.params as { module: string };
+const meta = getModule(module || '');
+
+if (!meta) {
+  return Astro.redirect(`${import.meta.env.BASE_URL}404`);
+}
+
+// 通过 knowledge-map-service 在服务端构建模块知识地图数据
+const mapData: KnowledgeMapData = await getModuleMap(module);
+// 服务端预生成 Mermaid 语法字符串，避免客户端岛屿导入 astro:content
+const graphSource: string = toMermaidGraph(mapData);
+
+// 通过 doc-service 获取模块文档列表（已按 order 升序排序），用于底部文档索引
+const sortedDocs = await getDocsByModule(module);
+
+const base = import.meta.env.BASE_URL;
+
+const breadcrumb = [
+  { label: '首页', href: `${base}` },
+  { label: meta.title, href: `${base}${module}/` },
+  { label: '知识地图' },
+];
+---
+
+<Layout title={`${meta.title} 知识地图`}>
+  <SEO
+    slot="head"
+    title={`${meta.title} 知识地图`}
+    description={`${meta.title} 模块知识结构与学习路径地图`}
+    type="article"
+  />
+  <Sidebar slot="sidebar" moduleId={module} />
+
+  <div class="map-page">
+    <Breadcrumb items={breadcrumb} hasSidebar />
+
+    <div class="map-header">
+      <span class="header-bar" style={`background:${categoryColors[getPrimaryCategory(meta)]}`}
+      ></span>
+      <div class="header-body">
+        <h1 class="map-title">{meta.title} 知识地图</h1>
+        <p class="map-subtitle">
+          模块知识结构与学习路径 | {sortedDocs.length} 篇文档 | {mapData.nodes.length} 个节点 | {
+            mapData.edges.length
+          } 条关系
+        </p>
+      </div>
+    </div>
+
+    <div class="map-nav">
+      <a href={`${base}${module}/`} class="map-back">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"><polyline points="18 6 6 12 18 18"></polyline></svg
+        >
+        <span>返回文档列表</span>
+      </a>
+      <a href={`${base}map/`} class="map-back">
+        <svg
+          width="14"
+          height="14"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2.5"
+          ><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"
+          ></line></svg
+        >
+        <span>全局知识地图</span>
+      </a>
+    </div>
+
+    <!-- 知识地图渲染区：客户端水合 Mermaid 图，支持缩放/拖拽/节点点击跳转 -->
+    <KnowledgeMap
+      client:load
+      scope="module"
+      map={mapData}
+      graphSource={graphSource}
+      baseUrl={base}
+    />
+
+    <div class="map-doc-list">
+      <h2 class="map-section-title">文档索引</h2>
+      <div class="map-doc-grid">
+        {
+          sortedDocs.map((doc) => {
+            const slug = docSlug(doc.id);
+            const href = `${base}${module}/${slug}/`;
+            return (
+              <a
+                href={href}
+                class="map-doc-card"
+                style={`--doc-color:${categoryColors[getPrimaryCategory(meta)]}`}
+              >
+                <span class="doc-card-bar" />
+                <div class="doc-card-body">
+                  <span class="doc-card-title">{doc.data.title}</span>
+                  <span class="doc-card-desc">{doc.data.description || ''}</span>
+                </div>
+              </a>
+            );
+          })
+        }
+      </div>
+    </div>
+  </div>
+</Layout>
+
+<style>
+  .map-page {
+    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-2xl);
+  }
+
+  .map-header {
+    display: flex;
+    margin-bottom: var(--spacing-lg);
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-light);
+  }
+
+  .header-bar {
+    width: 5px;
+    flex-shrink: 0;
+  }
+
+  .header-body {
+    padding: var(--spacing-lg);
+  }
+
+  .map-title {
+    font-family: var(--font-display);
+    font-size: 1.4em;
+    margin: 0 0 var(--spacing-xs);
+  }
+
+  .map-subtitle {
+    font-size: 0.88em;
+    color: var(--color-text-secondary);
+    margin: 0;
+  }
+
+  .map-nav {
+    display: flex;
+    gap: var(--spacing-sm);
+    margin-bottom: var(--spacing-lg);
+    flex-wrap: wrap;
+  }
+
+  .map-back {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-sm);
+    padding: var(--spacing-sm) var(--spacing-md);
+    color: var(--color-text-secondary);
+    font-size: 0.85em;
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-card);
+    transition:
+      color var(--transition-fast),
+      border-color var(--transition-fast);
+    text-decoration: none;
+  }
+
+  .map-back:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+  }
+
+  .map-doc-list {
+    margin-top: var(--spacing-xl);
+  }
+
+  .map-section-title {
+    font-family: var(--font-display);
+    font-size: 1em;
+    font-weight: 700;
+    margin: 0 0 var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .map-doc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 1px;
+    background: var(--color-border-light);
+    border: 1px solid var(--color-border-light);
+  }
+
+  .map-doc-card {
+    display: flex;
+    background: var(--color-bg);
+    text-decoration: none;
+    transition: background var(--transition-fast);
+  }
+
+  .map-doc-card:hover {
+    background: var(--color-bg-hover);
+  }
+
+  .doc-card-bar {
+    width: 4px;
+    flex-shrink: 0;
+    background: var(--doc-color);
+  }
+
+  .doc-card-body {
+    padding: var(--spacing-sm) var(--spacing-md);
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .doc-card-title {
+    font-family: var(--font-display);
+    font-size: 0.88em;
+    font-weight: 600;
+    color: var(--color-text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .doc-card-desc {
+    font-size: 0.75em;
+    color: var(--color-text-tertiary);
+    line-height: 1.4;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  @media (max-width: 768px) {
+    .map-page {
+      padding: var(--spacing-md) var(--spacing-md) var(--spacing-2xl);
+    }
+
+    .map-doc-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

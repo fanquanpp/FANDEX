@@ -1,0 +1,147 @@
+/**
+ * FANDEX 全局 CSS 变量定义（ark 家族令牌兼容层）
+ *
+ * 功能概述：
+ * 本文件作为 --color-* 命名兼容层，将原有全局设计令牌迁移为引用
+ * shd-shared/styles/tokens.css 中定义的 ark 家族语义令牌。
+ *
+ * 迁移策略：
+ * - 颜色令牌（primary/bg/text/border/success 等）：完全映射到 ark 语义令牌
+ *   通过 light-dark() 实现双主题自动切换，无需 [data-theme='dark'] 重复定义
+ * - 非颜色令牌（spacing/font/shadow/transition）：映射到 ark 令牌
+ * - 布局尺寸（content-width/nav-height/sidebar-width）：保留原值（ark 未定义布局概念）
+ * - 速查表专用变量（cheatsheet-*）：映射到 ark 语义令牌
+ * - 几何装饰变量（geo-*）：使用 light-dark() 合并双主题，派生自装饰色值
+ *
+ * 主题切换机制：
+ * - 所有颜色令牌通过 ark 的 light-dark() 函数自动处理双主题
+ * - 由 :root 的 color-scheme: light dark 驱动（在 shd-shared/styles/theme.css 声明）
+ * - [data-theme="dark"] 强制深色，[data-theme="light"] 强制浅色
+ * - 本文件不再需要 [data-theme='dark'] 块重复定义
+ *
+ * 引用链路：
+ * 组件 var(--color-text)
+ *   → ark var(--color-fg-primary)
+ *   → light-dark(var(--color-neutral-50), var(--color-neutral-1050))
+ *   → #0A0A0A (浅色) / #FFFFFF (深色)
+ */
+
+/* ====================================================================
+   兼容层令牌定义
+   --------------------------------------------------------------------
+   所有令牌在 :root 中定义，值引用 ark 语义令牌或保留原值。
+   无需 [data-theme='dark'] 覆盖，由 ark 的 light-dark() 自动处理。
+   ==================================================================== */
+:root {
+  /* ============================================================
+     1. 颜色令牌 — 语义层（映射 ark 语义令牌）
+     ------------------------------------------------------------
+     通过引用 ark 语义令牌，实现双主题自动切换。
+     ============================================================ */
+
+  /* --- 品牌色（映射 ark accent 强调色） --- */
+  --color-primary: var(--color-accent-base); /* 主品牌色，用于链接、按钮、强调元素 */
+  --color-primary-hover: var(--color-accent-hover); /* 主品牌色悬停态，提供视觉反馈 */
+  --color-secondary: var(--color-success-base); /* 辅助品牌色，用于二级标题装饰、成功状态 */
+  --color-tertiary: var(--color-warning-base); /* 第三品牌色，用于三级标题装饰、警告提示 */
+
+  /* --- 背景色（映射 ark bg 令牌） --- */
+  --color-bg: var(--color-bg-primary); /* 页面主背景色 */
+  --color-bg-card: var(--color-bg-elevated); /* 卡片/面板背景色（浮起元素） */
+  --color-bg-code: var(--color-bg-sunken); /* 代码块背景色（凹陷区域） */
+  --color-bg-hover: var(--color-bg-hover); /* 悬停态背景色，用于列表项、按钮等 */
+  --color-bg-sidebar: var(--color-bg-secondary); /* 侧边栏背景色（次背景） */
+
+  /* --- 文字色（映射 ark fg 令牌） --- */
+  --color-text: var(--color-fg-primary); /* 主文字色，用于正文内容 */
+  --color-text-secondary: var(--color-fg-secondary); /* 二级文字色，用于描述、辅助信息 */
+  --color-text-tertiary: var(--color-fg-tertiary); /* 三级文字色，用于占位符、弱化信息 */
+  --color-text-inverse: var(--color-fg-inverse); /* 反色文字，用于深色背景上的文字 */
+
+  /* --- 边框色（映射 ark border 令牌） --- */
+  --color-border: var(--color-border-strong); /* 主边框色，用于代码块、导航栏等 */
+  --color-border-light: var(--color-border-subtle); /* 浅边框色，用于分割线、卡片边框等 */
+
+  /* --- 语义色（映射 ark 状态色） --- */
+  --color-success: var(--color-success-base); /* 成功状态色 */
+  --color-warning: var(--color-warning-base); /* 警告状态色 */
+  --color-error: var(--color-danger-base); /* 错误/危险状态色 */
+  --color-info: var(--color-info-base); /* 信息状态色 */
+
+  /* --- 导航栏背景（半透明毛玻璃，派生自主背景） --- */
+  --color-nav-bg: color-mix(in srgb, var(--color-bg-primary) 95%, transparent);
+
+  /* ============================================================
+     2. 布局尺寸（保留原值，ark 未定义布局概念）
+     ============================================================ */
+  --content-width: 1280px; /* 内容区域最大宽度：全站统一基准 */
+  --nav-height: 48px; /* 顶部导航栏高度 */
+  --sidebar-width: 260px; /* 侧边栏宽度 */
+
+  /* ============================================================
+     3. 间距系统（映射 ark space 令牌，4px 基准递增）
+     ============================================================ */
+  --spacing-xs: var(--space-1); /* 4px 极小间距，用于紧凑元素内部 */
+  --spacing-sm: var(--space-2); /* 8px 小间距，用于元素间基础间隔 */
+  --spacing-md: var(--space-4); /* 16px 中等间距，用于组件内部标准间隔 */
+  --spacing-lg: var(--space-6); /* 24px 大间距，用于组件间标准间隔 */
+  --spacing-xl: var(--space-8); /* 32px 超大间距，用于区块间间隔 */
+  --spacing-2xl: var(--space-12); /* 48px 2倍超大间距，用于大区块间间隔 */
+  --spacing-3xl: var(--space-16); /* 64px 3倍超大间距，用于页面级间隔 */
+
+  /* ============================================================
+     4. 字体栈（映射 ark font-family 令牌）
+     ============================================================ */
+  --font-display: var(--font-family-heading); /* 展示字体，用于标题、标签等醒目文字 */
+  --font-body: var(--font-family-body); /* 正文字体，覆盖西文/中文回退 */
+  --font-code: var(--font-family-code); /* 等宽字体，用于代码块和行内代码 */
+
+  /* ============================================================
+     5. 过渡动画（映射 ark motion 令牌）
+     ============================================================ */
+  --transition-fast: var(--motion-duration-fast) var(--motion-easing-default); /* 快速过渡，用于悬停、焦点等即时反馈 */
+  --transition-base: var(--motion-duration-normal) var(--motion-easing-default); /* 基础过渡，用于主题切换、展开收起等 */
+
+  /* ============================================================
+     6. 阴影（映射 ark shadow 令牌）
+     ============================================================ */
+  --shadow-sm: var(--shadow-sm); /* 小阴影，用于微弱浮起效果 */
+  --shadow-md: var(--shadow-md); /* 中等阴影，用于卡片悬浮效果 */
+  --shadow-lg: var(--shadow-lg); /* 大阴影，用于弹窗、模态框等 */
+
+  /* ============================================================
+     7. 速查表专用变量（映射 ark 语义令牌）
+     ============================================================ */
+  --cheatsheet-bg: var(--color-bg-elevated); /* 速查表卡片背景色（浮起元素） */
+  --cheatsheet-border: var(--color-border-subtle); /* 速查表边框色（弱边框） */
+  --cheatsheet-text: var(--color-fg-primary); /* 速查表文字色（主文字） */
+  --cheatsheet-guide-bg: var(--color-info-bg); /* 学习指南背景色（信息色背景） */
+  --cheatsheet-guide-border: var(--color-info-base); /* 学习指南左侧装饰线颜色（信息色基准） */
+  --cheatsheet-error-bg: var(--color-danger-bg); /* 常见错误背景色（危险色背景） */
+  --cheatsheet-error-border: var(--color-danger-base); /* 常见错误左侧装饰线颜色（危险色基准） */
+  --cheatsheet-copy-bg: var(--color-bg-secondary); /* 复制按钮背景色，跟随次背景 */
+  --cheatsheet-copy-border: var(--color-border-subtle); /* 复制按钮边框色，跟随弱边框 */
+
+  /* ============================================================
+     8. 构成主义几何背景装饰变量
+     ------------------------------------------------------------
+     受俄国构成主义 / 包豪斯 / 至上主义启发
+     克制使用：仅作背景点缀，不干扰内容阅读
+     使用 light-dark() 合并双主题，派生自装饰色值：
+     - 亮色：墨色 alpha 派生（深色装饰）
+     - 暗色：白色 alpha 派生（浅色装饰，提亮维持可见度）
+     - 红/蓝装饰色：派生自 ark accent/info 令牌
+     ============================================================ */
+  --geo-ink: light-dark(rgba(13, 13, 13, 0.85), rgba(235, 235, 235, 0.75)); /* 几何形状墨色 */
+  --geo-red: light-dark(rgba(224, 90, 43, 0.85), rgba(240, 144, 112, 0.75)); /* 构成主义砖红 */
+  --geo-blue: light-dark(rgba(51, 102, 204, 0.85), rgba(110, 168, 254, 0.75)); /* 群青 */
+  --geo-curve: light-dark(rgba(51, 102, 204, 0.1), rgba(110, 168, 254, 0.16)); /* 曲线主色 */
+  --geo-wave: light-dark(rgba(224, 90, 43, 0.12), rgba(240, 144, 112, 0.18)); /* 波纹色 */
+  --geo-cross: light-dark(rgba(13, 13, 13, 0.18), rgba(235, 235, 235, 0.16)); /* 十字标记线 */
+  --geo-dot-lg: light-dark(rgba(13, 13, 13, 0.1), rgba(235, 235, 235, 0.1)); /* 大点阵 */
+  --geo-dot-sm: light-dark(rgba(13, 13, 13, 0.06), rgba(235, 235, 235, 0.06)); /* 小点阵 */
+  --geo-grid: light-dark(rgba(13, 13, 13, 0.06), rgba(235, 235, 235, 0.05)); /* 背景网格线 */
+  --geo-line: light-dark(rgba(13, 13, 13, 0.12), rgba(235, 235, 235, 0.1)); /* 几何辅助线 */
+  --geo-stripe: light-dark(rgba(51, 102, 204, 0.05), rgba(110, 168, 254, 0.08)); /* 斜纹底纹 */
+  --geo-glow-primary: light-dark(rgba(51, 102, 204, 0.18), rgba(110, 168, 254, 0.22)); /* 品牌色填充 */
+}

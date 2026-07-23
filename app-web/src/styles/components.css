@@ -1,0 +1,930 @@
+/**
+ * FANDEX 组件样式
+ *
+ * 功能概述：
+ * 定义项目所有 UI 组件的样式，包括应用布局（导航栏、侧边栏、主内容区）、
+ * 面包屑导航、文件列表、模块卡片、文档上下导航、术语提示/弹窗、
+ * 代码运行按钮、速查表等。支持移动端响应式和暗色主题适配。
+ */
+
+/* ========== 应用整体布局（CSS Grid） ========== */
+.app-layout {
+  display: grid;
+  grid-template-rows: var(--nav-height) 1fr; /* 第一行导航栏，第二行内容区 */
+  grid-template-columns: var(--sidebar-width) 1fr; /* 左侧边栏 + 右主内容 */
+  height: 100vh;
+  height: 100dvh; /* 动态视口高度，适配移动端 */
+}
+
+/* 无侧边栏时的布局：单列 */
+.app-layout.no-sidebar {
+  grid-template-columns: 1fr;
+}
+
+.app-layout.no-sidebar .app-main {
+  grid-column: 1 / -1; /* 占满整行 */
+}
+
+/* 三栏布局：侧边栏 + 主内容 + 目录大纲（桌面端 lg+ 启用）
+ * --toc-width 令牌默认 16rem，与 .fndx-toc 组件宽度保持一致
+ * 目录大纲组件自身在 max-width:1023px 由 CSS display:none 隐藏，
+ * 此处同步将 grid 转为双栏避免预留空白列 */
+.app-layout.has-toc {
+  grid-template-columns: var(--sidebar-width) 1fr var(--toc-width, 16rem);
+}
+
+@media (max-width: 1023px) {
+  .app-layout.has-toc {
+    grid-template-columns: var(--sidebar-width) 1fr;
+  }
+}
+
+@media (max-width: 768px) {
+  .app-layout.has-toc {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* 移动端：侧边栏隐藏，单列布局 */
+@media (max-width: 768px) {
+  .app-layout {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* ========== 顶部导航栏 ========== */
+.app-nav {
+  grid-column: 1 / -1; /* 导航栏横跨整行 */
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 var(--spacing-md);
+  background: var(--color-nav-bg);
+  backdrop-filter: blur(12px); /* 毛玻璃模糊效果 */
+  -webkit-backdrop-filter: blur(12px); /* Safari 前缀 */
+  border-bottom: 1px solid var(--color-border);
+  position: sticky;
+  top: 0;
+  z-index: 100; /* 确保导航栏在最上层 */
+  height: var(--nav-height);
+}
+
+/* 导航栏左侧区域：Logo + 侧边栏切换 */
+.nav-left {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* Logo 容器 */
+.nav-logo {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+}
+
+.nav-logo:hover {
+  opacity: 0.85;
+}
+
+/* Logo 标记：字母 F 方块，与 favicon 风格统一 */
+.logo-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  background: var(--color-primary);
+  border-radius: 4px;
+  color: var(--color-bg);
+  font-weight: 800;
+  font-size: 0.9em;
+  font-family: var(--font-display);
+}
+
+/* 字母 F 内容 */
+.logo-mark::before {
+  content: 'F';
+}
+
+/* Logo 文字：深色背景 + 浅色文字 */
+.logo-text {
+  display: flex;
+  align-items: center;
+  height: 28px;
+  padding: 0 8px;
+  background: var(--color-text);
+  color: var(--color-bg);
+  font-weight: 700;
+  font-size: 0.8em;
+  font-family: var(--font-display);
+  letter-spacing: 0.1em;
+}
+
+/* Logo 首页后缀（如 "DEX"） */
+.logo-home-suffix {
+  font-weight: 700;
+  opacity: 0.75;
+  margin-left: 1px;
+}
+
+/* 导航栏右侧区域 */
+.nav-right {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+/* GitHub 链接按钮 */
+.nav-github-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.78em;
+  font-weight: 500;
+  text-decoration: none;
+  letter-spacing: 0.02em;
+  transition: all var(--transition-fast);
+}
+
+.nav-github-link:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* GitHub 文字（移动端隐藏） */
+.nav-github-text {
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .nav-github-text {
+    display: none; /* 移动端只显示图标 */
+  }
+}
+
+/* 回到顶部按钮 */
+.nav-back-to-top {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border: 1px solid var(--color-border);
+  border-radius: 0; /* 直角边框，保持极简风格 */
+  background: transparent;
+  color: var(--color-text-secondary);
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+  white-space: nowrap;
+}
+
+.nav-back-to-top:hover:not(:focus) {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+}
+
+/* 键盘焦点可见状态（无障碍） */
+.nav-back-to-top:focus-visible {
+  background: var(--color-primary);
+  color: #fff;
+  border-color: var(--color-primary);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.nav-back-to-top svg {
+  flex-shrink: 0; /* 图标不收缩 */
+}
+
+/* 移动端回到顶部按钮适配 */
+@media (max-width: 768px) {
+  .nav-back-to-top-text {
+    display: inline;
+    font-size: 0.75rem;
+  }
+  .nav-back-to-top {
+    padding: 6px 10px;
+  }
+}
+
+/* ========== 侧边栏 ==========
+ * 注：侧边栏样式已迁移至 @fandex/styles 的 .fndx-sidebar 命名规范，
+ * 旧 .app-sidebar 类已废弃。移动端抽屉模式与滚动锁定由 layout-components.css 控制。
+ */
+
+/* ========== 主内容区 ========== */
+.app-main {
+  grid-row: 2;
+  grid-column: 2;
+  overflow-y: auto;
+  min-height: 0; /* 允许 Grid 子元素正确收缩 */
+  overflow-anchor: auto; /* 浏览器锚点滚动优化 */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: none; /* 禁止纵向过度滚动传播 */
+}
+
+/* 移动端主内容区适配 */
+@media (max-width: 768px) {
+  .app-main {
+    grid-column: 1 / -1;
+    padding-bottom: 64px; /* 为底部导航栏留出空间 */
+  }
+}
+
+/* ========== 移动端底部导航栏 ========== */
+.mobile-nav {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .mobile-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 56px;
+    background: var(--color-nav-bg);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-top: 1px solid var(--color-border);
+    z-index: 150;
+  }
+
+  /* 底部导航链接项 */
+  .mobile-nav-link {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    color: var(--color-text-secondary);
+    font-size: 0.65rem;
+    font-family: var(--font-display);
+    cursor: pointer;
+    text-decoration: none;
+    transition: color var(--transition-fast);
+    background: none;
+    border: none;
+    padding: 0;
+    outline: none;
+    -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+  }
+
+  .mobile-nav-link:hover {
+    color: var(--color-primary);
+  }
+
+  .mobile-nav-link:active {
+    color: var(--color-primary);
+  }
+
+  .mobile-nav-link svg {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* ========== 面包屑导航 ========== */
+.breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-sm) 0;
+  margin-bottom: var(--spacing-lg);
+  font-size: 0.82em;
+  border-bottom: 1px solid var(--color-border-light);
+  max-width: var(--content-width);
+  margin-left: auto;
+  margin-right: auto;
+  flex-wrap: nowrap;
+  overflow: hidden; /* 超长面包屑截断 */
+}
+
+/* 移动端面包屑适配 */
+@media (max-width: 768px) {
+  .breadcrumb {
+    font-size: 0.75em;
+    padding: var(--spacing-sm) var(--spacing-md);
+    margin-bottom: var(--spacing-md);
+    gap: 2px;
+  }
+
+  /* 面包屑项文字溢出省略 */
+  .breadcrumb .bc-link,
+  .breadcrumb .bc-current {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+  }
+
+  .breadcrumb .bc-current {
+    max-width: 160px; /* 当前页名称允许更长 */
+  }
+}
+
+/* ========== 侧边栏文件链接 ==========
+ * 注：旧 .sidebar-file-link / .file-list 样式已废弃，
+ * 侧边栏文档列表使用 .fndx-sidebar__link / .fndx-sidebar__list 命名规范。
+ */
+
+/* ========== 模块卡片网格 ========== */
+.module-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr); /* 默认4列 */
+  gap: 1px; /* 1px 间距充当边框效果 */
+  background: var(--color-border-light); /* 间距颜色即为边框色 */
+  border: 1px solid var(--color-border-light);
+}
+
+/* 平板端3列 */
+@media (max-width: 1024px) {
+  .module-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+/* 移动端2列 */
+@media (max-width: 768px) {
+  .module-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* 模块卡片 */
+.module-card {
+  background: var(--color-bg);
+  padding: var(--spacing-md);
+  cursor: pointer;
+  transition:
+    background var(--transition-fast),
+    transform var(--transition-fast);
+  text-decoration: none;
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-sm);
+}
+
+.module-card:hover {
+  background: var(--color-bg-hover);
+  transform: translateY(-2px); /* 悬停上浮效果 */
+}
+
+/* 模块卡片悬停阴影 */
+.module-card.card-hovered {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+[data-theme='dark'] .module-card.card-hovered {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+/* 注：旧 .sidebar-animated 动画类已废弃，侧边栏过渡由 .fndx-sidebar 的 transition 属性直接控制 */
+
+/* ========== 文档上下篇导航 ========== */
+.doc-nav {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--spacing-md);
+  margin-top: var(--spacing-lg);
+  padding-top: var(--spacing-lg);
+  border-top: 1px solid var(--color-border-light);
+  max-width: var(--content-width);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+/* 空的导航项隐藏 */
+.doc-nav > div:empty {
+  display: none;
+}
+
+/* 移动端文档导航适配 */
+@media (max-width: 768px) {
+  .doc-nav {
+    gap: var(--spacing-sm);
+    padding-left: var(--spacing-md);
+    padding-right: var(--spacing-md);
+  }
+
+  .doc-nav > div:empty {
+    display: none;
+  }
+}
+
+/* 导航按钮（上/下篇） */
+.nav-btn {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg-card);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  flex: 1;
+  min-width: 0; /* 允许 flex 子元素收缩 */
+  transition:
+    border-color var(--transition-fast),
+    color var(--transition-fast);
+}
+
+.nav-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+@media (max-width: 768px) {
+  .nav-btn {
+    width: 100%;
+  }
+}
+
+/* 移动端导航标签隐藏 */
+@media (max-width: 768px) {
+  .nav-label {
+    display: none;
+  }
+}
+
+/* 注：旧 .app-sidebar 滚动条样式已废弃，滚动条由 .fndx-sidebar__scroll 的 scrollbar-width/scrollbar-color 控制 */
+
+/* ========== 术语提示（Tooltip） ========== */
+.term-tip {
+  position: relative;
+  display: inline;
+  margin: 0;
+  padding: 0;
+}
+
+/* 术语缩写：点状下划线 + 帮助光标 */
+.term-abbr {
+  text-decoration: underline dotted var(--color-primary);
+  text-underline-offset: 3px;
+  cursor: help;
+  color: var(--color-primary);
+  margin: 0;
+  padding: 0;
+}
+
+/* 术语弹出提示框 */
+.term-popup {
+  display: block;
+  position: fixed; /* 固定定位，避免被父元素裁切 */
+  z-index: 9999;
+  min-width: 200px;
+  max-width: 320px;
+  padding: 8px 12px;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  font-size: 0.85em;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+  white-space: normal;
+  pointer-events: auto;
+  visibility: hidden;
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+/* 悬停或聚焦时显示弹出提示 */
+.term-tip:hover .term-popup,
+.term-tip:focus-within .term-popup {
+  visibility: visible;
+  opacity: 1;
+}
+
+/* 移动端禁用悬停弹出（改用点击弹窗） */
+@media (max-width: 768px) {
+  .term-tip:hover .term-popup,
+  .term-tip:focus-within .term-popup {
+    visibility: hidden;
+    opacity: 0;
+  }
+}
+
+/* 弹出提示定义文字 */
+.term-popup-def {
+  display: block;
+  margin-bottom: 6px;
+}
+
+/* 弹出提示详情链接 */
+.term-popup-link {
+  color: var(--color-primary);
+  font-size: 0.9em;
+  text-decoration: none;
+}
+
+.term-popup-link:hover {
+  text-decoration: underline;
+}
+
+/* ========== 术语详情弹窗（移动端） ========== */
+.term-modal {
+  position: fixed;
+  inset: 0; /* 全屏覆盖 */
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* 弹窗遮罩层 */
+.term-modal-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+/* 弹窗内容区域 */
+.term-modal-content {
+  position: relative;
+  background: var(--color-bg);
+  border-radius: 12px;
+  max-width: 90%;
+  max-height: 80vh;
+  overflow: auto;
+  padding: 20px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+  z-index: 1;
+}
+
+/* 弹窗头部 */
+.term-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+}
+
+/* 弹窗标题 */
+.term-modal-title {
+  margin: 0;
+  font-size: 1.1em;
+  color: var(--color-primary);
+  font-family: var(--font-display);
+}
+
+/* 弹窗关闭按钮 */
+.term-modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5em;
+  cursor: pointer;
+  color: var(--color-text-secondary);
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.term-modal-close:hover {
+  color: var(--color-text);
+}
+
+/* 弹窗定义文字 */
+.term-modal-def {
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  margin-bottom: 12px;
+}
+
+/* 弹窗详情链接 */
+.term-modal-link {
+  color: var(--color-primary);
+  text-decoration: none;
+  font-size: 0.9em;
+}
+
+.term-modal-link:hover {
+  text-decoration: underline;
+}
+
+/* 触控设备上术语缩写改为点击触发 */
+@media (hover: none) and (pointer: coarse) {
+  .term-abbr {
+    cursor: pointer;
+  }
+}
+
+/* ========== 代码运行按钮 ========== */
+.code-run-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--color-bg-secondary, var(--color-bg-card));
+  border: 1px solid var(--color-border-light);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 0.8em;
+  font-family: var(--font-display);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  z-index: 10;
+  color: var(--color-text-secondary);
+}
+
+.code-run-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* 代码运行结果区域 */
+.code-result {
+  margin-top: 8px;
+  padding: 12px;
+  font-family: var(--font-code);
+  font-size: 0.85em;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  border-radius: 0 4px 4px 0;
+}
+
+/* 运行成功结果 */
+.code-result-success {
+  background: var(--color-bg-card);
+  border-left: 3px solid var(--color-success);
+  color: var(--color-text);
+}
+
+/* 运行失败结果 */
+.code-result-error {
+  background: #fce4ec;
+  border-left: 3px solid #c62828;
+  color: #c62828;
+}
+
+/* 暗色模式错误结果适配 */
+[data-theme='dark'] .code-result-error {
+  background: #3b1010;
+}
+
+/* 代码运行中旋转动画 */
+@keyframes code-run-spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* ===== 速查表（Cheatsheet）组件 ===== */
+
+.cheatsheet {
+  max-width: var(--content-width);
+  margin: 0 auto;
+  padding: var(--spacing-lg) var(--spacing-md);
+  color: var(--cheatsheet-text);
+}
+
+/* 学习指南提示区 */
+.cheatsheet .learning-guide {
+  background: var(--cheatsheet-guide-bg);
+  border-left: 3px solid var(--cheatsheet-guide-border);
+  padding: var(--spacing-md) var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+  font-size: 0.9em;
+  line-height: 1.7;
+  color: var(--cheatsheet-text);
+}
+
+/* 搜索栏 */
+.cheatsheet .search-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+/* 搜索输入框 */
+.cheatsheet .search-bar input {
+  flex: 1;
+  padding: var(--spacing-sm) var(--spacing-md);
+  border: 1px solid var(--cheatsheet-border);
+  background: var(--cheatsheet-bg);
+  color: var(--cheatsheet-text);
+  font-family: var(--font-body);
+  font-size: 0.9em;
+  outline: none;
+  transition: border-color var(--transition-fast);
+}
+
+.cheatsheet .search-bar input:focus {
+  border-color: var(--color-primary);
+}
+
+/* 分组列表容器 */
+.cheatsheet .groups {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+/* 单个分组卡片 */
+.cheatsheet .group {
+  background: var(--cheatsheet-bg);
+  border: 1px solid var(--cheatsheet-border);
+  overflow: hidden;
+}
+
+/* 分组标题栏 */
+.cheatsheet .group-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--spacing-md) var(--spacing-lg);
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: 1em;
+  color: var(--cheatsheet-text);
+  border-bottom: 1px solid var(--cheatsheet-border);
+  user-select: none; /* 禁止选中标题 */
+}
+
+/* 可点击的分组标题（可折叠） */
+.cheatsheet .group-header[tabindex],
+.cheatsheet .group-header[role='button'] {
+  cursor: pointer;
+}
+
+/* 分组条目列表 */
+.cheatsheet .group-items {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+/* 单个条目 */
+.cheatsheet .item {
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-bottom: 1px solid var(--cheatsheet-border);
+}
+
+.cheatsheet .item:last-child {
+  border-bottom: none; /* 最后一个条目无需底边框 */
+}
+
+/* 条目描述文字 */
+.cheatsheet .item-desc {
+  font-size: 0.9em;
+  color: var(--color-text-secondary);
+  margin-bottom: var(--spacing-sm);
+  line-height: 1.6;
+}
+
+/* 速查表内代码块 */
+.cheatsheet .code-block {
+  position: relative;
+  background: var(--color-bg-code);
+  padding: var(--spacing-md);
+  overflow-x: auto;
+  font-family: var(--font-code);
+  font-size: 0.85em;
+  line-height: 1.6;
+}
+
+/* 速查表内复制按钮 */
+.cheatsheet .copy-btn {
+  position: absolute;
+  top: var(--spacing-sm);
+  right: var(--spacing-sm);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px;
+  background: var(--cheatsheet-copy-bg);
+  border: 1px solid var(--cheatsheet-copy-border);
+  color: var(--color-text-secondary);
+  font-family: var(--font-display);
+  font-size: 0.75em;
+  cursor: pointer;
+  opacity: 0; /* 默认隐藏 */
+  transition:
+    opacity var(--transition-fast),
+    border-color var(--transition-fast);
+}
+
+/* 代码块悬停时显示复制按钮 */
+.cheatsheet .code-block:hover .copy-btn {
+  opacity: 1;
+}
+
+.cheatsheet .copy-btn:hover {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+/* 预期输出区域 */
+.cheatsheet .expected-output {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--color-bg-code);
+  font-family: var(--font-code);
+  font-size: 0.82em;
+  line-height: 1.5;
+  color: var(--color-text-secondary);
+}
+
+/* 使用场景说明 */
+.cheatsheet .scene {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  font-size: 0.85em;
+  line-height: 1.6;
+  color: var(--color-text-secondary);
+  border-left: 2px solid var(--color-primary);
+}
+
+/* 常见错误提示 */
+.cheatsheet .common-errors {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--cheatsheet-error-bg);
+  border-left: 3px solid var(--cheatsheet-error-border);
+  font-size: 0.85em;
+  line-height: 1.6;
+  color: var(--cheatsheet-text);
+}
+
+/* 进阶技巧提示 */
+.cheatsheet .advance-tip {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--cheatsheet-guide-bg);
+  border-left: 2px solid var(--cheatsheet-guide-border);
+  font-size: 0.85em;
+  line-height: 1.6;
+  color: var(--cheatsheet-text);
+}
+
+/* 相关链接 */
+.cheatsheet .related-link {
+  display: inline-block;
+  margin-top: var(--spacing-sm);
+  color: var(--color-primary);
+  font-size: 0.85em;
+  text-decoration: none;
+}
+
+.cheatsheet .related-link:hover {
+  text-decoration: underline;
+}
+
+/* 搜索无结果提示 */
+.cheatsheet .no-results {
+  padding: var(--spacing-2xl) var(--spacing-md);
+  text-align: center;
+  color: var(--color-text-tertiary);
+  font-size: 0.95em;
+}
+
+/* 标签加粗 */
+.cheatsheet .label {
+  font-weight: 700;
+}
+
+/* 搜索结果计数 */
+.cheatsheet .result-count {
+  font-size: 0.82em;
+  color: var(--color-text-tertiary);
+  margin-left: var(--spacing-sm);
+}
+
+/* 折叠/展开图标 */
+.cheatsheet .toggle-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  transition: transform var(--transition-base);
+}
+
+/* 折叠状态：图标旋转 -90 度 */
+.cheatsheet .toggle-icon.collapsed {
+  transform: rotate(-90deg);
+}
+
+/* 小屏幕速查表适配 */
+@media (max-width: 640px) {
+  .cheatsheet .copy-btn {
+    opacity: 1; /* 小屏幕始终显示复制按钮 */
+  }
+
+  .cheatsheet .search-bar input {
+    width: 100%;
+  }
+}

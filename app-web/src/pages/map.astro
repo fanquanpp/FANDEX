@@ -1,0 +1,233 @@
+---
+/**
+ * 全局知识地图页（3D 力导向图）
+ * 通过 knowledge-map-service 在服务端构建完整 KnowledgeMap 数据
+ * （52 模块 + 2065 文档 + 4583 关系），传递给 KnowledgeGraph3D Vue 岛屿组件
+ *
+ * 数据流：
+ * - 服务端：getGlobalMap() → 返回完整知识地图（模块节点 + 文档节点 + 全部边）
+ * - 客户端：KnowledgeGraph3D.vue 基于 vasturiano/3d-force-graph（ThreeJS/WebGL）渲染
+ *   - 3D 力导向布局，节点自然散布于 3D 空间
+ *   - 支持左键旋转、滚轮缩放、右键平移、节点点击跳转
+ *
+ * 为什么不用 Mermaid：
+ * - Mermaid 在节点数超过数百时 render 会失败回退到 fill:#faa 错误占位节点
+ * - 3d-force-graph 基于 ThreeJS/WebGL，单图可渲染 10000+ 节点，性能与体验远超 Mermaid
+ *
+ * 使用场景：
+ * - 站点级全量知识图谱概览（模块 + 文档 + 关系）
+ * - 3D 空间中跨模块学习路径探索
+ * - 通过"模块快速跳转"区进入各模块文档级 Mermaid 地图
+ */
+import HomeLayout from '@/components/HomeLayout.astro';
+import SEO from '@/components/SEO.astro';
+import KnowledgeGraph3D from '@/islands/KnowledgeGraph3D';
+// 通过 services 桶文件统一导入：UI 层禁止直接调用 services 内部模块
+import { getGlobalMap, getAllModules } from '@/services';
+import type { KnowledgeMap as KnowledgeMapData } from '@/services';
+
+// 通过 knowledge-map-service 在服务端构建完整知识地图数据
+const mapData: KnowledgeMapData = await getGlobalMap();
+
+// 通过 module-service 获取全部模块（用于统计展示与快速跳转）
+const allModules = getAllModules();
+
+// 统计文档节点数：用于 hero 区展示
+const docCount = mapData.nodes.filter((n) => n.type === 'doc').length;
+
+const base = import.meta.env.BASE_URL;
+---
+
+<HomeLayout title="全局知识地图">
+  <SEO
+    slot="head"
+    title="全局知识地图"
+    description="FANDEX 全站 3D 知识图谱：52 个模块 + 2000+ 篇文档 + 依赖关系可视化，支持 3D 旋转、缩放、平移与节点跳转"
+    type="website"
+  />
+
+  <div class="global-map-page">
+    <section class="map-hero">
+      <div class="map-hero-badge">3D Knowledge Graph</div>
+      <h1 class="map-hero-title">全局知识地图</h1>
+      <p class="map-hero-desc">
+        基于 ThreeJS/WebGL 的 3D 力导向图，左键旋转 · 滚轮缩放 · 右键平移 · 点击节点跳转
+      </p>
+      <div class="map-hero-stats">
+        <div class="map-stat">
+          <span class="map-stat-num">{allModules.length}</span>
+          <span class="map-stat-label">模块</span>
+        </div>
+        <div class="map-stat-divider"></div>
+        <div class="map-stat">
+          <span class="map-stat-num">{docCount}</span>
+          <span class="map-stat-label">文档</span>
+        </div>
+        <div class="map-stat-divider"></div>
+        <div class="map-stat">
+          <span class="map-stat-num">{mapData.edges.length}</span>
+          <span class="map-stat-label">关系</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- 3D 知识图谱渲染区：客户端水合 3d-force-graph，支持旋转/缩放/平移/节点点击跳转 -->
+    <div class="map-render-area">
+      <KnowledgeGraph3D client:load scope="global" map={mapData} baseUrl={base} />
+    </div>
+
+    <!-- 模块快速跳转：作为图视图的可访问性补充，便于键盘/屏幕阅读器用户跳转 -->
+    <section class="map-modules-section" aria-label="模块快速跳转">
+      <h2 class="map-modules-title">模块快速跳转</h2>
+      <div class="map-modules-grid">
+        {
+          allModules.map((mod) => (
+            <a href={`${base}${mod.id}/map/`} class="map-module-card">
+              <span class="map-module-id">{mod.id}</span>
+              <span class="map-module-title">{mod.title}</span>
+            </a>
+          ))
+        }
+      </div>
+    </section>
+  </div>
+</HomeLayout>
+
+<style>
+  .global-map-page {
+    padding: var(--spacing-xl) var(--spacing-lg) var(--spacing-2xl);
+    max-width: var(--content-width, 1280px);
+    margin: 0 auto;
+  }
+
+  .map-hero {
+    text-align: center;
+    margin-bottom: var(--spacing-xl);
+  }
+
+  .map-hero-badge {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 0.78em;
+    color: var(--color-text-secondary);
+    border: 1px solid var(--color-border);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .map-hero-title {
+    font-family: var(--font-display);
+    font-size: 2em;
+    margin: 0 0 var(--spacing-sm);
+  }
+
+  .map-hero-desc {
+    font-size: 0.95em;
+    color: var(--color-text-secondary);
+    margin: 0 0 var(--spacing-lg);
+    /* 显式声明水平居中，避免被任何父级或继承样式覆盖，确保桌面端与移动端均居中显示 */
+    text-align: center;
+    margin-inline: auto;
+    max-width: 600px;
+  }
+
+  .map-hero-stats {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--spacing-md);
+    padding: var(--spacing-sm) var(--spacing-lg);
+    border: 1px solid var(--color-border-light);
+    background: var(--color-bg-card);
+  }
+
+  .map-stat {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .map-stat-num {
+    font-family: var(--font-display);
+    font-size: 1.4em;
+    font-weight: 700;
+    color: var(--color-text);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .map-stat-label {
+    font-size: 0.75em;
+    color: var(--color-text-secondary);
+  }
+
+  .map-stat-divider {
+    width: 1px;
+    height: 24px;
+    background: var(--color-border);
+  }
+
+  .map-render-area {
+    margin-bottom: var(--spacing-2xl);
+  }
+
+  .map-modules-section {
+    margin-top: var(--spacing-2xl);
+  }
+
+  .map-modules-title {
+    font-family: var(--font-display);
+    font-size: 1.1em;
+    font-weight: 700;
+    margin: 0 0 var(--spacing-md);
+    padding-bottom: var(--spacing-sm);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .map-modules-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--color-border-light);
+    border: 1px solid var(--color-border-light);
+  }
+
+  .map-module-card {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--color-bg);
+    text-decoration: none;
+    transition: background var(--transition-fast);
+  }
+
+  .map-module-card:hover {
+    background: var(--color-bg-hover);
+  }
+
+  .map-module-id {
+    font-family: var(--font-mono, monospace);
+    font-size: 0.72em;
+    color: var(--color-text-tertiary);
+    text-transform: lowercase;
+  }
+
+  .map-module-title {
+    font-size: 0.88em;
+    color: var(--color-text);
+    font-weight: 500;
+  }
+
+  @media (max-width: 768px) {
+    .global-map-page {
+      padding: var(--spacing-md) var(--spacing-md) var(--spacing-2xl);
+    }
+
+    .map-hero-title {
+      font-size: 1.5em;
+    }
+
+    .map-modules-grid {
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    }
+  }
+</style>

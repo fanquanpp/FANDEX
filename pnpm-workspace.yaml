@@ -1,0 +1,143 @@
+# =============================================================================
+# FANDEX pnpm workspace 配置
+# =============================================================================
+# 三端应用 + 共享层 + 工具链 + 第三方组件 + 文档
+# 使用 catalog 统一管理核心依赖版本（pnpm 9+ Catalogs 特性）
+# =============================================================================
+
+packages:
+  # 三端应用
+  - 'app-web'
+  - 'app-desktop'
+  - 'app-android'
+  # 共享层（含子包）
+  - 'shd-shared'
+  - 'shd-shared/tokens'
+  - 'shd-shared/styles'
+  - 'shd-shared/utl-utils'
+  - 'shd-shared/asc-astro-components'
+  - 'shd-shared/assets'
+  - 'shd-shared/tls-tools'
+  # 工具链
+  - 'tls-tools'
+  # 第三方组件插件
+  - 'thd-third-party'
+  - 'thd-third-party/components/*'
+  - 'thd-third-party/plugins/*'
+  - 'thd-third-party/adapters/*'
+  # 文档目录（非 npm 包，仅占位）
+  # dcs-docs/ 不纳入 workspace
+
+  # -----------------------------------------------------------------------------
+  # Catalog：核心依赖版本统一管理
+  # 各子包通过 "catalog:" 协议引用，确保版本一致
+  # -----------------------------------------------------------------------------
+allowBuilds:
+  esbuild: set this to true or false
+catalog:
+  # 框架核心
+  astro: ^7.1.1
+  react: ^19.0.0
+  react-dom: ^19.0.0
+  '@astrojs/react': ^4.0.0
+  '@astrojs/mdx': ^7.0.3
+  '@astrojs/rss': ^4.0.19
+  '@astrojs/sitemap': ^3.3.0
+  '@astrojs/check': ^0.9.9
+
+  # Tauri 2（desktop 专属）
+  '@tauri-apps/api': ^2.0.0
+  '@tauri-apps/cli': ^2.0.0
+  '@tauri-apps/plugin-fs': ^2.0.0
+  '@tauri-apps/plugin-http': ^2.0.0
+
+  # 样式与 UI
+  tailwindcss: ^4.3.3
+  '@tailwindcss/vite': ^4.3.3
+  '@tailwindcss/typography': ^0.5.20
+  class-variance-authority: ^0.7.1
+  clsx: ^2.1.1
+  tailwind-merge: ^3.6.0
+
+  # 状态管理与数据
+  zustand: ^5.0.0
+  '@tanstack/react-query': ^5.59.0
+  zod: ^4.4.3
+
+  # 动画
+  motion: ^11.0.0
+
+  # Radix UI（React 组件库，web/desktop 共享）
+  '@radix-ui/react-accordion': ^1.2.0
+  '@radix-ui/react-dialog': ^1.1.0
+  '@radix-ui/react-dropdown-menu': ^2.1.0
+  '@radix-ui/react-label': ^2.1.0
+  '@radix-ui/react-popover': ^1.1.0
+  '@radix-ui/react-progress': ^1.1.0
+  '@radix-ui/react-scroll-area': ^1.2.0
+  '@radix-ui/react-separator': ^1.1.0
+  '@radix-ui/react-slot': ^1.1.0
+  '@radix-ui/react-tabs': ^1.1.0
+  '@radix-ui/react-toggle': ^1.1.0
+  '@radix-ui/react-toggle-group': ^1.1.0
+  '@radix-ui/react-tooltip': ^1.1.0
+
+  # 内容处理
+  shiki: ^4.3.1
+  katex: ^0.16.47
+  rehype-autolink-headings: ^7.1.0
+  rehype-katex: ^7.0.1
+  rehype-slug: ^6.0.0
+  remark-emoji: ^5.0.2
+  remark-gfm: ^4.0.1
+  remark-math: ^6.0.0
+  unist-util-visit: ^5.1.0
+
+  # 搜索
+  fuse.js: ^7.5.0
+  pagefind: ^1.5.2
+  astro-pagefind: ^2.0.1
+
+  # 图标
+  lucide-react: ^0.460.0
+
+  # 工具链
+  typescript: ^5.7.0
+  tsx: ^4.19.2
+  vite: ^6.0.0
+  '@vitejs/plugin-react': ^4.3.0
+
+  # 类型定义
+  '@types/node': '^22.0.0'
+  '@types/react': ^19.0.0
+  '@types/react-dom': ^19.0.0
+  '@types/hast': ^3.0.5
+  '@types/mdast': ^4.0.4
+
+  # 其他
+  glob: ^13.0.6
+  fast-glob: ^3.3.3
+  commander: ^12.1.0
+  '@noble/ed25519': ^2.1.0
+  ajv: ^8.17.1
+  ajv-formats: ^3.0.1
+  web-vitals: ^5.3.0
+
+# -----------------------------------------------------------------------------
+# pnpm 11+ 设置（从子包 app-web/pnpm-workspace.yaml 迁移）
+# -----------------------------------------------------------------------------
+# 允许执行 build scripts 的包白名单
+# - esbuild: 需要下载平台原生二进制文件
+# - sharp: desktop 端图像处理需要原生模块
+# - @tailwindcss/oxides: Tailwind 4 原生引擎
+onlyBuiltDependencies:
+  - esbuild
+  - sharp
+  - '@tailwindcss/oxides'
+
+# -----------------------------------------------------------------------------
+# Catalog Protocols（预留）
+# -----------------------------------------------------------------------------
+# 使用 catalog: 协议引用版本，示例：
+#   "astro": "catalog:"
+# 等价于 "astro": "^7.1.1"

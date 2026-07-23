@@ -1,0 +1,23 @@
+{
+  "name": "@fandex/astro-components",
+  "version": "2.0.0",
+  "private": true,
+  "type": "module",
+  "description": "FANDEX 共享 Astro 组件 — TableOfContents/ReadingProgress/Toast 等三端通用组件",
+  "exports": {
+    "./*": "./*.astro",
+    "./TableOfContents.astro": "./TableOfContents.astro",
+    "./ReadingProgress.astro": "./ReadingProgress.astro"
+  },
+  "dependencies": {
+    "@fandex/tokens": "workspace:*",
+    "@fandex/styles": "workspace:*",
+    "@fandex/utils": "workspace:*"
+  },
+  "peerDependencies": {
+    "astro": "catalog:"
+  },
+  "devDependencies": {
+    "astro": "catalog:"
+  }
+}

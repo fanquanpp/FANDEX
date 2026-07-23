@@ -1,0 +1,273 @@
+/**
+ * Tailwind CSS v4 入口文件（ark 家族令牌体系）
+ *
+ * 功能概述：
+ * 作为 Tailwind v4 的 CSS-first 配置入口，通过 @theme 块将设计令牌映射为
+ * Tailwind 原生 token，自动生成对应的工具类（bg-primary-500、text-text-primary、
+ * rounded-lg 等）。
+ *
+ * 令牌体系架构（三端统一）：
+ * - 共享层：shd-shared/styles/tokens.css 定义 ark 家族令牌（primitive → semantic → component）
+ * - 兼容层：本仓库 tokens.css 提供 --fandex-* 命名兼容（值引用 ark 语义令牌）
+ * - Tailwind 层：本文件通过 @theme inline 将令牌导出为 Tailwind 命名空间
+ *
+ * 设计原则：
+ * - 不创建 tailwind.config.js（v4 已废弃 JS 配置）
+ * - 不使用 @tailwind base/components/utilities 旧指令（v4 改用 @import "tailwindcss"）
+ * - @theme inline 用于引用其他 CSS 变量的 token，确保工具类解析时使用引用而非字面值
+ * - 仅映射 Tailwind 原生识别的 token 命名空间（--color-*、--font-*、--radius-* 等）
+ *
+ * 主题切换机制：
+ * - ark 令牌使用 CSS light-dark() 函数实现双主题
+ * - 由 :root 的 color-scheme 声明驱动（shd-shared/styles/theme.css 管理）
+ * - [data-theme="dark"] 强制深色，[data-theme="light"] 强制浅色
+ * - 本文件的 @custom-variant dark 用于支持 dark: 前缀工具类
+ *
+ * 使用方式：
+ * - 在 BaseLayout.astro 中通过 import '@/styles/tailwind.css' 引入
+ * - 在组件中使用 `bg-primary-500`、`text-text-primary`、`rounded-lg` 等类名
+ */
+
+@import 'tailwindcss';
+
+/* ====================================================================
+   @theme inline：映射 Design Tokens 到 Tailwind 命名空间
+   --------------------------------------------------------------------
+   说明：使用 inline 修饰符，让 Tailwind 在工具类生成时保留 var() 引用，
+   而非在构建时替换为字面值。这样当主题切换时，所有 Tailwind 工具类会
+   同步更新主题色。
+
+   引用链路：
+   Tailwind 工具类 → @theme inline 变量 → --fandex-* 兼容层 → ark 语义令牌
+   ==================================================================== */
+@theme inline {
+  /* ============================================================
+     1. 颜色：主色板（Primary - 映射 ark accent 青色系）
+     ------------------------------------------------------------
+     保留 50-950 色阶编号以兼容现有组件代码（bg-primary-500 等）。
+     值通过 tokens.css 兼容层间接引用 ark 语义令牌。
+     ============================================================ */
+  --color-primary-50: var(--fandex-color-primary-50);
+  --color-primary-100: var(--fandex-color-primary-100);
+  --color-primary-200: var(--fandex-color-primary-200);
+  --color-primary-300: var(--fandex-color-primary-300);
+  --color-primary-400: var(--fandex-color-primary-400);
+  --color-primary-500: var(--fandex-color-primary-500);
+  --color-primary-600: var(--fandex-color-primary-600);
+  --color-primary-700: var(--fandex-color-primary-700);
+  --color-primary-800: var(--fandex-color-primary-800);
+  --color-primary-900: var(--fandex-color-primary-900);
+  --color-primary-950: var(--fandex-color-primary-950);
+
+  /* ============================================================
+     2. 颜色：辅助色板（Secondary - 映射 ark accent 青色系变体）
+     ============================================================ */
+  --color-secondary-50: var(--fandex-color-secondary-50);
+  --color-secondary-100: var(--fandex-color-secondary-100);
+  --color-secondary-200: var(--fandex-color-secondary-200);
+  --color-secondary-300: var(--fandex-color-secondary-300);
+  --color-secondary-400: var(--fandex-color-secondary-400);
+  --color-secondary-500: var(--fandex-color-secondary-500);
+  --color-secondary-600: var(--fandex-color-secondary-600);
+  --color-secondary-700: var(--fandex-color-secondary-700);
+  --color-secondary-800: var(--fandex-color-secondary-800);
+  --color-secondary-900: var(--fandex-color-secondary-900);
+  --color-secondary-950: var(--fandex-color-secondary-950);
+
+  /* ============================================================
+     3. 颜色：强调色板（Accent - 映射 ark warning 琥珀系）
+     ============================================================ */
+  --color-accent-50: var(--fandex-color-accent-50);
+  --color-accent-100: var(--fandex-color-accent-100);
+  --color-accent-200: var(--fandex-color-accent-200);
+  --color-accent-300: var(--fandex-color-accent-300);
+  --color-accent-400: var(--fandex-color-accent-400);
+  --color-accent-500: var(--fandex-color-accent-500);
+  --color-accent-600: var(--fandex-color-accent-600);
+  --color-accent-700: var(--fandex-color-accent-700);
+  --color-accent-800: var(--fandex-color-accent-800);
+  --color-accent-900: var(--fandex-color-accent-900);
+  --color-accent-950: var(--fandex-color-accent-950);
+
+  /* ============================================================
+     4. 颜色：中性色板（Neutral - 映射 ark neutral 灰阶系）
+     ============================================================ */
+  --color-neutral-50: var(--fandex-color-neutral-50);
+  --color-neutral-100: var(--fandex-color-neutral-100);
+  --color-neutral-200: var(--fandex-color-neutral-200);
+  --color-neutral-300: var(--fandex-color-neutral-300);
+  --color-neutral-400: var(--fandex-color-neutral-400);
+  --color-neutral-500: var(--fandex-color-neutral-500);
+  --color-neutral-600: var(--fandex-color-neutral-600);
+  --color-neutral-700: var(--fandex-color-neutral-700);
+  --color-neutral-800: var(--fandex-color-neutral-800);
+  --color-neutral-900: var(--fandex-color-neutral-900);
+  --color-neutral-950: var(--fandex-color-neutral-950);
+
+  /* ============================================================
+     5. 语义色：状态反馈（映射 ark 语义令牌）
+     ============================================================ */
+  --color-success: var(--fandex-color-success);
+  --color-success-light: var(--fandex-color-success-light);
+  --color-success-dark: var(--fandex-color-success-dark);
+  --color-success-bg: var(--fandex-color-success-bg);
+  --color-success-border: var(--fandex-color-success-border);
+
+  --color-warning: var(--fandex-color-warning);
+  --color-warning-light: var(--fandex-color-warning-light);
+  --color-warning-dark: var(--fandex-color-warning-dark);
+  --color-warning-bg: var(--fandex-color-warning-bg);
+  --color-warning-border: var(--fandex-color-warning-border);
+
+  --color-error: var(--fandex-color-error);
+  --color-error-light: var(--fandex-color-error-light);
+  --color-error-dark: var(--fandex-color-error-dark);
+  --color-error-bg: var(--fandex-color-error-bg);
+  --color-error-border: var(--fandex-color-error-border);
+
+  --color-info: var(--fandex-color-info);
+  --color-info-light: var(--fandex-color-info-light);
+  --color-info-dark: var(--fandex-color-info-dark);
+  --color-info-bg: var(--fandex-color-info-bg);
+  --color-info-border: var(--fandex-color-info-border);
+
+  /* ============================================================
+     6. 语义色：文本与背景（直接引用 ark 语义令牌）
+     ------------------------------------------------------------
+     此处直接引用 ark 语义令牌，确保 Tailwind 工具类与 ark 体系完全一致。
+     ============================================================ */
+  --color-text-primary: var(--color-fg-primary);
+  --color-text-secondary: var(--color-fg-secondary);
+  --color-text-tertiary: var(--color-fg-tertiary);
+  --color-text-disabled: var(--color-fg-disabled);
+  --color-text-inverse: var(--color-fg-inverse);
+
+  --color-background: var(--color-bg-primary);
+  --color-surface: var(--color-bg-secondary);
+  --color-elevated: var(--color-bg-elevated);
+  --color-sunken: var(--color-bg-sunken);
+  --color-hover: var(--color-bg-hover);
+  --color-active: var(--color-bg-active);
+
+  --color-border: var(--color-border-default);
+  --color-border-strong: var(--color-border-strong);
+  --color-border-subtle: var(--color-border-subtle);
+  --color-ring: var(--color-border-focus);
+
+  /* ============================================================
+     7. 字体族（映射 ark 字族令牌）
+     ============================================================ */
+  --font-sans: var(--font-family-sans);
+  --font-serif: var(--font-family-serif);
+  --font-mono: var(--font-family-mono);
+  --font-display: var(--font-family-display);
+
+  /* ============================================================
+     8. 字号（映射 ark 字号令牌）
+     ============================================================ */
+  --text-xs: var(--font-size-xs);
+  --text-sm: var(--font-size-sm);
+  --text-base: var(--font-size-base);
+  --text-lg: var(--font-size-lg);
+  --text-xl: var(--font-size-xl);
+  --text-2xl: var(--font-size-2xl);
+  --text-3xl: var(--font-size-3xl);
+  --text-4xl: var(--font-size-4xl);
+  --text-5xl: var(--font-size-5xl);
+  --text-6xl: var(--font-size-6xl);
+
+  /* ============================================================
+     9. 圆角（映射 ark 圆角令牌）
+     ============================================================ */
+  --radius-none: var(--radius-none);
+  --radius-sm: var(--radius-sm);
+  --radius-default: var(--radius-default);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-2xl: var(--radius-2xl);
+  --radius-3xl: var(--radius-3xl);
+  --radius-full: var(--radius-full);
+
+  /* ============================================================
+     10. 阴影（映射 ark 阴影令牌）
+     ============================================================ */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-default: var(--shadow-default);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-2xl);
+  --shadow-inner: var(--shadow-inner);
+
+  /* ============================================================
+     11. 间距（映射 ark 间距令牌，覆盖 Tailwind 默认 4px 栅格）
+     ============================================================ */
+  --spacing-0: var(--space-0);
+  --spacing-1: var(--space-1);
+  --spacing-2: var(--space-2);
+  --spacing-3: var(--space-3);
+  --spacing-4: var(--space-4);
+  --spacing-5: var(--space-5);
+  --spacing-6: var(--space-6);
+  --spacing-8: var(--space-8);
+  --spacing-10: var(--space-10);
+  --spacing-12: var(--space-12);
+  --spacing-16: var(--space-16);
+  --spacing-20: var(--space-20);
+  --spacing-24: var(--space-24);
+  --spacing-32: var(--space-32);
+
+  /* ============================================================
+     12. 动画（映射 ark 动效令牌）
+     ============================================================ */
+  --ease-default: var(--motion-easing-default);
+  --ease-in: var(--motion-easing-in);
+  --ease-out: var(--motion-easing-out);
+  --ease-in-out: var(--motion-easing-in-out);
+  --ease-spring: var(--motion-easing-spring);
+
+  --duration-instant: var(--motion-duration-instant);
+  --duration-fast: var(--motion-duration-fast);
+  --duration-normal: var(--motion-duration-normal);
+  --duration-slow: var(--motion-duration-slow);
+
+  /* ============================================================
+     13. z-index 层级
+     ------------------------------------------------------------
+     Tailwind v4 z-index 工具类命名空间必须为 --z-index-* 才能生成
+     对应的 .z-* 工具类（z-modal / z-tooltip 等）。此前误用 --z-*
+     仅注册 CSS 变量但不生成工具类，导致 DialogContent/DialogOverlay
+     的 z-modal 类失效（无 z-index 值），被 .home-nav(z-index:100)
+     等元素遮挡。修复方式：改用 --z-index-* 命名空间，保留 --z-*
+     作为 CSS 变量别名以向后兼容文档示例中的 var(--z-*) 引用。
+     ============================================================ */
+  --z-index-base: var(--fandex-z-base);
+  --z-index-dropdown: var(--fandex-z-dropdown);
+  --z-index-sticky: var(--fandex-z-sticky);
+  --z-index-overlay: var(--fandex-z-overlay);
+  --z-index-modal: var(--fandex-z-modal);
+  --z-index-popover: var(--fandex-z-popover);
+  --z-index-tooltip: var(--fandex-z-tooltip);
+  --z-index-notification: var(--fandex-z-notification);
+
+  /* 向后兼容别名：保留 --z-* 作为 CSS 变量引用（不生成工具类） */
+  --z-base: var(--z-index-base);
+  --z-dropdown: var(--z-index-dropdown);
+  --z-sticky: var(--z-index-sticky);
+  --z-overlay: var(--z-index-overlay);
+  --z-modal: var(--z-index-modal);
+  --z-popover: var(--z-index-popover);
+  --z-tooltip: var(--z-index-tooltip);
+  --z-notification: var(--z-index-notification);
+}
+
+/* ====================================================================
+   暗色变体：通过 [data-theme="dark"] 触发 dark: 前缀工具类
+   --------------------------------------------------------------------
+   说明：ark 体系采用 data-theme 属性切换主题。
+   通过 @custom-variant 重新定义 dark: 变体，使其响应 data-theme="dark"。
+   配合 shd-shared/styles/theme.css 的 color-scheme 声明协同工作。
+   ==================================================================== */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));

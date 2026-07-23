@@ -1,0 +1,15 @@
+{
+  "$description": "FANDEX 原始圆角令牌 — ark 家族偏好小圆角或直角，无语义",
+  "radius": {
+    "$type": "dimension",
+    "none": { "$value": "0", "$description": "直角（ark 家族常用）" },
+    "sm": { "$value": "0.125rem", "$description": "2px 微小圆角" },
+    "default": { "$value": "0.25rem", "$description": "4px 默认圆角" },
+    "md": { "$value": "0.375rem", "$description": "6px 中等圆角" },
+    "lg": { "$value": "0.5rem", "$description": "8px 大圆角" },
+    "xl": { "$value": "0.75rem", "$description": "12px 卡片圆角" },
+    "2xl": { "$value": "1rem", "$description": "16px 模态圆角" },
+    "3xl": { "$value": "1.5rem", "$description": "24px 大模态圆角" },
+    "full": { "$value": "9999px", "$description": "圆形" }
+  }
+}
