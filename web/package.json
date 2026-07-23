@@ -10,21 +10,8 @@
     "prebuild": "node scripts/generate-cheatsheet-highlights.js",
     "build": "node scripts/build-glossary-index.mjs && node scripts/build-search-index.mjs && astro build",
     "preview": "astro preview",
-    "prepare": "husky",
     "qa": "node scripts/qa-check.mjs",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "type-check": "astro check",
-    "format": "prettier --write .",
-    "format:check": "prettier --check .",
-    "lint:docs": "remark src/content/docs --ext .md,.mdx",
-    "lint:docs:fix": "remark src/content/docs --ext .md,.mdx --output",
-    "changeset": "changeset",
-    "changeset:version": "changeset version",
-    "changeset:status": "changeset status"
+    "type-check": "astro check"
   },
   "dependencies": {
     "@astrojs/mdx": "^7.0.3",
@@ -56,41 +43,15 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
-    "@changesets/changelog-github": "^0.7.0",
-    "@changesets/cli": "^2.31.1",
     "@types/hast": "^3.0.5",
     "@types/mdast": "^4.0.4",
-    "@lhci/cli": "^0.15.1",
-    "@playwright/test": "^1.61.1",
-    "@testing-library/vue": "^8.1.0",
-    "@vitest/coverage-v8": "^4.1.10",
-    "@vue/test-utils": "^2.4.11",
     "glob": "^13.0.6",
-    "happy-dom": "^20.11.0",
-    "husky": "^9.1.7",
-    "jsdom": "^29.1.1",
-    "lint-staged": "^17.1.0",
     "pagefind": "^1.5.2",
-    "prettier": "^3.9.5",
-    "prettier-plugin-astro": "^0.14.1",
-    "remark-cli": "^12.0.1",
-    "remark-preset-lint-consistent": "^6.0.1",
-    "rollup-plugin-visualizer": "^7.0.1",
-    "typescript": "^6.0.3",
-    "vitest": "^4.1.10"
+    "typescript": "^6.0.3"
   },
   "overrides": {
     "uuid": ">=11.1.1",
     "tmp": "^0.2.4"
-  },
-  "lint-staged": {
-    "*.{astro,ts,js,mjs,css,json,md}": [
-      "prettier --write"
-    ],
-    "*.{ts,astro}": [
-      "bash -c 'tsc --noEmit'",
-      "bash -c 'astro check'"
-    ]
   },
   "packageManager": "pnpm@11.15.1+sha512.81350b07e53c9538a02f1f2303b4290fa2d7be04e56e2a970c4cc4b417dc761de196edabd49d55c7dc9580db81007c44143e4e3d7e462b3000d23c255122d065"
 }

@@ -10,14 +10,6 @@
     "preview": "astro preview",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
-    "test": "vitest run",
-    "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "lint": "biome check .",
-    "lint:fix": "biome check --write .",
-    "format": "biome format --write .",
     "typecheck": "tsc --noEmit",
     "qa": "node ./scripts/qa-check.mjs"
   },
@@ -80,24 +72,17 @@
   },
   "devDependencies": {
     "@astrojs/check": "latest",
-    "@biomejs/biome": "latest",
-    "@playwright/test": "latest",
     "@tailwindcss/typography": "latest",
     "@tauri-apps/cli": "latest",
-    "@testing-library/jest-dom": "latest",
-    "@testing-library/react": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
     "@vitejs/plugin-react": "latest",
-    "@vitest/coverage-v8": "latest",
-    "happy-dom": "latest",
     "katex": "latest",
     "mermaid": "latest",
     "pagefind": "latest",
     "sharp": "latest",
     "shiki": "latest",
     "typescript": "latest",
-    "vite": "latest",
-    "vitest": "latest"
+    "vite": "latest"
   }
 }

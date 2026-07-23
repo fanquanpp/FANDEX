@@ -121,6 +121,16 @@ coverage/
 public/pagefind/
 desktop/public/pagefind/
 
+# web/reports/baseline 构建基线报告（CI 产物，不入库）
+web/reports/baseline/
+
+# web/public/data 与 desktop/public/data 构建产物（由 scripts/ 生成，不入库）
+web/public/data/
+desktop/public/data/
+
+# web/src/content/docs/ markdown 副本（由 content/full/ 同步生成，不入库）
+web/src/content/docs/
+
 # TypeScript 增量编译缓存
 *.tsbuildinfo
 
@@ -221,6 +231,10 @@ manifest/index.json
 
 # doc-id-map（包含本地路径映射，可能含敏感路径信息）
 tools/doc-id-map.json
+
+# 根目录 doc-id-map 映射文件（含本地绝对路径，禁止入库）
+/doc-id-map-full.json
+/doc-id-map-mobile.json
 
 
 # -----------------------------------------------------------------------------

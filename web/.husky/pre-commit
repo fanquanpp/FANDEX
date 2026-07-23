@@ -1,2 +1,0 @@
-export PATH="/c/Atian/Node:$PATH"
-npx lint-staged
