@@ -1,12 +1,13 @@
 # Build output
 dist/
+dist-web/
 .output/
 
 # Dependencies
 node_modules/
 
-# Astro
-.astro/
+# Expo cache
+.expo/
 
 # Test coverage
 coverage/

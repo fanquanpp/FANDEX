@@ -10,7 +10,8 @@
     "./favorites": "./favorites.ts",
     "./keyboard-shortcuts": "./keyboard-shortcuts.ts",
     "./metadata": "./metadata.ts",
-    "./modules": "./modules.ts"
+    "./modules": "./modules.ts",
+    "./roadmap": "./roadmap.ts"
   },
   "dependencies": {
     "zod": "catalog:"

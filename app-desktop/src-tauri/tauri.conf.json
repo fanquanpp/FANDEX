@@ -4,10 +4,10 @@
   "version": "3.1.0",
   "identifier": "com.fandex.app",
   "build": {
-    "beforeDevCommand": "pnpm dev",
-    "devUrl": "http://localhost:4321",
-    "beforeBuildCommand": "pnpm build",
-    "frontendDist": "../dist"
+    "beforeDevCommand": "pnpm expo:web",
+    "devUrl": "http://localhost:8081",
+    "beforeBuildCommand": "pnpm expo:build:web",
+    "frontendDist": "../dist-web"
   },
   "app": {
     "windows": [
@@ -46,7 +46,7 @@
     "copyright": "Copyright (c) 2026 fanquanpp. All rights reserved.",
     "category": "Education",
     "shortDescription": "FANDEX - 渐进式自学平台",
-    "longDescription": "FANDEX 是一款零基础到本科毕业的渐进式自学平台，含 51 模块与 1996 篇文档，基于 Tauri 2 + Astro 7 + React 19 技术栈，完全离线可用。",
+    "longDescription": "FANDEX 是一款零基础到本科毕业的渐进式自学平台，含 51 模块与 1996 篇文档，基于 Tauri 2 + Expo + React Native + React 19 技术栈，完全离线可用。",
     "homepage": "https://github.com/fanquanpp/FANDEX",
     "icon": [
       "icons/32x32.png",

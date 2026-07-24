@@ -1,18 +1,18 @@
-﻿/**
+/**
  * FANDEX 搜索索引构建脚本（Phase 11）
  *
  * 功能概述：
- * 封装 Pagefind 命令行工具，对 Astro 构建产物（./dist/）生成搜索索引。
+ * 封装 Pagefind 命令行工具，对 Expo 构建产物（./dist-web/）生成搜索索引。
  * 该脚本设计为可在构建链中重复调用：
- *   - 若 ./dist/ 不存在（astro build 尚未执行）：输出警告并以 0 退出，不阻断后续步骤
- *   - 若 ./dist/ 存在：执行 `npx pagefind --site dist` 生成索引，统计页面数与索引大小
+ *   - 若 ./dist-web/ 不存在（expo:build:web 尚未执行）：输出警告并以 0 退出，不阻断后续步骤
+ *   - 若 ./dist-web/ 存在：执行 `npx pagefind --site dist-web` 生成索引，统计页面数与索引大小
  *
  * 调用上下文：
- *   package.json 的 build 命令在 astro build 之后通过 `pagefind --site dist` 直接运行 pagefind，
- *   本脚本提供等价的 Node.js 封装，便于独立运行、CI/CD 流水线与统计输出。
+ *   package.json 的 expo:build:web 命令导出静态站点后，
+ *   本脚本提供 Node.js 封装，便于独立运行、CI/CD 流水线与统计输出。
  *
  * 输出：
- *   - ./dist/pagefind/ 目录（由 Pagefind 自动生成）
+ *   - ./dist-web/pagefind/ 目录（由 Pagefind 自动生成）
  *   - 控制台统计信息（页面数、索引大小、耗时）
  */
 
@@ -25,8 +25,8 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 /** 项目根目录 */
 const PROJECT_ROOT = resolve(__dirname, '..');
-/** Astro 构建产物目录 */
-const DIST_DIR = join(PROJECT_ROOT, 'dist');
+/** Expo 构建产物目录 */
+const DIST_DIR = join(PROJECT_ROOT, 'dist-web');
 /** Pagefind 索引输出目录 */
 const PAGEFIND_DIR = join(DIST_DIR, 'pagefind');
 
@@ -90,27 +90,27 @@ function main() {
   const startTime = Date.now();
   console.log('[build-search-index] 开始生成 Pagefind 搜索索引...');
 
-  // 1. 检查 ./dist/ 是否存在（astro build 是否已完成）
+  // 1. 检查 ./dist-web/ 是否存在（expo:build:web 是否已完成）
   if (!existsSync(DIST_DIR)) {
-    console.warn(`[build-search-index] 警告: ${DIST_DIR} 不存在，astro build 可能尚未执行。`);
+    console.warn(`[build-search-index] 警告: ${DIST_DIR} 不存在，expo:build:web 可能尚未执行。`);
     console.warn('[build-search-index] 跳过 Pagefind 索引生成（以 0 退出，不阻断构建链）。');
     process.exit(0);
   }
 
   const htmlCount = countFilesByExt(DIST_DIR, '.html');
-  console.log(`[build-search-index] 检测到 dist/ 包含 ${htmlCount} 个 HTML 页面。`);
+  console.log(`[build-search-index] 检测到 dist-web/ 包含 ${htmlCount} 个 HTML 页面。`);
 
-  // 2. 若 dist/ 中无 HTML 页面，说明 astro build 尚未执行或产物为空，跳过 pagefind 执行
+  // 2. 若 dist-web/ 中无 HTML 页面，说明 expo:build:web 尚未执行或产物为空，跳过 pagefind 执行
   if (htmlCount === 0) {
-    console.warn('[build-search-index] 警告: dist/ 中未发现 HTML 页面，跳过 pagefind 索引生成。');
+    console.warn('[build-search-index] 警告: dist-web/ 中未发现 HTML 页面，跳过 pagefind 索引生成。');
     console.warn(
-      '[build-search-index] 请确认 astro build 已成功执行；本脚本以 0 退出，不阻断构建链。',
+      '[build-search-index] 请确认 expo:build:web 已成功执行；本脚本以 0 退出，不阻断构建链。',
     );
     process.exit(0);
   }
 
-  // 3. 执行 `npx pagefind --site dist` 生成索引
-  console.log('[build-search-index] 执行: npx pagefind --site dist');
+  // 3. 执行 `npx pagefind --site dist-web` 生成索引
+  console.log('[build-search-index] 执行: npx pagefind --site dist-web');
   const result = spawnSync('npx', ['pagefind', '--site', DIST_DIR], {
     cwd: PROJECT_ROOT,
     stdio: 'inherit',

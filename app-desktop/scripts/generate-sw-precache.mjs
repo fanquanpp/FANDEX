@@ -1,13 +1,13 @@
-﻿/**
+/**
  * FANDEX Service Worker 预缓存清单生成脚本（Phase 11）
  *
  * 功能概述：
- * 在 Astro 构建完成后，扫描 ./dist/ 目录下全部静态资源，
+ * 在 Expo 构建完成后，扫描 ./dist-web/ 目录下全部静态资源，
  * 生成独立的预缓存清单 JSON 文件，供 Service Worker 运行时 fetch 加载。
  * 不再直接修改 sw.js，实现数据与代码解耦。
  *
- * 数据源：./dist/ 目录下全部静态文件
- * 输出：./dist/sw-precache-manifest.json
+ * 数据源：./dist-web/ 目录下全部静态文件
+ * 输出：./dist-web/sw-precache-manifest.json
  *
  * 输出格式：
  * {
@@ -45,8 +45,8 @@ import { fileURLToPath } from 'node:url';
 const __dirname = dirname(fileURLToPath(import.meta.url));
 /** 项目根目录 */
 const PROJECT_ROOT = resolve(__dirname, '..');
-/** Astro 构建输出目录 */
-const DIST_DIR = join(PROJECT_ROOT, 'dist');
+/** Expo 构建输出目录 */
+const DIST_DIR = join(PROJECT_ROOT, 'dist-web');
 /** 输出文件路径（与 sw.js 同目录） */
 const OUTPUT_FILE = join(DIST_DIR, 'sw-precache-manifest.json');
 
@@ -160,7 +160,7 @@ async function main() {
     }
   } catch (err) {
     console.error(`[generate-sw-precache] 错误: dist 目录不存在或不可访问: ${DIST_DIR}`);
-    console.error('[generate-sw-precache] 请先运行 astro build 后再执行本脚本。');
+    console.error('[generate-sw-precache] 请先运行 expo:build:web 后再执行本脚本。');
     console.error(`[generate-sw-precache] 详细错误: ${err.message}`);
     process.exit(1);
   }

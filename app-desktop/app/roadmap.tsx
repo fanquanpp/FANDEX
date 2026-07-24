@@ -16,42 +16,11 @@ import { ScrollView, View, Text, Pressable, StyleSheet, FlatList } from 'react-n
 import { router } from 'expo-router';
 import { useColorScheme } from 'react-native';
 
-// 从共享元数据 JSON 直接导入（Metro watchFolders 支持 workspace 跨包解析）
-import phasesData from '../../../shd-shared/metadata/roadmap/phases.json';
-import careerPathsData from '../../../shd-shared/metadata/roadmap/career-paths.json';
+// 从共享包导入路线图数据（三端统一数据源，JSON import 兼容 Metro）
+import { phases, careerPaths } from '@fandex/utils/roadmap';
 
 // 从共享模块访问层导入查询函数（用于通过模块 ID 获取模块标题）
 import { getModule, toModuleRoute } from './lib/modules';
-
-/** 路线图阶段数据类型 */
-interface RoadmapItem {
-  id: string;
-  arrow: string | null;
-}
-
-interface RoadmapPhase {
-  phase: string;
-  label: string;
-  desc: string;
-  color: string;
-  items: RoadmapItem[];
-}
-
-/** 职业路径数据类型 */
-interface CareerPathStep {
-  id: string;
-  label: string;
-}
-
-interface CareerPath {
-  label: string;
-  color: string;
-  steps: CareerPathStep[];
-}
-
-/** 类型化数据 */
-const phases = phasesData as RoadmapPhase[];
-const careerPaths = careerPathsData as CareerPath[];
 
 /** 主题色配置 */
 const COLORS = {

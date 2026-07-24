@@ -1,29 +1,24 @@
 {
-  "extends": "astro/tsconfigs/strict",
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
     "target": "ES2024",
     "module": "ESNext",
     "moduleResolution": "bundler",
     "jsx": "react-jsx",
     "jsxImportSource": "react",
-    "lib": ["ES2024", "DOM", "DOM.Iterable", "WebWorker"],
+    "lib": ["ES2024", "DOM", "DOM.Iterable"],
     "strict": true,
     "noUncheckedIndexedAccess": false,
-    "noImplicitOverride": false,
     "noFallthroughCasesInSwitch": true,
     "noUnusedLocals": false,
     "noUnusedParameters": false,
-    "verbatimModuleSyntax": true,
-    "allowImportingTsExtensions": false,
+    "verbatimModuleSyntax": false,
     "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "paths": {
-      "@/*": ["./src/*"],
-      "@modules": ["../shd-shared/metadata/modules.json"]
-    }
+    "forceConsistentCasingInFileNames": true
   },
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "node_modules"]
+  "include": ["app/**/*.ts", "app/**/*.tsx", "*.ts", "*.tsx"],
+  "exclude": ["dist", "dist-web", "node_modules", "src-tauri"]
 }

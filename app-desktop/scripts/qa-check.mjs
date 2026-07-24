@@ -7,13 +7,13 @@
  * 存在 FAIL 项时以非零退出码退出，阻断流水线。
  *
  * 检查项：
- *   1. 内容完整性：content/ 下文档数 > 1900
- *   2. 术语表完整性：glossary/ 下 27 个 glossary.md 文件
- *   3. 速查表完整性：cheatsheets/ 下 9 个 JSON 文件
- *   4. 模块定义：metadata/modules.json 含 51 个模块
+ *   1. 内容完整性：cnt-content/full/ 下文档数 > 1900
+ *   2. 术语表完整性：shd-shared/metadata/glossary/ 下 27 个 JSON 文件
+ *   3. 速查表完整性：shd-shared/metadata/cheatsheets/ 下 9 个 JSON 文件
+ *   4. 模块定义：shd-shared/metadata/modules.json 含 51 个模块
  *   5. 索引文件存在：glossary-index.json、module-docs-index.json、tag-index.json、knowledge-graph.json
- *   6. 构建产物：./dist/ 目录存在且含 index.html（仅 post-build 检查）
- *   7. 无 Vue 残留：grep "from 'vue'" 或 ".vue" 在 src/ 下返回 0 结果
+ *   6. 构建产物：./dist-web/ 目录存在且含 index.html（仅 post-build 检查）
+ *   7. 无 Vue 残留：grep "from 'vue'" 或 ".vue" 在 app/ 下返回 0 结果
  *   8. Tauri 配置：src-tauri/tauri.conf.json 存在
  *   9. PWA 资源：manifest.json、sw.js、icons/ 存在
  */
@@ -32,16 +32,16 @@ const MONO_ROOT = resolve(PROJECT_ROOT, '..');
 const CONTENT_DIR = join(MONO_ROOT, 'cnt-content', 'full');
 /** 术语表目录（仓库整理后 src/content/glossary 已迁移至 shd-shared/metadata/glossary，且格式由 Markdown 改为 JSON） */
 const GLOSSARY_DIR = join(MONO_ROOT, 'shd-shared', 'metadata', 'glossary');
-/** 速查表目录 */
-const CHEATSHEETS_DIR = join(PROJECT_ROOT, 'src', 'data', 'cheatsheets');
+/** 速查表目录（仓库整理后已迁移至 shd-shared/metadata/cheatsheets） */
+const CHEATSHEETS_DIR = join(MONO_ROOT, 'shd-shared', 'metadata', 'cheatsheets');
 /** 模块定义文件（仓库整理后 metadata/modules.json 已迁移至 shd-shared/metadata/modules.json） */
 const MODULES_FILE = join(MONO_ROOT, 'shd-shared', 'metadata', 'modules.json');
 /** 索引输出目录 */
 const DATA_DIR = join(PROJECT_ROOT, 'public', 'data');
-/** 构建产物目录 */
-const DIST_DIR = join(PROJECT_ROOT, 'dist');
-/** 源代码目录 */
-const SRC_DIR = join(PROJECT_ROOT, 'src');
+/** 构建产物目录（Expo export 输出至 dist-web/） */
+const DIST_DIR = join(PROJECT_ROOT, 'dist-web');
+/** 源代码目录（Expo Router 应用目录） */
+const SRC_DIR = join(PROJECT_ROOT, 'app');
 /** Tauri 配置目录 */
 const TAURI_DIR = join(PROJECT_ROOT, 'src-tauri');
 /** PWA 资源目录 */
@@ -251,25 +251,25 @@ async function checkIndexFiles() {
 async function checkBuildArtifacts() {
   console.log('[Dimension 6: Build Artifacts]');
   if (!(await fileExists(DIST_DIR))) {
-    warn(`dist/ 目录不存在（astro build 可能尚未执行）`);
+    warn(`dist-web/ 目录不存在（expo:build:web 可能尚未执行）`);
     return;
   }
   const indexHtml = join(DIST_DIR, 'index.html');
   if (await fileExists(indexHtml)) {
-    pass(`dist/index.html 存在`);
+    pass(`dist-web/index.html 存在`);
   } else {
-    fail(`dist/index.html 缺失（构建可能失败）`);
+    fail(`dist-web/index.html 缺失（构建可能失败）`);
   }
 }
 
 /**
- * 检查 7：无 Vue 残留（src/ 下不应包含 .vue 文件或 from 'vue' 导入）
+ * 检查 7：无 Vue 残留（app/ 下不应包含 .vue 文件或 from 'vue' 导入）
  */
 async function checkNoVueResidue() {
   console.log('[Dimension 7: No Vue Residue]');
   try {
     if (!(await fileExists(SRC_DIR))) {
-      warn(`src/ 目录不存在: ${SRC_DIR}`);
+      warn(`app/ 目录不存在: ${SRC_DIR}`);
       return;
     }
     /** @type {Array<{file: string, line: number, content: string}>} */
@@ -278,7 +278,7 @@ async function checkNoVueResidue() {
 
     await walkDir(
       SRC_DIR,
-      ['.vue', '.ts', '.tsx', '.js', '.jsx', '.astro', '.mjs'],
+      ['.vue', '.ts', '.tsx', '.js', '.jsx', '.mjs'],
       async (full) => {
         const content = await readFile(full, 'utf-8');
         const lines = content.split('\n');
@@ -301,7 +301,7 @@ async function checkNoVueResidue() {
     );
 
     if (vueFiles.length === 0 && vueImports.length === 0) {
-      pass(`src/ 下无 Vue 残留（无 .vue 文件、无 from 'vue' 导入）`);
+      pass(`app/ 下无 Vue 残留（无 .vue 文件、无 from 'vue' 导入）`);
     } else {
       if (vueFiles.length > 0) {
         fail(`发现 ${vueFiles.length} 个 .vue 文件（应全部移除）`);
