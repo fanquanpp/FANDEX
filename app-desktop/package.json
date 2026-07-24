@@ -9,6 +9,7 @@
     "expo:start": "expo start",
     "expo:web": "expo start --web",
     "expo:build:web": "expo export --platform web --output-dir dist-web",
+    "build:docs-content": "node ./scripts/build-docs-content.mjs",
     "tauri:dev": "tauri dev",
     "tauri:build": "tauri build",
     "typecheck": "tsc --noEmit",
@@ -41,6 +42,8 @@
     "remark-emoji": "catalog:",
     "remark-gfm": "catalog:",
     "remark-math": "catalog:",
+    "unified": "catalog:",
+    "remark-parse": "catalog:",
     "unist-util-visit": "catalog:",
     "zod": "catalog:",
     "zustand": "catalog:"

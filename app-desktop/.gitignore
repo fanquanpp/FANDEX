@@ -15,6 +15,9 @@ coverage/
 # Pagefind index
 public/pagefind/
 
+# 文档内容（由 scripts/build-docs-content.mjs 从 cnt-content/full/ 同步生成）
+public/content/
+
 # Tauri build
 src-tauri/target/
 

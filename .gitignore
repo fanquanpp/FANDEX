@@ -129,6 +129,9 @@ app-web/reports/baseline/
 app-web/public/data/
 app-desktop/public/data/
 
+# app-desktop/public/content 文档内容（由 build-docs-content.mjs 从 cnt-content/full/ 同步，不入库）
+app-desktop/public/content/
+
 # app-web/src/content/docs/ markdown 副本（由 cnt-content/full/ 同步生成，不入库）
 app-web/src/content/docs/
 
