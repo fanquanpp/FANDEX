@@ -75,13 +75,12 @@ prerequisites:
 
 | 模块 id | 分类中文名 |
 | --- | --- |
-| getting-started / markdown / git / github / english / shell / pnpm-monorepo | 工具链 |
+| getting-started / markdown / git / github / shell / pnpm-monorepo | 工具链 |
 | html5 / css / javascript / typescript / vue3 / react / svg / astro / vite / tailwind / nextjs / svelte / angular | 前端技术 |
-| java / kotlin / csharp / go / lua / harmonyos / python / rust / deno / bun / nestjs | 后端技术 |
+| java / kotlin / csharp / go / python / rust / nestjs | 后端技术 |
 | sql / mysql / postgresql / redis / mongodb | 数据库 |
 | algorithm / cs-fundamentals / c / cpp | 计算机科学 |
-| calculus / discrete-math / linear-algebra / probability-statistics | 数学 |
-| devops / networking / cybersecurity / cloud-computing / iot / software-testing / software-engineering / software-architecture / engineering-practices / message-queue | 云与基础设施 |
+| devops / networking / cybersecurity / cloud-computing / software-testing / software-engineering / software-architecture / engineering-practices | 云与基础设施 |
 
 ## 校验入口
 
