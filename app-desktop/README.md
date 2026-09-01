@@ -12,6 +12,9 @@ FANDEX 的 Windows 桌面端，基于 **Tauri 2**：内嵌 `app-web` 的静态�
 - **内容离线**：文档与索引全部内置于安装包，无任何联网依赖；
 - **窗口状态记忆**：关闭时保存窗口位置与尺寸，下次启动自动恢复
   （`tauri-plugin-window-state`）；
+- **桌面快捷键**：`Ctrl+Alt+F` 全局呼出/隐藏主窗口（应用在后台时仍可触发）；
+  `F11` 全屏切换，`Esc` 退出全屏；`Alt+左/右方向键` 后退/前进，
+  对齐浏览器阅读习惯；
 - **无在线编程**：网页端的"前端实验室"（在线编程）页面在桌面构建中剔除，
   与学习主线无关的能力不带入桌面端。
 
@@ -45,7 +48,7 @@ app-desktop/
 ├── package.json            # @fandex/desktop（tauri-cli 依赖）
 └── src-tauri/
     ├── tauri.conf.json     # 窗口/打包/图标/前端产物配置
-    ├── capabilities/       # Tauri 能力声明（窗口状态记忆）
+    ├── capabilities/       # Tauri 能力声明（窗口状态记忆、全屏快捷键）
     ├── icons/              # 图标套件（由 shd-shared 统一 app-icon.svg 生成）
-    └── src/                # Rust 入口（main.rs / lib.rs）
+    └── src/                # Rust 入口（main.rs / lib.rs：窗口构建、快捷键注册）
 ```

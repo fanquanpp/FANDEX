@@ -1,7 +1,12 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "default",
-  "description": "FANDEX 桌面端主窗口默认能力：核心 API 与窗口状态记忆",
+  "description": "FANDEX 桌面端主窗口默认能力：核心 API、窗口状态记忆与全屏快捷键",
   "windows": ["main"],
-  "permissions": ["core:default", "window-state:default"]
+  "permissions": [
+    "core:default",
+    "window-state:default",
+    "core:window:allow-set-fullscreen",
+    "core:window:allow-is-fullscreen"
+  ]
 }

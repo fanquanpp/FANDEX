@@ -5,20 +5,11 @@
   "identifier": "com.fandexpp.desktop",
   "build": {
     "beforeBuildCommand": "pnpm --filter @fandex/desktop build",
-    "frontendDist": "../app-web/dist"
+    "frontendDist": "../../app-web/dist"
   },
   "app": {
-    "windows": [
-      {
-        "title": "FANDEX",
-        "width": 1280,
-        "height": 800,
-        "minWidth": 960,
-        "minHeight": 640,
-        "center": true,
-        "dragDropEnabled": false
-      }
-    ],
+    "withGlobalTauri": true,
+    "windows": [],
     "security": {
       "csp": null
     }

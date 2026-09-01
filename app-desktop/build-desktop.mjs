@@ -19,7 +19,7 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const repoRoot = join(__dirname, '..', '..');
+const repoRoot = join(__dirname, '..');
 const dist = join(repoRoot, 'app-web', 'dist');
 
 // 1. 构建 web 端（复用单一内容源与既有构建管线）
