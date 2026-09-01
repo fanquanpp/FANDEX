@@ -154,11 +154,18 @@ jobs:
           name: fandex-old-apk
           path: apk-old
 
+      - name: 下载 Windows 桌面端安装包产物
+        uses: actions/download-artifact@v4
+        with:
+          name: fandex-desktop-installer
+          path: desktop
+
       - name: 重命名为发布文件名
         run: |
           mkdir -p apk
           mv apk-new/*.apk "apk/FANDEX-${{ github.ref_name }}.apk"
           mv apk-old/*.apk "apk/FANDEX-Legacy-${{ github.ref_name }}.apk"
+          mv desktop/*.exe "apk/FANDEX-Setup-${{ github.ref_name }}.exe"
           ls -la apk/
 
       - name: 生成发布说明
@@ -172,11 +179,12 @@ jobs:
             flag { print }
           ' CHANGELOG.md)
           if [ -z "$NOTES" ]; then
-            NOTES="FANDEX 双端 $VERSION 自动构建产物。
+            NOTES="FANDEX 三端 $VERSION 自动构建产物。
 
           - FANDEX-$VERSION.apk：新技术栈主线（React 生态三端统一）
           - FANDEX-Legacy-$VERSION.apk：旧技术栈归档线（Kotlin Compose 原生）
-          - 两个安装包 applicationId 不同，可并存安装"
+          - FANDEX-Setup-$VERSION.exe：Windows 桌面端安装包（Tauri 2，离线可用）
+          - 两个 APK applicationId 不同，可并存安装"
           fi
           # 多行文本写入 GITHUB_OUTPUT
           {
@@ -185,7 +193,7 @@ jobs:
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
-      - name: 创建 Release 并上传双端 APK
+      - name: 创建 Release 并上传三端安装包
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
@@ -194,4 +202,5 @@ jobs:
           files: |
             apk/FANDEX-${{ github.ref_name }}.apk
             apk/FANDEX-Legacy-${{ github.ref_name }}.apk
+            apk/FANDEX-Setup-${{ github.ref_name }}.exe
           fail_on_unmatched_files: true
