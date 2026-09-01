@@ -542,7 +542,16 @@ fun FANDEXApp(
                                 )
                             }
                         } else {
-                            /* 首页：主页 + 主题 */
+                            /* 首页：源仓库 + 主页 + 主题。
+                               源仓库按钮不直接跳转：项目在 2.7.0 版本前后分属两个仓库，
+                               点击弹出选择浮层，由用户按所需版本自行跳转 */
+                            IconButton(onClick = { showRepoSheet = true }) {
+                                Icon(
+                                    Icons.Default.Code,
+                                    contentDescription = "源仓库",
+                                    modifier = Modifier.size(20.dp)
+                                )
+                            }
                             IconButton(onClick = {
                                 navController.navigate(Screen.Home.route) {
                                     popUpTo(Screen.Home.route) { inclusive = true }
