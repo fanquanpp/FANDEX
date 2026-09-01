@@ -8,18 +8,26 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.viewModels
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.fandex.app.data.prefs.ThemeMode
 import com.fandex.app.ui.navigation.AppRoot
 import com.fandex.app.ui.theme.FandexTheme
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+
+/** 开屏最短展示时长（毫秒）：保证品牌动画完整播放，又不拖慢进入速度 */
+private const val SPLASH_HOLD_MILLIS = 600L
 
 /**
  * 主 Activity
@@ -32,11 +40,23 @@ class MainActivity : ComponentActivity() {
 
     private val mainViewModel: MainViewModel by viewModels()
 
+    /** 开屏保持标志：为 true 时 SplashScreen 保持可见 */
+    private var splashHold by mutableStateOf(true)
+
     override fun onCreate(savedInstanceState: Bundle?) {
+        // 开屏动画 logo（core-splashscreen）：Android 12+ 走系统开屏，
+        // 11 及以下由兼容库提供一致体验；退出动画由主题统一接管
+        val splashScreen = installSplashScreen()
+        splashScreen.setKeepOnScreenCondition { splashHold }
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
             val themeMode by mainViewModel.themeMode.collectAsState()
+            // 内容首帧就绪后延迟释放开屏，保证品牌动画完整
+            LaunchedEffect(Unit) {
+                delay(SPLASH_HOLD_MILLIS)
+                splashHold = false
+            }
             RootTheme(themeMode = themeMode) {
                 AppRoot()
             }

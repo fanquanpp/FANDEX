@@ -5,14 +5,15 @@
 #   1. push v* 标签 → 自动构建并发布 GitHub Release
 #   2. 手动触发（release=true） → 构建并发布指定标签的 Release
 #
-# 职责：双端并行构建签名 APK，重命名后创建 GitHub Release 并附带安装包。
+# 职责：三端并行构建（Android 双端 APK + Windows 桌面端 NSIS 安装包），
+#       统一命名后创建 GitHub Release 并附带全部安装包。
 #
 # 签名策略：
 #   未注入正式 keystore 时回退 debug 签名，CI 可直接出包；
 #   debug keystore 在 runner 上临时生成，仅用于分发安装，不做覆盖升级。
 # =============================================================================
 
-name: Android Build & Release
+name: Build & Release
 
 on:
   push:
@@ -84,9 +85,56 @@ jobs:
           path: ${{ matrix.apk }}
           retention-days: 90
 
+  desktop:
+    name: 构建 Windows 桌面端安装包
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 配置 pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: 配置 Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: pnpm
+
+      - name: 配置 Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust 编译缓存
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app-desktop/src-tauri
+
+      - name: 安装依赖
+        run: pnpm install --frozen-lockfile
+
+      - name: 桌面端构建（web 产物 + playground 剔除 + Tauri 打包）
+        run: pnpm --filter @fandex/desktop exec tauri build
+
+      - name: 前端实验室剔除校验
+        shell: pwsh
+        run: |
+          if (Test-Path "app-web/dist/playground") {
+            Write-Error "playground 页面未被剔除：桌面端不得包含在线编程功能"
+            exit 1
+          }
+          Write-Host "playground 已剔除，校验通过"
+
+      - name: 上传安装包构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: fandex-desktop-installer
+          path: app-desktop/src-tauri/target/release/bundle/nsis/*.exe
+          retention-days: 90
+
   release:
     name: 发布 GitHub Release
-    needs: build
+    needs: [build, desktop]
     if: startsWith(github.ref, 'refs/tags/v') || (github.event_name == 'workflow_dispatch' && github.event.inputs.release == 'true')
     runs-on: ubuntu-latest
     timeout-minutes: 10

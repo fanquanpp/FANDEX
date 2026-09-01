@@ -35,7 +35,9 @@ export default defineConfig({
   site: 'https://fanquanpp.github.io',
   // 部署基础路径（GitHub Pages 项目站点，单仓库仓库名 FANDEX）
   // 注意：base 必须与 GitHub Pages URL 路径一致，否则资源加载 404
-  base: '/FANDEX/',
+  // 桌面端构建（DESKTOP_BUILD=1，由 app-desktop/build-desktop.mjs 设置）使用
+  // 根路径 base：Tauri 的 frontendDist 服务在根路径，/FANDEX/ 前缀会 404
+  base: process.env.DESKTOP_BUILD === '1' ? '/' : '/FANDEX/',
   build: {
     // 样式内联策略：auto 由 Astro 自动决定（小文件内联，大文件外部引用）
     inlineStylesheets: 'auto',

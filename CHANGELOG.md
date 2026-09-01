@@ -80,4 +80,33 @@
 - 单仓库整合：三端统一 React 生态（web / desktop / android 占位）
   + 共享内容层（cnt-content / shd-shared / tls-tools / thd-third-party）。
 - 旧版 FANDEX-App 完整源码迁入仓库归档（后续重组为 `app-Android-old`）。
-- 历史变更详见各子工程内部文档与提交历史。
+- 历史变更详见各子工程内部文档与提交历史。## [v4.1.0] - 2026-08-30
+
+本版本新增 Windows 桌面端，并同步完善两端 Android 应用的体验细节。全端版本号
+统一为 4.1.0。
+
+### 新增
+
+- **Windows 桌面端（app-desktop）**：基于 Tauri 2，内嵌 web 端构建产物，
+  完全离线可用；窗口状态记忆（位置/尺寸自动恢复）；由统一 app-icon 生成的
+  全套图标；构建时剔除在线编程（前端实验室）页面并断言校验；
+  发布包命名 FANDEX-Setup-<版本>.exe；
+- **app-Android-new 开屏动画**：接入 core-splashscreen，品牌图标 + 深浅色
+  自适应背景（冷雾灰/近黑），600ms 品牌展示后渐出进入应用；
+- **app-Android-new 主题图标**：launcher 增加 monochrome 单色层
+  （Android 13+ 主题图标支持）；
+- **app-Android-old 源仓库选择**：顶部导航栏新增 GitHub 按钮，点击弹出
+  悬浮面板列出两个源仓库（当前仓库 FANDEX 与历史仓库 FANDEX-App，
+  按版本区间说明区分），风格与现有界面统一。
+
+### 变更
+
+- 全端版本号统一 4.1.0（Android 双端 versionCode 继续各自递增）；
+- 三端内容同步校验（web / Android 双端与 cnt-content 逐字节一致）；
+- 文档规模信息统一为 43 模块 / 1718 篇，AGENTS.md 模块->分类映射表对齐。
+
+### 修复
+
+- CI 触发职责核查与文档澄清（以 PR #12 拆分后的配置为准，无残留混乱）。
+
+
