@@ -1,0 +1,94 @@
+# =============================================================================
+# FANDEX Windows 桌面端构建校验工作流
+# =============================================================================
+# 触发时机：
+#   1. push 到 main 分支（桌面工程 / web 前端 / 内容源 / 工作流文件变更时）
+#   2. 指向 main 的 PR（桌面工程 / web 前端变更时）
+#   3. 手动触发
+#
+# 职责：Windows 下执行桌面端完整构建（web 产物 -> playground 剔除 -> Tauri
+#       编译打包），上传安装包为 artifact，不创建 Release。
+#
+# 发布由 android-release.yml 负责（v* 标签触发，桌面安装包与双端 APK
+# 进入同一个 GitHub Release）。
+# =============================================================================
+
+name: Desktop Build Check
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app-desktop/**'
+      - 'app-web/**'
+      - 'cnt-content/**'
+      - 'shd-shared/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/desktop-build.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app-desktop/**'
+      - 'app-web/**'
+      - 'cnt-content/**'
+      - 'shd-shared/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/desktop-build.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: desktop-build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: 构建 Windows 安装包
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Setup Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust 编译缓存
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app-desktop/src-tauri
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: 桌面端构建（web 产物 + playground 剔除 + Tauri 打包）
+        run: pnpm --filter @fandex/desktop exec tauri build
+
+      - name: 前端实验室剔除校验
+        shell: pwsh
+        run: |
+          if (Test-Path "app-web/dist/playground") {
+            Write-Error "playground 页面未被剔除：桌面端不得包含在线编程功能"
+            exit 1
+          }
+          Write-Host "playground 已剔除，校验通过"
+
+      - name: 上传安装包构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: fandex-desktop-installer
+          path: app-desktop/src-tauri/target/release/bundle/nsis/*.exe
+          retention-days: 14

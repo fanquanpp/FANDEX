@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 深色主题：近黑窗口底色，消除冷启动白闪 -->
-    <style name="Theme.FANDEX" parent="android:Theme.Material.NoActionBar">
-        <item name="android:statusBarColor">@android:color/transparent</item>
-        <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowBackground">@color/bg_primary_dark</item>
+    <!-- 开屏主题（深色）：近黑底 + 品牌图标，避免深色模式启动白闪 -->
+    <style name="Theme.FANDEX.Starting" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/bg_primary_dark</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>
+        <item name="windowSplashScreenAnimationDuration">600</item>
+        <item name="postSplashScreenTheme">@style/Theme.FANDEX</item>
         <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>

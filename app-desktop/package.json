@@ -1,0 +1,13 @@
+{
+  "name": "@fandex/desktop",
+  "version": "4.1.0",
+  "private": true,
+  "description": "FANDEX Windows 桌面端（Tauri 2）：内嵌 app-web 构建产物，完全离线",
+  "scripts": {
+    "build": "node build-desktop.mjs",
+    "tauri": "tauri"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0"
+  }
+}

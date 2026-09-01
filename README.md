@@ -1,14 +1,13 @@
 # FANDEX
 
-**FANDEX 是一套面向零基础学习者的全栈自学体系，同时是学成之后的随身语法速查伴侣。**
+**FANDEX 是一套面向零基础学习者的全栈自学体系，也是学成之后的随身语法速查伴侣。**
 
-43 个技术模块、1700+ 篇中文教学文档，从"计算机是如何工作的"一路讲到数据库、后端框架、
-云原生与软件架构。全部内容离线可用：网页直接访问，也可以装进手机（Android 双端应用）。
+43 个技术模块、1700+ 篇中文教学文档，从"计算机是如何工作的"讲到数据库、后端、云原生与
+软件架构，全部内容离线可用——网页、Windows 桌面端、Android 双端应用均可使用。
 
-整个体系托管在**单一 Git 仓库（monorepo）**中：根目录是唯一的仓库根（全仓库只有一个
-`.git`），网站、桌面端、双端 Android 应用与共享内容层全部是根仓库下的普通子目录，不存在
-任何子仓库、submodule 或嵌套 Git 配置。四端共享同一内容体系——内容单一来源为
-`cnt-content/full`，模块元数据唯一来源为 `shd-shared/metadata/modules.json`。
+整个体系托管在**单一 Git 仓库（monorepo）**中（根目录唯一 `.git`，无子仓库与
+submodule），四端共享同一内容体系：内容单一来源 `cnt-content/full`，模块元数据
+唯一来源 `shd-shared/metadata/modules.json`。
 
 ## 不知道从哪开始？从这里开始
 
@@ -34,7 +33,7 @@
 FANDEX/                        # 仓库根（唯一 .git 所在）
 ├── README.md  AGENTS.md  CHANGELOG.md  LICENSE  DISCLAIMER.md
 ├── app-web/            # 官网（Astro 7 + React 19 + Tailwind CSS 4），GitHub Pages 部署
-├── app-desktop/        # 桌面端占位（Tauri 2，规划中）
+├── app-desktop/        # Windows 桌面端（Tauri 2，内嵌 web 产物，完全离线）
 ├── app-Android-new/    # Android 应用 · 新技术栈主线（Kotlin + Jetpack Compose）
 ├── app-Android-old/    # Android 应用 · 旧技术栈归档线（功能完整，可构建发布）
 ├── cnt-content/        # 内容层：full/ 全量文档、syntax/ 语法速览素材
@@ -44,19 +43,22 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 └── tools/              # 内容工程批处理脚本
 ```
 
-## 双端 Android 应用
+## 客户端
 
-两套应用共享同一内容管线，`applicationId` 不同，可并存安装：
+三套客户端共享同一内容管线，安装名与包名均不同，可并存使用：
 
-| | app-Android-new（主线） | app-Android-old（归档线） |
-| --- | --- | --- |
-| 包名 | `com.fandexpp.fandex` | `com.fandex.app` |
-| 技术栈 | Kotlin + Jetpack Compose + Material 3 | Kotlin + Jetpack Compose + Material 3 |
-| 内容生成 | `generate-content.mjs` | `generate-legacy-content.mjs` |
-| 特性 | 语法速览、学习路线、全文搜索、mermaid 图表 | 离线速查、数学公式渲染、更新自检 |
+| | app-web | app-desktop | app-Android-new | app-Android-old |
+| --- | --- | --- | --- | --- |
+| 平台 | 网页 | Windows | Android | Android |
+| 定位 | 在线站点 | 桌面端主线 | 移动端主线 | 移动端归档线 |
+| 技术栈 | Astro 7 + React 19 | Tauri 2（内嵌 web 产物） | Compose + Material 3 | Compose + Material 3 |
+| 包名/标识 | - | `com.fandexpp.desktop` | `com.fandexpp.fandex` | `com.fandex.app` |
+| 安装名 | FANDEX | FANDEX | FANDEX | FANDEXO |
+| 内容生成 | 构建期 Content Collections | 内嵌 app-web 构建产物 | `generate-content.mjs` | `generate-legacy-content.mjs` |
 
-文档内容全部内置于安装包（assets），装好后完全离线可用；内容源统一锚定
-`cnt-content/full`，任何一端不维护独立内容副本。
+桌面端不包含网页端的在线编程（前端实验室）功能；文档内容全部内置于安装包，装好后
+完全离线可用，任何一端不维护独立内容副本。桌面端提供 `Ctrl+Alt+F` 全局呼出/隐藏、
+`F11` 全屏、`Alt+方向键` 前进后退等快捷键，详见 [app-desktop/README.md](app-desktop/README.md)。
 
 ## 快速开始
 
@@ -88,6 +90,16 @@ cd app-Android-old && ./gradlew :app:assembleDebug
 
 两个工程均内置 Gradle wrapper，首次构建自动下载 Gradle 与依赖。
 
+### Windows 桌面端（app-desktop）
+
+```bash
+pnpm --filter @fandex/desktop build   # web 构建 + playground 剔除 + 前端产物就绪
+cd app-desktop && npx tauri build     # 打包 NSIS 安装包（需 Rust 工具链）
+```
+
+需要 Rust stable 与 MSVC 工具链；CI 会自动构建（见 desktop-build.yml），
+日常使用建议直接下载 Release 安装包。
+
 ## 内容管线
 
 内容单一来源为 `cnt-content/full/<编号-模块>/<编号-标题>.md`，frontmatter 携带
@@ -104,9 +116,14 @@ cd app-Android-old && ./gradlew :app:assembleDebug
 
 ## 构建与发布（CI）
 
-`.github/workflows/android-release.yml`：push 到 main 时双端并行构建校验；push `v*`
-标签时构建签名 APK 并发布 GitHub Release（`FANDEX-<tag>.apk` 与
-`FANDEX-Legacy-<tag>.apk`，发布说明自动提取 CHANGELOG 版本段落）。
+`.github/workflows/android-build.yml`：push 与 PR 时双端 APK 并行构建校验。
+
+`.github/workflows/android-release.yml`：push `v*` 标签时构建三端安装包并发布
+GitHub Release（`FANDEX-<tag>.apk`、`FANDEX-Legacy-<tag>.apk` 与
+`FANDEX-Setup-<tag>.exe`，发布说明自动提取 CHANGELOG 版本段落）。
+
+`.github/workflows/desktop-build.yml`：push 与 PR 时构建 Windows 桌面端安装包并
+校验"前端实验室"剔除。
 
 `.github/workflows/deploy.yml`：push 到 main 后构建网站并发布至 GitHub Pages。
 
