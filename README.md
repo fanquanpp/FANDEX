@@ -54,10 +54,11 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 | 技术栈 | Astro 7 + React 19 | Tauri 2（内嵌 web 产物） | Compose + Material 3 | Compose + Material 3 |
 | 包名/标识 | - | `com.fandexpp.desktop` | `com.fandexpp.fandex` | `com.fandex.app` |
 | 安装名 | FANDEX | FANDEX | FANDEX | FANDEXO |
-| 内容生成 | 构建期 Content Collections | `generate-content.mjs` | `generate-content.mjs` | `generate-legacy-content.mjs` |
+| 内容生成 | 构建期 Content Collections | 内嵌 app-web 构建产物 | `generate-content.mjs` | `generate-legacy-content.mjs` |
 
 桌面端不包含网页端的在线编程（前端实验室）功能；文档内容全部内置于安装包，装好后
-完全离线可用，任何一端不维护独立内容副本。
+完全离线可用，任何一端不维护独立内容副本。桌面端提供 `Ctrl+Alt+F` 全局呼出/隐藏、
+`F11` 全屏、`Alt+方向键` 前进后退等快捷键，详见 [app-desktop/README.md](app-desktop/README.md)。
 
 ## 快速开始
 
@@ -115,9 +116,14 @@ cd app-desktop && npx tauri build     # 打包 NSIS 安装包（需 Rust 工具�
 
 ## 构建与发布（CI）
 
-`.github/workflows/android-release.yml`：push 到 main 时双端并行构建校验；push `v*`
-标签时构建签名 APK 并发布 GitHub Release（`FANDEX-<tag>.apk` 与
-`FANDEX-Legacy-<tag>.apk`，发布说明自动提取 CHANGELOG 版本段落）。
+`.github/workflows/android-build.yml`：push 与 PR 时双端 APK 并行构建校验。
+
+`.github/workflows/android-release.yml`：push `v*` 标签时构建三端安装包并发布
+GitHub Release（`FANDEX-<tag>.apk`、`FANDEX-Legacy-<tag>.apk` 与
+`FANDEX-Setup-<tag>.exe`，发布说明自动提取 CHANGELOG 版本段落）。
+
+`.github/workflows/desktop-build.yml`：push 与 PR 时构建 Windows 桌面端安装包并
+校验"前端实验室"剔除。
 
 `.github/workflows/deploy.yml`：push 到 main 后构建网站并发布至 GitHub Pages。
 
