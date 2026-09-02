@@ -16,6 +16,7 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 ├── README.md  AGENTS.md  CHANGELOG.md  LICENSE  DISCLAIMER.md
 ├── app-web/            # 官网（Astro 7 + React 19 + Tailwind CSS 4），GitHub Pages 部署
 ├── app-desktop/        # Windows 桌面端（Tauri 2，内嵌 web 产物，完全离线）
+├── app-desktop-portable/ # Windows 桌面端便携版（免安装解压即用，与 app-desktop 共用构建）
 ├── app-Android-new/    # Android 应用 · 新技术栈主线（Kotlin + Jetpack Compose）
 ├── app-Android-old/    # Android 应用 · 旧技术栈归档线（功能完整，可构建发布）
 ├── cnt-content/        # 内容层：full/ 全量文档、syntax/ 语法速览素材
@@ -41,6 +42,9 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 桌面端不包含网页端的在线编程（前端实验室）功能；文档内容全部内置于安装包，装好后
 完全离线可用，任何一端不维护独立内容副本。桌面端提供 `Ctrl+Alt+F` 全局呼出/隐藏、
 `F11` 全屏、`Alt+方向键` 前进后退等快捷键，详见 [app-desktop/README.md](app-desktop/README.md)。
+另有免安装的
+[便携版](app-desktop-portable/README.md)（FANDEX-Portable-<版本>.zip，解压即用、
+不写注册表），随 GitHub Release 一并分发。
 
 ## 快速开始
 
