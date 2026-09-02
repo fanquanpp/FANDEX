@@ -991,6 +991,33 @@
     letter-spacing: 0.02em;
   }
 
+  /* 章节序号（需求：左侧目录栏序号）：等宽数字 + 2px 竖条刻度线，
+     直角无圆点，激活/悬停态随 --module-color 着色 */
+  .fndx-sidebar__link-index {
+    flex-shrink: 0;
+    min-width: 2ch;
+    padding-right: 2px;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+    font-size: calc(var(--font-size-secondary) * 0.9);
+    color: var(--color-fg-tertiary);
+    /* 2px 竖条刻度线：与激活态左侧 2px 实线同一几何语言 */
+    border-right: 2px solid transparent;
+    transition: color var(--motion-duration-instant) var(--motion-easing-out),
+                border-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .fndx-sidebar__link:hover .fndx-sidebar__link-index {
+    color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 70%, var(--color-fg-secondary));
+    border-right-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 45%, transparent);
+  }
+
+  .fndx-sidebar__link.is-active .fndx-sidebar__link-index,
+  .fndx-sidebar__link[aria-current='page'] .fndx-sidebar__link-index {
+    color: var(--module-color, var(--color-accent-base));
+    border-right-color: var(--module-color, var(--color-accent-base));
+  }
+
   /* 文档链接文本（与进度指示器并排） */
   .fndx-sidebar__link-text {
     overflow: hidden;

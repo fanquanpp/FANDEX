@@ -198,7 +198,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
         class="fndx-sidebar__list"
       >
         {
-          sorted.map((doc) => {
+          sorted.map((doc, index) => {
             const slug = docSlug(doc.id)
             const isActive = currentSlug === slug
             return (
@@ -208,6 +208,10 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
                   class={`fndx-sidebar__link${isActive ? ' is-active' : ''}`}
                   aria-current={isActive ? 'page' : undefined}
                 >
+                  {/* 章节序号：按学习顺序（order）展示两位编号，装饰用对读屏隐藏 */}
+                  <span class="fndx-sidebar__link-index" aria-hidden="true">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
                   <span class="fndx-sidebar__link-text">{doc.data.title}</span>
                 </a>
               </li>

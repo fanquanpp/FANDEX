@@ -49,6 +49,7 @@ object Strings {
         val copied: String,
         val copy: String,
         val latexLabel: String,
+        val mermaidLabel: String,
         val codeLabel: String,
         /* v3.1.0 新增：检查更新相关文案 */
         val checkUpdate: String,
@@ -112,6 +113,7 @@ object Strings {
         copied = "已复制",
         copy = "复制",
         latexLabel = "LaTeX",
+        mermaidLabel = "Mermaid",
         codeLabel = "代码",
         checkUpdate = "检查更新",
         checkingUpdate = "正在检查...",

@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<!--
+  FANDEX appold 离线 Mermaid 图表渲染宿主页
+  由 WebViewRenderers.kt 通过 URL 参数传入渲染数据：
+    c    - mermaid 图源码（URL-safe Base64，UTF-8）
+    dark - 暗色模式（1 = dark 主题）
+    fg   - 前景文字色（#RRGGBB）
+  渲染完成后通过 FandexHeight.onHeight 回报文档高度；
+  解析失败时回退展示图源码，保证内容可读。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<style>
+  html, body { margin: 0; padding: 0; background: transparent; }
+  #wrap { padding: 10px 6px; overflow-x: auto; max-width: 100%; box-sizing: border-box; }
+  /* SVG 随容器宽度自适应，高度等比缩放 */
+  #out svg { max-width: 100%; height: auto; }
+  #fallback {
+    display: none;
+    font-family: monospace;
+    font-size: 12px;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+</style>
+<script src="mermaid/mermaid.min.js"></script>
+</head>
+<body>
+<div id="wrap">
+  <div id="out"></div>
+  <pre id="fallback"></pre>
+</div>
+<script>
+function decodeContent() {
+  var params = new URLSearchParams(location.search);
+  var b64 = (params.get('c') || '').replace(/-/g, '+').replace(/_/g, '/');
+  try {
+    return new TextDecoder().decode(Uint8Array.from(atob(b64), function (ch) { return ch.charCodeAt(0); }));
+  } catch (e) { return ''; }
+}
+
+function reportHeight() {
+  setTimeout(function () {
+    window.FandexHeight && FandexHeight.onHeight(document.documentElement.scrollHeight);
+  }, 60);
+}
+
+function renderMermaid() {
+  var params = new URLSearchParams(location.search);
+  var code = decodeContent();
+  var dark = params.get('dark') === '1';
+  var fg = params.get('fg') || '#1f2328';
+  document.body.style.color = fg;
+
+  var out = document.getElementById('out');
+  var fallback = document.getElementById('fallback');
+  function fail() {
+    out.style.display = 'none';
+    fallback.style.display = 'block';
+    fallback.textContent = code;
+    reportHeight();
+  }
+  try {
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: dark ? 'dark' : 'default',
+      securityLevel: 'strict',
+      fontFamily: 'sans-serif',
+      /* 透明背景，与 Compose 容器（codeBg）无缝融合 */
+      themeVariables: { background: 'transparent' },
+      flowchart: { useMaxWidth: true },
+      sequence: { useMaxWidth: true }
+    });
+    mermaid.render('fandex-diagram-' + Date.now(), code).then(function (result) {
+      out.innerHTML = result.svg;
+      reportHeight();
+    }).catch(fail);
+  } catch (e) {
+    fail();
+  }
+}
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  renderMermaid();
+} else {
+  window.addEventListener('DOMContentLoaded', renderMermaid);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<!--
+  FANDEX appold 离线公式渲染宿主页（KaTeX）
+  由 WebViewRenderers.kt 通过 URL 参数传入渲染数据：
+    c    - 公式内容（URL-safe Base64，UTF-8）
+    d    - 是否块级渲染（1 = displayMode）
+    dark - 暗色模式（1 = 暗色）
+    fg   - 前景文字色（#RRGGBB）
+  渲染完成后通过 FandexHeight.onHeight 回报文档高度，
+  Compose 侧据此设置 WebView 实际高度，避免滚动嵌套。
+-->
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<link rel="stylesheet" href="katex/katex.min.css">
+<style>
+  /* 透明背景：与 Compose 容器（codeBg）无缝融合 */
+  html, body { margin: 0; padding: 0; background: transparent; }
+  #wrap { padding: 10px 8px; overflow-x: auto; max-width: 100%; box-sizing: border-box; }
+  .katex { font-size: 1.18em; }
+  .katex-display { margin: 0; }
+  /* 解析失败时的原文回退展示 */
+  #fallback {
+    display: none;
+    font-family: monospace;
+    font-size: 13px;
+    white-space: pre-wrap;
+    word-break: break-all;
+  }
+</style>
+<script defer src="katex/katex.min.js"></script>
+</head>
+<body>
+<div id="wrap">
+  <span id="out"></span>
+  <pre id="fallback"></pre>
+</div>
+<script>
+function renderFormula() {
+  var params = new URLSearchParams(location.search);
+  /* Base64 -> UTF-8 字符串，规避 URI 特殊字符与长度问题 */
+  var b64 = (params.get('c') || '').replace(/-/g, '+').replace(/_/g, '/');
+  var formula = '';
+  try {
+    formula = new TextDecoder().decode(Uint8Array.from(atob(b64), function (ch) { return ch.charCodeAt(0); }));
+  } catch (e) { formula = ''; }
+  var display = params.get('d') === '1';
+  var fg = params.get('fg') || '#1f2328';
+  document.body.style.color = fg;
+
+  var out = document.getElementById('out');
+  var fallback = document.getElementById('fallback');
+  try {
+    /* throwOnError=false：无法解析的部分以红色原文展示，整体不阻断阅读 */
+    katex.render(formula, out, {
+      displayMode: display,
+      throwOnError: false,
+      strict: 'ignore',
+      trust: false,
+      output: 'html'
+    });
+  } catch (e) {
+    out.style.display = 'none';
+    fallback.style.display = 'block';
+    fallback.textContent = formula;
+  }
+  /* 等待布局稳定后回报高度 */
+  setTimeout(function () {
+    window.FandexHeight && FandexHeight.onHeight(document.documentElement.scrollHeight);
+  }, 60);
+}
+if (document.readyState === 'complete' || document.readyState === 'interactive') {
+  renderFormula();
+} else {
+  window.addEventListener('DOMContentLoaded', renderFormula);
+}
+</script>
+</body>
+</html>

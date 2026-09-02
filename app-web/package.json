@@ -1,6 +1,6 @@
 {
   "name": "@fandex/web",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "private": true,
   "type": "module",
   "description": "FANDEX Web 端 — Astro 7 + React 19 + Tailwind 4",

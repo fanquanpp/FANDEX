@@ -7,6 +7,39 @@
 > 发布说明约定：`android-release.yml` 工作流在打 `v*` 标签发布时，
 > 会自动提取本文档中对应 `## [vX.Y.Z]` 段落作为 GitHub Release 说明。
 
+## [v4.2.1] - 2026-09-02
+
+本版本聚焦平台体验：桌面端新增免安装便携版，appold 补齐 Mermaid 图表与
+数学公式的高保真离线渲染，web/desktop 左侧目录栏增加章节序号。
+全端版本号统一为 4.2.1。
+
+### 新增
+
+- **Windows 桌面端便携版（app-desktop-portable）**：新增独立目录，
+  产出 FANDEX-Portable-<版本>.zip，解压即用、不写注册表、删除文件夹即卸载；
+  复用 app-desktop 的 Tauri 配置（tauri build --no-bundle 跳过 NSIS），
+  收集 exe 与运行所需 DLL 并附带便携版说明文件；
+  发布工作流（android-release.yml）在打 v* 标签时同步构建并随 Release 分发；
+- **web/desktop 左侧目录栏章节序号**：文档列表按学习顺序展示两位编号，
+  等宽数字 + 2px 竖条刻度线（直角几何风格），悬停/激活态随模块分类色着色；
+  桌面端内嵌同一 web 构建产物，同步生效。
+
+### 修复
+
+- **appold Mermaid 图表渲染**：```mermaid 代码块此前按普通代码展示，
+  现通过本地内置 mermaid.js（assets/markdown-res，约 2.7MB，完全离线）渲染为
+  真实图表，解析失败时回退展示图源码；新增 Mermaid 标签与复制按钮顶栏；
+- **appold 数学公式渲染**：块级公式（```math，由 $$...$$ 转换）改用本地内置
+  KaTeX（含 20 个 woff2 字体，完全离线）渲染，替代原 Compose 自研 LaTeX 子集
+  （仅支持少量命令、分数/根号退化为线性文本）；解析失败回退展示原文；
+- **appold 表格行内公式**：表格行内的 $...$ 公式此前被整体跳过、以原始 LaTeX
+  文本展示，现统一转换渲染，公式内的竖线转义为 \\vert 防止破坏表格列分隔，
+  行内 LaTeX 子集同步补充 vert/lvert/rvert/mid 命令映射。
+
+### 变更
+
+- 全端版本号统一 4.2.1（Android 双端 versionCode 各自递增：7 / 17）。
+
 ## [v4.2.0] - 2026-09-02
 
 本版本是一次面向编程语言类与全栈开发类模块的内容深度工程：补全占位文档、

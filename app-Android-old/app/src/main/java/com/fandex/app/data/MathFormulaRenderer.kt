@@ -54,6 +54,9 @@ import com.fandex.app.ui.theme.MarkdownColorScheme
  * 未匹配的命令保持原样输出，便于用户识别未支持的语法
  */
 internal val LatexSymbolMap: Map<String, String> = mapOf(
+    /* v4.2.1：竖线族命令（表格行内公式经预处理会把 | 转义为 \vert） */
+    "vert" to "|", "Vert" to "‖", "lvert" to "|", "rvert" to "|",
+    "lVert" to "‖", "rVert" to "‖", "mid" to "|", "lmid" to "|",
     /* 希腊字母小写 */
     "alpha" to "α", "beta" to "β", "gamma" to "γ", "delta" to "δ",
     "epsilon" to "ε", "varepsilon" to "ε", "zeta" to "ζ", "eta" to "η",

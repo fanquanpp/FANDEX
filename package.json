@@ -1,6 +1,6 @@
 {
   "name": "fandex",
-  "version": "4.2.0",
+  "version": "4.2.1",
   "private": true,
   "type": "module",
   "description": "FANDEX 单仓库 monorepo — 三端统一 React 生态（web/desktop/android）+ 共享内容层",
