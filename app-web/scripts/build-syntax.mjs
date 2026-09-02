@@ -58,6 +58,7 @@ const LANGUAGE_FOLDERS = {
   '025-c': 'c',
   '026-cpp': 'cpp',
   '040-python': 'python',
+  '041-rust': 'rust',
 };
 
 /** 代码块最大保留行数：速查卡片只展示核心示例，避免长示例淹没要点 */

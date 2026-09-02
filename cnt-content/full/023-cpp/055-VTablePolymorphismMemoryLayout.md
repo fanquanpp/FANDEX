@@ -19,6 +19,19 @@ prerequisites:
 
 # 虚函数表与多态内存布局（Virtual Function Table & Polymorphic Memory Layout）
 
+## 前置知识
+
+- [完美转发与引用折叠](/cpp/054-PerfectForwardingReferenceCollapse)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本章节系统讲解 C++ 动态多态的底层实现机制：虚函数表（vtable）、虚指针（vptr）的对象内存布局、单继承与多重继承下的 vtable 结构、RTTI（运行时类型信息）的实现、thunk 技术与 this 指针调整、以及 CRTP 静态多态替代方案。内容对标 MIT 6.170 / Stanford CS106L / CMU 15-410 课程深度，融合 Itanium C++ ABI、LLVM、GCC、MSVC 等工业实现。
 
 ---

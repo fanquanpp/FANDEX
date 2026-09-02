@@ -20,6 +20,19 @@ prerequisites:
 
 # Go 与 Docker：从镜像分层到 distroless 的容器化工程实践
 
+## 前置知识
+
+- [Go 与 Kubernetes](/go/026-GoKubernetes)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文以 Go 1.22 与 Docker 25.x 为基准版本，覆盖容器化 Go 应用的全生命周期：OCI 镜像规范、镜像分层与 Content-Addressable Storage、多阶段构建（multi-stage build）、`scratch` 与 `distroless` 基础镜像、CGO_ENABLED 与静态编译、BuildKit 与 BuildX、镜像安全扫描、Docker Compose 编排、容器内调试（Delve、pprof）、镜像体积与启动性能优化。适用于已掌握 Go 基础与 Docker 基本使用、希望深入理解容器化工程实践的工程师。
 
 ---

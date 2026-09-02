@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [Go 接口与组合](/go/006-GoInterfaceComposition)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. Goroutine」的核心机制、典型用法与常见陷阱
+- 掌握「2. Channel」的核心机制、典型用法与常见陷阱
+- 掌握「3. Select」的核心机制、典型用法与常见陷阱
+- 掌握「4. sync 包」的核心机制、典型用法与常见陷阱
+- 掌握「5. Context 包」的核心机制、典型用法与常见陷阱
+
+
 ## 1. Goroutine
 
 ### 1.1 基本使用

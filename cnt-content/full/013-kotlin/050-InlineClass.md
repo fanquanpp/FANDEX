@@ -19,6 +19,19 @@ prerequisites:
 
 # 内联类（value class）
 
+## 前置知识
+
+- [密封类与密封接口](/kotlin/049-SealedClassSealedInterface)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.005、Stanford CS193P、CMU 15-410 教学水准，系统讲解 Kotlin 内联类（`@JvmInline value class`）从设计哲学到 JVM 字节码实现的完整链路。内容覆盖 Kotlin 1.3 inline class 实验性、1.5 value class 稳定化，以及与 C# struct、Scala AnyVal、Rust struct 的跨语言对比。
 
 ## 1. 历史动机与发展脉络

@@ -20,6 +20,19 @@ prerequisites:
 
 # constexpr 与编译期计算（Constant Expression & Compile-time Computation）
 
+## 前置知识
+
+- [变参模板](/cpp/023-VariadicTemplate)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本章节系统讲解 C++ 编译期计算体系：从 C++11 引入的 `constexpr` 关键字，到 C++14 放宽的函数体约束，到 C++17 的 `constexpr if` 与 `constexpr` lambda，再到 C++20 引入的 `consteval`（立即函数）、`constinit`（编译期初始化）、constexpr 容器与 constexpr 虚函数，以及 C++23 进一步扩展的 constexpr 标准库与 constexpr 多态。内容对标 MIT 6.172 / Stanford CS106L / CMU 15-410 课程深度，融合 GCC、Clang、MSVC 三大编译器的实现差异与 Boost.Hana、Boost.Mp11、EASTL 等工业级库的实践。
 
 ---

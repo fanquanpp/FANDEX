@@ -16,6 +16,19 @@ prerequisites:
   - 'java/002-JavaOverviewDevEnv'
 ---
 
+## 前置知识
+
+- [Java 性能调优](/java/094-JavaPerformanceTuning)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
+- 掌握「历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「代码示例」的核心机制、典型用法与常见陷阱
+
+
 ## 0. 本节阅读指引（先读这一节）
 
 本篇是「Java 与 Docker」进阶文档。
@@ -1026,7 +1039,7 @@ RUN mvn package
 
 **正确做法**：
 
-```
+```text
 -XX:+ExitOnOutOfMemoryError
 # 或更激进的
 -XX:+CrashOnOutOfMemoryError

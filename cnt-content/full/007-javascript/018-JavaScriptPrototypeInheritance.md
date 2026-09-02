@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [柯里化与偏函数](/javascript/017-CurryAndFunctionComposition)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 原型与原型链 (Prototype & Prototype Chain)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 构造函数与 new (Constructor & new)」的核心机制、典型用法与常见陷阱
+- 掌握「3. __proto__、prototype、constructor 三角关系」的核心机制、典型用法与常见陷阱
+- 掌握「4. Object.create() 与 Object.setPrototypeOf()」的核心机制、典型用法与常见陷阱
+- 掌握「5. 继承的常见实现 (Common Inheritance Patterns)」的核心机制、典型用法与常见陷阱
+
+
 
 ## 1. 原型与原型链 (Prototype & Prototype Chain)
 

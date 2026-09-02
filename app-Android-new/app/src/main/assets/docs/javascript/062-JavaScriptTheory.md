@@ -17,6 +17,19 @@ prerequisites: []
 
 # JavaScript 理论知识点
 
+## 前置知识
+
+- [正则断言](/javascript/061-RegexAssertions)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与语言演进」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义与语言语义」的核心机制、典型用法与常见陷阱
+- 掌握「3. ECMAScript 规范结构」的核心机制、典型用法与常见陷阱
+- 掌握「4. 执行模型与执行上下文」的核心机制、典型用法与常见陷阱
+- 掌握「5. 作用域链与闭包的形式语义」的核心机制、典型用法与常见陷阱
+
+
 > 本文以 MIT 6.S192、Stanford CS142 与 CMU 15-440 的教学范式为参考基准，将 JavaScript 的语言语义、类型系统、执行模型、内存模型与元编程理论组织为一篇可独立阅读的核心理论文档。所有形式化描述均基于 ECMA-262 第 27 版（ES2026）与 WHATWG HTML Living Standard。
 
 ## 1. 历史动机与语言演进
@@ -1755,30 +1768,16 @@ node --max-semi-space-size=64 server.js
 
 V8（自 v11+）采用四层执行模型：
 
-```
-JavaScript 源代码
-      |
-      v
-  Parser (解析器)
-      |
-      v
-  AST (抽象语法树)
-      |
-      +---> Ignition (解释器) ---> 字节码执行
-      |          |                    |
-      |          |                    v (热点代码)
-      |          |          Sparkplug (基线编译器) ---> 半优化机器码
-      |          |                    |
-      |          |                    v (进一步热点)
-      |          |          Maglev (中层编译器) ---> 较优化机器码
-      |          |                    |
-      |          |                    v (持续热点)
-      |          |          TurboFan (优化编译器) ---> 高度优化机器码
-      |          |                    |
-      |          |                    v (逆优化)
-      |          +<-------------------+
-      |
-      +---> 懒解析 (Lazy Parsing)
+```mermaid
+flowchart TB
+    SRC[JavaScript 源代码] --> Parser[Parser 解析器]
+    Parser --> AST[AST 抽象语法树]
+    AST --> Lazy[懒解析 Lazy Parsing]
+    AST --> Ignition[Ignition 解释器<br/>字节码执行]
+    Ignition -->|"热点代码"| Sparkplug[Sparkplug 基线编译器<br/>半优化机器码]
+    Sparkplug -->|"进一步热点"| Maglev[Maglev 中层编译器<br/>较优化机器码]
+    Maglev -->|"持续热点"| TurboFan[TurboFan 优化编译器<br/>高度优化机器码]
+    TurboFan -->|"逆优化"| Ignition
 ```
 
 ### 14.2 Ignition 解释器

@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
 description: C++ 基本类型、类型推导、类型转换与类型安全。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/002-CppOverviewAndModernStandard'
@@ -14,6 +14,19 @@ related:
   - 'cpp/006-RvalueReferenceMoveSemantics'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [C++ 基础语法](/cpp/003-CppBasicSyntax)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 常量 (Constants)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 类型推导」的核心机制、典型用法与常见陷阱
+- 掌握「3. 类型别名」的核心机制、典型用法与常见陷阱
+- 掌握「4. 最佳实践」的核心机制、典型用法与常见陷阱
+- 掌握「5. 代码示例」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 常量 (Constants)
 

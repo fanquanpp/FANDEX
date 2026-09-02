@@ -14,6 +14,19 @@ related:
   - 'typescript/019-TypeGuardCustomGuard'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [never 类型完整语义](/typescript/016-NeverTypeSemantics)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 类成员修饰符 (Access Modifiers)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 构造函数简写」的核心机制、典型用法与常见陷阱
+- 掌握「3. 抽象类 (Abstract Classes)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 静态成员」的核心机制、典型用法与常见陷阱
+- 掌握「5. 类的存取器 (Getters & Setters)」的核心机制、典型用法与常见陷阱
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

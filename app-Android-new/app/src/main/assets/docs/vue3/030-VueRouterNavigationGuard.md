@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [Pinia 持久化插件](/vue3/029-PiniaPersistencePlugin)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（带详尽注释）」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 
 
 ## 1. 历史动机与发展脉络
@@ -467,14 +480,12 @@ export default {
 
 ### 3. 守卫执行顺序
 
-```
 1. beforeRouteLeave（离开组件）
 2. beforeEach（全局）
 3. beforeRouteUpdate（复用组件）
 4. beforeEnter（路由配置）
 5. beforeRouteEnter（进入组件）
 6. afterEach（全局）
-```
 
 ### 4. 返回值
 

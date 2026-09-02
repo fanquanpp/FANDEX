@@ -19,6 +19,19 @@ prerequisites: []
 
 # Python 与性能优化
 
+## 前置知识
+
+- [Python 与 CI/CD](/python/037-PythonCICD)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（企业级 production-ready）」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.172 "Performance Engineering of Software Systems"、Stanford CS107 "Computer Organization & Systems"、CMU 15-410 "Distributed Systems" 中性能优化模块的教学水准，系统讲解 Python 性能分析的形式化方法、优化原理与生产级实践。
 
 ## 1. 历史动机与发展脉络

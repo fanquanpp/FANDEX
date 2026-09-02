@@ -17,6 +17,19 @@ prerequisites: []
 
 # Java 快速入门：从 Hello World 到工程化实践
 
+## 前置知识
+
+- [Java 概述与开发环境](/java/002-JavaOverviewDevEnv)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 零基础阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义（JLS & JVMS 规范）」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（企业级 production-ready）」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.031 (Software Construction)、Stanford CS106A (Programming Methodology) 与 CMU 15-214 (Software Engineering) 教学水准，覆盖从环境搭建、第一个程序到企业级工程化工作流的完整路径。文档采用 Bloom 教育目标分类法组织学习目标，结合 JLS (Java Language Specification) 与 JVMS (Java Virtual Machine Specification) 双规范视角，兼顾原理深度与工程可用性。
 
 ---

@@ -7,6 +7,54 @@
 > 发布说明约定：`android-release.yml` 工作流在打 `v*` 标签发布时，
 > 会自动提取本文档中对应 `## [vX.Y.Z]` 段落作为 GitHub Release 说明。
 
+## [v4.2.0] - 2026-09-02
+
+本版本是一次面向编程语言类与全栈开发类模块的内容深度工程：补全占位文档、
+新增学习总结、系统性修复 Markdown 围栏语义错误，并同步收紧构建期校验。
+全端版本号统一为 4.2.0。
+
+### 新增
+
+- **21 个模块学习总结**：java / kotlin / csharp / go / python / rust / c / cpp /
+  javascript / typescript / vue3 / react / nextjs / astro / nestjs / vite /
+  deno / bun / svelte / angular / tailwind 各新增 1 篇学习总结文档，
+  含 Mermaid 知识地图、易混淆概念对比、常见误区、自检清单与后续学习路径；
+- **4 篇新增知识文档**：astro 视图过渡、astro 中间件与图片优化、
+  vite 插件开发实战、bun 内置 SQLite/S3 与文件 I/O；
+- **Rust 语法速查**：cnt-content/syntax 新增 041-rust 素材（10 篇 77 个速查卡片），
+  build-syntax 映射同步，语法速览页覆盖全部 14 门语言；
+- **长文档前置说明**：524 篇超万字文档补齐"前置知识 / 学习目标"章节
+  （由 prerequisites 与正文 H2 结构推导生成）；
+- 代码示例特色化：新增与补全内容统一采用"虚拟歌手音乐平台"虚构领域
+  （P主 / 歌姬 / 歌曲 / 演唱会 / 应援色），风格参照 vocaloid 项目。
+
+### 修复
+
+- **Markdown 围栏语义错误 81 处**：正文步骤/清单被误包为代码块、
+  围栏语言标注缺失或错误（benchmark 输出、伪代码、配置文件等 26 处补注）、
+  ASCII 流程图转 Mermaid（V8 流水线、Spring 请求链、TLS 1.3 握手等 9 处）、
+  时间线转表格（TS / Kotlin / C++ 演进史等 5 处）、
+  围栏嵌套断裂与内容重复 4 处（vue3 响应式丢失开门栏、csharp/Unity 与
+  csharp/异步状态机 mermaid 被吞、go/正则 Thompson 构造缺"连接"条目）；
+- **49 篇占位骨架文档补全**：清理全部"主题已规划、正文待补全"占位文档
+  （javascript 4、typescript 3、java 5、kotlin 2、csharp 4、go 3、c 5、
+  python 4、rust 8、astro 3、vite 3、tailwind 3、deno 3、bun 3、angular 3）；
+- python 学习路径节点 ID 重复（python-101）修复；
+- 74 篇文档 author 字段统一为 fanquanpp；
+- 35 篇文档正文站内链接补前导斜杠（相对形式在站点 404）；
+- 14 篇文档 order 与学习顺序/步长 10 规则不一致的重排。
+
+### 变更
+
+- **删除 46 篇总览式 MERGED 合集文档**及其生成脚本 regen_merged.py，
+  内容源回归单一结构（web 端构建规模同步减小）；
+- docs collection schema 收紧：移除 tags / created / readingTime /
+  references / etymology / estimatedReadingTime / lastReviewed / reviewer
+  等历史宽容字段，与 content-audit 的 10 字段白名单完全一致；
+- 根 package.json 清理指向不存在 @fandex/tools 包的失效脚本；
+- 全端版本号统一 4.2.0（Android 双端 versionCode 各自递增）；
+- 文档规模信息统一为 46 模块 / 1743 篇。
+
 ## [v4.1.0] - 2026-09-02
 
 本版本新增 Windows 桌面端，并同步完善两端 Android 应用的体验细节。全端版本号

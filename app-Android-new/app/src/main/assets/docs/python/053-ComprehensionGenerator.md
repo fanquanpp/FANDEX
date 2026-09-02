@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 列表推导、字典推导、生成器表达式与迭代器。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'python/051-PythonVectorDatabase'
@@ -14,6 +14,19 @@ related:
   - 'python/065-DecoratorAdvanced'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [Python 进阶与最新特性](/python/052-PythonAdvancedLatestFeature)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 推导式 (Comprehensions)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 迭代器 (Iterators)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 生成器 (Generators)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 惰性求值 (Lazy Evaluation)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 迭代工具」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 推导式 (Comprehensions)
 

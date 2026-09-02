@@ -16,6 +16,19 @@ prerequisites:
   - 'c/002-CLanguageOverview'
 ---
 
+## 前置知识
+
+- [Socket 网络编程](/c/026-SocketNetworkProgramming)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「概述」的核心机制、典型用法与常见陷阱
+- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
+- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「理论推导」的核心机制、典型用法与常见陷阱
+- 掌握「代码示例」的核心机制、典型用法与常见陷阱
+
+
 ## 概述
 
 进程是 Unix/Linux 系统中程序运行的基本资源分配单位,而管道则是最古老的进程间通信(Inter-Process Communication, IPC)机制。1969 年 Unix V1 引入 `fork` 系统调用后,管道的概念在 1973 年 Unix V4 中正式成型,Ken Thompson 借助 shell 中的 `|` 运算符将管道引入用户日常生活,开创了"小工具协作"的软件哲学。这一设计哲学直接催生了 Do One Thing And Do It Well 的 Unix 文化,影响了此后四十年的操作系统与系统软件设计。

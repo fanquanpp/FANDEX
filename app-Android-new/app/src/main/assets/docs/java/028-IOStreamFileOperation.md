@@ -16,6 +16,19 @@ prerequisites:
   - 'java/002-JavaOverviewDevEnv'
 ---
 
+## 前置知识
+
+- [现代文件读写救急锦囊： Files.readString / writeString](/java/027-ModernIOQuickstart)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
+- 掌握「1. I/O 流分类 (Classification)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 字节流 (Byte Stream)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 字符流 (Character Stream)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 转换流」的核心机制、典型用法与常见陷阱
+
+
 ## 0. 本节阅读指引（先读这一节）
 
 本篇是「I/O 流与文件操作」，目标：会读写文件、理解字节流与字符流。

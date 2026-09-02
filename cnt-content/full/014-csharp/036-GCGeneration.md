@@ -19,6 +19,19 @@ prerequisites:
 
 # .NET GC 代机制：从弱分代假说到内存回收的全景解析
 
+## 前置知识
+
+- [依赖注入生命周期](/csharp/035-DILifecycle)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本章对标 MIT 6.1020（Software Construction）与 Stanford CS107（Programming Paradigms）的内存管理教学深度，结合 ECMA-335（CLI 规范）、CoreCLR 源码（`gc.cpp`、`gcee.cpp`）与 Andrew D. Wilson 等人的经典 GC 论文，深入剖析 .NET 垃圾回收器的分代模型、标记清除算法、压缩策略、固定对象机制、Server GC vs Workstation GC 的差异，以及在 ASP.NET Core、EF Core、高性能 I/O 路径中的工程实践。
 
 ## 1. 历史动机与发展脉络

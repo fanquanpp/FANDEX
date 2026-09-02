@@ -5,7 +5,7 @@ module: 'github'
 category: 工具链
 difficulty: intermediate
 description: GitHub Pages 静态站点部署方案：Jekyll、VitePress、Hugo 构建与发布。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'github/026-CommunityHealthFile'

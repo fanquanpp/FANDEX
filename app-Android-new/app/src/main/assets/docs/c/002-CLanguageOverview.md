@@ -5,7 +5,7 @@ module: 'c'
 category: 计算机科学
 difficulty: beginner
 description: C 语言的发展历史、设计哲学、核心特点、应用领域与全栈知识图谱，对标 MIT 6.S081、Stanford CS107、CMU 15-213 教学水准。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-03'
 related:
   - 'c/001-CZeroBasisStart'
@@ -15,6 +15,19 @@ prerequisites:
   - 'c/001-CZeroBasisStart'
 ---
 # C 语言概述
+
+## 前置知识
+
+- [C 语言零基础起步](/c/001-CZeroBasisStart)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 前言与导读」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+
 
 > "C is quirky, flawed, and an enormous success." — Dennis M. Ritchie
 

@@ -19,6 +19,19 @@ prerequisites:
 
 # Server Components 与 Client Components：从原理到工程实践
 
+## 前置知识
+
+- [React Compiler 自动记忆化](/react/039-ReactCompilerAutoMemoization)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（企业级 Production-Ready）」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本章对标 MIT 6.170（Software Studio）、Stanford CS142（Web Applications）与 CMU 17-618（Web Application Development）课程深度，系统阐述 React Server Components（RSC）的形式化语义、协议设计、运行时机制与工程实践。读者将掌握 Server Components 与 Client Components 的边界划分、组合规则、数据流模型、性能权衡与生产级架构设计，能够构建可扩展、可观测、可维护的现代 React 应用。
 
 ---
@@ -181,18 +194,13 @@ Server Components 不计入客户端 bundle。对于数据展示型页面，$n_c
 
 RSC 的完整渲染流程分为六个阶段：
 
-```
-1. 请求到达服务端
-   ↓
-2. 服务端渲染 Server Components（可中断、可并行）
-   ↓
-3. 序列化为 RSC Payload（流式 JSON）
-   ↓
-4. 流式传输到客户端（HTTP streaming）
-   ↓
-5. 客户端 React 解析 RSC Payload，渲染 Client Components
-   ↓
-6. Hydration 完成，页面可交互
+```mermaid
+flowchart TB
+    A[1. 请求到达服务端] --> B[2. 服务端渲染 Server Components<br/>可中断、可并行]
+    B --> C[3. 序列化为 RSC Payload<br/>流式 JSON]
+    C --> D[4. 流式传输到客户端<br/>HTTP streaming]
+    D --> E[5. 客户端 React 解析 RSC Payload<br/>渲染 Client Components]
+    E --> F[6. Hydration 完成<br/>页面可交互]
 ```
 
 关键特性：阶段 2-4 是流式的，即 React 不等待整个树渲染完成，而是逐块发送。这与传统 SSR 必须等待完整 HTML 不同。

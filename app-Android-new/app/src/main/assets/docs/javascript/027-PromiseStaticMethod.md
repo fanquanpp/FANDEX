@@ -19,6 +19,19 @@ prerequisites: []
 
 # Promise 静态方法（Promise Static Methods）
 
+## 前置知识
+
+- [Promise 构造器](/javascript/026-PromiseConstructorDeepDive)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络（Historical Motivation & Evolution）」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义（Formal Definitions）」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析（Theoretical Derivation）」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（Production-Ready Examples）」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析（Comparative Analysis）」的核心机制、典型用法与常见陷阱
+
+
 > 本篇对标 MIT 6.005（Software Construction）、Stanford CS110L（Safety in Systems Programming）与 CMU 15-440（Distributed Systems）教学水准，系统讲授 JavaScript Promise 的形式语义、静态方法族（`Promise.all` / `Promise.allSettled` / `Promise.any` / `Promise.race` / `Promise.withResolvers`）、组合子数学性质与工程化应用。所有数学公式使用 KaTeX 渲染，参考文献采用 ACM Reference Format。
 
 ---
@@ -304,7 +317,6 @@ Promise.withResolvers = function () {
 
 证明：二者均构造一个 pending Promise 并暴露其 `resolve` / `reject`。`withResolvers` 的规范实现（ECMA-262 §27.2.4.5）：
 
-```
 1. Let C be the this value.
 2. Let x be ? PromiseResolve(C, undefined).
 3. Let promiseCapability be ? NewPromiseCapability(C).
@@ -313,7 +325,6 @@ Promise.withResolvers = function () {
 6. Perform ! CreateDataPropertyOrThrow(result, "resolve", promiseCapability.[[Resolve]]).
 7. Perform ! CreateDataPropertyOrThrow(result, "reject", promiseCapability.[[Reject]]).
 8. Return result.
-```
 
 此实现内部调用 `NewPromiseCapability`，与 `new Promise(executor)` 走相同的 capability 构造路径，故行为等价。$\square$
 

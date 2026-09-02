@@ -22,6 +22,19 @@ prerequisites:
 
 # 异常安全（Exception Safety）
 
+## 前置知识
+
+- [文件 IO 与文件系统](/cpp/019-FileIOFileSystem)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本章节系统讲解 C++ 异常安全保证体系，包括基本保证（Basic Guarantee）、强保证（Strong Guarantee）与不抛出保证（No-throw Guarantee）的形式化定义、事务性编程范式、copy-and-swap 惯用法，以及在 STL、Boost、Chromium 等工业级代码库中的实践。内容对标 MIT 6.170 / Stanford CS106L / CMU 15-410 课程深度。
 
 ---

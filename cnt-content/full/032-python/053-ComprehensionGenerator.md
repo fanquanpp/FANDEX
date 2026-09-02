@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [Python 进阶与最新特性](/python/052-PythonAdvancedLatestFeature)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 推导式 (Comprehensions)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 迭代器 (Iterators)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 生成器 (Generators)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 惰性求值 (Lazy Evaluation)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 迭代工具」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 推导式 (Comprehensions)
 
 推导式是一种简洁高效的方式，用于从现有的序列创建新的序列。

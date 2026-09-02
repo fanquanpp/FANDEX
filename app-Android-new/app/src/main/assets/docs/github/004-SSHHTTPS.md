@@ -5,7 +5,7 @@ module: 'github'
 category: 工具链
 difficulty: intermediate
 description: SSH 与 HTTPS 远程配置对比、公钥配置、HTTPS+PAT 配置指南与故障排查。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'github/002-AccountRegister2FA'

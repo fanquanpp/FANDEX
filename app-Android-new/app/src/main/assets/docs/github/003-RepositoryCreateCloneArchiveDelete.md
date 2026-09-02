@@ -5,7 +5,7 @@ module: 'github'
 category: 工具链
 difficulty: intermediate
 description: GitHub 仓库创建、克隆、归档、删除的完整操作指南：从开新店到关店的全流程向导。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'github/001-GitHubOverview'

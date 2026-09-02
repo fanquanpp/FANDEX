@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [列表推导式进阶](/python/008-ListComprehensionAdvanced)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 运算符分类 (Operator Categories)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 海象运算符 (Walrus Operator - :=)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 赋值运算符 (Assignment Operators)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 运算符优先级 (Precedence)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 表达式 (Expressions)」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 运算符分类 (Operator Categories)
 
 ### 1.1 算术运算符 (Arithmetic)

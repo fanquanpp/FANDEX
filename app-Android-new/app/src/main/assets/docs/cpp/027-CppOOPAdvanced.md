@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: advanced
 description: 多重继承、虚继承、RTTI 与面向对象设计原则。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/025-NamespaceLinkage'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'cpp/002-CppOverviewAndModernStandard'
 ---
+
+## 前置知识
+
+- [C++网络编程](/cpp/026-CppNetworkProgramming)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 构造函数与析构函数」的核心机制、典型用法与常见陷阱
+- 掌握「2. 操作符重载」的核心机制、典型用法与常见陷阱
+- 掌握「3. 模板与泛型编程」的核心机制、典型用法与常见陷阱
+- 掌握「4. 标准模板库 (STL)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 面向对象编程最佳实践」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 构造函数与析构函数
 

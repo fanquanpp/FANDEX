@@ -504,7 +504,7 @@ QUIC协议 (HTTP/3):
   解决TCP的队头阻塞问题
 ```
 
-> 跨模块引用：[操作系统](os)的Socket接口是传输层的编程抽象。[Java](java/overview)的NIO/Netty框架封装了TCP/UDP的异步IO操作。[C语言](c/overview)的Berkeley Socket API是最底层的网络编程接口。
+> 跨模块引用：[操作系统](os)的Socket接口是传输层的编程抽象。[Java](/java$2的NIO/Netty框架封装了TCP/UDP的异步IO操作。[C语言](/c$2的Berkeley Socket API是最底层的网络编程接口。
 
 ---
 

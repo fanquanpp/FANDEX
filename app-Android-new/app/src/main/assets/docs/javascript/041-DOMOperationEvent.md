@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: DOM 树操作、事件模型与事件委托。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'javascript/060-RecordsAndTuples'
@@ -14,6 +14,19 @@ related:
   - 'javascript/038-JavaScriptModular'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [模块打包原理与 Tree Shaking](/javascript/040-ModuleBundlingAndTreeShaking)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. DOM 基础 (DOM Basics)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 查询与遍历 (Query & Traverse)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 创建与插入节点 (Create & Insert)」的核心机制、典型用法与常见陷阱
+- 掌握「在大量简单元素场景下，innerHTML 可能比逐个 createElement 更快，但需注意 XSS 风险。」的核心机制、典型用法与常见陷阱
+- 掌握「4. 属性操作 (Attribute Operations)」的核心机制、典型用法与常见陷阱
+
 
 ## 1. DOM 基础 (DOM Basics)
 

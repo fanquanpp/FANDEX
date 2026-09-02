@@ -20,6 +20,19 @@ prerequisites:
 
 # ASP-NET-Core中间件管道
 
+## 前置知识
+
+- [Entity Framework Core 迁移与优化](/csharp/033-EFCoreMigrationOptimization)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > "管道组合是函数式编程的核心思想在 Web 框架中的工程化体现——每个中间件都是一个变换器，将 Request 与 Response 的流编织成一条可观测、可插拔的责任链。" —— David Fowler, *ASP.NET Core Architecture Lead*
 
 ## 1. 历史动机与发展脉络

@@ -5,7 +5,7 @@ module: 'mysql'
 category: 数据库
 difficulty: advanced
 description: 联合注入、盲注、报错注入与绕过技巧。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'mysql/076-MySQLControlApplication'

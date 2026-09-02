@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: advanced
 description: 异常机制、错误处理策略、性能分析与优化技巧。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/063-CppTemplate'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'cpp/002-CppOverviewAndModernStandard'
 ---
+
+## 前置知识
+
+- [内存序与无锁编程](/cpp/064-MemoryOrderLockFree)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 异常处理 (Exceptions)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 性能优化 (Performance)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 性能分析与调试工具」的核心机制、典型用法与常见陷阱
+- 掌握「4. 性能优化最佳实践」的核心机制、典型用法与常见陷阱
+- 掌握「5. 代码示例」的核心机制、典型用法与常见陷阱
+
 
 
 ## 1. 异常处理 (Exceptions)

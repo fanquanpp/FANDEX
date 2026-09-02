@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [Vue 性能优化详解](/vue3/031-VuePerformanceDetailed)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 性能优化概述 | Performance Optimization Overview」的核心机制、典型用法与常见陷阱
+- 掌握「2. 渲染性能优化 | Rendering Performance Optimization」的核心机制、典型用法与常见陷阱
+- 掌握「3. 响应式性能优化 | Reactive Performance Optimization」的核心机制、典型用法与常见陷阱
+- 掌握「4. 网络性能优化 | Network Performance Optimization」的核心机制、典型用法与常见陷阱
+- 掌握「5. 构建优化 | Build Optimization」的核心机制、典型用法与常见陷阱
+
+
 
 ## 1. 性能优化概述 | Performance Optimization Overview
 

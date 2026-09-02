@@ -16,6 +16,19 @@ prerequisites:
   - 'csharp/002-CSharpOverviewEnvSetup'
 ---
 
+## 前置知识
+
+- [委托与事件底层原理](/csharp/031-DelegateEventUnderlying)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 历史动机与发展脉络
 
 ### 1.1 .NET Framework 1.0（2002）：反射的诞生
@@ -332,7 +345,7 @@ $$T_{\text{delegate}} \approx T_{\text{direct}} + T_{\text{indirection}}$$
 
 实测对比：
 
-```
+```text
 BenchmarkDotNet v0.13.12, .NET 8
 | Method          | Mean      | Ratio |
 |---------------- |----------:|------:|
@@ -348,7 +361,7 @@ BenchmarkDotNet v0.13.12, .NET 8
 
 读取目标 $T$ 上特性 $A$ 的算法：
 
-```
+```text
 Algorithm: GetCustomAttributes(T, A)
 Input: 目标 T (MemberInfo)，特性类型 A (Type)
 Output: 特性实例列表

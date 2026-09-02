@@ -13,6 +13,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [Python 是什么：最友好的第一门通用语言](/python/001-WhatIsPython)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0.1 Python 入门核心能力清单」的核心机制、典型用法与常见陷阱
+- 掌握「1. Python 概述 (Overview)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 应用领域 (Applications)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 环境搭建 (Environment Setup)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 解释器与 IDE (Interpreters & IDEs)」的核心机制、典型用法与常见陷阱
+
+
 ## 0.1 Python 入门核心能力清单
 
 ### 语法、内置类型与常用方法

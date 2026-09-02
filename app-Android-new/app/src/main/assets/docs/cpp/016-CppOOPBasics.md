@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
 description: 类与对象、封装、继承、多态与虚函数。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/014-RAIIResourceManagement'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'cpp/002-CppOverviewAndModernStandard'
 ---
+
+## 前置知识
+
+- [运算符重载](/cpp/015-OperatorOverloading)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 类与对象 (Class & Object)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 封装 (Encapsulation)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 继承 (Inheritance)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 多态 (Polymorphism)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 虚函数与虚函数表 (VTable)」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 类与对象 (Class & Object)
 

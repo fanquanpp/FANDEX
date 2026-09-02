@@ -18,6 +18,19 @@ prerequisites:
 
 # async/await 状态机：从语法糖到执行模型的全景解析
 
+## 前置知识
+
+- [LINQ 延迟与立即执行](/csharp/029-LINQDeferredImmediate)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本章对标 MIT 6.1020（Software Construction）与 Stanford CS110L（Safety in Systems Programming）的异步教学深度，结合 ECMA-334 规范、CLR RFC 与 .NET Runtime 源码，将 `async/await` 的语法糖层层剥开，揭示编译器生成的状态机、`AsyncMethodBuilder`、`IAsyncStateMachine`、`MoveNext`、`SynchronizationContext`、`TaskScheduler` 与 `ConfigureAwait` 之间的协作机制。
 
 ## 1. 历史动机与发展脉络

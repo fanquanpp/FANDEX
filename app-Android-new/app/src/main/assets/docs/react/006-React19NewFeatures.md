@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [Context 与全局状态](/react/005-ContextGlobalState)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. React Server Components (RSC)」的核心机制、典型用法与常见陷阱
+- 掌握「2. use() Hook」的核心机制、典型用法与常见陷阱
+- 掌握「3. Actions」的核心机制、典型用法与常见陷阱
+- 掌握「4. useFormStatus」的核心机制、典型用法与常见陷阱
+- 掌握「5. useOptimistic」的核心机制、典型用法与常见陷阱
+
+
 ## 1. React Server Components (RSC)
 
 React Server Components 是 React 19 最重要的特性，允许组件在服务端渲染，减少客户端 JavaScript 体积。

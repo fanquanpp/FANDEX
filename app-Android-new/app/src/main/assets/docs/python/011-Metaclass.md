@@ -20,6 +20,19 @@ prerequisites:
   - 'python/005-PythonDescriptorProtocol'
 ---
 
+## 前置知识
+
+- [Python 与虚拟环境](/python/010-PythonVirtualEnv)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 历史动机与演化
 
 ### 1.1 Smalltalk 的根源：一切皆对象，类也是对象
@@ -2254,7 +2267,7 @@ Python Software Foundation. (2024). *Lib/abc.py: ABCMeta*. GitHub repository. ht
 
 ### A.1 元类钩子调用顺序
 
-```
+```text
 class Foo(Base, metaclass=Meta):
     body
 

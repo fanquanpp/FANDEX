@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: CommonJS、ES Modules 与模块打包工具。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'javascript/041-DOMOperationEvent'
@@ -14,6 +14,19 @@ related:
   - 'javascript/035-ClosureMemoryLeakOptimization'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [JavaScript 垃圾回收与内存管理](/javascript/037-MemoryManagementAndGarbageCollection)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与背景」的核心机制、典型用法与常见陷阱
+- 掌握「1. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「2. 理论推导」的核心机制、典型用法与常见陷阱
+- 掌握「3. CommonJS 详解」的核心机制、典型用法与常见陷阱
+- 掌握「4. ES Modules 详解」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 历史动机与背景
 

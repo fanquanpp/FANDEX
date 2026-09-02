@@ -20,6 +20,19 @@ prerequisites:
 
 # 变量与常量（Variables & Constants）
 
+## 前置知识
+
+- [程序结构与基本语法](/python/003-ProgramStructureBasicSyntax)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > "In Python, variables are not boxes; they are labels on boxes." —— Ned Batchelder, *Python Names and Values*
 
 > "Constants are not a language feature in Python; they are a discipline." —— Brandon Rhodes, *Practices of the Pythonic Pro*

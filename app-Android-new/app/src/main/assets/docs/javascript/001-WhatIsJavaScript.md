@@ -38,7 +38,7 @@ prerequisites:
 只有两个地方需要关心：
 
 1. **浏览器**：你按 `F12` 打开的控制台就是一个即写即跑的 JavaScript 运行环境；
-2. **Node.js**：让 JavaScript 脱离浏览器、在操作系统里运行的工具（安装见 [Node.js 安装配置](getting-started/017-NodeJsInstall)）。
+2. **Node.js**：让 JavaScript 脱离浏览器、在操作系统里运行的工具（安装见 [Node.js 安装配置](/getting-started$2）。
 
 ## 动手环节：第一行代码
 
@@ -69,4 +69,4 @@ console.log(greet('学习者'));   // 输出：你好，学习者！欢迎来到
 
 ## 下一步
 
-完成上面的动手环节后，进入 [JavaScript 概述与运行环境](javascript/002-JavaScriptOverviewRuntimeEnv) 系统学习语法主线；想理解页面上 HTML 与 CSS 如何配合，先读 [网页是什么](html5/001-WhatIsWebpage) 与 [CSS 是什么](css/002-WhatIsCSS)。
+完成上面的动手环节后，进入 [JavaScript 概述与运行环境](/javascript$2 系统学习语法主线；想理解页面上 HTML 与 CSS 如何配合，先读 [网页是什么](/html5$2 与 [CSS 是什么](/css$2。

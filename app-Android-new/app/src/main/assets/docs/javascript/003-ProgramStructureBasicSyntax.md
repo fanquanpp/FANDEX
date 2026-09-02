@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: beginner
 description: JavaScript 语法基础、语句与表达式。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'javascript/002-JavaScriptOverviewRuntimeEnv'
@@ -13,6 +13,19 @@ related:
   - 'javascript/005-DataTypeOperator'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [JavaScript 概述与运行环境](/javascript/002-JavaScriptOverviewRuntimeEnv)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 引入方式 (Inclusion)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 语句与注释 (Statements & Comments)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 变量声明 (Variable Declarations)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 标识符规范 (Identifiers)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 严格模式 (Strict Mode)」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 引入方式 (Inclusion)
 

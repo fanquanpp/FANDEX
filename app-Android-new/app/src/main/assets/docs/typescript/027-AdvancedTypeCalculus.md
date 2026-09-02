@@ -14,6 +14,19 @@ related:
   - 'typescript/029-CovarianceContravariance'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [模块解析策略](/typescript/026-ModuleResolutionModernToolchains)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 类型断言 (Type Assertions)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 非空断言 (!)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 类型守卫 (Type Guards)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 映射类型 (Mapped Types)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 条件类型 (Conditional Types)」的核心机制、典型用法与常见陷阱
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 ## 1. 类型断言 (Type Assertions)

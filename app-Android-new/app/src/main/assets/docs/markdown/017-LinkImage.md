@@ -5,7 +5,7 @@ module: 'markdown'
 category: 工具链
 difficulty: intermediate
 description: 行内链接、引用链接、图片嵌入与脚注。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-03'
 related:
   - 'markdown/015-Mermaid'

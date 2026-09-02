@@ -20,6 +20,19 @@ prerequisites: []
 
 # tsconfig严格模式
 
+## 前置知识
+
+- [模块声明与全局类型增强](/typescript/059-ModuleDeclarationGlobalAugmentation)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.S192、Stanford CS110、CMU 15-214 等课程教学水准，系统讲解 TypeScript `tsconfig.json` 严格模式（Strict Mode）的设计动机、形式化语义、编译器选项矩阵、类型推导算法与工程级应用。所有代码示例均可在 TS 5.4 + `strict: true` 下编译通过。
 
 ---
@@ -47,21 +60,21 @@ TypeScript 在 **TS 2.3（2017 年 4 月）** 正式引入 `strict` 总开关，
 
 ### 1.3 版本演进时间线
 
-```
-2014-10  TS 1.0     最初发布，类型检查宽松
-2015-07  TS 1.5     noImplicitAny 引入
-2016-09  TS 2.0     strictNullChecks 引入（重大突破）
-2017-04  TS 2.3     strict 总开关引入，聚合 6 个子选项
-2017-08  TS 2.6     strictFunctionTypes 引入（独立选项）
-2018-03  TS 2.8     strictBindCallApply 引入
-2018-07  TS 3.0     unknown 类型引入，配合 strictNullChecks
-2019-08  TS 3.5     strictPropertyInitialization 引入
-2020-08  TS 4.0     noImplicitAny 在 catch 子句的改进
-2021-04  TS 4.3     useUnknownInCatchVariables 引入
-2022-11  TS 4.9     satisfies 操作符，配合严格模式提升精度
-2024-03  TS 5.4     NoInfer<T>，严格模式下的类型推断改进
-2024-11  TS 5.6     严格模式下迭代器与 Promise 的细化检查
-```
+| 时间 | 里程碑 | 说明 |
+| --- | --- | --- |
+| 2014-10 | TS 1.0 | 最初发布，类型检查宽松 |
+| 2015-07 | TS 1.5 | noImplicitAny 引入 |
+| 2016-09 | TS 2.0 | strictNullChecks 引入（重大突破） |
+| 2017-04 | TS 2.3 | strict 总开关引入，聚合 6 个子选项 |
+| 2017-08 | TS 2.6 | strictFunctionTypes 引入（独立选项） |
+| 2018-03 | TS 2.8 | strictBindCallApply 引入 |
+| 2018-07 | TS 3.0 | unknown 类型引入，配合 strictNullChecks |
+| 2019-08 | TS 3.5 | strictPropertyInitialization 引入 |
+| 2020-08 | TS 4.0 | noImplicitAny 在 catch 子句的改进 |
+| 2021-04 | TS 4.3 | useUnknownInCatchVariables 引入 |
+| 2022-11 | TS 4.9 | satisfies 操作符，配合严格模式提升精度 |
+| 2024-03 | TS 5.4 | NoInfer<T>，严格模式下的类型推断改进 |
+| 2024-11 | TS 5.6 | 严格模式下迭代器与 Promise 的细化检查 |
 
 ### 1.4 `strict` 总开关的演进
 

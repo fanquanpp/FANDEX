@@ -15,6 +15,19 @@ related:
   - 'typescript/050-TypeScript5NewFeatures'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [import type 与 verbatimModuleSyntax](/typescript/025-ImportTypeVerbatimModuleSyntax)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「引言：从 require 到 import 的解析演化」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与时间线」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 类型推导规则与子类型关系」的核心机制、典型用法与常见陷阱
+- 掌握「4. 五种 moduleResolution 策略详解」的核心机制、典型用法与常见陷阱
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 
