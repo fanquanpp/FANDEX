@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 720
 title: TypeScript 学习总结：核心知识体系回顾
 module: 'typescript'
 category: 前端技术

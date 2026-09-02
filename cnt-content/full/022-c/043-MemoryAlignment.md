@@ -20,6 +20,19 @@ prerequisites:
 
 # 内存对齐（Memory Alignment）
 
+## 前置知识
+
+- [内存管理](/c/042-MemoryManagement)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「摘要」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+
+
 > "The cost of misalignment is paid not in correctness, but in cycles, cache misses, and bus errors."
 > —— Hennessy & Patterson, *Computer Architecture: A Quantitative Approach*
 

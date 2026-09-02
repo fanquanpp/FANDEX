@@ -16,6 +16,19 @@ prerequisites:
   - 'c/002-CLanguageOverview'
 ---
 
+## 前置知识
+
+- [const 与 volatile 详解](/c/007-CVolatileAndConstDeepDive)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 运算符分类 (Operator Categories)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 运算符优先级 (Precedence)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 表达式 (Expressions)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 运算符与表达式的最佳实践」的核心机制、典型用法与常见陷阱
+- 掌握「5. 常见问题与解决方案」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 运算符分类 (Operator Categories)
 
 ### 1.1 算术运算符 (Arithmetic)

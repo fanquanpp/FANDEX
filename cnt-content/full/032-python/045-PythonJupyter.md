@@ -21,6 +21,19 @@ prerequisites:
 
 # Python 与 Jupyter：交互式计算、数据分析与可复现研究
 
+## 前置知识
+
+- [Python 与打包发布](/python/044-PythonPackagingEvolution)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与背景」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「数据摘要」的核心机制、典型用法与常见陷阱
+
+
 > 本文系统阐述 Jupyter 生态的核心机制与工程实践，包括 IPython 内核、Jupyter Message Protocol、Notebook 文档格式（.ipynb）、魔法命令系统、富显示对象、交互式 Widgets、可视化集成、性能优化（Cython、numba、joblib）、企业级部署（JupyterHub、Enterprise Gateway）与可复现研究实践。内容兼顾形式化定义与生产级应用，旨在帮助开发者建立对交互式计算的完整认知框架，具备构建数据科学工作流与生产级 Jupyter 平台的能力。
 
 ## 1. 历史动机与背景

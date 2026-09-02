@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 570
 title: Kotlin 学习总结：核心知识体系回顾
 module: 'kotlin'
 category: 后端技术

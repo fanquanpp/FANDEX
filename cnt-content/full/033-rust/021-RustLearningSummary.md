@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 210
 title: Rust 学习总结：核心知识体系回顾
 module: 'rust'
 category: 后端技术

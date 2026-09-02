@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 640
 title: Go 学习总结：核心知识体系回顾
 module: 'go'
 category: 后端技术

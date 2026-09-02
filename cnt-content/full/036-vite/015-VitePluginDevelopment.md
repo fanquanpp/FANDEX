@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 140
 title: Vite 插件开发：钩子体系与虚拟模块
 module: 'vite'
 category: 前端技术

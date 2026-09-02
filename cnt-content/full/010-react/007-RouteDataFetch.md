@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [React19 新特性](/react/006-React19NewFeatures)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. React Router v7」的核心机制、典型用法与常见陷阱
+- 掌握「2. 嵌套路由与布局路由」的核心机制、典型用法与常见陷阱
+- 掌握「3. 数据加载（loader/action）」的核心机制、典型用法与常见陷阱
+- 掌握「4. Next.js App Router」的核心机制、典型用法与常见陷阱
+- 掌握「5. Server Actions」的核心机制、典型用法与常见陷阱
+
+
 ## 1. React Router v7
 
 React Router v7 是 React 生态中最流行的路由库，整合了 Remix 的数据加载能力。

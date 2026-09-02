@@ -23,6 +23,19 @@ prerequisites:
 
 # Kotlin 类型系统深度解析（Kotlin Type System in Depth）
 
+## 前置知识
+
+- [Kotlin 与 Spring](/kotlin/027-KotlinSpring)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.005 Software Construction、Stanford CS193P、CMU 15-312 Principles of Programming Languages 等海外名校课程的教学水准，系统讲解 Kotlin 类型系统的核心机制：泛型（Generics）、型变（Variance）、星投影（Star Projection）、类型擦除（Type Erasure）、`reified` 类型参数、上下界约束（Bounds）。本文不假设读者具备 Scala 或 Haskell 的类型理论前置知识，所有概念均从"为什么需要"出发，逐步深入到 JVM 字节码与 K2 编译器实现层面。完成本文学习后，读者将能够独立设计类型安全的泛型 API、正确使用 `out`/`in`/`*` 修饰符、理解协变与逆变的本质区别，并能在 Android、KMP、Spring 等工程实践中应用类型系统理论。
 
 ## 1. 历史动机与发展脉络

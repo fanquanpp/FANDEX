@@ -18,6 +18,19 @@ prerequisites: []
 
 # 异步组件与 Suspense | Async Components and Suspense in Vue 3
 
+## 前置知识
+
+- [KeepAlive 缓存与生命周期](/vue3/027-KeepAliveCacheLifecycle)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络 | Historical Motivation and Evolution」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义 | Formal Definitions」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析 | Theoretical Derivation」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例 | Code Examples」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析 | Comparative Analysis」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.170、Stanford CS142、CMU 17-437 软件工程课程水准，系统化阐述 Vue 3 异步组件（`defineAsyncComponent`）与 `Suspense` 机制的原理、形式化定义、企业级实践与对比分析。涵盖代码分割（Code Splitting）、动态导入（Dynamic Import）、异步依赖编排（Async Orchestration）、错误边界（Error Boundary）、加载状态管理、SSR 流式渲染等主题，并辅以数学建模、对比分析、案例研究与习题。
 
 ---

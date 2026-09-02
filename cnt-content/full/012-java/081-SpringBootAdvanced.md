@@ -19,6 +19,19 @@ prerequisites:
   - 'java/021-CollectionFrameworkDetailed'
 ---
 
+## 前置知识
+
+- [Spring 基础： IoC 容器、 AOP、 Bean 生命周期与企业级开发核心](/java/080-SpringBasicsIoCAOPBeanLifecycle)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
+- 掌握「概述」的核心机制、典型用法与常见陷阱
+- 掌握「基础概念」的核心机制、典型用法与常见陷阱
+- 掌握「快速上手」的核心机制、典型用法与常见陷阱
+- 掌握「详细用法」的核心机制、典型用法与常见陷阱
+
+
 ## 0. 本节阅读指引（先读这一节）
 
 本篇是「Spring Boot 进阶」，目标：理解自动配置、Starter、Profile 与条件装配。

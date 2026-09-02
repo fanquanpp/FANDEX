@@ -22,6 +22,19 @@ prerequisites:
 
 # 数据类与字段默认值（Dataclasses & Field Defaults）
 
+## 前置知识
+
+- [描述符](/python/060-Descriptor)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > "dataclasses are a way to automate the writing of boilerplate code for classes that primarily exist to store data." —— PEP 557
 
 ## 1. 历史动机与演化

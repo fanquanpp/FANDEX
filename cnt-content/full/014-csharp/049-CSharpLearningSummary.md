@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 490
 title: C# 学习总结：核心知识体系回顾
 module: 'csharp'
 category: 后端技术

@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [C# 测试与工程化](/csharp/012-CSharpTestEngineering)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. Unity 中的 C」的核心机制、典型用法与常见陷阱
+- 掌握「2. MonoBehaviour 生命周期」的核心机制、典型用法与常见陷阱
+- 掌握「3. 协程 (Coroutine)」的核心机制、典型用法与常见陷阱
+- 掌握「4. ScriptableObject」的核心机制、典型用法与常见陷阱
+- 掌握「5. ECS 模式」的核心机制、典型用法与常见陷阱
+
+
 
 ## 1. Unity 中的 C#
 

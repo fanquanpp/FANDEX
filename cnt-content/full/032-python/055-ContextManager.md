@@ -20,6 +20,19 @@ prerequisites:
   - 'python/062-GeneratorCoroutine'
 ---
 
+## 前置知识
+
+- [模块、包与工程化](/python/054-ModulePackageEngineering)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「概述」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与背景」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+
+
 ## 概述
 
 上下文管理器（Context Manager）是 Python 资源管理的核心抽象。它将"资源获取即初始化"（Resource Acquisition Is Initialization, RAII）的思想融入 Python 对象模型，通过 `with` 语句确保资源在使用后被正确释放，即使代码块中发生异常也能保证清理逻辑被执行。这是 Python 区别于 C/C++ 等手动管理资源语言的标志性能力之一。

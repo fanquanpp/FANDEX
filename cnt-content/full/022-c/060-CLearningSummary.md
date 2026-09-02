@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 600
 title: C 语言学习总结：核心知识体系回顾
 module: 'c'
 category: 计算机科学

@@ -20,6 +20,19 @@ prerequisites:
 
 # Entity-Framework-Core迁移与优化
 
+## 前置知识
+
+- [反射与特性应用](/csharp/032-ReflectionAndFeatureApplication)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > "对象关系映射（ORM）是开发者的舒适区，但舒适区往往是性能黑洞。" —— Jimmy Bogard, *Architecting with Entity Framework Core*
 
 ## 1. 历史动机与发展脉络

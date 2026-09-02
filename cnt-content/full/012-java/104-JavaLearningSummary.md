@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 1040
 title: Java 学习总结：核心知识体系回顾
 module: 'java'
 category: 后端技术

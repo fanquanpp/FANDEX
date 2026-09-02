@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [变量与数据类型](/javascript/004-VariableDataType)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 数据类型 (Data Types)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 类型检测 (Type Checking)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 核心运算符 (Operators)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 类型转换 (Coercion)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 实战示例」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 数据类型 (Data Types)
 
 JavaScript 是一种动态类型语言，变量的类型会在运行时自动推断。JavaScript 中的数据类型分为两大类：原始类型（Primitive Types）和引用类型（Reference Types）。

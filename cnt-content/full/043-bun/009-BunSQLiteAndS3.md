@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 90
 title: Bun 内置能力：SQLite、S3 与文件 I/O
 module: 'bun'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 10
+order: 140
 title: Astro 视图过渡：跨页面动画与持久化组件
 module: 'astro'
 category: 前端技术
