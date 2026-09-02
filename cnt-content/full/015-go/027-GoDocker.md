@@ -912,7 +912,7 @@ flowchart TD
 
 **解决**：使用 `.dockerignore`：
 
-```
+```text
 # .dockerignore
 .git
 .github

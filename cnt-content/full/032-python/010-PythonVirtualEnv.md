@@ -1185,7 +1185,7 @@ __pycache__/
 
 **错误**：
 
-```txt
+```text
 # requirements.txt（无版本约束）
 fastapi
 uvicorn
@@ -1199,7 +1199,7 @@ pydantic
 
 **正确做法**：
 
-```txt
+```text
 # requirements.txt（精确版本）
 fastapi==0.110.0
 uvicorn[standard]==0.29.0

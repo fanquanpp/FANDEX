@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: 算术、比较、逻辑、位运算及运算符优先级。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'javascript/003-ProgramStructureBasicSyntax'

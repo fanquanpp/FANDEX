@@ -2254,7 +2254,7 @@ Python Software Foundation. (2024). *Lib/abc.py: ABCMeta*. GitHub repository. ht
 
 ### A.1 元类钩子调用顺序
 
-```
+```text
 class Foo(Base, metaclass=Meta):
     body
 

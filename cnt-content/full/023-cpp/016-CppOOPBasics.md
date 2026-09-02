@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
 description: 类与对象、封装、继承、多态与虚函数。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/014-RAIIResourceManagement'

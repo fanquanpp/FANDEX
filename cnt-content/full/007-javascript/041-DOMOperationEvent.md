@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: DOM 树操作、事件模型与事件委托。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'javascript/060-RecordsAndTuples'

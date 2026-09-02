@@ -321,14 +321,12 @@ $$\text{Translate} : \text{Expression}\langle T\rangle \to \text{SQL}$$
 
 查询翻译管线：
 
-```
 1. LINQ Expression Tree (C# 编译器生成)
 2. QueryExpression (EF Core 内部表示)
 3. SelectExpression (SQL SELECT 树)
 4. ShapedQueryExpression (实体物化器)
 5. RelationalCommand (SQL 字符串 + 参数)
 6. DbDataReader → Entity Materializer → T
-```
 
 #### 2.4.1 查询翻译示例
 
@@ -486,7 +484,7 @@ EF Core 6+ 的批处理优化：将多个 INSERT/UPDATE/DELETE 合并为单次 `
 
 `SaveChanges` 调用 `DetectChanges`，扫描所有 tracked 实体比较当前值与原始值：
 
-```
+```text
 Algorithm: DetectChanges
 Input: ChangeTracker
 Output: Updated state for each entity
@@ -2554,7 +2552,7 @@ services.AddDbContext<BlogContext>(options =>
 
 ## 附录 A：EF Core 性能基准（.NET 8, EF Core 8）
 
-```
+```text
 BenchmarkDotNet v0.13.12
 Runtime=.NET 8.0
 Database=SQL Server 2022

@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 模块导入、包结构、虚拟环境与依赖管理。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'python/052-PythonAdvancedLatestFeature'

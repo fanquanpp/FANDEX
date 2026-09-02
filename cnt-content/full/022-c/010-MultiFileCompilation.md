@@ -843,7 +843,7 @@ main.o:                utils.o:
 
 链接器的第二项任务是重定位（relocation）：合并各目标文件的段，调整符号地址。
 
-```
+```text
 链接前：
   main.o:  .text 起始地址 0x0，main 在 0x0，调用 add 在 0x10（占位）
   utils.o: .text 起始地址 0x0，add 在 0x0

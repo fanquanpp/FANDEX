@@ -578,17 +578,18 @@ public TransactionStatus getTransaction(TransactionDefinition definition) {
 
 #### 3.6.2 请求处理流程
 
-```
-请求 → DispatcherServlet
-    → HandlerMapping.resolve(request)  // 找到 HandlerExecutionChain
-    → HandlerInterceptor.preHandle()   // 前置拦截
-    → HandlerAdapter.handle(request, response, handler)  // 执行 Controller
-        → Controller 方法执行
-        → 返回 ModelAndView 或对象（@ResponseBody）
-    → HandlerInterceptor.postHandle()  // 后置拦截
-    → ViewResolver / MessageConverter  // 渲染视图或序列化 JSON
-    → HandlerInterceptor.afterCompletion()  // 完成回调
-    → 响应
+```mermaid
+flowchart TB
+    REQ[请求] --> DS[DispatcherServlet]
+    DS --> HM[HandlerMapping.resolve<br/>找到 HandlerExecutionChain]
+    HM --> Pre[HandlerInterceptor.preHandle<br/>前置拦截]
+    Pre --> HA[HandlerAdapter.handle<br/>执行 Controller]
+    HA --> CTRL[Controller 方法执行]
+    CTRL --> RET[返回 ModelAndView<br/>或 @ResponseBody 对象]
+    RET --> Post[HandlerInterceptor.postHandle<br/>后置拦截]
+    Post --> VR[ViewResolver / MessageConverter<br/>渲染视图或序列化 JSON]
+    VR --> AC[HandlerInterceptor.afterCompletion<br/>完成回调]
+    AC --> RES[响应]
 ```
 
 #### 3.6.3 关键源码

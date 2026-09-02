@@ -1026,7 +1026,7 @@ RUN mvn package
 
 **正确做法**：
 
-```
+```text
 -XX:+ExitOnOutOfMemoryError
 # 或更激进的
 -XX:+CrashOnOutOfMemoryError

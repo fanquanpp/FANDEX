@@ -5,7 +5,7 @@ module: 'c'
 category: 计算机科学
 difficulty: beginner
 description: 变量的定义、生命周期、作用域以及常量的多种实现方式。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'c/003-ProgramStructureBasicSyntax'
@@ -2232,7 +2232,7 @@ readelf -S prog
 
 #### 12.8.7 调试器常用命令
 
-```
+```text
 # GDB
 gcc -g -o prog prog.c
 gdb ./prog
@@ -2416,7 +2416,7 @@ L"hello"    /* wchar_t[6] */
 
 ### 12.9 学习笔记模板
 
-```
+```markdown
 # 学习笔记:变量与常量
 
 ## 我已掌握

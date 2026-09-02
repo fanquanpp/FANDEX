@@ -219,7 +219,7 @@ Thompson 构造法将正则表达式转换为 NFA。对于断言，需扩展标�
 
 实现上，断言通常通过"子匹配 + 位置回退"实现：
 
-```
+```text
 NFA for (?=R):
   1. Save current position p
   2. Run NFA for R starting at p

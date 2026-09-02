@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
 description: 左值引用、右值引用、常量引用、转发引用、引用折叠、悬空引用与 std::launder 全解。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'cpp/003-CppBasicSyntax'

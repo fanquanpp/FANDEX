@@ -1646,18 +1646,16 @@ pytest --durations=10
 
 #### 13.5.1 代码 review checklist
 
-```
-[ ] 类型注解完整且正确
-[ ] 公共函数有 docstring（Google 风格）
-[ ] 单元测试覆盖核心路径与边界
-[ ] Ruff/mypy 无错误
-[ ] 无 print 语句（使用 logging）
-[ ] 无 TODO/FIXME 未跟踪
-[ ] 安全扫描无高危
-[ ] 性能关键路径有基准测试
-[ ] 命名符合 PEP 8
-[ ] 单文件不超过 500 行
-```
+- [ ] 类型注解完整且正确
+- [ ] 公共函数有 docstring（Google 风格）
+- [ ] 单元测试覆盖核心路径与边界
+- [ ] Ruff/mypy 无错误
+- [ ] 无 print 语句（使用 logging）
+- [ ] 无 TODO/FIXME 未跟踪
+- [ ] 安全扫描无高危
+- [ ] 性能关键路径有基准测试
+- [ ] 命名符合 PEP 8
+- [ ] 单文件不超过 500 行
 
 #### 13.5.2 提交规范（Conventional Commits）
 

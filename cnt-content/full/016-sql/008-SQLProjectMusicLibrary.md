@@ -118,7 +118,7 @@ CREATE TABLE IF NOT EXISTS music (
 SHOW TABLES;
 ```
 
-设计要点回顾（对应 [约束详解](sql/015-Constraint)）：
+设计要点回顾（对应 [约束详解](/sql$2）：
 
 - 主表在前、从表在后；建表顺序错了外键会建立失败。
 - `CHECK` 让数据库兜底业务规则（身高区间），MySQL 8.0 起真正生效。
@@ -337,5 +337,5 @@ SELECT (SELECT COUNT(*) FROM music) AS src_rows,
 
 - 本项目把 DDL → DML → DQL 三阶段连成闭环，12 道查询覆盖了单表、聚合、连接、子查询与窗口函数预览。
 - 设计层面的收获：主表/从表的建表顺序、双外键从表、`CHECK` 兜底业务规则、软删除字段。
-- 延伸方向：查询性能如何保障？继续学习 [索引](sql/032-Index) 与 [执行计划](sql/033-ExecutionPlan)；
-  想见识面试题风格的综合题库，见 [SQL 实战与面试](sql/013-SQLPracticeInterview)。
+- 延伸方向：查询性能如何保障？继续学习 [索引](/sql$2 与 [执行计划](/sql$2；
+  想见识面试题风格的综合题库，见 [SQL 实战与面试](/sql$2。

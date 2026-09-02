@@ -47,7 +47,7 @@ Python 打包发布（Packaging and Distribution）是将 Python 代码从开发
 - 无法处理复杂的扩展模块编译
 - 缺乏元数据标准化
 
-```
+```python
 # distutils 时代的典型 setup.py
 from distutils.core import setup
 setup(name="mypackage", version="1.0")
@@ -1646,7 +1646,7 @@ include-package-data = true
 
 **基本写法：MANIFEST.in**
 `include <文件模式>`
-```
+```text
 # 显式声明包含文件
 include README.md LICENSE
 recursive-include mypackage/data *.json *.txt

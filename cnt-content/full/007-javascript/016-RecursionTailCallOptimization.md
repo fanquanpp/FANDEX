@@ -2361,7 +2361,7 @@ mapCPS([1, 2, 3], (x, k) => k(x * 2), (r) => console.log(r)); // [2, 4, 6]
 
 ### E.1 非尾递归的栈
 
-```
+```text
 fact(4) 调用时:
 [fact(4): n=4, ret=乘 4]
   [fact(3): n=3, ret=乘 3]

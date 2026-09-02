@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: 函数声明、箭头函数、作用域链、闭包原理、this 绑定机制、高阶函数、柯里化、尾调用优化的形式化定义与工程实践。
-author: Anonymous
+author: fanquanpp
 updated: '2026-07-21'
 related:
   - 'javascript/061-RegexAssertions'

@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: advanced
 description: 异常机制、错误处理策略、性能分析与优化技巧。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/063-CppTemplate'

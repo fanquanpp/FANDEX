@@ -365,7 +365,6 @@ $$
 
 JWT 验证算法：
 
-```
 1. 分割 JWT 为三部分（O(n)，n = JWT 长度）
 2. Base64URL 解码 Header（O(n)）
 3. 解析 Header，获取 alg（O(1)）
@@ -374,7 +373,6 @@ JWT 验证算法：
 6. Base64URL 解码 Payload（O(n)）
 7. 解析 Claims（O(n)）
 8. 验证 exp、nbf、iat、iss、aud（O(1)）
-```
 
 总复杂度 $O(n)$，其中 $n$ 为 JWT 长度。
 

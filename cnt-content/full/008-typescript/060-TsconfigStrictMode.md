@@ -47,21 +47,21 @@ TypeScript 在 **TS 2.3（2017 年 4 月）** 正式引入 `strict` 总开关，
 
 ### 1.3 版本演进时间线
 
-```
-2014-10  TS 1.0     最初发布，类型检查宽松
-2015-07  TS 1.5     noImplicitAny 引入
-2016-09  TS 2.0     strictNullChecks 引入（重大突破）
-2017-04  TS 2.3     strict 总开关引入，聚合 6 个子选项
-2017-08  TS 2.6     strictFunctionTypes 引入（独立选项）
-2018-03  TS 2.8     strictBindCallApply 引入
-2018-07  TS 3.0     unknown 类型引入，配合 strictNullChecks
-2019-08  TS 3.5     strictPropertyInitialization 引入
-2020-08  TS 4.0     noImplicitAny 在 catch 子句的改进
-2021-04  TS 4.3     useUnknownInCatchVariables 引入
-2022-11  TS 4.9     satisfies 操作符，配合严格模式提升精度
-2024-03  TS 5.4     NoInfer<T>，严格模式下的类型推断改进
-2024-11  TS 5.6     严格模式下迭代器与 Promise 的细化检查
-```
+| 时间 | 里程碑 | 说明 |
+| --- | --- | --- |
+| 2014-10 | TS 1.0 | 最初发布，类型检查宽松 |
+| 2015-07 | TS 1.5 | noImplicitAny 引入 |
+| 2016-09 | TS 2.0 | strictNullChecks 引入（重大突破） |
+| 2017-04 | TS 2.3 | strict 总开关引入，聚合 6 个子选项 |
+| 2017-08 | TS 2.6 | strictFunctionTypes 引入（独立选项） |
+| 2018-03 | TS 2.8 | strictBindCallApply 引入 |
+| 2018-07 | TS 3.0 | unknown 类型引入，配合 strictNullChecks |
+| 2019-08 | TS 3.5 | strictPropertyInitialization 引入 |
+| 2020-08 | TS 4.0 | noImplicitAny 在 catch 子句的改进 |
+| 2021-04 | TS 4.3 | useUnknownInCatchVariables 引入 |
+| 2022-11 | TS 4.9 | satisfies 操作符，配合严格模式提升精度 |
+| 2024-03 | TS 5.4 | NoInfer<T>，严格模式下的类型推断改进 |
+| 2024-11 | TS 5.6 | 严格模式下迭代器与 Promise 的细化检查 |
 
 ### 1.4 `strict` 总开关的演进
 

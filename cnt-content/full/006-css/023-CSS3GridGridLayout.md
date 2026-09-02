@@ -5,7 +5,7 @@ module: 'css'
 category: 前端技术
 difficulty: intermediate
 description: 网格容器与项目属性、区域命名与响应式网格。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'css/026-Shadow'

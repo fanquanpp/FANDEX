@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: CommonJS、ES Modules 与模块打包工具。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'javascript/041-DOMOperationEvent'

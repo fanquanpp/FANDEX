@@ -5,7 +5,7 @@ module: 'c'
 category: 计算机科学
 difficulty: intermediate
 description: 一维、多维数组、字符数组、数组与指针的关系及内存布局。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'c/036-EmbeddedCProgramming'

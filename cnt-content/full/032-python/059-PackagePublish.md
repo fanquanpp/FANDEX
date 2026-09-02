@@ -857,7 +857,7 @@ __version__ = "1.0.0.dev3"  # 开发版
 
 #### 陷阱 5：在 MANIFEST.in 中遗漏文件
 
-```
+```text
 # 反例：sdist 不包含 README
 include LICENSE
 # 缺少 README.md

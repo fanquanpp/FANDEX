@@ -5,7 +5,7 @@ module: 'markdown'
 category: 工具链
 difficulty: intermediate
 description: 行内代码、围栏代码块、语言标注与高亮配置。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-03'
 related:
   - 'markdown/021-ImageCDNAcceleration'

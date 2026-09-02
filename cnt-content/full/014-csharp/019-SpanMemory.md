@@ -3321,7 +3321,7 @@ dotnet-dump analyze dump.dmp
 
 ### D.4 PerfView
 
-```text
+```bash
 # 捕获 GC 事件
 PerfView.exe /OnlyProviders=*Microsoft-Windows-DotNETRuntime:0x1:4 collect
 

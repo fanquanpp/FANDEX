@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 函数定义、参数类型、lambda 表达式与高阶函数。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'python/025-WebScrapingWithPython'

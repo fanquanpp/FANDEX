@@ -5,7 +5,7 @@ module: 'html5'
 category: 前端技术
 difficulty: intermediate
 description: audio/video 元素、Canvas API 与 SVG 基础。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'html5/011-Accessibility'

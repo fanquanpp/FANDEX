@@ -235,5 +235,5 @@ WHERE NOT EXISTS (SELECT 1 FROM producer WHERE producer_name = 'ry0');
 - 一条 SQL = 定位（库/表）+ 动作（DDL/DML/DQL）+ 分号结尾。
 - 幂等三件套：`IF NOT EXISTS`、`INSERT IGNORE`、存在性检查。
 - 写操作安全流程：先 `SELECT` 验证 → 再 `UPDATE`/`DELETE` → 永远带 `WHERE`。
-- 环境就绪、三张表就位，下一课 [数据查询基础](sql/004-DataQueryBasics) 系统学习 SELECT；
-  想检验综合能力时直接挑战 [SQL 综合实战：曲库数据库](sql/008-SQLProjectMusicLibrary)。
+- 环境就绪、三张表就位，下一课 [数据查询基础](/sql$2 系统学习 SELECT；
+  想检验综合能力时直接挑战 [SQL 综合实战：曲库数据库](/sql$2。

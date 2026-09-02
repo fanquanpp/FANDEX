@@ -304,7 +304,6 @@ Promise.withResolvers = function () {
 
 证明：二者均构造一个 pending Promise 并暴露其 `resolve` / `reject`。`withResolvers` 的规范实现（ECMA-262 §27.2.4.5）：
 
-```
 1. Let C be the this value.
 2. Let x be ? PromiseResolve(C, undefined).
 3. Let promiseCapability be ? NewPromiseCapability(C).
@@ -313,7 +312,6 @@ Promise.withResolvers = function () {
 6. Perform ! CreateDataPropertyOrThrow(result, "resolve", promiseCapability.[[Resolve]]).
 7. Perform ! CreateDataPropertyOrThrow(result, "reject", promiseCapability.[[Reject]]).
 8. Return result.
-```
 
 此实现内部调用 `NewPromiseCapability`，与 `new Promise(executor)` 走相同的 capability 构造路径，故行为等价。$\square$
 

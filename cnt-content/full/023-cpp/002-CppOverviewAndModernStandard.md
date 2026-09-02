@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: beginner
 description: C++ 发展历程、标准演进与现代 C++ 核心特性概览。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-05'
 related:
   - 'cpp/003-CppBasicSyntax'

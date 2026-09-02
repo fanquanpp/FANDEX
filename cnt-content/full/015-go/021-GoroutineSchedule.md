@@ -1169,7 +1169,7 @@ upx --best --ultra-brute myapp                    # UPX 压缩
 
 ### 1. Go Module 配置
 
-```text
+```go
 # go.mod
 module github.com/fandex/server
 

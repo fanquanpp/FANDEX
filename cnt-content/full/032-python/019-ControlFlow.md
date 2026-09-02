@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 条件判断、循环结构与推导式。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'python/015-PythonDjango'

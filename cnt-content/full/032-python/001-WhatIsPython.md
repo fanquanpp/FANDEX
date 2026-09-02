@@ -40,7 +40,7 @@ print(total)   # 5050
 
 ## 它如何运行
 
-Python 是**解释型语言**：安装官方解释器后，用 `python 文件名.py` 即可运行，没有编译步骤，改一行看一次结果，非常适合初学者建立即时反馈。安装步骤见 [Python 安装](getting-started/021-PythonInstall)。
+Python 是**解释型语言**：安装官方解释器后，用 `python 文件名.py` 即可运行，没有编译步骤，改一行看一次结果，非常适合初学者建立即时反馈。安装步骤见 [Python 安装](/getting-started$2。
 
 ## 动手环节：两次运行
 
@@ -80,4 +80,4 @@ print(greet('学习者'))
 
 ## 下一步
 
-进入 [Python 概述与环境搭建](python/002-PythonOverviewEnvSetup) 系统开始语法主线；装环境遇到问题先查 [Python 安装](getting-started/021-PythonInstall) 与 [环境验证清单](getting-started/028-EnvVerificationChecklist)。
+进入 [Python 概述与环境搭建](/python$2 系统开始语法主线；装环境遇到问题先查 [Python 安装](/getting-started$2 与 [环境验证清单](/getting-started$2。

@@ -5,7 +5,7 @@ module: 'github'
 category: 工具链
 difficulty: intermediate
 description: GitHub 账户注册、邮箱验证、密码策略与双因素认证（2FA）配置指南：安全意义、TOTP 原理与恢复方案。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'github/001-GitHubOverview'

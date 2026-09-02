@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: advanced
 description: 多重继承、虚继承、RTTI 与面向对象设计原则。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/025-NamespaceLinkage'

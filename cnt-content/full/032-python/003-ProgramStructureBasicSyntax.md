@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: beginner
 description: Python 缩进规则、语句、注释与编码规范。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-03'
 related:
   - 'python/002-PythonOverviewEnvSetup'

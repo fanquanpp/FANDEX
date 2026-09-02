@@ -2173,31 +2173,27 @@ value class Serializable(val value: Type)
 
 ### A.2 装箱场景速查
 
-```
-装箱场景：
+**装箱场景**：
 1. V?（可空类型）
 2. T 是 V（泛型类型参数）
 3. List<V>、Set<V>、Map<K, V>（集合）
 4. Array<V>（数组）
 5. Any（基础类型转换）
 
-非装箱场景：
+**非装箱场景**：
 1. 直接传递 V
 2. V 的方法调用
 3. V 的属性访问
 4. inline 函数中的 V（reified）
-```
 
 ### A.3 约束速查
 
-```
 1. 单一属性（val，不能是 var）
 2. 不能继承其他类
 3. 不能是 abstract、open、sealed
 4. 不能有 backing field
 5. 不能递归引用
 6. JVM 平台必须 @JvmInline
-```
 
 ---
 

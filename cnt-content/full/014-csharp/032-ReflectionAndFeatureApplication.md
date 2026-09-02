@@ -332,7 +332,7 @@ $$T_{\text{delegate}} \approx T_{\text{direct}} + T_{\text{indirection}}$$
 
 实测对比：
 
-```
+```text
 BenchmarkDotNet v0.13.12, .NET 8
 | Method          | Mean      | Ratio |
 |---------------- |----------:|------:|
@@ -348,7 +348,7 @@ BenchmarkDotNet v0.13.12, .NET 8
 
 读取目标 $T$ 上特性 $A$ 的算法：
 
-```
+```text
 Algorithm: GetCustomAttributes(T, A)
 Input: 目标 T (MemberInfo)，特性类型 A (Type)
 Output: 特性实例列表

@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 算术、比较、逻辑、位运算与运算符优先级。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'python/070-BasicDataType'

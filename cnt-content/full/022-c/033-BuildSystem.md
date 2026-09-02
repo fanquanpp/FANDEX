@@ -904,21 +904,22 @@ include(CPack)
 
 `target_link_libraries` 的三个关键字决定了依赖如何传播：
 
-```
-假设：mylib 是一个库目标，myapp 链接 mylib
+假设 `mylib` 是一个库目标，`myapp` 链接 `mylib`：
 
+```cmake
 target_link_libraries(mylib
     PUBLIC  core_lib      # core_lib 对 mylib 自身和 mylib 的使用者都可见
     PRIVATE utils_lib     # utils_lib 仅 mylib 内部使用，不传递给 myapp
     INTERFACE api_lib     # api_lib 仅传递给 myapp，mylib 自身不使用
 )
-
-结果：
-- mylib 编译时：使用 core_lib, utils_lib 的头文件
-- mylib 链接时：链接 core_lib, utils_lib
-- myapp 编译时：使用 core_lib, api_lib 的头文件（不含 utils_lib）
-- myapp 链接时：链接 mylib, core_lib, api_lib（不含 utils_lib）
 ```
+
+传播结果：
+
+- `mylib` 编译时：使用 core_lib, utils_lib 的头文件
+- `mylib` 链接时：链接 core_lib, utils_lib
+- `myapp` 编译时：使用 core_lib, api_lib 的头文件（不含 utils_lib）
+- `myapp` 链接时：链接 mylib, core_lib, api_lib（不含 utils_lib）
 
 形式化表示：
 

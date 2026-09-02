@@ -39,7 +39,7 @@ prerequisites:
 
 实际性能差异：遍历100万个int元素，数组约1ms，链表约5-10ms（取决于内存分配器）。
 
-> 跨模块引用：链表在哈希表冲突处理中的应用参见 [哈希表](algorithm/hashtable)。C++ STL list的实现参见 [C++基础](cpp/overview)。
+> 跨模块引用：链表在哈希表冲突处理中的应用参见 [哈希表](/algorithm$2。C++ STL list的实现参见 [C++基础](/cpp$2。
 
 ---
 
@@ -317,7 +317,7 @@ class LRUCache:
             del self.cache[lru.key]
 ```
 
-> 跨模块引用：LRU缓存的完整分析参见 [哈希表](algorithm/hashtable)。
+> 跨模块引用：LRU缓存的完整分析参见 [哈希表](/algorithm$2。
 
 ---
 

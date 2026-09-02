@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: 回调、Promise、async/await 与事件循环。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'javascript/058-JavaScriptLatestFeature'
