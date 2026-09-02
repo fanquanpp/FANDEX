@@ -9,24 +9,6 @@
 submodule），四端共享同一内容体系：内容单一来源 `cnt-content/full`，模块元数据
 唯一来源 `shd-shared/metadata/modules.json`。
 
-## 不知道从哪开始？从这里开始
-
-如果你从未写过代码，按下面的主线顺序学习即可。每个模块的第一篇都是写给零基础的
-"这是什么、为什么学、怎么跑起来"，模块之间以前置依赖（prerequisites）标注衔接，不会出现断层：
-
-| 阶段 | 模块顺序 | 你将学会 |
-| --- | --- | --- |
-| 认知与工具 | getting-started → markdown → git → github | 计算机与互联网的工作原理、环境搭建、版本控制 |
-| Web 基石 | html5 → css → javascript → typescript | 从第一个网页到动态交互与类型安全 |
-| 前端框架 | vue3 或 react（二选一）→ vite → tailwind → svg → astro → nextjs | 现代前端的工程化开发 |
-| 后端与数据 | python 或 java 或 go → sql → mysql → postgresql → redis → nestjs | 服务端开发与数据库设计 |
-| 计算机科学 | algorithm → cs-fundamentals → c → cpp | 数据结构、算法与底层原理 |
-| 工程与架构 | devops → networking → cloud-computing → software-testing → software-architecture 等 | 部署运维、网络安全、架构设计 |
-| 专项扩展 | rust、kotlin、csharp、mongodb、message-queue、cybersecurity 等 | 第二语言与专项深化 |
-
-每篇文档都包含：学习动机、前置知识引用、可运行的代码示例、常见错误与调试方法、
-下一步推荐。文档之间的引用（7000+ 处）经全量校验，无死链。
-
 ## 仓库结构
 
 ```
