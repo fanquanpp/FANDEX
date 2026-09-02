@@ -48,8 +48,8 @@ const meta = getModule(module || '');
 // 通过 doc-service 获取当前模块排序后的文档列表，传递给 Sidebar 避免重复查询
 const sortedDocs = await getDocsByModule(module);
 
-// 通过 doc-service 计算预计阅读时间（优先使用 frontmatter 中的值）
-const readingTime = computeReadingTime(doc.body || '', doc.data.readingTime);
+// 通过 doc-service 计算预计阅读时间（frontmatter 已不再携带 readingTime 字段，统一按正文推算）
+const readingTime = computeReadingTime(doc.body || '');
 
 // 通过 doc-service 获取上下篇导航信息，预计算后传递给 DocNav 组件
 const navigation = await getDocNavigation(module, slug);
