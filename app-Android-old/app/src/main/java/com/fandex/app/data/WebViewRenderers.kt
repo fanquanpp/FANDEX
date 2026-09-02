@@ -20,6 +20,7 @@ import androidx.compose.ui.viewinterop.AndroidView
 import android.os.Handler
 import android.os.Looper
 import androidx.compose.ui.unit.dp
+import com.fandex.app.ui.theme.MarkdownColorScheme
 
 /**
  * WebView 离线渲染器（v4.2.1）
