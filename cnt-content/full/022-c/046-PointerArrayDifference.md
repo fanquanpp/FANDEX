@@ -1572,7 +1572,7 @@ int (*m[3])[4];             /* m is array of 3 pointer to array of 4 int */
 
 ### B.4 解析螺旋法则
 
-```
+```text
 int (*(*f)(void))[10];
 
 从 f 开始，顺时针螺旋阅读：

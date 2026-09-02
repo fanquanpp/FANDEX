@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: beginner
 description: Python 发展历程、版本特性与开发环境搭建。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-05'
 related:
   - 'python/003-ProgramStructureBasicSyntax'

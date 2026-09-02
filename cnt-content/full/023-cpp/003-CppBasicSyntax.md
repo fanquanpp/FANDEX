@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: beginner
 description: C++ 基本语法、注释、标识符与关键字。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/002-CppOverviewAndModernStandard'

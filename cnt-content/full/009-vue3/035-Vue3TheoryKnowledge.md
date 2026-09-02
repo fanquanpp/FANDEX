@@ -12,6 +12,7 @@ related:
   - 'vue3/034-Vue3ProjectExampleBlog'
 prerequisites: []
 ---
+````javascript
 
 
 Object.defineProperty(obj, key, {
@@ -290,7 +291,6 @@ diff 时只需遍历 Block 的 dynamicNodes 数组，跳过所有静态节点。
 
 事件处理函数在默认情况下每次渲染都会创建新函数，导致子组件不必要的更新。编译器自动缓存内联事件处理函数：
 
-```html
 ```html
 <template>
   <button @click="count++">{{ count }}</button>

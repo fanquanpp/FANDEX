@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: beginner
 description: JavaScript 语法基础、语句与表达式。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'javascript/002-JavaScriptOverviewRuntimeEnv'

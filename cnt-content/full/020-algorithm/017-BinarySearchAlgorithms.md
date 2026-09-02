@@ -139,7 +139,7 @@ flowchart TD
 | 极小数据集（< 16） | 部分适合 | 顺序查找 | 二分查找的常数因子可能更大 |
 | 内存极度受限 | 适合 | 布隆过滤器 | $m$ 位即可表示 $n$ 个元素 |
 
-> **跨模块引用**：二分查找基于有序数组，参见 [数组与动态数组](algorithm/array)；哈希查找的底层结构参见 [哈希表](algorithm/hashtable)；BST/AVL/红黑树/B 树的详细实现参见 [树](algorithm/tree) 与 [平衡树与高级树](algorithm/balanced-tree)；跳表的详细实现参见 [跳跃表](algorithm/skip-list)；并查集的查找参见 [并查集](algorithm/union-find)；堆作为优先队列的查找极值参见 [堆与优先队列](algorithm/heap)；字符串查找的深入讨论参见 [字符串算法](algorithm/string)。
+> **跨模块引用**：二分查找基于有序数组，参见 [数组与动态数组](/algorithm$2；哈希查找的底层结构参见 [哈希表](/algorithm$2；BST/AVL/红黑树/B 树的详细实现参见 [树](/algorithm$2 与 [平衡树与高级树](/algorithm$2；跳表的详细实现参见 [跳跃表](/algorithm$2；并查集的查找参见 [并查集](/algorithm$2；堆作为优先队列的查找极值参见 [堆与优先队列](/algorithm$2；字符串查找的深入讨论参见 [字符串算法](/algorithm$2。
 
 ---
 

@@ -232,24 +232,16 @@ Compiler 利用不变性推导进行优化：
 
 React Compiler 的完整编译流程：
 
-```
-1. 源代码（TypeScript/JSX）
-   ↓
-2. Babel/SWC 解析为 AST
-   ↓
-3. 语义分析（类型推导、作用域分析）
-   ↓
-4. 纯函数检查（Rules of React 验证）
-   ↓
-5. 依赖图构建
-   ↓
-6. 记忆化策略决策
-   ↓
-7. 代码生成（插入 useMemoCache）
-   ↓
-8. Source Map 生成
-   ↓
-9. 输出优化后的代码
+```mermaid
+flowchart TB
+    A[1. 源代码<br/>TypeScript / JSX] --> B[2. Babel/SWC 解析为 AST]
+    B --> C[3. 语义分析<br/>类型推导、作用域分析]
+    C --> D[4. 纯函数检查<br/>Rules of React 验证]
+    D --> E[5. 依赖图构建]
+    E --> F[6. 记忆化策略决策]
+    F --> G[7. 代码生成<br/>插入 useMemoCache]
+    G --> H[8. Source Map 生成]
+    H --> I[9. 输出优化后的代码]
 ```
 
 ### 3.2 AST 分析与依赖收集

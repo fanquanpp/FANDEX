@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: beginner
 description: var/let/const、原始类型、引用类型与类型转换。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'javascript/002-JavaScriptOverviewRuntimeEnv'

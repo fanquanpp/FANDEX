@@ -1,0 +1,7020 @@
+{
+ "modules": [
+  {
+   "id": "getting-started",
+   "docs": 30,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "markdown",
+   "docs": 33,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "git",
+   "docs": 42,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "github",
+   "docs": 58,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "html5",
+   "docs": 44,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "css",
+   "docs": 73,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "javascript",
+   "docs": 65,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "typescript",
+   "docs": 72,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "vue3",
+   "docs": 40,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "react",
+   "docs": 48,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "svg",
+   "docs": 19,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "java",
+   "docs": 104,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "kotlin",
+   "docs": 57,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "csharp",
+   "docs": 49,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "go",
+   "docs": 64,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "sql",
+   "docs": 46,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "mysql",
+   "docs": 92,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "postgresql",
+   "docs": 54,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "redis",
+   "docs": 31,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "algorithm",
+   "docs": 31,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "cs-fundamentals",
+   "docs": 63,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "c",
+   "docs": 60,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "cpp",
+   "docs": 78,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "devops",
+   "docs": 37,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "networking",
+   "docs": 39,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "cybersecurity",
+   "docs": 61,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "cloud-computing",
+   "docs": 56,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "software-testing",
+   "docs": 30,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "software-engineering",
+   "docs": 11,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "software-architecture",
+   "docs": 9,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "engineering-practices",
+   "docs": 8,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "python",
+   "docs": 103,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "rust",
+   "docs": 21,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "shell",
+   "docs": 15,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "astro",
+   "docs": 13,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "vite",
+   "docs": 13,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "pnpm-monorepo",
+   "docs": 9,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "tailwind",
+   "docs": 12,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "mongodb",
+   "docs": 10,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "nextjs",
+   "docs": 9,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "nestjs",
+   "docs": 11,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "deno",
+   "docs": 9,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "bun",
+   "docs": 8,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "svelte",
+   "docs": 8,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "angular",
+   "docs": 10,
+   "merged": 1,
+   "problems": {}
+  },
+  {
+   "id": "message-queue",
+   "docs": 9,
+   "merged": 1,
+   "problems": {}
+  }
+ ],
+ "totals": {
+  "FENCE_PROSE": 696,
+  "FENCE_NESTED": 14,
+  "FM_BAD_AUTHOR": 74,
+  "DOC_NO_PREAMBLE": 524,
+  "MODULE_NO_SUMMARY": 21,
+  "BODY_LINK_FIXABLE": 17
+ },
+ "issues": [
+  {
+   "type": "FENCE_PROSE",
+   "file": "001-getting-started/005-EnvVarPath.md",
+   "detail": "行69 lang=无 headings=0 table=0 cjk=11 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "002-markdown/001-SyntaxGuide.md",
+   "detail": "10 处（行 455,460,771）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/001-SyntaxGuide.md",
+   "detail": "行100 lang=markdown headings=6 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/001-SyntaxGuide.md",
+   "detail": "行208 lang=markdown headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/001-SyntaxGuide.md",
+   "detail": "行454 lang=markdown headings=1 table=0 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/001-SyntaxGuide.md",
+   "detail": "行489 lang=markdown headings=0 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/001-SyntaxGuide.md",
+   "detail": "行781 lang=markdown headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/001-SyntaxGuide.md",
+   "detail": "行796 lang=markdown headings=0 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/001-SyntaxGuide.md",
+   "detail": "行806 lang=markdown headings=0 table=3 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/001-SyntaxGuide.md",
+   "detail": "行816 lang=markdown headings=0 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/001-SyntaxGuide.md",
+   "detail": "行847 lang=markdown headings=1 table=0 cjk=1 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/002-HeadingSyntax.md",
+   "detail": "行47 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/002-HeadingSyntax.md",
+   "detail": "行89 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/002-HeadingSyntax.md",
+   "detail": "行102 lang=markdown headings=6 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/002-HeadingSyntax.md",
+   "detail": "行134 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/002-HeadingSyntax.md",
+   "detail": "行194 lang=markdown headings=1 table=0 cjk=0 codePunct=0.60"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "002-markdown/003-ParagraphLineBreak.md",
+   "detail": "5 处（行 109,116,128）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/003-ParagraphLineBreak.md",
+   "detail": "行42 lang=markdown headings=4 table=0 cjk=6 codePunct=0.06"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/003-ParagraphLineBreak.md",
+   "detail": "行102 lang=markdown headings=2 table=0 cjk=1 codePunct=0.36"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/003-ParagraphLineBreak.md",
+   "detail": "行121 lang=无 headings=2 table=0 cjk=2 codePunct=0.38"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/003-ParagraphLineBreak.md",
+   "detail": "行241 lang=markdown headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/005-CommonMarkSpec.md",
+   "detail": "行102 lang=markdown headings=0 table=0 cjk=4 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "002-markdown/006-ListSyntax.md",
+   "detail": "6 处（行 227,229,233）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/006-ListSyntax.md",
+   "detail": "行499 lang=无 headings=1 table=0 cjk=4 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "14 处（行 181,188,208）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行24 lang=markdown headings=0 table=6 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行46 lang=markdown headings=0 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行90 lang=markdown headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行105 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行215 lang=无 headings=6 table=7 cjk=7 codePunct=0.20"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行290 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行300 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行314 lang=markdown headings=1 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行326 lang=markdown headings=1 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行337 lang=markdown headings=1 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行379 lang=markdown headings=1 table=0 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行384 lang=无 headings=1 table=0 cjk=2 codePunct=0.22"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行395 lang=无 headings=2 table=0 cjk=5 codePunct=0.43"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行416 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行429 lang=markdown headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行443 lang=markdown headings=1 table=0 cjk=0 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行458 lang=markdown headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行521 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行562 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行603 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行609 lang=无 headings=2 table=0 cjk=4 codePunct=0.27"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行631 lang=markdown headings=1 table=0 cjk=2 codePunct=0.60"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行674 lang=markdown headings=1 table=0 cjk=0 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/007-GitHubFlavoredMarkdown.md",
+   "detail": "行687 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/008-EscapeCharacter.md",
+   "detail": "行8 lang=markdown headings=3 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/008-EscapeCharacter.md",
+   "detail": "行127 lang=markdown headings=0 table=6 cjk=1 codePunct=0.22"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/008-EscapeCharacter.md",
+   "detail": "行382 lang=markdown headings=0 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/008-EscapeCharacter.md",
+   "detail": "行390 lang=markdown headings=0 table=3 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/009-Footnote.md",
+   "detail": "行44 lang=markdown headings=0 table=0 cjk=11 codePunct=0.20"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/010-Strikethrough.md",
+   "detail": "行136 lang=markdown headings=0 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/010-Strikethrough.md",
+   "detail": "行228 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/010-Strikethrough.md",
+   "detail": "行246 lang=markdown headings=3 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/010-Strikethrough.md",
+   "detail": "行439 lang=markdown headings=0 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/010-Strikethrough.md",
+   "detail": "行531 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/010-Strikethrough.md",
+   "detail": "行549 lang=markdown headings=3 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/010-Strikethrough.md",
+   "detail": "行678 lang=markdown headings=1 table=0 cjk=0 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/013-SubscriptSuperscript.md",
+   "detail": "行43 lang=markdown headings=0 table=0 cjk=10 codePunct=0.54"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "58 处（行 13,19,300）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行298 lang=markdown headings=1 table=0 cjk=0 codePunct=0.20"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行312 lang=markdown headings=1 table=0 cjk=2 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行325 lang=markdown headings=1 table=0 cjk=0 codePunct=0.20"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行337 lang=markdown headings=1 table=0 cjk=3 codePunct=0.43"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行351 lang=markdown headings=1 table=0 cjk=2 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行364 lang=markdown headings=1 table=0 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行377 lang=markdown headings=1 table=0 cjk=3 codePunct=0.09"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行398 lang=markdown headings=1 table=0 cjk=2 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行413 lang=markdown headings=1 table=0 cjk=2 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行427 lang=markdown headings=1 table=0 cjk=3 codePunct=0.43"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行441 lang=markdown headings=1 table=0 cjk=2 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行456 lang=markdown headings=1 table=0 cjk=3 codePunct=0.10"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行473 lang=markdown headings=1 table=0 cjk=5 codePunct=0.30"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行493 lang=markdown headings=1 table=0 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行509 lang=markdown headings=1 table=0 cjk=0 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行524 lang=markdown headings=1 table=0 cjk=0 codePunct=0.20"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行544 lang=markdown headings=1 table=0 cjk=4 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行559 lang=markdown headings=1 table=0 cjk=3 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行574 lang=markdown headings=1 table=0 cjk=5 codePunct=0.60"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行591 lang=markdown headings=1 table=0 cjk=6 codePunct=0.60"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行611 lang=markdown headings=1 table=0 cjk=6 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行629 lang=markdown headings=1 table=0 cjk=4 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行648 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行666 lang=markdown headings=1 table=0 cjk=7 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行686 lang=markdown headings=1 table=0 cjk=1 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行701 lang=markdown headings=1 table=0 cjk=0 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行717 lang=markdown headings=1 table=0 cjk=1 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/015-Mermaid.md",
+   "detail": "行731 lang=markdown headings=1 table=0 cjk=1 codePunct=0.33"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "002-markdown/017-LinkImage.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/017-LinkImage.md",
+   "detail": "行209 lang=markdown headings=0 table=4 cjk=0 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/018-ConversionTool.md",
+   "detail": "行117 lang=markdown headings=1 table=0 cjk=3 codePunct=0.07"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/019-AutoTOC.md",
+   "detail": "行29 lang=markdown headings=6 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/019-AutoTOC.md",
+   "detail": "行55 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/019-AutoTOC.md",
+   "detail": "行67 lang=markdown headings=2 table=0 cjk=0 codePunct=0.17"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/019-AutoTOC.md",
+   "detail": "行105 lang=markdown headings=6 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/019-AutoTOC.md",
+   "detail": "行145 lang=markdown headings=2 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "2 处（行 177,406）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行6 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行25 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行35 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行45 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行57 lang=markdown headings=4 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行68 lang=markdown headings=4 table=0 cjk=0 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行90 lang=markdown headings=2 table=0 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行151 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行161 lang=markdown headings=1 table=0 cjk=0 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行171 lang=markdown headings=5 table=0 cjk=2 codePunct=0.11"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行187 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行197 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行207 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行228 lang=markdown headings=2 table=0 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行334 lang=markdown headings=6 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行360 lang=markdown headings=3 table=0 cjk=0 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行371 lang=markdown headings=1 table=0 cjk=3 codePunct=0.17"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行385 lang=markdown headings=1 table=0 cjk=1 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行398 lang=无 headings=6 table=0 cjk=1 codePunct=0.27"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行442 lang=markdown headings=1 table=0 cjk=1 codePunct=0.20"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行458 lang=markdown headings=1 table=0 cjk=2 codePunct=0.40"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行468 lang=markdown headings=1 table=0 cjk=1 codePunct=0.40"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行480 lang=markdown headings=1 table=0 cjk=1 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行513 lang=markdown headings=4 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/020-AnchorJump.md",
+   "detail": "行535 lang=markdown headings=1 table=0 cjk=2 codePunct=0.29"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "002-markdown/022-VCSPRCollaboration.md",
+   "detail": "7 处（行 129,135,146）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/022-VCSPRCollaboration.md",
+   "detail": "行26 lang=markdown headings=7 table=3 cjk=1 codePunct=0.03"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/022-VCSPRCollaboration.md",
+   "detail": "行71 lang=markdown headings=3 table=0 cjk=5 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/022-VCSPRCollaboration.md",
+   "detail": "行140 lang=无 headings=1 table=0 cjk=2 codePunct=0.10"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/022-VCSPRCollaboration.md",
+   "detail": "行155 lang=无 headings=2 table=0 cjk=5 codePunct=0.17"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/022-VCSPRCollaboration.md",
+   "detail": "行178 lang=无 headings=3 table=7 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/022-VCSPRCollaboration.md",
+   "detail": "行230 lang=markdown headings=6 table=0 cjk=0 codePunct=0.04"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/022-VCSPRCollaboration.md",
+   "detail": "行260 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "002-markdown/023-CodeBlockSyntaxHighlight.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "002-markdown/023-CodeBlockSyntaxHighlight.md",
+   "detail": "69 处（行 27,32,50）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/023-CodeBlockSyntaxHighlight.md",
+   "detail": "行278 lang=markdown headings=1 table=0 cjk=0 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/023-CodeBlockSyntaxHighlight.md",
+   "detail": "行511 lang=无 headings=1 table=0 cjk=1 codePunct=0.10"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/023-CodeBlockSyntaxHighlight.md",
+   "detail": "行587 lang=无 headings=1 table=0 cjk=2 codePunct=0.42"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/023-CodeBlockSyntaxHighlight.md",
+   "detail": "行612 lang=无 headings=1 table=0 cjk=2 codePunct=0.13"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行11 lang=markdown headings=0 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行20 lang=markdown headings=0 table=5 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行45 lang=markdown headings=0 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行66 lang=markdown headings=0 table=4 cjk=0 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行84 lang=markdown headings=0 table=4 cjk=0 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行102 lang=markdown headings=0 table=4 cjk=0 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行120 lang=markdown headings=0 table=4 cjk=0 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行138 lang=markdown headings=0 table=4 cjk=0 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行328 lang=markdown headings=0 table=5 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行364 lang=markdown headings=0 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行373 lang=markdown headings=0 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行386 lang=markdown headings=0 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行394 lang=markdown headings=0 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行402 lang=markdown headings=0 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行410 lang=markdown headings=0 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行422 lang=markdown headings=0 table=3 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行430 lang=markdown headings=0 table=3 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行438 lang=markdown headings=0 table=3 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/024-Table.md",
+   "detail": "行446 lang=markdown headings=0 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "002-markdown/025-SpecDocumentWriting.md",
+   "detail": "1 处（行 169）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/025-SpecDocumentWriting.md",
+   "detail": "行7 lang=markdown headings=0 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/025-SpecDocumentWriting.md",
+   "detail": "行15 lang=markdown headings=0 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/025-SpecDocumentWriting.md",
+   "detail": "行61 lang=markdown headings=0 table=3 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/025-SpecDocumentWriting.md",
+   "detail": "行69 lang=markdown headings=0 table=4 cjk=0 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/025-SpecDocumentWriting.md",
+   "detail": "行118 lang=markdown headings=2 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/025-SpecDocumentWriting.md",
+   "detail": "行177 lang=markdown headings=4 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/025-SpecDocumentWriting.md",
+   "detail": "行210 lang=markdown headings=9 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "002-markdown/026-AdvancedSyntaxDocumentAutomation.md",
+   "detail": "2 处（行 414,419）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/026-AdvancedSyntaxDocumentAutomation.md",
+   "detail": "行9 lang=markdown headings=0 table=5 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/026-AdvancedSyntaxDocumentAutomation.md",
+   "detail": "行27 lang=markdown headings=0 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/026-AdvancedSyntaxDocumentAutomation.md",
+   "detail": "行388 lang=markdown headings=1 table=0 cjk=2 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/026-AdvancedSyntaxDocumentAutomation.md",
+   "detail": "行404 lang=markdown headings=1 table=0 cjk=3 codePunct=0.27"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/026-AdvancedSyntaxDocumentAutomation.md",
+   "detail": "行426 lang=markdown headings=17 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/026-AdvancedSyntaxDocumentAutomation.md",
+   "detail": "行596 lang=markdown headings=3 table=0 cjk=0 codePunct=0.39"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行24 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行38 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行52 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行68 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行80 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行94 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行104 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行116 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行126 lang=markdown headings=1 table=0 cjk=0 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行136 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行146 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行158 lang=markdown headings=1 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行172 lang=markdown headings=2 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行185 lang=markdown headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行220 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行232 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行243 lang=markdown headings=1 table=0 cjk=0 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行254 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/027-TaskList.md",
+   "detail": "行295 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行7 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行22 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行35 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行49 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行64 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行78 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行90 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行103 lang=markdown headings=1 table=0 cjk=2 codePunct=0.86"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行117 lang=markdown headings=1 table=0 cjk=1 codePunct=0.80"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行131 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行141 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行153 lang=markdown headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行166 lang=markdown headings=1 table=4 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行180 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行190 lang=markdown headings=1 table=0 cjk=2 codePunct=0.80"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行203 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行217 lang=markdown headings=2 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行233 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行247 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行263 lang=markdown headings=1 table=0 cjk=2 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行275 lang=markdown headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行288 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行306 lang=markdown headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行318 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/028-DefinitionList.md",
+   "detail": "行329 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行7 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行18 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行29 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行40 lang=markdown headings=1 table=0 cjk=1 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行52 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行62 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行72 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行82 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行92 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行102 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行112 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行122 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行132 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行142 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行152 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行162 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行176 lang=markdown headings=1 table=0 cjk=4 codePunct=0.80"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行190 lang=markdown headings=1 table=0 cjk=3 codePunct=0.80"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行204 lang=markdown headings=1 table=0 cjk=4 codePunct=0.80"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行219 lang=markdown headings=1 table=0 cjk=1 codePunct=0.80"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行233 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行257 lang=markdown headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行268 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行279 lang=markdown headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行290 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行302 lang=markdown headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行319 lang=markdown headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行332 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行347 lang=markdown headings=1 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行363 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行373 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行386 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行397 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行408 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行420 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/029-AdmonitionCallout.md",
+   "detail": "行430 lang=markdown headings=1 table=0 cjk=1 codePunct=0.75"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行17 lang=markdown headings=1 table=0 cjk=1 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行28 lang=markdown headings=1 table=0 cjk=2 codePunct=0.80"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行69 lang=markdown headings=1 table=0 cjk=2 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行137 lang=markdown headings=1 table=0 cjk=2 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行148 lang=markdown headings=1 table=0 cjk=1 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行159 lang=markdown headings=1 table=0 cjk=1 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行172 lang=markdown headings=2 table=0 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行229 lang=markdown headings=1 table=0 cjk=0 codePunct=0.75"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行242 lang=markdown headings=1 table=0 cjk=2 codePunct=0.43"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行256 lang=markdown headings=1 table=0 cjk=2 codePunct=0.60"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行269 lang=markdown headings=1 table=0 cjk=3 codePunct=0.75"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行286 lang=markdown headings=1 table=0 cjk=1 codePunct=0.75"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行297 lang=markdown headings=1 table=0 cjk=1 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行310 lang=markdown headings=1 table=0 cjk=3 codePunct=0.91"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行328 lang=markdown headings=1 table=0 cjk=3 codePunct=0.90"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行387 lang=markdown headings=1 table=0 cjk=2 codePunct=0.40"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行483 lang=markdown headings=1 table=0 cjk=3 codePunct=0.17"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行518 lang=markdown headings=1 table=0 cjk=2 codePunct=0.80"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行530 lang=markdown headings=1 table=0 cjk=0 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "002-markdown/030-HtmlEmbed.md",
+   "detail": "行540 lang=markdown headings=1 table=0 cjk=1 codePunct=0.75"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/004-GitBranchManagement.md",
+   "detail": "行561 lang=text headings=6 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/004-GitBranchManagement.md",
+   "detail": "行636 lang=text headings=1 table=0 cjk=2 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/017-MergeConflictResolution.md",
+   "detail": "行191 lang=text headings=1 table=0 cjk=2 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/019-GitRebase.md",
+   "detail": "行88 lang=text headings=7 table=0 cjk=0 codePunct=0.55"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/019-GitRebase.md",
+   "detail": "行113 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/019-GitRebase.md",
+   "detail": "行121 lang=text headings=2 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/019-GitRebase.md",
+   "detail": "行134 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/019-GitRebase.md",
+   "detail": "行307 lang=text headings=7 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/019-GitRebase.md",
+   "detail": "行321 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/019-GitRebase.md",
+   "detail": "行329 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/019-GitRebase.md",
+   "detail": "行337 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/019-GitRebase.md",
+   "detail": "行352 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/019-GitRebase.md",
+   "detail": "行360 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/025-GitReset.md",
+   "detail": "行51 lang=无 headings=1 table=0 cjk=6 codePunct=0.20"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/028-TagManagement.md",
+   "detail": "行186 lang=text headings=4 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/037-InteractiveRebase.md",
+   "detail": "行20 lang=无 headings=15 table=0 cjk=0 codePunct=0.55"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/037-InteractiveRebase.md",
+   "detail": "行67 lang=无 headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/037-InteractiveRebase.md",
+   "detail": "行101 lang=无 headings=5 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/037-InteractiveRebase.md",
+   "detail": "行120 lang=无 headings=2 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/037-InteractiveRebase.md",
+   "detail": "行134 lang=无 headings=2 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/037-InteractiveRebase.md",
+   "detail": "行227 lang=无 headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/037-InteractiveRebase.md",
+   "detail": "行324 lang=无 headings=2 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "003-git/038-GitRevertResetComparison.md",
+   "detail": "2 处（行 12,37）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/038-GitRevertResetComparison.md",
+   "detail": "行31 lang=无 headings=1 table=0 cjk=2 codePunct=0.42"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "003-git/039-CodeReviewBestPractice.md",
+   "detail": "2 处（行 160,182）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/039-CodeReviewBestPractice.md",
+   "detail": "行157 lang=无 headings=2 table=0 cjk=1 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/039-CodeReviewBestPractice.md",
+   "detail": "行169 lang=无 headings=4 table=0 cjk=0 codePunct=0.03"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/039-CodeReviewBestPractice.md",
+   "detail": "行213 lang=无 headings=5 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "003-git/039-CodeReviewBestPractice.md",
+   "detail": "行231 lang=markdown headings=4 table=0 cjk=2 codePunct=0.09"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "004-github/002-AccountRegister2FA.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "004-github/003-RepositoryCreateCloneArchiveDelete.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "004-github/004-SSHHTTPS.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "004-github/005-CollaborationDevelopmentStandard.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/005-CollaborationDevelopmentStandard.md",
+   "detail": "行93 lang=markdown headings=5 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "004-github/006-READMEFile.md",
+   "detail": "2 处（行 100,139）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/006-READMEFile.md",
+   "detail": "行70 lang=markdown headings=5 table=0 cjk=8 codePunct=0.21"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/006-READMEFile.md",
+   "detail": "行133 lang=无 headings=2 table=4 cjk=8 codePunct=0.31"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/010-DependencySecurityOptions.md",
+   "detail": "行151 lang=markdown headings=2 table=0 cjk=1 codePunct=0.11"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/011-ForkWorkflow.md",
+   "detail": "行145 lang=markdown headings=3 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/012-ProjectsBoard.md",
+   "detail": "行103 lang=text headings=0 table=5 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/013-Wikis.md",
+   "detail": "行96 lang=markdown headings=0 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/014-Discussions.md",
+   "detail": "行122 lang=markdown headings=2 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/014-Discussions.md",
+   "detail": "行135 lang=无 headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/014-Discussions.md",
+   "detail": "行153 lang=markdown headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/015-GitHubCopilot.md",
+   "detail": "行159 lang=markdown headings=4 table=0 cjk=1 codePunct=0.06"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/016-Dependabot.md",
+   "detail": "行83 lang=markdown headings=2 table=0 cjk=2 codePunct=0.09"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "004-github/017-IssuesTemplateTagMilestone.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/017-IssuesTemplateTagMilestone.md",
+   "detail": "行38 lang=markdown headings=6 table=0 cjk=5 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/017-IssuesTemplateTagMilestone.md",
+   "detail": "行71 lang=markdown headings=4 table=0 cjk=5 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/025-CODEOWNERS.md",
+   "detail": "行68 lang=无 headings=2 table=0 cjk=0 codePunct=0.17"
+  },
+  {
+   "type": "FENCE_NESTED",
+   "file": "004-github/026-CommunityHealthFile.md",
+   "detail": "2 处（行 70,95）"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/026-CommunityHealthFile.md",
+   "detail": "行45 lang=markdown headings=5 table=0 cjk=3 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/026-CommunityHealthFile.md",
+   "detail": "行81 lang=无 headings=8 table=0 cjk=11 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/026-CommunityHealthFile.md",
+   "detail": "行128 lang=markdown headings=4 table=5 cjk=2 codePunct=0.04"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/026-CommunityHealthFile.md",
+   "detail": "行163 lang=markdown headings=5 table=0 cjk=0 codePunct=0.29"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "004-github/026-CommunityHealthFile.md",
+   "detail": "行193 lang=text headings=3 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "004-github/027-PullRequestCompleteCollaborationFlow.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "004-github/028-GitHubPagesMultiSolution.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "004-github/029-GitHubActionsCICD.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "004-github/031-FAQTroubleshoot.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "005-html5/012-HTML5FormValidation.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "005-html5/013-HTML5MultimediaCanvasDrawing.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "005-html5/015-HTML5OfflineStorageWebAPI.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "006-css/021-TraditionalLayoutTech.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "006-css/022-CSS3FlexboxFlexLayout.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "006-css/023-CSS3GridGridLayout.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "006-css/043-CSSPerformanceOptimizationDetailed.md",
+   "detail": "行200 lang=无 headings=0 table=0 cjk=0 codePunct=0.22"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "006-css/064-CSSTheoryKnowledge.md",
+   "detail": "行138 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "006-css/067-ResponsiveImage.md",
+   "detail": "行14 lang=无 headings=0 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "007-javascript/002-JavaScriptOverviewRuntimeEnv.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/002-JavaScriptOverviewRuntimeEnv.md",
+   "detail": "57465 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "007-javascript/003-ProgramStructureBasicSyntax.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/003-ProgramStructureBasicSyntax.md",
+   "detail": "24841 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "007-javascript/004-VariableDataType.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/004-VariableDataType.md",
+   "detail": "20964 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "007-javascript/005-DataTypeOperator.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/005-DataTypeOperator.md",
+   "detail": "30429 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/006-ControlFlow.md",
+   "detail": "42414 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "007-javascript/007-ObjectArray.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/007-ObjectArray.md",
+   "detail": "66344 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "007-javascript/008-FunctionScopeClosure.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/008-FunctionScopeClosure.md",
+   "detail": "38910 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/009-ArrayHigherOrderMethod.md",
+   "detail": "36143 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/011-Regex.md",
+   "detail": "56068 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/012-ES2018RegExpNamedCaptureGroups.md",
+   "detail": "41685 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/013-UnicodePropertyEscape.md",
+   "detail": "45853 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/014-CustomErrorTypes.md",
+   "detail": "76376 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/015-HigherOrderFunction.md",
+   "detail": "35052 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "007-javascript/016-RecursionTailCallOptimization.md",
+   "detail": "行2344 lang=text headings=0 table=0 cjk=10 codePunct=0.91"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/016-RecursionTailCallOptimization.md",
+   "detail": "53864 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/017-CurryAndFunctionComposition.md",
+   "detail": "45007 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "007-javascript/018-JavaScriptPrototypeInheritance.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/018-JavaScriptPrototypeInheritance.md",
+   "detail": "16523 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/019-PrototypeChainClassEssence.md",
+   "detail": "41595 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/020-DeepShallowCopy.md",
+   "detail": "38858 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/021-ObjectStaticMethods.md",
+   "detail": "54974 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/022-ES6NewFeatures.md",
+   "detail": "49814 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "007-javascript/025-AsyncProgramming.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/025-AsyncProgramming.md",
+   "detail": "53360 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/026-PromiseConstructorDeepDive.md",
+   "detail": "72889 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/027-PromiseStaticMethod.md",
+   "detail": "62048 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/028-AsyncConcurrencyControl.md",
+   "detail": "59043 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/029-EventLoop.md",
+   "detail": "43751 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/030-EventLoopDetailed.md",
+   "detail": "35823 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/031-IteratorHelper.md",
+   "detail": "37690 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/032-CoroutinesInJavaScript.md",
+   "detail": "54472 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/033-ExploringES6ProxiesAndReflect.md",
+   "detail": "60757 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/034-ProxyReflectPractice.md",
+   "detail": "85725 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/035-ClosureMemoryLeakOptimization.md",
+   "detail": "38941 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/036-MemoryLeakTroubleshoot.md",
+   "detail": "39524 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "007-javascript/038-JavaScriptModular.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/038-JavaScriptModular.md",
+   "detail": "55608 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/039-ModuleDynamicImportCodeSplitting.md",
+   "detail": "53295 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "007-javascript/041-DOMOperationEvent.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/041-DOMOperationEvent.md",
+   "detail": "27102 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/042-BOMBrowserObjectModel.md",
+   "detail": "41302 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/043-WebAPIBrowserInterface.md",
+   "detail": "45344 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/045-FetchApiWebStreams.md",
+   "detail": "81798 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/046-StorageForTheWeb.md",
+   "detail": "69860 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/047-IndexedDBADatabaseInYourBrowser.md",
+   "detail": "50435 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/048-ErrorBoundaryGlobalErrorCatch.md",
+   "detail": "45681 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/049-DebounceThrottle.md",
+   "detail": "80400 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/050-DebugPerformanceOptimization.md",
+   "detail": "64262 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/052-NodeJsPerformanceOptimization.md",
+   "detail": "44281 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/055-JavaScriptProjectPractice.md",
+   "detail": "32175 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/056-JavaScriptProjectExampleTodoApp.md",
+   "detail": "23147 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/058-JavaScriptLatestFeature.md",
+   "detail": "45740 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/059-TemporalJavaScriptAPI.md",
+   "detail": "49349 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/060-RecordsAndTuples.md",
+   "detail": "26795 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "007-javascript/061-RegexAssertions.md",
+   "detail": "行205 lang=text headings=0 table=0 cjk=0 codePunct=0.45"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/061-RegexAssertions.md",
+   "detail": "62260 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "007-javascript/062-JavaScriptTheory.md",
+   "detail": "59823 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "007-javascript",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/003-TypeScriptOverviewEnvSetup.md",
+   "detail": "29732 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/008-BasicTypeSystem.md",
+   "detail": "36938 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/009-InterfaceTypeAlias.md",
+   "detail": "31483 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/011-FunctionGeneric.md",
+   "detail": "44458 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/013-LiteralUnionTypes.md",
+   "detail": "50308 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/017-ClassDecorator.md",
+   "detail": "40148 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/018-IntersectionTypeMerge.md",
+   "detail": "39164 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/019-TypeGuardCustomGuard.md",
+   "detail": "51318 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/020-IndexSignatureDynamicProperty.md",
+   "detail": "57169 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/021-MappedTypeAdvanced.md",
+   "detail": "46796 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/022-GenericConstraintDefault.md",
+   "detail": "46078 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/023-DecoratorDetailed.md",
+   "detail": "35013 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/024-DeclarationFileWriting.md",
+   "detail": "80409 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/026-ModuleResolutionModernToolchains.md",
+   "detail": "47934 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/027-AdvancedTypeCalculus.md",
+   "detail": "27245 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/028-TypeGymnasticsPracticalPatterns.md",
+   "detail": "40678 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/029-CovarianceContravariance.md",
+   "detail": "42350 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/030-ThisTypePolymorphism.md",
+   "detail": "29251 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/031-SymbolsAndUniqueTypes.md",
+   "detail": "31659 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/032-NamespaceModule.md",
+   "detail": "34778 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/033-EnumAdvanced.md",
+   "detail": "47012 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/034-UtilityTypePrinciple.md",
+   "detail": "49020 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/035-ConditionalTypeDistribute.md",
+   "detail": "41049 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/036-InferTypeDeepDive.md",
+   "detail": "41753 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/037-RecursiveTypeDeepOperation.md",
+   "detail": "51947 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/038-ConditionalMappedType.md",
+   "detail": "42227 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/039-TypeScriptTypeDeclarationModuleResolution.md",
+   "detail": "55887 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/040-TypeSafeEventSystem.md",
+   "detail": "36404 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/041-TypeSafeAPIClient.md",
+   "detail": "71628 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/042-TypeSafeStateManagement.md",
+   "detail": "72698 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/043-TypeSafeEnvVar.md",
+   "detail": "56321 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/044-TypeSafeFormValidation.md",
+   "detail": "39408 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/045-TypeSafeI18n.md",
+   "detail": "51162 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/046-TypeSafeRoute.md",
+   "detail": "46900 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/047-TypeSafeConfigSystem.md",
+   "detail": "55588 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/048-TypeSafeDatabaseQuery.md",
+   "detail": "38677 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/049-TypeSafePubSub.md",
+   "detail": "54480 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/050-TypeScript5NewFeatures.md",
+   "detail": "43421 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/051-TypeScriptEngineeringConfig.md",
+   "detail": "33722 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/052-SatisfiesOperator.md",
+   "detail": "51407 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/053-TypeScriptMigrationPractice.md",
+   "detail": "48494 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/054-ConditionalTypeInfer.md",
+   "detail": "43191 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "008-typescript/055-TypeScriptCompilePerformanceOptimization.md",
+   "detail": "行699 lang=text headings=0 table=0 cjk=15 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/055-TypeScriptCompilePerformanceOptimization.md",
+   "detail": "32856 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/056-MappedTypeKeyRemap.md",
+   "detail": "45064 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/057-TemplateLiteralType.md",
+   "detail": "63870 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/058-TypeGymnastics.md",
+   "detail": "39833 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/059-ModuleDeclarationGlobalAugmentation.md",
+   "detail": "43376 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/060-TsconfigStrictMode.md",
+   "detail": "64979 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/061-DecoratorStandardImpl.md",
+   "detail": "52048 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/062-TypeScriptProjectExampleTypeSafeAPIClient.md",
+   "detail": "17020 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/063-TypeScriptProjectExampleTodoApp.md",
+   "detail": "12548 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "008-typescript/064-TypeScriptTheory.md",
+   "detail": "54260 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "008-typescript",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/003-Vue3TemplateSyntax.md",
+   "detail": "12347 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/004-Vue3DirectiveSystem.md",
+   "detail": "17357 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/006-API.md",
+   "detail": "16579 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/007-ProvideInject.md",
+   "detail": "83607 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/010-Vue3CompileOptimization.md",
+   "detail": "20403 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/011-Vue3SSR.md",
+   "detail": "75606 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/012-LifecycleHook.md",
+   "detail": "12640 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/014-Vue3WebComponents.md",
+   "detail": "44403 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/015-Vue3PerformancePractice.md",
+   "detail": "70280 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/016-ReactiveSystem.md",
+   "detail": "17589 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/018-ComponentSystem.md",
+   "detail": "20822 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/019-TypeScriptIntegration.md",
+   "detail": "23424 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/020-PiniaStateManagementDetailed.md",
+   "detail": "16922 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/021-PluginDevelopment.md",
+   "detail": "17380 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/023-VueRouterDetailed.md",
+   "detail": "17192 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/025-CustomComposableWrapper.md",
+   "detail": "13062 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/026-TeleportPortalApp.md",
+   "detail": "12923 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/027-KeepAliveCacheLifecycle.md",
+   "detail": "15294 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/028-AsyncComponentSuspense.md",
+   "detail": "77546 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/030-VueRouterNavigationGuard.md",
+   "detail": "11666 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/032-PerformanceOptimization.md",
+   "detail": "10055 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/033-Vue3AdvancedComponentFeature.md",
+   "detail": "23608 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "009-vue3/034-Vue3ProjectExampleBlog.md",
+   "detail": "16398 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "009-vue3",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/002-ComponentProps.md",
+   "detail": "13199 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/003-StateEvent.md",
+   "detail": "14632 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/004-HooksDeep.md",
+   "detail": "16041 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/005-ContextGlobalState.md",
+   "detail": "14115 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/006-React19NewFeatures.md",
+   "detail": "17522 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/007-RouteDataFetch.md",
+   "detail": "19724 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/008-PerformanceOptimization.md",
+   "detail": "16168 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/009-TestEngineering.md",
+   "detail": "13213 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/010-NextJSFullStack.md",
+   "detail": "16098 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "010-react/012-FiberArchitecture.md",
+   "detail": "行23 lang=text headings=0 table=0 cjk=12 codePunct=0.14"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/012-FiberArchitecture.md",
+   "detail": "10512 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/013-ConcurrentMode.md",
+   "detail": "12320 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/015-HooksPrinciple.md",
+   "detail": "11857 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/016-CustomHooksDesignPattern.md",
+   "detail": "52120 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/017-StateManagementSolutionComparison.md",
+   "detail": "10688 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/018-ReactPerformance.md",
+   "detail": "51872 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/019-ReactErrorBoundary.md",
+   "detail": "10235 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/020-ReactForm.md",
+   "detail": "10856 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/022-ReactTest.md",
+   "detail": "13200 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/023-ReactRouteAdvanced.md",
+   "detail": "11607 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/024-ReactI18n.md",
+   "detail": "10326 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/025-ReactAnimation.md",
+   "detail": "11367 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/026-ReactSSR.md",
+   "detail": "10611 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/027-ReactDesignPattern.md",
+   "detail": "10755 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/032-ReactAccessibility.md",
+   "detail": "10668 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/039-ReactCompilerAutoMemoization.md",
+   "detail": "44514 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/040-ServerClientComponents.md",
+   "detail": "52005 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "010-react/044-ErrorBoundarySentry.md",
+   "detail": "39457 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "010-react",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "011-svg/009-SVGTransform.md",
+   "detail": "行73 lang=无 headings=0 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "011-svg/009-SVGTransform.md",
+   "detail": "行449 lang=无 headings=0 table=3 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/002-JavaOverviewDevEnv.md",
+   "detail": "11013 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/003-QuickStart.md",
+   "detail": "36967 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/004-ProgramStructureBasicSyntax.md",
+   "detail": "17970 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/005-DataTypeConversion.md",
+   "detail": "12957 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/007-VariableConstant.md",
+   "detail": "12875 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/008-OperatorExpression.md",
+   "detail": "21701 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/009-ControlFlow.md",
+   "detail": "70215 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/011-ArrayDetailed.md",
+   "detail": "15518 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/015-OOP.md",
+   "detail": "15784 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/016-AbstractClassInterface.md",
+   "detail": "12115 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/018-ExceptionHandlingMechanism.md",
+   "detail": "15268 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/021-CollectionFrameworkDetailed.md",
+   "detail": "22513 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/028-IOStreamFileOperation.md",
+   "detail": "19749 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/029-LambdaFunctionalProgramming.md",
+   "detail": "16045 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/030-StreamAPI.md",
+   "detail": "17735 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/033-JavaFunctionalProgramming.md",
+   "detail": "64814 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/037-JavaAnnotationsTutorial.md",
+   "detail": "51804 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/039-GenericDetailed.md",
+   "detail": "15170 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/041-JavaGenericsTutorial.md",
+   "detail": "44161 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/042-JavaReflection.md",
+   "detail": "83843 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/043-ReflectionDynamicProxy.md",
+   "detail": "55594 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/044-AnnotationProcessor.md",
+   "detail": "45416 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/045-JavaRecordClass.md",
+   "detail": "50351 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/046-JavaTextBlock.md",
+   "detail": "10962 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/047-JavaModuleSystem.md",
+   "detail": "14506 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/048-JavaNewFeatures.md",
+   "detail": "78582 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/049-JavaNewFeaturesEcosystem.md",
+   "detail": "15097 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/050-MultithreadingBasics.md",
+   "detail": "20250 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/051-ConcurrencyBasics.md",
+   "detail": "41398 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/052-JUCConcurrency.md",
+   "detail": "53161 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/053-ConcurrencyDetailed.md",
+   "detail": "57351 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/054-CompletableFutureAsync.md",
+   "detail": "76267 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/055-ThreadLocalMemoryLeak.md",
+   "detail": "34484 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/059-JavaVirtualThread.md",
+   "detail": "72857 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/060-JavaReactiveProgramming.md",
+   "detail": "60190 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/061-JVMClassLoadingMechanism.md",
+   "detail": "38900 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/062-JVMGC.md",
+   "detail": "24551 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/063-JVMMemoryModel.md",
+   "detail": "59438 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/064-JVMtuning.md",
+   "detail": "46952 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/065-GenerationalZGCDetailed.md",
+   "detail": "27247 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/066-JavaTheoryJVMClassLoadingMemory.md",
+   "detail": "51068 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/067-JavaIONIO.md",
+   "detail": "53069 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/070-JavaSerialization.md",
+   "detail": "15139 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/071-JavaNetworkProgramming.md",
+   "detail": "54407 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/072-NetworkProgramming.md",
+   "detail": "23867 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/074-JavaDatabaseConnection.md",
+   "detail": "48252 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/076-JavaBuildTool.md",
+   "detail": "19722 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/079-JavaDesignPattern.md",
+   "detail": "14955 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/080-SpringBasicsIoCAOPBeanLifecycle.md",
+   "detail": "62491 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/081-SpringBootAdvanced.md",
+   "detail": "18131 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/082-SpringBootSecurity.md",
+   "detail": "15597 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/083-SpringBootDataAccess.md",
+   "detail": "65602 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/084-SpringBootNotes.md",
+   "detail": "52847 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/085-JavaMicroservice.md",
+   "detail": "11422 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/087-JavaUnitTest.md",
+   "detail": "54975 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/088-JavaLogSystem.md",
+   "detail": "66135 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/089-JavaRedis.md",
+   "detail": "12129 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/090-JavaMessageQueue.md",
+   "detail": "31373 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/091-JavaGraphQL.md",
+   "detail": "11417 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/092-JavaAI.md",
+   "detail": "29812 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/093-JavaSecurity.md",
+   "detail": "59399 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "012-java/095-JavaDocker.md",
+   "detail": "行1012 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/095-JavaDocker.md",
+   "detail": "40685 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/096-JavaKubernetes.md",
+   "detail": "17856 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/097-JavaWebAssembly.md",
+   "detail": "31862 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/098-JavaGraalVM.md",
+   "detail": "31809 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/101-JavaSwingGUI.md",
+   "detail": "16366 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "012-java/102-JavaProjectExampleLibrarySystem.md",
+   "detail": "28623 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "012-java",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/002-KotlinOverviewEnvSetup.md",
+   "detail": "66409 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/003-KotlinBasicSyntax.md",
+   "detail": "30082 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/004-KotlinFunctionAndLambda.md",
+   "detail": "16698 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/005-KotlinClassObject.md",
+   "detail": "21974 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/007-KotlinGenericTypeSystem.md",
+   "detail": "14967 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/008-KotlinCollectionCoroutine.md",
+   "detail": "20581 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/009-KotlinCoroutineAdvanced.md",
+   "detail": "14020 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/010-KotlinMultiplatform.md",
+   "detail": "15979 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/011-KotlinDSLDomainSpecificLanguage.md",
+   "detail": "10708 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/012-KotlinTestBestPractice.md",
+   "detail": "14891 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "013-kotlin/014-NullSafetyDetailed.md",
+   "detail": "行2239 lang=markdown headings=4 table=0 cjk=0 codePunct=0.06"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/014-NullSafetyDetailed.md",
+   "detail": "85595 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/015-SealedClassAlgebraicDataType.md",
+   "detail": "33284 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/016-DelegateProperty.md",
+   "detail": "72481 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/017-ExtensionFunction.md",
+   "detail": "42414 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/018-CoroutineBasics.md",
+   "detail": "60164 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/019-FlowReactiveStream.md",
+   "detail": "36367 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/020-KotlinScopeFunction.md",
+   "detail": "37321 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/021-KotlinCollectionOperation.md",
+   "detail": "15931 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/022-KotlinInlineClass.md",
+   "detail": "35771 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/023-KotlinContractContracts.md",
+   "detail": "55174 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/024-KotlinDSL.md",
+   "detail": "13101 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/025-KotlinSerialization.md",
+   "detail": "36622 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/027-KotlinSpring.md",
+   "detail": "10423 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/028-KotlinTypeSystem.md",
+   "detail": "63948 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/029-KotlinCompose.md",
+   "detail": "13587 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/030-KotlinArrow.md",
+   "detail": "10112 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/031-KotlinKtor.md",
+   "detail": "16123 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/034-KotlinKtorClient.md",
+   "detail": "14414 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/035-KotlinTest.md",
+   "detail": "14267 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/036-KotlinCompilerPlugin.md",
+   "detail": "44417 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/039-KotlinBenchmark.md",
+   "detail": "37351 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/040-KotlinIO.md",
+   "detail": "13630 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/041-KotlinRegex.md",
+   "detail": "56930 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/042-KotlinTime.md",
+   "detail": "12711 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/043-KotlinConcurrencySafety.md",
+   "detail": "60868 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/044-KotlinWebSocket.md",
+   "detail": "11963 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/046-CoroutineDispatcherContext.md",
+   "detail": "61607 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/047-FlowColdSharedState.md",
+   "detail": "44420 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/048-ChannelBroadcastChannel.md",
+   "detail": "85633 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/049-SealedClassSealedInterface.md",
+   "detail": "117958 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/050-InlineClass.md",
+   "detail": "48093 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/051-ExtensionFunctionCompilePrinciple.md",
+   "detail": "54990 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/052-ScopeFunctionDifference.md",
+   "detail": "37024 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/053-CoroutineExceptionHandling.md",
+   "detail": "65699 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "013-kotlin/054-KotlinCrossPlatform.md",
+   "detail": "79983 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "013-kotlin",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/002-CSharpOverviewEnvSetup.md",
+   "detail": "44874 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/003-CSharpBasicSyntax.md",
+   "detail": "46438 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/004-CSharpOOP.md",
+   "detail": "66164 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/006-CGenericCollection.md",
+   "detail": "73140 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/007-CAsyncProgramming.md",
+   "detail": "52411 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/008-CSharpLINQFunctionalProgramming.md",
+   "detail": "69226 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/009-CSharpAdvancedFeature.md",
+   "detail": "66066 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/011-CSharpDotNet.md",
+   "detail": "55969 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/012-CSharpTestEngineering.md",
+   "detail": "行2186 lang=text headings=0 table=7 cjk=0 codePunct=0.15"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/012-CSharpTestEngineering.md",
+   "detail": "59798 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/013-CSharpGameDevUnity.md",
+   "detail": "14255 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/014-LINQDeep.md",
+   "detail": "40143 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/015-AsyncProgrammingDetailed.md",
+   "detail": "65494 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/016-PatternMatching.md",
+   "detail": "58030 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/017-CRecordType.md",
+   "detail": "62566 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/018-GenericCovarianceContravariance.md",
+   "detail": "39739 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/019-SpanMemory.md",
+   "detail": "100546 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/020-SourceGenerator.md",
+   "detail": "47349 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/021-CSharpUnityGameDev.md",
+   "detail": "61462 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/022-CSharpBlazor.md",
+   "detail": "行3011 lang=text headings=2 table=0 cjk=2 codePunct=0.57"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/022-CSharpBlazor.md",
+   "detail": "82445 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/023-CSharpMAUI.md",
+   "detail": "50020 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/024-CSharpEFCore.md",
+   "detail": "70115 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/025-CSharpDependencyInjection.md",
+   "detail": "53522 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/026-CSharpAPI.md",
+   "detail": "51296 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/027-C12C13NewFeatures.md",
+   "detail": "59027 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/028-CSharpReflection.md",
+   "detail": "62663 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/029-LINQDeferredImmediate.md",
+   "detail": "67504 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/030-AsyncAwaitStateMachine.md",
+   "detail": "行258 lang=text headings=0 table=0 cjk=2 codePunct=0.41"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/030-AsyncAwaitStateMachine.md",
+   "detail": "56702 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/031-DelegateEventUnderlying.md",
+   "detail": "行519 lang=text headings=0 table=0 cjk=2 codePunct=0.63"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/031-DelegateEventUnderlying.md",
+   "detail": "行544 lang=text headings=0 table=0 cjk=2 codePunct=0.59"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/031-DelegateEventUnderlying.md",
+   "detail": "行842 lang=text headings=0 table=8 cjk=0 codePunct=0.22"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/031-DelegateEventUnderlying.md",
+   "detail": "行2680 lang=text headings=0 table=19 cjk=0 codePunct=0.17"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/031-DelegateEventUnderlying.md",
+   "detail": "71091 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/032-ReflectionAndFeatureApplication.md",
+   "detail": "行318 lang=text headings=0 table=8 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/032-ReflectionAndFeatureApplication.md",
+   "detail": "行334 lang=text headings=0 table=0 cjk=2 codePunct=0.50"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/032-ReflectionAndFeatureApplication.md",
+   "detail": "57792 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/033-EFCoreMigrationOptimization.md",
+   "detail": "行470 lang=text headings=0 table=0 cjk=0 codePunct=0.29"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/033-EFCoreMigrationOptimization.md",
+   "detail": "行2538 lang=text headings=0 table=16 cjk=0 codePunct=0.71"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/033-EFCoreMigrationOptimization.md",
+   "detail": "70005 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/034-AspNetCoreMiddlewarePipeline.md",
+   "detail": "97942 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/035-DILifecycle.md",
+   "detail": "52988 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/036-GCGeneration.md",
+   "detail": "47650 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/037-ValueTypeReferenceType.md",
+   "detail": "46262 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "014-csharp/038-RecordTypeImmutability.md",
+   "detail": "行913 lang=text headings=0 table=5 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "014-csharp/038-RecordTypeImmutability.md",
+   "detail": "52966 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "014-csharp",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/003-GoBasicSyntax.md",
+   "detail": "18024 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/004-GoFunctionMethod.md",
+   "detail": "13537 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/005-GoDataStructure.md",
+   "detail": "14600 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/007-GoConcurrentProgramming.md",
+   "detail": "17866 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/008-GoErrorHandling.md",
+   "detail": "12372 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/010-GoGeneric.md",
+   "detail": "14150 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/011-GoStandardLibraryToolchain.md",
+   "detail": "17482 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/012-GoWebDevelopmentMicroservice.md",
+   "detail": "17707 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/013-SlicePrinciple.md",
+   "detail": "34892 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/014-MapPrinciple.md",
+   "detail": "38944 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/015-UnsafePointer.md",
+   "detail": "39473 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/016-ChannelPrinciple.md",
+   "detail": "39398 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/017-Reflection.md",
+   "detail": "45514 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/019-MemoryAlignment.md",
+   "detail": "24772 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/020-ContextDetailed.md",
+   "detail": "37697 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "015-go/021-GoroutineSchedule.md",
+   "detail": "行334 lang=text headings=0 table=0 cjk=10 codePunct=0.43"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/021-GoroutineSchedule.md",
+   "detail": "35092 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/022-InterfaceTypeAssertion.md",
+   "detail": "39222 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/023-ErrorHandlingAdvanced.md",
+   "detail": "52096 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/026-GoKubernetes.md",
+   "detail": "42937 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "015-go/027-GoDocker.md",
+   "detail": "行898 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/027-GoDocker.md",
+   "detail": "39524 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/031-GoTest.md",
+   "detail": "11675 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/032-GoJSON.md",
+   "detail": "27273 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/033-GoFuzzing.md",
+   "detail": "39523 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/034-GoCGO.md",
+   "detail": "61550 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/035-GoWasm.md",
+   "detail": "37240 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/036-GoCodeGeneration.md",
+   "detail": "39665 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/037-GoDependencyInjection.md",
+   "detail": "34617 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/039-GoLog.md",
+   "detail": "32366 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/042-GoFileMonitor.md",
+   "detail": "41251 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/043-GoTime.md",
+   "detail": "38554 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/044-GoRegex.md",
+   "detail": "58464 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/045-GoSignalHandling.md",
+   "detail": "36630 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/046-GoPerformanceAnalysis.md",
+   "detail": "42640 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/048-GoHTTP.md",
+   "detail": "45869 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/049-GoOAuth2.md",
+   "detail": "84289 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/050-GoMiddleware.md",
+   "detail": "46814 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/052-Go.md",
+   "detail": "56046 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/053-GoroutineChannelPrinciple.md",
+   "detail": "47351 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/055-ConcurrencyPattern.md",
+   "detail": "52447 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/057-MemoryEscapeAnalysis.md",
+   "detail": "29596 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/058-GCAndTuning.md",
+   "detail": "38768 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/059-GenericDetailed.md",
+   "detail": "55474 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/060-UnitTestBenchmark.md",
+   "detail": "60723 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/061-RaceDetectionAtomic.md",
+   "detail": "16274 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "015-go/062-PackageManagementDetailed.md",
+   "detail": "行569 lang=text headings=4 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "015-go/062-PackageManagementDetailed.md",
+   "detail": "32655 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "015-go",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "016-sql/004-DataQueryBasics.md",
+   "detail": "行335 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "016-sql/016-SelectExecutionOrder.md",
+   "detail": "行55 lang=无 headings=0 table=0 cjk=1 codePunct=0.13"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "016-sql/032-Index.md",
+   "detail": "行342 lang=无 headings=0 table=0 cjk=3 codePunct=0.42"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "016-sql/032-Index.md",
+   "detail": "行382 lang=无 headings=0 table=0 cjk=3 codePunct=0.27"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "016-sql/032-Index.md",
+   "detail": "行402 lang=无 headings=0 table=0 cjk=2 codePunct=0.10"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "016-sql/032-Index.md",
+   "detail": "行529 lang=无 headings=0 table=0 cjk=10 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "016-sql/032-Index.md",
+   "detail": "行555 lang=无 headings=0 table=0 cjk=2 codePunct=0.21"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "016-sql/032-Index.md",
+   "detail": "行1045 lang=无 headings=0 table=0 cjk=7 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "016-sql/032-Index.md",
+   "detail": "行1331 lang=无 headings=0 table=0 cjk=3 codePunct=0.24"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "016-sql/032-Index.md",
+   "detail": "行1488 lang=无 headings=0 table=0 cjk=7 codePunct=0.36"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/006-MySQLEnvSetup.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/007-MySQLDataTypeConstraint.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/008-SQLDataDefinitionAdvanced.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/010-SQLDataOperationQuery.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/020-SQLFunctionAndAdvancedQuery.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "017-mysql/023-SlowQueryLog.md",
+   "detail": "行24 lang=无 headings=3 table=0 cjk=0 codePunct=0.40"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "017-mysql/030-MVCCPrinciple.md",
+   "detail": "行68 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/031-MultiTableJoinDetailed.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "017-mysql/036-RedoLog.md",
+   "detail": "行54 lang=无 headings=0 table=0 cjk=0 codePunct=0.43"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/043-AdvancedQueryMultiTableOperation.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "017-mysql/053-InnoDBSystemArchitecture.md",
+   "detail": "行283 lang=无 headings=0 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "017-mysql/053-InnoDBSystemArchitecture.md",
+   "detail": "行320 lang=无 headings=0 table=0 cjk=1 codePunct=0.43"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/055-MySQLIndexExecutionPlan.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "017-mysql/064-MVCCSnapshotCurrentRead.md",
+   "detail": "行70 lang=无 headings=0 table=0 cjk=0 codePunct=0.67"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/065-IndexPrinciplePerformanceOptimization.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "017-mysql/067-RedoUndoBinlogWriteTiming.md",
+   "detail": "行159 lang=无 headings=0 table=0 cjk=11 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "017-mysql/068-TwoPhaseCommit.md",
+   "detail": "行182 lang=无 headings=0 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/073-TransactionLockMechanism.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/074-MySQLConfigOps.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/075-MySQLQuickLookup.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "017-mysql/076-MySQLControlApplication.md",
+   "detail": "行219 lang=无 headings=0 table=3 cjk=0 codePunct=0.20"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/077-SQLInjectionBasicsDetection.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/078-SQLInjectionAttackTypePractice.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "017-mysql/079-SQLInjectionDefenseStrategy.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/001-OverviewInstallConfig.md",
+   "detail": "行31 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/001-OverviewInstallConfig.md",
+   "detail": "行101 lang=无 headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/001-OverviewInstallConfig.md",
+   "detail": "行125 lang=无 headings=2 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行314 lang=无 headings=0 table=0 cjk=14 codePunct=0.76"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行409 lang=无 headings=0 table=4 cjk=4 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行435 lang=无 headings=0 table=0 cjk=10 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行496 lang=无 headings=0 table=0 cjk=19 codePunct=0.74"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行603 lang=无 headings=0 table=0 cjk=9 codePunct=0.47"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行779 lang=无 headings=0 table=3 cjk=2 codePunct=0.43"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行965 lang=无 headings=0 table=0 cjk=4 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1167 lang=无 headings=0 table=0 cjk=5 codePunct=0.56"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1424 lang=无 headings=0 table=0 cjk=8 codePunct=0.35"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1465 lang=无 headings=0 table=0 cjk=10 codePunct=0.40"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1510 lang=无 headings=0 table=0 cjk=6 codePunct=0.58"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1535 lang=无 headings=0 table=0 cjk=13 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1572 lang=无 headings=0 table=0 cjk=4 codePunct=0.36"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1627 lang=无 headings=0 table=0 cjk=10 codePunct=0.43"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1679 lang=无 headings=0 table=0 cjk=11 codePunct=0.42"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1782 lang=无 headings=0 table=0 cjk=11 codePunct=0.28"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1805 lang=无 headings=0 table=0 cjk=10 codePunct=0.26"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1863 lang=无 headings=0 table=0 cjk=10 codePunct=0.43"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1884 lang=无 headings=0 table=0 cjk=13 codePunct=0.40"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1925 lang=无 headings=0 table=0 cjk=13 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行1948 lang=无 headings=0 table=0 cjk=10 codePunct=0.36"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行2014 lang=无 headings=0 table=0 cjk=2 codePunct=0.58"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行2091 lang=无 headings=0 table=0 cjk=3 codePunct=0.43"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行2396 lang=无 headings=0 table=0 cjk=18 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行3163 lang=无 headings=0 table=0 cjk=6 codePunct=0.27"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行3199 lang=无 headings=0 table=0 cjk=0 codePunct=0.13"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/002-TransactionConcurrencyControl.md",
+   "detail": "行3243 lang=无 headings=0 table=0 cjk=3 codePunct=0.18"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/005-ReplicationHA.md",
+   "detail": "行160 lang=无 headings=0 table=0 cjk=0 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/005-ReplicationHA.md",
+   "detail": "行332 lang=无 headings=2 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/009-VACUUMMechanism.md",
+   "detail": "行482 lang=无 headings=0 table=0 cjk=11 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/009-VACUUMMechanism.md",
+   "detail": "行792 lang=无 headings=0 table=0 cjk=10 codePunct=0.58"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/009-VACUUMMechanism.md",
+   "detail": "行936 lang=无 headings=0 table=0 cjk=15 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/009-VACUUMMechanism.md",
+   "detail": "行1211 lang=无 headings=0 table=0 cjk=11 codePunct=0.36"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/009-VACUUMMechanism.md",
+   "detail": "行1325 lang=无 headings=0 table=0 cjk=12 codePunct=0.44"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/009-VACUUMMechanism.md",
+   "detail": "行3246 lang=无 headings=0 table=0 cjk=12 codePunct=0.41"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/027-CascadingReplication.md",
+   "detail": "行360 lang=无 headings=0 table=3 cjk=6 codePunct=0.22"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "018-postgresql/043-ExtensionModuleDetailed.md",
+   "detail": "行259 lang=无 headings=0 table=0 cjk=0 codePunct=0.17"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/001-OverviewCoreDataStructure.md",
+   "detail": "行30 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/002-PersistenceModule.md",
+   "detail": "行92 lang=无 headings=0 table=0 cjk=7 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/003-ClusterHA.md",
+   "detail": "行105 lang=无 headings=0 table=0 cjk=4 codePunct=0.15"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/003-ClusterHA.md",
+   "detail": "行341 lang=无 headings=0 table=0 cjk=1 codePunct=0.10"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/004-CacheStrategyAdvancedFeature.md",
+   "detail": "行7 lang=无 headings=0 table=0 cjk=1 codePunct=0.07"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/004-CacheStrategyAdvancedFeature.md",
+   "detail": "行259 lang=无 headings=0 table=0 cjk=3 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/004-CacheStrategyAdvancedFeature.md",
+   "detail": "行512 lang=无 headings=0 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行79 lang=无 headings=0 table=10 cjk=4 codePunct=0.56"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行116 lang=无 headings=0 table=14 cjk=4 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行844 lang=无 headings=0 table=0 cjk=33 codePunct=0.10"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行1001 lang=无 headings=0 table=0 cjk=26 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行1091 lang=无 headings=0 table=0 cjk=17 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行1161 lang=无 headings=0 table=0 cjk=16 codePunct=0.15"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行1295 lang=无 headings=0 table=0 cjk=19 codePunct=0.04"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行1401 lang=无 headings=0 table=0 cjk=36 codePunct=0.05"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行1490 lang=无 headings=0 table=0 cjk=16 codePunct=0.05"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行1573 lang=无 headings=0 table=0 cjk=16 codePunct=0.05"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行1647 lang=无 headings=0 table=0 cjk=22 codePunct=0.04"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行1752 lang=无 headings=0 table=0 cjk=12 codePunct=0.16"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行1831 lang=无 headings=0 table=0 cjk=24 codePunct=0.06"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行1899 lang=无 headings=0 table=0 cjk=16 codePunct=0.05"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2051 lang=无 headings=0 table=0 cjk=21 codePunct=0.30"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2087 lang=无 headings=0 table=0 cjk=15 codePunct=0.11"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2126 lang=无 headings=0 table=0 cjk=10 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2172 lang=无 headings=0 table=0 cjk=12 codePunct=0.17"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2197 lang=无 headings=0 table=0 cjk=24 codePunct=0.52"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2344 lang=无 headings=0 table=0 cjk=22 codePunct=0.46"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2442 lang=无 headings=0 table=0 cjk=13 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2466 lang=无 headings=0 table=0 cjk=12 codePunct=0.06"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2488 lang=无 headings=0 table=0 cjk=23 codePunct=0.04"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2555 lang=无 headings=7 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2583 lang=无 headings=0 table=0 cjk=14 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2664 lang=无 headings=0 table=0 cjk=20 codePunct=0.27"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2733 lang=无 headings=0 table=0 cjk=16 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行2909 lang=无 headings=0 table=0 cjk=20 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行3027 lang=无 headings=0 table=0 cjk=21 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行3075 lang=无 headings=0 table=0 cjk=15 codePunct=0.05"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行4223 lang=无 headings=0 table=0 cjk=13 codePunct=0.13"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行4509 lang=无 headings=0 table=0 cjk=11 codePunct=0.13"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行4628 lang=无 headings=0 table=0 cjk=12 codePunct=0.11"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行5052 lang=无 headings=14 table=0 cjk=0 codePunct=0.30"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行5090 lang=无 headings=0 table=0 cjk=10 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/008-Stream.md",
+   "detail": "行5733 lang=无 headings=0 table=0 cjk=13 codePunct=0.17"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/011-AOFLogPersistence.md",
+   "detail": "行158 lang=无 headings=0 table=0 cjk=3 codePunct=0.11"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/016-SkipListAndSortedSet.md",
+   "detail": "行146 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/017-ReplicationBuffer.md",
+   "detail": "行45 lang=无 headings=0 table=0 cjk=4 codePunct=0.08"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/017-ReplicationBuffer.md",
+   "detail": "行137 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/018-SentinelElection.md",
+   "detail": "行60 lang=无 headings=0 table=0 cjk=0 codePunct=0.17"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/018-SentinelElection.md",
+   "detail": "行103 lang=无 headings=0 table=0 cjk=0 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/018-SentinelElection.md",
+   "detail": "行115 lang=无 headings=0 table=0 cjk=10 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/019-RedisClusterHashSlot.md",
+   "detail": "行18 lang=无 headings=0 table=0 cjk=0 codePunct=0.10"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/019-RedisClusterHashSlot.md",
+   "detail": "行150 lang=无 headings=0 table=0 cjk=2 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/020-PipeTransactionAtomic.md",
+   "detail": "行49 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "019-redis/022-CachePenetrationBreakdownAvalanche.md",
+   "detail": "行85 lang=无 headings=0 table=0 cjk=13 codePunct=0.31"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/002-SortAlgorithm.md",
+   "detail": "行1783 lang=无 headings=0 table=0 cjk=2 codePunct=0.11"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/002-SortAlgorithm.md",
+   "detail": "行1823 lang=无 headings=0 table=0 cjk=4 codePunct=0.13"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/003-StackAndQueue.md",
+   "detail": "行261 lang=text headings=0 table=0 cjk=26 codePunct=0.84"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/007-Tree.md",
+   "detail": "行1006 lang=text headings=0 table=1 cjk=12 codePunct=0.15"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/014-ArrayAndDynamicArray.md",
+   "detail": "行271 lang=text headings=0 table=0 cjk=17 codePunct=0.82"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/016-HeapAndPriorityQueue.md",
+   "detail": "行294 lang=无 headings=0 table=0 cjk=11 codePunct=0.77"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/016-HeapAndPriorityQueue.md",
+   "detail": "行746 lang=无 headings=0 table=0 cjk=10 codePunct=0.75"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/023-BloomFilter.md",
+   "detail": "行1722 lang=text headings=0 table=0 cjk=5 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/024-KmpStringMatching.md",
+   "detail": "行29 lang=text headings=0 table=0 cjk=10 codePunct=0.08"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/024-KmpStringMatching.md",
+   "detail": "行239 lang=text headings=0 table=0 cjk=2 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/024-KmpStringMatching.md",
+   "detail": "行259 lang=text headings=0 table=0 cjk=2 codePunct=0.09"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/027-KruskalAlgorithm.md",
+   "detail": "行245 lang=无 headings=0 table=0 cjk=0 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "020-algorithm/029-AlgorithmTheory.md",
+   "detail": "行44 lang=无 headings=0 table=0 cjk=10 codePunct=0.07"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/001-ComputerOverview.md",
+   "detail": "行41 lang=无 headings=0 table=0 cjk=11 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/001-ComputerOverview.md",
+   "detail": "行319 lang=无 headings=0 table=0 cjk=10 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/003-ComputerArchitecture.md",
+   "detail": "行30 lang=无 headings=0 table=2 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/003-ComputerArchitecture.md",
+   "detail": "行137 lang=无 headings=0 table=6 cjk=3 codePunct=0.27"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/003-ComputerArchitecture.md",
+   "detail": "行173 lang=无 headings=0 table=0 cjk=12 codePunct=0.36"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/003-ComputerArchitecture.md",
+   "detail": "行355 lang=无 headings=0 table=0 cjk=11 codePunct=0.24"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/003-ComputerArchitecture.md",
+   "detail": "行381 lang=无 headings=0 table=3 cjk=2 codePunct=0.18"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/003-ComputerArchitecture.md",
+   "detail": "行469 lang=无 headings=0 table=3 cjk=4 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/003-ComputerArchitecture.md",
+   "detail": "行509 lang=无 headings=0 table=0 cjk=11 codePunct=0.37"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行126 lang=无 headings=0 table=0 cjk=12 codePunct=0.87"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行186 lang=无 headings=0 table=0 cjk=14 codePunct=0.60"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行216 lang=无 headings=0 table=0 cjk=12 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行272 lang=无 headings=0 table=0 cjk=5 codePunct=0.60"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行325 lang=无 headings=0 table=0 cjk=8 codePunct=0.66"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行387 lang=无 headings=0 table=0 cjk=5 codePunct=0.57"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行406 lang=无 headings=0 table=0 cjk=14 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行447 lang=无 headings=0 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行461 lang=无 headings=0 table=2 cjk=8 codePunct=0.37"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行509 lang=无 headings=0 table=0 cjk=13 codePunct=0.41"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行587 lang=无 headings=0 table=0 cjk=3 codePunct=0.52"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行617 lang=无 headings=0 table=0 cjk=10 codePunct=0.41"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行662 lang=无 headings=0 table=0 cjk=11 codePunct=0.32"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/004-OperatingSystem.md",
+   "detail": "行686 lang=无 headings=0 table=0 cjk=13 codePunct=0.38"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行30 lang=无 headings=0 table=0 cjk=5 codePunct=0.18"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行50 lang=无 headings=0 table=2 cjk=7 codePunct=0.42"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行67 lang=无 headings=0 table=0 cjk=8 codePunct=0.13"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行87 lang=无 headings=0 table=0 cjk=8 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行112 lang=无 headings=0 table=0 cjk=7 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行141 lang=无 headings=0 table=10 cjk=11 codePunct=0.46"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行174 lang=无 headings=0 table=0 cjk=14 codePunct=0.30"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行202 lang=无 headings=0 table=0 cjk=23 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行255 lang=无 headings=0 table=0 cjk=11 codePunct=0.57"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行278 lang=无 headings=0 table=6 cjk=5 codePunct=0.29"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行322 lang=无 headings=0 table=8 cjk=5 codePunct=0.38"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行351 lang=无 headings=0 table=14 cjk=4 codePunct=0.48"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行385 lang=无 headings=0 table=4 cjk=11 codePunct=0.31"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行419 lang=无 headings=0 table=0 cjk=13 codePunct=0.38"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行463 lang=无 headings=0 table=13 cjk=6 codePunct=0.08"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行498 lang=无 headings=0 table=1 cjk=18 codePunct=0.44"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行528 lang=无 headings=0 table=5 cjk=16 codePunct=0.27"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行570 lang=无 headings=0 table=0 cjk=17 codePunct=0.40"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行600 lang=无 headings=0 table=14 cjk=6 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行633 lang=无 headings=0 table=0 cjk=13 codePunct=0.24"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/005-ComputerNetwork.md",
+   "detail": "行655 lang=无 headings=0 table=0 cjk=10 codePunct=0.26"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行7 lang=无 headings=0 table=0 cjk=15 codePunct=0.41"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行60 lang=无 headings=0 table=0 cjk=13 codePunct=0.38"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行111 lang=无 headings=0 table=2 cjk=14 codePunct=0.59"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行138 lang=无 headings=0 table=0 cjk=16 codePunct=0.38"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行169 lang=无 headings=0 table=0 cjk=20 codePunct=0.48"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行207 lang=无 headings=0 table=0 cjk=12 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行227 lang=无 headings=0 table=0 cjk=12 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行280 lang=无 headings=0 table=0 cjk=9 codePunct=0.21"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行355 lang=无 headings=0 table=0 cjk=13 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行381 lang=无 headings=0 table=2 cjk=5 codePunct=0.29"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行422 lang=无 headings=0 table=0 cjk=16 codePunct=0.64"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行461 lang=无 headings=0 table=0 cjk=15 codePunct=0.52"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行489 lang=无 headings=0 table=0 cjk=14 codePunct=0.57"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行517 lang=无 headings=0 table=0 cjk=18 codePunct=0.47"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行564 lang=无 headings=0 table=0 cjk=19 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行593 lang=无 headings=0 table=0 cjk=15 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行632 lang=无 headings=0 table=0 cjk=21 codePunct=0.53"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/007-DiscreteMathematics.md",
+   "detail": "行671 lang=无 headings=0 table=0 cjk=17 codePunct=0.63"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/009-NumberRepresentationEncoding.md",
+   "detail": "行42 lang=无 headings=0 table=0 cjk=11 codePunct=0.58"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/009-NumberRepresentationEncoding.md",
+   "detail": "行211 lang=无 headings=0 table=0 cjk=10 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/009-NumberRepresentationEncoding.md",
+   "detail": "行271 lang=无 headings=0 table=2 cjk=1 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/009-NumberRepresentationEncoding.md",
+   "detail": "行286 lang=无 headings=0 table=2 cjk=1 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/022-CompilePrinciple.md",
+   "detail": "行19 lang=无 headings=0 table=0 cjk=10 codePunct=0.38"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/022-CompilePrinciple.md",
+   "detail": "行182 lang=无 headings=0 table=0 cjk=4 codePunct=0.28"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/022-CompilePrinciple.md",
+   "detail": "行205 lang=无 headings=0 table=1 cjk=14 codePunct=0.37"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/022-CompilePrinciple.md",
+   "detail": "行321 lang=无 headings=0 table=0 cjk=16 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/022-CompilePrinciple.md",
+   "detail": "行354 lang=无 headings=0 table=0 cjk=11 codePunct=0.58"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/022-CompilePrinciple.md",
+   "detail": "行396 lang=无 headings=0 table=0 cjk=7 codePunct=0.60"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/022-CompilePrinciple.md",
+   "detail": "行547 lang=无 headings=0 table=0 cjk=7 codePunct=0.82"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/022-CompilePrinciple.md",
+   "detail": "行592 lang=无 headings=0 table=0 cjk=13 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/022-CompilePrinciple.md",
+   "detail": "行622 lang=无 headings=0 table=1 cjk=15 codePunct=0.20"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/022-CompilePrinciple.md",
+   "detail": "行657 lang=无 headings=0 table=0 cjk=9 codePunct=0.17"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/022-CompilePrinciple.md",
+   "detail": "行686 lang=无 headings=0 table=0 cjk=10 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/032-DesignPattern.md",
+   "detail": "行7 lang=无 headings=0 table=0 cjk=26 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/032-DesignPattern.md",
+   "detail": "行48 lang=无 headings=0 table=0 cjk=15 codePunct=0.41"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/032-DesignPattern.md",
+   "detail": "行295 lang=无 headings=0 table=0 cjk=8 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/032-DesignPattern.md",
+   "detail": "行320 lang=无 headings=0 table=0 cjk=25 codePunct=0.70"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/032-DesignPattern.md",
+   "detail": "行352 lang=无 headings=0 table=0 cjk=11 codePunct=0.13"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行22 lang=无 headings=0 table=0 cjk=15 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行57 lang=无 headings=0 table=0 cjk=13 codePunct=0.38"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行91 lang=无 headings=0 table=0 cjk=22 codePunct=0.53"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行132 lang=无 headings=0 table=0 cjk=25 codePunct=0.29"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行202 lang=无 headings=0 table=0 cjk=14 codePunct=0.13"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行243 lang=无 headings=0 table=12 cjk=2 codePunct=0.40"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行274 lang=无 headings=0 table=0 cjk=11 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行303 lang=无 headings=0 table=2 cjk=26 codePunct=0.28"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行383 lang=无 headings=0 table=34 cjk=6 codePunct=0.34"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行438 lang=无 headings=0 table=0 cjk=7 codePunct=0.42"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行476 lang=无 headings=0 table=0 cjk=11 codePunct=0.15"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行513 lang=无 headings=0 table=14 cjk=19 codePunct=0.50"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行560 lang=无 headings=0 table=0 cjk=26 codePunct=0.20"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行630 lang=无 headings=0 table=0 cjk=24 codePunct=0.35"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行669 lang=无 headings=0 table=0 cjk=14 codePunct=0.24"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行709 lang=无 headings=0 table=15 cjk=4 codePunct=0.26"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行750 lang=无 headings=0 table=8 cjk=16 codePunct=0.12"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行794 lang=无 headings=0 table=0 cjk=11 codePunct=0.46"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/036-NetworkProtocolDeep.md",
+   "detail": "行827 lang=无 headings=0 table=0 cjk=12 codePunct=0.46"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行7 lang=无 headings=0 table=0 cjk=11 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行66 lang=无 headings=0 table=1 cjk=16 codePunct=0.48"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行129 lang=无 headings=0 table=1 cjk=21 codePunct=0.42"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行180 lang=无 headings=0 table=0 cjk=22 codePunct=0.55"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行218 lang=无 headings=0 table=0 cjk=32 codePunct=0.66"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行300 lang=无 headings=0 table=0 cjk=13 codePunct=0.24"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行332 lang=无 headings=0 table=0 cjk=24 codePunct=0.57"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行374 lang=无 headings=0 table=0 cjk=14 codePunct=0.47"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行422 lang=无 headings=0 table=0 cjk=22 codePunct=0.39"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行477 lang=无 headings=0 table=0 cjk=16 codePunct=0.57"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行519 lang=无 headings=0 table=0 cjk=19 codePunct=0.44"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行629 lang=无 headings=0 table=0 cjk=4 codePunct=0.49"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行689 lang=无 headings=0 table=0 cjk=17 codePunct=0.54"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行733 lang=无 headings=0 table=0 cjk=20 codePunct=0.49"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行777 lang=无 headings=0 table=0 cjk=22 codePunct=0.61"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行862 lang=无 headings=0 table=0 cjk=13 codePunct=0.27"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行897 lang=无 headings=0 table=1 cjk=26 codePunct=0.34"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行958 lang=无 headings=0 table=0 cjk=20 codePunct=0.32"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行1013 lang=无 headings=0 table=0 cjk=14 codePunct=0.52"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行1047 lang=无 headings=0 table=0 cjk=27 codePunct=0.34"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行1087 lang=无 headings=0 table=0 cjk=26 codePunct=0.57"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行1187 lang=无 headings=0 table=0 cjk=19 codePunct=0.29"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行1236 lang=无 headings=0 table=0 cjk=16 codePunct=0.26"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "021-cs-fundamentals/037-CompileAndRuntime.md",
+   "detail": "行1272 lang=无 headings=0 table=0 cjk=25 codePunct=0.44"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "022-c/002-CLanguageOverview.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/002-CLanguageOverview.md",
+   "detail": "40023 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "022-c/003-ProgramStructureBasicSyntax.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/003-ProgramStructureBasicSyntax.md",
+   "detail": "33161 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/004-DataTypeDetailed.md",
+   "detail": "37940 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "022-c/005-VariableConstant.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "022-c/005-VariableConstant.md",
+   "detail": "行2218 lang=text headings=1 table=0 cjk=0 codePunct=0.76"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "022-c/005-VariableConstant.md",
+   "detail": "行2402 lang=markdown headings=6 table=0 cjk=1 codePunct=0.04"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/005-VariableConstant.md",
+   "detail": "57070 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/006-BitwiseBitField.md",
+   "detail": "24738 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "022-c/008-OperatorExpression.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/008-OperatorExpression.md",
+   "detail": "23090 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/009-EnumTypedef.md",
+   "detail": "24490 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "022-c/010-MultiFileCompilation.md",
+   "detail": "行826 lang=text headings=0 table=0 cjk=10 codePunct=0.21"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/010-MultiFileCompilation.md",
+   "detail": "53601 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/011-DynamicMemoryManagement.md",
+   "detail": "46050 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/012-FunctionPointerCallback.md",
+   "detail": "44930 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/013-VarargsFunction.md",
+   "detail": "35029 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/014-SignalHandling.md",
+   "detail": "60772 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/015-AtomicAndMemoryModel.md",
+   "detail": "16302 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/016-GenericSelection.md",
+   "detail": "44431 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/017-BitField.md",
+   "detail": "40061 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/018-AlignmentMemoryLayout.md",
+   "detail": "42205 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "022-c/019-ControlFlow.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/019-ControlFlow.md",
+   "detail": "18028 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/020-AttributeCompilerExtension.md",
+   "detail": "34367 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/021-SafeFunctionBoundsCheck.md",
+   "detail": "26754 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/022-InlineFunctionMacro.md",
+   "detail": "37775 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/023-ComplexDeclarationParsing.md",
+   "detail": "33252 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/024-ThreadConcurrency.md",
+   "detail": "15447 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/025-POSIXThread.md",
+   "detail": "15518 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/026-SocketNetworkProgramming.md",
+   "detail": "18101 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/027-ProcessAndPipe.md",
+   "detail": "33100 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/028-SharedMemorySemaphore.md",
+   "detail": "17404 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/029-FileSystemOperation.md",
+   "detail": "55820 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "022-c/030-FunctionDetailed.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/030-FunctionDetailed.md",
+   "detail": "14742 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "022-c/031-DynamicStaticLibrary.md",
+   "detail": "行358 lang=text headings=0 table=0 cjk=10 codePunct=0.80"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/031-DynamicStaticLibrary.md",
+   "detail": "35241 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/032-I18nAndL10n.md",
+   "detail": "48663 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/033-BuildSystem.md",
+   "detail": "44204 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "022-c/034-StaticAnalysisDebug.md",
+   "detail": "行1149 lang=text headings=8 table=0 cjk=0 codePunct=0.08"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/034-StaticAnalysisDebug.md",
+   "detail": "57406 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/035-CrossPlatformProgramming.md",
+   "detail": "53427 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/036-EmbeddedCProgramming.md",
+   "detail": "26439 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/037-CAssemblyInteraction.md",
+   "detail": "44020 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "022-c/038-ArrayDetailed.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/038-ArrayDetailed.md",
+   "detail": "16434 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/039-PreprocessorMacro.md",
+   "detail": "48845 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/040-C23C2y.md",
+   "detail": "17409 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "022-c/041-PointerDeep.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/041-PointerDeep.md",
+   "detail": "18188 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/042-MemoryManagement.md",
+   "detail": "12226 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "022-c/043-MemoryAlignment.md",
+   "detail": "行1488 lang=text headings=0 table=0 cjk=0 codePunct=0.73"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/043-MemoryAlignment.md",
+   "detail": "42209 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "022-c/044-StructAndUnion.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/044-StructAndUnion.md",
+   "detail": "18915 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/045-FunctionCallStackFrame.md",
+   "detail": "43412 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "022-c/046-PointerArrayDifference.md",
+   "detail": "行1558 lang=text headings=0 table=0 cjk=2 codePunct=0.45"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/046-PointerArrayDifference.md",
+   "detail": "40318 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/047-DoublePointerPointerArray.md",
+   "detail": "48951 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/048-FunctionPointerCallbackJumpTable.md",
+   "detail": "18193 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/049-VolatileKeyword.md",
+   "detail": "35389 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "022-c/050-StdioFileIO.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/050-StdioFileIO.md",
+   "detail": "12466 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/051-CLanguageTheory.md",
+   "detail": "43704 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/052-CAdvancedSystemProgramming.md",
+   "detail": "15123 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "022-c/053-CProjectExampleStudentGradeSystem.md",
+   "detail": "16185 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "022-c/059-CValgrind.md",
+   "detail": "行239 lang=text headings=1 table=0 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "022-c",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "023-cpp/002-CppOverviewAndModernStandard.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/002-CppOverviewAndModernStandard.md",
+   "detail": "14876 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "023-cpp/003-CppBasicSyntax.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/003-CppBasicSyntax.md",
+   "detail": "26591 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "023-cpp/004-CppTypeSystem.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/004-CppTypeSystem.md",
+   "detail": "17397 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "023-cpp/005-CppReferenceTypes.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/005-CppReferenceTypes.md",
+   "detail": "45310 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/006-RvalueReferenceMoveSemantics.md",
+   "detail": "82428 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/007-CppPointers.md",
+   "detail": "50583 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/008-SmartPointerDeepDive.md",
+   "detail": "75212 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/009-LambdaExpression.md",
+   "detail": "54395 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/010-TemplateMetaprogramming.md",
+   "detail": "89941 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/011-Cpp20Range.md",
+   "detail": "11659 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/012-Cpp20Module.md",
+   "detail": "35346 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/013-DesignPatternCpp.md",
+   "detail": "14131 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/014-RAIIResourceManagement.md",
+   "detail": "39889 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/015-OperatorOverloading.md",
+   "detail": "54205 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "023-cpp/016-CppOOPBasics.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/016-CppOOPBasics.md",
+   "detail": "21378 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/017-CppSTL.md",
+   "detail": "54003 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/018-StringProcessing.md",
+   "detail": "78797 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/019-FileIOFileSystem.md",
+   "detail": "15139 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/020-ExceptionSecurity.md",
+   "detail": "50460 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/021-MultithreadingConcurrency.md",
+   "detail": "51694 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/022-TypeTraitsSFINAE.md",
+   "detail": "81057 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/023-VariadicTemplate.md",
+   "detail": "54312 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/024-ConstexprCompileTime.md",
+   "detail": "67534 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/025-NamespaceLinkage.md",
+   "detail": "59550 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/026-CppNetworkProgramming.md",
+   "detail": "18454 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "023-cpp/027-CppOOPAdvanced.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/027-CppOOPAdvanced.md",
+   "detail": "20315 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/028-CppMemoryModel.md",
+   "detail": "45629 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/030-CppToolchain.md",
+   "detail": "43391 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/031-CppRegex.md",
+   "detail": "12588 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/032-CppPythonInteraction.md",
+   "detail": "10440 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/033-CppTestFramework.md",
+   "detail": "43406 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/036-CppPerformance.md",
+   "detail": "42484 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/037-CppSerialization.md",
+   "detail": "16420 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/038-CppGameDev.md",
+   "detail": "57177 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/039-CppEmbedded.md",
+   "detail": "52999 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "023-cpp/040-CppMemoryManagement.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/040-CppMemoryManagement.md",
+   "detail": "27805 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "023-cpp/041-CppCodeStyle.md",
+   "detail": "行1305 lang=markdown headings=7 table=0 cjk=0 codePunct=0.08"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/041-CppCodeStyle.md",
+   "detail": "58075 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/042-CppWebAssembly.md",
+   "detail": "39208 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/043-CppReflectionMetaprogramming.md",
+   "detail": "44070 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/044-CppMathLibrary.md",
+   "detail": "43389 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/045-CppSmartPointer.md",
+   "detail": "17653 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/046-CppDateTime.md",
+   "detail": "50205 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/047-CppFormatOutput.md",
+   "detail": "58264 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/048-Cpp26AndLatestStandard.md",
+   "detail": "32892 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "023-cpp/049-CppSTLContainersIterators.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/049-CppSTLContainersIterators.md",
+   "detail": "12754 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/050-ConcurrentProgramming.md",
+   "detail": "15267 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/051-CppCoreGuidelinesResourceManagement.md",
+   "detail": "87949 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "023-cpp/052-CppSTLAlgorithmAndFunctionObject.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/052-CppSTLAlgorithmAndFunctionObject.md",
+   "detail": "21484 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/053-MoveSemanticsDetailed.md",
+   "detail": "39351 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/054-PerfectForwardingReferenceCollapse.md",
+   "detail": "53855 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/055-VTablePolymorphismMemoryLayout.md",
+   "detail": "45242 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/056-SmartPointerCircularReference.md",
+   "detail": "11340 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/057-LambdaCaptureDetailed.md",
+   "detail": "62978 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/058-TypeExtractionSFINAE.md",
+   "detail": "52589 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/059-VariadicTemplateFoldExpression.md",
+   "detail": "51443 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/060-Cpp20Coroutine.md",
+   "detail": "108684 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/061-Cpp20Concept.md",
+   "detail": "52216 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/062-Cpp23NewFeatures.md",
+   "detail": "41890 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "023-cpp/063-CppTemplate.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/063-CppTemplate.md",
+   "detail": "20622 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/064-MemoryOrderLockFree.md",
+   "detail": "39566 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "023-cpp/065-CppExceptionAndPerformance.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/065-CppExceptionAndPerformance.md",
+   "detail": "16854 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/066-CppDebugPerformanceAnalysis.md",
+   "detail": "10617 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "023-cpp/067-CppProjectPractice.md",
+   "detail": "27563 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "023-cpp",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "024-devops/008-CloudNativeSRE.md",
+   "detail": "行304 lang=无 headings=0 table=0 cjk=5 codePunct=0.36"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "024-devops/008-CloudNativeSRE.md",
+   "detail": "行322 lang=markdown headings=5 table=6 cjk=0 codePunct=0.06"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "024-devops/008-CloudNativeSRE.md",
+   "detail": "行409 lang=markdown headings=5 table=5 cjk=1 codePunct=0.13"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "024-devops/014-PerformanceTuning.md",
+   "detail": "行15 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "024-devops/017-Troubleshooting.md",
+   "detail": "行31 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "024-devops/022-DatabaseOps.md",
+   "detail": "行247 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "024-devops/027-AnsiblePlaybookConfigManagement.md",
+   "detail": "行481 lang=无 headings=1 table=0 cjk=0 codePunct=0.88"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "024-devops/030-ELKStackLogAnalysis.md",
+   "detail": "行379 lang=无 headings=1 table=0 cjk=0 codePunct=0.87"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "024-devops/030-ELKStackLogAnalysis.md",
+   "detail": "行429 lang=无 headings=3 table=0 cjk=0 codePunct=0.78"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "024-devops/030-ELKStackLogAnalysis.md",
+   "detail": "行455 lang=无 headings=1 table=0 cjk=0 codePunct=0.92"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/003-NetworkWiringAndConstruction.md",
+   "detail": "行88 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/003-NetworkWiringAndConstruction.md",
+   "detail": "行142 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/003-NetworkWiringAndConstruction.md",
+   "detail": "行200 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/003-NetworkWiringAndConstruction.md",
+   "detail": "行299 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行18 lang=无 headings=0 table=0 cjk=12 codePunct=0.31"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行222 lang=text headings=0 table=0 cjk=1 codePunct=1.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行231 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行253 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行266 lang=text headings=0 table=0 cjk=1 codePunct=0.88"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行276 lang=text headings=1 table=0 cjk=5 codePunct=0.67"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行290 lang=text headings=0 table=4 cjk=5 codePunct=0.44"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行301 lang=text headings=1 table=0 cjk=1 codePunct=0.60"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行310 lang=text headings=0 table=2 cjk=5 codePunct=0.57"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行319 lang=text headings=1 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行329 lang=text headings=0 table=0 cjk=10 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行358 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行373 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行393 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行409 lang=text headings=1 table=0 cjk=0 codePunct=0.83"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行424 lang=text headings=1 table=0 cjk=5 codePunct=0.83"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行439 lang=text headings=1 table=0 cjk=3 codePunct=0.75"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行448 lang=text headings=1 table=0 cjk=3 codePunct=0.25"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行457 lang=text headings=4 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行483 lang=text headings=1 table=0 cjk=4 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行514 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行535 lang=text headings=0 table=0 cjk=10 codePunct=0.69"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行550 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行568 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行582 lang=text headings=1 table=0 cjk=6 codePunct=0.86"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行594 lang=text headings=1 table=0 cjk=4 codePunct=0.80"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/004-OSITCPIPModel.md",
+   "detail": "行610 lang=text headings=1 table=0 cjk=4 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/033-HTTPProtocol.md",
+   "detail": "行244 lang=text headings=5 table=0 cjk=0 codePunct=0.20"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/033-HTTPProtocol.md",
+   "detail": "行328 lang=text headings=1 table=0 cjk=0 codePunct=0.83"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/033-HTTPProtocol.md",
+   "detail": "行358 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "025-networking/033-HTTPProtocol.md",
+   "detail": "行367 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/002-WebSecurityPenetrationTesting.md",
+   "detail": "行269 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/002-WebSecurityPenetrationTesting.md",
+   "detail": "行346 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/003-BinarySecurityAndIncidentResponse.md",
+   "detail": "行447 lang=无 headings=0 table=0 cjk=8 codePunct=0.38"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/003-BinarySecurityAndIncidentResponse.md",
+   "detail": "行517 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/004-SecurityToolsPractice.md",
+   "detail": "行176 lang=无 headings=5 table=0 cjk=4 codePunct=0.31"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/004-SecurityToolsPractice.md",
+   "detail": "行197 lang=无 headings=0 table=0 cjk=3 codePunct=0.07"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/004-SecurityToolsPractice.md",
+   "detail": "行243 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/011-SSRFAttack.md",
+   "detail": "行30 lang=无 headings=2 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/011-SSRFAttack.md",
+   "detail": "行54 lang=无 headings=1 table=0 cjk=0 codePunct=0.20"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/011-SSRFAttack.md",
+   "detail": "行64 lang=无 headings=3 table=0 cjk=0 codePunct=0.11"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/011-SSRFAttack.md",
+   "detail": "行204 lang=无 headings=4 table=0 cjk=2 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/015-IncidentResponse.md",
+   "detail": "行92 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/020-DigitalCertificate.md",
+   "detail": "行111 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/021-HTTPSPrinciple.md",
+   "detail": "行29 lang=无 headings=0 table=22 cjk=0 codePunct=0.43"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/021-HTTPSPrinciple.md",
+   "detail": "行82 lang=无 headings=0 table=17 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/021-HTTPSPrinciple.md",
+   "detail": "行115 lang=无 headings=0 table=8 cjk=0 codePunct=0.33"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/022-PenetrationTestingMethodology.md",
+   "detail": "行132 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/023-InformationGathering.md",
+   "detail": "行59 lang=无 headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/024-VulnerabilityScan.md",
+   "detail": "行46 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/027-AuthenticationAuthorization.md",
+   "detail": "行78 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/039-HashTools.md",
+   "detail": "行179 lang=text headings=1 table=0 cjk=6 codePunct=0.86"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/039-HashTools.md",
+   "detail": "行195 lang=text headings=1 table=0 cjk=0 codePunct=0.86"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "026-cybersecurity/043-PasswordHash.md",
+   "detail": "行293 lang=text headings=1 table=0 cjk=0 codePunct=0.60"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "027-cloud-computing/007-CloudArchitectureDesign.md",
+   "detail": "行255 lang=无 headings=0 table=0 cjk=11 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "027-cloud-computing/012-CloudDatabaseService.md",
+   "detail": "行238 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "027-cloud-computing/013-KubernetesCore.md",
+   "detail": "行169 lang=无 headings=2 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "027-cloud-computing/018-CloudSecurityService.md",
+   "detail": "行131 lang=无 headings=0 table=0 cjk=1 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "028-software-testing/001-TestBasicsMethod.md",
+   "detail": "行325 lang=无 headings=0 table=0 cjk=11 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "028-software-testing/001-TestBasicsMethod.md",
+   "detail": "行360 lang=无 headings=0 table=0 cjk=9 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "028-software-testing/005-TestConceptPrinciple.md",
+   "detail": "行106 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "028-software-testing/005-TestConceptPrinciple.md",
+   "detail": "行334 lang=无 headings=1 table=0 cjk=4 codePunct=0.80"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "028-software-testing/007-TestType.md",
+   "detail": "行50 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "028-software-testing/014-JMeter.md",
+   "detail": "行121 lang=无 headings=2 table=0 cjk=1 codePunct=0.17"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "029-software-engineering/003-RequirementAnalysisMethod.md",
+   "detail": "行161 lang=text headings=0 table=0 cjk=8 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "029-software-engineering/009-TechDebtManagement.md",
+   "detail": "行117 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "030-software-architecture/001-SoftwareArchitectureOverview.md",
+   "detail": "行158 lang=markdown headings=7 table=0 cjk=3 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "030-software-architecture/003-MicroserviceArchitecture.md",
+   "detail": "行252 lang=无 headings=0 table=0 cjk=5 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "030-software-architecture/008-ArchitectureEvaluation.md",
+   "detail": "行129 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "031-engineering-practices/002-DesignDocumentStandard.md",
+   "detail": "行59 lang=markdown headings=19 table=15 cjk=6 codePunct=0.03"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "031-engineering-practices/002-DesignDocumentStandard.md",
+   "detail": "行178 lang=markdown headings=11 table=0 cjk=4 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "031-engineering-practices/002-DesignDocumentStandard.md",
+   "detail": "行274 lang=markdown headings=22 table=10 cjk=11 codePunct=0.08"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "031-engineering-practices/004-OnCallPractice.md",
+   "detail": "行184 lang=无 headings=0 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "031-engineering-practices/004-OnCallPractice.md",
+   "detail": "行224 lang=markdown headings=7 table=0 cjk=1 codePunct=0.05"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "031-engineering-practices/005-IncidentRetrospectiveMethodology.md",
+   "detail": "行87 lang=无 headings=0 table=0 cjk=11 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "031-engineering-practices/005-IncidentRetrospectiveMethodology.md",
+   "detail": "行125 lang=markdown headings=15 table=17 cjk=8 codePunct=0.04"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "032-python/002-PythonOverviewEnvSetup.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/002-PythonOverviewEnvSetup.md",
+   "detail": "14303 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "032-python/003-ProgramStructureBasicSyntax.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/003-ProgramStructureBasicSyntax.md",
+   "detail": "20668 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/004-VariableConstant.md",
+   "detail": "79480 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/005-PythonDescriptorProtocol.md",
+   "detail": "60613 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/006-DataTypeObjectModelDeepDive.md",
+   "detail": "58044 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/007-CoroutineAsyncio.md",
+   "detail": "16926 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/008-ListComprehensionAdvanced.md",
+   "detail": "48756 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "032-python/009-OperatorExpression.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/009-OperatorExpression.md",
+   "detail": "25932 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "032-python/010-PythonVirtualEnv.md",
+   "detail": "行1172 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "032-python/010-PythonVirtualEnv.md",
+   "detail": "行1186 lang=text headings=1 table=0 cjk=0 codePunct=0.75"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/010-PythonVirtualEnv.md",
+   "detail": "55481 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "032-python/011-Metaclass.md",
+   "detail": "行2236 lang=text headings=0 table=0 cjk=1 codePunct=0.69"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/011-Metaclass.md",
+   "detail": "83230 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/012-PythonSQLAlchemy.md",
+   "detail": "73312 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/013-MultiprocessingMultithreading.md",
+   "detail": "53635 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/015-PythonDjango.md",
+   "detail": "11615 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/016-DataClassPydantic.md",
+   "detail": "58379 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/018-PythonCeleryDistributedTaskQueue.md",
+   "detail": "51547 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "032-python/019-ControlFlow.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/019-ControlFlow.md",
+   "detail": "17811 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "032-python/020-PythonDocker.md",
+   "detail": "行135 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/021-PythonMachineLearning.md",
+   "detail": "12139 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/022-PythonDeepLearning.md",
+   "detail": "65054 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/023-PythonAndNLP.md",
+   "detail": "39049 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/024-PythonComputerVision.md",
+   "detail": "10364 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/025-WebScrapingWithPython.md",
+   "detail": "76431 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/026-PythonAutomationCookbook.md",
+   "detail": "62178 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "032-python/027-FunctionDetailed.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/027-FunctionDetailed.md",
+   "detail": "23225 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/029-PythonLog.md",
+   "detail": "12131 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/030-PythonAndCryptography.md",
+   "detail": "58645 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/031-PythonTest.md",
+   "detail": "46064 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/032-Python.md",
+   "detail": "85312 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/033-Decorator.md",
+   "detail": "22049 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/034-PythonMessageQueue.md",
+   "detail": "11830 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/036-PythonWebSocket.md",
+   "detail": "13544 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/037-PythonCICD.md",
+   "detail": "49938 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/038-PythonPerformance.md",
+   "detail": "49354 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "032-python/039-BuiltinDataStructure.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/039-BuiltinDataStructure.md",
+   "detail": "21347 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/041-Regex.md",
+   "detail": "69471 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/043-PythonDesignPattern.md",
+   "detail": "15117 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "032-python/044-PythonPackagingEvolution.md",
+   "detail": "行1028 lang=markdown headings=7 table=0 cjk=0 codePunct=0.15"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "032-python/044-PythonPackagingEvolution.md",
+   "detail": "行1633 lang=text headings=1 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/044-PythonPackagingEvolution.md",
+   "detail": "33762 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/045-PythonJupyter.md",
+   "detail": "35477 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/046-PythonGraphQL.md",
+   "detail": "19726 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/047-PythonCodeQuality.md",
+   "detail": "37887 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/048-ConcurrentProgramming.md",
+   "detail": "15467 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/049-PythonDatabaseMigration.md",
+   "detail": "10256 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/050-PythonOAuth2.md",
+   "detail": "17529 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/051-PythonVectorDatabase.md",
+   "detail": "11261 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/052-PythonAdvancedLatestFeature.md",
+   "detail": "16097 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "032-python/053-ComprehensionGenerator.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/053-ComprehensionGenerator.md",
+   "detail": "21768 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "032-python/054-ModulePackageEngineering.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/054-ModulePackageEngineering.md",
+   "detail": "20134 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/055-ContextManager.md",
+   "detail": "54969 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/056-MetaclassSingleton.md",
+   "detail": "66511 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/057-AsyncProgrammingDetailed.md",
+   "detail": "55796 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/058-WeakReference.md",
+   "detail": "49030 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "032-python/059-PackagePublish.md",
+   "detail": "行844 lang=text headings=2 table=0 cjk=0 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/059-PackagePublish.md",
+   "detail": "48730 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/060-Descriptor.md",
+   "detail": "65162 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/061-DataClassFieldDefault.md",
+   "detail": "57854 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/062-GeneratorCoroutine.md",
+   "detail": "67955 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/063-TypeAnnotationMypy.md",
+   "detail": "55493 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "032-python/064-OOP.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/064-OOP.md",
+   "detail": "14952 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/065-DecoratorAdvanced.md",
+   "detail": "14046 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "032-python/066-ExceptionHandling.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/066-ExceptionHandling.md",
+   "detail": "20966 字符"
+  },
+  {
+   "type": "FM_BAD_AUTHOR",
+   "file": "032-python/067-FileIOContextManager.md",
+   "detail": "Anonymous"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/067-FileIOContextManager.md",
+   "detail": "22652 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/068-PythonProjectExampleWebCrawlerDataAnalysis.md",
+   "detail": "19466 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "032-python/069-PythonTheoryKnowledge.md",
+   "detail": "10587 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "032-python",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "033-rust",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "034-shell/006-ScriptDebugging.md",
+   "detail": "行85 lang=text headings=0 table=0 cjk=2 codePunct=0.14"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "035-astro/001-AstroOverview.md",
+   "detail": "行161 lang=text headings=0 table=0 cjk=13 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "035-astro/001-AstroOverview.md",
+   "detail": "10927 字符"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "035-astro/003-PagesRouting.md",
+   "detail": "行65 lang=md headings=1 table=0 cjk=3 codePunct=0.00"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "035-astro/005-ContentCollections.md",
+   "detail": "行105 lang=md headings=0 table=0 cjk=3 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "035-astro/007-StylingFontsAssets.md",
+   "detail": "10921 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "035-astro",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "036-vite",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "FENCE_PROSE",
+   "file": "037-pnpm-monorepo/008-MonorepoPractice.md",
+   "detail": "行166 lang=无 headings=0 table=0 cjk=3 codePunct=0.00"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "038-tailwind/003-UtilityCore.md",
+   "detail": "11144 字符"
+  },
+  {
+   "type": "DOC_NO_PREAMBLE",
+   "file": "038-tailwind/004-LayoutFlexGrid.md",
+   "detail": "14142 字符"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "038-tailwind",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "040-nextjs",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "041-nestjs",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "042-deno",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "043-bun",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "044-svelte",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "MODULE_NO_SUMMARY",
+   "file": "045-angular",
+   "detail": "缺少学习总结文档"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "001-getting-started/001-HowComputersWork.md",
+   "detail": "1 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "001-getting-started/002-WhatIsProgramming.md",
+   "detail": "2 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "001-getting-started/003-HowInternetWorks.md",
+   "detail": "2 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "005-html5/001-WhatIsWebpage.md",
+   "detail": "3 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "006-css/001-WhatIsCSS.md",
+   "detail": "3 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "007-javascript/001-WhatIsJavaScript.md",
+   "detail": "3 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "008-typescript/001-WhyTypeScript.md",
+   "detail": "3 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "012-java/001-WhatIsJava.md",
+   "detail": "2 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "013-kotlin/001-WhatIsKotlin.md",
+   "detail": "2 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "014-csharp/001-WhatIsCSharp.md",
+   "detail": "1 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "015-go/001-WhatIsGo.md",
+   "detail": "2 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "016-sql/001-WhatIsDatabase.md",
+   "detail": "2 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "016-sql/003-SQLFirstSteps.md",
+   "detail": "2 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "016-sql/008-SQLProjectMusicLibrary.md",
+   "detail": "4 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "023-cpp/001-WhatIsCpp.md",
+   "detail": "2 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "032-python/001-WhatIsPython.md",
+   "detail": "4 处"
+  },
+  {
+   "type": "BODY_LINK_FIXABLE",
+   "file": "033-rust/001-WhatIsRust.md",
+   "detail": "2 处"
+  }
+ ]
+}

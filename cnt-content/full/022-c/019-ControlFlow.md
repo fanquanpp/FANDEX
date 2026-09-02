@@ -5,7 +5,7 @@ module: 'c'
 category: 计算机科学
 difficulty: intermediate
 description: 条件判断、循环结构及其控制语句。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'c/024-ThreadConcurrency'

@@ -5,7 +5,7 @@ module: 'c'
 category: 计算机科学
 difficulty: beginner
 description: C 程序的组成部分、注释规范、标识符规则、关键字与编译过程，对标 MIT/Stanford/CMU 教学水准。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'c/002-CLanguageOverview'

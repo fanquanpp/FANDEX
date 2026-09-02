@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: beginner
 description: JavaScript 发展历程、ECMAScript 标准与运行环境。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-05'
 related:
   - 'javascript/003-ProgramStructureBasicSyntax'
@@ -2520,7 +2520,6 @@ setTimeout(() => console.log('done'), 0);
 
 ### Node.js 事件循环（libuv）
 
-```
 1. timers 阶段：执行 setTimeout/setInterval 到期的回调
 2. pending callbacks：执行系统级回调（如 TCP 错误）
 3. idle, prepare：内部使用
@@ -2529,7 +2528,6 @@ setTimeout(() => console.log('done'), 0);
 6. close callbacks：执行 close 事件回调
 
 每个阶段之间清空微任务队列（Next Ticks + Microtasks）
-```
 
 **讲解：**
 

@@ -99,7 +99,7 @@ flowchart LR
 | 元素数量未知且增长缓慢 | 部分适合 | 动态数组扩容代价 $O(n)$ 偶发，可接受 |
 | 高度稀疏的二维表 | 不适合 | 应选稀疏数组 CSR/CSC 节省内存 |
 
-> **跨模块引用**：数组的链式替代方案参见 [链表](algorithm/linked-list)；数组作为栈/队列底层存储参见 [栈与队列](algorithm/stack-queue)；数组在哈希表开放寻址中的应用参见 [哈希表](algorithm/hashtable)；二分查找基于有序数组参见 [查找算法](algorithm/search)；动态规划状态表参见 [动态规划](algorithm/dynamic-programming)。
+> **跨模块引用**：数组的链式替代方案参见 [链表](/algorithm$2；数组作为栈/队列底层存储参见 [栈与队列](/algorithm$2；数组在哈希表开放寻址中的应用参见 [哈希表](/algorithm$2；二分查找基于有序数组参见 [查找算法](/algorithm$2；动态规划状态表参见 [动态规划](/algorithm$2。
 
 ---
 

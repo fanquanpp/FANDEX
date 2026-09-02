@@ -5,7 +5,7 @@ module: 'mysql'
 category: 数据库
 difficulty: intermediate
 description: 常用 SQL 语句、函数与配置参数速查。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'mysql/073-TransactionLockMechanism'

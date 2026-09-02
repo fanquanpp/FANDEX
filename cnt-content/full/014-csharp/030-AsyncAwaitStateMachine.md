@@ -271,7 +271,7 @@ C# 10.0 进一步允许 `[AsyncMethodBuilder(...)]` 应用于属性、字段、�
 
 编译器对 `async` 方法的转换遵循以下算法（简化版）：
 
-```
+```text
 输入：async 方法 M，包含 await 点 a_1, a_2, ..., a_n
 输出：状态机结构体 StateMachine_M，builder 方法 Builder_M
 

@@ -372,7 +372,7 @@ EXPORTS
 
 **BSD/SysV/GNU 三种格式**：
 
-```
+```text
 !<arch>\n              <- 8 字节全局 magic
 "mymath.o/0"           <- 成员名（以 / 结尾表示 SysV/GNU 格式）
 "1234567890"           <- 修改时间戳（10 字节）

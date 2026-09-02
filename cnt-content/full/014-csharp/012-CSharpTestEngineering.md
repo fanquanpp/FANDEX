@@ -1719,21 +1719,19 @@ dotnet build --no-restore || exit 1
 
 **测试金字塔实施**：
 
-```
-单元测试（70%）：
+**单元测试（70%）**：
 - 业务规则验证（价格计算、库存检查）
 - 数据模型验证
 - 工具类测试
 
-集成测试（20%）：
+**集成测试（20%）**：
 - API 端到端测试
 - 数据库持久化测试
 - 第三方支付接口测试（使用 WireMock）
 
-E2E 测试（10%）：
+**E2E 测试（10%）**：
 - 关键用户流程（注册→下单→支付→收货）
 - 多角色权限测试
-```
 
 **核心代码示例**：
 
@@ -2201,7 +2199,7 @@ dotnet add package Testcontainers.MsSql
 
 **附录 D：性能基准测试结果示例**
 
-```
+```text
 BenchmarkDotNet=v0.13.12, OS=Windows 11
 Intel Core i7-12700H CPU 2.30GHz, 1 CPU, 20 logical and 14 physical cores
 .NET SDK=8.0.100

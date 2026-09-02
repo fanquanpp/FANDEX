@@ -159,6 +159,7 @@ await foreach (var item in GenerateAsync().WithCancellation(ct))
 {
     Console.WriteLine(item);
 }
+```
 ```mermaid
 stateDiagram-v2
     [*] --> Created
@@ -168,6 +169,7 @@ stateDiagram-v2
     Running --> RanToCompletion
     Running --> Faulted
     Running --> Canceled
+```
 ```csharp
 public interface IAsyncEnumerable<out T>
 {

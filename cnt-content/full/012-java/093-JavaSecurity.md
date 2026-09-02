@@ -116,18 +116,20 @@ HMAC-SHA256 满足 SUFCMA 安全。AEAD（如 AES-GCM）= 对称加密 + MAC，�
 
 TLS 1.3 1-RTT 握手：
 
-```
-Client                                          Server
-  | --- ClientHello (key_share, supported_groups) ---> |
-  |                                                    |
-  | <-- ServerHello (key_share) ---------------------- |
-  | <-- EncryptedExtensions -------------------------- |
-  | <-- Certificate ---------------------------------- |
-  | <-- CertificateVerify ---------------------------- |
-  | <-- Finished ------------------------------------- |
-  |                                                    |
-  | --- Finished ------------------------------------> |
-  | --- Application Data <---------------------------> |
+```mermaid
+sequenceDiagram
+    participant C as 客户端
+    participant S as 服务端
+    C->>S: ClientHello（key_share、supported_groups）
+    S-->>C: ServerHello（key_share）
+    S-->>C: EncryptedExtensions
+    S-->>C: Certificate
+    S-->>C: CertificateVerify
+    S-->>C: Finished
+    C->>S: Finished
+    Note over C,S: 1-RTT 握手完成，进入应用数据阶段
+    C->>S: Application Data
+    S-->>C: Application Data
 ```
 
 握手后双方导出会话密钥：

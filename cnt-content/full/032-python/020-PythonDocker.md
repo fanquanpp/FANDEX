@@ -148,7 +148,7 @@ COPY . .
 
 和 .gitignore 类似，.dockerignore 文件指定哪些文件不复制到镜像中：
 
-```
+```text
 # .dockerignore 文件内容
 __pycache__
 *.pyc

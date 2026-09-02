@@ -1158,7 +1158,7 @@ JIT特有优化:
    内联缓存命中 -> 直接调用
 ```
 
-> 跨模块引用：[编译原理](compiler)基础篇介绍了编译器的基本优化。[Java](java/overview)的HotSpot JVM是JIT编译的典型实现。
+> 跨模块引用：[编译原理](compiler)基础篇介绍了编译器的基本优化。[Java](/java$2的HotSpot JVM是JIT编译的典型实现。
 
 ---
 

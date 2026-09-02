@@ -103,23 +103,23 @@ C++14/17/20 进一步改进：
 
 ### 1.5 演进时间线
 
-```text
-1972  C 语言                      K&R C
-1985  C++ 1.0                     Stroustrup
-1990s 8 位 MCU + C 主导           8051, AVR, PIC
-1996  EC++ Specification          日本嵌入式协会
-1998  C++98 ISO/IEC 14882         标准化
-2003  MISRA C++:2008              汽车工业
-2008  AUTOSAR C++14               汽车软件联盟
-2011  C++11                       constexpr / atomic / noexcept
-2014  C++14                       constexpr 增强
-2017  C++17                       constexpr if / std::byte
-2018  Zephyr RTOS C++ 支持        Linux Foundation
-2020  C++20                       concept / consteval / coroutine
-2023  MISRA C++:2023              基于 C++17/20
-2023  C++23                       std::expected / std::print
-2026  C++26 草案                  constexpr 更多扩展
-```
+| 时间 | 里程碑 | 说明 |
+| --- | --- | --- |
+| 1972 | C 语言 | K&R C |
+| 1985 | C++ 1.0 | Stroustrup |
+| 1990s 8 位 MCU + C 主导 | 8051, AVR, PIC |  |
+| 1996 | EC++ Specification | 日本嵌入式协会 |
+| 1998 | C++98 ISO/IEC 14882 | 标准化 |
+| 2003 | MISRA C++:2008 | 汽车工业 |
+| 2008 | AUTOSAR C++14 | 汽车软件联盟 |
+| 2011 | C++11 | constexpr / atomic / noexcept |
+| 2014 | C++14 | constexpr 增强 |
+| 2017 | C++17 | constexpr if / std::byte |
+| 2018 | Zephyr RTOS C++ 支持 | Linux Foundation |
+| 2020 | C++20 | concept / consteval / coroutine |
+| 2023 | MISRA C++:2023 | 基于 C++17/20 |
+| 2023 | C++23 | std::expected / std::print |
+| 2026 | C++26 草案 | constexpr 更多扩展 |
 
 ---
 

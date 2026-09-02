@@ -1163,7 +1163,7 @@ run
 
 `~/.gdbinit` 或 `.gdbinit`:
 
-```
+```text
 # 自动加载安全配置
 set auto-load safe-path /
 

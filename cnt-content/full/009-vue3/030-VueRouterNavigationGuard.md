@@ -467,14 +467,12 @@ export default {
 
 ### 3. 守卫执行顺序
 
-```
 1. beforeRouteLeave（离开组件）
 2. beforeEach（全局）
 3. beforeRouteUpdate（复用组件）
 4. beforeEnter（路由配置）
 5. beforeRouteEnter（进入组件）
 6. afterEach（全局）
-```
 
 ### 4. 返回值
 

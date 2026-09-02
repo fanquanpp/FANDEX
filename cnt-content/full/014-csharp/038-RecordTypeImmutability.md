@@ -925,7 +925,7 @@ Java record 是引用类型，对象头开销 16 字节（64 位 JVM，开启压
 
 #### 5.2.3 性能基准
 
-```
+```text
 BenchmarkDotNet v0.13.12, Windows 11
 | Method            | Mean      | Ratio | Allocated |
 |------------------ |----------:|------:|----------:|

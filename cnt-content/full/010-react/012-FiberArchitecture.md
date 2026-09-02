@@ -36,7 +36,7 @@ Fiber 是 React 16 引入的全新协调引擎，替代了原有的 Stack Reconc
 
 每个 React 元素对应一个 Fiber 节点，Fiber 节点通过链表结构组织：
 
-```
+```text
 Fiber 节点结构：
 {
   type,        // 组件类型（函数/类/标签名）

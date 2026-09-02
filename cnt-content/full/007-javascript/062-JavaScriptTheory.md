@@ -1755,30 +1755,16 @@ node --max-semi-space-size=64 server.js
 
 V8（自 v11+）采用四层执行模型：
 
-```
-JavaScript 源代码
-      |
-      v
-  Parser (解析器)
-      |
-      v
-  AST (抽象语法树)
-      |
-      +---> Ignition (解释器) ---> 字节码执行
-      |          |                    |
-      |          |                    v (热点代码)
-      |          |          Sparkplug (基线编译器) ---> 半优化机器码
-      |          |                    |
-      |          |                    v (进一步热点)
-      |          |          Maglev (中层编译器) ---> 较优化机器码
-      |          |                    |
-      |          |                    v (持续热点)
-      |          |          TurboFan (优化编译器) ---> 高度优化机器码
-      |          |                    |
-      |          |                    v (逆优化)
-      |          +<-------------------+
-      |
-      +---> 懒解析 (Lazy Parsing)
+```mermaid
+flowchart TB
+    SRC[JavaScript 源代码] --> Parser[Parser 解析器]
+    Parser --> AST[AST 抽象语法树]
+    AST --> Lazy[懒解析 Lazy Parsing]
+    AST --> Ignition[Ignition 解释器<br/>字节码执行]
+    Ignition -->|"热点代码"| Sparkplug[Sparkplug 基线编译器<br/>半优化机器码]
+    Sparkplug -->|"进一步热点"| Maglev[Maglev 中层编译器<br/>较优化机器码]
+    Maglev -->|"持续热点"| TurboFan[TurboFan 优化编译器<br/>高度优化机器码]
+    TurboFan -->|"逆优化"| Ignition
 ```
 
 ### 14.2 Ignition 解释器

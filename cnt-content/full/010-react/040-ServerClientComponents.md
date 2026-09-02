@@ -181,18 +181,13 @@ Server Components 不计入客户端 bundle。对于数据展示型页面，$n_c
 
 RSC 的完整渲染流程分为六个阶段：
 
-```
-1. 请求到达服务端
-   ↓
-2. 服务端渲染 Server Components（可中断、可并行）
-   ↓
-3. 序列化为 RSC Payload（流式 JSON）
-   ↓
-4. 流式传输到客户端（HTTP streaming）
-   ↓
-5. 客户端 React 解析 RSC Payload，渲染 Client Components
-   ↓
-6. Hydration 完成，页面可交互
+```mermaid
+flowchart TB
+    A[1. 请求到达服务端] --> B[2. 服务端渲染 Server Components<br/>可中断、可并行]
+    B --> C[3. 序列化为 RSC Payload<br/>流式 JSON]
+    C --> D[4. 流式传输到客户端<br/>HTTP streaming]
+    D --> E[5. 客户端 React 解析 RSC Payload<br/>渲染 Client Components]
+    E --> F[6. Hydration 完成<br/>页面可交互]
 ```
 
 关键特性：阶段 2-4 是流式的，即 React 不等待整个树渲染完成，而是逐块发送。这与传统 SSR 必须等待完整 HTML 不同。

@@ -5,7 +5,7 @@ module: 'css'
 category: 前端技术
 difficulty: intermediate
 description: 浮动、定位、BFC 与经典布局方案。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'css/004-CSS3BoxModelDetailed'

@@ -715,7 +715,7 @@ npx tsc --generateTrace ./trace-dir
 
 #### 4.6.2 解读诊断输出
 
-```
+```text
 Files:                          100    # 文件数
 Lines:                       10,000    # 代码行数
 Nodes:                       50,000    # AST 节点数

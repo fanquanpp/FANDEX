@@ -90,7 +90,7 @@ prerequisites:
 | 哈希表 | $O(1)$ | $O(n)$ | $O(1)$ | $O(1)$ | 不支持 | 不支持 |
 | 有序数组 | $O(\log n)$ | $O(\log n)$ | $O(n)$ | $O(n)$ | 支持 | 支持 |
 
-> **跨模块引用**：树的图论基础参见 [图算法](algorithm/graph)；堆作为完全二叉树参见 [堆与优先队列](algorithm/heap)；区间查询专用树形结构参见 [线段树](algorithm/segment-tree) 与 [树状数组](algorithm/fenwick-tree)；并查集的森林表示参见 [并查集](algorithm/disjoint-set)；跳跃表作为概率平衡结构参见 [跳跃表](algorithm/skiplist)。
+> **跨模块引用**：树的图论基础参见 [图算法](/algorithm$2；堆作为完全二叉树参见 [堆与优先队列](/algorithm$2；区间查询专用树形结构参见 [线段树](/algorithm$2 与 [树状数组](/algorithm$2；并查集的森林表示参见 [并查集](/algorithm$2；跳跃表作为概率平衡结构参见 [跳跃表](/algorithm$2。
 
 ### 1.6 适用场景与不适用场景
 

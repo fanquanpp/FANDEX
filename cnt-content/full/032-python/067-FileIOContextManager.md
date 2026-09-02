@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 文件读写、路径操作、with 语句与上下文管理。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'python/064-OOP'

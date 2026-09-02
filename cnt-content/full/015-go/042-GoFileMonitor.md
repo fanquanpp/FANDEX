@@ -201,16 +201,14 @@ inotify 在 Linux 内核中的实现位于 `fs/notify/inotify/`：
 
 `inotify_add_watch` 系统调用流程：
 
-```
-用户态: inotify_add_watch(fd, path, mask)
-   ↓
-内核态: sys_inotify_add_watch
-   ↓
-1. 通过 fd 找到 inotify_group
-2. 通过 path 解析 inode（path_lookup）
-3. 创建 inotify_inode_mark（若已存在则更新）
-4. 将 mark 添加到 inode 的 notification list
-5. 返回 wd（watch descriptor）
+```mermaid
+flowchart TB
+    U[用户态<br/>inotify_add_watch fd, path, mask] --> K[内核态<br/>sys_inotify_add_watch]
+    K --> S1[1. 通过 fd 找到 inotify_group]
+    S1 --> S2[2. 通过 path 解析 inode<br/>path_lookup]
+    S2 --> S3[3. 创建 inotify_inode_mark<br/>若已存在则更新]
+    S3 --> S4[4. 将 mark 添加到 inode 的 notification list]
+    S4 --> S5[5. 返回 wd watch descriptor]
 ```
 
 **2. 事件产生**

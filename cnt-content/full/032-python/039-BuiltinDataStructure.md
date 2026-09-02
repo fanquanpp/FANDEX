@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 列表、元组、字典、集合的操作与性能特征。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'python/037-PythonCICD'

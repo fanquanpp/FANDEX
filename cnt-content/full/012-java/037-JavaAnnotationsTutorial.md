@@ -1127,7 +1127,7 @@ public @interface Good {
 
 **修复**：
 
-```
+```properties
 # 文件路径：src/main/resources/META-INF/services/javax.annotation.processing.Processor
 # 内容：
 com.example.ImmutableProcessor
@@ -1671,7 +1671,7 @@ public @interface Cacheable {
 
 **3.** 通过 SPI 注册注解处理器：
 
-```
+```properties
 # 创建文件 src/main/resources/META-INF/services/javax.annotation.processing.Processor
 # 内容：
 com.example.MyProcessor

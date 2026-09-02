@@ -154,20 +154,20 @@ JetBrains 在设计 Kotlin 空安全时遵循了以下哲学：
 
 ### 1.11 时间线总览
 
-```
-1965  ALGOL W — Tony Hoare 引入空引用（"十亿美元的错误"）
-1973  ML — 引入 option 类型，函数式空安全开端
-1990  Haskell — Maybe monad，类型系统化空安全
-2004  Scala — Option[T]，函数式容器
-2014  Swift — Optional<T>，语法糖 T?
-2016  Kotlin 1.0 — 空安全初版，T?/?. /?:/!!/as?
-2017  Kotlin 1.1 — 实验性契约 API
-2018  Kotlin 1.3 — 契约稳定，KMP 一致性
-2020  Kotlin 1.4 — @Nullable 注解标准化
-2022  Kotlin 1.7 — K2 预览，智能转换优化
-2023  Kotlin 1.9 — JSpecify 集成
-2024  Kotlin 2.0 — K2 GA，跨模块空安全检查
-```
+| 时间 | 里程碑 | 说明 |
+| --- | --- | --- |
+| 1965 | ALGOL W — Tony Hoare 引入空引用（"十亿美元的错误"） |  |
+| 1973 | ML — 引入 option 类型，函数式空安全开端 |  |
+| 1990 | Haskell — Maybe monad，类型系统化空安全 |  |
+| 2004 | Scala — Option[T]，函数式容器 |  |
+| 2014 | Swift — Optional<T>，语法糖 T? |  |
+| 2016 | Kotlin 1.0 — 空安全初版，T?/?. /?:/!!/as? |  |
+| 2017 | Kotlin 1.1 — 实验性契约 API |  |
+| 2018 | Kotlin 1.3 — 契约稳定，KMP 一致性 |  |
+| 2020 | Kotlin 1.4 — @Nullable 注解标准化 |  |
+| 2022 | Kotlin 1.7 — K2 预览，智能转换优化 |  |
+| 2023 | Kotlin 1.9 — JSpecify 集成 |  |
+| 2024 | Kotlin 2.0 — K2 GA，跨模块空安全检查 |  |
 
 ---
 

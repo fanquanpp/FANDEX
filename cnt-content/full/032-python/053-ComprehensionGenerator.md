@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 列表推导、字典推导、生成器表达式与迭代器。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'python/051-PythonVectorDatabase'

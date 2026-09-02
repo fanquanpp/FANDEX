@@ -5,7 +5,7 @@ module: 'mysql'
 category: 数据库
 difficulty: intermediate
 description: INSERT/UPDATE/DELETE、SELECT 基础与条件查询。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'mysql/008-SQLDataDefinitionAdvanced'

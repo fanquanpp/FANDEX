@@ -1502,7 +1502,7 @@ timeline
 
 ### D.2 对齐控制方式优先级
 
-```
+```text
 1. 标准优先：alignas(N) > _Alignas(N) > <stdalign.h>::alignas
 2. 编译器扩展：
    - GCC/Clang: __attribute__((aligned(N))) / __attribute__((packed))

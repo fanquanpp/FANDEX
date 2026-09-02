@@ -5,7 +5,7 @@ module: 'mysql'
 category: 数据库
 difficulty: advanced
 description: 索引结构、覆盖索引、最左前缀与查询调优。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'mysql/063-StoredProcedureAndFunction'

@@ -533,7 +533,7 @@ MulticastDelegate {
 
 `Delegate.Combine(a, b)` 的伪代码：
 
-```
+```text
 Algorithm: Combine(a, b)
 Input: 委托 a, b
 Output: 合并后的委托
@@ -558,7 +558,7 @@ Output: 合并后的委托
 
 `Delegate.Remove(source, value)` 从 `source` 中移除**最后一个**与 `value` 等价的委托：
 
-```
+```text
 Algorithm: Remove(source, value)
 Input: 多播委托 source, 待移除委托 value
 Output: 移除后的委托
@@ -856,7 +856,7 @@ $$T_{\text{delegate}} = T_{\text{indirection}} + T_{\text{method}}$$
 
 实测对比（.NET 8, x64）：
 
-```
+```text
 BenchmarkDotNet v0.13.12
 | Method            | Mean      | Ratio |
 |------------------ |----------:|------:|
@@ -2694,7 +2694,7 @@ IL_001a: stloc.1
 
 ## 附录 B：委托性能基准（.NET 8, x64）
 
-```
+```text
 BenchmarkDotNet v0.13.12
 Runtime=.NET 8.0
 Platform=Windows 11

@@ -65,7 +65,7 @@ flowchart LR
 
 ## 动手环节：感受一次类型检查
 
-安装 Node.js 后（见 [Node.js 安装](getting-started/017-NodeJsInstall)），在终端执行：
+安装 Node.js 后（见 [Node.js 安装](/getting-started$2），在终端执行：
 
 ```bash
 npm install -g typescript
@@ -76,4 +76,4 @@ tsc --version
 
 ## 下一步
 
-读完 [如何学习本课程](typescript/002-HowToReadThisCourse) 后进入 [TypeScript 概述与环境搭建](typescript/003-TypeScriptOverviewEnvSetup)；类型进阶（泛型、联合类型）会在模块后半程展开。
+读完 [如何学习本课程](/typescript$2 后进入 [TypeScript 概述与环境搭建](/typescript$2；类型进阶（泛型、联合类型）会在模块后半程展开。

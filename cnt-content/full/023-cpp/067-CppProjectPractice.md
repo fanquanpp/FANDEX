@@ -33,17 +33,31 @@ prerequisites:
 
 #### 1.2.2 类图
 
-```
- +
- | FileManager |<----| CommandParser |---->| UI |<----| ErrorHandler |
- +
- | - list_dir() | | - parse() | | - display() | | - handle() |
- | - create_file()| | - get_command()| | - get_input() | | - log_error() |
- | - delete_file()| +----------------+ +----------------+ +----------------+
- | - move_file() |
- | - copy_file() |
- | - create_dir() |
- +
+```mermaid
+classDiagram
+    class FileManager {
+        -list_dir()
+        -create_file()
+        -delete_file()
+        -move_file()
+        -copy_file()
+        -create_dir()
+    }
+    class CommandParser {
+        -parse()
+        -get_command()
+    }
+    class UI {
+        -display()
+        -get_input()
+    }
+    class ErrorHandler {
+        -handle()
+        -log_error()
+    }
+    CommandParser --> FileManager
+    UI --> CommandParser
+    UI --> ErrorHandler
 ```
 
 ### 1.3 核心实现

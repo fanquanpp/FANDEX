@@ -106,7 +106,7 @@ flowchart LR
 | 优先级调度 | 不适合 | 应选堆 |
 | 中间任意位置插入 | 不适合 | 应选链表 |
 
-> **跨模块引用**：栈与队列的链式实现依赖 [链表](algorithm/linked-list)；堆作为优先级队列的底层结构参见 [堆与优先队列](algorithm/heap)；BFS 与 DFS 中队列/栈的应用参见 [搜索算法](algorithm/search)；函数调用栈与递归的关系参见 [递归与回溯](algorithm/recursion-backtracking)；循环队列作为数组受限应用参见 [数组与动态数组](algorithm/array)。
+> **跨模块引用**：栈与队列的链式实现依赖 [链表](/algorithm$2；堆作为优先级队列的底层结构参见 [堆与优先队列](/algorithm$2；BFS 与 DFS 中队列/栈的应用参见 [搜索算法](/algorithm$2；函数调用栈与递归的关系参见 [递归与回溯](/algorithm$2；循环队列作为数组受限应用参见 [数组与动态数组](/algorithm$2。
 
 ---
 
@@ -1416,7 +1416,7 @@ public List<List<Integer>> levelOrder(TreeNode root) {
 }
 ```
 
-> **跨模块引用**：BFS 与 DFS 的完整讨论参见 [搜索算法](algorithm/search)；BFS 在最短路径中的应用参见 [图算法](algorithm/graph)。
+> **跨模块引用**：BFS 与 DFS 的完整讨论参见 [搜索算法](/algorithm$2；BFS 在最短路径中的应用参见 [图算法](/algorithm$2。
 
 ---
 

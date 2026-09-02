@@ -172,19 +172,17 @@ $$
 
 ```
 新状态 i ──a──> 新状态 f
-```mermaid
-flowchart LR
-    S[新 s] -->|ε| N1[N(r1)]
-    N1 -->|ε| T[新 t]
-    S -->|ε| N2[N(r2)]
-    N2 -->|ε| T
-```mermaid
-flowchart LR
-    S[新 s] -->|ε| N1[N(r1)]
-    N1 -->|ε| T[新 t]
-    S -->|ε| N2[N(r2)]
-    N2 -->|ε| T
 ```
+
+3. **连接 $r_1 r_2$**：新建初态 $s$ 与终态 $t$，$s$ 经 $\epsilon$ 进入 $N(r_1)$，$N(r_1)$ 的接受状态经 $\epsilon$ 进入 $N(r_2)$，$N(r_2)$ 的接受状态经 $\epsilon$ 到达 $t$。
+
+```mermaid
+flowchart LR
+    S[新 s] -->|ε| N1[N(r1)]
+    N1 -->|ε| N2[N(r2)]
+    N2 -->|ε| T[新 t]
+```
+
 
 4. **选择 $r_1 | r_2$**：新建初态 $s$ 与终态 $t$，分别通过 $\epsilon$ 连接到两个子 NFA。
 

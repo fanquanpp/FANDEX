@@ -5,7 +5,7 @@ module: 'github'
 category: 工具链
 difficulty: intermediate
 description: GitHub 常见问题排查：权限问题、大文件、换行符、子模块、GPG 签名、Actions 配额。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'github/029-GitHubActionsCICD'
