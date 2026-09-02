@@ -36,6 +36,7 @@ const stagingDir = join(distDir, 'FANDEX-Portable');
 /** 从 app-desktop 的 tauri.conf.json 读取版本号，用于产物命名 */
 const tauriConf = JSON.parse(readFileSync(join(tauriDir, 'tauri.conf.json'), 'utf-8'));
 const version = tauriConf.version || '0.0.0';
+const productName = tauriConf.productName || 'FANDEX';
 
 // 1. 构建 Tauri 裸 exe（--no-bundle 跳过 NSIS，web 构建由 beforeBuildCommand 完成）
 console.log('[1/3] 构建 Tauri 裸 exe（--no-bundle，跳过 NSIS 安装包）...');
@@ -45,16 +46,35 @@ execSync('pnpm --filter @fandex/desktop exec tauri build --no-bundle', {
   env: { ...process.env, DESKTOP_BUILD: '1' },
 });
 
-const exePath = join(releaseDir, 'FANDEX.exe');
-if (!existsSync(exePath)) {
-  console.error('未找到构建产物 FANDEX.exe，便携版打包终止');
+/**
+ * 定位 Tauri 裸 exe 产物
+ * -----------------------------------------------------------------------------
+ * Tauri 2 的裸 exe 以 Cargo 包名产出（本仓库为 fandex-desktop.exe），
+ * productName（FANDEX）只作用于 NSIS 安装包命名，因此不能假设 FANDEX.exe 存在。
+ * 候选顺序：productName → Cargo 包名 → release 根目录首个 .exe 兜底。
+ */
+const cargoName = (
+  readFileSync(join(tauriDir, 'Cargo.toml'), 'utf-8').match(/^\s*name\s*=\s*"([^"]+)"/m) || []
+)[1];
+const candidates = [productName, cargoName]
+  .filter((name, index, list) => name && list.indexOf(name) === index)
+  .map((name) => join(releaseDir, `${name}.exe`));
+let exePath = candidates.find(existsSync);
+if (!exePath) {
+  const fallback = readdirSync(releaseDir).find((name) => name.toLowerCase().endsWith('.exe'));
+  if (fallback) exePath = join(releaseDir, fallback);
+}
+if (!exePath) {
+  console.error(`未找到构建产物 exe（候选：${candidates.map((p) => p.split('\\').pop()).join('、')}），便携版打包终止`);
   process.exit(1);
 }
+console.log(`定位到便携版主程序：${exePath}`);
 
 // 2. 收集 exe 与运行所需 DLL
 console.log('[2/3] 收集运行文件...');
 rmSync(stagingDir, { recursive: true, force: true });
 mkdirSync(stagingDir, { recursive: true });
+/* zip 内统一命名为 FANDEX.exe，与便携版说明保持一致 */
 copyFileSync(exePath, join(stagingDir, 'FANDEX.exe'));
 /* WebView2Loader.dll 等运行时依赖与 exe 同目录产出，一并收集 */
 for (const name of readdirSync(releaseDir)) {

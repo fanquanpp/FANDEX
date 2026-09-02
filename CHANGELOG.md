@@ -7,43 +7,12 @@
 > 发布说明约定：`android-release.yml` 工作流在打 `v*` 标签发布时，
 > 会自动提取本文档中对应 `## [vX.Y.Z]` 段落作为 GitHub Release 说明。
 
-## [未发布] - 2026-09-03
-
-本版本为仓库治理专项：清理历史遗留内容目录与一次性脚本，
-移除文档正文中冗余的"最后更新"明文段落，并修复历史迁移遗留的断链。
-不包含任何应用功能变更。
-
-### 移除
-
-- **cnt-content/mobile 遗留内容目录**：三端架构统一后，网站与 Android 双端
-  构建均只读取 cnt-content/full 与 cnt-content/syntax，该目录（690 个文件，
-  约 9.8MB）自 2026-08 syntax 迁出后已无任何消费方，整体删除
-  （git 历史可找回）；
-- **tools/ 一次性内容工程脚本**：mobile→full 迁移、练习题清理等一次性管线
-  已全部执行完毕，其质量门禁职责由 `app-web/scripts/content-audit.mjs` 与
-  `content.config.ts` 承接，整个目录删除。
-
-### 修复
-
-- **文档正文断链**：cnt-content/full 中 128 处因历史正则替换事故产生的
-  `](/module$2` 形态断链（丢失目标文档段与右括号），按链接文字逐条解析为
-  指向真实文档的有效链接；
-- **文档正文冗余段落**：47 篇文档移除正文中手写的"最后更新于 x月x日"
-  元信息小段落，更新时间统一由 frontmatter 的 `updated` 字段承载。
-
-### 变更
-
-- **Android 双端内嵌文档资产重新生成**：app-Android-new/assets/docs 与
-  app-Android-old/assets/dist-mobile 随内容源同步重建，并补齐旧端此前
-  缺失的 25 篇学习总结文档；
-- README、AGENTS.md、.gitignore 与相关脚本注释同步去除对已删除目录的
-  描述，根目录描述与实际结构保持一致。
-
-## [v4.2.1] - 2026-09-02
+## [v4.2.1] - 2026-09-03
 
 本版本聚焦平台体验：桌面端新增免安装便携版，appold 补齐 Mermaid 图表与
 数学公式的高保真离线渲染，web/desktop 左侧目录栏增加章节序号。
-全端版本号统一为 4.2.1。
+随版本发布同步完成一次仓库治理：清理历史遗留内容目录与一次性脚本、
+修复文档正文历史断链与冗余元信息段落。全端版本号统一为 4.2.1。
 
 ### 新增
 
@@ -58,6 +27,10 @@
 
 ### 修复
 
+- **便携版构建脚本**：适配 Tauri 2 裸 exe 以 Cargo 包名产出的事实
+  （fandex-desktop.exe，productName 仅作用于安装包命名），按
+  productName → Cargo 包名 → 目录兜底扫描的顺序定位产物，zip 内统一命名
+  FANDEX.exe，修复发布工作流中便携版打包失败导致整个 Release 跳过的问题；
 - **appold Mermaid 图表渲染**：```mermaid 代码块此前按普通代码展示，
   现通过本地内置 mermaid.js（assets/markdown-res，约 2.7MB，完全离线）渲染为
   真实图表，解析失败时回退展示图源码；新增 Mermaid 标签与复制按钮顶栏；
@@ -66,11 +39,26 @@
   （仅支持少量命令、分数/根号退化为线性文本）；解析失败回退展示原文；
 - **appold 表格行内公式**：表格行内的 $...$ 公式此前被整体跳过、以原始 LaTeX
   文本展示，现统一转换渲染，公式内的竖线转义为 \\vert 防止破坏表格列分隔，
-  行内 LaTeX 子集同步补充 vert/lvert/rvert/mid 命令映射。
+  行内 LaTeX 子集同步补充 vert/lvert/rvert/mid 命令映射；
+- **文档正文断链**：cnt-content/full 中 128 处因历史正则替换事故产生的
+  `](/module$2` 形态断链（丢失目标文档段与右括号），按链接文字逐条解析为
+  指向真实文档的有效链接；
+- **文档正文冗余段落**：47 篇文档移除正文中手写的"最后更新于 x月x日"
+  元信息小段落，更新时间统一由 frontmatter 的 `updated` 字段承载。
 
 ### 变更
 
-- 全端版本号统一 4.2.1（Android 双端 versionCode 各自递增：7 / 17）。
+- 全端版本号统一 4.2.1（Android 双端 versionCode 各自递增：7 / 17）；
+- **删除 cnt-content/mobile 遗留内容目录**（690 个文件，约 9.8MB）：三端架构
+  统一后网站与 Android 双端构建均只读取 cnt-content/full 与 cnt-content/syntax，
+  该目录自 2026-08 syntax 迁出后已无任何消费方（git 历史可找回）；
+- **删除 tools/ 一次性内容工程脚本**：mobile→full 迁移、练习题清理等一次性
+  管线已全部执行完毕，质量门禁职责由 `app-web/scripts/content-audit.mjs` 与
+  `content.config.ts` 承接；
+- **Android 双端内嵌文档资产随内容源重建**：app-Android-new/assets/docs 与
+  app-Android-old/assets/dist-mobile 同步，并补齐旧端此前缺失的 25 篇学习
+  总结文档；README、AGENTS.md、.gitignore 同步去除对已删除目录的描述，
+  根目录描述与实际结构保持一致。
 
 ## [v4.2.0] - 2026-09-02
 
