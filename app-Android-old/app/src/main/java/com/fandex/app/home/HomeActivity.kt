@@ -313,7 +313,7 @@ fun FANDEXApp(
     /* 使用 Box 包裹 ModalNavigationDrawer，便于在最上层叠加更新提示浮层，
        Toast 卡片不占用布局空间，不阻挡用户与底层内容的交互 */
     Box(modifier = Modifier.fillMaxSize()) {
-        /* 源仓库选择浮层：项目在 2.7.0 版本前后分属两个仓库，
+        /* 源仓库选择浮层：项目在 3.7.0 版本前后分属两个仓库，
            顶部 GitHub 按钮列出两个仓库供用户按所需版本跳转 */
         if (showRepoSheet) {
             val uriHandler = LocalUriHandler.current
@@ -331,14 +331,14 @@ fun FANDEXApp(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "项目自 2.7.0 版本起迁移至新仓库，请按所需版本选择",
+                        text = "项目自 3.7.0 版本起迁移至新仓库，请按所需版本选择",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Spacer(modifier = Modifier.height(16.dp))
                     RepoSheetItem(
                         title = "fanquanpp/FANDEX",
-                        desc = "2.7.0 及之后的最新版本（当前维护主线）",
+                        desc = "3.7.0 及之后的最新版本（当前维护主线）",
                         url = "https://github.com/fanquanpp/FANDEX",
                         uriHandler = uriHandler,
                         onDismiss = { showRepoSheet = false }
@@ -346,7 +346,7 @@ fun FANDEXApp(
                     Spacer(modifier = Modifier.height(10.dp))
                     RepoSheetItem(
                         title = "fanquanpp/FANDEX-App",
-                        desc = "2.7.0 及之前的历史版本",
+                        desc = "3.7.0 及之前的历史版本",
                         url = "https://github.com/fanquanpp/FANDEX-App",
                         uriHandler = uriHandler,
                         onDismiss = { showRepoSheet = false }
@@ -543,7 +543,7 @@ fun FANDEXApp(
                             }
                         } else {
                             /* 首页：源仓库 + 主页 + 主题。
-                               源仓库按钮不直接跳转：项目在 2.7.0 版本前后分属两个仓库，
+                               源仓库按钮不直接跳转：项目在 3.7.0 版本前后分属两个仓库，
                                点击弹出选择浮层，由用户按所需版本自行跳转 */
                             IconButton(onClick = { showRepoSheet = true }) {
                                 Icon(
