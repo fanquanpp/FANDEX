@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
 description: 标准算法、lambda 表达式、函数对象与范围库。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/050-ConcurrentProgramming'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'cpp/002-CppOverviewAndModernStandard'
 ---
+
+## 前置知识
+
+- [RAII 资源管理](/cpp/051-CppCoreGuidelinesResourceManagement)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 常用算法」的核心机制、典型用法与常见陷阱
+- 掌握「2. 仿函数与函数对象」的核心机制、典型用法与常见陷阱
+- 掌握「3. lambda 表达式 (C++11)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 智能指针与 STL」的核心机制、典型用法与常见陷阱
+- 掌握「5. STL 最佳实践」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 常用算法
 

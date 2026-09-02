@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: beginner
 description: C++ 发展历程、标准演进与现代 C++ 核心特性概览。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-05'
 related:
   - 'cpp/003-CppBasicSyntax'
@@ -13,6 +13,19 @@ related:
   - 'c/002-CLanguageOverview'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [C++ 是什么：从 C 到高性能泛型编程](/cpp/001-WhatIsCpp)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0.1 现代 C++ 最小知识地图」的核心机制、典型用法与常见陷阱
+- 掌握「1. C++ 概述 (Overview)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 现代 C++ 标准 (Standards)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 应用领域 (Applications)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 学习路线建议 (Learning Path)」的核心机制、典型用法与常见陷阱
+
 
 ## 0.1 现代 C++ 最小知识地图
 

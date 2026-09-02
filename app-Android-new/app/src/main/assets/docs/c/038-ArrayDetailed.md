@@ -5,7 +5,7 @@ module: 'c'
 category: 计算机科学
 difficulty: intermediate
 description: 一维、多维数组、字符数组、数组与指针的关系及内存布局。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'c/036-EmbeddedCProgramming'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'c/002-CLanguageOverview'
 ---
+
+## 前置知识
+
+- [C 与汇编交互](/c/037-CAssemblyInteraction)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 数组的概念与特性」的核心机制、典型用法与常见陷阱
+- 掌握「2. 一维数组」的核心机制、典型用法与常见陷阱
+- 掌握「3. 多维数组」的核心机制、典型用法与常见陷阱
+- 掌握「4. 字符数组与字符串」的核心机制、典型用法与常见陷阱
+- 掌握「5. 数组与指针的关系」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 数组的概念与特性
 

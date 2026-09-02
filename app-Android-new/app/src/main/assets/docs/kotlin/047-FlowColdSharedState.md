@@ -22,6 +22,19 @@ prerequisites:
 
 # Flow 冷流与 SharedFlow 和 StateFlow（Cold Flow, SharedFlow and StateFlow）
 
+## 前置知识
+
+- [协程调度器与上下文](/kotlin/046-CoroutineDispatcherContext)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.005、Stanford CS193P、CMU 15-410 教学水准，系统讲解 Kotlin Flow 体系从设计哲学到字节码实现的完整链路。内容覆盖 Kotlin Coroutines 1.3 引入 Flow、1.4 引入 StateFlow、1.5 引入 SharedFlow 的完整演进史，配套企业级生产代码、跨语言对比（RxJava、Project Reactor、Swift Combine）、形式化推导与习题解析。文档支持零基础自学，亦适合资深工程师作为参考手册。
 
 ## 1. 历史动机与发展脉络

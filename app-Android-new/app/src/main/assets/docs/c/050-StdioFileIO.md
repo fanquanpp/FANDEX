@@ -5,7 +5,7 @@ module: 'c'
 category: 计算机科学
 difficulty: intermediate
 description: 标准文件流操作、二进制文件及错误处理。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'c/049-VolatileKeyword'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'c/002-CLanguageOverview'
 ---
+
+## 前置知识
+
+- [volatile 关键字](/c/049-VolatileKeyword)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 文件 I/O 的概念与重要性」的核心机制、典型用法与常见陷阱
+- 掌握「2. 文件指针与标准流」的核心机制、典型用法与常见陷阱
+- 掌握「3. 文件的打开与关闭」的核心机制、典型用法与常见陷阱
+- 掌握「4. 文件读写操作」的核心机制、典型用法与常见陷阱
+- 掌握「5. 文件位置指针」的核心机制、典型用法与常见陷阱
+
 
 
 ## 1. 文件 I/O 的概念与重要性

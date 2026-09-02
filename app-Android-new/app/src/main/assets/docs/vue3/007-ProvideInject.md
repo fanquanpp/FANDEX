@@ -18,6 +18,19 @@ prerequisites: []
 
 # Provide 与 Inject | Dependency Injection in Vue 3
 
+## 前置知识
+
+- [组合式 API](/vue3/006-API)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络 | Historical Motivation and Evolution」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义 | Formal Definitions」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析 | Theoretical Derivation」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例 | Code Examples」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析 | Comparative Analysis」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.170、Stanford CS142、CMU 17-437 软件工程课程水准，系统化阐述 Vue 3 中 `provide`/`inject` 依赖注入机制的原理、形式化定义、企业级实践与对比分析。涵盖响应式注入、`InjectionKey` 类型系统、跨层级通信、SSR 单例污染防护、插件架构设计等主题，并辅以数学建模、案例研究与习题。
 
 ---

@@ -5,7 +5,7 @@ module: 'mysql'
 category: 数据库
 difficulty: intermediate
 description: 内连接、外连接、交叉连接与自连接。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'mysql/029-TransactionIsolationImplementation'

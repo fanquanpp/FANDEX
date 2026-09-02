@@ -20,6 +20,19 @@ prerequisites:
 
 # Entity-Framework-Core迁移与优化
 
+## 前置知识
+
+- [反射与特性应用](/csharp/032-ReflectionAndFeatureApplication)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > "对象关系映射（ORM）是开发者的舒适区，但舒适区往往是性能黑洞。" —— Jimmy Bogard, *Architecting with Entity Framework Core*
 
 ## 1. 历史动机与发展脉络
@@ -321,14 +334,12 @@ $$\text{Translate} : \text{Expression}\langle T\rangle \to \text{SQL}$$
 
 查询翻译管线：
 
-```
 1. LINQ Expression Tree (C# 编译器生成)
 2. QueryExpression (EF Core 内部表示)
 3. SelectExpression (SQL SELECT 树)
 4. ShapedQueryExpression (实体物化器)
 5. RelationalCommand (SQL 字符串 + 参数)
 6. DbDataReader → Entity Materializer → T
-```
 
 #### 2.4.1 查询翻译示例
 
@@ -486,7 +497,7 @@ EF Core 6+ 的批处理优化：将多个 INSERT/UPDATE/DELETE 合并为单次 `
 
 `SaveChanges` 调用 `DetectChanges`，扫描所有 tracked 实体比较当前值与原始值：
 
-```
+```text
 Algorithm: DetectChanges
 Input: ChangeTracker
 Output: Updated state for each entity
@@ -2554,7 +2565,7 @@ services.AddDbContext<BlogContext>(options =>
 
 ## 附录 A：EF Core 性能基准（.NET 8, EF Core 8）
 
-```
+```text
 BenchmarkDotNet v0.13.12
 Runtime=.NET 8.0
 Database=SQL Server 2022

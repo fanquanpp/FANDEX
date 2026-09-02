@@ -21,6 +21,19 @@ prerequisites: []
 
 # TypeScript 工程化配置：从单文件到 Monorepo 的完整路径
 
+## 前置知识
+
+- [TypeScript5 新特性](/typescript/050-TypeScript5NewFeatures)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本篇系统阐述 TypeScript 工程化配置的形式语义、演进脉络、企业级实践与陷阱，覆盖 `tsconfig.json` 全部关键选项、项目引用、增量编译、Monorepo 管理与 CI/CD 集成，对标 MIT 6.5838、Stanford CS242、CMU 15-814 等课程对 *build systems* 与 *configuration theory* 的教学要求。
 
 ## 1. 历史动机与发展脉络

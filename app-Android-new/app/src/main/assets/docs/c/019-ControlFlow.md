@@ -5,7 +5,7 @@ module: 'c'
 category: 计算机科学
 difficulty: intermediate
 description: 条件判断、循环结构及其控制语句。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'c/024-ThreadConcurrency'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'c/002-CLanguageOverview'
 ---
+
+## 前置知识
+
+- [对齐与内存布局](/c/018-AlignmentMemoryLayout)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 条件判断 (Selection)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 循环结构 (Iteration)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 循环控制语句 (Control Statements)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 控制流的最佳实践」的核心机制、典型用法与常见陷阱
+- 掌握「5. 常见问题与解决方案」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 条件判断 (Selection)
 

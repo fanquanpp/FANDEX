@@ -13,6 +13,19 @@ related:
 prerequisites: []
 ---
 
+## 前置知识
+
+- [Python 项目示例：网页爬虫与数据分析](/python/068-PythonProjectExampleWebCrawlerDataAnalysis)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「Python 字节码」的核心机制、典型用法与常见陷阱
+- 掌握「描述符协议（Descriptor Protocol）」的核心机制、典型用法与常见陷阱
+- 掌握「MRO（Method Resolution Order）」的核心机制、典型用法与常见陷阱
+- 掌握「元类（Metaclass）」的核心机制、典型用法与常见陷阱
+- 掌握「理论速查表」的核心机制、典型用法与常见陷阱
+
+
 
 1. 线程获取 GIL
 2. 执行一定数量的字节码（check interval，默认 100 条）或达到时间片（5ms）

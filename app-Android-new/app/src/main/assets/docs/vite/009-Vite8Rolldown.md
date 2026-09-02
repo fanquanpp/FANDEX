@@ -192,25 +192,23 @@ Bundled Dev：一次性打包再服务（大型应用启动/刷新更快，HMR �
 
 ### 6.2 其它值得关注的新特性
 
-```text
 1. TypeScript 路径别名原生支持
-   不再需要 vite-tsconfig-paths 插件，配置 resolve.tsconfigPaths 即可读取 tsconfig 的 paths
+  - 不再需要 vite-tsconfig-paths 插件，配置 resolve.tsconfigPaths 即可读取 tsconfig 的 paths
 
 2. 装饰器元数据支持
-   NestJS 等依赖 emitDecoratorMetadata 的框架无需再折腾 Babel/SWC 配置
+  - NestJS 等依赖 emitDecoratorMetadata 的框架无需再折腾 Babel/SWC 配置
 
 3. 内置 Vite Devtools
-   浏览器扩展形态，可查看模块依赖图、转换结果、触发依赖预构建、分析产物 chunk
+  - 浏览器扩展形态，可查看模块依赖图、转换结果、触发依赖预构建、分析产物 chunk
 
 4. 浏览器日志转发（forwardConsole）
-   浏览器 console 日志转发到终端（006 篇第 8 节）
+  - 浏览器 console 日志转发到终端（006 篇第 8 节）
 
 5. Chunk Import Map（实验性）
-   用导入映射提升 chunk 缓存效率，缓解"改一行代码哈希级联变化"问题
+  - 用导入映射提升 chunk 缓存效率，缓解"改一行代码哈希级联变化"问题
 
 6. Wasm ESM 支持
-   .wasm?init 导入支持在 SSR 环境中使用
-```
+  - .wasm?init 导入支持在 SSR 环境中使用
 
 ## 7. 对插件生态的影响
 
@@ -222,18 +220,16 @@ Rolldown 以"Rollup 插件兼容"为第一设计目标，迁移成本极低：
 
 三个值得了解的生态新特性：
 
-```text
 1. Hook Filters（钩子过滤）
-   插件声明 id/code/moduleType 过滤器后，不匹配的文件不再进入 JS 桥接层
-   ——插件再多，构建时间也不线性增长
+  - 插件声明 id/code/moduleType 过滤器后，不匹配的文件不再进入 JS 桥接层
+  - ——插件再多，构建时间也不线性增长
 
 2. 内置 Rust 插件
-   replace（变量替换）等高频场景提供 Rust 原生实现（replacePlugin），
-   配置更简单、性能更好；esmExternalRequirePlugin 等也一并内置
+  - replace（变量替换）等高频场景提供 Rust 原生实现（replacePlugin），
+  - 配置更简单、性能更好；esmExternalRequirePlugin 等也一并内置
 
 3. registry.vite.dev 官方插件目录
-   每日同步 npm 数据，可检索 Vite/Rolldown/Rollup 三类插件
-```
+  - 每日同步 npm 数据，可检索 Vite/Rolldown/Rollup 三类插件
 
 讲解：Hook Filters 是 Rolldown 给插件作者的"性能福利"——过去每个插件要对每个模块执行一次 JS 调用，现在过滤器直接在 Rust 层拦截，不匹配的直接跳过。对普通使用者而言：升级到 Vite 8 后插件照常工作，但建议把常用插件同步升级到最新版本以获得原生性能收益。
 
@@ -250,16 +246,14 @@ pnpm add -D vite@latest @vitejs/plugin-react@latest
 pnpm add -D vite@latest @vitejs/plugin-vue@latest
 ```
 
-```text
 2. 检查要点（官方迁移指南）：
-   - Node.js 版本：需要 20.19+ 或 22.12+
-   - 配置文件 vite.config.ts 通常无需改动（rollupOptions 等保持兼容，
+- Node.js 版本：需要 20.19+ 或 22.12+
+- 配置文件 vite.config.ts 通常无需改动（rollupOptions 等保持兼容，
      迁移到 rolldownOptions 更佳，旧写法暂时保留并给出弃用提示）
-   - 确认浏览器目标：默认从 Vite 7 的 Chrome 107 等提升到
+- 确认浏览器目标：默认从 Vite 7 的 Chrome 107 等提升到
      'baseline-widely-available'（Chrome 111 / Edge 111 / Firefox 114 / Safari 16.4）
-   - 删除或替换依赖 esbuild 专属行为的代码（Vite 8 不再内置 esbuild）
-   - 第三方插件升级到最新版
-```
+- 删除或替换依赖 esbuild 专属行为的代码（Vite 8 不再内置 esbuild）
+- 第三方插件升级到最新版
 
 ```text
 3. 曾使用 rolldown-vite 过渡包的用户：

@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: beginner
 description: Python 缩进规则、语句、注释与编码规范。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-03'
 related:
   - 'python/002-PythonOverviewEnvSetup'
@@ -13,6 +13,19 @@ related:
   - 'python/070-BasicDataType'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [Python 概述与环境配置](/python/002-PythonOverviewEnvSetup)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 程序结构 (Program Structure)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 缩进规则 (Indentation)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 注释规范 (Comments)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 标识符与关键字 (Identifiers & Keywords)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 语句换行 (Line Breaks)」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 程序结构 (Program Structure)
 

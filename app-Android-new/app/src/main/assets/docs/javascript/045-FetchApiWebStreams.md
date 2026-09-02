@@ -22,6 +22,19 @@ prerequisites:
 
 # 网络请求 API
 
+## 前置知识
+
+- [fetch 与 AbortController](/javascript/044-FetchApiAndAbortController)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 学习导览」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与技术演进」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. Fetch API 基础」的核心机制、典型用法与常见陷阱
+- 掌握「4. Request 对象详解」的核心机制、典型用法与常见陷阱
+
+
 > 本文是 FANDEX JavaScript 模块的核心工程文档之一,定位为 MIT 6.S081 / Stanford CS107 / CMU 15-410 级别的工程教学材料,涵盖 WHATWG Fetch 标准、AbortController 取消语义、Web Streams API、Service Worker 缓存策略、GraphQL 客户端实现等。
 
 ## 0. 学习导览

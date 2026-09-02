@@ -15,8 +15,8 @@ plugins {
  * 2. 通过顶级变量在 `android.defaultConfig` 与 `androidComponents.onVariants`
  *    之间共享同一份版本数据，保证输出文件名与内置版本号一致。
  */
-val appVersionName = "4.1.0"
-val appVersionCode = 15
+val appVersionName = "4.2.0"
+val appVersionCode = 16
 
 android {
     namespace = "com.fandex.app"

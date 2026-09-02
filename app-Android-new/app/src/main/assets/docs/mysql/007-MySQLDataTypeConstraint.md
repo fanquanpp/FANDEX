@@ -5,7 +5,7 @@ module: 'mysql'
 category: 数据库
 difficulty: beginner
 description: 数值、字符串、日期类型及主键、外键、唯一约束。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'mysql/005-MySQLOverviewDatabaseDesign'

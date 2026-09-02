@@ -1,6 +1,6 @@
 {
   "name": "fandex",
-  "version": "4.1.0",
+  "version": "4.2.0",
   "private": true,
   "type": "module",
   "description": "FANDEX 单仓库 monorepo — 三端统一 React 生态（web/desktop/android）+ 共享内容层",
@@ -15,9 +15,6 @@
     "build:web": "pnpm --filter @fandex/web build",
     "build:all": "pnpm -r --parallel build",
     "typecheck": "pnpm -r --parallel typecheck",
-    "validate-ids": "pnpm --filter @fandex/tools validate-ids",
-    "allocate-id": "pnpm --filter @fandex/tools allocate-id",
-    "generate-manifest": "pnpm --filter @fandex/tools generate-manifest",
     "clean": "pnpm -r exec rm -rf dist .astro node_modules/.cache && rm -rf node_modules",
     "install:all": "pnpm install --frozen-lockfile"
   },

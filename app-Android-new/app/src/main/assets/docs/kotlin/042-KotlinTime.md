@@ -16,6 +16,19 @@ prerequisites:
   - 'kotlin/002-KotlinOverviewEnvSetup'
 ---
 
+## 前置知识
+
+- [Kotlin 与正则表达式](/kotlin/041-KotlinRegex)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「概述」的核心机制、典型用法与常见陷阱
+- 掌握「基础概念」的核心机制、典型用法与常见陷阱
+- 掌握「快速上手」的核心机制、典型用法与常见陷阱
+- 掌握「详细用法」的核心机制、典型用法与常见陷阱
+- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+
+
 ## 概述
 
 kotlinx-datetime 是 Kotlin 官方的跨平台日期时间库。它基于 ISO 8601 标准，提供了统一的 API 来处理日期、时间、时区等概念。与 Java 的 `java.time` 不同，kotlinx-datetime 从一开始就为 Kotlin 多平台设计，可以在 JVM、JS、Native 等平台上使用。

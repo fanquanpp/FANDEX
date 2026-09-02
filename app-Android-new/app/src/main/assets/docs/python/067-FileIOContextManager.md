@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 文件读写、路径操作、with 语句与上下文管理。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'python/064-OOP'
@@ -14,6 +14,19 @@ related:
   - 'python/069-PythonTheoryKnowledge'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [异常处理](/python/066-ExceptionHandling)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 文件打开与关闭 (Open & Close)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 读写操作 (Read & Write)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 上下文管理器 (Context Manager - with)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 文件指针 (Positioning)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 二进制文件处理」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 文件打开与关闭 (Open & Close)
 

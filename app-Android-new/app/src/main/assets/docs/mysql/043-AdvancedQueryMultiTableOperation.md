@@ -5,7 +5,7 @@ module: 'mysql'
 category: 数据库
 difficulty: advanced
 description: 复杂查询优化、分组聚合与结果集处理。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'mysql/041-PITR'

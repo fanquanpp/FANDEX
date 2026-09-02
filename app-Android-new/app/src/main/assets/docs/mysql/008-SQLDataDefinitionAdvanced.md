@@ -5,7 +5,7 @@ module: 'mysql'
 category: 数据库
 difficulty: intermediate
 description: CREATE/ALTER/DROP、视图、索引与存储过程。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'mysql/006-MySQLEnvSetup'

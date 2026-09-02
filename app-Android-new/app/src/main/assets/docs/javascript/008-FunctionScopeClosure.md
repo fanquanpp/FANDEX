@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: 函数声明、箭头函数、作用域链、闭包原理、this 绑定机制、高阶函数、柯里化、尾调用优化的形式化定义与工程实践。
-author: Anonymous
+author: fanquanpp
 updated: '2026-07-21'
 related:
   - 'javascript/061-RegexAssertions'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'javascript/006-ControlFlow'
 ---
+
+## 前置知识
+
+- [对象与数组](/javascript/007-ObjectArray)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 引言」的核心机制、典型用法与常见陷阱
+- 掌握「2. 历史动机与背景」的核心机制、典型用法与常见陷阱
+- 掌握「3. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「4. 理论推导」的核心机制、典型用法与常见陷阱
+- 掌握「5. 代码示例」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 引言
 

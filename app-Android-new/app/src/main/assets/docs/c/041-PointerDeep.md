@@ -5,7 +5,7 @@ module: 'c'
 category: 计算机科学
 difficulty: intermediate
 description: 指针概念、指针运算、数组与指针、函数指针及多级指针。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'c/039-PreprocessorMacro'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'c/002-CLanguageOverview'
 ---
+
+## 前置知识
+
+- [C23 与 C2y 新标准](/c/040-C23C2y)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 指针的概念与重要性」的核心机制、典型用法与常见陷阱
+- 掌握「2. 指针的定义与初始化」的核心机制、典型用法与常见陷阱
+- 掌握「3. 指针运算」的核心机制、典型用法与常见陷阱
+- 掌握「4. 指针与数组」的核心机制、典型用法与常见陷阱
+- 掌握「5. 指针数组与数组指针」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 指针的概念与重要性
 

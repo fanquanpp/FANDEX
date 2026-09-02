@@ -16,6 +16,19 @@ prerequisites:
   - 'java/002-JavaOverviewDevEnv'
 ---
 
+## 前置知识
+
+- [Java 与 AI](/java/092-JavaAI)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
+- 掌握「历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「代码示例」的核心机制、典型用法与常见陷阱
+
+
 ## 0. 本节阅读指引（先读这一节）
 
 本篇是「Java 与安全」进阶文档。
@@ -116,18 +129,20 @@ HMAC-SHA256 满足 SUFCMA 安全。AEAD（如 AES-GCM）= 对称加密 + MAC，�
 
 TLS 1.3 1-RTT 握手：
 
-```
-Client                                          Server
-  | --- ClientHello (key_share, supported_groups) ---> |
-  |                                                    |
-  | <-- ServerHello (key_share) ---------------------- |
-  | <-- EncryptedExtensions -------------------------- |
-  | <-- Certificate ---------------------------------- |
-  | <-- CertificateVerify ---------------------------- |
-  | <-- Finished ------------------------------------- |
-  |                                                    |
-  | --- Finished ------------------------------------> |
-  | --- Application Data <---------------------------> |
+```mermaid
+sequenceDiagram
+    participant C as 客户端
+    participant S as 服务端
+    C->>S: ClientHello（key_share、supported_groups）
+    S-->>C: ServerHello（key_share）
+    S-->>C: EncryptedExtensions
+    S-->>C: Certificate
+    S-->>C: CertificateVerify
+    S-->>C: Finished
+    C->>S: Finished
+    Note over C,S: 1-RTT 握手完成，进入应用数据阶段
+    C->>S: Application Data
+    S-->>C: Application Data
 ```
 
 握手后双方导出会话密钥：

@@ -5,7 +5,7 @@ module: 'mysql'
 category: 数据库
 difficulty: intermediate
 description: B+Tree 索引、EXPLAIN 分析与索引优化策略。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'mysql/053-InnoDBSystemArchitecture'

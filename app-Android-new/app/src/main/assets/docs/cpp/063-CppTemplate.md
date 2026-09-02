@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
 description: C++ 模板完整解析：函数模板、类模板、模板特化、SFINAE、概念（concepts）与现代 C++ 泛型实践。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/061-Cpp20Concept'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'cpp/002-CppOverviewAndModernStandard'
 ---
+
+## 前置知识
+
+- [C++23 新特性](/cpp/062-Cpp23NewFeatures)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（带详尽注释）」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
 
 
 ## 1. 历史动机与发展脉络

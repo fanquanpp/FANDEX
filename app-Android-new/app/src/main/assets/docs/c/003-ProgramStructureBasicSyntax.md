@@ -5,7 +5,7 @@ module: 'c'
 category: 计算机科学
 difficulty: beginner
 description: C 程序的组成部分、注释规范、标识符规则、关键字与编译过程，对标 MIT/Stanford/CMU 教学水准。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'c/002-CLanguageOverview'
@@ -13,6 +13,19 @@ related:
   - 'c/005-VariableConstant'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [C 语言概述](/c/002-CLanguageOverview)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 前言与导读」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+
 
 ## 0. 前言与导读
 

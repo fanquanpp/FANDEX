@@ -17,6 +17,19 @@ prerequisites:
 
 # LINQ 延迟与立即执行：从迭代器到表达式树的全景解析
 
+## 前置知识
+
+- [C#与反射](/csharp/028-CSharpReflection)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本章对标 MIT 6.1020（Software Construction）与 Stanford CS107（Programming Paradigms）的延迟求值教学深度，结合 ECMA-335（CLI 规范）与 Roslyn 编译器源码，深入剖析 LINQ 中延迟执行（lazy evaluation）与立即执行（eager evaluation）的本质区别、`IEnumerable<T>` 与 `IQueryable<T>` 的双轨模型、`yield return` 状态机、表达式树（expression tree）的编译与翻译、`ToList`/`ToArray` 的强制求值语义，以及在 EF Core、ASP.NET Core 中的工程实践。
 
 ## 1. 历史动机与发展脉络

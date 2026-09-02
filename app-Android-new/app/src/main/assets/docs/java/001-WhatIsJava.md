@@ -49,7 +49,7 @@ public class Hello {
 
 ## 动手环节：编译并运行
 
-安装 JDK 后（步骤见 [Java JDK 配置](getting-started/024-JavaJdkConfig)），保存文件 `Hello.java`，在终端执行：
+安装 JDK 后（步骤见 [Java JDK 配置](/getting-started$2），保存文件 `Hello.java`，在终端执行：
 
 ```bash
 javac Hello.java   # 编译：生成 Hello.class 字节码
@@ -70,4 +70,4 @@ java Hello         # 运行：JVM 执行字节码，输出"你好，Java"
 
 ## 下一步
 
-进入 [Java 概述与开发环境](java/002-JavaOverviewDevEnv) 系统学习；本仓库另有 kotlin 模块——它与 Java 运行于同一个 JVM，语法更现代，学完 Java 基础后交叉阅读收益极大。
+进入 [Java 概述与开发环境](/java$2 系统学习；本仓库另有 kotlin 模块——它与 Java 运行于同一个 JVM，语法更现代，学完 Java 基础后交叉阅读收益极大。

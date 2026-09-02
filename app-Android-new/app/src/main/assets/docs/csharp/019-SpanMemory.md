@@ -15,6 +15,19 @@ prerequisites:
   - 'csharp/002-CSharpOverviewEnvSetup'
 ---
 
+## 前置知识
+
+- [泛型与协变逆变](/csharp/018-GenericCovarianceContravariance)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 历史动机与发展脉络
 
 ### 1.1 C/C++ 时代：指针与缓冲区溢出（1970s-2000s）
@@ -3321,7 +3334,7 @@ dotnet-dump analyze dump.dmp
 
 ### D.4 PerfView
 
-```text
+```bash
 # 捕获 GC 事件
 PerfView.exe /OnlyProviders=*Microsoft-Windows-DotNETRuntime:0x1:4 collect
 

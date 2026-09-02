@@ -19,6 +19,19 @@ prerequisites: []
 
 # Python 与代码质量
 
+## 前置知识
+
+- [Python 与 GraphQL](/python/046-PythonGraphQL)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（企业级 production-ready）」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.005 "Software Construction" 中 "Code Quality" 章节、Stanford CS106B "Programming Abstractions" 代码规范部分、CMU 17-313 "Foundations of Software Engineering" 质量保障模块的教学水准，系统讲解 Python 代码质量工具链的形式化定义、工程实践与最佳实践。
 
 ## 1. 历史动机与发展脉络
@@ -1646,18 +1659,16 @@ pytest --durations=10
 
 #### 13.5.1 代码 review checklist
 
-```
-[ ] 类型注解完整且正确
-[ ] 公共函数有 docstring（Google 风格）
-[ ] 单元测试覆盖核心路径与边界
-[ ] Ruff/mypy 无错误
-[ ] 无 print 语句（使用 logging）
-[ ] 无 TODO/FIXME 未跟踪
-[ ] 安全扫描无高危
-[ ] 性能关键路径有基准测试
-[ ] 命名符合 PEP 8
-[ ] 单文件不超过 500 行
-```
+- [ ] 类型注解完整且正确
+- [ ] 公共函数有 docstring（Google 风格）
+- [ ] 单元测试覆盖核心路径与边界
+- [ ] Ruff/mypy 无错误
+- [ ] 无 print 语句（使用 logging）
+- [ ] 无 TODO/FIXME 未跟踪
+- [ ] 安全扫描无高危
+- [ ] 性能关键路径有基准测试
+- [ ] 命名符合 PEP 8
+- [ ] 单文件不超过 500 行
 
 #### 13.5.2 提交规范（Conventional Commits）
 

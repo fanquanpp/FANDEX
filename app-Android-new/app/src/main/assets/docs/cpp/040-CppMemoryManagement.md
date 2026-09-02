@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: advanced
 description: 栈与堆、RAII、智能指针、内存池与自定义分配器。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/038-CppGameDev'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'cpp/002-CppOverviewAndModernStandard'
 ---
+
+## 前置知识
+
+- [C++嵌入式开发](/cpp/039-CppEmbedded)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 内存管理 (Memory Management)」的核心机制、典型用法与常见陷阱
+- 掌握「2. RAII 模式 (Resource Acquisition Is Initialization)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 智能指针 (Smart Pointers - C++11+)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 内存管理最佳实践」的核心机制、典型用法与常见陷阱
+- 掌握「5. 高级内存管理」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 内存管理 (Memory Management)
 

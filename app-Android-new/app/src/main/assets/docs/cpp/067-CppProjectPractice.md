@@ -13,6 +13,19 @@ related:
 prerequisites:
   - 'cpp/002-CppOverviewAndModernStandard'
 ---
+
+## 前置知识
+
+- [C++ 调试与性能分析](/cpp/066-CppDebugPerformanceAnalysis)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 项目一：简易文件管理器」的核心机制、典型用法与常见陷阱
+- 掌握「2. 项目二：简单的 HTTP 服务器」的核心机制、典型用法与常见陷阱
+- 掌握「3. 项目三：简单的数据库系统」的核心机制、典型用法与常见陷阱
+- 掌握「4. 最佳实践」的核心机制、典型用法与常见陷阱
+- 掌握「6. 更新日志」的核心机制、典型用法与常见陷阱
+
 > 阅读建议：综合项目，建议完成 RAII、STL 与并发基础后再动手。
 ## 1. 项目一：简易文件管理器
 
@@ -33,17 +46,31 @@ prerequisites:
 
 #### 1.2.2 类图
 
-```
- +
- | FileManager |<----| CommandParser |---->| UI |<----| ErrorHandler |
- +
- | - list_dir() | | - parse() | | - display() | | - handle() |
- | - create_file()| | - get_command()| | - get_input() | | - log_error() |
- | - delete_file()| +----------------+ +----------------+ +----------------+
- | - move_file() |
- | - copy_file() |
- | - create_dir() |
- +
+```mermaid
+classDiagram
+    class FileManager {
+        -list_dir()
+        -create_file()
+        -delete_file()
+        -move_file()
+        -copy_file()
+        -create_dir()
+    }
+    class CommandParser {
+        -parse()
+        -get_command()
+    }
+    class UI {
+        -display()
+        -get_input()
+    }
+    class ErrorHandler {
+        -handle()
+        -log_error()
+    }
+    CommandParser --> FileManager
+    UI --> CommandParser
+    UI --> ErrorHandler
 ```
 
 ### 1.3 核心实现

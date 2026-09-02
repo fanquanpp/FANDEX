@@ -5,7 +5,7 @@ module: 'html5'
 category: 前端技术
 difficulty: intermediate
 description: localStorage、sessionStorage、IndexedDB 与 Web Workers。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-03'
 related:
   - 'javascript/047-IndexedDBADatabaseInYourBrowser'

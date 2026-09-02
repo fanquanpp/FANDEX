@@ -5,7 +5,7 @@ module: 'html5'
 category: 前端技术
 difficulty: intermediate
 description: 表单控件、输入类型、内建验证与自定义校验。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'html5/010-SemanticTag'

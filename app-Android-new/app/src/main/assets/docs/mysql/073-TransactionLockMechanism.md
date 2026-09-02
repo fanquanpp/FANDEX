@@ -5,7 +5,7 @@ module: 'mysql'
 category: 数据库
 difficulty: intermediate
 description: ACID 特性、隔离级别、MVCC 与锁类型。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'mysql/071-ShardingStrategy'

@@ -19,6 +19,19 @@ prerequisites: []
 
 # Python 与深度学习：从感知机到 Transformer 的工程化全景
 
+## 前置知识
+
+- [Python 与机器学习](/python/021-PythonMachineLearning)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「摘要」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（企业级 production-ready）」的核心机制、典型用法与常见陷阱
+
+
 > "Deep learning is a particular kind of machine learning that achieves great power and flexibility by representing the world as a nested hierarchy of concepts, with each concept defined in relation to simpler concepts." —— Ian Goodfellow, *Deep Learning* (2016)
 
 ## 摘要

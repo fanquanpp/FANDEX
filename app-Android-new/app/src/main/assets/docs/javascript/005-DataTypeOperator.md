@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: 算术、比较、逻辑、位运算及运算符优先级。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'javascript/003-ProgramStructureBasicSyntax'
@@ -14,6 +14,19 @@ related:
   - 'javascript/015-HigherOrderFunction'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [变量与数据类型](/javascript/004-VariableDataType)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 数据类型 (Data Types)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 类型检测 (Type Checking)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 核心运算符 (Operators)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 类型转换 (Coercion)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 实战示例」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 数据类型 (Data Types)
 

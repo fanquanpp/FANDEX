@@ -16,6 +16,19 @@ prerequisites:
   - 'java/002-JavaOverviewDevEnv'
 ---
 
+## 前置知识
+
+- [Java 内部类详解](/java/017-JavaInnerClass)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
+- 掌握「1. 异常体系 (Exception Hierarchy)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 异常处理 (Try-Catch-Finally)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 抛出异常 (Throw & Throws)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 自定义异常 (Custom Exception)」的核心机制、典型用法与常见陷阱
+
+
 ## 0. 本节阅读指引（先读这一节）
 
 本篇是「异常处理机制」，目标：看懂异常体系，会写 try-catch-finally、throw/throws 与自定义异常。

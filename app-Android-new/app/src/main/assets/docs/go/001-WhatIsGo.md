@@ -35,7 +35,7 @@ Go（Golang）由 Google 于 2009 年发布，专为**大规模服务端工程**
 
 ## 第一行代码
 
-安装 Go 后（见 [Go 概述与环境配置](go/002-GoOverviewEnvSetup)），新建 `hello.go`：
+安装 Go 后（见 [Go 概述与环境配置](/go$2），新建 `hello.go`：
 
 ```go
 package main
@@ -79,4 +79,4 @@ func main() {
 
 ## 下一步
 
-进入 [Go 概述与环境配置](go/002-GoOverviewEnvSetup) 开始主线学习；并发与接口是本模块的灵魂，学到时建议回头重读本篇的两个动手环节。
+进入 [Go 概述与环境配置](/go$2 开始主线学习；并发与接口是本模块的灵魂，学到时建议回头重读本篇的两个动手环节。

@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
 description: 顺序容器、关联容器、无序容器及迭代器体系。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/047-CppFormatOutput'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'cpp/002-CppOverviewAndModernStandard'
 ---
+
+## 前置知识
+
+- [C++26 与最新标准](/cpp/048-Cpp26AndLatestStandard)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 序列容器」的核心机制、典型用法与常见陷阱
+- 掌握「2. 关联容器」的核心机制、典型用法与常见陷阱
+- 掌握「3. 无序容器 (C++11)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 容器适配器」的核心机制、典型用法与常见陷阱
+- 掌握「5. 迭代器 (Iterators)」的核心机制、典型用法与常见陷阱
+
 
 
 ## 1. 序列容器

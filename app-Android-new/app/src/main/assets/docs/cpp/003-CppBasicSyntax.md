@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: beginner
 description: C++ 基本语法、注释、标识符与关键字。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'cpp/002-CppOverviewAndModernStandard'
@@ -13,6 +13,19 @@ related:
   - 'cpp/005-CppReferenceTypes'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [C++ 概述与现代标准](/cpp/002-CppOverviewAndModernStandard)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 数据类型 (Data Types)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 控制流 (Control Flow)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 输入输出 (I/O)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 命名空间 (Namespace)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 作用域 (Scope)」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 数据类型 (Data Types)
 

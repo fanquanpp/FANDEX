@@ -5,7 +5,7 @@ module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
 description: 左值引用、右值引用、常量引用、转发引用、引用折叠、悬空引用与 std::launder 全解。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'cpp/003-CppBasicSyntax'
@@ -17,6 +17,19 @@ related:
 prerequisites:
   - 'cpp/002-CppOverviewAndModernStandard'
 ---
+
+## 前置知识
+
+- [C++ 类型系统](/cpp/004-CppTypeSystem)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（企业级 production-ready）」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析（横向对比）」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 历史动机与发展脉络
 

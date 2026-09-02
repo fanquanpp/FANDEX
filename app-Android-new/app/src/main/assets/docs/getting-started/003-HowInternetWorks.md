@@ -68,4 +68,4 @@ sequenceDiagram
 
 ## 下一步
 
-带着这张地图进入 [HTML5 模块的第一课：网页是什么](html5/001-WhatIsWebpage)，开始亲手构建页面的骨架；环境未装好的读者先回到[开发环境搭建](getting-started/004-DevEnvSetup)。
+带着这张地图进入 [HTML5 模块的第一课：网页是什么](/html5$2，开始亲手构建页面的骨架；环境未装好的读者先回到[开发环境搭建](/getting-started$2。

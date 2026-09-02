@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 条件判断、循环结构与推导式。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'python/015-PythonDjango'
@@ -14,6 +14,19 @@ related:
   - 'python/020-PythonDocker'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [Python 与 Celery：分布式任务队列的设计、实现与工程实践](/python/018-PythonCeleryDistributedTaskQueue)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 条件分支 (Selection)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 循环结构 (Iteration)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 异常处理 (Exception Handling)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 控制流的最佳实践」的核心机制、典型用法与常见陷阱
+- 掌握「if 条件语句」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 条件分支 (Selection)
 

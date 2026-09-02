@@ -5,7 +5,7 @@ module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: 回调、Promise、async/await 与事件循环。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'javascript/058-JavaScriptLatestFeature'
@@ -14,6 +14,19 @@ related:
   - 'javascript/019-PrototypeChainClassEssence'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [JavaScript ArrayBuffer 与 TypedArray 语法速查手册](/javascript/024-ArrayBufferTypedArray)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与背景」的核心机制、典型用法与常见陷阱
+- 掌握「1. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「2. 理论推导」的核心机制、典型用法与常见陷阱
+- 掌握「3. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「4. 对比分析」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 历史动机与背景
 

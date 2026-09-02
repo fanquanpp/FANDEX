@@ -1,6 +1,6 @@
 [package]
 name = "fandex-desktop"
-version = "4.1.0"
+version = "4.2.0"
 description = "FANDEX 零基础全栈自学体系 Windows 桌面端"
 authors = ["fanquanpp"]
 edition = "2021"

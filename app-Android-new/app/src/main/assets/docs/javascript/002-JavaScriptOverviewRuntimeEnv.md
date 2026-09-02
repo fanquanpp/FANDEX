@@ -5,13 +5,26 @@ module: 'javascript'
 category: 前端技术
 difficulty: beginner
 description: JavaScript 发展历程、ECMAScript 标准与运行环境。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-05'
 related:
   - 'javascript/003-ProgramStructureBasicSyntax'
   - 'javascript/004-VariableDataType'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [JavaScript 是什么：你的第一门编程语言](/javascript/001-WhatIsJavaScript)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0.1 JavaScript 必会运行模型」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机：一门十天诞生的语言」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+
 
 ## 0.1 JavaScript 必会运行模型
 
@@ -2520,7 +2533,6 @@ setTimeout(() => console.log('done'), 0);
 
 ### Node.js 事件循环（libuv）
 
-```
 1. timers 阶段：执行 setTimeout/setInterval 到期的回调
 2. pending callbacks：执行系统级回调（如 TCP 错误）
 3. idle, prepare：内部使用
@@ -2529,7 +2541,6 @@ setTimeout(() => console.log('done'), 0);
 6. close callbacks：执行 close 事件回调
 
 每个阶段之间清空微任务队列（Next Ticks + Microtasks）
-```
 
 **讲解：**
 

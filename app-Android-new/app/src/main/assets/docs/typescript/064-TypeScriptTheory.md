@@ -17,6 +17,19 @@ prerequisites: []
 > 里程碑标注：理论串讲，建议学习 6 个月后再读。
 # TypeScript 理论知识点
 
+## 前置知识
+
+- [TypeScript 项目实战：类型安全 TODO 应用](/typescript/063-TypeScriptProjectExampleTodoApp)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与语言演进」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义与类型论基础」的核心机制、典型用法与常见陷阱
+- 掌握「3. 类型论层级：STLC → System F → HM」的核心机制、典型用法与常见陷阱
+- 掌握「4. 结构类型与名义类型」的核心机制、典型用法与常见陷阱
+- 掌握「5. 子类型理论」的核心机制、典型用法与常见陷阱
+
+
 > 本文以 MIT 6.815、Stanford CS242、CMU 15-312 的类型论教学范式为参考基准，将 TypeScript 的类型系统原理、类型推导算法、子类型理论、泛型多态、类型级计算与控制流分析组织为一篇可独立阅读的核心理论文档。所有形式化描述均基于 Benjamin C. Pierce 的 *Types and Programming Languages* 与 TypeScript 5.x 官方规范。
 
 ## 1. 历史动机与语言演进

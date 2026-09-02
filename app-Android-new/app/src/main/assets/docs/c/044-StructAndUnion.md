@@ -5,7 +5,7 @@ module: 'c'
 category: 计算机科学
 difficulty: intermediate
 description: 结构体定义、内存对齐、联合体应用及枚举类型。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'c/042-MemoryManagement'
@@ -15,6 +15,19 @@ related:
 prerequisites:
   - 'c/002-CLanguageOverview'
 ---
+
+## 前置知识
+
+- [内存对齐](/c/043-MemoryAlignment)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 结构体 (Structures)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 联合体 (Unions)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 枚举 (Enums)」的核心机制、典型用法与常见陷阱
+- 掌握「4. typedef 类型别名」的核心机制、典型用法与常见陷阱
+- 掌握「5. 综合应用示例」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 结构体 (Structures)
 

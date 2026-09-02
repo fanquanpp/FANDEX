@@ -15,7 +15,7 @@ UI/UX 美术风格（ark-ui 设计语言）均与 web 端对齐。
 | 版本 | 1.0.0 (versionCode 1) |
 | 技术栈 | Kotlin 2.4 + Jetpack Compose (BOM 2026.08) + Material 3 |
 | minSdk / targetSdk | 26 / 37 |
-| 内容规模 | 43 模块 / 1718 篇文档 / 4500+ 语法点 / 40+ 学习路径，全部离线内置 |
+| 内容规模 | 46 模块 / 1743 篇文档 / 8500+ 语法点 / 40+ 学习路径，全部离线内置 |
 
 旧版安装包归档于 `legacy/`（已 gitignore），用于设备上的恢复参考。
 

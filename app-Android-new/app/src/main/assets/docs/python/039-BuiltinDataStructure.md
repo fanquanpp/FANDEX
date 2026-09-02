@@ -5,7 +5,7 @@ module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 列表、元组、字典、集合的操作与性能特征。
-author: Anonymous
+author: fanquanpp
 updated: '2026-08-01'
 related:
   - 'python/037-PythonCICD'
@@ -14,6 +14,19 @@ related:
   - 'python/043-PythonDesignPattern'
 prerequisites: []
 ---
+
+## 前置知识
+
+- [Python 与性能优化](/python/038-PythonPerformance)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 列表 (List - list)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 元组 (Tuple - tuple)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 字典 (Dictionary - dict)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 集合 (Set - set)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 数据结构对比」的核心机制、典型用法与常见陷阱
+
 
 ## 1. 列表 (List - `list`)
 

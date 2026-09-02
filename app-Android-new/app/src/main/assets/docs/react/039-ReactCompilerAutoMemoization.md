@@ -19,6 +19,19 @@ prerequisites:
 
 # React Compiler 自动记忆化：从原理到工程实践
 
+## 前置知识
+
+- [React 与 Monorepo](/react/038-ReactMonorepo)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（企业级 Production-Ready）」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本章对标 MIT 6.035（Compilers）与 Stanford CS143（Compiler Construction）课程深度，系统阐述 React Compiler（原 React Forget）的形式化语义、编译流程、依赖分析与工程实践。读者将掌握从 AST 分析、记忆化插入、不变性推导到生产部署的完整方法论，能够在企业级项目中正确启用 Compiler 并理解其与手动 `useMemo`/`useCallback` 的本质差异。
 
 ---
@@ -232,24 +245,16 @@ Compiler 利用不变性推导进行优化：
 
 React Compiler 的完整编译流程：
 
-```
-1. 源代码（TypeScript/JSX）
-   ↓
-2. Babel/SWC 解析为 AST
-   ↓
-3. 语义分析（类型推导、作用域分析）
-   ↓
-4. 纯函数检查（Rules of React 验证）
-   ↓
-5. 依赖图构建
-   ↓
-6. 记忆化策略决策
-   ↓
-7. 代码生成（插入 useMemoCache）
-   ↓
-8. Source Map 生成
-   ↓
-9. 输出优化后的代码
+```mermaid
+flowchart TB
+    A[1. 源代码<br/>TypeScript / JSX] --> B[2. Babel/SWC 解析为 AST]
+    B --> C[3. 语义分析<br/>类型推导、作用域分析]
+    C --> D[4. 纯函数检查<br/>Rules of React 验证]
+    D --> E[5. 依赖图构建]
+    E --> F[6. 记忆化策略决策]
+    F --> G[7. 代码生成<br/>插入 useMemoCache]
+    G --> H[8. Source Map 生成]
+    H --> I[9. 输出优化后的代码]
 ```
 
 ### 3.2 AST 分析与依赖收集

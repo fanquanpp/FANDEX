@@ -20,6 +20,19 @@ prerequisites:
 
 # 指针与数组的区别（Pointers vs Arrays）
 
+## 前置知识
+
+- [函数调用栈帧](/c/045-FunctionCallStackFrame)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「摘要」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+
+
 > "In C, there is a strong relationship between pointers and arrays, strong enough that pointers and arrays should be discussed simultaneously. Any operation that can be achieved by array subscripting can also be done with pointers. The pointer version will in general be faster but, at least to the uninitiated, harder to read."
 > —— Brian W. Kernighan & Dennis M. Ritchie, *The C Programming Language* 2nd ed., §5.3
 
@@ -1572,7 +1585,7 @@ int (*m[3])[4];             /* m is array of 3 pointer to array of 4 int */
 
 ### B.4 解析螺旋法则
 
-```
+```text
 int (*(*f)(void))[10];
 
 从 f 开始，顺时针螺旋阅读：

@@ -20,6 +20,19 @@ prerequisites:
 
 # 对齐与内存布局（Alignment and Memory Layout）
 
+## 前置知识
+
+- [位域](/c/017-BitField)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「摘要」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+
+
 > "Alignment is a property of a memory address, expressed as the numeric address modulo a power of 2. ... An aligned address is one whose value is a multiple of the alignment. ... The C standard speaks of alignment as a 'requirement' on object addresses; in practice the requirement is enforced jointly by hardware (for performance or correctness) and by the compiler (for ABI compliance)."
 > —— ISO/IEC 9899:2024 §6.2.8 与 GCC Manual, "Type Attributes"
 

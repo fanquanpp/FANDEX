@@ -19,6 +19,19 @@ prerequisites: []
 
 # 深拷贝与浅拷贝（Deep Copy & Shallow Copy）
 
+## 前置知识
+
+- [原型链继承与 class 本质](/javascript/019-PrototypeChainClassEssence)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络（Historical Motivation & Evolution）」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义（Formal Definitions）」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析（Theoretical Derivation）」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（Production-Ready Examples）」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析（Comparative Analysis）」的核心机制、典型用法与常见陷阱
+
+
 > 本篇对标 MIT 6.031（Software Construction）、Stanford CS107（Computer Organization & Systems）与 CMU 15-213（Introduction to Computer Systems）教学水准，系统讲授 JavaScript 中值语义与引用语义、深拷贝与浅拷贝的形式语义、算法实现与工程权衡。所有数学公式使用 KaTeX 渲染，参考文献采用 ACM Reference Format。
 
 ---
