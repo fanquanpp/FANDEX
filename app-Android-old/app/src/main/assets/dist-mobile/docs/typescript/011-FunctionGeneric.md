@@ -1,3 +1,16 @@
+## 前置知识
+
+- [keyof、typeof 与索引访问类型](/typescript/010-KeyofTypeofIndexedAccessTypes)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 函数重载 (Function Overloading)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 泛型 (Generics)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 泛型约束 (Generic Constraints)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 泛型类 (Generic Classes)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 泛型方法」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 函数重载 (Function Overloading)
 
 函数重载允许为同一个函数提供多个类型定义，根据传入的参数类型和数量来选择合适的类型定义。

@@ -1612,9 +1612,6 @@ class Host {
 | 模块解析 | Module Resolution | TypeScript 将模块说明符解析为实际文件的算法 |
 | 项目引用 | Project Reference | 通过 `references` 字段将多个 tsconfig 关联的机制 |
 
----
-
-*本文档版本：v2.0 | 最后更新：2026-07-21 | 适配 TypeScript 5.4+*
 ## 模块基础
 
 **基本写法：导出**

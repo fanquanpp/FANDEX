@@ -89,7 +89,7 @@ prerequisites:
 | 跳跃表 | $O(\log n)$ | $O(n)$ | $O(\log n)$ | $O(\log n)$ | 支持 | 支持 |
 | 有序数组 | $O(\log n)$ | $O(\log n)$ | $O(n)$ | $O(n)$ | 支持 | 支持 |
 
-> **跨模块引用**：哈希查找的搜索框架参见 [搜索算法](/algorithm$2；BST 和红黑树参见 [树](/algorithm$2；跳跃表作为概率平衡结构参见 [跳跃表](/algorithm$2；链表作为链地址法底层存储参见 [链表](/algorithm$2。
+> **跨模块引用**：哈希查找的搜索框架参见 [搜索算法](/algorithm/004-SearchAlgorithm)；BST 和红黑树参见 [树](/algorithm/007-Tree)；跳跃表作为概率平衡结构参见 [跳跃表](/algorithm/022-SkipList)；链表作为链地址法底层存储参见 [链表](/algorithm/005-LinkedList)。
 
 ### 1.6 适用场景与不适用场景
 
@@ -1412,7 +1412,7 @@ class ConsistentHashRing:
 | 传统 `h(k) mod N` | $O(K)$（几乎全部） |
 | 一致性哈希 | $O(K/N)$（仅相邻区间） |
 
-> **跨模块引用**：一致性哈希是分布式系统的基础原语，参见 [分布式系统](/cs-fundamentals$2。
+> **跨模块引用**：一致性哈希是分布式系统的基础原语，参见 [分布式系统](/cs-fundamentals/018-DistributedSystem)。
 
 ---
 
@@ -2093,7 +2093,7 @@ class URLShortener:
         return self.url_map.get(short_code, "")
 ```
 
-> **跨模块引用**：URL 短链系统的完整设计参见 [系统设计](/cs-fundamentals$2。
+> **跨模块引用**：URL 短链系统的完整设计参见 [系统设计](/cs-fundamentals/018-DistributedSystem)。
 
 ---
 

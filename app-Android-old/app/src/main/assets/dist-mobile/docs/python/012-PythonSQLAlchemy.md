@@ -1,5 +1,18 @@
 # Python 与 SQLAlchemy（Python & SQLAlchemy）
 
+## 前置知识
+
+- [元类](/python/011-Metaclass)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > "SQLAlchemy is not an ORM, it's a database toolkit that happens to include an ORM." —— Michael Bayer, SQLAlchemy Creator
 
 ## 1. 历史动机与演化
@@ -2655,7 +2668,3 @@ SQLAlchemy 的未来：
 - 优化异步性能。
 - 适配新型数据库。
 - 保持向后兼容的同时引入现代化 API。
-
----
-
-*本文档最后更新于 2026-07-21，基于 SQLAlchemy 2.0+ 编写。如有疑问或建议，请参考官方文档或在 GitHub Discussions 讨论。*

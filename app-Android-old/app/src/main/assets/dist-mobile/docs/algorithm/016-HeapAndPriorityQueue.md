@@ -98,7 +98,7 @@
 | 大量 decrease-key 操作 | 部分适合 | 二叉堆 $O(\log n)$，Fibonacci 堆 $O(1)$ 均摊更优 |
 | 元素优先级频繁变更 | 不适合 | 应选索引堆或 Fibonacci 堆 |
 
-> **跨模块引用**：堆作为完全二叉树的应用参见 [树](algorithm/tree)；堆排序与快排、归并的对比参见 [排序算法](algorithm/sorting)；Dijkstra/Prim 算法中堆的应用参见 [图算法](algorithm/graph)；堆在流式数据 Top-K 中的应用参见 [查找算法](algorithm/search)；堆作为优先队列与栈/队列的对比参见 [栈与队列](algorithm/stack-queue)。
+> **跨模块引用**：堆作为完全二叉树的应用参见 [树](/algorithm/007-Tree)；堆排序与快排、归并的对比参见 [排序算法](/algorithm/002-SortAlgorithm)；Dijkstra/Prim 算法中堆的应用参见 [图算法](/algorithm/008-GraphAlgorithms)；堆在流式数据 Top-K 中的应用参见 [查找算法](/algorithm/017-BinarySearchAlgorithms)；堆作为优先队列与栈/队列的对比参见 [栈与队列](/algorithm/003-StackAndQueue)。
 
 ---
 

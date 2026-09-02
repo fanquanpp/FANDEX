@@ -1,5 +1,18 @@
 # 事件循环详解（Event Loop In Depth）
 
+## 前置知识
+
+- [事件循环](/javascript/029-EventLoop)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络（Historical Motivation & Evolution）」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义（Formal Definitions）」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析（Theoretical Derivation）」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（Production-Ready Examples）」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析（Comparative Analysis）」的核心机制、典型用法与常见陷阱
+
+
 > 本篇对标 MIT 6.005（Software Construction）、Stanford CS110L（Safety in Systems Programming）与 CMU 15-410（Operating Systems Design）教学水准，系统讲授 JavaScript 事件循环（Event Loop）的形式语义、调度模型、浏览器与 Node.js 差异及工程实践。所有数学公式使用 KaTeX 渲染，参考文献采用 ACM Reference Format。
 
 ---

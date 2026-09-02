@@ -1,5 +1,18 @@
 # Python 与深度学习：从感知机到 Transformer 的工程化全景
 
+## 前置知识
+
+- [Python 与机器学习](/python/021-PythonMachineLearning)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「摘要」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（企业级 production-ready）」的核心机制、典型用法与常见陷阱
+
+
 > "Deep learning is a particular kind of machine learning that achieves great power and flexibility by representing the world as a nested hierarchy of concepts, with each concept defined in relation to simpler concepts." —— Ian Goodfellow, *Deep Learning* (2016)
 
 ## 摘要
@@ -2344,7 +2357,3 @@ Python 在深度学习领域的统治地位并非偶然，而是其优秀的语�
 掌握深度学习工程化的关键不在于记住 API，而在于理解：数学原理（反向传播、注意力机制）、工程实践（混合精度、分布式训练）、部署优化（量化、TensorRT）。在大模型时代，Python 仍将是连接算法创新与工程落地的核心语言，而深度学习工程师的角色也将从"调参"进化为"系统架构师"。
 
 > "The best way to predict the future is to invent it." —— Alan Kay
-
----
-
-*文档版本：v2.0.0 | 最后更新：2026-06-14 | 维护者：FANDEX Team*

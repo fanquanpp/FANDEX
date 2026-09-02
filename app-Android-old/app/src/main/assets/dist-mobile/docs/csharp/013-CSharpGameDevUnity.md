@@ -1,3 +1,17 @@
+## 前置知识
+
+- [C# 测试与工程化](/csharp/012-CSharpTestEngineering)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. Unity 中的 C」的核心机制、典型用法与常见陷阱
+- 掌握「2. MonoBehaviour 生命周期」的核心机制、典型用法与常见陷阱
+- 掌握「3. 协程 (Coroutine)」的核心机制、典型用法与常见陷阱
+- 掌握「4. ScriptableObject」的核心机制、典型用法与常见陷阱
+- 掌握「5. ECS 模式」的核心机制、典型用法与常见陷阱
+
+
+
 ## 1. Unity 中的 C#
 
 ### 1.1 Unity 与 .NET 版本
@@ -38,28 +52,16 @@ flowchart TD
 
 ### 2.1 生命周期流程
 
-```
-初始化阶段:
-  Awake()       → 脚本实例加载时调用（最早）
-  OnEnable()    → 对象启用时调用
-  Start()       → 第一帧更新前调用（仅一次）
-
-物理阶段:
-  FixedUpdate() → 固定时间间隔调用（物理计算）
-
-输入阶段:
-  Update()      → 每帧调用
-
-后期处理:
-  LateUpdate()  → 每帧在所有 Update 之后调用
-
-场景渲染:
-  OnPreCull()   → OnPreRender() → OnPostRender()
-
-禁用与销毁:
-  OnDisable()   → 对象禁用时调用
-  OnDestroy()   → 对象销毁时调用
-```
+| 阶段 | 回调 | 调用时机 |
+| --- | --- | --- |
+| 初始化 | `Awake()` | 脚本实例加载时调用（最早） |
+| 初始化 | `OnEnable()` | 对象启用时调用 |
+| 初始化 | `Start()` | 第一帧更新前调用（仅一次） |
+| 物理 | `FixedUpdate()` | 固定时间间隔调用（物理计算） |
+| 输入 | `Update()` | 每帧调用 |
+| 后期处理 | `LateUpdate()` | 每帧在所有 `Update` 之后调用 |
+| 场景渲染 | `OnPreCull()` / `OnPreRender()` / `OnPostRender()` | 依次在渲染前后调用 |
+| 禁用与销毁 | `OnDisable()` / `OnDestroy()` | 对象禁用 / 销毁时调用 |
 
 ### 2.2 生命周期代码
 
@@ -325,16 +327,8 @@ ECS (Entity Component System):
   Component→ 纯数据，struct，连续内存
   System   → 纯逻辑，批量处理 Component
   优势：数据局部性、批量处理、无 GC、并行友好
-```mermaid
-flowchart LR
-    subgraph DOTS[Unity DOTS]
-        E[Entities<br/>ECS 框架]
-        B[Burst Compiler<br/>SIMD 编译器]
-        J[C# Job System]
-        C[Collections<br/>NativeArray 等]
-    end
-    E --- B
-    J --- C
+```
+
 ```mermaid
 flowchart LR
     subgraph DOTS[Unity DOTS]
@@ -346,6 +340,7 @@ flowchart LR
     E --- B
     J --- C
 ```
+
 
 ### 5.3 Entities 基础（Unity ECS）
 

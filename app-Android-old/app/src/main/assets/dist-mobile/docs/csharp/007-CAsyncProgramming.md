@@ -1,5 +1,18 @@
 # C# 异步编程
 
+## 前置知识
+
+- [C# 泛型与集合](/csharp/006-CGenericCollection)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本篇是 FANDEX C# 系列的第五篇。我们将系统讲解 C# 异步编程：从 APM/EAP/TAP 模型演化到 async/await，深入剖析状态机转换、SynchronizationContext、ConfigureAwait、ValueTask、Channel、IAsyncEnumerable 等。内容对标 MIT 6.005（Software Construction）、Stanford CS110（Principles of Computer Systems）、CMU 15-440（Distributed Systems）课程教学严谨度，支持 0 基础自学，同时覆盖企业级实战要点。
 
 ---

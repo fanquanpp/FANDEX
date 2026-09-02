@@ -1,5 +1,18 @@
 # 函数调用栈帧（Function Call Stack Frame）
 
+## 前置知识
+
+- [结构体与联合体](/c/044-StructAndUnion)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「摘要」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+
+
 > "The stack is a data structure that has come to be accepted as a matter of course. We rarely think about how it works, or what life would be like without it. Yet the stack is the cornerstone of programming language implementation: it makes recursive procedures possible, it provides the mechanism for passing parameters and returning values, and it gives each procedure invocation its own private storage."
 > —— Richard P. Draves, *The Use of Function Calls in Operating System Implementation*, CMU CS 1991
 
@@ -1589,11 +1602,3 @@ int main(void) {
 | `-Walloca` | GCC/Clang | 警告 `alloca` 使用 |
 | `-Wvla` | GCC/Clang | 警告 VLA 使用 |
 | `-Wstack-protector-disabled` | Clang | 警告栈保护被禁用 |
-
----
-
-> **文档版本**：v1.0
-> **最后更新**：2026-06-14
-> **作者**：fanquanpp
-> **对标课程**：MIT 6.087 / Stanford CS107 / CMU 15-213
-> **标准依据**：ISO/IEC 9899:2024 (C23) / System V AMD64 ABI v1.0 / AAPCS64

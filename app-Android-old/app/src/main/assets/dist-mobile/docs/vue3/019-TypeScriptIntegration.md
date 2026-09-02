@@ -1,3 +1,16 @@
+## 前置知识
+
+- [组件系统](/vue3/018-ComponentSystem)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. TypeScript 集成概述 | TypeScript Integration Overview」的核心机制、典型用法与常见陷阱
+- 掌握「2. 环境设置 | Environment Setup」的核心机制、典型用法与常见陷阱
+- 掌握「3. 基本类型使用 | Basic Type Usage」的核心机制、典型用法与常见陷阱
+- 掌握「4. Vue 组件中的 TypeScript | TypeScript in Vue Components」的核心机制、典型用法与常见陷阱
+- 掌握「5. 组合式 API 与 TypeScript | Composition API with TypeScript」的核心机制、典型用法与常见陷阱
+
+
 ## 1. TypeScript 集成概述 | TypeScript Integration Overview
 
 TypeScript 是 JavaScript 的超集，它添加了静态类型系统，提供了更好的代码提示、类型检查和代码重构能力。Vue3 对 TypeScript 提供了良好的支持，通过集成 TypeScript，可以提高代码的可维护性和类型安全性。

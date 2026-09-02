@@ -64,7 +64,7 @@ prerequisites:
 | 元素需要删除的场景 | 不适合 | 标准 DSU 不支持删除，需用离线逆序或动态连通性专用结构 |
 | 严格 $O(1)$ 最坏单次查询 | 不适合 | DSU 为均摊复杂度，最坏仍 $O(\log n)$，应选哈希 + 集合 ID 映射 |
 
-> 跨模块引用：并查集在 Kruskal 算法中的应用详见 [图算法](/algorithm$2；与树状数组的复杂度对比详见 [树状数组](/algorithm$2。
+> 跨模块引用：并查集在 Kruskal 算法中的应用详见 [图算法](/algorithm/008-GraphAlgorithms)；与树状数组的复杂度对比详见 [树状数组](/algorithm/021-FenwickTree)。
 
 ---
 
@@ -1850,7 +1850,7 @@ def offline_dynamic_connectivity(n, operations):
 
 ### 14.2 应用拓展
 
-- **Tarjan 离线 LCA 算法**：DSU + DFS 实现 $O(n + q)$ 离线 LCA，详见 [图算法](/algorithm$2；
+- **Tarjan 离线 LCA 算法**：DSU + DFS 实现 $O(n + q)$ 离线 LCA，详见 [图算法](/algorithm/008-GraphAlgorithms)；
 - **动态连通性完全版**：HDT 算法支持删除，达到 $O(\log^2 n)$ 单次操作，参见 Holm, de Lichtenberg, Thorup 2001;
 - **最小生成树并行算法**：Borůvka 算法用 DSU 实现 $O(\log V)$ 轮并行，适合多核 / 分布式；
 - **持久化并查集**：函数式持久化版本支持历史版本查询，参见 Driscoll et al. 1989。

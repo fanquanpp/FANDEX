@@ -1,5 +1,18 @@
 # C++20 概念 (Concepts)
 
+## 前置知识
+
+- [C++20 协程](/cpp/060-Cpp20Coroutine)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档系统讲解 C++20 Concepts 机制的形式化基础、语法体系、语义模型、标准库概念族、子句驱动重载解析与工程实践。内容覆盖 ISO/IEC 14882:2020 [temp.concepts]、[temp.constr]、[temp.req] 等核心条款，对照 SFINAE、`std::enable_if`、标签分发等历史方案，结合 `<concepts>`、`<ranges>`、`<iterator>` 标准库设计实践，目标达到海外高校教学水准。
 
 ---
@@ -146,24 +159,24 @@ C++26 草案中的相关进展：
 
 ### 1.7 演进时间线
 
-```text
-1988  C++ 模板设计               Stroustrup
-1994  STL 由 HP 实现             Stepanov & Lee
-1998  C++98 标准化               模板正式纳入
-2003  SFINAE 原则形式化          Vandevoorde
-2003  Indiana 概念提案启动       Gregor, Lumsdaine
-2008  C++0x 草案 N2914           概念进入草案
-2009  Frankfurt 会议否决         概念地图过于复杂
-2013  Concepts Lite (N3580)      Stroustrup & Sutton
-2014  GCC 6 实验性实现           -fconcepts 选项
-2017  Jacksonville 进入 C++20    ISO/IEC WG21
-2018  Rapperswil <concepts> 定稿 Eric Niebler
-2019  Ranges 完成标准化          P0896 合入
-2020  C++20 发布                 ISO/IEC 14882:2020
-2021  主流编译器完整支持         GCC 10+, Clang 10+, MSVC 19.29+
-2023  C++23 小幅增强             expected / flat_map
-2026  C++26 草案                 反射 + 概念协同
-```
+| 时间 | 里程碑 | 说明 |
+| --- | --- | --- |
+| 1988 | C++ 模板设计 | Stroustrup |
+| 1994 | STL 由 HP 实现 | Stepanov & Lee |
+| 1998 | C++98 标准化 | 模板正式纳入 |
+| 2003 | SFINAE 原则形式化 | Vandevoorde |
+| 2003 | Indiana 概念提案启动 | Gregor, Lumsdaine |
+| 2008 | C++0x 草案 N2914 | 概念进入草案 |
+| 2009 | Frankfurt 会议否决 | 概念地图过于复杂 |
+| 2013 | Concepts Lite (N3580) | Stroustrup & Sutton |
+| 2014 | GCC 6 实验性实现 | -fconcepts 选项 |
+| 2017 | Jacksonville 进入 C++20 | ISO/IEC WG21 |
+| 2018 | Rapperswil <concepts> 定稿 Eric Niebler |  |
+| 2019 | Ranges 完成标准化 | P0896 合入 |
+| 2020 | C++20 发布 | ISO/IEC 14882:2020 |
+| 2021 | 主流编译器完整支持 | GCC 10+, Clang 10+, MSVC 19.29+ |
+| 2023 | C++23 小幅增强 | expected / flat_map |
+| 2026 | C++26 草案 | 反射 + 概念协同 |
 
 ---
 

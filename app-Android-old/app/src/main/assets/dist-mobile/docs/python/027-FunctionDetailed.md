@@ -1,3 +1,16 @@
+## 前置知识
+
+- [Python 与自动化](/python/026-PythonAutomationCookbook)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 函数基本语法 (Basic Syntax)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 参数类型 (Parameter Types)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 匿名函数 (Lambda)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 装饰器 (Decorators)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 高阶函数 (Higher-Order Functions)」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 函数基本语法 (Basic Syntax)
 
 函数是封装逻辑的可重用代码块，用于组织和简化代码。

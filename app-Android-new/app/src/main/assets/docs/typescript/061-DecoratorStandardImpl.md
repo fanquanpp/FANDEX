@@ -1826,9 +1826,6 @@ interface ClassAccessorDecoratorResult<V, R> {
 }
 ```
 
----
-
-*本文档最后更新于 2026-06-14，基于 TypeScript 5.4 与 TC39 Decorators Proposal Stage 3；TypeScript 7.x 沿用同一装饰器语义。如需了解最新版本特性，请参考 [TypeScript 官方文档](https://www.typescriptlang.org/docs/)与 [TC39 提案仓库](https://github.com/tc39/proposal-decorators)。*
 ## 装饰器基础
 
 **基本写法：类装饰器**

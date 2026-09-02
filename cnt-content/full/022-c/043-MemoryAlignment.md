@@ -1562,9 +1562,3 @@ typedef struct alignas(64) {
 
 > "The programmer who understands alignment understands the machine."
 > —— Anonymous systems programmer
-
----
-
-*文档版本：v2.0*
-*最后更新：2026-06-14*
-*维护者：fanquanpp*

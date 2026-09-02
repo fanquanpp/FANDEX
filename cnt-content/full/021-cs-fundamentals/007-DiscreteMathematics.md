@@ -117,7 +117,7 @@ prerequisites:
 结论: 对所有 n >= 1, 公式成立
 ```
 
-> 跨模块引用：[概述](overview)的停机问题证明使用了反证法。[编译原理](compiler)的类型正确性证明使用了归纳法。[C语言](/c$2的断言(assert)是命题逻辑在编程中的应用。
+> 跨模块引用：[概述](overview)的停机问题证明使用了反证法。[编译原理](compiler)的类型正确性证明使用了归纳法。[C语言](/c/001-CZeroBasisStart)的断言(assert)是命题逻辑在编程中的应用。
 
 ---
 
@@ -570,7 +570,7 @@ RSA加密:
   正确性: m^(e*d) = m^(1 + k*phi(n)) = m * (m^phi(n))^k = m (mod n)
 ```
 
-> 跨模块引用：[计算机网络](network)的RSA/ECC加密建立在数论和群论基础上。[编译原理](compiler)的哈希函数使用模运算。[C语言](/c$2的整数溢出行为与模运算直接相关。[体系结构](architecture)的ALU实现了模2^n的算术运算。
+> 跨模块引用：[计算机网络](network)的RSA/ECC加密建立在数论和群论基础上。[编译原理](compiler)的哈希函数使用模运算。[C语言](/c/001-CZeroBasisStart)的整数溢出行为与模运算直接相关。[体系结构](architecture)的ALU实现了模2^n的算术运算。
 
 ---
 

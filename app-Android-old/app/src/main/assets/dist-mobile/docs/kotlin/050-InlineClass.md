@@ -1,5 +1,18 @@
 # 内联类（value class）
 
+## 前置知识
+
+- [密封类与密封接口](/kotlin/049-SealedClassSealedInterface)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.005、Stanford CS193P、CMU 15-410 教学水准，系统讲解 Kotlin 内联类（`@JvmInline value class`）从设计哲学到 JVM 字节码实现的完整链路。内容覆盖 Kotlin 1.3 inline class 实验性、1.5 value class 稳定化，以及与 C# struct、Scala AnyVal、Rust struct 的跨语言对比。
 
 ## 1. 历史动机与发展脉络
@@ -2154,31 +2167,27 @@ value class Serializable(val value: Type)
 
 ### A.2 装箱场景速查
 
-```
-装箱场景：
+**装箱场景**：
 1. V?（可空类型）
 2. T 是 V（泛型类型参数）
 3. List<V>、Set<V>、Map<K, V>（集合）
 4. Array<V>（数组）
 5. Any（基础类型转换）
 
-非装箱场景：
+**非装箱场景**：
 1. 直接传递 V
 2. V 的方法调用
 3. V 的属性访问
 4. inline 函数中的 V（reified）
-```
 
 ### A.3 约束速查
 
-```
 1. 单一属性（val，不能是 var）
 2. 不能继承其他类
 3. 不能是 abstract、open、sealed
 4. 不能有 backing field
 5. 不能递归引用
 6. JVM 平台必须 @JvmInline
-```
 
 ---
 
@@ -2227,22 +2236,15 @@ value class Serializable(val value: Type)
 
 ## 附录 E：本文档写作说明
 
-### E.1 版本信息
-
-- Kotlin 版本：1.9 / 2.0
-- 文档版本：1.0
-- 最后更新：2026-06-14
-- 对标标准：MIT 6.005 / Stanford CS193P / CMU 15-410
-
-### E.2 引用格式
+### E.1 引用格式
 
 本文档遵循 ACM Reference Format。
 
-### E.3 数学公式
+### E.2 数学公式
 
 本文档使用 KaTeX 语法。
 
-### E.4 代码示例
+### E.3 代码示例
 
 所有代码示例均在 Kotlin 2.0 + JVM 17 上验证通过。
 

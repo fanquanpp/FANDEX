@@ -1,5 +1,18 @@
 # Go 与文件监控：从 fsnotify 到跨平台事件流的工程实践
 
+## 前置知识
+
+- [Go 与加密](/go/041-GoEncryption)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文以 Go 1.22 与 fsnotify v1.7 为基准版本，覆盖文件系统监控的全链路：Linux inotify、BSD/macOS kqueue、Windows ReadDirectoryChangesW、Go fsnotify 抽象层、事件去重与合并、递归监听、热重载（hot reload）、配置自动加载、日志轮转、构建工具增量编译、分布式文件同步。适用于已掌握 Go 基础与操作系统基本概念、希望深入理解文件监控机制的工程师。
 
 ---
@@ -181,16 +194,14 @@ inotify 在 Linux 内核中的实现位于 `fs/notify/inotify/`：
 
 `inotify_add_watch` 系统调用流程：
 
-```
-用户态: inotify_add_watch(fd, path, mask)
-   ↓
-内核态: sys_inotify_add_watch
-   ↓
-1. 通过 fd 找到 inotify_group
-2. 通过 path 解析 inode（path_lookup）
-3. 创建 inotify_inode_mark（若已存在则更新）
-4. 将 mark 添加到 inode 的 notification list
-5. 返回 wd（watch descriptor）
+```mermaid
+flowchart TB
+    U[用户态<br/>inotify_add_watch fd, path, mask] --> K[内核态<br/>sys_inotify_add_watch]
+    K --> S1[1. 通过 fd 找到 inotify_group]
+    S1 --> S2[2. 通过 path 解析 inode<br/>path_lookup]
+    S2 --> S3[3. 创建 inotify_inode_mark<br/>若已存在则更新]
+    S3 --> S4[4. 将 mark 添加到 inode 的 notification list]
+    S4 --> S5[5. 返回 wd watch descriptor]
 ```
 
 **2. 事件产生**

@@ -1,3 +1,16 @@
+## 前置知识
+
+- [Java 设计模式](/java/079-JavaDesignPattern)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 前置必读与阅读警告（先读这一节）」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与背景」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+
+
 ## 0. 前置必读与阅读警告（先读这一节）
 
 > **警告：这是全模块最不建议跳级阅读的文档之一。** 如果还没有完成 Java SE 核心，@Autowired、BeanPostProcessor、动态代理与事务传播行为（REQUIRES_NEW）对你就是天书。请按顺序先读完：
@@ -553,17 +566,18 @@ public TransactionStatus getTransaction(TransactionDefinition definition) {
 
 #### 3.6.2 请求处理流程
 
-```
-请求 → DispatcherServlet
-    → HandlerMapping.resolve(request)  // 找到 HandlerExecutionChain
-    → HandlerInterceptor.preHandle()   // 前置拦截
-    → HandlerAdapter.handle(request, response, handler)  // 执行 Controller
-        → Controller 方法执行
-        → 返回 ModelAndView 或对象（@ResponseBody）
-    → HandlerInterceptor.postHandle()  // 后置拦截
-    → ViewResolver / MessageConverter  // 渲染视图或序列化 JSON
-    → HandlerInterceptor.afterCompletion()  // 完成回调
-    → 响应
+```mermaid
+flowchart TB
+    REQ[请求] --> DS[DispatcherServlet]
+    DS --> HM[HandlerMapping.resolve<br/>找到 HandlerExecutionChain]
+    HM --> Pre[HandlerInterceptor.preHandle<br/>前置拦截]
+    Pre --> HA[HandlerAdapter.handle<br/>执行 Controller]
+    HA --> CTRL[Controller 方法执行]
+    CTRL --> RET[返回 ModelAndView<br/>或 @ResponseBody 对象]
+    RET --> Post[HandlerInterceptor.postHandle<br/>后置拦截]
+    Post --> VR[ViewResolver / MessageConverter<br/>渲染视图或序列化 JSON]
+    VR --> AC[HandlerInterceptor.afterCompletion<br/>完成回调]
+    AC --> RES[响应]
 ```
 
 #### 3.6.3 关键源码

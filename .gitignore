@@ -273,9 +273,8 @@ tls-tools/doc-id-map.json
 
 # 内容层 ID 映射文件（含本地绝对路径，禁止入库）
 # _id-registry.json 与 _archived-ids.json 入库（共享数据）
-# _doc-id-map*.json 不入库（含本地路径）
+# _doc-id-map.json 不入库（含本地路径）
 cnt-content/full/_doc-id-map.json
-cnt-content/full/_doc-id-map-mobile.archived.json
 
 
 # -----------------------------------------------------------------------------

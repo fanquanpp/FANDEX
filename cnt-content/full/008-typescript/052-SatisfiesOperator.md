@@ -2202,17 +2202,3 @@ if (isUser(data)) {
 | 运行时 | runtime | 代码执行阶段 |
 | 结构子类型 | structural subtyping | 基于结构的子类型关系（TypeScript 采用） |
 | 名义子类型 | nominal subtyping | 基于名称的子类型关系（Java 采用） |
-
----
-
-> **文档版本**：v2.0
->
-> **最后更新**：2026-07-21
->
-> **文档作者**：fanquanpp
->
-> **适用版本**：TypeScript 4.9+
->
-> **对标标准**：MIT 6.S192 / Stanford CS143 / CMU 15-411
->
-> **免责声明**：本文档基于 TypeScript 4.9 至 5.x 版本编写，后续版本可能有语法或行为变化，请以官方文档为准。

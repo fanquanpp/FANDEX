@@ -82,7 +82,7 @@ flowchart TD
 6. **对比**（Compare）：FAANG（Google/Meta/Amazon/Microsoft/Apple）与国内大厂（字节跳动/腾讯/阿里巴巴/百度/美团）的面试风格、考察重点、评分标准
 7. **创造**（Create）：设计 LeetCode 题目到工业场景的映射方案，构建个人刷题追踪系统、算法学习路径推荐引擎
 
-> 跨模块引用：刷题所需的算法理论基础知识参见 [算法分析基础与学习路线](/algorithm$2，递归与回溯的深入讨论参见 [递归与回溯](/algorithm$2。
+> 跨模块引用：刷题所需的算法理论基础知识参见 [算法分析基础与学习路线](/algorithm/001-AlgorithmAnalysisBasics)，递归与回溯的深入讨论参见 [递归与回溯](/algorithm/011-RecursionAndBacktracking)。
 
 ---
 

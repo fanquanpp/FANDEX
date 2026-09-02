@@ -1485,7 +1485,3 @@ func process(data js.Value) {
 | Component Model | 组件模型 | wasm 的跨语言组件互操作规范 |
 | Trampoline | 跳板函数 | JS 调用 Go 回调时的中间函数 |
 | Opaque Type | 不透明类型 | 类型内部表示对调用方不可见 |
-
----
-
-*本文档基于 Go 1.22 与 WebAssembly 1.0/2.0 规范撰写，最后更新于 2026-06-14。如有疑问或建议，欢迎在项目 issue 中讨论。*

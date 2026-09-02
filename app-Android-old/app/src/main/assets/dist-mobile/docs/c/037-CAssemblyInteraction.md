@@ -1,5 +1,18 @@
 # C 与汇编交互（C and Assembly Interaction）
 
+## 前置知识
+
+- [嵌入式 C 编程](/c/036-EmbeddedCProgramming)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「摘要」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+
+
 > "It is difficult to prevent the C compiler from generating good code. But sometimes the only way to get the code you need is to write it yourself in assembly language. ... GCC's extended `asm` syntax lets you embed assembly instructions within C functions, specify input and output operands, and tell the compiler what registers and memory your instructions modify."
 > —— GCC Manual, "Extended Asm" 与 Richard M. Stallman, *Using and Porting GCC*
 
@@ -1763,7 +1776,3 @@ locked:
 | `r` | 通用寄存器 `x0-x31` |
 | `f` | 浮点寄存器 `f0-f31` |
 | `vr` | 向量寄存器 `v0-v31` |
-
----
-
-*本文档最后更新于 2026-06-14，遵循 ISO/IEC 9899:2024 (C23) 标准与 GCC 14 手册。*

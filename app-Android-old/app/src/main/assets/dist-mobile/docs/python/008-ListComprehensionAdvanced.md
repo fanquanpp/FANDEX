@@ -1,3 +1,16 @@
+## 前置知识
+
+- [协程与 asyncio](/python/007-CoroutineAsyncio)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「摘要」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（企业级 production-ready）」的核心机制、典型用法与常见陷阱
+
+
 ## 摘要
 
 本文档系统阐述 Python 推导式（comprehension）与生成器表达式（generator expression）的设计哲学、形式语义、底层实现与工程实践。内容覆盖 PEP 202（list comprehension）、PEP 274（dict/set comprehension）、PEP 289（generator expression）以及 PEP 704（推导式内变量作用域修订）等核心提案，从 CPython 字节码层面剖析推导式的执行模型，并对照 Haskell、Scala、Rust 等语言的同源构造。结合 NumPy、Pandas、CPython 标准库等真实案例，给出可运行的企业级 production-ready 代码、性能基准、陷阱分析与最佳实践。
@@ -1714,9 +1727,6 @@ print(f"map+lambda: {t_map:.3f}s")
 
 > "Simple is better than complex. Complex is better than complicated. Readability counts."
 
----
-
-*文档版本：v2.0.0 | 最后更新：2026-06-14 | 维护者：FANDEX Team*
 ## 基本列表推导式
 
 **基本写法：基本列表推导式**

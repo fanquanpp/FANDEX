@@ -51,7 +51,7 @@ fun sumUp(): Int {
 }
 ```
 
-点击运行。两个语法点先记住：`val` 定义不可变变量（优先用它），`var` 定义可变变量；`$name` 与 `${...}` 是字符串模板，可以直接把值嵌进文本。本地环境安装见 [Kotlin 概述与环境搭建](kotlin/002-KotlinOverviewEnvSetup)。
+点击运行。两个语法点先记住：`val` 定义不可变变量（优先用它），`var` 定义可变变量；`$name` 与 `${...}` 是字符串模板，可以直接把值嵌进文本。本地环境安装见 [Kotlin 概述与环境搭建](/kotlin/002-KotlinOverviewEnvSetup)。
 
 ## 常见困惑
 
@@ -61,4 +61,4 @@ fun sumUp(): Int {
 
 ## 下一步
 
-进入 [Kotlin 概述与环境搭建](kotlin/002-KotlinOverviewEnvSetup) 开始语法主线；写 Android 应用时，kotlin 模块与移动端开发知识将直接派上用场。
+进入 [Kotlin 概述与环境搭建](/kotlin/002-KotlinOverviewEnvSetup) 开始语法主线；写 Android 应用时，kotlin 模块与移动端开发知识将直接派上用场。

@@ -235,7 +235,7 @@ valgrind --gen-suppressions=all ./app
 
 **基本写法：抑制文件格式**
 `{ <名称>, <工具>, <模式> ... }`
-```
+```text
 # 抑制规则示例
 {
    libfoo_false_positive

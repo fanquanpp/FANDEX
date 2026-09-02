@@ -1,6 +1,6 @@
 {
     "version": "4.3.0",
-    "generatedAt": "2026-09-01",
+    "generatedAt": "2026-09-02",
     "categories": [
         {
             "id": "tools",
@@ -425,7 +425,8 @@
                 "061-RegexAssertions",
                 "062-JavaScriptTheory",
                 "063-WebWorkersMultithreading",
-                "064-ServiceWorkerPWA"
+                "064-ServiceWorkerPWA",
+                "065-JavaScriptLearningSummary"
             ]
         },
         {
@@ -504,7 +505,8 @@
                 "068-TypeScript7CompilerGuide",
                 "069-TypeScriptFAQ",
                 "070-ProjectReferencesMonorepo",
-                "071-RuntimeSchemaValidation"
+                "071-RuntimeSchemaValidation",
+                "072-TypeScriptLearningSummary"
             ]
         },
         {
@@ -551,7 +553,8 @@
                 "036-Vue3ViteBuildConfig",
                 "037-Vue3NewFeatures3435",
                 "038-ComponentLibraryEngineering",
-                "039-VueEcosystemVersionMap"
+                "039-VueEcosystemVersionMap",
+                "040-Vue3LearningSummary"
             ]
         },
         {
@@ -606,7 +609,8 @@
                 "044-ErrorBoundarySentry",
                 "045-CustomHooksReuseLogic",
                 "046-ReactViteToolchainCommand",
-                "047-RenderingPriorityAndScheduling"
+                "047-RenderingPriorityAndScheduling",
+                "048-ReactLearningSummary"
             ]
         },
         {
@@ -743,7 +747,8 @@
                 "100-JavaCommandLineTools",
                 "101-JavaSwingGUI",
                 "102-JavaProjectExampleLibrarySystem",
-                "103-JavaSealedClassesPatternMatching"
+                "103-JavaSealedClassesPatternMatching",
+                "104-JavaLearningSummary"
             ]
         },
         {
@@ -807,7 +812,8 @@
                 "053-CoroutineExceptionHandling",
                 "054-KotlinCrossPlatform",
                 "055-FlowAdvanced",
-                "056-KotlinJavaInterop"
+                "056-KotlinJavaInterop",
+                "057-KotlinLearningSummary"
             ]
         },
         {
@@ -863,7 +869,8 @@
                 "045-DotnetCli",
                 "046-NetworkingHttp",
                 "047-PInvokeNativeInterop",
-                "048-DotnetPerformanceBenchmarking"
+                "048-DotnetPerformanceBenchmarking",
+                "049-CSharpLearningSummary"
             ]
         },
         {
@@ -934,7 +941,8 @@
                 "060-UnitTestBenchmark",
                 "061-RaceDetectionAtomic",
                 "062-PackageManagementDetailed",
-                "063-GoLatestFeatures"
+                "063-GoLatestFeatures",
+                "064-GoLearningSummary"
             ]
         },
         {
@@ -1360,7 +1368,8 @@
                 "056-C23NewFeatures",
                 "057-CCompilerOptions",
                 "058-CDebugGdb",
-                "059-CValgrind"
+                "059-CValgrind",
+                "060-CLearningSummary"
             ]
         },
         {
@@ -1445,7 +1454,8 @@
                 "074-DebugCommand",
                 "075-LinkSymbol",
                 "076-Cpp26LatestStandard",
-                "077-Cpp20Overview"
+                "077-Cpp20Overview",
+                "078-CppLearningSummary"
             ]
         },
         {
@@ -1862,7 +1872,8 @@
                 "099-HttpxRequests",
                 "100-ProfilingOptimization",
                 "101-GILAndFreeThreading",
-                "102-CExtensionsAndFfi"
+                "102-CExtensionsAndFfi",
+                "103-PythonLearningSummary"
             ]
         },
         {
@@ -1890,7 +1901,8 @@
                 "017-RustLifetimesDeepDive",
                 "018-RustClosuresFnTraits",
                 "019-RustCargoAdvanced",
-                "020-RustUnsafeRust"
+                "020-RustUnsafeRust",
+                "021-RustLearningSummary"
             ]
         },
         {
@@ -1932,7 +1944,10 @@
                 "009-Astro7Features",
                 "010-AstroFormsActions",
                 "011-AstroIntegrationsMdx",
-                "012-AstroTestingDebugging"
+                "012-AstroTestingDebugging",
+                "013-AstroLearningSummary",
+                "014-AstroViewTransitions",
+                "015-AstroMiddlewareImages"
             ]
         },
         {
@@ -1952,7 +1967,9 @@
                 "009-Vite8Rolldown",
                 "010-ViteEnvModes",
                 "011-ViteSSR",
-                "012-ViteVitestTesting"
+                "012-ViteVitestTesting",
+                "013-ViteLearningSummary",
+                "015-VitePluginDevelopment"
             ]
         },
         {
@@ -1987,7 +2004,8 @@
                 "008-V4Features",
                 "009-TailwindAnimationTransition",
                 "010-TailwindPluginsForms",
-                "011-TailwindContainerQueries"
+                "011-TailwindContainerQueries",
+                "012-TailwindLearningSummary"
             ]
         },
         {
@@ -2020,7 +2038,8 @@
                 "005-RouteHandlersApi",
                 "006-ServerActionsForms",
                 "007-RenderingStrategies",
-                "008-AuthProxyMiddleware"
+                "008-AuthProxyMiddleware",
+                "009-NextjsLearningSummary"
             ]
         },
         {
@@ -2038,7 +2057,8 @@
                 "007-InterceptorsAndFilters",
                 "008-ConfigEnvValidation",
                 "009-CachingAndQueues",
-                "010-MicroservicesAndHealth"
+                "010-MicroservicesAndHealth",
+                "011-NestjsLearningSummary"
             ]
         },
         {
@@ -2054,7 +2074,8 @@
                 "005-AdvancedRoadmap",
                 "006-DenoStdLibNpmCompatibility",
                 "007-DenoKVQueues",
-                "008-DenoTestingBenchCI"
+                "008-DenoTestingBenchCI",
+                "009-DenoLearningSummary"
             ]
         },
         {
@@ -2069,7 +2090,9 @@
                 "004-AdvancedRoadmap",
                 "005-BunPackageManagerWorkspaces",
                 "006-BunTestBench",
-                "007-BunWebSocketFrontendDev"
+                "007-BunWebSocketFrontendDev",
+                "008-BunLearningSummary",
+                "009-BunSQLiteAndS3"
             ]
         },
         {
@@ -2084,7 +2107,8 @@
                 "004-ComponentsTransitions",
                 "005-SvelteKitRoutingLoading",
                 "006-FormActionsProgressive",
-                "007-StateSharingDeployment"
+                "007-StateSharingDeployment",
+                "008-SvelteLearningSummary"
             ]
         },
         {
@@ -2101,7 +2125,8 @@
                 "006-AdvancedRoadmap",
                 "007-DirectivesPipes",
                 "008-HttpClientStateManagement",
-                "009-TestingSSRHydration"
+                "009-TestingSSRHydration",
+                "010-AngularLearningSummary"
             ]
         },
         {
@@ -4827,6 +4852,14 @@
             "description": "离线优先：Service Worker 生命周期、缓存策略与 PWA 安装体验。"
         },
         {
+            "slug": "065-JavaScriptLearningSummary",
+            "title": "JavaScript 学习总结：核心知识体系回顾",
+            "module": "javascript",
+            "category": "前端技术",
+            "difficulty": "intermediate",
+            "description": "回顾 JavaScript 模块的核心知识体系：类型与作用域、闭包与原型、Promise 与事件循环、DOM 与模块化、内存管理，并用虚拟歌手音乐平台的示例串联全部要点。"
+        },
+        {
             "slug": "001-WhyTypeScript",
             "title": "为什么需要 TypeScript：从 JavaScript 的烦恼说起",
             "module": "typescript",
@@ -5395,6 +5428,14 @@
             "description": "类型只存在于编译期：用 Schema 库补上运行时这一环。"
         },
         {
+            "slug": "072-TypeScriptLearningSummary",
+            "title": "TypeScript 学习总结：核心知识体系回顾",
+            "module": "typescript",
+            "category": "前端技术",
+            "difficulty": "intermediate",
+            "description": "回顾 TypeScript 模块的核心知识体系：类型标注与收窄、泛型与类型体操、tsconfig 工程配置、编译性能与类型安全实践，并用虚拟歌手音乐平台的示例串联全部要点。"
+        },
+        {
             "slug": "001-OverviewEnv",
             "title": "概述与环境",
             "module": "vue3",
@@ -5705,6 +5746,14 @@
             "category": "前端技术",
             "difficulty": "beginner",
             "description": "Vue 3.5 核心与周边生态的最新稳定版本、Node 要求与升级要点。"
+        },
+        {
+            "slug": "040-Vue3LearningSummary",
+            "title": "Vue3 学习总结：核心知识体系回顾",
+            "module": "vue3",
+            "category": "前端技术",
+            "difficulty": "intermediate",
+            "description": "串联 Vue3 模块全部文档，回顾响应式系统、组合式 API、组件体系、路由状态与工程化的核心脉络。"
         },
         {
             "slug": "001-OverviewEnvSetup",
@@ -6081,6 +6130,14 @@
             "category": "前端技术",
             "difficulty": "advanced",
             "description": "从 update 优先级、调度器到并发渲染，讲清 React 如何决定\"先渲染谁、能不能中断、中断后怎么办\"。"
+        },
+        {
+            "slug": "048-ReactLearningSummary",
+            "title": "React 学习总结：核心知识体系回顾",
+            "module": "react",
+            "category": "前端技术",
+            "difficulty": "intermediate",
+            "description": "串联 React 模块全部文档，回顾 Hooks 体系、Fiber 并发、服务端组件、状态管理与性能优化的核心脉络。"
         },
         {
             "slug": "001-SVGOverviewEnvSetup",
@@ -7051,6 +7108,14 @@
             "description": "sealed、record 与 switch 模式匹配：现代 Java 的代数数据类型表达。"
         },
         {
+            "slug": "104-JavaLearningSummary",
+            "title": "Java 学习总结：核心知识体系回顾",
+            "module": "java",
+            "category": "后端技术",
+            "difficulty": "intermediate",
+            "description": "按主题串联 Java 模块全部文档，回顾语法、面向对象、集合泛型、函数式、并发、JVM 与框架生态的核心概念、易混淆点与高频陷阱。"
+        },
+        {
             "slug": "001-WhatIsKotlin",
             "title": "Kotlin 是什么：现代 JVM 语言的起点",
             "module": "kotlin",
@@ -7499,6 +7564,14 @@
             "description": "双向调用规则：空安全映射、静态成员与 @Jvm 系列注解。"
         },
         {
+            "slug": "057-KotlinLearningSummary",
+            "title": "Kotlin 学习总结：核心知识体系回顾",
+            "module": "kotlin",
+            "category": "后端技术",
+            "difficulty": "intermediate",
+            "description": "按主题串联 Kotlin 模块全部文档，回顾语法与空安全、数据类与密封类、协程与 Flow、多平台与服务端框架的核心概念、易混淆点与高频陷阱。"
+        },
+        {
             "slug": "001-WhatIsCSharp",
             "title": "C# 是什么：.NET 世界的通用语言",
             "module": "csharp",
@@ -7881,6 +7954,14 @@
             "category": "后端技术",
             "difficulty": "advanced",
             "description": "用 BenchmarkDotNet 建立可信基准：从测量到优化的完整方法。"
+        },
+        {
+            "slug": "049-CSharpLearningSummary",
+            "title": "C# 学习总结：核心知识体系回顾",
+            "module": "csharp",
+            "category": "后端技术",
+            "difficulty": "intermediate",
+            "description": "按主题串联 C# 模块全部文档，回顾语法与 OOP、泛型集合、LINQ、异步、委托事件、运行时与框架生态的核心概念、易混淆点与高频陷阱。"
         },
         {
             "slug": "001-WhatIsGo",
@@ -8385,6 +8466,14 @@
             "category": "后端技术",
             "difficulty": "intermediate",
             "description": "近年版本特性速览：泛型落地后的语言演进与升级实践。"
+        },
+        {
+            "slug": "064-GoLearningSummary",
+            "title": "Go 学习总结：核心知识体系回顾",
+            "module": "go",
+            "category": "后端技术",
+            "difficulty": "intermediate",
+            "description": "串联 Go 模块全部文档，按语法基础、并发编程、接口与泛型、工程与工具链四条主线回顾核心知识，并用虚拟歌手平台案例沉淀示例代码。"
         },
         {
             "slug": "001-WhatIsDatabase",
@@ -11347,6 +11436,14 @@
             "description": "C Valgrind 内存检测 语法速查手册 的完整教学讲解。"
         },
         {
+            "slug": "060-CLearningSummary",
+            "title": "C 语言学习总结：核心知识体系回顾",
+            "module": "c",
+            "category": "计算机科学",
+            "difficulty": "intermediate",
+            "description": "回顾 C 语言模块的核心知识体系：编译模型、类型与内存布局、指针、动态内存、多文件构建、并发与调试工具，并用虚拟歌手音乐平台的示例串联全部要点。"
+        },
+        {
             "slug": "001-WhatIsCpp",
             "title": "C++ 是什么：从 C 到高性能泛型编程",
             "module": "cpp",
@@ -11961,6 +12058,14 @@
             "category": "计算机科学",
             "difficulty": "beginner",
             "description": "C++20 新特性汇总 的完整教学讲解。"
+        },
+        {
+            "slug": "078-CppLearningSummary",
+            "title": "C++ 学习总结：核心知识体系回顾",
+            "module": "cpp",
+            "category": "计算机科学",
+            "difficulty": "intermediate",
+            "description": "回顾 C++ 模块的核心知识体系：对象模型、RAII 与智能指针、移动语义、模板与 STL、现代 C++ 标准演进与并发工程实践，并用虚拟歌手音乐平台的示例串联全部要点。"
         },
         {
             "slug": "001-OverviewLinuxBasics",
@@ -14723,6 +14828,14 @@
             "description": "ctypes、cffi 与 CPython 扩展：让 Python 调用原生代码。"
         },
         {
+            "slug": "103-PythonLearningSummary",
+            "title": "Python 学习总结：核心知识体系回顾",
+            "module": "python",
+            "category": "后端技术",
+            "difficulty": "intermediate",
+            "description": "串联 Python 模块全部文档，按语法基础、对象模型、类型系统、并发与工程生态五条主线回顾核心知识，并用虚拟歌手平台案例沉淀示例代码。"
+        },
+        {
             "slug": "001-WhatIsRust",
             "title": "Rust 是什么：安全与性能兼得的系统语言",
             "module": "rust",
@@ -14881,6 +14994,14 @@
             "category": "后端技术",
             "difficulty": "advanced",
             "description": "unsafe 边界：裸指针、unsafe trait 与安全抽象的封装纪律。"
+        },
+        {
+            "slug": "021-RustLearningSummary",
+            "title": "Rust 学习总结：核心知识体系回顾",
+            "module": "rust",
+            "category": "后端技术",
+            "difficulty": "intermediate",
+            "description": "串联 Rust 模块全部文档，按所有权与借用、类型系统、trait 与泛型、并发与异步、工程化五条主线回顾核心知识，并用虚拟歌手平台案例沉淀示例代码。"
         },
         {
             "slug": "001-ShellBasics",
@@ -15091,6 +15212,30 @@
             "description": "保证站点质量：Vitest 单元测试与 Playwright 端到端。"
         },
         {
+            "slug": "013-AstroLearningSummary",
+            "title": "Astro 学习总结：核心知识体系回顾",
+            "module": "astro",
+            "category": "前端技术",
+            "difficulty": "intermediate",
+            "description": "串联 Astro 模块全部文档，回顾岛屿架构、内容集合、文件路由、集成体系与构建发布的核心脉络。"
+        },
+        {
+            "slug": "014-AstroViewTransitions",
+            "title": "Astro 视图过渡：跨页面动画与持久化组件",
+            "module": "astro",
+            "category": "前端技术",
+            "difficulty": "advanced",
+            "description": "用 ClientRouter 实现跨页面共享元素动画、持久化音乐播放器岛屿与导航生命周期脚本。"
+        },
+        {
+            "slug": "015-AstroMiddlewareImages",
+            "title": "Astro 中间件与图片优化",
+            "module": "astro",
+            "category": "前端技术",
+            "difficulty": "advanced",
+            "description": "用 astro:middleware 搭建全站请求闸口与粉丝团鉴权守卫，配合 astro:assets 打通图片管线与响应式图。"
+        },
+        {
             "slug": "001-ViteOverview",
             "title": "Vite 构建工具概述",
             "module": "vite",
@@ -15185,6 +15330,22 @@
             "category": "前端技术",
             "difficulty": "intermediate",
             "description": "与 Vite 同源的测试框架：配置、断言、mock 与覆盖率。"
+        },
+        {
+            "slug": "013-ViteLearningSummary",
+            "title": "Vite 学习总结：核心知识体系回顾",
+            "module": "vite",
+            "category": "前端技术",
+            "difficulty": "intermediate",
+            "description": "串联模块十二篇文档：从原生 ESM 与依赖预构建到配置、HMR、代码分割、插件系统与 Vite 8 Rolldown 单引擎的完整知识体系回顾。"
+        },
+        {
+            "slug": "015-VitePluginDevelopment",
+            "title": "Vite 插件开发：钩子体系与虚拟模块",
+            "module": "vite",
+            "category": "前端技术",
+            "difficulty": "advanced",
+            "description": "以歌单数据与自创歌词格式为素材，端到端实现虚拟模块插件、transform 编译器与 dev 期 HMR 联动。"
         },
         {
             "slug": "001-PnpmMonorepoOverview",
@@ -15339,6 +15500,14 @@
             "description": "容器查询组件级响应式：让组件自己决定布局。"
         },
         {
+            "slug": "012-TailwindLearningSummary",
+            "title": "Tailwind CSS 学习总结：核心知识体系回顾",
+            "module": "tailwind",
+            "category": "前端技术",
+            "difficulty": "intermediate",
+            "description": "串联模块十一篇文档：从 utility-first 理念与工具类家族到 @theme 设计令牌、响应式暗色与组件复用的完整知识体系回顾。"
+        },
+        {
             "slug": "001-MongoDBOverviewQuickStart",
             "title": "MongoDB 概述与五分钟快速上手",
             "module": "mongodb",
@@ -15475,6 +15644,14 @@
             "description": "会话、JWT 与 proxy.ts：守住 Next.js 应用的入口。"
         },
         {
+            "slug": "009-NextjsLearningSummary",
+            "title": "Next.js 学习总结：核心知识体系回顾",
+            "module": "nextjs",
+            "category": "前端技术",
+            "difficulty": "intermediate",
+            "description": "串联 Next.js 模块全部文档，回顾 App Router 路由、数据获取缓存、API 层、渲染策略与部署安全的全链路。"
+        },
+        {
             "slug": "001-NestJSOverview",
             "title": "NestJS 概述与快速上手",
             "module": "nestjs",
@@ -15555,6 +15732,14 @@
             "description": "微服务传输层选型与 @MessagePattern，@nestjs/terminus 健康检查，NestJS 12 版本要点。"
         },
         {
+            "slug": "011-NestjsLearningSummary",
+            "title": "NestJS 学习总结：核心知识体系回顾",
+            "module": "nestjs",
+            "category": "后端技术",
+            "difficulty": "intermediate",
+            "description": "串联模块十篇文档：从三层结构与依赖注入到守卫、拦截器、配置校验、缓存队列与微服务的完整知识体系回顾。"
+        },
+        {
             "slug": "001-DenoOverview",
             "title": "Deno 概述与快速上手",
             "module": "deno",
@@ -15619,6 +15804,14 @@
             "description": "零依赖质量三件套：deno test、deno bench 与 lint/fmt/check 流水线。"
         },
         {
+            "slug": "009-DenoLearningSummary",
+            "title": "Deno 学习总结：核心知识体系回顾",
+            "module": "deno",
+            "category": "后端技术",
+            "difficulty": "intermediate",
+            "description": "串联模块八篇文档：从安全模型与权限参数到 Hono 服务、Deno KV 与内置测试工具链的完整知识体系回顾。"
+        },
+        {
             "slug": "001-BunOverview",
             "title": "Bun 概述与快速上手",
             "module": "bun",
@@ -15675,6 +15868,22 @@
             "description": "实时与一体化：Bun.serve 的 WebSocket、routes 路由表与前端开发服务器。"
         },
         {
+            "slug": "008-BunLearningSummary",
+            "title": "Bun 学习总结：核心知识体系回顾",
+            "module": "bun",
+            "category": "后端技术",
+            "difficulty": "intermediate",
+            "description": "串联模块七篇文档：从全家桶运行时到内置服务器、SQL、包管理、测试与实时通信的完整知识体系回顾。"
+        },
+        {
+            "slug": "009-BunSQLiteAndS3",
+            "title": "Bun 内置能力：SQLite、S3 与文件 I/O",
+            "module": "bun",
+            "category": "后端技术",
+            "difficulty": "advanced",
+            "description": "深入 Bun.file 流式读写、bun:sqlite 预编译语句与事务实战，以及内置 S3 客户端管理演唱会素材。"
+        },
+        {
             "slug": "001-SvelteOverview",
             "title": "Svelte 5 概述与快速上手",
             "module": "svelte",
@@ -15729,6 +15938,14 @@
             "category": "前端技术",
             "difficulty": "intermediate",
             "description": "跨组件状态、环境变量与 adapter 选型：把 SvelteKit 应用送上生产。"
+        },
+        {
+            "slug": "008-SvelteLearningSummary",
+            "title": "Svelte 学习总结：核心知识体系回顾",
+            "module": "svelte",
+            "category": "前端技术",
+            "difficulty": "intermediate",
+            "description": "串联模块七篇文档：从编译时框架与 runes 响应式到 SvelteKit 路由、Form Actions 与部署的完整知识体系回顾。"
         },
         {
             "slug": "001-AngularOverview",
@@ -15801,6 +16018,14 @@
             "category": "前端技术",
             "difficulty": "advanced",
             "description": "质量与首屏：TestBed 单元测试、服务端渲染与客户端水合。"
+        },
+        {
+            "slug": "010-AngularLearningSummary",
+            "title": "Angular 学习总结：核心知识体系回顾",
+            "module": "angular",
+            "category": "前端技术",
+            "difficulty": "intermediate",
+            "description": "串联模块九篇文档：从独立组件与模板绑定到信号体系、依赖注入、路由表单与 SSR 水合的完整知识体系回顾。"
         },
         {
             "slug": "001-MessageQueueOverview",

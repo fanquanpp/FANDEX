@@ -1696,9 +1696,3 @@ timeline
 
 > "In C, the distinction between pointers and arrays is subtle enough to be missed, yet important enough to be mastered."
 > —— Anonymous
-
----
-
-*文档版本：v2.0*
-*最后更新：2026-06-14*
-*维护者：fanquanpp*

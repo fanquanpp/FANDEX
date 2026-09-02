@@ -1,3 +1,16 @@
+## 前置知识
+
+- [装饰器进阶](/python/065-DecoratorAdvanced)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 异常体系 (Exception Hierarchy)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 捕获处理 (Try-Except)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 抛出异常 (Raise)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 断言 (Assert)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 自定义异常 (Custom Exception)」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 异常体系 (Exception Hierarchy)
 
 Python 中的所有异常都派生自 `BaseException` 类，形成了一个层次结构。

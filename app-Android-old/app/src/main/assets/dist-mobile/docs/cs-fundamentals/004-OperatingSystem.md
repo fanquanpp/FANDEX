@@ -96,7 +96,7 @@ flowchart TD
     C2_0 --> C3_0
 ```
 
-> 跨模块引用：[体系结构](architecture)的特权级（Ring 0/3, EL0/EL1）是系统调用机制的基础。[C语言](c/overview)的标准库(glibc)封装了系统调用接口。
+> 跨模块引用：[体系结构](architecture)的特权级（Ring 0/3, EL0/EL1）是系统调用机制的基础。[C语言](/c/001-CZeroBasisStart)的标准库(glibc)封装了系统调用接口。
 
 ---
 
@@ -173,7 +173,7 @@ flowchart TD
     B1 --> B2
 ```
 
-> 跨模块引用：[Java](java/overview)的Thread类在Linux上使用1:1模型(pthread)。[C++](cpp/overview)的std::thread同样映射到OS线程。Go的goroutine使用M:N模型。
+> 跨模块引用：[Java](/java/001-WhatIsJava)的Thread类在Linux上使用1:1模型(pthread)。[C++](/cpp/001-WhatIsCpp)的std::thread同样映射到OS线程。Go的goroutine使用M:N模型。
 
 ---
 
@@ -434,7 +434,7 @@ Compare-And-Swap (CAS):
     3. 重复直到所有进程完成(安全) 或无法继续(不安全)
 ```
 
-> 跨模块引用：[Java](java/overview)的synchronized和ReentrantLock是信号量/互斥锁的语言级封装。[C++](cpp/overview)的std::mutex和std::condition_variable对应OS的互斥锁和条件变量。[设计模式](design-patterns)中的Singleton模式需要考虑多线程同步。
+> 跨模块引用：[Java](/java/001-WhatIsJava)的synchronized和ReentrantLock是信号量/互斥锁的语言级封装。[C++](/cpp/001-WhatIsCpp)的std::mutex和std::condition_variable对应OS的互斥锁和条件变量。[设计模式](design-patterns)中的Singleton模式需要考虑多线程同步。
 
 ---
 
@@ -546,7 +546,7 @@ flowchart TD
     B4 --> B5
 ```
 
-> 跨模块引用：[体系结构](architecture)的TLB和页表是虚拟内存的硬件基础。[C语言](c/overview)的malloc/free操作堆区，栈区由编译器自动管理。[编译原理](compiler)的代码生成决定了Text/Data/BSS段的布局。
+> 跨模块引用：[体系结构](architecture)的TLB和页表是虚拟内存的硬件基础。[C语言](/c/001-CZeroBasisStart)的malloc/free操作堆区，栈区由编译器自动管理。[编译原理](compiler)的代码生成决定了Text/Data/BSS段的布局。
 
 ---
 
@@ -705,7 +705,7 @@ I/O调度算法:
    注意: 信号处理、页面错误等复杂情况
 ```
 
-> 跨模块引用：[计算机网络](network)的高性能网络框架(Netty/DPDK)大量使用零拷贝技术。[Java](java/overview)的NIO使用DirectByteBuffer减少拷贝。[C语言](c/overview)的mmap系统调用直接映射文件到内存。
+> 跨模块引用：[计算机网络](network)的高性能网络框架(Netty/DPDK)大量使用零拷贝技术。[Java](/java/001-WhatIsJava)的NIO使用DirectByteBuffer减少拷贝。[C语言](/c/001-CZeroBasisStart)的mmap系统调用直接映射文件到内存。
 
 ---
 

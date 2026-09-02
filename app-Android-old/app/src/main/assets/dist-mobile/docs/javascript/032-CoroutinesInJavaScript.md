@@ -1,3 +1,16 @@
+## 前置知识
+
+- [迭代器辅助方法](/javascript/031-IteratorHelper)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 学习导览」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与技术演进」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 基础语法」的核心机制、典型用法与常见陷阱
+- 掌握「4. 迭代协议深入」的核心机制、典型用法与常见陷阱
+
+
 ## 0. 学习导览
 
 ### 0.1 学习路径
@@ -2117,7 +2130,6 @@ Go 的 channel + goroutine 是对称协程模型,支持并发执行。
 
 `GeneratorResume(generator, value, brand)` 的核心步骤(简化):
 
-```
 1. 验证 generator 的内部状态为 suspendedYield 或 suspendedStart
 2. 将状态置为 executing
 3. 恢复执行上下文(generatorContext)
@@ -2127,7 +2139,6 @@ Go 的 channel + goroutine 是对称协程模型,支持并发执行。
 7. 将状态置为 suspendedYield 或 completed
 8. 切换回调用者的执行上下文
 9. 返回 IteratorResult
-```
 
 ### 20.3 TC39 提案历程
 

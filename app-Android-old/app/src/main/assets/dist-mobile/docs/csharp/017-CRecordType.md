@@ -1,5 +1,18 @@
 # C# 记录类型
 
+## 前置知识
+
+- [模式匹配](/csharp/016-PatternMatching)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本篇是 FANDEX C# 系列的第五十三篇。我们将系统讲解 C# 记录类型（record）：从位置参数、`with` 表达式、值相等性、`init` 访问器到 `record struct`、`readonly record struct`、`Record` 与函数式编程、序列化、DDD 领域驱动设计、性能权衡与编译器合成代码剖析。内容对标 MIT 6.005（Software Construction）、Stanford CS110（Principles of Computer Systems）、CMU 15-214（Software Architectures）课程教学严谨度，支持 0 基础自学，同时覆盖企业级实战要点。
 
 ---

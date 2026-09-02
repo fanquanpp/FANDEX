@@ -1569,13 +1569,6 @@ trim_trailing_whitespace = true
 indent_size = 2
 ```
 
----
-
-> **文档版本**：v2.0
-> **最后更新**：2026-06-14
-> **维护者**：FANDEX Team
-> **对标标准**：MIT 6.005 / Stanford CS110 / CMU 15-440
-> **审阅状态**：待同行评审
 ## Lock 互斥锁
 
 **基本写法：创建锁**

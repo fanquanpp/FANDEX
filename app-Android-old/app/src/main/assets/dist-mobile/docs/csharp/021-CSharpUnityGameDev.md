@@ -1,3 +1,17 @@
+## 前置知识
+
+- [源生成器](/csharp/020-SourceGenerator)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「一、学习目标」的核心机制、典型用法与常见陷阱
+- 掌握「二、历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「三、形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「四、理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「五、代码示例（企业级 production-ready）」的核心机制、典型用法与常见陷阱
+
+
+
 ## 一、学习目标
 
 本文以 MIT 6.102 *Software Construction*、Stanford CS193u *Game Design*、CMU 15-466 *Computer Game Programming*、UC Berkeley CS 184 *Foundations of Computer Graphics* 的教学水准为参照，对 Unity 引擎的脚本系统、组件模型、生命周期、性能优化与工程化实践进行系统性、形式化与工程化的深度剖析。阅读完毕后，读者应能达成以下 Bloom 认知层级目标：

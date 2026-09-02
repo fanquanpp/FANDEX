@@ -1,3 +1,16 @@
+## 前置知识
+
+- [多文件编译](/c/010-MultiFileCompilation)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「第 1 章 引言与学习路径」的核心机制、典型用法与常见陷阱
+- 掌握「第 2 章 历史演进与设计哲学」的核心机制、典型用法与常见陷阱
+- 掌握「第 3 章 核心概念与术语体系」的核心机制、典型用法与常见陷阱
+- 掌握「第 4 章 API 详解」的核心机制、典型用法与常见陷阱
+- 掌握「第 5 章 内存分配器实现」的核心机制、典型用法与常见陷阱
+
+
 ## 第 1 章 引言与学习路径
 
 ### 1.1 为什么动态内存管理是 C 工程师的核心能力
@@ -613,34 +626,34 @@ flags 位:
 
 #### 5.1.3 分配流程
 
-```
-malloc(size)
-1. 计算 chunk 大小 (含 metadata,对齐)
-2. 若 size 在 fastbin 范围:
-   a. 查 fastbin,命中则返回
-3. 若 size 在 smallbin 范围:
-   a. 查 smallbin,命中则返回
-4. 遍历 unsorted bin:
-   a. 精确匹配则返回
-   b. 否则放入对应 small/large bin
-5. 查 large bin (best-fit)
-6. 若仍无,使用 top chunk
-7. 若 top chunk 不足,sysmalloc 向 OS 申请
+```mermaid
+flowchart TB
+    A["malloc(size)<br/>计算 chunk 大小（含 metadata、对齐）"] --> B{"size 在 fastbin 范围？"}
+    B -->|是| C["查 fastbin，命中则返回"]
+    B -->|否| D{"size 在 smallbin 范围？"}
+    D -->|是| E["查 smallbin，命中则返回"]
+    D -->|否| F[遍历 unsorted bin<br/>精确匹配则返回<br/>否则放入对应 small/large bin]
+    F --> G[查 large bin<br/>best-fit]
+    G --> H{"仍有空闲？"}
+    H -->|是| R[返回 chunk]
+    H -->|否| I[使用 top chunk]
+    I --> J{"top chunk 不足？"}
+    J -->|是| K[sysmalloc 向 OS 申请]
 ```
 
 #### 5.1.4 释放流程
 
-```
-free(ptr)
-1. 计算 chunk 大小
-2. 若 size 在 tcache 范围且未满:
-   a. 加入 tcache,返回
-3. 若 size 在 fastbin 范围:
-   a. 加入 fastbin,返回
-4. 否则:
-   a. 合并相邻空闲 chunk
-   b. 加入 unsorted bin
-   c. 若 chunk 是顶 chunk,可能 trim 给 OS
+```mermaid
+flowchart TB
+    A["free(ptr)<br/>计算 chunk 大小"] --> B{"size 在 tcache 范围且未满？"}
+    B -->|是| C[加入 tcache，返回]
+    B -->|否| D{"size 在 fastbin 范围？"}
+    D -->|是| E[加入 fastbin，返回]
+    D -->|否| F[合并相邻空闲 chunk]
+    F --> G[加入 unsorted bin]
+    G --> H{"chunk 是顶 chunk？"}
+    H -->|是| I["可能 trim 给 OS"]
+    H -->|否| R[完成]
 ```
 
 ### 5.2 jemalloc 详解

@@ -1,5 +1,18 @@
 # .NET GC 代机制：从弱分代假说到内存回收的全景解析
 
+## 前置知识
+
+- [依赖注入生命周期](/csharp/035-DILifecycle)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本章对标 MIT 6.1020（Software Construction）与 Stanford CS107（Programming Paradigms）的内存管理教学深度，结合 ECMA-335（CLI 规范）、CoreCLR 源码（`gc.cpp`、`gcee.cpp`）与 Andrew D. Wilson 等人的经典 GC 论文，深入剖析 .NET 垃圾回收器的分代模型、标记清除算法、压缩策略、固定对象机制、Server GC vs Workstation GC 的差异，以及在 ASP.NET Core、EF Core、高性能 I/O 路径中的工程实践。
 
 ## 1. 历史动机与发展脉络
@@ -1851,7 +1864,3 @@ public sealed class GcMonitor : IDisposable
 .NET GC 是一个经过 20 余年演进的成熟系统，从 1.0 的三代模型到 9 的 DATAS 与 POH，不断适应现代工作负载。理解 GC 代机制、标记清除、压缩策略、固定对象、Server/Workstation 模式的本质，是编写高性能 .NET 应用的基础。
 
 掌握 GC 不是为了"手动控制"——而是为了在合适的场景选择合适的工具：`ArrayPool<T>` 降低分配、`Span<T>` 零拷贝、POH 隔离固定、Background GC 降低停顿。GC 是协作的，开发者通过减少压力让 GC 更高效地工作。
-
----
-
-*最后更新：2026-07-20*

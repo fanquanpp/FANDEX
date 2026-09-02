@@ -2064,9 +2064,6 @@ error: template instantiation depth exceeds maximum of 900
 
 建议读者在阅读后，亲手实现本章习题中的代码，并尝试阅读标准库源码（如 `std::tuple`、`std::function`），以深化理解。
 
----
-
-*文档版本：v2.0 | 最后更新：2026-07-21 | 维护者：fanquanpp*
 ## 函数模板
 
 **基本写法：函数模板定义**

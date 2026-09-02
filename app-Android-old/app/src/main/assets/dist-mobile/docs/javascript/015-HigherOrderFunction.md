@@ -1,5 +1,18 @@
 # 高阶函数：JavaScript 函数式编程的核心抽象
 
+## 前置知识
+
+- [自定义错误类型](/javascript/014-CustomErrorTypes)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例（企业级 production-ready）」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > "Programs must be written for people to read, and only incidentally for machines to execute." —— Harold Abelson 与 Gerald Sussman 在 SICP 中的一句话，揭示了高阶函数作为抽象工具的本质。
 
 ## 1. 历史动机与发展脉络

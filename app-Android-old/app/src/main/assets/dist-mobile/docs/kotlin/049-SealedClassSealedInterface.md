@@ -1,3 +1,16 @@
+## 前置知识
+
+- [Channel 与 BroadcastChannel](/kotlin/048-ChannelBroadcastChannel)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 历史动机与发展脉络
 
 ### 1.1 问题背景：开放继承与类型安全的矛盾
@@ -184,21 +197,21 @@ Java 17 `sealed` 与 Kotlin `sealed` 的对比：
 
 ### 1.10 时间线总览
 
-```
-1973  ML — 引入 datatype，函数式 ADT 开端
-1990  Haskell — data 声明，case 穷举
-1996  OCaml — type 声明，match 穷举
-2004  Scala — sealed trait，case class，match 穷举
-2010  Rust — enum + match，支持绑定模式
-2014  Swift — enum + switch 穷举
-2016  Kotlin 1.0 — sealed class，when 穷举（同文件）
-2017  Kotlin 1.1 — 子类可在同文件任意位置
-2021  Kotlin 1.5 — 跨文件子类 + sealed interface
-2021  Java 17 — sealed class + permits
-2022  Kotlin 1.7 — 密封接口嵌套
-2023  Kotlin 1.9 — K2 Beta，穷举检查精度提升
-2024  Kotlin 2.0 — K2 GA，穷举检查智能化
-```
+| 时间 | 里程碑 | 说明 |
+| --- | --- | --- |
+| 1973 | ML — 引入 datatype，函数式 ADT 开端 |  |
+| 1990 | Haskell — data 声明，case 穷举 |  |
+| 1996 | OCaml — type 声明，match 穷举 |  |
+| 2004 | Scala — sealed trait，case class，match 穷举 |  |
+| 2010 | Rust — enum + match，支持绑定模式 |  |
+| 2014 | Swift — enum + switch 穷举 |  |
+| 2016 | Kotlin 1.0 — sealed class，when 穷举（同文件） |  |
+| 2017 | Kotlin 1.1 — 子类可在同文件任意位置 |  |
+| 2021 | Kotlin 1.5 — 跨文件子类 + sealed interface |  |
+| 2021 | Java 17 — sealed class + permits |  |
+| 2022 | Kotlin 1.7 — 密封接口嵌套 |  |
+| 2023 | Kotlin 1.9 — K2 Beta，穷举检查精度提升 |  |
+| 2024 | Kotlin 2.0 — K2 GA，穷举检查智能化 |  |
 
 ---
 

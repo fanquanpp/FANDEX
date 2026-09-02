@@ -1,5 +1,18 @@
 # C# 源生成器深度解析
 
+## 前置知识
+
+- [Span 与 Memory](/csharp/019-SpanMemory)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与背景」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 源生成器（Source Generators）是 C# 9 引入的编译时代码生成技术，标志着 C# 元编程范式从"运行期反射"向"编译期生成"的根本性转移。本文档系统梳理源生成器的语言动机、Roslyn API、增量生成器（Incremental Generators）、设计模式与工程实践，达到 MIT 6.035、Stanford CS243 同等编译器教学水准。
 
 ## 1. 历史动机与背景
@@ -1461,9 +1474,3 @@ context.RegisterPostInitializationOutput(ctx =>
 掌握源生成器不仅需要理解 Roslyn API，更需要具备编译器思维：分析编译管道、设计纯函数管线、处理缓存有效性、生成可读且高效的代码。随着 .NET 生态全面转向 AOT 与 Native AOT，源生成器将成为每个 .NET 工程师的必备技能。
 
 > "The best code is the code you don't write—but the second best is the code the compiler writes for you." — Anonymous
-
----
-
-*本文档最后更新：2026-06-14*
-*作者：fanquanpp*
-*版本：v2.0（金标准升级版）*

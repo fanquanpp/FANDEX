@@ -1,3 +1,16 @@
+## 前置知识
+
+- [Python 概述与环境配置](/python/002-PythonOverviewEnvSetup)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 程序结构 (Program Structure)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 缩进规则 (Indentation)」的核心机制、典型用法与常见陷阱
+- 掌握「3. 注释规范 (Comments)」的核心机制、典型用法与常见陷阱
+- 掌握「4. 标识符与关键字 (Identifiers & Keywords)」的核心机制、典型用法与常见陷阱
+- 掌握「5. 语句换行 (Line Breaks)」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 程序结构 (Program Structure)
 
 Python 程序由多个组件组成，包括模块导入、全局变量、函数定义、类定义和主逻辑。一个完整的 Python 程序通常遵循以下结构：

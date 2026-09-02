@@ -1,5 +1,18 @@
 # C++ 嵌入式开发
 
+## 前置知识
+
+- [C++游戏开发](/cpp/038-CppGameDev)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档系统讲解 C++ 在嵌入式系统中的应用，涵盖裸机编程、内存映射 I/O、`volatile` 语义、中断处理、实时性约束、跨编译工具链、嵌入式 C++ 子集 (EC++) 与现代 C++（C++17/C++20/C++23）在资源受限环境中的落地。内容遵循 ISO/IEC 14882:2023 与 IEC 60559 浮点标准，参考 MISRA C++:2023、AUTOSAR C++14、JSF AV C++ Coding Standards 等行业规范。
 
 ---
@@ -83,23 +96,23 @@ C++14/17/20 进一步改进：
 
 ### 1.5 演进时间线
 
-```text
-1972  C 语言                      K&R C
-1985  C++ 1.0                     Stroustrup
-1990s 8 位 MCU + C 主导           8051, AVR, PIC
-1996  EC++ Specification          日本嵌入式协会
-1998  C++98 ISO/IEC 14882         标准化
-2003  MISRA C++:2008              汽车工业
-2008  AUTOSAR C++14               汽车软件联盟
-2011  C++11                       constexpr / atomic / noexcept
-2014  C++14                       constexpr 增强
-2017  C++17                       constexpr if / std::byte
-2018  Zephyr RTOS C++ 支持        Linux Foundation
-2020  C++20                       concept / consteval / coroutine
-2023  MISRA C++:2023              基于 C++17/20
-2023  C++23                       std::expected / std::print
-2026  C++26 草案                  constexpr 更多扩展
-```
+| 时间 | 里程碑 | 说明 |
+| --- | --- | --- |
+| 1972 | C 语言 | K&R C |
+| 1985 | C++ 1.0 | Stroustrup |
+| 1990s 8 位 MCU + C 主导 | 8051, AVR, PIC |  |
+| 1996 | EC++ Specification | 日本嵌入式协会 |
+| 1998 | C++98 ISO/IEC 14882 | 标准化 |
+| 2003 | MISRA C++:2008 | 汽车工业 |
+| 2008 | AUTOSAR C++14 | 汽车软件联盟 |
+| 2011 | C++11 | constexpr / atomic / noexcept |
+| 2014 | C++14 | constexpr 增强 |
+| 2017 | C++17 | constexpr if / std::byte |
+| 2018 | Zephyr RTOS C++ 支持 | Linux Foundation |
+| 2020 | C++20 | concept / consteval / coroutine |
+| 2023 | MISRA C++:2023 | 基于 C++17/20 |
+| 2023 | C++23 | std::expected / std::print |
+| 2026 | C++26 草案 | constexpr 更多扩展 |
 
 ---
 
