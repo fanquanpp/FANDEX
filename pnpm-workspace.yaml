@@ -9,6 +9,7 @@ packages:
   # 三端应用（desktop/android 当前为空占位，仅保留目录结构）
   - 'app-web'
   - 'app-desktop'
+  - 'app-desktop-portable'
   - 'app-Android-new'
   # 共享层（含子包）
   - 'shd-shared'

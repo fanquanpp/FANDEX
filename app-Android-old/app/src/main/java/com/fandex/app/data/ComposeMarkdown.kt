@@ -120,17 +120,24 @@ internal fun PreprocessMarkdown(markdown: String): String {
         "```math\n${formula}\n```"
     }
 
-    /* 第二步：逐行处理行内公式 $...$，跳过表格行 */
-    /* 表格行以 | 开头，其中的 $...$ 是公式，替换为行内代码会插入反引号破坏表格语法 */
+    /* 第二步：逐行处理行内公式 $...$。
+       v4.2.1 修复：表格行内公式此前被整体跳过，导致表格中的公式以原始 LaTeX 文本展示。
+       现对表格行同样转换，但先把公式内的 | 转义为 \vert，避免竖线被误判为表格列分隔符。 */
     val blockFormulaPattern = Regex("""```math[\s\S]*?```""")
+    val inlineMathPattern = Regex("""(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)""")
     result = result.lineSequence().joinToString("\n") { line ->
         if (line.trimStart().startsWith("|")) {
-            /* 表格行：保留原始 $...$ 不替换，commonmark 会将其作为普通文本渲染 */
-            line
+            /* 表格行：转换 $...$ 并保护竖线字符 */
+            blockFormulaPattern.replace(line) { it.value }.let { processedLine ->
+                inlineMathPattern.replace(processedLine) { match ->
+                    val formula = match.groupValues[1].replace("|", "\\vert ")
+                    "`$${formula}$`"
+                }
+            }
         } else {
             /* 非表格行：替换行内公式为行内代码 */
             blockFormulaPattern.replace(line) { it.value }.let { processedLine ->
-                Regex("""(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)""").replace(processedLine) { match ->
+                inlineMathPattern.replace(processedLine) { match ->
                     val formula = match.groupValues[1]
                     "`$${formula}$`"
                 }
@@ -554,7 +561,60 @@ private fun RenderFencedCodeBlock(
     val code = codeBlock.literal
     val isCopied = remember { mutableStateOf(false) }
 
-    /* v3.1.0：math 语言走 LaTeX 公式渲染路径 */
+    /* v4.2.1：mermaid 语言走离线 WebView 图表渲染路径（原实现按普通代码展示） */
+    if (language.lowercase() == "mermaid") {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(vertical = 6.dp)
+                .border(
+                    width = 1.dp,
+                    color = colorScheme.codeBorder,
+                    shape = RoundedCornerShape(6.dp)
+                )
+                .background(
+                    color = colorScheme.codeBg,
+                    shape = RoundedCornerShape(6.dp)
+                )
+        ) {
+            /* 顶部栏：Mermaid 标签 + 复制按钮 */
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(colorScheme.codeHeaderBg)
+                    .padding(horizontal = 12.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = strings.mermaidLabel,
+                    fontSize = 11.sp * fontSizeScale,
+                    fontFamily = FontFamily.Monospace,
+                    color = colorScheme.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                TextButton(
+                    onClick = {
+                        CopyToClipboard(context, code)
+                        isCopied.value = true
+                    },
+                    contentPadding = ButtonDefaults.TextButtonContentPadding,
+                    modifier = Modifier.height(28.dp)
+                ) {
+                    Text(
+                        text = if (isCopied.value) strings.copied else strings.copy,
+                        fontSize = 11.sp * fontSizeScale,
+                        color = if (isCopied.value) colorScheme.primary else colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+            /* 图表内容：调用 MermaidDiagramView 离线渲染（失败时回退展示源码） */
+            MermaidDiagramView(code = code.trim(), colorScheme = colorScheme)
+        }
+        return
+    }
+
+    /* v3.1.0：math 语言走 LaTeX 公式渲染路径（v4.2.1 起改用 KaTeX 离线渲染） */
     if (language.lowercase() == "math") {
         Column(
             modifier = Modifier
@@ -601,11 +661,11 @@ private fun RenderFencedCodeBlock(
                     )
                 }
             }
-            /* 公式内容：调用 MathFormulaBlock 渲染 */
-            MathFormulaBlock(
+            /* 公式内容：v4.2.1 起调用 KaTeX 离线渲染（原 Compose 子集解析仅支持少量命令） */
+            MathWebViewBlock(
                 formula = code.trim(),
                 colorScheme = colorScheme,
-                fontSizeScale = fontSizeScale
+                isBlock = true
             )
         }
         return

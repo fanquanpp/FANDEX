@@ -1,0 +1,12 @@
+{
+  "name": "@fandex/desktop-portable",
+  "version": "4.2.1",
+  "private": true,
+  "description": "FANDEX Windows 桌面端便携版（免安装解压即用）：复用 app-desktop 的 Tauri 构建产出裸 exe 并打包 zip",
+  "scripts": {
+    "build": "node build-portable.mjs"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.0.0"
+  }
+}

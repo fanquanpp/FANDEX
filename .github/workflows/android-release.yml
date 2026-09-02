@@ -132,6 +132,16 @@ jobs:
           path: app-desktop/src-tauri/target/release/bundle/nsis/*.exe
           retention-days: 90
 
+      - name: 构建便携版（免安装解压即用）
+        run: pnpm --filter @fandex/desktop-portable build
+
+      - name: 上传便携版构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: fandex-desktop-portable
+          path: app-desktop-portable/dist/*.zip
+          retention-days: 90
+
   release:
     name: 发布 GitHub Release
     needs: [build, desktop]
@@ -160,12 +170,19 @@ jobs:
           name: fandex-desktop-installer
           path: desktop
 
+      - name: 下载 Windows 桌面端便携版产物
+        uses: actions/download-artifact@v4
+        with:
+          name: fandex-desktop-portable
+          path: desktop-portable
+
       - name: 重命名为发布文件名
         run: |
           mkdir -p apk
           mv apk-new/*.apk "apk/FANDEX-${{ github.ref_name }}.apk"
           mv apk-old/*.apk "apk/FANDEX-Legacy-${{ github.ref_name }}.apk"
           mv desktop/*.exe "apk/FANDEX-Setup-${{ github.ref_name }}.exe"
+          mv desktop-portable/*.zip "apk/FANDEX-Portable-${{ github.ref_name }}.zip"
           ls -la apk/
 
       - name: 生成发布说明
@@ -203,4 +220,5 @@ jobs:
             apk/FANDEX-${{ github.ref_name }}.apk
             apk/FANDEX-Legacy-${{ github.ref_name }}.apk
             apk/FANDEX-Setup-${{ github.ref_name }}.exe
+            apk/FANDEX-Portable-${{ github.ref_name }}.zip
           fail_on_unmatched_files: true
