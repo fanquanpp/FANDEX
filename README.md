@@ -21,9 +21,8 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 ├── app-Android-old/    # Android 应用 · 旧技术栈归档线（功能完整，可构建发布）
 ├── cnt-content/        # 内容层：full/ 全量文档、syntax/ 语法速览素材
 ├── shd-shared/         # 共享层：设计令牌、模块元数据（metadata/modules.json）、图标资产
-├── tls-tools/          # 工具链：文档 ID 分配、内容审计、manifest 签名分发
-├── thd-third-party/    # 第三方组件 / 插件 / 适配器
-└── tools/              # 内容工程批处理脚本
+├── tls-tools/          # 工具链：文档 ID 分配、内容清单（manifest）生成
+└── thd-third-party/    # 第三方组件 / 插件 / 适配器
 ```
 
 ## 客户端

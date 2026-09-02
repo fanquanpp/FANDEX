@@ -1622,11 +1622,3 @@ int main(void) {
 | `-Walloca` | GCC/Clang | 警告 `alloca` 使用 |
 | `-Wvla` | GCC/Clang | 警告 VLA 使用 |
 | `-Wstack-protector-disabled` | Clang | 警告栈保护被禁用 |
-
----
-
-> **文档版本**：v1.0
-> **最后更新**：2026-06-14
-> **作者**：fanquanpp
-> **对标课程**：MIT 6.087 / Stanford CS107 / CMU 15-213
-> **标准依据**：ISO/IEC 9899:2024 (C23) / System V AMD64 ABI v1.0 / AAPCS64

@@ -1883,7 +1883,3 @@ public sealed class GcMonitor : IDisposable
 .NET GC 是一个经过 20 余年演进的成熟系统，从 1.0 的三代模型到 9 的 DATAS 与 POH，不断适应现代工作负载。理解 GC 代机制、标记清除、压缩策略、固定对象、Server/Workstation 模式的本质，是编写高性能 .NET 应用的基础。
 
 掌握 GC 不是为了"手动控制"——而是为了在合适的场景选择合适的工具：`ArrayPool<T>` 降低分配、`Span<T>` 零拷贝、POH 隔离固定、Background GC 降低停顿。GC 是协作的，开发者通过减少压力让 GC 更高效地工作。
-
----
-
-*最后更新：2026-07-20*

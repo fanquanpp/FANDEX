@@ -4,6 +4,19 @@
 
 # 映射类型与键重映射
 
+## 前置知识
+
+- [TypeScript 编译与性能优化](/typescript/055-TypeScriptCompilePerformanceOptimization)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.S192、Stanford CS110、CMU 15-214 等课程教学水准，系统讲解 TypeScript 映射类型（Mapped Types）与键重映射（Key Remapping via `as`）的设计动机、形式化定义、推理规则与工程级应用。所有代码示例均可在 TS 5.4 + `strict: true` 下编译通过。
 
 ---
@@ -1602,9 +1615,6 @@ Soicher, G. (2016). *TypeScript 1.8: Mapped types design notes*. Microsoft Inter
 | 函子 | functor | Haskell 中的映射概念 |
 | 类型实例化 | type instantiation | TypeScript 编译器展开泛型类型 |
 
----
-
-*本文档由 FANDEX 项目维护，对标 MIT/Stanford/CMU 教学水准，最后更新于 2026-06-14。*
 ## 基本映射类型
 
 **换行写法：基本映射类型**

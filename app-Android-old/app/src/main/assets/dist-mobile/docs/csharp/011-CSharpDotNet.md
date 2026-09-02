@@ -1,5 +1,18 @@
 # C# .NET 平台与生态
 
+## 前置知识
+
+- [yield 迭代器状态机](/csharp/010-CSharpYieldIteratorStateMachine)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本篇是 FANDEX C# 系列的第八篇。我们将系统讲解 .NET 平台架构与生态：从 CLR/CoreCLR 运行时、BCL 基础类库、NuGet 包管理、依赖注入、配置系统、日志、中间件管道、ASP.NET Core、EF Core 到 .NET MAUI 跨平台 UI。内容对标 MIT 6.172（Performance Engineering）、Stanford CS142（Web Applications）、CMU 15-440（Distributed Systems）课程教学严谨度，支持 0 基础自学，同时覆盖企业级实战要点。
 
 ---

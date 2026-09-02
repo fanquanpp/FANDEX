@@ -4,6 +4,19 @@
 
 # 装饰器标准实现
 
+## 前置知识
+
+- [tsconfig 严格模式](/typescript/060-TsconfigStrictMode)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.S192、Stanford CS110、CMU 15-214 等课程教学水准，系统讲解 TypeScript 装饰器（Decorators）从 Legacy 到 Stage 3 标准的演进、形式化语义、元数据协议与工程级应用。所有代码示例均可在 TS 5.4 + `target: ES2022` 下编译通过。
 
 ---
@@ -1797,9 +1810,6 @@ interface ClassAccessorDecoratorResult<V, R> {
 }
 ```
 
----
-
-*本文档最后更新于 2026-06-14，基于 TypeScript 5.4 与 TC39 Decorators Proposal Stage 3；TypeScript 7.x 沿用同一装饰器语义。如需了解最新版本特性，请参考 [TypeScript 官方文档](https://www.typescriptlang.org/docs/)与 [TC39 提案仓库](https://github.com/tc39/proposal-decorators)。*
 ## 装饰器基础
 
 **基本写法：类装饰器**

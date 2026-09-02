@@ -1,3 +1,18 @@
+## 前置知识
+
+- [C#与 Unity 游戏开发](/csharp/021-CSharpUnityGameDev)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演进脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与性能分析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例与实战演示」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
+
+
 ## 1. 历史动机与演进脉络
 
 ### 1.1 Web 前端的 JavaScript 垄断期（1995-2015）
@@ -2619,33 +2634,31 @@ A：微软正致力于 Blazor United 项目，融合 MVC、Razor Pages、Blazor 
 
 **附录 G：开发环境配置清单**
 
-```
-必要工具：
+**必要工具**：
 - .NET 8 SDK 或更高版本
 - Visual Studio 2022 17.8+ 或 Visual Studio Code + C# Dev Kit
 - Node.js 18+（用于前端工具链，可选）
 - Git
 
-推荐插件（VS Code）：
+**推荐插件（VS Code）**：
 - C# Dev Kit
 - Blazor Snippets
 - Razor+ (语法高亮增强)
 
-推荐扩展（Visual Studio）：
+**推荐扩展（Visual Studio）**：
 - Web Essentials
 - Blazorator
 - Live Blazor Preview
 
-浏览器扩展：
+**浏览器扩展**：
 - C# DevTools（Chrome/Edge，调试 WASM）
 - Blazor Inspector（DOM 检查增强）
 
-命令行工具：
+**命令行工具**：
 - dotnet-ef（EF Core 工具）
 - dotnet-watch（热重载）
 - dotnet-counters（性能监控）
 - dotnet-dump（内存分析）
-```
 
 **附录 H：项目模板与脚手架**
 
@@ -2685,8 +2698,7 @@ dotnet add package Moq
 
 **附录 I：部署清单**
 
-```
-Blazor Server 部署：
+**Blazor Server 部署**：
 - [ ] 配置反向代理（Nginx/IIS）
 - [ ] 启用 WebSocket 支持
 - [ ] 配置 SignalR 背板（Redis）
@@ -2696,7 +2708,7 @@ Blazor Server 部署：
 - [ ] 配置 HTTPS
 - [ ] 设置日志收集
 
-Blazor WebAssembly 部署：
+**Blazor WebAssembly 部署**：
 - [ ] 配置静态文件服务
 - [ ] 启用 Brotli/Gzip 压缩
 - [ ] 配置缓存策略
@@ -2706,14 +2718,13 @@ Blazor WebAssembly 部署：
 - [ ] 配置 HTTPS
 - [ ] 启用 HSTS
 
-通用：
+**通用**：
 - [ ] 配置环境变量
 - [ ] 设置连接字符串
 - [ ] 配置密钥管理
 - [ ] 启用 Application Insights（监控）
 - [ ] 配置备份策略
 - [ ] 制定回滚方案
-```
 
 **附录 J：版本升级指南**
 
@@ -2744,67 +2755,63 @@ Blazor WebAssembly 部署：
 
 **附录 L：性能优化检查表**
 
-```
-首屏优化：
-[ ] 启用预渲染（Server 模式）
-[ ] 使用 AOT 编译（WASM 模式）
-[ ] 启用裁剪
-[ ] 懒加载大型程序集
-[ ] 压缩静态资源
-[ ] 使用 CDN
+**首屏优化**：
+- [ ] 启用预渲染（Server 模式）
+- [ ] 使用 AOT 编译（WASM 模式）
+- [ ] 启用裁剪
+- [ ] 懒加载大型程序集
+- [ ] 压缩静态资源
+- [ ] 使用 CDN
 
-运行时优化：
-[ ] 使用 @key 优化列表渲染
-[ ] 虚拟化大数据列表
-[ ] 避免 Update 中的内存分配
-[ ] 缓存组件引用
-[ ] 使用 ValueTask 替代 Task
-[ ] 减少不必要的 StateHasChanged 调用
+**运行时优化**：
+- [ ] 使用 @key 优化列表渲染
+- [ ] 虚拟化大数据列表
+- [ ] 避免 Update 中的内存分配
+- [ ] 缓存组件引用
+- [ ] 使用 ValueTask 替代 Task
+- [ ] 减少不必要的 StateHasChanged 调用
 
-内存优化：
-[ ] 取消事件订阅
-[ ] 释放 JS 对象引用
-[ ] 释放 Timer 与 IDisposable 资源
-[ ] 避免闭包捕获大对象
-[ ] 使用对象池
+**内存优化**：
+- [ ] 取消事件订阅
+- [ ] 释放 JS 对象引用
+- [ ] 释放 Timer 与 IDisposable 资源
+- [ ] 避免闭包捕获大对象
+- [ ] 使用对象池
 
-网络优化：
-[ ] 启用 SignalR 压缩
-[ ] 配置合理的传输方式
-[ ] 使用 MessagePack 替代 JSON
-[ ] 减小 API 响应体积
-[ ] 启用 HTTP/2 或 HTTP/3
-```
+**网络优化**：
+- [ ] 启用 SignalR 压缩
+- [ ] 配置合理的传输方式
+- [ ] 使用 MessagePack 替代 JSON
+- [ ] 减小 API 响应体积
+- [ ] 启用 HTTP/2 或 HTTP/3
 
 **附录 M：安全检查清单**
 
-```
-认证与授权：
-[ ] 使用 HTTPS
-[ ] 配置认证中间件
-[ ] 实现 Role-based 与 Policy-based 授权
-[ ] 验证所有敏感操作
-[ ] 实现防 CSRF
+**认证与授权**：
+- [ ] 使用 HTTPS
+- [ ] 配置认证中间件
+- [ ] 实现 Role-based 与 Policy-based 授权
+- [ ] 验证所有敏感操作
+- [ ] 实现防 CSRF
 
-输入验证：
-[ ] 所有用户输入进行验证
-[ ] 使用 DataAnnotations
-[ ] 防止 XSS（Blazor 自动转义）
-[ ] 防止 SQL 注入（使用参数化查询）
-[ ] 限制上传文件大小与类型
+**输入验证**：
+- [ ] 所有用户输入进行验证
+- [ ] 使用 DataAnnotations
+- [ ] 防止 XSS（Blazor 自动转义）
+- [ ] 防止 SQL 注入（使用参数化查询）
+- [ ] 限制上传文件大小与类型
 
-JS 互操作安全：
-[ ] 不在 JS 中执行用户输入
-[ ] 验证从 JS 接收的数据
-[ ] 限制 JS 调用范围
-[ ] 使用 ES 模块隔离
+**JS 互操作安全**：
+- [ ] 不在 JS 中执行用户输入
+- [ ] 验证从 JS 接收的数据
+- [ ] 限制 JS 调用范围
+- [ ] 使用 ES 模块隔离
 
-WASM 安全：
-[ ] 不在客户端存储敏感数据
-[ ] 验证所有客户端计算结果
-[ ] 使用 Service Worker 缓存敏感数据时谨慎
-[ ] 注意 WASM 代码可被反编译
-```
+**WASM 安全**：
+- [ ] 不在客户端存储敏感数据
+- [ ] 验证所有客户端计算结果
+- [ ] 使用 Service Worker 缓存敏感数据时谨慎
+- [ ] 注意 WASM 代码可被反编译
 
 **附录 N：社区资源与开源项目**
 
@@ -3013,7 +3020,7 @@ app.UseRequestLocalization();
 <p>@Loc["Hello, {0}", userName]</p>
 ```
 
-```
+```text
 # Resources/SharedResource.zh-CN.resx
 Welcome=欢迎
 Hello, {0}=你好，{0}

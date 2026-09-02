@@ -2095,13 +2095,6 @@ class DynamicPool(initialConcurrency: Int = 4) {
 - Kotlin 与 Android
 - 测试与最佳实践
 
----
-
-> **本文档版本**：v2.0
-> **最后更新**：2026-07-21
-> **维护者**：fanquanpp
-> **对标课程**：MIT 6.005、Stanford CS193P、CMU 15-440
-> **许可证**：CC BY-SA 4.0
 ## 协程基础
 
 **基本写法：launch 启动协程**

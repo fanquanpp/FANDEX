@@ -3735,12 +3735,6 @@ finally
 4. **持续跟进**：.NET 每个版本都在优化 Span 生态，关注 Stephen Toub 的博客。
 5. **贡献开源**：在 dotnet/runtime 提交 PR，深入理解 .NET 设计哲学。
 
----
-
-*文档版本：v1.0*
-*最后更新：2026-07-20*
-*对标标准：MIT 6.1020 / Stanford CS107 / CMU 15-410*
-*参考规范：ECMA-334 (C# 6th ed.) / ECMA-335 (CLI 6th ed.)*
 ## Span 基础
 
 **基本写法：从数组创建 Span**

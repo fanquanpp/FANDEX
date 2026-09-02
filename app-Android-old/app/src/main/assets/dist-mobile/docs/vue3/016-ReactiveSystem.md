@@ -1,3 +1,16 @@
+## 前置知识
+
+- [Vue3 性能优化实践](/vue3/015-Vue3PerformancePractice)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 响应式系统概述 | Reactive System Overview」的核心机制、典型用法与常见陷阱
+- 掌握「2. 响应式 API | Reactive APIs」的核心机制、典型用法与常见陷阱
+- 掌握「3. 响应式工具 | Reactive Utilities」的核心机制、典型用法与常见陷阱
+- 掌握「4. 响应式系统的陷阱 | Reactive System Pitfalls」的核心机制、典型用法与常见陷阱
+- 掌握「5. 响应式系统的最佳实践 | Reactive System Best Practices」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 响应式系统概述 | Reactive System Overview
 
 Vue3 的响应式系统是其核心特性之一，它使得数据变化能够自动触发视图更新。与 Vue2 相比，Vue3 的响应式系统进行了重构，使用 ES6 Proxy 替代了 Object.defineProperty，提供了更强大的响应式能力。

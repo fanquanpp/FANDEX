@@ -1,3 +1,16 @@
+## 前置知识
+
+- [LINQ 深度解析](/csharp/014-LINQDeep)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+- 掌握「6. 常见陷阱与最佳实践」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 历史动机与发展脉络
 
 ### 1.1 同步编程的瓶颈（.NET 1.0，2002）
@@ -141,6 +154,7 @@ await foreach (var item in GenerateAsync().WithCancellation(ct))
 {
     Console.WriteLine(item);
 }
+```
 ```mermaid
 stateDiagram-v2
     [*] --> Created
@@ -150,6 +164,7 @@ stateDiagram-v2
     Running --> RanToCompletion
     Running --> Faulted
     Running --> Canceled
+```
 ```csharp
 public interface IAsyncEnumerable<out T>
 {
@@ -2191,9 +2206,6 @@ C# 异步编程从 APM 的回调地狱，到 EAP 的事件模型，再到 TAP + 
 
 掌握这些，才能写出真正"全栈异步"的高性能 .NET 应用。
 
----
-
-*最后更新：2026-07-20*
 ## async 与 await 基础
 
 **基本写法：async 方法声明**

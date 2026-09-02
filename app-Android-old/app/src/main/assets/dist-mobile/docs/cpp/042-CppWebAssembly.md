@@ -1,3 +1,18 @@
+## 前置知识
+
+- [C++代码规范](/cpp/041-CppCodeStyle)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「概述」的核心机制、典型用法与常见陷阱
+- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
+- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「理论推导」的核心机制、典型用法与常见陷阱
+- 掌握「基础概念」的核心机制、典型用法与常见陷阱
+
+
+
+
 ## 概述
 
 WebAssembly（缩写 Wasm）是一种可移植、紧凑、高效的二进制指令格式，由 W3C WebAssembly Working Group 标准化。它定义了一个基于栈的虚拟机（stack-based virtual machine），其指令集设计参考了 LLVM IR、asm.js 与现代 CPU 指令集。Wasm 模块可以在现代浏览器中以接近原生的速度运行，也可以在 Node.js、Deno、Bun 等 JavaScript 运行时中执行，还可以通过 WASI（WebAssembly System Interface）在服务端、边缘计算节点、嵌入式设备上运行，实现"一次编译，多处运行"。

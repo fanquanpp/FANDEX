@@ -32,7 +32,7 @@ int main() {
 
 ## 动手环节：编译运行
 
-C++ 是编译型语言，需要编译器（Windows 推荐 VS Code + MinGW，配置见 [C 语言零基础起步](c/001-CZeroBasisStart) 的环境章节，两者共用工具链）。保存 `hello.cpp` 后：
+C++ 是编译型语言，需要编译器（Windows 推荐 VS Code + MinGW，配置见 [C 语言零基础起步](/c/001-CZeroBasisStart) 的环境章节，两者共用工具链）。保存 `hello.cpp` 后：
 
 ```bash
 g++ hello.cpp -o hello   # 编译
@@ -65,4 +65,4 @@ int main() {
 
 ## 下一步
 
-进入 [C++ 概述与现代标准](cpp/002-CppOverviewAndModernStandard) 开始主线；学到智能指针与 STL 章节时，你会真正体会到"现代 C++"与教科书上古老形象的巨大差异。
+进入 [C++ 概述与现代标准](/cpp/002-CppOverviewAndModernStandard) 开始主线；学到智能指针与 STL 章节时，你会真正体会到"现代 C++"与教科书上古老形象的巨大差异。

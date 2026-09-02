@@ -1,3 +1,16 @@
+## 前置知识
+
+- [Java 命令行工具 javac/java/jar/jshell/jpackage 语法速查手册](/java/100-JavaCommandLineTools)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
+- 掌握「1. Swing 概述 | Swing Overview」的核心机制、典型用法与常见陷阱
+- 掌握「3. 布局管理器 | Layout Managers」的核心机制、典型用法与常见陷阱
+- 掌握「4. 事件处理 | Event Handling」的核心机制、典型用法与常见陷阱
+- 掌握「5. Swing 高级特性 | Advanced Features」的核心机制、典型用法与常见陷阱
+
+
 ## 0. 本节阅读指引（先读这一节）
 
 本篇是「Swing 图形界面」。

@@ -5,6 +5,19 @@
 
 # 模块声明与全局类型增强
 
+## 前置知识
+
+- [类型体操](/typescript/058-TypeGymnastics)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.S192 与 Stanford CS142 课程标准，系统讲解 TypeScript 模块声明（Module Declaration）、声明合并（Declaration Merging）与全局类型增强（Global Augmentation）的形式语义、工程实践与生产级模式。文档面向零基础自学读者，从 JavaScript 模块系统的演化出发，逐步推导 `declare module`、`declare global`、三斜线指令与 `@types` 生态的设计动机，最终落地为可复用的工程模板。
 
 ---
@@ -1579,9 +1592,6 @@ class Host {
 | 模块解析 | Module Resolution | TypeScript 将模块说明符解析为实际文件的算法 |
 | 项目引用 | Project Reference | 通过 `references` 字段将多个 tsconfig 关联的机制 |
 
----
-
-*本文档版本：v2.0 | 最后更新：2026-07-21 | 适配 TypeScript 5.4+*
 ## 模块基础
 
 **基本写法：导出**

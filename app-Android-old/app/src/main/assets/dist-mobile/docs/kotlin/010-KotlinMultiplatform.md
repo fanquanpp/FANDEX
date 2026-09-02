@@ -1,3 +1,16 @@
+## 前置知识
+
+- [Kotlin 协程进阶](/kotlin/009-KotlinCoroutineAdvanced)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. KMP 架构概述」的核心机制、典型用法与常见陷阱
+- 掌握「2. expect/actual 声明」的核心机制、典型用法与常见陷阱
+- 掌握「3. 共享代码实践」的核心机制、典型用法与常见陷阱
+- 掌握「4. Compose Multiplatform」的核心机制、典型用法与常见陷阱
+- 掌握「5. iOS 集成」的核心机制、典型用法与常见陷阱
+
+
 ## 1. KMP 架构概述
 
 Kotlin Multiplatform (KMP) 是 JetBrains 推出的多平台开发方案，允许在平台间共享 Kotlin 代码，同时保留平台特定实现的能力。2024 年 Kotlin 2.1 正式将 KMP 标记为稳定版。

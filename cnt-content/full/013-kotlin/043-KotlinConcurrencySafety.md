@@ -2657,7 +2657,3 @@ class ConcurrentExecutor(
 6. **`Mutex.isLocked`**：检查锁状态（注意：仅用于调试，不用于逻辑）。
 7. **`Channel.isClosedForSend`**：检查 Channel 是否已关闭。
 8. **`StateFlow.value`**：调试时查看当前状态值。
-
----
-
-*本文档最后更新于 2026-07-21，对标 MIT 6.005、Stanford CS110、CMU 15-440 教学水准。*

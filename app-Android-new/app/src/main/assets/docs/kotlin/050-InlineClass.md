@@ -2255,22 +2255,15 @@ value class Serializable(val value: Type)
 
 ## 附录 E：本文档写作说明
 
-### E.1 版本信息
-
-- Kotlin 版本：1.9 / 2.0
-- 文档版本：1.0
-- 最后更新：2026-06-14
-- 对标标准：MIT 6.005 / Stanford CS193P / CMU 15-410
-
-### E.2 引用格式
+### E.1 引用格式
 
 本文档遵循 ACM Reference Format。
 
-### E.3 数学公式
+### E.2 数学公式
 
 本文档使用 KaTeX 语法。
 
-### E.4 代码示例
+### E.3 代码示例
 
 所有代码示例均在 Kotlin 2.0 + JVM 17 上验证通过。
 

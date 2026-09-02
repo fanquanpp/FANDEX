@@ -4,6 +4,19 @@
 `def <函数名>(<参数>: <类型>[T]) -> <类型>[T]`
 ```python
 # 使用 TypeVar 声明泛型
+
+## 前置知识
+
+- [推导式与生成器](/python/053-ComprehensionGenerator)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「泛型」的核心机制、典型用法与常见陷阱
+- 掌握「Optional 与 Union」的核心机制、典型用法与常见陷阱
+- 掌握「Callable 可调用类型」的核心机制、典型用法与常见陷阱
+- 掌握「容器类型」的核心机制、典型用法与常见陷阱
+- 掌握「TypedDict」的核心机制、典型用法与常见陷阱
+
 from typing import TypeVar
 T = TypeVar("T")
 def first(items: list[T]) -> T:

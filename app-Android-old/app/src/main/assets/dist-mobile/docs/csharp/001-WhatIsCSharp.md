@@ -57,4 +57,4 @@ for (int i = 1; i <= 100; i++)
 
 ## 下一步
 
-进入 [C# 概述与环境搭建](csharp/002-CSharpOverviewEnvSetup) 开始主线；面向对象部分建议与 java 模块对照学习，两者概念一一对应、语法互证。
+进入 [C# 概述与环境搭建](/csharp/002-CSharpOverviewEnvSetup) 开始主线；面向对象部分建议与 java 模块对照学习，两者概念一一对应、语法互证。

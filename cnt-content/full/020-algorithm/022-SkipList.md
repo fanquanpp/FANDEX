@@ -55,7 +55,7 @@ prerequisites:
 | 严格最坏 $O(\log n)$ 保证 | 不适合 | 跳跃表为期望复杂度，最坏 $O(n)$，应选红黑树 |
 | 极小数据量（< 64 个元素） | 不适合 | 多层索引的额外开销大于收益，应选有序数组 |
 
-> 跨模块引用：跳跃表与红黑树、AVL 的对比详见 [平衡树与高级树](/algorithm$2。Redis 中跳跃表的应用详见 [Redis 有序集合](/redis$2。
+> 跨模块引用：跳跃表与红黑树、AVL 的对比详见 [平衡树与高级树](/algorithm/015-BalancedTreeAdvanced)。Redis 中跳跃表的应用详见 [Redis 有序集合](/redis/001-OverviewCoreDataStructure)。
 
 ---
 
@@ -1694,11 +1694,11 @@ def delete_bug(self, key):
 
 ### 15.1 关联模块
 
-- [平衡树与高级树](/algorithm$2 — 红黑树、AVL、B 树、Splay 树的对比
-- [链表](/algorithm$2 — 跳跃表的底层结构基础
-- [树](/algorithm$2 — 二叉搜索树、堆、Trie 的形式化定义
-- [哈希表](/algorithm$2 — 无序集合的 $O(1)$ 替代方案
-- [线段树](/algorithm$2 — 区间查询的另一种 $O(\log n)$ 方案
+- [平衡树与高级树](/algorithm/015-BalancedTreeAdvanced) — 红黑树、AVL、B 树、Splay 树的对比
+- [链表](/algorithm/005-LinkedList) — 跳跃表的底层结构基础
+- [树](/algorithm/007-Tree) — 二叉搜索树、堆、Trie 的形式化定义
+- [哈希表](/algorithm/006-HashTable) — 无序集合的 $O(1)$ 替代方案
+- [线段树](/algorithm/020-SegmentTree) — 区间查询的另一种 $O(\log n)$ 方案
 
 ### 15.2 进阶资料
 

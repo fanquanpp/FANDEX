@@ -1,5 +1,18 @@
 # Go 与 Kubernetes：从 client-go 到 Operator 的工程实践
 
+## 前置知识
+
+- [Go 与 gRPC](/go/025-GoGRPC)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+
+
 > 本文以 Kubernetes 1.28 与 client-go 0.28 为基准版本，覆盖 Kubernetes API 编程模型的核心机制：RESTful API 交互、Clientset、Informer/Cache、Workqueue、Controller 协调循环（Reconciliation Loop）、Custom Resource Definition（CRD）、Operator 模式、Leader Election、kubebuilder/controller-runtime 框架。适用于已掌握 Go 基础语法与 Kubernetes 基本使用、希望深入理解 K8s 控制平面编程的工程师。
 
 ---

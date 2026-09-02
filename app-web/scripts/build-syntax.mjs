@@ -14,8 +14,8 @@
  *
  * 设计目的：
  *   - syntax 目录（cnt-content/syntax）是专用"速查"素材源：结构统一、代码示例
- *     精简，天然适合生成速查卡片；2026-08 起自历史遗留的 cnt-content/mobile 迁入，
- *     站点构建不再依赖 mobile 目录
+ *     精简，天然适合生成速查卡片；2026-08 起自 cnt-content/mobile 迁出，
+ *     mobile 目录已于 2026-09 清理删除，站点构建仅依赖 syntax 目录
  *   - 与 doc-stats.json / doc-index.json 一样，预构建为 JSON 缓存，
  *     避免运行时解析 700+ Markdown 文件，降低 dev/build 内存与耗时
  *   - 模块标题与分类颜色复用共享元数据，保证与全站模块体系一致
@@ -102,7 +102,7 @@ function capCode(code) {
 
 /**
  * 解析单个 Markdown 文档中的语法点
- * 结构约定（mobile 全库统一）：
+ * 结构约定（syntax 素材源统一）：
  *   # 文档标题
  *   ## 小节标题
  *   **写法名称**（HTML 等文档为 "**form 元素**" 等标签）
@@ -166,7 +166,7 @@ function parseSyntaxPoints(filePath, moduleId) {
 }
 
 /**
- * 主函数：扫描 mobile 语言模块并生成语法速查数据
+ * 主函数：扫描 syntax 语言模块并生成语法速查数据
  */
 function main() {
   console.log('[build-syntax] Scanning', syntaxContentDir);

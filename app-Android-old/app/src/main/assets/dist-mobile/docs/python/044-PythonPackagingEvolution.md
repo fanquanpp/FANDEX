@@ -1,3 +1,16 @@
+## 前置知识
+
+- [Python 与设计模式](/python/043-PythonDesignPattern)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 概述与定位」的核心机制、典型用法与常见陷阱
+- 掌握「2. 历史动机与演进时间线」的核心机制、典型用法与常见陷阱
+- 掌握「3. 形式化定义与数学基础」的核心机制、典型用法与常见陷阱
+- 掌握「4. 理论推导与算法原理」的核心机制、典型用法与常见陷阱
+- 掌握「5. 核心配置与生产级代码示例」的核心机制、典型用法与常见陷阱
+
+
 ## 1. 概述与定位
 
 Python 打包发布（Packaging and Distribution）是将 Python 代码从开发环境交付到目标用户或生产环境的工程化过程。它涵盖依赖声明、源码分发（sdist）、二进制分发（wheel）、PyPI 上传、版本管理、可信发布等环节。Python 打包生态历经 20 余年演进，从早期的 distutils 到 setuptools、pip、Poetry、hatch、pdm，每一步都伴随 PEP（Python Enhancement Proposal）的标准化推进。
@@ -30,7 +43,7 @@ Python 打包发布（Packaging and Distribution）是将 Python 代码从开发
 - 无法处理复杂的扩展模块编译
 - 缺乏元数据标准化
 
-```
+```python
 # distutils 时代的典型 setup.py
 from distutils.core import setup
 setup(name="mypackage", version="1.0")
@@ -1629,7 +1642,7 @@ include-package-data = true
 
 **基本写法：MANIFEST.in**
 `include <文件模式>`
-```
+```text
 # 显式声明包含文件
 include README.md LICENSE
 recursive-include mypackage/data *.json *.txt

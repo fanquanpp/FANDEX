@@ -1,3 +1,16 @@
+## 前置知识
+
+- [国际化与本地化](/c/032-I18nAndL10n)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
+- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「理论推导」的核心机制、典型用法与常见陷阱
+- 掌握「代码示例」的核心机制、典型用法与常见陷阱
+- 掌握「对比分析」的核心机制、典型用法与常见陷阱
+
+
 ## 历史动机与背景
 
 ### 构建系统诞生的历史背景
@@ -884,21 +897,22 @@ include(CPack)
 
 `target_link_libraries` 的三个关键字决定了依赖如何传播：
 
-```
-假设：mylib 是一个库目标，myapp 链接 mylib
+假设 `mylib` 是一个库目标，`myapp` 链接 `mylib`：
 
+```cmake
 target_link_libraries(mylib
     PUBLIC  core_lib      # core_lib 对 mylib 自身和 mylib 的使用者都可见
     PRIVATE utils_lib     # utils_lib 仅 mylib 内部使用，不传递给 myapp
     INTERFACE api_lib     # api_lib 仅传递给 myapp，mylib 自身不使用
 )
-
-结果：
-- mylib 编译时：使用 core_lib, utils_lib 的头文件
-- mylib 链接时：链接 core_lib, utils_lib
-- myapp 编译时：使用 core_lib, api_lib 的头文件（不含 utils_lib）
-- myapp 链接时：链接 mylib, core_lib, api_lib（不含 utils_lib）
 ```
+
+传播结果：
+
+- `mylib` 编译时：使用 core_lib, utils_lib 的头文件
+- `mylib` 链接时：链接 core_lib, utils_lib
+- `myapp` 编译时：使用 core_lib, api_lib 的头文件（不含 utils_lib）
+- `myapp` 链接时：链接 mylib, core_lib, api_lib（不含 utils_lib）
 
 形式化表示：
 

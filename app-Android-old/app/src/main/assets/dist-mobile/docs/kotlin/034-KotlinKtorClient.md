@@ -1,3 +1,16 @@
+## 前置知识
+
+- [Kotlin 与 Koin](/kotlin/033-KotlinKoin)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「概述」的核心机制、典型用法与常见陷阱
+- 掌握「基础概念」的核心机制、典型用法与常见陷阱
+- 掌握「快速上手」的核心机制、典型用法与常见陷阱
+- 掌握「详细用法」的核心机制、典型用法与常见陷阱
+- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+
+
 ## 概述
 
 Ktor Client 是 JetBrains 开发的 Kotlin HTTP 客户端库。它完全基于协程构建，支持多种引擎（CIO、OkHttp、Darwin 等），可以运行在 JVM、Android、iOS 和原生平台上。如果你需要在 Kotlin 项目中调用 REST API、下载文件或与 Web 服务交互，Ktor Client 是一个轻量且 Kotlin 风格的选择。

@@ -1848,7 +1848,3 @@ Console.WriteLine($"Downloaded {data.Length:N0} bytes in {sw.ElapsedMilliseconds
 - **不要孤立学习**：每一篇文档都关联着上下游，交叉阅读能加深理解。
 
 愿你在 FANDEX 的 C# 之旅中，既能掌握工程实战，也能体味语言设计之美。
-
----
-
-*本文由 FANDEX 团队编写，最后更新于 2026-07-21。若有疑问或建议，欢迎在项目仓库提交 Issue。*

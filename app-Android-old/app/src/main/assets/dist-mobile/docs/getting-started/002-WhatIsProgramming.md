@@ -58,4 +58,4 @@ console.log(total);     // 打印结果：5050
 
 ## 下一步
 
-选好方向后，进入[互联网是如何工作的](getting-started/003-HowInternetWorks)理解网页的来龙去脉，然后按[开发环境搭建](getting-started/004-DevEnvSetup)把工具装好，即可进入 `html5` 模块写下真正的第一行代码。
+选好方向后，进入[互联网是如何工作的](/getting-started/003-HowInternetWorks)理解网页的来龙去脉，然后按[开发环境搭建](/getting-started/004-DevEnvSetup)把工具装好，即可进入 `html5` 模块写下真正的第一行代码。

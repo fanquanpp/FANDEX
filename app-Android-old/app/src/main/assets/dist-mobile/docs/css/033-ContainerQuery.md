@@ -2214,9 +2214,6 @@ $$
 13. [ ] 性能测试：避免 `size` 容器导致布局开销
 14. [ ] 检查 `prefers-reduced-motion` 适配
 
----
-
-> 本文最后更新于 2026-06-14，内容基于 W3C CSS Containment Module Level 3（2024 Working Draft）。如规范更新，请以 W3C 最新发布为准。
 ## 附录 D：容器查询速查
 
 ### D.1 建立容器上下文

@@ -9,8 +9,7 @@
 - 代码需有完善、简洁的中文注释。
 - 每次任务完成后删除一次性脚本、废弃代码文件等临时产物。
 - 文档内容统一存放于 `cnt-content/full`；`cnt-content/syntax` 为语法速览
-  专用速查素材源（由 `app-web/scripts/build-syntax.mjs` 消费）；
-  `cnt-content/mobile` 为历史遗留目录，不作为网站内容源，不在其上执行统一化变更。
+  专用速查素材源（由 `app-web/scripts/build-syntax.mjs` 消费）。
 
 ## 文档 frontmatter 规范
 

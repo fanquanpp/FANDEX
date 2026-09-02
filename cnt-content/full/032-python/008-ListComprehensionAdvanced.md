@@ -1744,9 +1744,6 @@ print(f"map+lambda: {t_map:.3f}s")
 
 > "Simple is better than complex. Complex is better than complicated. Readability counts."
 
----
-
-*文档版本：v2.0.0 | 最后更新：2026-06-14 | 维护者：FANDEX Team*
 ## 基本列表推导式
 
 **基本写法：基本列表推导式**

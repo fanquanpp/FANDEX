@@ -1817,7 +1817,3 @@ CSS Flexbox §4.2 与 CSS Grid §2.2 明确规定：flex item 与 grid item 的 
 8. [ ] 检查浏览器兼容性（IE 不支持 `flow-root`）
 9. [ ] 验证响应式行为（不同视口下间距是否一致）
 10. [ ] 检查与设计系统的间距规范是否一致
-
----
-
-> 本文最后更新于 2026-06-14，内容基于 W3C CSS Box Model Module Level 3（2018）与 Level 4（2024 Editor's Draft）。如规范更新，请以 W3C 最新发布为准。

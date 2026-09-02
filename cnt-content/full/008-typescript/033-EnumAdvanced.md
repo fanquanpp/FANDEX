@@ -1578,9 +1578,6 @@ Bierman, G. (2012). *TypeScript design notes*. Microsoft Research Cambridge.
 | `as const` 断言 | as const assertion | 将对象收窄为字面量类型的断言 |
 | 字面量类型 | literal type | 具体值的类型（如 `'ACTIVE'`、`42`） |
 
----
-
-*本文档由 FANDEX 项目维护，对标 MIT/Stanford/CMU 教学水准，最后更新于 2026-06-14。*
 ## 数字枚举
 
 **换行写法：定义数字枚举**

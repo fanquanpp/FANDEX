@@ -3,7 +3,7 @@
  * 命名规范综合验证脚本
  *
  * 功能概述：
- * 扫描 cnt-content/full 与 cnt-content/mobile，检查：
+ * 扫描 cnt-content/full，检查：
  * 1. 文件夹命名：NNN-english-short（小写+连字符）
  * 2. 文档命名：NNN-EnglishName.md（PascalCase）
  * 3. 文件夹前缀唯一且连续
@@ -40,9 +40,9 @@ let compliantFolders = 0;
 let compliantDocs = 0;
 
 /**
- * 验证单个 manifest 类型目录
+ * 验证单个内容目录
  *
- * @param {string} manifestType - 'full' 或 'mobile'
+ * @param {string} manifestType - 内容目录名（如 'full'）
  */
 function validateManifestType(manifestType) {
   const dir = join(CONTENT_ROOT, manifestType);
@@ -162,9 +162,6 @@ function validateManifestType(manifestType) {
 /* 执行验证 */
 console.log('[validate] 开始命名规范综合验证');
 validateManifestType('full');
-const fullFolders = compliantFolders;
-const fullDocs = compliantDocs;
-validateManifestType('mobile');
 
 /* 输出结果 */
 console.log('\n========== 验证结果 ==========');

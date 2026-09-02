@@ -1665,13 +1665,3 @@ class BIT3:
     def _prefix(self, i): return self._q(self.t1, i)*(i+1) - self._q(self.t2, i)
     def range_query(self, l, r): return self._prefix(r) - self._prefix(l-1)
 ```
-
----
-
-**文档信息**：
-
-- 最后更新：2026-07-20
-- 审阅者：FANDEX Content Engineering
-- 文档版本：v2.0（金标准版）
-- 预计阅读时长：110 分钟
-- 适用对象：计算机科学本科高年级、研究生、算法竞赛选手、后端工程师

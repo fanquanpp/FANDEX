@@ -1,3 +1,17 @@
+## 前置知识
+
+- [测试与工程化](/react/009-TestEngineering)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. App Router」的核心机制、典型用法与常见陷阱
+- 掌握「2. Server Components」的核心机制、典型用法与常见陷阱
+- 掌握「3. Server Actions」的核心机制、典型用法与常见陷阱
+- 掌握「4. 中间件」的核心机制、典型用法与常见陷阱
+- 掌握「5. API Routes」的核心机制、典型用法与常见陷阱
+
+
+
 ## 1. App Router
 
 Next.js 15 的 App Router 基于文件系统路由，使用 React Server Components 作为默认渲染模式。

@@ -1657,7 +1657,3 @@ type Succ<N extends any[]> = [any, ...N];
 // 斐波那契
 type Fibonacci<N extends number, T extends any[] = [1], U extends any[] = [], V extends any[] = [any]> = T['length'] extends N ? U['length'] : Fibonacci<N, [...T, 1], V, [...U, ...V]>;
 ```
-
----
-
-*本文档最后更新于 2026-06-14，基于 TypeScript 5.4；当前稳定版为 TypeScript 7.x，文档中的类型级语法保持兼容。如需了解最新版本特性，请参考 [TypeScript 官方文档](https://www.typescriptlang.org/docs/)。*

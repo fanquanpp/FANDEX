@@ -1908,7 +1908,3 @@ func (c *counter) Get() int64 {
 | ResponseWriter | ResponseWriter | 响应写入接口 |
 | Context | Context | 请求作用域数据与取消信号 |
 | 自同态 | Endomorphism | 类型到自身的函数 |
-
----
-
-*本文档基于 Go 1.22 与主流 Web 框架撰写，最后更新于 2026-06-14。如有疑问或建议，欢迎在项目 issue 中讨论。*

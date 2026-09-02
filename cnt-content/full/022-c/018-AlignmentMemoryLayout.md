@@ -1646,7 +1646,3 @@ struct CacheLine {
 
 #endif /* ALIGNMENT_COMPAT_H */
 ```
-
----
-
-*本文档最后更新于 2026-06-14，遵循 ISO/IEC 9899:2024 (C23) 标准。*

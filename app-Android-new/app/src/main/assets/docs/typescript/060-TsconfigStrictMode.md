@@ -2230,9 +2230,6 @@ await service.delete('1');
 }
 ```
 
----
-
-> 本文档最后更新于 2026-06-14，基于 TypeScript 5.4 版本编写。所有代码示例均经过 `tsc --strict` 编译验证。
 ## 配置文件基础
 
 **基本写法：tsconfig.json 结构**

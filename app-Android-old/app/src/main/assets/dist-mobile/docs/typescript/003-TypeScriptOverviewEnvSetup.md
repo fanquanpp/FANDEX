@@ -1,3 +1,15 @@
+## 前置知识
+
+- [本课程使用指南（先读这里）](/typescript/002-HowToReadThisCourse)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. TypeScript 概述 (Overview)」的核心机制、典型用法与常见陷阱
+- 掌握「2. 环境配置 (Environment Setup)」的核心机制、典型用法与常见陷阱
+- 掌握「3. tsconfig.json 核心配置」的核心机制、典型用法与常见陷阱
+- 掌握「4. 工具链与生态系统」的核心机制、典型用法与常见陷阱
+- 掌握「5. 最佳实践」的核心机制、典型用法与常见陷阱
+
 ## 1. TypeScript 概述 (Overview)
 
 TypeScript 是 JavaScript 的一个**超集**，由微软开发，于 2012 年首次发布。它在 JavaScript 的基础上增加了**静态类型系统**和其他高级特性，最终通过编译器转换为纯 JavaScript 代码运行。TypeScript 的设计目标是帮助开发者构建大型、复杂的应用程序，提供更好的开发体验和代码质量。

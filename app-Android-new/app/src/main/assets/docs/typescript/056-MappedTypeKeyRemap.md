@@ -1631,9 +1631,6 @@ Soicher, G. (2016). *TypeScript 1.8: Mapped types design notes*. Microsoft Inter
 | 函子 | functor | Haskell 中的映射概念 |
 | 类型实例化 | type instantiation | TypeScript 编译器展开泛型类型 |
 
----
-
-*本文档由 FANDEX 项目维护，对标 MIT/Stanford/CMU 教学水准，最后更新于 2026-06-14。*
 ## 基本映射类型
 
 **换行写法：基本映射类型**

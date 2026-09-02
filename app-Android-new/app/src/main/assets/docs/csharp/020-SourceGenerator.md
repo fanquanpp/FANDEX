@@ -1491,9 +1491,3 @@ context.RegisterPostInitializationOutput(ctx =>
 掌握源生成器不仅需要理解 Roslyn API，更需要具备编译器思维：分析编译管道、设计纯函数管线、处理缓存有效性、生成可读且高效的代码。随着 .NET 生态全面转向 AOT 与 Native AOT，源生成器将成为每个 .NET 工程师的必备技能。
 
 > "The best code is the code you don't write—but the second best is the code the compiler writes for you." — Anonymous
-
----
-
-*本文档最后更新：2026-06-14*
-*作者：fanquanpp*
-*版本：v2.0（金标准升级版）*

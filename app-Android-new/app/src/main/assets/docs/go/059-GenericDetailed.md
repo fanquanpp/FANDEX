@@ -2742,10 +2742,3 @@ Go 泛型的引入是 Go 语言历史上最重要的演进之一。它解决了 
 5. **性能验证**：benchmark 确认收益
 
 > *"Generics are not a silver bullet, but they are a powerful tool in the right hands."* — Go 团队
-
----
-
-**文档版本**：Go 1.22
-**最后更新**：2026-06-14
-**作者**：fanquanpp
-**审阅状态**：待审阅

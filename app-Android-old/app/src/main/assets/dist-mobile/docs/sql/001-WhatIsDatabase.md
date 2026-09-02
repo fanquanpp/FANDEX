@@ -63,4 +63,4 @@ SELECT * FROM students ORDER BY score DESC;
 
 ## 下一步
 
-进入 [SQL 概述与标准](sql/002-OverviewStandard) 开始语法主线；想搭建本地数据库环境，接着读 [MySQL 模块](mysql/001-HowToUseThisCourse) 的环境章节。
+进入 [SQL 概述与标准](/sql/002-OverviewStandard) 开始语法主线；想搭建本地数据库环境，接着读 [MySQL 模块](/mysql/001-HowToUseThisCourse) 的环境章节。

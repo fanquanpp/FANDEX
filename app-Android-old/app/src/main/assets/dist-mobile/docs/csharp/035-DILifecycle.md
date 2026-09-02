@@ -1,3 +1,17 @@
+## 前置知识
+
+- [ASP.NET Core 中间件管道](/csharp/034-AspNetCoreMiddlewarePipeline)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「一、学习目标」的核心机制、典型用法与常见陷阱
+- 掌握「二、历史动机与发展脉络」的核心机制、典型用法与常见陷阱
+- 掌握「三、形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「四、理论推导与原理解析」的核心机制、典型用法与常见陷阱
+- 掌握「五、代码示例（企业级 production-ready）」的核心机制、典型用法与常见陷阱
+
+
+
 ## 一、学习目标
 
 本文以 MIT 6.170 *Software Studio*、Stanford CS193k *Distributed Systems*、CMU 17-447 *Software Engineering for Startups* 的依赖注入与服务生命周期教学水准为参照，对 ASP.NET Core 的 DI 容器与三种服务生命周期进行系统性、形式化与工程化的深度剖析。阅读完毕后，读者应能达成以下 Bloom 认知层级目标：

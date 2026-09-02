@@ -7,6 +7,38 @@
 > 发布说明约定：`android-release.yml` 工作流在打 `v*` 标签发布时，
 > 会自动提取本文档中对应 `## [vX.Y.Z]` 段落作为 GitHub Release 说明。
 
+## [未发布] - 2026-09-03
+
+本版本为仓库治理专项：清理历史遗留内容目录与一次性脚本，
+移除文档正文中冗余的"最后更新"明文段落，并修复历史迁移遗留的断链。
+不包含任何应用功能变更。
+
+### 移除
+
+- **cnt-content/mobile 遗留内容目录**：三端架构统一后，网站与 Android 双端
+  构建均只读取 cnt-content/full 与 cnt-content/syntax，该目录（690 个文件，
+  约 9.8MB）自 2026-08 syntax 迁出后已无任何消费方，整体删除
+  （git 历史可找回）；
+- **tools/ 一次性内容工程脚本**：mobile→full 迁移、练习题清理等一次性管线
+  已全部执行完毕，其质量门禁职责由 `app-web/scripts/content-audit.mjs` 与
+  `content.config.ts` 承接，整个目录删除。
+
+### 修复
+
+- **文档正文断链**：cnt-content/full 中 128 处因历史正则替换事故产生的
+  `](/module$2` 形态断链（丢失目标文档段与右括号），按链接文字逐条解析为
+  指向真实文档的有效链接；
+- **文档正文冗余段落**：47 篇文档移除正文中手写的"最后更新于 x月x日"
+  元信息小段落，更新时间统一由 frontmatter 的 `updated` 字段承载。
+
+### 变更
+
+- **Android 双端内嵌文档资产重新生成**：app-Android-new/assets/docs 与
+  app-Android-old/assets/dist-mobile 随内容源同步重建，并补齐旧端此前
+  缺失的 25 篇学习总结文档；
+- README、AGENTS.md、.gitignore 与相关脚本注释同步去除对已删除目录的
+  描述，根目录描述与实际结构保持一致。
+
 ## [v4.2.1] - 2026-09-02
 
 本版本聚焦平台体验：桌面端新增免安装便携版，appold 补齐 Mermaid 图表与

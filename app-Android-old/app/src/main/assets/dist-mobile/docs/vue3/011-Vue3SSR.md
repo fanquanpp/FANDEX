@@ -1,5 +1,18 @@
 # Vue 3 服务端渲染 | Server-Side Rendering in Vue 3
 
+## 前置知识
+
+- [Vue3 编译优化](/vue3/010-Vue3CompileOptimization)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. 历史动机与发展脉络 | Historical Motivation and Evolution」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义 | Formal Definitions」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导与原理解析 | Theoretical Derivation」的核心机制、典型用法与常见陷阱
+- 掌握「4. 代码示例 | Code Examples」的核心机制、典型用法与常见陷阱
+- 掌握「5. 对比分析 | Comparative Analysis」的核心机制、典型用法与常见陷阱
+
+
 > 本文档对标 MIT 6.170、Stanford CS142、CMU 17-437 软件工程课程水准，系统化阐述 Vue 3 服务端渲染（SSR）的原理、形式化定义、企业级实践与对比分析。涵盖同构应用架构、Hydration 机制、数据预取、流式渲染、Nuxt 3 集成、Vite SSR 构建、SSR 缓存策略、单例污染防护、SEO 优化、性能建模等主题，并辅以数学推导、对比分析、案例研究与习题。
 
 ---

@@ -1,3 +1,17 @@
+## 前置知识
+
+- [性能优化](/react/008-PerformanceOptimization)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「1. Vitest 与 Testing Library」的核心机制、典型用法与常见陷阱
+- 掌握「2. E2E 测试（Playwright）」的核心机制、典型用法与常见陷阱
+- 掌握「3. Storybook」的核心机制、典型用法与常见陷阱
+- 掌握「4. ESLint / Prettier」的核心机制、典型用法与常见陷阱
+- 掌握「5. CI/CD」的核心机制、典型用法与常见陷阱
+
+
+
 ## 1. Vitest 与 Testing Library
 
 ### 1.1 安装配置

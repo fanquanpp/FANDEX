@@ -1,3 +1,16 @@
+## 前置知识
+
+- [枚举救急锦囊：定义、构造函数与 switch](/java/036-EnumEssentials)：建议先完成前一篇的学习
+
+## 学习目标
+
+- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
+- 掌握「引言：从「int 常量」到「类型安全的领域建模」」的核心机制、典型用法与常见陷阱
+- 掌握「1. 历史动机与技术演进」的核心机制、典型用法与常见陷阱
+- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
+- 掌握「3. 理论推导」的核心机制、典型用法与常见陷阱
+
+
 ## 0. 本节阅读指引（先读这一节）
 
 本篇是「枚举与注解」，含较多理论章节。
@@ -1106,7 +1119,7 @@ public @interface Good {
 
 **修复**：
 
-```
+```properties
 # 文件路径：src/main/resources/META-INF/services/javax.annotation.processing.Processor
 # 内容：
 com.example.ImmutableProcessor
@@ -1650,7 +1663,7 @@ public @interface Cacheable {
 
 **3.** 通过 SPI 注册注解处理器：
 
-```
+```properties
 # 创建文件 src/main/resources/META-INF/services/javax.annotation.processing.Processor
 # 内容：
 com.example.MyProcessor
