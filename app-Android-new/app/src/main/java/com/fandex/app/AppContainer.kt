@@ -4,6 +4,7 @@ import android.content.Context
 import com.fandex.app.data.asset.AssetStore
 import com.fandex.app.data.prefs.HistoryPreferences
 import com.fandex.app.data.prefs.ThemePreferences
+import com.fandex.app.data.prefs.UpdatePreferences
 import com.fandex.app.data.repository.DocRepository
 import com.fandex.app.data.repository.LearningPathRepository
 import com.fandex.app.data.repository.ModuleRepository
@@ -37,4 +38,7 @@ class AppContainer(context: Context) {
 
     /** 阅读历史 */
     val historyPreferences = HistoryPreferences(context)
+
+    /** 更新偏好（自动检查开关 / 忽略版本 / 上次检查时间） */
+    val updatePreferences = UpdatePreferences(context)
 }

@@ -9,7 +9,7 @@ import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import LearningPathMap from '@/islands/learning-path/LearningPathMap'
-import { SITE } from '@/lib/constants'
+import { SITE, IS_DESKTOP_BUILD } from '@/lib/constants'
 import {
   getLearningPathModules,
   getLearningPathTechVM,
@@ -99,12 +99,14 @@ const chipModules = getLearningPathModules()
             </svg>
             <span class="entry-name">首页</span>
           </a>
-          <a href={`${base}playground/`} class="entry-btn" data-tooltip="前端实验工作台" data-tooltip-pos="bottom">
-            <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
-            </svg>
-            <span class="entry-name">在线编程</span>
-          </a>
+          {!IS_DESKTOP_BUILD && (
+            <a href={`${base}playground/`} class="entry-btn" data-tooltip="前端实验工作台" data-tooltip-pos="bottom">
+              <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
+              </svg>
+              <span class="entry-name">在线编程</span>
+            </a>
+          )}
           <a href={`${base}syntax/`} class="entry-btn" data-tooltip="语法快速查阅" data-tooltip-pos="bottom">
             <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
               <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>

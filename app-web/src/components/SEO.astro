@@ -12,7 +12,7 @@
  *   参考：https://developers.google.com/search/docs/appearance/structured-data/article
  * - BreadcrumbList schema 由调用方通过 breadcrumb prop 传入面包屑数组，
  *   组件内部转换为符合 schema.org/BreadcrumbList 规范的 JSON-LD
- * - OG image 缺省指向站点 favicon（社交平台对 SVG 支持有限，未来应替换为 1200x630 PNG）
+ * - OG image 使用 1200x630 品牌分享图（public/og-image.png，由 src/assets/og-image.svg 生成）
  * - is:inline 声明确保 Astro 不对 JSON-LD 脚本做二次处理
  *
  * 使用方式：
@@ -20,11 +20,6 @@
  *        publishedDate="2026-01-01" breadcrumb={[{label:'首页', href:'/'}, ...]} />
  */
 import { SITE } from '@/lib/constants';
-// 统一资产引用：favicon 从 @fandex/shared-assets 共享包导入，用于 OG 图片缺省值
-// Astro 静态导入 SVG 返回 SvgComponent & ImageMetadata 类型，
-// 此处提取 .src 字符串以匹配 new URL() 的 string | URL 参数约束
-import faviconMeta from '@fandex/shared-assets/icons/favicon.svg';
-const faviconUrl: string = (faviconMeta as unknown as { src: string }).src;
 
 interface BreadcrumbItem {
   /** 面包屑项显示文本 */
@@ -64,9 +59,10 @@ const fullTitle = `${title} | ${SITE.title}`;
 const pageUrl = canonical || SITE.url;
 const pageDescription = description || SITE.subtitle;
 
-// OG 图片：当前使用 favicon 作为缺省图（SVG），未来应替换为 1200x630 PNG 以获得最佳社交平台兼容性
-// favicon 来源统一为 @fandex/shared-assets 共享资产，通过 Vite 构建处理生成带哈希的 URL
-const ogImageUrl = new URL(faviconUrl, SITE.url).href;
+// OG 图片：使用 1200x630 品牌分享图（源文件 src/assets/og-image.svg，
+// 经 scripts/generate-og.mjs 渲染为 public/og-image.png；变更视觉后运行 pnpm og 重新生成）
+// 通过 BASE_URL 拼接以兼容 GitHub Pages 项目站点（/FANDEX/）与桌面端（/）两种 base
+const ogImageUrl = new URL(`${import.meta.env.BASE_URL}og-image.png`, SITE.url).href;
 
 // 文章日期：优先使用传入的 modifiedDate，回退到 publishedDate，再回退到当前时间
 // 统一将 string | Date 转换为 ISO 字符串以兼容 JSON-LD 规范
@@ -158,8 +154,8 @@ const breadcrumbJson =
 <meta property="og:image" content={ogImageUrl} />
 <meta property="og:locale" content="zh_CN" />
 
-<!-- Twitter Card 元数据 -->
-<meta name="twitter:card" content="summary" />
+<!-- Twitter Card 元数据（大图卡片：配合 1200x630 OG 图获得最佳展示） -->
+<meta name="twitter:card" content="summary_large_image" />
 <meta name="twitter:title" content={fullTitle} />
 <meta name="twitter:description" content={pageDescription} />
 <meta name="twitter:image" content={ogImageUrl} />

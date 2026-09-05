@@ -65,6 +65,7 @@ import com.fandex.app.ui.common.fandexEntrance
 import com.fandex.app.ui.common.tweenNormal
 import com.fandex.app.ui.components.DifficultyBadge
 import com.fandex.app.ui.components.FdxIconButton
+import com.fandex.app.ui.components.FontScaleControls
 import com.fandex.app.ui.components.ThemeQuickToggle
 import com.fandex.app.ui.components.TopDock
 import com.fandex.app.ui.markdown.MarkdownRenderer
@@ -154,6 +155,8 @@ fun DocumentScreen(
                     accentHex = success?.accentHex,
                     themeQuickToggle = { ThemeQuickToggle(viewModel = viewModel()) },
                     pageActions = {
+                        // 字号增减（移植自旧端文章页顶栏交互）
+                        FontScaleControls(viewModel = viewModel())
                         val toc = success?.toc.orEmpty()
                         if (toc.isNotEmpty()) {
                             DocumentTocButton(

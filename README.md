@@ -18,7 +18,7 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 ├── app-desktop/        # Windows 桌面端（Tauri 2，内嵌 web 产物，完全离线）
 ├── app-desktop-portable/ # Windows 桌面端便携版（免安装解压即用，与 app-desktop 共用构建）
 ├── app-Android-new/    # Android 应用 · 新技术栈主线（Kotlin + Jetpack Compose）
-├── app-Android-old/    # Android 应用 · 旧技术栈归档线（功能完整，可构建发布）
+├── app-Android-old/    # Android 应用 · 旧技术栈归档线（已冻结，仅修阻断缺陷）
 ├── cnt-content/        # 内容层：full/ 全量文档、syntax/ 语法速览素材
 ├── shd-shared/         # 共享层：设计令牌、模块元数据（metadata/modules.json）、图标资产
 ├── tls-tools/          # 工具链：文档 ID 分配、内容清单（manifest）生成
@@ -32,7 +32,7 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 | | app-web | app-desktop | app-Android-new | app-Android-old |
 | --- | --- | --- | --- | --- |
 | 平台 | 网页 | Windows | Android | Android |
-| 定位 | 在线站点 | 桌面端主线 | 移动端主线 | 移动端归档线 |
+| 定位 | 在线站点 | 桌面端主线 | 移动端主线 | 移动端归档线（已冻结） |
 | 技术栈 | Astro 7 + React 19 | Tauri 2（内嵌 web 产物） | Compose + Material 3 | Compose + Material 3 |
 | 包名/标识 | - | `com.fandexpp.desktop` | `com.fandexpp.fandex` | `com.fandex.app` |
 | 安装名 | FANDEX | FANDEX | FANDEX | FANDEXO |
@@ -44,6 +44,12 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 另有免安装的
 [便携版](app-desktop-portable/README.md)（FANDEX-Portable-<版本>.zip，解压即用、
 不写注册表），随 GitHub Release 一并分发。
+
+Android 新主线（app-Android-new）内置完整的应用更新体系：应用内检查 GitHub
+Releases 新版本、下载 APK（进度通知）并调起安装，支持每日后台自动检查（可关闭）
+与忽略指定版本；另有全局字号缩放（0.8–1.4，抽屉滑杆与文档页快捷按钮）与品牌
+启动页。旧主线（app-Android-old）自 4.3.0 起冻结维护，存量用户建议迁移到新主线，
+详见 [app-Android-old/README.md](app-Android-old/README.md)。
 
 ## 快速开始
 

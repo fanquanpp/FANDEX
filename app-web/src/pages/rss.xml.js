@@ -13,7 +13,8 @@ export async function GET(context) {
     items: docs.map((doc) => ({
       title: doc.data.title,
       description: doc.data.description,
-      pubDate: doc.data.updated || doc.data.created,
+      // schema 仅含 updated 字段（无 created），缺失时省略 pubDate
+      pubDate: doc.data.updated ? new Date(doc.data.updated) : undefined,
       // 链接必须与 [module]/[slug] 路由保持一致：
       // module 取自 frontmatter.module（规范短名），slug 取自文件名（docSlug），
       // 不能直接拼接 doc.id（物理目录路径含编号前缀与扩展名，会生成 404 链接）。

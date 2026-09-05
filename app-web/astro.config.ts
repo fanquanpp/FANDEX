@@ -24,11 +24,10 @@ import { rehypeLazyImages } from './src/plugins/rehype-lazy-images'; // 图片�
 import { rehypeWrapTables } from './src/plugins/rehype-wrap-tables'; // 表格包裹处理器：将 table 包入 <div class="table-wrap"> 以承担横向滚动
 import remarkMath from 'remark-math'; // 数学公式语法解析（LaTeX 语法）
 import rehypeKatex from 'rehype-katex'; // KaTeX 数学公式渲染
-import remarkGfm from 'remark-gfm'; // GitHub Flavored Markdown 支持（表格、删除线等）
 import remarkEmoji from 'remark-emoji'; // Emoji 短代码转换（如 :smile: → 😄）
 import rehypeSlug from 'rehype-slug'; // 为标题自动添加 id 属性
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'; // 为标题添加锚点链接
-import { createJavaScriptRegexEngine } from 'shiki'; // Shiki JS 正则引擎（替代 oniguruma WASM）
+import { unified } from '@astrojs/markdown-remark'; // Astro 7.3+ 的 remark/rehype Markdown 处理器
 
 export default defineConfig({
   // 站点地址，用于生成 sitemap 和规范链接
@@ -100,29 +99,33 @@ export default defineConfig({
     react(),
   ],
   markdown: {
-    // Remark 插件（Markdown → MDAST 转换阶段）
-    remarkPlugins: [
-      remarkGfm, // GFM 语法：表格、任务列表、删除线等
-      remarkEmoji, // Emoji 短代码转换
-      remarkMath, // 数学公式语法解析（$...$ 和 $$...$$）
-      remarkAdmonition, // 自定义提示块（:::note、:::tip 等）
-    ],
-    // Rehype 插件（MDAST → HAST → HTML 转换阶段）
-    rehypePlugins: [
-      rehypeSlug, // 为标题添加 id
-      [rehypeAutolinkHeadings, { behavior: 'wrap' }], // 标题锚点链接（包裹整个标题）
-      rehypeKatex, // KaTeX 数学公式渲染为 HTML
-      rehypeLazyImages, // 图片懒加载（添加 loading="lazy"）
-      rehypeWrapTables, // 表格包裹：将 table 包入 <div class="table-wrap"> 以承担横向滚动，规避 display:table 与 overflow-x:auto 冲突
-    ],
+    // Markdown 处理器：Astro 7.3 起默认处理器为 Sätteri，remark/rehype 插件
+    // 需显式挂载到 unified 处理器（@astrojs/markdown-remark）上，
+    // 旧的 markdown.remarkPlugins 顶层写法已废弃并将在下个大版本移除。
+    // gfm/smartypants 由处理器内建（默认开启），不再单独引入 remark-gfm。
+    processor: unified({
+      // Remark 插件（Markdown → MDAST 转换阶段）
+      remarkPlugins: [
+        remarkEmoji, // Emoji 短代码转换
+        remarkMath, // 数学公式语法解析（$...$ 和 $$...$$）
+        remarkAdmonition, // 自定义提示块（:::note、:::tip 等）
+      ],
+      // Rehype 插件（MDAST → HAST → HTML 转换阶段）
+      rehypePlugins: [
+        rehypeSlug, // 为标题添加 id
+        [rehypeAutolinkHeadings, { behavior: 'wrap' }], // 标题锚点链接（包裹整个标题）
+        rehypeKatex, // KaTeX 数学公式渲染为 HTML
+        rehypeLazyImages, // 图片懒加载（添加 loading="lazy"）
+        rehypeWrapTables, // 表格包裹：将 table 包入 <div class="table-wrap"> 以承担横向滚动，规避 display:table 与 overflow-x:auto 冲突
+      ],
+    }),
     // 代码高亮配置：Shiki 双主题支持亮色/暗色模式切换
     shikiConfig: {
-      // 高亮引擎：JS 正则引擎替代默认的 oniguruma WASM 引擎。
-      // 全站约 1900 篇文档连续高亮时 oniguruma 的线性内存池会越界
-      // （CI 报 "memory access out of bounds"，构建 14 分钟后失败）；
-      // JS 引擎跑在 V8 堆上，无 WASM 内存上限，构建全程稳定。
-      // forgiving=true：个别语法的高亮规则无法转换为 JS 正则时降级为纯文本，不中断构建。
-      engine: createJavaScriptRegexEngine({ forgiving: true }),
+      // 引擎说明：Astro 7 的内部高亮器（@astrojs/internal-helpers/shiki）
+      // 不再透传 shikiConfig.engine，始终按环境自选引擎（Node 下为 oniguruma WASM）。
+      // 若未来全站连续高亮再现 WASM 内存越界（CI 曾报 "memory access out of bounds"），
+      // 迁移路径：markdown.syntaxHighlight: false + 自定义 rehype-shiki 插件，
+      // 内部使用 shiki 的 createJavaScriptRegexEngine({ forgiving: true })。
       themes: { light: 'github-light', dark: 'github-dark' },
       // 不输出内联 color 属性，通过 CSS 变量（--shiki-light / --shiki-dark）控制主题切换
       defaultColor: false,

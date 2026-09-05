@@ -19,7 +19,7 @@ import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import SyntaxExplorer from '@/islands/SyntaxExplorer'
 import { getSyntaxIndex, getSyntaxStats } from '@/services'
-import { SITE } from '@/lib/constants'
+import { SITE, IS_DESKTOP_BUILD } from '@/lib/constants'
 // 复用首页 Hero / 统计 / 功能入口样式，保证美术完全一致
 import '@/styles/pages/index.css'
 
@@ -75,12 +75,14 @@ const base = import.meta.env.BASE_URL
             </svg>
             <span class="entry-name">首页</span>
           </a>
-          <a href={`${base}playground/`} class="entry-btn" data-tooltip="前端实验工作台" data-tooltip-pos="bottom">
-            <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
-            </svg>
-            <span class="entry-name">在线编程</span>
-          </a>
+          {!IS_DESKTOP_BUILD && (
+            <a href={`${base}playground/`} class="entry-btn" data-tooltip="前端实验工作台" data-tooltip-pos="bottom">
+              <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
+                <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
+              </svg>
+              <span class="entry-name">在线编程</span>
+            </a>
+          )}
           <a href={`${base}learning-path/`} class="entry-btn" data-tooltip="系统化学习路径" data-tooltip-pos="bottom">
             <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
               <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>

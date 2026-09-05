@@ -25,6 +25,12 @@ jlatexmathAndroid = "0.2.0"
 # 协程
 coroutines = "1.10.2"
 
+# 网络（更新自检：GitHub Releases API 与 APK CDN 下载）
+okhttp = "5.4.0"
+
+# 后台任务（每日更新检查）
+workManager = "2.10.0"
+
 # 序列化
 kotlinxSerialization = "1.8.0"
 
@@ -67,6 +73,12 @@ jlatexmath-android = { group = "ru.noties", name = "jlatexmath-android", version
 
 # 协程
 kotlinx-coroutines-android = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-android", version.ref = "coroutines" }
+
+# 网络（更新自检专用）
+okhttp = { group = "com.squareup.okhttp3", name = "okhttp", version.ref = "okhttp" }
+
+# WorkManager（每日更新检查后台任务）
+androidx-work-runtime-ktx = { group = "androidx.work", name = "work-runtime-ktx", version.ref = "workManager" }
 
 # 序列化
 kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-serialization-json", version.ref = "kotlinxSerialization" }

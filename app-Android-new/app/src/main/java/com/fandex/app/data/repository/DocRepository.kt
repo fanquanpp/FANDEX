@@ -1,9 +1,9 @@
 package com.fandex.app.data.repository
 
 import com.fandex.app.data.asset.AssetStore
-import com.fandex.app.data.model.DocFrontmatter
 import com.fandex.app.data.model.DocIndexEntry
 import com.fandex.app.data.model.FandexDoc
+import android.util.LruCache
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import kotlinx.serialization.json.Json
@@ -23,6 +23,15 @@ class DocRepository(private val assetStore: AssetStore) {
     /** 索引缓存 */
     @Volatile
     private var cachedIndex: List<DocIndexEntry>? = null
+
+    /**
+     * 已解析文档 LRU 缓存（key 为 assets 路径）
+     *
+     * APK assets 内容不可变，解析结果可安全复用：
+     * frontmatter 解析与正文切分按文档缓存，来回翻阅/上下篇导航反复
+     * 命中同一文档时避免重复解析。容量有界，防止长文档常驻内存。
+     */
+    private val parsedDocCache = LruCache<String, FandexDoc>(MAX_PARSED_DOCS)
 
     private val mutex = Mutex()
 
@@ -65,12 +74,13 @@ class DocRepository(private val assetStore: AssetStore) {
     }
 
     /**
-     * 加载单个文档正文并解析 frontmatter
+     * 加载单个文档正文并解析 frontmatter（解析结果走 LRU 缓存）
      */
     suspend fun doc(moduleId: String, docSlug: String): FandexDoc? {
         val path = "docs/$moduleId/$docSlug.md"
+        parsedDocCache.get(path)?.let { return it }
         val content = assetStore.readText(path) ?: return null
-        return parseMarkdown(content, docSlug)
+        return parseMarkdown(content, docSlug).also { parsedDocCache.put(path, it) }
     }
 
     /**
@@ -162,90 +172,11 @@ class DocRepository(private val assetStore: AssetStore) {
 
     /**
      * 解析 Markdown：分离 frontmatter（YAML）与正文
+     *
+     * 实现委托给 FrontmatterParser（独立对象，便于单元测试覆盖）
      */
     private fun parseMarkdown(content: String, slug: String): FandexDoc {
-        val frontmatterRegex = Regex("""^---\s*\n(.*?)\n---\s*\n""", RegexOption.DOT_MATCHES_ALL)
-        val match = frontmatterRegex.find(content)
-
-        if (match == null) {
-            return FandexDoc(
-                slug = slug,
-                frontmatter = DocFrontmatter(title = slug),
-                content = content
-            )
-        }
-
-        val body = content.substring(match.range.last + 1).trim()
-        return FandexDoc(
-            slug = slug,
-            frontmatter = parseFrontmatter(match.groupValues[1], slug),
-            content = body
-        )
-    }
-
-    /**
-     * 简易 YAML frontmatter 解析
-     *
-     * 覆盖 FANDEX 标准 10 字段：order, title, module, category, difficulty,
-     * description, author, updated, related, prerequisites
-     */
-    private fun parseFrontmatter(yaml: String, slug: String): DocFrontmatter {
-        var order = 0
-        var title = slug
-        var module = ""
-        var category = ""
-        var difficulty = "beginner"
-        var description = ""
-        var author = "fanquanpp"
-        var updated = ""
-        val related = mutableListOf<String>()
-        val prerequisites = mutableListOf<String>()
-
-        var currentList: MutableList<String>? = null
-
-        for (rawLine in yaml.split("\n")) {
-            val trimmed = rawLine.trim()
-            if (trimmed.isEmpty()) continue
-
-            // 处理列表项（related / prerequisites 的 "- 'module/文件名'" 行）
-            if (currentList != null && trimmed.startsWith("- ")) {
-                currentList.add(trimmed.removePrefix("- ").trim().trim('\'', '"'))
-                continue
-            }
-            currentList = null
-
-            val colonIndex = trimmed.indexOf(':')
-            if (colonIndex <= 0) continue
-
-            val key = trimmed.substring(0, colonIndex).trim()
-            val value = trimmed.substring(colonIndex + 1).trim().trim('\'', '"')
-
-            when (key) {
-                "order" -> order = value.toIntOrNull() ?: 0
-                "title" -> title = value
-                "module" -> module = value
-                "category" -> category = value
-                "difficulty" -> difficulty = value
-                "description" -> description = value
-                "author" -> author = value
-                "updated" -> updated = value
-                "related" -> if (value.isEmpty()) currentList = related
-                "prerequisites" -> if (value.isEmpty()) currentList = prerequisites
-            }
-        }
-
-        return DocFrontmatter(
-            order = order,
-            title = title,
-            module = module,
-            category = category,
-            difficulty = difficulty,
-            description = description,
-            author = author,
-            updated = updated,
-            related = related,
-            prerequisites = prerequisites
-        )
+        return FrontmatterParser.parseMarkdown(content, slug)
     }
 }
 
@@ -256,6 +187,9 @@ data class DocStats(
     val docCount: Int,
     val moduleCount: Int
 )
+
+/** 已解析文档 LRU 缓存容量上限（篇） */
+private const val MAX_PARSED_DOCS = 32
 
 /**
  * 阅读时长估算

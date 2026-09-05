@@ -353,57 +353,14 @@
     border: none;
   }
 
-  /* Prism 高亮配色：复用站点语义令牌，明暗主题自动切换 */
-  .syntax-panel__pre .token.comment,
-  .syntax-panel__pre .token.prolog,
-  .syntax-panel__pre .token.doctype,
-  .syntax-panel__pre .token.cdata {
-    color: var(--color-text-tertiary);
-    font-style: italic;
+  /* Shiki 双主题配色（构建期高亮，codeHtml 内嵌 --shiki-light / --shiki-dark 变量）：
+   * 与站点 code.css 的 .astro-code 方案一致，按 data-theme 切换取色 */
+  .syntax-panel__pre code span {
+    color: var(--shiki-light);
   }
 
-  .syntax-panel__pre .token.punctuation,
-  .syntax-panel__pre .token.operator,
-  .syntax-panel__pre .token.entity {
-    color: var(--color-text-secondary);
-  }
-
-  .syntax-panel__pre .token.keyword,
-  .syntax-panel__pre .token.selector,
-  .syntax-panel__pre .token.atrule,
-  .syntax-panel__pre .token.rule,
-  .syntax-panel__pre .token.property,
-  .syntax-panel__pre .token.tag {
-    color: var(--color-accent-base);
-  }
-
-  .syntax-panel__pre .token.string,
-  .syntax-panel__pre .token.char,
-  .syntax-panel__pre .token.attr-value {
-    color: var(--color-success-base);
-  }
-
-  .syntax-panel__pre .token.number,
-  .syntax-panel__pre .token.boolean,
-  .syntax-panel__pre .token.constant {
-    color: var(--color-warning-base);
-  }
-
-  .syntax-panel__pre .token.function,
-  .syntax-panel__pre .token.class-name,
-  .syntax-panel__pre .token.maybe-class-name,
-  .syntax-panel__pre .token.builtin {
-    color: var(--color-info-base);
-  }
-
-  .syntax-panel__pre .token.variable,
-  .syntax-panel__pre .token.parameter,
-  .syntax-panel__pre .token.plain {
-    color: var(--color-text);
-  }
-
-  .syntax-panel__pre .namespace {
-    opacity: 0.8;
+  html[data-theme='dark'] .syntax-panel__pre code span {
+    color: var(--shiki-dark);
   }
 
   .syntax-panel__truncated {

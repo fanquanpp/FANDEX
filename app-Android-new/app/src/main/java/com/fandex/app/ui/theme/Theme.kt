@@ -11,6 +11,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.unit.Density
 
 /**
  * 浅色主题 ColorScheme
@@ -288,11 +290,14 @@ private fun animateExtended(e: FandexExtendedColors): FandexExtendedColors = e.c
  * FANDEX 主题入口
  *
  * 双主题支持（浅色/深色），跟随系统或用户手动切换；
- * 主题切换时全部语义颜色做 320ms 插值过渡（对齐 web 端配色过渡体验）
+ * 主题切换时全部语义颜色做 320ms 插值过渡（对齐 web 端配色过渡体验）；
+ * fontScale 为全局字号缩放（0.8-1.4，移植自旧端 fontSizeScale 交互）：
+ * 通过覆盖 LocalDensity 的 fontScale 使全部 sp 单位文本生效
  */
 @Composable
 fun FandexTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
+    fontScale: Float = 1f,
     content: @Composable () -> Unit
 ) {
     val baseScheme = if (darkTheme) DarkColorScheme else LightColorScheme
@@ -300,7 +305,18 @@ fun FandexTheme(
     val colorScheme = animateScheme(baseScheme)
     val extendedColors = animateExtended(baseExtended)
 
-    CompositionLocalProvider(LocalExtendedColors provides extendedColors) {
+    /* 全局字号缩放：在系统 fontScale 基础上叠加用户设置的倍率，
+       仅影响 sp 单位（文本），不影响 dp 布局尺寸 */
+    val currentDensity = LocalDensity.current
+    val scaledDensity = Density(
+        density = currentDensity.density,
+        fontScale = fontScale.coerceIn(0.8f, 1.4f) * currentDensity.fontScale
+    )
+
+    CompositionLocalProvider(
+        LocalExtendedColors provides extendedColors,
+        LocalDensity provides scaledDensity
+    ) {
         MaterialTheme(
             colorScheme = colorScheme,
             typography = FandexTypography,

@@ -15,7 +15,8 @@ import java.util.concurrent.ConcurrentHashMap
  * 负责从 APK assets 目录读取文本与目录列表，并提供内存缓存：
  * - 元数据 JSON（modules.json、doc-index.json 等）在首次读取后常驻内存，
  *   避免搜索、列表页等高频场景反复解析
- * - 文档正文不缓存（体量大，且单次浏览后复用概率低）
+ * - 文档正文以原始文本形态缓存（assets 内容不可变）；结构化解析结果
+ *   由上层 DocRepository 的 LRU 缓存管理，避免长文档对象常驻内存
  */
 class AssetStore(private val context: Context) {
 

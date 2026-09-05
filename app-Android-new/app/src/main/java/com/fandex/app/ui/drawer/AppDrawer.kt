@@ -27,6 +27,9 @@ import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Slider
+import androidx.compose.material3.Switch
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -38,6 +41,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.AndroidViewModel
@@ -47,15 +51,20 @@ import com.fandex.app.BuildConfig
 import com.fandex.app.FandexApp
 import com.fandex.app.data.model.CategoryInfo
 import com.fandex.app.data.prefs.ThemeMode
+import com.fandex.app.data.prefs.ThemePreferences
 import com.fandex.app.ui.common.pressScale
 import com.fandex.app.ui.components.CategoryColor
 import com.fandex.app.ui.theme.LocalExtendedColors
+import com.fandex.app.update.CheckState
+import com.fandex.app.update.UpdateSettingsItem
+import com.fandex.app.update.UpdateViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /**
  * 抽屉 ViewModel
@@ -82,6 +91,10 @@ class DrawerViewModel(application: Application) : AndroidViewModel(application) 
     val themeMode: StateFlow<ThemeMode> = container.themePreferences.themeMode
         .stateIn(viewModelScope, SharingStarted.Eagerly, ThemeMode.SYSTEM)
 
+    /** 全局字号缩放倍率（0.8-1.4，默认 1.0） */
+    val fontScale: StateFlow<Float> = container.themePreferences.fontScale
+        .stateIn(viewModelScope, SharingStarted.Eagerly, ThemePreferences.DEFAULT_FONT_SCALE)
+
     init {
         load()
     }
@@ -105,6 +118,11 @@ class DrawerViewModel(application: Application) : AndroidViewModel(application) 
 
     fun setThemeMode(mode: ThemeMode) {
         viewModelScope.launch { container.themePreferences.setThemeMode(mode) }
+    }
+
+    /** 写入全局字号缩放（自动收敛到 0.8-1.4 区间） */
+    fun setFontScale(scale: Float) {
+        viewModelScope.launch { container.themePreferences.setFontScale(scale) }
     }
 }
 
@@ -135,13 +153,18 @@ fun AppDrawer(
     currentRoute: String,
     onNavigate: (String) -> Unit,
     onModuleClick: (String) -> Unit,
-    viewModel: DrawerViewModel = viewModel()
+    viewModel: DrawerViewModel = viewModel(),
+    updateViewModel: UpdateViewModel = viewModel()
 ) {
     val extendedColors = LocalExtendedColors.current
     val categories by viewModel.categories.collectAsState()
     val stats by viewModel.stats.collectAsState()
     val moduleCounts by viewModel.moduleCounts.collectAsState()
     val themeMode by viewModel.themeMode.collectAsState()
+    val fontScale by viewModel.fontScale.collectAsState()
+    val autoCheckEnabled by updateViewModel.autoCheckEnabled.collectAsState()
+    val ignoredVersion by updateViewModel.ignoredVersion.collectAsState()
+    val checkState by updateViewModel.checkState.collectAsState()
 
     val navItems = listOf(
         DrawerNav(Icons.Filled.Home, "首页", com.fandex.app.ui.navigation.Routes.HOME),
@@ -286,6 +309,122 @@ fun AppDrawer(
         HorizontalDivider(color = extendedColors.borderSubtle)
 
         // ---------------------------------------------------------------
+        // 固定顶部：设置区（字号缩放 + 更新自检）
+        // ---------------------------------------------------------------
+        DrawerSectionTitle("显示设置")
+
+        // 全局字号缩放：0.8-1.4，步长 0.1 共 7 档（移植自旧端 fontSizeScale 交互）
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp)
+        ) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "字号缩放",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "%.1fx".format(fontScale),
+                    style = MaterialTheme.typography.labelMedium,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.Medium
+                )
+            }
+            Slider(
+                value = fontScale,
+                onValueChange = { newValue ->
+                    // 步长 0.1，量化到 0.8/0.9/1.0/1.1/1.2/1.3/1.4
+                    val stepped = (newValue * 10).roundToInt() / 10f
+                    viewModel.setFontScale(stepped.coerceIn(0.8f, 1.4f))
+                },
+                valueRange = 0.8f..1.4f,
+                steps = 5, // 7 档 = 6 区间 = 5 个步长分隔点
+                modifier = Modifier.fillMaxWidth()
+            )
+        }
+
+        HorizontalDivider(color = extendedColors.borderSubtle)
+
+        DrawerSectionTitle("应用更新")
+
+        // 自动检查更新开关：开启时每日后台静默检查一次
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 16.dp, vertical = 4.dp),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(modifier = Modifier.weight(1f)) {
+                Text(
+                    text = "自动检查更新",
+                    style = MaterialTheme.typography.labelLarge,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.onSurface
+                )
+                Text(
+                    text = "每日联网时后台静默检查一次新版本",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = extendedColors.fgTertiary,
+                    maxLines = 2
+                )
+            }
+            Switch(
+                checked = autoCheckEnabled,
+                onCheckedChange = { updateViewModel.setAutoCheckEnabled(it) },
+                colors = SwitchDefaults.colors(
+                    checkedTrackColor = MaterialTheme.colorScheme.primary
+                )
+            )
+        }
+
+        // 手动检查更新：检查中展示加载指示，结果通过 hint 文字反馈
+        UpdateSettingsItem(
+            onClick = { updateViewModel.checkForUpdate(manual = true) },
+            isChecking = checkState is CheckState.Checking,
+            hint = updateHintOf(checkState, autoCheckEnabled)
+        )
+
+        // 忽略版本：存在被忽略版本时展示，可一键恢复提醒
+        if (ignoredVersion.isNotBlank()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "已忽略版本 v$ignoredVersion",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = extendedColors.fgTertiary,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(
+                    text = "恢复提醒",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.primary,
+                    fontWeight = FontWeight.SemiBold,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .clickable { updateViewModel.clearIgnoredVersion() }
+                        .padding(horizontal = 8.dp, vertical = 6.dp)
+                )
+            }
+        }
+
+        HorizontalDivider(color = extendedColors.borderSubtle)
+
+        // ---------------------------------------------------------------
         // 滚动区域：模块快速导航（多彩分类）
         // ---------------------------------------------------------------
         Column(
@@ -378,10 +517,21 @@ fun AppDrawer(
     }
 }
 
+/**
+ * 检查更新结果提示文字
+ *
+ * 依据检查状态机给出一条简要反馈（Idle / Checking 时不提示）
+ */
+private fun updateHintOf(state: CheckState, autoCheckEnabled: Boolean): String = when (state) {
+    is CheckState.UpToDate -> "当前已是最新版本"
+    is CheckState.Failed -> state.message
+    is CheckState.Available -> "发现新版本，可在页面顶部下载"
+    else -> if (autoCheckEnabled) "每日联网时自动检查" else "自动检查已关闭"
+}
+
 /** 抽屉分区标题 */
 @Composable
-private fun DrawerSectionTitle(title: String) {
-    Row(
+private fun DrawerSectionTitle(title: String) {    Row(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

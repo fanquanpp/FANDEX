@@ -26,12 +26,14 @@
  *   - tags 字段在 frontmatter 中仍保留以供搜索索引使用，但不再聚合统计
  *   - 新增 doc-index.json 输出，用于替代侧边栏运行时全量 getCollection 调用
  *
- * 性能：扫描所有文档约 1-2 秒（纯文件系统读取 + 正则解析）
+ * 性能：扫描所有文档约 1-3 秒（文件系统读取 + gray-matter YAML 解析）
  * =============================================================================
  */
 import { readdirSync, readFileSync, writeFileSync, mkdirSync } from 'node:fs';
 import { join, dirname, extname, relative, basename, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+// frontmatter 解析统一走共享助手（gray-matter，完整 YAML 语义），不再使用手写正则
+import { parseFrontmatter } from './lib/frontmatter.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const contentDir = join(__dirname, '..', '..', 'cnt-content', 'full');
@@ -61,50 +63,23 @@ function collectMarkdownFiles(dir, result = []) {
 }
 
 /**
- * 从 Markdown 文件内容中解析 frontmatter 字段
- * 使用正则提取，避免引入 gray-matter 等依赖
- *
- * 字段提取说明：
- * - module / category / title 为字符串，去除首尾引号与空白
- * - order 为数值，正则捕获纯数字部分后 parseInt；缺省由调用方补 0
- * - title 支持 YAML 单行字符串（含引号包裹），不支持多行折叠文本
- *   侧边栏仅需展示标题，个别复杂 title 解析偏差不影响功能
+ * 从 Markdown 文件内容中提取 frontmatter 关键字段
+ * 委托共享助手 parseFrontmatter（gray-matter / js-yaml 完整解析），
+ * 此处只做字段形态收窄：字符串裁剪、数值校验
  *
  * @param {string} content - 文件完整内容
  * @returns {{ module?: string, category?: string, title?: string, order?: number }}
  */
-function parseFrontmatter(content) {
-  const result = { module: undefined, category: undefined, title: undefined, order: undefined };
-  const fmMatch = content.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-  if (!fmMatch) return result;
-  const fm = fmMatch[1];
-
-  // module 字段（单值）
-  const moduleMatch = fm.match(/^module:\s*(.+)$/m);
-  if (moduleMatch) {
-    result.module = moduleMatch[1].trim().replace(/['"]/g, '');
-  }
-
-  // category 字段（单值，optional）
-  const categoryMatch = fm.match(/^category:\s*(.+)$/m);
-  if (categoryMatch) {
-    result.category = categoryMatch[1].trim().replace(/['"]/g, '');
-  }
-
-  // title 字段（单行字符串，去除首尾引号）
-  const titleMatch = fm.match(/^title:\s*(.+)$/m);
-  if (titleMatch) {
-    result.title = titleMatch[1].trim().replace(/^['"]|['"]$/g, '');
-  }
-
-  // order 字段（数值，捕获纯数字部分；支持负数与浮点，按需取舍）
-  const orderMatch = fm.match(/^order:\s*(-?\d+(?:\.\d+)?)\s*$/m);
-  if (orderMatch) {
-    const parsed = Number(orderMatch[1]);
-    result.order = Number.isFinite(parsed) ? parsed : undefined;
-  }
-
-  return result;
+function parseFrontmatterFields(content) {
+  const { data } = parseFrontmatter(content);
+  const asString = (v) => (typeof v === 'string' ? v.trim() || undefined : undefined);
+  const order = typeof data.order === 'number' && Number.isFinite(data.order) ? data.order : undefined;
+  return {
+    module: asString(data.module),
+    category: asString(data.category),
+    title: asString(data.title),
+    order,
+  };
 }
 
 /**
@@ -146,7 +121,7 @@ function main() {
   for (const filePath of files) {
     try {
       const content = readFileSync(filePath, 'utf-8');
-      const fm = parseFrontmatter(content);
+      const fm = parseFrontmatterFields(content);
       if (fm.module) moduleSet.add(fm.module);
       if (fm.category) categorySet.add(fm.category);
 

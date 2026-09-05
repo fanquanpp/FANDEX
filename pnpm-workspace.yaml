@@ -6,11 +6,10 @@
 # =============================================================================
 
 packages:
-  # 三端应用（desktop/android 当前为空占位，仅保留目录结构）
+  # 三端应用（Android 为纯 Gradle 工程，不参与 pnpm workspace）
   - 'app-web'
   - 'app-desktop'
   - 'app-desktop-portable'
-  - 'app-Android-new'
   # 共享层（含子包）
   - 'shd-shared'
   - 'shd-shared/tokens'
@@ -18,12 +17,7 @@ packages:
   - 'shd-shared/assets'
   # 工具链
   - 'tls-tools'
-  # 第三方组件插件
-  - 'thd-third-party'
-  - 'thd-third-party/components/*'
-  - 'thd-third-party/plugins/*'
-  - 'thd-third-party/adapters/*'
-  # 文档目录（非 npm 包，仅占位）
+  # 第三方组件插件（引入实际第三方包时再在此登记对应子目录）
   # dcs-docs/ 不纳入 workspace
 
   # -----------------------------------------------------------------------------
@@ -32,20 +26,17 @@ packages:
   # -----------------------------------------------------------------------------
 catalog:
   # 框架核心
-  astro: ^7.1.1
+  astro: ^7.3.1
   react: ^19.0.0
   react-dom: ^19.0.0
-  '@astrojs/react': ^4.0.0
-  '@astrojs/mdx': ^7.0.3
+  '@astrojs/react': ^6.0.5
+  '@astrojs/mdx': ^8.0.0
   '@astrojs/rss': ^4.0.19
-  '@astrojs/sitemap': ^3.3.0
-  '@astrojs/check': ^0.9.9
+  '@astrojs/sitemap': ^3.7.4
+  '@astrojs/check': ^0.9.10
 
-  # Tauri 2（desktop 专属）
-  '@tauri-apps/api': ^2.0.0
+  # Tauri 2（desktop 专属，桌面端仅消费 CLI）
   '@tauri-apps/cli': ^2.0.0
-  '@tauri-apps/plugin-fs': ^2.0.0
-  '@tauri-apps/plugin-http': ^2.0.0
 
   # 样式与 UI
   tailwindcss: ^4.3.3
@@ -56,7 +47,7 @@ catalog:
   tailwind-merge: ^3.6.0
 
   # 状态管理与数据
-  zod: ^4.4.3
+  zod: ^4.5.4
 
   # 动画
   motion: ^11.0.0
@@ -77,16 +68,16 @@ catalog:
   '@radix-ui/react-tooltip': ^1.1.0
 
   # 内容处理
-  shiki: ^4.3.1
-  prismjs: ^1.30.0
+  gray-matter: ^4.0.3
+  shiki: ^4.4.3
   katex: ^0.16.47
   unified: ^11.0.5
   remark-parse: ^11.0.0
   rehype-autolink-headings: ^7.1.0
   rehype-katex: ^7.0.1
   rehype-slug: ^6.0.0
+  '@astrojs/markdown-remark': ^7.3.0
   remark-emoji: ^5.0.2
-  remark-gfm: ^4.0.1
   remark-math: ^6.0.0
   unist-util-visit: ^5.1.0
 
@@ -111,7 +102,6 @@ catalog:
   glob: ^13.0.6
   fast-glob: ^3.3.3
   commander: ^12.1.0
-  '@noble/ed25519': ^2.1.0
   ajv: ^8.17.1
   ajv-formats: ^3.0.1
   web-vitals: ^5.3.0

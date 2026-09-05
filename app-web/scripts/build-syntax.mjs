@@ -3,35 +3,43 @@
  * =============================================================================
  * 核心执行流程：
  *   1. 扫描 cnt-content/syntax 目录下的语言模块（编程语言/数据库命令语言）
- *   2. 解析每篇文档：标题（首个 H1）+ 小节（H2）+ 语法点
+ *   2. 用 remark-parse（unified 生态标准 Markdown 解析器）解析每篇文档：
+ *      标题（首个 H1）+ 小节（H2）+ 语法点
  *      （语法点 = 粗体标签 + 行内公式 + 围栏代码块，如
  *       "**基本写法：标准变基**" / "**form 元素**"）
  *      每个 H2 小节只保留第一个语法点作为代表，体现"速查做减法"原则
- *   3. 汇聚模块元数据（标题、分类主题色来自 shd-shared/metadata/modules.json）
- *   4. 输出语法速览数据：
+ *   3. 用 Shiki（与站点文档管线同一高亮器）在构建期为每张卡片生成
+ *      双主题高亮 HTML（codeHtml），客户端零高亮依赖
+ *   4. 汇聚模块元数据（标题、分类主题色来自 shd-shared/metadata/modules.json）
+ *   5. 输出语法速览数据：
  *      - src/data/syntax-index.json          语言索引（轻量，页面直接内嵌）
  *      - public/syntax-data/<module>.json    分语言卡片（客户端按需 fetch）
  *
  * 设计目的：
  *   - syntax 目录（cnt-content/syntax）是专用"速查"素材源：结构统一、代码示例
- *     精简，天然适合生成速查卡片；2026-08 起自 cnt-content/mobile 迁出，
- *     mobile 目录已于 2026-09 清理删除，站点构建仅依赖 syntax 目录
+ *     精简，天然适合生成速查卡片
  *   - 与 doc-stats.json / doc-index.json 一样，预构建为 JSON 缓存，
- *     避免运行时解析 700+ Markdown 文件，降低 dev/build 内存与耗时
- *   - 模块标题与分类颜色复用共享元数据，保证与全站模块体系一致
+ *     避免运行时解析数千 Markdown 文件，降低 dev/build 内存与耗时
+ *   - 结构解析使用 remark-parse 替代早期手写正则（不再依赖素材的脆弱文本特征，
+ *     如粗体/围栏在行内代码与代码块内的误匹配）；高亮使用 Shiki 替代客户端
+ *     Prism（SyntaxExplorer 岛不再打包 20 种语言的高亮组件）
  *
  * 输出结构：
  *   {
- *     version: 1,
+ *     version: 2,
  *     generatedAt: "ISO 时间",
  *     languages: [{ id, title, icon, color, count, docCount }],
  *   }
- *   每个语言文件：{ module: "javascript", cards: [{ id, docTitle, section, name, formula, code, lang, truncated }] }
+ *   每个语言文件：{ module, cards: [{ id, docTitle, section, name, formula,
+ *     code, codeHtml, lang, truncated }] }
  * =============================================================================
  */
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, rmSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { unified } from 'unified';
+import remarkParse from 'remark-parse';
+import { createHighlighter } from 'shiki';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const syntaxContentDir = join(__dirname, '..', '..', 'cnt-content', 'syntax');
@@ -65,6 +73,37 @@ const LANGUAGE_FOLDERS = {
 const MAX_CODE_LINES = 8;
 /** 代码块最大保留字符数，防止个别超长示例撑大 JSON */
 const MAX_CODE_CHARS = 300;
+
+/**
+ * 语法数据 lang 字段 -> Shiki 语言标识映射
+ * 未知/别名语言降级为相近语法或纯文本（与原 Prism 映射语义一致）
+ */
+const SHIKI_LANG_ALIAS = {
+  bash: 'bash',
+  c: 'c',
+  cmake: 'cmake',
+  conf: 'ini',
+  cpp: 'cpp',
+  csharp: 'csharp',
+  go: 'go',
+  groovy: 'groovy',
+  java: 'java',
+  javascript: 'javascript',
+  json: 'json',
+  kotlin: 'kotlin',
+  lua: 'lua',
+  makefile: 'makefile',
+  properties: 'ini',
+  protobuf: 'protobuf',
+  python: 'python',
+  redis: 'ini',
+  sql: 'sql',
+  toml: 'toml',
+  typescript: 'typescript',
+  xml: 'xml',
+  yaml: 'yaml',
+  text: 'plaintext',
+};
 
 /**
  * 读取共享模块元数据，返回按模块 ID 索引的查询表
@@ -101,7 +140,38 @@ function capCode(code) {
 }
 
 /**
- * 解析单个 Markdown 文档中的语法点
+ * 提取节点的纯文本内容（用于粗体标签文本）
+ * @param {object} node - mdast 节点
+ * @returns {string} 纯文本
+ */
+function nodeText(node) {
+  if (node.type === 'text') return node.value;
+  if (Array.isArray(node.children)) return node.children.map(nodeText).join('');
+  return '';
+}
+
+/**
+ * 深度优先收集节点（任意嵌套层级）
+ * @param {object} root - mdast 节点
+ * @param {(node: object) => boolean} predicate - 节点判定
+ * @returns {object[]} 按文档顺序排列的命中节点
+ */
+function collectNodes(root, predicate) {
+  const found = [];
+  const stack = [root];
+  while (stack.length > 0) {
+    const node = stack.pop();
+    if (node !== root && predicate(node)) found.push(node);
+    // 逆序入栈保证深度优先的文档顺序
+    if (Array.isArray(node.children)) {
+      for (let i = node.children.length - 1; i >= 0; i--) stack.push(node.children[i]);
+    }
+  }
+  return found;
+}
+
+/**
+ * 解析单个 Markdown 文档中的语法点（remark-parse AST 驱动）
  * 结构约定（syntax 素材源统一）：
  *   # 文档标题
  *   ## 小节标题
@@ -112,65 +182,113 @@ function capCode(code) {
  *   ```
  * @param {string} filePath - Markdown 文件绝对路径
  * @param {string} moduleId - 模块 ID
+ * @param {object} parser - unified remark-parse 处理器实例
  * @returns {Array<object>} 语法点数组（每个 H2 小节至多一个代表点）
  */
-function parseSyntaxPoints(filePath, moduleId) {
+function parseSyntaxPoints(filePath, moduleId, parser) {
   const fileName = filePath.split(/[\\/]/).pop() || '';
   const text = readFileSync(filePath, 'utf-8');
-    const points = [];
+  const tree = parser.parse(text);
+  const points = [];
 
   // 文档标题：取首个 H1；缺失时回退为文件名（去编号前缀）
-  const h1Match = text.match(/^#\s+(.+)$/m);
-  const docTitle = h1Match
-    ? h1Match[1].trim()
+  const h1 = tree.children.find((n) => n.type === 'heading' && n.depth === 1);
+  const docTitle = h1
+    ? nodeText(h1).trim()
     : fileName.replace(/^\d+-/, '').replace(/\.md$/, '');
 
-  // 按 H2 切分正文，sections 形如 [前言, 标题1, 正文1, 标题2, 正文2, ...]
-    const sections = text.split(/^##\s+(.+)$/m);
-    for (let i = 1; i < sections.length; i += 2) {
-      const sectionTitle = sections[i].trim();
-      const body = sections[i + 1] || '';
-      // 小节代表点：每个小节只保留第一个符合条件的语法点
-      let representative = null;
-      // 按粗体标签切分小节，parts 形如 [前文, 标签1, 内容1, 标签2, 内容2, ...]
-      const parts = body.split(/\*\*(.+?)\*\*/);
-      for (let j = 1; j < parts.length; j += 2) {
-        const rawLabel = parts[j].trim();
-        const after = parts[j + 1] || '';
-        // 行内公式：标签后第一个反引号片段
-        const formulaMatch = after.match(/`([^`\n]+)`/);
-        const formula = formulaMatch ? formulaMatch[1].trim() : '';
-        // 示例代码：标签后第一个围栏代码块
-        const codeMatch = after.match(/```([^\n`]*)\n([\s\S]*?)```/);
-        // 语法点判定：同时具备行内公式与围栏代码块（结构特征，语言无关）
-        if (!formula || !codeMatch) continue;
-        // 写法名称：去掉"基本写法：/基本语法："等前缀
-        const name = rawLabel.replace(/^(基本|常用|核心)?\s*(写法|语法)\s*[：:]\s*/, '').trim() || rawLabel.trim();
-        const lang = codeMatch[1].trim() || 'text';
-        const capped = capCode(codeMatch[2].replace(/\s+$/, ''));
-        representative = {
-          module: moduleId,
-          docTitle,
-          section: sectionTitle,
-          name,
-          formula,
-          code: capped.code,
-          lang,
-          truncated: capped.truncated,
-        };
-        break;
-      }
-      if (representative) points.push(representative);
+  // 按 H2 切分小节（H1/H2 同时作为边界，避免 H1 后的"前言"混入首个小节）
+  let currentSection = null;
+  /** @type {Array<{ title: string, nodes: object[] }>} */
+  const sections = [];
+  for (const child of tree.children) {
+    if (child.type === 'heading' && child.depth === 2) {
+      currentSection = { title: nodeText(child).trim(), nodes: [] };
+      sections.push(currentSection);
+    } else if (currentSection) {
+      currentSection.nodes.push(child);
     }
+  }
+
+  for (const section of sections) {
+    // 小节内按文档顺序收集粗体标签 / 行内公式 / 围栏代码块
+    const strongs = collectNodes({ type: 'root', children: section.nodes }, (n) => n.type === 'strong');
+    const inlineCodes = collectNodes({ type: 'root', children: section.nodes }, (n) => n.type === 'inlineCode');
+    const fences = collectNodes({ type: 'root', children: section.nodes }, (n) => n.type === 'code');
+
+    // 每个粗体标签：取其后（下一个标签前）的首个行内公式与围栏代码块
+    // 结构特征判定：同时具备行内公式与围栏代码块（语言无关）
+    for (let s = 0; s < strongs.length; s++) {
+      const rawLabel = nodeText(strongs[s]).trim();
+      const rangeEnd = s + 1 < strongs.length ? strongs[s + 1] : null;
+      const afterInline = inlineCodes.filter((n) => n.position.start.offset > strongs[s].position.end.offset && (!rangeEnd || n.position.end.offset < rangeEnd.position.start.offset));
+      const afterFences = fences.filter((n) => n.position.start.offset > strongs[s].position.end.offset && (!rangeEnd || n.position.end.offset < rangeEnd.position.start.offset));
+      if (afterInline.length === 0 || afterFences.length === 0) continue;
+
+      const formula = afterInline[0].value.trim();
+      const lang = (afterFences[0].lang || '').trim() || 'text';
+      const capped = capCode(afterFences[0].value.replace(/\s+$/, ''));
+      // 写法名称：去掉"基本写法：/基本语法："等前缀
+      const name = rawLabel.replace(/^(基本|常用|核心)?\s*(写法|语法)\s*[：:]\s*/, '').trim() || rawLabel.trim();
+      points.push({
+        module: moduleId,
+        docTitle,
+        section: section.title,
+        name,
+        formula,
+        code: capped.code,
+        lang,
+        truncated: capped.truncated,
+      });
+      break; // 每个小节只保留第一个代表点
+    }
+  }
   return points;
+}
+
+// 与站点文档管线保持一致的 GFM 容错解析
+
+/**
+ * 初始化 Shiki 高亮器：双主题与素材涉及的语言一次性加载
+ * @returns {{ highlight(code: string, lang: string): string }}
+ */
+async function createSyntaxHighlighter() {
+  const langs = [...new Set(Object.values(SHIKI_LANG_ALIAS))];
+  const highlighter = await createHighlighter({
+    themes: ['github-light', 'github-dark'],
+    langs,
+  });
+  return {
+    /**
+     * 高亮代码为 HTML（双主题 CSS 变量方案，与站点 .astro-code 样式一致）
+     * 失败时返回空串，客户端回退纯文本展示
+     */
+    highlight(code, lang) {
+      const shikiLang = SHIKI_LANG_ALIAS[lang];
+      if (!shikiLang) return '';
+      try {
+        return highlighter.codeToHtml(code, {
+          lang: shikiLang,
+          themes: { light: 'github-light', dark: 'github-dark' },
+          defaultColor: false,
+        });
+      } catch {
+        return '';
+      }
+    },
+  };
 }
 
 /**
  * 主函数：扫描 syntax 语言模块并生成语法速查数据
  */
-function main() {
+async function main() {
   console.log('[build-syntax] Scanning', syntaxContentDir);
   const { byId, categoryColors } = loadModuleMetadata();
+  // 结构特征（粗体/行内码/围栏代码块）为核心 Markdown 语法，
+  // 纯 remark-parse 即可覆盖，无需 GFM 扩展
+  const parser = unified().use(remarkParse);
+  const highlighter = await createSyntaxHighlighter();
   /** @type {Map<string, { id: string, title: string, icon: string, color: string, order: number, count: number, docCount: number, cards: Array<object> }>} */
   const languages = new Map();
 
@@ -200,7 +318,7 @@ function main() {
       .sort();
     const seen = new Set();
     for (const fileName of files) {
-      const points = parseSyntaxPoints(join(folderPath, fileName), moduleId);
+      const points = parseSyntaxPoints(join(folderPath, fileName), moduleId, parser);
       if (points.length > 0) languages.get(moduleId).docCount += 1;
       for (const point of points) {
         // 同一文档内按 (小节, 名称, 代码) 去重，避免重复内容刷屏
@@ -215,6 +333,8 @@ function main() {
           name: point.name,
           formula: point.formula,
           code: point.code,
+          // 构建期 Shiki 高亮 HTML：客户端零高亮依赖（原为 Prism 运行时高亮）
+          codeHtml: highlighter.highlight(point.code, point.lang),
           lang: point.lang,
           truncated: point.truncated,
         });
@@ -228,7 +348,7 @@ function main() {
     .map(({ order, cards, ...rest }) => rest);
 
   const data = {
-    version: 1,
+    version: 2,
     generatedAt: new Date().toISOString(),
     languages: languageList,
   };
@@ -251,4 +371,7 @@ function main() {
   console.log('[build-syntax] Written language chunks to', publicDataDir);
 }
 
-main();
+main().catch((err) => {
+  console.error('[build-syntax] Failed:', err);
+  process.exit(1);
+});

@@ -1,0 +1,74 @@
+---
+/**
+ * 模块文档列表分页路由（第 2 页起）
+ * 路由 {module}/page/{n}/；第 1 页由 [module]/index.astro 承载（避免重复页面）。
+ * 不使用 Astro paginate()：rest 参数会与文档详情路由 [module]/[slug] 冲突。
+ */
+import Layout from '@/components/Layout.astro';
+import SEO from '@/components/SEO.astro';
+import Sidebar from '@/components/Sidebar.astro';
+import Breadcrumb from '@/components/Breadcrumb.astro';
+import ModulePageContent from '@/components/ModulePageContent.astro';
+import { getModule } from '@/lib/modules';
+import { MODULE_PAGE_SIZE } from '@/lib/constants';
+import { getDocsByModule } from '@/services';
+import '@/lib/progress';
+
+export async function getStaticPaths() {
+  const { modules } = await import('@/lib/modules');
+  const { getDocsByModule } = await import('@/services');
+  // 仅为文档数超过一页的模块生成第 2 页起的分页（第 1 页固定在 index.astro）
+  const paths = [];
+  for (const m of modules) {
+    const docs = await getDocsByModule(m.id);
+    const totalPages = Math.ceil(docs.length / MODULE_PAGE_SIZE);
+    for (let p = 2; p <= totalPages; p++) {
+      paths.push({ params: { module: m.id, page: String(p) } });
+    }
+  }
+  return paths;
+}
+
+const { module, page: pageParam } = Astro.params as { module: string; page: string };
+const page = Number.parseInt(pageParam || '1', 10);
+const meta = getModule(module || '');
+
+// 非法页码（NaN / 0 / 1 / 无元数据）一律回退首页
+if (!meta || !Number.isFinite(page) || page < 2) {
+  return Astro.redirect(`${import.meta.env.BASE_URL}${module || ''}/`);
+}
+
+const sortedDocs = await getDocsByModule(module);
+const totalPages = Math.ceil(sortedDocs.length / MODULE_PAGE_SIZE);
+// 页码越界时回到末页对应首页入口（保守回退到模块首页）
+if (page > totalPages) {
+  return Astro.redirect(`${import.meta.env.BASE_URL}${module}/`);
+}
+
+const baseUrl = import.meta.env.BASE_URL;
+const breadcrumb = [
+  { label: '首页', href: `${baseUrl}` },
+  { label: meta.title, href: `${baseUrl}${module}/` },
+  { label: `第 ${page} 页` },
+];
+---
+
+<Layout title={`${meta.title} · 第 ${page} 页`}>
+  <SEO
+    slot="head"
+    title={`${meta.title} · 第 ${page} 页`}
+    description={meta.description}
+    canonical={`${Astro.site}${Astro.url.pathname}`}
+  />
+  {/* 分页关系链：prev 指向上一页（第 2 页的 prev 为模块首页） */}
+  <link
+    rel="prev"
+    href={page === 2 ? `${Astro.site}${baseUrl}${module}/` : `${Astro.site}${baseUrl}${module}/page/${page - 1}/`}
+    slot="head"
+  />
+  {page < totalPages && <link rel="next" href={`${Astro.site}${baseUrl}${module}/page/${page + 1}/`} slot="head" />}
+  <Sidebar slot="sidebar" moduleId={module} />
+
+  <Breadcrumb items={breadcrumb} hasSidebar />
+  <ModulePageContent module={module} meta={meta} page={page} docs={sortedDocs} />
+</Layout>

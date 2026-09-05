@@ -9,12 +9,16 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.material3.ModalDrawerSheet
 import androidx.compose.material3.ModalNavigationDrawer
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NamedNavArgument
@@ -34,6 +38,7 @@ import com.fandex.app.ui.screens.module.ModuleScreen
 import com.fandex.app.ui.screens.search.SearchScreen
 import com.fandex.app.ui.screens.syntax.SyntaxDetailScreen
 import com.fandex.app.ui.screens.syntax.SyntaxScreen
+import com.fandex.app.update.UpdateOverlay
 import kotlinx.coroutines.launch
 
 // ---------------------------------------------------------------------------
@@ -90,6 +95,7 @@ fun AppRoot() {
     val currentRoute = backStackEntry?.destination?.route ?: Routes.HOME
     val drawerState = rememberDrawerState(initialValue = androidx.compose.material3.DrawerValue.Closed)
     val scope = rememberCoroutineScope()
+    val onOpenDrawer: () -> Unit = { scope.launch { drawerState.open() } }
 
     ModalNavigationDrawer(
         drawerState = drawerState,
@@ -113,10 +119,18 @@ fun AppRoot() {
             }
         }
     ) {
-        AppNavHost(
-            navController = navController,
-            onOpenDrawer = { scope.launch { drawerState.open() } }
-        )
+        // 更新自检浮层：覆盖在内容上方顶部（Toast 卡片 / 下载进度卡片）
+        Box {
+            AppNavHost(
+                navController = navController,
+                onOpenDrawer = onOpenDrawer
+            )
+            UpdateOverlay(
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .statusBarsPadding()
+            )
+        }
     }
 }
 

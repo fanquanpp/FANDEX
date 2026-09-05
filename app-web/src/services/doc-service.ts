@@ -26,6 +26,17 @@ import docIndexCache from '@/data/doc-index.json';
 /** 文档条目类型（从 Content Schema 推导） */
 type DocEntry = CollectionEntry<'docs'>;
 
+/**
+ * 构建期查询缓存（静态站点：同一构建进程内 collection 数据恒定，可安全复用）
+ *
+ * 背景：1700+ 篇文档逐页静态生成时，每页若各自调用 getCollection 全量过滤 + 排序，
+ * 总代价为 O(页数 × 文档数)，是构建耗时的主要热点之一。
+ * 缓存后每个模块只排序一次，getDocNavigation / Sidebar / [slug].astro 共享同一结果。
+ * dev 模式下内容变更会使 astro:content 虚拟模块失效并沿依赖链重新加载本模块，缓存随之重置。
+ */
+const sortedByModuleCache = new Map<string, DocEntry[]>();
+let allDocsCache: DocEntry[] | null = null;
+
 /** 文档导航结果：上下篇文档 */
 interface DocNavigation {
   /** 上一篇文档（按 order 排序），首篇时为 null */
@@ -74,14 +85,17 @@ interface DocIndexItem {
  * @returns 排序后的文档数组；异常时返回空数组
  */
 export async function getAllDocs(): Promise<DocEntry[]> {
+  if (allDocsCache) return allDocsCache;
   try {
     const docs = await getCollection('docs');
-    return docs.sort((a, b) => {
+    docs.sort((a, b) => {
       if (a.data.module !== b.data.module) {
         return a.data.module.localeCompare(b.data.module);
       }
       return (a.data.order || 0) - (b.data.order || 0);
     });
+    allDocsCache = docs;
+    return docs;
   } catch {
     return [];
   }
@@ -93,9 +107,13 @@ export async function getAllDocs(): Promise<DocEntry[]> {
  * @returns 排序后的文档数组；异常时返回空数组
  */
 export async function getDocsByModule(moduleId: string): Promise<DocEntry[]> {
+  const cached = sortedByModuleCache.get(moduleId);
+  if (cached) return cached;
   try {
     const docs = await getCollection('docs', ({ data }) => data.module === moduleId);
-    return docs.sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+    docs.sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
+    sortedByModuleCache.set(moduleId, docs);
+    return docs;
   } catch {
     return [];
   }
@@ -201,38 +219,5 @@ export function getDocsIndex(): DocIndexItem[] {
  * @param categoryId - 分类 ID（对应 frontmatter 中的 category 字段）
  * @returns 匹配分类的文档数组（按 order 排序）；异常时返回空数组
  */
-export async function getDocsByCategory(categoryId: string): Promise<DocEntry[]> {
-  try {
-    const docs = await getCollection('docs', ({ data }) => data.category === categoryId);
-    return docs.sort((a, b) => (a.data.order || 0) - (b.data.order || 0));
-  } catch {
-    return [];
-  }
-}
-
-/**
- * 获取关联文档
- * 基于文档 frontmatter 中的 related 字段（相关文档引用列表）查找关联文档
- * 支持两种引用格式：纯 slug 或 "moduleId/slug" 完整路径
- * @param moduleId - 当前文档所属模块 ID
- * @param slug - 当前文档 slug
- * @returns 关联文档数组；异常或无关联时返回空数组
- */
-export async function getRelatedDocs(moduleId: string, slug: string): Promise<DocEntry[]> {
-  try {
-    const current = await getDocBySlug(moduleId, slug);
-    if (!current || current.data.related.length === 0) return [];
-    const allDocs = await getAllDocs();
-    const relatedRefs = new Set(current.data.related);
-    return allDocs.filter((doc) => {
-      const docSlugStr = docSlug(doc.id);
-      const fullRef = `${doc.data.module}/${docSlugStr}`;
-      return relatedRefs.has(docSlugStr) || relatedRefs.has(fullRef);
-    });
-  } catch {
-    return [];
-  }
-}
-
 export type { DocEntry, DocNavigation, DocStats, DocIndexItem };
 export { computeReadingTime, docSlug };
