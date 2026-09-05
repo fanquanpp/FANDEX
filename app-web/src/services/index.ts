@@ -12,8 +12,6 @@ export {
   getDocNavigation,
   getDocStats,
   getDocsIndex,
-  getDocsByCategory,
-  getRelatedDocs,
   computeReadingTime,
   docSlug,
 } from './doc-service';

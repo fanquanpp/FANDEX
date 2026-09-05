@@ -1,6 +1,6 @@
 [package]
 name = "fandex-desktop"
-version = "4.2.1"
+version = "4.3.0"
 description = "FANDEX 零基础全栈自学体系 Windows 桌面端"
 authors = ["fanquanpp"]
 edition = "2021"
@@ -17,8 +17,8 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 tauri-plugin-window-state = "2"
 tauri-plugin-global-shortcut = "2"
-serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+# 注：当前无自定义 tauri 命令，未用到 serde/serde_json；
+# 后续新增 #[tauri::command] 时再按需引入
 
 [profile.release]
 # 桌面端发布构建：体积与运行性能平衡优化

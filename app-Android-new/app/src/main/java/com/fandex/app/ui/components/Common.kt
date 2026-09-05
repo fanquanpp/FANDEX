@@ -76,15 +76,16 @@ fun FdxIconButton(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     tint: Color = MaterialTheme.colorScheme.onSurface,
-    iconSize: Dp = 20.dp
+    iconSize: Dp = 20.dp,
+    enabled: Boolean = true
 ) {
     val extendedColors = LocalExtendedColors.current
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
 
-    // 按下底色过渡：透明 -> bgHover（快速反馈节奏）
+    // 按下底色过渡：透明 -> bgHover（快速反馈节奏）；禁用时降低不透明度
     val background by animateColorAsState(
-        targetValue = if (pressed) extendedColors.bgHover else Color.Transparent,
+        targetValue = if (pressed && enabled) extendedColors.bgHover else Color.Transparent,
         animationSpec = tweenFast(),
         label = "fdxIconButtonBg"
     )
@@ -95,13 +96,18 @@ fun FdxIconButton(
             .pressScale(interaction, pressedScale = 0.94f)
             .clip(RoundedCornerShape(4.dp))
             .background(background)
-            .clickable(interactionSource = interaction, indication = null, onClick = onClick),
+            .clickable(
+                interactionSource = interaction,
+                indication = null,
+                enabled = enabled,
+                onClick = onClick
+            ),
         contentAlignment = Alignment.Center
     ) {
         Icon(
             imageVector = icon,
             contentDescription = contentDescription,
-            tint = tint,
+            tint = if (enabled) tint else tint.copy(alpha = 0.38f),
             modifier = Modifier.size(iconSize)
         )
     }

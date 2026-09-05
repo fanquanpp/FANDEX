@@ -1,6 +1,6 @@
 {
   "name": "@fandex/web",
-  "version": "4.2.1",
+  "version": "4.3.0",
   "private": true,
   "type": "module",
   "description": "FANDEX Web 端 — Astro 7 + React 19 + Tailwind 4",
@@ -12,10 +12,12 @@
     "build": "node scripts/build-stats.mjs && node scripts/build-syntax.mjs && astro build && node scripts/clean-prerender.mjs && pagefind --site dist",
     "preview": "astro preview",
     "qa": "node scripts/qa-check.mjs",
+    "og": "node scripts/generate-og.mjs",
     "typecheck": "astro check",
     "build:search": "pagefind --site dist"
   },
   "dependencies": {
+    "@astrojs/markdown-remark": "catalog:",
     "@astrojs/mdx": "catalog:",
     "@astrojs/react": "catalog:",
     "@astrojs/rss": "catalog:",
@@ -49,18 +51,18 @@
     "katex": "catalog:",
     "lucide-react": "catalog:",
     "motion": "catalog:",
-    "prismjs": "catalog:",
     "react": "catalog:",
     "react-dom": "catalog:",
     "rehype-autolink-headings": "catalog:",
     "rehype-katex": "catalog:",
     "rehype-slug": "catalog:",
     "remark-emoji": "catalog:",
-    "remark-gfm": "catalog:",
     "remark-math": "catalog:",
+    "remark-parse": "catalog:",
     "shiki": "catalog:",
     "tailwind-merge": "catalog:",
     "tailwindcss": "catalog:",
+    "unified": "catalog:",
     "unist-util-visit": "catalog:",
     "web-vitals": "catalog:",
     "zod": "catalog:"
@@ -73,8 +75,11 @@
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
     "glob": "catalog:",
+    "gray-matter": "catalog:",
+    "mermaid": "^11.17.2",
     "pagefind": "^1.5.2",
     "rollup-plugin-visualizer": "catalog:",
+    "sharp": "^0.34.3",
     "typescript": "catalog:"
   }
 }

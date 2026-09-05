@@ -15,7 +15,9 @@
  *
  * 用于 BaseLayout.astro，覆盖所有通过该布局渲染的页面。
  * - script-src 允许 'unsafe-inline'：Astro 岛屿水合与暗色模式初始化脚本依赖内联脚本
- * - script-src 允许 https://cdn.jsdelivr.net：mermaid 图表运行时从 jsDelivr CDN 按需加载（ESM）
+ * - script-src 允许 https://cdn.jsdelivr.net：playground（前端实验室）运行时
+ *   从 jsDelivr 按需加载 prettier 格式化器；mermaid 已改为 npm 依赖
+ *   由 Vite 代码分割自托管，不再依赖 CDN
  * - script-src 允许 data:：Astro ClientRouter (View Transitions) 在 prefetch 启用时
  *   会注入 data:application/javascript, URL 的预取脚本，被 CSP 阻止会导致
  *   路由切换无响应（用户反馈：点击模块卡片多次才反应）。data: 在 script-src 中
@@ -25,8 +27,8 @@
  * - font-src 允许 data:：Base64 内嵌字体；品牌字体（Chakra Petch / IBM Plex Sans /
  *   JetBrains Mono）全部来自同源 /fonts/ 目录
  * - img-src 允许 data:：Base64 内嵌图片（如 SVG 数据 URI）
- * - connect-src 'self' + jsDelivr：XHR/Fetch 允许同源与按需 ESM 运行时
- *   （mermaid 渲染、语法速览语言分块为同源 fetch）
+ * - connect-src 'self' + jsDelivr：XHR/Fetch 允许同源与 playground prettier
+ *   的 CDN 运行时（mermaid 渲染、语法速览语言分块均为同源资源）
  */
 export const MAIN_CSP = [
   "default-src 'self'",

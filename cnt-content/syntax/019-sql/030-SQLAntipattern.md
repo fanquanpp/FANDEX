@@ -6,7 +6,7 @@
 
 ## SELECT * 滥用
 
-**基本写法：避免 SELECT ***
+**基本写法：避免 SELECT \***
 `SELECT <明确列名> FROM <表>`
 ```sql
 -- 反模式：SELECT * 性能差且不安全

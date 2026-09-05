@@ -25,6 +25,8 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+// frontmatter 解析统一走共享助手（gray-matter，完整 YAML 语义），不再逐行正则拼装
+import { parseFrontmatter } from './lib/frontmatter.mjs';
 
 /** 当前脚本所在目录 */
 const __dirname = dirname(fileURLToPath(import.meta.url));
@@ -108,15 +110,21 @@ function walk(dir) {
     else if (entry.name.endsWith('.md')) {
       const raw = readFileSync(full, 'utf-8');
 
-      // 解析 frontmatter
-      const match = raw.match(/^---\r?\n([\s\S]*?)\r?\n---/);
-      if (!match) {
+      // 解析 frontmatter（gray-matter 完整 YAML 语义；语法错误按 high 级问题报告而非中断审计）
+      let parsed;
+      try {
+        parsed = parseFrontmatter(raw);
+      } catch (e) {
+        issues.push({ file: full, issue: `BAD_FRONTMATTER: ${e.message}`, severity: 'high' });
+        continue;
+      }
+      const { present, data, content: matterBody, fm } = parsed;
+      if (!present) {
         issues.push({ file: full, issue: 'NO_FRONTMATTER', severity: 'high' });
         continue;
       }
 
-      const fm = match[1];
-      const body = raw.slice(match[0].length).trim(); // frontmatter 之后的正文
+      const body = matterBody.trim(); // frontmatter 之后的正文
 
       // ============================================================
       // Phase 1.5：schema 完整性检测
@@ -136,15 +144,13 @@ function walk(dir) {
         });
       }
 
-      // 提取 frontmatter 各字段
-      const titleLine = fm.match(/title:\s*["']?(.*?)["']?\s*$/m);
-      const title = titleLine ? titleLine[1] : '';
-      const modLine = fm.match(/module:\s*["']?(.*?)["']?\s*$/m);
-      const mod = modLine ? modLine[1] : '';
-      const orderLine = fm.match(/order:\s*(\d+)/m);
-      const order = orderLine ? orderLine[1] : '';
-      const diffLine = fm.match(/difficulty:\s*["']?(.*?)["']?\s*$/m);
-      const diff = diffLine ? diffLine[1] : '';
+      // 提取 frontmatter 各字段（gray-matter 已给出结构化值，仅做形态收窄）
+      const asText = (v) =>
+        v == null ? '' : typeof v === 'string' ? v.trim() : String(v).trim();
+      const title = asText(data.title);
+      const mod = asText(data.module);
+      const order = data.order == null ? '' : String(data.order);
+      const diff = asText(data.difficulty);
 
       // 检查 frontmatter 必填字段
       if (!title || title === '#')
@@ -155,12 +161,10 @@ function walk(dir) {
       if (!diff) issues.push({ file: full, issue: 'MISSING_DIFFICULTY', severity: 'medium' });
 
       // 统一规范必填字段：category / author / updated
-      const categoryLine = fm.match(/^category:\s*["']?(.*?)["']?\s*$/m);
-      const category = categoryLine ? categoryLine[1] : '';
-      const authorLine = fm.match(/^author:\s*["']?(.*?)["']?\s*$/m);
-      const author = authorLine ? authorLine[1] : '';
-      const updatedLine = fm.match(/^updated:\s*["']?(.*?)["']?\s*$/m);
-      const updated = updatedLine ? updatedLine[1] : '';
+      // （updated 若被 YAML 解析为 Date，asText 会转为 ISO 串，仅判断存在性，行为等价）
+      const category = asText(data.category);
+      const author = asText(data.author);
+      const updated = asText(data.updated);
       if (!category)
         issues.push({ file: full, issue: 'MISSING_CATEGORY', severity: 'medium' });
       if (!author)
@@ -168,43 +172,35 @@ function walk(dir) {
       if (!updated)
         issues.push({ file: full, issue: 'MISSING_UPDATED', severity: 'medium' });
 
-      // 统一规范：frontmatter 只允许 10 个标准字段
+      // 统一规范：frontmatter 只允许 10 个标准字段（直接基于解析后的键名判断）
       const STANDARD_FIELDS = [
         'order', 'title', 'module', 'category', 'difficulty',
         'description', 'author', 'updated', 'related', 'prerequisites',
       ];
-      const fmKeyRe = /^([A-Za-z_][A-Za-z0-9_]*):/gm;
-      for (const keyMatch of fm.matchAll(fmKeyRe)) {
-        if (!STANDARD_FIELDS.includes(keyMatch[1])) {
+      for (const key of Object.keys(data)) {
+        if (!STANDARD_FIELDS.includes(key)) {
           issues.push({
             file: full,
-            issue: `EXTRA_FIELD: ${keyMatch[1]}`,
+            issue: `EXTRA_FIELD: ${key}`,
             severity: 'low',
           });
         }
       }
 
-      // 统一规范：related / prerequisites 必须为 module/文件名 格式
+      // 统一规范：related / prerequisites 必须为 module/文件名 格式（YAML 列表项逐项校验）
       const refFormatRe = /^[a-z0-9-]+\/[A-Za-z0-9_-]+$/;
-      let currentList = null;
-      for (const line of fm.split(/\r?\n/)) {
-        const kv = line.match(/^([A-Za-z_][A-Za-z0-9_]*):\s*(.*)$/);
-        if (kv) {
-          const isEmptyList =
-            kv[1] === 'related' || kv[1] === 'prerequisites';
-          currentList = isEmptyList && kv[2].trim() === '' ? kv[1] : null;
-          continue;
-        }
-        if (!currentList) continue;
-        const itemMatch = line.match(/^\s*-\s*(.+)$/);
-        if (!itemMatch) continue;
-        const refValue = itemMatch[1].trim().replace(/^['"]|['"]$/g, '');
-        if (!refFormatRe.test(refValue)) {
-          issues.push({
-            file: full,
-            issue: `BAD_REF_FORMAT: ${currentList} ${refValue}`,
-            severity: 'medium',
-          });
+      for (const listKey of ['related', 'prerequisites']) {
+        const list = data[listKey];
+        if (!Array.isArray(list)) continue; // 标量/缺失不在此检查范围（原实现同样跳过）
+        for (const item of list) {
+          const refValue = asText(item);
+          if (!refFormatRe.test(refValue)) {
+            issues.push({
+              file: full,
+              issue: `BAD_REF_FORMAT: ${listKey} ${refValue}`,
+              severity: 'medium',
+            });
+          }
         }
       }
 

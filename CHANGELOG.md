@@ -7,6 +7,64 @@
 > 发布说明约定：`android-release.yml` 工作流在打 `v*` 标签发布时，
 > 会自动提取本文档中对应 `## [vX.Y.Z]` 段落作为 GitHub Release 说明。
 
+## [v4.3.0] - 2026-09-05
+
+本版本为全端质量与功能迭代：Android 新主线补齐应用壳能力（更新体系、启动页、
+字号缩放、正式签名、单元测试），web 端完成工具链升级（Astro 7.3、统一 Markdown
+处理器、构建期语法高亮），并完成一轮内容数据治理（语法速览去重、旧 Android 归档
+线冻结）。
+
+### 新增
+
+- **Android 新主线应用更新体系**：移植旧端完整能力——GitHub Releases 检查、
+  每日 WorkManager 后台检查、APK 下载进度卡片、PackageInstaller 安装、忽略版本、
+  抽屉设置项；Gson 全部替换为 kotlinx.serialization，Manifest 增补网络权限与
+  GitHub 域名白名单；
+- **Android 新主线品牌启动页**：接入 core-splashscreen（品牌底色 + 图标），
+  首帧就绪即退出，去除人为延迟；
+- **Android 新主线全局字号缩放**：DataStore 持久化（0.8–1.4），抽屉滑杆 7 档，
+  文档页顶栏字号增减按钮，LocalDensity 全局生效；
+- **Android 新主线单元测试**：新增 FrontmatterParser 可测对象与 21 例单元测试
+  （阅读时长、frontmatter 解析、版本比较），并修复版本号带空白时解析失败的缺陷；
+- **社交分享 OG 图**：新增 1200x630 品牌分享图（SVG 源 + sharp 生成 PNG），
+  Open Graph / Twitter Card / JSON-LD 全面接入，Twitter Card 升级为
+  summary_large_image；
+- **web 模块列表页分页**：每页 60 篇（`{module}/page/{n}/`），超大模块
+  （300+ 篇）不再单页输出全部条目，列表页体积与预取带宽显著下降。
+
+### 变更
+
+- **工具链升级**：Astro 7.1.3 → 7.3.1、@astrojs/mdx 8、@astrojs/react 6、
+  zod 4.5（内容 schema 硬性要求）；Markdown 插件迁移到 Astro 7.3 新的
+  `processor: unified({...})` 风格（移除已废弃的顶层插件写法）；
+- **语法速览高亮迁移到构建期**：客户端移除 Prism（约 20 种语言组件不再打包），
+  代码高亮由构建脚本以 Shiki 预生成双主题 HTML（分块数据新增 codeHtml 字段，
+  版本 v2）；结构解析由手写正则重写为 remark-parse AST 驱动；
+- **mermaid 自托管**：图表运行时从 jsDelivr CDN 改为 npm 依赖 + Vite 代码分割，
+  GitHub Pages 与桌面端离线环境均可用；
+- **构建性能**：doc-service 增加构建期查询缓存，消除每页全量过滤的 O(N²) 开销；
+  frontmatter 解析统一为 gray-matter（build-stats 与 content-audit 共享实现）；
+- **Android 旧主线（app-Android-old）冻结**：只修阻断缺陷，不再新增功能，
+  Legacy APK 保留供存量用户过渡，新版发布稳定后将从构建矩阵移除。
+
+### 修复
+
+- **语法速览数据去重**：删除 13 个 `*-MERGED.md` 派生合集（3.1MB，全部生成
+  管线均显式跳过、仅 web 端误读），消除 4200+ 张 docTitle 错误的重复卡片
+  （8564 → 4341 张，小节覆盖率经比对零丢失）；同批修正源素材 3 处粗体星号
+  未转义导致的解析偏差；
+- **rss.xml**：移除对 schema 中不存在字段 `created` 的引用；
+- **桌面端构建**：playground 入口剔除从"正则后处理 HTML"改为构建期条件渲染
+  （IS_DESKTOP_BUILD），删除脆弱的正则替换脚本；移除未使用的 serde 依赖；
+- **工程治理**：tls-tools 迁移 pnpm catalog 并删除 npm lockfile、engines 修正
+  为 node>=22；workspace 移除空注册与悬空 catalog 条目；删除远程遗留分支
+  fanquanpp-patch-3。
+
+### 版本号
+
+- 活跃三端（web / desktop / Android 新主线）统一升至 4.3.0
+  （Android 新主线 versionCode 8）；旧主线保持 4.2.1 冻结不再变更。
+
 ## [v4.2.1] - 2026-09-03
 
 本版本聚焦平台体验：桌面端新增免安装便携版，appold 补齐 Mermaid 图表与

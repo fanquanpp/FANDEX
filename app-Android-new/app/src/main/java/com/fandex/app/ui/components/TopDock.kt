@@ -33,6 +33,8 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.LightMode
 import androidx.compose.material.icons.filled.Menu
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.TextDecrease
+import androidx.compose.material.icons.filled.TextIncrease
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -352,4 +354,29 @@ fun ThemeQuickToggle(
             onClick = { viewModel.cycleThemeMode() }
         )
     }
+}
+
+/**
+ * 字号缩放控件（文档页顶栏）
+ *
+ * 移植自旧端文章页顶栏的字号增减交互：步进 0.1，范围 0.8-1.4；
+ * 到达边界时对应按钮置灰。缩放全局生效（FandexTheme 覆盖 LocalDensity）
+ */
+@Composable
+fun FontScaleControls(
+    viewModel: com.fandex.app.MainViewModel
+) {
+    val scale by viewModel.fontScale.collectAsState()
+    FdxIconButton(
+        icon = Icons.Filled.TextDecrease,
+        contentDescription = "减小字号",
+        onClick = { viewModel.decreaseFontScale() },
+        enabled = scale > com.fandex.app.data.prefs.ThemePreferences.MIN_FONT_SCALE
+    )
+    FdxIconButton(
+        icon = Icons.Filled.TextIncrease,
+        contentDescription = "增大字号",
+        onClick = { viewModel.increaseFontScale() },
+        enabled = scale < com.fandex.app.data.prefs.ThemePreferences.MAX_FONT_SCALE
+    )
 }

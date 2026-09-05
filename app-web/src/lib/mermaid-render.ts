@@ -2,15 +2,17 @@
  * Mermaid 图表客户端惰性渲染模块
  * =============================================================================
  * 功能概述：
- * 站点内容（cnt-content/full）中约 575 篇文档包含 ```mermaid 代码块。
+ * 站点内容（cnt-content/full）中约 520 篇文档包含 ```mermaid 代码块。
  * 构建期 Shiki 会把它们作为普通代码块输出（pre > code.language-mermaid），
- * 本模块在客户端扫描这些代码块，按需从 jsDelivr 动态 import mermaid ESM，
- * 将源码渲染为 SVG 并替换原代码块；页面不含 mermaid 块时零加载、零开销。
+ * 本模块在客户端扫描这些代码块，按需动态 import('mermaid') 渲染为 SVG
+ * 并替换原代码块；页面不含 mermaid 块时零加载、零开销。
  *
  * 设计决策：
  * - 选择客户端按需渲染而非构建期 SVG 化：构建期方案需要无头浏览器依赖，
- *   且 mermaid SVG 固化后无法跟随亮/暗主题；客户端方案在 CSP
- *   （script-src 已允许 cdn.jsdelivr.net）内以单次 ESM 加载完成
+ *   且 mermaid SVG 固化后无法跟随亮/暗主题
+ * - mermaid 来自 npm 依赖并由 Vite 代码分割为异步 chunk：仅含图表的页面
+ *   在首次渲染时才加载（此前为 jsDelivr CDN 运行时加载，自托管后
+ *   GitHub Pages 与 Tauri 桌面端离线环境均可用，且无第三方 CDN 依赖）
  * - 主题跟随 document.documentElement 的 data-theme（light → neutral，
  *   dark → dark），渲染时取当前值；切换主题后刷新页面即可重渲染
  * - 渲染失败（语法错误等）保留原代码块并在控制台给出提示，不阻断阅读
@@ -18,9 +20,6 @@
  *   通过 data-mermaid-state 标记跳过，避免重复渲染
  * =============================================================================
  */
-
-/** mermaid ESM 入口（jsDelivr CDN，锁定 v11 主版本） */
-const MERMAID_ESM_URL = 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 
 /** mermaid 模块缓存：同一页面生命周期内仅加载一次 */
 let mermaidPromise: Promise<MermaidAPI> | null = null;
@@ -35,12 +34,12 @@ interface MermaidAPI {
 let renderCounter = 0;
 
 /**
- * 惰性加载 mermaid 模块并按当前主题初始化
+ * 惰性加载 mermaid 模块（Vite 代码分割的异步 chunk）并按当前主题初始化
  * @returns mermaid API 对象
  */
 async function getMermaid(): Promise<MermaidAPI> {
   if (!mermaidPromise) {
-    mermaidPromise = import(/* @vite-ignore */ MERMAID_ESM_URL).then((mod) => {
+    mermaidPromise = import('mermaid').then((mod) => {
       const mermaid = (mod.default ?? mod) as MermaidAPI;
       const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
       mermaid.initialize({
