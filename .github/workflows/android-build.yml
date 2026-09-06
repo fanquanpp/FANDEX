@@ -6,7 +6,11 @@
 #   2. 指向 main 的 PR（Android 工程变更时）
 #   3. 手动触发
 #
-# 职责：双端并行构建 Release APK，上传为 artifact，不创建 Release。
+# 职责：双端并行构建 Release APK + 新技术栈单元测试 + APK 签名校验，
+#       上传为 artifact，不创建 Release。
+#
+# 签名策略与 android-release.yml 一致：配置 Secrets 时演练正式签名路径，
+# 未配置时回退 debug 签名（Secrets 清单见 android-release.yml 头部说明）。
 # =============================================================================
 
 name: Android Build Check
@@ -79,9 +83,46 @@ jobs:
       - name: 同步内容资产（${{ matrix.label }}）
         run: ${{ matrix.sync }}
 
+      - name: 解码正式签名密钥（新技术栈；未配置 Secrets 时回退 debug 签名）
+        if: ${{ matrix.id == 'new' }}
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$SIGNING_KEYSTORE_BASE64" ]; then
+            echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > app-Android-new/fandex-release.jks
+            echo "已解码正式 keystore：app-Android-new/fandex-release.jks"
+          else
+            echo "未配置 SIGNING_KEYSTORE_BASE64，本次使用 runner 临时 debug 签名"
+          fi
+
+      - name: 运行单元测试（新技术栈）
+        if: ${{ matrix.id == 'new' }}
+        working-directory: ${{ matrix.app }}
+        run: ./gradlew :app:test --stacktrace
+
       - name: 构建 Release APK
         working-directory: ${{ matrix.app }}
+        env:
+          FANDEX_KEYSTORE_PASSWORD: ${{ secrets.FANDEX_KEYSTORE_PASSWORD }}
+          FANDEX_KEY_PASSWORD: ${{ secrets.FANDEX_KEY_PASSWORD }}
+          FANDEX_KEY_ALIAS: ${{ secrets.FANDEX_KEY_ALIAS }}
         run: ./gradlew :app:assembleRelease --stacktrace
+
+      - name: 校验 APK 签名证书（新技术栈）
+        if: ${{ matrix.id == 'new' }}
+        run: |
+          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n1)"
+          echo "使用 $APKSIGNER"
+          "$APKSIGNER" verify --print-certs app-Android-new/app/build/outputs/apk/release/app-release.apk
+
+      - name: 上传测试报告（失败时）
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-report-${{ matrix.id }}
+          path: ${{ matrix.app }}/app/build/reports/tests/
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: 上传 APK 构建产物
         uses: actions/upload-artifact@v4
