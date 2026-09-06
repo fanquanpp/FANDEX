@@ -1,0 +1,34 @@
+# 行尾锚定：所有文本文件在仓库与任何平台检出中一律使用 LF
+# -----------------------------------------------------------------------------
+# 背景：内容源在 Windows 编辑器间流转会产生 CRLF 行尾，而 Android ICU 正则
+# 对 "\s*\n" 叠加 CRLF 的回溯匹配与 JVM 不一致，曾导致 frontmatter 围栏
+# 解析回归（文档标题退化为 slug、元信息组件丢失）。在属性层面根治：
+# 提交、检出、跨平台协作均不再发生行尾转换。
+# -----------------------------------------------------------------------------
+
+* text=auto eol=lf
+
+# Windows 脚本保持 CRLF（依赖解释器对 CRLF 的约定）
+*.bat text eol=crlf
+*.cmd text eol=crlf
+*.ps1 text eol=crlf
+
+# 二进制文件显式标记，禁止任何形式的行尾处理
+*.png  -text
+*.jpg  -text
+*.jpeg -text
+*.gif  -text
+*.webp -text
+*.avif -text
+*.ico  -text
+*.woff  -text
+*.woff2 -text
+*.ttf  -text
+*.otf  -text
+*.jks  -text
+*.zip  -text
+*.exe  -text
+*.dll  -text
+*.apk  -text
+*.jar  -text
+*.pdf  -text

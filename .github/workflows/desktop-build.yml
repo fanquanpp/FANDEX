@@ -86,6 +86,10 @@ jobs:
           }
           Write-Host "playground 已剔除，校验通过"
 
+      - name: Web 构建产物 QA 校验
+        # 模块一致性、幽灵目录、超大页面等门禁（对 DESKTOP_BUILD 产物同样适用）
+        run: pnpm --filter @fandex/web qa
+
       - name: 上传安装包构建产物
         uses: actions/upload-artifact@v4
         with:

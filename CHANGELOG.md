@@ -7,6 +7,22 @@
 > 发布说明约定：`android-release.yml` 工作流在打 `v*` 标签发布时，
 > 会自动提取本文档中对应 `## [vX.Y.Z]` 段落作为 GitHub Release 说明。
 
+## [未发布]
+
+### 变更
+
+- **CI/CD 加固**：发布工作流新增版本一致性校验（tag 必须对齐 Android
+  versionName / tauri.conf / 根 package.json）、Android 新主线单元测试
+  门禁、APK 签名证书校验（apksigner），发布说明附带产物 SHA-256 校验值；
+  桌面端发布与校验工作流新增构建产物 QA 门禁（模块一致性、幽灵目录、
+  超大页面，已验证对 DESKTOP_BUILD 产物兼容）；
+- **正式签名支持**：发布与校验工作流支持 Secrets 注入正式 keystore
+  （`SIGNING_KEYSTORE_BASE64` + `FANDEX_KEYSTORE_PASSWORD` /
+  `FANDEX_KEY_PASSWORD` / `FANDEX_KEY_ALIAS`），配置后官方包签名一致、
+  应用内更新可覆盖安装；未配置时维持 runner 临时 debug 签名回退；
+- **行尾锚定**：新增 `.gitattributes` 全仓 LF（Windows 脚本 CRLF 例外、
+  二进制显式标记），根治 Windows 检出 CRLF 引发的内容解析回归。
+
 ## [v4.3.1] - 2026-09-06
 
 本版本为缺陷修复版本：修复 v4.3.0 引入的 Windows 桌面端与 Android 新主线

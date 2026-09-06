@@ -5,12 +5,20 @@
 #   1. push v* 标签 → 自动构建并发布 GitHub Release
 #   2. 手动触发（release=true） → 构建并发布指定标签的 Release
 #
-# 职责：三端并行构建（Android 双端 APK + Windows 桌面端 NSIS 安装包），
-#       统一命名后创建 GitHub Release 并附带全部安装包。
+# 职责：版本一致性校验 → 三端并行构建（Android 双端 APK + Windows 桌面端
+#       NSIS 安装包，含单元测试与 APK 签名校验）→ 统一命名后创建
+#       GitHub Release，发布说明附带产物 SHA-256 校验值。
 #
-# 签名策略：
-#   未注入正式 keystore 时回退 debug 签名，CI 可直接出包；
-#   debug keystore 在 runner 上临时生成，仅用于分发安装，不做覆盖升级。
+# 签名策略（两级回退，gradle 侧三级回退见 app-Android-new/app/build.gradle.kts）：
+#   1. 配置以下 Secrets 时使用正式 keystore 签名——正式包之间签名一致，
+#      应用内更新（PackageInstaller 覆盖安装）才能成功：
+#        SIGNING_KEYSTORE_BASE64  ：fandex-release.jks 的 base64 文本
+#                                   （本地生成：base64 -w0 fandex-release.jks）
+#        FANDEX_KEYSTORE_PASSWORD ：keystore 密码
+#        FANDEX_KEY_PASSWORD      ：key 密码
+#        FANDEX_KEY_ALIAS         ：key 别名（可选，默认 fandex）
+#   2. 未配置 Secrets 时回退 runner 临时 debug 签名，CI 可直接出包；
+#      注意：每次运行的临时 key 都不同，仅可全新安装，无法覆盖升级
 # =============================================================================
 
 name: Build & Release
@@ -33,8 +41,34 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # -------------------------------------------------------
+  # 版本一致性校验：tag 必须与各端版本号对齐，防止漏改版本号
+  # -------------------------------------------------------
+  version-check:
+    name: 版本一致性校验
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v4
+
+      - name: 校验 tag 与各端版本号一致
+        run: |
+          TAG_VER="${GITHUB_REF_NAME#v}"
+          fail() { echo "::error::$1"; exit 1; }
+          GRADLE_VER="$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app-Android-new/app/build.gradle.kts)"
+          TAURI_VER="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' app-desktop/src-tauri/tauri.conf.json | head -n1)"
+          ROOT_VER="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' package.json | head -n1)"
+          echo "tag=$TAG_VER gradle=$GRADLE_VER tauri=$TAURI_VER root=$ROOT_VER"
+          [ -n "$TAG_VER" ] || fail "标签名须为 vX.Y.Z 形式"
+          [ "$GRADLE_VER" = "$TAG_VER" ] || fail "app-Android-new versionName（$GRADLE_VER）与 tag（$TAG_VER）不一致"
+          [ "$TAURI_VER" = "$TAG_VER" ] || fail "tauri.conf.json version（$TAURI_VER）与 tag（$TAG_VER）不一致"
+          [ "$ROOT_VER" = "$TAG_VER" ] || fail "根 package.json version（$ROOT_VER）与 tag（$TAG_VER）不一致"
+          echo "版本一致性校验通过"
+
   build:
     name: 构建 ${{ matrix.label }} APK
+    needs: version-check
     runs-on: ubuntu-latest
     timeout-minutes: 20
     strategy:
@@ -74,9 +108,46 @@ jobs:
       - name: 同步内容资产（${{ matrix.label }}）
         run: ${{ matrix.sync }}
 
+      - name: 解码正式签名密钥（新技术栈；未配置 Secrets 时回退 debug 签名）
+        if: ${{ matrix.id == 'new' }}
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$SIGNING_KEYSTORE_BASE64" ]; then
+            echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > app-Android-new/fandex-release.jks
+            echo "已解码正式 keystore：app-Android-new/fandex-release.jks"
+          else
+            echo "未配置 SIGNING_KEYSTORE_BASE64，本次使用 runner 临时 debug 签名"
+          fi
+
+      - name: 运行单元测试（新技术栈）
+        if: ${{ matrix.id == 'new' }}
+        working-directory: ${{ matrix.app }}
+        run: ./gradlew :app:test --stacktrace
+
       - name: 构建 Release APK
         working-directory: ${{ matrix.app }}
+        env:
+          FANDEX_KEYSTORE_PASSWORD: ${{ secrets.FANDEX_KEYSTORE_PASSWORD }}
+          FANDEX_KEY_PASSWORD: ${{ secrets.FANDEX_KEY_PASSWORD }}
+          FANDEX_KEY_ALIAS: ${{ secrets.FANDEX_KEY_ALIAS }}
         run: ./gradlew :app:assembleRelease --stacktrace
+
+      - name: 校验 APK 签名证书（新技术栈）
+        if: ${{ matrix.id == 'new' }}
+        run: |
+          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n1)"
+          echo "使用 $APKSIGNER"
+          "$APKSIGNER" verify --print-certs app-Android-new/app/build/outputs/apk/release/app-release.apk
+
+      - name: 上传测试报告（失败时）
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: unit-test-report-${{ matrix.id }}
+          path: ${{ matrix.app }}/app/build/reports/tests/
+          retention-days: 7
+          if-no-files-found: ignore
 
       - name: 上传 APK 构建产物
         uses: actions/upload-artifact@v4
@@ -87,6 +158,7 @@ jobs:
 
   desktop:
     name: 构建 Windows 桌面端安装包
+    needs: version-check
     runs-on: windows-latest
     timeout-minutes: 60
     steps:
@@ -124,6 +196,10 @@ jobs:
             exit 1
           }
           Write-Host "playground 已剔除，校验通过"
+
+      - name: Web 构建产物 QA 校验
+        # 模块一致性、幽灵目录、超大页面等门禁（对 DESKTOP_BUILD 产物同样适用）
+        run: pnpm --filter @fandex/web qa
 
       - name: 上传安装包构建产物
         uses: actions/upload-artifact@v4
@@ -203,10 +279,16 @@ jobs:
           - FANDEX-Setup-$VERSION.exe：Windows 桌面端安装包（Tauri 2，离线可用）
           - 两个 APK applicationId 不同，可并存安装"
           fi
-          # 多行文本写入 GITHUB_OUTPUT
+
+          # 产物 SHA-256 摘要追加到发布说明（镜像分发场景校验完整性）
+          DIGESTS="$(cd apk && sha256sum FANDEX-* | while read -r sum file; do echo "- \`${file}\` \`${sum}\`"; done)"
           {
             echo "body<<EOF"
             echo "$NOTES"
+            echo ""
+            echo "### 产物 SHA-256 校验值"
+            echo ""
+            echo "$DIGESTS"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
 
