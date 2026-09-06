@@ -7,6 +7,37 @@
 > 发布说明约定：`android-release.yml` 工作流在打 `v*` 标签发布时，
 > 会自动提取本文档中对应 `## [vX.Y.Z]` 段落作为 GitHub Release 说明。
 
+## [v4.3.1] - 2026-09-06
+
+本版本为缺陷修复版本：修复 v4.3.0 引入的 Windows 桌面端与 Android 新主线
+启动崩溃、Android 文档信息组件丢失两类回归，全部经过真机与桌面端实测验证。
+v4.3.0 的四个安装包均存在下述缺陷，请升级到本版本。
+
+### 修复
+
+- **Windows 桌面端启动崩溃**：全局快捷键 Ctrl+Alt+F 注册失败（被输入法、
+  安全软件、音乐播放器等占用时）此前直接抛错令 setup 钩子 panic，应用
+  完全无法启动。现降级为禁用全局呼出并保持应用正常启动；新增
+  single-instance 单实例插件，重复启动时唤醒已有窗口，同时规避
+  "隐藏实例占用快捷键 + 新实例抢注失败"与"更新安装后旧实例未退净"两类
+  启动失败场景；
+- **Android 新主线启动必崩**：v4.3.0 引入 WorkManager 后，其内嵌 Room
+  数据库 `WorkDatabase_Impl` 的无参构造器被 R8 剥离（Room 2.6.1 自带
+  keep 规则不含成员保留，AGP 9 R8 full mode 下反射实例化失败），进程
+  建立阶段即抛 NoSuchMethodException，任何启动方式均崩溃。proguard 规则
+  显式保留 RoomDatabase 子类构造器修复；
+- **Android 新主线文档"信息组件"丢失**（标题退化为 slug、作者/更新时间/
+  阅读时长缺失、前置知识卡片消失、frontmatter 原文泄漏进正文）：v4.3.0
+  内容治理轮重新生成的文档资产行尾变为 CRLF（Windows 编辑器写入，
+  `autocrlf` 检出放大），Android ICU 正则对 `\s*\n` 叠加 CRLF 的回溯匹配
+  与 JVM 不一致，frontmatter 围栏判定失败。解析器入口统一行尾归一化
+  （CRLF/CR -> LF）修复，内容生成脚本同步输出 LF，新增 CRLF/CR 单测
+  防回归（正则本身不变）；
+- **Windows 桌面端窗口空白**（构建流程问题，随本次重新出包消除）：
+  桌面端必须经 `pnpm --filter @fandex/desktop build` 构建（注入
+  `DESKTOP_BUILD=1` 切换资源 base 为 `/`）；直接复用 web 部署产物
+  （base `/FANDEX/`）打包会导致 Tauri 内全部资源 404、窗口无内容。
+
 ## [v4.3.0] - 2026-09-05
 
 本版本为全端质量与功能迭代：Android 新主线补齐应用壳能力（更新体系、启动页、

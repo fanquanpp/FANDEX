@@ -24,18 +24,23 @@ internal object FrontmatterParser {
      * @param slug 文档 slug（无 frontmatter 或缺 title 时作为标题兜底）
      */
     fun parseMarkdown(content: String, slug: String): FandexDoc {
-        val match = frontmatterRegex.find(content)
+        /* 统一 CRLF/CR -> LF：内容源经 Windows 编辑器流转会出现 CRLF 行尾，
+           Android ICU 正则对 "\s*\n" 叠加 \r 的回溯与 JVM 行为不一致，
+           会令 frontmatter 围栏匹配失败（标题退化为 slug、YAML 泄漏进正文）。
+           先归一化行尾再解析，保证各正则引擎下行为稳定 */
+        val normalized = content.replace("\r\n", "\n").replace('\r', '\n')
+        val match = frontmatterRegex.find(normalized)
 
         if (match == null) {
             // 无 frontmatter：整篇作为正文，标题以 slug 兜底
             return FandexDoc(
                 slug = slug,
                 frontmatter = DocFrontmatter(title = slug),
-                content = content
+                content = normalized
             )
         }
 
-        val body = content.substring(match.range.last + 1).trim()
+        val body = normalized.substring(match.range.last + 1).trim()
         return FandexDoc(
             slug = slug,
             frontmatter = parseFrontmatter(match.groupValues[1], slug),
