@@ -115,6 +115,26 @@ class FrontmatterParserTest {
         assertEquals("T", doc.frontmatter.title)
     }
 
+    /** CRLF 行尾（Windows 编辑内容/autocrlf 检出产物）：围栏可识别、标题正常、正文剥离 YAML */
+    @Test
+    fun parsesCrlfLineEndings() {
+        val markdown = "---\r\norder: 50\r\ntitle: XSS 攻击\r\nrelated:\r\n  - 'a/001'\r\n---\r\n\r\n正文第一段。"
+        val doc = FrontmatterParser.parseMarkdown(markdown, "005-XSSAttack")
+        assertEquals("XSS 攻击", doc.frontmatter.title)
+        assertEquals(50, doc.frontmatter.order)
+        assertEquals(listOf("a/001"), doc.frontmatter.related)
+        assertEquals("正文第一段。", doc.content)
+    }
+
+    /** 全文为孤立 CR 行尾（旧 Mac 风格）：同样归一化处理 */
+    @Test
+    fun parsesCrLineEndings() {
+        val markdown = "---\rtitle: T\r---\r\r正文。"
+        val doc = FrontmatterParser.parseMarkdown(markdown, "slug")
+        assertEquals("T", doc.frontmatter.title)
+        assertEquals("正文。", doc.content)
+    }
+
     /** 直解 frontmatter YAML（不经围栏切分），列表项无缩进也可解析 */
     @Test
     fun parsesRawYamlDirectly() {

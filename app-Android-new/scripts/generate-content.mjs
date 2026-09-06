@@ -244,7 +244,14 @@ function copyDocs() {
         if (fileName.includes('MERGED')) continue;
 
         const dest = join(ANDROID_ASSETS, 'docs', moduleId, fileName);
-        copyFile(filePath, dest);
+        // 行尾归一化为 LF：内容源在 Windows 编辑器间流转会产生 CRLF，
+        // Android 端 frontmatter 围栏正则对 CRLF 敏感（ICU 引擎对
+        // "\s*\n" 与 JVM 行为不一致），统一输出 LF 保证三端解析一致
+        const normalized = readFileSync(filePath, 'utf-8')
+            .replace(/\r\n/g, '\n')
+            .replace(/\r/g, '\n');
+        ensureDir(dirname(dest));
+        writeFileSync(dest, normalized, 'utf-8');
         count++;
     }
 

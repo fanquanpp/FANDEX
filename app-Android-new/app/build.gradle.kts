@@ -16,8 +16,8 @@ android {
         applicationId = "com.fandexpp.fandex"
         minSdk = 26
         targetSdk = 37
-        versionCode = 8
-        versionName = "4.3.0"
+        versionCode = 9
+        versionName = "4.3.1"
 
         /**
          * GitHub Releases API 端点
