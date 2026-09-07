@@ -86,7 +86,7 @@ catalog:
   typescript: ^5.7.0
   tsx: ^4.23.13
   vite: ^8.2.2
-  '@vitejs/plugin-react': ^4.3.0
+  '@vitejs/plugin-react': ^6.1.1
   rollup-plugin-visualizer: ^7.1.1
 
   # 类型定义
