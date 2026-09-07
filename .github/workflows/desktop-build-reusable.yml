@@ -1,0 +1,96 @@
+# =============================================================================
+# FANDEX Windows 桌面端构建（可复用工作流）
+# =============================================================================
+# 被以下工作流通过 jobs.<id>.uses 调用：
+#   - desktop-build.yml   （推送/PR 校验，产物保留 14 天）
+#   - android-release.yml （v* 标签发布，产物保留 90 天）
+#
+# 职责：Windows 下执行桌面端完整构建（web 产物 -> playground 剔除 ->
+#       Tauri 编译打包 -> 便携版打包），上传为 artifact，不创建 Release。
+# =============================================================================
+
+name: Desktop Build (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      retention-days:
+        description: '构建产物 artifact 保留天数（校验流水线 14，发布流水线 90）'
+        required: false
+        type: number
+        default: 14
+      include-portable:
+        description: '是否同时构建便携版 zip（仅发布流水线需要）'
+        required: false
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: 构建 Windows 安装包
+    runs-on: windows-latest
+    timeout-minutes: 60
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v7
+
+      - name: 配置 pnpm
+        uses: pnpm/action-setup@v6
+        # 不指定 version，自动从 package.json packageManager 字段读取，
+        # 确保 CI 与本地开发环境使用完全相同的 pnpm 版本
+
+      - name: 配置 Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: 配置 Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Rust 编译缓存
+        uses: swatinem/rust-cache@v2
+        with:
+          workspaces: app-desktop/src-tauri
+
+      - name: 安装依赖
+        # frozen-lockfile 保证依赖版本与 pnpm-lock.yaml 完全一致，构建可复现
+        run: pnpm install --frozen-lockfile
+
+      - name: 桌面端构建（web 产物 + playground 剔除 + Tauri 打包）
+        run: pnpm --filter @fandex/desktop exec tauri build
+
+      - name: 前端实验室剔除校验
+        shell: pwsh
+        run: |
+          if (Test-Path "app-web/dist/playground") {
+            Write-Error "playground 页面未被剔除：桌面端不得包含在线编程功能"
+            exit 1
+          }
+          Write-Host "playground 已剔除，校验通过"
+
+      - name: Web 构建产物 QA 校验
+        # 模块一致性、幽灵目录、超大页面等门禁（对 DESKTOP_BUILD 产物同样适用）
+        run: pnpm --filter @fandex/web qa
+
+      - name: 上传安装包构建产物
+        uses: actions/upload-artifact@v7
+        with:
+          name: fandex-desktop-installer
+          path: app-desktop/src-tauri/target/release/bundle/nsis/*.exe
+          retention-days: ${{ inputs.retention-days }}
+
+      - name: 构建便携版（免安装解压即用）
+        if: ${{ inputs.include-portable }}
+        run: pnpm --filter @fandex/desktop-portable build
+
+      - name: 上传便携版构建产物
+        if: ${{ inputs.include-portable }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: fandex-desktop-portable
+          path: app-desktop-portable/dist/*.zip
+          retention-days: ${{ inputs.retention-days }}

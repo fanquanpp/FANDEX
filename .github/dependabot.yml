@@ -1,0 +1,30 @@
+# =============================================================================
+# Dependabot 依赖更新配置
+# =============================================================================
+# github-actions 生态：各工作流以主版本标签（如 actions/checkout@v7）引用
+# Actions，Dependabot 每周汇总为一个 PR 统一升级，保持 CI 运行时不过期
+# （官方 Actions 的旧主版本会陆续停止维护并出现弃用告警）。
+#
+# npm 生态：pnpm monorepo，根目录 package.json + pnpm-workspace.yaml catalog
+# 统一管版本；minor/patch 归组为一个 PR，major 升级单独出 PR 便于评估。
+# =============================================================================
+version: 2
+updates:
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      github-actions:
+        patterns:
+          - '*'
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    groups:
+      npm-minor-and-patch:
+        update-types:
+          - minor
+          - patch

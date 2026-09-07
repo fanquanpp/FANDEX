@@ -1,8 +1,13 @@
 # =============================================================================
 # FANDEX Web 端 GitHub Pages 部署工作流
 # =============================================================================
-# 触发条件：push 到 main 分支 或 手动触发
-# 构建流程：pnpm monorepo 安装 → app-web 构建 → 上传 artifact → 部署到 Pages
+# 触发条件：
+#   1. push 到 main 分支 → 构建并部署到 Pages
+#   2. 指向 main 的 PR → 仅执行构建 + 类型检查 + QA 门禁，不部署
+#   3. 手动触发 → 构建并部署到 Pages
+#
+# 构建流程：pnpm monorepo 安装 → 全仓类型检查 → app-web 构建 → QA 门禁
+#           → 上传 artifact → 部署到 Pages
 #
 # 前置条件（仅需配置一次）：
 #   仓库 Settings → Pages → Source → 选择 "GitHub Actions"
@@ -27,6 +32,18 @@ on:
       - 'shd-shared/**'
       - 'package.json'
       - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/deploy.yml'
+  # 指向 main 的 PR 仅做构建校验（deploy 任务被 if 跳过）
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app-web/**'
+      - 'cnt-content/**'
+      - 'shd-shared/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
       - '.github/workflows/deploy.yml'
   # 允许从 Actions 面板手动触发
   workflow_dispatch:
@@ -37,14 +54,15 @@ permissions:
   pages: write            # 写入 Pages 部署
   id-token: write         # 生成 OIDC token 用于部署认证
 
-# 并发控制：同一分支的新构建取消旧构建，避免资源浪费
+# 并发控制：同一 Pages 环境串行部署；cancel-in-progress 必须为 false，
+# 取消进行中的 Pages 部署会使部署进入孤立状态（官方模板同款配置）
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   # ========================================================
-  # 构建任务：安装依赖、构建 web 端、上传产物
+  # 构建任务：安装依赖、类型检查、构建 web 端、QA 门禁、上传产物
   # ========================================================
   build:
     name: Build web
@@ -52,15 +70,15 @@ jobs:
     timeout-minutes: 30
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: Setup pnpm
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v6
         # 不指定 version，自动从 package.json packageManager 字段读取
         # 这确保 CI 与本地开发环境使用完全相同的 pnpm 版本
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: 22
           cache: pnpm          # 启用 pnpm store 缓存，加速后续构建
@@ -70,9 +88,12 @@ jobs:
         # CI 环境下禁止自动更新 lockfile，保证构建可复现
         run: pnpm install --frozen-lockfile
 
+      - name: Typecheck
+        # 全仓类型检查（app-web astro check + shd-shared/tokens + tls-tools）
+        run: pnpm typecheck
+
       - name: Build web project
         # 通过根目录 workspace 脚本构建 app-web 子包
-        # build:web 等价于 pnpm --filter @fandex/web build
         # 该命令会先执行 build-stats.mjs 生成统计信息，再执行 astro build
         run: pnpm build:web
 
@@ -82,20 +103,21 @@ jobs:
         run: pnpm --filter @fandex/web qa
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v6
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+        uses: actions/upload-pages-artifact@v5
         with:
           # Astro 构建产物输出目录（app-web/dist/）
           path: app-web/dist
 
   # ========================================================
-  # 部署任务：将构建产物发布到 GitHub Pages
+  # 部署任务：将构建产物发布到 GitHub Pages（PR 事件跳过）
   # ========================================================
   deploy:
     name: Deploy to Pages
     needs: build
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     environment:
@@ -104,4 +126,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

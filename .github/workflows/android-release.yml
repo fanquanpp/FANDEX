@@ -1,13 +1,13 @@
 # =============================================================================
-# FANDEX Android 双端发布工作流
+# FANDEX 三端发布工作流
 # =============================================================================
 # 触发时机：
 #   1. push v* 标签 → 自动构建并发布 GitHub Release
 #   2. 手动触发（release=true） → 构建并发布指定标签的 Release
 #
-# 职责：版本一致性校验 → 三端并行构建（Android 双端 APK + Windows 桌面端
-#       NSIS 安装包，含单元测试与 APK 签名校验）→ 统一命名后创建
-#       GitHub Release，发布说明附带产物 SHA-256 校验值。
+# 职责：版本一致性校验 → 三端并行构建（复用 android-build-reusable 与
+#       desktop-build-reusable，产物保留 90 天并附便携版）→ 统一命名后
+#       创建 GitHub Release，发布说明附带产物 SHA-256 校验值。
 #
 # 签名策略（两级回退，gradle 侧三级回退见 app-Android-new/app/build.gradle.kts）：
 #   1. 配置以下 Secrets 时使用正式 keystore 签名——正式包之间签名一致，
@@ -50,173 +50,43 @@ jobs:
     timeout-minutes: 5
     steps:
       - name: 检出仓库
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 校验 tag 与各端版本号一致
         run: |
           TAG_VER="${GITHUB_REF_NAME#v}"
           fail() { echo "::error::$1"; exit 1; }
-          GRADLE_VER="$(sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' app-Android-new/app/build.gradle.kts)"
-          TAURI_VER="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' app-desktop/src-tauri/tauri.conf.json | head -n1)"
-          ROOT_VER="$(sed -n 's/.*"version": "\([^"]*\)".*/\1/p' package.json | head -n1)"
-          echo "tag=$TAG_VER gradle=$GRADLE_VER tauri=$TAURI_VER root=$ROOT_VER"
+          gradle_ver() { sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' "$1"; }
+          json_ver() { sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$1" | head -n1; }
+          GRADLE_VER="$(gradle_ver app-Android-new/app/build.gradle.kts)"
+          WEB_VER="$(json_ver app-web/package.json)"
+          TAURI_VER="$(json_ver app-desktop/src-tauri/tauri.conf.json)"
+          PORTABLE_VER="$(json_ver app-desktop-portable/package.json)"
+          ROOT_VER="$(json_ver package.json)"
+          echo "tag=$TAG_VER gradle=$GRADLE_VER web=$WEB_VER tauri=$TAURI_VER portable=$PORTABLE_VER root=$ROOT_VER"
           [ -n "$TAG_VER" ] || fail "标签名须为 vX.Y.Z 形式"
           [ "$GRADLE_VER" = "$TAG_VER" ] || fail "app-Android-new versionName（$GRADLE_VER）与 tag（$TAG_VER）不一致"
+          [ "$WEB_VER" = "$TAG_VER" ] || fail "app-web version（$WEB_VER）与 tag（$TAG_VER）不一致"
           [ "$TAURI_VER" = "$TAG_VER" ] || fail "tauri.conf.json version（$TAURI_VER）与 tag（$TAG_VER）不一致"
+          [ "$PORTABLE_VER" = "$TAG_VER" ] || fail "app-desktop-portable version（$PORTABLE_VER）与 tag（$TAG_VER）不一致"
           [ "$ROOT_VER" = "$TAG_VER" ] || fail "根 package.json version（$ROOT_VER）与 tag（$TAG_VER）不一致"
           echo "版本一致性校验通过"
 
   build:
-    name: 构建 ${{ matrix.label }} APK
+    name: Android 双端构建
     needs: version-check
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - id: new
-            label: 新技术栈
-            app: app-Android-new
-            sync: node app-Android-new/scripts/generate-content.mjs
-            apk: app-Android-new/app/build/outputs/apk/release/app-release.apk
-            artifact: fandex-new-apk
-          - id: old
-            label: 旧技术栈
-            app: app-Android-old
-            sync: node app-Android-old/scripts/generate-legacy-content.mjs
-            apk: app-Android-old/app/build/outputs/apk/release/FANDEX-*.apk
-            artifact: fandex-old-apk
-    steps:
-      - name: 检出仓库
-        uses: actions/checkout@v4
-
-      - name: 配置 JDK 21
-        uses: actions/setup-java@v5
-        with:
-          distribution: temurin
-          java-version: '21'
-
-      - name: 配置 Gradle（含依赖缓存）
-        uses: gradle/actions/setup-gradle@v4
-
-      - name: 配置 Node 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-
-      - name: 同步内容资产（${{ matrix.label }}）
-        run: ${{ matrix.sync }}
-
-      - name: 解码正式签名密钥（新技术栈；未配置 Secrets 时回退 debug 签名）
-        if: ${{ matrix.id == 'new' }}
-        env:
-          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
-        run: |
-          if [ -n "$SIGNING_KEYSTORE_BASE64" ]; then
-            echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > app-Android-new/fandex-release.jks
-            echo "已解码正式 keystore：app-Android-new/fandex-release.jks"
-          else
-            echo "未配置 SIGNING_KEYSTORE_BASE64，本次使用 runner 临时 debug 签名"
-          fi
-
-      - name: 运行单元测试（新技术栈）
-        if: ${{ matrix.id == 'new' }}
-        working-directory: ${{ matrix.app }}
-        run: ./gradlew :app:test --stacktrace
-
-      - name: 构建 Release APK
-        working-directory: ${{ matrix.app }}
-        env:
-          FANDEX_KEYSTORE_PASSWORD: ${{ secrets.FANDEX_KEYSTORE_PASSWORD }}
-          FANDEX_KEY_PASSWORD: ${{ secrets.FANDEX_KEY_PASSWORD }}
-          FANDEX_KEY_ALIAS: ${{ secrets.FANDEX_KEY_ALIAS }}
-        run: ./gradlew :app:assembleRelease --stacktrace
-
-      - name: 校验 APK 签名证书（新技术栈）
-        if: ${{ matrix.id == 'new' }}
-        run: |
-          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n1)"
-          echo "使用 $APKSIGNER"
-          "$APKSIGNER" verify --print-certs app-Android-new/app/build/outputs/apk/release/app-release.apk
-
-      - name: 上传测试报告（失败时）
-        if: failure()
-        uses: actions/upload-artifact@v4
-        with:
-          name: unit-test-report-${{ matrix.id }}
-          path: ${{ matrix.app }}/app/build/reports/tests/
-          retention-days: 7
-          if-no-files-found: ignore
-
-      - name: 上传 APK 构建产物
-        uses: actions/upload-artifact@v4
-        with:
-          name: ${{ matrix.artifact }}
-          path: ${{ matrix.apk }}
-          retention-days: 90
+    uses: ./.github/workflows/android-build-reusable.yml
+    with:
+      retention-days: 90
+    secrets: inherit
 
   desktop:
-    name: 构建 Windows 桌面端安装包
+    name: Windows 桌面端构建
     needs: version-check
-    runs-on: windows-latest
-    timeout-minutes: 60
-    steps:
-      - name: 检出仓库
-        uses: actions/checkout@v4
-
-      - name: 配置 pnpm
-        uses: pnpm/action-setup@v4
-
-      - name: 配置 Node 22
-        uses: actions/setup-node@v4
-        with:
-          node-version: '22'
-          cache: pnpm
-
-      - name: 配置 Rust
-        uses: dtolnay/rust-toolchain@stable
-
-      - name: Rust 编译缓存
-        uses: swatinem/rust-cache@v2
-        with:
-          workspaces: app-desktop/src-tauri
-
-      - name: 安装依赖
-        run: pnpm install --frozen-lockfile
-
-      - name: 桌面端构建（web 产物 + playground 剔除 + Tauri 打包）
-        run: pnpm --filter @fandex/desktop exec tauri build
-
-      - name: 前端实验室剔除校验
-        shell: pwsh
-        run: |
-          if (Test-Path "app-web/dist/playground") {
-            Write-Error "playground 页面未被剔除：桌面端不得包含在线编程功能"
-            exit 1
-          }
-          Write-Host "playground 已剔除，校验通过"
-
-      - name: Web 构建产物 QA 校验
-        # 模块一致性、幽灵目录、超大页面等门禁（对 DESKTOP_BUILD 产物同样适用）
-        run: pnpm --filter @fandex/web qa
-
-      - name: 上传安装包构建产物
-        uses: actions/upload-artifact@v4
-        with:
-          name: fandex-desktop-installer
-          path: app-desktop/src-tauri/target/release/bundle/nsis/*.exe
-          retention-days: 90
-
-      - name: 构建便携版（免安装解压即用）
-        run: pnpm --filter @fandex/desktop-portable build
-
-      - name: 上传便携版构建产物
-        uses: actions/upload-artifact@v4
-        with:
-          name: fandex-desktop-portable
-          path: app-desktop-portable/dist/*.zip
-          retention-days: 90
+    uses: ./.github/workflows/desktop-build-reusable.yml
+    with:
+      retention-days: 90
+      include-portable: true
 
   release:
     name: 发布 GitHub Release
@@ -226,40 +96,40 @@ jobs:
     timeout-minutes: 10
     steps:
       - name: 检出仓库（读取 CHANGELOG 生成发布说明）
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
 
       - name: 下载新技术栈 APK 产物
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: fandex-new-apk
           path: apk-new
 
       - name: 下载旧技术栈 APK 产物
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: fandex-old-apk
           path: apk-old
 
       - name: 下载 Windows 桌面端安装包产物
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: fandex-desktop-installer
           path: desktop
 
       - name: 下载 Windows 桌面端便携版产物
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           name: fandex-desktop-portable
           path: desktop-portable
 
       - name: 重命名为发布文件名
         run: |
-          mkdir -p apk
-          mv apk-new/*.apk "apk/FANDEX-${{ github.ref_name }}.apk"
-          mv apk-old/*.apk "apk/FANDEX-Legacy-${{ github.ref_name }}.apk"
-          mv desktop/*.exe "apk/FANDEX-Setup-${{ github.ref_name }}.exe"
-          mv desktop-portable/*.zip "apk/FANDEX-Portable-${{ github.ref_name }}.zip"
-          ls -la apk/
+          mkdir -p dist
+          mv apk-new/*.apk "dist/FANDEX-${{ github.ref_name }}.apk"
+          mv apk-old/*.apk "dist/FANDEX-Legacy-${{ github.ref_name }}.apk"
+          mv desktop/*.exe "dist/FANDEX-Setup-${{ github.ref_name }}.exe"
+          mv desktop-portable/*.zip "dist/FANDEX-Portable-${{ github.ref_name }}.zip"
+          ls -la dist/
 
       - name: 生成发布说明
         id: notes
@@ -277,11 +147,12 @@ jobs:
           - FANDEX-$VERSION.apk：新技术栈主线（React 生态三端统一）
           - FANDEX-Legacy-$VERSION.apk：旧技术栈归档线（Kotlin Compose 原生）
           - FANDEX-Setup-$VERSION.exe：Windows 桌面端安装包（Tauri 2，离线可用）
+          - FANDEX-Portable-$VERSION.zip：Windows 桌面端便携版（免安装解压即用）
           - 两个 APK applicationId 不同，可并存安装"
           fi
 
           # 产物 SHA-256 摘要追加到发布说明（镜像分发场景校验完整性）
-          DIGESTS="$(cd apk && sha256sum FANDEX-* | while read -r sum file; do echo "- \`${file}\` \`${sum}\`"; done)"
+          DIGESTS="$(cd dist && sha256sum FANDEX-* | while read -r sum file; do echo "- \`${file}\` \`${sum}\`"; done)"
           {
             echo "body<<EOF"
             echo "$NOTES"
@@ -293,14 +164,14 @@ jobs:
           } >> "$GITHUB_OUTPUT"
 
       - name: 创建 Release 并上传三端安装包
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         with:
           tag_name: ${{ github.ref_name }}
           name: FANDEX ${{ github.ref_name }}
           body: ${{ steps.notes.outputs.body }}
           files: |
-            apk/FANDEX-${{ github.ref_name }}.apk
-            apk/FANDEX-Legacy-${{ github.ref_name }}.apk
-            apk/FANDEX-Setup-${{ github.ref_name }}.exe
-            apk/FANDEX-Portable-${{ github.ref_name }}.zip
+            dist/FANDEX-${{ github.ref_name }}.apk
+            dist/FANDEX-Legacy-${{ github.ref_name }}.apk
+            dist/FANDEX-Setup-${{ github.ref_name }}.exe
+            dist/FANDEX-Portable-${{ github.ref_name }}.zip
           fail_on_unmatched_files: true
