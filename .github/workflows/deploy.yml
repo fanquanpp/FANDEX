@@ -88,6 +88,11 @@ jobs:
         # CI 环境下禁止自动更新 lockfile，保证构建可复现
         run: pnpm install --frozen-lockfile
 
+      - name: Generate build stats baseline
+        # doc-stats.json 被 gitignore，仅在构建期生成（本地 dev/build 均先跑此脚本）；
+        # astro check 依赖该文件，因此 CI 中必须在 typecheck 之前生成
+        run: pnpm --filter @fandex/web exec node scripts/build-stats.mjs
+
       - name: Typecheck
         # 全仓类型检查（app-web astro check + shd-shared/tokens + tls-tools）
         run: pnpm typecheck
