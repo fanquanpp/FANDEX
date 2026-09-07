@@ -12,7 +12,6 @@ related:
   - 'javascript/033-ExploringES6ProxiesAndReflect'
   - 'javascript/029-EventLoop'
   - 'javascript/012-ES2018RegExpNamedCaptureGroups'
-prerequisites: []
 ---
 
 

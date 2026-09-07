@@ -11,7 +11,7 @@ related:
   - 'rust/002-RustOverview'
   - 'rust/003-RustEnvSetup'
 prerequisites:
-  - 'getting-started/002-WhatIsProgramming'
+  - 'cs-fundamentals/011-ProgrammingBasics'
 ---
 
 ## Rust 在技术版图中的位置

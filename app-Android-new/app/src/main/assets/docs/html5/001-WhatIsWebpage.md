@@ -9,14 +9,14 @@ author: fanquanpp
 updated: '2026-08-30'
 related:
   - 'html5/002-HTML5EnvSetupFirstPage'
-  - 'getting-started/003-HowInternetWorks'
+  - 'cs-fundamentals/005-ComputerNetwork'
 prerequisites:
-  - 'getting-started/003-HowInternetWorks'
+  - 'cs-fundamentals/005-ComputerNetwork'
 ---
 
 ## HTML 在整张地图上的位置
 
-[上一课](/getting-started/003-HowInternetWorks)你已经知道：浏览器拿到服务器返回的文件后渲染成页面。其中 **HTML 文件就是页面的骨架**——它告诉浏览器"这里是一个标题、这里是一段文字、这里是一张图片、这里该跳转到哪里"。
+如 [计算机网络基础](/cs-fundamentals/005-ComputerNetwork) 所讲：浏览器拿到服务器返回的文件后渲染成页面。其中 **HTML 文件就是页面的骨架**——它告诉浏览器"这里是一个标题、这里是一段文字、这里是一张图片、这里该跳转到哪里"。
 
 HTML 不是编程语言，而是**标记语言**：它不包含逻辑判断与循环，只负责用一对对"标签"给内容标注含义。
 
@@ -34,7 +34,7 @@ HTML 的基本单位是**标签（tag）**，通常成对出现：
 ## 动手环节：创建人生第一个网页
 
 1. 新建一个文件夹，在其中新建文本文件 `index.html`；
-2. 用任意文本编辑器（推荐 VS Code，安装见 [VS Code 安装配置](/getting-started/025-VSCodeInstall)）输入以下内容：
+2. 用任意文本编辑器（推荐 VS Code，安装见 [VS Code 安装配置](/shell/011-VSCodeInstall)）输入以下内容：
 
 ```html
 <!DOCTYPE html>

@@ -575,7 +575,7 @@ function main(): void {
  *
  * 生成来源：shd-shared/tokens/ 下的 W3C DTCG JSON 令牌
  * 生成脚本：shd-shared/tokens/scripts/generate-tokens-css.ts
- * 生成时间：${new Date().toISOString()}
+ * 由脚本全量生成，输出确定性可复现（不写入时间戳，避免重建产生无意义 diff）
  *
  * 令牌分层：
  * - primitive：原始值（颜色、间距、尺寸等原值，无语义）

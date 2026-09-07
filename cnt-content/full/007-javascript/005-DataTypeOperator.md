@@ -12,7 +12,6 @@ related:
   - 'javascript/004-VariableDataType'
   - 'javascript/006-ControlFlow'
   - 'javascript/015-HigherOrderFunction'
-prerequisites: []
 ---
 
 ## 前置知识

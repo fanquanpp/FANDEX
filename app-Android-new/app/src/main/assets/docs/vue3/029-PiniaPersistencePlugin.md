@@ -12,7 +12,6 @@ related:
   - 'vue3/028-AsyncComponentSuspense'
   - 'vue3/030-VueRouterNavigationGuard'
   - 'vue3/031-VuePerformanceDetailed'
-prerequisites: []
 ---
 
 ## 1. 安装与配置

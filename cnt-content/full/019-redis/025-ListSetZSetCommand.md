@@ -7,8 +7,6 @@ difficulty: beginner
 description: Redis List/Set/ZSet 命令 的完整教学讲解。
 author: fanquanpp
 updated: '2026-08-01'
-related: []
-prerequisites: []
 ---
 
 ## List 列表

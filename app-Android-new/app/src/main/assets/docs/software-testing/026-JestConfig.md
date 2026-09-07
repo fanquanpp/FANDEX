@@ -7,8 +7,6 @@ difficulty: beginner
 description: Jest 配置与快照 的完整教学讲解。
 author: fanquanpp
 updated: '2026-08-01'
-related: []
-prerequisites: []
 ---
 
 ## jest.config.js 配置

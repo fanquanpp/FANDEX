@@ -12,7 +12,6 @@ related:
   - 'python/004-VariableConstant'
   - 'python/008-ListComprehensionAdvanced'
   - 'python/009-OperatorExpression'
-prerequisites: []
 ---
 
 

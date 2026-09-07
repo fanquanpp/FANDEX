@@ -12,7 +12,6 @@ related:
   - 'vue3/013-Vue3TestStrategy'
   - 'vue3/015-Vue3PerformancePractice'
   - 'vue3/016-ReactiveSystem'
-prerequisites: []
 ---
 
 

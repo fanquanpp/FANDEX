@@ -10,7 +10,6 @@ updated: '2026-07-20'
 related:
   - 'javascript/045-FetchApiWebStreams'
   - 'javascript/047-IndexedDBADatabaseInYourBrowser'
-prerequisites: []
 ---
 
 ## 前置知识

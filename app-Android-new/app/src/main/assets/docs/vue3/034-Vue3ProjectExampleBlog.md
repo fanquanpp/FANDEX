@@ -11,7 +11,6 @@ related:
   - 'vue3/032-PerformanceOptimization'
   - 'vue3/033-Vue3AdvancedComponentFeature'
   - 'vue3/035-Vue3TheoryKnowledge'
-prerequisites: []
 ---
 
 ## 前置知识

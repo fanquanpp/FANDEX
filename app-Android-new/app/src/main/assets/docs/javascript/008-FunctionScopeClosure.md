@@ -8,7 +8,7 @@ description: 函数声明、箭头函数、作用域链、闭包原理、this �
 author: fanquanpp
 updated: '2026-07-21'
 related:
-  - 'javascript/061-RegexAssertions'
+  - 'javascript/066-RegexAssertions'
   - 'javascript/013-UnicodePropertyEscape'
   - 'javascript/014-CustomErrorTypes'
   - 'javascript/022-ES6NewFeatures'

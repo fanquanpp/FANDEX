@@ -7,8 +7,6 @@ difficulty: beginner
 description: Vue 3.4 / 3.5 新特性 的完整教学讲解。
 author: fanquanpp
 updated: '2026-08-01'
-related: []
-prerequisites: []
 ---
 
 ## Vue 3.4 defineModel

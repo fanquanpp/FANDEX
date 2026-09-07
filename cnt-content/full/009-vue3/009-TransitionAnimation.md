@@ -12,7 +12,6 @@ related:
   - 'vue3/008-CustomDirectiveAdvanced'
   - 'vue3/010-Vue3CompileOptimization'
   - 'vue3/011-Vue3SSR'
-prerequisites: []
 ---
 
 ## 1. Transition 组件

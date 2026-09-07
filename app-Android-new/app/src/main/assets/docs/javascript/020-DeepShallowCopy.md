@@ -12,7 +12,6 @@ related:
   - 'javascript/022-ES6NewFeatures'
   - 'javascript/049-DebounceThrottle'
   - 'javascript/009-ArrayHigherOrderMethod'
-prerequisites: []
 ---
 
 

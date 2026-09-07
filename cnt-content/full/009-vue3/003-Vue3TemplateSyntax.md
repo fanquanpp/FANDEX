@@ -12,7 +12,6 @@ related:
   - 'vue3/002-Vue3QuickStartGuide'
   - 'vue3/004-Vue3DirectiveSystem'
   - 'vue3/005-TeleportSuspense'
-prerequisites: []
 ---
 
 ## 前置知识

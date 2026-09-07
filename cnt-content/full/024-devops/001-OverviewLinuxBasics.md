@@ -10,7 +10,6 @@ updated: '2026-08-01'
 related:
   - 'devops/002-NetworkSecurity'
   - 'devops/003-ContainerDocker'
-prerequisites: []
 ---
 
 ## 1. DevOps 与 SRE 理念

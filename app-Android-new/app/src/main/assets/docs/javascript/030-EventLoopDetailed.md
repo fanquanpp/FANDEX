@@ -12,7 +12,6 @@ related:
   - 'javascript/019-PrototypeChainClassEssence'
   - 'javascript/027-PromiseStaticMethod'
   - 'javascript/028-AsyncConcurrencyControl'
-prerequisites: []
 ---
 
 

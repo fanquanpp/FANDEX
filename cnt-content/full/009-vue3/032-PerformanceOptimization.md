@@ -12,7 +12,6 @@ related:
   - 'vue3/031-VuePerformanceDetailed'
   - 'vue3/033-Vue3AdvancedComponentFeature'
   - 'vue3/034-Vue3ProjectExampleBlog'
-prerequisites: []
 ---
 
 ## 前置知识

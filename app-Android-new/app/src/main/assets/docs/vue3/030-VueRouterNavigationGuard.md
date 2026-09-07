@@ -12,7 +12,6 @@ related:
   - 'vue3/029-PiniaPersistencePlugin'
   - 'vue3/031-VuePerformanceDetailed'
   - 'vue3/032-PerformanceOptimization'
-prerequisites: []
 ---
 
 ## 前置知识

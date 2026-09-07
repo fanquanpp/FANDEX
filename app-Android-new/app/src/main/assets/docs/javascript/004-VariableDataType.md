@@ -12,7 +12,6 @@ related:
   - 'javascript/003-ProgramStructureBasicSyntax'
   - 'javascript/005-DataTypeOperator'
   - 'javascript/006-ControlFlow'
-prerequisites: []
 ---
 
 ## 前置知识

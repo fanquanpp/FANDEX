@@ -11,8 +11,7 @@ related:
   - 'javascript/033-ExploringES6ProxiesAndReflect'
   - 'javascript/021-ObjectStaticMethods'
   - 'javascript/012-ES2018RegExpNamedCaptureGroups'
-  - 'javascript/061-RegexAssertions'
-prerequisites: []
+  - 'javascript/066-RegexAssertions'
 ---
 
 > 阅读建议：核心必读。形式化模型可先跳过，重点看执行顺序示例与对比表；反复读直到能口算执行顺序。

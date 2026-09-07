@@ -63,6 +63,11 @@
           "doc": "009-ArrayHigherOrderMethod",
           "desc": "JavaScript数组高阶方法详解：reduce、flatMap及函数式数组操作模式。",
           "difficulty": "intermediate"
+        },
+        {
+          "id": "js-what-is",
+          "title": "JavaScript 是什么",
+          "doc": "001-WhatIsJavaScript"
         }
       ]
     },
@@ -396,37 +401,42 @@
         {
           "id": "js-049",
           "title": "Node.js 高级特性与性能优化",
-          "doc": "052-NodeJsPerformanceOptimization",
+          "doc": "055-NodeJsPerformanceOptimization",
           "desc": "异步编程模式、流处理、集群与 Worker、性能调优与安全实践。",
           "difficulty": "advanced"
         },
         {
           "id": "js-050",
           "title": "JavaScript 包管理命令速查（npm/pnpm/yarn）",
-          "doc": "053-PackageManagerCommands",
+          "doc": "056-PackageManagerCommands",
           "desc": "JavaScript 包管理命令速查（npm/pnpm/yarn） 的完整教学讲解。",
           "difficulty": "beginner"
         },
         {
           "id": "js-051",
           "title": "JavaScript console API 语法速查",
-          "doc": "054-ConsoleAPI",
+          "doc": "058-ConsoleAPI",
           "desc": "JavaScript console API 语法速查 的完整教学讲解。",
           "difficulty": "beginner"
         },
         {
           "id": "js-052",
           "title": "典型项目实战",
-          "doc": "055-JavaScriptProjectPractice",
+          "doc": "059-JavaScriptProjectPractice",
           "desc": "综合运用 DOM、异步与模块化的项目实践。",
           "difficulty": "intermediate"
         },
         {
           "id": "js-053",
           "title": "JavaScript 项目示例：待办事项应用",
-          "doc": "056-JavaScriptProjectExampleTodoApp",
+          "doc": "060-JavaScriptProjectExampleTodoApp",
           "desc": "综合运用 DOM 操作、事件处理与本地存储的待办事项应用。",
           "difficulty": "intermediate"
+        },
+        {
+          "id": "js-pkg-json",
+          "title": "package.json 与工程化配置",
+          "doc": "057-PackageJsonEngineeringDeepDive"
         }
       ]
     },
@@ -438,44 +448,54 @@
         {
           "id": "js-054",
           "title": "ES2023/2024/2025 新特性",
-          "doc": "057-ES2024NewFeatures",
+          "doc": "061-ES2023To2026NewFeatures",
           "desc": "ES2023/2024/2025 新特性 的完整教学讲解。",
           "difficulty": "beginner"
         },
         {
           "id": "js-055",
           "title": "JavaScript 最新特性与运行时",
-          "doc": "058-JavaScriptLatestFeature",
+          "doc": "062-JavaScriptLatestFeature",
           "desc": "ES2024-2026 新特性、V8 引擎原理、Node.js 22+、Deno 2.0、Bun 运行时与 WebAssembly 进阶。",
           "difficulty": "advanced"
         },
         {
           "id": "js-056",
           "title": "Temporal",
-          "doc": "059-TemporalJavaScriptAPI",
+          "doc": "063-TemporalJavaScriptAPI",
           "desc": "TC39 Temporal 现代日期时间 API——类型体系、时区算法、历法支持、Duration 运算与工程实践",
           "difficulty": "advanced"
         },
         {
           "id": "js-057",
           "title": "Records与Tuples",
-          "doc": "060-RecordsAndTuples",
+          "doc": "065-ImmutableDataStructures",
           "desc": "TC39 Record与Tuple不可变数据提案",
           "difficulty": "advanced"
         },
         {
           "id": "js-058",
           "title": "断言",
-          "doc": "061-RegexAssertions",
+          "doc": "066-RegexAssertions",
           "desc": "正则表达式先行断言（Lookahead）与后行断言（Lookbehind）的形式化理论、自动机基础、V8/SpiderMonkey 实现细节与企业级文本处理实践，对标 MIT 6.",
           "difficulty": "advanced"
         },
         {
           "id": "js-059",
           "title": "JavaScript 理论知识点",
-          "doc": "062-JavaScriptTheory",
+          "doc": "068-JavaScriptTheory",
           "desc": "执行上下文、作用域链、事件循环、原型继承与内存管理的形式语义与工程实践。",
           "difficulty": "intermediate"
+        },
+        {
+          "id": "js-erm",
+          "title": "显式资源管理 using",
+          "doc": "064-ExplicitResourceManagement"
+        },
+        {
+          "id": "js-intl",
+          "title": "Intl 国际化 API",
+          "doc": "067-IntlApi"
         }
       ]
     },
@@ -489,14 +509,14 @@
           "title": "Web Workers 多线程",
           "desc": "Worker 与 SharedArrayBuffer 并行",
           "difficulty": "advanced",
-          "doc": "063-WebWorkersMultithreading"
+          "doc": "069-WebWorkersMultithreading"
         },
         {
           "id": "js-902",
           "title": "Service Worker 与 PWA",
           "desc": "离线优先与安装体验",
           "difficulty": "advanced",
-          "doc": "064-ServiceWorkerPWA"
+          "doc": "070-ServiceWorkerPWA"
         },
         {
           "id": "js-903",

@@ -12,7 +12,6 @@ related:
   - 'vue3/010-Vue3CompileOptimization'
   - 'vue3/012-LifecycleHook'
   - 'vue3/013-Vue3TestStrategy'
-prerequisites: []
 ---
 
 

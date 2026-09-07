@@ -10,8 +10,8 @@ updated: '2026-08-05'
 related:
   - 'c/002-CLanguageOverview'
   - 'c/003-ProgramStructureBasicSyntax'
-  - 'getting-started/004-DevEnvSetup'
-  - 'getting-started/005-EnvVarPath'
+  - 'shell/005-DevEnvSetup'
+  - 'shell/004-EnvVarPath'
 prerequisites: []
 ---
 
@@ -198,7 +198,7 @@ PATH 是操作系统维护的一张"查找表"：当你输入 `gcc` 时，系统
 
 Windows 设置方法：系统设置 -> 高级系统设置 -> 环境变量 -> 在"用户变量"的 Path 中新建一行，填入 MinGW 的 bin 目录，保存后**重新打开终端**。
 
-macOS / Linux 的 PATH 修改方式以及更完整的终端与变量配置，参见入门模块的 `getting-started/002-EnvVarPath` 和 `getting-started/001-DevEnvSetup`。
+macOS / Linux 的 PATH 修改方式以及更完整的终端与变量配置，参见 `shell/004-EnvVarPath` 与 `shell/005-DevEnvSetup`。
 
 ## 3. 第一个程序：Hello World 逐行拆解
 

@@ -7,8 +7,6 @@ difficulty: beginner
 description: Redis 7.0+ 新特性命令速查手册 的完整教学讲解。
 author: fanquanpp
 updated: '2026-08-01'
-related: []
-prerequisites: []
 ---
 
 ## Redis Functions（7.0+）

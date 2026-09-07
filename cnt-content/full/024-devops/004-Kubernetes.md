@@ -11,7 +11,6 @@ related:
   - 'devops/002-NetworkSecurity'
   - 'devops/003-ContainerDocker'
   - 'devops/005-CICDPipeline'
-prerequisites: []
 ---
 
 ## 1. Kubernetes 架构

@@ -12,7 +12,6 @@ related:
   - 'vue3/032-PerformanceOptimization'
   - 'vue3/034-Vue3ProjectExampleBlog'
   - 'vue3/035-Vue3TheoryKnowledge'
-prerequisites: []
 ---
 
 ## 前置知识

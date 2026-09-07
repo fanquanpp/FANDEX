@@ -1,9 +1,76 @@
 {
   "$schema": "../../shd-shared/id-registry.schema.json",
   "archive_version": "1.0.0",
-  "updated_at": "2026-08-30T00:00:00.000Z",
+  "updated_at": "2026-09-08T00:00:00.000Z",
   "description": "FANDEX 已归档 ID 记录 — 记录已删除模块/文档的 ID 历史，防止 ID 复用。与 _id-registry.json 的 retired 状态互补：id-registry 标记 status=retired，本文件额外记录归档原因与归档时间。",
-  "archived_modules": [],
+  "archived_modules": [
+    {
+      "module_id": "M001",
+      "english_short": "getting-started",
+      "reason": "模块裁剪：有用内容已并入其他模块",
+      "archived_at": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "module_id": "M037",
+      "english_short": "software-engineering",
+      "reason": "模块裁剪：有用内容已并入其他模块",
+      "archived_at": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "module_id": "M038",
+      "english_short": "software-architecture",
+      "reason": "模块裁剪：有用内容已并入其他模块",
+      "archived_at": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "module_id": "M039",
+      "english_short": "engineering-practices",
+      "reason": "模块裁剪：有用内容已并入其他模块",
+      "archived_at": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "module_id": "M057",
+      "english_short": "pnpm-monorepo",
+      "reason": "模块裁剪：有用内容已并入其他模块",
+      "archived_at": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "module_id": "M059",
+      "english_short": "mongodb",
+      "reason": "模块裁剪：有用内容已并入其他模块",
+      "archived_at": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "module_id": "M062",
+      "english_short": "deno",
+      "reason": "模块裁剪：有用内容已并入其他模块",
+      "archived_at": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "module_id": "M063",
+      "english_short": "bun",
+      "reason": "模块裁剪：有用内容已并入其他模块",
+      "archived_at": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "module_id": "M064",
+      "english_short": "svelte",
+      "reason": "模块裁剪：有用内容已并入其他模块",
+      "archived_at": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "module_id": "M065",
+      "english_short": "angular",
+      "reason": "模块裁剪：有用内容已并入其他模块",
+      "archived_at": "2026-09-08T00:00:00.000Z"
+    },
+    {
+      "module_id": "M066",
+      "english_short": "message-queue",
+      "reason": "模块裁剪：有用内容已并入其他模块",
+      "archived_at": "2026-09-08T00:00:00.000Z"
+    }
+  ],
   "archived_docs": [
     {
       "doc_id": "D00414",

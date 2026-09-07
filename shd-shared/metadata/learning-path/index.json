@@ -20,10 +20,8 @@
     "algorithm",
     "cs-fundamentals",
     "devops",
-    "getting-started",
     "markdown",
     "github",
-    "pnpm-monorepo",
     "svg",
     "astro",
     "vite",
@@ -36,16 +34,7 @@
     "cybersecurity",
     "cloud-computing",
     "software-testing",
-    "software-engineering",
-    "software-architecture",
-    "engineering-practices",
-    "mongodb",
     "nextjs",
-    "nestjs",
-    "deno",
-    "bun",
-    "svelte",
-    "angular",
-    "message-queue"
+    "nestjs"
   ]
 }

@@ -386,6 +386,9 @@ importers:
 
   shd-shared/tokens:
     devDependencies:
+      '@types/node':
+        specifier: 'catalog:'
+        version: 22.20.1
       tsx:
         specifier: 'catalog:'
         version: 4.23.1

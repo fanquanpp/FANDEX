@@ -11,7 +11,7 @@ related:
   - 'cloud-computing/019-HelmPackageManagement'
   - 'cloud-computing/020-CloudCostOptimization'
   - 'cloud-computing/022-MicroserviceArchitecture'
-  - 'cloud-computing/023-ServiceMesh'
+  - 'cloud-computing/024-ServiceMesh'
 prerequisites:
   - 'cloud-computing/001-CloudComputingBasics'
 ---

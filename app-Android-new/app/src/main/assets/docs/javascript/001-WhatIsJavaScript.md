@@ -9,11 +9,7 @@ author: fanquanpp
 updated: '2026-08-30'
 related:
   - 'javascript/002-JavaScriptOverviewRuntimeEnv'
-  - 'getting-started/002-WhatIsProgramming'
   - 'html5/001-WhatIsWebpage'
-prerequisites:
-  - 'getting-started/002-WhatIsProgramming'
-  - 'getting-started/003-HowInternetWorks'
 ---
 
 ## 网页的三层分工
@@ -38,7 +34,7 @@ prerequisites:
 只有两个地方需要关心：
 
 1. **浏览器**：你按 `F12` 打开的控制台就是一个即写即跑的 JavaScript 运行环境；
-2. **Node.js**：让 JavaScript 脱离浏览器、在操作系统里运行的工具（安装见 [Node.js 安装配置](/getting-started/017-NodeJsInstall)）。
+2. **Node.js**：让 JavaScript 脱离浏览器、在操作系统里运行的工具（安装见 [Node.js 安装配置](/javascript/052-NodeJsInstall)）。
 
 ## 动手环节：第一行代码
 

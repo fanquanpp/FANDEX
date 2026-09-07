@@ -11,7 +11,7 @@ related:
   - 'sql/002-OverviewStandard'
   - 'sql/003-SQLFirstSteps'
 prerequisites:
-  - 'getting-started/002-WhatIsProgramming'
+  - 'cs-fundamentals/011-ProgrammingBasics'
 ---
 
 ## 为什么程序都需要数据库

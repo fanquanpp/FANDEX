@@ -12,7 +12,6 @@ related:
   - 'vue3/022-ComputedCacheWatchTiming'
   - 'vue3/024-CompositionAPIAdvantageScene'
   - 'vue3/025-CustomComposableWrapper'
-prerequisites: []
 ---
 
 ## 前置知识

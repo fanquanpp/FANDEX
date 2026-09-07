@@ -13,7 +13,6 @@ related:
   - 'javascript/026-PromiseConstructorDeepDive'
   - 'javascript/033-ExploringES6ProxiesAndReflect'
   - 'javascript/045-FetchApiWebStreams'
-prerequisites: []
 ---
 
 ## 前置知识

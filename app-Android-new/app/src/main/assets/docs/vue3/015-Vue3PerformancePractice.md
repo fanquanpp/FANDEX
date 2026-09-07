@@ -12,7 +12,6 @@ related:
   - 'vue3/014-Vue3WebComponents'
   - 'vue3/016-ReactiveSystem'
   - 'vue3/017-CustomHook'
-prerequisites: []
 ---
 
 

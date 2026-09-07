@@ -10,7 +10,6 @@ updated: '2026-08-01'
 related:
   - 'software-testing/002-FunctionalAndAutomatedTest'
   - 'software-testing/003-PerformanceInterfaceTest'
-prerequisites: []
 ---
 
 ## 1. 软件测试概述

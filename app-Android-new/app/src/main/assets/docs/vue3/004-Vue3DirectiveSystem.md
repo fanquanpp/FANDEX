@@ -12,7 +12,6 @@ related:
   - 'vue3/003-Vue3TemplateSyntax'
   - 'vue3/005-TeleportSuspense'
   - 'vue3/006-API'
-prerequisites: []
 ---
 
 ## 前置知识

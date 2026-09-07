@@ -12,7 +12,6 @@ related:
   - 'cloud-computing/002-CloudNetworkStorage'
   - 'cloud-computing/004-IaC'
   - 'cloud-computing/005-IaaSPaaSSaaS'
-prerequisites: []
 ---
 
 

@@ -12,7 +12,6 @@ related:
   - 'javascript/006-ControlFlow'
   - 'javascript/016-RecursionTailCallOptimization'
   - 'javascript/017-CurryAndFunctionComposition'
-prerequisites: []
 ---
 
 

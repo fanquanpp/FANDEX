@@ -8,10 +8,9 @@ description: 异步编程基础
 author: fanquanpp
 updated: '2026-08-01'
 related:
-  - 'python/048-ConcurrentProgramming'
-  - 'python/036-PythonWebSocket'
-  - 'python/014-PythonFastAPI'
-prerequisites: []
+  - 'python/049-ConcurrentProgramming'
+  - 'python/037-PythonWebSocket'
+  - 'python/015-PythonFastAPI'
 ---
 
 ## 事件循环

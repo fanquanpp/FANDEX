@@ -12,7 +12,6 @@ related:
   - 'javascript/048-ErrorBoundaryGlobalErrorCatch'
   - 'javascript/043-WebAPIBrowserInterface'
   - 'javascript/050-DebugPerformanceOptimization'
-prerequisites: []
 ---
 
 > 前置：先读 031 闭包内存与 057 内存管理；本篇为【进阶专题】。

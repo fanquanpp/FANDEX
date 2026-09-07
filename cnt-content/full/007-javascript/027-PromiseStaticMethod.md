@@ -12,7 +12,6 @@ related:
   - 'javascript/030-EventLoopDetailed'
   - 'javascript/028-AsyncConcurrencyControl'
   - 'javascript/022-ES6NewFeatures'
-prerequisites: []
 ---
 
 > 前置：先读 030 异步编程，掌握 Promise 基本用法。

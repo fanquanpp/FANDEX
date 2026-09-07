@@ -13,7 +13,6 @@ related:
   - 'javascript/045-FetchApiWebStreams'
   - 'javascript/046-StorageForTheWeb'
   - 'javascript/029-EventLoop'
-prerequisites: []
 ---
 
 

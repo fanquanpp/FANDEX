@@ -29,16 +29,6 @@
   ],
   "modules": [
     {
-      "id": "getting-started",
-      "title": "入门指南",
-      "icon": "入门",
-      "description": "零基础环境搭建与学习规划",
-      "categories": [
-        "tools"
-      ],
-      "folder_order": 1
-    },
-    {
       "id": "markdown",
       "title": "Markdown",
       "icon": "Md",
@@ -46,7 +36,7 @@
       "categories": [
         "tools"
       ],
-      "folder_order": 2,
+      "folder_order": 1,
       "officialDocs": [
         {
           "label": "原始规范",
@@ -73,7 +63,7 @@
       "categories": [
         "tools"
       ],
-      "folder_order": 3,
+      "folder_order": 2,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -100,7 +90,7 @@
       "categories": [
         "tools"
       ],
-      "folder_order": 4,
+      "folder_order": 3,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -127,7 +117,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 5,
+      "folder_order": 4,
       "updatePriority": true,
       "updateNote": "重点更新模块",
       "officialDocs": [
@@ -156,7 +146,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 6,
+      "folder_order": 5,
       "updatePriority": true,
       "updateNote": "重点更新模块",
       "officialDocs": [
@@ -185,7 +175,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 7,
+      "folder_order": 6,
       "updatePriority": true,
       "updateNote": "重点更新模块",
       "officialDocs": [
@@ -214,7 +204,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 8,
+      "folder_order": 7,
       "updatePriority": true,
       "updateNote": "重点更新模块",
       "officialDocs": [
@@ -243,7 +233,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 9,
+      "folder_order": 8,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -270,7 +260,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 10,
+      "folder_order": 9,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -297,7 +287,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 11,
+      "folder_order": 10,
       "officialDocs": [
         {
           "label": "MDN 文档",
@@ -324,7 +314,7 @@
       "categories": [
         "backend"
       ],
-      "folder_order": 12,
+      "folder_order": 11,
       "updatePriority": true,
       "updateNote": "重点更新模块",
       "officialDocs": [
@@ -358,7 +348,7 @@
       "categories": [
         "backend"
       ],
-      "folder_order": 13,
+      "folder_order": 12,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -390,7 +380,7 @@
       "categories": [
         "backend"
       ],
-      "folder_order": 14,
+      "folder_order": 13,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -423,7 +413,7 @@
         "backend",
         "cloud"
       ],
-      "folder_order": 15,
+      "folder_order": 14,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -455,7 +445,7 @@
       "categories": [
         "database"
       ],
-      "folder_order": 16,
+      "folder_order": 15,
       "officialDocs": [
         {
           "label": "ISO 标准索引",
@@ -482,7 +472,7 @@
       "categories": [
         "database"
       ],
-      "folder_order": 17,
+      "folder_order": 16,
       "updatePriority": true,
       "updateNote": "重点更新模块",
       "officialDocs": [
@@ -511,7 +501,7 @@
       "categories": [
         "database"
       ],
-      "folder_order": 18,
+      "folder_order": 17,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -532,14 +522,14 @@
     },
     {
       "id": "redis",
-      "title": "Redis",
+      "title": "Redis 与 MongoDB",
       "icon": "Rd",
-      "description": "内存数据库与缓存",
+      "description": "内存键值数据库与 MongoDB 文档数据库",
       "categories": [
         "database",
         "cloud"
       ],
-      "folder_order": 19,
+      "folder_order": 18,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -566,7 +556,7 @@
       "categories": [
         "cs"
       ],
-      "folder_order": 20
+      "folder_order": 19
     },
     {
       "id": "cs-fundamentals",
@@ -576,7 +566,7 @@
       "categories": [
         "cs"
       ],
-      "folder_order": 21
+      "folder_order": 20
     },
     {
       "id": "c",
@@ -586,7 +576,7 @@
       "categories": [
         "cs"
       ],
-      "folder_order": 22,
+      "folder_order": 21,
       "updatePriority": true,
       "updateNote": "重点更新模块",
       "officialDocs": [
@@ -615,7 +605,7 @@
       "categories": [
         "cs"
       ],
-      "folder_order": 23,
+      "folder_order": 22,
       "updatePriority": true,
       "updateNote": "重点更新模块",
       "officialDocs": [
@@ -643,13 +633,13 @@
     },
     {
       "id": "devops",
-      "title": "运维",
+      "title": "运维与中间件",
       "icon": "运维",
-      "description": "运维与SRE实践",
+      "description": "运维、SRE 实践与消息中间件",
       "categories": [
         "cloud"
       ],
-      "folder_order": 24
+      "folder_order": 23
     },
     {
       "id": "networking",
@@ -660,7 +650,7 @@
         "cloud",
         "cs"
       ],
-      "folder_order": 25,
+      "folder_order": 24,
       "officialDocs": [
         {
           "label": "RFC 编辑器",
@@ -687,7 +677,7 @@
       "categories": [
         "cloud"
       ],
-      "folder_order": 26
+      "folder_order": 25
     },
     {
       "id": "cloud-computing",
@@ -697,47 +687,17 @@
       "categories": [
         "cloud"
       ],
-      "folder_order": 27
+      "folder_order": 26
     },
     {
       "id": "software-testing",
-      "title": "软件测试",
+      "title": "软件工程与测试",
       "icon": "测试",
-      "description": "质量保障与测试工程",
+      "description": "测试工程、软件工程方法与架构实践",
       "categories": [
         "cloud"
       ],
-      "folder_order": 28
-    },
-    {
-      "id": "software-engineering",
-      "title": "软件工程",
-      "icon": "软工",
-      "description": "需求·设计·重构·度量",
-      "categories": [
-        "cloud"
-      ],
-      "folder_order": 29
-    },
-    {
-      "id": "software-architecture",
-      "title": "软件架构",
-      "icon": "架构",
-      "description": "架构风格·质量属性·领域驱动",
-      "categories": [
-        "cloud"
-      ],
-      "folder_order": 30
-    },
-    {
-      "id": "engineering-practices",
-      "title": "工程实践",
-      "icon": "实践",
-      "description": "Code Review·On-Call·事故复盘",
-      "categories": [
-        "cloud"
-      ],
-      "folder_order": 31
+      "folder_order": 27
     },
     {
       "id": "python",
@@ -747,7 +707,7 @@
       "categories": [
         "backend"
       ],
-      "folder_order": 32,
+      "folder_order": 28,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -779,7 +739,7 @@
       "categories": [
         "backend"
       ],
-      "folder_order": 33,
+      "folder_order": 29,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -795,13 +755,13 @@
     },
     {
       "id": "shell",
-      "title": "Shell",
+      "title": "Shell 与开发环境",
       "icon": "Sh",
-      "description": "命令行与脚本自动化",
+      "description": "命令行、Shell 脚本与开发环境配置",
       "categories": [
         "tools"
       ],
-      "folder_order": 34,
+      "folder_order": 30,
       "officialDocs": [
         {
           "label": "Bash 参考手册",
@@ -823,7 +783,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 35,
+      "folder_order": 31,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -845,7 +805,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 36,
+      "folder_order": 32,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -860,28 +820,6 @@
       ]
     },
     {
-      "id": "pnpm-monorepo",
-      "title": "pnpm Monorepo",
-      "icon": "Pm",
-      "description": "包管理器与 Monorepo 工程化",
-      "categories": [
-        "tools"
-      ],
-      "folder_order": 37,
-      "officialDocs": [
-        {
-          "label": "pnpm 官方文档",
-          "url": "https://pnpm.io/zh/",
-          "type": "docs"
-        },
-        {
-          "label": "Turborepo",
-          "url": "https://turborepo.com/",
-          "type": "docs"
-        }
-      ]
-    },
-    {
       "id": "tailwind",
       "title": "Tailwind CSS",
       "icon": "Tw",
@@ -889,7 +827,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 38,
+      "folder_order": 33,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -904,28 +842,6 @@
       ]
     },
     {
-      "id": "mongodb",
-      "title": "MongoDB",
-      "icon": "Mo",
-      "description": "文档型 NoSQL 数据库",
-      "categories": [
-        "database"
-      ],
-      "folder_order": 39,
-      "officialDocs": [
-        {
-          "label": "官方文档",
-          "url": "https://www.mongodb.com/docs/",
-          "type": "docs"
-        },
-        {
-          "label": "手册参考",
-          "url": "https://www.mongodb.com/docs/manual/reference/",
-          "type": "api"
-        }
-      ]
-    },
-    {
       "id": "nextjs",
       "title": "Next.js",
       "icon": "Nx",
@@ -933,7 +849,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 40,
+      "folder_order": 34,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -949,13 +865,13 @@
     },
     {
       "id": "nestjs",
-      "title": "NestJS",
+      "title": "NestJS 与 JS 运行时",
       "icon": "Ne",
-      "description": "Node.js 企业级框架",
+      "description": "Deno/Bun 运行时与 NestJS 企业级框架",
       "categories": [
         "backend"
       ],
-      "folder_order": 41,
+      "folder_order": 35,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -965,121 +881,6 @@
         {
           "label": "源码仓库",
           "url": "https://github.com/nestjs/nest",
-          "type": "docs"
-        }
-      ]
-    },
-    {
-      "id": "deno",
-      "title": "Deno",
-      "icon": "De",
-      "description": "默认安全的 JS/TS 运行时",
-      "categories": [
-        "backend"
-      ],
-      "folder_order": 42,
-      "officialDocs": [
-        {
-          "label": "官方文档",
-          "url": "https://docs.deno.com/",
-          "type": "docs"
-        },
-        {
-          "label": "JSR 包仓库",
-          "url": "https://jsr.io/",
-          "type": "api"
-        }
-      ]
-    },
-    {
-      "id": "bun",
-      "title": "Bun",
-      "icon": "Bu",
-      "description": "全家桶 JS 运行时与工具链",
-      "categories": [
-        "backend"
-      ],
-      "folder_order": 43,
-      "officialDocs": [
-        {
-          "label": "官方文档",
-          "url": "https://bun.sh/docs",
-          "type": "docs"
-        },
-        {
-          "label": "官方博客",
-          "url": "https://bun.sh/blog",
-          "type": "docs"
-        }
-      ]
-    },
-    {
-      "id": "svelte",
-      "title": "Svelte",
-      "icon": "Sv",
-      "description": "编译时响应式前端框架",
-      "categories": [
-        "frontend"
-      ],
-      "folder_order": 44,
-      "officialDocs": [
-        {
-          "label": "官方文档",
-          "url": "https://svelte.dev/docs",
-          "type": "docs"
-        },
-        {
-          "label": "SvelteKit 文档",
-          "url": "https://svelte.dev/docs/sveltekit",
-          "type": "docs"
-        }
-      ]
-    },
-    {
-      "id": "angular",
-      "title": "Angular",
-      "icon": "An",
-      "description": "企业级前端框架",
-      "categories": [
-        "frontend"
-      ],
-      "folder_order": 45,
-      "officialDocs": [
-        {
-          "label": "官方文档",
-          "url": "https://angular.dev/",
-          "type": "docs"
-        },
-        {
-          "label": "API 参考",
-          "url": "https://angular.dev/api",
-          "type": "api"
-        }
-      ]
-    },
-    {
-      "id": "message-queue",
-      "title": "消息队列",
-      "icon": "MQ",
-      "description": "Kafka 与 RabbitMQ 等消息中间件",
-      "categories": [
-        "cloud"
-      ],
-      "folder_order": 46,
-      "officialDocs": [
-        {
-          "label": "Kafka 文档",
-          "url": "https://kafka.apache.org/documentation/",
-          "type": "docs"
-        },
-        {
-          "label": "RabbitMQ 文档",
-          "url": "https://www.rabbitmq.com/docs",
-          "type": "docs"
-        },
-        {
-          "label": "Pulsar 文档",
-          "url": "https://pulsar.apache.org/docs/",
           "type": "docs"
         }
       ]
@@ -1128,17 +929,10 @@
       "java"
     ],
     "go": [],
-    "lua": [],
     "algorithm": [],
     "cs-fundamentals": [],
-    "discrete-math": [],
-    "calculus": [],
     "devops": [
       "git"
-    ],
-    "iot": [
-      "c",
-      "python"
     ],
     "networking": [],
     "cybersecurity": [
@@ -1151,38 +945,15 @@
       "sql"
     ],
     "redis": [],
-    "harmonyos": [
-      "javascript",
-      "typescript"
-    ],
     "software-testing": [],
     "git": [],
     "markdown": [],
-    "mongodb": [],
     "nextjs": [
       "react",
       "typescript"
     ],
     "nestjs": [
       "typescript"
-    ],
-    "deno": [
-      "javascript",
-      "typescript"
-    ],
-    "bun": [
-      "javascript",
-      "typescript"
-    ],
-    "svelte": [
-      "javascript",
-      "html5",
-      "css"
-    ],
-    "angular": [
-      "typescript",
-      "javascript"
-    ],
-    "message-queue": []
+    ]
   }
 }

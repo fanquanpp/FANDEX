@@ -11,7 +11,7 @@ related:
   - 'rust/004-RustBasicSyntax'
   - 'rust/002-RustOverview'
 prerequisites:
-  - 'getting-started/004-DevEnvSetup'
+  - 'shell/005-DevEnvSetup'
 ---
 
 

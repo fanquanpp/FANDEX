@@ -8,9 +8,9 @@ description: Python 变量与常量深度剖析：从名字绑定、LEGB 作用�
 author: fanquanpp
 updated: '2026-08-03'
 related:
-  - 'python/070-BasicDataType'
-  - 'python/063-TypeAnnotationMypy'
-  - 'python/064-OOP'
+  - 'python/071-BasicDataType'
+  - 'python/064-TypeAnnotationMypy'
+  - 'python/065-OOP'
 prerequisites:
   - 'python/002-PythonOverviewEnvSetup'
   - 'python/003-ProgramStructureBasicSyntax'

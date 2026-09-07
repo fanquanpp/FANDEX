@@ -12,7 +12,6 @@ related:
   - 'vue3/009-TransitionAnimation'
   - 'vue3/011-Vue3SSR'
   - 'vue3/012-LifecycleHook'
-prerequisites: []
 ---
 
 ## 前置知识

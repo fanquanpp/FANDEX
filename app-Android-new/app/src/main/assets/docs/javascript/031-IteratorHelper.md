@@ -10,8 +10,7 @@ updated: '2026-08-03'
 related:
   - 'javascript/047-IndexedDBADatabaseInYourBrowser'
   - 'javascript/026-PromiseConstructorDeepDive'
-  - 'javascript/060-RecordsAndTuples'
-prerequisites: []
+  - 'javascript/065-ImmutableDataStructures'
 ---
 
 ## 前置知识

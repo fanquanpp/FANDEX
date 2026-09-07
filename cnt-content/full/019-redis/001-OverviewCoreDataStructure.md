@@ -10,7 +10,6 @@ updated: '2026-08-03'
 related:
   - 'redis/002-PersistenceModule'
   - 'redis/003-ClusterHA'
-prerequisites: []
 ---
 
 

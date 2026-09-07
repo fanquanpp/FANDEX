@@ -12,7 +12,6 @@ related:
   - 'vue3/019-TypeScriptIntegration'
   - 'vue3/021-PluginDevelopment'
   - 'vue3/022-ComputedCacheWatchTiming'
-prerequisites: []
 ---
 
 ## 前置知识

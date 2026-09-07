@@ -10,7 +10,7 @@ updated: '2026-08-03'
 related:
   - 'javascript/021-ObjectStaticMethods'
   - 'javascript/029-EventLoop'
-  - 'javascript/061-RegexAssertions'
+  - 'javascript/066-RegexAssertions'
   - 'javascript/013-UnicodePropertyEscape'
 prerequisites:
   - 'javascript/011-Regex'

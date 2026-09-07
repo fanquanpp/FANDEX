@@ -12,7 +12,6 @@ related:
   - 'javascript/011-Regex'
   - 'javascript/036-MemoryLeakTroubleshoot'
   - 'javascript/043-WebAPIBrowserInterface'
-prerequisites: []
 ---
 
 

@@ -8,11 +8,10 @@ description: venv与包管理
 author: fanquanpp
 updated: '2026-06-14'
 related:
-  - 'python/045-PythonJupyter'
-  - 'python/044-PythonPackagingEvolution'
-  - 'python/047-PythonCodeQuality'
-  - 'python/020-PythonDocker'
-prerequisites: []
+  - 'python/046-PythonJupyter'
+  - 'python/045-PythonPackagingEvolution'
+  - 'python/048-PythonCodeQuality'
+  - 'python/021-PythonDocker'
 ---
 
 ## 前置知识

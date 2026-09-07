@@ -12,7 +12,6 @@ related:
   - 'react/003-StateEvent'
   - 'react/005-ContextGlobalState'
   - 'react/006-React19NewFeatures'
-prerequisites: []
 ---
 
 ## 前置知识

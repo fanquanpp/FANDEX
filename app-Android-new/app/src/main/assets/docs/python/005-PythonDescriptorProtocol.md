@@ -8,11 +8,11 @@ description: 系统阐述 Python 描述符协议的形式化定义、属性查�
 author: fanquanpp
 updated: '2026-07-21'
 related:
-  - 'python/033-Decorator'
-  - 'python/043-PythonDesignPattern'
-  - 'python/011-Metaclass'
+  - 'python/034-Decorator'
+  - 'python/044-PythonDesignPattern'
+  - 'python/012-Metaclass'
 prerequisites:
-  - 'python/033-Decorator'
+  - 'python/034-Decorator'
 ---
 
 

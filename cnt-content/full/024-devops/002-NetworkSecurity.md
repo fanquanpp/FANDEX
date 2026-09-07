@@ -11,7 +11,6 @@ related:
   - 'devops/001-OverviewLinuxBasics'
   - 'devops/003-ContainerDocker'
   - 'devops/004-Kubernetes'
-prerequisites: []
 ---
 
 ## 1. TCP/IP 协议栈

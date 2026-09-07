@@ -12,7 +12,6 @@ related:
   - 'javascript/035-ClosureMemoryLeakOptimization'
   - 'javascript/030-EventLoopDetailed'
   - 'javascript/027-PromiseStaticMethod'
-prerequisites: []
 ---
 
 > 前置：先掌握对象（026）与函数基础；形式化定义部分为【高阶选读】。

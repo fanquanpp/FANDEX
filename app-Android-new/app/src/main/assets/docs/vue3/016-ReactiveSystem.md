@@ -12,7 +12,6 @@ related:
   - 'vue3/015-Vue3PerformancePractice'
   - 'vue3/017-CustomHook'
   - 'vue3/018-ComponentSystem'
-prerequisites: []
 ---
 
 ## 前置知识

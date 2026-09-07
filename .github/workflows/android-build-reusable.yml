@@ -1,0 +1,131 @@
+# =============================================================================
+# FANDEX Android 双端构建（可复用工作流）
+# =============================================================================
+# 被以下工作流通过 jobs.<id>.uses 调用：
+#   - android-build.yml   （推送/PR 校验，产物保留 14 天）
+#   - android-release.yml （v* 标签发布，产物保留 90 天）
+#
+# 职责：新技术栈与旧技术栈并行构建 Release APK + 新技术栈单元测试 +
+#       APK 签名校验，上传为 artifact，不创建 Release。
+#
+# 签名策略（两级回退，gradle 侧三级回退见 app-Android-new/app/build.gradle.kts）：
+#   1. 调用方通过 secrets: inherit 传入正式签名 Secrets 时走正式签名路径；
+#   2. 未配置时回退 runner 临时 debug 签名，CI 可直接出包。
+# =============================================================================
+
+name: Android Build (Reusable)
+
+on:
+  workflow_call:
+    inputs:
+      retention-days:
+        description: '构建产物 artifact 保留天数（校验流水线 14，发布流水线 90）'
+        required: false
+        type: number
+        default: 14
+    secrets:
+      SIGNING_KEYSTORE_BASE64:
+        description: 'fandex-release.jks 的 base64 文本（本地生成：base64 -w0 fandex-release.jks）'
+        required: false
+      FANDEX_KEYSTORE_PASSWORD:
+        description: 'keystore 密码'
+        required: false
+      FANDEX_KEY_PASSWORD:
+        description: 'key 密码'
+        required: false
+      FANDEX_KEY_ALIAS:
+        description: 'key 别名（可选，默认 fandex）'
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: 构建 ${{ matrix.label }} APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - id: new
+            label: 新技术栈
+            app: app-Android-new
+            sync: node app-Android-new/scripts/generate-content.mjs
+            apk: app-Android-new/app/build/outputs/apk/release/app-release.apk
+            artifact: fandex-new-apk
+          - id: old
+            label: 旧技术栈
+            app: app-Android-old
+            sync: node app-Android-old/scripts/generate-legacy-content.mjs
+            apk: app-Android-old/app/build/outputs/apk/release/FANDEX-*.apk
+            artifact: fandex-old-apk
+    steps:
+      - name: 检出仓库
+        uses: actions/checkout@v7
+
+      - name: 配置 JDK 21
+        uses: actions/setup-java@v6
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: 配置 Gradle（含依赖缓存）
+        uses: gradle/actions/setup-gradle@v5
+
+      - name: 配置 Node 22
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+
+      - name: 同步内容资产（${{ matrix.label }}）
+        run: ${{ matrix.sync }}
+
+      - name: 解码正式签名密钥（新技术栈；未配置 Secrets 时回退 debug 签名）
+        if: ${{ matrix.id == 'new' }}
+        env:
+          SIGNING_KEYSTORE_BASE64: ${{ secrets.SIGNING_KEYSTORE_BASE64 }}
+        run: |
+          if [ -n "$SIGNING_KEYSTORE_BASE64" ]; then
+            echo "$SIGNING_KEYSTORE_BASE64" | base64 -d > app-Android-new/fandex-release.jks
+            echo "已解码正式 keystore：app-Android-new/fandex-release.jks"
+          else
+            echo "未配置 SIGNING_KEYSTORE_BASE64，本次使用 runner 临时 debug 签名"
+          fi
+
+      - name: 运行单元测试（新技术栈）
+        if: ${{ matrix.id == 'new' }}
+        working-directory: ${{ matrix.app }}
+        run: ./gradlew :app:test --stacktrace
+
+      - name: 构建 Release APK
+        working-directory: ${{ matrix.app }}
+        env:
+          FANDEX_KEYSTORE_PASSWORD: ${{ secrets.FANDEX_KEYSTORE_PASSWORD }}
+          FANDEX_KEY_PASSWORD: ${{ secrets.FANDEX_KEY_PASSWORD }}
+          FANDEX_KEY_ALIAS: ${{ secrets.FANDEX_KEY_ALIAS }}
+        run: ./gradlew :app:assembleRelease --stacktrace
+
+      - name: 校验 APK 签名证书（新技术栈）
+        if: ${{ matrix.id == 'new' }}
+        run: |
+          APKSIGNER="$(ls "$ANDROID_HOME"/build-tools/*/apksigner | sort -V | tail -n1)"
+          echo "使用 $APKSIGNER"
+          "$APKSIGNER" verify --print-certs app-Android-new/app/build/outputs/apk/release/app-release.apk
+
+      - name: 上传测试报告（失败时）
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: unit-test-report-${{ matrix.id }}
+          path: ${{ matrix.app }}/app/build/reports/tests/
+          retention-days: 7
+          if-no-files-found: ignore
+
+      - name: 上传 APK 构建产物
+        uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.artifact }}
+          path: ${{ matrix.apk }}
+          retention-days: ${{ inputs.retention-days }}

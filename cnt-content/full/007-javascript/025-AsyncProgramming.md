@@ -8,11 +8,10 @@ description: 回调、Promise、async/await 与事件循环。
 author: fanquanpp
 updated: '2026-08-02'
 related:
-  - 'javascript/058-JavaScriptLatestFeature'
+  - 'javascript/062-JavaScriptLatestFeature'
   - 'javascript/038-JavaScriptModular'
   - 'javascript/035-ClosureMemoryLeakOptimization'
   - 'javascript/019-PrototypeChainClassEssence'
-prerequisites: []
 ---
 
 ## 前置知识

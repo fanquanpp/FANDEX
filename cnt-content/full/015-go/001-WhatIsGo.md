@@ -9,9 +9,9 @@ author: fanquanpp
 updated: '2026-08-30'
 related:
   - 'go/002-GoOverviewEnvSetup'
-  - 'getting-started/002-WhatIsProgramming'
+  - 'cs-fundamentals/011-ProgrammingBasics'
 prerequisites:
-  - 'getting-started/002-WhatIsProgramming'
+  - 'cs-fundamentals/011-ProgrammingBasics'
 ---
 
 ## Go 在技术版图中的位置

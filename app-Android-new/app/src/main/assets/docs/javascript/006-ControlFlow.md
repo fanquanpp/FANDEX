@@ -13,7 +13,6 @@ related:
   - 'javascript/015-HigherOrderFunction'
   - 'javascript/016-RecursionTailCallOptimization'
   - 'javascript/030-EventLoopDetailed'
-prerequisites: []
 ---
 
 ## 前置知识

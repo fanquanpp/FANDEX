@@ -11,7 +11,6 @@ related:
   - 'cloud-computing/001-CloudComputingBasics'
   - 'cloud-computing/003-ContainerOrchestration'
   - 'cloud-computing/004-IaC'
-prerequisites: []
 ---
 
 

@@ -10,8 +10,8 @@ updated: '2026-08-05'
 related:
   - 'html5/003-HTML5CommentsAndEntities'
   - 'html5/007-HTML5OverviewCoreFeature'
-  - 'getting-started/025-VSCodeInstall'
-  - 'getting-started/006-IDEEditorSelection'
+  - 'shell/011-VSCodeInstall'
+  - 'shell/009-IDEEditorSelection'
 prerequisites: []
 ---
 
@@ -75,7 +75,7 @@ prerequisites: []
 2. 一路"下一步"安装完成；
 3. 安装后打开 VS Code，界面分成三块：左边是文件列表、中间是编辑区、顶部有菜单。
 
-> 也可以先用系统自带的"记事本"起步（零成本），等写到第 3 篇再换 VS Code 也不迟。VS Code 的完整安装与配置见 `getting-started/022-VSCodeInstall`。
+> 也可以先用系统自带的"记事本"起步（零成本），等写到第 3 篇再换 VS Code 也不迟。VS Code 的完整安装与配置见 `shell/011-VSCodeInstall`。
 
 **讲解：**
 

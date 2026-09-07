@@ -12,7 +12,6 @@ related:
   - 'react/007-RouteDataFetch'
   - 'react/009-TestEngineering'
   - 'react/010-NextJSFullStack'
-prerequisites: []
 ---
 
 ## 前置知识

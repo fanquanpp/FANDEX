@@ -12,7 +12,6 @@ related:
   - 'vue3/018-ComponentSystem'
   - 'vue3/020-PiniaStateManagementDetailed'
   - 'vue3/021-PluginDevelopment'
-prerequisites: []
 ---
 
 ## 前置知识
