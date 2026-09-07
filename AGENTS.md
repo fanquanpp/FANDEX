@@ -1,5 +1,9 @@
 # FANDEX 仓库规则
 
+本文件是工程规范的事实源，面向 AI 助手与协作者：通用工程约束、分支与推送
+规则、内容管线约定、校验入口与发版流程。仓库结构与三端介绍见
+[README.md](README.md)，面向人的完整协作教程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+
 ## 通用工程规范
 
 - 代码与对话中一律不使用 emoji 表情。
@@ -10,6 +14,19 @@
 - 每次任务完成后删除一次性脚本、废弃代码文件等临时产物。
 - 文档内容统一存放于 `cnt-content/full`；`cnt-content/syntax` 为语法速览
   专用速查素材源（由 `app-web/scripts/build-syntax.mjs` 消费）。
+
+## 分支与推送
+
+- `main` 是受保护的发布主线（网页部署、Release、版本 tag 均以它为基准），
+  只接受 Pull Request，直接 push 会被拒绝；`dev` 是协作集成分支，协作者
+  日常工作的落点。
+- 变更一律通过 PR 进入主线：协作者与外部贡献者发往 `dev`；维护者可直达
+  `main`（当前实践）。合并使用 merge commit，与仓库历史保持一致。
+- 提交信息遵循 Conventional Commits：`<type>(<scope>): 中文描述`，type 取
+  feat / fix / docs / content / refactor / chore / ci / perf / test，描述
+  动词开头、结尾不加句号。
+- 推送前本地校验至少通过 `pnpm sync`（幂等）与 `pnpm build:web`；内容类
+  改动再跑 `node app-web/scripts/content-audit.mjs` 确认无 HIGH 级问题。
 
 ## 文档内容规范（约定优先，自动补全）
 
@@ -68,10 +85,11 @@
 ### 约束（audit 兜底校验）
 
 - frontmatter 仅允许 10 个标准字段（order/title/module/category/difficulty/
-  description/author/updated/related/prerequisites）；历史禁用字段
-  （tags/created/quiz/references/etymology/estimatedReadingTime/
-  lastReviewed/reviewer/readingTime/keywords）由 sync 自动删除，其他
-  未知字段会被 audit 报告（low）。
+  description/author/updated/related/prerequisites）；`difficulty` 合法值
+  为 beginner / intermediate / advanced。
+- 历史禁用字段（tags/created/quiz/references/etymology/estimatedReadingTime/
+  lastReviewed/reviewer/readingTime/keywords/slug/lang/layout/date）由 sync
+  自动删除；其余未知字段会被 audit 报告（low）。
 - `related` / `prerequisites` 引用格式为 `模块id/文件名`（不带扩展名），
   死链与历史旧名由 sync 自动清理/归一。
 - 模块文件夹命名 `NNN-模块id`（模块 id 为小写字母开头的 kebab-case），
@@ -83,7 +101,7 @@
 名由 `modules.json` 的 `categoryLabels` 定义（工具链 / 前端技术 / 后端
 技术 / 数据库 / 计算机科学 / 数学 / 云与基础设施）。
 
-### 版本发布
+## 版本发布
 
 - `pnpm release`：自动 patch +1 并同步五处版本文件（根/app-web
   package.json、tauri.conf.json、app-desktop-portable/package.json、
@@ -95,7 +113,16 @@
 ## 校验入口
 
 - `app-web/scripts/content-sync.mjs`：内容自动同步（唯一自动化入口），
-  补全托管字段、注册/回收模块、清理死链；构建链与 CI 全量接入。
+  补全托管字段、注册/回收模块、清理死链；`--check` 只报告不写盘。已接入
+  全部本地构建链（web build / desktop build-desktop.mjs / Android 构建
+  工作流）与 CI。
 - `app-web/src/content.config.ts`：Astro content schema，构建期兜底校验。
 - `app-web/scripts/content-audit.mjs`：内容质量审计（正文长度、过时
-  关键词、未知字段等 sync 无法判断的问题），HIGH 级问题阻断流水线。
+  关键词、未知字段等 sync 无法判断的问题），HIGH 级问题以非零退出码阻断；
+  已作为 deploy.yml 门禁步骤运行。
+- `app-web/scripts/qa-check.mjs`（`pnpm --filter @fandex/web qa`）：构建
+  产物质量门禁（页面结构、SEO 资产、console.log 残留等），deploy 与
+  desktop 工作流已接入，FAIL 项阻断。
+- `app-web/scripts/audit-learning-path.mjs`：学习路径结构与死链审计，
+  手动运行。
+- `pnpm typecheck`：全仓类型检查，deploy.yml 在构建前执行。
