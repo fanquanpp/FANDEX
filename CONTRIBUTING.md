@@ -1,8 +1,10 @@
 # 贡献指南（Contributing）
 
 感谢你考虑为 FANDEX 做出贡献。本文档是完整的协作教程：从环境准备、内容写作、
-本地校验到提交、合并与发版。工程细节与 frontmatter 字段约束以 [AGENTS.md](AGENTS.md)
-为准；本仓库的差异只有「写内容」与「改应用」两类，教程对两者都适用。
+本地校验到提交、合并与发版。内容开发的逐步实操手册（含常见问题排查）见
+[CONTENT-GUIDE.md](CONTENT-GUIDE.md)；工程细节与 frontmatter 字段约束以
+[AGENTS.md](AGENTS.md) 为准；本仓库的差异只有「写内容」与「改应用」两类，
+教程对两者都适用。
 
 ## 仓库概览
 
@@ -115,17 +117,18 @@ pnpm typecheck     # 全仓类型检查
 
 ### 6. 发起 Pull Request
 
-推送分支并向 `dev` 发起 PR（外部贡献者为 fork 分支 → `dev`）。PR 描述请说明
-变更目的、范围与自测结果。CI 会自动运行：
+推送分支并向 `dev` 发起 PR（外部贡献者为 fork 分支 → `dev`；维护者可直接
+向 `main` 发 PR）。PR 描述请说明变更目的、范围与自测结果。CI 会自动运行：
 
 | 工作流 | 触发 | 内容 |
 | --- | --- | --- |
 | android-build.yml | push 与 PR | 双端 Android APK 并行构建校验 |
 | desktop-build.yml | push 与 PR | Windows 桌面端构建 + 前端实验室剔除校验 |
-| deploy.yml | push 到 main | 构建网站并发布 GitHub Pages |
+| deploy.yml | push 到 main 与指向 main 的 PR | 构建 + 类型检查 + 内容审计 + QA 门禁；仅 push 到 main 时发布 GitHub Pages |
+| android-release.yml | push `v*` 标签 | 构建三端安装包并发布 GitHub Release |
 
-所有构建前会自动运行 `content-sync.mjs`；`content-audit.mjs` 的 HIGH 级
-内容质量问题会阻断流水线。
+所有构建前会自动运行 `content-sync.mjs`；deploy 工作流中的 `content-audit.mjs`
+门禁会在出现 HIGH 级内容质量问题时阻断构建。
 
 ### 7. 合并
 
@@ -161,7 +164,8 @@ PR 合并后可删除特性分支。
 - [ ] 本地跑过 `pnpm sync` 与 `pnpm build:web` 且无报错（或确认 CI 会覆盖）；
 - [ ] 无 emoji、无构建产物入库；
 - [ ] 提交信息符合 Conventional Commits；
-- [ ] PR 目标分支为 `dev`（Dependabot 的依赖 PR 除外，它们指向 `main`）。
+- [ ] PR 目标分支：协作者与外部贡献者为 `dev`，维护者可直接发 `main`
+      （Dependabot 的依赖 PR 指向 `main`）。
 
 ## 发版流程（维护者）
 

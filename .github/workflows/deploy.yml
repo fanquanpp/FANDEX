@@ -6,8 +6,8 @@
 #   2. 指向 main 的 PR → 仅执行构建 + 类型检查 + QA 门禁，不部署
 #   3. 手动触发 → 构建并部署到 Pages
 #
-# 构建流程：pnpm monorepo 安装 → 全仓类型检查 → app-web 构建 → QA 门禁
-#           → 上传 artifact → 部署到 Pages
+# 构建流程：pnpm monorepo 安装 → 内容同步 + 内容审计 → 全仓类型检查
+#           → app-web 构建 → QA 门禁 → 上传 artifact → 部署到 Pages
 #
 # 前置条件（仅需配置一次）：
 #   仓库 Settings → Pages → Source → 选择 "GitHub Actions"
@@ -97,6 +97,11 @@ jobs:
         # 注册新模块（含 module.json 反拆）、清理死链引用。零依赖，幂等；
         # 后续 typecheck/build 消费补全后的内容，作者无需手工维护元数据
         run: pnpm --filter @fandex/web sync
+
+      - name: Content audit (block on HIGH severity issues)
+        # 内容质量审计：正文长度、过时关键词、frontmatter 未知字段等 sync
+        # 无法判断的问题；存在 HIGH 级问题时以非零退出码阻断构建与部署
+        run: pnpm --filter @fandex/web exec node scripts/content-audit.mjs
 
       - name: Generate build stats baseline
         # doc-stats.json 被 gitignore，仅在构建期生成（本地 dev/build 均先跑此脚本）；
