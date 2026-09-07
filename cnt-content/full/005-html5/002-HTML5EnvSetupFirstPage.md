@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第一课：安装编辑器、创建并保存 .html 文件、用浏览器打开、认识 F12 开发者工具。
 author: fanquanpp
-updated: '2026-08-05'
+updated: '2026-09-08'
 related:
   - 'html5/003-HTML5CommentsAndEntities'
   - 'html5/007-HTML5OverviewCoreFeature'

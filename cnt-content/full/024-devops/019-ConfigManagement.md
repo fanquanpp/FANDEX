@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 配置管理：Ansible、配置中心、环境管理、密钥管理与GitOps
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/017-ServiceMesh'
   - 'devops/018-LogManagement'

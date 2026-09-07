@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: "Java 枚举类型与注解系统的形式化定义、源码生成机制、注解处理器工作原理、与 C#/Kotlin/Scala 对比及工程实践"
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/005-DataTypeConversion'
   - 'java/007-VariableConstant'

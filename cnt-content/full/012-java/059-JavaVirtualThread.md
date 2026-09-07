@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Project Loom 虚拟线程、结构化并发、Continuation 机制与性能调优全景式深度解析
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/048-JavaNewFeatures'
   - 'java/060-JavaReactiveProgramming'

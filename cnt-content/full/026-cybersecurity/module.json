@@ -1,0 +1,11 @@
+{
+  "title": "网络安全",
+  "icon": "安全",
+  "description": "攻防·渗透·应急响应",
+  "categories": [
+    "cloud"
+  ],
+  "prerequisites": [
+    "networking"
+  ]
+}

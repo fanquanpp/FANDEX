@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 'workspace: 协议用法、本地包引用与发布时版本转换'
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'vite/017-WorkspaceSetup'
   - 'vite/019-CatalogManagement'

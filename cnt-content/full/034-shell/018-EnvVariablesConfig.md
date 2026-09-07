@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 环境变量与配置文件：env/export/PATH、变量扩展、bash 启动文件加载顺序
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'shell/019-ScriptDebugging'
   - 'shell/001-ShellBasics'

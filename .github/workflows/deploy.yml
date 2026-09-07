@@ -92,6 +92,12 @@ jobs:
         # CI 环境下禁止自动更新 lockfile，保证构建可复现
         run: pnpm install --frozen-lockfile
 
+      - name: Sync content (auto-complete frontmatter & module registry)
+        # 内容自动同步：补全 frontmatter 托管字段（order/module/category/updated 等）、
+        # 注册新模块（含 module.json 反拆）、清理死链引用。零依赖，幂等；
+        # 后续 typecheck/build 消费补全后的内容，作者无需手工维护元数据
+        run: pnpm --filter @fandex/web sync
+
       - name: Generate build stats baseline
         # doc-stats.json 被 gitignore，仅在构建期生成（本地 dev/build 均先跑此脚本）；
         # astro check 依赖该文件，因此 CI 中必须在 typecheck 之前生成

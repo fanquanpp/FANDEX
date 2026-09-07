@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: stdarg.h 机制、ABI 调用约定、类型安全与工程实践
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'c/011-DynamicMemoryManagement'
   - 'c/012-FunctionPointerCallback'

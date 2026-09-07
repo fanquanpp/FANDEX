@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 主流IDE与编辑器对比选型：VS Code、IntelliJ、Vim及云IDE方案。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/004-EnvVarPath'
   - 'shell/010-PluginEcosystem'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C 语言 volatile 关键字的完整知识体系，涵盖标准语义、编译器优化抑制、内存映射 I/O、信号处理、setjmp/longjmp、C11 原子操作对比、C++20 volatile 弃用、Linux 内核实践与多线程陷阱。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-02'
 related:
   - 'c/010-MultiFileCompilation'
   - 'c/041-PointerDeep'

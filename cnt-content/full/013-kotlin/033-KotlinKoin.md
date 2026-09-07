@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Koin依赖注入
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'kotlin/031-KotlinKtor'
   - 'kotlin/032-KotlinExposed'

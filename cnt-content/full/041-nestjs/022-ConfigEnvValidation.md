@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: '@nestjs/config 加分项：类型安全、启动即校验的配置体系。'
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'nestjs/017-ValidationPipes'
   - 'typescript/003-TypeScriptOverviewEnvSetup'

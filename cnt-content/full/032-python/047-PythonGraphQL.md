@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: Python GraphQL API 开发完整指南：Strawberry + FastAPI、Schema/Query/Mutation/Subscription、DataLoader 与工程实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/015-PythonFastAPI'
   - 'python/051-PythonOAuth2'
   - 'python/018-PythonRedis'
   - 'python/013-PythonSQLAlchemy'
+prerequisites: []
 ---
 
 ## 前置知识

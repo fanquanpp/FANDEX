@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 算术、比较、逻辑、位运算及运算符优先级。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'javascript/003-ProgramStructureBasicSyntax'
   - 'javascript/004-VariableDataType'
   - 'javascript/006-ControlFlow'
   - 'javascript/015-HigherOrderFunction'
+prerequisites: []
 ---
 
 ## 前置知识

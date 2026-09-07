@@ -1,0 +1,28 @@
+{
+  "title": "SVG",
+  "icon": "SVG",
+  "description": "矢量图形与动画",
+  "categories": [
+    "frontend"
+  ],
+  "prerequisites": [
+    "html5"
+  ],
+  "officialDocs": [
+    {
+      "label": "MDN 文档",
+      "url": "https://developer.mozilla.org/zh-CN/docs/Web/SVG",
+      "type": "docs"
+    },
+    {
+      "label": "W3C 规范",
+      "url": "https://www.w3.org/Graphics/SVG/",
+      "type": "spec"
+    },
+    {
+      "label": "SVG 2 规范",
+      "url": "https://www.w3.org/TR/SVG2/",
+      "type": "spec"
+    }
+  ]
+}

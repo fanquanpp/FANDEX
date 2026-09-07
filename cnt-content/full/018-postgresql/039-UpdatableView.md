@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL可更新视图：自动可更新条件、INSTEAD OF触发器、WITH CHECK OPTION
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/037-SequenceAutoIncrement'
   - 'postgresql/038-GeneratedColumn'

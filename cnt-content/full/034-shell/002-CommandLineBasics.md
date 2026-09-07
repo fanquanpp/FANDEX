@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Shell 命令行基础：文件与目录操作、通配符与帮助系统
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'shell/016-TextProcessingTools'
   - 'shell/001-ShellBasics'

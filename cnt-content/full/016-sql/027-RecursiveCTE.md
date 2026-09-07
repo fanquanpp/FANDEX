@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL递归公用表表达式：WITH RECURSIVE语法、层级遍历、图遍历、斐波那契数列与终止条件控制
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related:
   - 'sql/025-Subquery'
   - 'sql/028-PivotUnpivot'

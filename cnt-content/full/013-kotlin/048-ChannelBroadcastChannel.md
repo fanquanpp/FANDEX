@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin Channel与BroadcastChannel详解。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'kotlin/046-CoroutineDispatcherContext'
   - 'kotlin/047-FlowColdSharedState'

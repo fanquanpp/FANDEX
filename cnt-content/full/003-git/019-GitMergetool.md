@@ -6,10 +6,11 @@ category: 工具链
 difficulty: intermediate
 description: git mergetool配置与使用：可视化冲突解决工具的集成与自定义。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/017-GitHookGitLFS'
   - 'git/018-MergeConflictResolution'
+prerequisites: []
 ---
 
 

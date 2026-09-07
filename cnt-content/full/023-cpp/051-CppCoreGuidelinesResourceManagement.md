@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++ RAII 资源管理深度解析：形式化定义、栈展开机制、异常安全保证、智能指针、锁守卫、文件句柄、数据库事务、OpenGL/CUDA 资源、Pimpl、Scope Guard 与跨语言对比。
 author: fanquanpp
-updated: '2026-07-18'
+updated: '2026-09-02'
 related:
   - 'cpp/008-SmartPointerDeepDive'
   - 'cpp/007-CppPointers'

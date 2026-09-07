@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C# async/await 状态机生成原理详解：从编译器转换到 AsyncMethodBuilder、IAsyncStateMachine、MoveNext、SynchronizationContext 与 ConfigureAwait 的全链路剖析。
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-02'
 related:
   - 'csharp/029-LINQDeferredImmediate'
   - 'csharp/031-DelegateEventUnderlying'

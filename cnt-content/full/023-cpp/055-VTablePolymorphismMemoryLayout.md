@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++虚函数表(vtable)、虚指针(vptr)、多重继承内存布局、RTTI机制与多态实现原理的完整深度解析
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'cpp/053-MoveSemanticsDetailed'
   - 'cpp/054-PerfectForwardingReferenceCollapse'

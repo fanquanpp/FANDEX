@@ -13,8 +13,6 @@
 # 密钥与签名材料（最高优先级，严禁入库）
 # -----------------------------------------------------------------------------
 
-# Ed25519 manifest 签名密钥（tls-tools/ 生成的密钥对存放目录）
-tls-tools/keys/
 *.private-key.hex
 *.public-key.hex
 *.private-key.pem
@@ -123,11 +121,6 @@ app-Android-new/app/.cxx/
 *.exe
 *.msi
 *.sig
-
-# 工具链产物
-tls-tools/dist/
-tls-tools/manifests/
-tls-tools/archives/
 
 # 测试覆盖率
 coverage/
@@ -262,19 +255,14 @@ playwright/.cache/
 # -----------------------------------------------------------------------------
 # 生成的内容索引（CI 产物，不入库）
 # -----------------------------------------------------------------------------
+# doc-stats.json / doc-index.json / syntax-index.json 等由构建脚本生成，
+# 具体条目见各子项目 .gitignore
 
-# manifest 分发目录（由 content-manifest.yml 在 gh-pages 分支维护）
-manifest/dist/
-manifest/archives/
-manifest/index.json
-
-# doc-id-map（包含本地路径映射，可能含敏感路径信息）
-tls-tools/doc-id-map.json
-
-# 内容层 ID 映射文件（含本地绝对路径，禁止入库）
-# _id-registry.json 与 _archived-ids.json 入库（共享数据）
-# _doc-id-map.json 不入库（含本地路径）
+# 内容层同步辅助文件（ID 注册表等历史管线文件已退役，防止再生成入库）
 cnt-content/full/_doc-id-map.json
+cnt-content/full/_id-registry.json
+cnt-content/full/_archived-ids.json
+cnt-content/full/_op-list.json
 
 
 # -----------------------------------------------------------------------------

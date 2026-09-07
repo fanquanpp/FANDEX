@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Kubernetes存储：PV、PVC、StorageClass、CSI 与数据持久化详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cloud-computing/015-KubernetesNetwork'
   - 'cloud-computing/016-CloudNetworkService'

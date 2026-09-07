@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: '用 GPG 或 SSH 给提交签名，让提交带"防伪认证"；同时给出团队仓库的权限与工作流安全基线。'
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'git/009-SHA1IntegrityCheck'
   - 'git/006-GitRemoteRepoOperation'

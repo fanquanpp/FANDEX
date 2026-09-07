@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 并发渲染与Suspense集成
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'react/011-JSXDeepAnalysis'
   - 'react/012-FiberArchitecture'

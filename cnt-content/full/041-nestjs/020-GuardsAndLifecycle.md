@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 请求处理管线全景：七大组件的职责与顺序，CanActivate 守卫与声明式角色鉴权。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'nestjs/017-ValidationPipes'
   - 'nestjs/019-Testing'

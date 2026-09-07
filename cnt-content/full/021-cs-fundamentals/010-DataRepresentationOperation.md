@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 数据表示与运算：数值编码、浮点标准、定点运算、溢出检测与校验码
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/007-DiscreteMathematics'
   - 'cs-fundamentals/008-ComputerPrinciple'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 面向零基础读者建立网页的心智模型，认识 HTML 的角色，并创建人生第一个网页文件。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/002-HTML5EnvSetupFirstPage'
   - 'cs-fundamentals/005-ComputerNetwork'

@@ -6,13 +6,14 @@ category: 后端技术
 difficulty: beginner
 description: C# 语言概述、.NET 生态、.NET 8/9 新特性、环境搭建与 Hello World
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-03'
 related:
   - 'csharp/003-CSharpBasicSyntax'
   - 'csharp/004-CSharpOOP'
   - 'algorithm/001-AlgorithmAnalysisBasics'
 prerequisites: []
 ---
+
 # C# 概述与环境配置
 
 ## 前置知识

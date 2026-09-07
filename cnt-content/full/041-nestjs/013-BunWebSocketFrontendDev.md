@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 实时与一体化：Bun.serve 的 WebSocket、routes 路由表与前端开发服务器。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'nestjs/010-BunBuiltinServerSQL'
   - 'nestjs/012-BunTestBench'

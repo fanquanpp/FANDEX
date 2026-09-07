@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Gradle Kotlin DSL
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'kotlin/036-KotlinCompilerPlugin'
   - 'kotlin/026-KotlinAndroid'

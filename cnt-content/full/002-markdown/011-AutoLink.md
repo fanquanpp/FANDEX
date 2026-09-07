@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Markdown自动链接机制：URL识别规则、邮箱链接与扩展语法。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-02'
 related:
   - 'markdown/009-Footnote'
   - 'markdown/010-Strikethrough'

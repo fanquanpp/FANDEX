@@ -6,11 +6,12 @@ category: 工具链
 difficulty: intermediate
 description: git revert与git reset的深度对比：原理、适用场景与安全实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/037-GitFlowGitHubFlowComparison'
   - 'git/038-InteractiveRebase'
   - 'git/040-CodeReviewBestPractice'
+prerequisites: []
 ---
 
 

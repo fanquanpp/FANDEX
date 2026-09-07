@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C语言指针与数组的区别：sizeof、&运算、传参差异。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-03'
 related:
   - 'c/044-StructAndUnion'
   - 'c/045-FunctionCallStackFrame'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL行级安全策略RLS：策略定义、角色策略、WITH CHECK与多租户隔离
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/032-SSLEncryptionConnection'
   - 'postgresql/033-RoleBasedPermissionManagement'

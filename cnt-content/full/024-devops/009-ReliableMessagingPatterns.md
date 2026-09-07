@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 投递语义、死信队列、消费幂等、顺序保证与背压控制，把消息系统从"能通"做到"可靠"。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'devops/007-KafkaQuickStart'
   - 'devops/008-RabbitMQQuickStart'

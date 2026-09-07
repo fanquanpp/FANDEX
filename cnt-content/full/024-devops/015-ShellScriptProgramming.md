@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Shell脚本编程：Bash语法、流程控制、函数、文本处理与自动化脚本
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/013-IaC'
   - 'devops/014-CloudNativeSRE'

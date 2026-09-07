@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown在版本控制PR协作中的应用：模板、评论、审查与文档维护。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-29'
 related:
   - 'markdown/020-AnchorJump'
   - 'markdown/021-ImageCDNAcceleration'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 'Floyd-Warshall 多源最短路径算法：Robert W. Floyd 1962《Algorithm 97: Shortest Path》CACM 5(6):345 DOI:10.1145/367766.368168 与 Stephen Warshall 1962《A Theorem on Boolean Matrices》JACM 9(1):11-12 DOI:10.1145/321105.321107 独立提出的动态规划算法，Bernard Roy 1959 更早发现传递闭包版本。算法以 $O(n^3)$ 时间、$O(n^2)$ 空间求解所有顶点对最短路径，支持负权边（无负环），可用于负环检测与传递闭包计算。本文涵盖 DP 状态设计、最优子结构证明、路径重建、位运算优化、与 Dijkstra/Bellman-Ford/Johnson 算法的对比、在 OSPF 路由协议与 NetworkX 工业级库中的应用，附 Python/C++/Java 多语言实现。'
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-08-30'
 related:
   - 'algorithm/001-AlgorithmAnalysisBasics'
   - 'algorithm/008-GraphAlgorithms'

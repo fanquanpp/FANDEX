@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 插值、指令、修饰符与模板编译机制。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/001-OverviewEnv'
   - 'vue3/002-Vue3QuickStartGuide'
   - 'vue3/004-Vue3DirectiveSystem'
   - 'vue3/005-TeleportSuspense'
+prerequisites: []
 ---
 
 ## 前置知识

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React微前端架构
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'react/029-ReactWebSocket'
   - 'react/030-ReactGraphQL'

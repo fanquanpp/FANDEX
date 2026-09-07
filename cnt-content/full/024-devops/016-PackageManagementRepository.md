@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 包管理与仓库：RPM/DEB包管理、YUM/APT仓库、Artifactory与制品管理
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/014-CloudNativeSRE'
   - 'devops/015-ShellScriptProgramming'

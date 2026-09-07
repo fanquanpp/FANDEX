@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译器词法分析：正则表达式、NFA、DFA 与 Token 识别。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/055-ARPProtocolSpoofing'
   - 'cs-fundamentals/056-BGPRoute'

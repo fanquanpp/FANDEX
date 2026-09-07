@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 文件操作与std::filesystem
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'cpp/017-CppSTL'
   - 'cpp/018-StringProcessing'

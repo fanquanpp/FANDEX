@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: bun init 创建项目、bun add 管理依赖、bun test 编写测试，完整走一遍小工具开发。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nestjs/008-BunOverview'
   - 'nestjs/010-BunBuiltinServerSQL'

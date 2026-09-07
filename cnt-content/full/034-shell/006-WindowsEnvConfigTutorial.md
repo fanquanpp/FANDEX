@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Windows 开发环境完整配置指南，涵盖 WSL2、包管理器、环境变量、Git、Node.js、Python、Java JDK、Docker Desktop、VS Code 安装与配置。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/007-MacOSEnvConfigTutorial'
   - 'shell/008-LinuxEnvConfigTutorial'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 前几周必然遇到的高频术语，一句话大白话解释，不追求严谨只求可理解。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'mysql/001-HowToUseThisCourse'
 prerequisites: []

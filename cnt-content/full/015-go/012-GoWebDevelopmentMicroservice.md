@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: net/http 标准库、Gin/Echo/Fiber 框架、中间件模式、RESTful API、gRPC、数据库操作、项目结构与容器化部署。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'go/010-GoGeneric'
   - 'go/011-GoStandardLibraryToolchain'

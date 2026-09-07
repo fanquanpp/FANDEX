@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 三个必须背的全局属性速通：id 是身份证号、class 是可复用标签、style 是紧急临时样式，附终极对比表。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/005-HTML5DivSpanContainers'
   - 'html5/007-HTML5OverviewCoreFeature'

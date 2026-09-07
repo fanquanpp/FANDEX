@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: View Transitions API 在页面状态切换时自动生成平滑过渡，支持自定义动画与跨文档过渡。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'css/029-CSSAnimationTransition'
   - 'css/065-CSSNewFeatures'

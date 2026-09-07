@@ -6,9 +6,10 @@ category: 云与基础设施
 difficulty: intermediate
 description: RFC、ADR、技术方案文档的编写规范与最佳实践。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'devops/010-OnCallPractice'
+prerequisites: []
 ---
 
 

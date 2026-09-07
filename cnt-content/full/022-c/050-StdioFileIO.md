@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 标准文件流操作、二进制文件及错误处理。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/049-VolatileKeyword'
   - 'c/017-BitField'

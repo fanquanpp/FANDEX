@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: OWASP Top 10 详解：各漏洞原理、攻击方式与修复方案。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/026-InputValidation'
   - 'cybersecurity/027-AuthenticationAuthorization'

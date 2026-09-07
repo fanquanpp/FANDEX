@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: ruby 注音、bdi/bdo 双向文本隔离、lang/dir 属性深化：处理日文注音、中文拼音、阿拉伯文 RTL 排版的最后一公里。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/016-MetadataCharacterEncoding'
   - 'html5/017-TextSemantic'

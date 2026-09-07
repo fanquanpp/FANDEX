@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Vitest/Testing Library、组件测试、E2E 测试、Storybook、ESLint/Prettier、CI/CD 与项目结构最佳实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'react/007-RouteDataFetch'
   - 'react/008-PerformanceOptimization'
   - 'react/010-NextJSFullStack'
   - 'react/011-JSXDeepAnalysis'
+prerequisites: []
 ---
 
 ## 前置知识

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java 8 至 21 现代语言特性、API 演进与 JVM 改进全景式深度解析
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/070-JavaSerialization'
   - 'java/067-JavaIONIO'

@@ -6,12 +6,13 @@ category: 工具链
 difficulty: intermediate
 description: Git中SHA-1哈希的工作原理：内容寻址、完整性校验与碰撞问题。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/007-DistributedVCSPrinciple'
   - 'git/008-ObjectModel'
   - 'git/010-ThreeTrees'
   - 'git/011-GitDiffStagingOperation'
+prerequisites: []
 ---
 
 

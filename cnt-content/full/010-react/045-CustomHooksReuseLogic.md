@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React自定义Hooks设计模式：useFetch、useLocalStorage等实用Hook。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'react/043-ConcurrentRenderInterruptible'
   - 'react/044-ErrorBoundarySentry'

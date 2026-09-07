@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C 语言二级指针与指针数组的完整知识体系，涵盖多级间接寻址的形式化定义、内存布局、指针数组与数组指针的本质区别、函数指针数组、链表与树的二级指针实践、跨语言对比与工业级工程应用。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-02'
 related:
   - 'c/045-FunctionCallStackFrame'
   - 'c/046-PointerArrayDifference'

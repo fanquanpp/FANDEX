@@ -1,0 +1,26 @@
+{
+  "title": "Git",
+  "icon": "Git",
+  "description": "版本控制与分支管理",
+  "categories": [
+    "tools"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://git-scm.com/doc",
+      "type": "docs"
+    },
+    {
+      "label": "参考手册",
+      "url": "https://git-scm.com/docs",
+      "type": "api"
+    },
+    {
+      "label": "Pro Git 书",
+      "url": "https://git-scm.com/book/zh/v2",
+      "type": "docs"
+    }
+  ]
+}

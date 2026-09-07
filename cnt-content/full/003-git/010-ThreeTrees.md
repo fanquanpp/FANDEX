@@ -6,12 +6,13 @@ category: 工具链
 difficulty: intermediate
 description: Git三棵树模型：工作区、暂存区、本地仓库的状态管理与转换。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/008-ObjectModel'
   - 'git/009-SHA1IntegrityCheck'
   - 'git/011-GitDiffStagingOperation'
   - 'git/012-GitRestoreFileOperation'
+prerequisites: []
 ---
 
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C语言函数调用栈帧详解：局部变量、返回地址、寄存器保存、ABI规范与栈保护机制。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-03'
 related:
   - 'c/043-MemoryAlignment'
   - 'c/044-StructAndUnion'

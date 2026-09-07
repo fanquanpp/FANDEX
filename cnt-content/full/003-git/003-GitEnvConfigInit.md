@@ -6,11 +6,12 @@ category: 工具链
 difficulty: beginner
 description: Git 安装配置、用户信息设置与仓库初始化。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/001-Git'
   - 'git/004-GitBasicOperation'
   - 'git/005-GitBranchManagement'
+prerequisites: []
 ---
 
 ## 1. 什么是 Git

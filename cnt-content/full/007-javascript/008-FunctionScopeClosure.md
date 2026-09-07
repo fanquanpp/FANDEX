@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 函数声明、箭头函数、作用域链、闭包原理、this 绑定机制、高阶函数、柯里化、尾调用优化的形式化定义与工程实践。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'javascript/066-RegexAssertions'
   - 'javascript/013-UnicodePropertyEscape'

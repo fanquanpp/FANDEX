@@ -6,10 +6,11 @@ category: 前端技术
 difficulty: beginner
 description: Vite 构建工具概述：从 webpack 痛点出发，理解原生 ESM、依赖预构建、HMR 原理与 Vite 8 的 Rolldown 统一引擎
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'astro/001-AstroOverview'
   - 'vite/015-PnpmMonorepoOverview'
+prerequisites: []
 ---
 
 

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 函数定义、多返回值、命名返回值、可变参数、init 函数、方法与接收者、接口与隐式实现。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'go/002-GoOverviewEnvSetup'
   - 'go/003-GoBasicSyntax'

@@ -6,11 +6,12 @@ category: 云与基础设施
 difficulty: intermediate
 description: VPC 虚拟私有云、子网规划、安全组配置、NAT 网关、弹性计算服务、镜像管理、块存储与对象存储、CDN 加速。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/001-CloudComputingBasics'
   - 'cloud-computing/003-ContainerOrchestration'
   - 'cloud-computing/004-IaC'
+prerequisites: []
 ---
 
 

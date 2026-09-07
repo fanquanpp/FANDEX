@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 类定义、访问修饰符、装饰器模式与元数据。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/011-FunctionGeneric'
   - 'typescript/013-LiteralUnionTypes'

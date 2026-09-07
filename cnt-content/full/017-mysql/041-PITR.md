@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL基于时间点恢复PITR：全量恢复+binlog重放、时间点定位与误操作恢复
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/039-LogicalBackup'
   - 'mysql/040-PhysicalBackup'

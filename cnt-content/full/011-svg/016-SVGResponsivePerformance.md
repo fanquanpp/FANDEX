@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 响应式适配、性能瓶颈、优化策略、懒加载与压缩。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'svg/014-SVGCSSStyling'
   - 'svg/015-SVGJavaScriptInteraction'

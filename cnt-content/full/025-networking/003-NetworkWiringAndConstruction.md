@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 综合布线工程设计、铜缆端接、光纤熔接、配线架安装、理线标识、室外光缆敷设、信息模块端接、施工工艺规范、网络测试与项目组织管理。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'networking/001-NetworkBasicsAndProtocol'
   - 'networking/002-NetworkSystemManagement'

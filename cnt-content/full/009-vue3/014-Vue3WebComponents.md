@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Vue组件与Web Components互操作
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'vue3/012-LifecycleHook'
   - 'vue3/013-Vue3TestStrategy'
   - 'vue3/015-Vue3PerformancePractice'
   - 'vue3/016-ReactiveSystem'
+prerequisites: []
 ---
 
 

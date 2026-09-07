@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C语言动态内存分配、内存布局、常见内存错误与调试技术详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/040-C23C2y'
   - 'c/041-PointerDeep'

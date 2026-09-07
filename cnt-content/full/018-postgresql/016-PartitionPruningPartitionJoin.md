@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL分区裁剪与分区连接：运行时裁剪、分区智能连接与性能优化
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/014-QueryOptimization'
   - 'postgresql/015-PartitionedTable'

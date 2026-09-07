@@ -6,10 +6,11 @@ category: 工具链
 difficulty: intermediate
 description: HEAD指针机制与Git分支的本质：引用、符号引用与分支操作原理。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/017-GitHookGitLFS'
   - 'git/018-MergeConflictResolution'
+prerequisites: []
 ---
 
 

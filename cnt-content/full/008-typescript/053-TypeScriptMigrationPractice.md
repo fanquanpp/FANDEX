@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 渐进式迁移策略、类型覆盖提升、常见迁移陷阱与生产级最佳实践，涵盖 tsconfig 演进、JSDoc 桥接、ts-migrate 自动化与大型项目案例研究。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/051-TypeScriptEngineeringConfig'
   - 'typescript/052-SatisfiesOperator'
@@ -17,6 +17,7 @@ prerequisites:
   - 'typescript/009-InterfaceTypeAlias'
   - 'typescript/022-GenericConstraintDefault'
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

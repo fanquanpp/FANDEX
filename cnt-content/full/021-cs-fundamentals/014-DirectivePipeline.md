@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 指令流水线深度：超标量、超流水线、乱序执行、VLIW与流水线优化技术
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/008-ComputerPrinciple'
   - 'cs-fundamentals/010-DataRepresentationOperation'

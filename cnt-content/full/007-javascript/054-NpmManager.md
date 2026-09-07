@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: npm 的项目初始化、包安装、脚本执行与镜像源配置。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'javascript/052-NodeJsInstall'
   - 'javascript/053-NvmVersionManage'

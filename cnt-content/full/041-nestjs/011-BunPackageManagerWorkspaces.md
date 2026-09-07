@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: bun install 为什么快：bun.lock、workspaces 与可复现安装。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'nestjs/009-BunQuickStart'
 prerequisites:

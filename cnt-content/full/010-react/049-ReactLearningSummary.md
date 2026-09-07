@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 串联 React 模块全部文档，回顾 Hooks 体系、Fiber 并发、服务端组件、状态管理与性能优化的核心脉络。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'react/001-OverviewEnvSetup'
   - 'react/004-HooksDeep'
   - 'react/012-FiberArchitecture'
   - 'react/014-ServerComponents'
+prerequisites: []
 ---
 
 React 模块横跨函数组件、Hooks 原理、Fiber 并发架构与服务端组件四个层次，文档多达 47 篇。本文继续沿用"虚拟歌手音乐平台"这条主线（P 主发布歌曲、歌姬开演唱会、粉丝团投票应援），把分散的知识点重新串成一棵树，帮助你自查薄弱环节并安排二轮复习。

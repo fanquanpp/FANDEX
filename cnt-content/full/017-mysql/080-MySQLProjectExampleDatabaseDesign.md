@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 综合运用表设计、索引优化与事务的电商数据库项目。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/078-SQLInjectionAttackTypePractice'
   - 'mysql/079-SQLInjectionDefenseStrategy'

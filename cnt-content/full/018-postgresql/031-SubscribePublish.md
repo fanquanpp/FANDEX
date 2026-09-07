@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL逻辑复制：发布与订阅、选择性复制、冲突处理与监控
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/029-LogicalDecodingOutputPlugin'
   - 'postgresql/030-IncrementalBackup'

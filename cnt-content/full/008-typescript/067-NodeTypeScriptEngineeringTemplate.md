@@ -6,13 +6,14 @@ category: 前端技术
 difficulty: intermediate
 description: 一份开箱即用的 Node.js + TypeScript 工程骨架：目录结构、tsconfig 双配置、开发与构建脚本、常见坑位。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'typescript/051-TypeScriptEngineeringConfig'
   - 'typescript/060-TsconfigStrictMode'
 prerequisites:
   - 'typescript/003-TypeScriptOverviewEnvSetup'
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

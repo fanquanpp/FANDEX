@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 接口定义、隐式实现、空接口、类型断言、类型开关、接口组合、io.Reader/Writer、sort.Interface 与常见接口模式。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'go/004-GoFunctionMethod'
   - 'go/005-GoDataStructure'

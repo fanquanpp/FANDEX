@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 操作系统核心原理：进程管理、内存管理、文件系统、I/O系统、并发与同步。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-03'
 related:
   - 'cs-fundamentals/001-ComputerOverview'
   - 'cs-fundamentals/003-ComputerArchitecture'

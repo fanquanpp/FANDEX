@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: POSIX 文件系统 API、目录遍历、文件属性、权限管理、inotify 监控与跨平台文件操作，对标 MIT/Stanford/CMU 系统编程教学水准。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'c/027-ProcessAndPipe'
   - 'c/028-SharedMemorySemaphore'

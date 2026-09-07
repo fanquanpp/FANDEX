@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: GC算法与垃圾回收器
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/052-JUCConcurrency'
   - 'java/061-JVMClassLoadingMechanism'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: margin-inline、margin-block
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/041-FeatureQuery'
   - 'css/040-CascadeLayer'

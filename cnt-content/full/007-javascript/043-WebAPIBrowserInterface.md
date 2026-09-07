@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浏览器 Web API 详解：Fetch、Storage、IntersectionObserver、Web Workers、Geolocation、Broadcast Channel、ResizeObserver 等常用接口的形式化定义、工程实践与性能优化。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'javascript/048-ErrorBoundaryGlobalErrorCatch'
   - 'javascript/036-MemoryLeakTroubleshoot'

@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: 自然语言处理核心理论、spaCy/Transformers/NLTK 工程实践与 Transformer 注意力机制形式化推导
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-08'
 related:
   - 'python/022-PythonMachineLearning'
   - 'python/023-PythonDeepLearning'
   - 'python/025-PythonComputerVision'
   - 'python/026-WebScrapingWithPython'
+prerequisites: []
 ---
 
 ## 前置知识

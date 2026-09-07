@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 面向零基础读者介绍 Go 的定位、并发优势与工程哲学，完成第一个程序的运行。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'go/002-GoOverviewEnvSetup'
   - 'cs-fundamentals/011-ProgrammingBasics'

@@ -6,12 +6,13 @@ category: 工具链
 difficulty: intermediate
 description: 远程仓库关联、推送拉取与协作工作流。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/004-GitBasicOperation'
   - 'git/005-GitBranchManagement'
   - 'git/007-DistributedVCSPrinciple'
   - 'git/008-ObjectModel'
+prerequisites: []
 ---
 
 ## 2. 远程仓库概述

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 免密登录、scp/rsync 与端口转发：远程运维的基本功。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/026-CronScheduling'
 prerequisites:

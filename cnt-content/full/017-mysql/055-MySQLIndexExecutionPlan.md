@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: B+Tree 索引、EXPLAIN 分析与索引优化策略。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'mysql/053-InnoDBSystemArchitecture'
   - 'mysql/054-DataEncryption'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'mysql/089-View'
 ---
+
 
 ## 1. 索引是什么 (What is an Index)
 

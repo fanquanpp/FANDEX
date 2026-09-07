@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: WebRTC（getUserMedia）
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/033-MicrodataJSONLD'
   - 'html5/034-CustomDataAttribute'

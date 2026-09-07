@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Terraform 基础设施即代码：Provider、Resource、State、Module 与工作流。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/030-KubernetesCoreDetailed'
   - 'devops/031-HelmChartApplicationPackage'

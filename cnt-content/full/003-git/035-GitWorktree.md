@@ -6,9 +6,10 @@ category: 工具链
 difficulty: intermediate
 description: git worktree详解：多工作树并行开发，无需频繁切换分支。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/037-GitFlowGitHubFlowComparison'
+prerequisites: []
 ---
 
 ## 1. worktree 概述

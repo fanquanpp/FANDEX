@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 窗口函数、CTE与递归CTE、横向连接、分组集、MERGE语句、JSON_TABLE、全文检索、PostGIS、PL/pgSQL、触发器、FDW。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/002-TransactionConcurrencyControl'
   - 'postgresql/003-IndexQueryOptimization'

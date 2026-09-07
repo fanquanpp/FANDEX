@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++完美转发与引用折叠详解：std::forward、转发引用、参数包展开与元编程应用。
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-02'
 related:
   - 'cpp/052-CppSTLAlgorithmAndFunctionObject'
   - 'cpp/053-MoveSemanticsDetailed'

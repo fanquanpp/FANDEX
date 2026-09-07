@@ -6,13 +6,14 @@ category: 前端技术
 difficulty: intermediate
 description: JavaScript 自定义错误类型体系——Error 子类化、Error Cause、AggregateError、堆栈追踪与生产级错误监控
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-08'
 related:
   - 'javascript/021-ObjectStaticMethods'
   - 'javascript/029-EventLoop'
   - 'javascript/026-PromiseConstructorDeepDive'
   - 'javascript/033-ExploringES6ProxiesAndReflect'
   - 'javascript/045-FetchApiWebStreams'
+prerequisites: []
 ---
 
 ## 前置知识

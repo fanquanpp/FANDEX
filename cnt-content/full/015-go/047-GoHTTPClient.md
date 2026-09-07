@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: net/http与HTTP请求
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'go/043-GoTime'
   - 'go/032-GoJSON'

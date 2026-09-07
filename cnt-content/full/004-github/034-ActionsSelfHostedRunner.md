@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: GitHub Actions自托管运行器对比驱动详解：GitHub托管运行器 vs 自托管运行器全程对比，覆盖注册安装、标签路由、安全加固与运维管理。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-29'
 related:
   - 'github/032-ActionsMatrixBuild'
   - 'github/033-ActionsCacheDependency'

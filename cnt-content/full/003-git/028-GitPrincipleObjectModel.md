@@ -6,9 +6,10 @@ category: 工具链
 difficulty: advanced
 description: Git 底层对象模型、引用机制与存储原理。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/029-TagManagement'
+prerequisites: []
 ---
 
 

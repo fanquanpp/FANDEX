@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 零信任架构：Never trust, always verify 原则、实现框架与落地实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/029-XXEAttack'
   - 'cybersecurity/030-DeserializationVulnerability'

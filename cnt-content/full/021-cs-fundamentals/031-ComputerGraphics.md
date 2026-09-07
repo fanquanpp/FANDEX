@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 计算机图形学：图形变换、光栅化、光照模型、着色与渲染管线
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/029-MultimediaTechnology'
   - 'cs-fundamentals/030-AIFundamentals'

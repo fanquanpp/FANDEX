@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Turborepo 任务编排：turbo.json、tasks 配置、dependsOn 依赖与缓存机制
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'vite/017-WorkspaceSetup'
   - 'vite/022-MonorepoPractice'

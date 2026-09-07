@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: beginner
 description: 命令行工具开发
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/030-PythonLog'
   - 'python/032-PythonTest'
   - 'python/031-PythonAndCryptography'
   - 'python/028-FunctionDetailed'
+prerequisites: []
 ---
 
 

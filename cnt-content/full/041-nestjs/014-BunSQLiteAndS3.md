@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 深入 Bun.file 流式读写、bun:sqlite 预编译语句与事务实战，以及内置 S3 客户端管理演唱会素材。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'nestjs/009-BunQuickStart'
   - 'nestjs/010-BunBuiltinServerSQL'

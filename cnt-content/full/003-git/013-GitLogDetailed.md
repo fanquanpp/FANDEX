@@ -6,10 +6,11 @@ category: 工具链
 difficulty: intermediate
 description: git log多种格式与过滤选项：自定义输出、搜索过滤与可视化。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/011-GitDiffStagingOperation'
   - 'git/012-GitRestoreFileOperation'
+prerequisites: []
 ---
 
 ## 1. git log 基础

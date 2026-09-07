@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从"块级/行内"升级到正式分类：元数据、流、章节、标题、措辞、嵌入、交互七类内容，附"谁是谁的父级"速查矩阵。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/004-HTML5BlockVsInline'
   - 'html5/005-HTML5DivSpanContainers'

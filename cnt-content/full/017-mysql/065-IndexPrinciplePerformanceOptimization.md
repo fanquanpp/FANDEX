@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 索引结构、覆盖索引、最左前缀与查询调优。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'mysql/063-StoredProcedureAndFunction'
   - 'mysql/064-MVCCSnapshotCurrentRead'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'mysql/089-View'
 ---
+
 
 
 ## 1. 索引原理 (Index Mechanism)

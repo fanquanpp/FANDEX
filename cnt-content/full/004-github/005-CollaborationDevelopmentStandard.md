@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 协作开发规范：Commit Message 约定、分支命名、PR 模板、代码审查清单与 CLA/DCO 合规。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-02'
 related:
   - 'github/003-RepositoryCreateCloneArchiveDelete'
   - 'github/004-SSHHTTPS'

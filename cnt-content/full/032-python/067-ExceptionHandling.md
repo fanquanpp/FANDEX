@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: 异常体系、try-except、自定义异常与上下文管理器。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/060-PackagePublish'
   - 'python/065-OOP'
   - 'python/068-FileIOContextManager'
   - 'python/069-PythonProjectExampleWebCrawlerDataAnalysis'
+prerequisites: []
 ---
 
 ## 前置知识

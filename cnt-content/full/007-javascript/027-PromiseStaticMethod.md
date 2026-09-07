@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Promise静态方法详解：allSettled、any、withResolvers及传统方法对比。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'javascript/019-PrototypeChainClassEssence'
   - 'javascript/030-EventLoopDetailed'
   - 'javascript/028-AsyncConcurrencyControl'
   - 'javascript/022-ES6NewFeatures'
+prerequisites: []
 ---
 
 > 前置：先读 030 异步编程，掌握 Promise 基本用法。

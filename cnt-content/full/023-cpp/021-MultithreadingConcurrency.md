@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: std::thread与同步原语
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'cpp/019-FileIOFileSystem'
   - 'cpp/020-ExceptionSecurity'

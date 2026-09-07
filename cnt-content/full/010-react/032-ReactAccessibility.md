@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React应用可访问性
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'react/030-ReactGraphQL'
   - 'react/031-ReactMicroFrontend'

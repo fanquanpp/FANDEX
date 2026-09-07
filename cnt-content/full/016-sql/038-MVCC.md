@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL多版本并发控制MVCC：版本链、快照读、Read View、可见性判断与垃圾回收机制
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related:
   - 'sql/036-DirtyReadNonRepeatablePhantom'
   - 'sql/037-LockMechanism'

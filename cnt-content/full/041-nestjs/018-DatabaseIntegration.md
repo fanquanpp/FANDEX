@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: ConfigModule 管理环境变量，Prisma 定义模型并完成建表、CRUD 与模块注入。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nestjs/017-ValidationPipes'
   - 'postgresql/001-OverviewInstallConfig'

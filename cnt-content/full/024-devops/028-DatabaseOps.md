@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 数据库运维：备份恢复、主从复制、读写分离、分库分表与数据迁移
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/026-MonitorAndAlert'
   - 'devops/027-NetworkSecurityAdvanced'

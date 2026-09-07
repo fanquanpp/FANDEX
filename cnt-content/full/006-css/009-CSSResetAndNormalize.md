@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浏览器默认样式差异的来源，以及 reset、normalize、现代重置方案的选择与写法。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'css/004-CSS3BoxModelDetailed'
   - 'css/011-CascadeInheritanceBasics'

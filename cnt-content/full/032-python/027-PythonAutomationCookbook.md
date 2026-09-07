@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 文件、任务调度、Web 与 DevOps 自动化的工程实践，覆盖 pathlib、APScheduler、Celery、Airflow、Playwright、Fabric、subprocess 等核心工具链。
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-08'
 related:
   - 'python/025-PythonComputerVision'
   - 'python/026-WebScrapingWithPython'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 面向零基础读者建立数据库、表、SQL 的心智模型，并写出第一条查询语句。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/002-OverviewStandard'
   - 'sql/003-SQLFirstSteps'

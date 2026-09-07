@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis Cluster 哈希槽机制详解：CRC16 校验、16384 槽位分配、槽迁移、重定向与集群伸缩。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'redis/017-ReplicationBuffer'
   - 'redis/018-SentinelElection'

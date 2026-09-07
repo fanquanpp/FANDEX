@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 用 Hono 构建 REST API，接入 Deno KV 存储，并部署到 Deno Deploy 边缘网络。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nestjs/003-DenoPermissionsSecurity'
   - 'nestjs/016-ModuleControllerService'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: UML类图、时序图、活动图、状态图等核心图类型详解。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'software-testing/032-AgileDevelopment'
   - 'software-testing/033-RequirementAnalysisMethod'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 模板字面量类型（Template Literal Types）的形式化定义、字符串模式匹配规则、内置字符串操作类型、CSS 属性类型、路由参数类型推导、SQL 类型安全与运行时模板字符串的对比
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/055-TypeScriptCompilePerformanceOptimization'
   - 'typescript/056-MappedTypeKeyRemap'

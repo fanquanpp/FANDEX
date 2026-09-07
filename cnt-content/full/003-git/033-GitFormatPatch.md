@@ -6,7 +6,9 @@ category: 工具链
 difficulty: intermediate
 description: git format-patch详解：生成补丁文件、邮件工作流与离线协作。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
+related: []
+prerequisites: []
 ---
 
 ## 1. format-patch 概述

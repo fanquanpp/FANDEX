@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: HTML语义化标签与SEO优化详解：结构化标记、Schema.org、无障碍与搜索引擎友好实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'css/065-CSSNewFeatures'
   - 'css/043-CSSPerformanceOptimizationDetailed'

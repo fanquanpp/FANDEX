@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go 与文件监控：fsnotify、inotify/kqueue/ReadDirectoryChangesW 跨平台机制、事件去重、递归监听、热重载与生产级最佳实践
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'go/045-GoSignalHandling'
   - 'go/038-GoConfigManagement'

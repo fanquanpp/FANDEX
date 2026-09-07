@@ -6,10 +6,11 @@ category: 前端技术
 difficulty: intermediate
 description: 执行上下文、作用域链、事件循环、原型继承与内存管理的形式语义与工程实践。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'javascript/055-NodeJsPerformanceOptimization'
   - 'javascript/060-JavaScriptProjectExampleTodoApp'
+prerequisites: []
 ---
 
 

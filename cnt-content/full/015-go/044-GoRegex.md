@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go 与正则表达式：regexp 包、RE2 语法、Thompson NFA 构造、Pike VM 算法、线性时间复杂度证明、跨引擎对比、性能优化、Unicode 支持与生产级最佳实践
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'go/045-GoSignalHandling'
   - 'go/042-GoFileMonitor'

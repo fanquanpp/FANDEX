@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: BGP 边界网关协议：AS 路径、选路策略、路由聚合与 Anycast。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/054-QUIC'
   - 'cs-fundamentals/055-ARPProtocolSpoofing'

@@ -6,11 +6,12 @@ category: 后端技术
 difficulty: intermediate
 description: 综合运用 requests、BeautifulSoup 与 pandas 的爬虫项目。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/067-ExceptionHandling'
   - 'python/068-FileIOContextManager'
   - 'python/070-PythonTheoryKnowledge'
+prerequisites: []
 ---
 
 ## 前置知识

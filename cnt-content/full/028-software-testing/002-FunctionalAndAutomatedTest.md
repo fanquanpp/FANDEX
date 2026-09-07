@@ -6,11 +6,12 @@ category: 云与基础设施
 difficulty: intermediate
 description: 功能测试执行、自动化测试脚本编写、Selenium 框架、Unittest/pytest 框架、测试数据管理与页面对象模式。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'software-testing/001-TestBasicsMethod'
   - 'software-testing/003-PerformanceInterfaceTest'
   - 'software-testing/004-SecurityAndMobileTest'
+prerequisites: []
 ---
 
 

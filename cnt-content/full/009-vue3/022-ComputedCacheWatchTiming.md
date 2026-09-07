@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: Vue 3 computed缓存机制与watch执行时机详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/020-PiniaStateManagementDetailed'
   - 'vue3/021-PluginDevelopment'
   - 'vue3/023-VueRouterDetailed'
   - 'vue3/024-CompositionAPIAdvantageScene'
+prerequisites: []
 ---
 
 ## 1. computed 缓存机制

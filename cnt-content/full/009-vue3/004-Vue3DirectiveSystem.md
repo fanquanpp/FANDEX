@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 内置指令、自定义指令与指令钩子函数。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/002-Vue3QuickStartGuide'
   - 'vue3/003-Vue3TemplateSyntax'
   - 'vue3/005-TeleportSuspense'
   - 'vue3/006-API'
+prerequisites: []
 ---
 
 ## 前置知识

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: io/os/net/http/filepath/encoding/json/time 等核心包、go test/bench/vet/fmt/doc、构建标签、cgo 与 Go 工具链详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'go/008-GoErrorHandling'
   - 'go/010-GoGeneric'

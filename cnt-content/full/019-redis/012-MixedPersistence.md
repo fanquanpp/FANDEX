@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis混合持久化：RDB+AOF组合方案、加载流程、配置与性能权衡
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'redis/010-RDBSnapshotPersistence'
   - 'redis/011-AOFLogPersistence'

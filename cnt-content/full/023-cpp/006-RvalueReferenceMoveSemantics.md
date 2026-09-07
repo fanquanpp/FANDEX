@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 深入解析 C++11 右值引用与移动语义：值类别完整分类（lvalue/prvalue/xvalue/rvalue/glvalue）、移动构造与移动赋值的形式化语义、std::move/std::forward 的状态机模型、引用折叠规则、完美转发的形式化推导、T&& 模板推导规则、对比分析、工程实践、案例研究与习题，覆盖 C++11/14/17/20/23 的演进与生产级最佳实践。
 author: fanquanpp
-updated: '2026-07-18'
+updated: '2026-09-02'
 related:
   - 'cpp/008-SmartPointerDeepDive'
   - 'cpp/007-CppPointers'

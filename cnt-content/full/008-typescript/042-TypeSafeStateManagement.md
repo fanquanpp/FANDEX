@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 构建类型安全的状态管理系统，涵盖 Store 模式、Reducer/Action、选择器、中间件、异步流、不可变更新、有限状态机、原子状态与 Signal 响应式，并提供生产级最佳实践与案例研究。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/040-TypeSafeEventSystem'
   - 'typescript/041-TypeSafeAPIClient'
@@ -19,6 +19,7 @@ prerequisites:
   - 'typescript/022-GenericConstraintDefault'
   - 'typescript/013-LiteralUnionTypes'
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 脚本调试与严格模式：set -euo pipefail、trap 清理、bash -x、shellcheck 与 shfmt
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'shell/020-FunctionsArguments'
   - 'shell/021-PracticalScripts'

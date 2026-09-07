@@ -1,0 +1,27 @@
+{
+  "title": "Redis 与 MongoDB",
+  "icon": "Rd",
+  "description": "内存键值数据库与 MongoDB 文档数据库",
+  "categories": [
+    "database",
+    "cloud"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://redis.io/docs/",
+      "type": "docs"
+    },
+    {
+      "label": "命令参考",
+      "url": "https://redis.io/commands/",
+      "type": "api"
+    },
+    {
+      "label": "Redis 源码",
+      "url": "https://github.com/redis/redis",
+      "type": "spec"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go反射实现通用函数详解：reflect包。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'go/054-GMPModel'
   - 'go/055-ConcurrencyPattern'

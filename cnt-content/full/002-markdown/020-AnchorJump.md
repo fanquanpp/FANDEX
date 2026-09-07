@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown锚点跳转机制：标题锚点、自定义锚点与跨文档链接。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-02'
 related:
   - 'markdown/018-ConversionTool'
   - 'markdown/019-AutoTOC'

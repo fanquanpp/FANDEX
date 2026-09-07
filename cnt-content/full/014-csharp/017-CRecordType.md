@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: record 与 record struct、位置参数、with 表达式、值相等性、init 访问器、不可变性、Equals/GetHashCode 合约、拷贝语义、序列化、DDD 领域建模、函数式数据流、性能基准
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'csharp/002-CSharpOverviewEnvSetup'
   - 'csharp/003-CSharpBasicSyntax'

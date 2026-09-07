@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 非对称加密原理：RSA、ECC、Diffie-Hellman 等算法详解与应用。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/014-SymmetricEncryption'
   - 'cybersecurity/015-IncidentResponse'

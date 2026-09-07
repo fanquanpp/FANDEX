@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 第一个 Java 程序、编译运行与基本概念。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/002-JavaOverviewDevEnv'
   - 'java/004-ProgramStructureBasicSyntax'

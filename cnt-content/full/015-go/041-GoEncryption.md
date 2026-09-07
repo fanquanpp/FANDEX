@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: crypto包与安全编程
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'go/039-GoLog'
   - 'go/040-GoTemplate'

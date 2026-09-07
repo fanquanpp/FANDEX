@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL分库分表中间件：ShardingSphere、Vitess、MyCat的架构、分片策略与适用场景
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/048-PartitionedTable'
   - 'mysql/050-AccountPermissionManagement'

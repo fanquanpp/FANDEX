@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: GoF设计模式Java实现
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/082-SpringBootSecurity'
   - 'java/083-SpringBootDataAccess'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: inline函数与预处理器宏
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'c/020-AttributeCompilerExtension'
   - 'c/021-SafeFunctionBoundsCheck'

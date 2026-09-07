@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Python描述符协议详解：__get__、__set__、__delete__、数据描述符与非数据描述符、协议底层机制与生产级工程实践。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'python/057-MetaclassSingleton'
   - 'python/066-DecoratorAdvanced'

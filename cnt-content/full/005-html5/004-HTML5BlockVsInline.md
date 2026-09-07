@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 为什么 h1 独占一行而 span 不换行：块级、行内、空元素三组概念，含 F12 验证方法与嵌套铁律。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/003-HTML5CommentsAndEntities'
   - 'html5/005-HTML5DivSpanContainers'

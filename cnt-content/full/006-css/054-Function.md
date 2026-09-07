@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS 数值函数完整原理：calc/min/max/clamp 的语法、单位混合规则、嵌套与响应式应用。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'css/033-ContainerQuery'
   - 'css/053-MobileAdaptation'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Markdown中Emoji的使用方式：短代码语法、Unicode字符与平台兼容性。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-29'
 related:
   - 'markdown/010-Strikethrough'
   - 'markdown/011-AutoLink'

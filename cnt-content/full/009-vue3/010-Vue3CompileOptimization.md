@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: 编译时优化与运行时优化
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/008-CustomDirectiveAdvanced'
   - 'vue3/009-TransitionAnimation'
   - 'vue3/011-Vue3SSR'
   - 'vue3/012-LifecycleHook'
+prerequisites: []
 ---
 
 ## 前置知识

@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript内存泄漏排查详解：Chrome DevTools Memory面板、堆快照、分配时间线。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'javascript/011-Regex'
   - 'javascript/048-ErrorBoundaryGlobalErrorCatch'
   - 'javascript/043-WebAPIBrowserInterface'
   - 'javascript/050-DebugPerformanceOptimization'
+prerequisites: []
 ---
 
 > 前置：先读 031 闭包内存与 057 内存管理；本篇为【进阶专题】。

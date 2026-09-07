@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: beginner
 description: 系统阐述 Python 基础数据类型（int/float/complex/bool/NoneType/str/bytes/Decimal/Fraction）的对象模型、内存布局、不可变性语义、IEEE 754 浮点精度、整数缓存机制、字符串驻留、类型转换规则、可变性与不可变性、引用语义与值语义，以及生产环境下的精度陷阱、性能优化与最佳实践。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'python/003-ProgramStructureBasicSyntax'
   - 'python/004-VariableConstant'
   - 'python/008-ListComprehensionAdvanced'
   - 'python/009-OperatorExpression'
+prerequisites: []
 ---
 
 

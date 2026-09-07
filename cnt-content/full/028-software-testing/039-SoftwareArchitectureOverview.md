@@ -6,9 +6,10 @@ category: 云与基础设施
 difficulty: beginner
 description: 软件架构定义、架构师角色、架构决策与架构文档。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'software-testing/040-LayeredArchitecture'
+prerequisites: []
 ---
 
 

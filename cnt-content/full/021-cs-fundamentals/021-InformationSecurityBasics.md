@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 信息安全基础：密码学原理、对称加密、非对称加密、哈希函数与数字签名
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/019-AlgorithmDesignAnalysis'
   - 'cs-fundamentals/020-FormalLanguageAndAutomata'

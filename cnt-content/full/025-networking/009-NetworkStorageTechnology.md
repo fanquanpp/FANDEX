@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络存储技术：SAN、NAS、iSCSI、FC、分布式存储与数据保护
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'networking/007-WirelessNetwork'
   - 'networking/008-SDNNetworkAutomation'

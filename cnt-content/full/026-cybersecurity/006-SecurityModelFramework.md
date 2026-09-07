@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 安全模型与框架：CIA三元组、零信任、NIST、ISO27001、等保2.0
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/004-SecurityToolsPractice'
   - 'cybersecurity/005-XSSAttack'

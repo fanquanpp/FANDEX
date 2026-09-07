@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: GitHub CLI PR 管理 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-02'
 related: []
 prerequisites: []
 ---

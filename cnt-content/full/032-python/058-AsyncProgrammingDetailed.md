@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: advanced
 description: Python异步编程详解：asyncio事件循环、Task、Future。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'python/056-ContextManager'
   - 'python/057-MetaclassSingleton'
   - 'python/064-TypeAnnotationMypy'
   - 'python/062-DataClassFieldDefault'
+prerequisites: []
 ---
 
 ## 前置知识

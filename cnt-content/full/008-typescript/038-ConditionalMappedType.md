@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript条件类型、infer关键字、映射类型、模板字面量类型与类型体操实战，含形式化定义、推导与工程实践。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/036-InferTypeDeepDive'
   - 'typescript/037-RecursiveTypeDeepOperation'
@@ -16,6 +16,7 @@ related:
 prerequisites:
   - 'typescript/009-InterfaceTypeAlias'
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

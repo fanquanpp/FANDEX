@@ -1,0 +1,9 @@
+{
+  "title": "计算机基础",
+  "icon": "计概",
+  "description": "体系结构·操作系统·网络·编译",
+  "categories": [
+    "cs"
+  ],
+  "prerequisites": []
+}

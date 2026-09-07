@@ -6,9 +6,10 @@ category: 工具链
 difficulty: intermediate
 description: git submodule详解：子模块的添加、更新、管理与常见问题。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/029-TagManagement'
+prerequisites: []
 ---
 
 ## 1. submodule 概述

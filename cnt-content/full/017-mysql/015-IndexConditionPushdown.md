@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL索引条件下推ICP：原理、执行流程、适用条件与性能优化
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/013-ClusteredIndexSecondaryIndex'
   - 'mysql/014-CompositeIndexLeftmostPrefixPrinciple'

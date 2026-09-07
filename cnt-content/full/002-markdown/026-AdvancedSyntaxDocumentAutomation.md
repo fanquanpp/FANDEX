@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: 扩展语法、数学公式、流程图、自动化文档工作流。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-02'
 related:
   - 'markdown/031-BlockquoteNestedList'
   - 'markdown/025-SpecDocumentWriting'

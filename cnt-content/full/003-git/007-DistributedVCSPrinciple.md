@@ -6,12 +6,13 @@ category: 工具链
 difficulty: intermediate
 description: 分布式版本控制的核心原理：去中心化架构、数据完整性保证与协作模型。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/005-GitBranchManagement'
   - 'git/006-GitRemoteRepoOperation'
   - 'git/008-ObjectModel'
   - 'git/009-SHA1IntegrityCheck'
+prerequisites: []
 ---
 
 

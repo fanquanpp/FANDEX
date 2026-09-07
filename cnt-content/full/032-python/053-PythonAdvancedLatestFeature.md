@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: advanced
 description: Python 3.12-3.14 新特性、dataclass/attrs、asyncio 进阶、类型系统、Pydantic v2、FastAPI 与现代工具链。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/037-PythonWebSocket'
   - 'python/052-PythonVectorDatabase'
   - 'python/054-ComprehensionGenerator'
   - 'python/055-ModulePackageEngineering'
+prerequisites: []
 ---
 
 ## 前置知识

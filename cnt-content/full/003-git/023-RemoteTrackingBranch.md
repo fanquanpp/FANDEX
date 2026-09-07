@@ -6,9 +6,10 @@ category: 工具链
 difficulty: intermediate
 description: 远程跟踪分支机制：远程引用、上游分支与本地-远程同步模型。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/024-GitFlowGitHubFlow'
+prerequisites: []
 ---
 
 

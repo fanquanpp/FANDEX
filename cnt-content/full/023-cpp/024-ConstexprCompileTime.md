@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: constexpr/consteval/constinit完整原理、编译期求值模型、立即函数、constexpr if、编译期容器、与模板元编程的关系及工业级应用
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'cpp/022-TypeTraitsSFINAE'
   - 'cpp/023-VariadicTemplate'

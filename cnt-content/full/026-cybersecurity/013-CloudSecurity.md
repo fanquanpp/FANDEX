@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 云安全：共享责任模型、CSPM、CWPP、云原生安全与合规
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/011-SSRFAttack'
   - 'cybersecurity/012-MalwareAnalysis'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 面向零基础读者介绍 Rust 的定位、所有权思想与适用场景，完成第一次编译运行。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'rust/002-RustOverview'
   - 'rust/003-RustEnvSetup'

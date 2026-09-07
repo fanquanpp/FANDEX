@@ -6,11 +6,12 @@ category: 前端技术
 difficulty: beginner
 description: JavaScript 语法基础、语句与表达式。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'javascript/002-JavaScriptOverviewRuntimeEnv'
   - 'javascript/004-VariableDataType'
   - 'javascript/005-DataTypeOperator'
+prerequisites: []
 ---
 
 ## 前置知识

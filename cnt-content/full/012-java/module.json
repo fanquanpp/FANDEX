@@ -1,0 +1,33 @@
+{
+  "title": "Java",
+  "icon": "Ja",
+  "description": "企业级应用开发",
+  "categories": [
+    "backend"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://docs.oracle.com/en/java/javase/26/docs/api/",
+      "type": "docs"
+    },
+    {
+      "label": "JLS 语言规范",
+      "url": "https://docs.oracle.com/javase/specs/jls/se26/html/index.html",
+      "type": "spec"
+    },
+    {
+      "label": "JVMS 虚拟机规范",
+      "url": "https://docs.oracle.com/javase/specs/jvms/se26/html/index.html",
+      "type": "spec"
+    },
+    {
+      "label": "Oracle 教程",
+      "url": "https://docs.oracle.com/javase/tutorial/",
+      "type": "docs"
+    }
+  ],
+  "updatePriority": true,
+  "updateNote": "重点更新模块"
+}

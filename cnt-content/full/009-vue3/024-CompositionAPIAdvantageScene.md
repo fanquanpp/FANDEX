@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: Vue 3组合式API vs 选项式API对比与优势场景分析。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/022-ComputedCacheWatchTiming'
   - 'vue3/023-VueRouterDetailed'
   - 'vue3/025-CustomComposableWrapper'
   - 'vue3/026-TeleportPortalApp'
+prerequisites: []
 ---
 
 ## 1. 两种 API 对比

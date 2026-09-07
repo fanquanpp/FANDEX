@@ -38,13 +38,15 @@ const docs = defineCollection({
   }),
   schema: z.object({
     // === 统一后的 10 个标准字段 ===
-    // 文档 frontmatter 仅允许以下字段（见根目录 AGENTS.md 文档规范）：
-    // order / title / module / category / difficulty / description /
-    // author / updated / related / prerequisites
-    // 其中 title / module / category / difficulty / author / updated 为必填。
-    // 与 content-audit 的字段白名单严格一致：
-    // tags / created / readingTime / references / etymology 等历史宽容字段
-    // 已随存量清零移除，任何新增字段必须先过 AGENTS.md 规范评审。
+    // 字段来源分两类（详见 AGENTS.md 与 app-web/scripts/content-sync.mjs）：
+    // - 托管字段（sync 自动生成，手写会被校正）：order / module / category /
+    //   author / updated —— 构建链与 CI 在 schema 校验前先跑 content-sync，
+    //   因此这里保持必填严格校验作为兜底防线；
+    // - 手写字段（推荐但均可省略，sync 会补全）：title（缺省取 H1/文件名）、
+    //   description、difficulty（缺省 beginner）、related、prerequisites
+    //   （死链由 sync 自动清理）。
+    // tags / created / readingTime / references / etymology 等历史禁用字段
+    // 由 sync 自动删除，任何新增字段必须先过 AGENTS.md 规范评审。
     title: z.string(),
     module: z.string(),
     category: z.string(),
@@ -55,9 +57,6 @@ const docs = defineCollection({
     description: z.string().optional(),
     related: z.array(z.string()).default([]),
     prerequisites: z.array(z.string()).default([]),
-    // quiz 字段已随 QuizBlock 组件下线移除（存量 0 使用，且为 AGENTS.md 禁止字段）
-    // references / etymology / estimatedReadingTime / lastReviewed / reviewer
-    // 等 Phase 2.0 结构化字段已完成存量归一化清零（2026-09），一并移除。
   }),
 });
 

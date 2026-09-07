@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 发布订阅模式的形式语义、TypeScript 类型级实现、与主流事件库对比及生产级工程实践
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'typescript/047-TypeSafeConfigSystem'
   - 'typescript/048-TypeSafeDatabaseQuery'

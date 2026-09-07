@@ -6,12 +6,13 @@ category: 云与基础设施
 difficulty: intermediate
 description: LoadRunner 与 JMeter 性能测试、API 接口测试、Postman 工具使用、REST Assured 与接口 Mock。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'software-testing/001-TestBasicsMethod'
   - 'software-testing/002-FunctionalAndAutomatedTest'
   - 'software-testing/004-SecurityAndMobileTest'
   - 'software-testing/005-TestConceptPrinciple'
+prerequisites: []
 ---
 
 

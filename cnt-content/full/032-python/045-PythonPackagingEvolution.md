@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: Python 打包演进史、PEP 517/518/621 标准化、pyproject.toml 配置、wheel 与 sdist 构建、PyPI 发布流水线
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-08'
 related:
   - 'python/042-Regex'
   - 'python/044-PythonDesignPattern'
   - 'python/046-PythonJupyter'
   - 'python/010-PythonVirtualEnv'
+prerequisites: []
 ---
 
 ## 前置知识

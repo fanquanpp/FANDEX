@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 计算机体系结构核心原理：冯诺依曼模型、指令集设计、流水线、存储层次、并行体系。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-03'
 related:
   - 'cs-fundamentals/001-ComputerOverview'
   - 'cs-fundamentals/004-OperatingSystem'

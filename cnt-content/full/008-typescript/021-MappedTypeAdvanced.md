@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 键重映射、模板映射与递归映射类型
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/019-TypeGuardCustomGuard'
   - 'typescript/020-IndexSignatureDynamicProperty'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL数据加密：透明数据加密TDE、密钥管理、加密表空间与静态数据保护
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/052-FirewallPlugin'
   - 'mysql/053-InnoDBSystemArchitecture'

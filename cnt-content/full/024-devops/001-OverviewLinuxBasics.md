@@ -6,10 +6,11 @@ category: 云与基础设施
 difficulty: beginner
 description: DevOps/SRE 理念、Linux 系统管理、文件系统、用户权限、Shell 脚本与日志管理。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/002-NetworkSecurity'
   - 'devops/003-ContainerDocker'
+prerequisites: []
 ---
 
 ## 1. DevOps 与 SRE 理念

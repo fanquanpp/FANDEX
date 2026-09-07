@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 分布式系统：CAP定理、一致性模型、共识算法、分布式事务与容错机制
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/016-BusAndInterface'
   - 'cs-fundamentals/017-ParallelCalculate'

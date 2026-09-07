@@ -6,13 +6,14 @@ category: 前端技术
 difficulty: intermediate
 description: ES6 至 ES2024 重要新特性的形式化定义、工程实践与生产案例：解构赋值、展开运算符、Symbol、Proxy、可选链、空值合并、Records & Tuples、装饰器、模式匹配的完整剖析。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'javascript/027-PromiseStaticMethod'
   - 'javascript/028-AsyncConcurrencyControl'
   - 'javascript/020-DeepShallowCopy'
   - 'javascript/049-DebounceThrottle'
   - 'javascript/034-ProxyReflectPractice'
+prerequisites: []
 ---
 
 ## 前置知识

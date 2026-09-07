@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 执行计划、索引策略、查询重写、统计信息、参数化查询、分区表与物化视图
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related:
   - 'sql/009-WindowFunction'
   - 'sql/010-AdvancedQuery'

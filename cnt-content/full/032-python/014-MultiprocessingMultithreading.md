@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: threading与multiprocessing
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'python/005-PythonDescriptorProtocol'
   - 'python/007-CoroutineAsyncio'
   - 'python/017-DataClassPydantic'
   - 'python/015-PythonFastAPI'
+prerequisites: []
 ---
 
 ## 前置知识

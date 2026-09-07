@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 函数指针与回调函数模式
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'c/010-MultiFileCompilation'
   - 'c/011-DynamicMemoryManagement'

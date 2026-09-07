@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB死锁检测与处理：死锁检测算法、死锁日志分析、预防策略与自动恢复
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/031-MultiTableJoinDetailed'
   - 'mysql/032-LockClassification'

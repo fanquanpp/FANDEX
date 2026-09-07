@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: regex库与模式匹配
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'cpp/037-CppSerialization'
   - 'cpp/026-CppNetworkProgramming'

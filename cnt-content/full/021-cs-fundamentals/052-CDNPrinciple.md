@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: CDN 内容分发网络：边缘节点、回源机制、缓存策略与调度算法。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/050-TCP'
   - 'cs-fundamentals/051-DNSFlow'

@@ -6,10 +6,11 @@ category: 工具链
 difficulty: advanced
 description: Git Flow与GitHub Flow两种分支工作流的深度对比分析，适用场景与最佳实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/038-InteractiveRebase'
   - 'git/039-GitRevertResetComparison'
+prerequisites: []
 ---
 
 

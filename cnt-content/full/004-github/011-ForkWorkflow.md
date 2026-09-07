@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 'GitHub Fork工作流深度解析：以"菜谱复刻"类比，按 fork→clone→修改→PR→合回 的完整流程讲解开源协作、同步策略与冲突解决。'
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-29'
 related:
   - 'github/009-OpenSourceLicense'
   - 'github/010-DependencySecurityOptions'

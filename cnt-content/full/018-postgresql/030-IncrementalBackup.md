@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL增量备份：pg_basebackup、pg_receivewal、归档WAL与PITR
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/028-PhysicalReplicationSlot'
   - 'postgresql/029-LogicalDecodingOutputPlugin'

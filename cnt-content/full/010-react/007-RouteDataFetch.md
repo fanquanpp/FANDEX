@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: React Router v7、嵌套路由、布局路由、数据加载、Next.js App Router、Server Actions、SWR/React Query。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'react/005-ContextGlobalState'
   - 'react/006-React19NewFeatures'
   - 'react/008-PerformanceOptimization'
   - 'react/009-TestEngineering'
+prerequisites: []
 ---
 
 ## 前置知识

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 单链表、双链表与环形链表的原理、操作复杂度分析与多语言实现，涵盖常见面试题型。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-03'
 related:
   - 'algorithm/002-SortAlgorithm'
   - 'algorithm/004-SearchAlgorithm'

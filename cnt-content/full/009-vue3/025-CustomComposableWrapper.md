@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: Vue 3自定义组合函数（Composables）封装模式与最佳实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/023-VueRouterDetailed'
   - 'vue3/024-CompositionAPIAdvantageScene'
   - 'vue3/026-TeleportPortalApp'
   - 'vue3/027-KeepAliveCacheLifecycle'
+prerequisites: []
 ---
 
 ## 前置知识

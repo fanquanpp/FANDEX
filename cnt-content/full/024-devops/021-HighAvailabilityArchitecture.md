@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 高可用架构：冗余设计、故障转移、负载均衡、灾备与混沌工程
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/019-ConfigManagement'
   - 'devops/020-PerformanceTuning'

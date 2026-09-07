@@ -6,9 +6,10 @@ category: 工具链
 difficulty: intermediate
 description: git cherry-pick详解：选择性移植提交、跨分支应用与冲突处理。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/023-RemoteTrackingBranch'
+prerequisites: []
 ---
 
 ## 1. cherry-pick 概述

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 图标系统设计、aria 属性、屏幕阅读器支持与无障碍最佳实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'svg/012-SVGSymbolReuse'
   - 'svg/014-SVGCSSStyling'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Kotlin Android开发
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'kotlin/029-KotlinCompose'
   - 'kotlin/037-KotlinGradle'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Markdown自动目录生成：[TOC]语法、平台实现与自定义目录方案。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-29'
 related:
   - 'markdown/017-LinkImage'
   - 'markdown/018-ConversionTool'

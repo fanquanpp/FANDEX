@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 磁盘调度算法：FCFS、SSTF、SCAN、C-SCAN、LOOK、C-LOOK 的原理与对比。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/042-PageReplacementAlgorithm'
   - 'cs-fundamentals/043-FileSystemInode'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Kotlin 基础语法完整讲解：变量声明、基本类型、字符串模板、包与导入、控制流与区间。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'kotlin/002-KotlinOverviewEnvSetup'
   - 'kotlin/004-KotlinFunctionAndLambda'

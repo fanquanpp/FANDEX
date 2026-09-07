@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 内存分段与分页机制：段选择子、页表结构、TLB 加速、缺页中断处理。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/039-InterruptAndSystemCall'
   - 'cs-fundamentals/040-UserModeKernelModeSwitch'

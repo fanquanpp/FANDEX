@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Web无障碍访问（A11y）核心概念、ARIA属性、键盘导航、屏幕阅读器适配与WCAG标准。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'html5/008-HTML5BasicContentTags'
   - 'html5/010-SemanticTag'

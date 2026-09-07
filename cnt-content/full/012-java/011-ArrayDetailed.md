@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 一维与多维数组、数组操作与 Arrays 工具类。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/074-JavaDatabaseConnection'
   - 'java/049-JavaNewFeaturesEcosystem'

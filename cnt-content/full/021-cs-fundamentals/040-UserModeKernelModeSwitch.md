@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用户态与内核态的切换机制、切换开销分析、Ring 权限模型。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/038-PCBThreadTCB'
   - 'cs-fundamentals/039-InterruptAndSystemCall'

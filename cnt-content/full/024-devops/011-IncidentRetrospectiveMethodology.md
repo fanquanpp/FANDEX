@@ -6,11 +6,12 @@ category: 云与基础设施
 difficulty: intermediate
 description: Blameless Postmortem、5-Whys根因分析与复盘报告。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'devops/010-OnCallPractice'
   - 'software-testing/047-TechnicalReview'
   - 'software-testing/048-KnowledgeManagement'
+prerequisites: []
 ---
 
 

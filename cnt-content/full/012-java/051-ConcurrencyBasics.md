@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 线程、锁与并发工具
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/037-JavaAnnotationsTutorial'
   - 'java/041-JavaGenericsTutorial'

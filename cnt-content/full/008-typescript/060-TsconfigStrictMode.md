@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript tsconfig严格模式详解：strict、noImplicitAny、strictNullChecks等选项。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-03'
 related:
   - 'typescript/058-TypeGymnastics'
   - 'typescript/059-ModuleDeclarationGlobalAugmentation'
@@ -14,6 +14,7 @@ related:
   - 'typescript/062-TypeScriptProjectExampleTypeSafeAPIClient'
 prerequisites: []
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 免 JavaScript 弹窗双雄：dialog 的 showModal/close/returnValue 与 ::backdrop、popover 的触发机制，含使用时机对比与可访问性要点。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/009-HTML5TableAndStructuredContent'
   - 'html5/012-HTML5FormValidation'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Linux 开发环境完整配置指南，涵盖 apt/yum/pacman 包管理器、Git、Node.js（nvm）、Python（pyenv）、Java JDK、Docker、VS Code 安装与配置。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/006-WindowsEnvConfigTutorial'
   - 'shell/007-MacOSEnvConfigTutorial'

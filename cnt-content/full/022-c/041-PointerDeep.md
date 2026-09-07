@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 指针概念、指针运算、数组与指针、函数指针及多级指针。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/039-PreprocessorMacro'
   - 'c/040-C23C2y'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 系统化调试方法论：断点调试、日志策略、二分排查与常见调试工具。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/013-BuildTool'
   - 'cs-fundamentals/013-ProgrammingParadigmBasics'

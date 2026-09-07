@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 安全测试：OWASP ZAP、SQLMap、Nmap 的使用与漏洞验证。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'software-testing/017-APIAutomationTestDetailed'
   - 'software-testing/018-StressAndStabilityTest'

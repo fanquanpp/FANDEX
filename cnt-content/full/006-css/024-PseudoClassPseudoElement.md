@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: :nth-child、:not、:is、::before、::after
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/021-TraditionalLayoutTech'
   - 'css/022-CSS3FlexboxFlexLayout'

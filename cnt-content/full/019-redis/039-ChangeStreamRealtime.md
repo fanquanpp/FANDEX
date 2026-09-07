@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 监听数据变化的每一跳：Change Streams、resume token 与实时架构。
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-09-08'
 related:
   - 'redis/032-CRUDOperations'
 prerequisites:

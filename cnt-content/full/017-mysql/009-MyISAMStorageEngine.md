@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL MyISAM存储引擎：非事务表级锁、静态/动态行格式、全文索引、修复与适用场景
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/007-MySQLDataTypeConstraint'
   - 'mysql/008-SQLDataDefinitionAdvanced'

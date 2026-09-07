@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL企业防火墙插件：SQL白名单、学习模式、拦截模式与SQL注入防护
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/050-AccountPermissionManagement'
   - 'mysql/051-SSLEncryption'

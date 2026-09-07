@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 数组（Array）与动态数组（Dynamic Array）的连续内存模型、随机访问 $O(1)$ 原理、倍增扩容均摊 $O(1)$ 分析、行优先/列优先多维布局、稀疏数组 CSR/CSC、双指针/滑动窗口/前缀和/差分等核心技巧，涵盖 Von Neumann 1945 EDVAC、Iverson 1962 APL、Stepanov 1994 STL 等历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 10 章。
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-03'
 related:
   - 'algorithm/001-AlgorithmAnalysisBasics'
   - 'algorithm/012-StringAlgorithms'

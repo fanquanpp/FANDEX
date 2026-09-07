@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 'GitHub Actions制品（Artifacts）流程驱动详解：按"上传→下载→过期管理"完整流程，讲透 upload-artifact、download-artifact 与跨 Job/跨工作流传递。'
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-29'
 related:
   - 'github/033-ActionsCacheDependency'
   - 'github/034-ActionsSelfHostedRunner'

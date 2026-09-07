@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: tar、gzip、zip、7z 等压缩归档命令的速查。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'shell/002-CommandLineBasics'
   - 'shell/022-TextProcessing'

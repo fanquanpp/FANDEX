@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: ATAM评估方法、CBAM成本收益分析与架构评审实践。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/023-CAP'
   - 'software-testing/043-DDD'

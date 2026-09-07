@@ -1,0 +1,28 @@
+{
+  "title": "MySQL",
+  "icon": "My",
+  "description": "关系型数据存储",
+  "categories": [
+    "database"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://dev.mysql.com/doc/",
+      "type": "docs"
+    },
+    {
+      "label": "参考手册",
+      "url": "https://dev.mysql.com/doc/refman/9.0/en/",
+      "type": "api"
+    },
+    {
+      "label": "SQL 语法",
+      "url": "https://dev.mysql.com/doc/refman/9.0/en/sql-statements.html",
+      "type": "spec"
+    }
+  ],
+  "updatePriority": true,
+  "updateNote": "重点更新模块"
+}

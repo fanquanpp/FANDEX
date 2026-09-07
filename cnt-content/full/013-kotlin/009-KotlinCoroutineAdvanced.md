@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 协程异常处理、取消、超时、Flow 高级操作、StateFlow/SharedFlow 与 Select。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'kotlin/007-KotlinGenericTypeSystem'
   - 'kotlin/008-KotlinCollectionCoroutine'

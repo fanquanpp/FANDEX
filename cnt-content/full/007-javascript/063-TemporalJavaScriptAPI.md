@@ -12,6 +12,7 @@ related:
   - 'javascript/047-IndexedDBADatabaseInYourBrowser'
   - 'javascript/031-IteratorHelper'
   - 'javascript/026-PromiseConstructorDeepDive'
+prerequisites: []
 ---
 
 > 里程碑标注：Temporal 已于 2026 年进入 Stage 4 并纳入 ES2026 草案——它已是标准能力，不再是提案前瞻。生产环境落地前请确认目标运行时的支持矩阵，过渡期可继续用 date-fns/js-joda。

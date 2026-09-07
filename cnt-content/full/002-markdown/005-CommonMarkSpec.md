@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: CommonMark规范详解：标准化Markdown的定义、解析规则与一致性测试。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-29'
 related:
   - 'markdown/003-ParagraphLineBreak'
   - 'markdown/004-BasicTextFormat'

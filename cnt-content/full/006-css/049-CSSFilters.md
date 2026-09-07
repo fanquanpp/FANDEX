@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: filter 的 10 个滤镜函数：模糊、亮度、对比度、色相旋转等，实现图片与组件的视觉处理。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/026-Shadow'
   - 'css/027-BackgroundEnhancement'

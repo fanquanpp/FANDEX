@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 构建产物、环境变量、Vercel 与自托管部署、图片字体优化与核心性能指标排查。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nextjs/003-DataFetchingCaching'
   - 'devops/029-DockerfileMultiBuild'

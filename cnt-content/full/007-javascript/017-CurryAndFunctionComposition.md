@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 函数柯里化与偏函数应用的数学基础、形式语义、工程实现与生产级应用
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'javascript/015-HigherOrderFunction'
   - 'javascript/016-RecursionTailCallOptimization'

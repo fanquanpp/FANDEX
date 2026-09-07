@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: xUnit/NUnit/Moq、集成测试、BenchmarkDotNet、Source Generator、Roslyn Analyzer、CI/CD、代码规范
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'csharp/009-CSharpAdvancedFeature'
   - 'csharp/011-CSharpDotNet'

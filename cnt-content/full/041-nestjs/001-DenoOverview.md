@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 零基础第一课：理解 Deno 的安全模型与内置工具链，用两分钟运行第一个 TypeScript 脚本。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nestjs/002-DenoQuickStart'
   - 'nestjs/003-DenoPermissionsSecurity'

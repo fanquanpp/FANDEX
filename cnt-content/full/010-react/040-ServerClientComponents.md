@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React Server Components与Client Components界限划分与最佳实践。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'react/038-ReactMonorepo'
   - 'react/039-ReactCompilerAutoMemoization'

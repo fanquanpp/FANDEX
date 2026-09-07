@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 一个随时可跑的示例表与 10 个由易到难的练习 SQL，第一周常驻使用。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'mysql/084-DQL'
   - 'mysql/005-MySQLOverviewDatabaseDesign'

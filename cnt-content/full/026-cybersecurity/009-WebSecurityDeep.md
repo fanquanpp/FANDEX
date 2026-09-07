@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: Web安全深度：SQL注入、XSS、CSRF、SSRF、JWT安全与API安全
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/008-CryptographyApplication'
   - 'cybersecurity/044-SQLInjection'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 面向完全零基础读者的 C 语言第 0 课：搭建编译环境、逐行拆解 Hello World、理解编译流程、排查第一个错误，并建立内存与地址的基本概念。
 author: fanquanpp
-updated: '2026-08-05'
+updated: '2026-09-08'
 related:
   - 'c/002-CLanguageOverview'
   - 'c/003-ProgramStructureBasicSyntax'

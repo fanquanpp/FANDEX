@@ -6,10 +6,11 @@ category: 工具链
 difficulty: intermediate
 description: git stash详解：暂存工作进度、多栈管理与典型应用场景。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/023-RemoteTrackingBranch'
   - 'git/024-GitFlowGitHubFlow'
+prerequisites: []
 ---
 
 ## 1. stash 概述

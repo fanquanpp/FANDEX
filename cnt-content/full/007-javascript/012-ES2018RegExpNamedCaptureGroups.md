@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 正则表达式具名捕获组的形式语义、工程实践与生产级应用
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'javascript/021-ObjectStaticMethods'
   - 'javascript/029-EventLoop'

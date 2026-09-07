@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go测试框架与基准测试
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'go/028-GoRedis'
   - 'go/029-GoMessageQueue'

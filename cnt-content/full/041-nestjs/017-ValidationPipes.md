@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: ValidationPipe + class-validator 做请求校验，用异常过滤器统一错误响应，让接口从"能用"到"可靠"。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nestjs/016-ModuleControllerService'
   - 'nestjs/018-DatabaseIntegration'

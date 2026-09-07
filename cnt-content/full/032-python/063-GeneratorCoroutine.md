@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: advanced
 description: Python生成器与协程详解：yield、send、yield from。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'python/058-AsyncProgrammingDetailed'
   - 'python/056-ContextManager'
   - 'python/066-DecoratorAdvanced'
   - 'python/061-Descriptor'
+prerequisites: []
 ---
 
 ## 前置知识

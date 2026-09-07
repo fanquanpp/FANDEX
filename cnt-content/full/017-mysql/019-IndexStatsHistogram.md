@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL索引统计信息与直方图：ANALYZE TABLE、统计信息存储、直方图类型与优化器利用
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/017-PrefixIndex'
   - 'mysql/018-IndexHintForceIndex'

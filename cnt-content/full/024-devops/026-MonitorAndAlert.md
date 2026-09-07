@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 监控与告警：Prometheus、Grafana、告警设计、SLI/SLO与On-Call实践
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/024-ContainerSecurity'
   - 'devops/025-GitOpsCD'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: CSS架构方法论详解：BEM、OOCSS、SMACSS的核心理念、对比分析与实战应用。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/062-CSSCanvasDrawing'
   - 'css/063-CSSInJS'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 嵌入式C++开发要点
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'cpp/029-CppGraphicsProgramming'
   - 'cpp/038-CppGameDev'

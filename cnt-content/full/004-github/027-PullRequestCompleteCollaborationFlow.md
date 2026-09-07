@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Pull Request 完整生命周期：创建分支、提交推送、发起 PR、审查、合并到关闭与同步上游。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-02'
 related:
   - 'github/026-CommunityHealthFile'
   - 'github/028-GitHubPagesMultiSolution'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go GMP调度模型详解：G、M、P结构。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'go/052-Go'
   - 'go/053-GoroutineChannelPrinciple'

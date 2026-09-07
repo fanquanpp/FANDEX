@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 构建类型安全的环境变量管理系统，涵盖字面量类型、映射类型、Zod 运行时校验、多环境配置与生产级最佳实践。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/047-TypeSafeConfigSystem'
   - 'typescript/046-TypeSafeRoute'
@@ -17,6 +17,7 @@ prerequisites:
   - 'typescript/009-InterfaceTypeAlias'
   - 'typescript/013-LiteralUnionTypes'
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

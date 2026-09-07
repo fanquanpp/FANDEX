@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: URL 导入、JSR/npm 包、标准库常用模块与内置测试框架，完成一个带测试的小工具。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nestjs/001-DenoOverview'
   - 'nestjs/003-DenoPermissionsSecurity'

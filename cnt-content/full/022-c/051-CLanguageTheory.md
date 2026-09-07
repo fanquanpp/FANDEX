@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 编译流程、内存模型、ABI、链接与加载、未定义行为、严格别名、序列点等 C 语言核心理论，对标 MIT/Stanford/CMU 系统编程教学水准。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'c/017-BitField'
   - 'c/050-StdioFileIO'
@@ -18,6 +18,7 @@ prerequisites:
   - 'c/002-CLanguageOverview'
   - 'c/004-DataTypeDetailed'
 ---
+
 > 阅读建议：理论串讲，可分段查阅。
 # C 语言理论知识点
 

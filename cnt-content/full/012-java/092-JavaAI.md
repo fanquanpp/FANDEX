@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java机器学习与AI集成
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/091-JavaGraphQL'
   - 'java/094-JavaPerformanceTuning'

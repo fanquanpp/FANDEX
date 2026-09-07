@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 命令行操作基础：文件系统导航、进程管理、网络工具与Shell脚本入门。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/009-IDEEditorSelection'
   - 'shell/010-PluginEcosystem'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: '@layer'
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/036-CSSVariableCustomAttribute'
   - 'css/041-FeatureQuery'

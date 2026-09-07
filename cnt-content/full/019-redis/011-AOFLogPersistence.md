@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis AOF日志持久化：appendfsync策略、AOF重写机制、配置优化与恢复流程
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'redis/009-VectorSet'
   - 'redis/010-RDBSnapshotPersistence'

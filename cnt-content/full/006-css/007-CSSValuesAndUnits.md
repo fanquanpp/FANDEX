@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 绝对/相对单位、rem/em 细节、视口单位与字体相对单位的选择与换算。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'css/054-Function'
   - 'css/005-TextAndFontsBasics'

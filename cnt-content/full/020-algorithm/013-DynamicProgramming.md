@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 动态规划的 Bellman 最优性原理、最优子结构与重叠子问题形式化定义、状态转移方程代数表示、复杂度分析，覆盖一维/二维/区间/树形/状压/数位 DP 与背包、LCS、LIS、编辑距离等经典问题，附多语言实现。
 author: fanquanpp
-updated: '2026-07-18'
+updated: '2026-08-30'
 related:
   - 'algorithm/011-RecursionAndBacktracking'
   - 'algorithm/012-StringAlgorithms'

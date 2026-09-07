@@ -1,0 +1,30 @@
+{
+  "title": "React",
+  "icon": "Re",
+  "description": "组件化前端框架",
+  "categories": [
+    "frontend"
+  ],
+  "prerequisites": [
+    "javascript",
+    "html5",
+    "css"
+  ],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://zh-hans.react.dev/",
+      "type": "docs"
+    },
+    {
+      "label": "API 参考",
+      "url": "https://zh-hans.react.dev/reference/react",
+      "type": "api"
+    },
+    {
+      "label": "React 哲学",
+      "url": "https://zh-hans.react.dev/learn/thinking-in-react",
+      "type": "docs"
+    }
+  ]
+}

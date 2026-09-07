@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React错误边界与Sentry错误监控集成实践。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'react/042-React19NewAPI'
   - 'react/043-ConcurrentRenderInterruptible'

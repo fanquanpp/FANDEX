@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 层叠规则、包含块、格式化上下文与渲染原理。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/063-CSSInJS'
   - 'css/044-CSSArchitectureMethodology'

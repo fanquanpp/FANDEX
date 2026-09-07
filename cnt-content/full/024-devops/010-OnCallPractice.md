@@ -6,11 +6,12 @@ category: 云与基础设施
 difficulty: intermediate
 description: 值班制度、告警管理、轮值策略与On-Call素养。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'software-testing/045-DesignDocumentStandard'
   - 'devops/011-IncidentRetrospectiveMethodology'
   - 'software-testing/047-TechnicalReview'
+prerequisites: []
 ---
 
 

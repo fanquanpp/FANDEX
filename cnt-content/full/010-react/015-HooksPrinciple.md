@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React Hooks底层实现原理
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'react/013-ConcurrentMode'
   - 'react/016-CustomHooksDesignPattern'

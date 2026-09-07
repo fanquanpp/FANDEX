@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Store 定义、状态读写、异步操作与插件机制。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/018-ComponentSystem'
   - 'vue3/019-TypeScriptIntegration'
   - 'vue3/021-PluginDevelopment'
   - 'vue3/022-ComputedCacheWatchTiming'
+prerequisites: []
 ---
 
 ## 前置知识

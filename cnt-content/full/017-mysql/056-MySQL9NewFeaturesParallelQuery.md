@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL 9.x新特性：VECTOR向量类型、JSON增强、窗口函数完善、CTE递归、函数索引、并行查询优化
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/054-DataEncryption'
   - 'mysql/055-MySQLIndexExecutionPlan'

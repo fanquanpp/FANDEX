@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 让动画进度跟随滚动位置或滚动容器，替代 JS 滚动监听实现视差与进度条。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'css/029-CSSAnimationTransition'
   - 'css/039-ScrollSnap'

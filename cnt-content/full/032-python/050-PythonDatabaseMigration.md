@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: Alembic与数据库迁移
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/048-PythonCodeQuality'
   - 'python/049-ConcurrentProgramming'
   - 'python/051-PythonOAuth2'
   - 'python/037-PythonWebSocket'
+prerequisites: []
 ---
 
 ## 前置知识

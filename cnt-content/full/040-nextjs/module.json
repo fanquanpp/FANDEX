@@ -1,0 +1,24 @@
+{
+  "title": "Next.js",
+  "icon": "Nx",
+  "description": "React 全栈元框架",
+  "categories": [
+    "frontend"
+  ],
+  "prerequisites": [
+    "react",
+    "typescript"
+  ],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://nextjs.org/docs",
+      "type": "docs"
+    },
+    {
+      "label": "官方博客",
+      "url": "https://nextjs.org/blog",
+      "type": "docs"
+    }
+  ]
+}

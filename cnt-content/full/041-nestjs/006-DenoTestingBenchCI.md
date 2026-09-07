@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 零依赖质量三件套：deno test、deno bench 与 lint/fmt/check 流水线。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'nestjs/002-DenoQuickStart'
   - 'nestjs/005-DenoKVQueues'

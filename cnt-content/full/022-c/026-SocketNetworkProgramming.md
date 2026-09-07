@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: TCP/UDP套接字编程
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/023-ComplexDeclarationParsing'
   - 'c/025-POSIXThread'

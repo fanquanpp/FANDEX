@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: HTML 超链接与锚点完整指南：href 协议、target/rel 属性、路径系统、安全与可访问性。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'html5/017-TextSemantic'
   - 'html5/018-List'

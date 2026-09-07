@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: CI/CD 测试门禁：SonarQube 代码质量、Jacoco 覆盖率与质量门配置。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'software-testing/020-TestDouble'
   - 'software-testing/021-TDDBDD'

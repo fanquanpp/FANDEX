@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: TypeScript 结构化类型系统的赋值兼容规则：对象、函数、联合、交叉与特殊类型的兼容判断。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'typescript/013-LiteralUnionTypes'
   - 'typescript/018-IntersectionTypeMerge'

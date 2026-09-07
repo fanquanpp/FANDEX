@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: QUIC 协议：0-RTT 连接、连接迁移、多路复用与拥塞控制。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/052-CDNPrinciple'
   - 'cs-fundamentals/053-WebSocketFrameFormat'

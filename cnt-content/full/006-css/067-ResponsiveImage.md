@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: HTML响应式图片详解：srcset、sizes、picture元素与艺术指导策略。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'css/043-CSSPerformanceOptimizationDetailed'
   - 'css/066-HTMLSemanticSEO'

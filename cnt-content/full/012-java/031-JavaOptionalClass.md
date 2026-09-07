@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Java Optional 类 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'java/029-LambdaFunctionalProgramming'
   - 'java/030-StreamAPI'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: error接口、errors.Is/As、%w包装、panic/recover、Go 1.13+错误语义、错误链与生产级实践
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-03'
 related:
   - 'go/020-ContextDetailed'
   - 'go/022-InterfaceTypeAssertion'

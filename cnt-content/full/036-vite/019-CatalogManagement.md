@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: catalog 协议：pnpm-workspace.yaml 目录配置、catalogMode 与依赖版本统一
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'vite/017-WorkspaceSetup'
   - 'vite/018-WorkspaceProtocol'

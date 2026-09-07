@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 故障排查：系统诊断方法论、常用工具、典型故障模式与应急响应
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/021-HighAvailabilityArchitecture'
   - 'devops/022-AutomationTest'

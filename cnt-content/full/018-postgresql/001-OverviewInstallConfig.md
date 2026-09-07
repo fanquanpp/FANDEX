@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: PostgreSQL 17概述、安装与配置、pg_hba.conf认证、postgresql.conf核心参数、连接管理、角色与权限。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'postgresql/002-TransactionConcurrencyControl'
   - 'postgresql/003-IndexQueryOptimization'

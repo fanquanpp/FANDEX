@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 自动化测试：单元测试、集成测试、E2E测试、性能测试与测试策略
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/020-PerformanceTuning'
   - 'devops/021-HighAvailabilityArchitecture'

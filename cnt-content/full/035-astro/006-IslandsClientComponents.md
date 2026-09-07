@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 问题驱动理解岛屿架构：为什么页面没有交互、client 指令全家桶、水合原理、多框架集成与岛屿间通信
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'astro/004-ComponentsProps'
   - 'astro/005-ContentCollections'

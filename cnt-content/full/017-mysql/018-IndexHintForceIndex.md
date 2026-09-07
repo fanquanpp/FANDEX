@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL索引提示：USE INDEX、FORCE INDEX、IGNORE INDEX的语法、场景与注意事项
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/016-FullTextIndex'
   - 'mysql/017-PrefixIndex'

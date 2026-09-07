@@ -6,9 +6,10 @@ category: 后端技术
 difficulty: beginner
 description: 面向零基础读者介绍 Python 的定位、应用版图与语法气质，并完成第一次运行。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'python/002-PythonOverviewEnvSetup'
+prerequisites: []
 ---
 
 ## Python 在技术版图中的位置

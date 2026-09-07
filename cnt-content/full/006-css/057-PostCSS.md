@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: PostCSS（autoprefixer、cssnano）
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'css/056-LessStylus'
   - 'css/034-ResponsiveDesign'

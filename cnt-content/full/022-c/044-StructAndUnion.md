@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 结构体定义、内存对齐、联合体应用及枚举类型。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/042-MemoryManagement'
   - 'c/043-MemoryAlignment'

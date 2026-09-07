@@ -6,11 +6,12 @@ category: 云与基础设施
 difficulty: advanced
 description: K8s 架构、核心资源、存储、网络策略、Helm 与 Operator 模式。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/002-NetworkSecurity'
   - 'devops/003-ContainerDocker'
   - 'devops/005-CICDPipeline'
+prerequisites: []
 ---
 
 ## 1. Kubernetes 架构

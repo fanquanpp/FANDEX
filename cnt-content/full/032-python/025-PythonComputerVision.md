@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: OpenCV与图像处理
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/023-PythonDeepLearning'
   - 'python/024-PythonAndNLP'
   - 'python/026-WebScrapingWithPython'
   - 'python/027-PythonAutomationCookbook'
+prerequisites: []
 ---
 
 ## 前置知识

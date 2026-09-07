@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 文本处理三剑客：grep 行匹配、sed 流编辑、awk 列处理与统计、管道组合实战
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'shell/021-PracticalScripts'
   - 'shell/017-ProcessJobControl'

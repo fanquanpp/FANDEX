@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: GitOps与持续交付：ArgoCD、Flux、渐进式交付与发布策略
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/023-Troubleshooting'
   - 'devops/024-ContainerSecurity'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL SSL/TLS加密连接：证书配置、强制加密、客户端证书验证
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/030-IncrementalBackup'
   - 'postgresql/031-SubscribePublish'

@@ -6,10 +6,11 @@ category: 前端技术
 difficulty: beginner
 description: JavaScript 发展历程、ECMAScript 标准与运行环境。
 author: fanquanpp
-updated: '2026-08-05'
+updated: '2026-09-08'
 related:
   - 'javascript/003-ProgramStructureBasicSyntax'
   - 'javascript/004-VariableDataType'
+prerequisites: []
 ---
 
 ## 前置知识

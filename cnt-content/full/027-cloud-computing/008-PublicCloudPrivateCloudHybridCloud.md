@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 云计算部署模型：公有云、私有云、混合云与多云的概念、对比与选型。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cloud-computing/006-VirtualizationTech'
   - 'cloud-computing/007-CloudArchitectureDesign'

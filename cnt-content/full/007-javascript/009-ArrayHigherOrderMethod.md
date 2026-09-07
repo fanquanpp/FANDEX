@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: JavaScript数组高阶方法详解：reduce、flatMap及函数式数组操作模式。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'javascript/020-DeepShallowCopy'
   - 'javascript/049-DebounceThrottle'
   - 'javascript/034-ProxyReflectPractice'
   - 'javascript/039-ModuleDynamicImportCodeSplitting'
+prerequisites: []
 ---
 
 

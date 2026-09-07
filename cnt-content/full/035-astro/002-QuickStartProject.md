@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 手把手从零创建并运行第一个 Astro 项目：环境检查、create astro 向导、目录结构、配置文件、修改页面、构建与预览
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'astro/003-PagesRouting'
   - 'astro/004-ComponentsProps'

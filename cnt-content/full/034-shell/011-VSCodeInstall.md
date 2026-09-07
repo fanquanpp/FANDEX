@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: VS Code 的安装、命令行工具、扩展管理与常用配置。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/009-IDEEditorSelection'
   - 'shell/010-PluginEcosystem'

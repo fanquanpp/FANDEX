@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 变量声明、作用域、常量定义与命名规范。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/004-ProgramStructureBasicSyntax'
   - 'java/005-DataTypeConversion'

@@ -6,10 +6,11 @@ category: 前端技术
 difficulty: beginner
 description: pnpm 核心机制：内容寻址存储、符号链接与严格依赖隔离
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'vite/017-WorkspaceSetup'
   - 'vite/018-WorkspaceProtocol'
+prerequisites: []
 ---
 
 

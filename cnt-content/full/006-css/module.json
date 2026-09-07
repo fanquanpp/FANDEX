@@ -1,0 +1,30 @@
+{
+  "title": "CSS",
+  "icon": "CSS",
+  "description": "样式与视觉布局",
+  "categories": [
+    "frontend"
+  ],
+  "prerequisites": [
+    "html5"
+  ],
+  "officialDocs": [
+    {
+      "label": "MDN 文档",
+      "url": "https://developer.mozilla.org/zh-CN/docs/Web/CSS",
+      "type": "docs"
+    },
+    {
+      "label": "W3C 规范",
+      "url": "https://www.w3.org/Style/CSS/current-work",
+      "type": "spec"
+    },
+    {
+      "label": "CSS 规范索引",
+      "url": "https://www.w3.org/TR/?tag=css",
+      "type": "spec"
+    }
+  ],
+  "updatePriority": true,
+  "updateNote": "重点更新模块"
+}

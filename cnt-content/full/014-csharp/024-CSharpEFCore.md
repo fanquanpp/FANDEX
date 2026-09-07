@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Entity Framework Core ORM 框架：DbContext、实体映射、查询、迁移、并发控制、性能优化、架构模式与生产实践
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'csharp/008-CSharpLINQFunctionalProgramming'
 prerequisites:

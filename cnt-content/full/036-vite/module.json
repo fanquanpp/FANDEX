@@ -1,0 +1,21 @@
+{
+  "title": "Vite",
+  "icon": "Vi",
+  "description": "现代前端构建工具",
+  "categories": [
+    "frontend"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://cn.vitejs.dev/",
+      "type": "docs"
+    },
+    {
+      "label": "Vitest",
+      "url": "https://cn.vitest.dev/",
+      "type": "docs"
+    }
+  ]
+}

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用 anchor 属性把元素相对另一个元素定位，替代“JS 测量 + 绝对定位”的弹层方案。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'css/015-PositionDetailed'
   - 'css/023-CSS3GridGridLayout'

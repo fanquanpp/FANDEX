@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: 列表推导、字典推导、生成器表达式与迭代器。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/052-PythonVectorDatabase'
   - 'python/053-PythonAdvancedLatestFeature'
   - 'python/055-ModulePackageEngineering'
   - 'python/066-DecoratorAdvanced'
+prerequisites: []
 ---
 
 ## 前置知识

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 深入解析 CSS Container Queries 容器查询的规范、算法、工程实践与跨浏览器兼容性
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-03'
 related:
   - 'css/052-BorderRadius'
   - 'css/032-MediaQuery'

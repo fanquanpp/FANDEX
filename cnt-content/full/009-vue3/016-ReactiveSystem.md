@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Vue3响应式原理与API详解
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/014-Vue3WebComponents'
   - 'vue3/015-Vue3PerformancePractice'
   - 'vue3/017-CustomHook'
   - 'vue3/018-ComponentSystem'
+prerequisites: []
 ---
 
 ## 前置知识

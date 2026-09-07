@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 面向零基础读者介绍 C# 的定位、运行机制与应用版图，完成第一个控制台程序。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'csharp/002-CSharpOverviewEnvSetup'
   - 'cs-fundamentals/011-ProgrammingBasics'

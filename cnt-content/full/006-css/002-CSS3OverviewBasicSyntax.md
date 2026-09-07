@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: CSS 发展历程、语法结构与层叠规则。
 author: fanquanpp
-updated: '2026-08-05'
+updated: '2026-08-30'
 related:
   - 'css/004-CSS3BoxModelDetailed'
   - 'css/008-CSS3SelectorSystem'

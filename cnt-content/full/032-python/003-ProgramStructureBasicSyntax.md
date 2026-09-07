@@ -6,11 +6,12 @@ category: 后端技术
 difficulty: beginner
 description: Python 缩进规则、语句、注释与编码规范。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'python/002-PythonOverviewEnvSetup'
   - 'python/004-VariableConstant'
   - 'python/071-BasicDataType'
+prerequisites: []
 ---
 
 ## 前置知识

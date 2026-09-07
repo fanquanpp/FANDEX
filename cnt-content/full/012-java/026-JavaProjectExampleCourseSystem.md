@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用 List/Set/Map、比较器与 Objects 实现一个可运行的学生选课系统。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'java/021-CollectionFrameworkDetailed'
   - 'java/024-JavaComparatorComparable'

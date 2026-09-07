@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: cat、grep、sed、awk 等常用文本处理命令的速查。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'shell/016-TextProcessingTools'
   - 'shell/023-PipeRedirect'

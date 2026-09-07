@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React i18n实现方案
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'react/022-ReactTest'
   - 'react/023-ReactRouteAdvanced'

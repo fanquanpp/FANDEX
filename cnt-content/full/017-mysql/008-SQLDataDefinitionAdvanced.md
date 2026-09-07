@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: CREATE/ALTER/DROP、视图、索引与存储过程。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'mysql/006-MySQLEnvSetup'
   - 'mysql/007-MySQLDataTypeConstraint'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'mysql/089-View'
 ---
+
 
 ## 1. DDL (数据定义语言) - Data Definition Language
 

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: pytest单元测试框架：fixture、参数化、插件、配置与最佳实践详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'software-testing/009-BoundaryValueAnalysis'
   - 'software-testing/013-APIAutomationTest'

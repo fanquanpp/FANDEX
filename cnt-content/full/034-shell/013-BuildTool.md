@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 构建工具对比：Make、CMake、Vite的工作原理、配置方法与适用场景。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/012-ProjectInit'
   - 'cs-fundamentals/013-ProgrammingParadigmBasics'

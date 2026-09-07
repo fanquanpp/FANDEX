@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 常见环境配置错误的集中排查手册：命令找不到、权限拒绝、端口占用、代理、乱码等。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/004-EnvVarPath'
   - 'shell/014-EnvVerificationChecklist'

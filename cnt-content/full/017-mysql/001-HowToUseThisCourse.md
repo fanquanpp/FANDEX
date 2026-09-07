@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 零基础学习 MySQL 的正确姿势：必读/选读/进阶分层、学习路线与预期时间。
 author: fanquanpp
-updated: '2026-08-05'
+updated: '2026-08-30'
 related:
   - 'mysql/002-Roadmap'
   - 'mysql/003-Glossary'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Node.js 在 Windows、macOS、Linux 下的安装、版本管理与安装验证。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/006-WindowsEnvConfigTutorial'
   - 'shell/007-MacOSEnvConfigTutorial'

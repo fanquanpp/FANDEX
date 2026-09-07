@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: useEffect、useRef、useMemo、useCallback、useContext、自定义 Hook、Hooks 规则与常见陷阱。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'react/002-ComponentProps'
   - 'react/003-StateEvent'
   - 'react/005-ContextGlobalState'
   - 'react/006-React19NewFeatures'
+prerequisites: []
 ---
 
 ## 前置知识

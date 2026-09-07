@@ -1,0 +1,21 @@
+{
+  "title": "Rust",
+  "icon": "Rs",
+  "description": "安全高性能的系统编程语言",
+  "categories": [
+    "backend"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://www.rust-lang.org/zh-CN/learn",
+      "type": "docs"
+    },
+    {
+      "label": "标准库 API",
+      "url": "https://doc.rust-lang.org/std/",
+      "type": "api"
+    }
+  ]
+}

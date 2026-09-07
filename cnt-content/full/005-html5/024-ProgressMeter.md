@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: progress与meter
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'html5/022-SVG'
   - 'html5/023-EmbeddedContent'

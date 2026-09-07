@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: scikit-learn与ML基础
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/018-PythonRedis'
   - 'python/047-PythonGraphQL'
   - 'python/023-PythonDeepLearning'
   - 'python/024-PythonAndNLP'
+prerequisites: []
 ---
 
 ## 前置知识

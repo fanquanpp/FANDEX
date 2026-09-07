@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 系统阐述 Python 配置管理的形式化定义、配置源层级、十二因素应用方法论、Pydantic Settings/Dynaconf/python-dotenv 等主流方案、多环境配置、动态配置与特性开关、密钥管理、容器化与 Kubernetes 配置、配置测试与校验、生产级最佳实践。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'python/021-PythonDocker'
   - 'python/030-PythonLog'

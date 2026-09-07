@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Symbol、unique symbol 与品牌类型的类型论基础、形式语义与生产级模式
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/029-CovarianceContravariance'
   - 'typescript/030-ThisTypePolymorphism'

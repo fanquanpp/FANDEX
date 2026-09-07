@@ -79,6 +79,11 @@ jobs:
         with:
           node-version: '22'
 
+      - name: 内容自动同步（frontmatter 补全 + 模块注册）
+        # 与 web 端构建共用的内容同步入口：补全托管字段、注册新模块、
+        # 清理死链。零依赖可直接 node 运行，产物仅存在于构建工作区
+        run: node app-web/scripts/content-sync.mjs
+
       - name: 同步内容资产（${{ matrix.label }}）
         run: ${{ matrix.sync }}
 

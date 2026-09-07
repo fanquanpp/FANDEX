@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用零基础也能懂的例子解释 JavaScript 的类型陷阱与 TypeScript 的价值，建立类型思维的第一课。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'typescript/002-HowToReadThisCourse'
   - 'typescript/003-TypeScriptOverviewEnvSetup'

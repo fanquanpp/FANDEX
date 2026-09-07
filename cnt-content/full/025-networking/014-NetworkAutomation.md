@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 网络自动化：基础设施即代码、NetDevOps、网络CI/CD与自动化运维
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'networking/012-DNSDHCP'
   - 'networking/013-LoadBalanceTech'

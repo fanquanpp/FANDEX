@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Python 数据类与字段默认值深度剖析：从 dataclass 装饰器到 field 工厂、不可变性与企业级模型设计。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'python/064-TypeAnnotationMypy'
   - 'python/061-Descriptor'

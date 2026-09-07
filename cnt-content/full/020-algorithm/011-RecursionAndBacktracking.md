@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 递归（Recursion）的形式化定义、递归三要素（基线条件/递归条件/状态收缩）、递归树模型与主定理回顾、尾递归优化（TCO）、记忆化递归（Memoization）、回溯算法（Backtracking, Golomb-Baumert 1965 JACM 12(4):516-524）的系统化模板（选择-递归-撤销）、子集/排列/组合/N 皇后（Bezzel 1848）/数独/分割/括号生成/单词搜索的原理、实现与剪枝优化（排序剪枝/边界剪枝/条件剪枝/记忆化剪枝/位运算剪枝）、分支限界法（Land-Doig 1960）与 Dancing Links（Knuth 2000）的原理、对比分析与工程实践，涵盖 McCarthy 1960 LISP 递归系统化、Golomb-Baumert 1965 回溯法、Tarjan 1972 DFS、Bezzel 1848 N 皇后、Land-Doig 1960 分支限界、Knuth 2000 Dancing Links 的历史脉络，附 Python/C++/Java 多语言实现与 CLRS第4/22章、Kleinberg-Tardos第5章。
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-08-30'
 related:
   - 'algorithm/009-DivideAndConquer'
   - 'algorithm/010-GreedyAlgorithm'

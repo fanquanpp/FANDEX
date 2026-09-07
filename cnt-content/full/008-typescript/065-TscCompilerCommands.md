@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: TypeScript tsc 编译命令速查 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related: []
 prerequisites: []
 ---
