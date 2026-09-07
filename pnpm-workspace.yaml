@@ -48,7 +48,7 @@ catalog:
   zod: ^4.5.4
 
   # 动画
-  motion: ^11.0.0
+  motion: ^13.2.0
 
   # Radix UI（React 组件库，web/desktop 共享）
   '@radix-ui/react-accordion': ^1.2.20
