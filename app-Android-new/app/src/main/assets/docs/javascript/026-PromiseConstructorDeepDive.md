@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-07-20'
 related:
   - 'javascript/031-IteratorHelper'
-  - 'javascript/060-RecordsAndTuples'
+  - 'javascript/065-ImmutableDataStructures'
   - 'javascript/007-ObjectArray'
   - 'javascript/032-CoroutinesInJavaScript'
   - 'javascript/029-EventLoop'

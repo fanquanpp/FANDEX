@@ -10,8 +10,7 @@ updated: '2026-08-01'
 related:
   - 'devops/003-ContainerDocker'
   - 'devops/004-Kubernetes'
-  - 'devops/006-MonitorAndObservability'
-prerequisites: []
+  - 'devops/012-MonitorAndObservability'
 ---
 
 ## 1. CI/CD 原理

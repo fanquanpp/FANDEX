@@ -9,9 +9,9 @@ author: fanquanpp
 updated: '2026-08-30'
 related:
   - 'csharp/002-CSharpOverviewEnvSetup'
-  - 'getting-started/002-WhatIsProgramming'
+  - 'cs-fundamentals/011-ProgrammingBasics'
 prerequisites:
-  - 'getting-started/002-WhatIsProgramming'
+  - 'cs-fundamentals/011-ProgrammingBasics'
 ---
 
 ## C# 在技术版图中的位置

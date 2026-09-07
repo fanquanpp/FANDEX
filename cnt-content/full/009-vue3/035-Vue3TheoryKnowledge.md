@@ -10,7 +10,6 @@ updated: '2026-08-01'
 related:
   - 'vue3/033-Vue3AdvancedComponentFeature'
   - 'vue3/034-Vue3ProjectExampleBlog'
-prerequisites: []
 ---
 ````javascript
 

@@ -65,7 +65,7 @@ flowchart LR
 
 ## 动手环节：感受一次类型检查
 
-安装 Node.js 后（见 [Node.js 安装](/getting-started/017-NodeJsInstall)），在终端执行：
+安装 Node.js 后（见 [Node.js 安装](/javascript/052-NodeJsInstall)），在终端执行：
 
 ```bash
 npm install -g typescript

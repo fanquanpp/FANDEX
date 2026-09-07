@@ -10,7 +10,6 @@ updated: '2026-08-01'
 related:
   - 'cloud-computing/002-CloudNetworkStorage'
   - 'cloud-computing/003-ContainerOrchestration'
-prerequisites: []
 ---
 
 ## 1. 云计算概念与演进

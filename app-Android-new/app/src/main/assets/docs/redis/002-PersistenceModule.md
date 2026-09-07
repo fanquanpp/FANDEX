@@ -11,7 +11,6 @@ related:
   - 'redis/001-OverviewCoreDataStructure'
   - 'redis/003-ClusterHA'
   - 'redis/004-CacheStrategyAdvancedFeature'
-prerequisites: []
 ---
 
 

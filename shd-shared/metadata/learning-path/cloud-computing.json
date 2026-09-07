@@ -58,22 +58,22 @@
         {
           "id": "cloud-computing-103",
           "title": "AWS核心服务",
-          "doc": "025-AWSCore"
+          "doc": "026-AWSCore"
         },
         {
           "id": "cloud-computing-104",
           "title": "无服务器架构",
-          "doc": "028-ServerlessArchitecture"
+          "doc": "029-ServerlessArchitecture"
         },
         {
           "id": "cloud-computing-105",
           "title": "云计算 AWS S3 命令",
-          "doc": "031-AWSS3Command"
+          "doc": "032-AWSS3Command"
         },
         {
           "id": "cloud-computing-106",
           "title": "云计算 AWS IAM 命令",
-          "doc": "034-AWSIAMCommand"
+          "doc": "035-AWSIAMCommand"
         }
       ]
     },
@@ -85,37 +85,37 @@
         {
           "id": "cloud-computing-201",
           "title": "云计算 Azure 资源组与 VM",
-          "doc": "037-AzureGroupVMCommand"
+          "doc": "038-AzureGroupVMCommand"
         },
         {
           "id": "cloud-computing-202",
           "title": "云计算 GCP Compute 与 Storage",
-          "doc": "040-GCPComputeStorage"
+          "doc": "041-GCPComputeStorage"
         },
         {
           "id": "cloud-computing-203",
           "title": "AWS CloudWatch 监控日志命令",
-          "doc": "043-AWSCloudWatch"
+          "doc": "044-AWSCloudWatch"
         },
         {
           "id": "cloud-computing-204",
           "title": "AWS SQS/SNS 消息队列命令",
-          "doc": "046-AWSSQSCommands"
+          "doc": "047-AWSSQSCommands"
         },
         {
           "id": "cloud-computing-205",
           "title": "Azure AKS Kubernetes 命令",
-          "doc": "049-AzureAKSCommands"
+          "doc": "050-AzureAKSCommands"
         },
         {
           "id": "cloud-computing-206",
           "title": "Pulumi IaC 命令",
-          "doc": "052-PulumiCommands"
+          "doc": "053-PulumiCommands"
         },
         {
           "id": "cloud-computing-207",
           "title": "AWS CloudFront CDN 命令",
-          "doc": "055-AWSCloudFront"
+          "doc": "056-AWSCloudFront"
         }
       ]
     }

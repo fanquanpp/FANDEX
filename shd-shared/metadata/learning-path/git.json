@@ -20,42 +20,42 @@
           "title": "环境配置与初始化",
           "desc": "安装、全局配置与 git init",
           "difficulty": "beginner",
-          "doc": "002-GitEnvConfigInit"
+          "doc": "003-GitEnvConfigInit"
         },
         {
           "id": "git-003",
           "title": "基本操作",
           "desc": "add/commit/status 的日常循环",
           "difficulty": "beginner",
-          "doc": "003-GitBasicOperation"
+          "doc": "004-GitBasicOperation"
         },
         {
           "id": "git-004",
           "title": "三棵树",
           "desc": "工作区、暂存区与仓库的理解模型",
           "difficulty": "beginner",
-          "doc": "009-ThreeTrees"
+          "doc": "010-ThreeTrees"
         },
         {
           "id": "git-005",
           "title": "git-diff 与暂存区",
           "desc": "不同视角的差异对比",
           "difficulty": "beginner",
-          "doc": "010-GitDiffStagingOperation"
+          "doc": "011-GitDiffStagingOperation"
         },
         {
           "id": "git-006",
           "title": "git-restore 与文件操作",
           "desc": "撤销工作区与暂存区的修改",
           "difficulty": "beginner",
-          "doc": "011-GitRestoreFileOperation"
+          "doc": "012-GitRestoreFileOperation"
         },
         {
           "id": "git-007",
           "title": "git-log 详解",
           "desc": "提交历史查询与图形化输出",
           "difficulty": "beginner",
-          "doc": "012-GitLogDetailed"
+          "doc": "013-GitLogDetailed"
         }
       ]
     },
@@ -69,63 +69,63 @@
           "title": "分支管理",
           "desc": "分支的创建、切换与合并",
           "difficulty": "intermediate",
-          "doc": "004-GitBranchManagement"
+          "doc": "005-GitBranchManagement"
         },
         {
           "id": "git-009",
           "title": "HEAD 指针与分支本质",
           "desc": "分支是指针、HEAD 指向当前提交",
           "difficulty": "intermediate",
-          "doc": "015-HEADPointerBranchEssence"
+          "doc": "016-HEADPointerBranchEssence"
         },
         {
           "id": "git-010",
           "title": "合并冲突解决",
           "desc": "冲突的产生、标记与解决流程",
           "difficulty": "intermediate",
-          "doc": "017-MergeConflictResolution"
+          "doc": "018-MergeConflictResolution"
         },
         {
           "id": "git-011",
           "title": "git-rebase",
           "desc": "变基合并与提交重写",
           "difficulty": "intermediate",
-          "doc": "019-GitRebase"
+          "doc": "020-GitRebase"
         },
         {
           "id": "git-012",
           "title": "交互式 rebase",
           "desc": "squash/reword 等历史整理技巧",
           "difficulty": "advanced",
-          "doc": "037-InteractiveRebase"
+          "doc": "038-InteractiveRebase"
         },
         {
           "id": "git-013",
           "title": "git-cherry-pick",
           "desc": "把指定提交挑到当前分支",
           "difficulty": "intermediate",
-          "doc": "020-GitCherryPick"
+          "doc": "021-GitCherryPick"
         },
         {
           "id": "git-014",
           "title": "git-stash",
           "desc": "暂存未提交的工作现场",
           "difficulty": "intermediate",
-          "doc": "021-GitStash"
+          "doc": "022-GitStash"
         },
         {
           "id": "git-015",
           "title": "远程仓库操作",
           "desc": "clone/pull/push 与远程管理",
           "difficulty": "intermediate",
-          "doc": "005-GitRemoteRepoOperation"
+          "doc": "006-GitRemoteRepoOperation"
         },
         {
           "id": "git-016",
           "title": "远程跟踪分支",
           "desc": "本地与远程分支的映射关系",
           "difficulty": "intermediate",
-          "doc": "022-RemoteTrackingBranch"
+          "doc": "023-RemoteTrackingBranch"
         }
       ]
     },
@@ -139,49 +139,49 @@
           "title": "分布式版本控制原理",
           "desc": "本地仓库与分布式模型",
           "difficulty": "intermediate",
-          "doc": "006-DistributedVCSPrinciple"
+          "doc": "007-DistributedVCSPrinciple"
         },
         {
           "id": "git-018",
           "title": "对象模型",
           "desc": "blob/tree/commit 对象与引用",
           "difficulty": "advanced",
-          "doc": "007-ObjectModel"
+          "doc": "008-ObjectModel"
         },
         {
           "id": "git-019",
           "title": "SHA-1 哈希完整性",
           "desc": "内容寻址与完整性校验",
           "difficulty": "advanced",
-          "doc": "008-SHA1IntegrityCheck"
+          "doc": "009-SHA1IntegrityCheck"
         },
         {
           "id": "git-020",
           "title": "git-reflog",
           "desc": "找回丢失提交的后悔药",
           "difficulty": "advanced",
-          "doc": "013-GitReflog"
+          "doc": "014-GitReflog"
         },
         {
           "id": "git-021",
           "title": "git-reset",
           "desc": "三种重置模式与使用场景",
           "difficulty": "advanced",
-          "doc": "025-GitReset"
+          "doc": "026-GitReset"
         },
         {
           "id": "git-022",
           "title": "git-revert",
           "desc": "安全撤销已推送的提交",
           "difficulty": "intermediate",
-          "doc": "026-GitRevert"
+          "doc": "027-GitRevert"
         },
         {
           "id": "git-023",
           "title": "标签管理",
           "desc": "轻量标签与附注标签",
           "difficulty": "intermediate",
-          "doc": "028-TagManagement"
+          "doc": "029-TagManagement"
         }
       ]
     },
@@ -195,49 +195,49 @@
           "title": "Git-Flow 与 GitHub-Flow",
           "desc": "两种团队协作工作流的对比与选择",
           "difficulty": "intermediate",
-          "doc": "023-GitFlowGitHubFlow"
+          "doc": "024-GitFlowGitHubFlow"
         },
         {
           "id": "git-025",
           "title": "钩子与 Git LFS",
           "desc": "自动化钩子与大文件管理",
           "difficulty": "intermediate",
-          "doc": "016-GitHookGitLFS"
+          "doc": "017-GitHookGitLFS"
         },
         {
           "id": "git-026",
           "title": "git-bisect",
           "desc": "二分定位引入问题的提交",
           "difficulty": "advanced",
-          "doc": "029-GitBisect"
+          "doc": "030-GitBisect"
         },
         {
           "id": "git-027",
           "title": "git-worktree",
           "desc": "多工作区并行开发",
           "difficulty": "advanced",
-          "doc": "034-GitWorktree"
+          "doc": "035-GitWorktree"
         },
         {
           "id": "git-028",
           "title": "Code Review 最佳实践",
           "desc": "评审流程、提交规范与反馈技巧",
           "difficulty": "intermediate",
-          "doc": "039-CodeReviewBestPractice"
+          "doc": "040-CodeReviewBestPractice"
         },
         {
           "id": "git-029",
           "title": "忽略规则 .gitignore 深入",
           "desc": "忽略模式语法与团队共享规范",
           "difficulty": "beginner",
-          "doc": "040-GitignoreDeepDive"
+          "doc": "041-GitignoreDeepDive"
         },
         {
           "id": "git-030",
           "title": "签名提交与安全实践",
           "desc": "GPG/SSH 签名提交与仓库安全",
           "difficulty": "advanced",
-          "doc": "041-SignedCommitsAndSecurityPractices"
+          "doc": "042-SignedCommitsAndSecurityPractices"
         }
       ]
     }

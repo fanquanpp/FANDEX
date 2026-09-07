@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用可达性、标记清除、分代回收三个模型讲透 JavaScript 的自动内存管理，并给出写代码时避免内存泄漏的实用清单。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'javascript/035-ClosureMemoryLeakOptimization'
   - 'javascript/036-MemoryLeakTroubleshoot'
@@ -107,6 +107,28 @@ function process(el) {
 下一步建议阅读 闭包的内存泄露与优化 与
 内存泄漏排查 实战篇。
 
+## 弱引用：WeakRef 与 FinalizationRegistry
+
+强引用阻止回收，弱引用不影响可达性判定。三个弱引用工具的分工：
+
+```javascript
+// WeakMap/WeakSet：以对象为键的"附加数据"，键被回收条目自动消失
+const metadata = new WeakMap();
+metadata.set(domNode, { lastUsed: Date.now() });  // 不阻止 domNode 被回收
+
+// WeakRef：对目标保持弱引用，deref() 在目标存活时返回它
+let cache = new WeakRef(buildHeavyView());
+cache.deref()?.render();   // 已被回收则为 undefined，必须判空
+
+// FinalizationRegistry：目标被回收后收到回调（时机不确定，只能做兜底日志/资源提示）
+const registry = new FinalizationRegistry((held) => {
+  console.warn('视图对象已被回收，请检查是否遗漏显式释放：', held);
+});
+registry.register(view, 'heavy-view-id');
+```
+
+**纪律**：FinalizationRegistry 的回调时机由 GC 决定，不可用于业务清理逻辑；需要确定释放的资源改用显式资源管理（`using` 与 `Symbol.dispose`，见 `javascript/064-ExplicitResourceManagement`）。弱引用只解决"不阻止回收"，不解决"何时释放"。
+
 ## 核心知识点
 
 > 一句话记住内存：栈存基本值与引用，堆存对象；垃圾回收靠可达性，闭包与全局变量是常见泄漏源。
@@ -136,4 +158,5 @@ function process(el) {
 
 - 闭包：`javascript/007-FunctionScopeClosure`；
 - 泄漏排查：`javascript/035-MemoryLeakTroubleshoot`；
-- 集合弱引用：`javascript/022-MapSetWeakMapWeakSet`。
+- 集合弱引用：`javascript/023-MapSetWeakMapWeakSet`；
+- 显式资源管理：`javascript/064-ExplicitResourceManagement`。

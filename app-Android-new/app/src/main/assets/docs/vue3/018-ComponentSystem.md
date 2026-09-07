@@ -12,7 +12,6 @@ related:
   - 'vue3/017-CustomHook'
   - 'vue3/019-TypeScriptIntegration'
   - 'vue3/020-PiniaStateManagementDetailed'
-prerequisites: []
 ---
 
 ## 前置知识

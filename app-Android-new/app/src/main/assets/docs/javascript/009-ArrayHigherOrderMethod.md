@@ -12,7 +12,6 @@ related:
   - 'javascript/049-DebounceThrottle'
   - 'javascript/034-ProxyReflectPractice'
   - 'javascript/039-ModuleDynamicImportCodeSplitting'
-prerequisites: []
 ---
 
 

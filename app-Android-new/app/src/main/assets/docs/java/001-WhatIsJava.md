@@ -9,9 +9,9 @@ author: fanquanpp
 updated: '2026-08-30'
 related:
   - 'java/002-JavaOverviewDevEnv'
-  - 'getting-started/024-JavaJdkConfig'
+  - 'java/002-JavaOverviewDevEnv'
 prerequisites:
-  - 'getting-started/002-WhatIsProgramming'
+  - 'cs-fundamentals/011-ProgrammingBasics'
 ---
 
 ## Java 在技术版图中的位置
@@ -49,7 +49,7 @@ public class Hello {
 
 ## 动手环节：编译并运行
 
-安装 JDK 后（步骤见 [Java JDK 配置](/getting-started/024-JavaJdkConfig)），保存文件 `Hello.java`，在终端执行：
+安装 JDK 后（步骤见 [Java 开发环境搭建](/java/002-JavaOverviewDevEnv)），保存文件 `Hello.java`，在终端执行：
 
 ```bash
 javac Hello.java   # 编译：生成 Hello.class 字节码

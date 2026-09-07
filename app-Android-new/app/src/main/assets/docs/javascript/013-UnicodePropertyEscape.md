@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-08-03'
 related:
   - 'javascript/012-ES2018RegExpNamedCaptureGroups'
-  - 'javascript/061-RegexAssertions'
+  - 'javascript/066-RegexAssertions'
   - 'javascript/008-FunctionScopeClosure'
   - 'javascript/014-CustomErrorTypes'
 prerequisites:

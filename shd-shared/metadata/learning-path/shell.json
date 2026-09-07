@@ -21,12 +21,12 @@
         {
           "id": "shell-003",
           "title": "文本处理三剑客：grep、sed、awk",
-          "doc": "003-TextProcessingTools"
+          "doc": "016-TextProcessingTools"
         },
         {
           "id": "shell-004",
           "title": "进程与作业控制",
-          "doc": "004-ProcessJobControl"
+          "doc": "017-ProcessJobControl"
         }
       ]
     },
@@ -38,42 +38,42 @@
         {
           "id": "shell-101",
           "title": "环境变量与配置文件",
-          "doc": "005-EnvVariablesConfig"
+          "doc": "018-EnvVariablesConfig"
         },
         {
           "id": "shell-102",
           "title": "脚本调试与严格模式",
-          "doc": "006-ScriptDebugging"
+          "doc": "019-ScriptDebugging"
         },
         {
           "id": "shell-103",
           "title": "函数与参数处理",
-          "doc": "007-FunctionsArguments"
+          "doc": "020-FunctionsArguments"
         },
         {
           "id": "shell-104",
           "title": "实战脚本案例",
-          "doc": "008-PracticalScripts"
+          "doc": "021-PracticalScripts"
         },
         {
           "id": "shell-105",
           "title": "文本处理命令速查手册",
-          "doc": "009-TextProcessing"
+          "doc": "022-TextProcessing"
         },
         {
           "id": "shell-106",
           "title": "管道与重定向速查手册",
-          "doc": "010-PipeRedirect"
+          "doc": "023-PipeRedirect"
         },
         {
           "id": "shell-107",
           "title": "进程管理命令速查手册",
-          "doc": "011-ProcessManage"
+          "doc": "024-ProcessManage"
         },
         {
           "id": "shell-108",
           "title": "压缩解压命令速查手册",
-          "doc": "012-CompressArchive"
+          "doc": "025-CompressArchive"
         }
       ]
     }

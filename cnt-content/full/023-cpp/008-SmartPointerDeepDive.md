@@ -2853,8 +2853,8 @@ let w = Arc::downgrade(&p);           // 弱引用 +1
 - design-pattern/观察者模式：`weak_ptr` 在事件系统中的应用
 - design-pattern/工厂模式：`unique_ptr` 作为工厂返回类型的设计动机
 - design-pattern/Pimpl惯用法：编译防火墙与 `unique_ptr` 的协同
-- software-engineering/ABI稳定性：智能指针作为 ABI 边界的风险与对策
-- software-engineering/异常安全：RAII 与异常安全保证等级
+- ABI 稳定性：智能指针作为 ABI 边界的风险与对策
+- 异常安全：RAII 与异常安全保证等级
 
 ### 15.4 推荐学习路径
 

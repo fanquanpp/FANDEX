@@ -10,8 +10,7 @@ updated: '2026-08-03'
 related:
   - 'python/002-PythonOverviewEnvSetup'
   - 'python/004-VariableConstant'
-  - 'python/070-BasicDataType'
-prerequisites: []
+  - 'python/071-BasicDataType'
 ---
 
 ## 前置知识

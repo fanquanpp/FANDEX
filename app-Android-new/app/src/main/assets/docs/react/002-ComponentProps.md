@@ -11,7 +11,6 @@ related:
   - 'react/001-OverviewEnvSetup'
   - 'react/003-StateEvent'
   - 'react/004-HooksDeep'
-prerequisites: []
 ---
 
 ## 前置知识

@@ -11,7 +11,7 @@ related:
   - 'javascript/048-ErrorBoundaryGlobalErrorCatch'
   - 'javascript/036-MemoryLeakTroubleshoot'
   - 'javascript/050-DebugPerformanceOptimization'
-  - 'javascript/055-JavaScriptProjectPractice'
+  - 'javascript/059-JavaScriptProjectPractice'
 prerequisites:
   - 'javascript/022-ES6NewFeatures'
   - 'javascript/006-ControlFlow'

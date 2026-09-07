@@ -11,7 +11,6 @@ related:
   - 'vue3/001-OverviewEnv'
   - 'vue3/003-Vue3TemplateSyntax'
   - 'vue3/004-Vue3DirectiveSystem'
-prerequisites: []
 ---
 
 

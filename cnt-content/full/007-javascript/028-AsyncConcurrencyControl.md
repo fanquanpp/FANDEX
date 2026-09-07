@@ -12,7 +12,6 @@ related:
   - 'javascript/027-PromiseStaticMethod'
   - 'javascript/022-ES6NewFeatures'
   - 'javascript/020-DeepShallowCopy'
-prerequisites: []
 ---
 
 

@@ -12,7 +12,6 @@ related:
   - 'react/004-HooksDeep'
   - 'react/006-React19NewFeatures'
   - 'react/007-RouteDataFetch'
-prerequisites: []
 ---
 
 ## 前置知识

@@ -11,7 +11,6 @@ related:
   - 'javascript/002-JavaScriptOverviewRuntimeEnv'
   - 'javascript/004-VariableDataType'
   - 'javascript/005-DataTypeOperator'
-prerequisites: []
 ---
 
 ## 前置知识

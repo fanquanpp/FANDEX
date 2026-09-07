@@ -11,7 +11,6 @@ related:
   - 'software-testing/001-TestBasicsMethod'
   - 'software-testing/003-PerformanceInterfaceTest'
   - 'software-testing/004-SecurityAndMobileTest'
-prerequisites: []
 ---
 
 

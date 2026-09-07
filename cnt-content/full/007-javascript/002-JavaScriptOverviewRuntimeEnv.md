@@ -10,7 +10,6 @@ updated: '2026-08-05'
 related:
   - 'javascript/003-ProgramStructureBasicSyntax'
   - 'javascript/004-VariableDataType'
-prerequisites: []
 ---
 
 ## 前置知识

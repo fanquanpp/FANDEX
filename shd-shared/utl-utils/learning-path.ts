@@ -38,10 +38,8 @@ export { default as shellMap } from '../metadata/learning-path/shell.json';
 export { default as algorithmMap } from '../metadata/learning-path/algorithm.json';
 export { default as csFundamentalsMap } from '../metadata/learning-path/cs-fundamentals.json';
 export { default as devopsMap } from '../metadata/learning-path/devops.json';
-export { default as gettingStartedMap } from '../metadata/learning-path/getting-started.json';
 export { default as markdownMap } from '../metadata/learning-path/markdown.json';
 export { default as githubMap } from '../metadata/learning-path/github.json';
-export { default as pnpmMonorepoMap } from '../metadata/learning-path/pnpm-monorepo.json';
 export { default as svgMap } from '../metadata/learning-path/svg.json';
 export { default as astroMap } from '../metadata/learning-path/astro.json';
 export { default as viteMap } from '../metadata/learning-path/vite.json';
@@ -54,17 +52,8 @@ export { default as networkingMap } from '../metadata/learning-path/networking.j
 export { default as cybersecurityMap } from '../metadata/learning-path/cybersecurity.json';
 export { default as cloudComputingMap } from '../metadata/learning-path/cloud-computing.json';
 export { default as softwareTestingMap } from '../metadata/learning-path/software-testing.json';
-export { default as softwareEngineeringMap } from '../metadata/learning-path/software-engineering.json';
-export { default as softwareArchitectureMap } from '../metadata/learning-path/software-architecture.json';
-export { default as engineeringPracticesMap } from '../metadata/learning-path/engineering-practices.json';
-export { default as mongodbMap } from '../metadata/learning-path/mongodb.json';
 export { default as nextjsMap } from '../metadata/learning-path/nextjs.json';
 export { default as nestjsMap } from '../metadata/learning-path/nestjs.json';
-export { default as denoMap } from '../metadata/learning-path/deno.json';
-export { default as bunMap } from '../metadata/learning-path/bun.json';
-export { default as svelteMap } from '../metadata/learning-path/svelte.json';
-export { default as angularMap } from '../metadata/learning-path/angular.json';
-export { default as messageQueueMap } from '../metadata/learning-path/message-queue.json';
 
 // ============================================================
 // 类型定义

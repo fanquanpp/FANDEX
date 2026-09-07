@@ -1,6 +1,6 @@
 {
   "registry_version": "1.0.0",
-  "updated_at": "2026-08-30T00:00:00.000Z",
+  "updated_at": "2026-09-08T00:00:00.000Z",
   "next_module_sequence": 67,
   "modules": [
     {
@@ -10,7 +10,8 @@
       "folder_order": 1,
       "name": "入门指南",
       "allocated_at": "2026-07-30T16:22:43.351Z",
-      "status": "active"
+      "status": "retired",
+      "retired_at": "2026-09-08T00:00:00.000Z"
     },
     {
       "module_id": "M002",
@@ -262,7 +263,8 @@
       "folder_order": 29,
       "name": "软件工程",
       "allocated_at": "2026-07-30T16:22:43.384Z",
-      "status": "active"
+      "status": "retired",
+      "retired_at": "2026-09-08T00:00:00.000Z"
     },
     {
       "module_id": "M038",
@@ -271,7 +273,8 @@
       "folder_order": 30,
       "name": "软件架构",
       "allocated_at": "2026-07-30T16:22:43.384Z",
-      "status": "active"
+      "status": "retired",
+      "retired_at": "2026-09-08T00:00:00.000Z"
     },
     {
       "module_id": "M039",
@@ -280,7 +283,8 @@
       "folder_order": 31,
       "name": "工程实践",
       "allocated_at": "2026-07-30T16:22:43.384Z",
-      "status": "active"
+      "status": "retired",
+      "retired_at": "2026-09-08T00:00:00.000Z"
     },
     {
       "module_id": "M040",
@@ -454,7 +458,8 @@
       "folder_order": 37,
       "name": "pnpm与Monorepo",
       "allocated_at": "2026-08-01T09:42:11.218Z",
-      "status": "active"
+      "status": "retired",
+      "retired_at": "2026-09-08T00:00:00.000Z"
     },
     {
       "module_id": "M058",
@@ -472,7 +477,8 @@
       "folder_order": 39,
       "name": "MongoDB",
       "allocated_at": "2026-08-03T04:39:01Z",
-      "status": "active"
+      "status": "retired",
+      "retired_at": "2026-09-08T00:00:00.000Z"
     },
     {
       "module_id": "M060",
@@ -499,7 +505,8 @@
       "folder_order": 42,
       "name": "Deno",
       "allocated_at": "2026-08-03T04:39:01Z",
-      "status": "active"
+      "status": "retired",
+      "retired_at": "2026-09-08T00:00:00.000Z"
     },
     {
       "module_id": "M063",
@@ -508,7 +515,8 @@
       "folder_order": 43,
       "name": "Bun",
       "allocated_at": "2026-08-03T04:39:01Z",
-      "status": "active"
+      "status": "retired",
+      "retired_at": "2026-09-08T00:00:00.000Z"
     },
     {
       "module_id": "M064",
@@ -517,7 +525,8 @@
       "folder_order": 44,
       "name": "Svelte",
       "allocated_at": "2026-08-03T04:39:01Z",
-      "status": "active"
+      "status": "retired",
+      "retired_at": "2026-09-08T00:00:00.000Z"
     },
     {
       "module_id": "M065",
@@ -526,7 +535,8 @@
       "folder_order": 45,
       "name": "Angular",
       "allocated_at": "2026-08-03T04:39:01Z",
-      "status": "active"
+      "status": "retired",
+      "retired_at": "2026-09-08T00:00:00.000Z"
     },
     {
       "module_id": "M066",
@@ -535,7 +545,8 @@
       "folder_order": 46,
       "name": "消息队列",
       "allocated_at": "2026-08-03T04:39:01Z",
-      "status": "active"
+      "status": "retired",
+      "retired_at": "2026-09-08T00:00:00.000Z"
     }
   ],
   "docs": [

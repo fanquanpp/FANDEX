@@ -12,7 +12,6 @@ related:
   - 'react/008-PerformanceOptimization'
   - 'react/010-NextJSFullStack'
   - 'react/011-JSXDeepAnalysis'
-prerequisites: []
 ---
 
 ## 前置知识

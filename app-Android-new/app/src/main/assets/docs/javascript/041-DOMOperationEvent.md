@@ -8,11 +8,10 @@ description: DOM 树操作、事件模型与事件委托。
 author: fanquanpp
 updated: '2026-08-01'
 related:
-  - 'javascript/060-RecordsAndTuples'
+  - 'javascript/065-ImmutableDataStructures'
   - 'javascript/007-ObjectArray'
-  - 'javascript/058-JavaScriptLatestFeature'
+  - 'javascript/062-JavaScriptLatestFeature'
   - 'javascript/038-JavaScriptModular'
-prerequisites: []
 ---
 
 ## 前置知识

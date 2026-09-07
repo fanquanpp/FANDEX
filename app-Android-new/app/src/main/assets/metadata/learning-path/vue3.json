@@ -195,7 +195,7 @@
           "title": "组件库工程化",
           "desc": "组件库开发、发布与文档规范",
           "difficulty": "advanced",
-          "doc": "038-ComponentLibraryEngineering"
+          "doc": "039-ComponentLibraryEngineering"
         }
       ]
     }

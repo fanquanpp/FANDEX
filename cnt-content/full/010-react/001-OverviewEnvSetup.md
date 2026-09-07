@@ -10,7 +10,6 @@ updated: '2026-08-03'
 related:
   - 'react/002-ComponentProps'
   - 'react/003-StateEvent'
-prerequisites: []
 ---
 
 

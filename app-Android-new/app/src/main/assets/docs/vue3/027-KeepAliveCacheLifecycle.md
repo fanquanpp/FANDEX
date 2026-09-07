@@ -12,7 +12,6 @@ related:
   - 'vue3/026-TeleportPortalApp'
   - 'vue3/028-AsyncComponentSuspense'
   - 'vue3/029-PiniaPersistencePlugin'
-prerequisites: []
 ---
 
 ## 前置知识

@@ -9,8 +9,7 @@ author: fanquanpp
 updated: '2026-08-03'
 related:
   - 'astro/001-AstroOverview'
-  - 'pnpm-monorepo/001-PnpmMonorepoOverview'
-prerequisites: []
+  - 'vite/015-PnpmMonorepoOverview'
 ---
 
 

@@ -12,7 +12,6 @@ related:
   - 'vue3/025-CustomComposableWrapper'
   - 'vue3/027-KeepAliveCacheLifecycle'
   - 'vue3/028-AsyncComponentSuspense'
-prerequisites: []
 ---
 
 ## 前置知识

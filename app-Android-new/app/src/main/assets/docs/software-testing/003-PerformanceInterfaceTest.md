@@ -12,7 +12,6 @@ related:
   - 'software-testing/002-FunctionalAndAutomatedTest'
   - 'software-testing/004-SecurityAndMobileTest'
   - 'software-testing/005-TestConceptPrinciple'
-prerequisites: []
 ---
 
 

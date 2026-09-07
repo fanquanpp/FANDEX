@@ -9,10 +9,9 @@ author: fanquanpp
 updated: '2026-06-14'
 related:
   - 'python/004-VariableConstant'
-  - 'python/070-BasicDataType'
+  - 'python/071-BasicDataType'
   - 'python/009-OperatorExpression'
-  - 'python/011-Metaclass'
-prerequisites: []
+  - 'python/012-Metaclass'
 ---
 
 ## 前置知识

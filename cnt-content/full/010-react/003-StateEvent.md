@@ -12,7 +12,6 @@ related:
   - 'react/002-ComponentProps'
   - 'react/004-HooksDeep'
   - 'react/005-ContextGlobalState'
-prerequisites: []
 ---
 
 ## 前置知识

@@ -13,21 +13,21 @@
           "title": "概述与快速上手",
           "desc": "IoC 与装饰器心智模型",
           "difficulty": "beginner",
-          "doc": "001-NestJSOverview"
+          "doc": "015-NestJSOverview"
         },
         {
           "id": "nest-002",
           "title": "模块、控制器与服务",
           "desc": "组织应用的最小骨架",
           "difficulty": "beginner",
-          "doc": "002-ModuleControllerService"
+          "doc": "016-ModuleControllerService"
         },
         {
           "id": "nest-003",
           "title": "管道校验与异常处理",
           "desc": "DTO 校验与统一错误",
           "difficulty": "beginner",
-          "doc": "003-ValidationPipes"
+          "doc": "017-ValidationPipes"
         }
       ]
     },
@@ -41,21 +41,21 @@
           "title": "守卫与请求生命周期",
           "desc": "CanActivate 与角色鉴权",
           "difficulty": "intermediate",
-          "doc": "006-GuardsAndLifecycle"
+          "doc": "020-GuardsAndLifecycle"
         },
         {
           "id": "nest-102",
           "title": "拦截器与异常过滤器",
           "desc": "环绕逻辑与错误兜底",
           "difficulty": "intermediate",
-          "doc": "007-InterceptorsAndFilters"
+          "doc": "021-InterceptorsAndFilters"
         },
         {
           "id": "nest-103",
           "title": "配置与环境变量校验",
           "desc": "启动即校验的类型安全配置",
           "difficulty": "intermediate",
-          "doc": "008-ConfigEnvValidation"
+          "doc": "022-ConfigEnvValidation"
         }
       ]
     },
@@ -69,28 +69,28 @@
           "title": "接入数据库",
           "desc": "Prisma + PostgreSQL 集成",
           "difficulty": "intermediate",
-          "doc": "004-DatabaseIntegration"
+          "doc": "018-DatabaseIntegration"
         },
         {
           "id": "nest-202",
           "title": "缓存与消息队列",
           "desc": "CacheModule 与 BullMQ",
           "difficulty": "advanced",
-          "doc": "009-CachingAndQueues"
+          "doc": "023-CachingAndQueues"
         },
         {
           "id": "nest-203",
           "title": "微服务与健康检查",
           "desc": "传输层与 ClientProxy",
           "difficulty": "advanced",
-          "doc": "010-MicroservicesAndHealth"
+          "doc": "024-MicroservicesAndHealth"
         },
         {
           "id": "nest-204",
           "title": "单元与端到端测试",
           "desc": "TestBed 与 E2E",
           "difficulty": "intermediate",
-          "doc": "005-Testing"
+          "doc": "019-Testing"
         }
       ]
     }

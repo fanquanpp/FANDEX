@@ -10,8 +10,8 @@ updated: '2026-07-21'
 related:
   - 'javascript/036-MemoryLeakTroubleshoot'
   - 'javascript/043-WebAPIBrowserInterface'
-  - 'javascript/055-JavaScriptProjectPractice'
-  - 'javascript/052-NodeJsPerformanceOptimization'
+  - 'javascript/059-JavaScriptProjectPractice'
+  - 'javascript/055-NodeJsPerformanceOptimization'
 prerequisites:
   - 'javascript/006-ControlFlow'
   - 'javascript/008-FunctionScopeClosure'

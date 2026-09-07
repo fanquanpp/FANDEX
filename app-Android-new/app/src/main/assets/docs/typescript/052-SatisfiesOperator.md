@@ -8,7 +8,7 @@ description: TypeScript 4.9 引入的 satisfies 操作符详解：保留具体�
 author: fanquanpp
 updated: '2026-08-03'
 related:
-  - 'typescript/050-TypeScript5NewFeatures'
+  - 'typescript/050-TypeScript5xNewFeatures'
   - 'typescript/051-TypeScriptEngineeringConfig'
   - 'typescript/053-TypeScriptMigrationPractice'
   - 'typescript/054-ConditionalTypeInfer'

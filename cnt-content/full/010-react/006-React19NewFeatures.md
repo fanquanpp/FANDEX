@@ -12,7 +12,6 @@ related:
   - 'react/005-ContextGlobalState'
   - 'react/007-RouteDataFetch'
   - 'react/008-PerformanceOptimization'
-prerequisites: []
 ---
 
 ## 前置知识

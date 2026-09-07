@@ -12,7 +12,6 @@ related:
   - 'vue3/020-PiniaStateManagementDetailed'
   - 'vue3/022-ComputedCacheWatchTiming'
   - 'vue3/023-VueRouterDetailed'
-prerequisites: []
 ---
 
 ## 前置知识

@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-08-03'
 related:
   - 'nextjs/003-DataFetchingCaching'
-  - 'devops/023-DockerfileMultiBuild'
+  - 'devops/029-DockerfileMultiBuild'
   - 'cloud-computing/009-DockerDeepAnalysis'
 prerequisites:
   - 'nextjs/003-DataFetchingCaching'

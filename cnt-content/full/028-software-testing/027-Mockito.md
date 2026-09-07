@@ -7,8 +7,6 @@ difficulty: beginner
 description: Mockito 模拟 的完整教学讲解。
 author: fanquanpp
 updated: '2026-08-01'
-related: []
-prerequisites: []
 ---
 
 ## mock 创建模拟对象

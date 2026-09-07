@@ -9,10 +9,9 @@ author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'javascript/041-DOMOperationEvent'
-  - 'javascript/058-JavaScriptLatestFeature'
+  - 'javascript/062-JavaScriptLatestFeature'
   - 'javascript/025-AsyncProgramming'
   - 'javascript/035-ClosureMemoryLeakOptimization'
-prerequisites: []
 ---
 
 ## 前置知识

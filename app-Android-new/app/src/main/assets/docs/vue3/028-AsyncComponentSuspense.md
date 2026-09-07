@@ -12,7 +12,6 @@ related:
   - 'vue3/027-KeepAliveCacheLifecycle'
   - 'vue3/029-PiniaPersistencePlugin'
   - 'vue3/030-VueRouterNavigationGuard'
-prerequisites: []
 ---
 
 

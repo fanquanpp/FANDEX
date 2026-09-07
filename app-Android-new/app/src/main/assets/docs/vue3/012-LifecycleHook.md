@@ -12,7 +12,6 @@ related:
   - 'vue3/011-Vue3SSR'
   - 'vue3/013-Vue3TestStrategy'
   - 'vue3/014-Vue3WebComponents'
-prerequisites: []
 ---
 
 ## 前置知识

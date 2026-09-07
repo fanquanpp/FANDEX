@@ -10,7 +10,6 @@ updated: '2026-08-03'
 related:
   - 'vue3/002-Vue3QuickStartGuide'
   - 'vue3/003-Vue3TemplateSyntax'
-prerequisites: []
 ---
 
 

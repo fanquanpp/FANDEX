@@ -12,7 +12,6 @@ related:
   - 'vue3/006-API'
   - 'vue3/008-CustomDirectiveAdvanced'
   - 'vue3/009-TransitionAnimation'
-prerequisites: []
 ---
 
 

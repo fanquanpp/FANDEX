@@ -11,7 +11,7 @@ related:
   - 'kotlin/002-KotlinOverviewEnvSetup'
   - 'java/002-JavaOverviewDevEnv'
 prerequisites:
-  - 'getting-started/002-WhatIsProgramming'
+  - 'cs-fundamentals/011-ProgrammingBasics'
 ---
 
 ## Kotlin 在技术版图中的位置

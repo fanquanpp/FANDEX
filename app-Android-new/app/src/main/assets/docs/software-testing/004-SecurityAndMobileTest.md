@@ -12,7 +12,6 @@ related:
   - 'software-testing/003-PerformanceInterfaceTest'
   - 'software-testing/005-TestConceptPrinciple'
   - 'software-testing/006-TestLevels'
-prerequisites: []
 ---
 
 

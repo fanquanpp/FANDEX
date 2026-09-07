@@ -12,7 +12,6 @@ related:
   - 'vue3/012-LifecycleHook'
   - 'vue3/014-Vue3WebComponents'
   - 'vue3/015-Vue3PerformancePractice'
-prerequisites: []
 ---
 
 ## 1. 测试工具

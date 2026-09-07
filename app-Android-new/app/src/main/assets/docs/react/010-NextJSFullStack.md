@@ -12,7 +12,6 @@ related:
   - 'react/009-TestEngineering'
   - 'react/011-JSXDeepAnalysis'
   - 'react/012-FiberArchitecture'
-prerequisites: []
 ---
 
 ## 前置知识

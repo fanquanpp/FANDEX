@@ -11,7 +11,6 @@ related:
   - 'redis/001-OverviewCoreDataStructure'
   - 'redis/002-PersistenceModule'
   - 'redis/004-CacheStrategyAdvancedFeature'
-prerequisites: []
 ---
 
 ## 1. 主从复制

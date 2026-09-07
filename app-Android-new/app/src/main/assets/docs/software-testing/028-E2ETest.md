@@ -7,8 +7,6 @@ difficulty: beginner
 description: E2E 端到端测试 的完整教学讲解。
 author: fanquanpp
 updated: '2026-08-01'
-related: []
-prerequisites: []
 ---
 
 ## Cypress 基础

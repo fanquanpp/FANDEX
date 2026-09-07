@@ -9,10 +9,9 @@ author: fanquanpp
 updated: '2026-08-02'
 related:
   - 'javascript/026-PromiseConstructorDeepDive'
-  - 'javascript/060-RecordsAndTuples'
+  - 'javascript/065-ImmutableDataStructures'
   - 'javascript/041-DOMOperationEvent'
-  - 'javascript/058-JavaScriptLatestFeature'
-prerequisites: []
+  - 'javascript/062-JavaScriptLatestFeature'
 ---
 
 ## 前置知识

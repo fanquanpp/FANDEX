@@ -12,7 +12,6 @@ related:
   - 'vue3/024-CompositionAPIAdvantageScene'
   - 'vue3/026-TeleportPortalApp'
   - 'vue3/027-KeepAliveCacheLifecycle'
-prerequisites: []
 ---
 
 ## 前置知识

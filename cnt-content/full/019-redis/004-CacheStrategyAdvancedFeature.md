@@ -11,7 +11,6 @@ related:
   - 'redis/002-PersistenceModule'
   - 'redis/003-ClusterHA'
   - 'redis/005-BitMapRedis'
-prerequisites: []
 ---
 
 

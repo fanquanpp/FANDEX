@@ -8,10 +8,10 @@ description: Shell 脚本编程基础：命令、变量、管道、控制流、�
 author: fanquanpp
 updated: '2026-08-02'
 related:
-  - 'getting-started/008-CommandLineBasics'
+  - 'shell/003-CommandLineBasics'
   - 'devops/005-CICDPipeline'
 prerequisites:
-  - 'getting-started/008-CommandLineBasics'
+  - 'shell/003-CommandLineBasics'
 ---
 
 

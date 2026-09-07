@@ -10,8 +10,8 @@ updated: '2026-08-01'
 related:
   - 'cloud-computing/020-CloudCostOptimization'
   - 'cloud-computing/021-TwelveFactorApp'
-  - 'cloud-computing/023-ServiceMesh'
-  - 'cloud-computing/024-Observability'
+  - 'cloud-computing/024-ServiceMesh'
+  - 'cloud-computing/025-Observability'
 prerequisites:
   - 'cloud-computing/001-CloudComputingBasics'
 ---

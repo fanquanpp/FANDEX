@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-08-03'
 related:
   - 'typescript/043-TypeSafeEnvVar'
-  - 'typescript/050-TypeScript5NewFeatures'
+  - 'typescript/050-TypeScript5xNewFeatures'
   - 'typescript/052-SatisfiesOperator'
   - 'typescript/053-TypeScriptMigrationPractice'
 prerequisites: []
@@ -23,7 +23,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [TypeScript5 新特性](/typescript/050-TypeScript5NewFeatures)：建议先完成前一篇的学习
+- [TypeScript5 新特性](/typescript/050-TypeScript5xNewFeatures)：建议先完成前一篇的学习
 
 ## 学习目标
 

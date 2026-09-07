@@ -112,6 +112,11 @@
           "desc": "类定义、访问修饰符、装饰器模式与元数据。",
           "difficulty": "intermediate",
           "doc": "017-ClassDecorator"
+        },
+        {
+          "id": "ts-why",
+          "title": "为什么需要 TypeScript",
+          "doc": "001-WhyTypeScript"
         }
       ]
     },
@@ -349,7 +354,12 @@
           "title": "TypeScript 高频疑问 FAQ 合集",
           "desc": "按主题整理 TypeScript 学习中的高频疑问：any/unknown、interface/type、as/satisfies、import type、推断与收窄等。",
           "difficulty": "beginner",
-          "doc": "069-TypeScriptFAQ"
+          "doc": "070-TypeScriptFAQ"
+        },
+        {
+          "id": "ts-jsdoc",
+          "title": "JSDoc 类型驱动开发",
+          "doc": "069-JSDocTypeDevelopment"
         }
       ]
     },
@@ -358,41 +368,6 @@
       "title": "专项与速查",
       "subtitle": "按教学顺序补齐的进阶、工程化与速查文档",
       "nodes": [
-        {
-          "id": "ts-047",
-          "title": "类型兼容性（结构化类型系统）",
-          "desc": "TypeScript 结构化类型系统的赋值兼容规则：对象、函数、联合、交叉与特殊类型的兼容判断。",
-          "difficulty": "beginner",
-          "doc": "012-TypeCompatibility"
-        },
-        {
-          "id": "ts-048",
-          "title": "类型推断深入（拓宽与收窄）",
-          "desc": "TypeScript 类型推断的完整规则：字面量拓宽、const 与 let 差异、最佳公共类型、上下文类型推断与泛型推断。",
-          "difficulty": "intermediate",
-          "doc": "014-TypeInferenceDeepDive"
-        },
-        {
-          "id": "ts-049",
-          "title": "as const 完整讲解（const 断言）",
-          "desc": "as const 的完整语义：字面量收窄、递归只读、数组转元组，以及与类型注解、satisfies、enum 的取舍。",
-          "difficulty": "intermediate",
-          "doc": "015-ConstAssertion"
-        },
-        {
-          "id": "ts-050",
-          "title": "never 类型完整语义",
-          "desc": "never 作为空类型的完整语义：联合吸收、交叉吸收、穷尽检查、与 unknown 的对偶关系及其在泛型中的应用。",
-          "difficulty": "intermediate",
-          "doc": "016-NeverTypeSemantics"
-        },
-        {
-          "id": "ts-051",
-          "title": "import type 与 verbatimModuleSyntax",
-          "desc": "值导入与类型导入的区别、import type 的写法、verbatimModuleSyntax 与 isolatedModules 的作用及常见陷阱。",
-          "difficulty": "intermediate",
-          "doc": "025-ImportTypeVerbatimModuleSyntax"
-        },
         {
           "id": "ts-052",
           "title": "符号与唯一类型",
@@ -496,7 +471,7 @@
           "title": "TypeScript5新特性",
           "desc": "TypeScript 5.x 全版本新特性、形式语义与生产环境迁移指南",
           "difficulty": "intermediate",
-          "doc": "050-TypeScript5NewFeatures"
+          "doc": "050-TypeScript5xNewFeatures"
         },
         {
           "id": "ts-067",
@@ -520,13 +495,6 @@
           "doc": "059-ModuleDeclarationGlobalAugmentation"
         },
         {
-          "id": "ts-070",
-          "title": "TypeScript 项目实战：类型安全 TODO 应用",
-          "desc": "用 TypeScript 从零搭建前后端 TODO 应用：共享类型层、Node 后端、原生前端，串联类型守卫、收窄、工具类型与工程配置。",
-          "difficulty": "intermediate",
-          "doc": "063-TypeScriptProjectExampleTodoApp"
-        },
-        {
           "id": "ts-071",
           "title": "TypeScript 理论知识点",
           "desc": "类型论基础、结构化类型、子类型理论、类型推导、泛型多态与类型级计算的形式语义与工程实践。",
@@ -545,14 +513,7 @@
           "title": "TypeScript 7 原生编译器",
           "desc": "TypeScript 7（typescript-go 原生端口）的定位、安装、兼容性与迁移要点。",
           "difficulty": "intermediate",
-          "doc": "068-TypeScript7CompilerGuide"
-        },
-        {
-          "id": "ts-074",
-          "title": "TypeScript 高频疑问 FAQ 合集",
-          "desc": "按主题整理 TypeScript 学习中的高频疑问：any/unknown、interface/type、as/satisfies、import type、推断与收窄等。",
-          "difficulty": "beginner",
-          "doc": "069-TypeScriptFAQ"
+          "doc": "068-TypeScript6And7CompilerEvolution"
         }
       ]
     },
@@ -566,14 +527,14 @@
           "title": "Project References 与 Monorepo",
           "desc": "大仓中的 TS 组织",
           "difficulty": "advanced",
-          "doc": "070-ProjectReferencesMonorepo"
+          "doc": "071-ProjectReferencesMonorepo"
         },
         {
           "id": "ts-902",
           "title": "运行时 Schema 校验",
           "desc": "zod 与类型单源",
           "difficulty": "intermediate",
-          "doc": "071-RuntimeSchemaValidation"
+          "doc": "072-RuntimeSchemaValidation"
         },
         {
           "id": "ts-903",

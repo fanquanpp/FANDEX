@@ -8,10 +8,10 @@ description: Shell 命令行基础：文件与目录操作、通配符与帮助�
 author: fanquanpp
 updated: '2026-08-02'
 related:
-  - 'shell/003-TextProcessingTools'
+  - 'shell/016-TextProcessingTools'
   - 'shell/001-ShellBasics'
 prerequisites:
-  - 'getting-started/008-CommandLineBasics'
+  - 'shell/003-CommandLineBasics'
   - 'shell/001-ShellBasics'
 ---
 

@@ -11,7 +11,7 @@ related:
   - 'typescript/003-TypeScriptOverviewEnvSetup'
   - 'typescript/008-BasicTypeSystem'
   - 'typescript/009-InterfaceTypeAlias'
-  - 'typescript/069-TypeScriptFAQ'
+  - 'typescript/070-TypeScriptFAQ'
 prerequisites: []
 ---
 

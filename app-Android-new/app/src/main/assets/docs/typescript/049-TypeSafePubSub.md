@@ -12,7 +12,7 @@ related:
   - 'typescript/048-TypeSafeDatabaseQuery'
   - 'typescript/029-CovarianceContravariance'
   - 'typescript/013-LiteralUnionTypes'
-  - 'typescript/050-TypeScript5NewFeatures'
+  - 'typescript/050-TypeScript5xNewFeatures'
 prerequisites:
   - 'typescript/013-LiteralUnionTypes'
 ---

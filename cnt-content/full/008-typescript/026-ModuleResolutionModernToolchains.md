@@ -12,7 +12,7 @@ related:
   - 'typescript/024-DeclarationFileWriting'
   - 'typescript/027-AdvancedTypeCalculus'
   - 'typescript/028-TypeGymnasticsPracticalPatterns'
-  - 'typescript/050-TypeScript5NewFeatures'
+  - 'typescript/050-TypeScript5xNewFeatures'
 prerequisites: []
 ---
 

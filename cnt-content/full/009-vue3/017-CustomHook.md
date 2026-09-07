@@ -12,7 +12,6 @@ related:
   - 'vue3/016-ReactiveSystem'
   - 'vue3/018-ComponentSystem'
   - 'vue3/019-TypeScriptIntegration'
-prerequisites: []
 ---
 
 

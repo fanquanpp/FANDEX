@@ -26,17 +26,17 @@
         {
           "id": "devops-004",
           "title": "基础设施即代码",
-          "doc": "007-IaC"
+          "doc": "013-IaC"
         },
         {
           "id": "devops-005",
           "title": "Shell脚本编程",
-          "doc": "009-ShellScriptProgramming"
+          "doc": "015-ShellScriptProgramming"
         },
         {
           "id": "devops-006",
           "title": "服务网格",
-          "doc": "011-ServiceMesh"
+          "doc": "017-ServiceMesh"
         }
       ]
     },
@@ -48,32 +48,32 @@
         {
           "id": "devops-101",
           "title": "配置管理",
-          "doc": "013-ConfigManagement"
+          "doc": "019-ConfigManagement"
         },
         {
           "id": "devops-102",
           "title": "高可用架构",
-          "doc": "015-HighAvailabilityArchitecture"
+          "doc": "021-HighAvailabilityArchitecture"
         },
         {
           "id": "devops-103",
           "title": "故障排查",
-          "doc": "017-Troubleshooting"
+          "doc": "023-Troubleshooting"
         },
         {
           "id": "devops-104",
           "title": "GitOps与持续交付",
-          "doc": "019-GitOpsCD"
+          "doc": "025-GitOpsCD"
         },
         {
           "id": "devops-105",
           "title": "网络与安全进阶",
-          "doc": "021-NetworkSecurityAdvanced"
+          "doc": "027-NetworkSecurityAdvanced"
         },
         {
           "id": "devops-106",
           "title": "Dockerfile多阶段构建",
-          "doc": "023-DockerfileMultiBuild"
+          "doc": "029-DockerfileMultiBuild"
         }
       ]
     },
@@ -85,32 +85,32 @@
         {
           "id": "devops-201",
           "title": "Helm-Chart应用打包",
-          "doc": "025-HelmChartApplicationPackage"
+          "doc": "031-HelmChartApplicationPackage"
         },
         {
           "id": "devops-202",
           "title": "Ansible-Playbook配置管理",
-          "doc": "027-AnsiblePlaybookConfigManagement"
+          "doc": "033-AnsiblePlaybookConfigManagement"
         },
         {
           "id": "devops-203",
           "title": "Grafana仪表盘配置",
-          "doc": "029-GrafanaTableConfig"
+          "doc": "035-GrafanaTableConfig"
         },
         {
           "id": "devops-204",
           "title": "OpenTelemetry",
-          "doc": "031-OpenTelemetry"
+          "doc": "037-OpenTelemetry"
         },
         {
           "id": "devops-205",
           "title": "DevOps kubectl 基础命令",
-          "doc": "033-KubectlBasics"
+          "doc": "039-KubectlBasics"
         },
         {
           "id": "devops-206",
           "title": "DevOps Jenkins Pipeline",
-          "doc": "035-JenkinsPipeline"
+          "doc": "041-JenkinsPipeline"
         }
       ]
     }

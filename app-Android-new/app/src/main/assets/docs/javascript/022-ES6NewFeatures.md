@@ -13,7 +13,6 @@ related:
   - 'javascript/020-DeepShallowCopy'
   - 'javascript/049-DebounceThrottle'
   - 'javascript/034-ProxyReflectPractice'
-prerequisites: []
 ---
 
 ## 前置知识

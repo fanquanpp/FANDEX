@@ -12,7 +12,6 @@ related:
   - 'react/006-React19NewFeatures'
   - 'react/008-PerformanceOptimization'
   - 'react/009-TestEngineering'
-prerequisites: []
 ---
 
 ## 前置知识

@@ -12,7 +12,6 @@ related:
   - 'vue3/030-VueRouterNavigationGuard'
   - 'vue3/032-PerformanceOptimization'
   - 'vue3/033-Vue3AdvancedComponentFeature'
-prerequisites: []
 ---
 
 

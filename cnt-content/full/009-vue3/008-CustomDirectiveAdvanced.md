@@ -12,7 +12,6 @@ related:
   - 'vue3/007-ProvideInject'
   - 'vue3/009-TransitionAnimation'
   - 'vue3/010-Vue3CompileOptimization'
-prerequisites: []
 ---
 
 ## 1. 指令钩子

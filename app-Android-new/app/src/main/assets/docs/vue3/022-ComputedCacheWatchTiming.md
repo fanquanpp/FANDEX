@@ -12,7 +12,6 @@ related:
   - 'vue3/021-PluginDevelopment'
   - 'vue3/023-VueRouterDetailed'
   - 'vue3/024-CompositionAPIAdvantageScene'
-prerequisites: []
 ---
 
 ## 1. computed 缓存机制

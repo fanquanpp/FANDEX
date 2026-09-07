@@ -12,7 +12,6 @@ related:
   - 'javascript/039-ModuleDynamicImportCodeSplitting'
   - 'javascript/011-Regex'
   - 'javascript/048-ErrorBoundaryGlobalErrorCatch'
-prerequisites: []
 ---
 
 ## 前置知识

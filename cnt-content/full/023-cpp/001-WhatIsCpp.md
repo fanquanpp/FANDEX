@@ -11,7 +11,7 @@ related:
   - 'cpp/002-CppOverviewAndModernStandard'
   - 'c/002-CLanguageOverview'
 prerequisites:
-  - 'getting-started/002-WhatIsProgramming'
+  - 'cs-fundamentals/011-ProgrammingBasics'
 ---
 
 ## C 与 C++：同源而不同路

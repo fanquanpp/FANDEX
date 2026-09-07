@@ -12,7 +12,6 @@ related:
   - 'devops/002-NetworkSecurity'
   - 'devops/004-Kubernetes'
   - 'devops/005-CICDPipeline'
-prerequisites: []
 ---
 
 ## 1. 容器原理

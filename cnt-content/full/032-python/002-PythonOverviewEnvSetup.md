@@ -10,7 +10,6 @@ updated: '2026-08-05'
 related:
   - 'python/003-ProgramStructureBasicSyntax'
   - 'python/004-VariableConstant'
-prerequisites: []
 ---
 
 ## 前置知识

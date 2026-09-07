@@ -12,7 +12,6 @@ related:
   - 'javascript/018-JavaScriptPrototypeInheritance'
   - 'javascript/048-ErrorBoundaryGlobalErrorCatch'
   - 'javascript/036-MemoryLeakTroubleshoot'
-prerequisites: []
 ---
 
 ## 前置知识
