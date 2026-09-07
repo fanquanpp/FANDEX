@@ -12,10 +12,10 @@ UI/UX 美术风格（ark-ui 设计语言）均与 web 端对齐。
 | 项 | 值 |
 | --- | --- |
 | applicationId | `com.fandexpp.fandex` |
-| 版本 | 1.0.0 (versionCode 1) |
+| 版本 | 随仓库统一发版（当前 4.3.1，见根 CHANGELOG.md） |
 | 技术栈 | Kotlin 2.4 + Jetpack Compose (BOM 2026.08) + Material 3 |
 | minSdk / targetSdk | 26 / 37 |
-| 内容规模 | 46 模块 / 1743 篇文档 / 8500+ 语法点 / 40+ 学习路径，全部离线内置 |
+| 内容规模 | 35 模块 / 1700+ 篇文档 / 4300+ 条语法速查 / 36 条学习路径，全部离线内置 |
 
 旧版安装包归档于 `legacy/`（已 gitignore），用于设备上的恢复参考。
 

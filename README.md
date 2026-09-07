@@ -2,8 +2,9 @@
 
 **FANDEX 是一套面向零基础学习者的全栈自学体系，也是学成之后的随身语法速查伴侣。**
 
-46 个技术模块、1700+ 篇中文教学文档，从"计算机是如何工作的"讲到数据库、后端、云原生与
-软件架构，全部内容离线可用——网页、Windows 桌面端、Android 双端应用均可使用。
+35 个技术模块、1700+ 篇中文教学文档、4300+ 条语法速查、36 条学习路径，从"计算机
+是如何工作的"讲到数据库、后端、云原生与软件架构，全部内容离线可用——网页、
+Windows 桌面端、Android 双端应用均可使用。
 
 整个体系托管在**单一 Git 仓库（monorepo）**中（根目录唯一 `.git`，无子仓库与
 submodule），四端共享同一内容体系：内容单一来源 `cnt-content/full`，模块元数据
@@ -21,7 +22,8 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 ├── app-Android-old/    # Android 应用 · 旧技术栈归档线（已冻结，仅修阻断缺陷）
 ├── cnt-content/        # 内容层：full/ 全量文档、syntax/ 语法速览素材
 ├── shd-shared/         # 共享层：设计令牌、模块元数据（metadata/modules.json）、图标资产
-└── thd-third-party/    # 第三方组件 / 插件 / 适配器
+├── thd-third-party/    # 第三方组件 / 插件 / 适配器
+└── scripts/            # 仓库级自动化脚本（release.mjs 一键发版）
 ```
 
 ## 客户端
@@ -92,8 +94,12 @@ cd app-desktop && npx tauri build     # 打包 NSIS 安装包（需 Rust 工具�
 
 ## 内容管线
 
-内容单一来源为 `cnt-content/full/<编号-模块>/<编号-标题>.md`，frontmatter 携带
-`order / title / module / category / difficulty / description` 等元数据：
+内容单一来源为 `cnt-content/full/<编号-模块>/<编号-标题>.md`。内容维护遵循
+「作者只写内容，元数据自动补全」：`pnpm sync`（零依赖幂等脚本
+`app-web/scripts/content-sync.mjs`，已接入全部本地构建与 CI）会在构建前自动
+补全 frontmatter 托管字段、以各模块 `module.json` 为事实源注册与回收模块、
+清理死链引用；`app-web/scripts/content-audit.mjs` 做内容质量审计，HIGH 级
+问题阻断流水线。三端消费方式：
 
 - **网站**：Astro Content Collections 构建期校验（`app-web/src/content.config.ts`）；
 - **Android new**：`app-Android-new/scripts/generate-content.mjs` 生成
@@ -101,10 +107,8 @@ cd app-desktop && npx tauri build     # 打包 NSIS 安装包（需 Rust 工具�
 - **Android old**：`app-Android-old/scripts/generate-legacy-content.mjs` 生成
   `assets/dist-mobile`（frontmatter 剥离 + `index.json` 索引）。
 
-模块与分类元数据以各模块文件夹内的 `module.json` 为手写事实源，
-`shd-shared/metadata/modules.json` 由 `app-web/scripts/content-sync.mjs`
-在构建期自动重建。新增或修改文档前，请先阅读 [AGENTS.md](AGENTS.md) 中的
-内容规范与自动化说明。
+新增或修改文档前，请先阅读 [AGENTS.md](AGENTS.md) 中的内容规范与自动化说明，
+完整协作教程见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 构建与发布（CI）
 
@@ -119,13 +123,18 @@ GitHub Release（`FANDEX-<tag>.apk`、`FANDEX-Legacy-<tag>.apk` 与
 
 `.github/workflows/deploy.yml`：push 到 main 后构建网站并发布至 GitHub Pages。
 
+日常发版使用 `pnpm release [版本号]`：自动 patch +1（或指定版本）、同步五处
+版本文件、Android versionCode +1、迁移 CHANGELOG「未发布」段并 commit + tag +
+push，push 后 CI 自动构建并发布 GitHub Release（`--no-push` 只改文件与提交）。
+
 版本变更历史见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 贡献
 
-欢迎修正文档错误、补充知识点与报告问题。提交流程与规范见
-[CONTRIBUTING.md](CONTRIBUTING.md)；文档 frontmatter 字段约束、目录职责与工程规范
-见 [AGENTS.md](AGENTS.md)。
+欢迎修正文档错误、补充知识点与报告问题。仓库采用 `main`（受保护发布主线）+
+`dev`（协作集成分支）的双分支模型，从环境准备到合并的完整协作教程见
+[CONTRIBUTING.md](CONTRIBUTING.md)；文档 frontmatter 字段约束、目录职责与工程
+规范见 [AGENTS.md](AGENTS.md)。
 
 ## 许可与免责
 
