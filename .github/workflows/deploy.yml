@@ -54,11 +54,15 @@ permissions:
   pages: write            # 写入 Pages 部署
   id-token: write         # 生成 OIDC token 用于部署认证
 
-# 并发控制：同一 Pages 环境串行部署；cancel-in-progress 必须为 false，
-# 取消进行中的 Pages 部署会使部署进入孤立状态（官方模板同款配置）
+# 并发控制：按 ref 分组。同一分支的新运行排队/取消旧的，不同 ref 之间互不干扰
+# （若用字面量 group: pages，PR 校验运行与部署运行会共享队列，GitHub 会把
+#  仍在排队的 push 部署运行按"同组仅保留最新"规则取消）。
+# - main（push/dispatch）：cancel-in-progress=false，串行部署；
+#   取消进行中的 Pages 部署会使部署进入孤立状态（官方模板同款配置）
+# - PR：cancel-in-progress=true，PR 更新时自动取消过期的校验运行
 concurrency:
-  group: pages
-  cancel-in-progress: false
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   # ========================================================
