@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 信息收集技术：被动侦察、主动扫描、OSINT、子域名枚举与指纹识别详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/021-HTTPSPrinciple'
   - 'cybersecurity/022-PenetrationTestingMethodology'

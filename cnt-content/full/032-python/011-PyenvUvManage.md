@@ -6,7 +6,8 @@ category: 后端技术
 difficulty: beginner
 description: pyenv 与 uv 的安装、Python 版本管理与项目依赖管理。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
+related: []
 prerequisites:
   - 'shell/005-DevEnvSetup'
 ---

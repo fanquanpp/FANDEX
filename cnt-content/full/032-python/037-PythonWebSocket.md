@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: WebSocket实时通信
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/035-PythonMessageQueue'
   - 'python/036-PythonGrpc'
   - 'python/038-PythonCICD'
   - 'python/039-PythonPerformance'
+prerequisites: []
 ---
 
 ## 前置知识

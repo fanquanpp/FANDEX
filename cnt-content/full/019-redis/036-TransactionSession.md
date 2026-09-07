@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 多文档事务、会话与因果一致性——在文档数据库里获得确定性。
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-09-08'
 related:
   - 'redis/035-SchemaDesignEnterprise'
 prerequisites:

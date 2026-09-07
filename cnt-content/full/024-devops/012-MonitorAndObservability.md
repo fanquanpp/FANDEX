@@ -6,11 +6,12 @@ category: 云与基础设施
 difficulty: intermediate
 description: Prometheus+Grafana、日志、链路追踪、OpenTelemetry 与 SLO/SLI/SLA。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/005-CICDPipeline'
   - 'devops/013-IaC'
   - 'devops/014-CloudNativeSRE'
+prerequisites: []
 ---
 
 

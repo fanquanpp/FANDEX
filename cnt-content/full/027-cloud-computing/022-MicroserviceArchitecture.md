@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 微服务架构设计：拆分策略、通信模式、数据管理与服务治理详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/020-CloudCostOptimization'
   - 'cloud-computing/021-TwelveFactorApp'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 系统阐述 Celery 分布式任务队列的架构、Broker/Worker/Backend 协作模型、AMQP 协议、任务状态机、Canvas 工作流（chain/group/chord）、Beat 调度、重试与幂等机制，以及生产级部署、监控与性能优化实践。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'python/018-PythonRedis'
   - 'python/021-PythonDocker'

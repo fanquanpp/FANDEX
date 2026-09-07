@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++移动语义详解：移动构造、移动赋值、std::move与右值引用。
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-02'
 related:
   - 'cpp/051-CppCoreGuidelinesResourceManagement'
   - 'cpp/052-CppSTLAlgorithmAndFunctionObject'

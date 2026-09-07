@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Socket与HTTP客户端
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/079-JavaDesignPattern'
   - 'java/033-JavaFunctionalProgramming'

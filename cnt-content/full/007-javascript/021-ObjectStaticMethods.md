@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: ES6+ Object 静态方法体系、属性描述符、对象不可变性、TC39 演进时间线与工程实践
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-08'
 related:
   - 'javascript/032-CoroutinesInJavaScript'
   - 'javascript/033-ExploringES6ProxiesAndReflect'
   - 'javascript/029-EventLoop'
   - 'javascript/012-ES2018RegExpNamedCaptureGroups'
+prerequisites: []
 ---
 
 

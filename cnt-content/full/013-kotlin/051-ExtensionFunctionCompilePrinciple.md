@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin扩展函数编译原理详解。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-03'
 related:
   - 'kotlin/049-SealedClassSealedInterface'
   - 'kotlin/050-InlineClass'

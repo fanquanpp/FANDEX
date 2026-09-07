@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Java 枚举进阶 EnumSet/EnumMap/枚举单例语法速查手册 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'java/037-JavaAnnotationsTutorial'
   - 'java/045-JavaRecordClass'

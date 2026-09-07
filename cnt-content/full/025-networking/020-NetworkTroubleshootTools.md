@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络故障排查工具：tcpdump、ss、netstat、iperf 的使用方法。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'networking/018-NetworkNamespaceVirtualBridge'
   - 'networking/019-Tunneling'

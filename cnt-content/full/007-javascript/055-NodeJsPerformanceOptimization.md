@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: 异步编程模式、流处理、集群与 Worker、性能调优与安全实践。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'javascript/050-DebugPerformanceOptimization'
   - 'javascript/059-JavaScriptProjectPractice'
   - 'javascript/060-JavaScriptProjectExampleTodoApp'
   - 'javascript/068-JavaScriptTheory'
+prerequisites: []
 ---
 
 

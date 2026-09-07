@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 浏览器 DevTools、性能分析模型、内存泄漏排查、火焰图解读、Core Web Vitals 治理与生产级性能优化实践的形式化定义与工程指南。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'javascript/036-MemoryLeakTroubleshoot'
   - 'javascript/043-WebAPIBrowserInterface'

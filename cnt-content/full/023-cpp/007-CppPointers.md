@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 深入解析 C++ 指针的内存模型、算术运算、类型系统与安全实践，涵盖原始指针、智能指针与所有权语义。
 author: fanquanpp
-updated: '2026-07-18'
+updated: '2026-09-02'
 related:
   - 'cpp/005-CppReferenceTypes'
   - 'cpp/006-RvalueReferenceMoveSemantics'

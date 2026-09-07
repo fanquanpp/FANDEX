@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Shell 脚本编程基础：命令、变量、管道、控制流、函数与工程实践
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'shell/003-CommandLineBasics'
   - 'devops/005-CICDPipeline'

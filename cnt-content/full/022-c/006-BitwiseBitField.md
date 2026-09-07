@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 位操作与位域结构
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/004-DataTypeDetailed'
   - 'c/005-VariableConstant'

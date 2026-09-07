@@ -6,12 +6,13 @@ category: 云与基础设施
 difficulty: intermediate
 description: Docker 容器技术、Kubernetes 编排、Helm 包管理与容器镜像仓库。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/001-CloudComputingBasics'
   - 'cloud-computing/002-CloudNetworkStorage'
   - 'cloud-computing/004-IaC'
   - 'cloud-computing/005-IaaSPaaSSaaS'
+prerequisites: []
 ---
 
 

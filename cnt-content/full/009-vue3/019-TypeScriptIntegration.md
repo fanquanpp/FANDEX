@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Vue3中TypeScript的集成与使用
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/017-CustomHook'
   - 'vue3/018-ComponentSystem'
   - 'vue3/020-PiniaStateManagementDetailed'
   - 'vue3/021-PluginDevelopment'
+prerequisites: []
 ---
 
 ## 前置知识

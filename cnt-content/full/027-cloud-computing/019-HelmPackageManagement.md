@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Helm包管理：Chart结构、值管理、仓库操作与最佳实践详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cloud-computing/017-KubernetesStorage'
   - 'cloud-computing/018-CloudSecurityService'

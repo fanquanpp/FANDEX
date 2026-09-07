@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: Google Test、Catch2、doctest 等主流 C++ 测试框架的工程实践与对比
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'cpp/028-CppMemoryModel'
   - 'cpp/030-CppToolchain'

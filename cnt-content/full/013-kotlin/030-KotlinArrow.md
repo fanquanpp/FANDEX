@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 函数式编程库Arrow
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'kotlin/029-KotlinCompose'
   - 'kotlin/037-KotlinGradle'

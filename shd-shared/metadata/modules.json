@@ -36,7 +36,7 @@
       "categories": [
         "tools"
       ],
-      "folder_order": 1,
+      "folder_order": 2,
       "officialDocs": [
         {
           "label": "原始规范",
@@ -63,7 +63,7 @@
       "categories": [
         "tools"
       ],
-      "folder_order": 2,
+      "folder_order": 3,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -90,7 +90,7 @@
       "categories": [
         "tools"
       ],
-      "folder_order": 3,
+      "folder_order": 4,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -117,9 +117,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 4,
-      "updatePriority": true,
-      "updateNote": "重点更新模块",
+      "folder_order": 5,
       "officialDocs": [
         {
           "label": "WHATWG 规范",
@@ -136,7 +134,9 @@
           "url": "https://www.w3.org/TR/html/",
           "type": "spec"
         }
-      ]
+      ],
+      "updatePriority": true,
+      "updateNote": "重点更新模块"
     },
     {
       "id": "css",
@@ -146,9 +146,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 5,
-      "updatePriority": true,
-      "updateNote": "重点更新模块",
+      "folder_order": 6,
       "officialDocs": [
         {
           "label": "MDN 文档",
@@ -165,7 +163,9 @@
           "url": "https://www.w3.org/TR/?tag=css",
           "type": "spec"
         }
-      ]
+      ],
+      "updatePriority": true,
+      "updateNote": "重点更新模块"
     },
     {
       "id": "javascript",
@@ -175,9 +175,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 6,
-      "updatePriority": true,
-      "updateNote": "重点更新模块",
+      "folder_order": 7,
       "officialDocs": [
         {
           "label": "MDN 文档",
@@ -194,7 +192,9 @@
           "url": "https://github.com/tc39/proposals",
           "type": "spec"
         }
-      ]
+      ],
+      "updatePriority": true,
+      "updateNote": "重点更新模块"
     },
     {
       "id": "typescript",
@@ -204,9 +204,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 7,
-      "updatePriority": true,
-      "updateNote": "重点更新模块",
+      "folder_order": 8,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -223,7 +221,9 @@
           "url": "https://www.typescriptlang.org/docs/handbook/release-notes/overview.html",
           "type": "spec"
         }
-      ]
+      ],
+      "updatePriority": true,
+      "updateNote": "重点更新模块"
     },
     {
       "id": "vue3",
@@ -233,7 +233,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 8,
+      "folder_order": 9,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -260,7 +260,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 9,
+      "folder_order": 10,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -287,7 +287,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 10,
+      "folder_order": 11,
       "officialDocs": [
         {
           "label": "MDN 文档",
@@ -314,9 +314,7 @@
       "categories": [
         "backend"
       ],
-      "folder_order": 11,
-      "updatePriority": true,
-      "updateNote": "重点更新模块",
+      "folder_order": 12,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -338,7 +336,9 @@
           "url": "https://docs.oracle.com/javase/tutorial/",
           "type": "docs"
         }
-      ]
+      ],
+      "updatePriority": true,
+      "updateNote": "重点更新模块"
     },
     {
       "id": "kotlin",
@@ -348,7 +348,7 @@
       "categories": [
         "backend"
       ],
-      "folder_order": 12,
+      "folder_order": 13,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -380,7 +380,7 @@
       "categories": [
         "backend"
       ],
-      "folder_order": 13,
+      "folder_order": 14,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -413,7 +413,7 @@
         "backend",
         "cloud"
       ],
-      "folder_order": 14,
+      "folder_order": 15,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -445,7 +445,7 @@
       "categories": [
         "database"
       ],
-      "folder_order": 15,
+      "folder_order": 16,
       "officialDocs": [
         {
           "label": "ISO 标准索引",
@@ -472,9 +472,7 @@
       "categories": [
         "database"
       ],
-      "folder_order": 16,
-      "updatePriority": true,
-      "updateNote": "重点更新模块",
+      "folder_order": 17,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -491,7 +489,9 @@
           "url": "https://dev.mysql.com/doc/refman/9.0/en/sql-statements.html",
           "type": "spec"
         }
-      ]
+      ],
+      "updatePriority": true,
+      "updateNote": "重点更新模块"
     },
     {
       "id": "postgresql",
@@ -501,7 +501,7 @@
       "categories": [
         "database"
       ],
-      "folder_order": 17,
+      "folder_order": 18,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -529,7 +529,7 @@
         "database",
         "cloud"
       ],
-      "folder_order": 18,
+      "folder_order": 19,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -556,7 +556,7 @@
       "categories": [
         "cs"
       ],
-      "folder_order": 19
+      "folder_order": 20
     },
     {
       "id": "cs-fundamentals",
@@ -566,7 +566,7 @@
       "categories": [
         "cs"
       ],
-      "folder_order": 20
+      "folder_order": 21
     },
     {
       "id": "c",
@@ -576,9 +576,7 @@
       "categories": [
         "cs"
       ],
-      "folder_order": 21,
-      "updatePriority": true,
-      "updateNote": "重点更新模块",
+      "folder_order": 22,
       "officialDocs": [
         {
           "label": "cppreference C",
@@ -595,7 +593,9 @@
           "url": "https://www.open-std.org/jtc1/sc22/wg14/",
           "type": "spec"
         }
-      ]
+      ],
+      "updatePriority": true,
+      "updateNote": "重点更新模块"
     },
     {
       "id": "cpp",
@@ -605,9 +605,7 @@
       "categories": [
         "cs"
       ],
-      "folder_order": 22,
-      "updatePriority": true,
-      "updateNote": "重点更新模块",
+      "folder_order": 23,
       "officialDocs": [
         {
           "label": "ISO C++ 官方",
@@ -629,7 +627,9 @@
           "url": "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
           "type": "spec"
         }
-      ]
+      ],
+      "updatePriority": true,
+      "updateNote": "重点更新模块"
     },
     {
       "id": "devops",
@@ -639,7 +639,7 @@
       "categories": [
         "cloud"
       ],
-      "folder_order": 23
+      "folder_order": 24
     },
     {
       "id": "networking",
@@ -650,7 +650,7 @@
         "cloud",
         "cs"
       ],
-      "folder_order": 24,
+      "folder_order": 25,
       "officialDocs": [
         {
           "label": "RFC 编辑器",
@@ -677,7 +677,7 @@
       "categories": [
         "cloud"
       ],
-      "folder_order": 25
+      "folder_order": 26
     },
     {
       "id": "cloud-computing",
@@ -687,7 +687,7 @@
       "categories": [
         "cloud"
       ],
-      "folder_order": 26
+      "folder_order": 27
     },
     {
       "id": "software-testing",
@@ -697,7 +697,7 @@
       "categories": [
         "cloud"
       ],
-      "folder_order": 27
+      "folder_order": 28
     },
     {
       "id": "python",
@@ -707,7 +707,7 @@
       "categories": [
         "backend"
       ],
-      "folder_order": 28,
+      "folder_order": 32,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -739,7 +739,7 @@
       "categories": [
         "backend"
       ],
-      "folder_order": 29,
+      "folder_order": 33,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -761,7 +761,7 @@
       "categories": [
         "tools"
       ],
-      "folder_order": 30,
+      "folder_order": 34,
       "officialDocs": [
         {
           "label": "Bash 参考手册",
@@ -783,7 +783,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 31,
+      "folder_order": 35,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -805,7 +805,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 32,
+      "folder_order": 36,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -827,7 +827,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 33,
+      "folder_order": 38,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -849,7 +849,7 @@
       "categories": [
         "frontend"
       ],
-      "folder_order": 34,
+      "folder_order": 40,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -871,7 +871,7 @@
       "categories": [
         "backend"
       ],
-      "folder_order": 35,
+      "folder_order": 41,
       "officialDocs": [
         {
           "label": "官方文档",
@@ -916,38 +916,24 @@
     "svg": [
       "html5"
     ],
-    "python": [],
-    "mysql": [],
-    "sql": [],
-    "c": [],
-    "cpp": [
-      "c"
-    ],
-    "csharp": [],
-    "java": [],
     "kotlin": [
       "java"
     ],
-    "go": [],
-    "algorithm": [],
-    "cs-fundamentals": [],
+    "postgresql": [
+      "sql"
+    ],
+    "cpp": [
+      "c"
+    ],
     "devops": [
       "git"
     ],
-    "networking": [],
     "cybersecurity": [
       "networking"
     ],
     "cloud-computing": [
       "devops"
     ],
-    "postgresql": [
-      "sql"
-    ],
-    "redis": [],
-    "software-testing": [],
-    "git": [],
-    "markdown": [],
     "nextjs": [
       "react",
       "typescript"

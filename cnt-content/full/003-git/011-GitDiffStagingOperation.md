@@ -6,12 +6,13 @@ category: 工具链
 difficulty: intermediate
 description: git diff与diff --staged的详细用法：差异比较、输出格式与实用技巧。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/009-SHA1IntegrityCheck'
   - 'git/010-ThreeTrees'
   - 'git/012-GitRestoreFileOperation'
   - 'git/013-GitLogDetailed'
+prerequisites: []
 ---
 
 ## 1. git diff 概述

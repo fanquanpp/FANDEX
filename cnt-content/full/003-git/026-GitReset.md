@@ -6,10 +6,11 @@ category: 工具链
 difficulty: advanced
 description: git reset三种模式详解：soft、mixed、hard的区别与安全使用。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/024-GitFlowGitHubFlow'
   - 'git/028-GitPrincipleObjectModel'
+prerequisites: []
 ---
 
 

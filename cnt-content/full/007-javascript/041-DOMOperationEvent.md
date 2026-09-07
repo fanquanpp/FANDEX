@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: DOM 树操作、事件模型与事件委托。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'javascript/065-ImmutableDataStructures'
   - 'javascript/007-ObjectArray'
   - 'javascript/062-JavaScriptLatestFeature'
   - 'javascript/038-JavaScriptModular'
+prerequisites: []
 ---
 
 ## 前置知识

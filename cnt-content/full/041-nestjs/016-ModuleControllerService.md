@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用待办事项示例完整走一遍 Module/Controller/Service/DTO 的分层写法与依赖注入。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nestjs/015-NestJSOverview'
   - 'nestjs/017-ValidationPipes'

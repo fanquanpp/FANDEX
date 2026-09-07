@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 进程创建与进程间通信
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'c/025-POSIXThread'
   - 'c/026-SocketNetworkProgramming'

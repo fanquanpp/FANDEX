@@ -6,10 +6,11 @@ category: 工具链
 difficulty: intermediate
 description: git revert详解：安全撤销提交、生成反向提交与多人协作场景。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/028-GitPrincipleObjectModel'
   - 'git/029-TagManagement'
+prerequisites: []
 ---
 
 ## 1. revert 概述

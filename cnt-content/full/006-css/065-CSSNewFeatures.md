@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: CSS现代新特性详解：@container容器查询、@layer层叠层、逻辑属性、:has()选择器。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/044-CSSArchitectureMethodology'
   - 'css/064-CSSTheoryKnowledge'

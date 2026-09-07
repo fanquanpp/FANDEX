@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: static、relative、absolute、fixed、sticky
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/012-StyleSheetImportMethod'
   - 'css/014-MarginCollapse'

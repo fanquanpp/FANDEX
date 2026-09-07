@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 云计算三大服务模式 IaaS、PaaS、SaaS 的概念、对比与选型指南。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cloud-computing/003-ContainerOrchestration'
   - 'cloud-computing/004-IaC'

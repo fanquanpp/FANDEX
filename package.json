@@ -13,6 +13,8 @@
   "scripts": {
     "dev:web": "pnpm --filter @fandex/web dev",
     "build:web": "pnpm --filter @fandex/web build",
+    "sync": "pnpm --filter @fandex/web sync",
+    "release": "node scripts/release.mjs",
     "build:all": "pnpm -r --parallel build",
     "typecheck": "pnpm -r --parallel typecheck",
     "clean": "pnpm -r exec rm -rf dist .astro node_modules/.cache && rm -rf node_modules",

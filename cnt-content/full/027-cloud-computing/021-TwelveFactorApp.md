@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 12-Factor App 方法论：构建云原生应用的十二个最佳实践详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/019-HelmPackageManagement'
   - 'cloud-computing/020-CloudCostOptimization'

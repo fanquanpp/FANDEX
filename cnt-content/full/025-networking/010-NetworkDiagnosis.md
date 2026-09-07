@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络故障诊断：故障方法论、分层排查、工具使用与典型案例
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'networking/008-SDNNetworkAutomation'
   - 'networking/009-NetworkStorageTechnology'

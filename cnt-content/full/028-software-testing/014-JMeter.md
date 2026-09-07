@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: JMeter性能测试工具：测试计划、线程组、采样器、监听器与分布式测试详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'software-testing/013-APIAutomationTest'
   - 'software-testing/015-WhiteBoxTestCoverage'

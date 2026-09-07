@@ -6,12 +6,13 @@ category: 工具链
 difficulty: advanced
 description: Git对象模型详解：blob、tree、commit、tag四种对象的结构与关系。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/006-GitRemoteRepoOperation'
   - 'git/007-DistributedVCSPrinciple'
   - 'git/009-SHA1IntegrityCheck'
   - 'git/010-ThreeTrees'
+prerequisites: []
 ---
 
 

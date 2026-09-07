@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 带索引遍历与并行遍历：两个最常用内置组合函数。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'python/040-BuiltinDataStructure'
   - 'python/075-Itertools'

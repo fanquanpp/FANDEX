@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: Redis缓存与数据结构
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/019-PythonCeleryDistributedTaskQueue'
   - 'python/021-PythonDocker'
   - 'python/035-PythonMessageQueue'
   - 'python/016-PythonDjango'
+prerequisites: []
 ---
 
 

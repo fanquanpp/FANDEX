@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: Socket编程与网络协议
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'cpp/029-CppGraphicsProgramming'
   - 'cpp/037-CppSerialization'

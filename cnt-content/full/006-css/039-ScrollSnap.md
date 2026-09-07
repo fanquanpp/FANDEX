@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: scroll-snap
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'css/040-CascadeLayer'
   - 'css/037-LogicalProperty'

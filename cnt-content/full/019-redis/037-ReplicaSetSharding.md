@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 副本集高可用与水平分片：oplog、选举、shard key 选型与数据分布。
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-09-08'
 related:
   - 'redis/034-IndexPerformance'
 prerequisites:

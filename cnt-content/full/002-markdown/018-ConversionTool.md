@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown转换工具：Pandoc的安装、使用与高级转换技巧。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-02'
 related:
   - 'markdown/016-EditorFeature'
   - 'markdown/017-LinkImage'

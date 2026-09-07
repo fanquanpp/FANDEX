@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++ Lambda捕获详解：值捕获、引用捕获、初始化捕获、*this。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-03'
 related:
   - 'cpp/055-VTablePolymorphismMemoryLayout'
   - 'cpp/056-SmartPointerCircularReference'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 索引签名、Record与动态属性访问
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/018-IntersectionTypeMerge'
   - 'typescript/019-TypeGuardCustomGuard'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 身份与访问管理：SSO、OAuth 2.0、OIDC、JWT 的原理与安全实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/030-DeserializationVulnerability'
   - 'cybersecurity/031-ZeroTrustArchitecture'

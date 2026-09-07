@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: CGO与C互操作
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-03'
 related:
   - 'go/033-GoFuzzing'
   - 'go/046-GoPerformanceAnalysis'

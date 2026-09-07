@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 设计模式核心：创建型、结构型、行为型模式，SOLID原则，模式间关系与选择策略。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/030-AIFundamentals'
   - 'cs-fundamentals/031-ComputerGraphics'

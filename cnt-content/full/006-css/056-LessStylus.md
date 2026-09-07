@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Less与Stylus
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/039-ScrollSnap'
   - 'css/055-Sass'

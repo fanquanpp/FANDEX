@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++ 发展历程、标准演进与现代 C++ 核心特性概览。
 author: fanquanpp
-updated: '2026-08-05'
+updated: '2026-09-02'
 related:
   - 'cpp/003-CppBasicSyntax'
   - 'cpp/004-CppTypeSystem'

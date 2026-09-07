@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 安全开发：SDL、威胁建模、安全编码、SAST/DAST与安全测试
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/016-AsymmetricEncryption'
   - 'cybersecurity/017-HashAlgorithm'

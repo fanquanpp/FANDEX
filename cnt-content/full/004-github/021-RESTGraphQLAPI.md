@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: GitHub API详解：REST与GraphQL双路线对比（餐厅点餐类比）、认证方式、curl/gh api调用与速率限制。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-29'
 related:
   - 'github/019-CodeQLCodeScanning'
 prerequisites:

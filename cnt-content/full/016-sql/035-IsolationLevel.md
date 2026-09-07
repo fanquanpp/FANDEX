@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL事务隔离级别：读未提交、读已提交、可重复读、序列化的原理、实现机制与选择策略
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related:
   - 'sql/033-ExecutionPlan'
   - 'sql/034-TransactionACIDProperty'

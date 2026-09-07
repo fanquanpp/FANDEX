@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Java 11+ 读写小文件一把梭：不用 FileReader/FileWriter 那套老写法。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'java/028-IOStreamFileOperation'
   - 'java/069-JavaPathFiles'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: CSS性能优化深度指南：关键CSS内联、异步加载、选择器优化、渲染性能提升。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/064-CSSTheoryKnowledge'
   - 'css/065-CSSNewFeatures'

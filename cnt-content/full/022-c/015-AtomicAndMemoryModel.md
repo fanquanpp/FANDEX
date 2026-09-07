@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C11原子操作与内存序
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/013-VarargsFunction'
   - 'c/014-SignalHandling'

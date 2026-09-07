@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 页面置换算法：FIFO、LRU 实现、Clock 算法、LFU 与工作集模型。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/040-UserModeKernelModeSwitch'
   - 'cs-fundamentals/041-MemorySegmentationAndPaging'

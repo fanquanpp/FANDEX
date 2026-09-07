@@ -21,7 +21,6 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 ├── app-Android-old/    # Android 应用 · 旧技术栈归档线（已冻结，仅修阻断缺陷）
 ├── cnt-content/        # 内容层：full/ 全量文档、syntax/ 语法速览素材
 ├── shd-shared/         # 共享层：设计令牌、模块元数据（metadata/modules.json）、图标资产
-├── tls-tools/          # 工具链：文档 ID 分配、内容清单（manifest）生成
 └── thd-third-party/    # 第三方组件 / 插件 / 适配器
 ```
 
@@ -102,8 +101,10 @@ cd app-desktop && npx tauri build     # 打包 NSIS 安装包（需 Rust 工具�
 - **Android old**：`app-Android-old/scripts/generate-legacy-content.mjs` 生成
   `assets/dist-mobile`（frontmatter 剥离 + `index.json` 索引）。
 
-模块与分类元数据唯一来源为 `shd-shared/metadata/modules.json`。新增或修改文档前，
-请先阅读 [AGENTS.md](AGENTS.md) 中的 frontmatter 字段规范与内容审计入口。
+模块与分类元数据以各模块文件夹内的 `module.json` 为手写事实源，
+`shd-shared/metadata/modules.json` 由 `app-web/scripts/content-sync.mjs`
+在构建期自动重建。新增或修改文档前，请先阅读 [AGENTS.md](AGENTS.md) 中的
+内容规范与自动化说明。
 
 ## 构建与发布（CI）
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: WebSocket
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/029-ServiceWorkerPWA'
   - 'html5/033-MicrodataJSONLD'

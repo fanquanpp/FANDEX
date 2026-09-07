@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C 语言复杂声明的形式语法、右左法则、函数指针与数组指针的解析方法,涵盖 cdecl 工具、ABI 规范与真实项目案例。
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-02'
 related:
   - 'c/021-SafeFunctionBoundsCheck'
   - 'c/022-InlineFunctionMacro'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL NDB Cluster集群引擎：分布式架构、数据节点、SQL节点、管理节点与高可用方案
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/010-SQLDataOperationQuery'
   - 'mysql/011-MemoryStorageEngine'

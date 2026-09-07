@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin Flow冷流与SharedFlow和StateFlow详解：响应式流原理、冷热流对比、状态管理实践。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'kotlin/018-CoroutineBasics'
   - 'kotlin/046-CoroutineDispatcherContext'

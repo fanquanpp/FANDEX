@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: SELECT 语句、WHERE 条件、排序、分页、去重、别名、表达式与聚合函数
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related:
   - 'sql/002-OverviewStandard'
   - 'sql/005-MultiTableQuery'

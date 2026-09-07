@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS原生嵌套
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'css/061-CriticalRenderPathOptimization'
   - 'css/062-CSSCanvasDrawing'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Monorepo 实战：apps/packages 结构设计、共享包示例与 CI 优化
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'vite/020-TurborepoTasks'
   - 'vite/021-ChangesetsRelease'

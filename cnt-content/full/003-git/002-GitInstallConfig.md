@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Git 在主流系统下的安装与用户信息、别名等基础配置。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/006-WindowsEnvConfigTutorial'
   - 'shell/007-MacOSEnvConfigTutorial'

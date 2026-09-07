@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 日志管理：日志采集、ELK Stack、Fluentd、日志格式与日志分析
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/016-PackageManagementRepository'
   - 'devops/017-ServiceMesh'

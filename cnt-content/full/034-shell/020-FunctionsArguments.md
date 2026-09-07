@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 函数与参数处理：函数定义与作用域、位置参数、shift、getopts 参数解析
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'shell/019-ScriptDebugging'
   - 'shell/021-PracticalScripts'

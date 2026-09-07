@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: API自动化测试：RESTful API测试、工具选型、断言策略与框架设计详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'software-testing/015-WhiteBoxTestCoverage'
 prerequisites:

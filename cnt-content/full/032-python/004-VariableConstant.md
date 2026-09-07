@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Python 变量与常量深度剖析：从名字绑定、LEGB 作用域到引用语义、不可变性与企业级配置管理实践。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'python/071-BasicDataType'
   - 'python/064-TypeAnnotationMypy'

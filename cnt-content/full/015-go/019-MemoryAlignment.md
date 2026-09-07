@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 结构体对齐与内存布局
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'go/015-UnsafePointer'
   - 'go/017-Reflection'

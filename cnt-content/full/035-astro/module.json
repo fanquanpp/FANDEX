@@ -1,0 +1,21 @@
+{
+  "title": "Astro",
+  "icon": "As",
+  "description": "内容驱动的现代前端框架",
+  "categories": [
+    "frontend"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://docs.astro.build/zh-cn/",
+      "type": "docs"
+    },
+    {
+      "label": "主题商店",
+      "url": "https://astro.build/themes/",
+      "type": "docs"
+    }
+  ]
+}

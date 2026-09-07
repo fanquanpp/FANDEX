@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: 算术、比较、逻辑、位运算与运算符优先级。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/071-BasicDataType'
   - 'python/008-ListComprehensionAdvanced'
   - 'python/012-Metaclass'
   - 'python/005-PythonDescriptorProtocol'
+prerequisites: []
 ---
 
 ## 前置知识

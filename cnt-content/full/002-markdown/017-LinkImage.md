@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 行内链接、引用链接、图片嵌入与脚注。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'markdown/015-Mermaid'
   - 'markdown/016-EditorFeature'

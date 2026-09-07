@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 流程驱动掌握 Astro 样式与资源：全局风格、scoped 样式、Fonts API、Image 组件与 SVG 优化
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'astro/002-QuickStartProject'
   - 'astro/009-Astro7Features'

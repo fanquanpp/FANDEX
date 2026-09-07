@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C 语言枚举与 typedef 详解：枚举本质、typedef 别名、函数指针、状态机与可移植类型体系。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/006-BitwiseBitField'
   - 'c/008-OperatorExpression'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: '用 LCP、INP、CLS 三个核心指标学会量化"页面快不快"，并给出浏览器端采集与上报的完整示例。'
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'javascript/050-DebugPerformanceOptimization'
   - 'css/043-CSSPerformanceOptimizationDetailed'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 异常安全保证(Exception Safety Guarantees)、RAII、强异常安全事务与异常中立性的完整原理与工程实践
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-03'
 related:
   - 'cpp/018-StringProcessing'
   - 'cpp/019-FileIOFileSystem'

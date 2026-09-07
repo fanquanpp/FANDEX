@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: TCP 拥塞控制：慢启动、拥塞避免、快速重传、快速恢复算法与 BBR。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/047-HTTPCacheStrategy'
   - 'cs-fundamentals/048-HTTPSHandshake'

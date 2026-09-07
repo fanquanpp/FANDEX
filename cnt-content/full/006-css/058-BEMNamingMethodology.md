@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: BEM命名方法论
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'css/034-ResponsiveDesign'
   - 'css/057-PostCSS'

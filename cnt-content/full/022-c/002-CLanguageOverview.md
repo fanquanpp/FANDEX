@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C 语言的发展历史、设计哲学、核心特点、应用领域与全栈知识图谱，对标 MIT 6.S081、Stanford CS107、CMU 15-213 教学水准。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'c/001-CZeroBasisStart'
   - 'c/003-ProgramStructureBasicSyntax'
@@ -14,6 +14,7 @@ related:
 prerequisites:
   - 'c/001-CZeroBasisStart'
 ---
+
 # C 语言概述
 
 ## 前置知识

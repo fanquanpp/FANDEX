@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: React Server Components、use() Hook、Actions、useFormStatus、useOptimistic、useActionState、Suspense 进阶与流式 SSR。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'react/004-HooksDeep'
   - 'react/005-ContextGlobalState'
   - 'react/007-RouteDataFetch'
   - 'react/008-PerformanceOptimization'
+prerequisites: []
 ---
 
 ## 前置知识

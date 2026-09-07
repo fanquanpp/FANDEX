@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: CMake/Make/Ninja 构建系统原理、工程实践与跨平台管理
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'c/030-FunctionDetailed'
   - 'c/032-I18nAndL10n'

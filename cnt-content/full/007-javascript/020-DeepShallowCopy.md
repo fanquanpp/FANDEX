@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: JavaScript深拷贝与浅拷贝详解：structuredClone、JSON方案缺陷与自定义实现。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'javascript/028-AsyncConcurrencyControl'
   - 'javascript/022-ES6NewFeatures'
   - 'javascript/049-DebounceThrottle'
   - 'javascript/009-ArrayHigherOrderMethod'
+prerequisites: []
 ---
 
 

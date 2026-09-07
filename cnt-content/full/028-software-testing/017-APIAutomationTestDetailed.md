@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: API 自动化测试：Postman、RestAssured、Supertest 的使用与最佳实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'software-testing/015-WhiteBoxTestCoverage'
   - 'software-testing/016-AutomationTestFrameworkComparison'

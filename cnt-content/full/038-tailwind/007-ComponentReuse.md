@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Tailwind CSS 组件复用方案对比：纯工具类组件封装 / @apply 提取 / CSS 变量组合，配 cva + clsx + tailwind-merge 工程化实践，附适用场景决策表
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'tailwind/003-UtilityCore'
   - 'tailwind/005-ThemeCustomization'

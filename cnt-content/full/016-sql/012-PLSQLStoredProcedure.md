@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 存储过程与函数、触发器、游标、异常处理、动态 SQL 与方言对比
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related:
   - 'sql/010-AdvancedQuery'
   - 'sql/011-PerformanceOptimization'

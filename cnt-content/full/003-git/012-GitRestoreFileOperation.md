@@ -6,11 +6,12 @@ category: 工具链
 difficulty: intermediate
 description: git restore、rm、mv、clean等文件操作命令的详细用法与安全实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/010-ThreeTrees'
   - 'git/011-GitDiffStagingOperation'
   - 'git/013-GitLogDetailed'
+prerequisites: []
 ---
 
 

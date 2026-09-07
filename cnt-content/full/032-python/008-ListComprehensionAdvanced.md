@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: 列表/字典/集合推导式与生成器表达式
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'python/004-VariableConstant'
   - 'python/071-BasicDataType'
   - 'python/009-OperatorExpression'
   - 'python/012-Metaclass'
+prerequisites: []
 ---
 
 ## 前置知识

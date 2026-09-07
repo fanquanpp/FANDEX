@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 零基础第一课：消息队列解决什么问题、三种投递语义、Kafka/RabbitMQ/Pulsar 对比与选型。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'devops/007-KafkaQuickStart'
   - 'devops/008-RabbitMQQuickStart'

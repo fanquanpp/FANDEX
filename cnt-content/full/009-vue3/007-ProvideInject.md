@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 依赖注入与跨层级通信
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'vue3/005-TeleportSuspense'
   - 'vue3/006-API'
   - 'vue3/008-CustomDirectiveAdvanced'
   - 'vue3/009-TransitionAnimation'
+prerequisites: []
 ---
 
 

@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: Pinia持久化插件pinia-plugin-persistedstate配置与使用。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/027-KeepAliveCacheLifecycle'
   - 'vue3/028-AsyncComponentSuspense'
   - 'vue3/030-VueRouterNavigationGuard'
   - 'vue3/031-VuePerformanceDetailed'
+prerequisites: []
 ---
 
 ## 1. 安装与配置

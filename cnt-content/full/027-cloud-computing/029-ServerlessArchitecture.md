@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 无服务器架构：Serverless Framework、Lambda 冷启动优化与事件驱动。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/027-MultiCloudHybridArchitecture'
   - 'cloud-computing/028-LoadBalanceAutoScaling'

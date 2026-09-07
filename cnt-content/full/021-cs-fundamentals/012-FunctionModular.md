@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 函数定义与参数传递、模块化编程、文件操作、异常处理与调试基础（入门学习笔记）。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/011-ProgrammingBasics'
   - 'cs-fundamentals/013-ProgrammingParadigmBasics'

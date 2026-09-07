@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React中GraphQL数据获取
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'react/028-ReactWebAssembly'
   - 'react/029-ReactWebSocket'

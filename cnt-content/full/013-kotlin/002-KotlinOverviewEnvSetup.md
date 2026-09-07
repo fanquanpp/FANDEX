@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Kotlin 语言概述、发展历史、设计哲学、与 Java 的关系、多平台支持、环境搭建与第一批可运行程序。对标 MIT 6.005、Stanford CS193P、CMU 15-214 教学水准。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-03'
 related:
   - 'kotlin/003-KotlinBasicSyntax'
   - 'kotlin/004-KotlinFunctionAndLambda'

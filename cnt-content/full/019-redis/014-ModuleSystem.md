@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis模块系统：RedisJSON、RedisTimeSeries、RediSearch、RedisBloom等模块原理与使用
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'redis/012-MixedPersistence'
   - 'redis/013-DisklessReplication'

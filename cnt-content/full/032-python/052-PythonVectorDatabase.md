@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: advanced
 description: 向量搜索与RAG
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/051-PythonOAuth2'
   - 'python/037-PythonWebSocket'
   - 'python/053-PythonAdvancedLatestFeature'
   - 'python/054-ComprehensionGenerator'
+prerequisites: []
 ---
 
 ## 前置知识

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C++ chrono 库全解：duration、time_point、clock、C++20 日历与时区、C++23 时区数据库、leap second、计时基准、跨平台精度，含类型安全设计、UB 场景与企业级实战。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'cpp/045-CppSmartPointer'
   - 'cpp/031-CppRegex'

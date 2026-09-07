@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: box-shadow、text-shadow
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/017-StackingContext'
   - 'css/025-Gradient'

@@ -6,11 +6,12 @@ category: 前端技术
 difficulty: beginner
 description: 从零搭建 Vue3 项目、开发工具与核心概念速览。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/001-OverviewEnv'
   - 'vue3/003-Vue3TemplateSyntax'
   - 'vue3/004-Vue3DirectiveSystem'
+prerequisites: []
 ---
 
 

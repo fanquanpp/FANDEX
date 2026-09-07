@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: h1-h6、p、strong、em、mark、time、address
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'html5/015-HTML5OfflineStorageWebAPI'
   - 'html5/016-MetadataCharacterEncoding'

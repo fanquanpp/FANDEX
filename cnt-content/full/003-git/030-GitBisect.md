@@ -6,10 +6,11 @@ category: 工具链
 difficulty: intermediate
 description: git bisect二分查找：自动化定位引入Bug的提交。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/028-GitPrincipleObjectModel'
   - 'git/029-TagManagement'
+prerequisites: []
 ---
 
 ## 1. bisect 概述

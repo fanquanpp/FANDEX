@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: JSX语法原理与编译过程
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'react/009-TestEngineering'
   - 'react/010-NextJSFullStack'

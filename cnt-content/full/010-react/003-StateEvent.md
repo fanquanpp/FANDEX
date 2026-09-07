@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: beginner
 description: useState、useReducer、事件处理、表单处理、受控与非受控组件、状态提升、状态管理模式。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'react/001-OverviewEnvSetup'
   - 'react/002-ComponentProps'
   - 'react/004-HooksDeep'
   - 'react/005-ContextGlobalState'
+prerequisites: []
 ---
 
 ## 前置知识

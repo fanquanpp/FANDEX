@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL前缀索引：长字符串列的索引优化、选择性计算、适用场景与限制
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/015-IndexConditionPushdown'
   - 'mysql/016-FullTextIndex'

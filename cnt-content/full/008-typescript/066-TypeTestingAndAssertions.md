@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 类型也是代码，也要测试。用 tsd 写 expectType、expectError 断言，在重构时守住类型行为不回归。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'typescript/034-UtilityTypePrinciple'
   - 'typescript/053-TypeScriptMigrationPractice'

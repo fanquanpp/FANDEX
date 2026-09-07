@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: C#模式匹配与switch表达式
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'csharp/014-LINQDeep'
   - 'csharp/015-AsyncProgrammingDetailed'

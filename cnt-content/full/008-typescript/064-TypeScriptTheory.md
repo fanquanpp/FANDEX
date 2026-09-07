@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 类型论基础、结构化类型、子类型理论、类型推导、泛型多态与类型级计算的形式语义与工程实践。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/061-DecoratorStandardImpl'
   - 'typescript/062-TypeScriptProjectExampleTypeSafeAPIClient'
 prerequisites: []
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 > 里程碑标注：理论串讲，建议学习 6 个月后再读。

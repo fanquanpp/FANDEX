@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第一套标签：标题、段落、强调、换行、列表（ul/ol）、链接与图片，目标是写出带图文和列表的简单页面。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/006-HTML5CoreGlobalAttributes'
   - 'html5/007-HTML5OverviewCoreFeature'

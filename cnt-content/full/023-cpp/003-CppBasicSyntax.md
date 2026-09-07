@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++ 基本语法、注释、标识符与关键字。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'cpp/002-CppOverviewAndModernStandard'
   - 'cpp/004-CppTypeSystem'

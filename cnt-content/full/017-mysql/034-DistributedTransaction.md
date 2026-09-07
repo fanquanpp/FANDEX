@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL分布式事务：XA事务协议、两阶段提交、MySQL XA语法与跨库事务处理
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/032-LockClassification'
   - 'mysql/033-DeadlockDetectionHandling'

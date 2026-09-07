@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 面向零基础读者解释 Java 的定位、虚拟机机制与企业生态，完成第一个类的编译运行。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'java/002-JavaOverviewDevEnv'
   - 'java/002-JavaOverviewDevEnv'

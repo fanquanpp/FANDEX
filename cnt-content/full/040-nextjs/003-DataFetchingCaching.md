@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 服务器组件直接取数、fetch 缓存策略、ISR 增量静态再生与 Server Actions 表单提交。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'nextjs/002-AppRouterRouting'
   - 'nextjs/004-DeploymentOptimization'

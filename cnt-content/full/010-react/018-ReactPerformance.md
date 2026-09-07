@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React应用性能优化策略
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'react/016-CustomHooksDesignPattern'
   - 'react/017-StateManagementSolutionComparison'

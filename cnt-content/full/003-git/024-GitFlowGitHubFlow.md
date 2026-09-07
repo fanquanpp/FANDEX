@@ -6,9 +6,10 @@ category: 工具链
 difficulty: intermediate
 description: Git Flow与GitHub Flow分支模型对比：工作流程、适用场景与最佳实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/023-RemoteTrackingBranch'
+prerequisites: []
 ---
 
 ## 1. 分支模型概述

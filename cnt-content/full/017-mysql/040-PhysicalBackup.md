@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL物理备份：MySQL Enterprise Backup、Percona XtraBackup的原理、热备份与恢复流程
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/038-LogSystem'
   - 'mysql/039-LogicalBackup'

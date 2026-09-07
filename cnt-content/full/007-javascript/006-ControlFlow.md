@@ -6,13 +6,14 @@ category: 前端技术
 difficulty: intermediate
 description: JavaScript 控制流的数学语义、形式化推导、工程实践与反模式：条件分支、循环结构、迭代器协议、短路求值、异常控制流的完整剖析。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'javascript/004-VariableDataType'
   - 'javascript/005-DataTypeOperator'
   - 'javascript/015-HigherOrderFunction'
   - 'javascript/016-RecursionTailCallOptimization'
   - 'javascript/030-EventLoopDetailed'
+prerequisites: []
 ---
 
 ## 前置知识

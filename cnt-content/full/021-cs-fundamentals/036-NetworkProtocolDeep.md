@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 网络协议深度剖析：TCP拥塞控制机制、QUIC协议设计、HTTP演进、TLS 1.3握手、DNS解析、CDN原理、WebSocket与网络编程模型。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/034-HCI'
   - 'cs-fundamentals/035-ProgrammingLanguageTheory'

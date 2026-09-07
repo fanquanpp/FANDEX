@@ -6,10 +6,11 @@ category: 数据库
 difficulty: beginner
 description: Redis 8.0概述、字符串SDS、哈希、列表quicklist、集合、有序集合跳表、位图、HyperLogLog、GEO、Stream、Vector Set。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'redis/002-PersistenceModule'
   - 'redis/003-ClusterHA'
+prerequisites: []
 ---
 
 

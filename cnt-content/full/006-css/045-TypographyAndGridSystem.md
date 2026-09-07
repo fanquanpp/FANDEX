@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: '用字号阶梯、行高、8pt 间距与 CSS 变量搭一套可复用的排版网格，让页面看起来专业而不是"随手排的"。'
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/036-CSSVariableCustomAttribute'
   - 'css/034-ResponsiveDesign'

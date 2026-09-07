@@ -35,27 +35,31 @@
 
 ## 内容文档规范（重点）
 
-修改 `cnt-content/full/` 下的教学文档时，必须遵守：
+内容维护遵循「作者只写内容，元数据自动补全」：构建与 CI 会先运行
+`content-sync.mjs` 自动补全 frontmatter 托管字段、注册新模块、清理死链。
+作者只需遵守：
 
-1. **frontmatter 规范**：仅允许 AGENTS.md 规定的 10 个标准字段，顺序与取值约束
-   见 AGENTS.md（`order` 每模块内从 10 开始、步长 10；`difficulty` 仅限
-   beginner / intermediate / advanced）；
-2. **引用完整**：`related` 与 `prerequisites` 统一为 `module/文件名` 格式，必须指向
-   真实存在的文档，禁止死链；
-3. **新增文档**：插入学习顺序对应位置后，模块内整体重新编号，并同步更新所有
-   旧引用；
-4. **禁止 emoji**；图形需求使用 Mermaid 或 SVG；代码块必须标注语言；
-5. **单一来源**：内容只写入 `cnt-content/full`，不修改三端应用内的生成产物
+1. **文件命名**：文档 `NNN-EnglishName.md` 放入 `<NNN-模块id>/` 文件夹，
+   文件名编号即学习顺序；新增模块文件夹时可省略编号（自动分配）；
+2. **frontmatter**：推荐手写 `title` 与 `description`，其余字段可省略
+   （`order` / `module` / `category` / `author` / `updated` 由 sync 自动
+   生成，勿手写）；仅允许 AGENTS.md 规定的 10 个标准字段；
+3. **引用格式**：`related` 与 `prerequisites` 写 `module/文件名`（不带
+   扩展名），死链会被自动删除；
+4. **新增模块**：模块文件夹内写 `module.json` 声明模块信息（schema 见
+   AGENTS.md），缺失时 sync 会生成骨架，请补写完善；
+5. **禁止 emoji**；图形需求使用 Mermaid 或 SVG；代码块必须标注语言；
+6. **单一来源**：内容只写入 `cnt-content/full`，不修改三端应用内的生成产物
    （assets 目录），构建时由管线自动同步。
 
 ## 自检清单
 
 提交前请确认：
 
-- [ ] frontmatter 字段完整、顺序正确、order 编号连续；
-- [ ] 新增或修改的 `related` / `prerequisites` 引用全部真实存在；
+- [ ] 文档放入正确的模块文件夹，文件名编号符合学习顺序；
+- [ ] `title` / `description` 已填写（其余字段可不写）；
 - [ ] 代码示例语法正确、已标注语言；
-- [ ] 网站构建通过（根目录执行 `pnpm build:web`）；
+- [ ] 本地跑过 `pnpm sync`（或直接 `pnpm build:web`）且无报错；
 - [ ] 无 emoji、无构建产物入库；
 - [ ] 提交信息符合 Conventional Commits。
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++编码规范与最佳实践
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'cpp/040-CppMemoryManagement'
   - 'cpp/034-CppRustComparison'

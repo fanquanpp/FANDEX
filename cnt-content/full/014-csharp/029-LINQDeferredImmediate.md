@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C# LINQ 延迟执行与立即执行深度解析：IEnumerable<T>、IQueryable<T>、表达式树、yield return、迭代器状态机、ToList/ToArray 强制求值的全链路原理。
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-02'
 related:
   - 'csharp/030-AsyncAwaitStateMachine'
   - 'csharp/031-DelegateEventUnderlying'

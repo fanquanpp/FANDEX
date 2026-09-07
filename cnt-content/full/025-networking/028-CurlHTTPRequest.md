@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: Networking curl HTTP 请求 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related: []
 prerequisites: []
 ---

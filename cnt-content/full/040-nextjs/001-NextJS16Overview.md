@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第一课：理解 App Router、服务器组件与客户端组件，用 create-next-app 五分钟跑起第一个项目。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'nextjs/002-AppRouterRouting'
   - 'nextjs/003-DataFetchingCaching'

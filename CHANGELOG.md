@@ -11,6 +11,31 @@
 
 ### 变更
 
+- **内容管线自动化重构**：新增零依赖幂等脚本 `content-sync.mjs` 作为
+  内容维护单一入口——作者只需提交符合命名约定的 md 文件，构建与 CI
+  自动补全 frontmatter 托管字段（`order` / `module` / `category` /
+  `author` / `updated`）、注册与回收模块（含无编号文件夹自动重命名、
+  `module.json` 自动反拆生成）、清理死链引用、修复重复键与混合行尾
+  等历史脏数据；web / Android / 桌面三端构建链全量接入；
+- **模块元数据反转**：模块信息改为各模块文件夹内 `module.json` 手写
+  （title/icon/description/categories/prerequisites/officialDocs），
+  `modules.json` 的 `modules[]` 与 `modulePrerequisites` 由 sync 自动
+  重建；`folder_order` 恒等于文件夹编号，修复旧版 Android 内容生成
+  按序号拼错路径的问题；
+- **退役 ID 管线死重**：删除无任何运行时消费方的 `_id-registry.json`
+  （826KB）/ `_archived-ids.json` / `_op-list.json` / `_doc-id-map`、
+  `tls-tools` 整包（manifest 生成与 ID 分配 CLI）、三个 JSON schema、
+  `naming.config.json` 与孤儿数据 `metadata/review/`；pnpm workspace
+  同步瘦身（-19 包）；
+- **自动发版**：新增 `pnpm release [版本号]`——自动 patch +1（或指定
+  版本）、五处版本文件同步、Android versionCode 自动 +1、CHANGELOG
+  「未发布」段自动迁移、commit + tag + push 触发 Release 流水线；
+- **audit 聚焦**：`content-audit.mjs` 移除已由 sync 托管的结构性检查
+  （字段缺失/白名单/引用格式），聚焦内容质量（正文、过时关键词、
+  未知字段），存量 21 篇重复键 HIGH 问题已由 sync 全部修复归零。
+
+### 变更（上轮）
+
 - **CI/CD 加固**：发布工作流新增版本一致性校验（tag 必须对齐 Android
   versionName / tauri.conf / 根 package.json）、Android 新主线单元测试
   门禁、APK 签名证书校验（apksigner），发布说明附带产物 SHA-256 校验值；

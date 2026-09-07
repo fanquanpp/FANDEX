@@ -6,12 +6,13 @@ category: 云与基础设施
 difficulty: advanced
 description: 安全测试方法、移动应用测试、持续集成中的测试、测试左移与质量内建。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'software-testing/002-FunctionalAndAutomatedTest'
   - 'software-testing/003-PerformanceInterfaceTest'
   - 'software-testing/005-TestConceptPrinciple'
   - 'software-testing/006-TestLevels'
+prerequisites: []
 ---
 
 

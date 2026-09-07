@@ -6,9 +6,10 @@ category: 工具链
 difficulty: advanced
 description: git rebase详解：变基原理、交互式改写历史与安全实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/018-MergeConflictResolution'
+prerequisites: []
 ---
 
 ## 1. rebase 概述

@@ -6,10 +6,11 @@
   "description": "FANDEX Web 端 — Astro 7 + React 19 + Tailwind 4",
   "license": "MIT",
   "scripts": {
+    "sync": "node scripts/content-sync.mjs",
     "build:syntax": "node scripts/build-syntax.mjs",
     "audit:learning-path": "node scripts/audit-learning-path.mjs",
-    "dev": "node scripts/build-stats.mjs && node scripts/build-syntax.mjs && astro dev",
-    "build": "node scripts/build-stats.mjs && node scripts/build-syntax.mjs && astro build && node scripts/clean-prerender.mjs && pagefind --site dist",
+    "dev": "node scripts/content-sync.mjs && node scripts/build-stats.mjs && node scripts/build-syntax.mjs && astro dev",
+    "build": "node scripts/content-sync.mjs && node scripts/build-stats.mjs && node scripts/build-syntax.mjs && astro build && node scripts/clean-prerender.mjs && pagefind --site dist",
     "preview": "astro preview",
     "qa": "node scripts/qa-check.mjs",
     "og": "node scripts/generate-og.mjs",

@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: JavaScript正则表达式语法、常用模式、RegExp对象、字符串方法与实战技巧详解。
 author: fanquanpp
-updated: '2026-06-13'
+updated: '2026-09-08'
 related:
   - 'javascript/039-ModuleDynamicImportCodeSplitting'
   - 'javascript/018-JavaScriptPrototypeInheritance'
   - 'javascript/048-ErrorBoundaryGlobalErrorCatch'
   - 'javascript/036-MemoryLeakTroubleshoot'
+prerequisites: []
 ---
 
 ## 前置知识

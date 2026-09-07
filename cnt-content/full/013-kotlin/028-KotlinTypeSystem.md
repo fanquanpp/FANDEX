@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin 类型系统深度解析：泛型、型变（协变 out / 逆变 in / 不变）、星投影、类型擦除、reified 类型参数、上下界约束、declaration-site 与 use-site variance 的形式化定义、编译器实现与企业级工程实践。对标 MIT 6.005、Stanford CS193P、CMU 15-312 教学水准。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'kotlin/021-KotlinCollectionOperation'
   - 'kotlin/020-KotlinScopeFunction'

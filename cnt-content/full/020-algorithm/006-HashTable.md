@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 哈希表（Hash Table）的形式化定义、哈希函数设计（除法/乘法/全域/多项式滚动）、冲突处理（链地址法/开放寻址法/布谷鸟哈希）、扩容与再哈希、一致性哈希、Bloom Filter 与 LRU/LFU 缓存的工程实现，附 Python/C++/Java 多语言实现。
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-03'
 related:
   - 'algorithm/001-AlgorithmAnalysisBasics'
   - 'algorithm/005-LinkedList'

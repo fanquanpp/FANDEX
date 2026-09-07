@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C11 _Generic 泛型选择表达式原理、工程实现与最佳实践
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'c/014-SignalHandling'
   - 'c/015-AtomicAndMemoryModel'

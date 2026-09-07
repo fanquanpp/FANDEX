@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 中 infer 关键字的形式语义、推导规则与生产级应用——从函数返回值到模板字面量、从 Promise 解包到 AST 元编程
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/034-UtilityTypePrinciple'
   - 'typescript/035-ConditionalTypeDistribute'
@@ -14,6 +14,7 @@ related:
   - 'typescript/038-ConditionalMappedType'
 prerequisites: []
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

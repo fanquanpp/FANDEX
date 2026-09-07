@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Bun.serve 写 HTTP 服务，Bun.sql 操作 SQLite，内置 Redis 客户端与文件路由，一个运行时完成全栈。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nestjs/009-BunQuickStart'
   - 'sql/002-OverviewStandard'

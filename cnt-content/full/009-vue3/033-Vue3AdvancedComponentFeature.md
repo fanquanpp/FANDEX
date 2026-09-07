@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: 异步组件、动态组件、Teleport 与 Suspense。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/031-VuePerformanceDetailed'
   - 'vue3/032-PerformanceOptimization'
   - 'vue3/034-Vue3ProjectExampleBlog'
   - 'vue3/035-Vue3TheoryKnowledge'
+prerequisites: []
 ---
 
 ## 前置知识

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: postMessage
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'html5/033-MicrodataJSONLD'
   - 'html5/034-CustomDataAttribute'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL索引体系：B+树索引、哈希索引、全文索引、空间索引的原理、结构与适用场景
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related:
   - 'sql/033-ExecutionPlan'
   - 'sql/034-TransactionACIDProperty'

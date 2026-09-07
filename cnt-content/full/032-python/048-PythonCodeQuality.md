@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: beginner
 description: Ruff、Black与代码规范
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'python/046-PythonJupyter'
   - 'python/010-PythonVirtualEnv'
   - 'python/049-ConcurrentProgramming'
   - 'python/050-PythonDatabaseMigration'
+prerequisites: []
 ---
 
 

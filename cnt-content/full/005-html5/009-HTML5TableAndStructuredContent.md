@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 表格、定义列表、全局属性大表与 details/dialog/popover 等复杂结构，含语义化标签浅读。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/006-HTML5CoreGlobalAttributes'
   - 'html5/008-HTML5BasicContentTags'

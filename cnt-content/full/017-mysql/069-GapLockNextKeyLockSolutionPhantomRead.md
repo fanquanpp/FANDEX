@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB 间隙锁（Gap Lock）与临键锁（Next-Key Lock）详解：锁结构、加锁规则、幻读解决方案与死锁分析。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/067-RedoUndoBinlogWriteTiming'
   - 'mysql/068-TwoPhaseCommit'

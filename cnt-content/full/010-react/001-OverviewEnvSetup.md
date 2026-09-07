@@ -6,10 +6,11 @@ category: 前端技术
 difficulty: beginner
 description: React 概述、发展历史、React 19 新特性、环境搭建与 JSX 语法基础。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'react/002-ComponentProps'
   - 'react/003-StateEvent'
+prerequisites: []
 ---
 
 

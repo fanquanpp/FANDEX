@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Spring Boot 深度指南：自动配置原理、起步依赖、Actuator、Spring Data JPA、Spring Security、Spring Cloud 与生产级工程实践。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/029-LambdaFunctionalProgramming'
   - 'java/072-NetworkProgramming'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub Actions缓存机制问题驱动详解：从每次CI都重新下载依赖太慢的痛点切入，讲透 actions/cache 用法、缓存键设计、命中逻辑与依赖加速最佳实践。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-29'
 related:
   - 'github/031-FAQTroubleshoot'
   - 'github/032-ActionsMatrixBuild'

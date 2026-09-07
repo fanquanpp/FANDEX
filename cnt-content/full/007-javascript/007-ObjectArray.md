@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 对象操作、数组方法与解构赋值。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'javascript/026-PromiseConstructorDeepDive'
   - 'javascript/065-ImmutableDataStructures'
   - 'javascript/041-DOMOperationEvent'
   - 'javascript/062-JavaScriptLatestFeature'
+prerequisites: []
 ---
 
 ## 前置知识

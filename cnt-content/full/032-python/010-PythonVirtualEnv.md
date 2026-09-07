@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: beginner
 description: venv与包管理
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'python/046-PythonJupyter'
   - 'python/045-PythonPackagingEvolution'
   - 'python/048-PythonCodeQuality'
   - 'python/021-PythonDocker'
+prerequisites: []
 ---
 
 ## 前置知识

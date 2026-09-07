@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 受控组件与非受控组件
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'react/018-ReactPerformance'
   - 'react/019-ReactErrorBoundary'

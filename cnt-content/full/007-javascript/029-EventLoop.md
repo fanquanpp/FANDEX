@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript 事件循环模型——HTML 规范、Node.js 实现、微任务/宏任务、渲染调度
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'javascript/033-ExploringES6ProxiesAndReflect'
   - 'javascript/021-ObjectStaticMethods'
   - 'javascript/012-ES2018RegExpNamedCaptureGroups'
   - 'javascript/066-RegexAssertions'
+prerequisites: []
 ---
 
 > 阅读建议：核心必读。形式化模型可先跳过，重点看执行顺序示例与对比表；反复读直到能口算执行顺序。

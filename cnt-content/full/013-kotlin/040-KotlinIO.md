@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: kotlinx-io与文件操作
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'kotlin/038-KotlinAtomicOperation'
   - 'kotlin/039-KotlinBenchmark'

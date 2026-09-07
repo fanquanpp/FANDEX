@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: ctypes、cffi 与 CPython 扩展：让 Python 调用原生代码。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'python/014-MultiprocessingMultithreading'
   - 'python/039-PythonPerformance'

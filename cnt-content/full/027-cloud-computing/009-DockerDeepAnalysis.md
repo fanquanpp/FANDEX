@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Docker进阶：镜像构建优化、多阶段构建、网络模式、存储驱动与安全实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cloud-computing/007-CloudArchitectureDesign'
   - 'cloud-computing/008-PublicCloudPrivateCloudHybridCloud'

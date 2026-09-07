@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: SQL EXCEPT / INTERSECT 集合操作语法速查手册 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related: []
 prerequisites: []
 ---

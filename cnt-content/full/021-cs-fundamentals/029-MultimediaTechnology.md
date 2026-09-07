@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 多媒体技术：音频编码、图像压缩、视频编码、流媒体与多媒体网络
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/027-ComputerNetworkAdvanced'
   - 'cs-fundamentals/028-NetworkSecurity'

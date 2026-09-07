@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: HTTP 缓存策略：强缓存（Cache-Control、Expires）、协商缓存（ETag、Last-Modified）与缓存流程。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/045-ZeroCopy'
   - 'cs-fundamentals/046-IPC'

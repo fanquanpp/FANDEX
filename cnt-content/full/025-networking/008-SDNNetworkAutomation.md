@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: SDN与网络自动化：OpenFlow、NETCONF/YANG、Ansible网络、网络可编程
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'networking/006-NetworkSecurityTech'
   - 'networking/007-WirelessNetwork'

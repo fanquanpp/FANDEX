@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Markdown 删除线语法完整讲解：GFM 扩展、使用场景、HTML 替代与跨平台兼容性。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-02'
 related:
   - 'markdown/008-EscapeCharacter'
   - 'markdown/009-Footnote'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java应用性能优化
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'java/095-JavaDocker'
   - 'java/091-JavaGraphQL'

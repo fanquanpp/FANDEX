@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: Python装饰器详解：函数装饰器、类装饰器、带参数装饰器、functools.wraps与实用装饰器模式。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/043-PythonCLI'
   - 'python/033-Python'
   - 'python/035-PythonMessageQueue'
   - 'python/036-PythonGrpc'
+prerequisites: []
 ---
 
 ## 前置知识

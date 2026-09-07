@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL覆盖索引、部分索引、表达式索引：INCLUDE子句、条件索引与优化策略
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/010-TransactionIDWraparoundPrevention'
   - 'postgresql/011-IndexType'

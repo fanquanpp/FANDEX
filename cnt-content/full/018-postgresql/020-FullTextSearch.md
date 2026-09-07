@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL全文检索：tsvector、tsquery、GIN索引、排名与多语言支持
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/018-MERGEStatementEnhancement'
   - 'postgresql/021-GeoSpatialObject'

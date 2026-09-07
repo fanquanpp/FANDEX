@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: JSON与二进制序列化
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'cpp/026-CppNetworkProgramming'
   - 'cpp/031-CppRegex'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: AWS 核心服务：EC2、S3、VPC、RDS、Lambda、IAM 详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/024-ServiceMesh'
   - 'cloud-computing/025-Observability'

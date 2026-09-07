@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 数值计算、标准数学库与高性能第三方数学库的工程实践
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'cpp/042-CppWebAssembly'
   - 'cpp/043-CppReflectionMetaprogramming'

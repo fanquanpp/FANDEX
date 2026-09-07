@@ -1,0 +1,28 @@
+{
+  "title": "C",
+  "icon": "C",
+  "description": "底层系统编程",
+  "categories": [
+    "cs"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "cppreference C",
+      "url": "https://en.cppreference.com/w/c",
+      "type": "api"
+    },
+    {
+      "label": "ISO C 标准索引",
+      "url": "https://www.iso.org/standard/74528.html",
+      "type": "spec"
+    },
+    {
+      "label": "C 标准草案",
+      "url": "https://www.open-std.org/jtc1/sc22/wg14/",
+      "type": "spec"
+    }
+  ],
+  "updatePriority": true,
+  "updateNote": "重点更新模块"
+}

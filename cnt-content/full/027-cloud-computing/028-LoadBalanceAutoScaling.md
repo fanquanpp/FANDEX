@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 云负载均衡与自动伸缩：ALB、NLB、Auto Scaling Group 策略。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/026-AWSCore'
   - 'cloud-computing/027-MultiCloudHybridArchitecture'

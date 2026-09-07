@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Scrum框架、Kanban方法、Sprint规划、Backlog管理与敏捷实践。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'software-testing/031-SoftwareEngineeringOverview'
   - 'software-testing/033-RequirementAnalysisMethod'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL 自连接完整详解：同一表与自身连接的语法、典型场景（层级结构、比较、去重）与性能优化。
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related:
   - 'sql/020-JoinQuery'
   - 'sql/021-NaturalJoinUsing'

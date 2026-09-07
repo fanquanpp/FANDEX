@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: RabbitMQ与Kafka
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/033-Python'
   - 'python/034-Decorator'
   - 'python/036-PythonGrpc'
   - 'python/037-PythonWebSocket'
+prerequisites: []
 ---
 
 ## 前置知识

@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: Python正则表达式re模块详解：模式语法、匹配方法、分组、替换与实战应用。
 author: fanquanpp
-updated: '2026-06-13'
+updated: '2026-09-08'
 related:
   - 'python/039-PythonPerformance'
   - 'python/040-BuiltinDataStructure'
   - 'python/044-PythonDesignPattern'
   - 'python/045-PythonPackagingEvolution'
+prerequisites: []
 ---
 
 ## 前置知识

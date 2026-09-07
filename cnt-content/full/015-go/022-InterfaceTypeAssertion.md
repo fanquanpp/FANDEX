@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go接口与动态派发
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'go/021-GoroutineSchedule'
   - 'go/020-ContextDetailed'

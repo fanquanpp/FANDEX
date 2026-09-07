@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript Stage 3装饰器标准实现详解：类装饰器、方法装饰器与元数据。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-03'
 related:
   - 'typescript/059-ModuleDeclarationGlobalAugmentation'
   - 'typescript/060-TsconfigStrictMode'
@@ -14,6 +14,7 @@ related:
   - 'typescript/064-TypeScriptTheory'
 prerequisites: []
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

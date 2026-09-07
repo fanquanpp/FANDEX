@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Ktor HTTP客户端
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'kotlin/032-KotlinExposed'
   - 'kotlin/033-KotlinKoin'

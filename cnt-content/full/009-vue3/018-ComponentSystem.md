@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Vue3组件系统与通信机制
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/016-ReactiveSystem'
   - 'vue3/017-CustomHook'
   - 'vue3/019-TypeScriptIntegration'
   - 'vue3/020-PiniaStateManagementDetailed'
+prerequisites: []
 ---
 
 ## 前置知识

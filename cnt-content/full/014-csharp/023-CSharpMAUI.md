@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: .NET MAUI 跨平台应用开发：架构原理、XAML、数据绑定、平台特定代码、原生 API 互操作、性能优化、部署发布全流程
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related: []
 prerequisites:
   - 'csharp/002-CSharpOverviewEnvSetup'

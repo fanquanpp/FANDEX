@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: B-tree/Hash/GiST/GIN/SP-GiST/BRIN索引、覆盖/部分/表达式/KNN向量索引、统计信息、代价估算、执行计划分析、并行查询、分区表。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/001-OverviewInstallConfig'
   - 'postgresql/002-TransactionConcurrencyControl'

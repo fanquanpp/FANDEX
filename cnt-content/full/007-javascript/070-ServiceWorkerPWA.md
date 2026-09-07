@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 离线优先：Service Worker 生命周期、缓存策略与 PWA 安装体验。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'javascript/046-StorageForTheWeb'
   - 'javascript/043-WebAPIBrowserInterface'

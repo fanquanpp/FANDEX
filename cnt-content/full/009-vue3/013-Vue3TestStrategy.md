@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 组件测试与组合式函数测试
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/011-Vue3SSR'
   - 'vue3/012-LifecycleHook'
   - 'vue3/014-Vue3WebComponents'
   - 'vue3/015-Vue3PerformancePractice'
+prerequisites: []
 ---
 
 ## 1. 测试工具

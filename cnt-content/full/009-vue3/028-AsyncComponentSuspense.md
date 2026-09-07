@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: Vue 3异步组件defineAsyncComponent与Suspense配合使用。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'vue3/026-TeleportPortalApp'
   - 'vue3/027-KeepAliveCacheLifecycle'
   - 'vue3/029-PiniaPersistencePlugin'
   - 'vue3/030-VueRouterNavigationGuard'
+prerequisites: []
 ---
 
 

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 零配置测试：bun test、Jest 兼容面、mock 与覆盖率。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'nestjs/009-BunQuickStart'
   - 'nestjs/011-BunPackageManagerWorkspaces'

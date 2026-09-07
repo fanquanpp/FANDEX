@@ -1,0 +1,9 @@
+{
+  "title": "软件工程与测试",
+  "icon": "测试",
+  "description": "测试工程、软件工程方法与架构实践",
+  "categories": [
+    "cloud"
+  ],
+  "prerequisites": []
+}

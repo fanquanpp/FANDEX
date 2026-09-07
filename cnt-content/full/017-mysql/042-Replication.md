@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL主从复制：异步复制、半同步复制、全同步复制的原理、配置与切换
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/040-PhysicalBackup'
   - 'mysql/041-PITR'

@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript事件循环深度解析：宏任务与微任务优先级、浏览器与Node.js差异。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'javascript/035-ClosureMemoryLeakOptimization'
   - 'javascript/019-PrototypeChainClassEssence'
   - 'javascript/027-PromiseStaticMethod'
   - 'javascript/028-AsyncConcurrencyControl'
+prerequisites: []
 ---
 
 

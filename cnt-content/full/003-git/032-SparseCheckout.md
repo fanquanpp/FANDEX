@@ -6,7 +6,9 @@ category: 工具链
 difficulty: advanced
 description: git sparse-checkout详解：部分克隆与稀疏检出，优化大型仓库工作流。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
+related: []
+prerequisites: []
 ---
 
 ## 1. sparse-checkout 概述

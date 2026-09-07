@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 最新C#语言特性
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'csharp/029-LINQDeferredImmediate'
 prerequisites:

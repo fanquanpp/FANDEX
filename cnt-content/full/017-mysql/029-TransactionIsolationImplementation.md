@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB事务隔离级别底层实现：锁机制、MVCC、Read View与各隔离级别的实现细节
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/027-GroupByOrderByOptimization'
   - 'mysql/028-JOINAlgorithm'

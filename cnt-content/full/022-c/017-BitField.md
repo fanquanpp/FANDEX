@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 位域原理、内存布局、跨平台实践与性能优化
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'c/006-BitwiseBitField'
   - 'c/018-AlignmentMemoryLayout'

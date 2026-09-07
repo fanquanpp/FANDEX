@@ -1,0 +1,30 @@
+{
+  "title": "HTML5",
+  "icon": "H5",
+  "description": "Web结构与语义",
+  "categories": [
+    "frontend"
+  ],
+  "prerequisites": [
+    "markdown"
+  ],
+  "officialDocs": [
+    {
+      "label": "WHATWG 规范",
+      "url": "https://html.spec.whatwg.org/multipage/",
+      "type": "spec"
+    },
+    {
+      "label": "MDN 文档",
+      "url": "https://developer.mozilla.org/zh-CN/docs/Web/HTML",
+      "type": "docs"
+    },
+    {
+      "label": "W3C 规范",
+      "url": "https://www.w3.org/TR/html/",
+      "type": "spec"
+    }
+  ],
+  "updatePriority": true,
+  "updateNote": "重点更新模块"
+}

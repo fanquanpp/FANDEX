@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 算法设计与分析：分治、贪心、动态规划、回溯、分支限界与NP理论
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/017-ParallelCalculate'
   - 'cs-fundamentals/018-DistributedSystem'

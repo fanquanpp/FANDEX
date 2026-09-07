@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 云迁移 6R 策略：Rehost、Replatform、Repurchase、Refactor、Retire、Retain。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/028-LoadBalanceAutoScaling'
   - 'cloud-computing/029-ServerlessArchitecture'

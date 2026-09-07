@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: App Router、Server Components、Server Actions、中间件、API Routes、数据库集成、认证与部署。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'react/008-PerformanceOptimization'
   - 'react/009-TestEngineering'
   - 'react/011-JSXDeepAnalysis'
   - 'react/012-FiberArchitecture'
+prerequisites: []
 ---
 
 ## 前置知识

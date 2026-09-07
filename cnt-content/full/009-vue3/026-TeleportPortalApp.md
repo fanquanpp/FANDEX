@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: Vue 3 Teleport 传送门组件完整应用：to 目标解析、disabled、模态框、通知、遮罩、SSR 与无障碍。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/024-CompositionAPIAdvantageScene'
   - 'vue3/025-CustomComposableWrapper'
   - 'vue3/027-KeepAliveCacheLifecycle'
   - 'vue3/028-AsyncComponentSuspense'
+prerequisites: []
 ---
 
 ## 前置知识

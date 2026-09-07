@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 算术、关系、逻辑、位运算及运算符优先级详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/005-VariableConstant'
   - 'c/006-BitwiseBitField'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 深入解析 Promise 构造器的形式化语义、Promise A+ 规范、状态机模型、thenable 鸭子类型、微任务调度、并发原语(all/race/allSettled/any)、Promise.withResolvers 等高级主题,涵盖 MIT 6.S081 / Stanford CS107 级别的工程实践
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-08'
 related:
   - 'javascript/031-IteratorHelper'
   - 'javascript/065-ImmutableDataStructures'

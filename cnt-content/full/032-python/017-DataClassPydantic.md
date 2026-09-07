@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: dataclass与Pydantic模型
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'python/007-CoroutineAsyncio'
   - 'python/014-MultiprocessingMultithreading'
   - 'python/015-PythonFastAPI'
   - 'python/016-PythonDjango'
+prerequisites: []
 ---
 
 ## 前置知识

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript装饰器与元编程
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/021-MappedTypeAdvanced'
   - 'typescript/022-GenericConstraintDefault'
@@ -14,6 +14,7 @@ related:
   - 'typescript/026-ModuleResolutionModernToolchains'
 prerequisites: []
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

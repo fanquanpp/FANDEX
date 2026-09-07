@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 可变参数与序列/字典解包：函数签名里的星号完全指南。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'python/028-FunctionDetailed'
   - 'python/054-ComprehensionGenerator'

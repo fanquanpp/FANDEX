@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go pprof 与性能调优：CPU/堆/Goroutine/锁/阻塞采样、trace、火焰图、连续性能剖析与生产级调优实战
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'go/034-GoCGO'
   - 'go/033-GoFuzzing'

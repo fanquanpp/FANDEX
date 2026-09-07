@@ -6,10 +6,11 @@ category: 云与基础设施
 difficulty: beginner
 description: 云计算概念与演进、服务模型、部署模型、高可用架构设计、负载均衡配置、弹性伸缩策略与云成本优化。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/002-CloudNetworkStorage'
   - 'cloud-computing/003-ContainerOrchestration'
+prerequisites: []
 ---
 
 ## 1. 云计算概念与演进

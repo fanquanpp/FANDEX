@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: SLF4J、Logback、Log4j 2、JUL 与结构化日志的全景式深度解析
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/033-JavaFunctionalProgramming'
   - 'java/071-JavaNetworkProgramming'

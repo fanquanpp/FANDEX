@@ -1,0 +1,31 @@
+{
+  "title": "JavaScript",
+  "icon": "JS",
+  "description": "动态类型脚本语言",
+  "categories": [
+    "frontend"
+  ],
+  "prerequisites": [
+    "html5",
+    "css"
+  ],
+  "officialDocs": [
+    {
+      "label": "MDN 文档",
+      "url": "https://developer.mozilla.org/zh-CN/docs/Web/JavaScript",
+      "type": "docs"
+    },
+    {
+      "label": "ECMA-262 规范",
+      "url": "https://tc39.es/ecma262/",
+      "type": "spec"
+    },
+    {
+      "label": "TC39 提案",
+      "url": "https://github.com/tc39/proposals",
+      "type": "spec"
+    }
+  ],
+  "updatePriority": true,
+  "updateNote": "重点更新模块"
+}

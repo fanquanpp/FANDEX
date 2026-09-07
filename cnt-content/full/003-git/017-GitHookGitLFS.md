@@ -6,10 +6,11 @@ category: 工具链
 difficulty: advanced
 description: Git钩子自动化与大文件管理
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/016-HEADPointerBranchEssence'
   - 'git/018-MergeConflictResolution'
+prerequisites: []
 ---
 
 ## 1. Git 钩子概述

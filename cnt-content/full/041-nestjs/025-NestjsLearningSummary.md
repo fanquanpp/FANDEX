@@ -6,11 +6,12 @@ category: 后端技术
 difficulty: intermediate
 description: 串联模块十篇文档：从三层结构与依赖注入到守卫、拦截器、配置校验、缓存队列与微服务的完整知识体系回顾。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'nestjs/016-ModuleControllerService'
   - 'nestjs/020-GuardsAndLifecycle'
   - 'nestjs/023-CachingAndQueues'
+prerequisites: []
 ---
 
 本篇是 nestjs 模块的收官总结。我们以一个"虚拟歌手音乐平台"的后端为线索，把前 10 篇文档的核心内容重新串一遍：平台上有 P 主（producer）发布歌曲（song），歌姬（virtual singer）拥有自己的应援色，演唱会（concert）开放抢票，粉丝团（fan club）随时在线。围绕这些实体，你会再次看到模块、守卫、拦截器、队列与微服务各自扮演的角色，并能在自检清单上确认自己真正掌握了多少。回顾不同于初学：初学追求"每一步都跑通"，回顾追求"每一层都说得清"。建议先遮住各节的代码示例，只看小节标题回忆写法，再展开对照；说不上来的条目直接跳回对应原文档重读。整张知识地图里，模块三层结构与请求生命周期是两个枢纽——前者决定代码怎么组织，后者决定请求怎么流动，务必优先巩固。

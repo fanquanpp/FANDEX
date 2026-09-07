@@ -6,11 +6,12 @@ category: 云与基础设施
 difficulty: intermediate
 description: CI/CD 原理、GitHub Actions、GitLab CI、Jenkins、ArgoCD 与发布策略。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'devops/003-ContainerDocker'
   - 'devops/004-Kubernetes'
   - 'devops/012-MonitorAndObservability'
+prerequisites: []
 ---
 
 ## 1. CI/CD 原理

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB MVCC原理：隐藏列、Read View、undo log版本链与可见性判断算法
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/028-JOINAlgorithm'
   - 'mysql/029-TransactionIsolationImplementation'

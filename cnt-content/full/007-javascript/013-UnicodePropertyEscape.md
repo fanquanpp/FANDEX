@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 正则表达式 Unicode 属性转义机制、形式语义、性能调优与生产实践
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'javascript/012-ES2018RegExpNamedCaptureGroups'
   - 'javascript/066-RegexAssertions'

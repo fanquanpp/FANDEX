@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 服务网格：Istio、Linkerd 架构原理、流量管理、安全策略与可观测性详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/021-TwelveFactorApp'
   - 'cloud-computing/022-MicroserviceArchitecture'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 老网页和旧代码里必遇的废弃标签清单：font、center、frameset、marquee 等，附现代替代方案与遇到老项目时的处理思路。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/007-HTML5OverviewCoreFeature'
   - 'html5/014-DocTypeDeclaration'

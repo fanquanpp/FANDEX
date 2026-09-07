@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB重做日志redo log：WAL机制、日志缓冲、LSN、崩溃恢复与性能调优
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/034-DistributedTransaction'
   - 'mysql/035-Binlog'

@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 原型链、构造函数、class 语法与继承模式。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'javascript/034-ProxyReflectPractice'
   - 'javascript/039-ModuleDynamicImportCodeSplitting'
   - 'javascript/011-Regex'
   - 'javascript/048-ErrorBoundaryGlobalErrorCatch'
+prerequisites: []
 ---
 
 ## 前置知识

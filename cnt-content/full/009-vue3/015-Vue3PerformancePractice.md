@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Vue3应用性能优化技巧
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'vue3/013-Vue3TestStrategy'
   - 'vue3/014-Vue3WebComponents'
   - 'vue3/016-ReactiveSystem'
   - 'vue3/017-CustomHook'
+prerequisites: []
 ---
 
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 编译原理进阶：LL/LR分析、语法制导翻译、中间代码优化与代码生成
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/023-SoftwareEngineering'
   - 'cs-fundamentals/024-DatabaseSystemPrinciple'

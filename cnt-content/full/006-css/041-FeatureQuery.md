@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: '@supports'
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'css/054-Function'
   - 'css/036-CSSVariableCustomAttribute'

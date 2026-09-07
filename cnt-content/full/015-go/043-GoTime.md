@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: time包深度剖析：Time/Duration/Location 三大核心、单调时钟、时区处理、定时器、Ticker、性能优化与陷阱
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'go/047-GoHTTPClient'
   - 'go/045-GoSignalHandling'

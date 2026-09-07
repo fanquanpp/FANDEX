@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: ES2024-2026 新特性、V8 引擎原理、Node.js 22+、Deno 2.0、Bun 运行时与 WebAssembly 进阶。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'javascript/007-ObjectArray'
   - 'javascript/041-DOMOperationEvent'
   - 'javascript/038-JavaScriptModular'
   - 'javascript/025-AsyncProgramming'
+prerequisites: []
 ---
 
 > 里程碑标注：新特性速览，先掌握 ES6 基础（036）再读。

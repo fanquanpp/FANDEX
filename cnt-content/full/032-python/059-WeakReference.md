@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: advanced
 description: Python弱引用详解：weakref模块、WeakKeyDictionary。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'python/066-DecoratorAdvanced'
   - 'python/061-Descriptor'
   - 'python/057-MetaclassSingleton'
   - 'python/056-ContextManager'
+prerequisites: []
 ---
 
 ## 前置知识

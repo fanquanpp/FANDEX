@@ -6,13 +6,14 @@ category: 前端技术
 difficulty: intermediate
 description: Vite dev server：server 配置、host 端口、代理、HMR 原理（模块图/WebSocket/热替换边界）与 import.meta.hot API
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'vite/003-ConfigFile'
   - 'vite/002-QuickStart'
 prerequisites:
   - 'vite/003-ConfigFile'
 ---
+
 
 ## 0. 一个类比：餐厅后厨的"尝菜"
 

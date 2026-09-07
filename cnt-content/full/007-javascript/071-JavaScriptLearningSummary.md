@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 回顾 JavaScript 模块的核心知识体系：类型与作用域、闭包与原型、Promise 与事件循环、DOM 与模块化、内存管理，并用虚拟歌手音乐平台的示例串联全部要点。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'javascript/001-WhatIsJavaScript'
   - 'javascript/008-FunctionScopeClosure'
   - 'javascript/029-EventLoop'
   - 'javascript/038-JavaScriptModular'
+prerequisites: []
 ---
 
 JavaScript 模块共 64 篇文档，从"JavaScript 是什么"讲到 Service Worker 与 PWA。这篇总结把全部内容收拢为一张知识地图，并用"虚拟歌手音乐平台"这一贯穿领域重写核心示例：歌姬对象与原型链、播放计数器的闭包、异步拉取歌单、事件委托的播放列表、ES Modules 的代码分割——每个示例都使用 const、箭头函数、async/await 等现代惯用写法。读完本文，你应该能对着一段 JS 代码口算出它的执行顺序。

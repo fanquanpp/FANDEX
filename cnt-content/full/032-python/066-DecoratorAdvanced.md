@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: advanced
 description: Python装饰器进阶详解：带参数装饰器、类装饰器、functools.wraps。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/056-ContextManager'
   - 'python/061-Descriptor'
   - 'python/057-MetaclassSingleton'
   - 'python/063-GeneratorCoroutine'
+prerequisites: []
 ---
 
 ## 前置知识

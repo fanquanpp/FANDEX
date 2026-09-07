@@ -6,11 +6,12 @@ category: 工具链
 difficulty: intermediate
 description: git blame详解：逐行追溯代码作者、时间与提交，辅助代码审查与问题定位。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/013-GitLogDetailed'
   - 'git/016-HEADPointerBranchEssence'
   - 'git/017-GitHookGitLFS'
+prerequisites: []
 ---
 
 ## 1. git blame 概述

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL联合索引与最左前缀原则：索引结构、匹配规则、跳列场景与索引设计策略
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/013-ClusteredIndexSecondaryIndex'
   - 'mysql/015-IndexConditionPushdown'

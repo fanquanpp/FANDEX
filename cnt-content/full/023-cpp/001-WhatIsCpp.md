@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 面向零基础读者厘清 C 与 C++ 的关系、C++ 的能力版图与现代演进，完成第一个程序。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cpp/002-CppOverviewAndModernStandard'
   - 'c/002-CLanguageOverview'

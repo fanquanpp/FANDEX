@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 回调、Promise、async/await 与事件循环。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'javascript/062-JavaScriptLatestFeature'
   - 'javascript/038-JavaScriptModular'
   - 'javascript/035-ClosureMemoryLeakOptimization'
   - 'javascript/019-PrototypeChainClassEssence'
+prerequisites: []
 ---
 
 ## 前置知识

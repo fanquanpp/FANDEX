@@ -6,10 +6,11 @@ category: 工具链
 difficulty: intermediate
 description: git gc垃圾回收详解：仓库清理、对象打包与性能优化。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/037-GitFlowGitHubFlowComparison'
   - 'git/038-InteractiveRebase'
+prerequisites: []
 ---
 
 

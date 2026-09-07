@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: TypeScript 模块解析策略的形式语义、Node.js 包解析算法、exports 字段、路径映射与生产级配置
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'typescript/023-DecoratorDetailed'
   - 'typescript/024-DeclarationFileWriting'

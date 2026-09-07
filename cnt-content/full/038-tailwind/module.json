@@ -1,0 +1,21 @@
+{
+  "title": "Tailwind CSS",
+  "icon": "Tw",
+  "description": "原子化 CSS 框架",
+  "categories": [
+    "frontend"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://tailwindcss.com/docs",
+      "type": "docs"
+    },
+    {
+      "label": "中文文档",
+      "url": "https://www.tailwindcss.cn/docs",
+      "type": "docs"
+    }
+  ]
+}

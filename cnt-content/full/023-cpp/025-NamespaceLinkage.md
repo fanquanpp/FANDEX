@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 命名空间、匿名命名空间与链接性
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'cpp/023-VariadicTemplate'
   - 'cpp/024-ConstexprCompileTime'

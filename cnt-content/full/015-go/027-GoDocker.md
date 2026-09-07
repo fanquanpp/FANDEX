@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go 与 Docker 容器化：镜像分层、多阶段构建、scratch/distroless 镜像、CGO 静态编译、BuildKit、镜像安全与生产级最佳实践
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'go/026-GoKubernetes'
   - 'go/038-GoConfigManagement'

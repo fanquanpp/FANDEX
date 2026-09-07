@@ -1,0 +1,32 @@
+{
+  "title": "Go",
+  "icon": "Go",
+  "description": "云原生系统编程",
+  "categories": [
+    "backend",
+    "cloud"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://go.dev/doc/",
+      "type": "docs"
+    },
+    {
+      "label": "标准库 API",
+      "url": "https://go.dev/pkg/",
+      "type": "api"
+    },
+    {
+      "label": "语言规范",
+      "url": "https://go.dev/ref/spec",
+      "type": "spec"
+    },
+    {
+      "label": "A Tour of Go",
+      "url": "https://go.dev/tour/",
+      "type": "docs"
+    }
+  ]
+}

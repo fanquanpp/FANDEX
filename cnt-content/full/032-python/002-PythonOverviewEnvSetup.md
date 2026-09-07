@@ -6,10 +6,11 @@ category: 后端技术
 difficulty: beginner
 description: Python 发展历程、版本特性与开发环境搭建。
 author: fanquanpp
-updated: '2026-08-05'
+updated: '2026-09-08'
 related:
   - 'python/003-ProgramStructureBasicSyntax'
   - 'python/004-VariableConstant'
+prerequisites: []
 ---
 
 ## 前置知识

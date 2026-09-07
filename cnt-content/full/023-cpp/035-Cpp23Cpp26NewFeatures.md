@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 最新C++标准特性
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cpp/034-CppRustComparison'
   - 'cpp/032-CppPythonInteraction'

@@ -6,7 +6,9 @@ category: 工具链
 difficulty: intermediate
 description: git grep详解：在Git仓库中高效搜索代码，比grep更快的搜索方式。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
+related: []
+prerequisites: []
 ---
 
 

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL KNN向量索引：pgvector扩展、IVFFlat、HNSW索引与近似最近邻搜索
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/011-IndexType'
   - 'postgresql/012-CoveringIndexPartialIndex'

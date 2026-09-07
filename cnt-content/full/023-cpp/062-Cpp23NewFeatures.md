@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++23新特性详解：std::print、std::expected、std::flat_map、deducing this、std::mdspan、std::generator 等。
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-02'
 related:
   - 'cpp/060-Cpp20Coroutine'
   - 'cpp/061-Cpp20Concept'

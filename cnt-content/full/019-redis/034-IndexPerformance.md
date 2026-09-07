@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 单字段/复合/唯一/稀疏索引的创建与选择，用 explain 读懂查询计划，避免全表扫描。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'redis/032-CRUDOperations'
   - 'redis/033-AggregationPipeline'

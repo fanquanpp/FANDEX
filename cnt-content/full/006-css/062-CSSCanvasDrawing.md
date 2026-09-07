@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Canvas绘图API与动画实战
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'css/061-CriticalRenderPathOptimization'
   - 'css/042-CSSNativeNesting'

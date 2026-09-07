@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: crontab、at 与 systemd timer：让脚本按时自动运行。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/021-PracticalScripts'
 prerequisites:

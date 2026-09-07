@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: 条件判断、循环结构与推导式。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/016-PythonDjango'
   - 'python/013-PythonSQLAlchemy'
   - 'python/019-PythonCeleryDistributedTaskQueue'
   - 'python/021-PythonDocker'
+prerequisites: []
 ---
 
 ## 前置知识

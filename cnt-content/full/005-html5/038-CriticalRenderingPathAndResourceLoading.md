@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从 HTML 解析到首屏像素，讲清关键渲染路径的每一步，以及 async、defer、preload、prefetch 的正确用法。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'css/061-CriticalRenderPathOptimization'
   - 'javascript/051-CoreWebVitalsAndPerformanceMetrics'

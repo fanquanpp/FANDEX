@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL EXPLAIN输出详解：type、key、rows、filtered、Extra字段的含义与性能诊断
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/020-SQLFunctionAndAdvancedQuery'
   - 'mysql/021-IndexFailureScene'

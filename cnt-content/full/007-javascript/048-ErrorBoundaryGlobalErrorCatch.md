@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript错误边界与全局错误捕获：ErrorBoundary、window.onerror、unhandledrejection。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'javascript/018-JavaScriptPrototypeInheritance'
   - 'javascript/011-Regex'
   - 'javascript/036-MemoryLeakTroubleshoot'
   - 'javascript/043-WebAPIBrowserInterface'
+prerequisites: []
 ---
 
 

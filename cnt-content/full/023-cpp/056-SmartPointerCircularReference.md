@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++智能指针循环引用问题与weak_ptr解决方案。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'cpp/054-PerfectForwardingReferenceCollapse'
   - 'cpp/055-VTablePolymorphismMemoryLayout'

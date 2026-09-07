@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript 闭包导致的内存泄露原理、形式化建模、检测方法与工程级优化策略，对标 V8 引擎实现与现代前端框架实践。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'javascript/038-JavaScriptModular'
   - 'javascript/025-AsyncProgramming'

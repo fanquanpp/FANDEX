@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: changesets 版本管理：变更记录、版本 bump、CHANGELOG 生成与 npm 发布流程
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'vite/018-WorkspaceProtocol'
   - 'vite/019-CatalogManagement'

@@ -1,0 +1,30 @@
+{
+  "title": "TypeScript",
+  "icon": "TS",
+  "description": "静态类型JavaScript",
+  "categories": [
+    "frontend"
+  ],
+  "prerequisites": [
+    "javascript"
+  ],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://www.typescriptlang.org/zh/docs/",
+      "type": "docs"
+    },
+    {
+      "label": "Handbook",
+      "url": "https://www.typescriptlang.org/docs/handbook/intro.html",
+      "type": "docs"
+    },
+    {
+      "label": "发布说明",
+      "url": "https://www.typescriptlang.org/docs/handbook/release-notes/overview.html",
+      "type": "spec"
+    }
+  ],
+  "updatePriority": true,
+  "updateNote": "重点更新模块"
+}

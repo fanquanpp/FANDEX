@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL FDW外部数据包装器：跨数据库查询、postgres_fdw、文件FDW与数据联邦
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/023-TriggerEventTrigger'
   - 'postgresql/024-ExtensionModule'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL并行复制：逻辑时钟、写集并行、多线程回放与复制延迟优化
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/043-AdvancedQueryMultiTableOperation'
   - 'mysql/046-GroupReplication'

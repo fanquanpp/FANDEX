@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C11线程与并发原语
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/015-AtomicAndMemoryModel'
   - 'c/025-POSIXThread'

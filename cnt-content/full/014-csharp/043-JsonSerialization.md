@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: C# JSON 序列化 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related: []
 prerequisites: []
 ---

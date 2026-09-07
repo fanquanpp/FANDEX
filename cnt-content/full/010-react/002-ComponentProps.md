@@ -6,11 +6,12 @@ category: 前端技术
 difficulty: beginner
 description: 函数组件、Props 传递、children、组件组合模式、条件渲染、列表与 key、Fragment。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'react/001-OverviewEnvSetup'
   - 'react/003-StateEvent'
   - 'react/004-HooksDeep'
+prerequisites: []
 ---
 
 ## 前置知识

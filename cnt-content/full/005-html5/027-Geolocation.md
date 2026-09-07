@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Geolocation
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/025-WebComponentsPWADevelopment'
   - 'html5/026-DragAPI'

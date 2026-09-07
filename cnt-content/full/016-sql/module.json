@@ -1,0 +1,26 @@
+{
+  "title": "SQL",
+  "icon": "SQL",
+  "description": "结构化查询语言",
+  "categories": [
+    "database"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "ISO 标准索引",
+      "url": "https://www.iso.org/standard/76583.html",
+      "type": "spec"
+    },
+    {
+      "label": "Wikipedia SQL",
+      "url": "https://en.wikipedia.org/wiki/SQL",
+      "type": "docs"
+    },
+    {
+      "label": "PostgreSQL SQL 教程",
+      "url": "https://www.postgresql.org/docs/current/tutorial.html",
+      "type": "docs"
+    }
+  ]
+}

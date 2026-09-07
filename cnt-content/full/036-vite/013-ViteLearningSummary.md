@@ -6,11 +6,12 @@ category: 前端技术
 difficulty: intermediate
 description: 串联模块十二篇文档：从原生 ESM 与依赖预构建到配置、HMR、代码分割、插件系统与 Vite 8 Rolldown 单引擎的完整知识体系回顾。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'vite/003-ConfigFile'
   - 'vite/006-DevServerHMR'
   - 'vite/007-BuildSplit'
+prerequisites: []
 ---
 
 本篇是 vite 模块的收官总结。我们假设你在为"虚拟歌手音乐平台"搭建前端：站点要展示歌姬的应援色主题页、P 主的作品列表和演唱会开票倒计时。围绕这些场景，把前 12 篇文档的内容重新串一遍——开发时为什么快、资源与样式怎么走、构建产物怎么切、插件如何扩展，以及 Vite 8 的 Rolldown 单引擎意味着什么。读完请用自检清单核对掌握程度。回顾时建议自问自答：每看到一项配置，先合上文档问自己"不配会发生什么"，再展开验证。Vite 的知识分为开发期、构建期与扩展期三块，彼此独立又互相衔接，卡在哪一块就回哪一篇精读，不必从头再来。

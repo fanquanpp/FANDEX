@@ -6,10 +6,11 @@ category: 工具链
 difficulty: intermediate
 description: git commit --amend详解：修改最近提交的消息、内容与安全注意事项。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/023-RemoteTrackingBranch'
   - 'git/024-GitFlowGitHubFlow'
+prerequisites: []
 ---
 
 ## 1. amend 概述

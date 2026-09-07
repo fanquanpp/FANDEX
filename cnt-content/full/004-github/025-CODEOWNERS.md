@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: CODEOWNERS文件详解：以大型团队代码审查场景讲代码所有权、自动指派审查、语法规则与分支保护集成。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-03'
 related:
   - 'github/026-CommunityHealthFile'
   - 'github/027-PullRequestCompleteCollaborationFlow'

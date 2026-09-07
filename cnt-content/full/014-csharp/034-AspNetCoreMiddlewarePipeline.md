@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: ASP.NET Core中间件管道详解：从IApplicationBuilder到HttpContext的完整指南，涵盖管道构建、依赖注入、性能优化与生产级实践。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'csharp/032-ReflectionAndFeatureApplication'
   - 'csharp/033-EFCoreMigrationOptimization'

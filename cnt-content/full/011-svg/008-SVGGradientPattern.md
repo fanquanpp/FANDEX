@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: linearGradient、radialGradient、pattern 平铺与复杂纹理。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'svg/007-SVGColorFill'
   - 'svg/010-SVGFilterDetailed'

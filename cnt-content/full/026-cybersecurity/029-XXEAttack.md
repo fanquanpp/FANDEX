@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: XXE（XML 外部实体）攻击：原理、利用方式与防御。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/027-AuthenticationAuthorization'
   - 'cybersecurity/028-OWASPTop10Detailed'

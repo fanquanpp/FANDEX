@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 深入解析递归的形式化定义、调用栈模型、尾调用与 TCO 规范、trampoline 技术、CPS 续延传递、栈溢出防护等高级主题,涵盖 MIT 6.001 / Stanford CS107 / SICP 级别的工程教学
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-02'
 related:
   - 'javascript/006-ControlFlow'
   - 'javascript/015-HigherOrderFunction'

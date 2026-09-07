@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS 媒体查询完整原理：@media 语法、媒体特性、响应式断点、深色模式与 matchMedia。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'css/029-CSSAnimationTransition'
   - 'css/052-BorderRadius'

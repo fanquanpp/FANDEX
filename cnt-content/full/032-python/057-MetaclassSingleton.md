@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 元类驱动的单例模式深度剖析：从 __call__ 拦截到线程安全、测试可重置性与企业级应用。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'python/012-Metaclass'
   - 'python/063-GeneratorCoroutine'

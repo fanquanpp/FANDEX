@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 传送门与异步组件
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/003-Vue3TemplateSyntax'
   - 'vue3/004-Vue3DirectiveSystem'
   - 'vue3/006-API'
   - 'vue3/007-ProvideInject'
+prerequisites: []
 ---
 
 ## 1. Teleport

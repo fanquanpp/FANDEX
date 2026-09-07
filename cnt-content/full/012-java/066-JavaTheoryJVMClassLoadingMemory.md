@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 系统阐述 JVM 架构、类加载机制、内存模型、垃圾回收算法与性能调优核心知识。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/071-JavaNetworkProgramming'
   - 'java/080-SpringBasicsIoCAOPBeanLifecycle'

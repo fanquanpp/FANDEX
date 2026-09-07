@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Unity脚本与组件系统
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'csharp/019-SpanMemory'
   - 'csharp/020-SourceGenerator'

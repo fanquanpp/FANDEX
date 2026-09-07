@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 系统阐述 C++ 模板元编程（Template Metaprogramming, TMP）的理论与实践：从 Cfront 1989 到 C++23 Deducing this 的演进史、模板图灵完备性的形式化定义、SFINAE 与 Concepts 的形式化语义、模板实例化复杂度与编译期递归深度分析、模板特化与偏特化、可变参数模板与折叠表达式、CRTP/Expression Templates/Policy-Based Design/Type Erasure 等工程范式、Eigen/Boost.MPL/fmt/std::ranges 案例剖析、与 Rust/Java/Haskell/Zig/D 的对比分析、常见陷阱与习题，覆盖生产级 C++ 模板工程的全部核心知识。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'cpp/008-SmartPointerDeepDive'
   - 'cpp/006-RvalueReferenceMoveSemantics'

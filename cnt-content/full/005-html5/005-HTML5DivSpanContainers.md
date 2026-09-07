@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 实战最常用的搭积木工具：div 做布局分组、span 修饰局部文字，附"全 div 反例"与"语义 + 容器正解"对比。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'html5/004-HTML5BlockVsInline'
   - 'html5/006-HTML5CoreGlobalAttributes'

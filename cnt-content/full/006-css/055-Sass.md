@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Sass（变量、嵌套、混合、继承、运算、模块化）
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'css/037-LogicalProperty'
   - 'css/039-ScrollSnap'

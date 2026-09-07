@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 多云与混合云架构：Terraform 多云管理、VPC 互联、VPN 与专线。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/025-Observability'
   - 'cloud-computing/026-AWSCore'

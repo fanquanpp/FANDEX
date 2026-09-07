@@ -6,12 +6,13 @@ category: 工具链
 difficulty: beginner
 description: add、commit、diff、log 与撤销操作。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/001-Git'
   - 'git/003-GitEnvConfigInit'
   - 'git/005-GitBranchManagement'
   - 'git/006-GitRemoteRepoOperation'
+prerequisites: []
 ---
 
 ## 1. Git 工作区、暂存区和本地仓库

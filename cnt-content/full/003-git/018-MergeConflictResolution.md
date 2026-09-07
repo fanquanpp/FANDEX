@@ -6,10 +6,11 @@ category: 工具链
 difficulty: intermediate
 description: Git合并冲突的产生机制、解决策略与预防方法。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/016-HEADPointerBranchEssence'
   - 'git/017-GitHookGitLFS'
+prerequisites: []
 ---
 
 ## 1. 冲突概述

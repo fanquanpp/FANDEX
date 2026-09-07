@@ -6,11 +6,12 @@ category: 前端技术
 difficulty: advanced
 description: Iterator Helpers提案详解
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'javascript/047-IndexedDBADatabaseInYourBrowser'
   - 'javascript/026-PromiseConstructorDeepDive'
   - 'javascript/065-ImmutableDataStructures'
+prerequisites: []
 ---
 
 ## 前置知识

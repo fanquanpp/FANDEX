@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++26/23/20/17/14/11标准演进、虚函数表原理、RAII原则、模板元编程、CMake构建系统、vcpkg包管理。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'cpp/046-CppDateTime'
   - 'cpp/047-CppFormatOutput'

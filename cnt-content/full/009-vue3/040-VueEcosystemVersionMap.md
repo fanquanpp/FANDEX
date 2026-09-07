@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Vue 3.5 核心与周边生态的最新稳定版本、Node 要求与升级要点。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'vue3/001-OverviewEnv'
   - 'vue3/036-Vue3ViteBuildConfig'

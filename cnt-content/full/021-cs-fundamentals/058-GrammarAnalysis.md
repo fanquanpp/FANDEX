@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译器语法分析：递归下降、LL(1)、LR(0)、SLR、LALR 分析方法。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/056-BGPRoute'
   - 'cs-fundamentals/057-LexicalAnalysis'

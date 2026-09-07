@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: insert/find/update/delete 四类操作的完整语法、常用查询运算符与实战示例拆解。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'redis/031-MongoDBOverviewQuickStart'
   - 'redis/033-AggregationPipeline'

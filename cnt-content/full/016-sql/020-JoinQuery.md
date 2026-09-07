@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL连接查询：INNER JOIN、LEFT JOIN、RIGHT JOIN、FULL JOIN、CROSS JOIN、NATURAL JOIN的语法、语义与性能
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related:
   - 'sql/018-AggregateFunction'
   - 'sql/019-GROUPBYGroupingSet'

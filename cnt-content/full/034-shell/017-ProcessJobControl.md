@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 进程与作业控制：ps/top/kill、后台任务、nohup 与 timeout 限时运行
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'shell/018-EnvVariablesConfig'
   - 'shell/016-TextProcessingTools'

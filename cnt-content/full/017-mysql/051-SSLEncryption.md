@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL SSL/TLS加密连接：证书配置、强制加密、客户端验证与安全最佳实践
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/049-ShardingMiddleware'
   - 'mysql/050-AccountPermissionManagement'

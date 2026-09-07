@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 零基础第一课：认识"全家桶"运行时 Bun，两分钟跑起第一个 TypeScript 脚本。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nestjs/009-BunQuickStart'
   - 'nestjs/010-BunBuiltinServerSQL'

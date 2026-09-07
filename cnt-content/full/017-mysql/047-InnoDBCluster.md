@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB Cluster与InnoDB ClusterSet：MySQL Shell、MGR、MySQL Router集成高可用方案
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/045-ParallelReplication'
   - 'mysql/046-GroupReplication'

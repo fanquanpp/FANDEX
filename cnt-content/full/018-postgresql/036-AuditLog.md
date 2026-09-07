@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL审计日志：pgAudit扩展、日志配置、审计策略与合规要求
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/034-RowLevelSecurity'
   - 'postgresql/035-DataEncryptionStorage'

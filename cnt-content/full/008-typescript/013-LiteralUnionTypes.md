@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 字面量类型、联合类型、可辨识联合的形式语义、类型论基础与穷尽性检查的工程实践
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/009-InterfaceTypeAlias'
   - 'typescript/011-FunctionGeneric'

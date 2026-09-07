@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 注入原理、检测方法与防御策略入门。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-02'
 related:
   - 'mysql/075-MySQLQuickLookup'
   - 'mysql/076-MySQLControlApplication'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'mysql/075-MySQLQuickLookup'
 ---
+
 
 ## 1. SQL 注入概述 (Overview)
 

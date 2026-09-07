@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译器语义分析：符号表管理、类型检查、作用域与类型转换。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cs-fundamentals/057-LexicalAnalysis'
   - 'cs-fundamentals/058-GrammarAnalysis'

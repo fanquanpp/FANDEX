@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown规范文档编写进阶：表格进阶、脚注、自动目录、交叉引用等高级技巧。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-29'
 related:
   - 'markdown/024-Table'
   - 'markdown/031-BlockquoteNestedList'

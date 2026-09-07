@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: content/padding/border/margin、box-sizing 与视觉格式化。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'css/002-CSS3OverviewBasicSyntax'
   - 'css/008-CSS3SelectorSystem'

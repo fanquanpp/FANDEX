@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 从零讲透 .gitignore：模式语法、目录匹配、已跟踪文件处理、全局忽略与团队共享规范。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'git/004-GitBasicOperation'
   - 'git/006-GitRemoteRepoOperation'

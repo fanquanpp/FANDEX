@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++可变参数模板与折叠表达式详解。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'cpp/057-LambdaCaptureDetailed'
   - 'cpp/058-TypeExtractionSFINAE'

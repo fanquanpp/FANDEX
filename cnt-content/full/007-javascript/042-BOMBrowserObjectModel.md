@@ -6,13 +6,14 @@ category: 前端技术
 difficulty: intermediate
 description: 浏览器对象模型（BOM）原理、API 体系、工程实践与规范演进
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-08'
 related:
   - 'javascript/008-FunctionScopeClosure'
   - 'javascript/014-CustomErrorTypes'
   - 'javascript/045-FetchApiWebStreams'
   - 'javascript/046-StorageForTheWeb'
   - 'javascript/029-EventLoop'
+prerequisites: []
 ---
 
 

@@ -6,10 +6,11 @@ category: 云与基础设施
 difficulty: beginner
 description: 软件测试原则、测试分类、黑盒与白盒测试方法、测试用例设计、测试计划与测试报告编写。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'software-testing/002-FunctionalAndAutomatedTest'
   - 'software-testing/003-PerformanceInterfaceTest'
+prerequisites: []
 ---
 
 ## 1. 软件测试概述

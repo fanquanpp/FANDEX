@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 反射与表达式树
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'csharp/029-LINQDeferredImmediate'
   - 'csharp/030-AsyncAwaitStateMachine'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Redis位图Bitmap：位操作、统计、用户标签、在线状态与布隆过滤器
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'redis/004-CacheStrategyAdvancedFeature'
   - 'redis/006-NumberStats'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C语言内存对齐详解：struct大小计算、#pragma pack与对齐规则。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-03'
 related:
   - 'c/041-PointerDeep'
   - 'c/042-MemoryManagement'

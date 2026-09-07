@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: kotlinx.serialization 的核心原理、工程实践与性能优化
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'kotlin/022-KotlinInlineClass'
   - 'kotlin/023-KotlinContractContracts'

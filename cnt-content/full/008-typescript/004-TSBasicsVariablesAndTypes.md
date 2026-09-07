@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第一课：let/const 与 var 的区别、基础类型注解、解构赋值，知识点对齐官方 TypeScript Handbook。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'typescript/005-TSBasicsFunctions'
   - 'typescript/003-TypeScriptOverviewEnvSetup'

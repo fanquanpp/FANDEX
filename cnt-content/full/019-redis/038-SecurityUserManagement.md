@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 认证、角色与最小权限：把数据库的门锁好。
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-09-08'
 related:
   - 'redis/035-SchemaDesignEnterprise'
 prerequisites:

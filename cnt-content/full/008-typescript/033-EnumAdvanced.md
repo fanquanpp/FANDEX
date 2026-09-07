@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 枚举高级用法与替代方案
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-03'
 related:
   - 'typescript/031-SymbolsAndUniqueTypes'
   - 'typescript/032-NamespaceModule'
@@ -14,6 +14,7 @@ related:
   - 'typescript/035-ConditionalTypeDistribute'
 prerequisites: []
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL MERGE语句增强：UPSERT、RETURNING与条件操作
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/016-PartitionPruningPartitionJoin'
   - 'postgresql/017-AdvancedSQL'

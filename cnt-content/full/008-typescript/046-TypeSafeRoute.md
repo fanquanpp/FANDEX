@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 构建类型安全的前端路由系统
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/041-TypeSafeAPIClient'
   - 'typescript/045-TypeSafeI18n'

@@ -6,12 +6,13 @@ category: 工具链
 difficulty: intermediate
 description: 分支创建、合并、变基与分支策略。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/003-GitEnvConfigInit'
   - 'git/004-GitBasicOperation'
   - 'git/006-GitRemoteRepoOperation'
   - 'git/007-DistributedVCSPrinciple'
+prerequisites: []
 ---
 
 ## 2. 分支概述

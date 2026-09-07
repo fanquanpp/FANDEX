@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: pthread多线程编程
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/022-InlineFunctionMacro'
   - 'c/023-ComplexDeclarationParsing'

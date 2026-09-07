@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go 竞态检测与原子操作详解：-race 原理、atomic 包、常见竞态模式与无锁编程实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'go/059-GenericDetailed'
   - 'go/060-UnitTestBenchmark'

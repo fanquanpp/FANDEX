@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: JOIN 类型、自连接、子查询、EXISTS/IN、CTE 与递归 CTE
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related:
   - 'sql/002-OverviewStandard'
   - 'sql/004-DataQueryBasics'

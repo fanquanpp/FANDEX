@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React 19新增API详解：use、ref as prop、文档元数据、Actions。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'react/040-ServerClientComponents'
   - 'react/043-ConcurrentRenderInterruptible'

@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 自定义指令高级用法
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/006-API'
   - 'vue3/007-ProvideInject'
   - 'vue3/009-TransitionAnimation'
   - 'vue3/010-Vue3CompileOptimization'
+prerequisites: []
 ---
 
 ## 1. 指令钩子

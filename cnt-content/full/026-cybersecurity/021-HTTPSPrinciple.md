@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: HTTPS原理：TLS/SSL握手过程、密钥交换、证书验证与安全配置详解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/019-ComplianceAudit'
   - 'cybersecurity/020-DigitalCertificate'

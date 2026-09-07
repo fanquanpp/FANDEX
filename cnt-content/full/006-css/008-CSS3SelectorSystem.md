@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 基础选择器、组合选择器、伪类伪元素与优先级。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'css/002-CSS3OverviewBasicSyntax'
   - 'css/004-CSS3BoxModelDetailed'

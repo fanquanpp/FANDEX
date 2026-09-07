@@ -1,0 +1,28 @@
+{
+  "title": "PostgreSQL",
+  "icon": "PG",
+  "description": "高级关系型数据库",
+  "categories": [
+    "database"
+  ],
+  "prerequisites": [
+    "sql"
+  ],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://www.postgresql.org/docs/",
+      "type": "docs"
+    },
+    {
+      "label": "当前版本手册",
+      "url": "https://www.postgresql.org/docs/17/",
+      "type": "api"
+    },
+    {
+      "label": "SQL 命令",
+      "url": "https://www.postgresql.org/docs/17/sql-commands.html",
+      "type": "api"
+    }
+  ]
+}

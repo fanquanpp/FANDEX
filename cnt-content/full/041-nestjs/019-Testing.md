@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Jest 单元测试服务逻辑，Supertest 端到端测试真实 HTTP 接口，让重构有安全网。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nestjs/018-DatabaseIntegration'
   - 'software-testing/023-JestBasics'

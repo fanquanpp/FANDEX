@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: Django Web框架
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/021-PythonDocker'
   - 'python/019-PythonCeleryDistributedTaskQueue'
   - 'python/018-PythonRedis'
   - 'python/050-PythonDatabaseMigration'
+prerequisites: []
 ---
 
 ## 前置知识

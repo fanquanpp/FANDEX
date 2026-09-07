@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 深入解析 C++20 协程：co_await、co_yield、co_return 的形式化语义、Promise/Awaitable/Awaiter 三元模型、编译器状态机变换（HALO 优化、对称转移、CPS 变换）、对称与非对称协程对比、跨语言协程模型对比（Python/JavaScript/Rust/Go/C#/Java）、工程实践（Task/Generator/SyncWait/WhenAll/线程池集成）、案例研究（cppcoro/folly::coro/Boost.Asio/P2300 std::execution/异步 TCP 服务器）与习题，覆盖 C++20/23/26 的演进与生产级最佳实践。
 author: fanquanpp
-updated: '2026-07-18'
+updated: '2026-09-02'
 related:
   - 'cpp/006-RvalueReferenceMoveSemantics'
   - 'cpp/010-TemplateMetaprogramming'

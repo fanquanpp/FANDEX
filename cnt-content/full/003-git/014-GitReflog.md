@@ -6,11 +6,12 @@ category: 工具链
 difficulty: intermediate
 description: git reflog详解：引用日志的工作原理、恢复误操作与安全网机制。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'git/012-GitRestoreFileOperation'
   - 'git/013-GitLogDetailed'
   - 'git/016-HEADPointerBranchEssence'
+prerequisites: []
 ---
 
 ## 1. reflog 概述

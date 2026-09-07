@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React动画实现方案
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'react/023-ReactRouteAdvanced'
   - 'react/024-ReactI18n'

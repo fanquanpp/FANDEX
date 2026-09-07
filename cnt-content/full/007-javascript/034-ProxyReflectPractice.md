@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript 元编程双壁 Proxy 与 Reflect 的形式化语义、陷阱（Trap）体系、Vue3 响应式实现、Immer/MobX/Solid 对比、企业级验证/缓存/日志/RPC 代理实践，对标 MIT 6.831 与 CMU 17-445 软件工程课程水准。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'javascript/049-DebounceThrottle'
   - 'javascript/009-ArrayHigherOrderMethod'

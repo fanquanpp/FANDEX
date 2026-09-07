@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Python测试体系深度剖析：pytest框架、unittest标准库、TDD/BDD方法论、Mock与依赖隔离、覆盖率分析、属性测试、性能测试、CI/CD集成与生产级工程实践。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-08'
 related:
   - 'python/064-TypeAnnotationMypy'
   - 'python/048-PythonCodeQuality'

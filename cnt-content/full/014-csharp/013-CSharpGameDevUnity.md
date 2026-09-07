@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Unity 中 C# 编程、MonoBehaviour 生命周期、协程、ScriptableObject、ECS 模式、DOTS/Burst、性能优化
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'csharp/011-CSharpDotNet'
   - 'csharp/012-CSharpTestEngineering'

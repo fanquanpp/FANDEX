@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 应急响应：事件分类、取证分析、遏制策略、恢复流程与复盘
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/013-CloudSecurity'
   - 'cybersecurity/014-SymmetricEncryption'

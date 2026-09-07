@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 串联 Vue3 模块全部文档，回顾响应式系统、组合式 API、组件体系、路由状态与工程化的核心脉络。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'vue3/001-OverviewEnv'
   - 'vue3/016-ReactiveSystem'
   - 'vue3/018-ComponentSystem'
   - 'vue3/023-VueRouterDetailed'
+prerequisites: []
 ---
 
 学完本模块的 39 篇文档后，知识容易散落在各篇之中。本文以一个虚构的"虚拟歌手音乐平台"为线索，把 Vue3 的响应式原理、组合式 API、组件体系、路由与状态、性能与工程化串成一条完整的知识链路，帮助你定位薄弱环节并规划复习。

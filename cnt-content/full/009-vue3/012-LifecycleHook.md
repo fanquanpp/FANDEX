@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Vue3组件生命周期钩子详解：创建、挂载、更新、卸载与调试钩子的使用场景。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/010-Vue3CompileOptimization'
   - 'vue3/011-Vue3SSR'
   - 'vue3/013-Vue3TestStrategy'
   - 'vue3/014-Vue3WebComponents'
+prerequisites: []
 ---
 
 ## 前置知识

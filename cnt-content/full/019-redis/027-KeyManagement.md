@@ -6,7 +6,9 @@ category: 数据库
 difficulty: beginner
 description: Redis Key 管理与过期命令速查手册 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
+related: []
+prerequisites: []
 ---
 
 ## 过期时间设置

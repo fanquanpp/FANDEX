@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Redis缓存与数据结构
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'java/085-JavaMicroservice'
   - 'java/090-JavaMessageQueue'

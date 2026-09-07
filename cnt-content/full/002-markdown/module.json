@@ -1,0 +1,26 @@
+{
+  "title": "Markdown",
+  "icon": "Md",
+  "description": "文档标记与写作规范",
+  "categories": [
+    "tools"
+  ],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "原始规范",
+      "url": "https://daringfireball.net/projects/markdown/",
+      "type": "spec"
+    },
+    {
+      "label": "CommonMark 规范",
+      "url": "https://spec.commonmark.org/",
+      "type": "spec"
+    },
+    {
+      "label": "GitHub Flavored Markdown",
+      "url": "https://github.github.com/gfm/",
+      "type": "spec"
+    }
+  ]
+}

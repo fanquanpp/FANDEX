@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: '讲清打包器把模块变成浏览器可运行文件的原理，以及 Tree Shaking 为什么只能"摇掉"没被用到的 ESM 导出。'
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-08-30'
 related:
   - 'javascript/038-JavaScriptModular'
   - 'javascript/039-ModuleDynamicImportCodeSplitting'

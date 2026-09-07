@@ -6,9 +6,10 @@ category: 工具链
 difficulty: beginner
 description: 从零开始选择操作系统、安装编辑器和配置终端环境。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/002-ComputerArchitectureBasics'
+prerequisites: []
 ---
 
 ## 1. 选择操作系统

@@ -1,0 +1,28 @@
+{
+  "title": "GitHub",
+  "icon": "GH",
+  "description": "代码协作与CI/CD",
+  "categories": [
+    "tools"
+  ],
+  "prerequisites": [
+    "git"
+  ],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://docs.github.com/",
+      "type": "docs"
+    },
+    {
+      "label": "REST API",
+      "url": "https://docs.github.com/zh/rest",
+      "type": "api"
+    },
+    {
+      "label": "GraphQL API",
+      "url": "https://docs.github.com/zh/graphql",
+      "type": "api"
+    }
+  ]
+}

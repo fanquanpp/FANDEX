@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: OAuth2与JWT认证
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/049-ConcurrentProgramming'
   - 'python/050-PythonDatabaseMigration'
   - 'python/037-PythonWebSocket'
   - 'python/052-PythonVectorDatabase'
+prerequisites: []
 ---
 
 ## 前置知识

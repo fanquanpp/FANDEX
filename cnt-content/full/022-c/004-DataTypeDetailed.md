@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C 语言的整型、浮点型、派生类型、空类型、内存布局、ABI 与 C23 新类型，对标 MIT/Stanford/CMU 系统编程教学水准。
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'c/002-CLanguageOverview'
   - 'c/003-ProgramStructureBasicSyntax'

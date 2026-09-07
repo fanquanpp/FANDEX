@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Context API、Provider 模式、useContext 优化、状态管理方案对比与状态机。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'react/003-StateEvent'
   - 'react/004-HooksDeep'
   - 'react/006-React19NewFeatures'
   - 'react/007-RouteDataFetch'
+prerequisites: []
 ---
 
 ## 前置知识

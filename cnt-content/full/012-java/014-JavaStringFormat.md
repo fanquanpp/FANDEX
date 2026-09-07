@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Java String.format/printf/MessageFormat 语法速查手册 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-08-30'
 related:
   - 'java/013-JavaStringDetailed'
 prerequisites:

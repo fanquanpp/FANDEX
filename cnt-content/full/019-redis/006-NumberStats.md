@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Redis基数统计HyperLogLog：去重计数、UV统计、误差控制与内存优化
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'redis/005-BitMapRedis'
   - 'redis/007-GeoSpatial'

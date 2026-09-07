@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL 逻辑复制与物理复制对比：流复制、逻辑解码、发布订阅模型、适用场景与数据一致性。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/039-UpdatableView'
   - 'postgresql/040-ParallelQuery'

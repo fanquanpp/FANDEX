@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL数据加密存储：pgcrypto扩展、加密函数、列级加密与密钥管理
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'postgresql/033-RoleBasedPermissionManagement'
   - 'postgresql/034-RowLevelSecurity'

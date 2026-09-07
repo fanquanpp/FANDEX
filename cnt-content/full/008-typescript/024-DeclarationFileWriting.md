@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 声明文件（.d.ts）的语法结构、模块声明、全局类型增强、UMD 声明、声明合并规则、三斜线指令、DefinitelyTyped 生态与发布实践的形式化定义与工程指南
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-02'
 related:
   - 'typescript/039-TypeScriptTypeDeclarationModuleResolution'
   - 'typescript/022-GenericConstraintDefault'
@@ -15,6 +15,7 @@ related:
   - 'typescript/027-AdvancedTypeCalculus'
 prerequisites: []
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

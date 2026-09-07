@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: Vue3插件开发详解：插件结构、app.use注册、provide/inject、指令插件与全局组件注册。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'vue3/019-TypeScriptIntegration'
   - 'vue3/020-PiniaStateManagementDetailed'
   - 'vue3/022-ComputedCacheWatchTiming'
   - 'vue3/023-VueRouterDetailed'
+prerequisites: []
 ---
 
 ## 前置知识

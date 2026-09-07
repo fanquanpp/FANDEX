@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 默认拒绝的权限体系、--allow 系列参数、敏感信息管理与生产环境安全清单。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'nestjs/001-DenoOverview'
   - 'nestjs/007-DenoWebFrameworkDeploy'

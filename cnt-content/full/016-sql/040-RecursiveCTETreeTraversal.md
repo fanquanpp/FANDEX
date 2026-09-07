@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 递归 CTE 遍历树形与图结构：组织架构层级查询、评论回复树构建、路径枚举与环检测。
 author: fanquanpp
-updated: '2026-08-28'
+updated: '2026-08-30'
 related:
   - 'sql/039-WindowFunctionFramework'
   - 'sql/041-OptimisticPessimisticLock'

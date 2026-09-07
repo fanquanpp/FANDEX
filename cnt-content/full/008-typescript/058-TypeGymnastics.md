@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript类型体操详解：递归类型、斐波那契、深度只读等高级类型编程。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-03'
 related:
   - 'typescript/056-MappedTypeKeyRemap'
   - 'typescript/057-TemplateLiteralType'
@@ -14,6 +14,7 @@ related:
   - 'typescript/060-TsconfigStrictMode'
 prerequisites: []
 ---
+
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
 
 

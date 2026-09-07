@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL子查询优化：半连接转换、物化、子查询展开与IN/EXISTS优化策略
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/023-SlowQueryLog'
   - 'mysql/024-OptimizerTrace'

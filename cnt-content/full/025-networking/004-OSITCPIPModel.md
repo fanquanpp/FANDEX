@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: OSI与TCP-IP模型深度：协议层次、数据封装、PDU与协议数据单元分析
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'networking/002-NetworkSystemManagement'
   - 'networking/003-NetworkWiringAndConstruction'

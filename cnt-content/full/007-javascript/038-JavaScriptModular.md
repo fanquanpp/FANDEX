@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: CommonJS、ES Modules 与模块打包工具。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'javascript/041-DOMOperationEvent'
   - 'javascript/062-JavaScriptLatestFeature'
   - 'javascript/025-AsyncProgramming'
   - 'javascript/035-ClosureMemoryLeakOptimization'
+prerequisites: []
 ---
 
 ## 前置知识

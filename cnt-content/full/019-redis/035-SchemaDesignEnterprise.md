@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 内嵌与引用怎么选、常见建模模式、副本集高可用与事务取舍，从示例项目到生产部署。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'redis/031-MongoDBOverviewQuickStart'
   - 'redis/034-IndexPerformance'

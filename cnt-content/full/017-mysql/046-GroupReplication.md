@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL组复制Group Replication：单主/多主模式、Paxos协议、故障检测与自动切换
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/045-ParallelReplication'
   - 'mysql/048-PartitionedTable'

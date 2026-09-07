@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 交换与路由技术：VLAN、STP、链路聚合、静态路由、动态路由与策略路由
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'networking/003-NetworkWiringAndConstruction'
   - 'networking/004-OSITCPIPModel'

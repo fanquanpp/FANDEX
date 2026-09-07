@@ -6,10 +6,11 @@ category: 后端技术
 difficulty: intermediate
 description: GIL 机制、内存管理、字节码与运行时模型。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/068-FileIOContextManager'
   - 'python/069-PythonProjectExampleWebCrawlerDataAnalysis'
+prerequisites: []
 ---
 
 ## 前置知识

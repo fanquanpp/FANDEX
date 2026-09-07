@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: audio/video 元素、Canvas API 与 SVG 基础。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-02'
 related:
   - 'html5/011-Accessibility'
   - 'html5/012-HTML5FormValidation'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'html5/007-HTML5OverviewCoreFeature'
 ---
+
 
 > 前置依赖：Canvas 部分需要 JavaScript 基础。速通路径：先做第 0 节与 3.3.6“画一个笑脸”；3.4 变换与 3.6 交互为进阶内容，可先跳过。
 

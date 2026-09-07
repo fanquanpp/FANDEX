@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 函数定义、参数传递、作用域、递归及函数指针。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'c/028-SharedMemorySemaphore'
   - 'c/029-FileSystemOperation'

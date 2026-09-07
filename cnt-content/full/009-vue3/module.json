@@ -1,0 +1,30 @@
+{
+  "title": "Vue 3",
+  "icon": "V3",
+  "description": "响应式前端框架",
+  "categories": [
+    "frontend"
+  ],
+  "prerequisites": [
+    "javascript",
+    "html5",
+    "css"
+  ],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://cn.vuejs.org/",
+      "type": "docs"
+    },
+    {
+      "label": "API 参考",
+      "url": "https://cn.vuejs.org/api/",
+      "type": "api"
+    },
+    {
+      "label": "风格指南",
+      "url": "https://cn.vuejs.org/style-guide/",
+      "type": "spec"
+    }
+  ]
+}

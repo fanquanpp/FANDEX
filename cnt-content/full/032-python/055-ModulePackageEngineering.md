@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: 模块导入、包结构、虚拟环境与依赖管理。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/053-PythonAdvancedLatestFeature'
   - 'python/054-ComprehensionGenerator'
   - 'python/066-DecoratorAdvanced'
   - 'python/063-GeneratorCoroutine'
+prerequisites: []
 ---
 
 ## 泛型

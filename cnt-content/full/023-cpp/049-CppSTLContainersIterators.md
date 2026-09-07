@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 顺序容器、关联容器、无序容器及迭代器体系。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'cpp/047-CppFormatOutput'
   - 'cpp/048-Cpp26AndLatestStandard'

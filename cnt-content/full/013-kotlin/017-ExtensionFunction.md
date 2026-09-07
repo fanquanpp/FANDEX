@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Kotlin 扩展函数与扩展属性的原理、形式化语义、工程实践与陷阱分析
 author: fanquanpp
-updated: '2026-07-21'
+updated: '2026-09-02'
 related:
   - 'kotlin/020-KotlinScopeFunction'
   - 'kotlin/021-KotlinCollectionOperation'

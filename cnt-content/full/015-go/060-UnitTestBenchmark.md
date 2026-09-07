@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go单元测试与基准测试详解：go test -bench。
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-02'
 related:
   - 'go/058-GCAndTuning'
   - 'go/059-GenericDetailed'

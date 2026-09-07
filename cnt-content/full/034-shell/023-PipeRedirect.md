@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 标准输入输出重定向、管道、tee 与 xargs 的速查。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'shell/001-ShellBasics'
   - 'shell/002-CommandLineBasics'

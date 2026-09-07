@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: OWASP Top 10漏洞、SQL注入、XSS、CSRF、文件上传与命令执行漏洞、渗透测试流程、Nmap扫描、Burp Suite漏洞扫描。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'cybersecurity/001-SecurityBasicsDefense'
   - 'cybersecurity/003-BinarySecurityAndIncidentResponse'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 白盒测试覆盖度：语句覆盖、判定覆盖、条件覆盖、MC/DC 的定义与计算。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'software-testing/013-APIAutomationTest'
   - 'software-testing/016-AutomationTestFrameworkComparison'

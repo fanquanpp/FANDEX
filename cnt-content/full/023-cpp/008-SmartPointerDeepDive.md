@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 深入解析 C++ 智能指针 unique_ptr、shared_ptr、weak_ptr 的所有权语义、引用计数模型、形式化定义、工程实践与跨语言对比，覆盖 RAII、自定义删除器、循环引用破解与生产级模式。
 author: fanquanpp
-updated: '2026-07-18'
+updated: '2026-09-08'
 related:
   - 'cpp/006-RvalueReferenceMoveSemantics'
   - 'cpp/007-CppPointers'

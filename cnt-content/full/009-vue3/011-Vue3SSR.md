@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: advanced
 description: SSR与Nuxt.js集成
 author: fanquanpp
-updated: '2026-06-14'
+updated: '2026-09-08'
 related:
   - 'vue3/009-TransitionAnimation'
   - 'vue3/010-Vue3CompileOptimization'
   - 'vue3/012-LifecycleHook'
   - 'vue3/013-Vue3TestStrategy'
+prerequisites: []
 ---
 
 

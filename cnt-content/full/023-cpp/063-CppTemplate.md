@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C++ 模板完整解析：函数模板、类模板、模板特化、SFINAE、概念（concepts）与现代 C++ 泛型实践。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-02'
 related:
   - 'cpp/061-Cpp20Concept'
   - 'cpp/062-Cpp23NewFeatures'

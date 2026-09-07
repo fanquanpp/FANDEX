@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: 以函数为参数或返回值的编程模式
 author: fanquanpp
-updated: '2026-07-20'
+updated: '2026-09-08'
 related:
   - 'javascript/005-DataTypeOperator'
   - 'javascript/006-ControlFlow'
   - 'javascript/016-RecursionTailCallOptimization'
   - 'javascript/017-CurryAndFunctionComposition'
+prerequisites: []
 ---
 
 

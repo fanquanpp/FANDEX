@@ -1,0 +1,33 @@
+{
+  "title": "Kotlin",
+  "icon": "Kt",
+  "description": "JVM现代编程语言",
+  "categories": [
+    "backend"
+  ],
+  "prerequisites": [
+    "java"
+  ],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://kotlinlang.org/docs/home.html",
+      "type": "docs"
+    },
+    {
+      "label": "API 参考",
+      "url": "https://kotlinlang.org/api/latest/jvm/stdlib/",
+      "type": "api"
+    },
+    {
+      "label": "语言规范",
+      "url": "https://kotlinlang.org/spec/kotlin-lang-spec.pdf",
+      "type": "spec"
+    },
+    {
+      "label": "Kotlin 教程",
+      "url": "https://play.kotlinlang.org/",
+      "type": "docs"
+    }
+  ]
+}

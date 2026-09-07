@@ -1,0 +1,23 @@
+{
+  "title": "NestJS 与 JS 运行时",
+  "icon": "Ne",
+  "description": "Deno/Bun 运行时与 NestJS 企业级框架",
+  "categories": [
+    "backend"
+  ],
+  "prerequisites": [
+    "typescript"
+  ],
+  "officialDocs": [
+    {
+      "label": "官方文档",
+      "url": "https://docs.nestjs.com/",
+      "type": "docs"
+    },
+    {
+      "label": "源码仓库",
+      "url": "https://github.com/nestjs/nest",
+      "type": "docs"
+    }
+  ]
+}

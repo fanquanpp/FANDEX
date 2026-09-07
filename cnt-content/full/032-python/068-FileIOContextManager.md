@@ -6,12 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: 文件读写、路径操作、with 语句与上下文管理。
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-09-08'
 related:
   - 'python/065-OOP'
   - 'python/067-ExceptionHandling'
   - 'python/069-PythonProjectExampleWebCrawlerDataAnalysis'
   - 'python/070-PythonTheoryKnowledge'
+prerequisites: []
 ---
 
 ## 前置知识

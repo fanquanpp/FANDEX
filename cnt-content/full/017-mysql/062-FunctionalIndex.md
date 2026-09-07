@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL函数索引：基于表达式的索引、虚拟列索引与函数索引优化
 author: fanquanpp
-updated: '2026-08-01'
+updated: '2026-08-30'
 related:
   - 'mysql/060-InvisibleIndex'
   - 'mysql/061-PerformanceTuningSecurity'

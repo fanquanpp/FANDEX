@@ -1,0 +1,11 @@
+{
+  "title": "云计算",
+  "icon": "云",
+  "description": "云架构与容器编排",
+  "categories": [
+    "cloud"
+  ],
+  "prerequisites": [
+    "devops"
+  ]
+}

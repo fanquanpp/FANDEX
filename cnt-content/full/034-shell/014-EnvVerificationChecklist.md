@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 装完所有工具后逐项验证：命令、版本、路径、网络与版本管理是否一切正常。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'shell/005-DevEnvSetup'
   - 'shell/004-EnvVarPath'

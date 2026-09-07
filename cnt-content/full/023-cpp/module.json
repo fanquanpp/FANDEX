@@ -1,0 +1,35 @@
+{
+  "title": "C++",
+  "icon": "C+",
+  "description": "高性能与泛型编程",
+  "categories": [
+    "cs"
+  ],
+  "prerequisites": [
+    "c"
+  ],
+  "officialDocs": [
+    {
+      "label": "ISO C++ 官方",
+      "url": "https://isocpp.org/",
+      "type": "docs"
+    },
+    {
+      "label": "cppreference",
+      "url": "https://en.cppreference.com/",
+      "type": "api"
+    },
+    {
+      "label": "C++ 标准",
+      "url": "https://isocpp.org/std/the-standard",
+      "type": "spec"
+    },
+    {
+      "label": "C++ Core Guidelines",
+      "url": "https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines",
+      "type": "spec"
+    }
+  ],
+  "updatePriority": true,
+  "updateNote": "重点更新模块"
+}
