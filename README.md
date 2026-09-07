@@ -132,9 +132,10 @@ push，push 后 CI 自动构建并发布 GitHub Release（`--no-push` 只改文�
 ## 贡献
 
 欢迎修正文档错误、补充知识点与报告问题。仓库采用 `main`（受保护发布主线）+
-`dev`（协作集成分支）的双分支模型，从环境准备到合并的完整协作教程见
-[CONTRIBUTING.md](CONTRIBUTING.md)；文档 frontmatter 字段约束、目录职责与工程
-规范见 [AGENTS.md](AGENTS.md)。
+`dev`（协作集成分支）的双分支模型。内容开发的实操手册（新增文档/模块、本地
+校验与常见问题排查）见 [CONTENT-GUIDE.md](CONTENT-GUIDE.md)；从环境准备到
+合并的完整协作教程见 [CONTRIBUTING.md](CONTRIBUTING.md)；文档 frontmatter
+字段约束、目录职责与工程规范见 [AGENTS.md](AGENTS.md)。
 
 ## 许可与免责
 

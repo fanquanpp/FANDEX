@@ -1,8 +1,10 @@
 # 贡献指南（Contributing）
 
 感谢你考虑为 FANDEX 做出贡献。本文档是完整的协作教程：从环境准备、内容写作、
-本地校验到提交、合并与发版。工程细节与 frontmatter 字段约束以 [AGENTS.md](AGENTS.md)
-为准；本仓库的差异只有「写内容」与「改应用」两类，教程对两者都适用。
+本地校验到提交、合并与发版。内容开发的逐步实操手册（含常见问题排查）见
+[CONTENT-GUIDE.md](CONTENT-GUIDE.md)；工程细节与 frontmatter 字段约束以
+[AGENTS.md](AGENTS.md) 为准；本仓库的差异只有「写内容」与「改应用」两类，
+教程对两者都适用。
 
 ## 仓库概览
 
