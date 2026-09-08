@@ -111,12 +111,11 @@ function* naturals(): Generator<number> {
 - **`--noCheck`**：跳过类型检查但完整产出（配合 `tsc --build` 拆分"快速构建"与"完整检查"）；
 - 类型层完整支持 ES2025 的迭代器辅助方法（`IteratorObject` 泛型）。
 
-## 6. TypeScript 5.7（2025-01）：目标与产出现代化
+## 6. TypeScript 5.7（2025-01）：目标与检查现代化
 
 - **`--target es2024`**：正式支持 ES2024 目标与对应 `--lib`；
-- **声明文件路径重写**：`tsc` 产出 `.d.ts` 时自动把内部相对导入重写为发布形态（配合 `outDir`/`rootDir`），monorepo 发布前手工改路径的时代结束；
-- 非空值收窄更聪明：先判空再访问的 `obj[key]` 模式按常量键正确收窄；
-- Node.js 下利用 V8 编译缓存加速 `tsc --help` 等冷启动。
+- **检查非空表达式后的收窄重写**：`if (x !== null)` 这类判空检查之后，`x` 的收窄结果在更多间接场景（重新读取、别名传递）中被保留；
+- **导入路径预解析缓存**：模块路径的解析结果被缓存复用，增量构建与冷启动的开销显著下降。
 
 ## 7. TypeScript 5.8（2025-03）：拥抱 Node 类型剥离
 
@@ -134,37 +133,70 @@ Node.js 的原生类型剥离（type stripping）要求 `.ts` 文件只含可擦
 
 ### 7.2 其他
 
-- `--module node20`：模拟 Node 20 的模块互操作行为；
+- `--module node18`：模拟 Node 18 的模块互操作行为（后续 5.9 又补上 `node20`，两者都是 `nodenext` 在特定 Node 大版本下的"冻结形态"，适合锁定运行时的服务端项目）；
 - `--module nodenext` 下允许 `require()` 一个 ESM 模块（对应 Node 22 的 require(esm)）；
 - return 表达式的分支级检查：条件分支返回值逐支对照声明类型，报错位置更准。
 
-## 8. TypeScript 5.9（2025-08）：import defer 与体验打磨
+## 8. TypeScript 5.9（2025-08）：import defer 与 5.x 收官
+
+### 8.1 import defer：延迟模块求值
 
 ```typescript
-// 延迟求值模块：导入时不执行，首次访问属性才加载
+// 延迟求值模块：导入时不执行模块体，首次访问其属性才触发加载
 import defer * as heavy from './heavy-module.js';
 export function runWhenNeeded() { return heavy.compute(); }
-// 对应 ES2026 方向的 deferred module evaluation 提案
+// 对应仍处 TC39 Stage 3 的延迟模块求值（deferred module evaluation）提案
 ```
 
-- `tsc --init` 全新设计：生成的 tsconfig 只保留推荐默认值，注释指向文档；
-- 编辑器悬停类型支持展开（联合类型可逐个查看）、DOM API 悬停内置 MDN 摘要；
-- `--module node20` 下支持 `import.meta`；最低运行时要求 Node 14.17+。
+边界要注意：`import defer` 只对命名空间导入（`* as`）生效；被延迟模块的顶层副作用推迟到首次属性访问，但如果该模块同时被其他普通 `import` 引用，则会退化为立即执行。适合把"启动时的大依赖"（编辑器内核、图表库）推迟到真正使用的时刻。
 
-## 9. 升级策略
+### 8.2 其他
+
+- **`--module node20`**：新增 node20 模块策略，与 5.8 的 `node18` 配套，覆盖主流 LTS 运行时；
+- **`dom.iterable` 类型全面化**：`NodeList`、`FormData`、`Headers` 等集合类型的可迭代能力在类型层面补齐；
+- **可缩小的 async 回调返回类型**：泛型 API 接受 async 回调时，其返回类型会参考上下文期望的 `Promise<T>` 形态参与收窄，减少手动注解；
+- `tsc --init` 全新设计：生成的 tsconfig 只保留推荐默认值，注释指向文档；
+- 编辑器悬停类型支持展开：联合类型在悬停卡片中可逐个查看成员。
+
+## 9. TypeScript 6.0（2026-03）：语言层面的收官
+
+6.0 定位是"桥梁版本"：编译器 API 与 5.9 完全兼容，重心在默认值现代化与弃用清理（完整迁移指南见 `typescript/068-TypeScript6And7CompilerEvolution`）。语言与类型层面同样有一批正向变化，值得在 5.x 视角下记录：
+
+```typescript
+// target/lib es2025：ES2025 内建 API 的类型定义就位
+const safe = RegExp.escape("a.b(c)");   // 正则元字符转义（ES2025）
+
+// Temporal：Stage 4 定稿后的现代日期时间 API，经 esnext.temporal 提供
+const now = Temporal.Now.instant();
+
+// upsert 家族：键不存在则插入，存在则原样返回
+const m = new Map<string, number>();
+m.getOrInsert("hits", 0);
+m.getOrInsertComputed("ts", () => Date.now());
+```
+
+- **`#/` 子路径导入**：`module: nodenext` 与 `bundler` 下支持 package.json `imports` 字段声明的包内私有路径；
+- **`moduleResolution: bundler` 可与 `module: commonjs` 组合**，打包器 + CJS 产物的项目不再被选项约束卡住；
+- **`--stableTypeOrdering`**：诊断信息里类型的展示顺序稳定化（7.0 默认开启且不可关闭）；
+- **`dom` 库并入 `dom.iterable` / `dom.asynciterable`**：`"lib": ["dom"]` 自动获得集合迭代能力。
+
+6.0 之后语言特性趋近冻结，团队重心转向 Go 原生编译器（TypeScript 7.0，详见 `typescript/068-TypeScript6And7CompilerEvolution`）。
+
+## 10. 升级策略
 
 1. **不要跳版本**：5.x 各版本破坏性极小，`typescript` 直接升到 5.9.x 通常只需处理少量类型错误；
 2. **新开关按需逐个开**：`strictNullChecks`/`noUncheckedIndexedAccess` 类家族之外，`isolatedDeclarations`、`erasableSyntaxOnly`、`noUncheckedSideEffectImports` 都属于"先评估再开启"；
 3. **面向 6.x/7.x 提前铺路**：6.0 把 `strict` 设为默认、`target` 滚动到 es2025（详见 `typescript/068-TypeScript6And7CompilerEvolution`），现在显式写全 tsconfig 关键项，迁移成本最低；
 4. **库作者优先**：`isolatedDeclarations` + `verbatimModuleSyntax` 越早开，声明产出越健壮。
 
-## 10. 动手试试
+## 11. 动手试试
 
 1. 写一个 `defineConfig<const T>` 并验证推断结果与手写 `as const` 一致；
 2. 用 `using` 重写一个临时文件清理逻辑，对比 try/finally 版本；
 3. 找一个 `filter(Boolean)` 场景，升级到 5.5+ 后删掉手写类型谓词；
-4. 在实验分支开启 `--erasableSyntaxOnly`，清点项目里枚举与参数属性的数量，评估 Node 类型剥离的迁移面。
+4. 用 `import defer` 延迟一个重依赖模块，在 DevTools 里观察模块体何时真正执行；
+5. 在实验分支开启 `--erasableSyntaxOnly`，清点项目里枚举与参数属性的数量，评估 Node 类型剥离的迁移面。
 
-## 11. 一句话记住
+## 12. 一句话记住
 
-> 5.0-5.2 立语法（const 泛型、标准装饰器、using），5.4-5.5 强推断（NoInfer、推断谓词、isolatedDeclarations），5.6-5.8 收检查贴运行时（不可能代码、类型剥离），5.9 引入 import defer——然后一切为 6.0/7.0 的编译器换代让路。
+> 5.0-5.2 立语法（const 泛型、标准装饰器、using），5.4-5.5 强推断（NoInfer、推断谓词、isolatedDeclarations），5.6-5.8 收检查贴运行时（不可能代码、类型剥离），5.9 引入 import defer、6.0 补齐 es2025/Temporal 类型——然后一切为 6.0/7.0 的编译器换代让路。

@@ -59,12 +59,12 @@ TypeScript 配置不仅是"编译选项集合"，更是类型系统的外部化�
 | TS 3.4 | 2019 | `incremental`、`composite` | 增量编译落地 |
 | TS 3.8 | 2020 | `typeImports`、`assumeChangesOnlyAffectDirectDependencies` | 大型仓库优化 |
 | TS 4.0 | 2020 | `--noUncheckedIndexedAccess` | 安全性进一步增强 |
-| TS 4.5 | 2021 | `Awaited<T>`、`module: NodeNext` | ESM 支持完善 |
-| TS 4.7 | 2022 | `moduleResolution: Bundler` | 前端工具链对齐 |
+| TS 4.5 | 2021 | `Awaited<T>` | 类型推断精度 |
+| TS 4.7 | 2022 | `moduleResolution: node16/nodenext` | Node ESM 对齐 |
 | TS 4.9 | 2022 | `satisfies` 操作符 | 类型安全配置 |
 | TS 5.0 | 2023 | `--moduleResolution bundler`、新装饰器 | 标准化 |
 | TS 5.4 | 2024 | `NoInfer<T>`、`--module preserve` | 推断精度优化 |
-| TS 5.5 | 2025 | `--isolatedDeclarations` | 类型导出强制一致性 |
+| TS 5.5 | 2024 | `--isolatedDeclarations`、`${configDir}` | 类型导出强制一致性 |
 
 ### 1.3 构建工具演进
 

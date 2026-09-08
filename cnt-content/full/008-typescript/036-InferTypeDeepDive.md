@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 中 infer 关键字的形式语义、推导规则与生产级应用——从函数返回值到模板字面量、从 Promise 解包到 AST 元编程
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/034-UtilityTypePrinciple'
   - 'typescript/035-ConditionalTypeDistribute'
@@ -75,11 +75,10 @@ type GetLengthReturn = number;
 |------|------|---------|-----------|
 | 2.8 | 2018-03 | `infer` 关键字在条件类型中引入 | #21496 |
 | 3.0 | 2018-07 | 元组中的 rest 元素支持 `infer` | #24897 |
-| 3.4 | 2019-03 | `infer T extends X` 约束推断变量 | #25260 |
 | 4.0 | 2020-08 | 元组与 rest 元素的 `infer` 推导更精确 | #39094 |
 | 4.1 | 2020-11 | 模板字面量类型支持 `infer` | #40336 |
 | 4.5 | 2021-11 | 内置 `Awaited<T>` 类型 | #46052 |
-| 4.7 | 2022-05 | `infer extends` 约束语法稳定化 | #49385 |
+| 4.7 | 2022-05 | `infer X extends Y` 约束推断变量（#25260 经多轮修订在本版落地） | #49385 |
 | 5.0 | 2023-03 | `const` 类型参数与 `infer` 协同 | #51865 |
 | 5.4 | 2024-03 | `NoInfer<T>` 工具类型 | #57499 |
 

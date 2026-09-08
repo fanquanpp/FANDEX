@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript装饰器与元编程
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/021-MappedTypeAdvanced'
   - 'typescript/022-GenericConstraintDefault'
@@ -19,8 +19,6 @@ prerequisites: []
 
 
 
-
-# 装饰器详解：从实验性到 TC39 Stage 3 标准
 
 ## 前置知识
 
@@ -50,20 +48,17 @@ prerequisites: []
 | TS 1.5 | 2015 | 引入实验性装饰器（`experimentalDecorators`） | 借鉴 Java 注解与 Python 装饰器，支持 Angular 2.0 |
 | TS 1.6 | 2015 | `emitDecoratorMetadata` 配合 `Reflect.metadata` | 为依赖注入提供类型元数据 |
 | TS 4.0 | 2020 | 装饰器元组语义明确化 | 改善与 Angular、NestJS 兼容性 |
-| TS 4.9 | 2022 | TC39 Stage 3 装饰器草案预览 | 标准化进程，对齐 ECMAScript |
-| TS 5.0 | 2023 | 正式支持 TC39 Stage 3 装饰器 | 不再需要 `experimentalDecorators`，原生支持 |
-| TS 5.2 | 2023 | `Symbol.metadata` 标准化元数据 | 替代 `Reflect.metadata`，与 ECMAScript 对齐 |
-| TS 5.4 | 2024 | 装饰器 `context.access` 与 `addInitializer` 完善 | 支持私有字段访问与初始化钩子 |
-| TS 5.5 | 2025 | 装饰器与 `using` 资源管理协同 | 配合 Explicit Resource Management 提案 |
+| TS 5.0 | 2023 | 正式支持 TC39 Stage 3 装饰器 | 不再需要 `experimentalDecorators`，原生支持；同时落地 `Symbol.metadata`、`context.access` 与 `addInitializer` |
+
+> 截至 2026-09，TC39 装饰器提案仍处于 Stage 3（未定稿），TS 5.x 后续版本对装饰器本身无重大改动；标准装饰器当前形态不含参数装饰器。
 
 ### 1.3 TC39 标准化进程
 
 ECMAScript 装饰器提案历经多次迭代：
 
 - **Stage 1（2014）**：Yehuda Katz 与 Jonathan Turner 最初提案，强 reflect-based 模型
-- **Stage 2（2019）**：Daniel Ehrenberg 重写为更简洁的 hook-based 模型
-- **Stage 3（2022）**：Ron Buckton 与 Kristen Hewell 推进，TS 5.0 实现此版本
-- **Stage 4（预期 2025）**：进入正式 ECMAScript 标准
+- **Stage 2（2016）**：提案进入 Stage 2，此后由 Daniel Ehrenberg 等多次重写为更简洁的 hook-based 模型
+- **Stage 3（2022）**：Ron Buckton 与 Kristen Hewell 推进，TS 5.0 实现此版本；截至 2026-09 仍未进入 Stage 4
 
 ### 1.4 元编程理论基础
 
@@ -313,7 +308,6 @@ $$
 
 // 元数据键
 const INJECTABLE_KEY = Symbol('injectable');
-const INJECT_KEY = Symbol('inject');
 
 interface InjectableMetadata {
   scope: 'singleton' | 'transient';
@@ -323,43 +317,32 @@ interface InjectableMetadata {
 // 容器
 export class DIContainer {
   private static instances = new Map<symbol, unknown>();
-  private static registry = new Map<symbol, new (...args: any[]) => any>();
+  private static registry = new Map<symbol, new (...args: any[]) => unknown>();
 
-  static register<T extends new (...args: any[]) => any>(
+  static register<T extends new (...args: any[]) => unknown>(
     token: symbol,
     target: T,
-    scope: 'singleton' | 'transient' = 'singleton',
   ): void {
     this.registry.set(token, target);
-    if (scope === 'singleton') {
-      // 不立即创建，延迟到 resolve
-    }
   }
 
   static resolve<T>(token: symbol): T {
-    const target = this.registry.get(token);
-    if (!target) throw new Error(`No provider for token ${String(token)}`);
-
     if (this.instances.has(token)) {
       return this.instances.get(token) as T;
     }
+    const Target = this.registry.get(token);
+    if (!Target) throw new Error(`No provider for token ${String(token)}`);
 
-    // 读取构造函数参数元数据
-    const paramTypes: any[] = (target as any)[Symbol.metadata]?.get('design:paramtypes') ?? [];
-    const args = paramTypes.map((type) => {
-      const depToken = (type as any)[INJECT_KEY];
-      return depToken ? this.resolve(depToken) : undefined;
-    });
-
-    const instance = new target(...args);
+    // 构造器不接收依赖：依赖通过字段注入完成（见下方 Inject）
+    const instance = new Target();
     this.instances.set(token, instance);
-    return instance;
+    return instance as T;
   }
 }
 
-// Injectable 装饰器
+// Injectable 装饰器（类装饰器）：登记 token 并注册进容器
 export function Injectable(options: { scope?: 'singleton' | 'transient'; token?: symbol } = {}) {
-  return function <T extends new (...args: any[]) => any>(
+  return function <T extends new (...args: any[]) => unknown>(
     target: T,
     context: ClassDecoratorContext<T>,
   ): T {
@@ -368,31 +351,45 @@ export function Injectable(options: { scope?: 'singleton' | 'transient'; token?:
       scope: options.scope ?? 'singleton',
       token,
     };
-    context.metadata.set(INJECTABLE_KEY, metadata);
-    DIContainer.register(token, target, metadata.scope);
+    // context.metadata 是可变的普通对象（Record），直接以键值对写入
+    context.metadata[INJECTABLE_KEY] = metadata;
+    DIContainer.register(token, target);
     return target;
   };
 }
 
-// Inject 装饰器（参数装饰器，TS 5.0+ 通过 context.kind 区分）
+// Inject 装饰器（字段装饰器）
+// 注意：标准装饰器（TC39 Stage 3 当前形态）不含参数装饰器，
+// 构造器参数注入是 legacy experimentalDecorators + emitDecoratorMetadata 的能力。
+// 标准装饰器下的等价做法：用字段装饰器把 token 记入元数据，
+// 并返回初始化函数，在实例化时解析依赖并作为字段初始值。
 export function Inject(token: symbol) {
   return function (
-    target: any,
-    context: ClassParameterDecoratorContext,
-  ): void {
-    context.metadata.set(`param:${context.parameterIndex}`, token);
+    _initialValue: undefined,
+    context: ClassFieldDecoratorContext<unknown, unknown>,
+  ): (initialValue: unknown) => unknown {
+    context.metadata[`inject:${String(context.name)}`] = token;
+    return function () {
+      // 初始化函数在每次实例化时执行：解析容器中的单例并赋给字段
+      return DIContainer.resolve(token);
+    };
   };
 }
 
-// 使用示例
-@Injectable({ scope: 'singleton' })
+// 使用示例：token 必须是共享的同一符号（Symbol() 每次调用都创建新值，需提取为常量）
+const LoggerToken = Symbol('Logger');
+const UserServiceToken = Symbol('UserService');
+
+@Injectable({ token: LoggerToken })
 class Logger {
   log(msg: string) { console.log(`[LOG] ${msg}`); }
 }
 
-@Injectable({ scope: 'singleton' })
+@Injectable({ token: UserServiceToken })
 class UserService {
-  constructor(private logger: Logger) {}
+  // 字段注入：实例化时由容器解析 Logger 并赋值
+  @Inject(LoggerToken)
+  private logger!: Logger;
 
   getUser(id: string) {
     this.logger.log(`Getting user ${id}`);
@@ -400,7 +397,9 @@ class UserService {
   }
 }
 
-const userService = DIContainer.resolve<UserService>(Symbol('UserService'));
+const userService = DIContainer.resolve<UserService>(UserServiceToken);
+userService.getUser(1);
+// 输出：[LOG] Getting user 1
 ```
 
 ### 4.2 方法装饰器：性能监控与日志
@@ -1379,21 +1378,19 @@ console.log(svc.fib(40));  // 第二次命中缓存
 | --- | --- | --- |
 | `kind` | `'class' \| 'method' \| ...` | 装饰器类型 |
 | `name` | `string \| symbol` | 成员名称 |
-| `access` | `{ has, get, set }` | 安全访问器（支持私有成员） |
+| `access` | `{ has, get, set }`（按 `kind` 部分提供） | 安全访问器（支持私有成员） |
 | `static` | `boolean` | 是否静态成员 |
-| `metadata` | `Map<string, unknown>` | 类共享元数据 Map |
+| `metadata` | `Record<PropertyKey, unknown>`（可变共享对象） | 类共享元数据对象，经 `Symbol.metadata` 挂载 |
 | `addInitializer` | `(fn) => void` | 注册初始化函数（构造后执行） |
 
 ## 附录 C：版本兼容性矩阵
 
 | TS 版本 | 实验性装饰器 | TC39 Stage 3 | `Symbol.metadata` | `addInitializer` |
 | --- | --- | --- | --- | --- |
-| 1.5 | 支持（`experimentalDecorators`） | 不支持 | 不支持 | 不支持 |
-| 4.9 | 支持 | 预览 | 不支持 | 不支持 |
-| 5.0 | 支持 | 支持 | 不支持 | 支持 |
-| 5.2 | 支持 | 支持 | 支持 | 支持 |
-| 5.4 | 支持 | 支持 | 支持 | 支持（完善） |
-| 5.5 | 支持 | 支持 | 支持 | 支持 |
+| 1.5 - 4.9 | 支持（`experimentalDecorators`） | 不支持 | 不支持 | 不支持 |
+| 5.0+ | 支持（维护模式） | 支持 | 支持 | 支持 |
+
+> 截至 2026-09，TC39 装饰器提案仍处于 Stage 3（未定稿）；标准装饰器当前形态不含参数装饰器。
 
 ## 附录 D：常见错误代码
 

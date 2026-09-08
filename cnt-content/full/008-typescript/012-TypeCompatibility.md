@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: TypeScript 结构化类型系统的赋值兼容规则：对象、函数、联合、交叉与特殊类型的兼容判断。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'typescript/013-LiteralUnionTypes'
   - 'typescript/018-IntersectionTypeMerge'
@@ -282,7 +282,7 @@ const good: EventHandler = (e: unknown) => console.log(e);
 
 **Q5：泛型类型怎么判断兼容？**
 
-泛型参数相同的两个实例化类型按普通规则判断；泛型参数不同时，还要看类型参数本身是否兼容（例如 `Box<Dog>` 能否赋给 `Box<Animal>` 取决于 `Box<T>` 中 `T` 出现的位置，详见 `026-CovarianceContravariance`）。
+泛型参数相同的两个实例化类型按普通规则判断；泛型参数不同时，还要看类型参数本身是否兼容（例如 `Box<Dog>` 能否赋给 `Box<Animal>` 取决于 `Box<T>` 中 `T` 出现的位置，详见 `029-CovarianceContravariance`）。
 
 ## 11. 自测（小测验）
 
@@ -307,7 +307,7 @@ const good: EventHandler = (e: unknown) => console.log(e);
 
 ## 扩展阅读
 
-- `026-CovarianceContravariance`：型变理论的完整展开与工程案例；
-- `015-IntersectionTypeMerge`：交叉类型合并时的属性冲突（冲突属性变成 never）；
-- `010-LocalTypeInference`：类型收窄如何让联合类型"变成"单类型；
-- `TypeInferenceDeepDive`：推断与兼容性如何配合工作。
+- `029-CovarianceContravariance`：型变理论的完整展开与工程案例；
+- `018-IntersectionTypeMerge`：交叉类型合并时的属性冲突（冲突属性变成 never）；
+- `013-LiteralUnionTypes`：类型收窄如何让联合类型"变成"单类型；
+- `014-TypeInferenceDeepDive`：推断与兼容性如何配合工作。
