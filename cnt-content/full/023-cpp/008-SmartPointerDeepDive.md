@@ -2808,7 +2808,7 @@ let w = Arc::downgrade(&p);           // 弱引用 +1
 
 #### 15.2.1 标准与规范
 
-- **ISO/IEC 14882:2023（C++23）**：[C++23 标准草案](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/n4950.pdf) — 第 20.11 节 Smart Pointers，涵盖 `unique_ptr`、`shared_ptr`、`weak_ptr`、`enable_shared_from_this` 的完整规范。
+- **ISO/IEC 14882:2024（C++23）**：[C++23 标准草案](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/n4950.pdf) — 第 20.11 节 Smart Pointers，涵盖 `unique_ptr`、`shared_ptr`、`weak_ptr`、`enable_shared_from_this` 的完整规范。
 - **C++ Core Guidelines**：[isocpp.github.io/CppCoreGuidelines](https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines) — R 系列规则（R.20-R.34）专门论述智能指针的使用约束，由 Bjarne Stroustrup 与 Herb Sutter 维护。
 - **WG21 提案**：[open-std.org](https://www.open-std.org/jtc1/sc22/wg21/) — 关注 `std::atomic_ref`、`std::shared_ptr` 数组支持（P0674）、`std::weak_ptr` 的 lock-free 实现（N4182）等提案。
 
@@ -2879,7 +2879,7 @@ let w = Arc::downgrade(&p);           // 弱引用 +1
 1. 精读第 3 章形式化定义，理解引用计数的代数性质与不变量
 2. 研读第 7-8 章，剖析 `make_shared` 的内存布局与自定义删除器的类型擦除
 3. 阅读第 9 章跨语言对比，理解 C++/Rust/Java/Go 的所有权哲学差异
-4. 阅读 ISO/IEC 14882:2023 §20.11 与 C++ Core Guidelines R 系列
+4. 阅读 ISO/IEC 14882:2024 §20.11 与 C++ Core Guidelines R 系列
 5. 研读 Boost.SmartPtr 与 Folly SharedPtr 源码，理解工业级优化
 
 ### 15.5 社区与讨论

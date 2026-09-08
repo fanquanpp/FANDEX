@@ -712,7 +712,7 @@ ul.custom-mark li::before {
 
 ## 扩展学习
 
-- 列表样式：`css/023-PseudoClassPseudoElement` 中 `::marker` 的完整用法；
-- 语义选择：`html5/009-SemanticTag` 中 `nav` 与列表的组合；
+- 列表样式：`css/024-PseudoClassPseudoElement` 中 `::marker` 的完整用法；
+- 语义选择：`html5/010-SemanticTag` 中 `nav` 与列表的组合；
 - 组件化：`vue3` 模块中列表渲染 `v-for` 与 key 规范；
-- 无障碍：`html5/010-Accessibility` 中列表导航快捷键的体验。
+- 无障碍：`html5/011-Accessibility` 中列表导航快捷键的体验。

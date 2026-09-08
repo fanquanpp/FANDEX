@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: margin/padding/border/background/font 等简写属性的 1-4 值规则与“重置未写属性”陷阱。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/004-CSS3BoxModelDetailed'
   - 'css/027-BackgroundEnhancement'
@@ -57,7 +57,7 @@ margin: 10px 20px 30px 40px;
 }
 ```
 
-**讲解：** `background` 可合并颜色、图片、重复方式、位置、尺寸、附加方式等。注意两点：未写子属性会重置（例如只写 `background: url(...)` 会把颜色清掉）；`background-size` 用 `/` 与位置分隔。多背景分别写时，拆成 `background-image`/`background-color` 更安全。完整体系见 `css/026-BackgroundEnhancement`。
+**讲解：** `background` 可合并颜色、图片、重复方式、位置、尺寸、附加方式等。注意两点：未写子属性会重置（例如只写 `background: url(...)` 会把颜色清掉）；`background-size` 用 `/` 与位置分隔。多背景分别写时，拆成 `background-image`/`background-color` 更安全。完整体系见 `css/027-BackgroundEnhancement`。
 
 ## 4. font 简写
 
@@ -86,7 +86,7 @@ margin: 10px 20px 30px 40px;
 }
 ```
 
-**讲解：** 规则一致：简写覆盖一组相关属性，未写的子属性回到初始值。动画/过渡/列表/外框的细节分别见 `css/028-CSSAnimationTransition`、`css/017-CSSListStyle` 对应文档。
+**讲解：** 规则一致：简写覆盖一组相关属性，未写的子属性回到初始值。动画/过渡/列表/外框的细节分别见 `css/029-CSSAnimationTransition`、`css/018-CSSListStyle` 对应文档。
 
 ## 6. 简写会重置未指定属性
 
@@ -143,7 +143,7 @@ margin: 10px 20px 30px 40px;
 
 ## 10. 扩展学习
 
-- 盒模型与方向属性：`css/003-CSS3BoxModelDetailed`；
-- 背景完整体系：`css/026-BackgroundEnhancement`；
-- 文本与字体：`css/004-TextAndFontsBasics`；
-- 动画与过渡简写：`css/028-CSSAnimationTransition`。
+- 盒模型与方向属性：`css/004-CSS3BoxModelDetailed`；
+- 背景完整体系：`css/027-BackgroundEnhancement`；
+- 文本与字体：`css/005-TextAndFontsBasics`；
+- 动画与过渡简写：`css/029-CSSAnimationTransition`。

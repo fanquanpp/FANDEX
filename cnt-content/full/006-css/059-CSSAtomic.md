@@ -125,5 +125,5 @@ export default defineConfig({
 ## 扩展学习
 
 - Tailwind：`tailwind/003-UtilityCore`；
-- BEM：`css/057-BEMNamingMethodology`；
-- 架构：`css/043-CSSArchitectureMethodology`。
+- BEM：`css/058-BEMNamingMethodology`；
+- 架构：`css/044-CSSArchitectureMethodology`。

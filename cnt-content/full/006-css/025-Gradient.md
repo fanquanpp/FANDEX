@@ -2259,10 +2259,10 @@ background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red);
 
 ## 10. 扩展学习
 
-- 背景体系：`css/026-BackgroundEnhancement`；
-- 颜色与插值：`css/034-ModernColorSpace`（oklab/oklch）；
-- 动画：`css/028-CSSAnimationTransition` 中渐变动画；
-- 实战：`css/067-CSSProjectExampleResponsiveHomepage` 的渐变应用。
+- 背景体系：`css/027-BackgroundEnhancement`；
+- 颜色与插值：`css/035-ModernColorSpace`（oklab/oklch）；
+- 动画：`css/029-CSSAnimationTransition` 中渐变动画；
+- 实战：`css/068-CSSProjectExampleResponsiveHomepage` 的渐变应用。
 
 ## 附录 A：术语表
 

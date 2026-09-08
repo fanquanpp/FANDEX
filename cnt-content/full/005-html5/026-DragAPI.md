@@ -421,7 +421,7 @@ document.addEventListener('mouseup', () => {
 
 ## 扩展学习
 
-- 文件读取：`html5/014-HTML5OfflineStorageWebAPI` 中 File API；
-- 触屏拖拽：`html5/026-Geolocation` 之外的 Pointer Events 教程；
+- 文件读取：`html5/015-HTML5OfflineStorageWebAPI` 中 File API；
+- 触屏拖拽：`html5/027-Geolocation` 之外的 Pointer Events 教程；
 - 排序组件：Vue/React 生态中的 drag-and-drop 库（vuedraggable、dnd-kit）；
 - 无障碍：拖拽交互需要为键盘用户提供替代操作（如上下移动按钮）。

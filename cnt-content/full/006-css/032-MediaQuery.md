@@ -1312,7 +1312,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e)
 
 ## 扩展学习
 
-- 容器查询：`css/032-ContainerQuery`；
-- 响应式设计：`css/033-ResponsiveDesign`；
-- 移动适配：`css/052-MobileAdaptation`；
-- 可访问性：`css/045-AccessibleStyling`。
+- 容器查询：`css/033-ContainerQuery`；
+- 响应式设计：`css/034-ResponsiveDesign`；
+- 移动适配：`css/053-MobileAdaptation`；
+- 可访问性：`css/046-AccessibleStyling`。

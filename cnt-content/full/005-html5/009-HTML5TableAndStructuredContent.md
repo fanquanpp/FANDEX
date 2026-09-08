@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 表格、定义列表、全局属性大表与 details/dialog/popover 等复杂结构，含语义化标签浅读。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/006-HTML5CoreGlobalAttributes'
   - 'html5/008-HTML5BasicContentTags'
@@ -131,13 +131,13 @@ prerequisites:
 
 ### 2.4 相关标签的衔接
 
-- 响应式图片 `<picture>` / `<source>`：见 `html5/019-ImageResponsiveImage`；
-- Web Components 的 `<template>` / `<slot>`：见 `html5/024-WebComponentsPWADevelopment`；
-- 拖放 `<draggable>` 的完整 API：见 `html5/025-DragAPI`。
+- 响应式图片 `<picture>` / `<source>`：见 `html5/020-ImageResponsiveImage`；
+- Web Components 的 `<template>` / `<slot>`：见 `html5/025-WebComponentsPWADevelopment`；
+- 拖放 `<draggable>` 的完整 API：见 `html5/026-DragAPI`。
 
 ## 3. 全局属性
 
-全局属性是几乎所有 HTML 元素都支持的属性，用于提供额外的信息或功能。其中 `id`/`class`/`style` 三个最常用的已在 004-HTML5CoreGlobalAttributes 速通，这里保留完整参考表。
+全局属性是几乎所有 HTML 元素都支持的属性，用于提供额外的信息或功能。其中 `id`/`class`/`style` 三个最常用的已在 006-HTML5CoreGlobalAttributes 速通，这里保留完整参考表。
 
 ### 3.1 基本全局属性
 
@@ -157,7 +157,7 @@ prerequisites:
 
 ```html
  <!-- 使用 id 和 class -->
- <!-- div 是"无语义容器"，见 003-HTML5DivSpanContainers -->
+ <!-- div 是"无语义容器"，见 005-HTML5DivSpanContainers -->
  <div id="header" class="container">
   <h1>网站标题</h1>
  </div>
@@ -204,7 +204,7 @@ prerequisites:
 - `data-*` 以 `data-` 前缀承载自定义数据，不污染标准属性命名空间；
 - JavaScript 通过 `element.dataset` 读取，`data-price` 对应 `dataset.price`；
 - 适合存放与元素绑定的业务数据，复杂状态仍应交给框架或状态管理；
-- 完整实践见 `032-CustomDataAttribute`。
+- 完整实践见 `034-CustomDataAttribute`。
 
 ### 3.3 其他全局属性
 
@@ -238,7 +238,7 @@ prerequisites:
 
 ## 4. 语义化标签浅读
 
-> 本节第一遍"了解即可"：先用好 003-HTML5DivSpanContainers 的 div/span，做出页面后再回来看本节与 008-SemanticTag 的完整讲解。
+> 本节第一遍"了解即可"：先用好 005-HTML5DivSpanContainers 的 div/span，做出页面后再回来看本节与 010-SemanticTag 的完整讲解。
 
 HTML5 引入了一系列语义化标签，用于更清晰地描述网页结构。
 | 标签 | 描述 |
@@ -306,7 +306,7 @@ HTML5 引入了一系列语义化标签，用于更清晰地描述网页结构�
 - 页面骨架由 `header`、`nav`、`main`、`aside`、`footer` 组成，层级一目了然；
 - `main` 只出现一次，内部按主题拆分为 `section`，独立内容用 `article`；
 - 该结构对搜索引擎与屏幕阅读器都友好，是"语义化优先"的标准写法；
-- 完整深入（`article` 与 `section` 的边界、SEO 影响等）见 `008-SemanticTag`。
+- 完整深入（`article` 与 `section` 的边界、SEO 影响等）见 `010-SemanticTag`。
 
 ## 5. 综合示例：产品展示页面（纯 HTML 骨架）
 
@@ -381,7 +381,7 @@ HTML5 引入了一系列语义化标签，用于更清晰地描述网页结构�
 
 ## 7. 进阶知识点
 
-> 本节是速览；`dialog` 与 `popover` 的完整指南（`showModal`/`returnValue`/`::backdrop`/使用时机对比/可访问性）见专项 `039-HTML5DialogPopoverGuide`。
+> 本节是速览；`dialog` 与 `popover` 的完整指南（`showModal`/`returnValue`/`::backdrop`/使用时机对比/可访问性）见专项 `041-HTML5DialogPopoverGuide`。
 
 ### 7.1 可折叠内容：details 与 summary
 
@@ -484,9 +484,9 @@ HTML5 引入了一系列语义化标签，用于更清晰地描述网页结构�
 
 ## 11. 扩展学习
 
-- 语义方向：阅读 `008-SemanticTag` 掌握 `article` 与 `section` 的边界；
-- 数据方向：结合 `032-CustomDataAttribute` 实践 `data-*` 与 `dataset`；
-- 无障碍方向：参考 `009-Accessibility` 补齐 ARIA 与键盘导航；
-- 表单方向：`010-HTML5FormValidation` 学习输入类型与验证 API；
-- 媒体方向：在 `019-AudioVideo` 中学习 `audio`/`video` 的完整 API；
-- 容器方向：回顾 `003-HTML5DivSpanContainers`，理解 div/span 与语义标签的取舍。
+- 语义方向：阅读 `010-SemanticTag` 掌握 `article` 与 `section` 的边界；
+- 数据方向：结合 `034-CustomDataAttribute` 实践 `data-*` 与 `dataset`；
+- 无障碍方向：参考 `011-Accessibility` 补齐 ARIA 与键盘导航；
+- 表单方向：`012-HTML5FormValidation` 学习输入类型与验证 API；
+- 媒体方向：在 `021-AudioVideo` 中学习 `audio`/`video` 的完整 API；
+- 容器方向：回顾 `005-HTML5DivSpanContainers`，理解 div/span 与语义标签的取舍。

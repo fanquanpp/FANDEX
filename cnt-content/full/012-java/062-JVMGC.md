@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: GC算法与垃圾回收器
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/052-JUCConcurrency'
   - 'java/061-JVMClassLoadingMechanism'
@@ -59,15 +59,17 @@ prerequisites:
 | JDK 6 | 2006 | CMS 生产可用，ParallelOld 成熟 | 服务端低延迟场景普及 |
 | JDK 7 | 2011 | G1（Garbage-First）实验性引入 | 分区化（region-based）回收雏形 |
 | JDK 8 | 2014 | G1 移除实验标记，永久代被元空间（Metaspace）取代 | LTS 版本奠定现代 GC 基础 |
-| JDK 9 | 2017 | 统一日志框架 `-Xlog:gc*`；CMS 标记 deprecated | 日志与分析工具标准化 |
+| JDK 9 | 2017 | **G1 成为默认收集器**；统一日志框架 `-Xlog:gc*`；CMS 标记 deprecated | 日志与分析工具标准化 |
 | JDK 10 | 2018 | Parallel GC 完全并行化 Full GC | 大堆 Full GC 停顿大幅下降 |
-| JDK 11 | 2018 | ZGC 实验性、Epsilon GC（no-op）；G1 成为默认 | LTS 版本：低延迟探索起步 |
+| JDK 11 | 2018 | ZGC 实验性、Epsilon GC（no-op） | LTS 版本：低延迟探索起步 |
 | JDK 12 | 2019 | G1 中断性混合回收（Abortable Mixed Collections） | 可中断回收提升可调度性 |
 | JDK 14 | 2020 | CMS 移除；ZGC 支持 macOS/Windows | 减少 GC 选项复杂度 |
 | JDK 15 | 2020 | ZGC、Shenandoah 生产可用（Production） | 亚毫秒级停顿成为现实 |
 | JDK 17 | 2021 | ZGC 泄漏检测、G1 堆占用细化 | LTS 版本：低延迟 GC 工业级可用 |
 | JDK 21 | 2023 | 分代 ZGC（`-XX:+ZGenerational`）正式 GA | 分代 + 低延迟双优 |
-| JDK 23+ | 2024 | ZGC 分代默认、Generational Shenandoah 演进 | 持续优化大堆与延迟 |
+| JDK 23 | 2024-09 | 分代 ZGC 成为默认模式（JEP 474） | 大堆低延迟开箱即用 |
+| JDK 24 | 2025-03 | 移除 ZGC 非分代模式（JEP 490） | 实现简化，只保留分代 |
+| JDK 25 | 2025-09 | Generational Shenandoah | 代际假说推广到 Shenandoah |
 
 ### 设计动机的三个维度
 

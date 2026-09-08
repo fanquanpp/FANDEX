@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: pthread多线程编程
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/022-InlineFunctionMacro'
   - 'c/023-ComplexDeclarationParsing'
@@ -385,7 +385,10 @@ Task task_queue_pop(void) {
 }
 
 void worker_task(int id) {
-    printf("执行任务 %d (线程 %lu)\n", id, pthread_self());
+    /* 注意：pthread_t 是不透明类型，不同平台实现不同，
+       不要假设它是无符号整数并用 %lu 直接打印；
+       线程身份比较必须用 pthread_equal */
+    printf("执行任务 %d\n", id);
 }
 
 void *worker(void *arg) {
@@ -779,8 +782,10 @@ pthread_mutex_unlock(&m);
 **基本写法：超时等待**
 `pthread_cond_timedwait(&<cv>, &<锁>, &<超时>);`
 ```c
-// 限时等待
+// 限时等待；参数是"绝对时间点"（默认 CLOCK_REALTIME），不是相对时长
 struct timespec ts;
+clock_gettime(CLOCK_REALTIME, &ts);  // 需 #include <time.h>，链接 -lrt（旧 glibc）
+ts.tv_sec += 2;                      // 2 秒后到期
 pthread_cond_timedwait(&cv, &m, &ts);
 ```
 

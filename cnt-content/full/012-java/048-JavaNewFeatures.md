@@ -4,9 +4,9 @@ title: Java 新特性
 module: 'java'
 category: 后端技术
 difficulty: intermediate
-description: Java 8 至 21 现代语言特性、API 演进与 JVM 改进全景式深度解析
+description: Java 8 至 26 现代语言特性、API 演进与 JVM 改进全景式深度解析
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/070-JavaSerialization'
   - 'java/067-JavaIONIO'
@@ -38,7 +38,7 @@ prerequisites:
 
 本篇是「Java 新特性」综述。
 
-第一遍只读：4. 代码示例与附录 A（Java 8-21 特性速查表）；record、sealed、模式匹配、文本块各小节按需查阅。
+第一遍只读：4. 代码示例与附录 A（Java 8-26 特性速查表）；record、sealed、模式匹配、文本块各小节按需查阅。
 
 可跳过：1-3 节（历史、形式化、理论推导）与 5-8 节第二遍细读。
 
@@ -47,9 +47,9 @@ prerequisites:
 
 
 
-# Java 现代特性深度指南（Java 8-21）
+## Java 现代特性深度指南（Java 8-26）
 
-> Java 自 1996 年诞生以来，经历了从"缓慢演进"到"快速迭代"的范式转变。从 Java 8（2014）的 Lambda、Stream、Optional 三剑客开启现代 Java 纪元，到 Java 21（2023）的虚拟线程、模式匹配、记录类三大支柱完成"现代 Java"形态构建，这 9 年间的演进重新定义了 Java 作为一门语言的表达力、性能边界与工程哲学。本文将以版本为线索、以特性为单元、以原理为深度，系统性地剖析 Java 8 至 21 的关键演进，让读者既能掌握每个特性的"如何使用"，也能理解"为何如此设计"，最终建立对 Java 语言演进的系统认知。
+> Java 自 1996 年诞生以来，经历了从"缓慢演进"到"快速迭代"的范式转变。从 Java 8（2014）的 Lambda、Stream、Optional 三剑客开启现代 Java 纪元，到 Java 21（2023）的虚拟线程、模式匹配、记录类三大支柱完成"现代 Java"形态构建，再到 Java 25（2025-09，LTS）的作用域值、灵活构造器主体与紧凑对象头，以及 Java 26（2026-03）的 HTTP/3 客户端与 AOT 对象缓存，这十余年间的演进重新定义了 Java 作为一门语言的表达力、性能边界与工程哲学。本文将以版本为线索、以特性为单元、以原理为深度，系统性地剖析 Java 8 至 26 的关键演进，让读者既能掌握每个特性的"如何使用"，也能理解"为何如此设计"，最终建立对 Java 语言演进的系统认知。
 
 ---
 
@@ -75,7 +75,9 @@ Java 的发展史可分为三个阶段：
 **阶段 3：现代化完成期（2021-至今，JDK 17+）**
 
 - Java 21（2023 年 9 月）成为"现代 Java"的里程碑：虚拟线程正式、模式匹配正式、记录模式正式。
-- 后续版本（22、23、24...）继续增量演进，但核心形态已稳定。
+- 后续版本（22、23、24）继续增量演进：FFM（外部函数与内存 API，JEP 454）在 22 转正、Stream Gatherers（JEP 485）在 24 转正、分代 ZGC 自 23 起成为默认。
+- Java 25（2025 年 9 月，LTS）落地作用域值（JEP 506）、灵活构造器主体（JEP 513）、模块导入声明（JEP 511）、紧凑源文件与实例 main（JEP 512）、紧凑对象头（JEP 519）。
+- Java 26（2026 年 3 月）交付 HTTP/3 客户端（JEP 517）、AOT 对象缓存（JEP 516），并移除早已废弃的 Applet API（JEP 504）。
 - GraalVM、Native Image 推动 Java 向"云原生"友好演进。
 
 ### 1.2 JEP 机制与特性孵化
@@ -120,7 +122,12 @@ JEP 分为几类：
 | JDK 8 | 2014-03 | LTS | Lambda、Stream、Optional、Date Time API、默认方法、接口静态方法 |
 | JDK 11 | 2018-09 | LTS | HttpClient、var 局部变量、String 新方法（strip/isBlank/lines）、Flight Recorder 开源、ZGC 实验性 |
 | JDK 17 | 2021-09 | LTS | 密封类正式、Pattern Matching for instanceof 正式、强封装默认、Text Blocks 正式、Switch 表达式正式 |
-| JDK 21 | 2023-09 | LTS | 虚拟线程正式、Pattern Matching for switch 正式、Record Patterns 正式、字符串模板预览、Sequenced Collections |
+| JDK 21 | 2023-09 | LTS | 虚拟线程正式、Pattern Matching for switch 正式、Record Patterns 正式、字符串模板预览（后被撤回）、Sequenced Collections |
+| JDK 22 | 2024-03 | 特性 | FFM（外部函数与内存 API）正式（JEP 454）、未命名变量与模式（JEP 456）、多源文件程序直接启动（JEP 458） |
+| JDK 23 | 2024-09 | 特性 | 分代 ZGC 成为默认（JEP 474）、Markdown 文档注释（JEP 467）、Primitive Types in Patterns 首次预览（JEP 455） |
+| JDK 24 | 2025-03 | 特性 | Stream Gatherers 正式（JEP 485）、移除 ZGC 非分代模式（JEP 490）、紧凑对象头实验性（JEP 450）、字符串模板确认撤回 |
+| JDK 25 | 2025-09 | LTS | Scoped Values 正式（JEP 506）、灵活构造器主体正式（JEP 513）、模块导入声明正式（JEP 511）、紧凑源文件与实例 main 正式（JEP 512）、紧凑对象头正式（JEP 519）、分代 Shenandoah |
+| JDK 26 | 2026-03 | 特性 | HTTP/3 客户端（JEP 517）、AOT 对象缓存（JEP 516）、G1 吞吐优化（JEP 522）、PEM 编码第二预览（JEP 524）、Lazy Constants 第二预览（JEP 526）、移除 Applet API（JEP 504） |
 
 ### 1.4 设计哲学：Java 演进的保守与激进
 
@@ -141,7 +148,7 @@ Java 的演进遵循 **"保守的语法、激进的库"** 原则：
 | 密封类 | Java 17 | sealed class | sealed trait | sealed (C# 5) |
 | 虚拟线程 | Java 21 | 协程（kotlinx.coroutines） | 协程（影响） | async/await |
 | 不可变集合 | List.of (Java 9) | listOf | List(immutable) | ImmutableArray |
-| 字符串模板 | 预览（Java 21） | "$variable" | s"..." | $"..." |
+| 字符串模板 | 预览（21/23）后撤回重设计中 | "$variable" | s"..." | $"..." |
 | 空安全 | Optional（弱） | 原生（强） | Option（强） | Nullable（强） |
 
 > **历史轶事**：Java 8 的 Lambda 设计曾引发激烈争论。Brian Goetz（Java 语言架构师）最终选择"基于 invokedynamic 的 Lambda"而非"内部类语法糖"，这一决策使 Lambda 在字节码层与 Scala、Kotlin 的闭包实现兼容，为后续函数式编程生态奠定基础。
@@ -867,15 +874,22 @@ public class VirtualThreadDemo {
 
 ```java
 // 文件：StructuredConcurrencyDemo.java
-import java.util.concurrent.*;
-import java.util.concurrent.StructuredTaskScope.*;
+import java.util.concurrent.StructuredTaskScope;
+import java.util.concurrent.StructuredTaskScope.Joiner;
+import java.util.concurrent.StructuredTaskScope.Subtask;
+import java.util.List;
 
 /**
- * 结构化并发演示（Java 21 预览特性，Java 24 正式）
- * 演示 ShutdownOnFailure 和 ShutdownOnSuccess 两种作用域
+ * 结构化并发演示。
+ * 版本状态：自 JDK 21 起以预览形式迭代，截至 JDK 26 仍是第 6 次预览（JEP 525），
+ * 尚未转正，生产使用必须 --enable-preview，且 API 仍在演进。
  *
- * 编译运行需启用预览特性：
- *   javac --enable-preview --release 21 StructuredConcurrencyDemo.java
+ * 重要 API 变更：JDK 25（JEP 505）起不再使用 public 构造器
+ * （旧的 ShutdownOnFailure / ShutdownOnSuccess 子类已删除），
+ * 改为 StructuredTaskScope.open(...) 静态工厂 + Joiner 完成策略；
+ * JDK 26 又将 anySuccessfulResultOrThrow 更名为 anySuccessfulOrThrow。
+ * 下面示例按 JDK 26 预览 API 编写：
+ *   javac --release 26 --enable-preview StructuredConcurrencyDemo.java
  *   java --enable-preview StructuredConcurrencyDemo
  */
 public class StructuredConcurrencyDemo {
@@ -886,38 +900,43 @@ public class StructuredConcurrencyDemo {
     record Item(Long id, String name, double price) {}
 
     /**
-     * ShutdownOnFailure：任一子任务失败则关闭所有子任务
+     * 默认完成策略（open() 无参版本）：
+     * 任一子任务失败则取消其余子任务，join() 抛 FailedException；
+     * 全部成功时 join() 返回 null，需逐个 Subtask.get() 取结果。
      */
-    public static OrderDetail fetchOrderDetail(Long orderId) throws Exception {
-        try (var scope = new ShutdownOnFailure()) {
-            // 并发 fork 三个子任务
+    public static OrderDetail fetchOrderDetail(Long orderId) throws InterruptedException {
+        try (var scope = StructuredTaskScope.open()) {
+            // 并发 fork 三个子任务（默认在虚拟线程上执行）
+            // fork 的类型参数由每个 Callable 各自推断，互不影响
             Subtask<User> userTask = scope.fork(() -> fetchUser(orderId));
             Subtask<Order> orderTask = scope.fork(() -> fetchOrder(orderId));
             Subtask<List<Item>> itemsTask = scope.fork(() -> fetchItems(orderId));
 
-            // 等待所有子任务完成
+            // 等待所有子任务：任一失败立即取消其余并抛 FailedException
             scope.join();
-            // 若任一子任务失败，抛出 ExecutionException
-            scope.throwIfFailed();
 
-            // 所有子任务都成功，组装结果
+            // 走到这里说明全部成功，可安全 get()（get() 只能在 join 之后调用）
             return new OrderDetail(userTask.get(), orderTask.get(), itemsTask.get());
+        } catch (StructuredTaskScope.FailedException e) {
+            // 子任务失败时在此统一处理，e.getCause() 为原始异常
+            throw new IllegalStateException("订单详情获取失败", e.getCause());
         }
     }
 
     /**
-     * ShutdownOnSuccess：任一子任务成功则关闭其他子任务（用于竞速）
+     * 竞速策略：Joiner.anySuccessfulOrThrow()
+     * 任一子任务成功即取消其余，join() 返回第一个成功的结果；
+     * 全部失败时 join() 抛 FailedException。
      */
-    public static String fetchFromMultipleSources(String query) throws Exception {
-        try (var scope = new ShutdownOnSuccess<String>()) {
+    public static String fetchFromMultipleSources(String query) throws InterruptedException {
+        try (var scope = StructuredTaskScope.open(Joiner.<String>anySuccessfulOrThrow())) {
             // 并发查询多个数据源
             scope.fork(() -> queryPrimaryDB(query));
             scope.fork(() -> queryReplicaDB(query));
             scope.fork(() -> queryCache(query));
 
-            scope.join();
             // 返回第一个成功的结果
-            return scope.result();
+            return scope.join();
         }
     }
 
@@ -955,17 +974,31 @@ public class StructuredConcurrencyDemo {
         return "Cache: " + query;
     }
 
-    public static void main(String[] args) throws Exception {
-        System.out.println("=== ShutdownOnFailure 示例 ===");
+    public static void main(String[] args) throws InterruptedException {
+        System.out.println("=== 默认策略（全成功或快速失败） ===");
         OrderDetail detail = fetchOrderDetail(1001L);
         System.out.println(detail);
 
-        System.out.println("\n=== ShutdownOnSuccess 示例 ===");
+        System.out.println("\n=== 竞速策略（取最先成功者） ===");
         String result = fetchFromMultipleSources("hello");
         System.out.println("最先返回: " + result);
     }
 }
 ```
+
+> 预期输出（时序部分因并发调度而异，`最先返回` 恒为 Cache，因为其延迟最小）：
+>
+> ```text
+> === 默认策略（全成功或快速失败） ===
+> OrderDetail[user=User[id=1, name=张三, email=zhangsan@example.com], order=Order[id=1001, userId=1, total=199.99], items=[Item[id=1, name=商品A, price=99.99], Item[id=2, name=商品B, price=99.99]]]
+>
+> === 竞速策略（取最先成功者） ===
+> 最先返回: Cache: hello
+> ```
+>
+> 若在 JDK 21-24 上运行老代码，注意其 API 形态不同：
+> `new StructuredTaskScope.ShutdownOnFailure()` / `ShutdownOnSuccess<T>` 构造器写法
+> 在 JDK 25 起已被移除，升级时必须改写为 `open(...)` + `Joiner` 风格。
 
 ### 4.6 示例 6：作用域值（Scoped Values）
 
@@ -974,12 +1007,12 @@ public class StructuredConcurrencyDemo {
 import java.util.concurrent.Executors;
 
 /**
- * 作用域值演示（Java 21 预览，Java 25 正式）
+ * 作用域值演示（JDK 21-24 为预览，JDK 25 起正式，JEP 506）
  * 作用域值是 ThreadLocal 的现代替代品，特别适合虚拟线程
  *
- * 编译运行需启用预览特性：
- *   javac --enable-preview --release 21 ScopedValueDemo.java
- *   java --enable-preview ScopedValueDemo
+ * JDK 25+ 无需任何预览开关即可编译运行：
+ *   java ScopedValueDemo.java
+ * 若运行在 JDK 21-24，则需 --enable-preview 且 API 有细微差异
  */
 public class ScopedValueDemo {
 
@@ -1653,10 +1686,10 @@ void increment() {
 
 // 正确：用 AtomicInteger 或 ThreadLocal
 private static final ThreadLocal<Integer> COUNTER = ThreadLocal.withInitial(() -> 0);
-// 或使用可变引用
-private static final ScopedValue<int[]>> COUNTER = ScopedValue.newInstance();
-ScopedValue.where(COUNTER, new int[]{0}).run(() -> {
-    COUNTER.get()[0]++;
+// 或使用可变引用（注意这里是 ScopedValue<int[]>，上文同名的 ScopedValue<Integer> 仅作对比演示）
+private static final ScopedValue<int[]> MUTABLE_BOX = ScopedValue.newInstance();
+ScopedValue.where(MUTABLE_BOX, new int[]{0}).run(() -> {
+    MUTABLE_BOX.get()[0]++;
 });
 ```
 
@@ -1665,13 +1698,14 @@ ScopedValue.where(COUNTER, new int[]{0}).run(() -> {
 ```java
 // 反模式：在生产代码使用预览特性
 public String process(String input) {
-    // 字符串模板是预览特性，可能在后续版本变更
-    return STR."Processed: \{input}";
+    // 字符串模板曾是 JDK 21/23 的预览特性，因设计争议已在 JDK 24 起被整体撤回，
+    // 正在重新设计中——这正是预览特性风险的最好例证
+    return STR."Processed: \{input}"; // 任何现行 JDK 均无法编译
 }
 
-// 正确：预览特性仅在实验中使用，生产等待正式版
+// 正确：预览特性仅在实验中使用，生产使用正式 API
 public String process(String input) {
-    return "Processed: " + input; // 等待正式版
+    return "Processed: " + input; // 拼接或 MessageFormat/formatted 代替
 }
 ```
 
@@ -1683,11 +1717,12 @@ public String process(String input) {
 
 | 场景 | 推荐 JDK | 原因 |
 |------|---------|------|
-| 新项目（2024+） | JDK 21 (LTS) | 虚拟线程、模式匹配、记录模式正式 |
-| 已有项目（JDK 11 LTS） | 升级到 JDK 17 或 21 | JDK 17 是过渡，21 是终态 |
-| 已有项目（JDK 8） | 升级到 JDK 17 | 跨 JDK 8 到 17 有重大迁移（模块系统、强封装） |
+| 新项目（2025+） | JDK 25 (LTS) | 作用域值、灵活构造器主体、模块导入等转正，紧凑对象头降内存 |
+| 新项目（2024-2025 初） | JDK 21 (LTS) | 虚拟线程、模式匹配、记录模式正式 |
+| 已有项目（JDK 11 LTS） | 升级到 JDK 17 或 21 | JDK 17 是过渡，21/25 是终态 |
+| 已有项目（JDK 8） | 升级到 JDK 17 或 21 | 跨 JDK 8 到 17 有重大迁移（模块系统、强封装） |
 | 遗留系统（JDK 7-） | 评估迁移成本 | 若无迁移可能，考虑 GraalVM Native Image |
-| 云原生 / Serverless | JDK 21 + GraalVM | Native Image 启动快、内存省 |
+| 云原生 / Serverless | JDK 21/25 + GraalVM | Native Image 启动快、内存省 |
 
 ### 7.2 升级路径
 
@@ -2084,12 +2119,21 @@ public OrderDetail getOrderDetail(Long orderId) {
 7. JEP 441: Pattern Matching for switch. https://openjdk.org/jeps/441
 8. JEP 440: Record Patterns. https://openjdk.org/jeps/440
 9. JEP 444: Virtual Threads. https://openjdk.org/jeps/444
-10. JEP 453: Structured Concurrency (Preview). https://openjdk.org/jeps/453
-11. JEP 446: Scoped Values (Preview). https://openjdk.org/jeps/446
+10. JEP 453/505/525: Structured Concurrency（21 起预览迭代，26 为第 6 次预览）. https://openjdk.org/jeps/525
+11. JEP 446/464/481/499/506: Scoped Values（25 转正）. https://openjdk.org/jeps/506
 12. JEP 378: Text Blocks. https://openjdk.org/jeps/378
 13. JEP 361: Switch Expressions. https://openjdk.org/jeps/361
 14. JEP 286: Local-Variable Type Inference. https://openjdk.org/jeps/286
 15. JEP 321: HttpClient. https://openjdk.org/jeps/321
+16. JEP 454: Foreign Function & Memory API（22 转正）. https://openjdk.org/jeps/454
+17. JEP 485: Stream Gatherers（24 转正）. https://openjdk.org/jeps/485
+18. JEP 513: Flexible Constructor Bodies（25 转正）. https://openjdk.org/jeps/513
+19. JEP 511: Module Import Declarations（25 转正）. https://openjdk.org/jeps/511
+20. JEP 512: Compact Source Files and Instance Main Methods（25 转正）. https://openjdk.org/jeps/512
+21. JEP 519: Compact Object Headers（25 转正）. https://openjdk.org/jeps/519
+22. JEP 517: HTTP/3 for the HTTP Client API（26）. https://openjdk.org/jeps/517
+23. JEP 516: AOT Object Caching with Any GC（26）. https://openjdk.org/jeps/516
+24. JEP 530: Primitive Types in Patterns（26 为第 4 次预览）. https://openjdk.org/jeps/530
 
 ### 10.3 学术论文与书籍
 
@@ -2124,8 +2168,15 @@ public OrderDetail getOrderDetail(Long orderId) {
 
 ### 11.1 后续版本预览
 
-- **JDK 22+ 新特性**：字符串模板正式、Statements Before super()、Unnamed Variables。
-- **JDK 25 预测**：可能是下一个 LTS（2025 年 9 月），结构化并发正式、作用域值正式。
+- **JDK 25（2025-09，LTS，已发布）**：Scoped Values（JEP 506）、灵活构造器主体（JEP 513）、
+  模块导入声明（JEP 511）、紧凑源文件与实例 main（JEP 512）、紧凑对象头（JEP 519）转正；
+  结构化并发第 5 次预览（JEP 505，API 大改）。
+- **JDK 26（2026-03，已发布）**：HTTP/3 客户端（JEP 517）、AOT 对象缓存（JEP 516）、
+  G1 吞吐优化（JEP 522）、PEM 编码第 2 预览（JEP 524）、Lazy Constants 第 2 预览（JEP 526）、
+  Prepare to Make Final Mean Final（JEP 500）、移除 Applet API（JEP 504）、
+  结构化并发第 6 次预览（JEP 525）、Primitive Types in Patterns 第 4 次预览（JEP 530）、
+  Vector API 第 11 次孵化（JEP 529）。
+- **JDK 27（2026-09 中旬 GA，撰写时即将发布）**：以官方发布页为准，不要臆测特性清单。
 - **Project Valhalla**：值类型（Value Types），将彻底改变 Java 性能模型。
 - **Project Babylon**：GPU/异构计算集成，Java 向数据科学扩展。
 
@@ -2158,7 +2209,7 @@ public OrderDetail getOrderDetail(Long orderId) {
 
 ---
 
-## 附录 A：Java 8-21 特性速查表
+## 附录 A：Java 8-26 特性速查表
 
 | 版本 | 关键特性 | 类型 |
 |------|---------|------|
@@ -2176,6 +2227,11 @@ public OrderDetail getOrderDetail(Long orderId) {
 | Java 19 | 虚拟线程预览、结构化并发预览 | 特性 |
 | Java 20 | 记录模式预览、作用域值预览 | 特性 |
 | Java 21 | 虚拟线程正式、Pattern Matching switch 正式、Record Patterns 正式、Sequenced Collections | LTS |
+| Java 22 | FFM 正式（JEP 454）、未命名变量与模式（JEP 456）、多源文件直接启动（JEP 458） | 特性 |
+| Java 23 | 分代 ZGC 默认（JEP 474）、Markdown 文档注释、Primitive Patterns 预览 | 特性 |
+| Java 24 | Stream Gatherers 正式（JEP 485）、移除 ZGC 非分代模式（JEP 490）、紧凑对象头实验（JEP 450） | 特性 |
+| Java 25 | Scoped Values 正式（506）、灵活构造器主体（513）、模块导入（511）、紧凑源文件与实例 main（512）、紧凑对象头（519） | LTS |
+| Java 26 | HTTP/3 客户端（517）、AOT 对象缓存（516）、移除 Applet（504）、结构化并发第 6 预览（525）、Primitive Patterns 第 4 预览（530） | 特性 |
 
 ## 附录 B：Record 与 Lombok 互操作
 
@@ -2236,7 +2292,7 @@ User updated = user.withName("Bob"); // 生成新 Record，原对象不变
 
 ## 结语
 
-Java 8 至 21 的演进，是 Java 语言从"企业级稳重"向"现代化敏捷"转型的 9 年。Lambda 开启函数式大门，Record 与密封类重塑数据建模，模式匹配革新控制流，虚拟线程颠覆并发范式。每一项特性都不是孤立的存在，而是相互支撑、共同构成"现代 Java"的表达力矩阵。
+Java 8 至 26 的演进，是 Java 语言从"企业级稳重"向"现代化敏捷"持续转型的十余年。Lambda 开启函数式大门，Record 与密封类重塑数据建模，模式匹配革新控制流，虚拟线程颠覆并发范式，作用域值与结构化并发重构上下文传递与任务编排，FFM 打开受控的外部互操作之门。每一项特性都不是孤立的存在，而是相互支撑、共同构成"现代 Java"的表达力矩阵。
 
 本节以版本为经、以特性为纬，系统性地剖析了现代 Java 的关键演进。从 Record 的不可变透明性，到密封类的封闭性保证，到模式匹配的穷举性检查，到虚拟线程的轻量并发，每一项特性都既有理论深度（形式化定义、字节码剖析），又有实践广度（代码示例、工程实践、案例研究）。通过 10 个完整的代码示例、10 个反模式剖析、5 个生产案例研究，读者既能掌握"如何使用现代 Java"，也能理解"为何 Java 如此演进"。
 
@@ -2537,12 +2593,15 @@ String s = " hello ".strip();
 
 ---
 
-**基本写法：模板预览（Java 21 预览）**
+**基本写法：模板预览（曾为 Java 21/23 预览，后撤回）**
 `STR."<模板>"`
 ```java
-// 字符串模板（预览特性，需 --enable-preview）
+// 字符串模板曾在 JDK 21/23 以预览提供，因设计争议在 JDK 24 起被整体撤回，
+// 官方正在重新设计；任何现行 JDK 都不能直接编译下面的代码，仅作历史了解
 String name = "Alice";
 String msg = STR."Hello, \{name}!";
+// 生产替代方案：String.format / formatted / MessageFormat / text block 拼接
+String msg2 = "Hello, %s!".formatted(name);
 ```
 
 ---

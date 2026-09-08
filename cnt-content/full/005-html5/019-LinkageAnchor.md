@@ -710,8 +710,8 @@ a:active  { color: orange; }     /* 点击时 */
 
 ## 扩展学习
 
-- 路径与 URL：`javascript/037-JavaScriptModular` 中模块路径解析的类比；
+- 路径与 URL：`javascript/038-JavaScriptModular` 中模块路径解析的类比；
 - 路由：SPA 框架（Vue Router/React Router）与 History API 的关系；
-- 无障碍：`html5/010-Accessibility` 中焦点管理与键盘导航；
-- 安全：`javascript/047-ErrorBoundaryGlobalErrorCatch` 与外部链接安全基线；
-- SEO：`css/065-HTMLSemanticSEO` 中链接结构与站内权重传递。
+- 无障碍：`html5/011-Accessibility` 中焦点管理与键盘导航；
+- 安全：`javascript/048-ErrorBoundaryGlobalErrorCatch` 与外部链接安全基线；
+- SEO：`css/066-HTMLSemanticSEO` 中链接结构与站内权重传递。

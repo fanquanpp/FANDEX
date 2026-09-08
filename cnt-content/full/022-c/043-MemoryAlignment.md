@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C语言内存对齐详解：struct大小计算、#pragma pack与对齐规则。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'c/041-PointerDeep'
   - 'c/042-MemoryManagement'
@@ -18,7 +18,6 @@ prerequisites:
 
 
 
-# 内存对齐（Memory Alignment）
 
 ## 前置知识
 
@@ -95,29 +94,31 @@ C11 是对齐支持的重大里程碑，首次将"对齐"作为一等语言概�
 4. `max_align_t` 类型：表示最严格对齐要求的标准标量类型，`malloc` 保证至少对齐到 `alignof(max_align_t)`。
 5. `aligned_alloc(size_t alignment, size_t size)` 函数：分配对齐到 `alignment` 的内存。
 6. `_Atomic` 类型限定符与 `<stdatomic.h>`：原子操作要求操作数对齐，否则行为未定义。
-7. 取消对齐值必须是 2 的幂的隐式要求，明确为"对齐值是 size_t 类型的实现定义值，且为 2 的幂"。
+7. 明确对齐值是 `size_t` 类型的实现定义值；在实践中，所有主流平台的有效对齐均为 2 的幂。
 
 **C17 / ISO/IEC 9899:2018**
 
-C17 为技术勘误（technical corrigendum）版本，未引入新对齐特性，但修正了 C11 中 `aligned_alloc` 在某些平台（如 MSVC）的兼容性问题。`aligned_alloc` 要求 `size` 是 `alignment` 的整数倍，否则行为未定义，这一约束在 C17 中保留。
+C17 为技术勘误（technical corrigendum）版本，未引入新的对齐特性。`aligned_alloc` 要求 `size` 是 `alignment` 的整数倍；对违反该约束的行为，缺陷报告 DR460 将 C11 初版规定的"未定义行为"澄清为"函数失败并返回空指针"。
 
 **C23 / ISO/IEC 9899:2024**
 
 C23 进一步强化对齐支持：
 
 1. `alignof` 与 `alignas` 成为关键字（不再依赖 `<stdalign.h>` 宏），与 `_Alignof` / `_Alignas` 完全等价。
-2. 引入 `nullptr`、`bool`、`true`、`false` 等关键字，但对齐机制保持不变。
-3. `[[atribute::aligned(N)]]` 等标准属性语法在 C23 中得到扩展，但 `alignas` 仍为首选形式。
-4. `max_align_t` 的对齐要求在所有平台上至少为 16，以匹配现代 CPU 的 SIMD 向量对齐需求（AVX-512 要求 64 字节对齐，但标准仅保证 16）。
-5. 引入 `#embed` 指令（独立于对齐，但影响二进制资源布局）。
+2. 引入 `nullptr`、`bool`、`true`/`false` 等关键字与新拼写，但对齐机制本身保持不变。
+3. 标准属性（`[[deprecated]]`、`[[nodiscard]]` 等）落地，但**对齐没有标准化属性**——强制对齐仍用 `alignas`；GCC/Clang 另提供 `[[gnu::aligned(N)]]` 扩展。
+4. `max_align_t` 的对齐要求没有统一的"至少 16"标准下限：glibc x86-64 上为 16，许多 32 位平台上只有 8。标准只保证它覆盖所有基本标量类型的对齐需求。
+5. 新增与内存对齐相关的库设施：`memalignment`（查询指针所含对齐）、`free_sized` / `free_aligned_sized`（按分配时的尺寸/对齐释放，配合 `aligned_alloc` 使用）。
+6. 引入 `#embed` 指令（嵌入二进制资源，间接影响资源的内存布局方式）。
 
-**C2y（草案 ISO/IEC 9899:202y）**
+**C2y（草案）**
 
-截至 2026 年 7 月，C2y 草案讨论中的对齐相关议题包括：
+截至 2026 年 9 月，C2y 仍处工作草案阶段。对齐方向上被讨论的议题包括：
 
-- 标准 `aligned_alloc` 在 `size` 非 `alignment` 倍数时的行为澄清。
 - 跨语言 ABI（C/C++/Rust）对齐约定统一的可能性。
 - 显式"对齐值推导"机制，使函数可声明参数对齐要求。
+
+`aligned_alloc` 的 size 约束问题已在 C23 时期由 DR460 澄清（违反时返回空指针），不再悬而未决。
 
 ### 1.3 编译器实现演化
 
@@ -126,11 +127,10 @@ C23 进一步强化对齐支持：
 | 编译器 | 版本 | 重要特性 |
 | ------ | ---- | -------- |
 | GCC | 2.95（1999） | 引入 `__attribute__((aligned(N)))`、`__attribute__((packed))` |
-| GCC | 4.6（2011） | 完整实现 C11 `_Alignof` / `_Alignas` |
+| GCC | 4.7（2012） | 实现 C11 对齐支持：`_Alignas`、`_Alignof`、`max_align_t`、`<stdalign.h>` |
 | Clang | 3.0（2011） | 兼容 GCC 扩展，提供 `__builtin_assume_aligned` |
 | MSVC | 8.0（2005） | `__declspec(align(N))`、`#pragma pack` |
-| MSVC | 19.0（2015） | 部分支持 C11 `<stdalign.h>`（但默认以 C++ 模式编译） |
-| MSVC | 19.29（2020） | 完整支持 C11/C17 `<stdatomic.h>` 与对齐原语 |
+| MSVC | 19.x | C11 对齐与原子支持长期滞后：`<stdatomic.h>` 到 VS 2022 较新更新才可用，具体支持情况以微软文档为准 |
 | ICC | 13.0（2012） | 兼容 GCC 与 MSVC 双套扩展 |
 
 ### 1.4 ABI 规范的角色
@@ -709,13 +709,13 @@ sanitizer: all
 
 C++ 在 C 的对齐机制基础上扩展了：
 
-- **`alignas(expression)`** 允许任意常量表达式（C11 仅允许类型或常量）。
-- **`std::aligned_storage<N, A>`** 类型工具，提供未初始化的对齐存储。
+- **`alignas`** 同样接受类型或整型常量表达式，语法形式与 C 的 `_Alignas` 一致；差异更多体现在库设施层面。
+- **`std::aligned_storage<N, A>`** 类型工具，提供未初始化的对齐存储（C++23 起已被弃用，推荐 `alignas(T)[N]` 数组）。
 - **`std::aligned_alloc`**（C++17）封装 C11 的 `aligned_alloc`。
 - **`new` 运算符重载**：`operator new(size, std::align_val_t)` 显式对齐分配。
 - **`std::launder`**（C++17）：处理对象生命周期与对齐交互。
 
-C++ 不支持 C 的位域（虽然语法相同但语义略异），且对位域的内存布局更严格。
+C++ 同样支持位域，语法与 C 相同，但在分配细节（如何跨存储单元、`signed` 位域的符号语义）上与 C 略有差异。
 
 ### 5.3 与 Rust 对比
 

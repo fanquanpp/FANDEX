@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript Stage 3装饰器标准实现详解：类装饰器、方法装饰器与元数据。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'typescript/059-ModuleDeclarationGlobalAugmentation'
   - 'typescript/060-TsconfigStrictMode'
@@ -16,10 +16,6 @@ prerequisites: []
 ---
 
 > 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
-
-
-
-# 装饰器标准实现
 
 ## 前置知识
 
@@ -44,7 +40,7 @@ prerequisites: []
 
 装饰器（Decorator）的概念最早可追溯到 1960 年代的 Lisp 语言，其在函数定义时通过 `defadvice` 修饰函数行为。Python 在 2004 年的 PEP 318 中正式引入 `@decorator` 语法，Java 在 JSR 250（2006 年）中引入注解（Annotation），C# 在 2.0（2005 年）引入 Attribute。
 
-JavaScript 装饰器提案由 **Yehuda Katz** 与 **Brian Terlson** 在 2014 年首次提交至 TC39，历经 Stage 1（2014）、Stage 2（2017）、Stage 3（2022）三个阶段。整个提案历时 8 年，是 TC39 历史上耗时最长的提案之一。
+JavaScript 装饰器提案由 **Yehuda Katz** 与 **Brian Terlson** 在 2014 年首次提交至 TC39，历经 Stage 1（2014）、Stage 2（2016）、Stage 3（2022）三个阶段。整个提案历时多年，是 TC39 历史上耗时最长的提案之一；截至 2026-09，提案仍处于 Stage 3（未定稿）。
 
 ### 1.2 Stage 1 → Stage 2 → Stage 3 的演进
 
@@ -56,7 +52,7 @@ JavaScript 装饰器提案由 **Yehuda Katz** 与 **Brian Terlson** 在 2014 年
 - 方法装饰器：`(target, key, descriptor: PropertyDescriptor) => PropertyDescriptor | void`
 - 属性装饰器：`(target, key) => void`
 
-#### Stage 2（2017-2022）：Descriptor 时代
+#### Stage 2（2016-2022）：Descriptor 时代
 
 Stage 2 提案引入了更严格的类型签名，但仍基于描述符。这一阶段的核心变化是：
 
@@ -80,12 +76,9 @@ TypeScript 在 **TS 5.0（2023 年 3 月）** 正式支持 Stage 3 装饰器，�
 ```
 2014-04  TC39 Stage 1   Yehuda Katz 提交初版装饰器提案
 2015-04  TS 1.5         experimentalDecorators 标志引入（Legacy 装饰器）
-2017-09  TC39 Stage 2   描述符 API 阶段
-2022-03  TC39 Stage 3   上下文对象 API 阶段
-2023-03  TS 5.0         正式支持 Stage 3 装饰器
-2023-06  TS 5.2         装饰器元数据（Symbol.metadata）落地
-2024-03  TS 5.4         NoInfer<T>，配合装饰器提升类型推断
-2024-11  TS 5.6         装饰器在严格模式下的稳定性改进
+2016 初  TC39 Stage 2   描述符 API 阶段（期间模型多次重写）
+2022-03  TC39 Stage 3   上下文对象 API 阶段（截至 2026-09 仍未定稿，未进 Stage 4）
+2023-03  TS 5.0         正式支持 Stage 3 装饰器（含 Symbol.metadata、context.access、addInitializer）
 ```
 
 ### 1.4 设计动机深度分析
@@ -94,7 +87,7 @@ Daniel Ehrenberg 在 [TC39 Stage 3 提案](https://github.com/tc39/proposal-deco
 
 > **动机一：类型安全的元编程。** Legacy 装饰器通过 `PropertyDescriptor` 操作成员，类型签名宽松（`any` 充斥）。Stage 3 通过上下文对象提供精确的类型签名，使装饰器实现可在编译期校验。
 
-> **动机二：标准化元数据协议。** Legacy 装饰器依赖 `reflect-metadata` polyfill 与 `emitDecoratorMetadata` 标志，非 ECMAScript 标准。Stage 3 引入 `Symbol.metadata` 作为标准元数据载体，所有引擎原生支持。
+> **动机二：标准化元数据协议。** Legacy 装饰器依赖 `reflect-metadata` polyfill 与 `emitDecoratorMetadata` 标志，非 ECMAScript 标准。Stage 3 引入 `Symbol.metadata` 作为标准元数据载体，待提案定稿后由引擎原生支持（当前阶段由 TypeScript 编译为标准运行时代码实现）。
 
 > **动机三：与类字段语义对齐。** ES2022 类字段引入后，属性装饰器需要处理"字段尚未赋值"的情况。Stage 3 属性装饰器返回一个初始化函数 `(initialValue) => initialValue`，与类字段语义自然对齐。
 
@@ -104,16 +97,18 @@ Daniel Ehrenberg 在 [TC39 Stage 3 提案](https://github.com/tc39/proposal-deco
 
 - **2015-2020 Legacy 时代**：Angular、NestJS、TypeORM 依赖 `experimentalDecorators`，社区形成庞大生态
 - **2020-2023 过渡期**：TC39 提案演进至 Stage 3，框架开始评估迁移路径
-- **2023-2025 Stage 3 时代**：TS 5.0 落地后，新项目默认采用 Stage 3；旧项目通过兼容层逐步迁移
+- **2023 至今 Stage 3 时代**：TS 5.0 落地后，新项目默认采用 Stage 3；旧项目通过兼容层逐步迁移
 
-### 1.6 当前社区共识（2024-2025）
+### 1.6 当前社区共识
 
-TypeScript 核心团队在 2024 年路线图中明确：
+TypeScript 核心团队的方向一贯明确：
 
 - **新项目默认采用 Stage 3 装饰器**，不再启用 `experimentalDecorators`
 - **Legacy 装饰器进入维护模式**，不再添加新特性，但保持向后兼容
 - **`reflect-metadata` polyfill 仍需用于 Legacy 装饰器**，Stage 3 装饰器使用原生 `Symbol.metadata`
 - **NestJS、TypeORM 等框架的迁移路径**：通过适配层同时支持 Legacy 与 Stage 3，未来版本逐步切换至 Stage 3
+
+需要特别注意的是：**截至 2026-09，装饰器提案仍处于 Stage 3（未定稿）**，参数装饰器不在标准装饰器的当前形态中；构造器参数注入类需求（如 NestJS 风格的 `@Inject`）在标准装饰器下需改用字段装饰器加元数据，或继续使用 Legacy 装饰器。
 
 ---
 
@@ -1115,7 +1110,7 @@ console.log(MyClass[Symbol.metadata]);  // undefined
 
 **解决**：
 
-- 确保 TypeScript 版本 >= 5.2
+- 确保 TypeScript 版本 >= 5.0（5.0 起编译器支持 `Symbol.metadata`）
 - 添加 polyfill：`Symbol.metadata ??= Symbol('Symbol.metadata');`
 - 检查 `target` 配置：`"target": "ES2022"` 或更高
 
@@ -1167,7 +1162,9 @@ console.log(MyClass[Symbol.metadata]);  // undefined
     "useDefineForClassFields": true
   }
 }
-json
+```
+
+```json
 // tsconfig.legacy.json - Legacy 装饰器（兼容旧项目）
 {
   "compilerOptions": {
@@ -1511,8 +1508,7 @@ function logged<T extends { new(...args: any[]): {} }>(value: T, context: ClassD
     }
   };
 }
-typescript
-${String(context.name)}
+// 答案：${String(context.name)}
 ```
 
 **题目 3**：完成以下属性装饰器实现，提供默认值：
@@ -1525,9 +1521,7 @@ function defaultValue(defaultVal: any) {
     };
   };
 }
-typescript
-defaultVal
-initialValue
+// 答案：defaultVal / initialValue
 ```
 
 **题目 4**：装饰器组合 `@A @B @C class X` 等价于函数调用 ____。
@@ -1650,7 +1644,7 @@ console.log((DataService as any)[Symbol.metadata].measurements);
 
 7. ECMA-262. (2024). *ECMAScript 2024 Language Specification: Class Definitions*. https://tc39.es/ecma262/#sec-class-definitions
 
-8. Microsoft. (2024). *TypeScript 5.2 Release Notes: Symbol.metadata*. https://devblogs.microsoft.com/typescript/announcing-typescript-5-2/
+8. Microsoft. (2023). *TypeScript 5.0 Release Notes: Decorator Metadata*. https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/#decorators
 
 ### 10.4 教材与课程
 
@@ -1705,8 +1699,7 @@ console.log((DataService as any)[Symbol.metadata].measurements);
 
 - **Decorators (Stage 3)**：https://github.com/tc39/proposal-decorators
 - **Decorator Metadata (Stage 3)**：https://github.com/tc39/proposal-decorator-metadata
-- **Async Decorators (Stage 2)**：异步装饰器提案
-- **Class Static Initializer**：ES2022 类静态初始化块
+- **Class Static Block**：ES2022 类静态初始化块
 
 ---
 
@@ -1826,6 +1819,10 @@ interface ClassAccessorDecoratorResult<V, R> {
   initialize?: (this: R, value: V) => V;
 }
 ```
+
+## 速查表（Legacy 签名为主）
+
+> 本节速查表默认使用 **Legacy 装饰器签名**（`experimentalDecorators: true`，`(target, key, descriptor)` 三参数风格），适用于维护 Angular、NestJS、TypeORM 等存量生态代码。**新项目请优先使用本节末尾"标准装饰器（TS 5.0+）"小节的两参数 `(value, context)` 签名**——注意标准装饰器当前不含参数装饰器。
 
 ## 装饰器基础
 
@@ -2127,7 +2124,7 @@ class S { private _v = 1; @Log get v() { return this._v } }
 
 ---
 
-## 4.0 新版装饰器
+## 标准装饰器（TS 5.0+ 新版）
 
 **基本写法：Stage 3 装饰器**
 `function <装饰器>(<target>, <context>) { }`

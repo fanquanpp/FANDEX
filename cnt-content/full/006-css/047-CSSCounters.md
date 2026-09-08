@@ -148,7 +148,7 @@ ol li::before {
 
 ## 5. 扩展学习
 
-- 伪元素：`css/023-PseudoClassPseudoElement`（`::before`/`content`）；
-- 列表样式：`css/017-CSSListStyle`；
-- 选择器：`css/007-CSS3SelectorSystem`；
-- 内容生成：`css/053-Function` 中 `counter()` 函数。
+- 伪元素：`css/024-PseudoClassPseudoElement`（`::before`/`content`）；
+- 列表样式：`css/018-CSSListStyle`；
+- 选择器：`css/008-CSS3SelectorSystem`；
+- 内容生成：`css/054-Function` 中 `counter()` 函数。

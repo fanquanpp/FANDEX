@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: scroll-snap
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/040-CascadeLayer'
   - 'css/037-LogicalProperty'
@@ -129,7 +129,7 @@ html {
 }
 ```
 
-**讲解：** 平滑滚动会让部分用户不适，生产环境建议在 `prefers-reduced-motion` 下关闭，详见 `css/045-AccessibleStyling`。
+**讲解：** 平滑滚动会让部分用户不适，生产环境建议在 `prefers-reduced-motion` 下关闭，详见 `css/046-AccessibleStyling`。
 
 ## 动手试试
 
@@ -160,5 +160,5 @@ html {
 ## 扩展学习
 
 - 滚动行为：`scroll-behavior: smooth`；
-- 性能：`css/042-CSSPerformanceOptimizationDetailed`；
-- 移动端：`css/052-MobileAdaptation`。
+- 性能：`css/043-CSSPerformanceOptimizationDetailed`；
+- 移动端：`css/053-MobileAdaptation`。

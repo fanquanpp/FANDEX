@@ -1156,7 +1156,7 @@ document.querySelectorAll('.fade-in').forEach((el) => observer.observe(el));
 
 ## 扩展学习
 
-- Grid：`css/022-CSS3GridGridLayout`；
-- Flex：`css/021-CSS3FlexboxFlexLayout`；
-- 响应式：`css/033-ResponsiveDesign`；
-- 性能：`css/042-CSSPerformanceOptimizationDetailed`。
+- Grid：`css/023-CSS3GridGridLayout`；
+- Flex：`css/022-CSS3FlexboxFlexLayout`；
+- 响应式：`css/034-ResponsiveDesign`；
+- 性能：`css/043-CSSPerformanceOptimizationDetailed`。

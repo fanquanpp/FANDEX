@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C 语言二级指针与指针数组的完整知识体系，涵盖多级间接寻址的形式化定义、内存布局、指针数组与数组指针的本质区别、函数指针数组、链表与树的二级指针实践、跨语言对比与工业级工程应用。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/045-FunctionCallStackFrame'
   - 'c/046-PointerArrayDifference'
@@ -23,7 +23,6 @@ prerequisites:
 
 
 
-# 二级指针与指针数组
 
 ## 前置知识
 
@@ -1181,10 +1180,11 @@ const int *const *const pp = &p1;   /* 三重 const：pp、*pp、**pp 都不可�
 
 ```c
 char *arr[] = {"a", "b"};
-const char **cpp = arr;   /* 未定义行为：类型不兼容 */
+const char **cpp = arr;   /* 约束违规：类型不兼容，编译器必须给出诊断 */
+                          /* GCC 14 起默认按错误处理；加 cast 只是压制警告，访问时仍可能出问题 */
 ```
 
-原因：如果允许这样赋值，可以通过 `cpp[0] = (const char *)somewhere_non_const` 修改 `arr[0]`，绕过 const 保护。
+原因：如果允许把 `char **` 隐式当作 `const char **`，就能先往中间插入一层"指向 const 的指针"，再经由非 const 的原始指针改写 const 数据，绕过 const 保护。这是 C 类型系统有意禁止的经典漏洞场景。
 
 ### 7.4 内存泄漏检测
 
@@ -1248,12 +1248,13 @@ argv[3] = (nil) (should be NULL)
 #include <stdlib.h>
 
 char **split_args(const char *line, int *out_argc) {
-    char *copy = strdup(line);
+    char *copy = strdup(line);   /* C23 起为标准函数；strtok_r 则仍是 POSIX 函数 */
     if (!copy) return NULL;
 
     /* 第一遍：计算 token 数 */
     int count = 0;
     char *saveptr = NULL;
+    /* strtok_r 为 POSIX 扩展（可重入版 strtok），MSVC 上对应 strtok_s */
     char *tok = strtok_r(copy, " \t", &saveptr);
     while (tok) {
         count++;

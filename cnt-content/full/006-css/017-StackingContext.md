@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: z-index
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/015-PositionDetailed'
   - 'css/016-FloatClear'
@@ -131,15 +131,21 @@ prerequisites:
   isolation: isolate; /* 专门用于创建层叠上下文，无副作用 */
 }
 
-/* 方式七：其他属性 */
+/* 方式七：其他高频属性 */
 .element-7 {
-  -webkit-overflow-scrolling: touch; /* 移动端滚动 */
+  position: fixed; /* fixed/sticky 元素在多数引擎中创建层叠上下文（sticky 在移动端引擎全部生效） */
 }
 
 .element-8 {
+  mix-blend-mode: multiply; /* 混合模式；backdrop-filter、mask、clip-path 同理 */
+}
+
+.element-9 {
   contain: layout; /* CSS Containment */
 }
 ```
+
+> 提示：以上是高频触发条件速览，完整清单（含分栏 `column-count` 等边缘情况）以 MDN「Stacking context」页面为准。
 
 ### 层叠顺序七层模型
 
@@ -400,6 +406,6 @@ prerequisites:
 
 ## 扩展学习
 
-- 定位：`css/014-PositionDetailed`；
-- 优先级：`css/009-PriorityCalculation`；
-- 合成与性能：`css/042-CSSPerformanceOptimizationDetailed`。
+- 定位：`css/015-PositionDetailed`；
+- 优先级：`css/010-PriorityCalculation`；
+- 合成与性能：`css/043-CSSPerformanceOptimizationDetailed`。

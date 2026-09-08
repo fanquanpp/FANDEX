@@ -21,7 +21,7 @@ prerequisites:
 本章文档难度标记为 intermediate，是因为末尾包含 BFC 与 margin 塌陷两个进阶主题。按难度分层阅读：
 
 - **入门必读（第 1-2 节、第 3.1-3.2 节）**：盒模型的四层组成、`content-box` 与 `border-box`、margin/padding 的基本用法——这是布局的地基，第一遍精读并完成动手试试；
-- **进阶选读（第 3.3 节、第 4 节）**：margin 塌陷与 BFC 触发条件，第一遍可以跳过，先读 `css/013-MarginCollapse` 与 `css/016-StackingContext` 的速通部分，再回头看本节；
+- **进阶选读（第 3.3 节、第 4 节）**：margin 塌陷与 BFC 触发条件，第一遍可以跳过，先读 `css/014-MarginCollapse` 与 `css/017-StackingContext` 的速通部分，再回头看本节；
 - **参考章节（第 5-7 节）**：应用、最佳实践与高级技巧，随用随查。
 
 这样安排后，本章的“入门路径”实际难度为 beginner：先会算盒子尺寸，再逐步进入格式化上下文。
@@ -1425,8 +1425,8 @@ a::after {
 
 ## 扩展学习
 
-- 边距塌陷详解：`css/013-MarginCollapse`；
-- 定位与层叠：`css/014-PositionDetailed`、`css/016-StackingContext`；
-- 现代布局：`css/021-CSS3FlexboxFlexLayout`、`css/022-CSS3GridGridLayout`；
-- 尺寸单位：`css/001-CSS3OverviewBasicSyntax` 中单位章节；
+- 边距塌陷详解：`css/014-MarginCollapse`；
+- 定位与层叠：`css/015-PositionDetailed`、`css/017-StackingContext`；
+- 现代布局：`css/022-CSS3FlexboxFlexLayout`、`css/023-CSS3GridGridLayout`；
+- 尺寸单位：`css/002-CSS3OverviewBasicSyntax` 中单位章节；
 - 性能：避免大面积重排时的高频尺寸读写。

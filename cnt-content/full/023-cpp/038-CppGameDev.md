@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 游戏引擎与C++游戏开发
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/026-CppNetworkProgramming'
   - 'cpp/029-CppGraphicsProgramming'
@@ -33,7 +33,7 @@ prerequisites:
 - 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
 
 
-> 本文档系统讲解 C++ 在游戏开发中的应用，覆盖游戏循环架构、实体-组件-系统 (ECS) 模式、内存管理、缓存友好设计、SIMD 优化、数据导向设计 (DOD)、主流引擎剖析与工程实践。内容遵循 ISO/IEC 14882:2023，参考 Unreal Engine、Unity、Godot 等主流引擎的实现，目标达到海外高校教学水准。
+> 本文档系统讲解 C++ 在游戏开发中的应用，覆盖游戏循环架构、实体-组件-系统 (ECS) 模式、内存管理、缓存友好设计、SIMD 优化、数据导向设计 (DOD)、主流引擎剖析与工程实践。内容遵循 ISO/IEC 14882:2024，参考 Unreal Engine、Unity、Godot 等主流引擎的实现，目标达到海外高校教学水准。
 
 ---
 
@@ -2184,7 +2184,7 @@ void example() {
 
 ### 10.1 标准与规范
 
-1. ISO/IEC. *ISO/IEC 14882:2023 Information technology — Programming languages — C++*. International Organization for Standardization, 2023.
+1. ISO/IEC. *ISO/IEC 14882:2024 Information technology — Programming languages — C++*. International Organization for Standardization, 2024.
 
 2. Khronos Group. *Vulkan 1.3 Specification*. Khronos Group, 2023. Available: https://www.khronos.org/vulkan/
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 表单控件、输入类型、内建验证与自定义校验。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'html5/010-SemanticTag'
   - 'html5/011-Accessibility'
@@ -412,11 +412,29 @@ HTML5 提供了表单验证 API，用于在 JavaScript 中进行更复杂的验�
 
 | 属性/方法                    | 描述                         |
 | ---------------------------- | ---------------------------- |
+| `willValidate`               | 只读布尔值：该元素是否参与约束校验（被禁用、只读等不可校验的控件为 false） |
 | `validity`                   | 返回元素的验证状态对象       |
 | `validationMessage`          | 返回元素的验证错误消息       |
-| `checkValidity()`            | 检查元素是否有效，返回布尔值 |
+| `checkValidity()`            | 检查元素是否有效，返回布尔值；无效时还会触发 `invalid` 事件 |
+| `reportValidity()`           | 校验并**把结果呈现给用户**（显示浏览器错误气泡、聚焦字段），返回布尔值 |
 | `setCustomValidity(message)` | 设置自定义验证错误消息       |
-| **示例**：                   |
+
+`validity` 对象的完整标志位（均为布尔值；`valid` 为 true 表示全部通过）：
+
+| 标志位 | 为 true 的含义 | 对应约束 |
+| --- | --- | --- |
+| `valueMissing` | 必填但为空 | `required` |
+| `typeMismatch` | 值不符合类型格式 | `type="email"` / `type="url"` |
+| `patternMismatch` | 值不匹配正则 | `pattern` |
+| `tooLong` | 超出最大长度 | `maxlength` |
+| `tooShort` | 不足最小长度 | `minlength` |
+| `rangeUnderflow` | 小于最小值 | `min` |
+| `rangeOverflow` | 超出最大值 | `max` |
+| `stepMismatch` | 不符合步进间隔 | `step` |
+| `badInput` | 值无法解析（如数字框含非法字符） | `type="number"` 等 |
+| `customError` | 存在自定义错误 | `setCustomValidity()` |
+
+示例：
 
 ```html
 <form id="form">
@@ -901,6 +919,8 @@ input.addEventListener('invalid', (e) => {
 - `submit` 事件在点击提交按钮或按回车时触发，`checkValidity()` 返回整个表单是否有效；
 - `invalid` 事件在字段校验失败时触发，可在此统一设置自定义错误消息。
 
+> **`invalid` 事件里用 `setCustomValidity` 的陷阱**：自定义错误一旦设置就会持续存在（`customError` 标志保持 true、字段持续被判无效），除非显式传入空字符串清除。若只在 `invalid` 里设错误而从不清除，用户改对之后字段依然无效。更稳妥的做法是在 `invalid` 里只读 `validity`/`validationMessage` 展示错误；"设置自定义错误"留给跨字段校验等真正的刚需场景，并配 `input` 事件及时清空（上一节的密码一致性示例正是这么做的）。
+
 | 事件 | 触发时机 |
 | --- | --- |
 | `submit` | 表单提交 |
@@ -989,8 +1009,8 @@ fetch('/api/submit', {
 
 ## 12. 扩展学习
 
-- 交互进阶：`javascript/040-DOMOperationEvent` 全面掌握事件机制；
-- 异步提交：`javascript/024-AsyncProgramming` 中 `fetch` 与 `FormData` 的完整用法；
+- 交互进阶：`javascript/041-DOMOperationEvent` 全面掌握事件机制；
+- 异步提交：`javascript/025-AsyncProgramming` 中 `fetch` 与 `FormData` 的完整用法；
 - 后端配合：`sql/` 与 `backend` 模块了解服务端校验与数据存储；
-- 无障碍：`html5/010-Accessibility` 中表单与 `aria-describedby` 的规范；
+- 无障碍：`html5/011-Accessibility` 中表单与 `aria-describedby` 的规范；
 - 校验实践：在真实项目中把“声明式校验 + JS 补充校验 + 后端校验”三层都实现一遍。

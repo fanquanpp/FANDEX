@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C 语言的整型、浮点型、派生类型、空类型、内存布局、ABI 与 C23 新类型，对标 MIT/Stanford/CMU 系统编程教学水准。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/002-CLanguageOverview'
   - 'c/003-ProgramStructureBasicSyntax'
@@ -574,7 +574,7 @@ int main(void) {
     auto x = 42;        /* int */
     auto y = 3.14;      /* double */
     auto z = &x;        /* int* */
-    auto w = BUFFER_SIZE; /* int（constexpr 隐式转换为 int） */
+    auto w = BUFFER_SIZE; /* int（constexpr 对象本身就是 int 类型，直接推导，无转换） */
 
     printf("x = %d, y = %f, z = %p, w = %d\n", x, y, (void*)z, w);
     printf("PI = %.15f\n", PI);

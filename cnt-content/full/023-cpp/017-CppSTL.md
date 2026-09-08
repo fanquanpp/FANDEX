@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: STL 算法库全解：非修改式、修改式、排序、搜索、数值、分区、堆、C++17 并行算法、C++20 Ranges、C++23 容器算法，含复杂度分析、迭代器约束、企业级实战与陷阱。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/015-OperatorOverloading'
   - 'cpp/016-CppOOPBasics'
@@ -185,7 +185,7 @@ $$
 | RandomAccess | Bidirectional + `r + n`、`r - s`、`r[n]` | `std::vector`、`std::deque` |
 | Contiguous（C++20） | RandomAccess + 元素内存连续 | `std::vector`、`std::array`、`std::span` |
 
-形式化定义（ISO/IEC 14882:2023 §23.3）：
+形式化定义（ISO/IEC 14882:2024 §23.3）：
 
 $$
 \text{IteratorCategory}(I) := \begin{cases}
@@ -1594,7 +1594,7 @@ long long sum_fibonacci(std::size_t n) {
 
 ### 10.1 标准文档
 
-- ISO/IEC 14882:2023 *Information technology — Programming languages — C++*，§25 Algorithms library，§26 Ranges
+- ISO/IEC 14882:2024 *Information technology — Programming languages — C++*，§25 Algorithms library，§26 Ranges
 - ISO/IEC TS 19570:2018 *C++ Extensions for Parallelism*（已并入 C++17）
 
 ### 10.2 核心提案
@@ -1666,7 +1666,7 @@ long long sum_fibonacci(std::size_t n) {
 
 ---
 
-> 本文档基于 ISO/IEC 14882:2023（C++23）标准编写，覆盖 C++98 至 C++26 草案的主要算法演进。如需了解最新提案进展，请访问 [ISO C++ 委员会官网](https://isocpp.org/) 与 [cppreference.com](https://en.cppreference.com/)。
+> 本文档基于 ISO/IEC 14882:2024（C++23）标准编写，覆盖 C++98 至 C++26 草案的主要算法演进。如需了解最新提案进展，请访问 [ISO C++ 委员会官网](https://isocpp.org/) 与 [cppreference.com](https://en.cppreference.com/)。
 ## vector
 
 **基本写法：创建 vector**

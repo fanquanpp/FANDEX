@@ -409,6 +409,6 @@ prerequisites:
 ## 扩展学习
 
 - Schema.org 官方文档：完整类型与属性清单；
-- SEO 实践：`css/065-HTMLSemanticSEO` 语义化与结构化数据的配合；
-- 社交分享：`html5/015-MetadataCharacterEncoding` 中 Open Graph 与 JSON-LD 的差异；
+- SEO 实践：`css/066-HTMLSemanticSEO` 语义化与结构化数据的配合；
+- 社交分享：`html5/016-MetadataCharacterEncoding` 中 Open Graph 与 JSON-LD 的差异；
 - 验证工具：Google Rich Results Test、Schema Markup Validator。

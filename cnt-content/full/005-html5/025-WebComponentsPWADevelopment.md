@@ -6,12 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Web组件与渐进式Web应用开发
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/023-EmbeddedContent'
   - 'html5/024-ProgressMeter'
   - 'html5/026-DragAPI'
   - 'html5/027-Geolocation'
+  - 'html5/029-ServiceWorkerPWA'
 prerequisites:
   - 'html5/007-HTML5OverviewCoreFeature'
 ---
@@ -157,6 +158,8 @@ customElements.define('my-template-element', MyTemplateElement);
 | `adoptedCallback()`                                  | 元素被移动到新文档时 |
 
 ## 6. PWA (Progressive Web App) 概述
+
+> **本篇与 029 专项的分工**：Part B 只给你"跑通第一版 PWA"的最小骨架（Manifest + 注册 Service Worker + 一两个缓存策略）；Service Worker 生命周期的完整讲解、Cache Storage 细节、客户端管理、安装体验等进阶内容统一放在 `html5/029-ServiceWorkerPWA` 专项，读完 Part B 后应接着学它。两篇互补，不重复展开。
 
 PWA 是一种结合了 Web 和原生应用优点的应用程序，具有安装到主屏幕、离线访问、推送通知等特性。
 
@@ -1050,8 +1053,8 @@ async function syncData() {
 
 ## 扩展学习
 
-- 组件细节：`html5/022-EmbeddedContent` 对比 iframe 与 Web Components 的隔离方式；
-- PWA 深化：`html5/028-ServiceWorkerPWA` 完整生命周期与缓存策略；
-- 离线存储：`html5/014-HTML5OfflineStorageWebAPI` 本地存储与 Cache API；
-- 推送通知：`html5/014-HTML5OfflineStorageWebAPI` 中 Notification API；
+- 组件细节：`html5/023-EmbeddedContent` 对比 iframe 与 Web Components 的隔离方式；
+- PWA 深化：`html5/029-ServiceWorkerPWA` 完整生命周期与缓存策略；
+- 离线存储：`html5/015-HTML5OfflineStorageWebAPI` 本地存储与 Cache API；
+- 推送通知：`html5/015-HTML5OfflineStorageWebAPI` 中 Notification API；
 - 框架集成：Vue/React 中使用自定义元素的官方指南。

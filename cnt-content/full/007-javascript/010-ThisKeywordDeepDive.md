@@ -21,9 +21,9 @@ prerequisites:
 
 ## 前置知识
 
-- [函数、作用域与闭包](/module/javascript/008-FunctionScopeClosure)：`this` 的判定建立在函数调用与执行上下文之上。
-- [对象与数组](/module/javascript/007-ObjectArray)：隐式绑定发生在对象方法的调用形态上。
-- [原型链与类的本质](/module/javascript/019-PrototypeChainClassEssence)：`new` 绑定与类方法中的 `this` 依赖原型机制。
+- [函数、作用域与闭包](/javascript/008-FunctionScopeClosure)：`this` 的判定建立在函数调用与执行上下文之上。
+- [对象与数组](/javascript/007-ObjectArray)：隐式绑定发生在对象方法的调用形态上。
+- [原型链与类的本质](/javascript/019-PrototypeChainClassEssence)：`new` 绑定与类方法中的 `this` 依赖原型机制。
 
 ## 学习目标
 
@@ -51,7 +51,7 @@ teto.sing(); // 重音テト 正在演唱《吉原ラメント》
 
 // 方法引用脱离对象后单独调用：绑定被重置
 const lost = miku.sing;
-lost(); // undefined 正在演唱《...》（非严格模式下 this 指向全局对象）
+lost(); // name 读取失败：非严格模式 this 指向全局对象（浏览器中 window.name 是空字符串，读不到歌名）
 ```
 
 要点是看**调用点**（call-site）：`miku.sing()` 的调用点是"通过对象 miku 的属性触发"，于是 `this` 指向 miku；`lost()` 的调用点是一个赤裸的函数调用，`this` 与任何对象无关。判定 `this` 的全部工作，就是给调用点归类。

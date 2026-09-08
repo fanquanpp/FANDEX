@@ -111,7 +111,7 @@ prerequisites:
 
 ## 7. 扩展学习
 
-- 响应式图片：`html5/019-ImageResponsiveImage`；
-- 盒模型：`css/003-CSS3BoxModelDetailed`；
-- 背景适配：`css/026-BackgroundEnhancement`（background-size 对比）；
-- 圆角头像：`css/051-BorderRadius`。
+- 响应式图片：`html5/020-ImageResponsiveImage`；
+- 盒模型：`css/004-CSS3BoxModelDetailed`；
+- 背景适配：`css/027-BackgroundEnhancement`（background-size 对比）；
+- 圆角头像：`css/052-BorderRadius`。

@@ -18,7 +18,7 @@ prerequisites:
 
 ## 0. 一句话理解
 
-> `using` 声明让资源在**离开作用域的瞬间**确定性释放（文件句柄、连接、锁、监听器），不再依赖 GC 的"最终处理"，也不用手写 try/finally——提案已于 2025 年 5 月进入 Stage 4，Chrome 134+ 与 Firefox 已落地，是 ES2026 的核心特性。
+> `using` 声明让资源在**离开作用域的瞬间**确定性释放（文件句柄、连接、锁、监听器），不再依赖 GC 的"最终处理"，也不用手写 try/finally——显式资源管理提案已正式定稿（Stage 4，按年度发布节奏预计随 ES2027 出版），Chrome 134+ 已先行落地，其余引擎支持以 MDN 为准。
 
 ## 1. 解决什么问题
 
@@ -56,7 +56,8 @@ const out = await fetch('https://example.com');
 ## 3. 协议：Symbol.dispose 与 Symbol.asyncDispose
 
 ```javascript
-class TempFile implements Disposable {   // TS 类型：typescript/lib 的全局接口
+// TypeScript 写法：implements Disposable（纯 JS 省略该标注即可，运行时只认 Symbol.dispose 方法）
+class TempFile {
   #path;
   constructor(path) { this.#path = path; }
   [Symbol.dispose]() {
@@ -86,13 +87,13 @@ async function query() {
 ```javascript
 {
   using stack = new DisposableStack();
-  const a = stack.using(openResource('a'));   // 装入并在 stack 释放时统一释放
-  const b = stack.using(openResource('b'));
-  stack.onError = () => rollback();           // defer 风格
-}   // 逆序释放 a、b
+  const a = stack.use(openResource('a'));   // use：装入资源并原样返回
+  const b = stack.use(openResource('b'));
+  stack.defer(() => rollbackIfNeeded());    // defer：注册清理回调（defer 风格）
+}   // 逆序释放：先回调，再 b，再 a
 ```
 
-`DisposableStack`（及异步版 `AsyncDisposableStack`）适合"打开一组、成功才提交、失败全部回滚"的组合场景，`move()` 还能把整个栈的所有权移交给调用方。
+`DisposableStack`（及异步版 `AsyncDisposableStack`）的核心方法：`use(value)` 装入并返回资源、`adopt(value, onDispose)` 包装无协议的遗留对象、`defer(callback)` 注册清理回调、`move()` 把整个栈的所有权移交给调用方——适合"打开一组、成功才提交、失败全部回滚"的组合场景。
 
 ## 5. 工程落地
 
@@ -118,7 +119,7 @@ async function transfer(from, to, amount) {
 ### 5.3 生态支持
 
 - **TypeScript 5.2+** 提供完整的 `using` 类型检查与 `Disposable`/`AsyncDisposable` 全局类型（详见 `typescript/050-TypeScript5xNewFeatures`）；
-- 主流运行时：Chrome 134+、Firefox 已按 ES2026 路线落地；Node 新版本线跟进中；
+- 主流运行时：Chrome 134+ 已落地 `using` 语法，其余引擎与 Node 的支持进度以 MDN 为准；
 - 旧环境用 [core-js](https://github.com/zloirock/core-js) 的显式资源管理垫片（仅提供协议 polyfill，`using` 语法本身需转译）。
 
 ## 6. 与 GC 的关系

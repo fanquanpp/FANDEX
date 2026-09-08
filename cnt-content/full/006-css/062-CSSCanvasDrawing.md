@@ -657,6 +657,6 @@ Canvas 是 HTML5 提供的强大绘图 API，通过 JavaScript 可以在网页�
 
 ## 扩展学习
 
-- 完整 Canvas：`html5/012-HTML5MultimediaCanvasDrawing`；
-- 动画：`css/028-CSSAnimationTransition`；
-- SVG 对比：`html5/021-SVG`。
+- 完整 Canvas：`html5/013-HTML5MultimediaCanvasDrawing`；
+- 动画：`css/029-CSSAnimationTransition`；
+- SVG 对比：`html5/022-SVG`。

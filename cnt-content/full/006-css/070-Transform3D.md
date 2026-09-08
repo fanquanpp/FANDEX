@@ -256,6 +256,6 @@ prerequisites: []
 
 ## 扩展学习
 
-- 动画：`css/028-CSSAnimationTransition`；
-- 层叠：`css/016-StackingContext`；
-- 性能：`css/042-CSSPerformanceOptimizationDetailed`。
+- 动画：`css/029-CSSAnimationTransition`；
+- 层叠：`css/017-StackingContext`；
+- 性能：`css/043-CSSPerformanceOptimizationDetailed`。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java机器学习与AI集成
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/091-JavaGraphQL'
   - 'java/094-JavaPerformanceTuning'
@@ -62,7 +62,8 @@ Python 凭借 NumPy、Pandas、scikit-learn、PyTorch、TensorFlow 生态在 AI 
 | 2021 | TensorFlow Java 0.4 | 与 TF 2.x 对齐，支持 SavedModel |
 | 2022 | DJL 0.20+ | 支持 PyTorch 1.x/2.x、TensorFlow 2.x、MXNet、TensorRT 后端 |
 | 2023 | LangChain4j | 大模型（LLM）应用开发框架出现 |
-| 2024 | Spring AI 1.0 M1 | Spring 官方 AI 集成模块 |
+| 2024 | Spring AI 1.0 里程碑版 | Spring 官方 AI 集成模块 |
+| 2025 | Spring AI 1.0 GA（5 月） | 官方 AI 抽象进入生产可用 |
 | 2024 | JDK 21 虚拟线程 + 分代 ZGC | 高并发 LLM 服务底层优化 |
 
 ### 当代 Java AI 的三大主线

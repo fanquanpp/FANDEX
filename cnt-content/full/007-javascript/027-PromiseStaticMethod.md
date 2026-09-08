@@ -110,7 +110,22 @@ const promise = new Promise((res, rej) => {
 
 ES2024（提案 stage 4，2023）引入 `Promise.withResolvers()`，返回 `{ promise, resolve, reject }` 三元组，使 deferred 模式成为语言一等公民。
 
-### 1.7 跨语言对比
+### 1.7 Promise.try 的引入（ES2025）
+
+ES2025 收录 `Promise.try(fn, ...args)`：立即同步调用 `fn`，把"可能同步抛错"的函数统一包装为 Promise——同步抛错转为 rejected，返回值包装为 fulfilled。它是 `new Promise(resolve => resolve(fn()))` 与 `Promise.resolve().then(fn)` 的语义正名：
+
+```javascript
+// 旧写法的问题：JSON.parse 同步抛错时不会被 .catch 捕获
+const config = JSON.parse(raw).catch(handler);        // 错误写法：parse 抛错发生在 catch 挂上之前
+const ok = Promise.resolve().then(() => JSON.parse(raw)).catch(handler);  // 可行但绕
+
+// ES2025：一行，同步异常自动进入 rejected 链
+Promise.try(() => JSON.parse(raw)).catch(handler);
+```
+
+与 `withResolvers` 互补：`withResolvers` 解决"外部触发"的 deferred，`Promise.try` 解决"同步函数统一进异步链"。两者共同把 deferred 模式的最后一块手工样板收编为语言内建。
+
+### 1.8 跨语言对比
 
 Promise 概念在多语言中演化：
 
@@ -234,7 +249,19 @@ $$
 - **all-fail-reject**：仅当全部失败才 reject AggregateError
 - **空输入**：`Promise.any([])` 立即 rejected with `AggregateError([])`
 
-### 2.7 Promise.withResolvers 的形式定义
+### 2.7 Promise.try 的形式定义
+
+`Promise.try(fn, ...args)` 等价于：
+
+```text
+1. 立即以 try/catch 语义同步调用 fn(...args)；
+2. 调用抛出异常 x  ->  返回 Promise.reject(x)；
+3. 调用返回值 v     ->  返回 Promise.resolve(v)（v 为 thenable 时走 adoption 流程）。
+```
+
+注意"立即同步调用"意味着 `Promise.try` 不引入额外微任务——`fn` 在当前栈帧执行完才返回 Promise，这一点与 `Promise.resolve().then(fn)`（fn 至少延迟一个微任务）不同，对时延敏感的路径更友好。
+
+### 2.8 Promise.withResolvers 的形式定义
 
 **定义 3.7.1（Promise.withResolvers）**：`Promise.withResolvers()` 返回三元组 $(p, \text{resolve}, \text{reject})$，其中：
 

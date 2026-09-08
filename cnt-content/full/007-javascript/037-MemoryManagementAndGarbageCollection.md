@@ -156,7 +156,7 @@ registry.register(view, 'heavy-view-id');
 
 ## 扩展学习
 
-- 闭包：`javascript/007-FunctionScopeClosure`；
-- 泄漏排查：`javascript/035-MemoryLeakTroubleshoot`；
+- 闭包：`javascript/008-FunctionScopeClosure`；
+- 泄漏排查：`javascript/036-MemoryLeakTroubleshoot`；
 - 集合弱引用：`javascript/023-MapSetWeakMapWeakSet`；
 - 显式资源管理：`javascript/064-ExplicitResourceManagement`。

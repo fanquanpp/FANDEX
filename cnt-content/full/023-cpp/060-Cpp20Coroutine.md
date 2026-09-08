@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 深入解析 C++20 协程：co_await、co_yield、co_return 的形式化语义、Promise/Awaitable/Awaiter 三元模型、编译器状态机变换（HALO 优化、对称转移、CPS 变换）、对称与非对称协程对比、跨语言协程模型对比（Python/JavaScript/Rust/Go/C#/Java）、工程实践（Task/Generator/SyncWait/WhenAll/线程池集成）、案例研究（cppcoro/folly::coro/Boost.Asio/P2300 std::execution/异步 TCP 服务器）与习题，覆盖 C++20/23/26 的演进与生产级最佳实践。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/006-RvalueReferenceMoveSemantics'
   - 'cpp/010-TemplateMetaprogramming'
@@ -122,7 +122,7 @@ C++20（ISO/IEC 14882:2020）正式纳入协程特性。但标准库仅提供以
 - `std::suspend_always` 与 `std::suspend_never`：两个最简 Awaitable
 - `std::noop_coroutine()`：空操作协程
 
-C++23（ISO/IEC 14882:2023）补完 `std::generator`（P2502R2），提供同步生成器标准实现：
+C++23（ISO/IEC 14882:2024）补完 `std::generator`（P2502R2），提供同步生成器标准实现：
 
 ```cpp
 #include <generator>
@@ -197,7 +197,7 @@ timeline
 
 ### 3.1 协程的代数定义
 
-按 ISO/IEC 14882:2023 [dcl.fct.def.coroutine]，协程是「函数体内出现 co_await、co_yield 或 co_return 任一关键字的函数」。形式化定义如下：
+按 ISO/IEC 14882:2024 [dcl.fct.def.coroutine]，协程是「函数体内出现 co_await、co_yield 或 co_return 任一关键字的函数」。形式化定义如下：
 
 $$
 \text{isCoroutine}(f) \triangleq \text{body}(f) \cap \{\text{co\_await}, \text{co\_yield}, \text{co\_return}\} \neq \emptyset
@@ -428,7 +428,7 @@ int main() {
 
 ### 4.1 co_await 表达式的编译器展开
 
-按 ISO/IEC 14882:2023 [expr.await]，`co_await expr` 的编译器展开遵循以下步骤：
+按 ISO/IEC 14882:2024 [expr.await]，`co_await expr` 的编译器展开遵循以下步骤：
 
 1. 获取 awaiter：通过 `operator co_await` 查找或直接使用 expr
 2. 调用 `awaiter.await_ready()`，若返回 true 则跳到步骤 5
@@ -3513,7 +3513,7 @@ P2300 互操作方案：实现 `sender_of<T>` 概念与 `await_transform(sender)
 
 ### 12.1 标准与规范
 
-1. **ISO/IEC 14882:2023**. _Information technology — Programming languages — C++_. Eighth edition. International Organization for Standardization, 2023. ISO/IEC 14882:2023.（C++23 标准正文，含 [dcl.fct.def.coroutine]、[support.coroutine]、[range.generator] 等协程相关章节）
+1. **ISO/IEC 14882:2024**. _Information technology — Programming languages — C++_. Seventh edition. International Organization for Standardization, 2024. ISO/IEC 14882:2024.（C++23 标准正文，含 [dcl.fct.def.coroutine]、[support.coroutine]、[range.generator] 等协程相关章节）
 
 ### 12.2 教材与专著
 

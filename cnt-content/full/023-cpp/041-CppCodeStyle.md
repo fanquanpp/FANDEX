@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++编码规范与最佳实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/040-CppMemoryManagement'
   - 'cpp/034-CppRustComparison'
@@ -33,7 +33,7 @@ prerequisites:
 - 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
 
 
-> 本文档系统讲解 C++ 代码规范的形式化基础、主流规范体系、工具链落地与工程实践。内容覆盖 ISO/IEC 14882:2023 中与编码约束相关的条款、MISRA C++:2023、AUTOSAR C++14、Google C++ Style Guide、LLVM Coding Standards、CppCoreGuidelines、clang-tidy、clang-format 等主流规范与工具，目标达到海外高校教学水准。
+> 本文档系统讲解 C++ 代码规范的形式化基础、主流规范体系、工具链落地与工程实践。内容覆盖 ISO/IEC 14882:2024 中与编码约束相关的条款、MISRA C++:2023、AUTOSAR C++14、Google C++ Style Guide、LLVM Coding Standards、CppCoreGuidelines、clang-tidy、clang-format 等主流规范与工具，目标达到海外高校教学水准。
 
 ---
 
@@ -1778,7 +1778,7 @@ CheckOptions:
 
 ### 10.1 标准与规范
 
-1. ISO/IEC. *ISO/IEC 14882:2023 Information technology — Programming languages — C++*. International Organization for Standardization, 2023.
+1. ISO/IEC. *ISO/IEC 14882:2024 Information technology — Programming languages — C++*. International Organization for Standardization, 2024.
 
 2. MISRA. *MISRA C++:2023 Guidelines for the use of the C++ language in critical systems*. MIRA Limited, 2023. ISBN: 978-1-906400-10-1.
 

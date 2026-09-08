@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 让动画进度跟随滚动位置或滚动容器，替代 JS 滚动监听实现视差与进度条。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/029-CSSAnimationTransition'
   - 'css/039-ScrollSnap'
@@ -78,6 +78,7 @@ prerequisites:
 ```css
 .scroller {
   scroll-timeline-name: --page;   /* 给滚动容器命名 */
+  scroll-timeline-axis: block;    /* 可选：指定跟踪轴，默认 block */
 }
 .item {
   animation: rotate both;
@@ -86,6 +87,21 @@ prerequisites:
 ```
 
 **讲解：** 多个元素想共享同一个滚动进度时，用 `scroll-timeline-name` 命名滚动容器，各元素通过 `animation-timeline: --name` 引用，适合整页滚动叙事。
+
+一个必须知道的限制：**命名时间线只能被滚动容器的后代引用**。若驱动元素不是滚动容器的后代（比如“顶栏进度条”与“正文滚动区”是兄弟），要在共同祖先上用 `timeline-scope` 把名字“提升”出去：
+
+```css
+.page {
+  timeline-scope: --page; /* 在共同祖先上声明：--page 在子树内可见 */
+}
+.scroller {
+  scroll-timeline-name: --page;
+}
+.progress {
+  animation: grow linear both;
+  animation-timeline: --page; /* 现在兄弟节点也能引用 */
+}
+```
 
 ## 5. 兼容与降级
 
@@ -96,7 +112,7 @@ prerequisites:
 }
 ```
 
-**讲解：** 不支持滚动驱动动画的浏览器会忽略 `animation-timeline`，此时应保证普通动画先声明，作为兜底。现代 Chrome/Edge 已支持，Safari/Firefox 逐步跟进，上线前查 Baseline。
+**讲解：** 不支持滚动驱动动画的浏览器会忽略 `animation-timeline`，此时应保证普通动画先声明，作为兜底。Chrome/Edge 已稳定支持多年，Safari 的较新版本已跟进，Firefox 支持仍在推进中——上线前以 caniuse / MDN 实时数据为准，并用 `@supports (animation-timeline: scroll())` 精确开关增强样式。
 
 ## 6. 动手试试
 
@@ -112,9 +128,9 @@ prerequisites:
 - `scroll()`：进度 = 滚动容器位置；
 - `view()`：进度 = 元素在视口中的可见度；
 - `animation-range` 裁剪进入/离开阶段；
-- `scroll-timeline-name` 命名时间线，多元素共享；
+- `scroll-timeline-name` 命名时间线，多元素共享；非后代引用配 `timeline-scope`；
 - 先写普通动画做兼容兜底；
-- 与滚动捕捉（027）搭配可做翻页体验。
+- 与滚动捕捉（`css/039-ScrollSnap`）搭配可做翻页体验。
 
 ## 8. 注意事项与改进建议
 
@@ -127,7 +143,7 @@ prerequisites:
 
 ## 9. 扩展学习
 
-- 动画与过渡：`css/028-CSSAnimationTransition`；
-- 滚动捕捉：`css/038-ScrollSnap`；
-- 视图过渡：`css/029-CSSViewTransitions`；
-- 减少动效：`css/045-AccessibleStyling`。
+- 动画与过渡：`css/029-CSSAnimationTransition`；
+- 滚动捕捉：`css/039-ScrollSnap`；
+- 视图过渡：`css/030-CSSViewTransitions`；
+- 减少动效：`css/046-AccessibleStyling`。

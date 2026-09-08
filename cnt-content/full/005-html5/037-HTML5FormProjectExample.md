@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 综合运用表单验证、Canvas 与本地存储的交互式应用。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/035-CrossDocumentCommunication'
   - 'html5/036-ViewportConfigMobileFirst'
@@ -1160,7 +1160,7 @@ vercel --prod   # 部署到生产环境
 5. **离线支持** -- Service Worker + IndexedDB
 6. **OCR 识别** -- 上传证件自动填充
 
-> 下一步学习出路：项目已经用上了 HTML5 的表单验证、存储、事件与拖拽，接下来三选一继续深入——CSS 进阶（`css/033-ResponsiveDesign` 与 `css/067-CSSProjectExampleResponsiveHomepage`）、JavaScript 进阶（`javascript/054-JavaScriptProjectPractice`）、或框架入门（`vue3/001-OverviewEnv`、`react/001-OverviewEnvSetup`）。记住：项目能力来自写出的代码量，继续做第二个、第三个项目比反复读文档更有效。
+> 下一步学习出路：项目已经用上了 HTML5 的表单验证、存储、事件与拖拽，接下来三选一继续深入——CSS 进阶（`css/034-ResponsiveDesign` 与 `css/068-CSSProjectExampleResponsiveHomepage`）、JavaScript 进阶（`javascript/059-JavaScriptProjectPractice`）、或框架入门（`vue3/001-OverviewEnv`、`react/001-OverviewEnvSetup`）。记住：项目能力来自写出的代码量，继续做第二个、第三个项目比反复读文档更有效。
 
 ---
 
@@ -2060,8 +2060,8 @@ const data = {
 
 ## 扩展学习
 
-- 表单基础：`html5/011-HTML5FormValidation`（本项目的验证部分）；
-- 签名板：`html5/012-HTML5MultimediaCanvasDrawing`（Canvas 绘制与导出）；
-- 存储：`html5/014-HTML5OfflineStorageWebAPI`（LocalStorage/File API）；
-- 拖拽：`html5/025-DragAPI`（拖拽排序与上传）；
-- 工程化：`javascript/054-JavaScriptProjectPractice` 中小型项目的组织方式。
+- 表单基础：`html5/012-HTML5FormValidation`（本项目的验证部分）；
+- 签名板：`html5/013-HTML5MultimediaCanvasDrawing`（Canvas 绘制与导出）；
+- 存储：`html5/015-HTML5OfflineStorageWebAPI`（LocalStorage/File API）；
+- 拖拽：`html5/026-DragAPI`（拖拽排序与上传）；
+- 工程化：`javascript/059-JavaScriptProjectPractice` 中小型项目的组织方式。

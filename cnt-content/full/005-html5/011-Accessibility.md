@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Web无障碍访问（A11y）核心概念、ARIA属性、键盘导航、屏幕阅读器适配与WCAG标准。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/008-HTML5BasicContentTags'
   - 'html5/010-SemanticTag'
@@ -109,7 +109,7 @@ Web 内容无障碍指南（WCAG）围绕四个原则，从用户视角看就是
 
 **讲解：**
 
-- 有意义的图片用 `alt` 描述内容，装饰图片 `alt=""` 并加 `role="presentation"` 双重声明；
+- 有意义的图片用 `alt` 描述内容；装饰图片 `alt=""` 即可让读屏跳过（`role="presentation"` 属于锦上添花的重复声明，写了不扣分，但别以为不写就出错）；
 - 图标字体本身无语义，用 `aria-hidden="true"` 屏蔽，再补 `sr-only` 可见文本；
 - 复杂图表在 `figcaption` 中提供长描述，`alt` 保持一句话概括。
 
@@ -129,8 +129,9 @@ Web 内容无障碍指南（WCAG）围绕四个原则，从用户视角看就是
   <span id="email-hint" class="hint">请输入有效的邮箱地址</span>
 
   <!-- 必填字段提示 -->
-  <label for="phone"> 电话：<span aria-label="必填">*</span> </label>
-  <input type="tel" id="phone" name="phone" required aria-required="true" />
+  <!-- 星号仅供视觉识别；读屏的"必填"信息由 required 属性原生播报，星号对辅助技术隐藏 -->
+  <label for="phone"> 电话：<span aria-hidden="true">*</span> </label>
+  <input type="tel" id="phone" name="phone" required />
 
   <!-- 错误提示 -->
   <label for="password">密码：</label>
@@ -156,6 +157,7 @@ Web 内容无障碍指南（WCAG）围绕四个原则，从用户视角看就是
 
 - `label` 的两种关联方式（包裹式与 `for`/`id` 式）都能让点击文字聚焦输入框；
 - `aria-describedby` 把提示文本与输入框关联，读屏用户输入时能听到提示；
+- 必填提示用 `required` 原生表达（读屏会播报"必填"），视觉星号用 `aria-hidden="true"` 屏蔽即可——给 `<span>` 这类泛型元素写 `aria-label` 是无效的，它们不支持命名；
 - `aria-invalid="true"` 配合 `role="alert"` 的错误提示，让校验结果即时可感知；
 - `fieldset` + `legend` 为单选组提供分组标题，避免读屏用户迷失选项含义。
 
@@ -166,11 +168,13 @@ Web 内容无障碍指南（WCAG）围绕四个原则，从用户视角看就是
 ARIA（Accessible Rich Internet Applications）为复杂组件提供语义信息。
 
 ```html
-<!-- 角色role -->
-<nav role="navigation" aria-label="主导航">
+<!-- 角色role：nav 元素自带 navigation 地标角色，role 属性可省略；aria-label 用于区分多个导航区 -->
+<nav aria-label="主导航">
   <ul>
-    <li><a href="/" role="menuitem">首页</a></li>
-    <li><a href="/about" role="menuitem">关于</a></li>
+    <!-- 站点导航就是普通链接：不要加 role="menuitem"，
+         menu/menuitem 是给"应用式菜单组件"（带方向键交互）用的，用在站点导航反而会误导读屏用户 -->
+    <li><a href="/">首页</a></li>
+    <li><a href="/about">关于</a></li>
   </ul>
 </nav>
 
@@ -712,7 +716,7 @@ function trapFocus(element) {
 ## 11. 扩展学习
 
 - 规范原文：阅读 W3C WCAG 2.2 与 WAI-ARIA 1.2 官方文档；
-- 组件模式：`html5/024-WebComponentsPWADevelopment` 中自定义元素如何内置无障碍；
-- 表单无障碍：`html5/011-HTML5FormValidation` 的验证提示与 `aria-describedby` 结合；
-- 语义基础：先掌握 `html5/009-SemanticTag`，再理解 ARIA 的补充角色；
+- 组件模式：`html5/025-WebComponentsPWADevelopment` 中自定义元素如何内置无障碍；
+- 表单无障碍：`html5/012-HTML5FormValidation` 的验证提示与 `aria-describedby` 结合；
+- 语义基础：先掌握 `html5/010-SemanticTag`，再理解 ARIA 的补充角色；
 - 实测工具：Lighthouse、axe DevTools、NVDA/VoiceOver 与键盘走查流程。

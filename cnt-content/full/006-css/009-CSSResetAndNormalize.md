@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浏览器默认样式差异的来源，以及 reset、normalize、现代重置方案的选择与写法。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/004-CSS3BoxModelDetailed'
   - 'css/011-CascadeInheritanceBasics'
@@ -105,7 +105,7 @@ ol[role="list"] {
 | normalize.css | 拉齐差异 | 依赖浏览器默认语义 |
 | 现代重置 | 最小统一 | 设计系统/组件库首选 |
 
-**讲解：** 现代项目推荐“现代重置 + 设计令牌（CSS 变量）”，框架项目（Tailwind 等）自带预置，通常不需要再引 normalize。工程化细节见 `css/043-CSSArchitectureMethodology`。
+**讲解：** 现代项目推荐“现代重置 + 设计令牌（CSS 变量）”，框架项目（Tailwind 等）自带预置，通常不需要再引 normalize。工程化细节见 `css/044-CSSArchitectureMethodology`。
 
 ## 6. 动手试试
 
@@ -136,7 +136,7 @@ ol[role="list"] {
 
 ## 9. 扩展学习
 
-- 盒模型与 box-sizing：`css/003-CSS3BoxModelDetailed`；
-- 继承与层叠：`css/010-CascadeInheritanceBasics`；
-- 层叠层 @layer（重置入层）：`css/039-CascadeLayer`；
-- 架构方法论：`css/043-CSSArchitectureMethodology`。
+- 盒模型与 box-sizing：`css/004-CSS3BoxModelDetailed`；
+- 继承与层叠：`css/011-CascadeInheritanceBasics`；
+- 层叠层 @layer（重置入层）：`css/040-CascadeLayer`；
+- 架构方法论：`css/044-CSSArchitectureMethodology`。

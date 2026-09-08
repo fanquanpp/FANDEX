@@ -4,210 +4,244 @@ title: C++ tuple 与 pair
 module: 'cpp'
 category: 计算机科学
 difficulty: beginner
-description: C++ tuple 与 pair 的完整教学讲解。
+description: C++ tuple 与 pair 完整教学：构造与访问、字典序比较、tie/apply/tuple_cat、多返回值实践、C++23 tuple-like 增强。
 author: fanquanpp
-updated: '2026-08-30'
-related: []
-prerequisites: []
+updated: '2026-09-08'
+related:
+  - 'cpp/069-StructuredBinding'
+  - 'cpp/072-CppVariantOptionalAny'
+  - 'cpp/017-CppSTL'
+  - 'cpp/052-CppSTLAlgorithmAndFunctionObject'
+prerequisites:
+  - 'cpp/003-CppBasicSyntax'
 ---
+
+## 学习目标
+
+- 会用 `std::pair` 存「成对的两个值」、用 `std::tuple` 存「任意多个值」
+- 掌握 `std::get`、`std::tie`、`std::make_tuple`、`std::apply`、`std::tuple_cat` 五件套
+- 理解 pair/tuple 与 map、多返回值函数、结构化绑定之间的配合
+- 知道 pair/tuple 的典型误用：语义不明、按类型取值不唯一
+
+## 前置知识
+
+- 基础语法与函数返回值：[C++ 基础语法](/cpp/003-CppBasicSyntax)
+- 结构化绑定是解包 pair/tuple 的最佳拍档：[结构化绑定速查](/cpp/069-StructuredBinding)
+
+## 概念引入
+
+pair 与 tuple 回答的问题是：**如何把几个「本该一起出现」的值当作一个整体传递**。
+
+- `std::pair<A, B>`：恰好两个元素，且有固定名字 `first`/`second`。类比：一双鞋，
+  左右各一只，位置固定。
+- `std::tuple<A, B, C...>`：任意数量、任意类型的元素序列。类比：一串钥匙盘，
+  每个位置挂不同的钥匙，要按位置取。
+
+它们都是**编译期固定大小、固定类型**的聚合体：不涉及运行时类型擦除（这是与
+`std::any` 的本质区别，见 [variant/optional/any](/cpp/072-CppVariantOptionalAny)）。
+需要语义明确的「两个值」时优先自定义结构体；pair/tuple 适合「局部、位置即语义」的场景。
 
 ## pair 基本用法
 
-**基本写法：构造 pair**
-`std::pair<<类型1>, <类型2>> <变量>(<值1>, <值2>);`
 ```cpp
-// 存储两个可能不同类型的值
-std::pair<int, std::string> p(1, "hello");
+// compile: g++ -std=c++17 pair_demo.cpp && ./a.out
+#include <iostream>
+#include <string>
+#include <utility>
+
+int main() {
+    // 构造：显式类型 or make_pair 自动推导
+    std::pair<int, std::string> p1(1, "hello");
+    auto p2 = std::make_pair(42, 3.14);   // pair<int, double>
+
+    // 访问：first / second（这是 pair 独有的具名访问）
+    std::cout << p1.first << " " << p1.second << '\n';   // 1 hello
+
+    // 比较：字典序——先比 first，相等再比 second
+    // bool before = std::make_pair(1, 2) < std::make_pair(1, 3);  // true
+
+    // 解包：C++17 结构化绑定
+    auto [id, name] = p1;
+    std::cout << id << " " << name << '\n';              // 1 hello
+}
 ```
 
----
+pair 最常见的三个出处：
 
-**基本写法：make_pair**
-`std::make_pair(<值1>, <值2>)`
+1. 关联容器的元素：`std::map<K, V>` 的每个元素就是 `std::pair<const K, V>`；
+2. `map::insert` 的返回值：`std::pair<iterator, bool>`（位置 + 是否插入成功）；
+3. 自定义「双返回值」函数。
+
 ```cpp
-// 自动推导元素类型
-auto p = std::make_pair(42, 3.14);
+#include <map>
+#include <string>
+
+std::map<std::string, int> ages;
+auto [it, inserted] = ages.emplace("Alice", 30);   // 结构化绑定接收
+// inserted 为 true 表示新插入；为 false 表示 key 已存在，it 指向旧元素
 ```
-
----
-
-**基本写法：访问成员**
-`<pair>.first` / `<pair>.second`
-```cpp
-// 直接访问两个元素
-std::cout << p.first << " " << p.second;
-```
-
----
-
-**基本写法：结构化绑定解包**
-`auto [a, b] = <pair>;`
-```cpp
-// C++17 一次性解包两个成员
-auto [id, name] = p;
-```
-
----
-
-**基本写法：pair 比较**
-`<lhs> < <rhs>`
-```cpp
-// 字典序比较，先比 first 再比 second
-bool before = (std::make_pair(1, 2) < std::make_pair(1, 3));
-```
-
----
 
 ## tuple 基本用法
 
-**基本写法：构造 tuple**
-`std::tuple<<类型>...> <变量>(<值>...);`
 ```cpp
-// 任意数量、任意类型的元素组合
-std::tuple<int, double, std::string> t(1, 2.0, "x");
+// compile: g++ -std=c++17 tuple_demo.cpp && ./a.out
+#include <iostream>
+#include <string>
+#include <tuple>
+
+int main() {
+    std::tuple<int, double, std::string> t(1, 2.0, "x");
+    auto u = std::make_tuple(1, 2.0, "x");        // 自动推导
+
+    // 按索引取值：索引必须是编译期常量
+    std::cout << std::get<0>(t) << '\n';          // 1
+
+    // 按类型取值：该类型必须恰好出现一次，否则编译错误
+    std::cout << std::get<std::string>(t) << '\n';// x
+
+    // 编译期查询元素个数与元素类型
+    constexpr std::size_t n = std::tuple_size<decltype(t)>::value;   // 3
+    using First = std::tuple_element<0, decltype(t)>::type;          // int
+    std::cout << n << '\n';
+
+    // 解包
+    auto [i, d, s] = t;
+    std::cout << i << " " << d << " " << s << '\n';  // 1 2 x
+}
 ```
 
----
+## 常用操作五件套
 
-**基本写法：make_tuple**
-`std::make_tuple(<值>...)`
+### tie：把 tuple「写入」已有变量
+
 ```cpp
-// 自动推导各元素类型
-auto t = std::make_tuple(1, 2.0, "x");
-```
+#include <tuple>
 
----
-
-**基本写法：按索引取值**
-`std::get<<索引>>(<tuple>)`
-```cpp
-// 编译期固定索引取出元素
-std::cout << std::get<0>(t); // 1
-std::cout << std::get<std::string>(t); // 也可按类型取，需唯一
-```
-
----
-
-**基本写法：结构化绑定解包**
-`auto [a, b, c] = <tuple>;`
-```cpp
-// C++17 一次性解包全部元素
-auto [i, d, s] = t;
-```
-
----
-
-**基本写法：元素个数**
-`std::tuple_size<<tuple类型>>::value`
-```cpp
-// 编译期获取元素数量
-constexpr auto n = std::tuple_size<decltype(t)>::value;
-```
-
----
-
-**基本写法：元素类型**
-`std::tuple_element<<索引>, <tuple类型>>::type`
-```cpp
-// 编译期获取指定位置元素类型
-using T = std::tuple_element<0, decltype(t)>::type; // int
-```
-
----
-
-## tuple 操作
-
-**基本写法：tie 绑定变量**
-`std::tie(<引用1>, <引用2>...)`
-```cpp
-// 将变量以引用方式打包，常用于接收多返回值
 int a, b;
-std::tie(a, b) = std::make_pair(1, 2);
-```
+std::tie(a, b) = std::make_pair(1, 2);            // a=1, b=2
 
----
-
-**基本写法：tie 忽略某位**
-`std::tie(<变量>, std::ignore)`
-```cpp
-// 用 std::ignore 跳过不需要的位置
+// 不关心某个位置时用 std::ignore 占位
 int id;
 std::tie(id, std::ignore) = some_pair_func();
 ```
 
----
+注意 `tie` 绑定的是**引用**，所以目标变量必须已经存在；这与结构化绑定「随用随建名字」
+形成互补：需要提前声明的循环变量用 `tie`，就地新名字用结构化绑定。
 
-**基本写法：拼接多个 tuple**
-`std::tuple_cat(<tuple1>, <tuple2>...)`
+### tuple_cat：拼接
+
 ```cpp
-// 将多个 tuple 连成一个更大的 tuple
 auto t1 = std::make_tuple(1);
 auto t2 = std::make_tuple(2.0, "x");
-auto big = std::tuple_cat(t1, t2); // tuple<int, double, const char*>
+auto big = std::tuple_cat(t1, t2);   // tuple<int, double, const char*>
 ```
 
----
+### apply：把 tuple 当参数包调用函数
 
-**基本写法：函数调用解包**
-`std::apply(<函数>, <tuple>)`
 ```cpp
-// 将 tuple 元素作为参数调用函数
+#include <tuple>
+
 int add(int a, int b) { return a + b; }
 auto args = std::make_tuple(3, 4);
-int r = std::apply(add, args); // 7
+int r = std::apply(add, args);       // r == 7，等价于 add(std::get<0>(args), std::get<1>(args))
 ```
 
----
+`std::apply` 是泛型代码中的常用粘合剂：当你把「一包参数」存进 tuple，传递后用
+`apply` 还原成函数调用。
 
-**基本写法：构造时元素类型转换**
-`std::make_from_tuple<<类型>>(<tuple>)`
+### make_from_tuple：用 tuple 构造对象
+
 ```cpp
-// 用 tuple 元素构造指定类型对象
+#include <tuple>
+
 struct Point { int x, y; };
 auto args = std::make_tuple(1, 2);
-Point p = std::make_from_tuple<Point>(args);
+Point p = std::make_from_tuple<Point>(args);   // Point{1, 2}
 ```
 
----
+### 一次返回多个值（最常用场景）
 
-## pair/tuple 与容器
-
-**基本写法：map 元素即为 pair**
-`std::map<...>::value_type` 为 `std::pair<const Key, T>`
 ```cpp
-// 遍历时元素就是 pair
-for (const auto& kv : mymap) {
-    std::cout << kv.first << ":" << kv.second;
+#include <tuple>
+#include <iostream>
+
+// 返回「是否成功 + 结果」，比出参引用更直观
+std::tuple<bool, int> safe_divide(int a, int b) {
+    if (b == 0) return {false, 0};
+    return {true, a / b};
+}
+
+int main() {
+    auto [ok, val] = safe_divide(10, 3);
+    if (ok) std::cout << "10/3 = " << val << '\n';   // 10/3 = 3
 }
 ```
 
----
+工程提醒：跨函数边界的返回值若超过 3 个元素，或元素含义不靠位置就能看懂（如
+`tuple<int, int, int>` 谁是宽谁是高），应改用自定义结构体——编译器对结构体还有
+指定初始化器 `{.width = 3}` 这样的可读性支持。
 
-**基本写法：返回多值**
-`return std::make_tuple(<值>...);`
+## pair/tuple 与容器、算法
+
 ```cpp
-// 用 tuple 一次返回多个值，配合 tie 或结构化绑定接收
-std::tuple<bool, int> divmod(int a, int b) {
-    return {b != 0, b ? a / b : 0};
+#include <algorithm>
+#include <vector>
+
+std::vector<std::pair<int, std::string>> v{{2, "b"}, {1, "a"}, {1, "c"}};
+
+// pair 的字典序比较可以直接用于排序：先按 first 升序，first 相同按 second
+std::sort(v.begin(), v.end());
+// 结果：{1,"a"}, {1,"c"}, {2,"b"}
+```
+
+利用「pair 比较 = 字典序」可以零成本实现多键排序：把「主键」放进 `first`。
+`std::map`/`std::set` 对 pair 的排序同理。
+
+## C++23 增强：tuple-like 协议
+
+C++23 把「tuple 协议」（`std::tuple_size` + `std::tuple_element` + `std::get<i>`）
+正式化为 **tuple-like** 概念，并打通了它与 ranges 的关系：
+
+- `std::array`、`std::pair`、`std::tuple` 都满足 tuple-like，`std::get<0>` 对三者
+  统一可用（pair 的 `std::get` 事实上自 C++11 就有，C++23 是协议层面的统一）；
+- tuple 与 pair 之间可以按元素转换（P2165）；
+- `views::enumerate`、`views::zip` 等新视图产出的都是 tuple-like 对象，配合结构化
+  绑定遍历非常顺手。
+
+```cpp
+#include <ranges>
+#include <vector>
+
+std::vector<std::string> names{"a", "b", "c"};
+for (auto const& [idx, name] : names | std::views::enumerate) {
+    // idx 是元素下标，name 是元素本身——enumerate 产出 pair-like
 }
 ```
 
----
+## 常见陷阱
 
-## C++23/26 增强
+1. **按类型取值不唯一即编译错误**：`std::get<int>(tuple<int, int>)` 无法编译；
+   同类型元素多时只能按索引取。
+2. **`std::get<i>` 的索引必须是编译期常量**：想用运行期下标遍历 tuple 需要
+   模板递归或折叠表达式，普通循环做不到。
+3. **tuple 的语义黑洞**：`std::tuple<int, int>` 表示「坐标」还是「宽高」？
+   函数签名完全看不出来。跨接口边界请用结构体命名成员。
+4. **`std::tie` 绑定悬垂引用**：`std::tie(a, b) = f();` 中的 `a`、`b` 必须存活，
+   绑定到已销毁的局部变量是 UB。
+5. **比较陷阱**：pair/tuple 总是字典序比较。若 `first` 不是主键，排序结果会与
+   直觉不符——需要自定义比较器时不要依赖默认比较。
 
-**基本写法：tuple-like 协议**
-`std::tuple_size` / `std::tuple_element` 适配更多类型
-```cpp
-// C++23 起 array/pair 等均满足 tuple-like 概念
-// 可直接用于结构化绑定与 apply
-```
+## 小结
 
----
+**初学者记住这三点：**
 
-**基本写法：pair-like 访问**
-`std::get<<索引>>(<pair>)`
-```cpp
-// C++23 起对 pair 也可用 get<0>/<1> 访问，与 tuple 接口一致
-std::cout << std::get<0>(p);
-```
+1. 两个值用 `pair`（`first`/`second`），多个值用 `tuple`（`std::get<i>`）；
+2. 接收多返回值首选结构化绑定 `auto [a, b] = f();`，已有变量则用 `std::tie`；
+3. `map` 的元素就是 pair，`insert`/`emplace` 的返回值解构一下就能同时拿到位置与成败。
+
+**进阶者还需注意：**
+
+- `std::apply` / `std::make_from_tuple` 是参数包与函数调用之间的标准桥接；
+- C++23 的 tuple-like 协议统一了 pair/tuple/array 与新 ranges 视图的互操作；
+- 接口边界上的「位置语义」应让位于结构体成员名——tuple 的最佳活动范围是函数内部
+  与泛型库内部。

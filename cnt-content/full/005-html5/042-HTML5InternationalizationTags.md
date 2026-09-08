@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: ruby 注音、bdi/bdo 双向文本隔离、lang/dir 属性深化：处理日文注音、中文拼音、阿拉伯文 RTL 排版的最后一公里。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/016-MetadataCharacterEncoding'
   - 'html5/017-TextSemantic'
@@ -109,4 +109,4 @@ prerequisites:
 
 ## 7. 下一步
 
-国际化的文字处理已经闭环。最后一篇专项 `041-HTML5ImageMapArea` 是冷门但关键时刻能救场的图像热区。
+国际化的文字处理已经闭环。最后一篇专项 `043-HTML5ImageMapArea` 是冷门但关键时刻能救场的图像热区。

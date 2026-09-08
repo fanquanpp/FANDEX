@@ -140,6 +140,6 @@ body {
 
 ## 扩展学习
 
-- 无障碍完整教程：`html5/010-Accessibility`；
-- 动效：`css/028-CSSAnimationTransition`；
-- 深色主题：`css/031-MediaQuery`。
+- 无障碍完整教程：`html5/011-Accessibility`；
+- 动效：`css/029-CSSAnimationTransition`；
+- 深色主题：`css/032-MediaQuery`。

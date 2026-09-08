@@ -117,7 +117,7 @@ img {
 
 ## 5. 扩展学习
 
-- 阴影：`css/025-Shadow`；
-- 背景混合：`css/026-BackgroundEnhancement`（background-blend-mode）；
-- 性能：`css/042-CSSPerformanceOptimizationDetailed`；
-- 动画：`css/028-CSSAnimationTransition` 中滤镜过渡。
+- 阴影：`css/026-Shadow`；
+- 背景混合：`css/027-BackgroundEnhancement`（background-blend-mode）；
+- 性能：`css/043-CSSPerformanceOptimizationDetailed`；
+- 动画：`css/029-CSSAnimationTransition` 中滤镜过渡。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用一句话和三条规则快速掌握 CSS 覆盖规则，是深入学习优先级前的入门速查。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/008-CSS3SelectorSystem'
   - 'css/010-PriorityCalculation'
@@ -61,7 +61,7 @@ p {
 
 ## 3. 权重速查：四元组入门版
 
-完整计算规则在 `css/009-PriorityCalculation`，入门阶段只需要知道三档：
+完整计算规则在 `css/010-PriorityCalculation`，入门阶段只需要知道三档：
 
 | 选择器示例 | 档位 |
 | --- | --- |
@@ -73,7 +73,7 @@ p {
 
 ## 4. 与 007 的分工
 
-本课是“速查”，告诉你常见场景谁赢；`css/009-PriorityCalculation` 是“深入版”，讲四元组精确计算、`:where()`/`:is()`/`@layer` 等现代工具对优先级的改造。遇到“明明后写却不生效”“第三方库覆盖不掉”这类问题，再去读 007。
+本课是“速查”，告诉你常见场景谁赢；`css/010-PriorityCalculation` 是“深入版”，讲四元组精确计算、`:where()`/`:is()`/`@layer` 等现代工具对优先级的改造。遇到“明明后写却不生效”“第三方库覆盖不掉”这类问题，再去读 007。
 
 ## 5. 动手试试
 
@@ -104,7 +104,7 @@ p {
 
 ## 8. 扩展学习
 
-- 选择器系统：`css/007-CSS3SelectorSystem`；
-- 优先级深入版：`css/009-PriorityCalculation`；
-- 样式表引入方式：`css/011-StyleSheetImportMethod`；
-- 层叠层 @layer：`css/039-CascadeLayer`。
+- 选择器系统：`css/008-CSS3SelectorSystem`；
+- 优先级深入版：`css/010-PriorityCalculation`；
+- 样式表引入方式：`css/012-StyleSheetImportMethod`；
+- 层叠层 @layer：`css/040-CascadeLayer`。

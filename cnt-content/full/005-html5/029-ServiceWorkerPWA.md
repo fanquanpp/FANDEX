@@ -4,10 +4,12 @@ title: Service Worker 与 PWA
 module: 'html5'
 category: 前端技术
 difficulty: advanced
-description: Service Worker与PWA
+description: Service Worker 全生命周期（注册/安装/激活/fetch 拦截）、Cache Storage 缓存策略、Web App Manifest、推送通知与后台同步的 PWA 完整专项。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
+  - 'html5/015-HTML5OfflineStorageWebAPI'
+  - 'html5/025-WebComponentsPWADevelopment'
   - 'html5/027-Geolocation'
 prerequisites:
   - 'html5/007-HTML5OverviewCoreFeature'
@@ -557,8 +559,8 @@ window.addEventListener('appinstalled', () => {
 
 ## 扩展学习
 
-- 基础铺垫：`html5/014-HTML5OfflineStorageWebAPI` 的 Cache Storage 与离线章节；
-- 组件对比：`html5/024-WebComponentsPWADevelopment` 中 PWA 三件套；
+- 基础铺垫：`html5/015-HTML5OfflineStorageWebAPI` 的 Cache Storage 与离线章节；
+- 组件对比：`html5/025-WebComponentsPWADevelopment` 中 PWA 三件套；
 - 推送完整流程：Web Push 协议与 VAPID 密钥管理；
-- 性能：`javascript/050-CoreWebVitalsAndPerformanceMetrics` 中缓存对加载指标的影响；
+- 性能：`javascript/051-CoreWebVitalsAndPerformanceMetrics` 中缓存对加载指标的影响；
 - 工程化：Workbox 库封装注册、缓存与更新逻辑。

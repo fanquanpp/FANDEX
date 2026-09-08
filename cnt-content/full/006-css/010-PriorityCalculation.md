@@ -2127,10 +2127,10 @@ div { color: blue !important; }  /* 不覆盖内联 !important */
 | 忽略用户样式表 | 可访问性设置被覆盖 | 避免 `!important`，尊重用户样式 |
 
 ## 10. 扩展学习
-- 层叠进阶：`css/039-CascadeLayer`；
-- 选择器：`css/007-CSS3SelectorSystem`、`css/023-PseudoClassPseudoElement`；
-- 作用域：`css/070-ScopeAtRule`；
-- 工程实践：BEM（`css/057-BEMNamingMethodology`）与 CSS Modules（`css/059-CSSModules`）；
+- 层叠进阶：`css/040-CascadeLayer`；
+- 选择器：`css/008-CSS3SelectorSystem`、`css/024-PseudoClassPseudoElement`；
+- 作用域：`css/071-ScopeAtRule`；
+- 工程实践：BEM（`css/058-BEMNamingMethodology`）与 CSS Modules（`css/060-CSSModules`）；
 - 框架对照：Tailwind 的工具类优先级设计（`tailwind/` 模块）。
 
 ## 附录 A：术语表

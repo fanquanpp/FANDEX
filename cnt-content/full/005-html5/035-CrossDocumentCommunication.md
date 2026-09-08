@@ -1580,7 +1580,7 @@ window.addEventListener('message', (event) => {
 
 ## 扩展学习
 
-- 基础：`html5/022-EmbeddedContent` 中 iframe 与 postMessage 示例；
-- 实时通信：`html5/030-WebSocket` 对比服务端中转与端到端消息；
-- 安全：CSP 与 XSS 防护（`javascript/047-ErrorBoundaryGlobalErrorCatch`）；
+- 基础：`html5/023-EmbeddedContent` 中 iframe 与 postMessage 示例；
+- 实时通信：`html5/031-WebSocket` 对比服务端中转与端到端消息；
+- 安全：CSP 与 XSS 防护（`javascript/048-ErrorBoundaryGlobalErrorCatch`）；
 - 工程封装：4.5 节生产级 RPC 的完整实现。

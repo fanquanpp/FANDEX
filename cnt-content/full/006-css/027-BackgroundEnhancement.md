@@ -2660,10 +2660,10 @@ $$
 
 ## 10. 扩展学习
 
-- 渐变：`css/024-Gradient`；
-- 阴影：`css/025-Shadow`；
-- 滤镜与混合：`css/048-CSSFilters`（滤镜体系）；
-- 响应式背景：`css/033-ResponsiveDesign`。
+- 渐变：`css/025-Gradient`；
+- 阴影：`css/026-Shadow`；
+- 滤镜与混合：`css/049-CSSFilters`（滤镜体系）；
+- 响应式背景：`css/034-ResponsiveDesign`。
 
 ## 附录 A：术语表
 

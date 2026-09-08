@@ -38,7 +38,7 @@ prerequisites: []
 
 JavaScript 自 1995 年由 Brendan Eich 在 Netscape 用 10 天完成原型以来，其演化可被归纳为三条相互纠缠的主线：
 
-1. **语言层抽象的精细化**：从 ES3 的回调地狱，到 ES5 的 `Array.prototype.forEach`/`map`/`reduce`，到 ES2015 的 Promise、Generator、模块系统，再到 ES2024+ 的 `Promise.try`、`Iterator Helpers`、`Temporal`。每一步都试图用更接近"声明式数学"的方式表达控制流与数据流。
+1. **语言层抽象的精细化**：从 ES3 的回调地狱，到 ES5 的 `Array.prototype.forEach`/`map`/`reduce`，到 ES2015 的 Promise、Generator、模块系统，再到 ES2025 的 `Promise.try`、`Iterator Helpers` 与 2026 年定稿的 `Temporal`。每一步都试图用更接近"声明式数学"的方式表达控制流与数据流。
 2. **运行时的多元化**：从浏览器单宿主，到 2009 年 Node.js 诞生后的服务端运行时，再到 2018 年 Deno 与 2022 年 Bun 引入的"安全默认 + 原生 TypeScript + 高性能启动"的新范式，宿主环境从 1 个扩展到 4 个主流。
 3. **性能竞争的白热化**：2008 年 V8 引入 JIT（Just-In-Time）后，JS 性能提升约两个数量级；2017 年 WebAssembly 1.0 成为第四种浏览器原生语言；2023 年 V8 引入 Maglev 中间层优化编译器，将启动速度进一步提升 20-30%。
 
@@ -81,7 +81,7 @@ const p = Promise.try(async () => {
 7. 无原生的格式化支持（依赖 `Intl.DateTimeFormat` 间接实现）。
 8. 字符串序列化（`toISOString`）固定 UTC，无法本地化。
 
-`Temporal` 提案自 2017 年由 Philipp Dunkel 等人推动，2024 年进入 Stage 3，2025 年合入规范。它通过 12 个独立类型（`Instant`、`ZonedDateTime`、`PlainDate`、`PlainTime`、`PlainDateTime`、`PlainYearMonth`、`PlainMonthDay`、`Duration`、`Now`、`TimeZone`、`Calendar`）将时间建模拆分为正交维度，从根本上消除了上述缺陷。
+`Temporal` 提案自 2017 年发起，2021 年初进入 Stage 3 长打磨，2026 年正式定稿（Stage 4，预计随 ES2027 出版）。它通过 9 个正交类型（`Now`、`Instant`、`ZonedDateTime`、`PlainDateTime`、`PlainDate`、`PlainTime`、`PlainYearMonth`、`PlainMonthDay`、`Duration`）将时间建模拆分为独立维度，从根本上消除了上述缺陷（早期提案中的 `TimeZone`/`Calendar` 构造器在最终版中已改为字符串标识）。
 
 #### 1.2.3 为什么需要 `Iterator Helpers`
 
@@ -332,7 +332,7 @@ async function measureMicrotaskOverhead() {
 measureMicrotaskOverhead();
 ```
 
-### 4.3 ES2025 `Temporal` 完整示例
+### 4.3 `Temporal` 完整示例（2026 年定稿）
 
 ```javascript
 // ============================================================
@@ -346,7 +346,8 @@ const { Temporal } = require('@js-temporal/polyfill');
 // 1. 纯日期：与时间无关
 const startDate = Temporal.PlainDate.from('2026-07-21');
 const endDate = Temporal.PlainDate.from('2026-12-31');
-const diff = endDate.since(startDate);
+// 注意：since 默认 largestUnit 为年，会折算成"月+天"；要按天数计需显式指定
+const diff = endDate.since(startDate, { largestUnit: 'day' });
 console.log(`距离年底还有 ${diff.days} 天`); // 163 天
 
 // 2. 带时区的瞬间：跨时区会议调度
@@ -615,14 +616,15 @@ compileFromBytes().catch(console.error);
 
 ```javascript
 // ============================================================
-// ShadowRealm：创建隔离的 JS 执行环境（ES2025 Stage 3）
-// 注意：截至 2026 年仅 Chrome 125+ 与 Bun 1.2+ 默认启用
+// ShadowRealm：创建隔离的 JS 执行环境
+// 注意：ShadowRealm 至今仍是 Stage 3 提案（未定稿），
+// 主流引擎未默认启用（实验 flag 或最新版预览），生产使用需谨慎评估
 // ============================================================
 
 // ShadowRealm 提供独立的全局对象与原型链
 const realm = new ShadowRealm();
 
-// evaluate：同步执行字符串代码，返回可结构化克隆的值
+// evaluate：同步执行字符串代码，只能返回原始值或可调用对象（对象不可跨 Realm 传递）
 const result = realm.evaluate(`
   const x = 10;
   const y = 20;
@@ -796,13 +798,10 @@ const result = wasmInstance.exports.matrixMultiply(largeA, largeB);
 ### 6.6 反模式：ShadowRealm 中传递复杂对象
 
 ```javascript
-// ShadowRealm 的 evaluate 仅返回可结构化克隆的值
+// ShadowRealm 的 evaluate 只能返回原始值或函数，返回对象会直接抛 TypeError
 const realm = new ShadowRealm();
-const result = realm.evaluate(`
-  class Foo { method() { return 42; } }
-  new Foo();
-`);
-// result 是 {}，方法丢失！类实例无法跨 Realm 传递
+// 错误示范：类实例无法跨 Realm 返回
+// const bad = realm.evaluate(`(new class Foo {})()`);  // TypeError
 
 // 正确：在 Realm 内完成所有操作，仅返回原始值
 const value = realm.evaluate(`
@@ -983,7 +982,7 @@ const ordersByRegion = Object.groupBy(orders, o => o.region);
    - 第一阶段：新功能直接使用 `Temporal`。
    - 第二阶段：在边界层引入 `Date ↔ Temporal` 适配器。
    - 第三阶段：完成核心路径迁移后，移除适配器。
-4. **测试时区切换**：使用 `Temporalotnow` 模拟夏令时切换。
+4. **测试时区切换**：用测试替身 mock `Temporal.Now`（或注入固定时钟），覆盖夏令时切换日的用例。
 
 **核心代码**：
 
@@ -1124,7 +1123,7 @@ B. 抛出 RangeError
 C. 返回 2026-03-01
 D. 返回 Invalid Date
 
-**解析讲解**：B。Temporal 严格校验日期合法性，2026 年非闰年。
+**解析讲解**：A。`from()` 默认 `overflow: 'constrain'`，把不存在的日期约束到当月最后一天；只有显式传 `{ overflow: 'reject' }` 才会抛 RangeError（对应选项 B），而 Temporal 类型没有 Invalid Date 概念（对应选项 D）。
 
 ### 9.2 进阶题
 
@@ -1632,12 +1631,14 @@ RuntimeAdapter.serve(async (req) => {
 
 ## 15. 附录 G：ES2026 后续展望
 
-### 15.1 已进入 Stage 2 的关键提案
+### 15.1 仍处早期阶段的关键提案
 
-- **Pattern Matching**：受 Scala/Rust 启发的 `match` 表达式，预计 2027 年合入。
-- **Async Iterator Helpers**：当前 Iterator Helpers 的异步版本，2026 年 Stage 3。
-- **Decimal**：IEEE 754 decimal 浮点，解决金融计算精度问题，2026 年 Stage 2。
-- **Pipe Operator**：`|>` 操作符，与 F#/Elixir 类似，2026 年 Stage 2。
+- **Pattern Matching**：受 Scala/Rust 启发的 `match` 表达式，Stage 1-2，语法未冻结。
+- **Async Iterator Helpers**：当前 Iterator Helpers 的异步版本，推进中。
+- **Decimal**：十进制浮点，解决金融计算精度问题，Stage 1-2。
+- **Pipe Operator**：`|>` 操作符，与 F#/Elixir 类似，Stage 2（提案曾经历多轮设计重置）。
+
+以上均**未定稿**，示例仅用于理解设计方向，请勿在生产环境假设其可用。
 
 ### 15.2 Pattern Matching 示例预览
 

@@ -407,6 +407,6 @@ npx postcss styles.css -u cssnano -o styles.min.css
 
 ## 扩展学习
 
-- 渲染路径：`css/060-CriticalRenderPathOptimization`；
-- 指标：`javascript/050-CoreWebVitalsAndPerformanceMetrics`；
-- 动画：`css/028-CSSAnimationTransition`。
+- 渲染路径：`css/061-CriticalRenderPathOptimization`；
+- 指标：`javascript/051-CoreWebVitalsAndPerformanceMetrics`；
+- 动画：`css/029-CSSAnimationTransition`。

@@ -121,7 +121,7 @@ ul {
 
 ## 5. 扩展学习
 
-- 列表结构：`html5/017-List`；
-- `::marker`：`css/023-PseudoClassPseudoElement`；
-- 选择器：`css/007-CSS3SelectorSystem`；
-- 导航实战：`css/067-CSSProjectExampleResponsiveHomepage`。
+- 列表结构：`html5/018-List`；
+- `::marker`：`css/024-PseudoClassPseudoElement`；
+- 选择器：`css/008-CSS3SelectorSystem`；
+- 导航实战：`css/068-CSSProjectExampleResponsiveHomepage`。

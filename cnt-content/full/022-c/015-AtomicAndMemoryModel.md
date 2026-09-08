@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C11原子操作与内存序
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/013-VarargsFunction'
   - 'c/014-SignalHandling'
@@ -73,7 +73,7 @@ counter++; // 读取、加1、写回，三步操作可能被交错
 #include <threads.h>
 
 // 声明原子整型变量
-atomic_int counter = ATOMIC_VAR_INIT(0);
+atomic_int counter = 0;
 
 // 线程函数：每个线程自增100000次
 int thread_func(void *arg) {
@@ -118,9 +118,11 @@ atomic_long al;          // 等价于 _Atomic long
 atomic_uintptr_t ap;     // 等价于 _Atomic uintptr_t
 atomic_flag af;          // 布尔原子类型，最简单的原子类型
 
-// 初始化
-atomic_int x = ATOMIC_VAR_INIT(0);  // 编译时初始化
-atomic_init(&x, 42);                 // 运行时初始化（非原子操作）
+// 初始化：直接用常量初始化即可（本文示例均如此）
+// 注意：宏 ATOMIC_VAR_INIT 在 C17 中已弃用、C23 中已移除，不要再使用；
+// 静态/线程存储期的原子对象不做初始化也会被零初始化为有效值
+atomic_int x = 0;                    // 编译时初始化
+atomic_init(&x, 42);                 // 运行时初始化（非原子操作，仅限无线程竞争时）
 ```
 
 ### 原子读写操作
@@ -130,7 +132,7 @@ atomic_init(&x, 42);                 // 运行时初始化（非原子操作）
 #include <stdatomic.h>
 
 int main(void) {
-    atomic_int x = ATOMIC_VAR_INIT(0);
+    atomic_int x = 0;
 
     // 原子写入
     atomic_store(&x, 10);
@@ -155,7 +157,7 @@ int main(void) {
 #include <stdatomic.h>
 
 int main(void) {
-    atomic_int x = ATOMIC_VAR_INIT(10);
+    atomic_int x = 10;
 
     // 原子加法，返回修改前的值
     int old = atomic_fetch_add(&x, 5);
@@ -187,7 +189,7 @@ int main(void) {
 #include <stdatomic.h>
 
 int main(void) {
-    atomic_int x = ATOMIC_VAR_INIT(10);
+    atomic_int x = 10;
 
     // atomic_compare_exchange_strong(&x, &expected, desired)
     // 如果 x == expected，则将 x 设为 desired，返回 true
@@ -314,7 +316,7 @@ int main(void) {
 #define BUFFER_SIZE 10
 
 int buffer[BUFFER_SIZE];
-atomic_int ready = ATOMIC_VAR_INIT(0); // 同步标志
+atomic_int ready = 0; // 同步标志
 
 // 生产者线程
 int producer(void *arg) {
@@ -422,6 +424,8 @@ int main(void) {
 }
 ```
 
+上面的无锁栈是教学用最简实现（Treiber 栈）：生产环境中它存在经典的 **ABA 问题**（一个线程读到的头指针，在另一线程"弹出又压回同一地址"后值相同但语义已变，CAS 无法察觉），以及内存回收时机的难题，需要配合标记指针（tagged pointer）、hazard pointer 或 RCU 等技术解决。
+
 ## 注意事项
 
 ### atomic_init 不是原子操作
@@ -458,7 +462,7 @@ _Atomic struct Complex d; // 取决于实现，可能不支持
 `memory_order_relaxed` 只保证原子性，不保证操作顺序。在需要同步的场景中不能使用：
 
 ```c
-atomic_int flag = ATOMIC_VAR_INIT(0);
+atomic_int flag = 0;
 int data = 0;
 
 // 线程1
@@ -499,8 +503,8 @@ if (atomic_compare_exchange_strong(&x, &expected, 20)) {
 #include <threads.h>
 
 // 统计计数器：只需要原子性，不需要顺序保证
-atomic_int total_requests = ATOMIC_VAR_INIT(0);
-atomic_int total_errors = ATOMIC_VAR_INIT(0);
+atomic_int total_requests = 0;
+atomic_int total_errors = 0;
 
 int worker(void *arg) {
     for (int i = 0; i < 1000000; i++) {
@@ -540,7 +544,7 @@ typedef struct {
 } Config;
 
 Config *config_instance = NULL;
-atomic_int config_ready = ATOMIC_VAR_INIT(0);
+atomic_int config_ready = 0;
 
 // 线程安全的延迟初始化
 Config *get_config(void) {
@@ -782,11 +786,16 @@ atomic_flag_clear(&lock);
 
 ## 内存顺序
 
+注意：`atomic_load`/`atomic_store`/`atomic_fetch_*` 等基础版本只接收操作数（默认 seq_cst）；
+要指定内存序必须使用对应的 `*_explicit` 版本，二者参数列表不同。
+
 **基本写法：顺序一致**
 `memory_order_seq_cst`
 ```c
-// 最严格的全局顺序
-atomic_store(&v, 1, memory_order_seq_cst);
+// 最严格的全局顺序（也是默认内存序，无需写出）
+atomic_store(&v, 1);
+// 显式写法用 *_explicit 系列
+atomic_store_explicit(&v, 1, memory_order_seq_cst);
 ```
 
 ---
@@ -794,8 +803,8 @@ atomic_store(&v, 1, memory_order_seq_cst);
 **基本写法：获取语义**
 `memory_order_acquire`
 ```c
-// 加载时防止后续读重排
-int v = atomic_load(&flag, memory_order_acquire);
+// 加载时防止后续读写重排到此之前
+int v = atomic_load_explicit(&flag, memory_order_acquire);
 ```
 
 ---
@@ -803,8 +812,8 @@ int v = atomic_load(&flag, memory_order_acquire);
 **基本写法：释放语义**
 `memory_order_release`
 ```c
-// 存储时防止前面写重排
-atomic_store(&flag, 1, memory_order_release);
+// 存储时防止之前的写重排到此之后
+atomic_store_explicit(&flag, 1, memory_order_release);
 ```
 
 ---
@@ -813,7 +822,7 @@ atomic_store(&flag, 1, memory_order_release);
 `memory_order_relaxed`
 ```c
 // 仅原子无顺序约束
-atomic_fetch_add(&counter, 1, memory_order_relaxed);
+atomic_fetch_add_explicit(&counter, 1, memory_order_relaxed);
 ```
 
 ---

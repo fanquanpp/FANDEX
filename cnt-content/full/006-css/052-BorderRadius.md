@@ -1009,6 +1009,6 @@ defineProps<{
 
 ## 扩展学习
 
-- 盒模型：`css/003-CSS3BoxModelDetailed`；
-- 阴影：`css/025-Shadow`；
-- 背景裁剪：`css/026-BackgroundEnhancement`。
+- 盒模型：`css/004-CSS3BoxModelDetailed`；
+- 阴影：`css/026-Shadow`；
+- 背景裁剪：`css/027-BackgroundEnhancement`。

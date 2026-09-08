@@ -790,8 +790,8 @@ prerequisites: []
 
 ## 12. 扩展学习
 
-- 完整实践：阅读 `html5/016-TextSemantic` 与 `html5/017-List` 掌握文本与列表语义；
-- 无障碍深化：结合 `html5/010-Accessibility` 学习 WCAG 与 ARIA 完整规范；
-- 结构化数据：在 `html5/032-MicrodataJSONLD` 中对比微数据与 JSON-LD；
-- 交互组件：`html5/023-ProgressMeter`、`html5/024-WebComponentsPWADevelopment` 可延伸自定义组件语义；
-- SEO 方向：参考 `css/065-HTMLSemanticSEO` 了解语义化对搜索排名的影响。
+- 完整实践：阅读 `html5/017-TextSemantic` 与 `html5/018-List` 掌握文本与列表语义；
+- 无障碍深化：结合 `html5/011-Accessibility` 学习 WCAG 与 ARIA 完整规范；
+- 结构化数据：在 `html5/033-MicrodataJSONLD` 中对比微数据与 JSON-LD；
+- 交互组件：`html5/024-ProgressMeter`、`html5/025-WebComponentsPWADevelopment` 可延伸自定义组件语义；
+- SEO 方向：参考 `css/066-HTMLSemanticSEO` 了解语义化对搜索排名的影响。

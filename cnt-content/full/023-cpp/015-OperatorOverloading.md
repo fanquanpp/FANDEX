@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 运算符重载规则与最佳实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/014-RAIIResourceManagement'
   - 'cpp/012-Cpp20Module'
@@ -103,7 +103,7 @@ Stroustrup 在 *The C++ Programming Language* 第 4 版中提出运算符重载�
 
 ### 2.1 运算符函数的语法
 
-C++ 中每个运算符重载本质上是函数重载。语法形式（ISO/IEC 14882:2023 §12.4）：
+C++ 中每个运算符重载本质上是函数重载。语法形式（ISO/IEC 14882:2024 §12.4）：
 
 $$
 \text{operator-function} := \text{operator}\ \text{op}\ (\text{parameter-list})
@@ -149,7 +149,7 @@ $$
 
 ### 2.3 可重载与不可重载运算符清单
 
-**可重载运算符**（ISO/IEC 14882:2023 §12.4 [over.oper]）：
+**可重载运算符**（ISO/IEC 14882:2024 §12.4 [over.oper]）：
 
 ```
 +    -    *    /    %       ^       &        |        ~        !        =
@@ -1713,7 +1713,7 @@ int main() {
 
 ### 标准文档
 
-- **ISO/IEC 14882:2023** — *Information technology — Programming languages — C++*，第 12 章 [over]、第 16 章 [over.oper]。
+- **ISO/IEC 14882:2024** — *Information technology — Programming languages — C++*，第 12 章 [over]、第 16 章 [over.oper]。
 - **ISO/IEC 14882:2020** — C++20 标准，引入 `<=>`。
 - **ISO/IEC 14882:2011** — C++11 标准，引入 `explicit` 转换与用户定义字面量。
 

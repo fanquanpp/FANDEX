@@ -147,5 +147,5 @@ import styles from './Component.module.css';
 ## 扩展学习
 
 - Vite：`vite/005-CSSPreprocessors`；
-- 原子化：`css/058-CSSAtomic`；
-- 架构：`css/043-CSSArchitectureMethodology`。
+- 原子化：`css/059-CSSAtomic`；
+- 架构：`css/044-CSSArchitectureMethodology`。
