@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++智能指针unique_ptr、shared_ptr、weak_ptr详解，RAII原则与所有权语义。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/043-CppReflectionMetaprogramming'
   - 'cpp/044-CppMathLibrary'

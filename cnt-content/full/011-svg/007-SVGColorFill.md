@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: fill、stroke、opacity、currentColor、paint-order 与矢量效果。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'svg/004-SVGBasicShapeDetailed'
   - 'svg/008-SVGGradientPattern'

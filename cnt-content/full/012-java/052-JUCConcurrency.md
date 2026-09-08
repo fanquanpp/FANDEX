@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: java.util.concurrent并发工具
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/041-JavaGenericsTutorial'
   - 'java/051-ConcurrencyBasics'

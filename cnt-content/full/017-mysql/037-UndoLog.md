@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB撤销日志undo log：版本链、回滚段、MVCC支持与Purge机制
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/035-Binlog'
   - 'mysql/036-RedoLog'

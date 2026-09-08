@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 'GitHub Copilot深度解析：从"AI 补全代码"的体验切入，讲解订阅计划、安装配置、提示词工程、Copilot Chat 与安全最佳实践。'
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'github/017-IssuesTemplateTagMilestone'
 prerequisites:

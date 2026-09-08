@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 资源获取即初始化模式
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/012-Cpp20Module'
   - 'cpp/035-Cpp23Cpp26NewFeatures'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL二进制日志binlog：格式、配置、用途（复制与恢复）、清理策略与最佳实践
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/033-DeadlockDetectionHandling'
   - 'mysql/034-DistributedTransaction'

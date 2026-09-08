@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin Flow与Channel及响应式流规范深度剖析
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'kotlin/016-DelegateProperty'
   - 'kotlin/018-CoroutineBasics'

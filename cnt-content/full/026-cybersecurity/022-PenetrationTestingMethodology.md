@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 渗透测试方法论：PTES标准、OSSTMM、攻击流程与报告编写详解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cybersecurity/020-DigitalCertificate'
   - 'cybersecurity/021-HTTPSPrinciple'

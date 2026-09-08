@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: SVG 发展历程、核心特性、与 Canvas/位图对比、嵌入方式与开发环境。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'svg/002-SVGBasicSyntaxDocStructure'
   - 'svg/003-SVGCoordinateSystemViewBox'

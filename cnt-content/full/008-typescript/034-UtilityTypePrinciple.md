@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 内置工具类型的实现与自定义
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/032-NamespaceModule'
   - 'typescript/033-EnumAdvanced'

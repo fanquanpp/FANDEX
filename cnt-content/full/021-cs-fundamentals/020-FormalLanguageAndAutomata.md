@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 形式语言与自动机：正则语言、上下文无关文法、下推自动机与图灵机
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/018-DistributedSystem'
   - 'cs-fundamentals/019-AlgorithmDesignAnalysis'

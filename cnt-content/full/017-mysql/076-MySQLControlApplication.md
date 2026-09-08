@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL控制器设计模式与应用实践
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/074-MySQLConfigOps'
   - 'mysql/075-MySQLQuickLookup'

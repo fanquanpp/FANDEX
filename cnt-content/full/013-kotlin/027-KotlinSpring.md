@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Kotlin Spring Boot开发
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'kotlin/031-KotlinKtor'
   - 'kotlin/033-KotlinKoin'

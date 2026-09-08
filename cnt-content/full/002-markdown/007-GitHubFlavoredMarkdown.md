@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GFM扩展规范详解：表格、任务列表、删除线、自动链接与代码围栏。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'markdown/005-CommonMarkSpec'
   - 'markdown/006-ListSyntax'

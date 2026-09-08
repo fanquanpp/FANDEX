@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 线段树数据结构的形式化定义（区间幺半群上的完全二叉树）、懒标记下传语义、构建 O(n)、查询/更新 O(log n)、空间 O(4n) 的复杂度证明，覆盖递归/迭代实现、动态开点、离散化、持久化、合并线段树、李超树、扫描线等工程变体，附多语言实现。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'algorithm/018-LeetCodeInterviewGuide'
   - 'algorithm/019-UnionFind'

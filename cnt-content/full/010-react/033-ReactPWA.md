@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React渐进式Web应用
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'react/031-ReactMicroFrontend'
   - 'react/032-ReactAccessibility'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: LVS 高可用负载均衡：DR、NAT、TUN 三种模式原理与配置。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'networking/014-NetworkAutomation'
   - 'networking/015-LoadBalanceAlgorithm'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Java 类型擦除与桥接方法语法速查手册 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'java/039-GenericDetailed'
   - 'java/041-JavaGenericsTutorial'

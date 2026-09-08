@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 共享责任模型、身份与访问管理、数据加密与密钥管理、网络安全、合规与审计、安全运营与事件响应。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/016-CloudNetworkService'
   - 'cloud-computing/017-KubernetesStorage'

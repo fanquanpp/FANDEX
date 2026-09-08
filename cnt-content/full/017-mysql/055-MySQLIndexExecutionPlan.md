@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: B+Tree 索引、EXPLAIN 分析与索引优化策略。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'mysql/053-InnoDBSystemArchitecture'
   - 'mysql/054-DataEncryption'

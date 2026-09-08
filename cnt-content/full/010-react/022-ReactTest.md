@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React组件测试策略
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'react/020-ReactForm'
   - 'react/021-ReactTypeScript'

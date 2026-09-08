@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C11 Annex K安全函数
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/019-ControlFlow'
   - 'c/020-AttributeCompilerExtension'

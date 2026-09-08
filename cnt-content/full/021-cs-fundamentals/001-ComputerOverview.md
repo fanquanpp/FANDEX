@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 计算机科学学科全景图，知识体系脉络与核心抽象层级。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/003-ComputerArchitecture'
   - 'cs-fundamentals/004-OperatingSystem'

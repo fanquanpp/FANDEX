@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 云架构设计原则、微服务架构、事件驱动架构、无服务器架构、多区域高可用、灾备策略与架构评审。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/005-IaaSPaaSSaaS'
   - 'cloud-computing/006-VirtualizationTech'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Kotlin 空安全深度解析：可空类型、智能转换、平台类型、lateinit、Elvis 运算符的形式化定义、字节码实现与企业级工程实践。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'kotlin/017-ExtensionFunction'
   - 'kotlin/015-SealedClassAlgebraicDataType'

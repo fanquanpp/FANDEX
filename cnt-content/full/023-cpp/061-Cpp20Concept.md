@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++20 Concepts约束模板详解。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/059-VariadicTemplateFoldExpression'
   - 'cpp/060-Cpp20Coroutine'

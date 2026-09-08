@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "@font-face、font-display 与字体加载策略，兼顾品牌字体与首屏性能。"
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/045-TypographyAndGridSystem'
   - 'css/043-CSSPerformanceOptimizationDetailed'

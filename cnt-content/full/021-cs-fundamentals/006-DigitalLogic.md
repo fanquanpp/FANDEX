@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 数字逻辑基础：布尔代数、逻辑门、组合逻辑、时序逻辑与有限状态机
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/004-OperatingSystem'
   - 'cs-fundamentals/005-ComputerNetwork'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: .NET 零分配内存操作全景解析：Span<T>/ReadOnlySpan<T>/Memory<T> 的 ref struct 约束、stackalloc、切片运算、零拷贝、MemoryMarshal、ArrayPool<T>、MemoryManager<T> 的深度原理与工程实践。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'csharp/017-CRecordType'
   - 'csharp/018-GenericCovarianceContravariance'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: mask 系列属性用透明通道裁剪元素显示区域，实现渐变淡出、形状镂空等效果。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/027-BackgroundEnhancement'
   - 'css/054-Function'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Java JDBC 数据库连接 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'java/074-JavaDatabaseConnection'
   - 'java/083-SpringBootDataAccess'

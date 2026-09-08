@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL JSONB 与 JSON 类型对比：存储格式、查询性能、索引策略、GIN 索引与 JSON 路径表达式。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/040-ParallelQuery'
   - 'postgresql/041-LogicalPhysicalReplicationCompare'

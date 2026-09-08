@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go 与 WebAssembly：Wasm 字节码、栈式虚拟机、syscall/js 桥接、WASI、TinyGo 与浏览器端企业级应用
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'go/034-GoCGO'
   - 'go/036-GoCodeGeneration'

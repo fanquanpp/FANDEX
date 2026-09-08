@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: KMP 架构、expect/actual、共享代码策略、Compose Multiplatform 与 Gradle 配置。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'kotlin/008-KotlinCollectionCoroutine'
   - 'kotlin/009-KotlinCoroutineAdvanced'

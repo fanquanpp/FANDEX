@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Jetpack Compose桌面/移动
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'kotlin/020-KotlinScopeFunction'
   - 'kotlin/028-KotlinTypeSystem'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: JDBC 规范、连接池原理、事务管理、ORM 框架与高性能数据库访问最佳实践。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/046-JavaTextBlock'
   - 'java/047-JavaModuleSystem'

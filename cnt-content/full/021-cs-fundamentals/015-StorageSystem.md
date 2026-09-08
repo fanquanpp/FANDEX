@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 存储系统深度：Cache优化、虚拟存储、TLB、内存管理与存储一致性
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/010-DataRepresentationOperation'
   - 'cs-fundamentals/014-DirectivePipeline'

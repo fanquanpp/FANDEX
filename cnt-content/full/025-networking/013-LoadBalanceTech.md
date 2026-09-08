@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 负载均衡技术：四层/七层负载、算法、健康检查、会话保持与全局负载
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'networking/011-NetworkDesignPlanning'
   - 'networking/012-DNSDHCP'

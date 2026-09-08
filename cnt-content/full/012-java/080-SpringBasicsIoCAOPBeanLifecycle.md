@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 系统阐述 Spring 框架的 IoC 容器、AOP、Bean 生命周期、依赖注入、事务管理、Spring MVC 与 Spring Boot 核心机制。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/048-JavaNewFeatures'
   - 'java/008-OperatorExpression'

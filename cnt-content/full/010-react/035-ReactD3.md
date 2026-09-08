@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React中D3数据可视化
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'react/033-ReactPWA'
   - 'react/034-ReactCanvas'

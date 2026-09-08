@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: .NET Runtime、BCL、NuGet 包管理、依赖注入、配置系统、日志、中间件管道、ASP.NET Core、EF Core、MAUI、性能诊断、AOT 编译
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'csharp/002-CSharpOverviewEnvSetup'
   - 'csharp/003-CSharpBasicSyntax'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: object-fit 与 object-position 控制 img/video 等内容在盒子内的适配方式。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/020-ImageResponsiveImage'
   - 'css/004-CSS3BoxModelDetailed'

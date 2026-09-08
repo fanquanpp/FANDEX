@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 类与对象、封装、继承、多态与虚函数。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/014-RAIIResourceManagement'
   - 'cpp/015-OperatorOverloading'

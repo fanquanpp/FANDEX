@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 泛型类型系统、约束、协变逆变、List/Dictionary/HashSet/Queue/Stack/PriorityQueue、不可变集合、Frozen 集合、迭代器(yield)、LINQ to Objects、性能模型与生产实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'csharp/003-CSharpBasicSyntax'
   - 'csharp/004-CSharpOOP'

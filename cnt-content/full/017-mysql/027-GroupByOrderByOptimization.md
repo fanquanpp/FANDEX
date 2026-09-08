@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL GROUP BY与ORDER BY优化：松散索引扫描、紧凑索引扫描、临时表与filesort优化
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/025-SubqueryOptimization'
   - 'mysql/026-DerivedTableOptimization'

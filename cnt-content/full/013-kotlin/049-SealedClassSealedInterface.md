@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin 密封类与密封接口深度解析：受限继承、穷举检查、代数数据类型（ADT）、模式匹配、递归结构、when 表达式编译期检查的形式化定义、字节码实现与企业级工程实践。对标 MIT 6.005、Stanford CS193P、CMU 15-214 教学水准。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'kotlin/047-FlowColdSharedState'
   - 'kotlin/048-ChannelBroadcastChannel'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: System V与POSIX IPC
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/026-SocketNetworkProgramming'
   - 'c/027-ProcessAndPipe'

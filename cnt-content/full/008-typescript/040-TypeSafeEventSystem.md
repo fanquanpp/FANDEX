@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 类型安全事件系统的形式语义、构建器模式、异步事件、反应式扩展与生产级实现
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/038-ConditionalMappedType'
   - 'typescript/039-TypeScriptTypeDeclarationModuleResolution'

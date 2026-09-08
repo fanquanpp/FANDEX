@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go 1.18+泛型：类型参数、约束、类型推断、GC shape stenciling实现、泛型算法与生产级实践
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'go/057-MemoryEscapeAnalysis'
   - 'go/058-GCAndTuning'

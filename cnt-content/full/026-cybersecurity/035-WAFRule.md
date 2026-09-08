@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Web 应用防火墙 WAF：规则引擎、绕过技术与自定义规则。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cybersecurity/033-SecurityBaseline'
   - 'cybersecurity/034-VulnerabilityScanTools'

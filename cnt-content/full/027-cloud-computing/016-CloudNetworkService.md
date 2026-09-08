@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 虚拟私有云、子网与安全组、负载均衡、CDN与边缘计算、DNS服务、专线与VPN、网络架构设计。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/014-CloudStorageService'
   - 'cloud-computing/015-KubernetesNetwork'

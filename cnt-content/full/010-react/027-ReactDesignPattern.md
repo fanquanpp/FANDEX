@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React组件设计模式
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'react/025-ReactAnimation'
   - 'react/026-ReactSSR'

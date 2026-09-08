@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL VECTOR向量类型：向量存储、距离计算、AI嵌入与近似最近邻搜索
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/055-MySQLIndexExecutionPlan'
   - 'mysql/056-MySQL9NewFeaturesParallelQuery'

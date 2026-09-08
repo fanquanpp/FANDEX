@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 并行计算：Flynn分类、多处理器架构、并行算法、GPU计算与性能模型
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/015-StorageSystem'
   - 'cs-fundamentals/016-BusAndInterface'

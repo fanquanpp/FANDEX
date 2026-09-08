@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL物理复制槽：防止WAL清理、复制槽管理、活跃槽与堆积风险
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/026-StreamingReplication'
   - 'postgresql/027-CascadingReplication'

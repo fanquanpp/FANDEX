@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL约束机制：NOT NULL、UNIQUE、PRIMARY KEY、FOREIGN KEY、CHECK约束的语法、行为与最佳实践
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/013-SQLPracticeInterview'
   - 'sql/014-DataType'

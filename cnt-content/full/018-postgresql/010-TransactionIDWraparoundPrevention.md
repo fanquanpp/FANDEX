@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL事务ID回卷预防：XID机制、FREEZE、autovacuum_freeze_max_age与紧急处理
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/008-DeadlockDetectionHandling'
   - 'postgresql/009-VACUUMMechanism'

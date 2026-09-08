@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: TypeScript命名空间、ES模块、CommonJS模块、模块解析策略与声明文件详解。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/030-ThisTypePolymorphism'
   - 'typescript/031-SymbolsAndUniqueTypes'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript映射类型与键重映射详解：Mapped Types、as子句与高级模式。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'typescript/054-ConditionalTypeInfer'
   - 'typescript/055-TypeScriptCompilePerformanceOptimization'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java 8 Stream API流式操作、中间操作与终端操作、并行流与收集器详解。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/063-JVMMemoryModel'
   - 'java/029-LambdaFunctionalProgramming'

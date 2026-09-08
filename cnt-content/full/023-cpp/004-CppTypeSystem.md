@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C++ 基本类型、类型推导、类型转换与类型安全。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/002-CppOverviewAndModernStandard'
   - 'cpp/003-CppBasicSyntax'

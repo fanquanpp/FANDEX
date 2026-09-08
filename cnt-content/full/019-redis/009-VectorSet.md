@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis向量集Vector Set：高维向量存储、近似最近邻搜索与AI嵌入应用
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'redis/007-GeoSpatial'
   - 'redis/008-Stream'

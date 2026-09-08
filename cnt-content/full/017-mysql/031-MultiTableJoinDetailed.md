@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 内连接、外连接、交叉连接与自连接。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'mysql/029-TransactionIsolationImplementation'
   - 'mysql/030-MVCCPrinciple'

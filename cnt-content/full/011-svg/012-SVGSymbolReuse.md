@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: symbol、use、defs 复用机制与图标系统构建。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'svg/002-SVGBasicSyntaxDocStructure'
   - 'svg/014-SVGCSSStyling'

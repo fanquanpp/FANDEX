@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL分组与分组集：GROUP BY子句、ROLLUP、CUBE、GROUPING SETS多维分析、GROUPING函数与报表生成
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/017-FilterCondition'
   - 'sql/018-AggregateFunction'

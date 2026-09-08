@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Kubernetes网络模型：CNI、Pod网络、Service网络、Ingress 与网络策略详解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/013-KubernetesCore'
   - 'cloud-computing/014-CloudStorageService'

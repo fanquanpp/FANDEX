@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript 防抖（debounce）与节流（throttle）的形式化定义、速率限制理论、事件流调度算法、Lodash/VueUse/React Hooks 实现剖析与企业级性能优化实践，对标 MIT 6.831 用户界面工程与 CMU 17-445 软件工程课程水准。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'javascript/022-ES6NewFeatures'
   - 'javascript/020-DeepShallowCopy'

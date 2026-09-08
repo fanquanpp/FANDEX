@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: fetch 请求全解：流式读取、超时取消与错误语义。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'javascript/043-WebAPIBrowserInterface'
   - 'javascript/045-FetchApiWebStreams'

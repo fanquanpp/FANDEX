@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis 主从复制缓冲区机制：repl_backlog 环形缓冲区、全量同步与部分同步、缓冲区溢出与配置优化。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'redis/015-StringSDSStructure'
   - 'redis/016-SkipListAndSortedSet'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 压力测试与稳定性测试：JMeter、Gatling、Locust 的使用与指标分析。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'software-testing/016-AutomationTestFrameworkComparison'
   - 'software-testing/017-APIAutomationTestDetailed'

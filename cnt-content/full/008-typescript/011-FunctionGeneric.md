@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 函数类型签名、泛型约束、条件类型与推断。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/008-BasicTypeSystem'
   - 'typescript/009-InterfaceTypeAlias'

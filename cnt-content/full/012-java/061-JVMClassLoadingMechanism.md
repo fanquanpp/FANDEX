@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 类加载器、双亲委派模型、字节码增强与模块化类加载的系统性深度剖析
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/051-ConcurrencyBasics'
   - 'java/052-JUCConcurrency'

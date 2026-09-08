@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 并查集（Disjoint Set Union, DSU / Union-Find）数据结构的形式化定义、路径压缩与按秩合并的均摊复杂度分析（反 Ackermann 函数 α(n)）、Kruskal 最小生成树/连通分量/冗余连接等典型应用，附 Python/C++/Java 多语言实现。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'algorithm/001-AlgorithmAnalysisBasics'
   - 'algorithm/008-GraphAlgorithms'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 默认/隐式/显式/new/箭头四加一：this 指向的完整判定规则。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'javascript/008-FunctionScopeClosure'
   - 'javascript/007-ObjectArray'

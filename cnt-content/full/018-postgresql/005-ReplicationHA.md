@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 流复制、级联复制、逻辑复制、物理复制槽、逻辑解码、增量备份、订阅与发布、SSL/TLS、行级安全、pgcrypto、pgAudit。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/003-IndexQueryOptimization'
   - 'postgresql/004-AdvancedSQLExtension'

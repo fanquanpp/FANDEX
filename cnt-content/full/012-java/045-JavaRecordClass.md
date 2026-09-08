@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Record类与密封接口
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/098-JavaGraalVM'
   - 'java/096-JavaKubernetes'

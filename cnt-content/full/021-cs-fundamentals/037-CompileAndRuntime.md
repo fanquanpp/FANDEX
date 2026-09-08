@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 编译与运行时深度剖析：词法分析自动机构造、语法分析算法、语义分析、中间代码与SSA、优化技术、JIT编译、GC算法、链接与加载。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/035-ProgrammingLanguageTheory'
   - 'cs-fundamentals/036-NetworkProtocolDeep'

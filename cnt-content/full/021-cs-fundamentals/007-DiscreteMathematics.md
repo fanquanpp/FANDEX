@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 离散数学核心：逻辑与证明、集合与关系、图论、组合计数、代数结构、形式语言与自动机。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/005-ComputerNetwork'
   - 'cs-fundamentals/006-DigitalLogic'

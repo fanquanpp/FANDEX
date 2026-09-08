@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: '通过"没有组件 vs 有组件"的对比理解组件化：组件三段式结构、Props 传参、Slot 插槽、模板语法与作用域样式'
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'astro/003-PagesRouting'
   - 'astro/006-IslandsClientComponents'

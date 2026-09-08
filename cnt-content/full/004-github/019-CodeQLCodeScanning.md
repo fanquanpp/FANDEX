@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub CodeQL代码扫描详解：以安检机类比讲透语义分析原理、代码扫描配置、告警处理与自定义查询。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'github/017-IssuesTemplateTagMilestone'
   - 'github/018-SecretScanning'

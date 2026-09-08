@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 类型系统的高级编程模式、形式语义与生产级类型体操实战
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/026-ModuleResolutionModernToolchains'
   - 'typescript/027-AdvancedTypeCalculus'

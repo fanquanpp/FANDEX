@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Tailwind CSS 布局系统：Flex 与 Grid 布局原理（主轴/交叉轴、网格线/网格区域）、对应工具类映射、gap 间距、容器居中与定位，配大量布局示例
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'tailwind/003-UtilityCore'
   - 'tailwind/006-ResponsiveDark'

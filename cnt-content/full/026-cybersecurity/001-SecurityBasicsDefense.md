@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 防火墙策略配置、IDS/IPS入侵检测与防御、系统安全加固、对称/非对称加密算法、哈希算法、SSL/TLS协议。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cybersecurity/002-WebSecurityPenetrationTesting'
   - 'cybersecurity/003-BinarySecurityAndIncidentResponse'

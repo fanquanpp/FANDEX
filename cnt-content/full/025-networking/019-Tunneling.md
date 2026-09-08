@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络隧道技术：VxLAN、GRE、IPIP 原理与配置。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'networking/017-KeepalivedDualHotStandby'
   - 'networking/018-NetworkNamespaceVirtualBridge'

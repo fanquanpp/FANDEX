@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 类型守卫、自定义类型谓词、断言函数、判别式联合与生产级类型收窄实践，含形式化定义与工程级案例。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/017-ClassDecorator'
   - 'typescript/018-IntersectionTypeMerge'

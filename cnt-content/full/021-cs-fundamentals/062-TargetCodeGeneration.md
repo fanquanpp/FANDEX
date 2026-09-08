@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译器目标代码生成：寄存器分配、指令选择与指令调度。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/060-IntermediateCode'
   - 'cs-fundamentals/061-CodeOptimization'

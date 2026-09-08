@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: iframe、embed、object
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/021-AudioVideo'
   - 'html5/022-SVG'

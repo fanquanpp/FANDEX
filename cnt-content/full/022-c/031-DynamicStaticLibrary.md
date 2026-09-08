@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 库的创建、链接机制、符号解析、加载策略与跨平台实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/033-BuildSystem'
   - 'c/010-MultiFileCompilation'

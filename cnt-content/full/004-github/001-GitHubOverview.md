@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: GitHub 平台核心功能与协作开发流程：从注册账户、创建仓库到第一次提交的完整旅程。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'github/002-AccountRegister2FA'
   - 'github/003-RepositoryCreateCloneArchiveDelete'

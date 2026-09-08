@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS transition过渡、animation动画、关键帧、变换transform与性能优化详解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/027-BackgroundEnhancement'
   - 'css/023-CSS3GridGridLayout'

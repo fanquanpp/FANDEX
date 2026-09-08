@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL SELECT语句的逻辑执行顺序：FROM→JOIN→WHERE→GROUP BY→HAVING→SELECT→ORDER BY→LIMIT的完整解析
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/014-DataType'
   - 'sql/015-Constraint'

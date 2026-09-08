@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 异常机制、错误处理策略、性能分析与优化技巧。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/063-CppTemplate'
   - 'cpp/064-MemoryOrderLockFree'

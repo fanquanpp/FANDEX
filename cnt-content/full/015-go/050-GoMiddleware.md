@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go HTTP 中间件：Handler/HandlerFunc 接口、洋葱模型、Chain 组合律、context 传播、企业级网关实战
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'go/048-GoHTTP'
   - 'go/049-GoOAuth2'

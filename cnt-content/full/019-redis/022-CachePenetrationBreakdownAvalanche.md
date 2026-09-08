@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Redis 缓存三大问题：缓存穿透（布隆过滤器）、缓存击穿（互斥锁）、缓存雪崩（随机TTL）的原理与解决方案。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'redis/020-PipeTransactionAtomic'
   - 'redis/021-LuaScriptAtomicExecution'

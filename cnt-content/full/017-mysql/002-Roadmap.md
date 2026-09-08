@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 四周零基础 MySQL 学习时间线：每周学什么、读哪些文档、如何验收。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/001-HowToUseThisCourse'
   - 'mysql/004-SQLPlayground'

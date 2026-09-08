@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS自定义属性（变量）定义、作用域、动态更新、主题系统与最佳实践详解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/053-MobileAdaptation'
   - 'css/054-Function'

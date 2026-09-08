@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 虚拟化核心原理、Hypervisor分类、CPU/内存/IO虚拟化、容器虚拟化、硬件辅助虚拟化、虚拟机监控与迁移。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/004-IaC'
   - 'cloud-computing/005-IaaSPaaSSaaS'

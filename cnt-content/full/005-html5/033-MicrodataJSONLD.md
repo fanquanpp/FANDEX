@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Microdata与JSON-LD
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/034-CustomDataAttribute'
   - 'html5/035-CrossDocumentCommunication'

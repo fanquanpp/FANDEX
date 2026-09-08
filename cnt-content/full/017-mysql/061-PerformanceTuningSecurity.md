@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL性能调优：缓冲池配置、慢查询分析、performance_schema、安全认证、角色管理、在线DDL与XA事务
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/059-ReplicationHA'
   - 'mysql/060-InvisibleIndex'
