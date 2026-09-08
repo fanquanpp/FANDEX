@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用浏览器开发者工具定位“样式没生效”的四大原因：匹配、优先级、继承与覆盖。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/008-CSS3SelectorSystem'
   - 'css/010-PriorityCalculation'
@@ -44,7 +44,7 @@ Styles 面板下面有 Computed（计算后）标签，显示每个属性“最�
 
 ## 3. 覆盖样式追踪：找“谁赢了”
 
-在 Styles 面板里，被划掉的声明旁边通常有来源文件与行号。点击可跳到对应源码；悬停可看到覆盖它的规则。配合优先级速查（`css/012-CSSPriorityQuickStart`），就能判断是该改权重、改顺序，还是加更具体的类。
+在 Styles 面板里，被划掉的声明旁边通常有来源文件与行号。点击可跳到对应源码；悬停可看到覆盖它的规则。配合优先级速查（`css/013-CSSPriorityQuickStart`），就能判断是该改权重、改顺序，还是加更具体的类。
 
 **讲解：** 常见结论：第三方库样式覆盖不掉 → 你的选择器权重不够，而不是“库有问题”；“后写不生效” → 前面有更高权重的规则。
 
@@ -52,7 +52,7 @@ Styles 面板下面有 Computed（计算后）标签，显示每个属性“最�
 
 Elements 面板右上角有盒模型图：中间是 content，向外依次是 padding、border、margin，鼠标悬停会高亮页面上的对应区域。
 
-**讲解：** 布局“莫名其妙多了 20px”“两个盒子贴太近”这类问题，用盒模型图一眼就能看出是哪一层占的空间，再回到 `css/003-CSS3BoxModelDetailed` 查属性。
+**讲解：** 布局“莫名其妙多了 20px”“两个盒子贴太近”这类问题，用盒模型图一眼就能看出是哪一层占的空间，再回到 `css/004-CSS3BoxModelDetailed` 查属性。
 
 ## 5. 常见问题排查清单
 
@@ -93,7 +93,7 @@ Elements 面板右上角有盒模型图：中间是 content，向外依次是 pa
 
 ## 9. 扩展学习
 
-- 优先级速查：`css/012-CSSPriorityQuickStart`；
-- 优先级深入：`css/009-PriorityCalculation`；
-- 选择器匹配：`css/007-CSS3SelectorSystem`；
-- 盒模型：`css/003-CSS3BoxModelDetailed`。
+- 优先级速查：`css/013-CSSPriorityQuickStart`；
+- 优先级深入：`css/010-PriorityCalculation`；
+- 选择器匹配：`css/008-CSS3SelectorSystem`；
+- 盒模型：`css/004-CSS3BoxModelDetailed`。

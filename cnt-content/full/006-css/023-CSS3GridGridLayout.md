@@ -1879,7 +1879,7 @@ Grid 布局是一种强大的二维布局系统，具有以下优势：
 
 ## 扩展学习
 
-- 对比 Flexbox：`css/021-CSS3FlexboxFlexLayout`；
-- 响应式：`css/033-ResponsiveDesign`；
-- 实战：`css/067-CSSProjectExampleResponsiveHomepage`；
-- 简版速查：`css/068-Grid`。
+- 对比 Flexbox：`css/022-CSS3FlexboxFlexLayout`；
+- 响应式：`css/034-ResponsiveDesign`；
+- 实战：`css/068-CSSProjectExampleResponsiveHomepage`；
+- 简版速查：`css/069-Grid`。

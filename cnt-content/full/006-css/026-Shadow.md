@@ -573,7 +573,7 @@ box-shadow 沿盒子形状，drop-shadow 沿元素实际轮廓（适合 PNG 图�
 
 ## 扩展学习
 
-- 滤镜体系：`css/048-CSSFilters`；
-- 背景：`css/026-BackgroundEnhancement`；
-- 动画：`css/028-CSSAnimationTransition`；
-- 设计令牌：`css/035-CSSVariableCustomAttribute`。
+- 滤镜体系：`css/049-CSSFilters`；
+- 背景：`css/027-BackgroundEnhancement`；
+- 动画：`css/029-CSSAnimationTransition`；
+- 设计令牌：`css/036-CSSVariableCustomAttribute`。

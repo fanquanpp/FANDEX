@@ -1064,6 +1064,6 @@ li::before {
 
 ## 扩展学习
 
-- 变量：`css/035-CSSVariableCustomAttribute`；
-- 颜色：`css/034-ModernColorSpace`；
-- 响应式：`css/033-ResponsiveDesign`。
+- 变量：`css/036-CSSVariableCustomAttribute`；
+- 颜色：`css/035-ModernColorSpace`；
+- 响应式：`css/034-ResponsiveDesign`。

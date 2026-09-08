@@ -436,6 +436,6 @@ prerequisites: []
 
 ## 扩展学习
 
-- 完整教程：`css/022-CSS3GridGridLayout`；
-- 对比：`css/021-CSS3FlexboxFlexLayout`；
-- 实战：`css/067-CSSProjectExampleResponsiveHomepage`。
+- 完整教程：`css/023-CSS3GridGridLayout`；
+- 对比：`css/022-CSS3FlexboxFlexLayout`；
+- 实战：`css/068-CSSProjectExampleResponsiveHomepage`。

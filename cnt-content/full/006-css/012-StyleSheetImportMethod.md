@@ -121,6 +121,6 @@ CSS 有四种“上桌方式”：直接塞进标签（内联）、写在页面�
 
 ## 7. 扩展学习
 
-- 优先级：`css/009-PriorityCalculation`；
-- 性能：`css/060-CriticalRenderPathOptimization`；
-- 工程化：`css/056-PostCSS` 与构建工具的样式处理。
+- 优先级：`css/010-PriorityCalculation`；
+- 性能：`css/061-CriticalRenderPathOptimization`；
+- 工程化：`css/057-PostCSS` 与构建工具的样式处理。

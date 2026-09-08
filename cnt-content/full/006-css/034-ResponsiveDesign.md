@@ -926,7 +926,7 @@ img {
 
 ## 扩展学习
 
-- 媒体查询：`css/031-MediaQuery`；
-- 容器查询：`css/032-ContainerQuery`；
-- 移动适配：`css/052-MobileAdaptation`；
-- 响应式图片：`html5/019-ImageResponsiveImage`。
+- 媒体查询：`css/032-MediaQuery`；
+- 容器查询：`css/033-ContainerQuery`；
+- 移动适配：`css/053-MobileAdaptation`；
+- 响应式图片：`html5/020-ImageResponsiveImage`。

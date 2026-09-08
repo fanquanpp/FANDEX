@@ -1266,8 +1266,8 @@ li::before {
 
 ## 扩展学习
 
-- 选择器总览：`css/007-CSS3SelectorSystem`；
-- 优先级计算：`css/009-PriorityCalculation`；
-- 表单状态：`css/031-MediaQuery` 之外的 `:user-invalid` 等交互增强；
-- 嵌套与作用域：`css/071-CSSNesting`、`css/070-ScopeAtRule`；
-- 伪元素布局：`css/067-CSSProjectExampleResponsiveHomepage` 中的实际应用。
+- 选择器总览：`css/008-CSS3SelectorSystem`；
+- 优先级计算：`css/010-PriorityCalculation`；
+- 表单状态：`css/032-MediaQuery` 之外的 `:user-invalid` 等交互增强；
+- 嵌套与作用域：`css/072-CSSNesting`、`css/071-ScopeAtRule`；
+- 伪元素布局：`css/068-CSSProjectExampleResponsiveHomepage` 中的实际应用。

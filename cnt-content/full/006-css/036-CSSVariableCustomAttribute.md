@@ -1050,6 +1050,6 @@ body {
 
 ## 扩展学习
 
-- 主题实践：`css/001-CSS3OverviewBasicSyntax` 的变量章节；
-- 函数：`css/053-Function`；
-- 工程化：`css/043-CSSArchitectureMethodology`。
+- 主题实践：`css/002-CSS3OverviewBasicSyntax` 的变量章节；
+- 函数：`css/054-Function`；
+- 工程化：`css/044-CSSArchitectureMethodology`。

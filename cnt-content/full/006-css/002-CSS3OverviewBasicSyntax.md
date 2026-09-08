@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: CSS 发展历程、语法结构与层叠规则。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/004-CSS3BoxModelDetailed'
   - 'css/008-CSS3SelectorSystem'
@@ -59,7 +59,7 @@ prerequisites:
 
 1. **浏览器**：Chrome 或 Edge（本模块的调试演示均基于 Chrome DevTools）；
 2. **编辑器**：VS Code（或任意纯文本编辑器，记事本也可以）；
-3. **HTML 基础**：能写一个含 `<h1>` 与 `<p>` 标签的 `index.html`（HTML 入门见 `html5/006-HTML5OverviewCoreFeature`）。
+3. **HTML 基础**：能写一个含 `<h1>` 与 `<p>` 标签的 `index.html`（HTML 入门见 `html5/007-HTML5OverviewCoreFeature`）。
 
 不需要装任何额外软件，CSS 由浏览器直接解析，本模块所有示例都可用“一个 HTML 文件 + 一个 CSS 文件”复现。
 
@@ -109,7 +109,7 @@ h1 {
 - 说出 `px`/`em`/`rem` 的大致区别；
 - 按“三步急救法”排查样式不生效的常见原因。
 
-如果以上任一项答不上来，建议回头重读对应小节；都能回答，就可以进入 `css/003-CSS3BoxModelDetailed`。
+如果以上任一项答不上来，建议回头重读对应小节；都能回答，就可以进入 `css/004-CSS3BoxModelDetailed`。
 
 
 
@@ -527,7 +527,7 @@ CSS 变量（也称为自定义属性）允许你定义可重用的值，提高�
 
 - 用 `--` 前缀定义变量，用 `var(变量名)` 引用；
 - 变量写在 `:root` 中即全局可用，一处修改、全局生效；
-- 变量是运行时特性，可以被媒体查询与 JavaScript 动态覆盖（详见 `css/035-CSSVariableCustomAttribute`）。
+- 变量是运行时特性，可以被媒体查询与 JavaScript 动态覆盖（详见 `css/036-CSSVariableCustomAttribute`）。
 
 动手试试（2 分钟）：在 `:root` 中定义 `--main-color: #3498db` 与 `--spacing: 1rem`，在按钮样式中使用它们；改一处变量值，观察全局变化。
 
@@ -876,8 +876,8 @@ CSS3 是现代网页设计的重要组成部分，提供了丰富的特性和功
 ## 14. 扩展学习
 
 - CSS 历史：CSS1（1996）→ CSS2（1998）→ CSS2.1（2011）→ CSS3 模块化（2012 起），了解即可；
-- 选择器：`css/007-CSS3SelectorSystem` 系统掌握选择器；
-- 盒模型：`css/003-CSS3BoxModelDetailed` 理解尺寸计算；
-- 变量深入：`css/035-CSSVariableCustomAttribute` 作用域与动态主题；
-- 响应式：`css/033-ResponsiveDesign` 与 `css/031-MediaQuery`；
-- 工程化：`css/043-CSSArchitectureMethodology` 与 BEM 命名。
+- 选择器：`css/008-CSS3SelectorSystem` 系统掌握选择器；
+- 盒模型：`css/004-CSS3BoxModelDetailed` 理解尺寸计算；
+- 变量深入：`css/036-CSSVariableCustomAttribute` 作用域与动态主题；
+- 响应式：`css/034-ResponsiveDesign` 与 `css/032-MediaQuery`；
+- 工程化：`css/044-CSSArchitectureMethodology` 与 BEM 命名。

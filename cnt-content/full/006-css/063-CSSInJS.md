@@ -612,5 +612,5 @@ flowchart TD
 ## 扩展学习
 
 - React：`react/` 模块组件样式；
-- 模块化：`css/059-CSSModules`；
-- 架构：`css/043-CSSArchitectureMethodology`。
+- 模块化：`css/060-CSSModules`；
+- 架构：`css/044-CSSArchitectureMethodology`。

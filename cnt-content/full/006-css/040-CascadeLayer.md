@@ -514,6 +514,6 @@ p {
 
 ## 扩展学习
 
-- 优先级：`css/009-PriorityCalculation`；
-- 架构：`css/043-CSSArchitectureMethodology`；
-- 新特性：`css/064-CSSNewFeatures`。
+- 优先级：`css/010-PriorityCalculation`；
+- 架构：`css/044-CSSArchitectureMethodology`；
+- 新特性：`css/065-CSSNewFeatures`。

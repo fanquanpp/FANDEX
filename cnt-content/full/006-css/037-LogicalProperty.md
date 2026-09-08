@@ -124,6 +124,6 @@ border-end-end-radius: 8px; /* 行内结束 + 块结束 */
 
 ## 扩展学习
 
-- 排版：`css/044-TypographyAndGridSystem`；
-- 国际化：`html5/016-TextSemantic` 的 bdi 与方向；
-- 新特性：`css/064-CSSNewFeatures`。
+- 排版：`css/045-TypographyAndGridSystem`；
+- 国际化：`html5/017-TextSemantic` 的 bdi 与方向；
+- 新特性：`css/065-CSSNewFeatures`。

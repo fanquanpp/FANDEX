@@ -755,7 +755,7 @@ z-index 仅对定位元素生效；同一层叠上下文内比较；子元素无
 
 ## 扩展学习
 
-- 定位基础：`css/020-TraditionalLayoutTech`；
-- 层叠上下文：`css/016-StackingContext`；
-- 变换：`css/069-Transform3D`（transform 与包含块）；
-- 布局实战：`css/067-CSSProjectExampleResponsiveHomepage`。
+- 定位基础：`css/021-TraditionalLayoutTech`；
+- 层叠上下文：`css/017-StackingContext`；
+- 变换：`css/070-Transform3D`（transform 与包含块）；
+- 布局实战：`css/068-CSSProjectExampleResponsiveHomepage`。

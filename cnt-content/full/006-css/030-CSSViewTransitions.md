@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: View Transitions API 在页面状态切换时自动生成平滑过渡，支持自定义动画与跨文档过渡。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/029-CSSAnimationTransition'
   - 'css/065-CSSNewFeatures'
@@ -34,7 +34,7 @@ document.getElementById("switch").addEventListener("click", () => {
 });
 ```
 
-**讲解：** 回调里同步修改 DOM，浏览器自动为整个页面生成过渡。现代浏览器（Chrome/Edge/Safari 18+）均已支持，旧浏览器直接跳过动画，功能不受影响。
+**讲解：** 回调里同步修改 DOM，浏览器自动为整个页面生成过渡。Chrome/Edge 已稳定支持，Safari 18 起跟进，Firefox 的支持进度以 MDN/caniuse 为准；旧浏览器直接跳过动画，功能不受影响。
 
 ## 2. 命名视图：只让部分元素动
 
@@ -72,22 +72,32 @@ document.getElementById("switch").addEventListener("click", () => {
 
 ## 4. 跨文档过渡
 
+跨文档过渡让传统的多页面跳转（MPA）也拥有视图过渡，核心是 `@view-transition` at-rule：
+
 ```css
-/* 在 A 页面（列表）与 B 页面（详情）同时声明 */
-html {
-  view-transition-name: none;
+/* 在 A 页面（列表）与 B 页面（详情）同时声明：开启跨文档导航过渡 */
+@view-transition {
+  navigation: auto;
 }
+
+/* 两页中需要衔接的元素取同一个名字 */
 .article-card {
   view-transition-name: article;
 }
 ```
 
-**讲解：** 同源页面之间跳转时，只要新旧页面都有同名的 `view-transition-name` 元素，浏览器会自动衔接两页的该元素动画，实现“卡片从列表飞入详情”的效果。跨文档过渡要求页面处于同源，且不能阻止渲染。
+**讲解：** 声明 `@view-transition { navigation: auto; }` 后，同源页面之间的导航会被浏览器拦截为一次视图过渡：旧页面的截图与新页面的渲染自动衔接，两边同名 `view-transition-name` 的元素（如上例的 `.article-card`）直接做位置/尺寸补间，实现“卡片从列表飞入详情”。零 JS。
+
+三个硬条件：
+
+- 页面必须**同源**（协议、域名、端口一致），跨站导航不参与；
+- 旧页面不能被 `unload` 阻塞逻辑拖慢，且两边都要声明 `@view-transition`；
+- 跨文档过渡属较新能力：Chromium 系与较新的 Safari 已支持，Firefox 以 MDN/caniuse 为准，生产使用前查支持状态，不支持时导航行为完全正常（动画只是增强）。
 
 ## 5. 与动画/新特性的关系
 
-- `css/028-CSSAnimationTransition`：transition/keyframes 基础，是自定义过渡动画的前提；
-- `css/064-CSSNewFeatures`：视图过渡属于现代 CSS 新特性族，与容器查询、@scope 同期推进；
+- `css/029-CSSAnimationTransition`：transition/keyframes 基础，是自定义过渡动画的前提；
+- `css/065-CSSNewFeatures`：视图过渡属于现代 CSS 新特性族，与容器查询、@scope 同期推进；
 - 视图过渡适合“状态切换”而非“持续动画”，持续动效仍用 animation。
 
 ## 6. 动手试试
@@ -105,7 +115,7 @@ html {
 - 默认全页淡入淡出，无需写动画；
 - `view-transition-name` 让指定元素单独动画；
 - `::view-transition-old/new()` 定制旧/新画面层；
-- 跨文档过渡要求同源与同名视图；
+- 跨文档过渡用 `@view-transition { navigation: auto; }` 开启，要求同源与同名视图；
 - 不支持时静默降级为直接切换。
 
 ## 8. 注意事项与改进建议
@@ -119,7 +129,7 @@ html {
 
 ## 9. 扩展学习
 
-- 动画与过渡：`css/028-CSSAnimationTransition`；
-- 新特性总览：`css/064-CSSNewFeatures`；
-- 可访问性与减少动效：`css/045-AccessibleStyling`；
-- 滚动驱动动画：`css/030-CSSScrollDrivenAnimations`。
+- 动画与过渡：`css/029-CSSAnimationTransition`；
+- 新特性总览：`css/065-CSSNewFeatures`；
+- 可访问性与减少动效：`css/046-AccessibleStyling`；
+- 滚动驱动动画：`css/031-CSSScrollDrivenAnimations`。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 绝对/相对单位、rem/em 细节、视口单位与字体相对单位的选择与换算。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/054-Function'
   - 'css/005-TextAndFontsBasics'
@@ -101,7 +101,7 @@ code {
 | 容器占比 | `%` | 跟随父容器 |
 | 全屏/首屏区域 | `vh`/`dvh` | 跟随视口高度 |
 | 阅读行宽 | `ch` | 跟随字符度量 |
-| 流体字号 | `clamp()` + `vw` | 见 `css/053-Function` |
+| 流体字号 | `clamp()` + `vw` | 见 `css/054-Function` |
 
 ## 7. 动手试试
 
@@ -119,7 +119,7 @@ code {
 - `rem` 相对根字号，`em` 相对父级字号且会叠加；
 - `vw`/`vh` 相对视口，移动端优先 `dvh`；
 - `ch` 约等于一个字符宽，适合行宽限制；
-- 复杂场景用 `calc()`/`clamp()` 组合，见 `css/053-Function`。
+- 复杂场景用 `calc()`/`clamp()` 组合，见 `css/054-Function`。
 
 ## 9. 注意事项与改进建议
 
@@ -132,7 +132,7 @@ code {
 
 ## 10. 扩展学习
 
-- 函数与流体排版：`css/053-Function`；
-- 文本与字体基础：`css/004-TextAndFontsBasics`；
-- 响应式设计：`css/033-ResponsiveDesign`；
-- 移动端适配：`css/052-MobileAdaptation`。
+- 函数与流体排版：`css/054-Function`；
+- 文本与字体基础：`css/005-TextAndFontsBasics`；
+- 响应式设计：`css/034-ResponsiveDesign`；
+- 移动端适配：`css/053-MobileAdaptation`。

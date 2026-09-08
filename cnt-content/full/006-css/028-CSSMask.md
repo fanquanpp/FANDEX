@@ -91,7 +91,7 @@ prerequisites:
 - 兼容性：多数浏览器需要 `-webkit-` 前缀；
 - `clip-path` 是硬裁剪，`mask` 支持软过渡；
 - 两者都不改变元素布局占位；
-- 结合渐变函数使用最频繁，见 `css/024-Gradient`。
+- 结合渐变函数使用最频繁，见 `css/025-Gradient`。
 
 ## 7. 注意事项与改进建议
 
@@ -104,7 +104,7 @@ prerequisites:
 
 ## 8. 扩展学习
 
-- 背景体系：`css/026-BackgroundEnhancement`；
-- 渐变：`css/024-Gradient`；
-- 滤镜组合：`css/048-CSSFilters`；
-- 函数与图像处理：`css/053-Function`。
+- 背景体系：`css/027-BackgroundEnhancement`；
+- 渐变：`css/025-Gradient`；
+- 滤镜组合：`css/049-CSSFilters`；
+- 函数与图像处理：`css/054-Function`。
