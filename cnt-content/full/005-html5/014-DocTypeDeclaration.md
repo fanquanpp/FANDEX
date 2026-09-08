@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: DOCTYPE与HTML Living Standard
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/012-HTML5FormValidation'
   - 'html5/013-HTML5MultimediaCanvasDrawing'
@@ -103,14 +103,13 @@ if (document.compatMode === 'CSS1Compat') {
 
 ### 2.3 新特性演进时间线
 
-| 年份 | 新增特性                              |
-| ---- | ------------------------------------- |
-| 2020 | `loading="lazy"`                      |
-| 2021 | `<dialog>` 元素、`popover` 属性       |
-| 2022 | Container Queries、`:has()` 选择器    |
-| 2023 | View Transitions API、`<search>` 元素 |
-| 2024 | CSS Anchor Positioning                |
-| 2025 | Declarative Shadow DOM                |
+| 年份 | 新增特性                                                    |
+| ---- | ----------------------------------------------------------- |
+| 2020 | `loading="lazy"` 图片懒加载在各浏览器铺开                   |
+| 2022 | `<dialog>` 实现全浏览器兼容（Baseline 2022）、Container Queries、`:has()` 选择器 |
+| 2023 | `<search>` 元素进入标准、`popover` 属性首发（Chrome 114）、View Transitions API |
+| 2024 | `popover` 达成 Baseline、CSS Anchor Positioning（Chrome 125） |
+| 2025 | Invoker Commands 定名 `command`/`commandfor`（Chrome/Edge 135）、可定制 select 进入 Baseline |
 
 ## 3. DOCTYPE 最佳实践
 
@@ -146,8 +145,8 @@ if (document.compatMode === 'CSS1Compat') {
 
 ## 7. 扩展学习
 
-- 元数据：`html5/015-MetadataCharacterEncoding` 学习 charset 与编码声明优先级；
-- 渲染原理：`html5/037-CriticalRenderingPathAndResourceLoading` 理解解析与渲染流程；
-- 废弃标签：`html5/039-HTML5ObsoleteTags` 考古 font/center/frameset 等老标签与现代替代方案；
-- 盒模型差异：`css/003-CSS3BoxModelDetailed` 中怪异模式与标准模式的对比；
+- 元数据：`html5/016-MetadataCharacterEncoding` 学习 charset 与编码声明优先级；
+- 渲染原理：`html5/038-CriticalRenderingPathAndResourceLoading` 理解解析与渲染流程；
+- 废弃标签：`html5/040-HTML5ObsoleteTags` 考古 font/center/frameset 等老标签与现代替代方案；
+- 盒模型差异：`css/004-CSS3BoxModelDetailed` 中怪异模式与标准模式的对比；
 - 标准动态：持续关注 WHATWG HTML Living Standard 更新日志。

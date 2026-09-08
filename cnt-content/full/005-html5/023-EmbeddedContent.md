@@ -1985,8 +1985,8 @@ window.addEventListener('message', (event) => {
 
 ## 扩展学习
 
-- 通信进阶：`html5/034-CrossDocumentCommunication` 全面掌握 `postMessage`；
+- 通信进阶：`html5/035-CrossDocumentCommunication` 全面掌握 `postMessage`；
 - 安全：CSP 的 `frame-src` 与 `object-src` 指令（见 `css/` 或安全模块）；
-- 微前端：`html5/024-WebComponentsPWADevelopment` 对比 iframe 与 Web Components；
-- 性能：`html5/037-CriticalRenderingPathAndResourceLoading` 中第三方嵌入对 LCP 的影响；
+- 微前端：`html5/025-WebComponentsPWADevelopment` 对比 iframe 与 Web Components；
+- 性能：`html5/038-CriticalRenderingPathAndResourceLoading` 中第三方嵌入对 LCP 的影响；
 - 权限策略：MDN Permissions Policy 文档了解 `allow` 的完整取值。

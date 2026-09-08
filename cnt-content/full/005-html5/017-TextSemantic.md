@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: h1-h6、p、strong、em、mark、time、address
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/015-HTML5OfflineStorageWebAPI'
   - 'html5/016-MetadataCharacterEncoding'
@@ -285,7 +285,7 @@ E=mc<sup>2</sup>
 <ruby>日本<rt>にほん</rt></ruby>
 ```
 
-> 注音、`bdi`/`bdo` 双向文本与国际化排版的完整专项（含 `rp` 兜底写法、RTL 布局要点）见 `040-HTML5InternationalizationTags`。
+> 注音、`bdi`/`bdo` 双向文本与国际化排版的完整专项（含 `rp` 兜底写法、RTL 布局要点）见 `042-HTML5InternationalizationTags`。
 
 **rp 注音回退**
 ```html
@@ -331,7 +331,7 @@ E=mc<sup>2</sup>
 
 ## 扩展学习
 
-- 列表语义：`html5/017-List` 掌握 `ul`/`ol`/`dl` 的选择；
-- 链接语义：`html5/018-LinkageAnchor` 中链接文案与无障碍；
-- 无障碍：`html5/010-Accessibility` 中读屏如何消费文本语义；
-- 排版细节：`css/044-TypographyAndGridSystem` 控制文本的视觉呈现。
+- 列表语义：`html5/018-List` 掌握 `ul`/`ol`/`dl` 的选择；
+- 链接语义：`html5/019-LinkageAnchor` 中链接文案与无障碍；
+- 无障碍：`html5/011-Accessibility` 中读屏如何消费文本语义；
+- 排版细节：`css/045-TypographyAndGridSystem` 控制文本的视觉呈现。

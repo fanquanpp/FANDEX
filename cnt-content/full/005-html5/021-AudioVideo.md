@@ -388,8 +388,8 @@ video.play().then(() => {
 
 ## 扩展学习
 
-- 完整控制：`html5/012-HTML5MultimediaCanvasDrawing` 中自定义播放器与媒体 API；
+- 完整控制：`html5/013-HTML5MultimediaCanvasDrawing` 中自定义播放器与媒体 API；
 - 音频进阶：Web Audio API 节点图与音频可视化；
-- 性能：`html5/037-CriticalRenderingPathAndResourceLoading` 媒体预加载策略；
-- 无障碍：`html5/010-Accessibility` 中媒体替代文本与字幕规范；
-- 直播流：`html5/030-WebSocket` 与 MSE（Media Source Extensions）。
+- 性能：`html5/038-CriticalRenderingPathAndResourceLoading` 媒体预加载策略；
+- 无障碍：`html5/011-Accessibility` 中媒体替代文本与字幕规范；
+- 直播流：`html5/031-WebSocket` 与 MSE（Media Source Extensions）。

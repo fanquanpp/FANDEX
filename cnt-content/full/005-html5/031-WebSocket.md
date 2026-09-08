@@ -526,7 +526,7 @@ chat.send('Hello!');
 
 ## 扩展学习
 
-- 实时传输：`html5/031-WebRTC` 对比 WebSocket 与点对点媒体流；
+- 实时传输：`html5/032-WebRTC` 对比 WebSocket 与点对点媒体流；
 - 服务端：Node.js 的 `ws` 库与 Socket.IO 的使用；
 - 消息格式：JSON 协议设计（type/payload）与错误码约定；
-- 性能：`javascript/050-CoreWebVitalsAndPerformanceMetrics` 中长连接对资源的影响。
+- 性能：`javascript/051-CoreWebVitalsAndPerformanceMetrics` 中长连接对资源的影响。

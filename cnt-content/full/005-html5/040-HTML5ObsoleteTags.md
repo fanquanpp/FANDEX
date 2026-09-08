@@ -6,10 +6,11 @@ category: 前端技术
 difficulty: beginner
 description: 老网页和旧代码里必遇的废弃标签清单：font、center、frameset、marquee 等，附现代替代方案与遇到老项目时的处理思路。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/007-HTML5OverviewCoreFeature'
   - 'html5/014-DocTypeDeclaration'
+  - 'html5/044-HTMLNewElementsAndCapabilities'
 prerequisites:
   - 'html5/014-DocTypeDeclaration'
 ---
@@ -31,18 +32,31 @@ prerequisites:
 | `<font>` | 设置文字颜色/字号 | CSS：`color`、`font-size` |
 | `<center>` | 水平居中 | CSS：`text-align` 或 Flex/Grid |
 | `<big>` | 放大字号 | CSS：`font-size` |
-| `<small>` | 缩小字号 | 语义上用 `<small>` 表示辅助内容，字号交给 CSS |
+| `<strike>` | 删除线 | `<del>`（语义为"已删除"）或 CSS：`text-decoration` |
 | `<tt>` | 等宽字体 | CSS：`font-family: monospace` 或 `<code>` |
-| `<strike>` | 删除线 | `<del>` 或 CSS：`text-decoration` |
-| `<u>` | 下划线 | 语义用 `<ins>`，纯样式用 CSS（`u` 在 HTML5 中被重新定义为"无明确语义"） |
 | `<nobr>` | 禁止换行 | CSS：`white-space: nowrap` 或 `&nbsp;` |
 | `<marquee>` | 滚动文字 | CSS 动画或合理的交互设计 |
 | `<blink>` | 闪烁文字 | 不要做，闪烁对阅读和癫痫患者有害 |
 | `<acronym>` | 缩写词 | `<abbr>` |
 | `<applet>` | 嵌入 Java 小程序 | `<object>`、`<canvas>` 或普通脚本 |
+| `<keygen>` | 表单里生成密钥对 | 已从标准与主流浏览器移除；密钥场景用 Web Crypto API |
 | `<dir>` | 目录列表 | `<ul>` |
-| `<isindex>` | 单行搜索框 | `<form>` + `<input type="search">` |
+| `<isindex>` | 单行搜索框 | `<form>` + `<input type="search">`（搜索区域可用 `<search>` 包裹，见 044 专项） |
 | `<frameset>` / `<frame>` / `<noframes>` | 多框架布局 | 普通文档结构 + iframe（如确需嵌入） |
+
+### 容易误判：重新定义而非废弃
+
+有几个标签网上常被说成"废弃"，其实 HTML5 给了它们**新的语义**，是合法元素，不要见到就急着替换：
+
+| 标签 | 现行语义 | 使用场景 |
+| --- | --- | --- |
+| `<small>` | 附属细则（small print）：免责声明、版权注释 | `<small>© 2026 Example Inc.</small>` |
+| `<u>` | 无明确语义的注释（unarticulated annotation）：中文专名号、标记拼写错误 | 非文本注释类下划线；纯装饰下划线交给 CSS |
+| `<s>` | 不再准确/不再相关的内容（如改前的原价） | `<s>原价 99</s> 现价 59` |
+| `<b>` | 关键词、产品名等"引起注意但无强调语义"的文字 | 摘要里的关键词加粗 |
+| `<i>` | 术语、外文短语、想法声音等斜体语义 | `<i>凌波微步</i>`、外文词 |
+
+判断口诀：**"废弃"是标准让你别再用；"重新定义"是标准让你换个理由用**。以 WHATWG 规范与 MDN 的 "Deprecated" 标记为准，不要凭网上旧文下结论。
 
 ## 3. frameset 为什么被彻底移除
 
@@ -52,7 +66,7 @@ frameset 把浏览器窗口切成多个独立框架，问题有三：
 2. 地址栏 URL 不随框架内容变化，无法分享具体页面；
 3. 可访问性差，读屏软件无法理解"窗口碎片"。
 
-所以 HTML5 直接移除了 frameset/frame，现代嵌入需求用 `<iframe>`（见 021-EmbeddedContent）。
+所以 HTML5 直接移除了 frameset/frame，现代嵌入需求用 `<iframe>`（见 023-EmbeddedContent）。
 
 ## 4. 浏览器还认这些标签吗
 
@@ -92,4 +106,4 @@ frameset 把浏览器窗口切成多个独立框架，问题有三：
 
 ## 8. 下一步
 
-考古结束，回到主线。下一篇专项 `039-HTML5DialogPopoverGuide` 讲的是"未来"：`dialog` 与 `popover` 这两个现代交互组件。
+考古结束，回到主线。下一篇专项 `041-HTML5DialogPopoverGuide` 讲的是"未来"：`dialog` 与 `popover` 这两个现代交互组件。

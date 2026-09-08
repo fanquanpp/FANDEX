@@ -497,7 +497,7 @@ try {
 
 ## 扩展学习
 
-- 离线场景：`html5/028-ServiceWorkerPWA` 中 Service Worker（Worker 家族的一员）；
-- 数据缓存：`html5/014-HTML5OfflineStorageWebAPI` 中 Worker 与 IndexedDB 的配合；
-- 性能：`javascript/049-DebugPerformanceOptimization` 用性能面板分析主线程任务；
-- 并发模式：`javascript/027-AsyncConcurrencyControl` 对比异步任务与 Worker 的取舍。
+- 离线场景：`html5/029-ServiceWorkerPWA` 中 Service Worker（Worker 家族的一员）；
+- 数据缓存：`html5/015-HTML5OfflineStorageWebAPI` 中 Worker 与 IndexedDB 的配合；
+- 性能：`javascript/050-DebugPerformanceOptimization` 用性能面板分析主线程任务；
+- 并发模式：`javascript/028-AsyncConcurrencyControl` 对比异步任务与 Worker 的取舍。
