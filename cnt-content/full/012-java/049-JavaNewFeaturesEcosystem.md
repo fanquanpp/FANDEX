@@ -4,9 +4,9 @@ title: Java 新特性与生态
 module: 'java'
 category: 后端技术
 difficulty: advanced
-description: Java 21-24 新特性、模块系统、Spring Boot 3.x、构建工具与 GraalVM 原生镜像。
+description: Java 21-26 新特性、模块系统、Spring Boot 3.x/4.0、构建工具与 GraalVM 原生镜像。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/047-JavaModuleSystem'
   - 'java/074-JavaDatabaseConnection'
@@ -23,7 +23,7 @@ prerequisites:
 ## 学习目标
 
 - 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
-- 掌握「1. Java 21-24 新特性概览」的核心机制、典型用法与常见陷阱
+- 掌握「1. Java 21-26 新特性概览」的核心机制、典型用法与常见陷阱
 - 掌握「2. Java 模块系统（JPMS）」的核心机制、典型用法与常见陷阱
 - 掌握「3. Spring Boot 3.x 核心」的核心机制、典型用法与常见陷阱
 - 掌握「4. 构建工具」的核心机制、典型用法与常见陷阱
@@ -33,7 +33,7 @@ prerequisites:
 
 本篇是「Java 新特性与生态」进阶综述。
 
-第一遍只读：1. Java 21-24 新特性概览与 7. 小结；2-6 节（模块系统、Spring Boot 3、构建工具、JPackage、GraalVM）各有对应专篇，按需跳转。
+第一遍只读：1. Java 21-26 新特性概览与 7. 小结；2-6 节（模块系统、Spring Boot、构建工具、JPackage、GraalVM）各有对应专篇，按需跳转。
 
 可跳过：与本模块后续专篇重复的细节。
 
@@ -41,16 +41,18 @@ prerequisites:
 
 
 
-## 1. Java 21-24 新特性概览
+## 1. Java 21-26 新特性概览
 
-Java 自从切换到六个月发布周期后，每个 LTS 版本都带来了重要的语言和运行时改进。Java 21 是最新的 LTS 版本，Java 22 和 23 持续引入预览特性，Java 24 进一步巩固了这些改进。
+Java 自从切换到六个月发布周期后，每个 LTS 版本都带来了重要的语言和运行时改进。当前最新的 LTS 是 Java 25（2025-09），Java 22-24 与 Java 26（2026-03）在其间持续引入并巩固特性。
 
 | 版本    | 发布时间 | LTS | 关键特性                                                      |
 | :------ | :------- | :-- | :------------------------------------------------------------ |
 | Java 21 | 2023-09  | 是  | Virtual Threads、Record Patterns、Pattern Matching for switch |
-| Java 22 | 2024-03  | 否  | Unnamed Variables & Patterns、Stream Gatherers(预览)          |
-| Java 23 | 2024-09  | 否  | Primitive Types in Patterns(预览)、Module Import Declarations |
-| Java 24 | 2025-03  | 否  | Stream Gatherers(正式)、Compact Object Headers                |
+| Java 22 | 2024-03  | 否  | Unnamed Variables & Patterns、FFM 正式（JEP 454）、Stream Gatherers（预览） |
+| Java 23 | 2024-09  | 否  | Primitive Types in Patterns（预览）、Module Import Declarations（预览）、分代 ZGC 默认 |
+| Java 24 | 2025-03  | 否  | Stream Gatherers（正式，JEP 485）、Compact Object Headers（实验）、移除 ZGC 非分代模式 |
+| Java 25 | 2025-09  | 是  | Scoped Values（正式，JEP 506）、灵活构造器主体（JEP 513）、模块导入声明（JEP 511）、紧凑源文件与实例 main（JEP 512）、紧凑对象头（JEP 519） |
+| Java 26 | 2026-03  | 否  | HTTP/3 客户端（JEP 517）、AOT 对象缓存（JEP 516）、移除 Applet（JEP 504）、结构化并发第 6 次预览（JEP 525）、Lazy Constants 第 2 次预览（JEP 526） |
 
 ### 1.1 Virtual Threads（虚拟线程）
 
@@ -170,22 +172,17 @@ sequencedMap.sequencedEntrySet();
 sequencedMap.sequencedValues();
 ```
 
-### 1.5 String Templates（预览）
+### 1.5 String Templates（预览后已撤回）
 
-Java 21 引入了字符串模板的预览特性（注意：在后续版本中仍在演进）：
+Java 21 引入了字符串模板的预览特性。需要特别注意：由于设计争议（模板表达式的求值语义、与现有 API 的整合方式等），字符串模板在 JDK 23 的第二次预览后被**整体撤回**，JDK 24 起任何版本都不再包含该特性，官方正在重新设计中。
 
 ```java
-// 使用 STR 模板处理器
+// 以下代码仅作历史了解，在现行任何 JDK 上都无法编译：
 String message = STR."欢迎 \{name}，你的余额为 \{balance} 元";
 
-// 自定义模板处理器
-var JSON = StringTemplate.RAW;
-StringTemplate template = JSON."""
-    {
-        "name": "\{name}",
-        "age": \{age}
-    }
-    """;
+// 当前的生产替代方案：
+String message2 = "欢迎 %s，你的余额为 %s 元".formatted(name, balance);
+String message3 = String.format("欢迎 %s，你的余额为 %s 元", name, balance);
 ```
 
 ### 1.6 Unnamed Patterns & Variables
@@ -211,6 +208,39 @@ switch (shape) {
     case Circle(_) -> "圆形";
 }
 ```
+
+### 1.7 JDK 25 转正的语言特性速览
+
+JDK 25（LTS）一次性转正了四项来自 Amber 项目的语言特性，它们共同的目标是
+降低初学者的入门门槛、减少样板代码：
+
+```java
+// 1) 模块导入声明（JEP 511）：一次导入整个模块的所有导出包
+import module java.base;          // 等价于按需导入 java.util.*、java.io.*、java.math.* 等
+
+// 2) 紧凑源文件与实例 main（JEP 512）：无 class 声明、无 static、无 String[] 参数
+//    以下就是一个完整可运行的程序（假定文件名 Hello.java，JDK 25+）：
+//    void main() {
+//        System.out.println("Hello, Java 25!");
+//    }
+//    配合 java Hello.java 直接单文件运行，教学与脚本场景大幅简化
+
+// 3) 灵活构造器主体（JEP 513）：super(...) 之前允许执行语句，
+//    可以先校验参数再调用父类构造器
+class SaveUser extends User {
+    SaveUser(String name) {
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("name 不能为空"); // 早期校验
+        }
+        super(name); // 显式调用父类构造器可以不再是一行代码的首句
+    }
+}
+
+// 4) 作用域值（JEP 506）：ThreadLocal 的现代替代，见 048 示例 6
+```
+
+注意：结构化并发（JEP 525）截至 JDK 26 仍是第 6 次预览，尚未随这批特性转正，
+生产代码不应依赖。
 
 ## 2. Java 模块系统（JPMS）
 
@@ -260,6 +290,11 @@ jlink --module-path mods \
 ## 3. Spring Boot 3.x 核心
 
 Spring Boot 3.x 基于 Spring Framework 6，要求 Java 17+，全面拥抱 Jakarta EE 10 规范。
+
+> 版本时间线（2026-09）：Spring Boot 4.0 / Spring Framework 7 已于 2025-11 GA，
+> 基线仍为 Java 17+（推荐 Java 21+，Jakarta EE 11）。本节以 Boot 3.x 为教学内容，
+> 其自动配置、Actuator、Security 组件化等核心概念在 4.0 中保持延续；
+> 新项目可直接选择 Boot 4.x，但注意部分 API 与依赖坐标已随大版本升级调整。
 
 ### 3.1 自动配置原理
 
@@ -529,12 +564,13 @@ GraalVM 的 Native Image 技术可以将 Java 应用编译为独立的原生可�
 ### 6.1 基本使用
 
 ```bash
-# 安装 GraalVM
-sdk install java 21-graal
-sdk use java 21-graal
+# 安装 GraalVM（GraalVM for JDK 21+ 已内置 native-image，无需单独安装）
+sdk install java 21.0.2-graal
+sdk use java 21.0.2-graal
 
-# 安装 native-image
-gu install native-image
+# 验证 native-image 可用（旧版GraalVM 用 gu install 安装的方式已废弃，
+# GraalVM for JDK 21 起移除了 GraalVM Updater（gu），组件随发行版直接附带）
+native-image --version
 
 # 编译原生镜像
 native-image -jar myapp.jar myapp

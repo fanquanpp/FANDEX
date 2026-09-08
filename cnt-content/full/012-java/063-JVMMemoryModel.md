@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: JVM 内存模型深度解析：运行时数据区、JMM 形式化、分代 GC 算法、对象内存布局、现代收集器（G1/ZGC/Shenandoah）、内存调优与生产案例。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/053-ConcurrencyDetailed'
   - 'java/064-JVMtuning'
@@ -60,9 +60,10 @@ timeline
     2017: Java 9：G1 成为默认收集器 CMS 标记为 deprecated
     2018: Java 11 LTS：ZGC 实验性（JEP 333） 着色指针，< 10ms 停顿 Epsilon GC（无操作收集器，用于性能测试）
     2019: Java 12：G1 可中断混合收集（JEP 344） Shenandoah 加入 OpenJDK（Red Hat 主导）
-    2021: Java 17 LTS：ZGC 正式 GA（JEP 377） Shenandoah GA 偏向锁默认禁用（JEP 374）
-    2023: Java 21 LTS：ZGC 分代模式（JEP 439） 分代 ZGC：年轻代/老年代分离 Generational Shenandoah（2.0）
-    2024: Java 22-25 ZGC 进一步优化：非 NMT 内存管理 GraalVM Native Image AOT 主流化 CRaC（Coordinated Restore at Checkpoint）
+    2020: Java 15：ZGC 生产可用（JEP 377） Shenandoah 生产可用（JEP 379） 亚毫秒停顿进入生产
+    2021: Java 17 LTS：偏向锁默认禁用（JEP 374） ZGC/Shenandoah 生态固化
+    2023: Java 21 LTS：ZGC 分代模式（JEP 439） 分代 ZGC：年轻代/老年代分离
+    2024-2025: Java 23/24 分代 ZGC 成为默认（JEP 474）并移除非分代模式（JEP 490） Java 25 Generational Shenandoah GraalVM Native Image AOT 主流化 CRaC（Coordinated Restore at Checkpoint）
 ```
 
 ### 1.2 三大设计哲学

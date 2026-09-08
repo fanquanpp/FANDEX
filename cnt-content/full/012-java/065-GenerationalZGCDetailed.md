@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: JDK 21分代ZGC详解：原理、配置与调优。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/043-ReflectionDynamicProxy'
   - 'java/044-AnnotationProcessor'
@@ -46,7 +46,7 @@ prerequisites:
 
 ### ZGC 的诞生背景
 
-Java 9 时代，G1 已成为服务端主流 GC，但其在堆 > 16GB 时停顿随堆增长，无法满足低延迟 SLA。Azul 的 Pauseless GC（2005）证明并发转移可行，但工程实现复杂。Oracle 于 2017 年发起 ZGC 项目（JEP 377），目标是：无论堆大小、不论对象分配速率，单次 GC 停顿 < 10ms（实际 < 1ms）。
+Java 9 时代，G1 已成为服务端主流 GC，但其在堆 > 16GB 时停顿随堆增长，无法满足低延迟 SLA。Azul 的 Pauseless GC（2005）证明并发转移可行，但工程实现复杂。Oracle 于 2017 年发起 ZGC 项目（JEP 333），目标是：无论堆大小、不论对象分配速率，单次 GC 停顿 < 10ms（实际 < 1ms）。
 
 ### ZGC 演进时间线
 
@@ -57,11 +57,12 @@ Java 9 时代，G1 已成为服务端主流 GC，但其在堆 > 16GB 时停顿�
 | JDK 14 | JEP 364 | 支持 macOS | 跨平台 |
 | JDK 15 | JEP 377 | 生产可用（Production） | 撤销实验标记 |
 | JDK 16 | JEP 376 | 并发线程栈扫描 | 进一步降低停顿 |
-| JDK 17 | JEP 377 LTS | 增量调优、JFR 事件 | LTS 工业级可用 |
-| JDK 18 | JEP 416 | 改进的 finalize 处理 | 与 Cleaner 协同 |
-| JDK 21 | JEP 439 | 分代 ZGC 正式 GA | 引入分代假说 |
-| JDK 22 | — | 分代 ZGC 默认开启 | 全面替代非分代 |
-| JDK 23+ | — | 持续优化 remembered set | 减少屏障开销 |
+| JDK 17 | — | 无独立 ZGC JEP，性能与稳定性持续打磨 | LTS 上生产固化 |
+| JDK 18 | JEP 421 | Deprecate Finalization for Removal | GC 相关 API 收敛 |
+| JDK 21 | JEP 439 | 分代 ZGC 正式 GA（需 `-XX:+ZGenerational` 显式开启） | 引入分代假说 |
+| JDK 23 | JEP 474 | 分代 ZGC 成为默认模式 | 全面替代非分代 |
+| JDK 24 | JEP 490 | 移除非分代模式（旧开关一并失效） | 实现简化，只保留分代 |
+| JDK 25 | — | Generational Shenandoah | 代际假说推广到 Shenandoah |
 
 ### 为什么需要分代 ZGC？
 
@@ -507,9 +508,9 @@ application {
 
 ### 陷阱 1：未启用分代模式
 
-JDK 21 中分代 ZGC 需显式启用 `-XX:+ZGenerational`，JDK 22 起为默认。误用非分代 ZGC 会损失吞吐。
+JDK 21 中分代 ZGC 需显式启用 `-XX:+ZGenerational`，JDK 23 起成为默认（JEP 474）；JDK 24（JEP 490）已移除非分代模式，`-XX:-ZGenerational` 开关随之失效。误用已不存在的非分代选项会损失吞吐或直接报错。
 
-**正确做法**：JDK 21 必须显式启用；JDK 22+ 可省略。
+**正确做法**：JDK 21/22 必须显式启用 `-XX:+ZGenerational`；JDK 23+ 默认即分代，无需任何开关（JDK 24 起旧开关已移除）。
 
 ### 陷阱 2：堆大小过小
 
@@ -851,7 +852,7 @@ C. `-XX:+UseZGC -XX:+ZGenerational`
 D. `-XX:+UseG1GC -XX:+ZGenerational`
 
 **答案**：C
-**解析**：JDK 21 中分代 ZGC 需同时启用 ZGC 与分代模式。JDK 22 起 `ZGenerational` 为默认。
+**解析**：JDK 21 中分代 ZGC 需同时启用 ZGC 与分代模式。JDK 23 起（JEP 474）分代成为默认，JDK 24（JEP 490）移除非分代模式。
 
 **2. ZGC 染色指针使用 64 位指针的哪些位编码对象状态？**
 

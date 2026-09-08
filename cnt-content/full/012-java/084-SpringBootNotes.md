@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Spring Boot 深度指南：自动配置原理、起步依赖、Actuator、Spring Data JPA、Spring Security、Spring Cloud 与生产级工程实践。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/029-LambdaFunctionalProgramming'
   - 'java/072-NetworkProgramming'
@@ -64,7 +64,7 @@ timeline
     2022: Spring Boot 3.0 GA（11 月），基于 Spring Framework 6，Jakarta EE 9+，GraalVM Native Image（AOT），Java 17 最低要求，Micrometer Tracing
     2023: Spring Boot 3.1：Docker Compose 支持、ConnectionDetails 抽象；3.2：虚拟线程、JVM Checkpoint Restore（CRaC）
     2024: Spring Boot 3.3：Native Image 优化、structured logging、Packet Capture
-    2025: Spring Boot 3.4 / 4.0 路线图，HTTP Interface Client 增强，更深入 AOT 优化
+    2025: Spring Boot 3.4 / 3.5（3.x 末期线）；11 月 Spring Boot 4.0 GA：基于 Spring Framework 7，Java 17+ 基线（推荐 21+），Jakarta EE 11，API 手册与依赖坐标有较大调整
 ```
 
 ### 1.2 三大设计哲学
