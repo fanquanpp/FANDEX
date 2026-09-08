@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React中Canvas绘图
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'react/032-ReactAccessibility'
   - 'react/033-ReactPWA'

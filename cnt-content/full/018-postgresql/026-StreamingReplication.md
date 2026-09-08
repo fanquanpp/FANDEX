@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL流复制：同步复制、异步复制、WAL流传输与复制配置
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/024-ExtensionModule'
   - 'postgresql/025-FDWForeignDataWrapper'

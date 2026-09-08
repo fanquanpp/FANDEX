@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: let、run、with、apply、also 五大作用域函数深度剖析
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'kotlin/017-ExtensionFunction'
   - 'kotlin/021-KotlinCollectionOperation'

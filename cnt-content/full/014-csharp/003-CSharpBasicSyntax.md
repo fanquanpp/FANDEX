@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 变量与类型、值类型与引用类型、字符串插值、模式匹配、控制流、nullable 引用类型、顶级语句
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'csharp/002-CSharpOverviewEnvSetup'
   - 'csharp/004-CSharpOOP'

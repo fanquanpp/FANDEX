@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: go-redis客户端
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'go/026-GoKubernetes'
   - 'go/030-GoDatabase'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL复制架构：binlog格式、半同步/异步/延迟/组复制、InnoDB Cluster、备份恢复策略
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/057-VectorType'
   - 'mysql/058-JSONSchemaValidationAggregate'

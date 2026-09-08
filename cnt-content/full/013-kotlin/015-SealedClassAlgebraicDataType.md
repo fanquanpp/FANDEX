@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 密封类、密封接口与代数数据类型（ADT）的原理、形式化与实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'kotlin/014-NullSafetyDetailed'
   - 'kotlin/017-ExtensionFunction'

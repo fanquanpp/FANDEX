@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL 并发控制核心机制：乐观锁（版本号/CAS）与悲观锁（SELECT FOR UPDATE）的原理、适用场景与实现细节。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/039-WindowFunctionFramework'
   - 'sql/040-RecursiveCTETreeTraversal'

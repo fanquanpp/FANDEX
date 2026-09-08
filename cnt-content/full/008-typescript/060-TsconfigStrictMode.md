@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript tsconfig严格模式详解：strict、noImplicitAny、strictNullChecks等选项。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'typescript/058-TypeGymnastics'
   - 'typescript/059-ModuleDeclarationGlobalAugmentation'

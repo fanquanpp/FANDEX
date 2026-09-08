@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 进程控制块 PCB 与线程控制块 TCB 的结构、字段含义与调度关系。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/036-NetworkProtocolDeep'
   - 'cs-fundamentals/037-CompileAndRuntime'

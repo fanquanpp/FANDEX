@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 测试双（Test Double）：Mock、Stub、Spy、Fake 的区别与使用场景。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'software-testing/018-StressAndStabilityTest'
   - 'software-testing/019-SecurityTesting'

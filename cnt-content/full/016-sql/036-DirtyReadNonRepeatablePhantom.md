@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL并发异常：脏读、不可重复读、幻读的定义、示例、区别与防护策略
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/034-TransactionACIDProperty'
   - 'sql/035-IsolationLevel'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 软件工程：需求分析、设计模式、敏捷开发、测试策略与项目管理
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/021-InformationSecurityBasics'
   - 'cs-fundamentals/022-CompilePrinciple'

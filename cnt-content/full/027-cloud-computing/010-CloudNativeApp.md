@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 云原生应用设计、12-Factor方法论、容器化最佳实践、Kubernetes编排、服务网格集成、GitOps工作流。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/008-PublicCloudPrivateCloudHybridCloud'
   - 'cloud-computing/009-DockerDeepAnalysis'

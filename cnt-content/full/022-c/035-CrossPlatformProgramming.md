@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C 语言跨平台编程原理、抽象层设计与工程实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/033-BuildSystem'
   - 'c/034-StaticAnalysisDebug'

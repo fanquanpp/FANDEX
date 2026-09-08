@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React Compiler原理详解：自动记忆化、依赖分析与性能优化。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'react/037-ReactCICD'
   - 'react/038-ReactMonorepo'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: audio、video、source、track字幕
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/019-LinkageAnchor'
   - 'html5/020-ImageResponsiveImage'

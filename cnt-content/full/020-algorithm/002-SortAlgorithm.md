@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 排序（Sorting）算法的形式化定义、比较排序下界 $\Omega(n \log n)$ 的决策树证明、冒泡/选择/插入/希尔/归并/堆排/快排七大经典排序、计数/基数/桶排序三种线性时间非比较排序、内省排序（Musser 1997）与 Timsort（Peters 2002）的工业级混合方案，涵盖 von Neumann 1945 归并、Shell 1959 希尔、Hoare 1961 快排、Williams 1964 堆排、Musser 1997 内省、Peters 2002 Timsort 的历史脉络，附 Python/C++/Java 多语言实现。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'algorithm/001-AlgorithmAnalysisBasics'
   - 'algorithm/014-ArrayAndDynamicArray'

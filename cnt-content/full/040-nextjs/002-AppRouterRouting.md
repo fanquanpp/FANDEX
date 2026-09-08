@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 布局嵌套、动态路由、导航、加载与错误状态——App Router 文件约定的完整入门。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'nextjs/001-NextJS16Overview'
   - 'nextjs/003-DataFetchingCaching'

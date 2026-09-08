@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: C#反射与特性（Attribute）应用详解：从ECMA-335元数据到Source Generator的完整指南。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'csharp/030-AsyncAwaitStateMachine'
   - 'csharp/031-DelegateEventUnderlying'

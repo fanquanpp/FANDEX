@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 递归 CTE、PIVOT/UNPIVOT、GROUPING SETS、LATERAL JOIN、全文搜索与 JSON 查询
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/007-DDL'
   - 'sql/009-WindowFunction'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C语言内存对齐与结构体布局：alignof/alignas、填充规则、packed、缓存行对齐、AoS/SoA、伪共享与对齐分配器。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'c/016-GenericSelection'
   - 'c/024-ThreadConcurrency'

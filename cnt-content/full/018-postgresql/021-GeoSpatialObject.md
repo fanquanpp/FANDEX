@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL地理空间对象：PostGIS扩展、几何类型、空间索引与空间查询
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/020-FullTextSearch'
   - 'postgresql/022-StoredProcedureAndFunction'

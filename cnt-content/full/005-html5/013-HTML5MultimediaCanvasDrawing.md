@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: audio/video 元素、Canvas API 与 SVG 基础。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'html5/011-Accessibility'
   - 'html5/012-HTML5FormValidation'

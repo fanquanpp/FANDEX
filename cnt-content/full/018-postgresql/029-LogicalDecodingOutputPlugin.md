@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL逻辑解码与输出插件：逻辑复制基础、pgoutput、wal2json与CDC
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/027-CascadingReplication'
   - 'postgresql/028-PhysicalReplicationSlot'

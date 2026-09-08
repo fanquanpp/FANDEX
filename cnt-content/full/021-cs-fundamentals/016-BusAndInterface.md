@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 总线与接口：总线仲裁、总线协议、PCIe、USB、I2C、SPI与系统互连
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/014-DirectivePipeline'
   - 'cs-fundamentals/015-StorageSystem'

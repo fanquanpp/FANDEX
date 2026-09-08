@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: History API（pushState、replaceState）
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/029-ServiceWorkerPWA'
 prerequisites:

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Markdown转义机制：反斜杠转义规则、可转义字符列表与常见陷阱。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'markdown/006-ListSyntax'
   - 'markdown/009-Footnote'

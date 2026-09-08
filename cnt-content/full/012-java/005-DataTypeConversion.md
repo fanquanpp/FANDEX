@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 基本类型、引用类型、自动装箱与类型转换规则。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/003-QuickStart'
   - 'java/004-ProgramStructureBasicSyntax'

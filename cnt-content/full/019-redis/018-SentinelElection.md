@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis Sentinel 哨兵选举机制：主观下线、客观下线、Leader 选举与 Raft 算法、故障转移流程。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'redis/016-SkipListAndSortedSet'
   - 'redis/017-ReplicationBuffer'

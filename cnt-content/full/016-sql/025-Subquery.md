@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL子查询：标量子查询、行子查询、表子查询、关联子查询的语法、语义与性能优化
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/023-SemiAntiJoin'
   - 'sql/024-LateralDerivedTable'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Vite 生产构建：build 配置、动态 import 与 manualChunks 分包、tree-shaking、资源压缩与产物体积分析
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'vite/009-Vite8Rolldown'
   - 'vite/008-PluginSystem'

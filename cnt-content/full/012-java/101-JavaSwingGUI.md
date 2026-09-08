@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Swing 组件体系、事件驱动与 GUI 应用开发。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/072-NetworkProgramming'
   - 'java/086-SpringCloudMicroserviceDevelopment'

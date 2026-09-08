@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL JSON_TABLE：标准化JSON处理、路径表达式、嵌套列与关系化输出
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/017-AdvancedSQL'
   - 'postgresql/018-MERGEStatementEnhancement'

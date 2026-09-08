@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL Memory存储引擎：内存表、哈希索引、表级锁、适用场景与限制
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/009-MyISAMStorageEngine'
   - 'mysql/010-SQLDataOperationQuery'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 合规与审计：等保2.0、GDPR、ISO27001、安全审计与合规自动化
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cybersecurity/017-HashAlgorithm'
   - 'cybersecurity/018-SecureDevelopment'

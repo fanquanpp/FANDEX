@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go 切片底层实现、SliceHeader 结构、扩容算法、内存布局、GC 交互与工程级最佳实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'go/011-GoStandardLibraryToolchain'
   - 'go/012-GoWebDevelopmentMicroservice'

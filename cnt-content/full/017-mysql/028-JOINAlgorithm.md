@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL JOIN算法：Nested Loop Join、Block Nested Loop、Hash Join的原理、适用场景与优化
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/026-DerivedTableOptimization'
   - 'mysql/027-GroupByOrderByOptimization'

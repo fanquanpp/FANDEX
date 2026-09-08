@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: GraalVM、Native Image、SubstrateVM、Truffle 框架与云原生 Java 的系统性深度剖析
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/010-MethodDetailed'
   - 'java/059-JavaVirtualThread'

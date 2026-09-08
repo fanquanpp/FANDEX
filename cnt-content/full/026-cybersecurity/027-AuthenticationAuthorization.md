@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 身份认证与访问控制：认证机制、OAuth2、JWT、RBAC/ABAC 等详解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cybersecurity/025-SecureCodingPrinciples'
   - 'cybersecurity/026-InputValidation'

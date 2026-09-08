@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown图片CDN加速方案：图床选择、CDN配置、懒加载与性能优化。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'markdown/019-AutoTOC'
   - 'markdown/020-AnchorJump'

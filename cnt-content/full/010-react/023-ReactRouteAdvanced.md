@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React Router高级用法
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'react/021-ReactTypeScript'
   - 'react/022-ReactTest'

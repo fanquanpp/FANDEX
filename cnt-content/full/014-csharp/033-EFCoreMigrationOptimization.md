@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Entity Framework Core迁移与性能优化详解：从Code First建模到跨数据库Provider的完整指南。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'csharp/031-DelegateEventUnderlying'
   - 'csharp/032-ReflectionAndFeatureApplication'

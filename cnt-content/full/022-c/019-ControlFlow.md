@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 条件判断、循环结构及其控制语句。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/024-ThreadConcurrency'
   - 'c/018-AlignmentMemoryLayout'

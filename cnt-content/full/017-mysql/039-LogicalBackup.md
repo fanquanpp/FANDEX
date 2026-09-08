@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL逻辑备份：mysqldump、mysqlpump的用法、选项、一致性备份与恢复流程
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/037-UndoLog'
   - 'mysql/038-LogSystem'

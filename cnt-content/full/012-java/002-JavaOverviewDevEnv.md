@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Java 发展历史、平台体系与开发环境搭建。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/003-QuickStart'
   - 'java/004-ProgramStructureBasicSyntax'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: axum Web 服务、serde 序列化、clap CLI、tracing 日志与项目实战
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'rust/012-RustAsyncTokio'
   - 'rust/011-RustTestingDebugging'

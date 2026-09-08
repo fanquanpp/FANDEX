@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 关键CSS内联、异步加载
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/059-CSSAtomic'
   - 'css/042-CSSNativeNesting'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 不写 API 也能改数据：'use server'、useActionState 与安全校验。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'nextjs/003-DataFetchingCaching'
   - 'nextjs/004-DeploymentOptimization'

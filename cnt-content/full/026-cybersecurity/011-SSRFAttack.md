@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 服务端请求伪造攻击原理、利用场景与防御策略详解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cybersecurity/010-SOC'
   - 'cybersecurity/012-MalwareAnalysis'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 可变参数模板(Variadic Templates)与折叠表达式(Fold Expressions)的完整原理、实现与工程实践
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'cpp/021-MultithreadingConcurrency'
   - 'cpp/022-TypeTraitsSFINAE'

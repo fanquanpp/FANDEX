@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C预处理器指令、宏定义与展开、条件编译、文件包含与常见陷阱详解。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/037-CAssemblyInteraction'
   - 'c/038-ArrayDetailed'

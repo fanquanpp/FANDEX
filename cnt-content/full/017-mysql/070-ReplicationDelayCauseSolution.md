@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL 主从复制延迟的根因分析：单线程回放、大事务、DDL、网络带宽，以及并行复制、半同步复制等解决方案。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/068-TwoPhaseCommit'
   - 'mysql/069-GapLockNextKeyLockSolutionPhantomRead'

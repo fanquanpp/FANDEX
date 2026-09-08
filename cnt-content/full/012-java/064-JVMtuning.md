@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: JVM调优详解：堆参数、GC日志、MAT分析、G1/ZGC调优、生产级性能工程。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/049-JavaNewFeaturesEcosystem'
   - 'java/011-ArrayDetailed'

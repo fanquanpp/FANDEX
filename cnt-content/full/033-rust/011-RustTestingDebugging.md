@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 'cargo test 与 #[test]、断言宏、cargo clippy、dbg! 与调试技巧'
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'rust/004-RustBasicSyntax'
   - 'rust/013-RustEcosystemProject'

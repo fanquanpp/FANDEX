@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: '拓扑排序（Topological Sort）算法：Arthur B. Kahn 1962《Topological Sorting of Large Networks》Communications of the ACM 5(11):558-562 DOI:10.1145/368996.369025 提出的入度法（Kahn 算法/BFS），与 Robert Endre Tarjan 1972《Depth-First Search and Linear Graph Algorithms》SIAM Journal on Computing 1(2):146-160 DOI:10.1137/0201010 给出的 DFS 后序逆序线性时间算法共同构成两大主流方案。Donald E. Knuth 在《The Art of Computer Programming, Volume 1: Fundamental Algorithms》§2.2.3 系统化讨论拓扑排序与计算机科学中的等价问题。本文涵盖 DAG（有向无环图）的形式化定义、Kahn 与 DFS 算法的正确性证明、与强连通分量（Tarjan 1972）及关键路径法（CPM, Kelly-Walker 1957；PERT, Malcolm-Roseboom-Clark-Fazar 1959）的关系、编译器依赖分析、Make/Build 系统、课程先修关系、并行任务调度等工业级应用，附 Python/C++/Java 多语言实现。'
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'algorithm/001-AlgorithmAnalysisBasics'
   - 'algorithm/008-GraphAlgorithms'

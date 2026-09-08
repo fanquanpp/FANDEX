@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 编程语言理论：类型系统、Lambda演算、语义学与程序验证
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/033-SoftwareSystemStructure'
   - 'cs-fundamentals/034-HCI'

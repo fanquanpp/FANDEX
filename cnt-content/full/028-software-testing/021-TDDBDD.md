@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: TDD 测试驱动开发与 BDD 行为驱动开发：红-绿-重构循环、Given-When-Then 模式。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'software-testing/019-SecurityTesting'
   - 'software-testing/020-TestDouble'

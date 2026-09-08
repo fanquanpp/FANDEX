@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Blazor WebAssembly与Server
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'csharp/020-SourceGenerator'
 prerequisites:

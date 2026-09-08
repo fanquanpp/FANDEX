@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React中WebSocket实时通信
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'react/027-ReactDesignPattern'
   - 'react/028-ReactWebAssembly'

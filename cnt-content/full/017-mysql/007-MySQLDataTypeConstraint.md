@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 数值、字符串、日期类型及主键、外键、唯一约束。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'mysql/005-MySQLOverviewDatabaseDesign'
   - 'mysql/006-MySQLEnvSetup'

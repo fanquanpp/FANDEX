@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub 仓库创建、克隆、归档、删除的完整操作指南：从开新店到关店的全流程向导。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'github/001-GitHubOverview'
   - 'github/002-AccountRegister2FA'

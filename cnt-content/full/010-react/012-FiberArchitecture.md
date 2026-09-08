@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React Fiber协调引擎
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'react/010-NextJSFullStack'
   - 'react/011-JSXDeepAnalysis'

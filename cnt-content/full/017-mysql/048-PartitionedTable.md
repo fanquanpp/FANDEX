@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL分区表：RANGE、LIST、HASH、KEY分区的语法、管理、裁剪与性能优化
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/046-GroupReplication'
   - 'mysql/049-ShardingMiddleware'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: svg 根元素、命名空间、defs/metadata/title、嵌套与分组。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'svg/001-SVGOverviewEnvSetup'
   - 'svg/003-SVGCoordinateSystemViewBox'

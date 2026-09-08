@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL分区表：范围分区、列表分区、哈希分区的语法、管理与分区裁剪
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/013-KNNVectorIndex'
   - 'postgresql/014-QueryOptimization'

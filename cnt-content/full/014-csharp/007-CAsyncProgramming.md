@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: APM/EAP/TAP 演化、async/await 状态机、Task/ValueTask、SynchronizationContext、ConfigureAwait、并行编程(TPL)、Channel、IAsyncEnumerable、异步流、常见陷阱与最佳实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'csharp/002-CSharpOverviewEnvSetup'
   - 'csharp/003-CSharpBasicSyntax'

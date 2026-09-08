@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: SpringBoot高级特性
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/008-OperatorExpression'
   - 'java/080-SpringBasicsIoCAOPBeanLifecycle'

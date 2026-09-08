@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 会话、JWT 与 proxy.ts：守住 Next.js 应用的入口。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'nextjs/003-DataFetchingCaching'
   - 'nextjs/004-DeploymentOptimization'

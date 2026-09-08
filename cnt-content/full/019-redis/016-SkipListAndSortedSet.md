@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis 跳表（Skiplist）数据结构详解：层级结构、概率晋升、有序集合 ZSET 的底层实现与范围查询。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'redis/014-ModuleSystem'
   - 'redis/015-StringSDSStructure'

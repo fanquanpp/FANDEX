@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Kotlin 委托属性深度解析：lazy、observable、vetoable、map 委托、provideDelegate 的设计哲学、形式化定义、字节码实现与企业级工程实践。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'kotlin/017-ExtensionFunction'
   - 'kotlin/015-SealedClassAlgebraicDataType'

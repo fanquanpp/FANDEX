@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 条件类型与 infer 关键字详解：Conditional Types、分布式条件类型、类型推断与模式匹配的形式语义、工程实践与生产级应用。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'typescript/052-SatisfiesOperator'
   - 'typescript/053-TypeScriptMigrationPractice'

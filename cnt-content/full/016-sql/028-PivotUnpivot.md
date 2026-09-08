@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL PIVOT与UNPIVOT：行列转换的语法、条件聚合实现、跨数据库兼容方案与性能优化
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/027-RecursiveCTE'
   - 'sql/029-SetOperation'

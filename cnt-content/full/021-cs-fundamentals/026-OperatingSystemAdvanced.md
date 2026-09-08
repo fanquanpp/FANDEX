@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 操作系统进阶：进程调度、死锁、内存管理、文件系统与I/O子系统
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/024-DatabaseSystemPrinciple'
   - 'cs-fundamentals/025-CompilePrincipleAdvanced'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 对称加密原理：AES、DES、3DES、ChaCha20 等算法详解与对比。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cybersecurity/012-MalwareAnalysis'
   - 'cybersecurity/013-CloudSecurity'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 线程创建、同步机制、线程池与并发工具。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/039-GenericDetailed'
   - 'java/028-IOStreamFileOperation'

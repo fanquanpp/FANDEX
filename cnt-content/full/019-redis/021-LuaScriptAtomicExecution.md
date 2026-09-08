@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis Lua 脚本原子执行机制：EVAL/EVALSHA、脚本缓存、沙箱限制、调试与性能优化。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'redis/019-RedisClusterHashSlot'
   - 'redis/020-PipeTransactionAtomic'

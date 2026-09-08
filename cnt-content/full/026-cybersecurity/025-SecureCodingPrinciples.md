@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 安全编码实践：OWASP Top 10、安全编码原则、威胁建模与代码审计详解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cybersecurity/023-InformationGathering'
   - 'cybersecurity/024-VulnerabilityScan'

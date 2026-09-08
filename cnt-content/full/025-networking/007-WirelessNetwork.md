@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 无线网络：WiFi标准、WLAN架构、无线安全、无线规划与优化
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'networking/005-SwitchingAndRouting'
   - 'networking/006-NetworkSecurityTech'

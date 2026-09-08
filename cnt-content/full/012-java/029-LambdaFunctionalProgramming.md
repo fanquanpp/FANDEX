@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java 8 Lambda表达式、函数式接口、方法引用与函数式编程范式详解。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/050-MultithreadingBasics'
   - 'java/063-JVMMemoryModel'

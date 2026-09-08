@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: flex 容器与项目属性、对齐方式与常见布局模式。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'css/008-CSS3SelectorSystem'
   - 'css/021-TraditionalLayoutTech'

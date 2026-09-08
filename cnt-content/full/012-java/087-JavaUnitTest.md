@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: JUnit 5 Jupiter API、Mockito 桩件框架、AssertJ 流式断言、Spring Boot Test 测试切片、Testcontainers 集成测试、JMH 微基准测试与 TDD/BDD 工程实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/071-JavaNetworkProgramming'
   - 'java/088-JavaLogSystem'

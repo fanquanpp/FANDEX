@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL查询优化：统计信息ANALYZE、代价估算、执行计划EXPLAIN与优化器提示
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/012-CoveringIndexPartialIndex'
   - 'postgresql/013-KNNVectorIndex'

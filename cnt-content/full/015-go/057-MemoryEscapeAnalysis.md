@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 'Go内存逃逸分析详解：go build -gcflags="-m"。'
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'go/055-ConcurrencyPattern'
   - 'go/056-ReflectionGenericFunction'

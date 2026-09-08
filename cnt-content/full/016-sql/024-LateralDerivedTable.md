@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL LATERAL派生表：横向连接的语法、关联子查询展开、逐行生成结果与性能优化
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/022-SelfJoin'
   - 'sql/023-SemiAntiJoin'

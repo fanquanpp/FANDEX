@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Next.js SSR/SSG/ISR
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'react/024-ReactI18n'
   - 'react/025-ReactAnimation'

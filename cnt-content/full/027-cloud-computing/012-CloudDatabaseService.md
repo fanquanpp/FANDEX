@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 云数据库服务选型、托管关系型数据库、云原生数据库、NoSQL托管服务、数据库迁移策略、多区域复制与容灾。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/010-CloudNativeApp'
   - 'cloud-computing/011-KubernetesArchitecture'

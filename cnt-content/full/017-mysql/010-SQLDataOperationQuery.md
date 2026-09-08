@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: INSERT/UPDATE/DELETE、SELECT 基础与条件查询。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'mysql/008-SQLDataDefinitionAdvanced'
   - 'mysql/009-MyISAMStorageEngine'

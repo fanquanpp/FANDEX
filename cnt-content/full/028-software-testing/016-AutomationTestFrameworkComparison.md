@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 自动化测试框架对比：Selenium、Cypress、Playwright、Puppeteer 的特性与选型。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'software-testing/015-WhiteBoxTestCoverage'
   - 'software-testing/017-APIAutomationTestDetailed'
