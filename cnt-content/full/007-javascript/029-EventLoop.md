@@ -263,8 +263,10 @@ Promise.resolve().then(() => {
 
 queueMicrotask(() => console.log('2: queueMicrotask'));
 
-// 输出顺序：1 → 2 → 3 → 4 → 5
-// 注意：Promise.then 与 queueMicrotask 同优先级，按 FIFO 顺序执行
+// 输出顺序：1 → 3 → 2 → 4 → 5
+// 关键：Promise.then 与 queueMicrotask 进入同一条 FIFO 微任务队列——
+// then(3) 先注册所以先执行；3 执行中新产生的 4 只能排在已入队的 2 之后，
+// 微任务不能插队到已在队列中的任务前面
 ```
 
 ### 3.4 微任务的优先级

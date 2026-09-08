@@ -21,9 +21,9 @@ Service Worker 是一段运行在页面之外的脚本，站在网页与网络�
 
 ## 前置知识
 
-- [网络存储](/module/javascript/046-StorageForTheWeb)：Cache Storage 与其他存储 API 同属浏览器持久化体系。
-- [Web API 与浏览器接口](/module/javascript/043-WebAPIBrowserInterface)：Service Worker 本质上是宿主提供的一组 Web API。
-- [fetch 与 AbortController](/module/javascript/044-FetchApiAndAbortController)：拦截层大量使用 fetch 与 Response 的知识。
+- [网络存储](/javascript/046-StorageForTheWeb)：Cache Storage 与其他存储 API 同属浏览器持久化体系。
+- [Web API 与浏览器接口](/javascript/043-WebAPIBrowserInterface)：Service Worker 本质上是宿主提供的一组 Web API。
+- [fetch 与 AbortController](/javascript/044-FetchApiAndAbortController)：拦截层大量使用 fetch 与 Response 的知识。
 
 ## 学习目标
 

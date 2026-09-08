@@ -72,6 +72,7 @@ Thompson 的实现采用**NFA（非确定有限自动机）**算法，通过构�
 | ES2020 | 2020 | `String.prototype.matchAll` |
 | ES2022 | 2022 | `d` 修饰符（indices 属性） |
 | ES2024 | 2024 | Unicode 15.1 属性支持、`v` 修饰符（集合操作） |
+| ES2025 | 2025 | `RegExp.escape`、内联修饰符 `(?ims-ims:...)`、重复命名捕获组 |
 
 ### 1.5 为什么 JavaScript 正则值得深入学习
 
@@ -2655,6 +2656,28 @@ let ok = "hello".isWellFormed();
 **基本写法：RegExp.escape 转义**
 `RegExp.escape(<字符串>)`
 ```javascript
-// 转义字符串中的正则特殊字符用于安全构建正则
+// 转义字符串中的正则特殊字符用于安全构建正则（ES2025）
 let escaped = RegExp.escape("a.b*c");
+```
+
+---
+
+**基本写法：内联修饰符（ES2025 RegExp Modifiers）**
+`/(?ims-ims:子模式)/`
+```javascript
+// 修饰符只作用于括号内的子模式：前半段区分大小写，后半段不区分
+let re = /HELLO(?i: World)/;
+re.test("HELLO world");  // true
+re.test("hello world");  // false，HELLO 部分仍区分大小写
+```
+
+---
+
+**基本写法：重复命名捕获组（ES2025）**
+`/(?<name>分支一)|(?<name>分支二)/`
+```javascript
+// 多分支复用同一组名，此前会直接报错，只能靠数字索引取值
+let date = /(?<year>\d{4})-(?<month>\d{2})|(?<month>\d{2})\/(?<year>\d{4})/;
+let m = "03/2026".match(date);
+console.log(m.groups);  // { year: '2026', month: '03' }
 ```

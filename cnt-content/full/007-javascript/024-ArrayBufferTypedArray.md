@@ -228,6 +228,6 @@ console.log(le ? "little-endian" : "big-endian");
 
 ## 扩展学习
 
-- 存储：`javascript/046-IndexedDBADatabaseInYourBrowser`；
-- 性能：`javascript/049-DebugPerformanceOptimization`；
-- 文件：`html5/014-HTML5OfflineStorageWebAPI`。
+- 存储：`javascript/047-IndexedDBADatabaseInYourBrowser`；
+- 性能：`javascript/050-DebugPerformanceOptimization`；
+- 文件：`html5/015-HTML5OfflineStorageWebAPI`。

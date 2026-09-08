@@ -133,14 +133,14 @@ const result = from([1, 2, 3, 4, 5])
 | 2021-06 | Stage 2 | 方法列表定型：`map/filter/take/drop/flatMap/reduce/toArray/forEach/some/every/find` |
 | 2022-03 | Stage 2 | 引入 `Iterator.from()` 静态方法；明确 `Iterator.prototype` 作为基类 |
 | 2023-03 | Stage 3 | 进入 Stage 3，规范文本定稿 |
-| 2024-03 | Stage 3 | V8 v12.0+、Safari 17.4+、Firefox 128+ 提供原生支持 |
-| 2025-06 | Stage 3→4 | 进入 Stage 4 候选，预计 ES2026 标准确认 |
+| 2024 | 引擎落地 | Chrome 122+（V8）、Safari 17.4+、Firefox 128+ 提供原生支持 |
+| 2025 | Stage 4 | 正式定稿，随 ES2025（第 16 版）发布 |
 
-### 1.5 与 ES2024 的关系
+### 1.5 与 ES2025 的关系
 
-ES2024 已正式收录 Iterator Helpers，所有主流浏览器的最新版本支持。Node.js 22+ 默认启用。
+ES2025（第 16 版）已正式收录同步 Iterator Helpers，所有主流浏览器的最新版本支持。Node.js 22+ 默认启用。
 
-> **本节描述的语法与行为基于 ES2024 正式规范**，可直接在生产环境使用（注意旧浏览器需 polyfill）。
+> **本节描述的语法与行为基于 ES2025 正式规范**，可直接在生产环境使用（注意旧浏览器需 polyfill）。
 
 ---
 
@@ -407,12 +407,12 @@ flowchart TD
 }
 ```
 
-### 4.3 ETL 流水线（ES2024）
+### 4.3 ETL 流水线（ES2025）
 
 ```javascript
 // src/etl.js
 // 使用Iterator Helpers构建惰性ETL流水线
-// ECMAScript: ES2024
+// ECMAScript: ES2025
 
 /**
  * 从数据库批量读取记录（伪代码）
@@ -476,7 +476,7 @@ console.log(`Processed ${total} records`);
 ```javascript
 // src/log-stream.js
 // 用Iterator Helpers处理无限日志流
-// ECMAScript: ES2024
+// ECMAScript: ES2025
 
 /**
  * 模拟无限日志生成器
@@ -542,7 +542,7 @@ export function countByLevel() {
 ```javascript
 // src/pagination.js
 // 用Iterator实现按需加载更多
-// ECMAScript: ES2024
+// ECMAScript: ES2025
 
 import React, { useState, useEffect } from 'react';
 
@@ -1061,7 +1061,7 @@ it.next();  // { done: true } — 不可恢复
 
 ### 7.4 与 AsyncIterator 配合
 
-ES2024 还引入了 `AsyncIterator` helpers（Stage 3 → 4）：
+与同步版本对应，`AsyncIterator` helpers 作为独立提案仍在推进中（尚未定稿，可用性以 MDN 为准）：
 
 ```javascript
 // 异步迭代器
@@ -1446,7 +1446,7 @@ const result = [1, 2, 3, 4, 5].values()
 
 ---
 
-*本文档基于 ES2024 正式规范撰写。生产环境使用前请确认目标环境支持，旧环境请引入 core-js polyfill。*
+*本文档基于 ES2025 正式规范撰写。生产环境使用前请确认目标环境支持，旧环境请引入 core-js polyfill。*
 ## Symbol 基础
 
 **基本写法：创建唯一值**

@@ -1,10 +1,10 @@
 ---
 order: 610
-title: ES2023-ES2025 新特性与 ES2026 展望
+title: ES2023-ES2026 新特性全景
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
-description: 按"解决什么问题"串讲 ES2023-ES2025 全部定稿特性，并展望 ES2026 的 Temporal 与显式资源管理。
+description: 按"解决什么问题"串讲 ES2023-ES2025 全部定稿特性，并梳理 ES2026/ES2027 批次的 Temporal、显式资源管理与其余定稿提案。
 author: fanquanpp
 updated: '2026-09-08'
 related:
@@ -19,15 +19,16 @@ prerequisites:
 
 ## 0. 一句话理解
 
-> ES2023 给了"非破坏性数组方法"，ES2024 给了"分组与 Promise.withResolvers"，ES2025 给了"迭代器辅助、Set 集合运算、Import Attributes 与正则三连"；ES2026 已经锁定 Temporal 与显式资源管理。本篇按年份串讲每个特性"解决什么问题、怎么用、边界在哪"。
+> ES2023 给了"非破坏性数组方法"，ES2024 给了"分组、Promise.withResolvers 与 RegExp v 标志"，ES2025 给了"迭代器辅助、Set 集合运算、Import Attributes 与正则三连"；ES2026 批次已锁定 Upsert、Array.fromAsync 等定稿提案，Temporal 与显式资源管理也已在 2026 年定稿。本篇按年份串讲每个特性"解决什么问题、怎么用、边界在哪"。
 
 ## 0.1 版本机制：为什么特性按年份命名
 
-TC39 从 ES2015 起采用**年度发布**节奏：每年 3 月冻结该年度进入 Stage 4 的提案集合，7 月发布新版 ECMA-262。因此：
+TC39 从 ES2015 起采用**年度发布**节奏：每年 3 月冻结该年度进入 Stage 4 的提案集合，6-7 月发布新版 ECMA-262。因此：
 
-1. **ES2025 = 2025 年 6 月定稿的第 16 版**，包含当年 3 月前全部升到 Stage 4 的提案；
-2. 想预判"明年有什么"，看 [TC39 提案仓库](https://github.com/tc39/proposals) 里 Stage 3 的队列即可；
-3. 运行时支持永远滞后于规范：ES2025 特性在 2025-2026 年才陆续进入浏览器与 Node（Node 24+/Chrome 134+ 覆盖度最好）。
+1. **ES2025 = 2025 年发布的第 16 版**，收录截止 2025 年 3 月前全部升到 Stage 4 的提案；
+2. 3 月截稿**之后**才进 Stage 4 的提案（无论何时定稿）自动进入下一年度版本——所以 2026 年定稿的 Temporal 预计随 ES2027 正式出版；
+3. 想预判"明年有什么"，看 [TC39 提案仓库](https://github.com/tc39/proposals) 里 Stage 3 的队列即可；
+4. 运行时支持永远滞后于规范：ES2025 特性在 2025-2026 年才陆续进入浏览器与 Node（Node 24+/Chrome 134+ 覆盖度最好）。
 
 ## 1. ES2023：数组的不变性与尾部查找
 
@@ -93,7 +94,24 @@ const moved = buf.transfer();  // 所有权转移，原 buf 长度归零
 
 这两个方法服务于 WebAssembly 内存与零拷贝场景，普通业务代码用得少，见到时理解语义即可。
 
-## 3. ES2025：本年度七大特性
+### 2.4 RegExp v 标志：字符类的集合运算
+
+`v` 标志（ES2024，RegExp v flag with set notation）是 `u` 标志的升级版，新增字符类内的**集合运算**与字符串级匹配：
+
+```javascript
+// 交集 &&：既是希腊字母又是 Letter
+/[\p{Script_Extensions=Greek}&&\p{Letter}]/v.test('π');  // true
+
+// 差集 --：字母但排除希腊字母
+/[\p{Letter}--\p{Script=Greek}]/v;
+
+// 支持嵌套字符类与字符串字面量（u 标志做不到）
+/[[a-z]--q]/v.test('r');  // true，小写字母去掉 q
+```
+
+与 `u` 的差异：`v` 中字符类必须「非嵌套地」书写集合运算；匹配对象可以是多码点的字符串（如 emoji 序列），这是 `u` 标志无法表达的。
+
+## 3. ES2025：定稿特性速览
 
 ### 3.1 Iterator Helpers：迭代器上的惰性链式调用
 
@@ -111,7 +129,7 @@ const result = [1, 2, 3, 4, 5].values()
   .toArray();  // [10, 30]
 ```
 
-可用方法：`map`、`filter`、`take`、`drop`、`flatMap`、`reduce`、`toArray`、`forEach`、`some`、`every`、`find`。无限迭代器（如生成器）只有配合 `take` 才安全。完整机制见 `javascript/031-IteratorHelper`。
+可用方法：`map`、`filter`、`take`、`drop`、`flatMap`、`reduce`、`toArray`、`forEach`、`some`、`every`、`find`，外加静态方法 `Iterator.from`。注意迭代器上**没有** `findLast`/`findLastIndex`（那是数组的专属方法）；无限迭代器（如生成器）只有配合 `take` 才安全。完整机制见 `javascript/031-IteratorHelper`。
 
 ### 3.2 Set 集合运算：告别手写差集
 
@@ -184,29 +202,106 @@ new DataView(buf).setFloat16(0, 1.5);  // DataView 同步支持
 
 面向 GPU 交互、机器学习推理数据交换等带宽敏感场景；精度只有约 3 位十进制有效数字，常规业务不要用。
 
-### 3.7 RegExp v 标志的补全（ES2024 交集/差集字符类）
+## 4. ES2026 批次与 2026 年定稿：已定稿的前沿
+
+按 3 月截稿规则，以下提案已全部定稿（Stage 4），将随 ES2026 或 ES2027 进入正式文本。它们不再是"提案前瞻"，可以开始规划采用；运行时落地进度以 MDN 为准。
+
+### 4.1 Temporal：现代日期时间 API
+
+Temporal 已于 **2026 年正式定稿（Stage 4）**，按年度发布节奏预计随 ES2027 正式出版。不可变类型、原生时区与历法支持，替代几乎所有 `Date` 的使用场景。完整教学见 `javascript/063-TemporalJavaScriptAPI`。
 
 ```javascript
-// v 标志支持字符类集合运算
-/[\p{Script_Extensions=Greek}&&\p{Letter}]/v;  // 希腊字母与字母的交集
+// 一行获得不可变、带时区的当前时间
+const meeting = Temporal.PlainDate.from('2026-12-01').add({ days: 30 });
 ```
-
-`u` 标志的升级版，支持 `&&`（交集）、`--`（差集）与嵌套字符类，写多语言匹配时明显更清晰。
-
-## 4. ES2026 展望：两个已锁定的大特性
-
-### 4.1 Temporal：进入标准
-
-Temporal 已于 2026 年升入 **Stage 4 并纳入 ES2026** 草案——历时九年的现代日期时间 API 正式定稿。不可变类型、原生时区与历法支持，替代几乎所有 `Date` 的使用场景。完整教学见 `javascript/063-TemporalJavaScriptAPI`。
 
 ### 4.2 显式资源管理：using 与 await using
 
-`using` 声明已在 2025 年 5 月进入 Stage 4，Chrome 134+ 与 Firefox 均已落地，是 ES2026 的核心特性之一：以确定性的方式释放文件句柄、数据库连接、事件监听器。完整教学见 `javascript/064-ExplicitResourceManagement`。
+显式资源管理（Explicit Resource Management）已于 2026 年定稿（预计随 ES2027 出版），`using` 语法在 Chrome 134+ 等引擎已先行落地，其余引擎以 MDN 为准。它以确定性方式释放文件句柄、数据库连接、事件监听器：
 
-### 4.3 仍在路上的提案
+```javascript
+{
+  using handle = acquireResource();  // 离开作用域自动调用 handle[Symbol.dispose]()
+  await using conn = await openDB(); // 异步资源用 await using，离开时等待异步释放
+}  // 此处确定性释放，无需等待 GC
+```
 
-- **装饰器（Decorators）**：仍停留 Stage 3（2022 年至今），TypeScript 5.x 与 Babel 可用，但尚未定稿；
-- **Pattern Matching、Pipeline Operator**：长期 Stage 1-2，生产环境继续观望。
+完整教学见 `javascript/064-ExplicitResourceManagement`。
+
+### 4.3 Upsert：Map.prototype.getOrInsert
+
+"不存在则插入"是最常见的 Map 操作模式，此前要写两行（`get` + `set`），并发场景还会竞态。Upsert 提案为 Map 与 WeakMap 提供原子语义的四个方法：
+
+```javascript
+const cache = new Map();
+
+// getOrInsert：键不存在时插入默认值，返回"最终值"
+const val1 = cache.getOrInsert('user:1', defaultValue());       // 默认值总是被求值
+// getOrInsertComputed：默认值惰性求值（键存在则跳过昂贵计算）
+const val2 = cache.getOrInsertComputed('user:2', buildExpensive);
+```
+
+命名与语义以最终规范文本为准；落地前可用 `if (!map.has(k)) map.set(k, v)` 等价替代。
+
+### 4.4 JSON.parse source text access：保留数字原始文本
+
+`JSON.parse` 会把 `1.0000` 解析成 `1`，损失金融/科学场景需要的原始精度。该提案提供 `JSON.rawJSON` 与 `JSON.isRawJSON`，并给 reviver 增加携带原始文本的上下文：
+
+```javascript
+// rawJSON：声明"这段文本按原样参与序列化"
+const price = JSON.rawJSON('1.0000');
+JSON.stringify({ price });        // '{"price":1.0000}'，不丢精度
+
+// reviver 的第二个参数携带 source 原始文本
+JSON.parse('{"n": 1.0000}', (key, value, context) => {
+  if (key === 'n') return context.source;  // '1.0000'
+  return value;
+});
+```
+
+Node 21+ 等运行时已提前实现 `JSON.rawJSON`，可用性较好。
+
+### 4.5 Iterator Sequencing 与数组之外的新入口
+
+`Iterator.concat`（Iterator Sequencing 提案）把多个可迭代对象惰性拼接为一个迭代器，不物化中间数组：
+
+```javascript
+// 惰性拼接：遍历完 a 再遍历 b，全程不复制元素
+const combined = Iterator.concat([1, 2], new Set([3, 4]));
+console.log([...combined]);  // [1, 2, 3, 4]
+```
+
+### 4.6 其他随批次定稿的内置能力
+
+| 能力 | API | 解决什么问题 |
+| --- | --- | --- |
+| Array.fromAsync | `await Array.fromAsync(gen)` | 把异步可迭代对象收集为数组，替代手写 for-await + push |
+| Error.isError | `Error.isError(v)` | 可靠判断"是不是 Error"（`instanceof` 跨 realm 会失效） |
+| Uint8Array base64/hex | `u8.toBase64()` / `Uint8Array.fromBase64(s)` / `toHex()` 等 | 浏览器原生编解码，替代手写 btoa 补丁 |
+| Math.sumPrecise | `Math.sumPrecise([0.1, 0.2])` | 补偿求和避免浮点误差累积，结果 `0.30000000000000004` 变为 `0.3` |
+
+```javascript
+// Array.fromAsync：一行收拢异步流
+const lines = await Array.fromAsync(readLines(file));
+
+// Math.sumPrecise：注意参数必须是可迭代的数字，不能直接传多个参数
+Math.sumPrecise([0.1, 0.2]);  // 0.3
+
+// Uint8Array 与 base64 双向转换
+const bytes = Uint8Array.fromBase64('aGVsbG8=');
+console.log(bytes.toBase64());  // 'aGVsbG8='
+```
+
+### 4.7 ES2027 批次前瞻（已定稿待出版）
+
+- **Atomics.pause**：自旋等待时提示 CPU，优化忙等场景的功耗与吞吐；
+- **Joint Iteration**：`Iterator.zip` / `Iterator.zipKeyed`，按位打包多个迭代器。
+
+### 4.8 仍在路上的提案（不得写成标准）
+
+- **装饰器（Decorators，含 Decorator Metadata）**：仍停留 Stage 3，TypeScript 5.x 与 Babel 可用，但尚未定稿；
+- **Source Phase Imports（`import source`）**、**延迟模块求值（`import defer`）**：Stage 3；
+- **iterator chunking/includes/join**、**Pattern Matching、Pipeline Operator**：Stage 2 及更早，生产环境继续观望。
 
 ## 5. 版本采用策略：transpile 还是 polyfill
 
@@ -227,4 +322,4 @@ Temporal 已于 2026 年升入 **Stage 4 并纳入 ES2026** 草案——历时�
 
 ## 7. 一句话记住
 
-> ES2023 管数组不可变，ES2024 管分组与 Promise 便利性，ES2025 补齐迭代器、Set 运算与正则；ES2026 已锁定 Temporal 与 `using`——升级节奏由 browserslist 决定，语法靠转译、内置靠垫片。
+> ES2023 管数组不可变，ES2024 管分组、Promise 便利性与 RegExp v 标志，ES2025 补齐迭代器、Set 运算与正则；ES2026 批次带来 Upsert、fromAsync 与 base64 原生编解码，Temporal 与 `using` 也已在 2026 年定稿——记住 3 月截稿规则就能推断归属，语法靠转译、内置靠垫片。
