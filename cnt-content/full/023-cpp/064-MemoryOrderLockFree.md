@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++内存序与无锁编程详解：std::memory_order、std::atomic、fence、ABA 问题与无锁数据结构。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/062-Cpp23NewFeatures'
   - 'cpp/063-CppTemplate'
@@ -68,10 +68,10 @@ C++11 模型基于 Java Memory Model（JSR-133）改良，但去掉了 Java 的 
 | :--- | :--- | :--- |
 | **C++11** | 引入 `std::atomic`、6 种 `std::memory_order`、`std::atomic_thread_fence`、`std::atomic_signal_fence`、`std::mutex` 系列 | N2348, N2752 |
 | **C++14** | `std::shared_timed_mutex` 用于读写锁；`constexpr` 原子操作 | N3659 |
-| **C++17** | `std::atomic_ref<T>` 对已有对象原子访问；`std::scoped_lock` 多锁获取 | P0019, P0156 |
-| **C++20** | `std::atomic_ref` 完善；`std::counting_semaphore`、`std::latch`、`std::barrier`；`std::atomic` 扩展到 `std::shared_ptr` | P1135, P0718 |
-| **C++23** | `std::atomic_ref<T>::required_alignment`；`std::flat_map` 等容器与原子协作；`std::move_only_function` 与原子 | P1889 |
-| **C++26** | Hazard pointer（P2530）、`std::rcu`（P2545）、`std::atomic_ref` 扩展到 floating-point（P2045）；`std::execution` 与无锁并发整合（草案） | P2530, P2545 |
+| **C++17** | `std::scoped_lock` 多锁获取；`memory_order_consume` 规范进入修订、临时不建议使用 | P0156 |
+| **C++20** | `std::atomic_ref<T>`（对已有对象的原子访问，P0019）；`std::counting_semaphore`、`std::latch`、`std::barrier`；`std::atomic` 扩展到 `std::shared_ptr`；`atomic::wait/notify` | P0019, P0718, P1135 |
+| **C++23** | `std::atomic` 增补 `fetch_min`/`fetch_max`（含浮点类型） | P0493 |
+| **C++26（草案）** | Hazard pointer（P2530）、`std::rcu`（P2545）；`std::execution` sender/receiver 框架（P2300）；`memory_order_consume` 正式废弃 | P2530, P2545, P2300 |
 
 ### 1.4 与其他语言的横向对比
 
@@ -87,7 +87,7 @@ C++11 模型基于 Java Memory Model（JSR-133）改良，但去掉了 Java 的 
 
 ### 2.1 C++ 内存模型基础
 
-C++ 内存模型将程序视为对抽象机器上内存位置的访问序列。形式化定义如下（ISO/IEC 14882:2023 §6.9.2）：
+C++ 内存模型将程序视为对抽象机器上内存位置的访问序列。形式化定义如下（ISO/IEC 14882:2024 §6.9.2）：
 
 - **内存位置（memory location）**：标量对象（如 `int`、`char`）或相邻位域组成的最大序列。
 - **求值（evaluation）**：包括 value computation（值计算）和 side effect（副作用，如写入内存）。
@@ -116,9 +116,9 @@ $$
 | 枚举值 | 语义 | 同步保证 |
 | :--- | :--- | :--- |
 | `memory_order_relaxed` | 仅保证原子性，不提供顺序保证 | 无 |
-| `memory_order_consume` | 当前线程内依赖该 load 的操作不能重排到 load 之前 | 数据依赖同步 |
+| `memory_order_consume` | 名义上仅约束「数据依赖」该 load 的操作；自 C++17 起规范进入修订、不建议使用，主流编译器一律按 acquire 实现，C++26 起正式废弃 | 事实等价于 acquire |
 | `memory_order_acquire` | 当前线程内后续的读/写不能重排到 load 之前 | 与 release 配对 |
-| `memory_order_release` | 当前线程内之前的读/写不能重排到 store 之后 | 与 acquire/consume 配对 |
+| `memory_order_release` | 当前线程内之前的读/写不能重排到 store 之后 | 与 acquire 配对 |
 | `memory_order_acq_rel` | load 与 store 都有相应保证 | acquire + release |
 | `memory_order_seq_cst` | 全局总序，所有线程观察到的顺序一致 | 最强 |
 
@@ -1273,7 +1273,7 @@ public:
 
 - **N2007**: Memory Model for C++ (Boehm, 2005) — C++ 内存模型奠基。
 - **N2348**: A Strong and Safe Memory Model for C++ (Boehm, 2007) — 最终版本。
-- **P0019**: atomic_ref (Halpern, 2017) — C++17 引入 atomic_ref。
+- **P0019**: atomic_ref (Halpern, 2017) — 提案于 2017 年提交，随 C++20 正式纳入标准。
 - **P1135**: The C++20 Synchronization Library — semaphore/latch/barrier。
 - **P2530**: Hazard Pointers for C++26 — hazard pointer 标准化。
 - **P2545**: Read-Copy-Update (RCU) for C++26 — RCU 标准化。

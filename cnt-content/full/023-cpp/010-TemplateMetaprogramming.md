@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 系统阐述 C++ 模板元编程（Template Metaprogramming, TMP）的理论与实践：从 Cfront 1989 到 C++23 Deducing this 的演进史、模板图灵完备性的形式化定义、SFINAE 与 Concepts 的形式化语义、模板实例化复杂度与编译期递归深度分析、模板特化与偏特化、可变参数模板与折叠表达式、CRTP/Expression Templates/Policy-Based Design/Type Erasure 等工程范式、Eigen/Boost.MPL/fmt/std::ranges 案例剖析、与 Rust/Java/Haskell/Zig/D 的对比分析、常见陷阱与习题，覆盖生产级 C++ 模板工程的全部核心知识。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/008-SmartPointerDeepDive'
   - 'cpp/006-RvalueReferenceMoveSemantics'
@@ -3374,7 +3374,7 @@ Concepts 的错误诊断优势源于其约束的「原子化」。当 `save(Some
 
 ### 16.1 标准与技术报告
 
-1. ISO/IEC. 2023. _Information technology — Programming languages — C++_. ISO/IEC 14882:2023, Eighth edition. International Organization for Standardization.
+1. ISO/IEC. 2024. _Information technology — Programming languages — C++_. ISO/IEC 14882:2024, Seventh edition. International Organization for Standardization.
 
 2. ISO/IEC WG21. 2003. _N1510: A Proposal for the Addition of Variadic Templates to the C++ Language_. ISO C++ Committee technical report.
 

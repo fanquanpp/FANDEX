@@ -6,10 +6,23 @@ category: 计算机科学
 difficulty: beginner
 description: C++20 新特性汇总 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-30'
-related: []
-prerequisites: []
+updated: '2026-09-08'
+related:
+  - 'cpp/002-CppOverviewAndModernStandard'
+  - 'cpp/011-Cpp20Range'
+  - 'cpp/060-Cpp20Coroutine'
+  - 'cpp/061-Cpp20Concept'
+  - 'cpp/012-Cpp20Module'
+  - 'cpp/062-Cpp23NewFeatures'
+prerequisites:
+  - 'cpp/002-CppOverviewAndModernStandard'
 ---
+
+## 标准状态
+
+C++20 即 ISO/IEC 14882:2020（2020 年正式发布），是近年最重大的一次标准更新。
+本文按「四大核心特性 → 语言特性 → 库特性 → 容器与算法」给出速查式汇总；
+深度讲解见文末 related 中的 Ranges / 协程 / 概念 / 模块专篇。
 
 ## 四大核心特性
 
@@ -63,7 +76,8 @@ int main() { return add(1, 2); }
 `co_await / co_yield / co_return`
 ```cpp
 #include <coroutine>
-// 生成器
+// 生成器（promise_type 五个必需成员：get_return_object / initial_suspend /
+// final_suspend / unhandled_exception，以及 yield_value 或 return_void）
 struct Generator {
     struct promise_type {
         int value;
@@ -74,6 +88,7 @@ struct Generator {
         std::suspend_always final_suspend() noexcept { return {}; }
         std::suspend_always yield_value(int v) { value = v; return {}; }
         void return_void() {}
+        void unhandled_exception() { throw; }  // 必需：协程内异常外抛策略
     };
     std::coroutine_handle<promise_type> h;
 };
@@ -249,11 +264,11 @@ auto it = std::ranges::find(v, 4);
 `std::views::iota / repeat`
 ```cpp
 #include <ranges>
-// 无限序列
-for (int i : std::views::iota(1) | std::views::take(5)) {
-    std::cout << i; // 12345
+// 无限序列（C++20）
+for (int i : std::views::iota(1) | std::views::take(3)) {
+    std::cout << i; // 123
 }
-// 重复
+// 重复（views::repeat 是 C++23 新增，注意归属）
 for (auto x : std::views::repeat(42) | std::views::take(3)) {
     std::cout << x; // 424242
 }

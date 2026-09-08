@@ -2236,7 +2236,7 @@ public:
 ### 11.1 标准与规范
 
 - ISO/IEC 14882:2020（C++20 标准）第 9.2.6 节"constexpr and consteval functions"。
-- ISO/IEC 14882:2023（C++23 标准）第 9.2.6 节与"if consteval"相关章节。
+- ISO/IEC 14882:2024（C++23 标准）第 9.2.6 节与"if consteval"相关章节。
 - cppreference.com 的 [constexpr](https://en.cppreference.com/w/cpp/language/constexpr)、[consteval](https://en.cppreference.com/w/cpp/language/consteval)、[constinit](https://en.cppreference.com/w/cpp/language/constinit) 条目。
 
 ### 11.2 经典书籍

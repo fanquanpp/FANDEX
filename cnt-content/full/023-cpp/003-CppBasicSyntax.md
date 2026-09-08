@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++ 基本语法、注释、标识符与关键字。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/002-CppOverviewAndModernStandard'
   - 'cpp/004-CppTypeSystem'
@@ -52,6 +52,11 @@ C++ 具有丰富的类型系统，分为基本类型和复合类型。
 | `long double`        | 长双精度浮点数         | 8 或 16     | `long double ld = 3.14159265358979323846;`       |
 | **布尔类型**         |                        |             |                                                  |
 | `bool`               | 布尔值                 | 1           | `bool is_valid = true;`                          |
+
+> 注意：C++ 标准只规定各类型的**最小宽度与相对大小**，具体字节数随平台变化。
+> 表中「4 或 8」的典型差异来自系统 ABI：`long` 在 Windows（MSVC）上为 4 字节，
+> 在 Linux/macOS 上为 8 字节。需要固定位宽时使用 `<cstdint>` 中的
+> `int32_t`/`int64_t` 等定宽类型。
 | **空类型**           |                        |             |                                                  |
 | `void`               | 无类型                 | -           | 用于函数返回或通用指针                           |
 

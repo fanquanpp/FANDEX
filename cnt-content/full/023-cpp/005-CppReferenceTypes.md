@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 左值引用、右值引用、常量引用、转发引用、引用折叠、悬空引用与 std::launder 全解。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/003-CppBasicSyntax'
   - 'cpp/004-CppTypeSystem'
@@ -79,7 +79,7 @@ struct complex operator+(const struct complex& a, const struct complex& b);
 
 ### 2.1 引用的语法与语义
 
-C++ 中引用的形式化定义（ISO/IEC 14882:2023 §9.4.3）：
+C++ 中引用的形式化定义（ISO/IEC 14882:2024 §9.4.3）：
 
 $$
 \text{reference}(T, k) := \text{alias}(T, k)
@@ -98,7 +98,7 @@ $$
 
 ### 2.2 值类别（Value Category）
 
-C++11 重新形式化了表达式值类别（ISO/IEC 14882:2023 §6.10）：
+C++11 重新形式化了表达式值类别（ISO/IEC 14882:2024 §6.10）：
 
 $$
 \text{expr} \in \{\text{lvalue}, \text{xvalue}, \text{prvalue}\}
@@ -165,7 +165,7 @@ $$
 
 ### 2.5 const 引用与临时对象生命周期
 
-C++ 规定：const 引用绑定到 prvalue 时，会延长该临时对象的生命周期至引用的作用域结束（ISO/IEC 14882:2023 §6.7.7）：
+C++ 规定：const 引用绑定到 prvalue 时，会延长该临时对象的生命周期至引用的作用域结束（ISO/IEC 14882:2024 §6.7.7）：
 
 $$
 \text{lifetime}(t) \leftarrow \text{lifetime}(\text{const\_ref}(t)) \quad \text{if } t \text{ is prvalue}
@@ -1619,11 +1619,11 @@ v[0] = false;   // 通过代理类型修改
 
 ### 11.1 标准文献
 
-- ISO/IEC 14882:2023 §9.4.3 *References*：引用的标准化定义与语义。
-- ISO/IEC 14882:2023 §6.10 *Lvalues and rvalues*：值类别形式化。
-- ISO/IEC 14882:2023 §6.7.7 *Temporary objects*：临时对象生命周期。
-- ISO/IEC 14882:2023 §13.10.2 *Reference collapsing*：引用折叠规则。
-- ISO/IEC 14882:2023 §16.3.2 *Forwarding references*：转发引用定义。
+- ISO/IEC 14882:2024 §9.4.3 *References*：引用的标准化定义与语义。
+- ISO/IEC 14882:2024 §6.10 *Lvalues and rvalues*：值类别形式化。
+- ISO/IEC 14882:2024 §6.7.7 *Temporary objects*：临时对象生命周期。
+- ISO/IEC 14882:2024 §13.10.2 *Reference collapsing*：引用折叠规则。
+- ISO/IEC 14882:2024 §16.3.2 *Forwarding references*：转发引用定义。
 
 ### 11.2 经典书籍
 

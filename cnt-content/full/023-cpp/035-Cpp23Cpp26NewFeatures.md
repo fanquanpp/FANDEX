@@ -6,19 +6,22 @@ category: 计算机科学
 difficulty: intermediate
 description: 最新C++标准特性
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cpp/034-CppRustComparison'
   - 'cpp/032-CppPythonInteraction'
   - 'cpp/037-CppSerialization'
   - 'cpp/029-CppGraphicsProgramming'
+  - 'cpp/062-Cpp23NewFeatures'
+  - 'cpp/076-Cpp26LatestStandard'
+  - 'cpp/002-CppOverviewAndModernStandard'
 prerequisites: []
 ---
 
 
 ## 概述
 
-C++ 标准每三年发布一个新版本。C++23 于 2023 年定稿，带来了 std::expected、std::print、std::flat_map 等实用特性；C++26 正在制定中，预计引入反射、契约、线性代数库等重大特性。了解这些新特性可以让你写出更简洁、更安全、更高效的代码。
+C++ 标准每三年发布一个新版本。C++23（即 ISO/IEC 14882:2024，2023 年完成技术定稿、2024 年正式发布）带来了 std::expected、std::print、std::flat_map 等实用特性；C++26 已于 2025 年 6 月完成特性冻结（feature complete），标准本体预计 2026 年底前后发布——在正式发布前，本文所列 C++26 内容均以「草案」为准。了解这些新特性可以让你写出更简洁、更安全、更高效的代码。
 
 为什么需要关注新特性？C++ 的新特性通常是为了解决现有语法的痛点。std::expected 让错误处理不再依赖异常，std::print 让控制台输出不再需要 iostream 的繁琐，flat_map 提供了更高效的关联容器。掌握新特性能让你的代码更现代、更高效。
 
@@ -346,38 +349,49 @@ void stringImprovements() {
 }
 ```
 
-### C++26 预览特性
+### C++26 草案预览特性
+
+C++26 已于 2025 年 6 月特性冻结，以下重磅特性已并入标准草案（写作时请以草案状态为准，各编译器支持程度不一）：
 
 ```cpp
-// 1. 契约（Contracts）- C++26 预计引入
-// 允许在函数上添加前置条件、后置条件和断言
-
-// 预计语法（具体语法可能变化）：
+// 1. 契约（Contracts，P2900，已并入草案）
+// 使用前置条件 pre、后置条件 post 与断言 contract_assert
+// 语法采用语境关键字（早期草案中的 [[pre:]] 属性写法已废弃）：
 // int divide(int a, int b)
-//     [[pre: b != 0]]           // 前置条件
-//     [[post r: r == a / b]]    // 后置条件
+//     pre(b != 0)                // 前置条件
+//     post(r : r == a / b)       // 后置条件
 // {
+//     contract_assert(a >= 0);   // 契约断言
 //     return a / b;
 // }
 
-// 2. 反射（Reflection）- C++26 可能引入
-// 允许在编译期检查和操作类型信息
-// 类似 C# 的反射但在编译期执行
+// 2. 静态反射（P2996，已并入草案）
+// ^^T 获取类型的反射元信息（std::meta::info），[: :] 展开片段，
+// 配合 <meta> 中的 std::meta 工具函数在编译期查询/生成代码。
+// 注意：目前尚无主流编译器完整实现（仅实验分支可用），生产环境请等待。
 
-// 3. 线性代数库 std::linalg
-// 基于 BLAS 的线性代数操作
-#include <linalg>  // C++26 预计
+// 3. std::execution（P2300，已并入草案）
+// 基于 sender/receiver 的异步任务执行框架：
+// std::execution::just(42)
+//     | std::execution::then([](int x){ return x * 2; })
+//     | 投递到调度器并 sync_wait 等待结果。
 
-// 矩阵乘法等操作将标准化
-// std::linalg::matrix_multiply(A, B, C);
+// 4. std::linalg（C++26 草案）
+// 基于 std::mdspan 的线性代数参考接口，提供矩阵乘法、点积等 BLAS 风格操作。
 
-// 4. 调试工具 std::is_debugger_present
-// 检查是否在调试器中运行
-// if (std::is_debugger_present()) { ... }
+// 5. 调试工具
+// std::breakpoint() 与 std::is_debugger_present()（已并入草案）
 
-// 5. hazard_pointer 和 rcu
-// 无锁数据结构的标准化支持
+// 6. hazard_pointer 与 rcu
+// 无锁数据结构的标准化支持（已并入草案）
 ```
+
+其他已并入草案的实用特性一览：pack indexing（P2662，按索引访问参数包）、
+占位符变量 `_`（P2169）、`= delete("原因")`（P2573）、`#embed`（P1967，编译期嵌入二进制资源）、
+`std::inplace_vector`（固定容量、栈上存储的向量）、`std::hive`（快速删除的桶式容器）、
+`std::simd`（可移植 SIMD 封装）。语言库细节与编译器落地情况请以
+[cppreference 编译器支持页](https://en.cppreference.com/w/cpp/compiler_support) 为准；
+更完整的 C++26 综述见 [C++26 与最新标准](/cpp/048-Cpp26AndLatestStandard)。
 
 ## 常见场景
 
@@ -432,7 +446,7 @@ void displayUsers() {
 
 **flat_map 的适用场景**：flat_map 在插入和删除时需要移动元素，时间复杂度为 O(n)。不适合频繁插入删除的大数据集。
 
-**C++26 特性不稳定**：C++26 的特性仍在制定中，具体语法和行为可能变化。不建议在生产代码中使用未定稿的特性。
+**C++26 特性尚未发布**：C++26 目前仍是标准草案（预计 2026 年底前后发布正式标准），已冻结的特性语法基本稳定，但编译器实现参差不齐——例如反射尚无主流编译器完整实现。不建议在生产代码中依赖未落地的特性，使用前请查询特性宏与编译器支持页。
 
 ## 进阶用法
 

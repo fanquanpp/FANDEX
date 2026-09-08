@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++完美转发与引用折叠详解：std::forward、转发引用、参数包展开与元编程应用。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/052-CppSTLAlgorithmAndFunctionObject'
   - 'cpp/053-MoveSemanticsDetailed'
@@ -92,7 +92,7 @@ C++11 通过三个核心机制联合解决：
 
 ### 2.1 引用折叠规则的形式化
 
-引用折叠规则（ISO/IEC 14882:2023 §13.10.2）：
+引用折叠规则（ISO/IEC 14882:2024 §13.10.2）：
 
 $$
 \text{collapse}(T_1, T_2) =
@@ -114,7 +114,7 @@ $$
 
 ### 2.2 转发引用的形式化
 
-转发引用（forwarding reference，又称 universal reference）的形式化定义（ISO/IEC 14882:2023 §16.3.2）：
+转发引用（forwarding reference，又称 universal reference）的形式化定义（ISO/IEC 14882:2024 §16.3.2）：
 
 $$
 \text{forwarding\_ref}(\text{template}, T) \iff
@@ -1950,12 +1950,12 @@ tuple_for_each([](auto&& x) {
 
 ### 11.1 标准文献
 
-- ISO/IEC 14882:2023 §9.4.3 *References*：引用的标准化定义。
-- ISO/IEC 14882:2023 §13.10.2 *Reference collapsing*：引用折叠规则。
-- ISO/IEC 14882:2023 §16.3.2 *Forwarding references*：转发引用定义。
-- ISO/IEC 14882:2023 §16.5.4 *Tuple helper classes*：`std::tuple_size`、`std::tuple_element`。
-- ISO/IEC 14882:2023 §17.8 *Function objects*：`std::function`、`std::bind`、`std::invoke`。
-- ISO/IEC 14882:2023 §19.7 *Tuple*：`std::tuple`、`std::apply`。
+- ISO/IEC 14882:2024 §9.4.3 *References*：引用的标准化定义。
+- ISO/IEC 14882:2024 §13.10.2 *Reference collapsing*：引用折叠规则。
+- ISO/IEC 14882:2024 §16.3.2 *Forwarding references*：转发引用定义。
+- ISO/IEC 14882:2024 §16.5.4 *Tuple helper classes*：`std::tuple_size`、`std::tuple_element`。
+- ISO/IEC 14882:2024 §17.8 *Function objects*：`std::function`、`std::bind`、`std::invoke`。
+- ISO/IEC 14882:2024 §19.7 *Tuple*：`std::tuple`、`std::apply`。
 
 ### 11.2 经典书籍
 

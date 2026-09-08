@@ -6,12 +6,15 @@ category: 计算机科学
 difficulty: advanced
 description: C++26/23/20/17/14/11标准演进、虚函数表原理、RAII原则、模板元编程、CMake构建系统、vcpkg包管理。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/046-CppDateTime'
   - 'cpp/047-CppFormatOutput'
   - 'cpp/049-CppSTLContainersIterators'
   - 'cpp/050-ConcurrentProgramming'
+  - 'cpp/035-Cpp23Cpp26NewFeatures'
+  - 'cpp/076-Cpp26LatestStandard'
+  - 'cpp/062-Cpp23NewFeatures'
 prerequisites:
   - 'cpp/002-CppOverviewAndModernStandard'
 ---
@@ -22,7 +25,7 @@ prerequisites:
 
 ## 学习目标
 
-- 掌握「1. C++26 标准（2026 年）」的核心机制、典型用法与常见陷阱
+- 掌握「1. C++26 与正在演进的标准」的核心机制、典型用法与常见陷阱
 - 掌握「2. C++23 标准特性」的核心机制、典型用法与常见陷阱
 - 掌握「3. C++20 标准特性」的核心机制、典型用法与常见陷阱
 - 掌握「4. C++17 标准特性」的核心机制、典型用法与常见陷阱
@@ -30,153 +33,56 @@ prerequisites:
 
 
 
-## 1. C++26 标准（2026 年）
+## 1. C++26 与正在演进的标准
 
-C++26 是 C++ 的下一个主要标准版本，计划于 2026 年发布。它引入了多项重大语言和库特性。
+C++26 已于 2025 年 6 月完成特性冻结（feature complete），标准本体预计 2026 年底前后发布。在正式发布之前，本节所有内容均属**标准草案**：语法以已并入草案的提案（P 编号）为准，编译器支持参差不齐，请勿在生产代码中直接依赖。本节同时澄清几个容易与「并行算法」「C++20 constexpr」混淆的概念。
 
-### 1.1 模式匹配 inspect
+### 1.1 模式匹配（提案阶段，未进入标准）
 
-C++26 最令人期待的特性之一是结构化模式匹配，使用 `inspect` 关键字进行模式匹配。
+结构化模式匹配（`inspect`，提案 P1371 / 后续 P2688）长期是社区最期待的特性之一，但**截至特性冻结（2025-06）它并未并入 C++26 草案**，仍处于提案阶段。以下代码仅是提案示意，不能被当前任何编译器按标准接受：
 
 ```cpp
-#include <iostream>
-#include <string>
-#include <variant>
-#include <vector>
-
-// 基本模式匹配
-void describe(int n) {
-    inspect (n) {
-        0       => std::cout << "zero\n";
-        1       => std::cout << "one\n";
-        _       => std::cout << "other: " << n << "\n";
-    }
-}
-
-// 带条件的模式匹配
+// 【非标准代码】模式匹配提案示意（P1371/P2688，未并入 C++26）
+// 不要在实际项目中使用，语法与最终标准（若有）必有出入
 std::string classify(int value) {
     return inspect (value) {
         0             => "zero";
         n if n < 0    => "negative";
-        n if n > 100  => "large";
-        _             => "small positive";
+        _             => "other";
     };
-}
-
-// 结构解构匹配
-struct Point { double x, y; };
-
-void describe_point(const Point& p) {
-    inspect (p) {
-        Point{0.0, 0.0}   => std::cout << "origin\n";
-        Point{x, 0.0}     => std::cout << "on x-axis at " << x << "\n";
-        Point{0.0, y}     => std::cout << "on y-axis at " << y << "\n";
-        Point{x, y}       => std::cout << "at (" << x << ", " << y << ")\n";
-    }
-}
-
-// variant 匹配
-using Value = std::variant<int, double, std::string>;
-
-std::string to_string(const Value& v) {
-    return inspect (v) {
-        int i    => std::to_string(i);
-        double d => std::to_string(d);
-        std::string s => s;
-    };
-}
-
-int main() {
-    describe(0);
-    describe(42);
-    std::cout << classify(-5) << "\n";
-    std::cout << classify(200) << "\n";
-
-    Point p{3.0, 0.0};
-    describe_point(p);
-
-    Value v = std::string("hello");
-    std::cout << to_string(v) << "\n";
-    return 0;
 }
 ```
 
-### 1.2 契约编程
+在模式匹配标准化之前，替代方案是 `std::visit` 配合重载 lambda（C++17 起）、或 `std::holds_alternative` + `std::get_if` 的分支组合。
 
-C++26 引入了契约编程（Contract Programming），允许在函数接口上指定前置条件、后置条件和不变式。
+### 1.2 契约编程（P2900，已并入草案）
+
+C++26 草案纳入了契约编程：在函数接口上声明前置条件 `pre`、后置条件 `post` 与断言 `contract_assert`。注意最终并入草案的语法是**语境关键字**，而非早期讨论中的 `[[pre: ...]]` 属性写法：
 
 ```cpp
-#include <vector>
-#include <cassert>
-#include <iostream>
-
-// 前置条件：使用 pre 条件
+// C++26 草案契约语法（P2900）
+// 目前仅极少数编译器提供实验性支持，以下代码以草案文本为准
 int safe_divide(int a, int b)
-    [[pre: b != 0]]                    // 前置条件
-    [[post result: result * b == a]]   // 后置条件
+    pre(b != 0)                     // 前置条件：调用方保证 b 非零
+    post(r : r * b == a)            // 后置条件：返回值 r 满足 r*b == a
 {
+    contract_assert(a >= 0);        // 函数体内部的契约断言
     return a / b;
-}
-
-// 不变式：类的不变量
-class BankAccount {
-    double balance_;
-public:
-    BankAccount(double init) : balance_(init)
-        [[pre: init >= 0]]
-    {}
-
-    void deposit(double amount)
-        [[pre: amount > 0]]
-        [[post: balance_ >= 0]]
-    {
-        balance_ += amount;
-    }
-
-    void withdraw(double amount)
-        [[pre: amount > 0]]
-        [[pre: amount <= balance_]]
-        [[post: balance_ >= 0]]
-    {
-        balance_ -= amount;
-    }
-
-    double get_balance() const
-        [[post: result >= 0]]
-    {
-        return balance_;
-    }
-};
-
-// 契约断言
-template<typename T>
-T safe_at(const std::vector<T>& v, std::size_t i) {
-    [[assert: i < v.size()]];
-    return v[i];
-}
-
-int main() {
-    auto result = safe_divide(10, 3);
-    std::cout << "10 / 3 = " << result << "\n";
-
-    BankAccount acc(1000.0);
-    acc.deposit(500.0);
-    acc.withdraw(200.0);
-    std::cout << "Balance: " << acc.get_balance() << "\n";
-    return 0;
 }
 ```
 
-### 1.3 扩展 constexpr
+契约的检查语义（off / observe / enforce / quick-enforce 等检查级别）仍在标准修订中细化；早期原型的属性写法 `[[assert: ...]]`/`[[pre: ...]]` 已被上述关键字写法取代，检索旧资料时注意区分。
 
-C++26 进一步扩展了 `constexpr` 的能力，使更多代码可以在编译期执行。
+### 1.3 constexpr 的边界：哪些是 C++20 能力，哪些是 C++26 扩展
+
+下面示例中的「constexpr 虚函数」「constexpr 标准算法」其实都是 **C++20** 的能力，网上资料常误标为 C++26；C++26 是在此基础上继续放宽 constexpr 限制（如 constexpr placement new、更多库函数 constexpr 化）：
 
 ```cpp
 #include <array>
 #include <algorithm>
 #include <iostream>
 
-// constexpr 中的虚函数调用（C++26）
+// constexpr 虚函数与继承：这是 C++20 特性（常被误标为 C++26）
 struct Shape {
     constexpr virtual double area() const = 0;
     constexpr virtual ~Shape() = default;
@@ -194,7 +100,6 @@ struct Rectangle : Shape {
     constexpr double area() const override { return w * h; }
 };
 
-// 编译期计算
 constexpr double total_area() {
     Circle c(5.0);
     Rectangle r(3.0, 4.0);
@@ -203,20 +108,17 @@ constexpr double total_area() {
 
 static_assert(total_area() > 0, "area should be positive");
 
-// constexpr 中的更多标准库支持
+// constexpr 标准算法排序同样是 C++20 能力
 constexpr std::array<int, 5> sorted() {
     std::array<int, 5> arr = {5, 3, 1, 4, 2};
     std::sort(arr.begin(), arr.end());
     return arr;
 }
-
 static_assert(sorted()[0] == 1);
-static_assert(sorted()[4] == 5);
 
 int main() {
     constexpr auto areas = total_area();
     std::cout << "Total area: " << areas << "\n";
-
     constexpr auto arr = sorted();
     for (auto x : arr) std::cout << x << " ";
     std::cout << "\n";
@@ -224,37 +126,36 @@ int main() {
 }
 ```
 
-### 1.4 std::execution 并行算法
+### 1.4 std::execution 与并行算法：两个容易混淆的东西
 
-C++26 引入了 Senders/Receivers 模型的并行执行框架。
+「并行执行」在 C++ 中有两个不同层次的东西，初学者经常混淆：
+
+1. **C++17 并行算法**：`std::execution::par` 等执行策略，配 `std::reduce`/`std::sort` 等算法使用，属 `<execution>` 头文件，**与 C++26 无关**；
+2. **C++26 std::execution（P2300，已并入草案）**：基于 sender/receiver 的异步任务图框架，解决「异步操作的组合与调度」问题，定位类似其他语言的 Future/Promise 编排。
 
 ```cpp
 #include <execution>
 #include <algorithm>
 #include <vector>
-#include <iostream>
 #include <numeric>
+#include <iostream>
 
 int main() {
     std::vector<int> data(10'000'000);
     std::iota(data.begin(), data.end(), 1);
 
-    // 使用并行执行策略
+    // C++17 并行算法：执行策略（par = 并行）
     auto sum = std::reduce(
-        std::execution::par,           // 并行执行
+        std::execution::par,
         data.begin(), data.end(),
         0LL
     );
     std::cout << "Sum: " << sum << "\n";
 
-    // 使用并行不可排序执行策略（更高性能）
-    std::sort(std::execution::par_unseq, data.begin(), data.end());
-
-    // Senders/Receivers 模型（C++26）
-    // auto snd = std::execution::schedule(std::execution::par)
-    //     | std::execution::then([]{ return 42; })
+    // C++26 std::execution（P2300，草案）：sender 链式组合异步任务
+    // auto snd = std::execution::just(42)
     //     | std::execution::then([](int v){ return v * 2; });
-    // auto result = std::execution::sync_wait(std::move(snd)).value();
+    // auto [result] = std::execution::sync_wait(std::move(snd)).value();
 
     return 0;
 }
@@ -665,8 +566,11 @@ export int multiply(int a, int b) {
 int internal_helper(int x) {
     return x * x;
 }
+```
 
-// 模块分区
+```cpp
+// math_module_advanced.cppm — 模块分区必须写在独立的接口文件中
+// 一个接口单元只能有一条 export module 声明，不能与主模块接口写在同一文件
 export module math_module:advanced;
 
 export double power(double base, int exp) {
@@ -1163,8 +1067,9 @@ public:
             std::cout << "GDI resource freed\n";
         }
     }
-    FileRAII(const FileRAII&) = delete;
-    FileRAII& operator=(const FileRAII&) = delete;
+    // 禁止拷贝（注意：删除的构造函数名必须与所在类同名）
+    GDIObject(const GDIObject&) = delete;
+    GDIObject& operator=(const GDIObject&) = delete;
 };
 
 int main() {

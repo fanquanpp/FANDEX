@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: std::format与格式化
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/031-CppRegex'
   - 'cpp/046-CppDateTime'
@@ -104,7 +104,7 @@ C++20 标准引入 `<format>` 头，提供 `std::format`、`std::format_to`、`s
 - **缺少命名参数**：C++20 不支持 {fmt} 的 `fmt::arg("name", value)` 命名参数语法，C++23 才通过 P2918 补充。
 - **API 完整度**：C++20 `std::format` 不支持 {fmt} 的 `fmt::join`、`fmt::grouped_view` 等扩展。
 
-### 1.6 C++23：`std::print` 与 `std::println`（ISO/IEC 14882:2023）
+### 1.6 C++23：`std::print` 与 `std::println`（ISO/IEC 14882:2024）
 
 C++23 通过 P2093R12 引入 `<print>` 头，提供 `std::print` 与 `std::println` 函数。其核心改进：
 
@@ -135,7 +135,7 @@ C++26 草案（截稿时）已纳入或拟纳入以下改进：
 2017  C++17                                 string_view
 2018  P0645R0 std::format 提案              Zverovich
 2020  C++20 std::format                     ISO/IEC 14882:2020
-2023  C++23 std::print / std::println       ISO/IEC 14882:2023
+2023  C++23 std::print / std::println       ISO/IEC 14882:2024
 2026  C++26 命名参数 / ranges 格式化（草案） ISO/IEC CD 14882
 ```
 
@@ -161,7 +161,7 @@ string format(format_string<Args...> fmt, Args&&... args);
 - **20.20.6** `std::format_to`：迭代器输出版本。
 - **20.20.7** `std::format_to_n`：带最大输出长度限制的版本。
 
-C++23 `std::print` 见 ISO/IEC 14882:2023 第 20.21 节 [print]。
+C++23 `std::print` 见 ISO/IEC 14882:2024 第 20.21 节 [print]。
 
 ### 2.2 格式字符串的 EBNF 文法
 
@@ -1703,7 +1703,7 @@ int main() {
 
 [4] Zverovich, V. 2023. *std::print* (P2093R12). ISO/IEC JTC1/SC22/WG21. Retrieved from https://wg21.link/p2093r12.
 
-[5] International Organization for Standardization. 2023. *Information technology — Programming languages — C++* (ISO/IEC 14882:2023). ISO, Geneva, Switzerland. Section 20.21: Print.
+[5] International Organization for Standardization. 2023. *Information technology — Programming languages — C++* (ISO/IEC 14882:2024). ISO, Geneva, Switzerland. Section 20.21: Print.
 
 ### 10.2 论文与文献
 
@@ -1821,7 +1821,7 @@ int main() {
 
 ---
 
-> 本文档基于 ISO/IEC 14882:2020 与 ISO/IEC 14882:2023 编写，C++26 部分基于截至 2025 年 7 月的草案。示例代码已在 GCC 14.1、Clang 18.1、MSVC 19.39 上验证通过。
+> 本文档基于 ISO/IEC 14882:2020 与 ISO/IEC 14882:2024 编写，C++26 部分基于截至 2025 年 7 月的草案。示例代码已在 GCC 14.1、Clang 18.1、MSVC 19.39 上验证通过。
 ## std::format 基础
 
 **基本写法：格式化字符串**

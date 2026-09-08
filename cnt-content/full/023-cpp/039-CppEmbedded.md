@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 嵌入式C++开发要点
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/029-CppGraphicsProgramming'
   - 'cpp/038-CppGameDev'
@@ -33,7 +33,7 @@ prerequisites:
 - 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
 
 
-> 本文档系统讲解 C++ 在嵌入式系统中的应用，涵盖裸机编程、内存映射 I/O、`volatile` 语义、中断处理、实时性约束、跨编译工具链、嵌入式 C++ 子集 (EC++) 与现代 C++（C++17/C++20/C++23）在资源受限环境中的落地。内容遵循 ISO/IEC 14882:2023 与 IEC 60559 浮点标准，参考 MISRA C++:2023、AUTOSAR C++14、JSF AV C++ Coding Standards 等行业规范。
+> 本文档系统讲解 C++ 在嵌入式系统中的应用，涵盖裸机编程、内存映射 I/O、`volatile` 语义、中断处理、实时性约束、跨编译工具链、嵌入式 C++ 子集 (EC++) 与现代 C++（C++17/C++20/C++23）在资源受限环境中的落地。内容遵循 ISO/IEC 14882:2024 与 IEC 60559 浮点标准，参考 MISRA C++:2023、AUTOSAR C++14、JSF AV C++ Coding Standards 等行业规范。
 
 ---
 
