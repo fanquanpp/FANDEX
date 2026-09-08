@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: WebRTC（getUserMedia）
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/033-MicrodataJSONLD'
   - 'html5/034-CustomDataAttribute'
@@ -1954,7 +1954,7 @@ pc.close();
 
 ## 扩展学习
 
-- 前置基础：`html5/030-WebSocket` 信令传输；`javascript/024-AsyncProgramming` 异步流程；
+- 前置基础：`html5/031-WebSocket` 信令传输；`javascript/025-AsyncProgramming` 异步流程；
 - 服务端：Node.js `ws` 信令服务器与 STUN/TURN（coturn）部署；
 - 开源方案：LiveKit、mediasoup、Janus 的架构对比；
-- 性能：`javascript/050-CoreWebVitalsAndPerformanceMetrics` 与实时媒体质量监控。
+- 性能：`javascript/051-CoreWebVitalsAndPerformanceMetrics` 与实时媒体质量监控。

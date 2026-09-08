@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL序列与自增列：SERIAL、IDENTITY列、序列操作与ID生成策略
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/035-DataEncryptionStorage'
   - 'postgresql/036-AuditLog'

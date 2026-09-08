@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 综合运用：仪表盘、环形进度、动画 Logo、数据可视化。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'svg/013-SVGAnimationBasics'
   - 'svg/015-SVGJavaScriptInteraction'

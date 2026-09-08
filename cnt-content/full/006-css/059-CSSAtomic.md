@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Tailwind CSS、UnoCSS
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/057-PostCSS'
   - 'css/058-BEMNamingMethodology'
@@ -125,5 +125,5 @@ export default defineConfig({
 ## 扩展学习
 
 - Tailwind：`tailwind/003-UtilityCore`；
-- BEM：`css/057-BEMNamingMethodology`；
-- 架构：`css/043-CSSArchitectureMethodology`。
+- BEM：`css/058-BEMNamingMethodology`；
+- 架构：`css/044-CSSArchitectureMethodology`。

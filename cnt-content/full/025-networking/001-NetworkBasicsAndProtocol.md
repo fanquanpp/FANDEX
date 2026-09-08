@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: OSI七层模型、TCP/IP协议栈、IPv4/IPv6地址规划、子网划分、路由协议、VLAN、生成树、链路聚合、VRRP、广域网、隧道、ACL、SSH、SNMP、NAPT、认证与VPN技术。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'networking/002-NetworkSystemManagement'
   - 'networking/003-NetworkWiringAndConstruction'

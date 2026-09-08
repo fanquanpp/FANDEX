@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 深入解析 CSS Container Queries 容器查询的规范、算法、工程实践与跨浏览器兼容性
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'css/052-BorderRadius'
   - 'css/032-MediaQuery'
@@ -2182,10 +2182,10 @@ $$
 
 ## 10. 扩展学习
 
-- 媒体查询：`css/031-MediaQuery`；
-- 响应式设计：`css/033-ResponsiveDesign`；
-- 新特性：`css/064-CSSNewFeatures`；
-- 组件化实践：`css/067-CSSProjectExampleResponsiveHomepage`。
+- 媒体查询：`css/032-MediaQuery`；
+- 响应式设计：`css/034-ResponsiveDesign`；
+- 新特性：`css/065-CSSNewFeatures`；
+- 组件化实践：`css/068-CSSProjectExampleResponsiveHomepage`。
 
 ## 附录 A：术语表
 

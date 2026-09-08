@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C语言指针与数组的区别：sizeof、&运算、传参差异。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'c/044-StructAndUnion'
   - 'c/045-FunctionCallStackFrame'
@@ -18,7 +18,6 @@ prerequisites:
 
 
 
-# 指针与数组的区别（Pointers vs Arrays）
 
 ## 前置知识
 
@@ -133,13 +132,14 @@ C11 还引入 `_Generic`，可用于编写对数组与指针差异化处理的�
 )
 ```
 
-### 1.6 C23（2024）：`[[...]]` 属性与空数组
+### 1.6 C23（2024）：`[[...]]` 属性与新关键字
 
 C23 进一步规范化：
 
-- `[[...]]` 标准属性语法（替代 `__attribute__((...))`）。
-- 空数组 `int arr[0]`（灵活数组成员的早期形式）的语义澄清。
-- `static_assert` 成为关键字，可用于编译期验证数组大小。
+- `[[...]]` 标准属性语法（如 `[[deprecated]]`、`[[nodiscard]]`，与编译器扩展 `__attribute__((...))` 并存）。
+- `bool`/`true`/`false`、`static_assert`、`alignof`/`alignas` 成为关键字。
+- `typeof` 标准化：可保留数组类型，是少数不触发数组退化的上下文之一。
+- 注意：零长数组 `int arr[0]` 仍是 GNU 扩展；标准提供的是 C99 起的灵活数组成员（`arr[]`）。
 
 ### 1.7 编译器实现演化
 
@@ -149,7 +149,7 @@ C23 进一步规范化：
 | GCC | 4.6 | 完整支持 C99 VLA |
 | Clang | 3.0 | 兼容 GCC 警告与扩展 |
 | Clang | 6.0 | `-Warray-parameter` 增强诊断 |
-| MSVC | 19.0 | 完整支持 C99/C11 数组特性 |
+| MSVC | 19.x | 长期不支持 C99 VLA（变长数组）；数组参数退化诊断支持有限 |
 | GCC | 13.0 | `-Warray-parameter` 完整实现 |
 
 ---

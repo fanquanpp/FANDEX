@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React项目CI/CD实践
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'react/035-ReactD3'
   - 'react/036-ReactStorybook'

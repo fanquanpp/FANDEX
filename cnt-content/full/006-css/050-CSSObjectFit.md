@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: object-fit 与 object-position 控制 img/video 等内容在盒子内的适配方式。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/020-ImageResponsiveImage'
   - 'css/004-CSS3BoxModelDetailed'
@@ -111,7 +111,7 @@ prerequisites:
 
 ## 7. 扩展学习
 
-- 响应式图片：`html5/019-ImageResponsiveImage`；
-- 盒模型：`css/003-CSS3BoxModelDetailed`；
-- 背景适配：`css/026-BackgroundEnhancement`（background-size 对比）；
-- 圆角头像：`css/051-BorderRadius`。
+- 响应式图片：`html5/020-ImageResponsiveImage`；
+- 盒模型：`css/004-CSS3BoxModelDetailed`；
+- 背景适配：`css/027-BackgroundEnhancement`（background-size 对比）；
+- 圆角头像：`css/052-BorderRadius`。

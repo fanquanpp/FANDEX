@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis RDB快照持久化：save与bgsave机制、写时复制原理、配置优化与恢复流程
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'redis/008-Stream'
   - 'redis/009-VectorSet'

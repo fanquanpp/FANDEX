@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 反射、特性(Attribute)、动态编程(dynamic)、Span/Memory、ref struct、不安全代码、指针、委托与事件、多播委托
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'csharp/007-CAsyncProgramming'
   - 'csharp/008-CSharpLINQFunctionalProgramming'

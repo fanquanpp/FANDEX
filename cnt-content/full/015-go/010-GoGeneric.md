@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go 1.18+ 泛型、类型参数、约束、泛型函数与类型、类型推断、slices/maps/cmp 标准库包与泛型实际应用。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'go/007-GoConcurrentProgramming'
   - 'go/008-GoErrorHandling'

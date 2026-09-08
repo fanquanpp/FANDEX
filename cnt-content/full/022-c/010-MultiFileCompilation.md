@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C 语言多文件编译的完整知识体系，涵盖翻译单元、链接性、ODR、头文件、预处理器、Makefile/CMake/Ninja、静态/动态库、ABI、链接器原理与工业级工程实践。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/008-OperatorExpression'
   - 'c/009-EnumTypedef'

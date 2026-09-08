@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++移动语义详解：移动构造、移动赋值、std::move与右值引用。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/051-CppCoreGuidelinesResourceManagement'
   - 'cpp/052-CppSTLAlgorithmAndFunctionObject'
@@ -95,7 +95,7 @@ C++11 标准引入了**右值引用（rvalue reference）**`T&&` 与**移动语�
 
 ### 2.1 值类别（Value Category）
 
-依据 C++23 [basic.lval]（ISO/IEC 14882:2023 第 6.7.1 节）的定义，表达式按值类别划分为如下结构：
+依据 C++23 [basic.lval]（ISO/IEC 14882:2024 第 6.7.1 节）的定义，表达式按值类别划分为如下结构：
 
 ```mermaid
 flowchart TD

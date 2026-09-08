@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: never 作为空类型的完整语义：联合吸收、交叉吸收、穷尽检查、与 unknown 的对偶关系及其在泛型中的应用。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'typescript/013-LiteralUnionTypes'
   - 'typescript/018-IntersectionTypeMerge'

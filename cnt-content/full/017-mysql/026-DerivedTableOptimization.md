@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL派生表优化：合并策略、物化策略、LATERAL派生表与性能调优
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/024-OptimizerTrace'
   - 'mysql/025-SubqueryOptimization'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: writing-mode 与逻辑属性配合，让布局适配横排、竖排与从右到左的文字方向。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/037-LogicalProperty'
   - 'css/005-TextAndFontsBasics'
@@ -64,7 +64,7 @@ prerequisites:
 }
 ```
 
-**讲解：** 逻辑属性用 `block`（块方向）与 `inline`（行内方向）代替上下左右：`margin-inline-start` 在横排时是左边距，竖排时自动变成上边距。要支持多语言/多方向的项目应优先逻辑属性，完整清单见 `css/036-LogicalProperty`。
+**讲解：** 逻辑属性用 `block`（块方向）与 `inline`（行内方向）代替上下左右：`margin-inline-start` 在横排时是左边距，竖排时自动变成上边距。要支持多语言/多方向的项目应优先逻辑属性，完整清单见 `css/037-LogicalProperty`。
 
 ## 4. direction 与 dir 属性
 
@@ -96,7 +96,7 @@ prerequisites:
 - `text-orientation: upright` 强制字符直立；
 - 逻辑属性 `*-inline-*`/`*-block-*` 随方向自动调整；
 - 多语言项目优先 `dir` 属性，而非 CSS `direction`；
-- 逻辑属性详解见 `css/036-LogicalProperty`。
+- 逻辑属性详解见 `css/037-LogicalProperty`。
 
 ## 7. 注意事项与改进建议
 
@@ -109,7 +109,7 @@ prerequisites:
 
 ## 8. 扩展学习
 
-- 逻辑属性全集：`css/036-LogicalProperty`；
-- 文本与字体：`css/004-TextAndFontsBasics`；
-- 国际化与可访问性样式：`css/045-AccessibleStyling`；
-- 排版进阶：`css/044-TypographyAndGridSystem`。
+- 逻辑属性全集：`css/037-LogicalProperty`；
+- 文本与字体：`css/005-TextAndFontsBasics`；
+- 国际化与可访问性样式：`css/046-AccessibleStyling`；
+- 排版进阶：`css/045-TypographyAndGridSystem`。

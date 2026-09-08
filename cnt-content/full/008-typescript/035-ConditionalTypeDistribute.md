@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 分布式条件类型（Distributive Conditional Types）的形式语义、控制策略、类型级算法与生产级应用：裸类型参数、阻止分发、never 空集语义、IsUnion、类型过滤与排列组合。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/054-ConditionalTypeInfer'
   - 'typescript/034-UtilityTypePrinciple'

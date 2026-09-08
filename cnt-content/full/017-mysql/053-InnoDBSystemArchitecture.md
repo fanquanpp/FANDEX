@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: InnoDB存储引擎架构：聚簇索引、自适应哈希、变更缓冲、双写缓冲、事务日志、MVCC与Buffer Pool深度解析
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/051-SSLEncryption'
   - 'mysql/052-FirewallPlugin'

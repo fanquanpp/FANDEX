@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 让样式不成为障碍：对比度、焦点可见、减少动效与文本缩放，四个维度讲清可访问性样式的落地要点。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/011-Accessibility'
   - 'css/036-CSSVariableCustomAttribute'
@@ -140,6 +140,6 @@ body {
 
 ## 扩展学习
 
-- 无障碍完整教程：`html5/010-Accessibility`；
-- 动效：`css/028-CSSAnimationTransition`；
-- 深色主题：`css/031-MediaQuery`。
+- 无障碍完整教程：`html5/011-Accessibility`；
+- 动效：`css/029-CSSAnimationTransition`；
+- 深色主题：`css/032-MediaQuery`。

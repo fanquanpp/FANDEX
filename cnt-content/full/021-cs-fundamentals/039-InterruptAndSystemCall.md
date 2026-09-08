@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 中断机制（硬件中断、软件中断）与系统调用（int 0x80、syscall）的原理与流程。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/037-CompileAndRuntime'
   - 'cs-fundamentals/038-PCBThreadTCB'

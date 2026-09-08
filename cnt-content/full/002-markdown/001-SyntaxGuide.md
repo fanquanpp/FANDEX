@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Markdown 概述与核心特点。
 author: fanquanpp
-updated: '2026-08-03'
+updated: '2026-09-08'
 related:
   - 'markdown/002-HeadingSyntax'
   - 'markdown/003-ParagraphLineBreak'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Tailwind CSS 概述：从传统 CSS 到 utility-first 的演进对比、Tailwind 与 Bootstrap 的区别、Tailwind 4 新特性与适用场景
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'astro/001-AstroOverview'
 prerequisites: []

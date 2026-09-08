@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译原理核心：词法分析、语法分析、语义分析、中间代码生成、优化、目标代码生成。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/020-FormalLanguageAndAutomata'
   - 'cs-fundamentals/021-InformationSecurityBasics'

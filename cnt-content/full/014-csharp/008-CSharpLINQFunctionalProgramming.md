@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: LINQ 查询语法与方法语法、延迟执行、标准查询运算符、PLINQ、表达式树、局部函数、模式匹配进阶、函数式编程范式、Monad 与函子、范畴论应用
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'csharp/006-CGenericCollection'
   - 'csharp/007-CAsyncProgramming'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 基于 JMH 与 kotlinx-benchmark 的 Kotlin 性能基准测试方法论、工程实践与陷阱分析
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'kotlin/024-KotlinDSL'
   - 'kotlin/038-KotlinAtomicOperation'

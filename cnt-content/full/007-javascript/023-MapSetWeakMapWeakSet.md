@@ -11,6 +11,27 @@ related: []
 prerequisites: []
 ---
 
+## 前置知识
+
+- 对象与数组的基本用法（见 `javascript/007-ObjectArray`）。
+
+## 学习目标
+
+- 知道 Map、Set 相比"对象 + 数组"分别解决什么问题；
+- 记住 WeakMap/WeakSet 的弱引用语义与典型用途；
+- 会用 ES2025 原生集合运算方法替代手写交集差集。
+
+## Map：为什么不用对象存键值对
+
+Object 的键只能是字符串（Symbol 除外）：拿一个 DOM 节点或一个对象当键，会被强制转成字符串 `"[object Object]"`，所有对象键都撞到同一个槽里。Map 补上了这个能力——**键可以是任意类型**，并且按插入顺序遍历、`size` 直接可查、增删场景下性能更稳。
+
+类比你可把 Object 当"通讯录"（键是姓名字符串），把 Map 当"储物柜"（柜子可以是任何东西本身）。
+
+## Set：为什么不用数组去重后存
+
+数组查"是否包含某元素"是 `includes` 的线性扫描，数据量大时慢；Set 的 `has` 接近常数时间。凡是"只关心有没有、不关心顺序重复"的场景（已访问 ID、权限标签、待去重数据），Set 都是更贴切的结构。
+
+
 ## Map 基础
 
 **基本写法：创建与增删改查**
@@ -107,6 +128,27 @@ const a = new Set([1, 2, 3]);
 const b = new Set([2, 3, 4]);
 const inter = new Set([...a].filter(x => b.has(x))); // {2,3}
 const diff = new Set([...a].filter(x => !b.has(x))); // {1}
+```
+
+---
+
+**基本写法：Set 集合运算（ES2025 原生方法）**
+`<set>.union(<other>)` 等
+```javascript
+// ES2025 起直接内置七个集合运算方法，全部返回新 Set、不改原集合
+const a = new Set([1, 2, 3]);
+const b = new Set([2, 3, 4]);
+
+a.union(b);               // Set(4) {1,2,3,4}   并集
+a.intersection(b);        // Set(2) {2,3}       交集
+a.difference(b);          // Set(1) {1}         差集（a 有 b 无）
+a.symmetricDifference(b); // Set(2) {1,4}       对称差（仅一方有）
+a.isSubsetOf(b);          // false              a 是否为 b 的子集
+a.isSupersetOf(b);        // false              a 是否为 b 的超集
+a.isDisjointFrom(b);      // false              是否无交集（有公共元素 2,3）
+
+// 参数接受任何 Set-like（有 has/size 即可），比手写 filter+includes 的 O(n*m) 快
+a.intersection(new Set([3]));  // Set(1) {3}
 ```
 
 ---
@@ -224,6 +266,7 @@ m.set(key, 1); // 对象作键
 - Map：任意类型键、保留插入顺序、`get/set/has/delete/size`；
 - Set：值唯一、自动去重、`add/has/delete`；
 - Map ↔ 对象互转：`Object.entries` / `Object.fromEntries`；
+- Set 集合运算（ES2025）：`union/intersection/difference/symmetricDifference/isSubsetOf/isSupersetOf/isDisjointFrom`；
 - WeakMap：键必须是对象、不可遍历、无引用时回收；
 - WeakSet：值必须是对象、不可遍历；
 - 遍历：`forEach`/`keys()`/`values()`/`entries()`。
@@ -243,8 +286,17 @@ m.set(key, 1); // 对象作键
 | WeakMap 期望遍历 | 不可遍历 | 改用 Map（注意强引用） |
 | Set 存对象去重 | 引用去重非值去重 | 按需序列化键 |
 
+## 常见陷阱
+
+| 陷阱 | 说明 | 改进方案 |
+| --- | --- | --- |
+| Set 存对象后 `has` 判 false | 引用去重：内容相同的两个对象仍是两个引用 | 存不可变值/序列化键，或复用同一引用 |
+| `Object.fromEntries(map)` 丢对象键 | 对象的键必须是字符串 | 需保留对象键就用 Map 本身，别转对象 |
+| WeakMap 想 `size`/遍历 | 弱引用集合不可枚举（否则干扰 GC 时机） | 需要遍历就换 Map（注意强引用） |
+| NaN 作键 | NaN !== NaN，但 Map/Set 用 SameValueZero 比较，NaN 可作键且只占一位 | 了解即可，行为符合直觉 |
+
 ## 扩展学习
 
-- 对象：`javascript/020-ObjectStaticMethods`；
-- 内存：`javascript/036-MemoryManagementAndGarbageCollection`；
-- 数组：`javascript/006-ObjectArray`。
+- 对象：`javascript/021-ObjectStaticMethods`；
+- 内存：`javascript/037-MemoryManagementAndGarbageCollection`；
+- 数组：`javascript/007-ObjectArray`。

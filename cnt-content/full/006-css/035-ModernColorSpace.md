@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: CSS 现代色彩空间语法速查手册 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related: []
 prerequisites: []
 ---
@@ -168,15 +168,27 @@ prerequisites: []
 
 ---
 
-## color-contrast() 对比色
+## contrast-color() 自动对比色
 
-**基本写法：选择最高对比色**
-`color-contrast(<背景色> vs <候选1>, <候选2>, ...)`
+**基本写法：黑白二选一**
+`contrast-color(<颜色>)`
 ```css
-/* 浏览器自动选择与背景对比度达标的颜色 */
+/* 传入背景色，浏览器返回对比度更高的 white 或 black */
+/* 注意：该函数提案早期叫 color-contrast()，已定名 contrast-color()，
+   旧教程里 color-contrast(#f60 vs white, black) 的写法未进入标准 */
 .badge {
   background: #f60;
-  color: color-contrast(#f60 vs white, black);   /* 选 black */
+  color: contrast-color(#f60);   /* 深底自动配 white，浅底自动配 black */
+  --text: contrast-color(var(--bg)); /* 常与变量搭配，主题切换时文字自动反色 */
+}
+```
+
+**基本写法：配合 @supports 兜底**
+```css
+/* 不支持的浏览器会丢弃整条声明，先写普通值兜底 */
+.badge {
+  color: black;
+  color: contrast-color(#f60);
 }
 ```
 
@@ -236,6 +248,6 @@ prerequisites: []
 
 ## 扩展学习
 
-- 渐变：`css/024-Gradient`；
-- 变量：`css/035-CSSVariableCustomAttribute`；
-- 滤镜：`css/048-CSSFilters`。
+- 渐变：`css/025-Gradient`；
+- 变量：`css/036-CSSVariableCustomAttribute`；
+- 滤镜：`css/049-CSSFilters`。

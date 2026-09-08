@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: translate、rotate、scale、skew、matrix 与 transform-origin 变换组合。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'svg/003-SVGCoordinateSystemViewBox'
   - 'svg/008-SVGGradientPattern'

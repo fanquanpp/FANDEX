@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL自然连接NATURAL JOIN与USING子句：语法、语义、使用场景与潜在陷阱
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/019-GROUPBYGroupingSet'
   - 'sql/020-JoinQuery'

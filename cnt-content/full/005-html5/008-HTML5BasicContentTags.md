@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第一套标签：标题、段落、强调、换行、列表（ul/ol）、链接与图片，目标是写出带图文和列表的简单页面。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/006-HTML5CoreGlobalAttributes'
   - 'html5/007-HTML5OverviewCoreFeature'
@@ -38,12 +38,12 @@ prerequisites:
 | `<ul>`/`<ol>`/`<li>` | 必背 | 导航、列表必用 |
 | `<a>` | 必背 | 链接必用 |
 | `<img>` | 必背 | 图片必用 |
-| `<span>` | 常用 | 行内包裹，配合样式或脚本（速通见 003-HTML5DivSpanContainers） |
+| `<span>` | 常用 | 行内包裹，配合样式或脚本（速通见 005-HTML5DivSpanContainers） |
 | `<strong>`/`<em>` | 了解 | 强调语义，CSS 可辅助表现 |
 | `<mark>`/`<small>`/`<del>`/`<ins>` | 用到再查 | 低频语义标签，不用死记 |
 | `<sub>`/`<sup>` | 知道即可 | 几乎不用，遇到时查文档 |
 
-讲解：标为"必背"的标签需要你闭着眼睛都能写对，它们是每页网页的基础零件；标为"常用"的标签出现频率也很高，记不住可以靠编辑器提示；"用到再查"和"知道即可"的标签了解存在即可，真到使用时再查文档，不需要浪费记忆空间。表格（`table`）与定义列表（`dl`）在下一篇 007-HTML5TableAndStructuredContent 单独讲。
+讲解：标为"必背"的标签需要你闭着眼睛都能写对，它们是每页网页的基础零件；标为"常用"的标签出现频率也很高，记不住可以靠编辑器提示；"用到再查"和"知道即可"的标签了解存在即可，真到使用时再查文档，不需要浪费记忆空间。表格（`table`）与定义列表（`dl`）在下一篇 009-HTML5TableAndStructuredContent 单独讲。
 
 ## 1. 基础文本标签
 
@@ -96,7 +96,7 @@ prerequisites:
 
 ### 1.3 行内文本容器
 
-`<span>` 是行内容器，用于对文本的一部分进行样式设置或标记。它的完整讲解（什么时候用、怎么和 div 配合）在 003-HTML5DivSpanContainers，这里只需要知道：`span` 不换行、宽高由内容撑开。
+`<span>` 是行内容器，用于对文本的一部分进行样式设置或标记。它的完整讲解（什么时候用、怎么和 div 配合）在 005-HTML5DivSpanContainers，这里只需要知道：`span` 不换行、宽高由内容撑开。
 
 ```html
 <p>这是一段文本，其中 <span style="color: red;">红色部分</span> 是使用 span 标签标记的。</p>
@@ -132,7 +132,7 @@ prerequisites:
 | `<br>` | 换行标签，用于在文本中插入换行         |
 | `<hr>` | 分割线标签，用于在页面中插入水平分割线 |
 
-`<br>` 和 `<hr>` 都是空元素（没有闭合标签，见 002-HTML5BlockVsInline）。
+`<br>` 和 `<hr>` 都是空元素（没有闭合标签，见 004-HTML5BlockVsInline）。
 **示例**：
 
 ```html
@@ -201,7 +201,7 @@ prerequisites:
 
 ### 2.3 定义列表
 
-定义列表 `<dl>`（术语 + 描述）用于术语表、问答对等"键值对"场景，与表格同属结构化内容，已移到 007-HTML5TableAndStructuredContent 与表格一起讲解。
+定义列表 `<dl>`（术语 + 描述）用于术语表、问答对等"键值对"场景，与表格同属结构化内容，已移到 009-HTML5TableAndStructuredContent 与表格一起讲解。
 
 ### 2.4 嵌套列表
 
@@ -283,7 +283,7 @@ prerequisites:
 
 - `href` 决定链接目标：网页、锚点、`mailto:` 邮件或 `tel:` 电话；
 - `target="_blank"` 在新标签页打开，应同时搭配 `rel="noopener"` 防止反向标签页劫持；
-- 锚点链接 `#section1` 跳转到页面内 `id="section1"` 的元素，无需重新加载页面（id 属性见 004-HTML5CoreGlobalAttributes）。
+- 锚点链接 `#section1` 跳转到页面内 `id="section1"` 的元素，无需重新加载页面（id 属性见 006-HTML5CoreGlobalAttributes）。
 
 ### 3.2 图像
 
@@ -351,7 +351,7 @@ prerequisites:
 - `controls` 属性显示浏览器原生控制条，移除后需自行实现播放控制；
 - `<iframe>` 用于嵌入第三方页面，应设置 `width`/`height` 并谨慎使用 `allowfullscreen`。
 
-这三个标签的完整 API 分别在 019-AudioVideo 与 021-EmbeddedContent 展开，第一遍知道存在即可。
+这三个标签的完整 API 分别在 021-AudioVideo 与 023-EmbeddedContent 展开，第一遍知道存在即可。
 
 ## 4. 综合示例：基本网页结构（纯 HTML 骨架）
 
@@ -415,7 +415,7 @@ prerequisites:
 **讲解：**
 
 - 这个页面在浏览器中会显示为"白底黑字"的朴素风格——这正是 HTML 的本职工作：只负责内容和结构，不负责美化；
-- `header` 包住标题与导航，`main` 包住三个 `section`，`footer` 放版权信息，三段结构一目了然；这些语义容器的完整讲解在 008-SemanticTag；
+- `header` 包住标题与导航，`main` 包住三个 `section`，`footer` 放版权信息，三段结构一目了然；这些语义容器的完整讲解在 010-SemanticTag；
 - 导航里的 `<ul>` 和"服务列表"里的 `<ul>` 表达的都是"一组并列项目"，语义正确；
 - `mailto:` 与 `tel:` 链接让用户点击后直接唤起邮件与拨号应用。
 
@@ -476,9 +476,9 @@ prerequisites:
 
 ## 9. 扩展学习
 
-- 表格方向：`007-HTML5TableAndStructuredContent` 学习 `table` 与定义列表 `dl`；
-- 语义方向：阅读 `008-SemanticTag` 掌握 `article` 与 `section` 的边界；
-- 表单方向：深入 `010-HTML5FormValidation` 学习输入类型与验证 API；
-- 数据方向：结合 `032-CustomDataAttribute` 实践 `data-*` 与 `dataset`；
-- 无障碍方向：参考 `009-Accessibility` 补齐 ARIA 与键盘导航；
-- 媒体方向：在 `019-AudioVideo` 中学习 `audio`/`video` 的完整 API。
+- 表格方向：`009-HTML5TableAndStructuredContent` 学习 `table` 与定义列表 `dl`；
+- 语义方向：阅读 `010-SemanticTag` 掌握 `article` 与 `section` 的边界；
+- 表单方向：深入 `012-HTML5FormValidation` 学习输入类型与验证 API；
+- 数据方向：结合 `034-CustomDataAttribute` 实践 `data-*` 与 `dataset`；
+- 无障碍方向：参考 `011-Accessibility` 补齐 ARIA 与键盘导航；
+- 媒体方向：在 `021-AudioVideo` 中学习 `audio`/`video` 的完整 API。

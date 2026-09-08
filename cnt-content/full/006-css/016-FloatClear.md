@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: CSS 浮动与清除的完整原理：float/clear 属性、BFC 与 flow-root、clearfix 演进与现代布局替代方案。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/014-MarginCollapse'
   - 'css/015-PositionDetailed'
@@ -388,7 +388,7 @@ p {
 
 ## 12. 扩展学习
 
-- 传统布局：`css/020-TraditionalLayoutTech`；
-- 盒模型与 BFC：`css/003-CSS3BoxModelDetailed`、`css/013-MarginCollapse`；
-- 现代布局：`css/021-CSS3FlexboxFlexLayout`、`css/022-CSS3GridGridLayout`；
-- 响应式图文：`css/033-ResponsiveDesign`。
+- 传统布局：`css/021-TraditionalLayoutTech`；
+- 盒模型与 BFC：`css/004-CSS3BoxModelDetailed`、`css/014-MarginCollapse`；
+- 现代布局：`css/022-CSS3FlexboxFlexLayout`、`css/023-CSS3GridGridLayout`；
+- 响应式图文：`css/034-ResponsiveDesign`。

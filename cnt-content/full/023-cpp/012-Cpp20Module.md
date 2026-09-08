@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C++20模块系统(Modules)完整原理：模块接口单元、分区、私有模块、编译模型、ABI影响与迁移策略
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/010-TemplateMetaprogramming'
   - 'cpp/011-Cpp20Range'
@@ -131,20 +131,23 @@ C++20 模块的核心设计：
 - **module;** 声明全局模块片段。
 - **module :private** 声明私有模块片段。
 
-### 1.4 编译器支持现状（2023-2025）
+### 1.4 编译器支持现状（保守表述）
 
-截至 2025 年，三大编译器的模块支持情况：
+截至 2025-2026 年，三大编译器的模块支持程度差异明显，总体格局是：**MSVC 完整度最高，
+GCC 14/15 良好，Clang 仍在持续改进中**（具体特性覆盖请以 cppreference 编译器支持页为准）：
 
 | 编译器 | 版本 | 支持程度 | BMI 格式 | 后缀约定 |
 |--------|------|----------|----------|----------|
-| GCC | 14+ | 完整支持 | `.gcm` (CMI) | `.cppm` |
-| Clang | 17+ | 完整支持 | `.pcm` (PCH) | `.cppm` |
-| MSVC | 19.36+ | 完整支持 | `.ifc` | `.ixx` |
+| MSVC | 19.36+（VS 2019 16.11 起成熟） | 完整（生产可用） | `.ifc` | `.ixx` |
+| GCC | 14/15 | 良好（C++20 模块可用，`import std` 自 GCC 15 起较完整） | `.gcm` (CMI) | `.cppm` |
+| Clang | 17-20 | 持续改进中（核心可用，边角与标准库模块仍在完善） | `.pcm` (BMI) | `.cppm` |
 
 **跨编译器兼容性问题**：
-- BMI 格式不兼容：GCC 的 `.gcm` 无法被 Clang 读取。
+- BMI 格式互不兼容：GCC 的 `.gcm`、Clang 的 `.pcm`、MSVC 的 `.ifc` 彼此无法读取，
+  模块接口必须随源码一起分发并由各编译器自行重建。
 - 模块单元后缀不统一：GCC/Clang 用 `.cppm`，MSVC 用 `.ixx`。
-- 构建系统支持参差不齐：CMake 3.28+ 支持，Ninja 原生支持，Make 需手动配置。
+- 构建系统支持参差不齐：CMake 3.28+ 对 C++20 模块的扫描/依赖管理支持较完善，
+  Ninja 原生支持依赖输出（P1689 格式），Make 需手动配置。
 
 ### 1.5 C++23 与 C++26 的演进
 
@@ -994,10 +997,10 @@ Java 的 package 是命名空间机制，模块化（Java 9 引入的 Module Sys
 
 | 特性 | GCC | Clang | MSVC |
 |------|-----|-------|------|
-| BMI 格式 | `.gcm` (CMI) | `.pcm` (PCH) | `.ifc` |
+| BMI 格式 | `.gcm` (CMI) | `.pcm` (BMI) | `.ifc` |
 | 模块后缀 | `.cppm` | `.cppm` | `.ixx` |
-| 编译选项 | `-fmodules-ts` | `-fmodules` | `/std:c++20` |
-| 标准库模块 | GCC 14+ | Clang 17+ | MSVC 19.36+ |
+| 编译选项 | `-std=c++20` | `-std=c++20` | `/std:c++20` |
+| 标准库模块（import std） | GCC 15 起较完整 | 改进中（需自行构建 BMI） | MSVC 先行者，VS 2022 新版本可用 |
 | CMake 支持 | 3.28+ | 3.28+ | 3.28+ |
 | 跨编译器 BMI | 不兼容 | 不兼容 | 不兼容 |
 
@@ -1628,10 +1631,11 @@ int main() {
 - 消除 `min`/`max` 宏冲突。
 - 简化标准库使用。
 
-**编译器支持**：
-- GCC 14+：支持 `import std;`。
-- Clang 17+：支持 `import std;`。
-- MSVC 19.36+：支持 `import std;`。
+**编译器支持**（总体仍滞后于标准，落地细节随版本变化大，使用前请查证）：
+- MSVC：`import std;` 的先行者，VS 2022 较新版本配合 vcpkg 清单模式或
+  `/scanDependencies` 可用性最好。
+- GCC：GCC 15 起 `import std` 较为完整（GCC 14 仅有初步支持）。
+- Clang/libc++：持续改进中，早期版本需要自行构建标准库模块 BMI，生产使用前务必验证。
 
 ---
 

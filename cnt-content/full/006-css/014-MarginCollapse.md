@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 深入解析 CSS margin 合并、塌陷机制及 BFC 块格式化上下文的工程实践
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'css/010-PriorityCalculation'
   - 'css/012-StyleSheetImportMethod'
@@ -1770,9 +1770,9 @@ CSS Flexbox §4.2 与 CSS Grid §2.2 明确规定：flex item 与 grid item 的 
 | 间距用 margin 而非 gap | 最后一个元素多出边距 | 容器用 `gap` |
 
 ## 10. 扩展学习
-- 盒模型基础：`css/003-CSS3BoxModelDetailed`；
-- BFC 与布局：`css/020-TraditionalLayoutTech`；
-- 弹性布局：`css/021-CSS3FlexboxFlexLayout`（gap 与不合并行为）；
+- 盒模型基础：`css/004-CSS3BoxModelDetailed`；
+- BFC 与布局：`css/021-TraditionalLayoutTech`；
+- 弹性布局：`css/022-CSS3FlexboxFlexLayout`（gap 与不合并行为）；
 - 工程化间距：Tailwind 的 `space-y-*` 与 margin 处理策略。
 
 ## 附录 A：术语表

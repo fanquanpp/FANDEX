@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown中实现下标与上标的多种方式：HTML标签、LaTeX公式与扩展语法。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'markdown/011-AutoLink'
   - 'markdown/012-Emoji'

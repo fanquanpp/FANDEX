@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: sealed、record 与 switch 模式匹配：现代 Java 的代数数据类型表达。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/045-JavaRecordClass'
   - 'java/038-JavaEnumAdvanced'
@@ -15,9 +15,9 @@ prerequisites:
   - 'java/045-JavaRecordClass'
 ---
 
-# 密封类与模式匹配
+## 密封类与模式匹配
 
-想象平台要给演唱会做一个"购票结果"接口：结果要么成功（附带订单号），要么票档售罄，要么限购拦截，要么网络风控失败。用传统继承表达，任何类都能偷偷 `extends` 你的接口，调用方 `switch` 或 `if instanceof` 之后永远不敢说"我处理全了"。Java 17 正式的密封类（sealed，JEP 409）与 Java 21 正式的 record 模式、switch 模式匹配（JEP 440、441）合起来，给出了"受控继承体系 + 编译期穷举检查"的现代解法，让 Java 第一次拥有了接近函数式语言代数数据类型（ADT）的表达能力。
+想象平台要给演唱会做一个"购票结果"接口：结果要么成功（附带订单号），要么票档售罄，要么限购拦截，要么网络风控失败。用传统继承表达，任何类都能偷偷 `extends` 你的接口，调用方 `switch` 或 `if instanceof` 之后永远不敢说"我处理全了"。Java 17 正式的密封类（sealed，JEP 409）与 Java 21 正式的 record 模式、switch 模式匹配（JEP 440、441）合起来，给出了"受控继承体系 + 编译期穷举检查"的现代解法，让 Java 第一次拥有了接近函数式语言代数数据类型（ADT，代数数据类型：用"几个固定形态、每个形态携带固定数据"来建模领域的方式）的表达能力。
 
 ## 前置知识
 
@@ -197,7 +197,9 @@ String s = switch (ticket) {
 
 ## 6. 版本要求与迁移路径
 
-密封类在 Java 17 转正，switch 模式匹配（含 record 解构）在 Java 21 转正，`case null` 与 `when` 守卫同属 21。落地前先确认项目的 `--release` 或工具链版本：17 只能享受 sealed 与 `instanceof` 类型模式，21 才能体验完整的 switch 解构分派；Android 工程要看 AGP 与脱糖支持情况，老环境可以先用"有限集合 + 工厂方法"的编码习惯过渡。
+密封类在 Java 17 转正，switch 模式匹配（含 record 解构）在 Java 21 转正，`case null` 与 `when` 守卫同属 21。落地前先确认项目的 `--release` 或工具链版本：17 只能享受 sealed 与 `instanceof` 类型模式（后者 16 转正），21 才能体验完整的 switch 解构分派；Android 工程要看 AGP 与脱糖支持情况，老环境可以先用"有限集合 + 工厂方法"的编码习惯过渡。
+
+另一条仍在路上的支线是**基本类型模式**（Primitive Types in Patterns，允许 `case int i` 直接匹配包装类型并处理转换）：JDK 23 首次预览（JEP 455），截至 JDK 26 仍是第 4 次预览（JEP 530），尚未转正，生产代码不要依赖，教学示例也无需引入。
 
 迁移存量代码有一条低成本路径：把 `if-else instanceof` 链逐段替换为 switch 类型模式，行为零变化；再把"一个类 + 状态标志"拆成密封接口的多个 record。两条路都可以小步进行，每一步都有编译器兜底。
 

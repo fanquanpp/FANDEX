@@ -6,10 +6,13 @@ category: 计算机科学
 difficulty: beginner
 description: C++ 发展历程、标准演进与现代 C++ 核心特性概览。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/003-CppBasicSyntax'
   - 'cpp/004-CppTypeSystem'
+  - 'cpp/062-Cpp23NewFeatures'
+  - 'cpp/048-Cpp26AndLatestStandard'
+  - 'cpp/077-Cpp20Overview'
   - 'c/002-CLanguageOverview'
 prerequisites: []
 ---
@@ -118,8 +121,8 @@ C++ 标准由 ISO/IEC JTC1/SC22/WG21 委员会制定和维护，以下是主要�
 | **C++14** | 2014     | C++1y  | 对 C++11 的扩展和改进          |
 | **C++17** | 2017     | C++1z  | 进一步的功能增强               |
 | **C++20** | 2020     | C++2a  | 重大更新，引入 Concepts 等特性 |
-| **C++23** | 2023     | C++2b  | 持续改进和新特性               |
-| **C++26** | 2026     | 计划中 | 计划中的下一版本               |
+| **C++23** | 2024     | C++2b  | 完善性更新（ISO/IEC 14882:2024，2023 年定稿、2024 年正式发布） |
+| **C++26** | 预计 2026 | C++2c  | 草案：2025-06 特性冻结，标准本体预计 2026 年底前后发布 |
 
 ### 2.2 C++11 主要特性
 
@@ -182,7 +185,6 @@ C++20 是又一次重大更新：
 - **Coroutines**：协程
 - **Modules**：模块系统
 - **Ranges**：范围库
-- **Concepts**：类型约束
 - **三路比较运算符**：`<=>`
 - **指定初始化器**：`S{.x=1, .y=2}`
 - **`consteval`**：编译时求值
@@ -204,6 +206,9 @@ C++23 继续改进语言：
 - **`std::chrono::locate_zone`**：时区支持
 - **`std::ranges::to`**：范围转换
 - **增强的 `constexpr`**：更多 constexpr 支持
+
+> 标准状态提示：C++23 的正式名称是 **ISO/IEC 14882:2024**（技术定稿于 2023 年，ISO 出版于 2024 年）。下一版 C++26 已于 2025 年 6 月完成特性冻结（feature complete），标准本体预计 2026 年底前后发布——在正式发布前，其内容以「草案」为准，各编译器只提供部分支持。更细的特性清单见
+> [C++23 新特性](/cpp/062-Cpp23NewFeatures)、[C++26 与最新标准](/cpp/048-Cpp26AndLatestStandard)。
 
 ## 3. 应用领域 (Applications)
 
@@ -471,7 +476,7 @@ public:
 
 1. `class` 定义类：`public:` 公开成员，`private:` 私有成员。
 2. 构造函数在对象创建时自动执行，初始化成员变量。
-3. `std::make_unique<Dog>` 创建智能指针，自动管理内存，杜绝手写 delete。
+3. `std::make_unique<Circle>` 创建智能指针，自动管理内存，杜绝手写 delete。
 
 
 ## 7. 最佳实践

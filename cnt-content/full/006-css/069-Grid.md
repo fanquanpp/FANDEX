@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: CSS Grid 布局速查 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related: []
 prerequisites: []
 ---
@@ -436,6 +436,6 @@ prerequisites: []
 
 ## 扩展学习
 
-- 完整教程：`css/022-CSS3GridGridLayout`；
-- 对比：`css/021-CSS3FlexboxFlexLayout`；
-- 实战：`css/067-CSSProjectExampleResponsiveHomepage`。
+- 完整教程：`css/023-CSS3GridGridLayout`；
+- 对比：`css/022-CSS3FlexboxFlexLayout`；
+- 实战：`css/068-CSSProjectExampleResponsiveHomepage`。

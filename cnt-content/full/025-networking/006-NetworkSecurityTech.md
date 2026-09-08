@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络安全技术：防火墙、IDS/IPS、VPN、NAT与访问控制
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'networking/004-OSITCPIPModel'
   - 'networking/005-SwitchingAndRouting'

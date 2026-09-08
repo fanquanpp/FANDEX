@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 类定义、访问修饰符、装饰器模式与元数据。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/011-FunctionGeneric'
   - 'typescript/013-LiteralUnionTypes'
@@ -471,20 +471,45 @@ console.log(product.price); // 输出: 899.99
 - **装饰器**是一个函数，用于修改类、方法、属性或参数的行为。
 - **装饰器语法**使用 `@` 符号，后面跟着装饰器函数名。
 - **装饰器执行时机**：在类定义时执行，而不是在实例化时执行。
-- **启用装饰器**：需要在 tsconfig.json 中开启 `experimentalDecorators` 选项。
+- **两套实现，别混淆**：TypeScript 5.0（2023-03）起**默认支持 TC39 标准装饰器**（提案截至 2026-09 仍为 Stage 3 未定稿），签名为 `(value, context)` 两参数；本节示例采用旧的**实验性装饰器**（需在 tsconfig.json 开启 `experimentalDecorators`，`(target, key, descriptor)` 三参数风格），它仍被 Angular、NestJS 等存量生态广泛使用。新项目请优先使用标准装饰器，完整展开见 `typescript/061-DecoratorStandardImpl` 与 `typescript/023-DecoratorDetailed`。
 
 ### 6.2 装饰器的类型
 
-TypeScript 支持四种类型的装饰器：
+实验性装饰器支持五种装饰器；标准装饰器（TS 5.0+）支持前四种（不含参数装饰器）：
 
 1. **类装饰器**：应用于类声明
 2. **方法装饰器**：应用于类方法
 3. **属性装饰器**：应用于类属性
-4. **参数装饰器**：应用于方法参数
+4. **访问器装饰器**：应用于 getter/setter
+5. **参数装饰器**：应用于方法参数（仅实验性装饰器支持）
+
+### 6.2.1 标准装饰器签名对照
+
+同样是"方法日志"，标准装饰器这样写（无需任何编译选项）：
+
+```typescript
+// 标准装饰器（TS 5.0+ 默认启用）：签名是 (value, context) 两个参数
+function logStandard<T extends (...args: any[]) => any>(
+  value: T,
+  context: ClassMethodDecoratorContext<unknown, T>,
+): T {
+  return function (this: unknown, ...args: any[]) {
+    console.log(`[${String(context.name)}] called with:`, args);
+    return value.apply(this, args);
+  } as T;
+}
+class Greeting {
+  @logStandard
+  hello(name: string) { return `Hello, ${name}`; }
+}
+console.log(new Greeting().hello('TS'));
+// 输出: [hello] called with: ['TS']
+//       Hello, TS
+```
 
 ### 6.3 类装饰器
 
-类装饰器接收一个参数：目标类的构造函数。
+类装饰器接收一个参数：目标类的构造函数。（本节起示例均为**实验性装饰器**签名，需 tsconfig 开启 `experimentalDecorators`。）
 
 ```typescript
 // 类装饰器
@@ -1103,6 +1128,8 @@ console.log(truck.getInfo());
 
 ### 10.2 装饰器的综合应用
 
+> 本节示例为**实验性装饰器**签名（`(target, key, descriptor)`，需开启 `experimentalDecorators`）。迁移到标准装饰器时，把"包装原方法"的逻辑移入 `(value, context)` 签名并返回新函数即可，参见 6.2.1 节对照。
+
 ```typescript
 // 日志装饰器
 function log(target: any, key: string, descriptor: PropertyDescriptor) {
@@ -1576,6 +1603,8 @@ stack.push(1)
 ---
 
 ## 装饰器
+
+> 本节及后续"装饰器工厂""类/方法/属性装饰器实战"速查均为**实验性装饰器**签名（`experimentalDecorators: true`）。标准装饰器（TS 5.0+ 默认）使用 `(value, context)` 两参数签名且不含参数装饰器，详见 `typescript/061-DecoratorStandardImpl`。
 
 **换行写法：类装饰器**
 `function <装饰器>(<构造函数>: { new (...args: any[]): any }) { <语句> }`

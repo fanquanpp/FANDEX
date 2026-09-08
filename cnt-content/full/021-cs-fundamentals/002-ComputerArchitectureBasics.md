@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 从零理解计算机体系结构：冯·诺依曼模型、CPU 工作原理、指令周期、存储层次与总线系统（入门学习笔记）。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/001-ComputerOverview'
   - 'cs-fundamentals/003-ComputerArchitecture'

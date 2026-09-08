@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 映射类型、条件类型、模板字面量类型与类型体操。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/024-DeclarationFileWriting'
   - 'typescript/026-ModuleResolutionModernToolchains'

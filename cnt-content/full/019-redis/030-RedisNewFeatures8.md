@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 从 7 到 8：新数据类型、性能改进与功能演进。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'redis/029-NewFeatures7'
 prerequisites:

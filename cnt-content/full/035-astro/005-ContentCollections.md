@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以知识管理者的困惑为引，讲解内容集合：content.config.ts、glob loader、zod schema 校验、getCollection 查询、render 渲染与 Live Content Collections
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'astro/003-PagesRouting'
   - 'astro/006-IslandsClientComponents'

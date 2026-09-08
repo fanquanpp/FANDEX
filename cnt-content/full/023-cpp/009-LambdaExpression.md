@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C++11 至 C++23 Lambda 表达式的捕获语义、闭包类型、性能模型与工程实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/017-CppSTL'
   - 'cpp/021-MultithreadingConcurrency'

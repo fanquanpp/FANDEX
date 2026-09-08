@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 安全基线：CIS Benchmark、等保 2.0 与加固实践。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cybersecurity/031-ZeroTrustArchitecture'
   - 'cybersecurity/032-IdentityAccessManagement'

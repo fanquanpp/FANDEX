@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Tailwind CSS 4 主题定制全攻略：@theme 设计令牌、@theme inline、@utility、OKLCH 色彩与运行时换肤，从品牌设计规范视角落地你的设计系统
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'tailwind/002-InstallConfig'
   - 'tailwind/008-V4Features'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 浏览器如何加载与解析 CSS，DOM 与 CSSOM 如何合成渲染树并完成绘制。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/012-StyleSheetImportMethod'
   - 'css/061-CriticalRenderPathOptimization'
@@ -24,7 +24,7 @@ prerequisites:
 3. 把两棵树合并成“渲染树”（Render Tree），只留下真正要画的内容；
 4. 计算位置（布局）并绘制到屏幕（绘制）。
 
-本课只讲这条流程的“入门版”，让你知道样式为什么会生效、为什么不生效、以及为什么 `link` 要写在 `<head>` 里。深入版本见 `css/060-CriticalRenderPathOptimization`。
+本课只讲这条流程的“入门版”，让你知道样式为什么会生效、为什么不生效、以及为什么 `link` 要写在 `<head>` 里。深入版本见 `css/061-CriticalRenderPathOptimization`。
 
 ## 1. 第一步：HTML 变成 DOM
 
@@ -107,7 +107,7 @@ flowchart LR
 
 ## 6. 与 035 的分工
 
-`css/060-CriticalRenderPathOptimization` 讲的是“如何让这条流程更快”：压缩 CSS、去掉阻塞、延迟非关键样式等。本课只要建立流程直觉：
+`css/061-CriticalRenderPathOptimization` 讲的是“如何让这条流程更快”：压缩 CSS、去掉阻塞、延迟非关键样式等。本课只要建立流程直觉：
 
 - HTML → DOM；
 - CSS → CSSOM；
@@ -143,7 +143,7 @@ flowchart LR
 
 ## 10. 扩展学习
 
-- 关键渲染路径深入：`css/060-CriticalRenderPathOptimization`；
-- 引入方式与渲染阻塞：`css/011-StyleSheetImportMethod`；
-- 优先级计算：`css/009-PriorityCalculation`；
-- HTML 结构基础：`html5/006-HTML5OverviewCoreFeature`。
+- 关键渲染路径深入：`css/061-CriticalRenderPathOptimization`；
+- 引入方式与渲染阻塞：`css/012-StyleSheetImportMethod`；
+- 优先级计算：`css/010-PriorityCalculation`；
+- HTML 结构基础：`html5/007-HTML5OverviewCoreFeature`。

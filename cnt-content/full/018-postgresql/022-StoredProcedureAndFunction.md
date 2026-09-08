@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL存储过程与函数：PL/pgSQL、PL/Python、PL/Perl与过程语言扩展
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'postgresql/020-FullTextSearch'
   - 'postgresql/021-GeoSpatialObject'

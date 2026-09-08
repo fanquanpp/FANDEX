@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: HTML响应式图片详解：srcset、sizes、picture元素与艺术指导策略。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/043-CSSPerformanceOptimizationDetailed'
   - 'css/066-HTMLSemanticSEO'
@@ -304,6 +304,6 @@ export default defineConfig({
 
 ## 扩展学习
 
-- 完整教程：`html5/019-ImageResponsiveImage`；
-- 对象适配：`css/049-CSSObjectFit`；
-- 性能：`javascript/050-CoreWebVitalsAndPerformanceMetrics`。
+- 完整教程：`html5/020-ImageResponsiveImage`；
+- 对象适配：`css/050-CSSObjectFit`；
+- 性能：`javascript/051-CoreWebVitalsAndPerformanceMetrics`。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: slog与结构化日志
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'go/037-GoDependencyInjection'
   - 'go/038-GoConfigManagement'

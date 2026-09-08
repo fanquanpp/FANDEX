@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: flex 容器与项目属性、对齐方式与常见布局模式。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'css/008-CSS3SelectorSystem'
   - 'css/021-TraditionalLayoutTech'
@@ -1856,7 +1856,7 @@ Flexbox 是一种强大的一维布局模型，具有以下优势：
 
 ## 扩展学习
 
-- Grid 对比：`css/022-CSS3GridGridLayout` 一维与二维布局的选择；
-- 响应式：`css/033-ResponsiveDesign` 中 Flexbox 与媒体查询配合；
-- 经典布局：`css/020-TraditionalLayoutTech` 对比浮动方案；
-- 实战：`css/067-CSSProjectExampleResponsiveHomepage` 完整响应式首页。
+- Grid 对比：`css/023-CSS3GridGridLayout` 一维与二维布局的选择；
+- 响应式：`css/034-ResponsiveDesign` 中 Flexbox 与媒体查询配合；
+- 经典布局：`css/021-TraditionalLayoutTech` 对比浮动方案；
+- 实战：`css/068-CSSProjectExampleResponsiveHomepage` 完整响应式首页。

@@ -6,12 +6,15 @@ category: 计算机科学
 difficulty: advanced
 description: C++23新特性详解：std::print、std::expected、std::flat_map、deducing this、std::mdspan、std::generator 等。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/060-Cpp20Coroutine'
   - 'cpp/061-Cpp20Concept'
   - 'cpp/063-CppTemplate'
   - 'cpp/064-MemoryOrderLockFree'
+  - 'cpp/002-CppOverviewAndModernStandard'
+  - 'cpp/035-Cpp23Cpp26NewFeatures'
+  - 'cpp/076-Cpp26LatestStandard'
 prerequisites:
   - 'cpp/002-CppOverviewAndModernStandard'
 ---
@@ -37,30 +40,32 @@ C++23 是继 C++20 之后的"完善版"标准。C++20 引入了 concepts、range
 
 - **完善 C++20**：修复 concepts 与 ranges 的不完善之处；
 - **填补库空白**：`std::expected`、`std::flat_map`、`std::generator` 等长期被社区要求的工具；
-- **简化常用模式**：`std::print`/`std::println`、`if consteval`、`std::print` 等；
+- **简化常用模式**：`std::print`/`std::println`、`if consteval`、多维下标等；
 - **性能优化**：`std::move_only_function`、`std::mdspan` 等。
 
-C++23 标准于 **2023 年 12 月**正式发布（ISO/IEC 14882:2023）。
+C++23 于 2023 年完成技术定稿，以 **ISO/IEC 14882:2024** 的名义于 2024 年正式发布（2023 年是「定稿年份」，官方出版编号是 14882:2024）。
 
 ### 1.2 关键提案一览
 
 | 提案 | 标题 | 作者 | 特性 |
 | :--- | :--- | :--- | :--- |
-| P2096 | `std::print` formatting facility | S. Hittle, S. Plum | `std::print`/`std::println` |
-| P0323 | `std::expected` | Vicente Botet Escriba | expected 类型 |
+| P2093 | `std::print` formatting facility | V. Zverovich | `std::print`/`std::println` |
+| P0323 | `std::expected` | V. Botet Escriba et al. | expected 类型 |
 | P0429 | `std::flat_map` | M. Park, B. Yahyaouy | 扁平映射容器 |
 | P1222 | `std::flat_set` | M. Park | 扁平集合 |
 | P2295 | Support for UTF-8 as a portable source file encoding | Corentin Jabot | UTF-8 源码 |
-| P0847 | Deducing this | Gašper Ažman, Basil Fierz | 显式对象参数 |
-| P2316 | `if consteval` | Ed Catmur | consteval 判断 |
-| P0834 | `static operator()` | Barry Revzin | 静态调用运算符 |
-| P2589 | `std::mdspan` | H. Carter Edwards et al. | 多维视图 |
+| P0847 | Deducing this | Gašper Ažman et al. | 显式对象参数 |
+| P1938 | `if consteval` | Ed Catmur | consteval 判断 |
+| P1169 | `static operator()` | G. Ažman, B. Revzin | 静态调用运算符 |
+| P0009 | `std::mdspan` | H. Carter Edwards et al. | 多维视图 |
 | P2502 | `std::generator` | Casey Carter | 协程生成器 |
-| P0288 | `std::move_only_function` | J. Brown | 可移动函数包装 |
+| P0288 | `std::move_only_function` | R. Leahy | 可移动函数包装 |
 | P2447 | `std::span` constructors | A. Krinkin | span 改进 |
 | P2164 | `views::enumerate` | Tim Song | 索引视图 |
 | P2286 | Formatting ranges | B. Stroustrup | ranges 格式化 |
-| P2549 | `std::string::contains` | F. Erkelens | 字符串包含 |
+| P1679 | `std::string::contains` | — | 字符串包含 |
+| P2465 | Standard Library Modules `std`/`std.compat` | — | `import std;`（编译器落地滞后） |
+| P0881 | `std::stacktrace` | — | 栈回溯 |
 
 ### 1.3 C++11/14/17/20/23/26 演进
 
@@ -70,8 +75,8 @@ C++23 标准于 **2023 年 12 月**正式发布（ISO/IEC 14882:2023）。
 | **C++14** | 2014 | generic lambda、`std::make_unique`、`constexpr` 改进 |
 | **C++17** | 2017 | `std::optional`、`std::variant`、`std::string_view`、`if constexpr` |
 | **C++20** | 2020 | concepts、ranges、coroutines、modules、`<=>` |
-| **C++23** | 2023 | `std::print`、`std::expected`、`std::flat_map`、`std::mdspan`、deducing this |
-| **C++26** | 草案 | Hazard pointer、`std::rcu`、reflection、`std::execution` |
+| **C++23** | 2024（ISO/IEC 14882:2024） | `std::print`、`std::expected`、`std::flat_map`、`std::mdspan`、deducing this |
+| **C++26** | 草案（预计 2026 年底前后发布） | 静态反射、契约、`std::execution`、pack indexing、`std::inplace_vector`、`std::hive` |
 
 ### 1.4 与其他语言对比
 
@@ -485,7 +490,7 @@ int main() {
     auto r3 = compute(-16.0, 4.0); // 失败：负平方根
 
     if (r1) std::println("r1 = {}", *r1);
-    else    std::println("r1 error: {}", to_string(r2.error()));
+    else    std::println("r1 error: {}", to_string(r1.error()));
 
     if (r2) std::println("r2 = {}", *r2);
     else    std::println("r2 error: {}", to_string(r2.error()));
@@ -849,6 +854,48 @@ int main() {
 }
 ```
 
+### 4.12 `std::stacktrace` 栈回溯
+
+C++23 把栈回溯标准化为 `std::stacktrace`（提案 P0881），异常诊断、崩溃日志不再依赖平台专有 API：
+
+```cpp
+// file: stacktrace_demo.cpp
+// compile: g++ -std=c++23 -O0 -g -o st stacktrace_demo.cpp -lstdc++exp
+// 注意：GCC/libstdc++ 上 <stacktrace> 位于 libstdc++exp 库，需显式链接
+#include <stacktrace>
+#include <print>
+
+void inner() {
+    // 打印当前调用栈（调试用途；注意打印本身有运行时开销）
+    std::println("{}\n", std::stacktrace::current());
+}
+
+void outer() { inner(); }
+
+int main() {
+    outer();
+    return 0;
+}
+// 典型输出（地址随平台变化）：
+//  0# inner() at stacktrace_demo.cpp:7
+//  1# outer() at stacktrace_demo.cpp:10
+//  2# main at ...
+```
+
+### 4.13 `import std;`：标准库模块（落地滞后）
+
+C++23 把整个标准库封装成模块 `std` 与 `std.compat`（提案 P2465），理论上只需写：
+
+```cpp
+import std;          // 一次性导入整个标准库（不再需要 #include）
+
+int main() {
+    std::println("hello, modules");
+}
+```
+
+但要客观说明：`import std` 的**编译器/构建系统落地长期滞后于标准**。它要求编译器以二进制模块接口（BMI）形式预构建标准库，GCC 15、Clang（libc++）与 MSVC 的支持进度各不相同，CMake 也需要较新版本才能简化配置。生产环境中更稳妥的做法仍是 `#include` 头文件，或在确认工具链完整支持后再切换。这本身就是 C++23 的一个缩影：标准已定稿，生态落地需要时间。
+
 ## 5. 对比分析
 
 ### 5.1 `std::expected` 与 Rust `Result`
@@ -885,6 +932,9 @@ int main() {
 | Kotlin | `Sequence<T>` | `yield` |
 
 ### 5.4 编译器支持矩阵
+
+下表为大致情况（不同标准库实现、不同特性的落地时间差异很大），精确版本请以
+[cppreference 编译器支持页](https://en.cppreference.com/w/cpp/compiler_support) 为准：
 
 | 特性 | GCC | Clang | MSVC |
 | :--- | :--- | :--- | :--- |
@@ -1489,16 +1539,17 @@ int main() {
 
 ### 11.2 论文与提案
 
-- **P2096**: std::print formatting facility
+- **P2093**: std::print formatting facility
 - **P0323**: std::expected
 - **P0429**: std::flat_map
 - **P0847**: Deducing this
 - **P0009**: std::mdspan
 - **P2502**: std::generator
 - **P0288**: std::move_only_function
-- **P2316**: if consteval
-- **P0834**: static operator()
-- **P2549**: std::string::contains
+- **P1938**: if consteval
+- **P1169**: static operator()
+- **P1679**: std::string::contains
+- **P2465**: Standard Library Modules（import std）
 
 ### 11.4 视频课程
 
@@ -1521,7 +1572,7 @@ int main() {
 
 | 特性 | 头文件 | 主要提案 |
 | :--- | :--- | :--- |
-| `std::print`/`println` | `<print>` | P2096 |
+| `std::print`/`println` | `<print>` | P2093 |
 | `std::expected` | `<expected>` | P0323 |
 | `std::flat_map`/`flat_set` | `<flat_map>`/`<flat_set>` | P0429/P1222 |
 | `std::mdspan` | `<mdspan>` | P0009 |
@@ -1537,6 +1588,8 @@ int main() {
 | `std::string::contains` | `<string>` | P1679 |
 | `std::unreachable` | `<utility>` | P0627 |
 | 多维 `operator[]` | （语言特性） | P2128 |
+| `std::stacktrace` | `<stacktrace>` | P0881 |
+| `import std;` 标准库模块 | （模块） | P2465 |
 
 ## 附录 B：编译器支持矩阵
 

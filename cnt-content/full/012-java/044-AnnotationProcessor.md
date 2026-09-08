@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java注解处理器详解：Annotation Processor编译时生成代码。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/055-ThreadLocalMemoryLeak'
   - 'java/043-ReflectionDynamicProxy'

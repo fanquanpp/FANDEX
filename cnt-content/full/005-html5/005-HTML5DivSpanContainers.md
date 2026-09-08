@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 实战最常用的搭积木工具：div 做布局分组、span 修饰局部文字，附"全 div 反例"与"语义 + 容器正解"对比。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/004-HTML5BlockVsInline'
   - 'html5/006-HTML5CoreGlobalAttributes'
@@ -121,7 +121,7 @@ span 不能包块级元素（还记得 002 的嵌套铁律吗），它的舞台�
 
 ## 6. 语义化标签先认识一下
 
-后面 `008-SemanticTag` 会系统讲解，这里先混个脸熟：
+后面 `010-SemanticTag` 会系统讲解，这里先混个脸熟：
 
 | 标签 | 含义 |
 | --- | --- |
@@ -159,4 +159,4 @@ span 不能包块级元素（还记得 002 的嵌套铁律吗），它的舞台�
 
 ## 9. 下一步
 
-容器有了，接下来给它们"贴标签"：`004-HTML5CoreGlobalAttributes` 讲 `id`、`class`、`style` 三个属性——它们是 HTML 通往 CSS 和 JavaScript 的通道。
+容器有了，接下来给它们"贴标签"：`006-HTML5CoreGlobalAttributes` 讲 `id`、`class`、`style` 三个属性——它们是 HTML 通往 CSS 和 JavaScript 的通道。

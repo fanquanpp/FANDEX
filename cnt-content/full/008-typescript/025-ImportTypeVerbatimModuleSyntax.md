@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 值导入与类型导入的区别、import type 的写法、verbatimModuleSyntax 与 isolatedModules 的作用及常见陷阱。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'typescript/026-ModuleResolutionModernToolchains'
   - 'typescript/024-DeclarationFileWriting'

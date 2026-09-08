@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Go 语言概述、设计哲学、发展历史、Go 1.22+ 新特性、环境搭建、模块系统与 Hello World。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'go/003-GoBasicSyntax'
   - 'go/004-GoFunctionMethod'

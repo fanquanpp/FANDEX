@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: viewport、移动优先设计
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/034-CustomDataAttribute'
   - 'html5/035-CrossDocumentCommunication'
@@ -125,7 +125,7 @@ console.log(window.devicePixelRatio); // 1, 2, 3 等
 1. `container-type: inline-size` 让该元素成为"容器查询的参考容器"。
 2. `@container (min-width: 400px)` 与媒体查询写法几乎一样，但判断的是容器宽度而非视口。
 3. 它与组件化开发天然契合：同一个组件在侧边栏与主内容区可以呈现不同布局。
-4. 完整教程见 `css/032-ContainerQuery`；第一遍了解概念即可。
+4. 完整教程见 `css/033-ContainerQuery`；第一遍了解概念即可。
 
 ## 视口类型
 
@@ -404,7 +404,7 @@ el.addEventListener('gesturechange', (e) => {
 
 ## 扩展学习
 
-- 响应式：`css/031-MediaQuery` 断点与媒体查询完整语法；
-- 图片适配：`html5/019-ImageResponsiveImage` 的 srcset 与 DPR；
-- 移动端布局：`css/033-ResponsiveDesign` 响应式设计模式；
+- 响应式：`css/032-MediaQuery` 断点与媒体查询完整语法；
+- 图片适配：`html5/020-ImageResponsiveImage` 的 srcset 与 DPR；
+- 移动端布局：`css/034-ResponsiveDesign` 响应式设计模式；
 - 安全区域：Apple 的 safe-area-inset 文档与 `env()` 函数用法。

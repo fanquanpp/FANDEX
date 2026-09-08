@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C语言动态内存分配、内存布局、常见内存错误与调试技术详解。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/040-C23C2y'
   - 'c/041-PointerDeep'
@@ -164,15 +164,19 @@ void realloc_details(void) {
         return;
     }
     ptr = new_ptr;  // 始终使用返回值更新指针
+    // 注意：此刻 ptr 与 new_ptr 指向同一块内存，
+    // 绝不能再 free(new_ptr)，否则就是重复释放
 
     // 特殊用法：realloc(NULL, size) 等价于 malloc(size)
     int *p = (int *)realloc(NULL, 5 * sizeof(int));
+    if (!p) { free(ptr); return; }
 
-    // 特殊用法：realloc(ptr, 0) 等价于 free(ptr)（C99前）
-    // 注意：C11中行为已变更，不建议使用
+    // 关于 realloc(ptr, 0)：C99 曾允许其表示"释放并返回 NULL"，
+    // C11 起行为变为实现定义，C23 已移除该用法——不要这样写，
+    // 释放内存请老老实实调用 free
 
-    free(ptr);
-    free(new_ptr);
+    free(ptr);   // 释放扩容后的内存（即 new_ptr 指向的同一块）
+    free(p);     // 释放 realloc(NULL, ...) 分配的内存
 }
 ```
 

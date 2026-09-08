@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 route.ts 编写后端接口：方法、动态段、请求响应与缓存语义。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'nextjs/003-DataFetchingCaching'
   - 'nextjs/004-DeploymentOptimization'

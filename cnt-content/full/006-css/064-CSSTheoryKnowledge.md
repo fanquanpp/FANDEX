@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 层叠规则、包含块、格式化上下文与渲染原理。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/063-CSSInJS'
   - 'css/044-CSSArchitectureMethodology'
@@ -363,9 +363,9 @@ img {
 | 回流/重绘   | Layout > Paint > Composite                               | 避免频繁触发 Layout                       |
 
 ## 延伸阅读
-CSS 圆角与形状，见 007-css/051-BorderRadius 文档。
-CSS 媒体查询与响应式，见 007-css/031-MediaQuery 文档。
-CSS 函数与变量，见 007-css/053-Function 文档。
+CSS 圆角与形状，见 007-css/052-BorderRadius 文档。
+CSS 媒体查询与响应式，见 007-css/032-MediaQuery 文档。
+CSS 函数与变量，见 007-css/054-Function 文档。
 HTML 结构与语义，见 006-html5 模块。
 
 ## 动手试试
@@ -396,6 +396,6 @@ HTML 结构与语义，见 006-html5 模块。
 
 ## 扩展学习
 
-- 盒模型：`css/003-CSS3BoxModelDetailed`；
-- 优先级：`css/009-PriorityCalculation`；
-- 层叠上下文：`css/016-StackingContext`。
+- 盒模型：`css/004-CSS3BoxModelDetailed`；
+- 优先级：`css/010-PriorityCalculation`；
+- 层叠上下文：`css/017-StackingContext`。

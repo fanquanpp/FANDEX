@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 泛型函数与结构体、Trait 定义实现、Trait 对象与生命周期标注
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'rust/009-RustCollectionsIterators'
   - 'rust/008-RustErrorHandling'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "@font-face、font-display 与字体加载策略，兼顾品牌字体与首屏性能。"
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/045-TypographyAndGridSystem'
   - 'css/043-CSSPerformanceOptimizationDetailed'
@@ -100,8 +100,8 @@ body {
 
 ## 5. 扩展学习
 
-- 排版体系：`css/044-TypographyAndGridSystem`；
-- 性能：`css/042-CSSPerformanceOptimizationDetailed`、`html5/037-CriticalRenderingPathAndResourceLoading`；
+- 排版体系：`css/045-TypographyAndGridSystem`；
+- 性能：`css/043-CSSPerformanceOptimizationDetailed`、`html5/038-CriticalRenderingPathAndResourceLoading`；
 - 字体格式：woff2/woff/ttf 的兼容矩阵；
 - 字体转换工具：Font Squirrel Webfont Generator（生成多格式并子集化）、Google Fonts CSS2 API 的子集参数；
-- 资源预加载：`html5/006-HTML5OverviewCoreFeature` 的 preload 章节。
+- 资源预加载：`html5/007-HTML5OverviewCoreFeature` 的 preload 章节。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS Modules
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/058-BEMNamingMethodology'
   - 'css/059-CSSAtomic'
@@ -147,5 +147,5 @@ import styles from './Component.module.css';
 ## 扩展学习
 
 - Vite：`vite/005-CSSPreprocessors`；
-- 原子化：`css/058-CSSAtomic`；
-- 架构：`css/043-CSSArchitectureMethodology`。
+- 原子化：`css/059-CSSAtomic`；
+- 架构：`css/044-CSSArchitectureMethodology`。

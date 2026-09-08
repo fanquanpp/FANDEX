@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: History API（pushState、replaceState）
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/029-ServiceWorkerPWA'
 prerequisites:
@@ -406,6 +406,6 @@ history.pushState({ storageKey: 'pageState' }, '', '/page');
 ## 扩展学习
 
 - 路由框架：Vue Router / React Router 的 history 模式配置；
-- 前端路由原理：`javascript/038-ModuleDynamicImportCodeSplitting` 与路由懒加载；
-- URL 标准：`javascript/010-Regex` 或 WHATWG URL 规范；
+- 前端路由原理：`javascript/039-ModuleDynamicImportCodeSplitting` 与路由懒加载；
+- URL 标准：`javascript/011-Regex` 或 WHATWG URL 规范；
 - 服务器配置：Nginx `try_files` 的 SPA fallback 写法。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS 媒体查询完整原理：@media 语法、媒体特性、响应式断点、深色模式与 matchMedia。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/029-CSSAnimationTransition'
   - 'css/052-BorderRadius'
@@ -1312,7 +1312,7 @@ window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e)
 
 ## 扩展学习
 
-- 容器查询：`css/032-ContainerQuery`；
-- 响应式设计：`css/033-ResponsiveDesign`；
-- 移动适配：`css/052-MobileAdaptation`；
-- 可访问性：`css/045-AccessibleStyling`。
+- 容器查询：`css/033-ContainerQuery`；
+- 响应式设计：`css/034-ResponsiveDesign`；
+- 移动适配：`css/053-MobileAdaptation`；
+- 可访问性：`css/046-AccessibleStyling`。

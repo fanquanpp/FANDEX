@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java 泛型进阶——类型擦除机制、通配符语义、边界约束、桥接方法与 Project Valhalla 演进的形式化定义、理论推导与工程实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/007-VariableConstant'
   - 'java/037-JavaAnnotationsTutorial'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 一维、多维数组、字符数组、数组与指针的关系及内存布局。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/036-EmbeddedCProgramming'
   - 'c/037-CAssemblyInteraction'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React并发渲染与可中断更新详解：Concurrent Rendering原理。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'react/042-React19NewAPI'
   - 'react/044-ErrorBoundarySentry'

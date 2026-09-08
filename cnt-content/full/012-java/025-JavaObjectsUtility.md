@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Java Objects 工具类语法速查手册 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'java/018-ExceptionHandlingMechanism'
   - 'java/024-JavaComparatorComparable'

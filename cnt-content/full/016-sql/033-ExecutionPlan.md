@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL执行计划：EXPLAIN与EXPLAIN ANALYZE的输出解读、扫描类型、连接策略与性能诊断
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/032-Index'
   - 'sql/034-TransactionACIDProperty'

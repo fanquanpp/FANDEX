@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 对象存储、块存储、文件存储、归档存储、存储分层策略、数据生命周期管理、跨区域复制与一致性。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cloud-computing/012-CloudDatabaseService'
   - 'cloud-computing/013-KubernetesCore'

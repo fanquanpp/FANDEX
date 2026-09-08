@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: reflect包深度剖析：Type/Value/Kind 三大核心、动态调用、性能优化、反射元编程、生产级应用与陷阱
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'go/015-UnsafePointer'
   - 'go/019-MemoryAlignment'

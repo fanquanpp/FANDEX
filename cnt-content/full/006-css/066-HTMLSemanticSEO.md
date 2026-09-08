@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: HTML语义化标签与SEO优化详解：结构化标记、Schema.org、无障碍与搜索引擎友好实践。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/065-CSSNewFeatures'
   - 'css/043-CSSPerformanceOptimizationDetailed'
@@ -340,6 +340,6 @@ Sitemap: https://example.com/sitemap.xml
 
 ## 扩展学习
 
-- 语义：`html5/009-SemanticTag`；
-- 元数据：`html5/015-MetadataCharacterEncoding`；
-- 结构化数据：`html5/032-MicrodataJSONLD`。
+- 语义：`html5/010-SemanticTag`；
+- 元数据：`html5/016-MetadataCharacterEncoding`；
+- 结构化数据：`html5/033-MicrodataJSONLD`。

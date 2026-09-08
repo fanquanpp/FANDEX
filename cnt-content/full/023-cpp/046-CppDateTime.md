@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C++ chrono 库全解：duration、time_point、clock、C++20 日历与时区、C++23 时区数据库、leap second、计时基准、跨平台精度，含类型安全设计、UB 场景与企业级实战。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/045-CppSmartPointer'
   - 'cpp/031-CppRegex'
@@ -185,7 +185,7 @@ C++26 持续完善 chrono：
 
 `std::chrono::duration` 是 chrono 库的核心类型，表示一段时间间隔。
 
-形式化定义（ISO/IEC 14882:2023 §27.5）：
+形式化定义（ISO/IEC 14882:2024 §27.5）：
 
 $$
 \text{duration}(R, P) := R \times \frac{P_{\text{num}}}{P_{\text{den}}} \text{ seconds}
@@ -1796,7 +1796,7 @@ private:
 
 ### 10.1 标准文档
 
-- ISO/IEC 14882:2023 *Information technology — Programming languages — C++*，§27 Time library
+- ISO/IEC 14882:2024 *Information technology — Programming languages — C++*，§27 Time library
 - ISO/IEC 9899:2018 *C17*，§7.27 Time handling（C 兼容部分）
 
 ### 10.2 核心提案
@@ -1862,7 +1862,7 @@ private:
 
 ---
 
-> 本文档基于 ISO/IEC 14882:2023（C++23）标准编写，覆盖 C++11 至 C++26 草案的 chrono 库演进。如需了解最新提案进展，请访问 [ISO C++ 委员会官网](https://isocpp.org/) 与 [cppreference.com](https://en.cppreference.com/w/cpp/chrono)。
+> 本文档基于 ISO/IEC 14882:2024（C++23）标准编写，覆盖 C++11 至 C++26 草案的 chrono 库演进。如需了解最新提案进展，请访问 [ISO C++ 委员会官网](https://isocpp.org/) 与 [cppreference.com](https://en.cppreference.com/w/cpp/chrono)。
 ## duration 时长
 
 **基本写法：定义时长**

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: as const 的完整语义：字面量收窄、递归只读、数组转元组，以及与类型注解、satisfies、enum 的取舍。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'typescript/014-TypeInferenceDeepDive'
   - 'typescript/052-SatisfiesOperator'

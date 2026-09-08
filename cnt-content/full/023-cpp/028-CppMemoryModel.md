@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++11 原子操作、内存序、happens-before 关系与无锁编程的工程实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/013-DesignPatternCpp'
   - 'cpp/027-CppOOPAdvanced'
@@ -62,16 +62,16 @@ C++11 (ISO/IEC 14882:2011) 第 1.10 节正式定义内存模型,核心要点:
 
 ### 2011-2020:C++14/17/20 的渐进完善
 
-C++14 修复了 release/consume 语义的漏洞 (`memory_order_consume` 在实践中难以正确实现,标准建议避免使用)。C++17 引入 `std::atomic_ref`,允许对非原子对象进行原子访问。C++20 引入:
+C++14 主要是措辞完善;自 **C++17 起**,`memory_order_consume` 的规范进入修订状态、标准临时不建议使用(实现上没有任何主流编译器真正追踪依赖链,一律按 `acquire` 处理;C++26 起正式废弃)。C++20 引入(注意:`std::atomic_ref` 是 C++20 特性,常被误记为 C++17):
 
 - `std::atomic::wait/notify_one/notify_all`,提供 futex 风格的高效等待
-- `std::atomic_ref` 完善为模板
+- `std::atomic_ref`,允许对非原子对象进行原子访问
 - `std::counting_semaphore`、`std::latch`、`std::barrier` 等同步原语
 - `std::jthread` 与协作式取消机制
 
 ### 2020 至今:C++23/26 与硬件演进
 
-C++23 进一步完善原子 API,引入 `std::atomic_ref<T>::is_always_lock_free` 等编译期常量。C++26 计划引入 `std::execution` (Sender/Receiver 模型),将异步并发与内存模型深度整合。
+C++23 继续增补原子 API(如 `std::atomic` 的 `fetch_min`/`fetch_max`)。`std::execution`(Sender/Receiver 模型)已并入 **C++26 草案**(P2300),为异步并发提供标准执行框架。
 
 硬件层面,ARMv8、RISC-V 等弱内存模型架构在数据中心与移动端普及,x86-TSO 不再是默认假设。Apple Silicon M1/M2、AWS Graviton、华为鲲鹏等 ARM 处理器迫使 C++ 开发者重新审视内存序选择。同时,GPU (CUDA、HIP) 与 CXL (Compute Express Link) 等异构内存架构进一步复杂化了可见性问题。
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: std::thread与同步原语
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/019-FileIOFileSystem'
   - 'cpp/020-ExceptionSecurity'
@@ -38,7 +38,7 @@ C++ 在 2011 年之前**没有标准化的多线程支持**。开发者必须依
 - **C++14**：`std::shared_timed_mutex`（读写锁）；
 - **C++17**：`std::shared_mutex`（无超时读写锁）、`std::scoped_lock`（多锁同时获取避免死锁）、并行算法（`<execution>`）；
 - **C++20**：`std::jthread`（自动 join 与协作停止）、`std::stop_token`/`std::stop_source`、`std::semaphore`、`std::latch`、`std::barrier`、协程（`<coroutine>`）、`std::atomic_ref`、`std::wait`/`std::notify_*`；
-- **C++23**：`std::atomic_ref` 改进、`std::flat_map` 等并行友好的容器、`std::expected` 与异步组合、`std::mdspan`（多维视图便于并行访问）。
+- **C++23**：`std::flat_map` 等缓存友好容器、`std::expected`、`std::mdspan`（多维视图便于并行访问）、`std::print`/`std::println`。
 
 C++ 并发编程的核心挑战是**正确性**——比单线程程序更难写对。原因在于：
 
@@ -164,7 +164,7 @@ C++ 定义了六种内存序，对应不同的同步语义：
 | 内存序 | 语义 | 适用操作 |
 | ------ | ---- | -------- |
 | `memory_order_relaxed` | 无同步，仅保证原子性 | 计数器递增 |
-| `memory_order_consume` | 数据依赖（C++17 起弱化为 `acquire`） | 极少使用 |
+| `memory_order_consume` | 数据依赖（C++17 起规范修订、不建议使用，实现上一律按 `acquire` 处理；C++26 起正式废弃） | 极少使用 |
 | `memory_order_acquire` | 获取：后续读写不能重排序到前面 | load |
 | `memory_order_release` | 释放：前面读写不能重排序到后面 | store |
 | `memory_order_acq_rel` | 获取-释放：读-改-写操作同时具备两种语义 | `fetch_add`、`exchange` |
@@ -943,7 +943,7 @@ int main() {
 | 内存序 | 同步保证 | 性能开销 | 典型用途 |
 | ------ | -------- | -------- | -------- |
 | `relaxed` | 无 | 最低 | 计数器、统计 |
-| `consume` | 数据依赖 | 低（已弱化为 acquire） | 极少使用 |
+| `consume` | 数据依赖（实现上一律按 acquire；已废弃） | 低 | 极少使用 |
 | `acquire` | 读后不重排 | 低 | 读取 flag |
 | `release` | 写前不重排 | 低 | 写入 flag |
 | `acq_rel` | 读改写 | 中 | fetch_add |

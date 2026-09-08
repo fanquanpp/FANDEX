@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: async/await 与 Future、tokio 运行时、常见异步模式与陷阱
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'rust/013-RustEcosystemProject'
   - 'rust/010-RustGenericTrait'

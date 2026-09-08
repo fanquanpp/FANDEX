@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 枚举高级用法与替代方案
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'typescript/031-SymbolsAndUniqueTypes'
   - 'typescript/032-NamespaceModule'

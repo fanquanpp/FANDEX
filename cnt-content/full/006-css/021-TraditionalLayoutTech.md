@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浮动、定位、BFC 与经典布局方案。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'css/004-CSS3BoxModelDetailed'
   - 'css/008-CSS3SelectorSystem'
@@ -770,12 +770,12 @@ BFC（Block Formatting Context）是 CSS 中一个独立的渲染区域，内部
 | 父容器 `overflow: hidden` | sticky 失效 | 用 `overflow: clip` 或调整结构 |
 | 用 float 做整体布局 | 维护困难 | 新项目用 Flexbox/Grid |
 | 负 margin 居中 | 尺寸变化就失效 | 用 transform 或 Flexbox |
-| 忽略 `z-index` 上下文 | 层级不符合预期 | 理解层叠上下文（见 `css/016-StackingContext`） |
+| 忽略 `z-index` 上下文 | 层级不符合预期 | 理解层叠上下文（见 `css/017-StackingContext`） |
 
 ## 10. 扩展学习
 
-- 定位详解：`css/014-PositionDetailed`、`css/016-StackingContext`；
-- 浮动专题：`css/015-FloatClear`；
-- 现代布局：`css/021-CSS3FlexboxFlexLayout`、`css/022-CSS3GridGridLayout`；
-- 边距折叠：`css/013-MarginCollapse`；
-- 响应式：`css/033-ResponsiveDesign`。
+- 定位详解：`css/015-PositionDetailed`、`css/017-StackingContext`；
+- 浮动专题：`css/016-FloatClear`；
+- 现代布局：`css/022-CSS3FlexboxFlexLayout`、`css/023-CSS3GridGridLayout`；
+- 边距折叠：`css/014-MarginCollapse`；
+- 响应式：`css/034-ResponsiveDesign`。

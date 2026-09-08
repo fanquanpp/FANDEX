@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Maven与Gradle
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/088-JavaLogSystem'
   - 'java/087-JavaUnitTest'

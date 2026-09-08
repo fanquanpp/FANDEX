@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: TypeScript中this类型与多态this
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/028-TypeGymnasticsPracticalPatterns'
   - 'typescript/029-CovarianceContravariance'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: CSS transform 与 3D 变换语法速查手册 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related: []
 prerequisites: []
 ---
@@ -256,6 +256,6 @@ prerequisites: []
 
 ## 扩展学习
 
-- 动画：`css/028-CSSAnimationTransition`；
-- 层叠：`css/016-StackingContext`；
-- 性能：`css/042-CSSPerformanceOptimizationDetailed`。
+- 动画：`css/029-CSSAnimationTransition`；
+- 层叠：`css/017-StackingContext`；
+- 性能：`css/043-CSSPerformanceOptimizationDetailed`。

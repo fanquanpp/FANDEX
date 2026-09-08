@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: signal.h与信号处理
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/012-FunctionPointerCallback'
   - 'c/013-VarargsFunction'

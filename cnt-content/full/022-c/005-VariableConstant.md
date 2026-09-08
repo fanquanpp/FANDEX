@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 变量的定义、生命周期、作用域以及常量的多种实现方式。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/003-ProgramStructureBasicSyntax'
   - 'c/004-DataTypeDetailed'

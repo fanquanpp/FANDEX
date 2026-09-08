@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS 数值函数完整原理：calc/min/max/clamp 的语法、单位混合规则、嵌套与响应式应用。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/033-ContainerQuery'
   - 'css/053-MobileAdaptation'
@@ -1064,6 +1064,6 @@ li::before {
 
 ## 扩展学习
 
-- 变量：`css/035-CSSVariableCustomAttribute`；
-- 颜色：`css/034-ModernColorSpace`；
-- 响应式：`css/033-ResponsiveDesign`。
+- 变量：`css/036-CSSVariableCustomAttribute`；
+- 颜色：`css/035-ModernColorSpace`；
+- 响应式：`css/034-ResponsiveDesign`。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 关键CSS内联、异步加载
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/059-CSSAtomic'
   - 'css/042-CSSNativeNesting'
@@ -121,6 +121,6 @@ npx lighthouse https://example.com --view
 
 ## 扩展学习
 
-- 渲染路径：`html5/037-CriticalRenderingPathAndResourceLoading`；
-- 性能：`css/042-CSSPerformanceOptimizationDetailed`；
-- 指标：`javascript/050-CoreWebVitalsAndPerformanceMetrics`。
+- 渲染路径：`html5/038-CriticalRenderingPathAndResourceLoading`；
+- 性能：`css/043-CSSPerformanceOptimizationDetailed`；
+- 指标：`javascript/051-CoreWebVitalsAndPerformanceMetrics`。

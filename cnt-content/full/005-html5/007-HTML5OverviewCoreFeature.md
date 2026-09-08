@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第一课：5 分钟写出第一个网页，理解 HTML5 结构、语义化标签与核心特性。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/002-HTML5EnvSetupFirstPage'
   - 'html5/003-HTML5CommentsAndEntities'
@@ -44,7 +44,7 @@ flowchart LR
 
 ### 0.1 准备工作（2 分钟）
 
-> 还没有创建过 `index.html`，或不知道如何用浏览器打开？先读 `001-HTML5EnvSetupFirstPage`（第 0 课：环境搭建），把"编辑器 → 文件 → 浏览器"的闭环打通再回来。
+> 还没有创建过 `index.html`，或不知道如何用浏览器打开？先读 `002-HTML5EnvSetupFirstPage`（第 0 课：环境搭建），把"编辑器 → 文件 → 浏览器"的闭环打通再回来。
 
 1. 在电脑桌面上新建一个文本文档（记事本），重命名为 `index.html`（如果看不到后缀，需先打开“显示文件扩展名”）；
 2. 右键这个文件，选择“打开方式”里的“记事本”（先不要双击，现在双击会打开浏览器）。
@@ -383,7 +383,7 @@ HTML5 是 HTML 的最新版本，从 2014 年正式发布到现在，所有主�
 
 在 2026 年，主流浏览器（Chrome、Edge、Firefox、Safari）均已完美支持 HTML5 语义化标签，你完全不需要担心兼容问题。
 
-> 历史小贴士：10 多年前（IE6 至 IE8 时代），确实需要引入 `html5shiv.js` 补丁才能让新标签正常渲染。如今这些代码已退出历史舞台，了解一下即可，不必深究，详见 8.6 节；更多废弃标签（font/center/frameset 等）的考古清单见专项 `038-HTML5ObsoleteTags`。
+> 历史小贴士：10 多年前（IE6 至 IE8 时代），确实需要引入 `html5shiv.js` 补丁才能让新标签正常渲染。如今这些代码已退出历史舞台，了解一下即可，不必深究，详见 8.6 节；更多废弃标签（font/center/frameset 等）的考古清单见专项 `040-HTML5ObsoleteTags`。
 
 ### 5.2 语义化过度
 
@@ -677,4 +677,4 @@ HTML5 是现代 Web 开发的基础，它的语义化标签和新特性为 Web �
 - 无障碍方向：学习 ARIA 角色与属性，配合屏幕阅读器（NVDA、VoiceOver）实测；
 - 性能方向：结合 Critical Rendering Path 理解解析、布局与绘制的完整流程；
 - 工程方向：了解 Web Components 与 `<template>` 插槽，掌握组件化封装能力；
-- 关联文档：`html5/010-Accessibility`、`html5/035-ViewportConfigMobileFirst`、`html5/037-CriticalRenderingPathAndResourceLoading`。
+- 关联文档：`html5/011-Accessibility`、`html5/036-ViewportConfigMobileFirst`、`html5/038-CriticalRenderingPathAndResourceLoading`。

@@ -15,7 +15,7 @@ related:
 prerequisites: []
 ---
 
-> 里程碑标注：Temporal 已于 2026 年进入 Stage 4 并纳入 ES2026 草案——它已是标准能力，不再是提案前瞻。生产环境落地前请确认目标运行时的支持矩阵，过渡期可继续用 date-fns/js-joda。
+> 里程碑标注：Temporal 已于 2026 年进入 Stage 4 并正式定稿纳入标准——它已是标准能力，不再是提案前瞻；按 TC39 年度发布节奏（每年 3 月截稿），预计随 ES2027 正式出版。生产环境落地前请确认目标运行时的支持矩阵（以 MDN/caniuse 为准），过渡期可继续用 date-fns/js-joda 或 @js-temporal/polyfill。
 
 # Temporal 现代日期时间 API
 
@@ -36,7 +36,7 @@ prerequisites: []
 
 时间（Time）是软件开发中最复杂的概念之一。看似简单的"现在几点"问题，在跨时区、跨历法、跨夏令时（DST）场景下会衍生出大量边界情况。JavaScript 自 1995 年起内置的 `Date` 对象，因其设计缺陷长期被诟病为"语言中最糟糕的 API 之一"。
 
-`Temporal` 是 TC39 已定稿（Stage 4，ES2026）的现代日期时间 API，目标是：
+`Temporal` 是 TC39 已定稿（Stage 4，2026 年正式定稿，预计随 ES2027 出版）的现代日期时间 API，目标是：
 
 - **类型分离**：用 `Instant`、`ZonedDateTime`、`PlainDateTime`、`PlainDate`、`PlainTime`、`Duration` 等多个类型替代单一 `Date`。
 - **不可变性**：所有 Temporal 对象都是不可变的，避免 `Date` 的 mutate-in-place 陷阱。
@@ -87,7 +87,7 @@ prerequisites: []
 | 2020-03 | Stage 2，API 设计完成 | 命名为 Temporal（区别于 Date） |
 | 2021-01 | Stage 3，等待实现反馈 | polyfill 发布，API 趋于冻结 |
 | 2023-2025 | 引擎实现推进 | V8/SpiderMonkey/JSC 陆续落地实验性支持 |
-| 2026 | Stage 4，纳入 ES2026 | 正式标准化（规范草案 2026-07） |
+| 2026 | Stage 4，正式定稿 | 纳入标准草案，预计随 ES2027 正式出版 |
 
 > 注意：Stage 4 表示规范定稿；各运行时的完整支持仍在铺开，生产使用前用 `Temporal` 存在性检测 + polyfill（@js-temporal/polyfill）兜底。
 
@@ -218,8 +218,9 @@ const pdtNow = Temporal.Now.plainDateTimeISO(); // PlainDateTime（无时区）
 const pdNow = Temporal.Now.plainDateISO();     // PlainDate
 const ptNow = Temporal.Now.plainTimeISO();     // PlainTime
 
-// 指定时区与历法
-const nyNow = Temporal.Now.zonedDateTime('America/New_York', 'chinese');
+// 指定时区与历法（Now 系列只提供 ISO 历后缀方法，其他历法用 withCalendar 换算）
+const nyNow = Temporal.Now.zonedDateTimeISO('America/New_York');
+const chineseNow = nyNow.withCalendar('chinese');  // 转为中国农历表示
 const epochNanos = Temporal.Now.instant().epochNanoseconds;  // BigInt
 ```
 
@@ -340,8 +341,8 @@ console.log(pdt.day);      // 20
 console.log(pdt.hour);     // 10
 console.log(pdt.minute);   // 30
 
-// 与 ZonedDateTime 互转
-const zdt = pdt.toZonedDateTime('America/New_York');
+// 与 ZonedDateTime 互转（PlainDateTime 只能通过 toZonedDateTimeISO 挂上时区）
+const zdt = pdt.toZonedDateTimeISO('America/New_York');
 const pdtBack = zdt.toPlainDateTime();
 
 // 应用场景：生日、日历事件
@@ -409,12 +410,16 @@ const jan31 = Temporal.PlainDate.from('2026-01-31');
 const feb28 = jan31.add({ months: 1 });
 console.log(feb28.toString());  // '2026-02-28'（2 月无 31 日，取月末）
 
-// 差值计算
+// 差值计算（until 默认 largestUnit 为年，自动折算为月+天）
 const d1 = Temporal.PlainDate.from('2026-01-01');
 const d2 = Temporal.PlainDate.from('2026-12-31');
 const diff = d1.until(d2);
-console.log(diff.toString());  // 'P364D'
+console.log(diff.toString());  // 'P11M30D'（11 个月 30 天，合计 364 天）
 console.log(diff.total({ unit: 'day' }));  // 364
+
+// 需要以天为单位时显式指定 largestUnit
+const inDays = d1.until(d2, { largestUnit: 'day' });
+console.log(inDays.toString());  // 'P364D'
 ```
 
 ### 3.7 Temporal.PlainYearMonth 与 PlainMonthDay
@@ -444,7 +449,7 @@ console.log(`2026 年生日是周${weekday}`);  // 周日（7）
 ### 4.1 ISO 8601 基础语法
 
 ```
-2026-07-20T10:30:45.123456789+08:00[America/Shanghai][u-ca=chinese]
+2026-07-20T10:30:45.123456789+08:00[Asia/Shanghai][u-ca=chinese]
 └──date──┘└────────time────────┘└offset┘└──timezone──┘└─calendar──┘
 ```
 
@@ -490,13 +495,13 @@ console.log(zdt.toString({
 ### 4.3 解析选项
 
 ```javascript
-// 严格模式（默认）
+// 溢出约束（默认）：不存在的日期被"夹"到当月最后一天
+const constrain = Temporal.PlainDate.from('2026-02-31');
+console.log(constrain.toString());  // '2026-02-28'（默认 overflow: 'constrain'）
+
+// 严格拒绝：显式指定 overflow: 'reject' 才会抛错
 const strict = Temporal.PlainDate.from('2026-02-31', { overflow: 'reject' });
 // 抛出 RangeError（2 月无 31 日）
-
-// 溢出处理
-const constrain = Temporal.PlainDate.from('2026-02-31', { overflow: 'constrain' });
-console.log(constrain.toString());  // '2026-02-28'（截断到有效日期）
 
 // 与 Date 互操作
 const legacyDate = new Date('2026-07-20T10:30:00Z');
@@ -515,15 +520,14 @@ const legacy = new Date(zdt.epochMilliseconds);
 ### 5.1 IANA 时区数据库
 
 ```javascript
-// 获取所有支持时区
-const timeZones = Temporal.TimeZone.getAvailable timeZoneId();
+// 获取所有支持时区：标准入口是 Intl.supportedValuesOf（Temporal.TimeZone 构造器在最终版规范中已被移除，时区用字符串表示）
+const timeZones = Intl.supportedValuesOf('timeZone');
 // ['UTC', 'Africa/Abidjan', 'Africa/Accra', ..., 'America/New_York', ..., 'Asia/Shanghai', ...]
 
-// 时区对象操作
-const tz = Temporal.TimeZone.from('America/New_York');
-const instant = Temporal.Instant.from('2026-07-20T10:30:00Z');
-console.log(tz.getOffsetNanosecondsFor(instant));  // -14400000000000（-4 小时，夏令时）
-console.log(tz.getOffsetStringFor(instant));        // '-04:00'
+// 时区偏移通过 ZonedDateTime 观察（无需专门的时区对象）
+const zdt = Temporal.ZonedDateTime.from('2026-07-20T10:30:00[America/New_York]');
+console.log(zdt.offset);               // '-04:00'（夏令时偏移）
+console.log(zdt.offsetNanoseconds);    // -14400000000000（-4 小时，纳秒数）
 
 // 夏令时检测
 const summer = Temporal.ZonedDateTime.from('2026-07-01T12:00:00[America/New_York]');
@@ -691,12 +695,17 @@ console.log(result.toString());  // '2026-07-20T13:15:00'
 ### 7.2 until 与 since
 
 ```javascript
-// 计算两个日期的差值
+// 计算两个日期的差值（until 默认 largestUnit 为年，输出折算为月+天）
 const d1 = Temporal.PlainDate.from('2026-01-01');
 const d2 = Temporal.PlainDate.from('2026-12-31');
 const diff = d1.until(d2);
-console.log(diff.toString());  // 'P364D'
-console.log(diff.days);        // 364
+console.log(diff.toString());                    // 'P11M30D'
+console.log(diff.years, diff.months, diff.days); // 0 11 30
+
+// 以天为单位输出（注意：默认单位是年，不是天）
+const inDays = d1.until(d2, { largestUnit: 'day' });
+console.log(inDays.toString());  // 'P364D'
+console.log(inDays.days);        // 364
 
 // 自定义输出单位
 const inMonths = d1.until(d2, { largestUnit: 'month' });
@@ -707,7 +716,7 @@ console.log(inWeeks.toString());  // 'P52W0D'
 
 // since 是 until 的反向
 const since = d2.since(d1);
-console.log(since.toString());  // 'P364D'
+console.log(since.toString());  // 'P11M30D'（默认 largestUnit 为年）
 
 // ZonedDateTime 的 until（考虑 DST）
 const ny1 = Temporal.ZonedDateTime.from('2026-03-07T12:00:00[America/New_York]');
@@ -828,7 +837,7 @@ console.log(zdt.toLocaleString('en-US', {
   timeZoneName: 'short',
   timeZone: 'Europe/London',
 }));
-// 'Sunday, July 20, 2026, 03:30 AM BST'
+// 'Monday, July 20, 2026, 03:30 AM BST'（2026-07-20 是周一）
 ```
 
 ### 8.3 Intl.DateTimeFormat 与 Temporal
@@ -1093,7 +1102,8 @@ class BusinessDayCalculator {
     let count = 0;
     let current = start;
 
-    while (current < end) {
+    // Temporal 对象未重载关系运算符（valueOf 会抛 TypeError），比较必须用 compare
+    while (Temporal.PlainDate.compare(current, end) < 0) {
       current = current.add({ days: 1 });
       if (this._isBusinessDay(current)) count++;
     }
@@ -1587,7 +1597,9 @@ console.log(exactSeconds);  // 2678400（31 天）
 
 ---
 
-### 填空题知识点讲解
+## 13. 练习题
+
+### 13.1 填空题知识点讲解
 
 1. **（remember）** Temporal API 中表示"绝对时刻"的类型是 ______，表示"带时区的完整日期时间"的类型是 ______。
 
@@ -1697,8 +1709,9 @@ console.log(exactSeconds);  // 2678400（31 天）
 | PlainMonthDay | 月-日 | 否 | 是 | 生日（无年） |
 | Duration | 时间段 | 否 | 否 | 时长、间隔 |
 | Now | 工厂对象 | — | — | 获取当前时刻 |
-| TimeZone | 时区对象 | 是 | 否 | 时区操作 |
-| Calendar | 历法对象 | 否 | 是 | 历法操作 |
+
+> 注：早期提案中的 `Temporal.TimeZone` 与 `Temporal.Calendar` 构造器在最终版规范中已被移除，
+> 时区与历法统一用字符串标识（`'Asia/Shanghai'`、`'chinese'`）表示。
 
 ### 15.2 ISO 8601 字符串格式速查
 
@@ -1718,35 +1731,16 @@ console.log(exactSeconds);  // 2678400（31 天）
 
 ```mermaid
 flowchart TD
-    T0["Area/Location"]
-    T1["Africa/Cairo"]
-    T2["America/"]
-    T3["New_York"]
-    T4["Los_Angeles"]
-    T5["Argentina/Buenos_Aires"]
-    T6["Antarctica/Casey"]
-    T7["Asia/"]
-    T8["Shanghai"]
-    T9["Tokyo"]
-    T10["Singapore"]
-    T11["Atlantic/Reykjavik"]
-    T12["Australia/Sydney"]
-    T13["Europe/"]
-    T14["London"]
-    T15["Paris"]
-    T16["Indian/Maldives"]
-    T17["Pacific/Auckland"]
-    T18["UTC"]
-    T0 --> T1
-    T0 --> T2
-    T5 --> T6
-    T5 --> T7
-    T10 --> T11
-    T10 --> T12
-    T10 --> T13
-    T15 --> T16
-    T15 --> T17
-    T15 --> T18
+    T0["Area/Location"] --> A["Africa/"] & B["America/"] & C["Antarctica/"] & D["Asia/"] & E["Atlantic/"] & F["Australia/"] & G["Europe/"] & H["Indian/"] & I["Pacific/"] & J["UTC"]
+    A --> A1["Cairo"]
+    B --> B1["New_York"] & B2["Los_Angeles"] & B3["Argentina/Buenos_Aires"]
+    D --> D1["Shanghai"] & D2["Tokyo"] & D3["Singapore"]
+    E --> E1["Reykjavik"]
+    F --> F1["Sydney"]
+    G --> G1["London"] & G2["Paris"]
+    H --> H1["Maldives"]
+    I --> I1["Auckland"]
+    C --> C1["Casey"]
 ```
 
 ### 15.4 常用时区偏移量
@@ -1764,20 +1758,23 @@ flowchart TD
 | 悉尼 | Australia/Sydney | +10:00 (AEST) | +11:00 (AEDT) |
 | 迪拜 | Asia/Dubai | +04:00 | — |
 
-### 15.5 浏览器支持矩阵（截至 2026-07）
+### 15.5 运行时支持状态（截至 2026-09）
 
-| 浏览器 | 版本 | 支持情况 |
+Temporal 于 2026 年定稿，各运行时正在落地实现，**尚无全面可用的默认支持**——不要引用具体「最低版本即完整支持」的说法，以 [MDN](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Temporal) 与 [caniuse](https://caniuse.com/temporal) 的最新数据为准：
+
+| 运行时 | 状态 | 生产建议 |
 | --- | --- | --- |
-| Chrome | 119+ | 完整支持 |
-| Edge | 119+ | 完整支持 |
-| Firefox | 130+ | 完整支持 |
-| Safari | 17.4+ | 完整支持 |
-| Node.js | 22+ | 完整支持 |
-| Deno | 1.40+ | 完整支持 |
-| Bun | 1.1+ | 完整支持 |
-| iOS Safari | 17.4+ | 完整支持 |
-| Android Chrome | 119+ | 完整支持 |
-| 旧环境 | — | 需 @js-temporal/polyfill |
+| 标准状态 | Stage 4 定稿（2026），预计随 ES2027 出版 | 可放心学习 API 设计 |
+| 主流引擎 | 实现落地中（部分版本提供实验性/不完整支持） | 存在性检测后再用 |
+| 旧环境 | 无原生支持 | `@js-temporal/polyfill` 兜底 |
+
+```javascript
+// 生产环境的标准防御写法：存在性检测 + polyfill 异步加载
+if (typeof Temporal === 'undefined') {
+  // 动态引入 polyfill（npm install @js-temporal/polyfill）
+  await import('@js-temporal/polyfill/auto');
+}
+```
 
 ---
 

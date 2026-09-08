@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL全局事务标识符GTID：原理、配置、基于GTID的复制与故障切换
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/042-Replication'
   - 'mysql/043-AdvancedQueryMultiTableOperation'

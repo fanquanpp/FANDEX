@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: OpenTelemetry集成
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'go/050-GoMiddleware'
   - 'go/049-GoOAuth2'

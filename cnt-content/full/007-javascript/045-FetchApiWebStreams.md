@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 深入解析 WHATWG Fetch 标准、AbortController 取消语义、Web Streams API、Service Worker 缓存策略、GraphQL 客户端实现等高级主题,涵盖 MIT 6.S081 / Stanford CS107 级别的工程实践
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'javascript/014-CustomErrorTypes'
   - 'javascript/046-StorageForTheWeb'

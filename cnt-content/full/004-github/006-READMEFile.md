@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 'GitHub README文件深度解析：用"店铺招牌与产品说明书"的对比讲透README的结构、写作要点与开源项目最佳实践。'
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'github/004-SSHHTTPS'
   - 'github/005-CollaborationDevelopmentStandard'

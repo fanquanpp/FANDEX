@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: OVER 子句、PARTITION BY、排名函数、偏移函数、帧定义与累计计算
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/006-DML'
   - 'sql/007-DDL'

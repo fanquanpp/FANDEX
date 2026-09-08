@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: clipPath 硬裁剪、mask 软蒙版、 luminance 与 alpha 蒙版技巧。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'svg/010-SVGFilterDetailed'
   - 'svg/008-SVGGradientPattern'

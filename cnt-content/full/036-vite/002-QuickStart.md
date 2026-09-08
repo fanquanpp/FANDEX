@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Vite 快速上手：手把手创建项目、读懂目录结构、掌握 dev/build/preview 三个核心命令与 ESM 加速原理
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'vite/003-ConfigFile'
   - 'vite/004-StaticAssets'

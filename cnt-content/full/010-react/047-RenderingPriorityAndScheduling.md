@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: '从 update 优先级、调度器到并发渲染，讲清 React 如何决定"先渲染谁、能不能中断、中断后怎么办"。'
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'react/013-ConcurrentMode'
   - 'react/012-FiberArchitecture'

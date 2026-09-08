@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 数组、切片底层原理、map 底层实现、struct、嵌套与组合、标签与 JSON 序列化。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'go/003-GoBasicSyntax'
   - 'go/004-GoFunctionMethod'

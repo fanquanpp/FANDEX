@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从"块级/行内"升级到正式分类：元数据、流、章节、标题、措辞、嵌入、交互七类内容，附"谁是谁的父级"速查矩阵。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/004-HTML5BlockVsInline'
   - 'html5/005-HTML5DivSpanContainers'
@@ -134,4 +134,4 @@ div 属于流内容，span 只能包含措辞内容
 
 ## 8. 下一步
 
-内容模型是"标签关系"的正式规则，配合 008-SemanticTag（语义化章节结构）使用：先知道谁能装谁，再知道装什么最有语义。
+内容模型是"标签关系"的正式规则，配合 010-SemanticTag（语义化章节结构）使用：先知道谁能装谁，再知道装什么最有语义。

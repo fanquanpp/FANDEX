@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 声明文件（.d.ts）的语法结构、模块声明、全局类型增强、UMD 声明、声明合并规则、三斜线指令、DefinitelyTyped 生态与发布实践的形式化定义与工程指南
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/039-TypeScriptTypeDeclarationModuleResolution'
   - 'typescript/022-GenericConstraintDefault'

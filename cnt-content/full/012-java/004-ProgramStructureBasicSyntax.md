@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Java 程序结构、注释、标识符与关键字。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/002-JavaOverviewDevEnv'
   - 'java/003-QuickStart'

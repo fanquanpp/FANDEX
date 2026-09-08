@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React中集成WebAssembly
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'react/026-ReactSSR'
   - 'react/027-ReactDesignPattern'

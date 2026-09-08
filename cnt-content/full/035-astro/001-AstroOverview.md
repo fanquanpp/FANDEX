@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从一篇加载缓慢的博客说起：认识 Astro 是什么、岛屿架构如何解决内容站的性能困境，以及 Astro 5/6 时代内容集合、路由、部署与文档站实践的全貌
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'vite/001-ViteOverview'
   - 'markdown/001-SyntaxGuide'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 哪些属性会继承、inherit/initial/unset/revert 的差别，以及层叠决策的入门模型。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/010-PriorityCalculation'
   - 'css/013-CSSPriorityQuickStart'
@@ -73,7 +73,7 @@ body {
 
 ## 4. 层叠决策的入门模型
 
-当多个规则命中同一元素时，按以下顺序决策（深入算法见 `css/009-PriorityCalculation`）：
+当多个规则命中同一元素时，按以下顺序决策（深入算法见 `css/010-PriorityCalculation`）：
 
 1. 来源与重要性：作者 `!important` > 行内样式 > 普通规则 > 浏览器默认；
 2. 选择器权重：ID > 类 > 标签；
@@ -92,7 +92,7 @@ p {
 
 ## 5. 与 007 的分工
 
-本课是“入门版”：记住哪些属性会继承、四个关键字干什么、层叠三级模型；`css/009-PriorityCalculation` 是“深入版”：四元组精确计算、`:is()`/`:where()` 的权重规则、`@layer` 分层、工程实践。先有本课直觉，再读 007 才不会迷失在规范细节里。
+本课是“入门版”：记住哪些属性会继承、四个关键字干什么、层叠三级模型；`css/010-PriorityCalculation` 是“深入版”：四元组精确计算、`:is()`/`:where()` 的权重规则、`@layer` 分层、工程实践。先有本课直觉，再读 007 才不会迷失在规范细节里。
 
 ## 6. 动手试试
 
@@ -118,12 +118,12 @@ p {
 | --- | --- | --- |
 | 认为所有属性都继承 | 盒子属性其实不继承 | 按“文字 vs 盒子”分类记忆 |
 | 用 initial 清样式 | 可继承属性被清回初始值，行为意外 | 想“不设置”用 `unset`，想“跟父级”用 `inherit` |
-| 重置样式全用 `* {}` | 破坏可继承属性的自然传播 | 重置方案见 `css/008-CSSResetAndNormalize` |
+| 重置样式全用 `* {}` | 破坏可继承属性的自然传播 | 重置方案见 `css/009-CSSResetAndNormalize` |
 | 只记权重不记来源 | 浏览器默认/!important 场景判断错 | 先过“来源与重要性”这一级 |
 
 ## 9. 扩展学习
 
-- 优先级深入：`css/009-PriorityCalculation`；
-- 优先级速查：`css/012-CSSPriorityQuickStart`；
-- 重置方案：`css/008-CSSResetAndNormalize`；
-- 选择器系统：`css/007-CSS3SelectorSystem`。
+- 优先级深入：`css/010-PriorityCalculation`；
+- 优先级速查：`css/013-CSSPriorityQuickStart`；
+- 重置方案：`css/009-CSSResetAndNormalize`；
+- 选择器系统：`css/008-CSS3SelectorSystem`。

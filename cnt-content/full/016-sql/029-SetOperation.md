@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL集合操作：UNION、INTERSECT、EXCEPT的语法、去重规则、排序限制与性能优化
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/027-RecursiveCTE'
   - 'sql/028-PivotUnpivot'

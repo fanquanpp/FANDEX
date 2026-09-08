@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: CSS-in-JS方案与Grid高级布局
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/042-CSSNativeNesting'
   - 'css/062-CSSCanvasDrawing'
@@ -612,5 +612,5 @@ flowchart TD
 ## 扩展学习
 
 - React：`react/` 模块组件样式；
-- 模块化：`css/059-CSSModules`；
-- 架构：`css/043-CSSArchitectureMethodology`。
+- 模块化：`css/060-CSSModules`；
+- 架构：`css/044-CSSArchitectureMethodology`。

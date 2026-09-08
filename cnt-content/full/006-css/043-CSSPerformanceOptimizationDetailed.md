@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: CSS性能优化深度指南：关键CSS内联、异步加载、选择器优化、渲染性能提升。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/064-CSSTheoryKnowledge'
   - 'css/065-CSSNewFeatures'
@@ -407,6 +407,6 @@ npx postcss styles.css -u cssnano -o styles.min.css
 
 ## 扩展学习
 
-- 渲染路径：`css/060-CriticalRenderPathOptimization`；
-- 指标：`javascript/050-CoreWebVitalsAndPerformanceMetrics`；
-- 动画：`css/028-CSSAnimationTransition`。
+- 渲染路径：`css/061-CriticalRenderPathOptimization`；
+- 指标：`javascript/051-CoreWebVitalsAndPerformanceMetrics`；
+- 动画：`css/029-CSSAnimationTransition`。

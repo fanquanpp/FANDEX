@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: context.Context接口、cancel传播、超时控制、值传递、最佳实践与陷阱
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'go/016-ChannelPrinciple'
   - 'go/021-GoroutineSchedule'

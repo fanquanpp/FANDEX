@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: '用字号阶梯、行高、8pt 间距与 CSS 变量搭一套可复用的排版网格，让页面看起来专业而不是"随手排的"。'
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/036-CSSVariableCustomAttribute'
   - 'css/034-ResponsiveDesign'
@@ -131,7 +131,7 @@ prerequisites:
 
 排版系统的本质是"约束"：字号、行高、间距都从有限的数值集合里取值。
 先用 CSS 变量把阶梯定义出来，再让所有组件消费变量，页面自然会整齐。
-下一步可结合 `css/035-CSSVariableCustomAttribute` 做主题化扩展。
+下一步可结合 `css/036-CSSVariableCustomAttribute` 做主题化扩展。
 
 ## 动手试试
 
@@ -162,6 +162,6 @@ prerequisites:
 
 ## 扩展学习
 
-- 字体加载：`css/047-CSSFontLoading`；
-- 文本装饰：`css/044-TypographyAndGridSystem` 的文本章节；
-- 设计令牌：`css/035-CSSVariableCustomAttribute`。
+- 字体加载：`css/048-CSSFontLoading`；
+- 文本装饰：`css/045-TypographyAndGridSystem` 的文本章节；
+- 设计令牌：`css/036-CSSVariableCustomAttribute`。

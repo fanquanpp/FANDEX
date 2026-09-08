@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: mask 系列属性用透明通道裁剪元素显示区域，实现渐变淡出、形状镂空等效果。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/027-BackgroundEnhancement'
   - 'css/054-Function'
@@ -91,7 +91,7 @@ prerequisites:
 - 兼容性：多数浏览器需要 `-webkit-` 前缀；
 - `clip-path` 是硬裁剪，`mask` 支持软过渡；
 - 两者都不改变元素布局占位；
-- 结合渐变函数使用最频繁，见 `css/024-Gradient`。
+- 结合渐变函数使用最频繁，见 `css/025-Gradient`。
 
 ## 7. 注意事项与改进建议
 
@@ -104,7 +104,7 @@ prerequisites:
 
 ## 8. 扩展学习
 
-- 背景体系：`css/026-BackgroundEnhancement`；
-- 渐变：`css/024-Gradient`；
-- 滤镜组合：`css/048-CSSFilters`；
-- 函数与图像处理：`css/053-Function`。
+- 背景体系：`css/027-BackgroundEnhancement`；
+- 渐变：`css/025-Gradient`；
+- 滤镜组合：`css/049-CSSFilters`；
+- 函数与图像处理：`css/054-Function`。

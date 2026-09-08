@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 指针概念、指针运算、数组与指针、函数指针及多级指针。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/039-PreprocessorMacro'
   - 'c/040-C23C2y'
@@ -91,7 +91,7 @@ prerequisites:
  int a = 10;
  int *p = &a;
  printf("a 的值: %d\n", a); // 输出 10
- printf("p 存储的地址: %p\n", p); // 输出 a 的地址
+ printf("p 存储的地址: %p\n", (void*)p); // 输出 a 的地址（%p 要求 void*）
  printf("*p 的值: %d\n", *p); // 输出 10（解引用）
  *p = 20; // 通过指针修改 a 的值
  printf("修改后 a 的值: %d\n", a); // 输出 20
@@ -155,16 +155,17 @@ prerequisites:
  int arr[] = {10, 20, 30, 40, 50};
  int *p1 = &arr[0];
  int *p2 = &arr[3];
- int diff = p2 - p1;
- printf("p2 和 p1 之间的元素个数: %d\n", diff); // 输出 3
+ ptrdiff_t diff = p2 - p1;   // 指针差的类型是 ptrdiff_t（<stddef.h>）
+ printf("p2 和 p1 之间的元素个数: %d\n", (int)diff); // 输出 3
 ```
 
 ## 4. 指针与数组
 
 ### 4.1 数组名与指针的关系
 
-- **数组名**是数组首元素的地址，是一个常量指针（不能修改）。
-- **等价关系**：`arr` 等同于 `&arr[0]`
+- **数组名**在表达式中会**退化**（decay）为首元素地址值，可以像指针一样使用；但数组名本身不是指针对象，不能对它赋值（`arr++` 是错误的）。
+- **等价关系**：`arr` 在表达式中退化为 `&arr[0]`
+- **严格区分**：`&arr` 的类型是"指向整个数组的指针"（`int (*)[5]`），与退化后的 `int *` 类型不同，这一点在 `sizeof(arr)`（整个数组大小）与 `sizeof(&arr)`（指针大小）的差异上也能体现。
 
 ```c
  int arr[5] = {1, 2, 3, 4, 5};
@@ -285,6 +286,7 @@ prerequisites:
 ```c
  int rows = 3, cols = 4;
  int **matrix = (int **)malloc(rows * sizeof(int *));
+ if (matrix == NULL) { /* 分配失败处理，示例从略 */ }
  for (int i = 0; i < rows; i++) {
  matrix[i] = (int *)malloc(cols * sizeof(int));
  }
@@ -325,8 +327,8 @@ prerequisites:
 ```c
  int result = func_ptr(10, 20); // 调用 add 函数
  printf("Result: %d\n", result); // 输出 30
- // 也可以使用 (*func_ptr) 的形式
- int result = (*func_ptr)(10, 20);
+ // 也可以使用 (*func_ptr) 的显式解引用形式，二者等价
+ result = (*func_ptr)(10, 20);
 ```
 
 ### 7.3 函数指针的应用
@@ -585,7 +587,7 @@ prerequisites:
   // 查找最大值
   int *max_ptr = find_max(arr, size);
   printf("Maximum value: %d\n", *max_ptr);
-  printf("Maximum value at index: %d\n", max_ptr - arr);
+  printf("Maximum value at index: %d\n", (int)(max_ptr - arr)); // 指针差即下标
   // 释放内存
   free_array(arr);
   return 0;
@@ -651,7 +653,7 @@ prerequisites:
  typedef struct Node {
   int data;
   struct Node *next;
- }
+ } Node;   // 注意 typedef 结尾的分号不能少
  // 创建新节点
  Node *create_node(int data) {
   Node *new_node = (Node *)malloc(sizeof(Node));
@@ -702,7 +704,7 @@ prerequisites:
   int data;
   struct TreeNode *left;
   struct TreeNode *right;
- }
+ } TreeNode;   // 注意 typedef 结尾的分号不能少
  // 创建新节点
  TreeNode *create_node(int data) {
   TreeNode *new_node = (TreeNode *)malloc(sizeof(TreeNode));

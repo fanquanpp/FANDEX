@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 错误边界与异常处理
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'react/017-StateManagementSolutionComparison'
   - 'react/018-ReactPerformance'

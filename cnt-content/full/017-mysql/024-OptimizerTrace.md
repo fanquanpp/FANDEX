@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL优化器追踪OPTIMIZER_TRACE：执行计划选择过程、代价计算与调试方法
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/022-EXPLAINDetailed'
   - 'mysql/023-SlowQueryLog'

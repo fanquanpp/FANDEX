@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 零拷贝技术：sendfile、mmap、splice 的原理与性能对比。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/043-FileSystemInode'
   - 'cs-fundamentals/044-DiskScheduling'

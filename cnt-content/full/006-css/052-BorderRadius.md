@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: border-radius 完整原理：1-4 值语法、椭圆半径、百分比计算、圆角裁剪规则与常见形状实现。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/023-CSS3GridGridLayout'
   - 'css/029-CSSAnimationTransition'
@@ -1009,6 +1009,6 @@ defineProps<{
 
 ## 扩展学习
 
-- 盒模型：`css/003-CSS3BoxModelDetailed`；
-- 阴影：`css/025-Shadow`；
-- 背景裁剪：`css/026-BackgroundEnhancement`。
+- 盒模型：`css/004-CSS3BoxModelDetailed`；
+- 阴影：`css/026-Shadow`；
+- 背景裁剪：`css/027-BackgroundEnhancement`。

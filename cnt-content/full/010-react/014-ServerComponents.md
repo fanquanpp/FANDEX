@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React服务器组件详解
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'react/012-FiberArchitecture'
   - 'react/013-ConcurrentMode'

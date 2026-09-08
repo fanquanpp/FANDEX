@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL JSON模式验证与JSON聚合函数：JSON_SCHEMA_VALID、JSON_ARRAYAGG、JSON_OBJECTAGG
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/056-MySQL9NewFeaturesParallelQuery'
   - 'mysql/057-VectorType'

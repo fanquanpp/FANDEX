@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 面向零基础读者建立 CSS 的心智模型，理解选择器与样式规则，为第一个网页添加颜色与布局。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'css/002-CSS3OverviewBasicSyntax'
   - 'html5/001-WhatIsWebpage'

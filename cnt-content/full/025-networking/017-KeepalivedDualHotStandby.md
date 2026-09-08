@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Keepalived 双机热备：VRRP 协议、主备切换与脑裂防护。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'networking/015-LoadBalanceAlgorithm'
   - 'networking/016-HighAvailabilityLVS'

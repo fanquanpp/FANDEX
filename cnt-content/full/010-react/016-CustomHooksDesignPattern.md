@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 自定义Hook设计原则与模式
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'react/015-HooksPrinciple'
   - 'react/017-StateManagementSolutionComparison'

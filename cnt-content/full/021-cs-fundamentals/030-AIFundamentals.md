@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 人工智能基础：搜索算法、知识表示、机器学习、神经网络与深度学习
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/028-NetworkSecurity'
   - 'cs-fundamentals/029-MultimediaTechnology'

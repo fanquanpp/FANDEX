@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin 并发安全深度解析：共享可变状态、数据竞争、Mutex、原子操作、CAS、Actor 模型、Channel、线程限制、Volatile、StateFlow 的形式化定义、字节码实现与企业级工程实践。对标 MIT 6.005、Stanford CS110、CMU 15-440 教学水准。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'kotlin/041-KotlinRegex'
   - 'kotlin/042-KotlinTime'

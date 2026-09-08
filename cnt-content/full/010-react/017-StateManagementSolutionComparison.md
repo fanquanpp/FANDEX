@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Redux、Zustand、Jotai等方案对比
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'react/015-HooksPrinciple'
   - 'react/016-CustomHooksDesignPattern'

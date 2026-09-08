@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: list-style 系列属性控制有序/无序列表的标记样式，是列表排版的必修课。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/024-PseudoClassPseudoElement'
   - 'css/008-CSS3SelectorSystem'
@@ -121,7 +121,7 @@ ul {
 
 ## 5. 扩展学习
 
-- 列表结构：`html5/017-List`；
-- `::marker`：`css/023-PseudoClassPseudoElement`；
-- 选择器：`css/007-CSS3SelectorSystem`；
-- 导航实战：`css/067-CSSProjectExampleResponsiveHomepage`。
+- 列表结构：`html5/018-List`；
+- `::marker`：`css/024-PseudoClassPseudoElement`；
+- 选择器：`css/008-CSS3SelectorSystem`；
+- 导航实战：`css/068-CSSProjectExampleResponsiveHomepage`。

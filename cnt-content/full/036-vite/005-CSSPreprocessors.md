@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Vite 样式方案：从 Sass 源码到浏览器 CSS 的完整处理流水线，讲清预处理器、PostCSS、CSS Modules、Lightning CSS 与 Tailwind 集成
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'vite/004-StaticAssets'
   - 'vite/007-BuildSplit'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: std::string与字符串视图
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/016-CppOOPBasics'
   - 'cpp/017-CppSTL'
@@ -2306,7 +2306,7 @@ int main() {
 
 ### 10.1 标准文档
 
-- **ISO/IEC 14882:2023** — *Information technology — Programming languages — C++*，第 6 章 Strings，第 22 章 String views libraries，第 20.20 章 Format library。
+- **ISO/IEC 14882:2024** — *Information technology — Programming languages — C++*，第 6 章 Strings，第 22 章 String views libraries，第 20.20 章 Format library。
 - **ISO/IEC 10646:2020** — *Information technology — Universal Coded Character Set (UCS)*，Unicode 字符集标准。
 - **RFC 3629** — *UTF-8, a transformation format of ISO 10646*，UTF-8 编码规范。
 - **RFC 3986** — *Uniform Resource Identifier (URI): Generic Syntax*，URL 编码规范。

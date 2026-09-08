@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: HTML 三类列表（ul/ol/dl）的语义、属性、嵌套规则、无障碍要求与 CSS 样式化技巧。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/016-MetadataCharacterEncoding'
   - 'html5/017-TextSemantic'
@@ -712,7 +712,7 @@ ul.custom-mark li::before {
 
 ## 扩展学习
 
-- 列表样式：`css/023-PseudoClassPseudoElement` 中 `::marker` 的完整用法；
-- 语义选择：`html5/009-SemanticTag` 中 `nav` 与列表的组合；
+- 列表样式：`css/024-PseudoClassPseudoElement` 中 `::marker` 的完整用法；
+- 语义选择：`html5/010-SemanticTag` 中 `nav` 与列表的组合；
 - 组件化：`vue3` 模块中列表渲染 `v-for` 与 key 规范；
-- 无障碍：`html5/010-Accessibility` 中列表导航快捷键的体验。
+- 无障碍：`html5/011-Accessibility` 中列表导航快捷键的体验。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin内联类inline class避免装箱开销。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'kotlin/048-ChannelBroadcastChannel'
   - 'kotlin/049-SealedClassSealedInterface'

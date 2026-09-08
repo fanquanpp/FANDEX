@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis无盘复制：避免磁盘I/O的复制方案、配置与适用场景
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'redis/011-AOFLogPersistence'
   - 'redis/012-MixedPersistence'

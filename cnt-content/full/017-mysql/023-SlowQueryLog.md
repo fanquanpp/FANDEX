@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL慢查询日志：配置、分析工具mysqldumpslow、pt-query-digest与慢查询优化流程
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/021-IndexFailureScene'
   - 'mysql/022-EXPLAINDetailed'

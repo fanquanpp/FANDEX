@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: font 家族属性、文本对齐与间距控制，是正文排版的第一块基石。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/045-TypographyAndGridSystem'
   - 'css/048-CSSFontLoading'
@@ -17,7 +17,7 @@ prerequisites:
 
 ## 0. 直觉：把文字当成“可以被打扮的内容”
 
-页面里 90% 的内容是文字。CSS 控制文字有两组开关：一组管“字体长什么样”（`font-*`），一组管“文字怎么摆”（`text-*`）。本课把最常用的十几个属性一次讲清，排版进阶（字号阶梯、网格基准线）见 `css/044-TypographyAndGridSystem`。
+页面里 90% 的内容是文字。CSS 控制文字有两组开关：一组管“字体长什么样”（`font-*`），一组管“文字怎么摆”（`text-*`）。本课把最常用的十几个属性一次讲清，排版进阶（字号阶梯、网格基准线）见 `css/045-TypographyAndGridSystem`。
 
 ## 1. font-family：用哪套字体
 
@@ -53,7 +53,7 @@ p {
 }
 ```
 
-**讲解：** `px` 是固定大小；`em` 相对“父元素字号”；`rem` 相对“根元素字号”。入门阶段推荐正文用 `px` 或 `rem`，响应式排版再引入 `clamp()`（见 `css/053-Function`）。
+**讲解：** `px` 是固定大小；`em` 相对“父元素字号”；`rem` 相对“根元素字号”。入门阶段推荐正文用 `px` 或 `rem`，响应式排版再引入 `clamp()`（见 `css/054-Function`）。
 
 ## 3. font-weight 与 font-style
 
@@ -69,7 +69,7 @@ p {
 }
 ```
 
-**讲解：** 常见字重是 400（常规）与 700（加粗）。没有安装对应字重时，浏览器会合成加粗或加细，效果可能发虚；重要标题建议加载真实字重（见 `css/047-CSSFontLoading`）。
+**讲解：** 常见字重是 400（常规）与 700（加粗）。没有安装对应字重时，浏览器会合成加粗或加细，效果可能发虚；重要标题建议加载真实字重（见 `css/048-CSSFontLoading`）。
 
 ## 4. line-height：行高
 
@@ -173,7 +173,7 @@ a {
 
 ## 11. 扩展学习
 
-- 排版进阶：`css/044-TypographyAndGridSystem`；
-- 字体加载与 @font-face：`css/047-CSSFontLoading`；
-- 响应式字号（clamp）：`css/053-Function`；
-- 盒模型与间距：`css/003-CSS3BoxModelDetailed`。
+- 排版进阶：`css/045-TypographyAndGridSystem`；
+- 字体加载与 @font-face：`css/048-CSSFontLoading`；
+- 响应式字号（clamp）：`css/054-Function`；
+- 盒模型与间距：`css/004-CSS3BoxModelDetailed`。

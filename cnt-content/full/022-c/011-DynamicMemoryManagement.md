@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: malloc/calloc/realloc/free详解
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/009-EnumTypedef'
   - 'c/010-MultiFileCompilation'

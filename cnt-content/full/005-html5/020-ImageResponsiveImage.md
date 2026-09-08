@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: img、srcset、sizes、picture元素
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/018-List'
   - 'html5/019-LinkageAnchor'
@@ -648,7 +648,7 @@ function checkFormatSupport(mimeType) {
 
 ### 4.9 图片热区 map/area（知道即可）
 
-`<map>` + `<area>` 可以在**一张图片上划分多个可点击区域**（矩形、圆形、多边形），例如地图导航、商品示意图。它属于低频特性，知道"存在且长什么样"即可；完整用法（shape/coords 坐标计算、响应式适配）见专项 `041-HTML5ImageMapArea`：
+`<map>` + `<area>` 可以在**一张图片上划分多个可点击区域**（矩形、圆形、多边形），例如地图导航、商品示意图。它属于低频特性，知道"存在且长什么样"即可；完整用法（shape/coords 坐标计算、响应式适配）见专项 `043-HTML5ImageMapArea`：
 
 ```html
 <img src="floor-map.png" alt="楼层地图" usemap="#floors" />
@@ -1584,8 +1584,8 @@ console.log(img.currentSrc); // 当前加载的 URL
 
 ## 扩展学习
 
-- 格式对比：AVIF/WebP/JPEG 的选择见 `javascript/044-FetchApiWebStreams`（JavaScript 模块）；
-- 性能指标：`javascript/050-CoreWebVitalsAndPerformanceMetrics` 中 LCP/CLS 的测量；
-- 懒加载原理：`javascript/042-WebAPIBrowserInterface` 中 IntersectionObserver 实现；
-- 工程化：`html5/037-CriticalRenderingPathAndResourceLoading` 资源加载策略；
+- 格式对比：AVIF/WebP/JPEG 的选择见 `javascript/045-FetchApiWebStreams`（JavaScript 模块）；
+- 性能指标：`javascript/051-CoreWebVitalsAndPerformanceMetrics` 中 LCP/CLS 的测量；
+- 懒加载原理：`javascript/043-WebAPIBrowserInterface` 中 IntersectionObserver 实现；
+- 工程化：`html5/038-CriticalRenderingPathAndResourceLoading` 资源加载策略；
 - 组件方案：React 的 `next/image` 或 Vue 的 `v-img` 自动生成多档图。

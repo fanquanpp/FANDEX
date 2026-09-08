@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Project Loom 虚拟线程、结构化并发、Continuation 机制与性能调优全景式深度解析
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'java/048-JavaNewFeatures'
   - 'java/060-JavaReactiveProgramming'
@@ -102,7 +102,9 @@ Project Loom 由 Ron Pressler（Oracle）于 2018 年发起，目标是在 JVM �
 - JDK 19（2022-09）：虚拟线程作为预览特性发布（JEP 425）。
 - JDK 20（2023-03）：虚拟线程第二次预览（JEP 436），根据反馈调整 API。
 - JDK 21（2023-09）：虚拟线程正式发布（JEP 444），成为 LTS 特性。
-- JDK 22-24（2024-2025）：结构化并发、作用域值持续预览演进，社区生态（Spring Boot 3.2、Helidon Níma、Quarkus 3.6）全面接入。
+- JDK 22-24（2024-2025）：结构化并发、作用域值持续预览演进；JDK 24 的 JEP 491 使 `synchronized` 内阻塞不再固定载体线程；社区生态（Spring Boot 3.2、Helidon Níma、Quarkus 3.6）全面接入。
+- JDK 25（2025-09，LTS）：作用域值转正（JEP 506）；结构化并发第 5 次预览（JEP 505，API 重设计为 `open()` + `Joiner`）。
+- JDK 26（2026-03）：结构化并发第 6 次预览（JEP 525），仍未转正。
 
 ### 1.2 关键里程碑时间线
 
@@ -115,9 +117,10 @@ Project Loom 由 Ron Pressler（Oracle）于 2018 年发起，目标是在 JVM �
 | 2023-09 | JDK 21 (LTS) | **JEP 444：虚拟线程正式发布**，成为生产可用特性 |
 | 2023-11 | Spring Boot 3.2 | `spring.threads.virtual.enabled=true` 一键启用虚拟线程 |
 | 2024-03 | JDK 22 | JEP 462：结构化并发第二次预览（StructuredTaskScope） |
-| 2024-09 | JDK 23 | JEP 480：作用域值第三次预览（ScopedValue） |
-| 2025-03 | JDK 24 | JEP 499：结构化并发第四次预览，API 趋于稳定 |
-| 2025-09 | JDK 25 (LTS) | 结构化并发预期正式发布，虚拟线程生态成熟 |
+| 2024-09 | JDK 23 | JEP 480：结构化并发第三次预览；JEP 481：作用域值第三次预览 |
+| 2025-03 | JDK 24 | **JEP 491：`synchronized` 阻塞不再固定载体线程（Monitor 类 Pinning 基本消除）**；JEP 499：结构化并发第四次预览 |
+| 2025-09 | JDK 25 (LTS) | JEP 506：作用域值转正；JEP 505：结构化并发第五次预览（API 重设计为 open() + Joiner） |
+| 2026-03 | JDK 26 | JEP 525：结构化并发第六次预览，仍未转正 |
 
 ### 1.3 设计哲学：为何选择"虚拟线程"而非"协程"
 
@@ -145,18 +148,21 @@ Java 团队选择方案 C 的核心原因是 **"生态兼容性优先"** —— 
 
 ### 1.4 JEP 与虚拟线程相关提案
 
-| JEP 编号 | 标题 | 状态 | 核心内容 |
+| JEP 编号 | 标题 | 落地版本与状态 | 核心内容 |
 |---------|------|------|---------|
-| JEP 425 | Virtual Threads (Preview) | Final (JDK 19) | 虚拟线程首次预览，`Thread.ofVirtual()` API |
-| JEP 436 | Virtual Threads (Second Preview) | Final (JDK 20) | API 微调，`Thread.startVirtualThread` 简化 |
-| JEP 444 | Virtual Threads | Final (JDK 21) | **虚拟线程正式发布**，API 稳定 |
-| JEP 453 | Structured Concurrency (Preview) | Final (JDK 21) | `StructuredTaskScope` 首次预览 |
-| JEP 462 | Structured Concurrency (Second Preview) | Final (JDK 22) | API 简化，`ShutdownOnFailure` / `ShutdownOnSuccess` |
-| JEP 463 | Implicitly Declared Classes and Instance Main Methods | Preview (JDK 22) | 与虚拟线程无关，但同期发布 |
-| JEP 480 | Structured Concurrency (Third Preview) | Final (JDK 23) | API 进一步稳定 |
-| JEP 481 | Scoped Values (Third Preview) | Final (JDK 23) | `ScopedValue` 替代 `ThreadLocal` |
-| JEP 499 | Structured Concurrency (Fourth Preview) | Final (JDK 24) | API 趋于正式 |
-| JEP 505 | Scoped Values (Fifth Preview) | Final (JDK 25) | 预期正式发布 |
+| JEP 425 | Virtual Threads (Preview) | JDK 19，预览 | 虚拟线程首次预览，`Thread.ofVirtual()` API |
+| JEP 436 | Virtual Threads (Second Preview) | JDK 20，预览 | API 微调，`Thread.startVirtualThread` 简化 |
+| JEP 444 | Virtual Threads | JDK 21，**正式** | **虚拟线程正式发布**，API 稳定 |
+| JEP 453 | Structured Concurrency (Preview) | JDK 21，预览 | `StructuredTaskScope` 首次预览 |
+| JEP 462 | Structured Concurrency (Second Preview) | JDK 22，预览 | API 简化，`ShutdownOnFailure` / `ShutdownOnSuccess` |
+| JEP 463 | Implicitly Declared Classes and Instance Main Methods | JDK 22，预览 | 与虚拟线程无关，但同期发布（JDK 25 转正为 JEP 512） |
+| JEP 480 | Structured Concurrency (Third Preview) | JDK 23，预览 | API 进一步稳定 |
+| JEP 481 | Scoped Values (Third Preview) | JDK 23，预览 | `ScopedValue` 替代 `ThreadLocal` |
+| JEP 499 | Structured Concurrency (Fourth Preview) | JDK 24，预览 | API 趋于稳定 |
+| JEP 491 | Synchronized Virtual Threads without Pinning | JDK 24，正式 | **`synchronized`/`Object.wait()` 不再固定载体线程** |
+| JEP 505 | Structured Concurrency (Fifth Preview) | JDK 25，预览 | API 重设计：`StructuredTaskScope.open()` + `Joiner` 完成策略 |
+| JEP 506 | Scoped Values | JDK 25，**正式** | 作用域值转正，无需 `--enable-preview` |
+| JEP 525 | Structured Concurrency (Sixth Preview) | JDK 26，预览 | 仍未转正；`anySuccessfulResultOrThrow` 更名 `anySuccessfulOrThrow` |
 
 ### 1.5 虚拟线程与 Java 生态的共生关系
 
@@ -232,13 +238,18 @@ $$
 $$
 
 $$
-\text{RUNNABLE} \xrightarrow{\text{run() 返回}} \text{TERMINATED}
+\text{RUNNABLE} \xrightarrow{\text{native, JNI（JDK 23- 为 synchronized）}} \text{PINNED} \xrightarrow{\text{block 释放}} \text{RUNNABLE}
 $$
 
 关键区别：
 
 - **PARKED**：虚拟线程卸载（Unmount），载体线程释放，可执行其他虚拟线程。
 - **PINNED**：虚拟线程无法卸载，载体线程被占用，无法执行其他虚拟线程（退化为平台线程行为）。
+
+> 版本提示：JDK 24 的 JEP 491 重写了 ObjectMonitor 与虚拟线程的协作，
+> `synchronized` 块内阻塞与 `Object.wait()` 在 JDK 24+ 不再触发 Pinning；
+> 此后 Pinning 只在执行 `native` 方法 / JNI 代码时发生。
+> 依赖"JDK 21 必须 ReentrantLock 替换 synchronized"的老结论前，先确认运行版本。
 
 ### 2.4 Continuation 的形式化定义
 
@@ -375,7 +386,10 @@ JDK 21 对以上所有 API 都做了虚拟线程适配，业务代码无需任�
 
 ### 3.4 Pinning（线程固定）机制
 
-Pinning 是虚拟线程"无法卸载"的状态，会导致载体线程被占用。Pinning 发生在以下三种场景：
+Pinning 是虚拟线程"无法卸载"的状态，会导致载体线程被占用。以 JDK 24 为分界线：
+
+- **JDK 21-23**：`synchronized` 块内阻塞、`Object.wait()`、native / JNI 三类场景都会 Pinning。
+- **JDK 24+**：JEP 491 解决了 monitor 相关 Pinning，只剩 native / JNI 两类场景。
 
 #### 3.4.1 `synchronized` 块内阻塞
 
@@ -389,7 +403,7 @@ public synchronized void process() {  // 进入 synchronized 块
 
 JVM 的 monitor（监视器锁）实现依赖操作系统层（`ObjectMonitor`），monitor 的 `wait`/`enter` 操作涉及操作系统互斥量（`pthread_mutex`）。虚拟线程在 `synchronized` 块内阻塞时，JVM 无法将栈帧卸载（因为 monitor 持有者是载体线程），导致载体线程被占用。
 
-HotSpot 的 `ObjectMonitor` 结构在 JDK 21 前未针对虚拟线程适配，这是 Pinning 的根本原因。JDK 24+（JEP 491）正在开发 `synchronized` 的虚拟线程适配，预计 JDK 25 正式解决。
+HotSpot 的 `ObjectMonitor` 结构在 JDK 21-23 未针对虚拟线程适配，这是当时 Pinning 的根本原因。**JDK 24 已通过 JEP 491 正式解决**：monitor 的持有状态被虚拟线程化，`synchronized` 块内阻塞（以及 `Object.wait()`）不再固定载体线程，虚拟线程可以正常卸载。JDK 24+ 仍会 Pinning 的只剩 native / JNI 两类场景。
 
 #### 3.4.2 `native` 方法调用
 
@@ -416,7 +430,9 @@ JDK 21 提供了 Pinning 检测机制：
 **方式 1：JVM 诊断选项**
 
 ```bash
-# 启动时启用 Pinning 诊断
+# 启动时启用 Pinning 诊断（仅 JDK 21-23 有效；
+# JDK 24 起 JEP 491 移除了该属性——monitor 类 Pinning 已不存在，
+# 剩余的 native/JNI Pinning 请用下面的 JFR 事件监控）
 java -Djdk.tracePinnedThreads=short -jar app.jar
 # 或完整堆栈
 java -Djdk.tracePinnedThreads=full -jar app.jar
@@ -724,42 +740,41 @@ public class ConcurrentHttpDemo {
 
 ### 4.3 结构化并发示例
 
+> API 版本提示：结构化并发截至 JDK 26 仍是第 6 次预览（JEP 525）。
+> JDK 21-24 的 `new ShutdownOnFailure()` 写法在 JDK 25（JEP 505）起已被移除，
+> 下面示例按 JDK 25/26 预览 API（`open()` + `Joiner`）编写，运行需 `--enable-preview`。
+
 ```java
 package com.fandex.virtualthread;
 
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.StructuredTaskScope;
+import java.util.concurrent.StructuredTaskScope.Joiner;
+import java.util.concurrent.StructuredTaskScope.Subtask;
 import java.util.concurrent.TimeUnit;
 
 /**
  * 结构化并发示例
- * 演示 StructuredTaskScope 的 ShutdownOnFailure 与 ShutdownOnSuccess 模式
+ * 演示 open() 默认策略（全部成功或快速失败）与 anySuccessfulOrThrow 竞速策略
  */
 public class StructuredConcurrencyDemo {
 
     /**
      * 订单详情聚合服务
-     * 使用 ShutdownOnFailure：任一子任务失败则取消所有子任务
+     * 默认策略：任一子任务失败则取消所有子任务并抛 FailedException
      */
     public record OrderDetail(String order, String user, String payment) {}
 
-    public OrderDetail fetchOrderDetail(Long orderId) throws InterruptedException, ExecutionException {
-        // ShutdownOnFailure：任一子任务失败，自动取消其他子任务
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+    public OrderDetail fetchOrderDetail(Long orderId) throws InterruptedException {
+        // open() 无参版本：任一子任务失败，自动取消其他子任务
+        try (var scope = StructuredTaskScope.open()) {
             // 并发 fork 三个子任务
-            StructuredTaskScope.Subtask<String> orderTask = 
-                scope.fork(() -> fetchOrder(orderId));
-            StructuredTaskScope.Subtask<String> userTask = 
-                scope.fork(() -> fetchUser(orderId));
-            StructuredTaskScope.Subtask<String> paymentTask = 
-                scope.fork(() -> fetchPayment(orderId));
-            
-            // 等待所有子任务完成
+            Subtask<String> orderTask = scope.fork(() -> fetchOrder(orderId));
+            Subtask<String> userTask = scope.fork(() -> fetchUser(orderId));
+            Subtask<String> paymentTask = scope.fork(() -> fetchPayment(orderId));
+
+            // 等待所有子任务完成；任一失败时抛出 FailedException（非受检异常）
             scope.join();
-            
-            // 若任一子任务失败，抛出异常
-            scope.throwIfFailed();
-            
+
             // 所有子任务成功，组装结果
             return new OrderDetail(
                 orderTask.get(),
@@ -770,21 +785,19 @@ public class StructuredConcurrencyDemo {
     }
 
     /**
-     * 使用 ShutdownOnSuccess：任一子任务成功则取消其他子任务
+     * 竞速策略：任一子任务成功则取消其他子任务（join() 返回首个成功结果），
+     * 全部失败时 join() 抛 FailedException
      * 适用于"多源竞速"场景（如多机房读同一数据，取最快响应）
      */
     public String fetchFromFastestSource(String key) throws InterruptedException {
-        try (var scope = new StructuredTaskScope.ShutdownOnSuccess<String>()) {
+        try (var scope = StructuredTaskScope.open(Joiner.<String>anySuccessfulOrThrow())) {
             // 并发 fork 三个数据源
             scope.fork(() -> fetchFromRedis(key));
             scope.fork(() -> fetchFromMySQL(key));
             scope.fork(() -> fetchFromES(key));
-            
-            // 等待任一子任务成功（其他自动取消）
-            scope.join();
-            
-            // 返回最先成功的结果
-            return scope.result();
+
+            // 等待任一子任务成功（其他自动取消），返回最先成功的结果
+            return scope.join();
         }
     }
 
@@ -958,7 +971,7 @@ public class ScopedValueDemo {
             + ", locale=" + LOCALE.get());
         
         // 启动结构化并发子任务，子任务自动继承 ScopedValue
-        try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+        try (var scope = StructuredTaskScope.open()) {
             scope.fork(() -> fetchUserProfile(USER_ID.get()));
             scope.fork(() -> fetchUserOrders(USER_ID.get(), LOCALE.get()));
             scope.join();
@@ -1328,7 +1341,7 @@ public synchronized String fetchData(String key) {
 
 **问题分析**：
 
-`synchronized` 块内的阻塞操作会导致虚拟线程被 Pinning，载体线程被占用。100 个虚拟线程并发调用此方法会导致 100 个载体线程被 Pinning（即使载体线程池只有 8 个），吞吐量退化为平台线程水平。
+在 JDK 21-23 上，`synchronized` 块内的阻塞操作会导致虚拟线程被 Pinning，载体线程被占用。100 个虚拟线程并发调用此方法会导致 100 个载体线程被 Pinning（即使载体线程池只有 8 个），吞吐量退化为平台线程水平。JDK 24+（JEP 491）已消除 monitor 类 Pinning，但 `ReentrantLock` 在所有版本上都是安全选择，且能避免团队在不同 JDK 版本间踩坑。
 
 **正确做法**：
 
@@ -1336,7 +1349,7 @@ public synchronized String fetchData(String key) {
 private final ReentrantLock lock = new ReentrantLock();
 
 public String fetchData(String key) {
-    lock.lock();  // 阻塞时虚拟线程可正常卸载
+    lock.lock();  // 阻塞时虚拟线程可正常卸载（JDK 21+ 所有版本均成立）
     try {
         return httpClient.send(request);
     } finally {
@@ -1347,7 +1360,7 @@ public String fetchData(String key) {
 
 **工具检测**：
 
-启动时加 `-Djdk.tracePinnedThreads=short`，JVM 会打印 Pinning 堆栈，帮助快速定位。
+JDK 21-23 启动时加 `-Djdk.tracePinnedThreads=short`，JVM 会打印 Pinning 堆栈，帮助快速定位（JDK 24 起该属性已随 JEP 491 移除，改用 JFR `jdk.VirtualThreadPinned` 事件）。
 
 ### 6.2 反模式：池化虚拟线程
 
@@ -1549,32 +1562,31 @@ try (var executor = Executors.newVirtualThreadPerTaskExecutor()) {
 2. 若必须用 Reactor，配置 `Schedulers.fromExecutor(Executors.newVirtualThreadPerTaskExecutor())`。
 3. 评估是否真的需要 Reactor（虚拟线程已提供高并发，无需响应式）。
 
-### 6.10 反模式：误用 `StructuredTaskScope` 的 `shutdown` 策略
+### 6.10 反模式：误用 `StructuredTaskScope` 的完成策略
 
 **问题代码**：
 
 ```java
-// 错误：用 ShutdownOnSuccess 处理必须全部成功的任务
-try (var scope = new StructuredTaskScope.ShutdownOnSuccess<String>()) {
-    scope.fork(() -> createUser(user));   // 必须成功
+// 错误：用竞速策略（anySuccessfulOrThrow）处理必须全部成功的任务
+// 任何 JDK 版本（含旧的 ShutdownOnSuccess 写法）都不该这样用
+try (var scope = StructuredTaskScope.open(Joiner.<String>anySuccessfulOrThrow())) {
+    scope.fork(() -> createUser(user));        // 必须成功
     scope.fork(() -> sendWelcomeEmail(user));  // 必须成功
-    scope.join();
+    String result = scope.join(); // 任一成功即取消其余，另一任务可能根本没执行
 }
-// 若 createUser 成功但 sendWelcomeEmail 失败，scope 不会取消 createUser
 ```
 
 **问题分析**：
 
-`ShutdownOnSuccess` 在任一子任务成功时取消其他子任务，适用于"竞速"场景。若所有子任务必须全部成功，应使用 `ShutdownOnFailure`。
+竞速策略（`Joiner.anySuccessfulOrThrow()`，旧 API 为 `ShutdownOnSuccess`）在任一子任务成功时取消其他子任务，只适用于"多源竞速取最快"场景。若所有子任务必须全部成功，应使用默认策略 `open()`（旧 API 为 `ShutdownOnFailure`）。
 
 **正确做法**：
 
 ```java
-try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+try (var scope = StructuredTaskScope.open()) {
     var userTask = scope.fork(() -> createUser(user));
     var emailTask = scope.fork(() -> sendWelcomeEmail(user));
-    scope.join();
-    scope.throwIfFailed();  // 任一失败则抛异常
+    scope.join(); // 任一失败则取消其余并抛 FailedException
     return new Result(userTask.get(), emailTask.get());
 }
 ```
@@ -1801,14 +1813,13 @@ public Mono<AggregatedResult> aggregate(Long id) {
     ).map(tuple -> new AggregatedResult(tuple.getT1(), tuple.getT2(), tuple.getT3()));
 }
 
-// 新代码（虚拟线程 + 结构化并发）
-public AggregatedResult aggregate(Long id) throws Exception {
-    try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
+// 新代码（虚拟线程 + 结构化并发，JDK 25/26 预览 API）
+public AggregatedResult aggregate(Long id) throws InterruptedException {
+    try (var scope = StructuredTaskScope.open()) {
         var orderTask = scope.fork(() -> fetchOrder(id));
         var userTask = scope.fork(() -> fetchUser(id));
         var productTask = scope.fork(() -> fetchProduct(id));
-        scope.join();
-        scope.throwIfFailed();
+        scope.join(); // 任一失败自动取消其余并抛 FailedException
         return new AggregatedResult(orderTask.get(), userTask.get(), productTask.get());
     }
 }
@@ -2165,7 +2176,7 @@ public class UserService {
 
 ### 11.3 结构化并发与作用域值
 
-- **JEP 453 / 462 / 480 结构化并发演进**：从预览到稳定的设计历程
+- **JEP 453 / 462 / 480 / 499 / 505 / 525 结构化并发演进**：持续预览迭代（截至 JDK 26 尚未转正）
 - **JEP 446 / 480 / 505 作用域值演进**：`ScopedValue` 与 `ThreadLocal` 的对比
 - **结构化并发论文**：*Structured Concurrency* by Nathaniel J. Smith (2017)
 
@@ -2187,7 +2198,7 @@ public class UserService {
 - **Java 响应式编程**：Reactor、RxJava、Akka Streams 对比
 - **Java 多线程与并发**：`java.util.concurrent` 全家桶深度解析
 - **Java IO 与 NIO**：BIO/NIO/AIO 与虚拟线程的协同
-- **Java 新特性**：Java 8-21 现代特性全景
+- **Java 新特性**：Java 8-26 现代特性全景
 - **Java 与 GraalVM**：Native Image 对虚拟线程的支持
 
 ---
@@ -2204,16 +2215,20 @@ public class UserService {
 | `Executors.newVirtualThreadPerTaskExecutor()` | 每任务一虚拟线程的执行器 | `try (var ex = Executors.newVirtualThreadPerTaskExecutor()) { ... }` |
 | `Thread.currentThread().isVirtual()` | 判断当前线程是否虚拟线程 | `boolean isVt = Thread.currentThread().isVirtual()` |
 
-### A.2 结构化并发 API
+### A.2 结构化并发 API（JDK 25/26 预览 API，需 --enable-preview）
 
 | API | 描述 | 示例 |
 |-----|------|------|
-| `StructuredTaskScope.ShutdownOnFailure()` | 任一失败则取消全部 | `try (var s = new StructuredTaskScope.ShutdownOnFailure()) { ... }` |
-| `StructuredTaskScope.ShutdownOnSuccess<T>()` | 任一成功则取消全部 | `try (var s = new StructuredTaskScope.ShutdownOnSuccess<String>()) { ... }` |
+| `StructuredTaskScope.open()` | 默认策略：任一失败取消全部，全部成功后 join 返回 null | `try (var s = StructuredTaskScope.open()) { ... }` |
+| `StructuredTaskScope.open(Joiner.anySuccessfulOrThrow())` | 竞速：任一成功取消全部，join 返回首个结果 | `try (var s = StructuredTaskScope.open(Joiner.<String>anySuccessfulOrThrow())) { ... }` |
+| `StructuredTaskScope.open(Joiner.allSuccessfulOrThrow())` | 全部成功，join 返回 `List<T>` 结果 | `List<String> rs = scope.join()` |
+| `StructuredTaskScope.open(Joiner.awaitAll())` | 等待全部结束（不关心成败） | `scope.join()` |
 | `scope.fork(Callable)` | 在 scope 内 fork 子任务 | `var task = scope.fork(() -> fetchData())` |
-| `scope.join()` | 等待所有子任务完成 | `scope.join()` |
-| `scope.throwIfFailed()` | 若有子任务失败则抛异常 | `scope.throwIfFailed()` |
-| `scope.result()` | 获取 ShutdownOnSuccess 的结果 | `String result = scope.result()` |
+| `scope.join()` | 等待子任务按策略完成；失败时抛 `FailedException` | `scope.join()` |
+| `subtask.get()` | join 之后读取子任务结果 | `orderTask.get()` |
+
+> JDK 21-24 的旧 API（`new StructuredTaskScope.ShutdownOnFailure()` / `ShutdownOnSuccess<T>`、
+> `throwIfFailed()`、`result()`）自 JDK 25 起已移除，遇到老代码请按上表迁移。
 
 ### A.3 作用域值 API
 
@@ -2229,10 +2244,11 @@ public class UserService {
 
 | 选项 | 描述 | 示例 |
 |-----|------|------|
-| `-Djdk.tracePinnedThreads=short` | 打印 Pinning 简短堆栈 | `java -Djdk.tracePinnedThreads=short -jar app.jar` |
-| `-Djdk.tracePinnedThreads=full` | 打印 Pinning 完整堆栈 | `java -Djdk.tracePinnedThreads=full -jar app.jar` |
-| `-Djdk.virtualThreadParallelism=N` | 设置载体线程池并行度 | `java -Djdk.virtualThreadParallelism=16 -jar app.jar` |
-| `jcmd <pid> Thread.dump_to_file -format=json file` | JSON 线程转储 | `jcmd 12345 Thread.dump_to_file -format=json dump.json` |
+| `-Djdk.tracePinnedThreads=short` | 打印 Pinning 简短堆栈（仅 JDK 21-23，24 起移除） | `java -Djdk.tracePinnedThreads=short -jar app.jar` |
+| `-Djdk.tracePinnedThreads=full` | 打印 Pinning 完整堆栈（仅 JDK 21-23，24 起移除） | `java -Djdk.tracePinnedThreads=full -jar app.jar` |
+| `-Djdk.virtualThreadScheduler.parallelism=N` | 设置载体线程池并行度（较新版本的正式属性） | `java -Djdk.virtualThreadScheduler.parallelism=16 -jar app.jar` |
+| `-Djdk.virtualThreadParallelism=N` | 旧属性名（部分版本可用，优先用上面的正式属性） | `java -Djdk.virtualThreadParallelism=16 -jar app.jar` |
+| `jcmd <pid> Thread.dump_to_file -format=json file` | JSON 线程转储（含虚拟线程） | `jcmd 12345 Thread.dump_to_file -format=json dump.json` |
 
 ---
 
@@ -2280,7 +2296,7 @@ public class UserService {
 
 虚拟线程的核心价值在于 **"生态兼容性"** —— 它不引入新关键字、不破坏现有代码、不要求重写库，却在 JVM 层面实现了协程级别的轻量级并发。这一设计使 Java 在云原生时代保持了竞争力，为高并发 I/O 场景提供了"同步风格 + 异步性能"的最佳实践。
 
-未来，随着结构化并发与作用域值的正式发布（预期 JDK 25 LTS），Java 的并发模型将更加完善。开发者应持续关注 JEP 演进，结合项目实际场景，合理选型虚拟线程、Reactor、Kotlin 协程等并发模型，构建高性能、可维护的并发系统。
+未来，随着结构化并发的持续预览迭代（截至 JDK 26 为第 6 次预览，JEP 525）与作用域值的正式发布（JDK 25，JEP 506），Java 的并发模型将更加完善。开发者应持续关注 JEP 演进，结合项目实际场景，合理选型虚拟线程、Reactor、Kotlin 协程等并发模型，构建高性能、可维护的并发系统。
 
 > "虚拟线程不是银弹，但它让 Java 在高并发领域重新具备了竞争力。"
 > —— Brian Goetz, Java 语言架构师
@@ -2530,7 +2546,7 @@ synchronized (lock) {
 
 ---
 
-## 结构化并发（Java 21 预览）
+## 结构化并发（JDK 21 起预览迭代，截至 JDK 26 为第 6 次预览）
 
 **基本写法：结构化任务作用域**
 `StructuredTaskScope.open()`
@@ -2546,22 +2562,20 @@ try (var scope = StructuredTaskScope.open()) {
 
 ---
 
-**基本写法：关闭策略 ShutdownOnFailure**
-`new StructuredTaskScope.ShutdownOnFailure()`
+**基本写法：竞速策略 anySuccessfulOrThrow**
+`StructuredTaskScope.open(Joiner.anySuccessfulOrThrow())`
 ```java
-// 任一失败则取消所有任务
-try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-    Subtask<String> a = scope.fork(() -> queryA());
-    Subtask<String> b = scope.fork(() -> queryB());
-    scope.join();
-    scope.throwIfFailed();
-    System.out.println(a.get() + " " + b.get());
+// 任一成功则取消其余（JDK 25/26 预览 API，旧的 ShutdownOnSuccess 已移除）
+try (var scope = StructuredTaskScope.open(Joiner.<String>anySuccessfulOrThrow())) {
+    scope.fork(() -> queryPrimary());
+    scope.fork(() -> queryReplica());
+    String fastest = scope.join(); // 首个成功结果；全部失败抛 FailedException
 }
 ```
 
 ---
 
-## 作用域值（Java 21 预览）
+## 作用域值（JDK 21-24 预览，JDK 25 转正）
 
 **基本写法：定义 ScopedValue**
 `private static final ScopedValue<String> USER = ScopedValue.newInstance()`
@@ -2653,5 +2667,5 @@ Thread.startVirtualThread(() -> doWork());
 `ThreadLocal.withInitial(...)`
 ```java
 // 百万虚拟线程会复制 ThreadLocal，内存开销大
-// 推荐改用 ScopedValue（预览特性）
+// 推荐改用 ScopedValue（JDK 25 起正式）
 ```

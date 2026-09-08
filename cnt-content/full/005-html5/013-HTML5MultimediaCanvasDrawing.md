@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: audio/video 元素、Canvas API 与 SVG 基础。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'html5/011-Accessibility'
   - 'html5/012-HTML5FormValidation'
@@ -1038,8 +1038,8 @@ oscillator.stop(audioCtx.currentTime + 2); // 2 秒后停止
 
 ## 12. 扩展学习
 
-- Canvas 进阶：`javascript/014-HigherOrderFunction` 理解回调与动画循环的配合；
-- WebGL 与 3D：`css/061-CSSCanvasDrawing` 与 Three.js 官方示例；
+- Canvas 进阶：`javascript/015-HigherOrderFunction` 理解回调与动画循环的配合；
+- WebGL 与 3D：`css/062-CSSCanvasDrawing` 与 Three.js 官方示例；
 - 音视频进阶：Web Audio 节点图、MediaSource 流式播放；
-- 性能：`html5/037-CriticalRenderingPathAndResourceLoading` 中媒体资源加载策略；
+- 性能：`html5/038-CriticalRenderingPathAndResourceLoading` 中媒体资源加载策略；
 - 工程实践：图片懒加载与 `loading="lazy"` 的组合使用。

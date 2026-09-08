@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 软件测试类型：功能测试、性能测试、安全测试、兼容性测试等详解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'software-testing/005-TestConceptPrinciple'
   - 'software-testing/006-TestLevels'

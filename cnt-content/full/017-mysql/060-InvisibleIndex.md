@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL不可见索引：索引可见性控制、优化器忽略、安全删除索引与灰度验证
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/058-JSONSchemaValidationAggregate'
   - 'mysql/059-ReplicationHA'

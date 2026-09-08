@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub CLI（gh）详解：安装认证、仓库/PR/Issue/Actions 常用命令与工作流提速技巧。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'github/018-SecretScanning'
   - 'github/019-CodeQLCodeScanning'

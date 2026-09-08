@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub Actions触发器详解：以触发事件清单为主线，逐一讲解 push、pull_request、schedule、workflow_dispatch 等事件类型、过滤条件与触发优化技巧。
 author: fanquanpp
-updated: '2026-08-29'
+updated: '2026-09-08'
 related:
   - 'github/028-GitHubPagesMultiSolution'
   - 'github/029-GitHubActionsCICD'

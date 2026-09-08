@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++ RAII 资源管理深度解析：形式化定义、栈展开机制、异常安全保证、智能指针、锁守卫、文件句柄、数据库事务、OpenGL/CUDA 资源、Pimpl、Scope Guard 与跨语言对比。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'cpp/008-SmartPointerDeepDive'
   - 'cpp/007-CppPointers'
@@ -2918,7 +2918,7 @@ RAII 类通常需要重载 `operator*`、`operator->`、`operator[]`、`operator
 
 #### 20.2.1 标准文档
 
-- **ISO/IEC 14882:2023**：C++ 国际标准第 8 版（C++23），第 11.9 节定义析构函数语义，第 14.4 节规范异常处理与 Stack Unwinding，第 7.6.10 节规定内存管理函数。RAII 的全部理论基础均在该标准中形式化定义。
+- **ISO/IEC 14882:2024**：C++ 国际标准第 7 版（C++23），第 11.9 节定义析构函数语义，第 14.4 节规范异常处理与 Stack Unwinding，第 7.6.10 节规定内存管理函数。RAII 的全部理论基础均在该标准中形式化定义。
 - **ISO/IEC 14882:2020**：C++20 标准，引入 `std::span`、Concepts、Modules、Coroutines 等特性，影响 RAII 类的设计模式（如 Concept 约束的 Deleter、模块化的资源封装）。
 - **C++ Core Guidelines (isocpp)**：由 Stroustrup 与 Sutter 维护的官方编码准则，R 章节（R.1-R.32）专门讨论资源管理，是 RAII 实践的权威指南。链接：https://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines
 

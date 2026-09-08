@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 测试框架集成、协程测试、代码规范、性能优化与 Effective Kotlin 要点。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'kotlin/010-KotlinMultiplatform'
   - 'kotlin/011-KotlinDSLDomainSpecificLanguage'

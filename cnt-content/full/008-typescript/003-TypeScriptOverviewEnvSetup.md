@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: TypeScript 发展历程、与 JavaScript 的关系与开发环境搭建。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/002-HowToReadThisCourse'
   - 'typescript/008-BasicTypeSystem'

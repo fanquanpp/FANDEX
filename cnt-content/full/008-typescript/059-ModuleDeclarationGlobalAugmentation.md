@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 模块声明与全局类型增强：declare module、声明合并、全局扩展与 DefinitelyRoots 类型生态的形式语义、工程实践与生产级模式。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'typescript/057-TemplateLiteralType'
   - 'typescript/058-TypeGymnastics'

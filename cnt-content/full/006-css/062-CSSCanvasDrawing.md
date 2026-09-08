@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Canvas绘图API与动画实战
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/061-CriticalRenderPathOptimization'
   - 'css/042-CSSNativeNesting'
@@ -657,6 +657,6 @@ Canvas 是 HTML5 提供的强大绘图 API，通过 JavaScript 可以在网页�
 
 ## 扩展学习
 
-- 完整 Canvas：`html5/012-HTML5MultimediaCanvasDrawing`；
-- 动画：`css/028-CSSAnimationTransition`；
-- SVG 对比：`html5/021-SVG`。
+- 完整 Canvas：`html5/013-HTML5MultimediaCanvasDrawing`；
+- 动画：`css/029-CSSAnimationTransition`；
+- SVG 对比：`html5/022-SVG`。

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 标准文件流操作、二进制文件及错误处理。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/049-VolatileKeyword'
   - 'c/017-BitField'
@@ -307,7 +307,7 @@ prerequisites:
   char name[50];
   int age;
   float salary;
- }
+ } Employee;   /* 类型名与分号缺一不可 */
  // 写入结构体
  Employee emp = {"Alice", 25, 5000.0};
  FILE *fp = fopen("employee.dat", "wb");
@@ -446,8 +446,7 @@ prerequisites:
  if (ferror(fp)) {
   perror("Error reading file");
  }
-  printf("End of file reached\n");
- }
+ printf("End of file reached\n");
  fclose(fp);
 ```
 
@@ -491,7 +490,6 @@ prerequisites:
  #include <stdio.h>
  int main() {
   FILE *source, *dest;
-  char ch;
   // 打开源文件
   source = fopen("source.txt", "r");
   if (source == NULL) {
@@ -505,7 +503,9 @@ prerequisites:
   fclose(source);
   return 1;
   }
-  // 复制内容
+  // 复制内容（注意：接收 fgetc 返回值的变量必须是 int，
+  // 否则在 char 为无符号的平台上永远无法与 EOF 比较）
+  int ch;
   while ((ch = fgetc(source)) != EOF) {
   fputc(ch, dest);
   }
@@ -535,7 +535,7 @@ prerequisites:
   int id;
   char name[50];
   float score;
- }
+ } Student;   /* 类型名与分号缺一不可 */
  // 保存学生信息到文件
  void save_students(Student students[], int count, const char *filename) {
   FILE *fp = fopen(filename, "wb");
@@ -575,7 +575,7 @@ prerequisites:
   printf("Enter student ID: ");
   scanf("%d", &s.id);
   printf("Enter student name: ");
-  scanf(" %[^"]", s.name); // 读取带空格的字符串
+  scanf(" %49[^\n]", s.name); // 读取带空格的字符串（限制宽度 49 防止溢出）
   printf("Enter student score: ");
   scanf("%f", &s.score);
   students[count] = s;
@@ -634,8 +634,8 @@ prerequisites:
 - **处理错误情况**：使用 `perror` 和 `ferror` 等函数处理错误
 - **使用二进制模式处理二进制文件**：避免文本模式的自动转换
 - **合理使用缓冲区**：对于大文件操作，考虑使用缓冲区提高效率
-- **使用 `feof` 检测文件结束**：而不是依赖 `fgetc` 等函数的返回值
-- **避免使用 `gets`**：使用 `fgets` 替代，更安全
+- **用 `fgetc`/`fgets` 的返回值控制读循环**：`feof` 只在上一次读取"越界之后"才为真，把它当循环前置条件会多处理一次"不存在的记录"；正确做法是 `while (fgets(...) != NULL)`，循环结束后再用 `feof`/`ferror` 区分正常结束与出错
+- **避免使用 `gets`**：使用 `fgets` 替代，更安全（`gets` 已在 C11 中被标准删除）
 
 ### 9.2 性能优化
 

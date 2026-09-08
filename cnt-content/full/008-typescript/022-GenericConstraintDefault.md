@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 泛型约束、默认类型参数与条件泛型
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/020-IndexSignatureDynamicProperty'
   - 'typescript/021-MappedTypeAdvanced'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 变量与常量、基本类型、零值、类型转换、字符串、指针、控制流与 defer 语句。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'go/002-GoOverviewEnvSetup'
   - 'go/004-GoFunctionMethod'

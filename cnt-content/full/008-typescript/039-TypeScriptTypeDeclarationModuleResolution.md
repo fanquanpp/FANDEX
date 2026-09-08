@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: TypeScript 声明文件（.d.ts）结构、模块解析策略（Node/NodeNext/Bundler）、ESM/CJS 互操作、路径映射与包导出的全面工程指南
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/037-RecursiveTypeDeepOperation'
   - 'typescript/038-ConditionalMappedType'
@@ -83,11 +83,9 @@ JavaScript 的模块系统经历了漫长的演进，每次演进都直接影响
 | 2.0 (2016) | 引入 `paths` 路径映射 |
 | 3.0 (2018) | 引入 `--build` 与 project references |
 | 3.8 (2020) | 支持 `import type` |
-| 4.0 (2020) | 支持 `exports` 字段（实验性） |
-| 4.7 (2022) | 引入 `moduleResolution: node16/nodenext` |
+| 4.7 (2022) | 引入 `moduleResolution: node16/nodenext`（`exports` 字段解析随之落地） |
 | 5.0 (2023) | 稳定 `moduleResolution: bundler` |
-| 5.4 (2024) | 改进 `require` of ESM 错误信息 |
-| 5.7 (2024) | 增强对 `--erasableSyntaxOnly` 的支持 |
+| 5.8 (2025) | `--module node18`、`--erasableSyntaxOnly` 与 `require(esm)` 渐进支持 |
 
 ### 2.3 关键设计者
 

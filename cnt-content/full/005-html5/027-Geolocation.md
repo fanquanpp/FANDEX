@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Geolocation
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'html5/025-WebComponentsPWADevelopment'
   - 'html5/026-DragAPI'
@@ -328,6 +328,6 @@ console.log(fence.contains(39.9050, 116.4080)); // true/false
 ## 扩展学习
 
 - 地图服务：高德/腾讯/Google Maps JS API 的坐标展示与逆地理编码；
-- 权限体系：`html5/014-HTML5OfflineStorageWebAPI` 中 Notification 等权限 API；
-- 实时位置：`html5/030-WebSocket` 传输位置实现共享定位；
+- 权限体系：`html5/015-HTML5OfflineStorageWebAPI` 中 Notification 等权限 API；
+- 实时位置：`html5/031-WebSocket` 传输位置实现共享定位；
 - 隐私合规：了解 GDPR/个人信息保护法对位置数据的处理要求。

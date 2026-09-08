@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: DNS与DHCP：域名解析体系、DNSSEC、DHCP协议与IP地址管理
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'networking/010-NetworkDiagnosis'
   - 'networking/011-NetworkDesignPlanning'

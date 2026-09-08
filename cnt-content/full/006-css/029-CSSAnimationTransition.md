@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS transition过渡、animation动画、关键帧、变换transform与性能优化详解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/027-BackgroundEnhancement'
   - 'css/023-CSS3GridGridLayout'
@@ -1390,7 +1390,7 @@ function checkFPS() {
 
 ## 扩展学习
 
-- 关键帧与缓动：`css/064-CSSNewFeatures`；
-- 3D 变换：`css/069-Transform3D`；
-- 可访问性：`css/045-AccessibleStyling`（减少动效）；
-- 性能：`css/042-CSSPerformanceOptimizationDetailed`。
+- 关键帧与缓动：`css/065-CSSNewFeatures`；
+- 3D 变换：`css/070-Transform3D`；
+- 可访问性：`css/046-AccessibleStyling`（减少动效）；
+- 性能：`css/043-CSSPerformanceOptimizationDetailed`。

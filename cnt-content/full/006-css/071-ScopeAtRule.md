@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: CSS @scope 规则语法速查手册 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related: []
 prerequisites: []
 ---
@@ -202,6 +202,6 @@ p { color: black; }              /* 全局 */
 
 ## 扩展学习
 
-- 嵌套：`css/071-CSSNesting`；
-- 架构：`css/043-CSSArchitectureMethodology`；
-- 新特性：`css/064-CSSNewFeatures`。
+- 嵌套：`css/072-CSSNesting`；
+- 架构：`css/044-CSSArchitectureMethodology`；
+- 新特性：`css/065-CSSNewFeatures`。

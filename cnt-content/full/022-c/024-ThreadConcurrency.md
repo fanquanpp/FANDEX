@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C11线程与并发原语
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/015-AtomicAndMemoryModel'
   - 'c/025-POSIXThread'
@@ -499,14 +499,14 @@ void rwlock_destroy(RWLock *rw) {
 
 ### C11 线程的支持情况
 
-截至2025年，C11 线程的支持情况：
+截至 2026 年，C11 线程的支持情况：
 
-- GCC: 通过 `-std=c11 -pthread` 部分支持
-- Clang: 部分支持
-- MSVC: 不支持 `<threads.h>`
+- glibc 2.28（2018）起在 Linux 上提供 `<threads.h>`（编译需 `-pthread`，标准选择建议 `-std=c11` 或更新）
 - musl libc: 完整支持
+- Clang/glibc 组合可用；macOS 与 Windows 原生 libc 不提供
+- MSVC: 不支持 `<threads.h>`
 
-在不支持 C11 线程的平台上，可以使用 pthread 或 Windows 线程 API 作为替代。
+在不支持 C11 线程的平台上，可以使用 pthread 或 Windows 线程 API 作为替代（见下文兼容性封装层）。
 
 ### thrd_sleep 的使用
 
@@ -635,7 +635,7 @@ int main(void) {
 #include <stdatomic.h>
 
 // 原子标志用于线程间简单同步
-atomic_int done = ATOMIC_VAR_INIT(0);
+atomic_int done = 0;   // 直接常量初始化即可（ATOMIC_VAR_INIT 已在 C23 移除）
 
 int background_work(void *arg) {
     printf("后台工作开始\n");
@@ -813,8 +813,11 @@ if (mtx_trylock(&m) == thrd_success) { }
 **基本写法：定时加锁**
 `mtx_timedlock(&<锁>, &<超时>);`
 ```c
-// 限时等待加锁
+// 限时等待加锁；注意参数是"绝对时间点"（TIME_UTC 基准），
+// 不是相对时长——需先取当前时间再加上超时量
 struct timespec ts;
+timespec_get(&ts, TIME_UTC);   // 取当前绝对时间
+ts.tv_sec += 2;                // 2 秒后到期
 mtx_timedlock(&m, &ts);
 ```
 
@@ -838,12 +841,15 @@ mtx_init(&m, mtx_recursive);
 
 ---
 
-## 信号量 C23
+## 信号量（POSIX 扩展，非 C 标准库）
+
+注意：`sem_t`/`sem_init`/`sem_wait`/`sem_post` 来自 POSIX 的 `<semaphore.h>`，
+不属于 C 标准的 `<threads.h>`（C 标准至今未提供信号量）。Linux 下编译需链接 `-pthread`。
 
 **基本写法：创建信号量**
 `#include <semaphore.h>` `sem_t <变量>; sem_init(&<变量>, 0, <初始>);`
 ```c
-// 计数信号量
+// 计数信号量（第二个参数 0 表示线程间共享）
 sem_t sem;
 sem_init(&sem, 0, 3);
 ```

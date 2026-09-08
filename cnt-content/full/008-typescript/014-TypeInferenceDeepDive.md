@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: TypeScript 类型推断的完整规则：字面量拓宽、const 与 let 差异、最佳公共类型、上下文类型推断与泛型推断。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'typescript/015-ConstAssertion'
   - 'typescript/013-LiteralUnionTypes'

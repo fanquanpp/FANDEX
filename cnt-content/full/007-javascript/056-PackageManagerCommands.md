@@ -265,5 +265,5 @@ pnpm install   # 自动链接 store
 ## 扩展学习
 
 - Monorepo：`pnpm-monorepo/` 模块；
-- 模块：`javascript/037-JavaScriptModular`；
-- 构建：`javascript/039-ModuleBundlingAndTreeShaking`。
+- 模块：`javascript/038-JavaScriptModular`；
+- 构建：`javascript/040-ModuleBundlingAndTreeShaking`。

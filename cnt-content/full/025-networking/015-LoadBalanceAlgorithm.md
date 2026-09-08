@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 负载均衡算法：轮询、加权轮询、最少连接、一致性哈希与一致性哈希虚拟节点。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'networking/013-LoadBalanceTech'
   - 'networking/014-NetworkAutomation'

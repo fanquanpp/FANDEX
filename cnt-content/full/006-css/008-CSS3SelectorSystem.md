@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 基础选择器、组合选择器、伪类伪元素与优先级。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/002-CSS3OverviewBasicSyntax'
   - 'css/004-CSS3BoxModelDetailed'
@@ -716,7 +716,7 @@ div {
 5. `.box { color: green !important }` 与行内样式，谁赢？（!important 赢）
 6. `.a.b` 与 `.c`，谁赢？（`.a.b` 权重 20 赢）
 
-**讲解：** 前两题练“权重累加”，中间两题练“顺序与行内例外”，最后两题练“数量叠加与 !important”。全部答对即可进入 `css/009-PriorityCalculation` 的四元组精确计算。
+**讲解：** 前两题练“权重累加”，中间两题练“顺序与行内例外”，最后两题练“数量叠加与 !important”。全部答对即可进入 `css/010-PriorityCalculation` 的四元组精确计算。
 
 ## 6. 选择器性能
 
@@ -1856,8 +1856,8 @@ div:has(img) {
 
 ## 扩展学习
 
-- 优先级计算：`css/009-PriorityCalculation`；
-- 伪类/伪元素详解：`css/023-PseudoClassPseudoElement`；
-- BEM 命名：`css/057-BEMNamingMethodology`；
-- 嵌套规范：`css/041-CSSNativeNesting`、`css/071-CSSNesting`；
-- 现代选择器：`:has()` 与容器查询 `css/032-ContainerQuery`。
+- 优先级计算：`css/010-PriorityCalculation`；
+- 伪类/伪元素详解：`css/024-PseudoClassPseudoElement`；
+- BEM 命名：`css/058-BEMNamingMethodology`；
+- 嵌套规范：`css/042-CSSNativeNesting`、`css/072-CSSNesting`；
+- 现代选择器：`:has()` 与容器查询 `css/033-ContainerQuery`。

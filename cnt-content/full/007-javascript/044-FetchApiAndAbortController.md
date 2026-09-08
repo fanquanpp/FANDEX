@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: fetch 请求全解：流式读取、超时取消与错误语义。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'javascript/043-WebAPIBrowserInterface'
   - 'javascript/045-FetchApiWebStreams'
@@ -21,9 +21,9 @@ prerequisites:
 
 ## 前置知识
 
-- [Web API 与浏览器接口](/module/javascript/043-WebAPIBrowserInterface)：fetch 与 AbortController 都是宿主环境提供的 Web API。
-- [fetch 与 Web Streams](/module/javascript/045-FetchApiWebStreams)：响应体流式读取依赖 ReadableStream 概念。
-- [网络存储](/module/javascript/046-StorageForTheWeb)：请求结果常与本地缓存策略配合使用。
+- [Web API 与浏览器接口](/javascript/043-WebAPIBrowserInterface)：fetch 与 AbortController 都是宿主环境提供的 Web API。
+- [fetch 与 Web Streams](/javascript/045-FetchApiWebStreams)：响应体流式读取依赖 ReadableStream 概念。
+- [网络存储](/javascript/046-StorageForTheWeb)：请求结果常与本地缓存策略配合使用。
 
 ## 学习目标
 

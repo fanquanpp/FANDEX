@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译器代码优化：常量传播、死代码消除、循环展开与公共子表达式消除。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/059-SemanticAnalysis'
   - 'cs-fundamentals/060-IntermediateCode'

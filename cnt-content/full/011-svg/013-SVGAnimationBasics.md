@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: SMIL animate、animateTransform、animateMotion 与 CSS 动画对比。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'svg/009-SVGTransform'
   - 'svg/005-SVGPathDetailed'

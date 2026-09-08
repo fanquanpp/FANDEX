@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 面向对象、函数式、声明式三大编程范式的核心思想与代码实践（入门学习笔记）。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/011-ProgrammingBasics'
   - 'cs-fundamentals/012-FunctionModular'

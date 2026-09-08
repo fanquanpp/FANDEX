@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL数据类型体系：数值类型、字符串类型、日期时间类型、JSON类型、空间类型的语法、存储与最佳实践
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'sql/012-PLSQLStoredProcedure'
   - 'sql/013-SQLPracticeInterview'

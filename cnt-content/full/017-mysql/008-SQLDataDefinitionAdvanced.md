@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: CREATE/ALTER/DROP、视图、索引与存储过程。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'mysql/006-MySQLEnvSetup'
   - 'mysql/007-MySQLDataTypeConstraint'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C语言函数指针回调机制与跳转表实现。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'c/046-PointerArrayDifference'
   - 'c/047-DoublePointerPointerArray'

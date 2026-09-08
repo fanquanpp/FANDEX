@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Markdown脚注语法：定义方式、引用格式与多平台兼容性。
 author: fanquanpp
-updated: '2026-08-02'
+updated: '2026-09-08'
 related:
   - 'markdown/008-EscapeCharacter'
   - 'markdown/010-Strikethrough'

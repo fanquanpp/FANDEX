@@ -21,9 +21,9 @@ JavaScript 的主线程在同一时刻只能做一件事，任何超过几十毫
 
 ## 前置知识
 
-- [事件循环进阶](/module/javascript/030-EventLoopDetailed)：理解主线程为何会被长任务阻塞。
-- [ArrayBuffer 与 TypedArray](/module/javascript/024-ArrayBufferTypedArray)：二进制数据是 Worker 传输与共享内存的基础。
-- [异步编程](/module/javascript/025-AsyncProgramming)：Worker 通信结果通常用 Promise 组织。
+- [事件循环进阶](/javascript/030-EventLoopDetailed)：理解主线程为何会被长任务阻塞。
+- [ArrayBuffer 与 TypedArray](/javascript/024-ArrayBufferTypedArray)：二进制数据是 Worker 传输与共享内存的基础。
+- [异步编程](/javascript/025-AsyncProgramming)：Worker 通信结果通常用 Promise 组织。
 
 ## 学习目标
 

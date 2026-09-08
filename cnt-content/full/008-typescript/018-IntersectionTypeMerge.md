@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 交叉类型、接口合并与类型覆盖
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-08'
 related:
   - 'typescript/013-LiteralUnionTypes'
   - 'typescript/017-ClassDecorator'

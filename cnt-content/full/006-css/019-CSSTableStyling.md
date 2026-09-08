@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: border-collapse、border-spacing、caption-side、empty-cells 与 table-layout，系统掌握表格美化。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/024-PseudoClassPseudoElement'
   - 'css/010-PriorityCalculation'
@@ -143,7 +143,7 @@ table {
 
 ## 5. 扩展学习
 
-- 结构语义：`html5/017-List` 与表格的对比；
-- 隔行变色：`css/023-PseudoClassPseudoElement` 的 `:nth-child`；
-- 响应式表格：`css/033-ResponsiveDesign`；
-- 数据可视化：用 `css/022-CSS3GridGridLayout` 做网格布局。
+- 结构语义：`html5/018-List` 与表格的对比；
+- 隔行变色：`css/024-PseudoClassPseudoElement` 的 `:nth-child`；
+- 响应式表格：`css/034-ResponsiveDesign`；
+- 数据可视化：用 `css/023-CSS3GridGridLayout` 做网格布局。

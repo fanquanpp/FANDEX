@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 计算机组成原理：指令系统、CPU数据通路、控制器设计、存储体系与I/O系统
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'cs-fundamentals/006-DigitalLogic'
   - 'cs-fundamentals/007-DiscreteMathematics'

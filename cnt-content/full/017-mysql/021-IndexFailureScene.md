@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL索引失效场景：函数操作、隐式转换、LIKE前缀、OR条件、范围查询与优化策略
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'mysql/019-IndexStatsHistogram'
   - 'mysql/020-SQLFunctionAndAdvancedQuery'

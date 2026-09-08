@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: C# 语言概述、.NET 生态、.NET 8/9 新特性、环境搭建与 Hello World
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-08'
 related:
   - 'csharp/003-CSharpBasicSyntax'
   - 'csharp/004-CSharpOOP'

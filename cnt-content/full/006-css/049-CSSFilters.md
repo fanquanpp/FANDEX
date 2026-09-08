@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: filter 的 10 个滤镜函数：模糊、亮度、对比度、色相旋转等，实现图片与组件的视觉处理。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/026-Shadow'
   - 'css/027-BackgroundEnhancement'
@@ -117,7 +117,7 @@ img {
 
 ## 5. 扩展学习
 
-- 阴影：`css/025-Shadow`；
-- 背景混合：`css/026-BackgroundEnhancement`（background-blend-mode）；
-- 性能：`css/042-CSSPerformanceOptimizationDetailed`；
-- 动画：`css/028-CSSAnimationTransition` 中滤镜过渡。
+- 阴影：`css/026-Shadow`；
+- 背景混合：`css/027-BackgroundEnhancement`（background-blend-mode）；
+- 性能：`css/043-CSSPerformanceOptimizationDetailed`；
+- 动画：`css/029-CSSAnimationTransition` 中滤镜过渡。

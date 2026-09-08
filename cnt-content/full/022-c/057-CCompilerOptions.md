@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C 编译器命令 语法速查手册 的完整教学讲解。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related: []
 prerequisites: []
 ---

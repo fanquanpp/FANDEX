@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: gRPC与Protobuf
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'go/024-GoGraphQL'
   - 'go/048-GoHTTP'

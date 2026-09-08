@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Rust 基础语法：变量与不可变性、标量类型、复合类型、函数与控制流
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'rust/003-RustEnvSetup'
   - 'rust/005-RustOwnershipBorrowing'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 深入解析 CSS Backgrounds Module Level 3/4 多背景、background-size、background-clip、background-origin、background-attachment 的规范、绘制算法与工程实践
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-08'
 related:
   - 'css/025-Gradient'
   - 'css/026-Shadow'
@@ -2660,10 +2660,10 @@ $$
 
 ## 10. 扩展学习
 
-- 渐变：`css/024-Gradient`；
-- 阴影：`css/025-Shadow`；
-- 滤镜与混合：`css/048-CSSFilters`（滤镜体系）；
-- 响应式背景：`css/033-ResponsiveDesign`。
+- 渐变：`css/025-Gradient`；
+- 阴影：`css/026-Shadow`；
+- 滤镜与混合：`css/049-CSSFilters`（滤镜体系）；
+- 响应式背景：`css/034-ResponsiveDesign`。
 
 ## 附录 A：术语表
 
