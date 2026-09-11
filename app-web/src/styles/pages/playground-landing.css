@@ -98,7 +98,6 @@
 
   .pg-home__open:hover {
     background: var(--color-accent-hover);
-    box-shadow: 0 8px 24px -8px color-mix(in srgb, var(--color-accent-base) 45%, transparent);
   }
 
   .pg-home__open:active {

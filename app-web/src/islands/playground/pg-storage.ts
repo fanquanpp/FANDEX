@@ -132,13 +132,16 @@ export const DRAFT_PEN_KEY = 'frontend';
 /**
  * 保存前端实验草稿（自动保存调用，防抖由 UI 层控制）
  * @param pen - 当前编辑中的作品
+ * @returns 是否写入成功；失败时 UI 层显示未保存状态
  */
-export async function savePenDraft(pen: FrontendPen): Promise<void> {
-  if (!isClient) return;
+export async function savePenDraft(pen: FrontendPen): Promise<boolean> {
+  if (!isClient) return false;
   try {
     await idbPut(STORE_DRAFTS, pen);
+    return true;
   } catch {
-    // 存储失败不阻断编辑，UI 会显示未保存状态
+    // 存储失败不阻断编辑，UI 层据返回值显示未保存状态
+    return false;
   }
 }
 

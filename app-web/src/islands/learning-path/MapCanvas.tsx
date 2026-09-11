@@ -18,7 +18,7 @@ import {
   useLayoutEffect,
   useRef,
 } from 'react';
-import type { NodeProgress, TechProgress, TechVM } from './types';
+import type { TechProgress, TechVM } from './types';
 import {
   LAYOUT,
   getNodeCenters,

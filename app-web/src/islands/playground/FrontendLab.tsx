@@ -30,7 +30,7 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import CodeMirrorBox from './CodeMirrorBox';
+import CodeMirrorBoxLoader from './CodeMirrorBoxLoader';
 import { PgIcon } from './pg-icons';
 import { formatCode } from './pg-formatter';
 import { buildPreviewDoc, estimatePenBytes, parsePreviewMessage } from './pg-frontend-runtime';
@@ -124,7 +124,7 @@ const CONSOLE_LIMIT = 200;
 const STORAGE_WARN_RATIO = 0.85;
 
 /** 保存状态文案 */
-type SaveState = 'saved' | 'saving';
+type SaveState = 'saved' | 'saving' | 'error';
 /** 编辑器面板 key（与作品字段一一对应） */
 type PaneKey = 'html' | 'css' | 'js';
 /** 拖拽调整面板权重时的最小/最大占比 */
@@ -285,7 +285,32 @@ function FrontendLab() {
   }, [pen]);
 
   /**
-   * 自动保存（防抖）：草稿与作品库记录都实时落盘
+   * 立即落盘当前作品（跳过防抖），供页面隐藏/关闭前兜底调用。
+   * IndexedDB 写入在 pagehide 阶段发起即可被浏览器接受（尽力而为），
+   * 与防抖自动保存互补，把"最后几百毫秒输入丢失"的窗口压到最小。
+   */
+  const latestPenRef = useRef<FrontendPen | null>(null);
+  latestPenRef.current = pen;
+
+  const flushPen = useCallback((source: FrontendPen) => {
+    const now = Date.now();
+    const payload: FrontendPen = {
+      ...source,
+      split,
+      updatedAt: now,
+      lastOpenedAt: source.lastOpenedAt || now,
+    };
+    // 兜底路径静默执行：页面正在卸载，状态更新无意义
+    if (payload.id === 'draft') {
+      void savePenDraft(payload);
+    } else {
+      void savePen(payload).catch(() => {});
+    }
+  }, [split]);
+
+  /**
+   * 自动保存（防抖）：草稿与作品库记录都实时落盘；
+   * 写入失败时进入 error 态（工具栏显示「未保存」），不静默假报已保存
    */
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -297,15 +322,41 @@ function FrontendLab() {
         updatedAt: now,
         lastOpenedAt: pen.lastOpenedAt || now,
       };
-      if (pen.id === 'draft') {
-        await savePenDraft(payload);
-      } else {
-        await savePen(payload);
+      try {
+        let ok = true;
+        if (pen.id === 'draft') {
+          ok = await savePenDraft(payload);
+        } else {
+          await savePen(payload);
+        }
+        setSaveState(ok ? 'saved' : 'error');
+      } catch {
+        setSaveState('error');
       }
-      setSaveState('saved');
     }, AUTOSAVE_MS);
     return () => clearTimeout(timer);
   }, [pen, split]);
+
+  /**
+   * 页面隐藏/关闭前的兜底落盘：visibilitychange 覆盖切标签/最小化，
+   * pagehide 覆盖关闭与跳转，两者互补把丢失窗口压到最小
+   */
+  useEffect(() => {
+    const onHidden = () => {
+      const source = latestPenRef.current;
+      if (source && document.visibilityState === 'hidden') flushPen(source);
+    };
+    const onPageHide = () => {
+      const source = latestPenRef.current;
+      if (source) flushPen(source);
+    };
+    document.addEventListener('visibilitychange', onHidden);
+    window.addEventListener('pagehide', onPageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onHidden);
+      window.removeEventListener('pagehide', onPageHide);
+    };
+  }, [flushPen]);
 
   /**
    * 自动运行（防抖）：内容变化后延迟重建预览
@@ -677,7 +728,7 @@ function FrontendLab() {
             aria-label="作品标题"
           />
           <span className={`pg-save-state pg-save-state--${saveState}`}>
-            {saveState === 'saved' ? '已保存到本地' : '保存中'}
+            {saveState === 'saved' ? '已保存到本地' : saveState === 'error' ? '保存失败，请重试' : '保存中'}
           </span>
         </div>
         <div className="pg-toolbar-row pg-toolbar-row--actions">
@@ -866,10 +917,10 @@ function FrontendLab() {
                     </button>
                   </div>
                   <div className="pg-pane-body">
-                    <CodeMirrorBox
+                    <CodeMirrorBoxLoader
                       value={value}
                       language={language as 'html' | 'css' | 'javascript'}
-                      onChange={(next) =>
+                      onChange={(next: string) =>
                         updatePen(editor.key === 'html' ? { html: next } : editor.key === 'css' ? { css: next } : { js: next })
                       }
                       ariaLabel={`${editor.label} 编辑器`}

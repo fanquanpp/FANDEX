@@ -29,14 +29,14 @@
     min-height: 0;
   }
 
-  /* 通用按钮：与站点 fndx 按钮同语法（透明底 + 细边框 + 4px 圆角） */
+  /* 通用按钮：与站点 fndx 按钮同语法（透明底 + 细边框 + 2px 直角） */
   .pg-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     height: 28px;
     padding: 0 12px;
-    border-radius: var(--radius-md, 4px);
+    border-radius: var(--radius-sm, 2px);
     border: 1px solid transparent;
     background: transparent;
     color: var(--color-fg-secondary);
@@ -69,13 +69,15 @@
     outline-offset: 2px;
   }
 
+  /* 幽灵变体：中性悬停（边框加深 + 文字提亮），强调色只留给激活/主操作 */
   .pg-btn--ghost {
     border-color: var(--color-border-light);
     background: var(--color-bg-card);
   }
 
   .pg-btn--ghost:hover {
-    border-color: color-mix(in srgb, var(--color-accent-base) 45%, transparent);
+    border-color: var(--color-border-strong);
+    color: var(--color-fg-primary);
   }
 
   .pg-btn--primary {
@@ -108,7 +110,8 @@
     font-size: 11px;
   }
 
-  /* 编辑器开关按钮：紧凑等宽标签，激活态使用强调色 */
+  /* 编辑器开关按钮：紧凑等宽标签；激活态 = 中性底色 + 底缘 2px 强调色刻度
+     （不使用整片强调色渲染，避免 SaaS 式彩色胶囊感） */
   .pg-btn--editors {
     height: 24px;
     padding: 0 9px;
@@ -118,9 +121,10 @@
   }
 
   .pg-btn--editors.is-on {
-    color: var(--color-accent-base);
-    border-color: color-mix(in srgb, var(--color-accent-base) 55%, transparent);
-    background: color-mix(in srgb, var(--color-accent-base) 9%, transparent);
+    color: var(--color-fg-primary);
+    border-color: var(--color-border-strong);
+    background: var(--color-bg-card);
+    box-shadow: inset 0 -2px 0 var(--color-accent-base);
   }
 
   /* 顶部工具栏（前端实验与编程练习共用） */
@@ -141,7 +145,7 @@
     gap: 4px;
     height: 28px;
     padding: 0 8px;
-    border-radius: var(--radius-md, 4px);
+    border-radius: var(--radius-sm, 2px);
     color: var(--color-fg-secondary);
     text-decoration: none;
     font-size: 12px;
@@ -189,6 +193,15 @@
     background: var(--color-warning-base);
   }
 
+  /* 写入失败：危险色提示，明确"未保存"避免假报安心 */
+  .pg-save-state--error {
+    color: var(--color-danger-base);
+  }
+
+  .pg-save-state--error::before {
+    background: var(--color-danger-base);
+  }
+
   /* 工具栏提示：格式化结果等轻量反馈 */
   .pg-toolbar-note {
     margin-left: auto;
@@ -228,7 +241,7 @@
     height: 28px;
     padding: 0 10px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--radius-md, 4px);
+    border-radius: var(--radius-sm, 2px);
     background: var(--color-bg-card);
     color: var(--color-fg-primary);
     font-size: 12px;
@@ -577,6 +590,13 @@
     color: inherit;
   }
 
+  /* CodeMirror 懒加载占位：与 pane-body 同底色的静默骨架，无布局跳动 */
+  .pg-cm-fallback {
+    flex: 1;
+    min-height: 0;
+    background: var(--color-bg-code);
+  }
+
   /* 作品库抽屉：沿用站点卡片语法（细边框 + 悬浮转色） */
   .pg-drawer-mask {
     position: fixed;
@@ -791,12 +811,15 @@
     margin-left: auto;
   }
 
-  /* 面板开关激活态（窄屏标签页焦点）：强调色底 + 顶部 2px 刻度线 */
-  .pg-btn--editors.is-active {
-    color: var(--color-accent-base);
-    border-color: color-mix(in srgb, var(--color-accent-base) 65%, transparent);
-    background: color-mix(in srgb, var(--color-accent-base) 14%, transparent);
-    box-shadow: inset 0 2px 0 0 var(--color-accent-base);
+  /* 面板开关激活态（仅窄屏标签页焦点）：强调色底 + 顶部 2px 刻度线；
+     限定窄屏断点，桌面端统一走 .is-on 的中性 + 底缘刻度样式 */
+  @media (max-width: 720px) {
+    .pg-btn--editors.is-active {
+      color: var(--color-accent-base);
+      border-color: color-mix(in srgb, var(--color-accent-base) 65%, transparent);
+      background: color-mix(in srgb, var(--color-accent-base) 14%, transparent);
+      box-shadow: inset 0 2px 0 0 var(--color-accent-base);
+    }
   }
 
   /* 新建模板菜单容器（锚定新建按钮） */
