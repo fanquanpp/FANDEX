@@ -92,12 +92,13 @@ README「快速开始」）。
 ### 4. 本地校验
 
 ```bash
-pnpm sync          # 内容自动同步（补全元数据、注册模块、清理死链）
-pnpm build:web     # 完整 web 构建（含 Content Collections 构建期校验与搜索索引）
-pnpm typecheck     # 全仓类型检查
+pnpm sync          # 内容自动同步（补全元数据、注册模块、清理死链），幂等
+pnpm typecheck     # 全仓类型检查（app-web astro check + shd-shared/tokens）
 ```
 
-三项全部通过即与 CI 门槛等价。`pnpm sync` 是幂等的，重复执行无副作用。
+内容类改动建议再跑 `node app-web/scripts/content-audit.mjs` 确认无 HIGH 级
+问题。web 完整构建（`pnpm build:web`）不再作为推送前置，由 CI 在「指向
+main 的 PR 与发版」时验证；本地预览时仍可随时运行。
 
 ### 5. 提交
 
@@ -122,13 +123,14 @@ pnpm typecheck     # 全仓类型检查
 
 | 工作流 | 触发 | 内容 |
 | --- | --- | --- |
-| android-build.yml | push 与 PR | 双端 Android APK 并行构建校验 |
-| desktop-build.yml | push 与 PR | Windows 桌面端构建 + 前端实验室剔除校验 |
-| deploy.yml | push 到 main 与指向 main 的 PR | 构建 + 类型检查 + 内容审计 + QA 门禁；仅 push 到 main 时发布 GitHub Pages |
+| android-build.yml | push main 与指向 main 的 PR（带路径过滤） | 双端 Android APK 并行构建校验 |
+| desktop-build.yml | push main 与指向 main 的 PR（带路径过滤） | Windows 桌面端构建 + 前端实验室剔除校验 |
+| deploy.yml | push main 与指向 main 的 PR（带路径过滤） | 构建 + 类型检查 + 内容审计 + QA 门禁；仅 push 到 main 时发布 GitHub Pages |
 | android-release.yml | push `v*` 标签 | 构建三端安装包并发布 GitHub Release |
 
 所有构建前会自动运行 `content-sync.mjs`；deploy 工作流中的 `content-audit.mjs`
-门禁会在出现 HIGH 级内容质量问题时阻断构建。
+门禁会在出现 HIGH 级内容质量问题时阻断构建。注意：push 到 `dev` 不触发
+任何 CI，构建验证发生在指向 main 的 PR 与发版时。
 
 ### 7. 合并
 
@@ -161,7 +163,7 @@ PR 合并后可删除特性分支。
 - [ ] 文档放入正确的模块文件夹，文件名编号符合学习顺序；
 - [ ] `title` / `description` 已填写（其余字段可不写）；
 - [ ] 代码示例语法正确、已标注语言；
-- [ ] 本地跑过 `pnpm sync` 与 `pnpm build:web` 且无报错（或确认 CI 会覆盖）；
+- [ ] 本地跑过 `pnpm sync` 无报错（web 构建验证由 CI 覆盖，本地无需 `pnpm build:web`）；
 - [ ] 无 emoji、无构建产物入库；
 - [ ] 提交信息符合 Conventional Commits；
 - [ ] PR 目标分支：协作者与外部贡献者为 `dev`，维护者可直接发 `main`

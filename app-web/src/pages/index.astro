@@ -54,12 +54,13 @@ const grouped = getCategories()
       <div class="hero-stats-row">
         <div class="hero-stats">
           <div class="stat-item">
-            <span class="stat-num">{allModules.length}</span>
+            <!-- data-countup 提供滚动计数目标值；min-width 锁定最终值宽度，计数期间不挤压兄弟元素 -->
+            <span class="stat-num" data-countup={allModules.length} style={`min-width:${String(allModules.length).length}ch`}>{allModules.length}</span>
             <span class="stat-label">模块</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
-            <span class="stat-num">{stats.totalDocs}</span>
+            <span class="stat-num" data-countup={stats.totalDocs} style={`min-width:${String(stats.totalDocs).length}ch`}>{stats.totalDocs}</span>
             <span class="stat-label">文档</span>
           </div>
         </div>
@@ -135,7 +136,8 @@ const grouped = getCategories()
   </div>
 </HomeLayout>
 
-<!-- 客户端交互脚本：分类区域折叠/展开 -->
+<!-- 客户端交互脚本：分类区域折叠/展开 + 统计数字滚动计数 -->
 <script>
   import '@/lib/home-interactions';
+  import '@/lib/stat-count-up';
 </script>

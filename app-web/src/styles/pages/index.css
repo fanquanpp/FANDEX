@@ -754,26 +754,82 @@
   }
 
   /* ============================================================
-   * 6. 入场动效（CSS + motion 令牌，零 JS）
+   * 6. 入场动效 v2（CSS + motion 令牌，零 JS 编排）
    * ----------------------------------------------------------------
-   * 首屏 Hero 依次上滑揭示，模块卡片横向滑动器内错峰显现。
+   * 首屏入场时序（总长约 1s，一次性的"开机的仪式感"）：
+   *   0.04s 标题上滑 + 字距收势（0.26em 收拢至基础字距）
+   *   0.16s 统计栏上滑（数字随后由 stat-count-up.ts 滚动计数起跳）
+   *   0.26s 功能入口上滑，三个波浪边框路径依次"签名式"划过再隐去
+   *   0.42s Hero 底部分割线从中心向两侧展开
    * 依据 ark-ui 设计语言：
-   * - 直接交互 / 入场 150-250ms（--motion-duration-normal）
-   * - 非纯 opacity，附 Y 方向位移（fndx-slide-up keyframe）
-   * - 错峰间隔 40ms（--motion-delay-stagger-short 对应）
-   * 可访问性：prefers-reduced-motion 启用时整体禁用，由 MotionProvider 在
-   * React 侧同步降级。
+   * - 直接交互 / 入场 150-250ms，区域揭示 400-600ms（--motion-duration-slower）
+   * - 非纯 opacity，附 Y 方向位移（fndx-slide-up / 专属 keyframes）
+   * - 入场动画一律 fill: backwards：结束后不锁定关键帧，
+   *   元素回到基础样式，hover 过渡不受动画填充干扰
+   * 可访问性：prefers-reduced-motion 启用时整体禁用
    * ============================================================ */
 
-  /* Hero 区域：依次上滑入场（首屏即时播放，both 保持首尾态） */
-  .hero-title,
-  .hero-stats,
-  .hero-entries {
-    animation: fndx-slide-up var(--motion-duration-normal) var(--motion-easing-out) both;
+  /* 标题：待机渐变呼吸（heroBgPan）与入场动画合并为一条多动画声明。
+     修复：旧版用单值 animation 声明入场，覆盖了第 2 节的 heroBgPan，
+     导致首屏渐变呼吸失效，且 hover 改 animation-duration 会让已结束的
+     入场动画重新进入活动期产生"二次淡入"抖动 */
+  .hero-title {
+    animation:
+      heroBgPan 12s linear infinite alternate,
+      hero-title-in var(--motion-duration-slower) var(--motion-easing-out) 0.04s backwards;
   }
-  .hero-title { animation-delay: 0.06s; }
-  .hero-stats { animation-delay: 0.12s; }
-  .hero-entries { animation-delay: 0.18s; }
+
+  /* 标题入场：字距从 0.26em 收拢 + 上滑 + 渐显。
+     故意省略 to 关键帧：动画自动过渡到元素基础值，
+     首页 0.15em / 移动端 0.1em / 子页面 0.12em 各断点自动适配 */
+  @keyframes hero-title-in {
+    from {
+      opacity: 0;
+      transform: translateY(14px);
+      letter-spacing: 0.26em;
+    }
+  }
+
+  /* 统计栏与功能入口：依次上滑（数字计数由 stat-count-up.ts 接棒） */
+  .hero-stats {
+    animation: fndx-slide-up var(--motion-duration-normal) var(--motion-easing-out) 0.16s backwards;
+  }
+
+  .hero-entries {
+    animation: fndx-slide-up var(--motion-duration-normal) var(--motion-easing-out) 0.26s backwards;
+  }
+
+  /* 功能入口波浪边框：入场时依次"签名式"划过再隐去（一次性），之后恢复
+     hover 触发的路径书写交互；fill: backwards 结束后回到基础隐藏态（offset:250），
+     与 hover 过渡互不干扰 */
+  @keyframes entry-path-intro {
+    0% { stroke-dashoffset: 250; }
+    40% { stroke-dashoffset: 0; }
+    55% { stroke-dashoffset: 0; }
+    100% { stroke-dashoffset: 250; }
+  }
+
+  .hero-entries .entry-btn:nth-child(1) .entry-border path {
+    animation: entry-path-intro 1.9s var(--motion-easing-in-out) 0.5s backwards;
+  }
+
+  .hero-entries .entry-btn:nth-child(2) .entry-border path {
+    animation: entry-path-intro 1.9s var(--motion-easing-in-out) 0.64s backwards;
+  }
+
+  .hero-entries .entry-btn:nth-child(3) .entry-border path {
+    animation: entry-path-intro 1.9s var(--motion-easing-in-out) 0.78s backwards;
+  }
+
+  /* Hero 底部分割线：从中心向两侧展开（背景渐变线宽度 0% → 100%） */
+  .hero {
+    animation: hero-rule-in var(--motion-duration-slower) var(--motion-easing-out) 0.42s backwards;
+  }
+
+  @keyframes hero-rule-in {
+    from { background-size: 0% 1px; }
+    to { background-size: 100% 1px; }
+  }
 
   /* 模块卡片：滑动器内错峰入场（前 8 张依次显现，其余同步，避免长延迟）
    * 注：JS 克隆的卡片（aria-hidden）不参与入场动画 */
@@ -789,11 +845,14 @@
   .feature-track .module-card:not([aria-hidden='true']):nth-child(7) { animation-delay: 0.28s; }
   .feature-track .module-card:not([aria-hidden='true']):nth-child(8) { animation-delay: 0.32s; }
 
-  /* 可访问性：用户启用减少动效时禁用所有入场动画 */
+  /* 可访问性：用户启用减少动效时禁用所有入场动画
+     （入口边框在第 2 节的降级规则中已置为常显 offset:0） */
   @media (prefers-reduced-motion: reduce) {
+    .hero,
     .hero-title,
     .hero-stats,
     .hero-entries,
+    .hero-entries .entry-btn .entry-border path,
     .feature-track .module-card {
       animation: none;
     }
