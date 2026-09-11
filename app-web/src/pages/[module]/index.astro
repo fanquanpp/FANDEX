@@ -12,8 +12,6 @@ import ModulePageContent from '@/components/ModulePageContent.astro';
 import { getModule } from '@/lib/modules';
 import { MODULE_PAGE_SIZE } from '@/lib/constants';
 import { getDocsByModule } from '@/services';
-// 学习进度：客户端记录与装饰（进度条、侧边栏已读标记）
-import '@/lib/progress';
 
 export async function getStaticPaths() {
   const { modules } = await import('@/lib/modules');

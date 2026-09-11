@@ -4,7 +4,7 @@
  *
  * 功能概述：
  * - 文档页左侧导航面板，展示当前模块文档列表与全部模块视图
- * - 章节视图：当前模块的文档列表，按 order 排序，含进度指示器
+ * - 章节视图：当前模块的文档列表，按 order 排序
  * - 全部模块视图：模块按分类分组，支持点击展开/收起；
  *   面板内容由 SidebarModules 岛按需挂载（见 sidebar-modules-mount.ts），
  *   避免在服务端把全站导航重复内联到每个页面
@@ -267,7 +267,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
   <span class="fndx-sidebar__expand-fab-text">展开</span>
 </button>
 
-<!-- 客户端交互脚本：侧边栏滚动记忆、进度标记、模块折叠、视图切换、折叠收纳 -->
+<!-- 客户端交互脚本：侧边栏滚动记忆、模块折叠、视图切换、折叠收纳 -->
 <script>
   import '@/lib/sidebar-interactions';
   import '@/lib/sidebar-modules-mount';

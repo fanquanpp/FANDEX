@@ -48,8 +48,7 @@ function pageHref(n: number): string {
       <p class="header-desc">{meta.description}</p>
     </div>
     <div class="header-docs">
-      {/* 文档总数 chip 与学习进度指示（lib/progress.ts 客户端填充） */}
-      <span class="doc-progress" data-progress-module data-module={module} data-total={docs.length} aria-label="本模块学习进度"></span>
+      {/* 文档总数 chip */}
       <span class="doc-chip doc-chip--count" aria-label={`本模块共 ${docs.length} 篇文档`}>
         <span class="doc-chip-icon">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
