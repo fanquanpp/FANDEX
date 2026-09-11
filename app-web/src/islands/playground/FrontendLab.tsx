@@ -7,6 +7,8 @@
  *   - 编辑内容自动保存到浏览器 IndexedDB，刷新不丢失
  *   - 本地作品库：另存为新作品、打开历史作品、删除作品
  *   - 模板库：新建时可选空白页 / 交互示例 / CSS 动画三个起步模板
+ *   - 灵感画廊：内置 25 个前端设计成品（加载动画/按钮/卡片/文本/背景/
+ *     组件六类），实时预览效果并一键把源码载入编辑器
  *   - 快捷键：Ctrl/Cmd + Enter 运行预览
  *   - URL 同步：打开/另存作品后同步 ?pen= 参数，刷新不丢上下文
  *   - 窄屏（≤768px）下面板开关自动变为标签页行为，单屏聚焦当前编辑器
@@ -32,6 +34,8 @@ import CodeMirrorBox from './CodeMirrorBox';
 import { PgIcon } from './pg-icons';
 import { formatCode } from './pg-formatter';
 import { buildPreviewDoc, estimatePenBytes, parsePreviewMessage } from './pg-frontend-runtime';
+import ShowcaseGallery from './ShowcaseGallery';
+import type { ShowcaseItem } from './pg-showcase';
 import {
   deletePen,
   getStorageUsage,
@@ -178,6 +182,8 @@ function FrontendLab() {
   const [showLibrary, setShowLibrary] = useState(false);
   /** 是否打开新建模板菜单 */
   const [showTemplates, setShowTemplates] = useState(false);
+  /** 是否打开灵感画廊 */
+  const [showGallery, setShowGallery] = useState(false);
   /** 作品库列表 */
   const [library, setLibrary] = useState<FrontendPen[]>([]);
   /** 编辑器区域占比（0-1） */
@@ -425,9 +431,44 @@ function FrontendLab() {
   );
 
   /**
-   * 打开作品库面板并刷新列表
+   * 把灵感画廊成品载入编辑器（覆盖当前草稿，需用户确认）
+   * 确认策略与新建草稿一致：草稿有改动时提醒覆盖；作品态只提示切换且不影响已保存内容
+   * @param item - 目标成品
    */
-  const handleOpenLibrary = useCallback(async () => {
+  const handleLoadShowcase = useCallback(
+    (item: ShowcaseItem) => {
+      const isUntouched =
+        pen.id === 'draft' &&
+        TEMPLATES.some((t) => pen.html === t.html && pen.css === t.css && pen.js === t.js);
+      const needsConfirm =
+        pen.id !== 'draft'
+          ? '当前正在编辑作品库中的作品，载入成品会切换到新的草稿，已保存的作品不受影响，是否继续？'
+          : !isUntouched
+            ? '当前草稿尚未另存为作品，载入成品会覆盖草稿内容，是否继续？'
+            : '';
+      if (needsConfirm && !window.confirm(needsConfirm)) return;
+      const next: FrontendPen = {
+        ...DEFAULT_TEMPLATE,
+        title: item.name,
+        html: item.html,
+        css: item.css,
+        js: item.js,
+        lastOpenedAt: Date.now(),
+      };
+      setPen(next);
+      setPreviewDoc(buildPreviewDoc(next));
+      setRunId((n) => n + 1);
+      setConsoleEntries([]);
+      setActivePane('html');
+      setShowGallery(false);
+      syncPenUrl(null);
+    },
+    [pen],
+  );
+
+  /**
+   * 打开作品库面板并刷新列表
+   */  const handleOpenLibrary = useCallback(async () => {
     setLibrary(await loadPens());
     setShowLibrary(true);
   }, []);
@@ -677,6 +718,15 @@ function FrontendLab() {
             </button>
           </div>
           <div className="pg-toolbar-group">
+            <button
+              type="button"
+              className="pg-btn pg-btn--ghost"
+              onClick={() => setShowGallery(true)}
+              title="浏览灵感画廊：25 个设计成品，可一键载入源码"
+            >
+              <PgIcon name="gallery" size={14} />
+              <span>灵感库</span>
+            </button>
             <div className="pg-new-wrap">
               <button
                 type="button"
@@ -894,6 +944,13 @@ function FrontendLab() {
 
       {/* 新建模板菜单的点击关闭层 */}
       {showTemplates && <div className="pg-menu-mask" onClick={() => setShowTemplates(false)} />}
+
+      {/* 灵感画廊：设计成品实时预览与源码载入 */}
+      <ShowcaseGallery
+        open={showGallery}
+        onClose={() => setShowGallery(false)}
+        onLoad={handleLoadShowcase}
+      />
 
       {/* 本地作品库面板 */}
       {showLibrary && (

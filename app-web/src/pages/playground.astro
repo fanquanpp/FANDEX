@@ -6,6 +6,8 @@
  *   - 站内唯一编程入口：HTML / CSS / JavaScript 三栏编辑器 + 实时预览 + 控制台
  *   - CodePen 风格工作台，编辑内容自动保存到浏览器 IndexedDB
  *   - 本地作品库支持另存、打开与删除，全部数据仅存用户浏览器
+ *   - 灵感画廊：内置 25 个前端设计成品（动画/交互/组件），可实时预览
+ *     并一键载入编辑器查看与修改源码
  *
  * 美术对齐：
  *   - 使用 HomeLayout 全站横幅（FANDEX 标识 / GitHub / 主题切换），与主页同源
@@ -25,7 +27,7 @@ const base = import.meta.env.BASE_URL
   <SEO
     slot="head"
     title="在线编程 · FANDEX"
-    description="FANDEX 在线编程：在浏览器中编写 HTML、CSS 与 JavaScript，实时预览效果，内置控制台，作品自动保存在本地，无需注册与上传。"
+    description="FANDEX 在线编程：在浏览器中编写 HTML、CSS 与 JavaScript，实时预览效果，内置控制台与灵感画廊——25 个前端设计成品（加载动画、按钮交互、卡片效果、文本动效、背景氛围、实用组件）可一键载入源码学习，作品自动保存在本地，无需注册与上传。"
     canonical={`${SITE.url}${base}playground/`}
     type="website"
   />

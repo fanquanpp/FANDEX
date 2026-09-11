@@ -93,10 +93,11 @@ const CONSOLE_BRIDGE = `
 /**
  * 构建预览 iframe 的 srcdoc 文档
  * 结构：HTML 头部放入用户 CSS，body 放入用户 HTML，末尾注入桥接脚本与用户 JS
- * @param pen - 前端实验作品
+ * 签名接受最小接口：编辑器作品与灵感画廊成品都可直接传入
+ * @param pen - 含 html/css/js 三段源码的对象
  * @returns 完整 HTML 文档字符串
  */
-export function buildPreviewDoc(pen: FrontendPen): string {
+export function buildPreviewDoc(pen: Pick<FrontendPen, 'html' | 'css' | 'js'>): string {
   const css = escapeCloser(pen.css);
   const js = escapeCloser(pen.js);
   return [

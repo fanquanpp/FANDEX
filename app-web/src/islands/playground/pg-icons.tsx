@@ -38,6 +38,7 @@ export type PgIconName =
   | 'alert'
   | 'plus'
   | 'spark'
+  | 'gallery'
   ;
 
 /** 图标路径表：每个图标包含若干 path/形状定义 */
@@ -147,6 +148,14 @@ const PATHS: Record<PgIconName, ReactNode> = {
   spark: (
     <>
       <path d="M12 3l2.2 5.8L20 11l-5.8 2.2L12 19l-2.2-5.8L4 11l5.8-2.2L12 3Z" />
+    </>
+  ),
+  gallery: (
+    <>
+      <rect x="3" y="3" width="8" height="8" rx="1.5" />
+      <rect x="13" y="3" width="8" height="8" rx="1.5" />
+      <rect x="3" y="13" width="8" height="8" rx="1.5" />
+      <rect x="13" y="13" width="8" height="8" rx="1.5" />
     </>
   ),
 };
