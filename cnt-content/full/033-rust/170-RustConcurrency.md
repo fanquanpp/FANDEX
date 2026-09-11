@@ -1,29 +1,27 @@
 ---
-order: 160
+order: 170
 title: 并发编程
 module: 'rust'
 category: 后端技术
 difficulty: advanced
 description: 线程、通道与 Send/Sync：无数据竞争的并发模型。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'rust/014-RustSmartPointers'
-  - 'rust/012-RustAsyncTokio'
-  - 'rust/018-RustClosuresFnTraits'
+  - 'rust/150-RustSmartPointers'
+  - 'rust/130-RustAsyncTokio'
+  - 'rust/110-RustClosuresFnTraits'
 prerequisites:
-  - 'rust/014-RustSmartPointers'
+  - 'rust/150-RustSmartPointers'
 ---
-
-# 并发编程
 
 演唱会开场前一小时，三个检票窗口同时工作、同一份余票被同时扣减、粉丝请求从四面八方涌向主播——并发无处不在。并发编程的百年难题是**数据竞争**：两个执行流同时读写同一份数据且至少一个在写，结果不可复现。Rust 的答案是"所有权管数据、类型系统管线程"：`Send`/`Sync` 两个标记 trait 在**编译期**拒绝不安全的跨线程共享，把数据竞争从"调试到凌晨"变成"编译不过"。本篇讲透线程、锁、通道三件工具与背后的类型系统原理。
 
 ## 前置知识
 
-- [智能指针](/rust/014-RustSmartPointers)：`Arc` 是跨线程共享所有权的载体。
-- [闭包与 Fn 特征](/rust/018-RustClosuresFnTraits)：`move` 闭包是线程任务的载体。
-- [异步编程与 Tokio](/rust/012-RustAsyncTokio)：async 并发与本篇线程并发的对照。
+- [智能指针](/rust/150-RustSmartPointers)：`Arc` 是跨线程共享所有权的载体。
+- [闭包与 Fn 特征](/rust/110-RustClosuresFnTraits)：`move` 闭包是线程任务的载体。
+- [异步编程与 Tokio](/rust/130-RustAsyncTokio)：async 并发与本篇线程并发的对照。
 
 ## 学习目标
 
@@ -153,7 +151,7 @@ fn main() {
 两个标记 trait 是 Rust 并发安全的基石：
 
 - **`Send`**：类型的所有权可以安全地**转移**到另一个线程。几乎所有类型都自动实现；反例是 `Rc`（非原子计数）与裸指针。
-- **`Sync`**：类型的引用 `&T` 可以安全地**跨线程共享**。等价于 `T: Send` 且 `&T: Send`；反例是 `RefCell`（运行期借用检查不是线程安全的）。
+- **`Sync`**：类型的共享引用 `&T` 可以安全地**跨线程共享**。精确定义是 `T: Sync` 当且仅当 `&T: Send`——注意它**不要求** `T` 本身是 `Send`，二者是独立的能力：`MutexGuard`（锁守卫）是 `Send` 但不是 `Sync`（守卫可以移动到别的线程用，但绝不能两个线程各持一份）；反过来说 `RefCell` 两者皆非（运行期借用检查不是线程安全的）。
 
 它们是自动派生的：结构体的字段全 `Send` 则整体 `Send`。编译器用它们检查每一个 `thread::spawn` 的闭包——闭包捕获的数据必须 `Send`。这就是 `Rc` 传进线程直接报错的原因：
 

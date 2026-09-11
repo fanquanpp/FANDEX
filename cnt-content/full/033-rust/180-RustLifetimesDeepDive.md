@@ -1,27 +1,25 @@
 ---
-order: 170
+order: 180
 title: 生命周期深入
 module: 'rust'
 category: 后端技术
 difficulty: advanced
 description: 生命周期标注、省略规则与 HRTB：让借用检查器为你工作。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'rust/005-RustOwnershipBorrowing'
-  - 'rust/010-RustGenericTrait'
+  - 'rust/050-RustOwnershipBorrowing'
+  - 'rust/100-RustGenericTrait'
 prerequisites:
-  - 'rust/005-RustOwnershipBorrowing'
+  - 'rust/050-RustOwnershipBorrowing'
 ---
-
-# 生命周期深入
 
 《所有权与借用》里我们知道了生命周期的存在，但只停留在"编译器会自动推断"的层面。本篇把它讲透：生命周期标注到底是什么、三条省略规则如何推导、结构体与方法中的生命周期参数怎么写、`'static` 与高阶 trait 约束（HRTB）在什么场景出现。核心认知只有一句：**生命周期标注不改变任何变量的存活时间，它只是把"引用之间的存活关系"写下来，供编译器验证引用不悬垂**。
 
 ## 前置知识
 
-- [所有权与借用](/rust/005-RustOwnershipBorrowing)：借用规则与 NLL 的基础认知。
-- [泛型与 Trait](/rust/010-RustGenericTrait)：生命周期参数与泛型参数同属"泛型参数"家族。
+- [所有权与借用](/rust/050-RustOwnershipBorrowing)：借用规则与 NLL 的基础认知。
+- [泛型与 Trait](/rust/100-RustGenericTrait)：生命周期参数与泛型参数同属"泛型参数"家族。
 
 ## 学习目标
 

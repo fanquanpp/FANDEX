@@ -6,22 +6,20 @@ category: 后端技术
 difficulty: advanced
 description: unsafe 边界：裸指针、unsafe trait 与安全抽象的封装纪律。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'rust/014-RustSmartPointers'
-  - 'rust/005-RustOwnershipBorrowing'
+  - 'rust/150-RustSmartPointers'
+  - 'rust/050-RustOwnershipBorrowing'
 prerequisites:
-  - 'rust/014-RustSmartPointers'
+  - 'rust/150-RustSmartPointers'
 ---
-
-# Unsafe Rust
 
 前十九篇的所有保障，都来自"Safe Rust"：编译器证明每个引用合法、每次释放恰有一次。但总有一些场景编译器无法证明却真实安全——双端切片、手写容器、调用 C 库。`unsafe` 不是"关闭安全检查的开关"，而是**一条信任声明**："这里的正确性编译器验证不了，由我人工担保。" 它把 Rust 与 C/C++ 区分开的地方在于：unsafe 被限制在显式的、可搜索的代码块里，配合封装纪律，风险面积可以被压缩到接近于零。本篇讲清 unsafe 的能力边界、裸指针与别名规则、安全契约与封装惯例，并预览 FFI。
 
 ## 前置知识
 
-- [智能指针](/rust/014-RustSmartPointers)：`Box`/`Rc` 的实现本身就在 unsafe 之上封装。
-- [所有权与借用](/rust/005-RustOwnershipBorrowing)：别名规则是理解裸指针风险的前提。
+- [智能指针](/rust/150-RustSmartPointers)：`Box`/`Rc` 的实现本身就在 unsafe 之上封装。
+- [所有权与借用](/rust/050-RustOwnershipBorrowing)：别名规则是理解裸指针风险的前提。
 
 ## 学习目标
 
@@ -40,6 +38,8 @@ prerequisites:
 3. 访问或修改可变静态变量（`static mut`）。
 4. 实现 `unsafe trait`。
 5. 访问 `union` 的字段。
+
+关于第 3 条，2024 edition 有一个重要的收紧：**对 `static mut` 取引用被默认拒绝**（`static_mut_refs` lint 在该 edition 下为 deny）——引用的存活期不可控，正是静态可变数据最危险的用法。替代方案是用 `&raw const`/`&raw mut`（或 `addr_of_mut!`）直接取**裸指针**，或干脆改用 `AtomicU32`、`Mutex<T>` 等安全抽象。新版编译器把这条危险路径从"写法自由"变成了"写法违规"，工具链在替你把关。
 
 使用方式是 `unsafe { ... }` 块或 `unsafe fn`。心智模型是"双重世界"：Safe Rust 里编译器担保安全；unsafe 块里程序员向编译器担保——担保的内容是若干**不变量**（invariant），比如"这个指针有效且未被别名修改"。写 unsafe 的核心技能不是记 API，而是**识别并论证不变量**。纪律要求：每个 unsafe 块都要写 `// SAFETY:` 注释说明为何安全，说不出理由就不该写这个块。
 
@@ -104,6 +104,8 @@ fn main() {
 ```
 
 **解读**：`take_unchecked` 没有做任何边界检查——它把"idx 在界内""数据仍存活"两项检查转移给了调用方，换来零开销。这与 `Vec::get_unchecked` 的设计一致：标准库同时提供安全版 `get`（返回 `Option`，付出边界检查代价）与 unsafe 版 `get_unchecked`（快，但契约自负）。**设计准则**：unsafe fn 的契约要少而清晰，能用 assert 在函数内部廉价验证的条件就别留给调用方——每减少一条契约，误用的可能性就降一档。
+
+另一个与 `unsafe fn` 直接相关的 edition 变化：2024 edition 起启用 `unsafe_op_in_unsafe_fn` lint（默认 warn）——`unsafe fn` 体内执行不安全操作也必须写显式的 `unsafe { ... }` 块，不能再"整个函数天然是 unsafe 上下文"。这让函数体内哪些语句真正依赖担保一目了然，与"unsafe 块最小化"的纪律一脉相承；新代码建议直接遵守，老代码迁移时会收到编译器逐条提示。
 
 ## 4. 封装安全抽象：把 unsafe 关进最小笼子
 

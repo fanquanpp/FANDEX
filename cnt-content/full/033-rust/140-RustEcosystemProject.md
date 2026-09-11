@@ -1,17 +1,17 @@
 ---
-order: 130
+order: 140
 title: 常用生态与实战
 module: 'rust'
 category: 后端技术
 difficulty: advanced
 description: axum Web 服务、serde 序列化、clap CLI、tracing 日志与项目实战
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'rust/012-RustAsyncTokio'
-  - 'rust/011-RustTestingDebugging'
+  - 'rust/130-RustAsyncTokio'
+  - 'rust/120-RustTestingDebugging'
 prerequisites:
-  - 'rust/012-RustAsyncTokio'
+  - 'rust/130-RustAsyncTokio'
 ---
 
 
@@ -283,10 +283,10 @@ curl http://localhost:3000/todos
 
 部署提示：Rust 静态编译，`cargo build --release` 后单二进制即可部署；配合 `docker run` 或 systemd 即可上线。
 
-## 10. 小结
+## 8. 小结
 
-axum（路由）+ serde（数据）+ clap（CLI）+ tracing（日志）构成了 Rust 服务端开发的核心组合。本篇的待办 API 演示了从零搭建一个可运行服务的完整流程。至此，从环境搭建到生态实战的 Rust 系列学习路径已全部完成——用实战项目巩固知识，是进阶的不二法门。
+axum（路由）+ serde（数据）+ clap（CLI）+ tracing（日志）构成了 Rust 服务端开发的核心组合。本篇的待办 API 演示了从零搭建一个可运行服务的完整流程。至此，从环境搭建到生态实战的 Rust 主线学习路径已全部完成——用实战项目巩固知识，是进阶的不二法门。
 
-**回顾完整学习路径**：环境搭建（002）→ 基础语法（003）→ 所有权（004）→ 结构体/枚举（005）→ 错误处理（006）→ 集合迭代器（007）→ 泛型 Trait（008）→ 测试调试（009）→ 异步（010）→ 生态实战（011）。每一环都为下一环铺路，建议按顺序学习并完成各章练习。
+**回顾完整学习路径**：Rust 是什么 → 语言概述 → 环境搭建 → 基础语法 → 所有权与借用 → 借用检查器报错实战 → 结构体/枚举/模式匹配 → 错误处理 → 集合与迭代器 → 泛型与 Trait → 测试与调试 → 异步与 Tokio → 常用生态与实战（本篇）。之后的进阶篇章：智能指针、宏编程、并发编程、生命周期深入、闭包与 Fn 特征、Cargo 进阶、Unsafe Rust。每一环都为下一环铺路，建议按顺序学习并完成各章练习。
 
 > **一句话记忆**：Rust 服务端四件套——"axum 管路由、serde 管数据、clap 管参数、tracing 管日志"；用它们组合出的待办 API 是生产级骨架（`Arc<Mutex<Store>>` + Router + Json），curl 一发即验。

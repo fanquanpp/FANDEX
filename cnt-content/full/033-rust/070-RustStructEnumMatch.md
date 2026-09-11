@@ -6,12 +6,12 @@ category: 后端技术
 difficulty: beginner
 description: 结构体与 impl、枚举与 Option、match 模式匹配与 if let
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'rust/005-RustOwnershipBorrowing'
-  - 'rust/008-RustErrorHandling'
+  - 'rust/050-RustOwnershipBorrowing'
+  - 'rust/080-RustErrorHandling'
 prerequisites:
-  - 'rust/005-RustOwnershipBorrowing'
+  - 'rust/050-RustOwnershipBorrowing'
 ---
 
 
@@ -104,7 +104,7 @@ fn main() {
 }
 ```
 
-讲解：`self` 三种形态：`&self`（借用只读）、`&mut self`（可变借用）、`self`（获取所有权）；关联函数无 self，用 `Type::fn()` 调用。Rust 没有继承，复用靠 trait（见 008 篇）。
+讲解：`self` 三种形态：`&self`（借用只读）、`&mut self`（可变借用）、`self`（获取所有权）；关联函数无 self，用 `Type::fn()` 调用。Rust 没有继承，复用靠 trait（见泛型与 Trait 一篇）。
 
 ### 2.1 结构体打印调试
 
@@ -251,7 +251,7 @@ println!("{}", b.unwrap_or(0));      // 0
 println!("{}", b.map(|v| v * 2).is_none()); // true
 ```
 
-讲解：生产代码慎用 `unwrap()`（会 panic），先用 `unwrap_or` 或 match 显式处理；`?` 运算符在 006 篇错误处理中讲解。
+讲解：生产代码慎用 `unwrap()`（会 panic），先用 `unwrap_or` 或 match 显式处理；`?` 运算符在错误处理一篇中讲解。
 
 ## 6. 综合示例：用枚举实现简单状态机
 
@@ -293,7 +293,7 @@ fn main() {
 | `Rectangle` cannot be formatted | 结构体未实现 Debug | 加 `#[derive(Debug)]` |
 | type `Option<T>` cannot be used with `?` | Option 与 Result 混用 | 用 `ok_or` 转换类型 |
 
-## 10. 小结
+## 8. 小结
 
 结构体组织数据、impl 定义行为、枚举表达状态、match 穷尽处理分支、Option 消灭空指针。这五件套是 Rust 建模日常业务的基本功。下一步学习错误处理：让程序在失败时给出优雅的反馈而非崩溃。
 

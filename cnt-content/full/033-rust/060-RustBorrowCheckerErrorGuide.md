@@ -6,24 +6,22 @@ category: 后端技术
 difficulty: intermediate
 description: E0382/E0502/E0597 等高频报错：读懂提示并修复。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'rust/005-RustOwnershipBorrowing'
-  - 'rust/008-RustErrorHandling'
-  - 'rust/017-RustLifetimesDeepDive'
+  - 'rust/050-RustOwnershipBorrowing'
+  - 'rust/080-RustErrorHandling'
+  - 'rust/180-RustLifetimesDeepDive'
 prerequisites:
-  - 'rust/005-RustOwnershipBorrowing'
+  - 'rust/050-RustOwnershipBorrowing'
 ---
-
-# 借用检查器报错实战
 
 学 Rust 的第一道坎往往不是语法，而是编译器源源不断的红色报错。借用检查器（borrow checker）以"报错比代码多"著称，但它的提示信息其实是所有语言里最详尽的：错误码、借用发生点、冲突点、修复建议一应俱全。本篇以虚拟歌手音乐平台的票务与曲库场景为背景，把 E0382、E0502、E0597 三个最高频的报错逐一拆开，并沉淀出一套可复用的修复套路——**读懂报错，比背规则更重要**。
 
 ## 前置知识
 
-- [所有权与借用](/rust/005-RustOwnershipBorrowing)：所有权三规则、移动与借用的基本约束。
-- [Rust 基础语法](/rust/004-RustBasicSyntax)：变量绑定、函数与字符串基础。
-- [Rust 错误处理](/rust/008-RustErrorHandling)：Result 与 panic 的分工。
+- [所有权与借用](/rust/050-RustOwnershipBorrowing)：所有权三规则、移动与借用的基本约束。
+- [Rust 基础语法](/rust/040-RustBasicSyntax)：变量绑定、函数与字符串基础。
+- [Rust 错误处理](/rust/080-RustErrorHandling)：Result 与 panic 的分工。
 
 ## 学习目标
 

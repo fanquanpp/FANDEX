@@ -6,12 +6,12 @@ category: 后端技术
 difficulty: intermediate
 description: 泛型函数与结构体、Trait 定义实现、Trait 对象与生命周期标注
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'rust/009-RustCollectionsIterators'
-  - 'rust/008-RustErrorHandling'
+  - 'rust/090-RustCollectionsIterators'
+  - 'rust/080-RustErrorHandling'
 prerequisites:
-  - 'rust/008-RustErrorHandling'
+  - 'rust/080-RustErrorHandling'
 ---
 
 
@@ -158,7 +158,7 @@ fn make_summary_dyn(kind: bool) -> Box<dyn Summary> {  // 动态分发
 | PartialEq / Eq | 相等比较 | `x == y` |
 | PartialOrd / Ord | 大小比较、排序 | `v.sort()` |
 | Default | 默认值 | `#[derive(Default)]` |
-| Iterator | 迭代器协议 | 见 007 篇 |
+| Iterator | 迭代器协议 | 见集合与迭代器一篇 |
 | From / Into | 类型转换 | `String::from(s)` |
 
 通过 `#[derive(...)]` 派生这些 trait 是 Rust 最常用的"免费实现"：
@@ -178,7 +178,7 @@ fn main() {
 }
 ```
 
-讲解：derive 只能用于"各字段也实现了该 trait"的类型；这大幅减少样板代码。自定义 `Display` 需要手写 `fmt` 方法（见 006 篇自定义错误示例）。
+讲解：derive 只能用于"各字段也实现了该 trait"的类型；这大幅减少样板代码。自定义 `Display` 需要手写 `fmt` 方法（见错误处理一篇的自定义错误示例）。
 
 ## 4. 生命周期标注
 
@@ -257,7 +257,34 @@ fn main() {
 
 讲解：`T: Display + Clone` 表示 T 必须同时实现两个 trait（多约束）；参数 `&T` 是借用，内部需要所有权时用 clone。泛型函数最常见的三个关键词组合：`Display`（打印）、`Clone`（复制）、借用引用（避免移动）。
 
-## 8. 小结
+## 6. 进阶：trait 中的 async fn 与返回 impl Trait
+
+Rust 1.75（2023-12 起）正式支持在 trait 中直接写 `async fn` 与返回 `impl Trait`（RPITIT），异步接口不再必须依赖 `async-trait` 宏：
+
+```rust
+trait Fetcher {
+    // trait 方法原生支持 async：等价于返回 impl Future<Output = Data>
+    async fn fetch(&self, url: &str) -> String;
+
+    // 也支持返回位置 impl Trait
+    fn items(&self) -> impl Iterator<Item = u32>;
+}
+
+struct HttpFetcher;
+
+impl Fetcher for HttpFetcher {
+    async fn fetch(&self, url: &str) -> String {
+        format!("来自 {url} 的数据")
+    }
+    fn items(&self) -> impl Iterator<Item = u32> {
+        1..=3
+    }
+}
+```
+
+讲解：这一特性让 trait 定义异步接口的样板大幅减少。两个当前仍需了解的限制：其一，含 `async fn` 的 trait **暂时不能做 trait 对象**（`dyn Fetcher` 编译不过）——需要动态分发时仍用 `async-trait` crate（它把 async 方法改写成 `Box<dyn Future>`）或枚举分发；其二，返回的 Future 的具体类型由实现方决定，跨线程 spawn 时可能需要 `Send` 约束辅助。Rust 2024 edition 进一步改进了 `impl Trait` 的生命周期捕获规则（默认捕获所有输入生命周期），写泛型异步代码时语义更符合直觉。
+
+## 7. 小结
 
 泛型解决"对多种类型写一份代码"，Trait 定义"行为的接口"，生命周期保证"引用不悬垂"。三者组合让 Rust 既能写出抽象代码，又保持零运行时开销与内存安全。下一步进入测试与调试，学会验证自己的代码。
 

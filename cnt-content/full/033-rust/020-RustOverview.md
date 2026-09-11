@@ -6,21 +6,13 @@ category: 后端技术
 difficulty: beginner
 description: Rust 编程语言概述：设计目标、所有权与借用、Cargo 生态、学习路线与工程实践
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'c/009-EnumTypedef'
-  - 'cpp/063-CppTemplate'
-  - 'go/007-GoConcurrentProgramming'
+  - 'c/110-EnumTypedef'
+  - 'cpp/330-CppTemplate'
+  - 'go/120-GoConcurrentProgramming'
 prerequisites: []
 ---
-
-
-> 本节为增量补充，帮助你选择 Rust 版本。
-
-- Rust：1.97（2026-07-09）为当前稳定版；官方每 6 周发布一次小版本，建议始终跟随最新稳定版。
-- Edition 2024 自 1.85 起稳定，新项目在 Cargo.toml 中声明 edition = "2024"。
-- 生态：Cargo 是统一构建/依赖/测试/文档入口；Web 后端常用 axum + tokio，跨平台桌面常用 Tauri。
-
 
 
 ## 1. 从"给汽车装安全气囊"说起
@@ -125,7 +117,9 @@ fn main() {
 
 讲解：`Result` 是标准库的错误处理枚举；`match` 必须覆盖所有分支，因此不会漏掉错误路径。
 
-## 4. Cargo 与工具链
+## 4. 版本节奏与 Cargo 工具链
+
+Rust 的版本机制有两条线：**小版本**每 6 周发布一次稳定版（写作本文时为 1.98 系列，2026-08 发布），只加特性不破坏旧代码，`rustup update` 即可跟进；**Edition** 是数年一次的兼容性里程碑（2015/2018/2021/2024），允许少量语法规则调整。最新为 Edition 2024（2025-02 随 1.85 稳定），新项目应使用它。
 
 Cargo 是 Rust 的构建系统与包管理器，功能类似 npm/Maven 的组合：
 
@@ -153,7 +147,7 @@ serde = { version = "1", features = ["derive"] }
 tokio = { version = "1", features = ["full"] }
 ```
 
-讲解：edition 是 Rust 的兼容性里程碑（2015/2018/2021/2024），新项目应使用最新 edition。
+讲解：edition 是 Rust 的兼容性里程碑（2015/2018/2021/2024），新项目应使用最新 edition；2024 edition 收紧了 unsafe 约束（`unsafe fn` 体内的不安全操作需显式 `unsafe` 块、对 `static mut` 取引用被拒绝）并改进了返回位置 impl Trait 的生命周期捕获规则，老项目可用 `cargo fix --edition` 迁移。
 
 ## 5. 标准库与常用生态
 
@@ -208,7 +202,7 @@ Go 语法简单、并发模型友好、编译快；Rust 控制精细、无 GC、
 
 误区五：以为 Rust 只适合系统编程。它同样适合 Web 后端（axum）、CLI 工具、WebAssembly、数据处理——生态已经相当成熟。
 
-## 11. 小结
+## 9. 小结
 
 Rust 是系统编程领域近十年最重要的语言创新：所有权系统把内存安全从"运行时检查"提升到"编译期保证"。学习 Rust 不仅获得一门语言，更能加深对内存、并发与编译原理的理解——这些知识对所有语言都有迁移价值。
 

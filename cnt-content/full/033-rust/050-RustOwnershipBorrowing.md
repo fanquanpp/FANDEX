@@ -6,13 +6,13 @@ category: 后端技术
 difficulty: beginner
 description: Rust 核心机制：所有权规则、移动与复制、借用与引用、切片、生命周期与内存安全
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'rust/004-RustBasicSyntax'
-  - 'rust/007-RustStructEnumMatch'
-  - 'rust/010-RustGenericTrait'
+  - 'rust/040-RustBasicSyntax'
+  - 'rust/070-RustStructEnumMatch'
+  - 'rust/100-RustGenericTrait'
 prerequisites:
-  - 'rust/004-RustBasicSyntax'
+  - 'rust/040-RustBasicSyntax'
 ---
 
 
@@ -299,7 +299,7 @@ fn main() {
 3. 必要时用 `clone()` 快速通过，再回头优化为引用
 4. **先编译通过，再优化借用**——编译器是最好的老师，它的提示几乎总是指向正确方向
 
-## 11. 小结
+## 9. 小结
 
 所有权三规则（每值一主、主离即释、可转不移）+ 借用两条约束（不可变可并行、可变要独占）+ 切片视图（零拷贝的窗口）+ 生命周期（防止悬垂），构成了 Rust 内存安全的地基。
 

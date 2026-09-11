@@ -1,17 +1,17 @@
 ---
-order: 110
+order: 120
 title: 测试与调试
 module: 'rust'
 category: 后端技术
 difficulty: beginner
 description: 'cargo test 与 #[test]、断言宏、cargo clippy、dbg! 与调试技巧'
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'rust/004-RustBasicSyntax'
-  - 'rust/013-RustEcosystemProject'
+  - 'rust/040-RustBasicSyntax'
+  - 'rust/140-RustEcosystemProject'
 prerequisites:
-  - 'rust/008-RustErrorHandling'
+  - 'rust/080-RustErrorHandling'
 ---
 
 
@@ -244,7 +244,7 @@ mod tests {
 
 讲解：边界值测试（90/89/60 等临界点）是测试的核心价值；`#[should_panic]` 验证非法输入的防护路径。
 
-## 9. 小结
+## 7. 小结
 
 测试三件套（`#[test]` + 断言宏 + cargo test）、质量双保险（clippy + fmt）、调试三板斧（dbg!、断点、RUST_BACKTRACE）。把"写代码 → check → clippy → test"变成肌肉记忆，代码质量就有了基本保障。下一步进入异步编程，学习高并发服务的基础。
 

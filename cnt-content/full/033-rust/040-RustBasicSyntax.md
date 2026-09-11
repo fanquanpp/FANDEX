@@ -6,12 +6,12 @@ category: 后端技术
 difficulty: beginner
 description: Rust 基础语法：变量与不可变性、标量类型、复合类型、函数与控制流
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'rust/003-RustEnvSetup'
-  - 'rust/005-RustOwnershipBorrowing'
+  - 'rust/030-RustEnvSetup'
+  - 'rust/050-RustOwnershipBorrowing'
 prerequisites:
-  - 'rust/003-RustEnvSetup'
+  - 'rust/030-RustEnvSetup'
 ---
 
 
@@ -109,7 +109,7 @@ let zeros = [0; 5];            // 5 个 0，等价于 [0,0,0,0,0]
 println!("{}", arr[0]);        // 越界会 panic
 ```
 
-讲解：数组长度编译期确定、存于栈上；越界访问在运行时 panic（安全性：不会读到脏内存）。需要动态长度时用 Vec（见 007 篇）。
+讲解：数组长度编译期确定、存于栈上；越界访问在运行时 panic（安全性：不会读到脏内存）。需要动态长度时用 Vec（见集合与迭代器一篇）。
 
 ## 4. 函数
 
@@ -223,7 +223,7 @@ fn main() {
 | expected `()` | 函数多写了分号 | 去掉最后表达式的分号 |
 | index out of bounds | 数组越界 | 用迭代器遍历，避免手动索引 |
 
-## 10. 小结
+## 8. 小结
 
 本课覆盖变量、标量/复合类型、函数与控制流。核心记忆点：变量默认不可变（mut 显式可变）、表达式有值（if/loop 可返回）、for 优先于 while 做遍历。下一步学习 Rust 的灵魂——所有权与借用。
 

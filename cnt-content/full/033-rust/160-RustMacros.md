@@ -1,27 +1,25 @@
 ---
-order: 150
+order: 160
 title: 宏编程
 module: 'rust'
 category: 后端技术
 difficulty: advanced
 description: 声明宏与过程宏：Rust 元编程的两条路径。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'rust/014-RustSmartPointers'
-  - 'rust/010-RustGenericTrait'
+  - 'rust/150-RustSmartPointers'
+  - 'rust/100-RustGenericTrait'
 prerequisites:
-  - 'rust/014-RustSmartPointers'
+  - 'rust/150-RustSmartPointers'
 ---
-
-# 宏编程
 
 函数处理**值**，宏处理**代码**。`vec![]` 能接收任意个元素、`#[derive(Serialize)]` 能凭空生成整个 impl 块——这些都是函数做不到的，因为宏在**编译期**把一段 token（语法片段）展开成新代码，相当于"编译器里的编译器"。Rust 提供两条元编程路径：声明宏（`macro_rules!`，模式匹配式展开）与过程宏（用 Rust 代码操作语法树，功能最强）。本篇以虚拟歌手音乐平台的曲目单、应援色与数据模型为背景，走完从声明宏到 derive 宏实战的完整路径。
 
 ## 前置知识
 
-- [智能指针](/rust/014-RustSmartPointers)：理解 `Box` 与 trait 对象，过程宏生成的代码会用到。
-- [泛型与 Trait](/rust/010-RustGenericTrait)：trait 实现是过程宏最常生成的目标。
+- [智能指针](/rust/150-RustSmartPointers)：理解 `Box` 与 trait 对象，过程宏生成的代码会用到。
+- [泛型与 Trait](/rust/100-RustGenericTrait)：trait 实现是过程宏最常生成的目标。
 
 ## 学习目标
 

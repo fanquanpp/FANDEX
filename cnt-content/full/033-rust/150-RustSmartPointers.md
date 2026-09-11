@@ -1,27 +1,25 @@
 ---
-order: 140
+order: 150
 title: 智能指针
 module: 'rust'
 category: 后端技术
 difficulty: intermediate
 description: Box、Rc、Arc 与内部可变性：堆内存与共享所有权的标准答案。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'rust/010-RustGenericTrait'
-  - 'rust/016-RustConcurrency'
+  - 'rust/100-RustGenericTrait'
+  - 'rust/170-RustConcurrency'
 prerequisites:
-  - 'rust/010-RustGenericTrait'
+  - 'rust/100-RustGenericTrait'
 ---
-
-# 智能指针
 
 所有权规则解决"一个值归谁管"，但真实系统里总有规则之外的需求：数据太大想放堆上（`Box`）、一个值被多方共同持有（`Rc`/`Arc`）、共享的同时还要能修改（`RefCell`）。智能指针就是这些需求的"标准答案"——它们是实现了 `Deref` 与 `Drop` 的结构体，在所有权系统内扩展出堆分配、共享所有权与内部可变性三种能力。本篇以虚拟歌手音乐平台的歌单、粉丝团与曲目关系为背景，逐一讲透这四件工具。
 
 ## 前置知识
 
-- [泛型与 Trait](/rust/010-RustGenericTrait)：trait 约束与 trait 对象的基础。
-- [所有权与借用](/rust/005-RustOwnershipBorrowing)：所有权三规则与借用约束。
+- [泛型与 Trait](/rust/100-RustGenericTrait)：trait 约束与 trait 对象的基础。
+- [所有权与借用](/rust/050-RustOwnershipBorrowing)：所有权三规则与借用约束。
 
 ## 学习目标
 

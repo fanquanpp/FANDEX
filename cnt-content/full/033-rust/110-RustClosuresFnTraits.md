@@ -1,27 +1,25 @@
 ---
-order: 180
+order: 110
 title: 闭包与 Fn 特征
 module: 'rust'
 category: 后端技术
 difficulty: intermediate
 description: Fn/FnMut/FnOnce、捕获方式与 move：闭包的类型系统真相。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'rust/010-RustGenericTrait'
-  - 'rust/009-RustCollectionsIterators'
+  - 'rust/100-RustGenericTrait'
+  - 'rust/090-RustCollectionsIterators'
 prerequisites:
-  - 'rust/010-RustGenericTrait'
+  - 'rust/100-RustGenericTrait'
 ---
-
-# 闭包与 Fn 特征
 
 闭包（closure）是能捕获所在环境变量的匿名函数，是 Rust 表达"行为"的一等公民：迭代器适配器、线程任务、回调、策略模式都靠它。但闭包不是语法糖那么简单——编译器按"你如何使用捕获的变量"把它翻译成 `Fn`、`FnMut`、`FnOnce` 三个 trait 之一，决定了它能被调用几次、能否跨线程、能否存进集合。理解这三个特征，就是理解闭包的类型系统真相。本篇以虚拟歌手平台的票价策略、售票计数与曲目筛选为背景，把闭包从语法讲到特征边界。
 
 ## 前置知识
 
-- [泛型与 Trait](/rust/010-RustGenericTrait)：trait 约束与 trait 对象是闭包参数的两种写法。
-- [集合与迭代器](/rust/009-RustCollectionsIterators)：闭包与迭代器适配器天生一对。
+- [泛型与 Trait](/rust/100-RustGenericTrait)：trait 约束与 trait 对象是闭包参数的两种写法。
+- [集合与迭代器](/rust/090-RustCollectionsIterators)：闭包与迭代器适配器天生一对。
 
 ## 学习目标
 
@@ -155,6 +153,8 @@ fn main() {
 **解读**：返回闭包必须 `move` 的原因值得记牢——闭包若按默认方式**借用** `rate`（一个即将销毁的局部变量），返回后借用悬垂，编译器直接拒绝；`move` 让 `rate` 成为闭包的私有数据，闭包走到哪数据跟到哪。`impl Trait` 返回值意味着"某个实现了 Fn 的具体类型"（编译期已知但不具名），若需要运行期切换策略（如从配置读折扣规则），就退到 `Box<dyn Fn>`。三者的选择顺序：默认泛型约束，签名嫌长换 `impl Trait`，需要异构集合或运行期多态才用 trait 对象。
 
 三种写法的性能特征也值得量化理解：泛型约束与 `impl Trait` 在编译期**单态化**——每个闭包类型生成一份专属代码，调用被内联成直接跳转，与手写代码同样快，代价是编译产物膨胀；trait 对象则通过虚表（vtable）**动态分发**——调用多一次指针跳转且编译器难以内联，换来的是体积与灵活性。绝大多数业务代码里这点差距可以忽略，但在热循环（如逐帧音频处理）中，把 `dyn` 换回泛型是常见的优化动作。
+
+异步场景把这套体系又延伸了一层：Rust 1.85（2025-02）稳定了**异步闭包** `async || { ... }`，并配套引入 `AsyncFn`/`AsyncFnMut`/`AsyncFnOnce` 三个特征，与同步三特征一一对应——异步闭包调用后返回 Future，且可以持有跨 `.await` 存活的借用。在它出现之前，"返回 Future 的闭包"只能用返回 `impl Future` 的普通闭包或 `Box<dyn Future>` 模拟，借用表达能力受限；现在给异步回调写约束可以直接写 `F: AsyncFn(u32) -> u32`。同步闭包的 `Fn`/`FnMut`/`FnOnce` 心智模型可以整体平移过去，这也是本篇值得学扎实的原因。
 
 ## 5. 与迭代器适配器的配合
 

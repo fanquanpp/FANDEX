@@ -6,12 +6,12 @@ category: 后端技术
 difficulty: intermediate
 description: Vec、HashMap、HashSet、String 与迭代器链式操作
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'rust/005-RustOwnershipBorrowing'
-  - 'rust/010-RustGenericTrait'
+  - 'rust/050-RustOwnershipBorrowing'
+  - 'rust/100-RustGenericTrait'
 prerequisites:
-  - 'rust/005-RustOwnershipBorrowing'
+  - 'rust/050-RustOwnershipBorrowing'
 ---
 
 
@@ -264,7 +264,7 @@ fn main() {
 
 讲解：`lines()` 按行迭代、`split_whitespace` 分词、`entry().or_insert()` 计数——组合了本节全部知识点。
 
-## 10. 小结
+## 8. 小结
 
 Vec/HashMap/HashSet 覆盖了绝大多数数据组织需求；String 与 &str 的区分沿用所有权思维；迭代器链式操作让数据处理"声明式、零分配、可组合"。下一步学习泛型与 Trait，让代码对不同类型复用。
 

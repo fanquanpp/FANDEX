@@ -1,17 +1,17 @@
 ---
-order: 120
+order: 130
 title: 异步编程与 Tokio
 module: 'rust'
 category: 后端技术
 difficulty: advanced
 description: async/await 与 Future、tokio 运行时、常见异步模式与陷阱
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'rust/013-RustEcosystemProject'
-  - 'rust/010-RustGenericTrait'
+  - 'rust/140-RustEcosystemProject'
+  - 'rust/100-RustGenericTrait'
 prerequisites:
-  - 'rust/010-RustGenericTrait'
+  - 'rust/100-RustGenericTrait'
 ---
 
 
@@ -51,13 +51,13 @@ async 函数必须在一个运行时上执行：
 ```rust
 #[tokio::main]
 async fn main() {
-    let a = do_work(1).await;   // 顺序等待：1s
+    let a = do_work(1).await;   // 顺序等待：100ms + 200ms = 300ms
     let b = do_work(2).await;
     println!("{a} {b}");
 }
 ```
 
-讲解：`#[tokio::main]` 宏启动 tokio 多线程运行时并运行 async main。顺序 `await` 时任务一个接一个执行；并发需要用 join 或 spawn。
+讲解：`#[tokio::main]` 宏启动 tokio 多线程运行时并运行 async main。顺序 `await` 时任务一个接一个执行，总耗时是各任务之和；并发需要用 join 或 spawn。
 
 ### 2.2 并发执行
 
@@ -66,7 +66,7 @@ use tokio::join;
 
 #[tokio::main]
 async fn main() {
-    let (a, b) = join!(do_work(1), do_work(2));  // 同时等待，共约 2s 而非 3s
+    let (a, b) = join!(do_work(1), do_work(2));  // 并发执行，约 200ms（取最慢者）而非顺序的 300ms
     println!("{a} {b}");
 }
 ```
@@ -233,16 +233,16 @@ async fn bad() {
 
 spawn 的任务若捕获了非 Send 类型（如裸指针、Rc），编译器报"future cannot be sent between threads"。对策：避免在 async 任务中持有 Rc/RefCell；用 Arc/Mutex 代替。
 
-### 5.4 async 递归与 trait 的坑
+### 5.4 async 递归与 async trait
 
 ```rust
-// 递归 async fn 需要 Box::pin 包裹（Rust 2024 之前）
+// 递归 async fn 需要 Box::pin 包裹：递归使 Future 大小未知
 async fn rec(n: u32) -> u32 {
     if n == 0 { 0 } else { Box::pin(rec(n - 1)).await + 1 }
 }
 ```
 
-讲解：async fn 返回的 Future 大小不定（递归时未知），用 `Box::pin` 固定到堆上；trait 中的 async 方法也需类似处理（或用 async-trait crate）。
+讲解：`async fn` 返回的 Future 大小在编译期未知，出现递归时类型大小成为死循环，用 `Box::pin` 把 Future 固定到堆上即可。trait 中的异步方法自 Rust 1.75 起可以**原生声明** `async fn`（见《泛型与 Trait》进阶一节），不再必须借助 `async-trait` crate；但当需要 trait 对象（`dyn`）动态分发，或方法递归时，仍要 `Box::pin`/`async-trait` 兜底。
 
 ## 6. 综合示例：并发下载模拟
 
@@ -267,7 +267,7 @@ async fn main() {
 
 讲解：`spawn` 并发执行 10 个下载任务，总耗时从 3 秒降到 0.3 秒——这就是异步的吞吐威力。`JoinHandle` 按序 await，但任务是并发的。
 
-## 9. 小结
+## 7. 小结
 
 异步的核心是"Future 惰性 + await 挂起 + 运行时调度"：async 定义任务、await 等待完成、join!/spawn 并发、select! 多路选择、timeout 超时防护。牢记两条红线：异步中不用同步阻塞、跨 await 用 tokio 锁。下一步用 axum、serde、clap 搭建真实项目。
 

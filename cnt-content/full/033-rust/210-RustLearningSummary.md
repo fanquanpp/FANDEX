@@ -6,26 +6,26 @@ category: 后端技术
 difficulty: intermediate
 description: 串联 Rust 模块全部文档，按所有权与借用、类型系统、trait 与泛型、并发与异步、工程化五条主线回顾核心知识，并用虚拟歌手平台案例沉淀示例代码。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'rust/005-RustOwnershipBorrowing'
-  - 'rust/010-RustGenericTrait'
-  - 'rust/008-RustErrorHandling'
-  - 'rust/012-RustAsyncTokio'
+  - 'rust/050-RustOwnershipBorrowing'
+  - 'rust/100-RustGenericTrait'
+  - 'rust/080-RustErrorHandling'
+  - 'rust/130-RustAsyncTokio'
 prerequisites: []
 ---
 
-本文是对 Rust 模块全部 20 篇文档的收束与回顾。我们继续沿用贯穿系列的"虚拟歌手音乐平台"案例——P 主（producer）投稿、歌姬（virtual singer）开演唱会、粉丝团（fan club）统计应援票数——把所有权、类型系统、trait 抽象、并发与工程化五条主线串成一张知识网。Rust 的学习曲线集中在前期编译期报错，因此本文特别强调"读懂报错并系统性修正"的能力，把编译器当作最严格的导师。
+本文是对 Rust 模块其余 20 篇文档的收束与回顾。我们继续沿用贯穿系列的"虚拟歌手音乐平台"案例——P 主（producer）投稿、歌姬（virtual singer）开演唱会、粉丝团（fan club）统计应援票数——把所有权、类型系统、trait 抽象、并发与工程化五条主线串成一张知识网。Rust 的学习曲线集中在前期编译期报错，因此本文特别强调"读懂报错并系统性修正"的能力，把编译器当作最严格的导师。
 
 ## 前置知识
 
-- [Rust 是什么：安全与性能兼得的系统语言](/rust/001-WhatIsRust)：理解所有权思想的直觉版与 Cargo 工作流。
-- [所有权与借用](/rust/005-RustOwnershipBorrowing)：所有权三规则、移动与借用、切片。
-- [结构体、枚举与模式匹配](/rust/007-RustStructEnumMatch)：自定义类型与 match 穷尽检查。
+- [Rust 是什么：安全与性能兼得的系统语言](/rust/010-WhatIsRust)：理解所有权思想的直觉版与 Cargo 工作流。
+- [所有权与借用](/rust/050-RustOwnershipBorrowing)：所有权三规则、移动与借用、切片。
+- [结构体、枚举与模式匹配](/rust/070-RustStructEnumMatch)：自定义类型与 match 穷尽检查。
 
 ## 学习目标
 
-1. 串联模块全部 20 篇文档，形成"入门语法、所有权与借用、类型系统、trait 与泛型、并发与异步、工程化"六层知识骨架。
+1. 串联模块其余 20 篇文档，形成"入门语法、所有权与借用、类型系统、trait 与泛型、并发与异步、工程化"六层知识骨架。
 2. 用统一的"虚拟歌手音乐平台"案例复述 Rust 的惯用写法：Result 与 `?`、模式匹配、迭代器链、trait 约束泛型与 Arc/Mutex 共享。
 3. 辨析 String 与 &str、Rc 与 Arc、move 与 Copy 等易混淆概念。
 4. 能读懂借用检查器（E0382、E0502、E0106 等）的报错信息，并按系统方法修正。
@@ -33,7 +33,7 @@ prerequisites: []
 
 ## 知识地图
 
-模块 20 篇文档按主题分为六组，组内编号即学习顺序：
+其余 20 篇文档按主题分为六组，组内排列即学习顺序：
 
 ```mermaid
 flowchart TD
@@ -45,41 +45,41 @@ flowchart TD
     ROOT --> G6
 
     subgraph G1["入门与环境"]
-        A1["001 Rust 是什么"]
-        A2["002 Rust 概述"]
-        A3["003 环境搭建"]
-        A4["004 基础语法"]
+        A1["Rust 是什么"]
+        A2["Rust 概述"]
+        A3["环境搭建"]
+        A4["基础语法"]
     end
 
     subgraph G2["所有权与借用"]
-        B1["005 所有权与借用"]
-        B2["006 借用检查器报错指南"]
-        B3["017 生命周期详解"]
+        B1["所有权与借用"]
+        B2["借用检查器报错指南"]
+        B3["生命周期详解"]
     end
 
     subgraph G3["类型系统"]
-        C1["007 结构体枚举与 match"]
-        C2["008 错误处理"]
-        C3["009 集合与迭代器"]
-        C4["014 智能指针"]
+        C1["结构体枚举与 match"]
+        C2["错误处理"]
+        C3["集合与迭代器"]
+        C4["智能指针"]
     end
 
     subgraph G4["trait 与泛型"]
-        D1["010 泛型与 trait"]
-        D2["015 宏"]
-        D3["018 闭包与 Fn trait"]
+        D1["泛型与 trait"]
+        D2["闭包与 Fn trait"]
+        D3["宏"]
     end
 
     subgraph G5["并发与异步"]
-        E1["012 异步编程与 Tokio"]
-        E2["016 并发编程"]
+        E1["异步编程与 Tokio"]
+        E2["并发编程"]
     end
 
     subgraph G6["工程化"]
-        F1["011 测试与调试"]
-        F2["013 生态与项目实战"]
-        F3["019 Cargo 进阶"]
-        F4["020 Unsafe Rust"]
+        F1["测试与调试"]
+        F2["生态与项目实战"]
+        F3["Cargo 进阶"]
+        F4["Unsafe Rust"]
     end
 ```
 
@@ -108,7 +108,7 @@ fn main() {
 
 ### 2. 所有权与借用
 
-所有权三规则——每个值有唯一所有者、所有者离开作用域时值被 drop、值可以移动给新所有者——让 Rust 在编译期完成内存管理，既无 GC 停顿也无手动释放。借用（`&` 与 `&mut`）允许"借阅而不夺取"，但同一时刻要么多个不可变借用、要么一个可变借用，这条约束在编译期消灭了数据竞争；报错排查见[借用检查器报错指南](/rust/006-RustBorrowCheckerErrorGuide)，生命周期标注的深水区见[生命周期详解](/rust/017-RustLifetimesDeepDive)。
+所有权三规则——每个值有唯一所有者、所有者离开作用域时值被 drop、值可以移动给新所有者——让 Rust 在编译期完成内存管理，既无 GC 停顿也无手动释放。借用（`&` 与 `&mut`）允许"借阅而不夺取"，但同一时刻要么多个不可变借用、要么一个可变借用，这条约束在编译期消灭了数据竞争；报错排查见[借用检查器报错指南](/rust/060-RustBorrowCheckerErrorGuide)，生命周期标注的深水区见[生命周期详解](/rust/180-RustLifetimesDeepDive)。
 
 ```rust
 // 1. 结构体持有 String，拥有堆上的歌名数据
@@ -160,7 +160,7 @@ fn main() {
 
 ### 4. 错误处理：Result 与 `?` 运算符
 
-Rust 把错误分成两类：不可恢复错误用 `panic!`（越界、断言失败），可恢复错误用 `Result<T, E>` 枚举在类型层面表达。函数签名里的 `Result` 就是文档，调用方被迫处理每一条失败路径；`?` 运算符在遇错时提前返回并自动转换错误类型，配合自定义错误枚举可以搭出清晰的错误传播链，详见[错误处理](/rust/008-RustErrorHandling)。
+Rust 把错误分成两类：不可恢复错误用 `panic!`（越界、断言失败），可恢复错误用 `Result<T, E>` 枚举在类型层面表达。函数签名里的 `Result` 就是文档，调用方被迫处理每一条失败路径；`?` 运算符在遇错时提前返回并自动转换错误类型，配合自定义错误枚举可以搭出清晰的错误传播链，详见[错误处理](/rust/080-RustErrorHandling)。
 
 ```rust
 // 1. 自定义错误枚举，配合 Result 表达可恢复失败
@@ -190,7 +190,7 @@ fn main() {
 
 ### 5. 集合与迭代器
 
-Vec、HashMap、HashSet 是最常用的三大堆上集合；索引越界会 panic，用 `get()` 则返回 Option 安全访问。迭代器是零成本抽象的典范：`map/filter/collect` 等适配器链在编译后与手写循环等价，`entry().or_insert()` 则是"不存在则初始化"的统计惯用法，详见[集合与迭代器](/rust/009-RustCollectionsIterators)。
+Vec、HashMap、HashSet 是最常用的三大堆上集合；索引越界会 panic，用 `get()` 则返回 Option 安全访问。迭代器是零成本抽象的典范：`map/filter/collect` 等适配器链在编译后与手写循环等价，`entry().or_insert()` 则是"不存在则初始化"的统计惯用法，详见[集合与迭代器](/rust/090-RustCollectionsIterators)。
 
 ```rust
 use std::collections::HashMap;
@@ -217,7 +217,7 @@ fn main() {
 
 ### 6. trait 与泛型
 
-trait 定义共享行为，是 Rust 的接口机制；泛型函数通过 trait 约束限定类型参数的能力，编译期单态化为具体类型的专用代码，运行时零开销。静态分发用泛型（编译期生成），动态分发用 `dyn Trait`（虚表跳转），两者取舍与宏编程见[泛型与 trait](/rust/010-RustGenericTrait)与[宏](/rust/015-RustMacros)。
+trait 定义共享行为，是 Rust 的接口机制；泛型函数通过 trait 约束限定类型参数的能力，编译期单态化为具体类型的专用代码，运行时零开销。静态分发用泛型（编译期生成），动态分发用 `dyn Trait`（虚表跳转），两者取舍与宏编程见[泛型与 trait](/rust/100-RustGenericTrait)与[宏](/rust/160-RustMacros)。
 
 ```rust
 // 1. trait 定义共享行为：任何“可应援”的对象都能计票
@@ -250,7 +250,7 @@ fn main() {
 
 ### 7. 智能指针与共享所有权
 
-`Box<T>` 把数据放上堆、栈上只留指针；`Rc<T>` 用引用计数实现单线程内的多所有者共享；`RefCell<T>` 提供"编译期不可变、运行时可变"的内部可变性。三者的组合覆盖了树、图等所有权规则不好直接表达的结构；循环引用要用 `Weak` 打破，跨线程版本见下节的 Arc，详见[智能指针](/rust/014-RustSmartPointers)。
+`Box<T>` 把数据放上堆、栈上只留指针；`Rc<T>` 用引用计数实现单线程内的多所有者共享；`RefCell<T>` 提供"编译期不可变、运行时可变"的内部可变性。三者的组合覆盖了树、图等所有权规则不好直接表达的结构；循环引用要用 `Weak` 打破，跨线程版本见下节的 Arc，详见[智能指针](/rust/150-RustSmartPointers)。
 
 ```rust
 use std::rc::Rc;
@@ -276,7 +276,7 @@ fn main() {
 
 ### 8. 并发与异步
 
-线程侧：`Arc<Mutex<T>>` 是"共享可变状态"的标准答案——Arc 管跨线程所有权，Mutex 管互斥访问，违反规则的代码直接编译不过，Send/Sync 语义详见[并发编程](/rust/016-RustConcurrency)。异步侧：`async fn` 返回惰性 Future，必须由 tokio 等运行时驱动，`join!` 并发等待、`spawn` 交给运行时调度，详见[异步编程与 Tokio](/rust/012-RustAsyncTokio)。
+线程侧：`Arc<Mutex<T>>` 是"共享可变状态"的标准答案——Arc 管跨线程所有权，Mutex 管互斥访问，违反规则的代码直接编译不过，Send/Sync 语义详见[并发编程](/rust/170-RustConcurrency)。异步侧：`async fn` 返回惰性 Future，必须由 tokio 等运行时驱动，`join!` 并发等待、`spawn` 交给运行时调度，详见[异步编程与 Tokio](/rust/130-RustAsyncTokio)。
 
 ```rust
 use std::sync::{Arc, Mutex};
@@ -327,7 +327,7 @@ async fn main() {
 
 ### 9. 测试与 Cargo 工程化
 
-Cargo 是 Rust 工程的中枢：`cargo new/check/test/build --release` 覆盖日常全流程，`Cargo.toml` 声明依赖与特性开关；单元测试直接写在被测文件里，`#[cfg(test)]` 模块加 `#[test]` 函数即可被 `cargo test` 发现，调试与集成测试见[测试与调试](/rust/011-RustTestingDebugging)与[Cargo 进阶](/rust/019-RustCargoAdvanced)。
+Cargo 是 Rust 工程的中枢：`cargo new/check/test/build --release` 覆盖日常全流程，`Cargo.toml` 声明依赖与特性开关；单元测试直接写在被测文件里，`#[cfg(test)]` 模块加 `#[test]` 函数即可被 `cargo test` 发现，调试与集成测试见[测试与调试](/rust/120-RustTestingDebugging)与[Cargo 进阶](/rust/190-RustCargoAdvanced)。
 
 ```rust
 // 1. 被测函数：根据点赞与转发计算歌曲应援指数
@@ -490,8 +490,8 @@ h.join().unwrap();
 
 ## 后续学习路径
 
-1. [异步编程与 Tokio](/rust/012-RustAsyncTokio)：系统掌握 Future、运行时与异步并发模式。
-2. [Rust 宏](/rust/015-RustMacros)：学习声明宏与过程宏，进入元编程领域。
-3. [生命周期详解](/rust/017-RustLifetimesDeepDive)：攻克结构体标注与复杂借用场景的生命周期问题。
-4. [Cargo 进阶](/rust/019-RustCargoAdvanced)：工作区、特性开关、发布与依赖治理。
-5. [生态与项目实战](/rust/013-RustEcosystemProject)：把语言能力落成真实项目。
+1. [异步编程与 Tokio](/rust/130-RustAsyncTokio)：系统掌握 Future、运行时与异步并发模式。
+2. [Rust 宏](/rust/160-RustMacros)：学习声明宏与过程宏，进入元编程领域。
+3. [生命周期详解](/rust/180-RustLifetimesDeepDive)：攻克结构体标注与复杂借用场景的生命周期问题。
+4. [Cargo 进阶](/rust/190-RustCargoAdvanced)：工作区、特性开关、发布与依赖治理。
+5. [生态与项目实战](/rust/140-RustEcosystemProject)：把语言能力落成真实项目。
