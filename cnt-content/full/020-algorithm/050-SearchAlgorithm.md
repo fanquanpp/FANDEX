@@ -1,25 +1,25 @@
 ---
-order: 40
+order: 50
 title: 搜索算法
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: 搜索（Search）算法的形式化定义、状态空间图模型、完备性与最优性证明、线性搜索 $O(n)$、二分搜索 $O(\log n)$、哈希查找 $O(1)$、BFS/DFS 图搜索 $O(V+E)$、双向 BFS、迭代深化 DFS（IDDFS）、A* 启发式搜索（Hart-Nilsson-Raphael 1968）、IDA* 内存受限搜索（Korf 1985）、Minimax + Alpha-Beta 剪枝博弈树搜索（Shannon 1950、Knuth-Moore 1975）的原理、实现与对比分析，涵盖 Shannon 1950 国际象棋程序、Dijkstra 1959 最短路径、Hart-Nilsson-Raphael 1968 A*、Korf 1985 IDA* 等历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 22 章。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/002-SortAlgorithm'
-  - 'algorithm/017-BinarySearchAlgorithms'
-  - 'algorithm/006-HashTable'
-  - 'algorithm/007-Tree'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/011-RecursionAndBacktracking'
-  - 'algorithm/016-HeapAndPriorityQueue'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/030-SortAlgorithm'
+  - 'algorithm/170-BinarySearchAlgorithms'
+  - 'algorithm/070-HashTable'
+  - 'algorithm/080-Tree'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/140-RecursionAndBacktracking'
+  - 'algorithm/090-HeapAndPriorityQueue'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/017-BinarySearchAlgorithms'
-  - 'algorithm/011-RecursionAndBacktracking'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/170-BinarySearchAlgorithms'
+  - 'algorithm/140-RecursionAndBacktracking'
 ---
 
 
@@ -1939,3 +1939,10 @@ flowchart TD
 ---
 
 > **核心要点**：搜索算法是计算机科学的基石——从 Knuth TAOCP Vol.3 的静态查找到 Russell-Norvig AIMA 的状态空间搜索，再到 AlphaGo 的 MCTS。掌握本文 13 种算法（线性/二分/哈希/BFS/DFS/双向 BFS/IDDFS/A*/IDA*/Minimax/Alpha-Beta/MCTS）的形式化复杂度、完备性、最优性、工程实现，是算法工程师与 AI 研究者的核心素养。
+
+## 延伸资源
+
+- [VisuAlgo: Graph Traversal](https://visualgo.net/en/dfsbfs)：BFS 与 DFS 的交互可视化，附带拓扑排序、环检测等应用演示（英文，免费）。
+- [Hello 算法](https://www.hello-algo.com/)：开源数据结构与算法书，搜索与回溯等主题提供中文图解与多语言可运行实现（中文，免费，适合入门）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

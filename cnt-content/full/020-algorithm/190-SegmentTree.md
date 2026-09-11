@@ -1,26 +1,26 @@
 ---
-order: 200
+order: 190
 title: 线段树
 module: 'algorithm'
 category: 计算机科学
 difficulty: advanced
 description: 线段树数据结构的形式化定义（区间幺半群上的完全二叉树）、懒标记下传语义、构建 O(n)、查询/更新 O(log n)、空间 O(4n) 的复杂度证明，覆盖递归/迭代实现、动态开点、离散化、持久化、合并线段树、李超树、扫描线等工程变体，附多语言实现。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/018-LeetCodeInterviewGuide'
-  - 'algorithm/019-UnionFind'
-  - 'algorithm/021-FenwickTree'
-  - 'algorithm/015-BalancedTreeAdvanced'
-  - 'algorithm/022-SkipList'
-  - 'algorithm/016-HeapAndPriorityQueue'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/013-DynamicProgramming'
+  - 'algorithm/300-LeetCodeInterviewGuide'
+  - 'algorithm/180-UnionFind'
+  - 'algorithm/200-FenwickTree'
+  - 'algorithm/100-BalancedTreeAdvanced'
+  - 'algorithm/210-SkipList'
+  - 'algorithm/090-HeapAndPriorityQueue'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/160-DynamicProgramming'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/007-Tree'
-  - 'algorithm/021-FenwickTree'
-  - 'cs-fundamentals/007-DiscreteMathematics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/080-Tree'
+  - 'algorithm/200-FenwickTree'
+  - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
 
@@ -2910,8 +2910,8 @@ PostgreSQL 查询优化器在处理 `BETWEEN` 谓词时，会使用 B-tree 索�
 
 ```python
 class IntervalIndexSegTree:
-    """简化版区间索引：维护若干区间，快速查询与给定区间重叠的区间数。
-    基于"扫描线 + 离散化 + 线段树"实现。
+    """简化版区间索引：维护若干区间，快速统计查询区间内各坐标点的覆盖次数合计。
+    基于"离散化 + 线段树标记永久化"实现。
     """
 
     def __init__(self, intervals):
@@ -2922,7 +2922,7 @@ class IntervalIndexSegTree:
         self.x_index = {x: i for i, x in enumerate(xs)}
         self.m = len(xs)
         self.xs = xs
-        # 用差分数组 + 线段树维护每个 x 上的覆盖次数
+        # 用差分思想在线段树上做区间加（标记永久化），维护每个 x 上的覆盖次数
         self.tree = [0] * (4 * self.m)
         for l, r in intervals:
             self._update(1, 0, self.m - 1, self.x_index[l], self.x_index[r], 1)
@@ -2938,23 +2938,24 @@ class IntervalIndexSegTree:
         self._update(node * 2 + 1, mid + 1, end, l, r, val)
 
     def count_overlap(self, l, r):
-        """统计与 [l, r] 重叠的区间数（简化版：统计 x 上覆盖次数 > 0 的点数）。"""
-        # 实际工程需更复杂逻辑，此处仅示意
+        """统计 [l, r] 内各离散坐标点的覆盖次数合计（简化示意：l、r 必须是已出现过的坐标）。"""
         return self._query(1, 0, self.m - 1, self.x_index[l], self.x_index[r])
 
-    def _query(self, node, start, end, l, r):
+    def _query(self, node, start, end, l, r, carry=0):
         if r < start or end < l:
             return 0
-        if l <= start and end <= r:
-            return self.tree[node]
+        carry += self.tree[node]  # 永久标记随路径下传累加
+        if start == end:
+            return carry  # 叶子处：根到叶路径上的所有标记都作用于该点
         mid = (start + end) // 2
-        return self._query(node * 2, start, mid, l, r) + \
-               self._query(node * 2 + 1, mid + 1, end, l, r)
+        return self._query(node * 2, start, mid, l, r, carry) + \
+               self._query(node * 2 + 1, mid + 1, end, l, r, carry)
 
 # 测试
 intervals = [(1, 5), (3, 8), (10, 15)]
 idx = IntervalIndexSegTree(intervals)
-print(idx.count_overlap(2, 4))  # 输出: 4 (差分覆盖统计)
+# 离散化后坐标为 [1, 3, 5, 8, 10, 15]，查询端点必须是已出现过的坐标
+print(idx.count_overlap(3, 8))  # 输出: 5（坐标 3、5、8 上的覆盖次数 2 + 2 + 1）
 ```
 
 ---

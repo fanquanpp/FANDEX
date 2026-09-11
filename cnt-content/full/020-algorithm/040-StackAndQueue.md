@@ -1,24 +1,24 @@
 ---
-order: 30
+order: 40
 title: 栈与队列
 module: 'algorithm'
 category: 计算机科学
 difficulty: beginner
 description: 栈（Stack）与队列（Queue）的形式化定义、LIFO/FIFO 原理、顺序栈/链式栈/循环队列/链式队列/双端队列/单调栈/单调队列的实现与复杂度分析，涵盖 Bauer-Samelson 1955 叠加原理、Dijkstra 1965 信号量、Hoare 1978 CSP 等历史脉络，附 Python/C++/Java 多语言实现。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/014-ArrayAndDynamicArray'
-  - 'algorithm/005-LinkedList'
-  - 'algorithm/016-HeapAndPriorityQueue'
-  - 'algorithm/004-SearchAlgorithm'
-  - 'algorithm/011-RecursionAndBacktracking'
-  - 'algorithm/002-SortAlgorithm'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/020-ArrayAndDynamicArray'
+  - 'algorithm/060-LinkedList'
+  - 'algorithm/090-HeapAndPriorityQueue'
+  - 'algorithm/050-SearchAlgorithm'
+  - 'algorithm/140-RecursionAndBacktracking'
+  - 'algorithm/030-SortAlgorithm'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/014-ArrayAndDynamicArray'
-  - 'algorithm/005-LinkedList'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/020-ArrayAndDynamicArray'
+  - 'algorithm/060-LinkedList'
 ---
 
 
@@ -106,7 +106,7 @@ flowchart LR
 | 优先级调度 | 不适合 | 应选堆 |
 | 中间任意位置插入 | 不适合 | 应选链表 |
 
-> **跨模块引用**：栈与队列的链式实现依赖 [链表](/algorithm/005-LinkedList)；堆作为优先级队列的底层结构参见 [堆与优先队列](/algorithm/016-HeapAndPriorityQueue)；BFS 与 DFS 中队列/栈的应用参见 [搜索算法](/algorithm/004-SearchAlgorithm)；函数调用栈与递归的关系参见 [递归与回溯](/algorithm/011-RecursionAndBacktracking)；循环队列作为数组受限应用参见 [数组与动态数组](/algorithm/014-ArrayAndDynamicArray)。
+> **跨模块引用**：栈与队列的链式实现依赖 [链表](/algorithm/060-LinkedList)；堆作为优先级队列的底层结构参见 [堆与优先队列](/algorithm/090-HeapAndPriorityQueue)；BFS 与 DFS 中队列/栈的应用参见 [搜索算法](/algorithm/050-SearchAlgorithm)；函数调用栈与递归的关系参见 [递归与回溯](/algorithm/140-RecursionAndBacktracking)；循环队列作为数组受限应用参见 [数组与动态数组](/algorithm/020-ArrayAndDynamicArray)。
 
 ---
 
@@ -1416,7 +1416,7 @@ public List<List<Integer>> levelOrder(TreeNode root) {
 }
 ```
 
-> **跨模块引用**：BFS 与 DFS 的完整讨论参见 [搜索算法](/algorithm/004-SearchAlgorithm)；BFS 在最短路径中的应用参见 [图算法](/algorithm/008-GraphAlgorithms)。
+> **跨模块引用**：BFS 与 DFS 的完整讨论参见 [搜索算法](/algorithm/050-SearchAlgorithm)；BFS 在最短路径中的应用参见 [图算法](/algorithm/110-GraphAlgorithms)。
 
 ---
 
@@ -2033,3 +2033,10 @@ def is_palindrome(head) -> bool:
 | 查找 | $O(n)$ | $O(n)$ | $O(n)$ | $O(n)$ | $O(n)$ | — | — |
 | 扩容 | $O(n)$ 偶发 | 无需 | $O(n)$ 偶发 | 无需 | $O(n)$ 偶发 | 无需 | 无需 |
 | 内存/元素 | 数据 + 容量分摊 | 数据 + 8 字节指针 | 数据 + 容量分摊 | 数据 + 8 字节指针 | 数据 + 容量分摊 | 同栈 | 同双端队列 |
+
+## 延伸资源
+
+- [USF: Stack 可视化](https://www.cs.usfca.edu/~galles/visualization/StackArray.html)：栈的数组实现交互动画，可单步观察入栈与出栈（英文，免费）。
+- [USF: Queue 可视化](https://www.cs.usfca.edu/~galles/visualization/QueueArray.html)：队列的数组实现交互动画，可单步观察入队与出队（英文，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

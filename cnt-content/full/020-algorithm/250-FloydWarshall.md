@@ -1,24 +1,24 @@
 ---
-order: 260
+order: 250
 title: Floyd-Warshall 算法
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: 'Floyd-Warshall 多源最短路径算法：Robert W. Floyd 1962《Algorithm 97: Shortest Path》CACM 5(6):345 DOI:10.1145/367766.368168 与 Stephen Warshall 1962《A Theorem on Boolean Matrices》JACM 9(1):11-12 DOI:10.1145/321105.321107 独立提出的动态规划算法，Bernard Roy 1959 更早发现传递闭包版本。算法以 $O(n^3)$ 时间、$O(n^2)$ 空间求解所有顶点对最短路径，支持负权边（无负环），可用于负环检测与传递闭包计算。本文涵盖 DP 状态设计、最优子结构证明、路径重建、位运算优化、与 Dijkstra/Bellman-Ford/Johnson 算法的对比、在 OSPF 路由协议与 NetworkX 工业级库中的应用，附 Python/C++/Java 多语言实现。'
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/013-DynamicProgramming'
-  - 'algorithm/019-UnionFind'
-  - 'algorithm/027-KruskalAlgorithm'
-  - 'algorithm/028-TopologicalSorting'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/160-DynamicProgramming'
+  - 'algorithm/180-UnionFind'
+  - 'algorithm/260-KruskalAlgorithm'
+  - 'algorithm/270-TopologicalSorting'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/013-DynamicProgramming'
-  - 'cs-fundamentals/007-DiscreteMathematics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/160-DynamicProgramming'
+  - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
 
@@ -444,8 +444,10 @@ def reconstruct_path(nxt, i, j):
     根据路径矩阵 nxt 重建 i 到 j 的最短路径
 
     返回:
-        路径顶点列表，如 [i, ..., j]；无路径返回空列表
+        路径顶点列表，如 [i, ..., j]；无路径返回空列表；i == j 时返回 [i]
     """
+    if i == j:
+        return [i]  # 起点即终点（nxt[i][i] 初始化为 -1，需先处理此边界）
     if nxt[i][j] == -1:
         return []  # i 到 j 不可达
     path = [i]
@@ -1121,10 +1123,12 @@ for u, v, w in edges_undirected:
 # n <= 100, 边权为整数: int 即可
 # n <= 500, 边权可能很大: long long (C++) / int (Python 任意精度)
 # 边权为浮点: double (注意 NaN 比较)
+```
 
-# C++ 推荐：long long 防溢出
+```cpp
+// C++ 推荐：long long 防溢出
 using T = long long;
-const T INF = 1e18;  # 比 LLONG_MAX 小，留出加法空间
+const T INF = 1e18;  // 比 LLONG_MAX 小，留出加法空间
 ```
 
 **实践 2：缓存友好的循环顺序**
@@ -1693,3 +1697,9 @@ def reconstruct_path_fixed(nxt, i, j):
 | 循环不变式 | Loop Invariant | 循环每轮保持的性质，用于正确性证明 |
 | 摊还分析 | Amortized Analysis | 分析操作序列总代价的方法（并查集分析） |
 | 三角不等式 | Triangle Inequality | $\delta(u, v) \leq \delta(u, w) + \delta(w, v)$ |
+
+## 延伸资源
+
+- [CP-Algorithms: Floyd-Warshall](https://cp-algorithms.com/graph/all-pair-shortest-path-floyd-warshall.html)：Floyd-Warshall 的 O(n^3) 实现、路径重建与负环检测说明（英文，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

@@ -1,28 +1,28 @@
 ---
-order: 70
+order: 80
 title: 树
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: 树（Tree）的形式化定义、二叉树遍历、二叉搜索树（BST）、AVL 树、红黑树、B 树/B+ 树、Splay 伸展树、Treap 树堆、Trie 字典树、LSM 树的原理、复杂度分析与多语言实现，附 Python/C++/Java 实现。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/005-LinkedList'
-  - 'algorithm/006-HashTable'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/016-HeapAndPriorityQueue'
-  - 'algorithm/020-SegmentTree'
-  - 'algorithm/021-FenwickTree'
-  - 'algorithm/019-UnionFind'
-  - 'algorithm/022-SkipList'
-  - 'algorithm/002-SortAlgorithm'
-  - 'algorithm/004-SearchAlgorithm'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/060-LinkedList'
+  - 'algorithm/070-HashTable'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/090-HeapAndPriorityQueue'
+  - 'algorithm/190-SegmentTree'
+  - 'algorithm/200-FenwickTree'
+  - 'algorithm/180-UnionFind'
+  - 'algorithm/210-SkipList'
+  - 'algorithm/030-SortAlgorithm'
+  - 'algorithm/050-SearchAlgorithm'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/005-LinkedList'
-  - 'cs-fundamentals/007-DiscreteMathematics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/060-LinkedList'
+  - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
 
@@ -90,7 +90,7 @@ prerequisites:
 | 哈希表 | $O(1)$ | $O(n)$ | $O(1)$ | $O(1)$ | 不支持 | 不支持 |
 | 有序数组 | $O(\log n)$ | $O(\log n)$ | $O(n)$ | $O(n)$ | 支持 | 支持 |
 
-> **跨模块引用**：树的图论基础参见 [图算法](/algorithm/008-GraphAlgorithms)；堆作为完全二叉树参见 [堆与优先队列](/algorithm/016-HeapAndPriorityQueue)；区间查询专用树形结构参见 [线段树](/algorithm/020-SegmentTree) 与 [树状数组](/algorithm/021-FenwickTree)；并查集的森林表示参见 [并查集](/algorithm/019-UnionFind)；跳跃表作为概率平衡结构参见 [跳跃表](/algorithm/022-SkipList)。
+> **跨模块引用**：树的图论基础参见 [图算法](/algorithm/110-GraphAlgorithms)；堆作为完全二叉树参见 [堆与优先队列](/algorithm/090-HeapAndPriorityQueue)；区间查询专用树形结构参见 [线段树](/algorithm/190-SegmentTree) 与 [树状数组](/algorithm/200-FenwickTree)；并查集的森林表示参见 [并查集](/algorithm/180-UnionFind)；跳跃表作为概率平衡结构参见 [跳跃表](/algorithm/210-SkipList)。
 
 ### 1.6 适用场景与不适用场景
 
@@ -2012,3 +2012,9 @@ Splay 树的单次操作最坏 $O(n)$（如退化为链表时访问叶子），�
 | Trie（$L$ 为键长） | $O(L)$ | $O(L)$ | $O(L)$ | $O(L + r)$ | $O(NL)$ | 前缀匹配 |
 | LSM 树（$L$ 层） | $O(L \log n)$ | $O(1)$ 摊还 | $O(1)$ 摊还 | $O(\log n + r)$ | $O(Ln)$ | 写优化 |
 | 跳跃表 | $O(\log n)$ 期望 | $O(\log n)$ 期望 | $O(\log n)$ 期望 | $O(\log n + r)$ | $O(n)$ | 概率平衡 |
+
+## 延伸资源
+
+- [VisuAlgo: BST/AVL](https://visualgo.net/en/bst)：二叉搜索树与 AVL 树的交互可视化，逐步演示插入、删除与旋转（英文，免费，适合理解旋转细节）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

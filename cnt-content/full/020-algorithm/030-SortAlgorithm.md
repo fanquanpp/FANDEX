@@ -1,23 +1,23 @@
 ---
-order: 20
+order: 30
 title: 排序算法
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: 排序（Sorting）算法的形式化定义、比较排序下界 $\Omega(n \log n)$ 的决策树证明、冒泡/选择/插入/希尔/归并/堆排/快排七大经典排序、计数/基数/桶排序三种线性时间非比较排序、内省排序（Musser 1997）与 Timsort（Peters 2002）的工业级混合方案，涵盖 von Neumann 1945 归并、Shell 1959 希尔、Hoare 1961 快排、Williams 1964 堆排、Musser 1997 内省、Peters 2002 Timsort 的历史脉络，附 Python/C++/Java 多语言实现。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/014-ArrayAndDynamicArray'
-  - 'algorithm/011-RecursionAndBacktracking'
-  - 'algorithm/009-DivideAndConquer'
-  - 'algorithm/016-HeapAndPriorityQueue'
-  - 'algorithm/017-BinarySearchAlgorithms'
-  - 'algorithm/004-SearchAlgorithm'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/020-ArrayAndDynamicArray'
+  - 'algorithm/140-RecursionAndBacktracking'
+  - 'algorithm/120-DivideAndConquer'
+  - 'algorithm/090-HeapAndPriorityQueue'
+  - 'algorithm/170-BinarySearchAlgorithms'
+  - 'algorithm/050-SearchAlgorithm'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/014-ArrayAndDynamicArray'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/020-ArrayAndDynamicArray'
 ---
 
 
@@ -324,7 +324,7 @@ Timsort 的复杂度分析依赖**run 长度与归并栈不变式**。
 
 **稳定性的工程价值**：
 1. **多关键字排序**：先按次要关键字排序，再按主要关键字稳定排序，即可实现多关键字排序；
-2. **数据库 ORDER BY**：SQL 标准要求 ORDER BY 稳定（虽然 SQL 标准未显式规定，但工业实现均稳定）；
+2. **数据库 ORDER BY**：SQL 标准并不保证 ORDER BY 对并列（排序键相等）行的输出顺序，该顺序由具体实现决定；依赖稳定序时应显式追加次级排序键（如 `ORDER BY a, b`）；
 3. **UI 列表排序**：用户先按时间排序再按作者排序，期望保留时间顺序的稳定性。
 
 **各排序的稳定性分析**：
@@ -2343,3 +2343,10 @@ flowchart TD
 ---
 
 <!-- FANDEX Content Engineering - 排序算法 - MIT/Stanford/CMU 金标准版 - 2026-07-20 -->
+
+## 延伸资源
+
+- [VisuAlgo: Sorting](https://visualgo.net/en/sorting)：新加坡国立大学的排序可视化，逐步动画演示从冒泡到基数排序并标注复杂度与稳定性（英文，免费，适合建立过程直觉）。
+- [USF Data Structure Visualizations](https://www.cs.usfca.edu/~galles/visualization/Algorithms.html)：旧金山大学的算法可视化合集，含各类排序算法的逐帧动画（英文，免费，适合课堂演示与自学对照）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

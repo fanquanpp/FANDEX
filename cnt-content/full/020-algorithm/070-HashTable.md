@@ -1,24 +1,24 @@
 ---
-order: 60
+order: 70
 title: 哈希表
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: 哈希表（Hash Table）的形式化定义、哈希函数设计（除法/乘法/全域/多项式滚动）、冲突处理（链地址法/开放寻址法/布谷鸟哈希）、扩容与再哈希、一致性哈希、Bloom Filter 与 LRU/LFU 缓存的工程实现，附 Python/C++/Java 多语言实现。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/005-LinkedList'
-  - 'algorithm/007-Tree'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/004-SearchAlgorithm'
-  - 'algorithm/022-SkipList'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/060-LinkedList'
+  - 'algorithm/080-Tree'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/050-SearchAlgorithm'
+  - 'algorithm/210-SkipList'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/005-LinkedList'
-  - 'algorithm/007-Tree'
-  - 'cs-fundamentals/007-DiscreteMathematics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/060-LinkedList'
+  - 'algorithm/080-Tree'
+  - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
 
@@ -89,7 +89,7 @@ prerequisites:
 | 跳跃表 | $O(\log n)$ | $O(n)$ | $O(\log n)$ | $O(\log n)$ | 支持 | 支持 |
 | 有序数组 | $O(\log n)$ | $O(\log n)$ | $O(n)$ | $O(n)$ | 支持 | 支持 |
 
-> **跨模块引用**：哈希查找的搜索框架参见 [搜索算法](/algorithm/004-SearchAlgorithm)；BST 和红黑树参见 [树](/algorithm/007-Tree)；跳跃表作为概率平衡结构参见 [跳跃表](/algorithm/022-SkipList)；链表作为链地址法底层存储参见 [链表](/algorithm/005-LinkedList)。
+> **跨模块引用**：哈希查找的搜索框架参见 [搜索算法](/algorithm/050-SearchAlgorithm)；BST 和红黑树参见 [树](/algorithm/080-Tree)；跳跃表作为概率平衡结构参见 [跳跃表](/algorithm/210-SkipList)；链表作为链地址法底层存储参见 [链表](/algorithm/060-LinkedList)。
 
 ### 1.6 适用场景与不适用场景
 
@@ -1412,7 +1412,7 @@ class ConsistentHashRing:
 | 传统 `h(k) mod N` | $O(K)$（几乎全部） |
 | 一致性哈希 | $O(K/N)$（仅相邻区间） |
 
-> **跨模块引用**：一致性哈希是分布式系统的基础原语，参见 [分布式系统](/cs-fundamentals/018-DistributedSystem)。
+> **跨模块引用**：一致性哈希是分布式系统的基础原语，参见 [分布式系统](/cs-fundamentals/410-DistributedSystem)。
 
 ---
 
@@ -2093,7 +2093,7 @@ class URLShortener:
         return self.url_map.get(short_code, "")
 ```
 
-> **跨模块引用**：URL 短链系统的完整设计参见 [系统设计](/cs-fundamentals/018-DistributedSystem)。
+> **跨模块引用**：URL 短链系统的完整设计参见 [系统设计](/cs-fundamentals/410-DistributedSystem)。
 
 ---
 
@@ -2294,3 +2294,10 @@ Python 3.6+ 采用 PEP 412 紧凑字典实现，三段式结构：
 | 删除 | $O(1+\alpha)$ | $O(n)$ | $O(1/(1-\alpha))$ | $O(n)$ | $O(1)$ |
 | 空间 | $O(n+m)$ | $O(n+m)$ | $O(m)$ | $O(m)$ | $O(m)$ |
 | $\alpha$ 范围 | $[0, \infty)$ | $[0, \infty)$ | $[0, 1)$ | $[0, 1)$ | $[0, 0.5)$ |
+
+## 延伸资源
+
+- [VisuAlgo: Hash Table](https://visualgo.net/en/hashtable)：哈希表冲突处理四种策略（链地址、线性/平方/双散列探查）的交互可视化（英文，免费）。
+- [USF: Open Hashing 可视化](https://www.cs.usfca.edu/~galles/visualization/OpenHash.html)：开放寻址哈希表的交互动画，可单步观察探查序列（英文，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

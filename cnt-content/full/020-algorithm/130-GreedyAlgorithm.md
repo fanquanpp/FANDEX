@@ -1,25 +1,25 @@
 ---
-order: 100
+order: 130
 title: 贪心算法
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: 贪心（Greedy）算法的形式化定义、贪心选择性质与最优子结构、拟阵理论（Edmonds 1971）统一框架、交换论证/保持领先/势能下降三大正确性证明方法、活动选择、哈夫曼编码（Huffman 1952）、Kruskal 最小生成树（Kruskal 1956）、Prim 最小生成树（Prim 1957）、Dijkstra 单源最短路（Dijkstra 1959）、分数背包、任务调度、区间调度的原理、实现与对比分析，涵盖 Huffman 1952 MIT、Kruskal 1956 Proc. AMS、Prim 1957 BSTJ、Dijkstra 1959 Numerische Mathematik、Rado 1957、Edmonds 1971 Mathematical Programming 的历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 16/23/24 章。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/009-DivideAndConquer'
-  - 'algorithm/011-RecursionAndBacktracking'
-  - 'algorithm/012-StringAlgorithms'
-  - 'algorithm/013-DynamicProgramming'
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/004-SearchAlgorithm'
-  - 'algorithm/016-HeapAndPriorityQueue'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/120-DivideAndConquer'
+  - 'algorithm/140-RecursionAndBacktracking'
+  - 'algorithm/150-StringAlgorithms'
+  - 'algorithm/160-DynamicProgramming'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/050-SearchAlgorithm'
+  - 'algorithm/090-HeapAndPriorityQueue'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/016-HeapAndPriorityQueue'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/090-HeapAndPriorityQueue'
 ---
 
 
@@ -504,7 +504,7 @@ def prim(n: int, adj: list) -> int:
 
 **定理 7.1（切割性质）**：设 $S$ 是 $V$ 的任意非空真子集，$e$ 是跨越 $S$ 与 $V \setminus S$ 的最小权重边，则 $e$ 必在某棵 MST 中。
 
-**证明**：设 $T$ 是 MST 且 $e \notin T$。$T \cup \{e\}$ 含环 $C$，$C$ 必含另一跨越边 $e'$，$w(e') \geq w(e)$。$T' = T \setminus \{e'\} \cup \{e}$ 仍是生成树且 $w(T') \leq w(T)$。若 $T$ 最优则 $T'$ 也最优，$e \in T'$。
+**证明**：设 $T$ 是 MST 且 $e \notin T$。$T \cup \{e\}$ 含环 $C$，$C$ 必含另一跨越边 $e'$，$w(e') \geq w(e)$。$T' = T \setminus \{e'\} \cup \{e\}$ 仍是生成树且 $w(T') \leq w(T)$。若 $T$ 最优则 $T'$ 也最优，$e \in T'$。
 
 Prim 每步都选当前切割的最小跨越边，由切割性质必在 MST 中。
 
@@ -620,7 +620,7 @@ def fractional_knapsack(items: list, capacity: float) -> float:
 | 正确性 | 拟阵保证 | 最优子结构 |
 | 经典反例 | 金砂 | 古董瓷器 |
 
-**0-1 背包反例**：3 件物品 $(v, w) = (60, 10), (100, 20), (120, 30)$，$W = 50$。分数背包取全部前两件 + 第三件 2/3，总价值 $60 + 100 + 80 = 240$。0-1 背包应取第二、三件，总价值 $100 + 120 = 220$（而非贪心的 $60 + 100 = 160$）。
+**0-1 背包反例**：3 件物品 $(v, w) = (60, 10), (100, 20), (120, 30)$，$W = 50$。分数背包按单位价值排序后取全部前两件 + 第三件的 2/3，总价值 $60 + 100 + 80 = 240$；此时贪心最优。若错误地把它当成 0-1 背包仍按单位价值贪心（不可分割，只能取前两件），总价值只有 $60 + 100 = 160$；而 0-1 背包的最优解是取第二、三件，总价值 $100 + 120 = 220$。可见同一贪心策略在 0-1 背包上失效——问题不在排序，而在"不可分割"破坏了贪心选择性质。
 
 ## 10. 区间调度与 Dilworth 定理
 
@@ -843,7 +843,9 @@ Kruskal 对重边无影响（按权重排序后重边按任意顺序处理），
 
 LeetCode 621 中冷却 $n$ 表示同类任务间至少 $n$ 个间隔，非总间隔。
 
-### 填空题知识点讲解
+## 14. 习题与练习
+
+### 14.1 填空题知识点讲解
 
 **1.** Kruskal 算法使用 ____ 数据结构检测环，复杂度近似 ____。
 
@@ -865,7 +867,7 @@ LeetCode 621 中冷却 $n$ 表示同类任务间至少 $n$ 个间隔，非总间
 
 **解析讲解**：$O(n \log n)$；$O(nW)$
 
-### 14.3 代码修正题
+### 14.2 代码修正题
 
 **1.** 以下活动选择实现有 bug，请修正：
 
@@ -906,7 +908,7 @@ def dijkstra_buggy(adj, src):
 
 **修正**：去除 `if w < 0` 分支，使用 Bellman-Ford 处理负边。
 
-### 14.4 开放论述题
+### 14.3 开放论述题
 
 **1.** 论述拟阵理论如何统一 Kruskal MST 与任务调度等贪心算法的正确性。
 
@@ -919,6 +921,8 @@ def dijkstra_buggy(adj, src):
 **3.** 比较 Kruskal 与 Prim 在稀疏图与稠密图上的性能，并解释原因。
 
 **解析讲解**：稀疏图（$E \approx V$）：Kruskal $O(E \log E) = O(V \log V)$ 优于 Prim $O(E \log V) = O(V \log V)$（相当）或 $O(V^2)$（邻接矩阵）。稠密图（$E \approx V^2$）：Prim 邻接矩阵 $O(V^2)$ 优于 Kruskal $O(V^2 \log V)$。原因：Kruskal 全局排序边，稠密图排序成本高；Prim 顶点扩展，邻接矩阵直接遍历邻居 $O(V)$，总 $O(V^2)$。
+
+## 15. 参考文献
 
 ### 15.1 经典教材
 
@@ -947,6 +951,8 @@ def dijkstra_buggy(adj, src):
 17. **Kubernetes Scheduler.** https://kubernetes.io/docs/concepts/scheduling-eviction/.
 18. **CPython heapq.** https://github.com/python/cpython/blob/main/Lib/heapq.py.
 
+## 16. 进阶主题
+
 ### 16.1 理论深入
 
 - **Lawler, E. L.** (1976). *Combinatorial Optimization: Networks and Matroids*. Holt, Rinehart and Winston. 拟阵优化经典；
@@ -961,14 +967,14 @@ def dijkstra_buggy(adj, src):
 - **子模优化**：子模函数最大化的贪心 $(1-1/e)$ 近似（Nemhauser 1978）；
 - **机器学习**：决策树 ID3/C4.5 用信息增益贪心选择特征。
 
-### 16.4 教学视频
+### 16.3 教学视频
 
 - **MIT 6.006 Lecture 9-11**：贪心、MST、Dijkstra；
 - **Stanford CS161 Lecture 12-15**：贪心证明方法；
 - **CMU 15-211 Lecture 21-23**：贪心正确性证明；
 - **Berkeley CS170 Lecture 14-16**：贪心与拟阵。
 
-### 16.5 进阶主题
+### 16.4 进阶方向
 
 - **Greedoid**：拟阵的推广，允许更灵活的贪心；
 - **Submodular Function Maximization**：子模函数最大化 $(1-1/e)$ 近似；
@@ -1020,10 +1026,21 @@ flowchart TD
     T17["拟阵结构 → 直接贪心（Edmonds 定理保证）"]
     T0 --> T1
     T0 --> T2
-    T5 --> T6
-    T9 --> T10
-    T12 --> T13
-    T16 --> T17
+    T0 --> T6
+    T0 --> T10
+    T0 --> T13
+    T0 --> T17
+    T2 --> T3
+    T2 --> T4
+    T2 --> T5
+    T6 --> T7
+    T6 --> T8
+    T6 --> T9
+    T10 --> T11
+    T10 --> T12
+    T13 --> T14
+    T13 --> T15
+    T13 --> T16
 ```
 
 ### 17.4 教学反思
@@ -1044,3 +1061,10 @@ flowchart TD
 ---
 
 > **核心要点**：贪心算法通过局部最优达到全局最优，正确性靠贪心选择性质 + 最优子结构保证。Edmonds 1971 拟阵理论提供统一判据。六大经典贪心算法（活动选择、Huffman 编码、Kruskal、Prim、Dijkstra、分数背包）覆盖压缩、网络设计、最短路、调度四大应用领域。掌握交换论证、保持领先、拟阵归约三大证明方法，是算法工程师的核心素养。
+
+## 延伸资源
+
+- [VisuAlgo: MST](https://visualgo.net/en/mst)：Prim 与 Kruskal 的执行过程可视化，含贪心正确性所依赖的切分性质讲解（英文，免费）。
+- [Hello 算法](https://www.hello-algo.com/)：开源数据结构与算法书，贪心策略等主题提供中文图解与多语言可运行实现（中文，免费，适合入门）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

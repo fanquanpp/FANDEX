@@ -1,27 +1,27 @@
 ---
-order: 180
+order: 300
 title: LeetCode 刷题指南：从题型分类到面试策略的系统化路径
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: LeetCode 刷题指南系统化阐述在线算法评测平台的发展脉络（ACM ICPC 1970、Google Code Jam 2003-2023、Topcoder Open 2001、Meta Hacker Cup 2011、Codeforces 2009、AtCoder 2012、LeetCode 2015 by Winston Tang、LeetCode China 2018）、十大题型分类体系（数组/双指针、链表、树、图、二分查找、回溯、动态规划、贪心、滑动窗口、单调栈）、三遍刷题法与四步解题法、时间复杂度反推（$n \leq 20 \to O(2^n)$、$n \leq 100 \to O(n^3)$、$n \leq 10^4 \to O(n^2)$、$n \leq 10^6 \to O(n \log n)$、$n \leq 10^9 \to O(\log n)$）、高频题解模板（Python/C++/Java 三语言实现）、LeetCode Hot 100/Top Interview 150/Grind 75/NeetCode 150 学习路径对比、FAANG 与字节跳动/腾讯/阿里巴巴面试风格分析、LeetCode 题目到工业应用的映射（LRU Cache → Redis 淘汰策略、并查集 → Kubernetes 网络、单调栈 → Prometheus 监控）、LeetCode/LintCode/HackerRank/CodeSignal/牛客网五大平台对比。覆盖 100+ 经典题目索引（LC-1/11/15/42/72/200/300/1143 等），含 Bloom 分类法学习目标、ACM 格式参考文献（含 DOI）。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/011-RecursionAndBacktracking'
-  - 'algorithm/002-SortAlgorithm'
-  - 'algorithm/004-SearchAlgorithm'
-  - 'algorithm/013-DynamicProgramming'
-  - 'algorithm/010-GreedyAlgorithm'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/007-Tree'
-  - 'algorithm/016-HeapAndPriorityQueue'
-  - 'algorithm/019-UnionFind'
-  - 'algorithm/020-SegmentTree'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/140-RecursionAndBacktracking'
+  - 'algorithm/030-SortAlgorithm'
+  - 'algorithm/050-SearchAlgorithm'
+  - 'algorithm/160-DynamicProgramming'
+  - 'algorithm/130-GreedyAlgorithm'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/080-Tree'
+  - 'algorithm/090-HeapAndPriorityQueue'
+  - 'algorithm/180-UnionFind'
+  - 'algorithm/190-SegmentTree'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/011-RecursionAndBacktracking'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/140-RecursionAndBacktracking'
 ---
 
 
@@ -82,7 +82,7 @@ flowchart TD
 6. **对比**（Compare）：FAANG（Google/Meta/Amazon/Microsoft/Apple）与国内大厂（字节跳动/腾讯/阿里巴巴/百度/美团）的面试风格、考察重点、评分标准
 7. **创造**（Create）：设计 LeetCode 题目到工业场景的映射方案，构建个人刷题追踪系统、算法学习路径推荐引擎
 
-> 跨模块引用：刷题所需的算法理论基础知识参见 [算法分析基础与学习路线](/algorithm/001-AlgorithmAnalysisBasics)，递归与回溯的深入讨论参见 [递归与回溯](/algorithm/011-RecursionAndBacktracking)。
+> 跨模块引用：刷题所需的算法理论基础知识参见 [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)，递归与回溯的深入讨论参见 [递归与回溯](/algorithm/140-RecursionAndBacktracking)。
 
 ---
 
@@ -1362,6 +1362,12 @@ def count_bits(n: int) -> list[int]:
 - 笔试模拟：可参加企业官方笔试，体验真实招聘流程
 - 面经社区丰富：含 FAANG/中国大厂面试经验分享
 - 算法题质量参差：部分题目描述与测试用例不如 LeetCode 严谨
+
+**第三方面试题情报资源**：
+
+- **[PracHub](https://prachub.com/questions)**：可按公司、岗位、轮次、主题和难度筛选的候选人报告编程面试题。与 OJ 平台互补——刷题清单解决「练什么」，情报工具帮助了解「目标公司近期在考什么」，适合在完成系统化刷题后按目标公司定向冲刺。
+
+> 外部资源免责声明：本文提及的第三方平台与工具（包括但不限于 PracHub）仅为信息索引，其内容的准确性、时效性、合法性与可用性由相应运营方负责；题目回忆类信息可能存在偏差，请以目标公司实际面试为准。仓库维护者不对使用者使用该等外部资源所产生的各类问题承担责任。
 
 #### 5.1.2 竞赛导向平台对比
 

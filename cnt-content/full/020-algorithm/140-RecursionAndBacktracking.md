@@ -1,25 +1,25 @@
 ---
-order: 110
+order: 140
 title: 递归与回溯
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: 递归（Recursion）的形式化定义、递归三要素（基线条件/递归条件/状态收缩）、递归树模型与主定理回顾、尾递归优化（TCO）、记忆化递归（Memoization）、回溯算法（Backtracking, Golomb-Baumert 1965 JACM 12(4):516-524）的系统化模板（选择-递归-撤销）、子集/排列/组合/N 皇后（Bezzel 1848）/数独/分割/括号生成/单词搜索的原理、实现与剪枝优化（排序剪枝/边界剪枝/条件剪枝/记忆化剪枝/位运算剪枝）、分支限界法（Land-Doig 1960）与 Dancing Links（Knuth 2000）的原理、对比分析与工程实践，涵盖 McCarthy 1960 LISP 递归系统化、Golomb-Baumert 1965 回溯法、Tarjan 1972 DFS、Bezzel 1848 N 皇后、Land-Doig 1960 分支限界、Knuth 2000 Dancing Links 的历史脉络，附 Python/C++/Java 多语言实现与 CLRS第4/22章、Kleinberg-Tardos第5章。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/009-DivideAndConquer'
-  - 'algorithm/010-GreedyAlgorithm'
-  - 'algorithm/013-DynamicProgramming'
-  - 'algorithm/004-SearchAlgorithm'
-  - 'algorithm/012-StringAlgorithms'
-  - 'algorithm/007-Tree'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/001-AlgorithmAnalysisBasics'
+  - 'algorithm/120-DivideAndConquer'
+  - 'algorithm/130-GreedyAlgorithm'
+  - 'algorithm/160-DynamicProgramming'
+  - 'algorithm/050-SearchAlgorithm'
+  - 'algorithm/150-StringAlgorithms'
+  - 'algorithm/080-Tree'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/003-StackAndQueue'
-  - 'algorithm/007-Tree'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/040-StackAndQueue'
+  - 'algorithm/080-Tree'
 ---
 
 
@@ -2065,3 +2065,10 @@ flowchart TD
 - 实现小型 SAT 求解器（CDCL）
 - 实现数独求解器 Web App
 - 参与开源 CP 求解器社区
+
+## 延伸资源
+
+- [USF Data Structure Visualizations](https://www.cs.usfca.edu/~galles/visualization/Algorithms.html)：旧金山大学的算法可视化合集，目录含 N 皇后等回溯问题的演示入口（英文，免费）。
+- [Hello 算法](https://www.hello-algo.com/)：开源数据结构与算法书，回溯一章给出全排列、子集等模板与剪枝技巧（中文，免费，适合入门）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

@@ -1,26 +1,26 @@
 ---
-order: 130
+order: 160
 title: 动态规划
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: 动态规划的 Bellman 最优性原理、最优子结构与重叠子问题形式化定义、状态转移方程代数表示、复杂度分析，覆盖一维/二维/区间/树形/状压/数位 DP 与背包、LCS、LIS、编辑距离等经典问题，附多语言实现。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/011-RecursionAndBacktracking'
-  - 'algorithm/012-StringAlgorithms'
-  - 'algorithm/014-ArrayAndDynamicArray'
-  - 'algorithm/003-StackAndQueue'
-  - 'algorithm/010-GreedyAlgorithm'
-  - 'algorithm/009-DivideAndConquer'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/025-BitmaskDynamicProgramming'
-  - 'algorithm/026-FloydWarshall'
+  - 'algorithm/140-RecursionAndBacktracking'
+  - 'algorithm/150-StringAlgorithms'
+  - 'algorithm/020-ArrayAndDynamicArray'
+  - 'algorithm/040-StackAndQueue'
+  - 'algorithm/130-GreedyAlgorithm'
+  - 'algorithm/120-DivideAndConquer'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/240-BitmaskDynamicProgramming'
+  - 'algorithm/250-FloydWarshall'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/011-RecursionAndBacktracking'
-  - 'cs-fundamentals/007-DiscreteMathematics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/140-RecursionAndBacktracking'
+  - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
 

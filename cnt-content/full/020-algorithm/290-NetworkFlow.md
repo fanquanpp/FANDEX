@@ -1,23 +1,23 @@
 ---
-order: 300
+order: 290
 title: 网络流
 module: 'algorithm'
 category: 计算机科学
 difficulty: advanced
 description: 网络流算法：流网络形式化定义 (G,s,t,c,f)、最大流最小割定理、Ford-Fulkerson 方法 O(E·|f*|)、Edmonds-Karp 算法 O(VE²)、Dinic 算法 O(V²E)、Push-Relabel 算法 O(V²E)/O(V³)、ISAP、最小费用最大流、网络单纯形，覆盖二分图匹配、Project Selection、Image Segmentation、Baseball Elimination、Airline Scheduling 等工程应用，附多语言实现。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/028-TopologicalSorting'
-  - 'algorithm/013-DynamicProgramming'
-  - 'algorithm/029-AlgorithmTheory'
-  - 'algorithm/020-SegmentTree'
-  - 'algorithm/019-UnionFind'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/270-TopologicalSorting'
+  - 'algorithm/160-DynamicProgramming'
+  - 'algorithm/280-AlgorithmTheory'
+  - 'algorithm/190-SegmentTree'
+  - 'algorithm/180-UnionFind'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'cs-fundamentals/007-DiscreteMathematics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
 
@@ -3422,3 +3422,10 @@ def meeting_scheduling(participants, slots, availability):
 ---
 
 _最后审阅：2026-07-18 · FANDEX Content Engineering_
+
+## 延伸资源
+
+- [OI Wiki: 网络流](https://oi-wiki.org/graph/flow/)：中文竞赛向网络流专题，覆盖最大流、最小割与费用流（中文，免费）。
+- [CP-Algorithms: Edmonds-Karp](https://cp-algorithms.com/graph/edmonds_karp.html)：Ford-Fulkerson 方法与 BFS 增广实现的英文权威参考（英文，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

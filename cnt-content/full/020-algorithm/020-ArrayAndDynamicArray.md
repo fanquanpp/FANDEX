@@ -1,22 +1,22 @@
 ---
-order: 140
+order: 20
 title: 数组与动态数组
 module: 'algorithm'
 category: 计算机科学
 difficulty: beginner
 description: 数组（Array）与动态数组（Dynamic Array）的连续内存模型、随机访问 $O(1)$ 原理、倍增扩容均摊 $O(1)$ 分析、行优先/列优先多维布局、稀疏数组 CSR/CSC、双指针/滑动窗口/前缀和/差分等核心技巧，涵盖 Von Neumann 1945 EDVAC、Iverson 1962 APL、Stepanov 1994 STL 等历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 10 章。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/012-StringAlgorithms'
-  - 'algorithm/013-DynamicProgramming'
-  - 'algorithm/003-StackAndQueue'
-  - 'algorithm/005-LinkedList'
-  - 'algorithm/006-HashTable'
-  - 'algorithm/015-BalancedTreeAdvanced'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/150-StringAlgorithms'
+  - 'algorithm/160-DynamicProgramming'
+  - 'algorithm/040-StackAndQueue'
+  - 'algorithm/060-LinkedList'
+  - 'algorithm/070-HashTable'
+  - 'algorithm/100-BalancedTreeAdvanced'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
 ---
 
 
@@ -99,7 +99,7 @@ flowchart LR
 | 元素数量未知且增长缓慢 | 部分适合 | 动态数组扩容代价 $O(n)$ 偶发，可接受 |
 | 高度稀疏的二维表 | 不适合 | 应选稀疏数组 CSR/CSC 节省内存 |
 
-> **跨模块引用**：数组的链式替代方案参见 [链表](/algorithm/005-LinkedList)；数组作为栈/队列底层存储参见 [栈与队列](/algorithm/003-StackAndQueue)；数组在哈希表开放寻址中的应用参见 [哈希表](/algorithm/006-HashTable)；二分查找基于有序数组参见 [查找算法](/algorithm/017-BinarySearchAlgorithms)；动态规划状态表参见 [动态规划](/algorithm/013-DynamicProgramming)。
+> **跨模块引用**：数组的链式替代方案参见 [链表](/algorithm/060-LinkedList)；数组作为栈/队列底层存储参见 [栈与队列](/algorithm/040-StackAndQueue)；数组在哈希表开放寻址中的应用参见 [哈希表](/algorithm/070-HashTable)；二分查找基于有序数组参见 [查找算法](/algorithm/170-BinarySearchAlgorithms)；动态规划状态表参见 [动态规划](/algorithm/160-DynamicProgramming)。
 
 ---
 
@@ -1652,14 +1652,18 @@ typedef struct {
 ```
 
 ```python
-# Python list 元素是 PyObject* 指针
->>> import sys
->>> arr = [1, 2, 3, 4, 5]
->>> sys.getsizeof(arr)
-104  # 56 字节头部 + 5 × 8 字节指针 = 96，向上对齐到 104
->>> arr.append(6)
->>> sys.getsizeof(arr)
-136  # 触发扩容，allocated 增长为 9（104 + 4×8 = 136）
+# Python list 元素是 PyObject* 指针；sizeof 数值随版本略有差异
+# （下述为 64 位 CPython 3.14 实测）
+import sys
+arr = [1, 2, 3, 4, 5]
+print(sys.getsizeof(arr))
+# 输出: 104（56 字节头部 + 6 个指针槽 x 8 字节；字面量构造预留了 1 个空槽）
+arr.append(6)
+print(sys.getsizeof(arr))
+# 输出: 104（预留槽位正好被填上，无需扩容）
+arr.append(7)
+print(sys.getsizeof(arr))
+# 输出: 152（超出容量触发扩容，allocated 从 6 按增长策略扩到 12 个槽位）
 ```
 
 ### 11.5 Redis ziplist 压缩列表
@@ -2172,3 +2176,9 @@ def pop(self):
 | 内存开销 | 仅元素 | 元素 + 预留 | 元素 + 指针 | 仅元素 |
 
 ---
+
+## 延伸资源
+
+- [Hello 算法](https://www.hello-algo.com/)：开源数据结构与算法书，数组与链表一章图解动态数组扩容与内存布局（中文，免费，适合入门）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

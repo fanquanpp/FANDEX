@@ -1,21 +1,21 @@
 ---
-order: 240
+order: 230
 title: KMP 字符串匹配
 module: 'algorithm'
 category: 计算机科学
 difficulty: advanced
 description: Knuth-Morris-Pratt（KMP）字符串匹配算法：基于模式串自身结构构建部分匹配表（PMT/next 数组），实现 O(n+m) 线性时间匹配。涵盖 Morris 1970、Pratt 1970 独立发现与 Knuth 1970 复杂度证明的演进脉络，Knuth-Morris-Pratt 1977《Fast Pattern Matching in Strings》SIAM J. Comp. 6(2):323-350 DOI:10.1137/0206024 系统化发表；Cook 1971 字符串匹配下界、Aho-Corasick 1975 多模式扩展、Boyer-Moore 1977、Rabin-Karp 1987、Sunday 1990 变种对比；KMP 在 GNU grep、ESLint、IDE 语法检查、生物信息学 read 比对、Linux 内核字符串搜索中的应用；附 Python/C++/Java 多语言实现与 KMP 自动机、AC 自动机扩展。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/012-StringAlgorithms'
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/023-BloomFilter'
-  - 'algorithm/025-BitmaskDynamicProgramming'
-  - 'algorithm/022-SkipList'
+  - 'algorithm/150-StringAlgorithms'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/220-BloomFilter'
+  - 'algorithm/240-BitmaskDynamicProgramming'
+  - 'algorithm/210-SkipList'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/012-StringAlgorithms'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/150-StringAlgorithms'
 ---
 
 
@@ -223,27 +223,27 @@ $$\text{PMT}[i] = \text{lps}(P[0..i]) = \max\{k \in \{0, 1, \ldots, i\} \mid P[0
 
 next 数组是 PMT 的等价形式，用于在失配时直接给出模式指针的跳转位置。现代教材中存在两种常见约定：
 
-**定义 3.6**（next 数组，约定 A，CLRS 风格）：next 数组长度为 $m$，定义为：
+**定义 3.6**（next 数组，本文约定，-1 哨兵状态编号）：next 数组长度为 $m$，定义为：
 
-$$\text{next}[j] = \text{lps}(P[0..j-1]) = \max\{k \in \{0, 1, \ldots, j-1\} \mid P[0..k-1] = P[j-k..j-1]\}$$
+$$\text{next}[j] = \text{lps}(P[0..j]) - 1 = \text{PMT}[j] - 1$$
 
-约定 $\text{next}[0] = -1$（哨兵值，表示模式整体右移）。在此约定下，当 $T[i]$ 与 $P[j]$ 失配时，模式指针跳转到 $j' = \text{next}[j]$，文本指针 $i$ 不变。
+其中 $\text{lps}(P[0..j])$ 是前缀 $P[0..j]$ 的最长相等真前后缀长度（即 $\text{PMT}[j]$）。语义上，状态 $j$ 表示"模式前 $j+1$ 个字符已与文本匹配，下一个比较位置是 $P[j+1]$"；失配时模式指针跳转到状态 $j' = \text{next}[j]$，文本指针 $i$ 不变；$\text{next}[j] = -1$（哨兵）表示无可复用的已匹配前缀，模式整体右移。
 
-**定义 3.7**（next 数组，约定 B，国内教材风格）：next 数组长度为 $m$，定义为：
+**定义 3.7**（next 数组，对照约定，无哨兵 $\pi$ 风格）：
 
-$$\text{next}[j] = \begin{cases} -1 & j = 0 \\ \text{lps}(P[0..j-1]) - 1 & j \geq 1 \end{cases}$$
+$$\text{next}_\pi[j] = \text{lps}(P[0..j-1])$$
 
-失配时 $j' = \text{next}[j]$，文本指针 $i$ 不变。本文采用约定 A（CLRS 风格），以便与 Pratts 函数 $\pi[j]$ 一致。
+其中 $j$ 表示已匹配的字符数：失配时（比较 $P[j]$ 失败）跳转 $j' = \text{next}_\pi[j-1]$，文本指针 $i$ 不变。该约定即 CLRS 前缀函数 $\pi$（无 -1 哨兵），与本文约定满足 $\text{next}[j] = \text{next}_\pi[j+1] - 1$。两种约定数值不同、跳转逻辑也不同，**构建与匹配必须配套使用**，交叉混用会漏匹配或越界。
 
-**示例 3.2**：$P = \text{"ABABC"}$，按约定 A：
+**示例 3.2**：$P = \text{"ABABC"}$，按本文约定：
 
 | $j$ | 0 | 1 | 2 | 3 | 4 |
 | --- | --- | --- | --- | --- | --- |
 | $P[j]$ | A | B | A | B | C |
-| $\text{PMT}[j]$ | 0 | 0 | 1 | 2 | 0 |
-| $\text{next}[j]$ | -1 | 0 | 0 | 1 | 2 |
+| $\text{PMT}[j]$（$=\text{lps}(P[0..j])$） | 0 | 0 | 1 | 2 | 0 |
+| $\text{next}[j]$ | -1 | -1 | 0 | 1 | -1 |
 
-注意 $\text{next}[j] = \text{PMT}[j-1]$（$j \geq 1$），$\text{next}[0] = -1$（哨兵）。
+注意 $\text{next}[j] = \text{PMT}[j] - 1$（对所有 $j$ 成立，含 $j = 0$；哨兵 $-1$ 恰为 $\text{PMT}[0] - 1$）。
 
 ### 3.4 KMP 算法的形式化定义
 
@@ -259,18 +259,16 @@ $$\text{next}[j] = \begin{cases} -1 & j = 0 \\ \text{lps}(P[0..j-1]) - 1 & j \ge
 输入：文本 T[0..n-1]，模式 P[0..m-1]
 输出：所有匹配偏移 s
 1.  next ← BuildNext(P)
-2.  j ← 0  // 模式指针
+2.  j ← -1  // 状态：已匹配 j+1 个字符；-1 表示尚无任何匹配
 3.  for i ← 0 to n-1 do
-4.      while j ≥ 0 and T[i] ≠ P[j] do
+4.      while j ≥ 0 and T[i] ≠ P[j+1] do
 5.          j ← next[j]
-6.      if j = -1 then
-7.          j ← 0
-8.      else if T[i] = P[j] then
-9.          j ← j + 1
-10.     if j = m then
-11.         输出 s = i - m + 1
-12.         j ← next[j-1]  // 继续搜索下一个匹配
-13. end for
+6.      if T[i] = P[j+1] then
+7.          j ← j + 1
+8.      if j = m - 1 then
+9.          输出 s = i - m + 1
+10.         j ← next[j]  // 继续搜索下一个匹配（按完整模式的最长相等前后缀回退）
+11. end for
 ```
 
 **算法 3.2**（BuildNext，模式串与自身的 KMP 匹配）：
@@ -400,21 +398,22 @@ $$P[0..j'-1] = P[j-j'..j-1]$$
 
 ### 4.5 next 数组优化（nextval）的正确性
 
-**定义 4.1**（nextval 数组）：nextval 数组是 next 数组的优化形式，定义为：
+**定义 4.1**（nextval 数组）：nextval 数组是 next 数组的优化形式，在本文的 -1 哨兵状态约定下定义为：
 
-$$\text{nextval}[j] = \begin{cases} \text{next}[j] & \text{若 } j = 0 \text{ 或 } P[j] \neq P[\text{next}[j]] \\ \text{nextval}[\text{next}[j]] & \text{若 } P[j] = P[\text{next}[j]] \end{cases}$$
+$$\text{nextval}[j] = \begin{cases} \text{next}[j] & \text{若 } \text{next}[j] = -1 \text{ 或 } j = m-1 \text{ 或 } P[j+1] \neq P[\text{next}[j]+1] \\ \text{nextval}[\text{next}[j]] & \text{若 } P[j+1] = P[\text{next}[j]+1] \end{cases}$$
 
-**优化原理**：若 $P[j] = P[\text{next}[j]]$，则当 $T[i] \neq P[j]$ 失配时，跳转到 $\text{next}[j]$ 后必然再次失配（因 $P[\text{next}[j]] = P[j] \neq T[i]$）。nextval 直接跳过这一必然失配的中间状态。
+**优化原理**：状态 $j$ 下失配时比较的是 $P[j+1]$。若 $P[\text{next}[j]+1] = P[j+1]$，则跳转到 $\text{next}[j]$ 后的比较对象仍是同一个字符，$T[i] \neq P[j+1]$ 蕴含跳转后必然再次失配。nextval 直接跳过这一必然失配的中间状态。（末位状态 $j = m-1$ 匹配成功后的回退沿用 $\text{next}[j]$，无优化空间。）
 
 **示例 3.3**：$P = \text{"AAAAB"}$，next 与 nextval 对比：
 
 | $j$ | 0 | 1 | 2 | 3 | 4 |
 | --- | --- | --- | --- | --- | --- |
 | $P[j]$ | A | A | A | A | B |
-| $\text{next}[j]$ | -1 | 0 | 1 | 2 | 3 |
-| $\text{nextval}[j]$ | -1 | -1 | -1 | -1 | 3 |
+| $\text{PMT}[j]$ | 0 | 1 | 2 | 3 | 0 |
+| $\text{next}[j]$ | -1 | 0 | 1 | 2 | -1 |
+| $\text{nextval}[j]$ | -1 | -1 | -1 | 2 | -1 |
 
-解释：$\text{nextval}[1] = \text{nextval}[\text{next}[1]] = \text{nextval}[0] = -1$，因 $P[1] = P[\text{next}[1]] = P[0] = \text{A}$。
+解释：$\text{nextval}[1] = \text{nextval}[\text{next}[1]] = \text{nextval}[0] = -1$，因 $P[2] = P[\text{next}[1]+1] = P[1] = \text{A}$（跳转后仍比较 A，必然再失配）；$\text{nextval}[3] = \text{next}[3] = 2$，因 $P[4] = \text{B} \neq P[3] = \text{A}$；末位 $j = 4$ 沿用 $\text{next}[4] = -1$。
 
 nextval 在不改变时间复杂度的前提下减少常数因子，是实际工程实现中的常用优化。
 
@@ -427,13 +426,14 @@ nextval 在不改变时间复杂度的前提下减少常数因子，是实际工
 ```python
 def build_next(pattern: str) -> list[int]:
     """
-    构建 KMP 算法的 next 数组（约定 A，CLRS 风格）
+    构建 KMP 算法的 next 数组（-1 哨兵状态约定）
 
     参数:
         pattern: 模式串 P[0..m-1]
 
     返回:
-        next 数组，next[0] = -1（哨兵），next[i] = lps(P[0..i-1])
+        next 数组，next[0] = -1（哨兵），next[i] = lps(P[0..i]) - 1 = PMT[i] - 1；
+        状态 i 表示已匹配 i+1 个字符
 
     时间复杂度: O(m)，基于势能法摊还分析
     空间复杂度: O(m)
@@ -624,7 +624,7 @@ int main() {
     for (int s : matches) std::cout << s << " ";
     std::cout << "\n";
     // 输出:
-    // next: -1 -1 0 1 2 -1 0 1 2
+    // next: -1 -1 0 1 -1 0 1 2 3
     // matches: 10
     return 0;
 }
@@ -736,17 +736,19 @@ class KMPAutomaton:
             else:
                 self.delta[0][ci] = 0
 
-        # 递推：delta[q][c] = delta[next[q]][c] 若 c != P[q]
+        # 递推：状态 q 失配（c != P[q]）时，保留的已匹配字符数为 lps(P[0..q-1]) = next[q-1] + 1
         for q in range(1, self.m):
+            fail = next_arr[q - 1] + 1  # 失配后回退到的状态（已匹配字符数）
             for ci, c in enumerate(self.alphabet):
                 if c == self.pattern[q]:
                     self.delta[q][ci] = q + 1
                 else:
-                    self.delta[q][ci] = self.delta[next_arr[q]][ci]
+                    self.delta[q][ci] = self.delta[fail][ci]
 
-        # 接受状态 m：所有转移回 delta[next[m-1]][c]
+        # 接受状态 m：所有转移回 delta[lps(P)][c]，lps(P) = next[m-1] + 1
+        fail_m = next_arr[self.m - 1] + 1
         for ci, c in enumerate(self.alphabet):
-            self.delta[self.m][ci] = self.delta[next_arr[self.m - 1]][ci]
+            self.delta[self.m][ci] = self.delta[fail_m][ci]
 
     def search(self, text: str) -> list[int]:
         """匹配，返回所有出现位置"""
@@ -781,8 +783,8 @@ def minimal_period(s: str) -> int:
     """
     求字符串 s 的最小循环节长度
 
-    利用 KMP next 数组：若 n % (n - next[-1]) == 0，
-    则最小循环节长度为 n - next[-1]，否则为 n
+    利用前缀函数（PMT）：若 n % (n - pmt[n-1]) == 0，
+    则最小循环节长度为 n - pmt[n-1]，否则为 n
 
     时间复杂度: O(n)
     空间复杂度: O(n)
@@ -932,10 +934,10 @@ KMP 与 BM 几乎同期发表（1977），但范式截然不同：
 ### 7.1 陷阱一：next 数组约定的混淆
 
 :::danger
-**错误示例**：混用约定 A（CLRS，`next[0] = -1`）与约定 B（国内教材，`next[j] = lps - 1`）
+**错误示例**：构建与匹配使用了不配套的 next 约定（本文的 -1 哨兵状态约定 vs 无哨兵 $\pi$ 约定）
 
 ```python
-# 错误：构建时用约定 A，匹配时用约定 B 的跳转逻辑
+# 错误：构建时用 -1 哨兵状态约定，匹配时按无哨兵 π 约定的逻辑跳转
 def build_next_wrong(pattern):
     next_arr = [0] * len(pattern)  # 应该是 -1
     # ...
@@ -945,17 +947,17 @@ def kmp_wrong(text, pattern):
     j = 0
     for i in range(len(text)):
         while j > 0 and text[i] != pattern[j]:
-            j = next_arr[j - 1]  # 约定 B 的跳转，但 next_arr 是约定 A
+            j = next_arr[j - 1]  # π 约定的跳转，但 next_arr 是状态约定
         # ...
 ```
 
-**错误原因**：约定 A 与约定 B 的跳转逻辑不同。约定 A 跳转 `j = next[j]`（next[j] 是 P[0..j-1] 的 lps），约定 B 跳转 `j = next[j-1]`（next[j-1] 是 P[0..j-1] 的 lps）。混用会导致漏匹配或越界。
+**错误原因**：不同约定下 next 数组语义不同。本文的 -1 哨兵状态约定中，状态 $j$ 表示"已匹配 $j+1$ 个字符"，$\text{next}[j] = \text{lps}(P[0..j]) - 1$，失配跳转 $j = \text{next}[j]$；无哨兵 $\pi$ 约定中，$j$ 表示已匹配字符数，$\text{next}_\pi[j] = \text{lps}(P[0..j-1])$，失配跳转 $j = \text{next}_\pi[j-1]$。交叉混用会导致漏匹配或越界。
 
-**修正方案**：明确选用一种约定，构建与匹配逻辑保持一致。本文采用约定 A（CLRS 风格），next[0] = -1 为哨兵，跳转时 `j = next[j]`。
+**修正方案**：明确选用一种约定，构建与匹配逻辑保持一致。本文全文采用 -1 哨兵状态约定（$\text{next}[0] = -1$，$\text{next}[j] = \text{lps}(P[0..j]) - 1$），构建与匹配均跳转 $j = \text{next}[j]$。
 
 ```python
 def build_next_correct(pattern):
-    """约定 A：next[0] = -1，next[i] = lps(P[0..i-1])"""
+    """本文约定：next[0] = -1，next[i] = lps(P[0..i]) - 1"""
     m = len(pattern)
     next_arr = [-1] * m  # 关键：next[0] = -1
     j = -1
@@ -1798,3 +1800,10 @@ flowchart TD
 | 进阶 | 学习 Suffix Tree/Array、AC 自动机、FM-Index | 本文第 13.5 节 + Gusfield 1997 | 20-40 小时 |
 
 ---
+
+## 延伸资源
+
+- [OI Wiki: KMP](https://oi-wiki.org/string/kmp/)：中文竞赛向 KMP 讲解，含下标约定讨论与周期、循环节等扩展应用（中文，免费）。
+- [CP-Algorithms: Prefix Function](https://cp-algorithms.com/string/prefix-function.html)：前缀函数与 KMP 的英文权威参考，含字符串压缩、去重子串计数等应用（英文，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

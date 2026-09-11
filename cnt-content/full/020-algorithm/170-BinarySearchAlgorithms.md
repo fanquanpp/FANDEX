@@ -6,20 +6,20 @@ category: 计算机科学
 difficulty: intermediate
 description: 查找（Search）算法的形式化定义、顺序查找 $O(n)$、二分查找 $O(\log n)$、插值查找 $O(\log \log n)$、斐波那契查找、哈希查找 $O(1)$、BST/AVL/红黑树查找、B 树查找、跳表查找（Pugh 1990）、字符串查找（KMP 1977、Boyer-Moore 1977、Rabin-Karp）、布隆过滤器（Bloom 1970）的原理、实现与对比分析，涵盖 Mauchly 1946 二分查找、Luhn 1953 哈希表、Bayer-McCreight 1972 B 树、Guibas-Sedgewick 1978 红黑树、Bloom 1970 布隆过滤器、Knuth-Morris-Pratt 1977 KMP、Boyer-Moore 1977 字符串匹配等历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 11/12/13 章。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/014-ArrayAndDynamicArray'
-  - 'algorithm/006-HashTable'
-  - 'algorithm/007-Tree'
-  - 'algorithm/015-BalancedTreeAdvanced'
-  - 'algorithm/016-HeapAndPriorityQueue'
-  - 'algorithm/012-StringAlgorithms'
-  - 'algorithm/002-SortAlgorithm'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/020-ArrayAndDynamicArray'
+  - 'algorithm/070-HashTable'
+  - 'algorithm/080-Tree'
+  - 'algorithm/100-BalancedTreeAdvanced'
+  - 'algorithm/090-HeapAndPriorityQueue'
+  - 'algorithm/150-StringAlgorithms'
+  - 'algorithm/030-SortAlgorithm'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/014-ArrayAndDynamicArray'
-  - 'algorithm/007-Tree'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/020-ArrayAndDynamicArray'
+  - 'algorithm/080-Tree'
 ---
 
 
@@ -139,7 +139,7 @@ flowchart TD
 | 极小数据集（< 16） | 部分适合 | 顺序查找 | 二分查找的常数因子可能更大 |
 | 内存极度受限 | 适合 | 布隆过滤器 | $m$ 位即可表示 $n$ 个元素 |
 
-> **跨模块引用**：二分查找基于有序数组，参见 [数组与动态数组](/algorithm/014-ArrayAndDynamicArray)；哈希查找的底层结构参见 [哈希表](/algorithm/006-HashTable)；BST/AVL/红黑树/B 树的详细实现参见 [树](/algorithm/007-Tree) 与 [平衡树与高级树](/algorithm/015-BalancedTreeAdvanced)；跳表的详细实现参见 [跳跃表](/algorithm/022-SkipList)；并查集的查找参见 [并查集](/algorithm/019-UnionFind)；堆作为优先队列的查找极值参见 [堆与优先队列](/algorithm/016-HeapAndPriorityQueue)；字符串查找的深入讨论参见 [字符串算法](/algorithm/012-StringAlgorithms)。
+> **跨模块引用**：二分查找基于有序数组，参见 [数组与动态数组](/algorithm/020-ArrayAndDynamicArray)；哈希查找的底层结构参见 [哈希表](/algorithm/070-HashTable)；BST/AVL/红黑树/B 树的详细实现参见 [树](/algorithm/080-Tree) 与 [平衡树与高级树](/algorithm/100-BalancedTreeAdvanced)；跳表的详细实现参见 [跳跃表](/algorithm/210-SkipList)；并查集的查找参见 [并查集](/algorithm/180-UnionFind)；堆作为优先队列的查找极值参见 [堆与优先队列](/algorithm/090-HeapAndPriorityQueue)；字符串查找的深入讨论参见 [字符串算法](/algorithm/150-StringAlgorithms)。
 
 ---
 
@@ -507,13 +507,13 @@ int sentinelSearch(std::vector<int>& arr, int target) {
 **二分查找**（Binary Search）要求数组**有序**且**支持随机访问**，每次将查找区间减半：
 
 ```
-在 [1, 3, 5, 7, 9, 11, 13, 15] 中查找 7：
+在 [1, 3, 5, 7, 9, 11, 13, 15] 中查找 11（下标从 0 开始）：
 
-第1轮: [1, 3, 5, 7, 9, 11, 13, 15]  mid=4, arr[4]=9 > 7 → 左半
-第2轮: [1, 3, 5, 7]                  mid=1, arr[1]=3 < 7 → 右半
-第3轮: [5, 7]                        mid=2, arr[2]=5 < 7 → 右半
-第4轮: [7]                           mid=3, arr[3]=7 = 7 → 找到!
+第1轮: left=0, right=7, mid=(0+7)//2=3, arr[3]=7  < 11 → 右半，left=4
+第2轮: left=4, right=7, mid=(4+7)//2=5, arr[5]=11 = 11 → 找到!
 ```
+
+上例 2 轮即命中；而查找 1 或 15 这类端点值时会走满 $\lfloor \log_2 8 \rfloor + 1 = 4$ 轮。二分查找的单次查询比较次数在 1 到 $\lfloor \log_2 n \rfloor + 1$ 之间。
 
 ### 5.2 标准实现（闭区间 [left, right]）
 
@@ -812,29 +812,37 @@ def my_sqrt_iter(x: float, iterations: int = 100) -> float:
 **模板一：闭区间 [left, right]**
 
 ```python
-left, right = 0, len(arr) - 1
-while left <= right:
-    mid = left + (right - left) // 2
-    if arr[mid] == target:
-        return mid
-    elif arr[mid] < target:
-        left = mid + 1
-    else:
-        right = mid - 1
-return -1
+def binary_search_exact(arr, target):
+    """模板一：闭区间 [left, right]，精确查找"""
+    left, right = 0, len(arr) - 1
+    while left <= right:
+        mid = left + (right - left) // 2
+        if arr[mid] == target:
+            return mid
+        elif arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid - 1
+    return -1
+
+print(binary_search_exact([1, 3, 5, 7, 9], 7))  # 输出: 3
 ```
 
 **模板二：半开区间 [left, right)**
 
 ```python
-left, right = 0, len(arr)
-while left < right:
-    mid = left + (right - left) // 2
-    if arr[mid] < target:
-        left = mid + 1
-    else:
-        right = mid
-return left  # 第一个 >= target 的位置
+def lower_bound(arr, target):
+    """模板二：半开区间 [left, right)，返回第一个 >= target 的位置"""
+    left, right = 0, len(arr)
+    while left < right:
+        mid = left + (right - left) // 2
+        if arr[mid] < target:
+            left = mid + 1
+        else:
+            right = mid
+    return left  # 第一个 >= target 的位置
+
+print(lower_bound([1, 3, 5, 7, 9], 6))  # 输出: 3（指向 7）
 ```
 
 **选择指南**：
@@ -959,9 +967,10 @@ def fibonacci_search(arr: list[int], target: int) -> int:
     if n == 0:
         return -1
     
-    # 生成 Fibonacci 数列
+    # 生成 Fibonacci 数列：必须找到最小的 k 使 F[k] - 1 >= n，
+    # 否则填充后 temp 长度不足 F[k]-1，向右收缩（k -= 2）时 mid 可能越界
     fib = [1, 1]
-    while fib[-1] < n:
+    while fib[-1] < n + 1:
         fib.append(fib[-1] + fib[-2])
     
     k = len(fib) - 1
@@ -989,11 +998,11 @@ public static int fibonacciSearch(int[] arr, int target) {
     int n = arr.length;
     if (n == 0) return -1;
     
-    // 生成 Fibonacci 数列
+    // 生成 Fibonacci 数列：需保证 F[k] - 1 >= n（否则填充长度不足，mid 可能越界）
     int[] fib = new int[n + 2];
     fib[0] = fib[1] = 1;
     int k = 1;
-    while (fib[k] < n) {
+    while (fib[k] < n + 1) {
         k++;
         fib[k] = fib[k - 1] + fib[k - 2];
     }
@@ -2418,3 +2427,9 @@ Dijkstra 算法的核心操作是 `extract_min`（$V$ 次）与 `decrease_key`�
 ---
 
 *本文档最后审校：2026-07-20 · FANDEX Content Engineering · 遵循 MIT/Stanford/CMU 教学基准与 12 项质量基准规范*
+
+## 延伸资源
+
+- [LeetCode 二分查找题单](https://leetcode.cn/problem-list/binary-search/)：按二分标签组织的题目列表，可按难度筛选，适合配合本文两个模板逐题练习（中文界面，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

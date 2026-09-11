@@ -1,25 +1,25 @@
 ---
-order: 90
+order: 120
 title: 分治算法
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: 分治（Divide and Conquer）算法的形式化定义、三步范式（分解-解决-合并）、递推关系 $T(n) = aT(n/b) + f(n)$ 与主定理（Master Theorem, Bentley-Haken-Saxe 1980）三种情况的完整证明、分治与递归的关系、归并排序（von Neumann 1945 EDVAC）、快速排序（Hoare 1961）、Karatsuba 大整数乘法（Karatsuba-Ofman 1963 Soviet Physics-Doklady 7:595-596）、Strassen 矩阵乘法（Strassen 1969 Numerische Mathematik 13(4):354-356）、快速傅里叶变换 FFT（Cooley-Tukey 1965 Mathematics of Computation 19:297-301）、最近点对（Bentley-Shamos 1976）的原理、实现与对比分析，涵盖 von Neumann 1945 EDVAC、Karatsuba 1960 莫斯科大学研讨会、Cooley-Tukey 1965 IBM Watson、Strassen 1969 突破 $O(n^3)$、Bentley-Haken-Saxe 1980 主定理的历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 2/4/7 章。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/002-SortAlgorithm'
-  - 'algorithm/011-RecursionAndBacktracking'
-  - 'algorithm/010-GreedyAlgorithm'
-  - 'algorithm/013-DynamicProgramming'
-  - 'algorithm/007-Tree'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/012-StringAlgorithms'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/030-SortAlgorithm'
+  - 'algorithm/140-RecursionAndBacktracking'
+  - 'algorithm/130-GreedyAlgorithm'
+  - 'algorithm/160-DynamicProgramming'
+  - 'algorithm/080-Tree'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/150-StringAlgorithms'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/002-SortAlgorithm'
-  - 'algorithm/011-RecursionAndBacktracking'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/030-SortAlgorithm'
+  - 'algorithm/140-RecursionAndBacktracking'
 ---
 
 
@@ -1542,3 +1542,9 @@ flowchart TD
 - 阅读第 15 章，学习 Akra-Bazzi、cache-oblivious、NC 类；
 - 阅读 Kleinberg-Tardos 第 5 章 FFT 部分；
 - 研究 Harvey-van der Hoeven 2019 $O(n \log n)$ 大整数乘法。
+
+## 延伸资源
+
+- [MIT 6.006 Introduction to Algorithms](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/)：MIT 开放课程，分治与主定理单元提供讲义、视频与习题（英文，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

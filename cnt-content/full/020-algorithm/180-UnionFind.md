@@ -1,25 +1,25 @@
 ---
-order: 190
+order: 180
 title: 并查集
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: 并查集（Disjoint Set Union, DSU / Union-Find）数据结构的形式化定义、路径压缩与按秩合并的均摊复杂度分析（反 Ackermann 函数 α(n)）、Kruskal 最小生成树/连通分量/冗余连接等典型应用，附 Python/C++/Java 多语言实现。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/007-Tree'
-  - 'algorithm/020-SegmentTree'
-  - 'algorithm/021-FenwickTree'
-  - 'algorithm/016-HeapAndPriorityQueue'
-  - 'algorithm/017-BinarySearchAlgorithms'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/080-Tree'
+  - 'algorithm/190-SegmentTree'
+  - 'algorithm/200-FenwickTree'
+  - 'algorithm/090-HeapAndPriorityQueue'
+  - 'algorithm/170-BinarySearchAlgorithms'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/007-Tree'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'cs-fundamentals/007-DiscreteMathematics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/080-Tree'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
 
@@ -64,7 +64,7 @@ prerequisites:
 | 元素需要删除的场景 | 不适合 | 标准 DSU 不支持删除，需用离线逆序或动态连通性专用结构 |
 | 严格 $O(1)$ 最坏单次查询 | 不适合 | DSU 为均摊复杂度，最坏仍 $O(\log n)$，应选哈希 + 集合 ID 映射 |
 
-> 跨模块引用：并查集在 Kruskal 算法中的应用详见 [图算法](/algorithm/008-GraphAlgorithms)；与树状数组的复杂度对比详见 [树状数组](/algorithm/021-FenwickTree)。
+> 跨模块引用：并查集在 Kruskal 算法中的应用详见 [图算法](/algorithm/110-GraphAlgorithms)；与树状数组的复杂度对比详见 [树状数组](/algorithm/200-FenwickTree)。
 
 ---
 
@@ -1850,7 +1850,7 @@ def offline_dynamic_connectivity(n, operations):
 
 ### 14.2 应用拓展
 
-- **Tarjan 离线 LCA 算法**：DSU + DFS 实现 $O(n + q)$ 离线 LCA，详见 [图算法](/algorithm/008-GraphAlgorithms)；
+- **Tarjan 离线 LCA 算法**：DSU + DFS 实现 $O(n + q)$ 离线 LCA，详见 [图算法](/algorithm/110-GraphAlgorithms)；
 - **动态连通性完全版**：HDT 算法支持删除，达到 $O(\log^2 n)$ 单次操作，参见 Holm, de Lichtenberg, Thorup 2001;
 - **最小生成树并行算法**：Borůvka 算法用 DSU 实现 $O(\log V)$ 轮并行，适合多核 / 分布式；
 - **持久化并查集**：函数式持久化版本支持历史版本查询，参见 Driscoll et al. 1989。
@@ -1894,3 +1894,10 @@ def offline_dynamic_connectivity(n, operations):
 详细证明参见 Tarjan 1983 第 2 章，或 CLRS 第 21 章定理 21.4。
 
 ---
+
+## 延伸资源
+
+- [CP-Algorithms: Disjoint Set Union](https://cp-algorithms.com/data_structures/disjoint_set_union.html)：并查集的路径压缩与按秩/按大小合并实现，附连通分量、离线 LCA 等应用（英文，免费，竞赛社区维护的权威参考）。
+- [VisuAlgo: UFDS](https://visualgo.net/en/ufds)：并查集操作的交互可视化，可观察路径压缩前后的树形变化（英文，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

@@ -1,25 +1,25 @@
 ---
-order: 120
+order: 150
 title: 字符串算法
 module: 'algorithm'
 category: 计算机科学
 difficulty: advanced
 description: 字符串匹配的形式化定义（模式串在主串中的出现位置搜索）、KMP/Boyer-Moore/Rabin-Karp/Sunday/Z 函数等单模式匹配、Aho-Corasick 多模式匹配、后缀数组（倍增/DC3/SA-IS 线性算法）、后缀自动机（endpos 等价类）、后缀树（Ukkonen 线性算法）以及字符串动态规划（LCS、编辑距离、最长回文）的系统化讲解，覆盖复杂度证明、多语言实现（Python/C++/Java）。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/013-DynamicProgramming'
-  - 'algorithm/011-RecursionAndBacktracking'
-  - 'algorithm/014-ArrayAndDynamicArray'
-  - 'algorithm/020-SegmentTree'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/030-NetworkFlow'
-  - 'algorithm/024-KmpStringMatching'
+  - 'algorithm/160-DynamicProgramming'
+  - 'algorithm/140-RecursionAndBacktracking'
+  - 'algorithm/020-ArrayAndDynamicArray'
+  - 'algorithm/190-SegmentTree'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/290-NetworkFlow'
+  - 'algorithm/230-KmpStringMatching'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/014-ArrayAndDynamicArray'
-  - 'algorithm/007-Tree'
-  - 'cs-fundamentals/007-DiscreteMathematics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/020-ArrayAndDynamicArray'
+  - 'algorithm/080-Tree'
+  - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
 
@@ -1166,10 +1166,11 @@ def build_good_suffix_table(pattern):
         good_suffix[i] = m
     j = 0
     for i in range(m - 1, -1, -1):
-        if suffix[i] == i + 1:
-            for ; j < m - 1 - i; j++:
+        if suffix[i] == i + 1:  # pattern[:i+1] 既是前缀又与末尾匹配，可一次性覆盖一段
+            while j < m - 1 - i:  # j 只前进，等价于 C 写法的 for(; j < m-1-i; j++)
                 if good_suffix[j] == m:
                     good_suffix[j] = m - 1 - i
+                j += 1
     for i in range(m - 1):
         good_suffix[m - 1 - suffix[i]] = m - 1 - i
     return good_suffix
@@ -3251,3 +3252,10 @@ AC 自动机的 fail 指针构建本质上是 Trie 树上的 BFS，与图遍历�
 ---
 
 **结语**：字符串算法是计算机科学中理论与实践结合最紧密的领域之一。从 1970s 的 KMP/Boyer-Moore 到 2000s 的 SA-IS，再到当代的 SIMD 优化与机器学习融合，这一领域持续演进。掌握字符串算法不仅是工程师的核心素养，更是理解计算本质的窗口——如何在有限的资源下，高效地处理"信息"这一抽象实体。愿本章节成为您探索字符串算法世界的起点。
+
+## 延伸资源
+
+- [OI Wiki: 字符串](https://oi-wiki.org/string/)：竞赛向中文字符串专题，覆盖 KMP、Z 函数、后缀数组、后缀自动机等（中文，免费，适合竞赛向深入）。
+- [CP-Algorithms: Suffix Array](https://cp-algorithms.com/string/suffix-array.html)：后缀数组的 O(n log n) 构造、LCP 与去重子串计数等应用（英文，免费，竞赛社区维护的权威参考）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

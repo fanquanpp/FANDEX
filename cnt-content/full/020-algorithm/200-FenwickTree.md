@@ -1,23 +1,23 @@
 ---
-order: 210
+order: 200
 title: 树状数组
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: '树状数组（Fenwick Tree / Binary Indexed Tree, BIT）的形式化定义（基于二进制分解的前缀和索引结构）、lowbit 位运算原理、单点更新 + 区间查询 $O(\log n)$、区间更新 + 单点查询（差分树状数组）、区间更新 + 区间查询（双树状数组）三种模式的形式化推导与复杂度证明，覆盖 Peter M. Fenwick 1994《A New Data Structure for Cumulative Frequency Tables》Software: Practice and Experience 24(3):327-336 DOI:10.1002/spe.4380240306 的历史脉络、lowbit 不变式证明、与线段树 / 平方分解 / 前缀和的对比、Lucene 倒排索引 / Redis Sorted Set / PostgreSQL 统计信息等工业案例，附 Python / C++ / Java 多语言实现。'
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-12'
 related:
-  - 'algorithm/020-SegmentTree'
-  - 'algorithm/019-UnionFind'
-  - 'algorithm/015-BalancedTreeAdvanced'
-  - 'algorithm/007-Tree'
-  - 'algorithm/016-HeapAndPriorityQueue'
-  - 'algorithm/001-AlgorithmAnalysisBasics'
+  - 'algorithm/190-SegmentTree'
+  - 'algorithm/180-UnionFind'
+  - 'algorithm/100-BalancedTreeAdvanced'
+  - 'algorithm/080-Tree'
+  - 'algorithm/090-HeapAndPriorityQueue'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/007-Tree'
-  - 'cs-fundamentals/007-DiscreteMathematics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/080-Tree'
+  - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
 
@@ -1689,3 +1689,10 @@ class BIT3:
     def _prefix(self, i): return self._q(self.t1, i)*(i+1) - self._q(self.t2, i)
     def range_query(self, l, r): return self._prefix(r) - self._prefix(l-1)
 ```
+
+## 延伸资源
+
+- [CP-Algorithms: Fenwick Tree](https://cp-algorithms.com/data_structures/fenwick.html)：树状数组的原理、区间修改等变体与配套练习题列表（英文，免费）。
+- [OI Wiki: 树状数组](https://oi-wiki.org/ds/fenwick/)：中文竞赛向讲解，含二维树状数组、权值树状数组与求第 k 小等应用（中文，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

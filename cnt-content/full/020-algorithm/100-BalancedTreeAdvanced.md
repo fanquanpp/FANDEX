@@ -1,23 +1,23 @@
 ---
-order: 150
+order: 100
 title: 平衡树与高级树
 module: 'algorithm'
 category: 计算机科学
 difficulty: advanced
 description: 二叉搜索树（BST）、AVL 树（Adelson-Velsky-Landis 1962《An algorithm for the organization of information》Dokl. Akad. Nauk SSSR 146:263-266）、2-3 树（Hopcroft 1970）、红黑树（Bayer 1972 原始版对称二叉 B 树；Guibas-Sedgewick 1978《A Dichromatic Framework for Balanced Trees》FOCS 19th Annual Symposium 现代版；Sedgewick 2008 Left-Leaning Red-Black BST）、B 树（Bayer-McCreight 1972《Organization and Maintenance of Large Ordered Indexes》Acta Informatica 1(3):173-189）、B+ 树（Knuth 1973 TAOCP Vol.3 系统化；Comer 1979《The Ubiquitous B-Tree》Computing Surveys 11(2):121-137）、Splay 树（Sleator-Tarjan 1985《Self-Adjusting Binary Search Trees》JACM 32(3):652-686 DOI:10.1145/3828.3835）、Treap（Seidel-Aragon 1996）、AA 树（Andersson 1993）的形式化定义、旋转操作、平衡不变式与摊还分析、复杂度证明，覆盖 MySQL InnoDB B+ 树聚簇索引 / Linux CFS 红黑树 / Java TreeMap / C++ std::map / PostgreSQL B-tree 等工业案例，附 Python / C++ / Java 多语言实现。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-12'
 related:
-  - 'algorithm/007-Tree'
-  - 'algorithm/021-FenwickTree'
-  - 'algorithm/020-SegmentTree'
-  - 'algorithm/016-HeapAndPriorityQueue'
-  - 'algorithm/022-SkipList'
-  - 'algorithm/001-AlgorithmAnalysisBasics'
+  - 'algorithm/080-Tree'
+  - 'algorithm/200-FenwickTree'
+  - 'algorithm/190-SegmentTree'
+  - 'algorithm/090-HeapAndPriorityQueue'
+  - 'algorithm/210-SkipList'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
 prerequisites:
-  - 'algorithm/007-Tree'
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'cs-fundamentals/007-DiscreteMathematics'
+  - 'algorithm/080-Tree'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
 
@@ -2119,3 +2119,9 @@ Splay 树相比红黑树的劣势：
 | SQLite | B+ 树 | 表 + 索引 | 嵌入式数据库 |
 | Linux ext4 | HTree (B+ 树变体) | 目录索引 | 大目录性能 |
 | Lucene | FST + 倒排索引 | 全文检索 | 前缀压缩 |
+
+## 延伸资源
+
+- [VisuAlgo: BST/AVL](https://visualgo.net/en/avl)：二叉搜索树与 AVL 树的交互可视化，可逐帧观察插入删除触发的旋转修复（英文，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

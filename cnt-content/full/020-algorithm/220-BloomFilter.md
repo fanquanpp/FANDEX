@@ -1,20 +1,20 @@
 ---
-order: 230
+order: 220
 title: 布隆过滤器
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: 布隆过滤器（Bloom Filter）：一种空间高效的概率数据结构，由 Burton H. Bloom 1970《Space/Time Trade-offs in Hash Coding with Allowable Errors》Communications of the ACM 13(7):422-426 DOI:10.1145/362686.362692 提出。利用 k 个独立哈希函数将元素映射到 m 位的位数组，实现 O(k) 时间复杂度的成员查询，无假阴性但允许可控假阳性。本章涵盖 Bloom 原始动机、假阳性率 $P = (1 - e^{-kn/m})^k$ 的完整推导、最优哈希函数个数 $k_{\text{opt}} = (m/n)\ln 2$ 的极值分析、Counting Bloom Filter（Fan et al. 1998 USENIX Summary Cache）、Compressed Bloom Filter（Mitzenmacher 2002）、Cuckoo Filter（Fan et al. 2014 ACM TOCT）、Spectral Bloom Filter、Stable Bloom Filter 等变种；对比 Hash Set、Skip List、HyperLogLog、Cuckoo Filter 的空间/时间/精度权衡；附 Python/C++/Java 三语言实现、工业级应用（Cassandra、HBase、PostgreSQL、Chrome、Bitcoin SPV、Squid Proxy、Bigtable）。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/022-SkipList'
-  - 'algorithm/024-KmpStringMatching'
-  - 'algorithm/025-BitmaskDynamicProgramming'
-  - 'algorithm/021-FenwickTree'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/210-SkipList'
+  - 'algorithm/230-KmpStringMatching'
+  - 'algorithm/240-BitmaskDynamicProgramming'
+  - 'algorithm/200-FenwickTree'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
 ---
 
 

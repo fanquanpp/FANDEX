@@ -1,26 +1,26 @@
 ---
-order: 270
+order: 260
 title: Kruskal 算法
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
 description: Kruskal 最小生成树算法：Joseph B. Kruskal 1956《On the Shortest Spanning Subtree of a Graph》Proceedings of the American Mathematical Society 7(1):48-50 DOI:10.1090/S0002-9939-1956-0078686-7 提出的贪心加边算法，与 Prim 1957、Jarník 1930、Borůvka 1926 共同构成 MST 算法家族。算法以 $O(E \log E)$ 时间、$O(V)$ 空间求解连通无向加权图的最小生成树，借助并查集（Tarjan 1975 路径压缩+按秩合并）实现高效的环检测。本文涵盖贪心选择性质证明、切割性质与回路性质、与 Prim/Borůvka 算法的对比、最小生成森林/次小生成树/TSP 2-近似应用、NetworkX 与 Boost Graph Library 工业级实现，附 Python/C++/Java 多语言实现。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/010-GreedyAlgorithm'
-  - 'algorithm/019-UnionFind'
-  - 'algorithm/016-HeapAndPriorityQueue'
-  - 'algorithm/026-FloydWarshall'
-  - 'algorithm/028-TopologicalSorting'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/130-GreedyAlgorithm'
+  - 'algorithm/180-UnionFind'
+  - 'algorithm/090-HeapAndPriorityQueue'
+  - 'algorithm/250-FloydWarshall'
+  - 'algorithm/270-TopologicalSorting'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/010-GreedyAlgorithm'
-  - 'algorithm/019-UnionFind'
-  - 'cs-fundamentals/007-DiscreteMathematics'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/130-GreedyAlgorithm'
+  - 'algorithm/180-UnionFind'
+  - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
 
@@ -2057,3 +2057,10 @@ Borůvka 的分布式优势：
 | 三角不等式 | Triangle Inequality | $d(a, c) \leq d(a, b) + d(b, c)$，度量 TSP 的前提 |
 | 软堆 | Soft Heap | Chazelle 2000 提出的"允许错误"的堆数据结构 |
 | GHS 算法 | Gallager-Humblet-Spira Algorithm | 分布式 MST 算法 |
+
+## 延伸资源
+
+- [CP-Algorithms: Kruskal with DSU](https://cp-algorithms.com/graph/mst_kruskal_with_dsu.html)：Kruskal 配合并查集的标准实现与复杂度分析（英文，免费）。
+- [VisuAlgo: MST](https://visualgo.net/en/mst)：Kruskal 与 Prim 执行过程的交互可视化（英文，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

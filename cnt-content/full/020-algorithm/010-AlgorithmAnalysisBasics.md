@@ -6,16 +6,16 @@ category: 计算机科学
 difficulty: beginner
 description: 算法分析（Algorithm Analysis）的形式化定义、五类渐近记号（Bachmann 1894《Analytische Zahlentheorie》大 O 符号、Landau 1909《Handbuch》推广、Knuth 1976《Big Omicron and Big Omega and Big Theta》SIGACT News 12(3):36-44 系统化）、计算复杂性类（Hartmanis-Stearns 1965《On the Computational Complexity of Algorithms》Trans. AMS 117:285-306、Cobham 1964/Edmonds 1965 P 类、Cook 1971《The Complexity of Theorem-Proving Procedures》STOC、Karp 1972《Reducibility Among Combinatorial Problems》STOC 197-206）、主定理（Bentley-Haken-Saxe 1980 SIGACT News 12(3):36-44）、摊还分析（Sleator-Tarjan 1985《Amortized Efficiency of List Update and Paging Rules》CACM 28(2):202-208）、随机化分析（Rabin 1976）、时空权衡策略与系统化学习路线图，涵盖 Turing 1936《On Computable Numbers》Proc. LMS 42:230-265、Knuth 1968 TAOCP Vol.1、Cormen-Leiserson-Rivest 1990《Introduction to Algorithms》第 1 版的历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 1-4 章、Kleinberg-Tardos 第 2-5 章。
 author: fanquanpp
-updated: '2026-09-03'
+updated: '2026-09-12'
 related:
-  - 'algorithm/002-SortAlgorithm'
-  - 'algorithm/004-SearchAlgorithm'
-  - 'algorithm/009-DivideAndConquer'
-  - 'algorithm/011-RecursionAndBacktracking'
-  - 'algorithm/010-GreedyAlgorithm'
-  - 'algorithm/013-DynamicProgramming'
-  - 'algorithm/008-GraphAlgorithms'
-  - 'algorithm/007-Tree'
+  - 'algorithm/030-SortAlgorithm'
+  - 'algorithm/050-SearchAlgorithm'
+  - 'algorithm/120-DivideAndConquer'
+  - 'algorithm/140-RecursionAndBacktracking'
+  - 'algorithm/130-GreedyAlgorithm'
+  - 'algorithm/160-DynamicProgramming'
+  - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/080-Tree'
 prerequisites: []
 ---
 
@@ -80,7 +80,7 @@ flowchart TD
 
 **编码方式**的选择也很关键。同一个整数，用一元编码（$n$ 个 1）和二进制编码（$\log n$ 位）表示，会导致完全不同的复杂度结论。在标准计算模型（图灵机/RAM）下，默认使用二进制编码。一元编码下的多项式时间算法，在二进制编码下变为伪多项式（pseudo-polynomial）时间，如 0-1 背包的 $O(nW)$ DP（$W$ 为背包容量，二进制编码下 $W$ 可达 $2^n$）。
 
-> 跨模块引用：整数编码与位运算密切相关，参见 [C++ 基础](/cpp/003-CppBasicSyntax) 中的位运算章节。
+> 跨模块引用：整数编码与位运算密切相关，参见 [C++ 基础](/cpp/030-CppBasicSyntax) 中的位运算章节。
 
 ### 1.4 学习目标
 
@@ -1867,3 +1867,10 @@ graph LR
 > "算法分析的本质，是用数学语言描述计算过程的资源消耗。从 Turing 1936 的图灵机模型到 Knuth 1976 的渐近记号系统化，从 Hartmanis-Stearns 1965 的复杂性类到 Sleator-Tarjan 1985 的势能摊还，每一步演进都让我们更深刻地理解'什么是好算法'。掌握算法分析，不仅是技能，更是思维方式。"
 >
 > —— FANDEX 内容工程团队，2026 年 7 月
+
+## 延伸资源
+
+- [Hello 算法](https://www.hello-algo.com/)：开源数据结构与算法书，复杂度分析一章以中文图解大 O 记号、时间/空间复杂度的推演方法与常见量级（中文，免费，适合入门）。
+- [MIT 6.006 Introduction to Algorithms](https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/)：MIT 开放课程，渐近记号、递归式与摊还分析单元提供讲义、视频与习题（英文，免费，适合系统学习）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。

@@ -1,24 +1,24 @@
 ---
-order: 250
+order: 240
 title: 动态规划状态压缩
 module: 'algorithm'
 category: 计算机科学
 difficulty: advanced
 description: 状态压缩动态规划（Bitmask Dynamic Programming）：以二进制位编码子集状态，将指数级状态空间压缩至 $O(2^n \cdot n)$ 的可处理范围。系统化梳理 Bellman 1957《Dynamic Programming》Princeton University Press 开山之作、Held-Karp 1962《A Dynamic Programming Approach to Sequencing Problems》J. SIAM 10(1):196-210 DOI:10.1137/0110015 旅行商问题（TSP）$O(n^2 2^n)$ 算法、bitmask DP 系统化方法，覆盖 TSP、N 皇后、数独、划分等和子集、棋盘覆盖、排列型 DP 五大经典问题，含位运算技巧（`& | ^ ~`、`<< >>`、`__builtin_popcount`、低比特 `x & (-x)`、子集枚举 `(sub - 1) & S`）、与记忆化递归、自底向上 DP、滚动数组的对比，附 Python/C++/Java 多语言实现与 LeetCode 1879/1655/1494/1125/1931 经典题解，及在 Google OR-Tools、CP-SAT 求解器、Concorde TSP 求解器中的工业级应用。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'algorithm/013-DynamicProgramming'
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/029-AlgorithmTheory'
-  - 'algorithm/011-RecursionAndBacktracking'
-  - 'algorithm/023-BloomFilter'
-  - 'algorithm/024-KmpStringMatching'
-  - 'algorithm/026-FloydWarshall'
-  - 'algorithm/027-KruskalAlgorithm'
+  - 'algorithm/160-DynamicProgramming'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/280-AlgorithmTheory'
+  - 'algorithm/140-RecursionAndBacktracking'
+  - 'algorithm/220-BloomFilter'
+  - 'algorithm/230-KmpStringMatching'
+  - 'algorithm/250-FloydWarshall'
+  - 'algorithm/260-KruskalAlgorithm'
 prerequisites:
-  - 'algorithm/001-AlgorithmAnalysisBasics'
-  - 'algorithm/013-DynamicProgramming'
+  - 'algorithm/010-AlgorithmAnalysisBasics'
+  - 'algorithm/160-DynamicProgramming'
 ---
 
 
@@ -1761,3 +1761,10 @@ graph LR
 > "状态压缩 DP 的精髓，在于将组合爆炸的状态空间压缩至可处理的指数级。从 Bellman 1957 的最优性原理到 Held-Karp 1962 的 TSP 算法，从竞赛社区的 bitmask 技巧到 Google OR-Tools 的工业级求解器，每一次演进都让我们更接近 NP-Hard 问题的精确解边界。掌握 bitmask DP，不仅是掌握一项算法，更是理解'指数级算法可处理窗口'的思维方式。"
 >
 > —— FANDEX 内容工程团队，2026 年 7 月
+
+## 延伸资源
+
+- [OI Wiki: 动态规划](https://oi-wiki.org/dp/)：中文竞赛向 DP 专题，含状压 DP、树形 DP、数位 DP 等分类讲解（中文，免费）。
+- [LeetCode 动态规划题单](https://leetcode.cn/problem-list/dynamic-programming/)：按 DP 标签组织的题目列表，可按难度筛选练习（中文界面，免费）。
+
+> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。
