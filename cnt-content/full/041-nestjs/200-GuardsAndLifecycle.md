@@ -6,12 +6,12 @@ category: 后端技术
 difficulty: intermediate
 description: 请求处理管线全景：七大组件的职责与顺序，CanActivate 守卫与声明式角色鉴权。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/017-ValidationPipes'
-  - 'nestjs/019-Testing'
+  - 'nestjs/170-ValidationPipes'
+  - 'nestjs/190-Testing'
 prerequisites:
-  - 'nestjs/016-ModuleControllerService'
+  - 'nestjs/160-ModuleControllerService'
 ---
 
 ## 0. 请求生命周期（先读这里）
@@ -25,7 +25,7 @@ prerequisites:
 | 1 | 中间件 Middleware | NestMiddleware | 通用预处理：CORS、body 解析、请求日志 |
 | 2 | 守卫 Guard | CanActivate | 决定请求能否继续：登录态、角色、限流 |
 | 3 | 拦截器（前半） | NestInterceptor | 计时起点、请求改写 |
-| 4 | 管道 Pipe | PipeTransform | 参数转换与校验（见第 3 篇） |
+| 4 | 管道 Pipe | PipeTransform | 参数转换与校验（见[管道校验与异常处理](/nestjs/170-ValidationPipes)） |
 | 5 | 处理器 Handler | Controller + Service | 真正的业务逻辑 |
 | 6 | 拦截器（后半） | RxJS 操作符 | 响应映射、统一包装 |
 | 7 | 异常过滤器 | ExceptionFilter | 兜底所有未捕获异常 |

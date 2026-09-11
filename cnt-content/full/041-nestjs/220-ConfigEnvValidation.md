@@ -6,12 +6,12 @@ category: 后端技术
 difficulty: intermediate
 description: '@nestjs/config 加分项：类型安全、启动即校验的配置体系。'
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/017-ValidationPipes'
-  - 'typescript/003-TypeScriptOverviewEnvSetup'
+  - 'nestjs/170-ValidationPipes'
+  - 'typescript/030-TypeScriptOverviewEnvSetup'
 prerequisites:
-  - 'nestjs/016-ModuleControllerService'
+  - 'nestjs/160-ModuleControllerService'
 ---
 
 ## 0. 配置为什么值得单独一章（先读这里）
@@ -33,7 +33,7 @@ prerequisites:
 npm i @nestjs/config zod
 ```
 
-第 4 篇已经在用 `@nestjs/config` 读取 `DATABASE_URL`，现在把完整体系搭起来：
+[接入数据库](/nestjs/180-DatabaseIntegration)已经在用 `@nestjs/config` 读取 `DATABASE_URL`，现在把完整体系搭起来：
 
 ```typescript
 // src/app.module.ts

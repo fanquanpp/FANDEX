@@ -6,13 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: 实时与一体化：Bun.serve 的 WebSocket、routes 路由表与前端开发服务器。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/010-BunBuiltinServerSQL'
-  - 'nestjs/012-BunTestBench'
+  - 'nestjs/100-BunBuiltinServerSQL'
+  - 'nestjs/120-BunTestBench'
 prerequisites:
-  - 'nestjs/010-BunBuiltinServerSQL'
-  - 'nestjs/012-BunTestBench'
+  - 'nestjs/100-BunBuiltinServerSQL'
+  - 'nestjs/120-BunTestBench'
 ---
 
 # WebSocket 与前端开发服务器
@@ -21,9 +21,9 @@ prerequisites:
 
 ## 前置知识
 
-- [Bun 内置服务器、SQL 与数据库](/nestjs/010-BunBuiltinServerSQL)：已经写过 Bun.serve 的 fetch 处理器，理解 Request/Response 流。
-- [内置测试与基准](/nestjs/012-BunTestBench)：改动后能随手验证，本篇的聊天室可以配合 bun test 做协议测试。
-- [Bun 快速入门：项目、依赖与测试](/nestjs/009-BunQuickStart)：会用 bun 运行单文件 TypeScript。
+- [Bun 内置服务器、SQL 与数据库](/nestjs/100-BunBuiltinServerSQL)：已经写过 Bun.serve 的 fetch 处理器，理解 Request/Response 流。
+- [内置测试与基准](/nestjs/120-BunTestBench)：改动后能随手验证，本篇的聊天室可以配合 bun test 做协议测试。
+- [Bun 快速入门：项目、依赖与测试](/nestjs/090-BunQuickStart)：会用 bun 运行单文件 TypeScript。
 
 ## 学习目标
 
@@ -135,7 +135,7 @@ a.onopen = () => setTimeout(() => a.send(JSON.stringify({ room: "room-miku", tex
 
 ## 3. routes 路由表与 cookies()
 
-Bun 1.2 起 `Bun.serve` 支持 routes 路由表：字面量路径直接命中，`:param` 声明动态段，未命中落到 fetch 兜底。Cookie 则由 `request.cookies` 托管读写。
+Bun 1.2.3 起 `Bun.serve` 支持 routes 路由表：字面量路径直接命中，`:param` 声明动态段，未命中落到 fetch 兜底。Cookie 则由 `request.cookies` 托管读写。
 
 ```typescript
 // routes.ts —— 路由表 + Cookie：记住到访粉丝
@@ -170,7 +170,7 @@ const server = Bun.serve({
 **讲解：**
 
 1. routes 的匹配顺序：字面量路径优先，动态段次之，都不命中进入 fetch。处理器可以返回 Response、字符串或 `Response.json(...)`。
-2. `request.cookies` 是读写一体的 Cookie 助手（Bun 1.2.7+）：`set` 之后再返回响应，Set-Cookie 头自动附加，不用手工拼 `headers`。
+2. `request.cookies` 是读写一体的 Cookie 助手（routes 处理器收到的 BunRequest 提供）：`set` 之后再返回响应，Set-Cookie 头自动附加，不用手工拼 `headers`。
 3. routes 与 fetch 并存时职责清晰：routes 管"已知的业务路径"，fetch 兜底 404 与 WebSocket 协议升级——把升级请求留在 fetch 里，是与路由表共存时的常见组织方式。
 4. 身份类 Cookie 记得 `httpOnly: true`（禁止脚本读取）与明确的 `path`/`maxAge`，会话标识绝不能进 localStorage 之外的可注入位置。
 5. 调试 Cookie 用 `curl -i` 看响应头里的 Set-Cookie，比浏览器 DevTools 更直接；升级请求则看握手响应的状态码（101 表示切换成功）。
@@ -333,4 +333,4 @@ await kv.enqueue({ type: "ticket-ok", name: ws.data.name })
 
 1. **房间在线人数大屏**：扩展聊天室，增加 `GET /api/rooms` 返回每个房间的 `subscriberCount`，前端每 3 秒拉取渲染成榜单。提示：房间列表先在服务端维护一个 Map<房间名, 简介>，避免暴露白名单实现细节。
 2. **开票倒计时广播**：服务端用 setInterval 每秒向 `concert-c001` 频道 publish 剩余秒数，客户端进入页面即显示实时倒计时。提示：发布前判断 `subscriberCount > 0`，没人订阅时跳过序列化开销。
-3. **弹幕协议测试**：用 [内置测试与基准](/nestjs/012-BunTestBench) 的 bun test 写协议级测试：模拟两个 WebSocket 客户端加入同一房间，断言广播只到达订阅者、超长文本被截断到 80 字。提示：测试里 `server.upgrade` 需要真实端口，选一个随机高位端口避免冲突。再验证一个客户端异常断开后，广播仍能正常送达其余订阅者。
+3. **弹幕协议测试**：用 [内置测试与基准](/nestjs/120-BunTestBench) 的 bun test 写协议级测试：模拟两个 WebSocket 客户端加入同一房间，断言广播只到达订阅者、超长文本被截断到 80 字。提示：测试里 `server.upgrade` 需要真实端口，选一个随机高位端口避免冲突。再验证一个客户端异常断开后，广播仍能正常送达其余订阅者。

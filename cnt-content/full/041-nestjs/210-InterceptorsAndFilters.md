@@ -6,11 +6,11 @@ category: 后端技术
 difficulty: intermediate
 description: NestInterceptor 响应变换与耗时日志，ExceptionFilter 全局兜底，验证管线执行顺序。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/017-ValidationPipes'
+  - 'nestjs/170-ValidationPipes'
 prerequisites:
-  - 'nestjs/016-ModuleControllerService'
+  - 'nestjs/160-ModuleControllerService'
 ---
 
 ## 0. 环绕逻辑与错误兜底（先读这里）
@@ -105,14 +105,14 @@ return next.handle().pipe(
 
 **讲解：**
 
-1. 统一响应壳与第 3 篇的统一错误结构是一对：成功走 `TransformInterceptor`，失败走 `ExceptionFilter`，前端只需要解析两种固定格式。
+1. 统一响应壳与[管道校验与异常处理](/nestjs/170-ValidationPipes)的统一错误结构是一对：成功走 `TransformInterceptor`，失败走 `ExceptionFilter`，前端只需要解析两种固定格式。
 2. `catchError` 不是必须的：不处理时异常沿管线继续向后传，最终由异常过滤器接收；在这里先转换，适合"把第三方库的私有错误类型翻译成 HTTP 语义"。
 3. RxJS 的 `Observable` 是惰性流，不订阅就不执行，Nest 负责订阅，你只管在管道里加工。
 4. 全局注册方式与守卫一致：`{ provide: APP_INTERCEPTOR, useClass: TransformInterceptor }`，先注册的先执行。
 
 ## 3. 业务异常与全量异常过滤器
 
-第 3 篇写过只处理 `HttpException` 的局部过滤器；进阶做法是定义业务异常 + 一个全量兜底过滤器：
+[管道校验与异常处理](/nestjs/170-ValidationPipes)写过只处理 `HttpException` 的局部过滤器；进阶做法是定义业务异常 + 一个全量兜底过滤器：
 
 ```typescript
 // src/common/exceptions/business.exception.ts

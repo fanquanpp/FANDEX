@@ -6,24 +6,24 @@ category: 后端技术
 difficulty: advanced
 description: 内置零配置数据库：强一致 KV、原子事务与消息队列。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/007-DenoWebFrameworkDeploy'
-  - 'nestjs/004-DenoStdLibNpmCompatibility'
+  - 'nestjs/070-DenoWebFrameworkDeploy'
+  - 'nestjs/040-DenoStdLibNpmCompatibility'
 prerequisites:
-  - 'nestjs/007-DenoWebFrameworkDeploy'
-  - 'nestjs/004-DenoStdLibNpmCompatibility'
+  - 'nestjs/070-DenoWebFrameworkDeploy'
+  - 'nestjs/040-DenoStdLibNpmCompatibility'
 ---
 
 # Deno KV 与队列
 
-很多后台系统的第一块存储需求，其实用不上关系数据库：给歌曲计票、给歌姬存档案、给演唱会锁库存、给粉丝发确认通知——这些都是"按键读写"与"按键广播"。Deno 把这类需求内置成了 Deno KV：`Deno.openKv()` 一行打开，本地落在 SQLite，部署到 Deno Deploy 后自动变成跨节点的强一致数据库，代码一行不改。本篇围绕平台的打榜投票与购票流程，把 KV 的读写建模、原子事务、实时监听与内置消息队列一次讲透，最后划清它与 Postgres 的边界。
+很多后台系统的第一块存储需求，其实用不上关系数据库：给歌曲计票、给歌姬存档案、给演唱会锁库存、给粉丝发确认通知——这些都是"按键读写"与"按键广播"。Deno 把这类需求内置成了 Deno KV：`Deno.openKv()` 一行打开，本地落在 SQLite，部署到 Deno Deploy 后自动变成跨节点的强一致数据库，代码一行不改。需要留意：截至 Deno 2.9，KV 仍是官方标注的不稳定 API——运行时要带 `--unstable-kv` 标记，API 形态可能随版本演进，核心读写与原子操作的写法在 2.x 全系保持稳定。本篇围绕平台的打榜投票与购票流程，把 KV 的读写建模、原子事务、实时监听与内置消息队列一次讲透，最后划清它与 Postgres 的边界。
 
 ## 前置知识
 
-- [Deno Web 开发与云端部署](/nestjs/007-DenoWebFrameworkDeploy)：已经用 Hono 暴露过 REST 接口并接触过 KV 的基础读写。
-- [标准库与 npm 兼容](/nestjs/004-DenoStdLibNpmCompatibility)：理解依赖与权限管理，本篇示例的命令都遵循最小授权。
-- [权限模型与安全实践](/nestjs/003-DenoPermissionsSecurity)：知道 `--allow-read` 等参数如何约束 KV 的本地存储文件。
+- [Deno Web 开发与云端部署](/nestjs/070-DenoWebFrameworkDeploy)：已经用 Hono 暴露过 REST 接口并接触过 KV 的基础读写。
+- [标准库与 npm 兼容](/nestjs/040-DenoStdLibNpmCompatibility)：理解依赖与权限管理，本篇示例的命令都遵循最小授权。
+- [权限模型与安全实践](/nestjs/030-DenoPermissionsSecurity)：知道 `--allow-read` 等参数如何约束 KV 的本地存储文件。
 
 ## 学习目标
 
@@ -57,12 +57,12 @@ await kv.delete(["singer", "teto"]) // 下架歌姬
 ```
 
 ```bash
-deno run --allow-read kv_basic.ts
+deno run --unstable-kv kv_basic.ts
 ```
 
 **讲解：**
 
-1. `Deno.openKv()` 零配置：本地把数据落在 SQLite 文件里，部署到 Deno Deploy 后是托管的强一致 KV，业务代码不需要改动。
+1. `Deno.openKv()` 零配置，但截至 Deno 2.9 需要 `--unstable-kv` 标记开启：本地把数据落在 SQLite 文件里，部署到 Deno Deploy 后是托管的强一致 KV（FoundationDB 后端），业务代码不需要改动。
 2. key 用数组表达层级：`["singer", "miku"]`、`["vote", songId]`。建模口诀是"大集合放第一层，id 放第二层"，前缀扫描按 key 的字典序进行。
 3. value 支持数字、字符串、对象与 Uint8Array（可存封面缩略图等二进制），底层用结构化克隆序列化。
 4. KV 的写入在本地是强持久的：进程崩溃不丢已确认写入，这让"扣减库存、累计票数"这类关键计数可以放心直接放在 KV 上。
@@ -274,6 +274,8 @@ await kv.set(["issued", msg.orderId], { seat: msg.seat })
 4. **把 KV 当关系库全前缀扫描**：在百万级前缀上 `kv.list` 做过滤统计，性能与可维护性都崩塌。出现聚合需求立刻换 Postgres，或用原子 sum 维护汇总 key 以空间换时间。
 
 5. **把大对象塞进 value**：KV 适合小而频繁的读写，几 MB 的封面原图、整份音频文件塞进 value 会显著拖慢读写并占用存储配额。大内容交给对象存储或文件系统，KV 里只存引用与元数据（URL、大小、时长），读写保持轻快。
+
+6. **运行时忘了 `--unstable-kv`**：不带标记时 `Deno.openKv` 不存在，脚本直接报 `Deno.openKv is not a function` 一类的错误——这不是 bug，是不稳定 API 的开关没打开。把它写进 deno.json 的 tasks 或 CI 命令里固化；生产采用前关注官方 release notes 里 KV 的稳定化进展。
 
 ## 本篇小结
 

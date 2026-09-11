@@ -6,22 +6,21 @@ category: 后端技术
 difficulty: beginner
 description: bun install 为什么快：bun.lock、workspaces 与可复现安装。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/009-BunQuickStart'
+  - 'nestjs/090-BunQuickStart'
 prerequisites:
-  - 'nestjs/009-BunQuickStart'
+  - 'nestjs/090-BunQuickStart'
 ---
 
 # 包管理与工作区
 
-`bun install` 是很多人接触 Bun 的第一个命令：同样的 package.json，比 npm 快一个数量级。速度只是表象，本篇要讲清楚三件更持久的事：锁文件如何保证"每个人、每次、每台机器装出同一份依赖"；workspaces 如何用最小配置搭起 monorepo，让平台前端、票务后端与共享类型同仓演进；以及 Bun 对生命周期脚本的默认拦截如何挡住一类供应链攻击。008 篇会对整个 bun 模块做收官总结，009 篇展开 SQLite 与 S3 等内置能力，本篇聚焦"依赖装得快、装得稳"这一站。
+`bun install` 是很多人接触 Bun 的第一个命令：同样的 package.json，比 npm 快一个数量级。速度只是表象，本篇要讲清楚三件更持久的事：锁文件如何保证"每个人、每次、每台机器装出同一份依赖"；workspaces 如何用最小配置搭起 monorepo，让平台前端、票务后端与共享类型同仓演进；以及 Bun 对生命周期脚本的默认管控如何挡住一类供应链攻击。008 篇介绍 Bun 的整体定位，010 篇展开内置服务器、SQL 与 Redis，014 篇深入 SQLite 与 S3，本篇聚焦"依赖装得快、装得稳"这一站。
 
 ## 前置知识
 
-- [Bun 快速入门：项目、依赖与测试](/nestjs/009-BunQuickStart)：已经用 `bun init` 建过项目、用 `bun add` 装过依赖。
-- [Bun 概览](/nestjs/008-BunOverview)：理解 Bun"一体多面"的定位，包管理器只是内置能力之一。
-- [进阶学习路线图](/bun/004-AdvancedRoadmap)：了解包管理与工作区在路线图中的位置。
+- [Bun 快速入门：项目、依赖与测试](/nestjs/090-BunQuickStart)：已经用 `bun init` 建过项目、用 `bun add` 装过依赖。
+- [Bun 概览](/nestjs/080-BunOverview)：理解 Bun"一体多面"的定位，包管理器只是内置能力之一。
 
 ## 学习目标
 
@@ -65,14 +64,15 @@ package.json 里的 `^1.2.0` 只是一个范围，不同时间解析可能落到
 ```
 
 ```bash
-bun install --save-text-lockfile --frozen-lockfile   # 锁文件优先，禁止静默更新
-bun install                                           # 日常开发：锁文件缺失或过期时重建
-bun pm ls                                             # 对照锁文件查看实际依赖树
+bun install --frozen-lockfile                        # CI：锁文件优先，禁止静默更新
+bun install                                          # 日常开发：锁文件缺失或过期时重建
+bun install --save-text-lockfile                     # 旧项目迁移：把二进制 bun.lockb 转成文本 bun.lock
+bun pm ls                                            # 对照锁文件查看实际依赖树
 ```
 
 **讲解：**
 
-1. bun.lock 是文本格式（JSONC 风格），可读、可 diff、可评审——PR 里能直接看出"这次升级改了哪个包"。
+1. bun.lock 是文本格式（JSONC 风格），可读、可 diff、可评审——PR 里能直接看出"这次升级改了哪个包"。1.2 起它取代旧二进制 `bun.lockb` 成为默认；存量项目用 `--save-text-lockfile` 完成一次性转换，转换后删掉旧文件避免双锁并存。
 2. Bun 也读取 .npmrc 的 registry 与令牌配置，私有源团队可以无缝切换；安装行为与 npm 生态的习惯保持一致。
 3. 锁文件必须提交进仓库。日常开发用 `bun install`，它会按 package.json 的范围解析并把结果写回锁文件；CI 用 `--frozen-lockfile`，范围与锁文件不一致时直接失败而不是悄悄解析新版。
 4. 可复现安装的判定标准：删掉 node_modules 重装后，`bun pm ls` 输出与锁文件逐行一致。
@@ -155,7 +155,7 @@ bun run --filter '@vfinder/api' dev  # 按包名运行某个工作区的脚本
 
 ## 4. 生命周期脚本安全策略
 
-依赖包的 install/postinstall 脚本拥有任意执行能力，是供应链攻击的经典入口。Bun 的默认策略是"不执行，先申报"。
+依赖包的 install/postinstall 脚本拥有任意执行能力，是供应链攻击的经典入口。Bun 的默认策略是"默认关，白名单放行"：只执行内置白名单里常见编译型包的脚本（且仅限 npm 来源），其余一律跳过并提示。
 
 ```bash
 bun add better-sqlite3   # 带编译脚本的包
@@ -172,8 +172,8 @@ bun pm trust better-sqlite3   # 审查源码后，逐个信任
 
 **讲解：**
 
-1. 默认拦截所有依赖的 preinstall/postinstall 脚本，安装日志会提示哪些包的脚本被跳过——依赖投毒最常见的"下载后执行"路径被从默认行为上切断。
-2. 真正需要编译原生模块的包（better-sqlite3 等）用 `bun pm trust <pkg>` 放行，决策记录进 trustedDependencies 并随仓库提交，评审可见。
+1. 内置白名单覆盖了常见编译型包（仅 npm 来源），所以多数项目开箱即用；白名单之外与所有非 npm 来源（file:、git: 等）的依赖脚本一律跳过，安装日志会提示哪些包的脚本没跑——"下载后偷偷执行"的投毒路径被从默认行为上切断。
+2. 显式写 `trustedDependencies` 时要特别注意：它**整体替换**内置白名单而不是追加——写了一个包名，其余内置放行也失效。真正需要编译原生模块的包（better-sqlite3 等）用 `bun pm trust <pkg>` 放行并自动登记进 trustedDependencies，决策随仓库提交，评审可见。
 3. 每次新增依赖后跑一遍 `bun pm untrusted`：功能缺失（比如原生模块没编译）多半是"脚本被拦了忘了信任"，而不是包坏了。
 4. trustedDependencies 的名字容易误导：它不是"可信的包"名单，而是"允许执行其安装脚本"的精确名单——语义是放行脚本，不是信任代码。
 5. trust 是一次性决策但要定期复核：升级大版本时重看脚本内容——供应链攻击往往潜伏在"看起来一直没变"的包的某次小更新里。
@@ -182,7 +182,7 @@ bun pm trust better-sqlite3   # 审查源码后，逐个信任
 
 ```bash
 bun pm ls            # 列出依赖树（--all 展开间接依赖）
-bun pm why zod       # 查看某包为何被安装：完整依赖来源链
+bun why zod          # 查看某包为何被安装：完整依赖来源链
 bun pm bin           # 输出 node_modules/.bin 路径，脚本里定位可执行文件
 bun pm cache rm      # 清空全局缓存，排查"缓存导致的诡异问题"
 bun pm pack          # 打包当前包为 tarball，发布前自检包内容
@@ -190,7 +190,7 @@ bun pm pack          # 打包当前包为 tarball，发布前自检包内容
 
 **讲解：**
 
-1. `bun pm why` 是排查"这个包谁引进来的"的最快路径，输出从直接依赖到当前包的完整链条。
+1. `bun why` 是排查"这个包谁引进来的"的最快路径，输出从直接依赖到当前包的完整链条。
 2. `bun pm pack` 产出的 tarball 可用 `npm view` 或本地安装验证，避免发布后发现漏了文件；包内容清单也是评审的对照材料。
 3. 缓存异常的症状是"换个网络/换台机器就好了"：先 `bun pm cache rm` 再重装，能排除一整类环境问题。
 4. `bun run` 优先执行 package.json 的 scripts，找不到脚本时回退执行 node_modules/.bin 下的可执行文件；由于启动开销极低，可以放心用它替代 npx 做临时执行。

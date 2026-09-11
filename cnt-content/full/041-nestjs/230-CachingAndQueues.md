@@ -6,12 +6,12 @@ category: 后端技术
 difficulty: advanced
 description: CacheModule 响应缓存与 BullMQ 异步任务：TTL、key 设计、重试退避与延迟任务。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/018-DatabaseIntegration'
-  - 'nestjs/019-Testing'
+  - 'nestjs/180-DatabaseIntegration'
+  - 'nestjs/190-Testing'
 prerequisites:
-  - 'nestjs/016-ModuleControllerService'
+  - 'nestjs/160-ModuleControllerService'
 ---
 
 ## 0. 什么时候需要它们（先读这里）

@@ -6,20 +6,20 @@ category: 后端技术
 difficulty: advanced
 description: 深入 Bun.file 流式读写、bun:sqlite 预编译语句与事务实战，以及内置 S3 客户端管理演唱会素材。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/009-BunQuickStart'
-  - 'nestjs/010-BunBuiltinServerSQL'
+  - 'nestjs/090-BunQuickStart'
+  - 'nestjs/100-BunBuiltinServerSQL'
 prerequisites:
-  - 'nestjs/008-BunOverview'
-  - 'nestjs/009-BunQuickStart'
+  - 'nestjs/080-BunOverview'
+  - 'nestjs/090-BunQuickStart'
 ---
 
 ## 前置知识
 
-- [Bun 概览](/nestjs/008-BunOverview)：理解 Bun 作为运行时"一体多面"的定位，本文讲的是它内置能力中最常用的三块。
-- [Bun 快速上手](/nestjs/009-BunQuickStart)：会运行 `bun run` 与单文件脚本，理解顶层 `await` 与 ESM 写法。
-- [Bun 内置服务器、SQL 与数据库](/nestjs/010-BunBuiltinServerSQL)：已接触 `bun:sqlite` 的基础增删查改，本文向事务、性能与对象存储纵深推进。
+- [Bun 概览](/nestjs/080-BunOverview)：理解 Bun 作为运行时"一体多面"的定位，本文讲的是它内置能力中最常用的三块。
+- [Bun 快速上手](/nestjs/090-BunQuickStart)：会运行 `bun run` 与单文件脚本，理解顶层 `await` 与 ESM 写法。
+- [Bun 内置服务器、SQL 与数据库](/nestjs/100-BunBuiltinServerSQL)：已接触 `bun:sqlite` 的基础增删查改，本文向事务、性能与对象存储纵深推进。
 
 ## 学习目标
 
@@ -62,7 +62,7 @@ Blob 标准的真正威力在"接口互通"：`Request` 的 body 是 Blob、`Res
 
 ## 2. bun:sqlite 进阶：预编译语句与命名参数
 
-第 003 篇已经用过 `db.query()` 的基础形态，这里补上它的真实定位：`db.query(sql)` 是**预编译语句的缓存工厂**——同一个 SQL 字符串只会编译一次，之后每次调用都复用已编译的语句。高并发下这正是性能分水岭。
+[Bun 内置服务器、SQL 与数据库](/nestjs/100-BunBuiltinServerSQL)已经用过 `db.query()` 的基础形态，这里补上它的真实定位：`db.query(sql)` 是**预编译语句的缓存工厂**——同一个 SQL 字符串只会编译一次，之后每次调用都复用已编译的语句。高并发下这正是性能分水岭。
 
 ```typescript
 // db.ts：歌曲库的访问层
@@ -92,7 +92,7 @@ export function getSong(id: number) {
 
 三种占位符（`$name`、`:name`、`@name`）都映射到对象的键，语义相同，团队统一一种即可。返回值 API 有一张小速查表：`.all()` 全部行、`.get()` 第一行（无结果返回 `null`）、`.run()` 只关心影响行数、`.values()` 只要值不要列名。初学者最常混淆的是 `.get()` 在无结果时返回 `null` 而不是抛错——调用处要做空值分支，不能假设每首歌都存在。
 
-把它与第 003 篇的写法对照，还有一个升级点：位置参数（`?` 加一串位置实参）在列数增多后可读性骤降，命名参数则让 SQL 与调用处互相印证——SQL 里写 `:singer`，调用处就传 `':singer': value`，参数错位这种经典 bug 从机制上消失了。访问层封装的最后一块拼图是类型：把查询结果映射成 TypeScript 接口（`hotSongs` 返回 `{ id: number; name: string }[]`），配合 `bun:sqlite` 自带的类型定义，从 SQL 到调用方的整条链路都有提示。SQLite 本体是 C 写的，Bun 原生绑定后的执行速度在常见 ORM 之上——省下的不只是依赖，还有每一层抽象的开销。
+把它与内置服务器一篇的写法对照，还有一个升级点：位置参数（`?` 加一串位置实参）在列数增多后可读性骤降，命名参数则让 SQL 与调用处互相印证——SQL 里写 `:singer`，调用处就传 `':singer': value`，参数错位这种经典 bug 从机制上消失了。访问层封装的最后一块拼图是类型：把查询结果映射成 TypeScript 接口（`hotSongs` 返回 `{ id: number; name: string }[]`），配合 `bun:sqlite` 自带的类型定义，从 SQL 到调用方的整条链路都有提示。SQLite 本体是 C 写的，Bun 原生绑定后的执行速度在常见 ORM 之上——省下的不只是依赖，还有每一层抽象的开销。
 
 ## 3. 事务实战：一次购票的两步写
 
@@ -221,7 +221,7 @@ Bun.serve({
 
 ## 6. 何时仍需要外部数据库
 
-`bun:sqlite` 是内嵌库（进程内、文件级），它的舒适区是单机或读多写少的服务。遇到以下信号就该考虑外部数据库：多实例水平扩容（SQLite 文件无法共享）、高频并发写（单连接串行成为瓶颈）、需要在线备份与主从。Bun 同样提供了基于 C 驱动的 `Bun.sql`（PostgreSQL/MySQL 支持）与内置 Redis 客户端（见 003 篇），升级路径仍在"零依赖"哲学之内：从 `bun:sqlite` 到 `Bun.sql`，业务 SQL 大多原样迁移，改的是连接方式与部署形态。
+`bun:sqlite` 是内嵌库（进程内、文件级），它的舒适区是单机或读多写少的服务。遇到以下信号就该考虑外部数据库：多实例水平扩容（SQLite 文件无法共享）、高频并发写（单连接串行成为瓶颈）、需要在线备份与主从。Bun 同样提供内置的统一 SQL 客户端 Bun.SQL（PostgreSQL/MySQL）与内置 Redis 客户端（见 [Bun 内置服务器、SQL 与数据库](/nestjs/100-BunBuiltinServerSQL)），升级路径仍在"零依赖"哲学之内：从 `bun:sqlite` 到 `Bun.SQL`，业务 SQL 大多原样迁移，改的是连接方式与部署形态。
 
 升级的时机判断可以量化：看两个数字——单实例的写入峰值 QPS 与多副本部署的需求。写入峰值在几百 QPS 以内、部署形态是单实例或"一写多读缓存"，`bun:sqlite` 都在舒适区；写入逼近千级 QPS 或团队要求多实例无状态部署，就该把 concert、orders 这类热点表迁去 PostgreSQL，而海报、日志这类大对象顺路归入 S3。有意思的是，这份"存储选型清单"里 Bun 内置能力已经覆盖了前两级：内嵌 SQLite 与对象存储各就各位，剩下的决策只是"什么时候引入真正的数据库服务"，而不是"每个项目都从装数据库开始"。
 

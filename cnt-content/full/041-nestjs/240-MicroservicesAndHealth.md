@@ -6,11 +6,11 @@ category: 后端技术
 difficulty: advanced
 description: 微服务传输层选型与 @MessagePattern，@nestjs/terminus 健康检查，NestJS 12 版本要点。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/018-DatabaseIntegration'
+  - 'nestjs/180-DatabaseIntegration'
 prerequisites:
-  - 'nestjs/016-ModuleControllerService'
+  - 'nestjs/160-ModuleControllerService'
 ---
 
 ## 0. 从单应用到多应用（先读这里）

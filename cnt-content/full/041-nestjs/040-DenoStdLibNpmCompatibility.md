@@ -6,11 +6,11 @@ category: 后端技术
 difficulty: intermediate
 description: 'jsr:@std、npm:、node: 三种导入来源与 deno.json 依赖管理。'
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/002-DenoQuickStart'
+  - 'nestjs/020-DenoQuickStart'
 prerequisites:
-  - 'nestjs/002-DenoQuickStart'
+  - 'nestjs/020-DenoQuickStart'
 ---
 
 # 标准库与 npm 兼容
@@ -19,9 +19,8 @@ Deno 的依赖管理只有一句话：依赖就是 URL 或包名，写在 import
 
 ## 前置知识
 
-- [Deno 快速入门：导入、标准库与测试](/nestjs/002-DenoQuickStart)：已经用 `npm:` 导入装过依赖，理解"首次运行自动下载缓存"的模式。
-- [权限模型与安全实践](/nestjs/003-DenoPermissionsSecurity)：知道 `--allow-read`、`--allow-net` 的含义，本篇示例的读写与网络操作都依赖它。
-- [进阶学习路线图](/deno/005-AdvancedRoadmap)：了解本篇在"依赖管理"一站中的位置与目标。
+- [Deno 快速入门：导入、标准库与测试](/nestjs/020-DenoQuickStart)：已经用 `npm:` 导入装过依赖，理解"首次运行自动下载缓存"的模式。
+- [权限模型与安全实践](/nestjs/030-DenoPermissionsSecurity)：知道 `--allow-read`、`--allow-net` 的含义，本篇示例的读写与网络操作都依赖它。
 
 ## 学习目标
 
@@ -128,16 +127,16 @@ deno install --frozen    # 严格按锁文件安装，用于 CI
 ```typescript
 // std_demo.ts —— 标准库三件套：路径、UUID、终端着色
 import { join, extname } from "@std/path"
-import { v4, validate } from "@std/uuid"
+import { v4 } from "@std/uuid"
 import { red, cyan, bold } from "@std/fmt/colors"
 
 // 1) 拼接歌姬封面路径：跨平台安全，Windows 上也能得到正确分隔符
 const cover = join("assets", "singers", "miku", "cover.png")
 console.log("封面：", cover, "扩展名：", extname(cover))
 
-// 2) 为购票订单生成 UUID，并在查询接口校验合法性
+// 2) 为购票订单生成 UUID v4，并在查询接口校验合法性
 const orderId = v4.generate()
-console.log("订单号：", orderId, "格式合法：", validate(orderId))
+console.log("订单号：", orderId, "格式合法：", v4.validate(orderId))
 
 // 3) 终端里按应援色高亮输出歌姬名：teto 粉、miku 青绿
 console.log(`打榜第一名：${bold(cyan("miku"))}，第二名：${red("teto")}`)
@@ -150,7 +149,7 @@ deno run --allow-read std_demo.ts
 **讲解：**
 
 1. `@std/path` 的 join/normalize/extname 处理路径差异，比手工拼字符串可靠；前缀 `@std/` 是标准库的命名约定。
-2. `@std/uuid` 提供 v1 到 v7 各版本生成器，`v4.generate()` 常用于订单号，`validate()` 在接收外部 id 时先验一遍。
+2. `@std/uuid` 按版本号分命名空间（v1 到 v7），`v4.generate()` 常用于订单号，`v4.validate()` 在接收外部 id 时先验一遍；只需要随机唯一 id 而不挑版本时，Web 标准的 `crypto.randomUUID()` 内置可用，连标准库都不必装。
 3. `@std/fmt/colors` 让 CLI 工具输出可读的彩色日志，原理是 ANSI 转义码，在非终端环境自动降级。
 4. CSV 这类"榜单导入"场景交给 `@std/csv`：一个 parse 调用把文本变成二维数组，配合 cast 选项自动转换数字类型。
 
@@ -239,7 +238,7 @@ deno test               # 测试零安装即可运行，替换 jest 时逐文件
 
 1. Deno 2 兼容 package.json 与 node_modules：`nodeModulesDir: "auto"` 让依赖照常落到 node_modules，React、Vite 这类工具链项目不必一刀切重写。
 2. 内置模块的绝大多数 API 行为与 Node 一致，迁移时优先看报错而不是猜；`deno lint` 会提示可自动修复的写法。
-3. `-A` 只用于排查，跑通后按 [权限模型与安全实践](/nestjs/003-DenoPermissionsSecurity) 的方法把权限收敛到最小集合，写进 tasks 固化。
+3. `-A` 只用于排查，跑通后按 [权限模型与安全实践](/nestjs/030-DenoPermissionsSecurity) 的方法把权限收敛到最小集合，写进 tasks 固化。
 4. 迁移完成的验收是"三件套全绿"：`deno fmt --check`、`deno lint`、`deno test` 全部通过后，再清理 Node 工具链残留（jest.config、babel 配置等），避免两套体系并存。
 5. 迁移收尾把权限清单与依赖清单写进 README：后来者应当能从文档知道"为什么是这些权限"，而不是靠口头约定。
 
@@ -298,5 +297,5 @@ deno install --frozen
 ## 动手实践
 
 1. **依赖整理**：给一个散落着 URL 导入的小脚本做迁移——把 `https://deno.land/x/xxx` 换成 `jsr:` 并登记到 deno.json imports。提示：迁移后运行 `deno info` 确认依赖树只有映射表里的来源。
-2. 动手实验**：删除 deno.lock 后分别用 `deno install` 与 `deno install --frozen` 安装，观察行为差异；再把 deno.lock 加入 .gitignore 思考 CI 上会发生什么。提示：--frozen 在无锁文件时也会直接失败。顺手把两次的失败信息抄进笔记，加深印象。
+2. **动手实验**：删除 deno.lock 后分别用 `deno install` 与 `deno install --frozen` 安装，观察行为差异；再把 deno.lock 加入 .gitignore 思考 CI 上会发生什么。提示：--frozen 在无锁文件时也会直接失败。顺手把两次的失败信息抄进笔记，加深印象。
 3. **Node 项目移植**：找一个只有两三个依赖的 Node CLI 脚本（比如批量重命名封面图的工具），按"先 -A 跑通、再收敛权限"的步骤迁到 Deno，并把 npm scripts 改写成 deno tasks。提示：`import ... from "node:fs"` 加前缀是第一个要过手的差异。迁移完成后写下三条最大的惊喜与三条最大的阻力，沉淀成自己的迁移清单。

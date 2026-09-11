@@ -6,24 +6,24 @@ category: 后端技术
 difficulty: intermediate
 description: 零依赖质量三件套：deno test、deno bench 与 lint/fmt/check 流水线。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/002-DenoQuickStart'
-  - 'nestjs/005-DenoKVQueues'
+  - 'nestjs/020-DenoQuickStart'
+  - 'nestjs/050-DenoKVQueues'
 prerequisites:
-  - 'nestjs/002-DenoQuickStart'
-  - 'nestjs/005-DenoKVQueues'
+  - 'nestjs/020-DenoQuickStart'
+  - 'nestjs/050-DenoKVQueues'
 ---
 
 # 测试、基准与 CI
 
-Deno 把质量工程的三件事都内置了：`deno test` 跑测试（断言来自标准库 @std/assert）、`deno bench` 跑基准、`deno fmt/lint/check` 守住风格与类型。不需要安装 Jest、benchmark.js 或任何流水线插件，一个 deno.json 加一份 GitHub Actions 就构成完整门禁。本篇以平台的"热度分计算"与"购票接口"为被测对象，把单元测试、异步与权限受限测试、基准对比、CI 流水线一次串起来。042-deno 的模块学习总结（009 篇）会对全模块做收官回顾，本篇聚焦质量工具链本身。
+Deno 把质量工程的三件事都内置了：`deno test` 跑测试（断言来自标准库 @std/assert）、`deno bench` 跑基准、`deno fmt/lint/check` 守住风格与类型。不需要安装 Jest、benchmark.js 或任何流水线插件，一个 deno.json 加一份 GitHub Actions 就构成完整门禁。本篇以平台的"热度分计算"与"购票接口"为被测对象，把单元测试、异步与权限受限测试、基准对比、CI 流水线一次串起来，聚焦质量工具链本身。
 
 ## 前置知识
 
-- [Deno 快速入门：导入、标准库与测试](/nestjs/002-DenoQuickStart)：已经写过 `Deno.test` 的最小用例，理解 *_test.ts 的自动发现。
-- [Deno KV 与队列](/nestjs/005-DenoKVQueues)：知道 KV 的原子操作语义，本篇的集成测试会用到本地 KV。
-- [标准库与 npm 兼容](/nestjs/004-DenoStdLibNpmCompatibility)：理解 deno.json tasks 与锁文件，CI 流水线基于它搭建。
+- [Deno 快速入门：导入、标准库与测试](/nestjs/020-DenoQuickStart)：已经写过 `Deno.test` 的最小用例，理解 *_test.ts 的自动发现。
+- [Deno KV 与队列](/nestjs/050-DenoKVQueues)：知道 KV 的原子操作语义，本篇的集成测试会用到本地 KV。
+- [标准库与 npm 兼容](/nestjs/040-DenoStdLibNpmCompatibility)：理解 deno.json tasks 与锁文件，CI 流水线基于它搭建。
 
 ## 学习目标
 
@@ -218,7 +218,7 @@ jobs:
 3. 基准在 CI 里"只记录不拦截"：把 JSON 产物存成工件对比趋势，回归超过阈值再人工介入，避免噪声报警。
 4. 仓库组织上约定俗成：`*_test.ts` 就近放在被测文件同目录，跨模块共享的测试工具收敛到 tests/ 目录；纯函数测试不需要权限，涉及网络或文件读写的用例单独声明 permissions，避免为整个测试任务开大权限。
 5. 组织策略小结：纯函数用例追求全分支、构造器消灭重复数据、集成用例收窄权限、基准随代码演进——四条纪律的共同目标是"测试改得起"，改一个函数时测试的调整量应接近于零。
-6. CI 里的依赖安装沿用 `deno install --frozen`（见 [标准库与 npm 兼容](/nestjs/004-DenoStdLibNpmCompatibility)），锁文件保证三方一致。
+6. CI 里的依赖安装沿用 `deno install --frozen`（见 [标准库与 npm 兼容](/nestjs/040-DenoStdLibNpmCompatibility)），锁文件保证三方一致。
 7. 门禁再往前一步是 GitHub 分支保护：把 test 与 check 两个 job 设为合并前置条件，本地则用 pre-commit 跑 `deno fmt`，形成"提交前自动修、合并前机器验"的双保险。
 
 ## 5. 覆盖率与测试组织策略
@@ -305,5 +305,5 @@ Deno.test("加入购物车", () => {
 ## 动手实践
 
 1. **覆盖率补全**：给 heatScore 加上"plays 为 0 且 votes 为 0 返回 0"的分支测试，用 `deno test --coverage` 与 `deno coverage` 查看行覆盖率，把分支补到 100%。提示：先跑一次覆盖率找到未覆盖行号，再针对性写用例。
-2. **购票流程集成测试**：用 `permissions: { read: true }` 的受限用例测试 KV 版购票函数（见 [Deno KV 与队列](/nestjs/005-DenoKVQueues)），断言并发抢票的成功数等于库存。提示：本地 KV 可用 `:memory:` 打开，测试间互不影响。
+2. **购票流程集成测试**：用受限权限的用例测试 KV 版购票函数（见 [Deno KV 与队列](/nestjs/050-DenoKVQueues)），断言并发抢票的成功数等于库存。提示：KV 目前需要 `--unstable-kv` 标记，把它加在 `deno test` 命令上；本地 KV 可用 `:memory:` 打开，测试间互不影响。
 3. **基准回归报告**：为热度分的三种实现（函数版、内联版、查表版）各写一条 Deno.bench 并分组对比，把 `--json` 结果提交成 CI 工件，对比两次运行的相对差异。提示：三组实现放在同一 group 内，baseline 指向当前线上版本。同时在 README 里记录本次基准的硬件与版本环境，保证两次运行的趋势可比。

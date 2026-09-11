@@ -6,23 +6,23 @@ category: 后端技术
 difficulty: beginner
 description: 零配置测试：bun test、Jest 兼容面、mock 与覆盖率。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'nestjs/009-BunQuickStart'
-  - 'nestjs/011-BunPackageManagerWorkspaces'
+  - 'nestjs/090-BunQuickStart'
+  - 'nestjs/110-BunPackageManagerWorkspaces'
 prerequisites:
-  - 'nestjs/011-BunPackageManagerWorkspaces'
+  - 'nestjs/110-BunPackageManagerWorkspaces'
 ---
 
 # 内置测试与基准
 
-`bun test` 是运行时自带的测试器：Jest 兼容的 API、TypeScript 直接运行、毫秒级启动，不用安装 Jest 也不用配 ts-jest。基准测试同样内置——`bun:test` 导出的 `bench()` 与测试同一套运行机制，改完代码顺手就能对比两版实现的性能。本篇以平台的"热度分计算"与"票务服务"为被测对象，覆盖测试骨架与 matcher、从 Jest 迁移的差异点、mock 三件套、快照与覆盖率，最后接进 CI。SQLite、S3 等内置能力的测试放到 009 篇展开，这里聚焦测试与基准本身。
+`bun test` 是运行时自带的测试器：Jest 兼容的 API、TypeScript 直接运行、毫秒级启动，不用安装 Jest 也不用配 ts-jest。基准测试同样内置——`bun:test` 导出的 `bench()` 与测试同一套运行机制，改完代码顺手就能对比两版实现的性能。本篇以平台的"热度分计算"与"票务服务"为被测对象，覆盖测试骨架与 matcher、从 Jest 迁移的差异点、mock 三件套、快照与覆盖率，最后接进 CI。SQLite、SQL 与 S3 等内置能力本身在 010 与 014 两篇展开，这里聚焦测试与基准本身。
 
 ## 前置知识
 
-- [包管理与工作区](/nestjs/011-BunPackageManagerWorkspaces)：理解 bun.lock 与冻结安装，CI 一节会用到。
-- [Bun 快速入门：项目、依赖与测试](/nestjs/009-BunQuickStart)：已经跑过 `bun test` 的最小示例。
-- [Bun 内置服务器、SQL 与数据库](/nestjs/010-BunBuiltinServerSQL)：了解 Bun.serve 的形态，服务测试一节会模拟它的依赖。
+- [包管理与工作区](/nestjs/110-BunPackageManagerWorkspaces)：理解 bun.lock 与冻结安装，CI 一节会用到。
+- [Bun 快速入门：项目、依赖与测试](/nestjs/090-BunQuickStart)：已经跑过 `bun test` 的最小示例。
+- [Bun 内置服务器、SQL 与数据库](/nestjs/100-BunBuiltinServerSQL)：了解 Bun.serve 的形态，服务测试一节会模拟它的依赖。
 
 ## 学习目标
 
@@ -334,6 +334,6 @@ expect({ seat: order.seat, price: order.price }).toMatchSnapshot()
 
 ## 动手实践
 
-1. **mock.module 实战**：给 [Bun 内置服务器、SQL 与数据库](/nestjs/010-BunBuiltinServerSQL) 中的接口处理函数写测试，用 mock.module 替换数据库查询函数，覆盖"正常返回"与"上游 500"两条路径。提示：注意先 mock 后 `await import()` 的时序。
+1. **mock.module 实战**：给 [Bun 内置服务器、SQL 与数据库](/nestjs/100-BunBuiltinServerSQL) 中的接口处理函数写测试，用 mock.module 替换数据库查询函数，覆盖"正常返回"与"上游 500"两条路径。提示：注意先 mock 后 `await import()` 的时序。
 2. **快照守门**：为演唱会曲单渲染写快照测试，故意修改格式触发快照失败，走一遍"评审 diff -> bun test -u 更新 -> 再次通过"的流程。提示：在快照里加入歌姬名，体会易变内容带来的维护成本。
 3. **基准对比**：写两个版本的座位检索函数（线性扫描版与 Map 索引版），用 bench() 分组对比并标注 baseline，把结论写进 PR 描述。提示：数据量从 100 与 10000 两档分别测，观察曲线拐点。若两版差距在噪声范围内，说明数据结构尚未成瓶颈，把这个结论也写进 PR。
