@@ -6,14 +6,20 @@ category: 前端技术
 difficulty: advanced
 description: 响应式适配、性能瓶颈、优化策略、懒加载与压缩。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'svg/014-SVGCSSStyling'
-  - 'svg/015-SVGJavaScriptInteraction'
-  - 'svg/010-SVGFilterDetailed'
+  - 'svg/130-SVGCSSStyling'
+  - 'svg/150-SVGJavaScriptInteraction'
+  - 'svg/100-SVGFilterDetailed'
 prerequisites:
-  - 'svg/003-SVGCoordinateSystemViewBox'
+  - 'svg/030-SVGCoordinateSystemViewBox'
 ---
+
+---
+
+> 前置知识：viewBox 与 preserveAspectRatio（《SVG 坐标系统与 viewBox》，003-SVGCoordinateSystemViewBox）、CSS 嵌入方式对样式的影响（《SVG CSS 样式化》，014-SVGCSSStyling）。
+>
+> 学习目标：掌握"只写 viewBox + 外部 CSS 控尺寸"的响应式范式与 preserveAspectRatio 的九宫格取值；能判断 SVG 的性能瓶颈在节点数、路径复杂度还是滤镜；掌握 SVGO、批量 DOM、合成层三类优化手段；知道什么规模该切换到 Canvas。
 
 ## 1. 响应式 SVG
 
@@ -51,6 +57,16 @@ prerequisites:
 </svg>
 ```
 
+取值由"九宫格对齐 + 缩放策略"两段组成（`none` 单独使用，直接拉伸不保比例）：
+
+| 对齐段     | 说明                                                              |
+| ---------- | ----------------------------------------------------------------- |
+| `xMin/xMid/xMax` | 水平方向：靠左 / 居中 / 靠右                                |
+| `YMin/YMid/YMax` | 垂直方向：靠上 / 居中 / 靠下                                |
+| `meet`     | 完整显示内容，不足处留白（默认值 `xMidYMid meet`）                |
+| `slice`    | 填满视口，超出部分被裁剪                                          |
+| `none`     | 不保持宽高比，拉伸变形铺满                                        |
+
 ### 1.3 CSS aspect-ratio
 
 ```css
@@ -65,6 +81,35 @@ prerequisites:
 ```
 
 确保容器保持宽高比，避免 SVG 高度坍塌。
+
+### 1.4 断点式尺寸变体
+
+图标类 SVG 常用"断点改尺寸"而非等比缩放，保证小屏上的点击与视觉密度：
+
+```css
+.responsive-icon {
+  width: 32px;
+  height: 32px;
+}
+
+@media (max-width: 768px) {
+  .responsive-icon {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@media (max-width: 480px) {
+  .responsive-icon {
+    width: 16px;
+    height: 16px;
+  }
+}
+```
+
+```html
+<svg class="responsive-icon" viewBox="0 0 24 24"><use href="#icon-menu" /></svg>
+```
 
 ## 2. 流式 SVG
 
@@ -99,6 +144,26 @@ prerequisites:
     <text x="200" y="100" text-anchor="middle" font-size="16">更多细节</text>
   </g>
 </svg>
+```
+
+文本还可以用 em 相对单位随容器"呼吸"：给 `<svg>` 设一个基准 `font-size`，图内文字统一用 em，改一处即可整体缩放。
+
+```html
+<svg viewBox="0 0 400 200">
+  <text x="200" y="100" text-anchor="middle" font-size="2em">响应式文本</text>
+</svg>
+```
+
+```css
+svg {
+  font-size: 16px;
+}
+
+@media (max-width: 600px) {
+  svg {
+    font-size: 12px;
+  }
+}
 ```
 
 ## 3. CSS Container Queries
@@ -190,8 +255,37 @@ prerequisites:
 
 ```bash
 npm install -g svgo
-svgo input.svg -o output.svg --precision=2
+
+# 单文件（--multipass 允许多轮压缩直到不再变化）
+svgo --multipass input.svg -o output.svg
+
+# 批量
+svgo --multipass -f input-dir -o output-dir
 ```
+
+```js
+// .svgo.config.js（SVGO 3+ 的配置风格，插件用字符串或对象均可）
+module.exports = {
+  multipass: true,
+  plugins: [
+    // 默认插件集：合并路径、删元数据、压缩坐标等 20+ 项
+    {
+      name: 'preset-default',
+      params: {
+        overrides: {
+          // 需要保留 id 时关闭个别插件（按需增删）
+          cleanupIds: false,
+        },
+      },
+    },
+    // 移除 width/height 属性，让 SVG 完全响应外部 CSS（响应式场景常用）
+    'removeDimensions',
+    'sortAttrs',
+  ],
+};
+```
+
+坐标精度（旧版 CLI 的 `--precision` 参数已移除）通过 `preset-default` 里的 `convertPathData` 插件参数 `floatPrecision` 控制。
 
 ### 5.4 避免复杂滤镜
 
@@ -211,12 +305,14 @@ svgo input.svg -o output.svg --precision=2
 ### 5.5 transform 替代几何属性
 
 ```javascript
-// 慢：修改 x 触发重排
+// 慢：修改 x 触发布局计算
 rect.setAttribute('x', 100);
 
-// 快：修改 transform 使用合成层
+// 快：transform 不参与布局，可被合成器加速
 rect.style.transform = 'translateX(100px)';
 ```
+
+与之配套的是描边问题：几何被 transform 缩放时，`stroke-width` 也跟着变。需要"缩放图形但描边恒定"（地图、网格线）时，加 `vector-effect="non-scaling-stroke"`；SVG 2 还定义了 `non-scaling-size`、`non-rotation`、`fixed-position` 等值，但浏览器支持仅限于实验性，跨浏览器代码只应依赖 `non-scaling-stroke`。
 
 ### 5.6 will-change 提示
 
@@ -266,26 +362,39 @@ document.querySelectorAll('img[data-src]').forEach((img) => {
 <img data-src="diagram.svg" alt="图表" loading="lazy" />
 ```
 
+`<img>` 引用的 SVG 同样要写好宽高与流式 CSS，避免加载时布局抖动（CLS）：
+
+```html
+<img
+  src="diagram.svg"
+  alt="响应式图表"
+  width="800"
+  height="600"
+  loading="lazy"
+/>
+```
+
+```css
+img[src$='.svg'] {
+  max-width: 100%;
+  height: auto;
+}
+```
+
 ## 7. 压缩与优化
 
 ### 7.1 SVGO 优化
 
-```bash
-# 单文件
-svgo input.svg -o output.svg
+SVGO 的命令行用法见 5.3 节；这里补充选择优化项的思路——不是所有默认项都该开：
 
-# 批量
-svgo -f input-dir -o output-dir
-
-# 配置文件 .svgo.config.js
-module.exports = {
-  plugins: [
-    { name: 'preset-default' },
-    { name: 'removeDimensions', active: true },  // 移除 width/height
-    { name: 'sortAttrs', active: true }
-  ]
-};
-```
+| 优化             | 说明                           | 注意                             |
+| ---------------- | ------------------------------ | -------------------------------- |
+| 移除注释与元数据 | 减小体积                       | 安全                             |
+| 合并路径         | 多 path 合并为单 path          | 可能破坏层级语义与独立动画单元   |
+| 简化坐标         | 降低小数精度                   | 极小图形留意锯齿                 |
+| 移除默认值       | 如 `fill="black"` 可省略       | 安全                             |
+| `removeDimensions` | 移除 width/height，配合外部 CSS 做响应式 | `<img>` 固定尺寸场景不要开 |
+| `cleanupIds`     | 移除"未使用"的 id              | 内联 sprite 场景必须关闭，否则 `<use>` 断链 |
 
 ### 7.2 常用优化项
 
@@ -397,8 +506,10 @@ svg.appendChild(fragment); // 一次性插入
   data.forEach((d) => {
     const use = document.createElementNS('http://www.w3.org/2000/svg', 'use');
     use.setAttribute('href', '#point');
-    use.setAttribute('x', d.x - 1);
-    use.setAttribute('y', d.y - 1);
+    // use 的 x/y 是实例左上角：symbol viewBox 宽 2、use 尺寸 6，半径 3，
+    // 因此左上角应为 (d.x-3, d.y-3) 才能让圆心正对数据点
+    use.setAttribute('x', d.x - 3);
+    use.setAttribute('y', d.y - 3);
     use.setAttribute('width', 6);
     use.setAttribute('height', 6);
     fragment.appendChild(use);
@@ -441,326 +552,17 @@ svg.appendChild(fragment); // 一次性插入
 | 复杂图像处理             | Canvas        |
 | 需要交互与可访问性       | SVG           |
 
-下一篇介绍 SVG 图标系统与可访问性。
-## 响应式 SVG 基础
+## 小结
 
-**仅声明 viewBox 自适应**
-`<svg viewBox="<min-x> <min-y> <width> <height>" [class]="<类名>">`
-```html
-<!-- 不指定 width/height,仅声明 viewBox,由外层 CSS 控制实际尺寸 -->
-<svg viewBox="0 0 400 300" class="responsive">
-  <!-- SVG 内容按宽高比自动缩放 -->
-</svg>
-```
+初学者要点：
 
-```css
-.responsive {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-```
+- 响应式 SVG 的黄金组合：元素只写 `viewBox`，尺寸交给外部 CSS（`width: 100%; height: auto`），`meet` 保完整、`slice` 保铺满、`none` 牺牲比例。
+- 性能第一杀手是节点数量，第二是滤镜与软蒙版；先量化（Performance 面板）再优化，不要凭感觉。
+- 动画优先改 `transform` / `opacity`，它们不触发布局；批量化 DOM 操作（DocumentFragment + 一次性挂载）。
 
----
+进阶注意：
 
-## preserveAspectRatio 适配
+- §4.2 的节点阈值是经验参考而非标准，实际临界点取决于节点复杂度、目标设备与是否动画；用真实数据在目标机型上测。
+- SVGO 不是开箱即用：`cleanupIds` 会砍掉 sprite 里被 `<use>` 引用的 id，`removeDimensions` 会破坏 `<img>` 固定尺寸场景——按用途裁剪插件清单。
+- 容器查询（container queries）解决的是"SVG 随所在容器而非视口变化"，组件化页面里比媒体查询更贴合；两者可以叠加使用。
 
-**完整显示留白**
-`<svg viewBox="..." preserveAspectRatio="xMidYMid meet">`
-```html
-<!-- 4:3 内容在 16:9 容器中上下留白,完整显示 -->
-<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid meet">
-  <!-- 内容 -->
-</svg>
-```
-
-**填满容器裁剪**
-`<svg viewBox="..." preserveAspectRatio="xMidYMid slice">`
-```html
-<!-- 4:3 内容在 16:9 容器中左右被裁,填满容器 -->
-<svg viewBox="0 0 400 300" preserveAspectRatio="xMidYMid slice">
-  <!-- 内容 -->
-</svg>
-```
-
-### preserveAspectRatio 取值表
-
-| 对齐方式 | 说明 |
-| --- | --- |
-| `xMinYMin` | 左上对齐 |
-| `xMidYMin` | 顶部居中对齐 |
-| `xMaxYMin` | 右上对齐 |
-| `xMinYMid` | 左侧居中对齐 |
-| `xMidYMid` | 居中对齐(默认) |
-| `xMaxYMid` | 右侧居中对齐 |
-| `xMinYMax` | 左下对齐 |
-| `xMidYMax` | 底部居中对齐 |
-| `xMaxYMax` | 右下对齐 |
-| `meet` | 完整显示,留白 |
-| `slice` | 填满容器,裁剪 |
-| `none` | 拉伸变形,不保比例 |
-
----
-
-## CSS aspect-ratio 控制宽高比
-
-**容器宽高比**
-`<selector> { aspect-ratio: <width> / <height>; }`
-```css
-.chart {
-  width: 100%;
-  aspect-ratio: 4 / 3;
-}
-```
-
-```html
-<svg class="chart" viewBox="0 0 400 300">...</svg>
-```
-
----
-
-## 流式 SVG 媒体查询
-
-**视口响应式显示**
-`@media (max-width: <breakpoint>) { <selector> { display: <value>; } }`
-```html
-<svg viewBox="0 0 400 200">
-  <style>
-    .mobile-only { display: none; }
-    .desktop-only { display: block; }
-
-    @media (max-width: 600px) {
-      .mobile-only { display: block; }
-      .desktop-only { display: none; }
-    }
-  </style>
-  <g class="mobile-only">
-    <text x="200" y="100" text-anchor="middle" font-size="20">简化视图</text>
-  </g>
-  <g class="desktop-only">
-    <text x="200" y="50" text-anchor="middle" font-size="32">完整视图</text>
-    <text x="200" y="100" text-anchor="middle" font-size="16">更多细节</text>
-  </g>
-</svg>
-```
-
----
-
-## CSS Container Queries
-
-**容器查询声明**
-`<container-selector> { container-type: inline-size; }`
-```css
-.chart-container {
-  container-type: inline-size;
-}
-
-@container (max-width: 400px) {
-  .chart .detailed {
-    display: none;
-  }
-}
-```
-
-```html
-<div class="chart-container">
-  <svg class="chart" viewBox="0 0 400 300">
-    <g class="detailed">...</g>
-  </svg>
-</div>
-```
-
----
-
-## 响应式属性综合
-
-**svg 元素响应式属性**
-`<svg viewBox="..." preserveAspectRatio="..." width="..." height="...">`
-```html
-<svg
-  viewBox="0 0 100 100"
-  preserveAspectRatio="xMidYMid meet"
-  width="100%"
-  height="100%"
-  class="responsive-svg"
->
-  <circle cx="50" cy="50" r="40" fill="#4f5bd5" />
-</svg>
-```
-
-### svg 响应式属性表
-
-| 属性 | 说明 | 示例 |
-| --- | --- | --- |
-| `viewBox` | 视口坐标系 | `0 0 400 300` |
-| `preserveAspectRatio` | 宽高比保持策略 | `xMidYMid meet` |
-| `width` | 宽度(CSS 可覆盖) | `100%` / `auto` |
-| `height` | 高度(CSS 可覆盖) | `100%` / `auto` |
-| `class` | CSS 类名 | `responsive` |
-
----
-
-## CSS 响应式尺寸变体
-
-**断点尺寸控制**
-`@media (max-width: <bp>) { .icon { width: <size>; height: <size>; } }`
-```css
-.responsive-icon {
-  width: 32px;
-  height: 32px;
-}
-
-@media (max-width: 768px) {
-  .responsive-icon {
-    width: 24px;
-    height: 24px;
-  }
-}
-
-@media (max-width: 480px) {
-  .responsive-icon {
-    width: 16px;
-    height: 16px;
-  }
-}
-```
-
-```html
-<svg class="responsive-icon" viewBox="0 0 24 24">
-  <use href="#icon-menu" />
-</svg>
-```
-
----
-
-## 嵌入式响应式图片
-
-**img 标签响应式 SVG**
-`<img src="<file>.svg" alt="..." width="..." height="..." />`
-```html
-<img
-  src="diagram.svg"
-  alt="响应式图表"
-  width="100%"
-  height="auto"
-  loading="lazy"
-/>
-```
-
-```css
-img.responsive-svg {
-  width: 100%;
-  height: auto;
-  max-width: 800px;
-}
-```
-
----
-
-## 响应式 viewBox 多版本
-
-**多 viewBox 适配**
-`<svg viewBox="<mobile-box>" class="svg-mobile"> / <svg viewBox="<desktop-box>" class="svg-desktop">`
-```html
-<!-- 移动端简化版 viewBox -->
-<svg viewBox="0 0 200 200" class="svg-mobile">
-  <circle cx="100" cy="100" r="50" />
-</svg>
-
-<!-- 桌面端扩展版 viewBox -->
-<svg viewBox="0 0 800 400" class="svg-desktop">
-  <circle cx="100" cy="200" r="50" />
-  <circle cx="400" cy="200" r="50" />
-  <circle cx="700" cy="200" r="50" />
-</svg>
-```
-
-```css
-.svg-mobile { display: none; }
-.svg-desktop { display: block; }
-
-@media (max-width: 768px) {
-  .svg-mobile { display: block; }
-  .svg-desktop { display: none; }
-}
-```
-
----
-
-## 响应式字体单位
-
-**SVG 内 em 单位**
-`<text font-size="<em>em" ...>`
-```html
-<svg viewBox="0 0 400 200">
-  <text x="200" y="100" text-anchor="middle" font-size="2em">
-    响应式文本
-  </text>
-</svg>
-```
-
-```css
-svg {
-  font-size: 16px;
-}
-@media (max-width: 600px) {
-  svg {
-    font-size: 12px;
-  }
-}
-```
-
----
-
-## 响应式 transform 缩放
-
-**CSS transform 自适应**
-`<selector> { transform: scale(<factor>); transform-origin: <origin>; }`
-```css
-.logo-svg {
-  transform-origin: center;
-  transform-box: fill-box;
-}
-
-@media (max-width: 600px) {
-  .logo-svg {
-    transform: scale(0.7);
-  }
-}
-```
-
-```html
-<svg class="logo-svg" viewBox="0 0 400 120">
-  <text x="200" y="75" text-anchor="middle" font-size="48">LOGO</text>
-</svg>
-```
-
----
-
-## 响应式 stroke-width
-
-**non-scaling-stroke 属性**
-`<element stroke-width="<value>" vector-effect="non-scaling-stroke" />`
-```html
-<svg viewBox="0 0 100 100" width="100%" height="100%">
-  <!-- 描边宽度不随 SVG 缩放而变化 -->
-  <rect
-    x="10"
-    y="10"
-    width="80"
-    height="80"
-    fill="none"
-    stroke="#333"
-    stroke-width="2"
-    vector-effect="non-scaling-stroke"
-  />
-</svg>
-```
-
-### vector-effect 取值表
-
-| 值 | 说明 |
-| --- | --- |
-| `non-scaling-stroke` | 描边宽度保持不变,不随缩放 |
-| `non-rotating-stroke` | 描边方向不随变换旋转 |
-| `none` | 默认行为,随变换缩放 |

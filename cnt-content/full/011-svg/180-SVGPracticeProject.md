@@ -6,15 +6,15 @@ category: 前端技术
 difficulty: advanced
 description: 综合运用：仪表盘、环形进度、动画 Logo、数据可视化。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'svg/013-SVGAnimationBasics'
-  - 'svg/015-SVGJavaScriptInteraction'
-  - 'svg/016-SVGResponsivePerformance'
+  - 'svg/140-SVGAnimationBasics'
+  - 'svg/150-SVGJavaScriptInteraction'
+  - 'svg/160-SVGResponsivePerformance'
 prerequisites:
-  - 'svg/013-SVGAnimationBasics'
-  - 'svg/015-SVGJavaScriptInteraction'
-  - 'svg/017-SVGIconAccessibility'
+  - 'svg/140-SVGAnimationBasics'
+  - 'svg/150-SVGJavaScriptInteraction'
+  - 'svg/170-SVGIconAccessibility'
 ---
 
 ## 1. 项目一：环形进度条
@@ -861,8 +861,10 @@ prerequisites:
 - **Snap.svg**：http://snapsvg.io/ - 现代 SVG 操作库
 - **Figma**：可视化设计工具，支持 SVG 导出
 
-至此，SVG 模块从基础到实战的完整教程结束。建议按顺序学习，并在每个章节后动手实践示例代码。
-## 环形进度条语法
+
+## 10. 附录：语法速查
+
+### 环形进度条语法
 
 **stroke-dasharray 控制进度**
 `<circle r="<半径>" stroke-dasharray="<周长>" stroke-dashoffset="<偏移>" transform="rotate(-90 <cx> <cy>)">`
@@ -918,7 +920,7 @@ prerequisites:
 
 ---
 
-## 渐变描边语法
+### 渐变描边语法
 
 **url() 引用渐变**
 `<element stroke="url(#<gradient-id>)">`
@@ -935,7 +937,7 @@ prerequisites:
 
 ---
 
-## 阴影滤镜语法
+### 阴影滤镜语法
 
 **feDropShadow 投影**
 `<filter id="<id>"><feDropShadow dx="..." dy="..." stdDeviation="..." flood-opacity="..." /></filter>`
@@ -951,7 +953,7 @@ prerequisites:
 
 ---
 
-## 图表轴线语法
+### 图表轴线语法
 
 **坐标轴绘制**
 `<line x1="..." y1="..." x2="..." y2="..." stroke="..." />`
@@ -978,7 +980,7 @@ prerequisites:
 
 ---
 
-## JS 动态创建 SVG 元素
+### JS 动态创建 SVG 元素
 
 **createElementNS 创建**
 `document.createElementNS("<svg-ns>", "<tag>")`
@@ -1010,7 +1012,7 @@ svg.appendChild(bar);
 
 ---
 
-## requestAnimationFrame 动画
+### requestAnimationFrame 动画
 
 **JS 动画循环**
 `requestAnimationFrame(<callback>)`
@@ -1034,7 +1036,7 @@ requestAnimationFrame(animate);
 
 ---
 
-## CSS transition 动画
+### CSS transition 动画
 
 **transition 延迟入场**
 `<selector> { transition: all <dur> <easing>; transition-delay: <delay>; }`
@@ -1060,7 +1062,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## path 动画语法
+### path 动画语法
 
 **animate 动画 d 属性**
 `<path d="..."><animate attributeName="d" values="..." dur="..." repeatCount="indefinite" /></path>`
@@ -1077,7 +1079,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## stop-color 动画
+### stop-color 动画
 
 **渐变色 stop 颜色变化**
 `<stop offset="..." stop-color="..."><animate attributeName="stop-color" values="..." dur="..." repeatCount="indefinite" /></stop>`
@@ -1106,7 +1108,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## tspan 文本拆分动画
+### tspan 文本拆分动画
 
 **tspan 逐字符动画**
 `<text><tspan class="letter">F</tspan><tspan class="letter">A</tspan>...</text>`
@@ -1154,7 +1156,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## radialGradient 节点语法
+### radialGradient 节点语法
 
 **径向渐变节点**
 `<radialGradient id="..."><stop offset="..." stop-color="..." /></radialGradient>`
@@ -1171,7 +1173,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## pattern 网格背景
+### pattern 网格背景
 
 **pattern 平铺图案**
 `<pattern id="..." width="..." height="..." patternUnits="userSpaceOnUse">...</pattern>`
@@ -1199,7 +1201,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## 脉冲动画语法
+### 脉冲动画语法
 
 **节点脉冲环**
 `<circle class="pulse-ring" r="..."><animate attributeName="r" values="..." dur="..." repeatCount="indefinite" /></circle>`
@@ -1219,7 +1221,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## begin 延迟动画
+### begin 延迟动画
 
 **begin 延迟启动**
 `<animate attributeName="..." values="..." dur="..." begin="<delay>" repeatCount="indefinite" />`
@@ -1244,7 +1246,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## 连接线语法
+### 连接线语法
 
 **节点间连线**
 `<line x1="..." y1="..." x2="..." y2="..." stroke="..." stroke-width="..." opacity="..." />`
@@ -1257,7 +1259,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## hover 交互语法
+### hover 交互语法
 
 **CSS hover 缩放**
 `<selector>:hover { transform: scale(<factor>); }`
@@ -1279,7 +1281,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## 折线图语法
+### 折线图语法
 
 **polyline 折线**
 `<polyline points="<x1>,<y1> <x2>,<y2> ..." fill="none" stroke="..." stroke-width="..." />`
@@ -1319,7 +1321,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## 区域填充语法
+### 区域填充语法
 
 **path 填充区域**
 `<path d="M <start> L <points> L <end> Z" fill="url(#<grad>)" opacity="..." />`
@@ -1340,7 +1342,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## 数据点语法
+### 数据点语法
 
 **数据点圆**
 `<circle cx="<x>" cy="<y>" r="<radius>" fill="..." />`
@@ -1355,7 +1357,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## 饼图 path 语法
+### 饼图 path 语法
 
 **A 弧线绘制扇形**
 `<path d="M <cx> <cy> L <x1> <y1> A <r> <r> 0 <large-arc> 1 <x2> <y2> Z" fill="..." />`
@@ -1398,7 +1400,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## 饼图圆环语法
+### 饼图圆环语法
 
 **stroke-dasharray 绘制圆环段**
 `<circle r="<r>" stroke="..." stroke-dasharray="<segment> <remaining>" stroke-dashoffset="<offset>" />`
@@ -1434,7 +1436,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## 折线图入场动画
+### 折线图入场动画
 
 **stroke-dasharray 绘制动画**
 `<polyline stroke-dasharray="<length>" stroke-dashoffset="<length>"><animate attributeName="stroke-dashoffset" from="..." to="0" dur="..." fill="freeze" /></polyline>`
@@ -1459,7 +1461,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## 柱状图入场动画
+### 柱状图入场动画
 
 **rect 高度动画**
 `<rect><animate attributeName="height" from="0" to="..." dur="..." fill="freeze" /><animate attributeName="y" from="..." to="..." dur="..." fill="freeze" /></rect>`
@@ -1472,7 +1474,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## transform 平移语法
+### transform 平移语法
 
 **transform translate 平移**
 `<g transform="translate(<x>, <y>)">...</g>`
@@ -1490,7 +1492,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## rotate 旋转语法
+### rotate 旋转语法
 
 **transform rotate 旋转**
 `<element transform="rotate(<angle> [<cx> <cy>])">`
@@ -1506,7 +1508,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## scale 缩放语法
+### scale 缩放语法
 
 **transform scale 缩放**
 `<element transform="scale(<sx> [<sy>])">`
@@ -1518,7 +1520,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## 综合滤镜链语法
+### 综合滤镜链语法
 
 **feGaussianBlur + feMerge 发光**
 `<filter id="..."><feGaussianBlur stdDeviation="..." result="b" /><feMerge><feMergeNode in="b" /><feMergeNode in="SourceGraphic" /></feMerge></filter>`
@@ -1538,7 +1540,7 @@ requestAnimationFrame(() => {
 
 ---
 
-## 事件处理语法
+### 事件处理语法
 
 **addEventListener 绑定**
 `element.addEventListener('<event>', <callback>)`
@@ -1572,7 +1574,7 @@ bar.addEventListener('mouseleave', (e) => {
 
 ---
 
-## DocumentFragment 批量插入
+### DocumentFragment 批量插入
 
 **批量插入优化**
 `const fragment = document.createDocumentFragment(); ... svg.appendChild(fragment);`
@@ -1594,7 +1596,7 @@ svg.appendChild(fragment); // 一次性插入,减少重排
 
 ---
 
-## 数据驱动渲染
+### 数据驱动渲染
 
 **数据 → SVG**
 `data.forEach(d => { const el = createElementNS(...); el.setAttribute(...); svg.appendChild(el); })`
@@ -1624,7 +1626,7 @@ data.forEach((d, i) => {
 
 ---
 
-## 图例语法
+### 图例语法
 
 **图例项**
 `<g class="legend"><rect /><text>...</text></g>`
@@ -1643,7 +1645,7 @@ data.forEach((d, i) => {
 
 ---
 
-## 标题与描述语法
+### 标题与描述语法
 
 **图表 title 与 desc**
 `<svg><title>...</title><desc>...</desc>...</svg>`
@@ -1657,7 +1659,7 @@ data.forEach((d, i) => {
 
 ---
 
-## path 命令综合参考
+### path 命令综合参考
 
 **M/L/H/V 直线**
 `<path d="M <x> <y> L <x> <y> H <x> V <y>" />`
@@ -1696,3 +1698,4 @@ data.forEach((d, i) => {
 | `T` | 平滑二次贝塞尔 | `x y` |
 | `A` | 弧线 | `rx ry rot large-arc sweep x y` |
 | `Z` / `z` | 闭合路径 | (无参数) |
+

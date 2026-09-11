@@ -6,13 +6,13 @@ category: 前端技术
 difficulty: beginner
 description: SVG 发展历程、核心特性、与 Canvas/位图对比、嵌入方式与开发环境。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'svg/002-SVGBasicSyntaxDocStructure'
-  - 'svg/003-SVGCoordinateSystemViewBox'
-  - 'html5/022-SVG'
+  - 'svg/020-SVGBasicSyntaxDocStructure'
+  - 'svg/030-SVGCoordinateSystemViewBox'
+  - 'html5/210-SVG'
 prerequisites:
-  - 'html5/007-HTML5OverviewCoreFeature'
+  - 'html5/020-HTML5OverviewCoreFeature'
 ---
 
 ## 1. 历史动机与发展脉络
@@ -31,10 +31,11 @@ SVG 规范历经二十余年迭代,形成了清晰的版本演进图谱。
 | ---- | -------- | -------- | -------- | -------------- |
 | SVG 1.0 | 2001 | 基础图形、路径、文本、变换 | Recommendation | 全平台支持 |
 | SVG 1.1 | 2003 | 模块化拆分,引入 SVG Tiny/Basic 子集 | Recommendation | 全平台支持 |
-| SVG Tiny 1.2 | 2008 | 移动设备优化,聚焦资源受限场景 | Recommendation | 已废弃 |
+| SVG Tiny 1.2 | 2008 | 移动设备优化,聚焦资源受限场景 | Recommendation | 历史标准(已被 SVG 2 取代) |
 | SVG 1.2 Full | - | 计划增加流式音频/视频、DOM Level 3 | 草案废止 | 未实现 |
-| SVG 2 | 2018-至今 | 融合 HTML5、CSS Grid、Web Components | Candidate Recommendation | 现代浏览器部分支持 |
-| SVG 2.1 | 2024+ | Web Animations API 集成、属性简化 | Working Draft | 实验性支持 |
+| SVG 2 | 2018 快照,持续勘误 | 与 CSS 对齐(几何属性、text 等),融合 HTML 解析 | Candidate Recommendation(2018-10-04) | 现代浏览器事实上大面积实现 |
+
+> **SVG 2 的规范现状(重要)**:SVG 2 至今停留在 Candidate Recommendation 快照(2018-10-04),从未推进为正式 Recommendation——SVG 工作组已转入维护模式,靠勘误与独立模块文档(如 SVG Animations、Filter Effects)继续演进。但浏览器厂商早已按 SVG 2 草案实现了绝大部分特性(CSS 几何属性、geometry properties、文本排版改进等),工程上可视为"事实标准",引用规范时写"SVG 2 (CR)"最为严谨。不存在"SVG 2.1"或 /TR/SVG21 这样的规范版本。
 
 ### 1.3 关键技术决策节点
 
@@ -49,7 +50,7 @@ timeline
     2014 : SVG 2 草案融合 CSS
     2018 : SVG 2 Candidate Recommendation
     2020 : CSS Containment 与 SVG 协同
-    2024 : SVG 2.1 Working Draft
+    2018 至今 : 维护模式,勘误与独立模块演进
 ```
 
 ### 1.4 设计哲学:为什么是 XML
@@ -397,6 +398,16 @@ $$
   </body>
 </html>
 ```
+
+四种方式的能力差异一览(选型速查):
+
+| 能力            | inline | img | CSS 背景 | object |
+| --------------- | ------ | --- | -------- | ------ |
+| 外部 CSS 样式化 | 是     | 否  | 否       | 否     |
+| JavaScript 交互 | 是     | 否  | 否       | 仅内部 |
+| 事件绑定        | 是     | 否  | 否       | 仅内部 |
+| 可访问性        | 强     | 中  | 弱       | 中     |
+| 缓存友好        | 否     | 是  | 是       | 是     |
 
 ### 4.4 生产级 SVG 工程目录结构
 
@@ -1386,8 +1397,6 @@ await Promise.all(
 
 - World Wide Web Consortium (W3C). 2018. *Scalable Vector Graphics (SVG) 2*. W3C Candidate Recommendation. https://www.w3.org/TR/SVG2/
 
-- World Wide Web Consortium (W3C). 2024. *SVG 2.1 W3C Working Draft*. https://www.w3.org/TR/SVG21/
-
 - Internet Engineering Task Force (IETF). 2015. *The "image/svg+xml" Media Type Registration*. RFC 6174. https://doi.org/10.17487/RFC6174
 
 ### 10.2 学术论文
@@ -1492,110 +1501,3 @@ await Promise.all(
 8. **SVG 与设计系统**:Figma → SVG → 组件库的工作流
 
 下一篇将从 `<svg>` 根元素与文档结构开始,逐步展开 SVG 的核心语法。
-## 内联 SVG
-
-**内联嵌入**
-`<svg width="<宽>" height="<高>" viewBox="<min-x> <min-y> <w> <h>" xmlns="http://www.w3.org/2000/svg"> ... </svg>`
-```html
-<!-- 内联在 HTML 中,享有完整的 CSS 与 JavaScript 能力 -->
-<svg width="100" height="100" viewBox="0 0 100 100">
-  <circle cx="50" cy="50" r="40" fill="#4f5bd5" />
-</svg>
-```
-
----
-
-## img 标签引用
-
-**img 引用 SVG 文件**
-`<img src="<文件路径>" alt="<替代文本>" width="<宽>" height="<高>" />`
-```html
-<!-- 无法用外部 CSS 样式化内部元素,无法执行内部 JavaScript -->
-<img src="logo.svg" alt="Logo" width="200" height="100" />
-```
-
----
-
-## CSS 背景图引用
-
-**CSS 背景图引用 SVG**
-`background-image: url('<文件路径>');`
-```css
-/* 同 img 限制,且无法交互 */
-.hero {
-  background-image: url('pattern.svg');
-  background-size: cover;
-}
-```
-
----
-
-## object 标签嵌入
-
-**object 嵌入 SVG**
-`<object data="<文件路径>" type="image/svg+xml" width="<宽>" height="<高>"></object>`
-```html
-<!-- 独立文档上下文,内部脚本与样式独立运行,与主页面通信需 postMessage -->
-<object data="diagram.svg" type="image/svg+xml" width="800" height="600"></object>
-```
-
----
-
-## iframe 嵌入
-
-**iframe 嵌入 SVG**
-`<iframe src="<文件路径>" width="<宽>" height="<高>"></iframe>`
-```html
-<iframe src="diagram.svg" width="800" height="600"></iframe>
-```
-
----
-
-## 嵌入方式能力对比
-
-| 能力            | inline | img | CSS 背景 | object |
-| --------------- | ------ | --- | -------- | ------ |
-| 外部 CSS 样式化 | 是     | 否  | 否       | 否     |
-| JavaScript 交互 | 是     | 否  | 否       | 仅内部 |
-| 事件绑定        | 是     | 否  | 否       | 仅内部 |
-| 可访问性        | 强     | 中  | 弱       | 中     |
-| 缓存友好        | 否     | 是  | 是       | 是     |
-
----
-
-## SVG 与 Canvas 对比
-
-| 维度             | SVG                             | Canvas                     |
-| ---------------- | ------------------------------- | -------------------------- |
-| **描述方式**     | 矢量(保留模式)                | 位图(立即模式)           |
-| **DOM 节点**     | 每个图形都是 DOM 元素           | 单一 canvas 元素           |
-| **事件绑定**     | 可直接绑定到子元素              | 需自行做命中检测           |
-| **缩放表现**     | 无损缩放                        | 放大后锯齿明显             |
-| **性能特征**     | 元素多时性能下降                | 元素数量影响小             |
-| **动画**         | SMIL / CSS / DOM 操作           | requestAnimationFrame 重绘 |
-| **文本可访问性** | 原生支持                        | 需额外处理                 |
-| **适用场景**     | 图标、图表、UI 装饰、数据可视化 | 游戏、图像处理、复杂粒子   |
-
----
-
-## 第一个 SVG 示例
-
-**完整 SVG 结构**
-`<svg width="<宽>" height="<高>" viewBox="<min-x> <min-y> <w> <h>" xmlns="http://www.w3.org/2000/svg"> ... </svg>`
-```html
-<svg width="240" height="120" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg">
-  <!-- 渐变定义 -->
-  <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="0%">
-      <stop offset="0%" stop-color="#4f5bd5" />
-      <stop offset="100%" stop-color="#00b894" />
-    </linearGradient>
-  </defs>
-  <!-- 矩形 -->
-  <rect x="20" y="20" width="200" height="80" rx="12" fill="url(#grad)" />
-  <!-- 文本 -->
-  <text x="120" y="65" text-anchor="middle" fill="#fff" font-size="20" font-family="sans-serif">
-    Hello SVG
-  </text>
-</svg>
-```
