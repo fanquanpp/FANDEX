@@ -926,10 +926,7 @@ function FrontendLab() {
           {pen.showConsole && (
             <div className="pg-console">
               <div className="pg-console-head">
-                <span className="pg-console-title">
-                  <PgIcon name="terminal" size={12} />
-                  控制台
-                </span>
+                <span className="pg-console-title">控制台</span>
                 <div className="pg-console-actions">
                   {consoleEntries.length > 0 && (
                     <button
@@ -952,11 +949,10 @@ function FrontendLab() {
               </div>
               <div className="pg-console-body">
                 {consoleEntries.length === 0 ? (
-                  <div className="pg-console-empty">暂无输出，运行预览后 console 内容会显示在这里</div>
+                  <div className="pg-console-empty">暂无输出</div>
                 ) : (
                   consoleEntries.map((entry, index) => (
                     <div className={`pg-console-line pg-console-line--${entry.kind}`} key={`${entry.time}-${index}`}>
-                      <span className="pg-console-kind">{entry.kind}</span>
                       <pre className="pg-console-text">{entry.text}</pre>
                     </div>
                   ))

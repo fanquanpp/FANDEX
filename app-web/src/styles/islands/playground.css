@@ -506,11 +506,11 @@
     background: #ffffff;
   }
 
-  /* 控制台 */
+  /* 控制台：极简瘦条（占屏最小化），纯文本输出不做视觉修饰 */
   .pg-console {
     display: flex;
     flex-direction: column;
-    height: 200px;
+    height: 96px;
     border-top: 1px solid var(--color-border-light);
     background: var(--color-bg-sunken, var(--color-bg-code));
     flex-shrink: 0;
@@ -520,23 +520,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 26px;
-    padding: 0 10px 0 14px;
-    border-bottom: 1px solid var(--color-border-light);
+    height: 22px;
+    padding: 0 8px 0 10px;
     flex-shrink: 0;
-    position: relative;
-  }
-
-  .pg-console-head::before {
-    content: '';
-    position: absolute;
-    left: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 2px;
-    height: 10px;
-    background: var(--color-accent-base);
-    opacity: 0.65;
   }
 
   .pg-console-title {
@@ -544,10 +530,9 @@
     align-items: center;
     gap: 6px;
     font-family: var(--font-family-mono);
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-fg-secondary);
+    color: var(--color-fg-tertiary);
   }
 
   .pg-console-actions {
@@ -560,10 +545,10 @@
     flex: 1;
     min-height: 0;
     overflow: auto;
-    padding: 6px 10px;
+    padding: 2px 10px 4px;
     font-family: var(--font-family-mono);
-    font-size: 12px;
-    line-height: 1.6;
+    font-size: 11px;
+    line-height: 1.5;
   }
 
   .pg-console-empty {
@@ -571,46 +556,16 @@
     font-family: var(--font-body);
   }
 
+  /* 日志行：纯文本，仅以文字颜色区分警告/错误，无底色与徽标 */
   .pg-console-line {
-    display: flex;
-    gap: 8px;
-    padding: 3px 4px;
-    border-left: 2px solid transparent;
-  }
-
-  /* 日志类型：左侧强调色刻度 + 类型标签着色，避免与正文互相遮挡 */
-  .pg-console-line--log {
-    border-left-color: var(--color-accent-base);
+    padding: 1px 0;
   }
 
   .pg-console-line--warn {
-    border-left-color: var(--color-warning-base);
-    background: color-mix(in srgb, var(--color-warning-base) 6%, transparent);
-  }
-
-  .pg-console-line--error {
-    border-left-color: var(--color-danger-base);
-    background: color-mix(in srgb, var(--color-danger-base) 7%, transparent);
-  }
-
-  .pg-console-kind {
-    flex-shrink: 0;
-    width: 38px;
-    text-align: right;
-    font-size: 10px;
-    color: var(--color-fg-tertiary);
-    text-transform: uppercase;
-  }
-
-  .pg-console-line--log .pg-console-kind {
-    color: var(--color-accent-base);
-  }
-
-  .pg-console-line--warn .pg-console-kind {
     color: var(--color-warning-base);
   }
 
-  .pg-console-line--error .pg-console-kind {
+  .pg-console-line--error {
     color: var(--color-danger-base);
   }
 
@@ -619,7 +574,7 @@
     white-space: pre-wrap;
     word-break: break-word;
     background: transparent;
-    color: var(--color-fg-primary);
+    color: inherit;
   }
 
   /* 作品库抽屉：沿用站点卡片语法（细边框 + 悬浮转色） */
@@ -811,7 +766,7 @@
     }
 
     .pg-console {
-      height: 160px;
+      height: 80px;
     }
 
   }
