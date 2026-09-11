@@ -1,29 +1,30 @@
 ---
-order: 90
+order: 100
 title: Next.js 学习总结：核心知识体系回顾
 module: 'nextjs'
 category: 前端技术
 difficulty: intermediate
 description: 串联 Next.js 模块全部文档，回顾 App Router 路由、数据获取缓存、API 层、渲染策略与部署安全的全链路。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'nextjs/001-NextJS16Overview'
-  - 'nextjs/002-AppRouterRouting'
-  - 'nextjs/003-DataFetchingCaching'
-  - 'nextjs/007-RenderingStrategies'
+  - 'nextjs/010-NextJS16Overview'
+  - 'nextjs/020-AppRouterRouting'
+  - 'nextjs/030-DataFetchingCaching'
+  - 'nextjs/060-RenderingStrategies'
+  - 'nextjs/070-CacheComponentsDeepDive'
 prerequisites: []
 ---
 
-Next.js 模块共 8 篇文档，覆盖了从建站到上线的完整链路。本文继续以"虚拟歌手音乐平台"为背景（歌姬主页、演唱会排期、粉丝团报名），把 App Router 文件约定、数据获取与缓存、API 层、渲染策略和部署安全五条线索收拢成一页，作为二轮复习的索引。
+Next.js 模块共 10 篇文档，覆盖了从建站到上线的完整链路。本文继续以"虚拟歌手音乐平台"为背景（歌姬主页、演唱会排期、粉丝团报名），把 App Router 文件约定、数据获取与缓存、API 层、渲染策略、缓存新模型和部署安全六条线索收拢成一页，作为二轮复习的索引。
 
 使用建议：Next.js 的知识重心不在语法而在"约定与选型"——文件放哪里、缓存选哪种、渲染用哪档，都是决策题而非默写题。它的设计哲学是"约定优先于配置"：记住文件名就是记住功能，记住缓存关键词就是记住整套数据策略。因此复习时建议每读完一节就问自己：这个需求放到我的项目里该怎么选，为什么这样选，换一种选法会牺牲什么。示例代码可直接放入 create-next-app 生成的项目中对照验证。
 
 ## 前置知识
 
-- [Next.js 16 概述与快速上手](/nextjs/001-NextJS16Overview)：App Router 的定位与 create-next-app 建站流程，理解"页面文件即路由"的起点。
-- [React 概述与环境配置](/react/001-OverviewEnvSetup)：React 19 组件模型是 Next.js 的地基，服务端组件语法直接来自 React 19。
-- [Next.js App Router 路由系统](/nextjs/002-AppRouterRouting)：布局嵌套、动态路由与 loading、error、not-found 三种状态页面的文件约定。
+- [Next.js 16 概述与快速上手](/nextjs/010-NextJS16Overview)：App Router 的定位与 create-next-app 建站流程，理解"页面文件即路由"的起点。
+- [React 概述与环境配置](/react/010-OverviewEnvSetup)：React 19 组件模型是 Next.js 的地基，服务端组件语法直接来自 React 19。
+- [Next.js App Router 路由系统](/nextjs/020-AppRouterRouting)：布局嵌套、动态路由与 loading、error、not-found 三种状态页面的文件约定。
 
 ## 学习目标
 
@@ -31,34 +32,36 @@ Next.js 模块共 8 篇文档，覆盖了从建站到上线的完整链路。本
 2. 能为演唱会排期页选择正确的 fetch 缓存策略，说清 force-cache、no-store、revalidate 三者的差别与组合方式。
 3. 能用 Route Handlers 写出粉丝团报名接口，再用 Server Actions 改写同一需求，并说出两者的适用边界。
 4. 能用一张表区分 SSG、ISR、SSR、CSR，并给出每个页面级的选型结论与判定信号。
-5. 能配置中间件保护粉丝团页面，并说出构建期与运行期各自的优化手段。
+5. 能说出 Next.js 16 Cache Components 模型的核心变化：`'use cache'` 显式声明缓存、`cacheLife` 控制时长、静态壳与动态洞同页共存。
+6. 能配置 proxy.ts 保护粉丝团页面，并说出构建期与运行期各自的优化手段。
 
 ## 知识地图
 
 ```mermaid
 flowchart TB
     subgraph N1["框架入门"]
-        B001["001 概述与快速上手"]
+        B001["概述与快速上手"]
     end
     subgraph N2["路由与页面"]
-        B002["002 App Router 路由"]
+        B002["App Router 路由"]
     end
     subgraph N3["渲染与数据"]
-        B003["003 数据获取与缓存"]
-        B007["007 渲染策略与缓存"]
+        B003["数据获取与缓存"]
+        B007["渲染策略与缓存"]
+        B010["缓存体系与 Cache Components"]
     end
     subgraph N4["API 与表单"]
-        B005["005 Route Handlers 与 API"]
-        B006["006 Server Actions 与表单"]
+        B005["Route Handlers 与 API"]
+        B006["Server Actions 与表单"]
     end
     subgraph N5["部署与安全"]
-        B004["004 部署与优化"]
-        B008["008 认证代理与中间件"]
+        B004["部署与优化"]
+        B008["认证、代理与安全"]
     end
     N1 --> N2 --> N3 --> N4 --> N5
 ```
 
-模块虽只有 8 篇，但结构非常紧凑：N1 与 N2 解决"页面从哪来"，是一切的地基；N3 是全模块的心脏，数据从哪来、多旧可接受、HTML 何时生成，三个问题都落在这里；N4 解决"数据怎么改"；N5 解决"如何安全地上线"。读完后回头看，你会发现整条链路就是一次真实项目从开发到发布的顺序重演，按编号顺序复习即可覆盖全部主干。
+模块共 10 篇，结构紧凑：N1 与 N2 解决"页面从哪来"，是一切的地基；N3 是全模块的心脏，数据从哪来、多旧可接受、HTML 何时生成，三个问题都落在这里，其中 010 是 003 与 007 的进阶合流（Next.js 16 的显式缓存模型），初学可先跳过、二轮复习时再攻；N4 解决"数据怎么改"；N5 解决"如何安全地上线"。读完后回头看，你会发现整条链路就是一次真实项目从开发到发布的顺序重演，按编号顺序复习即可覆盖全部主干。
 
 ## 核心概念回顾
 
@@ -176,7 +179,7 @@ export async function POST(request: Request) {
 
 ### 5. Server Actions：表单提交的最短路径
 
-本应用内部的表单不必手写接口：用 `'use server'` 标记的异步函数可以直接绑定到 `<form action>`，框架自动完成序列化与请求，写库后还能配合 `revalidatePath` 或 `revalidateTag` 刷新列表缓存。要注意 Action 本质仍是公开的 HTTP 端点，入参校验与权限检查一样都不能少，这是 [Server Actions 与表单](/nextjs/006-ServerActionsForms) 反复强调的安全模型。
+本应用内部的表单不必手写接口：用 `'use server'` 标记的异步函数可以直接绑定到 `<form action>`，框架自动完成序列化与请求，写库后还能配合 `revalidatePath` 或 `revalidateTag` 刷新列表缓存。要注意 Action 本质仍是公开的 HTTP 端点，入参校验与权限检查一样都不能少，这是 [Server Actions 与表单](/nextjs/050-ServerActionsForms) 反复强调的安全模型。
 
 ```tsx
 // app/fan-club/page.tsx：内联 Server Action，提交直接在服务器执行
@@ -224,15 +227,15 @@ export default async function RankingPage() {
 }
 ```
 
-### 7. 中间件与访问控制
+### 7. proxy.ts 与访问控制
 
-`middleware.ts` 在请求进入路由前运行，适合做登录态检查、重定向与请求改写。注意它运行在边缘环境，应保持轻量：只做 Cookie 或请求头级别的判断，重查询交给页面或 Route Handler，否则每个被拦截的请求都会变慢。
+`proxy.ts`（Next.js 16 起由 `middleware.ts` 更名，旧文件名仍可用但已废弃）在请求进入路由前运行，适合做登录态检查、重定向与请求改写。它运行在 Node.js 运行时上，但官方要求它保持轻量：只做 Cookie 或请求头级别的判断，重查询交给页面或 Route Handler，否则每个被拦截的请求都会变慢。更完整的鉴权分层模型见第 8 篇。
 
 ```ts
-// middleware.ts：未登录用户访问粉丝团页时重定向到登录页
+// proxy.ts：未登录用户访问粉丝团页时重定向到登录页
 import { NextResponse, type NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const hasSession = request.cookies.has('fan_session')
   if (!hasSession) {
     const url = new URL('/login', request.url)
@@ -345,17 +348,17 @@ export async function joinFanClub() {
 }
 ```
 
-### 误区 6：在中间件里做重查询
+### 误区 6：在 proxy 里做重查询
 
 ```ts
-// 错误：middleware 运行在边缘环境，直连数据库既慢又可能连不上
-export async function middleware(request: NextRequest) {
+// 错误：proxy 官方定位是轻量入口层，直连数据库的慢查询会拖慢每个被拦截的请求
+export async function proxy(request: NextRequest) {
   const user = await db.user.findBySession(request.cookies) // 不应出现
   return NextResponse.next()
 }
 
-// 修正：中间件只做轻量 Cookie 检查，详细鉴权放到页面或 Route Handler
-export function middleware(request: NextRequest) {
+// 修正：proxy 只做轻量 Cookie 检查，详细鉴权放到页面或 Route Handler
+export function proxy(request: NextRequest) {
   if (!request.cookies.has('fan_session')) {
     return NextResponse.redirect(new URL('/login', request.url))
   }
@@ -393,16 +396,18 @@ revalidatePath('/fan-club')
 - [ ] 能用 useActionState 把服务端校验错误回显到表单并保留用户已输入的内容。
 - [ ] 能对着决策树为歌曲详情页、实时榜单、购票后台分别选定渲染策略并给出判定信号。
 - [ ] 能说清 params 与 searchParams 在 Next.js 15 以后均为 Promise 的写法差异。
-- [ ] 能配置 matcher 精确控制中间件的拦截范围，避免全站请求都被额外处理。
+- [ ] 能说出 `'use cache'` + `cacheLife` + `cacheTag` 各自解决什么问题，以及 Cache Components 启用后哪些路由段配置会失效。
+- [ ] 能配置 matcher 精确控制 proxy 的拦截范围，避免全站请求都被额外处理。
 - [ ] 能列举部署阶段的三个优化抓手：图片字体优化、按需加载、缓存头策略。
 - [ ] 能说明为什么客户端组件不能 import 数据库客户端，以及密钥泄漏的常见路径。
 
 ## 后续学习路径
 
-1. 复习 [Next.js 数据获取与缓存](/nextjs/003-DataFetchingCaching)，把三种缓存策略的适用边界背熟，重点理解请求去重与按标签失效。
-2. 深入 [Route Handlers 与 API 设计](/nextjs/005-RouteHandlersApi)，补齐统一错误处理与状态码规范，学会用 NextRequest、NextResponse 处理 Cookie 与流式响应。
-3. 攻克 [Server Actions 与表单](/nextjs/006-ServerActionsForms)，掌握 zod 校验、useActionState 错误回显与缓存失效的完整链路。
-4. 精读 [渲染策略与缓存](/nextjs/007-RenderingStrategies)，理解 Next.js 16 缓存模型显式化后的 Cache Components、Partial Prefetching 与 Instant Navigations。
-5. 学习 [认证代理与中间件](/nextjs/008-AuthProxyMiddleware)，为平台补上完整的登录、会话与代理转发方案。
-6. 实践 [部署与优化](/nextjs/004-DeploymentOptimization)，把构建分析、图片字体优化落到 CI 流程里，形成可重复的发布管线。
-7. 回到 [Next.js App Router](/react/041-NextJsAppRouter)，从 React 视角补全 App Router 的实现原理，理解服务端组件在元框架中如何落地，打通 react 模块与 nextjs 模块的最后一公里。
+1. 复习 [Next.js 数据获取与缓存](/nextjs/030-DataFetchingCaching)，把三种缓存策略的适用边界背熟，重点理解请求去重与按标签失效。
+2. 深入 [Route Handlers 与 API 设计](/nextjs/040-RouteHandlersApi)，补齐统一错误处理与状态码规范，学会用 NextRequest、NextResponse 处理 Cookie 与流式响应。
+3. 攻克 [Server Actions 与表单](/nextjs/050-ServerActionsForms)，掌握 zod 校验、useActionState 错误回显与缓存失效的完整链路。
+4. 精读 [渲染策略与缓存](/nextjs/060-RenderingStrategies)，理解 Next.js 16 缓存模型显式化后的 Cache Components、Partial Prefetching 与 Instant Navigations。
+5. 进阶 [缓存体系与 Cache Components 深入](/nextjs/070-CacheComponentsDeepDive)，掌握 `'use cache'`、`cacheLife` 与 `updateTag` 的新模型写法，并把传统缓存语义逐一迁移过去。
+6. 学习 [认证、代理与安全](/nextjs/080-AuthProxyMiddleware)，为平台补上完整的登录、会话与代理转发方案。
+7. 实践 [部署与优化](/nextjs/090-DeploymentOptimization)，把构建分析、图片字体优化落到 CI 流程里，形成可重复的发布管线。
+8. 回到 [Next.js App Router](/react/410-NextJsAppRouter)，从 React 视角补全 App Router 的实现原理，理解服务端组件在元框架中如何落地，打通 react 模块与 nextjs 模块的最后一公里。

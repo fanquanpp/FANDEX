@@ -1,18 +1,18 @@
 ---
-order: 60
+order: 50
 title: Server Actions 与表单
 module: 'nextjs'
 category: 前端技术
 difficulty: intermediate
 description: 不写 API 也能改数据：'use server'、useActionState 与安全校验。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'nextjs/003-DataFetchingCaching'
-  - 'nextjs/004-DeploymentOptimization'
+  - 'nextjs/030-DataFetchingCaching'
+  - 'nextjs/090-DeploymentOptimization'
 prerequisites:
-  - 'nextjs/002-AppRouterRouting'
-  - 'react/001-OverviewEnvSetup'
+  - 'nextjs/020-AppRouterRouting'
+  - 'react/010-OverviewEnvSetup'
 ---
 
 ## 0. Server Actions 是什么（先读这里）
@@ -32,7 +32,7 @@ prerequisites:
 **讲解：**
 
 1. Server Actions 并没有"消灭"后端：它本质仍是框架托管的 HTTP 端点，只是 URL、序列化与调用协议都不再需要你操心。
-2. 需要精确控制 HTTP 语义、供外部系统调用时用 Route Handler（见第 5 篇）；本应用内部的表单与按钮用 Server Actions。
+2. 需要精确控制 HTTP 语义、供外部系统调用时用 Route Handler（见第 4 篇）；本应用内部的表单与按钮用 Server Actions。
 3. 两者可共存：Action 负责页面交互，Handler 负责开放能力，底层共享同一套数据库访问代码。
 
 ## 1. 第一个 Server Action：'use server' 与 form action
@@ -238,7 +238,7 @@ export async function publishPost(id: string) {
   await db.post.update({ where: { id }, data: { published: true } })
 
   revalidatePath("/posts") // 方式一：精确失效某个路径
-  revalidateTag("posts") // 方式二：失效打有该标签的所有缓存
+  revalidateTag("posts") // 方式二：失效打有该标签的所有缓存（16 起推荐传第二个参数，见下方讲解）
   redirect("/posts") // 跳转；redirect 通过抛错终止后续代码，不要用 try/catch 包它
 }
 ```
@@ -252,8 +252,9 @@ export async function publishPost(id: string) {
 **讲解：**
 
 1. 给 fetch 打标签：`fetch(url, { next: { tags: ["posts"] } })`，之后一处 `revalidateTag("posts")` 即可让所有用到它的页面同步更新。
-2. 带动态段的路径也可失效，如 `revalidatePath("/posts/[id]", "page")`。
-3. 失效要"最小够用"：只 revalidate 真正受影响的路径与标签，避免整站缓存频繁失效。
+2. Next.js 16 调整了 `revalidateTag` 的签名：传第二个参数（`cacheLife` profile，推荐 `"max"`）可获得"先回旧值、后台再生"的体验，单参数写法已标记废弃；需要"写后立读"（用户立刻看到自己改的结果）时，Server Action 里改用 `updateTag("posts")`。两套 API 的取舍详见第 3 篇与第 7 篇。
+3. 带动态段的路径也可失效，如 `revalidatePath("/posts/[id]", "page")`。
+4. 失效要"最小够用"：只 revalidate 真正受影响的路径与标签，避免整站缓存频繁失效。
 
 ## 6. 渐进增强：JS 加载前也能提交
 
@@ -319,6 +320,6 @@ export async function deleteUser(formData: FormData) {
 
 > Action = 标了 `'use server'` 的 async 函数：`<form action>` 一绑即用；结果用 `useActionState` 接回组件，pending 用 `useFormStatus`；校验只认服务端 zod；改完数据 `revalidatePath/Tag` 失效缓存；它本质是公开端点，鉴权必须写在函数体内。
 
-- 与本文互补的 HTTP 接口写法，见第 5 篇《Route Handlers 与 API 设计》。
+- 与本文互补的 HTTP 接口写法，见第 4 篇《Route Handlers 与 API 设计》。
 - `revalidateTag` 与 fetch 标签的配合细节，见第 3 篇《Next.js 数据获取与缓存》。
 - 渐进增强与 Server Actions 的更多 API 行为，以官方文档为准。

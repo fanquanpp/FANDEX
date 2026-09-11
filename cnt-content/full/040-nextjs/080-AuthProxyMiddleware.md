@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: intermediate
 description: 会话、JWT 与 proxy.ts：守住 Next.js 应用的入口。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'nextjs/003-DataFetchingCaching'
-  - 'nextjs/004-DeploymentOptimization'
+  - 'nextjs/030-DataFetchingCaching'
+  - 'nextjs/090-DeploymentOptimization'
 prerequisites:
-  - 'nextjs/002-AppRouterRouting'
+  - 'nextjs/020-AppRouterRouting'
 ---
 
 ## 0. 认证与入口防线（先读这里）
@@ -83,14 +83,14 @@ export default async function Dashboard() {
 
 1. `cookies()` 读取在页面、Server Action、Route Handler 中均可用；**写入只允许出现在 Server Action 或 Route Handler 中**——服务器组件渲染阶段写 Cookie 会被直接报错。
 2. 会话 Cookie 三件套：`httpOnly`（防脚本偷取）、`secure`（只走 HTTPS）、`sameSite`（限制跨站携带）；三者缺一都有已知攻击面。
-3. 读取 Cookie 属于动态 API，会让该页面进入动态渲染（见第 7 篇），这是"登录态页面默认动态"的原因。
+3. 读取 Cookie 属于动态 API，会让该页面进入动态渲染（见第 6 篇），这是"登录态页面默认动态"的原因。
 
 ## 3. proxy.ts：请求进入应用前的关卡
 
-历史与定位：`middleware.ts` 自 Next.js 16 起更名为 `proxy.ts`（旧文件名仍可运行，建议统一迁移）。它运行在请求到达页面/接口之前，是全应用唯一的"入口中间件"。
+历史与定位：`middleware.ts` 自 Next.js 16 起更名为 `proxy.ts`（旧文件名仍可用，但已标记废弃、将在未来版本移除，建议统一迁移）。它运行在请求到达页面/接口之前，是全应用唯一的"入口中间件"。
 
-1. **运行位置**：部署时通常运行在离用户更近的边缘环境；它不是完整的 Node.js 进程——完整的 Node API（如直接读写文件、连接数据库）不可用，代码必须保持轻量（具体运行时能力以官方文档为准）。
-2. **能力**：改写/重定向请求、读写转发头与 Cookie、短路返回响应；**没有服务器端数据库会话**，只能看到请求本身携带的信息。
+1. **运行位置**：16 起 `proxy.ts` **运行在 Node.js 运行时**上（更名的一大动机就是把请求拦截收敛到单一、可预测的运行环境）；旧的 `middleware.ts` 继续跑在边缘环境，只服务存量场景。即便在 Node 运行时，官方文档仍明确要求 proxy 保持轻量：它"不适合慢速数据获取"，不应承担完整会话管理或授权职责。
+2. **能力**：改写/重定向请求、读写请求与响应头、读写 Cookie、短路返回响应；只能看到请求本身携带的信息，`fetch` 的 `cache`/`next.revalidate`/`next.tags` 选项在 proxy 中不生效。
 3. **不是鉴权层**：它适合做"粗筛"与体验优化，不能作为敏感操作唯一的安全边界。
 
 ```ts
@@ -120,7 +120,7 @@ export const config = {
 
 **讲解：**
 
-1. 导出函数即为处理函数（`proxy.ts` 中推荐命名 `proxy`，旧的 `middleware.ts` 中为 `middleware`）；返回 `NextResponse.next()` 放行、`redirect()` 跳转、`rewrite()` 改写。
+1. 处理函数支持命名导出 `proxy` 或默认导出（旧的 `middleware.ts` 中函数名为 `middleware`）；返回 `NextResponse.next()` 放行、`redirect()` 跳转、`rewrite()` 改写。全项目只支持一个 proxy 文件，复杂逻辑可拆成模块再在 `proxy.ts` 中集中引入。
 2. `matcher` 支持 `/dashboard/:path*` 这类通配与负向前瞻正则；匹配范围越小，边缘开销与误伤越少。
 3. proxy 的正确用法清单：登录态粗筛与跳转、A/B 分流、按地理/设备改写、安全头注入；错误用法：在 proxy 里直连数据库、做重计算或唯一鉴权。
 
@@ -180,7 +180,7 @@ export async function login(formData: FormData) {
 
 1. 回跳地址必须做**开放重定向防护**：只接受本站相对路径，否则攻击者可构造 `/login?from=https://evil.com` 钓鱼。
 2. 登出即反向操作：Server Action 中 `store.delete("session")` 后 `redirect("/")`；如有服务端会话记录，同时删除。
-3. 表单绑定 Server Action 的写法来自第 6 篇；错误提示可用 `useActionState` 替代这里的 `?error=1` 参数。
+3. 表单绑定 Server Action 的写法来自第 5 篇；错误提示可用 `useActionState` 替代这里的 `?error=1` 参数。
 
 ## 5. 安全响应头清单
 
@@ -218,7 +218,7 @@ export default nextConfig
 
 1. CSP 配置不当容易"误伤"自己的脚本与样式：初期可先用 `Content-Security-Policy-Report-Only` 观察违规报告，再逐步收紧为强制模式。
 2. 以上为常用起步值，具体指令组合需结合站点实际的第三方资源调整；完整指令清单以官方文档为准。
-3. 静态资源、CDN 缓存与安全头的相互作用属于部署话题，可延伸阅读第 4 篇《Next.js 部署与性能优化》。
+3. 静态资源、CDN 缓存与安全头的相互作用属于部署话题，可延伸阅读第 9 篇《Next.js 部署与性能优化》。
 
 ## 6. CSRF 与鉴权分层模型
 
@@ -256,7 +256,7 @@ export async function deleteUser(formData: FormData) {
 
 **讲解：**
 
-1. **永远不要只靠 proxy.ts**：Server Action 是公开端点（见第 6 篇），攻击者可以直接构造请求调用，绕过页面上的按钮与 proxy 的跳转。
+1. **永远不要只靠 proxy.ts**：Server Action 是公开端点（见第 5 篇），攻击者可以直接构造请求调用，绕过页面上的按钮与 proxy 的跳转。
 2. 第二层的纪律是"每个敏感操作都自证权限"：读会话、验角色、再动数据；公共函数封装 `requireAdmin()` 可减少遗漏。
 3. 第三层是运维与架构话题：为数据库账号分配最小权限、启用行级安全，属于纵深防御，超出框架层职责。
 
@@ -264,13 +264,13 @@ export async function deleteUser(formData: FormData) {
 
 1. 实现完整登录链路：`/dashboard` 被 proxy 重定向到 `/login`，登录成功写 httpOnly Cookie 并回跳，登出删除 Cookie。
 2. 在 `next.config.ts` 配置三个安全头，用浏览器 DevTools 的 Network 面板确认响应中已生效。
-3. 给第 6 篇的文章删除 Action 补上管理员校验，并尝试不带 Cookie 直接调用该 Action，确认返回无权限。
+3. 给第 5 篇的文章删除 Action 补上管理员校验，并尝试不带 Cookie 直接调用该 Action，确认返回无权限。
 
 ## 小结与延伸
 
-> 登录态首选 Cookie + 服务端会话：`cookies()` 读 anywhere、写只在 Action/Handler；`proxy.ts`（16 起由 middleware.ts 更名）在边缘做粗筛与安全头，跑不了完整 Node API；CSRF 靠 sameSite 加 Origin 校验；分层模型记住一句：proxy 粗筛、action/handler 强校验、数据层兜底，永远不要只靠 proxy。
+> 登录态首选 Cookie + 服务端会话：`cookies()` 读 anywhere、写只在 Action/Handler；`proxy.ts`（16 起由 middleware.ts 更名，运行在 Node.js 运行时）做粗筛与安全头，官方仍要求它保持轻量、不做慢查询与完整鉴权；CSRF 靠 sameSite 加 Origin 校验；分层模型记住一句：proxy 粗筛、action/handler 强校验、数据层兜底，永远不要只靠 proxy。
 
-- Server Action 与 Route Handler 的写法基础，见第 5 篇《Route Handlers 与 API 设计》与第 6 篇《Server Actions 与表单》。
-- 会话读取导致的动态渲染、缓存失效逻辑，见第 7 篇《渲染策略与缓存》。
-- 生产环境的 HTTPS、反代与密钥管理，见第 4 篇《Next.js 部署与性能优化》。
+- Server Action 与 Route Handler 的写法基础，见第 4 篇《Route Handlers 与 API 设计》与第 5 篇《Server Actions 与表单》。
+- 会话读取导致的动态渲染、缓存失效逻辑，见第 6 篇《渲染策略与缓存》。
+- 生产环境的 HTTPS、反代与密钥管理，见第 9 篇《Next.js 部署与性能优化》。
 - 认证库（Auth.js、Clerk 等）的接入方式、proxy 运行时的具体能力边界，以官方文档为准。

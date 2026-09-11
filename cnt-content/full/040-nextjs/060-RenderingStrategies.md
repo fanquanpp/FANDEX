@@ -1,17 +1,18 @@
 ---
-order: 70
+order: 60
 title: 渲染策略与缓存
 module: 'nextjs'
 category: 前端技术
 difficulty: advanced
 description: SSG/ISR/SSR/流式渲染：给每个页面选对渲染方式。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'nextjs/003-DataFetchingCaching'
-  - 'nextjs/004-DeploymentOptimization'
+  - 'nextjs/030-DataFetchingCaching'
+  - 'nextjs/070-CacheComponentsDeepDive'
+  - 'nextjs/090-DeploymentOptimization'
 prerequisites:
-  - 'nextjs/003-DataFetchingCaching'
+  - 'nextjs/030-DataFetchingCaching'
 ---
 
 ## 0. 渲染策略全景（先读这里）
@@ -76,7 +77,7 @@ export default async function SearchPage({
 
 1. 动态信号清单：`cookies()`、`headers()`、页面 props 的 `searchParams`、`connection()` 等；只要任一被使用，该路由就转为动态渲染。
 2. 也可显式声明：`export const dynamic = "force-dynamic"` 强制动态、`"force-static"` 强制静态；显式声明的优先级高于默认推断。
-3. Next.js 16 缓存模型显式化（Cache Components，见第 4 节）之后，"什么被缓存、什么动态"由代码显式声明，默认行为更保守，细节以官方文档为准。
+3. Next.js 16 缓存模型显式化（Cache Components，见第 3 节）之后，"什么被缓存、什么动态"由代码显式声明，默认行为更保守，细节以官方文档为准。
 
 ## 2. 流式 SSR 与 Suspense 边界
 
@@ -119,7 +120,7 @@ export default function Loading() {
 
 ## 3. Cache Components 与 Partial Prefetching
 
-Next.js 16.0 把缓存模型显式化：过去"fetch 默认缓存、Router Cache 自动缓存"的隐式行为，是"为什么页面没更新"类问题的根源。新模型的两个核心概念（细节与启用方式以官方文档为准）：
+Next.js 16.0 把缓存模型显式化：过去"fetch 默认缓存、Router Cache 自动缓存"的隐式行为，是"为什么页面没更新"类问题的根源。在 `next.config.ts` 中设置 `cacheComponents: true` 启用，两个核心概念：
 
 1. **Cache Components**：缓存什么由代码显式声明（`use cache` 指令等），未声明的内容默认动态渲染；动态读取必须放在 `<Suspense>` 边界内，与缓存壳自由组合。
 2. **Partial Prefetching**：导航预取不再只有"整页静态 HTML"与"什么都不取"两档——可以只预取页面的静态壳，动态部分进入页面后再流式补齐。
@@ -163,7 +164,7 @@ export default async function LivePrice({ id }: { id: string }) {
 
 1. 判断口诀：**能缓存的显式缓存，该动态的老实动态**；两类的交界处用 `<Suspense>` 划开。
 2. Partial Prefetching 让"点得快"与"看得全"兼得：静态壳秒开，动态洞由流式填上。
-3. 该特性仍处于快速演进期，指令名称、配置项与默认值可能调整，落地前以官方文档为准。
+3. 启用后传统路由段配置（`dynamic`、`revalidate`、`fetchCache`）会被新模型取代，迁移映射与 `'use cache'`/`cacheLife` 的完整用法见第 7 篇《缓存体系与 Cache Components 深入》；具体配置项以当前版本的官方文档为准。
 
 ## 4. Instant Navigations：SPA 级导航体验
 
@@ -237,5 +238,6 @@ flowchart TD
 > 先问数据多旧可接受：不变用 SSG、可容忍延迟用 ISR、要实时用 SSR；再问交互多重：重交互只下沉到叶子组件 CSR。判定看动态 API 与显式声明；慢查询交给 Suspense 流式；16 时代的缓存要显式声明，导航即时感来自 Partial Prefetching 与 Instant Navigations。
 
 - 数据获取与缓存的基础语法，见第 3 篇《Next.js 数据获取与缓存》。
-- 缓存与预取对部署产物与 CDN 的影响，见第 4 篇《Next.js 部署与性能优化》。
-- Cache Components、Partial Prefetching 与 Instant Navigations 仍在快速演进，指令与配置的最新形态以官方文档为准。
+- Cache Components 指令与迁移映射的系统讲解，见第 7 篇《缓存体系与 Cache Components 深入》。
+- 缓存与预取对部署产物与 CDN 的影响，见第 9 篇《Next.js 部署与性能优化》。
+- Partial Prefetching 与 Instant Navigations 的最新形态以官方文档为准。

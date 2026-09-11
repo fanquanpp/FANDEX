@@ -1,17 +1,17 @@
 ---
-order: 50
+order: 40
 title: Route Handlers 与 API 设计
 module: 'nextjs'
 category: 前端技术
 difficulty: intermediate
 description: 用 route.ts 编写后端接口：方法、动态段、请求响应与缓存语义。
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'nextjs/003-DataFetchingCaching'
-  - 'nextjs/004-DeploymentOptimization'
+  - 'nextjs/030-DataFetchingCaching'
+  - 'nextjs/090-DeploymentOptimization'
 prerequisites:
-  - 'nextjs/002-AppRouterRouting'
+  - 'nextjs/020-AppRouterRouting'
 ---
 
 ## 0. Route Handlers 是什么（先读这里）
@@ -295,7 +295,7 @@ export async function DELETE(
 
 > `route.ts` 导出方法即接口：params/searchParams 记得 `await`；NextRequest/NextResponse 管 Cookie 与跳转；GET 是否缓存由你显式声明；错误统一封装，4xx 说人话、5xx 不泄密。
 
-- 接口只负责"承形"；本应用内部的改数据操作更推荐 Server Actions，见第 6 篇《Server Actions 与表单》。
-- 缓存语义与渲染策略的全局视角，见第 3 篇《Next.js 数据获取与缓存》与第 7 篇《渲染策略与缓存》。
+- 接口只负责"承形"；本应用内部的改数据操作更推荐 Server Actions，见第 5 篇《Server Actions 与表单》。
+- 缓存语义与渲染策略的全局视角，见第 3 篇《Next.js 数据获取与缓存》与第 6 篇《渲染策略与缓存》。
 - 接口的鉴权与安全响应头设置，见第 8 篇《认证、代理与安全》。
 - 更多接口细节（如 Edge 与 Node 运行时差异、Webhook 校验）以官方文档为准。
