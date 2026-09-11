@@ -1,6 +1,6 @@
 ---
 order: 300
-title: git-reset
+title: git-reset 三种重置模式
 module: 'git'
 category: 工具链
 difficulty: advanced

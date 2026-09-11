@@ -1,6 +1,6 @@
 ---
 order: 190
-title: CODEOWNERS
+title: CODEOWNERS 代码所有者
 module: 'github'
 category: 工具链
 difficulty: intermediate

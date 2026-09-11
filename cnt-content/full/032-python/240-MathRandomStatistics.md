@@ -1,6 +1,6 @@
 ---
 order: 240
-title: Python math/random/statistics
+title: math、random 与 statistics 标准库
 module: 'python'
 category: 后端技术
 difficulty: beginner

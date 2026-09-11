@@ -1,6 +1,6 @@
 ---
 order: 380
-title: git-submodule
+title: git-submodule 子模块管理
 module: 'git'
 category: 工具链
 difficulty: intermediate

@@ -1,6 +1,6 @@
 ---
 order: 400
-title: git-format-patch
+title: git-format-patch 补丁协作
 module: 'git'
 category: 工具链
 difficulty: intermediate

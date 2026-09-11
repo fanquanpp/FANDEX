@@ -1,6 +1,6 @@
 ---
 order: 190
-title: git-blame
+title: git-blame 逐行追溯历史
 module: 'git'
 category: 工具链
 difficulty: intermediate

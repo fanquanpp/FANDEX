@@ -1,6 +1,6 @@
 ---
 order: 290
-title: git-cherry-pick
+title: git-cherry-pick 选择性移植提交
 module: 'git'
 category: 工具链
 difficulty: intermediate

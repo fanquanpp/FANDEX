@@ -1,6 +1,6 @@
 ---
 order: 360
-title: git-bisect
+title: git-bisect 二分定位缺陷提交
 module: 'git'
 category: 工具链
 difficulty: intermediate

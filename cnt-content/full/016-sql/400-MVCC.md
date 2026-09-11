@@ -1,6 +1,6 @@
 ---
 order: 400
-title: MVCC
+title: MVCC 多版本并发控制
 module: 'sql'
 category: 数据库
 difficulty: advanced

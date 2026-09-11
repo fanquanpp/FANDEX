@@ -1,6 +1,6 @@
 ---
 order: 410
-title: git-worktree
+title: git-worktree 多工作树并行
 module: 'git'
 category: 工具链
 difficulty: intermediate

@@ -1,6 +1,6 @@
 ---
 order: 390
-title: sparse-checkout
+title: sparse-checkout 稀疏检出
 module: 'git'
 category: 工具链
 difficulty: advanced

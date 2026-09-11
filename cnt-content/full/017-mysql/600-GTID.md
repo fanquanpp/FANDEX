@@ -1,6 +1,6 @@
 ---
 order: 600
-title: GTID
+title: GTID 全局事务标识符
 module: 'mysql'
 category: 数据库
 difficulty: advanced

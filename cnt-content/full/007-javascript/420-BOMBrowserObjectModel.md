@@ -1,6 +1,6 @@
 ---
 order: 420
-title: BOM
+title: BOM 浏览器对象模型
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate

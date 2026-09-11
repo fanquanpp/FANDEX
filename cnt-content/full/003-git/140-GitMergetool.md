@@ -1,6 +1,6 @@
 ---
 order: 140
-title: git-mergetool
+title: git-mergetool 合并冲突工具
 module: 'git'
 category: 工具链
 difficulty: intermediate

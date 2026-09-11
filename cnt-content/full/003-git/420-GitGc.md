@@ -1,6 +1,6 @@
 ---
 order: 420
-title: git-gc
+title: git-gc 仓库垃圾回收
 module: 'git'
 category: 工具链
 difficulty: intermediate

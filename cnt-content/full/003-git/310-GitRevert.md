@@ -1,6 +1,6 @@
 ---
 order: 310
-title: git-revert
+title: git-revert 安全撤销提交
 module: 'git'
 category: 工具链
 difficulty: intermediate

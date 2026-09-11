@@ -1,6 +1,6 @@
 ---
 order: 260
-title: git-reflog
+title: git-reflog 引用日志与误操作救援
 module: 'git'
 category: 工具链
 difficulty: intermediate

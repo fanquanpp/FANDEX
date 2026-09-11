@@ -1,6 +1,6 @@
 ---
 order: 90
-title: git-commit-amend
+title: git-commit-amend 修补最近提交
 module: 'git'
 category: 工具链
 difficulty: intermediate

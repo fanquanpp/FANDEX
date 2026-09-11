@@ -1,6 +1,6 @@
 ---
 order: 120
-title: JSON_TABLE
+title: JSON_TABLE 关系化查询
 module: 'postgresql'
 category: 数据库
 difficulty: advanced

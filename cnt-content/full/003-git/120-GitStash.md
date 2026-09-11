@@ -1,6 +1,6 @@
 ---
 order: 120
-title: git-stash
+title: git-stash 暂存工作进度
 module: 'git'
 category: 工具链
 difficulty: intermediate

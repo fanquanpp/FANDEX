@@ -1,6 +1,6 @@
 ---
 order: 270
-title: git-rebase
+title: git-rebase 变基与改写历史
 module: 'git'
 category: 工具链
 difficulty: advanced

@@ -1,6 +1,6 @@
 ---
 order: 440
-title: Python gc inspect dis
+title: gc、inspect 与 dis 运行时工具
 module: 'python'
 category: 后端技术
 difficulty: beginner
