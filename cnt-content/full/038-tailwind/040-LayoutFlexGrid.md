@@ -6,25 +6,25 @@ category: 前端技术
 difficulty: beginner
 description: Tailwind CSS 布局系统：Flex 与 Grid 布局原理（主轴/交叉轴、网格线/网格区域）、对应工具类映射、gap 间距、容器居中与定位，配大量布局示例
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'tailwind/003-UtilityCore'
-  - 'tailwind/006-ResponsiveDark'
+  - 'tailwind/030-UtilityCore'
+  - 'tailwind/060-ResponsiveDark'
 prerequisites:
-  - 'tailwind/003-UtilityCore'
+  - 'tailwind/030-UtilityCore'
 ---
 
 ## 前置知识
 
-- [Tailwind CSS 核心概念与工具类](/tailwind/003-UtilityCore)：建议先完成前一篇的学习
+- [Tailwind CSS 核心概念与工具类](/tailwind/030-UtilityCore)：建议先完成前一篇的学习
 
 ## 学习目标
 
-- 掌握「0. 摆积木的排布学问」的核心机制、典型用法与常见陷阱
-- 掌握「1. 布局的起点：文档流与盒模型」的核心机制、典型用法与常见陷阱
-- 掌握「2. Flex 原理：一维排布的串珠」的核心机制、典型用法与常见陷阱
-- 掌握「3. Grid 原理：二维排布的底板」的核心机制、典型用法与常见陷阱
-- 掌握「4. 间距与居中：布局的"呼吸感"」的核心机制、典型用法与常见陷阱
+- 理解文档流、display 与盒模型如何决定元素的默认排布，说清 Flex 与 Grid 各自解决的布局问题。
+- 建立"主轴/交叉轴、容器/项目"两个心智模型，能用 `justify-*`、`items-*`、`flex-1`、`shrink-0` 完成一维布局。
+- 理解网格线、网格轨道与隐式网格，能用 `grid-cols-*`、`col-span-*`、`gap-*` 搭出二维页面骨架。
+- 能按场景选对居中方式：文字用 `text-center`、块级容器用 `mx-auto` + 定宽、双轴居中用 `flex items-center justify-center`。
+- 能用 `relative`/`absolute`/`fixed`/`sticky` 与 `z-*` 处理徽标、吸顶导航、弹窗遮罩等特殊定位场景。
 
 
 
@@ -446,6 +446,6 @@ flowchart TB
 | 定位基准错误 | absolute 元素"飞"到页面角落 | 祖先没有 `relative`，absolute 定位到更外层 | 在最近的定位父元素上加 `relative` |
 | 响应式断点写反 | 移动端也显示多列 | 忘记"移动优先"：基础类先写移动端样式 | 基础写单列，`md:`/`lg:` 前缀逐级增强 |
 
-## 9. 一句话记忆
+## 8. 一句话记忆
 
 一维排布用 Flex（容器管方向与对齐、项目管伸缩），二维排布用 Grid（容器管行列轨道、项目管跨列跨行），兄弟间距用 `gap`、块级居中用 `mx-auto`、悬浮层用 `relative + absolute + z-*`。

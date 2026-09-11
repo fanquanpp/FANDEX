@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: beginner
 description: Tailwind CSS 安装与配置：Vite/React/Astro 项目接入教程、@import 与 @source 详解、Tailwind 3 与 4 配置差异对照
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'tailwind/003-UtilityCore'
-  - 'css/008-CSS3SelectorSystem'
+  - 'tailwind/030-UtilityCore'
+  - 'css/130-CSS3SelectorSystem'
 prerequisites:
-  - 'css/008-CSS3SelectorSystem'
+  - 'css/130-CSS3SelectorSystem'
 ---
 
 
@@ -348,6 +348,6 @@ npx @tailwindcss/upgrade
 | 重复配置 | 样式重复或冲突 | 同时使用了旧集成包（如 `@astrojs/tailwind`）与 Vite 插件 | 只保留一种接入方式 |
 | 修改后不生效 | 改了配置没反应 | Vite 缓存或监听失效 | 重启开发服务器 |
 
-## 12. 一句话记忆
+## 11. 一句话记忆
 
 安装 Tailwind 4 只有两步：装包（`tailwindcss` + 对应构建插件）与写一行 `@import "tailwindcss";`——剩下的扫描范围用 `@source` 按需补充，配置从 `tailwind.config.js` 搬进了 CSS。

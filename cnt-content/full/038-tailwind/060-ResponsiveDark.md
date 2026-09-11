@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: intermediate
 description: 'Tailwind CSS 响应式与暗色模式原理篇：从移动优先断点与 prefers-color-scheme 媒体查询讲起，掌握 sm:/md:/lg: 前缀、dark: 变体与 @custom-variant 策略切换'
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'tailwind/004-LayoutFlexGrid'
-  - 'tailwind/005-ThemeCustomization'
+  - 'tailwind/040-LayoutFlexGrid'
+  - 'tailwind/050-ThemeCustomization'
 prerequisites:
-  - 'tailwind/003-UtilityCore'
+  - 'tailwind/030-UtilityCore'
 ---
 
 
@@ -309,6 +309,6 @@ Tailwind 的变体（断点前缀、状态前缀、暗色前缀）可以像积�
 | 拼接动态类名 `bg-${color}-500` | 样式缺失 | 内容扫描只识别完整类名，无法解析拼接 | 使用完整类名，或用映射表（如 `const map = { red: 'bg-red-500' }`） |
 | 深色模式下忘记处理图片/阴影 | 图片过亮、阴影突兀 | `dark:` 只覆盖显式书写的类 | 给图片加 `dark:opacity-80`、阴影换 `dark:shadow-none` 等 |
 
-## 9. 一句话记忆
+## 8. 一句话记忆
 
 **响应式 = "移动优先"断点闸门（`sm:`/`md:`/`lg:` 只是自动包一层媒体查询）；暗色 = `dark:` 变体（默认听系统，`@custom-variant` 后听 `.dark` 类）；二者都是"环境条件 + 类名前缀"的语法糖。**

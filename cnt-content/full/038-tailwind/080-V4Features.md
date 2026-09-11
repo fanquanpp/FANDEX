@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: intermediate
 description: Tailwind CSS v4 新特性时间线：Oxide 引擎、CSS-first 配置、自动内容检测、@tailwindcss/vite 插件、原生 @layer 级联与 @source/@utility/@custom-variant 新语法
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'tailwind/002-InstallConfig'
-  - 'tailwind/005-ThemeCustomization'
+  - 'tailwind/020-InstallConfig'
+  - 'tailwind/050-ThemeCustomization'
 prerequisites:
-  - 'tailwind/002-InstallConfig'
+  - 'tailwind/020-InstallConfig'
 ---
 
 
@@ -28,11 +28,12 @@ Tailwind CSS v4 就是一次"**换代级改款**"。2025 年 1 月 22 日，Tail
 | 时间 | 版本 | 里程碑 |
 | --- | --- | --- |
 | 2017 年底 | v0.x | 框架诞生，Utility-First 理念确立 |
-| 2021 年 | v2.x | 引入 JIT 模式雏形 |
-| 2022 年 | v3.0 | JIT 成为默认，`tailwind.config.js` 时代 |
+| 2020-11 / 2021-03 | v2.0 / v2.1 | v2.0 引入暗色模式；v2.1 提供可选的 JIT 引擎 |
+| 2021-12 | v3.0 | JIT 成为默认，`tailwind.config.js` 时代 |
 | 2025-01-22 | v4.0 | 从零重写：Rust 引擎 Oxide、CSS-first 配置、自动内容检测 |
-| 2025-2026 | v4.1 / v4.2 | 新增 webpack 插件、新调色板、逻辑属性工具类等 |
-| 2026-05 | v4.3 | 持续迭代：性能与细节继续完善 |
+| 2025-04-03 | v4.1 | 新增 `text-shadow-*`、`mask-*` 工具类、`@source not/inline` 指令、`pointer-coarse:` 等变体 |
+| 2026-02-18 | v4.2 | 新增 mauve/olive/mist/taupe 四个中性色板、官方 Webpack 插件、逻辑属性工具类补全 |
+| 2026-05-08 | v4.3 | 内置滚动条样式（`scrollbar-*`）、`@container-size` 尺寸容器、`zoom-*` 与 `tab-*` 工具类、`@variant` 组合增强 |
 
 对学习者最有意义的对照是 **v3 与 v4 的架构对比**：
 
@@ -64,9 +65,9 @@ Tailwind 团队在自己的 Catalyst 项目上做的实测：
 
 最后一个数字最有意义：**当你复用已生成的类名时，增量构建在微秒级完成**——热更新（HMR）从"明显等待"变成"几乎瞬时"。真实项目体感：大型设计系统全量构建从 4 秒级降到 1 秒以内。
 
-### 2.3 附带收益：安装体积减半
+### 2.3 附带收益：更小的安装体积
 
-v4 的 `tailwindcss` 包通过可选依赖携带平台对应的 Rust 二进制，整体安装体积约 15MB，而 v3 的 JavaScript 依赖链约 45MB。对开发者完全透明——按 v4 方式安装即可自动获得全部性能收益，无需任何调优参数。
+v4 的 `tailwindcss` 包通过可选依赖携带平台对应的 Rust 二进制——npm 安装时只下载当前操作系统需要的原生包，不再像 v3 那样拖一整条纯 JavaScript 依赖链，官方公告称安装体积明显缩小、依赖大幅减少。对开发者完全透明——按 v4 方式安装即可自动获得全部性能收益，无需任何调优参数。
 
 ## 3. 第二大变化：CSS-first 配置
 
@@ -151,7 +152,7 @@ export default defineConfig({
 @import "tailwindcss";
 ```
 
-对比 v3 的安装（`tailwindcss` + `postcss` + `autoprefixer` + 两个配置文件），v4 真正做到了"开箱即用"。注意 `@tailwindcss/vite` 要求 Vite 5 及以上版本。
+对比 v3 的安装（`tailwindcss` + `postcss` + `autoprefixer` + 两个配置文件），v4 真正做到了"开箱即用"。注意 `@tailwindcss/vite` 插件要求 Vite 5.2 及以上版本。
 
 ## 6. 第五大变化：原生 @layer 级联
 
@@ -306,8 +307,9 @@ npx @tailwindcss/upgrade
 ### 10.4 常见破坏性变化自查清单
 
 - **默认边框颜色**：v3 默认 `border` 为 gray-200，v4 默认使用 `currentColor`，涉及边框需显式指定颜色；
+- **阴影与圆角改名**：v4 把"裸类"与"`-sm`"整体降一档——`shadow-sm` 改为 `shadow-xs`、裸 `shadow` 改为 `shadow-sm`，`rounded-*`、`blur-*` 同理；`ring` 默认宽度从 3px 变为 1px、默认颜色改为 `currentColor`，旧 `ring` 需改写为 `ring-3`；
+- **占位符颜色**：v3 的 `::placeholder` 默认 gray-400，v4 改为"当前文字色 50% 透明度"，表单密集页面迁移后需留意；
 - **调色板观感**：OKLCH 下同一色号显示不同，重点检查品牌色；
-- **阴影与圆角**：`shadow-sm` 等阴影值微调，容器圆角默认值有变化；
 - **动态类名**：`bg-${color}-500` 拼接在 v4 中同样不被扫描，改用完整类名或映射表；
 - **浏览器要求**：v4 要求现代浏览器（Chrome 111+、Safari 16.4+、Firefox 128+），不支持 IE11。
 
@@ -332,6 +334,6 @@ npx @tailwindcss/upgrade
 | 拼接类名 `bg-${color}-500` | 样式缺失且无报错 | 扫描器只识别源码中的完整类名 | 用完整类名或映射表 |
 | v3 插件在 v4 中报错 | 插件加载失败 | 部分 v3 插件尚未适配 v4 | 查插件文档；用 `@utility`/`@custom-variant` 原生替代 |
 
-## 13. 一句话记忆
+## 12. 一句话记忆
 
 **v4 = 换发动机（Rust 的 Oxide，快 100 倍）+ 换中控（配置搬进 CSS 的 @theme）+ 全系标配（容器查询、OKLCH、新语法全家桶）——"改款"之后，功能更强、上手更简单。**

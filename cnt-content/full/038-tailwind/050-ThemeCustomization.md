@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: intermediate
 description: Tailwind CSS 4 主题定制全攻略：@theme 设计令牌、@theme inline、@utility、OKLCH 色彩与运行时换肤，从品牌设计规范视角落地你的设计系统
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'tailwind/002-InstallConfig'
-  - 'tailwind/008-V4Features'
+  - 'tailwind/020-InstallConfig'
+  - 'tailwind/080-V4Features'
 prerequisites:
-  - 'tailwind/002-InstallConfig'
+  - 'tailwind/020-InstallConfig'
 ---
 
 
@@ -288,8 +288,8 @@ Tailwind 4 的默认调色板改用 **OKLCH 色彩空间**，它是 CSS 原生�
 
 两种写法各有用处：
 
-- **普通 `@theme`**：适合希望"运行时能通过覆盖变量换肤"的场景（见第 10 节）；
-- **`@theme inline`**：适合"类名渲染结果必须稳定、不依赖变量链"的场景。Tailwind 默认主题内部大量使用 inline 展开，以保证内置工具类取值稳定。
+- **普通 `@theme`**：变量会作为真实 CSS 变量输出到 `:root`，工具类引用的是变量本身——适合希望"运行时能通过覆盖变量换肤"的场景（见第 10 节）；
+- **`@theme inline`**：工具类直接内联变量的解析值，不再经由全局变量中转——shadcn/ui 这类"在 `:root` / `.dark` 上自管变量、再暴露给 Tailwind"的主题方案，正是靠 `@theme inline` 引用这些外部变量实现暗色一键切换的。
 
 官方文档特别提醒：当变量引用会跨作用域时（如 `--font-sans: var(--font-inter)`，而 `--font-inter` 定义在更深层选择器），必须用 `@theme inline`，否则 `var()` 可能在解析时取不到值而回退到兜底值。
 
@@ -347,6 +347,6 @@ function applyTheme(name) {
 | 语义令牌换肤不生效 | 切换主题后颜色不变 | 用了 `@theme inline`，值被内联无法覆盖 | 需要运行时换肤的令牌用普通 `@theme` |
 | 用 `bg-[var(--color-primary)]` 写任意值 | 能运行但可读性差 | 忽略了令牌已生成工具类的事实 | 直接用 `bg-primary`，任意值仅用于一次性场景 |
 
-## 13. 一句话记忆
+## 12. 一句话记忆
 
 **设计令牌 = 网站的装修设计图纸；`@theme` 声明令牌，一个变量同时变身"CSS 变量 + 全套工具类"，改一处、全站生效。**

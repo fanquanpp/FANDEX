@@ -6,11 +6,11 @@ category: 前端技术
 difficulty: intermediate
 description: 串联模块十一篇文档：从 utility-first 理念与工具类家族到 @theme 设计令牌、响应式暗色与组件复用的完整知识体系回顾。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'tailwind/003-UtilityCore'
-  - 'tailwind/005-ThemeCustomization'
-  - 'tailwind/007-ComponentReuse'
+  - 'tailwind/030-UtilityCore'
+  - 'tailwind/050-ThemeCustomization'
+  - 'tailwind/070-ComponentReuse'
 prerequisites: []
 ---
 
@@ -18,8 +18,8 @@ prerequisites: []
 
 ## 前置知识
 
-- [Tailwind CSS 概述](/tailwind/001-TailwindOverview)：utility-first 与传统 CSS、Bootstrap 的本质差异，是理解一切工具类设计的前提。
-- [Tailwind CSS 核心概念与工具类](/tailwind/003-UtilityCore)：七大工具类族与命名规律是"读类名"的基本功，回顾前先确认能看懂任意一段类名。
+- [Tailwind CSS 概述](/tailwind/010-TailwindOverview)：utility-first 与传统 CSS、Bootstrap 的本质差异，是理解一切工具类设计的前提。
+- [Tailwind CSS 核心概念与工具类](/tailwind/030-UtilityCore)：七大工具类族与命名规律是"读类名"的基本功，回顾前先确认能看懂任意一段类名。
 
 ## 学习目标
 
@@ -37,7 +37,6 @@ flowchart TD
   subgraph ideas["理念与安装"]
     A["001 Tailwind CSS 概述"]
     B["002 安装与配置"]
-    C["008 v4 新特性"]
   end
   subgraph utils["工具类核心"]
     D["003 核心概念与工具类"]
@@ -49,6 +48,7 @@ flowchart TD
   end
   subgraph engineering["工程化"]
     H["007 组件复用"]
+    C["008 v4 新特性"]
   end
   subgraph advanced["进阶方向"]
     I["009 动画与过渡"]
@@ -56,24 +56,24 @@ flowchart TD
     K["011 容器查询"]
   end
   A --> B
-  B --> C
-  C --> D
+  B --> D
   D --> E
   E --> F
   F --> G
   G --> H
-  H --> I
+  H --> C
+  C --> I
   I --> J
   J --> K
 ```
 
-读图按编号推进：001、002、008 是理念与架构块，003、004 是工具类核心块，005、006 是主题与变体块，007 是工程化块，009 到 011 是待补全的进阶块。主线从理念直达工程化；009-011 三篇当前为占位文档，可先按计划要点自行预研，等正文发布后对照补齐。
+读图按编号推进：001、002 是理念与安装块，003、004 是工具类核心块，005、006 是主题与变体块，007、008 是工程化与架构块，009 到 011 是动画、插件、容器查询三个进阶专题。主线从理念出发，经工具类核心直达工程化，最后以进阶专题收尾；每一篇的正文都已就绪，回顾时按图索骥即可。
 
 ## 核心概念回顾
 
 ### 1. utility-first 理念
 
-Tailwind 不提供成品组件，而是提供成百上千个单一用途的"积木颗粒"：一个工具类只负责一条 CSS 声明，页面样式由颗粒在 HTML 里拼装出来。它解决的是传统 CSS 的两大顽疾——命名困难与样式全局污染（见[Tailwind CSS 概述](/tailwind/001-TailwindOverview)）：
+Tailwind 不提供成品组件，而是提供成百上千个单一用途的"积木颗粒"：一个工具类只负责一条 CSS 声明，页面样式由颗粒在 HTML 里拼装出来。它解决的是传统 CSS 的两大顽疾——命名困难与样式全局污染（见[Tailwind CSS 概述](/tailwind/010-TailwindOverview)）：
 
 ```html
 <!-- 歌姬卡片：全部样式由工具类拼装，无需另写 .css 文件 -->
@@ -91,7 +91,7 @@ Tailwind 不提供成品组件，而是提供成百上千个单一用途的"积�
 
 ### 2. 工具类家族与命名规律
 
-类名遵循"属性前缀 + 值"的两级命名：`bg` 对应 background、`p` 对应 padding、`text` 对应字号与文字颜色；颜色都落在 50-950 的明度刻度上，间距都是 0.25rem 的倍数。规格统一意味着类名可以"读"出来（见[核心概念与工具类](/tailwind/003-UtilityCore)）：
+类名遵循"属性前缀 + 值"的两级命名：`bg` 对应 background、`p` 对应 padding、`text` 对应字号与文字颜色；颜色都落在 50-950 的明度刻度上，间距都是 0.25rem 的倍数。规格统一意味着类名可以"读"出来（见[核心概念与工具类](/tailwind/030-UtilityCore)）：
 
 ```html
 <!-- 拆一个类名练手：演唱会开票横幅 -->
@@ -106,7 +106,7 @@ Flex 与 Grid 的选择口诀是"一维问 Flex、二维问 Grid"：歌姬一览
 
 ### 3. 布局系统：Flex 与 Grid
 
-Flex 擅长一维排布（一行或一列），Grid 擅长二维排布（行列同时控制）。平台首页的"歌姬一览"用 Grid 分格，卡片内部用 Flex 对齐，`gap-*` 统一替代子元素间距（见[布局系统](/tailwind/004-LayoutFlexGrid)）：
+Flex 擅长一维排布（一行或一列），Grid 擅长二维排布（行列同时控制）。平台首页的"歌姬一览"用 Grid 分格，卡片内部用 Flex 对齐，`gap-*` 统一替代子元素间距（见[布局系统](/tailwind/040-LayoutFlexGrid)）：
 
 ```html
 <!-- 歌姬一览：Grid 控制整体分格 -->
@@ -127,7 +127,7 @@ Flex 擅长一维排布（一行或一列），Grid 擅长二维排布（行列�
 
 ### 4. @theme 与设计令牌
 
-设计令牌就是把"颜色、字体、间距"等设计决策起名保存。Tailwind 4 把这份"图纸"从 tailwind.config.js 搬进 CSS：`@theme` 块声明的变量会自动生成对应工具类，歌姬应援色正是最贴切的例子（见[主题定制与设计令牌](/tailwind/005-ThemeCustomization)）：
+设计令牌就是把"颜色、字体、间距"等设计决策起名保存。Tailwind 4 把这份"图纸"从 tailwind.config.js 搬进 CSS：`@theme` 块声明的变量会自动生成对应工具类，歌姬应援色正是最贴切的例子（见[主题定制与设计令牌](/tailwind/050-ThemeCustomization)）：
 
 ```css
 /* app.css —— 用 @theme 把六位歌姬的应援色注册为品牌令牌 */
@@ -149,7 +149,7 @@ Flex 擅长一维排布（一行或一列），Grid 擅长二维排布（行列�
 
 ### 5. 响应式与暗色模式
 
-响应式与暗色的本质是媒体查询，Tailwind 把"变形条件"写成类名前缀：`md:grid-cols-2` 表示达到平板宽度变两列，`dark:bg-gray-900` 表示系统暗色时换深色底。移动优先意味着不带前缀的类是基准样式（见[响应式与暗色模式](/tailwind/006-ResponsiveDark)）：
+响应式与暗色的本质是媒体查询，Tailwind 把"变形条件"写成类名前缀：`md:grid-cols-2` 表示达到平板宽度变两列，`dark:bg-gray-900` 表示系统暗色时换深色底。移动优先意味着不带前缀的类是基准样式（见[响应式与暗色模式](/tailwind/060-ResponsiveDark)）：
 
 ```html
 <!-- 演唱会横幅：移动优先 + 暗色变体 -->
@@ -165,7 +165,7 @@ Flex 擅长一维排布（一行或一列），Grid 擅长二维排布（行列�
 
 ### 6. 组件复用：从工具类到组件
 
-反复出现的工具类组合要沉淀为可复用零件：组件化项目用"组件 + cva"管理变体，纯 HTML 场景用 `@apply` 提取，需要主题切换时用 CSS 变量组合。变体多的按钮用 cva 最省心（见[组件复用](/tailwind/007-ComponentReuse)）：
+反复出现的工具类组合要沉淀为可复用零件：组件化项目用"组件 + cva"管理变体，纯 HTML 场景用 `@apply` 提取，需要主题切换时用 CSS 变量组合。变体多的按钮用 cva 最省心（见[组件复用](/tailwind/070-ComponentReuse)）：
 
 ```typescript
 // src/components/badge.ts —— 用 cva 定义应援色徽章的多个变体
@@ -191,7 +191,7 @@ v4 的自动内容检测扫的是完整类名字符串，这正是"拼接类名�
 
 ### 7. v4 的 CSS-first 架构
 
-v4 是从零重写的换代：构建引擎换成 Rust（Oxide），配置从 JS 文件搬进 CSS 的 @theme 块，内容检测自动化（不再维护 content 数组），并原生支持容器查询与 3D 变换。理解"为什么变"比记住"变成什么"更重要（见[v4 新特性](/tailwind/008-V4Features)）：
+v4 是从零重写的换代：构建引擎换成 Rust（Oxide），配置从 JS 文件搬进 CSS 的 @theme 块，内容检测自动化（不再维护 content 数组），并原生支持容器查询与 3D 变换。理解"为什么变"比记住"变成什么"更重要（见[v4 新特性](/tailwind/080-V4Features)）：
 
 ```css
 /* v4 接入：一行 @import 取代 v3 的三层指令与 config 文件 */
@@ -236,7 +236,7 @@ v3 与 v4 的架构差异则是新老资料冲突的根源，迁移前先对齐�
 const cls = isMiku ? "text-teal-600" : "text-pink-600"
 ```
 
-2. 用 `class` 策略做暗色切换，却没重定义 dark 变体，`dark:` 全部不生效（见[响应式与暗色模式](/tailwind/006-ResponsiveDark)）：
+2. 用 `class` 策略做暗色切换，却没重定义 dark 变体，`dark:` 全部不生效（见[响应式与暗色模式](/tailwind/060-ResponsiveDark)）：
 
 ```css
 /* 错误：只给 html 挂 class，dark: 仍跟随系统媒体查询 */
@@ -256,7 +256,7 @@ const cls = isMiku ? "text-teal-600" : "text-pink-600"
 <p class="text-miku">初音未来</p>
 ```
 
-4. 合并动态类名时 `p-2` 与 `p-4` 同时存在，优先级取决于书写顺序，样式随机失效。用 tailwind-merge 做合并（见[组件复用](/tailwind/007-ComponentReuse)）：
+4. 合并动态类名时 `p-2` 与 `p-4` 同时存在，优先级取决于书写顺序，样式随机失效。用 tailwind-merge 做合并（见[组件复用](/tailwind/070-ComponentReuse)）：
 
 ```typescript
 // 错误：直接拼接，两个 padding 类冲突
@@ -294,7 +294,7 @@ const cls = twMerge("p-2", extra) // extra = "p-4" 得到 "p-4"
 
 ## 后续学习路径
 
-1. 夯实布局：重读[布局系统](/tailwind/004-LayoutFlexGrid)，把主轴交叉轴与网格线原理用自己的话讲一遍。
-2. 建立设计系统：跟随[主题定制与设计令牌](/tailwind/005-ThemeCustomization)为平台落地完整令牌体系，衔接[响应式与暗色模式](/tailwind/006-ResponsiveDark)完成多形态适配。
-3. 工程化复用：精读[组件复用](/tailwind/007-ComponentReuse)，用 cva 重构一个现有组件并对比维护成本。
-4. 展望新特性：按[组件复用](/tailwind/007-ComponentReuse)、[v4 新特性](/tailwind/008-V4Features)的顺序收束主线，并跟进[动画与过渡](/tailwind/009-TailwindAnimationTransition)、[插件与表单](/tailwind/010-TailwindPluginsForms)、[容器查询](/tailwind/011-TailwindContainerQueries)的后续更新。
+1. 夯实布局：重读[布局系统](/tailwind/040-LayoutFlexGrid)，把主轴交叉轴与网格线原理用自己的话讲一遍。
+2. 建立设计系统：跟随[主题定制与设计令牌](/tailwind/050-ThemeCustomization)为平台落地完整令牌体系，衔接[响应式与暗色模式](/tailwind/060-ResponsiveDark)完成多形态适配。
+3. 工程化复用：精读[组件复用](/tailwind/070-ComponentReuse)，用 cva 重构一个现有组件并对比维护成本。
+4. 进阶专题：按[组件复用](/tailwind/070-ComponentReuse)、[v4 新特性](/tailwind/080-V4Features)的顺序收束主线，再依次学习[动画与过渡](/tailwind/090-TailwindAnimationTransition)、[插件与表单](/tailwind/100-TailwindPluginsForms)、[容器查询](/tailwind/110-TailwindContainerQueries)三个进阶篇，补全模块全景。

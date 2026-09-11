@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: intermediate
 description: Tailwind CSS 组件复用方案对比：纯工具类组件封装 / @apply 提取 / CSS 变量组合，配 cva + clsx + tailwind-merge 工程化实践，附适用场景决策表
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'tailwind/003-UtilityCore'
-  - 'tailwind/005-ThemeCustomization'
+  - 'tailwind/030-UtilityCore'
+  - 'tailwind/050-ThemeCustomization'
 prerequisites:
-  - 'tailwind/003-UtilityCore'
+  - 'tailwind/030-UtilityCore'
 ---
 
 
@@ -328,6 +328,6 @@ export function Button({ variant, size, className, children }) {
 | `@apply` 里用了未定义的类名 | 编译报错 `Cannot apply unknown utility class` | 类名拼写错误或令牌未定义 | 检查拼写；自定义类先定义在 `@theme` 中 |
 | 忘记给组件加 `className` 透传 | 调用方无法覆盖样式 | 组件没有接收外部类名 | 组件 props 增加 `className` 并用 `cn()` 合并 |
 
-## 10. 一句话记忆
+## 9. 一句话记忆
 
 **复用三板斧：组件封装管结构（框架项目首选）、`@apply` 管纯 CSS 沉淀、设计令牌管全局取值；工程化收尾用 `cva + cn()` 管变体和类名冲突——先定方案，再写代码。**

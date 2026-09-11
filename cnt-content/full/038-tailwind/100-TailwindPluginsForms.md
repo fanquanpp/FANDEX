@@ -4,25 +4,23 @@ title: 插件与表单
 module: 'tailwind'
 category: 前端技术
 difficulty: intermediate
-description: 官方插件生态：forms、typography 与自定义插件编写。
+description: 'Tailwind CSS 插件与表单：@plugin 加载 forms/typography 官方插件、三种重置策略选择、prose 长文排版兜底、plugin() API 与 matchUtilities 按令牌批量生成工具类'
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'tailwind/005-ThemeCustomization'
-  - 'tailwind/008-V4Features'
+  - 'tailwind/050-ThemeCustomization'
+  - 'tailwind/080-V4Features'
 prerequisites:
-  - 'tailwind/005-ThemeCustomization'
+  - 'tailwind/050-ThemeCustomization'
 ---
-
-# 插件与表单
 
 工具类擅长"精确打击"，但有两类需求天然不适合逐个类名去凑：表单控件的**出厂统一调校**（每个 input 都要同款边框、焦点环）与长文正文的**排版兜底**（CMS 与 MDX 来的内容没法逐段加类）。官方插件体系正是为这两类"批处理"需求准备的。本篇覆盖两个最常用的官方插件 forms 与 typography，再进到自定义插件 API 与主题联动。
 
 ## 前置知识
 
-- [Tailwind 主题定制与设计令牌](/tailwind/005-ThemeCustomization)：插件通过 theme() 读取令牌，主题改色插件自动跟随。
-- [Tailwind 4 新特性速览](/tailwind/008-V4Features)：@plugin 指令与 CSS-first 配置的背景。
-- [Tailwind 工具类核心机制](/tailwind/003-UtilityCore)：理解变体修饰，才能理解插件注册的类如何被使用。
+- [Tailwind 主题定制与设计令牌](/tailwind/050-ThemeCustomization)：插件通过 theme() 读取令牌，主题改色插件自动跟随。
+- [Tailwind 4 新特性速览](/tailwind/080-V4Features)：@plugin 指令与 CSS-first 配置的背景。
+- [Tailwind 工具类核心机制](/tailwind/030-UtilityCore)：理解变体修饰，才能理解插件注册的类如何被使用。
 
 ## 学习目标
 
@@ -46,7 +44,7 @@ Tailwind 插件是一个函数包，在构建期向引擎注册新工具类、�
 @plugin "@tailwindcss/typography";
 ```
 
-旧版（Tailwind 3）的方式是在 `tailwind.config.js` 的 `plugins` 数组里注册，升级到 4 后迁移成上面的 @plugin 写法即可。官方插件按"批处理一类需求"组织：forms 管表单控件、typography 管长文排版；社区插件同理。挑选原则与 astro 集成一致：**官方优先、按需引入**——每个插件都会扩大样式产物与团队认知面，装一个就要让全队知道它注册了哪些类。
+旧版（Tailwind 3）的方式是在 `tailwind.config.js` 的 `plugins` 数组里注册，升级到 4 后迁移成上面的 @plugin 写法即可。官方插件按"批处理一类需求"组织：forms 管表单控件、typography 管长文排版；社区插件同理。挑选原则与接入 Vite 插件时一样：**官方优先、按需引入**——每个插件都会扩大样式产物与团队认知面，装一个就要让全队知道它注册了哪些类。
 
 插件的注册顺序会影响覆盖关系：后注册的插件可以覆盖先注册插件写入的同类规则，与工具类在样式表中的先后顺序一致。团队里若有多个插件都要碰表单样式，把"打底型"（forms）放在前面、"个性化型"（自己的组件插件）放在后面，覆盖方向就永远是"个性覆盖打底"，不会出现反向打架。
 
@@ -227,6 +225,6 @@ export const glow = plugin(({ matchUtilities, theme }) => {
 
 ## 动手实践
 
-1. **表单统一化**：接入 forms 插件（strategy: base），把 010 篇的购票表单、粉丝团报名表、P主投稿表三个表单的控件换成统一焦点环，主题里改一次 primary 的值验证全部联动。提示：radio 的选中色就是 text-primary。
+1. **表单统一化**：接入 forms 插件（strategy: base），把本篇第 2 节的购票表单、粉丝团报名表、P主投稿表三个表单的控件换成统一焦点环，主题里改一次 primary 的值验证全部联动。提示：radio 的选中色就是 text-primary。
 2. **专栏排版**：为歌姬访谈专栏启用 prose，加 prose-headings 竖条修饰与 dark:prose-invert，对比接 CMS 原始内容前后的可读性。提示：别忘了 max-w-none 与外层容器宽度的分工。
 3. **写一个票档插件**：实现 `ticket-tier` 插件，用 addComponents 注册 `.ticket-tier` 卡片类（主题令牌引用），再用 matchUtilities 按色板生成 `tier-glow-*` 工具类。提示：先在 @theme 里确认有哪几个色板令牌可消费。

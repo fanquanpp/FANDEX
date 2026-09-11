@@ -4,25 +4,23 @@ title: 动画与过渡
 module: 'tailwind'
 category: 前端技术
 difficulty: intermediate
-description: transition、animation 与新特性：让界面自然地动起来。
+description: 'Tailwind CSS 动画与过渡：transition 三件套与 animate-* 内置动画、@theme 动画令牌与关键帧摇树、data-* 条件动画、性能与 motion-safe 无障碍底线'
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'tailwind/003-UtilityCore'
-  - 'tailwind/005-ThemeCustomization'
+  - 'tailwind/030-UtilityCore'
+  - 'tailwind/050-ThemeCustomization'
 prerequisites:
-  - 'tailwind/003-UtilityCore'
+  - 'tailwind/030-UtilityCore'
 ---
-
-# 动画与过渡
 
 界面的"动"分两种：**transition** 是状态 A 到状态 B 的补间——按钮悬停变深、卡片展开收起，用户发起，浏览器补上中间帧；**animation** 是元素自己按关键帧循环表演——加载旋转、立绘悬浮、骨架屏呼吸。Tailwind 把两者都做成工具类，本篇讲清各自的用法、新版主题化写法，以及"动了但要动得对"的性能与无障碍底线。
 
 ## 前置知识
 
-- [Tailwind 工具类核心机制](/tailwind/003-UtilityCore)：变体与修饰符的语法是本篇的地基。
-- [Tailwind 主题定制与设计令牌](/tailwind/005-ThemeCustomization)：动画令牌与颜色令牌一样写进 @theme。
-- [Tailwind 响应式与暗色模式](/tailwind/006-ResponsiveDark)：hover: 等状态变体在本篇大量复用。
+- [Tailwind 工具类核心机制](/tailwind/030-UtilityCore)：变体与修饰符的语法是本篇的地基。
+- [Tailwind 主题定制与设计令牌](/tailwind/050-ThemeCustomization)：动画令牌与颜色令牌一样写进 @theme。
+- [Tailwind 响应式与暗色模式](/tailwind/060-ResponsiveDark)：hover: 等状态变体在本篇大量复用。
 
 ## 学习目标
 

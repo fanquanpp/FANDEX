@@ -6,25 +6,25 @@ category: 前端技术
 difficulty: beginner
 description: Tailwind CSS 核心工具类清单：颜色、间距、排版、边框、圆角、阴影、滤镜七大族逐一盘点，含类名命名规律、状态变体与任意值
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'tailwind/002-InstallConfig'
-  - 'tailwind/004-LayoutFlexGrid'
+  - 'tailwind/020-InstallConfig'
+  - 'tailwind/040-LayoutFlexGrid'
 prerequisites:
-  - 'tailwind/002-InstallConfig'
+  - 'tailwind/020-InstallConfig'
 ---
 
 ## 前置知识
 
-- [Tailwind CSS 安装与配置](/tailwind/002-InstallConfig)：建议先完成前一篇的学习
+- [Tailwind CSS 安装与配置](/tailwind/020-InstallConfig)：建议先完成前一篇的学习
 
 ## 学习目标
 
-- 掌握「0. 工具箱里的成套扳手」的核心机制、典型用法与常见陷阱
-- 掌握「1. 先认识命名规律：工具类怎么"读"出来」的核心机制、典型用法与常见陷阱
-- 掌握「2. 颜色族：全站配色都在这一层」的核心机制、典型用法与常见陷阱
-- 掌握「3. 间距族：一切留白都有刻度」的核心机制、典型用法与常见陷阱
-- 掌握「4. 排版族：字号、字重、行高、字距一次配齐」的核心机制、典型用法与常见陷阱
+- 能拆解任意工具类名的"前缀 + 色相/对象 + 刻度"结构，从类名直接读出它对应的 CSS 声明。
+- 能用颜色、间距、排版、边框、圆角、阴影、滤镜七大族工具类，脱离自定义 CSS 完成常规组件样式。
+- 能用 `hover:`/`focus:`/`disabled:` 等状态变体表达交互状态，理解 `group-hover:` 的父子联动机制。
+- 能判断何时该用任意值语法，并知道如何把高频例外值提升为 `@theme` 设计令牌或 `@utility` 自定义工具类。
+- 能识别 `bg-opacity-*`、动态拼接类名等旧写法或错误写法，并给出 v4 下的正确替代。
 
 
 
@@ -366,6 +366,6 @@ v4 在 4.2 版本还新增了 mauve（灰紫）、olive（橄榄）、mist（雾
 | 圆角图片四角发方 | 图片盖住了圆角 | 图片溢出容器圆角 | 容器加 `overflow-hidden` |
 | v3 透明度写法残留 | `bg-opacity-50` 无效 | v4 已移除该旧类 | 用 `bg-black/50` 斜杠修饰符 |
 
-## 13. 一句话记忆
+## 12. 一句话记忆
 
 工具类就是成套扳手：按"属性前缀 + 刻度值"的规律从颜色、间距、排版、边框、圆角、阴影、滤镜七大族里挑选组合，状态切换靠 `hover:` 等前缀，刻度的例外用任意值与 `@utility` 补充。
