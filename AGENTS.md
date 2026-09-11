@@ -25,8 +25,9 @@
 - 提交信息遵循 Conventional Commits：`<type>(<scope>): 中文描述`，type 取
   feat / fix / docs / content / refactor / chore / ci / perf / test，描述
   动词开头、结尾不加句号。
-- 推送前本地校验至少通过 `pnpm sync`（幂等）与 `pnpm build:web`；内容类
-  改动再跑 `node app-web/scripts/content-audit.mjs` 确认无 HIGH 级问题。
+- 推送前本地校验运行 `pnpm sync`（幂等）；内容类改动再跑
+  `node app-web/scripts/content-audit.mjs` 确认无 HIGH 级问题。web 构建验证
+  交由远端 CI 执行，本地不要求 `pnpm build:web`。
 
 ## 文档内容规范（约定优先，自动补全）
 

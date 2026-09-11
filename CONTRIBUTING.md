@@ -161,7 +161,7 @@ PR 合并后可删除特性分支。
 - [ ] 文档放入正确的模块文件夹，文件名编号符合学习顺序；
 - [ ] `title` / `description` 已填写（其余字段可不写）；
 - [ ] 代码示例语法正确、已标注语言；
-- [ ] 本地跑过 `pnpm sync` 与 `pnpm build:web` 且无报错（或确认 CI 会覆盖）；
+- [ ] 本地跑过 `pnpm sync` 无报错（web 构建验证由 CI 覆盖，本地无需 `pnpm build:web`）；
 - [ ] 无 emoji、无构建产物入库；
 - [ ] 提交信息符合 Conventional Commits；
 - [ ] PR 目标分支：协作者与外部贡献者为 `dev`，维护者可直接发 `main`
