@@ -2,10 +2,11 @@
  * 思维导图详情面板
  * -----------------------------------------------------------------------------
  * 展示当前悬停/选中知识点的说明、难度、文档状态与跳转入口；
+ * 提供三态学习进度标记（未学习/学习中/已完成，localStorage 持久化）；
  * 待补充节点提供官方资料兜底与"定位到节点"操作。
  */
 import type { CSSProperties } from 'react';
-import type { NodeVM } from './types';
+import type { NodeProgress, NodeVM } from './types';
 
 interface Props {
   /** 当前节点（null 时显示引导提示） */
@@ -14,6 +15,10 @@ interface Props {
   techTitle: string;
   /** 技术主题色 */
   color: string;
+  /** 当前节点学习进度（null = 未学习） */
+  progress: NodeProgress | null;
+  /** 设置节点进度（null = 清除标记） */
+  onSetProgress: (nodeId: string, state: NodeProgress | null) => void;
   /** 关闭选中 */
   onClose: () => void;
   /** 定位到节点（画布居中） */
@@ -27,8 +32,23 @@ const DIFFICULTY_LABEL: Record<string, string> = {
   advanced: '进阶',
 };
 
+/** 进度三态选项（value null 用 'none' 字符串承载以便遍历） */
+const PROGRESS_OPTIONS: Array<{ value: 'none' | NodeProgress; label: string }> = [
+  { value: 'none', label: '未学习' },
+  { value: 'learning', label: '学习中' },
+  { value: 'done', label: '已完成' },
+];
+
 /** 详情面板：无节点时展示引导，有节点时展示完整信息 */
-export default function MapDetailPanel({ node, techTitle, color, onClose, onFocus }: Props) {
+export default function MapDetailPanel({
+  node,
+  techTitle,
+  color,
+  progress,
+  onSetProgress,
+  onClose,
+  onFocus,
+}: Props) {
   if (!node) {
     return (
       <aside className="lp-panel lp-panel--empty">
@@ -48,6 +68,7 @@ export default function MapDetailPanel({ node, techTitle, color, onClose, onFocu
   }
 
   const planned = !node.href;
+  const currentState: 'none' | NodeProgress = progress ?? 'none';
   return (
     <aside className="lp-panel" style={{ '--lp-panel-color': color } as CSSProperties}>
       <div className="lp-panel__head">
@@ -71,6 +92,23 @@ export default function MapDetailPanel({ node, techTitle, color, onClose, onFocu
         </span>
       </div>
       {node.desc && <p className="lp-panel__desc">{node.desc}</p>}
+
+      {/* 学习进度标记：三态分段选择（roadmap.sh 模式，localStorage 持久化） */}
+      <div className="lp-panel__progress" role="group" aria-label="学习进度标记">
+        {PROGRESS_OPTIONS.map((option) => (
+          <button
+            key={option.value}
+            type="button"
+            className={`lp-panel__progress-btn${
+              currentState === option.value ? ' is-active' : ''
+            }${option.value === 'done' && currentState === 'done' ? ' is-done' : ''}`}
+            aria-pressed={currentState === option.value}
+            onClick={() => onSetProgress(node.id, option.value === 'none' ? null : option.value)}
+          >
+            {option.label}
+          </button>
+        ))}
+      </div>
 
       {node.href ? (
         <a className="lp-panel__doc-link" href={node.href}>

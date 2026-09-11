@@ -251,6 +251,87 @@ document.addEventListener('astro:page-load', () => {
 
 document.addEventListener('astro:page-load', initCopyButtons);
 
+// ========== 代码块横向溢出指示 ==========
+/**
+ * 为可横向滚动的代码块追加右缘渐变指示：
+ * - scrollWidth 超出 clientWidth 时给外层容器加 .has-overflow，
+ *   CSS 据此渲染右缘青色渐隐遮罩，提示"右侧还有内容"
+ * - scroll 事件实时消隐：滚动到最右端时移除指示
+ * - 窗口缩放（含侧边栏折叠）时重新检测
+ */
+function initCodeOverflow(): void {
+  const blocks = document.querySelectorAll<HTMLElement>('.code-block');
+
+  blocks.forEach((block) => {
+    if (block.dataset.overflowBound === 'true') return;
+    block.dataset.overflowBound = 'true';
+
+    const scroller = block.querySelector<HTMLElement>('pre');
+    if (!scroller) return;
+
+    /** 依据当前横向滚动状态同步指示器显隐 */
+    const sync = (): void => {
+      const overflow = scroller.scrollWidth - scroller.clientWidth > 4;
+      const atEnd = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 4;
+      block.classList.toggle('has-overflow', overflow && !atEnd);
+    };
+
+    scroller.addEventListener('scroll', sync, { passive: true });
+    // 首帧排版完成后检测一次（字体加载会改变 scrollWidth，双 rAF 确保排版稳定）
+    requestAnimationFrame(() => requestAnimationFrame(sync));
+  });
+
+  // 字体加载完成后复检（等宽字体就位会显著改变代码宽度）
+  if (document.fonts?.status === 'loading') {
+    void document.fonts.ready.then(() => {
+      document.querySelectorAll<HTMLElement>('.code-block').forEach((block) => {
+        const scroller = block.querySelector<HTMLElement>('pre');
+        if (!scroller) return;
+        const overflow = scroller.scrollWidth - scroller.clientWidth > 4;
+        const atEnd = scroller.scrollLeft + scroller.clientWidth >= scroller.scrollWidth - 4;
+        block.classList.toggle('has-overflow', overflow && !atEnd);
+      });
+    });
+  }
+}
+
+// ========== 标题锚点链接 ==========
+/**
+ * 为文档正文 h2/h3 追加悬停锚点（GitHub 式 heading permalink）：
+ * - Astro 已为 markdown 标题生成 id，这里注入 # 链接便于分享定位
+ * - 仅注入一次（dataset 防重入），锚点样式在 code.css/typography 侧定义
+ */
+function initHeadingAnchors(): void {
+  document.querySelectorAll<HTMLElement>('.prose h2[id], .prose h3[id]').forEach((heading) => {
+    if (heading.dataset.anchorBound === 'true') return;
+    heading.dataset.anchorBound = 'true';
+
+    const anchor = document.createElement('a');
+    anchor.className = 'heading-anchor';
+    anchor.href = `#${heading.id}`;
+    anchor.setAttribute('aria-label', '标题锚点链接');
+    anchor.textContent = '#';
+    // 锚点点击不触发标题文本的选中行为，仅复制定位
+    anchor.addEventListener('click', (e) => {
+      e.preventDefault();
+      // 复制带锚点的完整地址到剪贴板（失败时静默降级为普通跳转）
+      const url = `${window.location.origin}${window.location.pathname}#${heading.id}`;
+      if (navigator.clipboard) {
+        void navigator.clipboard.writeText(url);
+      }
+      window.history.replaceState(null, '', `#${heading.id}`);
+    });
+    heading.appendChild(anchor);
+  });
+}
+
+document.addEventListener('astro:page-load', () => {
+  initCodeOverflow();
+  initHeadingAnchors();
+});
+initCodeOverflow();
+initHeadingAnchors();
+
 // ========== 微交互动画 ==========
 async function initAnimations(): Promise<void> {
   try {

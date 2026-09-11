@@ -1,12 +1,14 @@
 /**
  * 学习路径思维导图主岛
  * -----------------------------------------------------------------------------
- * 组合层：持有选中/悬停/折叠状态，组装画布、控制条与详情面板。
+ * 组合层：持有选中/悬停/折叠/学习进度状态，组装画布、控制条与详情面板。
  * 数据来源：由 Astro 页面注入的 TechVM（服务端组装，客户端不加载地图 JSON）。
+ * 学习进度：localStorage 持久化（progress.ts），节点三态呈现 + Duolingo 式进度环。
  */
 import { useCallback, useMemo, useRef, useState, type CSSProperties } from 'react';
-import type { TechVM } from './types';
+import type { NodeProgress, TechProgress, TechVM } from './types';
 import { computeMapLayout } from './map-layout';
+import { readTechProgress, writeNodeProgress } from './progress';
 import MapCanvas, { type MapCanvasHandle } from './MapCanvas';
 import MapControls from './MapControls';
 import MapDetailPanel from './MapDetailPanel';
@@ -17,6 +19,10 @@ interface Props {
   /** 站点基础路径 */
   base: string;
 }
+
+/** 进度环半径与周长（SVG stroke-dasharray 用） */
+const RING_RADIUS = 15;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 /** 学习路径思维导图 */
 export default function LearningPathMap({ tech, base }: Props) {
@@ -32,12 +38,27 @@ export default function LearningPathMap({ tech, base }: Props) {
   const [scale, setScale] = useState(100);
   /** 画布命令式接口 */
   const canvasRef = useRef<MapCanvasHandle>(null);
+  /** 学习进度表：节点 ID -> learning/done（首帧从 localStorage 恢复） */
+  const [progress, setProgress] = useState<TechProgress>(() => readTechProgress(tech.module));
 
   /** 布局：阶段/节点/连线坐标（折叠变化时增量重算） */
   const layout = useMemo(
     () => computeMapLayout(tech.stages, collapsedStageIds),
     [tech.stages, collapsedStageIds],
   );
+
+  /** 进度统计：已完成 / 学习中数量（用于进度环与读数） */
+  const { doneCount, learningCount } = useMemo(() => {
+    let done = 0;
+    let learning = 0;
+    for (const stage of tech.stages) {
+      for (const node of stage.nodes) {
+        if (progress[node.id] === 'done') done += 1;
+        else if (progress[node.id] === 'learning') learning += 1;
+      }
+    }
+    return { doneCount: done, learningCount: learning };
+  }, [progress, tech.stages]);
 
   /** 面板展示节点：优先悬停，其次选中 */
   const panelNode = useMemo(() => {
@@ -85,10 +106,47 @@ export default function LearningPathMap({ tech, base }: Props) {
     if (id) canvasRef.current?.focusNode(id);
   }, [hoverId, selectedId]);
 
+  /** 设置节点进度（null = 清除标记），同步持久化到 localStorage */
+  const handleSetProgress = useCallback(
+    (nodeId: string, state: NodeProgress | null) => {
+      setProgress(writeNodeProgress(tech.module, nodeId, state));
+    },
+    [tech.module],
+  );
+
+  /** 进度环填充比例（已完成 / 总节点数） */
+  const totalNodes = tech.stats.nodes;
+  const ringRatio = totalNodes > 0 ? doneCount / totalNodes : 0;
+
   return (
     <div className="lp-map" style={{ '--lp-color': tech.color } as CSSProperties}>
-      {/* 顶部控制条（统计信息已上移至页面 Hero，与语法速览页布局一致） */}
+      {/* 顶部控制条：左侧学习进度环 + 右侧缩放控制 */}
       <div className="lp-map__toolbar">
+        {/* Duolingo 式进度环：已完成占比 + mono 读数（已完成/学习中/总数） */}
+        <div
+          className="lp-progress"
+          role="status"
+          aria-label={`学习进度：已完成 ${doneCount} / 共 ${totalNodes} 个知识点，学习中 ${learningCount} 个`}
+        >
+          <svg className="lp-progress__ring" viewBox="0 0 36 36" aria-hidden="true">
+            <circle className="lp-progress__track" cx="18" cy="18" r={RING_RADIUS} />
+            <circle
+              className="lp-progress__fill"
+              cx="18"
+              cy="18"
+              r={RING_RADIUS}
+              strokeDasharray={`${(ringRatio * RING_CIRCUMFERENCE).toFixed(2)} ${RING_CIRCUMFERENCE.toFixed(2)}`}
+              transform="rotate(-90 18 18)"
+            />
+          </svg>
+          <div className="lp-progress__readout">
+            <span className="lp-progress__num">{doneCount}/{totalNodes}</span>
+            <span className="lp-progress__label">已完成</span>
+          </div>
+          {learningCount > 0 && (
+            <span className="lp-progress__learning">学习中 {learningCount}</span>
+          )}
+        </div>
         <MapControls
           scale={scale}
           onZoomOut={() => canvasRef.current?.zoomBy(1 / 1.25)}
@@ -117,6 +175,7 @@ export default function LearningPathMap({ tech, base }: Props) {
           collapsedStageIds={collapsedStageIds}
           selectedId={selectedId}
           hoverId={hoverId}
+          nodeProgress={progress}
           onSelectNode={handleSelectNode}
           onHoverNode={handleHoverNode}
           onToggleStage={handleToggleStage}
@@ -127,6 +186,8 @@ export default function LearningPathMap({ tech, base }: Props) {
           node={panelNode}
           techTitle={tech.title}
           color={tech.color}
+          progress={panelNode ? (progress[panelNode.id] ?? null) : null}
+          onSetProgress={handleSetProgress}
           onClose={() => {
             setSelectedId(null);
             setHoverId(null);
@@ -144,6 +205,14 @@ export default function LearningPathMap({ tech, base }: Props) {
         <span className="lp-legend-item">
           <i className="lp-legend-line lp-legend-line--planned" />
           文档待补充
+        </span>
+        <span className="lp-legend-item">
+          <i className="lp-legend-state lp-legend-state--learning" />
+          学习中
+        </span>
+        <span className="lp-legend-item">
+          <i className="lp-legend-state lp-legend-state--done" />
+          已完成
         </span>
         <span className="lp-legend-item">
           <i className="lp-legend-bar lp-legend-bar--beginner" />

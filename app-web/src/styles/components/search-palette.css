@@ -108,6 +108,32 @@
     margin-top: 2px;
   }
 
+  /* 分组标签：mono 大写眉标 + 3px 竖条刻度（禁止点状装饰） */
+  .search-palette__group {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 12px 4px;
+    font-family: var(--font-family-mono, monospace);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--color-text-tertiary);
+  }
+
+  .search-palette__group::before {
+    content: '';
+    width: 3px;
+    height: 10px;
+    border-radius: 1px;
+    background: var(--color-accent-base, var(--color-primary));
+    flex-shrink: 0;
+  }
+
+  /* 组后首条目留出呼吸间距（组标签与条目的衔接） */
+  .search-palette__group + .search-palette__entry {
+    margin-top: 0;
+  }
+
   .search-palette__item {
     display: flex;
     flex-direction: column;

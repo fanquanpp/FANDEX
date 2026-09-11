@@ -78,6 +78,16 @@
   opacity: 1;
 }
 
+/* ========== 横向溢出指示 ==========
+ * 由 lib/layout-interactions.ts 的 initCodeOverflow 检测：
+ * pre 内容超宽且未滚动到最右端时，容器获得 .has-overflow，
+ * 右缘 28px 渐隐遮罩提示"右侧还有内容"；滚到底自动消隐。
+ * prefers-reduced-motion 无关（纯静态遮罩，无动画）。 */
+.code-block.has-overflow pre {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+  mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
+}
+
 /* ========== 代码块内 pre 元素 ========== */
 .code-block pre {
   margin: 0;

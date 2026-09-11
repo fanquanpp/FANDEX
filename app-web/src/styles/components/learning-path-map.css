@@ -611,6 +611,173 @@
   }
 
   /* ============================================================
+   * 学习进度（roadmap.sh 式三态 + Duolingo 式进度环）
+   * ============================================================ */
+
+  /* --- 工具栏进度环 --- */
+  .lp-progress {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-right: auto;
+    padding: 4px 10px 4px 4px;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--fandex-radius-md, 4px);
+    background: var(--color-bg-card);
+  }
+
+  .lp-progress__ring {
+    width: 30px;
+    height: 30px;
+  }
+
+  /* 环轨道：细弱底色 */
+  .lp-progress__track {
+    fill: none;
+    stroke: var(--color-border-light);
+    stroke-width: 3.5;
+  }
+
+  /* 环填充：技术主题色，末端圆角；比例由 stroke-dasharray 内联控制 */
+  .lp-progress__fill {
+    fill: none;
+    stroke: var(--lp-color);
+    stroke-width: 3.5;
+    stroke-linecap: round;
+    transition: stroke-dasharray var(--motion-duration-normal) var(--motion-easing-out);
+  }
+
+  .lp-progress__readout {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+  }
+
+  .lp-progress__num {
+    font-family: var(--font-family-mono);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--color-fg-primary);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .lp-progress__label {
+    font-size: 0.6rem;
+    color: var(--color-fg-tertiary);
+    letter-spacing: 0.06em;
+  }
+
+  /* 学习中读数：仅存在学习节点时出现 */
+  .lp-progress__learning {
+    padding: 2px 8px;
+    border: 1px solid color-mix(in srgb, var(--color-accent-base) 40%, transparent);
+    border-radius: var(--fandex-radius-sm, 2px);
+    font-family: var(--font-family-mono);
+    font-size: 0.62rem;
+    color: var(--color-accent-base);
+    white-space: nowrap;
+  }
+
+  /* --- 节点三态：学习中（青色刻度）/ 已完成（绿色对勾 + 状态字色） --- */
+  .lp-node__progress-mark {
+    fill: var(--color-accent-base);
+  }
+
+  .lp-node__status--learning {
+    fill: var(--color-accent-base);
+  }
+
+  .lp-node__check {
+    fill: none;
+    stroke: var(--color-success);
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .lp-node__status--done {
+    fill: var(--color-success);
+  }
+
+  /* 已完成节点：标题弱化 + 边框覆成功色，传达"收起不必再盯" */
+  .lp-node--done .lp-node__title {
+    fill: var(--color-fg-secondary);
+  }
+
+  .lp-node--done .lp-node__rect {
+    stroke: color-mix(in srgb, var(--color-success) 45%, var(--color-border-default));
+  }
+
+  /* 学习中节点：边框覆强调色 */
+  .lp-node--learning .lp-node__rect {
+    stroke: color-mix(in srgb, var(--color-accent-base) 55%, var(--color-border-default));
+  }
+
+  /* --- 详情面板进度分段选择 --- */
+  .lp-panel__progress {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--fandex-radius-md, 4px);
+    background: var(--color-bg-sunken);
+  }
+
+  .lp-panel__progress-btn {
+    padding: 6px 4px;
+    border: 1px solid transparent;
+    border-radius: var(--fandex-radius-sm, 2px);
+    background: transparent;
+    color: var(--color-fg-secondary);
+    font-family: var(--font-body);
+    font-size: 0.78rem;
+    cursor: pointer;
+    transition:
+      background-color var(--motion-duration-instant) var(--motion-easing-out),
+      color var(--motion-duration-instant) var(--motion-easing-out),
+      border-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .lp-panel__progress-btn:hover {
+    background: var(--color-bg-hover);
+    color: var(--color-fg-primary);
+  }
+
+  .lp-panel__progress-btn.is-active {
+    background: var(--color-bg-card);
+    border-color: color-mix(in srgb, var(--color-accent-base) 50%, transparent);
+    color: var(--color-accent-base);
+  }
+
+  /* 已完成态激活：绿色系反馈 */
+  .lp-panel__progress-btn.is-done.is-active {
+    border-color: color-mix(in srgb, var(--color-success) 50%, transparent);
+    color: var(--color-success);
+  }
+
+  .lp-panel__progress-btn:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 1px;
+  }
+
+  /* --- 图例：进度状态项（3px 竖条刻度，与难度色条同语言） --- */
+  .lp-legend-state {
+    width: 3px;
+    height: 12px;
+    border-radius: 1px;
+    display: inline-block;
+  }
+
+  .lp-legend-state--learning {
+    background: var(--color-accent-base);
+  }
+
+  .lp-legend-state--done {
+    background: var(--color-success);
+  }
+
+  /* ============================================================
    * 响应式
    * ============================================================ */
   @media (max-width: 1024px) {
@@ -627,6 +794,12 @@
     .lp-canvas {
       height: 430px;
     }
+
+    /* 移动端进度环隐藏文字读数，仅保留环形与数值 */
+    .lp-progress__label,
+    .lp-progress__learning {
+      display: none;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -635,6 +808,10 @@
     }
 
     .lp-node {
+      transition: none;
+    }
+
+    .lp-progress__fill {
       transition: none;
     }
   }

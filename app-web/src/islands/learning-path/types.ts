@@ -22,6 +22,17 @@ export interface NodeVM {
   official?: KnowledgeOfficialLink;
 }
 
+/**
+ * 节点学习进度状态（用户标记）
+ * - 'learning' 学习中
+ * - 'done' 已完成
+ * - 未标记即"未学习"，不落存储（避免全量节点写入 localStorage）
+ */
+export type NodeProgress = 'learning' | 'done';
+
+/** 单个技术的进度表：节点 ID -> 进度状态 */
+export type TechProgress = Record<string, NodeProgress>;
+
 /** 阶段视图模型 */
 export interface StageVM {
   id: string;

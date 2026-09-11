@@ -53,7 +53,7 @@
     "code": {
       "bg": { "$value": "{color.neutral.0}", "$description": "代码块背景（纯黑）" },
       "text": { "$value": "{color.neutral.900}", "$description": "代码默认文字（浅灰）" },
-      "comment": { "$value": "{color.neutral.500}", "$description": "代码注释" }
+      "comment": { "$value": "{color.neutral.600}", "$description": "代码注释（对比度审计：neutral.500 在纯黑上仅 2.1:1，提至 neutral.600 达 4.7:1 满足 AA）" }
     }
   }
 }

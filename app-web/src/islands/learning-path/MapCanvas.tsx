@@ -18,7 +18,7 @@ import {
   useLayoutEffect,
   useRef,
 } from 'react';
-import type { TechVM } from './types';
+import type { NodeProgress, TechProgress, TechVM } from './types';
 import {
   LAYOUT,
   getNodeCenters,
@@ -54,6 +54,8 @@ interface Props {
   selectedId: string | null;
   /** 悬停节点 ID */
   hoverId: string | null;
+  /** 节点学习进度表（节点 ID -> learning/done） */
+  nodeProgress: TechProgress;
   /** 选中节点 */
   onSelectNode: (id: string) => void;
   /** 悬停/移出节点 */
@@ -94,6 +96,7 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
     collapsedStageIds,
     selectedId,
     hoverId,
+    nodeProgress,
     onSelectNode,
     onHoverNode,
     onToggleStage,
@@ -532,6 +535,7 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
                       height={LAYOUT.nodeHeight}
                       selected={selectedId === node.id}
                       hovered={hoverId === node.id}
+                      progress={nodeProgress[node.id] ?? null}
                       onSelect={onSelectNode}
                       onHover={onHoverNode}
                     />
