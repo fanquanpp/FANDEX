@@ -1050,10 +1050,11 @@
     color: var(--color-fg-primary);
   }
 
+  /* 激活分组：左缘 3px 竖条 + 中性底色（不做整片强调色渲染） */
   .pg-sc-group.is-active {
     border-left-color: var(--color-accent-base);
-    background: color-mix(in srgb, var(--color-accent-base) 10%, transparent);
-    color: var(--color-accent-base);
+    background: var(--color-bg-card);
+    color: var(--color-fg-primary);
   }
 
   .pg-sc-group-name {
@@ -1068,7 +1069,7 @@
   }
 
   .pg-sc-group.is-active .pg-sc-group-count {
-    color: var(--color-accent-base);
+    color: var(--color-fg-secondary);
   }
 
   .pg-sc-group-desc {
