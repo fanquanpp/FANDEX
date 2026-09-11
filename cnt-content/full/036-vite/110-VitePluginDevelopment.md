@@ -1,26 +1,26 @@
 ---
-order: 140
+order: 110
 title: Vite 插件开发：钩子体系与虚拟模块
 module: 'vite'
 category: 前端技术
 difficulty: advanced
 description: 以歌单数据与自创歌词格式为素材，端到端实现虚拟模块插件、transform 编译器与 dev 期 HMR 联动。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'vite/008-PluginSystem'
-  - 'vite/006-DevServerHMR'
-  - 'vite/009-Vite8Rolldown'
+  - 'vite/100-PluginSystem'
+  - 'vite/070-DevServerHMR'
+  - 'vite/120-Vite8Rolldown'
 prerequisites:
-  - 'vite/008-PluginSystem'
-  - 'vite/003-ConfigFile'
+  - 'vite/100-PluginSystem'
+  - 'vite/030-ConfigFile'
 ---
 
 ## 前置知识
 
-- [Vite 插件系统](/vite/008-PluginSystem)：已了解插件对象结构、钩子分类与 `enforce` / `apply` 顺序控制，本文在其基础上做端到端实战。
-- [Vite 配置文件](/vite/003-ConfigFile)：会在 `vite.config.ts` 中注册插件并读取配置。
-- [Vite 开发服务器与 HMR](/vite/006-DevServerHMR)：理解模块图与热更新边界，本文的 `handleHotUpdate` 会直接操作它们。
+- [Vite 插件系统](/vite/100-PluginSystem)：已了解插件对象结构、钩子分类与 `enforce` / `apply` 顺序控制，本文在其基础上做端到端实战。
+- [Vite 配置文件](/vite/030-ConfigFile)：会在 `vite.config.ts` 中注册插件并读取配置。
+- [Vite 开发服务器与 HMR](/vite/070-DevServerHMR)：理解模块图与热更新边界，本文的 `handleHotUpdate` 会直接操作它们。
 
 ## 学习目标
 
@@ -172,7 +172,7 @@ export function seek(currentMs) {
 }
 ```
 
-使用处毫无特殊感：`import { seek } from './senbonzakura.vlyric'`。三个工程要点：其一，**过滤必须前置**——`transform` 会被成百上千个模块调用，先用正则短路能省下绝大部分开销；Vite 8 / Rolldown 还支持声明式 `filter` 属性，把过滤下沉到原生层进一步提速（见 009 篇）。其二，`return undefined` 与 `return null` 是"不处理"，与返回空 `code` 完全不同，别把整条链路拦断。其三，返回 `map: null` 会破坏下游插件的 sourcemap 链，发布级插件请用 `magic-string` 等库生成真实 map。
+使用处毫无特殊感：`import { seek } from './senbonzakura.vlyric'`。三个工程要点：其一，**过滤必须前置**——`transform` 会被成百上千个模块调用，先用正则短路能省下绝大部分开销；Vite 8 / Rolldown 还支持声明式 `filter` 属性，把过滤下沉到原生层进一步提速（见《Vite 8 与 Rolldown 新特性》）。其二，`return undefined` 与 `return null` 是"不处理"，与返回空 `code` 完全不同，别把整条链路拦断。其三，返回 `map: null` 会破坏下游插件的 sourcemap 链，发布级插件请用 `magic-string` 等库生成真实 map。
 
 设计一个自定义格式时，还有一个边界问题要提前想清楚：**这个格式与标准模块系统如何互操作**。`.vlyric` 的答案很顺——它编译成 ES 模块后，可以被任何 JS 文件导入、可以参与摇树、可以被打包拆分，因为它"变成"了标准模块。但如果格式里允许 `import` 其他文件（比如歌词引用另一首的副歌），你的编译器就要负责改写这些导入并返回正确的模块依赖信息，复杂度陡增。经验法则是：自定义格式保持"叶子节点"（不含导入），把组合关系留在 JS 层，插件的复杂度就能维持在一个下午能读完的水平。
 
@@ -220,7 +220,7 @@ export function annotatorPlugin(): Plugin {
 // const titles = otherPlugin.api?.getTitles?.()
 ```
 
-钩子执行顺序的规则（同钩子按数组顺序、`enforce` 分层）在 008 篇已系统讲过，这里只强调实战结论：**有依赖关系的插件，调用方排在被调方之后**；如果发现顺序敏感，把"读数据"挪到 `configResolved` / `buildStart` 这类早期钩子完成，把"用数据"留在 `transform` / `generateBundle`，能大幅降低对顺序的敏感度。
+钩子执行顺序的规则（同钩子按数组顺序、`enforce` 分层）在《Vite 插件系统》已系统讲过，这里只强调实战结论：**有依赖关系的插件，调用方排在被调方之后**；如果发现顺序敏感，把"读数据"挪到 `configResolved` / `buildStart` 这类早期钩子完成，把"用数据"留在 `transform` / `generateBundle`，能大幅降低对顺序的敏感度。
 
 `api` 属性的用法再往前推一步就是插件生态的分工模式：一个插件专职"采集"（扫描全站模块、汇总信息），一批插件专职"消费"（生成报告、注入产物、输出断言）。采集方通过 `api` 暴露稳定接口，消费方在 `buildStart` 后读取——这种解耦让你可以单独替换采集实现而不动消费方。写 `api` 时给它配一份类型声明（`export interface AnnotatorApi { getTitles(): string[] }`），其他插件作者拿到类型就知道能力边界，这比文档里的形容词有效得多。
 

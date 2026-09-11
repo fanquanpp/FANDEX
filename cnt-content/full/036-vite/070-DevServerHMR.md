@@ -1,17 +1,17 @@
 ---
-order: 60
+order: 70
 title: Vite 开发服务器与 HMR
 module: 'vite'
 category: 前端技术
 difficulty: intermediate
 description: Vite dev server：server 配置、host 端口、代理、HMR 原理（模块图/WebSocket/热替换边界）与 import.meta.hot API
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'vite/003-ConfigFile'
-  - 'vite/002-QuickStart'
+  - 'vite/030-ConfigFile'
+  - 'vite/020-QuickStart'
 prerequisites:
-  - 'vite/003-ConfigFile'
+  - 'vite/030-ConfigFile'
 ---
 
 
@@ -30,7 +30,7 @@ Vite 开发服务器里的 HMR（Hot Module Replacement，模块热替换）干�
 
 ## 1. 初体验：改一行代码，页面瞬间更新
 
-先不聊原理，动手体验一次。用 002 篇的方式创建一个 Vite 项目并启动：
+先不聊原理，动手体验一次。用《Vite 快速上手与项目结构》的方式创建一个 Vite 项目并启动：
 
 ```bash
 # 创建项目（以 vanilla-ts 模板为例）
@@ -76,7 +76,7 @@ Vite dev server 收到请求
 
 ### 2.2 依赖预构建
 
-dev server 启动时，Vite 会做一件重要的事：把 `node_modules` 里的依赖（如 React、Vue）用 esbuild/Rolldown 预构建成 ESM，存放在 `node_modules/.vite/deps`。这样浏览器请求第三方库时，得到的是转换好、扁平化的 ESM，而不是层层嵌套的 CommonJS，加载速度大幅提升。
+dev server 启动时，Vite 会做一件重要的事：把 `node_modules` 里的依赖（如 React、Vue）预构建成 ESM，存放在 `node_modules/.vite/deps`。这一步在 Vite 8 中由 Rolldown 执行（Vite 7 及以前是 esbuild）。这样浏览器请求第三方库时，得到的是转换好、扁平化的 ESM，而不是层层嵌套的 CommonJS，加载速度大幅提升。
 
 ```text
 pnpm dev 启动时的输出：
@@ -106,7 +106,6 @@ export default defineConfig({
     cors: true,           // 允许跨域访问开发资源
     https: false,         // 需要 https 时配置证书对象
     proxy: {},            // 开发期请求代理，见第 5 节
-    forwardConsole: 'js', // 浏览器日志转发到终端，见第 8 节
   },
 })
 ```
@@ -119,7 +118,6 @@ export default defineConfig({
 | `open` | `false` | 启动后自动用默认浏览器打开页面 |
 | `cors` | `true` | 允许跨域请求开发资源 |
 | `proxy` | 无 | 请求代理配置，见第 5 节 |
-| `forwardConsole` | `'js'` | 浏览器 console 日志转发到终端，见第 8 节 |
 
 注意：`vite preview`（预览构建产物）使用独立的 `preview` 配置块，语法与 `server` 相同但互不影响，例如 `preview.port` 默认 4173。
 
@@ -334,22 +332,22 @@ if (import.meta.hot) {
 
 ## 8. forwardConsole：日志转发
 
-Vite 8 新增的 `server.forwardConsole`（默认 `'js'`）会把**浏览器控制台日志转发到终端**，开发调试时不用在浏览器和终端之间来回切换：
+Vite 8 新增的 `server.forwardConsole` 会把**浏览器控制台输出与未捕获错误转发到终端**，开发调试时不用在浏览器和终端之间来回切换。它的取值是布尔值或对象，默认行为是"auto"：检测到 AI 编码代理接入时自动开启，否则关闭：
 
 ```ts
 // vite.config.ts
 export default defineConfig({
   server: {
-    // 'js' | 'all' | 'none'
-    // js：转发 console.log/warn/error 等 JS 日志（默认）
-    // all：额外转发网络请求等浏览器日志
-    // none：关闭转发
-    forwardConsole: 'all',
+    // boolean | { unhandledErrors?: boolean, logLevels?: ('error'|'warn'|'info'|'log'|'debug')[] }
+    // true：转发未捕获错误 + console.error / console.warn
+    // 对象：按需选择转发哪些错误与日志级别
+    // false / 省略：默认关闭（检测到编码代理时自动开启）
+    forwardConsole: true,
   },
 })
 ```
 
-典型场景：移动端真机调试、iframe 内日志、SSR 场景——这些情况下 DevTools 不方便打开，日志直接看终端最省事。觉得刷屏就设成 `'none'`。
+典型场景：移动端真机调试、iframe 内日志、SSR 场景——这些情况下 DevTools 不方便打开，日志直接看终端最省事；编码代理（AI 结对）场景下 Vite 会自动开启，让代理直接"看到"浏览器报错。觉得刷屏就显式设为 `false`。
 
 ## 9. 常见错误与对策表
 
@@ -364,6 +362,6 @@ export default defineConfig({
 | 端口被占用且 `strictPort: true` | 端口冲突 | 换端口，或 `lsof -i:5173` 查占用进程后处理 |
 | 代理不生效、接口 404 | 请求没走代理前缀，或 `rewrite` 误删了路径 | 确认请求路径以 `/api` 开头，检查 `rewrite` 正则 |
 
-## 11. 一句话记忆
+## 10. 一句话记忆
 
 HMR 就是"后厨尝菜"：保存文件后，Vite 沿着模块图向上找到 accept 边界，只把改动的模块通过 WebSocket 换掉，页面状态原封不动——把整页刷新留给实在热不起来的模块。

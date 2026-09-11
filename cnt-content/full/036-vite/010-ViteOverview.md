@@ -6,17 +6,17 @@ category: 前端技术
 difficulty: beginner
 description: Vite 构建工具概述：从 webpack 痛点出发，理解原生 ESM、依赖预构建、HMR 原理与 Vite 8 的 Rolldown 统一引擎
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'astro/001-AstroOverview'
-  - 'vite/015-PnpmMonorepoOverview'
+  - 'astro/010-AstroOverview'
+  - 'vite/150-PnpmMonorepoOverview'
 prerequisites: []
 ---
 
 
 > 本节为增量补充，帮助你选择 Vite 版本。
 
-- Vite：8.x 为当前主线，依赖优化与打包已切换到 Rolldown 引擎；配套测试框架为 Vitest 3+。
+- Vite：8.x 为当前主线（2026-09 最新为 8.2.x），依赖优化与打包已切换到 Rolldown 引擎；配套测试框架 Vitest 已迭代到 5.0（2026-09 发布）。
 - 新项目 `npm create vite@latest` 默认安装 8.x；框架模板（Vue/React/Svelte）由官方维护。
 - 注意：Vite 要求 Node.js 20.19+/22.12+，推荐直接使用 Node 22 LTS。
 
@@ -162,7 +162,7 @@ Vite 长期采用"双引擎"设计：
 
 双引擎方案让 Vite 快速成长，但也带来代价：两套转换管线、两套插件系统、行为不一致的边缘案例越积越多。
 
-**2026 年 3 月 12 日发布的 Vite 8 终结了双引擎时代**：改用 **Rolldown**（VoidZero 团队用 Rust 编写的打包器）作为唯一打包引擎，配合 **Oxc**（Rust 编译器）做 JavaScript/TypeScript 转换。官方基准测试显示，一个 19,000 模块的项目，生产构建从 Rollup 的 40.1 秒降到 Rolldown 的 1.61 秒（约 25 倍）；实际公司案例中 Linear 的构建从 46 秒降到 6 秒。由于 Rolldown 兼容 Rollup 插件 API，绝大多数现有 Vite 插件无需修改即可工作。
+**2026 年 3 月 12 日发布的 Vite 8 终结了双引擎时代**：改用 **Rolldown**（VoidZero 团队用 Rust 编写的打包器）作为唯一打包引擎，配合 **Oxc**（Rust 编译器）做 JavaScript/TypeScript 转换。官方基准显示 Rolldown 比 Rollup 快 10-30 倍（项目越大差距越明显），性能与 esbuild 处于同一水平；实际公司案例中 Linear 的生产构建从 46 秒降到 6 秒。由于 Rolldown 兼容 Rollup 插件 API，绝大多数现有 Vite 插件无需修改即可工作。
 
 ```text
 Vite 7 及之前：
@@ -201,9 +201,9 @@ flowchart TD
 | 2 | 裸导入报错：`Failed to resolve import "lodash"` | 依赖未安装，或 import 路径写错 | 执行 `pnpm add lodash`，检查包名拼写 |
 | 3 | 修改 `vite.config.ts` 后配置不生效 | 部分插件、配置需要重启 dev server | 重启 `pnpm dev`；Vite 会自动重启大部分配置变更，但新增插件时建议手动重启 |
 | 4 | HMR 不生效，保存后整页刷新 | 模块未声明接受更新；或修改了 vite 配置/新增了插件 | 检查是否为 HMR 边界场景；重启 dev server 后重试 |
-| 5 | 部署后资源 404 | `base` 配置与部署路径不匹配（部署在子路径却用了默认 `/`） | 设置 `base: '/子路径/'`，参见 004 篇 |
+| 5 | 部署后资源 404 | `base` 配置与部署路径不匹配（部署在子路径却用了默认 `/`） | 设置 `base: '/子路径/'`，参见《Vite 静态资源处理》 |
 | 6 | 环境变量拿到 undefined | 变量未加 `VITE_` 前缀，或用了动态访问 `import.meta.env[key]` | 变量加 `VITE_` 前缀；使用完整字面量写法 `import.meta.env.VITE_X` |
 
-## 11. 一句话记忆
+## 10. 一句话记忆
 
 Vite 的"快"来自三个设计：**开发时用浏览器原生 ESM 按需加载，依赖交给预构建合并，生产时用 Rolldown 全量优化——把"开发体验"和"生产质量"两条管线彻底分开**。

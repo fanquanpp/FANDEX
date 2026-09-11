@@ -6,14 +6,14 @@ category: 前端技术
 difficulty: intermediate
 description: changesets 版本管理：变更记录、版本 bump、CHANGELOG 生成与 npm 发布流程
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'vite/018-WorkspaceProtocol'
-  - 'vite/019-CatalogManagement'
-  - 'vite/022-MonorepoPractice'
+  - 'vite/180-WorkspaceProtocol'
+  - 'vite/190-CatalogManagement'
+  - 'vite/220-MonorepoPractice'
 prerequisites:
-  - 'vite/017-WorkspaceSetup'
-  - 'vite/018-WorkspaceProtocol'
+  - 'vite/170-WorkspaceSetup'
+  - 'vite/180-WorkspaceProtocol'
 ---
 
 
@@ -36,7 +36,7 @@ prerequisites:
 1. **开发期**：开发者在 PR 中记录变更意图（changeset）——"我改了哪个包、什么级别的变更"
 2. **发版期**：统一计算各包的新版本并生成 CHANGELOG——自动、可追溯
 
-它与 `workspace:` 协议发布转换（见 004 篇）天然配合，形成从代码合并到 npm 上线的完整闭环。
+它与 `workspace:` 协议发布转换（见《workspace 协议与内部依赖》）天然配合，形成从代码合并到 npm 上线的完整闭环。
 
 ## 2. 安装与配置
 
@@ -137,7 +137,7 @@ git commit -m "chore: version packages"
 pnpm changeset publish
 ```
 
-按依赖拓扑顺序对"版本号高于 registry 中已有版本"的包执行 `pnpm publish`。发布时 pnpm 会把 `workspace:*` 转换为真实版本号（见 004 篇），消费者可正常安装。
+按依赖拓扑顺序对"版本号高于 registry 中已有版本"的包执行 `pnpm publish`。发布时 pnpm 会把 `workspace:*` 转换为真实版本号（见《workspace 协议与内部依赖》），消费者可正常安装。
 
 ### 5.1 发布前置条件
 
@@ -154,6 +154,18 @@ pnpm changeset publish
 
 - 私有 scope（`@fandex/*`）发布到 npm 默认私有，需在 `publishConfig` 中声明 `access: "public"`
 - 需确认登录状态：pnpm 11 已原生实现登录/发布流程，不再依赖 npm CLI
+
+### 5.2 预发布模式（pre 模式）
+
+大版本发布前通常要先放 `2.0.0-rc.0` 这类候选版本收集反馈。changesets 内置了"pre 模式"管理整个预发布周期：
+
+```bash
+pnpm changeset pre enter rc   # 进入预发布模式，模式名为 rc
+pnpm changeset version        # 之后每次 version 都发 2.0.0-rc.N，并逐次递增
+pnpm changeset pre exit       # 候选期结束，退出后下一个 version 直接发正式版
+```
+
+要点：进入 pre 模式后，所有被 changeset 标记的包按 `预发布` 规则提升版本（如 `2.0.0-rc.0` -> `2.0.0-rc.1`），期间积累的变更在退出时会自动"折叠"成正式版本号。整个进入/退出动作本身要产生一个 commit 入库，CI 上的发布流水线无需任何改动——它只认"有没有待处理的 changeset"。
 
 ## 6. CI 自动化：完整发布流水线
 
@@ -207,3 +219,16 @@ jobs:
 **误区三：patch 也能包含新功能。** → 语义化版本的核心承诺：patch 只修 bug。塞入新功能会破坏使用者的版本预期。
 
 **误区四：发布后发现问题只能回滚版本。** → 正确做法是发一个**修复版本**（如 1.2.4），而不是撤回已发布的 1.2.3（npm 不允许同版本覆盖）。
+
+## 9. 本篇小结
+
+1. changesets 把发版拆成"开发期记录意图 + 发版期统一计算"两个环节：changeset 文件随 PR 入库，版本号与 CHANGELOG 由工具统一消费生成。
+2. SemVer 级别选择是人的判断，版本号计算是机器的工作；`fixed` / `linked` 包组与 `pre` 预发布模式覆盖了多包联动的复杂场景。
+3. `changesets/action` 把 version（开版本 PR）与 publish（npm 发布）串成标准流水线，版本变更与发布在 Git 历史中完全可追溯。
+4. 发布后发现问题发修复版而不是撤回版本；每个 PR 带不带 changeset 是一次显式的发版决策。
+
+## 10. 动手实践
+
+1. **走通最小闭环**：在双包仓库中给 utils 记一个 minor changeset，合并后运行 `pnpm changeset version && pnpm changeset publish --dry-run`（或对私有包用 `pnpm pack` 替代真实发布），检查 CHANGELOG 与版本号变化。提示：`version` 之后先看 git diff 再决定是否继续。
+2. **体验版本联动**：让 web 以 `workspace:*` 依赖 utils，给 utils 记 patch changeset 并 version，观察 web 的依赖声明是否被同步更新。提示：这正是 `updateInternalDependencies: patch` 的作用。
+3. **演练 pre 模式**：进入 `pre enter next` 后连续 version 两次，观察 `-next.0` 到 `-next.1` 的递增；退出后再 version 一次，确认产出正式版本。提示：pre 期间的 changeset 会一直保留到退出时统一折叠。

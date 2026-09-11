@@ -1,18 +1,18 @@
 ---
-order: 90
+order: 120
 title: Vite 8 与 Rolldown 新特性
 module: 'vite'
 category: 前端技术
 difficulty: intermediate
 description: Vite 8 单引擎架构：版本演进时间线、Rolldown（Rust 打包器）、Oxc、Lightning CSS、Bundled Dev Mode 与升级迁移指南
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'vite/007-BuildSplit'
-  - 'vite/008-PluginSystem'
+  - 'vite/080-BuildSplit'
+  - 'vite/100-PluginSystem'
 prerequisites:
-  - 'vite/002-QuickStart'
-  - 'vite/007-BuildSplit'
+  - 'vite/020-QuickStart'
+  - 'vite/080-BuildSplit'
 ---
 
 
@@ -32,12 +32,12 @@ Vite 的旧架构正是这样一辆"双引擎跑车"：开发时用 esbuild 快�
 | --- | --- | --- |
 | Vite 4 | 2022 年 12 月 | 基于 Rollup 3，升级 esbuild，引入 SWC 实验支持 |
 | Vite 5 | 2023 年 11 月 | 基于 Rollup 4，性能与体积优化，移除部分废弃 API |
-| Vite 6 | 2024 年 11 月 | 引入 **Environment API**（多环境构建基础）、依赖预构建默认启用 |
-| Vite 7 | 2025 年 6 月 | 性能优化、API 精简、为 Rolldown 迁移铺路，提供 `rolldown-vite` 实验包 |
-| **Vite 8** | **2026 年 3 月 12 日** | **Rolldown 成为唯一打包器**（取代 esbuild + Rollup），单引擎时代开启 |
+| Vite 6 | 2024 年 11 月 | 引入**实验性 Environment API**（多环境构建基础）、Sass 默认改用现代 API、CJS Node API 进入废弃流程 |
+| Vite 7 | 2025 年 6 月 | 要求 Node 20.19+ / 22.12+ 并转为纯 ESM 包、默认浏览器目标改为 `baseline-widely-available`、提供 `rolldown-vite` 实验包 |
+| **Vite 8** | **2026 年 3 月 12 日** | **Rolldown + Oxc 取代 esbuild + Rollup**，单引擎时代开启 |
 | Vite 8.1 | 2026 年 6 月 23 日 | 实验性 **Bundled Dev Mode**、Chunk Import Map、Wasm ESM 等 |
 
-讲解：Vite 从 4 到 7 是"量变"（性能与体验持续打磨），Vite 8 是"质变"——官方博客称之为 **"自 Vite 2 以来最重大的架构变更"**（The most significant architectural change since Vite 2）。发布时 Vite 周下载量已达 6500 万次，是生态覆盖面最广的前端构建工具。
+讲解：Vite 从 4 到 7 是"量变"（性能与体验持续打磨），Vite 8 是"质变"——官方博客称之为 **"自 Vite 2 以来最重大的架构变更"**（The most significant architectural change since Vite 2）。发布时 Vite 周下载量已达 6500 万次，是生态覆盖面最广的前端构建工具。截至 2026 年 9 月，最新的小版本线是 Vite 8.2.x。
 
 ## 2. 双引擎时代的困境
 
@@ -158,7 +158,7 @@ Oxc 生态全家桶：
   Oxlint          代码检查（ESLint 生态的 Rust 替代）
 ```
 
-对 Vite 用户最直接的感受：**Vite 8 不再内置 esbuild**，转换与压缩由 Rolldown 内部基于 Oxc 完成，功能等价但更快。配套的还有 `@vitejs/plugin-react` 升级到 v6，React 项目的转换引擎从 Babel 切换到 Oxc——Babel 不再是必要依赖。
+对 Vite 用户最直接的感受：**默认构建管线中不再有 esbuild 的位置**——esbuild 从必装依赖降级为可选依赖（仅当显式配置 `build.cssMinify: 'esbuild'` 等回退项时才需要安装），转换与压缩由 Rolldown 内部基于 Oxc 完成，功能等价但更快。配套的还有 `@vitejs/plugin-react` 升级到 v6，React 项目的转换引擎从 Babel 切换到 Oxc——Babel 不再是必要依赖。
 
 ### 5.2 Lightning CSS：CSS 管线的 Rust 化
 
@@ -191,25 +191,29 @@ Bundled Dev：一次性打包再服务（大型应用启动/刷新更快，HMR �
 
 实测中 Linear 团队冷启动渲染快 3 倍、整页刷新快约 40%。该模式目前在 Vite 8.1 中为实验性特性（侧重浏览器端与基础插件），大型单体应用可尝鲜，使用大量第三方插件的项目建议等待生态适配。
 
+实测中 Linear 团队冷启动渲染快 3 倍、整页刷新快约 40%。该模式目前在 Vite 8.1 中为实验性特性（侧重浏览器端与基础插件），通过 `--experimental-bundle` 参数或配置 `experimental.bundledDev: true` 开启；大型单体应用可尝鲜，使用大量第三方插件的项目建议等待生态适配。
+
 ### 6.2 其它值得关注的新特性
 
 1. TypeScript 路径别名原生支持
-  - 不再需要 vite-tsconfig-paths 插件，配置 resolve.tsconfigPaths 即可读取 tsconfig 的 paths
+  - 配置 `resolve.tsconfigPaths: true` 即可读取 tsconfig 的 paths，不再需要 vite-tsconfig-paths 插件
+  - 注意它默认关闭（有少量解析性能开销），按项目需要显式开启
 
 2. 装饰器元数据支持
-  - NestJS 等依赖 emitDecoratorMetadata 的框架无需再折腾 Babel/SWC 配置
+  - Vite 8 内置自动支持 TypeScript 的 emitDecoratorMetadata，NestJS 等框架无需再折腾 Babel/SWC 配置
+  - 边界提醒：原生支持的是 TS 装饰器元数据发射；TC39 标准装饰器的原生降级（lowering）尚未支持，官方给出 Babel/SWC 变通方案
 
 3. 内置 Vite Devtools
-  - 浏览器扩展形态，可查看模块依赖图、转换结果、触发依赖预构建、分析产物 chunk
+  - 通过 `devtools` 配置项从 dev server 直接启用，可查看模块依赖图、转换结果、触发依赖预构建、分析产物 chunk
 
 4. 浏览器日志转发（forwardConsole）
-  - 浏览器 console 日志转发到终端（006 篇第 8 节）
+  - 浏览器 console 日志转发到终端（《Vite 开发服务器与 HMR》第 8 节）
 
 5. Chunk Import Map（实验性）
   - 用导入映射提升 chunk 缓存效率，缓解"改一行代码哈希级联变化"问题
 
 6. Wasm ESM 支持
-  - .wasm?init 导入支持在 SSR 环境中使用
+  - 直接 `import` wasm 文件并调用导出（如 `import { add } from './add.wasm'`），实现自 vite-plugin-wasm 上游合并
 
 ## 7. 对插件生态的影响
 
@@ -248,12 +252,18 @@ pnpm add -D vite@latest @vitejs/plugin-vue@latest
 ```
 
 2. 检查要点（官方迁移指南）：
-- Node.js 版本：需要 20.19+ 或 22.12+
+- Node.js 版本：需要 20.19+ 或 22.12+（与 Vite 7 一致，Vite 7 起即为纯 ESM 包）
 - 配置文件 vite.config.ts 通常无需改动（rollupOptions 等保持兼容，
      迁移到 rolldownOptions 更佳，旧写法暂时保留并给出弃用提示）
-- 确认浏览器目标：默认从 Vite 7 的 Chrome 107 等提升到
-     'baseline-widely-available'（Chrome 111 / Edge 111 / Firefox 114 / Safari 16.4）
-- 删除或替换依赖 esbuild 专属行为的代码（Vite 8 不再内置 esbuild）
+- 确认浏览器目标：默认目标名仍是 'baseline-widely-available'（Vite 7 引入），
+     但对应下限从 Chrome 107 / Edge 107 / Firefox 104 / Safari 16.0
+     提升到 Chrome 111 / Edge 111 / Firefox 114 / Safari 16.4
+     （对齐 2026-01-01 的 Baseline Widely Available 特性集）
+- esbuild 相关：esbuild 降级为可选依赖；`esbuild` 配置项自动转换为 `oxc`，
+     `transformWithEsbuild` 弃用（改用 `transformWithOxc`）
+- CommonJS 互操作行为统一：dev 与 build 使用一致的 CJS 互操作规则，
+     极端兼容场景可用 `legacy.inconsistentCjsInterop: true` 回退旧行为
+- manualChunks：对象写法已移除、函数写法弃用，迁移到 Rolldown 的 `codeSplitting` 配置
 - 第三方插件升级到最新版
 
 ```text
@@ -276,13 +286,15 @@ pnpm add -D vite@latest @vitejs/plugin-vue@latest
 | 现象 / 报错信息 | 常见原因 | 解决办法 |
 | --- | --- | --- |
 | 升级后提示 Node 版本过低 | Vite 8 要求 Node.js 20.19+ 或 22.12+ | 升级 Node 到满足要求的版本 |
-| 依赖 esbuild 专属 API 的代码报错 | Vite 8 不再内置 esbuild | 移除 esbuild 专属写法，改用 Rolldown/Oxc 等价能力 |
+| 依赖 esbuild 专属 API 的代码报错 | esbuild 已降级为可选依赖，默认管线由 Rolldown/Oxc 承担 | 移除 esbuild 专属写法，改用 Oxc 等价能力（`transformWithOxc` 等） |
 | 升级后插件报不兼容错误 | 插件未适配 Rolldown | 升级插件到最新版；冷门插件查官方兼容性说明或 registry.vite.dev |
 | 产物行为与旧版略有差异 | Rolldown 的 tree-shaking/常量内联更激进 | 在官方迁移指南确认是否已知变更，必要时显式配置 |
-| 自定义浏览器 target 失效 | Vite 8 默认 target 提升为 baseline-widely-available | 显式配置 `build.target` 覆盖默认值 |
+| CJS 依赖的导入写法行为变化 | Vite 8 统一了 dev 与 build 的 CJS 互操作规则 | 按新规则调整；极端兼容场景可用 `legacy.inconsistentCjsInterop: true` 回退 |
+| 构建报 manualChunks 配置错误 | 对象写法已移除、函数写法已弃用 | 迁移到 Rolldown 的 `codeSplitting` 配置 |
+| 自定义浏览器 target 失效 | Vite 8 将默认 target 的浏览器下限提升（Chrome 111 等） | 显式配置 `build.target` 覆盖默认值 |
 | 升级后首次构建较慢 | 模块级持久化缓存未建立 | 属正常现象，第二次构建即开始享受缓存收益 |
 | `rollupOptions` 出现弃用提示 | 旧配置名仍在兼容期内 | 迁移到 `rolldownOptions`（或 `worker.rolldownOptions`） |
 
-## 11. 一句话记忆
+## 10. 一句话记忆
 
 Vite 8 给跑车换了一台统一发动机：Rust 写的 Rolldown 同时接管开发与生产，双引擎时代"本地能跑、上线就挂"的顽疾从架构上根除——更快、更一致、插件生态照常运转。

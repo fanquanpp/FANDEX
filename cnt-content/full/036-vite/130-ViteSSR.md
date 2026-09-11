@@ -1,28 +1,26 @@
 ---
-order: 110
+order: 130
 title: 服务端渲染 SSR
 module: 'vite'
 category: 前端技术
 difficulty: advanced
-description: Vite SSR 基础：服务端入口、水合与框架方案选型。
+description: Vite SSR 实战：CSR/SSR 渲染时机对比、双入口构建、中间件模式、水合与数据注水、元框架选型与部署形态
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'vite/010-ViteEnvModes'
-  - 'vite/007-BuildSplit'
+  - 'vite/050-ViteEnvModes'
+  - 'vite/080-BuildSplit'
 prerequisites:
-  - 'vite/010-ViteEnvModes'
+  - 'vite/050-ViteEnvModes'
 ---
-
-# 服务端渲染 SSR
 
 SPA 把渲染工作全推给浏览器：用户先看到空白页，等 JS 下载执行完才有内容。SSR（服务端渲染）把"出 HTML"这一步挪回服务器，用户请求到达即拿到完整页面。Vite 对 SSR 的支持是"基础设施级"的：双入口构建、服务端模块即时加载、开发期 HMR 全都开箱可用。本篇用最小代码跑通整条链路，再聊何时应该改用框架方案。
 
 ## 前置知识
 
-- [Vite 环境变量与模式](/vite/010-ViteEnvModes)：SSR 双端代码依赖环境变量区分场合与安全边界。
-- [Vite 构建与产物拆分](/vite/007-BuildSplit)：理解客户端产物的结构，SSR 要额外多打一个服务端包。
-- [Vite 开发服务器与 HMR](/vite/006-DevServerHMR)：SSR 开发模式就是 dev server 的"中间件化"。
+- [Vite 环境变量与模式](/vite/050-ViteEnvModes)：SSR 双端代码依赖环境变量区分场合与安全边界。
+- [Vite 构建与产物拆分](/vite/080-BuildSplit)：理解客户端产物的结构，SSR 要额外多打一个服务端包。
+- [Vite 开发服务器与 HMR](/vite/070-DevServerHMR)：SSR 开发模式就是 dev server 的"中间件化"。
 
 ## 学习目标
 
@@ -167,9 +165,11 @@ hydrateRoot(document.querySelector('#app')!, <App />)
 | Nuxt | Vue | Vue 官方全栈方案，生态完整 | 后台管理系统、全 Vue 团队 |
 | SvelteKit | Svelte | 轻量、编译时优化彻底 | 交互密集的小型应用 |
 | Astro | 多框架混合 | 岛屿架构，默认零 JS | 内容站、歌姬主页、教程站 |
-| Remix / Next | React | React 生态的 SSR 方案 | React 团队的动态站点 |
+| Remix / React Router v7 | React | 基于 Vite 的 React 全栈方案 | React 团队的动态站点 |
 
-对"虚拟歌手音乐平台"这类站点，Astro 是天然契合的：歌曲页、歌姬主页是内容页面，默认零 JS；播放器用岛屿（见 014 篇的持久化播放器）；购票提交用 Actions（见 010 篇）。选择判断可以总结成一句话：**页面以内容为主选 Astro，以应用为主选 Nuxt / SvelteKit / Remix；除非为了学习，否则不要在生产上手写整套 SSR 基建**。
+注意上表的边界：**Next.js 不在此列**——它基于自己的构建链（webpack / Turbopack），并不跑在 Vite 上；React 团队若想留在 Vite 生态，对应选择是 Remix / React Router v7（框架模式基于 Vite）。
+
+对"虚拟歌手音乐平台"这类站点，Astro 是天然契合的：歌曲页、歌姬主页是内容页面，默认零 JS；播放器用岛屿（见《Vite 插件开发》的持久化播放器）；购票提交用 Astro 的 Actions 表单方案。选择判断可以总结成一句话：**页面以内容为主选 Astro，以应用为主选 Nuxt / SvelteKit / Remix；除非为了学习，否则不要在生产上手写整套 SSR 基建**。
 
 ## 6. 部署差异：Node 常驻与 Serverless 两条路
 

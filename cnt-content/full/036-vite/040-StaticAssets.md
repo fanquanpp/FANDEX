@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: beginner
 description: 'Vite 静态资源：按"一个 Logo 从设计到上线"的场景，讲清 public 与 src/assets 的区别、import 资源、SVG、字体、favicon 与 base 路径'
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'vite/003-ConfigFile'
-  - 'vite/007-BuildSplit'
+  - 'vite/030-ConfigFile'
+  - 'vite/080-BuildSplit'
 prerequisites:
-  - 'vite/002-QuickStart'
+  - 'vite/020-QuickStart'
 ---
 
 
@@ -308,6 +308,6 @@ export default defineConfig({
 | 6 | 动态拼接路径拿不到图片 | 字符串变量路径无法被静态分析 | 改用 `new URL(name, import.meta.url)` 或 `import.meta.glob` |
 | 7 | 字体加载导致文字闪烁/白屏 | 未设置 `font-display` | `@font-face` 加 `font-display: swap`，并考虑字体子集化 |
 
-## 12. 一句话记忆
+## 11. 一句话记忆
 
 **图片字体走 `src/` 的 import（有哈希、可内联、可优化），`favicon`、`robots.txt` 这类"不加工、要原名"的走 `public/`，部署子路径就设 `base`——资源路径问题的答案，永远在这三句话里**。

@@ -1,28 +1,26 @@
 ---
-order: 120
+order: 90
 title: Vitest 测试集成
 module: 'vite'
 category: 前端技术
 difficulty: intermediate
-description: 与 Vite 同源的测试框架：配置、断言、mock 与覆盖率。
+description: Vitest 测试集成：与 Vite 共享配置管线、断言与异步测试、vi mock 体系、jsdom 环境、覆盖率门禁与 Jest 迁移对照
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'vite/010-ViteEnvModes'
-  - 'vite/003-ConfigFile'
+  - 'vite/050-ViteEnvModes'
+  - 'vite/030-ConfigFile'
 prerequisites:
-  - 'vite/010-ViteEnvModes'
+  - 'vite/050-ViteEnvModes'
 ---
-
-# Vitest 测试集成
 
 Vitest 的定位一句话可以说清：**用 Vite 的管线跑测试**。你的项目已经为 dev 与 build 配好的别名、插件、环境变量，测试时原样生效，不再需要为 Jest 单独维护一套转译配置。本篇从安装配置讲起，覆盖断言、mock、DOM 测试与覆盖率，最后给出从 Jest 迁移的对照表。
 
 ## 前置知识
 
-- [Vite 环境变量与模式](/vite/010-ViteEnvModes)：测试模式与 import.meta.env 的关系。
-- [Vite 配置文件](/vite/003-ConfigFile)：Vitest 配置是对 Vite 配置的扩展与合并。
-- [Vite 构建与产物拆分](/vite/007-BuildSplit)：理解源码如何被转换，才能理解测试为何无需额外配置。
+- [Vite 环境变量与模式](/vite/050-ViteEnvModes)：测试模式与 import.meta.env 的关系。
+- [Vite 配置文件](/vite/030-ConfigFile)：Vitest 配置是对 Vite 配置的扩展与合并。
+- [Vite 构建与产物拆分](/vite/080-BuildSplit)：理解源码如何被转换，才能理解测试为何无需额外配置。
 
 ## 学习目标
 
@@ -101,7 +99,7 @@ describe('点歌队列', () => {
 })
 ```
 
-常用断言速览：`toBe`（原始值与引用）、`toEqual`（深度相等）、`toContain`（包含成员）、`toHaveLength`、`toThrow`。异步测试的两条路线：被测函数本身是 Promise 就 `await` 它；断言"最终会变成某个值"用 `await expect.poll(() => getStatus()).toBe('ready')`——`poll` 会按间隔反复求值直到满足或超时，适合轮询场景。 Vitest 3 起还内置了 `expect.soft`（软断言，收集全部失败而不是遇错即停），批量校验字段时很省事。
+常用断言速览：`toBe`（原始值与引用）、`toEqual`（深度相等）、`toContain`（包含成员）、`toHaveLength`、`toThrow`。异步测试的两条路线：被测函数本身是 Promise 就 `await` 它；断言"最终会变成某个值"用 `await expect.poll(() => getStatus()).toBe('ready')`——`poll` 会按间隔反复求值直到满足或超时，适合轮询场景。此外还有内置的 `expect.soft`（软断言，收集全部失败而不是遇错即停），批量校验字段时很省事。
 
 `poll` 补个具体例子：余量轮询场景里，`await expect.poll(async () => getStock('stand-s')).toBeLessThan(20)` 会在时限内反复求值直到满足或超时，比手写 sleep 循环稳定得多。
 
@@ -223,7 +221,7 @@ test: {
 
 2. **mock 状态在用例间泄漏**。第一个用例 `mockResolvedValue` 的返回值会延续到后面的用例。修正：配置里加 `test: { clearMocks: true }`，或在每个用例前 `vi.clearAllMocks()`；更彻底的做法是用 `mockResolvedValueOnce` 表达"只对本次生效"。
 
-3. **忘了切换环境导致 document is not defined**。默认 node 环境没有 DOM。修正：文件首行加 `// @vitest-environment jsdom`，或在配置里针对目录用 `environmentMatchGlobs` 批量指定。
+3. **忘了切换环境导致 document is not defined**。默认 node 环境没有 DOM。修正：文件首行加 `// @vitest-environment jsdom`；目录级的批量切换用 `projects` 配置声明（旧版常用的 `environmentMatchGlobs` 已被废弃，新项目不要再依赖）。
 
 4. **覆盖率阈值定在错误的范围上**。把 `include` 留空时统计的是"所有被加载的文件"，入口文件的低覆盖会稀释数字。修正：显式圈定核心业务目录，排除样板代码后再谈阈值。
 

@@ -6,17 +6,17 @@ category: 前端技术
 difficulty: intermediate
 description: pnpm 与 Monorepo 工程化：workspace、内容寻址存储、依赖隔离、catalog、任务编排与发布
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'vite/001-ViteOverview'
-  - 'devops/005-CICDPipeline'
+  - 'vite/010-ViteOverview'
+  - 'devops/140-CICDPipeline'
 prerequisites: []
 ---
 
 
 > 本节为增量补充，帮助你选择 pnpm 版本。
 
-- pnpm：11.x 为当前稳定版（本仓库使用的 11.15.1），支持目录锁（Catalogs）、Turborepo 任务编排与 Changesets 发布。
+- pnpm：11.x 为本仓库锁定的版本（11.15.1，要求 Node.js 22+），2026 年 pnpm 12 已成为最新稳定线；本篇与后续各篇介绍的 workspace、catalog、任务编排与发布用法在两个大版本间保持一致。
 - 安装方式：`corepack enable pnpm` 或独立安装脚本；建议通过 packageManager 字段固定版本。
 - Monorepo 场景：pnpm workspaces + Turborepo + Changesets 是当前企业主流组合。
 
@@ -61,9 +61,9 @@ Monorepo 带来的四个核心收益：
 
 **收益二：统一依赖。** 所有包共享一份 lockfile（`pnpm-lock.yaml`），React、TypeScript 的版本全仓库统一，杜绝"这个项目 React 18、那个项目 React 19"的漂移。
 
-**收益三：代码复用无成本。** 共享包通过 `workspace:*` 协议直接引用本地源码（详见 004 篇），改完立刻生效，**不需要发布到 npm 就能联调**。
+**收益三：代码复用无成本。** 共享包通过 `workspace:*` 协议直接引用本地源码（详见《workspace 协议与内部依赖》），改完立刻生效，**不需要发布到 npm 就能联调**。
 
-**收益四：统一 CI。** 一次流水线就能构建/测试所有相关包，配合任务缓存（详见 006 篇），CI 速度反而比多仓库更快。
+**收益四：统一 CI。** 一次流水线就能构建/测试所有相关包，配合任务缓存（详见《Turborepo 任务编排》），CI 速度反而比多仓库更快。
 
 ### 1.3 代价是什么
 
@@ -77,7 +77,7 @@ Monorepo 不是银弹，它把"仓库管理"的复杂度转移到了"工具链�
 
 ### 1.4 为什么是 pnpm
 
-Node 生态的包管理器有 npm、yarn、pnpm 三个主流选择。pnpm 之所以是 Monorepo 的事实标准，靠的是三套机制（详见 002 篇）：
+Node 生态的包管理器有 npm、yarn、pnpm 三个主流选择。pnpm 之所以是 Monorepo 的事实标准，靠的是三套机制（详见《pnpm 核心特性》）：
 
 | 机制 | 解决的问题 |
 | :--- | :--- |
@@ -163,10 +163,10 @@ Monorepo 最头疼的问题之一是**版本漂移**：A 包用 `react@^18`，B 
 catalog:
   react: ^19.0.0
   typescript: ^5.7.0
-  vite: ^6.0.0
+  vite: ^8.0.0
 ```
 
-各包通过 `catalog:` 协议引用（详见 005 篇）：
+各包通过 `catalog:` 协议引用（详见《catalog 依赖目录管理》）：
 
 ```json
 {
@@ -207,7 +207,7 @@ pnpm store prune                 # 清理全局 store 孤儿包
 
 ### 6.2 Turborepo：缓存 + 依赖图编排
 
-Turborepo 在 pnpm 之上增加两层能力（详见 006 篇）：
+Turborepo 在 pnpm 之上增加两层能力（详见《Turborepo 任务编排》）：
 
 - **任务依赖图**：`dependsOn: ["^build"]` 声明"先构建依赖包"
 - **哈希缓存**：按输入文件内容计算指纹，未变更的包直接复用缓存（`FULL TURBO`）
@@ -231,7 +231,7 @@ Turborepo 在 pnpm 之上增加两层能力（详见 006 篇）：
 
 Monorepo 发版和单仓库完全不同——改一个共享包可能牵动多个包。手工维护版本号极易出错：漏改依赖引用、CHANGELOG 缺失、版本冲突。
 
-**Changesets**（详见 007 篇）把发版拆成两个环节：
+**Changesets**（详见《changesets 版本管理与发布》）把发版拆成两个环节：
 
 1. **开发期**：每个 PR 附带一个"变更集文件"（记录改了哪个包、什么级别 major/minor/patch）
 2. **发版期**：CI 统一计算各包新版本、生成 CHANGELOG、按拓扑顺序发布到 npm

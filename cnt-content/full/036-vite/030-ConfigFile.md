@@ -6,13 +6,13 @@ category: 前端技术
 difficulty: beginner
 description: 'vite.config.ts 详解：defineConfig、plugins、路径别名、开发服务器代理与构建选项，用"不配 vs 配 vs 配好"三段对比讲透'
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'vite/002-QuickStart'
-  - 'vite/006-DevServerHMR'
-  - 'vite/007-BuildSplit'
+  - 'vite/020-QuickStart'
+  - 'vite/070-DevServerHMR'
+  - 'vite/080-BuildSplit'
 prerequisites:
-  - 'vite/002-QuickStart'
+  - 'vite/020-QuickStart'
 ---
 
 
@@ -64,7 +64,7 @@ import { defineConfig } from 'vite'
 
 export default defineConfig({
   root: '.',          // 项目根目录（默认值就是当前目录）
-  base: '/',          // 公共基础路径（部署到子路径时修改，见 004 篇）
+  base: '/',          // 公共基础路径（部署到子路径时修改，见《Vite 静态资源处理》）
   plugins: [],        // 插件列表
 })
 ```
@@ -332,6 +332,6 @@ vite build --mode staging
 | 6 | 生产环境接口请求仍报跨域 | `server.proxy` 只在开发环境生效 | 生产环境在 nginx/网关配置反向代理 |
 | 7 | 自定义变量在代码中无类型提示 | 未在 `vite-env.d.ts` 声明 | 按第 7 节方式补充 `ImportMetaEnv` 接口 |
 
-## 10. 一句话记忆
+## 9. 一句话记忆
 
 **vite.config.ts 是 Vite 的方向盘：`defineConfig` 拿类型提示，`plugins` 装能力，`resolve` 管寻路，`server` 管开发，`build` 管产物，`VITE_` 前缀管环境——所有配置都遵循"默认可用、按需调整、两套机制同步"**。

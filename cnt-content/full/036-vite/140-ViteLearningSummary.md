@@ -1,16 +1,16 @@
 ---
-order: 130
+order: 140
 title: Vite 学习总结：核心知识体系回顾
 module: 'vite'
 category: 前端技术
 difficulty: intermediate
 description: 串联模块十二篇文档：从原生 ESM 与依赖预构建到配置、HMR、代码分割、插件系统与 Vite 8 Rolldown 单引擎的完整知识体系回顾。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'vite/003-ConfigFile'
-  - 'vite/006-DevServerHMR'
-  - 'vite/007-BuildSplit'
+  - 'vite/030-ConfigFile'
+  - 'vite/070-DevServerHMR'
+  - 'vite/080-BuildSplit'
 prerequisites: []
 ---
 
@@ -18,8 +18,8 @@ prerequisites: []
 
 ## 前置知识
 
-- [Vite 构建工具概述](/vite/001-ViteOverview)：原生 ESM 与依赖预构建是理解一切后续机制的前提，总结前请先回顾"快递分拣中心"类比。
-- [Vite 快速上手与项目结构](/vite/002-QuickStart)：dev/build/preview 三个命令与目录结构是动手操作的基础，本文所有示例都基于该结构。
+- [Vite 构建工具概述](/vite/010-ViteOverview)：原生 ESM 与依赖预构建是理解一切后续机制的前提，总结前请先回顾"快递分拣中心"类比。
+- [Vite 快速上手与项目结构](/vite/020-QuickStart)：dev/build/preview 三个命令与目录结构是动手操作的基础，本文所有示例都基于该结构。
 
 ## 学习目标
 
@@ -75,7 +75,7 @@ flowchart TD
 
 ### 1. 为什么快：原生 ESM 与依赖预构建
 
-传统打包器开发时要先把整个项目打成一个大 bundle；Vite 则让浏览器按需向开发服务器请求模块，改一行代码只处理一个文件。但第三方依赖动辄几百个模块请求，所以 Vite 在首次启动时用引擎把它们预构建成单文件缓存起来——这就是"冷启动一次、之后毫秒级"的原因（见[构建工具概述](/vite/001-ViteOverview)）。平台入口对歌姬主页的按需引用就是这条链路：
+传统打包器开发时要先把整个项目打成一个大 bundle；Vite 则让浏览器按需向开发服务器请求模块，改一行代码只处理一个文件。但第三方依赖动辄几百个模块请求，所以 Vite 在首次启动时用引擎把它们预构建成单文件缓存起来——这就是"冷启动一次、之后毫秒级"的原因（见[构建工具概述](/vite/010-ViteOverview)）。平台入口对歌姬主页的按需引用就是这条链路：
 
 ```html
 <!-- index.html：浏览器直接请求 main.ts，开发服务器逐个转换返回 -->
@@ -96,7 +96,7 @@ renderSingerPage(themeColor.miku) // 按需引入，改 theme 不必重启应用
 
 ### 2. 配置文件：方向盘与仪表盘
 
-`vite.config.ts` 决定端口、别名、代理、插件与构建产物形态，`defineConfig` 提供完整类型提示。音乐平台最典型的两处配置是 `@` 别名与 `/api` 代理——前端请求转发给后端歌曲服务（见[配置文件详解](/vite/003-ConfigFile)）：
+`vite.config.ts` 决定端口、别名、代理、插件与构建产物形态，`defineConfig` 提供完整类型提示。音乐平台最典型的两处配置是 `@` 别名与 `/api` 代理——前端请求转发给后端歌曲服务（见[配置文件详解](/vite/030-ConfigFile)）：
 
 ```typescript
 // vite.config.ts —— 平台前端的核心配置
@@ -119,7 +119,7 @@ export default defineConfig({
 
 ### 3. 静态资源：两类货架
 
-静态资源分两种存放方式：`src/` 下的资源用 `import` 引入，参与构建（加内容哈希、可压缩、可内联）；`public/` 下的资源原样复制，适合favicon、robots.txt 这类不需要处理的文件（见[静态资源处理](/vite/004-StaticAssets)）：
+静态资源分两种存放方式：`src/` 下的资源用 `import` 引入，参与构建（加内容哈希、可压缩、可内联）；`public/` 下的资源原样复制，适合favicon、robots.txt 这类不需要处理的文件（见[静态资源处理](/vite/040-StaticAssets)）：
 
 ```typescript
 // src/pages/singer.ts —— 歌姬立绘走"加工区"，构建后获得哈希文件名
@@ -137,7 +137,7 @@ CSS Modules 的价值在多人协作时最明显：平台前端两位开发者�
 
 ### 4. CSS 流水线：从 Sass 到浏览器
 
-一段 Sass 源码要经过"入口登记、预处理器编译、PostCSS 后处理、CSS Modules 局部化、注入或抽取"五站才能生效。开发时以 `<style>` 标签注入保证 HMR 粒度，生产时抽取为独立 CSS 按需加载（见[CSS 与预处理器](/vite/005-CSSPreprocessors)）：
+一段 Sass 源码要经过"入口登记、预处理器编译、PostCSS 后处理、CSS Modules 局部化、注入或抽取"五站才能生效。开发时以 `<style>` 标签注入保证 HMR 粒度，生产时抽取为独立 CSS 按需加载（见[CSS 与预处理器](/vite/060-CSSPreprocessors)）：
 
 ```css
 /* src/pages/singer.module.css —— CSS Modules：类名自动局部化，不怕冲突 */
@@ -162,7 +162,7 @@ HMR 的边界决定开发体验：CSS 与框架组件有现成的热替换边界
 
 ### 5. 开发服务器与 HMR
 
-HMR 的本质是"模块图 + WebSocket"：服务器监听文件变化，沿模块图找出受影响的边界，把最新模块推给浏览器就地替换，页面状态不丢失。Vite 对 CSS、Vue、React 提供开箱即用的热替换，原生模块可用 `import.meta.hot` 自定义（见[开发服务器与 HMR](/vite/006-DevServerHMR)）：
+HMR 的本质是"模块图 + WebSocket"：服务器监听文件变化，沿模块图找出受影响的边界，把最新模块推给浏览器就地替换，页面状态不丢失。Vite 对 CSS、Vue、React 提供开箱即用的热替换，原生模块可用 `import.meta.hot` 自定义（见[开发服务器与 HMR](/vite/070-DevServerHMR)）：
 
 ```typescript
 // src/config/theme.ts —— 应援色配置热更新：改配置不用整页刷新
@@ -176,11 +176,11 @@ if (import.meta.hot) {
 }
 ```
 
-分包策略的核心是按变化频率分组：业务代码高频变化，第三方依赖低频变化，拆开后业务迭代不会击穿依赖包的浏览器缓存。优化结果应当用产物分析工具量化验证，而不是凭感觉下结论——007 篇的事故现场就是从 Network 面板与构建输出开始定位的。
+分包策略的核心是按变化频率分组：业务代码高频变化，第三方依赖低频变化，拆开后业务迭代不会击穿依赖包的浏览器缓存。优化结果应当用产物分析工具量化验证，而不是凭感觉下结论——《Vite 生产构建与代码分割》篇的事故现场就是从 Network 面板与构建输出开始定位的。
 
 ### 6. 生产构建与代码分割
 
-构建期的核心是"首屏只带必需代码"：路由懒加载把非首页切成独立 chunk，`manualChunks` 把稳定的大依赖单独分包以利用缓存，tree-shaking 顺带删掉没用到的导出。平台把演唱会压轴的重依赖单独拆包（见[生产构建与代码分割](/vite/007-BuildSplit)）：
+构建期的核心是"首屏只带必需代码"：路由懒加载把非首页切成独立 chunk，`manualChunks` 把稳定的大依赖单独分包以利用缓存，tree-shaking 顺带删掉没用到的导出。平台把演唱会压轴的重依赖单独拆包（见[生产构建与代码分割](/vite/080-BuildSplit)）：
 
 ```typescript
 // src/router.ts —— 演唱会页懒加载：进入路由才下载对应 chunk
@@ -207,7 +207,7 @@ export default defineConfig({
 
 ### 7. 插件系统与 Vite 8 Rolldown
 
-插件是带名字与钩子函数的对象：`resolveId`、`load`、`transform` 等钩子在模块解析链上各司其职，社区生态由此生长。Vite 8 用 Rust 写的 Rolldown 取代了"开发 esbuild + 生产 Rollup"的双引擎架构，开发与生产行为一致，兼容既有 Rollup 插件 API（见[插件系统](/vite/008-PluginSystem)与[Vite 8 与 Rolldown 新特性](/vite/009-Vite8Rolldown)）：
+插件是带名字与钩子函数的对象：`resolveId`、`load`、`transform` 等钩子在模块解析链上各司其职，社区生态由此生长。Vite 8 用 Rust 写的 Rolldown 取代了"开发 esbuild + 生产 Rollup"的双引擎架构，开发与生产行为一致，兼容既有 Rollup 插件 API（见[插件系统](/vite/100-PluginSystem)与[Vite 8 与 Rolldown 新特性](/vite/120-Vite8Rolldown)）：
 
 ```typescript
 // vite.config.ts —— 自定义插件：把应援色标记编译成主题变量
@@ -318,7 +318,7 @@ server: {
 
 ## 后续学习路径
 
-1. 补齐配置细节：精读[配置文件详解](/vite/003-ConfigFile)的"不配、配、配好"三段对比，把每一项为什么存在讲给自己听。
-2. 深入开发体验：按[开发服务器与 HMR](/vite/006-DevServerHMR)复现模块图与热替换边界的实验。
-3. 优化生产产物：跟随[生产构建与代码分割](/vite/007-BuildSplit)从事故现场走一遍优化链路，再读[插件系统](/vite/008-PluginSystem)尝试动手写插件。
-4. 展望架构演进：阅读[Vite 8 与 Rolldown 新特性](/vite/009-Vite8Rolldown)理解单引擎时代，并关注[环境变量与模式](/vite/010-ViteEnvModes)、[服务端渲染 SSR](/vite/011-ViteSSR)、[Vitest 测试集成](/vite/012-ViteVitestTesting)的后续更新。
+1. 补齐配置细节：精读[配置文件详解](/vite/030-ConfigFile)的"不配、配、配好"三段对比，把每一项为什么存在讲给自己听。
+2. 深入开发体验：按[开发服务器与 HMR](/vite/070-DevServerHMR)复现模块图与热替换边界的实验。
+3. 优化生产产物：跟随[生产构建与代码分割](/vite/080-BuildSplit)从事故现场走一遍优化链路，再读[插件系统](/vite/100-PluginSystem)尝试动手写插件。
+4. 展望架构演进：阅读[Vite 8 与 Rolldown 新特性](/vite/120-Vite8Rolldown)理解单引擎时代，并关注[环境变量与模式](/vite/050-ViteEnvModes)、[服务端渲染 SSR](/vite/130-ViteSSR)、[Vitest 测试集成](/vite/090-ViteVitestTesting)的后续更新。

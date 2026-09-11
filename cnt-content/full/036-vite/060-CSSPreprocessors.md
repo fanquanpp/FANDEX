@@ -1,17 +1,17 @@
 ---
-order: 50
+order: 60
 title: Vite CSS 与预处理器
 module: 'vite'
 category: 前端技术
 difficulty: intermediate
 description: Vite 样式方案：从 Sass 源码到浏览器 CSS 的完整处理流水线，讲清预处理器、PostCSS、CSS Modules、Lightning CSS 与 Tailwind 集成
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'vite/004-StaticAssets'
-  - 'vite/007-BuildSplit'
+  - 'vite/040-StaticAssets'
+  - 'vite/080-BuildSplit'
 prerequisites:
-  - 'vite/003-ConfigFile'
+  - 'vite/030-ConfigFile'
 ---
 
 
@@ -54,7 +54,7 @@ body {
 }
 ```
 
-讲解：Vite 会解析 CSS 中的 `@import` 与 `url()` 引用——`url()` 指向的图片、字体等资源会走 004 篇介绍的静态资源管线（加哈希、可内联）；`@import` 引入的其他 CSS 文件会被内联合并。Vite 同时把 CSS 与 JS 的依赖关系绑定：某个 CSS 仅被特定 chunk 使用时，它会跟随该 chunk 一起拆分，实现"只有访问对应页面才下载它的样式"。
+讲解：Vite 会解析 CSS 中的 `@import` 与 `url()` 引用——`url()` 指向的图片、字体等资源会走《Vite 静态资源处理》介绍的静态资源管线（加哈希、可内联）；`@import` 引入的其他 CSS 文件会被内联合并。Vite 同时把 CSS 与 JS 的依赖关系绑定：某个 CSS 仅被特定 chunk 使用时，它会跟随该 chunk 一起拆分，实现"只有访问对应页面才下载它的样式"。
 
 ### 2.2 三种进入方式对比
 
@@ -283,7 +283,7 @@ export default defineConfig({
 pnpm add -D lightningcss
 ```
 
-讲解：Lightning CSS（Rust 编写）比传统 JS 实现的 CSS 处理快约 100 倍，能同时完成压缩、语法降级、CSS Modules。Vite 8 中它是生产构建 CSS 压缩的默认承担者（详见本模块 009 篇）。
+讲解：Lightning CSS（Rust 编写）比传统 JS 实现的 CSS 处理快约 100 倍，能同时完成压缩、语法降级、CSS Modules。Vite 8 中它是生产构建 CSS 压缩的默认承担者（详见本模块《Vite 8 与 Rolldown 新特性》）。
 
 ## 7. 综合案例：Tailwind CSS 的接入流程
 
@@ -329,6 +329,6 @@ import './index.css'
 | 6 | 动态 import 页面的样式没生效 | `cssCodeSplit` 关闭后异步 chunk 的样式被合并但加载顺序异常 | 按需确认是否真的需要关闭分割；大项目保持默认开启 |
 | 7 | 全局样式污染组件 | 全局 `.css` 中的选择器与组件类名重名 | 组件样式一律走 `.module.css`；全局样式用前缀约定（如 `.fx-`）隔离 |
 
-## 10. 一句话记忆
+## 9. 一句话记忆
 
 **CSS 在 Vite 中就是一条五站流水线：import 入口登记 -> 预处理器编译 -> PostCSS 加工 -> CSS Modules 装盘 -> 压缩按需送达——你只需记住"装编译器就能用、`.module.css` 管局部、生产自动分割"三个要点**。

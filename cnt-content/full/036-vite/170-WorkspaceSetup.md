@@ -6,13 +6,13 @@ category: 前端技术
 difficulty: beginner
 description: pnpm workspace 配置：pnpm-workspace.yaml、packages 模式与安装命令
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'vite/016-PnpmCore'
-  - 'vite/018-WorkspaceProtocol'
-  - 'vite/019-CatalogManagement'
+  - 'vite/160-PnpmCore'
+  - 'vite/180-WorkspaceProtocol'
+  - 'vite/190-CatalogManagement'
 prerequisites:
-  - 'vite/016-PnpmCore'
+  - 'vite/160-PnpmCore'
 ---
 
 
@@ -34,7 +34,7 @@ prerequisites:
 - 每个项目单独管理依赖版本（版本漂移）
 - 项目之间无法直接引用本地代码（只能发版或复制）
 
-有了 workspace，pnpm 一次 `pnpm install` 即可为全部包生成依赖，并通过符号链接让包之间互相引用（详见 004 篇）。
+有了 workspace，pnpm 一次 `pnpm install` 即可为全部包生成依赖，并通过符号链接让包之间互相引用（详见《workspace 协议与内部依赖》）。
 
 ### 1.3 最小工作空间的三个文件
 
@@ -54,19 +54,22 @@ prerequisites:
 # 1. 创建项目目录并进入
 mkdir my-monorepo && cd my-monorepo
 
-# 2. 创建根 package.json（-w 表示 workspace root）
-pnpm init -w
+# 2. 创建根 package.json
+pnpm init
 ```
 
-生成的根 `package.json` 长这样：
+`pnpm init` 生成最小可用的 `package.json`（新版 pnpm 默认 `"type": "module"`）。根包建议再手动补上 `"private": true`，防止它被误发布：
 
 ```json
 {
   "name": "my-monorepo",
   "version": "1.0.0",
+  "type": "module",
   "private": true
 }
 ```
+
+注意：`pnpm init` 没有 `-w` 选项，`-w` 是 `pnpm add` 安装依赖到根包时才用的标志（见第 5 节）。
 
 ### 2.2 创建 pnpm-workspace.yaml
 
@@ -107,7 +110,7 @@ pnpm install
 
 - 生成了 `pnpm-lock.yaml`（整个工作空间的依赖锁）
 - 所有包的依赖被统一管理
-- 各包可以通过 `workspace:*` 协议互相引用（见 004 篇）
+- 各包可以通过 `workspace:*` 协议互相引用（见《workspace 协议与内部依赖》）
 
 ## 3. pnpm-workspace.yaml 详解
 
@@ -153,7 +156,7 @@ packages:
 {
   "name": "fandex-monorepo",
   "private": true,
-  "packageManager": "pnpm@11.0.0",
+  "packageManager": "pnpm@11.15.1",
   "engines": {
     "node": ">=22"
   },
@@ -182,11 +185,11 @@ packages:
 ### 5.1 首次安装与增量安装
 
 ```bash
-pnpm install            # 安装所有包的依赖，生成/更新 pnpm-lock.yaml
-pnpm install -w         # 给根包安装开发依赖（-w 表示 workspace root）
+pnpm install              # 安装所有包的依赖，生成/更新 pnpm-lock.yaml
+pnpm add -w typescript    # 给根包安装开发依赖（-w 表示写入 workspace root）
 ```
 
-`-w`（--workspace-root）把依赖加到根 package.json；不带参数时 pnpm 会读取全部包的依赖一次性安装。
+`pnpm add -w`（--workspace-root）把依赖加到根 package.json；不带 `-w` 的 `pnpm install` 会读取全部包的依赖一次性安装。在根目录直接 `pnpm add 某包`（不带 -w）时 pnpm 会拒绝执行并提示，避免误把仓库级工具装错位置。
 
 ### 5.2 冻结安装（CI 必用）
 
@@ -197,7 +200,7 @@ pnpm install --frozen-lockfile
 
 `--frozen-lockfile` 不修改 pnpm-lock.yaml，若 lockfile 与 package.json 不一致则安装失败。
 
-**为什么 CI 必须用**：保证团队与线上环境依赖完全一致，防止"本地能跑、CI 挂"的幽灵依赖问题（见 002 篇）。
+**为什么 CI 必须用**：保证团队与线上环境依赖完全一致，防止"本地能跑、CI 挂"的幽灵依赖问题（见《pnpm 核心特性》）。
 
 ### 5.3 pnpm-lock.yaml 必须入库
 
@@ -227,18 +230,23 @@ pnpm -r --parallel lint     # 并行执行互不依赖的 lint
 ### 6.2 按包过滤：--filter / -F
 
 ```bash
-pnpm -F @fandex/web dev          # 只运行 web 包的 dev
-pnpm -F @fandex/utils add lodash # 给 utils 包添加依赖
-pnpm -F @fandex/web --filter "…{@fandex/utils}…" test  # 连同依赖一起
+pnpm -F @fandex/web dev               # 只运行 web 包的 dev
+pnpm -F @fandex/utils add lodash      # 给 utils 包添加依赖
+pnpm -F "@fandex/web..." test         # web 及它依赖的所有包（ASCII 三个点，不能写成中文省略号）
+pnpm -F "...@fandex/utils" build      # 所有依赖 utils 的包（被影响方，先升级先回归）
+pnpm -F "@fandex/web^..." test        # 只跑 web 的依赖包，不含 web 自身
 ```
 
-**花括号过滤语法**：
+**省略号（...）过滤语法**（省略号一律用 ASCII 半角点号）：
 
 | 写法 | 含义 |
 | :--- | :--- |
-| `@{包}…` | 该包及其所有依赖 |
-| `…{包}` | 所有依赖该包的包 |
-| `@{包}…{包2}` | 两个方向都包含 |
+| `pkg...` | 该包及其所有依赖（直接 + 传递） |
+| `...pkg` | 该包及其所有"被谁依赖"的包（反向） |
+| `pkg^...` | 只含该包的依赖，不含它自己 |
+| `...^pkg` | 只含依赖它的包，不含它自己 |
+
+花括号 `{...}` 则是**路径过滤**：`pnpm -F "./packages/**" build` 按目录 glob 圈定包，可与省略号组合（如 `...{packages/**}`）。过滤选择器还能与 Git 变更范围配合（`--filter "...[origin/main]"` 圈出相对主干有变更的包），是 CI 增量构建的基础。
 
 ### 6.3 常用命令速查
 
@@ -262,3 +270,18 @@ pnpm -F @fandex/web --filter "…{@fandex/utils}…" test  # 连同依赖一起
 **陷阱四：`--frozen-lockfile` 报错。** CI 上报"lockfile 与 package.json 不一致"。→ 说明有人改了 package.json 没重新 install，本地先执行 `pnpm install` 提交新的 lockfile。
 
 **陷阱五：glob 模式写错。** `apps/*` 只匹配一层，`apps/**` 匹配多层。→ 根据目录深度选择合适的写法。
+
+**陷阱六：过滤表达式里用了中文省略号。** 从聊天工具或文档复制命令时，`...` 被自动替换成 `…`，pnpm 无法识别。→ 手写或粘贴后检查，省略号必须是 ASCII 半角点号。
+
+## 8. 本篇小结
+
+1. workspace 的最小闭环是三件套：`pnpm-workspace.yaml` 声明包、根 `package.json` 放公共脚本、`pnpm-lock.yaml` 入库锁定依赖树。
+2. `packages` 用 glob 声明成员，`*` 一层、`**` 多层、`!` 排除；每个被匹配的目录必须有 package.json。
+3. 根目录只放仓库级工程依赖（`pnpm add -w`），业务依赖进各自的包；CI 一律 `pnpm install --frozen-lockfile`。
+4. 过滤两条主线：`-r` 递归全量，`-F <pkg>...` 按依赖关系定向；省略号方向决定"找依赖"还是"找被依赖者"。
+
+## 9. 动手实践
+
+1. **搭建最小 workspace**：按第 2 节从零建出 `apps/web` 与 `packages/utils`，确认根目录生成的 pnpm-lock.yaml 只有一份、两个包的依赖都在根 node_modules 汇总。提示：`pnpm -r list --depth -1` 可列出全部包自检。
+2. **验证过滤方向**：给 utils 加一个依赖它的第三个包，分别运行 `pnpm -F "@fandex/utils..." list` 与 `pnpm -F "...@fandex/utils" list`，观察两种方向的包集合差异。提示：前者是"utils 和它依赖的"，后者是"utils 和依赖它的"。
+3. **制造并修复一次 lockfile 冲突**：让两个分支各自改动不同的 package.json 后合并，观察 pnpm-lock.yaml 冲突，再用 `pnpm install` 自动修复。提示：修复完成后 `git diff` 检查，确认没有人为手改 lockfile。

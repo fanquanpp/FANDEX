@@ -6,13 +6,13 @@ category: 前端技术
 difficulty: intermediate
 description: Turborepo 任务编排：turbo.json、tasks 配置、dependsOn 依赖与缓存机制
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'vite/017-WorkspaceSetup'
-  - 'vite/022-MonorepoPractice'
+  - 'vite/170-WorkspaceSetup'
+  - 'vite/220-MonorepoPractice'
 prerequisites:
-  - 'vite/017-WorkspaceSetup'
-  - 'vite/016-PnpmCore'
+  - 'vite/170-WorkspaceSetup'
+  - 'vite/160-PnpmCore'
 ---
 
 
@@ -39,7 +39,7 @@ prerequisites:
 
 ```bash
 pnpm add -D turbo -w
-npx turbo init
+pnpm exec turbo init
 ```
 
 **要点**：
@@ -88,11 +88,11 @@ turbo.json 中的 `tasks` 字段（Turbo 2.x 语法，旧版为 pipeline）声�
 | 写法 | 含义 |
 | ---- | ---- |
 | `dependsOn: []` | 无依赖，可并行 |
-| `dependsOn: ["^build"]` | 先执行所有被依赖包（依赖我的）的 build |
+| `dependsOn: ["^build"]` | 先执行"我依赖的那些包"（上游）的 build |
 | `dependsOn: ["build"]` | 先执行本包自己的 build |
 | `dependsOn: ["^build", "lint"]` | 组合：先依赖包 build，再本包 lint |
 
-**`^` 前缀的含义**：`^build` 中的 `^` 代表"依赖关系方向"——"所有依赖我的包的 build"（即我的上游依赖先构建）。
+**`^` 前缀的含义**：`^build` 表示"**我依赖的包**（上游依赖）的 build 任务先完成"。`^` 读作"沿依赖边向上游走"——应用依赖 ui 库，`apps/web` 的 `^build` 就是 `packages/ui` 的 build。方向记忆：不带 `^` 看本包内部，带 `^` 看上游依赖。
 
 ## 4. 缓存机制
 
@@ -146,8 +146,8 @@ turbo run build --dry      # 预览执行计划，不真正执行
 
 **重点命令**：
 
-- `--affected`：结合 Git 比较（默认 `--base` 指向 main）圈定变更范围，是 CI 按变更集构建的核心
-- `--dry`：打印计划图，便于调试依赖关系
+- `--affected`：结合 Git 比较（用 `--base` 指定基准分支，或在 turbo.json 的 `affected.base` 中固定，避免各机器默认值不一致）圈定变更范围，是 CI 按变更集构建的核心
+- `--dry`（可加 `=json`）：打印任务执行计划，便于调试依赖关系与缓存命中预期
 
 ## 6. 与 pnpm 原生能力对比
 
@@ -174,3 +174,16 @@ turbo run build --dry      # 预览执行计划，不真正执行
 **误区三：`outputs` 可以不写。** → 不声明 outputs，缓存就无法恢复产物，turbo 只能"跳过执行但无法恢复文件"——缓存效果大打折扣。构建任务必须声明 outputs。
 
 **误区四：dev 任务也应该缓存。** → dev 是长驻进程（persistent），不产生可复用产物，`cache: false` 是正确配置。
+
+## 8. 本篇小结
+
+1. Turborepo 与 pnpm 是互补关系：pnpm 管依赖安装，turbo 管"任务怎么跑、哪些能跳过"。
+2. turbo.json 的 `tasks`（2.x 语法）里最关键的三件事：`dependsOn: ["^build"]` 表达"上游先构建"、`outputs` 声明可恢复的产物、dev 类任务标 `persistent` 且不缓存。
+3. 缓存正确性的根基是"输入指纹"：源码、依赖、环境变量、配置任一变化，指纹即变、缓存即失效——它只会在输入完全一致时命中，不会让你用上旧代码。
+4. CI 的两大提速开关：远程缓存共享产物（`TURBO_TOKEN` / `TURBO_TEAM`）与 `--affected` 只跑变更相关包。
+
+## 9. 动手实践
+
+1. **看到执行计划**：在一个多包仓库里运行 `turbo run build --dry=json`，对照 turbo.json 检查每个包的任务顺序，确认 ui 库的 build 排在应用之前。提示：`^build` 边遗漏时，顺序图会立刻暴露。
+2. **验证缓存命中**：连续两次运行 `turbo run build`，第二次应出现 FULL TURBO；随后只改一个包的一行代码再跑，观察只有该包及其上游受影响。提示：改动后缓存的包会减少，命中数是排查"指纹计算过宽"的线索。
+3. **用 inputs 收紧指纹**：给 build 任务加 `inputs: ["src/**", "tsconfig.json"]` 后改 README，验证 build 不再被无关改动触发。提示：`turbo run build --dry=json` 的哈希值可以前后对比。

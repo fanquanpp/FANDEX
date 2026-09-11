@@ -6,13 +6,13 @@ category: 前端技术
 difficulty: beginner
 description: Vite 快速上手：手把手创建项目、读懂目录结构、掌握 dev/build/preview 三个核心命令与 ESM 加速原理
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'vite/003-ConfigFile'
-  - 'vite/004-StaticAssets'
-  - 'vite/006-DevServerHMR'
+  - 'vite/030-ConfigFile'
+  - 'vite/040-StaticAssets'
+  - 'vite/070-DevServerHMR'
 prerequisites:
-  - 'javascript/006-ControlFlow'
+  - 'javascript/060-ControlFlow'
 ---
 
 
@@ -20,7 +20,7 @@ prerequisites:
 
 想象你第一次进厨房做饭。你不需要先成为大厨，只需要按步骤来：开火（点火）、热锅（预热）、下食材（倒入代码）、起锅（产出结果）。做饭最怕的不是"不会做"，而是**在错误的环节做错误的事**——比如菜还没熟就关火，或者油锅还没热就下菜。
 
-跑通一个 Vite 项目也是如此。本文是一篇**操作向导**，不追求一次讲透所有原理，而是带你按 7 个步骤亲手跑通"创建项目 → 启动开发 → 修改页面 → 生产构建 → 本地预览"的完整流程。跟着做一遍，比读十遍理论有用。阅读本文前建议先通读 001 篇《Vite 构建工具概述》，了解基本概念；本系列采用 Vite 8（2026 年 3 月发布的最新大版本）。
+跑通一个 Vite 项目也是如此。本文是一篇**操作向导**，不追求一次讲透所有原理，而是带你按 7 个步骤亲手跑通"创建项目 → 启动开发 → 修改页面 → 生产构建 → 本地预览"的完整流程。跟着做一遍，比读十遍理论有用。阅读本文前建议先通读《Vite 构建工具概述》，了解基本概念；本系列采用 Vite 8（2026 年 3 月发布的最新大版本）。
 
 ## 2. 第 0 步：检查灶台——环境准备
 
@@ -87,10 +87,10 @@ pnpm install
 graph TD
   A["my-vite-app/"] --> B["index.html（页面入口 HTML，位于项目根目录）"]
   A --> C["package.json（依赖与脚本定义）"]
-  A --> D["vite.config.ts（Vite 配置文件，003 篇详解）"]
+  A --> D["vite.config.ts（Vite 配置文件，配置篇详解）"]
   A --> E["tsconfig.json（TypeScript 编译配置）"]
   A --> F["tsconfig.app.json（应用代码的 TS 配置）"]
-  A --> G["public/（公共静态资源，原样复制，004 篇详解）"]
+  A --> G["public/（公共静态资源，原样复制，静态资源篇详解）"]
   A --> H["src/"]
   H --> H1["main.tsx（应用入口，挂载到 #root）"]
   H --> H2["App.tsx（根组件）"]
@@ -113,7 +113,7 @@ graph TD
 </html>
 ```
 
-讲解：`type="module"` 让浏览器以原生 ES Module 方式加载脚本。`src/main.tsx` 中再通过 `import` 递归引用其他模块，浏览器按需发起请求，Vite 的开发服务器会拦截并即时转换这些请求（原理详见 001 篇第 4 节）。
+讲解：`type="module"` 让浏览器以原生 ES Module 方式加载脚本。`src/main.tsx` 中再通过 `import` 递归引用其他模块，浏览器按需发起请求，Vite 的开发服务器会拦截并即时转换这些请求（原理详见《Vite 构建工具概述》第 4 节）。
 
 ## 6. 第 4 步：下食材——启动开发服务器
 
@@ -162,7 +162,7 @@ function App() {
 export default App
 ```
 
-保存文件，然后观察浏览器：页面内容**即时更新**，且输入框内容、滚动位置等页面状态不会丢失——这正是 Vite 的 HMR（模块热替换）特性，其原理见 001 篇第 6 节，深入内容见 006 篇。
+保存文件，然后观察浏览器：页面内容**即时更新**，且输入框内容、滚动位置等页面状态不会丢失——这正是 Vite 的 HMR（模块热替换）特性，其原理见《Vite 构建工具概述》第 6 节，深入内容见《Vite 开发服务器与 HMR》。
 
 再做一个实验：把 `<h1>` 的文本改回来，再改一下 `src/App.css` 中的背景色，体会"改代码 → 保存 → 页面秒变"的开发节奏。
 
@@ -219,7 +219,7 @@ pnpm preview
 
 ## 11. 为什么快：一次看懂 ESM 与依赖预构建
 
-（详见 001 篇第 4-5 节，这里只做操作视角的速览。）
+（详见《Vite 构建工具概述》第 4-5 节，这里只做操作视角的速览。）
 
 - **按需编译**：浏览器原生 ESM 支持让 dev server 只需转换"当前请求的文件"，冷启动与项目规模无关；
 - **依赖预构建**：`node_modules` 中的依赖在启动时被 Rolldown 预合并为 ESM 并缓存到 `node_modules/.vite`，浏览器一次请求即可加载；
@@ -242,9 +242,9 @@ pnpm dev             # 删除缓存目录后重启，效果同上
 | 3 | 端口被占用 | 5173 已被其他进程使用 | 无需处理，Vite 会自动顺延端口；或 `pnpm dev --port 3000` 指定 |
 | 4 | 编辑器报"找不到模块 react" | 依赖未安装或编辑器未重新加载 | 确认 `pnpm install` 成功；重启编辑器让 TS 服务重新加载 |
 | 5 | 页面打不开 `http://localhost:5173/` | dev server 未启动成功，或浏览器代理设置异常 | 查看终端输出确认 `ready`；检查代理软件是否拦截 localhost |
-| 6 | build 产物部署后白屏/404 | `base` 未按部署路径配置 | 在 `vite.config.ts` 设置 `base: '/子路径/'`，见 004 篇 |
+| 6 | build 产物部署后白屏/404 | `base` 未按部署路径配置 | 在 `vite.config.ts` 设置 `base: '/子路径/'`，见《Vite 静态资源处理》 |
 | 7 | 模板默认内容太多 | 脚手架自带演示页面与 logo | 按需删除 `src` 下不需要的文件与 `public/vite.svg`，保持目录干净 |
 
-## 14. 一句话记忆
+## 13. 一句话记忆
 
 **创建项目、安装依赖、`pnpm dev` 开发、`pnpm build` 上线、`pnpm preview` 验货——Vite 项目的日常就是这"三令五步"，而它的快来自浏览器原生 ESM 的按需加载**。

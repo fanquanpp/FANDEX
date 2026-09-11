@@ -6,14 +6,14 @@ category: 前端技术
 difficulty: intermediate
 description: catalog 协议：pnpm-workspace.yaml 目录配置、catalogMode 与依赖版本统一
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'vite/017-WorkspaceSetup'
-  - 'vite/018-WorkspaceProtocol'
-  - 'vite/021-ChangesetsRelease'
+  - 'vite/170-WorkspaceSetup'
+  - 'vite/180-WorkspaceProtocol'
+  - 'vite/210-ChangesetsRelease'
 prerequisites:
-  - 'vite/017-WorkspaceSetup'
-  - 'vite/016-PnpmCore'
+  - 'vite/170-WorkspaceSetup'
+  - 'vite/160-PnpmCore'
 ---
 
 
@@ -48,7 +48,7 @@ packages:
 catalog:
   react: ^19.0.0
   typescript: ^5.7.0
-  vite: ^6.0.0
+  vite: ^8.0.0
 ```
 
 **要点**：
@@ -184,3 +184,26 @@ overrides:
 **误区三：catalog 只能放 dependencies。** → 它可以用于 dependencies、devDependencies、peerDependencies、overrides 等所有依赖位置。
 
 **误区四：用了 catalog 就不需要 workspace 协议了。** → 两者分工不同：catalog 管"外部依赖版本"，workspace 管"内部包引用"，配合使用才完整。
+
+## 8. 常见报错与对策
+
+| 现象 / 报错信息 | 常见原因 | 解决办法 |
+| --- | --- | --- |
+| `catalog: 反应不到对应条目`（安装时报某依赖未在 catalog 中定义） | strict 模式下引用了 catalog 不存在的依赖 | 先在 pnpm-workspace.yaml 的 catalog 里登记该依赖，再执行安装 |
+| 改了 catalog 版本但依赖没变 | lockfile 已按旧范围解析，且范围内版本未强制刷新 | 执行 `pnpm -r update` 让全工作空间按新范围重新解析 |
+| 具名目录拼错：`catalog:react-18` 安装失败 | `catalogs` 下没有这个名字 | 核对 pnpm-workspace.yaml 中 `catalogs` 的键名，注意连字符 |
+| 发布的包里还残留 `catalog:` 协议 | 用了非 pnpm 的发布方式（如手改后 `npm publish`） | 统一用 `pnpm publish`（或 changesets 触发），由它在打包时完成协议替换 |
+| 只想升级某一个包的某依赖 | 全局 update 波及面大 | 用 `pnpm -F <包名> update <依赖>` 定向更新 |
+
+## 9. 本篇小结
+
+1. catalog 是"外部依赖版本的单一事实来源"：定义集中在一处 pnpm-workspace.yaml，引用用 `catalog:`（默认目录）或 `catalog:<名称>`（具名目录）。
+2. `catalogMode` 三档各有定位：`manual` 手工维护、`prefer` 渐进迁移、`strict` 工具强制统一；strict 是防版本漂移的终极手段。
+3. catalog 管"外部 npm 依赖"，`workspace:` 协议管"内部包引用"，两者分工互补、配合使用。
+4. 发布时 pnpm 自动把 `catalog:` 替换为真实版本范围，仓库内文件不变，消费者无感知。
+
+## 10. 动手实践
+
+1. **搭建统一版本目录**：把一个多包仓库的 react、typescript、vite 全部迁到 catalog，运行 `pnpm -r update` 后用 `pnpm why react` 验证各包解析到同一版本。提示：迁移前先 grep 各包 package.json，找出全部版本写法。
+2. **体验 strict 的拦截**：开启 `catalogMode: strict` 后，故意在某个包里 `pnpm add` 一个 catalog 外的新依赖，观察报错；再把依赖登记进 catalog 重试。提示：报错信息会明确指出"未在 catalog 中定义"。
+3. **具名目录演练**：为旧版本迁移造一个 `catalogs: { legacy: { react: ^17.0.2 } }`，让一个待迁移包临时用 `catalog:legacy`，验证默认目录与具名目录互不干扰。提示：迁移完成后删除具名目录并重新 update 收敛。

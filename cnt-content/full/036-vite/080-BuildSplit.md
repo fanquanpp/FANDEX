@@ -1,17 +1,17 @@
 ---
-order: 70
+order: 80
 title: Vite 生产构建与代码分割
 module: 'vite'
 category: 前端技术
 difficulty: intermediate
 description: Vite 生产构建：build 配置、动态 import 与 manualChunks 分包、tree-shaking、资源压缩与产物体积分析
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'vite/009-Vite8Rolldown'
-  - 'vite/008-PluginSystem'
+  - 'vite/120-Vite8Rolldown'
+  - 'vite/100-PluginSystem'
 prerequisites:
-  - 'vite/003-ConfigFile'
+  - 'vite/030-ConfigFile'
 ---
 
 
@@ -52,7 +52,7 @@ prerequisites:
 
 ## 2. 生产构建做了什么
 
-`vite build` 把开发产物转换成可上线的优化版本。Vite 8 中整条流程由 **Rolldown** 统一完成（开发与生产同一套管线，详见 009 篇）。一次构建的执行链：
+`vite build` 把开发产物转换成可上线的优化版本。Vite 8 中整条流程由 **Rolldown** 统一完成（开发与生产同一套管线，详见《Vite 8 与 Rolldown 新特性》）。一次构建的执行链：
 
 vite build 的执行链：
 1. 入口分析：从 index.html 追踪所有模块
@@ -62,7 +62,7 @@ vite build 的执行链：
 5. 压缩：JS/CSS 压缩 + 文件内容哈希
 6. 输出到 dist/（默认）
 
-讲解：开发环境（dev）不打包、按需转换；生产构建则相反——完整打包、深度优化。Vite 8 中两者由同一个打包器承担，"本地能跑、上线就挂"的差异问题从架构上被大幅消除（009 篇详述）。
+讲解：开发环境（dev）不打包、按需转换；生产构建则相反——完整打包、深度优化。Vite 8 中两者由同一个打包器承担，"本地能跑、上线就挂"的差异问题从架构上被大幅消除（《Vite 8 与 Rolldown 新特性》详述）。
 
 先看一个最简单的构建示例：
 
@@ -206,7 +206,7 @@ export default defineConfig({
 
 讲解：函数形式的判断顺序很重要——把"变更频率低、体积大"的库放在最前面匹配。分包粒度太粗（全塞 vendor）缓存命中率低；太细（每个库一包）又会制造几十个文件。业界经验：**框架 1 包、UI 库 1 包、大图表库 1 包、其余 vendor 1 包**是比较稳妥的起点。
 
-配置名仍是 `rollupOptions`：在 Vite 8 中它作为 Rolldown 的兼容入口保留，保持插件与配置的兼容性（009 篇会讲 `rolldownOptions` 与迁移）。
+配置名仍是 `rollupOptions`：在 Vite 8 中它作为 Rolldown 的兼容入口保留，保持插件与配置的兼容性（《Vite 8 与 Rolldown 新特性》会讲 `rolldownOptions` 与迁移）。
 
 ### 4.3 分包后的实际收益
 
@@ -290,7 +290,7 @@ Rolldown 在 Vite 8 中默认启用更强的死代码消除与常量内联，同
 | 图片/字体 | 不压缩（原样复制） | 需用图片优化插件 |
 | HTML | 极简压缩 | 保留必要结构 |
 
-讲解：Vite 8 不再依赖 esbuild 压缩 JS、也不需要 cssnano——分别被 Rolldown（Oxc）与 Lightning CSS 取代。图片压缩不是 Vite 内置能力，可选用 `vite-plugin-imagemin` 或构建前用工具处理。另外，生产环境默认移除 `console.log` 与 `debugger`（Vite 8 由 Rolldown 相关选项控制），确认符合团队约定。
+讲解：Vite 8 不再依赖 esbuild 压缩 JS、也不需要 cssnano——分别被 Rolldown（Oxc）与 Lightning CSS 取代。图片压缩不是 Vite 内置能力，可选用 `vite-plugin-imagemin` 或构建前用工具处理。另外注意：生产构建默认**保留** `console.log` 与 `debugger`，需要移除时要在构建配置中显式开启对应的 drop 选项——上线前检查产物里有没有调试日志，是发版 checklist 的固定动作。
 
 ## 8. 分析产物体积
 
@@ -335,7 +335,7 @@ visualizer 生成交互式 treemap（矩形面积图）：每个矩形的大小�
 | 现象 / 报错信息 | 常见原因 | 解决办法 |
 | --- | --- | --- |
 | 构建输出 `Some chunks are larger than 500 kB` | 主包混入了大依赖且未分割 | 用动态 import 拆路由、`manualChunks` 拆第三方库 |
-| 构建成功但上线 404 | `base` 配置与部署子路径不一致 | 部署在子路径时配置 `base: '/子路径/'`，见 004 篇 |
+| 构建成功但上线 404 | `base` 配置与部署子路径不一致 | 部署在子路径时配置 `base: '/子路径/'`，见《Vite 静态资源处理》 |
 | tree-shaking 失效、产物里仍有死代码 | 依赖是 CommonJS 或模块有顶层副作用 | 改用 ESM 版库（如 lodash-es），配置 `sideEffects` |
 | 动态 import 不生效、仍打进主包 | 误用了静态 import 或变量路径 | 用 `const Page = () => import('./Page')` 写法，路径写静态 |
 | vendor chunk 反复变哈希、缓存失效 | 手动分组粒度不合理，业务代码混入 vendor | 按"框架/UI/大库/其余"分层分组 |
@@ -343,6 +343,6 @@ visualizer 生成交互式 treemap（矩形面积图）：每个矩形的大小�
 | 产物里残留 `console.log` / `debugger` | 生产压缩配置未移除 | 确认构建压缩开启（默认移除），或按团队约定配置 |
 | sourcemap 泄露源码 | `sourcemap: 'inline'` 或 `true` 直接上线 | 线上用 `'hidden'`，或只用于灰度/内网 |
 
-## 11. 一句话记忆
+## 10. 一句话记忆
 
 代码分割就是"搬家分装"：动态 import 让每个路由按需加载，manualChunks 让变更频率相近的依赖共享缓存——用户只下载当下需要的，浏览器只重新下载变了的。

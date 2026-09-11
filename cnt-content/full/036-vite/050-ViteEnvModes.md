@@ -1,28 +1,26 @@
 ---
-order: 100
+order: 50
 title: 环境变量与模式
 module: 'vite'
 category: 前端技术
 difficulty: beginner
-description: .env 文件、import.meta.env 与多模式构建配置。
+description: Vite 环境变量与模式：.env 文件加载优先级、VITE_ 前缀暴露规则、静态替换原理、staging 自定义模式与密钥安全边界
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'vite/003-ConfigFile'
-  - 'vite/006-DevServerHMR'
+  - 'vite/030-ConfigFile'
+  - 'vite/070-DevServerHMR'
 prerequisites:
-  - 'vite/003-ConfigFile'
+  - 'vite/030-ConfigFile'
 ---
-
-# 环境变量与模式
 
 同一套前端代码要跑在多个"场合"里：开发者本地连 Mock 服务、测试环境连灰度网关、生产连正式网关。把地址写死在代码里显然不行，Vite 的答案是两件配套工具：`.env` 文件家族负责"按场合存值"，模式（mode）负责"决定读哪份值"。本篇把加载顺序、暴露规则与安全边界一次讲清。
 
 ## 前置知识
 
-- [Vite 配置文件](/vite/003-ConfigFile)：本篇会在配置里用 `loadEnv` 读取环境变量。
-- [Vite 快速上手与项目结构](/vite/002-QuickStart)：.env 文件都放在项目根目录，与 index.html 平级。
-- [Vite 开发服务器与 HMR](/vite/006-DevServerHMR)：dev server 与 build 默认对应两个不同模式。
+- [Vite 配置文件](/vite/030-ConfigFile)：本篇会在配置里用 `loadEnv` 读取环境变量。
+- [Vite 快速上手与项目结构](/vite/020-QuickStart)：.env 文件都放在项目根目录，与 index.html 平级。
+- [Vite 开发服务器与 HMR](/vite/070-DevServerHMR)：dev server 与 build 默认对应两个不同模式。
 
 ## 学习目标
 
@@ -102,7 +100,7 @@ interface ImportMeta {
 }
 ```
 
-还有一个实现层的要点：环境变量是**构建期的静态字符串替换**。Vite 在打包时把 `import.meta.env.VITE_API_BASE` 这段代码直接替换成字符串字面量，因此运行时改动环境变量不会生效，也不能用 `import.meta.env[key]` 这种动态索引（替换器找不到对应的静态写法，客户端拿到的是 undefined）。
+还有一个实现层的要点：环境变量是**构建期的静态字符串替换**。Vite 在打包时把 `import.meta.env.VITE_API_BASE` 这段代码直接替换成字符串字面量，因此运行时改动环境变量不会生效，也不能用 `import.meta.env[key]` 这种动态索引（替换器找不到对应的静态写法，生产产物里拿到的是 undefined）。一个更容易埋雷的细节：开发期 `import.meta.env` 是一个真实对象，动态索引"恰好能跑"；一到生产构建就静默失效——dev 与 prod 行为不一致，问题往往到部署后才暴露，所以动态写法要在开发期就当错误处理。
 
 静态替换是"限制"更是"特性"。因为替换发生在打包期，生产产物里只有真正用到的变量字面量，`import.meta.env.DEV` 这类判断直接退化为布尔常量，配合压缩器的死代码消除，开发专用的调试分支一点体积都不占。同样因为替换在打包期，变量在客户端是"只读快照"——想拿"运行时可变"的配置（比如运营随时切换的活动开关），那属于接口数据的范畴，走 fetch 而不是环境变量。
 

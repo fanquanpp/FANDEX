@@ -1,18 +1,18 @@
 ---
-order: 80
+order: 100
 title: Vite 插件系统
 module: 'vite'
 category: 前端技术
 difficulty: advanced
 description: Vite 插件系统：插件 API、钩子机制（config/resolveId/load/transform 等）、插件开发入门与常用插件盘点
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'vite/007-BuildSplit'
-  - 'vite/009-Vite8Rolldown'
+  - 'vite/080-BuildSplit'
+  - 'vite/120-Vite8Rolldown'
 prerequisites:
-  - 'vite/003-ConfigFile'
-  - 'vite/007-BuildSplit'
+  - 'vite/030-ConfigFile'
+  - 'vite/080-BuildSplit'
 ---
 
 ## 0. 一个类比：乐高插口与手机应用商店
@@ -29,7 +29,7 @@ Vite 底座（核心能力）：
   React/Vue 支持、路径别名、代码检查、产物分析、PWA、旧浏览器兼容...
 ```
 
-再用手机应用商店理解：手机系统本身只提供打电话、发短信等基础能力，你要用地图、支付、游戏，去"应用商店"（插件生态）下载安装即可。Vite 的哲学完全相同——**核心保持精简，能力通过插件扩展**。Vite 8 中 Rolldown 完全兼容 Rollup 插件 API，绝大部分现有插件开箱即用（详见 009 篇），插件生态的"插口标准"从未改变过。
+再用手机应用商店理解：手机系统本身只提供打电话、发短信等基础能力，你要用地图、支付、游戏，去"应用商店"（插件生态）下载安装即可。Vite 的哲学完全相同——**核心保持精简，能力通过插件扩展**。Vite 8 中 Rolldown 完全兼容 Rollup 插件 API，绝大部分现有插件开箱即用（详见《Vite 8 与 Rolldown 新特性》），插件生态的"插口标准"从未改变过。
 
 ## 1. 插件是什么
 
@@ -62,11 +62,11 @@ const myPlugin = {
 | `@vitejs/plugin-react` | React JSX 转换 + Fast Refresh（Vite 8 起底层由 Babel 切换为 Oxc） |
 | `@vitejs/plugin-vue` | Vue 单文件组件（SFC）支持 |
 | `@vitejs/plugin-legacy` | 旧浏览器兼容（语法降级 + polyfill） |
-| `@tailwindcss/vite` | Tailwind CSS 集成（见 005 篇） |
+| `@tailwindcss/vite` | Tailwind CSS 集成（见《Vite CSS 与预处理器》） |
 | `vite-plugin-pwa` | PWA 支持（Service Worker 等） |
 | `vite-plugin-inspect` | 插件调试：可视化查看每个模块被哪些插件处理过 |
 | `unplugin-auto-import` | 自动按需引入 API（写代码不 import 也能用） |
-| `rollup-plugin-visualizer` | 产物体积可视化分析（见 007 篇） |
+| `rollup-plugin-visualizer` | 产物体积可视化分析（见《Vite 生产构建与代码分割》） |
 
 插件分两类：
 
@@ -137,7 +137,7 @@ export default defineConfig({
 
 关键规则：**多个插件都实现了同一个钩子时，按 `plugins` 数组顺序依次调用**；同一个钩子的返回值会作为后续插件的输入。所以插件顺序错了，行为就可能错。
 
-Vite 独有钩子（`config`、`configureServer`、`handleHotUpdate` 等）只在 Vite 环境生效；Rolldown 在 Vite 8 中实现了同样的钩子，因此开发与构建走同一套插件管线（009 篇详述）。
+Vite 独有钩子（`config`、`configureServer`、`handleHotUpdate` 等）只在 Vite 环境生效；Rolldown 在 Vite 8 中实现了同样的钩子，因此开发与构建走同一套插件管线（《Vite 8 与 Rolldown 新特性》详述）。
 
 ## 4. 插件顺序与执行时机
 
@@ -256,11 +256,11 @@ export function consoleDemo(): Plugin {
 
 - `transform` 返回 `{ code, map }` 对象或直接返回字符串；不需要修改时返回 `null`（或 `undefined`）。
 - 返回值会**依次传给下一个插件的 transform**，形成一条转换链：`插件A.transform -> 插件B.transform -> ... -> 构建器`。
-- 钩子内尽量避免高成本操作。Vite 8 中 Rolldown 提供 **hook filters**（钩子过滤）：插件声明 `transformFilter: { id: { include: [/\.ts$/] } }` 后，不匹配的文件直接跳过 JS 桥接层，插件再多也不拖慢构建（详见 009 篇）。
+- 钩子内尽量避免高成本操作。Vite 8 中 Rolldown 提供 **hook filters**（钩子过滤）：插件声明 `transformFilter: { id: { include: [/\.ts$/] } }` 后，不匹配的文件直接跳过 JS 桥接层，插件再多也不拖慢构建（详见《Vite 8 与 Rolldown 新特性》）。
 
 ### transform 钩子进阶：改写 import 语句
 
-一个真实场景：把 `import { debounce } from 'lodash'` 自动改写为 `import { debounce } from 'lodash-es'`（lodash 的 ESM 版本，可被 tree-shaking，见 007 篇）：
+一个真实场景：把 `import { debounce } from 'lodash'` 自动改写为 `import { debounce } from 'lodash-es'`（lodash 的 ESM 版本，可被 tree-shaking，见《Vite 生产构建与代码分割》）：
 
 ```ts
 import type { Plugin } from 'vite'
@@ -365,8 +365,8 @@ export default defineConfig({
 | `\0` 前缀的 ID 出现在报错信息里 | 虚拟模块 ID 泄漏到业务代码或错误信息 | 虚拟模块仅内部使用，`load` 返回真实源码后对外不可见 |
 | 改了插件代码不生效 | dev server 未重启（配置与插件列表变更不触发 HMR） | 重启 `pnpm dev` |
 | transform 返回格式错误 | 返回了 `{ code }` 但缺 `map`，或直接返回了 `undefined` | 返回 `{ code, map }` 对象；不需要处理时显式返回 `null` |
-| 与 Rolldown 不兼容的冷门插件报错 | 极少数依赖 Rollup 内部 API 的插件 | 升级插件到最新版；仍异常则查官方兼容性说明（009 篇有迁移指引） |
+| 与 Rolldown 不兼容的冷门插件报错 | 极少数依赖 Rollup 内部 API 的插件 | 升级插件到最新版；仍异常则查官方兼容性说明（《Vite 8 与 Rolldown 新特性》有迁移指引） |
 
-## 11. 一句话记忆
+## 10. 一句话记忆
 
 Vite 插件就是"乐高插口上的零件"：核心留好标准钩子（resolveId、load、transform、buildEnd...），插件在特定时机插上自己的代码——理解"何时插、插在哪、返回什么"，就掌握了 Vite 一半的架构。
