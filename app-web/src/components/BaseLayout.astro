@@ -174,3 +174,9 @@ const base = import.meta.env.BASE_URL;
   // pagefind 索引在构建后生成，运行时按需惰性加载
   import '@/lib/search-palette';
 </script>
+
+<script>
+  // PWA 安装入口：捕获 beforeinstallprompt 点亮导航栏「安装应用」按钮，
+  // iOS Safari 降级为「添加到主屏幕」指引浮层（详见 lib/pwa-install）
+  import '@/lib/pwa-install';
+</script>

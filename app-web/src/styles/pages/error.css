@@ -236,14 +236,20 @@
     color var(--transition-fast);
 }
 
+/* 主按钮：品牌强调色实底（暗色模式为发光亮青，浅色模式为工业青），
+ * 悬停切换至强调色 hover 档，保持扁平克制不附加光晕 */
 .error-btn--primary {
-  background: var(--color-text);
-  border: 1px solid var(--color-text);
-  color: var(--color-bg);
+  background: var(--color-accent-base);
+  border: 1px solid var(--color-accent-base);
+  color: var(--color-accent-fg);
+  transition:
+    background-color var(--transition-fast),
+    border-color var(--transition-fast);
 }
 
 .error-btn--primary:hover {
-  opacity: 0.85;
+  background: var(--color-accent-hover);
+  border-color: var(--color-accent-hover);
 }
 
 .error-btn:not(.error-btn--primary) {

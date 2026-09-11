@@ -179,10 +179,10 @@ const hasMath = containsMath(doc.body || '');
           >
             {
               doc.data.difficulty === 'beginner'
-                ? 'Beginner'
+                ? '入门'
                 : doc.data.difficulty === 'advanced'
-                  ? 'Advanced'
-                  : 'Intermediate'
+                  ? '高级'
+                  : '中级'
             }
           </span>
           {
@@ -381,9 +381,4 @@ const hasMath = containsMath(doc.body || '');
      页面不含图表时零网络请求、零运行时开销 -->
 <script>
   import '@/lib/mermaid-render';
-</script>
-
-<!-- 客户端脚本：学习进度记录与装饰（侧边栏已读标记 / 模块进度条） -->
-<script>
-  import '@/lib/progress';
 </script>

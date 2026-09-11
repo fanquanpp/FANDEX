@@ -7,6 +7,8 @@
  *   - 编辑内容自动保存到浏览器 IndexedDB，刷新不丢失
  *   - 本地作品库：另存为新作品、打开历史作品、删除作品
  *   - 模板库：新建时可选空白页 / 交互示例 / CSS 动画三个起步模板
+ *   - 灵感画廊：内置 25 个前端设计成品（加载动画/按钮/卡片/文本/背景/
+ *     组件六类），实时预览效果并一键把源码载入编辑器
  *   - 快捷键：Ctrl/Cmd + Enter 运行预览
  *   - URL 同步：打开/另存作品后同步 ?pen= 参数，刷新不丢上下文
  *   - 窄屏（≤768px）下面板开关自动变为标签页行为，单屏聚焦当前编辑器
@@ -28,10 +30,12 @@ import {
   type CSSProperties,
   type PointerEvent as ReactPointerEvent,
 } from 'react';
-import CodeMirrorBox from './CodeMirrorBox';
+import CodeMirrorBoxLoader from './CodeMirrorBoxLoader';
 import { PgIcon } from './pg-icons';
 import { formatCode } from './pg-formatter';
 import { buildPreviewDoc, estimatePenBytes, parsePreviewMessage } from './pg-frontend-runtime';
+import ShowcaseGallery from './ShowcaseGallery';
+import { SHOWCASE_ITEMS, type ShowcaseItem } from './pg-showcase';
 import {
   deletePen,
   getStorageUsage,
@@ -120,7 +124,7 @@ const CONSOLE_LIMIT = 200;
 const STORAGE_WARN_RATIO = 0.85;
 
 /** 保存状态文案 */
-type SaveState = 'saved' | 'saving';
+type SaveState = 'saved' | 'saving' | 'error';
 /** 编辑器面板 key（与作品字段一一对应） */
 type PaneKey = 'html' | 'css' | 'js';
 /** 拖拽调整面板权重时的最小/最大占比 */
@@ -178,6 +182,8 @@ function FrontendLab() {
   const [showLibrary, setShowLibrary] = useState(false);
   /** 是否打开新建模板菜单 */
   const [showTemplates, setShowTemplates] = useState(false);
+  /** 是否打开灵感画廊 */
+  const [showGallery, setShowGallery] = useState(false);
   /** 作品库列表 */
   const [library, setLibrary] = useState<FrontendPen[]>([]);
   /** 编辑器区域占比（0-1） */
@@ -209,10 +215,28 @@ function FrontendLab() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // 优先打开地址栏指定的作品（?pen=ID），否则恢复草稿
-      const penId = new URLSearchParams(window.location.search).get('pen');
+      // 深链优先级：?showcase= 载入图鉴成品 > ?pen= 打开指定作品 > 恢复草稿；
+      // ?panel=gallery 打开时直接展开灵感画廊面板
+      const params = new URLSearchParams(window.location.search);
+      const showcaseId = params.get('showcase');
+      const openGallery = params.get('panel') === 'gallery';
+      const penId = params.get('pen');
+
       let target: FrontendPen | null = null;
-      if (penId) {
+      const showcase = showcaseId
+        ? SHOWCASE_ITEMS.find((s) => s.id === showcaseId)
+        : undefined;
+      if (showcase) {
+        // 图鉴深链：用户从功能主页/图鉴主动点击而来，直接载入无需覆盖确认
+        target = {
+          ...DEFAULT_TEMPLATE,
+          title: showcase.name,
+          html: showcase.html,
+          css: showcase.css,
+          js: showcase.js,
+          lastOpenedAt: Date.now(),
+        };
+      } else if (penId) {
         const pens = await loadPens();
         target = pens.find((p) => p.id === penId) ?? null;
       }
@@ -232,6 +256,13 @@ function FrontendLab() {
         setPreviewDoc(buildPreviewDoc(opened));
         // 地址栏与实际打开的作品保持一致（草稿态移除参数）
         syncPenUrl(target.id !== 'draft' ? target.id : null);
+      }
+      // 深链参数一次性消费：应用后清除地址参数，刷新不再重复覆盖草稿
+      if (showcaseId || openGallery) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+      }
+      if (!cancelled && openGallery) {
+        setShowGallery(true);
       }
       setLibrary(await loadPens());
       const usage = await getStorageUsage();
@@ -254,7 +285,32 @@ function FrontendLab() {
   }, [pen]);
 
   /**
-   * 自动保存（防抖）：草稿与作品库记录都实时落盘
+   * 立即落盘当前作品（跳过防抖），供页面隐藏/关闭前兜底调用。
+   * IndexedDB 写入在 pagehide 阶段发起即可被浏览器接受（尽力而为），
+   * 与防抖自动保存互补，把"最后几百毫秒输入丢失"的窗口压到最小。
+   */
+  const latestPenRef = useRef<FrontendPen | null>(null);
+  latestPenRef.current = pen;
+
+  const flushPen = useCallback((source: FrontendPen) => {
+    const now = Date.now();
+    const payload: FrontendPen = {
+      ...source,
+      split,
+      updatedAt: now,
+      lastOpenedAt: source.lastOpenedAt || now,
+    };
+    // 兜底路径静默执行：页面正在卸载，状态更新无意义
+    if (payload.id === 'draft') {
+      void savePenDraft(payload);
+    } else {
+      void savePen(payload).catch(() => {});
+    }
+  }, [split]);
+
+  /**
+   * 自动保存（防抖）：草稿与作品库记录都实时落盘；
+   * 写入失败时进入 error 态（工具栏显示「未保存」），不静默假报已保存
    */
   useEffect(() => {
     const timer = setTimeout(async () => {
@@ -266,15 +322,41 @@ function FrontendLab() {
         updatedAt: now,
         lastOpenedAt: pen.lastOpenedAt || now,
       };
-      if (pen.id === 'draft') {
-        await savePenDraft(payload);
-      } else {
-        await savePen(payload);
+      try {
+        let ok = true;
+        if (pen.id === 'draft') {
+          ok = await savePenDraft(payload);
+        } else {
+          await savePen(payload);
+        }
+        setSaveState(ok ? 'saved' : 'error');
+      } catch {
+        setSaveState('error');
       }
-      setSaveState('saved');
     }, AUTOSAVE_MS);
     return () => clearTimeout(timer);
   }, [pen, split]);
+
+  /**
+   * 页面隐藏/关闭前的兜底落盘：visibilitychange 覆盖切标签/最小化，
+   * pagehide 覆盖关闭与跳转，两者互补把丢失窗口压到最小
+   */
+  useEffect(() => {
+    const onHidden = () => {
+      const source = latestPenRef.current;
+      if (source && document.visibilityState === 'hidden') flushPen(source);
+    };
+    const onPageHide = () => {
+      const source = latestPenRef.current;
+      if (source) flushPen(source);
+    };
+    document.addEventListener('visibilitychange', onHidden);
+    window.addEventListener('pagehide', onPageHide);
+    return () => {
+      document.removeEventListener('visibilitychange', onHidden);
+      window.removeEventListener('pagehide', onPageHide);
+    };
+  }, [flushPen]);
 
   /**
    * 自动运行（防抖）：内容变化后延迟重建预览
@@ -425,9 +507,44 @@ function FrontendLab() {
   );
 
   /**
-   * 打开作品库面板并刷新列表
+   * 把灵感画廊成品载入编辑器（覆盖当前草稿，需用户确认）
+   * 确认策略与新建草稿一致：草稿有改动时提醒覆盖；作品态只提示切换且不影响已保存内容
+   * @param item - 目标成品
    */
-  const handleOpenLibrary = useCallback(async () => {
+  const handleLoadShowcase = useCallback(
+    (item: ShowcaseItem) => {
+      const isUntouched =
+        pen.id === 'draft' &&
+        TEMPLATES.some((t) => pen.html === t.html && pen.css === t.css && pen.js === t.js);
+      const needsConfirm =
+        pen.id !== 'draft'
+          ? '当前正在编辑作品库中的作品，载入成品会切换到新的草稿，已保存的作品不受影响，是否继续？'
+          : !isUntouched
+            ? '当前草稿尚未另存为作品，载入成品会覆盖草稿内容，是否继续？'
+            : '';
+      if (needsConfirm && !window.confirm(needsConfirm)) return;
+      const next: FrontendPen = {
+        ...DEFAULT_TEMPLATE,
+        title: item.name,
+        html: item.html,
+        css: item.css,
+        js: item.js,
+        lastOpenedAt: Date.now(),
+      };
+      setPen(next);
+      setPreviewDoc(buildPreviewDoc(next));
+      setRunId((n) => n + 1);
+      setConsoleEntries([]);
+      setActivePane('html');
+      setShowGallery(false);
+      syncPenUrl(null);
+    },
+    [pen],
+  );
+
+  /**
+   * 打开作品库面板并刷新列表
+   */  const handleOpenLibrary = useCallback(async () => {
     setLibrary(await loadPens());
     setShowLibrary(true);
   }, []);
@@ -611,7 +728,7 @@ function FrontendLab() {
             aria-label="作品标题"
           />
           <span className={`pg-save-state pg-save-state--${saveState}`}>
-            {saveState === 'saved' ? '已保存到本地' : '保存中'}
+            {saveState === 'saved' ? '已保存到本地' : saveState === 'error' ? '保存失败，请重试' : '保存中'}
           </span>
         </div>
         <div className="pg-toolbar-row pg-toolbar-row--actions">
@@ -677,6 +794,15 @@ function FrontendLab() {
             </button>
           </div>
           <div className="pg-toolbar-group">
+            <button
+              type="button"
+              className="pg-btn pg-btn--ghost"
+              onClick={() => setShowGallery(true)}
+              title="浏览灵感画廊：25 个设计成品，可一键载入源码"
+            >
+              <PgIcon name="gallery" size={14} />
+              <span>灵感库</span>
+            </button>
             <div className="pg-new-wrap">
               <button
                 type="button"
@@ -791,10 +917,10 @@ function FrontendLab() {
                     </button>
                   </div>
                   <div className="pg-pane-body">
-                    <CodeMirrorBox
+                    <CodeMirrorBoxLoader
                       value={value}
                       language={language as 'html' | 'css' | 'javascript'}
-                      onChange={(next) =>
+                      onChange={(next: string) =>
                         updatePen(editor.key === 'html' ? { html: next } : editor.key === 'css' ? { css: next } : { js: next })
                       }
                       ariaLabel={`${editor.label} 编辑器`}
@@ -851,10 +977,7 @@ function FrontendLab() {
           {pen.showConsole && (
             <div className="pg-console">
               <div className="pg-console-head">
-                <span className="pg-console-title">
-                  <PgIcon name="terminal" size={12} />
-                  控制台
-                </span>
+                <span className="pg-console-title">控制台</span>
                 <div className="pg-console-actions">
                   {consoleEntries.length > 0 && (
                     <button
@@ -877,11 +1000,10 @@ function FrontendLab() {
               </div>
               <div className="pg-console-body">
                 {consoleEntries.length === 0 ? (
-                  <div className="pg-console-empty">暂无输出，运行预览后 console 内容会显示在这里</div>
+                  <div className="pg-console-empty">暂无输出</div>
                 ) : (
                   consoleEntries.map((entry, index) => (
                     <div className={`pg-console-line pg-console-line--${entry.kind}`} key={`${entry.time}-${index}`}>
-                      <span className="pg-console-kind">{entry.kind}</span>
                       <pre className="pg-console-text">{entry.text}</pre>
                     </div>
                   ))
@@ -894,6 +1016,13 @@ function FrontendLab() {
 
       {/* 新建模板菜单的点击关闭层 */}
       {showTemplates && <div className="pg-menu-mask" onClick={() => setShowTemplates(false)} />}
+
+      {/* 灵感画廊：设计成品实时预览与源码载入 */}
+      <ShowcaseGallery
+        open={showGallery}
+        onClose={() => setShowGallery(false)}
+        onLoad={handleLoadShowcase}
+      />
 
       {/* 本地作品库面板 */}
       {showLibrary && (

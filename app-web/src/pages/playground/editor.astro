@@ -1,0 +1,40 @@
+---
+/**
+ * 在线编程工作台页面（前端三件套实验场）
+ * -----------------------------------------------------------------------------
+ * 隶属「在线编程」子级：/playground/ 为功能主页（介绍 + 灵感图鉴入口），
+ * 本页为工作台本体，支持深链参数：
+ *   - ?showcase=<id>  载入灵感图鉴指定成品（由图鉴卡片「载入工作台」触发）
+ *   - ?panel=gallery  打开时直接展开灵感画廊面板
+ *   - ?pen=<id>       打开作品库中指定作品
+ *
+ * 美术对齐：
+ *   - 使用 HomeLayout 全站横幅（FANDEX 标识 / GitHub / 主题切换），与主页同源
+ *   - 几何背景装饰复用 playground 专属变体（网格 + 尖括号 + 终端方块）
+ */
+import HomeLayout from '@/components/HomeLayout.astro'
+import SEO from '@/components/SEO.astro'
+import GeoBgDecor from '@/components/GeoBgDecor.astro'
+import FrontendLab from '@/islands/playground/FrontendLab'
+import { SITE } from '@/lib/constants'
+import '@/styles/islands/playground.css'
+
+const base = import.meta.env.BASE_URL
+---
+
+<HomeLayout title="在线编程工作台">
+  <SEO
+    slot="head"
+    title="在线编程工作台"
+    description="FANDEX 在线编程工作台：在浏览器中编写 HTML、CSS 与 JavaScript，实时预览效果，内置控制台与灵感画廊，作品自动保存在本地，无需注册与上传。"
+    canonical={`${SITE.url}${base}playground/editor/`}
+    type="website"
+  />
+
+  <div class="pg-page">
+    <!-- 几何背景装饰：playground 专属变体（网格 + 尖括号 + 终端方块） -->
+    <GeoBgDecor variant="playground" />
+    <!-- 前端实验工作台（客户端岛组件） -->
+    <FrontendLab client:load />
+  </div>
+</HomeLayout>

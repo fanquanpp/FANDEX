@@ -12,7 +12,6 @@ import ModulePageContent from '@/components/ModulePageContent.astro';
 import { getModule } from '@/lib/modules';
 import { MODULE_PAGE_SIZE } from '@/lib/constants';
 import { getDocsByModule } from '@/services';
-import '@/lib/progress';
 
 export async function getStaticPaths() {
   const { modules } = await import('@/lib/modules');

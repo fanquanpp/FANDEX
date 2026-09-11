@@ -55,7 +55,11 @@ const {
   breadcrumb,
 } = Astro.props;
 
-const fullTitle = `${title} | ${SITE.title}`;
+// 标题去重：title 与站点名相同，或已携带站点名后缀（如「学习路线 · FANDEX」）时
+// 不再追加「| FANDEX」，避免出现「… FANDEX | FANDEX」式重复标题
+const SITE_TITLE_SUFFIX = new RegExp(`(?:^|[\\s·|—-])${SITE.title}\\s*$`);
+const fullTitle =
+  title === SITE.title || SITE_TITLE_SUFFIX.test(title) ? title : `${title} | ${SITE.title}`;
 const pageUrl = canonical || SITE.url;
 const pageDescription = description || SITE.subtitle;
 

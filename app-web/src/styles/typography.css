@@ -969,3 +969,50 @@ dfn {
 }
 
 } /* end @layer base */
+
+/* ===== 标题锚点链接（GitHub 式 heading permalink） =====
+   由 lib/layout-interactions.ts 的 initHeadingAnchors 注入：
+   悬停/聚焦 h2/h3 时淡入 # 标记，点击复制带锚点地址并更新 hash。
+   触屏设备常显低透明度保证可发现性。 */
+@layer components {
+  .heading-anchor {
+    display: inline-block;
+    margin-left: 8px;
+    font-family: var(--font-family-mono, monospace);
+    font-size: 0.72em;
+    font-weight: 500;
+    color: var(--color-accent-base);
+    text-decoration: none;
+    opacity: 0;
+    transform: translateY(-1px);
+    transition:
+      opacity var(--motion-duration-fast) var(--motion-easing-out),
+      transform var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .prose h2:hover .heading-anchor,
+    .prose h3:hover .heading-anchor {
+      opacity: 0.65;
+    }
+
+    .prose h2 .heading-anchor:hover,
+    .prose h3 .heading-anchor:hover {
+      opacity: 1;
+      transform: translateY(-1px) scale(1.1);
+    }
+  }
+
+  /* 触屏（无悬停）：常显低透明度，保证可发现与可点按 */
+  @media (hover: none) {
+    .heading-anchor {
+      opacity: 0.4;
+    }
+  }
+
+  .heading-anchor:focus-visible {
+    opacity: 1;
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+}

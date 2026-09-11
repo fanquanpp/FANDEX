@@ -223,59 +223,6 @@
   }
 }
 
-/* ========== 学习进度指示（lib/progress.ts 驱动） ========== */
-
-/* 模块首页进度条容器：与 doc-chip 同一行的直角胶囊（禁止圆点装饰） */
-.doc-progress {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  height: 24px;
-  padding: 0 10px;
-  border: 1px solid var(--color-border-light);
-  border-radius: var(--radius-md, 3px);
-  background: var(--color-bg-card);
-}
-
-.doc-progress__text {
-  font-family: var(--font-family-mono, monospace);
-  font-size: 11px;
-  letter-spacing: 0.04em;
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-}
-
-/* 进度条：4px 高几何刻度条，填充色为模块主题色 */
-.doc-progress__bar {
-  width: 72px;
-  height: 4px;
-  border-radius: 1px;
-  background: color-mix(in srgb, var(--color-text-tertiary) 25%, transparent);
-  overflow: hidden;
-}
-
-.doc-progress__bar i {
-  display: block;
-  height: 100%;
-  border-radius: 1px;
-  background: var(--module-color, var(--color-accent-base, var(--color-primary)));
-  transition: width var(--motion-duration-normal, 300ms) var(--motion-easing-out, ease-out);
-}
-
-/* 侧边栏已读文档链接：标题后追加对勾刻度（伪元素绘制，非图标字体） */
-.fndx-sidebar a.is-visited .fndx-sidebar__link-text::after,
-.fndx-sidebar a.is-visited::after {
-  content: '';
-  display: inline-block;
-  width: 8px;
-  height: 5px;
-  margin-left: 6px;
-  border-left: 2px solid var(--color-success, #3fb950);
-  border-bottom: 2px solid var(--color-success, #3fb950);
-  transform: rotate(-45deg) translateY(-1px);
-  flex-shrink: 0;
-}
-
 /* 回到顶部按钮：基础样式由 .fndx-icon-btn 提供（透明背景 + 无边框 + 统一悬停）
  * 此处仅保留 Top 文字标注与移动端适配 */
 .nav-back-to-top {
@@ -444,6 +391,32 @@
 /* 模块卡片悬停阴影 */
 .module-card.card-hovered {
   box-shadow: var(--shadow-md);
+}
+
+/* ========== PWA 安装指引浮层（lib/pwa-install.ts 创建） ========== */
+/* iOS Safari 无安装事件：点击「安装应用」按钮后在导航栏下方展示操作指引 */
+.install-tip {
+  position: fixed;
+  top: calc(var(--nav-height, 48px) + 6px);
+  right: 12px;
+  z-index: 200;
+  max-width: min(300px, calc(100vw - 24px));
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-dropdown);
+  color: var(--color-fg-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+  animation: install-tip-in var(--motion-duration-normal) var(--motion-easing-out);
+}
+
+@keyframes install-tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
 }
 
 /* ========== 文档上下篇导航 ========== */

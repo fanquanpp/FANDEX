@@ -70,7 +70,7 @@ const grouped = getCategories()
              三个按钮颜色统一使用项目标题主题色 var(--color-accent-base) -->
         <nav class="hero-entries" aria-label="功能入口">
           {!IS_DESKTOP_BUILD && (
-            <a href={`${import.meta.env.BASE_URL}playground/`} class="entry-btn" data-tooltip="前端实验工作台" data-tooltip-pos="bottom">
+            <a href={`${import.meta.env.BASE_URL}playground/`} class="entry-btn" data-tooltip="在线编写与运行代码" data-tooltip-pos="bottom">
               <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
                 <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
               </svg>
@@ -90,6 +90,17 @@ const grouped = getCategories()
             <span class="entry-name">学习路线</span>
           </a>
         </nav>
+      </div>
+
+      <!-- 终端模拟面板：工业科幻品牌签名（Endfield 冷光终端）
+           逐字输出初始化序列 + 闪烁块光标；纯装饰（aria-hidden），
+           动效由 lib/home-terminal.ts 驱动，prefers-reduced-motion 时静态显示全文 -->
+      <div class="hero-terminal" aria-hidden="true">
+        <div class="hero-terminal__bar">
+          <span class="hero-terminal__title">fandex://init</span>
+          <span class="hero-terminal__rec">[REC]</span>
+        </div>
+        <pre class="hero-terminal__body" data-terminal><code></code></pre>
       </div>
     </section>
 
@@ -136,8 +147,9 @@ const grouped = getCategories()
   </div>
 </HomeLayout>
 
-<!-- 客户端交互脚本：分类区域折叠/展开 + 统计数字滚动计数 -->
+<!-- 客户端交互脚本：分类区域折叠/展开 + 统计数字滚动计数 + 终端逐字输出 -->
 <script>
   import '@/lib/home-interactions';
   import '@/lib/stat-count-up';
+  import '@/lib/home-terminal';
 </script>

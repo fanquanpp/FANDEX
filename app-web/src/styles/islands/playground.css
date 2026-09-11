@@ -29,14 +29,14 @@
     min-height: 0;
   }
 
-  /* 通用按钮：与站点 fndx 按钮同语法（透明底 + 细边框 + 4px 圆角） */
+  /* 通用按钮：与站点 fndx 按钮同语法（透明底 + 细边框 + 2px 直角） */
   .pg-btn {
     display: inline-flex;
     align-items: center;
     gap: 6px;
     height: 28px;
     padding: 0 12px;
-    border-radius: var(--radius-md, 4px);
+    border-radius: var(--radius-sm, 2px);
     border: 1px solid transparent;
     background: transparent;
     color: var(--color-fg-secondary);
@@ -69,13 +69,15 @@
     outline-offset: 2px;
   }
 
+  /* 幽灵变体：中性悬停（边框加深 + 文字提亮），强调色只留给激活/主操作 */
   .pg-btn--ghost {
     border-color: var(--color-border-light);
     background: var(--color-bg-card);
   }
 
   .pg-btn--ghost:hover {
-    border-color: color-mix(in srgb, var(--color-accent-base) 45%, transparent);
+    border-color: var(--color-border-strong);
+    color: var(--color-fg-primary);
   }
 
   .pg-btn--primary {
@@ -108,7 +110,8 @@
     font-size: 11px;
   }
 
-  /* 编辑器开关按钮：紧凑等宽标签，激活态使用强调色 */
+  /* 编辑器开关按钮：紧凑等宽标签；激活态 = 中性底色 + 底缘 2px 强调色刻度
+     （不使用整片强调色渲染，避免 SaaS 式彩色胶囊感） */
   .pg-btn--editors {
     height: 24px;
     padding: 0 9px;
@@ -118,9 +121,10 @@
   }
 
   .pg-btn--editors.is-on {
-    color: var(--color-accent-base);
-    border-color: color-mix(in srgb, var(--color-accent-base) 55%, transparent);
-    background: color-mix(in srgb, var(--color-accent-base) 9%, transparent);
+    color: var(--color-fg-primary);
+    border-color: var(--color-border-strong);
+    background: var(--color-bg-card);
+    box-shadow: inset 0 -2px 0 var(--color-accent-base);
   }
 
   /* 顶部工具栏（前端实验与编程练习共用） */
@@ -141,7 +145,7 @@
     gap: 4px;
     height: 28px;
     padding: 0 8px;
-    border-radius: var(--radius-md, 4px);
+    border-radius: var(--radius-sm, 2px);
     color: var(--color-fg-secondary);
     text-decoration: none;
     font-size: 12px;
@@ -189,6 +193,15 @@
     background: var(--color-warning-base);
   }
 
+  /* 写入失败：危险色提示，明确"未保存"避免假报安心 */
+  .pg-save-state--error {
+    color: var(--color-danger-base);
+  }
+
+  .pg-save-state--error::before {
+    background: var(--color-danger-base);
+  }
+
   /* 工具栏提示：格式化结果等轻量反馈 */
   .pg-toolbar-note {
     margin-left: auto;
@@ -228,7 +241,7 @@
     height: 28px;
     padding: 0 10px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--radius-md, 4px);
+    border-radius: var(--radius-sm, 2px);
     background: var(--color-bg-card);
     color: var(--color-fg-primary);
     font-size: 12px;
@@ -506,11 +519,11 @@
     background: #ffffff;
   }
 
-  /* 控制台 */
+  /* 控制台：极简瘦条（占屏最小化），纯文本输出不做视觉修饰 */
   .pg-console {
     display: flex;
     flex-direction: column;
-    height: 200px;
+    height: 96px;
     border-top: 1px solid var(--color-border-light);
     background: var(--color-bg-sunken, var(--color-bg-code));
     flex-shrink: 0;
@@ -520,23 +533,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    height: 26px;
-    padding: 0 10px 0 14px;
-    border-bottom: 1px solid var(--color-border-light);
+    height: 22px;
+    padding: 0 8px 0 10px;
     flex-shrink: 0;
-    position: relative;
-  }
-
-  .pg-console-head::before {
-    content: '';
-    position: absolute;
-    left: 5px;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 2px;
-    height: 10px;
-    background: var(--color-accent-base);
-    opacity: 0.65;
   }
 
   .pg-console-title {
@@ -544,10 +543,9 @@
     align-items: center;
     gap: 6px;
     font-family: var(--font-family-mono);
-    font-size: 11px;
+    font-size: 10px;
     letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-fg-secondary);
+    color: var(--color-fg-tertiary);
   }
 
   .pg-console-actions {
@@ -560,10 +558,10 @@
     flex: 1;
     min-height: 0;
     overflow: auto;
-    padding: 6px 10px;
+    padding: 2px 10px 4px;
     font-family: var(--font-family-mono);
-    font-size: 12px;
-    line-height: 1.6;
+    font-size: 11px;
+    line-height: 1.5;
   }
 
   .pg-console-empty {
@@ -571,46 +569,16 @@
     font-family: var(--font-body);
   }
 
+  /* 日志行：纯文本，仅以文字颜色区分警告/错误，无底色与徽标 */
   .pg-console-line {
-    display: flex;
-    gap: 8px;
-    padding: 3px 4px;
-    border-left: 2px solid transparent;
-  }
-
-  /* 日志类型：左侧强调色刻度 + 类型标签着色，避免与正文互相遮挡 */
-  .pg-console-line--log {
-    border-left-color: var(--color-accent-base);
+    padding: 1px 0;
   }
 
   .pg-console-line--warn {
-    border-left-color: var(--color-warning-base);
-    background: color-mix(in srgb, var(--color-warning-base) 6%, transparent);
-  }
-
-  .pg-console-line--error {
-    border-left-color: var(--color-danger-base);
-    background: color-mix(in srgb, var(--color-danger-base) 7%, transparent);
-  }
-
-  .pg-console-kind {
-    flex-shrink: 0;
-    width: 38px;
-    text-align: right;
-    font-size: 10px;
-    color: var(--color-fg-tertiary);
-    text-transform: uppercase;
-  }
-
-  .pg-console-line--log .pg-console-kind {
-    color: var(--color-accent-base);
-  }
-
-  .pg-console-line--warn .pg-console-kind {
     color: var(--color-warning-base);
   }
 
-  .pg-console-line--error .pg-console-kind {
+  .pg-console-line--error {
     color: var(--color-danger-base);
   }
 
@@ -619,7 +587,14 @@
     white-space: pre-wrap;
     word-break: break-word;
     background: transparent;
-    color: var(--color-fg-primary);
+    color: inherit;
+  }
+
+  /* CodeMirror 懒加载占位：与 pane-body 同底色的静默骨架，无布局跳动 */
+  .pg-cm-fallback {
+    flex: 1;
+    min-height: 0;
+    background: var(--color-bg-code);
   }
 
   /* 作品库抽屉：沿用站点卡片语法（细边框 + 悬浮转色） */
@@ -811,7 +786,7 @@
     }
 
     .pg-console {
-      height: 160px;
+      height: 80px;
     }
 
   }
@@ -836,12 +811,15 @@
     margin-left: auto;
   }
 
-  /* 面板开关激活态（窄屏标签页焦点）：强调色底 + 顶部 2px 刻度线 */
-  .pg-btn--editors.is-active {
-    color: var(--color-accent-base);
-    border-color: color-mix(in srgb, var(--color-accent-base) 65%, transparent);
-    background: color-mix(in srgb, var(--color-accent-base) 14%, transparent);
-    box-shadow: inset 0 2px 0 0 var(--color-accent-base);
+  /* 面板开关激活态（仅窄屏标签页焦点）：强调色底 + 顶部 2px 刻度线；
+     限定窄屏断点，桌面端统一走 .is-on 的中性 + 底缘刻度样式 */
+  @media (max-width: 720px) {
+    .pg-btn--editors.is-active {
+      color: var(--color-accent-base);
+      border-color: color-mix(in srgb, var(--color-accent-base) 65%, transparent);
+      background: color-mix(in srgb, var(--color-accent-base) 14%, transparent);
+      box-shadow: inset 0 2px 0 0 var(--color-accent-base);
+    }
   }
 
   /* 新建模板菜单容器（锚定新建按钮） */
@@ -931,6 +909,321 @@
   .pg-count--danger {
     color: var(--color-danger-base);
     border-color: color-mix(in srgb, var(--color-danger-base) 55%, transparent);
+  }
+
+  /* ============================================================
+     灵感画廊（设计成品库）
+     ------------------------------------------------------------
+     全屏面板：左侧分组导航 + 右侧成品网格
+     每张卡片内嵌沙箱 iframe 实时运行成品效果，滚动进入
+     视口后按需加载；入场动效消费 --motion-* 令牌
+     ============================================================ */
+  /* 遮罩层：位于作品库抽屉之上 */
+  .pg-sc-mask {
+    position: fixed;
+    inset: 0;
+    z-index: calc(var(--fandex-z-overlay, 50) + 1);
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: stretch;
+    justify-content: center;
+    padding: clamp(0px, 2.5vw, 24px);
+  }
+
+  /* 面板主体：卡片底 + 细边框，入场轻微上浮 */
+  .pg-sc-panel {
+    display: flex;
+    flex-direction: column;
+    width: min(1240px, 100%);
+    margin: 0 auto;
+    background: var(--color-bg-card);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md, 4px);
+    box-shadow: var(--shadow-xl);
+    overflow: hidden;
+    animation: pg-sc-in var(--motion-duration-normal) var(--motion-easing-out) both;
+  }
+
+  @keyframes pg-sc-in {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  /* 头部：标题 + 关闭按钮，左侧强调色刻度线 */
+  .pg-sc-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    height: 46px;
+    padding: 0 12px 0 16px;
+    border-bottom: 1px solid var(--color-border-light);
+    background: var(--color-bg-surface, var(--color-bg-sidebar));
+    flex-shrink: 0;
+    position: relative;
+  }
+
+  .pg-sc-head::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 2px;
+    height: 14px;
+    background: var(--color-accent-base);
+    opacity: 0.65;
+  }
+
+  .pg-sc-title {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--font-display);
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-fg-primary);
+  }
+
+  .pg-sc-title-note {
+    font-style: normal;
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.05em;
+    color: var(--color-fg-tertiary);
+  }
+
+  .pg-sc-layout {
+    display: grid;
+    grid-template-columns: 172px 1fr;
+    flex: 1;
+    min-height: 0;
+  }
+
+  /* 分组导航：竖条激活指示（禁止圆点装饰） */
+  .pg-sc-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    padding: 10px 8px;
+    border-right: 1px solid var(--color-border-light);
+    background: var(--color-bg-surface, var(--color-bg-sidebar));
+    overflow: auto;
+  }
+
+  .pg-sc-nav-item {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+  }
+
+  .pg-sc-group {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 6px;
+    padding: 7px 10px;
+    border: none;
+    border-left: 2px solid transparent;
+    border-radius: var(--radius-sm, 3px);
+    background: transparent;
+    color: var(--color-fg-secondary);
+    font-family: var(--font-body);
+    font-size: 13px;
+    text-align: left;
+    cursor: pointer;
+    transition:
+      background-color var(--motion-duration-instant) var(--motion-easing-out),
+      border-color var(--motion-duration-instant) var(--motion-easing-out),
+      color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .pg-sc-group:hover {
+    background: var(--color-bg-hover);
+    color: var(--color-fg-primary);
+  }
+
+  /* 激活分组：左缘 3px 竖条 + 中性底色（不做整片强调色渲染） */
+  .pg-sc-group.is-active {
+    border-left-color: var(--color-accent-base);
+    background: var(--color-bg-card);
+    color: var(--color-fg-primary);
+  }
+
+  .pg-sc-group-name {
+    white-space: nowrap;
+  }
+
+  .pg-sc-group-count {
+    font-style: normal;
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    color: var(--color-fg-tertiary);
+  }
+
+  .pg-sc-group.is-active .pg-sc-group-count {
+    color: var(--color-fg-secondary);
+  }
+
+  .pg-sc-group-desc {
+    padding-left: 12px;
+    font-size: 10px;
+    color: var(--color-fg-tertiary);
+  }
+
+  /* 成品网格：滚动容器内自适应多列 */
+  .pg-sc-body {
+    flex: 1;
+    min-height: 0;
+    overflow: auto;
+    padding: 12px;
+  }
+
+  .pg-sc-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(236px, 1fr));
+    gap: 12px;
+  }
+
+  /* 成品卡片：预览区 + 元信息区，hover 边框转强调色 */
+  .pg-sc-card {
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md, 4px);
+    background: var(--color-bg-elevated, var(--color-bg-card));
+    overflow: hidden;
+    transition:
+      border-color var(--motion-duration-instant) var(--motion-easing-out),
+      box-shadow var(--motion-duration-normal) var(--motion-easing-out);
+  }
+
+  .pg-sc-card:hover {
+    border-color: color-mix(in srgb, var(--color-accent-base) 45%, transparent);
+    box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.25));
+  }
+
+  /* 预览区：固定纵横比，深色底衬托成品效果 */
+  .pg-sc-preview {
+    position: relative;
+    aspect-ratio: 16 / 10;
+    background: #101418;
+    border-bottom: 1px solid var(--color-border-light);
+    overflow: hidden;
+  }
+
+  .pg-sc-frame {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+  }
+
+  .pg-sc-placeholder {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    padding: 12px;
+    font-family: var(--font-family-mono);
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--color-fg-tertiary);
+  }
+
+  /* 元信息：名称/说明在左，载入按钮在右 */
+  .pg-sc-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 9px 10px;
+  }
+
+  .pg-sc-text {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+  }
+
+  .pg-sc-name {
+    font-family: var(--font-display);
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--color-fg-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .pg-sc-desc {
+    font-size: 11px;
+    line-height: 1.5;
+    color: var(--color-fg-tertiary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .pg-sc-load {
+    flex-shrink: 0;
+  }
+
+  /* 灵感画廊动效降级：reduced-motion 下关闭入场动画 */
+  @media (prefers-reduced-motion: reduce) {
+    .pg-sc-panel {
+      animation: none;
+    }
+  }
+
+  /* 窄屏：画廊布局单列化，分组导航变为横向滚动 */
+  @media (max-width: 860px) {
+    .pg-sc-layout {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto 1fr;
+    }
+
+    .pg-sc-nav {
+      flex-direction: row;
+      align-items: center;
+      gap: 6px;
+      padding: 8px 10px;
+      border-right: none;
+      border-bottom: 1px solid var(--color-border-light);
+      overflow-x: auto;
+    }
+
+    .pg-sc-nav-item {
+      flex-shrink: 0;
+    }
+
+    .pg-sc-group {
+      border-left: none;
+      border-bottom: 2px solid transparent;
+      padding: 6px 10px;
+    }
+
+    .pg-sc-group.is-active {
+      border-bottom-color: var(--color-accent-base);
+    }
+
+    .pg-sc-group-desc,
+    .pg-sc-group-count {
+      display: none;
+    }
+
+    .pg-sc-title-note {
+      display: none;
+    }
   }
 
   /* 窄屏：工具栏双行收紧，编辑器面板切换为标签页行为

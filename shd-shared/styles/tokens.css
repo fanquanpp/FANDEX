@@ -942,8 +942,8 @@
     --color-code-bg: var(--color-neutral-0);
     /* 代码默认文字（浅灰） */
     --color-code-text: var(--color-neutral-900);
-    /* 代码注释 */
-    --color-code-comment: var(--color-neutral-500);
+    /* 代码注释（对比度审计：neutral.500 在纯黑上仅 2.1:1，提至 neutral.600 达 4.7:1 满足 AA） */
+    --color-code-comment: var(--color-neutral-600);
   }
 
   /* 显式浅色模式（data-theme='light' 时无需覆盖值，仅声明 color-scheme） */

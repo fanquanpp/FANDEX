@@ -389,6 +389,94 @@
   }
 
   /* ============================================================
+   * 2.5 终端模拟面板（工业科幻品牌签名）
+   * ----------------------------------------------------------------
+   * Hero 下方居中的"开机自检"终端：
+   * - 近黑代码底 + 细边框 + 直角小圆角，与代码块同一套表面语言
+   * - 标题栏左侧 mono 路径标记，右侧 [REC] 呼吸指示（文字标记，非圆点）
+   * - 输出内容由 lib/home-terminal.ts 逐字写入，光标为 CSS 块状伪元素
+   * - min-height 锁定面板高度，逐字输出过程中不产生布局位移
+   * ============================================================ */
+  .hero-terminal {
+    max-width: 560px;
+    margin: var(--spacing-lg) auto 0;
+    text-align: left;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-md);
+    background: var(--color-code-bg);
+    box-shadow: var(--shadow-xs);
+    overflow: hidden;
+  }
+
+  .hero-terminal__bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 6px 12px;
+    /* 标题栏在两种主题下都保持"深色终端"表面：
+       以代码底色为基微量提亮，与机身一体，避免浅色模式下出现突兀灰带 */
+    background: color-mix(in srgb, var(--color-fg-primary) 5%, var(--color-code-bg));
+    border-bottom: 1px solid color-mix(in srgb, var(--color-fg-primary) 10%, transparent);
+  }
+
+  .hero-terminal__title {
+    font-family: var(--font-family-mono, monospace);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
+    color: color-mix(in srgb, var(--color-code-text) 72%, transparent);
+  }
+
+  /* [REC] 呼吸指示：警示色 mono 文字标记（替代圆点录制指示） */
+  .hero-terminal__rec {
+    font-family: var(--font-family-mono, monospace);
+    font-size: 0.66rem;
+    letter-spacing: 0.12em;
+    color: var(--color-danger);
+    animation: heroTerminalRec 2.4s ease-in-out infinite;
+  }
+
+  @keyframes heroTerminalRec {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+
+  .hero-terminal__body {
+    margin: 0;
+    padding: 12px 14px;
+    min-height: 6.5em;
+    font-family: var(--font-family-mono, monospace);
+    font-size: 0.72rem;
+    line-height: 1.7;
+    color: var(--color-code-text);
+    white-space: pre-wrap;
+    overflow: hidden;
+  }
+
+  /* 闪烁块光标：挂在 code 伪元素上，始终跟随文本末尾 */
+  .hero-terminal__body code::after {
+    content: '';
+    display: inline-block;
+    width: 0.55em;
+    height: 1em;
+    margin-left: 2px;
+    vertical-align: text-bottom;
+    background: var(--color-accent-base);
+    animation: heroTerminalCursor 1.1s step-end infinite;
+  }
+
+  @keyframes heroTerminalCursor {
+    50% { opacity: 0; }
+  }
+
+  /* 减少动效：[REC] 与光标停止闪烁，静态呈现 */
+  @media (prefers-reduced-motion: reduce) {
+    .hero-terminal__rec,
+    .hero-terminal__body code::after {
+      animation: none;
+    }
+  }
+
+  /* ============================================================
    * 3. 分类区域（极简现代横向滑动器）
    * ----------------------------------------------------------------
    * 结构：
@@ -595,6 +683,34 @@
     /* 预留动效扩展点：后续可接入 Motion 惯性滑行 */
   }
 
+  /* 循环滚动态：两侧渐隐遮罩，让被裁切的克隆卡片呈现"渐入渐出"意图，
+     消除静态截图/首屏中"半截卡片"的破碎感（静态模式不裁切，无需遮罩） */
+  .feature-scroller:not(.is-static) {
+    -webkit-mask-image: linear-gradient(
+      to right,
+      transparent 0,
+      #000 4%,
+      #000 96%,
+      transparent 100%
+    );
+    mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%);
+  }
+
+  /* 静态态：卡片集宽度不超过视口时（小分类）不克隆、不自动滚动，
+     轨道居中铺满，隐藏左右导航按钮（:has 向上命中所属分类区块） */
+  .feature-scroller.is-static {
+    cursor: default;
+  }
+
+  .feature-scroller.is-static .feature-track {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .category-section:has(.feature-scroller.is-static) .category-header__actions {
+    display: none;
+  }
+
   /* 拖拽进行中：切换光标 */
   .feature-scroller.is-dragging {
     cursor: grabbing;
@@ -656,10 +772,24 @@
       height: 20px;
     }
 
-    /* 移动端功能入口：缩小内边距与字号 */
+    /* 移动端统计与功能入口纵向堆叠，入口独占一行三列网格
+       （保持 flex 横排会把 3 个入口挤到统计右侧，过载难读） */
+    .hero-stats-row {
+      flex-direction: column;
+      gap: var(--spacing-md);
+    }
+
+    /* 移动端功能入口：固定三列网格，避免 flex 换行产生"2+1 孤行" */
     .hero-entries {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: var(--spacing-xs);
-      margin-top: var(--spacing-md);
+      margin-top: 0;
+    }
+
+    .entry-btn {
+      padding: 10px 8px;
+      font-size: 0.85rem;
     }
 
     /* 滑动器卡片宽度收窄 */
@@ -695,6 +825,18 @@
 
     .home-page--sub .hero-title {
       font-size: 1.3rem;
+    }
+
+    /* 小屏入口按钮进一步收窄（保持三列） */
+    .entry-btn {
+      padding: 8px 4px;
+      font-size: 0.78rem;
+    }
+
+    /* 小屏终端面板：字号微降，锁定的 min-height 相应收缩 */
+    .hero-terminal__body {
+      font-size: 0.66rem;
+      min-height: 6em;
     }
 
     /* 小屏卡片进一步收窄 */

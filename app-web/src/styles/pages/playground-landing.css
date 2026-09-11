@@ -1,0 +1,321 @@
+/**
+ * 在线编程功能主页样式（/playground/ 子级主页）
+ * -----------------------------------------------------------------------------
+ * 职责：图鉴精选网格 / 功能说明卡 / Hero 标语等落地页专属样式。
+ * Hero 与统计行复用首页 index.css，此处不重复定义。
+ *
+ * 设计语言（ark-ui）：
+ * - 直角小圆角 + 1px 边框 + 卡片底色，交互反馈走边框转色与阴影加深
+ * - 禁点状装饰：标记统一 3px 竖条
+ * - 动效消费 motion 令牌并提供 prefers-reduced-motion 降级
+ *
+ * 层级归属：@layer pages（与 index.css 一致）
+ */
+
+@layer pages {
+  /* ============================================================
+   * 1. Hero 标语
+   * ============================================================ */
+  .pg-home__tagline {
+    max-width: 560px;
+    margin: var(--spacing-sm) auto 0;
+    font-size: 0.92rem;
+    line-height: 1.7;
+    color: var(--color-fg-secondary);
+    text-align: center;
+  }
+
+  /* ============================================================
+   * 2. 灵感图鉴区（显眼入口）
+   * ============================================================ */
+  .pg-home__gallery {
+    margin-top: var(--spacing-xl);
+  }
+
+  /* 区块头部：竖条标记 + 标题 + 计数 + 说明，右侧完整图鉴入口 */
+  .pg-home__gallery-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--spacing-md);
+    flex-wrap: wrap;
+    padding: var(--spacing-xs) 0 var(--spacing-sm);
+    margin-bottom: var(--spacing-md);
+  }
+
+  .pg-home__gallery-title {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-inline-sm);
+    flex-wrap: wrap;
+  }
+
+  /* 3px 竖条标记：与首页分类指示器同语言（禁点状） */
+  .pg-home__marker {
+    width: 3px;
+    height: 16px;
+    border-radius: 1px;
+    background: var(--color-accent-base);
+    align-self: center;
+    flex-shrink: 0;
+  }
+
+  .pg-home__heading {
+    font-family: var(--font-display);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    color: var(--color-fg-primary);
+    margin: 0;
+  }
+
+  .pg-home__gallery-desc {
+    width: 100%;
+    margin: 2px 0 0;
+    font-size: 0.8rem;
+    color: var(--color-fg-tertiary);
+  }
+
+  /* 完整图鉴入口：直角实底按钮，区块内最高视觉权重 */
+  .pg-home__open {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 18px;
+    border-radius: var(--radius-md);
+    background: var(--color-accent-base);
+    color: var(--color-accent-fg);
+    font-family: var(--font-display);
+    font-size: 0.9rem;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-decoration: none;
+    transition:
+      background-color var(--motion-duration-fast) var(--motion-easing-out),
+      box-shadow var(--motion-duration-normal) var(--motion-easing-out),
+      transform var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .pg-home__open:hover {
+    background: var(--color-accent-hover);
+  }
+
+  .pg-home__open:active {
+    transform: scale(0.98);
+  }
+
+  .pg-home__open:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .pg-home__open svg {
+    transition: transform var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .pg-home__open:hover svg {
+    transform: translateX(2px);
+  }
+
+  /* ============================================================
+   * 3. 图鉴精选网格：沙箱实时预览卡
+   * ============================================================ */
+  .pg-home__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: var(--spacing-md);
+  }
+
+  /* 整卡为链接：点击任意处载入工作台 */
+  .pg-home__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: var(--spacing-sm);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-card);
+    text-decoration: none;
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-easing-out),
+      box-shadow var(--motion-duration-normal) var(--motion-easing-out),
+      transform var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .pg-home__card:hover {
+      border-color: color-mix(in srgb, var(--color-accent-base) 50%, var(--color-border-subtle));
+      box-shadow: var(--shadow-md);
+      transform: translateY(-2px);
+    }
+
+    .pg-home__card:hover .pg-home__card-name {
+      color: var(--color-accent-base);
+    }
+  }
+
+  .pg-home__card:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  /* 分组徽标：mono 小字铭牌，贴卡片右上角 */
+  .pg-home__card-group {
+    position: absolute;
+    top: var(--spacing-sm);
+    right: var(--spacing-sm);
+    z-index: 1;
+    padding: 2px 8px;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm);
+    background: color-mix(in srgb, var(--color-bg-primary) 72%, transparent);
+    font-family: var(--font-family-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.08em;
+    color: var(--color-fg-tertiary);
+  }
+
+  /* 预览窗口：固定比例裁切成品全屏舞台，hover 时轻微放大视距 */
+  .pg-home__preview {
+    display: block;
+    aspect-ratio: 16 / 10;
+    margin-bottom: var(--spacing-sm);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm);
+    overflow: hidden;
+    background: var(--color-code-bg);
+  }
+
+  /* iframe 以 200% 尺寸从左上角铺放：成品源码按整屏（100vh/100vw）编写，
+     等比缩小后正好呈现完整效果，无需改造成品源码 */
+  .pg-home__preview iframe {
+    width: 200%;
+    height: 200%;
+    border: none;
+    transform: scale(0.5);
+    transform-origin: 0 0;
+    pointer-events: none;
+  }
+
+  .pg-home__card-name {
+    font-family: var(--font-display);
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: var(--color-fg-primary);
+    transition: color var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .pg-home__card-desc {
+    margin-top: 2px;
+    font-size: 0.74rem;
+    line-height: 1.5;
+    color: var(--color-fg-tertiary);
+  }
+
+  /* ============================================================
+   * 4. 功能说明卡（模块卡片视觉语言：分类色顶线 + 图标容器）
+   * ============================================================ */
+  .pg-home__features {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: var(--spacing-md);
+    margin-top: var(--spacing-xl);
+  }
+
+  .pg-home__feature {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xs);
+    padding: var(--spacing-md);
+    border: 1px solid var(--color-border-subtle);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-card);
+    text-decoration: none;
+    overflow: hidden;
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-easing-out),
+      box-shadow var(--motion-duration-normal) var(--motion-easing-out);
+  }
+
+  /* 顶部分类色条：静止收起，hover 展开（与 module-card 同语言） */
+  .pg-home__feature-mark {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--module-color, var(--color-accent-base));
+    opacity: 0.55;
+    transition:
+      height var(--motion-duration-normal) var(--motion-easing-out),
+      opacity var(--motion-duration-normal) var(--motion-easing-out);
+  }
+
+  @media (hover: hover) {
+    .pg-home__feature:hover {
+      border-color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 45%, var(--color-border-subtle));
+      box-shadow: var(--shadow-md);
+    }
+
+    .pg-home__feature:hover .pg-home__feature-mark {
+      height: 4px;
+      opacity: 1;
+    }
+
+    .pg-home__feature:hover .pg-home__feature-title {
+      color: var(--module-color, var(--color-accent-base));
+    }
+  }
+
+  .pg-home__feature:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .pg-home__feature-title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--color-fg-primary);
+    transition: color var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .pg-home__feature-desc {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--color-fg-secondary);
+  }
+
+  /* ============================================================
+   * 5. 响应式与可访问性
+   * ============================================================ */
+  @media (max-width: 768px) {
+    .pg-home__gallery-head {
+      align-items: flex-start;
+      flex-direction: column;
+    }
+
+    .pg-home__grid {
+      grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pg-home__open,
+    .pg-home__open svg,
+    .pg-home__card,
+    .pg-home__feature,
+    .pg-home__feature-mark {
+      transition: none;
+    }
+
+    @media (hover: hover) {
+      .pg-home__card:hover {
+        transform: none;
+      }
+    }
+  }
+}

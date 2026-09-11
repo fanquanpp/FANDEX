@@ -1,9 +1,14 @@
 ---
 /**
- * Footer 组件 — 极简页脚
- * 渲染项目版权信息与 GitHub、MIT License 链接
+ * Footer 组件 — 站点地图式页脚
+ * -----------------------------------------------------------------------------
+ * 三列布局（桌面端）：品牌块 / 学习入口 / 项目资源，底部版权行。
+ * 复用 shared/layout-components.css 的 .fndx-footer__sections 网格体系，
+ * 品牌标识与竖条标记遵循 ark 设计语言（禁点状装饰、直角小圆角）。
+ * 首页与学习路线页共用；桌面端构建（DESKTOP_BUILD=1）时隐藏在线编程入口。
  */
 import { SITE } from '@/lib/constants';
+import { IS_DESKTOP_BUILD } from '@/lib/constants';
 
 interface Props {
   /** 当前页面标识，预留用于未来导航高亮 */
@@ -11,6 +16,7 @@ interface Props {
 }
 
 const { currentPath: _currentPath } = Astro.props;
+const base = import.meta.env.BASE_URL;
 
 /** 项目发布起始年份 */
 const PROJECT_START_YEAR = 2026;
@@ -20,39 +26,178 @@ const yearRange =
   currentYear > PROJECT_START_YEAR
     ? `${PROJECT_START_YEAR}-${currentYear}`
     : `${PROJECT_START_YEAR}`;
-
-/** 居中布局修饰符 */
-const footerClass = 'fndx-footer fndx-footer--centered fndx-footer--minimal';
 ---
 
-<footer class={footerClass} role="contentinfo" aria-label="站点页脚">
+<footer class="fndx-footer fndx-footer--plain" role="contentinfo" aria-label="站点页脚">
   <div class="fndx-footer__container">
-    {/* 导航链接组 */}
-    <nav class="fndx-footer__nav" aria-label="页脚导航">
-      <a
-        href="https://github.com/fanquanpp/FANDEX"
-        class="fndx-footer__nav-link"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        GitHub
-      </a>
-      <span class="fndx-footer__nav-divider" aria-hidden="true">·</span>
-      <a
-        href="https://github.com/fanquanpp/FANDEX/blob/main/LICENSE"
-        class="fndx-footer__nav-link"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        MIT License
-      </a>
-    </nav>
+    <!-- 三列站点地图：品牌 / 学习入口 / 项目资源 -->
+    <div class="fndx-footer__sections">
+      <!-- 品牌块：字标 + 品牌主张 + 技术标记 -->
+      <div class="fndx-footer__section footer-brand">
+        <p class="footer-brand__mark">
+          <span class="footer-brand__fan">FAN</span><span class="footer-brand__dex">DEX</span>
+          <span class="footer-brand__marker" aria-hidden="true">://</span>
+        </p>
+        <p class="footer-brand__tagline">循序渐进，从第一行代码到理解整个世界。</p>
+        <p class="footer-brand__meta">计算机科学自学平台 · {SITE.author}</p>
+      </div>
 
-    {/* 底部版权区 */}
+      <!-- 学习入口：站内三大功能 -->
+      <nav class="fndx-footer__section" aria-label="学习入口">
+        <h2 class="fndx-footer__section-title footer-section-title">学习入口</h2>
+        {!IS_DESKTOP_BUILD && (
+          <a href={`${base}playground/`} class="fndx-footer__link">在线编程</a>
+        )}
+        <a href={`${base}syntax/`} class="fndx-footer__link">语法速览</a>
+        <a href={`${base}learning-path/`} class="fndx-footer__link">学习路线</a>
+        <a href={base} class="fndx-footer__link">模块总览</a>
+      </nav>
+
+      <!-- 项目资源：仓库与协议 -->
+      <nav class="fndx-footer__section" aria-label="项目资源">
+        <h2 class="fndx-footer__section-title footer-section-title">项目资源</h2>
+        <a
+          href="https://github.com/fanquanpp/FANDEX"
+          class="fndx-footer__link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          GitHub 仓库
+        </a>
+        <a
+          href="https://github.com/fanquanpp/FANDEX/releases"
+          class="fndx-footer__link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          版本发布
+        </a>
+        <a
+          href="https://github.com/fanquanpp/FANDEX/issues"
+          class="fndx-footer__link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          问题反馈
+        </a>
+        <a
+          href="https://github.com/fanquanpp/FANDEX/blob/main/LICENSE"
+          class="fndx-footer__link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          MIT License
+        </a>
+      </nav>
+    </div>
+
+    {/* 底部版权区：左侧版权，右侧构建信息 */}
     <div class="fndx-footer__bottom">
       <p class="fndx-footer__copyright">
-        Copyright (c) {yearRange} {SITE.author || 'fanquanpp'} · MIT License · 计算机科学自学平台
+        Copyright (c) {yearRange} {SITE.author || 'fanquanpp'} · 计算机科学自学平台
       </p>
+      <p class="footer-build-note">ASTRO // STATIC BUILD</p>
     </div>
   </div>
 </footer>
+
+<style>
+  /* 页脚视觉微调：去独立背景块、贴品牌语言
+     层级归属：Astro scoped style，仅作用于本组件 */
+  .fndx-footer--plain {
+    background: transparent;
+    border-top: none;
+    /* 顶部分割线：两端渐隐的细线（与 hero 分割线同款语言） */
+    background-image: linear-gradient(
+      to right,
+      transparent,
+      var(--color-border-light) 12%,
+      var(--color-border-light) 88%,
+      transparent
+    );
+    background-size: 100% 1px;
+    background-position: top;
+    background-repeat: no-repeat;
+    margin-top: var(--spacing-xl);
+    padding-block: var(--spacing-lg) var(--space-6);
+  }
+
+  /* 品牌块：字标 + 主张 + 元信息 */
+  .footer-brand {
+    gap: var(--space-stack-sm);
+  }
+
+  .footer-brand__mark {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1.15rem;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.08em;
+    color: var(--color-fg-primary);
+    line-height: 1.2;
+  }
+
+  /* DEX 半段用强调色，与首页 hero 渐变标题同源 */
+  .footer-brand__dex {
+    color: var(--color-accent-base);
+  }
+
+  /* 等宽技术标记：仅装饰语境使用，不进入正文 */
+  .footer-brand__marker {
+    font-family: var(--font-family-mono, monospace);
+    font-size: 0.72rem;
+    color: var(--color-fg-tertiary);
+    letter-spacing: 0;
+  }
+
+  .footer-brand__tagline {
+    margin: 0;
+    font-size: var(--font-size-secondary);
+    color: var(--color-fg-secondary);
+    line-height: var(--font-line-height-body);
+  }
+
+  .footer-brand__meta {
+    margin: 0;
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+    font-family: var(--font-family-mono, monospace);
+    letter-spacing: 0.04em;
+  }
+
+  /* 分区标题：3px 竖条标记（几何刻度语言，禁点状装饰） */
+  .footer-section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--space-inline-sm);
+    letter-spacing: var(--font-letter-spacing-label);
+  }
+
+  .footer-section-title::before {
+    content: '';
+    width: 3px;
+    height: 12px;
+    border-radius: 1px;
+    background: var(--color-accent-base);
+    flex-shrink: 0;
+  }
+
+  /* 底部构建信息：mono 小字，右对齐 */
+  .footer-build-note {
+    margin: 0;
+    font-family: var(--font-family-mono, monospace);
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+    letter-spacing: 0.08em;
+  }
+
+  /* 移动端：构建信息隐藏，保持版权行纯净 */
+  @media (max-width: 767px) {
+    .footer-build-note {
+      display: none;
+    }
+  }
+</style>
