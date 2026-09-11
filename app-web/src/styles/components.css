@@ -393,6 +393,32 @@
   box-shadow: var(--shadow-md);
 }
 
+/* ========== PWA 安装指引浮层（lib/pwa-install.ts 创建） ========== */
+/* iOS Safari 无安装事件：点击「安装应用」按钮后在导航栏下方展示操作指引 */
+.install-tip {
+  position: fixed;
+  top: calc(var(--nav-height, 48px) + 6px);
+  right: 12px;
+  z-index: 200;
+  max-width: min(300px, calc(100vw - 24px));
+  padding: 10px 12px;
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  background: var(--color-bg-elevated);
+  box-shadow: var(--shadow-dropdown);
+  color: var(--color-fg-secondary);
+  font-size: 12px;
+  line-height: 1.6;
+  animation: install-tip-in var(--motion-duration-normal) var(--motion-easing-out);
+}
+
+@keyframes install-tip-in {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+}
+
 /* ========== 文档上下篇导航 ========== */
 .doc-nav {
   display: flex;
