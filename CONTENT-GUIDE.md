@@ -139,13 +139,12 @@ sync 时自动回收，无需手工清理。删除后如果有其他文档通过
 
 ```bash
 pnpm sync                                          # 补全元数据（幂等）
-pnpm build:web                                     # 完整构建（含 schema 校验与搜索索引）
 node app-web/scripts/content-audit.mjs             # 内容审计，确认无 HIGH 级问题
 ```
 
-与 CI 门槛等价的最小组合是 `pnpm sync` + `pnpm build:web`；内容改动建议
-加跑 audit。提交与 PR 流程（分支命名、Conventional Commits、PR 目标分支）
-见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+推送前至少跑 `pnpm sync`；完整构建验证由 CI 在「指向 main 的 PR 与发版」时
+执行（本地预览可随时运行 `pnpm build:web`）。提交与 PR 流程（分支命名、
+Conventional Commits、PR 目标分支）见 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
 ## 注意事项
 
