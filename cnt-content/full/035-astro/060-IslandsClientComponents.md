@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: intermediate
 description: 问题驱动理解岛屿架构：为什么页面没有交互、client 指令全家桶、水合原理、多框架集成与岛屿间通信
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'astro/004-ComponentsProps'
-  - 'astro/005-ContentCollections'
+  - 'astro/040-ComponentsProps'
+  - 'astro/050-ContentCollections'
 prerequisites:
-  - 'astro/004-ComponentsProps'
+  - 'astro/040-ComponentsProps'
 ---
 
 
@@ -103,8 +103,8 @@ import Counter from '../components/Counter.tsx'
 
 1. **构建期**：Astro 编译页面，把 Counter 渲染成静态 HTML（按钮 + "点击了 0 次"），同时分析出只有这个组件需要客户端脚本，为它单独打包成一个小的 JS chunk；
 2. **加载期**：浏览器拿到 HTML，立即渲染出完整页面——此时页面已经可以阅读（无需等待任何 JS）；
-3. **脚本期**：浏览器下载并执行 Counter 的 chunk，React 运行时找到服务端渲染出的那个按钮（通过 `data-astro-cid` 之类的标记），把虚拟 DOM 与现有 DOM 对齐；
-4. **激活期**：事件绑定生效，`useState` 接管状态，按钮开始响应点击。
+3. **脚本期**：浏览器下载并执行 Counter 的 chunk。Astro 会把每个岛屿包在 `<astro-island>` 自定义元素里（组件的 props 已序列化在其属性上），框架运行时据此找到对应的 DOM、取出初始 props；
+4. **激活期**：React 把虚拟 DOM 与现有 DOM 对齐（不重新创建节点），事件绑定生效，`useState` 接管状态，按钮开始响应点击。
 
 ```mermaid
 flowchart TD
@@ -331,6 +331,6 @@ window.addEventListener('search:done', (e) => {
 | 未安装对应框架集成 | 报错 `Cannot find module '@astrojs/react'` 之类 | 只装框架本身没装 Astro 集成 | 运行 `npx astro add react` 安装并配置集成 |
 | 无差别给所有组件加 `client:load` | 首屏 JS 体积暴涨、Lighthouse 评分下降 | 水合时机选择过重，脚本抢占主线程 | 按"从轻到重"决策：visible → idle → load 逐级选择 |
 
-## 8. 一句话记忆
+## 7. 一句话记忆
 
 **"页面默认是一片静态的海洋，只有显式加上 `client:` 指令的组件，才会变成一座被水合的岛屿——不加指令，就没有交互。"**

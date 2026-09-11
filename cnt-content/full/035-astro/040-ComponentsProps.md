@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: beginner
 description: '通过"没有组件 vs 有组件"的对比理解组件化：组件三段式结构、Props 传参、Slot 插槽、模板语法与作用域样式'
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'astro/003-PagesRouting'
-  - 'astro/006-IslandsClientComponents'
+  - 'astro/030-PagesRouting'
+  - 'astro/060-IslandsClientComponents'
 prerequisites:
-  - 'astro/002-QuickStartProject'
+  - 'astro/020-QuickStartProject'
 ---
 
 
@@ -435,6 +435,6 @@ const hasFooter = Astro.slots.has('footer')
 | 组件 `<style>` 影响不到子组件 | 子组件样式没生效 | scoped 样式默认不穿透子组件 | 在父组件用 `:global()`，或在子组件内自行定义样式 |
 | Slot 内容不显示 | 写了 `<Component>内容</Component>` 但页面没有内容 | 组件模板里忘了放 `<slot />` | 在组件模板的期望位置加上 `<slot />` |
 
-## 11. 一句话记忆
+## 10. 一句话记忆
 
 **组件是乐高零件：Props 是说明书（传数据），Slot 是凹槽（插内容），`<style>` 是涂装（只属于自己）——把重复封装成零件，把变化暴露成参数。**

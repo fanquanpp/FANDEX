@@ -1,29 +1,29 @@
 ---
-order: 130
+order: 150
 title: Astro 学习总结：核心知识体系回顾
 module: 'astro'
 category: 前端技术
 difficulty: intermediate
 description: 串联 Astro 模块全部文档，回顾岛屿架构、内容集合、文件路由、集成体系与构建发布的核心脉络。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'astro/001-AstroOverview'
-  - 'astro/005-ContentCollections'
-  - 'astro/006-IslandsClientComponents'
-  - 'astro/003-PagesRouting'
+  - 'astro/010-AstroOverview'
+  - 'astro/050-ContentCollections'
+  - 'astro/060-IslandsClientComponents'
+  - 'astro/030-PagesRouting'
 prerequisites: []
 ---
 
-Astro 模块共 12 篇文档，主线是"为内容站把 JavaScript 成本压到最低"。本文仍以"虚拟歌手音乐平台"为背景：歌曲评测、歌姬资料属于纯静态内容，人气投票、播放器则做成按需水合的岛屿。借助这条主线，把岛屿架构、内容集合、文件路由、集成与发布五条线索收拢成一页复习索引。
+Astro 模块共 15 篇文档，主线是"为内容站把 JavaScript 成本压到最低"。本文以"虚拟歌手音乐平台"为背景：歌曲评测、歌姬资料属于纯静态内容，人气投票、播放器则做成按需水合的岛屿。借助这条主线，把岛屿架构、内容集合、文件路由、样式资源、集成、视图过渡、中间件与发布八条线索收拢成一页复习索引。
 
-使用建议：Astro 的知识要点集中在两处——理解"默认零 JS"的输出模型，以及掌握内容集合这套编目系统。前者决定你能否正确设计页面，后者决定站点能否长期维护。复习时建议先重读 [Astro 框架概述与文档站实践](/astro/001-AstroOverview) 的性能问题分析，再按地图逐组检验自己能否复述每个机制解决的是什么问题。
+使用建议：Astro 的知识要点集中在两处——理解"默认零 JS"的输出模型，以及掌握内容集合这套编目系统。前者决定你能否正确设计页面，后者决定站点能否长期维护。复习时建议先重读 [Astro 框架概述与文档站实践](/astro/010-AstroOverview) 的性能问题分析，再按地图逐组检验自己能否复述每个机制解决的是什么问题。
 
 ## 前置知识
 
-- [Astro 框架概述与文档站实践](/astro/001-AstroOverview)：理解 SPA 为什么"重"，以及零 JS 默认、像报社一样出版内容的设计哲学。
-- [Astro 快速上手项目](/astro/002-QuickStartProject)：会用 create astro 建立并运行第一个项目，认识 src 目录约定。
-- [Astro 组件与 Props 插槽](/astro/004-ComponentsProps)：掌握组件三段式结构与 Props、Slot 语法，理解"零件与说明书"的类比。
+- [Astro 框架概述与文档站实践](/astro/010-AstroOverview)：理解 SPA 为什么"重"，以及零 JS 默认、像报社一样出版内容的设计哲学。
+- [Astro 快速上手项目](/astro/020-QuickStartProject)：会用 create astro 建立并运行第一个项目，认识 src 目录约定。
+- [Astro 组件与 Props 插槽](/astro/040-ComponentsProps)：掌握组件三段式结构与 Props、Slot 语法，理解"零件与说明书"的类比。
 
 ## 学习目标
 
@@ -54,15 +54,19 @@ flowchart TB
         D010["010 表单与 Actions"]
         D011["011 集成与 MDX"]
     end
-    subgraph C5["质量与发布"]
+    subgraph C5["进阶能力"]
+        D014["014 视图过渡"]
+        D015["015 中间件与图片"]
+    end
+    subgraph C6["质量与发布"]
         D008["008 构建与部署"]
         D009["009 Astro 7 新特性"]
         D012["012 测试与调试"]
     end
-    C1 --> C2 --> C3 --> C4 --> C5
+    C1 --> C2 --> C3 --> C4 --> C5 --> C6
 ```
 
-十二篇文档可以分成两个半场：上半场 C1 与 C2 是"把页面搭出来"，解决结构、路由与样式问题，难度不高但必须一次学扎实；下半场的核心是 C3，内容集合与岛屿架构是 Astro 区别于其他框架的两张名片，也是面试与选型时最常被问到的能力；C4 与 C5 属于把站点做完整、发布出去的收尾工作。若时间紧张，C3 优先级最高。
+十五篇文档可以分成两个半场：上半场 C1 与 C2 是"把页面搭出来"，解决结构、路由与样式问题，难度不高但必须一次学扎实；下半场的核心是 C3，内容集合与岛屿架构是 Astro 区别于其他框架的两张名片，也是面试与选型时最常被问到的能力；C4 与 C5 把站点做完整（收输入、扩集成、加动画与请求闸口），C6 属于发布与质量收尾。若时间紧张，C3 优先级最高。
 
 ## 核心概念回顾
 
@@ -117,7 +121,8 @@ const { id } = Astro.params
 
 ```ts
 // src/content.config.ts：为歌曲评测文档定义"借书卡"
-import { defineCollection, z } from 'astro:content'
+import { defineCollection } from 'astro:content'
+import { z } from 'astro/zod'
 import { glob } from 'astro/loaders'
 
 const songs = defineCollection({
@@ -194,7 +199,8 @@ Astro Actions 把"接收输入、服务端校验、返回结果"收敛为一个�
 
 ```ts
 // src/actions/index.ts：粉丝团报名的服务端校验
-import { defineAction, z } from 'astro:actions'
+import { defineAction } from 'astro:actions'
+import { z } from 'astro/zod'
 
 export const server = {
   fanClub: {
@@ -362,11 +368,11 @@ export default defineConfig({ base: '/repo/' })
 
 ## 后续学习路径
 
-1. 复习 [Astro 页面与路由](/astro/003-PagesRouting)，把静态、动态、Rest 参数、嵌套路由与重定向一次吃透。
-2. 深入 [内容集合与 Schema](/astro/005-ContentCollections)，练习 glob loader 与 Live Content Collections，为更大规模的内容站做准备。
-3. 精读 [岛屿架构与客户端指令](/astro/006-IslandsClientComponents)，掌握多框架岛屿共存与岛屿间通信方案。
-4. 学习 [样式字体与资源](/astro/007-StylingFontsAssets)，把应援色主题落到作用域样式与字体 API 上，避免样式串扰。
-5. 补齐 [表单与 Actions](/astro/010-AstroFormsActions)，为报名、评论等输入场景建立服务端校验与错误反馈链路。
-6. 实践 [集成与 MDX](/astro/011-AstroIntegrationsMdx)，让评测文档可以内嵌交互岛屿，扩展内容的表现力。
-7. 走一遍 [构建与部署](/astro/008-BuildDeploy)，把平台发布到静态托管或带适配器的 SSR 环境，并配置好环境变量。
-8. 跟进 [Astro 7 新特性](/astro/009-Astro7Features)，再用 [测试与调试](/astro/012-AstroTestingDebugging) 收尾，保证框架升级不踩坑。
+1. 复习 [Astro 页面与路由](/astro/030-PagesRouting)，把静态、动态、Rest 参数、嵌套路由与重定向一次吃透。
+2. 深入 [内容集合与 Schema](/astro/050-ContentCollections)，练习 glob loader 与 Live Content Collections，为更大规模的内容站做准备。
+3. 精读 [岛屿架构与客户端指令](/astro/060-IslandsClientComponents)，掌握多框架岛屿共存与岛屿间通信方案。
+4. 学习 [样式字体与资源](/astro/070-StylingFontsAssets)，把应援色主题落到作用域样式与字体 API 上，避免样式串扰。
+5. 补齐 [表单与 Actions](/astro/100-AstroFormsActions)，为报名、评论等输入场景建立服务端校验与错误反馈链路。
+6. 实践 [集成与 MDX](/astro/110-AstroIntegrationsMdx)，让评测文档可以内嵌交互岛屿，扩展内容的表现力。
+7. 走一遍 [构建与部署](/astro/080-BuildDeploy)，把平台发布到静态托管或带适配器的 SSR 环境，并配置好环境变量。
+8. 跟进 [Astro 7 新特性](/astro/090-Astro7Features)，再用 [测试与调试](/astro/140-AstroTestingDebugging) 收尾，保证框架升级不踩坑。

@@ -6,23 +6,21 @@ category: 前端技术
 difficulty: intermediate
 description: 接收用户输入：Astro 表单、API 路由与 Action 服务端校验。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'astro/003-PagesRouting'
-  - 'astro/008-BuildDeploy'
+  - 'astro/030-PagesRouting'
+  - 'astro/080-BuildDeploy'
 prerequisites:
-  - 'astro/008-BuildDeploy'
+  - 'astro/080-BuildDeploy'
 ---
-
-# 表单与 Actions
 
 静态站点擅长"展示"，但音乐平台总有必须"收"进来的东西：演唱会购票、P主投稿、粉丝团报名。Astro 处理用户输入有三条路——在页面里直接处理 POST、写 API 路由端点、用 Actions 做带类型与校验的服务端函数。本篇以"演唱会购票"为主线，把三条路一次讲透，并回答最关键的选型问题：什么时候该用哪一条。
 
 ## 前置知识
 
-- [Astro 页面与路由](/astro/003-PagesRouting)：表单的提交目标与 API 端点都建立在文件系统路由之上。
-- [Astro 岛屿与客户端组件](/astro/006-IslandsClientComponents)：渐进增强的客户端部分要靠脚本或岛屿完成。
-- [Astro 构建与部署](/astro/008-BuildDeploy)：理解静态输出与 SSR 适配器的差别，页面 POST 与 Actions 都需要服务端运行时。
+- [Astro 页面与路由](/astro/030-PagesRouting)：表单的提交目标与 API 端点都建立在文件系统路由之上。
+- [Astro 岛屿与客户端组件](/astro/060-IslandsClientComponents)：渐进增强的客户端部分要靠脚本或岛屿完成。
+- [Astro 构建与部署](/astro/080-BuildDeploy)：理解静态输出与 SSR 适配器的差别，页面 POST 与 Actions 都需要服务端运行时。
 
 ## 学习目标
 
@@ -127,7 +125,7 @@ export const POST: APIRoute = async ({ request }) => {
 
 API 路由与页面共用同一套路由规则（见 003 篇）：`src/pages/api/tickets/check.ts` 对应路径 `/api/tickets/check`。它和"页面处理 POST"的分工很清楚——页面 POST 服务于**浏览器里的这张表单**，返回的是 HTML；API 路由服务于**任何调用方**（岛屿的 fetch、App、第三方），返回的是 JSON 或其他格式。平台里"侧栏余量角标"就是典型用法：岛屿挂载后 `fetch('/api/tickets/check?...')`，把余量渲染出来，页面本身不用为它写一行服务端代码。
 
-写 API 路由时把响应的"形状"当成接口契约来对待。首先是状态码：参数缺失回 400，查不到资源回 404，服务端异常回 500，全程 200 会让调用方被迫解析 body 猜结果。其次是 Content-Type 与序列化保持一致：返回 JSON 就统一 `application/json`，避免调用方在不同端点上做差异化兼容。最后记得 API 路由同样跑在服务端运行时上，纯静态输出（`output: 'static'`）的站点里它不会生成——这与下一节 Actions 的前提一致，"有没有后端"是引入它们之前要先回答的问题。
+写 API 路由时把响应的"形状"当成接口契约来对待。首先是状态码：参数缺失回 400，查不到资源回 404，服务端异常回 500，全程 200 会让调用方被迫解析 body 猜结果。其次是 Content-Type 与序列化保持一致：返回 JSON 就统一 `application/json`，避免调用方在不同端点上做差异化兼容。最后注意 API 路由与输出模式的关系：**GET 端点在纯静态模式（`output: 'static'`）下会在构建期执行、生成静态文件**（如 `/api/tickets/check.json`）；而 POST 这类非 GET 方法必须按需渲染才有意义——静态站点没有"服务器"来接住它们。这与下一节 Actions 的前提一致，"有没有后端"是引入它们之前要先回答的问题。
 
 ## 3. Astro Actions：校验定义一次，两端复用
 
@@ -135,7 +133,8 @@ API 路由与页面共用同一套路由规则（见 003 篇）：`src/pages/api
 
 ```typescript
 // src/actions/index.ts：全站 Action 定义
-import { defineAction, z } from 'astro:actions'
+import { defineAction } from 'astro:actions'
+import { z } from 'astro/zod'  // Astro 6 起 z 从 astro/zod 导入
 
 export const server = {
   ticket: {

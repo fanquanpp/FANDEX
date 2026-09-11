@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: beginner
 description: 以城市路牌为线索讲解 Astro 文件路由：静态路由、动态路由 [slug]、多级与 Rest 参数、嵌套路由、404、重定向与布局
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'astro/004-ComponentsProps'
-  - 'astro/005-ContentCollections'
+  - 'astro/040-ComponentsProps'
+  - 'astro/050-ContentCollections'
 prerequisites:
-  - 'astro/002-QuickStartProject'
+  - 'astro/020-QuickStartProject'
 ---
 
 
@@ -328,12 +328,13 @@ export default defineConfig({
 })
 ```
 
-方式二：页面级动态重定向
+方式二：页面级动态重定向（需要按需渲染能力）
 
 ```astro
 ---
 // src/pages/legacy/[slug].astro
-// 旧链接统一 301 到新地址
+// 注意：返回 Response 的重定向发生在"请求期"，因此该页面需按需渲染
+// （安装适配器并 export const prerender = false，或使用 server 输出模式）
 export async function getStaticPaths() {
   return [
     { params: { slug: 'old-hello' } },
@@ -350,7 +351,7 @@ return new Response(null, {
 ---
 ```
 
-讲解：`301` 是"永久重定向"状态码，告诉搜索引擎"旧地址已废弃，用新地址收录"，是网站改版、文章迁移的标准做法。配置式重定向更简单直观，优先使用。
+讲解：`301` 是"永久重定向"状态码，告诉搜索引擎"旧地址已废弃，用新地址收录"，是网站改版、文章迁移的标准做法。配置式重定向更简单直观，且在纯静态模式下也能工作（构建时生成带 meta refresh 的跳转页），优先使用；页面级 `return new Response(...)` 适合目标地址需要运行时计算的场景。
 
 ## 8. 路由与内容集合：黄金组合
 
@@ -398,6 +399,6 @@ const { Content } = await render(doc)  // 把 Markdown 正文编译为组件
 | 旧链接失效 | 用户收藏的链接 404 | 改版后没有处理重定向 | 用 `astro.config.mjs` 的 `redirects` 配置 301 重定向 |
 | 子路径部署后样式丢失 | 图片、CSS 全部 404 | 部署在 `/repo/` 子路径但未配置 `base` | 在 `astro.config.mjs` 配置 `base: '/repo/'`，链接使用 `/repo/` 前缀 |
 
-## 11. 一句话记忆
+## 10. 一句话记忆
 
 **文件即路牌：`src/pages/` 里的每个文件对应一个 URL，`[方括号]` 是参数位，`index` 是入口，`404` 是错误页，`redirects` 是换路牌——放一个文件，就多一条路。**

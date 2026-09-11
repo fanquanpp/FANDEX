@@ -1,26 +1,26 @@
 ---
-order: 140
+order: 120
 title: Astro 视图过渡：跨页面动画与持久化组件
 module: 'astro'
 category: 前端技术
 difficulty: advanced
 description: 用 ClientRouter 实现跨页面共享元素动画、持久化音乐播放器岛屿与导航生命周期脚本。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'astro/003-PagesRouting'
-  - 'astro/006-IslandsClientComponents'
-  - 'astro/009-Astro7Features'
+  - 'astro/030-PagesRouting'
+  - 'astro/060-IslandsClientComponents'
+  - 'astro/090-Astro7Features'
 prerequisites:
-  - 'astro/003-PagesRouting'
-  - 'astro/006-IslandsClientComponents'
+  - 'astro/030-PagesRouting'
+  - 'astro/060-IslandsClientComponents'
 ---
 
 ## 前置知识
 
-- [Astro 页面与路由](/astro/003-PagesRouting)：理解多页面应用（MPA）的页面切换模型，知道一次导航就是一次完整文档加载。
-- [Astro 岛屿与客户端组件](/astro/006-IslandsClientComponents)：掌握岛屿架构与 `client:*` 水合指令，本文的"持久化组件"正建立在岛屿之上。
-- [Astro 7 新特性速览](/astro/009-Astro7Features)：了解 View Transitions 从 Astro 3 实验特性到 5.0 更名 ClientRouter 的演进脉络。
+- [Astro 页面与路由](/astro/030-PagesRouting)：理解多页面应用（MPA）的页面切换模型，知道一次导航就是一次完整文档加载。
+- [Astro 岛屿与客户端组件](/astro/060-IslandsClientComponents)：掌握岛屿架构与 `client:*` 水合指令，本文的"持久化组件"正建立在岛屿之上。
+- [Astro 7 新特性速览](/astro/090-Astro7Features)：了解 View Transitions 从 Astro 3 实验特性到 5.0 更名 ClientRouter 的演进脉络。
 
 ## 学习目标
 

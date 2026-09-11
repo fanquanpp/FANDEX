@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: intermediate
 description: 旅程驱动理解从构建到上线：astro build、产物分析、适配器与按需渲染、CI 部署、域名与 HTTPS、路由缓存
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'astro/005-ContentCollections'
-  - 'astro/009-Astro7Features'
+  - 'astro/050-ContentCollections'
+  - 'astro/090-Astro7Features'
 prerequisites:
-  - 'astro/002-QuickStartProject'
+  - 'astro/020-QuickStartProject'
 ---
 
 
@@ -188,42 +188,49 @@ export default defineConfig({
 
 ## 5. 沿途的快速通道：路由缓存
 
-"最快的构建是不发生的构建"——对按需渲染站点来说，最快的渲染是**不渲染**：命中缓存直接返回。Astro 7 中路由缓存（Route Caching）已稳定，通过 `routeRules` 按 URL 模式声明式配置：
+"最快的构建是不发生的构建"——对按需渲染站点来说，最快的渲染是**不渲染**：命中缓存直接返回。Astro 7 中路由缓存（Route Caching）已稳定，通过顶层的 `cache` 与 `routeRules` 声明式配置：
 
 ```js
 // astro.config.mjs（server 模式项目）
 import { defineConfig, memoryCache } from 'astro/config'
+import node from '@astrojs/node'
 
 export default defineConfig({
   output: 'server',
-  cache: { provider: memoryCache() },   // 内置内存缓存提供方
-  routeRules: [
-    {
-      pattern: '/blog/**',
-      maxAge: 60 * 60,        // 缓存 1 小时
-      swr: 60 * 60 * 24,      // 过期后 24 小时内仍可服务旧内容（Stale-While-Revalidate）
+  adapter: node({ mode: 'standalone' }),  // 路由缓存只对按需渲染页面有意义
+  cache: { provider: memoryCache() },     // 内置内存缓存提供方
+  // routeRules 是"URL 模式 -> 缓存选项"的对象；模式支持静态路径、
+  // [id] 动态段与 [...path] Rest 段，不支持 /a/** 这类 glob 通配
+  routeRules: {
+    '/blog/[...path]': {
+      maxAge: 60 * 60,     // 缓存 1 小时（对应 Cache-Control: max-age）
+      swr: 60 * 60 * 24,   // 过期后 24 小时内仍可服务旧内容（stale-while-revalidate）
     },
-  ],
+  },
 })
 ```
 
-缓存语义遵循标准 HTTP 缓存：`maxAge` 对应 `Cache-Control: max-age`，`swr` 对应 `stale-while-revalidate`。缓存命中时源站根本不渲染，高读低写的页面（文档、列表）收益最大。
+缓存语义遵循标准 HTTP 缓存：`maxAge` 对应 `Cache-Control: max-age`，`swr` 对应 `stale-while-revalidate`，`tags` 数组可用于定向失效。缓存命中时源站根本不渲染，高读低写的页面（文档、列表）收益最大。
 
 ### 5.1 更进一步的 CDN 缓存提供方（实验特性）
 
-若部署在 Netlify / Vercel / Cloudflare，可把缓存配置下发到平台边缘：
+若部署在 Netlify / Vercel / Cloudflare，可把缓存配置下发到平台边缘。三家官方适配器都提供实验性的缓存 provider，用法是把 `cache.provider` 从 `memoryCache()` 换成平台专属实现（当前需手动启用，官方计划后续版本自动接入）：
 
 ```js
+// astro.config.mjs（Cloudflare 为例；Netlify/Vercel 同理，从各自适配器包导入）
 import { defineConfig } from 'astro/config'
-import cloudflare from '@astrojs/cloudflare'
+import cacheCloudflare from '@astrojs/cloudflare/cache'
 
 export default defineConfig({
   output: 'server',
-  adapter: cloudflare({ cdnCache: { provider: 'cloudflare' } }),
+  cache: { provider: cacheCloudflare() },
+  routeRules: {
+    '/docs/[...path]': { maxAge: 3600, tags: ['docs'] },
+  },
 })
 ```
 
-启用后，`routeRules` 的缓存指令映射到平台原生缓存头与失效 API，响应缓存在全球边缘节点就近返回，进一步降低源站压力。
+启用后，`routeRules` 的缓存指令会映射到平台原生缓存头（如 `Cloudflare-CDN-Cache-Control`）与 `Cache-Tag` 失效机制，响应缓存在全球边缘节点就近返回，进一步降低源站压力。
 
 ## 6. 第 5 站，物流车队：CI/CD 与平台部署
 
@@ -315,8 +322,8 @@ jobs:
 | 部署到平台后是空白页 | 平台显示 404 / 无法访问 | 未安装适配器，或输出目录配置不对 | 按平台装对应适配器；确认构建输出目录为 `dist` |
 | SSR 站点本地正常、线上异常 | 生产环境报运行时错误 | 平台运行时与本地 Node 环境差异（老版本尤其常见） | 升级 Astro 6+ 并确认适配器在开发期即运行目标运行时；核对 Node 版本 22+ |
 | `npm run build` 在 CI 中失败 | 构建命令报错退出 | CI 环境 Node 版本过低（Astro 7 要求 Node 22+） | `actions/setup-node` 指定 `node-version: 22` |
-| 缓存策略不生效 | 页面每次都重新渲染 | 未配置 `cache.provider`，或只配了 `routeRules` 没开 provider | 配置 `cache: { provider: memoryCache() }`（或平台 CDN provider） |
+| 缓存策略不生效 | 页面每次都重新渲染 | 未配置 `cache.provider`，或只配了 `routeRules` 没开 provider | 配置 `cache: { provider: memoryCache() }`（或平台 CDN provider）；同时确认 `routeRules` 用的是 `/blog/[...path]` 这类路由模式而非 `/blog/**` 通配 |
 
-## 10. 一句话记忆
+## 9. 一句话记忆
 
 **"构建是印刷、产物要质检、适配器定发行渠道、缓存是快速通道、CI 是物流车队、域名与 HTTPS 是最后挂牌——上线是一趟从 dist/ 到全球 CDN 的完整旅程。"**

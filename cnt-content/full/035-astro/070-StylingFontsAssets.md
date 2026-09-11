@@ -6,25 +6,25 @@ category: 前端技术
 difficulty: intermediate
 description: 流程驱动掌握 Astro 样式与资源：全局风格、scoped 样式、Fonts API、Image 组件与 SVG 优化
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'astro/002-QuickStartProject'
-  - 'astro/009-Astro7Features'
+  - 'astro/020-QuickStartProject'
+  - 'astro/090-Astro7Features'
 prerequisites:
-  - 'astro/002-QuickStartProject'
+  - 'astro/020-QuickStartProject'
 ---
 
 ## 前置知识
 
-- [Astro 岛屿架构与客户端指令](/astro/006-IslandsClientComponents)：建议先完成前一篇的学习
+- [Astro 岛屿架构与客户端指令](/astro/060-IslandsClientComponents)：建议先完成前一篇的学习；
+- 了解 CSS 变量（`--var` / `var(--var)`）的基本写法。
 
 ## 学习目标
 
-- 掌握「0. 开篇：装修一套房子，先打底还是先挂画？」的核心机制、典型用法与常见陷阱
-- 掌握「1. 第一步，全屋打底：全局样式与主题变量」的核心机制、典型用法与常见陷阱
-- 掌握「2. 第二步，逐间软装：组件 scoped 样式」的核心机制、典型用法与常见陷阱
-- 掌握「3. 第三步，门面招牌：字体与 Fonts API」的核心机制、典型用法与常见陷阱
-- 掌握「4. 第四步，家具家电：图片资源优化」的核心机制、典型用法与常见陷阱
+- 能说清"全局样式管主题基调、组件 scoped 样式管细节"的分工，并解释 Astro 样式作用域隔离的实现原理；
+- 能用 Fonts API 以声明式配置接入 Google/本地字体，替代手写 `@font-face` 与手动预加载；
+- 能正确区分 `src/assets/` 与 `public/` 的职责边界，并用 `<Image />` / `<Picture />` 完成压缩、转格式与防布局偏移；
+- 能为一个真实站点按"打底、软装、门面、家具、点缀"的顺序落地完整的样式与资源方案，并知道每一步的常见坑。
 
 
 
@@ -186,7 +186,7 @@ import '../styles/global.css'
 | 预处理器 Sass/Less | `npm i sass` 后直接写 `lang="scss"` | 同左 | 需要嵌套、变量、mixin 的场景 |
 | Tailwind | `npx astro add tailwind` | 按类名 | 工具类优先的项目 |
 
-其中 Tailwind 与 Sass 属于"升级项"：Sass 只需 `npm install sass` 即可在 `<style lang="scss">` 中使用（Astro 开箱支持）；Tailwind 通过 `npx astro add tailwind` 一键集成，Astro 7 内置对 Tailwind 4 的完整支持（Vite 插件方式，无需 PostCSS 胶水）。
+其中 Tailwind 与 Sass 属于"升级项"：Sass 只需 `npm install sass` 即可在 `<style lang="scss">` 中使用（Astro 开箱支持）；Tailwind 通过 `npx astro add tailwind` 一键集成——注意该命令自 Astro 5 起安装的是 Tailwind 4 的官方 **Vite 插件 `@tailwindcss/vite`**，旧的 `@astrojs/tailwind` 集成仅服务 Tailwind 3 兼容场景。
 
 ## 3. 第三步，门面招牌：字体与 Fonts API
 
@@ -222,11 +222,16 @@ export default defineConfig({
       subsets: ['latin'],
     },
     {
-      // 使用本地字体文件（.woff2 放 src/assets 下）
+      // 使用本地字体文件：每个字重写一个 variant（src 指向 src/ 下的字体文件）
       provider: fontProviders.local(),
       name: 'DingTalk',
-      path: './src/assets/fonts/DingTalk.woff2',
       cssVariable: '--font-ding',
+      options: {
+        variants: [
+          { weight: 400, style: 'normal', src: ['./src/assets/fonts/DingTalk-Regular.woff2'] },
+          { weight: 700, style: 'normal', src: ['./src/assets/fonts/DingTalk-Bold.woff2'] },
+        ],
+      },
     },
   ],
 })
@@ -235,7 +240,7 @@ export default defineConfig({
 配置要点：
 
 1. **每个字体必须指定三项**：`name`（字体家族名）、`cssVariable`（注入的 CSS 变量名）、`provider`（字体来源）；
-2. **内置 provider 包括**：Google、Fontsource、Adobe、Bunny、Fontshare、Google Icons 与 Local（本地文件），覆盖绝大多数使用场景；
+2. **内置 provider 包括**：Google、Fontsource、Adobe、Bunny、Fontshare、Google Icons、NPM 与 Local（本地文件），覆盖绝大多数使用场景；
 3. **构建期行为**：Astro 下载字体文件并自托管（隐私友好、无第三方请求）、自动生成优化的回退字体（fallback metrics，消除 CLS）、输出 `font-display` 优化与预加载链接。
 
 ### 3.3 在页面中启用字体
@@ -243,14 +248,14 @@ export default defineConfig({
 ```astro
 ---
 // src/layouts/Layout.astro
-import { Font } from 'astro/fonts'
+import { Font } from 'astro:assets'  // 注意：Font 组件从 astro:assets 导入
 ---
 <!doctype html>
 <html lang="zh-CN">
   <head>
     <!-- <Font /> 会在 head 中输出字体 CSS 与预加载链接 -->
-    <Font cssVariable="--font-inter" />
-    <Font cssVariable="--font-ding" />
+    <Font cssVariable="--font-inter" preload />
+    <Font cssVariable="--font-ding" preload />
   </head>
   <body>
     <slot />
@@ -272,7 +277,7 @@ h1 {
 
 ### 3.4 预加载与变量字体
 
-- **预加载（preload）**：`<Font />` 自动为首屏关键字体输出 `<link rel="preload">`，加快首屏文字渲染；
+- **预加载（preload）**：给 `<Font />` 加 `preload` 属性，为首屏关键字体输出 `<link rel="preload">`，加快首屏文字渲染；
 - **变量字体**：Fonts API 支持 variable fonts，一个文件覆盖所有字重，进一步减小体积（配置时省略 `weights` 即视为变量字体）。
 
 一句话总结第三步：**字体是"门面"，交给 Fonts API 这个专业团队处理，你只负责声明"用哪个、放哪、叫什么变量"。**
@@ -324,6 +329,10 @@ import heroImg from '../assets/hero.jpg'  // 导入时获得图片元数据
 // src/components/Banner.astro
 import { Picture, getImage } from 'astro:assets'
 import banner from '../assets/banner.png'
+
+// getImage：在组件脚本（构建期/服务端）中编程式获取优化后的图片信息
+// 注意它不能在 <script>（浏览器端）里调用——客户端调用会直接抛错
+const optimized = await getImage({ src: banner, width: 400 })
 ---
 
 <!-- Picture：多格式 + 多尺寸组合，输出 <source> 列表 -->
@@ -334,14 +343,11 @@ import banner from '../assets/banner.png'
   alt="横幅"
 />
 
-<!-- getImage：编程式获取优化后的图片 URL（适合内容集合正文） -->
-<script>
-  const optimized = await getImage({ src: banner, width: 400 })
-  console.log(optimized.src)  // 优化后的文件地址
-</script>
+<!-- 也可以把 getImage 的结果直接用在模板里 -->
+<img src={optimized.src} alt="横幅缩略" width="400" />
 ```
 
-使用场景区分：**`<Image />` 用于模板中静态写好的图片；`<Picture />` 用于需要多格式多尺寸切换的场景；`getImage()` 用于代码中动态处理（如内容集合的 Markdown 正文图片）。**
+使用场景区分：**`<Image />` 用于模板中静态写好的图片；`<Picture />` 用于需要多格式多尺寸切换的场景；`getImage()` 用于组件脚本中动态计算图片地址（注意：只能在服务端/frontmatter 中调用）。**
 
 ### 4.4 远程图片与响应式
 
@@ -356,13 +362,14 @@ export default defineConfig({
 })
 ```
 
-关于响应式图片：Astro 5 起实验性的**响应式图片**（Responsive Images）在 Astro 6/7 已全面可用——开启后 `<Image />` 默认自动生成多尺寸 `srcset`，无需手写 `densities`/`sizes`，配合 `image.experimentalLayout` 还能输出 `fill` 模式的自动裁剪。手动需要精确控制时仍可显式传 `densities={[1, 2]}` 或 `sizes` 属性。
+关于响应式图片：Astro 5.10 起 `layout` / `fit` / `priority` 等响应式属性已稳定，Astro 6/7 延续并默认按容器裁剪、绝不放大——开启后 `<Image />` 默认自动生成多尺寸 `srcset`，无需手写 `densities`/`sizes`。需要精确控制时仍可显式传 `densities={[1, 2]}` 或 `sizes` 属性。
 
 ### 4.5 内容集合中的图片字段
 
 ```ts
 // src/content.config.ts
-import { defineCollection, z } from 'astro:content'
+import { defineCollection } from 'astro:content'
+import { z } from 'astro/zod'
 import { glob } from 'astro/loaders'
 
 const posts = defineCollection({
@@ -434,6 +441,6 @@ import Logo from '../assets/logo.svg?astro'
 | 组件样式"串"到别的组件 | 某组件样式影响全站 | 误用了全局选择器或 `is:global` | 去掉 `is:global`，改用 scoped 选择器；需要外溢时用 `:global()` 收窄范围 |
 | `import '../styles/global.css'` 重复引入 | 样式重复出现（通常无报错） | 在每个组件里都导入了全局样式 | 只在布局组件中引入一次，其余组件靠变量与 scoped 样式 |
 
-## 9. 一句话记忆
+## 8. 一句话记忆
 
 **"全局样式刷墙、scoped 样式软装、字体交给 Fonts API、图片交给 astro:assets——装修从打底开始，优化从源头抓起。"**

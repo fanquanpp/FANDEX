@@ -1,26 +1,26 @@
 ---
-order: 150
+order: 130
 title: Astro 中间件与图片优化
 module: 'astro'
 category: 前端技术
 difficulty: advanced
 description: 用 astro:middleware 搭建全站请求闸口与粉丝团鉴权守卫，配合 astro:assets 打通图片管线与响应式图。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'astro/007-StylingFontsAssets'
-  - 'astro/003-PagesRouting'
-  - 'astro/008-BuildDeploy'
+  - 'astro/070-StylingFontsAssets'
+  - 'astro/030-PagesRouting'
+  - 'astro/080-BuildDeploy'
 prerequisites:
-  - 'astro/003-PagesRouting'
-  - 'astro/007-StylingFontsAssets'
+  - 'astro/030-PagesRouting'
+  - 'astro/070-StylingFontsAssets'
 ---
 
 ## 前置知识
 
-- [Astro 页面与路由](/astro/003-PagesRouting)：知道请求如何落到页面与端点，中间件正是插在这条链路的最前端。
-- [Astro 样式与资源优化](/astro/007-StylingFontsAssets)：已接触 `Image` / `Picture` 组件的基本用法，本文在此基础上讲全局图片管线与响应式配置。
-- [Astro 构建与部署](/astro/008-BuildDeploy)：理解静态输出与 SSR 适配器的区别，这决定中间件运行在构建期还是请求期。
+- [Astro 页面与路由](/astro/030-PagesRouting)：知道请求如何落到页面与端点，中间件正是插在这条链路的最前端。
+- [Astro 样式与资源优化](/astro/070-StylingFontsAssets)：已接触 `Image` / `Picture` 组件的基本用法，本文在此基础上讲全局图片管线与响应式配置。
+- [Astro 构建与部署](/astro/080-BuildDeploy)：理解静态输出与 SSR 适配器的区别，这决定中间件运行在构建期还是请求期。
 
 ## 学习目标
 
@@ -169,7 +169,8 @@ export default defineConfig({
     domains: ['cdn.vocalive.example'],
     // 更细粒度的授权：协议 + 主机名 + 路径模式
     remotePatterns: [{ protocol: 'https', hostname: 'img.crypton.example', pathname: '/posters/**' }],
-    // 为 layout 属性生成的响应式样式开启全局开关
+    // 响应式样式开关：Astro 5.10 需要 true 显式开启；
+    // Astro 6/7 样式随响应式图片自动附带（哈希 class + data-astro-fit 等属性）
     responsiveStyles: true,
   },
 })
@@ -199,7 +200,6 @@ import poster from '../../assets/posters/magical-mirai-2026.jpg'
   format="avif"
   fallbackFormat="webp"
   priority
-  widths={[480, 960, 1440]}
 />
 
 <!-- 角色立绘：Picture 同时输出多格式，浏览器择优加载 -->
@@ -215,7 +215,7 @@ import poster from '../../assets/posters/magical-mirai-2026.jpg'
 
 逐项说明：`layout="constrained"` 是内容图的推荐值（`full-width` 给通栏 Banner，`fixed` 给定宽图标位）；`fit="cover"` 决定裁切方式；`format` + `fallbackFormat` 组合让支持 AVIF 的浏览器拿最小体积；首屏海报加 `priority` 生成高优先级加载提示，非首屏立绘用 `loading="lazy"`。这些属性都是对原生加载提示的封装，最终都会落到 `<img>` 标签上。
 
-把 `widths` 数组定准是响应式图片里最需要"拍脑袋"的一步，其实有章可循：先看布局容器实际会出现的最大渲染宽度（比如详情页海报最大 720 CSS 像素），再按 1 倍、2 倍屏幕密度放大就是合理集合（720、1440），无需为极端设备堆十档宽度；`sizes` 属性由 `layout` 模式自动生成，手动覆盖仅在布局特殊时才需要。最后别忘了替代文本（alt）是图片的无障碍接口：海报写"魔法未来 2026 主视觉"，而不是"图片"或文件名——这与性能无关，却是图片组件用法的及格线。
+把响应式断点定准是响应式图片里最需要"拍脑袋"的一步，其实有章可循：先看布局容器实际会出现的最大渲染宽度（比如详情页海报最大 720 CSS 像素），再按屏幕密度决定 `densities={[1, 2]}`（1 倍、2 倍屏各出一档）就是合理集合，无需为极端设备堆出十档宽度；`sizes` 属性由 `layout` 模式自动生成，手动覆盖仅在布局特殊时才需要。最后别忘了替代文本（alt）是图片的无障碍接口：海报写"魔法未来 2026 主视觉"，而不是"图片"或文件名——这与性能无关，却是图片组件用法的及格线。
 
 ## 6. 实战整合：受保护的应援壁纸库
 
@@ -225,12 +225,15 @@ import poster from '../../assets/posters/magical-mirai-2026.jpg'
 ---
 // src/pages/fanclub/wallpapers.astro：粉丝团专属壁纸库
 import { Image } from 'astro:assets'
+// 需要 <Image /> 处理的图片必须从 src/ 导入（public/ 下或字符串路径不会被优化）
+import wallpaperMiku from '../../assets/wallpapers/miku-2026.png'
+import wallpaperRin from '../../assets/wallpapers/rin-2026.png'
 
 // 守卫已在中间件完成，这里直接取登录用户
 const { user } = Astro.locals
 const wallpapers = [
-  { id: 'miku-2026', singer: '初音未来', color: '#39C5BB', src: '/wallpapers/miku-2026.png' },
-  { id: 'rin-2026', singer: '镜音铃', color: '#FFE500', src: '/wallpapers/rin-2026.png' },
+  { singer: '初音未来', color: '#39C5BB', src: wallpaperMiku },
+  { singer: '镜音铃', color: '#FFE500', src: wallpaperRin },
 ]
 ---
 

@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: beginner
 description: 手把手从零创建并运行第一个 Astro 项目：环境检查、create astro 向导、目录结构、配置文件、修改页面、构建与预览
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'astro/003-PagesRouting'
-  - 'astro/004-ComponentsProps'
+  - 'astro/030-PagesRouting'
+  - 'astro/040-ComponentsProps'
 prerequisites:
-  - 'html5/010-SemanticTag'
+  - 'html5/170-SemanticTag'
 ---
 
 
@@ -178,7 +178,7 @@ import { defineConfig } from 'astro/config'
 // 官方推荐用 defineConfig 包裹配置，可获得类型提示与配置校验
 export default defineConfig({
   site: 'https://example.com',  // 站点最终部署地址，生成 sitemap 和规范链接必需
-  output: 'static',             // 输出模式：static（默认）/ server（SSR）/ hybrid
+  output: 'static',             // 输出模式：static（默认，全站构建期生成）/ server（按需渲染，需适配器）
   compressHTML: true,           // 构建时压缩 HTML 中的空白字符
   markdown: {
     shikiConfig: { theme: 'github-dark' }, // 代码高亮主题（Shiki）
@@ -189,7 +189,7 @@ export default defineConfig({
 讲解：
 
 - `site`：填最终上线域名。不填也能构建，但 sitemap、OG 图片等依赖绝对地址的功能会失效；
-- `output`：默认 `static`（构建期生成全部页面）。需要服务端渲染时改为 `server` 并安装适配器（详见 001 篇第 8 节）；
+- `output`：默认 `static`（构建期生成全部页面）。需要按请求渲染时改为 `server` 并安装适配器（详见 008 篇）。旧的 `hybrid` 模式在 Astro 5 已被移除，改为在 server 模式下用 `export const prerender = true` 标记个别静态页；
 - `markdown.shikiConfig`：控制代码块高亮主题，常用的还有 `github-light`、`one-dark-pro` 等。
 
 ### 5.2 package.json 的脚本

@@ -6,12 +6,12 @@ category: 前端技术
 difficulty: intermediate
 description: 以知识管理者的困惑为引，讲解内容集合：content.config.ts、glob loader、zod schema 校验、getCollection 查询、render 渲染与 Live Content Collections
 author: fanquanpp
-updated: '2026-08-30'
+updated: '2026-09-12'
 related:
-  - 'astro/003-PagesRouting'
-  - 'astro/006-IslandsClientComponents'
+  - 'astro/030-PagesRouting'
+  - 'astro/060-IslandsClientComponents'
 prerequisites:
-  - 'astro/002-QuickStartProject'
+  - 'astro/020-QuickStartProject'
 ---
 
 
@@ -63,7 +63,8 @@ Astro 5 开始，在项目根目录（或 `src/` 下）创建 `content.config.ts
 
 ```ts
 // content.config.ts
-import { defineCollection, z } from 'astro:content'
+import { defineCollection } from 'astro:content'
+import { z } from 'astro/zod'   // Astro 6 起 z 改从 astro/zod 导入（5.x 从 astro:content 导入的写法已弃用）
 import { glob } from 'astro/loaders'
 
 // 定义 blog 集合：用 glob loader 加载 src/content/blog/ 下的 Markdown 文件
@@ -88,7 +89,7 @@ export const collections = { blog }
 讲解：
 
 - `defineCollection` 接收两个关键配置：`loader`（内容来源）与 `schema`（数据结构）；
-- `z` 是 Zod 库，通过 `astro:content` 重新导出，无需单独安装；
+- `z` 是内置的 Zod 库：Astro 5 从 `astro:content` 重新导出，**Astro 6 起改从 `astro/zod` 导入**（同时升级到 Zod 4，个别 API 有差异，如顶层 `z.email()` 取代 `z.string().email()`）；
 - `z.coerce.date()` 会把 `"2026-08-01"` 这样的字符串自动转换为 `Date` 对象；
 - `default()` 为缺失字段提供默认值——**新增字段时一定要给默认值**，否则存量文档会全部校验失败；
 - `z.enum([...])` 限定取值范围，比如 author 只能填列出的几个名字，杜绝"阿和""阿禾"混用。
@@ -132,11 +133,12 @@ author: FANDEX
 这里是文档正文。frontmatter 与正文之间用空行分隔。
 
 - frontmatter 以 `---` 包裹，字段必须符合 schema 声明；
-- 缺少必填字段、类型错误、出现未声明字段，都会导致**构建失败**并给出精确报错；
+- 缺少必填字段、类型错误，都会导致**构建失败**并给出精确报错（哪个文件、哪个字段、期望什么类型）；
+- schema 未声明的字段不会报错，而是被 Zod **静默剥离**（不会出现在 `data` 里）——想让"多写未知字段"也报错，可用 `z.object({...}).strict()`；
 - 编辑器装上 Astro 扩展后，写文档时就有字段补全提示。
 ```
 
-一个常见的新手困惑：**"schema 里没声明的字段能写吗？"** 答案是不能——未声明字段会导致校验失败。这看似"限制"，实则是纪律：保证每篇文档的元数据完全可控，是内容站长期稳定的基石。
+一个常见的新手困惑：**"schema 里没声明的字段写了会怎样？"** 默认会被静默剥离——数据不丢文件，但 `post.data.某字段` 取不到值，往往表现为"页面悄悄少了一块内容"。要么把字段补进 schema，要么用 `.strict()` 让它在构建期暴露，别让它隐身。
 
 ## 4. 查询内容：getCollection 与 getEntry
 
@@ -292,45 +294,53 @@ post.data.draft          // 类型为 boolean
 
 第五，**大站点考虑 build 缓存**：Astro 对内容集合有内置缓存与增量构建，内容越多收益越大。
 
-## 8. 进阶：Live Content Collections（Astro 6+）
+## 8. 进阶：Live Content Collections（实时内容集合）
 
 ### 8.1 为什么需要"活"的集合
 
-传统内容集合在**构建时**获取数据：内容更新了，必须重新构建部署才能生效。但对于电商库存、实时榜单、突发新闻这类**频繁变化**的内容，重建整个站点不现实。Astro 6 推出的 **Live Content Collections（实时内容集合）** 让内容在**请求时**实时拉取。
+传统内容集合在**构建时**获取数据：内容更新了，必须重新构建部署才能生效。但对于电商库存、实时榜单、突发新闻这类**频繁变化**的内容，重建整个站点不现实。Astro 6 把 **Live Content Collections（实时内容集合）** 转正，让内容在**请求时**实时拉取，全程无需重新构建。
+
+实时集合的配置写在独立的 `src/live.config.ts` 中（与 `content.config.ts` 并存）。关键区别在于 loader：它必须是实现了 `loadCollection`（拉取整集）与 `loadEntry`（拉取单条）两个方法的 **live loader**，而不能用 `glob()` 这类构建期 loader：
 
 ```ts
 // src/live.config.ts（Astro 6+，与 content.config.ts 并存）
 import { defineLiveCollection } from 'astro:content'
+import { z } from 'astro/zod'
+import { liveGithubReleasesLoader } from 'astro-loader-github-releases' // 社区 live loader 示例
 
-const products = defineLiveCollection({
-  loader: async () => {
-    // 每次请求实时拉取数据（示意）
-    const response = await fetch('https://api.example.com/products')
-    return response.json()
-  },
+const releases = defineLiveCollection({
+  loader: liveGithubReleasesLoader({ repo: 'withastro/astro' }),
+  // schema 可选：不写时由 loader 的泛型提供类型；写了则请求期同样校验
+  schema: z.object({
+    tag: z.string(),
+    publishedAt: z.coerce.date(),
+  }),
 })
 
-export const collections = { products }
+export const collections = { releases }
 ```
+
+如果数据源没有现成 loader，可以按 `astro/loaders` 的 `LiveLoader` 接口自己实现一个对象：`loadCollection({ filter })` 返回 `{ entries: [{ id, data }] }`，`loadEntry({ filter })` 返回 `{ id, data }`，失败时返回 `{ error }`——每次请求都会真实调用它们。
 
 ### 8.2 查询实时数据
 
 ```astro
 ---
-import { getLiveCollection } from 'astro:content'
+import { getLiveCollection, getLiveEntry } from 'astro:content'
 
-// 请求时实时获取，无需重新构建
-const products = await getLiveCollection('products')
+// 请求时实时获取，无需重新构建（注意是 getLive 系列函数，不是 getCollection）
+const releases = await getLiveCollection('releases')
+const latest = await getLiveEntry('releases', 'v7.0.0')
 ---
 
 <ul>
-  {products.map((p) => (
-    <li>{p.name} —— 库存 {p.stock}</li>
+  {releases.map((r) => (
+    <li>{r.data.tag} —— 发布于 {r.data.publishedAt.toLocaleDateString('zh-CN')}</li>
   ))}
 </ul>
 ```
 
-讲解：Live Collections 适合"内容变化频繁、无法等重建"的场景；稳定的文章、文档仍应使用构建期集合（更快、更省）。**两者按需混用**是大型站点的常见形态。
+讲解：Live Collections 只能在**按需渲染**的页面里使用（请求期才有意义，纯静态站点没有"请求"这个时机）；查询函数是 `getLiveCollection` / `getLiveEntry`。适合"内容变化频繁、无法等重建"的场景；稳定的文章、文档仍应使用构建期集合（更快、更省）。**两者按需混用**是大型站点的常见形态。
 
 ## 9. 常见错误与对策表
 
@@ -343,6 +353,6 @@ const products = await getLiveCollection('products')
 | 查询了不存在的集合名 | 运行时报集合不存在 | `getCollection('xxx')` 名称拼写错误 | 检查集合名与 `collections` 对象键名一致 |
 | 误把 pages 目录当集合数据源 | 查询结果与预期不符 | 内容文件同时放在 `src/pages/`（会生成页面）和集合目录 | 内容集合的数据文件放集合目录（如 `src/content/blog/`），不要放 `pages/` |
 
-## 11. 一句话记忆
+## 10. 一句话记忆
 
 **内容集合是图书馆编目系统：loader 决定书从哪来，schema 决定借书卡的格式（不合格不上架），getCollection 是检索目录，render 把书的内容翻开给读者看。**

@@ -6,23 +6,21 @@ category: 前端技术
 difficulty: intermediate
 description: 用集成扩展能力：MDX、站点地图与官方集成生态。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'astro/004-ComponentsProps'
-  - 'astro/005-ContentCollections'
+  - 'astro/040-ComponentsProps'
+  - 'astro/050-ContentCollections'
 prerequisites:
-  - 'astro/005-ContentCollections'
+  - 'astro/050-ContentCollections'
 ---
-
-# 集成与 MDX
 
 Astro 的核心只管"页面、组件、内容"三件事，其余能力——MDX 混排、站点地图、框架岛屿、图标——都以**集成（Integration）**的形式挂上来。本篇先拆开集成机制看它到底做了什么，再以 MDX 为主角讲"在文档里直接用组件"的写作方式，最后给出官方集成的选型表与传参方法。
 
 ## 前置知识
 
-- [Astro 组件与 Props](/astro/004-ComponentsProps)：MDX 里混排的正是这些组件。
-- [Astro 内容集合](/astro/005-ContentCollections)：本篇的 MDX 内容以内容集合方式组织。
-- [Astro 构建与部署](/astro/008-BuildDeploy)：sitemap 等集成的产物在构建期生成，需理解构建流程。
+- [Astro 组件与 Props](/astro/040-ComponentsProps)：MDX 里混排的正是这些组件。
+- [Astro 内容集合](/astro/050-ContentCollections)：本篇的 MDX 内容以内容集合方式组织。
+- [Astro 构建与部署](/astro/080-BuildDeploy)：sitemap 等集成的产物在构建期生成，需理解构建流程。
 
 ## 学习目标
 
@@ -113,7 +111,7 @@ MDX 在内容集合里还保留一个贴心细节：渲染入口与 `.md` 完全
 
 ## 3. components 映射：让文档元素穿上平台皮肤
 
-MDX 可以"从文件内部"导入组件，但更多时候你想要反过来：**不改一篇篇文档，统一替换某种元素的全站渲染**。比如所有 `.md` 歌词引用块都要渲染成"歌词摘录卡片"，所有二级标题都要带应援色竖条。这用 `Content` 组件的 `components` 映射实现。
+MDX 可以"从文件内部"导入组件，但更多时候你想要反过来：**不改一篇篇文档，统一替换某种元素的全站渲染**。比如所有歌词引用块都要渲染成"歌词摘录卡片"，所有二级标题都要带应援色竖条。这用 `Content` 组件的 `components` 映射实现（对 MDX 集合条目生效，见下文范围说明）。
 
 ```astro
 ---
@@ -139,7 +137,7 @@ const { Content } = await render(entry)
 </article>
 ```
 
-两层机制可以叠加使用：`components` 映射从外部替换元素实现，对 `.md` 与 `.mdx` 都有效；MDX 的文件内 import 则从内部精确引入。当两者冲突时，MDX 文件里显式 import 的组件优先——写文档的作者拥有最终决定权。平台的内容规范因此可以这样分工：`components` 映射负责"全站一致性"（标题、引用、表格），MDX 文件内 import 负责"这一篇的特殊内容"（谱面组件、投票组件）。
+两层机制可以叠加使用：`components` 映射从外部替换元素实现，MDX 的文件内 import 则从内部精确引入。需要划清的是适用范围：**`components` 映射是 MDX 集成 documented 的能力**——官方文档明确覆盖"导入的 MDX 文件"与"内容集合中的 `.mdx` 条目"两种场景；对纯 `.md` 集合条目，官方契约中的元素级定制路径是 remark/rehype 插件（Astro 7 起需 `@astrojs/markdown-remark`）。当两者冲突时，MDX 文件里显式 import 的组件优先——写文档的作者拥有最终决定权。平台的内容规范因此可以这样分工：`components` 映射负责"全站一致性"（标题、引用、表格），MDX 文件内 import 负责"这一篇的特殊内容"（谱面组件、投票组件）。
 
 映射的能力边界也有必要说清：`components` 只能替换**渲染出的 HTML 元素**（h2、blockquote、a 等标准标签），不能替换 frontmatter 渲染流程，也不能拦截自定义组件。另外，映射函数接收的 Props 里 `children` 是已经渲染好的内容片段，所以 SongQuote 这类包装组件只做"加壳"（套上边框、应援色竖条），不应对 children 做解析改造——想在内容层面做深度处理，那是 remark/rehype 插件的职责。
 
@@ -179,7 +177,10 @@ export default defineConfig({
   integrations: [
     mdx({
       // MDX 默认继承全局 markdown 配置（含 remarkPlugins、shiki 主题等）；
-      // 设为 false 可以完全另起一套
+      // 设为 false 可以完全另起一套。
+      // 注意：Astro 7 起 Markdown/MDX 默认由原生管线 Sätteri 渲染，
+      // remark/rehype 插件需安装 @astrojs/markdown-remark 并配置
+      // markdown: { processor: unified() } 才会生效
       extendMarkdownConfig: true,
       remarkPlugins: [remarkMath], // 让教程里的公式渲染成数学排版
     }),
@@ -232,5 +233,5 @@ export default defineConfig({
 ## 动手实践
 
 1. **接入 MDX 并混排**：把 005 篇的歌曲集合升级为 MDX，在一篇听歌笔记里嵌入 SongCard 组件，再故意在正文写一个未 import 的组件名，观察报错信息。提示：报错会指向 MDX 文件行号，养成先看构建日志的习惯。
-2. **全站引用块皮肤**：用 `components` 映射把所有 `blockquote` 渲染成带应援色竖条的"歌词摘录"卡片，验证对 `.md` 生效、对文件内自定义的 `.mdx` 不生效。提示：SongQuote 接收的 children 是渲染后的内容。
+2. **全站引用块皮肤**：用 `components` 映射把所有 `blockquote` 渲染成带应援色竖条的"歌词摘录"卡片，验证对未自定义的 MDX 条目生效、对文件内显式 import 的 `.mdx` 不生效。提示：SongQuote 接收的 children 是渲染后的内容。
 3. **上线三件套**：为平台配置 mdx、sitemap、rss 三个集成，给 sitemap 加 filter 排除 `/admin/` 路径。提示：先补 `site` 字段，再构建检查 `dist` 下的产物文件名。

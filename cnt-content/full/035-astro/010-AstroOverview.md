@@ -6,26 +6,27 @@ category: 前端技术
 difficulty: beginner
 description: 从一篇加载缓慢的博客说起：认识 Astro 是什么、岛屿架构如何解决内容站的性能困境，以及 Astro 5/6 时代内容集合、路由、部署与文档站实践的全貌
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'vite/001-ViteOverview'
-  - 'markdown/001-SyntaxGuide'
-  - 'tailwind/001-TailwindOverview'
+  - 'vite/010-ViteOverview'
+  - 'markdown/010-SyntaxGuide'
+  - 'tailwind/010-TailwindOverview'
 prerequisites:
-  - 'markdown/001-SyntaxGuide'
+  - 'markdown/010-SyntaxGuide'
 ---
 
 ## 前置知识
 
-- 具备本模块学习路径中前置文档的基础知识
+- 会使用终端执行 `node -v`、`npm install` 等基础命令（本模块 002 篇会从零带做一遍）；
+- 了解 HTML 基本标签与 Markdown 书写（可先读 `markdown/010-SyntaxGuide`）；
+- 听说过 React/Vue 这类"单页应用框架"即可，不要求写过。
 
 ## 学习目标
 
-- 掌握「0. 从一个真实的故事说起」的核心机制、典型用法与常见陷阱
-- 掌握「1. 问题解剖：内容站的性能困境」的核心机制、典型用法与常见陷阱
-- 掌握「2. Astro 是什么」的核心机制、典型用法与常见陷阱
-- 掌握「3. 岛屿架构：用最少的 JS 换最多的交互」的核心机制、典型用法与常见陷阱
-- 掌握「4. 项目结构：一本书的目录」的核心机制、典型用法与常见陷阱
+- 能用自己的话说清 Astro 解决的核心问题：内容站为什么不需要整页 JavaScript；
+- 能解释岛屿架构与"选择性水合"的含义，说出 `client:load` / `client:idle` / `client:visible` 各自的适用场景；
+- 能看懂 Astro 项目目录结构，说出 `src/pages`、`src/content.config.ts`、`public/` 各自的职责；
+- 能从版本演进表中定位 Content Layer、Server Islands、Fonts API 等关键特性属于哪一代 Astro，知道当前稳定版是哪条线。
 
 
 
@@ -40,10 +41,10 @@ prerequisites:
 
 
 > 本节为增量补充，帮助你选择 Astro 版本。
-
-- Astro：6.x 为当前稳定版（6.0 于 2026-03 发布，6.2 为最新），要求 Node.js 22+。
-- 6.x 重点：新开发服务器、字体 API、内置 CSP、实验性 Rust 编译器、Adapter API 重构。
-- 新项目直接执行 `npm create astro@latest`，模板会安装当前稳定版。
+>
+> - Astro：7.x 为当前稳定版（7.0 于 2026-06-22 发布，截至 2026-09 已迭代到 7.3），要求 Node.js 22.12+；
+> - 7.x 重点：Rust 编译器转正、Sätteri 原生 Markdown/MDX 管线、Vite 8（Rolldown 打包器）、队列渲染与路由缓存稳定，构建整体提速 15%-61%；
+> - 新项目直接执行 `npm create astro@latest`，模板会安装当前稳定版。
 
 ## 1. 问题解剖：内容站的性能困境
 
@@ -84,19 +85,19 @@ Astro 换了一种思路，它的工作方式更像一家**报社**：
 
 Astro 是一个面向**内容驱动网站**（博客、文档站、营销页、电商展示页）的 Web 框架。它于 2021 年发布，核心理念是：**默认输出零 JavaScript 的静态 HTML，只有显式标记的交互组件才在浏览器加载脚本**。
 
-截至 2026 年 8 月，Astro 的版本演进如下：
+截至 2026 年 9 月，Astro 的版本演进如下：
 
 | 版本 | 时间 | 关键特性 |
 | --- | --- | --- |
 | Astro 1.x | 2022 年 | 岛屿架构、SSG 起步 |
 | Astro 2.x | 2023 年 | 内容集合（Content Collections）、类型安全的 Markdown |
-| Astro 3.x | 2023 年 | View Transitions 预览、图片优化 |
-| Astro 4.x | 2023 年底 | 更快的构建、国际化（i18n）路由 |
-| Astro 5.x | 2024 年 12 月 | **Content Layer**（统一内容加载）、**Server Islands**（服务器岛） |
-| Astro 6.x | 2026 年 | **Live Content Collections**（实时内容集合）、Fonts API、CSP 支持、Rust 编译器、Advanced Routing 预览 |
-| Astro 7.x | 2026 年 | 预览阶段，基于 6.x 演进 |
+| Astro 3.x | 2023 年 | View Transitions、图片优化 |
+| Astro 4.x | 2023 年底 | 开发者工具栏、国际化（i18n）路由 |
+| Astro 5.x | 2024 年 12 月 | **Content Layer**（统一内容加载）、**Server Islands**（服务器岛）、Actions、类型安全环境变量 `astro:env`、Session API |
+| Astro 6.x | 2026 年 3 月 | **Live Content Collections**（实时内容集合）、Fonts API、内置 CSP、重设计的 dev server（Vite 7 Environment API）、路由缓存（实验）、Rust 编译器（实验） |
+| Astro 7.x | 2026 年 6 月 | **Rust 编译器转正**、Sätteri 原生 Markdown 管线、Vite 8（Rolldown 打包器）、队列渲染与路由缓存稳定、Advanced Routing（`src/fetch.ts`） |
 
-其中 Astro 5 引入的 Content Layer 把"内容集合"从只能读本地 Markdown 扩展为"可以从任何数据源加载"的统一 API；Astro 6 进一步推出 Live Content Collections，允许内容在**请求时实时拉取**而非仅构建时获取，非常适合内容频繁更新的场景。2026 年 1 月 Cloudflare 收购了 Astro 团队，框架保持 MIT 开源许可。
+其中 Astro 5 引入的 Content Layer 把"内容集合"从只能读本地 Markdown 扩展为"可以从任何数据源加载"的统一 API；Astro 6 进一步把"实时内容集合"转正，允许内容在**请求时实时拉取**而非仅构建时获取，非常适合内容频繁更新的场景。2026 年 1 月 Cloudflare 收购了 Astro 背后的公司（框架保持 MIT 开源许可），6.x/7.x 与 Cloudflare 平台的适配因此愈发深入。
 
 ### 2.2 Astro 的三大核心能力
 
@@ -165,21 +166,18 @@ import ThemeToggle from '../components/ThemeToggle.astro'
 
 讲解：
 
-- 不加任何指令的组件，只输出服务端渲染好的 HTML，零脚本；
+- 不加任何指令的组件，只输出服务端渲染好的 HTML，零脚本（**没有"默认水合"这回事**，忘了写指令就永远没有交互，这是新手第一大坑）；
 - `client:load`：页面一加载就下载并执行该组件脚本；
-- `client:idle`：浏览器空闲时再加载（默认值）；
+- `client:idle`：浏览器空闲时再加载；
 - `client:visible`：组件进入视口才加载；
-- `client:only`：只在客户端渲染（如纯前端组件）；
+- `client:only`：跳过服务端渲染，只在浏览器端渲染（组件依赖 `window`/`document` 时使用）；
 - `client:media="(max-width: 640px)"`：满足媒体查询才加载。
 
 水合（hydration）的意思是：组件在构建期已经把 HTML 渲染出来了，浏览器端再加载一小段脚本，给这些 HTML"接上"事件、状态和交互能力。这样首屏内容立即可见，交互功能随后补齐。
 
 ### 3.3 性能收益有多大
 
-Astro 官方及社区 2026 年的实测数据（来源见文末链接）：
-
-- 一个典型 Astro 5 内容页每页的客户端 JavaScript 为 0 至 15KB；同等内容的 Next.js 16 页面为 85 至 250KB；
-- 66% 的真实 Astro 站点在 Core Web Vitals（核心网页指标）上表现良好，同期 WordPress 为 48%、Gatsby 为 47%、Next.js 为 30%、Nuxt 为 28%。
+Astro 官方多次引用 HTTP Archive 等 Core Web Vitals（核心网页指标）公开统计：真实 Astro 站点在三项核心指标上的达标率长期居主流框架前列（同期基于客户端水合的 SPA 框架普遍靠后）。此外，典型 Astro 内容页每页的客户端 JavaScript 通常只有几 KB 到十几 KB，而同等内容的 SPA 页面往往上百 KB——数量级差距才是对内容站最有意义的结论。
 
 对内容站而言，"快"不是锦上添花，而是用户留存和搜索引擎排名的决定性因素。
 
@@ -265,7 +263,8 @@ import { Code } from 'astro/components'
 
 ```ts
 // src/content.config.ts
-import { defineCollection, z } from 'astro:content'
+import { defineCollection } from 'astro:content'
+import { z } from 'astro/zod'   // Astro 6 起 z 从 astro/zod 导入（5.x 及更早从 astro:content 导入，现已弃用）
 import { glob } from 'astro/loaders'
 
 const docs = defineCollection({
@@ -363,8 +362,9 @@ Astro 的样式体系覆盖四个层次：
 | `@astrojs/mdx` | 支持 MDX（Markdown 内嵌组件） |
 | `@astrojs/sitemap` | 自动生成 sitemap.xml |
 | `@astrojs/rss` | 生成 RSS 订阅源 |
-| `@astrojs/cloudflare` / `@astrojs/netlify` / `@astrojs/vercel` | 部署适配器 |
-| `@astrojs/tailwind` | Tailwind CSS 集成 |
+| `@astrojs/cloudflare` / `@astrojs/netlify` / `@astrojs/vercel` / `@astrojs/node` | 部署适配器 |
+
+Tailwind 接入说明：`npx astro add tailwind` 自 Astro 5 起安装的是官方 **Vite 插件 `@tailwindcss/vite`**（Tailwind 4 方案）；旧的 `@astrojs/tailwind` 集成仅用于 Tailwind 3 兼容，新项目不要使用。
 
 ## 8. 路由、SSR 与部署
 
@@ -372,8 +372,8 @@ Astro 的样式体系覆盖四个层次：
 
 Astro 默认 `output: 'static'`，构建期生成全部页面，部署到任何静态托管即可。若需要按请求渲染的页面（如用户信息、实时数据），有两种方式：
 
-- 在 `astro.config.mjs` 中配置 `output: 'server'` 全站启用 SSR（需配合适配器）；
-- 更精细的做法：保持静态模式，在个别页面导出 `export const prerender = false`，只让该页面按需渲染。
+- 在 `astro.config.mjs` 中配置 `output: 'server'` 全站按需渲染（需配合适配器）；
+- 更精细的做法：保持默认静态模式，安装适配器后在个别页面导出 `export const prerender = false`，只让该页面按需渲染——注意 `prerender = false` 必须有适配器提供运行时，纯静态托管跑不了。
 
 文档站通常全部静态输出，个别页面（如搜索接口）按需渲染。
 
@@ -434,6 +434,6 @@ flowchart LR
 | 忽略构建产物分析 | 页面 JS 体积悄悄变大 | 交互组件越加越多，未检查水合成本 | 查看 `astro build` 报告，按报告调整 `client:` 指令 |
 | 误以为 Astro 是 SPA | 页面切换整页刷新，体验"传统" | 对 Astro 的工作模式理解偏差 | 可选接入 View Transitions 获得 SPA 般的平滑过渡 |
 
-## 13. 一句话记忆
+## 12. 一句话记忆
 
 **Astro 是"内容优先"的 Web 框架：默认零 JavaScript 输出静态 HTML，交互组件像大海中的岛屿一样按需加载，让内容站又快又省。**

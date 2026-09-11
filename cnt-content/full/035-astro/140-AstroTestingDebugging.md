@@ -1,28 +1,26 @@
 ---
-order: 120
+order: 140
 title: 测试与调试
 module: 'astro'
 category: 前端技术
 difficulty: intermediate
 description: 保证站点质量：Vitest 单元测试与 Playwright 端到端。
 author: fanquanpp
-updated: '2026-09-02'
+updated: '2026-09-12'
 related:
-  - 'astro/010-AstroFormsActions'
-  - 'astro/008-BuildDeploy'
+  - 'astro/100-AstroFormsActions'
+  - 'astro/080-BuildDeploy'
 prerequisites:
-  - 'astro/010-AstroFormsActions'
+  - 'astro/100-AstroFormsActions'
 ---
-
-# 测试与调试
 
 购票、下单这类功能写错一行，损失是真金白银。Astro 站点的质量保障由四层组成：Vitest 测纯逻辑与组件渲染、Playwright 测完整用户流程、`astro check` 做 `.astro` 文件的类型诊断、CI 把前两者固定成每次提交的门禁。本篇按"从快到慢"的顺序搭建这套体系，并穿插服务端渲染特有的调试技巧。
 
 ## 前置知识
 
-- [Astro 表单与 Actions](/astro/010-AstroFormsActions)：本篇的测试对象主要是那里的购票逻辑。
-- [Astro 岛屿与客户端组件](/astro/006-IslandsClientComponents)：组件测试需要区分服务端渲染与岛屿水合。
-- [Astro 构建与部署](/astro/008-BuildDeploy)：CI 的最终门禁是构建，E2E 建议跑在 preview 产物上。
+- [Astro 表单与 Actions](/astro/100-AstroFormsActions)：本篇的测试对象主要是那里的购票逻辑。
+- [Astro 岛屿与客户端组件](/astro/060-IslandsClientComponents)：组件测试需要区分服务端渲染与岛屿水合。
+- [Astro 构建与部署](/astro/080-BuildDeploy)：CI 的最终门禁是构建，E2E 建议跑在 preview 产物上。
 
 ## 学习目标
 
@@ -53,7 +51,7 @@ export default getViteConfig({
 })
 ```
 
-`getViteConfig` 做的事：把 Astro 的别名、插件、TypeScript 配置注入 Vitest，让测试文件里可以像页面代码一样 `import { getCollection } from 'astro:content'` 并获得完整类型。没有这层包装，测试会大量报"找不到模块"。配置好后加上脚本即可运行：
+`getViteConfig` 做的事：把 Astro 的别名、插件、TypeScript 配置注入 Vitest，让测试文件里可以像页面代码一样 `import { getCollection } from 'astro:content'` 并获得完整类型。没有这层包装，测试会大量报"找不到模块"。注意版本配合：Astro 6 起要求 Vitest 3.2 以上（或 4.1 beta 5+），版本过旧时 `getViteConfig` 会报兼容错误。配置好后加上脚本即可运行：
 
 ```bash
 # package.json scripts
