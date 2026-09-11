@@ -46,6 +46,10 @@ const CARD_COUNT_SPEED_BOOST = 0.04;
 /** 最大速度提升（卡片极少时速度上限） */
 const MAX_SPEED_BOOST = 0.6;
 
+/** 自动滚动延迟启动（毫秒）：首屏先静止呈现完整卡片，
+ *  让访客先完成视觉定位，滚动再缓缓开始，消除"一进页面就在动"的躁动感 */
+const AUTO_START_DELAY_MS = 2600;
+
 /**
  * 初始化首页分类区域的折叠交互
  */
@@ -96,6 +100,8 @@ interface ScrollerState {
   inertiaRafId: number | null;
   /** 物理惯性：惯性开始时间戳，用于限制最大持续时间 */
   inertiaStartTime: number;
+  /** 自动滚动允许开始的时间戳（performance.now() 之后才启动） */
+  startAt: number;
 }
 
 /**
@@ -112,7 +118,7 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
   if (cards.length === 0) return;
 
   // 测量单份卡片集宽度（在克隆前使用原始卡片计算）
-  // 动态计算克隆份数，确保总宽度 ≥ 视窗 + 单份宽度，避免回绕时视窗右侧空窗
+  // 动态计算克隆份数，确保总宽度 ≥ 视窗 + 单份宽度，避免回绕空窗
   const gapStr = getComputedStyle(track).gap;
   const gap = parseFloat(gapStr) || 16;
   let originalCardSetWidth = 0;
@@ -120,6 +126,14 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
     originalCardSetWidth += card.getBoundingClientRect().width + gap;
   }
   const viewportWidth = scroller.clientWidth;
+
+  // 静态模式：单份卡片集宽度不超过视口时（小分类）无需克隆与自动滚动，
+  // 轨道交由 CSS 居中展示（.feature-scroller.is-static），导航按钮一并隐藏
+  if (originalCardSetWidth <= viewportWidth) {
+    scroller.classList.add('is-static');
+    track.dataset.initialized = 'true';
+    return;
+  }
 
   // 计算需要的份数：总宽度 ≥ 视窗宽度 + 单份宽度
   // 保证 offset 从 0 回绕到 -cardSetWidth 时视窗始终有内容
@@ -175,6 +189,8 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
     isInertiaActive: false,
     inertiaRafId: null,
     inertiaStartTime: 0,
+    // 首屏静止期：延迟 AUTO_START_DELAY_MS 再启动自动滚动
+    startAt: performance.now() + AUTO_START_DELAY_MS,
   };
 
   /**
@@ -213,8 +229,10 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
     state.isHovering = scroller.matches(':hover');
 
     // 非拖拽、非惯性期间，根据悬停状态动态调整 isPaused
+    //（含首屏静止期：startAt 之前保持静止，让访客先看清卡片）
     if (!state.isDragging && !state.isInertiaActive) {
-      state.isPaused = state.isHovering || reduceMotion;
+      state.isPaused =
+        state.isHovering || reduceMotion || performance.now() < state.startAt;
     }
 
     if (!state.isPaused && !state.isDragging && !state.isInertiaActive) {
@@ -446,8 +464,9 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
           if (progress < 1) {
             requestAnimationFrame(animateNav);
           } else {
-            // 恢复自动滚动
-            state.isPaused = wasPaused;
+            // 恢复自动滚动（仍处于首屏静止期时维持静止）
+            state.isPaused =
+              wasPaused || performance.now() < state.startAt;
           }
         };
         requestAnimationFrame(animateNav);

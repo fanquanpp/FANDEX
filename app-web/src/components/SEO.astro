@@ -55,7 +55,9 @@ const {
   breadcrumb,
 } = Astro.props;
 
-const fullTitle = `${title} | ${SITE.title}`;
+// 标题去重：首页等页面传入的 title 与站点名相同时不再追加后缀，
+// 避免出现「FANDEX | FANDEX」式的重复标题（影响搜索结果展示与 OG 分享卡片）
+const fullTitle = title === SITE.title ? SITE.title : `${title} | ${SITE.title}`;
 const pageUrl = canonical || SITE.url;
 const pageDescription = description || SITE.subtitle;
 

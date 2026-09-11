@@ -23,17 +23,83 @@
   margin-right: auto;
 }
 
-/* 导航按钮：基础样式与统一特效由 .fndx-icon-btn--labeled 提供（透明背景 + 无边框 + 统一悬停）
- * 此处仅保留双行内容的布局：高度交由内容撑开，保证标签 + 标题完整展示 */
-.nav-btn {
-  /* display/align/size/background/color/border/transition/hover 均由 .fndx-icon-btn--labeled 提供 */
+/* 导航按钮：基础样式与统一特效由 .fndx-icon-btn--labeled 提供（透明背景 + 无边框 + 统一悬停），
+ * 此处升级为「卡片式 pager」（Stripe/Vercel Docs 模式）：
+ * - 细边框 + 卡片底色，上一篇/下一篇各占一张等宽卡片
+ * - 左缘 3px 竖条指示器（默认收起，悬停/聚焦时展开），几何刻度语言替代位移装饰
+ * - 悬停边框与标题切换为品牌强调色，箭头沿阅读方向微移
+ * 选择器带 .doc-nav 前缀提高特异性，稳定覆盖 .fndx-icon-btn--labeled 基类 */
+.doc-nav .nav-btn {
+  /* display/align 均由 .fndx-icon-btn--labeled 提供 */
   gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md);
+  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm) var(--spacing-lg);
   height: auto;
   min-height: var(--size-control-sm);
   text-decoration: none;
   flex: 1;
   min-width: 0;
+  position: relative;
+  background: var(--color-bg-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  transition:
+    border-color var(--motion-duration-fast) var(--motion-easing-out),
+    background-color var(--motion-duration-fast) var(--motion-easing-out);
+}
+
+/* 左缘竖条指示器：悬停/键盘聚焦时自中心纵向展开 */
+.doc-nav .nav-btn::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 0;
+  border-radius: 1px;
+  background: var(--color-accent-base);
+  transition: height var(--motion-duration-normal) var(--motion-easing-out);
+}
+
+/* 标题颜色过渡：悬停时切换为强调色 */
+.doc-nav .nav-title {
+  transition: color var(--motion-duration-fast) var(--motion-easing-out);
+}
+
+@media (hover: hover) {
+  .doc-nav .nav-btn:hover {
+    border-color: color-mix(in srgb, var(--color-accent-base) 45%, var(--color-border-subtle));
+    background: var(--color-bg-hover);
+  }
+
+  .doc-nav .nav-btn:hover::before {
+    height: 62%;
+  }
+
+  .doc-nav .nav-btn:hover .nav-title {
+    color: var(--color-accent-base);
+  }
+}
+
+/* 键盘焦点与悬停同反馈（可访问性） */
+.doc-nav .nav-btn:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.doc-nav .nav-btn:focus-visible::before {
+  height: 62%;
+}
+
+/* 下一篇卡片：竖条贴右缘、文字右对齐，与上一篇形成方向镜像 */
+.doc-nav .nav-btn--next::before {
+  left: auto;
+  right: 0;
+}
+
+.doc-nav .nav-btn--next .nav-label,
+.doc-nav .nav-btn--next .nav-title {
+  text-align: right;
 }
 
 /* 方向性图标微位移：上一篇/下一篇悬停时箭头沿阅读方向平移（与左右滚动按钮一致） */
@@ -94,7 +160,7 @@
   }
 
   .nav-btn {
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--spacing-xs) var(--spacing-sm) var(--spacing-xs) var(--spacing-md);
     flex-direction: row;
   }
 

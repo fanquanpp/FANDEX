@@ -103,29 +103,26 @@
 }
 
 /* ========== 语言标签（通过 data-lang 属性显示） ========== */
-/* 利用 CSS attr() 函数从 data-lang 属性读取语言名 */
+/* 利用 CSS attr() 函数从 data-lang 属性读取语言名。
+ * 位置：左上角 mono 大写小字（Stripe 式工具栏语言），
+ * 与右上角的复制按钮各占一角、互不遮挡，因此无需悬停淡出 */
 .code-block[data-lang]::before {
   content: attr(data-lang);
   position: absolute;
   top: 0;
-  right: 0;
+  left: 0;
   padding: 0.2em 0.75em;
-  font-family: var(--font-display);
-  font-size: 0.7em;
+  font-family: var(--font-family-mono, monospace);
+  font-size: 0.68em;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  font-weight: 700;
+  font-weight: 500;
   color: var(--color-text-tertiary);
-  background: var(--color-bg-card);
-  border-bottom-left-radius: 6px;
-  opacity: 0.5; /* 默认半透明 */
-  transition: opacity var(--transition-base);
+  background: color-mix(in srgb, var(--color-border-light) 35%, transparent);
+  border-bottom-right-radius: 6px;
+  opacity: 0.85;
+  pointer-events: none;
   z-index: 1;
-}
-
-/* 悬停时语言标签淡出，为复制按钮让出空间 */
-.code-block[data-lang]:hover::before {
-  opacity: 0;
 }
 
 /* ========== Shiki 双主题切换 ========== */

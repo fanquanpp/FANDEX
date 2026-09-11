@@ -91,6 +91,17 @@ const grouped = getCategories()
           </a>
         </nav>
       </div>
+
+      <!-- 终端模拟面板：工业科幻品牌签名（Endfield 冷光终端）
+           逐字输出初始化序列 + 闪烁块光标；纯装饰（aria-hidden），
+           动效由 lib/home-terminal.ts 驱动，prefers-reduced-motion 时静态显示全文 -->
+      <div class="hero-terminal" aria-hidden="true">
+        <div class="hero-terminal__bar">
+          <span class="hero-terminal__title">fandex://init</span>
+          <span class="hero-terminal__rec">[REC]</span>
+        </div>
+        <pre class="hero-terminal__body" data-terminal><code></code></pre>
+      </div>
     </section>
 
     <!-- 按分类展示模块卡片（横向无限滑动选择器） -->
@@ -136,8 +147,9 @@ const grouped = getCategories()
   </div>
 </HomeLayout>
 
-<!-- 客户端交互脚本：分类区域折叠/展开 + 统计数字滚动计数 -->
+<!-- 客户端交互脚本：分类区域折叠/展开 + 统计数字滚动计数 + 终端逐字输出 -->
 <script>
   import '@/lib/home-interactions';
   import '@/lib/stat-count-up';
+  import '@/lib/home-terminal';
 </script>

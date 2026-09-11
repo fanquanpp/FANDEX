@@ -174,8 +174,14 @@ function initCopyButtons(): void {
     const wrapper = document.createElement('div');
     wrapper.className = 'code-block';
 
-    // 提取代码语言标识
-    const lang = (codeEl.className.match(/language-(\S+)/) || [])[1] || '';
+    // 提取代码语言标识：
+    // - 常规高亮代码块的 code 元素带 language-* 类
+    // - Shiki 输出（Astro 构建 markdown）语言标记在 pre 的 data-language 属性上，
+    //   code 元素无 language-* 类，需兜底读取，否则语言标签永远缺失
+    const lang =
+      (codeEl.className.match(/language-(\S+)/) || [])[1] ||
+      pre.getAttribute('data-language') ||
+      '';
     if (lang) wrapper.setAttribute('data-lang', lang);
 
     const btn = document.createElement('button');
