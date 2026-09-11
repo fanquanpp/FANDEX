@@ -1,41 +1,172 @@
 ---
 /**
- * 在线编程页面（前端三件套实验场）
- *
+ * 在线编程功能主页（子级主页）
+ * -----------------------------------------------------------------------------
  * 功能概述：
- *   - 站内唯一编程入口：HTML / CSS / JavaScript 三栏编辑器 + 实时预览 + 控制台
- *   - CodePen 风格工作台，编辑内容自动保存到浏览器 IndexedDB
- *   - 本地作品库支持另存、打开与删除，全部数据仅存用户浏览器
- *   - 灵感画廊：内置 25 个前端设计成品（动画/交互/组件），可实时预览
- *     并一键载入编辑器查看与修改源码
+ *   - /playground/ 为「在线编程」功能入口主页，与语法速览/学习路线同级的
+ *     落地页：Hero 统计 + 功能说明 + 灵感图鉴精选预览，不再直接进入工作台
+ *   - 工作台本体位于 /playground/editor/，支持深链：
+ *     ?showcase=<id> 直接载入图鉴成品，?panel=gallery 打开即展开画廊
  *
  * 美术对齐：
- *   - 使用 HomeLayout 全站横幅（FANDEX 标识 / GitHub / 主题切换），与主页同源
- *   - 几何背景装饰复用 playground 专属变体（网格 + 尖括号 + 终端方块）
+ *   - Hero 复用首页美术体系（styles/pages/index.css）：
+ *     渐变标题 + 统计行 + SVG 波浪描边功能入口
+ *   - 图鉴精选卡片为沙箱 iframe 实时预览（构建期由 buildPreviewDoc 生成
+ *     srcdoc，服务端直出，懒加载），所见即所得
  */
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
-import FrontendLab from '@/islands/playground/FrontendLab'
+import { SHOWCASE_GROUPS, SHOWCASE_ITEMS } from '@/islands/playground/pg-showcase'
+import { buildPreviewDoc } from '@/islands/playground/pg-frontend-runtime'
 import { SITE } from '@/lib/constants'
-import '@/styles/islands/playground.css'
+// 复用首页 Hero / 统计 / 功能入口样式，保证美术完全一致
+import '@/styles/pages/index.css'
+// 落地页专属：图鉴精选网格 / 功能说明 / 行动召唤
+import '@/styles/pages/playground-landing.css'
 
 const base = import.meta.env.BASE_URL
+
+/** 图鉴精选：每个分组取首个成品，保证类别全覆盖（7 个分组 → 7 张预览卡） */
+const featured = SHOWCASE_GROUPS.map((group) => ({
+  group,
+  item: SHOWCASE_ITEMS.find((item) => item.groupId === group.id),
+})).filter((entry): entry is typeof entry & { item: NonNullable<typeof entry.item> } =>
+  Boolean(entry.item),
+)
 ---
 
 <HomeLayout title="在线编程">
   <SEO
     slot="head"
     title="在线编程 · FANDEX"
-    description="FANDEX 在线编程：在浏览器中编写 HTML、CSS 与 JavaScript，实时预览效果，内置控制台与灵感画廊——25 个前端设计成品（加载动画、按钮交互、卡片效果、文本动效、背景氛围、实用组件）可一键载入源码学习，作品自动保存在本地，无需注册与上传。"
+    description="FANDEX 在线编程：浏览器里的前端实验场，编写 HTML、CSS 与 JavaScript 即时预览，内置控制台与本地作品库；灵感图鉴收录 25 个前端设计成品，实时预览、一键载入源码学习，无需注册与上传。"
     canonical={`${SITE.url}${base}playground/`}
     type="website"
   />
 
-  <div class="pg-page">
+  <div class="home-page home-page--sub pg-home">
     <!-- 几何背景装饰：playground 专属变体（网格 + 尖括号 + 终端方块） -->
     <GeoBgDecor variant="playground" />
-    <!-- 前端实验工作台（客户端岛组件） -->
-    <FrontendLab client:load />
+
+    <!-- Hero 区域：复用首页美术（渐变标题 + 统计 + SVG 描边入口） -->
+    <section class="hero">
+      <h1 class="hero-title" data-text="在线编程">
+        <span class="hero-title-fan">在线</span><span class="hero-title-dex">编程</span>
+      </h1>
+      <p class="pg-home__tagline">
+        浏览器里的前端实验场：写 HTML / CSS / JavaScript，即时预览与调试，数据只保存在本地。
+      </p>
+
+      <!-- 统计 + 功能入口同一行容器（与首页 hero-stats-row 结构一致） -->
+      <div class="hero-stats-row">
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-num">{SHOWCASE_ITEMS.length}</span>
+            <span class="stat-label">灵感成品</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">{SHOWCASE_GROUPS.length}</span>
+            <span class="stat-label">图鉴分类</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">3</span>
+            <span class="stat-label">语言</span>
+          </div>
+        </div>
+
+        <!-- 功能入口：首页同款纯文字按钮 + SVG 波浪描边动画 -->
+        <nav class="hero-entries" aria-label="功能入口">
+          <a href={`${base}playground/editor/`} class="entry-btn" data-tooltip="打开编辑器开始编写" data-tooltip-pos="bottom">
+            <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
+            </svg>
+            <span class="entry-name">进入工作台</span>
+          </a>
+          <a href="#pg-gallery" class="entry-btn" data-tooltip="25 个设计成品实时预览" data-tooltip-pos="bottom">
+            <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
+            </svg>
+            <span class="entry-name">灵感图鉴</span>
+          </a>
+          <a href={base} class="entry-btn" data-tooltip="返回首页" data-tooltip-pos="bottom">
+            <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
+              <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
+            </svg>
+            <span class="entry-name">首页</span>
+          </a>
+        </nav>
+      </div>
+    </section>
+
+    <!-- 灵感图鉴：显眼入口区（精选成品实时预览 + 完整图鉴召唤） -->
+    <section id="pg-gallery" class="pg-home__gallery fndx-scroll-reveal" aria-label="灵感图鉴">
+      <header class="pg-home__gallery-head">
+        <div class="pg-home__gallery-title">
+          <span class="pg-home__marker" aria-hidden="true"></span>
+          <h2 class="pg-home__heading">灵感图鉴</h2>
+          <span class="category-count">{SHOWCASE_ITEMS.length}</span>
+          <p class="pg-home__gallery-desc">
+            按场景分类的设计成品：点击卡片直接载入工作台查看与修改源码。
+          </p>
+        </div>
+        <!-- 完整图鉴入口：直达工作台并自动展开画廊面板 -->
+        <a
+          class="pg-home__open"
+          href={`${base}playground/editor/?panel=gallery`}
+          data-tooltip="打开工作台并展开完整图鉴"
+        >
+          打开完整图鉴
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </a>
+      </header>
+
+      <!-- 精选预览网格：每张卡片实时运行对应成品（懒加载） -->
+      <div class="pg-home__grid">
+        {featured.map(({ group, item }) => (
+          <a
+            class="pg-home__card"
+            href={`${base}playground/editor/?showcase=${item.id}`}
+            title={`载入「${item.name}」源码到工作台`}
+          >
+            <span class="pg-home__card-group">{group.name}</span>
+            <span class="pg-home__preview">
+              <iframe
+                sandbox="allow-scripts"
+                srcdoc={buildPreviewDoc(item)}
+                title={`${item.name} 实时预览`}
+                loading="lazy"
+                tabindex="-1"
+              />
+            </span>
+            <span class="pg-home__card-name">{item.name}</span>
+            <span class="pg-home__card-desc">{item.desc}</span>
+          </a>
+        ))}
+      </div>
+    </section>
+
+    <!-- 功能说明：三张能力卡（模块卡片视觉语言） -->
+    <section class="pg-home__features" aria-label="工作台能力">
+      <a class="pg-home__feature" href={`${base}playground/editor/`} style="--module-color: var(--color-accent-base)">
+        <span class="pg-home__feature-mark" aria-hidden="true"></span>
+        <h3 class="pg-home__feature-title">实时预览</h3>
+        <p class="pg-home__feature-desc">编辑即运行，三栏编辑器 + 沙箱 iframe，改动立刻可见。</p>
+      </a>
+      <a class="pg-home__feature" href={`${base}playground/editor/`} style="--module-color: var(--color-success-base)">
+        <span class="pg-home__feature-mark" aria-hidden="true"></span>
+        <h3 class="pg-home__feature-title">内置控制台</h3>
+        <p class="pg-home__feature-desc">console 输出与报错直接回传页面，调试不必打开 DevTools。</p>
+      </a>
+      <a class="pg-home__feature" href={`${base}playground/editor/`} style="--module-color: var(--color-warning-base)">
+        <span class="pg-home__feature-mark" aria-hidden="true"></span>
+        <h3 class="pg-home__feature-title">本地作品库</h3>
+        <p class="pg-home__feature-desc">作品自动保存到浏览器本地，另存、打开、删除，无需注册上传。</p>
+      </a>
+    </section>
   </div>
 </HomeLayout>

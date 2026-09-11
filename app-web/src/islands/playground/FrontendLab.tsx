@@ -35,7 +35,7 @@ import { PgIcon } from './pg-icons';
 import { formatCode } from './pg-formatter';
 import { buildPreviewDoc, estimatePenBytes, parsePreviewMessage } from './pg-frontend-runtime';
 import ShowcaseGallery from './ShowcaseGallery';
-import type { ShowcaseItem } from './pg-showcase';
+import { SHOWCASE_ITEMS, type ShowcaseItem } from './pg-showcase';
 import {
   deletePen,
   getStorageUsage,
@@ -215,10 +215,28 @@ function FrontendLab() {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // 优先打开地址栏指定的作品（?pen=ID），否则恢复草稿
-      const penId = new URLSearchParams(window.location.search).get('pen');
+      // 深链优先级：?showcase= 载入图鉴成品 > ?pen= 打开指定作品 > 恢复草稿；
+      // ?panel=gallery 打开时直接展开灵感画廊面板
+      const params = new URLSearchParams(window.location.search);
+      const showcaseId = params.get('showcase');
+      const openGallery = params.get('panel') === 'gallery';
+      const penId = params.get('pen');
+
       let target: FrontendPen | null = null;
-      if (penId) {
+      const showcase = showcaseId
+        ? SHOWCASE_ITEMS.find((s) => s.id === showcaseId)
+        : undefined;
+      if (showcase) {
+        // 图鉴深链：用户从功能主页/图鉴主动点击而来，直接载入无需覆盖确认
+        target = {
+          ...DEFAULT_TEMPLATE,
+          title: showcase.name,
+          html: showcase.html,
+          css: showcase.css,
+          js: showcase.js,
+          lastOpenedAt: Date.now(),
+        };
+      } else if (penId) {
         const pens = await loadPens();
         target = pens.find((p) => p.id === penId) ?? null;
       }
@@ -238,6 +256,13 @@ function FrontendLab() {
         setPreviewDoc(buildPreviewDoc(opened));
         // 地址栏与实际打开的作品保持一致（草稿态移除参数）
         syncPenUrl(target.id !== 'draft' ? target.id : null);
+      }
+      // 深链参数一次性消费：应用后清除地址参数，刷新不再重复覆盖草稿
+      if (showcaseId || openGallery) {
+        window.history.replaceState(null, '', window.location.pathname + window.location.hash);
+      }
+      if (!cancelled && openGallery) {
+        setShowGallery(true);
       }
       setLibrary(await loadPens());
       const usage = await getStorageUsage();

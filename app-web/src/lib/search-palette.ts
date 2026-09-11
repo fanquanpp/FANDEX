@@ -121,8 +121,12 @@ function quickEntries(): QuickEntry[] {
     { title: '学习路线', href: `${BASE}learning-path/`, crumb: '系统化学习路径' },
     { title: '模块总览', href: BASE, crumb: '全部分类与模块' },
   ];
+  // 在线编程与灵感图鉴成对出现：桌面端构建无 playground 页面时一并隐藏
   if (document.querySelector('a[href$="playground/"]')) {
-    entries.unshift({ title: '在线编程', href: `${BASE}playground/`, crumb: '前端实验工作台' });
+    entries.unshift(
+      { title: '灵感图鉴', href: `${BASE}playground/editor/?panel=gallery`, crumb: '25 个设计成品' },
+      { title: '在线编程', href: `${BASE}playground/`, crumb: '在线编写与运行代码' },
+    );
   }
   return entries;
 }
