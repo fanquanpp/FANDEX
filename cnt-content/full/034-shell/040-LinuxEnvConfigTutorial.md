@@ -1,17 +1,17 @@
 ---
-order: 80
+order: 40
 title: Linux 开发环境配置
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: Linux 开发环境完整配置指南，涵盖 apt/yum/pacman 包管理器、Git、Node.js（nvm）、Python（pyenv）、Java JDK、Docker、VS Code 安装与配置。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/006-WindowsEnvConfigTutorial'
-  - 'shell/007-MacOSEnvConfigTutorial'
+  - 'shell/020-WindowsEnvConfigTutorial'
+  - 'shell/030-MacOSEnvConfigTutorial'
 prerequisites:
-  - 'shell/005-DevEnvSetup'
+  - 'shell/010-DevEnvSetup'
 ---
 
 ## 1. 包管理器

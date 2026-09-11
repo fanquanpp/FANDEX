@@ -1,18 +1,18 @@
 ---
-order: 20
+order: 130
 title: 命令行基础：文件与目录操作
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: Shell 命令行基础：文件与目录操作、通配符与帮助系统
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/016-TextProcessingTools'
-  - 'shell/001-ShellBasics'
+  - 'shell/200-TextProcessingTools'
+  - 'shell/150-ShellBasics'
 prerequisites:
-  - 'shell/003-CommandLineBasics'
-  - 'shell/001-ShellBasics'
+  - 'shell/140-CrossPlatformCommandLine'
+  - 'shell/150-ShellBasics'
 ---
 
 
@@ -191,7 +191,7 @@ Ctrl + L                 # 清屏（等价于 clear）
 
 **陷阱一：目录名含空格。** `cd My Documents` 会被拆成两个参数，必须写成 `cd "My Documents"` 或 `cd My\ Documents`。
 
-**陷阱二：`rm -rf` 加空变量。** `rm -rf $DIR` 中 `$DIR` 为空时等价于 `rm -rf`（危险）。始终写 `rm -rf "$DIR"`。
+**陷阱二：`rm -rf` 拼上空变量。** `rm -rf $DIR` 中 `$DIR` 为空时只是缺参数报错尚可补救；真正的灾难在拼接场景——`rm -rf /$SUB` 或 `rm -rf "$DIR/"` 遇到空变量会剩下 `rm -rf /`。始终写 `rm -rf "${DIR:?DIR 未设置}"`，并在删除前 `ls` 预览。
 
 **陷阱三：通配符无匹配。** `ls *.log` 在没有 log 文件时会原样输出 `*.log` 并报错，可用 `nullglob` 选项或先检查。
 

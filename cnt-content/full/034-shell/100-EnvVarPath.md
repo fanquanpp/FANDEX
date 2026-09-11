@@ -1,18 +1,18 @@
 ---
-order: 40
+order: 100
 title: 环境变量与 PATH
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: 环境变量概念、PATH机制、跨平台配置与常见问题排查。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'cs-fundamentals/012-FunctionModular'
-  - 'shell/009-IDEEditorSelection'
-  - 'shell/010-PluginEcosystem'
+  - 'cs-fundamentals/030-FunctionModular'
+  - 'shell/050-IDEEditorSelection'
+  - 'shell/070-PluginEcosystem'
 prerequisites:
-  - 'shell/005-DevEnvSetup'
+  - 'shell/010-DevEnvSetup'
 ---
 
 ## 1. 环境变量基础

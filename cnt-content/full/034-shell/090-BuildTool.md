@@ -1,18 +1,18 @@
 ---
-order: 130
+order: 90
 title: 构建工具
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: 构建工具对比：Make、CMake、Vite的工作原理、配置方法与适用场景。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/012-ProjectInit'
-  - 'cs-fundamentals/013-ProgrammingParadigmBasics'
-  - 'software-testing/030-DebugThinking'
+  - 'shell/080-ProjectInit'
+  - 'cs-fundamentals/040-ProgrammingParadigmBasics'
+  - 'software-testing/300-DebugThinking'
 prerequisites:
-  - 'shell/005-DevEnvSetup'
+  - 'shell/010-DevEnvSetup'
 ---
 
 > 阅读建议：按你的项目类型选读——前端看 Vite 部分，C/C++ 看 Make/CMake 部分，其余先跳过。

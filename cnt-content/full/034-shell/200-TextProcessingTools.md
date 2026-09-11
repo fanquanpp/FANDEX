@@ -1,18 +1,18 @@
 ---
-order: 160
-title: 文本处理三剑客： grep、 sed、 awk
+order: 200
+title: 文本处理三剑客：grep、sed、awk
 module: 'shell'
 category: 工具链
 difficulty: intermediate
 description: 文本处理三剑客：grep 行匹配、sed 流编辑、awk 列处理与统计、管道组合实战
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/021-PracticalScripts'
-  - 'shell/017-ProcessJobControl'
+  - 'shell/250-PracticalScripts'
+  - 'shell/220-ProcessJobControl'
 prerequisites:
-  - 'shell/002-CommandLineBasics'
-  - 'shell/001-ShellBasics'
+  - 'shell/130-CommandLineBasics'
+  - 'shell/150-ShellBasics'
 ---
 
 
@@ -88,6 +88,8 @@ sed '1,5d' file                 # 删除第 1 到第 5 行
 
 **安全要点**：`sed -i` 修改原文件，务必先用不加 `-i` 的命令预览结果。
 
+**可移植性**：GNU sed（Linux）的 `-i` 可不带后缀直接用；macOS/BSD sed 的 `-i` 必须带后缀参数，写成 `sed -i '' 's/a/b/g' file`。跨平台脚本统一用 `sed -i.bak` 最稳。
+
 ### 3.2 打印与插入
 
 ```bash
@@ -102,13 +104,13 @@ sed 默认会把每一行都打印出来，`-n` 配合 `p` 才做到"只看想�
 ### 3.3 捕获分组
 
 ```bash
-# 将 "name=alice" 改为 "name=ALICE"
+# 将 "name=alice" 改为 "name=ALICE"（\U 转大写为 GNU sed 专属，macOS/BSD sed 不支持）
 echo "name=alice" | sed -E 's/(name=)(.*)/\1\U\2/'
-# 提取日期：2026-08-01 -> 08/01
+# 提取日期：2026-08-01 -> 08/01/2026
 echo "2026-08-01" | sed -E 's/([0-9]{4})-([0-9]{2})-([0-9]{2})/\2\/\3\/\1/'
 ```
 
-`(...)` 捕获分组，`\1`、`\2` 引用分组内容，`\U` 将后续内容转大写。分组替换是 sed 进阶的核心能力。
+`(...)` 捕获分组，`\1`、`\2` 引用分组内容；GNU sed 的 `\U` 可将后续内容转大写（可移植替代：`tr 'a-z' 'A-Z'` 或 awk 的 `toupper()`）。分组替换是 sed 进阶的核心能力。
 
 ## 4. awk：列处理与统计（会计）
 
@@ -171,8 +173,8 @@ awk '{print $9}' access.log | sort | uniq -c | sort -rn
 # 找出 404 页面并去重
 awk '$9 == 404 {print $7}' access.log | sort -u
 
-# 最近 5 分钟的报错
-grep "$(date -d '5 minutes ago' '+%d/%b/%Y:%H:%M')" error.log | wc -l
+# 提取某一分钟（5 分钟前）的日志行数；date -d 为 GNU 专属，macOS 用 date -v-5M
+grep -c "$(date -d '5 minutes ago' '+%d/%b/%Y:%H:%M')" error.log
 ```
 
 ```text
@@ -184,7 +186,7 @@ grep "$(date -d '5 minutes ago' '+%d/%b/%Y:%H:%M')" error.log | wc -l
 
 **核心套路**：`sort | uniq -c | sort -rn` 是"分组计数 + 排序"的标准三段式——先排序使相同行相邻，`uniq -c` 计数，再按数值倒序排。`$(...)` 命令替换让 grep 的匹配模式动态生成。
 
-## 7. 常见误区
+## 6. 常见误区
 
 **误区一：grep、sed、awk 都要背下所有选项。** → 记住最常用的 10 个用法（本章已覆盖），其余用 `man` 查。
 

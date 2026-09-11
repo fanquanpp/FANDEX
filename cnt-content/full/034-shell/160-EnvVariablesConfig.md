@@ -1,18 +1,18 @@
 ---
-order: 180
+order: 160
 title: 环境变量与配置文件
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: 环境变量与配置文件：env/export/PATH、变量扩展、bash 启动文件加载顺序
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/019-ScriptDebugging'
-  - 'shell/001-ShellBasics'
+  - 'shell/190-ScriptDebugging'
+  - 'shell/150-ShellBasics'
 prerequisites:
-  - 'shell/002-CommandLineBasics'
-  - 'shell/001-ShellBasics'
+  - 'shell/130-CommandLineBasics'
+  - 'shell/150-ShellBasics'
 ---
 
 

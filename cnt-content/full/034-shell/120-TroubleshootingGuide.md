@@ -1,29 +1,35 @@
 ---
-order: 150
+order: 120
 title: 环境配置“我卡住了”指南
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: 常见环境配置错误的集中排查手册：命令找不到、权限拒绝、端口占用、代理、乱码等。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/004-EnvVarPath'
-  - 'shell/014-EnvVerificationChecklist'
+  - 'shell/100-EnvVarPath'
+  - 'shell/110-EnvVerificationChecklist'
 prerequisites:
-  - 'shell/005-DevEnvSetup'
+  - 'shell/010-DevEnvSetup'
 ---
 
 ## 0. 使用说明
 
 按症状找章节：**命令找不到 → 1**；**权限被拒 → 2**；**下载慢/失败 → 3**；**端口占用 → 4**；**中文乱码 → 5**；**WSL 相关 → 6**；**改了配置不生效 → 7**。
 
+动手前的通用方法论（三步定位法）：
+
+1. **看清报错原文**：终端报错的第一行/最后一行往往直接写着原因（`command not found`、`Permission denied`、`EADDRINUSE`），照着关键词搜比"我的电脑坏了"有效一万倍；
+2. **区分"没装"还是"没找到"**：`--version` 都跑不起来多半是没装或 PATH 问题，能跑但行为异常是配置问题；
+3. **一次只改一个变量**：改一处、验证一次，同时改三个地方出了问题就再也说不清是哪一步引入的。
+
 ## 1. 命令找不到（command not found / 不是内部或外部命令）
 
 可能原因与对应解法：
 
 1. **没安装**：先执行 `node -v` 对应的安装文档确认已安装；
-2. **PATH 未包含目录**：把安装目录加入 PATH（见 `getting-started/002-EnvVarPath`）；
+2. **PATH 未包含目录**：把安装目录加入 PATH（见 `shell/100-EnvVarPath`）；
 3. **没有重开终端**：PATH 修改只对新终端生效，**关掉重开**；
 4. **安装时没勾选“添加到 PATH”**：重装或手动补 PATH；
 5. **nvm 场景**：`nvm` 是 shell 函数，脚本（非交互）里不可用，先在交互终端安装并 `nvm use`。
@@ -47,7 +53,7 @@ chmod +x setup-linux.sh
 2. npm 换源：`npm config set registry https://registry.npmmirror.com`；
 3. pip 换源：`pip config set global.index-url https://pypi.tuna.tsinghua.edu.cn/simple`；
 4. 公司/校园网需要代理时：配置 npm 代理 `npm config set proxy http://127.0.0.1:端口`，或设置系统代理后重试；
-5. GitHub 克隆失败：改用镜像（如 ghproxy）或 `git config --global url."https://ghproxy.com/https://github.com/".insteadOf "https://github.com/"`（按需使用，注意安全）。
+5. GitHub 克隆慢或失败：优先使用官方加速方案（如 `git clone` 时改用 SSH），或改用可信镜像；第三方 URL 改写代理会经手你的代码与凭据，仅在可信环境按需使用。
 
 ## 4. 端口占用（EADDRINUSE / 端口被占用）
 
@@ -81,9 +87,18 @@ taskkill /PID <PID> /F
 ## 7. 改了配置不生效
 
 1. **重开终端**（90% 的情况）；
-2. 确认改的是“当前用户”而不是临时会话（如 PowerShell 里 `$env:Path=...` 只在当前窗口有效）；
+2. 确认改的是”当前用户”而不是临时会话（如 PowerShell 里 `$env:Path=...` 只在当前窗口有效）；
 3. 确认配置文件语法正确：`.zshrc`/`.bashrc` 里写错会静默失败，执行 `source ~/.zshrc` 看报错；
 4. 用 `which`/`where` 确认实际解析到哪个路径。
+
+```bash
+# 验证 PATH 里到底有没有某个目录
+echo “$PATH” | tr ':' '\n' | grep -n “node”   # 逐行列出含 node 的 PATH 条目
+
+# 验证命令解析到哪个可执行文件（同名命令排查）
+type -a node        # bash/zsh：列出所有同名命中，第一个优先生效
+where.exe node      # Windows
+```
 
 ## 8. 仍然解决不了
 
@@ -99,6 +114,6 @@ taskkill /PID <PID> /F
 
 ## 扩展学习
 
-- 环境变量：`getting-started/002-EnvVarPath`；
-- 验证清单：`getting-started/025-EnvVerificationChecklist`；
-- 平台配置：`getting-started/011-WindowsEnvConfigTutorial`、`getting-started/012-MacOSEnvConfigTutorial`、`getting-started/013-LinuxEnvConfigTutorial`。
+- 环境变量：`shell/100-EnvVarPath`；
+- 验证清单：`shell/110-EnvVerificationChecklist`；
+- 平台配置：`shell/020-WindowsEnvConfigTutorial`、`shell/030-MacOSEnvConfigTutorial`、`shell/040-LinuxEnvConfigTutorial`。

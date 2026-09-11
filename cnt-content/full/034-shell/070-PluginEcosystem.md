@@ -1,18 +1,18 @@
 ---
-order: 100
+order: 70
 title: 插件生态
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: 编辑器与IDE插件体系、包管理机制、插件开发基础与生态维护。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/004-EnvVarPath'
-  - 'shell/009-IDEEditorSelection'
-  - 'shell/003-CommandLineBasics'
+  - 'shell/100-EnvVarPath'
+  - 'shell/050-IDEEditorSelection'
+  - 'shell/140-CrossPlatformCommandLine'
 prerequisites:
-  - 'shell/005-DevEnvSetup'
+  - 'shell/010-DevEnvSetup'
 ---
 
 > 阅读建议：插件可以边用边装，不需要一次装全。

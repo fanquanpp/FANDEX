@@ -1,18 +1,18 @@
 ---
-order: 90
+order: 50
 title: IDE 与编辑器选型
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: 主流IDE与编辑器对比选型：VS Code、IntelliJ、Vim及云IDE方案。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/004-EnvVarPath'
-  - 'shell/010-PluginEcosystem'
-  - 'shell/003-CommandLineBasics'
+  - 'shell/100-EnvVarPath'
+  - 'shell/070-PluginEcosystem'
+  - 'shell/140-CrossPlatformCommandLine'
 prerequisites:
-  - 'shell/005-DevEnvSetup'
+  - 'shell/010-DevEnvSetup'
 ---
 
 > 阅读建议：0 基础学习者推荐直接选 VS Code，本片其余部分（Vim、JetBrains 对比）可先跳过，等遇到编辑器瓶颈再回来看。

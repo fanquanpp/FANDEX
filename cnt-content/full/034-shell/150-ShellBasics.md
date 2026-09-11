@@ -1,17 +1,17 @@
 ---
-order: 10
+order: 150
 title: Shell 脚本编程基础
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: Shell 脚本编程基础：命令、变量、管道、控制流、函数与工程实践
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/003-CommandLineBasics'
-  - 'devops/005-CICDPipeline'
+  - 'shell/140-CrossPlatformCommandLine'
+  - 'devops/140-CICDPipeline'
 prerequisites:
-  - 'shell/003-CommandLineBasics'
+  - 'shell/140-CrossPlatformCommandLine'
 ---
 
 
@@ -27,7 +27,7 @@ prerequisites:
 
 **Shell 就是操作系统的"服务员"**：它读取你输入的命令，调用系统程序执行，并把结果返回给你。它既是**交互式工具**（你在终端里敲命令），也是**脚本语言**（把命令写进文件批量执行）。
 
-Linux/macOS 默认是 bash（或 zsh），Windows 的 PowerShell 是另一套体系，但 Git Bash/WSL 可以运行 bash 脚本。
+多数 Linux 发行版默认 bash，macOS 自 10.15（2019）起默认 zsh；Windows 的 PowerShell 是另一套体系，但 Git Bash/WSL 可以运行 bash 脚本。
 
 ### 1.2 Shell 脚本的价值：做"胶水"
 

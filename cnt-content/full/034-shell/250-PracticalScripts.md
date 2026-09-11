@@ -1,19 +1,19 @@
 ---
-order: 210
+order: 250
 title: 实战脚本案例
 module: 'shell'
 category: 工具链
 difficulty: intermediate
 description: 实战脚本案例：部署脚本模板、日志分析报表、定时备份、文件批量处理
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/016-TextProcessingTools'
-  - 'shell/019-ScriptDebugging'
-  - 'shell/020-FunctionsArguments'
+  - 'shell/200-TextProcessingTools'
+  - 'shell/190-ScriptDebugging'
+  - 'shell/180-FunctionsArguments'
 prerequisites:
-  - 'shell/020-FunctionsArguments'
-  - 'shell/019-ScriptDebugging'
+  - 'shell/180-FunctionsArguments'
+  - 'shell/190-ScriptDebugging'
 ---
 
 
@@ -23,11 +23,11 @@ prerequisites:
 
 **生产级脚本的共同特征**：
 
-1. 开头 `set -euo pipefail`，失败立即停止（006 篇）
-2. 参数有默认值或必填校验，`getopts` 解析（007 篇）
-3. 日志函数统一输出，带时间戳（007 篇）
-4. 关键动作可预览（dry-run），删除前确认（002 篇）
-5. 通过 `shellcheck` 静态检查（006 篇）
+1. 开头 `set -euo pipefail`，失败立即停止（《脚本调试与严格模式》）
+2. 参数有默认值或必填校验，`getopts` 解析（《函数与参数处理》）
+3. 日志函数统一输出，带时间戳（《函数与参数处理》）
+4. 关键动作可预览（dry-run），删除前确认（《命令行基础：文件与目录操作》）
+5. 通过 `shellcheck` 静态检查（《脚本调试与严格模式》）
 
 ## 2. 案例一：部署脚本模板
 
@@ -150,7 +150,7 @@ echo "报表已生成: $OUT"
 **设计亮点**：
 
 - `{ ... }` 分组把多段输出合并成一次管道，`tee` 同时写文件与终端
-- 所有统计复用 003 篇的三段式 `sort | uniq -c | sort -rn`
+- 所有统计复用《文本处理三剑客》的三段式 `sort | uniq -c | sort -rn`
 - 此脚本可放入 crontab 每天 0 点生成日报，运维同学每天查看即可掌握站点健康度
 
 ## 4. 案例三：定时备份脚本
@@ -193,7 +193,7 @@ log "备份完成，共 $(du -h "$archive" | cut -f1)"
 ```
 
 ```bash
-# 配合 crontab 每天凌晨 2 点执行（crontab -e 编辑）
+# 配合 crontab 每天凌晨 2 点执行（crontab -e 编辑；环境陷阱与 flock 见《定时任务与调度》）
 0 2 * * * /usr/local/bin/backup.sh /var/www/myapp 7 >> /var/log/backup_cron.log 2>&1
 ```
 
@@ -239,7 +239,7 @@ echo "批量处理完成"
 
 **设计亮点**：
 
-- `[ -e "$file" ] || continue` 是"通配符可能无匹配"的防御（结合 002 篇陷阱三）
+- `[ -e "$file" ] || continue` 是"通配符可能无匹配"的防御（见《命令行基础：文件与目录操作》陷阱三）
 - `printf "%04d"` 生成四位补零序号
 - `${file##*.}` 用参数扩展取扩展名，比 `sed`/`awk` 更轻快
 - **批量脚本一律先打印再执行（演练模式），确认无误后再去掉 echo 落盘**

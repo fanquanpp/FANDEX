@@ -1,25 +1,25 @@
 ---
-order: 140
+order: 110
 title: 开发环境验证清单
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: 装完所有工具后逐项验证：命令、版本、路径、网络与版本管理是否一切正常。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/005-DevEnvSetup'
-  - 'shell/004-EnvVarPath'
-  - 'shell/015-TroubleshootingGuide'
+  - 'shell/010-DevEnvSetup'
+  - 'shell/100-EnvVarPath'
+  - 'shell/120-TroubleshootingGuide'
 prerequisites:
-  - 'shell/006-WindowsEnvConfigTutorial'
-  - 'javascript/052-NodeJsInstall'
-  - 'git/002-GitInstallConfig'
+  - 'shell/020-WindowsEnvConfigTutorial'
+  - 'javascript/520-NodeJsInstall'
+  - 'git/020-GitInstallConfig'
 ---
 
 ## 0. 这份清单怎么用
 
-打开终端（Windows 用 PowerShell 或 WSL，macOS/Linux 用自带终端），逐条执行下面的命令。每一条都有“预期结果”；如果输出与预期不符，跳到 `getting-started/026-TroubleshootingGuide` 找对应问题。
+打开终端（Windows 用 PowerShell 或 WSL，macOS/Linux 用自带终端），逐条执行下面的命令。每一条都有“预期结果”；如果输出与预期不符，跳到 `shell/120-TroubleshootingGuide` 找对应问题。
 
 建议按顺序勾选：
 
@@ -57,7 +57,7 @@ node -v
 npm -v
 ```
 
-**预期**：`node -v` 输出 `v20+` 或更高（LTS 版）；`npm -v` 输出 `10+`。若提示找不到命令，检查是否安装了 Node.js，或 PATH 是否包含 Node 目录（`getting-started/002-EnvVarPath`）。
+**预期**：`node -v` 输出当前 LTS 线版本（如 `v22` 或 `v24`）；`npm -v` 输出 `10+`。若提示找不到命令，检查是否安装了 Node.js，或 PATH 是否包含 Node 目录（`shell/100-EnvVarPath`）。
 
 ## 4. Python 与 pip
 
@@ -108,7 +108,7 @@ npm config get registry
 pip config list
 ```
 
-**预期**：npm 输出国内镜像地址（如 `https://registry.npmmirror.com`）或官方源；pip 输出镜像配置（如有）。配置方法见 `getting-started/015-NpmManager` 与 `getting-started/019-PipVenvManager`。
+**预期**：npm 输出国内镜像地址（如 `https://registry.npmmirror.com`）或官方源；pip 输出镜像配置（如有）。npm 源配置见 `javascript/540-NpmManager`；Python 虚拟环境与 pip 源见 `python/040-PythonVirtualEnv`。
 
 ## 8. 版本管理工具（可选）
 
@@ -130,7 +130,59 @@ where.exe node # Windows PowerShell
 
 **预期**：输出 node 的安装路径。如果仍是旧路径或找不到，说明 PATH 配置未保存或未重开终端。
 
-## 10. 全部通过后
+## 10. 自动化验证脚本
+
+逐条手敲适合第一次配置；换机器或带新人时，用一个脚本自动跑完整套检查：
+
+```bash
+#!/usr/bin/env bash
+# check-env.sh - 开发环境体检脚本（bash 3+ 兼容，三平台通用）
+set -u
+
+pass=0
+fail=0
+
+# check <名称> <命令...>：命令成功记 PASS，失败记 FAIL
+check() {
+    local name="$1"; shift
+    if "$@" > /dev/null 2>&1; then
+        echo "PASS  $name"
+        pass=$((pass + 1))
+    else
+        echo "FAIL  $name"
+        fail=$((fail + 1))
+    fi
+}
+
+check "终端可用"        echo hello
+check "VS Code"         code --version
+check "Node.js"         node -v
+check "npm"             npm -v
+check "Python"          python3 --version
+check "pip"             python3 -m pip --version
+check "Git"             git --version
+check "Git 身份已配置"  git config --global user.name
+
+echo "-----------------------------"
+echo "结果: $pass 通过, $fail 未通过"
+[ "$fail" -eq 0 ] && echo "环境就绪，可以开始学习" || echo "请按上方 FAIL 项排查"
+exit "$fail"   # 退出码 = 失败数，可接入 CI
+```
+
+```text
+预期输出：
+PASS  终端可用
+PASS  VS Code
+PASS  Node.js
+FAIL  Git 身份已配置
+-----------------------------
+结果: 3 通过, 1 未通过
+请按上方 FAIL 项排查
+```
+
+脚本要点：`check` 函数把"跑命令 + 报结果"封装起来；`exit "$fail"` 让脚本可以接进 CI 或 Makefile；需要检查 Docker 等可选工具时按同一模式加一行即可。
+
+## 11. 全部通过后
 
 全部打勾后，你的开发环境已经可以开始学习写代码。建议把本清单收藏，换新电脑时按同一流程重建环境。
 
@@ -138,6 +190,6 @@ where.exe node # Windows PowerShell
 
 ## 扩展学习
 
-- 环境变量与 PATH：`getting-started/002-EnvVarPath`；
-- 卡住排查：`getting-started/026-TroubleshootingGuide`；
-- 平台配置：`getting-started/011-WindowsEnvConfigTutorial`、`getting-started/012-MacOSEnvConfigTutorial`、`getting-started/013-LinuxEnvConfigTutorial`。
+- 环境变量与 PATH：`shell/100-EnvVarPath`；
+- 卡住排查：`shell/120-TroubleshootingGuide`；
+- 平台配置：`shell/020-WindowsEnvConfigTutorial`、`shell/030-MacOSEnvConfigTutorial`、`shell/040-LinuxEnvConfigTutorial`。

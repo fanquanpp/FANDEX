@@ -1,17 +1,17 @@
 ---
-order: 70
+order: 30
 title: macOS 开发环境配置
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: macOS 开发环境完整配置指南，涵盖 Homebrew、Xcode Command Line Tools、Git、Node.js（nvm）、Python（pyenv）、Java JDK、Docker Desktop、VS Code 安装与配置。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/006-WindowsEnvConfigTutorial'
-  - 'shell/008-LinuxEnvConfigTutorial'
+  - 'shell/020-WindowsEnvConfigTutorial'
+  - 'shell/040-LinuxEnvConfigTutorial'
 prerequisites:
-  - 'shell/005-DevEnvSetup'
+  - 'shell/010-DevEnvSetup'
 ---
 
 ## 1. Homebrew 安装

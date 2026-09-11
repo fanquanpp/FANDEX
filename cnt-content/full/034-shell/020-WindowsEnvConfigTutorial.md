@@ -1,17 +1,17 @@
 ---
-order: 60
+order: 20
 title: Windows 开发环境配置
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: Windows 开发环境完整配置指南，涵盖 WSL2、包管理器、环境变量、Git、Node.js、Python、Java JDK、Docker Desktop、VS Code 安装与配置。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/007-MacOSEnvConfigTutorial'
-  - 'shell/008-LinuxEnvConfigTutorial'
+  - 'shell/030-MacOSEnvConfigTutorial'
+  - 'shell/040-LinuxEnvConfigTutorial'
 prerequisites:
-  - 'shell/005-DevEnvSetup'
+  - 'shell/010-DevEnvSetup'
 ---
 
 ## 0. 快速开始：一键脚本与完整教程
@@ -23,7 +23,7 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 .\cnt-content\full\001-getting-started\scripts\setup-windows.ps1
 ```
 
-脚本会自动安装 VS Code、Git、Node.js LTS、Python，并配置 npm/pip 国内镜像。装完后用 `shell/014-EnvVerificationChecklist` 验证，卡住查 `shell/015-TroubleshootingGuide`。
+脚本会自动安装 VS Code、Git、Node.js LTS、Python，并配置 npm/pip 国内镜像。装完后用 `shell/110-EnvVerificationChecklist` 验证，卡住查 `shell/120-TroubleshootingGuide`。
 
 想理解每一步在做什么，或需要 WSL2、Docker 等进阶配置，继续阅读本篇完整教程。
 

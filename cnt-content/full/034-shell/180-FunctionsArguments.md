@@ -1,18 +1,18 @@
 ---
-order: 200
+order: 180
 title: 函数与参数处理
 module: 'shell'
 category: 工具链
 difficulty: intermediate
 description: 函数与参数处理：函数定义与作用域、位置参数、shift、getopts 参数解析
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/019-ScriptDebugging'
-  - 'shell/021-PracticalScripts'
+  - 'shell/190-ScriptDebugging'
+  - 'shell/250-PracticalScripts'
 prerequisites:
-  - 'shell/001-ShellBasics'
-  - 'shell/018-EnvVariablesConfig'
+  - 'shell/150-ShellBasics'
+  - 'shell/160-EnvVariablesConfig'
 ---
 
 
@@ -147,7 +147,7 @@ usage() {
     echo "用法: $0 -f <文件> [-v] [-o <目录>]"
     echo "  -f  必填：输入文件"
     echo "  -o  输出目录（默认 ./out）"
-    echo "  -v  显示版本"
+    echo "  -v  详细输出（verbose 开关）"
     exit 1
 }
 

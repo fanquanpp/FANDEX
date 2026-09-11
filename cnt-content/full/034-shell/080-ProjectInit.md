@@ -1,17 +1,17 @@
 ---
-order: 120
+order: 80
 title: 项目初始化
 module: 'shell'
 category: 工具链
 difficulty: beginner
 description: 项目初始化流程、脚手架工具、模板选择与项目结构规范。
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/013-BuildTool'
-  - 'cs-fundamentals/013-ProgrammingParadigmBasics'
+  - 'shell/090-BuildTool'
+  - 'cs-fundamentals/040-ProgrammingParadigmBasics'
 prerequisites:
-  - 'shell/005-DevEnvSetup'
+  - 'shell/010-DevEnvSetup'
 ---
 
 > 阅读建议：脚手架与项目结构是重点；Monorepo 属于进阶内容，0 基础学习者可先跳过。

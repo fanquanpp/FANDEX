@@ -1,18 +1,18 @@
 ---
-order: 170
+order: 220
 title: 进程与作业控制
 module: 'shell'
 category: 工具链
 difficulty: intermediate
 description: 进程与作业控制：ps/top/kill、后台任务、nohup 与 timeout 限时运行
 author: fanquanpp
-updated: '2026-09-08'
+updated: '2026-09-12'
 related:
-  - 'shell/018-EnvVariablesConfig'
-  - 'shell/016-TextProcessingTools'
+  - 'shell/160-EnvVariablesConfig'
+  - 'shell/200-TextProcessingTools'
 prerequisites:
-  - 'shell/002-CommandLineBasics'
-  - 'shell/001-ShellBasics'
+  - 'shell/130-CommandLineBasics'
+  - 'shell/150-ShellBasics'
 ---
 
 
@@ -82,12 +82,15 @@ htop                    # 交互式增强版（需安装）
 
 | 信号 | 编号 | 行为 |
 | --- | --- | --- |
-| SIGHUP | 1 | 挂断；终端关闭时默认发给前台进程 |
+| SIGHUP | 1 | 挂断；终端关闭时默认发给会话内进程 |
 | SIGINT | 2 | 键盘中断（Ctrl + C） |
 | SIGTERM | 15 | 优雅终止（默认），进程可清理后退出 |
 | SIGKILL | 9 | 强制杀死，进程无法拦截 |
-| SIGSTOP | 19 | 暂停进程（Ctrl + Z 发送） |
+| SIGTSTP | 20 | 键盘暂停（Ctrl + Z 发送），进程可捕获处理 |
+| SIGSTOP | 19 | 强制暂停（只能 kill -STOP 发送），进程无法拦截 |
 | SIGCONT | 18 | 恢复暂停的进程 |
+
+注意区分两个"暂停"：Ctrl + Z 发送的是 SIGTSTP（20），程序可以捕获它做善后；SIGSTOP（19）不可捕获，进程只能被硬性冻住。
 
 ```bash
 kill 1234                # 默认 SIGTERM，优雅终止
@@ -147,8 +150,8 @@ kill %2                  # 终止作业 2（支持作业号）
 
 ```bash
 nohup python app.py > app.log 2>&1 &
-disown -h %1             # 让已启动的后台作业忽略 SIGHUP
-disown -a                # 忽略所有后台作业
+disown -h %1             # 标记作业 1：收到 SIGHUP 时忽略（作业仍在表中）
+disown -a                # 把所有作业从作业表移除（Shell 退出时都不再发 SIGHUP）
 ```
 
 - `nohup`（no hangup）：让进程忽略挂断信号，即使关闭终端进程也不退出；输出默认写入 `nohup.out`，建议显式重定向到自己的日志文件
