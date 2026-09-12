@@ -136,15 +136,15 @@ function initFullscreenToggle(): void {
       const btn = document.getElementById('mobile-fullscreen-btn');
       const span = btn?.querySelector('span');
       if (document.fullscreenElement) {
-        span && (span.textContent = '退出');
+        if (span) span.textContent = '退出';
         try {
           localStorage.setItem('fandex-fullscreen', 'true');
-        } catch {}
+        } catch { /* localStorage 不可用时静默降级 */ }
       } else {
-        span && (span.textContent = '全屏');
+        if (span) span.textContent = '全屏';
         try {
           localStorage.removeItem('fandex-fullscreen');
-        } catch {}
+        } catch { /* localStorage 不可用时静默降级 */ }
       }
     };
     document.addEventListener('fullscreenchange', onFullscreenChange);

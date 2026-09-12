@@ -196,8 +196,8 @@ function FrontendLab() {
   const [toolbarNote, setToolbarNote] = useState('');
   /** 存储用量提示 */
   const [storageWarning, setStorageWarning] = useState<string>('');
-  /** 当前作品字节数（用于本地占用提示） */
-  const [penBytes, setPenBytes] = useState(0);
+  /** 当前作品字节数（用于本地占用提示）：纯派生值，随 pen 渲染期计算 */
+  const penBytes = useMemo(() => estimatePenBytes(pen), [pen]);
   /** 窄屏标签页：当前聚焦的编辑器面板 */
   const [activePane, setActivePane] = useState<PaneKey>('html');
   /** iframe 引用（用于控制台消息来源校验） */
@@ -278,19 +278,15 @@ function FrontendLab() {
   }, []);
 
   /**
-   * 同步当前作品字节估算（用于本地占用提示）
-   */
-  useEffect(() => {
-    setPenBytes(estimatePenBytes(pen));
-  }, [pen]);
-
-  /**
    * 立即落盘当前作品（跳过防抖），供页面隐藏/关闭前兜底调用。
    * IndexedDB 写入在 pagehide 阶段发起即可被浏览器接受（尽力而为），
    * 与防抖自动保存互补，把"最后几百毫秒输入丢失"的窗口压到最小。
    */
+  // latest ref 模式：渲染期不入 ref（react-hooks/refs），改在渲染提交后同步
   const latestPenRef = useRef<FrontendPen | null>(null);
-  latestPenRef.current = pen;
+  useEffect(() => {
+    latestPenRef.current = pen;
+  }, [pen]);
 
   const flushPen = useCallback((source: FrontendPen) => {
     const now = Date.now();

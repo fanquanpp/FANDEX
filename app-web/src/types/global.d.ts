@@ -19,7 +19,6 @@
  * FANDEX 自定义全局类型声明
  */
 declare global {
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   interface Window {
     /**
      * 导出 Web Vitals 数据的全局 API
