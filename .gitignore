@@ -92,10 +92,6 @@ build/
 out/
 .output/
 
-# 例外：app-Android-old（旧版 App 历史归档）的内置离线文档资源目录恰好命名为
-# dist-mobile/，属源码资源而非构建产物，需从上方通用规则中重新包含
-!app-Android-old/app/src/main/assets/dist-mobile/
-
 # Rust / Tauri 编译产物
 target/
 src-tauri/target/
