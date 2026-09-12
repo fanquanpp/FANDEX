@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: Knuth-Morris-Pratt（KMP）字符串匹配算法：基于模式串自身结构构建部分匹配表（PMT/next 数组），实现 O(n+m) 线性时间匹配。涵盖 Morris 1970、Pratt 1970 独立发现与 Knuth 1970 复杂度证明的演进脉络，Knuth-Morris-Pratt 1977《Fast Pattern Matching in Strings》SIAM J. Comp. 6(2):323-350 DOI:10.1137/0206024 系统化发表；Cook 1971 字符串匹配下界、Aho-Corasick 1975 多模式扩展、Boyer-Moore 1977、Rabin-Karp 1987、Sunday 1990 变种对比；KMP 在 GNU grep、ESLint、IDE 语法检查、生物信息学 read 比对、Linux 内核字符串搜索中的应用；附 Python/C++/Java 多语言实现与 KMP 自动机、AC 自动机扩展。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/150-StringAlgorithms'
   - 'algorithm/010-AlgorithmAnalysisBasics'
@@ -17,6 +17,7 @@ prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/150-StringAlgorithms'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

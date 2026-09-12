@@ -6,13 +6,14 @@ category: 云与基础设施
 difficulty: intermediate
 description: 功能测试执行、自动化测试脚本编写、Selenium 框架、Unittest/pytest 框架、测试数据管理与页面对象模式。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'software-testing/010-TestBasicsMethod'
   - 'software-testing/140-PerformanceInterfaceTest'
   - 'software-testing/170-SecurityAndMobileTest'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「软件工程与测试」模块的第 8 篇，难度定位为进阶。重点内容：功能测试执行、自动化测试脚本编写、Selenium 框架、Unittest/pytest 框架、测试数据管理与页面对象模式。

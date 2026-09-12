@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 深入解析 CSS Backgrounds Module Level 3/4 多背景、background-size、background-clip、background-origin、background-attachment 的规范、绘制算法与工程实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/260-Gradient'
   - 'css/270-Shadow'
@@ -17,6 +17,7 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
   - 'css/230-StackingContext'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

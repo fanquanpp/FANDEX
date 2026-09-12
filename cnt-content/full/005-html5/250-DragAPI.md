@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: drag/drop
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/160-ProgressMeter'
   - 'html5/310-WebComponentsPWADevelopment'
@@ -14,6 +14,7 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

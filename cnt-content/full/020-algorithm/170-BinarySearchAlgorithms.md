@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 查找（Search）算法的形式化定义、顺序查找 $O(n)$、二分查找 $O(\log n)$、插值查找 $O(\log \log n)$、斐波那契查找、哈希查找 $O(1)$、BST/AVL/红黑树查找、B 树查找、跳表查找（Pugh 1990）、字符串查找（KMP 1977、Boyer-Moore 1977、Rabin-Karp）、布隆过滤器（Bloom 1970）的原理、实现与对比分析，涵盖 Mauchly 1946 二分查找、Luhn 1953 哈希表、Bayer-McCreight 1972 B 树、Guibas-Sedgewick 1978 红黑树、Bloom 1970 布隆过滤器、Knuth-Morris-Pratt 1977 KMP、Boyer-Moore 1977 字符串匹配等历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 11/12/13 章。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/020-ArrayAndDynamicArray'
@@ -21,6 +21,7 @@ prerequisites:
   - 'algorithm/020-ArrayAndDynamicArray'
   - 'algorithm/080-Tree'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: LeetCode 刷题指南系统化阐述在线算法评测平台的发展脉络（ACM ICPC 1970、Google Code Jam 2003-2023、Topcoder Open 2001、Meta Hacker Cup 2011、Codeforces 2009、AtCoder 2012、LeetCode 2015 by Winston Tang、LeetCode China 2018）、十大题型分类体系（数组/双指针、链表、树、图、二分查找、回溯、动态规划、贪心、滑动窗口、单调栈）、三遍刷题法与四步解题法、时间复杂度反推（$n \leq 20 \to O(2^n)$、$n \leq 100 \to O(n^3)$、$n \leq 10^4 \to O(n^2)$、$n \leq 10^6 \to O(n \log n)$、$n \leq 10^9 \to O(\log n)$）、高频题解模板（Python/C++/Java 三语言实现）、LeetCode Hot 100/Top Interview 150/Grind 75/NeetCode 150 学习路径对比、FAANG 与字节跳动/腾讯/阿里巴巴面试风格分析、LeetCode 题目到工业应用的映射（LRU Cache → Redis 淘汰策略、并查集 → Kubernetes 网络、单调栈 → Prometheus 监控）、LeetCode/LintCode/HackerRank/CodeSignal/牛客网五大平台对比。覆盖 100+ 经典题目索引（LC-1/11/15/42/72/200/300/1143 等），含 Bloom 分类法学习目标、ACM 格式参考文献（含 DOI）。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/140-RecursionAndBacktracking'
@@ -23,6 +23,7 @@ prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/140-RecursionAndBacktracking'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

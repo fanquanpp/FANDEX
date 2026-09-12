@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 内联样式、style 标签、外部 CSS、CSS 变量、伪类与媒体查询。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'svg/070-SVGColorFill'
   - 'svg/120-SVGSymbolReuse'
@@ -14,6 +14,7 @@ related:
 prerequisites:
   - 'svg/070-SVGColorFill'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 栈（Stack）与队列（Queue）的形式化定义、LIFO/FIFO 原理、顺序栈/链式栈/循环队列/链式队列/双端队列/单调栈/单调队列的实现与复杂度分析，涵盖 Bauer-Samelson 1955 叠加原理、Dijkstra 1965 信号量、Hoare 1978 CSP 等历史脉络，附 Python/C++/Java 多语言实现。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/020-ArrayAndDynamicArray'
@@ -20,6 +20,7 @@ prerequisites:
   - 'algorithm/020-ArrayAndDynamicArray'
   - 'algorithm/060-LinkedList'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

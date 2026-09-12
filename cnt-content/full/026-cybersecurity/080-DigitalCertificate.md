@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 数字证书原理：X.509 标准、PKI 体系、证书链验证与证书管理详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cybersecurity/340-SecureDevelopment'
   - 'cybersecurity/540-ComplianceAudit'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: OVER 子句、PARTITION BY、排名函数、偏移函数、帧定义与累计计算
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/120-DML'
   - 'sql/110-DDL'
@@ -14,6 +14,7 @@ related:
   - 'sql/440-PerformanceOptimization'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「SQL」模块的第 26 篇，难度定位为高级。重点内容：OVER 子句、PARTITION BY、排名函数、偏移函数、帧定义与累计计算

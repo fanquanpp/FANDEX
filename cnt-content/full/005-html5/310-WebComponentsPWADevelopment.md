@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Web组件与渐进式Web应用开发
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/220-EmbeddedContent'
   - 'html5/160-ProgressMeter'
@@ -16,6 +16,7 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

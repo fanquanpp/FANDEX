@@ -6,10 +6,11 @@ category: 云与基础设施
 difficulty: beginner
 description: 'DynamoDB 命令实战：建表与键设计、增删改查、索引与事务、流/TTL 与备份恢复。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related: []
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「云计算」模块的第 48 篇，难度定位为入门。重点内容：DynamoDB 命令实战：建表与键设计、增删改查、索引与事务、流/TTL 与备份恢复。

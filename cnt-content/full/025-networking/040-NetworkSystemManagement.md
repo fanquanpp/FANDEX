@@ -6,13 +6,14 @@ category: 云与基础设施
 difficulty: intermediate
 description: Windows Server部署、活动目录、DNS/DHCP/IIS/文件/终端服务、组策略、Linux服务器、Shell脚本、数据中心网络、无线网络规划与安全。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'networking/010-NetworkBasicsAndProtocol'
   - 'networking/030-NetworkWiringAndConstruction'
   - 'networking/020-OSITCPIPModel'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「Networking」模块的第 4 篇，难度定位为进阶。重点内容：Windows Server部署、活动目录、DNS/DHCP/IIS/文件/终端服务、组策略、Linux服务器、Shell脚本、数据中心网络、无线网络规划与安全。

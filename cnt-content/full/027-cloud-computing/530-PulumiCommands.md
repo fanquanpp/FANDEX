@@ -6,10 +6,11 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Pulumi 命令实战：项目初始化、配置与栈管理、预览部署、状态操作与策略合规。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related: []
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「云计算」模块的第 53 篇，难度定位为入门。重点内容：Pulumi 命令实战：项目初始化、配置与栈管理、预览部署、状态操作与策略合规。

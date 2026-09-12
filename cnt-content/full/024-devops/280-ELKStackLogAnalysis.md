@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: ELK Stack 日志分析：Elasticsearch 索引、Logstash 管道、Kibana 可视化。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'devops/250-Prometheus'
   - 'devops/260-GrafanaDashboards'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'devops/010-OverviewLinuxBasics'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

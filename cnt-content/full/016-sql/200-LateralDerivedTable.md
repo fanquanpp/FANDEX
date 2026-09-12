@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL LATERAL派生表：横向连接的语法、关联子查询展开、逐行生成结果与性能优化
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/170-SelfJoin'
   - 'sql/180-SemiAntiJoin'
@@ -14,6 +14,7 @@ related:
 prerequisites:
   - 'sql/020-OverviewStandard'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

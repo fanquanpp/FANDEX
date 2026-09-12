@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 经典面试题、业务场景 SQL、数据仓库 SQL 与编码规范
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/440-PerformanceOptimization'
   - 'sql/330-PLSQLStoredProcedure'
@@ -14,6 +14,7 @@ related:
   - 'sql/100-Constraint'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「SQL」模块的第 45 篇，难度定位为高级。重点内容：经典面试题、业务场景 SQL、数据仓库 SQL 与编码规范

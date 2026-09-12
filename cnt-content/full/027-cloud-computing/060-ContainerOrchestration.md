@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Docker 容器技术、Kubernetes 编排、Helm 包管理与容器镜像仓库。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cloud-computing/010-CloudComputingBasics'
   - 'cloud-computing/040-CloudNetworkStorage'
@@ -14,6 +14,7 @@ related:
   - 'cloud-computing/020-IaaSPaaSSaaS'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「云计算」模块的第 6 篇，难度定位为进阶。重点内容：Docker 容器技术、Kubernetes 编排、Helm 包管理与容器镜像仓库。

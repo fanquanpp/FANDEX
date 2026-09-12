@@ -6,10 +6,11 @@ category: 云与基础设施
 difficulty: beginner
 description: 'CloudFront 命令实战：分发创建与配置、源站与 OAC、缓存失效刷新、TLS 证书与边缘函数。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related: []
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「云计算」模块的第 56 篇，难度定位为入门。重点内容：CloudFront 命令实战：分发创建与配置、源站与 OAC、缓存失效刷新、TLS 证书与边缘函数。

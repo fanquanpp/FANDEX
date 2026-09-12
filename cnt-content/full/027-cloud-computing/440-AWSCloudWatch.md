@@ -6,10 +6,11 @@ category: 云与基础设施
 difficulty: beginner
 description: 'CloudWatch 命令实战：指标查询、日志组与 Logs Insights、告警、仪表盘与异常检测。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related: []
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「云计算」模块的第 44 篇，难度定位为入门。重点内容：CloudWatch 命令实战：指标查询、日志组与 Logs Insights、告警、仪表盘与异常检测。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: HTML5语义化标签详解：header、nav、main、article、section、aside、footer等，提升可访问性与SEO。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/080-HTML5DivSpanContainers'
   - 'html5/100-HTML5BasicContentTags'
@@ -15,6 +15,7 @@ related:
   - 'html5/190-HTML5FormValidation'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「HTML5」模块的第 17 篇，难度定位为入门。重点内容：HTML5语义化标签详解：header、nav、main、article、section、aside、footer等，提升可访问性与SEO。

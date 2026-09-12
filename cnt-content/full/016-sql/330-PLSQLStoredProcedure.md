@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 存储过程与函数、触发器、游标、异常处理、动态 SQL 与方言对比
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/320-AdvancedQuery'
   - 'sql/440-PerformanceOptimization'
@@ -14,6 +14,7 @@ related:
   - 'sql/090-DataType'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「SQL」模块的第 33 篇，难度定位为高级。重点内容：存储过程与函数、触发器、游标、异常处理、动态 SQL 与方言对比

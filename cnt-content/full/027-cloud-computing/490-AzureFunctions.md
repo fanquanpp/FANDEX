@@ -6,10 +6,11 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Azure Functions 实战：Core Tools 工作流、项目与函数创建、本地调试与部署、触发器配置。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related: []
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「云计算」模块的第 49 篇，难度定位为入门。重点内容：Azure Functions 实战：Core Tools 工作流、项目与函数创建、本地调试与部署、触发器配置。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第一课：5 分钟写出第一个网页，理解 HTML5 结构、语义化标签与核心特性。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/030-HTML5EnvSetupFirstPage'
   - 'html5/050-HTML5CommentsAndEntities'
@@ -15,6 +15,7 @@ related:
   - 'html5/170-SemanticTag'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「HTML5」模块的第 2 篇，难度定位为入门。重点内容：零基础第一课：5 分钟写出第一个网页，理解 HTML5 结构、语义化标签与核心特性。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Service Worker 全生命周期（注册/安装/激活/fetch 拦截）、Cache Storage 缓存策略、Web App Manifest、推送通知与后台同步的 PWA 完整专项。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/240-HTML5OfflineStorageWebAPI'
   - 'html5/310-WebComponentsPWADevelopment'
@@ -14,6 +14,7 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

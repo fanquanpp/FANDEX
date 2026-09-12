@@ -6,12 +6,13 @@ category: 工具链
 difficulty: advanced
 description: Git钩子自动化与大文件管理
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'git/110-HEADPointerBranchEssence'
   - 'git/130-MergeConflictResolution'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「Git」模块的第 34 篇，难度定位为高级。重点内容：Git钩子自动化与大文件管理

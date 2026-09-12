@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浮动、定位、BFC 与经典布局方案。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/050-CSS3BoxModelDetailed'
   - 'css/130-CSS3SelectorSystem'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

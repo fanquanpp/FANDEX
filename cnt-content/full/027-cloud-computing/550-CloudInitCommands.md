@@ -6,10 +6,11 @@ category: 云与基础设施
 difficulty: beginner
 description: 'cloud-init 实战：user-data 与实例初始化、软件包/用户/磁盘/网络配置与服务管理。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related: []
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「云计算」模块的第 55 篇，难度定位为入门。重点内容：cloud-init 实战：user-data 与实例初始化、软件包/用户/磁盘/网络配置与服务管理。

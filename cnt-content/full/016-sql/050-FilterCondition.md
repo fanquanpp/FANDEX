@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: SQL过滤条件：比较运算符、IN、BETWEEN、LIKE、IS NULL的语法、模式匹配与性能优化
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/100-Constraint'
   - 'sql/080-SelectExecutionOrder'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'sql/020-OverviewStandard'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

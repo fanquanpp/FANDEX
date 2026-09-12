@@ -6,13 +6,14 @@ category: 工具链
 difficulty: beginner
 description: Git 安装配置、用户信息设置与仓库初始化。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'git/010-Git'
   - 'git/050-GitBasicOperation'
   - 'git/100-GitBranchManagement'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「Git」模块的第 3 篇，难度定位为入门。重点内容：Git 安装配置、用户信息设置与仓库初始化。

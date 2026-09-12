@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: path 命令、贝塞尔曲线、弧线、相对坐标与复杂路径绘制技巧。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'svg/040-SVGBasicShapeDetailed'
   - 'svg/090-SVGTransform'
@@ -14,6 +14,7 @@ related:
 prerequisites:
   - 'svg/040-SVGBasicShapeDetailed'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

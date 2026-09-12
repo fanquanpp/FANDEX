@@ -6,13 +6,14 @@ category: 数据库
 difficulty: advanced
 description: 主从复制、哨兵模式自动故障转移、Redis Cluster无中心分片、集群代理、Redis Flex混合存储、Redis for AI套件。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'redis/010-OverviewCoreDataStructure'
   - 'redis/140-PersistenceModule'
   - 'redis/110-CacheStrategyAdvancedFeature'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「Redis 与 MongoDB」模块的第 18 篇，难度定位为高级。重点内容：主从复制、哨兵模式自动故障转移、Redis Cluster无中心分片、集群代理、Redis Flex混合存储、Redis for AI套件。

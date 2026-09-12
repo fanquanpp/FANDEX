@@ -6,13 +6,14 @@ category: 云与基础设施
 difficulty: intermediate
 description: CI/CD 原理、GitHub Actions、GitLab CI、Jenkins、ArgoCD 与发布策略。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'devops/050-ContainerDocker'
   - 'devops/080-Kubernetes'
   - 'devops/240-MonitorAndObservability'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「运维与中间件」模块的第 14 篇，难度定位为进阶。重点内容：CI/CD 原理、GitHub Actions、GitLab CI、Jenkins、ArgoCD 与发布策略。

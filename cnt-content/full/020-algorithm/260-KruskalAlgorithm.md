@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: Kruskal 最小生成树算法：Joseph B. Kruskal 1956《On the Shortest Spanning Subtree of a Graph》Proceedings of the American Mathematical Society 7(1):48-50 DOI:10.1090/S0002-9939-1956-0078686-7 提出的贪心加边算法，与 Prim 1957、Jarník 1930、Borůvka 1926 共同构成 MST 算法家族。算法以 $O(E \log E)$ 时间、$O(V)$ 空间求解连通无向加权图的最小生成树，借助并查集（Tarjan 1975 路径压缩+按秩合并）实现高效的环检测。本文涵盖贪心选择性质证明、切割性质与回路性质、与 Prim/Borůvka 算法的对比、最小生成森林/次小生成树/TSP 2-近似应用、NetworkX 与 Boost Graph Library 工业级实现，附 Python/C++/Java 多语言实现。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/110-GraphAlgorithms'
@@ -22,6 +22,7 @@ prerequisites:
   - 'algorithm/180-UnionFind'
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

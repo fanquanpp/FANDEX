@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 深入解析 CSS 优先级（Specificity）与层叠算法（Cascade Algorithm）的规范、计算、工程实践与跨框架对比
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/240-CSS3FlexboxFlexLayout'
   - 'css/140-PseudoClassPseudoElement'
@@ -18,6 +18,7 @@ prerequisites:
   - 'css/130-CSS3SelectorSystem'
   - 'css/180-CSSPriorityQuickStart'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

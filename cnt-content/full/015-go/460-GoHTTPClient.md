@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: net/http 客户端实战：请求构建、超时与连接池设计、重试退避、流式处理与 httptest 测试。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'go/400-GoTime'
   - 'go/330-GoJSON'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'go/020-GoOverviewEnvSetup'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

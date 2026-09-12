@@ -6,12 +6,13 @@ category: 工具链
 difficulty: beginner
 description: Markdown 概述与核心特点。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'markdown/020-HeadingSyntax'
   - 'markdown/030-ParagraphLineBreak'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「Markdown」模块的第 1 篇，难度定位为入门。重点内容：Markdown 概述与核心特点。

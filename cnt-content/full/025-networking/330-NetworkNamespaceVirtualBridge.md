@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Linux 网络命名空间（netns）与虚拟网桥（bridge）：容器网络基础。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/250-KeepalivedDualHotStandby'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'networking/010-NetworkBasicsAndProtocol'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

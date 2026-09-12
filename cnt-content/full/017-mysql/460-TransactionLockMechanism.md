@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: ACID 特性、隔离级别、MVCC 与锁类型。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/670-ShardingStrategy'
   - 'mysql/810-JSONTypeJSONTable'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'mysql/160-View'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

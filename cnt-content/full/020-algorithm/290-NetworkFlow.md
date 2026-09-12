@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 网络流算法：流网络形式化定义 (G,s,t,c,f)、最大流最小割定理、Ford-Fulkerson 方法 O(E·|f*|)、Edmonds-Karp 算法 O(VE²)、Dinic 算法 O(V²E)、Push-Relabel 算法 O(V²E)/O(V³)、ISAP、最小费用最大流、网络单纯形，覆盖二分图匹配、Project Selection、Image Segmentation、Baseball Elimination、Airline Scheduling 等工程应用，附多语言实现。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/110-GraphAlgorithms'
   - 'algorithm/270-TopologicalSorting'
@@ -19,6 +19,7 @@ prerequisites:
   - 'algorithm/110-GraphAlgorithms'
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

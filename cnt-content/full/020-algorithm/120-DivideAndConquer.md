@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 分治（Divide and Conquer）算法的形式化定义、三步范式（分解-解决-合并）、递推关系 $T(n) = aT(n/b) + f(n)$ 与主定理（Master Theorem, Bentley-Haken-Saxe 1980）三种情况的完整证明、分治与递归的关系、归并排序（von Neumann 1945 EDVAC）、快速排序（Hoare 1961）、Karatsuba 大整数乘法（Karatsuba-Ofman 1963 Soviet Physics-Doklady 7:595-596）、Strassen 矩阵乘法（Strassen 1969 Numerische Mathematik 13(4):354-356）、快速傅里叶变换 FFT（Cooley-Tukey 1965 Mathematics of Computation 19:297-301）、最近点对（Bentley-Shamos 1976）的原理、实现与对比分析，涵盖 von Neumann 1945 EDVAC、Karatsuba 1960 莫斯科大学研讨会、Cooley-Tukey 1965 IBM Watson、Strassen 1969 突破 $O(n^3)$、Bentley-Haken-Saxe 1980 主定理的历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 2/4/7 章。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/030-SortAlgorithm'
@@ -21,6 +21,7 @@ prerequisites:
   - 'algorithm/030-SortAlgorithm'
   - 'algorithm/140-RecursionAndBacktracking'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

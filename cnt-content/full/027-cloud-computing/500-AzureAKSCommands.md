@@ -6,10 +6,11 @@ category: 云与基础设施
 difficulty: beginner
 description: 'AKS 命令实战：集群创建、凭证访问、节点池、升级维护、自动伸缩与网络/安全配置。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related: []
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「云计算」模块的第 50 篇，难度定位为入门。重点内容：AKS 命令实战：集群创建、凭证访问、节点池、升级维护、自动伸缩与网络/安全配置。

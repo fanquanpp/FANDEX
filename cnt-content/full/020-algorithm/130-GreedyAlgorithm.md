@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 贪心（Greedy）算法的形式化定义、贪心选择性质与最优子结构、拟阵理论（Edmonds 1971）统一框架、交换论证/保持领先/势能下降三大正确性证明方法、活动选择、哈夫曼编码（Huffman 1952）、Kruskal 最小生成树（Kruskal 1956）、Prim 最小生成树（Prim 1957）、Dijkstra 单源最短路（Dijkstra 1959）、分数背包、任务调度、区间调度的原理、实现与对比分析，涵盖 Huffman 1952 MIT、Kruskal 1956 Proc. AMS、Prim 1957 BSTJ、Dijkstra 1959 Numerische Mathematik、Rado 1957、Edmonds 1971 Mathematical Programming 的历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 16/23/24 章。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/110-GraphAlgorithms'
   - 'algorithm/120-DivideAndConquer'
@@ -21,6 +21,7 @@ prerequisites:
   - 'algorithm/110-GraphAlgorithms'
   - 'algorithm/090-HeapAndPriorityQueue'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

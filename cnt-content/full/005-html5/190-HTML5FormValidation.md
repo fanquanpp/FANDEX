@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 表单控件、输入类型、内建验证与自定义校验。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/170-SemanticTag'
   - 'html5/180-Accessibility'
@@ -14,6 +14,7 @@ related:
   - 'html5/040-DocTypeDeclaration'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「HTML5」模块的第 19 篇，难度定位为进阶。重点内容：表单控件、输入类型、内建验证与自定义校验。

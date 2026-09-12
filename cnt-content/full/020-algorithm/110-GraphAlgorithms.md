@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 图的形式化定义、表示方法、遍历算法、最短路径、最小生成树、强连通分量与拓扑排序，附正确性证明、复杂度分析与多语言实现，覆盖 CLRS 4th 风格教学大纲。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/070-HashTable'
   - 'algorithm/080-Tree'
@@ -22,6 +22,7 @@ prerequisites:
   - 'algorithm/050-SearchAlgorithm'
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

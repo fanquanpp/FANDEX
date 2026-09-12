@@ -6,13 +6,14 @@ category: 云与基础设施
 difficulty: intermediate
 description: OWASP Top 10漏洞、SQL注入、XSS、CSRF、文件上传与命令执行漏洞、渗透测试流程、Nmap扫描、Burp Suite漏洞扫描。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cybersecurity/010-SecurityBasicsDefense'
   - 'cybersecurity/580-BinarySecurityAndIncidentResponse'
   - 'cybersecurity/370-SecurityToolsPractice'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「网络安全」模块的第 15 篇，难度定位为进阶。重点内容：OWASP Top 10漏洞、SQL注入、XSS、CSRF、文件上传与命令执行漏洞、渗透测试流程、Nmap扫描、Burp Suite漏洞扫描。

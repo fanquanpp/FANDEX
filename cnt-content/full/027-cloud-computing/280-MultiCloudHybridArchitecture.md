@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: '多云与混合云架构：选型动因与代价、VPC 互联（Peering/VPN/专线）、Terraform 多 Provider、统一身份与监控、rclone 跨云数据同步。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cloud-computing/170-Observability'
   - 'cloud-computing/270-AWSCore'
@@ -15,6 +15,7 @@ related:
 prerequisites:
   - 'cloud-computing/010-CloudComputingBasics'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

@@ -6,13 +6,14 @@ category: 云与基础设施
 difficulty: intermediate
 description: Prometheus+Grafana、日志、链路追踪、OpenTelemetry 与 SLO/SLI/SLA。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'devops/140-CICDPipeline'
   - 'devops/200-IaC'
   - 'devops/360-CloudNativeSRE'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「运维与中间件」模块的第 24 篇，难度定位为进阶。重点内容：Prometheus+Grafana、日志、链路追踪、OpenTelemetry 与 SLO/SLI/SLA。

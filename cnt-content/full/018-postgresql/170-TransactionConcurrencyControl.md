@@ -6,13 +6,14 @@ category: 数据库
 difficulty: intermediate
 description: MVCC多版本并发控制、快照隔离、事务隔离级别、锁机制、死锁检测、VACUUM机制与冻结。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'postgresql/010-OverviewInstallConfig'
   - 'postgresql/240-IndexQueryOptimization'
   - 'postgresql/530-AdvancedSQLExtension'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「PostgreSQL」模块的第 17 篇，难度定位为进阶。重点内容：MVCC多版本并发控制、快照隔离、事务隔离级别、锁机制、死锁检测、VACUUM机制与冻结。

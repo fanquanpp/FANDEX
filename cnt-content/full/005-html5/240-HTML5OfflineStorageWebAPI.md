@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: localStorage、sessionStorage、IndexedDB 与 Web Workers。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'javascript/470-IndexedDBADatabaseInYourBrowser'
   - 'html5/230-HTML5MultimediaCanvasDrawing'
@@ -16,6 +16,7 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

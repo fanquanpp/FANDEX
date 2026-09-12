@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 计算复杂性理论的核心体系：以 Turing 1936《On Computable Numbers, with an Application to the Entscheidungsproblem》Proc. LMS 42:230-265 图灵机模型与 Church 1936《An Unsolvable Problem of Elementary Number Theory》Amer. J. Math. 58(2):345-363 λ-演算为根基，梳理 Gödel 1931 不完备性定理、Rice 1953《Classes of Recursively Enumerable Sets and Their Decision Problems》Trans. AMS 74:358-366、Hartmanis-Stearns 1965《On the Computational Complexity of Algorithms》Trans. AMS 117:285-306 复杂性类奠基、Cook 1971《The Complexity of Theorem-Proving Procedures》STOC 151-158 Cook-Levin 定理、Karp 1972《Reducibility Among Combinatorial Problems》21 个 NP 完全问题、Levin 1973《Universal Search Problems》Probl. Peredachi Inf. 9(3):115-116 独立发现、Savitch 1970《Relationships Between Nondeterministic and Deterministic Tape Complexities》JCSS 4(2):177-192、Baker-Gill-Solovay 1975《Relativizations of the P=?NP Question》SICOMP 4(4):431-442 相对化屏障、Ladner 1975《On the Structure of Polynomial Time Reducibility》JACM 22(1):155-171 NP-intermediate、PCP 定理（Arora-Safra 1998《Probabilistic Checking of Proofs》JACM 45(1):70-122；Arora-Lund-Motwani-Sudan-Szegedy 1998 JACM 45(3):501-555；Dinur 2007 组合证明）的完整脉络，覆盖 P/NP/NP-Hard/NP-Complete 形式化定义、多项式归约、摊还分析三方法（Sleator-Tarjan 1985 CACM 28(2):202-208）、竞争分析（Sleator-Tarjan 1985）、在线算法、数据流模型、P vs NP 千禧年大奖问题，附 Python/C++/Java 多语言实现与经典归约链（SAT → 3-SAT → CLIQUE → VERTEX-COVER → HAMILTONIAN-CYCLE → TSP）及 LeetCode 经典题解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/160-DynamicProgramming'
@@ -20,6 +20,7 @@ prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/160-DynamicProgramming'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Web无障碍访问（A11y）核心概念、ARIA属性、键盘导航、屏幕阅读器适配与WCAG标准。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/100-HTML5BasicContentTags'
   - 'html5/170-SemanticTag'
@@ -14,6 +14,7 @@ related:
   - 'html5/230-HTML5MultimediaCanvasDrawing'
 prerequisites: []
 ---
+
 ## 学习目标
 
 本文是「HTML5」模块的第 18 篇，难度定位为进阶。重点内容：Web无障碍访问（A11y）核心概念、ARIA属性、键盘导航、屏幕阅读器适配与WCAG标准。

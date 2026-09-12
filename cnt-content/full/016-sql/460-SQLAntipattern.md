@@ -6,13 +6,14 @@ category: 数据库
 difficulty: intermediate
 description: SQL 开发中的常见反模式：存储 CSV 列、滥用枚举、预优化、隐式类型转换等，以及对应的正确实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/250-RecursiveCTETreeTraversal'
   - 'sql/410-OptimisticPessimisticLock'
 prerequisites:
   - 'sql/020-OverviewStandard'
 ---
+
 ## 前置知识
 
 建议先阅读以下内容再进入本文：
