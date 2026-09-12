@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Web Workers
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/250-DragAPI'
   - 'html5/260-Geolocation'
@@ -14,6 +14,12 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 > 前置要求（中级）：本节需要 JavaScript 中级基础——Promise、async/await、事件监听、class（`javascript/001`-`005`、`039`、`023`、`017`），以及事件循环概念（`javascript/027`）。Worker 内没有 DOM/window，所有通信都走 postMessage 消息，先理解"消息传递"再写代码。
 >

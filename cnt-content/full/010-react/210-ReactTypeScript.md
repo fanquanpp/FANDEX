@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React + TypeScript 实战：Props 与事件类型、Hooks 泛型、Context 类型安全模式、React 19 类型系统变化（ref 即 prop、useRef 必传初始值、JSX 命名空间迁移）与常用类型速查。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'react/190-ReactErrorBoundary'
   - 'react/200-ReactForm'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'react/010-OverviewEnvSetup'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与环境配置](/react/010-OverviewEnvSetup)
 
 ## 1. 一句话理解
 

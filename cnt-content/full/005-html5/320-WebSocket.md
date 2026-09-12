@@ -6,13 +6,19 @@ category: 前端技术
 difficulty: intermediate
 description: WebSocket
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/300-ServiceWorkerPWA'
   - 'html5/350-MicrodataJSONLD'
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 > 前置要求：需要 Promise、async/await、事件监听基础（`javascript/001`-`005`、`039`、`023`）；理解 HTTP 请求-响应模型（`networking/001`）有助于理解握手过程。速查区"WebSocket vs SSE"给出单向推送场景的轻量替代，实际项目按"双向/单向"选型。
 

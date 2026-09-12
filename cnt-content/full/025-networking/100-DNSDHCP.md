@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: DNS 解析体系与加密演进（DoT/DoH/DoQ）、DNSSEC 信任链、DHCP 租约机制与 DHCPv6/SLAAC。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'networking/190-NetworkDiagnosis'
   - 'networking/180-NetworkDesignPlanning'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'networking/010-NetworkBasicsAndProtocol'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [网络基础与协议](/networking/010-NetworkBasicsAndProtocol)
 
 前置知识：TCP/IP 分层模型、UDP/TCP 的区别、子网划分（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)）。
 

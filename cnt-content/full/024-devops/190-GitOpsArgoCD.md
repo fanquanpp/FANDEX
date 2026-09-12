@@ -6,13 +6,19 @@ category: 云与基础设施
 difficulty: intermediate
 description: GitOps 与 ArgoCD 持续交付：声明式基础设施、Git 单一事实来源与自动同步。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'devops/280-ELKStackLogAnalysis'
   - 'devops/290-OpenTelemetry'
 prerequisites:
   - 'devops/010-OverviewLinuxBasics'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与 Linux 基础](/devops/010-OverviewLinuxBasics)
 
 ## 0. 一句话理解
 

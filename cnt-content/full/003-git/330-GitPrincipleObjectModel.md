@@ -6,12 +6,25 @@ category: 工具链
 difficulty: advanced
 description: Git 底层对象模型、引用机制与存储原理。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'git/200-TagManagement'
 prerequisites: []
 ---
 
+## 学习目标
+
+本文是「Git」模块的第 33 篇，难度定位为高级。重点内容：Git 底层对象模型、引用机制与存储原理。
+
+主要章节：
+
+- 1. Git 概述
+- 2. Git 基础概念
+- 3. Git 基本命令
+- 4. Git 工作流程
+- 5. Git 配置
+- 6. Git 钩子
+- ……共 16 个章节
 
 ## 1. Git 概述
 

@@ -15,7 +15,11 @@
 - `app-desktop` / `app-desktop-portable`：Tauri Windows 桌面端（主开发与
   便携版打包）；
 - `app-Android-new` / `app-Android-old`：Android 双端（纯 Gradle 工程，不参与
-  pnpm workspace；构建前由 `generate-content.mjs` 自动生成内容 assets）；
+  pnpm workspace）。assets 中的内容域（new：`docs`/`metadata`/`syntax-data`，
+  old：`dist-mobile`）为生成产物，**不入库**——构建 APK 前必须先运行对应
+  生成脚本（new：`scripts/generate-content.mjs`，old：
+  `scripts/generate-legacy-content.mjs`），CI 构建已自动执行；assets 中的
+  `mermaid/`、`markdown-res/` 为手工内嵌的离线运行时资源，正常入库）；
 - `shd-shared`：共享层——`metadata/modules.json`（模块注册表、分类色与
   分类中文名 `categoryLabels`）、`styles/tokens.css`（设计与动效语义令牌）
   及 tokens / utl-utils / assets 子包；

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 窗口函数、CTE与递归CTE、横向连接、分组集、MERGE语句、JSON_TABLE、全文检索、PostGIS、PL/pgSQL、触发器、FDW。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'postgresql/170-TransactionConcurrencyControl'
   - 'postgresql/240-IndexQueryOptimization'
@@ -14,6 +14,19 @@ related:
 prerequisites: []
 ---
 
+## 学习目标
+
+本文是「PostgreSQL」模块的第 53 篇，难度定位为高级。重点内容：窗口函数、CTE与递归CTE、横向连接、分组集、MERGE语句、JSON_TABLE、全文检索、PostGIS、PL/pgSQL、触发器、FDW。
+
+主要章节：
+
+- 1. 窗口函数
+- 2. CTE 与递归 CTE
+- 3. 横向连接（LATERAL）
+- 4. 分组集（Grouping Sets）
+- 5. MERGE 语句增强
+- 6. JSON_TABLE 标准化
+- ……共 11 个章节
 
 ## 1. 窗口函数
 

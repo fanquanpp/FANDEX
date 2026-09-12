@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS 媒体查询完整原理：@media 语法、媒体特性、响应式断点、深色模式与 matchMedia。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/330-CSSAnimationTransition'
   - 'css/280-BorderRadius'
@@ -16,6 +16,11 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
 
 ## 1. 历史动机与发展脉络
 

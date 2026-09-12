@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS transition过渡、animation动画、关键帧、变换transform与性能优化详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/290-BackgroundEnhancement'
   - 'css/250-CSS3GridGridLayout'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
 
 ## 1. CSS 过渡（Transition）
 

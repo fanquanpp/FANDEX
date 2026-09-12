@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: :nth-child、:not、:is、::before、::after
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/210-TraditionalLayoutTech'
   - 'css/240-CSS3FlexboxFlexLayout'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
 
 ## 伪元素
 

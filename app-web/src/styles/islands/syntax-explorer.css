@@ -23,9 +23,9 @@
     z-index: 30;
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
-    margin: 0 calc(var(--spacing-md) * -1);
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-4);
+    margin: 0 calc(var(--space-4) * -1);
     background: color-mix(in oklch, var(--color-bg-primary) 88%, transparent);
     backdrop-filter: blur(12px) saturate(160%);
     -webkit-backdrop-filter: blur(12px) saturate(160%);
@@ -39,10 +39,10 @@
     gap: 6px;
     padding: 3px 10px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-sm, 2px);
+    border-radius: var(--radius-sm, 2px);
     background: transparent;
     color: var(--color-text-secondary);
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.74em;
     letter-spacing: 0.02em;
     cursor: pointer;
@@ -53,12 +53,12 @@
   }
 
   .syntax-lang-chip:hover {
-    color: var(--color-text);
+    color: var(--color-fg-primary);
     border-color: color-mix(in oklch, var(--lang-color, var(--color-accent-base)) 45%, transparent);
   }
 
   .syntax-lang-chip.is-active {
-    color: var(--color-text);
+    color: var(--color-fg-primary);
     border-color: color-mix(in oklch, var(--lang-color, var(--color-accent-base)) 60%, transparent);
     background-color: color-mix(in oklch, var(--lang-color, var(--color-accent-base)) 9%, transparent);
   }
@@ -87,10 +87,10 @@
    * 2. 元信息与状态提示
    * ============================================================ */
   .syntax-meta {
-    padding: var(--spacing-sm) var(--spacing-md) 0;
+    padding: var(--space-2) var(--space-4) 0;
     font-size: 0.76em;
     color: var(--color-text-tertiary);
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     letter-spacing: 0.02em;
     min-height: 1.6em;
   }
@@ -99,17 +99,17 @@
   .syntax-error {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    margin: var(--spacing-md);
-    padding: var(--spacing-sm) var(--spacing-md);
-    border: 1px solid color-mix(in srgb, var(--color-error) 40%, transparent);
-    background: color-mix(in srgb, var(--color-error) 8%, var(--color-bg-card));
-    color: var(--color-error);
+    gap: var(--space-2);
+    margin: var(--space-4);
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid color-mix(in srgb, var(--color-danger-base) 40%, transparent);
+    background: color-mix(in srgb, var(--color-danger-base) 8%, var(--color-bg-card));
+    color: var(--color-danger-base);
     font-size: 0.82em;
   }
 
   .syntax-empty {
-    padding: var(--spacing-2xl) var(--spacing-md);
+    padding: var(--space-12) var(--space-4);
     text-align: center;
     color: var(--color-text-tertiary);
     font-size: 0.86em;
@@ -124,8 +124,8 @@
   .syntax-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap: var(--spacing-md);
-    padding: var(--spacing-md) 0;
+    gap: var(--space-4);
+    padding: var(--space-4) 0;
   }
 
   /* 按钮语义重置：继承字体、左对齐、整卡可点击 */
@@ -150,14 +150,14 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-family: var(--font-code);
+    font-family: var(--font-family-code);
     font-size: 0.66rem;
     color: var(--color-text-tertiary);
   }
 
   /* 卡片 hover 时公式行转为语言主题色（与标题变色节奏一致） */
   .syntax-card:hover .syntax-card__formula {
-    color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 75%, var(--color-text));
+    color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 75%, var(--color-fg-primary));
   }
 
   /* ============================================================
@@ -167,7 +167,7 @@
    * 此处仅保留块级居中布局与主操作区横向内边距 */
   .syntax-more {
     display: block;
-    margin: var(--spacing-sm) auto var(--spacing-2xl);
+    margin: var(--space-2) auto var(--space-12);
     padding: 0 var(--space-4);
     height: var(--size-control-sm);
   }
@@ -190,12 +190,13 @@
     -webkit-backdrop-filter: blur(6px);
   }
 
+  /* 面板开合动画时长与缓动消费 --motion-* 令牌，与全站动效观感统一 */
   .syntax-panel-overlay[data-state='open'] {
-    animation: syntax-panel-fade-in 0.2s ease both;
+    animation: syntax-panel-fade-in var(--motion-duration-fast) var(--motion-easing-out) both;
   }
 
   .syntax-panel-overlay[data-state='closed'] {
-    animation: syntax-panel-fade-out 0.15s ease both;
+    animation: syntax-panel-fade-out var(--motion-duration-fast) var(--motion-easing-out) both;
   }
 
   /* 面板主体：居中卡片，宽度自适应，内容超高时内部滚动 */
@@ -206,34 +207,34 @@
     z-index: calc(var(--z-modal, 300) + 1);
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-sm);
+    gap: var(--space-2);
     width: min(760px, calc(100vw - 40px));
     max-height: min(82vh, 720px);
     min-width: 0;
     overflow: auto;
-    padding: var(--spacing-xl);
+    padding: var(--space-8);
     background: var(--color-bg-card);
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-md, 4px);
+    border-radius: var(--radius-md, 4px);
     box-shadow: var(--shadow-lg);
     transform: translate(-50%, -50%);
   }
 
   .syntax-panel[data-state='open'] {
-    animation: syntax-panel-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+    animation: syntax-panel-in var(--motion-duration-normal) var(--motion-easing-out) both;
   }
 
   .syntax-panel[data-state='closed'] {
-    animation: syntax-panel-out 0.15s ease both;
+    animation: syntax-panel-out var(--motion-duration-fast) var(--motion-easing-out) both;
   }
 
   /* 面板头部：语言徽标 + 来源文档 */
   .syntax-panel__header {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--space-2);
     min-width: 0;
-    padding-bottom: var(--spacing-sm);
+    padding-bottom: var(--space-2);
     border-bottom: 1px solid var(--color-border-light);
   }
 
@@ -242,7 +243,7 @@
     padding: 2px 8px;
     border-radius: 2px;
     color: var(--color-text-inverse, #fff);
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.68em;
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -261,11 +262,11 @@
   /* 语法要点 */
   .syntax-panel__section {
     margin: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 1.28em;
     font-weight: 700;
     line-height: 1.35;
-    color: var(--color-text);
+    color: var(--color-fg-primary);
   }
 
   .syntax-panel__name {
@@ -284,8 +285,8 @@
     border-left: 3px solid color-mix(in oklch, var(--lang-color, var(--color-accent-base)) 65%, transparent);
     border-radius: 2px;
     background: var(--color-bg-code);
-    color: var(--color-text);
-    font-family: var(--font-code);
+    color: var(--color-fg-primary);
+    font-family: var(--font-family-code);
     font-size: 0.82em;
     line-height: 1.6;
     white-space: pre-wrap;
@@ -306,13 +307,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-sm);
+    gap: var(--space-2);
     padding: 4px 8px;
     border-bottom: 1px solid var(--color-border-light);
   }
 
   .syntax-panel__lang {
-    font-family: var(--font-code);
+    font-family: var(--font-family-code);
     font-size: 0.66em;
     letter-spacing: 0.06em;
     text-transform: uppercase;
@@ -333,14 +334,14 @@
 
   .syntax-panel__pre {
     margin: 0;
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--space-2) var(--space-4);
     max-height: 300px;
     overflow: auto;
-    font-family: var(--font-code);
+    font-family: var(--font-family-code);
     font-size: 0.78em;
     line-height: 1.6;
     background: transparent;
-    color: var(--color-text);
+    color: var(--color-fg-primary);
     tab-size: 2;
     overflow-wrap: anywhere;
     overscroll-behavior: contain;
@@ -375,9 +376,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-sm);
+    gap: var(--space-2);
     flex-wrap: wrap;
-    padding-top: var(--spacing-sm);
+    padding-top: var(--space-2);
     border-top: 1px solid var(--color-border-light);
   }
 
@@ -446,18 +447,18 @@
 
   @media (max-width: 768px) {
     .syntax-langs {
-      margin: 0 calc(var(--spacing-sm) * -1);
-      padding: var(--spacing-sm);
+      margin: 0 calc(var(--space-2) * -1);
+      padding: var(--space-2);
     }
 
     .syntax-grid {
       grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
-      gap: var(--spacing-sm);
-      padding: var(--spacing-sm) 0;
+      gap: var(--space-2);
+      padding: var(--space-2) 0;
     }
 
     .syntax-panel {
-      padding: var(--spacing-md);
+      padding: var(--space-4);
     }
   }
 

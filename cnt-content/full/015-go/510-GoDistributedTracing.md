@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: OpenTelemetry Go 实战：Span 与采样、OTLP 导出、HTTP/gRPC 集成、trace_id 关联日志与工程化要点。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'go/480-GoMiddleware'
   - 'go/490-GoOAuth2'
@@ -16,6 +16,11 @@ prerequisites:
   - 'go/020-GoOverviewEnvSetup'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [Go 概述与环境配置](/go/020-GoOverviewEnvSetup)
 
 ## 概述
 

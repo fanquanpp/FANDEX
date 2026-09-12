@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 字符串匹配的形式化定义（模式串在主串中的出现位置搜索）、KMP/Boyer-Moore/Rabin-Karp/Sunday/Z 函数等单模式匹配、Aho-Corasick 多模式匹配、后缀数组（倍增/DC3/SA-IS 线性算法）、后缀自动机（endpos 等价类）、后缀树（Ukkonen 线性算法）以及字符串动态规划（LCS、编辑距离、最长回文）的系统化讲解，覆盖复杂度证明、多语言实现（Python/C++/Java）。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/160-DynamicProgramming'
   - 'algorithm/140-RecursionAndBacktracking'
@@ -22,7 +22,14 @@ prerequisites:
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [数组与动态数组](/algorithm/020-ArrayAndDynamicArray)
+- [树](/algorithm/080-Tree)
+- [离散数学](/cs-fundamentals/540-DiscreteMathematics)
 
 ## 第 1 章 学习目标与导论
 

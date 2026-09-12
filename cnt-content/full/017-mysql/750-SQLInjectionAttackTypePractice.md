@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 联合注入、盲注、报错注入与绕过技巧。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/900-MySQLApplicationController'
   - 'mysql/740-SQLInjectionBasicsDetection'
@@ -16,6 +16,11 @@ prerequisites:
   - 'mysql/740-SQLInjectionBasicsDetection'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [SQL 注入基础与检测](/mysql/740-SQLInjectionBasicsDetection)
 
 ## 1. SQL 注入攻击类型 (Attack Types)
 

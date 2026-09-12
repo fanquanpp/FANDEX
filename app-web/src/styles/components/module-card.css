@@ -29,12 +29,12 @@
   .module-card {
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-4);
     text-decoration: none;
     background: var(--color-bg-card);
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-md, 4px);
+    border-radius: var(--radius-md, 4px);
     box-shadow: var(--shadow-xs);
     /* 动效令牌驱动：hover/active 即时反馈（ark: 直接交互 75ms instant）
        使用 instant 确保 hover 无迟钝卡顿感，跟手响应 */
@@ -95,7 +95,7 @@
   .card-header {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--space-1);
     min-width: 0;
   }
 
@@ -166,10 +166,10 @@
    * 4. 卡片标题
    * ============================================================ */
   .card-title {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.85rem;
     font-weight: var(--font-weight-semibold, 600);
-    color: var(--color-text);
+    color: var(--color-fg-primary);
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -210,7 +210,7 @@
   @media (max-width: 768px) {
     .module-card {
       width: 100%;
-      padding: var(--spacing-sm) var(--spacing-md);
+      padding: var(--space-2) var(--space-4);
     }
 
     .card-icon {
@@ -231,7 +231,7 @@
   /* 超小屏：进一步紧凑 */
   @media (max-width: 480px) {
     .module-card {
-      padding: var(--spacing-xs) var(--spacing-sm);
+      padding: var(--space-1) var(--space-2);
       gap: 4px;
     }
 

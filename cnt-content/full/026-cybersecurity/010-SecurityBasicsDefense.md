@@ -6,12 +6,26 @@ category: 云与基础设施
 difficulty: beginner
 description: 防火墙策略配置、IDS/IPS入侵检测与防御、系统安全加固、对称/非对称加密算法、哈希算法、SSL/TLS协议。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cybersecurity/150-WebSecurityPenetrationTesting'
   - 'cybersecurity/580-BinarySecurityAndIncidentResponse'
 prerequisites: []
 ---
+
+## 学习目标
+
+本文是「网络安全」模块的第 1 篇，难度定位为入门。重点内容：防火墙策略配置、IDS/IPS入侵检测与防御、系统安全加固、对称/非对称加密算法、哈希算法、SSL/TLS协议。
+
+主要章节：
+
+- 1. 防火墙策略配置
+- 2. 入侵检测系统（IDS）
+- 3. 系统安全加固
+- 4. 对称加密算法
+- 5. 非对称加密算法
+- 6. 哈希算法
+- ……共 16 个章节
 
 ## 1. 防火墙策略配置
 

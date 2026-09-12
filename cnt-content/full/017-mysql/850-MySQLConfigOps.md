@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 参数调优、日志管理、备份恢复与监控。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/810-JSONTypeJSONTable'
   - 'mysql/460-TransactionLockMechanism'
@@ -16,7 +16,11 @@ prerequisites:
   - 'mysql/160-View'
 ---
 
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [视图语法速查手册](/mysql/160-View)
 
 ## 1. 基本操作 (Basic Ops)
 

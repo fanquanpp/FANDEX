@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 基础选择器、组合选择器、伪类伪元素与优先级。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/020-CSS3OverviewBasicSyntax'
   - 'css/050-CSS3BoxModelDetailed'
@@ -17,6 +17,13 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
   - 'css/050-CSS3BoxModelDetailed'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+- [CSS3 盒模型详解](/css/050-CSS3BoxModelDetailed)
 
 ## 1. 基础选择器
 

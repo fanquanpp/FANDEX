@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 网格容器与项目属性、区域命名与响应式网格。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/270-Shadow'
   - 'css/290-BackgroundEnhancement'
@@ -16,6 +16,11 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
 
 > 前置依赖：基础选择器与盒模型。本篇为完整版，可配合 068-Grid 速查复习。
 

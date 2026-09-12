@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: database/sql 与 ORM 实战：连接池、事务、NULL 处理、context 系列查询、GORM 关联与 sqlx/sqlc 选型。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'go/550-GoRedis'
   - 'go/540-GoMessageQueue'
@@ -16,6 +16,11 @@ prerequisites:
   - 'go/020-GoOverviewEnvSetup'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [Go 概述与环境配置](/go/020-GoOverviewEnvSetup)
 
 ## 概述
 

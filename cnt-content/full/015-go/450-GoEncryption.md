@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: crypto 包与安全编程：哈希与 HMAC、bcrypt 密码存储、AES-GCM、RSA 签名、密钥派生与安全随机数。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'go/380-GoLog'
   - 'go/440-GoTemplate'
@@ -16,6 +16,11 @@ prerequisites:
   - 'go/020-GoOverviewEnvSetup'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [Go 概述与环境配置](/go/020-GoOverviewEnvSetup)
 
 ## 概述
 

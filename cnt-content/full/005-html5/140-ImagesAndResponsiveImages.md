@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: img、srcset、sizes、picture元素
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/120-List'
   - 'html5/130-LinksAndAnchors'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 > 0基础速通：读第 0 节直觉、第 1-3 章核心概念速览与第 4 章代码示例即可；第 6 章深入理解（选读）供进阶。
 

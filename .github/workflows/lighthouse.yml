@@ -1,0 +1,82 @@
+# =============================================================================
+# FANDEX Lighthouse CI 性能预算工作流
+# =============================================================================
+# 触发条件：与 deploy.yml 相同的路径过滤（push main / 指向 main 的 PR）
+#
+# 设计说明：
+# - 独立工作流、不进入 deploy 门禁链：性能回归以红灯可见的方式暴露，
+#   但不阻断页面部署（阈值刚建立时避免误伤正常发版）
+# - 断言配置在 app-web/lighthouserc.json：performance >= 0.85 为 error 级，
+#   其余类别与资源预算为 warn 级，观察一段时间后再逐级收紧
+# - 服务器：app-web/scripts/lhci-server.mjs 剥离 /FANDEX/ base 前缀静态服务 dist
+# - checkout 需 fetch-depth: 0：content-sync 依赖 git 历史推导文档日期
+# =============================================================================
+
+name: Lighthouse CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'app-web/**'
+      - 'cnt-content/**'
+      - 'shd-shared/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/lighthouse.yml'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'app-web/**'
+      - 'cnt-content/**'
+      - 'shd-shared/**'
+      - 'package.json'
+      - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - '.github/workflows/lighthouse.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lighthouse:
+    name: Lighthouse audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Sync content
+        run: pnpm --filter @fandex/web sync
+
+      - name: Generate build stats baseline
+        run: pnpm --filter @fandex/web exec node scripts/build-stats.mjs
+
+      - name: Build web project
+        run: pnpm build:web
+
+      - name: Run Lighthouse CI
+        uses: treosh/lighthouse-ci-action@v12
+        with:
+          configPath: app-web/lighthouserc.json

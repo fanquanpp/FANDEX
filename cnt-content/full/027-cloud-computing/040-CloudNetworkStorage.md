@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: VPC 虚拟私有云、子网规划、安全组配置、NAT 网关、弹性计算服务、镜像管理、块存储与对象存储、CDN 加速。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cloud-computing/010-CloudComputingBasics'
   - 'cloud-computing/060-ContainerOrchestration'
@@ -14,6 +14,19 @@ related:
 prerequisites: []
 ---
 
+## 学习目标
+
+本文是「云计算」模块的第 4 篇，难度定位为进阶。重点内容：VPC 虚拟私有云、子网规划、安全组配置、NAT 网关、弹性计算服务、镜像管理、块存储与对象存储、CDN 加速。
+
+主要章节：
+
+- 1. VPC 虚拟私有云
+- 2. 安全组配置
+- 3. NAT 网关
+- 4. 弹性计算服务
+- 5. 镜像管理
+- 6. 块存储服务
+- ……共 9 个章节
 
 ## 1. VPC 虚拟私有云
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 计算机体系结构核心原理：冯诺依曼模型、指令集设计、流水线、存储层次、并行体系。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cs-fundamentals/010-ComputerOverview'
   - 'cs-fundamentals/150-OperatingSystem'
@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 学习目标
+
+本文是「计算机基础」模块的第 9 篇，难度定位为进阶。重点内容：计算机体系结构核心原理：冯诺依曼模型、指令集设计、流水线、存储层次、并行体系。
+
+主要章节：
+
+- 1. 冯诺依曼体系与哈佛体系
+- 2. 指令集体系结构 (ISA)
+- 3. 流水线原理
+- 4. 存储层次结构
+- 5. 总线与互连
+- 6. 并行体系结构
+- ……共 7 个章节
 
 ## 1. 冯诺依曼体系与哈佛体系
 

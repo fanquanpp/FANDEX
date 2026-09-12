@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 树（Tree）的形式化定义、二叉树遍历、二叉搜索树（BST）、AVL 树、红黑树、B 树/B+ 树、Splay 伸展树、Treap 树堆、Trie 字典树、LSM 树的原理、复杂度分析与多语言实现，附 Python/C++/Java 实现。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/060-LinkedList'
@@ -25,7 +25,13 @@ prerequisites:
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [链表](/algorithm/060-LinkedList)
+- [离散数学](/cs-fundamentals/540-DiscreteMathematics)
 
 ## 1. 概述与学习目标
 

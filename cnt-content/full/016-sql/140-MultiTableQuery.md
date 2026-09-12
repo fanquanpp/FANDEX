@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: JOIN 类型、自连接、子查询、EXISTS/IN、CTE 与递归 CTE
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/020-OverviewStandard'
   - 'sql/040-DataQueryBasics'
@@ -14,6 +14,20 @@ related:
   - 'sql/110-DDL'
 prerequisites: []
 ---
+
+## 学习目标
+
+本文是「SQL」模块的第 14 篇，难度定位为进阶。重点内容：JOIN 类型、自连接、子查询、EXISTS/IN、CTE 与递归 CTE
+
+主要章节：
+
+- INNER JOIN
+- 自连接
+- 列子查询
+- EXISTS 与 IN
+- JOIN 性能建议
+- JOIN 类型概览
+- ……共 18 个章节
 
 ## INNER JOIN
 

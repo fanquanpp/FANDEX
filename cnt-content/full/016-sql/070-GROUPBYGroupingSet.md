@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL分组与分组集：GROUP BY子句、ROLLUP、CUBE、GROUPING SETS多维分析、GROUPING函数与报表生成
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/050-FilterCondition'
   - 'sql/060-AggregateFunction'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'sql/020-OverviewStandard'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与标准](/sql/020-OverviewStandard)
 
 ## 1. GROUP BY 基础
 

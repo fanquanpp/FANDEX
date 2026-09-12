@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 远程仓库关联、推送拉取与协作工作流。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'git/050-GitBasicOperation'
   - 'git/100-GitBranchManagement'
@@ -14,6 +14,20 @@ related:
   - 'git/240-ObjectModel'
 prerequisites: []
 ---
+
+## 学习目标
+
+本文是「Git」模块的第 15 篇，难度定位为进阶。重点内容：远程仓库关联、推送拉取与协作工作流。
+
+主要章节：
+
+- 2. 远程仓库概述
+- 3. 远程仓库管理
+- 4. 推送与拉取
+- 5. 远程分支管理
+- 6. 常见远程操作问题与解决方案
+- 7. 远程仓库最佳实践
+- ……共 20 个章节
 
 ## 2. 远程仓库概述
 

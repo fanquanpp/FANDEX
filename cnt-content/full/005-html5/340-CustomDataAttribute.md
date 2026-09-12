@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: data-*
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/350-MicrodataJSONLD'
   - 'html5/280-CrossDocumentCommunication'
@@ -14,6 +14,12 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 ## 1. 历史动机与发展脉络
 

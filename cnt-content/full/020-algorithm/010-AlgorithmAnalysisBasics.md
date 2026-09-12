@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 算法分析（Algorithm Analysis）的形式化定义、五类渐近记号（Bachmann 1894《Analytische Zahlentheorie》大 O 符号、Landau 1909《Handbuch》推广、Knuth 1976《Big Omicron and Big Omega and Big Theta》SIGACT News 12(3):36-44 系统化）、计算复杂性类（Hartmanis-Stearns 1965《On the Computational Complexity of Algorithms》Trans. AMS 117:285-306、Cobham 1964/Edmonds 1965 P 类、Cook 1971《The Complexity of Theorem-Proving Procedures》STOC、Karp 1972《Reducibility Among Combinatorial Problems》STOC 197-206）、主定理（Bentley-Haken-Saxe 1980 SIGACT News 12(3):36-44）、摊还分析（Sleator-Tarjan 1985《Amortized Efficiency of List Update and Paging Rules》CACM 28(2):202-208）、随机化分析（Rabin 1976）、时空权衡策略与系统化学习路线图，涵盖 Turing 1936《On Computable Numbers》Proc. LMS 42:230-265、Knuth 1968 TAOCP Vol.1、Cormen-Leiserson-Rivest 1990《Introduction to Algorithms》第 1 版的历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 1-4 章、Kleinberg-Tardos 第 2-5 章。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/030-SortAlgorithm'
   - 'algorithm/050-SearchAlgorithm'
@@ -19,7 +19,19 @@ related:
 prerequisites: []
 ---
 
+## 学习目标
 
+本文是「算法与数据结构」模块的第 1 篇，难度定位为入门。重点内容：算法分析（Algorithm Analysis）的形式化定义、五类渐近记号（Bachmann 1894《Analytische Zahlentheorie》大 O 符号、Landa……
+
+主要章节：
+
+- 1. 概述与学习目标
+- 2. 历史动机与演进
+- 3. 形式化定义
+- 4. 时空权衡
+- 5. 递推与主定理
+- 6. 摊还分析
+- ……共 14 个章节
 
 ## 1. 概述与学习目标
 

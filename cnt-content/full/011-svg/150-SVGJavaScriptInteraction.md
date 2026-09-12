@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: DOM 操作、事件绑定、属性读写、动态生成与数据驱动可视化。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'svg/130-SVGCSSStyling'
   - 'svg/140-SVGAnimationBasics'
@@ -14,6 +14,12 @@ related:
 prerequisites:
   - 'svg/130-SVGCSSStyling'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [SVG CSS 样式化](/svg/130-SVGCSSStyling)
 
 ---
 

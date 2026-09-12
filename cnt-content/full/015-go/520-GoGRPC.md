@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: gRPC 与 Protobuf 实战：proto3 服务定义、代码生成、四种通信模式、拦截器、超时与状态码、生产级实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'go/530-GoGraphQL'
   - 'go/470-GoHTTP'
@@ -16,6 +16,11 @@ prerequisites:
   - 'go/020-GoOverviewEnvSetup'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [Go 概述与环境配置](/go/020-GoOverviewEnvSetup)
 
 ## 概述
 

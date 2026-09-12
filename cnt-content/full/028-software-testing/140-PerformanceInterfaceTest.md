@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: LoadRunner 与 JMeter 性能测试、API 接口测试、Postman 工具使用、REST Assured 与接口 Mock。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'software-testing/010-TestBasicsMethod'
   - 'software-testing/080-FunctionalAndAutomatedTest'
@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 学习目标
+
+本文是「软件工程与测试」模块的第 14 篇，难度定位为进阶。重点内容：LoadRunner 与 JMeter 性能测试、API 接口测试、Postman 工具使用、REST Assured 与接口 Mock。
+
+主要章节：
+
+- 1. 性能测试概述
+- 2. JMeter 性能测试
+- 3. LoadRunner 性能测试
+- 4. API 接口测试
+- 5. Postman 工具
+- 6. 接口 Mock
+- ……共 7 个章节
 
 ## 1. 性能测试概述
 

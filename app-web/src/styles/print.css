@@ -1,0 +1,105 @@
+/**
+ * 打印样式（@media print）
+ *
+ * 目标：文档页直接 Ctrl+P / 导出 PDF 时输出干净可读的纸面排版：
+ * - 隐藏全部交互与装饰元素（顶栏、侧边栏、目录、几何装饰、上下篇导航）
+ * - 三栏布局扁平化为单列正文，充分利用纸面宽度
+ * - 代码块、提示块、表格、引用块避免跨页断裂；标题不与后续内容分离
+ * - 正文外链在纸面上追加可见 URL（纸面无法点击，链接地址需要可追溯）
+ * - @page 设定页边距；关闭阴影类装饰以节省墨量
+ *
+ * 约定：仅做减法与断页控制，不重设字号/字体（沿用屏幕排版 inherited 样式），
+ * 深色主题下打印由浏览器默认处理（不打印背景色），正文对比度足够。
+ */
+
+@media print {
+  /* ── 隐藏交互与装饰元素 ─────────────────────────────── */
+  .app-nav,
+  .fndx-sidebar,
+  .fndx-sidebar-backdrop,
+  .fndx-toc,
+  .geo-bg-decor,
+  #nav-back-to-top,
+  .doc-nav {
+    display: none !important;
+  }
+
+  /* ── 布局扁平化：解除三栏网格约束 ───────────────────── */
+  .app-layout,
+  .app-main {
+    display: block !important;
+    width: auto !important;
+    max-width: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  /* ── 纸面基调：白底深字、去阴影与动画 ───────────────── */
+  html,
+  body {
+    background: #fff !important;
+    color: #111 !important;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+    animation: none !important;
+    transition: none !important;
+  }
+
+  /* ── 断页控制：块级容器不腰斩，标题不孤行 ───────────── */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    break-after: avoid;
+    break-inside: avoid;
+  }
+
+  pre,
+  blockquote,
+  table,
+  .admonition,
+  .table-wrap {
+    break-inside: avoid;
+  }
+
+  /* 代码块过长允许断页（避免整块被推到下一页留下大片空白），
+     仅保留行内不断行 */
+  pre {
+    white-space: pre-wrap !important;
+    word-break: break-word;
+    border: 1px solid #ddd !important;
+  }
+
+  /* 提示块打印时保留边框语义（色块背景不会被打印） */
+  .admonition {
+    border: 1px solid #ccc !important;
+    border-left-width: 3px !important;
+  }
+
+  /* 表格边框打印可见（屏幕态多为背景色区分） */
+  table th,
+  table td {
+    border: 1px solid #ccc !important;
+  }
+
+  /* ── 外链追加可见 URL（纸面可追溯，内链省略避免冗长） ── */
+  .doc-page a[href^='http']::after {
+    content: ' (' attr(href) ')';
+    font-size: 0.85em;
+    color: #555;
+    word-break: break-all;
+  }
+
+  /* ── 页面设置 ──────────────────────────────────────── */
+  @page {
+    margin: 1.5cm;
+  }
+}

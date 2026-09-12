@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL控制器设计模式与应用实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/850-MySQLConfigOps'
   - 'mysql/890-MySQLQuickLookup'
@@ -16,6 +16,11 @@ prerequisites:
   - 'mysql/160-View'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [视图语法速查手册](/mysql/160-View)
 
 ## 1. 控制器概述 | Controller Overview
 

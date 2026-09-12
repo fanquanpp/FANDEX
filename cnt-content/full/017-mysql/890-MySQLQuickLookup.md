@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 常用 SQL 语句、函数与配置参数速查。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/460-TransactionLockMechanism'
   - 'mysql/850-MySQLConfigOps'
@@ -16,7 +16,11 @@ prerequisites:
   - 'mysql/160-View'
 ---
 
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [视图语法速查手册](/mysql/160-View)
 
 ## 1. 数据库操作
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 线段树数据结构的形式化定义（区间幺半群上的完全二叉树）、懒标记下传语义、构建 O(n)、查询/更新 O(log n)、空间 O(4n) 的复杂度证明，覆盖递归/迭代实现、动态开点、离散化、持久化、合并线段树、李超树、扫描线等工程变体，附多语言实现。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/300-LeetCodeInterviewGuide'
   - 'algorithm/180-UnionFind'
@@ -23,7 +23,14 @@ prerequisites:
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [树](/algorithm/080-Tree)
+- [树状数组](/algorithm/200-FenwickTree)
+- [离散数学](/cs-fundamentals/540-DiscreteMathematics)
 
 ## 第 1 章 学习目标与导论
 

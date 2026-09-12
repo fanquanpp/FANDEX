@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 堆（Heap）与优先队列（Priority Queue）的完全二叉树数组表示、最大堆/最小堆的堆序性质、上浮与下沉操作、Floyd 建堆 $O(n)$ 证明、堆排序、Top-K 问题、索引堆、二项堆、Fibonacci 堆、配对堆的对比分析，涵盖 Williams 1964 Algorithm 232 Heapsort、Floyd 1964 Algorithm 245 Treesort、Vuillemin 1978 二项堆、Fredman-Tarjan 1984 Fibonacci 堆等历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 6 章。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/080-Tree'
@@ -22,7 +22,13 @@ prerequisites:
   - 'algorithm/020-ArrayAndDynamicArray'
 ---
 
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [树](/algorithm/080-Tree)
+- [数组与动态数组](/algorithm/020-ArrayAndDynamicArray)
 
 ## 1. 概述与学习目标
 

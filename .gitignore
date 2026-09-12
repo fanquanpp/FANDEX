@@ -3,8 +3,9 @@
 # =============================================================================
 # 设计原则：
 # 1. 根 .gitignore 负责共享规则与跨子项目的敏感文件排除
-# 2. 各子项目（app-web/app-desktop/app-Android-new）保留各自的 .gitignore 作为独立构建时的兜底
-# 3. 敏感文件（私钥/密钥库/本地配置）采用最严格策略，前置排除避免误提交
+# 2. 各子项目（app-web/app-desktop/app-Android-*）保留各自的 .gitignore 作为
+#    独立构建时的兜底，与本文件的少量重复属有意设计
+# 3. 救感文件（私钥/密钥库/本地配置）采用最严格策略，前置排除避免误提交
 # 4. 目录命名遵循英文简写前缀约定：app-（应用）/cnt-（内容）/shd-（共享）/tls-（工具）/thd-（第三方）/dcs-（文档）
 # =============================================================================
 
@@ -53,7 +54,7 @@ secrets.*.json
 
 
 # -----------------------------------------------------------------------------
-# 依赖目录
+# 依赖与工具缓存目录
 # -----------------------------------------------------------------------------
 node_modules/
 .pnpm-store/
@@ -69,18 +70,15 @@ __pycache__/
 .venv/
 venv/
 
-# Turborepo 构建缓存
-.turbo/
-
 # Astro 缓存
 .astro/
 
-# Gradle 缓存
+# Gradle / Kotlin 编译缓存
 .gradle/
-app-Android-new/.gradle/
+.kotlin/
 
-# Kotlin 编译日志
-app-Android-new/.kotlin/
+# ESLint 增量缓存
+.eslintcache
 
 
 # -----------------------------------------------------------------------------
@@ -94,17 +92,13 @@ build/
 out/
 .output/
 
-# 例外：app-Android-old（旧版 App 历史归档）的内置离线文档资源目录恰好命名为
-# dist-mobile/，属源码资源而非构建产物，需从上方通用规则中重新包含
-!app-Android-old/app/src/main/assets/dist-mobile/
-
 # Rust / Tauri 编译产物
 target/
 src-tauri/target/
 app-desktop/src-tauri/target/
 *.rs.bk
 
-# Android 构建产物
+# Android 枞建产物
 app-Android-new/app/build/
 app-Android-new/build/
 app-Android-new/app/.cxx/
@@ -118,7 +112,6 @@ app-Android-new/app/.cxx/
 *.app-image.tar.gz
 *.app.tar.gz
 *.dmg
-*.exe
 *.msi
 *.sig
 
@@ -132,12 +125,7 @@ public/pagefind/
 app-desktop/public/pagefind/
 
 # app-web/reports 构建分析报告（CI 产物，不入库）
-app-web/reports/baseline/
-app-web/reports/bundle-stats.html
-
-# app-web/public/data 与 app-desktop/public/data 构建产物（由 scripts/ 生成，不入库）
-app-web/public/data/
-app-desktop/public/data/
+app-web/reports/
 
 # app-web/src/content/docs/ markdown 副本（由 cnt-content/full/ 同步生成，不入库）
 app-web/src/content/docs/
@@ -160,7 +148,7 @@ app-web/src/content/docs/
 .classpath
 .settings/
 
-# Trae IDE 工作区
+# Trae IDE 巯作区
 .trae/
 
 # Cursor
@@ -197,66 +185,22 @@ Microsoft.PowerShell_profile.ps1
 
 
 # -----------------------------------------------------------------------------
-# 日志文件
+# 日志与临时产物
 # -----------------------------------------------------------------------------
 *.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-lerna-debug.log*
-.android-debug.log
-
-
-# -----------------------------------------------------------------------------
-# 压缩包与二进制产物
-# -----------------------------------------------------------------------------
-*.zip
-*.tar
-*.tar.gz
-*.tgz
-*.bz2
-*.xz
-*.rar
-*.7z
-
-
-# -----------------------------------------------------------------------------
-# 临时工作区与调试产物
-# -----------------------------------------------------------------------------
-
-# 编辑器备份与合并残留
+*.tmp
+*.temp
 *.orig
 *.rej
 *.bak
-*.tmp
-*.temp
-
-# 任务临时工作区
-.task8-workspace/
-.tmp-task*/
-task*-workspace/
-
-# 调试输出文件
-tsc_output*.txt
-*.tsc-output
-
-# 构建报告
-build-report.*
-audit-*.log
-astro_check*.log
 
 # Playwright 测试产物
 test-results/
 playwright-report/
 playwright/.cache/
 
-
-# -----------------------------------------------------------------------------
-# 生成的内容索引（CI 产物，不入库）
-# -----------------------------------------------------------------------------
-# doc-stats.json / doc-index.json / syntax-index.json 等由构建脚本生成，
-# 具体条目见各子项目 .gitignore
+# Lighthouse CI 本地运行产物
+.lighthouseci/
 
 # 内容层同步辅助文件（ID 注册表等历史管线文件已退役，防止再生成入库）
 cnt-content/full/_doc-id-map.json
@@ -271,29 +215,5 @@ cnt-content/full/_op-list.json
 CODE_WIKI.md
 Code-Wiki.md
 
-
-# -----------------------------------------------------------------------------
-# 其他
-# -----------------------------------------------------------------------------
-
-# Husky 内部目录（保留 .husky/pre-commit 等钩子，忽略内部脚本）
-.husky/_/
-
-# 变更集临时文件
-.changeset/*.md
-!.changeset/README.md
-!.changeset/config.json
-
-# pnpm 调试
-pnpm-debug.log*
-
-# Vitest 临时文件
-.vitest/
-
 # Obsidian 工作区配置（本地编辑器状态，不入库）
 .obsidian/
-
-# 根目录一次性内容生成脚本（批量生成文档的临时工具，不入库）
-/gen*.py
-/_gen*.py
-/gen_helper.py

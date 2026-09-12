@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 状态压缩动态规划（Bitmask Dynamic Programming）：以二进制位编码子集状态，将指数级状态空间压缩至 $O(2^n \cdot n)$ 的可处理范围。系统化梳理 Bellman 1957《Dynamic Programming》Princeton University Press 开山之作、Held-Karp 1962《A Dynamic Programming Approach to Sequencing Problems》J. SIAM 10(1):196-210 DOI:10.1137/0110015 旅行商问题（TSP）$O(n^2 2^n)$ 算法、bitmask DP 系统化方法，覆盖 TSP、N 皇后、数独、划分等和子集、棋盘覆盖、排列型 DP 五大经典问题，含位运算技巧（`& | ^ ~`、`<< >>`、`__builtin_popcount`、低比特 `x & (-x)`、子集枚举 `(sub - 1) & S`）、与记忆化递归、自底向上 DP、滚动数组的对比，附 Python/C++/Java 多语言实现与 LeetCode 1879/1655/1494/1125/1931 经典题解，及在 Google OR-Tools、CP-SAT 求解器、Concorde TSP 求解器中的工业级应用。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/160-DynamicProgramming'
   - 'algorithm/010-AlgorithmAnalysisBasics'
@@ -21,7 +21,12 @@ prerequisites:
   - 'algorithm/160-DynamicProgramming'
 ---
 
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [动态规划](/algorithm/160-DynamicProgramming)
 
 ## 1. 概述与学习目标
 

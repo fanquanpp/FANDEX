@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: CSS自定义属性（变量）定义、作用域、动态更新、主题系统与最佳实践详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/380-MobileAdaptation'
   - 'css/120-CSSFunctions'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
 
 ## 1. CSS 自定义属性基础
 

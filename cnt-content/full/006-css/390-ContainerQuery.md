@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 深入解析 CSS Container Queries 容器查询的规范、算法、工程实践与跨浏览器兼容性
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/280-BorderRadius'
   - 'css/360-MediaQuery'
@@ -18,6 +18,14 @@ prerequisites:
   - 'css/360-MediaQuery'
   - 'css/410-CSSVariableCustomAttribute'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+- [媒体查询](/css/360-MediaQuery)
+- [CSS 变量与自定义属性](/css/410-CSSVariableCustomAttribute)
 
 > 前置依赖：先掌握 031 媒体查询。0基础速通：读第 0 节直觉与第 1 节核心必读即可；第 6 章深入理解（选读）供进阶。
 

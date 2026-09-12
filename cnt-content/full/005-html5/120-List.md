@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: HTML 三类列表（ul/ol/dl）的语义、属性、嵌套规则、无障碍要求与 CSS 样式化技巧。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/060-MetadataCharacterEncoding'
   - 'html5/110-TextSemantic'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 > 0基础速通：直接读第 2 章三类列表速览、第 4 章代码示例与第 9 章核心知识点；第 1 章历史与第 3 章原理可跳过。
 

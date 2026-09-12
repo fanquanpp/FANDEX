@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: localStorage、sessionStorage、IndexedDB 与 Web Workers。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'javascript/470-IndexedDBADatabaseInYourBrowser'
   - 'html5/230-HTML5MultimediaCanvasDrawing'
@@ -17,6 +17,11 @@ prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 > 0基础速通：必学第 1 章 Web Storage 与第 5 章 Fetch；其余（Geolocation、Worker、Service Worker、Notification 等）按需选学。Service Worker 完整版见 027。
 

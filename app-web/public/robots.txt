@@ -7,3 +7,6 @@ Disallow: /FANDEX/design-system/
 
 # 站点地图：通过 @astrojs/sitemap 自动生成 sitemap-index.xml
 Sitemap: https://fanquanpp.github.io/FANDEX/sitemap-index.xml
+
+# AI 助手索引：/llms.txt 以纯 Markdown 列出全站文档结构（llmstxt.org 规范），
+# 供 ChatGPT、Cursor 等编码代理无需解析 HTML 即可检索站点内容

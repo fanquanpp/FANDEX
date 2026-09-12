@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: ACID 特性、隔离级别、MVCC 与锁类型。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/670-ShardingStrategy'
   - 'mysql/810-JSONTypeJSONTable'
@@ -16,6 +16,11 @@ prerequisites:
   - 'mysql/160-View'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [视图语法速查手册](/mysql/160-View)
 
 ## 1. 事务特性 (ACID)
 

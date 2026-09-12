@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 进制转换、原码反码补码、IEEE 754浮点数、ASCII与Unicode编码（入门学习笔记）。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cs-fundamentals/090-ComputerArchitecture'
   - 'cs-fundamentals/070-DataRepresentationOperation'
@@ -14,6 +14,12 @@ related:
 prerequisites:
   - 'cs-fundamentals/010-ComputerOverview'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [计算机科学概述](/cs-fundamentals/010-ComputerOverview)
 
 ## 1. 进制与转换
 

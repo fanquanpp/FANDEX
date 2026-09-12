@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 递归 CTE、PIVOT/UNPIVOT、GROUPING SETS、LATERAL JOIN、全文搜索与 JSON 查询
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/110-DDL'
   - 'sql/260-WindowFunction'
@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 学习目标
+
+本文是「SQL」模块的第 32 篇，难度定位为高级。重点内容：递归 CTE、PIVOT/UNPIVOT、GROUPING SETS、LATERAL JOIN、全文搜索与 JSON 查询
+
+主要章节：
+
+- 递归 CTE 进阶
+- PIVOT / UNPIVOT
+- GROUPING SETS / ROLLUP / CUBE
+- LATERAL JOIN / APPLY
+- 全文搜索
+- JSON 查询
+- ……共 7 个章节
 
 # 高级查询
 

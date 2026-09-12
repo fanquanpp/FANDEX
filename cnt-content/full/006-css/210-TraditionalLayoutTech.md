@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 浮动、定位、BFC 与经典布局方案。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/050-CSS3BoxModelDetailed'
   - 'css/130-CSS3SelectorSystem'
@@ -16,6 +16,11 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
 
 > 前置依赖：先读 003 盒模型与 015 浮动。圣杯/双飞翼布局为进阶内容，0 基础可先跳过。
 

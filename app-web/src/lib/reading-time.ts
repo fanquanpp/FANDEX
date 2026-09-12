@@ -20,7 +20,7 @@
 export function computeReadingTime(body: string, readingTime?: number): number {
   if (readingTime && readingTime > 0) return readingTime;
   // 去除代码块（```...```）和 Markdown 标记符号
-  const stripped = body.replace(/```[\s\S]*?```/g, '').replace(/[#*`~\[\]()>_\-!|]/g, '');
+  const stripped = body.replace(/```[\s\S]*?```/g, '').replace(/[#*`~[]()>_!|-]/g, '');
   const chars = stripped.replace(/\s/g, '').length;
   return Math.max(1, Math.ceil(chars / 300));
 }

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: audio、video、source、track字幕
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/130-LinksAndAnchors'
   - 'html5/140-ImagesAndResponsiveImages'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 > 前置要求：本节主体是纯 HTML 标签（audio/video/source/track），零基础可直接学；涉及播放控制的 JavaScript 示例（play/pause、timeupdate 等事件）需要 JS 基础，建议先完成 `javascript/001`-`005` 与 `javascript/039`（DOM 与事件）后再读。纯 HTML 阶段可先跳过这些代码块，不影响理解标签本身。
 

@@ -9,7 +9,8 @@ export async function GET(context) {
   return rss({
     title: SITE.title,
     description: SITE.subtitle,
-    site: context.site,
+    // channel 级链接指向站点首页（含 base）：Astro.site 为根域，需补 BASE_URL 前缀
+    site: new URL(import.meta.env.BASE_URL, context.site).href,
     items: docs.map((doc) => ({
       title: doc.data.title,
       description: doc.data.description,

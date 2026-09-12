@@ -9,6 +9,8 @@
     "sync": "node scripts/content-sync.mjs",
     "build:syntax": "node scripts/build-syntax.mjs",
     "audit:learning-path": "node scripts/audit-learning-path.mjs",
+    "lint": "eslint .",
+    "test:smoke": "playwright test",
     "dev": "node scripts/content-sync.mjs && node scripts/build-stats.mjs && node scripts/build-syntax.mjs && astro dev",
     "build": "node scripts/content-sync.mjs && node scripts/build-stats.mjs && node scripts/build-syntax.mjs && astro build && node scripts/clean-prerender.mjs && pagefind --site dist",
     "preview": "astro preview",
@@ -71,16 +73,22 @@
   "devDependencies": {
     "@astrojs/check": "catalog:",
     "@pagefind/windows-x64": "1.5.2",
+    "@playwright/test": "catalog:",
     "@types/hast": "catalog:",
     "@types/mdast": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "catalog:",
+    "@eslint/js": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
     "glob": "catalog:",
+    "globals": "catalog:",
     "gray-matter": "catalog:",
     "mermaid": "^11.17.2",
     "pagefind": "^1.5.2",
     "rollup-plugin-visualizer": "catalog:",
     "sharp": "^0.35.0",
-    "typescript": "catalog:"
+    "typescript": "catalog:",
+    "typescript-eslint": "catalog:"
   }
 }

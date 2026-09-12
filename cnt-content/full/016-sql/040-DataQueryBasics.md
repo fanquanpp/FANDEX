@@ -6,13 +6,27 @@ category: 数据库
 difficulty: beginner
 description: SELECT 语句、WHERE 条件、排序、分页、去重、别名、表达式与聚合函数
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/020-OverviewStandard'
   - 'sql/140-MultiTableQuery'
   - 'sql/120-DML'
 prerequisites: []
 ---
+
+## 学习目标
+
+本文是「SQL」模块的第 4 篇，难度定位为入门。重点内容：SELECT 语句、WHERE 条件、排序、分页、去重、别名、表达式与聚合函数
+
+主要章节：
+
+- 0. 五分钟上手：五条最常用的查询（先读这里）
+- WHERE 条件
+- LIKE 模式匹配
+- ORDER BY 排序
+- LIMIT / OFFSET 分页
+- DISTINCT 去重
+- ……共 15 个章节
 
 ## 0. 五分钟上手：五条最常用的查询（先读这里）
 

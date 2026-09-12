@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Kubernetes核心架构：控制平面、节点组件、etcd、API Server 等详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cloud-computing/070-DockerDeepAnalysis'
   - 'cloud-computing/080-CloudNativeApp'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'cloud-computing/010-CloudComputingBasics'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [云计算基础](/cloud-computing/010-CloudComputingBasics)
 
 ## 1. Kubernetes 整体架构
 

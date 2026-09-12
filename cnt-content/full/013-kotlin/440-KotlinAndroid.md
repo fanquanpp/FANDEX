@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Kotlin Android 开发主线：ViewModel + StateFlow 状态管理、生命周期安全协程、Compose UI、权限与后台任务。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'kotlin/450-KotlinCompose'
   - 'kotlin/410-KotlinGradle'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'kotlin/230-CoroutineBasics'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [协程基础](/kotlin/230-CoroutineBasics)
 
 ## 概述
 

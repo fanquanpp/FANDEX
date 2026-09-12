@@ -20,6 +20,7 @@ import react from '@astrojs/react'; // React 集成：在 Astro 中使用 React 
 import tailwindcss from '@tailwindcss/vite'; // Tailwind CSS v4 Vite 插件（CSS-first 配置，无需 tailwind.config.js）
 import { visualizer } from 'rollup-plugin-visualizer'; // Bundle 体积可视化分析：构建后生成 reports/bundle-stats.html
 import { remarkAdmonition } from './src/plugins/remark-admonition'; // 自定义提示块解析器
+import { remarkInternalLinks } from './src/plugins/remark-internal-links'; // 站内根相对链接 base 重写：修复 GitHub Pages 项目路径下内链 404
 import { rehypeLazyImages } from './src/plugins/rehype-lazy-images'; // 图片懒加载处理器
 import { rehypeWrapTables } from './src/plugins/rehype-wrap-tables'; // 表格包裹处理器：将 table 包入 <div class="table-wrap"> 以承担横向滚动
 import remarkMath from 'remark-math'; // 数学公式语法解析（LaTeX 语法）
@@ -29,6 +30,10 @@ import rehypeSlug from 'rehype-slug'; // 为标题自动添加 id 属性
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'; // 为标题添加锚点链接
 import { unified } from '@astrojs/markdown-remark'; // Astro 7.3+ 的 remark/rehype Markdown 处理器
 
+// 站点基础路径常量：GitHub Pages 项目站点为 /FANDEX/，桌面端构建为 /
+// 同时供 defineConfig({ base }) 与 remarkInternalLinks 插件使用
+const SITE_BASE = process.env.DESKTOP_BUILD === '1' ? '/' : '/FANDEX/';
+
 export default defineConfig({
   // 站点地址，用于生成 sitemap 和规范链接
   site: 'https://fanquanpp.github.io',
@@ -36,7 +41,8 @@ export default defineConfig({
   // 注意：base 必须与 GitHub Pages URL 路径一致，否则资源加载 404
   // 桌面端构建（DESKTOP_BUILD=1，由 app-desktop/build-desktop.mjs 设置）使用
   // 根路径 base：Tauri 的 frontendDist 服务在根路径，/FANDEX/ 前缀会 404
-  base: process.env.DESKTOP_BUILD === '1' ? '/' : '/FANDEX/',
+  // 该常量同时传给 remarkInternalLinks 插件（单一事实源，见插件内注释）
+  base: SITE_BASE,
   build: {
     // 样式内联策略：auto 由 Astro 自动决定（小文件内联，大文件外部引用）
     inlineStylesheets: 'auto',
@@ -109,12 +115,25 @@ export default defineConfig({
         remarkEmoji, // Emoji 短代码转换
         remarkMath, // 数学公式语法解析（$...$ 和 $$...$$）
         remarkAdmonition, // 自定义提示块（:::note、:::tip 等）
+        [remarkInternalLinks, { base: SITE_BASE }], // 站内根相对链接补 base 前缀（GitHub Pages 项目站点必需）
       ],
       // Rehype 插件（MDAST → HAST → HTML 转换阶段）
       rehypePlugins: [
         rehypeSlug, // 为标题添加 id
         [rehypeAutolinkHeadings, { behavior: 'wrap' }], // 标题锚点链接（包裹整个标题）
-        rehypeKatex, // KaTeX 数学公式渲染为 HTML
+        // output: 'mathml' 仅输出 MathML（KaTeX 的语义层）。演进记录：
+        // 1) 早期默认 'htmlAndMathml'：公式密集页（如 algorithm/290 约 580 条公式）
+        //    HTML 体积因隐藏 MathML 副本膨胀近三分之一；
+        // 2) 曾切 'html'：体积最优但公式退化为 span 字形堆叠——读屏与搜索引擎
+        //    均无法获取公式语义，对教育站属可访问性回归；
+        // 3) 现切 'mathml'：MathML Core 已被全主流浏览器支持（Chrome 109+），
+        //    无需 katex.css 与 KaTeX 字体（[slug].astro 的按需注入已随之移除），
+        //    实测体积约为 html 输出的 1/5 且读屏/SEO 语义完整。
+        // 已验证场景：分式、根号、自适应定界符、矩阵（mtable）、aligned/cases、
+        // 上下标与希腊字母（本地 Chromium 无头截图比对，2026-09-13）。
+        // 兜底预案：若未来出现渲染质量回退，可回退 'htmlAndMathml' 并恢复
+        // katex.min.css 按需注入（git 历史可考）。
+        [rehypeKatex, { output: 'mathml' }],
         rehypeLazyImages, // 图片懒加载（添加 loading="lazy"）
         rehypeWrapTables, // 表格包裹：将 table 包入 <div class="table-wrap"> 以承担横向滚动，规避 display:table 与 overflow-x:auto 冲突
       ],

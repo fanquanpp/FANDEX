@@ -70,7 +70,6 @@ function handleMetric(metric: Metric): void {
   }
   // 开发环境输出到 console 便于调试
   if (import.meta.env.DEV) {
-    // eslint-disable-next-line no-console
     console.log(
       `[WebVitals] ${metric.name} = ${metric.value.toFixed(2)} (${metric.rating})`,
       metric
@@ -82,13 +81,14 @@ function handleMetric(metric: Metric): void {
  * 组件 props 接口
  * WebVitalsTracker 无外部 props，定义空接口以保持组件接口一致性
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- 岛屿约定保留空接口：Record<string, never> 会拒绝 Astro 的 client:* 属性传递
 interface WebVitalsTrackerProps {}
 
 /**
  * Web Vitals 采集器组件
  * 无 UI 输出，仅在客户端挂载时注册采集回调并暴露全局导出 API
  */
-export function WebVitalsTracker({}: WebVitalsTrackerProps = {}) {
+export function WebVitalsTracker(_props: WebVitalsTrackerProps) {
   useEffect(() => {
     /** 保存 web-vitals 取消订阅函数，组件卸载时调用 */
     let cleanup: (() => void) | null = null;

@@ -35,14 +35,14 @@
   body {
     min-height: 100vh;
     min-height: 100dvh;
-    font-family: var(--font-body);
+    font-family: var(--font-family-body);
     font-size: 1.0625rem; /* 17px，略大于基准字号，提升中文可读性 */
     line-height: 1.85;
-    color: var(--color-text);
-    background: var(--color-bg);
+    color: var(--color-fg-primary);
+    background: var(--color-bg-primary);
     transition:
-      background var(--transition-base),
-      color var(--transition-base);
+      background var(--motion-duration-normal),
+      color var(--motion-duration-normal);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     overflow-wrap: break-word;
@@ -54,7 +54,7 @@
 
   /* ========== 全局链接 ========== */
   a {
-    color: var(--color-primary);
+    color: var(--color-accent-base);
     text-decoration: none;
   }
   a:hover {
@@ -63,7 +63,7 @@
 
   /* ========== 文字选区 ========== */
   ::selection {
-    background: var(--color-primary);
+    background: var(--color-accent-base);
     color: var(--color-text-inverse);
   }
 
@@ -90,11 +90,11 @@
     background: var(--color-border-light);
   }
   ::-webkit-scrollbar-thumb:hover {
-    background: var(--color-border);
+    background: var(--color-border-strong);
   }
 
   [data-theme='dark'] ::-webkit-scrollbar-thumb {
-    background: var(--color-border);
+    background: var(--color-border-strong);
   }
   [data-theme='dark'] ::-webkit-scrollbar-thumb:hover {
     background: var(--color-text-tertiary);
@@ -149,8 +149,8 @@
     --admonition-text: var(--color-fg-primary);
     --admonition-title-text: var(--admonition-accent);
 
-    padding: var(--spacing-md) var(--spacing-lg);
-    margin: var(--spacing-lg) 0;
+    padding: var(--space-4) var(--space-6);
+    margin: var(--space-6) 0;
     border-left: 4px solid var(--admonition-border);
     border-radius: var(--radius-md);
     background: var(--admonition-bg);
@@ -165,8 +165,8 @@
   .admonition .admonition-title {
     font-weight: 700;
     font-size: 0.95em;
-    margin-bottom: var(--spacing-sm);
-    padding-bottom: var(--spacing-xs);
+    margin-bottom: var(--space-2);
+    padding-bottom: var(--space-1);
     color: var(--admonition-title-text);
   }
 
@@ -183,7 +183,7 @@
 
   /* 嵌套提示块间距调整 */
   .admonition .admonition {
-    margin-top: var(--spacing-md);
+    margin-top: var(--space-4);
     margin-bottom: 0;
   }
 

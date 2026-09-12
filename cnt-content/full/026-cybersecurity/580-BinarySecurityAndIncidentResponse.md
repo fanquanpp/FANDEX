@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 二进制逆向工程、栈/堆溢出利用、格式化字符串漏洞、物联网与工控安全、隐写术、应急响应流程、日志分析、内存/磁盘取证、流量分析、CTF与法律法规。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cybersecurity/010-SecurityBasicsDefense'
   - 'cybersecurity/150-WebSecurityPenetrationTesting'
@@ -15,6 +15,19 @@ related:
 prerequisites: []
 ---
 
+## 学习目标
+
+本文是「网络安全」模块的第 58 篇，难度定位为高级。重点内容：二进制逆向工程、栈/堆溢出利用、格式化字符串漏洞、物联网与工控安全、隐写术、应急响应流程、日志分析、内存/磁盘取证、流量分析、CTF与法律法规。
+
+主要章节：
+
+- 1. 二进制逆向工程
+- 2. 栈溢出漏洞利用
+- 3. 堆溢出漏洞利用
+- 4. 格式化字符串漏洞
+- 5. 物联网安全
+- 6. 工控系统安全
+- ……共 13 个章节
 
 ## 1. 二进制逆向工程
 

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 最新C++标准特性
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cpp/710-CppRustComparison'
   - 'cpp/580-CppPythonInteraction'
@@ -18,6 +18,19 @@ related:
 prerequisites: []
 ---
 
+## 学习目标
+
+本文是「C++」模块的第 74 篇，难度定位为进阶。重点内容：最新C++标准特性
+
+主要章节：
+
+- 概述
+- 基础概念
+- 快速上手
+- 详细用法
+- 常见场景
+- 注意事项
+- ……共 7 个章节
 
 ## 概述
 

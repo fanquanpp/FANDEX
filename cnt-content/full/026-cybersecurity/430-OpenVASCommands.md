@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'OpenVAS/GVM 命令：部署初始化与订阅更新、目标与任务管理（gvm-cli）、报告导出与 CVE 结果研判'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cybersecurity/400-VulnerabilityScan'
   - 'cybersecurity/410-VulnerabilityScanTools'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [安全基础与防御](/cybersecurity/010-SecurityBasicsDefense)
 
 ## OpenVAS/GVM 服务管理
 

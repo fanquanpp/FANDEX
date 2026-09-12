@@ -20,6 +20,10 @@ const COUNT_UP_DURATION_MS = 950;
 /** 起跳延迟（毫秒）：等待统计栏入场动画（0.16s 延迟 + 250ms 时长）基本落定 */
 const COUNT_START_DELAY_MS = 260;
 
+/** 未落定的计时器/动画帧登记：页面切换前统一取消，避免向已脱离文档的节点写入 */
+const pendingTimers = new Set<number>();
+const pendingFrames = new Set<number>();
+
 /**
  * easeOutExpo 缓动曲线：前 30% 时间完成约 90% 的数值变化，尾部缓慢收势
  * @param t 归一化进度（0-1）
@@ -43,17 +47,26 @@ function animateCount(el: HTMLElement): void {
   el.textContent = '0';
 
   const startAt = performance.now();
+  // 当前动画帧 id（let：每帧重排程时更新登记，before-swap 取消最新一帧即可）
+  let frameId = 0;
   const tick = (now: number): void => {
+    pendingFrames.delete(frameId);
     const progress = Math.min((now - startAt) / COUNT_UP_DURATION_MS, 1);
     el.textContent = String(Math.round(easeOutExpo(progress) * target));
     if (progress < 1) {
-      requestAnimationFrame(tick);
+      frameId = requestAnimationFrame(tick);
+      pendingFrames.add(frameId);
     } else {
       // 落定：精确写回目标值，避免缓动舍入误差
       el.textContent = String(target);
     }
   };
-  window.setTimeout(() => requestAnimationFrame(tick), COUNT_START_DELAY_MS);
+  const timerId = window.setTimeout(() => {
+    pendingTimers.delete(timerId);
+    frameId = requestAnimationFrame(tick);
+    pendingFrames.add(frameId);
+  }, COUNT_START_DELAY_MS);
+  pendingTimers.add(timerId);
 }
 
 /**
@@ -71,4 +84,11 @@ function initStatCountUp(): void {
 if (!import.meta.env.SSR && typeof document !== 'undefined') {
   initStatCountUp();
   document.addEventListener('astro:page-load', initStatCountUp);
+  // 页面切换前取消未落定的计数：计时器与动画帧不再触达已脱离文档的节点
+  document.addEventListener('astro:before-swap', () => {
+    for (const id of pendingTimers) window.clearTimeout(id);
+    for (const id of pendingFrames) cancelAnimationFrame(id);
+    pendingTimers.clear();
+    pendingFrames.clear();
+  });
 }

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 综合运用 Flexbox、Grid 与媒体查询的响应式主页。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/660-HTMLSemanticSEO'
   - 'css/670-ResponsiveImage'
@@ -14,6 +14,11 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
 
 | 英雄区   | 全屏背景，打字机效果，向下滚动指示  |
 | -------- | ----------------------------------- |

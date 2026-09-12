@@ -64,6 +64,7 @@ const ShowcaseCard = memo(function ShowcaseCard({
     if (!el) return;
     // 环境不支持 IntersectionObserver 时直接全量加载，保证功能可用
     if (typeof IntersectionObserver === 'undefined') {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 兜底分支，同步设置即为预期
       setInView(true);
       return;
     }

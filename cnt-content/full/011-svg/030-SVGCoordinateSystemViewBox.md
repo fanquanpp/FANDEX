@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 视口、viewBox、preserveAspectRatio、坐标系变换原理与适配技巧。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'svg/020-SVGBasicSyntaxDocStructure'
   - 'svg/040-SVGBasicShapeDetailed'
@@ -14,6 +14,12 @@ related:
 prerequisites:
   - 'svg/020-SVGBasicSyntaxDocStructure'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [SVG 基础语法与文档结构](/svg/020-SVGBasicSyntaxDocStructure)
 
 ## 1. 历史动机与发展脉络
 

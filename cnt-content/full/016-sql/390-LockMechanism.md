@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: SQL锁机制：共享锁、排他锁、意向锁、间隙锁、临键锁的原理、兼容性与死锁预防
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/370-IsolationLevel'
   - 'sql/380-DirtyReadNonRepeatablePhantom'
@@ -14,6 +14,12 @@ related:
 prerequisites:
   - 'sql/020-OverviewStandard'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与标准](/sql/020-OverviewStandard)
 
 ## 1. 锁概述
 

@@ -14,9 +14,9 @@
 .doc-nav {
   display: flex;
   justify-content: space-between;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
-  padding-top: var(--spacing-lg);
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
   border-top: 1px solid var(--color-border-light);
   max-width: var(--content-width);
   margin-left: auto;
@@ -31,8 +31,8 @@
  * 选择器带 .doc-nav 前缀提高特异性，稳定覆盖 .fndx-icon-btn--labeled 基类 */
 .doc-nav .nav-btn {
   /* display/align 均由 .fndx-icon-btn--labeled 提供 */
-  gap: var(--spacing-sm);
-  padding: var(--spacing-sm) var(--spacing-md) var(--spacing-sm) var(--spacing-lg);
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4) var(--space-2) var(--space-6);
   height: auto;
   min-height: var(--size-control-sm);
   text-decoration: none;
@@ -148,7 +148,7 @@
 @media (max-width: 768px) {
   .doc-nav {
     flex-direction: row;
-    gap: var(--spacing-sm);
+    gap: var(--space-2);
   }
 
   .doc-nav.single-btn {
@@ -160,7 +160,7 @@
   }
 
   .nav-btn {
-    padding: var(--spacing-xs) var(--spacing-sm) var(--spacing-xs) var(--spacing-md);
+    padding: var(--space-1) var(--space-2) var(--space-1) var(--space-4);
     flex-direction: row;
   }
 

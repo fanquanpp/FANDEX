@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: INSERT/UPDATE/DELETE、SELECT 基础与条件查询。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/090-SQLDataDefinitionAdvanced'
   - 'mysql/180-MyISAMStorageEngine'
@@ -15,6 +15,11 @@ prerequisites:
   - 'mysql/160-View'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [视图语法速查手册](/mysql/160-View)
 
 ## 1. SQL 概述
 

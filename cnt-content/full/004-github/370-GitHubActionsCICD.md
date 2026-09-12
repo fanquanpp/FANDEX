@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub Actions 与 CI/CD 总纲：以智能工厂流水线为类比，讲透 CI/CD 概念、workflow 文件结构（name/on/jobs/steps）、Actions 市场使用与工程最佳实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'github/180-PullRequestCompleteCollaborationFlow'
   - 'github/360-GitHubPagesMultiSolution'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'github/010-GitHubOverview'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [GitHub 概述](/github/010-GitHubOverview)
 
 ## 0. 开始之前：一座"智能工厂流水线"的故事
 

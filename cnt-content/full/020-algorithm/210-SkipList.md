@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 跳跃表（Skip List）数据结构的形式化定义（多层索引概率结构）、期望 O(log n) 查找/插入/删除的随机化分析、与平衡树的对比、Redis Sorted Set / LevelDB MemTable / Apache Lucene 倒排索引等工程实现，附多语言实现。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'algorithm/190-SegmentTree'
   - 'algorithm/200-FenwickTree'
@@ -21,7 +21,14 @@ prerequisites:
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [链表](/algorithm/060-LinkedList)
+- [树](/algorithm/080-Tree)
+- [离散数学](/cs-fundamentals/540-DiscreteMathematics)
 
 ## 1. 概述与学习目标
 

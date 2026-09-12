@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 深入解析 CSS margin 合并、塌陷机制及 BFC 块格式化上下文的工程实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/170-PriorityCalculation'
   - 'css/040-StyleSheetImportMethod'
@@ -17,6 +17,13 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
   - 'css/050-CSS3BoxModelDetailed'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+- [CSS3 盒模型详解](/css/050-CSS3BoxModelDetailed)
 
 > 0基础速通：读第 0 节直觉、第 1 节核心必读（代码示例）与第 7 节综合挑战即可；第 6 章深入理解（选读）供进阶。
 

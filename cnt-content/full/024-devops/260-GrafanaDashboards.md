@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Grafana 仪表盘配置：数据源、面板类型、变量模板与告警集成。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'devops/220-AnsiblePlaybookConfigManagement'
   - 'devops/250-Prometheus'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'devops/010-OverviewLinuxBasics'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与 Linux 基础](/devops/010-OverviewLinuxBasics)
 
 ## 0. 一句话理解
 

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL存储过程与自定义函数详解：创建、参数、变量、流程控制、游标与异常处理。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/860-PerformanceTuningSecurity'
   - 'mysql/290-FunctionalIndex'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'mysql/160-View'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [视图语法速查手册](/mysql/160-View)
 
 ## 1. 存储过程基础
 

@@ -6,12 +6,26 @@ category: 计算机科学
 difficulty: beginner
 description: 计算机科学学科全景图，知识体系脉络与核心抽象层级。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'cs-fundamentals/090-ComputerArchitecture'
   - 'cs-fundamentals/150-OperatingSystem'
 prerequisites: []
 ---
+
+## 学习目标
+
+本文是「计算机基础」模块的第 1 篇，难度定位为入门。重点内容：计算机科学学科全景图，知识体系脉络与核心抽象层级。
+
+主要章节：
+
+- 1. 学科定义与边界
+- 2. 知识体系全景图
+- 3. 抽象层级模型
+- 4. 三大主线：体系结构 / 协议栈 / 状态机
+- 5. 计算理论的哲学基础
+- 6. 本模块的知识依赖图
+- ……共 7 个章节
 
 ## 1. 学科定义与边界
 

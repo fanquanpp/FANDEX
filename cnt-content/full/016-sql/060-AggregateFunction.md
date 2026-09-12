@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: SQL聚合函数：COUNT、SUM、AVG、MAX、MIN的语法、NULL处理、DISTINCT聚合与高级聚合技巧
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/080-SelectExecutionOrder'
   - 'sql/050-FilterCondition'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'sql/020-OverviewStandard'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与标准](/sql/020-OverviewStandard)
 
 ## 1. 聚合函数概述
 

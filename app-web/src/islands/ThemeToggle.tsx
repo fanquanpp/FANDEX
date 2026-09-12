@@ -32,6 +32,7 @@ import '@/styles/islands/ThemeToggle.css';
  * 组件 props 接口
  * ThemeToggle 无外部 props，定义空接口以保持组件接口一致性
  */
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type -- 岛屿约定保留空接口：Record<string, never> 会拒绝 Astro 的 client:* 属性传递
 interface ThemeToggleProps {}
 
 /** 太阳图标（暗色模式下显示，提示可切换到亮色） */
@@ -82,7 +83,7 @@ function MoonIcon({ visible }: { visible: boolean }) {
  * 主题切换组件
  * 在亮色与暗色模式间切换，状态持久化到 localStorage
  */
-export function ThemeToggle({}: ThemeToggleProps = {}) {
+export function ThemeToggle(_props: ThemeToggleProps) {
   /**
    * 当前主题状态：'light' 亮色 | 'dark' 暗色
    * 初始值为 'light'，在 useEffect 中根据 localStorage 或系统偏好修正
@@ -111,6 +112,8 @@ export function ThemeToggle({}: ThemeToggleProps = {}) {
     // 通过统一主题模块读取已保存的主题偏好，无保存值时跟随系统
     const saved = getSavedTheme();
     const initial: Theme = saved ?? (prefersDarkMode() ? 'dark' : 'light');
+    // SSR 下无法在 useState 初始化器读 localStorage，两段式初始化是必要模式（豁免 set-state-in-effect）
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setTheme(initial);
     // 同步显式声明 data-theme，消除"无属性"中间态
     // 作为 BaseLayout 内联脚本的二次保险（FOUC 四层防护 · 第四层）

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Ansible Playbook 配置管理：Inventory、Module、Role 与最佳实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'devops/110-HelmChartApplicationPackage'
   - 'devops/210-Terraform'
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'devops/010-OverviewLinuxBasics'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与 Linux 基础](/devops/010-OverviewLinuxBasics)
 
 ## 0. 一句话理解
 

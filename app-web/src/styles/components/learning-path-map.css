@@ -52,7 +52,7 @@
   .lp-controls__scale {
     min-width: 46px;
     text-align: center;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.68rem;
     color: var(--color-fg-secondary);
   }
@@ -156,14 +156,14 @@
   }
 
   .lp-root__icon {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 1.05rem;
     font-weight: 700;
     fill: var(--lp-color);
   }
 
   .lp-root__title {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.92rem;
     font-weight: 600;
     fill: var(--color-fg-primary);
@@ -206,7 +206,7 @@
   }
 
   .lp-stage__title {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.82rem;
     font-weight: 600;
     fill: var(--color-fg-primary);
@@ -228,7 +228,7 @@
   }
 
   .lp-stage__count {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.68rem;
     font-weight: 700;
     fill: var(--lp-color);
@@ -289,7 +289,7 @@
 
   /* 待补充节点：虚线边框 + 警示色 */
   .lp-node__rect--planned {
-    stroke: color-mix(in oklch, var(--color-warning) 62%, var(--color-border-strong));
+    stroke: color-mix(in oklch, var(--color-warning-base) 62%, var(--color-border-strong));
     stroke-dasharray: 5 4;
   }
 
@@ -336,15 +336,15 @@
   }
 
   .lp-node__bar--beginner {
-    fill: var(--color-success);
+    fill: var(--color-success-base);
   }
 
   .lp-node__bar--intermediate {
-    fill: var(--color-warning);
+    fill: var(--color-warning-base);
   }
 
   .lp-node__bar--advanced {
-    fill: var(--color-error);
+    fill: var(--color-danger-base);
   }
 
   /* ============================================================
@@ -358,7 +358,7 @@
     min-height: 240px;
     padding: var(--space-6);
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-md, 4px);
+    border-radius: var(--radius-md, 4px);
     background: var(--color-bg-card);
   }
 
@@ -401,7 +401,7 @@
 
   .lp-panel__empty-title {
     margin: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.9rem;
     font-weight: 600;
     color: var(--color-fg-primary);
@@ -430,7 +430,7 @@
     padding: 2px 8px;
     border-radius: 2px;
     background: color-mix(in oklch, var(--lp-panel-color) 10%, transparent);
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.66rem;
     font-weight: 600;
     letter-spacing: 0.04em;
@@ -439,7 +439,7 @@
 
   .lp-panel__title {
     margin: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 1rem;
     font-weight: 600;
     line-height: 1.45;
@@ -469,8 +469,8 @@
   }
 
   .lp-panel__status--planned {
-    color: var(--color-warning);
-    border-color: color-mix(in oklch, var(--color-warning) 40%, transparent);
+    color: var(--color-warning-base);
+    border-color: color-mix(in oklch, var(--color-warning-base) 40%, transparent);
   }
 
   .lp-panel__desc {
@@ -490,7 +490,7 @@
     border: 1px solid color-mix(in oklch, var(--lp-panel-color) 55%, transparent);
     border-radius: 2px;
     background: color-mix(in oklch, var(--lp-panel-color) 8%, transparent);
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.76rem;
     font-weight: 600;
     color: var(--lp-panel-color);
@@ -505,8 +505,8 @@
   /* 待补充提示 */
   .lp-panel__notice {
     padding: var(--space-2) var(--space-3);
-    border-left: 3px solid var(--color-warning);
-    background: color-mix(in oklch, var(--color-warning) 9%, var(--color-bg-card));
+    border-left: 3px solid var(--color-warning-base);
+    background: color-mix(in oklch, var(--color-warning-base) 9%, var(--color-bg-card));
     font-size: 0.76rem;
     line-height: 1.6;
     color: var(--color-fg-secondary);
@@ -588,7 +588,7 @@
 
   .lp-legend-line--planned {
     height: 0;
-    border-top: 2px dashed var(--color-warning);
+    border-top: 2px dashed var(--color-warning-base);
   }
 
   .lp-legend-bar {
@@ -599,15 +599,15 @@
   }
 
   .lp-legend-bar--beginner {
-    background: var(--color-success);
+    background: var(--color-success-base);
   }
 
   .lp-legend-bar--intermediate {
-    background: var(--color-warning);
+    background: var(--color-warning-base);
   }
 
   .lp-legend-bar--advanced {
-    background: var(--color-error);
+    background: var(--color-danger-base);
   }
 
   /* ============================================================
@@ -622,7 +622,7 @@
     margin-right: auto;
     padding: 4px 10px 4px 4px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-md, 4px);
+    border-radius: var(--radius-md, 4px);
     background: var(--color-bg-card);
   }
 
@@ -671,7 +671,7 @@
   .lp-progress__learning {
     padding: 2px 8px;
     border: 1px solid color-mix(in srgb, var(--color-accent-base) 40%, transparent);
-    border-radius: var(--fandex-radius-sm, 2px);
+    border-radius: var(--radius-sm, 2px);
     font-family: var(--font-family-mono);
     font-size: 0.62rem;
     color: var(--color-accent-base);
@@ -689,14 +689,14 @@
 
   .lp-node__check {
     fill: none;
-    stroke: var(--color-success);
+    stroke: var(--color-success-base);
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
   }
 
   .lp-node__status--done {
-    fill: var(--color-success);
+    fill: var(--color-success-base);
   }
 
   /* 已完成节点：标题弱化 + 边框覆成功色，传达"收起不必再盯" */
@@ -705,7 +705,7 @@
   }
 
   .lp-node--done .lp-node__rect {
-    stroke: color-mix(in srgb, var(--color-success) 45%, var(--color-border-default));
+    stroke: color-mix(in srgb, var(--color-success-base) 45%, var(--color-border-default));
   }
 
   /* 学习中节点：边框覆强调色 */
@@ -720,17 +720,17 @@
     gap: 4px;
     padding: 4px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-md, 4px);
+    border-radius: var(--radius-md, 4px);
     background: var(--color-bg-sunken);
   }
 
   .lp-panel__progress-btn {
     padding: 6px 4px;
     border: 1px solid transparent;
-    border-radius: var(--fandex-radius-sm, 2px);
+    border-radius: var(--radius-sm, 2px);
     background: transparent;
     color: var(--color-fg-secondary);
-    font-family: var(--font-body);
+    font-family: var(--font-family-body);
     font-size: 0.78rem;
     cursor: pointer;
     transition:
@@ -752,8 +752,8 @@
 
   /* 已完成态激活：绿色系反馈 */
   .lp-panel__progress-btn.is-done.is-active {
-    border-color: color-mix(in srgb, var(--color-success) 50%, transparent);
-    color: var(--color-success);
+    border-color: color-mix(in srgb, var(--color-success-base) 50%, transparent);
+    color: var(--color-success-base);
   }
 
   .lp-panel__progress-btn:focus-visible {
@@ -774,7 +774,7 @@
   }
 
   .lp-legend-state--done {
-    background: var(--color-success);
+    background: var(--color-success-base);
   }
 
   /* ============================================================

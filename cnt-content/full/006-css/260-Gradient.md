@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 深入解析 CSS 渐变（linear-gradient、radial-gradient、conic-gradient）的规范、几何算法、颜色插值与工程实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/200-FloatClear'
   - 'css/230-StackingContext'
@@ -16,6 +16,13 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
   - 'css/290-BackgroundEnhancement'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+- [背景增强](/css/290-BackgroundEnhancement)
 
 > 0基础速通：读第 0 节直觉与第 1 节核心必读（代码示例）即可；第 6 章深入理解（选读）供进阶。
 

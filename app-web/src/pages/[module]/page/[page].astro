@@ -57,15 +57,16 @@ const breadcrumb = [
     slot="head"
     title={`${meta.title} · 第 ${page} 页`}
     description={meta.description}
-    canonical={`${Astro.site}${Astro.url.pathname}`}
+    canonical={new URL(Astro.url.pathname, Astro.site).href}
   />
-  {/* 分页关系链：prev 指向上一页（第 2 页的 prev 为模块首页） */}
+  {/* 分页关系链：prev 指向上一页（第 2 页的 prev 为模块首页）。
+      统一用 new URL 拼接：Astro.site 序列化自带尾斜杠，字符串直拼会产生双斜杠 */}
   <link
     rel="prev"
-    href={page === 2 ? `${Astro.site}${baseUrl}${module}/` : `${Astro.site}${baseUrl}${module}/page/${page - 1}/`}
+    href={page === 2 ? new URL(`${baseUrl}${module}/`, Astro.site).href : new URL(`${baseUrl}${module}/page/${page - 1}/`, Astro.site).href}
     slot="head"
   />
-  {page < totalPages && <link rel="next" href={`${Astro.site}${baseUrl}${module}/page/${page + 1}/`} slot="head" />}
+  {page < totalPages && <link rel="next" href={new URL(`${baseUrl}${module}/page/${page + 1}/`, Astro.site).href} slot="head" />}
   <Sidebar slot="sidebar" moduleId={module} />
 
   <Breadcrumb items={breadcrumb} hasSidebar />

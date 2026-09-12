@@ -6,13 +6,26 @@ category: 数据库
 difficulty: beginner
 description: Redis 8.0概述、字符串SDS、哈希、列表quicklist、集合、有序集合跳表、位图、HyperLogLog、GEO、Stream、Vector Set。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'redis/140-PersistenceModule'
   - 'redis/180-ClusterHA'
 prerequisites: []
 ---
 
+## 学习目标
+
+本文是「Redis 与 MongoDB」模块的第 1 篇，难度定位为入门。重点内容：Redis 8.0概述、字符串SDS、哈希、列表quicklist、集合、有序集合跳表、位图、HyperLogLog、GEO、Stream、Vector Set。
+
+主要章节：
+
+- 1. Redis 8.0 概述
+- 2. 字符串（SDS）
+- 3. 哈希（Hash）
+- 4. 列表（List）
+- 5. 集合（Set）
+- 6. 有序集合（ZSet）
+- ……共 11 个章节
 
 > 选型前先了解版本与许可现状（信息截至 2026-09，最新版本以 redis.io/downloads 为准）。
 

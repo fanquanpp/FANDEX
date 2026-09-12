@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 执行计划、索引策略、查询重写、统计信息、参数化查询、分区表与物化视图
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'sql/260-WindowFunction'
   - 'sql/320-AdvancedQuery'
@@ -14,6 +14,20 @@ related:
   - 'sql/450-SQLPracticeInterview'
 prerequisites: []
 ---
+
+## 学习目标
+
+本文是「SQL」模块的第 44 篇，难度定位为高级。重点内容：执行计划、索引策略、查询重写、统计信息、参数化查询、分区表与物化视图
+
+主要章节：
+
+- 执行计划
+- 索引策略
+- 查询重写
+- 统计信息
+- 参数化查询
+- 分区表
+- ……共 15 个章节
 
 ## 执行计划
 

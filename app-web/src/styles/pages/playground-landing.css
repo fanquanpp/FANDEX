@@ -18,7 +18,7 @@
    * ============================================================ */
   .pg-home__tagline {
     max-width: 560px;
-    margin: var(--spacing-sm) auto 0;
+    margin: var(--space-2) auto 0;
     font-size: 0.92rem;
     line-height: 1.7;
     color: var(--color-fg-secondary);
@@ -29,7 +29,7 @@
    * 2. 灵感图鉴区（显眼入口）
    * ============================================================ */
   .pg-home__gallery {
-    margin-top: var(--spacing-xl);
+    margin-top: var(--space-8);
   }
 
   /* 区块头部：竖条标记 + 标题 + 计数 + 说明，右侧完整图鉴入口 */
@@ -37,10 +37,10 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-md);
+    gap: var(--space-4);
     flex-wrap: wrap;
-    padding: var(--spacing-xs) 0 var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
+    padding: var(--space-1) 0 var(--space-2);
+    margin-bottom: var(--space-4);
   }
 
   .pg-home__gallery-title {
@@ -61,7 +61,7 @@
   }
 
   .pg-home__heading {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 1.05rem;
     font-weight: 700;
     letter-spacing: 0.04em;
@@ -85,7 +85,7 @@
     border-radius: var(--radius-md);
     background: var(--color-accent-base);
     color: var(--color-accent-fg);
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.9rem;
     font-weight: 600;
     letter-spacing: 0.03em;
@@ -123,7 +123,7 @@
   .pg-home__grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
-    gap: var(--spacing-md);
+    gap: var(--space-4);
   }
 
   /* 整卡为链接：点击任意处载入工作台 */
@@ -131,7 +131,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    padding: var(--spacing-sm);
+    padding: var(--space-2);
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-md);
     background: var(--color-bg-card);
@@ -162,8 +162,8 @@
   /* 分组徽标：mono 小字铭牌，贴卡片右上角 */
   .pg-home__card-group {
     position: absolute;
-    top: var(--spacing-sm);
-    right: var(--spacing-sm);
+    top: var(--space-2);
+    right: var(--space-2);
     z-index: 1;
     padding: 2px 8px;
     border: 1px solid var(--color-border-light);
@@ -179,7 +179,7 @@
   .pg-home__preview {
     display: block;
     aspect-ratio: 16 / 10;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--space-2);
     border: 1px solid var(--color-border-light);
     border-radius: var(--radius-sm);
     overflow: hidden;
@@ -198,7 +198,7 @@
   }
 
   .pg-home__card-name {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.88rem;
     font-weight: 600;
     color: var(--color-fg-primary);
@@ -218,16 +218,16 @@
   .pg-home__features {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-    gap: var(--spacing-md);
-    margin-top: var(--spacing-xl);
+    gap: var(--space-4);
+    margin-top: var(--space-8);
   }
 
   .pg-home__feature {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-md);
+    gap: var(--space-1);
+    padding: var(--space-4);
     border: 1px solid var(--color-border-subtle);
     border-radius: var(--radius-md);
     background: var(--color-bg-card);
@@ -275,7 +275,7 @@
 
   .pg-home__feature-title {
     margin: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.92rem;
     font-weight: 700;
     color: var(--color-fg-primary);

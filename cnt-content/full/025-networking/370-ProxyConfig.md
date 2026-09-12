@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 代理配置：环境变量与系统代理、HTTP/SOCKS5 代理与代理链、常见客户端配置要点。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'networking/130-CurlHTTPRequest'
   - 'networking/120-HTTPProtocol'
@@ -14,6 +14,12 @@ related:
 prerequisites:
   - 'networking/120-HTTPProtocol'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTTP 协议](/networking/120-HTTPProtocol)
 
 ## 环境变量代理
 

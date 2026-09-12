@@ -6,10 +6,24 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Harbor 实战：安装部署、配置调优、镜像推送拉取、项目与用户管理、扫描与复制策略。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related: []
 prerequisites: []
 ---
+
+## 学习目标
+
+本文是「云计算」模块的第 54 篇，难度定位为入门。重点内容：Harbor 实战：安装部署、配置调优、镜像推送拉取、项目与用户管理、扫描与复制策略。
+
+主要章节：
+
+- 安装与部署
+- 配置文件
+- Docker 客户端登录
+- 镜像推送
+- 项目与用户管理
+- 镜像管理 API
+- ……共 12 个章节
 
 ## 安装与部署
 

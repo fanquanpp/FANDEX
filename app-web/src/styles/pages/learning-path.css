@@ -22,21 +22,21 @@
     display: flex;
     flex-wrap: wrap;
     justify-content: center;
-    gap: var(--spacing-xs);
-    margin-top: calc(var(--spacing-sm) * -1);
-    margin-bottom: var(--spacing-md);
+    gap: var(--space-1);
+    margin-top: calc(var(--space-2) * -1);
+    margin-bottom: var(--space-4);
   }
 
   /* ============================================================
    * 分类区块
    * ============================================================ */
   .lp-category {
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--space-8);
   }
 
   /* 分类标题：复用首页 category-header 组件类，仅调整纵向间距 */
   .lp-category__title {
-    margin: 0 0 var(--spacing-md);
+    margin: 0 0 var(--space-4);
     justify-content: flex-start;
     position: relative;
   }
@@ -74,7 +74,7 @@
   .lp-tech-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: var(--spacing-md);
+    gap: var(--space-4);
   }
 
   /* ============================================================
@@ -86,14 +86,14 @@
   .lp-careers {
     position: relative;
     z-index: 1;
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--space-8);
   }
 
   .lp-careers__head {
     display: flex;
     align-items: baseline;
-    gap: var(--spacing-sm);
-    margin-bottom: var(--spacing-md);
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
     padding-left: 12px;
     position: relative;
   }
@@ -113,7 +113,7 @@
 
   .lp-careers__head h2 {
     margin: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 1.05rem;
     letter-spacing: 0.03em;
     color: var(--color-fg-primary);
@@ -127,7 +127,7 @@
 
   .lp-careers__grid {
     display: grid;
-    gap: var(--spacing-md);
+    gap: var(--space-4);
   }
 
   /* 职业卡片：紧凑三栏总览（职业信息 | 学习阶段 | 职业阶梯） */
@@ -136,11 +136,11 @@
     position: relative;
     display: grid;
     grid-template-columns: minmax(230px, 1fr) minmax(300px, 1.8fr) minmax(180px, 0.9fr);
-    gap: var(--spacing-md);
+    gap: var(--space-4);
     align-items: start;
     padding: 14px 18px 16px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-md, 4px);
+    border-radius: var(--radius-md, 4px);
     background: var(--color-bg-card);
     box-shadow: var(--shadow-xs);
     overflow: hidden;
@@ -204,7 +204,8 @@
     stroke-width: 1.8;
     stroke-dasharray: 430;
     stroke-dashoffset: 430;
-    animation: lp-curve-flow 3.8s linear infinite;
+    /* 时长按 dasharray 等速换算（430/230 * 3.6s），与分类曲线流光速度一致 */
+    animation: lp-curve-flow 6.7s linear infinite;
   }
 
   @keyframes lp-curve-flow {
@@ -222,7 +223,7 @@
   .lp-career__head {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--space-2);
     min-width: 0;
     margin-bottom: 6px;
   }
@@ -240,14 +241,14 @@
   .lp-career__titles {
     display: flex;
     align-items: baseline;
-    gap: var(--spacing-sm);
+    gap: var(--space-2);
     min-width: 0;
     flex: 1;
   }
 
   .lp-career__title {
     margin: 0;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.92rem;
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -269,7 +270,7 @@
     flex-shrink: 0;
     padding: 2px 10px;
     border: 1px solid color-mix(in srgb, var(--career-color) 45%, transparent);
-    border-radius: var(--fandex-radius-sm, 2px);
+    border-radius: var(--radius-sm, 2px);
     font-family: var(--font-family-mono);
     font-size: 10px;
     letter-spacing: 0.08em;
@@ -278,9 +279,9 @@
   }
 
   .lp-career__status.is-planned {
-    color: var(--color-warning);
-    border-color: color-mix(in srgb, var(--color-warning) 45%, transparent);
-    background: color-mix(in srgb, var(--color-warning) 8%, transparent);
+    color: var(--color-warning-base);
+    border-color: color-mix(in srgb, var(--color-warning-base) 45%, transparent);
+    background: color-mix(in srgb, var(--color-warning-base) 8%, transparent);
   }
 
   .lp-career__desc {
@@ -306,7 +307,7 @@
   .lp-career__route {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--spacing-sm);
+    gap: var(--space-2);
     min-width: 0;
   }
 
@@ -317,7 +318,7 @@
     gap: 4px;
     padding: 8px 10px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-sm, 2px);
+    border-radius: var(--radius-sm, 2px);
     background: color-mix(in srgb, var(--career-color) 4%, var(--color-bg-card));
     min-width: 0;
   }
@@ -337,7 +338,7 @@
   }
 
   .lp-career__stage-label {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.72rem;
     font-weight: 600;
     letter-spacing: 0.03em;
@@ -361,9 +362,9 @@
   .lp-career__chip {
     padding: 2px 9px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-sm, 2px);
+    border-radius: var(--radius-sm, 2px);
     background: var(--color-bg-card);
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 10px;
     color: var(--color-text-secondary);
     text-decoration: none;
@@ -391,7 +392,7 @@
     position: relative;
     padding: 6px 10px 6px 14px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-sm, 2px);
+    border-radius: var(--radius-sm, 2px);
     font-family: var(--font-family-mono);
     font-size: 9.5px;
     line-height: 1.5;
@@ -423,13 +424,13 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-4);
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-md, 4px);
+    border-radius: var(--radius-md, 4px);
     background: var(--color-bg-card);
     box-shadow: var(--shadow-xs);
-    color: var(--color-text);
+    color: var(--color-fg-primary);
     text-decoration: none;
     min-width: 0;
     overflow: hidden;
@@ -490,7 +491,7 @@
   .lp-tech-card__head {
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--space-1);
     min-width: 0;
   }
 
@@ -538,10 +539,10 @@
   }
 
   .lp-tech-card__title {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.85rem;
     font-weight: var(--font-weight-semibold, 600);
-    color: var(--color-text);
+    color: var(--color-fg-primary);
     margin: 0;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -584,8 +585,8 @@
   .lp-tech-card__stats {
     display: inline-flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    font-family: var(--font-display);
+    gap: var(--space-2);
+    font-family: var(--font-family-heading);
     font-size: 0.7rem;
     color: var(--color-text-tertiary);
   }
@@ -602,7 +603,7 @@
   }
 
   .lp-tech-card__stats .is-gap strong {
-    color: var(--color-warning);
+    color: var(--color-warning-base);
   }
 
   /* 覆盖进度条：自绘 SVG */
@@ -631,9 +632,9 @@
     z-index: 30;
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-sm) var(--spacing-md);
-    margin: 0 calc(var(--spacing-md) * -1);
+    gap: var(--space-1);
+    padding: var(--space-2) var(--space-4);
+    margin: 0 calc(var(--space-4) * -1);
     background: color-mix(in oklch, var(--color-bg-primary) 88%, transparent);
     backdrop-filter: blur(12px) saturate(160%);
     -webkit-backdrop-filter: blur(12px) saturate(160%);
@@ -646,10 +647,10 @@
     gap: 6px;
     padding: 3px 10px;
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-sm, 2px);
+    border-radius: var(--radius-sm, 2px);
     background: transparent;
     color: var(--color-text-secondary);
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.74em;
     letter-spacing: 0.02em;
     text-decoration: none;
@@ -660,12 +661,12 @@
   }
 
   .lp-tech-chip:hover {
-    color: var(--color-text);
+    color: var(--color-fg-primary);
     border-color: color-mix(in oklch, var(--chip-color, var(--color-accent-base)) 45%, transparent);
   }
 
   .lp-tech-chip.is-active {
-    color: var(--color-text);
+    color: var(--color-fg-primary);
     border-color: color-mix(in oklch, var(--chip-color, var(--color-accent-base)) 60%, transparent);
     background-color: color-mix(in oklch, var(--chip-color, var(--color-accent-base)) 9%, transparent);
   }
@@ -696,7 +697,7 @@
     padding: 3px 9px;
     border: 1px solid var(--color-border-light);
     border-radius: 2px;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.66rem;
     color: var(--color-text-secondary);
     text-decoration: none;
@@ -718,7 +719,7 @@
   @media (max-width: 768px) {
     .lp-career {
       grid-template-columns: 1fr;
-      gap: var(--spacing-sm);
+      gap: var(--space-2);
     }
 
     .lp-careers__route {
@@ -743,8 +744,8 @@
     }
 
     .lp-tech-chips {
-      margin: 0 calc(var(--spacing-sm) * -1);
-      padding: var(--spacing-sm);
+      margin: 0 calc(var(--space-2) * -1);
+      padding: var(--space-2);
     }
   }
 

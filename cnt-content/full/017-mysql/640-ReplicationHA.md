@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL复制架构：binlog格式、半同步/异步/延迟/组复制、InnoDB Cluster、备份恢复策略
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/830-VectorType'
   - 'mysql/800-JSONSchemaValidationAggregate'
@@ -16,6 +16,11 @@ prerequisites:
   - 'mysql/160-View'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [视图语法速查手册](/mysql/160-View)
 
 ## 1. 二进制日志 (Binary Log)
 

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 安全测试方法、移动应用测试、持续集成中的测试、测试左移与质量内建。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'software-testing/080-FunctionalAndAutomatedTest'
   - 'software-testing/140-PerformanceInterfaceTest'
@@ -15,6 +15,17 @@ related:
 prerequisites: []
 ---
 
+## 学习目标
+
+本文是「软件工程与测试」模块的第 17 篇，难度定位为高级。重点内容：安全测试方法、移动应用测试、持续集成中的测试、测试左移与质量内建。
+
+主要章节：
+
+- 1. 安全测试方法
+- 2. 移动应用测试
+- 3. 持续集成中的测试
+- 4. 测试左移与质量内建
+- 小结
 
 ## 1. 安全测试方法
 

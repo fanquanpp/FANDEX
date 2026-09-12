@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 聚合函数、窗口函数、子查询与公用表表达式。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/270-IndexHintForceIndex'
   - 'mysql/300-IndexStatsHistogram'
@@ -16,6 +16,11 @@ prerequisites:
   - 'mysql/160-View'
 ---
 
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [视图语法速查手册](/mysql/160-View)
 
 ## 1. 内置函数详解
 

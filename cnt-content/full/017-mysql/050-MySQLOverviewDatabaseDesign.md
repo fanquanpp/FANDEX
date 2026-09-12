@@ -6,13 +6,24 @@ category: 数据库
 difficulty: beginner
 description: MySQL 发展历程、体系结构与数据库设计范式。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/160-View'
   - 'mysql/060-MySQLEnvSetup'
   - 'mysql/070-MySQLDataTypeConstraint'
 prerequisites: []
 ---
+
+## 学习目标
+
+本文是「MySQL」模块的第 5 篇，难度定位为入门。重点内容：MySQL 发展历程、体系结构与数据库设计范式。
+
+主要章节：
+
+- 0. 五分钟写出第一句 SQL（先读这里）
+- 1. 数据库概述 (Overview)
+- 2. 数据库设计基础
+- 3. 总结
 
 ## 0. 五分钟写出第一句 SQL（先读这里）
 

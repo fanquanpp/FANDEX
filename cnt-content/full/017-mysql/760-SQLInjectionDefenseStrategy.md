@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 参数化查询、ORM 防御、WAF 与安全编码实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'mysql/740-SQLInjectionBasicsDetection'
   - 'mysql/750-SQLInjectionAttackTypePractice'
@@ -16,7 +16,11 @@ prerequisites:
   - 'mysql/160-View'
 ---
 
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [视图语法速查手册](/mysql/160-View)
 
 ## 1. SQL 注入防御策略 (Defense Strategies)
 

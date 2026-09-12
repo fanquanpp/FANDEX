@@ -1,29 +1,29 @@
 /* 测验区域整体样式：与上方内容分隔 */
 @layer islands {
 .quiz-block {
-  margin-top: var(--spacing-xl);
-  padding-top: var(--spacing-lg);
+  margin-top: var(--space-8);
+  padding-top: var(--space-6);
   border-top: 1px solid var(--color-border-light);
 }
 
 /* 标题样式 */
 .quiz-title {
-  font-family: var(--font-display);
+  font-family: var(--font-family-heading);
   font-size: 1.1em;
   font-weight: 700;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: var(--space-4);
 }
 
 /* 题目列表：垂直排列，间距适中 */
 .quiz-list {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
+  gap: var(--space-4);
 }
 
 /* 单个题目卡片：带边框和背景 */
 .quiz-item {
-  padding: var(--spacing-md);
+  padding: var(--space-4);
   border: 1px solid var(--color-border-light);
   background: var(--color-bg-card);
 }
@@ -41,7 +41,7 @@
 /* 题目文字：适当行高，便于阅读 */
 .quiz-question {
   font-size: 0.92em;
-  margin-bottom: var(--spacing-sm);
+  margin-bottom: var(--space-2);
   line-height: 1.6;
 }
 
@@ -52,7 +52,7 @@
   justify-content: center;
   width: 20px;
   height: 20px;
-  background: var(--color-primary);
+  background: var(--color-accent-base);
   color: var(--color-fg-inverse);
   font-size: 0.75em;
   font-weight: 700;
@@ -73,35 +73,35 @@
 /* 答案输入区域：水平排列输入框和提交按钮 */
 .quiz-answer-area {
   display: flex;
-  gap: var(--spacing-sm);
+  gap: var(--space-2);
   align-items: flex-start;
-  margin-top: var(--spacing-sm);
+  margin-top: var(--space-2);
 }
 
 /* 填空输入框：自适应宽度 */
 .quiz-input {
   flex: 1;
   padding: 6px 10px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-bg-primary);
+  color: var(--color-fg-primary);
   font-size: 0.88em;
-  font-family: var(--font-display);
+  font-family: var(--font-family-heading);
   outline: none;
 }
 
 /* 输入框聚焦效果 */
 .quiz-input:focus {
-  border-color: var(--color-primary);
+  border-color: var(--color-accent-base);
 }
 
 /* 修正题文本域：等宽字体，支持垂直调整大小 */
 .quiz-textarea {
   flex: 1;
   padding: 6px 10px;
-  border: 1px solid var(--color-border);
-  background: var(--color-bg);
-  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-bg-primary);
+  color: var(--color-fg-primary);
   font-size: 0.85em;
   font-family: var(--font-mono, monospace);
   outline: none;
@@ -110,24 +110,24 @@
 
 /* 文本域聚焦效果 */
 .quiz-textarea:focus {
-  border-color: var(--color-primary);
+  border-color: var(--color-accent-base);
 }
 
 /* 修正题代码展示区：等宽字体，支持横向滚动 */
 .quiz-code {
   width: 100%;
-  padding: var(--spacing-sm);
-  background: var(--color-bg);
+  padding: var(--space-2);
+  background: var(--color-bg-primary);
   border: 1px solid var(--color-border-light);
   font-size: 0.82em;
-  margin-bottom: var(--spacing-xs);
+  margin-bottom: var(--space-1);
   overflow-x: auto;
 }
 
 /* 提交按钮：透明背景，悬停时变为主题色 */
 .quiz-submit-btn {
   padding: 6px 14px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   background: transparent;
   color: var(--color-text-secondary);
   font-size: 0.85em;
@@ -136,8 +136,8 @@
 }
 
 .quiz-submit-btn:hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--color-accent-base);
+  color: var(--color-accent-base);
 }
 
 /* 选择题选项列表：垂直排列 */
@@ -145,32 +145,32 @@
   display: flex;
   flex-direction: column;
   gap: 4px;
-  margin-top: var(--spacing-sm);
+  margin-top: var(--space-2);
 }
 
 /* 单个选项按钮：左对齐，带边框 */
 .quiz-option {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--space-2);
   padding: 6px 10px;
   border: 1px solid var(--color-border-light);
-  background: var(--color-bg);
-  color: var(--color-text);
+  background: var(--color-bg-primary);
+  color: var(--color-fg-primary);
   font-size: 0.88em;
   cursor: pointer;
   text-align: left;
-  transition: color var(--transition-fast), background-color var(--transition-fast), border-color var(--transition-fast), box-shadow var(--transition-fast);
+  transition: color var(--motion-duration-instant), background-color var(--motion-duration-instant), border-color var(--motion-duration-instant), box-shadow var(--motion-duration-instant);
 }
 
 /* 选项悬停效果：边框变为主题色 */
 .quiz-option:hover:not(:disabled) {
-  border-color: var(--color-primary);
+  border-color: var(--color-accent-base);
 }
 
 /* 选中状态：边框和背景高亮 */
 .quiz-option.selected {
-  border-color: var(--color-primary);
+  border-color: var(--color-accent-base);
   background: var(--color-bg-hover);
 }
 
@@ -195,7 +195,7 @@
   justify-content: center;
   width: 20px;
   height: 20px;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   font-size: 0.78em;
   font-weight: 600;
   flex-shrink: 0;
@@ -203,11 +203,11 @@
 
 /* 反馈区域：水平排列，自动换行 */
 .quiz-feedback {
-  margin-top: var(--spacing-sm);
+  margin-top: var(--space-2);
   font-size: 0.85em;
   display: flex;
   flex-wrap: wrap;
-  gap: var(--spacing-sm);
+  gap: var(--space-2);
   align-items: baseline;
 }
 

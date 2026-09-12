@@ -9,23 +9,9 @@
  * - 共享的 head 内容统一通过 named slot "head" 透传
  * - WebVitalsTracker 通过 client:load 在浏览器端水合后开始采集
  */
-// CSS 引入顺序说明：
-// 1. styles/shared — ark 家族令牌体系（含 @layer 声明、reset、tokens、theme、base、typography）
-//    必须最先引入，确保 ark 令牌优先加载，后续兼容层才能正确引用（原 @fandex/styles 已迁入 app-web）
-// 2. variables.css — --color-* 兼容层（引用 ark 语义令牌，通过 [data-theme] 自动切换主题）
-// 3. tokens.css — --fandex-* 兼容层（引用 ark 语义令牌，保留色阶过渡期兼容）
-// 4. tailwind.css — Tailwind 4 配置（@theme inline 映射 ark 令牌生成工具类）
-// 5. 业务样式 — global/typography/code/components/geo-decor（基于兼容层令牌）
-import '@/styles/shared/index.css';
-import '@/styles/variables.css';
-import '@/styles/tokens.css';
-import '@/styles/tailwind.css';
-import '@/styles/global.css';
-import '@/styles/typography.css';
-import '@/styles/code.css';
-import '@/styles/components.css';
-import '@/styles/geo-decor.css';
-import '@/styles/components/search-palette.css';
+// CSS 引入：全部样式收敛到 styles/site.css 单一入口（内含图层顺序说明与
+// 兼容层迁移终态计划）。BaseLayout 不得直接引入其他样式文件，防止顺序漂移
+import '@/styles/site.css';
 import { SITE } from '@/lib/constants';
 import { MAIN_CSP } from '@/lib/csp';
 import { ClientRouter } from 'astro:transitions';
@@ -57,6 +43,13 @@ const base = import.meta.env.BASE_URL;
     <link rel="apple-touch-icon" href={appleTouchIconUrl} />
     <!-- PWA 清单：配合 public/sw.js 提供可安装、可离线的站点体验 -->
     <link rel="manifest" href={`${base}manifest.webmanifest`} />
+    <!-- RSS 订阅发现：阅读器与浏览器扩展据此自动发现全站更新流 -->
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title={`${SITE.title} 订阅`}
+      href={`${base}rss.xml`}
+    />
     <!-- 内容安全策略：限制脚本、样式、字体等资源的加载来源 -->
     <meta http-equiv="Content-Security-Policy" content={MAIN_CSP} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
@@ -179,4 +172,10 @@ const base = import.meta.env.BASE_URL;
   // PWA 安装入口：捕获 beforeinstallprompt 点亮导航栏「安装应用」按钮，
   // iOS Safari 降级为「添加到主屏幕」指引浮层（详见 lib/pwa-install）
   import '@/lib/pwa-install';
+</script>
+
+<script>
+  // SWR 内容更新提示条：Service Worker 后台刷新发现页面更新时，
+  // 底部浮出「内容已更新」细条，用户点击即刷新到最新版（详见 lib/sw-update）
+  import '@/lib/sw-update';
 </script>

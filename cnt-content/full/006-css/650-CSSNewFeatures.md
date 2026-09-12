@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 2024-2026 CSS 现代特性总览：if() 条件取值、text-box 文本裁剪、shape() 与 corner-shape、field-sizing、滚动条样式、跨文档视图过渡、@starting-style 等，附支持状态与渐进增强策略。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'css/390-ContainerQuery'
   - 'css/450-CascadeLayer'
@@ -20,6 +20,13 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
   - 'css/170-PriorityCalculation'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+- [优先级计算](/css/170-PriorityCalculation)
 
 ## 1. 这篇文档解决什么问题
 

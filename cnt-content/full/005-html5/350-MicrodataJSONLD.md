@@ -6,13 +6,19 @@ category: 前端技术
 difficulty: intermediate
 description: Microdata与JSON-LD
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related:
   - 'html5/340-CustomDataAttribute'
   - 'html5/280-CrossDocumentCommunication'
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 ## 1. 结构化数据概述
 

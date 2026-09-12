@@ -82,6 +82,16 @@ catalog:
   # 图标（偏差报备：搜索功能已删除，fuse.js/pagefind/astro-pagefind 一并移除）
   lucide-react: ^0.460.0
 
+  # Lint 体系（ESLint 10 flat config，作用域：app-web 的 TS/TSX 与管线脚本）
+  eslint: ^10.10.0
+  '@eslint/js': ^10.0.1
+  typescript-eslint: ^8.70.0
+  eslint-plugin-react-hooks: ^7.1.1
+  globals: ^17.12.0
+
+  # 冒烟测试（app-web tests/smoke.spec.ts，FrontendLab 拆分等重构的安全网前置）
+  '@playwright/test': ^1.63.0
+
   # 工具链
   typescript: ^5.7.0
   tsx: ^4.23.13
@@ -133,3 +143,16 @@ strictDepBuilds: false
 # 传递链路：app-web > glob > minimatch > brace-expansion
 overrides:
   brace-expansion: ^5.0.8
+  # ---- 供应链漏洞修复（2026-09-13 审计，配合 deploy.yml 的 audit 门禁）----
+  # js-yaml：!!omap 二次方 CPU 消耗 + maxTotalMergeKeys 不限 CPU（GHSA high x2）
+  'js-yaml@4': ^4.3.2
+  # svgo：removeScripts 对 SVG foreignObject 净化不完整（GHSA high + moderate）
+  'svgo@4': ^4.1.0
+  # nanoid：自定义生成器可无限循环（GHSA high）
+  'nanoid@3': ^3.3.18
+  # smol-toml：畸形 TOML 导致拒绝服务（GHSA high）
+  'smol-toml@1': ^1.7.1
+  # postcss：sourceMappingURL 读取任意 .map 文件的修复不完整（GHSA moderate）
+  'postcss@8': ^8.5.23
+  # fast-uri：主机混淆 / SSRF 多枚漏洞（GHSA high x3）
+  'fast-uri@3': ^3.1.6

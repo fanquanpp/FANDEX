@@ -6,10 +6,24 @@ category: 云与基础设施
 difficulty: beginner
 description: 'SQS/SNS 命令实战：队列与主题管理、消息收发、死信队列、订阅过滤与 Kinesis 对照。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-13'
 related: []
 prerequisites: []
 ---
+
+## 学习目标
+
+本文是「云计算」模块的第 47 篇，难度定位为入门。重点内容：SQS/SNS 命令实战：队列与主题管理、消息收发、死信队列、订阅过滤与 Kinesis 对照。
+
+主要章节：
+
+- SQS 队列管理
+- SQS 消息收发
+- SQS 死信队列
+- SNS 主题管理
+- SNS 订阅管理
+- SNS 发布消息
+- ……共 9 个章节
 
 ## SQS 队列管理
 
