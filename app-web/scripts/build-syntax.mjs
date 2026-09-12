@@ -349,7 +349,7 @@ async function main() {
 
   const data = {
     version: 2,
-    generatedAt: new Date().toISOString(),
+    // 不写入 generatedAt 时间戳：本文件入库，时间戳会让每次构建产生无意义 diff
     languages: languageList,
   };
 
