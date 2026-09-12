@@ -36,7 +36,6 @@ export interface SyntaxLanguage {
 /** 语言索引缓存结构 */
 interface SyntaxIndexCache {
   version: number;
-  generatedAt: string;
   languages: SyntaxLanguage[];
 }
 
@@ -58,7 +57,6 @@ export function getSyntaxIndex(): SyntaxIndexCache {
   const cache = syntaxIndexCache as SyntaxIndexCache;
   return {
     version: cache.version ?? 1,
-    generatedAt: cache.generatedAt ?? '',
     languages: Array.isArray(cache.languages) ? cache.languages : [],
   };
 }
