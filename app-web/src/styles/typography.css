@@ -400,14 +400,20 @@ dfn {
   font-weight: var(--fandex-font-weight-medium);
 }
 
-/* ========== 数学公式样式（KaTeX） ========== */
-/* KaTeX 容器：行内与块级公式统一处理 */
+/* ========== 数学公式样式（KaTeX MathML 输出） ========== */
+/* KaTeX 已切换 output:'mathml'（见 astro.config.ts 注释），产物结构为
+ * <span class="katex"><math>…</math></span>，浏览器按 MathML Core 原生渲染，
+ * 不再依赖 katex.css 与 KaTeX 字体。行内与块级公式统一处理：
+ * 行内为 <span class="katex"><math>，块级为 <span class="katex"><math display="block">
+ * （mathml 输出不再生成 .katex-display 包裹，用 :has 兜底历史 HTML 结构） */
 .katex {
   font-size: 1.1em; /* 数学公式略大于正文，提升可读性 */
 }
 
-/* 块级公式：居中 + 横向滚动 */
-.katex-display {
+/* 块级公式：独立成行 + 居中 + 长公式横向滚动 */
+.katex-display,
+.katex:has(> math[display='block']) {
+  display: block;
   margin: var(--fandex-spacing-6) 0;
   overflow-x: auto; /* 长公式横向滚动 */
   overflow-y: hidden;
@@ -415,17 +421,7 @@ dfn {
   text-align: center; /* 公式居中 */
 }
 
-/* 块级公式内的 KaTeX 容器 */
-.katex-display > .katex {
-  text-align: center;
-}
-
-/* 公式编号右对齐 */
-.katex-display > .katex > .katex-mathml {
-  display: none; /* MathML 隐藏，仅显示渲染后的公式 */
-}
-
-/* 暗色模式下公式文字色 */
+/* 暗色模式下公式文字色（MathML 的 <math> 通过 CSS color 继承） */
 [data-theme='dark'] .katex {
   color: var(--fandex-color-text-primary);
 }

@@ -121,12 +121,19 @@ export default defineConfig({
       rehypePlugins: [
         rehypeSlug, // 为标题添加 id
         [rehypeAutolinkHeadings, { behavior: 'wrap' }], // 标题锚点链接（包裹整个标题）
-        // output: 'html' 仅输出 KaTeX HTML 渲染层。默认 'htmlAndMathml' 会为
-        // 每条公式额外内联一份隐藏的 MathML 副本（供读屏），公式密集页
-        // （如 algorithm/290 约 580 条公式）HTML 体积因此膨胀近三分之一。
-        // 取舍：牺牲公式级读屏语义，换取显著更小的页面与更快的解析；
-        // 公式含义由上下文文字承载，不影响学习阅读主路径。
-        [rehypeKatex, { output: 'html' }],
+        // output: 'mathml' 仅输出 MathML（KaTeX 的语义层）。演进记录：
+        // 1) 早期默认 'htmlAndMathml'：公式密集页（如 algorithm/290 约 580 条公式）
+        //    HTML 体积因隐藏 MathML 副本膨胀近三分之一；
+        // 2) 曾切 'html'：体积最优但公式退化为 span 字形堆叠——读屏与搜索引擎
+        //    均无法获取公式语义，对教育站属可访问性回归；
+        // 3) 现切 'mathml'：MathML Core 已被全主流浏览器支持（Chrome 109+），
+        //    无需 katex.css 与 KaTeX 字体（[slug].astro 的按需注入已随之移除），
+        //    实测体积约为 html 输出的 1/5 且读屏/SEO 语义完整。
+        // 已验证场景：分式、根号、自适应定界符、矩阵（mtable）、aligned/cases、
+        // 上下标与希腊字母（本地 Chromium 无头截图比对，2026-09-13）。
+        // 兜底预案：若未来出现渲染质量回退，可回退 'htmlAndMathml' 并恢复
+        // katex.min.css 按需注入（git 历史可考）。
+        [rehypeKatex, { output: 'mathml' }],
         rehypeLazyImages, // 图片懒加载（添加 loading="lazy"）
         rehypeWrapTables, // 表格包裹：将 table 包入 <div class="table-wrap"> 以承担横向滚动，规避 display:table 与 overflow-x:auto 冲突
       ],

@@ -12,8 +12,6 @@ import Breadcrumb from '@/components/Breadcrumb.astro';
 import DocNav from '@/components/DocNav.astro';
 import GeoBgDecor from '@/components/GeoBgDecor.astro';
 import { render } from 'astro:content';
-// KaTeX 样式按需加载：仅含数学公式的页面才引用该 CSS（避免全站 CSS 携带 KaTeX 样式与字体声明）
-import katexCssUrl from 'katex/dist/katex.min.css?url';
 import { getModule, modulePrerequisites, categoryColors, getPrimaryCategory } from '@/lib/modules';
 // 通过 doc-service 获取文档数据与导航信息，UI 层禁止直接调用 getCollection
 // docSlug/computeReadingTime/getDocNavigation 均由 Service 层统一提供
@@ -66,16 +64,6 @@ const breadcrumb = [
  *  仅在颜色非空时设置，避免空串导致 var() fallback 失效 */
 const moduleColor = categoryColors[meta ? getPrimaryCategory(meta) : 'tools'];
 const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefined;
-
-/**
- * 判断文档正文是否包含数学公式（排除代码块），用于决定是否加载 KaTeX 样式
- * 支持 $$...$$ 块级公式与 $...$ 行内公式；转义 \$ 不触发
- */
-function containsMath(body: string): boolean {
-  const withoutCode = body.replace(/```[\s\S]*?```/g, '');
-  return /\$\$[\s\S]*?\$\$|(^|[^\\])\$[^$\n]+?\$/.test(withoutCode);
-}
-const hasMath = containsMath(doc.body || '');
 ---
 
 <Layout title={doc.data.title}>
@@ -88,7 +76,6 @@ const hasMath = containsMath(doc.body || '');
     modifiedDate={doc.data.updated || undefined}
     breadcrumb={breadcrumb}
   />
-  {hasMath && <link rel="stylesheet" href={katexCssUrl} slot="head" />}
   <Sidebar
     slot="sidebar"
     moduleId={module}
