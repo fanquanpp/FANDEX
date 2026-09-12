@@ -38,7 +38,7 @@
  * =============================================================================
  */
 
-import { readFileSync, writeFileSync, readdirSync, statSync, renameSync, existsSync } from 'node:fs';
+import { readFileSync, writeFileSync, readdirSync, renameSync, existsSync } from 'node:fs';
 import { join, dirname, basename, extname } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
@@ -108,6 +108,7 @@ const report = {
   deadRefsRemoved: 0,
   bannedRemoved: 0,
   orderReshuffled: 0,
+  unparseableLists: [], // 解析失败的行内列表（file#key），已跳过改写待人工处理
 };
 
 /** 记一次字段变更（报告用） */
@@ -143,7 +144,7 @@ function parseScalar(v) {
 /** YAML 标量序列化：含特殊字符时加单引号，风格与存量文档一致 */
 function dumpScalar(v) {
   const t = String(v);
-  if (t === '' || /[:#\[\]{}&*!|>'"%@`,]/.test(t)) return `'${t.replace(/'/g, "''")}'`;
+  if (t === '' || /[:#[]{}&*!|>'"%@`,]/.test(t)) return `'${t.replace(/'/g, "''")}'`;
   return t;
 }
 
@@ -210,7 +211,13 @@ function getScalarLine(lines, entries, key) {
   return v === '' ? undefined : v; // `key:` 后为空 = 列表或空值
 }
 
-/** 提取某键的字符串列表项（`- 'x'` 行） */
+/** 提取某键的字符串列表项（`- 'x'` 行）
+ *  @returns {string[] | undefined | null}
+ *    - string[]：解析出的列表项
+ *    - undefined：键不存在
+ *    - null：行内写法无法安全解析（JSON 数组解析失败或行内非数组标量）。
+ *      返回 null 而非空数组是数据保护：无法确认原始条目时禁止改写，
+ *      否则下游死链过滤会把作者手写的引用静默清空 */
 function getListItems(lines, entries, key) {
   const e = entries.find((x) => x.key === key);
   if (!e) return undefined;
@@ -219,9 +226,10 @@ function getListItems(lines, entries, key) {
     // 行内数组写法 related: ['a', 'b']
     const inner = inline[1].trim();
     if (inner.startsWith('[')) {
-      try { return JSON.parse(inner.replace(/'/g, '"')); } catch { return []; }
+      try { return JSON.parse(inner.replace(/'/g, '"')); } catch { return null; }
     }
-    return [];
+    // 行内非数组标量（如 `related: devops`）同样无法安全归一
+    return null;
   }
   const items = [];
   for (let i = e.lineIdx + 1; i < e.endIdx; i++) {
@@ -235,13 +243,14 @@ function getListItems(lines, entries, key) {
  * 对文档执行 frontmatter 补全（行级最小 diff）
  * @param {string} raw - 文件原始内容
  * @param {Object} patch - 目标值 { order, module, category, difficulty, author, updated, title, related, prerequisites }
+ * @param {string} relPath - 相对仓库根的文档路径（仅用于报告定位解析失败的列表）
  * @returns {{ text: string, changed: boolean }}
  */
-function applyFrontmatter(raw, patch) {
+function applyFrontmatter(raw, patch, relPath = '') {
   const eol = detectEol(raw);
   const hasFm = /^\uFEFF?---\r?\n/.test(raw);
   let head;            // frontmatter 内部行数组
-  let before = '';     // frontmatter 起始 ---（含 BOM 前缀）
+  let before;          // frontmatter 起始 ---（含 BOM 前缀，仅 hasFm 分支赋值）
   let body;            // frontmatter 之后的内容（含结束 --- 之后全部）
   if (hasFm) {
     const bom = raw.startsWith('\uFEFF') ? '\uFEFF' : '';
@@ -360,6 +369,11 @@ function applyFrontmatter(raw, patch) {
   // --- 列表字段：死链过滤 ---
   for (const key of ['related', 'prerequisites']) {
     const items = getListItems(head, entries, key);
+    if (items === null) {
+      // 行内写法解析失败：保留原行跳过改写并报备，待作者改为标准写法后自动恢复过滤
+      report.unparseableLists.push(`${relPath}#${key}`);
+      continue;
+    }
     if (items === undefined) {
       // 缺失：写空列表（规范要求字段存在，schema 有 default，但显式化便于人工阅读）
       insertKey(head, entries, key, '[]');
@@ -723,7 +737,7 @@ function syncDocuments(folders, modulesData, gitDates) {
         title: titleFromH1 ?? fallbackTitle,
       };
 
-      const { text, changed } = applyFrontmatter(raw, patch, { relPath });
+      const { text, changed } = applyFrontmatter(raw, patch, relPath);
       if (changed) {
         report.docsTouched++;
         if (!CHECK_MODE) writeFileSync(full, text, 'utf-8');
@@ -748,8 +762,8 @@ function main() {
   // folder_order = 文件夹编号
   for (let i = 0; i < folders.length; i++) decls[i]._num = folders[i].num;
 
-  // 阶段 2：重建 modules.json
-  const { data: modulesData } = rebuildModulesJson(decls);
+  // 阶段 2：重建 modules.json（changed 标记用于 check 模式判定派生漂移）
+  const { changed: modulesChanged, data: modulesData } = rebuildModulesJson(decls);
 
   // 阶段 3：学习路径同步
   syncLearningPath(modulesData);
@@ -768,13 +782,18 @@ function main() {
   if (report.modulesRemoved.length) console.log(`已移除模块: ${report.modulesRemoved.join(', ')}`);
   if (report.moduleInfoGenerated.length) console.log(`生成 module.json: ${report.moduleInfoGenerated.join(', ')}`);
   if (report.learningPathAdded.length) console.log(`学习路径补充: ${report.learningPathAdded.join(', ')}`);
+  if (report.unparseableLists.length) {
+    console.log(`[warn] 行内列表解析失败（已保留原值，请改为块状列表写法）:`);
+    for (const item of report.unparseableLists) console.log(`  - ${item}`);
+  }
   for (const [k, v] of Object.entries(report.fieldChanges)) console.log(`字段 ${k}: ${v} 篇`);
   if (report.orderReshuffled) console.log(`order 重排: ${report.orderReshuffled} 篇`);
   if (report.deadRefsRemoved) console.log(`死链引用删除: ${report.deadRefsRemoved} 项`);
   if (report.bannedRemoved) console.log(`禁用字段删除: ${report.bannedRemoved} 项`);
 
   if (CHECK_MODE && (report.docsTouched || report.foldersRenamed.length || report.modulesRegistered.length ||
-      report.moduleInfoGenerated.length || report.learningPathAdded.length)) {
+      report.modulesRemoved.length || report.moduleInfoGenerated.length || report.learningPathAdded.length ||
+      modulesChanged || report.unparseableLists.length)) {
     console.log('\n[CHECK] 存在待同步内容，请运行 content-sync（或以 fix 模式执行）。');
     process.exit(1);
   }
