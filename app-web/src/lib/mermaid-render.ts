@@ -33,6 +33,9 @@ interface MermaidAPI {
 /** 渲染计数器：为每个图表生成唯一 DOM id */
 let renderCounter = 0;
 
+/** 视口外图表观察器登记表：页面切换时统一断开，避免闭包持有已脱离文档的元素 */
+const pendingObservers = new Set<IntersectionObserver>();
+
 /**
  * 惰性加载 mermaid 模块（Vite 代码分割的异步 chunk）并按当前主题初始化
  * @returns mermaid API 对象
@@ -118,12 +121,14 @@ function renderAllMermaid(): void {
         (entries) => {
           if (entries.some((entry) => entry.isIntersecting)) {
             observer.disconnect();
+            pendingObservers.delete(observer);
             void renderOne(pre);
           }
         },
         { rootMargin: '50% 0px' },
       );
       observer.observe(pre);
+      pendingObservers.add(observer);
     }
   });
 }
@@ -133,4 +138,9 @@ if (!import.meta.env.SSR && typeof document !== 'undefined') {
   // 首次加载与 View Transitions 页面切换后均重新扫描
   renderAllMermaid();
   document.addEventListener('astro:page-load', renderAllMermaid);
+  // 页面切换前断开未触发的观察器：旧页面的闭包不再持有脱离文档的 pre 元素
+  document.addEventListener('astro:before-swap', () => {
+    for (const observer of pendingObservers) observer.disconnect();
+    pendingObservers.clear();
+  });
 }
