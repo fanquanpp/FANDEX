@@ -135,10 +135,6 @@ app-desktop/public/pagefind/
 app-web/reports/baseline/
 app-web/reports/bundle-stats.html
 
-# app-web/public/data 与 app-desktop/public/data 构建产物（由 scripts/ 生成，不入库）
-app-web/public/data/
-app-desktop/public/data/
-
 # app-web/src/content/docs/ markdown 副本（由 cnt-content/full/ 同步生成，不入库）
 app-web/src/content/docs/
 
@@ -297,3 +293,4 @@ pnpm-debug.log*
 /gen*.py
 /_gen*.py
 /gen_helper.py
+.lighthouseci/
