@@ -1,4 +1,5 @@
 ---
+import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
 /**
  * 首页
  * 展示所有学习模块，按分类分组显示
@@ -71,22 +72,16 @@ const grouped = getCategories()
         <nav class="hero-entries" aria-label="功能入口">
           {!IS_DESKTOP_BUILD && (
             <a href={`${import.meta.env.BASE_URL}playground/`} class="entry-btn" data-tooltip="在线编写与运行代码" data-tooltip-pos="bottom">
-              <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
-                <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
-              </svg>
+              <EntryWaveBorder />
               <span class="entry-name">在线编程</span>
             </a>
           )}
           <a href={`${import.meta.env.BASE_URL}syntax/`} class="entry-btn" data-tooltip="语法快速查阅" data-tooltip-pos="bottom">
-            <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
-            </svg>
+            <EntryWaveBorder />
             <span class="entry-name">语法速览</span>
           </a>
           <a href={`${import.meta.env.BASE_URL}learning-path/`} class="entry-btn" data-tooltip="系统化学习路径" data-tooltip-pos="bottom">
-            <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
-            </svg>
+            <EntryWaveBorder />
             <span class="entry-name">学习路线</span>
           </a>
         </nav>
@@ -113,9 +108,7 @@ const grouped = getCategories()
                分类主题色通过按钮上的 --marker-color 注入，
                .entry-border 描边在 hover 时执行路径书写动画 -->
           <button class="category-header__lead" data-toggle type="button" style={`--marker-color:${group.color}`} aria-label={`折叠/展开 ${group.label} 分类`}>
-            <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
-            </svg>
+            <EntryWaveBorder />
             <span class="category-marker"></span>
             <span class="category-tag">{group.label}</span>
             <span class="category-count">{group.modules.length}</span>

@@ -1,4 +1,5 @@
 ---
+import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
 /**
  * 在线编程功能主页（子级主页）
  * -----------------------------------------------------------------------------
@@ -80,21 +81,15 @@ const featured = SHOWCASE_GROUPS.map((group) => ({
         <!-- 功能入口：首页同款纯文字按钮 + SVG 波浪描边动画 -->
         <nav class="hero-entries" aria-label="功能入口">
           <a href={`${base}playground/editor/`} class="entry-btn" data-tooltip="打开编辑器开始编写" data-tooltip-pos="bottom">
-            <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
-            </svg>
+            <EntryWaveBorder />
             <span class="entry-name">进入工作台</span>
           </a>
           <a href="#pg-gallery" class="entry-btn" data-tooltip="25 个设计成品实时预览" data-tooltip-pos="bottom">
-            <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
-            </svg>
+            <EntryWaveBorder />
             <span class="entry-name">灵感图鉴</span>
           </a>
           <a href={base} class="entry-btn" data-tooltip="返回首页" data-tooltip-pos="bottom">
-            <svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
-              <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26"/>
-            </svg>
+            <EntryWaveBorder />
             <span class="entry-name">首页</span>
           </a>
         </nav>

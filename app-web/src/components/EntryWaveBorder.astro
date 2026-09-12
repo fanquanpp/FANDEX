@@ -1,0 +1,13 @@
+---
+/**
+ * 入口按钮波浪描边（共享装饰组件）
+ * -----------------------------------------------------------------------------
+ * 手绘风格波浪路径，作为 entry-btn 入口按钮的 SVG 描边：
+ * - preserveAspectRatio="none" 使路径随按钮拉伸，两端收进按钮圆角内
+ * - 描边 hover 书写动画由 styles/pages/index.css 的 .entry-border path 定义
+ * - 历史上该 SVG 在首页/语法/学习路径/工作台 4 个页面复制了 13 份，收敛于此
+ */
+---
+<svg class="entry-border" viewBox="0 0 200 52" preserveAspectRatio="none" aria-hidden="true">
+  <path d="M10,26 Q30,6 60,10 T110,26 T160,42 T190,26" />
+</svg>
