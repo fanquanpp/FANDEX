@@ -2,7 +2,7 @@
  * FANDEX 内容质量审计脚本
  *
  * 功能概述：
- * 扫描 cnt-content/full 下所有 .md 文件，只检查「内容质量」类问题；
+ * 扫描 cnt-content/full 下所有 .md / .mdx 文件，只检查「内容质量」类问题；
  * 结构完整性（module/order/category/updated 等字段缺失、字段白名单、
  * 关联引用格式与死链）由 content-sync.mjs 在审计之前自动补全与修复，
  * 因此不再属于本脚本的职责范围。
@@ -59,7 +59,9 @@ function walk(dir) {
     const full = join(dir, entry.name);
     if (entry.isDirectory())
       walk(full); // 递归子目录
-    else if (entry.name.endsWith('.md')) {
+    else if (entry.name.endsWith('.md') || entry.name.endsWith('.mdx')) {
+      // .mdx 与 .md 同标准审计：content collection、content-sync、build-stats
+      // 均处理 .mdx，审计范围必须一致，否则 mdx 文件逃过质量门禁
       const raw = readFileSync(full, 'utf-8');
 
       // 解析 frontmatter（gray-matter 完整 YAML 语义；语法错误按 high 级问题报告而非中断审计）
