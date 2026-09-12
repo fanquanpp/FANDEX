@@ -121,7 +121,12 @@ export default defineConfig({
       rehypePlugins: [
         rehypeSlug, // 为标题添加 id
         [rehypeAutolinkHeadings, { behavior: 'wrap' }], // 标题锚点链接（包裹整个标题）
-        rehypeKatex, // KaTeX 数学公式渲染为 HTML
+        // output: 'html' 仅输出 KaTeX HTML 渲染层。默认 'htmlAndMathml' 会为
+        // 每条公式额外内联一份隐藏的 MathML 副本（供读屏），公式密集页
+        // （如 algorithm/290 约 580 条公式）HTML 体积因此膨胀近三分之一。
+        // 取舍：牺牲公式级读屏语义，换取显著更小的页面与更快的解析；
+        // 公式含义由上下文文字承载，不影响学习阅读主路径。
+        [rehypeKatex, { output: 'html' }],
         rehypeLazyImages, // 图片懒加载（添加 loading="lazy"）
         rehypeWrapTables, // 表格包裹：将 table 包入 <div class="table-wrap"> 以承担横向滚动，规避 display:table 与 overflow-x:auto 冲突
       ],
