@@ -21,7 +21,7 @@
  *   焦点陷阱、Escape 关闭与 aria 语义
  */
 
-import { useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 // 复用首页模块卡片样式（顶部色条、hover 边框/阴影、几何图标、标题变色）
 import '@/styles/components/module-card.css';
@@ -138,41 +138,45 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
   /**
    * 加载语言分块并更新卡片状态
    * 使用请求序号防止竞态：仅当响应仍是最新请求时写入状态
+   * useCallback 稳定化：依赖仅 base（prop，挂载后不变），供切换语言 effect 引用
    * @param id - 语言 ID
    */
-  async function loadLanguage(id: string): Promise<void> {
-    const seq = ++requestSeqRef.current;
-    // 已缓存数据直接渲染，无需网络请求
-    const cached = cacheRef.current.get(id);
-    if (cached) {
-      setCards(cached);
-      setLoading(false);
+  const loadLanguage = useCallback(
+    async (id: string): Promise<void> => {
+      const seq = ++requestSeqRef.current;
+      // 已缓存数据直接渲染，无需网络请求
+      const cached = cacheRef.current.get(id);
+      if (cached) {
+        setCards(cached);
+        setLoading(false);
+        setError('');
+        setVisibleCount(PAGE_SIZE);
+        return;
+      }
+      setLoading(true);
       setError('');
       setVisibleCount(PAGE_SIZE);
-      return;
-    }
-    setLoading(true);
-    setError('');
-    setVisibleCount(PAGE_SIZE);
-    try {
-      const response = await fetch(`${base}syntax-data/${id}.json`, {
-        // 静态分块不可变，允许浏览器复用缓存
-        cache: 'force-cache',
-      });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      const data = (await response.json()) as SyntaxLanguageData;
-      const cardList = Array.isArray(data.cards) ? data.cards : [];
-      cacheRef.current.set(id, cardList);
-      // 竞态保护：仅最新请求可写入状态
-      if (seq !== requestSeqRef.current) return;
-      setCards(cardList);
-    } catch {
-      if (seq !== requestSeqRef.current) return;
-      setError('语法数据加载失败，请稍后重试或切换其他语言');
-    } finally {
-      if (seq === requestSeqRef.current) setLoading(false);
-    }
-  }
+      try {
+        const response = await fetch(`${base}syntax-data/${id}.json`, {
+          // 静态分块不可变，允许浏览器复用缓存
+          cache: 'force-cache',
+        });
+        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+        const data = (await response.json()) as SyntaxLanguageData;
+        const cardList = Array.isArray(data.cards) ? data.cards : [];
+        cacheRef.current.set(id, cardList);
+        // 竞态保护：仅最新请求可写入状态
+        if (seq !== requestSeqRef.current) return;
+        setCards(cardList);
+      } catch {
+        if (seq !== requestSeqRef.current) return;
+        setError('语法数据加载失败，请稍后重试或切换其他语言');
+      } finally {
+        if (seq === requestSeqRef.current) setLoading(false);
+      }
+    },
+    [base],
+  );
 
   // 语言切换或首次挂载时加载对应分块
   useEffect(() => {
@@ -180,7 +184,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
     void loadLanguage(activeId);
     // 组件卸载时清理复制反馈定时器
     return () => window.clearTimeout(copiedTimerRef.current);
-  }, [activeId]);
+  }, [activeId, loadLanguage]);
 
   // 面板打开时锁定首页滚动容器，关闭后恢复
   useEffect(() => {
