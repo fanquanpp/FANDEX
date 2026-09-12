@@ -75,6 +75,11 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
+        # 必须完整克隆：content-sync 依赖 git log 历史推导文档 updated 日期，
+        # 浅克隆（默认 fetch-depth: 1）会让全部文档日期回退为构建当天，
+        # 污染线上"最后更新"与 SEO 的 modifiedDate
+        with:
+          fetch-depth: 0
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v6
@@ -91,6 +96,12 @@ jobs:
         # 使用 frozen-lockfile 确保依赖版本与 pnpm-lock.yaml 完全一致
         # CI 环境下禁止自动更新 lockfile，保证构建可复现
         run: pnpm install --frozen-lockfile
+
+      - name: Audit production dependencies (block on high severity)
+        # 供应链门禁：生产依赖存在 high 及以上漏洞时阻断构建。
+        # 本站为纯静态产物，构建链（vite/postcss 等）漏洞不随产物发布，
+        # 故只审计 --prod 范围并以 high 为阈值，避免构建链噪音误伤
+        run: pnpm -C app-web audit --prod --audit-level high
 
       - name: Sync content (auto-complete frontmatter & module registry)
         # 内容自动同步：补全 frontmatter 托管字段（order/module/category/updated 等）、
@@ -111,6 +122,11 @@ jobs:
       - name: Typecheck
         # 全仓类型检查（app-web astro check + shd-shared/tokens + tls-tools）
         run: pnpm typecheck
+
+      - name: Lint
+        # ESLint（flat config）：src 的 TS/TSX（含 react-hooks 规则）与管线脚本；
+        # 0 错误为通过（存量 exhaustive-deps 警告不阻断，待逐个人工评估）
+        run: pnpm --filter @fandex/web lint
 
       - name: Build web project
         # 通过根目录 workspace 脚本构建 app-web 子包

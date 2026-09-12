@@ -36,6 +36,10 @@ jobs:
     steps:
       - name: 检出仓库
         uses: actions/checkout@v7
+        # 必须完整克隆：构建链中的 content-sync 依赖 git log 历史推导文档
+        # updated 日期，浅克隆会让全部文档日期回退为构建当天
+        with:
+          fetch-depth: 0
 
       - name: 配置 pnpm
         uses: pnpm/action-setup@v6

@@ -51,6 +51,9 @@ jobs:
     steps:
       - name: 检出仓库
         uses: actions/checkout@v7
+        # 完整克隆：发布场景需要 tag 与提交历史保持完整可追溯
+        with:
+          fetch-depth: 0
 
       - name: 校验 tag 与各端版本号一致
         run: |
@@ -97,6 +100,9 @@ jobs:
     steps:
       - name: 检出仓库（读取 CHANGELOG 生成发布说明）
         uses: actions/checkout@v7
+        # 完整克隆：发布说明需要读取历史 CHANGELOG 与 tag 对应关系
+        with:
+          fetch-depth: 0
 
       - name: 下载新技术栈 APK 产物
         uses: actions/download-artifact@v8
