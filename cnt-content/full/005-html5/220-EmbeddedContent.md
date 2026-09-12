@@ -15,6 +15,11 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 > 0基础速通：只读第 0 节直觉、第 2 章 iframe 核心速览与 4.1 示例；其余（安全、微前端等）为进阶参考。
 

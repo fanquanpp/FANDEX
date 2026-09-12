@@ -15,6 +15,11 @@ related:
 prerequisites:
   - 'kotlin/230-CoroutineBasics'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [协程基础](/kotlin/230-CoroutineBasics)
 
 ## 概述
 

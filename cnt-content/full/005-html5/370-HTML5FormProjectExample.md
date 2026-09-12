@@ -13,7 +13,11 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 | 实时验证      | 内置验证 + 自定义验证逻辑 |
 | ------------- | ------------------------- |

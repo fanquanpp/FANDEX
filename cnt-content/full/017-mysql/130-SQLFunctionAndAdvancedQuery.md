@@ -15,7 +15,11 @@ related:
 prerequisites:
   - 'mysql/160-View'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [视图语法速查手册](/mysql/160-View)
 
 ## 1. 内置函数详解
 

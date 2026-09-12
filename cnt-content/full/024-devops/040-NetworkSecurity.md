@@ -13,6 +13,19 @@ related:
   - 'devops/080-Kubernetes'
 prerequisites: []
 ---
+## 学习目标
+
+本文是「运维与中间件」模块的第 4 篇，难度定位为进阶。重点内容：TCP/IP 协议栈、DNS/HTTP/HTTPS、防火墙、SSL/TLS、SSH 安全与网络故障排查。
+
+主要章节：
+
+- 1. TCP/IP 协议栈
+- 2. DNS
+- 3. HTTP/HTTPS
+- 4. 防火墙
+- 5. SSH 安全
+- 6. VPN
+- ……共 19 个章节
 
 ## 1. TCP/IP 协议栈
 

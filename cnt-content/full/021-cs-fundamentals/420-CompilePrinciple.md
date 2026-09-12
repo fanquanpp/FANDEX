@@ -15,7 +15,11 @@ related:
 prerequisites:
   - 'cs-fundamentals/010-ComputerOverview'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [计算机科学概述](/cs-fundamentals/010-ComputerOverview)
 
 ## 1. 编译器概述
 

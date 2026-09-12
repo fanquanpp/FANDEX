@@ -15,7 +15,11 @@ related:
 prerequisites:
   - 'postgresql/010-OverviewInstallConfig'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [概述与安装配置](/postgresql/010-OverviewInstallConfig)
 
 # PostgreSQL VACUUM 机制深度解析
 

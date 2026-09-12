@@ -13,6 +13,11 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 > 前置要求（本模块最高难度）：除 JavaScript 中级基础（Promise/async/class/事件，`javascript/001`-`005`、`039`、`023`）外，还需要基本网络概念：TCP/UDP、NAT、HTTP（`networking/001`）。信令流程（Offer/Answer/ICE）是本篇核心，建议先读 4.1 完整 demo 建立整体印象，再回头读第 2-3 章理论；调试时用 `chrome://webrtc-internals`（见 4.7）。
 

@@ -12,6 +12,19 @@ related:
   - 'networking/030-NetworkWiringAndConstruction'
 prerequisites: []
 ---
+## 学习目标
+
+本文是「Networking」模块的第 1 篇，难度定位为入门。重点内容：OSI七层模型、TCP/IP协议栈、IPv4/IPv6地址规划、子网划分、路由协议、VLAN、生成树、链路聚合、VRRP、广域网、隧道、ACL、SSH、SNMP、NAPT、认证与V……
+
+主要章节：
+
+- 1. OSI 七层模型
+- 2. TCP/IP 协议栈
+- 3. IPv4/IPv6 地址规划
+- 4. 子网划分
+- 5. 路由协议
+- 6. VLAN 划分
+- ……共 27 个章节
 
 ## 1. OSI 七层模型
 

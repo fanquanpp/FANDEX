@@ -13,6 +13,19 @@ related:
   - 'redis/110-CacheStrategyAdvancedFeature'
 prerequisites: []
 ---
+## 学习目标
+
+本文是「Redis 与 MongoDB」模块的第 18 篇，难度定位为高级。重点内容：主从复制、哨兵模式自动故障转移、Redis Cluster无中心分片、集群代理、Redis Flex混合存储、Redis for AI套件。
+
+主要章节：
+
+- 1. 主从复制
+- 2. 哨兵模式（Sentinel）
+- 3. Redis Cluster
+- 4. 集群代理
+- 5. Redis Flex 混合存储引擎
+- 6. Redis for AI 套件
+- ……共 13 个章节
 
 ## 1. 主从复制
 

@@ -21,8 +21,13 @@ prerequisites:
   - 'algorithm/110-GraphAlgorithms'
   - 'algorithm/090-HeapAndPriorityQueue'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
 
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [图算法](/algorithm/110-GraphAlgorithms)
+- [堆与优先队列](/algorithm/090-HeapAndPriorityQueue)
 
 ## 1. 概述与学习目标
 

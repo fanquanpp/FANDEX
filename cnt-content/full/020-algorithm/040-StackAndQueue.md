@@ -20,8 +20,13 @@ prerequisites:
   - 'algorithm/020-ArrayAndDynamicArray'
   - 'algorithm/060-LinkedList'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
 
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [数组与动态数组](/algorithm/020-ArrayAndDynamicArray)
+- [链表](/algorithm/060-LinkedList)
 
 ## 1. 概述与学习目标
 

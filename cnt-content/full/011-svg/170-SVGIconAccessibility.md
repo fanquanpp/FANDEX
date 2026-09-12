@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'svg/120-SVGSymbolReuse'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [SVG 符号与复用](/svg/120-SVGSymbolReuse)
 
 ---
 

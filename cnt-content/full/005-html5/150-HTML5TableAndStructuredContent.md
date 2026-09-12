@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'html5/100-HTML5BasicContentTags'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 基础内容标签](/html5/100-HTML5BasicContentTags)
 
 ## 0. 核心认知：表格是"数据表"，不是"布局工具"
 

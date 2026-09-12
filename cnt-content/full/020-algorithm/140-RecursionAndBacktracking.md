@@ -21,8 +21,13 @@ prerequisites:
   - 'algorithm/040-StackAndQueue'
   - 'algorithm/080-Tree'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
 
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [栈与队列](/algorithm/040-StackAndQueue)
+- [树](/algorithm/080-Tree)
 
 ## 1. 概述与学习目标
 

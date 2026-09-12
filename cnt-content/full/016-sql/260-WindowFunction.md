@@ -14,6 +14,19 @@ related:
   - 'sql/440-PerformanceOptimization'
 prerequisites: []
 ---
+## 学习目标
+
+本文是「SQL」模块的第 26 篇，难度定位为高级。重点内容：OVER 子句、PARTITION BY、排名函数、偏移函数、帧定义与累计计算
+
+主要章节：
+
+- 概述
+- OVER 子句
+- PARTITION BY 分区
+- ORDER BY 与排名函数
+- 偏移函数
+- 帧定义（Frame Specification）
+- ……共 25 个章节
 
 ### FIRST_VALUE / LAST_VALUE
 

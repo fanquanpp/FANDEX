@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'svg/090-SVGTransform'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [SVG 变换 transform](/svg/090-SVGTransform)
 
 ---
 

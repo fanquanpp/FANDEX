@@ -16,6 +16,13 @@ prerequisites:
   - 'svg/150-SVGJavaScriptInteraction'
   - 'svg/170-SVGIconAccessibility'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [SVG 动画基础](/svg/140-SVGAnimationBasics)
+- [SVG JavaScript 交互](/svg/150-SVGJavaScriptInteraction)
+- [SVG 图标与可访问性](/svg/170-SVGIconAccessibility)
 
 ## 1. 项目一：环形进度条
 

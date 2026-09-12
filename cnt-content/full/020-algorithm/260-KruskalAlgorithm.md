@@ -22,8 +22,15 @@ prerequisites:
   - 'algorithm/180-UnionFind'
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
 
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [图算法](/algorithm/110-GraphAlgorithms)
+- [贪心算法](/algorithm/130-GreedyAlgorithm)
+- [并查集](/algorithm/180-UnionFind)
+- [离散数学](/cs-fundamentals/540-DiscreteMathematics)
 
 ## 1. 概述与学习目标
 

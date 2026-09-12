@@ -15,7 +15,11 @@ related:
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
 
 > 前置依赖：先读 003 盒模型与 015 浮动。圣杯/双飞翼布局为进阶内容，0 基础可先跳过。
 

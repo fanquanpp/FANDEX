@@ -18,6 +18,13 @@ prerequisites:
   - 'css/130-CSS3SelectorSystem'
   - 'css/180-CSSPriorityQuickStart'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+- [CSS3 选择器系统](/css/130-CSS3SelectorSystem)
+- [样式优先级语法速查手册](/css/180-CSSPriorityQuickStart)
 
 > 0基础速通：读第 0 节直觉、第 1 节核心必读（代码示例）与第 7 节综合挑战即可；第 2-5 章按需查阅，第 6 章深入理解（选读）供进阶。
 

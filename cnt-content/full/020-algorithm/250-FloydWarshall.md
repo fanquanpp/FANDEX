@@ -20,8 +20,14 @@ prerequisites:
   - 'algorithm/160-DynamicProgramming'
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
 
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [图算法](/algorithm/110-GraphAlgorithms)
+- [动态规划](/algorithm/160-DynamicProgramming)
+- [离散数学](/cs-fundamentals/540-DiscreteMathematics)
 
 ## 1. 概述与学习目标
 

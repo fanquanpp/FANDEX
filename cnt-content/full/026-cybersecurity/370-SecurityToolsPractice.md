@@ -14,7 +14,19 @@ related:
   - 'cybersecurity/020-SecurityModelFramework'
 prerequisites: []
 ---
+## 学习目标
 
+本文是「网络安全」模块的第 37 篇，难度定位为进阶。重点内容：Metasploit框架、Nmap高级用法、Wireshark深度分析、Burp Suite进阶、SQLMap自动化注入、Hydra暴力破解、John密码破解、Kali工具集、安全……
+
+主要章节：
+
+- 1. Metasploit 框架
+- 2. Nmap 高级用法
+- 3. Wireshark 深度分析
+- 4. Burp Suite 进阶
+- 5. SQLMap 自动化注入
+- 6. Hydra 暴力破解
+- ……共 9 个章节
 
 ## 1. Metasploit 框架
 

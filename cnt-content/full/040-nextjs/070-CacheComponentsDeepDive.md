@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'nextjs/030-DataFetchingCaching'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [Next.js 数据获取与缓存](/nextjs/030-DataFetchingCaching)
 
 ## 0. 一句话理解
 

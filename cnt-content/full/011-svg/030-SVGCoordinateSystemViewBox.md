@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'svg/020-SVGBasicSyntaxDocStructure'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [SVG 基础语法与文档结构](/svg/020-SVGBasicSyntaxDocStructure)
 
 ## 1. 历史动机与发展脉络
 

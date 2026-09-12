@@ -15,6 +15,11 @@ related:
 prerequisites:
   - 'networking/010-NetworkBasicsAndProtocol'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [网络基础与协议](/networking/010-NetworkBasicsAndProtocol)
 
 前置知识：TCP/IP 分层模型、UDP/TCP 的区别、子网划分（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)）。
 

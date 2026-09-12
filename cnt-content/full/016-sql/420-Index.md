@@ -13,7 +13,11 @@ related:
 prerequisites:
   - 'sql/020-OverviewStandard'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [概述与标准](/sql/020-OverviewStandard)
 
 # SQL 索引体系：从数据结构到工程实践
 

@@ -16,6 +16,12 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
   - 'css/290-BackgroundEnhancement'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+- [背景增强](/css/290-BackgroundEnhancement)
 
 > 0基础速通：读第 0 节直觉与第 1 节核心必读（代码示例）即可；第 6 章深入理解（选读）供进阶。
 

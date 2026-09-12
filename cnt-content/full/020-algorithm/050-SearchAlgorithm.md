@@ -21,8 +21,13 @@ prerequisites:
   - 'algorithm/170-BinarySearchAlgorithms'
   - 'algorithm/140-RecursionAndBacktracking'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
 
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [查找算法](/algorithm/170-BinarySearchAlgorithms)
+- [递归与回溯](/algorithm/140-RecursionAndBacktracking)
 
 ## 1. 概述与学习目标
 

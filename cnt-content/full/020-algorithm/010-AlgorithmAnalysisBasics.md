@@ -18,8 +18,19 @@ related:
   - 'algorithm/080-Tree'
 prerequisites: []
 ---
+## 学习目标
 
+本文是「算法与数据结构」模块的第 1 篇，难度定位为入门。重点内容：算法分析（Algorithm Analysis）的形式化定义、五类渐近记号（Bachmann 1894《Analytische Zahlentheorie》大 O 符号、Landa……
 
+主要章节：
+
+- 1. 概述与学习目标
+- 2. 历史动机与演进
+- 3. 形式化定义
+- 4. 时空权衡
+- 5. 递推与主定理
+- 6. 摊还分析
+- ……共 14 个章节
 
 ## 1. 概述与学习目标
 

@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'svg/080-SVGGradientPattern'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [SVG 渐变与图案](/svg/080-SVGGradientPattern)
 
 ---
 

@@ -15,6 +15,11 @@ related:
 prerequisites:
   - 'react/010-OverviewEnvSetup'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与环境配置](/react/010-OverviewEnvSetup)
 
 ## 1. 先分类，再选型：大部分"状态管理问题"是分类问题
 

@@ -15,7 +15,11 @@ related:
 prerequisites:
   - 'go/020-GoOverviewEnvSetup'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [Go 概述与环境配置](/go/020-GoOverviewEnvSetup)
 
 ## 概述
 

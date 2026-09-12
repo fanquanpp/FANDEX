@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 > 前置要求：本节全部示例依赖 JavaScript 事件监听（dragstart/dragover/drop 等），请先完成 `javascript/001`-`005` 与 `javascript/039`（DOM 与事件）。
 >

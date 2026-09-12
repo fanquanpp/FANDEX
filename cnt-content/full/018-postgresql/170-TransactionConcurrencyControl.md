@@ -13,7 +13,19 @@ related:
   - 'postgresql/530-AdvancedSQLExtension'
 prerequisites: []
 ---
+## 学习目标
 
+本文是「PostgreSQL」模块的第 17 篇，难度定位为进阶。重点内容：MVCC多版本并发控制、快照隔离、事务隔离级别、锁机制、死锁检测、VACUUM机制与冻结。
+
+主要章节：
+
+- 第 1 章 概述与学习目标
+- 第 2 章 事务理论基础
+- 第 3 章 PostgreSQL MVCC 实现原理
+- 第 4 章 隔离级别详解
+- 第 5 章 锁机制深度剖析
+- 第 6 章 快照与可见性
+- ……共 21 个章节
 
 # PostgreSQL 事务与并发控制：从原理到工程实践
 

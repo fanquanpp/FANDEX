@@ -15,6 +15,11 @@ related:
 prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与核心数据结构](/redis/010-OverviewCoreDataStructure)
 
 ## 第 1 章 概述与学习目标
 

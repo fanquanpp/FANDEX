@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'svg/030-SVGCoordinateSystemViewBox'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [SVG 坐标系与 viewBox](/svg/030-SVGCoordinateSystemViewBox)
 
 ---
 

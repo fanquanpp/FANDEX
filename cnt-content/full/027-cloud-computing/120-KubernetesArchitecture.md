@@ -15,6 +15,11 @@ related:
 prerequisites:
   - 'cloud-computing/010-CloudComputingBasics'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [云计算基础](/cloud-computing/010-CloudComputingBasics)
 
 ## 1. Kubernetes 整体架构
 

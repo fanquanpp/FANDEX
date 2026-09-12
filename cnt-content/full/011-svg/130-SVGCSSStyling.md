@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'svg/070-SVGColorFill'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [SVG 颜色与填充](/svg/070-SVGColorFill)
 
 ---
 

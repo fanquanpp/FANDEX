@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'sql/020-OverviewStandard'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与标准](/sql/020-OverviewStandard)
 
 ## 1. LATERAL 概述
 

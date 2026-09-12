@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'networking/120-HTTPProtocol'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [HTTP 协议](/networking/120-HTTPProtocol)
 
 ## 环境变量代理
 

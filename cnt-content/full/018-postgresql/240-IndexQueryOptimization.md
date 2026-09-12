@@ -14,7 +14,18 @@ related:
   - 'postgresql/470-ReplicationHA'
 prerequisites: []
 ---
+## 学习目标
 
+本文是「PostgreSQL」模块的第 24 篇，难度定位为高级。重点内容：B-tree/Hash/GiST/GIN/SP-GiST/BRIN索引、覆盖/部分/表达式/KNN向量索引、统计信息、代价估算、执行计划分析、并行查询、分区表。
+
+主要章节：
+
+- 1. 索引类型
+- 2. 高级索引技术
+- 3. 统计信息与 ANALYZE
+- 4. 执行计划分析
+- 5. 并行查询
+- 6. 分区表
 
 ## 1. 索引类型
 

@@ -16,7 +16,11 @@ related:
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
 
 > 0基础速通：必学第 1 章 Web Storage 与第 5 章 Fetch；其余（Geolocation、Worker、Service Worker、Notification 等）按需选学。Service Worker 完整版见 027。
 

@@ -15,7 +15,11 @@ related:
 prerequisites:
   - 'mysql/740-SQLInjectionBasicsDetection'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
+
+- [SQL 注入基础与检测](/mysql/740-SQLInjectionBasicsDetection)
 
 ## 1. SQL 注入攻击类型 (Attack Types)
 

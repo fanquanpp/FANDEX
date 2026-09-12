@@ -13,6 +13,19 @@ related:
   - 'devops/240-MonitorAndObservability'
 prerequisites: []
 ---
+## 学习目标
+
+本文是「运维与中间件」模块的第 14 篇，难度定位为进阶。重点内容：CI/CD 原理、GitHub Actions、GitLab CI、Jenkins、ArgoCD 与发布策略。
+
+主要章节：
+
+- 1. CI/CD 原理
+- 2. GitHub Actions
+- 3. GitLab CI
+- 4. Jenkins
+- 5. ArgoCD
+- 6. 发布策略
+- ……共 19 个章节
 
 ## 1. CI/CD 原理
 

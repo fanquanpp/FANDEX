@@ -12,6 +12,19 @@ related:
   - 'markdown/030-ParagraphLineBreak'
 prerequisites: []
 ---
+## 学习目标
+
+本文是「Markdown」模块的第 1 篇，难度定位为入门。重点内容：Markdown 概述与核心特点。
+
+主要章节：
+
+- 0. 学习路径与分层（先读这一节）
+- 1. 引言
+- 2. 什么是 Markdown
+- 3. 标题语法
+- 二级标题（对应 HTML h2，一级章节）
+- 二级标题
+- ……共 22 个章节
 
 ## 0. 学习路径与分层（先读这一节）
 

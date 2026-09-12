@@ -14,6 +14,19 @@ related:
   - 'devops/140-CICDPipeline'
 prerequisites: []
 ---
+## 学习目标
+
+本文是「运维与中间件」模块的第 5 篇，难度定位为进阶。重点内容：容器原理、Docker 架构、镜像构建、多阶段构建、Docker Compose 与镜像优化。
+
+主要章节：
+
+- 1. 容器原理
+- 2. Docker 架构
+- 3. Dockerfile
+- 4. Docker Compose
+- 5. 镜像优化
+- 6. 私有仓库
+- ……共 16 个章节
 
 ## 1. 容器原理
 

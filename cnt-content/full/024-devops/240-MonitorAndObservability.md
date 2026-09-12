@@ -13,7 +13,19 @@ related:
   - 'devops/360-CloudNativeSRE'
 prerequisites: []
 ---
+## 学习目标
 
+本文是「运维与中间件」模块的第 24 篇，难度定位为进阶。重点内容：Prometheus+Grafana、日志、链路追踪、OpenTelemetry 与 SLO/SLI/SLA。
+
+主要章节：
+
+- 1. 可观测性三大支柱
+- 2. Prometheus + Grafana
+- 3. 日志系统
+- 4. 链路追踪
+- 5. SLO/SLI/SLA
+- 6. Grafana Dashboard
+- ……共 7 个章节
 
 ## 1. 可观测性三大支柱
 

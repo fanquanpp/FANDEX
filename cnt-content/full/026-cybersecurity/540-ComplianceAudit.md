@@ -15,6 +15,11 @@ related:
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [安全基础与防御](/cybersecurity/010-SecurityBasicsDefense)
 
 ## 1. 合规体系
 

@@ -13,7 +13,19 @@ related:
   - 'software-testing/170-SecurityAndMobileTest'
 prerequisites: []
 ---
+## 学习目标
 
+本文是「软件工程与测试」模块的第 8 篇，难度定位为进阶。重点内容：功能测试执行、自动化测试脚本编写、Selenium 框架、Unittest/pytest 框架、测试数据管理与页面对象模式。
+
+主要章节：
+
+- 1. 功能测试执行
+- 2. Selenium 测试框架
+- 3. Unittest 测试框架
+- 4. pytest 测试框架
+- 5. 测试数据管理
+- 6. 页面对象模式（POM）
+- ……共 7 个章节
 
 ## 1. 功能测试执行
 

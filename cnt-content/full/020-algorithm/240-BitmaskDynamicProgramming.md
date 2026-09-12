@@ -20,8 +20,12 @@ prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/160-DynamicProgramming'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
 
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [动态规划](/algorithm/160-DynamicProgramming)
 
 ## 1. 概述与学习目标
 

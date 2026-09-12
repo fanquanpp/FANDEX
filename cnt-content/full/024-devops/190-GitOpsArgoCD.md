@@ -13,6 +13,11 @@ related:
 prerequisites:
   - 'devops/010-OverviewLinuxBasics'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与 Linux 基础](/devops/010-OverviewLinuxBasics)
 
 ## 0. 一句话理解
 

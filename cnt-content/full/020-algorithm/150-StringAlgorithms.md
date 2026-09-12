@@ -21,8 +21,14 @@ prerequisites:
   - 'algorithm/080-Tree'
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
 
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [数组与动态数组](/algorithm/020-ArrayAndDynamicArray)
+- [树](/algorithm/080-Tree)
+- [离散数学](/cs-fundamentals/540-DiscreteMathematics)
 
 ## 第 1 章 学习目标与导论
 

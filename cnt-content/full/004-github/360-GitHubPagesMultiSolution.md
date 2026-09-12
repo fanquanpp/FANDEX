@@ -15,6 +15,11 @@ related:
 prerequisites:
   - 'github/010-GitHubOverview'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [GitHub 概述](/github/010-GitHubOverview)
 
 ## 1. 背景
 

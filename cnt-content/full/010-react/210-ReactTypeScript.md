@@ -15,6 +15,11 @@ related:
 prerequisites:
   - 'react/010-OverviewEnvSetup'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [概述与环境配置](/react/010-OverviewEnvSetup)
 
 ## 1. 一句话理解
 

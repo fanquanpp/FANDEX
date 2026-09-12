@@ -20,6 +20,12 @@ prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
   - 'css/170-PriorityCalculation'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+- [优先级计算](/css/170-PriorityCalculation)
 
 ## 1. 这篇文档解决什么问题
 

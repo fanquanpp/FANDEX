@@ -17,8 +17,12 @@ prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/150-StringAlgorithms'
 ---
+## 前置知识
 
+建议先阅读以下内容再进入本文：
 
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+- [字符串算法](/algorithm/150-StringAlgorithms)
 
 ## 1. 概述与学习目标
 

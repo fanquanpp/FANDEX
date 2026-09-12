@@ -13,6 +13,11 @@ related:
 prerequisites:
   - 'shell/010-DevEnvSetup'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [开发环境搭建](/shell/010-DevEnvSetup)
 
 ## 0. 快速开始：一键脚本与完整教程
 

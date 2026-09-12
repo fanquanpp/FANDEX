@@ -14,6 +14,11 @@ related:
 prerequisites:
   - 'cs-fundamentals/020-ProgrammingBasics'
 ---
+## 前置知识
+
+建议先阅读以下内容再进入本文：
+
+- [程序设计基础](/cs-fundamentals/020-ProgrammingBasics)
 
 ## 1. 函数定义
 
