@@ -25,15 +25,13 @@ import {
   useCallback,
   useEffect,
   useMemo,
-  useRef,
   useState,
   type CSSProperties,
-  type PointerEvent as ReactPointerEvent,
 } from 'react';
 import CodeMirrorBoxLoader from './CodeMirrorBoxLoader';
 import { PgIcon } from './pg-icons';
 import { formatCode } from './pg-formatter';
-import { buildPreviewDoc, estimatePenBytes, parsePreviewMessage } from './pg-frontend-runtime';
+import { estimatePenBytes } from './pg-frontend-runtime';
 import ShowcaseGallery from './ShowcaseGallery';
 import { SHOWCASE_ITEMS, type ShowcaseItem } from './pg-showcase';
 import {
@@ -42,9 +40,11 @@ import {
   loadPenDraft,
   loadPens,
   savePen,
-  savePenDraft,
 } from './pg-storage';
-import type { ConsoleEntry, FrontendPen } from './types';
+import type { FrontendPen } from './types';
+import { usePenPersistence } from './use-pen-persistence';
+import { usePreviewRuntime } from './use-preview-runtime';
+import { useSplitPanes, type PaneKey } from './use-split-panes';
 
 /** 起步模板结构（新建时可选） */
 interface PenTemplate {
@@ -65,7 +65,7 @@ interface PenTemplate {
 /** 空白模板内容（与旧版默认草稿一致的最小结构） */
 const BLANK_HTML = '<h1>你好，FANDEX</h1>\n<button id="demo">点我</button>\n<p id="tip">打开控制台查看输出</p>';
 const BLANK_CSS =
-  'body {\n  font-family: var(--font-body, sans-serif);\n  text-align: center;\n  padding: 40px 16px;\n}\nbutton {\n  padding: 8px 20px;\n  border-radius: 8px;\n  border: 1px solid #0B6E7E;\n  background: #E6FBFC;\n  color: #0B6E7E;\n  cursor: pointer;\n}';
+  'body {\n  font-family: var(--font-family-body, sans-serif);\n  text-align: center;\n  padding: 40px 16px;\n}\nbutton {\n  padding: 8px 20px;\n  border-radius: 8px;\n  border: 1px solid #0B6E7E;\n  background: #E6FBFC;\n  color: #0B6E7E;\n  cursor: pointer;\n}';
 const BLANK_JS =
   "const tip = document.getElementById('tip');\nconst btn = document.getElementById('demo');\nbtn.addEventListener('click', () => {\n  tip.textContent = '点击次数 +1';\n  console.log('按钮被点击');\n});\nconsole.log('预览已就绪');";
 
@@ -111,25 +111,10 @@ const DEFAULT_TEMPLATE: FrontendPen = {
   lastOpenedAt: 0,
 };
 
-/** 编辑器区域占预览区的比例范围 */
-const SPLIT_MIN = 0.2;
-const SPLIT_MAX = 0.8;
-/** 自动保存防抖时长（毫秒） */
-const AUTOSAVE_MS = 800;
-/** 自动运行防抖时长（毫秒） */
-const AUTORUN_MS = 600;
-/** 控制台日志条数上限 */
-const CONSOLE_LIMIT = 200;
 /** 存储用量预警阈值（占比） */
 const STORAGE_WARN_RATIO = 0.85;
 
-/** 保存状态文案 */
-type SaveState = 'saved' | 'saving' | 'error';
-/** 编辑器面板 key（与作品字段一一对应） */
-type PaneKey = 'html' | 'css' | 'js';
-/** 拖拽调整面板权重时的最小/最大占比 */
-const PANE_RATIO_MIN = 0.15;
-const PANE_RATIO_MAX = 0.85;
+/** 编辑器面板 key（从分栏 Hook 再导出，模板/工具栏共用） */
 
 /**
  * 格式化时间戳为本地时间字符串
@@ -170,14 +155,6 @@ function syncPenUrl(penId: string | null): void {
 function FrontendLab() {
   /** 当前编辑中的作品 */
   const [pen, setPen] = useState<FrontendPen>(DEFAULT_TEMPLATE);
-  /** 自动保存状态 */
-  const [saveState, setSaveState] = useState<SaveState>('saved');
-  /** 预览文档（srcdoc 内容） */
-  const [previewDoc, setPreviewDoc] = useState<string>(() => buildPreviewDoc(DEFAULT_TEMPLATE));
-  /** 手动运行计数（作为 iframe key 强制刷新） */
-  const [runId, setRunId] = useState(0);
-  /** 控制台日志 */
-  const [consoleEntries, setConsoleEntries] = useState<ConsoleEntry[]>([]);
   /** 是否打开作品库面板 */
   const [showLibrary, setShowLibrary] = useState(false);
   /** 是否打开新建模板菜单 */
@@ -186,10 +163,6 @@ function FrontendLab() {
   const [showGallery, setShowGallery] = useState(false);
   /** 作品库列表 */
   const [library, setLibrary] = useState<FrontendPen[]>([]);
-  /** 编辑器区域占比（0-1） */
-  const [split, setSplit] = useState(0.5);
-  /** 是否正在拖拽分隔条 */
-  const [dragging, setDragging] = useState(false);
   /** 是否正在格式化代码 */
   const [formatting, setFormatting] = useState(false);
   /** 工具栏提示（格式化结果等） */
@@ -200,14 +173,40 @@ function FrontendLab() {
   const penBytes = useMemo(() => estimatePenBytes(pen), [pen]);
   /** 窄屏标签页：当前聚焦的编辑器面板 */
   const [activePane, setActivePane] = useState<PaneKey>('html');
-  /** iframe 引用（用于控制台消息来源校验） */
-  const iframeRef = useRef<HTMLIFrameElement | null>(null);
-  /** 拖拽起始信息 */
-  const dragRef = useRef<{ start: number; value: number } | null>(null);
-  /** 面板权重拖拽起始信息 */
-  const paneDragRef = useRef<{ a: PaneKey; b: PaneKey; start: number; wa: number; wb: number } | null>(null);
-  /** 编辑器区域容器引用（用于计算拖拽比例） */
-  const editorsRef = useRef<HTMLElement | null>(null);
+
+  /**
+   * 更新作品内容的通用入口
+   * 字节估算由持久化/预览 Hook 外的渲染期派生，无需在此处重复计算
+   */
+  const updatePen = useCallback((patch: Partial<FrontendPen>) => {
+    setPen((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  // 布局域：编辑器/预览分栏与三栏权重拖拽（split 供持久化与网格模板消费）
+  const {
+    split,
+    setSplit,
+    dragging,
+    editorsRef,
+    handleSplitStart,
+    handleSplitMove,
+    handleSplitEnd,
+    handlePaneSplitStart,
+    handlePaneSplitMove,
+    handlePaneSplitEnd,
+  } = useSplitPanes({ pen, updatePen });
+  // 预览域：srcdoc 构建、自动/手动运行、快捷键与控制台消息
+  const {
+    previewDoc,
+    runId,
+    consoleEntries,
+    setConsoleEntries,
+    iframeRef,
+    handleRun,
+    resetPreview,
+  } = usePreviewRuntime({ pen });
+  // 持久化域：防抖自动保存与页面隐藏兜底落盘
+  const { saveState, setSaveState } = usePenPersistence({ pen, split });
 
   /**
    * 挂载时读取本地草稿与存储用量
@@ -253,7 +252,7 @@ function FrontendLab() {
         };
         setPen(opened);
         setSplit(opened.split ?? 0.5);
-        setPreviewDoc(buildPreviewDoc(opened));
+        resetPreview(opened);
         // 地址栏与实际打开的作品保持一致（草稿态移除参数）
         syncPenUrl(target.id !== 'draft' ? target.id : null);
       }
@@ -275,140 +274,9 @@ function FrontendLab() {
     return () => {
       cancelled = true;
     };
+    // 挂载引导仅执行一次：深链解析与草稿恢复不依赖响应式值
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-
-  /**
-   * 立即落盘当前作品（跳过防抖），供页面隐藏/关闭前兜底调用。
-   * IndexedDB 写入在 pagehide 阶段发起即可被浏览器接受（尽力而为），
-   * 与防抖自动保存互补，把"最后几百毫秒输入丢失"的窗口压到最小。
-   */
-  // latest ref 模式：渲染期不入 ref（react-hooks/refs），改在渲染提交后同步
-  const latestPenRef = useRef<FrontendPen | null>(null);
-  useEffect(() => {
-    latestPenRef.current = pen;
-  }, [pen]);
-
-  const flushPen = useCallback((source: FrontendPen) => {
-    const now = Date.now();
-    const payload: FrontendPen = {
-      ...source,
-      split,
-      updatedAt: now,
-      lastOpenedAt: source.lastOpenedAt || now,
-    };
-    // 兜底路径静默执行：页面正在卸载，状态更新无意义
-    if (payload.id === 'draft') {
-      void savePenDraft(payload);
-    } else {
-      void savePen(payload).catch(() => {});
-    }
-  }, [split]);
-
-  /**
-   * 自动保存（防抖）：草稿与作品库记录都实时落盘；
-   * 写入失败时进入 error 态（工具栏显示「未保存」），不静默假报已保存
-   */
-  useEffect(() => {
-    const timer = setTimeout(async () => {
-      setSaveState('saving');
-      const now = Date.now();
-      const payload: FrontendPen = {
-        ...pen,
-        split,
-        updatedAt: now,
-        lastOpenedAt: pen.lastOpenedAt || now,
-      };
-      try {
-        let ok = true;
-        if (pen.id === 'draft') {
-          ok = await savePenDraft(payload);
-        } else {
-          await savePen(payload);
-        }
-        setSaveState(ok ? 'saved' : 'error');
-      } catch {
-        setSaveState('error');
-      }
-    }, AUTOSAVE_MS);
-    return () => clearTimeout(timer);
-  }, [pen, split]);
-
-  /**
-   * 页面隐藏/关闭前的兜底落盘：visibilitychange 覆盖切标签/最小化，
-   * pagehide 覆盖关闭与跳转，两者互补把丢失窗口压到最小
-   */
-  useEffect(() => {
-    const onHidden = () => {
-      const source = latestPenRef.current;
-      if (source && document.visibilityState === 'hidden') flushPen(source);
-    };
-    const onPageHide = () => {
-      const source = latestPenRef.current;
-      if (source) flushPen(source);
-    };
-    document.addEventListener('visibilitychange', onHidden);
-    window.addEventListener('pagehide', onPageHide);
-    return () => {
-      document.removeEventListener('visibilitychange', onHidden);
-      window.removeEventListener('pagehide', onPageHide);
-    };
-  }, [flushPen]);
-
-  /**
-   * 自动运行（防抖）：内容变化后延迟重建预览
-   */
-  useEffect(() => {
-    if (!pen.autoRun) return;
-    const timer = setTimeout(() => {
-      setPreviewDoc(buildPreviewDoc(pen));
-      setRunId((n) => n + 1);
-    }, AUTORUN_MS);
-    return () => clearTimeout(timer);
-  }, [pen.html, pen.css, pen.js, pen.autoRun]);
-
-  /**
-   * 全局快捷键：Ctrl/Cmd + Enter 运行预览
-   */
-  useEffect(() => {
-    const onKeyDown = (e: KeyboardEvent) => {
-      if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-        e.preventDefault();
-        setPreviewDoc(buildPreviewDoc(pen));
-        setRunId((n) => n + 1);
-      }
-    };
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, [pen]);
-
-  /**
-   * 监听预览 iframe 回传的控制台消息
-   */
-  useEffect(() => {
-    const onMessage = (e: MessageEvent) => {
-      const entry = parsePreviewMessage(e, iframeRef.current?.contentWindow ?? null);
-      if (!entry) return;
-      setConsoleEntries((prev) => [...prev.slice(-(CONSOLE_LIMIT - 1)), entry]);
-    };
-    window.addEventListener('message', onMessage);
-    return () => window.removeEventListener('message', onMessage);
-  }, []);
-
-  /**
-   * 更新作品内容的通用入口
-   * 字节估算由上方独立 effect 随 pen 变化同步，无需在此处重复计算
-   */
-  const updatePen = useCallback((patch: Partial<FrontendPen>) => {
-    setPen((prev) => ({ ...prev, ...patch }));
-  }, []);
-
-  /**
-   * 手动运行：立即重建预览并强制刷新 iframe
-   */
-  const handleRun = useCallback(() => {
-    setPreviewDoc(buildPreviewDoc(pen));
-    setRunId((n) => n + 1);
-  }, [pen]);
 
   /**
    * 格式化三个编辑器（HTML/CSS/JS 使用各自语言解析器）
@@ -466,7 +334,7 @@ function FrontendLab() {
     setLibrary(await loadPens());
     setSaveState('saved');
     syncPenUrl(newId);
-  }, [pen]);
+  }, [pen, setSaveState]);
 
   /**
    * 按模板新建草稿（会覆盖当前未另存的编辑内容，需用户确认）
@@ -492,14 +360,12 @@ function FrontendLab() {
         lastOpenedAt: Date.now(),
       };
       setPen(next);
-      setPreviewDoc(buildPreviewDoc(next));
-      setRunId((n) => n + 1);
-      setConsoleEntries([]);
+      resetPreview(next);
       setActivePane('html');
       setShowTemplates(false);
       syncPenUrl(null);
     },
-    [pen],
+    [pen, resetPreview],
   );
 
   /**
@@ -528,14 +394,12 @@ function FrontendLab() {
         lastOpenedAt: Date.now(),
       };
       setPen(next);
-      setPreviewDoc(buildPreviewDoc(next));
-      setRunId((n) => n + 1);
-      setConsoleEntries([]);
+      resetPreview(next);
       setActivePane('html');
       setShowGallery(false);
       syncPenUrl(null);
     },
-    [pen],
+    [pen, resetPreview],
   );
 
   /**
@@ -560,12 +424,10 @@ function FrontendLab() {
     await savePen(opened);
     setPen(opened);
     setSplit(opened.split ?? 0.5);
-    setPreviewDoc(buildPreviewDoc(opened));
-    setRunId((n) => n + 1);
-    setConsoleEntries([]);
+    resetPreview(opened);
     setShowLibrary(false);
     syncPenUrl(opened.id);
-  }, []);
+  }, [resetPreview, setSplit]);
 
   /**
    * 删除作品库中的一条作品（用户主动操作，带确认）
@@ -591,96 +453,6 @@ function FrontendLab() {
     },
     [pen, updatePen],
   );
-
-  /**
-   * 开始拖拽分隔条
-   */
-  const handleSplitStart = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      e.preventDefault();
-      // 捕获指针，保证拖拽移出分隔条后仍能持续更新比例
-      e.currentTarget.setPointerCapture(e.pointerId);
-      dragRef.current = {
-        start: pen.layout === 'left' ? e.clientX : e.clientY,
-        value: split,
-      };
-      setDragging(true);
-    },
-    [pen.layout, split],
-  );
-
-  /**
-   * 拖拽过程中更新分隔比例
-   */
-  const handleSplitMove = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      if (!dragRef.current) return;
-      const total = pen.layout === 'left' ? window.innerWidth : window.innerHeight;
-      const delta = (pen.layout === 'left' ? e.clientX : e.clientY) - dragRef.current.start;
-      const next = Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, dragRef.current.value + delta / total));
-      setSplit(next);
-    },
-    [pen.layout],
-  );
-
-  /**
-   * 结束拖拽：把最终比例写回作品（随自动保存持久化）
-   */
-  const handleSplitEnd = useCallback(() => {
-    dragRef.current = null;
-    setDragging(false);
-  }, []);
-
-  /**
-   * 开始拖拽面板权重（HTML/CSS/JS 三栏边界）
-   * 捕获指针，保证拖出分隔条后仍能持续更新
-   */
-  const handlePaneSplitStart = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>, a: PaneKey, b: PaneKey) => {
-      e.preventDefault();
-      e.currentTarget.setPointerCapture(e.pointerId);
-      paneDragRef.current = {
-        a,
-        b,
-        start: pen.layout === 'left' ? e.clientY : e.clientX,
-        wa: pen.paneWeights[a],
-        wb: pen.paneWeights[b],
-      };
-      setDragging(true);
-    },
-    [pen.layout, pen.paneWeights],
-  );
-
-  /**
-   * 拖拽过程中更新两侧面板权重
-   * 位移换算为总权重内的增量，并限制单侧最小占比
-   */
-  const handlePaneSplitMove = useCallback(
-    (e: ReactPointerEvent<HTMLDivElement>) => {
-      const drag = paneDragRef.current;
-      const container = editorsRef.current;
-      if (!drag || !container) return;
-      const size = pen.layout === 'left' ? container.clientHeight : container.clientWidth;
-      if (size <= 0) return;
-      const total = drag.wa + drag.wb;
-      const delta = (pen.layout === 'left' ? e.clientY : e.clientX) - drag.start;
-      const nextA = Math.min(
-        total * PANE_RATIO_MAX,
-        Math.max(total * PANE_RATIO_MIN, drag.wa + total * (delta / size)),
-      );
-      setPen((prev) => ({
-        ...prev,
-        paneWeights: { ...prev.paneWeights, [drag.a]: nextA, [drag.b]: total - nextA },
-      }));
-    },
-    [pen.layout],
-  );
-
-  /** 结束面板权重拖拽 */
-  const handlePaneSplitEnd = useCallback(() => {
-    paneDragRef.current = null;
-    setDragging(false);
-  }, []);
 
   /** 编辑器区域网格模板（按布局方向生成） */
   const workspaceStyle = useMemo<CSSProperties>(() => {
