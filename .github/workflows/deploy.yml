@@ -120,7 +120,7 @@ jobs:
         run: pnpm --filter @fandex/web exec node scripts/build-stats.mjs
 
       - name: Typecheck
-        # 全仓类型检查（app-web astro check + shd-shared/tokens + tls-tools）
+        # 全仓类型检查（app-web astro check + shd-shared/tokens）
         run: pnpm typecheck
 
       - name: Lint
