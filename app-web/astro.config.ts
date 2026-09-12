@@ -20,6 +20,7 @@ import react from '@astrojs/react'; // React 集成：在 Astro 中使用 React 
 import tailwindcss from '@tailwindcss/vite'; // Tailwind CSS v4 Vite 插件（CSS-first 配置，无需 tailwind.config.js）
 import { visualizer } from 'rollup-plugin-visualizer'; // Bundle 体积可视化分析：构建后生成 reports/bundle-stats.html
 import { remarkAdmonition } from './src/plugins/remark-admonition'; // 自定义提示块解析器
+import { remarkInternalLinks } from './src/plugins/remark-internal-links'; // 站内根相对链接 base 重写：修复 GitHub Pages 项目路径下内链 404
 import { rehypeLazyImages } from './src/plugins/rehype-lazy-images'; // 图片懒加载处理器
 import { rehypeWrapTables } from './src/plugins/rehype-wrap-tables'; // 表格包裹处理器：将 table 包入 <div class="table-wrap"> 以承担横向滚动
 import remarkMath from 'remark-math'; // 数学公式语法解析（LaTeX 语法）
@@ -29,6 +30,10 @@ import rehypeSlug from 'rehype-slug'; // 为标题自动添加 id 属性
 import rehypeAutolinkHeadings from 'rehype-autolink-headings'; // 为标题添加锚点链接
 import { unified } from '@astrojs/markdown-remark'; // Astro 7.3+ 的 remark/rehype Markdown 处理器
 
+// 站点基础路径常量：GitHub Pages 项目站点为 /FANDEX/，桌面端构建为 /
+// 同时供 defineConfig({ base }) 与 remarkInternalLinks 插件使用
+const SITE_BASE = process.env.DESKTOP_BUILD === '1' ? '/' : '/FANDEX/';
+
 export default defineConfig({
   // 站点地址，用于生成 sitemap 和规范链接
   site: 'https://fanquanpp.github.io',
@@ -36,7 +41,8 @@ export default defineConfig({
   // 注意：base 必须与 GitHub Pages URL 路径一致，否则资源加载 404
   // 桌面端构建（DESKTOP_BUILD=1，由 app-desktop/build-desktop.mjs 设置）使用
   // 根路径 base：Tauri 的 frontendDist 服务在根路径，/FANDEX/ 前缀会 404
-  base: process.env.DESKTOP_BUILD === '1' ? '/' : '/FANDEX/',
+  // 该常量同时传给 remarkInternalLinks 插件（单一事实源，见插件内注释）
+  base: SITE_BASE,
   build: {
     // 样式内联策略：auto 由 Astro 自动决定（小文件内联，大文件外部引用）
     inlineStylesheets: 'auto',
@@ -109,6 +115,7 @@ export default defineConfig({
         remarkEmoji, // Emoji 短代码转换
         remarkMath, // 数学公式语法解析（$...$ 和 $$...$$）
         remarkAdmonition, // 自定义提示块（:::note、:::tip 等）
+        [remarkInternalLinks, { base: SITE_BASE }], // 站内根相对链接补 base 前缀（GitHub Pages 项目站点必需）
       ],
       // Rehype 插件（MDAST → HAST → HTML 转换阶段）
       rehypePlugins: [

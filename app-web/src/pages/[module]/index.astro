@@ -37,10 +37,10 @@ const totalPages = Math.ceil(sortedDocs.length / MODULE_PAGE_SIZE);
     slot="head"
     title={meta.title}
     description={meta.description}
-    canonical={`${Astro.site}${Astro.url.pathname}`}
+    canonical={new URL(Astro.url.pathname, Astro.site).href}
   />
   {/* 分页关系提示：便于搜索引擎理解第 1 页与后续分页的关系 */}
-  {totalPages > 1 && <link rel="next" href={`${Astro.site}${Astro.url.pathname}page/2/`} slot="head" />}
+  {totalPages > 1 && <link rel="next" href={new URL(`${Astro.url.pathname}page/2/`, Astro.site).href} slot="head" />}
   <Sidebar slot="sidebar" moduleId={module} />
 
   <ModulePageContent module={module} meta={meta} page={1} docs={sortedDocs} />
