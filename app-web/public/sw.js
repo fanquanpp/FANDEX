@@ -128,6 +128,11 @@ async function htmlStaleWhileRevalidate(request, url) {
     try {
       const response = await fetch(request);
       if (response.ok && response.type === 'basic') {
+        // 命中缓存且后台拿到了不同内容：通知页面弹出「内容已更新」提示条，
+        // 弥补 SWR"本次读到旧版"的体验缺口（详见 lib/sw-update）
+        if (cached && (await contentDiffers(cached, response))) {
+          await notifyContentUpdated(cacheKey);
+        }
         await putHtmlWithLimit(cache, cacheKey, response);
       }
       return response;
@@ -147,6 +152,35 @@ async function htmlStaleWhileRevalidate(request, url) {
     offline ||
     new Response('Offline', { status: 503, statusText: 'Offline' })
   );
+}
+
+/**
+ * 比对缓存副本与后台新响应的 HTML 是否不同
+ * 优先比较 ETag（两者都有时零开销）；任一方缺失时回退全文比对
+ * @param {Response} cached - 缓存中的旧副本
+ * @param {Response} fresh - 后台拉取的新响应
+ * @returns {Promise<boolean>} 内容是否发生变化
+ */
+async function contentDiffers(cached, fresh) {
+  const cachedTag = cached.headers.get('etag');
+  const freshTag = fresh.headers.get('etag');
+  if (cachedTag && freshTag) return cachedTag !== freshTag;
+  const [cachedText, freshText] = await Promise.all([
+    cached.clone().text(),
+    fresh.clone().text(),
+  ]);
+  return cachedText !== freshText;
+}
+
+/**
+ * 向所有打开的页面广播内容更新事件
+ * @param {string} pathname - 发生更新的页面路径（归一化缓存键）
+ */
+async function notifyContentUpdated(pathname) {
+  const clientList = await self.clients.matchAll({ type: 'window' });
+  for (const client of clientList) {
+    client.postMessage({ type: 'SW_CONTENT_UPDATED', pathname });
+  }
 }
 
 /**

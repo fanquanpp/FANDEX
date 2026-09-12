@@ -27,6 +27,7 @@ import '@/styles/components.css';
 import '@/styles/geo-decor.css';
 import '@/styles/print.css';
 import '@/styles/components/search-palette.css';
+import '@/styles/components/sw-update.css';
 import { SITE } from '@/lib/constants';
 import { MAIN_CSP } from '@/lib/csp';
 import { ClientRouter } from 'astro:transitions';
@@ -187,4 +188,10 @@ const base = import.meta.env.BASE_URL;
   // PWA 安装入口：捕获 beforeinstallprompt 点亮导航栏「安装应用」按钮，
   // iOS Safari 降级为「添加到主屏幕」指引浮层（详见 lib/pwa-install）
   import '@/lib/pwa-install';
+</script>
+
+<script>
+  // SWR 内容更新提示条：Service Worker 后台刷新发现页面更新时，
+  // 底部浮出「内容已更新」细条，用户点击即刷新到最新版（详见 lib/sw-update）
+  import '@/lib/sw-update';
 </script>

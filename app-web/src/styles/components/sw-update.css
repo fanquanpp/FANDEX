@@ -1,0 +1,93 @@
+/**
+ * 内容更新提示条样式（lib/sw-update）
+ * -----------------------------------------------------------------------------
+ * SWR 后台刷新发现页面更新时，由 sw-update.ts 动态创建的底部细条。
+ * 设计约束：直角小圆角（--radius-md 以内）、左侧竖条强调（禁止圆点装饰）、
+ * 动效全部消费 --motion-* 语义令牌并提供 reduced-motion 降级。
+ * -----------------------------------------------------------------------------
+ */
+
+.sw-update-bar {
+  position: fixed;
+  bottom: var(--space-4);
+  left: 50%;
+  /* 隐藏态下沉至视口外，is-visible 后浮入 */
+  transform: translate(-50%, calc(100% + var(--space-4)));
+  z-index: 90;
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  max-width: calc(100vw - var(--space-8));
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-bg-elevated);
+  border: 1px solid var(--color-border-default);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-dropdown);
+  opacity: 0;
+  transition:
+    transform var(--motion-duration-slow) var(--motion-easing-out),
+    opacity var(--motion-duration-slow) var(--motion-easing-out);
+}
+
+/* 左侧竖条强调刻度（替代点状装饰的仓库统一做法） */
+.sw-update-bar::before {
+  content: '';
+  flex: none;
+  width: 3px;
+  height: 1em;
+  border-radius: 1px;
+  background: var(--color-accent-base);
+}
+
+.sw-update-bar.is-visible {
+  transform: translate(-50%, 0);
+  opacity: 1;
+}
+
+.sw-update-bar-text {
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-fg-primary);
+  white-space: nowrap;
+}
+
+.sw-update-bar-refresh {
+  flex: none;
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-accent-fg);
+  background: var(--color-accent-base);
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: background var(--motion-duration-hover) var(--motion-easing-default);
+}
+
+.sw-update-bar-refresh:hover {
+  background: var(--color-accent-hover);
+}
+
+.sw-update-bar-close {
+  flex: none;
+  padding: var(--space-1) var(--space-2);
+  font-size: var(--font-size-sm, 0.875rem);
+  color: var(--color-fg-secondary);
+  background: transparent;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition:
+    color var(--motion-duration-hover) var(--motion-easing-default),
+    background var(--motion-duration-hover) var(--motion-easing-default);
+}
+
+.sw-update-bar-close:hover {
+  color: var(--color-fg-primary);
+  background: var(--color-bg-hover);
+}
+
+/* 减少动效：跳过浮入过渡，直接显隐 */
+@media (prefers-reduced-motion: reduce) {
+  .sw-update-bar {
+    transition: none;
+  }
+}
