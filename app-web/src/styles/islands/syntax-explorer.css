@@ -190,12 +190,13 @@
     -webkit-backdrop-filter: blur(6px);
   }
 
+  /* 面板开合动画时长与缓动消费 --motion-* 令牌，与全站动效观感统一 */
   .syntax-panel-overlay[data-state='open'] {
-    animation: syntax-panel-fade-in 0.2s ease both;
+    animation: syntax-panel-fade-in var(--motion-duration-fast) var(--motion-easing-out) both;
   }
 
   .syntax-panel-overlay[data-state='closed'] {
-    animation: syntax-panel-fade-out 0.15s ease both;
+    animation: syntax-panel-fade-out var(--motion-duration-fast) var(--motion-easing-out) both;
   }
 
   /* 面板主体：居中卡片，宽度自适应，内容超高时内部滚动 */
@@ -220,11 +221,11 @@
   }
 
   .syntax-panel[data-state='open'] {
-    animation: syntax-panel-in 0.22s cubic-bezier(0.2, 0.9, 0.3, 1) both;
+    animation: syntax-panel-in var(--motion-duration-normal) var(--motion-easing-out) both;
   }
 
   .syntax-panel[data-state='closed'] {
-    animation: syntax-panel-out 0.15s ease both;
+    animation: syntax-panel-out var(--motion-duration-fast) var(--motion-easing-out) both;
   }
 
   /* 面板头部：语言徽标 + 来源文档 */

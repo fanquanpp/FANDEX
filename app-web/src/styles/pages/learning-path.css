@@ -204,7 +204,8 @@
     stroke-width: 1.8;
     stroke-dasharray: 430;
     stroke-dashoffset: 430;
-    animation: lp-curve-flow 3.8s linear infinite;
+    /* 时长按 dasharray 等速换算（430/230 * 3.6s），与分类曲线流光速度一致 */
+    animation: lp-curve-flow 6.7s linear infinite;
   }
 
   @keyframes lp-curve-flow {

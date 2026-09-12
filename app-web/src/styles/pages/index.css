@@ -121,12 +121,16 @@
     color: transparent;
     /* 待机动画：背景缓慢移动，呼吸感 */
     animation: heroBgPan 12s linear infinite alternate;
-    transition: transform 0.4s ease, letter-spacing 0.4s ease;
+    /* hover 过渡时长缓动消费 --motion-* 令牌 */
+    transition:
+      transform var(--motion-duration-slow) var(--motion-easing-out),
+      letter-spacing var(--motion-duration-slow) var(--motion-easing-out);
   }
 
   .hero-title:hover {
-    /* hover 时加速背景滚动 + 微缩放 + 字距微增 */
-    animation-duration: 4s;
+    /* hover 反馈：微缩放 + 字距微增。
+       不通过修改 animation-duration 加速背景——运行时改写时长会按新时长
+       重映射当前进度，背景位置会肉眼可见地跳变 */
     transform: scale(1.02);
     letter-spacing: 0.16em;
   }
