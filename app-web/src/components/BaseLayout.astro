@@ -9,25 +9,9 @@
  * - 共享的 head 内容统一通过 named slot "head" 透传
  * - WebVitalsTracker 通过 client:load 在浏览器端水合后开始采集
  */
-// CSS 引入顺序说明：
-// 1. styles/shared — ark 家族令牌体系（含 @layer 声明、reset、tokens、theme、base、typography）
-//    必须最先引入，确保 ark 令牌优先加载，后续兼容层才能正确引用（原 @fandex/styles 已迁入 app-web）
-// 2. variables.css — --color-* 兼容层（引用 ark 语义令牌，通过 [data-theme] 自动切换主题）
-// 3. tokens.css — --fandex-* 兼容层（引用 ark 语义令牌，保留色阶过渡期兼容）
-// 4. tailwind.css — Tailwind 4 配置（@theme inline 映射 ark 令牌生成工具类）
-// 5. 业务样式 — global/typography/code/components/geo-decor/print（基于兼容层令牌）
-import '@/styles/shared/index.css';
-import '@/styles/variables.css';
-import '@/styles/tokens.css';
-import '@/styles/tailwind.css';
-import '@/styles/global.css';
-import '@/styles/typography.css';
-import '@/styles/code.css';
-import '@/styles/components.css';
-import '@/styles/geo-decor.css';
-import '@/styles/print.css';
-import '@/styles/components/search-palette.css';
-import '@/styles/components/sw-update.css';
+// CSS 引入：全部样式收敛到 styles/site.css 单一入口（内含图层顺序说明与
+// 兼容层迁移终态计划）。BaseLayout 不得直接引入其他样式文件，防止顺序漂移
+import '@/styles/site.css';
 import { SITE } from '@/lib/constants';
 import { MAIN_CSP } from '@/lib/csp';
 import { ClientRouter } from 'astro:transitions';

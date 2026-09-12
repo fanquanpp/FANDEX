@@ -23,12 +23,12 @@
   cursor: pointer;
   border-radius: 6px;
   flex-shrink: 0;
-  margin-right: calc(var(--spacing-xs) * -1);
+  margin-right: calc(var(--space-1) * -1);
 }
 
 .nav-toggle:hover {
   background: var(--color-bg-tertiary);
-  color: var(--color-text);
+  color: var(--color-fg-primary);
 }
 
 @media (max-width: 768px) {
@@ -41,9 +41,9 @@
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm) 0;
-  margin-bottom: var(--spacing-lg);
+  gap: var(--space-1);
+  padding: var(--space-2) 0;
+  margin-bottom: var(--space-6);
   font-size: 0.82em;
   border-bottom: 1px solid var(--color-border-light);
   max-width: var(--content-width);
@@ -55,14 +55,14 @@
 .bc-sep {
   color: var(--color-text-tertiary);
   opacity: 0.4;
-  font-family: var(--font-display);
+  font-family: var(--font-family-heading);
 }
 
 /* 省略号：移动端折叠中间层级时显示 */
 .bc-ellipsis {
   display: none;
   color: var(--color-text-tertiary);
-  font-family: var(--font-display);
+  font-family: var(--font-family-heading);
 }
 
 /* 移动端分隔符 */
@@ -76,14 +76,14 @@
 }
 
 .bc-link:hover {
-  color: var(--color-primary);
+  color: var(--color-accent-base);
 }
 
 /* 当前层级（不可点击） */
 .bc-current {
-  color: var(--color-text);
+  color: var(--color-fg-primary);
   font-weight: 500;
-  font-family: var(--font-display);
+  font-family: var(--font-family-heading);
 }
 
 /* 移动端适配：粘性定位，折叠中间层级 */
@@ -93,8 +93,8 @@
     position: sticky;
     top: var(--nav-height, 56px);
     z-index: 90;
-    background: var(--color-bg);
-    padding: var(--spacing-sm) var(--spacing-md);
+    background: var(--color-bg-primary);
+    padding: var(--space-2) var(--space-4);
     margin-bottom: 0;
   }
 

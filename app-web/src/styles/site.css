@@ -1,0 +1,34 @@
+/**
+ * FANDEX 全站样式单一入口（site.css）
+ * =============================================================================
+ * BaseLayout 与独立页（404）只引入本文件；全部样式的加载顺序收敛于此。
+ *
+ * 图层模型（顺序即优先级，不可调换）：
+ *   1. shared/index.css      ark 家族令牌本体（shd-shared/styles 的手工同步副本：
+ *                            layers → reset → tokens → theme → base → … → layout）
+ *                            ⚠ 该目录与上游 shd-shared 保持同步对应，勿直接修改
+ *   2. variables.css         --color-* 旧命名兼容层（语义映射 ark，另有
+ *                            色阶/布局/几何装饰字面值）
+ *   3. compat-fandex.css     --fandex-* 旧命名兼容层（同上；2026-09-13 起
+ *                            passthrough 映射已全部内联到使用点，仅存字面值令牌）
+ *   4. tailwind.css          Tailwind v4（@theme inline 引用上述令牌生成工具类）
+ *   5-9. 业务样式             global / typography / code / components / geo-decor / print
+ *  10. 组件级样式             components/*.css（与功能脚本成对出现的细粒度样式）
+ *
+ * 迁移终态（收尾计划）：
+ * - 业务与共享样式全部消费 ark 语义令牌后，删除 2/3 两个兼容层文件
+ * - shared/ 目录回归由 shd-shared 单向同步（当前为手工副本）
+ * =============================================================================
+ */
+@import './shared/index.css';
+@import './variables.css';
+@import './compat-fandex.css';
+@import './tailwind.css';
+@import './global.css';
+@import './typography.css';
+@import './code.css';
+@import './components.css';
+@import './geo-decor.css';
+@import './print.css';
+@import './components/search-palette.css';
+@import './components/sw-update.css';

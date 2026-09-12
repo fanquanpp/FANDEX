@@ -20,7 +20,7 @@
     display: flex;
     flex-direction: column;
     padding: 0;
-    border: 1px solid var(--color-border, var(--color-border-light));
+    border: 1px solid var(--color-border-strong, var(--color-border-light));
     border-radius: var(--radius-md, 4px);
     background: var(--color-bg-card);
     color: var(--color-text-primary);
@@ -56,7 +56,7 @@
     width: 4px;
     height: 16px;
     border-radius: 1px;
-    background: var(--color-accent-base, var(--color-primary));
+    background: var(--color-accent-base, var(--color-accent-base));
     flex-shrink: 0;
   }
 
@@ -70,7 +70,7 @@
     background: transparent;
     color: inherit;
     font-size: 14px;
-    font-family: var(--font-body, sans-serif);
+    font-family: var(--font-family-body, sans-serif);
   }
 
   .search-palette__input::placeholder {
@@ -125,7 +125,7 @@
     width: 3px;
     height: 10px;
     border-radius: 1px;
-    background: var(--color-accent-base, var(--color-primary));
+    background: var(--color-accent-base, var(--color-accent-base));
     flex-shrink: 0;
   }
 
@@ -152,11 +152,11 @@
   .search-palette__item:hover,
   .search-palette__item[aria-selected='true'] {
     background: var(--color-bg-hover, rgba(127, 127, 127, 0.12));
-    border-left-color: var(--color-accent-base, var(--color-primary));
+    border-left-color: var(--color-accent-base, var(--color-accent-base));
   }
 
   .search-palette__title {
-    font-family: var(--font-display, sans-serif);
+    font-family: var(--font-family-heading, sans-serif);
     font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.02em;
@@ -182,7 +182,7 @@
   /* pagefind 高亮片段：命中词用主题色加重 */
   .search-palette__excerpt mark {
     background: transparent;
-    color: var(--color-accent-base, var(--color-primary));
+    color: var(--color-accent-base, var(--color-accent-base));
     font-weight: 600;
   }
 

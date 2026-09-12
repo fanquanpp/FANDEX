@@ -2,8 +2,11 @@
  * FANDEX 全局 CSS 变量定义（ark 家族令牌兼容层）
  *
  * 功能概述：
- * 本文件作为 --color-* 命名兼容层，将原有全局设计令牌迁移为引用
- * shd-shared/styles/tokens.css 中定义的 ark 家族语义令牌。
+ * 本文件作为 --color-* 旧命名兼容层，将原有全局设计令牌映射到
+ * shd-shared/styles/tokens.css 定义的 ark 家族语义令牌。
+ *
+ * 迁移现状（2026-09-13）：语义 passthrough 映射已内联到使用点并删除，
+ * 仅存布局尺寸（content-width/nav-height 等）与 geo 装饰变量字面值。
  *
  * 迁移策略：
  * - 颜色令牌（primary/bg/text/border/success 等）：完全映射到 ark 语义令牌
@@ -19,7 +22,7 @@
  * - 本文件不再需要 [data-theme='dark'] 块重复定义
  *
  * 引用链路：
- * 组件 var(--color-text)
+ * 组件 var(--color-fg-primary)
  *   → ark var(--color-fg-primary)
  *   → [data-theme='light'] 取 var(--color-neutral-50) / [data-theme='dark'] 取 var(--color-neutral-1050)
  *   → #0A0E14 (浅色) / #EBEFF3 (深色)
@@ -44,32 +47,19 @@
      ============================================================ */
 
   /* --- 品牌色（映射 ark accent 强调色） --- */
-  --color-primary: var(--color-accent-base); /* 主品牌色，用于链接、按钮、强调元素 */
-  --color-primary-hover: var(--color-accent-hover); /* 主品牌色悬停态，提供视觉反馈 */
-  --color-secondary: var(--color-success-base); /* 辅助品牌色，用于二级标题装饰、成功状态 */
-  --color-tertiary: var(--color-warning-base); /* 第三品牌色，用于三级标题装饰、警告提示 */
 
   /* --- 背景色（映射 ark bg 令牌） --- */
   --color-bg: var(--color-bg-primary); /* 页面主背景色 */
-  --color-bg-card: var(--color-bg-elevated); /* 卡片/面板背景色（浮起元素） */
-  --color-bg-code: var(--color-bg-sunken); /* 代码块背景色（凹陷区域） */
   --color-bg-hover: var(--color-bg-hover); /* 悬停态背景色，用于列表项、按钮等 */
-  --color-bg-sidebar: var(--color-bg-secondary); /* 侧边栏背景色（次背景） */
 
   /* --- 文字色（映射 ark fg 令牌） --- */
-  --color-text: var(--color-fg-primary); /* 主文字色，用于正文内容 */
-  --color-text-secondary: var(--color-fg-secondary); /* 二级文字色，用于描述、辅助信息 */
-  --color-text-tertiary: var(--color-fg-tertiary); /* 三级文字色，用于占位符、弱化信息 */
-  --color-text-inverse: var(--color-fg-inverse); /* 反色文字，用于深色背景上的文字 */
 
   /* --- 边框色（映射 ark border 令牌） --- */
   --color-border: var(--color-border-strong); /* 主边框色，用于代码块、导航栏等 */
-  --color-border-light: var(--color-border-subtle); /* 浅边框色，用于分割线、卡片边框等 */
 
   /* --- 语义色（映射 ark 状态色） --- */
   --color-success: var(--color-success-base); /* 成功状态色 */
   --color-warning: var(--color-warning-base); /* 警告状态色 */
-  --color-error: var(--color-danger-base); /* 错误/危险状态色 */
   --color-info: var(--color-info-base); /* 信息状态色 */
 
   /* --- 导航栏背景（半透明毛玻璃，派生自主背景） --- */
@@ -85,20 +75,10 @@
   /* ============================================================
      3. 间距系统（映射 ark space 令牌，4px 基准递增）
      ============================================================ */
-  --spacing-xs: var(--space-1); /* 4px 极小间距，用于紧凑元素内部 */
-  --spacing-sm: var(--space-2); /* 8px 小间距，用于元素间基础间隔 */
-  --spacing-md: var(--space-4); /* 16px 中等间距，用于组件内部标准间隔 */
-  --spacing-lg: var(--space-6); /* 24px 大间距，用于组件间标准间隔 */
-  --spacing-xl: var(--space-8); /* 32px 超大间距，用于区块间间隔 */
-  --spacing-2xl: var(--space-12); /* 48px 2倍超大间距，用于大区块间间隔 */
-  --spacing-3xl: var(--space-16); /* 64px 3倍超大间距，用于页面级间隔 */
 
   /* ============================================================
      4. 字体栈（映射 ark font-family 令牌）
      ============================================================ */
-  --font-display: var(--font-family-heading); /* 展示字体，用于标题、标签等醒目文字 */
-  --font-body: var(--font-family-body); /* 正文字体，覆盖西文/中文回退 */
-  --font-code: var(--font-family-code); /* 等宽字体，用于代码块和行内代码 */
 
   /* ============================================================
      5. 过渡动画（映射 ark motion 令牌）
@@ -106,8 +86,6 @@
      悬停反馈使用 instant（75ms）确保即时响应，消除迟钝卡顿感。
      基础过渡使用 normal（250ms）用于展开收起等较大幅度变化。
      ============================================================ */
-  --transition-fast: var(--motion-duration-instant) var(--motion-easing-out); /* 即时反馈（75ms），用于悬停、焦点等 */
-  --transition-base: var(--motion-duration-normal) var(--motion-easing-default); /* 基础过渡，用于主题切换、展开收起等 */
 
   /* ============================================================
      6. 阴影（映射 ark shadow 令牌）
@@ -126,7 +104,6 @@
      - 暗色：白色 alpha 派生（浅色装饰，提亮维持可见度）
      - 红/蓝装饰色：派生自 ark accent/info 令牌
      ============================================================ */
-  --geo-ink: rgba(13, 13, 13, 0.85); /* 几何形状墨色 */
   --geo-red: rgba(224, 90, 43, 0.85); /* 构成主义砖红 */
   --geo-blue: rgba(51, 102, 204, 0.85); /* 群青 */
   --geo-curve: rgba(51, 102, 204, 0.1); /* 曲线主色 */
@@ -137,7 +114,16 @@
   --geo-grid: rgba(13, 13, 13, 0.06); /* 背景网格线 */
   --geo-line: rgba(13, 13, 13, 0.12); /* 几何辅助线 */
   --geo-stripe: rgba(51, 102, 204, 0.05); /* 斜纹底纹 */
-  --geo-glow-primary: rgba(51, 102, 204, 0.18); /* 品牌色填充 */
+  --color-border-light: var(--color-border-subtle); /* 浅边框色，用于分割线、卡片边框等 */
+
+  --color-bg-card: var(--color-bg-elevated); /* 卡片/面板背景色（浮起元素） */
+
+  --color-bg-code: var(--color-bg-sunken); /* 代码块背景色（凹陷区域） */
+
+  --color-primary-hover: var(--color-accent-hover); /* 主品牌色悬停态，提供视觉反馈 */
+
+  --color-bg-sidebar: var(--color-bg-secondary); /* 侧边栏背景色（次背景） */
+
 }
 
   /* ============================================================
@@ -146,7 +132,6 @@
      暗色模式下使用白色 alpha 派生，提亮维持可见度。
      ============================================================ */
   [data-theme='dark'] {
-    --geo-ink: rgba(235, 235, 235, 0.75);
     --geo-red: rgba(240, 144, 112, 0.75);
     --geo-blue: rgba(110, 168, 254, 0.75);
     --geo-curve: rgba(110, 168, 254, 0.16);
@@ -157,6 +142,5 @@
     --geo-grid: rgba(235, 235, 235, 0.05);
     --geo-line: rgba(235, 235, 235, 0.1);
     --geo-stripe: rgba(110, 168, 254, 0.08);
-    --geo-glow-primary: rgba(110, 168, 254, 0.22);
   }
 } /* end @layer tokens */

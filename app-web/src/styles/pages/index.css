@@ -44,7 +44,7 @@
     min-height: calc(100vh - var(--nav-height));
     min-height: calc(100dvh - var(--nav-height));
     margin: 0 auto;
-    padding: 0 var(--spacing-xl) var(--spacing-3xl);
+    padding: 0 var(--space-8) var(--space-16);
   }
 
   /* 确保首页内容层在几何装饰层之上 */
@@ -64,8 +64,8 @@
   .hero {
     position: relative;
     text-align: center;
-    padding: var(--spacing-xl) 0 var(--spacing-lg);
-    margin-bottom: var(--spacing-lg);
+    padding: var(--space-8) 0 var(--space-6);
+    margin-bottom: var(--space-6);
     /* 底部 ark 风格分割线：渐变淡出 */
     border-bottom: 1px solid transparent;
     background-image: linear-gradient(
@@ -94,11 +94,11 @@
    * - ghostIdle keyframes 让残影微小浮动，hover 时逆方向位移形成视差
    * 性能：仅动画 transform 与 background-position，GPU 加速，60fps */
   .hero-title {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 3rem;
     font-weight: 800;
     letter-spacing: 0.15em;
-    margin: 0 0 var(--spacing-sm);
+    margin: 0 0 var(--space-2);
     line-height: 1.1;
     display: inline-flex;
     align-items: baseline;
@@ -179,7 +179,7 @@
   .home-page--sub .hero-title {
     font-size: 2.1rem;
     letter-spacing: 0.12em;
-    margin-bottom: var(--spacing-xs);
+    margin-bottom: var(--space-1);
   }
 
   .home-page--sub .hero-title:hover {
@@ -220,9 +220,9 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-lg);
+    gap: var(--space-6);
     flex-wrap: wrap;
-    margin-top: var(--spacing-sm);
+    margin-top: var(--space-2);
   }
 
   /* 统计数据栏 — ark 风格：数字突出、标签克制 */
@@ -230,8 +230,8 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-lg);
-    font-family: var(--font-display);
+    gap: var(--space-6);
+    font-family: var(--font-family-heading);
     font-size: 0.82rem;
     flex-wrap: wrap;
   }
@@ -284,7 +284,7 @@
    * 性能：仅动画 stroke-dashoffset，GPU 加速 */
   .hero-entries {
     display: flex;
-    gap: var(--spacing-xs);
+    gap: var(--space-1);
     justify-content: center;
     flex-wrap: wrap;
   }
@@ -299,7 +299,7 @@
     background: transparent;
     color: var(--color-fg-secondary);
     text-decoration: none;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.94rem;
     font-weight: 500;
     letter-spacing: 0.02em;
@@ -403,9 +403,9 @@
    * ============================================================ */
   .hero-terminal {
     max-width: 560px;
-    margin: var(--spacing-lg) auto 0;
+    margin: var(--space-6) auto 0;
     text-align: left;
-    border: 1px solid var(--color-border);
+    border: 1px solid var(--color-border-strong);
     border-radius: var(--radius-md);
     background: var(--color-code-bg);
     box-shadow: var(--shadow-xs);
@@ -503,7 +503,7 @@
    *   </section>
    * ============================================================ */
   .category-section {
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--space-8);
     /* grid-template-rows 过渡实现折叠/展开顺滑动画
        - 默认 auto 1fr：标题栏自适应 + 内容区占据剩余空间
        - 折叠时 auto 0fr：内容行高度过渡到 0
@@ -525,9 +525,9 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-md);
-    padding: var(--spacing-xs) 0 var(--spacing-sm);
-    margin-bottom: var(--spacing-sm);
+    gap: var(--space-4);
+    padding: var(--space-1) 0 var(--space-2);
+    margin-bottom: var(--space-2);
   }
 
   /* 标题栏左侧可点击区域（折叠/展开触发器） */
@@ -539,11 +539,11 @@
     gap: var(--space-inline-sm);
     background: none;
     border: none;
-    padding: var(--spacing-xs) var(--spacing-sm);
+    padding: var(--space-1) var(--space-2);
     cursor: pointer;
     color: var(--color-fg-primary);
-    font-family: var(--font-display);
-    border-radius: var(--fandex-radius-sm, 2px);
+    font-family: var(--font-family-heading);
+    border-radius: var(--radius-sm, 2px);
     transition:
       background-color var(--motion-duration-instant) var(--motion-easing-out),
       color var(--motion-duration-instant) var(--motion-easing-out);
@@ -600,7 +600,7 @@
     color: var(--color-fg-tertiary);
     font-variant-numeric: tabular-nums;
     padding: 1px 8px;
-    border-radius: var(--fandex-radius-md, 4px);
+    border-radius: var(--radius-md, 4px);
     background: var(--color-bg-elevated);
     border: 1px solid var(--color-border-subtle);
     line-height: 1.5;
@@ -724,8 +724,8 @@
      will-change: transform 优化 requestAnimationFrame 驱动的动画性能 */
   .feature-track {
     display: flex;
-    gap: var(--spacing-md);
-    padding: var(--spacing-xs) 0;
+    gap: var(--space-4);
+    padding: var(--space-1) 0;
     width: max-content;
     /* 提示浏览器将 transform 提升为独立合成层，减少重绘开销 */
     will-change: transform;
@@ -745,11 +745,11 @@
   /* 移动端适配（768px 以下） */
   @media (max-width: 768px) {
     .home-page {
-      padding: 0 var(--spacing-md) var(--spacing-2xl);
+      padding: 0 var(--space-4) var(--space-12);
     }
 
     .hero {
-      padding: var(--spacing-xl) 0 var(--spacing-lg);
+      padding: var(--space-8) 0 var(--space-6);
     }
 
     .hero-title {
@@ -764,7 +764,7 @@
     }
 
     .hero-stats {
-      gap: var(--spacing-sm);
+      gap: var(--space-2);
       font-size: 0.75rem;
     }
 
@@ -780,14 +780,14 @@
        （保持 flex 横排会把 3 个入口挤到统计右侧，过载难读） */
     .hero-stats-row {
       flex-direction: column;
-      gap: var(--spacing-md);
+      gap: var(--space-4);
     }
 
     /* 移动端功能入口：固定三列网格，避免 flex 换行产生"2+1 孤行" */
     .hero-entries {
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
-      gap: var(--spacing-xs);
+      gap: var(--space-1);
       margin-top: 0;
     }
 
@@ -802,8 +802,8 @@
     }
 
     .module-card {
-      padding: var(--spacing-md);
-      gap: var(--spacing-xs);
+      padding: var(--space-4);
+      gap: var(--space-1);
     }
 
     .card-title {
@@ -849,7 +849,7 @@
     }
 
     .module-card {
-      padding: var(--spacing-sm);
+      padding: var(--space-2);
       gap: 4px;
     }
 
@@ -877,7 +877,7 @@
     }
 
     .hero-stats {
-      gap: var(--spacing-md);
+      gap: var(--space-4);
     }
 
     /* 小屏导航按钮隐藏（依赖原生触屏滑动） */
@@ -890,7 +890,7 @@
      不再纵向堆叠，避免子页面 Hero 占据过高首屏空间 */
   @media (max-width: 480px) {
     .hero-stats {
-      gap: var(--spacing-md);
+      gap: var(--space-4);
       font-size: 0.72rem;
     }
 

@@ -213,7 +213,7 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
    注：不设置 overflow:hidden，以保留 .doc-title-row 的 sticky 定位 */
   .doc-page {
     position: relative;
-    padding: var(--spacing-md) var(--spacing-lg) var(--spacing-2xl);
+    padding: var(--space-4) var(--space-6) var(--space-12);
     width: 100%;
     /* 限制内容最大宽度并居中，避免宽屏下行宽过长影响阅读体验 */
     /* fallback 与 --content-width 保持一致，防止变量未加载时回退到较窄值 */
@@ -232,24 +232,24 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
   .prereq-notice {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) var(--spacing-md);
-    margin-bottom: var(--spacing-md);
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    margin-bottom: var(--space-4);
     background: var(--color-bg-card);
     border: 1px solid var(--color-border-light);
-    border-left: 3px solid var(--color-warning);
+    border-left: 3px solid var(--color-warning-base);
     font-size: 0.85em;
     color: var(--color-text-secondary);
   }
 
   .prereq-notice svg {
     flex-shrink: 0;
-    color: var(--color-warning);
+    color: var(--color-warning-base);
   }
 
   .prereq-notice a {
     /* 前置知识链接颜色改为模块分类主题色 */
-    color: var(--module-color, var(--color-primary));
+    color: var(--module-color, var(--color-accent-base));
     text-decoration: none;
   }
 
@@ -259,8 +259,8 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
 
   /* 文档头部元信息区域 */
   .doc-header {
-    margin-bottom: var(--spacing-lg);
-    padding-bottom: var(--spacing-lg);
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-6);
     border-bottom: 1px solid var(--color-border-light);
   }
 
@@ -269,18 +269,18 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     position: sticky;
     top: 0;
     z-index: 20;
-    background: var(--color-bg);
+    background: var(--color-bg-primary);
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: var(--spacing-sm);
-    padding: var(--spacing-sm) 0;
+    gap: var(--space-2);
+    padding: var(--space-2) 0;
     border-bottom: 1px solid var(--color-border-light);
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--space-2);
   }
 
   .doc-header {
-    margin-bottom: var(--spacing-xl);
+    margin-bottom: var(--space-8);
   }
 
   .doc-title-row .doc-title {
@@ -289,7 +289,7 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
 
   /* 文档标题 */
   .doc-title {
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--space-2);
     font-size: 1.6em;
     line-height: 1.3;
   }
@@ -298,16 +298,16 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
   .doc-meta {
     display: flex;
     align-items: center;
-    gap: var(--spacing-sm);
+    gap: var(--space-2);
     flex-wrap: wrap;
-    margin-bottom: var(--spacing-sm);
+    margin-bottom: var(--space-2);
   }
 
   .doc-meta-item {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.78em;
     color: var(--color-text-tertiary);
   }
@@ -322,25 +322,25 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
 
   /* 入门级：成功色（绿） */
   .diff-beginner {
-    background: color-mix(in srgb, var(--color-success) 15%, var(--color-bg));
-    color: var(--color-success);
+    background: color-mix(in srgb, var(--color-success-base) 15%, var(--color-bg-primary));
+    color: var(--color-success-base);
   }
 
   /* 中级：警告色（橙） */
   .diff-intermediate {
-    background: color-mix(in srgb, var(--color-warning) 15%, var(--color-bg));
-    color: var(--color-warning);
+    background: color-mix(in srgb, var(--color-warning-base) 15%, var(--color-bg-primary));
+    color: var(--color-warning-base);
   }
 
   /* 高级：危险色（红） */
   .diff-advanced {
-    background: color-mix(in srgb, var(--color-danger) 15%, var(--color-bg));
+    background: color-mix(in srgb, var(--color-danger) 15%, var(--color-bg-primary));
     color: var(--color-danger);
   }
 
   /* 文档描述 */
   .doc-description {
-    margin-top: var(--spacing-sm);
+    margin-top: var(--space-2);
     font-size: 0.92em;
     color: var(--color-text-secondary);
     line-height: 1.6;
@@ -349,7 +349,7 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
   /* 移动端适配 */
   @media (max-width: 768px) {
     .doc-page {
-      padding: var(--spacing-sm) var(--spacing-md) var(--spacing-2xl);
+      padding: var(--space-2) var(--space-4) var(--space-12);
     }
 
     .doc-title {

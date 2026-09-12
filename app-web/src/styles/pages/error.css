@@ -24,8 +24,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: var(--spacing-lg);
-  background: var(--color-bg);
+  padding: var(--space-6);
+  background: var(--color-bg-primary);
 }
 
 .error-container {
@@ -43,7 +43,7 @@
   position: relative;
   display: inline-block;
   padding: 0 0.08em 0.16em;
-  margin-bottom: var(--spacing-lg);
+  margin-bottom: var(--space-6);
 }
 
 /* 左上 / 右下角括号：直角几何语言，缓慢呼吸 */
@@ -53,7 +53,7 @@
   position: absolute;
   width: 38px;
   height: 38px;
-  border: 2px solid var(--color-primary);
+  border: 2px solid var(--color-accent-base);
   animation: error-corner-pulse 5s ease-in-out infinite;
 }
 
@@ -74,7 +74,7 @@
 
 /* 渐变扫光：亮带在数字填充色中缓慢往返 */
 .error-code {
-  font-family: var(--font-display);
+  font-family: var(--font-family-heading);
   font-size: clamp(5rem, 16vw, 8.5rem);
   font-weight: 800;
   line-height: 1;
@@ -82,11 +82,11 @@
   color: transparent;
   background-image: linear-gradient(
     100deg,
-    var(--color-primary) 0%,
-    var(--color-primary) 38%,
+    var(--color-accent-base) 0%,
+    var(--color-accent-base) 38%,
     var(--color-text-secondary) 50%,
-    var(--color-primary) 62%,
-    var(--color-primary) 100%
+    var(--color-accent-base) 62%,
+    var(--color-accent-base) 100%
   );
   background-size: 220% 100%;
   background-clip: text;
@@ -118,11 +118,11 @@
    标题与说明：文案极简，只保留必要信息
    ------------------------------------------------------------------ */
 .error-title {
-  font-family: var(--font-display);
+  font-family: var(--font-family-heading);
   font-size: 1.45em;
   font-weight: 600;
-  color: var(--color-text);
-  margin: 0 0 var(--spacing-sm);
+  color: var(--color-fg-primary);
+  margin: 0 0 var(--space-2);
 }
 
 .error-desc {
@@ -141,13 +141,13 @@
   justify-content: center;
   gap: 7px;
   height: 16px;
-  margin: var(--spacing-md) 0 var(--spacing-lg);
+  margin: var(--space-4) 0 var(--space-6);
 }
 
 .error-ticks i {
   display: block;
   width: 2px;
-  background: var(--color-border);
+  background: var(--color-border-strong);
   transform-origin: center;
   animation: error-tick-pulse 2.6s ease-in-out infinite;
 }
@@ -180,9 +180,9 @@
 .error-path {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--space-2);
   max-width: 100%;
-  padding: 5px var(--spacing-md);
+  padding: 5px var(--space-4);
   border: 1px solid var(--color-border-light);
   border-radius: var(--radius-sm);
   background: var(--color-bg-card);
@@ -202,7 +202,7 @@
 .error-path-value {
   font-family: var(--font-mono);
   font-size: 0.8em;
-  color: var(--color-text);
+  color: var(--color-fg-primary);
   overflow-wrap: anywhere;
   max-width: 100%;
 }
@@ -215,8 +215,8 @@
   align-items: center;
   justify-content: center;
   flex-wrap: wrap;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-xl);
+  gap: var(--space-4);
+  margin-top: var(--space-8);
 }
 
 .error-btn {
@@ -224,16 +224,16 @@
   align-items: center;
   justify-content: center;
   min-width: 132px;
-  padding: var(--spacing-sm) var(--spacing-xl);
+  padding: var(--space-2) var(--space-8);
   font-size: 0.9em;
   font-weight: 500;
   font-family: inherit;
   text-decoration: none;
   border-radius: var(--radius-sm);
   transition:
-    opacity var(--transition-fast),
-    border-color var(--transition-fast),
-    color var(--transition-fast);
+    opacity var(--motion-duration-instant),
+    border-color var(--motion-duration-instant),
+    color var(--motion-duration-instant);
 }
 
 /* 主按钮：品牌强调色实底（暗色模式为发光亮青，浅色模式为工业青），
@@ -243,8 +243,8 @@
   border: 1px solid var(--color-accent-base);
   color: var(--color-accent-fg);
   transition:
-    background-color var(--transition-fast),
-    border-color var(--transition-fast);
+    background-color var(--motion-duration-instant),
+    border-color var(--motion-duration-instant);
 }
 
 .error-btn--primary:hover {
@@ -254,13 +254,13 @@
 
 .error-btn:not(.error-btn--primary) {
   background: transparent;
-  border: 1px solid var(--color-border);
-  color: var(--color-text);
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-fg-primary);
 }
 
 .error-btn:not(.error-btn--primary):hover {
-  border-color: var(--color-primary);
-  color: var(--color-primary);
+  border-color: var(--color-accent-base);
+  color: var(--color-accent-base);
 }
 
 /* ------------------------------------------------------------------

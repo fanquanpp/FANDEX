@@ -107,27 +107,27 @@
   /* ============================================================
      5. 语义色：状态反馈（映射 ark 语义令牌）
      ============================================================ */
-  --color-success: var(--fandex-color-success);
-  --color-success-light: var(--fandex-color-success-light);
-  --color-success-dark: var(--fandex-color-success-dark);
-  --color-success-bg: var(--fandex-color-success-bg);
-  --color-success-border: var(--fandex-color-success-border);
+  --color-success: var(--color-success-base);
+  --color-success-light: var(--color-success-base-light);
+  --color-success-dark: var(--color-success-base-dark);
+  --color-success-bg: var(--color-success-base-bg);
+  --color-success-border: var(--color-success-base-border);
 
-  --color-warning: var(--fandex-color-warning);
-  --color-warning-light: var(--fandex-color-warning-light);
-  --color-warning-dark: var(--fandex-color-warning-dark);
+  --color-warning: var(--color-warning-base);
+  --color-warning-light: var(--color-warning-base-light);
+  --color-warning-dark: var(--color-warning-base-dark);
   --color-warning-bg: var(--fandex-color-warning-bg);
   --color-warning-border: var(--fandex-color-warning-border);
 
-  --color-error: var(--fandex-color-error);
+  --color-error: var(--color-danger-base);
   --color-error-light: var(--fandex-color-error-light);
   --color-error-dark: var(--fandex-color-error-dark);
   --color-error-bg: var(--fandex-color-error-bg);
   --color-error-border: var(--fandex-color-error-border);
 
-  --color-info: var(--fandex-color-info);
-  --color-info-light: var(--fandex-color-info-light);
-  --color-info-dark: var(--fandex-color-info-dark);
+  --color-info: var(--color-info-base);
+  --color-info-light: var(--color-info-base-light);
+  --color-info-dark: var(--color-info-base-dark);
   --color-info-bg: var(--fandex-color-info-bg);
   --color-info-border: var(--fandex-color-info-border);
 

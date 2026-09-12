@@ -32,7 +32,7 @@
     align-items: center;
     justify-content: space-between;
     gap: var(--space-inline-md);
-    padding: 0 var(--spacing-lg);
+    padding: 0 var(--space-6);
     /* 毛玻璃背景：ark 头部令牌驱动。
        不透明度提高到 95% 并去掉 saturate，避免背景装饰的砖红/波纹
        透过半透明导航层形成"肉色"色偏，保持冷灰中性色 */
@@ -84,14 +84,14 @@
     display: inline-flex;
     align-items: center;
     gap: var(--space-inline-sm);
-    color: var(--color-text);
+    color: var(--color-fg-primary);
     text-decoration: none;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-weight: var(--font-weight-bold, 700);
     font-size: 1.05rem;
     letter-spacing: 0.04em;
     padding: 4px 8px;
-    border-radius: var(--fandex-radius-sm, 2px);
+    border-radius: var(--radius-sm, 2px);
     /* 相对定位：为 ::after 下划线提供定位上下文 */
     position: relative;
     /* 仅保留 color 过渡（移除 background 过渡）
@@ -102,7 +102,7 @@
   /* hover 变色：文字切换为主品牌色（与下划线同色系），平滑过渡
    * 与全局 components.css 的 .nav-logo:hover 保持一致（全站统一） */
   .nav-logo:hover {
-    color: var(--color-primary);
+    color: var(--color-accent-base);
   }
 
   /* 下划线伪元素：默认 width:0，hover 时展开至 100%
@@ -188,7 +188,7 @@
   /* 移动端：隐藏操作链接文字，显示全屏按钮 */
   @media (max-width: 768px) {
     .home-nav {
-      padding: 0 var(--spacing-md);
+      padding: 0 var(--space-4);
       /* 移动端禁用 backdrop-filter，避免与 sticky 叠加导致滚动卡顿 */
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
@@ -212,7 +212,7 @@
   /* 超小屏：进一步紧凑 */
   @media (max-width: 480px) {
     .home-nav {
-      padding: 0 var(--spacing-sm);
+      padding: 0 var(--space-2);
       gap: var(--space-inline-xs);
     }
 

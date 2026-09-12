@@ -115,16 +115,16 @@ const fandexEditorTheme = EditorView.theme(
       fontSize: '13px',
       // 编辑器背景使用代码块专用令牌；浅色模式下比普通凹陷背景更深，保证文字可读
       backgroundColor: 'var(--cm-bg, var(--color-bg-code, var(--color-bg-sunken)))',
-      color: 'var(--color-text)',
+      color: 'var(--color-fg-primary)',
     },
     '.cm-scroller': {
-      fontFamily: 'var(--font-code)',
+      fontFamily: 'var(--font-family-code)',
       lineHeight: '1.65',
       overflow: 'auto',
     },
     '.cm-content': {
       padding: '10px 0',
-      caretColor: 'var(--color-primary)',
+      caretColor: 'var(--color-accent-base)',
     },
     '.cm-line': {
       padding: '0 12px',
@@ -150,7 +150,7 @@ const fandexEditorTheme = EditorView.theme(
       backgroundColor: 'var(--cm-selection-bg, rgba(125, 135, 150, 0.28))',
     },
     '.cm-cursor': {
-      borderLeftColor: 'var(--color-primary)',
+      borderLeftColor: 'var(--color-accent-base)',
     },
     '.cm-matchingBracket': {
       backgroundColor: 'var(--color-primary-100)',
@@ -160,12 +160,12 @@ const fandexEditorTheme = EditorView.theme(
       backgroundColor: 'var(--color-bg-elevated)',
       border: '1px solid var(--color-border-default)',
       borderRadius: 'var(--radius-sm)',
-      color: 'var(--color-text)',
+      color: 'var(--color-fg-primary)',
       boxShadow: 'var(--shadow-md)',
     },
     '.cm-tooltip-autocomplete > ul > li[aria-selected]': {
       backgroundColor: 'var(--color-bg-hover)',
-      color: 'var(--color-text)',
+      color: 'var(--color-fg-primary)',
     },
     '.cm-foldGutter .cm-gutterElement': {
       color: 'var(--color-text-tertiary)',
@@ -191,12 +191,12 @@ const fandexHighlightStyle = HighlightStyle.define([
   },
   { tag: [tags.variableName, tags.propertyName, tags.definition(tags.propertyName)], color: 'var(--fandex-color-code-variable)' },
   { tag: tags.comment, color: 'var(--color-text-tertiary)', fontStyle: 'italic' },
-  { tag: tags.operator, color: 'var(--color-text)' },
+  { tag: tags.operator, color: 'var(--color-fg-primary)' },
   { tag: tags.punctuation, color: 'var(--color-text-secondary)' },
   { tag: [tags.typeName, tags.className], color: 'var(--fandex-color-code-function)' },
   { tag: tags.tagName, color: 'var(--fandex-color-code-keyword)' },
   { tag: tags.attributeName, color: 'var(--fandex-color-code-function)' },
-  { tag: tags.link, color: 'var(--color-primary)' },
+  { tag: tags.link, color: 'var(--color-accent-base)' },
   { tag: tags.emphasis, fontStyle: 'italic' },
   { tag: tags.strong, fontWeight: 'bold' },
   { tag: tags.heading, fontWeight: 'bold', color: 'var(--fandex-color-code-function)' },

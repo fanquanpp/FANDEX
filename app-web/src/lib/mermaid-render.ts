@@ -50,7 +50,7 @@ async function getMermaid(): Promise<MermaidAPI> {
         securityLevel: 'strict',
         theme: isDark ? 'dark' : 'neutral',
         fontFamily:
-          "var(--font-body, system-ui), -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif",
+          "var(--font-family-body, system-ui), -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif",
       });
       return mermaid;
     });

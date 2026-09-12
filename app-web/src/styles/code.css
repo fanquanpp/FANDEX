@@ -16,9 +16,9 @@
 .astro-code {
   margin: 1em 0;
   padding: 1.25em 1em;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   background: var(--color-bg-code) !important; /* !important 覆盖 Shiki 内联样式 */
-  font-family: var(--font-code);
+  font-family: var(--font-family-code);
   font-size: 0.875em;
   line-height: 1.6;
   overflow-x: auto; /* 长代码横向滚动 */
@@ -27,9 +27,9 @@
 
 /* ========== 行内代码（非 pre 内的 code） ========== */
 :not(pre) > code {
-  font-family: var(--font-code);
+  font-family: var(--font-family-code);
   background: var(--color-bg-code);
-  color: var(--color-text);
+  color: var(--color-fg-primary);
   padding: 0.15em 0.4em;
   font-size: 0.875em;
   border: 1px solid var(--color-border-light);
@@ -38,7 +38,7 @@
 /* ========== 自定义代码块容器 ========== */
 .code-block {
   margin: 1em 0;
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-strong);
   position: relative;
 }
 
@@ -52,8 +52,8 @@
 
 /* 已复制状态：使用成功色标识（覆盖基类的悬停背景） */
 .copy-btn.copied {
-  background-color: color-mix(in oklch, var(--color-success) 20%, transparent);
-  color: var(--color-success);
+  background-color: color-mix(in oklch, var(--color-success-base) 20%, transparent);
+  color: var(--color-success-base);
 }
 
 /* ========== 代码块内浮动复制按钮 ========== */
@@ -65,7 +65,7 @@
   z-index: 2;
   opacity: 0.6; /* 默认半透明，减少视觉干扰 */
   transition:
-    opacity var(--transition-base),
+    opacity var(--motion-duration-normal),
     background-color var(--motion-duration-instant) var(--motion-easing-out),
     color var(--motion-duration-instant) var(--motion-easing-out),
     border-color var(--motion-duration-instant) var(--motion-easing-out),
@@ -93,7 +93,7 @@
   margin: 0;
   padding: 1.25em 1em;
   overflow-x: auto;
-  font-family: var(--font-code);
+  font-family: var(--font-family-code);
   font-size: 0.875em;
   line-height: 1.6;
   background: var(--color-bg-code);
@@ -189,8 +189,8 @@ html[data-theme='light'] .astro-code span {
 
 .mermaid-figure {
   margin: 1.25em 0;
-  border: 1px solid var(--color-border);
-  border-left: 3px solid var(--color-accent-base, var(--color-primary));
+  border: 1px solid var(--color-border-strong);
+  border-left: 3px solid var(--color-accent-base, var(--color-accent-base));
   border-radius: var(--radius-md, 4px);
   background: var(--color-bg-card);
   overflow: hidden;

@@ -312,15 +312,15 @@
     /* 强调色上的文字（白色） */
     --color-accent-fg: var(--color-neutral-1050);
     /* 成功色 */
-    --color-success-base: var(--color-success-light);
+    --color-success-base: var(--color-success-base-light);
     /* 成功色背景（需降低不透明度，运行时处理） */
-    --color-success-bg: var(--color-success-light);
+    --color-success-bg: var(--color-success-base-light);
     /* 成功色上的文字 */
     --color-success-fg: var(--color-neutral-1050);
     /* 警告色 */
-    --color-warning-base: var(--color-warning-light);
+    --color-warning-base: var(--color-warning-base-light);
     /* 警告色背景 */
-    --color-warning-bg: var(--color-warning-light);
+    --color-warning-bg: var(--color-warning-base-light);
     /* 警告色上的文字 */
     --color-warning-fg: var(--color-neutral-1050);
     /* 危险色 */
@@ -330,9 +330,9 @@
     /* 危险色上的文字 */
     --color-danger-fg: var(--color-neutral-1050);
     /* 信息色（同青色基准） */
-    --color-info-base: var(--color-info-light);
+    --color-info-base: var(--color-info-base-light);
     /* 信息色背景 */
-    --color-info-bg: var(--color-info-light);
+    --color-info-bg: var(--color-info-base-light);
     /* 信息色上的文字 */
     --color-info-fg: var(--color-neutral-1050);
     /* 默认边框 */
@@ -870,15 +870,15 @@
     /* 强调色上的文字（黑色） */
     --color-accent-fg: var(--color-neutral-0);
     /* 成功色（提亮） */
-    --color-success-base: var(--color-success-dark);
+    --color-success-base: var(--color-success-base-dark);
     /* 成功色背景 */
-    --color-success-bg: var(--color-success-dark);
+    --color-success-bg: var(--color-success-base-dark);
     /* 成功色上的文字 */
     --color-success-fg: var(--color-neutral-0);
     /* 警告色（提亮） */
-    --color-warning-base: var(--color-warning-dark);
+    --color-warning-base: var(--color-warning-base-dark);
     /* 警告色背景 */
-    --color-warning-bg: var(--color-warning-dark);
+    --color-warning-bg: var(--color-warning-base-dark);
     /* 警告色上的文字 */
     --color-warning-fg: var(--color-neutral-0);
     /* 危险色（提亮） */
@@ -888,9 +888,9 @@
     /* 危险色上的文字 */
     --color-danger-fg: var(--color-neutral-0);
     /* 信息色（同亮青） */
-    --color-info-base: var(--color-info-dark);
+    --color-info-base: var(--color-info-base-dark);
     /* 信息色背景 */
-    --color-info-bg: var(--color-info-dark);
+    --color-info-bg: var(--color-info-base-dark);
     /* 信息色上的文字 */
     --color-info-fg: var(--color-neutral-0);
     /* 默认边框（深灰） */

@@ -10,15 +10,7 @@
  * 样式：styles/pages/error.css
  * 脚本：仅内联一段路径展示脚本（无搜索、无建议等重功能）
  */
-import '@/styles/shared/index.css';
-import '@/styles/variables.css';
-import '@/styles/tokens.css';
-import '@/styles/tailwind.css';
-import '@/styles/global.css';
-import '@/styles/typography.css';
-import '@/styles/code.css';
-import '@/styles/components.css';
-import '@/styles/geo-decor.css';
+import '@/styles/site.css';  // 全站样式单一入口（geo-decor 已含其中）
 import '@/styles/pages/error.css';
 import GeoBgDecor from '@/components/GeoBgDecor.astro';
 import { SITE } from '@/lib/constants';

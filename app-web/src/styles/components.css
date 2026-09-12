@@ -97,8 +97,8 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-sm);
-  padding: 0 var(--spacing-lg);
+  gap: var(--space-2);
+  padding: 0 var(--space-6);
   background: var(--color-nav-bg);
   backdrop-filter: blur(16px) saturate(180%);
   -webkit-backdrop-filter: blur(16px) saturate(180%);
@@ -123,7 +123,7 @@
 .nav-left {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--space-2);
   flex-shrink: 0; /* 防止被压缩导致内容重叠 */
   min-width: 0;
 }
@@ -136,15 +136,15 @@
 .nav-logo {
   display: inline-flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  color: var(--color-text);
+  gap: var(--space-1);
+  color: var(--color-fg-primary);
   text-decoration: none;
-  font-family: var(--font-display);
+  font-family: var(--font-family-heading);
   font-weight: var(--font-weight-bold, 700);
   font-size: 1.05rem;
   letter-spacing: 0.04em;
   padding: 4px 8px;
-  border-radius: var(--fandex-radius-sm, 2px);
+  border-radius: var(--radius-sm, 2px);
   cursor: pointer;
   /* 相对定位：为 ::after 下划线提供定位上下文（与首页特效一致） */
   position: relative;
@@ -155,7 +155,7 @@
 /* hover 变色：文字切换为主品牌色（与下划线同色系），平滑过渡
  * 与首页 home-layout.css 的 .nav-logo:hover 保持一致（全站统一） */
 .nav-logo:hover {
-  color: var(--color-primary);
+  color: var(--color-accent-base);
 }
 
 /* 下划线伪元素：默认 width:0，hover 时展开至 100%
@@ -188,7 +188,7 @@
   border-radius: 0;
   font-size: 1.05rem;
   font-weight: var(--font-weight-bold, 700);
-  font-family: var(--font-display);
+  font-family: var(--font-family-heading);
   letter-spacing: 0.04em;
 }
 
@@ -196,7 +196,7 @@
 .nav-right {
   display: flex;
   align-items: center;
-  gap: var(--spacing-sm);
+  gap: var(--space-2);
   flex-shrink: 0; /* 防止被压缩导致按钮重叠 */
 }
 
@@ -291,7 +291,7 @@
     background: var(--color-bg-primary);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid var(--color-border-strong);
     z-index: 150;
   }
 
@@ -305,10 +305,10 @@
     gap: 2px;
     color: var(--color-text-secondary);
     font-size: 0.65rem;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     cursor: pointer;
     text-decoration: none;
-    transition: color var(--transition-fast);
+    transition: color var(--motion-duration-instant);
     background: none;
     border: none;
     padding: 0;
@@ -317,11 +317,11 @@
   }
 
   .mobile-nav-link:hover {
-    color: var(--color-primary);
+    color: var(--color-accent-base);
   }
 
   .mobile-nav-link:active {
-    color: var(--color-primary);
+    color: var(--color-accent-base);
   }
 
   .mobile-nav-link svg {
@@ -334,9 +334,9 @@
 .breadcrumb {
   display: flex;
   align-items: center;
-  gap: var(--spacing-xs);
-  padding: var(--spacing-sm) 0;
-  margin-bottom: var(--spacing-lg);
+  gap: var(--space-1);
+  padding: var(--space-2) 0;
+  margin-bottom: var(--space-6);
   font-size: 0.82em;
   border-bottom: 1px solid var(--color-border-light);
   max-width: var(--content-width);
@@ -350,8 +350,8 @@
 @media (max-width: 768px) {
   .breadcrumb {
     font-size: 0.75em;
-    padding: var(--spacing-sm) var(--spacing-md);
-    margin-bottom: var(--spacing-md);
+    padding: var(--space-2) var(--space-4);
+    margin-bottom: var(--space-4);
     gap: 2px;
   }
 
@@ -371,16 +371,16 @@
 
 /* 模块卡片 */
 .module-card {
-  background: var(--color-bg);
-  padding: var(--spacing-md);
+  background: var(--color-bg-primary);
+  padding: var(--space-4);
   cursor: pointer;
   transition:
-    background var(--transition-fast),
-    transform var(--transition-fast);
+    background var(--motion-duration-instant),
+    transform var(--motion-duration-instant);
   text-decoration: none;
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-sm);
+  gap: var(--space-2);
 }
 
 .module-card:hover {
@@ -423,9 +423,9 @@
 .doc-nav {
   display: flex;
   justify-content: space-between;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-lg);
-  padding-top: var(--spacing-lg);
+  gap: var(--space-4);
+  margin-top: var(--space-6);
+  padding-top: var(--space-6);
   border-top: 1px solid var(--color-border-light);
   max-width: var(--content-width);
   margin-left: auto;
@@ -440,9 +440,9 @@
 /* 移动端文档导航适配 */
 @media (max-width: 768px) {
   .doc-nav {
-    gap: var(--spacing-sm);
-    padding-left: var(--spacing-md);
-    padding-right: var(--spacing-md);
+    gap: var(--space-2);
+    padding-left: var(--space-4);
+    padding-right: var(--space-4);
   }
 
   .doc-nav > div:empty {

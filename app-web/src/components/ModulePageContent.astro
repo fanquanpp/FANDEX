@@ -183,29 +183,29 @@ function pageHref(n: number): string {
    * 宽度自适应桌面端 94vw，移除 48rem 限制 */
   @layer pages {
   .module-page {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--space-2) var(--space-4);
     width: 94vw;
     max-width: 100%;
     margin-inline: auto;
   }
 
   .module-header {
-    margin-bottom: var(--spacing-md);
+    margin-bottom: var(--space-4);
     background: var(--color-bg-card);
     border: 1px solid var(--color-border-light);
-    border-radius: var(--fandex-radius-md, 4px);
+    border-radius: var(--radius-md, 4px);
   }
 
   .header-body {
-    padding: var(--spacing-sm) var(--spacing-md);
+    padding: var(--space-2) var(--space-4);
     display: flex;
     align-items: center;
-    gap: var(--spacing-xs);
+    gap: var(--space-1);
     flex-wrap: wrap;
   }
 
   .header-title {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 1.05em;
     font-weight: 600;
     margin: 0;
@@ -224,8 +224,8 @@ function pageHref(n: number): string {
   .header-docs {
     display: flex;
     flex-wrap: wrap;
-    gap: var(--spacing-xs);
-    padding: var(--spacing-xs) var(--spacing-md);
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-4);
     border-top: 1px solid var(--color-border-light);
   }
 
@@ -238,7 +238,7 @@ function pageHref(n: number): string {
     padding: 3px 8px;
     border: 1px solid var(--color-border-light);
     border-radius: 2px;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.68em;
     color: var(--color-text-secondary);
     text-decoration: none;
@@ -311,10 +311,10 @@ function pageHref(n: number): string {
     display: flex;
     align-items: center;
     flex-wrap: wrap;
-    gap: var(--spacing-xs) var(--spacing-sm);
-    padding: var(--spacing-xs) var(--spacing-sm);
+    gap: var(--space-1) var(--space-2);
+    padding: var(--space-1) var(--space-2);
     border-radius: 0;
-    color: var(--color-text);
+    color: var(--color-fg-primary);
     text-decoration: none;
     border-left: 2px solid transparent;
     position: relative;
@@ -382,7 +382,7 @@ function pageHref(n: number): string {
   }
 
   .doc-list-seq {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.68em;
     color: var(--color-text-tertiary);
     flex-shrink: 0;
@@ -391,7 +391,7 @@ function pageHref(n: number): string {
 
   /* 标题：允许完整显示，超长时换行而非截断 */
   .doc-list-title {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.82em;
     font-weight: 500;
     flex: 1 1 auto;
@@ -411,26 +411,26 @@ function pageHref(n: number): string {
   }
 
   .diff-beginner {
-    background: color-mix(in srgb, var(--color-success) 15%, var(--color-bg));
-    color: var(--color-success);
+    background: color-mix(in srgb, var(--color-success-base) 15%, var(--color-bg-primary));
+    color: var(--color-success-base);
   }
 
   .diff-intermediate {
-    background: color-mix(in srgb, var(--color-warning) 15%, var(--color-bg));
-    color: var(--color-warning);
+    background: color-mix(in srgb, var(--color-warning-base) 15%, var(--color-bg-primary));
+    color: var(--color-warning-base);
   }
 
   /* 进阶难度标识：加强背景色强调（原 --color-danger 变量语义令牌为 --color-error） */
   .diff-advanced {
-    background: color-mix(in srgb, var(--color-error) 28%, var(--color-bg));
-    color: var(--color-error);
+    background: color-mix(in srgb, var(--color-danger-base) 28%, var(--color-bg-primary));
+    color: var(--color-danger-base);
     font-weight: 600;
   }
 
   /* 描述：独占一行显示 —— flex-basis:100% 强制换行到新行 */
   .doc-list-desc {
     flex-basis: 100%;
-    padding-left: calc(24px + var(--spacing-sm));
+    padding-left: calc(24px + var(--space-2));
     font-size: 0.72em;
     color: var(--color-text-tertiary);
     line-height: 1.5;
@@ -442,8 +442,8 @@ function pageHref(n: number): string {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: var(--spacing-sm);
-    margin-top: var(--spacing-md);
+    gap: var(--space-2);
+    margin-top: var(--space-4);
   }
 
   .pager-link {
@@ -452,7 +452,7 @@ function pageHref(n: number): string {
     padding: 4px 12px;
     border: 1px solid var(--color-border-light);
     border-radius: 2px;
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.75em;
     color: var(--color-text-secondary);
     text-decoration: none;
@@ -471,7 +471,7 @@ function pageHref(n: number): string {
   }
 
   .pager-status {
-    font-family: var(--font-display);
+    font-family: var(--font-family-heading);
     font-size: 0.72em;
     color: var(--color-text-tertiary);
     letter-spacing: 0.02em;
