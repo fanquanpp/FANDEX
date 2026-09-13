@@ -741,6 +741,22 @@
     flex: 0 0 200px;
   }
 
+  /* 静态行的空占位卡片：虚线空槽，由 lib/home-interactions.ts 按视口宽度
+     对称插入真实卡片两侧，填满整行消除空位（强迫症修复）。
+     不承载内容与交互（aria-hidden + pointer-events:none），
+     不参与滚动（整行本就静止），仅作版面填充 */
+  .feature-track .module-card--ghost {
+    background: transparent;
+    border: 1px dashed var(--color-border-subtle);
+    box-shadow: none;
+    pointer-events: none;
+  }
+
+  /* 占位卡片禁用顶部装饰线（::before 分类色上线为真实卡片专属） */
+  .feature-track .module-card--ghost::before {
+    content: none;
+  }
+
   /* ============================================================
    * 5. 响应式适配
    * ============================================================ */
