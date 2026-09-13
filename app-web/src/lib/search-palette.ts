@@ -119,6 +119,8 @@ function quickEntries(): QuickEntry[] {
   const entries: QuickEntry[] = [
     { title: '语法速览', href: `${BASE}syntax/`, crumb: '语法快速查阅' },
     { title: '学习路线', href: `${BASE}learning-path/`, crumb: '系统化学习路径' },
+    { title: '算法教学', href: `${BASE}algorithms/`, crumb: '算法教程课程表' },
+    { title: '算法题图鉴', href: `${BASE}algorithms/problems/`, crumb: '经典算法题与讲解' },
     { title: '模块总览', href: BASE, crumb: '全部分类与模块' },
   ];
   // 在线编程与灵感图鉴成对出现：桌面端构建无 playground 页面时一并隐藏

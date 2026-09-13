@@ -1,0 +1,201 @@
+---
+import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
+/**
+ * 算法题图鉴列表页
+ * -----------------------------------------------------------------------------
+ * 经典算法题集合：分类 / 难度筛选 + 关键词搜索 + 题目卡片网格，
+ * 点击卡片进入题目详情页（题意概括 + 思路讲解 + 参考实现）。
+ * 筛选交互由 lib/algo-problems.ts 驱动，状态同步 URL 便于分享。
+ */
+import HomeLayout from '@/components/HomeLayout.astro'
+import SEO from '@/components/SEO.astro'
+import GeoBgDecor from '@/components/GeoBgDecor.astro'
+import Footer from '@/components/Footer.astro'
+import { SITE, IS_DESKTOP_BUILD } from '@/lib/constants'
+import {
+  ALGO_PROBLEMS,
+  ALGO_CATEGORIES,
+  DIFFICULTY_LABELS,
+  DIFFICULTY_ORDER,
+  countByCategory,
+  countByDifficulty,
+  type AlgoDifficulty,
+} from '@/data/algo-problems'
+// 复用首页 Hero / 统计 / 功能入口样式
+import '@/styles/pages/index.css'
+import '@/styles/pages/algorithms.css'
+
+const base = import.meta.env.BASE_URL
+
+// 统计与枚举数据（构建期计算）
+const catCounts = countByCategory()
+const diffCounts = countByDifficulty()
+const total = ALGO_PROBLEMS.length
+
+/** 难度 -> 语义色 token 名（卡片主题色与徽章配色） */
+const DIFF_COLOR: Record<AlgoDifficulty, string> = {
+  easy: 'success',
+  medium: 'warning',
+  hard: 'danger',
+}
+---
+
+<HomeLayout title="算法题图鉴">
+  <SEO
+    slot="head"
+    title="算法题图鉴 · FANDEX"
+    description="FANDEX 算法题图鉴：按分类整理的经典算法题，每题附题意概括、分点思路讲解、参考实现与复杂度分析。"
+    canonical={`${SITE.url}${base}algorithms/problems/`}
+    type="website"
+  />
+
+  <div class="home-page home-page--sub">
+    <GeoBgDecor variant="learning-path" />
+
+    <!-- Hero 区域：复用首页美术 -->
+    <section class="hero">
+      <h1 class="hero-title" data-text="算法题图鉴">
+        <span class="hero-title-fan">算法题</span><span class="hero-title-dex">图鉴</span>
+      </h1>
+
+      <div class="hero-stats-row">
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-num">{total}</span>
+            <span class="stat-label">道题目</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">{ALGO_CATEGORIES.length}</span>
+            <span class="stat-label">个分类</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">{diffCounts.easy}</span>
+            <span class="stat-label">道简单</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">{diffCounts.medium}</span>
+            <span class="stat-label">道中等</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">{diffCounts.hard}</span>
+            <span class="stat-label">道困难</span>
+          </div>
+        </div>
+
+        <!-- 功能入口：教学总览与本页互为姊妹入口 -->
+        <nav class="hero-entries" aria-label="功能入口">
+          <a href={base} class="entry-btn" data-tooltip="返回首页" data-tooltip-pos="bottom">
+            <EntryWaveBorder />
+            <span class="entry-name">首页</span>
+          </a>
+          <a href={`${base}algorithms/`} class="entry-btn" data-tooltip="算法教程课程表" data-tooltip-pos="bottom">
+            <EntryWaveBorder />
+            <span class="entry-name">算法教学</span>
+          </a>
+          {!IS_DESKTOP_BUILD && (
+            <a href={`${base}playground/`} class="entry-btn" data-tooltip="在线编写与运行代码" data-tooltip-pos="bottom">
+              <EntryWaveBorder />
+              <span class="entry-name">在线编程</span>
+            </a>
+          )}
+          <a href={`${base}learning-path/`} class="entry-btn" data-tooltip="系统化学习路径" data-tooltip-pos="bottom">
+            <EntryWaveBorder />
+            <span class="entry-name">学习路线</span>
+          </a>
+        </nav>
+      </div>
+    </section>
+
+    <!-- 筛选与题目网格：交互挂载点 data-algo-problems -->
+    <section data-algo-problems>
+      <div class="ap-filter">
+        <div class="ap-filter__row">
+          <span class="ap-filter__label" aria-hidden="true"></span>
+          <span class="ap-filter__hint">分类</span>
+          <button class="ap-chip is-active" type="button" data-filter-cat="all" aria-pressed="true">
+            全部<em>{total}</em>
+          </button>
+          {ALGO_CATEGORIES.map((cat) => (
+            <button
+              class="ap-chip"
+              type="button"
+              data-filter-cat={cat.id}
+              title={cat.desc}
+              aria-pressed="false"
+            >
+              {cat.label}<em>{catCounts[cat.id]}</em>
+            </button>
+          ))}
+        </div>
+        <div class="ap-filter__row">
+          <span class="ap-filter__label" aria-hidden="true"></span>
+          <span class="ap-filter__hint">难度</span>
+          <button class="ap-chip is-active" type="button" data-filter-diff="all" aria-pressed="true">
+            全部
+          </button>
+          {DIFFICULTY_ORDER.map((diff) => (
+            <button
+              class="ap-chip"
+              type="button"
+              data-filter-diff={diff}
+              aria-pressed="false"
+            >
+              {DIFFICULTY_LABELS[diff]}<em>{diffCounts[diff]}</em>
+            </button>
+          ))}
+          <input
+            class="ap-search"
+            type="search"
+            data-filter-search
+            placeholder="搜索题名 / 标签"
+            aria-label="按题名或标签搜索题目"
+          />
+        </div>
+      </div>
+
+      <!-- 命中计数行 -->
+      <p class="ap-count" data-filter-count aria-live="polite"></p>
+
+      <div class="ap-grid">
+        {ALGO_PROBLEMS.map((problem, i) => (
+          <a
+            class="ap-card"
+            href={`${base}algorithms/problems/${problem.slug}/`}
+            data-algo-card
+            data-cat={problem.category}
+            data-diff={problem.difficulty}
+            data-search={`${problem.lc ?? ''} ${problem.title} ${problem.titleEn} ${problem.tags.join(' ')} ${problem.brief}`.toLowerCase()}
+            style={`--ap-color:var(--color-${DIFF_COLOR[problem.difficulty]}-base);animation-delay:${Math.min(i, 24) * 30}ms`}
+          >
+            <div class="ap-card__head">
+              <span class="ap-card__no" aria-hidden="true">{problem.lc ? `LC ${problem.lc}` : '经典'}</span>
+              <h3 class="ap-card__title">{problem.title}</h3>
+              <span class={`ap-badge ap-badge--${problem.difficulty}`}>{DIFFICULTY_LABELS[problem.difficulty]}</span>
+            </div>
+            <p class="ap-card__en">{problem.titleEn}</p>
+            <p class="ap-card__brief">{problem.brief}</p>
+            <div class="ap-card__tags">
+              {problem.tags.map((tag) => (
+                <span class="ap-card__tag">{tag}</span>
+              ))}
+            </div>
+          </a>
+        ))}
+      </div>
+
+      <!-- 空状态：筛选无命中时显示 -->
+      <p class="ap-empty" data-ap-empty hidden>没有匹配的题目，换个筛选条件试试。</p>
+    </section>
+
+    <Footer />
+  </div>
+</HomeLayout>
+
+<!-- 题图鉴筛选交互 -->
+<script>
+  import '@/lib/algo-problems';
+</script>
