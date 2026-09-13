@@ -5,7 +5,7 @@
 # 1. 根 .gitignore 负责共享规则与跨子项目的敏感文件排除
 # 2. 各子项目（app-web/app-desktop/app-Android-*）保留各自的 .gitignore 作为
 #    独立构建时的兜底，与本文件的少量重复属有意设计
-# 3. 救感文件（私钥/密钥库/本地配置）采用最严格策略，前置排除避免误提交
+# 3. 敏感文件（私钥/密钥库/本地配置）采用最严格策略，前置排除避免误提交
 # 4. 目录命名遵循英文简写前缀约定：app-（应用）/cnt-（内容）/shd-（共享）/tls-（工具）/thd-（第三方）/dcs-（文档）
 # =============================================================================
 
@@ -98,7 +98,7 @@ src-tauri/target/
 app-desktop/src-tauri/target/
 *.rs.bk
 
-# Android 枞建产物
+# Android 构建产物
 app-Android-new/app/build/
 app-Android-new/build/
 app-Android-new/app/.cxx/
@@ -148,12 +148,15 @@ app-web/src/content/docs/
 .classpath
 .settings/
 
-# Trae IDE 巯作区
+# Trae IDE 工作区
 .trae/
 
 # Cursor
 .cursor/
 .cursorignore
+
+# IntelliJ 模块文件（子项目各自忽略，此处兜底根目录散落场景）
+*.iml
 
 
 # -----------------------------------------------------------------------------

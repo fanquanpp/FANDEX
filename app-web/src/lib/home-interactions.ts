@@ -46,6 +46,9 @@ const CARD_COUNT_SPEED_BOOST = 0.04;
 /** 最大速度提升（卡片极少时速度上限） */
 const MAX_SPEED_BOOST = 0.6;
 
+/** 静态行空占位卡片的类名（虚线空槽，仅作版面填充） */
+const GHOST_CARD_CLASS = 'module-card--ghost';
+
 /** 自动滚动延迟启动（毫秒）：首屏先静止呈现完整卡片，
  *  让访客先完成视觉定位，滚动再缓缓开始，消除"一进页面就在动"的躁动感 */
 const AUTO_START_DELAY_MS = 2600;
@@ -105,6 +108,70 @@ interface ScrollerState {
 }
 
 /**
+ * 创建空占位卡片元素：无内容、不可交互、对辅助技术隐藏
+ */
+function createGhostCard(): HTMLElement {
+  const ghost = document.createElement('div');
+  ghost.className = `module-card ${GHOST_CARD_CLASS}`;
+  ghost.setAttribute('aria-hidden', 'true');
+  return ghost;
+}
+
+/**
+ * 静态行的空占位卡片填充
+ * -----------------------------------------------------------------------------
+ * 小分类（卡片集宽度不超过视口）不滚动、轨道居中；为避免两侧留出大面积
+ * 空位、与满幅滚动的分类行不协调，按需在真实卡片两侧对称插入虚线空占位
+ * 卡片填满整行宽度。占位卡片不参与任何滚动（整行本就静止），仅作版面
+ * 填充；窗口尺寸变化时先移除旧占位符再按当前视口重新补齐。
+ *
+ * @param scroller 滑动器视窗容器（测量可用宽度）
+ * @param track 滑动轨道（插入占位卡片的容器）
+ * @param realSetWidth 真实卡片集总宽度（含间距，初始化时测量）
+ * @param gap 轨道间距（像素）
+ */
+function setupStaticFiller(
+  scroller: HTMLElement,
+  track: HTMLElement,
+  realSetWidth: number,
+  gap: number,
+): void {
+  const firstReal = (Array.from(track.children) as HTMLElement[]).find(
+    (el) => !el.classList.contains(GHOST_CARD_CLASS),
+  );
+  if (!firstReal) return;
+
+  /** 按当前视口宽度重建占位卡片：真实卡片保持居中，占位卡对称补满两侧 */
+  const fill = (): void => {
+    track.querySelectorAll(`.${GHOST_CARD_CLASS}`).forEach((el) => el.remove());
+    const deficit = scroller.clientWidth - realSetWidth;
+    // 每张占位卡片连同其左侧间距的占位开销（与真实卡片同宽）
+    const slot = firstReal.getBoundingClientRect().width + gap;
+    // 向上取整保证行宽始终被填满：溢出部分由视窗边缘裁切（与滚动行边缘
+    // 半卡片裁切的视觉语言一致），不产生背景空位
+    const need = slot > 0 && deficit > 0 ? Math.ceil(deficit / slot) : 0;
+    const leftCount = Math.floor(need / 2);
+    for (let i = 0; i < leftCount; i++) {
+      track.insertBefore(createGhostCard(), track.firstElementChild);
+    }
+    for (let i = 0; i < need - leftCount; i++) {
+      track.appendChild(createGhostCard());
+    }
+  };
+
+  window.addEventListener('resize', fill);
+
+  // View Transitions 切页清理：解除窗口监听
+  const cleanup = (): void => {
+    window.removeEventListener('resize', fill);
+    document.removeEventListener('astro:before-swap', cleanup);
+  };
+  document.addEventListener('astro:before-swap', cleanup);
+
+  fill();
+}
+
+/**
  * 初始化单个滑动器的自动滚动、无限循环、拖拽与导航按钮
  */
 function initScroller(scroller: HTMLElement, rowIndex: number): void {
@@ -128,10 +195,12 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
   const viewportWidth = scroller.clientWidth;
 
   // 静态模式：单份卡片集宽度不超过视口时（小分类）无需克隆与自动滚动，
-  // 轨道交由 CSS 居中展示（.feature-scroller.is-static），导航按钮一并隐藏
+  // 轨道交由 CSS 居中展示（.feature-scroller.is-static），导航按钮一并隐藏；
+  // 同时以空占位卡片补满两侧空位，保持与其他滚动行满幅一致的版面
   if (originalCardSetWidth <= viewportWidth) {
     scroller.classList.add('is-static');
     track.dataset.initialized = 'true';
+    setupStaticFiller(scroller, track, originalCardSetWidth, gap);
     return;
   }
 

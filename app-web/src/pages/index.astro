@@ -88,14 +88,17 @@ const grouped = getCategories()
       </div>
 
       <!-- 终端模拟面板：工业科幻品牌签名（Endfield 冷光终端）
-           逐字输出初始化序列 + 闪烁块光标；纯装饰（aria-hidden），
-           动效由 lib/home-terminal.ts 驱动，prefers-reduced-motion 时静态显示全文 -->
+           逐字输出初始化序列；光标为末行真实 readonly 输入框的原生插入符，
+           不渲染粗细与色彩，宽度/颜色/闪烁节奏完全跟随浏览器默认；
+           纯装饰（aria-hidden），动效由 lib/home-terminal.ts 驱动，
+           prefers-reduced-motion 时静态显示全文 -->
       <div class="hero-terminal" aria-hidden="true">
         <div class="hero-terminal__bar">
           <span class="hero-terminal__title">fandex://init</span>
           <span class="hero-terminal__rec">[REC]</span>
         </div>
-        <pre class="hero-terminal__body" data-terminal><code></code></pre>
+        <!-- 注意：body 消费 pre-wrap 语义，code 与 input 之间不得插入空白文本节点 -->
+        <div class="hero-terminal__body" data-terminal><code data-terminal-log></code><input class="hero-terminal__input" data-terminal-input type="text" readonly tabindex="-1" autocomplete="off" autocapitalize="off" spellcheck="false" /></div>
       </div>
     </section>
 
