@@ -11,17 +11,17 @@
         {
           "id": "vite-001",
           "title": "Vite 构建工具概述",
-          "doc": "001-ViteOverview"
+          "doc": "010-ViteOverview"
         },
         {
           "id": "vite-002",
           "title": "Vite 快速上手与项目结构",
-          "doc": "002-QuickStart"
+          "doc": "020-QuickStart"
         },
         {
           "id": "vite-003",
           "title": "Vite 配置文件详解",
-          "doc": "003-ConfigFile"
+          "doc": "030-ConfigFile"
         }
       ]
     },
@@ -33,17 +33,17 @@
         {
           "id": "vite-101",
           "title": "Vite 静态资源处理",
-          "doc": "004-StaticAssets"
+          "doc": "040-StaticAssets"
         },
         {
           "id": "vite-102",
           "title": "Vite CSS 与预处理器",
-          "doc": "005-CSSPreprocessors"
+          "doc": "060-CSSPreprocessors"
         },
         {
           "id": "vite-103",
           "title": "Vite 开发服务器与 HMR",
-          "doc": "006-DevServerHMR"
+          "doc": "070-DevServerHMR"
         }
       ]
     },
@@ -55,17 +55,17 @@
         {
           "id": "vite-201",
           "title": "Vite 生产构建与代码分割",
-          "doc": "007-BuildSplit"
+          "doc": "080-BuildSplit"
         },
         {
           "id": "vite-202",
           "title": "Vite 插件系统",
-          "doc": "008-PluginSystem"
+          "doc": "100-PluginSystem"
         },
         {
           "id": "vite-203",
           "title": "Vite 8 与 Rolldown 新特性",
-          "doc": "009-Vite8Rolldown"
+          "doc": "120-Vite8Rolldown"
         }
       ]
     }

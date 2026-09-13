@@ -11,32 +11,32 @@
         {
           "id": "kotlin-001",
           "title": "Kotlin 概述与环境配置",
-          "doc": "002-KotlinOverviewEnvSetup"
+          "doc": "020-KotlinOverviewEnvSetup"
         },
         {
           "id": "kotlin-002",
           "title": "Kotlin 类与对象",
-          "doc": "005-KotlinClassObject"
+          "doc": "050-KotlinClassObject"
         },
         {
           "id": "kotlin-003",
           "title": "Kotlin 协程进阶",
-          "doc": "009-KotlinCoroutineAdvanced"
+          "doc": "240-KotlinCoroutineAdvanced"
         },
         {
           "id": "kotlin-004",
           "title": "Kotlin 测试与最佳实践",
-          "doc": "012-KotlinTestBestPractice"
+          "doc": "380-KotlinTestBestPractice"
         },
         {
           "id": "kotlin-005",
           "title": "密封类与代数数据类型",
-          "doc": "015-SealedClassAlgebraicDataType"
+          "doc": "150-SealedClassAlgebraicDataType"
         },
         {
           "id": "kotlin-006",
           "title": "协程基础",
-          "doc": "018-CoroutineBasics"
+          "doc": "230-CoroutineBasics"
         }
       ]
     },
@@ -48,32 +48,32 @@
         {
           "id": "kotlin-101",
           "title": "Kotlin作用域函数",
-          "doc": "020-KotlinScopeFunction"
+          "doc": "070-KotlinScopeFunction"
         },
         {
           "id": "kotlin-102",
           "title": "Kotlin 契约（Contracts）",
-          "doc": "023-KotlinContractContracts"
+          "doc": "140-KotlinContractContracts"
         },
         {
           "id": "kotlin-103",
           "title": "Kotlin与Android",
-          "doc": "026-KotlinAndroid"
+          "doc": "440-KotlinAndroid"
         },
         {
           "id": "kotlin-104",
           "title": "Kotlin与Compose",
-          "doc": "029-KotlinCompose"
+          "doc": "450-KotlinCompose"
         },
         {
           "id": "kotlin-105",
           "title": "Kotlin与Exposed",
-          "doc": "032-KotlinExposed"
+          "doc": "520-KotlinExposed"
         },
         {
           "id": "kotlin-106",
           "title": "Kotlin与测试",
-          "doc": "035-KotlinTest"
+          "doc": "390-KotlinTest"
         }
       ]
     },
@@ -85,32 +85,32 @@
         {
           "id": "kotlin-201",
           "title": "Kotlin与原子操作",
-          "doc": "038-KotlinAtomicOperation"
+          "doc": "280-KotlinAtomicOperation"
         },
         {
           "id": "kotlin-202",
           "title": "Kotlin 与正则表达式",
-          "doc": "041-KotlinRegex"
+          "doc": "360-KotlinRegex"
         },
         {
           "id": "kotlin-203",
           "title": "Kotlin与WebSocket",
-          "doc": "044-KotlinWebSocket"
+          "doc": "510-KotlinWebSocket"
         },
         {
           "id": "kotlin-204",
           "title": "Flow冷流与SharedFlow和StateFlow",
-          "doc": "047-FlowColdSharedState"
+          "doc": "300-FlowColdSharedState"
         },
         {
           "id": "kotlin-205",
           "title": "内联类",
-          "doc": "050-InlineClass"
+          "doc": "200-InlineClass"
         },
         {
           "id": "kotlin-206",
           "title": "协程异常处理",
-          "doc": "053-CoroutineExceptionHandling"
+          "doc": "260-CoroutineExceptionHandling"
         }
       ]
     },
@@ -124,14 +124,14 @@
           "title": "Kotlin 与 Java 互操作",
           "desc": "双向调用与 @Jvm 注解",
           "difficulty": "intermediate",
-          "doc": "056-KotlinJavaInterop"
+          "doc": "430-KotlinJavaInterop"
         },
         {
           "id": "kt-902",
           "title": "data class 详解",
           "desc": "数据载体最佳实践",
           "difficulty": "beginner",
-          "doc": "006-KotlinDataClassDeepDive"
+          "doc": "060-KotlinDataClassDeepDive"
         }
       ]
     }

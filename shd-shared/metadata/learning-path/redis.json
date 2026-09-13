@@ -11,32 +11,32 @@
         {
           "id": "redis-001",
           "title": "概述与核心数据结构",
-          "doc": "001-OverviewCoreDataStructure"
+          "doc": "010-OverviewCoreDataStructure"
         },
         {
           "id": "redis-002",
           "title": "集群与高可用",
-          "doc": "003-ClusterHA"
+          "doc": "180-ClusterHA"
         },
         {
           "id": "redis-003",
           "title": "位图",
-          "doc": "005-BitMapRedis"
+          "doc": "060-BitMapRedis"
         },
         {
           "id": "redis-004",
           "title": "地理空间",
-          "doc": "007-GeoSpatial"
+          "doc": "070-GeoSpatial"
         },
         {
           "id": "redis-005",
           "title": "向量集",
-          "doc": "009-VectorSet"
+          "doc": "100-VectorSet"
         },
         {
           "id": "redis-006",
           "title": "AOF日志持久化",
-          "doc": "011-AOFLogPersistence"
+          "doc": "160-AOFLogPersistence"
         }
       ]
     },
@@ -48,27 +48,27 @@
         {
           "id": "redis-101",
           "title": "无盘复制",
-          "doc": "013-DisklessReplication"
+          "doc": "190-DisklessReplication"
         },
         {
           "id": "redis-102",
           "title": "字符串SDS结构",
-          "doc": "015-StringSDSStructure"
+          "doc": "260-StringSDSStructure"
         },
         {
           "id": "redis-103",
           "title": "主从复制缓冲区",
-          "doc": "017-ReplicationBuffer"
+          "doc": "200-ReplicationBuffer"
         },
         {
           "id": "redis-104",
           "title": "Redis-Cluster哈希槽",
-          "doc": "019-RedisClusterHashSlot"
+          "doc": "220-RedisClusterHashSlot"
         },
         {
           "id": "redis-105",
           "title": "Lua脚本原子执行",
-          "doc": "021-LuaScriptAtomicExecution"
+          "doc": "240-LuaScriptAtomicExecution"
         }
       ]
     },
@@ -80,37 +80,37 @@
         {
           "id": "redis-201",
           "title": "内存淘汰策略",
-          "doc": "023-MemoryEvictionPolicy"
+          "doc": "130-MemoryEvictionPolicy"
         },
         {
           "id": "redis-202",
           "title": "Redis Hash 命令速查",
-          "doc": "024-HashCommand"
+          "doc": "030-HashCommand"
         },
         {
           "id": "redis-203",
           "title": "Redis List/Set/ZSet 命令",
-          "doc": "025-ListSetZSetCommand"
+          "doc": "040-ListSetZSetCommand"
         },
         {
           "id": "redis-204",
           "title": "Redis 发布订阅命令",
-          "doc": "026-PubSubCommand"
+          "doc": "080-PubSubCommand"
         },
         {
           "id": "redis-205",
           "title": "Redis Key 管理与过期命令速查手册",
-          "doc": "027-KeyManagement"
+          "doc": "020-KeyManagement"
         },
         {
           "id": "redis-206",
           "title": "Redis 安全与 ACL 命令速查手册",
-          "doc": "028-ACL"
+          "doc": "290-ACL"
         },
         {
           "id": "redis-207",
           "title": "Redis 7.0+ 新特性命令速查手册",
-          "doc": "029-NewFeatures7"
+          "doc": "300-NewFeatures7"
         }
       ]
     }

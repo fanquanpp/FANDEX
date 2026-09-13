@@ -11,32 +11,32 @@
         {
           "id": "devops-001",
           "title": "概述与 Linux 基础",
-          "doc": "001-OverviewLinuxBasics"
+          "doc": "010-OverviewLinuxBasics"
         },
         {
           "id": "devops-002",
           "title": "容器与 Docker",
-          "doc": "003-ContainerDocker"
+          "doc": "050-ContainerDocker"
         },
         {
           "id": "devops-003",
           "title": "CI/CD 流水线",
-          "doc": "005-CICDPipeline"
+          "doc": "140-CICDPipeline"
         },
         {
           "id": "devops-004",
           "title": "基础设施即代码",
-          "doc": "013-IaC"
+          "doc": "200-IaC"
         },
         {
           "id": "devops-005",
           "title": "Shell脚本编程",
-          "doc": "015-ShellScriptProgramming"
+          "doc": "020-ShellScriptProgramming"
         },
         {
           "id": "devops-006",
           "title": "服务网格",
-          "doc": "017-ServiceMesh"
+          "doc": "130-ServiceMesh"
         }
       ]
     },
@@ -48,32 +48,32 @@
         {
           "id": "devops-101",
           "title": "配置管理",
-          "doc": "019-ConfigManagement"
+          "doc": "230-ConfigManagement"
         },
         {
           "id": "devops-102",
           "title": "高可用架构",
-          "doc": "021-HighAvailabilityArchitecture"
+          "doc": "350-HighAvailabilityArchitecture"
         },
         {
           "id": "devops-103",
           "title": "故障排查",
-          "doc": "023-Troubleshooting"
+          "doc": "330-Troubleshooting"
         },
         {
           "id": "devops-104",
           "title": "GitOps与持续交付",
-          "doc": "025-GitOpsCD"
+          "doc": "180-GitOpsCD"
         },
         {
           "id": "devops-105",
           "title": "网络与安全进阶",
-          "doc": "027-NetworkSecurityAdvanced"
+          "doc": "420-NetworkSecurityAdvanced"
         },
         {
           "id": "devops-106",
           "title": "Dockerfile多阶段构建",
-          "doc": "029-DockerfileMultiBuild"
+          "doc": "060-DockerfileMultiBuild"
         }
       ]
     },
@@ -85,32 +85,32 @@
         {
           "id": "devops-201",
           "title": "Helm-Chart应用打包",
-          "doc": "031-HelmChartApplicationPackage"
+          "doc": "110-HelmChartApplicationPackage"
         },
         {
           "id": "devops-202",
           "title": "Ansible-Playbook配置管理",
-          "doc": "033-AnsiblePlaybookConfigManagement"
+          "doc": "220-AnsiblePlaybookConfigManagement"
         },
         {
           "id": "devops-203",
           "title": "Grafana仪表盘配置",
-          "doc": "035-GrafanaTableConfig"
+          "doc": "260-GrafanaDashboards"
         },
         {
           "id": "devops-204",
           "title": "OpenTelemetry",
-          "doc": "037-OpenTelemetry"
+          "doc": "290-OpenTelemetry"
         },
         {
           "id": "devops-205",
           "title": "DevOps kubectl 基础命令",
-          "doc": "039-KubectlBasics"
+          "doc": "100-KubectlBasics"
         },
         {
           "id": "devops-206",
           "title": "DevOps Jenkins Pipeline",
-          "doc": "041-JenkinsPipeline"
+          "doc": "150-JenkinsPipeline"
         }
       ]
     }

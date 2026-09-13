@@ -13,14 +13,14 @@
           "title": "概述与快速上手",
           "desc": "App Router 与服务器组件初体验",
           "difficulty": "beginner",
-          "doc": "001-NextJS16Overview"
+          "doc": "010-NextJS16Overview"
         },
         {
           "id": "next-002",
           "title": "App Router 路由系统",
           "desc": "布局、动态段与导航",
           "difficulty": "beginner",
-          "doc": "002-AppRouterRouting"
+          "doc": "020-AppRouterRouting"
         }
       ]
     },
@@ -34,21 +34,21 @@
           "title": "数据获取与缓存",
           "desc": "fetch 缓存语义与 revalidate",
           "difficulty": "intermediate",
-          "doc": "003-DataFetchingCaching"
+          "doc": "030-DataFetchingCaching"
         },
         {
           "id": "next-102",
           "title": "Route Handlers 与 API 设计",
           "desc": "route.ts 编写后端接口",
           "difficulty": "intermediate",
-          "doc": "005-RouteHandlersApi"
+          "doc": "040-RouteHandlersApi"
         },
         {
           "id": "next-103",
           "title": "Server Actions 与表单",
           "desc": "不写 API 也能改数据",
           "difficulty": "intermediate",
-          "doc": "006-ServerActionsForms"
+          "doc": "050-ServerActionsForms"
         }
       ]
     },
@@ -62,21 +62,21 @@
           "title": "渲染策略与缓存",
           "desc": "SSG/ISR/SSR 与流式渲染",
           "difficulty": "advanced",
-          "doc": "007-RenderingStrategies"
+          "doc": "060-RenderingStrategies"
         },
         {
           "id": "next-202",
           "title": "认证、代理与安全",
           "desc": "会话、JWT 与 proxy.ts",
           "difficulty": "intermediate",
-          "doc": "008-AuthProxyMiddleware"
+          "doc": "080-AuthProxyMiddleware"
         },
         {
           "id": "next-203",
           "title": "部署与性能优化",
           "desc": "构建产物、缓存与监控",
           "difficulty": "intermediate",
-          "doc": "004-DeploymentOptimization"
+          "doc": "090-DeploymentOptimization"
         }
       ]
     }
