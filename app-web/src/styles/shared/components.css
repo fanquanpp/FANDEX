@@ -677,7 +677,8 @@
   /* 深色模式覆盖：soft 软填充背景透明度调整
      原 light-dark() 已迁移为 [data-theme='dark'] 选择器方案 */
   [data-theme='dark'] .fndx-badge--soft.fndx-badge--primary {
-    background-color: rgba(0, 229, 255, 0.16);
+    /* 深色主色底：cyan-500（品牌青）按原透明度混入，替代旧亮青硬编码 */
+    background-color: color-mix(in srgb, var(--color-cyan-500) 16%, transparent);
   }
 
   [data-theme='dark'] .fndx-badge--soft.fndx-badge--success {
@@ -695,7 +696,8 @@
   /* 深色模式覆盖：输入框 focus 焦点环阴影
      原 light-dark() 已迁移为 [data-theme='dark'] 选择器方案 */
   [data-theme='dark'] .fndx-input:focus {
-    box-shadow: 0 0 0 3px rgba(0, 229, 255, 0.22);
+    /* 深色焦点环：cyan-500（品牌青）按原透明度混入，替代旧亮青硬编码 */
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-cyan-500) 22%, transparent);
   }
 
   [data-theme='dark'] .fndx-input-wrapper.has-error .fndx-input:focus,
