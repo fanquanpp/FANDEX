@@ -1,0 +1,218 @@
+---
+import { Code } from 'astro:components';
+/**
+ * 算法题目详情页
+ * -----------------------------------------------------------------------------
+ * 单道算法题的完整讲解：题意概括 / 分点思路 / 参考实现（折叠）/
+ * 复杂度与关联教程 / 同库前后题导航。数据全部来自构建期题库数据集。
+ */
+import HomeLayout from '@/components/HomeLayout.astro'
+import SEO from '@/components/SEO.astro'
+import GeoBgDecor from '@/components/GeoBgDecor.astro'
+import Footer from '@/components/Footer.astro'
+import { SITE } from '@/lib/constants'
+import { getDocsByModule, docSlug } from '@/services'
+import {
+  ALGO_PROBLEMS,
+  ALGO_CATEGORIES,
+  DIFFICULTY_LABELS,
+  type AlgoProblem,
+  type AlgoDifficulty,
+} from '@/data/algo-problems'
+import '@/styles/pages/algorithms.css'
+
+/** 难度 -> 语义色 token 名（与列表页徽章配色一致） */
+const DIFF_COLOR: Record<AlgoDifficulty, string> = {
+  easy: 'success',
+  medium: 'warning',
+  hard: 'danger',
+}
+
+/** 关联教程的展示结构（title 缺省回退为 slug，防文档被删后链接悬空） */
+interface RelatedDoc {
+  slug: string;
+  title: string;
+}
+
+export async function getStaticPaths() {
+  // 关联教程需要文档标题：构建期一次拉取 algorithm 模块索引
+  const algoDocs = await getDocsByModule('algorithm')
+  const docTitleBySlug = new Map(algoDocs.map((doc) => [docSlug(doc.id), doc.data.title]))
+
+  return ALGO_PROBLEMS.map((problem, index) => ({
+    params: { slug: problem.slug },
+    props: {
+      problem,
+      index,
+      prev: index > 0 ? (ALGO_PROBLEMS[index - 1] ?? null) : null,
+      next: index < ALGO_PROBLEMS.length - 1 ? (ALGO_PROBLEMS[index + 1] ?? null) : null,
+      related: (problem.related ?? []).map<RelatedDoc>((slug) => ({
+        slug,
+        title: docTitleBySlug.get(slug) ?? slug,
+      })),
+    },
+  }))
+}
+
+interface Props {
+  problem: AlgoProblem;
+  index: number;
+  prev: AlgoProblem | null;
+  next: AlgoProblem | null;
+  related: RelatedDoc[];
+}
+
+const { problem, index, prev, next, related } = Astro.props
+const base = import.meta.env.BASE_URL
+const category = ALGO_CATEGORIES.find((cat) => cat.id === problem.category)
+// 题意概括按空行拆段渲染
+const statementParas = problem.statement.split('\n\n').filter(Boolean)
+---
+
+<HomeLayout title={`${problem.title} · 算法题图鉴`}>
+  <SEO
+    slot="head"
+    title={`${problem.title}（${problem.lc ? `LeetCode ${problem.lc}` : '经典题'}）· 算法题图鉴 - FANDEX`}
+    description={problem.brief}
+    canonical={`${SITE.url}${base}algorithms/problems/${problem.slug}/`}
+    type="article"
+  />
+
+  <div class="home-page home-page--sub">
+    <GeoBgDecor variant="minimal" />
+
+    <article class="apd">
+      <!-- 面包屑：算法教学 / 算法题图鉴 / 当前题 -->
+      <nav class="apd-crumb" aria-label="面包屑">
+        <a href={`${base}algorithms/`}>算法教学</a>
+        <span class="apd-crumb__sep" aria-hidden="true">/</span>
+        <a href={`${base}algorithms/problems/`}>算法题图鉴</a>
+        <span class="apd-crumb__sep" aria-hidden="true">/</span>
+        <span aria-current="page">{problem.title}</span>
+      </nav>
+
+      <!-- 题目头部：题号 / 难度 / 全库序号 + 标题 + 技法标签 -->
+      <header class="apd-head">
+        <p class="apd-head__meta">
+          <span class="ap-card__no">{problem.lc ? `LC ${problem.lc}` : '经典题'}</span>
+          <span class="ap-crumb__sep" aria-hidden="true">·</span>
+          <span>{category?.label}</span>
+          <span class="ap-crumb__sep" aria-hidden="true">·</span>
+          <span class={`ap-badge ap-badge--${problem.difficulty}`}>{DIFFICULTY_LABELS[problem.difficulty]}</span>
+          <span class="ap-crumb__sep" aria-hidden="true">·</span>
+          <span>第 {index + 1} / {ALGO_PROBLEMS.length} 题</span>
+        </p>
+        <h1 class="apd-head__title" style={`--ap-color:var(--color-${DIFF_COLOR[problem.difficulty]}-base)`}>
+          {problem.title}
+        </h1>
+        <p class="apd-head__en">{problem.titleEn}</p>
+        <div class="apd-head__tags">
+          {problem.tags.map((tag) => (
+            <span class="ap-card__tag">{tag}</span>
+          ))}
+        </div>
+      </header>
+
+      <!-- 题目描述：概括复述 + 示例 + 数据范围 -->
+      <section class="apd-sec">
+        <h2 class="apd-sec__title">题目描述</h2>
+        <div class="apd-statement">
+          {statementParas.map((para) => (
+            <p>{para}</p>
+          ))}
+        </div>
+      </section>
+
+      <!-- 解题思路：分点讲解 -->
+      <section class="apd-sec">
+        <h2 class="apd-sec__title">解题思路</h2>
+        <ol class="apd-idea">
+          {problem.idea.map((point) => (
+            <li>{point}</li>
+          ))}
+        </ol>
+      </section>
+
+      <!-- 参考实现：默认折叠，先自己想再看 -->
+      <section class="apd-sec">
+        <h2 class="apd-sec__title">参考实现</h2>
+        <details class="apd-code">
+          <summary>
+            查看参考实现<em>Python · 建议先自行作答</em>
+          </summary>
+          <div class="apd-code__body">
+            <Code
+              code={problem.code}
+              lang="python"
+              themes={{ light: 'github-light', dark: 'github-dark' }}
+              defaultColor={false}
+              wrap
+            />
+          </div>
+        </details>
+      </section>
+
+      <!-- 复杂度与归属信息 -->
+      <section class="apd-sec">
+        <h2 class="apd-sec__title">复杂度与归属</h2>
+        <div class="apd-meta">
+          <div class="apd-meta__item">
+            <span class="apd-meta__label">时间复杂度</span>
+            <span class="apd-meta__value">{problem.time}</span>
+          </div>
+          <div class="apd-meta__item">
+            <span class="apd-meta__label">空间复杂度</span>
+            <span class="apd-meta__value">{problem.space}</span>
+          </div>
+          <div class="apd-meta__item">
+            <span class="apd-meta__label">所属分类</span>
+            <span class="apd-meta__value">{category?.label}</span>
+          </div>
+          <div class="apd-meta__item">
+            <span class="apd-meta__label">题源</span>
+            <span class="apd-meta__value">{problem.lc ? `LeetCode ${problem.lc}` : '经典算法题'}</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 关联教程：回链算法教学文档 -->
+      {related.length > 0 && (
+        <section class="apd-sec">
+          <h2 class="apd-sec__title">关联教程</h2>
+          <div class="apd-rel">
+            {related.map((doc) => (
+              <a href={`${base}algorithm/${doc.slug}/`}>{doc.title}</a>
+            ))}
+          </div>
+        </section>
+      )}
+
+      <!-- 同库前后题导航 -->
+      <nav class="apd-nav" aria-label="前后题目">
+        {prev ? (
+          <a class="apd-nav__link" href={`${base}algorithms/problems/${prev.slug}/`}>
+            <span class="apd-nav__dir">PREV · 上一题</span>
+            <span class="apd-nav__title">{prev.title}</span>
+          </a>
+        ) : (
+          <span class="apd-nav__link is-placeholder" aria-hidden="true"></span>
+        )}
+        {next ? (
+          <a class="apd-nav__link is-next" href={`${base}algorithms/problems/${next.slug}/`}>
+            <span class="apd-nav__dir">NEXT · 下一题</span>
+            <span class="apd-nav__title">{next.title}</span>
+          </a>
+        ) : (
+          <span class="apd-nav__link is-placeholder" aria-hidden="true"></span>
+        )}
+      </nav>
+
+      <!-- 返回图鉴 -->
+      <p class="apd-back">
+        <a class="ap-chip" href={`${base}algorithms/problems/`}>返回题图鉴</a>
+      </p>
+    </article>
+
+    <Footer />
+  </div>
+</HomeLayout>

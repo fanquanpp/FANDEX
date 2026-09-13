@@ -1,0 +1,337 @@
+---
+import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
+/**
+ * 算法教学总览页
+ * -----------------------------------------------------------------------------
+ * 将 algorithm 模块的全部教程按学习曲线重组为单元章节课程表，
+ * 与「学习路线」并排同级作为独立子页面；
+ * 页面同时提供「算法题图鉴」的显眼入口，形成"学教程 -> 刷题"闭环。
+ */
+import HomeLayout from '@/components/HomeLayout.astro'
+import SEO from '@/components/SEO.astro'
+import GeoBgDecor from '@/components/GeoBgDecor.astro'
+import Footer from '@/components/Footer.astro'
+import { SITE, IS_DESKTOP_BUILD } from '@/lib/constants'
+import { categoryColors } from '@/lib/modules'
+import { getDocsByModule, docSlug } from '@/services'
+import { ALGO_PROBLEMS, ALGO_CATEGORIES } from '@/data/algo-problems'
+// 复用首页 Hero / 统计 / 功能入口样式，保证美术与学习路线页完全一致
+import '@/styles/pages/index.css'
+import '@/styles/pages/algorithms.css'
+
+const base = import.meta.env.BASE_URL
+
+/** 教学文档难度标签映射（frontmatter.difficulty -> 中文短标签） */
+const LEVEL_LABELS: Record<string, string> = {
+  beginner: '入门',
+  intermediate: '进阶',
+  advanced: '深入',
+}
+
+/**
+ * 单元章节定义：slug 分组即学习曲线
+ * （顺序参考「数据结构 -> 排序查找 -> 设计范式 -> 图论 -> 字符串 -> 高级结构 -> 实战」）
+ */
+const UNITS = [
+  {
+    id: 'foundation',
+    index: '01',
+    title: '基础与分析',
+    en: 'Foundations',
+    desc: '复杂度思维起步，吃透数组、栈队列、链表与哈希等线性结构的实现细节。',
+    color: categoryColors.cs,
+    slugs: [
+      '010-AlgorithmAnalysisBasics',
+      '020-ArrayAndDynamicArray',
+      '040-StackAndQueue',
+      '050-SearchAlgorithm',
+      '060-LinkedList',
+      '070-HashTable',
+    ],
+  },
+  {
+    id: 'tree',
+    index: '02',
+    title: '树形结构',
+    en: 'Trees',
+    desc: '从二叉树到堆与平衡树，掌握递归结构与层次关系的通用处理模式。',
+    color: categoryColors.backend,
+    slugs: ['080-Tree', '090-HeapAndPriorityQueue', '100-BalancedTreeAdvanced'],
+  },
+  {
+    id: 'sort-search',
+    index: '03',
+    title: '排序与查找',
+    en: 'Sorting & Searching',
+    desc: '经典排序范式对比，二分查找及其在分段有序场景的变形。',
+    color: categoryColors.frontend,
+    slugs: ['030-SortAlgorithm', '170-BinarySearchAlgorithms'],
+  },
+  {
+    id: 'design',
+    index: '04',
+    title: '算法设计范式',
+    en: 'Design Paradigms',
+    desc: '分治、贪心、回溯与动态规划四大设计思想，从暴力到最优的系统演进。',
+    color: categoryColors.database,
+    slugs: [
+      '120-DivideAndConquer',
+      '130-GreedyAlgorithm',
+      '140-RecursionAndBacktracking',
+      '160-DynamicProgramming',
+      '240-BitmaskDynamicProgramming',
+    ],
+  },
+  {
+    id: 'graph',
+    index: '05',
+    title: '图论',
+    en: 'Graph Theory',
+    desc: '遍历与连通性、拓扑排序、最短路、最小生成树，一路走到网络流。',
+    color: categoryColors.cloud,
+    slugs: [
+      '110-GraphAlgorithms',
+      '180-UnionFind',
+      '250-FloydWarshall',
+      '260-KruskalAlgorithm',
+      '270-TopologicalSorting',
+      '290-NetworkFlow',
+    ],
+  },
+  {
+    id: 'string',
+    index: '06',
+    title: '字符串算法',
+    en: 'Strings',
+    desc: '字符串处理专题与 KMP 高效匹配。',
+    color: categoryColors.math,
+    slugs: ['150-StringAlgorithms', '230-KmpStringMatching'],
+  },
+  {
+    id: 'advanced',
+    index: '07',
+    title: '高级数据结构',
+    en: 'Advanced Structures',
+    desc: '线段树、树状数组、跳表与布隆过滤器等进阶武器库。',
+    color: categoryColors.tools,
+    slugs: ['190-SegmentTree', '200-FenwickTree', '210-SkipList', '220-BloomFilter'],
+  },
+  {
+    id: 'practice',
+    index: '08',
+    title: '理论与实战',
+    en: 'Theory & Practice',
+    desc: '以计算理论收束知识体系，再用面试题单检验学习成果。',
+    color: categoryColors.cs,
+    slugs: ['280-AlgorithmTheory', '300-LeetCodeInterviewGuide'],
+  },
+]
+
+// 拉取 algorithm 模块全部文档并建立 slug 索引（构建期一次查询）
+const algoDocs = await getDocsByModule('algorithm')
+const docBySlug = new Map(algoDocs.map((doc) => [docSlug(doc.id), doc]))
+
+/** 组装单元视图模型：slug 映射到真实文档元数据，失效 slug 自动剔除 */
+const units = UNITS.map((unit) => ({
+  ...unit,
+  docs: unit.slugs
+    .map((slug) => {
+      const doc = docBySlug.get(slug)
+      if (!doc) return null
+      return {
+        slug,
+        title: doc.data.title,
+        description: doc.data.description,
+        difficulty: String(doc.data.difficulty),
+        order: doc.data.order,
+      }
+    })
+    .filter((doc): doc is NonNullable<typeof doc> => doc !== null),
+})).filter((unit) => unit.docs.length > 0)
+
+// 兜底：未归入任何单元的文档并入「更多专题」，防止内容扩充后遗漏
+const mappedSlugs = new Set<string>(UNITS.flatMap((unit) => [...unit.slugs]))
+const restDocs = algoDocs.filter((doc) => !mappedSlugs.has(docSlug(doc.id)))
+if (restDocs.length > 0) {
+  units.push({
+    id: 'more',
+    index: '09',
+    title: '更多专题',
+    en: 'More',
+    desc: '尚未归入上述单元的算法专题文档。',
+    color: categoryColors.cs,
+    docs: restDocs.map((doc) => ({
+      slug: docSlug(doc.id),
+      title: doc.data.title,
+      description: doc.data.description,
+      difficulty: String(doc.data.difficulty),
+      order: doc.data.order,
+    })),
+  } as (typeof units)[number])
+}
+
+// 聚合统计：教程篇数 / 单元数 / 题库题量
+const docTotal = algoDocs.length
+const problemTotal = ALGO_PROBLEMS.length
+const categoryTotal = ALGO_CATEGORIES.length
+---
+
+<HomeLayout title="算法教学">
+  <SEO
+    slot="head"
+    title="算法教学 · FANDEX"
+    description="FANDEX 算法教学：按单元章节组织的算法与数据结构完整教程，配套算法题图鉴刷题。"
+    canonical={`${SITE.url}${base}algorithms/`}
+    type="website"
+  />
+
+  <div class="home-page home-page--sub">
+    <!-- 几何背景装饰：复用学习路线变体（竖条刻度语言） -->
+    <GeoBgDecor variant="learning-path" />
+
+    <!-- Hero 区域：复用首页美术（渐变标题 + 统计 + SVG 描边入口） -->
+    <section class="hero">
+      <h1 class="hero-title" data-text="算法教学">
+        <span class="hero-title-fan">算法</span><span class="hero-title-dex">教学</span>
+      </h1>
+
+      <div class="hero-stats-row">
+        <div class="hero-stats">
+          <div class="stat-item">
+            <span class="stat-num">{units.length}</span>
+            <span class="stat-label">大单元</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">{docTotal}</span>
+            <span class="stat-label">篇教程</span>
+          </div>
+          <div class="stat-divider"></div>
+          <div class="stat-item">
+            <span class="stat-num">{problemTotal}</span>
+            <span class="stat-label">道配套习题</span>
+          </div>
+        </div>
+
+        <!-- 功能入口：与其他子页面保持一致（题图鉴由页面内召唤区承载） -->
+        <nav class="hero-entries" aria-label="功能入口">
+          <a href={base} class="entry-btn" data-tooltip="返回首页" data-tooltip-pos="bottom">
+            <EntryWaveBorder />
+            <span class="entry-name">首页</span>
+          </a>
+          {!IS_DESKTOP_BUILD && (
+            <a href={`${base}playground/`} class="entry-btn" data-tooltip="在线编写与运行代码" data-tooltip-pos="bottom">
+              <EntryWaveBorder />
+              <span class="entry-name">在线编程</span>
+            </a>
+          )}
+          <a href={`${base}algorithms/problems/`} class="entry-btn" data-tooltip="经典算法题与讲解图鉴" data-tooltip-pos="bottom">
+            <EntryWaveBorder />
+            <span class="entry-name">题图鉴</span>
+          </a>
+          <a href={`${base}learning-path/`} class="entry-btn" data-tooltip="系统化学习路径" data-tooltip-pos="bottom">
+            <EntryWaveBorder />
+            <span class="entry-name">学习路线</span>
+          </a>
+          <a href={`${base}syntax/`} class="entry-btn" data-tooltip="语法快速查阅" data-tooltip-pos="bottom">
+            <EntryWaveBorder />
+            <span class="entry-name">语法速览</span>
+          </a>
+        </nav>
+      </div>
+    </section>
+
+    <!-- 题图鉴召唤区：教程与刷题的闭环入口 -->
+    <a class="algo-cta" href={`${base}algorithms/problems/`}>
+      <div class="algo-cta__main">
+        <h2 class="algo-cta__title">算法题图鉴</h2>
+        <p class="algo-cta__desc">
+          按分类整理的经典算法题集合：每题附题意概括、分点思路讲解与参考实现，
+          学完上方教程后到这里按专题检验手感。
+        </p>
+      </div>
+      <div class="algo-cta__stats">
+        <span>{problemTotal} 道题</span>
+        <i aria-hidden="true"></i>
+        <span>{categoryTotal} 个分类</span>
+        <i aria-hidden="true"></i>
+        <span aria-hidden="true">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </span>
+      </div>
+    </a>
+
+    <!-- 单元章节：按学习曲线组织的教程卡片 -->
+    <div class="algo-units">
+      {units.map((unit) => (
+        <section class="algo-section" id={unit.id} data-unit={unit.id}>
+          <header class="algo-section__head">
+            <h2 class="algo-section__title">
+              <span class="algo-section__index" aria-hidden="true">{unit.index}</span>
+              {unit.title}
+            </h2>
+            <span class="algo-section__en">{unit.en} · {unit.desc}</span>
+            <span class="algo-section__count">{unit.docs.length} 篇</span>
+          </header>
+          <div class="algo-unit__grid">
+            {unit.docs.map((doc, docIndex) => (
+              <a
+                class="algo-doc-card"
+                href={`${base}algorithm/${doc.slug}/`}
+                style={`--card-color:${unit.color};animation-delay:${docIndex * 40}ms`}
+              >
+                <div class="algo-doc-card__head">
+                  <span class="algo-doc-card__no" aria-hidden="true">{String(doc.order).padStart(3, '0')}</span>
+                  <h3 class="algo-doc-card__title">{doc.title}</h3>
+                  <span class="algo-doc-card__level">{LEVEL_LABELS[doc.difficulty] ?? doc.difficulty}</span>
+                </div>
+                <p class="algo-doc-card__desc">{doc.description}</p>
+              </a>
+            ))}
+          </div>
+        </section>
+      ))}
+    </div>
+
+    <Footer />
+  </div>
+</HomeLayout>
+
+<style>
+  /* 单元序号：mono 竖排装饰，与标题基线对齐 */
+  .algo-section__index {
+    font-family: var(--font-family-mono);
+    font-size: 0.66rem;
+    color: var(--color-accent-base);
+    margin-right: var(--space-2);
+    letter-spacing: 0.06em;
+  }
+
+  .algo-section__head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin-bottom: var(--space-3);
+  }
+
+  .algo-section__en {
+    flex: 1;
+    min-width: 0;
+    font-family: var(--font-family-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  @media (max-width: 767px) {
+    .algo-section__en {
+      display: none;
+    }
+  }
+</style>
