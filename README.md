@@ -1,14 +1,30 @@
 # FANDEX
 
+[![Release](https://img.shields.io/github/v/release/fanquanpp/FANDEX?sort=semver&label=%E7%A8%B3%E5%AE%9A%E7%89%88)](https://github.com/fanquanpp/FANDEX/releases/latest)
+[![Deploy](https://github.com/fanquanpp/FANDEX/actions/workflows/deploy.yml/badge.svg)](https://github.com/fanquanpp/FANDEX/actions/workflows/deploy.yml)
+[![License](https://img.shields.io/github/license/fanquanpp/FANDEX)](LICENSE)
+
 **FANDEX 是一套面向零基础学习者的全栈自学体系，也是学成之后的随身语法速查伴侣。**
 
-35 个技术模块、1700+ 篇中文教学文档、4300+ 条语法速查、35 条学习路径，从"计算机
-是如何工作的"讲到数据库、后端、云原生与软件架构，全部内容离线可用——网页、
-Windows 桌面端、Android 双端应用均可使用。
+35 个技术模块、1722 篇中文教学文档、4300+ 条语法速查、979 个学习路径知识点，
+从"计算机是如何工作的"讲到数据库、后端、云原生与软件架构。网页、Windows 桌面端、
+Android 双端共享同一内容体系，全部内容离线可用。
 
 整个体系托管在**单一 Git 仓库（monorepo）**中（根目录唯一 `.git`，无子仓库与
-submodule），四端共享同一内容体系：内容单一来源 `cnt-content/full`，模块元数据
-唯一来源 `shd-shared/metadata/modules.json`。
+submodule）：内容单一来源 `cnt-content/full`，模块元数据唯一来源
+`shd-shared/metadata/modules.json`，设计令牌唯一来源 `shd-shared/tokens/`。
+
+## 功能亮点
+
+- **在线编程（前端实验室）**：浏览器内编辑并运行 HTML/CSS/JS，内置成品图鉴实时
+  预览、瘦条控制台与深链直达（`?showcase=<id>`）；桌面端构建自动剔除该功能；
+- **学习路线**：思维导图式技术知识链（35 门技术 · 979 个知识点），节点三态进度
+  标记（未学习/学习中/已完成）与工具栏总进度环；
+- **语法速览**：14 门语言/技术 4300+ 张速查卡片，按语言分包按需加载；
+- **命令面板搜索**：`Ctrl/⌘ + K` 全文检索，最近浏览、功能入口分组直达；
+- **PWA 离线**：网页端可安装到桌面/主屏，Service Worker 缓存支持离线回访；
+- **亮暗双主题**：亮色冷雾灰、暗色纯黑画布；全站视觉由设计令牌驱动
+  （DTCG JSON 单一来源，CI 令牌漂移门禁保障 web 与共享层逐令牌一致）。
 
 ## 仓库结构
 
@@ -21,7 +37,7 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 ├── app-Android-new/    # Android 应用 · 新技术栈主线（Kotlin + Jetpack Compose）
 ├── app-Android-old/    # Android 应用 · 旧技术栈归档线（已冻结，仅修阻断缺陷）
 ├── cnt-content/        # 内容层：full/ 全量文档、syntax/ 语法速览素材
-├── shd-shared/         # 共享层：设计令牌、模块元数据（metadata/modules.json）、图标资产
+├── shd-shared/         # 共享层：设计令牌（tokens/）、模块元数据、图标资产
 ├── thd-third-party/    # 第三方组件 / 插件 / 适配器
 └── scripts/            # 仓库级自动化脚本（release.mjs 一键发版）
 ```
@@ -41,8 +57,8 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 
 桌面端不包含网页端的在线编程（前端实验室）功能；文档内容全部内置于安装包，装好后
 完全离线可用，任何一端不维护独立内容副本。桌面端提供 `Ctrl+Alt+F` 全局呼出/隐藏、
-`F11` 全屏、`Alt+方向键` 前进后退等快捷键，详见 [app-desktop/README.md](app-desktop/README.md)。
-另有免安装的
+`F11` 全屏、`Alt+方向键` 前进后退等快捷键，详见
+[app-desktop/README.md](app-desktop/README.md)。另有免安装的
 [便携版](app-desktop-portable/README.md)（FANDEX-Portable-<版本>.zip，解压即用、
 不写注册表），随 GitHub Release 一并分发。
 
@@ -99,7 +115,18 @@ cd app-desktop && npx tauri build     # 打包 NSIS 安装包（需 Rust 工具�
 `app-web/scripts/content-sync.mjs`，已接入全部本地构建与 CI）会在构建前自动
 补全 frontmatter 托管字段、以各模块 `module.json` 为事实源注册与回收模块、
 清理死链引用；`app-web/scripts/content-audit.mjs` 做内容质量审计，HIGH 级
-问题阻断流水线。三端消费方式：
+问题阻断流水线。
+
+```mermaid
+flowchart LR
+    A["cnt-content/full\n35 模块 · 1722 篇"] --> B["content-sync\n元数据自动补全"]
+    B --> C["app-web\nContent Collections"]
+    B --> D["app-Android-new\ngenerate-content.mjs"]
+    B --> E["app-Android-old\ngenerate-legacy-content.mjs"]
+    C --> F["GitHub Pages\n+ app-desktop 内嵌"]
+```
+
+三端消费方式：
 
 - **网站**：Astro Content Collections 构建期校验（`app-web/src/content.config.ts`）；
 - **Android new**：`app-Android-new/scripts/generate-content.mjs` 生成
@@ -112,20 +139,23 @@ cd app-desktop && npx tauri build     # 打包 NSIS 安装包（需 Rust 工具�
 
 ## 构建与发布（CI）
 
-`.github/workflows/android-build.yml`：push 与 PR 时双端 APK 并行构建校验。
+全部构建工作流只在 push `main` 与指向 `main` 的 PR 上触发（push `dev` 不触发
+CI），带路径过滤；Android 与桌面端采用「触发器 + reusable workflow」结构复用
+同一构建逻辑。
 
-`.github/workflows/android-release.yml`：push `v*` 标签时构建三端安装包并发布
-GitHub Release（`FANDEX-<tag>.apk`、`FANDEX-Legacy-<tag>.apk` 与
-`FANDEX-Setup-<tag>.exe`，发布说明自动提取 CHANGELOG 版本段落）。
+| 工作流 | 触发 | 职责 |
+| --- | --- | --- |
+| `deploy.yml` | push `main` / PR | typecheck、内容审计、网站构建 + QA 门禁、发布 GitHub Pages |
+| `android-build.yml` | push `main` / PR | 双端 APK 并行构建校验（reusable） |
+| `desktop-build.yml` | push `main` / PR | Windows 桌面端安装包构建与"前端实验室"剔除校验（reusable） |
+| `android-release.yml` | push `v*` 标签 | 构建三端安装包并发布 GitHub Release |
+| `lighthouse.yml` | 定时 / 手动 | Lighthouse 性能基线巡检 |
 
-`.github/workflows/desktop-build.yml`：push 与 PR 时构建 Windows 桌面端安装包并
-校验"前端实验室"剔除。
-
-`.github/workflows/deploy.yml`：push 到 main 后构建网站并发布至 GitHub Pages。
-
-日常发版使用 `pnpm release [版本号]`：自动 patch +1（或指定版本）、同步五处
-版本文件、Android versionCode +1、迁移 CHANGELOG「未发布」段并 commit + tag +
-push，push 后 CI 自动构建并发布 GitHub Release（`--no-push` 只改文件与提交）。
+发布说明自动提取 CHANGELOG 对应版本段落（`FANDEX-<tag>.apk`、
+`FANDEX-Legacy-<tag>.apk` 与 `FANDEX-Setup-<tag>.exe`）。日常发版使用
+`pnpm release [版本号]`：自动 patch +1（或指定版本）、同步五处版本文件、
+Android versionCode +1、迁移 CHANGELOG「未发布」段并 commit + tag + push，
+push 后 CI 自动构建并发布 GitHub Release（`--no-push` 只改文件与提交）。
 
 版本变更历史见 [CHANGELOG.md](CHANGELOG.md)。
 
