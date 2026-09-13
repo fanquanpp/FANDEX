@@ -25,7 +25,7 @@
  * 组件 var(--color-fg-primary)
  *   → ark var(--color-fg-primary)
  *   → [data-theme='light'] 取 var(--color-neutral-50) / [data-theme='dark'] 取 var(--color-neutral-1050)
- *   → #0A0E14 (浅色) / #EBEFF3 (深色)
+ *   → #0A0A0A (浅色) / #EBEFF3 (深色)
  */
 
 /* ====================================================================

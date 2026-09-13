@@ -4,15 +4,15 @@
     "$type": "color",
     "neutral": {
       "0": { "$value": "#000000", "$description": "纯黑（阴影基底）" },
-      "50": { "$value": "#0A0E14", "$description": "FANDEX 深色主背景（冷青底近黑）" },
-      "100": { "$value": "#11161E", "$description": "FANDEX 深色次背景（surface/card）" },
-      "200": { "$value": "#1B2330", "$description": "FANDEX 深色三级背景（surface-container）" },
-      "300": { "$value": "#2A3547", "$description": "FANDEX 深色边框" },
-      "400": { "$value": "#3A4753", "$description": "FANDEX 深色强边框（neutral-600）" },
-      "500": { "$value": "#4E5E6B", "$description": "FANDEX 二级文字（neutral-500）" },
+      "50": { "$value": "#0A0A0A", "$description": "深色主背景（近黑，暗色模式维持原纯黑灰板）" },
+      "100": { "$value": "#141414", "$description": "深色次背景（surface/card）" },
+      "200": { "$value": "#1F1F1F", "$description": "深色三级背景（surface-container）" },
+      "300": { "$value": "#2A2A2A", "$description": "深色边框" },
+      "400": { "$value": "#404040", "$description": "深色强边框" },
+      "500": { "$value": "#525252", "$description": "深色次级文字" },
       "550": { "$value": "#596671", "$description": "FANDEX 浅色三级文字（冷雾灰，Task 4.2 配方：新背景上保持 WCAG AA ≥4.5:1）" },
-      "600": { "$value": "#6E7E8B", "$description": "FANDEX 三级文字（neutral-400）" },
-      "700": { "$value": "#9FADB9", "$description": "FANDEX 深色模式次级文字（neutral-300）" },
+      "600": { "$value": "#737373", "$description": "三级文字" },
+      "700": { "$value": "#A3A3A3", "$description": "深色模式次级文字" },
       "800": { "$value": "#BCC8D0", "$description": "FANDEX 浅色强边框（冷雾灰）" },
       "900": { "$value": "#CCD5DB", "$description": "FANDEX 浅色默认边框（冷雾灰）" },
       "950": { "$value": "#DAE1E6", "$description": "FANDEX 浅色弱边框/三级背景（冷雾灰）" },
@@ -23,9 +23,9 @@
       "100": { "$value": "#053645", "$description": "深青（active 态，浅色模式强调色整体下移一档，FANDEX primary-900）" },
       "200": { "$value": "#085263", "$description": "中深青（hover 态，浅色模式，FANDEX primary-800）" },
       "300": { "$value": "#0B6E7E", "$description": "青色基准（浅色模式强调色，Task 4.2：新背景上 WCAG AA 5.1:1，FANDEX primary-700）" },
-      "400": { "$value": "#00A6CC", "$description": "中亮青（active 态，深色模式，FANDEX accent-500）" },
-      "500": { "$value": "#00C8F0", "$description": "亮青（深色模式强调色，FANDEX accent-400）" },
-      "600": { "$value": "#3DDDFF", "$description": "极亮青（hover 态，深色模式，FANDEX accent-300）" }
+      "400": { "$value": "#00BCD4", "$description": "中亮青（active 态，深色模式）" },
+      "500": { "$value": "#00E5FF", "$description": "亮青（深色模式强调色）" },
+      "600": { "$value": "#4FF2FF", "$description": "极亮青（hover 态，深色模式）" }
     },
     "primary": {
       "50": { "$value": "#E6FBFC", "$description": "FANDEX primary-50" },
@@ -65,7 +65,7 @@
     },
     "info": {
       "light": { "$value": "#0B6E7E", "$description": "信息色（浅色模式，Task 4.2：同新强调色基准 FANDEX primary-700）" },
-      "dark": { "$value": "#00C8F0", "$description": "信息色（深色模式，同 FANDEX accent-400）" }
+      "dark": { "$value": "#00E5FF", "$description": "信息色（深色模式，同亮青）" }
     },
     "shadow": {
       "black": { "$value": "#000000", "$description": "阴影色（黑色基底）" }
