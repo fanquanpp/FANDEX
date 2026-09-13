@@ -80,7 +80,7 @@ catalog:
   unist-util-visit: ^5.1.0
 
   # 图标（偏差报备：搜索功能已删除，fuse.js/pagefind/astro-pagefind 一并移除）
-  lucide-react: ^0.460.0
+  lucide-react: ^1.43.0
 
   # Lint 体系（ESLint 10 flat config，作用域：app-web 的 TS/TSX 与管线脚本）
   eslint: ^10.10.0
