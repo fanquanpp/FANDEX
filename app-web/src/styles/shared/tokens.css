@@ -739,8 +739,8 @@
     --input-radius: var(--radius-control);
     /* 输入框边框宽度 */
     --input-border-width: 1px;
-    /* 光标颜色（青色） */
-    --input-caret-color: var(--color-accent-base);
+    /* 光标颜色（原生，跟随浏览器/系统默认） */
+    --input-caret-color: auto;
     /* 选中文本背景（青色） */
     --input-selection-bg: var(--color-accent-base);
     /* 选中文本文字（白色） */

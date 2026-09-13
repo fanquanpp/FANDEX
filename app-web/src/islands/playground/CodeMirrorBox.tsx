@@ -124,7 +124,7 @@ const fandexEditorTheme = EditorView.theme(
     },
     '.cm-content': {
       padding: '10px 0',
-      caretColor: 'var(--color-accent-base)',
+      // 插入符保持浏览器原生渲染（不指定粗细与色彩）
     },
     '.cm-line': {
       padding: '0 12px',

@@ -3,7 +3,7 @@
   "input": {
     "radius": { "$value": "{radius.control}", "$description": "输入框圆角（4px）" },
     "borderWidth": { "$value": "1px", "$description": "输入框边框宽度" },
-    "caretColor": { "$value": "{color.accent.base}", "$description": "光标颜色（青色）" },
+    "caretColor": { "$value": "auto", "$description": "光标颜色（原生，跟随浏览器/系统默认）" },
     "selectionBg": { "$value": "{color.accent.base}", "$description": "选中文本背景（青色）" },
     "selectionFg": { "$value": "{color.accent.fg}", "$description": "选中文本文字（白色）" },
 
