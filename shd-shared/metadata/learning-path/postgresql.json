@@ -11,32 +11,32 @@
         {
           "id": "postgresql-001",
           "title": "概述与安装配置",
-          "doc": "001-OverviewInstallConfig"
+          "doc": "010-OverviewInstallConfig"
         },
         {
           "id": "postgresql-002",
           "title": "高级SQL与扩展",
-          "doc": "004-AdvancedSQLExtension"
+          "doc": "530-AdvancedSQLExtension"
         },
         {
           "id": "postgresql-003",
           "title": "锁机制",
-          "doc": "007-LockMechanism"
+          "doc": "190-LockMechanism"
         },
         {
           "id": "postgresql-004",
           "title": "事务ID回卷预防",
-          "doc": "010-TransactionIDWraparoundPrevention"
+          "doc": "180-TransactionIDWraparoundPrevention"
         },
         {
           "id": "postgresql-005",
           "title": "KNN向量索引",
-          "doc": "013-KNNVectorIndex"
+          "doc": "320-KNNVectorIndex"
         },
         {
           "id": "postgresql-006",
           "title": "分区裁剪与分区连接",
-          "doc": "016-PartitionPruningPartitionJoin"
+          "doc": "280-PartitionPruningPartitionJoin"
         }
       ]
     },
@@ -48,32 +48,32 @@
         {
           "id": "postgresql-101",
           "title": "MERGE语句增强",
-          "doc": "018-MERGEStatementEnhancement"
+          "doc": "290-MERGEStatementEnhancement"
         },
         {
           "id": "postgresql-102",
           "title": "地理空间对象",
-          "doc": "021-GeoSpatialObject"
+          "doc": "310-GeoSpatialObject"
         },
         {
           "id": "postgresql-103",
           "title": "扩展模块",
-          "doc": "024-ExtensionModule"
+          "doc": "330-ExtensionModule"
         },
         {
           "id": "postgresql-104",
           "title": "级联复制",
-          "doc": "027-CascadingReplication"
+          "doc": "410-CascadingReplication"
         },
         {
           "id": "postgresql-105",
           "title": "增量备份",
-          "doc": "030-IncrementalBackup"
+          "doc": "450-IncrementalBackup"
         },
         {
           "id": "postgresql-106",
           "title": "基于角色的权限管理",
-          "doc": "033-RoleBasedPermissionManagement"
+          "doc": "490-RoleBasedPermissionManagement"
         }
       ]
     },
@@ -85,32 +85,32 @@
         {
           "id": "postgresql-201",
           "title": "审计日志",
-          "doc": "036-AuditLog"
+          "doc": "520-AuditLog"
         },
         {
           "id": "postgresql-202",
           "title": "可更新视图",
-          "doc": "039-UpdatableView"
+          "doc": "140-UpdatableView"
         },
         {
           "id": "postgresql-203",
           "title": "JSONB与JSON差异",
-          "doc": "042-JSONBJSONDifference"
+          "doc": "110-JSONBJSONDifference"
         },
         {
           "id": "postgresql-204",
           "title": "PostgreSQL DML 数据操作",
-          "doc": "045-DML"
+          "doc": "040-DML"
         },
         {
           "id": "postgresql-205",
           "title": "PostgreSQL psql CLI 命令",
-          "doc": "048-PsqlCLI"
+          "doc": "020-PsqlCLI"
         },
         {
           "id": "postgresql-206",
           "title": "模式（Schema）管理 语法速查手册",
-          "doc": "051-SchemaManagement"
+          "doc": "050-SchemaManagement"
         }
       ]
     }

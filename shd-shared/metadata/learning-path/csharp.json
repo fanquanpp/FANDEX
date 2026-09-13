@@ -11,37 +11,37 @@
         {
           "id": "csharp-001",
           "title": "C# 概述与环境配置",
-          "doc": "002-CSharpOverviewEnvSetup"
+          "doc": "020-CSharpOverviewEnvSetup"
         },
         {
           "id": "csharp-002",
           "title": "C# 面向对象编程",
-          "doc": "004-CSharpOOP"
+          "doc": "040-CSharpOOP"
         },
         {
           "id": "csharp-003",
           "title": "C# 异步编程",
-          "doc": "007-CAsyncProgramming"
+          "doc": "080-CAsyncProgramming"
         },
         {
           "id": "csharp-004",
           "title": "C# 高级特性",
-          "doc": "009-CSharpAdvancedFeature"
+          "doc": "150-CSharpAdvancedFeature"
         },
         {
           "id": "csharp-005",
           "title": "C# 测试与工程化",
-          "doc": "012-CSharpTestEngineering"
+          "doc": "340-CSharpTestEngineering"
         },
         {
           "id": "csharp-006",
           "title": "LINQ深度解析",
-          "doc": "014-LINQDeep"
+          "doc": "120-LINQDeep"
         },
         {
           "id": "csharp-007",
           "title": "模式匹配",
-          "doc": "016-PatternMatching"
+          "doc": "160-PatternMatching"
         }
       ]
     },
@@ -53,37 +53,37 @@
         {
           "id": "csharp-101",
           "title": "泛型与协变逆变",
-          "doc": "018-GenericCovarianceContravariance"
+          "doc": "190-GenericCovarianceContravariance"
         },
         {
           "id": "csharp-102",
           "title": "源生成器",
-          "doc": "020-SourceGenerator"
+          "doc": "240-SourceGenerator"
         },
         {
           "id": "csharp-103",
           "title": "C#与Blazor",
-          "doc": "022-CSharpBlazor"
+          "doc": "320-CSharpBlazor"
         },
         {
           "id": "csharp-104",
           "title": "C#与EF Core",
-          "doc": "024-CSharpEFCore"
+          "doc": "280-CSharpEFCore"
         },
         {
           "id": "csharp-105",
           "title": "C#与最小API",
-          "doc": "026-CSharpAPI"
+          "doc": "300-CSharpAPI"
         },
         {
           "id": "csharp-106",
           "title": "C#与反射",
-          "doc": "028-CSharpReflection"
+          "doc": "350-CSharpReflection"
         },
         {
           "id": "csharp-107",
           "title": "async-await状态机",
-          "doc": "030-AsyncAwaitStateMachine"
+          "doc": "100-AsyncAwaitStateMachine"
         }
       ]
     },
@@ -95,42 +95,42 @@
         {
           "id": "csharp-201",
           "title": "反射与特性应用",
-          "doc": "032-ReflectionAndFeatureApplication"
+          "doc": "360-ReflectionAndFeatureApplication"
         },
         {
           "id": "csharp-202",
           "title": "ASP-NET-Core中间件管道",
-          "doc": "034-AspNetCoreMiddlewarePipeline"
+          "doc": "310-AspNetCoreMiddlewarePipeline"
         },
         {
           "id": "csharp-203",
           "title": "GC代机制",
-          "doc": "036-GCGeneration"
+          "doc": "390-GCGeneration"
         },
         {
           "id": "csharp-204",
           "title": "记录类型与不可变性",
-          "doc": "038-RecordTypeImmutability"
+          "doc": "180-RecordTypeImmutability"
         },
         {
           "id": "csharp-205",
           "title": "C# LINQ 与异步速查",
-          "doc": "040-LinqAsync"
+          "doc": "430-LinqAsync"
         },
         {
           "id": "csharp-206",
           "title": "C# 文件与流操作",
-          "doc": "042-FileAndStream"
+          "doc": "450-FileAndStream"
         },
         {
           "id": "csharp-207",
           "title": "C# 正则表达式",
-          "doc": "044-RegularExpression"
+          "doc": "470-RegularExpression"
         },
         {
           "id": "csharp-208",
           "title": "C# HttpClient 网络请求",
-          "doc": "046-NetworkingHttp"
+          "doc": "490-NetworkingHttp"
         }
       ]
     },
@@ -144,28 +144,28 @@
           "title": "P/Invoke 与原生互操作",
           "desc": "DllImport 与封送",
           "difficulty": "advanced",
-          "doc": "047-PInvokeNativeInterop"
+          "doc": "410-PInvokeNativeInterop"
         },
         {
           "id": "cs-902",
           "title": ".NET 性能测量与优化",
           "desc": "BenchmarkDotNet 基准方法",
           "difficulty": "advanced",
-          "doc": "048-DotnetPerformanceBenchmarking"
+          "doc": "400-DotnetPerformanceBenchmarking"
         },
         {
           "id": "cs-903",
           "title": "可空引用类型 NRT",
           "desc": "编译期消灭空引用",
           "difficulty": "intermediate",
-          "doc": "005-CSharpNullableReferenceTypes"
+          "doc": "060-CSharpNullableReferenceTypes"
         },
         {
           "id": "cs-904",
           "title": "yield 迭代器状态机",
           "desc": "延迟执行的编译器魔法",
           "difficulty": "advanced",
-          "doc": "010-CSharpYieldIteratorStateMachine"
+          "doc": "140-CSharpYieldIteratorStateMachine"
         }
       ]
     }

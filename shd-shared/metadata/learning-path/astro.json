@@ -11,17 +11,17 @@
         {
           "id": "astro-001",
           "title": "Astro 框架概述与文档站实践",
-          "doc": "001-AstroOverview"
+          "doc": "010-AstroOverview"
         },
         {
           "id": "astro-002",
           "title": "Astro 项目创建与目录结构",
-          "doc": "002-QuickStartProject"
+          "doc": "020-QuickStartProject"
         },
         {
           "id": "astro-003",
           "title": "Astro 页面与路由",
-          "doc": "003-PagesRouting"
+          "doc": "030-PagesRouting"
         }
       ]
     },
@@ -33,17 +33,17 @@
         {
           "id": "astro-101",
           "title": "Astro 组件与 Props 插槽",
-          "doc": "004-ComponentsProps"
+          "doc": "040-ComponentsProps"
         },
         {
           "id": "astro-102",
           "title": "Astro 内容集合与 Schema",
-          "doc": "005-ContentCollections"
+          "doc": "050-ContentCollections"
         },
         {
           "id": "astro-103",
           "title": "Astro 岛屿架构与客户端指令",
-          "doc": "006-IslandsClientComponents"
+          "doc": "060-IslandsClientComponents"
         }
       ]
     },
@@ -55,17 +55,17 @@
         {
           "id": "astro-201",
           "title": "Astro 样式与资源优化",
-          "doc": "007-StylingFontsAssets"
+          "doc": "070-StylingFontsAssets"
         },
         {
           "id": "astro-202",
           "title": "Astro 构建与部署",
-          "doc": "008-BuildDeploy"
+          "doc": "080-BuildDeploy"
         },
         {
           "id": "astro-203",
           "title": "Astro 7 新特性速览",
-          "doc": "009-Astro7Features"
+          "doc": "090-Astro7Features"
         }
       ]
     }
