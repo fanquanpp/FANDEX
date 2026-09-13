@@ -184,6 +184,17 @@ app-desktop-portable/package.json、Android versionName）、versionCode +1、
 CHANGELOG「未发布」段迁移、commit + tag + push；push 后 Release 工作流自动
 构建三端安装包并发布 GitHub Release。
 
+## 许可与免责
+
+1. 提交到本仓库的任何内容（文档、代码、图示）即表示你确认拥有相应权利，并以
+   [MIT License](LICENSE) 许可发布，允许他人在许可范围内使用、修改与再分发。
+2. 引用或改编第三方内容时，必须注明原始出处与许可；未获授权的受版权保护材料
+   不得入库。
+3. 全部内容受 [DISCLAIMER.md](DISCLAIMER.md) 约束（教育用途、无担保、责任
+   限制等）；贡献者无需单独签署任何协议。
+4. 涉及第三方商标的表述遵循 DISCLAIMER.md 第 5 节：仅作技术说明用途，不得
+   暗示合作或背书关系。
+
 ## 行为准则
 
 保持友善与建设性：讨论针对内容与技术本身，尊重不同背景的学习者。恶意行为将被

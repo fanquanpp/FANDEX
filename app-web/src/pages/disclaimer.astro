@@ -1,0 +1,219 @@
+---
+/**
+ * 免责声明页（/disclaimer/）
+ * -----------------------------------------------------------------------------
+ * 站内常驻法律文本页：与根目录 DISCLAIMER.md 内容同步（本页为网页渲染版）。
+ * 独立静态页（同 404.astro 模式）：自带 head 与主题预置脚本，不依赖
+ * BaseLayout（法律页无需侧边栏/搜索/命令面板）。
+ * 排版复用 site.css 内的 .prose 文档排版规则；页头与布局使用品牌语言
+ * （mono 技术标记、竖条刻度、直角小圆角，禁点状装饰）。
+ */
+import '@/styles/site.css';
+import GeoBgDecor from '@/components/GeoBgDecor.astro';
+import { SITE } from '@/lib/constants';
+import { MINIMAL_CSP } from '@/lib/csp';
+
+const base = import.meta.env.BASE_URL;
+const UPDATED = '2026-09-13';
+---
+
+<html lang={SITE.lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content={MINIMAL_CSP} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <title>免责声明 | {SITE.title}</title>
+    <meta
+      name="description"
+      content="FANDEX 免责声明：内容仅供编程学习与教育参考、在线编程实验场本地运行说明、本地存储与隐私、第三方商标归属与责任限制。"
+    />
+    <meta property="og:title" content="免责声明 | FANDEX" />
+    <meta property="og:description" content="FANDEX 免责声明：教育用途、实验场本地运行、隐私与商标声明。" />
+    <meta property="og:type" content="article" />
+
+    <link rel="stylesheet" href={`${base}fonts/fonts.css`} />
+    <link
+      rel="preload"
+      href={`${base}fonts/jetbrains-mono-400.woff2`}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <script is:inline>
+      (function () {
+        var raw = localStorage.getItem('fandex-theme');
+        var theme;
+        if (raw === 'dark' || raw === 'light') {
+          theme = raw;
+        } else {
+          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+        }
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.style.colorScheme = theme;
+      })();
+    </script>
+  </head>
+  <body>
+    <div class="legal-page">
+      <GeoBgDecor variant="error" />
+      <main class="legal-container">
+        <!-- 页头：mono 路径标记 + 标题 + 更新日期 -->
+        <header class="legal-head">
+          <p class="legal-marker" aria-hidden="true">fandex://legal/disclaimer</p>
+          <h1 class="legal-title">免责声明</h1>
+          <p class="legal-updated">
+            最后更新 <time datetime={UPDATED}>{UPDATED}</time> · 生效于全部端（网页 / 桌面 / Android）
+          </p>
+        </header>
+
+        <article class="prose legal-prose">
+          <p>
+            在使用 FANDEX（含网站、Windows 桌面端与 Android 应用）提供的全部内容前，请仔细阅读本声明。
+            下载、克隆、浏览或以任何方式使用本仓库内容，即视为你已阅读并同意本声明的全部条款。
+          </p>
+
+          <h2>1. 内容性质（仅供参考的教育内容）</h2>
+          <p>
+            本站全部内容（包括但不限于文档、代码示例、学习路线、语法速查卡片）仅用于<strong>编程学习与教育参考</strong>，不构成任何职业规划、招聘、投资、法律、医疗或商业决策的建议，不能替代任何领域专业人士的意见。
+          </p>
+          <p>
+            技术内容具有时效性。软件版本迭代迅速，文档所述的 API、命令、最佳实践可能随版本更新而变化。执行任何命令或代码前，请以对应技术的官方文档为准。学习路线与时间预估基于一般经验，个体差异较大，不构成任何学习效果或结果承诺。
+          </p>
+
+          <h2>2. 代码与示例</h2>
+          <p>
+            文档中的代码示例以<strong>教学演示</strong>为目的编写，优先保证可读性与易懂性，通常不包含生产环境所需的安全加固、异常兜底与性能优化。直接用于生产环境前，请自行完成安全评审与充分测试。因直接复制、运行或改编本站代码示例而产生的任何后果（包括但不限于数据丢失、服务中断、安全漏洞），由使用者自行承担。
+          </p>
+
+          <h2>3. 在线编程实验场（前端实验室）</h2>
+          <p>
+            实验场中编写与运行的 HTML / CSS / JavaScript 代码<strong>仅在你的浏览器本地执行</strong>，不经过任何服务器编译或托管；本项目为开源项目，<a href="https://github.com/fanquanpp/FANDEX" target="_blank" rel="noopener noreferrer">源码可审计</a>，以此自证不含数据上传行为。
+          </p>
+          <p>
+            你在实验场中编写的代码、草稿与偏好设置仅保存在你本地浏览器的 IndexedDB / localStorage 中，清除浏览器数据或更换设备即不可恢复，请自行备份重要内容。灵感图鉴中的成品示例按"原样"提供，仅作学习参考，不担保其在生产环境的可用性与安全性。请勿利用实验场运行违反法律法规或他人权益的代码；由此产生的一切责任由使用者自行承担。
+          </p>
+
+          <h2>4. 本地存储与隐私</h2>
+          <p>
+            本项目<strong>无账号系统、无自建服务器、无统计埋点、无广告追踪</strong>；网站为纯静态构建产物。浏览器本地存储仅用于功能性目的：主题偏好、侧边栏状态、最近浏览文档、学习路线进度标记、实验场草稿（localStorage / IndexedDB），这些数据不离开你的设备。
+          </p>
+          <p>
+            网站托管于 GitHub Pages，访问行为受
+            <a href="https://docs.github.com/zh/site-policy/github-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub 隐私声明</a>
+            约束；Android 端的更新检查会访问 GitHub Releases API，该请求由 GitHub 按其隐私政策处理。
+          </p>
+
+          <h2>5. 第三方链接与商标</h2>
+          <p>
+            文档中引用的第三方网站链接（如 MDN、各技术官方文档）仅出于学习目的提供，对其内容的可用性、准确性与隐私实践不承担任何责任；外部链接不构成背书。
+          </p>
+          <p>
+            文中提及的所有第三方产品名称、商标与 Logo（如 Java、React、Kotlin 等），其权利归各自所有者所有。它们在文档中的出现仅为<strong>技术说明之用途</strong>，不代表与本仓库存在任何合作、归属或背书关系。
+          </p>
+
+          <h2>6. 内容准确性</h2>
+          <p>
+            本站内容虽经编写与校验流程（含引用完整性审计），仍可能存在疏漏或错误。如果你发现内容错误，欢迎通过
+            <a href="https://github.com/fanquanpp/FANDEX/issues" target="_blank" rel="noopener noreferrer">Issue</a>
+            或
+            <a href="https://github.com/fanquanpp/FANDEX/pulls" target="_blank" rel="noopener noreferrer">Pull Request</a>
+            反馈；但在修正之前，请以官方文档作为最终依据。
+          </p>
+
+          <h2>7. 责任限制</h2>
+          <p>
+            在适用法律允许的最大范围内，本仓库作者与贡献者<strong>不对</strong>因使用或无法使用本仓库内容而产生的任何直接、间接、附带、特殊或后果性损害承担责任。你因使用本仓库内容而采取的任何行动，风险由你自行承担。
+          </p>
+
+          <h2>8. 许可</h2>
+          <p>
+            本仓库内容在
+            <a href="https://github.com/fanquanpp/FANDEX/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
+            下提供。本免责声明与 MIT License 同时适用；如两者冲突，以 MIT License 条款为准。Markdown 源版本见仓库根目录 <code>DISCLAIMER.md</code>。
+          </p>
+        </article>
+
+        <nav class="legal-actions" aria-label="免责页出口">
+          <a href={base} class="legal-btn">返回首页</a>
+        </nav>
+      </main>
+    </div>
+  </body>
+</html>
+
+<style>
+  /* 免责声明页布局：窄栏阅读宽度 + 品牌页头（mono 标记 / 竖条刻度） */
+  .legal-page {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .legal-container {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-4) var(--space-10);
+  }
+
+  .legal-head {
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  /* mono 技术路径标记：品牌签名（与终端面板标题同语言） */
+  .legal-marker {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-family-mono, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--color-fg-tertiary);
+  }
+
+  .legal-title {
+    margin: 0;
+    font-family: var(--font-family-heading);
+    font-size: 1.8rem;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.04em;
+    color: var(--color-fg-primary);
+  }
+
+  .legal-updated {
+    margin: var(--space-2) 0 0;
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+  }
+
+  /* prose 在文档页布局中的默认边距由父容器提供，这里手动给窄栏内边距 */
+  .legal-prose {
+    padding-inline-end: var(--space-2);
+  }
+
+  /* 出口按钮：直角小圆角 + 1px 边框（与 404 出口同语言） */
+  .legal-actions {
+    margin-top: var(--space-7);
+  }
+
+  .legal-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 10px 22px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-md, 4px);
+    color: var(--color-fg-secondary);
+    text-decoration: none;
+    font-size: var(--font-size-secondary);
+    transition:
+      color var(--motion-duration-instant) var(--motion-easing-out),
+      border-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .legal-btn:hover {
+    color: var(--color-accent-base);
+    border-color: color-mix(in srgb, var(--color-accent-base) 50%, transparent);
+  }
+</style>
