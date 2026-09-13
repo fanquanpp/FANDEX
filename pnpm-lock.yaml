@@ -151,8 +151,8 @@ catalogs:
       specifier: ^5.1.0
       version: 5.1.0
     web-vitals:
-      specifier: ^5.3.0
-      version: 5.3.0
+      specifier: ^6.2.1
+      version: 6.2.1
     zod:
       specifier: ^4.6.1
       version: 4.6.1
@@ -337,7 +337,7 @@ importers:
         version: 5.1.0
       web-vitals:
         specifier: 'catalog:'
-        version: 5.3.0
+        version: 6.2.1
       zod:
         specifier: 'catalog:'
         version: 4.6.1
@@ -4779,8 +4779,8 @@ packages:
   web-namespaces@2.0.1:
     resolution: {integrity: sha512-bKr1DkiNa2krS7qxNtdrtHAmzuYGFQLiQ13TsorsdT6ULTkPLKuu5+GsFpDlg6JFjUTwX2DyhMPG2be8uPrqsQ==}
 
-  web-vitals@5.3.0:
-    resolution: {integrity: sha512-q6LWsLatGYZp5VGBIOvbTj6JBV2nOmC8KvWztXBmwJcfFAzhwKwbOxhUH306XY3CcaZDUlSmSuNPBsCn0bFu+g==}
+  web-vitals@6.2.1:
+    resolution: {integrity: sha512-rLcLXA2sx6+9dE88NHFubwTtGxpK4yYBLj6qHPdFoCaLr0cXGb4efOqtKLlm4loGA4OEKHIQKMKzZkKyOh5ctw==}
 
   which@2.0.2:
     resolution: {integrity: sha512-BLI3Tl1TW3Pvl70l3yq3Y64i+awpwXqsGBYWkkqMtnbXgrMD+yj7rhW0kuEDxzJaYXGjEW5ogapKNMEKNMjibA==}
@@ -9640,7 +9640,7 @@ snapshots:
 
   web-namespaces@2.0.1: {}
 
-  web-vitals@5.3.0: {}
+  web-vitals@6.2.1: {}
 
   which@2.0.2:
     dependencies:
