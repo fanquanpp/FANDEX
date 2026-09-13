@@ -522,7 +522,7 @@ export const LINEAR_PROBLEMS: AlgoProblem[] = [
         else:
             cur += ch
     return cur`,
-    time: 'O(n × 展开规模)',
+    time: 'O(输出展开规模)',
     space: 'O(n)',
     related: ['040-StackAndQueue', '140-RecursionAndBacktracking'],
   },

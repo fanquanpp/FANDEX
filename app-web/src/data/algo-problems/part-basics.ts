@@ -8,35 +8,6 @@ import type { AlgoProblem } from './types';
 export const BASIC_PROBLEMS: AlgoProblem[] = [
   // ==================== 数组与双指针 ====================
   {
-    slug: 'two-sum',
-    lc: 1,
-    title: '两数之和',
-    titleEn: 'Two Sum',
-    difficulty: 'easy',
-    category: 'array',
-    tags: ['哈希表', '一次遍历'],
-    brief: '在数组中找出和为目标值的两个数的下标。',
-    statement:
-      '给定一个整数数组 nums 和目标值 target，请找出数组中和等于 target 的两个整数，返回它们的下标。\n\n示例：nums = [2, 7, 11, 15]，target = 9，因为 2 + 7 = 9，返回 [0, 1]。\n\n数据范围：每个输入恰好有唯一解，同一元素不能重复使用。',
-    idea: [
-      '最直观的做法是枚举所有两两组合，时间复杂度 O(n^2)，在数据量大时会超时。',
-      '优化的关键在于换一个问法：遍历到 x 时，不再向前找配对，而是问"target - x 之前出现过吗"。',
-      '用哈希表记录「数值 -> 下标」，每次先查补数是否存在，再把当前数存入表内，一趟遍历即可完成。',
-      '先查后存的顺序天然避免了自己与自己配对的问题。',
-    ],
-    code: `def twoSum(nums, target):
-    # seen 记录「数值 -> 下标」，一次遍历查补数
-    seen = {}
-    for i, x in enumerate(nums):
-        if target - x in seen:
-            return [seen[target - x], i]
-        seen[x] = i
-    return []`,
-    time: 'O(n)',
-    space: 'O(n)',
-    related: ['070-HashTable', '020-ArrayAndDynamicArray'],
-  },
-  {
     slug: 'remove-element',
     lc: 27,
     title: '移除元素',
@@ -731,6 +702,35 @@ def maxSlidingWindow(nums, k):
   },
 
   // ==================== 哈希表 ====================
+  {
+    slug: 'two-sum',
+    lc: 1,
+    title: '两数之和',
+    titleEn: 'Two Sum',
+    difficulty: 'easy',
+    category: 'hash',
+    tags: ['哈希表', '一次遍历'],
+    brief: '在数组中找出和为目标值的两个数的下标。',
+    statement:
+      '给定一个整数数组 nums 和目标值 target，请找出数组中和等于 target 的两个整数，返回它们的下标。\n\n示例：nums = [2, 7, 11, 15]，target = 9，因为 2 + 7 = 9，返回 [0, 1]。\n\n数据范围：每个输入恰好有唯一解，同一元素不能重复使用。',
+    idea: [
+      '最直观的做法是枚举所有两两组合，时间复杂度 O(n^2)，在数据量大时会超时。',
+      '优化的关键在于换一个问法：遍历到 x 时，不再向前找配对，而是问"target - x 之前出现过吗"。',
+      '用哈希表记录「数值 -> 下标」，每次先查补数是否存在，再把当前数存入表内，一趟遍历即可完成。',
+      '先查后存的顺序天然避免了自己与自己配对的问题。',
+    ],
+    code: `def twoSum(nums, target):
+    # seen 记录「数值 -> 下标」，一次遍历查补数
+    seen = {}
+    for i, x in enumerate(nums):
+        if target - x in seen:
+            return [seen[target - x], i]
+        seen[x] = i
+    return []`,
+    time: 'O(n)',
+    space: 'O(n)',
+    related: ['070-HashTable', '020-ArrayAndDynamicArray'],
+  },
   {
     slug: 'group-anagrams',
     lc: 49,

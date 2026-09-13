@@ -148,7 +148,7 @@ export const ENUM_PROBLEMS: AlgoProblem[] = [
 
     backtrack(0, target)
     return res`,
-    time: 'O(解的规模)',
+    time: '输出敏感（与解的数量线性相关）',
     space: 'O(target)',
     related: ['140-RecursionAndBacktracking'],
   },
@@ -488,7 +488,9 @@ export const ENUM_PROBLEMS: AlgoProblem[] = [
         node.next.prev = node.prev
 
     def _move_to_front(self, node):
-        self._remove(node)
+        # prev 为 None 表示新节点尚未入链，无需摘除
+        if node.prev is not None:
+            self._remove(node)
         node.next = self.head.next
         node.prev = self.head
         self.head.next.prev = node
