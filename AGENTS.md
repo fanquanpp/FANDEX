@@ -144,6 +144,11 @@
   移除监听器），避免页面切换后内存泄漏与重复绑定。
 - 新增依赖一律走 `pnpm-workspace.yaml` catalog（见「仓库组成」）；web 端
   可选依赖的 Windows 二进制（如 pagefind）缺失时，显式安装对应平台包。
+- 设计令牌事实源为 `shd-shared/tokens/` 的 DTCG JSON（改值走 JSON 源 +
+  `pnpm --filter @fandex/tokens build:css`）；web 端消费的
+  `src/styles/shared/tokens.css` 是其手工同步副本，必须逐令牌与
+  `shd-shared/styles/tokens.css` 一致——漂移由
+  `app-web/scripts/check-tokens-drift.mjs` 门禁在 dev / build 链阻断。
 
 ## 版本发布
 

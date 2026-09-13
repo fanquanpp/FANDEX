@@ -3,7 +3,13 @@
  *
  * 生成来源：shd-shared/tokens/ 下的 W3C DTCG JSON 令牌
  * 生成脚本：shd-shared/tokens/scripts/generate-tokens-css.ts
- * 生成时间：2026-07-24T12:56:50.924Z（最后手动同步：2026-08-02）
+ * 生成时间：2026-07-24T12:56:50.924Z（最后手动同步：2026-09-13）
+ *
+ * 同步规则：本副本必须与 shd-shared/styles/tokens.css（DTCG JSON 生成物）
+ * 逐令牌一致；一致性由 scripts/check-tokens-drift.mjs 门禁保障，
+ * 已接入 dev / build 链，漂移会直接报错退出。
+ * 修改令牌请走 DTCG JSON 源 + `pnpm --filter @fandex/tokens build:css`，
+ * 再将生成值同步到本文件。
  *
  * 令牌分层：
  * - primitive：原始值（颜色、间距、尺寸等原值，无语义）
@@ -26,51 +32,88 @@
     /* ============================================================
        1. Primitive 层 — 原始令牌值
        ============================================================ */
-    /* 纯黑 */
+    /* 纯黑（阴影基底） */
     --color-neutral-0: #000000;
-    /* 近黑（ark 深色主背景） */
-    --color-neutral-50: #0A0A0A;
-    /* 深色次背景 */
-    --color-neutral-100: #141414;
-    /* 深色三级背景 */
-    --color-neutral-200: #1F1F1F;
-    /* 深色边框 */
-    --color-neutral-300: #2A2A2A;
-    /* 深色强边框 */
-    --color-neutral-400: #404040;
-    /* 深色次级文字 */
-    --color-neutral-500: #525252;
-    /* 三级文字 */
-    --color-neutral-600: #737373;
-    /* 深色模式次级文字 */
-    --color-neutral-700: #A3A3A3;
-    /* 浅色三级文字（冷雾灰，Task 4.2：新背景上保持 WCAG AA >= 4.5:1） */
+    /* FANDEX 深色主背景（冷青底近黑） */
+    --color-neutral-50: #0A0E14;
+    /* FANDEX 深色次背景（surface/card） */
+    --color-neutral-100: #11161E;
+    /* FANDEX 深色三级背景（surface-container） */
+    --color-neutral-200: #1B2330;
+    /* FANDEX 深色边框 */
+    --color-neutral-300: #2A3547;
+    /* FANDEX 深色强边框（neutral-600） */
+    --color-neutral-400: #3A4753;
+    /* FANDEX 二级文字（neutral-500） */
+    --color-neutral-500: #4E5E6B;
+    /* FANDEX 浅色三级文字（冷雾灰，Task 4.2 配方：新背景上保持 WCAG AA ≥4.5:1） */
     --color-neutral-550: #596671;
-    /* 浅色强边框（冷雾灰） */
+    /* FANDEX 三级文字（neutral-400） */
+    --color-neutral-600: #6E7E8B;
+    /* FANDEX 深色模式次级文字（neutral-300） */
+    --color-neutral-700: #9FADB9;
+    /* FANDEX 浅色强边框（冷雾灰） */
     --color-neutral-800: #BCC8D0;
-    /* 浅色默认边框（冷雾灰） */
+    /* FANDEX 浅色默认边框（冷雾灰） */
     --color-neutral-900: #CCD5DB;
-    /* 浅色弱边框/三级背景（冷雾灰） */
+    /* FANDEX 浅色弱边框/三级背景（冷雾灰） */
     --color-neutral-950: #DAE1E6;
-    /* 浅色次背景（冷雾灰） */
+    /* FANDEX 浅色次背景（冷雾灰） */
     --color-neutral-1000: #E2E8EC;
-    /* 浅色主背景（冷雾灰 #EBEFF3，Task 4.2 配方）
-     * 由类白色 #FAF9F6 下调一档，主背景亮度 L* 97.9 → 94.3，
-     * 与 #0a0e14 主文字对比度 16.7:1，远超 4.5:1 要求；
-     * 本文件为设计令牌手动同步副本，JSON 源文件已同步更新 */
+    /* FANDEX 浅色主背景（冷雾灰，Task 4.2 配方：亮度 L* 97.9→94.3，主文字对比度 16.7:1） */
     --color-neutral-1050: #EBEFF3;
-    /* 深青（active 态，浅色模式强调色整体下移一档） */
+    /* 深青（active 态，浅色模式强调色整体下移一档，FANDEX primary-900） */
     --color-cyan-100: #053645;
-    /* 中深青（hover 态，浅色模式） */
+    /* 中深青（hover 态，浅色模式，FANDEX primary-800） */
     --color-cyan-200: #085263;
-    /* 青色基准（浅色模式强调色，Task 4.2：新背景上 WCAG AA 5.1:1） */
+    /* 青色基准（浅色模式强调色，Task 4.2：新背景上 WCAG AA 5.1:1，FANDEX primary-700） */
     --color-cyan-300: #0B6E7E;
-    /* 中亮青（active 态，深色模式） */
-    --color-cyan-400: #00BCD4;
-    /* 亮青（深色模式强调色） */
-    --color-cyan-500: #00E5FF;
-    /* 极亮青（hover 态，深色模式） */
-    --color-cyan-600: #4FF2FF;
+    /* 中亮青（active 态，深色模式，FANDEX accent-500） */
+    --color-cyan-400: #00A6CC;
+    /* 亮青（深色模式强调色，FANDEX accent-400） */
+    --color-cyan-500: #00C8F0;
+    /* 极亮青（hover 态，深色模式，FANDEX accent-300） */
+    --color-cyan-600: #3DDDFF;
+    /* FANDEX primary-50 */
+    --color-primary-50: #E6FBFC;
+    /* FANDEX primary-100 */
+    --color-primary-100: #C6F3F5;
+    /* FANDEX primary-200 */
+    --color-primary-200: #99E8EC;
+    /* FANDEX primary-300 */
+    --color-primary-300: #66D8E0;
+    /* FANDEX primary-400 */
+    --color-primary-400: #33C5D1;
+    /* FANDEX primary-500 */
+    --color-primary-500: #14B0BE;
+    /* FANDEX primary-600（色阶过渡值，Task 4.2 起浅色强调色基准为 primary-700） */
+    --color-primary-600: #0E8C9C;
+    /* FANDEX primary-700 */
+    --color-primary-700: #0B6E7E;
+    /* FANDEX primary-800 */
+    --color-primary-800: #085263;
+    /* FANDEX primary-900 */
+    --color-primary-900: #053645;
+    /* FANDEX accent-50 */
+    --color-accent-50: #E5FBFF;
+    /* FANDEX accent-100 */
+    --color-accent-100: #B8F2FF;
+    /* FANDEX accent-200 */
+    --color-accent-200: #7EE9FF;
+    /* FANDEX accent-300 */
+    --color-accent-300: #3DDDFF;
+    /* FANDEX accent-400（深色主色） */
+    --color-accent-400: #00C8F0;
+    /* FANDEX accent-500 */
+    --color-accent-500: #00A6CC;
+    /* FANDEX accent-600 */
+    --color-accent-600: #0085A6;
+    /* FANDEX accent-700 */
+    --color-accent-700: #006680;
+    /* FANDEX accent-800 */
+    --color-accent-800: #004859;
+    /* FANDEX accent-900 */
+    --color-accent-900: #002D38;
     /* 成功色（浅色模式） */
     --color-success-light: #16A34A;
     /* 成功色（深色模式，提亮） */
@@ -86,17 +129,17 @@
     /* 信息色（浅色模式，同新强调色基准） */
     --color-info-light: #0B6E7E;
     /* 信息色（深色模式，同亮青） */
-    --color-info-dark: #00E5FF;
+    --color-info-dark: #00C8F0;
     /* 阴影色（黑色基底） */
     --color-shadow-black: #000000;
-    /* 无衬线字族（正文）— 西文 Inter 优先，中文走系统字体栈 */
-    --font-family-sans: Inter, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, Hiragino Sans GB, Noto Sans SC, Source Han Sans SC, sans-serif;
+    /* 无衬线字族（正文）— 西文 IBM Plex Sans 优先（FANDEX 品牌设计），中文走系统字体栈 */
+    --font-family-sans: IBM Plex Sans, Inter, -apple-system, BlinkMacSystemFont, Segoe UI, PingFang SC, Microsoft YaHei, Hiragino Sans GB, Noto Sans SC, Source Han Sans SC, sans-serif;
     /* 衬线字族（长文阅读、引文） */
     --font-family-serif: Source Serif Pro, Source Han Serif SC, Noto Serif SC, STSong, SimSun, serif;
-    /* 等宽字族（代码专用）— JetBrains Mono 优先 */
+    /* 等宽字族（代码专用）— JetBrains Mono 优先（FANDEX 品牌设计） */
     --font-family-mono: JetBrains Mono, Fira Code, Cascadia Code, Consolas, Courier New, monospace;
-    /* 展示字族（大标题，字距收紧） */
-    --font-family-display: Inter, -apple-system, BlinkMacSystemFont, PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif;
+    /* 展示字族（大标题，棱角分明的几何半压缩无衬线，FANDEX 品牌设计） */
+    --font-family-display: Chakra Petch, Inter, -apple-system, BlinkMacSystemFont, PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif;
     /* 12px 辅助文字 */
     --font-size-xs: 0.75rem;
     /* 14px 次要文字 */
@@ -905,8 +948,8 @@
     --color-code-bg: var(--color-neutral-0);
     /* 代码默认文字（浅灰） */
     --color-code-text: var(--color-neutral-900);
-    /* 代码注释 */
-    --color-code-comment: var(--color-neutral-500);
+    /* 代码注释（neutral-600，深底对比度达 WCAG AA） */
+    --color-code-comment: var(--color-neutral-600);
   }
 
   /* 显式浅色模式（data-theme='light' 时无需覆盖值，仅声明 color-scheme） */
