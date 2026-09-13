@@ -24,11 +24,11 @@ packages:
   # -----------------------------------------------------------------------------
 catalog:
   # 框架核心
-  astro: ^7.3.1
-  react: ^19.0.0
-  react-dom: ^19.0.0
+  astro: ^7.3.2
+  react: ^19.3.0
+  react-dom: ^19.3.0
   '@astrojs/react': ^6.0.5
-  '@astrojs/mdx': ^8.0.0
+  '@astrojs/mdx': ^8.0.1
   '@astrojs/rss': ^4.0.19
   '@astrojs/sitemap': ^3.7.4
   '@astrojs/check': ^0.9.10
@@ -45,7 +45,7 @@ catalog:
   tailwind-merge: ^3.6.0
 
   # 状态管理与数据
-  zod: ^4.5.4
+  zod: ^4.6.1
 
   # 动画
   motion: ^13.2.0
@@ -68,13 +68,13 @@ catalog:
   # 内容处理
   gray-matter: ^4.0.3
   shiki: ^4.4.3
-  katex: ^0.18.5
+  katex: ^0.18.7
   unified: ^11.0.5
   remark-parse: ^11.0.0
   rehype-autolink-headings: ^7.1.0
   rehype-katex: ^7.0.1
   rehype-slug: ^6.0.0
-  '@astrojs/markdown-remark': ^7.3.0
+  '@astrojs/markdown-remark': ^7.3.1
   remark-emoji: ^5.0.2
   remark-math: ^6.0.0
   unist-util-visit: ^5.1.0
@@ -100,15 +100,15 @@ catalog:
   rollup-plugin-visualizer: ^7.1.1
 
   # 类型定义
-  '@types/node': '^22.0.0'
-  '@types/react': ^19.2.18
-  '@types/react-dom': ^19.2.7
+  '@types/node': '^26.5.1'
+  '@types/react': ^19.3.0
+  '@types/react-dom': ^19.3.0
   '@types/hast': ^3.0.5
   '@types/mdast': ^4.0.4
 
   # 其他
   glob: ^13.0.6
-  web-vitals: ^5.3.0
+  web-vitals: ^6.2.1
 
 # -----------------------------------------------------------------------------
 # pnpm 11+ 设置（从 .npmrc 与 package.json pnpm 字段迁移）
