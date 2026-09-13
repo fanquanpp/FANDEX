@@ -171,5 +171,9 @@ push 后 CI 自动构建并发布 GitHub Release（`--no-push` 只改文件与�
 
 - 本仓库内容以 [MIT License](LICENSE) 许可发布；`thd-third-party/licenses/` 存放第三方
   组件的许可文本。
-- 学习内容仅供教育参考，不构成职业或投资建议，使用前请阅读
-  [DISCLAIMER.md](DISCLAIMER.md)。
+- 学习内容仅供教育参考，不构成职业、投资或任何专业建议；在线编程实验场的代码仅在
+  用户浏览器本地运行、数据仅存本地；本项目无账号、无自建服务器、无统计埋点。
+- 完整条款见 [DISCLAIMER.md](DISCLAIMER.md)（含教育用途、代码示例、实验场、隐私、
+  商标归属与责任限制九节）；网站访客可在页脚「免责声明」直达
+  [网页版](https://fanquanpp.github.io/FANDEX/disclaimer/)。
+- 贡献内容的许可与引用规范见 [CONTRIBUTING.md](CONTRIBUTING.md)「许可与免责」。
