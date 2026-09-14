@@ -196,7 +196,7 @@
   }
 
   /* 移动端：去掉文字标签，仅保留图标按钮；面板占满宽度 */
-  @media (max-width: 768px) {
+  @media (max-width: 767.98px) {
     .nav-search-text {
       display: none;
     }

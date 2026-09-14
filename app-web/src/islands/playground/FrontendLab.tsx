@@ -41,7 +41,7 @@ import {
   loadPens,
   savePen,
 } from './pg-storage';
-import type { FrontendPen } from './types';
+import type { FrontendLayout, FrontendPen } from './types';
 import { usePenPersistence } from './use-pen-persistence';
 import { usePreviewRuntime } from './use-preview-runtime';
 import { useSplitPanes, type PaneKey } from './use-split-panes';
@@ -114,6 +114,15 @@ const DEFAULT_TEMPLATE: FrontendPen = {
 /** 存储用量预警阈值（占比） */
 const STORAGE_WARN_RATIO = 0.85;
 
+/**
+ * 视口窄于 700px 时新作品默认上下堆叠：
+ * 左右分栏在窄屏下编辑器与预览各占约一半宽度，两者都不可用。
+ * 仅影响新建草稿的初始值；已保存作品保持用户上次的布局选择。
+ */
+function narrowPreferredLayout(): FrontendLayout {
+  return typeof window !== 'undefined' && window.innerWidth < 700 ? 'top' : 'left';
+}
+
 /** 编辑器面板 key（从分栏 Hook 再导出，模板/工具栏共用） */
 
 /**
@@ -182,6 +191,20 @@ function FrontendLab() {
     setPen((prev) => ({ ...prev, ...patch }));
   }, []);
 
+  // 窄屏首建草稿默认上下堆叠：DEFAULT_TEMPLATE 是模块常量（构建期 SSR 求值，
+  // 不能读视口），故在客户端首渲染期做一次守卫式校正——仅未落盘的初始草稿
+  // （id=draft 且 createdAt=0）触发，已保存作品保持用户上次的布局选择
+  const [narrowLayoutChecked, setNarrowLayoutChecked] = useState(false);
+  if (!narrowLayoutChecked) {
+    setNarrowLayoutChecked(true);
+    const preferred = narrowPreferredLayout();
+    setPen((prev) =>
+      prev.id === 'draft' && prev.createdAt === 0 && prev.layout !== preferred
+        ? { ...prev, layout: preferred }
+        : prev,
+    );
+  }
+
   // 布局域：编辑器/预览分栏与三栏权重拖拽（split 供持久化与网格模板消费）
   const {
     split,
@@ -229,6 +252,7 @@ function FrontendLab() {
         // 图鉴深链：用户从功能主页/图鉴主动点击而来，直接载入无需覆盖确认
         target = {
           ...DEFAULT_TEMPLATE,
+          layout: narrowPreferredLayout(),
           title: showcase.name,
           html: showcase.html,
           css: showcase.css,
@@ -354,6 +378,7 @@ function FrontendLab() {
       if (needsConfirm && !window.confirm(needsConfirm)) return;
       const next: FrontendPen = {
         ...DEFAULT_TEMPLATE,
+        layout: narrowPreferredLayout(),
         html: template.html,
         css: template.css,
         js: template.js,
@@ -387,6 +412,7 @@ function FrontendLab() {
       if (needsConfirm && !window.confirm(needsConfirm)) return;
       const next: FrontendPen = {
         ...DEFAULT_TEMPLATE,
+        layout: narrowPreferredLayout(),
         title: item.name,
         html: item.html,
         css: item.css,

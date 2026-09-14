@@ -151,7 +151,7 @@ html[data-theme='light'] .astro-code span {
 }
 
 /* ========== 移动端响应式适配 ========== */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .astro-code {
     padding: 1em 0.75em;
     font-size: 0.8em; /* 移动端字号缩小 */

@@ -145,7 +145,7 @@
 }
 
 /* 移动端适配 */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .doc-nav {
     flex-direction: row;
     gap: var(--space-2);
