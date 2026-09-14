@@ -67,6 +67,13 @@
     color: var(--color-fg-tertiary);
   }
 
+  /* 触屏设备没有物理键盘，快捷键提示无意义，直接隐藏 */
+  @media (pointer: coarse) {
+    .lp-map__shortcuts {
+      display: none;
+    }
+  }
+
   .lp-map__shortcut {
     display: inline-flex;
     align-items: center;
@@ -790,7 +797,7 @@
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 767.98px) {
     .lp-canvas {
       height: 430px;
     }

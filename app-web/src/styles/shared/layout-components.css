@@ -274,7 +274,7 @@
     display: none;
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: 767.98px) {
     .fndx-header__menu-toggle {
       display: inline-flex;
     }
@@ -865,7 +865,7 @@
     display: none;
   }
 
-  @media (max-width: 767px) {
+  @media (max-width: 767.98px) {
     .fndx-sidebar__close {
       display: inline-flex;
     }
@@ -1147,7 +1147,7 @@
   }
 
   /* 移动端：Sidebar 变为滑入抽屉 */
-  @media (max-width: 767px) {
+  @media (max-width: 767.98px) {
     .fndx-sidebar {
       position: fixed;
       top: var(--nav-height);

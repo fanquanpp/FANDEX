@@ -427,7 +427,7 @@ dfn {
 }
 
 /* ========== 响应式排版 ========== */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   /* 移动端标题字号递减 */
   h1 {
     font-size: var(--font-size-3xl);
@@ -702,6 +702,12 @@ dfn {
   margin: var(--space-6) 0;
 }
 
+/* 包裹层可聚焦（tabindex=0）：键盘用户聚焦后可直接横向滚动表格 */
+.prose .table-wrap:focus-visible {
+  outline: 2px solid var(--color-accent-base);
+  outline-offset: 2px;
+}
+
 /* 包裹层内的表格取消自身外边距，避免与包裹层双重留白 */
 .prose .table-wrap table {
   margin: 0;
@@ -910,7 +916,7 @@ dfn {
 }
 
 /* ========== 移动端响应式适配 ========== */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .prose {
     padding: 0 var(--space-4);
     font-size: 0.88em; /* 移动端字号缩小 */

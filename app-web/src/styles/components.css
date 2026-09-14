@@ -78,14 +78,14 @@
   }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .app-layout.has-toc {
     grid-template-columns: 1fr;
   }
 }
 
 /* 移动端：侧边栏隐藏，单列布局 */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .app-layout {
     grid-template-columns: 1fr;
   }
@@ -111,7 +111,7 @@
 }
 
 /* 移动端禁用 backdrop-filter：与 sticky 定位叠加会导致每帧重绘，严重卡顿 */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .app-nav {
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -217,7 +217,7 @@
   white-space: nowrap;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .nav-github-text {
     display: none; /* 移动端只显示图标 */
   }
@@ -237,7 +237,7 @@
 }
 
 /* 移动端回到顶部按钮适配：窄屏隐藏文字仅保留图标 */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .nav-back-to-top {
     padding: 0;
   }
@@ -267,7 +267,7 @@
 }
 
 /* 移动端主内容区适配 */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .app-main {
     grid-column: 1 / -1;
     padding-bottom: 64px; /* 为底部导航栏留出空间 */
@@ -279,7 +279,7 @@
   display: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .mobile-nav {
     display: flex;
     position: fixed;
@@ -347,7 +347,7 @@
 }
 
 /* 移动端面包屑适配 */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .breadcrumb {
     font-size: 0.75em;
     padding: var(--space-2) var(--space-4);
@@ -438,7 +438,7 @@
 }
 
 /* 移动端文档导航适配 */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .doc-nav {
     gap: var(--space-2);
     padding-left: var(--space-4);
@@ -459,14 +459,14 @@
   text-decoration: none;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .nav-btn {
     width: 100%;
   }
 }
 
 /* 移动端导航标签隐藏 */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .nav-label {
     display: none;
   }

@@ -68,6 +68,35 @@ function bindTerminal(root: HTMLElement): TerminalHandle | null {
     inputEl.focus({ preventScroll: true });
   };
 
+  /** 滚动导航键集合：readonly 输入框自身不需要这些键，转发给页面滚动容器 */
+  const SCROLL_KEYS = new Set(['PageUp', 'PageDown', 'Home', 'End', 'ArrowUp', 'ArrowDown', ' ']);
+
+  /**
+   * 输入框持焦期间转发滚动导航键。
+   * 首页为 body 锁滚 + main.home-main 内部滚动结构，若不转发，
+   * 挂载即聚焦的输入框会吞掉 PageUp/PageDown/Home/End/方向键/空格，
+   * 键盘用户将无法滚动首页。
+   */
+  const onInputKeyDown = (event: KeyboardEvent): void => {
+    if (!SCROLL_KEYS.has(event.key)) return;
+    const target: Element | null = root.closest('main') ?? document.scrollingElement;
+    if (!target) return;
+    event.preventDefault();
+    const step = target.clientHeight * 0.9;
+    if (event.key === 'PageDown' || event.key === ' ') {
+      target.scrollBy({ top: step, behavior: 'smooth' });
+    } else if (event.key === 'PageUp') {
+      target.scrollBy({ top: -step, behavior: 'smooth' });
+    } else if (event.key === 'Home') {
+      target.scrollTo({ top: 0, behavior: 'smooth' });
+    } else if (event.key === 'End') {
+      target.scrollTo({ top: target.scrollHeight, behavior: 'smooth' });
+    } else {
+      target.scrollBy({ top: event.key === 'ArrowDown' ? 80 : -80, behavior: 'smooth' });
+    }
+  };
+  inputEl.addEventListener('keydown', onInputKeyDown);
+
   // 减少动效偏好：跳过逐字动画，静态显示全文（原生光标仍随焦点闪烁）
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   if (reduceMotion) {
@@ -120,6 +149,7 @@ function bindTerminal(root: HTMLElement): TerminalHandle | null {
   /** View Transitions 切页清理：终止输出链并解除监听 */
   const onBeforeSwap = (): void => {
     if (timer !== null) window.clearTimeout(timer);
+    inputEl.removeEventListener('keydown', onInputKeyDown);
     root.removeEventListener('click', onRootClick);
     document.removeEventListener('astro:before-swap', onBeforeSwap);
   };

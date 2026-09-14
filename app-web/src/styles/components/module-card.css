@@ -207,7 +207,7 @@
    * ============================================================ */
 
   /* 移动端卡片撑满宽度 */
-  @media (max-width: 768px) {
+  @media (max-width: 767.98px) {
     .module-card {
       width: 100%;
       padding: var(--space-2) var(--space-4);

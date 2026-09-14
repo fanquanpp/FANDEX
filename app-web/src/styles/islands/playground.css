@@ -1228,7 +1228,7 @@
 
   /* 窄屏：工具栏双行收紧，编辑器面板切换为标签页行为
      仅显示 is-active 面板，配合工具栏 HTML/CSS/JS 按钮切换单屏聚焦 */
-  @media (max-width: 768px) {
+  @media (max-width: 767.98px) {
     .pg-toolbar {
       padding: 6px 10px;
       row-gap: 6px;

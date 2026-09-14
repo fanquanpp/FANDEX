@@ -31,7 +31,7 @@
   color: var(--color-fg-primary);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .nav-toggle {
     display: inline-flex;
   }
@@ -88,7 +88,7 @@
 
 /* 移动端适配：粘性定位，折叠中间层级 */
 /* 修复 z-index 冲突：面包屑粘在导航栏下方，层级低于导航栏(100)避免覆盖 */
-@media (max-width: 768px) {
+@media (max-width: 767.98px) {
   .breadcrumb {
     position: sticky;
     top: var(--nav-height, 56px);

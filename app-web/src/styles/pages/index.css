@@ -762,7 +762,7 @@
    * ============================================================ */
 
   /* 移动端适配（768px 以下） */
-  @media (max-width: 768px) {
+  @media (max-width: 767.98px) {
     .home-page {
       padding: 0 var(--space-4) var(--space-12);
     }

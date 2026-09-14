@@ -292,7 +292,7 @@
   /* ============================================================
    * 5. 响应式与可访问性
    * ============================================================ */
-  @media (max-width: 768px) {
+  @media (max-width: 767.98px) {
     .pg-home__gallery-head {
       align-items: flex-start;
       flex-direction: column;

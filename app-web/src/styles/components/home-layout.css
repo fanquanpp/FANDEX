@@ -186,7 +186,7 @@
    * ============================================================ */
 
   /* 移动端：隐藏操作链接文字，显示全屏按钮 */
-  @media (max-width: 768px) {
+  @media (max-width: 767.98px) {
     .home-nav {
       padding: 0 var(--space-4);
       /* 移动端禁用 backdrop-filter，避免与 sticky 叠加导致滚动卡顿 */

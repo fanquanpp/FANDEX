@@ -26,12 +26,17 @@ export function rehypeWrapTables() {
       (node: Element, index: number | undefined, parent: Parents | undefined) => {
         if (node.tagName !== 'table') return;
         if (index === undefined || parent === undefined) return;
-        // 限定父节点为 Element（Root 不应直接包含 table），便于后续读取 tagName 与 properties
-        if (parent.type !== 'element') return;
+        // 允许父节点为 Element 或 Root：Markdown 顶层表格的父节点正是 Root，
+        // 排除 Root 会让全站大多数（顶层）表格漏包（历史上 1905 页中 1294 页裸表）
+        if (parent.type !== 'element' && parent.type !== 'root') return;
 
-        // 父节点已是 table-wrap 包裹层则跳过，防止二次包裹
-        const parentProps = (parent as Element).properties as Properties | undefined;
+        // 父节点已是 table-wrap 包裹层则跳过，防止二次包裹（仅 Element 有 className）
+        const parentProps =
+          parent.type === 'element'
+            ? ((parent as Element).properties as Properties | undefined)
+            : undefined;
         if (
+          parent.type === 'element' &&
           (parent as Element).tagName === 'div' &&
           parentProps !== undefined &&
           Array.isArray(parentProps.className) &&
@@ -40,11 +45,12 @@ export function rehypeWrapTables() {
           return;
         }
 
-        // 构造包裹层节点：<div class="table-wrap">原表格</div>
+        // 构造包裹层节点：<div class="table-wrap" tabindex="0">原表格</div>
+        // tabindex=0 让键盘用户可聚焦包裹层后用方向键横向滚动表格（可达性）
         const wrapNode: Element = {
           type: 'element',
           tagName: 'div',
-          properties: { className: ['table-wrap'] },
+          properties: { className: ['table-wrap'], tabIndex: 0 },
           children: [node as ElementContent],
         };
 

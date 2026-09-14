@@ -445,7 +445,7 @@
     }
   }
 
-  @media (max-width: 768px) {
+  @media (max-width: 767.98px) {
     .syntax-langs {
       margin: 0 calc(var(--space-2) * -1);
       padding: var(--space-2);
