@@ -76,6 +76,9 @@ function bindTerminal(root: HTMLElement): TerminalHandle | null {
    * 首页为 body 锁滚 + main.home-main 内部滚动结构，若不转发，
    * 挂载即聚焦的输入框会吞掉 PageUp/PageDown/Home/End/方向键/空格，
    * 键盘用户将无法滚动首页。
+   * 不指定 behavior：跟随 CSS scroll-behavior（键盘滚动本就即时，
+   * 且全局 reduced-motion 兜底会把 scroll-behavior 强制为 auto——
+   * 显式 'smooth' 会无视该兜底，构成无障碍回归）。
    */
   const onInputKeyDown = (event: KeyboardEvent): void => {
     if (!SCROLL_KEYS.has(event.key)) return;
@@ -84,15 +87,15 @@ function bindTerminal(root: HTMLElement): TerminalHandle | null {
     event.preventDefault();
     const step = target.clientHeight * 0.9;
     if (event.key === 'PageDown' || event.key === ' ') {
-      target.scrollBy({ top: step, behavior: 'smooth' });
+      target.scrollBy({ top: step });
     } else if (event.key === 'PageUp') {
-      target.scrollBy({ top: -step, behavior: 'smooth' });
+      target.scrollBy({ top: -step });
     } else if (event.key === 'Home') {
-      target.scrollTo({ top: 0, behavior: 'smooth' });
+      target.scrollTo({ top: 0 });
     } else if (event.key === 'End') {
-      target.scrollTo({ top: target.scrollHeight, behavior: 'smooth' });
+      target.scrollTo({ top: target.scrollHeight });
     } else {
-      target.scrollBy({ top: event.key === 'ArrowDown' ? 80 : -80, behavior: 'smooth' });
+      target.scrollBy({ top: event.key === 'ArrowDown' ? 80 : -80 });
     }
   };
   inputEl.addEventListener('keydown', onInputKeyDown);
