@@ -59,6 +59,16 @@
   小节（基于 frontmatter 难度、描述与真实章节结构生成），读者进入长文
   前可获得模块定位、难度与章节导览；
 
+### 变更
+
+- **web 端依赖全量升级**：lockfile 全量重解析至各依赖当前最新版——
+  mermaid 11 → 12（12 默认布局引擎换 ELK、默认外观换 neo，渲染初始化
+  显式固定 dagre + classic，约 520 篇含图表文档观感与升级前一致）；
+  TypeScript 5.9 → 6.0（typescript-eslint 与 @astrojs/check peer 范围内
+  的最新大版本）；lucide-react 1.45 / tailwind-merge 3.7 / zod 4.6.4 等
+  同步刷新；Astro 7.3.2 与全家桶已是最新，无版本变化。typecheck、lint、
+  qa 门禁、生产依赖审计（零漏洞）与全量构建全部通过；
+
 ## [v4.4.0] - 2026-09-11
 
 ### 新增

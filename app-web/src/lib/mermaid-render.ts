@@ -48,6 +48,12 @@ async function getMermaid(): Promise<MermaidAPI> {
       mermaid.initialize({
         startOnLoad: false,
         securityLevel: 'strict',
+        // mermaid 12 破坏性变更的显式回钉：默认布局引擎由 dagre 换为 ELK、
+        // 默认外观由 classic 换为 neo。约 520 篇文档的既有图表按 11.x 观感
+        // 排版与配色，升级依赖不应重排全部图表，故固定 dagre + classic。
+        // 若后续有意切换新观感，删除这两项即可。
+        layout: 'dagre',
+        look: 'classic',
         theme: isDark ? 'dark' : 'neutral',
         fontFamily:
           "var(--font-family-body, system-ui), -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif",

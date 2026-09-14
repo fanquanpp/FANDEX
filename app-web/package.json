@@ -84,7 +84,7 @@
     "glob": "catalog:",
     "globals": "catalog:",
     "gray-matter": "catalog:",
-    "mermaid": "^11.17.2",
+    "mermaid": "^12.0.0",
     "pagefind": "^1.5.2",
     "rollup-plugin-visualizer": "catalog:",
     "sharp": "^0.35.0",
