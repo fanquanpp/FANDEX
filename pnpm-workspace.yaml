@@ -42,10 +42,10 @@ catalog:
   '@tailwindcss/typography': ^0.5.20
   class-variance-authority: ^0.7.1
   clsx: ^2.1.1
-  tailwind-merge: ^3.6.0
+  tailwind-merge: ^3.7.0
 
   # 状态管理与数据
-  zod: ^4.6.1
+  zod: ^4.6.4
 
   # 动画
   motion: ^13.2.0
@@ -80,7 +80,7 @@ catalog:
   unist-util-visit: ^5.1.0
 
   # 图标（偏差报备：搜索功能已删除，fuse.js/pagefind/astro-pagefind 一并移除）
-  lucide-react: ^1.43.0
+  lucide-react: ^1.45.0
 
   # Lint 体系（ESLint 10 flat config，作用域：app-web 的 TS/TSX 与管线脚本）
   eslint: ^10.10.0
@@ -93,7 +93,9 @@ catalog:
   '@playwright/test': ^1.63.0
 
   # 工具链
-  typescript: ^5.7.0
+  # typescript：保持 6.x——typescript-eslint 8.70 peer 上限 <6.1.0、@astrojs/check
+  # peer 为 ^5.0.0 || ^6.0.0，TS 7（原生移植版）两者均不支持，根目录独立用 7.0.2 不受影响
+  typescript: ^6.0.3
   tsx: ^4.23.13
   vite: ^8.2.2
   '@vitejs/plugin-react': ^6.1.1
