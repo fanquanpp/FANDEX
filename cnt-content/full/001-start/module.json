@@ -1,0 +1,7 @@
+{
+  "title": "零基础起步",
+  "icon": "Go",
+  "description": "写给完全没有编程经验的学习者：计算机常识、环境搭建、命令行入门、学习方法论与第一行代码",
+  "categories": ["tools"],
+  "prerequisites": []
+}

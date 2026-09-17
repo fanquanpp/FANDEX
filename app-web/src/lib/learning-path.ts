@@ -56,6 +56,8 @@ import {
   softwareTestingMap,
   nextjsMap,
   nestjsMap,
+  startMap,
+  roadmapMap,
 } from '@fandex/utils/learning-path';
 import docIndex from '@/data/doc-index.json';
 import { getModule, categoryColors, getPrimaryCategory } from '@/lib/modules';
@@ -163,6 +165,8 @@ const technologyMaps: Readonly<Record<string, TechnologyMap>> = {
   'software-testing': softwareTestingMap as unknown as TechnologyMap,
   nextjs: nextjsMap as unknown as TechnologyMap,
   nestjs: nestjsMap as unknown as TechnologyMap,
+  start: startMap as unknown as TechnologyMap,
+  roadmap: roadmapMap as unknown as TechnologyMap,
 };
 
 /** 文档索引映射：module/slug -> title，供节点文档标题解析 */

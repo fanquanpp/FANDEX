@@ -1,0 +1,48 @@
+{
+  "version": "1.0.0",
+  "module": "roadmap",
+  "summary": "十一条就业方向路线：选方向、走阶段、做项目、冲求职，全部映射到本仓库具体文档。",
+  "stages": [
+    {
+      "id": "choose",
+      "title": "选择方向",
+      "subtitle": "路线目录与三问决策法",
+      "nodes": [
+        { "id": "roadmap-001", "title": "路线图总览与选型", "desc": "11 条路线目录、市场速览与决策框架", "doc": "010-RoadmapOverview" }
+      ]
+    },
+    {
+      "id": "dev",
+      "title": "开发主线",
+      "subtitle": "前端、后端、全栈、移动与系统",
+      "nodes": [
+        { "id": "roadmap-002", "title": "前端工程师路线", "doc": "020-FrontendRoute" },
+        { "id": "roadmap-003", "title": "Java 后端路线", "doc": "030-BackendJavaRoute" },
+        { "id": "roadmap-004", "title": "Go 后端路线", "doc": "040-BackendGoRoute" },
+        { "id": "roadmap-005", "title": "Python 与 AI 路线", "doc": "050-BackendPythonAIRoute" },
+        { "id": "roadmap-006", "title": "Node 全栈路线", "doc": "060-FullStackNodeRoute" },
+        { "id": "roadmap-007", "title": "移动端路线", "doc": "070-MobileRoute" },
+        { "id": "roadmap-008", "title": "系统编程路线", "doc": "080-SystemRoute" }
+      ]
+    },
+    {
+      "id": "ops",
+      "title": "工程与质量",
+      "subtitle": "运维、数据库、安全与测试",
+      "nodes": [
+        { "id": "roadmap-009", "title": "云与运维路线", "doc": "090-DevOpsCloudRoute" },
+        { "id": "roadmap-010", "title": "数据库路线", "doc": "100-DatabaseRoute" },
+        { "id": "roadmap-011", "title": "网络安全路线", "doc": "110-SecurityRoute" },
+        { "id": "roadmap-012", "title": "软件测试路线", "doc": "120-QATestingRoute" }
+      ]
+    },
+    {
+      "id": "plan",
+      "title": "计划执行",
+      "subtitle": "把路线落成每日动作",
+      "nodes": [
+        { "id": "roadmap-013", "title": "十二个月计划模板", "desc": "周节奏、月检点与防弃坑机制", "doc": "130-TwelveMonthPlanTemplate" }
+      ]
+    }
+  ]
+}

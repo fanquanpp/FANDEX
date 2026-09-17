@@ -51,6 +51,6 @@ prerequisites: []
 
 ## 扩展学习
 
-- 使用指南：`mysql/010-HowToUseThisCourse`；
-- 路线图：`mysql/020-Roadmap`；
-- 第一课：`mysql/050-MySQLOverviewDatabaseDesign`。
+- 使用指南：[如何使用本课程](/mysql/010-HowToUseThisCourse)；
+- 路线图：[学习路线图](/mysql/020-Roadmap)；
+- 第一课：[数据库设计与 MySQL 概述](/mysql/050-MySQLOverviewDatabaseDesign)。
