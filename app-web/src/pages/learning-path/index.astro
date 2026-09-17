@@ -1,5 +1,4 @@
 ---
-import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
 /**
  * 学习路径总览页
  * -----------------------------------------------------------------------------
@@ -9,8 +8,9 @@ import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
+import FeatureNav from '@/components/FeatureNav.astro'
 import Footer from '@/components/Footer.astro'
-import { SITE, IS_DESKTOP_BUILD } from '@/lib/constants'
+import { SITE } from '@/lib/constants'
 import { categoryColors, getModule, getPrimaryCategory } from '@/lib/modules'
 import { getCategories } from '@/services'
 import {
@@ -193,27 +193,8 @@ const careers = [
           </div>
         </div>
 
-        <!-- 功能入口：首页同款纯文字按钮 + SVG 波浪描边动画 -->
-        <nav class="hero-entries" aria-label="功能入口">
-          <a href={base} class="entry-btn" data-tooltip="返回首页" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">首页</span>
-          </a>
-          {!IS_DESKTOP_BUILD && (
-            <a href={`${base}playground/`} class="entry-btn" data-tooltip="在线编写与运行代码" data-tooltip-pos="bottom">
-              <EntryWaveBorder />
-              <span class="entry-name">在线编程</span>
-            </a>
-          )}
-          <a href={`${base}syntax/`} class="entry-btn" data-tooltip="语法快速查阅" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">语法速览</span>
-          </a>
-          <a href={`${base}algorithms/`} class="entry-btn" data-tooltip="算法教程与刷题图鉴" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">算法教学</span>
-          </a>
-        </nav>
+        <!-- 功能入口：共享兄弟入口（FeatureNav 统一维护，避免各页子集缺漏） -->
+        <FeatureNav />
       </div>
     </section>
 

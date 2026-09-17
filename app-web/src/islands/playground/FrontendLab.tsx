@@ -170,6 +170,8 @@ function FrontendLab() {
   const [showTemplates, setShowTemplates] = useState(false);
   /** 是否打开灵感画廊 */
   const [showGallery, setShowGallery] = useState(false);
+  /** 是否打开快捷键说明面板 */
+  const [showShortcuts, setShowShortcuts] = useState(false);
   /** 作品库列表 */
   const [library, setLibrary] = useState<FrontendPen[]>([]);
   /** 是否正在格式化代码 */
@@ -361,6 +363,56 @@ function FrontendLab() {
   }, [pen, setSaveState]);
 
   /**
+   * 智能保存（Ctrl/Cmd+S）：草稿另存为新作品；已保存作品原地更新，
+   * 避免连续保存产生重复副本（CodePen 的 Save / Fork 双语义）
+   */
+  const handleSave = useCallback(async () => {
+    if (pen.id === 'draft') {
+      await handleSaveAsNew();
+      return;
+    }
+    const saved: FrontendPen = { ...pen, updatedAt: Date.now(), lastOpenedAt: Date.now() };
+    await savePen(saved);
+    setPen(saved);
+    setLibrary(await loadPens());
+    setSaveState('saved');
+  }, [pen, handleSaveAsNew, setSaveState]);
+
+  // 全局快捷键：Ctrl/Cmd+S 保存、Shift+Alt+F 格式化、? 打开快捷键说明。
+  // 输入类元素聚焦时仅放行 Ctrl/Cmd+S 与 Shift+Alt+F（组合键不干扰打字）
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      const target = event.target as HTMLElement | null;
+      const isTyping =
+        target &&
+        (target.tagName === 'INPUT' ||
+          target.tagName === 'TEXTAREA' ||
+          target.isContentEditable);
+
+      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+        event.preventDefault();
+        void handleSave();
+        return;
+      }
+      if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'f') {
+        event.preventDefault();
+        void handleFormat();
+        return;
+      }
+      if (event.key === 'Escape' && showShortcuts) {
+        setShowShortcuts(false);
+        return;
+      }
+      if (event.key === '?' && !event.ctrlKey && !event.metaKey && !event.altKey && !isTyping) {
+        event.preventDefault();
+        setShowShortcuts((v) => !v);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleSave, handleFormat, showShortcuts]);
+
+  /**
    * 按模板新建草稿（会覆盖当前未另存的编辑内容，需用户确认）
    * @param template - 目标模板；缺省时使用交互示例模板
    */
@@ -547,7 +599,7 @@ function FrontendLab() {
               className="pg-btn pg-btn--ghost"
               onClick={() => void handleFormat()}
               disabled={formatting}
-              title="格式化 HTML/CSS/JS 代码"
+              title="格式化 HTML/CSS/JS 代码（Shift+Alt+F）"
             >
               <PgIcon name="spark" size={14} />
               <span>格式化</span>
@@ -625,7 +677,7 @@ function FrontendLab() {
                 </div>
               )}
             </div>
-            <button type="button" className="pg-btn pg-btn--ghost" onClick={() => void handleSaveAsNew()} title="另存为新作品">
+            <button type="button" className="pg-btn pg-btn--ghost" onClick={() => void handleSave()} title="保存：草稿另存为新作品（Ctrl/Cmd+S）">
               <PgIcon name="copy" size={14} />
               <span>另存</span>
             </button>
@@ -633,6 +685,16 @@ function FrontendLab() {
               <PgIcon name="folder" size={14} />
               <span>作品库</span>
               {library.length > 0 && <em className="pg-count">{library.length}</em>}
+            </button>
+            <button
+              type="button"
+              className="pg-btn pg-btn--ghost"
+              onClick={() => setShowShortcuts((v) => !v)}
+              aria-expanded={showShortcuts}
+              title="键盘快捷键（?）"
+            >
+              <PgIcon name="keyboard" size={14} />
+              <span>快捷键</span>
             </button>
             <button
               type="button"
@@ -810,6 +872,67 @@ function FrontendLab() {
 
       {/* 新建模板菜单的点击关闭层 */}
       {showTemplates && <div className="pg-menu-mask" onClick={() => setShowTemplates(false)} />}
+
+      {/* 快捷键说明面板：轻量居中弹层（Esc / 点击遮罩关闭） */}
+      {showShortcuts && (
+        <div className="pg-keys-mask" onClick={() => setShowShortcuts(false)}>
+          <div
+            className="pg-keys"
+            role="dialog"
+            aria-modal="true"
+            aria-label="键盘快捷键"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <header className="pg-keys__head">
+              <span className="pg-keys__title">
+                <PgIcon name="keyboard" size={14} />
+                键盘快捷键
+              </span>
+              <button
+                type="button"
+                className="pg-btn pg-btn--ghost pg-btn--sm"
+                onClick={() => setShowShortcuts(false)}
+                title="关闭（Esc）"
+              >
+                <PgIcon name="close" size={14} />
+              </button>
+            </header>
+            <div className="pg-keys__body">
+              <div className="pg-keys__row">
+                <span className="pg-keys__desc">运行预览</span>
+                <span className="pg-keys__combo">
+                  <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Enter</kbd>
+                </span>
+              </div>
+              <div className="pg-keys__row">
+                <span className="pg-keys__desc">格式化代码</span>
+                <span className="pg-keys__combo">
+                  <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>F</kbd>
+                </span>
+              </div>
+              <div className="pg-keys__row">
+                <span className="pg-keys__desc">保存（草稿另存为新作品）</span>
+                <span className="pg-keys__combo">
+                  <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>S</kbd>
+                </span>
+              </div>
+              <div className="pg-keys__row">
+                <span className="pg-keys__desc">打开 / 关闭本面板</span>
+                <span className="pg-keys__combo">
+                  <kbd>?</kbd>
+                </span>
+              </div>
+              <div className="pg-keys__row">
+                <span className="pg-keys__desc">关闭面板 / 弹层</span>
+                <span className="pg-keys__combo">
+                  <kbd>Esc</kbd>
+                </span>
+              </div>
+            </div>
+            <p className="pg-keys__note">编辑内容自动保存到浏览器本地（IndexedDB），刷新不丢失。</p>
+          </div>
+        </div>
+      )}
 
       {/* 灵感画廊：设计成品实时预览与源码载入 */}
       <ShowcaseGallery

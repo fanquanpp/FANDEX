@@ -81,3 +81,14 @@ export function writeNodeProgress(
   writeStore(store);
   return tech;
 }
+
+/**
+ * 清除单个技术的全部进度标记（重置进度）
+ * @param module - 技术模块 id
+ */
+export function clearTechProgress(module: string): TechProgress {
+  const store = readStore();
+  delete store[module];
+  writeStore(store);
+  return {};
+}

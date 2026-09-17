@@ -5,10 +5,10 @@
  * 数据来源：由 Astro 页面注入的 TechVM（服务端组装，客户端不加载地图 JSON）。
  * 学习进度：localStorage 持久化（progress.ts），节点三态呈现 + Duolingo 式进度环。
  */
-import { useCallback, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import type { NodeProgress, TechProgress, TechVM } from './types';
 import { computeMapLayout } from './map-layout';
-import { readTechProgress, writeNodeProgress } from './progress';
+import { clearTechProgress, readTechProgress, writeNodeProgress } from './progress';
 import MapCanvas, { type MapCanvasHandle } from './MapCanvas';
 import MapControls from './MapControls';
 import MapDetailPanel from './MapDetailPanel';
@@ -114,6 +114,31 @@ export default function LearningPathMap({ tech, base }: Props) {
     [tech.module],
   );
 
+  /** 重置当前技术的全部学习进度（带确认） */
+  const handleResetProgress = useCallback(() => {
+    if (doneCount + learningCount === 0) return;
+    if (!window.confirm(`清除「${tech.title}」的全部学习进度标记？此操作不可恢复。`)) return;
+    setProgress(clearTechProgress(tech.module));
+  }, [doneCount, learningCount, tech.module, tech.title]);
+
+  // 键盘进度快捷键（roadmap.sh 模式）：D 已完成 / L 学习中 / S 清除标记。
+  // 仅在详情面板有节点时生效；输入类元素聚焦与修饰键组合不接管
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.metaKey || event.ctrlKey || event.altKey) return;
+      const key = event.key.toLowerCase();
+      if (key !== 'd' && key !== 'l' && key !== 's') return;
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      const id = hoverId ?? selectedId;
+      if (!id) return;
+      event.preventDefault();
+      handleSetProgress(id, key === 'd' ? 'done' : key === 'l' ? 'learning' : null);
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [handleSetProgress, hoverId, selectedId]);
+
   /** 进度环填充比例（已完成 / 总节点数） */
   const totalNodes = tech.stats.nodes;
   const ringRatio = totalNodes > 0 ? doneCount / totalNodes : 0;
@@ -153,6 +178,8 @@ export default function LearningPathMap({ tech, base }: Props) {
           onZoomIn={() => canvasRef.current?.zoomBy(1.25)}
           onFit={() => canvasRef.current?.fit()}
           onReset={() => canvasRef.current?.reset()}
+          onResetProgress={handleResetProgress}
+          hasProgress={doneCount + learningCount > 0}
         />
       </div>
 
@@ -162,6 +189,7 @@ export default function LearningPathMap({ tech, base }: Props) {
         <span className="lp-map__shortcut"><kbd>0</kbd>/<kbd>F</kbd> 适应视口</span>
         <span className="lp-map__shortcut"><kbd>R</kbd> 复位</span>
         <span className="lp-map__shortcut"><kbd>方向键</kbd> 平移</span>
+        <span className="lp-map__shortcut"><kbd>D</kbd>/<kbd>L</kbd>/<kbd>S</kbd> 已完成/学习中/清除</span>
         <span className="lp-map__shortcut"><kbd>Esc</kbd> 关闭详情</span>
       </div>
 

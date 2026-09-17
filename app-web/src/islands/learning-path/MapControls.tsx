@@ -1,7 +1,8 @@
 /**
  * 思维导图画布控制条
  * -----------------------------------------------------------------------------
- * 提供缩小、放大、适应视口、复位四个操作，统一使用 fndx-icon-btn 幽灵按钮风格。
+ * 提供缩小、放大、适应视口、复位、重置进度五个操作，统一使用 fndx-icon-btn
+ * 幽灵按钮风格。重置进度仅在有标记时可用（roadmap.sh 的 remove-status 模式）。
  */
 interface Props {
   /** 当前缩放百分比（0-100 整数） */
@@ -14,10 +15,22 @@ interface Props {
   onFit: () => void;
   /** 复位到 100% */
   onReset: () => void;
+  /** 重置本技术的全部学习进度（组件内已带确认） */
+  onResetProgress: () => void;
+  /** 是否存在进度标记（无标记时禁用重置按钮） */
+  hasProgress: boolean;
 }
 
 /** 控制条：仅图标按钮 + 缩放读数 */
-export default function MapControls({ scale, onZoomOut, onZoomIn, onFit, onReset }: Props) {
+export default function MapControls({
+  scale,
+  onZoomOut,
+  onZoomIn,
+  onFit,
+  onReset,
+  onResetProgress,
+  hasProgress,
+}: Props) {
   return (
     <div className="lp-controls" role="toolbar" aria-label="思维导图缩放控制">
       <button type="button" className="fndx-icon-btn" onClick={onZoomOut} aria-label="缩小">
@@ -43,6 +56,20 @@ export default function MapControls({ scale, onZoomOut, onZoomIn, onFit, onReset
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <path d="M3 12a9 9 0 1 0 3-6.7" />
           <polyline points="3 3 3 8 8 8" />
+        </svg>
+      </button>
+      <button
+        type="button"
+        className="fndx-icon-btn"
+        onClick={onResetProgress}
+        aria-label="重置学习进度"
+        title="重置本技术的全部进度标记"
+        disabled={!hasProgress}
+      >
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <path d="M4 7h16" />
+          <path d="M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2" />
+          <path d="M6 7l1 12a2 2 0 0 0 2 1.9h6a2 2 0 0 0 2-1.9l1-12" />
         </svg>
       </button>
     </div>

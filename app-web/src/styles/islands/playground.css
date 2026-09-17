@@ -905,6 +905,92 @@
     background: transparent;
   }
 
+  /* ============================================================
+   * 快捷键说明面板：轻量居中弹层（Esc / 点击遮罩关闭）
+   * ============================================================ */
+  .pg-keys-mask {
+    position: fixed;
+    inset: 0;
+    z-index: 60;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: color-mix(in oklch, var(--color-neutral-50, #000) 45%, transparent);
+  }
+
+  .pg-keys {
+    width: min(340px, calc(100vw - 40px));
+    padding: var(--space-4);
+    background: var(--color-bg-surface, var(--color-bg-sidebar));
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md, 4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .pg-keys__head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: var(--space-3);
+  }
+
+  .pg-keys__title {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-family-heading);
+    font-size: 0.82rem;
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-fg-primary);
+  }
+
+  .pg-keys__body {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .pg-keys__row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+  }
+
+  .pg-keys__desc {
+    font-size: 0.74rem;
+    color: var(--color-text-secondary);
+  }
+
+  .pg-keys__combo {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-family: var(--font-family-mono);
+    font-size: 0.64rem;
+    color: var(--color-text-tertiary);
+    white-space: nowrap;
+  }
+
+  .pg-keys__combo kbd {
+    padding: 1px 6px;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm, 2px);
+    background: var(--color-bg-card);
+    font-family: var(--font-family-mono);
+    font-size: 0.62rem;
+    line-height: 1.5;
+    color: var(--color-text-secondary);
+  }
+
+  .pg-keys__note {
+    margin: var(--space-3) 0 0;
+    padding-top: var(--space-2);
+    border-top: 1px dashed var(--color-border-light);
+    font-size: 0.66rem;
+    color: var(--color-text-tertiary);
+  }
+
   /* 控制台错误计数徽章：直角 + 危险色描边（禁止圆点） */
   .pg-count--danger {
     color: var(--color-danger-base);

@@ -457,6 +457,87 @@
   outline-offset: 2px;
 }
 
+/* 拉伸链接：卡片内容包在 a 内，::after 覆盖整卡作为点击热区，
+ * 进度标记按钮以更高 z-index 悬于热区之上 */
+.ap-card__link {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+  min-width: 0;
+  color: inherit;
+  text-decoration: none;
+}
+
+.ap-card__link::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.ap-card__link:focus-visible {
+  outline: none;
+}
+
+.ap-card__link:focus-visible::after {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: -2px;
+}
+
+/* 本机进度标记行：已掌握 / 待复习角标（卡片右下角） */
+.ap-card__marks {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+  margin-top: var(--space-1);
+}
+
+/* 标记按钮：细线方框 + 语义色激活态（对勾 = 已掌握，星 = 待复习） */
+.ap-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: 22px;
+  height: 22px;
+  padding: 0;
+  border: 1px solid var(--color-border-light);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--color-text-tertiary);
+  cursor: pointer;
+  transition:
+    color var(--motion-duration-instant) var(--motion-easing-out),
+    border-color var(--motion-duration-instant) var(--motion-easing-out),
+    background-color var(--motion-duration-instant) var(--motion-easing-out);
+}
+
+.ap-mark:hover {
+  color: var(--color-fg-primary);
+  border-color: var(--color-border-strong, var(--color-border-light));
+}
+
+.ap-mark:focus-visible {
+  outline: 2px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.ap-mark.is-on[data-mark='solved'],
+.ap-mark.is-on[data-ap-detail-mark='solved'] {
+  color: var(--color-success-base);
+  border-color: color-mix(in srgb, var(--color-success-base) 50%, transparent);
+  background: color-mix(in srgb, var(--color-success-base) 9%, transparent);
+}
+
+.ap-mark.is-on[data-mark='review'],
+.ap-mark.is-on[data-ap-detail-mark='review'] {
+  color: var(--color-warning-base);
+  border-color: color-mix(in srgb, var(--color-warning-base) 50%, transparent);
+  background: color-mix(in srgb, var(--color-warning-base) 9%, transparent);
+}
+
 .ap-grid .ap-card {
   animation: fndx-slide-up var(--motion-duration-normal) var(--motion-easing-out) both;
 }
@@ -574,6 +655,22 @@
   display: none;
 }
 
+/* 命中计数行：计数 + 本机进度说明 */
+.ap-count-row {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.ap-count-note {
+  font-family: var(--font-family-mono);
+  font-size: 0.62rem;
+  color: var(--color-text-tertiary);
+  letter-spacing: 0.03em;
+}
+
 /* 空状态 */
 .ap-empty {
   padding: var(--space-8) var(--space-4);
@@ -583,6 +680,18 @@
   color: var(--color-text-tertiary);
   border: 1px dashed var(--color-border-light);
   border-radius: var(--radius-md);
+}
+
+.ap-empty p {
+  margin: 0 0 var(--space-3);
+}
+
+/* 空态恢复动作：清除关键词 / 重置全部筛选 */
+.ap-empty__actions {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
 .ap-empty[hidden] {
@@ -662,6 +771,39 @@
   flex-wrap: wrap;
   gap: 4px;
   margin-top: var(--space-2);
+}
+
+/* 本机进度标记行：已掌握 / 待复习（带文字的大号变体） */
+.apd-progress {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  flex-wrap: wrap;
+  margin-top: var(--space-3);
+  padding-top: var(--space-3);
+  border-top: 1px dashed var(--color-border-light);
+}
+
+.apd-progress__label {
+  font-family: var(--font-family-mono);
+  font-size: 0.66rem;
+  letter-spacing: 0.06em;
+  color: var(--color-text-tertiary);
+}
+
+.ap-mark--lg {
+  width: auto;
+  height: 26px;
+  padding: 0 10px;
+  font-family: var(--font-family-heading);
+  font-size: 0.72rem;
+  letter-spacing: 0.02em;
+}
+
+.apd-progress__note {
+  font-family: var(--font-family-mono);
+  font-size: 0.62rem;
+  color: var(--color-text-tertiary);
 }
 
 /* 章节区块 */

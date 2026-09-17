@@ -1,17 +1,18 @@
 ---
-import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
 /**
  * 算法题图鉴列表页
  * -----------------------------------------------------------------------------
- * 经典算法题集合：分类 / 难度筛选 + 关键词搜索 + 题目卡片网格，
+ * 经典算法题集合：分类 / 难度 / 本机进度筛选 + 关键词搜索 + 题目卡片网格，
  * 点击卡片进入题目详情页（题意概括 + 思路讲解 + 参考实现）。
- * 筛选交互由 lib/algo-problems.ts 驱动，状态同步 URL 便于分享。
+ * 筛选交互由 lib/algo-problems.ts 驱动，状态同步 URL 便于分享；
+ * 已掌握/待复习标记存 localStorage（lib/ap-progress.ts），无需账号。
  */
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
+import FeatureNav from '@/components/FeatureNav.astro'
 import Footer from '@/components/Footer.astro'
-import { SITE, IS_DESKTOP_BUILD } from '@/lib/constants'
+import { SITE } from '@/lib/constants'
 import {
   ALGO_PROBLEMS,
   ALGO_CATEGORIES,
@@ -86,27 +87,8 @@ const DIFF_COLOR: Record<AlgoDifficulty, string> = {
           </div>
         </div>
 
-        <!-- 功能入口：教学总览与本页互为姊妹入口 -->
-        <nav class="hero-entries" aria-label="功能入口">
-          <a href={base} class="entry-btn" data-tooltip="返回首页" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">首页</span>
-          </a>
-          <a href={`${base}algorithms/`} class="entry-btn" data-tooltip="算法教程课程表" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">算法教学</span>
-          </a>
-          {!IS_DESKTOP_BUILD && (
-            <a href={`${base}playground/`} class="entry-btn" data-tooltip="在线编写与运行代码" data-tooltip-pos="bottom">
-              <EntryWaveBorder />
-              <span class="entry-name">在线编程</span>
-            </a>
-          )}
-          <a href={`${base}learning-path/`} class="entry-btn" data-tooltip="系统化学习路径" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">学习路线</span>
-          </a>
-        </nav>
+        <!-- 功能入口：共享兄弟入口（FeatureNav 统一维护） -->
+        <FeatureNav />
       </div>
     </section>
 
@@ -147,6 +129,19 @@ const DIFF_COLOR: Record<AlgoDifficulty, string> = {
               {DIFFICULTY_LABELS[diff]}<em>{diffCounts[diff]}</em>
             </button>
           ))}
+        </div>
+        <div class="ap-filter__row">
+          <span class="ap-filter__label" aria-hidden="true"></span>
+          <span class="ap-filter__hint">进度</span>
+          <button class="ap-chip is-active" type="button" data-filter-status="all" aria-pressed="true">
+            全部
+          </button>
+          <button class="ap-chip" type="button" data-filter-status="solved" aria-pressed="false" title="只看已标记掌握的题目">
+            已掌握<em data-ap-status-count="solved">0</em>
+          </button>
+          <button class="ap-chip" type="button" data-filter-status="review" aria-pressed="false" title="只看标记待复习的题目">
+            待复习<em data-ap-status-count="review">0</em>
+          </button>
           <input
             class="ap-search"
             type="search"
@@ -157,38 +152,78 @@ const DIFF_COLOR: Record<AlgoDifficulty, string> = {
         </div>
       </div>
 
-      <!-- 命中计数行 -->
-      <p class="ap-count" data-filter-count aria-live="polite"></p>
+      <!-- 命中计数行：附本机进度说明（进度仅存当前浏览器） -->
+      <div class="ap-count-row">
+        <p class="ap-count" data-filter-count aria-live="polite"></p>
+        <span class="ap-count-note">掌握 / 复习标记仅保存在当前浏览器</span>
+      </div>
 
       <div class="ap-grid">
         {ALGO_PROBLEMS.map((problem, i) => (
-          <a
+          <article
             class="ap-card"
-            href={`${base}algorithms/problems/${problem.slug}/`}
-            data-algo-card
+            data-algo-item
             data-cat={problem.category}
             data-diff={problem.difficulty}
+            data-slug={problem.slug}
             data-search={`${problem.lc ?? ''} ${problem.title} ${problem.titleEn} ${problem.tags.join(' ')} ${problem.brief}`.toLowerCase()}
             style={`--ap-color:var(--color-${DIFF_COLOR[problem.difficulty]}-base);animation-delay:${Math.min(i, 24) * 30}ms`}
           >
-            <div class="ap-card__head">
-              <span class="ap-card__no" aria-hidden="true">{problem.lc ? `LC ${problem.lc}` : '经典'}</span>
-              <h3 class="ap-card__title">{problem.title}</h3>
-              <span class={`ap-badge ap-badge--${problem.difficulty}`}>{DIFFICULTY_LABELS[problem.difficulty]}</span>
+            <a
+              class="ap-card__link"
+              href={`${base}algorithms/problems/${problem.slug}/`}
+              aria-label={`${problem.title}（${DIFFICULTY_LABELS[problem.difficulty]}）`}
+            >
+              <div class="ap-card__head">
+                <span class="ap-card__no" aria-hidden="true">{problem.lc ? `LC ${problem.lc}` : '经典'}</span>
+                <h3 class="ap-card__title">{problem.title}</h3>
+                <span class={`ap-badge ap-badge--${problem.difficulty}`}>{DIFFICULTY_LABELS[problem.difficulty]}</span>
+              </div>
+              <p class="ap-card__en">{problem.titleEn}</p>
+              <p class="ap-card__brief">{problem.brief}</p>
+              <div class="ap-card__tags">
+                {problem.tags.map((tag) => (
+                  <span class="ap-card__tag">{tag}</span>
+                ))}
+              </div>
+            </a>
+            <!-- 本机进度标记：已掌握 / 待复习（z-index 高于拉伸链接） -->
+            <div class="ap-card__marks">
+              <button
+                type="button"
+                class="ap-mark"
+                data-mark="solved"
+                aria-pressed="false"
+                title="标记为已掌握"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                  <path d="M4 12.5l5 5L20 6.5" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="ap-mark"
+                data-mark="review"
+                aria-pressed="false"
+                title="标记为待复习"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 3l2.7 5.6 6.3.9-4.5 4.4 1 6.1-5.5-2.9-5.5 2.9 1-6.1L3 9.5l6.3-.9L12 3z" />
+                </svg>
+              </button>
             </div>
-            <p class="ap-card__en">{problem.titleEn}</p>
-            <p class="ap-card__brief">{problem.brief}</p>
-            <div class="ap-card__tags">
-              {problem.tags.map((tag) => (
-                <span class="ap-card__tag">{tag}</span>
-              ))}
-            </div>
-          </a>
+          </article>
         ))}
       </div>
 
-      <!-- 空状态：筛选无命中时显示 -->
-      <p class="ap-empty" data-ap-empty hidden>没有匹配的题目，换个筛选条件试试。</p>
+      <!-- 空状态：筛选无命中时显示，附恢复动作 -->
+      <div class="ap-empty" data-ap-empty hidden>
+        <p>没有匹配的题目</p>
+        <div class="ap-empty__actions">
+          <button type="button" class="ap-chip" data-ap-clear-q>清除关键词</button>
+          <button type="button" class="ap-chip" data-ap-reset>重置全部筛选</button>
+        </div>
+      </div>
     </section>
 
     <Footer />

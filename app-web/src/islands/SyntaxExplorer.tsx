@@ -2,17 +2,20 @@
  * 语法速览交互岛（SyntaxExplorer）
  * =============================================================================
  * 功能概述：
- * - 语言切换：通过彩色语言 chip 过滤语法卡片（无搜索）
+ * - 语言切换：通过彩色语言 chip 过滤语法卡片
+ * - 关键词筛选：对当前语言卡片做子串匹配（小节/写法/公式/代码），
+ *   URL 同步 ?lang=&q= 支持分享与刷新恢复；筛选态显示全部命中（不分批）
  * - 按需加载：卡片数据按语言拆分到 public/syntax-data/<module>.json，
  *   切换语言时 fetch 对应分块并缓存，避免页面内嵌 2MB 数据
  * - 速查卡片：复用首页模块卡片体系（.module-card 特效），
  *   缩小为"图标 + 小节 + 写法 + 公式"的紧凑入口
  * - 悬浮面板：点击卡片后弹出详情面板（Radix Dialog），
- *   展示完整公式、示例代码、复制按钮与完整文档入口
+ *   展示完整公式、示例代码、复制按钮与完整文档入口；
+ *   支持上一条/下一条切换（按钮与左右方向键）
  *
  * 数据流：
  *   languages prop（页面内嵌索引）→ activeId state → fetch 语言分块
- *   → cards state → 网格渲染；点击卡片 → selected state → 悬浮面板
+ *   → cards state → query 筛选 → 网格渲染；点击卡片 → selected state → 悬浮面板
  *
  * 设计说明：
  * - 并发保护：请求序号 ref 保证快速切换语言时旧响应不会覆盖新状态
@@ -21,7 +24,7 @@
  *   焦点陷阱、Escape 关闭与 aria 语义
  */
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 // 复用首页模块卡片样式（顶部色条、hover 边框/阴影、几何图标、标题变色）
 import '@/styles/components/module-card.css';
@@ -65,7 +68,7 @@ interface SyntaxExplorerProps {
   base: string;
 }
 
-/** 单批渲染的卡片数量：兼顾首屏密度与滚动性能 */
+/** 单批渲染的卡片数量：兼顾首屏密度与滚动性能（筛选态不分批，直接展示全部命中） */
 const PAGE_SIZE = 36;
 /** 复制成功提示持续时长（毫秒） */
 const COPIED_MS = 1600;
@@ -73,26 +76,53 @@ const COPIED_MS = 1600;
 const DEFAULT_LANGUAGE = 'javascript';
 /** 首页滚动容器选择器：面板打开时锁定滚动 */
 const HOME_MAIN_SELECTOR = '.home-main';
+/** 关键词筛选防抖时长（毫秒） */
+const QUERY_DEBOUNCE_MS = 160;
+
+/** 从 URL 查询参数恢复初始语言与筛选词（缺省回落默认语言、空词） */
+function readStateFromUrl(languages: SyntaxLanguage[]): { lang: string; q: string } {
+  if (typeof window === 'undefined') return { lang: languages[0]?.id ?? '', q: '' };
+  const params = new URLSearchParams(window.location.search);
+  const langParam = params.get('lang') ?? '';
+  const known = languages.find((lang) => lang.id === langParam)?.id;
+  return {
+    lang: known ?? languages.find((lang) => lang.id === DEFAULT_LANGUAGE)?.id ?? languages[0]?.id ?? '',
+    q: params.get('q') ?? '',
+  };
+}
+
+/** 把语言与筛选词同步回 URL（默认值不写入，保持地址干净） */
+function syncStateUrl(lang: string, query: string): void {
+  const params = new URLSearchParams();
+  if (lang && lang !== DEFAULT_LANGUAGE) params.set('lang', lang);
+  const q = query.trim();
+  if (q) params.set('q', q);
+  const search = params.toString();
+  window.history.replaceState(
+    null,
+    '',
+    search ? `${window.location.pathname}?${search}` : window.location.pathname,
+  );
+}
 
 /**
  * 语法速览交互岛
  * 提供语言切换、紧凑速查卡片、悬浮详情面板与代码复制能力
  */
 export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
-  /** 当前选中的语言 ID */
-  const [activeId, setActiveId] = useState<string>(
-    () =>
-      languages.find((lang) => lang.id === DEFAULT_LANGUAGE)?.id ??
-      languages[0]?.id ??
-      '',
-  );
+  /** 当前选中的语言 ID（首帧从 URL 恢复） */
+  const [activeId, setActiveId] = useState<string>(() => readStateFromUrl(languages).lang);
+  /** 关键词筛选词（立即回显，防抖后参与过滤与 URL 同步） */
+  const [query, setQuery] = useState<string>(() => readStateFromUrl(languages).q);
+  /** 实际参与过滤的筛选词（防抖后的值） */
+  const [appliedQuery, setAppliedQuery] = useState<string>(() => readStateFromUrl(languages).q);
   /** 当前语言的卡片列表；null 表示尚未加载完成 */
   const [cards, setCards] = useState<SyntaxCard[] | null>(null);
   /** 是否正在加载语言分块 */
   const [loading, setLoading] = useState(false);
   /** 加载失败信息；为空表示正常 */
   const [error, setError] = useState('');
-  /** 当前可见卡片数量（分批渲染） */
+  /** 当前可见卡片数量（分批渲染，仅无筛选词时生效） */
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   /** 悬浮面板当前展示的卡片；null 表示面板关闭 */
   const [selected, setSelected] = useState<SyntaxCard | null>(null);
@@ -104,9 +134,31 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
   const requestSeqRef = useRef(0);
   /** 复制反馈定时器句柄（组件卸载时清理） */
   const copiedTimerRef = useRef<number | undefined>(undefined);
+  /** 筛选词防抖定时器句柄 */
+  const queryTimerRef = useRef<number | undefined>(undefined);
+  /** 搜索框 DOM 引用（"/" 快捷键聚焦） */
+  const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const active = languages.find((lang) => lang.id === activeId);
   const activeColor = active?.color || 'var(--color-accent-base)';
+
+  /** 应用筛选词后的命中卡片（子串匹配：小节/写法/公式/代码，全部小写化） */
+  const filteredCards = useMemo(() => {
+    const needle = appliedQuery.trim().toLowerCase();
+    if (!cards) return [];
+    if (!needle) return cards;
+    return cards.filter(
+      (card) =>
+        card.section.toLowerCase().includes(needle) ||
+        card.name.toLowerCase().includes(needle) ||
+        card.formula.toLowerCase().includes(needle) ||
+        card.code.toLowerCase().includes(needle),
+    );
+  }, [cards, appliedQuery]);
+
+  /** 筛选词生效时关闭分批：目标驱动检索一次看到全部命中 */
+  const isFiltering = appliedQuery.trim() !== '';
+  const visibleCards = isFiltering ? filteredCards : filteredCards.slice(0, visibleCount);
 
   /**
    * 切换语言：清空旧卡片并触发对应分块加载
@@ -116,6 +168,63 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
     if (id === activeId) return;
     setActiveId(id);
   }
+
+  /**
+   * 更新筛选词：输入立即回显，防抖后写入 appliedQuery 参与过滤
+   */
+  function handleQueryInput(next: string): void {
+    setQuery(next);
+    window.clearTimeout(queryTimerRef.current);
+    queryTimerRef.current = window.setTimeout(() => {
+      setAppliedQuery(next);
+      setVisibleCount(PAGE_SIZE);
+    }, QUERY_DEBOUNCE_MS);
+  }
+
+  /** 清空筛选词并回焦搜索框 */
+  function clearQuery(): void {
+    window.clearTimeout(queryTimerRef.current);
+    setQuery('');
+    setAppliedQuery('');
+    setVisibleCount(PAGE_SIZE);
+    searchInputRef.current?.focus();
+  }
+
+  // 语言/筛选词变化时同步 URL（replaceState，不产生历史记录）
+  useEffect(() => {
+    syncStateUrl(activeId, appliedQuery);
+  }, [activeId, appliedQuery]);
+
+  // "/" 快捷键聚焦搜索框（输入类元素聚焦时不接管）
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
+      const target = event.target as HTMLElement | null;
+      if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
+      event.preventDefault();
+      searchInputRef.current?.focus();
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  // 面板打开期间的左右方向键：在命中列表内切换上一条/下一条
+  useEffect(() => {
+    if (!selected) return;
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') return;
+      const index = filteredCards.findIndex((card) => card.id === selected.id);
+      if (index === -1) return;
+      const delta = event.key === 'ArrowLeft' ? -1 : 1;
+      const next = filteredCards[index + delta];
+      if (next) {
+        event.preventDefault();
+        setSelected(next);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [selected, filteredCards]);
 
   /**
    * 复制代码到剪贴板
@@ -182,8 +291,11 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
   useEffect(() => {
     if (!activeId) return;
     void loadLanguage(activeId);
-    // 组件卸载时清理复制反馈定时器
-    return () => window.clearTimeout(copiedTimerRef.current);
+    // 组件卸载时清理复制反馈与筛选词防抖定时器
+    return () => {
+      window.clearTimeout(copiedTimerRef.current);
+      window.clearTimeout(queryTimerRef.current);
+    };
   }, [activeId, loadLanguage]);
 
   // 面板打开时锁定首页滚动容器，关闭后恢复
@@ -197,8 +309,6 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
     }
     return () => main.classList.remove('syntax-panel-open');
   }, [selected]);
-
-  const visibleCards = cards?.slice(0, visibleCount) ?? [];
 
   return (
     <div className="syntax-explorer">
@@ -223,13 +333,49 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
         })}
       </nav>
 
-      {/* 当前语言元信息：供屏幕阅读器播报加载状态 */}
+      {/* 筛选行：关键词筛选（当前语言内子串匹配），"/" 快捷键聚焦 */}
+      <div className="syntax-filter">
+        <div className="syntax-filter__box">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <circle cx="11" cy="11" r="7" />
+            <line x1="16.5" y1="16.5" x2="21" y2="21" />
+          </svg>
+          <input
+            ref={searchInputRef}
+            className="syntax-filter__input"
+            type="search"
+            value={query}
+            onChange={(e) => handleQueryInput(e.target.value)}
+            placeholder="筛选语法点（小节 / 写法 / 公式 / 代码）"
+            aria-label="筛选当前语言的语法点"
+          />
+          {query && (
+            <button
+              type="button"
+              className="syntax-filter__clear"
+              onClick={clearQuery}
+              aria-label="清除筛选关键词"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <path d="M6 6l12 12M18 6L6 18" />
+              </svg>
+            </button>
+          )}
+        </div>
+        <span className="syntax-filter__hint" aria-hidden="true">
+          <kbd>/</kbd> 聚焦
+        </span>
+      </div>
+
+      {/* 当前语言元信息：供屏幕阅读器播报加载状态与命中数 */}
       <div className="syntax-meta" aria-live="polite">
         {loading
           ? '正在加载语法卡片'
-          : active
-            ? `${active.title} · ${active.count} 个语法点 · 来自 ${active.docCount} 篇文档`
-            : ''}
+          : isFiltering && cards
+            ? `${active?.title} · 命中 ${filteredCards.length} / ${cards.length} 个语法点`
+            : active
+              ? `${active.title} · ${active.count} 个语法点 · 来自 ${active.docCount} 篇文档`
+              : ''}
       </div>
 
       {/* 加载失败提示 */}
@@ -245,7 +391,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
       )}
 
       {/* 速查卡片网格：复用首页模块卡片特效，点击打开悬浮面板 */}
-      {cards && cards.length > 0 && (
+      {cards && visibleCards.length > 0 && (
         <>
           <div className="syntax-grid">
             {visibleCards.map((card, index) => (
@@ -273,17 +419,31 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
             ))}
           </div>
 
-          {/* 增量加载：未展示完时提供"加载更多" */}
-          {visibleCount < cards.length && (
+          {/* 增量加载：未筛选且未展示完时提供"加载更多"（筛选态直接展示全部命中） */}
+          {!isFiltering && visibleCount < cards!.length && (
             <button
               type="button"
               className="syntax-more fndx-icon-btn fndx-icon-btn--labeled"
               onClick={() => setVisibleCount((current) => current + PAGE_SIZE)}
             >
-              加载更多（剩余 {cards.length - visibleCount} 条）
+              加载更多（剩余 {cards!.length - visibleCount} 条）
             </button>
           )}
         </>
+      )}
+
+      {/* 筛选无命中：给出恢复动作，不留白 */}
+      {cards && !loading && !error && visibleCards.length === 0 && (
+        <div className="syntax-empty syntax-empty--filter" role="status">
+          <p>没有匹配「{appliedQuery.trim()}」的语法点</p>
+          <button
+            type="button"
+            className="syntax-more fndx-icon-btn fndx-icon-btn--labeled"
+            onClick={clearQuery}
+          >
+            清除筛选词，查看全部 {cards.length} 条
+          </button>
+        </div>
       )}
 
       {/* 空数据兜底：语言分块为空时提示（正常情况不会出现） */}
@@ -360,8 +520,47 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
               </div>
             )}
 
-            {/* 面板底部：完整文档入口 + 关闭按钮 */}
+            {/* 面板底部：上下条切换 + 完整文档入口 + 关闭按钮 */}
             <div className="syntax-panel__footer">
+              {selected && filteredCards.length > 1 && (
+                <div className="syntax-panel__nav" aria-label="上一条 / 下一条">
+                  <button
+                    type="button"
+                    className="syntax-panel__nav-btn"
+                    disabled={filteredCards[0]?.id === selected.id}
+                    onClick={() => {
+                      const index = filteredCards.findIndex((card) => card.id === selected.id);
+                      const prev = filteredCards[index - 1];
+                      if (prev) setSelected(prev);
+                    }}
+                    aria-label="上一条语法点（左方向键）"
+                  >
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                      <polyline points="15 18 9 12 15 6" />
+                    </svg>
+                    上一条
+                  </button>
+                  <span className="syntax-panel__nav-pos">
+                    {filteredCards.findIndex((card) => card.id === selected.id) + 1} / {filteredCards.length}
+                  </span>
+                  <button
+                    type="button"
+                    className="syntax-panel__nav-btn"
+                    disabled={filteredCards[filteredCards.length - 1]?.id === selected.id}
+                    onClick={() => {
+                      const index = filteredCards.findIndex((card) => card.id === selected.id);
+                      const next = filteredCards[index + 1];
+                      if (next) setSelected(next);
+                    }}
+                    aria-label="下一条语法点（右方向键）"
+                  >
+                    下一条
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                      <polyline points="9 18 15 12 9 6" />
+                    </svg>
+                  </button>
+                </div>
+              )}
               <a
                 className="syntax-panel__link fndx-icon-btn fndx-icon-btn--labeled"
                 href={`${base}${active?.id}/`}

@@ -1,5 +1,4 @@
 ---
-import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
 /**
  * 算法教学总览页
  * -----------------------------------------------------------------------------
@@ -10,8 +9,9 @@ import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
+import FeatureNav from '@/components/FeatureNav.astro'
 import Footer from '@/components/Footer.astro'
-import { SITE, IS_DESKTOP_BUILD } from '@/lib/constants'
+import { SITE } from '@/lib/constants'
 import { categoryColors } from '@/lib/modules'
 import { getDocsByModule, docSlug } from '@/services'
 import { ALGO_PROBLEMS, ALGO_CATEGORIES } from '@/data/algo-problems'
@@ -213,31 +213,10 @@ const categoryTotal = ALGO_CATEGORIES.length
           </div>
         </div>
 
-        <!-- 功能入口：与其他子页面保持一致（题图鉴由页面内召唤区承载） -->
-        <nav class="hero-entries" aria-label="功能入口">
-          <a href={base} class="entry-btn" data-tooltip="返回首页" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">首页</span>
-          </a>
-          {!IS_DESKTOP_BUILD && (
-            <a href={`${base}playground/`} class="entry-btn" data-tooltip="在线编写与运行代码" data-tooltip-pos="bottom">
-              <EntryWaveBorder />
-              <span class="entry-name">在线编程</span>
-            </a>
-          )}
-          <a href={`${base}algorithms/problems/`} class="entry-btn" data-tooltip="经典算法题与讲解图鉴" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">题图鉴</span>
-          </a>
-          <a href={`${base}learning-path/`} class="entry-btn" data-tooltip="系统化学习路径" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">学习路线</span>
-          </a>
-          <a href={`${base}syntax/`} class="entry-btn" data-tooltip="语法快速查阅" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">语法速览</span>
-          </a>
-        </nav>
+        <!-- 功能入口：题图鉴召唤区由页面内承载，其余为共享兄弟入口（FeatureNav） -->
+        <FeatureNav
+          extra={[{ href: `${base}algorithms/problems/`, label: '题图鉴', tooltip: '经典算法题与讲解图鉴' }]}
+        />
       </div>
     </section>
 
