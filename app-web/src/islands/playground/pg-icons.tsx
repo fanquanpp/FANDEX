@@ -39,6 +39,7 @@ export type PgIconName =
   | 'plus'
   | 'spark'
   | 'gallery'
+  | 'keyboard'
   ;
 
 /** 图标路径表：每个图标包含若干 path/形状定义 */
@@ -156,6 +157,13 @@ const PATHS: Record<PgIconName, ReactNode> = {
       <rect x="13" y="3" width="8" height="8" rx="1.5" />
       <rect x="3" y="13" width="8" height="8" rx="1.5" />
       <rect x="13" y="13" width="8" height="8" rx="1.5" />
+    </>
+  ),
+  keyboard: (
+    <>
+      <rect x="3" y="7" width="18" height="11" rx="1.5" />
+      <path d="M6 10.5h.01M9 10.5h.01M12 10.5h.01M15 10.5h.01M18 10.5h.01" />
+      <path d="M7 14.5h10" />
     </>
   ),
 };

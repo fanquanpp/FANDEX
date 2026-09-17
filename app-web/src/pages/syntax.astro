@@ -1,11 +1,10 @@
 ---
-import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
 /**
  * 语法速览页面
  * -----------------------------------------------------------------------------
  * 功能概述：
  * - 汇聚 syntax 速查素材中的编程语言/数据库命令语言语法要点，
- *   提供语言切换 + 紧凑速查卡片 + 悬浮详情面板
+ *   提供语言切换 + 关键词筛选 + 紧凑速查卡片 + 悬浮详情面板
  * - 数据管线：scripts/build-syntax.mjs 解析 cnt-content/syntax，
  *   生成轻量语言索引（内嵌）与分语言卡片分块（按需 fetch）
  *
@@ -18,9 +17,10 @@ import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
+import FeatureNav from '@/components/FeatureNav.astro'
 import SyntaxExplorer from '@/islands/SyntaxExplorer'
 import { getSyntaxIndex, getSyntaxStats } from '@/services'
-import { SITE, IS_DESKTOP_BUILD } from '@/lib/constants'
+import { SITE } from '@/lib/constants'
 // 复用首页 Hero / 统计 / 功能入口样式，保证美术完全一致
 import '@/styles/pages/index.css'
 
@@ -68,27 +68,8 @@ const base = import.meta.env.BASE_URL
           </div>
         </div>
 
-        <!-- 功能入口：首页同款纯文字按钮 + SVG 波浪描边动画 -->
-        <nav class="hero-entries" aria-label="功能入口">
-          <a href={base} class="entry-btn" data-tooltip="返回首页" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">首页</span>
-          </a>
-          {!IS_DESKTOP_BUILD && (
-            <a href={`${base}playground/`} class="entry-btn" data-tooltip="在线编写与运行代码" data-tooltip-pos="bottom">
-              <EntryWaveBorder />
-              <span class="entry-name">在线编程</span>
-            </a>
-          )}
-          <a href={`${base}learning-path/`} class="entry-btn" data-tooltip="系统化学习路径" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">学习路线</span>
-          </a>
-          <a href={`${base}algorithms/`} class="entry-btn" data-tooltip="算法教程与刷题图鉴" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">算法教学</span>
-          </a>
-        </nav>
+        <!-- 功能入口：共享兄弟入口（FeatureNav 统一维护） -->
+        <FeatureNav />
       </div>
     </section>
 

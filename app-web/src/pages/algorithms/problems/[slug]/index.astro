@@ -111,6 +111,23 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
             <span class="ap-card__tag">{tag}</span>
           ))}
         </div>
+        <!-- 本机进度标记：已掌握 / 待复习（localStorage，lib/algo-problems.ts 驱动） -->
+        <div class="apd-progress" data-apd-progress data-apd-slug={problem.slug}>
+          <span class="apd-progress__label">本机进度</span>
+          <button type="button" class="ap-mark ap-mark--lg" data-ap-detail-mark="solved" aria-pressed="false" title="标记为已掌握">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+              <path d="M4 12.5l5 5L20 6.5" />
+            </svg>
+            <span>已掌握</span>
+          </button>
+          <button type="button" class="ap-mark ap-mark--lg" data-ap-detail-mark="review" aria-pressed="false" title="标记为待复习">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M12 3l2.7 5.6 6.3.9-4.5 4.4 1 6.1-5.5-2.9-5.5 2.9 1-6.1L3 9.5l6.3-.9L12 3z" />
+            </svg>
+            <span>待复习</span>
+          </button>
+          <span class="apd-progress__note">仅保存在当前浏览器</span>
+        </div>
       </header>
 
       <!-- 题目描述：概括复述 + 示例 + 数据范围 -->
@@ -207,12 +224,17 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
         )}
       </nav>
 
-      <!-- 返回图鉴 -->
+      <!-- 返回图鉴：链接由脚本附加离开列表页时的筛选上下文，恢复原筛选视图 -->
       <p class="apd-back">
-        <a class="ap-chip" href={`${base}algorithms/problems/`}>返回题图鉴</a>
+        <a class="ap-chip" data-apd-back href={`${base}algorithms/problems/`}>返回题图鉴</a>
       </p>
     </article>
 
     <Footer />
   </div>
 </HomeLayout>
+
+<!-- 详情页本机进度标记与返回上下文（与列表页共用交互脚本） -->
+<script>
+  import '@/lib/algo-problems';
+</script>

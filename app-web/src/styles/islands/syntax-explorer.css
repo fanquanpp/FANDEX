@@ -161,6 +161,112 @@
   }
 
   /* ============================================================
+   * 3.5 关键词筛选行
+   * ------------------------------------------------------------
+   * 语言 chip 栏之下的轻量检索框：目标驱动的检索场景
+   * （DevDocs/QuickRef 模式），筛选态关闭分批直接展示全部命中
+   * ============================================================ */
+  .syntax-filter {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin: var(--space-3) 0 0;
+  }
+
+  .syntax-filter__box {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1;
+    max-width: 420px;
+    padding: 0 var(--space-2);
+    height: var(--size-control-sm);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm, 2px);
+    background: var(--color-bg-card);
+    color: var(--color-text-tertiary);
+    transition: border-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .syntax-filter__box:focus-within {
+    border-color: color-mix(in oklch, var(--color-accent-base) 55%, transparent);
+  }
+
+  .syntax-filter__input {
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    border: none;
+    background: transparent;
+    color: var(--color-fg-primary);
+    font-family: var(--font-family-heading);
+    font-size: 0.78em;
+    letter-spacing: 0.02em;
+    outline: none;
+  }
+
+  .syntax-filter__input::placeholder {
+    color: var(--color-text-tertiary);
+  }
+
+  .syntax-filter__input::-webkit-search-cancel-button {
+    display: none;
+  }
+
+  .syntax-filter__clear {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 18px;
+    height: 18px;
+    padding: 0;
+    border: none;
+    border-radius: var(--radius-sm, 2px);
+    background: transparent;
+    color: var(--color-text-tertiary);
+    cursor: pointer;
+  }
+
+  .syntax-filter__clear:hover {
+    color: var(--color-fg-primary);
+  }
+
+  .syntax-filter__hint {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-family-mono);
+    font-size: 0.66rem;
+    color: var(--color-text-tertiary);
+  }
+
+  .syntax-filter__hint kbd {
+    padding: 0 5px;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm, 2px);
+    background: var(--color-bg-card);
+    font-family: var(--font-family-mono);
+    font-size: 0.62rem;
+    line-height: 1.5;
+  }
+
+  /* 筛选无命中：说明 + 恢复动作（不留白） */
+  .syntax-empty--filter {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--space-3);
+  }
+
+  .syntax-empty--filter p {
+    margin: 0;
+  }
+
+  .syntax-empty--filter .syntax-more {
+    margin: 0;
+  }
+
+  /* ============================================================
    * 4. 加载更多按钮
    * ============================================================ */
   /* 加载更多：基础样式与统一特效由 .fndx-icon-btn--labeled 提供（ghost 风格），
@@ -403,6 +509,52 @@
   /* 关闭按钮：完全复用统一图标按钮语言（ghost 风格 + 统一悬停/按下/焦点特效） */
   .syntax-panel__close {
     /* 基础样式与特效均由 .fndx-icon-btn--labeled 提供 */
+  }
+
+  /* 面板底部上一条/下一条切换：占据整行，居中分布（有切换时换行展示） */
+  .syntax-panel__nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-2);
+    width: 100%;
+    padding-bottom: var(--space-2);
+    border-bottom: 1px dashed var(--color-border-light);
+  }
+
+  .syntax-panel__nav-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm, 2px);
+    background: transparent;
+    color: var(--color-text-secondary);
+    font-family: var(--font-family-heading);
+    font-size: 0.72em;
+    letter-spacing: 0.02em;
+    cursor: pointer;
+    transition:
+      color var(--motion-duration-instant) var(--motion-easing-out),
+      border-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .syntax-panel__nav-btn:hover:not(:disabled) {
+    color: var(--color-fg-primary);
+    border-color: color-mix(in oklch, var(--lang-color, var(--color-accent-base)) 50%, transparent);
+  }
+
+  .syntax-panel__nav-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  .syntax-panel__nav-pos {
+    font-family: var(--font-family-mono);
+    font-size: 0.66rem;
+    color: var(--color-text-tertiary);
+    letter-spacing: 0.04em;
   }
 
   /* 面板打开时锁定首页滚动容器 */
