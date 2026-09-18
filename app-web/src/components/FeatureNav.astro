@@ -44,8 +44,14 @@ const entries: FeatureEntry[] = [...extra, ...siblings]
 
 <nav class="hero-entries" aria-label="功能入口">
   {
-    entries.map((entry) => (
-      <a href={entry.href} class="entry-btn" data-tooltip={entry.tooltip} data-tooltip-pos="bottom">
+    entries.map((entry, i) => (
+      <a
+        href={entry.href}
+        class="entry-btn"
+        style={`--entry-i:${i}`}
+        data-tooltip={entry.tooltip}
+        data-tooltip-pos="bottom"
+      >
         <EntryWaveBorder />
         <span class="entry-name">{entry.label}</span>
       </a>

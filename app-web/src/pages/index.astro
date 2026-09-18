@@ -25,6 +25,16 @@ const stats = await getDocStats()
 // 通过 module-service 获取全部模块（只读数组），用于首页模块计数
 const allModules = getAllModules()
 
+// 功能入口单一数据源：新增入口只需在此追加，入场波浪签名的错峰延迟
+// 由渲染序号 --entry-i 驱动 CSS calc 自动计算，与添加顺序/数量解耦；
+// 桌面端构建无在线编程（DESKTOP_BUILD=1 时过滤，序号随实际渲染重排）
+const heroEntries = [
+  { href: 'playground/', name: '在线编程', tooltip: '在线编写与运行代码', webOnly: true },
+  { href: 'syntax/', name: '语法速览', tooltip: '语法快速查阅' },
+  { href: 'learning-path/', name: '学习路线', tooltip: '系统化学习路径' },
+  { href: 'algorithms/', name: '算法教学', tooltip: '算法教程与刷题图鉴' },
+].filter(entry => !IS_DESKTOP_BUILD || !entry.webOnly)
+
 // 通过 module-service 获取分类信息并按分类分组模块
 // getCategories() 已按 categoryOrder 顺序返回 { id, label, color }
 const grouped = getCategories()
@@ -51,7 +61,7 @@ const grouped = getCategories()
         <span class="hero-title-fan">FAN</span><span class="hero-title-dex">DEX</span>
       </h1>
       <!-- 统计数据 + 功能入口同一行容器
-           左侧：模块/文档数统计；右侧：三大功能入口（纯文字 + SVG border 描边动画） -->
+           左侧：模块/文档数统计；右侧：功能入口（heroEntries 单一数据源，纯文字 + SVG border 描边动画） -->
       <div class="hero-stats-row">
         <div class="hero-stats">
           <div class="stat-item">
@@ -65,29 +75,24 @@ const grouped = getCategories()
             <span class="stat-label">文档</span>
           </div>
         </div>
-        <!-- 功能入口区：纯文字按钮 + SVG 路径签名动画
+        <!-- 功能入口区：heroEntries 单一数据源渲染，纯文字按钮 + SVG 路径签名动画
              使用二次贝塞尔曲线（Q 命令）绘制手绘风格波浪路径，
-             hover 时 stroke-dashoffset 从 250 → 0 实现路径书写动画
-             三个按钮颜色统一使用项目标题主题色 var(--color-accent-base) -->
+             hover 时 stroke-dashoffset 从 250 → 0 实现路径书写动画；
+             入场错峰延迟由 --entry-i 序号驱动（见 index.css entry-path-intro），
+             各入口颜色统一使用项目标题主题色 var(--color-accent-base) -->
         <nav class="hero-entries" aria-label="功能入口">
-          {!IS_DESKTOP_BUILD && (
-            <a href={`${import.meta.env.BASE_URL}playground/`} class="entry-btn" data-tooltip="在线编写与运行代码" data-tooltip-pos="bottom">
+          {heroEntries.map((entry, i) => (
+            <a
+              href={`${import.meta.env.BASE_URL}${entry.href}`}
+              class="entry-btn"
+              style={`--entry-i:${i}`}
+              data-tooltip={entry.tooltip}
+              data-tooltip-pos="bottom"
+            >
               <EntryWaveBorder />
-              <span class="entry-name">在线编程</span>
+              <span class="entry-name">{entry.name}</span>
             </a>
-          )}
-          <a href={`${import.meta.env.BASE_URL}syntax/`} class="entry-btn" data-tooltip="语法快速查阅" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">语法速览</span>
-          </a>
-          <a href={`${import.meta.env.BASE_URL}learning-path/`} class="entry-btn" data-tooltip="系统化学习路径" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">学习路线</span>
-          </a>
-          <a href={`${import.meta.env.BASE_URL}algorithms/`} class="entry-btn" data-tooltip="算法教程与刷题图鉴" data-tooltip-pos="bottom">
-            <EntryWaveBorder />
-            <span class="entry-name">算法教学</span>
-          </a>
+          ))}
         </nav>
       </div>
 

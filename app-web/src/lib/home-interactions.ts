@@ -46,9 +46,6 @@ const CARD_COUNT_SPEED_BOOST = 0.04;
 /** 最大速度提升（卡片极少时速度上限） */
 const MAX_SPEED_BOOST = 0.6;
 
-/** 静态行空占位卡片的类名（虚线空槽，仅作版面填充） */
-const GHOST_CARD_CLASS = 'module-card--ghost';
-
 /** 自动滚动延迟启动（毫秒）：首屏先静止呈现完整卡片，
  *  让访客先完成视觉定位，滚动再缓缓开始，消除"一进页面就在动"的躁动感 */
 const AUTO_START_DELAY_MS = 2600;
@@ -108,70 +105,6 @@ interface ScrollerState {
 }
 
 /**
- * 创建空占位卡片元素：无内容、不可交互、对辅助技术隐藏
- */
-function createGhostCard(): HTMLElement {
-  const ghost = document.createElement('div');
-  ghost.className = `module-card ${GHOST_CARD_CLASS}`;
-  ghost.setAttribute('aria-hidden', 'true');
-  return ghost;
-}
-
-/**
- * 静态行的空占位卡片填充
- * -----------------------------------------------------------------------------
- * 小分类（卡片集宽度不超过视口）不滚动、轨道居中；为避免两侧留出大面积
- * 空位、与满幅滚动的分类行不协调，按需在真实卡片两侧对称插入虚线空占位
- * 卡片填满整行宽度。占位卡片不参与任何滚动（整行本就静止），仅作版面
- * 填充；窗口尺寸变化时先移除旧占位符再按当前视口重新补齐。
- *
- * @param scroller 滑动器视窗容器（测量可用宽度）
- * @param track 滑动轨道（插入占位卡片的容器）
- * @param realSetWidth 真实卡片集总宽度（含间距，初始化时测量）
- * @param gap 轨道间距（像素）
- */
-function setupStaticFiller(
-  scroller: HTMLElement,
-  track: HTMLElement,
-  realSetWidth: number,
-  gap: number,
-): void {
-  const firstReal = (Array.from(track.children) as HTMLElement[]).find(
-    (el) => !el.classList.contains(GHOST_CARD_CLASS),
-  );
-  if (!firstReal) return;
-
-  /** 按当前视口宽度重建占位卡片：真实卡片保持居中，占位卡对称补满两侧 */
-  const fill = (): void => {
-    track.querySelectorAll(`.${GHOST_CARD_CLASS}`).forEach((el) => el.remove());
-    const deficit = scroller.clientWidth - realSetWidth;
-    // 每张占位卡片连同其左侧间距的占位开销（与真实卡片同宽）
-    const slot = firstReal.getBoundingClientRect().width + gap;
-    // 向上取整保证行宽始终被填满：溢出部分由视窗边缘裁切（与滚动行边缘
-    // 半卡片裁切的视觉语言一致），不产生背景空位
-    const need = slot > 0 && deficit > 0 ? Math.ceil(deficit / slot) : 0;
-    const leftCount = Math.floor(need / 2);
-    for (let i = 0; i < leftCount; i++) {
-      track.insertBefore(createGhostCard(), track.firstElementChild);
-    }
-    for (let i = 0; i < need - leftCount; i++) {
-      track.appendChild(createGhostCard());
-    }
-  };
-
-  window.addEventListener('resize', fill);
-
-  // View Transitions 切页清理：解除窗口监听
-  const cleanup = (): void => {
-    window.removeEventListener('resize', fill);
-    document.removeEventListener('astro:before-swap', cleanup);
-  };
-  document.addEventListener('astro:before-swap', cleanup);
-
-  fill();
-}
-
-/**
  * 初始化单个滑动器的自动滚动、无限循环、拖拽与导航按钮
  */
 function initScroller(scroller: HTMLElement, rowIndex: number): void {
@@ -194,26 +127,12 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
   }
   const viewportWidth = scroller.clientWidth;
 
-  // 静态模式：单份卡片集宽度不超过视口时（小分类）无需克隆与自动滚动，
-  // 轨道交由 CSS 居中展示（.feature-scroller.is-static），导航按钮一并隐藏；
-  // 同时以空占位卡片补满两侧空位，保持与其他滚动行满幅一致的版面
-  if (originalCardSetWidth <= viewportWidth) {
-    scroller.classList.add('is-static');
-    track.dataset.initialized = 'true';
-    setupStaticFiller(scroller, track, originalCardSetWidth, gap);
-    return;
-  }
+  // 退化防护：单份宽度非正（如布局未就绪或卡片全部零宽）时
+  // 份数计算会得到 Infinity，直接放弃初始化避免克隆死循环
+  if (originalCardSetWidth <= 0) return;
 
-  // 计算需要的份数：总宽度 ≥ 视窗宽度 + 单份宽度
-  // 保证 offset 从 0 回绕到 -cardSetWidth 时视窗始终有内容
-  // 最少 2 份（原始 + 1 份克隆），卡片少时自动增加至 3 份或更多
-  const neededCopies = Math.max(
-    2,
-    Math.ceil((viewportWidth + originalCardSetWidth) / originalCardSetWidth),
-  );
-
-  // 克隆 neededCopies - 1 份（原始已有 1 份），实现无缝循环
-  for (let i = 1; i < neededCopies; i++) {
+  // 克隆一份卡片集的辅助函数：克隆卡对辅助技术隐藏、不可聚焦
+  const cloneSet = (): void => {
     cards.forEach((card) => {
       const clone = card.cloneNode(true) as HTMLElement;
       clone.setAttribute('aria-hidden', 'true');
@@ -221,6 +140,20 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
       clone.style.animation = 'none';
       track.appendChild(clone);
     });
+  };
+
+  // 计算需要的份数：总宽度 ≥ 视窗宽度 + 单份宽度
+  // 保证 offset 在 [-cardSetWidth, 0] 任意位置回绕时视窗始终有内容
+  // 最少 2 份（原始 + 1 份克隆），小分类卡片集不足视口时自动补至 3 份或更多
+  // —— 任何分类行、任何视口尺寸下都保持循环滚动，不再有静止行
+  const neededCopies = Math.max(
+    2,
+    Math.ceil((viewportWidth + originalCardSetWidth) / originalCardSetWidth),
+  );
+
+  // 克隆 neededCopies - 1 份（原始已有 1 份），实现无缝循环
+  for (let i = 1; i < neededCopies; i++) {
+    cloneSet();
   }
 
   track.dataset.initialized = 'true';
@@ -228,10 +161,17 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
   // 确定滚动方向：rowIndex 0, 2, 4... 向左；1, 3, 5... 向右
   const direction: 'left' | 'right' = rowIndex % 2 === 0 ? 'left' : 'right';
 
-  // 计算单份卡片集宽度（总宽度 / 份数）
-  // 无论克隆多少份，除以份数即为单份宽度，取模回绕逻辑不变
+  // 计算单份卡片集宽度：原始卡片（前 cards.length 张）宽度 + 各自间距
+  // 恰为"含尾随间距"的单份宽度，回绕接缝处的卡片间距与行内完全一致；
+  // 直接取前 N 张而非 scrollWidth / 份数，避免 flex gap 计数取整误差
   const measureCardSetWidth = (): number => {
-    return track.scrollWidth / neededCopies;
+    let width = 0;
+    for (let i = 0; i < cards.length; i++) {
+      const el = track.children[i] as HTMLElement | undefined;
+      if (!el) break;
+      width += el.getBoundingClientRect().width + gap;
+    }
+    return width;
   };
 
   // 计算滚动速度：卡片数量越少速度越快
@@ -560,9 +500,15 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
   scroller.addEventListener('wheel', onWheel, { passive: false });
 
   // ========== 响应窗口大小变化 ==========
-  // 窗口大小变化时重新计算 cardSetWidth
+  // 窗口大小变化时重新测量单份宽度，并维持无缝循环不变量
+  // "总宽度 ≥ 视窗 + 单份宽度"：视窗变大（或断点切换卡片宽度）导致
+  // 总宽度不足时按份追加克隆——只增不减、追加在尾部，不影响既有
+  // offset 取模回绕映射；小分类行在大屏下同样持续滚动无空窗
   const handleResize = (): void => {
     state.cardSetWidth = measureCardSetWidth();
+    while (track.scrollWidth < scroller.clientWidth + state.cardSetWidth) {
+      cloneSet();
+    }
   };
   window.addEventListener('resize', handleResize);
 
