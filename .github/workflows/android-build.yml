@@ -40,7 +40,8 @@ permissions:
 
 concurrency:
   group: android-build-${{ github.ref }}
-  cancel-in-progress: true
+  # 与 desktop-build 保持一致：仅取消被顶替的 PR 旧任务，main 推送排队执行
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
