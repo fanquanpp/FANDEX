@@ -1,16 +1,16 @@
 ---
-order: 370
+order: 60
 title: 事务与会话
-module: 'redis'
+module: 'mongodb'
 category: 数据库
 difficulty: intermediate
 description: 多文档事务、会话与因果一致性——在文档数据库里获得确定性。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-18'
 related:
-  - 'redis/360-MongoDBSchemaDesign'
+  - 'mongodb/050-MongoDBSchemaDesign'
 prerequisites:
-  - 'redis/330-MongoDBCRUDOperations'
+  - 'mongodb/020-MongoDBCRUDOperations'
 ---
 
 ## 0. 为什么 NoSQL 也需要事务（先读这里）

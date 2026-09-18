@@ -1,0 +1,7 @@
+{
+  "title": "MongoDB",
+  "icon": "Mo",
+  "description": "文档型 NoSQL 数据库：CRUD 与聚合管道、索引与建模、事务与副本集分片、安全与变更流",
+  "categories": ["database"],
+  "prerequisites": ["sql"]
+}

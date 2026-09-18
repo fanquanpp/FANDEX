@@ -1,18 +1,18 @@
 ---
-order: 340
+order: 30
 title: MongoDB 聚合管道
-module: 'redis'
+module: 'mongodb'
 category: 数据库
 difficulty: intermediate
 description: 用 $match/$group/$sort/$project 等管道阶段完成分组、统计、拆数组等复杂查询，替代 SQL 的 GROUP BY。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-18'
 related:
-  - 'redis/330-MongoDBCRUDOperations'
-  - 'redis/350-MongoDBIndexPerformance'
+  - 'mongodb/020-MongoDBCRUDOperations'
+  - 'mongodb/040-MongoDBIndexPerformance'
   - 'sql/040-DataQueryBasics'
 prerequisites:
-  - 'redis/330-MongoDBCRUDOperations'
+  - 'mongodb/020-MongoDBCRUDOperations'
 ---
 
 ## 0. 一句话理解

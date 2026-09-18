@@ -56,6 +56,7 @@ export { default as nextjsMap } from '../metadata/learning-path/nextjs.json';
 export { default as nestjsMap } from '../metadata/learning-path/nestjs.json';
 export { default as startMap } from '../metadata/learning-path/start.json';
 export { default as roadmapMap } from '../metadata/learning-path/roadmap.json';
+export { default as mongodbMap } from '../metadata/learning-path/mongodb.json';
 
 // ============================================================
 // 类型定义

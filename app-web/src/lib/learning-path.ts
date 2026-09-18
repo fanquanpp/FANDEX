@@ -58,6 +58,7 @@ import {
   nestjsMap,
   startMap,
   roadmapMap,
+  mongodbMap,
 } from '@fandex/utils/learning-path';
 import docIndex from '@/data/doc-index.json';
 import { getModule, categoryColors, getPrimaryCategory } from '@/lib/modules';
@@ -167,6 +168,7 @@ const technologyMaps: Readonly<Record<string, TechnologyMap>> = {
   nestjs: nestjsMap as unknown as TechnologyMap,
   start: startMap as unknown as TechnologyMap,
   roadmap: roadmapMap as unknown as TechnologyMap,
+  mongodb: mongodbMap as unknown as TechnologyMap,
 };
 
 /** 文档索引映射：module/slug -> title，供节点文档标题解析 */

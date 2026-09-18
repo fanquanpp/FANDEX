@@ -1,16 +1,16 @@
 ---
-order: 380
+order: 70
 title: 副本集与分片架构
-module: 'redis'
+module: 'mongodb'
 category: 数据库
 difficulty: advanced
 description: 副本集高可用与水平分片：oplog、选举、shard key 选型与数据分布。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-18'
 related:
-  - 'redis/350-MongoDBIndexPerformance'
+  - 'mongodb/040-MongoDBIndexPerformance'
 prerequisites:
-  - 'redis/360-MongoDBSchemaDesign'
+  - 'mongodb/050-MongoDBSchemaDesign'
 ---
 
 ## 0. 从单机到分片：演进路线（先读这里）

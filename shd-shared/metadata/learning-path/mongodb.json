@@ -1,0 +1,37 @@
+{
+  "version": "1.0.0",
+  "module": "mongodb",
+  "summary": "从文档模型与 CRUD 起步，经索引、聚合与建模，走向事务、分片集群与安全运营。",
+  "stages": [
+    {
+      "id": "basics",
+      "title": "入门基础",
+      "subtitle": "文档模型与增删改查",
+      "nodes": [
+        { "id": "mongo-001", "title": "MongoDB 概述与快速上手", "doc": "010-MongoDBOverviewQuickStart" },
+        { "id": "mongo-002", "title": "CRUD 操作", "doc": "020-MongoDBCRUDOperations" }
+      ]
+    },
+    {
+      "id": "intermediate",
+      "title": "查询与建模",
+      "subtitle": "聚合管道、索引与文档设计",
+      "nodes": [
+        { "id": "mongo-003", "title": "聚合管道", "doc": "030-MongoDBAggregationPipeline" },
+        { "id": "mongo-004", "title": "索引与性能", "doc": "040-MongoDBIndexPerformance" },
+        { "id": "mongo-005", "title": "模式设计", "doc": "050-MongoDBSchemaDesign" }
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "进阶与运维",
+      "subtitle": "事务、集群、安全与实时流",
+      "nodes": [
+        { "id": "mongo-006", "title": "事务与会话", "doc": "060-MongoDBTransactionSession" },
+        { "id": "mongo-007", "title": "副本集与分片", "doc": "070-MongoDBReplicaSetSharding" },
+        { "id": "mongo-008", "title": "安全与用户管理", "doc": "080-MongoDBSecurityUserManagement" },
+        { "id": "mongo-009", "title": "Change Stream 实时流", "doc": "090-MongoDBChangeStreamRealtime" }
+      ]
+    }
+  ]
+}

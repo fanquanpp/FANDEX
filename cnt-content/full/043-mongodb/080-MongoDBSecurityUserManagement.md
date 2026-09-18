@@ -1,16 +1,16 @@
 ---
-order: 390
+order: 80
 title: 安全与用户管理
-module: 'redis'
+module: 'mongodb'
 category: 数据库
 difficulty: intermediate
 description: 认证、角色与最小权限：把数据库的门锁好。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-18'
 related:
-  - 'redis/360-MongoDBSchemaDesign'
+  - 'mongodb/050-MongoDBSchemaDesign'
 prerequisites:
-  - 'redis/320-MongoDBOverviewQuickStart'
+  - 'mongodb/010-MongoDBOverviewQuickStart'
 ---
 
 ## 0. 把数据库的门锁好（先读这里）
