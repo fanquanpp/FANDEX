@@ -28,7 +28,7 @@ const allModules = getAllModules()
 // 功能入口单一数据源来自 lib/feature-entries（与文档页顶栏直达链接、
 // 子页 FeatureNav、移动端功能面板同源）；入场波浪签名的错峰延迟
 // 由渲染序号 --entry-i 驱动 CSS calc 自动计算，与添加顺序/数量解耦；
-// 桌面端构建无在线编程（webOnly 过滤，序号随实际渲染重排）
+// 桌面端构建无在线前端（webOnly 过滤，序号随实际渲染重排）
 const heroEntries = getFeatureEntries(`${import.meta.env.BASE_URL}`)
 
 // 通过 module-service 获取分类信息并按分类分组模块

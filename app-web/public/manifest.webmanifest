@@ -1,7 +1,7 @@
 {
   "name": "FANDEX — 循序渐进的自学之旅",
   "short_name": "FANDEX",
-  "description": "覆盖工具链、前端、后端、数据库、计算机科学、数学与云基础设施的自学知识库，支持在线编程实验与学习路线导图。",
+  "description": "覆盖工具链、前端、后端、数据库、计算机科学、数学与云基础设施的自学知识库，支持在线前端实验与学习路线导图。",
   "id": "/FANDEX/",
   "start_url": "/FANDEX/",
   "scope": "/FANDEX/",
@@ -39,8 +39,8 @@
   ],
   "shortcuts": [
     {
-      "name": "在线编程",
-      "short_name": "在线编程",
+      "name": "在线前端",
+      "short_name": "在线前端",
       "description": "HTML / CSS / JS 前端实验工作台",
       "url": "/FANDEX/playground/",
       "icons": [{ "src": "/FANDEX/icons/app-icon-192.png", "sizes": "192x192" }]

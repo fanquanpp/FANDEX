@@ -26,7 +26,7 @@ test.describe('子功能页 UX 迭代验证', () => {
       await page.goto(`${BASE}${path}`);
       const entries = page.locator('.hero-entries .entry-name');
       const labels = (await entries.allTextContents()).map((s) => s.trim());
-      for (const required of ['首页', '语法速览', '学习路线', '算法教学', '在线编程']) {
+      for (const required of ['首页', '语法速览', '学习路线', '算法教学', '在线前端']) {
         expect(labels, `${path} 缺少入口 ${required}`).toContain(required);
       }
     }
@@ -88,7 +88,7 @@ test.describe('子功能页 UX 迭代验证', () => {
     await page.evaluate(() => localStorage.removeItem('fandex-ap-progress'));
   });
 
-  test('在线编程工作台：快捷键面板 + Ctrl+S 另存', async ({ page }) => {
+  test('在线前端工作台：快捷键面板 + Ctrl+S 另存', async ({ page }) => {
     await page.goto(`${BASE}playground/editor/`);
     await page.waitForSelector('.pg-toolbar');
     // ? 打开快捷键面板，Esc 关闭

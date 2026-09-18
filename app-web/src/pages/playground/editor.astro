@@ -1,8 +1,8 @@
 ---
 /**
- * 在线编程工作台页面（前端三件套实验场）
+ * 在线前端工作台页面（前端三件套实验场）
  * -----------------------------------------------------------------------------
- * 隶属「在线编程」子级：/playground/ 为功能主页（介绍 + 灵感图鉴入口），
+ * 隶属「在线前端」子级：/playground/ 为功能主页（介绍 + 灵感图鉴入口），
  * 本页为工作台本体，支持深链参数：
  *   - ?showcase=<id>  载入灵感图鉴指定成品（由图鉴卡片「载入工作台」触发）
  *   - ?panel=gallery  打开时直接展开灵感画廊面板
@@ -22,11 +22,11 @@ import '@/styles/islands/playground.css'
 const base = import.meta.env.BASE_URL
 ---
 
-<HomeLayout title="在线编程工作台">
+<HomeLayout title="在线前端工作台">
   <SEO
     slot="head"
-    title="在线编程工作台"
-    description="FANDEX 在线编程工作台：在浏览器中编写 HTML、CSS 与 JavaScript，实时预览效果，内置控制台与灵感画廊，作品自动保存在本地，无需注册与上传。"
+    title="在线前端工作台"
+    description="FANDEX 在线前端工作台：在浏览器中编写 HTML、CSS 与 JavaScript，实时预览效果，内置控制台与灵感画廊，作品自动保存在本地，无需注册与上传。"
     canonical={`${SITE.url}${base}playground/editor/`}
     type="website"
   />

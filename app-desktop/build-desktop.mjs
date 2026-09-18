@@ -4,9 +4,9 @@
  * 流程：
  *   1. 在仓库根执行 pnpm build:web（Astro 静态构建 + pagefind 索引），
  *      并注入 DESKTOP_BUILD=1：web 端据此切换 base 为 /，页面 CSP 移除
- *      CDN 授权（DESKTOP_CSP），且构建期条件渲染直接不输出"在线编程"（playground）
+ *      CDN 授权（DESKTOP_CSP），且构建期条件渲染直接不输出"在线前端"（playground）
  *      入口链接、不注册 Service Worker
- *   2. 剔除"前端实验室"页面产物（playground/）——桌面端不提供在线编程
+ *   2. 剔除"前端实验室"页面产物（playground/）——桌面端不提供在线前端
  *   3. 产物目录即 Tauri 的 frontendDist（tauri.conf.json -> ../../app-web/dist，
  *      相对 src-tauri 解析），随后由 `tauri build` 打包为 Windows 安装包（NSIS）
  *

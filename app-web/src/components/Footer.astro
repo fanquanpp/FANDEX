@@ -5,7 +5,7 @@
  * 三列布局（桌面端）：品牌块 / 学习入口 / 项目资源，底部版权行。
  * 复用 shared/layout-components.css 的 .fndx-footer__sections 网格体系，
  * 品牌标识与竖条标记遵循 ark 设计语言（禁点状装饰、直角小圆角）。
- * 首页与学习路线页共用；桌面端构建（DESKTOP_BUILD=1）时隐藏在线编程入口。
+ * 首页与学习路线页共用；桌面端构建（DESKTOP_BUILD=1）时隐藏在线前端入口。
  */
 import { SITE } from '@/lib/constants';
 import { IS_DESKTOP_BUILD } from '@/lib/constants';
@@ -46,7 +46,7 @@ const yearRange =
       <nav class="fndx-footer__section" aria-label="学习入口">
         <h2 class="fndx-footer__section-title footer-section-title">学习入口</h2>
         {!IS_DESKTOP_BUILD && (
-          <a href={`${base}playground/`} class="fndx-footer__link">在线编程</a>
+          <a href={`${base}playground/`} class="fndx-footer__link">在线前端</a>
         )}
         <a href={`${base}syntax/`} class="fndx-footer__link">语法速览</a>
         <a href={`${base}learning-path/`} class="fndx-footer__link">学习路线</a>

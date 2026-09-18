@@ -112,7 +112,7 @@ function saveRecent(entry: QuickEntry): void {
 
 /**
  * 功能入口分组数据
- * 在线编程仅在 web 构建（页面中存在 playground 链接）时展示，
+ * 在线前端仅在 web 构建（页面中存在 playground 链接）时展示，
  * 桌面端构建无此项，运行时探测即可，无需注入构建标记
  */
 function quickEntries(): QuickEntry[] {
@@ -123,11 +123,11 @@ function quickEntries(): QuickEntry[] {
     { title: '算法题图鉴', href: `${BASE}algorithms/problems/`, crumb: '经典算法题与讲解' },
     { title: '模块总览', href: BASE, crumb: '全部分类与模块' },
   ];
-  // 在线编程与灵感图鉴成对出现：桌面端构建无 playground 页面时一并隐藏
+  // 在线前端与灵感图鉴成对出现：桌面端构建无 playground 页面时一并隐藏
   if (document.querySelector('a[href$="playground/"]')) {
     entries.unshift(
       { title: '灵感图鉴', href: `${BASE}playground/editor/?panel=gallery`, crumb: '25 个设计成品' },
-      { title: '在线编程', href: `${BASE}playground/`, crumb: '在线编写与运行代码' },
+      { title: '在线前端', href: `${BASE}playground/`, crumb: '在线编写与运行代码' },
     );
   }
   return entries;

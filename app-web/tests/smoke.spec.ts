@@ -8,7 +8,7 @@
  * 4. 公式页：KaTeX MathML 输出守卫（output:'mathml' 试点，
  *    若未来回退 'html' 或结构变更，此用例会失败提示同步调整）
  * 5. 语法速览：React 岛屿挂载
- * 6. 在线编程工作台：FrontendLab 冒烟（零页面错误 + 编辑器容器出现）
+ * 6. 在线前端工作台：FrontendLab 冒烟（零页面错误 + 编辑器容器出现）
  *
  * 每个用例同时监听 pageerror（未捕获异常）：任何一处脚本崩溃都判定失败，
  * 这是对 ClientRouter 生命周期脚本（lib/*.ts）最廉价也最有效的回归防线。
@@ -27,7 +27,7 @@ test('首页渲染：标题、入口按钮与模块卡片', async ({ page }) => 
   const errors = trackPageErrors(page);
   await page.goto('/FANDEX/');
   await expect(page).toHaveTitle(/FANDEX/i);
-  // 入口按钮（波浪描边组件消费方）：语法速览 / 学习路线 / 在线编程等
+  // 入口按钮（波浪描边组件消费方）：语法速览 / 学习路线 / 在线前端等
   await expect(page.locator('a.entry-btn', { hasText: '语法速览' })).toBeVisible();
   await expect(page.locator('a.entry-btn', { hasText: '学习路线' })).toBeVisible();
   expect(await page.locator('a.entry-btn').count()).toBeGreaterThanOrEqual(3);
@@ -68,7 +68,7 @@ test('语法速览：React 岛屿挂载', async ({ page }) => {
   expect(errors, '语法速览页不应有未捕获异常').toEqual([]);
 });
 
-test('在线编程工作台：FrontendLab 冒烟', async ({ page }) => {
+test('在线前端工作台：FrontendLab 冒烟', async ({ page }) => {
   const errors = trackPageErrors(page);
   await page.goto('/FANDEX/playground/');
   // 工作台主容器可见（编辑器懒加载由 CodeMirrorBoxLoader 控制，不做时机断言）

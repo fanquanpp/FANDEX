@@ -5,7 +5,7 @@
  * 共用同一组入口定义，保证全站各表面看到的入口集合与顺序一致；
  * 新增子级功能页时只需在此追加一项，各表面自动同步。
  *
- * 桌面端构建（DESKTOP_BUILD=1）不提供在线编程，webOnly 入口由
+ * 桌面端构建（DESKTOP_BUILD=1）不提供在线前端，webOnly 入口由
  * getFeatureEntries 统一过滤，序号随实际渲染重排（与入场动画 --entry-i 解耦）。
  */
 import { IS_DESKTOP_BUILD } from '@/lib/constants';
@@ -17,13 +17,13 @@ export interface FeatureEntry {
   path: string;
   /** 悬停提示 */
   tooltip: string;
-  /** 仅 web 构建渲染（桌面端无在线编程） */
+  /** 仅 web 构建渲染（桌面端无在线前端） */
   webOnly?: boolean;
 }
 
 /** 顶栏与首页 hero 共用的四个顶级子功能入口（顺序即跨页心智模型） */
 export const FEATURE_ENTRIES: FeatureEntry[] = [
-  { name: '在线编程', path: 'playground/', tooltip: '在线编写与运行代码', webOnly: true },
+  { name: '在线前端', path: 'playground/', tooltip: '在线编写与运行代码', webOnly: true },
   { name: '语法速览', path: 'syntax/', tooltip: '语法快速查阅' },
   { name: '学习路线', path: 'learning-path/', tooltip: '系统化学习路径' },
   { name: '算法教学', path: 'algorithms/', tooltip: '算法教程与刷题图鉴' },

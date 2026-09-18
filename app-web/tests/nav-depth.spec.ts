@@ -11,7 +11,7 @@
 import { expect, test } from '@playwright/test';
 
 const DOC_PAGE = '/FANDEX/algorithm/290-NetworkFlow/';
-const TOP_ENTRIES = ['在线编程', '语法速览', '学习路线', '算法教学'];
+const TOP_ENTRIES = ['在线前端', '语法速览', '学习路线', '算法教学'];
 
 test('文档页顶栏功能直达链接（≥768px）', async ({ page }) => {
   const errors: Error[] = [];

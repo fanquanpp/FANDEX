@@ -1,9 +1,9 @@
 ---
 /**
- * 在线编程功能主页（子级主页）
+ * 在线前端功能主页（子级主页）
  * -----------------------------------------------------------------------------
  * 功能概述：
- *   - /playground/ 为「在线编程」功能入口主页，与语法速览/学习路线同级的
+ *   - /playground/ 为「在线前端」功能入口主页，与语法速览/学习路线同级的
  *     落地页：Hero 统计 + 功能说明 + 灵感图鉴精选预览，不再直接进入工作台
  *   - 工作台本体位于 /playground/editor/，支持深链：
  *     ?showcase=<id> 直接载入图鉴成品，?panel=gallery 打开即展开画廊
@@ -37,11 +37,11 @@ const featured = SHOWCASE_GROUPS.map((group) => ({
 )
 ---
 
-<HomeLayout title="在线编程">
+<HomeLayout title="在线前端">
   <SEO
     slot="head"
-    title="在线编程 · FANDEX"
-    description="FANDEX 在线编程：浏览器里的前端实验场，编写 HTML、CSS 与 JavaScript 即时预览，内置控制台与本地作品库；灵感图鉴收录 25 个前端设计成品，实时预览、一键载入源码学习，无需注册与上传。"
+    title="在线前端 · FANDEX"
+    description="FANDEX 在线前端：浏览器里的前端实验场，编写 HTML、CSS 与 JavaScript 即时预览，内置控制台与本地作品库；灵感图鉴收录 25 个前端设计成品，实时预览、一键载入源码学习，无需注册与上传。"
     canonical={`${SITE.url}${base}playground/`}
     type="website"
   />
@@ -52,8 +52,8 @@ const featured = SHOWCASE_GROUPS.map((group) => ({
 
     <!-- Hero 区域：复用首页美术（渐变标题 + 统计 + SVG 描边入口） -->
     <section class="hero">
-      <h1 class="hero-title" data-text="在线编程">
-        <span class="hero-title-fan">在线</span><span class="hero-title-dex">编程</span>
+      <h1 class="hero-title" data-text="在线前端">
+        <span class="hero-title-fan">在线</span><span class="hero-title-dex">前端</span>
       </h1>
       <p class="pg-home__tagline">
         浏览器里的前端实验场：写 HTML / CSS / JavaScript，即时预览与调试。代码仅在你的浏览器本地运行与存储（IndexedDB），不会上传任何服务器。

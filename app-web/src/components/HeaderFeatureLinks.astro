@@ -6,7 +6,7 @@ import { getFeatureEntries } from '@/lib/feature-entries';
  * 文档页（Layout 布局）此前没有任何子级功能页入口，回首页找 hero 入口是
  * 唯一可见通路，入口深度过高。本组件把四个顶级功能入口常驻文档页顶栏，
  * ≥768px 显示（窄屏由底部导航「功能」面板承接），当前页高亮。
- * 入口数据来自 feature-entries 单一数据源，桌面构建自动过滤在线编程。
+ * 入口数据来自 feature-entries 单一数据源，桌面构建自动过滤在线前端。
  */
 const base = import.meta.env.BASE_URL;
 const entries = getFeatureEntries(base);
