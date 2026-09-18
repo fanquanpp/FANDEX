@@ -28,6 +28,11 @@ import '@/styles/pages/index.css'
 const syntaxIndex = getSyntaxIndex()
 const syntaxStats = getSyntaxStats()
 const base = import.meta.env.BASE_URL
+
+/** 热门语言直达芯片：按卡片数取前 8 门，点击经 ?lang= 直达该语言速查 */
+const quickLangs = [...syntaxIndex.languages]
+  .sort((a, b) => b.count - a.count)
+  .slice(0, 8)
 ---
 
 <HomeLayout title="语法速览">
@@ -71,6 +76,24 @@ const base = import.meta.env.BASE_URL
         <!-- 功能入口：共享兄弟入口（FeatureNav 统一维护） -->
         <FeatureNav />
       </div>
+
+      <!-- 热门语言直达：?lang= 深链由 SyntaxExplorer 恢复，点击即见该语言卡片 -->
+      <div class="syntax-quick" aria-label="热门语言直达">
+        <span class="syntax-quick__label">直达</span>
+        {quickLangs.map((lang) => (
+          <a
+            class="syntax-quick__chip"
+            href={`?lang=${lang.id}`}
+            style={`--chip-color:${lang.color}`}
+            data-tooltip={`直达 ${lang.title} 语法速查`}
+            data-tooltip-pos="bottom"
+          >
+            <span class="syntax-quick__icon" aria-hidden="true">{lang.icon}</span>
+            {lang.title}
+            <em>{lang.count}</em>
+          </a>
+        ))}
+      </div>
     </section>
 
     <!-- 语法速查交互区：语言切换 + 紧凑卡片网格 + 悬浮面板 -->
@@ -81,3 +104,69 @@ const base = import.meta.env.BASE_URL
     />
   </div>
 </HomeLayout>
+
+<style>
+  /* 热门语言直达芯片：hero 与速查区之间的一步直达入口（?lang= 深链） */
+  .syntax-quick {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .syntax-quick__label {
+    font-family: var(--font-family-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    color: var(--color-text-tertiary);
+  }
+
+  .syntax-quick__chip {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-1);
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid var(--color-border-light);
+    border-radius: 999px;
+    background: var(--color-bg-card);
+    font-family: var(--font-family-heading);
+    font-size: 0.76rem;
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-easing-out),
+      color var(--motion-duration-fast) var(--motion-easing-out),
+      box-shadow var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .syntax-quick__chip em {
+    font-family: var(--font-family-mono);
+    font-size: 0.6rem;
+    font-style: normal;
+    color: var(--color-text-tertiary);
+  }
+
+  .syntax-quick__chip:hover {
+    border-color: color-mix(in srgb, var(--chip-color) 60%, transparent);
+    color: var(--color-fg-primary);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .syntax-quick__chip:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .syntax-quick__icon {
+    font-size: 0.72rem;
+    color: var(--chip-color);
+  }
+
+  @media (max-width: 767px) {
+    .syntax-quick__chip em {
+      display: none;
+    }
+  }
+</style>

@@ -120,13 +120,13 @@ function quickEntries(): QuickEntry[] {
     { title: '语法速览', href: `${BASE}syntax/`, crumb: '语法快速查阅' },
     { title: '学习路线', href: `${BASE}learning-path/`, crumb: '系统化学习路径' },
     { title: '算法教学', href: `${BASE}algorithms/`, crumb: '算法教程课程表' },
-    { title: '算法题图鉴', href: `${BASE}algorithms/problems/`, crumb: '经典算法题与讲解' },
+    { title: '算法题图鉴', href: `${BASE}algorithms/?view=problems`, crumb: '经典算法题与讲解' },
     { title: '模块总览', href: BASE, crumb: '全部分类与模块' },
   ];
   // 在线前端与灵感图鉴成对出现：桌面端构建无 playground 页面时一并隐藏
   if (document.querySelector('a[href$="playground/"]')) {
     entries.unshift(
-      { title: '灵感图鉴', href: `${BASE}playground/editor/?panel=gallery`, crumb: '25 个设计成品' },
+      { title: '灵感图鉴', href: `${BASE}playground/?panel=gallery`, crumb: '25 个设计成品' },
       { title: '在线前端', href: `${BASE}playground/`, crumb: '在线编写与运行代码' },
     );
   }

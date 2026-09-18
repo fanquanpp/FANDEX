@@ -71,8 +71,8 @@ test('语法速览：React 岛屿挂载', async ({ page }) => {
 test('在线前端工作台：FrontendLab 冒烟', async ({ page }) => {
   const errors = trackPageErrors(page);
   await page.goto('/FANDEX/playground/');
-  // 工作台主容器可见（编辑器懒加载由 CodeMirrorBoxLoader 控制，不做时机断言）
-  await expect(page.locator('body')).not.toBeEmpty();
+  // 入口扁平化后 /playground/ 即工作台本体：工具栏应真实出现（2026-09-19）
+  await expect(page.locator('.pg-toolbar')).toBeVisible({ timeout: 10_000 });
   // 等待岛屿水合窗口，捕获首屏内的脚本崩溃
   await page.waitForTimeout(2_000);
   expect(errors, '工作台不应有未捕获异常（FrontendLab 冒烟守卫）').toEqual([]);

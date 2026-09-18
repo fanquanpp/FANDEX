@@ -23,15 +23,15 @@ export interface FeatureEntry {
 
 /** 顶栏与首页 hero 共用的四个顶级子功能入口（顺序即跨页心智模型） */
 export const FEATURE_ENTRIES: FeatureEntry[] = [
-  { name: '在线前端', path: 'playground/', tooltip: '在线编写与运行代码', webOnly: true },
+  { name: '在线前端', path: 'playground/', tooltip: '打开浏览器前端工作台', webOnly: true },
   { name: '语法速览', path: 'syntax/', tooltip: '语法快速查阅' },
   { name: '学习路线', path: 'learning-path/', tooltip: '系统化学习路径' },
   { name: '算法教学', path: 'algorithms/', tooltip: '算法教程与刷题图鉴' },
 ];
 
-/** 功能面板附加直达项：层级较深的次级页，绕过父级页中转一步直达 */
+/** 功能面板附加直达项：较深的功能视图，绕过父级页中转一步直达 */
 export const FEATURE_SHEET_EXTRA_ENTRIES: FeatureEntry[] = [
-  { name: '算法题图鉴', path: 'algorithms/problems/', tooltip: '经典算法题与讲解' },
+  { name: '算法题图鉴', path: 'algorithms/?view=problems', tooltip: '经典算法题与讲解' },
 ];
 
 /** 解析为带完整前缀的入口（构建期静态过滤 webOnly） */

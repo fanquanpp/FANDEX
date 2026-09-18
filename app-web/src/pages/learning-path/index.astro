@@ -100,7 +100,7 @@ const careers = [
     id: 'fullstack',
     index: '03',
     title: '全栈工程师',
-    en: 'Full-stack Engineer',
+    en: 'Full-stack',
     color: categoryColors.cs,
     status: '已开放',
     desc: '贯通前端界面与后端服务，掌握数据库与部署交付，具备独立完成完整产品的能力。',
@@ -116,7 +116,7 @@ const careers = [
     id: 'devops',
     index: '04',
     title: 'DevOps / 平台工程师',
-    en: 'DevOps / Platform Engineer',
+    en: 'DevOps',
     color: categoryColors.cloud,
     status: '已开放',
     desc: '以脚本、版本控制与网络为基础，向自动化、云计算与平台工程方向持续演进。',
@@ -157,7 +157,7 @@ const careers = [
     type="website"
   />
 
-  <div class="home-page home-page--sub">
+  <div class="home-page home-page--sub" data-lp-hub data-lp-base={base}>
     <!-- 几何背景装饰：learning-path 变体（点状装饰已统一为竖条） -->
     <GeoBgDecor variant="learning-path" />
 
@@ -195,6 +195,19 @@ const careers = [
 
         <!-- 功能入口：共享兄弟入口（FeatureNav 统一维护，避免各页子集缺漏） -->
         <FeatureNav />
+      </div>
+
+      <!-- 继续上次学习：直达上次浏览的技术地图（由 lib/lp-progress-ui.ts 点亮） -->
+      <div class="lp-resume" data-lp-resume hidden>
+        <span class="lp-resume__label">继续上次</span>
+        <a class="lp-resume__link" data-lp-resume-link href="#">
+          <span class="lp-resume__dot" aria-hidden="true"></span>
+          <span data-lp-resume-name></span>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <line x1="5" y1="12" x2="19" y2="12" />
+            <polyline points="12 5 19 12 12 19" />
+          </svg>
+        </a>
       </div>
     </section>
 
@@ -281,6 +294,8 @@ const careers = [
               <a
                 class="lp-tech-card"
                 href={`${base}learning-path/${card.module}/`}
+                data-lp-module={card.module}
+                data-lp-total={card.vm.stats.nodes}
                 style={`--card-color:${group.color};animation-delay:${cardIndex * 40}ms`}
               >
                 <div class="lp-tech-card__head">
@@ -314,6 +329,8 @@ const careers = [
                   <rect class="bar-track" x="0" y="0" width="100" height="4" />
                   <rect class="bar-fill" x="0" y="0" width={percent} height="4" />
                 </svg>
+                <!-- 本机学习进度徽章：由 lib/lp-progress-ui.ts 读取进度表点亮 -->
+                <span class="lp-tech-card__progress" data-lp-progress hidden></span>
               </a>
             )
           })}
@@ -324,3 +341,8 @@ const careers = [
     <Footer />
   </div>
 </HomeLayout>
+
+<!-- 进度直显：「继续上次」芯片 + 技术卡片本机进度徽章 -->
+<script>
+  import '@/lib/lp-progress-ui';
+</script>

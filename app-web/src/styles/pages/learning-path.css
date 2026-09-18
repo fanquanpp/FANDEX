@@ -253,9 +253,13 @@
     font-weight: 600;
     letter-spacing: 0.02em;
     color: var(--color-fg-primary);
+    /* 中文主标不折行：挤压空间由英文副标以省略号吸收（2026-09-19 评审修复） */
+    white-space: nowrap;
   }
 
   .lp-career__en {
+    flex: 1;
+    min-width: 0;
     font-family: var(--font-family-mono);
     font-size: 10px;
     letter-spacing: 0.08em;
@@ -755,5 +759,81 @@
       animation: none;
       stroke-dashoffset: 0;
     }
+  }
+
+  /* ============================================================
+   * 功能直达迭代（2026-09-19）：继续上次学习 + 卡片进度徽章
+   * ------------------------------------------------------------
+   * 「继续上次」芯片：hero 下方，由 lib/lp-progress-ui.ts 读取
+   * fandex-lp-last 点亮，一步回到上次浏览的技术地图；
+   * 徽章：技术卡片下方，直接标注本机三态进度汇总
+   * ============================================================ */
+  .lp-resume {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    margin-top: var(--space-4);
+  }
+
+  .lp-resume[hidden] {
+    display: none;
+  }
+
+  .lp-resume__label {
+    font-family: var(--font-family-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    color: var(--color-text-tertiary);
+  }
+
+  .lp-resume__link {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-1) var(--space-3);
+    border: 1px solid color-mix(in srgb, var(--color-accent-base) 40%, transparent);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-accent-base) 8%, transparent);
+    font-family: var(--font-family-heading);
+    font-size: 0.78rem;
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-fg-primary);
+    text-decoration: none;
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-easing-out),
+      box-shadow var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .lp-resume__link:hover {
+    border-color: var(--color-accent-base);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .lp-resume__link:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .lp-resume__dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--color-accent-base);
+  }
+
+  .lp-resume__link svg {
+    color: var(--color-text-tertiary);
+  }
+
+  .lp-tech-card__progress {
+    display: block;
+    font-family: var(--font-family-mono);
+    font-size: 0.64rem;
+    letter-spacing: 0.04em;
+    color: var(--card-color);
+  }
+
+  .lp-tech-card__progress[hidden] {
+    display: none;
   }
 }

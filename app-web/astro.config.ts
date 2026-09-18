@@ -47,12 +47,14 @@ export default defineConfig({
     // 样式内联策略：auto 由 Astro 自动决定（小文件内联，大文件外部引用）
     inlineStylesheets: 'auto',
   },
-  // 旧链接重定向：MongoDB 9 篇自 redis 模块拆分为独立 mongodb 模块（2026-09-19）。
+  // 旧链接重定向：MongoDB 9 篇自 redis 模块拆分为独立 mongodb 模块（2026-09-19）；
+  // 算法题图鉴列表页并入算法教学页（?view=problems 页内直切，2026-09-19 入口扁平化）。
   // 静态输出下 Astro 为每条生成 meta-refresh HTML 页，GitHub Pages 直接生效。
   // 注意：Astro 不会给 redirect 目标自动附加 base（实测生成的是根相对路径），
   // 项目站点部署在 /FANDEX/ 下，必须显式拼接 SITE_BASE，否则跳转后仍旧 404
   redirects: Object.fromEntries(
     Object.entries({
+      '/algorithms/problems/': '/algorithms/?view=problems',
       '/redis/320-MongoDBOverviewQuickStart': '/mongodb/010-MongoDBOverviewQuickStart',
       '/redis/330-MongoDBCRUDOperations': '/mongodb/020-MongoDBCRUDOperations',
       '/redis/340-MongoDBAggregationPipeline': '/mongodb/030-MongoDBAggregationPipeline',

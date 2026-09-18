@@ -1,40 +1,30 @@
 ---
 /**
- * 在线前端工作台页面（前端三件套实验场）
+ * 旧路径重定向：/playground/editor/ -> /playground/（2026-09-19 入口扁平化）
  * -----------------------------------------------------------------------------
- * 隶属「在线前端」子级：/playground/ 为功能主页（介绍 + 灵感图鉴入口），
- * 本页为工作台本体，支持深链参数：
- *   - ?showcase=<id>  载入灵感图鉴指定成品（由图鉴卡片「载入工作台」触发）
- *   - ?panel=gallery  打开时直接展开灵感画廊面板
- *   - ?pen=<id>       打开作品库中指定作品
- *
- * 美术对齐：
- *   - 使用 HomeLayout 全站横幅（FANDEX 标识 / GitHub / 主题切换），与主页同源
- *   - 几何背景装饰复用 playground 专属变体（网格 + 尖括号 + 终端方块）
+ * 工作台上移至 /playground/ 后，本页仅负责接续旧深链与历史收藏：
+ *   - 行内脚本拼接来源查询串与哈希后瞬时跳转（?showcase / ?panel / ?pen 不丢失）
+ *   - meta refresh 兜底：无 JS 环境仍可达工作台（仅丢查询参数）
+ *   - noindex：重定向页不参与索引，规范地址收敛到 /playground/
  */
-import HomeLayout from '@/components/HomeLayout.astro'
-import SEO from '@/components/SEO.astro'
-import GeoBgDecor from '@/components/GeoBgDecor.astro'
-import FrontendLab from '@/islands/playground/FrontendLab'
-import { SITE } from '@/lib/constants'
-import '@/styles/islands/playground.css'
+import BaseLayout from '@/components/BaseLayout.astro'
 
 const base = import.meta.env.BASE_URL
+const target = `${base}playground/`
 ---
 
-<HomeLayout title="在线前端工作台">
-  <SEO
-    slot="head"
-    title="在线前端工作台"
-    description="FANDEX 在线前端工作台：在浏览器中编写 HTML、CSS 与 JavaScript，实时预览效果，内置控制台与灵感画廊，作品自动保存在本地，无需注册与上传。"
-    canonical={`${SITE.url}${base}playground/editor/`}
-    type="website"
-  />
-
-  <div class="pg-page">
-    <!-- 几何背景装饰：playground 专属变体（网格 + 尖括号 + 终端方块） -->
-    <GeoBgDecor variant="playground" />
-    <!-- 前端实验工作台（客户端岛组件） -->
-    <FrontendLab client:load />
-  </div>
-</HomeLayout>
+<BaseLayout title="在线前端工作台">
+  <meta slot="head" name="robots" content="noindex, follow" />
+  <!-- 1 秒延迟兜底：给上方查询保留脚本让路（0 秒会在解析期抢跑丢掉查询串）；
+       无 JS 环境由本 meta 接管跳转，仅丢查询参数 -->
+  <meta slot="head" http-equiv="refresh" content={`1; url=${target}`} />
+  <script is:inline define:vars={{ target }}>
+    // 查询保留跳转：解析即执行，先于 meta refresh 兜底，深链参数不丢失
+    location.replace(target + location.search + location.hash);
+  </script>
+  <noscript>
+    <p style="padding: 2rem; text-align: center">
+      在线前端工作台已迁移，<a href={target}>点此进入</a>。
+    </p>
+  </noscript>
+</BaseLayout>

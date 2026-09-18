@@ -57,7 +57,12 @@ const chipModules = getLearningPathModules()
     type="website"
   />
 
-  <div class="home-page home-page--sub" style={`--lp-color:${techVM.color}`}>
+  <div
+    class="home-page home-page--sub"
+    style={`--lp-color:${techVM.color}`}
+    data-lp-tech={techVM.module}
+    data-lp-tech-title={techVM.title}
+  >
     <!-- 几何背景装饰：learning-path 变体（点状装饰已统一为竖条） -->
     <GeoBgDecor variant="learning-path" />
 
@@ -146,3 +151,8 @@ const chipModules = getLearningPathModules()
     <LearningPathMap client:load tech={techVM} base={base} />
   </div>
 </HomeLayout>
+
+<!-- 最近学习记录：总览页「继续上次学习」直达芯片的数据源 -->
+<script>
+  import '@/lib/lp-progress-ui';
+</script>
