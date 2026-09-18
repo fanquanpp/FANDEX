@@ -8,12 +8,13 @@ description: MySQL复制架构：binlog格式、半同步/异步/延迟/组复�
 author: fanquanpp
 updated: '2026-09-13'
 related:
-  - 'mysql/830-VectorType'
-  - 'mysql/800-JSONSchemaValidationAggregate'
-  - 'mysql/280-InvisibleIndex'
+  - 'mysql/590-Replication'
+  - 'mysql/620-GroupReplication'
+  - 'mysql/630-InnoDBCluster'
   - 'mysql/860-PerformanceTuningSecurity'
 prerequisites:
-  - 'mysql/160-View'
+  - 'mysql/590-Replication'
+  - 'mysql/490-Binlog'
 ---
 
 ## 前置知识
