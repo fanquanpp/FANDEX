@@ -1,0 +1,33 @@
+---
+import { getFeatureEntries } from '@/lib/feature-entries';
+/**
+ * 文档页顶栏功能直达链接
+ * -----------------------------------------------------------------------------
+ * 文档页（Layout 布局）此前没有任何子级功能页入口，回首页找 hero 入口是
+ * 唯一可见通路，入口深度过高。本组件把四个顶级功能入口常驻文档页顶栏，
+ * ≥768px 显示（窄屏由底部导航「功能」面板承接），当前页高亮。
+ * 入口数据来自 feature-entries 单一数据源，桌面构建自动过滤在线编程。
+ */
+const base = import.meta.env.BASE_URL;
+const entries = getFeatureEntries(base);
+const currentPath = decodeURI(Astro.url.pathname);
+const isCurrent = (href: string): boolean => {
+  const bare = href.replace(/\/$/, '');
+  return currentPath === href || currentPath === bare;
+};
+---
+<nav class="header-feature-links" aria-label="功能直达">
+  {
+    entries.map(entry => (
+      <a
+        href={entry.href}
+        class:list={['header-feature-link', { 'is-current': isCurrent(entry.href) }]}
+        aria-current={isCurrent(entry.href) ? 'page' : undefined}
+        data-tooltip={entry.tooltip}
+        data-tooltip-pos="bottom"
+      >
+        {entry.name}
+      </a>
+    ))
+  }
+</nav>

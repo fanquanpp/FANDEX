@@ -1,6 +1,6 @@
 ---
 import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
-import { IS_DESKTOP_BUILD } from '@/lib/constants';
+import { getFeatureEntries } from '@/lib/feature-entries';
 /**
  * 子功能页共享功能入口导航
  * -----------------------------------------------------------------------------
@@ -8,7 +8,9 @@ import { IS_DESKTOP_BUILD } from '@/lib/constants';
  * 兄弟功能入口，保证跨功能跳转的入口一致性与可预期性（此前各页维护的内联
  * nav 子集互相缺漏，如题图鉴页缺语法速览、语法页缺题图鉴）。
  *
- * 页面专属入口（如在线编程主页的"进入工作台/灵感图鉴"）通过 extra 前置渲染。
+ * 标准兄弟入口（首页 + 四个顶级功能）来自 feature-entries 单一数据源，与
+ * 文档页顶栏直达链接、移动端功能面板同源；页面专属入口（如在线编程主页的
+ * "进入工作台/灵感图鉴"）通过 extra 前置渲染。
  * 桌面端构建不含 playground，"在线编程"入口自动隐藏。
  */
 interface FeatureEntry {
@@ -31,12 +33,11 @@ const { extra = [] } = Astro.props
 /** 标准兄弟入口：所有子功能页共享（顺序即跨页跳转的心智模型） */
 const siblings: FeatureEntry[] = [
   { href: base, label: '首页', tooltip: '返回首页' },
-  { href: `${base}syntax/`, label: '语法速览', tooltip: '语法快速查阅' },
-  { href: `${base}learning-path/`, label: '学习路线', tooltip: '系统化学习路径' },
-  { href: `${base}algorithms/`, label: '算法教学', tooltip: '算法教程与刷题图鉴' },
-  ...(!IS_DESKTOP_BUILD
-    ? [{ href: `${base}playground/`, label: '在线编程', tooltip: '在线编写与运行代码' }]
-    : []),
+  ...getFeatureEntries(base).map(entry => ({
+    href: entry.href,
+    label: entry.name,
+    tooltip: entry.tooltip,
+  })),
 ]
 
 const entries: FeatureEntry[] = [...extra, ...siblings]

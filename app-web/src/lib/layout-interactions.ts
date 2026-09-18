@@ -61,6 +61,49 @@ function restoreSidebarFromUrl(): void {
   }
 }
 
+// ========== 移动端功能直达面板 ==========
+// Esc/遮罩/链接触发的关闭逻辑使用即时 DOM 查询：面板 DOM 随页面切换重建，
+// 避免 astro:page-load 重绑后闭包持有旧元素
+/** 关闭功能直达面板并恢复触发按钮焦点 */
+function closeFeatureSheet(): void {
+  const sheet = document.getElementById('feature-sheet');
+  const backdrop = document.getElementById('feature-sheet-backdrop');
+  const btn = document.getElementById('mobile-features-btn');
+  if (!sheet || !sheet.classList.contains('is-open')) return;
+  sheet.classList.remove('is-open');
+  sheet.setAttribute('aria-hidden', 'true');
+  backdrop?.classList.remove('is-visible');
+  btn?.setAttribute('aria-expanded', 'false');
+  btn?.focus();
+}
+
+/** 初始化功能直达面板：底部导航「功能」按钮唤起，子级功能页一步直达 */
+function initFeatureSheet(): void {
+  const btn = document.getElementById('mobile-features-btn');
+  const sheet = document.getElementById('feature-sheet');
+  const backdrop = document.getElementById('feature-sheet-backdrop');
+  if (!btn || !sheet || !backdrop || btn.dataset.sheetBound === 'true') return;
+  btn.dataset.sheetBound = 'true';
+
+  btn.addEventListener('click', () => {
+    const willOpen = !sheet.classList.contains('is-open');
+    sheet.classList.toggle('is-open', willOpen);
+    sheet.setAttribute('aria-hidden', String(!willOpen));
+    backdrop.classList.toggle('is-visible', willOpen);
+    btn.setAttribute('aria-expanded', String(willOpen));
+    if (willOpen) {
+      (sheet.querySelector('a') as HTMLElement | null)?.focus();
+    } else {
+      btn.focus();
+    }
+  });
+  // 遮罩点击与面板内链接点击均关闭面板（链接跳转后新页面面板为初始关闭态）
+  backdrop.addEventListener('click', closeFeatureSheet);
+  sheet.addEventListener('click', event => {
+    if ((event.target as HTMLElement | null)?.closest('a')) closeFeatureSheet();
+  });
+}
+
 /**
  * 初始化侧边栏开关、返回顶部按钮等 DOM 依赖交互
  * 每次 View Transitions 页面切换后重新执行，确保新 DOM 元素绑定监听器
@@ -100,6 +143,8 @@ function initLayoutInteractions(): void {
     backdrop.dataset.bound = 'true';
     backdrop.addEventListener('click', closeSidebar);
   }
+
+  initFeatureSheet();
 
   // 返回顶部按钮：每次页面切换后重新绑定（原实现仅注册一次，View Transitions 后失效）
   const backToTopBtn = document.getElementById('nav-back-to-top');
@@ -242,6 +287,12 @@ function initCopyButtons(): void {
 initLayoutInteractions();
 initFullscreenToggle();
 initCopyButtons();
+
+// Esc 关闭功能直达面板：置于模块顶层仅注册一次，不随 astro:page-load 重绑；
+// closeFeatureSheet 内部有 is-open 守卫，面板未打开时零开销直返
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') closeFeatureSheet();
+});
 
 document.addEventListener('astro:page-load', () => {
   closeSidebar();
