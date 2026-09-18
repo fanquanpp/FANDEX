@@ -46,7 +46,9 @@ permissions:
 
 concurrency:
   group: desktop-build-${{ github.ref }}
-  cancel-in-progress: true
+  # 仅取消被 PR 新提交顶替的旧任务；push 到 main 时排队执行，
+  # 避免连续合并时桌面校验被级联取消（每次合并都应得到最终验证结果）
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   build:
