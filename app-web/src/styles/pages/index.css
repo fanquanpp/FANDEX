@@ -280,7 +280,7 @@
    * - SVG .entry-border 使用二次贝塞尔曲线（Q 命令）绘制手绘风格波浪路径
    * - preserveAspectRatio="none" 让路径拉伸适配按钮尺寸
    * - hover 时 stroke-dashoffset 从 250 → 0，实现路径从无到有的书写动画
-   * - 三个按钮颜色统一使用项目标题主题色 var(--color-accent-base)
+   * - 各入口颜色统一使用项目标题主题色 var(--color-accent-base)
    * 性能：仅动画 stroke-dashoffset，GPU 加速 */
   .hero-entries {
     display: flex;
@@ -691,8 +691,8 @@
   }
 
   /* 循环滚动态：两侧渐隐遮罩，让被裁切的克隆卡片呈现"渐入渐出"意图，
-     消除静态截图/首屏中"半截卡片"的破碎感（静态模式不裁切，无需遮罩） */
-  .feature-scroller:not(.is-static) {
+     消除静态截图/首屏中"半截卡片"的破碎感（所有分类行均循环滚动） */
+  .feature-scroller {
     -webkit-mask-image: linear-gradient(
       to right,
       transparent 0,
@@ -701,21 +701,6 @@
       transparent 100%
     );
     mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%);
-  }
-
-  /* 静态态：卡片集宽度不超过视口时（小分类）不克隆、不自动滚动，
-     轨道居中铺满，隐藏左右导航按钮（:has 向上命中所属分类区块） */
-  .feature-scroller.is-static {
-    cursor: default;
-  }
-
-  .feature-scroller.is-static .feature-track {
-    width: 100%;
-    justify-content: center;
-  }
-
-  .category-section:has(.feature-scroller.is-static) .category-header__actions {
-    display: none;
   }
 
   /* 拖拽进行中：切换光标 */
@@ -739,22 +724,6 @@
      紧凑化：200px 适配缩小后的卡片整体视觉权重 */
   .feature-track .module-card {
     flex: 0 0 200px;
-  }
-
-  /* 静态行的空占位卡片：虚线空槽，由 lib/home-interactions.ts 按视口宽度
-     对称插入真实卡片两侧，填满整行消除空位（强迫症修复）。
-     不承载内容与交互（aria-hidden + pointer-events:none），
-     不参与滚动（整行本就静止），仅作版面填充 */
-  .feature-track .module-card--ghost {
-    background: transparent;
-    border: 1px dashed var(--color-border-subtle);
-    box-shadow: none;
-    pointer-events: none;
-  }
-
-  /* 占位卡片禁用顶部装饰线（::before 分类色上线为真实卡片专属） */
-  .feature-track .module-card--ghost::before {
-    content: none;
   }
 
   /* ============================================================
@@ -802,10 +771,11 @@
       gap: var(--space-4);
     }
 
-    /* 移动端功能入口：固定三列网格，避免 flex 换行产生"2+1 孤行" */
+    /* 移动端功能入口：两列网格（web 构建 4 个入口 2x2 均衡铺满，
+       避免单数落单；桌面构建 3 个入口为 2+1，窄屏下仍然紧凑） */
     .hero-entries {
       display: grid;
-      grid-template-columns: repeat(3, minmax(0, 1fr));
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: var(--space-1);
       margin-top: 0;
     }
@@ -966,7 +936,10 @@
 
   /* 功能入口波浪边框：入场时依次"签名式"划过再隐去（一次性），之后恢复
      hover 触发的路径书写交互；fill: backwards 结束后回到基础隐藏态（offset:250），
-     与 hover 过渡互不干扰 */
+     与 hover 过渡互不干扰。
+     错峰延迟由按钮上的 --entry-i 渲染序号统一计算（0.14s 步进，起拍 0.5s），
+     新增/删减入口自动参与错峰，不按 nth-child 硬编码——入口数量随构建
+     （桌面端无在线编程）或迭代增减时不再出现覆盖不全的割裂 */
   @keyframes entry-path-intro {
     0% { stroke-dashoffset: 250; }
     40% { stroke-dashoffset: 0; }
@@ -974,16 +947,9 @@
     100% { stroke-dashoffset: 250; }
   }
 
-  .hero-entries .entry-btn:nth-child(1) .entry-border path {
-    animation: entry-path-intro 1.9s var(--motion-easing-in-out) 0.5s backwards;
-  }
-
-  .hero-entries .entry-btn:nth-child(2) .entry-border path {
-    animation: entry-path-intro 1.9s var(--motion-easing-in-out) 0.64s backwards;
-  }
-
-  .hero-entries .entry-btn:nth-child(3) .entry-border path {
-    animation: entry-path-intro 1.9s var(--motion-easing-in-out) 0.78s backwards;
+  .hero-entries .entry-btn .entry-border path {
+    animation: entry-path-intro 1.9s var(--motion-easing-in-out) backwards;
+    animation-delay: calc(0.5s + var(--entry-i, 0) * 0.14s);
   }
 
   /* Hero 底部分割线：从中心向两侧展开（背景渐变线宽度 0% → 100%） */
