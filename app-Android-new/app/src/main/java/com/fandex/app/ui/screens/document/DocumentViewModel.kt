@@ -1,6 +1,7 @@
 package com.fandex.app.ui.screens.document
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fandex.app.FandexApp
@@ -101,8 +102,14 @@ class DocumentViewModel(application: Application) : AndroidViewModel(application
                     )
                 )
             } catch (e: Exception) {
+                Log.e(TAG, "文档加载失败: $moduleId/$docSlug", e)
                 _state.value = DocumentUiState.Error(e.message ?: "加载失败")
             }
         }
+    }
+
+    companion object {
+        /** 日志 TAG */
+        private const val TAG = "DocumentViewModel"
     }
 }

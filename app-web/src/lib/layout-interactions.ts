@@ -352,7 +352,11 @@ void initAnimations();
 // fullscreenchange 监听器由 initFullscreenToggle 通过 onFullscreenChange === null 守卫，仅注册一次。
 
 // 注册 Service Worker 以支持离线访问
-if ('serviceWorker' in navigator) {
+// Tauri 桌面端（window.__TAURI__ 由 withGlobalTauri 注入）必须跳过：
+// 1) 桌面端内容本身随应用离线分发，SW 无增益；
+// 2) WebView2 的 SW 缓存跨应用升级持久存在，会把旧版本 HTML/资源继续
+//    提供给已升级的应用（与 web 端 2026-09-15 排查过的"SW 供旧"同因）。
+if (!('__TAURI__' in window) && 'serviceWorker' in navigator) {
   const base = import.meta.env.BASE_URL;
   navigator.serviceWorker.register(base + 'sw.js').catch((err) => {
     // 开发环境暴露 SW 注册失败原因，便于排查；生产环境静默以避免噪音

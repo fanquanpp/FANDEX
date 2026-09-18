@@ -961,7 +961,7 @@ dependencies = [
 
 [[package]]
 name = "fandex-desktop"
-version = "4.3.1"
+version = "4.4.0"
 dependencies = [
  "tauri",
  "tauri-build",

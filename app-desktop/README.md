@@ -35,10 +35,16 @@ cd app-desktop && npx tauri build
 ## 与 web 端的关系
 
 桌面端不复制 web 代码：`tauri.conf.json` 的 `frontendDist` 直接指向
-`../app-web/dist`，web 端每次构建即桌面端可用产物。唯二差异由构建编排处理：
+`../../app-web/dist`（相对 `src-tauri/`）。web 端构建管线即桌面端可用产物，
+差异由构建编排处理：
 
 1. `DESKTOP_BUILD=1` 时 Astro `base` 切换为根路径（Tauri 内 `/FANDEX/` 前缀会 404）；
-2. 构建后剔除 playground 页面与静态 HTML 中的入口链接。
+2. 页面 CSP 切换为无 CDN 授权的收紧版（playground 已剔除，无 CDN 消费者）；
+3. 不注册 Service Worker（桌面端内容随应用分发，SW 缓存会在升级后供旧）；
+4. 构建后剔除 playground 页面与静态 HTML 中的入口链接。
+
+注意：`app-web/dist` 被 web 与桌面两种构建共用且 `base` 互斥——桌面构建完成后
+`dist` 即桌面变体，仅供 Tauri 打包；web 部署一律走 CI 独立构建（deploy.yml）。
 
 ## 目录结构
 
