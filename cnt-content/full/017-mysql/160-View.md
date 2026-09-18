@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: MySQL 视图从零到工程化：创建替换与列别名、CHECK OPTION 的写入守卫、DEFINER/INVOKER 安全上下文、视图的四类适用场景与性能边界。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'mysql/150-AdvancedQueryMultiTableOperation'
   - 'mysql/690-AccountPermissionManagement'

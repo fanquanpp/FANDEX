@@ -9,10 +9,14 @@ import BaseLayout from '@/components/BaseLayout.astro';
 import ThemeToggle from '@/islands/ThemeToggle';
 import PerformanceMonitor from '@/components/PerformanceMonitor.astro';
 import ReadingProgress from '@/components/ReadingProgress.astro';
+import HeaderFeatureLinks from '@/components/HeaderFeatureLinks.astro';
+import { getFeatureSheetEntries } from '@/lib/feature-entries';
 import { SITE } from '@/lib/constants';
 
 const { title } = Astro.props;
 const base = import.meta.env.BASE_URL;
+// 移动端功能直达面板入口（含题图鉴等次级页，绕过父级页中转）
+const sheetEntries = getFeatureSheetEntries(base);
 // 检测是否包含侧边栏/目录大纲插槽，用于条件渲染遮罩层、移动端导航按钮和三栏布局
 const hasSidebar = Astro.slots.has('sidebar');
 const hasToc = Astro.slots.has('toc');
@@ -55,6 +59,8 @@ const hasToc = Astro.slots.has('toc');
         <a href={base} class="nav-logo">
           <span class="logo-text">{SITE.title}</span>
         </a>
+        <!-- 功能直达链接：子级功能页常驻顶栏（≥768px，窄屏走底部导航功能面板） -->
+        <HeaderFeatureLinks />
       </div>
       <div class="nav-right">
         <!-- 全站搜索：打开命令面板（Ctrl/Cmd + K），纯 DOM 实现无岛屿水合 -->
@@ -142,6 +148,16 @@ const hasToc = Astro.slots.has('toc');
         </button>
       )
     }
+    <!-- 功能直达面板按钮：窄屏（<768px）子级功能页常驻入口，唤起 feature-sheet -->
+    <button class="mobile-nav-link" id="mobile-features-btn" aria-label="功能" aria-expanded="false" aria-controls="feature-sheet">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+        <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+        <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+        <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+      </svg>
+      <span>功能</span>
+    </button>
     <!-- 全屏切换按钮 -->
     <button class="mobile-nav-link" id="mobile-fullscreen-btn" aria-label="全屏">
       <svg
@@ -158,6 +174,22 @@ const hasToc = Astro.slots.has('toc');
       </svg>
       <span>全屏</span>
     </button>
+  </nav>
+  <!-- 移动端功能直达面板：子级功能页一步直达（含题图鉴等次级页），窄屏专属 -->
+  <div class="feature-sheet-backdrop" id="feature-sheet-backdrop" />
+  <nav class="feature-sheet" id="feature-sheet" aria-label="功能直达" aria-hidden="true">
+    <p class="feature-sheet__title">功能直达</p>
+    {
+      sheetEntries.map(entry => (
+        <a href={entry.href} class="feature-sheet__link">
+          <span class="feature-sheet__name">{entry.name}</span>
+          <span class="feature-sheet__hint">{entry.tooltip}</span>
+          <svg class="feature-sheet__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+            <polyline points="9 18 15 12 9 6" />
+          </svg>
+        </a>
+      ))
+    }
   </nav>
   <!-- 性能监控面板：仅开发环境渲染（组件内部通过 import.meta.env.DEV 控制） -->
   <PerformanceMonitor />

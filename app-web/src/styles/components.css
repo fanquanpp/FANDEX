@@ -474,4 +474,153 @@
 
 /* 注：旧 .app-sidebar 滚动条样式已废弃，滚动条由 .fndx-sidebar__scroll 的 scrollbar-width/scrollbar-color 控制 */
 
+/* ========== 顶栏功能直达链接（文档页 Layout，入口扁平化）==========
+ * 文档页此前无任何子级功能页入口，唯一可见通路是回首页找 hero 入口；
+ * 此处把四个顶级功能入口常驻文档页顶栏，≥768px 显示，
+ * 窄屏（<768px）由底部导航「功能」面板（.feature-sheet）承接。
+ * 当前页高亮用底部短刻度线（几何刻度语言，与页脚分区标题竖条同源）。 */
+.header-feature-links {
+  display: none; /* 窄屏隐藏，避免与底部导航功能面板重复 */
+}
+
+@media (min-width: 768px) {
+  .header-feature-links {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+    margin-left: var(--space-4);
+    /* 允许在窄桌面压缩：优先保 logo 与右侧操作按钮不重叠 */
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .header-feature-link {
+    position: relative;
+    font-family: var(--font-family-heading);
+    font-size: 0.8rem;
+    letter-spacing: 0.04em;
+    color: var(--color-fg-secondary);
+    text-decoration: none;
+    white-space: nowrap;
+    transition: color var(--motion-duration-instant);
+  }
+
+  .header-feature-link:hover,
+  .header-feature-link:focus-visible {
+    color: var(--color-accent-base);
+  }
+
+  .header-feature-link.is-current {
+    color: var(--color-fg-primary);
+  }
+
+  .header-feature-link.is-current::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -6px;
+    height: 2px;
+    border-radius: 1px;
+    background: var(--color-accent-base);
+  }
+}
+
+/* ========== 移动端功能直达面板 ==========
+ * 底部导航「功能」按钮唤起，列出全部子级功能页入口（含题图鉴等次级页），
+ * 一步直达不再依赖父级页中转；仅 <768px 渲染交互，桌面端保持 display:none。 */
+.feature-sheet-backdrop,
+.feature-sheet {
+  display: none;
+}
+
+@media (max-width: 767.98px) {
+  .feature-sheet-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.55);
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity var(--motion-duration-fast);
+    z-index: 200;
+  }
+
+  .feature-sheet-backdrop.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .feature-sheet {
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    left: 0;
+    right: 0;
+    /* 悬于底部导航（56px）之上，不遮蔽导航本体 */
+    bottom: 56px;
+    background: var(--color-bg-primary);
+    border-top: 1px solid var(--color-border-strong);
+    padding: var(--space-2) 0 var(--space-3);
+    transform: translateY(12px);
+    opacity: 0;
+    pointer-events: none;
+    transition:
+      transform var(--motion-duration-fast),
+      opacity var(--motion-duration-fast);
+    z-index: 210;
+  }
+
+  .feature-sheet.is-open {
+    transform: translateY(0);
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .feature-sheet__title {
+    margin: 0;
+    padding: var(--space-2) var(--space-5) var(--space-1);
+    font-family: var(--font-family-heading);
+    font-size: var(--font-size-caption);
+    letter-spacing: var(--font-letter-spacing-label);
+    color: var(--color-fg-tertiary);
+  }
+
+  .feature-sheet__link {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+    /* 触控目标下限 */
+    min-height: 48px;
+    padding: 0 var(--space-5);
+    color: var(--color-fg-primary);
+    text-decoration: none;
+  }
+
+  .feature-sheet__link:active {
+    background: var(--color-bg-secondary);
+  }
+
+  .feature-sheet__name {
+    flex-shrink: 0;
+    font-family: var(--font-family-heading);
+    font-size: 0.9rem;
+  }
+
+  .feature-sheet__hint {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+  }
+
+  .feature-sheet__chevron {
+    flex-shrink: 0;
+    color: var(--color-fg-tertiary);
+  }
+}
+
 } /* end @layer components */

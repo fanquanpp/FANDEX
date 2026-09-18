@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: NDB Cluster 的架构与取舍：三类节点分工、同步复制与自动分片、SQL 节点与数据节点分离的意义，以及与 InnoDB Cluster 的选型对照。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'mysql/620-GroupReplication'
   - 'mysql/630-InnoDBCluster'

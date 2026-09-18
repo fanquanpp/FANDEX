@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: mysqladmin 命令行工具实战：存活探测与状态速览、进程与连接治理、安全关机与密码修改，以及它在现代监控体系里的位置。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'mysql/910-CLI'
   - 'mysql/850-MySQLConfigOps'

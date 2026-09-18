@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: LISTEN/NOTIFY 从语法到生产：事务性通知语义、psql 与驱动两种接收方式、触发器联动与 SKIP LOCKED 任务队列模式、载荷限制与队列积压治理。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'postgresql/380-TriggerEventTrigger'
   - 'postgresql/260-ParallelQuery'

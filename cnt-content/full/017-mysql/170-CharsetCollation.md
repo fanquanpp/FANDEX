@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: MySQL 字符集体系一次讲透：utf8 与 utf8mb4 的历史坑、四级配置的继承规则、排序规则 ai_ci 后缀解读、乱码与索引失效两类经典事故。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'mysql/070-MySQLDataTypeConstraint'
   - 'mysql/210-IndexManagement'

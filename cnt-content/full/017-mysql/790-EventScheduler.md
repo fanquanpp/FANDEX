@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL Event Scheduler 实战：一次性与周期事件、ON COMPLETION 保留策略、错误处理与排查，以及"数据库定时任务 vs 系统 crontab"的选型判断。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'mysql/770-StoredProcedureAndFunction'
   - 'mysql/780-TriggerEvent'

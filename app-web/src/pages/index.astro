@@ -16,8 +16,8 @@ import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import Footer from '@/components/Footer.astro'
 // 通过 Service 层获取数据，UI 层禁止直接调用 getCollection
 import { getDocStats, getAllModules, getCategories, getModulesByCategory } from '@/services'
-// 桌面端构建标记：DESKTOP_BUILD=1 时不渲染 playground 入口（桌面端无在线编程）
-import { IS_DESKTOP_BUILD } from '@/lib/constants'
+// 功能入口单一数据源（桌面端构建 webOnly 过滤在函数内部完成）
+import { getFeatureEntries } from '@/lib/feature-entries'
 import '@/styles/pages/index.css'
 
 // 通过 doc-service 获取文档统计（总数、模块数、分类数、标签数）
@@ -25,15 +25,11 @@ const stats = await getDocStats()
 // 通过 module-service 获取全部模块（只读数组），用于首页模块计数
 const allModules = getAllModules()
 
-// 功能入口单一数据源：新增入口只需在此追加，入场波浪签名的错峰延迟
+// 功能入口单一数据源来自 lib/feature-entries（与文档页顶栏直达链接、
+// 子页 FeatureNav、移动端功能面板同源）；入场波浪签名的错峰延迟
 // 由渲染序号 --entry-i 驱动 CSS calc 自动计算，与添加顺序/数量解耦；
-// 桌面端构建无在线编程（DESKTOP_BUILD=1 时过滤，序号随实际渲染重排）
-const heroEntries = [
-  { href: 'playground/', name: '在线编程', tooltip: '在线编写与运行代码', webOnly: true },
-  { href: 'syntax/', name: '语法速览', tooltip: '语法快速查阅' },
-  { href: 'learning-path/', name: '学习路线', tooltip: '系统化学习路径' },
-  { href: 'algorithms/', name: '算法教学', tooltip: '算法教程与刷题图鉴' },
-].filter(entry => !IS_DESKTOP_BUILD || !entry.webOnly)
+// 桌面端构建无在线编程（webOnly 过滤，序号随实际渲染重排）
+const heroEntries = getFeatureEntries(`${import.meta.env.BASE_URL}`)
 
 // 通过 module-service 获取分类信息并按分类分组模块
 // getCategories() 已按 categoryOrder 顺序返回 { id, label, color }
@@ -83,7 +79,7 @@ const grouped = getCategories()
         <nav class="hero-entries" aria-label="功能入口">
           {heroEntries.map((entry, i) => (
             <a
-              href={`${import.meta.env.BASE_URL}${entry.href}`}
+              href={entry.href}
               class="entry-btn"
               style={`--entry-i:${i}`}
               data-tooltip={entry.tooltip}
