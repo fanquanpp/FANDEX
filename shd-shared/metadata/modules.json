@@ -29,6 +29,16 @@
   ],
   "modules": [
     {
+      "id": "start",
+      "title": "零基础起步",
+      "icon": "Go",
+      "description": "写给完全没有编程经验的学习者：计算机常识、环境搭建、命令行入门、学习方法论与第一行代码",
+      "categories": [
+        "tools"
+      ],
+      "folder_order": 1
+    },
+    {
       "id": "markdown",
       "title": "Markdown",
       "icon": "Md",
@@ -884,6 +894,16 @@
           "type": "docs"
         }
       ]
+    },
+    {
+      "id": "roadmap",
+      "title": "技术栈路线图",
+      "icon": "Rm",
+      "description": "跨模块技术栈路线：前端、后端、全栈、移动端、系统编程、云与运维、数据库、安全、测试方向的完整成长路径与阶段计划",
+      "categories": [
+        "cs"
+      ],
+      "folder_order": 42
     }
   ],
   "modulePrerequisites": {

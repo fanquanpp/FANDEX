@@ -1,0 +1,43 @@
+{
+  "version": "1.0.0",
+  "module": "start",
+  "summary": "零基础起步四步走：建立认知、装好环境、写出第一行代码、拿到 12 个月路线图。",
+  "stages": [
+    {
+      "id": "awareness",
+      "title": "建立认知",
+      "subtitle": "编程是什么、电脑怎么用、怎么学",
+      "nodes": [
+        { "id": "start-001", "title": "编程零基础第一课", "desc": "编程本质、开发者日常与本库跟学法", "doc": "010-ProgrammingStartGuide" },
+        { "id": "start-002", "title": "零基础计算机常识", "desc": "文件、路径、扩展名、安装与权限", "doc": "020-ComputerBasicsForBeginners" },
+        { "id": "start-003", "title": "学习方法论", "desc": "主动回忆、读报错、搜索提问与 AI 教练", "doc": "050-LearnHowToLearnProgramming" }
+      ]
+    },
+    {
+      "id": "setup",
+      "title": "环境与工具",
+      "subtitle": "把装备装齐并学会用命令行",
+      "nodes": [
+        { "id": "start-004", "title": "开发环境搭建", "desc": "VS Code、Git、Node.js 与 Python 一次装齐", "doc": "030-DevEnvironmentSetup" },
+        { "id": "start-005", "title": "终端与命令行入门", "desc": "十个必备命令与相对绝对路径实战", "doc": "040-TerminalAndShellBasics" }
+      ]
+    },
+    {
+      "id": "firstcode",
+      "title": "第一行代码",
+      "subtitle": "两门语言各 90 分钟体验",
+      "nodes": [
+        { "id": "start-006", "title": "第一门语言体验 JavaScript", "desc": "浏览器控制台与猜数字游戏", "doc": "060-FirstProgramJavaScript" },
+        { "id": "start-007", "title": "第二门语言体验 Python", "desc": "REPL、容器与记账小工具，选定主线", "doc": "070-FirstProgramPython" }
+      ]
+    },
+    {
+      "id": "navigation",
+      "title": "路线导航",
+      "subtitle": "全库地图与 12 个月规划",
+      "nodes": [
+        { "id": "start-008", "title": "全库学习路线总览", "desc": "六类模块与三阶段地图", "doc": "080-LearningRouteOverview" }
+      ]
+    }
+  ]
+}

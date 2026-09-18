@@ -118,7 +118,7 @@ SELECT name FROM students WHERE age > 18 ORDER BY score DESC LIMIT 3;
 
 ## 扩展学习
 
-- 查询语法：`mysql/120-DQL`；
-- 建表：`mysql/070-MySQLDataTypeConstraint`；
-- 术语：`mysql/030-Glossary`；
-- 第一课：`mysql/050-MySQLOverviewDatabaseDesign`。
+- 查询语法：[DQL 数据查询](/mysql/120-DQL)；
+- 建表：[数据类型与约束](/mysql/070-MySQLDataTypeConstraint)；
+- 术语：[术语表（零基础版）](/mysql/030-Glossary)；
+- 第一课：[数据库设计与 MySQL 概述](/mysql/050-MySQLOverviewDatabaseDesign)。

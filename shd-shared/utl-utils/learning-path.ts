@@ -54,6 +54,8 @@ export { default as cloudComputingMap } from '../metadata/learning-path/cloud-co
 export { default as softwareTestingMap } from '../metadata/learning-path/software-testing.json';
 export { default as nextjsMap } from '../metadata/learning-path/nextjs.json';
 export { default as nestjsMap } from '../metadata/learning-path/nestjs.json';
+export { default as startMap } from '../metadata/learning-path/start.json';
+export { default as roadmapMap } from '../metadata/learning-path/roadmap.json';
 
 // ============================================================
 // 类型定义
