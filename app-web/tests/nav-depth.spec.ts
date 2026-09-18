@@ -8,7 +8,7 @@
  *    （含题图鉴次级页直达），Esc 与遮罩均可关闭
  * -----------------------------------------------------------------------------
  */
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test } from '@playwright/test';
 
 const DOC_PAGE = '/FANDEX/algorithm/290-NetworkFlow/';
 const TOP_ENTRIES = ['在线编程', '语法速览', '学习路线', '算法教学'];
