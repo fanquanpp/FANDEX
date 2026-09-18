@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 分组与排序的索引化路径：三种索引扫描策略（松散/紧凑/索引分组）、filesort 的单双路与内存机制、组合查询的临时表成因与设计检查单。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'mysql/360-SubqueryOptimization'
   - 'mysql/370-DerivedTableOptimization'

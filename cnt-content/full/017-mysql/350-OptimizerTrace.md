@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: OPTIMIZER_TRACE 的诊断方法：开启与读取、追踪输出的三大阶段、代价估算逐项分析、"为什么不用这个索引"的终极答案。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'mysql/320-EXPLAINDetailed'
   - 'mysql/340-SlowQueryLog'

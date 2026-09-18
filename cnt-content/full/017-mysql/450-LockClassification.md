@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: InnoDB 锁体系一次理清：全局/表级/行级三层结构、MDL 阻塞链事故、意向锁兼容矩阵、间隙锁与临键锁的防幻读机制，以及每个锁的生产事故场景。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'mysql/430-MVCCPrinciple'
   - 'mysql/460-TransactionLockMechanism'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Memory 引擎全景：纯内存存储与重启即失的交换律、哈希索引与 B+ 树的选择、表级锁的并发含义、以及 8.0 临时表改用 TempTable 后的真实定位。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'mysql/180-MyISAMStorageEngine'
   - 'mysql/210-IndexManagement'

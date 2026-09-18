@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: FROM 子查询的优化器行为：合并与物化两条路线的条件、derived_merge 开关、LATERAL 派生表的正确用法与性能调优检查单。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'mysql/360-SubqueryOptimization'
   - 'mysql/380-GroupByOrderByOptimization'

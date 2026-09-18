@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL 子查询的优化器内幕：半连接四种策略、物化机制、IN 与 EXISTS 的真相、关联子查询的窗口函数与 JOIN 改写法。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-19'
 related:
   - 'mysql/370-DerivedTableOptimization'
   - 'mysql/380-GroupByOrderByOptimization'
