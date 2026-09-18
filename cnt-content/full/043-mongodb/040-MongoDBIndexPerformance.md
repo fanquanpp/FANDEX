@@ -1,18 +1,18 @@
 ---
-order: 350
+order: 40
 title: MongoDB 索引与查询性能
-module: 'redis'
+module: 'mongodb'
 category: 数据库
 difficulty: intermediate
 description: 单字段/复合/唯一/稀疏索引的创建与选择，用 explain 读懂查询计划，避免全表扫描。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-18'
 related:
-  - 'redis/330-MongoDBCRUDOperations'
-  - 'redis/340-MongoDBAggregationPipeline'
+  - 'mongodb/020-MongoDBCRUDOperations'
+  - 'mongodb/030-MongoDBAggregationPipeline'
   - 'mysql/400-IndexPrinciplePerformanceOptimization'
 prerequisites:
-  - 'redis/330-MongoDBCRUDOperations'
+  - 'mongodb/020-MongoDBCRUDOperations'
 ---
 
 ## 0. 一句话理解

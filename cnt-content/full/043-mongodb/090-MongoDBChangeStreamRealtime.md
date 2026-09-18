@@ -1,16 +1,16 @@
 ---
-order: 400
+order: 90
 title: 变更流与实时应用
-module: 'redis'
+module: 'mongodb'
 category: 数据库
 difficulty: advanced
 description: 监听数据变化的每一跳：Change Streams、resume token 与实时架构。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-18'
 related:
-  - 'redis/330-MongoDBCRUDOperations'
+  - 'mongodb/020-MongoDBCRUDOperations'
 prerequisites:
-  - 'redis/340-MongoDBAggregationPipeline'
+  - 'mongodb/030-MongoDBAggregationPipeline'
 ---
 
 ## 0. 让数据变化主动找你（先读这里）

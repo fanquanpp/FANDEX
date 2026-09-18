@@ -532,12 +532,11 @@
     },
     {
       "id": "redis",
-      "title": "Redis 与 MongoDB",
+      "title": "Redis",
       "icon": "Rd",
-      "description": "内存键值数据库与 MongoDB 文档数据库",
+      "description": "内存键值数据库：核心数据结构、缓存策略、持久化、集群高可用与 ACL 安全",
       "categories": [
-        "database",
-        "cloud"
+        "database"
       ],
       "folder_order": 19,
       "officialDocs": [
@@ -904,6 +903,16 @@
         "cs"
       ],
       "folder_order": 42
+    },
+    {
+      "id": "mongodb",
+      "title": "MongoDB",
+      "icon": "Mo",
+      "description": "文档型 NoSQL 数据库：CRUD 与聚合管道、索引与建模、事务与副本集分片、安全与变更流",
+      "categories": [
+        "database"
+      ],
+      "folder_order": 43
     }
   ],
   "modulePrerequisites": {
@@ -960,6 +969,9 @@
     ],
     "nestjs": [
       "typescript"
+    ],
+    "mongodb": [
+      "sql"
     ]
   }
 }

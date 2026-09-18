@@ -1,18 +1,18 @@
 ---
-order: 330
+order: 20
 title: MongoDB 增删改查完整语法
-module: 'redis'
+module: 'mongodb'
 category: 数据库
 difficulty: beginner
 description: insert/find/update/delete 四类操作的完整语法、常用查询运算符与实战示例拆解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-18'
 related:
-  - 'redis/320-MongoDBOverviewQuickStart'
-  - 'redis/340-MongoDBAggregationPipeline'
-  - 'redis/350-MongoDBIndexPerformance'
+  - 'mongodb/010-MongoDBOverviewQuickStart'
+  - 'mongodb/030-MongoDBAggregationPipeline'
+  - 'mongodb/040-MongoDBIndexPerformance'
 prerequisites:
-  - 'redis/320-MongoDBOverviewQuickStart'
+  - 'mongodb/010-MongoDBOverviewQuickStart'
 ---
 
 ## 0. 一句话理解

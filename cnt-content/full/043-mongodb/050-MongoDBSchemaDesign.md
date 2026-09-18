@@ -1,17 +1,17 @@
 ---
-order: 360
+order: 50
 title: MongoDB 数据建模与企业落地
-module: 'redis'
+module: 'mongodb'
 category: 数据库
 difficulty: intermediate
 description: 内嵌与引用怎么选、常见建模模式、副本集高可用与事务取舍，从示例项目到生产部署。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-18'
 related:
-  - 'redis/320-MongoDBOverviewQuickStart'
-  - 'redis/350-MongoDBIndexPerformance'
+  - 'mongodb/010-MongoDBOverviewQuickStart'
+  - 'mongodb/040-MongoDBIndexPerformance'
 prerequisites:
-  - 'redis/340-MongoDBAggregationPipeline'
+  - 'mongodb/030-MongoDBAggregationPipeline'
 ---
 
 ## 0. 一句话理解
