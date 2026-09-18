@@ -48,19 +48,22 @@ export default defineConfig({
     inlineStylesheets: 'auto',
   },
   // 旧链接重定向：MongoDB 9 篇自 redis 模块拆分为独立 mongodb 模块（2026-09-19）。
-  // 静态输出下 Astro 为每条生成 meta-refresh HTML 页，GitHub Pages 直接生效；
-  // 目标路径自动附带 base 前缀
-  redirects: {
-    '/redis/320-MongoDBOverviewQuickStart': '/mongodb/010-MongoDBOverviewQuickStart',
-    '/redis/330-MongoDBCRUDOperations': '/mongodb/020-MongoDBCRUDOperations',
-    '/redis/340-MongoDBAggregationPipeline': '/mongodb/030-MongoDBAggregationPipeline',
-    '/redis/350-MongoDBIndexPerformance': '/mongodb/040-MongoDBIndexPerformance',
-    '/redis/360-MongoDBSchemaDesign': '/mongodb/050-MongoDBSchemaDesign',
-    '/redis/370-MongoDBTransactionSession': '/mongodb/060-MongoDBTransactionSession',
-    '/redis/380-MongoDBReplicaSetSharding': '/mongodb/070-MongoDBReplicaSetSharding',
-    '/redis/390-MongoDBSecurityUserManagement': '/mongodb/080-MongoDBSecurityUserManagement',
-    '/redis/400-MongoDBChangeStreamRealtime': '/mongodb/090-MongoDBChangeStreamRealtime',
-  },
+  // 静态输出下 Astro 为每条生成 meta-refresh HTML 页，GitHub Pages 直接生效。
+  // 注意：Astro 不会给 redirect 目标自动附加 base（实测生成的是根相对路径），
+  // 项目站点部署在 /FANDEX/ 下，必须显式拼接 SITE_BASE，否则跳转后仍旧 404
+  redirects: Object.fromEntries(
+    Object.entries({
+      '/redis/320-MongoDBOverviewQuickStart': '/mongodb/010-MongoDBOverviewQuickStart',
+      '/redis/330-MongoDBCRUDOperations': '/mongodb/020-MongoDBCRUDOperations',
+      '/redis/340-MongoDBAggregationPipeline': '/mongodb/030-MongoDBAggregationPipeline',
+      '/redis/350-MongoDBIndexPerformance': '/mongodb/040-MongoDBIndexPerformance',
+      '/redis/360-MongoDBSchemaDesign': '/mongodb/050-MongoDBSchemaDesign',
+      '/redis/370-MongoDBTransactionSession': '/mongodb/060-MongoDBTransactionSession',
+      '/redis/380-MongoDBReplicaSetSharding': '/mongodb/070-MongoDBReplicaSetSharding',
+      '/redis/390-MongoDBSecurityUserManagement': '/mongodb/080-MongoDBSecurityUserManagement',
+      '/redis/400-MongoDBChangeStreamRealtime': '/mongodb/090-MongoDBChangeStreamRealtime',
+    }).map(([from, to]) => [from, `${SITE_BASE}${to}`.replace(/\/{2,}/g, '/')]),
+  ),
   // Vite 构建选项：控制 Rollup 输出文件名格式
   vite: {
     // 扩展名解析：.tsx 为 Islands 主扩展名，使不带扩展名的 import 能正确解析
