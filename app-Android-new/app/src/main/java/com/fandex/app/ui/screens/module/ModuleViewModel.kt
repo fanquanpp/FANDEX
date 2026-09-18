@@ -1,6 +1,7 @@
 package com.fandex.app.ui.screens.module
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fandex.app.FandexApp
@@ -51,9 +52,15 @@ class ModuleViewModel(application: Application) : AndroidViewModel(application) 
                     _state.value = ModuleUiState.Error("模块不存在")
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "模块文档列表加载失败: $moduleId", e)
                 _state.value = ModuleUiState.Error(e.message ?: "加载失败")
             }
         }
+    }
+
+    companion object {
+        /** 日志 TAG */
+        private const val TAG = "ModuleViewModel"
     }
 }
 

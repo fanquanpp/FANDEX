@@ -1,6 +1,7 @@
 package com.fandex.app.ui.screens.learningpath
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fandex.app.FandexApp
@@ -52,8 +53,14 @@ class LearningPathDetailViewModel(application: Application) : AndroidViewModel(a
                     _state.value = LearningPathDetailUiState.Error("学习路径不存在")
                 }
             } catch (e: Exception) {
+                Log.e(TAG, "学习路径详情加载失败: $moduleId", e)
                 _state.value = LearningPathDetailUiState.Error(e.message ?: "加载失败")
             }
         }
+    }
+
+    companion object {
+        /** 日志 TAG */
+        private const val TAG = "LearningPathDetailViewModel"
     }
 }

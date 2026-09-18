@@ -4,18 +4,18 @@ agp = "9.3.0"
 kotlin = "2.4.10"
 
 # Compose 与 Material 3
-composeBom = "2026.08.00"
+composeBom = "2026.09.00"
 material3 = "1.4.0"
-activityCompose = "1.10.1"
-navigationCompose = "2.9.8"
+activityCompose = "1.13.0"
+navigationCompose = "2.10.1"
 
 # AndroidX 核心
-coreKtx = "1.17.0"
+coreKtx = "1.19.0"
 
 # 开屏动画（SplashScreen 兼容库：Android 8.0+ 统一开屏体验）
-splashscreen = "1.0.1"
-lifecycleRuntimeKtx = "2.9.4"
-lifecycleViewmodelCompose = "2.9.4"
+splashscreen = "1.2.0"
+lifecycleRuntimeKtx = "2.11.0"
+lifecycleViewmodelCompose = "2.11.0"
 datastorePreferences = "1.2.1"
 
 # Markdown 解析
@@ -23,16 +23,16 @@ commonmark = "0.30.0"
 jlatexmathAndroid = "0.2.0"
 
 # 协程
-coroutines = "1.10.2"
+coroutines = "1.11.0"
 
 # 网络（更新自检：GitHub Releases API 与 APK CDN 下载）
-okhttp = "5.4.0"
+okhttp = "5.5.0"
 
 # 后台任务（每日更新检查）
 workManager = "2.10.0"
 
 # 序列化
-kotlinxSerialization = "1.8.0"
+kotlinxSerialization = "1.11.0"
 
 # 测试
 junit = "4.13.2"

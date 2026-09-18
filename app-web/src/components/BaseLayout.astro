@@ -12,8 +12,8 @@
 // CSS 引入：全部样式收敛到 styles/site.css 单一入口（内含图层顺序说明与
 // 兼容层迁移终态计划）。BaseLayout 不得直接引入其他样式文件，防止顺序漂移
 import '@/styles/site.css';
-import { SITE } from '@/lib/constants';
-import { MAIN_CSP } from '@/lib/csp';
+import { SITE, IS_DESKTOP_BUILD } from '@/lib/constants';
+import { MAIN_CSP, DESKTOP_CSP } from '@/lib/csp';
 import { ClientRouter } from 'astro:transitions';
 import WebVitalsTracker from '@/islands/WebVitalsTracker';
 // 统一资产引用：favicon 从 @fandex/shared-assets 共享包导入，消除三端各自维护的硬编码图标
@@ -25,6 +25,8 @@ const faviconUrl: string = (faviconMeta as unknown as { src: string }).src;
 const appleTouchIconUrl: string = (appleTouchIconMeta as unknown as { src: string }).src;
 
 const base = import.meta.env.BASE_URL;
+// 桌面构建使用收紧版 CSP：playground 已剔除，jsDelivr 授权随之移除（见 csp.ts）
+const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
 ---
 
 <html lang={SITE.lang}>
@@ -51,12 +53,17 @@ const base = import.meta.env.BASE_URL;
       href={`${base}rss.xml`}
     />
     <!-- 内容安全策略：限制脚本、样式、字体等资源的加载来源 -->
-    <meta http-equiv="Content-Security-Policy" content={MAIN_CSP} />
+    <meta http-equiv="Content-Security-Policy" content={csp} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    <!-- 预连接 CDN 以加速资源加载（mermaid 等按需 ESM 运行时仍走 jsDelivr） -->
-    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-    <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+    {/* 预连接 CDN 以加速 playground prettier 的按需加载；桌面构建已剔除
+        playground 且 CSP 不再授权该域，预连接一并移除 */}
+    {!IS_DESKTOP_BUILD && (
+      <>
+        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+      </>
+    )}
 
     <!-- FANDEX 品牌字体：全部自托管（Chakra Petch + IBM Plex Sans + JetBrains Mono）
          不再依赖 Google Fonts CDN，消除第三方域 TLS 握手与不可达风险

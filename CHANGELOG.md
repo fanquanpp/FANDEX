@@ -69,6 +69,35 @@
   同步刷新；Astro 7.3.2 与全家桶已是最新，无版本变化。typecheck、lint、
   qa 门禁、生产依赖审计（零漏洞）与全量构建全部通过；
 
+### 修复
+
+- **桌面端版本同步盲区**：发版脚本与 CI 版本一致性门禁此前不覆盖
+  `app-desktop/package.json` 与 `src-tauri/Cargo.toml`（后者连带 Cargo.lock），
+  v4.4.0 发布后两者仍停在 4.3.1。已将四份 package.json、tauri.conf.json、
+  Cargo.toml/lock、Android versionName 共七处全部纳入 release.mjs 同步与
+  version-check 校验，现存偏差一并修正；
+- **桌面端升级后可能供旧**：web 端 Service Worker 会在 Tauri WebView 内照常
+  注册，其缓存跨应用升级持久存在，可向已升级的应用继续提供旧版页面。现检测
+  到 Tauri 环境（`window.__TAURI__`）时跳过注册——桌面内容本就随应用离线分发，
+  SW 无增益；桌面构建的页面 CSP 同步收紧为无任何第三方域授权（playground
+  早已剔除，jsDelivr 授权失去唯一消费者）；
+- **Android 页面加载失败无日志**：六个页面 ViewModel（首页/文档/模块/学习
+  路径列表与详情/语法详情）的异常分支只把 message 写进 UI 错误态、不落日志，
+  线上排障时无迹可循。现统一在兜底前 `Log.e` 记录堆栈；
+- **发布说明端描述错位**：Release 自动说明中新技术栈 APK 被误写为
+  "React 生态三端统一"（实为 Kotlin Compose 重写版），Legacy APK 描述同步
+  改为冻结维护定位；
+
+### 变更
+
+- **Android 新版依赖对齐稳定最新**：Compose BOM 2026.08 → 2026.09、
+  activity-compose 1.10.1 → 1.13.0、lifecycle 2.9.4 → 2.11.0、
+  core-ktx 1.17.0 → 1.19.0、navigation-compose 2.9.8 → 2.10.1、
+  SplashScreen 1.0.1 → 1.2.0、协程 1.10.2 → 1.11.0、okhttp 5.4.0 → 5.5.0、
+  kotlinx-serialization 1.8.0 → 1.11.0（AGP/Kotlin 版本保持不变）；
+  datastore 与 WorkManager 当前稳定版即所用的 1.2.1 / 2.10.0，无动作。
+  旧技术栈 APK 处于维护冻结，按冻结公告不做变更；
+
 ## [v4.4.0] - 2026-09-11
 
 ### 新增

@@ -1,6 +1,7 @@
 package com.fandex.app.ui.screens.home
 
 import android.app.Application
+import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.fandex.app.FandexApp
@@ -54,8 +55,14 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
                     moduleCount = stats.moduleCount
                 )
             } catch (e: Exception) {
+                Log.e(TAG, "首页数据加载失败", e)
                 _state.value = HomeUiState.Error(e.message ?: "加载失败")
             }
         }
+    }
+
+    companion object {
+        /** 日志 TAG */
+        private const val TAG = "HomeViewModel"
     }
 }

@@ -61,16 +61,21 @@ jobs:
           fail() { echo "::error::$1"; exit 1; }
           gradle_ver() { sed -n 's/.*versionName = "\([^"]*\)".*/\1/p' "$1"; }
           json_ver() { sed -n 's/.*"version": "\([^"]*\)".*/\1/p' "$1" | head -n1; }
+          cargo_ver() { sed -n 's/^version = "\([^"]*\)".*/\1/p' "$1" | head -n1; }
           GRADLE_VER="$(gradle_ver app-Android-new/app/build.gradle.kts)"
           WEB_VER="$(json_ver app-web/package.json)"
           TAURI_VER="$(json_ver app-desktop/src-tauri/tauri.conf.json)"
+          DESKTOP_PKG_VER="$(json_ver app-desktop/package.json)"
+          CARGO_VER="$(cargo_ver app-desktop/src-tauri/Cargo.toml)"
           PORTABLE_VER="$(json_ver app-desktop-portable/package.json)"
           ROOT_VER="$(json_ver package.json)"
-          echo "tag=$TAG_VER gradle=$GRADLE_VER web=$WEB_VER tauri=$TAURI_VER portable=$PORTABLE_VER root=$ROOT_VER"
+          echo "tag=$TAG_VER gradle=$GRADLE_VER web=$WEB_VER tauri=$TAURI_VER desktop=$DESKTOP_PKG_VER cargo=$CARGO_VER portable=$PORTABLE_VER root=$ROOT_VER"
           [ -n "$TAG_VER" ] || fail "标签名须为 vX.Y.Z 形式"
           [ "$GRADLE_VER" = "$TAG_VER" ] || fail "app-Android-new versionName（$GRADLE_VER）与 tag（$TAG_VER）不一致"
           [ "$WEB_VER" = "$TAG_VER" ] || fail "app-web version（$WEB_VER）与 tag（$TAG_VER）不一致"
           [ "$TAURI_VER" = "$TAG_VER" ] || fail "tauri.conf.json version（$TAURI_VER）与 tag（$TAG_VER）不一致"
+          [ "$DESKTOP_PKG_VER" = "$TAG_VER" ] || fail "app-desktop package.json version（$DESKTOP_PKG_VER）与 tag（$TAG_VER）不一致"
+          [ "$CARGO_VER" = "$TAG_VER" ] || fail "src-tauri/Cargo.toml version（$CARGO_VER）与 tag（$TAG_VER）不一致"
           [ "$PORTABLE_VER" = "$TAG_VER" ] || fail "app-desktop-portable version（$PORTABLE_VER）与 tag（$TAG_VER）不一致"
           [ "$ROOT_VER" = "$TAG_VER" ] || fail "根 package.json version（$ROOT_VER）与 tag（$TAG_VER）不一致"
           echo "版本一致性校验通过"
@@ -150,8 +155,8 @@ jobs:
           if [ -z "$NOTES" ]; then
             NOTES="FANDEX 三端 $VERSION 自动构建产物。
 
-          - FANDEX-$VERSION.apk：新技术栈主线（React 生态三端统一）
-          - FANDEX-Legacy-$VERSION.apk：旧技术栈归档线（Kotlin Compose 原生）
+          - FANDEX-$VERSION.apk：新技术栈主线（Kotlin Compose 重写版）
+          - FANDEX-Legacy-$VERSION.apk：旧技术栈归档线（冻结维护，存量过渡）
           - FANDEX-Setup-$VERSION.exe：Windows 桌面端安装包（Tauri 2，离线可用）
           - FANDEX-Portable-$VERSION.zip：Windows 桌面端便携版（免安装解压即用）
           - 两个 APK applicationId 不同，可并存安装"

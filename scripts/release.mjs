@@ -3,8 +3,9 @@
  * =============================================================================
  * 一条命令完成版本发布准备：
  *   1. 计算新版本号：传参指定（如 `4.4.0` / `4`），缺省为当前版本 patch + 1；
- *   2. 同步写入 5 处版本文件（根/app-web package.json、tauri.conf.json、
- *      app-desktop-portable/package.json、Android versionName）；
+ *   2. 同步写入 7 处版本文件（根/app-web/app-desktop/app-desktop-portable 四个
+ *      package.json、tauri.conf.json、src-tauri/Cargo.toml 与 Cargo.lock、
+ *      Android versionName）；
  *   3. Android versionCode 自动 +1（每次发布递增）；
  *   4. CHANGELOG.md 无对应版本段时，从「未发布」段迁移内容生成新版本段
  *      （无未发布内容则生成占位说明）；
@@ -87,12 +88,13 @@ if (dirty) {
 }
 
 // ============================================================
-// 五处版本文件 + versionCode 同步
+// 七处版本文件 + versionCode 同步
 // ============================================================
 
 const targetFiles = [
   'package.json',
   'app-web/package.json',
+  'app-desktop/package.json',
   'app-desktop/src-tauri/tauri.conf.json',
   'app-desktop-portable/package.json',
 ];
@@ -110,6 +112,34 @@ function bumpJsonVersion(relPath) {
 }
 
 for (const f of targetFiles) bumpJsonVersion(f);
+
+/** Rust 侧版本替换：Cargo.toml 的 [package] version 与 Cargo.lock 的本地包版本 */
+function bumpCargoVersion() {
+  const tomlPath = 'app-desktop/src-tauri/Cargo.toml';
+  const tomlFull = join(ROOT, tomlPath);
+  const tomlRaw = readFileSync(tomlFull, 'utf-8');
+  // 仅替换 [package] 段内首个 version 行（依赖段声明的是 semicolon 区间，不含裸版本）
+  const tomlRe = /(\[package\][\s\S]*?^version\s*=\s*")([^"]+)(")/m;
+  if (!tomlRe.test(tomlRaw)) {
+    console.error(`[error] ${tomlPath} 中未找到 [package] version 字段`);
+    process.exit(1);
+  }
+  writeFileSync(tomlFull, tomlRaw.replace(tomlRe, `$1${nextVersion}$3`), 'utf-8');
+
+  // Cargo.lock 中本地包的锁定版本：不同步会在下次 cargo 构建时产生 lockfile diff；
+  // 这里按包名块精准替换（name = "fandex-desktop" 紧跟的 version 行）
+  const lockPath = 'app-desktop/src-tauri/Cargo.lock';
+  const lockFull = join(ROOT, lockPath);
+  const lockRaw = readFileSync(lockFull, 'utf-8');
+  const lockRe = /(\[\[package\]\]\s*\nname = "fandex-desktop"\s*\nversion = ")[^"]+(")/;
+  if (!lockRe.test(lockRaw)) {
+    console.error(`[error] ${lockPath} 中未找到 fandex-desktop 包版本块`);
+    process.exit(1);
+  }
+  writeFileSync(lockFull, lockRaw.replace(lockRe, `$1${nextVersion}$2`), 'utf-8');
+  console.log('Cargo.toml 与 Cargo.lock 版本已同步');
+}
+bumpCargoVersion();
 
 /** Android versionName 替换 + versionCode 递增 */
 function bumpGradle() {
@@ -130,7 +160,7 @@ function bumpGradle() {
 }
 bumpGradle();
 
-console.log(`版本号五处同步完成: ${currentVersion} -> ${nextVersion}`);
+console.log(`版本号七处同步完成: ${currentVersion} -> ${nextVersion}`);
 
 // ============================================================
 // CHANGELOG：迁移「未发布」段或生成占位段

@@ -6,6 +6,7 @@
  *
  * 设计原则：
  * - MAIN_CSP 用于主站点（含 Astro 岛屿水合、CDN 资源等场景）
+ * - DESKTOP_CSP 用于 Tauri 桌面构建（playground 已剔除，无任何 CDN 授权）
  * - MINIMAL_CSP 用于 404 页面（无岛屿水合，但保留内联 script 用于暗色模式初始化）
  * - 任意指令调整必须同步评估对页面资源加载的影响
  */
@@ -37,6 +38,23 @@ export const MAIN_CSP = [
   "font-src 'self' data:",
   "img-src 'self' data:",
   "connect-src 'self' https://cdn.jsdelivr.net",
+].join('; ');
+
+/**
+ * 桌面端（Tauri）CSP
+ *
+ * 用于 DESKTOP_BUILD=1 构建的 BaseLayout 页面：playground 已在桌面构建整体剔除，
+ * jsDelivr 放宽随之失去唯一消费者，故移除该域授权——桌面端零第三方网络来源，
+ * 页面 CSP 与"完全离线"的产物定位保持一致。
+ * 其余指令与 MAIN_CSP 完全相同；调整任一文件时必须两处同步评估。
+ */
+export const DESKTOP_CSP = [
+  "default-src 'self'",
+  "script-src 'self' 'unsafe-inline' data:",
+  "style-src 'self' 'unsafe-inline'",
+  "font-src 'self' data:",
+  "img-src 'self' data:",
+  "connect-src 'self'",
 ].join('; ');
 
 /**
