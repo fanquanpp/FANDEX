@@ -174,7 +174,7 @@
     -webkit-text-stroke: 1.5px color-mix(in oklch, var(--color-accent-base) 70%, transparent);
   }
 
-  /* 子页面（在线编程/语法速览/学习路线等）Hero 标题缩小
+  /* 子页面（在线前端/语法速览/学习路线等）Hero 标题缩小
    * 避免长文本（如"TypeScript 学习路线"）在残影中换行产生视觉残影 */
   .home-page--sub .hero-title {
     font-size: 2.1rem;
@@ -939,7 +939,7 @@
      与 hover 过渡互不干扰。
      错峰延迟由按钮上的 --entry-i 渲染序号统一计算（0.14s 步进，起拍 0.5s），
      新增/删减入口自动参与错峰，不按 nth-child 硬编码——入口数量随构建
-     （桌面端无在线编程）或迭代增减时不再出现覆盖不全的割裂 */
+     （桌面端无在线前端）或迭代增减时不再出现覆盖不全的割裂 */
   @keyframes entry-path-intro {
     0% { stroke-dashoffset: 250; }
     40% { stroke-dashoffset: 0; }

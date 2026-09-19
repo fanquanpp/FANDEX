@@ -1,10 +1,17 @@
 ---
 /**
- * 算法教学总览页
+ * 算法教学页（教程课程表 + 题图鉴双视图 + 外部平台推荐）
  * -----------------------------------------------------------------------------
- * 将 algorithm 模块的全部教程按学习曲线重组为单元章节课程表，
- * 与「学习路线」并排同级作为独立子页面；
- * 页面同时提供「算法题图鉴」的显眼入口，形成"学教程 -> 刷题"闭环。
+ * 入口扁平化（2026-09-19）：
+ *   - 原独立子页「算法题图鉴」并入本页，成为页内可直切的第二视图：
+ *     点击 hero「题图鉴」或视图切换器一步直达刷题功能，不再中转介绍页
+ *   - 视图状态同步 URL（?view=problems），深链 / 刷新 / 分享均可还原
+ *   - 题目详情页仍位于 /algorithms/problems/<slug>/（内容页，非介绍页）
+ *   - 新增「外部刷题平台推荐」：力扣 / PracHub / NeetCode 等第三方资源，
+ *     附免责声明（详见 disclaimer 页），仓库维护者不对第三方内容负责
+ *
+ * 教程组织：algorithm 模块全部教程按学习曲线重组为单元章节课程表，
+ * 形成"学教程 -> 站内刷题 -> 外部平台进阶"的完整闭环。
  */
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
@@ -14,7 +21,15 @@ import Footer from '@/components/Footer.astro'
 import { SITE } from '@/lib/constants'
 import { categoryColors } from '@/lib/modules'
 import { getDocsByModule, docSlug } from '@/services'
-import { ALGO_PROBLEMS, ALGO_CATEGORIES } from '@/data/algo-problems'
+import {
+  ALGO_PROBLEMS,
+  ALGO_CATEGORIES,
+  DIFFICULTY_LABELS,
+  DIFFICULTY_ORDER,
+  countByCategory,
+  countByDifficulty,
+  type AlgoDifficulty,
+} from '@/data/algo-problems'
 // 复用首页 Hero / 统计 / 功能入口样式，保证美术与学习路线页完全一致
 import '@/styles/pages/index.css'
 import '@/styles/pages/algorithms.css'
@@ -174,18 +189,86 @@ if (restDocs.length > 0) {
 const docTotal = algoDocs.length
 const problemTotal = ALGO_PROBLEMS.length
 const categoryTotal = ALGO_CATEGORIES.length
+
+// 题图鉴视图：统计与枚举数据（构建期计算）
+const catCounts = countByCategory()
+const diffCounts = countByDifficulty()
+
+/** 难度 -> 语义色 token 名（卡片主题色与徽章配色） */
+const DIFF_COLOR: Record<AlgoDifficulty, string> = {
+  easy: 'success',
+  medium: 'warning',
+  hard: 'danger',
+}
+
+/**
+ * 外部刷题平台推荐（第三方资源，中性描述）
+ * -----------------------------------------------------------------------------
+ * 收录原则：题库规模 / 模式化路线 / 面试真实度 / 竞赛训练各有侧重，互补不重复；
+ * 全部为外部独立平台，其内容与服务由各自运营方提供，免责声明见 disclaimer 页。
+ */
+const EXTERNAL_PLATFORMS = [
+  {
+    name: '力扣 LeetCode',
+    host: 'leetcode.cn',
+    href: 'https://leetcode.cn/',
+    tag: '综合题库',
+    color: categoryColors.frontend,
+    desc: '全球规模领先的算法题库，按标签 / 难度 / 企业筛选，在线判题与题解社区完善，站内题图鉴中标注 LC 序号的题目均可在其上提交验证。',
+  },
+  {
+    name: 'PracHub',
+    host: 'prachub.com',
+    href: 'https://prachub.com/questions',
+    tag: '面试准备',
+    color: categoryColors.cs,
+    desc: '可按公司、岗位、轮次、主题和难度筛选的候选人报告编程面试题，适合在掌握基础模式后按目标公司定向备战。',
+  },
+  {
+    name: 'NeetCode',
+    host: 'neetcode.io',
+    href: 'https://neetcode.io/',
+    tag: '模式路线',
+    color: categoryColors.backend,
+    desc: '以题型模式（pattern）组织的免费刷题路线与视频讲解，Blind 75 / NeetCode 150 题单是与本站教程搭配的经典进阶路径。',
+  },
+  {
+    name: '洛谷',
+    host: 'luogu.com.cn',
+    href: 'https://www.luogu.com.cn/',
+    tag: '竞赛训练',
+    color: categoryColors.math,
+    desc: '中文算法竞赛社区，官方题单与训练营覆盖入门到 NOIP / ICPC 水平，适合在课程表之后追求更强的实现能力。',
+  },
+  {
+    name: 'Codeforces',
+    host: 'codeforces.com',
+    href: 'https://codeforces.com/',
+    tag: '竞技比赛',
+    color: categoryColors.cloud,
+    desc: '全球竞技编程赛事与题库，评级赛制驱动持续练习，锻炼限时高压下的建模与编码能力。',
+  },
+  {
+    name: '牛客网',
+    host: 'nowcoder.com',
+    href: 'https://www.nowcoder.com/',
+    tag: '面试准备',
+    color: categoryColors.database,
+    desc: '国内笔试面试题库与模拟面试，覆盖校招高频考点与企业真题，求职季的实战演练场。',
+  },
+] as const
 ---
 
 <HomeLayout title="算法教学">
   <SEO
     slot="head"
     title="算法教学 · FANDEX"
-    description="FANDEX 算法教学：按单元章节组织的算法与数据结构完整教程，配套算法题图鉴刷题。"
+    description="FANDEX 算法教学：按单元章节组织的算法与数据结构完整教程，页内直切算法题图鉴刷题，并收录力扣、PracHub、NeetCode 等外部刷题平台推荐。"
     canonical={`${SITE.url}${base}algorithms/`}
     type="website"
   />
 
-  <div class="home-page home-page--sub">
+  <div class="home-page home-page--sub" data-algo-page>
     <!-- 几何背景装饰：复用学习路线变体（竖条刻度语言） -->
     <GeoBgDecor variant="learning-path" />
 
@@ -213,38 +296,27 @@ const categoryTotal = ALGO_CATEGORIES.length
           </div>
         </div>
 
-        <!-- 功能入口：题图鉴召唤区由页面内承载，其余为共享兄弟入口（FeatureNav） -->
+        <!-- 功能入口：题图鉴直达链接（点击即切页内视图，不再中转独立页） -->
         <FeatureNav
-          extra={[{ href: `${base}algorithms/problems/`, label: '题图鉴', tooltip: '经典算法题与讲解图鉴' }]}
+          extra={[{ href: `?view=problems`, label: '题图鉴', tooltip: '直达刷题视图：经典算法题与讲解' }]}
         />
       </div>
     </section>
 
-    <!-- 题图鉴召唤区：教程与刷题的闭环入口 -->
-    <a class="algo-cta" href={`${base}algorithms/problems/`}>
-      <div class="algo-cta__main">
-        <h2 class="algo-cta__title">算法题图鉴</h2>
-        <p class="algo-cta__desc">
-          按分类整理的经典算法题集合：每题附题意概括、分点思路讲解与参考实现，
-          学完上方教程后到这里按专题检验手感。
-        </p>
-      </div>
-      <div class="algo-cta__stats">
-        <span>{problemTotal} 道题</span>
-        <i aria-hidden="true"></i>
-        <span>{categoryTotal} 个分类</span>
-        <i aria-hidden="true"></i>
-        <span aria-hidden="true">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="5" y1="12" x2="19" y2="12" />
-            <polyline points="12 5 19 12 12 19" />
-          </svg>
-        </span>
-      </div>
-    </a>
+    <!-- 视图切换器：教程 / 刷题两大功能一步直达（sticky 常驻可达） -->
+    <div class="algo-views" data-algo-views role="group" aria-label="教程与题图鉴视图切换">
+      <button type="button" class="algo-views__tab is-active" data-view-tab="tutorials" aria-pressed="true">
+        教程课程表
+        <em>{docTotal} 篇</em>
+      </button>
+      <button type="button" class="algo-views__tab" data-view-tab="problems" aria-pressed="false">
+        算法题图鉴
+        <em>{problemTotal} 道题</em>
+      </button>
+    </div>
 
-    <!-- 单元章节：按学习曲线组织的教程卡片 -->
-    <div class="algo-units">
+    <!-- 视图一：单元章节课程表（默认视图） -->
+    <div class="algo-units" data-algo-view="tutorials">
       {units.map((unit) => (
         <section class="algo-section" id={unit.id} data-unit={unit.id}>
           <header class="algo-section__head">
@@ -275,11 +347,376 @@ const categoryTotal = ALGO_CATEGORIES.length
       ))}
     </div>
 
+    <!-- 视图二：题图鉴（原独立子页并入；筛选交互由 lib/algo-problems.ts 驱动） -->
+    <section data-algo-view="problems" data-algo-problems hidden>
+      <div class="ap-filter">
+        <div class="ap-filter__row">
+          <span class="ap-filter__label" aria-hidden="true"></span>
+          <span class="ap-filter__hint">分类</span>
+          <button class="ap-chip is-active" type="button" data-filter-cat="all" aria-pressed="true">
+            全部<em>{problemTotal}</em>
+          </button>
+          {ALGO_CATEGORIES.map((cat) => (
+            <button
+              class="ap-chip"
+              type="button"
+              data-filter-cat={cat.id}
+              title={cat.desc}
+              aria-pressed="false"
+            >
+              {cat.label}<em>{catCounts[cat.id]}</em>
+            </button>
+          ))}
+        </div>
+        <div class="ap-filter__row">
+          <span class="ap-filter__label" aria-hidden="true"></span>
+          <span class="ap-filter__hint">难度</span>
+          <button class="ap-chip is-active" type="button" data-filter-diff="all" aria-pressed="true">
+            全部
+          </button>
+          {DIFFICULTY_ORDER.map((diff) => (
+            <button
+              class="ap-chip"
+              type="button"
+              data-filter-diff={diff}
+              aria-pressed="false"
+            >
+              {DIFFICULTY_LABELS[diff]}<em>{diffCounts[diff]}</em>
+            </button>
+          ))}
+        </div>
+        <div class="ap-filter__row">
+          <span class="ap-filter__label" aria-hidden="true"></span>
+          <span class="ap-filter__hint">进度</span>
+          <button class="ap-chip is-active" type="button" data-filter-status="all" aria-pressed="true">
+            全部
+          </button>
+          <button class="ap-chip" type="button" data-filter-status="solved" aria-pressed="false" title="只看已标记掌握的题目">
+            已掌握<em data-ap-status-count="solved">0</em>
+          </button>
+          <button class="ap-chip" type="button" data-filter-status="review" aria-pressed="false" title="只看标记待复习的题目">
+            待复习<em data-ap-status-count="review">0</em>
+          </button>
+          <input
+            class="ap-search"
+            type="search"
+            data-filter-search
+            placeholder="搜索题名 / 标签"
+            aria-label="按题名或标签搜索题目"
+          />
+        </div>
+      </div>
+
+      <!-- 命中计数行：附本机进度说明（进度仅存当前浏览器） -->
+      <div class="ap-count-row">
+        <p class="ap-count" data-filter-count aria-live="polite"></p>
+        <span class="ap-count-note">掌握 / 复习标记仅保存在当前浏览器</span>
+      </div>
+
+      <div class="ap-grid">
+        {ALGO_PROBLEMS.map((problem, i) => (
+          <article
+            class="ap-card"
+            data-algo-item
+            data-cat={problem.category}
+            data-diff={problem.difficulty}
+            data-slug={problem.slug}
+            data-search={`${problem.lc ?? ''} ${problem.title} ${problem.titleEn} ${problem.tags.join(' ')} ${problem.brief}`.toLowerCase()}
+            style={`--ap-color:var(--color-${DIFF_COLOR[problem.difficulty]}-base);animation-delay:${Math.min(i, 24) * 30}ms`}
+          >
+            <a
+              class="ap-card__link"
+              href={`${base}algorithms/problems/${problem.slug}/`}
+              aria-label={`${problem.title}（${DIFFICULTY_LABELS[problem.difficulty]}）`}
+            >
+              <div class="ap-card__head">
+                <span class="ap-card__no" aria-hidden="true">{problem.lc ? `LC ${problem.lc}` : '经典'}</span>
+                <h3 class="ap-card__title">{problem.title}</h3>
+                <span class={`ap-badge ap-badge--${problem.difficulty}`}>{DIFFICULTY_LABELS[problem.difficulty]}</span>
+              </div>
+              <p class="ap-card__en">{problem.titleEn}</p>
+              <p class="ap-card__brief">{problem.brief}</p>
+              <div class="ap-card__tags">
+                {problem.tags.map((tag) => (
+                  <span class="ap-card__tag">{tag}</span>
+                ))}
+              </div>
+            </a>
+            <!-- 本机进度标记：已掌握 / 待复习（z-index 高于拉伸链接） -->
+            <div class="ap-card__marks">
+              <button
+                type="button"
+                class="ap-mark"
+                data-mark="solved"
+                aria-pressed="false"
+                title="标记为已掌握"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                  <path d="M4 12.5l5 5L20 6.5" />
+                </svg>
+              </button>
+              <button
+                type="button"
+                class="ap-mark"
+                data-mark="review"
+                aria-pressed="false"
+                title="标记为待复习"
+              >
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <path d="M12 3l2.7 5.6 6.3.9-4.5 4.4 1 6.1-5.5-2.9-5.5 2.9 1-6.1L3 9.5l6.3-.9L12 3z" />
+                </svg>
+              </button>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <!-- 空状态：筛选无命中时显示，附恢复动作 -->
+      <div class="ap-empty" data-ap-empty hidden>
+        <p>没有匹配的题目</p>
+        <div class="ap-empty__actions">
+          <button type="button" class="ap-chip" data-ap-clear-q>清除关键词</button>
+          <button type="button" class="ap-chip" data-ap-reset>重置全部筛选</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- 外部刷题平台推荐：站内闭环之后的进阶出口（第三方资源 + 免责声明） -->
+    <section class="algo-ext" aria-label="外部刷题平台推荐" data-algo-ext>
+      <header class="algo-ext__head">
+        <h2 class="algo-section__title">外部刷题平台推荐</h2>
+        <span class="algo-ext__note">第三方资源 · 供学完站内教程后按需进阶</span>
+      </header>
+      <div class="algo-ext__grid">
+        {EXTERNAL_PLATFORMS.map((platform) => (
+          <a
+            class="algo-ext__card"
+            href={platform.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={`--card-color:${platform.color}`}
+          >
+            <div class="algo-ext__card-head">
+              <h3 class="algo-ext__name">{platform.name}</h3>
+              <span class="algo-ext__tag">{platform.tag}</span>
+              <svg class="algo-ext__arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <line x1="7" y1="17" x2="17" y2="7" />
+                <polyline points="8 7 17 7 17 16" />
+              </svg>
+            </div>
+            <p class="algo-ext__desc">{platform.desc}</p>
+            <span class="algo-ext__host">{platform.host}</span>
+          </a>
+        ))}
+      </div>
+      <p class="algo-ext__disclaimer">
+        以上为外部第三方平台，其内容、账号与服务均由各自运营方提供；收录仅为学习资源参考，
+        不构成合作或背书，本站不对使用外部资源产生的各类问题承担责任。详见
+        <a href={`${base}disclaimer/`}>免责声明</a>。
+      </p>
+    </section>
+
     <Footer />
   </div>
 </HomeLayout>
 
 <style>
+  /* 锚点跳转留出吸顶切换器的高度，避免标题被遮挡 */
+  .algo-units,
+  [data-algo-ext] {
+    scroll-margin-top: 72px;
+  }
+
+  /* 视图切换器：sticky 常驻，深滚动时仍可一步互切两大功能 */
+  .algo-views {
+    position: sticky;
+    top: 0;
+    z-index: 60;
+    display: inline-flex;
+    gap: var(--space-1);
+    margin-block: var(--space-6) 0;
+    padding: 4px;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--color-bg-primary) 92%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  .algo-views__tab {
+    display: inline-flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    border: 1px solid transparent;
+    border-radius: calc(var(--radius-md) - 3px);
+    background: transparent;
+    font-family: var(--font-family-heading);
+    font-size: 0.82rem;
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-text-secondary);
+    cursor: pointer;
+    transition:
+      color var(--motion-duration-fast) var(--motion-easing-out),
+      border-color var(--motion-duration-fast) var(--motion-easing-out),
+      background-color var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .algo-views__tab em {
+    font-family: var(--font-family-mono);
+    font-size: 0.64rem;
+    font-style: normal;
+    color: var(--color-text-tertiary);
+  }
+
+  .algo-views__tab:hover {
+    color: var(--color-fg-primary);
+  }
+
+  .algo-views__tab:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .algo-views__tab.is-active {
+    color: var(--color-fg-primary);
+    border-color: color-mix(in srgb, var(--color-accent-base) 45%, transparent);
+    background: color-mix(in srgb, var(--color-accent-base) 10%, transparent);
+  }
+
+  /* 外部平台推荐区 */
+  .algo-ext {
+    margin-block: var(--space-10) var(--space-8);
+  }
+
+  .algo-ext__head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-3);
+    margin-bottom: var(--space-4);
+  }
+
+  .algo-ext__note {
+    font-family: var(--font-family-mono);
+    font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary);
+  }
+
+  .algo-ext__grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-3);
+  }
+
+  .algo-ext__card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+    padding: var(--space-4) var(--space-4) var(--space-3);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md);
+    background: var(--color-bg-card);
+    color: inherit;
+    text-decoration: none;
+    transition:
+      border-color var(--motion-duration-fast) var(--motion-easing-out),
+      box-shadow var(--motion-duration-fast) var(--motion-easing-out),
+      transform var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  /* 顶部类别色条：hover 展开，与模块卡片同语言 */
+  .algo-ext__card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    border-radius: var(--radius-md) var(--radius-md) 0 0;
+    background: var(--card-color);
+    opacity: 0.55;
+    transition: opacity var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .algo-ext__card:hover {
+    border-color: color-mix(in srgb, var(--card-color) 55%, transparent);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .algo-ext__card:hover::before {
+    opacity: 1;
+  }
+
+  .algo-ext__card:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .algo-ext__card-head {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+  }
+
+  .algo-ext__name {
+    margin: 0;
+    font-family: var(--font-family-heading);
+    font-size: 0.9rem;
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-fg-primary);
+  }
+
+  .algo-ext__tag {
+    padding: 1px var(--space-2);
+    border: 1px solid color-mix(in srgb, var(--card-color) 45%, transparent);
+    border-radius: 999px;
+    font-family: var(--font-family-mono);
+    font-size: 0.6rem;
+    color: var(--color-text-secondary);
+    white-space: nowrap;
+  }
+
+  .algo-ext__arrow {
+    margin-left: auto;
+    color: var(--color-text-tertiary);
+    transition: color var(--motion-duration-fast) var(--motion-easing-out);
+  }
+
+  .algo-ext__card:hover .algo-ext__arrow {
+    color: var(--card-color);
+  }
+
+  .algo-ext__desc {
+    margin: 0;
+    font-size: 0.74rem;
+    line-height: 1.65;
+    color: var(--color-text-secondary);
+  }
+
+  .algo-ext__host {
+    margin-top: auto;
+    font-family: var(--font-family-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.05em;
+    color: var(--color-text-tertiary);
+  }
+
+  .algo-ext__disclaimer {
+    margin-block: var(--space-4) 0;
+    font-size: 0.72rem;
+    line-height: 1.7;
+    color: var(--color-text-tertiary);
+  }
+
+  .algo-ext__disclaimer a {
+    color: var(--color-text-secondary);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+  }
+
   /* 单元序号：mono 竖排装饰，与标题基线对齐 */
   .algo-section__index {
     font-family: var(--font-family-mono);
@@ -308,9 +745,36 @@ const categoryTotal = ALGO_CATEGORIES.length
     text-overflow: ellipsis;
   }
 
+  @media (max-width: 900px) {
+    .algo-ext__grid {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+
   @media (max-width: 767px) {
     .algo-section__en {
       display: none;
     }
+
+    /* 切换器占满一行，窄屏下统计行不再拥挤 */
+    .algo-views {
+      display: flex;
+      width: 100%;
+    }
+
+    .algo-views__tab {
+      flex: 1;
+      justify-content: center;
+    }
+
+    .algo-ext__grid {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
+
+<!-- 题图鉴筛选交互 + 双视图直切 -->
+<script>
+  import '@/lib/algo-problems';
+  import '@/lib/algo-views';
+</script>

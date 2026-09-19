@@ -86,7 +86,7 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
       <nav class="apd-crumb" aria-label="面包屑">
         <a href={`${base}algorithms/`}>算法教学</a>
         <span class="apd-crumb__sep" aria-hidden="true">/</span>
-        <a href={`${base}algorithms/problems/`}>算法题图鉴</a>
+        <a href={`${base}algorithms/?view=problems`}>算法题图鉴</a>
         <span class="apd-crumb__sep" aria-hidden="true">/</span>
         <span aria-current="page">{problem.title}</span>
       </nav>
@@ -226,7 +226,7 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
 
       <!-- 返回图鉴：链接由脚本附加离开列表页时的筛选上下文，恢复原筛选视图 -->
       <p class="apd-back">
-        <a class="ap-chip" data-apd-back href={`${base}algorithms/problems/`}>返回题图鉴</a>
+        <a class="ap-chip" data-apd-back href={`${base}algorithms/?view=problems`}>返回题图鉴</a>
       </p>
     </article>
 

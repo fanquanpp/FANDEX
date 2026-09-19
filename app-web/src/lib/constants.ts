@@ -16,7 +16,7 @@ export const SITE = {
 /**
  * 桌面端构建标记
  * app-desktop/build-desktop.mjs 会设置 DESKTOP_BUILD=1 构建 Tauri 前端产物：
- * 桌面端不提供在线编程，需隐藏"在线编程"（playground）入口，避免死链。
+ * 桌面端不提供在线前端，需隐藏"在线前端"（playground）入口，避免死链。
  * 构建期常量：Astro 前置脚本中读取，静态条件下渲染为无该入口的 HTML。
  */
 export const IS_DESKTOP_BUILD = process.env.DESKTOP_BUILD === '1';

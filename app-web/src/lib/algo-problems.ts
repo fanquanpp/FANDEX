@@ -1,5 +1,5 @@
 /**
- * 算法题图鉴列表页交互脚本（web 端）
+ * 算法题图鉴视图交互脚本（web 端，挂载于算法教学页 ?view=problems 视图）
  * -----------------------------------------------------------------------------
  * 职责：
  * 1. 分类 / 难度 / 本机进度筛选：芯片点击切换，卡片按 data-cat / data-diff
@@ -47,6 +47,9 @@ function readStateFromUrl(): FilterState {
 /** 把筛选状态同步到 URL（默认值不写入，保持地址干净） */
 function syncUrl(state: FilterState): void {
   const params = new URLSearchParams();
+  // 双视图合并后保留视图参数：筛选交互不得把地址打回教程视图
+  const view = new URLSearchParams(window.location.search).get('view');
+  if (view) params.set('view', view);
   if (state.cat !== 'all') params.set('cat', state.cat);
   if (state.diff !== 'all') params.set('diff', state.diff);
   if (state.status !== 'all') params.set('status', state.status);
@@ -251,12 +254,16 @@ function initProblemDetailProgress(): void {
     });
   });
 
-  // 返回链接恢复筛选上下文
+  // 返回链接恢复筛选上下文：默认地址已携带 ?view=problems，
+  // 会话上下文按参数名合并（同名字段以离开列表页时的值为准），避免出现双问号
   const backLink = document.querySelector<HTMLAnchorElement>('[data-apd-back]');
   if (backLink) {
     const context = readFilterContext();
     if (context && context !== '?') {
-      backLink.href = `${backLink.href}${context}`;
+      const url = new URL(backLink.href);
+      const extra = new URLSearchParams(context.startsWith('?') ? context.slice(1) : context);
+      extra.forEach((value, key) => url.searchParams.set(key, value));
+      backLink.href = `${url.pathname}${url.search}`;
     }
   }
 }
