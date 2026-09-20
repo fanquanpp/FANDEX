@@ -54,7 +54,7 @@ const navigation = await getDocNavigation(module, slug);
 
 // 面包屑导航数据
 const breadcrumb = [
-  { label: '首页', href: `${import.meta.env.BASE_URL}` },
+  { label: '首页', href: `${import.meta.env.BASE_URL}`, i18nKey: 'breadcrumb.home' },
   { label: meta?.title || module, href: `${import.meta.env.BASE_URL}${module}/` },
   { label: doc.data.title },
 ];
@@ -116,9 +116,9 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
                 <line x1="12" y1="16" x2="12.01" y2="16" />
               </>
             </svg>
+            <span data-i18n="doc.prereq">前置知识: </span>
             <span>
-              前置知识:{' '}
-              {prereqs.map((p: string, i: number) => {
+            {prereqs.map((p: string, i: number) => {
                 const parts = p.split('/');
                 const modId = parts[0] || ''; // noUncheckedIndexedAccess：数组访问可能返回 undefined，提供兜底
                 const modMeta = getModule(modId);
@@ -165,11 +165,13 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
             class={`doc-meta-item doc-difficulty diff-${doc.data.difficulty || 'intermediate'}`}
           >
             {
-              doc.data.difficulty === 'beginner'
-                ? '入门'
-                : doc.data.difficulty === 'advanced'
-                  ? '高级'
-                  : '中级'
+              <span data-i18n={`doc.difficulty.${doc.data.difficulty || 'intermediate'}`}>
+                {doc.data.difficulty === 'beginner'
+                  ? '入门'
+                  : doc.data.difficulty === 'advanced'
+                    ? '高级'
+                    : '中级'}
+              </span>
             }
           </span>
           {
@@ -190,7 +192,9 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
                     <line x1="3" y1="10" x2="21" y2="10" />
                   </>
                 </svg>
-                {new Date(doc.data.updated).toLocaleDateString('zh-CN')}
+                <time datetime={new Date(doc.data.updated).toISOString()} data-i18n-date={new Date(doc.data.updated).toISOString()}>
+                  {new Date(doc.data.updated).toLocaleDateString('zh-CN')}
+                </time>
               </span>
             )
           }

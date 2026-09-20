@@ -55,6 +55,18 @@ const base = import.meta.env.BASE_URL;
         // 兜底逻辑在 prefers-color-scheme:dark 下覆盖用户已选择的 light
         document.documentElement.setAttribute('data-theme', theme);
         document.documentElement.style.colorScheme = theme;
+        // 界面语言同步声明（与 BaseLayout 内联脚本同构，独立页自带）
+        try {
+          var savedLang = localStorage.getItem('fandex-lang');
+          if (savedLang === 'en') {
+            document.documentElement.setAttribute('data-lang', 'en');
+            document.documentElement.setAttribute('lang', 'en');
+          } else {
+            document.documentElement.setAttribute('data-lang', 'zh');
+          }
+        } catch (e) {
+          /* localStorage 不可用时保持 SSR 中文 */
+        }
       })();
     </script>
   </head>
@@ -67,8 +79,8 @@ const base = import.meta.env.BASE_URL;
         <div class="error-code-frame" aria-hidden="true">
           <div class="error-code">404</div>
         </div>
-        <h1 class="error-title">页面未找到</h1>
-        <p class="error-desc">地址不存在或内容已被移动。</p>
+        <h1 class="error-title" data-i18n="error404.title">页面未找到</h1>
+        <p class="error-desc" data-i18n="error404.desc">地址不存在或内容已被移动。</p>
 
         <!-- 刻度装饰线：竖条而非点状，呼应构成主义语言 -->
         <div class="error-ticks" aria-hidden="true">
@@ -77,16 +89,21 @@ const base = import.meta.env.BASE_URL;
 
         <!-- 失效路径：明确告知用户访问了哪个不存在的地址 -->
         <div class="error-path" id="error-path-block" hidden>
-          <span class="error-path-label">失效链接</span>
+          <span class="error-path-label" data-i18n="error404.invalid">失效链接</span>
           <code class="error-path-value" id="error-path-value"></code>
         </div>
 
-        <nav class="error-actions" aria-label="错误页出口">
-          <a href={base} class="error-btn error-btn--primary">返回首页</a>
-          <a href={`${base}learning-path/`} class="error-btn">学习路线</a>
+        <nav class="error-actions" aria-label="错误页出口" data-i18n-aria="error404.exitsAria">
+          <a href={base} class="error-btn error-btn--primary" data-i18n="error404.backHome">返回首页</a>
+          <a href={`${base}learning-path/`} class="error-btn" data-i18n="error404.learningPath">学习路线</a>
         </nav>
       </main>
     </div>
+
+    <!-- 界面语言 DOM 应用器：英文用户访问 404 时文案随全局偏好切换 -->
+    <script>
+      import '@/lib/i18n-dom';
+    </script>
 
     <!-- 路径展示脚本：仅输出当前失效路径，无其他交互 -->
     <script is:inline>

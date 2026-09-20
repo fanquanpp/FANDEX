@@ -78,22 +78,22 @@ const chipModules = getLearningPathModules()
         <div class="hero-stats">
           <div class="stat-item">
             <span class="stat-num">{techVM.stats.stages}</span>
-            <span class="stat-label">阶段</span>
+            <span class="stat-label" data-i18n="lpTech.stages">阶段</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-num">{techVM.stats.nodes}</span>
-            <span class="stat-label">知识点</span>
+            <span class="stat-label" data-i18n="lp.nodes">知识点</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-num">{techVM.stats.docs}</span>
-            <span class="stat-label">篇已发布</span>
+            <span class="stat-label" data-i18n="lp.published">篇已发布</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-num">{techVM.stats.gaps}</span>
-            <span class="stat-label">篇待补充</span>
+            <span class="stat-label" data-i18n="lp.gaps">篇待补充</span>
           </div>
         </div>
 
@@ -124,14 +124,14 @@ const chipModules = getLearningPathModules()
     )}
 
     <!-- 技术切换 chip 栏：与语法速览语言切换栏同款，吸顶可快速切换 -->
-    <nav class="lp-tech-chips" aria-label="切换学习路线">
+    <nav class="lp-tech-chips" aria-label="切换学习路线" data-i18n-aria="lpTech.switchAria">
       <a
         class="lp-tech-chip"
         href={`${base}learning-path/`}
         style={`--chip-color:${techVM.color}`}
       >
         <i class="lp-tech-chip__bar" aria-hidden="true"></i>
-        总览
+        <span data-i18n="lpTech.overview">总览</span>
       </a>
       {chipModules.map((item) => (
         <a

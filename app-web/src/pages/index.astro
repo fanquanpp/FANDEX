@@ -63,12 +63,12 @@ const grouped = getCategories()
           <div class="stat-item">
             <!-- data-countup 提供滚动计数目标值；min-width 锁定最终值宽度，计数期间不挤压兄弟元素 -->
             <span class="stat-num" data-countup={allModules.length} style={`min-width:${String(allModules.length).length}ch`}>{allModules.length}</span>
-            <span class="stat-label">模块</span>
+            <span class="stat-label" data-i18n="home.modules">模块</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-num" data-countup={stats.totalDocs} style={`min-width:${String(stats.totalDocs).length}ch`}>{stats.totalDocs}</span>
-            <span class="stat-label">文档</span>
+            <span class="stat-label" data-i18n="home.docs">文档</span>
           </div>
         </div>
         <!-- 功能入口区：heroEntries 单一数据源渲染，纯文字按钮 + SVG 路径签名动画
@@ -76,17 +76,18 @@ const grouped = getCategories()
              hover 时 stroke-dashoffset 从 250 → 0 实现路径书写动画；
              入场错峰延迟由 --entry-i 序号驱动（见 index.css entry-path-intro），
              各入口颜色统一使用项目标题主题色 var(--color-accent-base) -->
-        <nav class="hero-entries" aria-label="功能入口">
+        <nav class="hero-entries" aria-label="功能入口" data-i18n-aria="home.entriesAria">
           {heroEntries.map((entry, i) => (
             <a
               href={entry.href}
               class="entry-btn"
               style={`--entry-i:${i}`}
               data-tooltip={entry.tooltip}
+              data-i18n-tooltip={entry.tooltipKey}
               data-tooltip-pos="bottom"
             >
               <EntryWaveBorder />
-              <span class="entry-name">{entry.name}</span>
+              <span class="entry-name" data-i18n={entry.nameKey}>{entry.name}</span>
             </a>
           ))}
         </nav>
@@ -115,7 +116,7 @@ const grouped = getCategories()
           <!-- 标题按钮：与 Hero 入口同款 SVG 波浪描边悬停动画
                分类主题色通过按钮上的 --marker-color 注入，
                .entry-border 描边在 hover 时执行路径书写动画 -->
-          <button class="category-header__lead" data-toggle type="button" style={`--marker-color:${group.color}`} aria-label={`折叠/展开 ${group.label} 分类`}>
+          <button class="category-header__lead" data-toggle type="button" style={`--marker-color:${group.color}`} aria-label={`折叠/展开 ${group.label} 分类`} data-i18n-aria="home.toggleCategory" data-i18n-params={JSON.stringify({ label: group.label })}>
             <EntryWaveBorder />
             <span class="category-marker"></span>
             <span class="category-tag">{group.label}</span>
@@ -124,10 +125,10 @@ const grouped = getCategories()
           </button>
           <!-- 右侧：左右导航按钮，统一 fndx-icon-btn 风格 -->
           <div class="category-header__actions">
-            <button class="category-nav-btn fndx-icon-btn" data-nav="-1" type="button" aria-label="向左滚动">
+            <button class="category-nav-btn fndx-icon-btn" data-nav="-1" type="button" aria-label="向左滚动" data-i18n-aria="home.scrollLeft">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
             </button>
-            <button class="category-nav-btn fndx-icon-btn" data-nav="1" type="button" aria-label="向右滚动">
+            <button class="category-nav-btn fndx-icon-btn" data-nav="1" type="button" aria-label="向右滚动" data-i18n-aria="home.scrollRight">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="9 18 15 12 9 6"/></svg>
             </button>
           </div>

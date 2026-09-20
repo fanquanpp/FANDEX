@@ -1,0 +1,27 @@
+---
+/**
+ * 语言切换按钮（zh <-> en）
+ * -----------------------------------------------------------------------------
+ * 纯 DOM 组件（无岛屿水合）：点击由 lib/i18n-dom 的事件委托接管，
+ * 文案切换由 data-i18n* 属性协议驱动，与全站 UI 文案同一管线。
+ *
+ * 视觉对齐 ThemeToggle：统一 .fndx-icon-btn 图标按钮语言；
+ * 标注使用 mono 短标签（EN / 中）——品牌技术标记语言，不引入新图标。
+ * zh 态显示「EN」（切去英文），en 态显示「中」（切回中文）。
+ */
+import { t } from '@/lib/i18n';
+import '@/styles/islands/LangToggle.css';
+---
+
+<button
+  type="button"
+  class="fndx-lang-toggle fndx-icon-btn"
+  data-lang-toggle
+  aria-label={t('langToggle.aria')}
+  data-i18n-aria="langToggle.aria"
+  data-tooltip={t('langToggle.tooltip')}
+  data-i18n-tooltip="langToggle.tooltip"
+  data-tooltip-pos="bottom"
+>
+  <span class="fndx-lang-toggle__label" data-i18n="langToggle.label">{t('langToggle.label')}</span>
+</button>

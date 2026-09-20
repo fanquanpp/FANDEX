@@ -28,7 +28,7 @@ const yearRange =
     : `${PROJECT_START_YEAR}`;
 ---
 
-<footer class="fndx-footer fndx-footer--plain" role="contentinfo" aria-label="站点页脚">
+<footer class="fndx-footer fndx-footer--plain" role="contentinfo" aria-label="站点页脚" data-i18n-aria="footer.footerAria">
   <div class="fndx-footer__container">
     <!-- 三列站点地图：品牌 / 学习入口 / 项目资源 -->
     <div class="fndx-footer__sections">
@@ -38,30 +38,31 @@ const yearRange =
           <span class="footer-brand__fan">FAN</span><span class="footer-brand__dex">DEX</span>
           <span class="footer-brand__marker" aria-hidden="true">://</span>
         </p>
-        <p class="footer-brand__tagline">循序渐进，从第一行代码到理解整个世界。</p>
-        <p class="footer-brand__meta">计算机科学自学平台 · {SITE.author}</p>
+        <p class="footer-brand__tagline" data-i18n="footer.tagline">循序渐进，从第一行代码到理解整个世界。</p>
+        <p class="footer-brand__meta" data-i18n="footer.meta" data-i18n-params={JSON.stringify({ author: SITE.author })}>计算机科学自学平台 · {SITE.author}</p>
       </div>
 
       <!-- 学习入口：站内三大功能 -->
-      <nav class="fndx-footer__section" aria-label="学习入口">
-        <h2 class="fndx-footer__section-title footer-section-title">学习入口</h2>
+      <nav class="fndx-footer__section" aria-label="学习入口" data-i18n-aria="footer.learnAria">
+        <h2 class="fndx-footer__section-title footer-section-title" data-i18n="footer.learnTitle">学习入口</h2>
         {!IS_DESKTOP_BUILD && (
-          <a href={`${base}playground/`} class="fndx-footer__link">在线前端</a>
+          <a href={`${base}playground/`} class="fndx-footer__link" data-i18n="footer.playground">在线前端</a>
         )}
-        <a href={`${base}syntax/`} class="fndx-footer__link">语法速览</a>
-        <a href={`${base}learning-path/`} class="fndx-footer__link">学习路线</a>
-        <a href={`${base}algorithms/`} class="fndx-footer__link">算法教学</a>
-        <a href={base} class="fndx-footer__link">模块总览</a>
+        <a href={`${base}syntax/`} class="fndx-footer__link" data-i18n="footer.syntax">语法速览</a>
+        <a href={`${base}learning-path/`} class="fndx-footer__link" data-i18n="footer.learningPath">学习路线</a>
+        <a href={`${base}algorithms/`} class="fndx-footer__link" data-i18n="footer.algorithms">算法教学</a>
+        <a href={base} class="fndx-footer__link" data-i18n="footer.moduleOverview">模块总览</a>
       </nav>
 
       <!-- 项目资源：仓库与协议 -->
-      <nav class="fndx-footer__section" aria-label="项目资源">
-        <h2 class="fndx-footer__section-title footer-section-title">项目资源</h2>
+      <nav class="fndx-footer__section" aria-label="项目资源" data-i18n-aria="footer.resourcesAria">
+        <h2 class="fndx-footer__section-title footer-section-title" data-i18n="footer.resourcesTitle">项目资源</h2>
         <a
           href="https://github.com/fanquanpp/FANDEX"
           class="fndx-footer__link"
           target="_blank"
           rel="noopener noreferrer"
+          data-i18n="footer.github"
         >
           GitHub 仓库
         </a>
@@ -70,6 +71,7 @@ const yearRange =
           class="fndx-footer__link"
           target="_blank"
           rel="noopener noreferrer"
+          data-i18n="footer.releases"
         >
           版本发布
         </a>
@@ -78,6 +80,7 @@ const yearRange =
           class="fndx-footer__link"
           target="_blank"
           rel="noopener noreferrer"
+          data-i18n="footer.issues"
         >
           问题反馈
         </a>
@@ -89,13 +92,17 @@ const yearRange =
         >
           MIT License
         </a>
-        <a href={`${base}disclaimer/`} class="fndx-footer__link">免责声明</a>
+        <a href={`${base}disclaimer/`} class="fndx-footer__link" data-i18n="footer.disclaimer">免责声明</a>
       </nav>
     </div>
 
     {/* 底部版权区：左侧版权与用途声明，右侧构建信息 */}
     <div class="fndx-footer__bottom">
-      <p class="fndx-footer__copyright">
+      <p
+        class="fndx-footer__copyright"
+        data-i18n="footer.copyright"
+        data-i18n-params={JSON.stringify({ year: yearRange, author: SITE.author || 'fanquanpp' })}
+      >
         Copyright (c) {yearRange} {SITE.author || 'fanquanpp'} · 计算机科学自学平台 · 内容仅供学习参考
       </p>
       <p class="footer-build-note">ASTRO // STATIC BUILD</p>

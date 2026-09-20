@@ -46,9 +46,9 @@ if (page > totalPages) {
 
 const baseUrl = import.meta.env.BASE_URL;
 const breadcrumb = [
-  { label: '首页', href: `${baseUrl}` },
+  { label: '首页', href: `${baseUrl}`, i18nKey: 'breadcrumb.home' },
   { label: meta.title, href: `${baseUrl}${module}/` },
-  { label: `第 ${page} 页` },
+  { label: `第 ${page} 页`, i18nKey: 'breadcrumb.page', i18nParams: { n: page } },
 ];
 ---
 

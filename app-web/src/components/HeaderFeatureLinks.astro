@@ -16,7 +16,7 @@ const isCurrent = (href: string): boolean => {
   return currentPath === href || currentPath === bare;
 };
 ---
-<nav class="header-feature-links" aria-label="功能直达">
+<nav class="header-feature-links" aria-label="功能直达" data-i18n-aria="nav.featureLinksAria">
   {
     entries.map(entry => (
       <a
@@ -24,7 +24,9 @@ const isCurrent = (href: string): boolean => {
         class:list={['header-feature-link', { 'is-current': isCurrent(entry.href) }]}
         aria-current={isCurrent(entry.href) ? 'page' : undefined}
         data-tooltip={entry.tooltip}
+        data-i18n-tooltip={entry.tooltipKey}
         data-tooltip-pos="bottom"
+        data-i18n={entry.nameKey}
       >
         {entry.name}
       </a>

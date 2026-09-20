@@ -18,6 +18,9 @@
  *   - 自动运行采用防抖（600ms），避免每次按键都重建 iframe
  *   - 控制台日志上限 200 条，防止长期运行撑爆内存
  *   - 所有数据仅存本地，不提供分享/上传/导出功能
+ *
+ * UI 双语：界面文案经 lib/i18n 的 t() 取当前语言（useLang 订阅全局切换）；
+ * 模板初始代码与作品内容（用户数据）不参与翻译。
  */
 
 import {
@@ -45,15 +48,17 @@ import type { FrontendLayout, FrontendPen } from './types';
 import { usePenPersistence } from './use-pen-persistence';
 import { usePreviewRuntime } from './use-preview-runtime';
 import { useSplitPanes, type PaneKey } from './use-split-panes';
+import { useLang } from '@/lib/use-lang';
+import { t, type Lang } from '@/lib/i18n';
 
-/** 起步模板结构（新建时可选） */
+/** 起步模板结构（新建时可选；name/desc 走 i18n 字典键） */
 interface PenTemplate {
   /** 模板 ID */
   id: string;
-  /** 模板名称 */
-  name: string;
-  /** 模板一句话说明 */
-  desc: string;
+  /** 模板名称字典键 */
+  nameKey: string;
+  /** 模板一句话说明字典键 */
+  descKey: string;
   /** HTML 初始代码 */
   html: string;
   /** CSS 初始代码 */
@@ -69,13 +74,13 @@ const BLANK_CSS =
 const BLANK_JS =
   "const tip = document.getElementById('tip');\nconst btn = document.getElementById('demo');\nbtn.addEventListener('click', () => {\n  tip.textContent = '点击次数 +1';\n  console.log('按钮被点击');\n});\nconsole.log('预览已就绪');";
 
-/** 起步模板列表（新建菜单展示顺序） */
+/** 起步模板列表（新建菜单展示顺序；名称/说明见字典 pg.template.*） */
 const TEMPLATES: readonly PenTemplate[] = [
-  { id: 'blank', name: '交互示例', desc: '按钮点击 + 控制台输出', html: BLANK_HTML, css: BLANK_CSS, js: BLANK_JS },
+  { id: 'blank', nameKey: 'pg.template.interactive.name', descKey: 'pg.template.interactive.desc', html: BLANK_HTML, css: BLANK_CSS, js: BLANK_JS },
   {
     id: 'animation',
-    name: 'CSS 动画',
-    desc: '几何图形循环动画',
+    nameKey: 'pg.template.animation.name',
+    descKey: 'pg.template.animation.desc',
     html: '<div class="stage">\n  <div class="box box-a"></div>\n  <div class="box box-b"></div>\n  <div class="box box-c"></div>\n</div>',
     css:
       '.stage {\n  display: flex;\n  gap: 24px;\n  justify-content: center;\n  align-items: center;\n  height: 100vh;\n  background: #101418;\n}\n.box {\n  width: 48px;\n  height: 48px;\n  animation: pulse 1.6s ease-in-out infinite;\n}\n.box-a { background: #35C4DC; border-radius: 4px; }\n.box-b { background: #E8B93E; border-radius: 24px; animation-delay: 0.2s; }\n.box-c { background: #E05A4E; border-radius: 4px; transform: rotate(45deg); animation-delay: 0.4s; }\n@keyframes pulse {\n  0%, 100% { transform: translateY(0) rotate(0deg); }\n  50% { transform: translateY(-24px) rotate(8deg); }\n}',
@@ -83,8 +88,8 @@ const TEMPLATES: readonly PenTemplate[] = [
   },
   {
     id: 'empty',
-    name: '空白页面',
-    desc: '从零开始自由编写',
+    nameKey: 'pg.template.blank.name',
+    descKey: 'pg.template.blank.desc',
     html: '<h1>空白页面</h1>\n<p>从这里开始你的作品</p>',
     css: 'body {\n  font-family: sans-serif;\n  padding: 40px 16px;\n  text-align: center;\n}',
     js: "console.log('开始编写吧');",
@@ -127,10 +132,10 @@ function narrowPreferredLayout(): FrontendLayout {
 
 /**
  * 格式化时间戳为本地时间字符串
- * @param ts - 时间戳（毫秒）
+ * @param ts - 时间戳（毫秒）；0 表示未保存（文案走 i18n 字典）
  */
-function formatTime(ts: number): string {
-  if (!ts) return '未保存';
+function formatTime(ts: number, lang: Lang): string {
+  if (!ts) return t('pg.unsaved', undefined, lang);
   const d = new Date(ts);
   const pad = (n: number) => String(n).padStart(2, '0');
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
@@ -162,6 +167,8 @@ function syncPenUrl(penId: string | null): void {
 
 /** 前端实验沙箱主组件 */
 function FrontendLab() {
+  /** 界面语言（工作台全部 UI 文案双语，订阅全局切换） */
+  const lang = useLang();
   /** 当前编辑中的作品 */
   const [pen, setPen] = useState<FrontendPen>(DEFAULT_TEMPLATE);
   /** 是否打开作品库面板 */
@@ -178,8 +185,8 @@ function FrontendLab() {
   const [formatting, setFormatting] = useState(false);
   /** 工具栏提示（格式化结果等） */
   const [toolbarNote, setToolbarNote] = useState('');
-  /** 存储用量提示 */
-  const [storageWarning, setStorageWarning] = useState<string>('');
+  /** 存储用量提示（存数值，文案渲染期按当前语言取字典） */
+  const [storageWarning, setStorageWarning] = useState<{ used: string; quota: string } | null>(null);
   /** 当前作品字节数（用于本地占用提示）：纯派生值，随 pen 渲染期计算 */
   const penBytes = useMemo(() => estimatePenBytes(pen), [pen]);
   /** 窄屏标签页：当前聚焦的编辑器面板 */
@@ -292,9 +299,10 @@ function FrontendLab() {
       setLibrary(await loadPens());
       const usage = await getStorageUsage();
       if (!cancelled && usage.quotaBytes > 0 && usage.usageBytes / usage.quotaBytes > STORAGE_WARN_RATIO) {
-        setStorageWarning(
-          `本地存储已使用 ${formatBytes(usage.usageBytes)} / ${formatBytes(usage.quotaBytes)}，建议整理作品库`,
-        );
+        setStorageWarning({
+          used: formatBytes(usage.usageBytes),
+          quota: formatBytes(usage.quotaBytes),
+        });
       }
     })();
     return () => {
@@ -354,8 +362,7 @@ function FrontendLab() {
       createdAt: now,
       updatedAt: now,
       lastOpenedAt: now,
-    };
-    await savePen(newPen);
+    };    await savePen(newPen);
     setPen(newPen);
     setLibrary(await loadPens());
     setSaveState('saved');
@@ -423,9 +430,9 @@ function FrontendLab() {
         TEMPLATES.some((t) => pen.html === t.html && pen.css === t.css && pen.js === t.js);
       const needsConfirm =
         pen.id !== 'draft'
-          ? '当前正在编辑作品库中的作品，新建草稿不会影响已保存的作品，是否继续？'
+          ? t('pg.confirmNewSaved', undefined, lang)
           : !isUntouched
-            ? '当前草稿尚未另存为作品，新建会覆盖草稿内容，是否继续？'
+            ? t('pg.confirmNewDraft', undefined, lang)
             : '';
       if (needsConfirm && !window.confirm(needsConfirm)) return;
       const next: FrontendPen = {
@@ -442,7 +449,7 @@ function FrontendLab() {
       setShowTemplates(false);
       syncPenUrl(null);
     },
-    [pen, resetPreview],
+    [pen, resetPreview, lang],
   );
 
   /**
@@ -457,9 +464,9 @@ function FrontendLab() {
         TEMPLATES.some((t) => pen.html === t.html && pen.css === t.css && pen.js === t.js);
       const needsConfirm =
         pen.id !== 'draft'
-          ? '当前正在编辑作品库中的作品，载入成品会切换到新的草稿，已保存的作品不受影响，是否继续？'
+          ? t('pg.confirmLoadSaved', undefined, lang)
           : !isUntouched
-            ? '当前草稿尚未另存为作品，载入成品会覆盖草稿内容，是否继续？'
+            ? t('pg.confirmLoadDraft', undefined, lang)
             : '';
       if (needsConfirm && !window.confirm(needsConfirm)) return;
       const next: FrontendPen = {
@@ -477,7 +484,7 @@ function FrontendLab() {
       setShowGallery(false);
       syncPenUrl(null);
     },
-    [pen, resetPreview],
+    [pen, resetPreview, lang],
   );
 
   /**
@@ -511,10 +518,10 @@ function FrontendLab() {
    * 删除作品库中的一条作品（用户主动操作，带确认）
    */
   const handleDeletePen = useCallback(async (item: FrontendPen) => {
-    if (!window.confirm(`确定删除作品「${item.title}」？删除后无法恢复。`)) return;
+    if (!window.confirm(t('pg.deleteConfirm', { title: item.title }, lang))) return;
     await deletePen(item.id);
     setLibrary(await loadPens());
-  }, []);
+  }, [lang]);
 
   /**
    * 切换编辑器面板可见性；窄屏下同时把该面板设为标签页焦点
@@ -562,24 +569,28 @@ function FrontendLab() {
       {/* 顶部工具栏：品牌区 / 面板开关 / 视图操作 / 作品操作 / 运行 */}
       <header className="pg-toolbar">
         <div className="pg-toolbar-row">
-          <a className="pg-back" href={`${import.meta.env.BASE_URL}`} aria-label="返回首页">
+          <a className="pg-back" href={`${import.meta.env.BASE_URL}`} aria-label={t('pg.backHomeAria', undefined, lang)}>
             <PgIcon name="arrow-left" size={15} />
-            <span>首页</span>
+            <span>{t('pg.backHome', undefined, lang)}</span>
           </a>
           <input
             className="pg-title-input"
             value={pen.title}
-            placeholder="作品标题"
+            placeholder={t('pg.titlePlaceholder', undefined, lang)}
             onChange={(e) => updatePen({ title: e.target.value })}
-            aria-label="作品标题"
+            aria-label={t('pg.titleAria', undefined, lang)}
           />
           <span className={`pg-save-state pg-save-state--${saveState}`}>
-            {saveState === 'saved' ? '已保存到本地' : saveState === 'error' ? '保存失败，请重试' : '保存中'}
+            {saveState === 'saved'
+              ? t('pg.saveState.saved', undefined, lang)
+              : saveState === 'error'
+                ? t('pg.saveState.error', undefined, lang)
+                : t('pg.saveState.saving', undefined, lang)}
           </span>
         </div>
         <div className="pg-toolbar-row pg-toolbar-row--actions">
           {/* 编辑器开关组：桌面为显隐开关，窄屏为标签页 */}
-          <div className="pg-toolbar-group pg-toolbar-group--editors" role="group" aria-label="编辑器面板">
+          <div className="pg-toolbar-group pg-toolbar-group--editors" role="group" aria-label={t('pg.editorsAria', undefined, lang)}>
             {editors.map((editor) => (
               <button
                 key={editor.key}
@@ -587,7 +598,7 @@ function FrontendLab() {
                 className={`pg-btn pg-btn--editors${editor.visible ? ' is-on' : ''}${effectivePane === editor.key ? ' is-active' : ''}`}
                 onClick={() => togglePane(editor.key)}
                 aria-pressed={editor.visible}
-                title={`切换到 ${editor.label} 编辑器`}
+                title={t('pg.switchEditor', { lang: editor.label }, lang)}
               >
                 {editor.label}
               </button>
@@ -599,39 +610,39 @@ function FrontendLab() {
               className="pg-btn pg-btn--ghost"
               onClick={() => void handleFormat()}
               disabled={formatting}
-              title="格式化 HTML/CSS/JS 代码（Shift+Alt+F）"
+              title={t('pg.formatTitle', undefined, lang)}
             >
               <PgIcon name="spark" size={14} />
-              <span>格式化</span>
+              <span>{t('pg.format', undefined, lang)}</span>
             </button>
             <button
               type="button"
               className="pg-btn pg-btn--ghost"
               onClick={() => updatePen({ autoRun: !pen.autoRun })}
               aria-pressed={pen.autoRun}
-              title="自动运行预览"
+              title={t('pg.autoTitle', undefined, lang)}
             >
               <PgIcon name="refresh" size={14} />
-              <span>自动</span>
+              <span>{t('pg.auto', undefined, lang)}</span>
             </button>
             <button
               type="button"
               className="pg-btn pg-btn--ghost"
               onClick={() => updatePen({ layout: pen.layout === 'left' ? 'top' : 'left' })}
-              title="切换编辑区布局"
+              title={t('pg.layoutTitle', undefined, lang)}
             >
               <PgIcon name={pen.layout === 'left' ? 'layout-left' : 'layout-top'} size={14} />
-              <span>{pen.layout === 'left' ? '左右' : '上下'}</span>
+              <span>{pen.layout === 'left' ? t('pg.layoutLeft', undefined, lang) : t('pg.layoutTop', undefined, lang)}</span>
             </button>
             <button
               type="button"
               className="pg-btn pg-btn--ghost"
               onClick={() => updatePen({ showConsole: !pen.showConsole })}
               aria-pressed={pen.showConsole}
-              title="控制台"
+              title={t('pg.consoleTitle', undefined, lang)}
             >
               <PgIcon name="terminal" size={14} />
-              <span>控制台</span>
+              <span>{t('pg.console', undefined, lang)}</span>
               {consoleEntries.filter((entry) => entry.kind === 'error').length > 0 && (
                 <em className="pg-count pg-count--danger">
                   {consoleEntries.filter((entry) => entry.kind === 'error').length}
@@ -644,10 +655,10 @@ function FrontendLab() {
               type="button"
               className="pg-btn pg-btn--ghost"
               onClick={() => setShowGallery(true)}
-              title="浏览灵感画廊：25 个设计成品，可一键载入源码"
+              title={t('pg.galleryTitle', undefined, lang)}
             >
               <PgIcon name="gallery" size={14} />
-              <span>灵感库</span>
+              <span>{t('pg.gallery', undefined, lang)}</span>
             </button>
             <div className="pg-new-wrap">
               <button
@@ -655,13 +666,13 @@ function FrontendLab() {
                 className="pg-btn pg-btn--ghost"
                 onClick={() => setShowTemplates((v) => !v)}
                 aria-expanded={showTemplates}
-                title="从模板新建草稿"
+                title={t('pg.newTitle', undefined, lang)}
               >
                 <PgIcon name="plus" size={14} />
-                <span>新建</span>
+                <span>{t('pg.new', undefined, lang)}</span>
               </button>
               {showTemplates && (
-                <div className="pg-menu" role="menu" aria-label="选择新建模板">
+                <div className="pg-menu" role="menu" aria-label={t('pg.templateMenuAria', undefined, lang)}>
                   {TEMPLATES.map((template) => (
                     <button
                       key={template.id}
@@ -670,20 +681,20 @@ function FrontendLab() {
                       role="menuitem"
                       onClick={() => handleNewDraft(template)}
                     >
-                      <span className="pg-menu-name">{template.name}</span>
-                      <span className="pg-menu-desc">{template.desc}</span>
+                      <span className="pg-menu-name">{t(template.nameKey, undefined, lang)}</span>
+                      <span className="pg-menu-desc">{t(template.descKey, undefined, lang)}</span>
                     </button>
                   ))}
                 </div>
               )}
             </div>
-            <button type="button" className="pg-btn pg-btn--ghost" onClick={() => void handleSave()} title="保存：草稿另存为新作品（Ctrl/Cmd+S）">
+            <button type="button" className="pg-btn pg-btn--ghost" onClick={() => void handleSave()} title={t('pg.saveTitle', undefined, lang)}>
               <PgIcon name="copy" size={14} />
-              <span>另存</span>
+              <span>{t('pg.save', undefined, lang)}</span>
             </button>
-            <button type="button" className="pg-btn pg-btn--ghost pg-btn--library" onClick={() => void handleOpenLibrary()} title="本地作品库">
+            <button type="button" className="pg-btn pg-btn--ghost pg-btn--library" onClick={() => void handleOpenLibrary()} title={t('pg.libraryTitle', undefined, lang)}>
               <PgIcon name="folder" size={14} />
-              <span>作品库</span>
+              <span>{t('pg.library', undefined, lang)}</span>
               {library.length > 0 && <em className="pg-count">{library.length}</em>}
             </button>
             <button
@@ -691,19 +702,19 @@ function FrontendLab() {
               className="pg-btn pg-btn--ghost"
               onClick={() => setShowShortcuts((v) => !v)}
               aria-expanded={showShortcuts}
-              title="键盘快捷键（?）"
+              title={t('pg.keysTitle', undefined, lang)}
             >
               <PgIcon name="keyboard" size={14} />
-              <span>快捷键</span>
+              <span>{t('pg.keys', undefined, lang)}</span>
             </button>
             <button
               type="button"
               className="pg-btn pg-btn--primary"
               onClick={handleRun}
-              title="运行预览（Ctrl/Cmd + Enter）"
+              title={t('pg.runTitle', undefined, lang)}
             >
               <PgIcon name="play" size={14} />
-              <span>运行</span>
+              <span>{t('pg.run', undefined, lang)}</span>
             </button>
           </div>
           {toolbarNote && <span className="pg-toolbar-note">{toolbarNote}</span>}
@@ -714,7 +725,7 @@ function FrontendLab() {
       {storageWarning && (
         <div className="pg-warning-bar">
           <PgIcon name="alert" size={14} />
-          <span>{storageWarning}</span>
+          <span>{t('pg.storageWarn', { used: storageWarning.used, quota: storageWarning.quota }, lang)}</span>
         </div>
       )}
 
@@ -723,7 +734,7 @@ function FrontendLab() {
         {/* 编辑器区域 */}
         <section
           className={`pg-editors pg-editors--${pen.layout}`}
-          aria-label="代码编辑器"
+          aria-label={t('pg.editorsAria2', undefined, lang)}
           ref={editorsRef}
         >
           {visibleEditors.map((editor, index) => {
@@ -743,7 +754,7 @@ function FrontendLab() {
                     onPointerCancel={handlePaneSplitEnd}
                     role="separator"
                     aria-orientation={pen.layout === 'left' ? 'horizontal' : 'vertical'}
-                    aria-label={`调整 ${visibleEditors[index - 1]!.label} 与 ${editor.label} 比例`}
+                    aria-label={t('pg.resizeEditors', { a: visibleEditors[index - 1]!.label, b: editor.label }, lang)}
                   />
                 )}
                 <div
@@ -767,7 +778,7 @@ function FrontendLab() {
                               : { showJs: false },
                         )
                       }
-                      title={`收起 ${editor.label}`}
+                      title={t('pg.collapseEditor', { lang: editor.label }, lang)}
                     >
                       <PgIcon name="close" size={12} />
                     </button>
@@ -779,7 +790,7 @@ function FrontendLab() {
                       onChange={(next: string) =>
                         updatePen(editor.key === 'html' ? { html: next } : editor.key === 'css' ? { css: next } : { js: next })
                       }
-                      ariaLabel={`${editor.label} 编辑器`}
+                      ariaLabel={t('pg.editorAria', { lang: editor.label }, lang)}
                     />
                   </div>
                 </div>
@@ -787,7 +798,7 @@ function FrontendLab() {
             );
           })}
           {!pen.showHtml && !pen.showCss && !pen.showJs && (
-            <div className="pg-pane-empty">全部编辑器已收起，请从工具栏的 HTML / CSS / JS 按钮重新打开</div>
+            <div className="pg-pane-empty">{t('pg.paneEmpty', undefined, lang)}</div>
           )}
         </section>
 
@@ -800,7 +811,7 @@ function FrontendLab() {
           onPointerCancel={handleSplitEnd}
           role="separator"
           aria-orientation={pen.layout === 'left' ? 'vertical' : 'horizontal'}
-          aria-label="调整编辑区与预览区比例"
+          aria-label={t('pg.resizeMain', undefined, lang)}
         />
 
         {/* 预览区域 */}
@@ -808,7 +819,7 @@ function FrontendLab() {
           <div className="pg-preview-head">
             <span className="pg-preview-title">
               <PgIcon name="spark" size={13} />
-              实时预览
+              {t('pg.livePreview', undefined, lang)}
             </span>
             <div className="pg-preview-actions">
               <span className="pg-preview-size">{formatBytes(penBytes)}</span>
@@ -816,7 +827,7 @@ function FrontendLab() {
                 type="button"
                 className="pg-btn pg-btn--ghost pg-btn--sm"
                 onClick={handleRun}
-                title="重新运行预览（Ctrl/Cmd + Enter）"
+                title={t('pg.rerunTitle', undefined, lang)}
               >
                 <PgIcon name="refresh" size={12} />
               </button>
@@ -828,12 +839,12 @@ function FrontendLab() {
             className="pg-frame"
             sandbox="allow-scripts allow-modals allow-forms allow-popups allow-pointer-lock"
             srcDoc={previewDoc}
-            title="前端效果预览"
+            title={t('pg.previewTitle', undefined, lang)}
           />
           {pen.showConsole && (
             <div className="pg-console">
               <div className="pg-console-head">
-                <span className="pg-console-title">控制台</span>
+                <span className="pg-console-title">{t('pg.console', undefined, lang)}</span>
                 <div className="pg-console-actions">
                   {consoleEntries.length > 0 && (
                     <button
@@ -841,14 +852,14 @@ function FrontendLab() {
                       className="pg-btn pg-btn--ghost pg-btn--sm"
                       onClick={() => setConsoleEntries([])}
                     >
-                      清空
+                      {t('pg.consoleClear', undefined, lang)}
                     </button>
                   )}
                   <button
                     type="button"
                     className="pg-btn pg-btn--ghost pg-btn--sm"
                     onClick={() => updatePen({ showConsole: false })}
-                    title="收起控制台"
+                    title={t('pg.consoleCollapse', undefined, lang)}
                   >
                     <PgIcon name="close" size={12} />
                   </button>
@@ -856,7 +867,7 @@ function FrontendLab() {
               </div>
               <div className="pg-console-body">
                 {consoleEntries.length === 0 ? (
-                  <div className="pg-console-empty">暂无输出</div>
+                  <div className="pg-console-empty">{t('pg.consoleEmpty', undefined, lang)}</div>
                 ) : (
                   consoleEntries.map((entry, index) => (
                     <div className={`pg-console-line pg-console-line--${entry.kind}`} key={`${entry.time}-${index}`}>
@@ -880,56 +891,56 @@ function FrontendLab() {
             className="pg-keys"
             role="dialog"
             aria-modal="true"
-            aria-label="键盘快捷键"
+            aria-label={t('pg.keysPanelAria', undefined, lang)}
             onClick={(e) => e.stopPropagation()}
           >
             <header className="pg-keys__head">
               <span className="pg-keys__title">
                 <PgIcon name="keyboard" size={14} />
-                键盘快捷键
+                {t('pg.keysPanelTitle', undefined, lang)}
               </span>
               <button
                 type="button"
                 className="pg-btn pg-btn--ghost pg-btn--sm"
                 onClick={() => setShowShortcuts(false)}
-                title="关闭（Esc）"
+                title={t('pg.closeAria', undefined, lang)}
               >
                 <PgIcon name="close" size={14} />
               </button>
             </header>
             <div className="pg-keys__body">
               <div className="pg-keys__row">
-                <span className="pg-keys__desc">运行预览</span>
+                <span className="pg-keys__desc">{t('pg.keysRun', undefined, lang)}</span>
                 <span className="pg-keys__combo">
                   <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Enter</kbd>
                 </span>
               </div>
               <div className="pg-keys__row">
-                <span className="pg-keys__desc">格式化代码</span>
+                <span className="pg-keys__desc">{t('pg.keysFormat', undefined, lang)}</span>
                 <span className="pg-keys__combo">
                   <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>F</kbd>
                 </span>
               </div>
               <div className="pg-keys__row">
-                <span className="pg-keys__desc">保存（草稿另存为新作品）</span>
+                <span className="pg-keys__desc">{t('pg.keysSave', undefined, lang)}</span>
                 <span className="pg-keys__combo">
                   <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>S</kbd>
                 </span>
               </div>
               <div className="pg-keys__row">
-                <span className="pg-keys__desc">打开 / 关闭本面板</span>
+                <span className="pg-keys__desc">{t('pg.keysPanel', undefined, lang)}</span>
                 <span className="pg-keys__combo">
                   <kbd>?</kbd>
                 </span>
               </div>
               <div className="pg-keys__row">
-                <span className="pg-keys__desc">关闭面板 / 弹层</span>
+                <span className="pg-keys__desc">{t('pg.keysClose', undefined, lang)}</span>
                 <span className="pg-keys__combo">
                   <kbd>Esc</kbd>
                 </span>
               </div>
             </div>
-            <p className="pg-keys__note">编辑内容自动保存到浏览器本地（IndexedDB），刷新不丢失。</p>
+            <p className="pg-keys__note">{t('pg.keysNote', undefined, lang)}</p>
           </div>
         </div>
       )}
@@ -948,7 +959,7 @@ function FrontendLab() {
             <div className="pg-drawer-head">
               <span className="pg-drawer-title">
                 <PgIcon name="folder" size={15} />
-                本地作品库
+                {t('pg.libraryTitle2', undefined, lang)}
               </span>
               <button type="button" className="pg-btn pg-btn--ghost pg-btn--sm" onClick={() => setShowLibrary(false)}>
                 <PgIcon name="close" size={14} />
@@ -957,27 +968,27 @@ function FrontendLab() {
             <div className="pg-drawer-body">
               {library.length === 0 ? (
                 <div className="pg-drawer-empty">
-                  暂无保存的作品。编辑完成后点击「另存」即可保存在当前浏览器。
+                  {t('pg.libraryEmpty', undefined, lang)}
                 </div>
               ) : (
                 library.map((item) => (
                   <div className={`pg-lib-item ${item.id === pen.id ? 'pg-lib-item--active' : ''}`} key={item.id}>
                     <div className="pg-lib-info">
-                      <span className="pg-lib-title">{item.title || '未命名作品'}</span>
+                      <span className="pg-lib-title">{item.title || t('pg.untitled', undefined, lang)}</span>
                       <span className="pg-lib-meta">
-                        {formatTime(item.updatedAt)} · {formatBytes(estimatePenBytes(item))}
+                        {formatTime(item.updatedAt, lang)} · {formatBytes(estimatePenBytes(item))}
                       </span>
                     </div>
                     <div className="pg-lib-actions">
                       <button type="button" className="pg-btn pg-btn--ghost pg-btn--sm" onClick={() => void handleOpenPen(item)}>
-                        打开
+                        {t('pg.open', undefined, lang)}
                       </button>
                       <button
                         type="button"
                         className="pg-btn pg-btn--ghost pg-btn--sm pg-btn--danger"
                         onClick={() => handleDeletePen(item)}
                       >
-                        删除
+                        {t('pg.delete', undefined, lang)}
                       </button>
                     </div>
                   </div>

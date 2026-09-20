@@ -4,8 +4,11 @@
  * 组合层：持有选中/悬停/折叠/学习进度状态，组装画布、控制条与详情面板。
  * 数据来源：由 Astro 页面注入的 TechVM（服务端组装，客户端不加载地图 JSON）。
  * 学习进度：localStorage 持久化（progress.ts），节点三态呈现 + Duolingo 式进度环。
+ * 界面文案经 lib/i18n 的 t() 取当前语言（UI 双语）。
  */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { useLang } from '@/lib/use-lang';
+import { t } from '@/lib/i18n';
 import type { NodeProgress, TechProgress, TechVM } from './types';
 import { computeMapLayout } from './map-layout';
 import { clearTechProgress, readTechProgress, writeNodeProgress } from './progress';
@@ -26,6 +29,8 @@ const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 /** 学习路径思维导图 */
 export default function LearningPathMap({ tech, base }: Props) {
+  /** 界面语言（全岛文案双语，订阅全局切换） */
+  const lang = useLang();
   /** 选中节点 ID（点击待补充节点触发） */
   const [selectedId, setSelectedId] = useState<string | null>(null);
   /** 悬停节点 ID（优先于选中态展示） */
@@ -117,9 +122,9 @@ export default function LearningPathMap({ tech, base }: Props) {
   /** 重置当前技术的全部学习进度（带确认） */
   const handleResetProgress = useCallback(() => {
     if (doneCount + learningCount === 0) return;
-    if (!window.confirm(`清除「${tech.title}」的全部学习进度标记？此操作不可恢复。`)) return;
+    if (!window.confirm(t('lpMap.clearConfirm', { title: tech.title }, lang))) return;
     setProgress(clearTechProgress(tech.module));
-  }, [doneCount, learningCount, tech.module, tech.title]);
+  }, [doneCount, learningCount, tech.module, tech.title, lang]);
 
   // 键盘进度快捷键（roadmap.sh 模式）：D 已完成 / L 学习中 / S 清除标记。
   // 仅在详情面板有节点时生效；输入类元素聚焦与修饰键组合不接管
@@ -151,7 +156,7 @@ export default function LearningPathMap({ tech, base }: Props) {
         <div
           className="lp-progress"
           role="status"
-          aria-label={`学习进度：已完成 ${doneCount} / 共 ${totalNodes} 个知识点，学习中 ${learningCount} 个`}
+          aria-label={t('lpMap.progressAria', { done: doneCount, total: totalNodes, learning: learningCount }, lang)}
         >
           <svg className="lp-progress__ring" viewBox="0 0 36 36" aria-hidden="true">
             <circle className="lp-progress__track" cx="18" cy="18" r={RING_RADIUS} />
@@ -166,10 +171,10 @@ export default function LearningPathMap({ tech, base }: Props) {
           </svg>
           <div className="lp-progress__readout">
             <span className="lp-progress__num">{doneCount}/{totalNodes}</span>
-            <span className="lp-progress__label">已完成</span>
+            <span className="lp-progress__label">{t('lpMap.done', undefined, lang)}</span>
           </div>
           {learningCount > 0 && (
-            <span className="lp-progress__learning">学习中 {learningCount}</span>
+            <span className="lp-progress__learning">{t('lpMap.learning', { n: learningCount }, lang)}</span>
           )}
         </div>
         <MapControls
@@ -184,13 +189,13 @@ export default function LearningPathMap({ tech, base }: Props) {
       </div>
 
       {/* 键盘快捷键提示条 */}
-      <div className="lp-map__shortcuts" aria-label="键盘快捷键">
-        <span className="lp-map__shortcut"><kbd>+</kbd>/<kbd>-</kbd> 缩放</span>
-        <span className="lp-map__shortcut"><kbd>0</kbd>/<kbd>F</kbd> 适应视口</span>
-        <span className="lp-map__shortcut"><kbd>R</kbd> 复位</span>
-        <span className="lp-map__shortcut"><kbd>方向键</kbd> 平移</span>
-        <span className="lp-map__shortcut"><kbd>D</kbd>/<kbd>L</kbd>/<kbd>S</kbd> 已完成/学习中/清除</span>
-        <span className="lp-map__shortcut"><kbd>Esc</kbd> 关闭详情</span>
+      <div className="lp-map__shortcuts" aria-label={t('lpMap.shortcutsAria', undefined, lang)}>
+        <span className="lp-map__shortcut"><kbd>+</kbd>/<kbd>-</kbd> {t('lpMap.scZoom', undefined, lang)}</span>
+        <span className="lp-map__shortcut"><kbd>0</kbd>/<kbd>F</kbd> {t('lpMap.scFit', undefined, lang)}</span>
+        <span className="lp-map__shortcut"><kbd>R</kbd> {t('lpMap.scReset', undefined, lang)}</span>
+        <span className="lp-map__shortcut"><kbd>{t('lpMap.scPanKey', undefined, lang)}</kbd> {t('lpMap.scPan', undefined, lang)}</span>
+        <span className="lp-map__shortcut"><kbd>D</kbd>/<kbd>L</kbd>/<kbd>S</kbd> {t('lpMap.scMark', undefined, lang)}</span>
+        <span className="lp-map__shortcut"><kbd>Esc</kbd> {t('lpMap.scClose', undefined, lang)}</span>
       </div>
 
       {/* 画布 + 详情面板 */}
@@ -225,34 +230,34 @@ export default function LearningPathMap({ tech, base }: Props) {
       </div>
 
       {/* 图例 */}
-      <div className="lp-map__legend" aria-label="图例">
+      <div className="lp-map__legend" aria-label={t('lpMap.legendAria', undefined, lang)}>
         <span className="lp-legend-item">
           <i className="lp-legend-line" />
-          已发布文档
+          {t('lpMap.legendDoc', undefined, lang)}
         </span>
         <span className="lp-legend-item">
           <i className="lp-legend-line lp-legend-line--planned" />
-          文档待补充
+          {t('lpMap.legendGap', undefined, lang)}
         </span>
         <span className="lp-legend-item">
           <i className="lp-legend-state lp-legend-state--learning" />
-          学习中
+          {t('lpMap.legendLearning', undefined, lang)}
         </span>
         <span className="lp-legend-item">
           <i className="lp-legend-state lp-legend-state--done" />
-          已完成
+          {t('lpMap.legendDone', undefined, lang)}
         </span>
         <span className="lp-legend-item">
           <i className="lp-legend-bar lp-legend-bar--beginner" />
-          入门
+          {t('lpMap.legendBeginner', undefined, lang)}
         </span>
         <span className="lp-legend-item">
           <i className="lp-legend-bar lp-legend-bar--intermediate" />
-          中级
+          {t('lpMap.legendIntermediate', undefined, lang)}
         </span>
         <span className="lp-legend-item">
           <i className="lp-legend-bar lp-legend-bar--advanced" />
-          进阶
+          {t('lpMap.legendAdvanced', undefined, lang)}
         </span>
       </div>
     </div>

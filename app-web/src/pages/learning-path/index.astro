@@ -11,6 +11,7 @@ import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import FeatureNav from '@/components/FeatureNav.astro'
 import Footer from '@/components/Footer.astro'
 import { SITE } from '@/lib/constants'
+import { t } from '@/lib/i18n'
 import { categoryColors, getModule, getPrimaryCategory } from '@/lib/modules'
 import { getCategories } from '@/services'
 import {
@@ -56,7 +57,9 @@ const pathModules = new Set(getLearningPathModules())
 
 /**
  * 职业路线规划数据
- * 依据主流职业发展路径与知识体系结构整理，模块均引用站内真实内容：
+ * 依据主流职业发展路径与知识体系结构整理，模块均引用站内真实内容；
+ * 展示文案（标题/状态/描述/阶段/阶梯）收于 i18n 字典（lpCareer.*），
+ * SSR 渲染中文，运行时经 data-i18n 属性随界面语言切换：
  * - 前端：基础（HTML/CSS/JS）→ 框架进阶（TS/Vue/React）→ 工程化与架构
  * - 后端：语言与基础 → 数据与算法 → 架构与工程
  * - 全栈：前端 + 后端 + 贯通交付
@@ -67,82 +70,82 @@ const careers = [
   {
     id: 'frontend',
     index: '01',
-    title: '前端工程师',
+    titleKey: 'lpCareer.frontend.title',
     en: 'Frontend Engineer',
     color: categoryColors.frontend,
-    status: '已开放',
-    desc: '从 HTML / CSS / JavaScript 起步，经 TypeScript 与主流框架进阶，最终走向工程化与架构设计。',
+    status: 'open',
+    descKey: 'lpCareer.frontend.desc',
     stages: [
-      { label: '入门基础', points: ['HTML5', 'CSS', 'JavaScript', 'Git'] },
-      { label: '框架进阶', points: ['TypeScript', 'Vue 3', 'React'] },
-      { label: '工程化架构', points: ['Vite', 'Astro', 'Monorepo'] },
+      { labelKey: 'lpCareer.frontend.stage1', points: ['HTML5', 'CSS', 'JavaScript', 'Git'] },
+      { labelKey: 'lpCareer.frontend.stage2', points: ['TypeScript', 'Vue 3', 'React'] },
+      { labelKey: 'lpCareer.frontend.stage3', points: ['Vite', 'Astro', 'Monorepo'] },
     ],
     modules: ['html5', 'css', 'javascript', 'git', 'typescript', 'vue3', 'react', 'vite', 'astro'],
-    ladder: ['初级 · 独立完成页面开发', '中级 · 框架与复杂模块', '高级 · 性能优化与架构'],
+    ladderKeys: ['lpCareer.frontend.ladder1', 'lpCareer.frontend.ladder2', 'lpCareer.frontend.ladder3'],
   },
   {
     id: 'backend',
     index: '02',
-    title: '后端工程师',
+    titleKey: 'lpCareer.backend.title',
     en: 'Backend Engineer',
     color: categoryColors.backend,
-    status: '已开放',
-    desc: '以一门后端语言为主线，贯通算法、数据库与计算机基础，再向高并发与系统架构演进。',
+    status: 'open',
+    descKey: 'lpCareer.backend.desc',
     stages: [
-      { label: '语言与基础', points: ['Python', 'Go', 'C++', 'Shell'] },
-      { label: '数据与算法', points: ['SQL', 'MySQL', 'Redis', '算法'] },
-      { label: '架构与工程', points: ['计算机基础', '软件工程与测试'] },
+      { labelKey: 'lpCareer.backend.stage1', points: ['Python', 'Go', 'C++', 'Shell'] },
+      { labelKey: 'lpCareer.backend.stage2', points: ['SQL', 'MySQL', 'Redis', '算法'] },
+      { labelKey: 'lpCareer.backend.stage3', points: ['计算机基础', '软件工程与测试'] },
     ],
     modules: ['python', 'go', 'cpp', 'shell', 'sql', 'mysql', 'redis', 'algorithm', 'cs-fundamentals', 'software-testing'],
-    ladder: ['初级 · 接口与业务模块', '中级 · 性能与高并发', '高级 · 分布式架构'],
+    ladderKeys: ['lpCareer.backend.ladder1', 'lpCareer.backend.ladder2', 'lpCareer.backend.ladder3'],
   },
   {
     id: 'fullstack',
     index: '03',
-    title: '全栈工程师',
+    titleKey: 'lpCareer.fullstack.title',
     en: 'Full-stack',
     color: categoryColors.cs,
-    status: '已开放',
-    desc: '贯通前端界面与后端服务，掌握数据库与部署交付，具备独立完成完整产品的能力。',
+    status: 'open',
+    descKey: 'lpCareer.fullstack.desc',
     stages: [
-      { label: '前端基础', points: ['HTML5', 'CSS', 'JavaScript', 'TypeScript'] },
-      { label: '后端与数据', points: ['Python', 'SQL', 'Redis'] },
-      { label: '贯通与交付', points: ['Git', '运维', '工程实践'] },
+      { labelKey: 'lpCareer.fullstack.stage1', points: ['HTML5', 'CSS', 'JavaScript', 'TypeScript'] },
+      { labelKey: 'lpCareer.fullstack.stage2', points: ['Python', 'SQL', 'Redis'] },
+      { labelKey: 'lpCareer.fullstack.stage3', points: ['Git', '运维', '工程实践'] },
     ],
     modules: ['html5', 'css', 'javascript', 'typescript', 'react', 'python', 'sql', 'redis', 'git', 'devops', 'software-testing'],
-    ladder: ['初阶 · 前后端可独立开发', '进阶 · 数据库与部署贯通', '高阶 · 系统设计与架构'],
+    ladderKeys: ['lpCareer.fullstack.ladder1', 'lpCareer.fullstack.ladder2', 'lpCareer.fullstack.ladder3'],
   },
   {
     id: 'devops',
     index: '04',
-    title: 'DevOps / 平台工程师',
+    titleKey: 'lpCareer.devops.title',
     en: 'DevOps',
     color: categoryColors.cloud,
-    status: '已开放',
-    desc: '以脚本、版本控制与网络为基础，向自动化、云计算与平台工程方向持续演进。',
+    status: 'open',
+    descKey: 'lpCareer.devops.desc',
     stages: [
-      { label: '基础工具', points: ['Shell', 'Git', 'Networking'] },
-      { label: '云与自动化', points: ['运维', '云计算', '网络安全'] },
-      { label: '平台工程', points: ['软件工程与测试', '消息中间件'] },
+      { labelKey: 'lpCareer.devops.stage1', points: ['Shell', 'Git', 'Networking'] },
+      { labelKey: 'lpCareer.devops.stage2', points: ['运维', '云计算', '网络安全'] },
+      { labelKey: 'lpCareer.devops.stage3', points: ['软件工程与测试', '消息中间件'] },
     ],
     modules: ['shell', 'git', 'python', 'networking', 'devops', 'cloud-computing', 'cybersecurity', 'software-testing'],
-    ladder: ['运维 · 基础设施稳定', 'DevOps · 自动化流水线', '平台/SRE · 系统化工程'],
+    ladderKeys: ['lpCareer.devops.ladder1', 'lpCareer.devops.ladder2', 'lpCareer.devops.ladder3'],
   },
   {
     id: 'data',
     index: '05',
-    title: '数据工程师',
+    titleKey: 'lpCareer.data.title',
     en: 'Data Engineer',
     color: categoryColors.database,
-    status: '规划中',
-    desc: '从 SQL 与 Python 出发，掌握数据库与数据管道，逐步建立面向 AI 时代的数据素养。',
+    status: 'planned',
+    descKey: 'lpCareer.data.desc',
     stages: [
-      { label: '语言与数据', points: ['Python', 'SQL'] },
-      { label: '存储与管道', points: ['MySQL', 'Redis', '云计算'] },
-      { label: 'AI 素养', points: ['概率统计', '线性代数', '算法'] },
+      { labelKey: 'lpCareer.data.stage1', points: ['Python', 'SQL'] },
+      { labelKey: 'lpCareer.data.stage2', points: ['MySQL', 'Redis', '云计算'] },
+      { labelKey: 'lpCareer.data.stage3', points: ['概率统计', '线性代数', '算法'] },
     ],
     modules: ['python', 'sql', 'mysql', 'postgresql', 'redis', 'cloud-computing', 'algorithm', 'probability-statistics', 'linear-algebra'],
-    ladder: ['入门 · 数据查询与清洗', '进阶 · 数据管道设计', '专家 · 数据平台架构'],
+    ladderKeys: ['lpCareer.data.ladder1', 'lpCareer.data.ladder2', 'lpCareer.data.ladder3'],
   },
 ] as const
 
@@ -179,22 +182,22 @@ const careers = [
         <div class="hero-stats">
           <div class="stat-item">
             <span class="stat-num">{techCards.length}</span>
-            <span class="stat-label">门技术</span>
+            <span class="stat-label" data-i18n="lp.techs">门技术</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-num">{total.nodes}</span>
-            <span class="stat-label">知识点</span>
+            <span class="stat-label" data-i18n="lp.nodes">知识点</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-num">{total.docs}</span>
-            <span class="stat-label">篇已发布</span>
+            <span class="stat-label" data-i18n="lp.published">篇已发布</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-num">{total.gaps}</span>
-            <span class="stat-label">篇待补充</span>
+            <span class="stat-label" data-i18n="lp.gaps">篇待补充</span>
           </div>
         </div>
 
@@ -204,7 +207,7 @@ const careers = [
 
       <!-- 继续上次学习：直达上次浏览的技术地图（由 lib/lp-progress-ui.ts 点亮） -->
       <div class="lp-resume" data-lp-resume hidden>
-        <span class="lp-resume__label">继续上次</span>
+        <span class="lp-resume__label" data-i18n="lp.resume">继续上次</span>
         <a class="lp-resume__link" data-lp-resume-link href="#">
           <span class="lp-resume__dot" aria-hidden="true"></span>
           <span data-lp-resume-name></span>
@@ -223,8 +226,8 @@ const careers = [
       style={`--career-ramp:linear-gradient(180deg, ${careers.map((career) => career.color).join(', ')})`}
     >
       <div class="lp-careers__head">
-        <h2>职业路线规划</h2>
-        <span class="lp-careers__note">按职业目标组合技术栈，知识体系随路线逐步展开</span>
+        <h2 data-i18n="lp.careersTitle">职业路线规划</h2>
+        <span class="lp-careers__note" data-i18n="lp.careersNote">按职业目标组合技术栈，知识体系随路线逐步展开</span>
       </div>
       <div class="lp-careers__grid">
         {careers.map((career) => (
@@ -238,14 +241,14 @@ const careers = [
               <header class="lp-career__head">
                 <span class="lp-career__index" aria-hidden="true">{career.index}</span>
                 <div class="lp-career__titles">
-                  <h3 class="lp-career__title">{career.title}</h3>
+                  <h3 class="lp-career__title" data-i18n={career.titleKey}>{t(career.titleKey)}</h3>
                   <span class="lp-career__en">{career.en}</span>
                 </div>
-                <span class={`lp-career__status${career.status === '规划中' ? ' is-planned' : ''}`}>
-                  {career.status}
+                <span class={`lp-career__status${career.status === 'planned' ? ' is-planned' : ''}`} data-i18n={career.status === 'planned' ? 'lp.statusPlanned' : 'lp.statusOpen'}>
+                  {career.status === 'planned' ? '规划中' : '已开放'}
                 </span>
               </header>
-              <p class="lp-career__desc">{career.desc}</p>
+              <p class="lp-career__desc" data-i18n={career.descKey}>{t(career.descKey)}</p>
               <div class="lp-career__modules">
                 {career.modules.map((moduleId) => {
                   const meta = getModule(moduleId)
@@ -264,15 +267,15 @@ const careers = [
             <div class="lp-career__route">
               {career.stages.map((stage) => (
                 <div class="lp-career__stage">
-                  <span class="lp-career__stage-label">{stage.label}</span>
+                  <span class="lp-career__stage-label" data-i18n={stage.labelKey}>{t(stage.labelKey)}</span>
                   <span class="lp-career__stage-points">{stage.points.join(' · ')}</span>
                 </div>
               ))}
             </div>
             <div class="lp-career__ladder">
-              {career.ladder.map((step, stepIndex) => (
-                <span class={`lp-career__step${stepIndex === 0 ? ' is-first' : ''}`}>
-                  {step}
+              {career.ladderKeys.map((ladderKey, stepIndex) => (
+                <span class={`lp-career__step${stepIndex === 0 ? ' is-first' : ''}`} data-i18n={ladderKey}>
+                  {t(ladderKey)}
                 </span>
               ))}
             </div>
@@ -288,7 +291,7 @@ const careers = [
         <h2 class="category-header lp-category__title" style={`--marker-color:${group.color}`}>
           <span class="category-marker" aria-hidden="true"></span>
           <span class="category-tag">{group.label}</span>
-          <span class="category-count">{group.cards.length} 门</span>
+          <span class="category-count" data-i18n="lp.categoryCount" data-i18n-params={JSON.stringify({ n: group.cards.length })}>{group.cards.length} 门</span>
           <svg class="lp-category__curve" viewBox="0 0 220 10" preserveAspectRatio="none" aria-hidden="true">
             <path class="lp-category__curve-base" d="M2,6 C40,2 80,9 120,5 C160,1 190,8 218,4" />
             <path class="lp-category__curve-flow" d="M2,6 C40,2 80,9 120,5 C160,1 190,8 218,4" />
@@ -321,12 +324,12 @@ const careers = [
                 </div>
                 <p class="lp-tech-card__desc">{card.vm.summary}</p>
                 <div class="lp-tech-card__stats">
-                  <span><strong>{card.vm.stats.nodes}</strong> 知识点</span>
+                  <span><strong>{card.vm.stats.nodes}</strong> <span data-i18n="lp.cardNodes">知识点</span></span>
                   <i aria-hidden="true"></i>
-                  <span><strong>{card.vm.stats.docs}</strong> 已发布</span>
+                  <span><strong>{card.vm.stats.docs}</strong> <span data-i18n="lp.cardPublished">已发布</span></span>
                   <i aria-hidden="true"></i>
                   <span class={card.vm.stats.gaps > 0 ? 'is-gap' : undefined}>
-                    <strong>{card.vm.stats.gaps}</strong> 待补充
+                    <strong>{card.vm.stats.gaps}</strong> <span data-i18n="lp.cardGaps">待补充</span>
                   </span>
                 </div>
                 <svg

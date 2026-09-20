@@ -18,8 +18,10 @@
  * - 渲染失败（语法错误等）保留原代码块并在控制台给出提示，不阻断阅读
  * - 与 View Transitions 兼容：astro:page-load 时重新扫描，已处理容器
  *   通过 data-mermaid-state 标记跳过，避免重复渲染
+ * - 图注文案经 lib/i18n 的 t() 取当前语言（UI 双语）
  * =============================================================================
  */
+import { t } from './i18n';
 
 /** mermaid 模块缓存：同一页面生命周期内仅加载一次 */
 let mermaidPromise: Promise<MermaidAPI> | null = null;
@@ -100,7 +102,7 @@ async function renderOne(pre: Element): Promise<void> {
     wrapper.appendChild(scrollWrap);
     const caption = document.createElement('figcaption');
     caption.className = 'mermaid-caption';
-    caption.textContent = 'mermaid 图表';
+    caption.textContent = t('code.mermaidCaption');
     wrapper.appendChild(caption);
     pre.replaceWith(wrapper);
   } catch (err) {

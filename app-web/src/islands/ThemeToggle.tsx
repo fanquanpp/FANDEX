@@ -26,6 +26,8 @@
  */
 import { useState, useEffect, useCallback } from 'react';
 import { getSavedTheme, prefersDarkMode, setTheme as persistTheme, type Theme } from '@/lib/theme';
+import { useLang } from '@/lib/use-lang';
+import { t } from '@/lib/i18n';
 import '@/styles/islands/ThemeToggle.css';
 
 /**
@@ -90,6 +92,9 @@ export function ThemeToggle(_props: ThemeToggleProps) {
    */
   const [theme, setTheme] = useState<'light' | 'dark'>('light');
 
+  /** 界面语言（提示文案双语，订阅全局切换） */
+  const lang = useLang();
+
   /**
    * 是否已完成客户端挂载
    * 用于控制图标的可见性：
@@ -152,9 +157,9 @@ export function ThemeToggle(_props: ThemeToggleProps) {
       type="button"
       className={`fndx-theme-toggle fndx-icon-btn${mounted ? ' fndx-theme-toggle--ready' : ''}`}
       onClick={mounted ? toggle : undefined}
-      data-tooltip={theme === 'dark' ? '亮色模式' : '暗色模式'}
+      data-tooltip={theme === 'dark' ? t('theme.tooltipLight', undefined, lang) : t('theme.tooltipDark', undefined, lang)}
       data-tooltip-pos="bottom"
-      aria-label={theme === 'dark' ? '切换到亮色模式' : '切换到暗色模式'}
+      aria-label={theme === 'dark' ? t('theme.switchLight', undefined, lang) : t('theme.switchDark', undefined, lang)}
       tabIndex={mounted ? 0 : -1}
       aria-hidden={!mounted}
     >

@@ -11,7 +11,9 @@
  * - beforeinstallprompt 在页面生命周期内只触发一次，模块级变量保存事件；
  *   View Transitions 切页后 astro:page-load 重新绑定新 DOM 上的按钮
  * - SSR 环境整体跳过（Astro 预渲染期不求值）
+ * - iOS 指引文案经 lib/i18n 的 t() 取当前语言（UI 双语）
  */
+import { t } from './i18n';
 
 /** beforeinstallprompt 事件的最小结构声明 */
 interface InstallPromptEvent extends Event {
@@ -64,7 +66,7 @@ function showTip(): void {
   const tip = document.createElement('div');
   tip.className = 'install-tip';
   tip.setAttribute('role', 'note');
-  tip.textContent = '在浏览器「分享」菜单中选择「添加到主屏幕 / 安装应用」即可离线使用。';
+  tip.textContent = t('pwa.iosTip');
   document.body.appendChild(tip);
   window.setTimeout(removeTip, 5000);
 }

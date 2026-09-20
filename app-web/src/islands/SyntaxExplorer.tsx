@@ -26,6 +26,8 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
+import { useLang } from '@/lib/use-lang';
+import { t } from '@/lib/i18n';
 // 复用首页模块卡片样式（顶部色条、hover 边框/阴影、几何图标、标题变色）
 import '@/styles/components/module-card.css';
 import '@/styles/islands/syntax-explorer.css';
@@ -110,6 +112,8 @@ function syncStateUrl(lang: string, query: string): void {
  * 提供语言切换、紧凑速查卡片、悬浮详情面板与代码复制能力
  */
 export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
+  /** 界面语言（全岛文案双语，订阅全局切换） */
+  const lang = useLang();
   /** 当前选中的语言 ID（首帧从 URL 恢复） */
   const [activeId, setActiveId] = useState<string>(() => readStateFromUrl(languages).lang);
   /** 关键词筛选词（立即回显，防抖后参与过滤与 URL 同步） */
@@ -120,8 +124,8 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
   const [cards, setCards] = useState<SyntaxCard[] | null>(null);
   /** 是否正在加载语言分块 */
   const [loading, setLoading] = useState(false);
-  /** 加载失败信息；为空表示正常 */
-  const [error, setError] = useState('');
+  /** 加载失败标记；false 表示正常（文案渲染时按当前语言取字典） */
+  const [error, setError] = useState(false);
   /** 当前可见卡片数量（分批渲染，仅无筛选词时生效） */
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
   /** 悬浮面板当前展示的卡片；null 表示面板关闭 */
@@ -258,12 +262,12 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
       if (cached) {
         setCards(cached);
         setLoading(false);
-        setError('');
+        setError(false);
         setVisibleCount(PAGE_SIZE);
         return;
       }
       setLoading(true);
-      setError('');
+      setError(false);
       setVisibleCount(PAGE_SIZE);
       try {
         const response = await fetch(`${base}syntax-data/${id}.json`, {
@@ -279,7 +283,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
         setCards(cardList);
       } catch {
         if (seq !== requestSeqRef.current) return;
-        setError('语法数据加载失败，请稍后重试或切换其他语言');
+        setError(true);
       } finally {
         if (seq === requestSeqRef.current) setLoading(false);
       }
@@ -313,7 +317,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
   return (
     <div className="syntax-explorer">
       {/* 语言切换区：彩色 chip 导航，颜色跟随模块分类主题色 */}
-      <nav className="syntax-langs" aria-label="语法语言切换">
+      <nav className="syntax-langs" aria-label={t('syntax.langsAria', undefined, lang)}>
         {languages.map((lang) => {
           const isActive = lang.id === activeId;
           return (
@@ -346,15 +350,15 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
             type="search"
             value={query}
             onChange={(e) => handleQueryInput(e.target.value)}
-            placeholder="筛选语法点（小节 / 写法 / 公式 / 代码）"
-            aria-label="筛选当前语言的语法点"
+            placeholder={t('syntax.filterPlaceholder', undefined, lang)}
+            aria-label={t('syntax.filterAria', undefined, lang)}
           />
           {query && (
             <button
               type="button"
               className="syntax-filter__clear"
               onClick={clearQuery}
-              aria-label="清除筛选关键词"
+              aria-label={t('syntax.clearAria', undefined, lang)}
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                 <path d="M6 6l12 12M18 6L6 18" />
@@ -363,18 +367,18 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
           )}
         </div>
         <span className="syntax-filter__hint" aria-hidden="true">
-          <kbd>/</kbd> 聚焦
+          <kbd>/</kbd> {t('syntax.focusHint', undefined, lang)}
         </span>
       </div>
 
       {/* 当前语言元信息：供屏幕阅读器播报加载状态与命中数 */}
       <div className="syntax-meta" aria-live="polite">
         {loading
-          ? '正在加载语法卡片'
+          ? t('syntax.loading', undefined, lang)
           : isFiltering && cards
-            ? `${active?.title} · 命中 ${filteredCards.length} / ${cards.length} 个语法点`
+            ? t('syntax.metaFiltered', { title: active?.title ?? '', n: filteredCards.length, t: cards.length }, lang)
             : active
-              ? `${active.title} · ${active.count} 个语法点 · 来自 ${active.docCount} 篇文档`
+              ? t('syntax.meta', { title: active.title, n: active.count, d: active.docCount }, lang)
               : ''}
       </div>
 
@@ -386,7 +390,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
             <line x1="12" y1="8" x2="12" y2="12" />
             <line x1="12" y1="16" x2="12.01" y2="16" />
           </svg>
-          <span>{error}</span>
+          <span>{t('syntax.loadError', undefined, lang)}</span>
         </div>
       )}
 
@@ -426,7 +430,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
               className="syntax-more fndx-icon-btn fndx-icon-btn--labeled"
               onClick={() => setVisibleCount((current) => current + PAGE_SIZE)}
             >
-              加载更多（剩余 {cards!.length - visibleCount} 条）
+              {t('syntax.more', { n: cards!.length - visibleCount }, lang)}
             </button>
           )}
         </>
@@ -435,20 +439,20 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
       {/* 筛选无命中：给出恢复动作，不留白 */}
       {cards && !loading && !error && visibleCards.length === 0 && (
         <div className="syntax-empty syntax-empty--filter" role="status">
-          <p>没有匹配「{appliedQuery.trim()}」的语法点</p>
+          <p>{t('syntax.noMatch', { q: appliedQuery.trim() }, lang)}</p>
           <button
             type="button"
             className="syntax-more fndx-icon-btn fndx-icon-btn--labeled"
             onClick={clearQuery}
           >
-            清除筛选词，查看全部 {cards.length} 条
+            {t('syntax.clearQuery', { n: cards.length }, lang)}
           </button>
         </div>
       )}
 
       {/* 空数据兜底：语言分块为空时提示（正常情况不会出现） */}
       {!loading && !error && cards && cards.length === 0 && (
-        <div className="syntax-empty">该语言暂无速查卡片</div>
+        <div className="syntax-empty">{t('syntax.empty', undefined, lang)}</div>
       )}
 
       {/* 悬浮详情面板：Radix Dialog 提供焦点陷阱与 Escape 关闭 */}
@@ -463,7 +467,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
           <DialogPrimitive.Content
             className="syntax-panel"
             style={{ '--lang-color': activeColor } as CSSProperties}
-            aria-label={`${active?.title} 语法详情`}
+            aria-label={t('syntax.detailAria', { title: active?.title ?? '' }, lang)}
           >
             {/* 面板头部：语言徽标 + 来源文档 */}
             <div className="syntax-panel__header">
@@ -490,7 +494,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
                   <button
                     type="button"
                     className="syntax-panel__copy fndx-icon-btn fndx-icon-btn--labeled"
-                    aria-label={copiedId === selected.id ? '已复制' : '复制代码'}
+                    aria-label={copiedId === selected.id ? t('syntax.copied', undefined, lang) : t('syntax.copyCodeAria', undefined, lang)}
                     onClick={() => void copyCode(selected.id, selected.code)}
                   >
                     {copiedId === selected.id ? (
@@ -503,7 +507,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
                         <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
                       </svg>
                     )}
-                    <span>{copiedId === selected.id ? '已复制' : '复制'}</span>
+                    <span>{copiedId === selected.id ? t('syntax.copied', undefined, lang) : t('syntax.copy', undefined, lang)}</span>
                   </button>
                 </div>
                 <pre className="syntax-panel__pre">
@@ -515,7 +519,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
                   )}
                 </pre>
                 {selected.truncated && (
-                  <div className="syntax-panel__truncated">示例已省略，详见完整文档</div>
+                  <div className="syntax-panel__truncated">{t('syntax.truncated', undefined, lang)}</div>
                 )}
               </div>
             )}
@@ -523,7 +527,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
             {/* 面板底部：上下条切换 + 完整文档入口 + 关闭按钮 */}
             <div className="syntax-panel__footer">
               {selected && filteredCards.length > 1 && (
-                <div className="syntax-panel__nav" aria-label="上一条 / 下一条">
+                <div className="syntax-panel__nav" aria-label={t('syntax.navAria', undefined, lang)}>
                   <button
                     type="button"
                     className="syntax-panel__nav-btn"
@@ -533,12 +537,12 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
                       const prev = filteredCards[index - 1];
                       if (prev) setSelected(prev);
                     }}
-                    aria-label="上一条语法点（左方向键）"
+                    aria-label={t('syntax.prevAria', undefined, lang)}
                   >
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                       <polyline points="15 18 9 12 15 6" />
                     </svg>
-                    上一条
+                    {t('syntax.prevItem', undefined, lang)}
                   </button>
                   <span className="syntax-panel__nav-pos">
                     {filteredCards.findIndex((card) => card.id === selected.id) + 1} / {filteredCards.length}
@@ -552,9 +556,9 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
                       const next = filteredCards[index + 1];
                       if (next) setSelected(next);
                     }}
-                    aria-label="下一条语法点（右方向键）"
+                    aria-label={t('syntax.nextAria', undefined, lang)}
                   >
-                    下一条
+                    {t('syntax.nextItem', undefined, lang)}
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                       <polyline points="9 18 15 12 9 6" />
                     </svg>
@@ -565,14 +569,14 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
                 className="syntax-panel__link fndx-icon-btn fndx-icon-btn--labeled"
                 href={`${base}${active?.id}/`}
               >
-                <span>查看 {active?.title} 完整文档</span>
+                <span>{t('syntax.viewDoc', { title: active?.title ?? '' }, lang)}</span>
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
                   <line x1="5" y1="12" x2="19" y2="12" />
                   <polyline points="12 5 19 12 12 19" />
                 </svg>
               </a>
               <DialogPrimitive.Close className="syntax-panel__close fndx-icon-btn fndx-icon-btn--labeled">
-                关闭
+                {t('syntax.close', undefined, lang)}
               </DialogPrimitive.Close>
             </div>
           </DialogPrimitive.Content>

@@ -28,6 +28,8 @@ import {
 import MapEdge from './MapEdge';
 import MapNode from './MapNode';
 import MapStage from './MapStage';
+import { useLang } from '@/lib/use-lang';
+import { t } from '@/lib/i18n';
 
 /** 画布对外能力（供主岛调用） */
 export interface MapCanvasHandle {
@@ -107,6 +109,8 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
 ) {
   /** 容器（决定视口尺寸） */
   const containerRef = useRef<HTMLDivElement>(null);
+  /** 界面语言（画布 aria 与根节点计数文案双语） */
+  const lang = useLang();
   /** SVG 元素 */
   const svgRef = useRef<SVGSVGElement>(null);
   /** 内容组（transform 直接作用于此） */
@@ -451,7 +455,7 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
       ref={containerRef}
       tabIndex={0}
       role="application"
-      aria-label={`${tech.title} 学习路线思维导图，支持拖拽平移、滚轮缩放；快捷键：+/- 缩放、0/F 适应视口、R 复位、方向键平移、Esc 关闭详情`}
+      aria-label={t('lpMap.canvasAria', { title: tech.title }, lang)}
     >
       <svg
         className="lp-canvas__svg"
@@ -496,7 +500,7 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
                 {tech.title}
               </text>
               <text className="lp-root__count" x={layout.root.width - 12} y={20} textAnchor="end">
-                {tech.stats.nodes} 知识点
+                {t('lpMap.rootNodes', { n: tech.stats.nodes }, lang)}
               </text>
             </a>
           </g>

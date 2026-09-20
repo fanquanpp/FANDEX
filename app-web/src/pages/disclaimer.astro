@@ -51,6 +51,18 @@ const UPDATED = '2026-09-19';
         }
         document.documentElement.setAttribute('data-theme', theme);
         document.documentElement.style.colorScheme = theme;
+        // 界面语言同步声明（与 BaseLayout 内联脚本同构，独立页自带）
+        try {
+          var savedLang = localStorage.getItem('fandex-lang');
+          if (savedLang === 'en') {
+            document.documentElement.setAttribute('data-lang', 'en');
+            document.documentElement.setAttribute('lang', 'en');
+          } else {
+            document.documentElement.setAttribute('data-lang', 'zh');
+          }
+        } catch (e) {
+          /* localStorage 不可用时保持 SSR 中文 */
+        }
       })();
     </script>
   </head>
@@ -58,12 +70,12 @@ const UPDATED = '2026-09-19';
     <div class="legal-page">
       <GeoBgDecor variant="error" />
       <main class="legal-container">
-        <!-- 页头：mono 路径标记 + 标题 + 更新日期 -->
+        <!-- 页头：mono 路径标记 + 标题 + 更新日期（法律正文保持中文，仅界面壳双语） -->
         <header class="legal-head">
           <p class="legal-marker" aria-hidden="true">fandex://legal/disclaimer</p>
-          <h1 class="legal-title">免责声明</h1>
+          <h1 class="legal-title" data-i18n="footer.disclaimer">免责声明</h1>
           <p class="legal-updated">
-            最后更新 <time datetime={UPDATED}>{UPDATED}</time> · 生效于全部端（网页 / 桌面 / Android）
+            <span data-i18n="legal.updatedPrefix">最后更新</span> <time datetime={UPDATED}>{UPDATED}</time> · <span data-i18n="legal.updatedSuffix">生效于全部端（网页 / 桌面 / Android）</span>
           </p>
         </header>
 
@@ -137,11 +149,16 @@ const UPDATED = '2026-09-19';
           </p>
         </article>
 
-        <nav class="legal-actions" aria-label="免责页出口">
-          <a href={base} class="legal-btn">返回首页</a>
+        <nav class="legal-actions" aria-label="免责页出口" data-i18n-aria="legal.exitsAria">
+          <a href={base} class="legal-btn" data-i18n="legal.backHome">返回首页</a>
         </nav>
       </main>
     </div>
+
+    <!-- 界面语言 DOM 应用器：英文用户访问时界面壳文案随全局偏好切换 -->
+    <script>
+      import '@/lib/i18n-dom';
+    </script>
   </body>
 </html>
 

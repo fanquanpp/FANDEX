@@ -7,6 +7,7 @@
  */
 import BaseLayout from '@/components/BaseLayout.astro';
 import ThemeToggle from '@/islands/ThemeToggle';
+import LangToggle from '@/components/LangToggle.astro';
 import PerformanceMonitor from '@/components/PerformanceMonitor.astro';
 import ReadingProgress from '@/components/ReadingProgress.astro';
 import HeaderFeatureLinks from '@/components/HeaderFeatureLinks.astro';
@@ -64,15 +65,15 @@ const hasToc = Astro.slots.has('toc');
       </div>
       <div class="nav-right">
         <!-- 全站搜索：打开命令面板（Ctrl/Cmd + K），纯 DOM 实现无岛屿水合 -->
-        <button class="nav-search-btn fndx-icon-btn fndx-icon-btn--labeled" type="button" data-search-trigger aria-label="搜索" data-tooltip="搜索（Ctrl+K）" data-tooltip-pos="bottom">
+        <button class="nav-search-btn fndx-icon-btn fndx-icon-btn--labeled" type="button" data-search-trigger aria-label="搜索" data-i18n-aria="nav.searchAria" data-tooltip="搜索（Ctrl+K）" data-i18n-tooltip="nav.searchTooltip" data-tooltip-pos="bottom">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <circle cx="11" cy="11" r="7"></circle>
             <line x1="16.5" y1="16.5" x2="21" y2="21"></line>
           </svg>
-          <span class="nav-search-text">搜索</span>
+          <span class="nav-search-text" data-i18n="nav.search">搜索</span>
         </button>
         <!-- 返回顶部按钮：图标 + Top 文字标注，统一 fndx-icon-btn 风格 -->
-        <button class="nav-back-to-top fndx-icon-btn fndx-icon-btn--labeled" id="nav-back-to-top" aria-label="返回顶部" data-tooltip="返回顶部" data-tooltip-pos="bottom">
+        <button class="nav-back-to-top fndx-icon-btn fndx-icon-btn--labeled" id="nav-back-to-top" aria-label="返回顶部" data-i18n-aria="nav.backToTop" data-tooltip="返回顶部" data-i18n-tooltip="nav.backToTop" data-tooltip-pos="bottom">
           <svg
             width="14"
             height="14"
@@ -83,10 +84,10 @@ const hasToc = Astro.slots.has('toc');
           >
             <polyline points="18 15 12 9 6 15"></polyline>
           </svg>
-          <span class="nav-back-to-top-text">Top</span>
+          <span class="nav-back-to-top-text" data-i18n="nav.top">Top</span>
         </button>
         <!-- PWA 安装入口：默认隐藏，可安装（beforeinstallprompt / iOS）时由 lib/pwa-install 点亮 -->
-        <button class="nav-install-btn fndx-icon-btn" type="button" data-install-app hidden aria-label="安装应用" data-tooltip="安装到桌面 / 主屏幕" data-tooltip-pos="bottom">
+        <button class="nav-install-btn fndx-icon-btn" type="button" data-install-app hidden aria-label="安装应用" data-i18n-aria="nav.install" data-tooltip="安装到桌面 / 主屏幕" data-i18n-tooltip="nav.installTooltip" data-tooltip-pos="bottom">
           <svg
             width="14"
             height="14"
@@ -100,6 +101,8 @@ const hasToc = Astro.slots.has('toc');
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
         </button>
+        <!-- 界面语言切换（zh <-> en）：纯 DOM 组件，交互由 lib/i18n-dom 委托 -->
+        <LangToggle />
         <!-- 主题切换按钮（React 岛屿组件） -->
         <ThemeToggle client:load />
       </div>
@@ -127,12 +130,12 @@ const hasToc = Astro.slots.has('toc');
         <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
         <polyline points="9 22 9 12 15 12 15 22"></polyline>
       </svg>
-      <span>首页</span>
+      <span data-i18n="nav.home">首页</span>
     </a>
     <!-- 模块切换按钮：仅在有侧边栏时显示 -->
     {
       hasSidebar && (
-        <button class="mobile-nav-link" id="mobile-sidebar-btn" aria-label="模块">
+        <button class="mobile-nav-link" id="mobile-sidebar-btn" aria-label="模块" data-i18n-aria="nav.modulesAria">
           <svg
             width="20"
             height="20"
@@ -144,22 +147,22 @@ const hasToc = Astro.slots.has('toc');
             <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
             <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
           </svg>
-          <span>模块</span>
+          <span data-i18n="nav.modules">模块</span>
         </button>
       )
     }
     <!-- 功能直达面板按钮：窄屏（<768px）子级功能页常驻入口，唤起 feature-sheet -->
-    <button class="mobile-nav-link" id="mobile-features-btn" aria-label="功能" aria-expanded="false" aria-controls="feature-sheet">
+    <button class="mobile-nav-link" id="mobile-features-btn" aria-label="功能" data-i18n-aria="nav.featuresAria" aria-expanded="false" aria-controls="feature-sheet">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="7" height="7" rx="1"></rect>
         <rect x="14" y="3" width="7" height="7" rx="1"></rect>
         <rect x="3" y="14" width="7" height="7" rx="1"></rect>
         <rect x="14" y="14" width="7" height="7" rx="1"></rect>
       </svg>
-      <span>功能</span>
+      <span data-i18n="nav.features">功能</span>
     </button>
     <!-- 全屏切换按钮 -->
-    <button class="mobile-nav-link" id="mobile-fullscreen-btn" aria-label="全屏">
+    <button class="mobile-nav-link" id="mobile-fullscreen-btn" aria-label="全屏" data-i18n-aria="nav.fullscreenAriaMobile">
       <svg
         width="20"
         height="20"
@@ -172,18 +175,18 @@ const hasToc = Astro.slots.has('toc');
           d="M8 3H5a2 2 0 0 0-2 2v3m18 0V5a2 2 0 0 0-2-2h-3m0 18h3a2 2 0 0 0 2-2v-3M3 16v3a2 2 0 0 0 2 2h3"
         ></path>
       </svg>
-      <span>全屏</span>
+      <span data-i18n="nav.fullscreenLabel">全屏</span>
     </button>
   </nav>
   <!-- 移动端功能直达面板：子级功能页一步直达（含题图鉴等次级页），窄屏专属 -->
   <div class="feature-sheet-backdrop" id="feature-sheet-backdrop" />
-  <nav class="feature-sheet" id="feature-sheet" aria-label="功能直达" aria-hidden="true">
-    <p class="feature-sheet__title">功能直达</p>
+  <nav class="feature-sheet" id="feature-sheet" aria-label="功能直达" data-i18n-aria="nav.featureSheetAria" aria-hidden="true">
+    <p class="feature-sheet__title" data-i18n="nav.featureSheetTitle">功能直达</p>
     {
       sheetEntries.map(entry => (
         <a href={entry.href} class="feature-sheet__link">
-          <span class="feature-sheet__name">{entry.name}</span>
-          <span class="feature-sheet__hint">{entry.tooltip}</span>
+          <span class="feature-sheet__name" data-i18n={entry.nameKey}>{entry.name}</span>
+          <span class="feature-sheet__hint" data-i18n={entry.tooltipKey}>{entry.tooltip}</span>
           <svg class="feature-sheet__chevron" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
             <polyline points="9 18 15 12 9 6" />
           </svg>

@@ -5,7 +5,10 @@
  * - 已发布节点由面板中的"阅读专项文档"按钮负责跳转，画布内不直接导航
  * - 标题自动换行（最多两行），尾部显示难度竖条与状态
  * - 学习进度三态：未学习（默认）/ 学习中（青色）/ 已完成（绿色对勾 + 状态文案）
+ * - 状态/aria 文案经 lib/i18n 的 t() 取当前语言（UI 双语）
  */
+import { useLang } from '@/lib/use-lang';
+import { t, type Lang } from '@/lib/i18n';
 import type { NodeProgress, NodeVM } from './types';
 
 interface Props {
@@ -36,10 +39,10 @@ interface Props {
 /** 标题单行最大字符数（CJK 字符约等于字号宽度） */
 const LINE_CHARS = 17;
 
-/** 进度状态文案 */
-const PROGRESS_LABEL: Record<Exclude<NodeProgress, null>, string> = {
-  learning: '学习中',
-  done: '已完成',
+/** 进度状态文案字典键 */
+const PROGRESS_LABEL_KEY: Record<Exclude<NodeProgress, null>, string> = {
+  learning: 'lpMap.statusLearning',
+  done: 'lpMap.statusDone',
 };
 
 /**
@@ -58,13 +61,16 @@ function wrapTitle(title: string): string[] {
  * 节点状态文案：进度标记优先于发布状态
  * （已完成/学习中 未标记时回落到 已发布/文档待补充）
  */
-function statusText(node: NodeVM, progress: NodeProgress | null): string {
-  if (progress) return PROGRESS_LABEL[progress];
-  return node.href ? '已发布' : '文档待补充';
+function statusText(node: NodeVM, progress: NodeProgress | null, lang: Lang): string {
+  if (progress) return t(PROGRESS_LABEL_KEY[progress], undefined, lang);
+  return node.href
+    ? t('lpMap.statusPublished', undefined, lang)
+    : t('lpMap.statusPlanned', undefined, lang);
 }
 
 /** 节点内容（矩形 + 文本 + 元信息） */
 function NodeBody({ node, index, width, height, progress }: Props) {
+  const lang = useLang();
   const lines = wrapTitle(node.title);
   const planned = !node.href;
   return (
@@ -118,7 +124,7 @@ function NodeBody({ node, index, width, height, progress }: Props) {
         x={21}
         y={height - 11}
       >
-        {statusText(node, progress)}
+        {statusText(node, progress, lang)}
       </text>
     </>
   );
@@ -127,6 +133,7 @@ function NodeBody({ node, index, width, height, progress }: Props) {
 /** 知识点节点 */
 export default function MapNode(props: Props) {
   const { node, x, y, selected, hovered, progress, onSelect, onHover } = props;
+  const lang = useLang();
   const commonProps = {
     transform: `translate(${x} ${y})`,
     className: `lp-node${selected ? ' lp-node--selected' : ''}${
@@ -136,13 +143,13 @@ export default function MapNode(props: Props) {
     onPointerLeave: () => onHover(null),
   };
 
-  const stateText = progress ? PROGRESS_LABEL[progress] : node.href ? '已发布' : '文档待补充';
+  const stateText = statusText(node, progress, lang);
 
   return (
     <g
       role="button"
       tabIndex={0}
-      aria-label={`${node.title}（${stateText}，点击查看详情）`}
+      aria-label={t('lpMap.nodeAria', { title: node.title, state: stateText }, lang)}
       onClick={() => onSelect(node.id)}
       onKeyDown={(event) => {
         if (event.key === 'Enter' || event.key === ' ') {
