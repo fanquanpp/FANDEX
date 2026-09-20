@@ -23,6 +23,9 @@ export function useLang(): Lang {
 
   useEffect(() => {
     // 挂载即同步真实语言（覆盖英文用户的首帧中文）
+    // SSR 下无法在 useState 初始化器读 DOM/localStorage，两段式初始化是必要模式
+    // （与 ThemeToggle 同一豁免：set-state-in-effect）
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setLang(getLang());
     // 订阅后续切换（含跨标签页同步触发的 setLang 广播）
     return subscribeLang(setLang);
