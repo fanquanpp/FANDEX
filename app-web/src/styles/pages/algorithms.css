@@ -28,7 +28,9 @@
   width: 3px;
   height: 14px;
   border-radius: 1px;
-  background: var(--color-accent-base);
+  /* 章节竖条跟随模块主题色：单元色 --unit-color -> 页面主题色 --page-color
+   * -> 题目难度色 --ap-color -> 品牌青兜底 */
+  background: var(--unit-color, var(--page-color, var(--ap-color, var(--color-accent-base))));
   align-self: center;
   flex-shrink: 0;
 }
@@ -72,7 +74,7 @@
 
 /* 文档卡片：与 lp-tech-card 同款视觉（顶部装饰线悬停展开） */
 .algo-doc-card {
-  --card-color: var(--color-accent-base);
+  --card-color: var(--unit-color, var(--page-color, var(--color-accent-base)));
   position: relative;
   display: flex;
   flex-direction: column;
@@ -215,7 +217,7 @@
   width: 3px;
   height: 12px;
   border-radius: 1px;
-  background: var(--color-accent-base);
+  background: var(--page-color, var(--color-accent-base));
 }
 
 .ap-filter__hint {
@@ -256,7 +258,7 @@
 
 .ap-chip:hover {
   color: var(--color-fg-primary);
-  border-color: color-mix(in srgb, var(--color-accent-base) 45%, transparent);
+  border-color: color-mix(in srgb, var(--page-color, var(--color-accent-base)) 45%, transparent);
 }
 
 .ap-chip:focus-visible {
@@ -265,13 +267,13 @@
 }
 
 .ap-chip.is-active {
-  color: var(--color-accent-base);
-  border-color: color-mix(in srgb, var(--color-accent-base) 55%, transparent);
-  background: color-mix(in srgb, var(--color-accent-base) 12%, transparent);
+  color: var(--page-color, var(--color-accent-base));
+  border-color: color-mix(in srgb, var(--page-color, var(--color-accent-base)) 55%, transparent);
+  background: color-mix(in srgb, var(--page-color, var(--color-accent-base)) 12%, transparent);
 }
 
 .ap-chip.is-active em {
-  color: color-mix(in srgb, var(--color-accent-base) 75%, var(--color-text-secondary));
+  color: color-mix(in srgb, var(--page-color, var(--color-accent-base)) 75%, var(--color-text-secondary));
 }
 
 /* 搜索框：mono 输入 */
@@ -757,8 +759,8 @@
 .apd-idea li {
   counter-increment: idea;
   padding: var(--space-2) var(--space-4);
-  border-left: 3px solid color-mix(in srgb, var(--color-accent-base) 55%, transparent);
-  background: color-mix(in srgb, var(--color-accent-base) 5%, transparent);
+  border-left: 3px solid color-mix(in srgb, var(--ap-color, var(--color-accent-base)) 55%, transparent);
+  background: color-mix(in srgb, var(--ap-color, var(--color-accent-base)) 5%, transparent);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
   font-size: 0.8rem;
   line-height: 1.75;
@@ -771,7 +773,7 @@
   margin-bottom: 2px;
   font-family: var(--font-family-mono);
   font-size: 0.66rem;
-  color: var(--color-accent-base);
+  color: var(--ap-color, var(--color-accent-base));
 }
 
 /* 参考实现折叠块 */
@@ -781,10 +783,10 @@
   gap: var(--space-2);
   cursor: pointer;
   padding: 5px 12px;
-  border: 1px solid color-mix(in srgb, var(--color-accent-base) 40%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ap-color, var(--color-accent-base)) 40%, transparent);
   border-radius: var(--radius-md);
-  background: color-mix(in srgb, var(--color-accent-base) 8%, transparent);
-  color: var(--color-accent-base);
+  background: color-mix(in srgb, var(--ap-color, var(--color-accent-base)) 8%, transparent);
+  color: var(--ap-color, var(--color-accent-base));
   font-family: var(--font-family-heading);
   font-size: 0.75rem;
   font-weight: var(--font-weight-semibold, 600);
@@ -800,7 +802,7 @@
 }
 
 .apd-code summary:hover {
-  background: color-mix(in srgb, var(--color-accent-base) 14%, transparent);
+  background: color-mix(in srgb, var(--ap-color, var(--color-accent-base)) 14%, transparent);
 }
 
 .apd-code summary:focus-visible {
@@ -890,14 +892,14 @@
   width: 3px;
   height: 10px;
   border-radius: 1px;
-  background: var(--color-accent-base);
+  background: var(--ap-color, var(--color-accent-base));
   opacity: 0.6;
   transition: opacity var(--motion-duration-instant) var(--motion-easing-out);
 }
 
 .apd-rel a:hover {
   color: var(--color-fg-primary);
-  border-color: color-mix(in srgb, var(--color-accent-base) 50%, transparent);
+  border-color: color-mix(in srgb, var(--ap-color, var(--color-accent-base)) 50%, transparent);
   background: var(--color-bg-hover);
 }
 
@@ -935,7 +937,7 @@
 }
 
 .apd-nav__link:hover {
-  border-color: color-mix(in srgb, var(--color-accent-base) 50%, transparent);
+  border-color: color-mix(in srgb, var(--ap-color, var(--color-accent-base)) 50%, transparent);
   background: var(--color-bg-hover);
 }
 

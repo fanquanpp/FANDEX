@@ -78,7 +78,8 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
     type="article"
   />
 
-  <div class="home-page home-page--sub">
+  <!-- 难度主题色注入页根：章节竖条 / 思路列表 / 参考实现等色块跟随 -->
+  <div class="home-page home-page--sub" style={`--ap-color:var(--color-${DIFF_COLOR[problem.difficulty]}-base)`}>
     <GeoBgDecor variant="minimal" />
 
     <article class="apd">
@@ -102,7 +103,7 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
           <span class="ap-crumb__sep" aria-hidden="true">·</span>
           <span>第 {index + 1} / {ALGO_PROBLEMS.length} 题</span>
         </p>
-        <h1 class="apd-head__title" style={`--ap-color:var(--color-${DIFF_COLOR[problem.difficulty]}-base)`}>
+        <h1 class="apd-head__title">
           {problem.title}
         </h1>
         <p class="apd-head__en">{problem.titleEn}</p>

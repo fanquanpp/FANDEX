@@ -313,7 +313,8 @@
     transform: translateY(-50%);
     width: 2px;
     height: 12px;
-    background: var(--color-accent-base);
+    /* 面板标签竖条跟随页面主题色（前端技术分类色，--pg-color 由页面注入） */
+    background: var(--pg-color, var(--color-accent-base));
     opacity: 0.65;
   }
 
@@ -483,7 +484,7 @@
     transform: translateY(-50%);
     width: 2px;
     height: 12px;
-    background: var(--color-accent-base);
+    background: var(--pg-color, var(--color-accent-base));
     opacity: 0.65;
   }
 
@@ -1063,7 +1064,7 @@
     transform: translateY(-50%);
     width: 2px;
     height: 14px;
-    background: var(--color-accent-base);
+    background: var(--pg-color, var(--color-accent-base));
     opacity: 0.65;
   }
 

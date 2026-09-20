@@ -48,6 +48,14 @@ function initResumeChip(hub: HTMLElement): void {
   if (!link || !name) return;
   link.href = `${base}learning-path/${last.module}/`;
   name.textContent = last.title;
+  // 芯片色块跟随目标技术的分类主题色（--lp-colors：module -> 分类色，构建期注入）
+  try {
+    const colors = hub.dataset.lpColors ? (JSON.parse(hub.dataset.lpColors) as Record<string, string>) : null;
+    const color = colors?.[last.module];
+    if (color) link.style.setProperty('--resume-color', color);
+  } catch {
+    /* 颜色映射解析失败时保持兜底色 */
+  }
   wrap.hidden = false;
 }
 
