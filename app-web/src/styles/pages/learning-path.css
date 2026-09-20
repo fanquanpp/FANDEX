@@ -107,7 +107,9 @@
     width: 3px;
     height: 15px;
     border-radius: 1px;
-    background: var(--color-accent-base);
+    /* 分区竖条采用五职业主题色纵向渐变（--career-ramp 由页面注入），
+     * 呼应下方各职业卡各自的分类主题色，不再使用站点品牌青 */
+    background: var(--career-ramp, var(--color-accent-base));
     opacity: 0.8;
   }
 
@@ -791,9 +793,10 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-1) var(--space-3);
-    border: 1px solid color-mix(in srgb, var(--color-accent-base) 40%, transparent);
+    /* 直达芯片跟随目标技术的分类主题色（--resume-color 由 lp-progress-ui 点亮时注入） */
+    border: 1px solid color-mix(in srgb, var(--resume-color, var(--color-accent-base)) 40%, transparent);
     border-radius: 999px;
-    background: color-mix(in srgb, var(--color-accent-base) 8%, transparent);
+    background: color-mix(in srgb, var(--resume-color, var(--color-accent-base)) 8%, transparent);
     font-family: var(--font-family-heading);
     font-size: 0.78rem;
     font-weight: var(--font-weight-semibold, 600);
@@ -805,7 +808,7 @@
   }
 
   .lp-resume__link:hover {
-    border-color: var(--color-accent-base);
+    border-color: var(--resume-color, var(--color-accent-base));
     box-shadow: var(--shadow-sm);
   }
 
@@ -818,7 +821,7 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: var(--color-accent-base);
+    background: var(--resume-color, var(--color-accent-base));
   }
 
   .lp-resume__link svg {

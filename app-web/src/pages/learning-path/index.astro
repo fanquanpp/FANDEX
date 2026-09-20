@@ -157,7 +157,12 @@ const careers = [
     type="website"
   />
 
-  <div class="home-page home-page--sub" data-lp-hub data-lp-base={base}>
+  <div
+    class="home-page home-page--sub"
+    data-lp-hub
+    data-lp-base={base}
+    data-lp-colors={JSON.stringify(Object.fromEntries(techCards.map((card) => [card.module, categoryColors[card.category]])))}
+  >
     <!-- 几何背景装饰：learning-path 变体（点状装饰已统一为竖条） -->
     <GeoBgDecor variant="learning-path" />
 
@@ -211,8 +216,12 @@ const careers = [
       </div>
     </section>
 
-    <!-- 职业路线规划：按职业目标组织知识体系 -->
-    <section class="lp-careers">
+    <!-- 职业路线规划：按职业目标组织知识体系
+         （分区竖条采用五职业主题色纵向渐变，呼应下方各职业卡配色） -->
+    <section
+      class="lp-careers"
+      style={`--career-ramp:linear-gradient(180deg, ${careers.map((career) => career.color).join(', ')})`}
+    >
       <div class="lp-careers__head">
         <h2>职业路线规划</h2>
         <span class="lp-careers__note">按职业目标组合技术栈，知识体系随路线逐步展开</span>
