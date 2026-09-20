@@ -8,7 +8,7 @@
  */
 import type { CSSProperties } from 'react';
 import { useLang } from '@/lib/use-lang';
-import { t } from '@/lib/i18n';
+import { t, type Lang } from '@/lib/i18n';
 import type { NodeProgress, NodeVM } from './types';
 
 interface Props {
