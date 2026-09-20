@@ -11,7 +11,9 @@
  * 8. Service Worker 注册：支持离线访问
  *
  * 兼容 Astro ClientRouter：所有初始化函数监听 astro:page-load 重新执行
+ * 界面文案（全屏按钮/复制按钮/锚点 aria）经 lib/i18n 的 t() 取当前语言
  */
+import { t } from './i18n';
 
 // ========== 侧边栏开关逻辑 ==========
 /** 打开侧边栏并同步 URL 参数 */
@@ -181,12 +183,12 @@ function initFullscreenToggle(): void {
       const btn = document.getElementById('mobile-fullscreen-btn');
       const span = btn?.querySelector('span');
       if (document.fullscreenElement) {
-        if (span) span.textContent = '退出';
+        if (span) span.textContent = t('nav.exitFullscreen');
         try {
           localStorage.setItem('fandex-fullscreen', 'true');
         } catch { /* localStorage 不可用时静默降级 */ }
       } else {
-        if (span) span.textContent = '全屏';
+        if (span) span.textContent = t('nav.fullscreen');
         try {
           localStorage.removeItem('fandex-fullscreen');
         } catch { /* localStorage 不可用时静默降级 */ }
@@ -232,7 +234,7 @@ function initCopyButtons(): void {
     const btn = document.createElement('button');
     // 统一 fndx-icon-btn 风格：透明背景 + 无边框 + 统一悬停效果
     btn.className = 'copy-btn fndx-icon-btn fndx-icon-btn--labeled';
-    btn.setAttribute('aria-label', 'Copy code');
+    btn.setAttribute('aria-label', t('code.copyAria'));
     btn.innerHTML =
       '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
 
@@ -360,7 +362,7 @@ function initHeadingAnchors(): void {
     const anchor = document.createElement('a');
     anchor.className = 'heading-anchor';
     anchor.href = `#${heading.id}`;
-    anchor.setAttribute('aria-label', '标题锚点链接');
+    anchor.setAttribute('aria-label', t('code.headingAnchorAria'));
     anchor.textContent = '#';
     // 锚点点击不触发标题文本的选中行为，仅复制定位
     anchor.addEventListener('click', (e) => {

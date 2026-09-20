@@ -8,12 +8,15 @@
  * - 输入防抖 200ms，展示标题/面包屑/摘要片段，支持上下键选择、Enter 跳转
  * - 与 View Transitions 兼容：面板 DOM 按需创建，keydown 绑定在 window 上
  *   （ClientRouter 导航不重执行模块脚本，监听器天然持久）
+ * - 界面文案经 lib/i18n 的 t() 取当前语言（UI 双语），
+ *   语言切换事件触发时若面板打开则按当前输入重渲染
  *
  * 设计原则：
  * - 零框架依赖的纯 DOM 实现，不增加任何岛屿水合成本
  * - 索引与运行时全部同源静态文件，无外部服务
  * =============================================================================
  */
+import { t, subscribeLang } from './i18n';
 
 /** 站点基础路径（与 import.meta.env.BASE_URL 一致，构建期内联） */
 const BASE = import.meta.env.BASE_URL;
@@ -117,17 +120,17 @@ function saveRecent(entry: QuickEntry): void {
  */
 function quickEntries(): QuickEntry[] {
   const entries: QuickEntry[] = [
-    { title: '语法速览', href: `${BASE}syntax/`, crumb: '语法快速查阅' },
-    { title: '学习路线', href: `${BASE}learning-path/`, crumb: '系统化学习路径' },
-    { title: '算法教学', href: `${BASE}algorithms/`, crumb: '算法教程课程表' },
-    { title: '算法题图鉴', href: `${BASE}algorithms/?view=problems`, crumb: '经典算法题与讲解' },
-    { title: '模块总览', href: BASE, crumb: '全部分类与模块' },
+    { title: t('search.entry.syntax'), href: `${BASE}syntax/`, crumb: t('search.entry.syntaxCrumb') },
+    { title: t('search.entry.learningPath'), href: `${BASE}learning-path/`, crumb: t('search.entry.learningPathCrumb') },
+    { title: t('search.entry.algorithms'), href: `${BASE}algorithms/`, crumb: t('search.entry.algorithmsCrumb') },
+    { title: t('search.entry.problems'), href: `${BASE}algorithms/?view=problems`, crumb: t('search.entry.problemsCrumb') },
+    { title: t('search.entry.modules'), href: BASE, crumb: t('search.entry.modulesCrumb') },
   ];
   // 在线前端与灵感图鉴成对出现：桌面端构建无 playground 页面时一并隐藏
   if (document.querySelector('a[href$="playground/"]')) {
     entries.unshift(
-      { title: '灵感图鉴', href: `${BASE}playground/?panel=gallery`, crumb: '25 个设计成品' },
-      { title: '在线前端', href: `${BASE}playground/`, crumb: '在线编写与运行代码' },
+      { title: t('search.entry.gallery'), href: `${BASE}playground/?panel=gallery`, crumb: t('search.entry.galleryCrumb') },
+      { title: t('search.entry.playground'), href: `${BASE}playground/`, crumb: t('search.entry.playgroundCrumb') },
     );
   }
   return entries;
@@ -175,23 +178,23 @@ function ensurePanel(): HTMLDialogElement {
 
   panel = document.createElement('dialog');
   panel.className = 'search-palette';
-  panel.setAttribute('aria-label', '全站搜索');
+  panel.setAttribute('aria-label', t('search.title'));
   panel.innerHTML = `
     <div class="search-palette__head">
       <span class="search-palette__mark" aria-hidden="true"></span>
       <input
         class="search-palette__input"
         type="search"
-        placeholder="搜索文档、语法与知识点"
-        aria-label="搜索关键词"
+        placeholder="${t('search.placeholder')}"
+        aria-label="${t('search.inputAria')}"
         autocomplete="off"
         spellcheck="false"
       />
       <kbd class="search-palette__kbd">Esc</kbd>
     </div>
     <div class="search-palette__status" role="status"></div>
-    <ul class="search-palette__list" role="listbox" aria-label="搜索结果"></ul>
-    <div class="search-palette__foot">上下键选择 · Enter 打开 · Esc 关闭</div>
+    <ul class="search-palette__list" role="listbox" aria-label="${t('search.resultsAria')}"></ul>
+    <div class="search-palette__foot">${t('search.foot')}</div>
   `;
   document.body.appendChild(panel);
 
@@ -252,11 +255,11 @@ async function runSearch(query: string): Promise<void> {
 
   const pagefind = await loadPagefind();
   if (!pagefind) {
-    statusEl.textContent = '搜索索引不可用（本地开发环境请先执行完整构建）';
+    statusEl.textContent = t('search.noIndex');
     return;
   }
 
-  statusEl.textContent = '检索中';
+  statusEl.textContent = t('search.searching');
   try {
     const { results } = await pagefind.search(query);
     const datas = await Promise.all(results.slice(0, MAX_RESULTS).map((r) => r.data()));
@@ -265,12 +268,12 @@ async function runSearch(query: string): Promise<void> {
 
     if (datas.length === 0) {
       // 无结果态：明确告知未命中，并保留功能入口分组作为出口，不让面板留白
-      statusEl.textContent = `未找到与「${query}」相关的内容，试试更短的关键词`;
-      renderGroup('功能入口', quickEntries());
+      statusEl.textContent = t('search.noResults', { q: query });
+      renderGroup(t('search.features'), quickEntries());
       selectFirstItem();
       return;
     }
-    statusEl.textContent = `共 ${results.length} 条结果`;
+    statusEl.textContent = t('search.resultCount', { n: results.length });
 
     datas.forEach((data) => {
       const li = document.createElement('li');
@@ -284,13 +287,13 @@ async function runSearch(query: string): Promise<void> {
       a.href = href;
       const crumb = data.breadcrumbs?.map((b) => b.title).filter(Boolean).join(' / ');
       a.innerHTML = `
-        <span class="search-palette__title">${data.meta?.title ?? '未命名文档'}</span>
+        <span class="search-palette__title">${data.meta?.title ?? t('search.untitled')}</span>
         ${crumb ? `<span class="search-palette__crumb">${crumb}</span>` : ''}
         <span class="search-palette__excerpt">${data.excerpt}</span>
       `;
       // 点击后记录最近浏览并关闭面板，交给 ClientRouter 完成跳转
       a.addEventListener('click', () => {
-        saveRecent({ title: data.meta?.title ?? '未命名文档', href });
+        saveRecent({ title: data.meta?.title ?? t('search.untitled'), href });
         closePalette();
       });
       li.appendChild(a);
@@ -298,7 +301,7 @@ async function runSearch(query: string): Promise<void> {
     });
     selectFirstItem();
   } catch {
-    statusEl.textContent = '检索失败，请稍后重试';
+    statusEl.textContent = t('search.searchFailed');
   }
 }
 
@@ -323,12 +326,12 @@ function renderEmptyView(): void {
   if (!listEl || !statusEl) return;
   listEl.innerHTML = '';
   const recent = readRecent();
-  renderGroup('最近浏览', recent);
-  renderGroup('功能入口', quickEntries());
+  renderGroup(t('search.recent'), recent);
+  renderGroup(t('search.features'), quickEntries());
   if (recent.length === 0) {
-    statusEl.textContent = '输入关键词开始检索，或从下方入口进入';
+    statusEl.textContent = t('search.startHint');
   } else {
-    statusEl.textContent = '最近浏览与功能入口';
+    statusEl.textContent = t('search.recentHint');
   }
   selectFirstItem();
 }
@@ -387,6 +390,13 @@ document.addEventListener('astro:before-swap', () => {
 // 防御性清扫：移除任何游离在文档中的关闭态面板（异常路径兜底）
 document.addEventListener('astro:page-load', () => {
   document.querySelectorAll('dialog.search-palette:not([open])').forEach((el) => el.remove());
+});
+
+// 界面语言切换时重渲染当前视图（面板打开期间切换语言，文案即时跟随）
+subscribeLang(() => {
+  if (panel?.open) {
+    void runSearch(inputEl?.value.trim() ?? '');
+  }
 });
 
 // 最近浏览自动记录：文档阅读页加载时写入一条浏览历史，

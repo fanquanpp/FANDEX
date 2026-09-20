@@ -19,6 +19,7 @@ import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import FeatureNav from '@/components/FeatureNav.astro'
 import Footer from '@/components/Footer.astro'
 import { SITE } from '@/lib/constants'
+import { t } from '@/lib/i18n'
 import { categoryColors } from '@/lib/modules'
 import { getDocsByModule, docSlug } from '@/services'
 import {
@@ -44,24 +45,25 @@ const base = import.meta.env.BASE_URL
  */
 const pageColor = categoryColors.cs
 
-/** 教学文档难度标签映射（frontmatter.difficulty -> 中文短标签） */
-const LEVEL_LABELS: Record<string, string> = {
-  beginner: '入门',
-  intermediate: '进阶',
-  advanced: '深入',
+/** 教学文档难度标签字典键（frontmatter.difficulty -> 界面短标签） */
+const LEVEL_KEYS: Record<string, string> = {
+  beginner: 'algo.level.beginner',
+  intermediate: 'algo.level.intermediate',
+  advanced: 'algo.level.advanced',
 }
 
 /**
  * 单元章节定义：slug 分组即学习曲线
  * （顺序参考「数据结构 -> 排序查找 -> 设计范式 -> 图论 -> 字符串 -> 高级结构 -> 实战」）
+ * 展示文案（标题/描述）收于 i18n 字典（algoUnit.*），en 字段保留为 mono 装饰标记
  */
 const UNITS = [
   {
     id: 'foundation',
     index: '01',
-    title: '基础与分析',
+    titleKey: 'algoUnit.foundation.title',
     en: 'Foundations',
-    desc: '复杂度思维起步，吃透数组、栈队列、链表与哈希等线性结构的实现细节。',
+    descKey: 'algoUnit.foundation.desc',
     color: categoryColors.cs,
     slugs: [
       '010-AlgorithmAnalysisBasics',
@@ -75,27 +77,27 @@ const UNITS = [
   {
     id: 'tree',
     index: '02',
-    title: '树形结构',
+    titleKey: 'algoUnit.tree.title',
     en: 'Trees',
-    desc: '从二叉树到堆与平衡树，掌握递归结构与层次关系的通用处理模式。',
+    descKey: 'algoUnit.tree.desc',
     color: categoryColors.backend,
     slugs: ['080-Tree', '090-HeapAndPriorityQueue', '100-BalancedTreeAdvanced'],
   },
   {
     id: 'sort-search',
     index: '03',
-    title: '排序与查找',
+    titleKey: 'algoUnit.sortSearch.title',
     en: 'Sorting & Searching',
-    desc: '经典排序范式对比，二分查找及其在分段有序场景的变形。',
+    descKey: 'algoUnit.sortSearch.desc',
     color: categoryColors.frontend,
     slugs: ['030-SortAlgorithm', '170-BinarySearchAlgorithms'],
   },
   {
     id: 'design',
     index: '04',
-    title: '算法设计范式',
+    titleKey: 'algoUnit.design.title',
     en: 'Design Paradigms',
-    desc: '分治、贪心、回溯与动态规划四大设计思想，从暴力到最优的系统演进。',
+    descKey: 'algoUnit.design.desc',
     color: categoryColors.database,
     slugs: [
       '120-DivideAndConquer',
@@ -108,9 +110,9 @@ const UNITS = [
   {
     id: 'graph',
     index: '05',
-    title: '图论',
+    titleKey: 'algoUnit.graph.title',
     en: 'Graph Theory',
-    desc: '遍历与连通性、拓扑排序、最短路、最小生成树，一路走到网络流。',
+    descKey: 'algoUnit.graph.desc',
     color: categoryColors.cloud,
     slugs: [
       '110-GraphAlgorithms',
@@ -124,27 +126,27 @@ const UNITS = [
   {
     id: 'string',
     index: '06',
-    title: '字符串算法',
+    titleKey: 'algoUnit.string.title',
     en: 'Strings',
-    desc: '字符串处理专题与 KMP 高效匹配。',
+    descKey: 'algoUnit.string.desc',
     color: categoryColors.math,
     slugs: ['150-StringAlgorithms', '230-KmpStringMatching'],
   },
   {
     id: 'advanced',
     index: '07',
-    title: '高级数据结构',
+    titleKey: 'algoUnit.advanced.title',
     en: 'Advanced Structures',
-    desc: '线段树、树状数组、跳表与布隆过滤器等进阶武器库。',
+    descKey: 'algoUnit.advanced.desc',
     color: categoryColors.tools,
     slugs: ['190-SegmentTree', '200-FenwickTree', '210-SkipList', '220-BloomFilter'],
   },
   {
     id: 'practice',
     index: '08',
-    title: '理论与实战',
+    titleKey: 'algoUnit.practice.title',
     en: 'Theory & Practice',
-    desc: '以计算理论收束知识体系，再用面试题单检验学习成果。',
+    descKey: 'algoUnit.practice.desc',
     color: categoryColors.cs,
     slugs: ['280-AlgorithmTheory', '300-LeetCodeInterviewGuide'],
   },
@@ -179,9 +181,9 @@ if (restDocs.length > 0) {
   units.push({
     id: 'more',
     index: '09',
-    title: '更多专题',
+    titleKey: 'algoUnit.more.title',
     en: 'More',
-    desc: '尚未归入上述单元的算法专题文档。',
+    descKey: 'algoUnit.more.desc',
     color: categoryColors.cs,
     docs: restDocs.map((doc) => ({
       slug: docSlug(doc.id),
@@ -290,36 +292,36 @@ const EXTERNAL_PLATFORMS = [
         <div class="hero-stats">
           <div class="stat-item">
             <span class="stat-num">{units.length}</span>
-            <span class="stat-label">大单元</span>
+            <span class="stat-label" data-i18n="algo.units">大单元</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-num">{docTotal}</span>
-            <span class="stat-label">篇教程</span>
+            <span class="stat-label" data-i18n="algo.docs">篇教程</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-num">{problemTotal}</span>
-            <span class="stat-label">道配套习题</span>
+            <span class="stat-label" data-i18n="algo.problems">道配套习题</span>
           </div>
         </div>
 
         <!-- 功能入口：题图鉴直达链接（点击即切页内视图，不再中转独立页） -->
         <FeatureNav
-          extra={[{ href: `?view=problems`, label: '题图鉴', tooltip: '直达刷题视图：经典算法题与讲解' }]}
+          extra={[{ href: `?view=problems`, label: '题图鉴', tooltip: '直达刷题视图：经典算法题与讲解', labelKey: 'algo.atlasEntry.name', tooltipKey: 'algo.atlasEntry.tooltip' }]}
         />
       </div>
     </section>
 
     <!-- 视图切换器：教程 / 刷题两大功能一步直达（sticky 常驻可达） -->
-    <div class="algo-views" data-algo-views role="group" aria-label="教程与题图鉴视图切换">
+    <div class="algo-views" data-algo-views role="group" aria-label="教程与题图鉴视图切换" data-i18n-aria="algo.viewsAria">
       <button type="button" class="algo-views__tab is-active" data-view-tab="tutorials" aria-pressed="true">
-        教程课程表
-        <em>{docTotal} 篇</em>
+        <span data-i18n="algo.tabTutorials">教程课程表</span>
+        <em data-i18n="algo.tabTutorialsCount" data-i18n-params={JSON.stringify({ n: docTotal })}>{docTotal} 篇</em>
       </button>
       <button type="button" class="algo-views__tab" data-view-tab="problems" aria-pressed="false">
-        算法题图鉴
-        <em>{problemTotal} 道题</em>
+        <span data-i18n="algo.tabProblems">算法题图鉴</span>
+        <em data-i18n="algo.tabProblemsCount" data-i18n-params={JSON.stringify({ n: problemTotal })}>{problemTotal} 道题</em>
       </button>
     </div>
 
@@ -330,10 +332,10 @@ const EXTERNAL_PLATFORMS = [
           <header class="algo-section__head">
             <h2 class="algo-section__title">
               <span class="algo-section__index" aria-hidden="true">{unit.index}</span>
-              {unit.title}
+              <span data-i18n={unit.titleKey}>{t(unit.titleKey)}</span>
             </h2>
-            <span class="algo-section__en">{unit.en} · {unit.desc}</span>
-            <span class="algo-section__count">{unit.docs.length} 篇</span>
+            <span class="algo-section__en">{unit.en} · <span data-i18n={unit.descKey}>{t(unit.descKey)}</span></span>
+            <span class="algo-section__count" data-i18n="algo.unitDocs" data-i18n-params={JSON.stringify({ n: unit.docs.length })}>{unit.docs.length} 篇</span>
           </header>
           <div class="algo-unit__grid">
             {unit.docs.map((doc, docIndex) => (
@@ -345,7 +347,7 @@ const EXTERNAL_PLATFORMS = [
                 <div class="algo-doc-card__head">
                   <span class="algo-doc-card__no" aria-hidden="true">{String(doc.order).padStart(3, '0')}</span>
                   <h3 class="algo-doc-card__title">{doc.title}</h3>
-                  <span class="algo-doc-card__level">{LEVEL_LABELS[doc.difficulty] ?? doc.difficulty}</span>
+                  <span class="algo-doc-card__level" data-i18n={LEVEL_KEYS[doc.difficulty] ?? undefined}>{doc.difficulty === 'beginner' ? '入门' : doc.difficulty === 'advanced' ? '深入' : '进阶'}</span>
                 </div>
                 <p class="algo-doc-card__desc">{doc.description}</p>
               </a>
@@ -360,9 +362,9 @@ const EXTERNAL_PLATFORMS = [
       <div class="ap-filter">
         <div class="ap-filter__row">
           <span class="ap-filter__label" aria-hidden="true"></span>
-          <span class="ap-filter__hint">分类</span>
+          <span class="ap-filter__hint" data-i18n="ap.catLabel">分类</span>
           <button class="ap-chip is-active" type="button" data-filter-cat="all" aria-pressed="true">
-            全部<em>{problemTotal}</em>
+            <span data-i18n="ap.all">全部</span><em>{problemTotal}</em>
           </button>
           {ALGO_CATEGORIES.map((cat) => (
             <button
@@ -378,9 +380,9 @@ const EXTERNAL_PLATFORMS = [
         </div>
         <div class="ap-filter__row">
           <span class="ap-filter__label" aria-hidden="true"></span>
-          <span class="ap-filter__hint">难度</span>
+          <span class="ap-filter__hint" data-i18n="ap.diffLabel">难度</span>
           <button class="ap-chip is-active" type="button" data-filter-diff="all" aria-pressed="true">
-            全部
+            <span data-i18n="ap.all">全部</span>
           </button>
           {DIFFICULTY_ORDER.map((diff) => (
             <button
@@ -395,22 +397,24 @@ const EXTERNAL_PLATFORMS = [
         </div>
         <div class="ap-filter__row">
           <span class="ap-filter__label" aria-hidden="true"></span>
-          <span class="ap-filter__hint">进度</span>
+          <span class="ap-filter__hint" data-i18n="ap.statusLabel">进度</span>
           <button class="ap-chip is-active" type="button" data-filter-status="all" aria-pressed="true">
-            全部
+            <span data-i18n="ap.all">全部</span>
           </button>
-          <button class="ap-chip" type="button" data-filter-status="solved" aria-pressed="false" title="只看已标记掌握的题目">
-            已掌握<em data-ap-status-count="solved">0</em>
+          <button class="ap-chip" type="button" data-filter-status="solved" aria-pressed="false" title="只看已标记掌握的题目" data-i18n-title="ap.solvedTitle">
+            <span data-i18n="ap.solved">已掌握</span><em data-ap-status-count="solved">0</em>
           </button>
-          <button class="ap-chip" type="button" data-filter-status="review" aria-pressed="false" title="只看标记待复习的题目">
-            待复习<em data-ap-status-count="review">0</em>
+          <button class="ap-chip" type="button" data-filter-status="review" aria-pressed="false" title="只看标记待复习的题目" data-i18n-title="ap.reviewTitle">
+            <span data-i18n="ap.review">待复习</span><em data-ap-status-count="review">0</em>
           </button>
           <input
             class="ap-search"
             type="search"
             data-filter-search
             placeholder="搜索题名 / 标签"
+            data-i18n-placeholder="ap.searchPlaceholder"
             aria-label="按题名或标签搜索题目"
+            data-i18n-aria="ap.searchAria"
           />
         </div>
       </div>
@@ -418,7 +422,7 @@ const EXTERNAL_PLATFORMS = [
       <!-- 命中计数行：附本机进度说明（进度仅存当前浏览器） -->
       <div class="ap-count-row">
         <p class="ap-count" data-filter-count aria-live="polite"></p>
-        <span class="ap-count-note">掌握 / 复习标记仅保存在当前浏览器</span>
+        <span class="ap-count-note" data-i18n="ap.countNote">掌握 / 复习标记仅保存在当前浏览器</span>
       </div>
 
       <div class="ap-grid">
@@ -438,7 +442,7 @@ const EXTERNAL_PLATFORMS = [
               aria-label={`${problem.title}（${DIFFICULTY_LABELS[problem.difficulty]}）`}
             >
               <div class="ap-card__head">
-                <span class="ap-card__no" aria-hidden="true">{problem.lc ? `LC ${problem.lc}` : '经典'}</span>
+                <span class="ap-card__no" aria-hidden="true">{problem.lc ? `LC ${problem.lc}` : <span data-i18n="ap.classic">经典</span>}</span>
                 <h3 class="ap-card__title">{problem.title}</h3>
                 <span class={`ap-badge ap-badge--${problem.difficulty}`}>{DIFFICULTY_LABELS[problem.difficulty]}</span>
               </div>
@@ -458,6 +462,7 @@ const EXTERNAL_PLATFORMS = [
                 data-mark="solved"
                 aria-pressed="false"
                 title="标记为已掌握"
+                data-i18n-title="ap.markSolved"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
                   <path d="M4 12.5l5 5L20 6.5" />
@@ -469,6 +474,7 @@ const EXTERNAL_PLATFORMS = [
                 data-mark="review"
                 aria-pressed="false"
                 title="标记为待复习"
+                data-i18n-title="ap.markReview"
               >
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                   <path d="M12 3l2.7 5.6 6.3.9-4.5 4.4 1 6.1-5.5-2.9-5.5 2.9 1-6.1L3 9.5l6.3-.9L12 3z" />
@@ -481,19 +487,19 @@ const EXTERNAL_PLATFORMS = [
 
       <!-- 空状态：筛选无命中时显示，附恢复动作 -->
       <div class="ap-empty" data-ap-empty hidden>
-        <p>没有匹配的题目</p>
+        <p data-i18n="ap.empty">没有匹配的题目</p>
         <div class="ap-empty__actions">
-          <button type="button" class="ap-chip" data-ap-clear-q>清除关键词</button>
-          <button type="button" class="ap-chip" data-ap-reset>重置全部筛选</button>
+          <button type="button" class="ap-chip" data-ap-clear-q data-i18n="ap.clearQ">清除关键词</button>
+          <button type="button" class="ap-chip" data-ap-reset data-i18n="ap.reset">重置全部筛选</button>
         </div>
       </div>
     </section>
 
     <!-- 外部刷题平台推荐：站内闭环之后的进阶出口（第三方资源 + 免责声明） -->
-    <section class="algo-ext" aria-label="外部刷题平台推荐" data-algo-ext>
+    <section class="algo-ext" aria-label="外部刷题平台推荐" data-i18n-aria="algoExt.title" data-algo-ext>
       <header class="algo-ext__head">
-        <h2 class="algo-section__title">外部刷题平台推荐</h2>
-        <span class="algo-ext__note">第三方资源 · 供学完站内教程后按需进阶</span>
+        <h2 class="algo-section__title" data-i18n="algoExt.title">外部刷题平台推荐</h2>
+        <span class="algo-ext__note" data-i18n="algoExt.note">第三方资源 · 供学完站内教程后按需进阶</span>
       </header>
       <div class="algo-ext__grid">
         {EXTERNAL_PLATFORMS.map((platform) => (
@@ -518,9 +524,8 @@ const EXTERNAL_PLATFORMS = [
         ))}
       </div>
       <p class="algo-ext__disclaimer">
-        以上为外部第三方平台，其内容、账号与服务均由各自运营方提供；收录仅为学习资源参考，
-        不构成合作或背书，本站不对使用外部资源产生的各类问题承担责任。详见
-        <a href={`${base}disclaimer/`}>免责声明</a>。
+        <span data-i18n="algoExt.disclaimerPre">以上为外部第三方平台，其内容、账号与服务均由各自运营方提供；收录仅为学习资源参考，不构成合作或背书，本站不对使用外部资源产生的各类问题承担责任。详见</span>
+        <a href={`${base}disclaimer/`} data-i18n="footer.disclaimer">免责声明</a><span data-i18n="algoExt.disclaimerPost">。</span>
       </p>
     </section>
 

@@ -12,6 +12,9 @@
  *   - 预览 iframe 复用编辑器同一套 sandbox（无同源权限），成品代码
  *     运行在独立不透明源，无法访问站点数据
  *   - IntersectionObserver 一次性触发后即断开，滚动开销可忽略
+ *
+ * UI 双语：界面文案经 lib/i18n 的 t() 取当前语言（useLang 订阅全局切换）；
+ * 成品名称/说明（pg-showcase 数据）为内容层，保持原文。
  */
 
 import {
@@ -29,6 +32,8 @@ import {
   groupShowcaseItems,
   type ShowcaseItem,
 } from './pg-showcase';
+import { useLang } from '@/lib/use-lang';
+import { t } from '@/lib/i18n';
 
 interface GalleryProps {
   /** 画廊是否打开（未打开时不渲染任何 DOM） */
@@ -49,6 +54,8 @@ const ShowcaseCard = memo(function ShowcaseCard({
   active: boolean;
   onLoad: (item: ShowcaseItem) => void;
 }) {
+  /** 界面语言（卡片 aria/title/占位文案双语） */
+  const lang = useLang();
   /** 卡片根节点（IntersectionObserver 观察目标） */
   const cardRef = useRef<HTMLDivElement | null>(null);
   /** 是否已进入视口（进入后保持 true，预览只加载一次） */
@@ -96,12 +103,12 @@ const ShowcaseCard = memo(function ShowcaseCard({
             className="pg-sc-frame"
             sandbox="allow-scripts"
             srcDoc={previewDoc}
-            title={`${item.name} 预览`}
+            title={t('pgSc.previewTitle', { name: item.name }, lang)}
             loading="lazy"
             tabIndex={-1}
           />
         ) : (
-          <div className="pg-sc-placeholder">滚动到可视区域后加载预览</div>
+          <div className="pg-sc-placeholder">{t('pgSc.placeholder', undefined, lang)}</div>
         )}
       </div>
       <div className="pg-sc-meta">
@@ -113,10 +120,10 @@ const ShowcaseCard = memo(function ShowcaseCard({
           type="button"
           className="pg-btn pg-btn--ghost pg-btn--sm pg-sc-load"
           onClick={() => onLoad(item)}
-          title={`把「${item.name}」的源码载入编辑器`}
+          title={t('pgSc.loadAria', { name: item.name }, lang)}
         >
           <PgIcon name="code" size={12} />
-          <span>载入编辑器</span>
+          <span>{t('pgSc.load', undefined, lang)}</span>
         </button>
       </div>
     </div>
@@ -125,6 +132,8 @@ const ShowcaseCard = memo(function ShowcaseCard({
 
 /** 灵感画廊主组件 */
 export default function ShowcaseGallery({ open, onClose, onLoad }: GalleryProps) {
+  /** 界面语言（面板文案双语） */
+  const lang = useLang();
   /** 当前分组（all 为全部） */
   const [group, setGroup] = useState<string>('all');
   /** 按分组归类的成品（模块级数据，挂载时归类一次） */
@@ -166,20 +175,20 @@ export default function ShowcaseGallery({ open, onClose, onLoad }: GalleryProps)
   );
 
   return (
-    <div className="pg-sc-mask" role="dialog" aria-modal="true" aria-label="灵感画廊">
+    <div className="pg-sc-mask" role="dialog" aria-modal="true" aria-label={t('pgSc.maskAria', undefined, lang)}>
       <div className="pg-sc-panel">
         {/* 面板头部：标题与关闭 */}
         <header className="pg-sc-head">
           <span className="pg-sc-title">
             <PgIcon name="spark" size={15} />
-            灵感画廊
-            <em className="pg-sc-title-note">{items.length} 个成品 · 点击卡片按钮载入源码</em>
+            {t('pgSc.title', undefined, lang)}
+            <em className="pg-sc-title-note">{t('pgSc.note', { n: items.length }, lang)}</em>
           </span>
           <button
             type="button"
             className="pg-btn pg-btn--ghost pg-btn--sm"
             onClick={onClose}
-            title="关闭画廊（Esc）"
+            title={t('pgSc.closeTitle', undefined, lang)}
           >
             <PgIcon name="close" size={14} />
           </button>
@@ -187,8 +196,8 @@ export default function ShowcaseGallery({ open, onClose, onLoad }: GalleryProps)
 
         <div className="pg-sc-layout">
           {/* 分组导航：桌面侧栏、窄屏横向滚动 */}
-          <nav className="pg-sc-nav" aria-label="成品分组">
-            {renderGroupBtn('all', '全部', items.length)}
+          <nav className="pg-sc-nav" aria-label={t('pgSc.groupsAria', undefined, lang)}>
+            {renderGroupBtn('all', t('pgSc.all', undefined, lang), items.length)}
             {SHOWCASE_GROUPS.map((g) => {
               const list = grouped.get(g.id) ?? [];
               return (

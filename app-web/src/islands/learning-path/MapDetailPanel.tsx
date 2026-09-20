@@ -4,8 +4,11 @@
  * 展示当前悬停/选中知识点的说明、难度、文档状态与跳转入口；
  * 提供三态学习进度标记（未学习/学习中/已完成，localStorage 持久化）；
  * 待补充节点提供官方资料兜底与"定位到节点"操作。
+ * 界面文案经 lib/i18n 的 t() 取当前语言（UI 双语）。
  */
 import type { CSSProperties } from 'react';
+import { useLang } from '@/lib/use-lang';
+import { t } from '@/lib/i18n';
 import type { NodeProgress, NodeVM } from './types';
 
 interface Props {
@@ -25,18 +28,18 @@ interface Props {
   onFocus: () => void;
 }
 
-/** 难度中文标签 */
-const DIFFICULTY_LABEL: Record<string, string> = {
-  beginner: '入门',
-  intermediate: '中级',
-  advanced: '进阶',
+/** 难度标签字典键 */
+const DIFFICULTY_KEY: Record<string, string> = {
+  beginner: 'lpMap.legendBeginner',
+  intermediate: 'lpMap.legendIntermediate',
+  advanced: 'lpMap.legendAdvanced',
 };
 
 /** 进度三态选项（value null 用 'none' 字符串承载以便遍历） */
-const PROGRESS_OPTIONS: Array<{ value: 'none' | NodeProgress; label: string }> = [
-  { value: 'none', label: '未学习' },
-  { value: 'learning', label: '学习中' },
-  { value: 'done', label: '已完成' },
+const PROGRESS_OPTIONS: Array<{ value: 'none' | NodeProgress; labelKey: string }> = [
+  { value: 'none', labelKey: 'lpMap.statusNone' },
+  { value: 'learning', labelKey: 'lpMap.statusLearning' },
+  { value: 'done', labelKey: 'lpMap.statusDone' },
 ];
 
 /** 详情面板：无节点时展示引导，有节点时展示完整信息 */
@@ -49,6 +52,7 @@ export default function MapDetailPanel({
   onClose,
   onFocus,
 }: Props) {
+  const lang = useLang();
   if (!node) {
     return (
       <aside className="lp-panel lp-panel--empty">
@@ -60,9 +64,9 @@ export default function MapDetailPanel({
           <rect className="lp-panel__empty-node" x="82" y="34" width="20" height="20" rx="2" />
           <rect className="lp-panel__empty-node lp-panel__empty-node--planned" x="142" y="58" width="16" height="20" rx="2" />
         </svg>
-        <h3 className="lp-panel__empty-title">选择知识点</h3>
-        <p className="lp-panel__hint">悬停或点击地图中的知识点节点，查看说明与文档入口。</p>
-        <p className="lp-panel__sub">虚线节点表示文档待补充，可先参考官方资料。</p>
+        <h3 className="lp-panel__empty-title">{t('lpMap.emptyTitle', undefined, lang)}</h3>
+        <p className="lp-panel__hint">{t('lpMap.emptyHint', undefined, lang)}</p>
+        <p className="lp-panel__sub">{t('lpMap.emptySub', undefined, lang)}</p>
       </aside>
     );
   }
@@ -73,7 +77,7 @@ export default function MapDetailPanel({
     <aside className="lp-panel" style={{ '--lp-panel-color': color } as CSSProperties}>
       <div className="lp-panel__head">
         <span className="lp-panel__stage">{node.stageTitle}</span>
-        <button type="button" className="fndx-icon-btn" onClick={onClose} aria-label="关闭详情">
+        <button type="button" className="fndx-icon-btn" onClick={onClose} aria-label={t('lpMap.closeDetail', undefined, lang)}>
           <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
             <line x1="18" y1="6" x2="6" y2="18" />
             <line x1="6" y1="6" x2="18" y2="18" />
@@ -84,17 +88,19 @@ export default function MapDetailPanel({
       <div className="lp-panel__meta">
         {node.difficulty && (
           <span className={`lp-panel__difficulty diff-${node.difficulty}`}>
-            {DIFFICULTY_LABEL[node.difficulty] ?? node.difficulty}
+            {DIFFICULTY_KEY[node.difficulty]
+              ? t(DIFFICULTY_KEY[node.difficulty], undefined, lang)
+              : node.difficulty}
           </span>
         )}
         <span className={`lp-panel__status${planned ? ' lp-panel__status--planned' : ''}`}>
-          {planned ? '文档待补充' : '已发布'}
+          {planned ? t('lpMap.statusPlanned', undefined, lang) : t('lpMap.statusPublished', undefined, lang)}
         </span>
       </div>
       {node.desc && <p className="lp-panel__desc">{node.desc}</p>}
 
       {/* 学习进度标记：三态分段选择（roadmap.sh 模式，localStorage 持久化） */}
-      <div className="lp-panel__progress" role="group" aria-label="学习进度标记">
+      <div className="lp-panel__progress" role="group" aria-label={t('lpMap.progressGroupAria', undefined, lang)}>
         {PROGRESS_OPTIONS.map((option) => (
           <button
             key={option.value}
@@ -105,7 +111,7 @@ export default function MapDetailPanel({
             aria-pressed={currentState === option.value}
             onClick={() => onSetProgress(node.id, option.value === 'none' ? null : option.value)}
           >
-            {option.label}
+            {t(option.labelKey, undefined, lang)}
           </button>
         ))}
       </div>
@@ -118,11 +124,13 @@ export default function MapDetailPanel({
             <line x1="16" y1="13" x2="8" y2="13" />
             <line x1="16" y1="17" x2="8" y2="17" />
           </svg>
-          {node.docTitle ? `阅读：${node.docTitle}` : '阅读专项文档'}
+          {node.docTitle
+            ? t('lpMap.readDoc', { title: node.docTitle }, lang)
+            : t('lpMap.readGeneric', undefined, lang)}
         </a>
       ) : (
         <div className="lp-panel__notice">
-          该知识点暂未发布专项文档，可先通过官方资料学习。
+          {t('lpMap.noDoc', undefined, lang)}
         </div>
       )}
 
@@ -147,9 +155,9 @@ export default function MapDetailPanel({
           <circle cx="12" cy="12" r="3" />
           <circle cx="12" cy="12" r="9" />
         </svg>
-        在地图中定位
+        {t('lpMap.locate', undefined, lang)}
       </button>
-      <p className="lp-panel__footer">{techTitle} 学习路线</p>
+      <p className="lp-panel__footer">{t('lpMap.panelFooter', { title: techTitle }, lang)}</p>
     </aside>
   );
 }

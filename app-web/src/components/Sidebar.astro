@@ -76,6 +76,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
   id="app-sidebar"
   class="fndx-sidebar"
   aria-label="侧边栏"
+  data-i18n-aria="sidebar.asideAria"
   data-module={moduleId}
   style={moduleColorStyle(meta)}
 >
@@ -85,6 +86,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
     id="sidebar-close-btn"
     class="fndx-sidebar__close fndx-icon-btn"
     aria-label="关闭侧边栏"
+    data-i18n-aria="sidebar.close"
   >
     <svg
       xmlns="http://www.w3.org/2000/svg"
@@ -112,7 +114,9 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
       id="sidebar-collapse-btn"
       class="fndx-sidebar__collapse fndx-icon-btn"
       aria-label="折叠侧边栏"
+      data-i18n-aria="sidebar.collapse"
       data-tooltip="折叠侧边栏"
+      data-i18n-tooltip="sidebar.collapse"
       data-tooltip-pos="right"
     >
       <svg
@@ -134,13 +138,14 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
     <!-- 视图切换 tabs：章节 / 全部模块
          样式由 .fndx-sidebar__view-tabs / .fndx-sidebar__view-tab 提供（layout-components.css）
          点击切换面板显隐，状态持久化到 localStorage -->
-    <div class="fndx-sidebar__view-tabs" role="tablist" aria-label="侧边栏视图切换">
+    <div class="fndx-sidebar__view-tabs" role="tablist" aria-label="侧边栏视图切换" data-i18n-aria="sidebar.viewTabsAria">
       <button
         type="button"
         class="fndx-sidebar__view-tab is-active"
         data-view="chapters"
         role="tab"
         aria-selected="true"
+        data-i18n="sidebar.chapters"
       >
         章节
       </button>
@@ -150,6 +155,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
         data-view="modules"
         role="tab"
         aria-selected="false"
+        data-i18n="sidebar.all"
       >
         全部
       </button>
@@ -160,6 +166,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
       href={base}
       class="fndx-sidebar__back fndx-icon-btn"
       aria-label="返回首页"
+      data-i18n-aria="sidebar.backHome"
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"
@@ -184,6 +191,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
     id="sidebar-chapters-panel"
     class="fndx-sidebar__panel"
     aria-label="章节导航"
+    data-i18n-aria="sidebar.chaptersAria"
   >
     <div
       id="sidebar-scroll"
@@ -229,6 +237,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
     id="sidebar-all-modules-panel"
     class="fndx-sidebar__panel is-hidden"
     aria-label="全部模块"
+    data-i18n-aria="sidebar.allModulesAria"
   >
     <div
       id="sidebar-all-modules-scroll"
@@ -247,7 +256,9 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
   id="sidebar-expand-fab"
   class="fndx-sidebar__expand-fab fndx-icon-btn fndx-icon-btn--labeled"
   aria-label="展开侧边栏"
+  data-i18n-aria="sidebar.expandAria"
   data-tooltip="展开侧边栏"
+  data-i18n-tooltip="sidebar.expandAria"
   data-tooltip-pos="right"
 >
   <svg
@@ -264,7 +275,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
   >
     <polyline points="9 18 15 12 9 6" />
   </svg>
-  <span class="fndx-sidebar__expand-fab-text">展开</span>
+  <span class="fndx-sidebar__expand-fab-text" data-i18n="sidebar.expand">展开</span>
 </button>
 
 <!-- 客户端交互脚本：侧边栏滚动记忆、模块折叠、视图切换、折叠收纳 -->

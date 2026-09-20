@@ -148,6 +148,24 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
         } catch (e) {
           /* localStorage 不可用时静默降级（如隐私模式） */
         }
+
+        // 界面语言同步读取（UI 双语 FOUC 防护，与主题同一模型）
+        // SSR 恒为中文；英文为用户主动选择（fandex-lang），仅存 localStorage。
+        // 此处尽早声明 data-lang 与 lang 属性：
+        // - data-lang 供 CSS 钩子与岛屿读取（lib/i18n 首次求值取自此处）
+        // - lang 影响读屏发音与浏览器翻译建议
+        // 文案切换由 lib/i18n-dom 在模块脚本阶段批量完成（DOM 解析后、首帧绘制前）
+        try {
+          var savedLang = localStorage.getItem('fandex-lang');
+          if (savedLang === 'en') {
+            document.documentElement.setAttribute('data-lang', 'en');
+            document.documentElement.setAttribute('lang', 'en');
+          } else {
+            document.documentElement.setAttribute('data-lang', 'zh');
+          }
+        } catch (e) {
+          /* localStorage 不可用时静默降级：保持 SSR 中文 */
+        }
       })();
     </script>
     <slot name="head" />
@@ -167,6 +185,13 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
   // 同时处理跨标签页主题同步与系统主题变化跟随
   import { initThemePersistence } from '@/lib/theme';
   initThemePersistence();
+</script>
+
+<script>
+  // 界面语言 DOM 应用器（UI 双语 · 与主题同一模型）
+  // 首屏把 SSR 中文文案切换为用户选择的语言（默认 zh 等效幂等），
+  // 并接管 [data-lang-toggle] 点击、语言变化与 View Transitions 后的重放
+  import '@/lib/i18n-dom';
 </script>
 
 <script>

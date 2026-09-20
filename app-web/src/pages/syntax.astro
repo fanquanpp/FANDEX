@@ -59,17 +59,17 @@ const quickLangs = [...syntaxIndex.languages]
         <div class="hero-stats">
           <div class="stat-item">
             <span class="stat-num">{syntaxStats.totalLanguages}</span>
-            <span class="stat-label">语言</span>
+            <span class="stat-label" data-i18n="syntaxPage.languages">语言</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-num">{syntaxStats.totalCards}</span>
-            <span class="stat-label">语法点</span>
+            <span class="stat-label" data-i18n="syntaxPage.cards">语法点</span>
           </div>
           <div class="stat-divider"></div>
           <div class="stat-item">
             <span class="stat-num">{syntaxStats.totalDocs}</span>
-            <span class="stat-label">文档</span>
+            <span class="stat-label" data-i18n="syntaxPage.docs">文档</span>
           </div>
         </div>
 
@@ -78,14 +78,16 @@ const quickLangs = [...syntaxIndex.languages]
       </div>
 
       <!-- 热门语言直达：?lang= 深链由 SyntaxExplorer 恢复，点击即见该语言卡片 -->
-      <div class="syntax-quick" aria-label="热门语言直达">
-        <span class="syntax-quick__label">直达</span>
+      <div class="syntax-quick" aria-label="热门语言直达" data-i18n-aria="syntaxPage.quickAria">
+        <span class="syntax-quick__label" data-i18n="syntaxPage.quickLabel">直达</span>
         {quickLangs.map((lang) => (
           <a
             class="syntax-quick__chip"
             href={`?lang=${lang.id}`}
             style={`--chip-color:${lang.color}`}
             data-tooltip={`直达 ${lang.title} 语法速查`}
+            data-i18n-tooltip="syntaxPage.quickTooltip"
+            data-i18n-params={JSON.stringify({ title: lang.title })}
             data-tooltip-pos="bottom"
           >
             <span class="syntax-quick__icon" aria-hidden="true">{lang.icon}</span>

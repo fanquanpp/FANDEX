@@ -84,10 +84,10 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
 
     <article class="apd">
       <!-- 面包屑：算法教学 / 算法题图鉴 / 当前题 -->
-      <nav class="apd-crumb" aria-label="面包屑">
-        <a href={`${base}algorithms/`}>算法教学</a>
+      <nav class="apd-crumb" aria-label="面包屑" data-i18n-aria="apd.crumbAria">
+        <a href={`${base}algorithms/`} data-i18n="apd.algorithms">算法教学</a>
         <span class="apd-crumb__sep" aria-hidden="true">/</span>
-        <a href={`${base}algorithms/?view=problems`}>算法题图鉴</a>
+        <a href={`${base}algorithms/?view=problems`} data-i18n="apd.atlas">算法题图鉴</a>
         <span class="apd-crumb__sep" aria-hidden="true">/</span>
         <span aria-current="page">{problem.title}</span>
       </nav>
@@ -95,13 +95,13 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
       <!-- 题目头部：题号 / 难度 / 全库序号 + 标题 + 技法标签 -->
       <header class="apd-head">
         <p class="apd-head__meta">
-          <span class="ap-card__no">{problem.lc ? `LC ${problem.lc}` : '经典题'}</span>
+          <span class="ap-card__no">{problem.lc ? `LC ${problem.lc}` : <span data-i18n="apd.classicBadge">经典题</span>}</span>
           <span class="ap-crumb__sep" aria-hidden="true">·</span>
           <span>{category?.label}</span>
           <span class="ap-crumb__sep" aria-hidden="true">·</span>
           <span class={`ap-badge ap-badge--${problem.difficulty}`}>{DIFFICULTY_LABELS[problem.difficulty]}</span>
           <span class="ap-crumb__sep" aria-hidden="true">·</span>
-          <span>第 {index + 1} / {ALGO_PROBLEMS.length} 题</span>
+          <span data-i18n="apd.index" data-i18n-params={JSON.stringify({ p: index + 1, t: ALGO_PROBLEMS.length })}>第 {index + 1} / {ALGO_PROBLEMS.length} 题</span>
         </p>
         <h1 class="apd-head__title">
           {problem.title}
@@ -114,26 +114,26 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
         </div>
         <!-- 本机进度标记：已掌握 / 待复习（localStorage，lib/algo-problems.ts 驱动） -->
         <div class="apd-progress" data-apd-progress data-apd-slug={problem.slug}>
-          <span class="apd-progress__label">本机进度</span>
-          <button type="button" class="ap-mark ap-mark--lg" data-ap-detail-mark="solved" aria-pressed="false" title="标记为已掌握">
+          <span class="apd-progress__label" data-i18n="apd.localProgress">本机进度</span>
+          <button type="button" class="ap-mark ap-mark--lg" data-ap-detail-mark="solved" aria-pressed="false" title="标记为已掌握" data-i18n-title="ap.markSolved">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
               <path d="M4 12.5l5 5L20 6.5" />
             </svg>
-            <span>已掌握</span>
+            <span data-i18n="ap.solved">已掌握</span>
           </button>
-          <button type="button" class="ap-mark ap-mark--lg" data-ap-detail-mark="review" aria-pressed="false" title="标记为待复习">
+          <button type="button" class="ap-mark ap-mark--lg" data-ap-detail-mark="review" aria-pressed="false" title="标记为待复习" data-i18n-title="ap.markReview">
             <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
               <path d="M12 3l2.7 5.6 6.3.9-4.5 4.4 1 6.1-5.5-2.9-5.5 2.9 1-6.1L3 9.5l6.3-.9L12 3z" />
             </svg>
-            <span>待复习</span>
+            <span data-i18n="ap.review">待复习</span>
           </button>
-          <span class="apd-progress__note">仅保存在当前浏览器</span>
+          <span class="apd-progress__note" data-i18n="apd.progressNote">仅保存在当前浏览器</span>
         </div>
       </header>
 
       <!-- 题目描述：概括复述 + 示例 + 数据范围 -->
       <section class="apd-sec">
-        <h2 class="apd-sec__title">题目描述</h2>
+        <h2 class="apd-sec__title" data-i18n="apd.desc">题目描述</h2>
         <div class="apd-statement">
           {statementParas.map((para) => (
             <p>{para}</p>
@@ -143,7 +143,7 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
 
       <!-- 解题思路：分点讲解 -->
       <section class="apd-sec">
-        <h2 class="apd-sec__title">解题思路</h2>
+        <h2 class="apd-sec__title" data-i18n="apd.idea">解题思路</h2>
         <ol class="apd-idea">
           {problem.idea.map((point) => (
             <li>{point}</li>
@@ -153,10 +153,10 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
 
       <!-- 参考实现：默认折叠，先自己想再看 -->
       <section class="apd-sec">
-        <h2 class="apd-sec__title">参考实现</h2>
+        <h2 class="apd-sec__title" data-i18n="apd.impl">参考实现</h2>
         <details class="apd-code">
           <summary>
-            查看参考实现<em>Python · 建议先自行作答</em>
+            <span data-i18n="apd.implToggle">查看参考实现</span><em data-i18n="apd.implHint">Python · 建议先自行作答</em>
           </summary>
           <div class="apd-code__body">
             <Code
@@ -172,23 +172,23 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
 
       <!-- 复杂度与归属信息 -->
       <section class="apd-sec">
-        <h2 class="apd-sec__title">复杂度与归属</h2>
+        <h2 class="apd-sec__title" data-i18n="apd.meta">复杂度与归属</h2>
         <div class="apd-meta">
           <div class="apd-meta__item">
-            <span class="apd-meta__label">时间复杂度</span>
+            <span class="apd-meta__label" data-i18n="apd.time">时间复杂度</span>
             <span class="apd-meta__value">{problem.time}</span>
           </div>
           <div class="apd-meta__item">
-            <span class="apd-meta__label">空间复杂度</span>
+            <span class="apd-meta__label" data-i18n="apd.space">空间复杂度</span>
             <span class="apd-meta__value">{problem.space}</span>
           </div>
           <div class="apd-meta__item">
-            <span class="apd-meta__label">所属分类</span>
+            <span class="apd-meta__label" data-i18n="apd.category">所属分类</span>
             <span class="apd-meta__value">{category?.label}</span>
           </div>
           <div class="apd-meta__item">
-            <span class="apd-meta__label">题源</span>
-            <span class="apd-meta__value">{problem.lc ? `LeetCode ${problem.lc}` : '经典算法题'}</span>
+            <span class="apd-meta__label" data-i18n="apd.source">题源</span>
+            <span class="apd-meta__value">{problem.lc ? `LeetCode ${problem.lc}` : <span data-i18n="apd.sourceClassic">经典算法题</span>}</span>
           </div>
         </div>
       </section>
@@ -196,7 +196,7 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
       <!-- 关联教程：回链算法教学文档 -->
       {related.length > 0 && (
         <section class="apd-sec">
-          <h2 class="apd-sec__title">关联教程</h2>
+          <h2 class="apd-sec__title" data-i18n="apd.related">关联教程</h2>
           <div class="apd-rel">
             {related.map((doc) => (
               <a href={`${base}algorithm/${doc.slug}/`}>{doc.title}</a>
@@ -206,10 +206,10 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
       )}
 
       <!-- 同库前后题导航 -->
-      <nav class="apd-nav" aria-label="前后题目">
+      <nav class="apd-nav" aria-label="前后题目" data-i18n-aria="apd.navAria">
         {prev ? (
           <a class="apd-nav__link" href={`${base}algorithms/problems/${prev.slug}/`}>
-            <span class="apd-nav__dir">PREV · 上一题</span>
+            <span class="apd-nav__dir" data-i18n="apd.prev">PREV · 上一题</span>
             <span class="apd-nav__title">{prev.title}</span>
           </a>
         ) : (
@@ -217,7 +217,7 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
         )}
         {next ? (
           <a class="apd-nav__link is-next" href={`${base}algorithms/problems/${next.slug}/`}>
-            <span class="apd-nav__dir">NEXT · 下一题</span>
+            <span class="apd-nav__dir" data-i18n="apd.next">NEXT · 下一题</span>
             <span class="apd-nav__title">{next.title}</span>
           </a>
         ) : (
@@ -227,7 +227,7 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
 
       <!-- 返回图鉴：链接由脚本附加离开列表页时的筛选上下文，恢复原筛选视图 -->
       <p class="apd-back">
-        <a class="ap-chip" data-apd-back href={`${base}algorithms/?view=problems`}>返回题图鉴</a>
+        <a class="ap-chip" data-apd-back href={`${base}algorithms/?view=problems`} data-i18n="apd.back">返回题图鉴</a>
       </p>
     </article>
 

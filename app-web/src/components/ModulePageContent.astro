@@ -49,7 +49,12 @@ function pageHref(n: number): string {
     </div>
     <div class="header-docs">
       {/* 文档总数 chip */}
-      <span class="doc-chip doc-chip--count" aria-label={`本模块共 ${docs.length} 篇文档`}>
+      <span
+        class="doc-chip doc-chip--count"
+        aria-label={`本模块共 ${docs.length} 篇文档`}
+        data-i18n-aria="modulePage.docCountAria"
+        data-i18n-params={JSON.stringify({ n: docs.length })}
+      >
         <span class="doc-chip-icon">
           <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
@@ -58,7 +63,13 @@ function pageHref(n: number): string {
             <line x1="16" y1="17" x2="8" y2="17" />
           </svg>
         </span>
-        <span class="doc-chip-label">共 {docs.length} 篇</span>
+        <span
+          class="doc-chip-label"
+          data-i18n="modulePage.docCount"
+          data-i18n-params={JSON.stringify({ n: docs.length })}
+        >
+          共 {docs.length} 篇
+        </span>
       </span>
       {
         meta.officialDocs && meta.officialDocs.length > 0 && (
@@ -69,6 +80,8 @@ function pageHref(n: number): string {
               target="_blank"
               rel="noopener noreferrer"
               aria-label={`${doc.label}（在新标签页打开）`}
+              data-i18n-aria="modulePage.openExternal"
+              data-i18n-params={JSON.stringify({ label: doc.label })}
             >
               <span class="doc-chip-icon">
                 {doc.type === 'api' ? (
@@ -134,11 +147,17 @@ function pageHref(n: number): string {
             </span>
             <span class="doc-list-seq">{String((page - 1) * MODULE_PAGE_SIZE + idx + 1).padStart(3, '0')}</span>
             <span class={`doc-list-difficulty diff-${doc.data.difficulty || 'intermediate'}`}>
-              {doc.data.difficulty === 'beginner'
-                ? '入门'
-                : doc.data.difficulty === 'advanced'
-                  ? '进阶'
-                  : '中级'}
+              {
+                <span
+                  data-i18n={`modulePage.difficulty.${doc.data.difficulty || 'intermediate'}`}
+                >
+                  {doc.data.difficulty === 'beginner'
+                    ? '入门'
+                    : doc.data.difficulty === 'advanced'
+                      ? '进阶'
+                      : '中级'}
+                </span>
+              }
             </span>
             <span class="doc-list-title">{doc.data.title}</span>
             {doc.data.description && <span class="doc-list-desc">{doc.data.description}</span>}
@@ -150,25 +169,29 @@ function pageHref(n: number): string {
 
   {
     totalPages > 1 && (
-      <nav class="pager" aria-label="文档列表分页">
+      <nav class="pager" aria-label="文档列表分页" data-i18n-aria="modulePage.pagerAria">
         {page > 1 ? (
-          <a class="pager-link" href={pageHref(page - 1)} rel="prev">
+          <a class="pager-link" href={pageHref(page - 1)} rel="prev" data-i18n="modulePage.prev">
             上一页
           </a>
         ) : (
-          <span class="pager-link pager-link--disabled" aria-disabled="true">
+          <span class="pager-link pager-link--disabled" aria-disabled="true" data-i18n="modulePage.prev">
             上一页
           </span>
         )}
-        <span class="pager-status">
+        <span
+          class="pager-status"
+          data-i18n="modulePage.status"
+          data-i18n-params={JSON.stringify({ p: page, t: totalPages })}
+        >
           第 {page} / {totalPages} 页
         </span>
         {page < totalPages ? (
-          <a class="pager-link" href={pageHref(page + 1)} rel="next">
+          <a class="pager-link" href={pageHref(page + 1)} rel="next" data-i18n="modulePage.next">
             下一页
           </a>
         ) : (
-          <span class="pager-link pager-link--disabled" aria-disabled="true">
+          <span class="pager-link pager-link--disabled" aria-disabled="true" data-i18n="modulePage.next">
             下一页
           </span>
         )}

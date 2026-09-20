@@ -11,7 +11,9 @@
  *
  * 兼容 ClientRouter：astro:page-load 重新绑定（dataset 防重入）；
  * localStorage 不可用（隐私模式）时全部静默降级为隐藏。
+ * 徽章文案经 lib/i18n 的 t() 取当前语言（UI 双语）。
  */
+import { t } from './i18n';
 
 /** 最近学习记录键 */
 const LAST_KEY = 'fandex-lp-last';
@@ -75,8 +77,12 @@ function initCardBadges(hub: HTMLElement): void {
     });
     if (done === 0 && learning === 0) return;
     const total = card.dataset.lpTotal ?? '';
-    const parts = [`已完成 ${done}${total ? ` / ${total}` : ''}`];
-    if (learning > 0) parts.push(`学习中 ${learning}`);
+    const parts = [
+      total
+        ? t('lp.badgeDoneTotal', { n: done, t: total })
+        : t('lp.badgeDone', { n: done }),
+    ];
+    if (learning > 0) parts.push(t('lp.badgeLearning', { n: learning }));
     badge.textContent = parts.join(' · ');
     badge.hidden = false;
   });

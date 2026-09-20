@@ -15,6 +15,7 @@
  */
 
 import { countMarks, readFilterContext, readProblemMarks, saveFilterContext, toggleProblemMark } from '@/lib/ap-progress';
+import { t } from '@/lib/i18n';
 
 /** 状态筛选值 */
 type StatusFilter = 'all' | 'solved' | 'review';
@@ -103,7 +104,7 @@ function applyFilter(root: HTMLElement, state: FilterState): void {
 
   const counter = root.querySelector('[data-filter-count]');
   if (counter) {
-    counter.textContent = `命中 ${shown} / ${items.length} 道题`;
+    counter.textContent = t('ap.hitCount', { s: shown, t: items.length });
   }
   const empty = root.querySelector<HTMLElement>('[data-ap-empty]');
   if (empty) empty.hidden = shown !== 0;

@@ -110,11 +110,12 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
     <aside
       class="fndx-toc"
       aria-label="本页目录"
+      data-i18n-aria="toc.asideAria"
       data-toc-scroll-config={scrollConfig}
       style={style}
     >
       <nav class="fndx-toc__nav" id="fndx-toc-nav">
-        <h2 class="fndx-toc__title">本页目录</h2>
+        <h2 class="fndx-toc__title" data-i18n="toc.title">本页目录</h2>
         <ul class="fndx-toc__list">
           {groups.map((group) => {
             if (group.type === 'h2') {
@@ -148,6 +149,7 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
                         type="button"
                         class="fndx-toc__collapse"
                         aria-label="折叠子目录"
+                        data-i18n-aria="toc.collapse"
                         aria-expanded="true"
                         data-toc-collapse={parentSlug}
                       >
@@ -167,7 +169,7 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
                       </button>
                     </>
                   ) : (
-                    <span class="fndx-toc__orphan-label">其他</span>
+                    <span class="fndx-toc__orphan-label" data-i18n="toc.other">其他</span>
                   )}
                 </div>
                 <ul class="fndx-toc__list fndx-toc__children">
@@ -204,7 +206,9 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
    * - 点击折叠按钮时切换子目录显隐，并持久化到 localStorage
    * - 兼容 View Transitions：监听 astro:page-load 事件重新初始化
    * - 支持多实例：通过 data-toc-scroll-config 读取各组件的滚动配置
+   * - aria-label 文案经 lib/i18n 的 t() 取当前语言（UI 双语）
    */
+  import { t } from '@/lib/i18n';
 
   /** 上一次创建的 IntersectionObserver，用于 page-load 前断开，防止累积泄漏 */
   let prevObserver: IntersectionObserver | null = null;
@@ -379,12 +383,12 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
           children.classList.add('is-collapsed');
           btn.classList.add('is-collapsed');
           btn.setAttribute('aria-expanded', 'false');
-          btn.setAttribute('aria-label', '展开子目录');
+          btn.setAttribute('aria-label', t('toc.expand'));
         } else {
           children.classList.remove('is-collapsed');
           btn.classList.remove('is-collapsed');
           btn.setAttribute('aria-expanded', 'true');
-          btn.setAttribute('aria-label', '折叠子目录');
+          btn.setAttribute('aria-label', t('toc.collapse'));
         }
 
         // 持久化
@@ -416,7 +420,7 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
       children.classList.add('is-collapsed');
       btn.classList.add('is-collapsed');
       btn.setAttribute('aria-expanded', 'false');
-      btn.setAttribute('aria-label', '展开子目录');
+      btn.setAttribute('aria-label', t('toc.expand'));
     });
   }
 

@@ -13,8 +13,10 @@
  *   Transitions 切页后依然有效，无需 astro:page-load 重绑
  * - 提示条 DOM 按需创建；astro:before-swap 时移除，避免残留到新页面
  * - 动效消费 --motion-* 语义令牌，prefers-reduced-motion 下直接显隐
+ * - 界面文案经 lib/i18n 的 t() 取当前语言（UI 双语，提示条创建时定格）
  * =============================================================================
  */
+import { t } from './i18n';
 
 /** SW 广播消息的最小结构 */
 interface SwUpdateMessage {
@@ -52,21 +54,21 @@ function showUpdateBar(): void {
 
   const text = document.createElement('span');
   text.className = 'sw-update-bar-text';
-  text.textContent = '内容已更新';
+  text.textContent = t('swUpdate.updated');
   bar.appendChild(text);
 
   const refreshBtn = document.createElement('button');
   refreshBtn.type = 'button';
   refreshBtn.className = 'sw-update-bar-refresh';
-  refreshBtn.textContent = '立即刷新';
+  refreshBtn.textContent = t('swUpdate.refresh');
   refreshBtn.addEventListener('click', () => window.location.reload());
   bar.appendChild(refreshBtn);
 
   const closeBtn = document.createElement('button');
   closeBtn.type = 'button';
   closeBtn.className = 'sw-update-bar-close';
-  closeBtn.setAttribute('aria-label', '关闭更新提示');
-  closeBtn.textContent = '关闭';
+  closeBtn.setAttribute('aria-label', t('swUpdate.closeAria'));
+  closeBtn.textContent = t('swUpdate.close');
   closeBtn.addEventListener('click', removeBar);
   bar.appendChild(closeBtn);
 

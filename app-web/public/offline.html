@@ -91,6 +91,27 @@
       border-right: 6px solid currentColor;
     }
   </style>
+  <script>
+    // 界面语言跟随全局偏好（fandex-lang）：离线兜底页自包含，内联微型字典
+    (function () {
+      try {
+        if (localStorage.getItem('fandex-lang') === 'en') {
+          document.documentElement.setAttribute('lang', 'en');
+          document.documentElement.setAttribute('data-lang', 'en');
+          var h1 = document.querySelector('.panel h1');
+          var p = document.querySelector('.panel p');
+          var a = document.querySelector('.panel a');
+          if (h1) h1.textContent = 'You are offline';
+          if (p) p.textContent = 'No network connection and this page is not in the local cache. Pages you have visited still open offline; restore the network and use the button below to go back home.';
+          if (a) a.textContent = 'Back to home';
+        } else {
+          document.documentElement.setAttribute('data-lang', 'zh');
+        }
+      } catch (e) {
+        /* localStorage 不可用时保持中文 */
+      }
+    })();
+  </script>
 </head>
 <body>
   <main class="panel">

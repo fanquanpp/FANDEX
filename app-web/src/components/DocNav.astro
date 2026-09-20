@@ -32,7 +32,7 @@ const { prev, next } = Astro.props as { prev: DocEntry | null; next: DocEntry | 
           <polyline points="18 6 6 12 18 18" />
         </svg>
         <div>
-          <span class="nav-label">上一篇</span>
+          <span class="nav-label" data-i18n="docNav.prev">上一篇</span>
           <span class="nav-title">{prev.data.title}</span>
         </div>
       </a>
@@ -48,7 +48,7 @@ const { prev, next } = Astro.props as { prev: DocEntry | null; next: DocEntry | 
         style="text-align:right"
       >
         <div>
-          <span class="nav-label">下一篇</span>
+          <span class="nav-label" data-i18n="docNav.next">下一篇</span>
           <span class="nav-title">{next.data.title}</span>
         </div>
         <svg

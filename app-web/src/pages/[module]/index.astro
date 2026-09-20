@@ -28,7 +28,7 @@ if (!meta) {
 // 通过 doc-service 获取当前模块的文档列表（已按 order 升序排序）
 const sortedDocs = await getDocsByModule(module);
 
-const breadcrumb = [{ label: '首页', href: `${import.meta.env.BASE_URL}` }, { label: meta.title }];
+const breadcrumb = [{ label: '首页', href: `${import.meta.env.BASE_URL}`, i18nKey: 'breadcrumb.home' }, { label: meta.title }];
 const totalPages = Math.ceil(sortedDocs.length / MODULE_PAGE_SIZE);
 ---
 

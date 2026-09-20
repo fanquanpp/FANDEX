@@ -3,8 +3,11 @@
  * -----------------------------------------------------------------------------
  * 渲染阶段标题（序号、标题、副标题、节点数、折叠箭头），
  * 标题区域可点击折叠/展开整列知识点。
+ * 折叠 aria 文案经 lib/i18n 的 t() 取当前语言（UI 双语）。
  */
 import type { ReactNode } from 'react';
+import { useLang } from '@/lib/use-lang';
+import { t } from '@/lib/i18n';
 import type { StageVM } from './types';
 import { LAYOUT } from './map-layout';
 
@@ -38,6 +41,7 @@ export default function MapStage({
   onToggle,
   children,
 }: Props) {
+  const lang = useLang();
   const nodeCount = stage.nodes.length;
   return (
     <g transform={`translate(${x} ${y})`} className={`lp-stage${collapsed ? ' lp-stage--collapsed' : ''}`}>
@@ -45,7 +49,11 @@ export default function MapStage({
       <g
         role="button"
         tabIndex={0}
-        aria-label={`${collapsed ? '展开' : '折叠'}${stage.title}（${nodeCount} 个知识点）`}
+        aria-label={t(
+          collapsed ? 'lpMap.stageExpand' : 'lpMap.stageCollapse',
+          { title: stage.title, n: nodeCount },
+          lang,
+        )}
         onClick={() => onToggle(stage.id)}
         onKeyDown={(event) => {
           if (event.key === 'Enter' || event.key === ' ') {

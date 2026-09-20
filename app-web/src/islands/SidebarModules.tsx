@@ -23,6 +23,8 @@ import {
   getPrimaryCategory,
   type Module,
 } from '@/lib/modules';
+import { useLang } from '@/lib/use-lang';
+import { t } from '@/lib/i18n';
 // 直接导入 module-service（不经过 services 桶文件），
 // 避免把 doc-service（含 astro:content）拉进客户端包
 import { getCategories, type CategoryInfo } from '@/services/module-service';
@@ -96,6 +98,8 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
 export default function SidebarModules({ moduleId, currentSlug }: SidebarModulesProps) {
   const base = import.meta.env.BASE_URL;
   const categories = getCategories();
+  /** 界面语言（展开/收起 aria 文案双语） */
+  const lang = useLang();
 
   // 将轻量索引按模块分组（构建期已按 module + order 排序，分组后顺序稳定）
   const docsByModule = useMemo(() => {
@@ -166,7 +170,11 @@ export default function SidebarModules({ moduleId, currentSlug }: SidebarModules
                         <button
                           type="button"
                           className="fndx-sidebar__module-arrow"
-                          aria-label={`${isExpanded ? '收起' : '展开'} ${m.title} 文档列表`}
+                          aria-label={t(
+                            isExpanded ? 'sidebar.moduleToggle.collapse' : 'sidebar.moduleToggle.expand',
+                            { title: m.title },
+                            lang,
+                          )}
                           aria-expanded={isExpanded}
                           data-module-toggle={m.id}
                           onClick={() => toggleModule(m.id)}

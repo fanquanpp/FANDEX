@@ -12,6 +12,7 @@ import { getFeatureEntries } from '@/lib/feature-entries';
  * 文档页顶栏直达链接、移动端功能面板同源；页面专属入口（如在线前端主页的
  * "进入工作台/灵感图鉴"）通过 extra 前置渲染。
  * 桌面端构建不含 playground，"在线前端"入口自动隐藏。
+ * 文案经 data-i18n* 属性协议支持中英双语（labelKey/tooltipKey 为字典键）。
  */
 interface FeatureEntry {
   /** 跳转地址 */
@@ -20,6 +21,12 @@ interface FeatureEntry {
   label: string;
   /** 悬停提示 */
   tooltip: string;
+  /** 入口文案字典键（可选；提供时运行时可切换英文） */
+  labelKey?: string;
+  /** 悬停提示字典键 */
+  tooltipKey?: string;
+  /** 提示文案插值参数（tooltipKey 携带 {n} 等占位符时提供） */
+  i18nTooltipParams?: Record<string, string | number>;
 }
 
 interface Props {
@@ -32,18 +39,20 @@ const { extra = [] } = Astro.props
 
 /** 标准兄弟入口：所有子功能页共享（顺序即跨页跳转的心智模型） */
 const siblings: FeatureEntry[] = [
-  { href: base, label: '首页', tooltip: '返回首页' },
+  { href: base, label: '首页', tooltip: '返回首页', labelKey: 'feature.home.name', tooltipKey: 'feature.home.tooltip' },
   ...getFeatureEntries(base).map(entry => ({
     href: entry.href,
     label: entry.name,
     tooltip: entry.tooltip,
+    labelKey: entry.nameKey,
+    tooltipKey: entry.tooltipKey,
   })),
 ]
 
 const entries: FeatureEntry[] = [...extra, ...siblings]
 ---
 
-<nav class="hero-entries" aria-label="功能入口">
+<nav class="hero-entries" aria-label="功能入口" data-i18n-aria="home.entriesAria">
   {
     entries.map((entry, i) => (
       <a
@@ -51,10 +60,12 @@ const entries: FeatureEntry[] = [...extra, ...siblings]
         class="entry-btn"
         style={`--entry-i:${i}`}
         data-tooltip={entry.tooltip}
+        data-i18n-tooltip={entry.tooltipKey}
+        data-i18n-params={entry.i18nTooltipParams ? JSON.stringify(entry.i18nTooltipParams) : undefined}
         data-tooltip-pos="bottom"
       >
         <EntryWaveBorder />
-        <span class="entry-name">{entry.label}</span>
+        <span class="entry-name" data-i18n={entry.labelKey}>{entry.label}</span>
       </a>
     ))
   }
