@@ -211,59 +211,185 @@ const DIFF_COLOR: Record<AlgoDifficulty, string> = {
 }
 
 /**
- * 外部刷题平台推荐（第三方资源，中性描述）
- * -----------------------------------------------------------------------------
- * 收录原则：题库规模 / 模式化路线 / 面试真实度 / 竞赛训练各有侧重，互补不重复；
+ * 外部资源推荐（第三方资源，中性描述），按用途分组：
+ * - 刷题与竞赛：题库规模 / 面试真实度 / 竞赛训练各有侧重，互补不重复
+ * - 可视化学习：算法与数据结构的过程演示，与教程模板代码对照观看
+ * - 计划与追踪：刷题计划生成与进度统计
+ * - 公开课与视频：体系化课程与"为什么这样解"的思路讲解
  * 全部为外部独立平台，其内容与服务由各自运营方提供，免责声明见 disclaimer 页。
  */
-const EXTERNAL_PLATFORMS = [
+const EXTERNAL_GROUPS = [
   {
-    name: '力扣 LeetCode',
-    host: 'leetcode.cn',
-    href: 'https://leetcode.cn/',
-    tag: '综合题库',
-    color: categoryColors.frontend,
-    desc: '全球规模领先的算法题库，按标签 / 难度 / 企业筛选，在线判题与题解社区完善，站内题图鉴中标注 LC 序号的题目均可在其上提交验证。',
+    id: 'practice',
+    labelKey: 'algoExt.group.practice',
+    en: 'Practice & Contests',
+    platforms: [
+      {
+        name: '力扣 LeetCode',
+        host: 'leetcode.cn',
+        href: 'https://leetcode.cn/',
+        tag: '综合题库',
+        color: categoryColors.frontend,
+        desc: '全球规模领先的算法题库，按标签 / 难度 / 企业筛选，在线判题与题解社区完善，站内题图鉴中标注 LC 序号的题目均可在其上提交验证。',
+      },
+      {
+        name: 'PracHub',
+        host: 'prachub.com',
+        href: 'https://prachub.com/questions',
+        tag: '面试准备',
+        color: categoryColors.cs,
+        desc: '可按公司、岗位、轮次、主题和难度筛选的候选人报告编程面试题，适合在掌握基础模式后按目标公司定向备战。',
+      },
+      {
+        name: 'NeetCode',
+        host: 'neetcode.io',
+        href: 'https://neetcode.io/',
+        tag: '模式路线',
+        color: categoryColors.backend,
+        desc: '以题型模式（pattern）组织的免费刷题路线与视频讲解，Blind 75 / NeetCode 150 题单是与本站教程搭配的经典进阶路径。',
+      },
+      {
+        name: '洛谷',
+        host: 'luogu.com.cn',
+        href: 'https://www.luogu.com.cn/',
+        tag: '竞赛训练',
+        color: categoryColors.math,
+        desc: '中文算法竞赛社区，官方题单与训练营覆盖入门到 NOIP / ICPC 水平，适合在课程表之后追求更强的实现能力。',
+      },
+      {
+        name: 'Codeforces',
+        host: 'codeforces.com',
+        href: 'https://codeforces.com/',
+        tag: '竞技比赛',
+        color: categoryColors.cloud,
+        desc: '全球竞技编程赛事与题库，评级赛制驱动持续练习；博客区沉淀顶级选手的技巧分享，是限时训练与进阶阅读的双重阵地。',
+      },
+      {
+        name: '牛客网',
+        host: 'nowcoder.com',
+        href: 'https://www.nowcoder.com/',
+        tag: '面试准备',
+        color: categoryColors.database,
+        desc: '国内笔试面试题库与模拟面试，覆盖校招高频考点与企业真题，求职季的实战演练场。',
+      },
+      {
+        name: 'AtCoder',
+        host: 'atcoder.jp',
+        href: 'https://atcoder.jp/contests/dp',
+        tag: 'DP 专项',
+        color: categoryColors.tools,
+        desc: '日本竞技编程平台，其 Educational DP Contest 收录 26 道动态规划专项题，从背包到区间 DP 全覆盖，适合作为设计范式单元之后的集中演练。',
+      },
+    ],
   },
   {
-    name: 'PracHub',
-    host: 'prachub.com',
-    href: 'https://prachub.com/questions',
-    tag: '面试准备',
-    color: categoryColors.cs,
-    desc: '可按公司、岗位、轮次、主题和难度筛选的候选人报告编程面试题，适合在掌握基础模式后按目标公司定向备战。',
+    id: 'visual',
+    labelKey: 'algoExt.group.visual',
+    en: 'Visualizations',
+    platforms: [
+      {
+        name: 'VisuAlgo',
+        host: 'visualgo.net',
+        href: 'https://visualgo.net/',
+        tag: '算法可视化',
+        color: categoryColors.cs,
+        desc: '新加坡国立大学 Steven Halim 团队打造的交互式可视化库，50 余种算法逐步动画演示，排序、图遍历与数据结构操作可与站内教程对照观看。',
+      },
+      {
+        name: 'Algorithm Visualizer',
+        host: 'algorithm-visualizer.org',
+        href: 'https://algorithm-visualizer.org/',
+        tag: '代码动画',
+        color: categoryColors.frontend,
+        desc: '开源可视化平台，支持 JavaScript / Python 代码实时执行并同步生成动画，直观呈现每一步的状态变化，适合验证自己写的模板逻辑。',
+      },
+      {
+        name: 'USFCA 数据结构可视化',
+        host: 'cs.usfca.edu',
+        href: 'https://www.cs.usfca.edu/~galles/visualization/',
+        tag: '结构演示',
+        color: categoryColors.backend,
+        desc: '旧金山大学 David Galles 制作的交互式演示合集，链表、树、堆、图等经典结构的插入、删除与遍历过程逐帧可操作。',
+      },
+    ],
   },
   {
-    name: 'NeetCode',
-    host: 'neetcode.io',
-    href: 'https://neetcode.io/',
-    tag: '模式路线',
-    color: categoryColors.backend,
-    desc: '以题型模式（pattern）组织的免费刷题路线与视频讲解，Blind 75 / NeetCode 150 题单是与本站教程搭配的经典进阶路径。',
+    id: 'plan',
+    labelKey: 'algoExt.group.plan',
+    en: 'Plans & Tracking',
+    platforms: [
+      {
+        name: 'Grind 75',
+        host: 'techinterviewhandbook.org',
+        href: 'https://www.techinterviewhandbook.org/grind75',
+        tag: '计划生成',
+        color: categoryColors.cloud,
+        desc: '可按剩余周数与每周投入时长自定义题量的刷题计划生成器，自动排布题目顺序，适合求职倒计时阶段安排节奏。',
+      },
+      {
+        name: 'LeetCode 统计面板',
+        host: 'leetcode.com',
+        href: 'https://leetcode.com/profile/',
+        tag: '进度追踪',
+        color: categoryColors.database,
+        desc: '官方个人统计面板，汇总解题数、提交数与周赛 rating 趋势，可与站内题图鉴的本机掌握标记配合做长期复盘。',
+      },
+    ],
   },
   {
-    name: '洛谷',
-    host: 'luogu.com.cn',
-    href: 'https://www.luogu.com.cn/',
-    tag: '竞赛训练',
-    color: categoryColors.math,
-    desc: '中文算法竞赛社区，官方题单与训练营覆盖入门到 NOIP / ICPC 水平，适合在课程表之后追求更强的实现能力。',
-  },
-  {
-    name: 'Codeforces',
-    host: 'codeforces.com',
-    href: 'https://codeforces.com/',
-    tag: '竞技比赛',
-    color: categoryColors.cloud,
-    desc: '全球竞技编程赛事与题库，评级赛制驱动持续练习，锻炼限时高压下的建模与编码能力。',
-  },
-  {
-    name: '牛客网',
-    host: 'nowcoder.com',
-    href: 'https://www.nowcoder.com/',
-    tag: '面试准备',
-    color: categoryColors.database,
-    desc: '国内笔试面试题库与模拟面试，覆盖校招高频考点与企业真题，求职季的实战演练场。',
+    id: 'course',
+    labelKey: 'algoExt.group.course',
+    en: 'Courses & Videos',
+    platforms: [
+      {
+        name: 'MIT 6.006 算法导论',
+        host: 'ocw.mit.edu',
+        href: 'https://ocw.mit.edu/courses/6-006-introduction-to-algorithms-spring-2020/',
+        tag: '公开课',
+        color: categoryColors.cs,
+        desc: 'Erik Demaine 等主讲的 MIT 经典算法课，Spring 2020 版提供完整视频与习题，覆盖从复杂度分析到高级结构的课程主线。',
+      },
+      {
+        name: 'Stanford CS161',
+        host: 'web.stanford.edu',
+        href: 'https://web.stanford.edu/class/cs161/',
+        tag: '公开课',
+        color: categoryColors.cloud,
+        desc: 'Tim Roughgarden 主讲的算法设计与分析课程，课程讲义比 CLRS 更精炼，适合在刷题之外补足证明与复杂度分析功底。',
+      },
+      {
+        name: 'Princeton 算法 Part I & II',
+        host: 'coursera.org',
+        href: 'https://www.coursera.org/learn/algorithms-part1',
+        tag: '公开课',
+        color: categoryColors.backend,
+        desc: 'Sedgewick 主讲、Coursera 上最经典的算法系列课，配套 Java 实现与编程作业，数据结构部分可与站内树形单元互为印证。',
+      },
+      {
+        name: 'Berkeley CS 61B',
+        host: 'cs61b.org',
+        href: 'https://cs61b.org/',
+        tag: '公开课',
+        color: categoryColors.frontend,
+        desc: 'Josh Hug 主讲的 Java 数据结构课程，实现细节与工程视角兼备，是树、堆、图等单元的理想加深材料。',
+      },
+      {
+        name: 'Back To Back SWE',
+        host: 'youtube.com',
+        href: 'https://www.youtube.com/@BackToBackSWE',
+        tag: '视频频道',
+        color: categoryColors.math,
+        desc: 'FAANG 工程师视角的算法讲解频道，侧重"为什么这样解"的思路推导而非代码罗列，适合巩固套路背后的直觉。',
+      },
+      {
+        name: 'WilliamFiset',
+        host: 'youtube.com',
+        href: 'https://www.youtube.com/@WilliamFiset-videos',
+        tag: '视频频道',
+        color: categoryColors.tools,
+        desc: 'Google 工程师的图论与数据结构系列，从邻接表、并查集一路讲到网络流，与站内图论单元逐节互补。',
+      },
+    ],
   },
 ] as const
 ---
@@ -272,7 +398,7 @@ const EXTERNAL_PLATFORMS = [
   <SEO
     slot="head"
     title="算法教学 · FANDEX"
-    description="FANDEX 算法教学：按单元章节组织的算法与数据结构完整教程，页内直切算法题图鉴刷题，并收录力扣、PracHub、NeetCode 等外部刷题平台推荐。"
+    description="FANDEX 算法教学：按单元章节组织的算法与数据结构完整教程，页内直切算法题图鉴刷题，并分组收录刷题平台、可视化工具与公开课等外部学习资源推荐。"
     canonical={`${SITE.url}${base}algorithms/`}
     type="website"
   />
@@ -494,34 +620,42 @@ const EXTERNAL_PLATFORMS = [
       </div>
     </section>
 
-    <!-- 外部刷题平台推荐：站内闭环之后的进阶出口（第三方资源 + 免责声明） -->
+    <!-- 外部资源推荐：站内闭环之后的进阶出口（第三方资源 + 免责声明） -->
     <section class="algo-ext" aria-label="外部刷题平台推荐" data-i18n-aria="algoExt.title" data-algo-ext>
       <header class="algo-ext__head">
         <h2 class="algo-section__title" data-i18n="algoExt.title">外部刷题平台推荐</h2>
-        <span class="algo-ext__note" data-i18n="algoExt.note">第三方资源 · 供学完站内教程后按需进阶</span>
+        <span class="algo-ext__note" data-i18n="algoExt.note">第三方资源 · 刷题 / 可视化 / 计划 / 公开课，按需进阶</span>
       </header>
-      <div class="algo-ext__grid">
-        {EXTERNAL_PLATFORMS.map((platform) => (
-          <a
-            class="algo-ext__card"
-            href={platform.href}
-            target="_blank"
-            rel="noopener noreferrer"
-            style={`--card-color:${platform.color}`}
-          >
-            <div class="algo-ext__card-head">
-              <h3 class="algo-ext__name">{platform.name}</h3>
-              <span class="algo-ext__tag">{platform.tag}</span>
-              <svg class="algo-ext__arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
-                <line x1="7" y1="17" x2="17" y2="7" />
-                <polyline points="8 7 17 7 17 16" />
-              </svg>
-            </div>
-            <p class="algo-ext__desc">{platform.desc}</p>
-            <span class="algo-ext__host">{platform.host}</span>
-          </a>
-        ))}
-      </div>
+      {EXTERNAL_GROUPS.map((group) => (
+        <div class="algo-ext__group">
+          <h3 class="algo-ext__group-title">
+            <span data-i18n={group.labelKey}>{t(group.labelKey)}</span>
+            <em>{group.en}</em>
+          </h3>
+          <div class="algo-ext__grid">
+            {group.platforms.map((platform) => (
+              <a
+                class="algo-ext__card"
+                href={platform.href}
+                target="_blank"
+                rel="noopener noreferrer"
+                style={`--card-color:${platform.color}`}
+              >
+                <div class="algo-ext__card-head">
+                  <h4 class="algo-ext__name">{platform.name}</h4>
+                  <span class="algo-ext__tag">{platform.tag}</span>
+                  <svg class="algo-ext__arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                    <line x1="7" y1="17" x2="17" y2="7" />
+                    <polyline points="8 7 17 7 17 16" />
+                  </svg>
+                </div>
+                <p class="algo-ext__desc">{platform.desc}</p>
+                <span class="algo-ext__host">{platform.host}</span>
+              </a>
+            ))}
+          </div>
+        </div>
+      ))}
       <p class="algo-ext__disclaimer">
         <span data-i18n="algoExt.disclaimerPre">以上为外部第三方平台，其内容、账号与服务均由各自运营方提供；收录仅为学习资源参考，不构成合作或背书，本站不对使用外部资源产生的各类问题承担责任。详见</span>
         <a href={`${base}disclaimer/`} data-i18n="footer.disclaimer">免责声明</a><span data-i18n="algoExt.disclaimerPost">。</span>
@@ -611,6 +745,30 @@ const EXTERNAL_PLATFORMS = [
   .algo-ext__note {
     font-family: var(--font-family-mono);
     font-size: 0.66rem;
+    letter-spacing: 0.04em;
+    color: var(--color-text-tertiary);
+  }
+
+  /* 用途分组：mono 英文副标记与单元章节头部同语言 */
+  .algo-ext__group + .algo-ext__group {
+    margin-top: var(--space-6);
+  }
+
+  .algo-ext__group-title {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-2);
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-family-heading);
+    font-size: 0.8rem;
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-text-secondary);
+  }
+
+  .algo-ext__group-title em {
+    font-family: var(--font-family-mono);
+    font-size: 0.62rem;
+    font-style: normal;
     letter-spacing: 0.04em;
     color: var(--color-text-tertiary);
   }

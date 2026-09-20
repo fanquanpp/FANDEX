@@ -26,6 +26,19 @@
 - **打印样式**：文档页支持 Ctrl+P / 导出 PDF——自动隐藏顶栏、侧边栏、
   目录与几何装饰，三栏扁平化为单列正文，代码块与提示块防跨页断裂，
   正文外链在纸面追加可见 URL；
+- **界面中英双语**：全站 UI 文案中英双语（440+ 条字典文案），顶栏语言
+  按钮一键切换（zh / en）；中文为基准语言——SSR 直出完整中文页面，
+  SEO、RSS 与无 JS 降级不受影响，英文为纯客户端渐进增强；语言选择本地
+  持久化、跨标签页与 View Transitions 切页后保持，文档正文与教学内容
+  不进字典、永远保持原文；
+- **算法教学外部资源分组推荐**：算法教学页「外部刷题平台推荐」由 6 项
+  平铺扩充为四组 18 项——刷题与竞赛（力扣、PracHub、NeetCode、洛谷、
+  Codeforces、牛客网、AtCoder DP 专项）、可视化学习（VisuAlgo、
+  Algorithm Visualizer、USFCA 数据结构可视化）、计划与追踪（Grind 75、
+  LeetCode 统计面板）、公开课与视频（MIT 6.006、Stanford CS161、
+  Princeton Algorithms、Berkeley CS 61B、Back To Back SWE、
+  WilliamFiset）；分组标签与区块副注中英双语，算法页 SEO 描述与
+  disclaimer（网页版、仓库版）平台列举同步更新；
 
 ### 修复
 

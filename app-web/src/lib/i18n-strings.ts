@@ -403,7 +403,11 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'algo.level.intermediate': { zh: '进阶', en: 'Advanced' },
   'algo.level.advanced': { zh: '深入', en: 'Deep dive' },
   'algoExt.title': { zh: '外部刷题平台推荐', en: 'External Practice Platforms' },
-  'algoExt.note': { zh: '第三方资源 · 供学完站内教程后按需进阶', en: 'Third-party resources for going further after the tutorials' },
+  'algoExt.note': { zh: '第三方资源 · 刷题 / 可视化 / 计划 / 公开课，按需进阶', en: 'Third-party resources: platforms, visualizations, planners and courses' },
+  'algoExt.group.practice': { zh: '刷题与竞赛', en: 'Practice & Contests' },
+  'algoExt.group.visual': { zh: '可视化学习', en: 'Visualizations' },
+  'algoExt.group.plan': { zh: '计划与追踪', en: 'Plans & Tracking' },
+  'algoExt.group.course': { zh: '公开课与视频', en: 'Courses & Videos' },
   'algoExt.disclaimerPre': {
     zh: '以上为外部第三方平台，其内容、账号与服务均由各自运营方提供；收录仅为学习资源参考，不构成合作或背书，本站不对使用外部资源产生的各类问题承担责任。详见',
     en: 'The above are external third-party platforms whose content, accounts and services are provided by their operators; listed for learning reference only, without partnership or endorsement, and we are not liable for issues arising from them. See the ',
