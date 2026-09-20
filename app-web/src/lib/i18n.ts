@@ -115,7 +115,7 @@ export function toggleLang(): Lang {
 export function subscribeLang(callback: (lang: Lang) => void): () => void {
   if (isServer) return () => {};
   const handler = (event: Event): void => {
-    callback((event as CustomEvent<Lang>).detail?.lang ?? readLangFromDom());
+    callback((event as CustomEvent<Lang>).detail ?? readLangFromDom());
   };
   document.addEventListener(LANG_CHANGE_EVENT, handler);
   return () => document.removeEventListener(LANG_CHANGE_EVENT, handler);

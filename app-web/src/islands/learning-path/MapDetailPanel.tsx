@@ -42,6 +42,12 @@ const PROGRESS_OPTIONS: Array<{ value: 'none' | NodeProgress; labelKey: string }
   { value: 'done', labelKey: 'lpMap.statusDone' },
 ];
 
+/** 难度标签取词：未知难度回退原始值（noUncheckedIndexedAccess 收窄） */
+function difficultyLabel(difficulty: string, lang: Lang): string {
+  const key = DIFFICULTY_KEY[difficulty];
+  return key ? t(key, undefined, lang) : difficulty;
+}
+
 /** 详情面板：无节点时展示引导，有节点时展示完整信息 */
 export default function MapDetailPanel({
   node,
@@ -88,9 +94,7 @@ export default function MapDetailPanel({
       <div className="lp-panel__meta">
         {node.difficulty && (
           <span className={`lp-panel__difficulty diff-${node.difficulty}`}>
-            {DIFFICULTY_KEY[node.difficulty]
-              ? t(DIFFICULTY_KEY[node.difficulty], undefined, lang)
-              : node.difficulty}
+            {difficultyLabel(node.difficulty, lang)}
           </span>
         )}
         <span className={`lp-panel__status${planned ? ' lp-panel__status--planned' : ''}`}>
