@@ -45,10 +45,10 @@ catalog:
   tailwind-merge: ^3.7.0
 
   # 状态管理与数据
-  zod: ^4.6.4
+  zod: ^4.6.5
 
   # 动画
-  motion: ^13.2.0
+  motion: ^13.3.0
 
   # Radix UI（React 组件库，web/desktop 共享）
   '@radix-ui/react-accordion': ^1.2.20
@@ -80,7 +80,7 @@ catalog:
   unist-util-visit: ^5.1.0
 
   # 图标（偏差报备：搜索功能已删除，fuse.js/pagefind/astro-pagefind 一并移除）
-  lucide-react: ^1.45.0
+  lucide-react: ^1.46.0
 
   # Lint 体系（ESLint 10 flat config，作用域：app-web 的 TS/TSX 与管线脚本）
   eslint: ^10.10.0
@@ -97,12 +97,12 @@ catalog:
   # peer 为 ^5.0.0 || ^6.0.0，TS 7（原生移植版）两者均不支持，根目录独立用 7.0.2 不受影响
   typescript: ^6.0.3
   tsx: ^4.23.13
-  vite: ^8.2.2
+  vite: ^8.3.0
   '@vitejs/plugin-react': ^6.1.1
   rollup-plugin-visualizer: ^7.1.1
 
   # 类型定义
-  '@types/node': '^26.5.1'
+  '@types/node': '^26.6.1'
   '@types/react': ^19.3.0
   '@types/react-dom': ^19.3.0
   '@types/hast': ^3.0.5
@@ -110,7 +110,7 @@ catalog:
 
   # 其他
   glob: ^13.0.6
-  web-vitals: ^6.2.1
+  web-vitals: ^6.2.2
 
 # -----------------------------------------------------------------------------
 # pnpm 11+ 设置（从 .npmrc 与 package.json pnpm 字段迁移）
