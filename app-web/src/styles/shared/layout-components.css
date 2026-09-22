@@ -656,7 +656,7 @@
   .fndx-sidebar__link.is-active,
   .fndx-sidebar__link[aria-current='page'] {
     background-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 10%, transparent);
-    color: var(--module-color, var(--color-accent-base));
+    color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 75%, var(--color-fg-primary));
     border-left-color: var(--module-color, var(--color-accent-base));
     font-weight: var(--font-weight-emphasis);
   }
@@ -731,7 +731,7 @@
 
   .fndx-sidebar__view-tab.is-active {
     background-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 12%, transparent);
-    color: var(--module-color, var(--color-accent-base));
+    color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 75%, var(--color-fg-primary));
     font-weight: var(--font-weight-emphasis);
   }
 

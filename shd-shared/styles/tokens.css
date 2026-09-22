@@ -40,7 +40,7 @@
     --color-neutral-400: #404040;
     /* 深色次级文字 */
     --color-neutral-500: #525252;
-    /* FANDEX 浅色三级文字（冷雾灰，Task 4.2 配方：新背景上保持 WCAG AA ≥4.5:1） */
+    /* FANDEX 浅色三级文字（冷雾灰，新背景上保持 WCAG AA ≥4.5:1） */
     --color-neutral-550: #596671;
     /* 三级文字 */
     --color-neutral-600: #737373;
@@ -54,7 +54,7 @@
     --color-neutral-950: #DAE1E6;
     /* FANDEX 浅色次背景（冷雾灰） */
     --color-neutral-1000: #E2E8EC;
-    /* FANDEX 浅色主背景（冷雾灰，Task 4.2 配方：亮度 L* 97.9→94.3，主文字对比度 16.7:1） */
+    /* FANDEX 浅色主背景（冷雾灰） */
     --color-neutral-1050: #EBEFF3;
     /* 深青绿（active 态，浅色模式强调色整体下移一档，FANDEX primary-900） */
     --color-cyan-100: #084743;
