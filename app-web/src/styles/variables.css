@@ -21,16 +21,12 @@
   --shadow-md: var(--shadow-md);
   --shadow-lg: var(--shadow-lg);
 
-  --geo-red: rgba(224, 90, 43, 0.85);
-  --geo-blue: rgba(51, 102, 204, 0.85);
-  --geo-curve: rgba(51, 102, 204, 0.1);
-  --geo-wave: rgba(224, 90, 43, 0.12);
-  --geo-cross: rgba(13, 13, 13, 0.18);
-  --geo-dot-lg: rgba(13, 13, 13, 0.1);
-  --geo-dot-sm: rgba(13, 13, 13, 0.06);
-  --geo-grid: rgba(13, 13, 13, 0.06);
-  --geo-line: rgba(13, 13, 13, 0.12);
-  --geo-stripe: rgba(51, 102, 204, 0.05);
+  --decor-grid: rgba(22, 126, 118, 0.07);
+  --decor-line: rgba(22, 126, 118, 0.16);
+  --decor-strong: rgba(22, 126, 118, 0.32);
+  --decor-soft: rgba(57, 197, 187, 0.12);
+  --decor-note: rgba(57, 197, 187, 0.42);
+  --decor-accent: rgba(102, 204, 255, 0.34);
   --color-border-light: var(--color-border-subtle);
 
   --color-bg-card: var(--color-bg-elevated);
@@ -44,15 +40,11 @@
 }
 
   [data-theme='dark'] {
-    --geo-red: rgba(240, 144, 112, 0.75);
-    --geo-blue: rgba(110, 168, 254, 0.75);
-    --geo-curve: rgba(110, 168, 254, 0.16);
-    --geo-wave: rgba(240, 144, 112, 0.18);
-    --geo-cross: rgba(235, 235, 235, 0.16);
-    --geo-dot-lg: rgba(235, 235, 235, 0.1);
-    --geo-dot-sm: rgba(235, 235, 235, 0.06);
-    --geo-grid: rgba(235, 235, 235, 0.05);
-    --geo-line: rgba(235, 235, 235, 0.1);
-    --geo-stripe: rgba(110, 168, 254, 0.08);
+    --decor-grid: rgba(57, 197, 187, 0.06);
+    --decor-line: rgba(57, 197, 187, 0.18);
+    --decor-strong: rgba(57, 197, 187, 0.4);
+    --decor-soft: rgba(0, 255, 237, 0.09);
+    --decor-note: rgba(57, 197, 187, 0.52);
+    --decor-accent: rgba(102, 204, 255, 0.42);
   }
 }

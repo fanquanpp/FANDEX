@@ -87,8 +87,8 @@
     overflow: hidden;
     border: 1px solid var(--color-border-light);
     background:
-      linear-gradient(var(--geo-grid, rgba(13, 13, 13, 0.04)) 1px, transparent 1px),
-      linear-gradient(90deg, var(--geo-grid, rgba(13, 13, 13, 0.04)) 1px, transparent 1px),
+      linear-gradient(var(--decor-grid, rgba(22, 126, 118, 0.05)) 1px, transparent 1px),
+      linear-gradient(90deg, var(--decor-grid, rgba(22, 126, 118, 0.05)) 1px, transparent 1px),
       var(--color-bg-card);
     background-size: 28px 28px;
     touch-action: none;
