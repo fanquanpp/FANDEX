@@ -4,8 +4,10 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
+  type PointerEvent as ReactPointerEvent,
 } from 'react';
 import CodeMirrorBoxLoader from './CodeMirrorBoxLoader';
 import { PgIcon } from './pg-icons';
@@ -42,7 +44,16 @@ const BLANK_CSS =
 const BLANK_JS =
   "const tip = document.getElementById('tip');\nconst btn = document.getElementById('demo');\nbtn.addEventListener('click', () => {\n  tip.textContent = '点击次数 +1';\n  console.log('按钮被点击');\n});\nconsole.log('预览已就绪');";
 
+// 默认示例：FANDEX 字标页（渐变流动标题 + 交互计数），开箱即展示站点设计语言
+const FANDEX_HTML =
+  '<div class="hero">\n  <p class="kicker">fandex://init</p>\n  <h1 class="title">FANDEX</h1>\n  <p class="tagline">循序渐进的自学之旅</p>\n  <button id="cta">开始探索</button>\n  <p class="meta" id="meta">等待交互…</p>\n</div>';
+const FANDEX_CSS =
+  'body {\n  margin: 0;\n  min-height: 100vh;\n  display: grid;\n  place-items: center;\n  background: #0a0e14;\n  font-family: "IBM Plex Sans", "PingFang SC", "Microsoft YaHei", sans-serif;\n}\n.hero { text-align: center; padding: 24px; }\n.kicker {\n  margin: 0 0 14px;\n  font-family: monospace;\n  font-size: 12px;\n  letter-spacing: 0.3em;\n  color: #4e5e6b;\n}\n.title {\n  margin: 0;\n  font-size: clamp(56px, 14vw, 112px);\n  font-weight: 800;\n  letter-spacing: 0.06em;\n  line-height: 1;\n  background: linear-gradient(90deg, #39c5bb, #4ffff2, #66ccff, #39c5bb);\n  background-size: 200% 100%;\n  -webkit-background-clip: text;\n  background-clip: text;\n  color: transparent;\n  animation: flow 4s linear infinite;\n}\n@keyframes flow {\n  to { background-position: -200% 0; }\n}\n.tagline {\n  margin: 14px 0 26px;\n  font-family: monospace;\n  font-size: 14px;\n  letter-spacing: 0.42em;\n  color: #8fa3b0;\n}\nbutton {\n  padding: 11px 34px;\n  border: 1px solid #39c5bb;\n  border-radius: 4px;\n  background: transparent;\n  color: #4ffff2;\n  font-size: 14px;\n  letter-spacing: 0.1em;\n  cursor: pointer;\n  transition: background 0.2s ease, box-shadow 0.2s ease;\n}\nbutton:hover {\n  background: rgba(57, 197, 187, 0.12);\n  box-shadow: 0 0 18px rgba(57, 197, 187, 0.35);\n}\n.meta {\n  margin: 20px 0 0;\n  font-family: monospace;\n  font-size: 12px;\n  color: #4e5e6b;\n}';
+const FANDEX_JS =
+  "const meta = document.getElementById('meta');\nlet count = 0;\ndocument.getElementById('cta').addEventListener('click', () => {\n  count += 1;\n  meta.textContent = '已探索 ' + count + ' 次 · fandex://learn';\n  console.log('开始探索，第', count, '次');\n});\nconsole.log('FANDEX 前端实验室已就绪');\nconsole.info('修改左侧代码，预览会自动刷新');";
+
 const TEMPLATES: readonly PenTemplate[] = [
+  { id: 'fandex', nameKey: 'pg.template.fandex.name', descKey: 'pg.template.fandex.desc', html: FANDEX_HTML, css: FANDEX_CSS, js: FANDEX_JS },
   { id: 'blank', nameKey: 'pg.template.interactive.name', descKey: 'pg.template.interactive.desc', html: BLANK_HTML, css: BLANK_CSS, js: BLANK_JS },
   {
     id: 'animation',
@@ -132,6 +143,34 @@ function FrontendLab() {
   const [storageWarning, setStorageWarning] = useState<{ used: string; quota: string } | null>(null);
   const penBytes = useMemo(() => estimatePenBytes(pen), [pen]);
   const [activePane, setActivePane] = useState<PaneKey>('html');
+
+  // 控制台高度可拖拽调节（预览区内部、位于 iframe 与控制台之间）
+  const [consoleHeight, setConsoleHeight] = useState(200);
+  const [consoleResizing, setConsoleResizing] = useState(false);
+  const consoleDragRef = useRef<{ startY: number; startH: number } | null>(null);
+
+  const handleConsoleResizeStart = useCallback(
+    (e: ReactPointerEvent<HTMLDivElement>) => {
+      e.preventDefault();
+      e.currentTarget.setPointerCapture(e.pointerId);
+      consoleDragRef.current = { startY: e.clientY, startH: consoleHeight };
+      setConsoleResizing(true);
+    },
+    [consoleHeight],
+  );
+
+  const handleConsoleResizeMove = useCallback((e: ReactPointerEvent<HTMLDivElement>) => {
+    const drag = consoleDragRef.current;
+    if (!drag) return;
+    // 向上拖增大控制台：高度 = 起始高度 + 纵向位移
+    const next = Math.min(480, Math.max(120, drag.startH + (drag.startY - e.clientY)));
+    setConsoleHeight(Math.round(next));
+  }, []);
+
+  const handleConsoleResizeEnd = useCallback(() => {
+    consoleDragRef.current = null;
+    setConsoleResizing(false);
+  }, []);
 
   const updatePen = useCallback((patch: Partial<FrontendPen>) => {
     setPen((prev) => ({ ...prev, ...patch }));
@@ -521,9 +560,15 @@ const handleOpenLibrary = useCallback(async () => {
 
   const workspaceStyle = useMemo<CSSProperties>(() => {
     const ratio = `${split * 100}%`;
-    return pen.layout === 'left'
-      ? { gridTemplateColumns: `${ratio} 3px 1fr`, gridTemplateRows: '100%' }
-      : { gridTemplateColumns: '100%', gridTemplateRows: `${ratio} 3px 1fr` };
+    const grid =
+      pen.layout === 'left'
+        ? { gridTemplateColumns: `${ratio} 3px 1fr`, gridTemplateRows: '100%' }
+        : { gridTemplateColumns: '100%', gridTemplateRows: `${ratio} 3px 1fr` };
+    // 拖拽时全局光标跟随布局方向（列/行），不再 inherit 吞掉系统光标
+    return {
+      ...grid,
+      '--pg-drag-cursor': pen.layout === 'left' ? 'col-resize' : 'row-resize',
+    } as CSSProperties;
   }, [pen.layout, split]);
 
   const editors = useMemo(
@@ -541,7 +586,9 @@ const handleOpenLibrary = useCallback(async () => {
     : (visibleEditors[0]?.key ?? null);
 
   return (
-    <div className={`pg-frontend ${dragging ? 'pg-dragging' : ''}`}>
+    <div
+      className={`pg-frontend ${dragging ? 'pg-dragging' : ''} ${consoleResizing ? 'pg-resizing-console' : ''}`}
+    >
       {/* 顶部工具栏：品牌区 / 面板开关 / 视图操作 / 作品操作 / 运行 */}
       <header className="pg-toolbar">
         <div className="pg-toolbar-row">
@@ -834,7 +881,19 @@ const handleOpenLibrary = useCallback(async () => {
             title={t('pg.previewTitle', undefined, lang)}
           />
           {pen.showConsole && (
-            <div className="pg-console">
+            <div
+              className="pg-console-splitter"
+              onPointerDown={handleConsoleResizeStart}
+              onPointerMove={handleConsoleResizeMove}
+              onPointerUp={handleConsoleResizeEnd}
+              onPointerCancel={handleConsoleResizeEnd}
+              role="separator"
+              aria-orientation="horizontal"
+              aria-label={t('pg.resizeConsole', undefined, lang)}
+            />
+          )}
+          {pen.showConsole && (
+            <div className="pg-console" style={{ height: consoleHeight }}>
               <div className="pg-console-head">
                 <span className="pg-console-title">{t('pg.console', undefined, lang)}</span>
                 <div className="pg-console-actions">
