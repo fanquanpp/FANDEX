@@ -7,15 +7,12 @@ difficulty: beginner
 description: 用场景而非图片配置角色背景，实现状态别名与转场帧，自定义对话框与打字机效果
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'konado/070-KonadoDialogueManagerApi'
   - 'konado/100-KonadoLocalizationAndExtensions'
 prerequisites:
   - 'konado/070-KonadoDialogueManagerApi'
+---
 
 默认模板里的角色是一张张立绘图片、背景是一张张静图，这对快速起步足够了。但如果你想让角色是 Live2D 模型、让背景是一段带动画的视频，或者想换掉对话框样式、做出与众不同的打字机效果——Konado 的回答不是"等官方支持"，而是一个更彻底的设计：角色与背景本质上都是场景（Scene），图片只是场景的一种最简单形态。
 

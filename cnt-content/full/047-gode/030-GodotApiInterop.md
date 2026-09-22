@@ -7,15 +7,12 @@ difficulty: beginner
 description: 通过 godot 模块使用引擎类与单例，掌握 Variant 桥接规则与被释放对象的引用检查
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gode/020-FirstTypeScriptScript'
   - 'gode/050-MetadataExportsSignalsRpc'
 prerequisites:
   - 'gode/020-FirstTypeScriptScript'
+---
 
 上一篇你已经在 `godot` 模块里导入过 `GD`、`Node`、`Vector3`，本篇把这个"TS 与 Godot 之间的唯一边界"讲透：它提供什么、命名规则是什么、值在两种世界之间如何桥接，以及最重要的一课——Godot 对象的生命周期由谁掌管。掌握这些，你才能写出既正确又高性能的 TypeScript 游戏代码。
 

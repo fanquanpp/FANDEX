@@ -7,15 +7,12 @@ difficulty: beginner
 description: 创建挂载并运行第一个 TS 节点脚本，理解默认导出继承 Godot 基类与显式导入的规则
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gode/010-GodeOverviewAndInstallation'
   - 'gode/030-GodotApiInterop'
 prerequisites:
   - 'gode/010-GodeOverviewAndInstallation'
+---
 
 上一篇完成了 Gode 插件安装，语言列表里已经能看到 TypeScript。本篇带你走完"新建脚本、编写代码、挂载节点、运行场景"的完整闭环，并讲清楚两条最重要的语言规则：默认导出继承 Godot 基类、Godot 符号必须显式导入。学完本篇，你就能像使用 GDScript 一样自然地用 TypeScript 驱动节点。
 

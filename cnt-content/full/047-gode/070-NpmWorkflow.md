@@ -7,15 +7,12 @@ difficulty: beginner
 description: 在 Godot 项目里使用 npm 包，掌握 pnpm hoisted 布局与原生模块的运行时物化机制
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gode/060-TypeScriptConfigAndCompilation'
   - 'gode/080-DebuggingAndExporting'
 prerequisites:
   - 'gode/060-TypeScriptConfigAndCompilation'
+---
 
 Gode 的口号里有一句"使用强大的 npm 生态"。本篇讲清这条能力线的边界与规则：npm 解析何时启用、如何初始化依赖、ESM 与 CommonJS 包如何加载、pnpm 需要哪些额外配置、原生 `.node` 模块如何工作，以及官方给出的使用限制。原则先行：npm 是可选能力，不是必需品——它解决的是"确实需要现成库"的问题，而不是项目现代化的必经步骤。
 

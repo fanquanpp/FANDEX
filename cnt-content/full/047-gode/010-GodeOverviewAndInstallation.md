@@ -7,13 +7,11 @@ difficulty: beginner
 description: 认识 Gode 的定位原理与平台支持，完成插件下载启用并排查 TypeScript 语言不出现的常见问题
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'godot/140-ScriptingEcosystemCSharpGDExtension'
   - 'gode/020-FirstTypeScriptScript'
+prerequisites: []
+---
 
 Gode 是 GodotHub 组织开源维护的 Godot 引擎扩展项目，仓库描述为 "Godot with JavaScript / TypeScript & NodeJS"，核心代码由 C++ 编写，以 MIT 许可证发布。它的定位一句话就能说清：为 Godot 引擎提供 JavaScript/TypeScript 脚本支持，并且运行在所有原生平台上。官方文档首页的口号是：用现代 TypeScript 编写 Godot 节点脚本，从 godot 模块导入 Godot 类，并使用强大的 npm 生态（原文：Write Godot node scripts in modern TypeScript, import Godot classes from the `godot` module, and use the powerful npm ecosystem）。
 

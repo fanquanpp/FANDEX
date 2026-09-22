@@ -7,10 +7,6 @@ difficulty: beginner
 description: 按官方风格指南统一命名与代码顺序，用静态类型获得更快执行与更早的错误发现
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gdscript/010-GDScriptLanguageOverview'
   - 'gdscript/020-VariablesConstantsEnums'

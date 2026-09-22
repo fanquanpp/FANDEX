@@ -8,11 +8,9 @@ description: 区分三种音频播放节点，理解总线音量与音高，掌�
 author: fanquanpp
 updated: '2026-09-22'
 related: []
-prerequisites: []
+prerequisites:
+  - 'godot/110-AnimationAndTween'
 ---
-
-related: ['godot/110-AnimationAndTween', 'godot/130-ExportingProjects']
-prerequisites: ['godot/110-AnimationAndTween']
 
 音效与音乐承担了游戏一半的氛围，但 Godot 的音频系统模型其实非常直白：音频数据装在 AudioStream（音频流）资源里，播放器（Player）节点负责把它放出来。真正的难点在两处：面对三种播放器节点选哪个，以及 finished 这类信号的准确行为到底是什么。本篇就围绕这两点展开，最后用一个"背景音乐加随机脚步声"的实战把它们串起来。
 

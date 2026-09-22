@@ -8,11 +8,9 @@ description: 用 AnimationPlayer 制作属性关键帧动画，用 Tween 在代�
 author: fanquanpp
 updated: '2026-09-22'
 related: []
-prerequisites: []
+prerequisites:
+  - 'godot/030-FirstScriptAndLifecycle'
 ---
-
-related: ['godot/070-TwoDGameObjects', 'godot/120-AudioPlayback']
-prerequisites: ['godot/030-FirstScriptAndLifecycle']
 
 血条的缓动、按钮的按压反馈、Boss 的出场演出——动画是游戏"手感"的直接来源。Godot 提供两条互补的动画路线：AnimationPlayer（动画播放器）在编辑器里打关键帧，适合美术向的复杂编排；Tween（补间）在代码里创建，适合程序驱动的一次性过渡。本篇把两条路线的用法与各自的坑一次讲清。
 

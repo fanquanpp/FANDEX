@@ -8,11 +8,9 @@ description: 系统学习 KonadoScript 指令，从对话立绘背景运镜到�
 author: fanquanpp
 updated: '2026-09-22'
 related: []
-prerequisites: []
+prerequisites:
+  - 'godot/160-KonadoVisualNovelFramework'
 ---
-
-related: ['godot/160-KonadoVisualNovelFramework', 'godot/180-KonadoAdvancedIntegration']
-prerequisites: ['godot/160-KonadoVisualNovelFramework']
 
 上一篇我们把 Konado 模板接进了 Godot 场景，这一篇来解决真正核心的问题：剧情怎么写。Konado 提供了一门为视觉小说定制的剧本语言 KonadoScript，你不需要编程基础，用一行行近似自然语言的指令就能描述对话、立绘、背景、运镜、音频、选项分支与变量。本篇将逐类讲清每一条指令，最后用一个完整的咖啡厅小剧本把它们串起来。
 

@@ -7,16 +7,13 @@ difficulty: beginner
 description: 在 TS 与 GDScript 之间双向调用，理解动态 call 的松耦合本质并用信号做跨语言边界
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gode/020-FirstTypeScriptScript'
   - 'godot/040-SignalsObserving'
   - 'gode/050-MetadataExportsSignalsRpc'
 prerequisites:
   - 'gode/020-FirstTypeScriptScript'
+---
 
 真实项目很少只有一种语言：可能有队友坚持 GDScript，也可能引用了现成的 GDScript 插件。本篇讲清 TS 与 GDScript 如何双向调用、动态 `call()` 为什么松耦合也为什么类型不安全、官方为什么建议用信号做跨语言边界，以及如何让 TS 脚本直接充当 autoload（自动加载单例）。
 

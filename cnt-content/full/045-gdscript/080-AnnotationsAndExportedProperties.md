@@ -7,10 +7,6 @@ difficulty: beginner
 description: 用 @export 家族把字段暴露到检查器，用 @onready 与 @tool 等注解控制初始化与编辑器行为
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gdscript/070-ClassesOOPAndMemory'
   - 'godot/020-NodesScenesAndInstancing'

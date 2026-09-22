@@ -8,11 +8,9 @@ description: 认识 Konado 框架与多许可证模式，完成插件安装并�
 author: fanquanpp
 updated: '2026-09-22'
 related: []
-prerequisites: []
+prerequisites:
+  - 'godot/020-NodesScenesAndInstancing'
 ---
-
-related: ['godot/170-KonadoScriptAuthoring', 'godot/180-KonadoAdvancedIntegration', 'renpy/010-RenPyOverviewAndSetup']
-prerequisites: ['godot/020-NodesScenesAndInstancing']
 
 如果你的目标是做一款视觉小说（Visual Novel）、Galgame 或者带大量剧情对话的 RPG，用 Godot 从零手写对话框、打字机、选项分支、存档和立绘调度，工作量会大得吓人。Konado（中文名"可娜多"）就是为了解决这个问题而生的：它是基于 Godot Engine 的视觉小说引擎框架，官方把它描述为"对话创建工具包"（dialogue creation toolkit），内置对话模板与对话管理器，帮助你快速构建视觉小说、Galgame、RPG 等故事驱动项目。它的核心卖点是让创作者专注于故事叙述本身，而不必陷入程序细节。
 

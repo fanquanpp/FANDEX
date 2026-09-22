@@ -7,15 +7,12 @@ difficulty: beginner
 description: 掌握 screentext 全屏叙事 signal waitsignal 与 Godot 侧联动以及成就指令与 end 的回退语义
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'konado/050-KonadoVariablesAndBranching'
   - 'konado/080-KonadoSaveAndRollback'
 prerequisites:
   - 'konado/050-KonadoVariablesAndBranching'
+---
 
 在上一篇里，你已经能用变量、条件分支与选项让剧情"动"起来了。但一款成熟的视觉小说还需要更多舞台手段：章节标题的全屏字幕、把剧情事件抛给 GDScript 处理的信号、等待外部动画播完的阻塞指令，以及把玩家行为记录成成就（Achievement）的系统。本篇就把这些"进阶指令"一次讲透，并补上一块容易被忽视的内容：剧本导出时的加密保护。
 

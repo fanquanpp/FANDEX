@@ -7,15 +7,12 @@ difficulty: beginner
 description: 做多语言剧情与界面切换，用好内置 KS 编辑器，接入设置成就与 C 井 Web 工具扩展
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'konado/090-KonadoSceneAssetsAndCustomization'
   - 'konado/010-KonadoOverviewAndInstall'
 prerequisites:
   - 'konado/090-KonadoSceneAssetsAndCustomization'
+---
 
 这是 Konado 系列的最后一篇，收束三件事：让游戏说多种语言（界面本地化与剧情本地化）、让编写剧本这件事本身更高效（内置 KS 编辑器与日志诊断体系），以及把几个官方扩展组件纳入你的工具箱——设置系统、成就系统、C# 适配层 Konado.NET 与 Web 工具。文末还附了从 2.4 升级到 2.8 的注意事项摘要，供维护旧项目的读者查阅。
 

@@ -7,10 +7,6 @@ difficulty: beginner
 description: 分清值类型与引用类型，掌握数字字符串与向量等基本类型的行为差异以及安全的类型转换方法
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gdscript/020-VariablesConstantsEnums'
   - 'gdscript/040-OperatorsAndControlFlow'

@@ -7,15 +7,12 @@ difficulty: beginner
 description: 理解 tsconfig 自动生成与编译时机，按需开启更严格检查或接入 Node 类型
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gode/010-GodeOverviewAndInstallation'
   - 'gode/070-NpmWorkflow'
 prerequisites:
   - 'gode/010-GodeOverviewAndInstallation'
+---
 
 前几篇的代码都"开箱即用"，本篇揭开背后的机制：TypeScript 何时被编译、编译产物放在哪、tsconfig.json 从哪来、哪些选项值得调整。理解编译模型后，你既能放心地忽略生成的 JavaScript，也能按需收紧类型检查或接入 Node 类型。
 
