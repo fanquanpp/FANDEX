@@ -924,6 +924,111 @@
     color: var(--color-text-tertiary);
   }
 
+  /* 上手指南：比快捷键面板更宽的分节弹层 */
+  .pg-guide {
+    width: min(560px, calc(100vw - 40px));
+    max-height: min(680px, calc(100vh - 48px));
+    overflow-y: auto;
+    padding: var(--space-4);
+    background: var(--color-bg-surface, var(--color-bg-sidebar));
+    border: 1px solid var(--color-border-light);
+    border-top: 2px solid var(--pg-color, var(--color-accent-base));
+    border-radius: var(--radius-md, 4px);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .pg-guide__welcome {
+    margin: 0 0 var(--space-3);
+    font-size: 0.8rem;
+    color: var(--color-text-secondary);
+  }
+
+  .pg-guide__section {
+    padding-top: var(--space-3);
+    margin-top: var(--space-2);
+    border-top: 1px dashed var(--color-border-light);
+  }
+
+  .pg-guide__heading {
+    margin: 0 0 var(--space-2);
+    font-family: var(--font-family-heading);
+    font-size: 0.78rem;
+    font-weight: var(--font-weight-semibold, 600);
+    color: var(--color-fg-primary);
+  }
+
+  .pg-guide__steps {
+    margin: 0;
+    padding-left: 1.3em;
+    display: grid;
+    gap: 4px;
+    font-size: 0.78rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+  }
+
+  .pg-guide__start {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .pg-guide__features {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 5px 14px;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    color: var(--color-text-secondary);
+  }
+
+  .pg-guide__features li {
+    padding-left: 1em;
+    position: relative;
+  }
+
+  .pg-guide__features li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.62em;
+    width: 5px;
+    height: 5px;
+    border-radius: 1px;
+    background: var(--pg-color, var(--color-accent-base));
+    opacity: 0.7;
+  }
+
+  .pg-guide__learn {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .pg-guide__link {
+    padding: 4px 12px;
+    border: 1px solid color-mix(in srgb, var(--pg-color, var(--color-accent-base)) 38%, transparent);
+    border-radius: var(--radius-sm, 2px);
+    font-size: 0.75rem;
+    color: color-mix(in srgb, var(--pg-color, var(--color-accent-base)) 75%, var(--color-fg-primary));
+    text-decoration: none;
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .pg-guide__link:hover {
+    background: color-mix(in srgb, var(--pg-color, var(--color-accent-base)) 10%, transparent);
+  }
+
+  .pg-lib-empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-3);
+  }
+
   .pg-count--danger {
     color: var(--color-danger-base);
     border-color: color-mix(in srgb, var(--color-danger-base) 55%, transparent);
