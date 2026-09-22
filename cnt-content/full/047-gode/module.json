@@ -1,0 +1,24 @@
+{
+  "title": "Gode",
+  "icon": "Ge",
+  "description": "Godot 的 JavaScript/TypeScript 脚本支持：内嵌 Node.js 运行时、godot 模块与互操作、元数据导出、npm 工程化、断点调试与跨平台导出",
+  "categories": ["gamedev"],
+  "prerequisites": ["godot"],
+  "officialDocs": [
+    {
+      "label": "Gode 官方文档（中文）",
+      "url": "https://godothub.com/oss/gode/zh/",
+      "type": "docs"
+    },
+    {
+      "label": "Gode GitHub 仓库",
+      "url": "https://github.com/godothub/gode",
+      "type": "api"
+    },
+    {
+      "label": "Gode 官方 TypeScript 演示项目",
+      "url": "https://github.com/godothub/gode-tps-demo",
+      "type": "docs"
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "title": "Konado",
+  "icon": "Kn",
+  "description": "Godot 视觉小说框架：KonadoScript 剧本语言、立绘背景运镜、选项分支变量、存档回退、场景化资源定制与本地化成就扩展",
+  "categories": ["gamedev"],
+  "prerequisites": ["godot"],
+  "officialDocs": [
+    {
+      "label": "Konado 官方文档（中文）",
+      "url": "https://godothub.com/oss/konado/zh/latest/",
+      "type": "docs"
+    },
+    {
+      "label": "Konado GitHub 仓库",
+      "url": "https://github.com/godothub/konado",
+      "type": "api"
+    },
+    {
+      "label": "Konado 安装教程",
+      "url": "https://godothub.com/oss/konado/zh/latest/tutorial/install.html",
+      "type": "docs"
+    }
+  ]
+}

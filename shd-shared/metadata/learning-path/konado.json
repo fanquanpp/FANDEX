@@ -1,0 +1,85 @@
+{
+  "version": "1.0.0",
+  "module": "konado",
+  "summary": "用 Konado 在 Godot 里做视觉小说：从安装架构到剧本语言全指令、管理器 API、存档回退与资源定制、本地化扩展。",
+  "stages": [
+    {
+      "id": "start",
+      "title": "起步",
+      "subtitle": "定位许可证、安装与架构模型",
+      "nodes": [
+        {
+          "id": "konado-000",
+          "title": "Konado 是什么与插件安装",
+          "doc": "010-KonadoOverviewAndInstall"
+        },
+        {
+          "id": "konado-001",
+          "title": "架构：从剧本到虚拟机",
+          "doc": "020-KonadoArchitecture"
+        }
+      ]
+    },
+    {
+      "id": "script",
+      "title": "剧本语言",
+      "subtitle": "对话、舞台演出、变量与分支到高级指令",
+      "nodes": [
+        {
+          "id": "konado-002",
+          "title": "KonadoScript 基础：对话与语音",
+          "doc": "030-KonadoScriptDialogue"
+        },
+        {
+          "id": "konado-003",
+          "title": "舞台演出：立绘背景与运镜",
+          "doc": "040-KonadoStageAndCamera"
+        },
+        {
+          "id": "konado-004",
+          "title": "变量、选项与分支",
+          "doc": "050-KonadoVariablesAndBranching"
+        },
+        {
+          "id": "konado-005",
+          "title": "高级指令：全屏文本信号与成就",
+          "doc": "060-KonadoAdvancedInstructions"
+        }
+      ]
+    },
+    {
+      "id": "integrate",
+      "title": "集成与数据",
+      "subtitle": "管理器 API、存档与回退",
+      "nodes": [
+        {
+          "id": "konado-006",
+          "title": "对话管理器 API 全解",
+          "doc": "070-KonadoDialogueManagerApi"
+        },
+        {
+          "id": "konado-007",
+          "title": "存档、回退与对话历史",
+          "doc": "080-KonadoSaveAndRollback"
+        }
+      ]
+    },
+    {
+      "id": "craft",
+      "title": "定制与生态",
+      "subtitle": "场景化资源、界面定制、本地化与扩展组件",
+      "nodes": [
+        {
+          "id": "konado-008",
+          "title": "场景化资源与界面定制",
+          "doc": "090-KonadoSceneAssetsAndCustomization"
+        },
+        {
+          "id": "konado-009",
+          "title": "本地化、编辑器与扩展组件",
+          "doc": "100-KonadoLocalizationAndExtensions"
+        }
+      ]
+    }
+  ]
+}
