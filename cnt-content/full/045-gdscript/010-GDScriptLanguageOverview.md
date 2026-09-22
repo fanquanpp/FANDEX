@@ -7,13 +7,10 @@ difficulty: beginner
 description: 认识 GDScript 的定位与版本演进，写出第一个脚本并掌握缩进注释与代码区域等基础规则
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'godot/030-FirstScriptAndLifecycle'
   - 'gdscript/020-VariablesConstantsEnums'
+prerequisites: []
 ---
 
 GDScript 是 Godot 引擎的内置脚本语言（built-in scripting language），官方对它的定义是：高级（high-level）、面向对象（object-oriented）、命令式（imperative）、渐进类型（gradually typed）。它的语法风格与 Python 相近，但官方文档明确声明 "GDScript is not based on Python"——它不是 Python 的移植，而是为 Godot 的节点（Node）与场景（Scene）体系量身定制的语言：你可以直接重写 _ready()、_process() 这类生命周期虚方法，用 $NodePath 取节点，用 @export 把变量导出到检查器面板。你在 godot 模块里已经见过这些身影，本模块开始正式学习这门语言本身。

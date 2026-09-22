@@ -7,15 +7,12 @@ difficulty: beginner
 description: 用 static exports 暴露检查器属性，用 static signals 声明信号，用 static rpc_config 配置多人调用
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gode/040-GDScriptInteropAndAutoload'
   - 'gode/020-FirstTypeScriptScript'
 prerequisites:
   - 'gode/020-FirstTypeScriptScript'
+---
 
 GDScript 有 `@export`、`signal`、`@rpc` 这类语言级注解，TypeScript 没有对等物。Gode 的解法是用类静态元数据（static metadata）声明 Godot 集成点：`static exports` 管导出属性，`static signals` 管信号，`static rpc_config` 管多人 RPC，另有 `@GlobalClass` 装饰器与 `static tool` 补齐编辑器集成。本篇逐个讲解这些机制，并给出自查清单。
 

@@ -7,15 +7,12 @@ difficulty: beginner
 description: 用 actor 指令族调度立绘，用 background 九种效果切场景，用 cam 与 asyncam 控制镜头
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'konado/030-KonadoScriptDialogue'
   - 'konado/060-KonadoAdvancedInstructions'
 prerequisites:
   - 'konado/030-KonadoScriptDialogue'
+---
 
 视觉小说的"演出感"来自三件事：谁站在台上（立绘）、背后是什么（背景）、镜头怎么动（运镜）。Konado 把这三件事分别交给 actor 指令族、background 指令与 cam/asyncam 指令。本篇逐一讲清这些指令的语法与细节，最后用一段完整剧本把它们串起来。
 

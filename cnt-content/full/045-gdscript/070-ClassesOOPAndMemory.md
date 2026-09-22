@@ -7,10 +7,6 @@ difficulty: beginner
 description: 掌握三种类的定义方式继承与多态属性访问器，并理解引用计数与手动释放的内存规则
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gdscript/020-VariablesConstantsEnums'
   - 'gdscript/050-FunctionsAndCallable'

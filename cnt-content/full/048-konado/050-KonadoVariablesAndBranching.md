@@ -7,15 +7,12 @@ difficulty: beginner
 description: 用持久与临时变量驱动剧情状态，用 choice branch 与 if 写出多分支互动叙事
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'konado/040-KonadoStageAndCamera'
   - 'konado/070-KonadoDialogueManagerApi'
 prerequisites:
   - 'konado/040-KonadoStageAndCamera'
+---
 
 互动叙事的门槛在"选择"：玩家点了不同选项，剧情要有不同走向，而走向的背后是数值与条件。Konado 用两套互相配合的机制解决这件事：变量系统（持久变量与临时变量）负责记住状态，choice、branch 与 if 负责根据状态分流。本篇讲完变量与三种分流写法，最后用一段完整的"好感度送礼"剧本收尾。
 

@@ -7,15 +7,12 @@ difficulty: beginner
 description: 使用槽位存档 API 保存恢复完整运行状态，理解上一句回滚的事务机制与 Backlog 点击回退
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'konado/060-KonadoAdvancedInstructions'
   - 'konado/070-KonadoDialogueManagerApi'
 prerequisites:
   - 'konado/070-KonadoDialogueManagerApi'
+---
 
 视觉小说玩家对两个功能有近乎执念的期待：随时存档读档，以及看漏一句话后能退回去重看。Konado 把这两件事都做成了默认能力：槽位化的存档系统（Save System）、按句回退的上一句功能，以及可以点击任意历史条目直接跳回去的 Backlog（对话历史）面板。这一篇讲清它们的 API、内部机制与边界规则。
 

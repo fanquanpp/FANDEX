@@ -7,12 +7,11 @@ difficulty: beginner
 description: 从 Control 基类到容器家族，掌握 Godot 界面布局规则与主题换肤的基本方法
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
+related:
+  - 'godot/110-AnimationAndTween'
+prerequisites:
+  - 'godot/020-NodesScenesAndInstancing'
 ---
-
-related: ['godot/110-AnimationAndTween']
-prerequisites: ['godot/020-NodesScenesAndInstancing']
 
 一个游戏好不好上手，界面的贡献常常被低估：血条、背包、设置菜单、对话框，全都属于 UI（User Interface，用户界面）。Godot 的 UI 体系有一套与 2D/3D 世界平行的规则：一切控件（Control）都继承自 Control 基类，而容器（Container）负责自动摆放子控件。理解"容器接管布局"这条规则，是从像素级手动对齐的苦力活里解放出来的关键。
 

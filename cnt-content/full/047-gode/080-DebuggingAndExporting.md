@@ -7,15 +7,12 @@ difficulty: beginner
 description: 打开 Node inspector 做断点调试，配置导出策略把 TS 项目发布到五大原生平台
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gode/070-NpmWorkflow'
   - 'godot/130-ExportingProjects'
 prerequisites:
   - 'gode/070-NpmWorkflow'
+---
 
 项目能跑起来只是开始，本篇解决两件"上线前"的事：一是断点调试——通过 Node/V8 Inspector 协议用 VS Code 或 Chrome DevTools 附加到游戏进程；二是项目导出——把 TypeScript 项目按标准流程发布到五大原生平台，并理清 npm 依赖在导出包里的打包规则。
 

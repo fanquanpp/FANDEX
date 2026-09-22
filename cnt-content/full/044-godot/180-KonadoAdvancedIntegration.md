@@ -8,11 +8,9 @@ description: 打通 KonadoDialogueManager 的变量存档回退能力，自定�
 author: fanquanpp
 updated: '2026-09-22'
 related: []
-prerequisites: []
+prerequisites:
+  - 'godot/170-KonadoScriptAuthoring'
 ---
-
-related: ['godot/160-KonadoVisualNovelFramework', 'godot/170-KonadoScriptAuthoring']
-prerequisites: ['godot/170-KonadoScriptAuthoring']
 
 前两篇解决了"装起来"和"写剧本"，这一篇进入真正的工程化环节：把 KonadoDialogueManager 的导出属性、信号、变量存储、存档与回退机制用熟，替换默认对话框，用场景化的角色与背景资源接入任意表现技术，最后接入本地化、成就系统等扩展组件，并学会用日志与错误码诊断问题。所有内容基于 2.8+ API。
 

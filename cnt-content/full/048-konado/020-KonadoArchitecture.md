@@ -7,15 +7,12 @@ difficulty: beginner
 description: 理解 KonadoScript 编译模型与模板场景结构，认识核心节点类与图层约定
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'konado/010-KonadoOverviewAndInstall'
   - 'konado/030-KonadoScriptDialogue'
 prerequisites:
   - 'konado/010-KonadoOverviewAndInstall'
+---
 
 一篇 Konado 剧本从你写下第一行对话，到玩家看到打字机逐字吐出文本，中间要经过一条完整的流水线：剧本被编译成指令程序，程序被装进剧情镜头，再由虚拟机按程序计数器逐条执行。理解这条流水线，你就能明白为什么保存 .ks 文件后运行数据会自动刷新、为什么报错信息里带有源码行号、以及运行时故障应该到哪里定位。本篇先讲编译模型，再讲两种把对话接入自己场景的方式，然后完整拆解默认模板场景结构与 CanvasLayer（画布层）层级约定，最后给出 2.8 版本核心节点与类名的功能地图。
 

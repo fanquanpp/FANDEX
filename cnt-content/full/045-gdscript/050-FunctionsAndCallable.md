@@ -7,10 +7,6 @@ difficulty: beginner
 description: 从函数声明默认参数到可变参数递归，再到一等公民 Callable 与 lambda 闭包的完整用法
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'gdscript/030-BasicDataTypesConversion'
   - 'gdscript/090-SignalsAwaitCoroutines'

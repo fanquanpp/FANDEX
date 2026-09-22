@@ -8,11 +8,9 @@ description: 用 TileSet 与 TileMapLayer 绘制关卡，掌握图块放置坐�
 author: fanquanpp
 updated: '2026-09-22'
 related: []
-prerequisites: []
+prerequisites:
+  - 'godot/080-CharacterPhysicsAndCollision'
 ---
-
-related: ['godot/080-CharacterPhysicsAndCollision', 'godot/100-UiControlAndContainers']
-prerequisites: ['godot/080-CharacterPhysicsAndCollision']
 
 上一篇我们让角色能在场景里跑跳碰撞了，但只有空荡荡的背景谈不上"关卡"。瓦片地图（Tilemap）是 2D 游戏搭建关卡的标准做法：把地面、墙壁、装饰拆成一张张大小相同的小图块（tile），再按网格（grid）拼出整张地图。它省内存、绘制快，编辑器里点点画画就能调整布局，是平台跳跃、俯视角 RPG、塔防等类型几乎绕不开的工具。
 

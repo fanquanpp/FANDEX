@@ -7,15 +7,12 @@ difficulty: beginner
 description: 系统梳理 KonadoDialogueManager 的导出属性信号与生命周期方法，打通剧本与游戏逻辑
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'konado/020-KonadoArchitecture'
   - 'konado/050-KonadoVariablesAndBranching'
 prerequisites:
   - 'konado/020-KonadoArchitecture'
+---
 
 前几篇里我们一直在"用"KonadoDialogueManager 这个名字：绑定它、调用它、连它的信号。这一篇把它的 API 面板彻底摊开：所有导出属性、全部信号、完整的生命周期方法，以及围绕它的资源表与子控制器。读完本篇，你就能不查文档地回答"这个功能该找哪个属性、哪个方法、哪个信号"。
 

@@ -7,15 +7,12 @@ difficulty: beginner
 description: 学习剧本文件规则与对话行语法，掌握三种说话者形式与打字速度语音标签
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'konado/020-KonadoArchitecture'
   - 'konado/040-KonadoStageAndCamera'
 prerequisites:
   - 'konado/020-KonadoArchitecture'
+---
 
 KonadoScript 是 Konado 为视觉小说定制的创作语言。写故事的人用它讲故事：一行文本就是一句对话，不需要任何编程知识；需要演出变化时，再往行里添加指令。上一篇我们知道了 .ks 剧本会在导入或保存时被编译成虚拟机指令，本篇回到创作的起点，把你在 KonadoScript 里写得最多的一类行——对话行——彻底讲清楚：它的语法结构、说话者的三种书写形式、2.8 新增的命名参数，以及如何给一句话挂上语音。
 

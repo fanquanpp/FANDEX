@@ -7,13 +7,11 @@ difficulty: beginner
 description: 认识 Konado 的定位版本与三许可证模式，完成插件安装并按官方推荐配置好视觉小说项目
 author: fanquanpp
 updated: '2026-09-22'
-related: []
-prerequisites: []
----
-
 related:
   - 'konado/020-KonadoArchitecture'
   - 'godot/160-KonadoVisualNovelFramework'
+prerequisites: []
+---
 
 如果你想用 Godot Engine（戈多引擎）制作视觉小说、Galgame，或者为 RPG 编写大量剧情对话，却不想从零实现对话框、打字机、选项与存档系统，Konado 正是为这类需求准备的工具。Konado（中文名"可娜多"）是基于 Godot Engine 的视觉小说（Visual Novel）框架与通用对话解决方案，官方 README 对它的定位是：一个为 Godot Engine 打造的对话创建工具包（dialogue creation toolkit），通过模板（templates）与对话管理器（dialogue manager）帮助你快速构建视觉小说、Galgame、RPG 以及其他故事驱动的项目。它把视觉小说需要的一整套"舞台设备"做成开箱即用的组件，让创作者专注于故事叙述本身，而不陷入程序细节。
 
