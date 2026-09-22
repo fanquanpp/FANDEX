@@ -1,20 +1,24 @@
 @layer components {
 
 /*
- * 律动装饰系统 — 以「声音的可视化」为唯一母题
+ * 律动装饰系统 — 以「声音的可视化 + 歌姬舞台」为唯一母题
  *
- * 元素族谱（全部围绕虚拟歌姬的"演唱"意象，不再堆砌无关几何）：
+ * 元素族谱（全部围绕虚拟歌姬意象，色彩取自分类歌姬主题色，不再堆砌无关几何）：
  *   grid   底纹网格（缓慢漂移的乐谱纸）
  *   wave   音波（正弦线滚动，对应声轨）
  *   eq     均衡条（三根错峰跳动的电平柱）
- *   orbit  轨道环（旋转虚线环 + 环顶绕行的音符点）
+ *   orbit  轨道星系（三重轨道各一种歌姬色，异速异向旋转 + 绕行音符点）
  *   note   漂浮音符（八分音符上浮消散）
- *   num    幽灵数字（初音未来 CV01 的 "01" 与应援数 "39"）
- *   scan   扫描线 / caret 光标 / brackets 括号（playground、error 的代码变奏）
+ *   trio   三色音符组（洛天依蓝 / 乐正绫红 / 言和薄荷绿错峰升起）
+ *   star   星尘（歌姬彩四角星微粒漂移闪烁，星尘 Singer 典故）
+ *   glow   舞台光晕（底部呼吸柔光斑，演唱会地灯意象）
+ *   num    编号铭牌（页面轨道号 00 起，配页面拉丁名，404 页显示 404）
+ *   scan   扫描线 / caret 光标 / brackets 括号 / terminal（代码变奏）
  *
  * 动画纪律（web.dev 合成器动画实践）：
  *   - 只动 transform 与 opacity，禁止 background-position / 尺寸动画
  *   - 循环位移一律按图元周期整数倍平移，保证无缝
+ *   - 单页同时出现的彩色元素不超过三种歌姬色，装饰低透明度优先
  *   - prefers-reduced-motion 下全部静止
  */
 
@@ -128,34 +132,63 @@
   }
 }
 
-/* 轨道环：整体旋转带动虚线内环与环顶音符点绕行 */
+/* 轨道星系：三重轨道各用一种歌姬主题色，异速异向旋转，环顶各带一颗绕行音符点 */
 .decor-orbit {
   position: absolute;
-  width: 170px;
-  height: 170px;
-  border: 1px solid var(--decor-line);
-  border-radius: 50%;
-  animation: decor-orbit-rotate 34s linear infinite;
+  width: 190px;
+  height: 190px;
 }
 
-.decor-orbit::before {
-  content: '';
+.decor-orbit__ring {
   position: absolute;
-  inset: 28px;
-  border: 1px dashed var(--decor-strong);
   border-radius: 50%;
-  opacity: 0.65;
+  animation: decor-orbit-rotate linear infinite;
 }
 
-.decor-orbit::after {
-  content: '';
+.decor-orbit__ring--a {
+  inset: 0;
+  border: 1px solid rgba(57, 197, 187, 0.4);
+  animation-duration: 38s;
+}
+
+.decor-orbit__ring--b {
+  inset: 30px;
+  border: 1px dashed rgba(102, 204, 255, 0.42);
+  animation-duration: 26s;
+  animation-direction: reverse;
+}
+
+.decor-orbit__ring--c {
+  inset: 60px;
+  border: 1px solid rgba(153, 153, 255, 0.4);
+  animation-duration: 48s;
+}
+
+.decor-orbit__ring i {
   position: absolute;
-  top: -4px;
-  left: calc(50% - 4px);
-  width: 8px;
-  height: 8px;
+  top: -3.5px;
+  left: calc(50% - 3.5px);
+  width: 7px;
+  height: 7px;
   border-radius: 50%;
-  background: var(--decor-note);
+}
+
+.decor-orbit__ring--a i {
+  background: rgba(57, 197, 187, 0.85);
+}
+
+.decor-orbit__ring--b i {
+  background: rgba(102, 204, 255, 0.85);
+  width: 6px;
+  height: 6px;
+  top: -3px;
+}
+
+.decor-orbit__ring--c i {
+  background: rgba(153, 153, 255, 0.8);
+  width: 5px;
+  height: 5px;
+  top: -2.5px;
 }
 
 @keyframes decor-orbit-rotate {
@@ -232,6 +265,127 @@
   50% {
     transform: translate3d(0, -14px, 0);
     opacity: 0.7;
+  }
+}
+
+/* 编号铭牌：数字下方的页面拉丁名（功能主题锚点） */
+.decor-num::after {
+  content: attr(data-label);
+  position: absolute;
+  left: 6px;
+  bottom: -1.7em;
+  font-family: var(--font-family-mono);
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.34em;
+  color: var(--color-text-tertiary);
+  -webkit-text-stroke: 0;
+  white-space: nowrap;
+}
+
+/* 三色音符：洛天依蓝 / 乐正绫红 / 言和薄荷绿，错峰升起（取代单一 39 数字） */
+.decor-trio {
+  position: absolute;
+  width: 70px;
+  height: 100px;
+}
+
+.decor-trio span {
+  position: absolute;
+  width: 26px;
+  height: 34px;
+  -webkit-mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 32'><circle cx='10.5' cy='24.5' r='5.5' fill='black'/><rect x='14.4' y='3' width='2.6' height='22' fill='black'/><path d='M17,3 C21,6 21.8,10 19.6,13.6' stroke='black' stroke-width='2.6' fill='none' stroke-linecap='round'/></svg>");
+  mask-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 32'><circle cx='10.5' cy='24.5' r='5.5' fill='black'/><rect x='14.4' y='3' width='2.6' height='22' fill='black'/><path d='M17,3 C21,6 21.8,10 19.6,13.6' stroke='black' stroke-width='2.6' fill='none' stroke-linecap='round'/></svg>");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  opacity: 0;
+  animation: decor-note-float 12s ease-in-out infinite;
+}
+
+.decor-trio span:nth-child(1) {
+  left: 0;
+  background-color: rgba(102, 204, 255, 0.75);
+}
+
+.decor-trio span:nth-child(2) {
+  left: 24px;
+  top: 14px;
+  background-color: rgba(238, 0, 0, 0.6);
+  animation-delay: -4s;
+}
+
+.decor-trio span:nth-child(3) {
+  left: 44px;
+  top: 4px;
+  background-color: rgba(0, 255, 204, 0.7);
+  animation-delay: -8s;
+}
+
+/* 星尘：歌姬彩色的四角星微粒，漂移闪烁（星尘 Singer 典故） */
+.decor-star {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  clip-path: polygon(50% 0, 61% 39%, 100% 50%, 61% 61%, 50% 100%, 39% 61%, 0 50%, 39% 39%);
+  animation: decor-star-drift 11s ease-in-out infinite alternate;
+}
+
+.decor-star--a {
+  background: rgba(57, 197, 187, 0.6);
+}
+
+.decor-star--b {
+  background: rgba(102, 204, 255, 0.62);
+  animation-delay: -3.6s;
+  animation-duration: 13s;
+}
+
+.decor-star--c {
+  background: rgba(153, 153, 255, 0.58);
+  animation-delay: -7.2s;
+  animation-duration: 9s;
+}
+
+.decor-star--d {
+  background: rgba(255, 136, 0, 0.5);
+  animation-delay: -5.4s;
+  animation-duration: 15s;
+}
+
+@keyframes decor-star-drift {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(0.8);
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translate3d(10px, 46px, 0) rotate(52deg) scale(1.05);
+    opacity: 0.2;
+  }
+}
+
+/* 舞台光晕：底部呼吸的柔光斑，演唱会的地灯意象 */
+.decor-glow {
+  position: absolute;
+  width: 520px;
+  height: 300px;
+  background: radial-gradient(closest-side, var(--decor-soft), transparent 72%);
+  animation: decor-glow-breathe 15s ease-in-out infinite;
+}
+
+@keyframes decor-glow-breathe {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(0.94);
+  }
+  50% {
+    opacity: 0.9;
+    transform: scale(1.04);
   }
 }
 
@@ -330,16 +484,28 @@
 
 @media (max-width: 767.98px) {
   .decor-orbit {
-    width: 120px;
-    height: 120px;
+    width: 130px;
+    height: 130px;
+  }
+
+  .decor-orbit__ring--c {
+    inset: 42px;
   }
 
   .decor-num {
     opacity: 0.55;
   }
 
+  .decor-num::after {
+    letter-spacing: 0.22em;
+  }
+
   .decor-wave {
     height: 90px;
+  }
+
+  .decor-trio {
+    transform: scale(0.8);
   }
 }
 
@@ -347,8 +513,11 @@
   .decor-grid,
   .decor-wave,
   .decor-eq i,
-  .decor-orbit,
+  .decor-orbit__ring,
   .decor-note,
+  .decor-trio span,
+  .decor-star,
+  .decor-glow,
   .decor-num,
   .decor-num--accent,
   .decor-scanline,
@@ -358,8 +527,13 @@
     animation: none;
   }
 
-  .decor-note {
+  .decor-note,
+  .decor-trio span {
     opacity: 0.4;
+  }
+
+  .decor-star {
+    opacity: 0.5;
   }
 }
 
