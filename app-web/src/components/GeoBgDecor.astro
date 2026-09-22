@@ -1,5 +1,4 @@
 ---
-
 export type GeoBgVariant =
   | 'home'
   | 'docs'
@@ -11,70 +10,66 @@ export type GeoBgVariant =
   | 'info'
   | 'playground';
 
-type GeoDecorItem = string | { readonly className: string; readonly style?: string };
+interface GeoDecorItem {
+  readonly className: string;
+  readonly style?: string;
+  readonly content?: string;
+}
 
+/*
+ * 律动装饰系统 — 每个页面只讲一个「声音可视化」母题的强弱变奏：
+ *   home          全编制：音波 + 均衡条 + 轨道环 + 音符 + 幽灵数字 01/39（歌姬元素）
+ *   docs / list   轻编制：阅读优先，仅保留一两条声轨
+ *   playground    代码变奏：括号、终端、光标（青绿着色）
+ *   error         扫描线变奏
+ */
 const GEO_DECOR_CONFIG: Record<GeoBgVariant, GeoDecorItem[]> = {
   home: [
-    'geo-curve-s',
-    'geo-ripple-tr',
-    'geo-triangle-rt',
-    'geo-bars-marks',
-    'geo-spiral-ccw',
-    'geo-pulse-ring',
-    'geo-float-block',
-    'geo-orbit-ring',
-    'geo-crosshair',
+    { className: 'decor-grid' },
+    { className: 'decor-wave', style: 'top:26%' },
+    { className: 'decor-eq', style: 'bottom:16%;left:9%' },
+    { className: 'decor-orbit', style: 'top:11%;right:7%' },
+    { className: 'decor-note', style: 'top:44%;left:5%' },
+    { className: 'decor-note', style: 'top:60%;right:24%;animation-delay:-5s' },
+    { className: 'decor-num', style: 'left:3%;bottom:4%;font-size:clamp(150px,22vw,280px)', content: '01' },
+    { className: 'decor-num decor-num--accent', style: 'right:2%;top:12%;font-size:clamp(110px,15vw,190px)', content: '39' },
   ],
   docs: [
-    'geo-bg-grid',
-    'geo-curve-s',
-    'geo-cross-marks',
-    'geo-dots-radial',
-    'geo-bezier-flow',
-    'geo-pulse-ring',
-    'geo-float-block',
+    { className: 'decor-grid' },
+    { className: 'decor-wave', style: 'top:8%;opacity:.5' },
+    { className: 'decor-eq', style: 'bottom:9%;right:5%;height:38px' },
   ],
   list: [
-    'geo-bg-grid',
-    'geo-parallel-lines',
-    'geo-cross-marks',
-    { className: 'geo-hatch-block', style: 'top:12%;right:4%' },
-    'geo-dots-radial',
-    'geo-chevron-stack',
-    'geo-bezier-flow',
+    { className: 'decor-grid' },
+    { className: 'decor-orbit', style: 'top:12%;right:9%;width:130px;height:130px' },
+    { className: 'decor-eq', style: 'bottom:11%;left:7%' },
   ],
   'learning-path': [
-    'geo-bg-grid',
-    'geo-curve-s',
-    'geo-triangle-rt',
-    'geo-bars-marks',
-    'geo-bars-radial',
-    'geo-bars-pulse',
-    'geo-float-block',
-    'geo-bars-float',
+    { className: 'decor-grid' },
+    { className: 'decor-wave', style: 'bottom:4%' },
+    { className: 'decor-eq', style: 'top:15%;right:6%' },
   ],
-  minimal: ['geo-bg-grid', 'geo-bars-marks'],
-  loading: ['geo-bg-grid', 'geo-dots-sm'],
-  error: ['geo-bg-grid', 'geo-bars-marks', 'geo-bars-pulse', 'geo-scan-line'],
+  minimal: [{ className: 'decor-grid' }],
+  loading: [
+    { className: 'decor-grid' },
+    { className: 'decor-eq', style: 'bottom:14%;left:50%;margin-left:-25px' },
+  ],
+  error: [
+    { className: 'decor-grid' },
+    { className: 'decor-scanline' },
+    { className: 'decor-eq', style: 'bottom:12%;left:8%' },
+  ],
   info: [
-    'geo-bg-grid',
-    'geo-curve-s',
-    'geo-cross-marks',
-    'geo-dots-radial',
-    'geo-pulse-ring',
-    'geo-float-block',
+    { className: 'decor-grid' },
+    { className: 'decor-wave', style: 'top:12%' },
+    { className: 'decor-orbit', style: 'top:16%;right:6%' },
   ],
   playground: [
-    'geo-bg-grid',
-    'geo-bracket-pair',
-    'geo-terminal-block',
-    'geo-parallel-lines',
-    'geo-bars-radial',
-    'geo-bars-marks',
-    'geo-bars-pulse',
-    'geo-scan-line',
-    'geo-code-cursor',
-    'geo-bezier-flow',
+    { className: 'decor-grid' },
+    { className: 'decor-brackets', style: 'top:12%;left:3%' },
+    { className: 'decor-terminal', style: 'bottom:12%;right:4%' },
+    { className: 'decor-scanline' },
+    { className: 'decor-caret', style: 'bottom:17%;right:13%' },
   ],
 };
 
@@ -86,12 +81,20 @@ const { variant = 'minimal' } = Astro.props;
 const items = GEO_DECOR_CONFIG[variant];
 ---
 
-<div class="geo-bg-decor" aria-hidden="true">
+<div class="decor-bg" aria-hidden="true">
   {
-    items.map((item) => {
-      const className = typeof item === 'string' ? item : item.className;
-      const style = typeof item === 'string' ? undefined : item.style;
-      return <div class={className} style={style} />;
-    })
+    items.map((item) =>
+      item.className === 'decor-eq' ? (
+        <div class="decor-eq" style={item.style}>
+          <i />
+          <i />
+          <i />
+        </div>
+      ) : (
+        <div class={item.className} style={item.style}>
+          {item.content}
+        </div>
+      )
+    )
   }
 </div>
