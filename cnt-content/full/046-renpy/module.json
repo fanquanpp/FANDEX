@@ -1,0 +1,24 @@
+{
+  "title": "Ren'Py",
+  "icon": "Rp",
+  "description": "Ren'Py 视觉小说引擎：脚本语言与角色对话、图像转场与 ATL、屏幕语言、存档回滚、多语言翻译与全平台发布",
+  "categories": ["gamedev"],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "Ren'Py 官方文档",
+      "url": "https://www.renpy.org/doc/html/",
+      "type": "docs"
+    },
+    {
+      "label": "Ren'Py 快速上手手册",
+      "url": "https://www.renpy.org/doc/html/quickstart.html",
+      "type": "docs"
+    },
+    {
+      "label": "Ren'Py 引擎源码仓库",
+      "url": "https://github.com/renpy/renpy",
+      "type": "api"
+    }
+  ]
+}

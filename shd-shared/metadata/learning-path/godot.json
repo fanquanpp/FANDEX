@@ -1,0 +1,139 @@
+{
+  "version": "1.0.0",
+  "module": "godot",
+  "summary": "从安装编辑器到发布多平台游戏：节点场景模型、信号资源、2D 与瓦片地图、UI 动画音频、脚本生态与 Konado 视觉小说框架。",
+  "stages": [
+    {
+      "id": "setup",
+      "title": "入门与编辑器",
+      "subtitle": "安装 Godot 4.7，理解节点场景与第一个脚本",
+      "nodes": [
+        {
+          "id": "godot-000",
+          "title": "Godot 是什么与安装起步",
+          "doc": "010-GodotOverviewAndSetup"
+        },
+        {
+          "id": "godot-001",
+          "title": "节点、场景与实例化",
+          "doc": "020-NodesScenesAndInstancing"
+        },
+        {
+          "id": "godot-002",
+          "title": "第一个脚本与生命周期",
+          "doc": "030-FirstScriptAndLifecycle"
+        }
+      ]
+    },
+    {
+      "id": "core",
+      "title": "核心机制",
+      "subtitle": "信号解耦、资源共享与输入系统",
+      "nodes": [
+        {
+          "id": "godot-003",
+          "title": "信号：节点间的广播通信",
+          "doc": "040-SignalsObserving"
+        },
+        {
+          "id": "godot-004",
+          "title": "资源与自动加载单例",
+          "doc": "050-ResourcesAndAutoload"
+        },
+        {
+          "id": "godot-005",
+          "title": "输入系统：事件与动作映射",
+          "doc": "060-InputEventsAndActions"
+        }
+      ]
+    },
+    {
+      "id": "twod",
+      "title": "2D 游戏开发",
+      "subtitle": "精灵相机、角色物理与瓦片地图关卡",
+      "nodes": [
+        {
+          "id": "godot-006",
+          "title": "2D 游戏对象：精灵与相机",
+          "doc": "070-TwoDGameObjects"
+        },
+        {
+          "id": "godot-007",
+          "title": "角色移动与碰撞检测",
+          "doc": "080-CharacterPhysicsAndCollision"
+        },
+        {
+          "id": "godot-008",
+          "title": "瓦片地图与关卡搭建",
+          "doc": "090-TilemapsAndLevelDesign"
+        }
+      ]
+    },
+    {
+      "id": "polish",
+      "title": "表现与打磨",
+      "subtitle": "UI 布局、动画与音频",
+      "nodes": [
+        {
+          "id": "godot-009",
+          "title": "UI 界面：Control 与容器",
+          "doc": "100-UiControlAndContainers"
+        },
+        {
+          "id": "godot-010",
+          "title": "动画系统：AnimationPlayer 与 Tween",
+          "doc": "110-AnimationAndTween"
+        },
+        {
+          "id": "godot-011",
+          "title": "音频播放",
+          "doc": "120-AudioPlayback"
+        }
+      ]
+    },
+    {
+      "id": "ship",
+      "title": "发布与脚本生态",
+      "subtitle": "跨平台导出、C#/GDExtension 与 Gode",
+      "nodes": [
+        {
+          "id": "godot-012",
+          "title": "导出与跨平台发布",
+          "doc": "130-ExportingProjects"
+        },
+        {
+          "id": "godot-013",
+          "title": "脚本生态：C# 与 GDExtension",
+          "doc": "140-ScriptingEcosystemCSharpGDExtension"
+        },
+        {
+          "id": "godot-014",
+          "title": "Gode：用 JavaScript 与 TypeScript 写 Godot",
+          "doc": "150-GodeJavaScriptTypeScript"
+        }
+      ]
+    },
+    {
+      "id": "konado",
+      "title": "Konado 视觉小说框架",
+      "subtitle": "用 Konado 在 Godot 里做视觉小说",
+      "nodes": [
+        {
+          "id": "godot-015",
+          "title": "Konado 视觉小说框架入门",
+          "doc": "160-KonadoVisualNovelFramework"
+        },
+        {
+          "id": "godot-016",
+          "title": "KonadoScript 剧本编写",
+          "doc": "170-KonadoScriptAuthoring"
+        },
+        {
+          "id": "godot-017",
+          "title": "Konado 进阶：变量存档与深度定制",
+          "doc": "180-KonadoAdvancedIntegration"
+        }
+      ]
+    }
+  ]
+}

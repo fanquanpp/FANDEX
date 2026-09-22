@@ -1,0 +1,34 @@
+{
+  "title": "Godot 引擎",
+  "icon": "Gt",
+  "description": "Godot 4.7 游戏引擎：节点场景模型、信号资源、2D 与瓦片地图、UI 动画音频、跨平台导出，以及 Konado 视觉小说框架与 Gode JS/TS 脚本生态",
+  "categories": ["gamedev"],
+  "prerequisites": [],
+  "officialDocs": [
+    {
+      "label": "Godot 官方文档（stable）",
+      "url": "https://docs.godotengine.org/en/stable/",
+      "type": "docs"
+    },
+    {
+      "label": "Godot 4.7 发布说明",
+      "url": "https://godotengine.org/releases/4.7/",
+      "type": "docs"
+    },
+    {
+      "label": "Konado 官方文档",
+      "url": "https://godothub.com/oss/konado/zh/latest/",
+      "type": "docs"
+    },
+    {
+      "label": "Gode 官方文档",
+      "url": "https://godothub.com/oss/gode/zh/",
+      "type": "docs"
+    },
+    {
+      "label": "Godot 引擎源码仓库",
+      "url": "https://github.com/godotengine/godot",
+      "type": "api"
+    }
+  ]
+}

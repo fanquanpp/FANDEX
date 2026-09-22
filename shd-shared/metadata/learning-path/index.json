@@ -38,6 +38,9 @@
     "nestjs",
     "start",
     "roadmap",
-    "mongodb"
+    "mongodb",
+    "godot",
+    "gdscript",
+    "renpy"
   ]
 }

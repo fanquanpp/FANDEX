@@ -1,0 +1,24 @@
+{
+  "title": "GDScript",
+  "icon": "Gd",
+  "description": "Godot 内置脚本语言：变量类型与集合、函数与 Callable、面向对象、信号与协程、注解导出、官方风格指南与设计模式",
+  "categories": ["gamedev"],
+  "prerequisites": ["godot"],
+  "officialDocs": [
+    {
+      "label": "GDScript 官方文档",
+      "url": "https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/index.html",
+      "type": "docs"
+    },
+    {
+      "label": "GDScript 语言参考（gdscript_basics）",
+      "url": "https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_basics.html",
+      "type": "docs"
+    },
+    {
+      "label": "GDScript 中文教程（godothub，代码 MIT 开源）",
+      "url": "https://godothub.com/oss/gdscript-tutorial/",
+      "type": "docs"
+    }
+  ]
+}
