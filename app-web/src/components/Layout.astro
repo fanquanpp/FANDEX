@@ -1,10 +1,4 @@
 ---
-/**
- * 文档页主布局组件
- * 提供文档页面的整体结构：顶部导航栏、侧边栏、主内容区、移动端底部导航
- * 支持暗色模式切换、全屏模式、侧边栏状态持久化、代码复制等功能
- * 继承 BaseLayout 的共享 head 与样式引入，仅保留文档页特有的结构与脚本
- */
 import BaseLayout from '@/components/BaseLayout.astro';
 import ThemeToggle from '@/islands/ThemeToggle';
 import LangToggle from '@/components/LangToggle.astro';
@@ -16,9 +10,7 @@ import { SITE } from '@/lib/constants';
 
 const { title } = Astro.props;
 const base = import.meta.env.BASE_URL;
-// 移动端功能直达面板入口（含题图鉴等次级页，绕过父级页中转）
 const sheetEntries = getFeatureSheetEntries(base);
-// 检测是否包含侧边栏/目录大纲插槽，用于条件渲染遮罩层、移动端导航按钮和三栏布局
 const hasSidebar = Astro.slots.has('sidebar');
 const hasToc = Astro.slots.has('toc');
 ---
@@ -26,45 +18,34 @@ const hasToc = Astro.slots.has('toc');
 <BaseLayout title={title}>
   <slot name="head" slot="head" />
 
-  <!-- 文档页滚动架构：body 禁止滚动，所有纵向滚动由 .app-main 内部容器处理
-       防止快速上下滑动时 body 扩展产生无限空页面（item 12 修复） -->
   <style is:inline>
     @layer base {
     html {
       height: 100%;
-      /* 禁止 html 层级的过度滚动，防止链式滚动传播 */
       overscroll-behavior: none;
     }
     body {
-      /* 固定高度而非 min-height，防止 body 扩展产生空白滚动区 */
       height: 100vh;
       height: 100dvh;
-      /* 禁止 body 滚动，所有滚动由 .app-main 处理 */
       overflow: hidden;
       overscroll-behavior: none;
     }
     }
   </style>
-  <!-- 侧边栏遮罩层：移动端打开侧边栏时显示，点击关闭（使用共享 .fndx-sidebar-backdrop 样式） -->
   {hasSidebar && <div class="fndx-sidebar-backdrop" id="sidebar-backdrop" />}
-  <!-- 阅读进度条：固定于页面顶部，由本地组件提供（原 @fandex/astro-components 已迁入 app-web） -->
   <ReadingProgress />
-  <!-- 主布局容器：根据侧边栏/目录大纲存在情况添加不同类名，支持三栏布局 -->
   <div
     class="app-layout"
     class:list={{ 'no-sidebar': !hasSidebar, 'has-toc': hasToc }}
   >
-    <!-- 顶部导航栏 -->
     <header class="app-nav">
       <div class="nav-left">
         <a href={base} class="nav-logo">
           <span class="logo-text">{SITE.title}</span>
         </a>
-        <!-- 功能直达链接：子级功能页常驻顶栏（≥768px，窄屏走底部导航功能面板） -->
         <HeaderFeatureLinks />
       </div>
       <div class="nav-right">
-        <!-- 全站搜索：打开命令面板（Ctrl/Cmd + K），纯 DOM 实现无岛屿水合 -->
         <button class="nav-search-btn fndx-icon-btn fndx-icon-btn--labeled" type="button" data-search-trigger aria-label="搜索" data-i18n-aria="nav.searchAria" data-tooltip="搜索（Ctrl+K）" data-i18n-tooltip="nav.searchTooltip" data-tooltip-pos="bottom">
           <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
             <circle cx="11" cy="11" r="7"></circle>
@@ -72,7 +53,6 @@ const hasToc = Astro.slots.has('toc');
           </svg>
           <span class="nav-search-text" data-i18n="nav.search">搜索</span>
         </button>
-        <!-- 返回顶部按钮：图标 + Top 文字标注，统一 fndx-icon-btn 风格 -->
         <button class="nav-back-to-top fndx-icon-btn fndx-icon-btn--labeled" id="nav-back-to-top" aria-label="返回顶部" data-i18n-aria="nav.backToTop" data-tooltip="返回顶部" data-i18n-tooltip="nav.backToTop" data-tooltip-pos="bottom">
           <svg
             width="14"
@@ -86,7 +66,6 @@ const hasToc = Astro.slots.has('toc');
           </svg>
           <span class="nav-back-to-top-text" data-i18n="nav.top">Top</span>
         </button>
-        <!-- PWA 安装入口：默认隐藏，可安装（beforeinstallprompt / iOS）时由 lib/pwa-install 点亮 -->
         <button class="nav-install-btn fndx-icon-btn" type="button" data-install-app hidden aria-label="安装应用" data-i18n-aria="nav.install" data-tooltip="安装到桌面 / 主屏幕" data-i18n-tooltip="nav.installTooltip" data-tooltip-pos="bottom">
           <svg
             width="14"
@@ -101,22 +80,16 @@ const hasToc = Astro.slots.has('toc');
             <line x1="12" y1="15" x2="12" y2="3"></line>
           </svg>
         </button>
-        <!-- 界面语言切换（zh <-> en）：纯 DOM 组件，交互由 lib/i18n-dom 委托 -->
         <LangToggle />
-        <!-- 主题切换按钮（React 岛屿组件） -->
         <ThemeToggle client:load />
       </div>
     </header>
-    <!-- 侧边栏插槽 -->
     <slot name="sidebar" />
-    <!-- 主内容区域 -->
     <main class="app-main" id="app-main">
       <slot />
     </main>
-    <!-- 目录大纲插槽（仅桌面端显示，由 .fndx-toc CSS 控制响应式显隐） -->
     {hasToc && <slot name="toc" />}
   </div>
-  <!-- 移动端底部导航栏 -->
   <nav class="mobile-nav">
     <a href={base} class="mobile-nav-link">
       <svg
@@ -132,7 +105,6 @@ const hasToc = Astro.slots.has('toc');
       </svg>
       <span data-i18n="nav.home">首页</span>
     </a>
-    <!-- 模块切换按钮：仅在有侧边栏时显示 -->
     {
       hasSidebar && (
         <button class="mobile-nav-link" id="mobile-sidebar-btn" aria-label="模块" data-i18n-aria="nav.modulesAria">
@@ -151,7 +123,6 @@ const hasToc = Astro.slots.has('toc');
         </button>
       )
     }
-    <!-- 功能直达面板按钮：窄屏（<768px）子级功能页常驻入口，唤起 feature-sheet -->
     <button class="mobile-nav-link" id="mobile-features-btn" aria-label="功能" data-i18n-aria="nav.featuresAria" aria-expanded="false" aria-controls="feature-sheet">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
         <rect x="3" y="3" width="7" height="7" rx="1"></rect>
@@ -161,7 +132,6 @@ const hasToc = Astro.slots.has('toc');
       </svg>
       <span data-i18n="nav.features">功能</span>
     </button>
-    <!-- 全屏切换按钮 -->
     <button class="mobile-nav-link" id="mobile-fullscreen-btn" aria-label="全屏" data-i18n-aria="nav.fullscreenAriaMobile">
       <svg
         width="20"
@@ -178,7 +148,6 @@ const hasToc = Astro.slots.has('toc');
       <span data-i18n="nav.fullscreenLabel">全屏</span>
     </button>
   </nav>
-  <!-- 移动端功能直达面板：子级功能页一步直达（含题图鉴等次级页），窄屏专属 -->
   <div class="feature-sheet-backdrop" id="feature-sheet-backdrop" />
   <nav class="feature-sheet" id="feature-sheet" aria-label="功能直达" data-i18n-aria="nav.featureSheetAria" aria-hidden="true">
     <p class="feature-sheet__title" data-i18n="nav.featureSheetTitle">功能直达</p>
@@ -194,19 +163,14 @@ const hasToc = Astro.slots.has('toc');
       ))
     }
   </nav>
-  <!-- 性能监控面板：仅开发环境渲染（组件内部通过 import.meta.env.DEV 控制） -->
   <PerformanceMonitor />
 </BaseLayout>
 
-<!-- 客户端交互脚本：侧边栏开关、全屏切换、代码复制、SW 注册等 -->
 <script>
   import '@/lib/layout-interactions';
 </script>
 
 <style>
-  /* 菜单切换按钮：默认隐藏，移动端显示
-   * 注：遮罩层样式已迁移至 @fandex/styles 的 .fndx-sidebar-backdrop
-   * 归入 @layer components，避免未分层 CSS 覆盖 ark 令牌 */
   @layer components {
   .nav-toggle {
     display: none;

@@ -1,22 +1,4 @@
-/**
- * 语法速览岛样式（SyntaxExplorer）
- * -----------------------------------------------------------------------------
- * 设计说明：
- * - 卡片特效复用首页模块卡片体系（module-card.css）：
- *   顶部分类色条展开、hover 边框转色 + 阴影加深、几何图标角标、按下下沉
- * - 本文件只补充语法卡片的按钮重置、公式行、网格、悬浮面板与状态提示
- * - 悬浮面板沿用几何科技风：细线边框 + 直切圆角 + ark 语义令牌
- * - 禁止点状装饰：状态标记使用竖条刻度，按钮统一直角小圆角
- *
- * 归入 @layer islands：低于 pages 层，避免覆盖页面级布局
- */
 @layer islands {
-  /* ============================================================
-   * 1. 语言切换区
-   * ------------------------------------------------------------
-   * sticky 吸顶（相对 .home-main 滚动容器），背景半透明毛玻璃，
-   * 切换语言时保持入口可见
-   * ============================================================ */
   .syntax-langs {
     position: sticky;
     top: 0;
@@ -32,7 +14,6 @@
     border-bottom: 1px solid var(--color-border-light);
   }
 
-  /* 语言 chip：透明底 + 细线边框，激活态使用语言主题色描边与淡色底 */
   .syntax-lang-chip {
     display: inline-flex;
     align-items: center;
@@ -63,7 +44,6 @@
     background-color: color-mix(in oklch, var(--lang-color, var(--color-accent-base)) 9%, transparent);
   }
 
-  /* 主题色竖条：未激活弱化，激活态饱和（与学习路线 chip 统一） */
   .syntax-lang-bar {
     width: 2px;
     height: 10px;
@@ -77,15 +57,11 @@
     opacity: 1;
   }
 
-  /* 卡片数量：弱化信息，避免视觉噪音 */
   .syntax-lang-count {
     font-size: 0.88em;
     color: var(--color-text-tertiary);
   }
 
-  /* ============================================================
-   * 2. 元信息与状态提示
-   * ============================================================ */
   .syntax-meta {
     padding: var(--space-2) var(--space-4) 0;
     font-size: 0.76em;
@@ -95,7 +71,6 @@
     min-height: 1.6em;
   }
 
-  /* 加载失败提示：危险色描边 + 淡色底 */
   .syntax-error {
     display: flex;
     align-items: center;
@@ -115,12 +90,6 @@
     font-size: 0.86em;
   }
 
-  /* ============================================================
-   * 3. 速查卡片网格
-   * ------------------------------------------------------------
-   * 卡片本体复用 .module-card 特效（module-card.css），
-   * 此处仅做按钮语义重置与紧凑网格布局
-   * ============================================================ */
   .syntax-grid {
     display: grid;
     grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
@@ -128,7 +97,6 @@
     padding: var(--space-4) 0;
   }
 
-  /* 按钮语义重置：继承字体、左对齐、整卡可点击 */
   .syntax-card {
     width: 100%;
     font: inherit;
@@ -137,12 +105,10 @@
     color: inherit;
   }
 
-  /* 卡片入场：与首页卡片一致的上滑淡入，延迟由行内 animationDelay 控制 */
   .syntax-grid .syntax-card {
     animation: fndx-slide-up var(--motion-duration-normal) var(--motion-easing-out) both;
   }
 
-  /* 公式行：等宽字体单行省略，保持卡片紧凑 */
   .syntax-card__formula {
     display: block;
     margin: 0;
@@ -155,17 +121,10 @@
     color: var(--color-text-tertiary);
   }
 
-  /* 卡片 hover 时公式行转为语言主题色（与标题变色节奏一致） */
   .syntax-card:hover .syntax-card__formula {
     color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 75%, var(--color-fg-primary));
   }
 
-  /* ============================================================
-   * 3.5 关键词筛选行
-   * ------------------------------------------------------------
-   * 语言 chip 栏之下的轻量检索框：目标驱动的检索场景
-   * （DevDocs/QuickRef 模式），筛选态关闭分批直接展示全部命中
-   * ============================================================ */
   .syntax-filter {
     display: flex;
     align-items: center;
@@ -250,7 +209,6 @@
     line-height: 1.5;
   }
 
-  /* 筛选无命中：说明 + 恢复动作（不留白） */
   .syntax-empty--filter {
     display: flex;
     flex-direction: column;
@@ -266,11 +224,6 @@
     margin: 0;
   }
 
-  /* ============================================================
-   * 4. 加载更多按钮
-   * ============================================================ */
-  /* 加载更多：基础样式与统一特效由 .fndx-icon-btn--labeled 提供（ghost 风格），
-   * 此处仅保留块级居中布局与主操作区横向内边距 */
   .syntax-more {
     display: block;
     margin: var(--space-2) auto var(--space-12);
@@ -278,25 +231,15 @@
     height: var(--size-control-sm);
   }
 
-  /* ============================================================
-   * 5. 悬浮详情面板
-   * ------------------------------------------------------------
-   * Radix Dialog 渲染到 body，fixed 居中；几何科技风：
-   * 细线边框 + 直切圆角 + 卡片背景 + 深色遮罩毛玻璃
-   * ============================================================ */
-
-  /* 遮罩层：半透明深色 + 轻微模糊，聚焦面板内容 */
   .syntax-panel-overlay {
     position: fixed;
     inset: 0;
     z-index: var(--z-modal, 300);
-    /* 固定使用近黑中性色，暗色模式下不会因前景色为浅色而泛白 */
     background: color-mix(in oklch, var(--color-neutral-50) 55%, transparent);
     backdrop-filter: blur(6px);
     -webkit-backdrop-filter: blur(6px);
   }
 
-  /* 面板开合动画时长与缓动消费 --motion-* 令牌，与全站动效观感统一 */
   .syntax-panel-overlay[data-state='open'] {
     animation: syntax-panel-fade-in var(--motion-duration-fast) var(--motion-easing-out) both;
   }
@@ -305,7 +248,6 @@
     animation: syntax-panel-fade-out var(--motion-duration-fast) var(--motion-easing-out) both;
   }
 
-  /* 面板主体：居中卡片，宽度自适应，内容超高时内部滚动 */
   .syntax-panel {
     position: fixed;
     left: 50%;
@@ -334,7 +276,6 @@
     animation: syntax-panel-out var(--motion-duration-fast) var(--motion-easing-out) both;
   }
 
-  /* 面板头部：语言徽标 + 来源文档 */
   .syntax-panel__header {
     display: flex;
     align-items: center;
@@ -365,7 +306,6 @@
     color: var(--color-text-tertiary);
   }
 
-  /* 语法要点 */
   .syntax-panel__section {
     margin: 0;
     font-family: var(--font-family-heading);
@@ -382,7 +322,6 @@
     line-height: 1.5;
   }
 
-  /* 完整公式：等宽字体 + 语言色文字 + 淡色底，允许换行 */
   .syntax-panel__formula {
     display: block;
     min-width: 0;
@@ -400,7 +339,6 @@
     overflow-wrap: anywhere;
   }
 
-  /* 示例代码区 */
   .syntax-panel__code {
     border: 1px solid var(--color-border-light);
     border-radius: 2px;
@@ -426,7 +364,6 @@
     color: var(--color-text-tertiary);
   }
 
-  /* 复制按钮：复用统一图标按钮语言，悬停色使用语言主题色保持面板语义 */
   .syntax-panel__copy {
     color: var(--color-fg-tertiary);
   }
@@ -460,8 +397,6 @@
     border: none;
   }
 
-  /* Shiki 双主题配色（构建期高亮，codeHtml 内嵌 --shiki-light / --shiki-dark 变量）：
-   * 与站点 code.css 的 .astro-code 方案一致，按 data-theme 切换取色 */
   .syntax-panel__pre code span {
     color: var(--shiki-light);
   }
@@ -477,7 +412,6 @@
     color: var(--color-text-tertiary);
   }
 
-  /* 面板底部：完整文档入口 + 关闭按钮 */
   .syntax-panel__footer {
     display: flex;
     align-items: center;
@@ -488,8 +422,6 @@
     border-top: 1px solid var(--color-border-light);
   }
 
-  /* 完整文档入口：复用统一图标按钮语言，保留语义强调色；
-   * 悬停时背景提亮 + 箭头向右位移，明确“前往”语义 */
   .syntax-panel__link {
     color: var(--color-accent-base);
     font-weight: var(--font-weight-emphasis);
@@ -506,12 +438,9 @@
     }
   }
 
-  /* 关闭按钮：完全复用统一图标按钮语言（ghost 风格 + 统一悬停/按下/焦点特效） */
   .syntax-panel__close {
-    /* 基础样式与特效均由 .fndx-icon-btn--labeled 提供 */
   }
 
-  /* 面板底部上一条/下一条切换：占据整行，居中分布（有切换时换行展示） */
   .syntax-panel__nav {
     display: flex;
     align-items: center;
@@ -557,14 +486,10 @@
     letter-spacing: 0.04em;
   }
 
-  /* 面板打开时锁定首页滚动容器 */
   .syntax-panel-open {
     overflow: hidden;
   }
 
-  /* ============================================================
-   * 6. 动效关键帧与移动端适配
-   * ============================================================ */
   @keyframes syntax-panel-fade-in {
     from { opacity: 0; }
     to { opacity: 1; }
@@ -614,7 +539,6 @@
     }
   }
 
-  /* 减少动效偏好：禁用面板与卡片入场动画 */
   @media (prefers-reduced-motion: reduce) {
     .syntax-grid .syntax-card,
     .syntax-panel,

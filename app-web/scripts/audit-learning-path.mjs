@@ -1,43 +1,14 @@
-/**
- * 学习路径审计脚本
- * =============================================================================
- * 功能概述：
- * 1. 校验 shd-shared/metadata/learning-path/ 下全部知识地图的结构合法性
- * 2. 校验地图引用的模块 ID 与文档 slug 是否真实存在
- * 3. 输出每门技术的覆盖统计与"待补充文档"缺口清单
- * 4. 可选：为缺口生成 Markdown 文档模板（--templates 目录）
- *
- * 使用方式：
- *   node scripts/audit-learning-path.mjs
- *   node scripts/audit-learning-path.mjs --write-report
- *   node scripts/audit-learning-path.mjs --templates ../tmp/gap-templates
- *
- * 设计说明：
- * - 直接扫描文件系统，不依赖 Astro 构建缓存（doc-index.json），可独立运行
- * - 数据结构校验使用 zod（app-web 已有依赖），保证与共享类型一致
- * - 报告写入 .trae/documents/ 便于作为内容工作清单持续维护
- * =============================================================================
- */
 import { readdirSync, readFileSync, writeFileSync, mkdirSync, existsSync } from 'node:fs';
 import { join, dirname, basename, extname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { z } from 'zod';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-/** FANDEX 仓库根目录 */
 const ROOT = join(__dirname, '..', '..');
-/** 学习路径数据目录 */
 const MAP_DIR = join(ROOT, 'shd-shared', 'metadata', 'learning-path');
-/** 共享模块元数据 */
 const MODULES_PATH = join(ROOT, 'shd-shared', 'metadata', 'modules.json');
-/** 内容目录 */
 const CONTENT_DIR = join(ROOT, 'cnt-content', 'full');
-/** 缺口报告输出目录 */
 const REPORT_DIR = join(ROOT, '.trae', 'documents');
-
-// ============================================================
-// Schema 定义（与 shd-shared/utl-utils/learning-path.ts 对齐）
-// ============================================================
 
 const officialLinkSchema = z.object({
   label: z.string().min(1),
@@ -72,20 +43,10 @@ const indexSchema = z.object({
   order: z.array(z.string()),
 });
 
-// ============================================================
-// 数据加载
-// ============================================================
-
-/** 读取并解析 JSON 文件 */
 function loadJson(filePath) {
   return JSON.parse(readFileSync(filePath, 'utf-8'));
 }
 
-/**
- * 扫描内容目录，构建 模块 -> slug 集合
- * @returns {{ docsByFolder: Map<string, Set<string>>, folderByModule: Map<string, string> }}
- *          已发布文档索引 + 模块 ID 到文件夹名的映射
- */
 function scanContentDocs() {
   const docsByFolder = new Map();
   const folderByModule = new Map();
@@ -101,26 +62,17 @@ function scanContentDocs() {
       }
     }
     docsByFolder.set(dir.name, slugs);
-    // 目录名格式：NNN-english-short，解析出模块 ID
     const match = dir.name.match(/^\d{3}-(.+)$/);
     if (match) folderByModule.set(match[1], dir.name);
   }
   return { docsByFolder, folderByModule };
 }
 
-/**
- * 读取模块元数据，返回 模块 ID -> 文件夹名 的映射
- */
 function loadModuleFolders() {
   const modules = loadJson(MODULES_PATH).modules;
   return new Map(modules.map((m) => [m.id, m]));
 }
 
-// ============================================================
-// 主流程
-// ============================================================
-
-/** 运行入口 */
 function main() {
   const args = process.argv.slice(2);
   const writeReport = args.includes('--write-report');
@@ -137,7 +89,6 @@ function main() {
   const rows = [];
   const gapRows = [];
 
-  // 校验索引中的模块是否都存在地图文件
   for (const id of index.order) {
     if (!existsSync(join(MAP_DIR, `${id}.json`))) {
       console.error(`[FAIL] index.json 引用了不存在的地图文件: ${id}.json`);
@@ -145,7 +96,6 @@ function main() {
     }
   }
 
-  // 逐一校验并统计每门技术
   for (const moduleId of index.order) {
     const filePath = join(MAP_DIR, `${moduleId}.json`);
     if (!existsSync(filePath)) continue;
@@ -219,7 +169,6 @@ function main() {
     );
   }
 
-  // 检查内容目录中是否还有未收录进地图的模块（提示性）
   for (const moduleId of moduleIds) {
     if (!index.order.includes(moduleId)) {
       console.warn(`[WARN] 模块 ${moduleId} 尚未配置学习路径地图`);
@@ -227,9 +176,6 @@ function main() {
     }
   }
 
-  // ============================================================
-  // 输出报告
-  // ============================================================
   const total = rows.reduce((acc, r) => acc + r.nodes, 0);
   const totalDocs = rows.reduce((acc, r) => acc + r.docs, 0);
   const totalGaps = rows.reduce((acc, r) => acc + r.gaps, 0);
@@ -266,7 +212,6 @@ function main() {
     console.log(`\n报告已写入: ${reportPath}`);
   }
 
-  // 生成缺口文档模板
   if (templatesDir && gapRows.length > 0) {
     mkdirSync(templatesDir, { recursive: true });
     for (const gap of gapRows) {

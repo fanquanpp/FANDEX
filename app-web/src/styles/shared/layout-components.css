@@ -1,64 +1,26 @@
-/* =============================================================================
- * FANDEX 布局组件样式 — @layer tokens 扩展 + @layer components
- * -----------------------------------------------------------------------------
- * 职责：
- * 1. 布局专用令牌定义（nav-height / sidebar-width / toc-width / z-index 层级）
- * 2. .fndx-header          顶部导航（sticky + 毛玻璃背景 + logo + 操作区）
- * 3. .fndx-footer          底部信息区（版权 + 链接 + 分隔线）
- * 4. .fndx-sidebar         左侧文档导航（模块列表 + 文档树 + 折叠展开）
- * 5. .fndx-toc             右侧目录大纲（标题列表 + 滚动高亮 + 折叠）
- * 6. .fndx-reading-progress 顶部阅读进度条（fixed + 渐变填充）
- * 7. .fndx-mobile-nav      移动端底部导航（5 按钮 + safe-area 适配）
- * 8. .fndx-breadcrumb      面包屑导航（分隔符 + 当前页高亮）
- * 9. .fndx-doc-nav         文档上下页导航（上一篇/下一篇 + 键盘快捷键提示）
- * -----------------------------------------------------------------------------
- * 设计原则：
- * - 严格消费 tokens.css 中已定义的令牌，布局专用令牌在此文件 tokens 层扩展
- * - 双主题由 [data-theme] 选择器与 color-scheme 自动切换
- * - 响应式：桌面三栏布局，移动端折叠为单栏 + 底部导航
- * - 可访问性：focus-visible 焦点环、aria-current 当前页标识、prefers-reduced-motion 降级
- * - 留白未来扩展：每个组件预留 __title / __action / __icon 子元素类
- * -----------------------------------------------------------------------------
- * 引用：spec.md 第四章 4.3 核心功能矩阵 / 第八章 ark-ui 美术风格
- *       tasks.md 阶段 D.2 布局组件样式实现
- * =============================================================================
- */
 
-/* === 布局专用令牌（tokens 层扩展） === */
 @layer tokens {
   :root {
-    /* ---------- 导航栏尺寸 ---------- */
-    /** 顶部导航栏高度（桌面 56px，移动 52px） */
     --nav-height: var(--size-control-md);
     --nav-height-mobile: 3.25rem;
 
-    /** 底部移动导航栏高度（含 safe-area） */
     --mobile-nav-height: var(--size-control-md);
 
-    /** 阅读进度条高度 */
     --reading-progress-height: 3px;
 
-    /* ---------- 侧边栏尺寸 ---------- */
-    /** 左侧 Sidebar 宽度（桌面 240px，大屏 260px — 紧凑化以扩大阅读区） */
     --sidebar-width: 15rem;
     --sidebar-width-xl: 16.25rem;
 
-    /** 侧边栏折叠态宽度（仅保留图标条 0px — 完全折叠以最大化阅读空间） */
     --sidebar-collapsed-width: 0rem;
 
-    /** 右侧 TOC 宽度（桌面 224px，大屏 256px） */
     --toc-width: 14rem;
     --toc-width-xl: 16rem;
 
-    /* ---------- 内容区约束 ---------- */
-    /** 文档内容最大宽度（阅读优化 48rem = 768px） */
     --content-max-width: var(--size-container-md);
 
-    /** 布局间距 */
     --layout-gap: var(--space-8);
     --layout-gap-lg: var(--space-12);
 
-    /* ---------- 层级 z-index ---------- */
     --z-header: 40;
     --z-sidebar: 30;
     --z-toc: 20;
@@ -68,23 +30,18 @@
     --z-modal: 200;
     --z-toast: 300;
 
-    /* ---------- 导航栏视觉令牌 ---------- */
     --header-bg: color-mix(in oklch, var(--color-bg-primary) 85%, transparent);
     --header-border: var(--color-border-default);
     --header-blur: 12px;
 
-    /** Sidebar 背景 */
     --sidebar-bg: color-mix(in oklch, var(--color-bg-secondary) 50%, transparent);
     --sidebar-border: var(--color-border-default);
 
-    /** TOC 背景 */
     --toc-bg: transparent;
     --toc-border: var(--color-border-subtle);
 
-    /** 移动导航背景 */
     --mobile-nav-bg: color-mix(in oklch, var(--color-bg-primary) 95%, transparent);
 
-    /** 阅读进度条渐变 */
     --reading-progress-gradient: linear-gradient(
       90deg,
       var(--color-accent-base),
@@ -92,9 +49,6 @@
     );
   }
 
-  /* === 深色模式覆盖：导航栏 / 侧边栏 / 移动导航背景透明度调整 ===
-     原 light-dark() 已迁移为 [data-theme='dark'] 选择器方案，
-     因 Tailwind v4 解析器在 @theme 块外不支持 light-dark() 与 var() 混合写法 */
   [data-theme='dark'] {
     --header-bg: color-mix(in oklch, var(--color-bg-primary) 80%, transparent);
     --sidebar-bg: color-mix(in oklch, var(--color-bg-secondary) 40%, transparent);
@@ -102,38 +56,8 @@
   }
 }
 
-/* === 布局组件样式（components 层） === */
 @layer components {
 
-  /* ============================================================
-   * 0. 统一图标按钮基类 .fndx-icon-btn
-   * ------------------------------------------------------------
-   * 设计动机：项目中带 SVG 的小按钮（主题切换、折叠/展开、返回首页、
-   * 关闭、返回顶部、分类导航、GitHub 链接、复制按钮等）原本散落在
-   * 多个样式文件中，存在两套并行设计系统，导致美术风格割裂。
-   *
-   * 统一规范（ghost 风格，与 .fndx-theme-toggle 一致）：
-   * - 透明背景 + 无边框 + --radius-control 圆角
-   * - 尺寸：--size-control-sm（32px）
-   * - 文字色：--color-fg-secondary（默认）/ --color-fg-primary（悬停）
-   * - 悬停背景：--color-bg-hover
-   * - 过渡：--motion-duration-instant + --motion-easing-out
-   *
-   * 统一交互特效（全站图标按钮共用一套反馈语言）：
-   * - 悬停：背景提亮 + 文字加深 + 图标微缩放（scale 1.08）
-   * - 按下：整体缩放反馈（scale 0.94）+ 激活背景加深
-   * - 聚焦：2px 焦点环（--color-border-focus）
-   * - 方向性图标（左右滚动/上下篇/外链箭头）可在各自组件中叠加位移动效
-   *
-   * 变体：
-   * - .fndx-icon-btn--labeled：带文字标签，自动宽度，统一字号/字重/字距
-   *
-   * 使用方式：
-   *   <button class="fndx-icon-btn" aria-label="..."><svg>...</svg></button>
-   *   <a class="fndx-icon-btn fndx-icon-btn--labeled" href="...">
-   *     <svg>...</svg><span>文字</span>
-   *   </a>
-   * ============================================================ */
   .fndx-icon-btn {
     display: inline-flex;
     align-items: center;
@@ -148,7 +72,6 @@
     cursor: pointer;
     text-decoration: none;
     flex-shrink: 0;
-    /* 触屏设备去除点击高亮，统一由背景/缩放反馈替代 */
     -webkit-tap-highlight-color: transparent;
     transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
                 color var(--motion-duration-instant) var(--motion-easing-out),
@@ -157,8 +80,6 @@
                 transform var(--motion-duration-instant) var(--motion-easing-out);
   }
 
-  /* SVG 图标默认 16px，flex-shrink 防止被压缩；微缩放动效由 hover 触发。
-   * 主题切换按钮除外：其图标由 Motion 驱动旋转/缩放动画，避免 CSS 过渡冲突 */
   .fndx-icon-btn:not(.fndx-theme-toggle) svg {
     width: 16px;
     height: 16px;
@@ -166,7 +87,6 @@
     transition: transform var(--motion-duration-normal) var(--motion-easing-out);
   }
 
-  /* 悬停反馈：背景提亮 + 文字加深 + 图标微缩放（仅支持 hover 的设备生效） */
   @media (hover: hover) {
     .fndx-icon-btn:hover {
       background-color: var(--color-bg-hover);
@@ -178,20 +98,16 @@
     }
   }
 
-  /* 按下反馈：整体缩放 + 激活背景加深（与悬停背景区分层级） */
   .fndx-icon-btn:active {
     background-color: var(--color-bg-active);
     transform: scale(0.94);
   }
 
-  /* 键盘焦点可见状态：统一焦点环 */
   .fndx-icon-btn:focus-visible {
     outline: 2px solid var(--color-border-focus);
     outline-offset: 2px;
   }
 
-  /* 带文字标签的变体：自动宽度，统一文字样式
-   * 用于：返回顶部(Top)、展开侧边栏、GitHub 源仓库、上下篇导航等 */
   .fndx-icon-btn--labeled {
     width: auto;
     height: var(--size-control-sm);
@@ -202,21 +118,6 @@
     letter-spacing: var(--font-letter-spacing-label);
   }
 
-  /* ============================================================
-   * 1. 顶部导航 .fndx-header
-   * ------------------------------------------------------------
-   * 使用方式：
-   *   <header class="fndx-header" role="banner">
-   *     <div class="fndx-header__left">
-   *       <a class="fndx-header__logo" href="/">
-   *         <span class="fndx-header__logo-text">FANDEX</span>
-   *       </a>
-   *     </div>
-   *     <div class="fndx-header__right">
-   *       <button class="fndx-header__action">…</button>
-   *     </div>
-   *   </header>
-   * ============================================================ */
   .fndx-header {
     position: sticky;
     top: 0;
@@ -241,7 +142,6 @@
     }
   }
 
-  /* 左/右区域 */
   .fndx-header__left,
   .fndx-header__right {
     display: flex;
@@ -249,9 +149,6 @@
     gap: var(--space-inline-sm);
   }
 
-  /* 中部区域（搜索触发器、导航链接等）
-   * 默认 flex: 1 占满剩余空间，并限制最大宽度避免搜索框过宽
-   * 移动端：缩小为自适应内容，避免压缩左右操作区 */
   .fndx-header__center {
     flex: 1 1 auto;
     display: flex;
@@ -268,8 +165,6 @@
     }
   }
 
-  /* 汉堡菜单按钮（移动端文档页可见）
-   * 复用 .fndx-header__action 基础样式，此处仅覆盖可见性 */
   .fndx-header__menu-toggle {
     display: none;
   }
@@ -280,7 +175,6 @@
     }
   }
 
-  /* Logo 文字在窄屏下隐藏（仅显示 Logo 标记） */
   .fndx-header__logo-text {
     display: inline-block;
   }
@@ -291,7 +185,6 @@
     }
   }
 
-  /* Logo 容器 */
   .fndx-header__logo {
     display: inline-flex;
     align-items: center;
@@ -304,7 +197,6 @@
     letter-spacing: var(--font-letter-spacing-wide);
   }
 
-  /* 操作按钮（图标按钮） */
   .fndx-header__action {
     display: inline-flex;
     align-items: center;
@@ -332,7 +224,6 @@
     outline-offset: 2px;
   }
 
-  /* 操作链接（文字按钮） */
   .fndx-header__action-link {
     display: inline-flex;
     align-items: center;
@@ -357,19 +248,6 @@
     }
   }
 
-  /* ============================================================
-   * 2. 底部信息区 .fndx-footer
-   * ------------------------------------------------------------
-   * 使用方式：
-   *   <footer class="fndx-footer" role="contentinfo">
-   *     <div class="fndx-footer__container">
-   *       <div class="fndx-footer__section">…</div>
-   *       <div class="fndx-footer__bottom">
-   *         <p class="fndx-footer__copyright">© 2026 FANDEX</p>
-   *       </div>
-   *     </div>
-   *   </footer>
-   * ============================================================ */
   .fndx-footer {
     border-top: 1px solid var(--color-border-default);
     background-color: var(--color-bg-secondary);
@@ -378,8 +256,6 @@
     margin-top: auto;
   }
 
-  /* 极简模式修饰符：单行版权，无块状背景，呈现为网页底部简单信息行
-     移除背景色与上边框，避免形成独立视觉块（用户反馈：太突兀） */
   .fndx-footer--minimal {
     background-color: transparent;
     border-top: none;
@@ -390,7 +266,6 @@
     gap: 0;
   }
 
-  /* 极简模式下底部版权区：移除上边框与额外内边距，保持单行紧凑 */
   .fndx-footer--minimal .fndx-footer__bottom {
     padding-top: 0;
     border-top: none;
@@ -412,7 +287,6 @@
     }
   }
 
-  /* 分区组（多列布局） */
   .fndx-footer__sections {
     display: grid;
     grid-template-columns: 1fr;
@@ -458,7 +332,6 @@
     }
   }
 
-  /* 底部版权区 */
   .fndx-footer__bottom {
     display: flex;
     flex-direction: column;
@@ -483,14 +356,11 @@
     color: var(--color-fg-tertiary);
   }
 
-  /* 居中单列布局变体（首页等简约 footer 使用）
-   * 通过 .fndx-footer--centered 修饰符切换为居中布局 */
   .fndx-footer--centered .fndx-footer__container {
     align-items: center;
     text-align: center;
   }
 
-  /* 导航链接组（居中布局） */
   .fndx-footer__nav {
     display: flex;
     align-items: center;
@@ -512,20 +382,17 @@
     }
   }
 
-  /* 统计数据区 */
   .fndx-footer__stats {
     color: var(--color-fg-tertiary);
     font-size: var(--font-size-secondary);
   }
 
-  /* 技术信息 */
   .fndx-footer__tech {
     color: var(--color-fg-tertiary);
     opacity: 0.7;
     font-size: var(--font-size-secondary);
   }
 
-  /* 注意事项/免责声明文字 */
   .fndx-footer__notice {
     color: var(--color-fg-tertiary);
     opacity: 0.5;
@@ -533,7 +400,6 @@
     line-height: var(--font-line-height-body);
   }
 
-  /* 分隔符 */
   .fndx-footer__divider,
   .fndx-footer__nav-divider {
     opacity: 0.4;
@@ -541,13 +407,6 @@
     user-select: none;
   }
 
-  /* ============================================================
-   * 3. 左侧文档导航 .fndx-sidebar
-   * ------------------------------------------------------------
-   * 紧凑现代风格：减小宽度、去除劣质装饰、支持整体折叠收纳
-   * 折叠状态由 .is-collapsed 类驱动，宽度过渡为 0 释放阅读空间
-   * 折叠后通过浮动展开按钮（.fndx-sidebar__expand-fab）恢复
-   * ============================================================ */
   .fndx-sidebar {
     display: flex;
     flex-direction: column;
@@ -558,7 +417,6 @@
     -webkit-backdrop-filter: blur(8px);
     border-right: 1px solid var(--sidebar-border);
     overflow: hidden;
-    /* 折叠/展开过渡：宽度变化使用 ease-out 避免弹跳 */
     transition: width var(--motion-duration-normal) var(--motion-easing-out);
   }
 
@@ -568,7 +426,6 @@
     }
   }
 
-  /* 折叠态：宽度归零，内容隐藏，释放全部阅读空间 */
   .fndx-sidebar.is-collapsed {
     width: var(--sidebar-collapsed-width);
     border-right: none;
@@ -582,23 +439,10 @@
     visibility: hidden;
   }
 
-  /* 首屏侧边栏折叠 FOUC 防护
-   * -------------------------------------------------------------------------
-   * 问题：SSR 渲染的 <aside> 无 is-collapsed 类，首屏为展开态；
-   *       hydration 后 sidebar-interactions.ts 才读取 localStorage 并应用折叠类，
-   *       导致"先展开后折叠"的视觉闪屏。
-   * 方案：BaseLayout.astro 内联脚本在 <head> 阶段同步读取 localStorage，
-   *       为 <html> 添加 sidebar-collapsed 标记类；
-   *       此处基于该标记类在首屏即应用折叠样式，与 .is-collapsed 等效。
-   * 同步：sidebar-interactions.ts 的 applyCollapsedState 会同步管理 <html> 上该类，
-   *       确保用户切换折叠状态时首屏标记类与实际状态一致。
-   * 注：html.sidebar-collapsed 选择器特异性高于 .fndx-sidebar.is-collapsed，
-   *     但两者样式声明完全相同，互不冲突；hydration 后两套规则同时生效，效果一致。 */
   html.sidebar-collapsed .app-layout {
     grid-template-columns: 0 1fr;
   }
 
-  /* TOC 已改为 position:fixed，不再占 grid 列，折叠态同样为双列 */
   html.sidebar-collapsed .app-layout.has-toc {
     grid-template-columns: 0 1fr;
   }
@@ -620,31 +464,18 @@
     display: flex;
   }
 
-  /* 浮动展开按钮：侧边栏折叠时显示在左边缘顶部，点击恢复侧边栏
-   * 位置与侧边栏顶部折叠按钮对齐（紧贴 header 下方），含"展开"文字标注
-   * 基础按钮样式由 .fndx-icon-btn--labeled 提供，此处仅保留定位与特殊边框形状
-   *
-   * 选择器特异性说明：
-   * - 选择器附加 .fndx-icon-btn 将特异性提升至 (0,2,0)
-   * - 目的：覆盖 [data-tooltip] { position: relative } 的 (0,1,0)
-   * - 该按钮同时承载 data-tooltip 属性（用于悬浮提示），但不允许 relative
-   *   覆盖 position: fixed，否则按钮会被定位到文档流中而非视口左上角，
-   *   导致侧边栏折叠后用户看不到展开按钮
-   */
   .fndx-sidebar__expand-fab.fndx-icon-btn {
     position: fixed;
     top: var(--nav-height);
     left: 0;
     z-index: var(--z-sidebar);
     display: none;
-    /* 仅保留右侧圆角，贴合左边缘 */
     border-radius: 0 var(--radius-control) var(--radius-control) 0;
     background-color: var(--sidebar-bg);
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
   }
 
-  /* 展开按钮文字标注：字号/字重/字距由 .fndx-icon-btn--labeled 统一控制 */
   .fndx-sidebar__expand-fab-text {
     white-space: nowrap;
   }
@@ -654,7 +485,6 @@
     display: inline-flex;
   }
 
-  /* 顶部标题区（紧凑现代风格：精简标题 + 折叠/返回图标按钮） */
   .fndx-sidebar__top {
     display: flex;
     align-items: center;
@@ -665,7 +495,6 @@
     flex-shrink: 0;
   }
 
-  /* 折叠按钮：基础样式由 .fndx-icon-btn 提供，此处仅保留 24px 紧凑尺寸覆盖 */
   .fndx-sidebar__collapse {
     flex-shrink: 0;
     width: 24px;
@@ -689,22 +518,18 @@
     line-height: 1.4;
   }
 
-  /* 模块标题在滚动区内的变体（从顶部区移入，需底部间距与分隔线区分标题与列表） */
   .fndx-sidebar__title--module {
     padding: var(--space-1) var(--space-2) var(--space-2);
     margin-bottom: var(--space-2);
     border-bottom: 1px solid var(--color-border-subtle);
   }
 
-  /* 视图切换 tabs 在共享顶部区中居中占据中间空间
-     替代原模块标题位置，flex:1 让 tabs 自适应中间剩余空间并居中 */
   .fndx-sidebar__top .fndx-sidebar__view-tabs {
     flex: 1 1 auto;
     justify-content: center;
     max-width: 12rem;
   }
 
-  /* 折叠/切换按钮 */
   .fndx-sidebar__toggle {
     display: inline-flex;
     align-items: center;
@@ -726,7 +551,6 @@
     }
   }
 
-  /* 滚动区 */
   .fndx-sidebar__scroll {
     flex: 1 1 auto;
     overflow-y: auto;
@@ -736,7 +560,6 @@
     scrollbar-color: var(--color-border-strong) transparent;
   }
 
-  /* 文档列表 */
   .fndx-sidebar__list {
     list-style: none;
     margin: 0;
@@ -746,7 +569,6 @@
     gap: var(--space-stack-xs);
   }
 
-  /* 模块分组 */
   .fndx-sidebar__group {
     display: flex;
     flex-direction: column;
@@ -770,10 +592,6 @@
     transition: background-color var(--motion-duration-instant) var(--motion-easing-out);
   }
 
-  /* 左侧几何色条指示器：3px 宽竖条 + 模块分类色
-   * 与首页 .category-marker、module-card 底部条的几何美学统一
-   * 使用 group-title 上 inline 设置的 --module-color（Sidebar.astro 已注入）
-   * hover 时高度增长，复用 category-marker 的交互语言 */
   .fndx-sidebar__group-title::before {
     content: '';
     position: absolute;
@@ -811,20 +629,16 @@
     display: none;
   }
 
-  /* 文档链接：紧凑化，去除劣质左边框线，改用模块分类色高亮 */
   .fndx-sidebar__link {
     display: flex;
     align-items: center;
     gap: var(--space-inline-xs);
     padding: var(--space-1) var(--space-2);
-    /* 移除 border-radius，左侧颜色条保持直角（与 .doc-list-link 统一几何线条风格） */
     border-radius: 0;
     color: var(--color-fg-secondary);
     text-decoration: none;
     font-size: var(--font-size-secondary);
     line-height: var(--font-line-height-body);
-    /* 激活态使用左侧 2px 实线，颜色由 --module-color 驱动（模块分类色）
-       默认透明，激活时显现；统一几何直角线条 */
     border-left: 2px solid transparent;
     transition: background-color var(--motion-duration-instant) var(--motion-easing-out),
                 color var(--motion-duration-instant) var(--motion-easing-out),
@@ -832,7 +646,6 @@
   }
 
   @media (hover: hover) {
-    /* 悬停特效（需求5）：强化背景色 + 模块分类色左边框 + 文字加色，视觉提示更明显 */
     .fndx-sidebar__link:hover {
       background-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 8%, var(--color-bg-hover));
       color: var(--color-fg-primary);
@@ -840,8 +653,6 @@
     }
   }
 
-  /* 激活态：使用模块分类色（--module-color）替代 web 主题青色
-     确保侧边栏与模块卡片、模块页的视觉色系统一 */
   .fndx-sidebar__link.is-active,
   .fndx-sidebar__link[aria-current='page'] {
     background-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 10%, transparent);
@@ -855,8 +666,6 @@
     outline-offset: -2px;
   }
 
-  /* 关闭按钮（移动端抽屉模式可见）
-   * 基础样式由 .fndx-icon-btn 提供，此处仅保留定位与移动端显隐控制 */
   .fndx-sidebar__close {
     position: absolute;
     top: var(--space-2);
@@ -871,7 +680,6 @@
     }
   }
 
-  /* 标题组：小圆点 + 标题文字（紧凑横排） */
   .fndx-sidebar__title-group {
     display: flex;
     align-items: center;
@@ -880,7 +688,6 @@
     flex: 1 1 auto;
   }
 
-  /* 模块分类颜色竖条（项目规范：禁止圆点装饰，统一为竖条刻度） */
   .fndx-sidebar__color-dot {
     flex-shrink: 0;
     width: 2px;
@@ -889,7 +696,6 @@
     background-color: var(--color-accent-base);
   }
 
-  /* 视图切换按钮组（章节 / 资料） */
   .fndx-sidebar__view-tabs {
     display: inline-flex;
     flex-shrink: 0;
@@ -923,18 +729,12 @@
     }
   }
 
-  /* 激活态：使用模块分类色（--module-color）替代固定品牌青色
-   * 与 .fndx-sidebar__link.is-active、module-card、category-marker 的色系统一
-   * 背景采用 color-mix 低浓度融合，避免实色卡通感，保持克制几何美学
-   * 底部 2px 进度条作为装饰标识，与 module-card 底部条统一几何语言 */
   .fndx-sidebar__view-tab.is-active {
     background-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 12%, transparent);
     color: var(--module-color, var(--color-accent-base));
     font-weight: var(--font-weight-emphasis);
   }
 
-  /* 底部装饰条：激活态固定显现，非激活态 hover 时低透明度预览
-   * 几何标识语言与 module-card 底部进度条、category-marker 竖条一致 */
   .fndx-sidebar__view-tab::after {
     content: '';
     position: absolute;
@@ -964,7 +764,6 @@
     outline-offset: -2px;
   }
 
-  /* 返回首页（图标按钮）：基础样式与统一特效由 .fndx-icon-btn 提供，此处仅保留 24px 紧凑尺寸 */
   .fndx-sidebar__back {
     flex-shrink: 0;
     width: 24px;
@@ -972,7 +771,6 @@
     text-decoration: none;
   }
 
-  /* 面板（视图容器）：章节 / 资料 / 全部模块互斥显示 */
   .fndx-sidebar__panel {
     display: flex;
     flex-direction: column;
@@ -991,8 +789,6 @@
     letter-spacing: 0.02em;
   }
 
-  /* 章节序号（需求：左侧目录栏序号）：等宽数字 + 2px 竖条刻度线，
-     直角无圆点，激活/悬停态随 --module-color 着色 */
   .fndx-sidebar__link-index {
     flex-shrink: 0;
     min-width: 2ch;
@@ -1001,7 +797,6 @@
     font-variant-numeric: tabular-nums;
     font-size: calc(var(--font-size-secondary) * 0.9);
     color: var(--color-fg-tertiary);
-    /* 2px 竖条刻度线：与激活态左侧 2px 实线同一几何语言 */
     border-right: 2px solid transparent;
     transition: color var(--motion-duration-instant) var(--motion-easing-out),
                 border-color var(--motion-duration-instant) var(--motion-easing-out);
@@ -1018,7 +813,6 @@
     border-right-color: var(--module-color, var(--color-accent-base));
   }
 
-  /* 文档链接文本（与进度指示器并排） */
   .fndx-sidebar__link-text {
     overflow: hidden;
     text-overflow: ellipsis;
@@ -1026,7 +820,6 @@
     min-width: 0;
   }
 
-  /* 图标链接变体 */
   .fndx-sidebar__link--icon {
     padding: var(--space-2) var(--space-3);
   }
@@ -1037,7 +830,6 @@
     height: var(--size-icon-sm);
   }
 
-  /* 大纲链接：根据层级缩进 */
   .fndx-sidebar__link--level-2 {
     padding-left: var(--space-3);
   }
@@ -1046,14 +838,12 @@
     padding-left: var(--space-6);
   }
 
-  /* 子文档链接（更小字号 + 缩进） */
   .fndx-sidebar__link--sub {
     padding: var(--space-1) var(--space-3);
     padding-left: var(--space-6);
     font-size: var(--font-size-caption);
   }
 
-  /* 底部固定入口区 */
   .fndx-sidebar__footer-links {
     display: flex;
     flex-direction: column;
@@ -1063,7 +853,6 @@
     border-top: 1px solid var(--color-border-subtle);
   }
 
-  /* 模块行（全部模块视图）：链接 + 展开按钮 */
   .fndx-sidebar__module-row {
     display: flex;
     align-items: center;
@@ -1075,7 +864,6 @@
     min-width: 0;
   }
 
-  /* 模块展开按钮 */
   .fndx-sidebar__module-arrow {
     display: inline-flex;
     align-items: center;
@@ -1104,7 +892,6 @@
     outline-offset: 2px;
   }
 
-  /* 箭头图标旋转（展开状态） */
   .fndx-sidebar__module-arrow-icon {
     display: inline-flex;
     transition: transform var(--motion-duration-fast) var(--motion-easing-out);
@@ -1114,7 +901,6 @@
     transform: rotate(90deg);
   }
 
-  /* 模块子文档列表（默认折叠） */
   .fndx-sidebar__module-docs {
     list-style: none;
     margin: 0;
@@ -1129,7 +915,6 @@
     display: none;
   }
 
-  /* 模块分类竖条（小尺寸） */
   .fndx-sidebar__module-dot {
     flex-shrink: 0;
     width: 2px;
@@ -1137,7 +922,6 @@
     border-radius: 1px;
   }
 
-  /* 分组标题竖条（全部模块视图分类标识） */
   .fndx-sidebar__group-dot {
     display: inline-flex;
     width: 2px;
@@ -1146,7 +930,6 @@
     flex-shrink: 0;
   }
 
-  /* 移动端：Sidebar 变为滑入抽屉 */
   @media (max-width: 767.98px) {
     .fndx-sidebar {
       position: fixed;
@@ -1164,13 +947,11 @@
       transform: translateX(0);
     }
 
-    /* 侧边栏打开时锁定页面滚动（body.sidebar-open 由 Layout.astro 脚本控制） */
     body.sidebar-open {
       overflow: hidden;
     }
   }
 
-  /* 遮罩层（移动端 Sidebar 打开时） */
   .fndx-sidebar-backdrop {
     position: fixed;
     inset: 0;
@@ -1188,25 +969,11 @@
     visibility: visible;
   }
 
-  /* ============================================================
-   * 4. 右侧目录大纲 .fndx-toc
-   * ------------------------------------------------------------
-   * 使用方式：
-   *   <aside class="fndx-toc" aria-label="本页目录">
-   *     <nav class="fndx-toc__nav">
-   *       <h2 class="fndx-toc__title">目录</h2>
-   *       <ul class="fndx-toc__list">
-   *         <li><a class="fndx-toc__link is-active" href="#section-1">章节</a></li>
-   *       </ul>
-   *     </nav>
-   *   </aside>
-   * ============================================================ */
   .fndx-toc {
     display: flex;
     flex-direction: column;
     width: var(--toc-width);
     flex-shrink: 0;
-    /* min-width: 0 防止 grid 子元素内容撑破列宽导致三栏布局坍缩（需求9） */
     min-width: 0;
     background-color: var(--toc-bg);
     overflow: hidden;
@@ -1218,14 +985,6 @@
     }
   }
 
-  /* 桌面端 fixed 定位（需求2 修复）
-   * -------------------------------------------------------------------------
-   * 问题：原 sticky 定位 + grid 三列布局，在侧边栏折叠/展开时
-   *       grid-template-columns 过渡导致 TOC 产生水平位移，遮挡内容。
-   * 方案：改为 position:fixed 脱离 grid 流，固定在视口右侧，
-   *       主内容区通过 padding-right 预留宽度（见 components.css .app-layout.has-toc）。
-   * 优势：侧边栏折叠/展开时 TOC 位置完全不变，消除水平位移。
-   * max-height 约束 TOC 高度，超出部分由 .fndx-toc__nav 内部滚动 */
   @media (min-width: 1024px) {
     .fndx-toc {
       position: fixed;
@@ -1236,14 +995,12 @@
     }
   }
 
-  /* 移动端隐藏（由底部弹层替代） */
   @media (max-width: 1023px) {
     .fndx-toc {
       display: none;
     }
   }
 
-  /* TOC 导航容器：可纵向滚动（需求10），min-height:0 允许 flex 子元素收缩 */
   .fndx-toc__nav {
     display: flex;
     flex-direction: column;
@@ -1256,7 +1013,6 @@
     scrollbar-color: var(--color-border-strong) transparent;
   }
 
-  /* WebKit 滚动条样式 */
   .fndx-toc__nav::-webkit-scrollbar {
     width: 4px;
   }
@@ -1270,7 +1026,6 @@
     background: transparent;
   }
 
-  /* TOC 标题：sticky 固定在 nav 顶部，滚动时保持可见 */
   .fndx-toc__title {
     position: sticky;
     top: 0;
@@ -1295,12 +1050,9 @@
     border-left: 1px solid var(--toc-border);
   }
 
-  /* TOC 链接：统一左侧竖线装饰与 .fndx-sidebar__link 一致（需求3）
-   * 移除 border-radius，左侧颜色条保持直角（全项目颜色条统一几何直角风格） */
   .fndx-toc__link {
     display: block;
     padding: var(--space-1) var(--space-3);
-    /* 移除 border-radius，左侧颜色条保持直角 */
     border-radius: 0;
     border-left: 2px solid transparent;
     margin-left: -1px;
@@ -1314,7 +1066,6 @@
   }
 
   @media (hover: hover) {
-    /* TOC 链接悬停：统一使用 --module-color 驱动背景与边框色（与 sidebar__link 一致） */
     .fndx-toc__link:hover {
       background-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 8%, var(--color-bg-hover));
       color: var(--color-fg-primary);
@@ -1322,7 +1073,6 @@
     }
   }
 
-  /* 激活态：使用 --module-color 替代固定 accent 色，与侧边栏激活态一致 */
   .fndx-toc__link.is-active {
     background-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 10%, transparent);
     color: var(--module-color, var(--color-accent-base));
@@ -1335,7 +1085,6 @@
     outline-offset: -2px;
   }
 
-  /* TOC 层级缩进 */
   .fndx-toc__link--level-2 {
     padding-left: var(--space-6);
   }
@@ -1348,7 +1097,6 @@
     padding-left: var(--space-10);
   }
 
-  /* 折叠按钮 */
   .fndx-toc__collapse {
     display: inline-flex;
     align-items: center;
@@ -1383,19 +1131,16 @@
     display: none;
   }
 
-  /* TOC 列表项（无额外样式，保留语义占位便于未来扩展） */
   .fndx-toc__item {
     min-width: 0;
   }
 
-  /* 分组头部：父级 h2 链接 + 折叠按钮 */
   .fndx-toc__group-header {
     display: flex;
     align-items: center;
     gap: var(--space-inline-xs);
   }
 
-  /* 父级 h2 链接：占据剩余空间，与折叠按钮并排 */
   .fndx-toc__link--parent {
     flex: 1 1 auto;
     min-width: 0;
@@ -1404,7 +1149,6 @@
     white-space: nowrap;
   }
 
-  /* 孤立 h3（无 h2 父级）的占位标签 */
   .fndx-toc__orphan-label {
     display: block;
     flex: 1 1 auto;
@@ -1417,17 +1161,6 @@
     opacity: 0.7;
   }
 
-  /* ============================================================
-   * 5. 阅读进度条 .fndx-reading-progress
-   * ------------------------------------------------------------
-   * 使用方式：
-   *   <div class="fndx-reading-progress" role="progressbar"
-   *        aria-valuenow="35" aria-valuemin="0" aria-valuemax="100">
-   *     <div class="fndx-reading-progress__bar" style="width: 35%"></div>
-   *   </div>
-   *
-   * 由 JS 监听 scroll 事件更新 width 与 aria-valuenow
-   * ============================================================ */
   .fndx-reading-progress {
     position: fixed;
     top: 0;
@@ -1447,24 +1180,12 @@
     border-radius: 0 2px 2px 0;
   }
 
-  /* 尊重 prefers-reduced-motion：禁用过渡 */
   @media (prefers-reduced-motion: reduce) {
     .fndx-reading-progress__bar {
       transition: none;
     }
   }
 
-  /* ============================================================
-   * 6. 移动端底部导航 .fndx-mobile-nav
-   * ------------------------------------------------------------
-   * 使用方式：
-   *   <nav class="fndx-mobile-nav" aria-label="底部导航">
-   *     <a class="fndx-mobile-nav__item is-active" href="/">
-   *       <span class="fndx-mobile-nav__icon">…</span>
-   *       <span class="fndx-mobile-nav__label">首页</span>
-   *     </a>
-   *   </nav>
-   * ============================================================ */
   .fndx-mobile-nav {
     position: fixed;
     inset-inline: 0;
@@ -1474,14 +1195,12 @@
     align-items: stretch;
     height: var(--mobile-nav-height);
     padding-bottom: env(safe-area-inset-bottom);
-    /* 移动端纯色背景，避免 backdrop-filter 与 fixed 叠加导致每帧重绘卡顿 */
     background-color: var(--color-bg-primary);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
     border-top: 1px solid var(--header-border);
   }
 
-  /* 仅移动端显示 */
   @media (min-width: 768px) {
     .fndx-mobile-nav {
       display: none;
@@ -1528,21 +1247,6 @@
     line-height: 1;
   }
 
-  /* ============================================================
-   * 7. 面包屑导航 .fndx-breadcrumb
-   * ------------------------------------------------------------
-   * 使用方式：
-   *   <nav class="fndx-breadcrumb" aria-label="面包屑">
-   *     <ol class="fndx-breadcrumb__list">
-   *       <li class="fndx-breadcrumb__item">
-   *         <a class="fndx-breadcrumb__link" href="/">首页</a>
-   *       </li>
-   *       <li class="fndx-breadcrumb__item is-current">
-   *         <span class="fndx-breadcrumb__current">当前页</span>
-   *       </li>
-   *     </ol>
-   *   </nav>
-   * ============================================================ */
   .fndx-breadcrumb {
     display: flex;
   }
@@ -1565,7 +1269,6 @@
     color: var(--color-fg-secondary);
   }
 
-  /* 分隔符 */
   .fndx-breadcrumb__item:not(:last-child)::after {
     content: '/';
     color: var(--color-fg-tertiary);
@@ -1596,24 +1299,8 @@
   }
 
   .fndx-breadcrumb__current {
-    /* 继承父级样式 */
   }
 
-  /* ============================================================
-   * 8. 文档上下页导航 .fndx-doc-nav
-   * ------------------------------------------------------------
-   * 使用方式：
-   *   <nav class="fndx-doc-nav" aria-label="文档导航">
-   *     <a class="fndx-doc-nav__link fndx-doc-nav__link--prev" href="…">
-   *       <span class="fndx-doc-nav__direction">上一篇</span>
-   *       <span class="fndx-doc-nav__title">文档标题</span>
-   *     </a>
-   *     <a class="fndx-doc-nav__link fndx-doc-nav__link--next" href="…">
-   *       <span class="fndx-doc-nav__direction">下一篇</span>
-   *       <span class="fndx-doc-nav__title">文档标题</span>
-   *     </a>
-   *   </nav>
-   * ============================================================ */
   .fndx-doc-nav {
     display: flex;
     justify-content: space-between;
@@ -1652,7 +1339,6 @@
     .fndx-doc-nav__link:hover {
       border-color: var(--color-accent-base);
       background-color: var(--color-bg-hover);
-      /* 移除悬停上浮 transform: translateY(-1px)，统一为直角边框样式反馈 */
     }
   }
 
@@ -1661,12 +1347,10 @@
     outline-offset: 2px;
   }
 
-  /* 上一篇：左对齐 */
   .fndx-doc-nav__link--prev {
     text-align: left;
   }
 
-  /* 下一篇：右对齐 */
   .fndx-doc-nav__link--next {
     text-align: right;
     align-items: flex-end;
@@ -1698,11 +1382,6 @@
     white-space: nowrap;
   }
 
-  /* ============================================================
-   * 9. 文档主内容区 .fndx-doc-content
-   * ------------------------------------------------------------
-   * 文档阅读容器，限制最大宽度提升可读性
-   * ============================================================ */
   .fndx-doc-content {
     width: 100%;
     max-width: var(--content-max-width);
@@ -1718,12 +1397,6 @@
     margin-bottom: 0;
   }
 
-  /* ============================================================
-   * 10. 三栏文档布局 .fndx-doc-layout
-   * ------------------------------------------------------------
-   * 桌面：Header + [Sidebar | Content | TOC] + Footer
-   * 移动：Header + [Content] + MobileNav
-   * ============================================================ */
   .fndx-doc-layout {
     display: flex;
     flex: 1 1 auto;
@@ -1745,37 +1418,12 @@
     flex-direction: column;
   }
 
-  /* 无 Sidebar 变体（首页、设置页等） */
   .fndx-doc-layout--no-sidebar {
-    /* Sidebar 隐藏时，内容区自动占满 */
   }
 
   .fndx-doc-layout--no-toc {
-    /* TOC 隐藏时，内容区自动占满 */
   }
 
-  /* ============================================================
-   * 11. 纯 CSS Tooltip（替代浏览器原生 title 属性）
-   * ------------------------------------------------------------
-   * 优化按钮悬停提示文本性能与样式
-   * -------------------------------------------------------------------------
-   * 问题：浏览器原生 title 属性存在显示延迟长（500ms+）、样式不可控、
-   *       触屏不可靠、快速移动鼠标时卡顿闪烁等问题。
-   * 方案：通过 data-tooltip 属性 + ::before/::after 伪元素实现纯 CSS tooltip
-   * 优势：零 JS、性能佳、样式统一（引用 ark 令牌）、支持键盘聚焦、延迟可控
-   *
-   * 用法：
-   *   <button data-tooltip="提示文本" aria-label="无障碍标签">...</button>
-   *   <button data-tooltip="提示" data-tooltip-pos="bottom">...</button>
-   *
-   * 位置变体（data-tooltip-pos）：
-   * - 默认/unset：上方显示
-   * - bottom：下方显示（用于导航栏按钮，避免被视口顶部裁剪）
-   * - right：右侧显示（用于侧边栏折叠按钮，避免被左边缘裁剪）
-   *
-   * 注意：data-tooltip 仅用于视觉提示，aria-label 用于屏幕阅读器
-   *       两者应同时存在，aria-label 值可与 data-tooltip 相同或更详细
-   * ============================================================ */
   [data-tooltip] {
     position: relative;
   }
@@ -1786,19 +1434,16 @@
     opacity: 0;
     pointer-events: none;
     z-index: 1000;
-    /* 延迟显示 300ms，避免鼠标快速划过时闪烁 */
     transition: opacity var(--motion-duration-fast) var(--motion-easing-out);
     transition-delay: 300ms;
   }
 
   [data-tooltip]::before {
     content: attr(data-tooltip);
-    /* 默认定位：上方 */
     bottom: 100%;
     left: 50%;
     transform: translateX(-50%);
     margin-bottom: 6px;
-    /* 样式：引用 ark 语义令牌，与设计系统一致 */
     padding: 4px 8px;
     background-color: var(--color-bg-elevated);
     color: var(--color-fg-primary);
@@ -1812,7 +1457,6 @@
     box-shadow: var(--shadow-sm);
   }
 
-  /* 小三角箭头（默认上方） */
   [data-tooltip]::after {
     content: '';
     bottom: 100%;
@@ -1823,7 +1467,6 @@
     border-top-color: var(--color-border-default);
   }
 
-  /* 位置变体：下方（用于导航栏按钮） */
   [data-tooltip-pos='bottom']::before {
     bottom: auto;
     top: 100%;
@@ -1840,7 +1483,6 @@
     border-bottom-color: var(--color-border-default);
   }
 
-  /* 位置变体：右侧（用于侧边栏按钮） */
   [data-tooltip-pos='right']::before {
     bottom: auto;
     top: 50%;
@@ -1861,7 +1503,6 @@
     border-left-color: var(--color-border-default);
   }
 
-  /* 悬停或键盘聚焦时显示 */
   [data-tooltip]:hover::before,
   [data-tooltip]:hover::after,
   [data-tooltip]:focus-visible::before,
@@ -1869,7 +1510,6 @@
     opacity: 1;
   }
 
-  /* 减少动效偏好：立即显示，无延迟和过渡 */
   @media (prefers-reduced-motion: reduce) {
     [data-tooltip]::before,
     [data-tooltip]::after {

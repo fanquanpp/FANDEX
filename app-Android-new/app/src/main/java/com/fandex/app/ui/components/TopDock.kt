@@ -55,26 +55,8 @@ import com.fandex.app.ui.common.selectionPulse
 import com.fandex.app.ui.common.tweenFast
 import com.fandex.app.ui.theme.LocalExtendedColors
 
-/** 源仓库地址（GitHub 按钮跳转目标） */
 const val REPO_URL = "https://github.com/fanquanpp/FANDEX"
 
-/**
- * 全局顶部功能 Dock
- *
- * 层次设计（体现"按钮有距离感，不与页面同纸"）：
- * - 整体为 surface 底 + 底部 1dp borderSubtle 分割线，与页面内容明确分层
- * - 右侧动作区收进一个"分段容器"：bgElevated 底 + 1dp borderDefault 边框 + 4dp 直角小圆角，
- *   图标按钮之间以 1dp x 16dp borderSubtle 竖条分隔，形成工具条层次
- * - 左侧标题前以 3dp x 14dp 模块色竖条装饰（传入 accentHex 时用模块色，否则用 primary）
- * - 返回 / 菜单图标与主题三态图标切换均带 fade + scale 过渡动效
- *
- * 参考旧版 FANDEX-App 顶栏设计：多页面通用功能常驻
- * - 左侧：抽屉菜单（首页）/ 返回（详情页）
- * - 中部：页面标题（首页为品牌名）
- * - 右侧：页面专属按钮 + 常驻功能按钮（语法速览 / 学习路线 / 搜索 / 首页 / 源仓库 / 主题快切）
- *
- * 图标统一取自共享 Material 图标集与 modules.json 元数据，不单独造图标
- */
 @Composable
 fun TopDock(
     title: String,
@@ -92,14 +74,12 @@ fun TopDock(
     pageActions: @Composable () -> Unit = {}
 ) {
     val extendedColors = LocalExtendedColors.current
-    // 标题竖条装饰色：优先模块分类色，缺省回退 primary
     val accent = accentHex?.let { CategoryColor.parse(it) } ?: MaterialTheme.colorScheme.primary
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surface)
-            // 状态栏内边距：自定义 Dock 需自行处理（M3 TopAppBar 默认自带）
             .statusBarsPadding()
     ) {
         Row(
@@ -109,7 +89,6 @@ fun TopDock(
                 .padding(horizontal = 8.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            // 左侧：抽屉 / 返回（图标切换带 fade + scale 过渡）
             AnimatedContent(
                 targetState = showBack,
                 transitionSpec = {
@@ -127,7 +106,6 @@ fun TopDock(
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // 标题区：模块色竖条装饰 + 标题
             Box(
                 modifier = Modifier
                     .width(3.dp)
@@ -144,12 +122,10 @@ fun TopDock(
                 modifier = Modifier.weight(1f)
             )
 
-            // 页面专属按钮（目录 / 分享等）：独立于右侧全局工具条
             pageActions()
 
             Spacer(modifier = Modifier.width(8.dp))
 
-            // 常驻功能分段容器：层次感的核心载体
             DockActionSegment(
                 showNavActions = showNavActions,
                 showHome = showHome,
@@ -161,7 +137,6 @@ fun TopDock(
             )
         }
 
-        // 底部 1dp 分割线：Dock 与页面内容的分界
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -171,13 +146,6 @@ fun TopDock(
     }
 }
 
-/**
- * 右侧常驻功能分段容器
- *
- * bgElevated 底 + 1dp borderDefault 边框 + 4dp 直角小圆角；
- * 相邻图标按钮之间插入 1dp x 16dp borderSubtle 竖条分隔，
- * 形成一整条"工具条"而非散落按钮（层次感距离感的核心交付）
- */
 @Composable
 private fun DockActionSegment(
     showNavActions: Boolean,
@@ -200,7 +168,6 @@ private fun DockActionSegment(
     ) {
         var hasPrevious = false
 
-        // 常驻导航：语法速览 / 学习路线 / 搜索（详情页收起以保标题空间）
         if (showNavActions) {
             DockSegmentItem(hasPrevious) { DockIcon(Icons.Filled.Code, "语法速览", onSyntax) }
             DockSegmentItem(true) { DockIcon(Icons.Filled.Explore, "学习路线", onLearningPath) }
@@ -208,13 +175,11 @@ private fun DockActionSegment(
             hasPrevious = true
         }
 
-        // 首页（非首页时显示，一键回主页）
         if (showHome) {
             DockSegmentItem(hasPrevious) { DockIcon(Icons.Filled.Home, "首页", onHome) }
             hasPrevious = true
         }
 
-        // 源仓库（浏览器打开 GitHub 仓库）
             DockSegmentItem(hasPrevious) {
                 val uriHandler = LocalUriHandler.current
                 DockIcon(Icons.AutoMirrored.Filled.OpenInNew, "源仓库") {
@@ -222,14 +187,10 @@ private fun DockActionSegment(
                 }
             }
 
-        // 主题快切（全页面常驻；当前所有调用方均传入非空内容）
         DockSegmentItem(true, content = themeQuickToggle)
     }
 }
 
-/**
- * 分段容器内的条目：非首个条目前插入 1dp x 16dp 竖条分隔
- */
 @Composable
 private fun DockSegmentItem(
     withLeadingDivider: Boolean,
@@ -246,9 +207,6 @@ private fun DockSegmentItem(
     content()
 }
 
-/**
- * Dock 图标按钮（统一走 FdxIconButton，20dp 图标 + 按压缩放）
- */
 @Composable
 private fun DockIcon(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
@@ -262,12 +220,6 @@ private fun DockIcon(
     )
 }
 
-/**
- * 分类筛选 Chip（参考旧版首页筛选行）
- *
- * 选中态：分类色填充 + 反色文字；未选中：边框 + 次级文字
- * 底色 / 边框 / 文字色随选中态平滑过渡，选中瞬间叠加弹性缩放脉冲
- */
 @Composable
 fun FilterChip(
     label: String,
@@ -279,7 +231,6 @@ fun FilterChip(
     val extendedColors = LocalExtendedColors.current
     val interaction = remember { MutableInteractionSource() }
 
-    // 选中 / 未选中三态颜色平滑过渡
     val bg by animateColorAsState(
         targetValue = if (selected) color else extendedColors.bgElevated,
         animationSpec = tween(FandexMotion.DurationFast),
@@ -287,7 +238,6 @@ fun FilterChip(
     )
     val fg by animateColorAsState(
         targetValue = if (selected) {
-            // 依据背景亮度选择可读文字色
             if (color.isLightColor()) Color.White
             else Color(0xFF0A0A0A)
         } else extendedColors.fgSecondary,
@@ -319,18 +269,11 @@ fun FilterChip(
     }
 }
 
-/** 亮度粗判（>0.6 视为浅色背景，用深色文字） */
 private fun Color.isLightColor(): Boolean {
     val lum = 0.299 * red + 0.587 * green + 0.114 * blue
     return lum > 0.6
 }
 
-/**
- * 主题快切按钮
- *
- * 参考旧版顶栏主题按钮：跟随系统 -> 浅色 -> 深色 循环
- * 图标随当前模式以 fade + scale 过渡切换（共享 Material 图标集）
- */
 @Composable
 fun ThemeQuickToggle(
     viewModel: com.fandex.app.MainViewModel
@@ -356,12 +299,6 @@ fun ThemeQuickToggle(
     }
 }
 
-/**
- * 字号缩放控件（文档页顶栏）
- *
- * 移植自旧端文章页顶栏的字号增减交互：步进 0.1，范围 0.8-1.4；
- * 到达边界时对应按钮置灰。缩放全局生效（FandexTheme 覆盖 LocalDensity）
- */
 @Composable
 fun FontScaleControls(
     viewModel: com.fandex.app.MainViewModel

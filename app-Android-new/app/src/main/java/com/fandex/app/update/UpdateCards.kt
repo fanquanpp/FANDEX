@@ -48,24 +48,8 @@ import com.fandex.app.ui.components.FdxIconButton
 import com.fandex.app.ui.theme.LocalExtendedColors
 import kotlinx.coroutines.delay
 
-/** 日志 TAG */
 private const val TAG = "UpdateCard"
 
-/**
- * 非侵入式更新提示卡片（Toast 模式）
- *
- * 功能：从顶部滑入的卡片，展示新版本信息与操作按钮，3 秒后自动收起
- *
- * 输入：
- *   - state：检查状态（CheckState.Available）
- *   - onDownload：点击"立即下载"回调
- *   - onDismiss：点击"稍后提醒"或自动消失回调
- *   - onIgnore：点击"忽略此版本"回调
- *   - modifier：布局修饰符
- *
- * 视觉对齐新端组件风格：bgElevated 底 + 1dp 边框 + 4dp 直角小圆角，
- * 不使用旧端的 GlassCard 玻璃拟态（新端无该组件）
- */
 @Composable
 fun UpdateToastCard(
     state: CheckState.Available,
@@ -75,13 +59,12 @@ fun UpdateToastCard(
     modifier: Modifier = Modifier
 ) {
     val info = state.updateInfo
-    /* 控制卡片可见性，3 秒后自动消失 */
     var visible by remember { mutableStateOf(true) }
 
     LaunchedEffect(Unit) {
         delay(3000)
         visible = false
-        delay(300) /* 等待退出动画完成 */
+        delay(300)
         onDismiss()
     }
 
@@ -107,19 +90,6 @@ fun UpdateToastCard(
     }
 }
 
-/**
- * 更新卡片内部内容组件
- *
- * 功能：统一的卡片内容渲染，信息结构与旧端 UpdateToastCard / ProgressCard 对齐：
- *   标题行（图标 + 版本号 + 关闭）-> 文件大小 -> 更新说明 -> 主操作行 -> 次要操作行
- *
- * 输入：
- *   - info：UpdateInfo 业务数据
- *   - onDownload：立即下载回调
- *   - onDismiss：关闭/稍后回调
- *   - onIgnore：忽略版本回调
- *   - maxReleaseNotesLines：Release Notes 最大行数
- */
 @Composable
 private fun UpdateCardContent(
     info: UpdateInfo,
@@ -140,7 +110,6 @@ private fun UpdateCardContent(
             .border(1.dp, extendedColors.borderDefault, RoundedCornerShape(4.dp))
             .padding(16.dp)
     ) {
-        /* 标题行：图标 + 版本号 + 关闭按钮 */
         Row(
             modifier = Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically
@@ -171,7 +140,6 @@ private fun UpdateCardContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        /* 文件大小信息行 */
         Text(
             text = "大小：${formatFileSize(info.downloadSize)}",
             style = MaterialTheme.typography.labelSmall,
@@ -180,7 +148,6 @@ private fun UpdateCardContent(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        /* 更新说明（Markdown 原文，最多 N 行） */
         if (info.releaseNotes.isNotBlank()) {
             Text(
                 text = info.releaseNotes,
@@ -193,7 +160,6 @@ private fun UpdateCardContent(
             Spacer(modifier = Modifier.height(12.dp))
         }
 
-        /* 操作按钮行：立即下载（primary 填充） + 查看详情（描边，跳转 Release 页面） */
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
@@ -247,7 +213,6 @@ private fun UpdateCardContent(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        /* 次要操作行：忽略此版本 / 稍后提醒 */
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.End,
@@ -276,15 +241,6 @@ private fun UpdateCardContent(
     }
 }
 
-/**
- * 下载进度卡片
- *
- * 功能：下载过程中展示进度条与已下载字节数（信息结构与旧端 ProgressCard 对齐）
- *
- * 输入：
- *   - state：DownloadState.Downloading 下载状态
- *   - onCancel：取消下载回调
- */
 @Composable
 fun UpdateDownloadProgressCard(
     state: DownloadState.Downloading,
@@ -361,12 +317,6 @@ fun UpdateDownloadProgressCard(
     }
 }
 
-/**
- * 下载完成提示浮层
- *
- * 功能：下载完成后展示"安装"入口，避免仅靠 LaunchedEffect 一次性调起
- *       在权限缺失等场景下没有重试入口的问题
- */
 @Composable
 fun UpdateInstallReadyCard(
     onInstall: () -> Unit,
@@ -407,12 +357,6 @@ fun UpdateInstallReadyCard(
     }
 }
 
-/**
- * 格式化文件大小
- *
- * 输入：字节数
- * 输出：人类可读字符串，如 "12.34 MB"
- */
 internal fun formatFileSize(bytes: Long): String {
     if (bytes <= 0) return "未知"
     val units = arrayOf("B", "KB", "MB", "GB")

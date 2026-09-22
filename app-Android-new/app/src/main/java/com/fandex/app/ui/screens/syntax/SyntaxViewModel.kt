@@ -10,11 +10,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * 语法速览 ViewModel
- *
- * 语言列表与统计来自预构建索引（syntax-index.json），顺序与 web 端一致
- */
 class SyntaxViewModel(application: Application) : AndroidViewModel(application) {
 
     private val container = (application as FandexApp).container

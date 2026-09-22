@@ -1,34 +1,4 @@
 ---
-/**
- * TableOfContents 目录大纲组件（三端共享）
- *
- * 功能概述：
- * - 在文档右侧显示当前页面的标题大纲（h2 / h3 / h4）
- * - sticky 定位，跟随滚动保持在视口内（避让 Header）
- * - IntersectionObserver 监听主内容区标题可见性，高亮当前章节
- * - 点击大纲项平滑滚动到对应标题
- * - h2 作为分组标题，点击折叠按钮可收起/展开其下所有 h3
- * - 折叠状态持久化到 localStorage（按页面 URL 隔离）
- * - 仅在传入标题数量 >= 3 时显示（避免短文档出现冗余大纲）
- * - 完整无障碍：aside[aria-label]、aria-current="location"、aria-expanded
- * - 基于 @fandex/styles 的 .fndx-toc 命名规范实现样式
- *
- * 设计原则：
- * - 严格消费 layout-components.css 中已定义的 .fndx-toc 令牌与样式
- * - 双主题由 [data-theme] 选择器与 color-scheme 自动切换
- * - 响应式：桌面（lg+）显示，移动端由 CSS 隐藏（.fndx-toc 在 max-width:1023px 时 display:none）
- * - 可访问性：focus-visible 焦点环、aria-current 当前章节标识、aria-expanded 折叠状态
- *
- * Props:
- *   headings - 标题数组（来自 Astro 执行 getHeadings() / Markdown headings）
- *              字段：{ depth: number; slug: string; text: string }
- *   maxDepth - 显示的最大标题深度（默认 3，即 h2 与 h3）
- *   minCount - 显示大纲所需的最少标题数（默认 3）
- *   scrollContainer - 滚动容器选择器（默认 '#app-main'，用于计算滚动偏移）
- *   offsetTop      - 滚动偏移量（默认 80，避让 sticky Header）
- *
- * 引用：spec.md 第八章 ark-ui 美术风格 / tasks.md 阶段 D.2.4 统一 TableOfContents 组件
- */
 interface TocHeading {
   depth: number;
   slug: string;
@@ -41,8 +11,6 @@ interface Props {
   minCount?: number;
   scrollContainer?: string;
   offsetTop?: number;
-  /** 自定义内联样式（用于注入 --module-color 等 CSS 变量，统一链接装饰色）
-   *  显式包含 undefined 以兼容 exactOptionalPropertyTypes 严格模式 */
   style?: string | undefined;
 }
 
@@ -55,18 +23,10 @@ const {
   style,
 } = Astro.props;
 
-/** 过滤可见标题：depth 在 [2, maxDepth] 区间 */
 const visibleHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= maxDepth);
 
-/** 是否显示大纲（标题数 >= minCount 才显示） */
 const shouldRender = visibleHeadings.length >= minCount;
 
-/**
- * 构建大纲分组结构：h2 作为组头，后续 h3 归入该组
- * 用于在模板中按组渲染，便于客户端按组折叠
- *
- * @returns 数组，每项包含 { type: 'h2', heading } 或 { type: 'h3-group', parent, items }
- */
 type TocGroup =
   | { type: 'h2'; heading: TocHeading }
   | { type: 'h3-group'; parent: TocHeading; items: TocHeading[] };
@@ -78,7 +38,6 @@ const groups: TocGroup[] = [];
 
   for (const h of visibleHeadings) {
     if (h.depth === 2) {
-      // 输出上一个未闭合的 h3-group
       if (currentGroup) {
         groups.push(currentGroup);
         currentGroup = null;
@@ -87,7 +46,6 @@ const groups: TocGroup[] = [];
       groups.push({ type: 'h2', heading: h });
     } else if (h.depth === 3) {
       if (!currentH2) {
-        // 没有 h2 父级的孤立 h3，单独成组（parent 为占位）
         groups.push({ type: 'h3-group', parent: { depth: 2, slug: '', text: '' }, items: [h] });
       } else {
         if (!currentGroup) {
@@ -101,7 +59,6 @@ const groups: TocGroup[] = [];
   if (currentGroup) groups.push(currentGroup);
 }
 
-/** 滚动容器与偏移量配置（序列化为 data 属性供客户端脚本读取） */
 const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offsetTop });
 ---
 
@@ -131,7 +88,6 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
                 </li>
               );
             }
-            // h3-group：渲染父级 h2 折叠按钮 + h3 列表
             const parentSlug = group.parent.slug;
             return (
               <li class="fndx-toc__item" data-toc-group={parentSlug || 'orphan'}>
@@ -195,33 +151,16 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
 }
 
 <script>
-  /**
-   * 目录大纲滚动监听与折叠逻辑（三端共享）
-   *
-   * 实现说明：
-   * - 通过 IntersectionObserver 监听主内容区标题进入视口
-   * - 当标题进入视口底部 60% 区域时，标记为当前章节
-   * - 同步高亮对应的大纲链接（添加 is-active 类）
-   * - 点击大纲项时阻止默认跳转，改为平滑滚动到标题位置
-   * - 点击折叠按钮时切换子目录显隐，并持久化到 localStorage
-   * - 兼容 View Transitions：监听 astro:page-load 事件重新初始化
-   * - 支持多实例：通过 data-toc-scroll-config 读取各组件的滚动配置
-   * - aria-label 文案经 lib/i18n 的 t() 取当前语言（UI 双语）
-   */
   import { t } from '@/lib/i18n';
 
-  /** 上一次创建的 IntersectionObserver，用于 page-load 前断开，防止累积泄漏 */
   let prevObserver: IntersectionObserver | null = null;
 
-  /** localStorage 键名前缀：TOC 折叠状态（按页面 URL 隔离） */
   const TOC_COLLAPSE_PREFIX = 'fandex-toc-collapsed:';
 
-  /** 获取当前页面的折叠状态存储键 */
   function getTocStorageKey(): string {
     return TOC_COLLAPSE_PREFIX + window.location.pathname;
   }
 
-  /** 读取已折叠的 h2 slug 集合 */
   function readCollapsedSet(): Set<string> {
     try {
       const raw = localStorage.getItem(getTocStorageKey());
@@ -233,7 +172,6 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
     }
   }
 
-  /** 写入已折叠的 h2 slug 集合 */
   function writeCollapsedSet(set: Set<string>): void {
     try {
       localStorage.setItem(getTocStorageKey(), JSON.stringify(Array.from(set)));
@@ -242,7 +180,6 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
     }
   }
 
-  /** 从 data-toc-scroll-config 属性解析滚动配置 */
   function readScrollConfig(aside: HTMLElement): { container: string; offset: number } {
     const raw = aside.getAttribute('data-toc-scroll-config');
     if (!raw) return { container: '#app-main', offset: 80 };
@@ -257,19 +194,15 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
     }
   }
 
-  /** 初始化 TOC 高亮 + 折叠交互 */
   function initTocHighlight(): void {
     const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.fndx-toc__link[data-toc-slug]');
     if (tocLinks.length === 0) return;
 
-    /** 定位 TOC 容器以读取滚动配置 */
     const tocAside = document.querySelector<HTMLElement>('.fndx-toc');
     const config = tocAside ? readScrollConfig(tocAside) : { container: '#app-main', offset: 80 };
 
-    /** 滚动容器（优先使用配置的选择器，回退到 documentElement） */
     const mainEl = document.querySelector<HTMLElement>(config.container) || document.documentElement;
 
-    /** 收集对应的标题 DOM */
     const headingElements: HTMLElement[] = [];
     tocLinks.forEach((link) => {
       const slug = link.getAttribute('data-toc-slug');
@@ -278,10 +211,8 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
       if (target) headingElements.push(target);
     });
 
-    /** 当前激活的 slug */
     let activeSlug = '';
 
-    /** 高亮指定 slug 对应的大纲链接，移除其他链接的高亮 */
     function highlightActive(slug: string): void {
       if (slug === activeSlug) return;
       activeSlug = slug;
@@ -297,9 +228,7 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
       });
     }
 
-    /** 点击大纲项时平滑滚动到标题 */
     tocLinks.forEach((link) => {
-      // 避免重复绑定
       if (link.dataset.bound === '1') return;
       link.dataset.bound = '1';
 
@@ -319,8 +248,6 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
       });
     });
 
-    /** IntersectionObserver：监听标题可见性 */
-    // 断开上一页的 observer，防止每次 page-load 累积新 observer 导致内存泄漏
     if (prevObserver) {
       prevObserver.disconnect();
       prevObserver = null;
@@ -332,7 +259,6 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
           .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
 
         if (visible.length > 0) {
-          // noUncheckedIndexedAccess 下 visible[0] 为 possibly undefined，需显式收窄
           const target = visible[0];
           if (target && target.target.id) {
             highlightActive(target.target.id);
@@ -348,17 +274,13 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
 
     headingElements.forEach((el) => observer.observe(el));
 
-    // 记录当前 observer，供下次 page-load 断开
     prevObserver = observer;
 
-    /** 初始化折叠按钮交互 */
     initTocCollapse();
 
-    /** 恢复持久化的折叠状态 */
     restoreTocCollapseState();
   }
 
-  /** 初始化 TOC 折叠按钮交互 */
   function initTocCollapse(): void {
     const buttons = document.querySelectorAll<HTMLButtonElement>('.fndx-toc__collapse[data-toc-collapse]');
     buttons.forEach((btn) => {
@@ -391,7 +313,6 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
           btn.setAttribute('aria-label', t('toc.collapse'));
         }
 
-        // 持久化
         const collapsedSet = readCollapsedSet();
         if (willCollapse) {
           collapsedSet.add(parentSlug);
@@ -403,7 +324,6 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
     });
   }
 
-  /** 恢复 TOC 折叠状态 */
   function restoreTocCollapseState(): void {
     const collapsedSet = readCollapsedSet();
     if (collapsedSet.size === 0) return;
@@ -424,7 +344,6 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
     });
   }
 
-  // 初始化（首屏与 View Transitions 跳转后均触发）
   initTocHighlight();
   document.addEventListener('astro:page-load', initTocHighlight);
 </script>

@@ -1,14 +1,4 @@
 ---
-/**
- * 首页布局组件
- * 提供首页的整体结构：顶部导航栏和主内容区
- * 导航栏包含 GitHub 仓库链接、全屏按钮和主题切换
- * 继承 BaseLayout 的共享 head 与样式引入，仅保留首页特有的结构与脚本
- *
- * 样式与交互逻辑已拆分至独立文件：
- * - styles/components/home-layout.css       布局样式（导航栏、主内容区、响应式）
- * - lib/home-layout-interactions.ts          客户端脚本（全屏切换与持久化）
- */
 import BaseLayout from '@/components/BaseLayout.astro';
 import ThemeToggle from '@/islands/ThemeToggle';
 import LangToggle from '@/components/LangToggle.astro';
@@ -22,8 +12,6 @@ const base = import.meta.env.BASE_URL;
 <BaseLayout title={title}>
   <slot name="head" slot="head" />
 
-  <!-- 首页滚动架构：body 禁止滚动，所有纵向滚动由 .home-main 内部容器处理
-       防止快速上下滑动时 body 扩展产生无限空页面 -->
   <style is:inline>
     @layer base {
     html {
@@ -39,7 +27,6 @@ const base = import.meta.env.BASE_URL;
     }
   </style>
 
-  <!-- 首页顶部导航栏 -->
   <header class="home-nav">
     <div class="nav-left">
       <a href={base} class="nav-logo" aria-label="返回首页" data-i18n-aria="nav.backHomeAria">
@@ -47,7 +34,6 @@ const base = import.meta.env.BASE_URL;
       </a>
     </div>
     <div class="nav-right">
-      <!-- 全站搜索：打开命令面板（Ctrl/Cmd + K），纯 DOM 实现无岛屿水合 -->
       <button class="nav-search-btn fndx-icon-btn fndx-icon-btn--labeled" type="button" data-search-trigger aria-label="搜索" data-i18n-aria="nav.searchAria" data-tooltip="搜索（Ctrl+K）" data-i18n-tooltip="nav.searchTooltip" data-tooltip-pos="bottom">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
           <circle cx="11" cy="11" r="7"></circle>
@@ -55,7 +41,6 @@ const base = import.meta.env.BASE_URL;
         </svg>
         <span class="nav-search-text" data-i18n="nav.search">搜索</span>
       </button>
-      <!-- GitHub 仓库链接：统一 fndx-icon-btn 风格，悬停提示简化为 GitHub -->
       <a
         href="https://github.com/fanquanpp/FANDEX"
         class="nav-github-link fndx-icon-btn fndx-icon-btn--labeled"
@@ -71,7 +56,6 @@ const base = import.meta.env.BASE_URL;
         >
         <span class="nav-github-text">GitHub</span>
       </a>
-      <!-- 全屏按钮：仅移动端显示，统一 fndx-icon-btn 风格 -->
       <button class="nav-fullscreen-btn fndx-icon-btn" id="home-fullscreen-btn" aria-label="切换全屏模式" data-i18n-aria="nav.fullscreenAria" data-tooltip="全屏" data-i18n-tooltip="nav.fullscreenTooltip" data-tooltip-pos="bottom">
         <svg
           width="16"
@@ -86,7 +70,6 @@ const base = import.meta.env.BASE_URL;
           ></path>
         </svg>
       </button>
-      <!-- PWA 安装入口：默认隐藏，可安装（beforeinstallprompt / iOS）时由 lib/pwa-install 点亮 -->
       <button class="nav-install-btn fndx-icon-btn" type="button" data-install-app hidden aria-label="安装应用" data-i18n-aria="nav.install" data-tooltip="安装到桌面 / 主屏幕" data-i18n-tooltip="nav.installTooltip" data-tooltip-pos="bottom">
         <svg
           width="14"
@@ -101,19 +84,15 @@ const base = import.meta.env.BASE_URL;
           <line x1="12" y1="15" x2="12" y2="3"></line>
         </svg>
       </button>
-      <!-- 界面语言切换（zh <-> en）：纯 DOM 组件，交互由 lib/i18n-dom 委托 -->
       <LangToggle />
-      <!-- 主题切换按钮 -->
       <ThemeToggle client:load />
     </div>
   </header>
-  <!-- 首页主内容区 -->
   <main class="home-main">
     <slot />
   </main>
 </BaseLayout>
 
-<!-- 客户端交互脚本：全屏模式切换与状态持久化 -->
 <script>
   import '@/lib/home-layout-interactions';
 </script>

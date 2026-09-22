@@ -1,16 +1,3 @@
-/**
- * Design System Demo 岛屿组件
- *
- * 功能概述：
- * 作为 /design-system 页面的交互式演示容器，集中展示 8 个基础 UI 组件的
- * 全部 variant 与 size。通过 client:load 水合，确保所有 radix 组件
- * 的交互行为（悬停、点击、展开等）正常工作。
- *
- * 设计原则：
- * - 按"组件 + 变体矩阵"组织布局，便于视觉对比
- * - 所有展示组件均使用 Design Tokens 颜色，验证双主题切换
- * - 使用 Tailwind v4 工具类进行布局（grid、gap、padding 等）
- */
 
 import { useState } from 'react';
 import { motion } from 'motion/react';
@@ -45,32 +32,16 @@ import {
   ScrollArea,
 } from '@/ui/components';
 
-/**
- * Button 变体矩阵数据
- */
 const buttonVariants = ['default', 'destructive', 'outline', 'secondary', 'ghost', 'link'] as const;
 
 const buttonSizes = ['sm', 'default', 'lg'] as const;
 
-/**
- * Badge 变体列表
- */
 const badgeVariants = ['default', 'secondary', 'destructive', 'outline'] as const;
 
-/**
- * 长内容数据（用于 ScrollArea 演示）
- */
 const scrollItems = Array.from({ length: 20 }, (_, i) => `第 ${i + 1} 项内容`);
 
-/**
- * 组件 props 接口
- * stats：站点实时统计数据，由 design-system.astro 在 SSG 阶段从 Service 层
- *   读取后注入，避免岛屿组件中硬编码过时数字
- */
 interface DesignSystemDemoStats {
-  /** 模块总数 */
   totalModules?: number;
-  /** 文档总数 */
   totalDocs?: number;
 }
 
@@ -78,14 +49,7 @@ interface DesignSystemDemoProps {
   stats?: DesignSystemDemoStats;
 }
 
-/**
- * Design System 演示组件
- * 展示 8 个基础 UI 组件的全部变体与尺寸组合
- */
 export function DesignSystemDemo({ stats }: DesignSystemDemoProps = {}) {
-  /**
-   * Dialog 开关状态（受控模式）
-   */
   const [dialogOpen, setDialogOpen] = useState(false);
 
   return (

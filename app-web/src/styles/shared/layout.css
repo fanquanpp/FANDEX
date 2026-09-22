@@ -1,20 +1,5 @@
-/* =============================================================================
- * FANDEX 布局工具样式 — utilities 层
- * -----------------------------------------------------------------------------
- * 职责：提供 grid/flex 布局辅助类，减少重复布局代码
- * 1. Flex 布局工具（方向、对齐、换行）
- * 2. Grid 布局工具（列数、间距）
- * 3. 容器与间距工具
- * 4. 定位与层叠工具
- * -----------------------------------------------------------------------------
- * 注意：本文件位于 utilities 层，优先级高于 components 层
- * Tailwind 4.x 的工具类也输出到此层，可共存
- * 引用：spec.md 第三章 3.3.1 layout.css
- * =============================================================================
- */
 
 @layer utilities {
-  /* === 容器 === */
   .fndx-container {
     width: 100%;
     max-width: var(--size-container-lg);
@@ -30,7 +15,6 @@
     max-width: var(--size-container-2xl);
   }
 
-  /* === Flex 布局 === */
   .fndx-flex {
     display: flex;
   }
@@ -63,7 +47,6 @@
     flex: none;
   }
 
-  /* === Flex 对齐 === */
   .fndx-items-start {
     align-items: flex-start;
   }
@@ -100,7 +83,6 @@
     justify-content: space-around;
   }
 
-  /* === Grid 布局 === */
   .fndx-grid {
     display: grid;
   }
@@ -110,12 +92,10 @@
   .fndx-grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .fndx-grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
 
-  /* 自适应网格：minmax + auto-fit，无需媒体查询 */
   .fndx-grid-auto {
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
   }
 
-  /* === 间距工具 === */
   .fndx-gap-1 { gap: var(--space-1); }
   .fndx-gap-2 { gap: var(--space-2); }
   .fndx-gap-3 { gap: var(--space-3); }
@@ -132,25 +112,21 @@
   .fndx-p-4 { padding: var(--space-4); }
   .fndx-p-6 { padding: var(--space-6); }
 
-  /* === 定位工具 === */
   .fndx-relative { position: relative; }
   .fndx-absolute { position: absolute; }
   .fndx-fixed { position: fixed; }
   .fndx-sticky { position: sticky; }
 
-  /* === 层叠工具 === */
   .fndx-z-base { z-index: 1; }
   .fndx-z-dropdown { z-index: 100; }
   .fndx-z-modal { z-index: 200; }
   .fndx-z-toast { z-index: 300; }
 
-  /* === 显示工具 === */
   .fndx-block { display: block; }
   .fndx-inline { display: inline; }
   .fndx-inline-block { display: inline-block; }
   .fndx-hidden { display: none; }
 
-  /* === 文字对齐 === */
   .fndx-text-left { text-align: left; }
   .fndx-text-center { text-align: center; }
   .fndx-text-right { text-align: right; }

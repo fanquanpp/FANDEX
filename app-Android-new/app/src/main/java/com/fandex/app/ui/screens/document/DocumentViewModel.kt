@@ -20,13 +20,9 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/**
- * 文档页状态
- */
 sealed class DocumentUiState {
     object Loading : DocumentUiState()
 
-    /** 文档详情：正文分块 + 目录 + 导航 + 相关/前置文档 */
     data class Success(
         val doc: FandexDoc,
         val blocks: List<MarkdownBlock>,
@@ -36,19 +32,12 @@ sealed class DocumentUiState {
         val next: DocIndexEntry? = null,
         val related: List<DocIndexEntry> = emptyList(),
         val prerequisites: List<DocIndexEntry> = emptyList(),
-        /** 文档所属模块的分类色（辅助装饰用多彩色） */
         val accentHex: String = "#4F5BD5"
     ) : DocumentUiState()
 
     data class Error(val message: String) : DocumentUiState()
 }
 
-/**
- * 文档页 ViewModel
- *
- * 对齐 web 端 doc-service 聚合的文档详情数据：
- * 正文解析在 Default 调度器执行，相关/前置文档支持跨模块解析
- */
 class DocumentViewModel(application: Application) : AndroidViewModel(application) {
 
     private val container = (application as FandexApp).container
@@ -67,7 +56,6 @@ class DocumentViewModel(application: Application) : AndroidViewModel(application
                     return@launch
                 }
 
-                // 正文解析与目录提取为 CPU 密集，切换调度器
                 val blocks = withContext(Dispatchers.Default) {
                     MarkdownRenderer().parse(doc.content)
                 }
@@ -91,7 +79,6 @@ class DocumentViewModel(application: Application) : AndroidViewModel(application
                         ?: "#4F5BD5"
                 )
 
-                // 记录阅读历史（供首页"最近浏览"与继续阅读）
                 container.historyPreferences.record(
                     HistoryEntry(
                         module = moduleId,
@@ -109,7 +96,6 @@ class DocumentViewModel(application: Application) : AndroidViewModel(application
     }
 
     companion object {
-        /** 日志 TAG */
         private const val TAG = "DocumentViewModel"
     }
 }

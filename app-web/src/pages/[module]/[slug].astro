@@ -1,9 +1,4 @@
 ---
-/**
- * 文档详情页路由
- * 动态路由 [module]/[slug]，为每篇文档生成独立页面
- * 包含面包屑导航、前置知识提示、文档内容、知识检测、上下篇导航
- */
 import Layout from '@/components/Layout.astro';
 import SEO from '@/components/SEO.astro';
 import Sidebar from '@/components/Sidebar.astro';
@@ -13,8 +8,6 @@ import DocNav from '@/components/DocNav.astro';
 import GeoBgDecor from '@/components/GeoBgDecor.astro';
 import { render } from 'astro:content';
 import { getModule, modulePrerequisites, categoryColors, getPrimaryCategory } from '@/lib/modules';
-// 通过 doc-service 获取文档数据与导航信息，UI 层禁止直接调用 getCollection
-// docSlug/computeReadingTime/getDocNavigation 均由 Service 层统一提供
 import {
   getAllDocs,
   getDocsByModule,
@@ -24,9 +17,7 @@ import {
   type DocEntry,
 } from '@/services';
 
-/** 生成静态路径：为每篇文档创建一个页面 */
 export async function getStaticPaths() {
-  // 通过 doc-service 获取全部文档（已按模块和 order 排序）
   const docs = await getAllDocs();
   return docs.map((doc) => {
     const slug = docSlug(doc.id);
@@ -39,29 +30,21 @@ export async function getStaticPaths() {
 
 const { doc } = Astro.props as { doc: DocEntry };
 const { module, slug } = Astro.params as { module: string; slug: string };
-// 渲染 Markdown 内容并获取标题列表
 const { Content, headings } = await render(doc);
 const meta = getModule(module || '');
 
-// 通过 doc-service 获取当前模块排序后的文档列表，传递给 Sidebar 避免重复查询
 const sortedDocs = await getDocsByModule(module);
 
-// 通过 doc-service 计算预计阅读时间（frontmatter 已不再携带 readingTime 字段，统一按正文推算）
 const readingTime = computeReadingTime(doc.body || '');
 
-// 通过 doc-service 获取上下篇导航信息，预计算后传递给 DocNav 组件
 const navigation = await getDocNavigation(module, slug);
 
-// 面包屑导航数据
 const breadcrumb = [
   { label: '首页', href: `${import.meta.env.BASE_URL}`, i18nKey: 'breadcrumb.home' },
   { label: meta?.title || module, href: `${import.meta.env.BASE_URL}${module}/` },
   { label: doc.data.title },
 ];
 
-/** 计算模块分类色对应的 --module-color 内联样式字符串
- *  用于 .doc-page 容器与 TableOfContents 组件，统一链接装饰色（需求3）
- *  仅在颜色非空时设置，避免空串导致 var() fallback 失效 */
 const moduleColor = categoryColors[meta ? getPrimaryCategory(meta) : 'tools'];
 const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefined;
 ---
@@ -83,16 +66,11 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     sortedDocs={sortedDocs}
   />
 
-  <!-- 目录大纲：通过 toc 插槽渲染到 Layout 右侧栏，由 TableOfContents 共享组件控制显隐
-       注入 --module-color 统一 TOC 链接装饰色与侧边栏/文档列表一致（需求3） -->
   <TableOfContents slot="toc" headings={headings} style={moduleColorStyle} />
 
   <div class="doc-page" style={moduleColorStyle} id="doc-root" data-module={module} data-slug={slug}>
-    <!-- 几何背景装饰层 · docs 变体：网格底纹 + 品牌光晕 + 几何线条（克制 8 项） -->
     <GeoBgDecor variant="docs" />
-    <!-- 面包屑导航 -->
     <Breadcrumb items={breadcrumb} hasSidebar />
-    <!-- 前置知识提示 -->
     {
       (() => {
         const prereqs =
@@ -120,7 +98,7 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
             <span>
             {prereqs.map((p: string, i: number) => {
                 const parts = p.split('/');
-                const modId = parts[0] || ''; // noUncheckedIndexedAccess：数组访问可能返回 undefined，提供兜底
+                const modId = parts[0] || '';
                 const modMeta = getModule(modId);
                 const label = modMeta ? modMeta.title : p;
                 const href =
@@ -139,13 +117,10 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
         );
       })()
     }
-    <!-- 文章主体 -->
     <article class="prose">
-      <!-- 标题行 -->
       <div class="doc-title-row fndx-scroll-reveal">
         <h1 class="doc-title">{doc.data.title}</h1>
       </div>
-      <!-- 文档元信息：阅读时间、难度、更新日期 -->
       <header class="doc-header fndx-scroll-reveal-fade">
         <div class="doc-meta">
           <span class="doc-meta-item doc-reading-time">
@@ -199,40 +174,30 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
             )
           }
         </div>
-        <!-- 文档描述 -->
         {doc.data.description && <p class="doc-description">{doc.data.description}</p>}
       </header>
-      <!-- 文档正文内容 -->
       <Content />
     </article>
-    <!-- 上下篇导航：传递预计算的 prev/next，避免组件内部重复查询 -->
     <DocNav prev={navigation.prev} next={navigation.next} />
   </div>
 </Layout>
 
 <style>
-  /* 文档详情页样式 — 归入 @layer pages，避免未分层 CSS 覆盖 ark 令牌导致主题切换失效 */
   @layer pages {
-  /* 文档页面容器：作为装饰层的定位上下文
-   注：不设置 overflow:hidden，以保留 .doc-title-row 的 sticky 定位 */
   .doc-page {
     position: relative;
     padding: var(--space-4) var(--space-6) var(--space-12);
     width: 100%;
-    /* 限制内容最大宽度并居中，避免宽屏下行宽过长影响阅读体验 */
-    /* fallback 与 --content-width 保持一致，防止变量未加载时回退到较窄值 */
     max-width: var(--content-width, 1280px);
     margin-inline: auto;
     min-height: 100%;
   }
 
-  /* 确保文档内容层在几何装饰层之上 */
   .doc-page > :not(.geo-bg-decor) {
     position: relative;
     z-index: 1;
   }
 
-  /* 前置知识提示条 */
   .prereq-notice {
     display: flex;
     align-items: center;
@@ -252,7 +217,6 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
   }
 
   .prereq-notice a {
-    /* 前置知识链接颜色改为模块分类主题色 */
     color: var(--module-color, var(--color-accent-base));
     text-decoration: none;
   }
@@ -261,14 +225,12 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     text-decoration: underline;
   }
 
-  /* 文档头部元信息区域 */
   .doc-header {
     margin-bottom: var(--space-6);
     padding-bottom: var(--space-6);
     border-bottom: 1px solid var(--color-border-light);
   }
 
-  /* 标题行：粘性定位，包含标题和进度按钮 */
   .doc-title-row {
     position: sticky;
     top: 0;
@@ -291,14 +253,12 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     margin-bottom: 0;
   }
 
-  /* 文档标题 */
   .doc-title {
     margin-bottom: var(--space-2);
     font-size: 1.6em;
     line-height: 1.3;
   }
 
-  /* 元信息行 */
   .doc-meta {
     display: flex;
     align-items: center;
@@ -316,7 +276,6 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     color: var(--color-text-tertiary);
   }
 
-  /* 难度标签：不同难度使用不同颜色 */
   .doc-difficulty {
     padding: 2px 8px;
     border-radius: 3px;
@@ -324,25 +283,21 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     letter-spacing: 0.02em;
   }
 
-  /* 入门级：成功色（绿） */
   .diff-beginner {
     background: color-mix(in srgb, var(--color-success-base) 15%, var(--color-bg-primary));
     color: var(--color-success-base);
   }
 
-  /* 中级：警告色（橙） */
   .diff-intermediate {
     background: color-mix(in srgb, var(--color-warning-base) 15%, var(--color-bg-primary));
     color: var(--color-warning-base);
   }
 
-  /* 高级：危险色（红） */
   .diff-advanced {
     background: color-mix(in srgb, var(--color-danger) 15%, var(--color-bg-primary));
     color: var(--color-danger);
   }
 
-  /* 文档描述 */
   .doc-description {
     margin-top: var(--space-2);
     font-size: 0.92em;
@@ -350,7 +305,6 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     line-height: 1.6;
   }
 
-  /* 移动端适配 */
   @media (max-width: 768px) {
     .doc-page {
       padding: var(--space-2) var(--space-4) var(--space-12);
@@ -364,12 +318,9 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
       gap: 6px;
     }
   }
-  } /* end @layer pages */
+  }
 </style>
 
-<!-- 客户端脚本：Mermaid 图表惰性渲染（仅文档页引入）
-     扫描 ```mermaid 代码块，临近视口时按需加载 mermaid ESM 渲染为 SVG；
-     页面不含图表时零网络请求、零运行时开销 -->
 <script>
   import '@/lib/mermaid-render';
 </script>

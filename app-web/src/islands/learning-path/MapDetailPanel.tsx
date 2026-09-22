@@ -1,54 +1,35 @@
-/**
- * 思维导图详情面板
- * -----------------------------------------------------------------------------
- * 展示当前悬停/选中知识点的说明、难度、文档状态与跳转入口；
- * 提供三态学习进度标记（未学习/学习中/已完成，localStorage 持久化）；
- * 待补充节点提供官方资料兜底与"定位到节点"操作。
- * 界面文案经 lib/i18n 的 t() 取当前语言（UI 双语）。
- */
 import type { CSSProperties } from 'react';
 import { useLang } from '@/lib/use-lang';
 import { t, type Lang } from '@/lib/i18n';
 import type { NodeProgress, NodeVM } from './types';
 
 interface Props {
-  /** 当前节点（null 时显示引导提示） */
   node: NodeVM | null;
-  /** 技术标题 */
   techTitle: string;
-  /** 技术主题色 */
   color: string;
-  /** 当前节点学习进度（null = 未学习） */
   progress: NodeProgress | null;
-  /** 设置节点进度（null = 清除标记） */
   onSetProgress: (nodeId: string, state: NodeProgress | null) => void;
-  /** 关闭选中 */
   onClose: () => void;
-  /** 定位到节点（画布居中） */
   onFocus: () => void;
 }
 
-/** 难度标签字典键 */
 const DIFFICULTY_KEY: Record<string, string> = {
   beginner: 'lpMap.legendBeginner',
   intermediate: 'lpMap.legendIntermediate',
   advanced: 'lpMap.legendAdvanced',
 };
 
-/** 进度三态选项（value null 用 'none' 字符串承载以便遍历） */
 const PROGRESS_OPTIONS: Array<{ value: 'none' | NodeProgress; labelKey: string }> = [
   { value: 'none', labelKey: 'lpMap.statusNone' },
   { value: 'learning', labelKey: 'lpMap.statusLearning' },
   { value: 'done', labelKey: 'lpMap.statusDone' },
 ];
 
-/** 难度标签取词：未知难度回退原始值（noUncheckedIndexedAccess 收窄） */
 function difficultyLabel(difficulty: string, lang: Lang): string {
   const key = DIFFICULTY_KEY[difficulty];
   return key ? t(key, undefined, lang) : difficulty;
 }
 
-/** 详情面板：无节点时展示引导，有节点时展示完整信息 */
 export default function MapDetailPanel({
   node,
   techTitle,

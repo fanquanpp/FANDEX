@@ -1,19 +1,4 @@
 ---
-/**
- * 语法速览页面
- * -----------------------------------------------------------------------------
- * 功能概述：
- * - 汇聚 syntax 速查素材中的编程语言/数据库命令语言语法要点，
- *   提供语言切换 + 关键词筛选 + 紧凑速查卡片 + 悬浮详情面板
- * - 数据管线：scripts/build-syntax.mjs 解析 cnt-content/syntax，
- *   生成轻量语言索引（内嵌）与分语言卡片分块（按需 fetch）
- *
- * 美术对齐：
- * - 完全复用项目首页美术体系（styles/pages/index.css）：
- *   Hero 渐变标题 + 统计行 + SVG 波浪描边功能入口
- * - 卡片复用首页模块卡片特效（module-card.css）：
- *   顶部分类色条展开、hover 边框转色 + 阴影加深、几何图标、按下下沉
- */
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
@@ -21,15 +6,12 @@ import FeatureNav from '@/components/FeatureNav.astro'
 import SyntaxExplorer from '@/islands/SyntaxExplorer'
 import { getSyntaxIndex, getSyntaxStats } from '@/services'
 import { SITE } from '@/lib/constants'
-// 复用首页 Hero / 统计 / 功能入口样式，保证美术完全一致
 import '@/styles/pages/index.css'
 
-// 语言索引与统计（预构建 JSON，轻量内嵌）
 const syntaxIndex = getSyntaxIndex()
 const syntaxStats = getSyntaxStats()
 const base = import.meta.env.BASE_URL
 
-/** 热门语言直达芯片：按卡片数取前 8 门，点击经 ?lang= 直达该语言速查 */
 const quickLangs = [...syntaxIndex.languages]
   .sort((a, b) => b.count - a.count)
   .slice(0, 8)
@@ -45,16 +27,13 @@ const quickLangs = [...syntaxIndex.languages]
   />
 
   <div class="home-page home-page--sub">
-    <!-- 几何背景装饰：home 变体，与首页视觉统一 -->
     <GeoBgDecor variant="home" />
 
-    <!-- Hero 区域：复用首页美术（渐变标题 + 统计 + SVG 描边入口） -->
     <section class="hero">
       <h1 class="hero-title" data-text="语法速览">
         <span class="hero-title-fan">语法</span><span class="hero-title-dex">速览</span>
       </h1>
 
-      <!-- 统计 + 功能入口同一行容器（与首页 hero-stats-row 结构一致） -->
       <div class="hero-stats-row">
         <div class="hero-stats">
           <div class="stat-item">
@@ -73,11 +52,9 @@ const quickLangs = [...syntaxIndex.languages]
           </div>
         </div>
 
-        <!-- 功能入口：共享兄弟入口（FeatureNav 统一维护） -->
         <FeatureNav />
       </div>
 
-      <!-- 热门语言直达：?lang= 深链由 SyntaxExplorer 恢复，点击即见该语言卡片 -->
       <div class="syntax-quick" aria-label="热门语言直达" data-i18n-aria="syntaxPage.quickAria">
         <span class="syntax-quick__label" data-i18n="syntaxPage.quickLabel">直达</span>
         {quickLangs.map((lang) => (
@@ -98,7 +75,6 @@ const quickLangs = [...syntaxIndex.languages]
       </div>
     </section>
 
-    <!-- 语法速查交互区：语言切换 + 紧凑卡片网格 + 悬浮面板 -->
     <SyntaxExplorer
       client:visible
       languages={syntaxIndex.languages}
@@ -108,7 +84,6 @@ const quickLangs = [...syntaxIndex.languages]
 </HomeLayout>
 
 <style>
-  /* 热门语言直达芯片：hero 与速查区之间的一步直达入口（?lang= 深链） */
   .syntax-quick {
     display: flex;
     flex-wrap: wrap;

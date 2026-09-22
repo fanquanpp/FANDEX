@@ -1,31 +1,15 @@
 ---
-/**
- * 基础布局组件
- * 抽取 HomeLayout 与 Layout 的共享代码：CSS 引入、CSP meta、CDN 预连接、
- * 字体预加载、暗色模式初始化脚本、主题切换组件、Web Vitals 采集器
- *
- * 设计原则：
- * - 子布局通过 Astro.slots.has() 检测插槽来条件渲染差异化结构
- * - 共享的 head 内容统一通过 named slot "head" 透传
- * - WebVitalsTracker 通过 client:load 在浏览器端水合后开始采集
- */
-// CSS 引入：全部样式收敛到 styles/site.css 单一入口（内含图层顺序说明与
-// 兼容层迁移终态计划）。BaseLayout 不得直接引入其他样式文件，防止顺序漂移
 import '@/styles/site.css';
 import { SITE, IS_DESKTOP_BUILD } from '@/lib/constants';
 import { MAIN_CSP, DESKTOP_CSP } from '@/lib/csp';
 import { ClientRouter } from 'astro:transitions';
 import WebVitalsTracker from '@/islands/WebVitalsTracker';
-// 统一资产引用：favicon 从 @fandex/shared-assets 共享包导入，消除三端各自维护的硬编码图标
-// Astro 静态导入 SVG/PNG 返回 ImageMetadata 类型（含 .src 字段），
-// <link href> 属性期望 string | URL，此处提取 .src 字符串以匹配类型约束
 import faviconMeta from '@fandex/shared-assets/icons/favicon.svg';
 import appleTouchIconMeta from '@fandex/shared-assets/icons/apple-touch-icon.png';
 const faviconUrl: string = (faviconMeta as unknown as { src: string }).src;
 const appleTouchIconUrl: string = (appleTouchIconMeta as unknown as { src: string }).src;
 
 const base = import.meta.env.BASE_URL;
-// 桌面构建使用收紧版 CSP：playground 已剔除，jsDelivr 授权随之移除（见 csp.ts）
 const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
 ---
 
@@ -33,31 +17,22 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- 移动端浏览器 UI 颜色：与主题同步，防止地址栏/状态栏白闪
-         初始值由下方内联脚本动态设置，此处提供 SSR 默认值 -->
     <meta name="theme-color" content="#EBEFF3" id="meta-theme-color" />
-    <!-- View Transitions：Astro ClientRouter 驱动跨页过渡
-         配合各交互脚本已使用的 astro:page-load / astro:before-swap 事件，
-         路由切换时自动重绑交互、清理监听器，无累积泄漏 -->
     <ClientRouter />
-    <!-- 程序图标：统一引用 @fandex/shared-assets 共享资产源 -->
     <link rel="icon" type="image/svg+xml" href={faviconUrl} />
     <link rel="apple-touch-icon" href={appleTouchIconUrl} />
-    <!-- PWA 清单：配合 public/sw.js 提供可安装、可离线的站点体验 -->
     <link rel="manifest" href={`${base}manifest.webmanifest`} />
-    <!-- RSS 订阅发现：阅读器与浏览器扩展据此自动发现全站更新流 -->
     <link
       rel="alternate"
       type="application/rss+xml"
       title={`${SITE.title} 订阅`}
       href={`${base}rss.xml`}
     />
-    <!-- 内容安全策略：限制脚本、样式、字体等资源的加载来源 -->
     <meta http-equiv="Content-Security-Policy" content={csp} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    {/* 预连接 CDN 以加速 playground prettier 的按需加载；桌面构建已剔除
-        playground 且 CSP 不再授权该域，预连接一并移除 */}
+    {
+}
     {!IS_DESKTOP_BUILD && (
       <>
         <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
@@ -65,18 +40,12 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
       </>
     )}
 
-    <!-- FANDEX 品牌字体：全部自托管（Chakra Petch + IBM Plex Sans + JetBrains Mono）
-         不再依赖 Google Fonts CDN，消除第三方域 TLS 握手与不可达风险
-         字体声明统一位于 fonts.css，关键字体额外 preload 加速首屏文本渲染
-         注：astro check 会将 onload 内联事件中的 this.media 误报为未使用变量（ts(6133) hint），
-         属工具限制，不影响运行时行为 -->
     <link
       rel="stylesheet"
       href={`${base}fonts/fonts.css`}
       media="print"
       onload="this.media='all'"
     />
-    <!-- 关键字体预加载：正文 400 + 标题 600 + 代码 400，其余字重按需懒加载 -->
     <link
       rel="preload"
       href={`${base}fonts/ibm-plex-sans-400.woff2`}
@@ -98,49 +67,22 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
       type="font/woff2"
       crossorigin
     />
-    <!--
-      主题初始化脚本（FOUC 四层防护 · 第一层）
-      ==========================================
-      - 在 HTML 解析早期同步设置 data-theme，防止主题闪烁(FOUC)
-      - 始终显式声明 data-theme 为 'light' 或 'dark'，避免 HTML 处于
-        "无 data-theme 属性"的中间态（否则 tokens.css 的
-        :root:not([data-theme]) 兜底逻辑在 prefers-color-scheme:dark
-        下会错误覆盖用户已选择的 light，导致主题切换后刷新被强制回退）
-      - 同步更新 meta theme-color，防止移动端浏览器 UI 白闪
-      - ThemeToggle React 岛屿通过 client:load 在 hydration 后接管交互
-      - View Transitions 切换后的主题重应用由 lib/theme.ts 的
-        astro:after-swap 监听处理（第二层防护）
-
-      侧边栏折叠状态同步读取（FOUC 防护）
-      - 同步读取 localStorage 的 fan dex-sidebar-collapsed 标记（实际键名无空格）
-      - 若为 '1' 则为 <html> 添加 sidebar-collapsed 类
-      - CSS 基于该标记类在首屏即应用折叠样式，避免 hydration 前的展开态闪屏
-      - hydration 后由 sidebar-interactions.ts 的 .is-collapsed 接管（两者等效）
-      - 同步逻辑：applyCollapsedState 会同步管理 <html> 上的该类，保持一致
-    -->
     <script is:inline>
       (function () {
         var raw = localStorage.getItem('fandex-theme');
         var theme;
-        // 优先使用用户手动设置的主题；无保存值时跟随系统偏好
         if (raw === 'dark' || raw === 'light') {
           theme = raw;
         } else {
           theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
-        // 始终显式设置 data-theme，消除"无属性"中间态
         document.documentElement.setAttribute('data-theme', theme);
         document.documentElement.style.colorScheme = theme;
-        // 同步更新 meta theme-color（移动端浏览器 UI 颜色）
-        // 浅色模式使用冷雾灰 #EBEFF3 与主背景一致
         var meta = document.querySelector('meta[name="theme-color"]');
         if (meta) {
           meta.setAttribute('content', theme === 'dark' ? '#0a0e14' : '#EBEFF3');
         }
 
-        // 侧边栏折叠状态同步读取，防止首屏展开态闪屏
-        // 仅在文档页（存在 .app-layout.has-toc 或 .fndx-sidebar 的页面）生效
-        // 内联脚本在 <head> 阶段执行，<aside> 尚未解析，通过 <html> 标记类传递状态
         try {
           if (localStorage.getItem('fandex-sidebar-collapsed') === '1') {
             document.documentElement.classList.add('sidebar-collapsed');
@@ -149,12 +91,6 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
           /* localStorage 不可用时静默降级（如隐私模式） */
         }
 
-        // 界面语言同步读取（UI 双语 FOUC 防护，与主题同一模型）
-        // SSR 恒为中文；英文为用户主动选择（fandex-lang），仅存 localStorage。
-        // 此处尽早声明 data-lang 与 lang 属性：
-        // - data-lang 供 CSS 钩子与岛屿读取（lib/i18n 首次求值取自此处）
-        // - lang 影响读屏发音与浏览器翻译建议
-        // 文案切换由 lib/i18n-dom 在模块脚本阶段批量完成（DOM 解析后、首帧绘制前）
         try {
           var savedLang = localStorage.getItem('fandex-lang');
           if (savedLang === 'en') {
@@ -172,42 +108,27 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
   </head>
   <body>
     <slot />
-    <!-- Web Vitals 采集器：client:idle 推迟到浏览器空闲时段水合
-         采集是观测性任务，不应抢占首屏交互资源；改为 idle 可降低 INP/TBT 开销 -->
     <WebVitalsTracker client:idle />
   </body>
 </html>
 
 <script>
-  // 主题持久化初始化（FOUC 四层防护 · 第二层）
-  // 监听 astro:after-swap 事件，在 View Transitions 切换页面后重新应用主题
-  // 解决 ClientRouter 替换 document.documentElement 时 data-theme 属性丢失导致的白闪
-  // 同时处理跨标签页主题同步与系统主题变化跟随
   import { initThemePersistence } from '@/lib/theme';
   initThemePersistence();
 </script>
 
 <script>
-  // 界面语言 DOM 应用器（UI 双语 · 与主题同一模型）
-  // 首屏把 SSR 中文文案切换为用户选择的语言（默认 zh 等效幂等），
-  // 并接管 [data-lang-toggle] 点击、语言变化与 View Transitions 后的重放
   import '@/lib/i18n-dom';
 </script>
 
 <script>
-  // 全站搜索命令面板：Ctrl/Cmd + K 或导航栏搜索按钮触发
-  // pagefind 索引在构建后生成，运行时按需惰性加载
   import '@/lib/search-palette';
 </script>
 
 <script>
-  // PWA 安装入口：捕获 beforeinstallprompt 点亮导航栏「安装应用」按钮，
-  // iOS Safari 降级为「添加到主屏幕」指引浮层（详见 lib/pwa-install）
   import '@/lib/pwa-install';
 </script>
 
 <script>
-  // SWR 内容更新提示条：Service Worker 后台刷新发现页面更新时，
-  // 底部浮出「内容已更新」细条，用户点击即刷新到最新版（详见 lib/sw-update）
   import '@/lib/sw-update';
 </script>

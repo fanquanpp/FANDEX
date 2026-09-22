@@ -1,31 +1,16 @@
-/**
- * 思维导图画布控制条
- * -----------------------------------------------------------------------------
- * 提供缩小、放大、适应视口、复位、重置进度五个操作，统一使用 fndx-icon-btn
- * 幽灵按钮风格。重置进度仅在有标记时可用（roadmap.sh 的 remove-status 模式）。
- * aria/title 文案经 lib/i18n 的 t() 取当前语言（UI 双语）。
- */
 import { useLang } from '@/lib/use-lang';
 import { t } from '@/lib/i18n';
 
 interface Props {
-  /** 当前缩放百分比（0-100 整数） */
   scale: number;
-  /** 缩小 */
   onZoomOut: () => void;
-  /** 放大 */
   onZoomIn: () => void;
-  /** 适应视口 */
   onFit: () => void;
-  /** 复位到 100% */
   onReset: () => void;
-  /** 重置本技术的全部学习进度（组件内已带确认） */
   onResetProgress: () => void;
-  /** 是否存在进度标记（无标记时禁用重置按钮） */
   hasProgress: boolean;
 }
 
-/** 控制条：仅图标按钮 + 缩放读数 */
 export default function MapControls({
   scale,
   onZoomOut,

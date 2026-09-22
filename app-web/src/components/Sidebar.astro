@@ -1,31 +1,5 @@
 ---
-/**
- * Sidebar 侧边栏组件（web 端）
- *
- * 功能概述：
- * - 文档页左侧导航面板，展示当前模块文档列表与全部模块视图
- * - 章节视图：当前模块的文档列表，按 order 排序
- * - 全部模块视图：模块按分类分组，支持点击展开/收起；
- *   面板内容由 SidebarModules 岛按需挂载（见 sidebar-modules-mount.ts），
- *   避免在服务端把全站导航重复内联到每个页面
- * - sessionStorage 滚动位置记忆（导航后恢复滚动位置）
- * - 模块折叠状态持久化（通过 localStorage 的 expanded 集合）
- * - 基于 @fandex/styles 的 .fndx-sidebar 命名规范实现样式
- * - 完整无障碍：aside[aria-label="侧边栏"]、aria-current="page"
- *
- * 设计变更：
- * - 原"资料"视图（内嵌标题大纲）已移除，改由共享 TableOfContents 组件
- *   在文档页右侧 toc 插槽渲染（见 shd-shared/asc-astro-components/TableOfContents.astro）
- * - headings Prop 保留用于未来扩展，但不再驱动侧边栏视图切换
- *
- * Props:
- *   moduleId    - 当前模块 ID（如 `frontend/javascript`）
- *   currentSlug - 当前文档 slug（用于高亮）
- *   sortedDocs  - 已排序的文档集合（可选，避免重复查询）
- */
-// categoryColors 和 getPrimaryCategory 为静态样式数据，保留从 @/lib/modules 导入
 import { categoryColors, getPrimaryCategory } from '@/lib/modules'
-// 通过 doc-service 和 module-service 获取数据，UI 层禁止直接调用 getCollection
 import {
   getModule,
   getDocsByModule,
@@ -41,31 +15,19 @@ const { moduleId, currentSlug, sortedDocs } = Astro.props as {
   sortedDocs?: DocEntry[]
 }
 
-// 通过 doc-service 获取当前模块文档列表，支持外部传入已排序列表以避免重复查询
 const sorted = sortedDocs || await getDocsByModule(moduleId)
 const meta = getModule(moduleId)
-// 通过 module-service 获取分类列表，用于"全部模块"面板按分类分组渲染
 const base = import.meta.env.BASE_URL
 
-/** 构建文档链接（兼容 BASE_URL） */
 function docHref(slug: string): string {
   return `${base}${moduleId}/${slug}/`
 }
 
-/** 获取模块的主分类颜色（用于色条/圆点）
- *  categoryColors[key] 在 noUncheckedIndexedAccess 下返回 string | undefined，
- *  此处通过 ?? '' 兜底确保返回 string，外层调用方已通过 --module-color CSS 变量提供默认色
- *
- *  注意：返回空字符串时，调用方不应将 --module-color 设为空串，
- *  因为 var(--module-color, fallback) 在变量值为空串时返回空串而非 fallback，
- *  会导致 color-mix() 等函数失效。应通过 moduleColorStyle() 条件化设置。 */
 function moduleColor(m: Module | undefined): string {
   if (!m) return categoryColors.tools ?? ''
   return categoryColors[getPrimaryCategory(m)] ?? categoryColors.tools ?? ''
 }
 
-/** 生成 --module-color 的 inline style 字符串
- *  仅在颜色非空时设置，避免空串导致 var() fallback 失效 */
 function moduleColorStyle(m: Module | undefined): string | undefined {
   const color = moduleColor(m)
   return color ? `--module-color:${color}` : undefined
@@ -80,7 +42,6 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
   data-module={moduleId}
   style={moduleColorStyle(meta)}
 >
-  <!-- 移动端关闭按钮（抽屉模式可见）：统一 fndx-icon-btn 风格 -->
   <button
     type="button"
     id="sidebar-close-btn"
@@ -105,10 +66,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
     </svg>
   </button>
 
-  <!-- 共享顶部固定区：折叠按钮 + 视图切换 tabs + 返回首页
-       独立于两个面板之外，确保切换视图时 tabs 与折叠按钮始终可见 -->
   <div class="fndx-sidebar__top">
-    <!-- 折叠收纳按钮：点击后将整个侧边栏折叠，释放阅读空间 -->
     <button
       type="button"
       id="sidebar-collapse-btn"
@@ -135,9 +93,6 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
       </svg>
     </button>
 
-    <!-- 视图切换 tabs：章节 / 全部模块
-         样式由 .fndx-sidebar__view-tabs / .fndx-sidebar__view-tab 提供（layout-components.css）
-         点击切换面板显隐，状态持久化到 localStorage -->
     <div class="fndx-sidebar__view-tabs" role="tablist" aria-label="侧边栏视图切换" data-i18n-aria="sidebar.viewTabsAria">
       <button
         type="button"
@@ -161,7 +116,6 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
       </button>
     </div>
 
-    <!-- 返回首页（图标按钮，hover 显现 tooltip 语义） -->
     <a
       href={base}
       class="fndx-sidebar__back fndx-icon-btn"
@@ -186,7 +140,6 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
     </a>
   </div>
 
-  <!-- 章节导航面板：当前模块的文档列表 -->
   <nav
     id="sidebar-chapters-panel"
     class="fndx-sidebar__panel"
@@ -197,7 +150,6 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
       id="sidebar-scroll"
       class="fndx-sidebar__scroll"
     >
-      <!-- 模块标题（从顶部区移入滚动区，避免与 tabs 争抢空间） -->
       <h2 class="fndx-sidebar__title fndx-sidebar__title--module">
         {meta?.title || moduleId}
       </h2>
@@ -216,7 +168,7 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
                   class={`fndx-sidebar__link${isActive ? ' is-active' : ''}`}
                   aria-current={isActive ? 'page' : undefined}
                 >
-                  {/* 章节序号：按学习顺序（order）展示两位编号，装饰用对读屏隐藏 */}
+                  {}
                   <span class="fndx-sidebar__link-index" aria-hidden="true">
                     {String(index + 1).padStart(2, '0')}
                   </span>
@@ -230,9 +182,6 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
     </div>
   </nav>
 
-  <!-- 全部模块面板（默认隐藏，点击 tabs 切换显示）
-       面板内容由 sidebar-modules-mount.ts 按需动态挂载 SidebarModules 岛，
-       挂载点携带当前模块/文档信息，供岛组件渲染激活态 -->
   <nav
     id="sidebar-all-modules-panel"
     class="fndx-sidebar__panel is-hidden"
@@ -249,8 +198,6 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
   </nav>
 </aside>
 
-<!-- 浮动展开按钮：侧边栏折叠后显示在左边缘顶部，点击恢复侧边栏
-     含"展开"文字标注，避免单独 svg 图标语义不明；统一 fndx-icon-btn 风格 -->
 <button
   type="button"
   id="sidebar-expand-fab"
@@ -278,7 +225,6 @@ function moduleColorStyle(m: Module | undefined): string | undefined {
   <span class="fndx-sidebar__expand-fab-text" data-i18n="sidebar.expand">展开</span>
 </button>
 
-<!-- 客户端交互脚本：侧边栏滚动记忆、模块折叠、视图切换、折叠收纳 -->
 <script>
   import '@/lib/sidebar-interactions';
   import '@/lib/sidebar-modules-mount';

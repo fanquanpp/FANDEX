@@ -1,11 +1,3 @@
-/**
- * 学习路径思维导图主岛
- * -----------------------------------------------------------------------------
- * 组合层：持有选中/悬停/折叠/学习进度状态，组装画布、控制条与详情面板。
- * 数据来源：由 Astro 页面注入的 TechVM（服务端组装，客户端不加载地图 JSON）。
- * 学习进度：localStorage 持久化（progress.ts），节点三态呈现 + Duolingo 式进度环。
- * 界面文案经 lib/i18n 的 t() 取当前语言（UI 双语）。
- */
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { useLang } from '@/lib/use-lang';
 import { t } from '@/lib/i18n';
@@ -17,42 +9,29 @@ import MapControls from './MapControls';
 import MapDetailPanel from './MapDetailPanel';
 
 interface Props {
-  /** 技术视图模型 */
   tech: TechVM;
-  /** 站点基础路径 */
   base: string;
 }
 
-/** 进度环半径与周长（SVG stroke-dasharray 用） */
 const RING_RADIUS = 15;
 const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
-/** 学习路径思维导图 */
 export default function LearningPathMap({ tech, base }: Props) {
-  /** 界面语言（全岛文案双语，订阅全局切换） */
   const lang = useLang();
-  /** 选中节点 ID（点击待补充节点触发） */
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  /** 悬停节点 ID（优先于选中态展示） */
   const [hoverId, setHoverId] = useState<string | null>(null);
-  /** 折叠的阶段 ID 集合 */
   const [collapsedStageIds, setCollapsedStageIds] = useState<ReadonlySet<string>>(
     () => new Set(),
   );
-  /** 缩放百分比 */
   const [scale, setScale] = useState(100);
-  /** 画布命令式接口 */
   const canvasRef = useRef<MapCanvasHandle>(null);
-  /** 学习进度表：节点 ID -> learning/done（首帧从 localStorage 恢复） */
   const [progress, setProgress] = useState<TechProgress>(() => readTechProgress(tech.module));
 
-  /** 布局：阶段/节点/连线坐标（折叠变化时增量重算） */
   const layout = useMemo(
     () => computeMapLayout(tech.stages, collapsedStageIds),
     [tech.stages, collapsedStageIds],
   );
 
-  /** 进度统计：已完成 / 学习中数量（用于进度环与读数） */
   const { doneCount, learningCount } = useMemo(() => {
     let done = 0;
     let learning = 0;
@@ -65,7 +44,6 @@ export default function LearningPathMap({ tech, base }: Props) {
     return { doneCount: done, learningCount: learning };
   }, [progress, tech.stages]);
 
-  /** 面板展示节点：优先悬停，其次选中 */
   const panelNode = useMemo(() => {
     const id = hoverId ?? selectedId;
     if (!id) return null;
@@ -76,23 +54,19 @@ export default function LearningPathMap({ tech, base }: Props) {
     return null;
   }, [hoverId, selectedId, tech.stages]);
 
-  /** 选中节点 */
   const handleSelectNode = useCallback((id: string) => {
     setSelectedId(id);
   }, []);
 
-  /** 悬停节点 */
   const handleHoverNode = useCallback((id: string | null) => {
     setHoverId(id);
   }, []);
 
-  /** 清空选中与悬停（Esc 快捷键） */
   const handleClearSelection = useCallback(() => {
     setSelectedId(null);
     setHoverId(null);
   }, []);
 
-  /** 折叠/展开阶段 */
   const handleToggleStage = useCallback((id: string) => {
     setCollapsedStageIds((prev) => {
       const next = new Set(prev);
@@ -105,13 +79,11 @@ export default function LearningPathMap({ tech, base }: Props) {
     });
   }, []);
 
-  /** 在地图中定位当前节点 */
   const handleLocate = useCallback(() => {
     const id = hoverId ?? selectedId;
     if (id) canvasRef.current?.focusNode(id);
   }, [hoverId, selectedId]);
 
-  /** 设置节点进度（null = 清除标记），同步持久化到 localStorage */
   const handleSetProgress = useCallback(
     (nodeId: string, state: NodeProgress | null) => {
       setProgress(writeNodeProgress(tech.module, nodeId, state));
@@ -119,15 +91,12 @@ export default function LearningPathMap({ tech, base }: Props) {
     [tech.module],
   );
 
-  /** 重置当前技术的全部学习进度（带确认） */
   const handleResetProgress = useCallback(() => {
     if (doneCount + learningCount === 0) return;
     if (!window.confirm(t('lpMap.clearConfirm', { title: tech.title }, lang))) return;
     setProgress(clearTechProgress(tech.module));
   }, [doneCount, learningCount, tech.module, tech.title, lang]);
 
-  // 键盘进度快捷键（roadmap.sh 模式）：D 已完成 / L 学习中 / S 清除标记。
-  // 仅在详情面板有节点时生效；输入类元素聚焦与修饰键组合不接管
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.metaKey || event.ctrlKey || event.altKey) return;
@@ -144,7 +113,6 @@ export default function LearningPathMap({ tech, base }: Props) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [handleSetProgress, hoverId, selectedId]);
 
-  /** 进度环填充比例（已完成 / 总节点数） */
   const totalNodes = tech.stats.nodes;
   const ringRatio = totalNodes > 0 ? doneCount / totalNodes : 0;
 

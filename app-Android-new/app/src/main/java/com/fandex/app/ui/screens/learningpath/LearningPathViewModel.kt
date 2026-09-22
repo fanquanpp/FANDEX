@@ -11,20 +11,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * 学习路线页状态
- */
 sealed class LearningPathUiState {
     object Loading : LearningPathUiState()
     data class Success(val paths: List<LearningPathSummary>) : LearningPathUiState()
     data class Error(val message: String) : LearningPathUiState()
 }
 
-/**
- * 学习路线 ViewModel
- *
- * 路径列表由索引 order 与模块元数据组合而成，顺序与 web 端一致
- */
 class LearningPathViewModel(application: Application) : AndroidViewModel(application) {
 
     private val container = (application as FandexApp).container
@@ -45,7 +37,6 @@ class LearningPathViewModel(application: Application) : AndroidViewModel(applica
     }
 
     companion object {
-        /** 日志 TAG */
         private const val TAG = "LearningPathViewModel"
     }
 }

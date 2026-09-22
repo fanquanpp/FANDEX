@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 与 web 端令牌一致的背景色（浅色冷雾灰 / 深色近黑） -->
     <color name="bg_primary_light">#EBEFF3</color>
     <color name="bg_primary_dark">#0A0A0A</color>
 </resources>

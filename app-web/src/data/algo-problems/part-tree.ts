@@ -1,12 +1,6 @@
 import type { AlgoProblem } from './types';
 
-/**
- * 算法题图鉴 · 树与堆篇
- * 二叉树 / 堆与优先队列
- * 题面为便于学习的概括复述，参考实现为 Python。
- */
 export const TREE_PROBLEMS: AlgoProblem[] = [
-  // ==================== 二叉树 ====================
   {
     slug: 'maximum-depth-of-binary-tree',
     lc: 104,
@@ -260,7 +254,6 @@ def levelOrder(root):
     related: ['080-Tree', '160-DynamicProgramming'],
   },
 
-  // ==================== 堆与优先队列 ====================
   {
     slug: 'kth-largest-element-in-an-array',
     lc: 215,

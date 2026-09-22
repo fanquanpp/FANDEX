@@ -1,55 +1,28 @@
-/**
- * 思维导图知识点节点原子组件
- * -----------------------------------------------------------------------------
- * - 全部节点统一为可选中卡片：点击在右侧面板展示说明与文档入口
- * - 已发布节点由面板中的"阅读专项文档"按钮负责跳转，画布内不直接导航
- * - 标题自动换行（最多两行），尾部显示难度竖条与状态
- * - 学习进度三态：未学习（默认）/ 学习中（青色）/ 已完成（绿色对勾 + 状态文案）
- * - 状态/aria 文案经 lib/i18n 的 t() 取当前语言（UI 双语）
- */
 import { useLang } from '@/lib/use-lang';
 import { t, type Lang } from '@/lib/i18n';
 import type { NodeProgress, NodeVM } from './types';
 
 interface Props {
-  /** 节点视图模型 */
   node: NodeVM;
-  /** 节点左上角 x */
   x: number;
-  /** 节点左上角 y */
   y: number;
-  /** 阶段内序号（从 1 开始） */
   index: number;
-  /** 节点宽度 */
   width: number;
-  /** 节点高度 */
   height: number;
-  /** 是否选中 */
   selected: boolean;
-  /** 是否悬停 */
   hovered: boolean;
-  /** 学习进度状态（null = 未学习） */
   progress: NodeProgress | null;
-  /** 点击待补充节点 */
   onSelect: (id: string) => void;
-  /** 悬停/移出节点 */
   onHover: (id: string | null) => void;
 }
 
-/** 标题单行最大字符数（CJK 字符约等于字号宽度） */
 const LINE_CHARS = 17;
 
-/** 进度状态文案字典键 */
 const PROGRESS_LABEL_KEY: Record<Exclude<NodeProgress, null>, string> = {
   learning: 'lpMap.statusLearning',
   done: 'lpMap.statusDone',
 };
 
-/**
- * 标题换行：按字符数拆分为最多两行，超出部分省略
- * @param title - 原始标题
- * @returns 行数组（1-2 行）
- */
 function wrapTitle(title: string): string[] {
   if (title.length <= LINE_CHARS) return [title];
   const first = title.slice(0, LINE_CHARS);
@@ -57,10 +30,6 @@ function wrapTitle(title: string): string[] {
   return [first, rest.length > LINE_CHARS ? `${rest.slice(0, LINE_CHARS - 1)}…` : rest];
 }
 
-/**
- * 节点状态文案：进度标记优先于发布状态
- * （已完成/学习中 未标记时回落到 已发布/文档待补充）
- */
 function statusText(node: NodeVM, progress: NodeProgress | null, lang: Lang): string {
   if (progress) return t(PROGRESS_LABEL_KEY[progress], undefined, lang);
   return node.href
@@ -68,7 +37,6 @@ function statusText(node: NodeVM, progress: NodeProgress | null, lang: Lang): st
     : t('lpMap.statusPlanned', undefined, lang);
 }
 
-/** 节点内容（矩形 + 文本 + 元信息） */
 function NodeBody({ node, index, width, height, progress }: Props) {
   const lang = useLang();
   const lines = wrapTitle(node.title);
@@ -130,7 +98,6 @@ function NodeBody({ node, index, width, height, progress }: Props) {
   );
 }
 
-/** 知识点节点 */
 export default function MapNode(props: Props) {
   const { node, x, y, selected, hovered, progress, onSelect, onHover } = props;
   const lang = useLang();

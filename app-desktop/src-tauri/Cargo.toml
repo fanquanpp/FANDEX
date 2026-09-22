@@ -18,11 +18,8 @@ tauri = { version = "2", features = [] }
 tauri-plugin-window-state = "2"
 tauri-plugin-global-shortcut = "2"
 tauri-plugin-single-instance = "2"
-# 注：当前无自定义 tauri 命令，未用到 serde/serde_json；
-# 后续新增 #[tauri::command] 时再按需引入
 
 [profile.release]
-# 桌面端发布构建：体积与运行性能平衡优化
 codegen-units = 1
 lto = true
 opt-level = "s"

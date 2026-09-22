@@ -1,10 +1,3 @@
-/**
- * 思维导图阶段列组件
- * -----------------------------------------------------------------------------
- * 渲染阶段标题（序号、标题、副标题、节点数、折叠箭头），
- * 标题区域可点击折叠/展开整列知识点。
- * 折叠 aria 文案经 lib/i18n 的 t() 取当前语言（UI 双语）。
- */
 import type { ReactNode } from 'react';
 import { useLang } from '@/lib/use-lang';
 import { t } from '@/lib/i18n';
@@ -12,25 +5,16 @@ import type { StageVM } from './types';
 import { LAYOUT } from './map-layout';
 
 interface Props {
-  /** 阶段视图模型 */
   stage: StageVM;
-  /** 阶段序号（从 1 开始） */
   index: number;
-  /** 阶段列左上角 x */
   x: number;
-  /** 阶段列左上角 y */
   y: number;
-  /** 阶段主题色 */
   color: string;
-  /** 是否折叠 */
   collapsed: boolean;
-  /** 切换折叠 */
   onToggle: (id: string) => void;
-  /** 阶段内节点渲染 */
   children: ReactNode;
 }
 
-/** 阶段标题列 */
 export default function MapStage({
   stage,
   index,

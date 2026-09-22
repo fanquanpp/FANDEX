@@ -12,25 +12,16 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * 模块页状态
- */
 sealed class ModuleUiState {
     object Loading : ModuleUiState()
     data class Success(
         val module: Module,
         val docs: List<DocIndexEntry>,
-        /** 模块主分类色（辅助装饰用多彩色） */
         val accentHex: String = "#4F5BD5"
     ) : ModuleUiState()
     data class Error(val message: String) : ModuleUiState()
 }
 
-/**
- * 模块页 ViewModel
- *
- * 组合模块元数据与模块文档索引
- */
 class ModuleViewModel(application: Application) : AndroidViewModel(application) {
 
     private val container = (application as FandexApp).container
@@ -59,8 +50,6 @@ class ModuleViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     companion object {
-        /** 日志 TAG */
         private const val TAG = "ModuleViewModel"
     }
 }
-

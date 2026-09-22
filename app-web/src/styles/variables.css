@@ -1,136 +1,48 @@
-/**
- * FANDEX 全局 CSS 变量定义（ark 家族令牌兼容层）
- *
- * 功能概述：
- * 本文件作为 --color-* 旧命名兼容层，将原有全局设计令牌映射到
- * shd-shared/styles/tokens.css 定义的 ark 家族语义令牌。
- *
- * 迁移现状（2026-09-13）：语义 passthrough 映射已内联到使用点并删除，
- * 仅存布局尺寸（content-width/nav-height 等）与 geo 装饰变量字面值。
- *
- * 迁移策略：
- * - 颜色令牌（primary/bg/text/border/success 等）：完全映射到 ark 语义令牌
- *   通过 ark 的 [data-theme] 选择器方案实现双主题自动切换，无需重复定义
- * - 非颜色令牌（spacing/font/shadow/transition）：映射到 ark 令牌
- * - 布局尺寸（content-width/nav-height/sidebar-width）：保留原值（ark 未定义布局概念）
- * - 几何装饰变量（geo-*）：由 [data-theme] 选择器合并双主题，派生自装饰色值
- *
- * 主题切换机制：
- * - 所有颜色令牌通过 ark 的 [data-theme] 选择器方案自动处理双主题
- * - 由 :root 的 color-scheme 驱动（在 app-web/src/styles/shared/theme.css 声明）
- * - [data-theme="dark"] 强制深色，[data-theme="light"] 强制浅色
- * - 本文件不再需要 [data-theme='dark'] 块重复定义
- *
- * 引用链路：
- * 组件 var(--color-fg-primary)
- *   → ark var(--color-fg-primary)
- *   → [data-theme='light'] 取 var(--color-neutral-50) / [data-theme='dark'] 取 var(--color-neutral-1050)
- *   → #0A0A0A (浅色) / #EBEFF3 (深色)
- */
 
-/* ====================================================================
-   兼容层令牌定义
-   --------------------------------------------------------------------
-   所有令牌在 @layer tokens 的 :root 中定义，值引用 ark 语义令牌或保留原值。
-   必须包裹在 @layer tokens 中，确保：
-   1. 优先级正确（低于 unlayered CSS，但高于 @theme 层）
-   2. Tailwind v4 解析器能正确处理 var() 引用链
-   3. 主题切换由 ark 的 [data-theme] 选择器方案自动处理
-   无需 [data-theme='dark'] 覆盖，由 theme.css 统一管理。
-   ==================================================================== */
 @layer tokens {
 :root {
-  /* ============================================================
-     1. 颜色令牌 — 语义层（映射 ark 语义令牌）
-     ------------------------------------------------------------
-     通过引用 ark 语义令牌，实现双主题自动切换。
-     ============================================================ */
 
-  /* --- 品牌色（映射 ark accent 强调色） --- */
+  --color-bg: var(--color-bg-primary);
+  --color-bg-hover: var(--color-bg-hover);
 
-  /* --- 背景色（映射 ark bg 令牌） --- */
-  --color-bg: var(--color-bg-primary); /* 页面主背景色 */
-  --color-bg-hover: var(--color-bg-hover); /* 悬停态背景色，用于列表项、按钮等 */
+  --color-border: var(--color-border-strong);
 
-  /* --- 文字色（映射 ark fg 令牌） --- */
+  --color-success: var(--color-success-base);
+  --color-warning: var(--color-warning-base);
+  --color-info: var(--color-info-base);
 
-  /* --- 边框色（映射 ark border 令牌） --- */
-  --color-border: var(--color-border-strong); /* 主边框色，用于代码块、导航栏等 */
-
-  /* --- 语义色（映射 ark 状态色） --- */
-  --color-success: var(--color-success-base); /* 成功状态色 */
-  --color-warning: var(--color-warning-base); /* 警告状态色 */
-  --color-info: var(--color-info-base); /* 信息状态色 */
-
-  /* --- 导航栏背景（半透明毛玻璃，派生自主背景） --- */
   --color-nav-bg: color-mix(in srgb, var(--color-bg-primary) 95%, transparent);
 
-  /* ============================================================
-     2. 布局尺寸（保留原值，ark 未定义布局概念）
-     ============================================================ */
-  --content-width: 1280px; /* 内容区域最大宽度：全站统一基准 */
-  --nav-height: 48px; /* 顶部导航栏高度 */
-  --sidebar-width: 260px; /* 侧边栏宽度 */
+  --content-width: 1280px;
+  --nav-height: 48px;
+  --sidebar-width: 260px;
 
-  /* ============================================================
-     3. 间距系统（映射 ark space 令牌，4px 基准递增）
-     ============================================================ */
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
 
-  /* ============================================================
-     4. 字体栈（映射 ark font-family 令牌）
-     ============================================================ */
+  --geo-red: rgba(224, 90, 43, 0.85);
+  --geo-blue: rgba(51, 102, 204, 0.85);
+  --geo-curve: rgba(51, 102, 204, 0.1);
+  --geo-wave: rgba(224, 90, 43, 0.12);
+  --geo-cross: rgba(13, 13, 13, 0.18);
+  --geo-dot-lg: rgba(13, 13, 13, 0.1);
+  --geo-dot-sm: rgba(13, 13, 13, 0.06);
+  --geo-grid: rgba(13, 13, 13, 0.06);
+  --geo-line: rgba(13, 13, 13, 0.12);
+  --geo-stripe: rgba(51, 102, 204, 0.05);
+  --color-border-light: var(--color-border-subtle);
 
-  /* ============================================================
-     5. 过渡动画（映射 ark motion 令牌）
-     ============================================================
-     悬停反馈使用 instant（75ms）确保即时响应，消除迟钝卡顿感。
-     基础过渡使用 normal（250ms）用于展开收起等较大幅度变化。
-     ============================================================ */
+  --color-bg-card: var(--color-bg-elevated);
 
-  /* ============================================================
-     6. 阴影（映射 ark shadow 令牌）
-     ============================================================ */
-  --shadow-sm: var(--shadow-sm); /* 小阴影，用于微弱浮起效果 */
-  --shadow-md: var(--shadow-md); /* 中等阴影，用于卡片悬浮效果 */
-  --shadow-lg: var(--shadow-lg); /* 大阴影，用于弹窗、模态框等 */
+  --color-bg-code: var(--color-bg-sunken);
 
-  /* ============================================================
-     7. 构成主义几何背景装饰变量
-     ------------------------------------------------------------
-     受俄国构成主义 / 包豪斯 / 至上主义启发
-     克制使用：仅作背景点缀，不干扰内容阅读
-     浅色默认值定义于此，深色覆盖值在 [data-theme='dark'] 块中定义：
-     - 亮色：墨色 alpha 派生（深色装饰）
-     - 暗色：白色 alpha 派生（浅色装饰，提亮维持可见度）
-     - 红/蓝装饰色：派生自 ark accent/info 令牌
-     ============================================================ */
-  --geo-red: rgba(224, 90, 43, 0.85); /* 构成主义砖红 */
-  --geo-blue: rgba(51, 102, 204, 0.85); /* 群青 */
-  --geo-curve: rgba(51, 102, 204, 0.1); /* 曲线主色 */
-  --geo-wave: rgba(224, 90, 43, 0.12); /* 波纹色 */
-  --geo-cross: rgba(13, 13, 13, 0.18); /* 十字标记线 */
-  --geo-dot-lg: rgba(13, 13, 13, 0.1); /* 大点阵 */
-  --geo-dot-sm: rgba(13, 13, 13, 0.06); /* 小点阵 */
-  --geo-grid: rgba(13, 13, 13, 0.06); /* 背景网格线 */
-  --geo-line: rgba(13, 13, 13, 0.12); /* 几何辅助线 */
-  --geo-stripe: rgba(51, 102, 204, 0.05); /* 斜纹底纹 */
-  --color-border-light: var(--color-border-subtle); /* 浅边框色，用于分割线、卡片边框等 */
+  --color-primary-hover: var(--color-accent-hover);
 
-  --color-bg-card: var(--color-bg-elevated); /* 卡片/面板背景色（浮起元素） */
-
-  --color-bg-code: var(--color-bg-sunken); /* 代码块背景色（凹陷区域） */
-
-  --color-primary-hover: var(--color-accent-hover); /* 主品牌色悬停态，提供视觉反馈 */
-
-  --color-bg-sidebar: var(--color-bg-secondary); /* 侧边栏背景色（次背景） */
+  --color-bg-sidebar: var(--color-bg-secondary);
 
 }
 
-  /* ============================================================
-     深色模式：几何装饰变量覆盖
-     ------------------------------------------------------------
-     暗色模式下使用白色 alpha 派生，提亮维持可见度。
-     ============================================================ */
   [data-theme='dark'] {
     --geo-red: rgba(240, 144, 112, 0.75);
     --geo-blue: rgba(110, 168, 254, 0.75);
@@ -143,4 +55,4 @@
     --geo-line: rgba(235, 235, 235, 0.1);
     --geo-stripe: rgba(110, 168, 254, 0.08);
   }
-} /* end @layer tokens */
+}

@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- FANDEX 启动图标背景：品牌蓝对角渐变（与 shd-shared/assets/icons/favicon.svg 标准一致） -->
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
     <gradient

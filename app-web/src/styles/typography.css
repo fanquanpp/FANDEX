@@ -1,44 +1,16 @@
-/**
- * FANDEX 排版样式（Design Tokens 系统 + 现有 .prose 规则）
- *
- * 功能概述：
- * 本文件包含两部分：
- *   1. 基于 ark 语义令牌的全局元素排版规则（h1-h6、p、ul/ol、blockquote、
- *      table、hr、img、code、数学公式等），适用于非 .prose 容器。
- *   2. .prose 容器作用域下的 Markdown 渲染排版规则；令牌已于 2026-09-13
- *      统一迁移到 ark 语义令牌，与全局规则同源。
- *
- * 兼容策略：
- * - 新规则使用元素选择器（h1、p 等），特异性较低（0,0,0,1）
- * - .prose 规则使用 .prose 后代选择器，特异性较高（0,0,1,1），在 .prose 容器内优先
- * - 因此新规则不会影响现有 .prose 内容的渲染，仅作用于 .prose 外部的元素
- *
- * 层级归属：@layer base（避免未分层 CSS 覆盖 ark 令牌导致主题切换失效）
- *   .prose 规则虽在 base 层，但其选择器特异性（0,0,1,1）高于全局元素排版（0,0,0,1），
- *   同层内特异性高的规则仍优先，保证 .prose 容器内排版正确渲染。
- */
 
-/* 归入 @layer base，确保优先级低于 tokens 层，主题切换正常工作 */
 @layer base {
 
-/* ###################################################################
-   第一部分：Design Tokens 全局排版规则（新增）
-   ################################################################### */
-
-/* ========== 中英文混排优化 ==========
-   启用字距、连字、上下文替换；中文标点挤压（渐进增强）。 */
 body {
   font-feature-settings:
     'kern' 1,
     'liga' 1,
-    'calt' 1; /* 西文字距与连字 */
-  font-variant-east-asian: proportional-width; /* 中日韩字符等比例宽度 */
-  text-spacing-trim: space-all; /* 标点挤压（CSS Text 4，渐进增强） */
-  hanging-punctuation: first last; /* 首尾标点悬挂 */
+    'calt' 1;
+  font-variant-east-asian: proportional-width;
+  text-spacing-trim: space-all;
+  hanging-punctuation: first last;
 }
 
-/* ========== 标题样式 ==========
-   使用 display 字族、紧凑行高、负字距，营造层次感。 */
 h1,
 h2,
 h3,
@@ -52,8 +24,8 @@ h6 {
   color: var(--color-fg-primary);
   margin-top: 1.5em;
   margin-bottom: 0.5em;
-  scroll-margin-top: 6rem; /* 锚点滚动偏移，避免被固定导航栏遮挡 */
-  text-wrap: balance; /* 标题文本平衡换行 */
+  scroll-margin-top: 6rem;
+  text-wrap: balance;
 }
 
 h1 {
@@ -95,23 +67,20 @@ h6 {
   letter-spacing: var(--font-letter-spacing-wider);
 }
 
-/* 首个标题去除顶部间距 */
 h1:first-child,
 h2:first-child,
 h3:first-child {
   margin-top: 0;
 }
 
-/* ========== 段落样式 ========== */
 p {
   margin: var(--space-4) 0;
   line-height: var(--font-line-height-relaxed);
   color: var(--color-fg-primary);
-  text-align: justify; /* 中文两端对齐 */
-  text-justify: inter-character; /* CJK 字符间距调整 */
+  text-align: justify;
+  text-justify: inter-character;
 }
 
-/* ========== 列表样式 ========== */
 ul,
 ol {
   margin: var(--space-4) 0;
@@ -120,11 +89,11 @@ ol {
 }
 
 ul {
-  list-style: disc; /* 无序列表圆点 */
+  list-style: disc;
 }
 
 ol {
-  list-style: decimal; /* 有序列表数字 */
+  list-style: decimal;
 }
 
 li {
@@ -133,10 +102,9 @@ li {
 }
 
 li::marker {
-  color: var(--fandex-color-primary-500); /* 列表标记使用主色 */
+  color: var(--fandex-color-primary-500);
 }
 
-/* 嵌套列表缩小缩进 */
 ul ul,
 ol ol,
 ul ol,
@@ -144,7 +112,6 @@ ol ul {
   margin: var(--space-1) 0;
 }
 
-/* ========== 引用样式 ========== */
 blockquote {
   margin: var(--space-6) 0;
   padding: var(--space-3) var(--space-5);
@@ -152,7 +119,7 @@ blockquote {
   background-color: var(--color-bg-secondary);
   border-radius: 0 var(--radius-md) var(--radius-md) 0;
   color: var(--color-fg-secondary);
-  font-style: italic; /* 引用斜体，区分正文 */
+  font-style: italic;
   position: relative;
 }
 
@@ -168,7 +135,6 @@ blockquote > :last-child {
   margin-bottom: 0;
 }
 
-/* 引用来源（cite 或 footer） */
 blockquote footer,
 blockquote cite {
   display: block;
@@ -180,15 +146,14 @@ blockquote cite {
 
 blockquote footer::before,
 blockquote cite::before {
-  content: '— '; /* 引用来源前缀破折号 */
+  content: '— ';
 }
 
-/* ========== 行内代码样式 ========== */
 code,
 kbd,
 samp {
   font-family: var(--font-family-mono);
-  font-size: 0.875em; /* 相对于父元素略小 */
+  font-size: 0.875em;
 }
 
 :not(pre) > code,
@@ -199,24 +164,22 @@ samp {
   color: var(--fandex-color-primary-700);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-default);
-  word-break: break-word; /* 长代码标识符可断行 */
+  word-break: break-word;
 }
 
-/* 暗色模式下行内代码文字色提亮 */
 [data-theme='dark'] :not(pre) > code,
 [data-theme='dark'] :not(pre) > kbd,
 [data-theme='dark'] :not(pre) > samp {
   color: var(--fandex-color-primary-300);
 }
 
-/* ========== 代码块样式 ========== */
 pre {
   margin: var(--space-6) 0;
   padding: var(--space-4) var(--space-5);
   background-color: var(--color-code-bg);
   border: 1px solid var(--color-border-default);
   border-radius: var(--radius-lg);
-  overflow-x: auto; /* 长代码横向滚动 */
+  overflow-x: auto;
   font-family: var(--font-family-mono);
   font-size: var(--font-size-sm);
   line-height: var(--font-line-height-normal);
@@ -224,7 +187,7 @@ pre {
 }
 
 pre code {
-  background: none; /* pre 内的 code 不重复背景 */
+  background: none;
   padding: 0;
   border: none;
   border-radius: 0;
@@ -233,13 +196,12 @@ pre code {
   line-height: inherit;
 }
 
-/* ========== 键盘按键样式（kbd） ========== */
 kbd {
   display: inline-block;
   padding: 0.15em 0.4em;
   background-color: var(--color-bg-elevated);
   border: 1px solid var(--color-border-strong);
-  border-bottom-width: 2px; /* 底部加粗，模拟物理按键立体感 */
+  border-bottom-width: 2px;
   border-radius: var(--radius-default);
   font-family: var(--font-family-mono);
   font-size: 0.85em;
@@ -247,7 +209,6 @@ kbd {
   box-shadow: var(--shadow-xs);
 }
 
-/* ========== 表格样式 ========== */
 table {
   width: 100%;
   margin: var(--space-6) 0;
@@ -267,37 +228,31 @@ td {
   vertical-align: top;
 }
 
-/* 表头：主色背景 + 反色文字 */
 th {
   background-color: var(--fandex-color-primary-600);
   color: var(--color-fg-inverse);
   font-weight: var(--font-weight-semibold);
   font-family: var(--font-family-display);
-  white-space: nowrap; /* 表头不换行 */
+  white-space: nowrap;
 }
 
-/* 暗色模式下表头使用稍浅的主色 */
 [data-theme='dark'] th {
   background-color: var(--fandex-color-primary-700);
 }
 
-/* 斑马纹：偶数行使用 surface 背景 */
 tbody tr:nth-child(even) {
   background-color: var(--color-bg-secondary);
 }
 
-/* 行悬停高亮 */
 tbody tr:hover {
   background-color: var(--color-bg-hover);
   transition: background-color var(--motion-duration-fast) var(--motion-easing-out);
 }
 
-/* 表格底部边框去除（避免与容器边框重叠） */
 tbody tr:last-child td {
   border-bottom: none;
 }
 
-/* ========== 水平分割线 ========== */
 hr {
   margin: var(--space-8) 0;
   border: none;
@@ -305,7 +260,6 @@ hr {
   height: 0;
 }
 
-/* ========== 图片样式 ========== */
 img {
   max-width: 100%;
   height: auto;
@@ -324,7 +278,6 @@ figure img {
   margin: 0 auto;
 }
 
-/* 图片标题（figcaption） */
 figcaption {
   margin-top: var(--space-2);
   font-size: var(--font-size-sm);
@@ -332,7 +285,6 @@ figcaption {
   font-style: italic;
 }
 
-/* ========== 强调与标记 ========== */
 strong,
 b {
   font-weight: var(--font-weight-semibold);
@@ -356,20 +308,17 @@ mark {
   color: var(--color-fg-inverse);
 }
 
-/* 删除线 */
 del {
   color: var(--color-fg-tertiary);
   text-decoration: line-through;
 }
 
-/* 插入线 */
 ins {
   color: var(--color-success-base);
   text-decoration: underline;
   text-decoration-color: var(--color-success-base);
 }
 
-/* 上标与下标 */
 sup,
 sub {
   font-size: 0.75em;
@@ -386,49 +335,37 @@ sub {
   bottom: -0.25em;
 }
 
-/* ========== 缩写与定义 ========== */
 abbr[title] {
-  cursor: help; /* 鼠标悬停显示帮助光标 */
+  cursor: help;
   text-decoration: underline dotted;
   text-underline-offset: 0.15em;
   text-decoration-color: var(--color-fg-tertiary);
 }
 
-/* 定义术语 */
 dfn {
   font-style: italic;
   font-weight: var(--font-weight-medium);
 }
 
-/* ========== 数学公式样式（KaTeX MathML 输出） ========== */
-/* KaTeX 已切换 output:'mathml'（见 astro.config.ts 注释），产物结构为
- * <span class="katex"><math>…</math></span>，浏览器按 MathML Core 原生渲染，
- * 不再依赖 katex.css 与 KaTeX 字体。行内与块级公式统一处理：
- * 行内为 <span class="katex"><math>，块级为 <span class="katex"><math display="block">
- * （mathml 输出不再生成 .katex-display 包裹，用 :has 兜底历史 HTML 结构） */
 .katex {
-  font-size: 1.1em; /* 数学公式略大于正文，提升可读性 */
+  font-size: 1.1em;
 }
 
-/* 块级公式：独立成行 + 居中 + 长公式横向滚动 */
 .katex-display,
 .katex:has(> math[display='block']) {
   display: block;
   margin: var(--space-6) 0;
-  overflow-x: auto; /* 长公式横向滚动 */
+  overflow-x: auto;
   overflow-y: hidden;
   padding: var(--space-2) 0;
-  text-align: center; /* 公式居中 */
+  text-align: center;
 }
 
-/* 暗色模式下公式文字色（MathML 的 <math> 通过 CSS color 继承） */
 [data-theme='dark'] .katex {
   color: var(--color-fg-primary);
 }
 
-/* ========== 响应式排版 ========== */
 @media (max-width: 767.98px) {
-  /* 移动端标题字号递减 */
   h1 {
     font-size: var(--font-size-3xl);
   }
@@ -442,24 +379,20 @@ dfn {
     font-size: var(--font-size-lg);
   }
 
-  /* 移动端段落左对齐（两端对齐在窄屏下效果差） */
   p {
     text-align: left;
   }
 
-  /* 移动端列表缩进减小 */
   ul,
   ol {
     padding-left: var(--space-4);
   }
 
-  /* 移动端引用块间距缩小 */
   blockquote {
     padding: var(--space-2) var(--space-4);
     margin: var(--space-4) 0;
   }
 
-  /* 移动端表格支持横向滚动 */
   table {
     display: block;
     overflow-x: auto;
@@ -473,32 +406,12 @@ dfn {
   }
 }
 
-/* ###################################################################
-   第二部分：.prose 容器排版规则（令牌已迁移至 ark 语义层）
-   --------------------------------------------------------------------
-   以下规则为现有 .prose 容器作用域下的 Markdown 渲染样式，
-   使用旧 --color-* 令牌，保持现有功能不变。
-   特异性高于上方全局规则（.prose h1 = 0,0,1,1 > h1 = 0,0,0,1），
-   因此 .prose 容器内的元素仍按以下规则渲染，不受新规则影响。
-   ################################################################### */
-
-/**
- * FANDEX 排版样式
- *
- * 功能概述：
- * 定义 .prose 容器下所有 Markdown 渲染内容的排版规则，包括标题层级、
- * 段落、链接、列表、引用、表格、代码、提示块（Admonition）
- * 等元素的样式。支持亮色/暗色主题和移动端响应式适配。
- */
-
-/* ========== 基础容器 ========== */
 .prose {
   max-width: 100%;
   margin: 0 auto;
-  line-height: 1.9; /* 中文排版行高略大，提升可读性 */
+  line-height: 1.9;
 }
 
-/* ========== 标题通用样式 ========== */
 .prose h1,
 .prose h2,
 .prose h3,
@@ -507,14 +420,13 @@ dfn {
 .prose h6 {
   font-family: var(--font-family-body);
   font-weight: 700;
-  line-height: 1.35; /* 标题行高较紧凑，增强层级感 */
+  line-height: 1.35;
   color: var(--color-fg-primary);
   margin-top: 1.6em;
   margin-bottom: 0.6em;
-  scroll-margin-top: calc(var(--nav-height) + 24px); /* 锚点滚动偏移，避免被导航栏遮挡 */
+  scroll-margin-top: calc(var(--nav-height) + 24px);
 }
 
-/* h1：左侧竖线 + 底部边框，突出章节入口 */
 .prose h1 {
   font-size: 1.7em;
   border-left: 3px solid var(--module-color, var(--color-accent-base));
@@ -523,76 +435,65 @@ dfn {
   padding-bottom: 0.35em;
 }
 
-/* h2：底部彩色边框，区分主要章节 */
 .prose h2 {
   font-size: 1.35em;
   border-bottom: 2px solid var(--module-color, var(--color-success-base));
   padding-bottom: 0.3em;
 }
 
-/* h3：左侧竖线，轻量级小节标记 */
 .prose h3 {
   font-size: 1.15em;
   border-left: 3px solid var(--module-color, var(--color-warning-base));
   padding-left: 0.5em;
 }
 
-/* h4：下划线装饰，最细的标题层级 */
 .prose h4 {
   font-size: 1.05em;
   text-decoration: underline;
-  text-underline-offset: 0.25em; /* 下划线与文字间距 */
-  text-decoration-color: var(--color-border-light); /* 浅色下划线，避免过于突兀 */
+  text-underline-offset: 0.25em;
+  text-decoration-color: var(--color-border-light);
 }
 
-/* h5：与正文等大，仅靠加粗区分 */
 .prose h5 {
   font-size: 1em;
 }
 
-/* h6：略小于正文，使用二级文字色弱化 */
 .prose h6 {
   font-size: 0.95em;
   color: var(--color-text-secondary);
 }
 
-/* 首个标题去除顶部间距，避免页面顶部空白过大 */
 .prose h1:first-child {
   margin-top: 0;
 }
 
-/* ========== 段落 ========== */
 .prose p {
   margin: 0.9em 0;
-  text-align: justify; /* 两端对齐，中文排版更整齐 */
+  text-align: justify;
 }
 
-/* ========== 链接 ========== */
 .prose a {
   color: var(--color-accent-base);
   text-decoration: underline;
-  text-decoration-style: dotted; /* 点状下划线，区分普通文字 */
-  text-underline-offset: 0.15em; /* 下划线偏移，避免与文字底部粘连 */
+  text-decoration-style: dotted;
+  text-underline-offset: 0.15em;
   text-decoration-thickness: 1px;
   transition:
     color var(--motion-duration-instant),
     text-decoration-style var(--motion-duration-instant);
 }
 
-/* 链接悬停：颜色加深 + 下划线变实线 */
 .prose a:hover {
   color: var(--color-primary-hover);
   text-decoration-style: solid;
 }
 
-/* ========== 列表 ========== */
 .prose ul,
 .prose ol {
   padding-left: 2em;
   margin: 0.8em 0;
 }
 
-/* 无序列表：移除默认圆点，使用自定义圆点 */
 .prose ul {
   list-style: none;
 }
@@ -602,7 +503,6 @@ dfn {
   padding-left: 0.5em;
 }
 
-/* 自定义列表标记：竖条刻度（项目规范：禁止圆点装饰） */
 .prose ul > li::before {
   content: '';
   position: absolute;
@@ -615,19 +515,17 @@ dfn {
   opacity: 0.6;
 }
 
-/* 有序列表：自定义计数器样式 */
 .prose ol {
-  counter-reset: prose-ol; /* 重置计数器 */
+  counter-reset: prose-ol;
   list-style: none;
 }
 
 .prose ol > li {
   position: relative;
   padding-left: 0.5em;
-  counter-increment: prose-ol; /* 计数器递增 */
+  counter-increment: prose-ol;
 }
 
-/* 自定义序号：主色 + 加粗 + 右对齐 */
 .prose ol > li::before {
   content: counter(prose-ol) '.';
   position: absolute;
@@ -640,12 +538,10 @@ dfn {
   color: var(--color-accent-base);
 }
 
-/* 列表项间距 */
 .prose li {
   margin: 0.35em 0;
 }
 
-/* ========== 引用块 ========== */
 .prose blockquote {
   border-left: 3px solid var(--color-accent-base);
   padding: 0.85em 1.25em;
@@ -655,7 +551,6 @@ dfn {
   position: relative;
 }
 
-/* 引用块内首尾段落去除多余间距 */
 .prose blockquote > p:first-child {
   margin-top: 0;
 }
@@ -663,25 +558,21 @@ dfn {
   margin-bottom: 0;
 }
 
-/* 警告引用块：橙色左边框 + 暖色背景（使用 color-mix 主题自适应） */
 .prose blockquote.warning {
   border-left-color: var(--color-warning-base);
   background: color-mix(in srgb, var(--color-warning-base) 10%, var(--color-bg-card));
 }
 
-/* 危险引用块：红色左边框 + 粉色背景（使用 color-mix 主题自适应） */
 .prose blockquote.danger {
   border-left-color: var(--color-danger);
   background: color-mix(in srgb, var(--color-danger) 10%, var(--color-bg-card));
 }
 
-/* 提示引用块：绿色左边框 + 浅绿背景（使用 color-mix 主题自适应） */
 .prose blockquote.tip {
   border-left-color: var(--color-success-base);
   background: color-mix(in srgb, var(--color-success-base) 10%, var(--color-bg-card));
 }
 
-/* 引用块暗色主题适配：提高混合比例维持可见度 */
 [data-theme='dark'] .prose blockquote.warning {
   background: color-mix(in srgb, var(--color-warning-base) 16%, var(--color-bg-card));
 }
@@ -694,21 +585,17 @@ dfn {
   background: color-mix(in srgb, var(--color-success-base) 16%, var(--color-bg-card));
 }
 
-/* ========== 表格 ========== */
-/* 表格包裹层：承担横向滚动能力，规避 display:table 与 overflow-x:auto 同元素冲突 */
 .prose .table-wrap {
   overflow-x: auto;
-  -webkit-overflow-scrolling: touch; /* iOS 惯性滚动 */
+  -webkit-overflow-scrolling: touch;
   margin: var(--space-6) 0;
 }
 
-/* 包裹层可聚焦（tabindex=0）：键盘用户聚焦后可直接横向滚动表格 */
 .prose .table-wrap:focus-visible {
   outline: 2px solid var(--color-accent-base);
   outline-offset: 2px;
 }
 
-/* 包裹层内的表格取消自身外边距，避免与包裹层双重留白 */
 .prose .table-wrap table {
   margin: 0;
 }
@@ -718,7 +605,7 @@ dfn {
   border-collapse: collapse;
   margin: 1em 0;
   border: 1px solid var(--color-border-strong);
-  font-size: 0.92em; /* 表格字号略小，容纳更多数据 */
+  font-size: 0.92em;
 }
 
 .prose th,
@@ -728,55 +615,44 @@ dfn {
   border: 1px solid var(--color-border-light);
 }
 
-/* 表头：主色背景 + 反色文字 */
 .prose th {
   background: var(--color-accent-base);
   color: var(--color-text-inverse);
   font-family: var(--font-family-heading);
   font-size: 0.9em;
   font-weight: 600;
-  white-space: nowrap; /* 表头不换行 */
+  white-space: nowrap;
 }
 
-/* 暗色模式下表头使用深色主色背景，避免过亮 */
 [data-theme='dark'] .prose th {
   background: var(--color-primary-700);
   color: var(--color-primary-200);
 }
 
-/* 偶数行斑马纹 */
 .prose tr:nth-child(even) td {
   background: var(--color-bg-card);
 }
 
-/* 行悬停高亮 */
 .prose tr:hover td {
   background: var(--color-bg-hover);
 }
 
-/* ========== 图片 ========== */
 .prose img {
   max-width: 100%;
   border: 1px solid var(--color-border-strong);
 }
 
-/* ========== 分割线 ========== */
 .prose hr {
   border: none;
   border-top: 3px solid var(--color-border-strong);
   margin: 2.5em 0;
 }
 
-/* ========== 强调文字 ========== */
-/* 加粗文字颜色改为模块分类主题色（--module-color 由 [slug].astro 注入到 article）
-   无模块上下文时回退到主品牌色 */
 .prose strong {
   color: var(--module-color, var(--color-accent-base));
   font-weight: 700;
 }
 
-/* ========== 高亮标记 ========== */
-/* 高亮标记背景改为模块分类主题色（半透明），文字保持深色确保对比度 */
 .prose mark {
   background: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 20%, transparent);
   color: var(--color-fg-primary);
@@ -784,7 +660,6 @@ dfn {
   border-radius: var(--radius-sm);
 }
 
-/* ========== 折叠面板（details/summary） ========== */
 .prose details {
   margin: 1em 0;
   border: 1px solid var(--color-border-light);
@@ -800,7 +675,7 @@ dfn {
   font-family: var(--font-family-heading);
   font-size: 0.9em;
   color: var(--color-accent-base);
-  user-select: none; /* 禁止选中标题文字，避免误操作 */
+  user-select: none;
   transition: background var(--motion-duration-instant);
 }
 
@@ -808,18 +683,15 @@ dfn {
   background: var(--color-bg-hover);
 }
 
-/* 展开状态下标题底部添加分割线 */
 .prose details[open] summary {
   border-bottom: 1px solid var(--color-border-light);
 }
 
-/* 折叠面板内容区域统一内边距 */
 .prose details > *:not(summary) {
   padding: 0.7em 1em;
   margin: 0;
 }
 
-/* ========== 行内代码 ========== */
 .prose code {
   font-family: var(--font-family-code);
   background: var(--color-bg-code);
@@ -829,15 +701,13 @@ dfn {
   border-radius: 3px;
 }
 
-/* ========== 代码块容器 ========== */
 .prose pre {
   margin: 1em 0;
-  overflow-x: auto; /* 长代码横向滚动 */
+  overflow-x: auto;
   border: 1px solid var(--color-border-strong);
   border-radius: 4px;
 }
 
-/* 代码块内的行内代码：去除独立样式，继承 pre 的样式 */
 .prose pre code {
   background: none;
   padding: 0;
@@ -847,7 +717,6 @@ dfn {
   line-height: 1.6;
 }
 
-/* ========== 提示块（Admonition） ========== */
 .prose .admonition {
   margin: 1.2em 0;
   padding: 0.85em 1.25em;
@@ -865,7 +734,6 @@ dfn {
   letter-spacing: 0.05em;
 }
 
-/* --- note 提示块：蓝色 --- */
 .prose .admonition-note {
   border-left-color: var(--color-accent-base);
 }
@@ -874,7 +742,6 @@ dfn {
   color: var(--color-accent-base);
 }
 
-/* --- tip 提示块：绿色（color-mix 主题自适应） --- */
 .prose .admonition-tip {
   border-left-color: var(--color-success-base);
   background: color-mix(in srgb, var(--color-success-base) 10%, var(--color-bg-card));
@@ -884,7 +751,6 @@ dfn {
   color: var(--color-success-base);
 }
 
-/* --- warning 提示块：橙色（color-mix 主题自适应） --- */
 .prose .admonition-warning {
   border-left-color: var(--color-warning-base);
   background: color-mix(in srgb, var(--color-warning-base) 10%, var(--color-bg-card));
@@ -894,7 +760,6 @@ dfn {
   color: var(--color-warning-base);
 }
 
-/* --- danger 提示块：红色（color-mix 主题自适应） --- */
 .prose .admonition-danger {
   border-left-color: var(--color-danger);
   background: color-mix(in srgb, var(--color-danger) 10%, var(--color-bg-card));
@@ -904,7 +769,6 @@ dfn {
   color: var(--color-danger);
 }
 
-/* 提示块暗色主题适配：提高混合比例维持可见度 */
 [data-theme='dark'] .prose .admonition-tip {
   background: color-mix(in srgb, var(--color-success-base) 16%, var(--color-bg-card));
 }
@@ -915,14 +779,12 @@ dfn {
   background: color-mix(in srgb, var(--color-danger) 16%, var(--color-bg-card));
 }
 
-/* ========== 移动端响应式适配 ========== */
 @media (max-width: 767.98px) {
   .prose {
     padding: 0 var(--space-4);
-    font-size: 0.88em; /* 移动端字号缩小 */
+    font-size: 0.88em;
   }
 
-  /* 移动端标题字号递减 */
   .prose h1 {
     font-size: 1.35em;
   }
@@ -936,31 +798,26 @@ dfn {
     font-size: 1em;
   }
 
-  /* 移动端段落左对齐（两端对齐在窄屏下效果差） */
   .prose p {
     text-align: left;
   }
 
-  /* 移动端列表缩进减小 */
   .prose ul,
   .prose ol {
     padding-left: 1.5em;
   }
 
-  /* 移动端引用块间距缩小 */
   .prose blockquote {
     padding: 0.65em 1em;
     margin: 1em 0;
   }
 
-  /* 移动端表格单元格间距缩小 */
   .prose th,
   .prose td {
     padding: 0.5em 0.65em;
     font-size: 0.9em;
   }
 
-  /* 移动端表格基础样式（横向滚动由 .table-wrap 包裹层承担，避免 display:table 与 overflow-x:auto 冲突） */
   .prose table {
     display: table;
     width: 100%;
@@ -970,12 +827,8 @@ dfn {
   }
 }
 
-} /* end @layer base */
+}
 
-/* ===== 标题锚点链接（GitHub 式 heading permalink） =====
-   由 lib/layout-interactions.ts 的 initHeadingAnchors 注入：
-   悬停/聚焦 h2/h3 时淡入 # 标记，点击复制带锚点地址并更新 hash。
-   触屏设备常显低透明度保证可发现性。 */
 @layer components {
   .heading-anchor {
     display: inline-block;
@@ -1005,7 +858,6 @@ dfn {
     }
   }
 
-  /* 触屏（无悬停）：常显低透明度，保证可发现与可点按 */
   @media (hover: none) {
     .heading-anchor {
       opacity: 0.4;

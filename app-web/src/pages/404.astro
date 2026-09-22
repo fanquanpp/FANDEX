@@ -1,16 +1,5 @@
 ---
-/**
- * 404 错误页
- * -----------------------------------------------------------------------------
- * 设计原则：极简、克制、直接。
- * - 保留必要信息：错误码、一句话说明、失效路径
- * - 只提供两个出口：返回首页 / 学习路线
- * - 背景使用 error 变体几何装饰（网格漂移 + 竖条脉冲 + 扫描线）
- *
- * 样式：styles/pages/error.css
- * 脚本：仅内联一段路径展示脚本（无搜索、无建议等重功能）
- */
-import '@/styles/site.css';  // 全站样式单一入口（geo-decor 已含其中）
+import '@/styles/site.css';
 import '@/styles/pages/error.css';
 import GeoBgDecor from '@/components/GeoBgDecor.astro';
 import { SITE } from '@/lib/constants';
@@ -51,11 +40,8 @@ const base = import.meta.env.BASE_URL;
         } else {
           theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
         }
-        // 始终显式设置 data-theme，避免 tokens.css 的 :root:not([data-theme])
-        // 兜底逻辑在 prefers-color-scheme:dark 下覆盖用户已选择的 light
         document.documentElement.setAttribute('data-theme', theme);
         document.documentElement.style.colorScheme = theme;
-        // 界面语言同步声明（与 BaseLayout 内联脚本同构，独立页自带）
         try {
           var savedLang = localStorage.getItem('fandex-lang');
           if (savedLang === 'en') {
@@ -72,22 +58,18 @@ const base = import.meta.env.BASE_URL;
   </head>
   <body>
     <div class="error-page">
-      <!-- 几何背景装饰层：网格漂移 + 竖条脉冲 + 扫描线，不含点状元素 -->
       <GeoBgDecor variant="error" />
       <main class="error-container">
-        <!-- 错误码：渐变扫光 + 四角括号框 -->
         <div class="error-code-frame" aria-hidden="true">
           <div class="error-code">404</div>
         </div>
         <h1 class="error-title" data-i18n="error404.title">页面未找到</h1>
         <p class="error-desc" data-i18n="error404.desc">地址不存在或内容已被移动。</p>
 
-        <!-- 刻度装饰线：竖条而非点状，呼应构成主义语言 -->
         <div class="error-ticks" aria-hidden="true">
           <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
         </div>
 
-        <!-- 失效路径：明确告知用户访问了哪个不存在的地址 -->
         <div class="error-path" id="error-path-block" hidden>
           <span class="error-path-label" data-i18n="error404.invalid">失效链接</span>
           <code class="error-path-value" id="error-path-value"></code>
@@ -100,12 +82,10 @@ const base = import.meta.env.BASE_URL;
       </main>
     </div>
 
-    <!-- 界面语言 DOM 应用器：英文用户访问 404 时文案随全局偏好切换 -->
     <script>
       import '@/lib/i18n-dom';
     </script>
 
-    <!-- 路径展示脚本：仅输出当前失效路径，无其他交互 -->
     <script is:inline>
       (function () {
         var block = document.getElementById('error-path-block');

@@ -1,10 +1,4 @@
 ---
-/**
- * 单技术学习路线页
- * -----------------------------------------------------------------------------
- * 动态路由 /learning-path/[tech]/，渲染该技术的自绘 SVG 思维导图：
- * 技术根节点 → 阶段列 → 知识点链，节点可点击跳转专项文档。
- */
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
@@ -16,12 +10,10 @@ import {
   getLearningPathTechVM,
   hasLearningPathMap,
 } from '@/lib/learning-path'
-// 复用首页 Hero / 统计 / 功能入口样式，保证美术与语法速览页完全一致
 import '@/styles/pages/index.css'
 import '@/styles/pages/learning-path.css'
 import '@/styles/components/learning-path-map.css'
 
-/** 为已配置地图的每门技术生成独立页面 */
 export function getStaticPaths() {
   return getLearningPathModules().map((tech) => ({ params: { tech } }))
 }
@@ -29,7 +21,6 @@ export function getStaticPaths() {
 const { tech } = Astro.params
 const base = import.meta.env.BASE_URL
 
-// 防御：未配置地图的技术重定向到 404
 if (!hasLearningPathMap(tech || '')) {
   return Astro.redirect(`${base}404`)
 }
@@ -39,7 +30,6 @@ if (!techVM) {
   return Astro.redirect(`${base}404`)
 }
 
-// 技术切换 chip 数据（吸顶栏，含当前技术；计数为知识点数）
 const chipModules = getLearningPathModules()
   .map((id) => {
     const item = getLearningPathTechVM(id, base)
@@ -63,17 +53,13 @@ const chipModules = getLearningPathModules()
     data-lp-tech={techVM.module}
     data-lp-tech-title={techVM.title}
   >
-    <!-- 几何背景装饰：learning-path 变体（点状装饰已统一为竖条） -->
     <GeoBgDecor variant="learning-path" />
 
-    <!-- Hero 区域：复用首页美术（渐变标题 + 统计 + SVG 描边入口） -->
     <section class="hero">
-      <!-- Hero 标题：仅保留英文技术名 logo，删除中文 logo（学习路线） -->
       <h1 class="hero-title" data-text={techVM.title}>
         <span class="hero-title-fan">{techVM.title}</span>
       </h1>
 
-      <!-- 统计 + 功能入口同一行容器（与首页/语法速览结构一致） -->
       <div class="hero-stats-row">
         <div class="hero-stats">
           <div class="stat-item">
@@ -97,12 +83,10 @@ const chipModules = getLearningPathModules()
           </div>
         </div>
 
-        <!-- 功能入口：共享兄弟入口（FeatureNav 统一维护） -->
         <FeatureNav />
       </div>
     </section>
 
-    <!-- 官方文档入口：Hero 下方居中排列 -->
     {techVM.officialDocs.length > 0 && (
       <div class="lp-docs">
         {techVM.officialDocs.map((doc) => (
@@ -123,7 +107,6 @@ const chipModules = getLearningPathModules()
       </div>
     )}
 
-    <!-- 技术切换 chip 栏：与语法速览语言切换栏同款，吸顶可快速切换 -->
     <nav class="lp-tech-chips" aria-label="切换学习路线" data-i18n-aria="lpTech.switchAria">
       <a
         class="lp-tech-chip"
@@ -147,12 +130,10 @@ const chipModules = getLearningPathModules()
       ))}
     </nav>
 
-    <!-- 思维导图交互区：自绘 SVG，支持拖拽、缩放、折叠与节点跳转 -->
     <LearningPathMap client:load tech={techVM} base={base} />
   </div>
 </HomeLayout>
 
-<!-- 最近学习记录：总览页「继续上次学习」直达芯片的数据源 -->
 <script>
   import '@/lib/lp-progress-ui';
 </script>

@@ -6,15 +6,6 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
-/**
- * 应用版本元数据（顶级变量）
- *
- * 提取到顶层的原因：
- * 1. AGP 9.0 新变体 API（androidComponents.onVariants）中
- *    `variant.versionName` 已被移除，无法在变体回调内直接读取版本名。
- * 2. 通过顶级变量在 `android.defaultConfig` 与 `androidComponents.onVariants`
- *    之间共享同一份版本数据，保证输出文件名与内置版本号一致。
- */
 val appVersionName = "4.2.1"
 val appVersionCode = 17
 
@@ -29,12 +20,6 @@ android {
         versionCode = appVersionCode
         versionName = appVersionName
 
-        /**
-         * GitHub Releases API 端点
-         *
-         * 用于 UpdateChecker 检查应用更新，迁移自 UpdateChecker.kt 中的硬编码 URL。
-         * 通过 BuildConfig 注入便于后续切换仓库或环境（如内测分发）时统一管理。
-         */
         buildConfigField(
             "String",
             "GITHUB_API_URL",
@@ -42,21 +27,6 @@ android {
         )
     }
 
-    /**
-     * 签名配置
-     *
-     * 密码读取优先级：
-     * 1. 环境变量 FANDEX_KEYSTORE_PASSWORD / FANDEX_KEY_PASSWORD（CI 通过 Secrets 注入）
-     * 2. local.properties 中的 storePassword / keyPassword（本地开发）
-     *
-     * keyAlias 优先级：
-     * 1. 环境变量 FANDEX_KEY_ALIAS
-     * 2. local.properties 中的 keyAlias
-     * 3. 默认值 "fandex"
-     *
-     * 未配置环境变量且 local.properties 不存在时，密码为空字符串，
-     * 仅 debug 构建可用（debug 不需要签名密码）。
-     */
     val localProps = Properties().apply {
         file("../local.properties").takeIf { it.exists() }?.inputStream()?.use { load(it) }
     }
@@ -76,12 +46,6 @@ android {
         release {
             isMinifyEnabled = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-            /**
-             * 签名回退策略（与 app-Android-new 的个人分发策略一致）：
-             * - 提供正式 keystore（文件存在且密码非空）时使用 release 签名
-             * - 否则回退 debug 签名，保证无密钥环境（CI / 新 clone）可直接出包；
-             *   旧行为是无条件使用 release 配置，无密钥环境构建 release 直接失败
-             */
             signingConfig = if (
                 signingConfigs.getByName("release").storeFile?.exists() == true &&
                 !signingConfigs.getByName("release").storePassword.isNullOrBlank()
@@ -103,17 +67,6 @@ android {
         buildConfig = true
     }
 
-    /**
-     * 单元测试配置
-     *
-     * - returnDefaultValues：Android 框架方法未 mock 时返回默认值，避免 NPE
-     *   ContentLoader 单元测试通过 Mockito mock Context 与 AssetManager，
-     *   该配置作为兜底防止未预期的方法调用抛出 NullPointerException
-     * - jvmArgs net.bytebuddy.experimental=true：
-     *   当前环境为 JDK 25，Mockito 5.14.2 内置的 Byte Buddy 最高官方支持到 Java 24。
-     *   设置 experimental 标志允许 Byte Buddy 在 Java 25 上工作（这是 Mockito 官方推荐方案）。
-     *   后续 Mockito 升级到内置 Byte Buddy 1.17+ 后可移除此参数。
-     */
     testOptions {
         unitTests {
             isReturnDefaultValues = true
@@ -124,27 +77,12 @@ android {
     }
 }
 
-/**
- * Kotlin 编译器配置
- *
- * AGP 9.0 移除了 `kotlinOptions` DSL 块，改用 `kotlin { compilerOptions { } }`。
- * 显式指定 JVM 字节码目标为 21，与 compileOptions 中的 Java 21 保持一致。
- */
 kotlin {
     compilerOptions {
         jvmTarget.set(JvmTarget.JVM_21)
     }
 }
 
-/**
- * 自定义 APK 输出文件名（AGP 9.0 新变体 API）
- *
- * 旧版 `applicationVariants.all { }` DSL 在 AGP 9.0 中已被移除，
- * 改用 `androidComponents.onVariants { }` 配合 VariantOutput API。
- *
- * 输出格式：FANDEX-v{versionName}.apk（如 FANDEX-v3.0.0.apk）
- * 确保下载和分发时文件名具有可辨识的版本标识。
- */
 androidComponents {
     onVariants { variant ->
         variant.outputs.forEach { output ->
@@ -154,7 +92,6 @@ androidComponents {
 }
 
 dependencies {
-    // Compose
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.material3)
@@ -163,35 +100,26 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.navigation.compose)
 
-    // Lifecycle
     implementation(libs.lifecycle.viewmodel.compose)
     implementation(libs.lifecycle.runtime.compose)
 
-    // Markdown 解析
     implementation(libs.commonmark)
     implementation(libs.commonmark.ext.gfm.tables)
     implementation(libs.commonmark.ext.gfm.strikethrough)
 
-    // DataStore（偏好设置持久化）
     implementation(libs.datastore.preferences)
 
-    // JSON 解析
     implementation(libs.gson)
 
-    // AndroidX Core
     implementation(libs.core.ktx)
     implementation(libs.androidx.annotation)
 
-    // 网络请求（仅用于更新自检功能，访问 GitHub Releases 域名白名单）
     implementation(libs.okhttp)
 
-    // 协程
     implementation(libs.kotlinx.coroutines.android)
 
-    // WorkManager（更新检查后台任务）
     implementation(libs.androidx.work.runtime.ktx)
 
-    // 单元测试
     testImplementation(libs.junit)
     testImplementation(libs.kotlinx.coroutines.test)
     testImplementation(libs.mockito.core)

@@ -1,10 +1,4 @@
 ---
-/**
- * 学习路径总览页
- * -----------------------------------------------------------------------------
- * 展示已配置知识地图的技术卡片（按分类分组），每张卡片包含覆盖统计与进度条，
- * 点击进入单技术思维导图页。
- */
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
@@ -18,13 +12,11 @@ import {
   getLearningPathModules,
   getLearningPathTechVM,
 } from '@/lib/learning-path'
-// 复用首页 Hero / 统计 / 功能入口 / 分类组件样式，保证美术与语法速览页完全一致
 import '@/styles/pages/index.css'
 import '@/styles/pages/learning-path.css'
 
 const base = import.meta.env.BASE_URL
 
-// 技术卡片数据：模块元数据 + 视图模型（服务端组装）
 const techCards = getLearningPathModules()
   .map((module) => {
     const meta = getModule(module)
@@ -34,7 +26,6 @@ const techCards = getLearningPathModules()
   })
   .filter((card): card is NonNullable<typeof card> => card !== null)
 
-// 按主分类分组（沿用首页分类顺序与配色）
 const grouped = getCategories()
   .map((cat) => ({
     ...cat,
@@ -42,7 +33,6 @@ const grouped = getCategories()
   }))
   .filter((group) => group.cards.length > 0)
 
-// 聚合统计
 const total = techCards.reduce(
   (acc, card) => ({
     nodes: acc.nodes + card.vm.stats.nodes,
@@ -52,20 +42,8 @@ const total = techCards.reduce(
   { nodes: 0, docs: 0, gaps: 0 },
 )
 
-/** 已配置思维导图的技术集合（用于知识体系芯片跳转） */
 const pathModules = new Set(getLearningPathModules())
 
-/**
- * 职业路线规划数据
- * 依据主流职业发展路径与知识体系结构整理，模块均引用站内真实内容；
- * 展示文案（标题/状态/描述/阶段/阶梯）收于 i18n 字典（lpCareer.*），
- * SSR 渲染中文，运行时经 data-i18n 属性随界面语言切换：
- * - 前端：基础（HTML/CSS/JS）→ 框架进阶（TS/Vue/React）→ 工程化与架构
- * - 后端：语言与基础 → 数据与算法 → 架构与工程
- * - 全栈：前端 + 后端 + 贯通交付
- * - DevOps：工具与网络 → 云与自动化 → 平台工程
- * - 数据：语言与数据 → 存储与管道 → AI 素养
- */
 const careers = [
   {
     id: 'frontend',
@@ -166,18 +144,13 @@ const careers = [
     data-lp-base={base}
     data-lp-colors={JSON.stringify(Object.fromEntries(techCards.map((card) => [card.module, categoryColors[card.category]])))}
   >
-    <!-- 几何背景装饰：learning-path 变体（点状装饰已统一为竖条） -->
     <GeoBgDecor variant="learning-path" />
 
-    <!-- Hero 区域：复用首页美术（渐变标题 + 统计 + SVG 描边入口） -->
     <section class="hero">
-      <!-- Hero 标题：中文双字结构，与语法速览/在线前端页统一
-           （英文长标题会使 data-text 残影伪元素换行错位产生重影，故统一中文） -->
       <h1 class="hero-title" data-text="学习路线">
         <span class="hero-title-fan">学习</span><span class="hero-title-dex">路线</span>
       </h1>
 
-      <!-- 统计 + 功能入口同一行容器（与首页/语法速览结构一致） -->
       <div class="hero-stats-row">
         <div class="hero-stats">
           <div class="stat-item">
@@ -201,11 +174,9 @@ const careers = [
           </div>
         </div>
 
-        <!-- 功能入口：共享兄弟入口（FeatureNav 统一维护，避免各页子集缺漏） -->
         <FeatureNav />
       </div>
 
-      <!-- 继续上次学习：直达上次浏览的技术地图（由 lib/lp-progress-ui.ts 点亮） -->
       <div class="lp-resume" data-lp-resume hidden>
         <span class="lp-resume__label" data-i18n="lp.resume">继续上次</span>
         <a class="lp-resume__link" data-lp-resume-link href="#">
@@ -219,8 +190,6 @@ const careers = [
       </div>
     </section>
 
-    <!-- 职业路线规划：按职业目标组织知识体系
-         （分区竖条采用五职业主题色纵向渐变，呼应下方各职业卡配色） -->
     <section
       class="lp-careers"
       style={`--career-ramp:linear-gradient(180deg, ${careers.map((career) => career.color).join(', ')})`}
@@ -284,7 +253,6 @@ const careers = [
       </div>
     </section>
 
-    <!-- 分类技术卡片 -->
     {grouped.map((group) => (
       <section class="lp-category" data-category={group.id}>
         <!-- 分类标题栏：复用首页 category-header 组件类，附加常驻曲线动画装饰 -->
@@ -354,7 +322,6 @@ const careers = [
   </div>
 </HomeLayout>
 
-<!-- 进度直显：「继续上次」芯片 + 技术卡片本机进度徽章 -->
 <script>
   import '@/lib/lp-progress-ui';
 </script>

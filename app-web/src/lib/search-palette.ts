@@ -1,77 +1,36 @@
-/**
- * 全站搜索命令面板（pagefind 驱动）
- * =============================================================================
- * 功能概述：
- * - Ctrl/Cmd + K 或点击导航搜索按钮打开命令面板，全文检索全站文档
- * - 索引由 pagefind 在构建后生成（dist/pagefind/，见 package.json build 脚本），
- *   首次打开面板时惰性加载 pagefind 运行时，未加载成功（如 dev 环境）时给出提示
- * - 输入防抖 200ms，展示标题/面包屑/摘要片段，支持上下键选择、Enter 跳转
- * - 与 View Transitions 兼容：面板 DOM 按需创建，keydown 绑定在 window 上
- *   （ClientRouter 导航不重执行模块脚本，监听器天然持久）
- * - 界面文案经 lib/i18n 的 t() 取当前语言（UI 双语），
- *   语言切换事件触发时若面板打开则按当前输入重渲染
- *
- * 设计原则：
- * - 零框架依赖的纯 DOM 实现，不增加任何岛屿水合成本
- * - 索引与运行时全部同源静态文件，无外部服务
- * =============================================================================
- */
 import { t, subscribeLang } from './i18n';
 
-/** 站点基础路径（与 import.meta.env.BASE_URL 一致，构建期内联） */
 const BASE = import.meta.env.BASE_URL;
-/** 每次展示的最大结果数 */
 const MAX_RESULTS = 10;
-/** 输入防抖时长（毫秒） */
 const DEBOUNCE_MS = 200;
-/** 最近浏览存储键（localStorage） */
 const RECENT_KEY = 'fandex-recent-docs';
-/** 最近浏览保留条数 */
 const RECENT_MAX = 5;
 
-/** 快捷条目最小结构（最近浏览与功能入口共用） */
 interface QuickEntry {
   title: string;
   href: string;
   crumb?: string;
 }
 
-/** pagefind 结果条目的最小结构声明 */
 interface PagefindData {
-  /** 页面地址（相对 dist 根目录） */
   url: string;
-  /** 页面元信息 */
   meta: { title?: string };
-  /** 高亮摘要 HTML */
   excerpt: string;
-  /** 面包屑（pagefind 内置层级） */
   breadcrumbs?: Array<{ title?: string }>;
 }
 
-/** pagefind 模块的最小接口声明 */
 interface PagefindAPI {
   search: (query: string) => Promise<{ results: Array<{ data: () => Promise<PagefindData> }> }>;
 }
 
-/** 已加载的 pagefind 实例缓存 */
 let pagefindInstance: PagefindAPI | null = null;
-/** 面板 DOM 引用（按需创建） */
 let panel: HTMLDialogElement | null = null;
-/** 输入框引用 */
 let inputEl: HTMLInputElement | null = null;
-/** 结果容器引用 */
 let listEl: HTMLElement | null = null;
-/** 状态提示引用 */
 let statusEl: HTMLElement | null = null;
-/** 防抖计时器 */
 let debounceTimer: number | undefined;
-/** 当前键盘焦点在结果列表中的下标 */
 let activeIndex = -1;
 
-/**
- * 惰性加载 pagefind 运行时
- * @returns pagefind API；索引不存在（dev 环境）时返回 null
- */
 async function loadPagefind(): Promise<PagefindAPI | null> {
   if (pagefindInstance) return pagefindInstance;
   try {
@@ -84,10 +43,6 @@ async function loadPagefind(): Promise<PagefindAPI | null> {
   }
 }
 
-/**
- * 读取最近浏览记录
- * @returns 最近浏览条目（新在前，最多 RECENT_MAX 条）
- */
 function readRecent(): QuickEntry[] {
   try {
     const raw = localStorage.getItem(RECENT_KEY);
@@ -99,9 +54,6 @@ function readRecent(): QuickEntry[] {
   }
 }
 
-/**
- * 写入一条最近浏览记录：按 href 去重、新条目置顶、超出上限截断
- */
 function saveRecent(entry: QuickEntry): void {
   if (!entry.href || !entry.title) return;
   const list = readRecent().filter((item) => item.href !== entry.href);
@@ -113,11 +65,6 @@ function saveRecent(entry: QuickEntry): void {
   }
 }
 
-/**
- * 功能入口分组数据
- * 在线前端仅在 web 构建（页面中存在 playground 链接）时展示，
- * 桌面端构建无此项，运行时探测即可，无需注入构建标记
- */
 function quickEntries(): QuickEntry[] {
   const entries: QuickEntry[] = [
     { title: t('search.entry.syntax'), href: `${BASE}syntax/`, crumb: t('search.entry.syntaxCrumb') },
@@ -126,7 +73,6 @@ function quickEntries(): QuickEntry[] {
     { title: t('search.entry.problems'), href: `${BASE}algorithms/?view=problems`, crumb: t('search.entry.problemsCrumb') },
     { title: t('search.entry.modules'), href: BASE, crumb: t('search.entry.modulesCrumb') },
   ];
-  // 在线前端与灵感图鉴成对出现：桌面端构建无 playground 页面时一并隐藏
   if (document.querySelector('a[href$="playground/"]')) {
     entries.unshift(
       { title: t('search.entry.gallery'), href: `${BASE}playground/?panel=gallery`, crumb: t('search.entry.galleryCrumb') },
@@ -136,11 +82,6 @@ function quickEntries(): QuickEntry[] {
   return entries;
 }
 
-/**
- * 渲染一个结果分组（组标签 + 条目列表），返回本组首个可选条目
- * @param label - 组标签（如「最近浏览」「功能入口」）
- * @param entries - 组内条目
- */
 function renderGroup(label: string, entries: QuickEntry[]): void {
   if (!listEl || entries.length === 0) return;
   const head = document.createElement('li');
@@ -160,7 +101,6 @@ function renderGroup(label: string, entries: QuickEntry[]): void {
       <span class="search-palette__title">${entry.title}</span>
       ${entry.crumb ? `<span class="search-palette__crumb">${entry.crumb}</span>` : ''}
     `;
-    // 点击后记录最近浏览并关闭面板，交给 ClientRouter 完成跳转
     a.addEventListener('click', () => {
       saveRecent({ title: entry.title, href: entry.href });
       closePalette();
@@ -170,9 +110,6 @@ function renderGroup(label: string, entries: QuickEntry[]): void {
   });
 }
 
-/**
- * 创建面板 DOM 结构（仅首次调用时执行）
- */
 function ensurePanel(): HTMLDialogElement {
   if (panel) return panel;
 
@@ -202,7 +139,6 @@ function ensurePanel(): HTMLDialogElement {
   listEl = panel.querySelector('.search-palette__list');
   statusEl = panel.querySelector('.search-palette__status');
 
-  // 关闭行为：点击遮罩或 Esc（dialog 原生支持 Esc 关闭）
   panel.addEventListener('click', (e) => {
     const target = e.target as HTMLElement;
     if (target === panel) closePalette();
@@ -211,7 +147,6 @@ function ensurePanel(): HTMLDialogElement {
     activeIndex = -1;
   });
 
-  // 输入防抖搜索
   inputEl?.addEventListener('input', () => {
     window.clearTimeout(debounceTimer);
     debounceTimer = window.setTimeout(() => {
@@ -219,7 +154,6 @@ function ensurePanel(): HTMLDialogElement {
     }, DEBOUNCE_MS);
   });
 
-  // 键盘导航：上下选择，Enter 打开
   panel.addEventListener('keydown', (e) => {
     if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
       e.preventDefault();
@@ -242,10 +176,6 @@ function ensurePanel(): HTMLDialogElement {
   return panel;
 }
 
-/**
- * 执行搜索并渲染结果
- * @param query - 搜索关键词；空串时渲染最近浏览与功能入口分组
- */
 async function runSearch(query: string): Promise<void> {
   if (!listEl || !statusEl) return;
   if (!query) {
@@ -267,7 +197,6 @@ async function runSearch(query: string): Promise<void> {
     activeIndex = datas.length > 0 ? 0 : -1;
 
     if (datas.length === 0) {
-      // 无结果态：明确告知未命中，并保留功能入口分组作为出口，不让面板留白
       statusEl.textContent = t('search.noResults', { q: query });
       renderGroup(t('search.features'), quickEntries());
       selectFirstItem();
@@ -282,7 +211,6 @@ async function runSearch(query: string): Promise<void> {
       a.className = 'search-palette__item';
       a.setAttribute('role', 'option');
       a.setAttribute('aria-selected', 'false');
-      // pagefind 地址相对 dist 根目录，补齐站点 base 前缀
       const href = data.url.startsWith(BASE) ? data.url : `${BASE}${data.url.replace(/^\//, '')}`;
       a.href = href;
       const crumb = data.breadcrumbs?.map((b) => b.title).filter(Boolean).join(' / ');
@@ -291,7 +219,6 @@ async function runSearch(query: string): Promise<void> {
         ${crumb ? `<span class="search-palette__crumb">${crumb}</span>` : ''}
         <span class="search-palette__excerpt">${data.excerpt}</span>
       `;
-      // 点击后记录最近浏览并关闭面板，交给 ClientRouter 完成跳转
       a.addEventListener('click', () => {
         saveRecent({ title: data.meta?.title ?? t('search.untitled'), href });
         closePalette();
@@ -305,7 +232,6 @@ async function runSearch(query: string): Promise<void> {
   }
 }
 
-/** 将列表中首个可选条目置为选中（键盘 Enter 直接打开） */
 function selectFirstItem(): void {
   if (!listEl) return;
   const first = listEl.querySelector<HTMLAnchorElement>('.search-palette__item');
@@ -319,9 +245,6 @@ function selectFirstItem(): void {
   activeIndex = 0;
 }
 
-/**
- * 渲染空查询视图：最近浏览（如有）+ 功能入口两组
- */
 function renderEmptyView(): void {
   if (!listEl || !statusEl) return;
   listEl.innerHTML = '';
@@ -336,7 +259,6 @@ function renderEmptyView(): void {
   selectFirstItem();
 }
 
-/** 打开面板并聚焦输入框 */
 function openPalette(): void {
   const dialog = ensurePanel();
   if (dialog.open) return;
@@ -348,7 +270,6 @@ function openPalette(): void {
   renderEmptyView();
 }
 
-/** 关闭面板并彻底销毁 DOM：杜绝任何"残留背景"路径（下次打开时重建） */
 function closePalette(): void {
   if (!panel) return;
   if (panel.open) panel.close();
@@ -359,9 +280,7 @@ function closePalette(): void {
   statusEl = null;
 }
 
-// SSR/预渲染环境不执行任何 DOM 逻辑（Astro 构建期会求值页面脚本模块）
 if (!import.meta.env.SSR && typeof window !== 'undefined') {
-  // 全局快捷键：Ctrl/Cmd + K 打开（window 级绑定，ClientRouter 导航后依然有效）
   window.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
     e.preventDefault();
@@ -373,7 +292,6 @@ if (!import.meta.env.SSR && typeof window !== 'undefined') {
   }
 });
 
-// 导航栏搜索按钮（存在时）触发打开；View Transitions 切页后重新绑定
 function bindTrigger(): void {
   document.querySelectorAll<HTMLElement>('[data-search-trigger]').forEach((btn) => {
     btn.addEventListener('click', openPalette);
@@ -382,25 +300,20 @@ function bindTrigger(): void {
 bindTrigger();
 document.addEventListener('astro:page-load', bindTrigger);
 
-// View Transitions 路由切换前销毁面板，避免旧页面实例残留
 document.addEventListener('astro:before-swap', () => {
   closePalette();
 });
 
-// 防御性清扫：移除任何游离在文档中的关闭态面板（异常路径兜底）
 document.addEventListener('astro:page-load', () => {
   document.querySelectorAll('dialog.search-palette:not([open])').forEach((el) => el.remove());
 });
 
-// 界面语言切换时重渲染当前视图（面板打开期间切换语言，文案即时跟随）
 subscribeLang(() => {
   if (panel?.open) {
     void runSearch(inputEl?.value.trim() ?? '');
   }
 });
 
-// 最近浏览自动记录：文档阅读页加载时写入一条浏览历史，
-// 供下次打开命令面板时以「最近浏览」分组置顶展示
 document.addEventListener('astro:page-load', () => {
   const titleEl = document.querySelector<HTMLElement>('.doc-title');
   if (!titleEl) return;

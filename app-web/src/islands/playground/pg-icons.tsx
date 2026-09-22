@@ -1,24 +1,11 @@
 import type { ReactNode } from 'react';
 
-/**
- * Playground 自绘 SVG 图标集
- *
- * 设计说明：
- *   - 按项目规范不使用位图与 emoji，图形一律使用自绘 SVG
- *   - 统一 24x24 视图、2px 描边、圆角端点，与 FANDEX 几何风格一致
- *   - 颜色继承 currentColor，跟随主题切换
- */
-
 interface PgIconProps {
-  /** 图标名称 */
   name: PgIconName;
-  /** 尺寸（px），默认 16 */
   size?: number;
-  /** 附加类名 */
   className?: string;
 }
 
-/** 可用图标名称 */
 export type PgIconName =
   | 'play'
   | 'stop'
@@ -42,7 +29,6 @@ export type PgIconName =
   | 'keyboard'
   ;
 
-/** 图标路径表：每个图标包含若干 path/形状定义 */
 const PATHS: Record<PgIconName, ReactNode> = {
   play: (
     <>
@@ -168,10 +154,6 @@ const PATHS: Record<PgIconName, ReactNode> = {
   ),
 };
 
-/**
- * 自绘 SVG 图标组件
- * 所有图标使用 currentColor，可通过 color 样式控制颜色
- */
 export function PgIcon({ name, size = 16, className }: PgIconProps) {
   return (
     <svg

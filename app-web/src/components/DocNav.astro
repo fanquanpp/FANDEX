@@ -1,19 +1,10 @@
 ---
-/**
- * 文档底部导航组件
- * 显示当前文档的上一篇/下一篇链接，方便用户按顺序浏览文档
- * 通过 props 接收预计算的 prev/next 文档条目，避免组件内部直接查询 Content Collection
- * 由 [slug].astro 在 getStaticPaths 阶段通过 getDocNavigation 预计算后传递
- *
- * 样式已拆分至 styles/components/doc-nav.css
- */
 import { docSlug, type DocEntry } from '@/services';
 import '@/styles/components/doc-nav.css';
 
 const { prev, next } = Astro.props as { prev: DocEntry | null; next: DocEntry | null };
 ---
 
-<!-- 底部导航：仅有一篇时使用单按钮布局；统一 fndx-icon-btn 风格 -->
 <nav class="doc-nav" class:list={{ 'single-btn': !prev || !next }}>
   {
     prev ? (

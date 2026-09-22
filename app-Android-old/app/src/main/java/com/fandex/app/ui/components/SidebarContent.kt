@@ -37,24 +37,6 @@ import com.fandex.app.data.ContentIndex
 import com.fandex.app.data.Strings
 import com.fandex.app.data.resolveDocuments
 
-/**
- * 侧边栏内容组件
- *
- * 功能：合并原 SidebarModuleContent 与 SidebarArticleContent，统一渲染模块文档列表
- * 输入：
- *   - contentIndex: 内容索引
- *   - currentModuleId: 当前模块 ID
- *   - strings: 多语言字符串
- *   - onDocumentClick: 文档点击回调（module, slug, title）
- *   - onNavigateHome: 返回主页回调
- *   - highlightCurrent: 是否高亮当前文档（文章路由下传 true，模块路由下传 false）
- *   - currentSlug: 当前文档 slug（仅当 highlightCurrent=true 时生效，用于匹配高亮项）
- * 输出：返回主页按钮 + 模块标题 + 文档列表（可选高亮当前项）
- *
- * 设计说明：
- *   1. 通过 highlightCurrent 参数区分两种场景，消除重复组件定义
- *   2. 高亮策略：背景色使用 primaryContainer，文字加粗显示
- */
 @Composable
 fun SidebarContent(
     contentIndex: ContentIndex?,
@@ -71,7 +53,6 @@ fun SidebarContent(
     }
     val documents = module?.let { contentIndex.resolveDocuments(it) } ?: emptyList()
 
-    /* 解析分类强调色（解析失败时由 CategoryColorParser 返回兜底色） */
     val accentColor = remember(category?.color) {
         CategoryColorParser.parse(category?.color)
     }
@@ -82,7 +63,6 @@ fun SidebarContent(
             .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = 16.dp, vertical = 12.dp)
     ) {
-        /* 返回主页按钮 */
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -106,7 +86,6 @@ fun SidebarContent(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        /* 模块标题 */
         if (module != null) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Box(
@@ -135,14 +114,12 @@ fun SidebarContent(
 
         Spacer(modifier = Modifier.height(12.dp))
 
-        /* 文档列表 */
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
             contentPadding = PaddingValues(vertical = 4.dp),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
             items(documents, key = { it.slug }) { document ->
-                /* 判断当前文档是否需要高亮：仅当 highlightCurrent=true 且 slug 匹配时高亮 */
                 val isCurrent = highlightCurrent && currentSlug != null && document.slug == currentSlug
                 DocumentListItem(
                     document = document,

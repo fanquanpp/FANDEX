@@ -14,12 +14,6 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.Density
 
-/**
- * 浅色主题 ColorScheme
- *
- * 逐值对齐 shd-shared/styles/tokens.css 浅色语义层：
- * 冷雾灰背景 #EBEFF3 + 深青强调 #0B6E7E
- */
 private val LightColorScheme = lightColorScheme(
     primary = PrimitiveColors.Cyan300,
     onPrimary = PrimitiveColors.Neutral1050,
@@ -57,12 +51,6 @@ private val LightColorScheme = lightColorScheme(
     scrim = PrimitiveColors.Neutral0,
 )
 
-/**
- * 深色主题 ColorScheme
- *
- * 逐值对齐 shd-shared/styles/tokens.css 深色语义层：
- * 冷青近黑背景 #0A0E14 + 亮青强调 #00C8F0
- */
 private val DarkColorScheme = darkColorScheme(
     primary = PrimitiveColors.Cyan500,
     onPrimary = PrimitiveColors.Neutral0,
@@ -100,13 +88,7 @@ private val DarkColorScheme = darkColorScheme(
     scrim = PrimitiveColors.Neutral0,
 )
 
-/**
- * FANDEX 扩展颜色
- *
- * 提供 Material 3 ColorScheme 之外的语义颜色，字段名与 web 语义令牌一一对应
- */
 data class FandexExtendedColors(
-    /** 当前是否深色主题（mermaid 图表主题等需要） */
     val isDark: Boolean,
     val bgSecondary: Color,
     val bgTertiary: Color,
@@ -136,12 +118,6 @@ data class FandexExtendedColors(
     val info: Color,
 )
 
-/**
- * 浅色扩展颜色
- *
- * 代码块在浅色模式下使用亮色底（凹陷背景）与深色文字（用户确认的亮色代码块方案），
- * 高亮色板对齐 web 端 Shiki github-light 主题
- */
 private val LightExtendedColors = FandexExtendedColors(
     isDark = false,
     bgSecondary = PrimitiveColors.Neutral1000,
@@ -160,7 +136,6 @@ private val LightExtendedColors = FandexExtendedColors(
     borderFocus = PrimitiveColors.Cyan300,
     codeBg = PrimitiveColors.Neutral950,
     codeText = PrimitiveColors.Neutral50,
-    // github-light（与 web 端 Shiki 双主题一致）
     codeComment = Color(0xFF6E7781),
     codeKeyword = Color(0xFFCF222E),
     codeString = Color(0xFF0A3069),
@@ -173,7 +148,6 @@ private val LightExtendedColors = FandexExtendedColors(
     info = PrimitiveColors.InfoLight,
 )
 
-/** 深色扩展颜色（高亮色板对齐 web 端 Shiki github-dark 主题） */
 private val DarkExtendedColors = FandexExtendedColors(
     isDark = true,
     bgSecondary = PrimitiveColors.Neutral100,
@@ -192,7 +166,6 @@ private val DarkExtendedColors = FandexExtendedColors(
     borderFocus = PrimitiveColors.Cyan500,
     codeBg = PrimitiveColors.Neutral0,
     codeText = PrimitiveColors.Neutral900,
-    // github-dark
     codeComment = Color(0xFF8B949E),
     codeKeyword = Color(0xFFFF7B72),
     codeString = Color(0xFFA5D6FF),
@@ -207,10 +180,8 @@ private val DarkExtendedColors = FandexExtendedColors(
 
 val LocalExtendedColors = staticCompositionLocalOf { LightExtendedColors }
 
-/** 主题切换时颜色过渡时长 */
 private const val THEME_ANIM_DURATION = 320
 
-/** 对单个颜色做主题切换动画包装 */
 @Composable
 private fun animatedColor(target: Color): Color =
     animateColorAsState(
@@ -219,9 +190,6 @@ private fun animatedColor(target: Color): Color =
         label = "themeColor",
     ).value
 
-/**
- * 对 ColorScheme 全字段做插值动画，实现主题切换时的平滑颜色过渡
- */
 @Composable
 private fun animateScheme(s: ColorScheme): ColorScheme = s.copy(
     primary = animatedColor(s.primary),
@@ -255,7 +223,6 @@ private fun animateScheme(s: ColorScheme): ColorScheme = s.copy(
     scrim = animatedColor(s.scrim),
 )
 
-/** 对扩展颜色做插值动画 */
 @Composable
 private fun animateExtended(e: FandexExtendedColors): FandexExtendedColors = e.copy(
     bgSecondary = animatedColor(e.bgSecondary),
@@ -286,14 +253,6 @@ private fun animateExtended(e: FandexExtendedColors): FandexExtendedColors = e.c
     info = animatedColor(e.info),
 )
 
-/**
- * FANDEX 主题入口
- *
- * 双主题支持（浅色/深色），跟随系统或用户手动切换；
- * 主题切换时全部语义颜色做 320ms 插值过渡（对齐 web 端配色过渡体验）；
- * fontScale 为全局字号缩放（0.8-1.4，移植自旧端 fontSizeScale 交互）：
- * 通过覆盖 LocalDensity 的 fontScale 使全部 sp 单位文本生效
- */
 @Composable
 fun FandexTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
@@ -305,8 +264,6 @@ fun FandexTheme(
     val colorScheme = animateScheme(baseScheme)
     val extendedColors = animateExtended(baseExtended)
 
-    /* 全局字号缩放：在系统 fontScale 基础上叠加用户设置的倍率，
-       仅影响 sp 单位（文本），不影响 dp 布局尺寸 */
     val currentDensity = LocalDensity.current
     val scaledDensity = Density(
         density = currentDensity.density,

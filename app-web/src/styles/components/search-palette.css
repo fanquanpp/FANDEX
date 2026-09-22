@@ -1,16 +1,6 @@
-/**
- * 全站搜索命令面板样式（search-palette.ts 动态创建的 dialog）
- * -----------------------------------------------------------------------------
- * 美术规范：与站点一致的卡片容器语言 —— 1px 边框 + 直角小圆角 + 左侧强调色竖条，
- * 结果项 hover 高亮，选中项以 2px 左竖条标记（禁止点状装饰）。
- * 层级归属：@layer components。
- * -----------------------------------------------------------------------------
- */
 @layer components {
 
   .search-palette {
-    /* dialog 默认关闭态为 display:none；此处自定义了 display，
-       必须显式恢复关闭态隐藏，否则面板会常驻显示 */
     display: none;
     position: fixed;
     inset: 0;
@@ -28,17 +18,14 @@
     overflow: hidden;
   }
 
-  /* 关闭态双重保险：:not([open]) 显式隐藏（与基础 display:none 等效，防层叠覆盖） */
   .search-palette:not([open]) {
     display: none;
   }
 
-  /* 打开态：showModal() 后以 flex 纵向布局呈现 */
   .search-palette[open] {
     display: flex;
   }
 
-  /* dialog 原生遮罩：与站点半透明遮罩一致 */
   .search-palette::backdrop {
     background: rgba(8, 12, 18, 0.55);
   }
@@ -51,7 +38,6 @@
     border-bottom: 1px solid var(--color-border-light);
   }
 
-  /* 输入框前 geometric 刻度：4px 竖条强调（禁止圆点） */
   .search-palette__mark {
     width: 4px;
     height: 16px;
@@ -108,7 +94,6 @@
     margin-top: 2px;
   }
 
-  /* 分组标签：mono 大写眉标 + 3px 竖条刻度（禁止点状装饰） */
   .search-palette__group {
     display: flex;
     align-items: center;
@@ -129,7 +114,6 @@
     flex-shrink: 0;
   }
 
-  /* 组后首条目留出呼吸间距（组标签与条目的衔接） */
   .search-palette__group + .search-palette__entry {
     margin-top: 0;
   }
@@ -179,7 +163,6 @@
     overflow: hidden;
   }
 
-  /* pagefind 高亮片段：命中词用主题色加重 */
   .search-palette__excerpt mark {
     background: transparent;
     color: var(--color-accent-base, var(--color-accent-base));
@@ -195,7 +178,6 @@
     color: var(--color-text-tertiary);
   }
 
-  /* 移动端：去掉文字标签，仅保留图标按钮；面板占满宽度 */
   @media (max-width: 767.98px) {
     .nav-search-text {
       display: none;

@@ -1,43 +1,22 @@
 ---
 import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
 import { getFeatureEntries } from '@/lib/feature-entries';
-/**
- * 子功能页共享功能入口导航
- * -----------------------------------------------------------------------------
- * 六个子功能页（在线前端 / 语法速览 / 学习路线 / 算法教学 / 题图鉴）共用同一组
- * 兄弟功能入口，保证跨功能跳转的入口一致性与可预期性（此前各页维护的内联
- * nav 子集互相缺漏，如题图鉴页缺语法速览、语法页缺题图鉴）。
- *
- * 标准兄弟入口（首页 + 四个顶级功能）来自 feature-entries 单一数据源，与
- * 文档页顶栏直达链接、移动端功能面板同源；页面专属入口（如在线前端主页的
- * "进入工作台/灵感图鉴"）通过 extra 前置渲染。
- * 桌面端构建不含 playground，"在线前端"入口自动隐藏。
- * 文案经 data-i18n* 属性协议支持中英双语（labelKey/tooltipKey 为字典键）。
- */
 interface FeatureEntry {
-  /** 跳转地址 */
   href: string;
-  /** 入口文案 */
   label: string;
-  /** 悬停提示 */
   tooltip: string;
-  /** 入口文案字典键（可选；提供时运行时可切换英文） */
   labelKey?: string;
-  /** 悬停提示字典键 */
   tooltipKey?: string;
-  /** 提示文案插值参数（tooltipKey 携带 {n} 等占位符时提供） */
   i18nTooltipParams?: Record<string, string | number>;
 }
 
 interface Props {
-  /** 页面专属入口（渲染在标准兄弟入口之前） */
   extra?: FeatureEntry[];
 }
 
 const base = import.meta.env.BASE_URL
 const { extra = [] } = Astro.props
 
-/** 标准兄弟入口：所有子功能页共享（顺序即跨页跳转的心智模型） */
 const siblings: FeatureEntry[] = [
   { href: base, label: '首页', tooltip: '返回首页', labelKey: 'feature.home.name', tooltipKey: 'feature.home.tooltip' },
   ...getFeatureEntries(base).map(entry => ({

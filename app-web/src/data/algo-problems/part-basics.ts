@@ -1,12 +1,6 @@
 import type { AlgoProblem } from './types';
 
-/**
- * 算法题图鉴 · 基础篇
- * 数组与双指针 / 滑动窗口与前缀和 / 二分查找 / 哈希表
- * 题面为便于学习的概括复述，参考实现为 Python。
- */
 export const BASIC_PROBLEMS: AlgoProblem[] = [
-  // ==================== 数组与双指针 ====================
   {
     slug: 'remove-element',
     lc: 27,
@@ -271,7 +265,6 @@ export const BASIC_PROBLEMS: AlgoProblem[] = [
     related: ['020-ArrayAndDynamicArray', '040-StackAndQueue'],
   },
 
-  // ==================== 滑动窗口与前缀和 ====================
   {
     slug: 'minimum-size-subarray-sum',
     lc: 209,
@@ -482,7 +475,6 @@ def maxSlidingWindow(nums, k):
     related: ['040-StackAndQueue'],
   },
 
-  // ==================== 二分查找 ====================
   {
     slug: 'binary-search',
     lc: 704,
@@ -701,7 +693,6 @@ def maxSlidingWindow(nums, k):
     related: ['170-BinarySearchAlgorithms', '010-AlgorithmAnalysisBasics'],
   },
 
-  // ==================== 哈希表 ====================
   {
     slug: 'two-sum',
     lc: 1,

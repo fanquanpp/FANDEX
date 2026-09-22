@@ -66,24 +66,10 @@ import org.commonmark.ext.gfm.tables.TablesExtension
 import org.commonmark.ext.task.list.items.TaskListItemsExtension
 import org.commonmark.parser.Parser
 
-/** 链接点击注解标签 */
 private const val URL_TAG = "URL"
 
-/** 行内公式内嵌内容标签前缀 */
 private const val MATH_TAG = "math-"
 
-/**
- * Markdown 渲染引擎
- *
- * 使用 commonmark-java 解析 Markdown 为 AST，
- * 再将块级模型映射到 Jetpack Compose 组件：
- * - 标题 / 段落 / 加粗（模块色）/ 斜体 / 删除线 / 内联代码
- * - 代码块（语法高亮 + 复制按钮 + 语言标签）
- * - 块级数学公式（$$...$$，JLatexMath）与行内公式（$...$）
- * - 有序 / 无序 / 任务 / 嵌套列表
- * - 引用块与告警块（[!NOTE] 等）
- * - 表格 / 分隔线 / 链接点击 / 图片占位
- */
 class MarkdownRenderer {
 
     private val parser: Parser = Parser.builder()
@@ -96,12 +82,6 @@ class MarkdownRenderer {
         )
         .build()
 
-    /**
-     * 解析 Markdown 为块级列表
-     *
-     * 块级公式（$$...$$）在进入 commonmark 之前先提取（避免被解析为普通段落），
-     * 其余文本按原逻辑解析；供文档页 LazyColumn 分块渲染与目录提取使用
-     */
     fun parse(markdown: String): List<MarkdownBlock> {
         val blocks = mutableListOf<MarkdownBlock>()
         for (segment in splitMathSegments(markdown)) {
@@ -115,11 +95,6 @@ class MarkdownRenderer {
         return blocks
     }
 
-    /**
-     * 整体渲染（Column 顺序排列全部块）
-     *
-     * 适用于内容较短的页面；长文档请配合 parse + LazyColumn 使用
-     */
     @Composable
     fun Render(markdown: String, accentColor: Color? = null) {
         val blocks = remember(markdown) { parse(markdown) }
@@ -133,11 +108,6 @@ class MarkdownRenderer {
         }
     }
 
-    /**
-     * 渲染单个块级元素（公开供文档页逐块渲染）
-     *
-     * @param accentColor 模块分类色，用于加粗文字着色（对齐 web 端 .prose strong）
-     */
     @Composable
     fun Block(block: MarkdownBlock, accentColor: Color? = null) {
         when (block) {
@@ -154,13 +124,6 @@ class MarkdownRenderer {
     }
 }
 
-// ---------------------------------------------------------------------------
-// 块级视图
-// ---------------------------------------------------------------------------
-
-/**
- * 标题块
- */
 @Composable
 private fun HeadingBlock(block: MarkdownBlock.Heading) {
     val style = when (block.level) {
@@ -181,12 +144,8 @@ private fun HeadingBlock(block: MarkdownBlock.Heading) {
     )
 }
 
-/**
- * 段落块（支持链接点击、图片占位、行内公式与模块色加粗）
- */
 @Composable
 private fun ParagraphBlock(block: MarkdownBlock.Paragraph, accentColor: Color?) {
-    // 段落仅含图片时渲染为图片占位卡
     val images = block.segments.filterIsInstance<TextSegment.Image>()
     if (images.size == 1 && block.segments.size == 1) {
         ImagePlaceholder(images.first())
@@ -220,17 +179,11 @@ private fun ParagraphBlock(block: MarkdownBlock.Paragraph, accentColor: Color?) 
                 }
             }
     )
-    // 与文本混排的内嵌图片：段落后补占位卡
     images.forEach { image ->
         ImagePlaceholder(image)
     }
 }
 
-/**
- * 代码块（语言标签 + 复制 + 语法高亮）
- *
- * mermaid 块走离线图表渲染（WebView + 内置 mermaid.min.js）
- */
 @Composable
 private fun CodeBlockView(block: MarkdownBlock.CodeBlock) {
     if (block.language.lowercase().trim() == "mermaid") {
@@ -249,7 +202,6 @@ private fun CodeBlockView(block: MarkdownBlock.CodeBlock) {
             .clip(RoundedCornerShape(8.dp))
             .background(extendedColors.codeBg)
     ) {
-        // 头部：语言标签 + 复制按钮
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -286,9 +238,6 @@ private fun CodeBlockView(block: MarkdownBlock.CodeBlock) {
     }
 }
 
-/**
- * 列表块（含任务列表与嵌套渲染）
- */
 @Composable
 private fun ListBlockView(block: MarkdownBlock.ListBlock, accentColor: Color?, depth: Int) {
     val extendedColors = LocalExtendedColors.current
@@ -301,7 +250,6 @@ private fun ListBlockView(block: MarkdownBlock.ListBlock, accentColor: Color?, d
     ) {
         block.items.forEachIndexed { index, item ->
             Row(verticalAlignment = Alignment.Top) {
-                // 任务项渲染勾选框，普通项渲染序号 / 符号
                 when {
                     item.checked != null -> {
                         Icon(
@@ -336,7 +284,6 @@ private fun ListBlockView(block: MarkdownBlock.ListBlock, accentColor: Color?, d
                         style = MaterialTheme.typography.bodyLarge,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    // 嵌套子列表项
                     item.children.forEach { child ->
                         Row(verticalAlignment = Alignment.Top) {
                             Text(
@@ -358,9 +305,6 @@ private fun ListBlockView(block: MarkdownBlock.ListBlock, accentColor: Color?, d
     }
 }
 
-/**
- * 引用块
- */
 @Composable
 private fun BlockQuoteView(block: MarkdownBlock.BlockQuote, accentColor: Color?) {
     val extendedColors = LocalExtendedColors.current
@@ -395,11 +339,6 @@ private fun BlockQuoteView(block: MarkdownBlock.BlockQuote, accentColor: Color?)
     }
 }
 
-/**
- * 告警块（[!NOTE] / [!TIP] 等）
- *
- * 左侧主题色竖条 + 类型标题 + 内容段落
- */
 @Composable
 private fun AdmonitionView(block: MarkdownBlock.Admonition, accentColor: Color?) {
     val extendedColors = LocalExtendedColors.current
@@ -447,11 +386,6 @@ private fun AdmonitionView(block: MarkdownBlock.Admonition, accentColor: Color?)
     }
 }
 
-/**
- * 图片占位卡
- *
- * 离线场景不加载网络位图，展示替代文本与来源
- */
 @Composable
 private fun ImagePlaceholder(image: TextSegment.Image) {
     val extendedColors = LocalExtendedColors.current
@@ -490,20 +424,12 @@ private fun ImagePlaceholder(image: TextSegment.Image) {
     }
 }
 
-/**
- * 表格
- *
- * 手机屏适配策略：
- * - 按各列最大内容长度占比分配列宽（设最小列宽兜底），保证列对齐
- * - 总宽超出屏幕时横向滚动（不使用 weight，避免滚动容器内权重宽度归零）
- */
 @Composable
 private fun TableView(block: MarkdownBlock.Table) {
     val extendedColors = LocalExtendedColors.current
     val scrollState = rememberScrollState()
     val screenWidthDp = LocalConfiguration.current.screenWidthDp.dp
 
-    // 各列内容最大字符数（截断到 40，防止个别长列独占宽度）
     val columnCount = block.headers.size
     val columnChars = remember(block) {
         List(columnCount) { c ->
@@ -513,7 +439,6 @@ private fun TableView(block: MarkdownBlock.Table) {
         }
     }
     val totalChars = columnChars.sum().coerceAtLeast(1)
-    // 可用宽度按 390dp 基准估算，列宽下限 88dp 保证可读
     val baseWidth = minOf(screenWidthDp, 390.dp) - 16.dp
     val columnWidths = columnChars.map { len ->
         maxOf(baseWidth * len / totalChars, 88.dp)
@@ -527,7 +452,6 @@ private fun TableView(block: MarkdownBlock.Table) {
             .background(extendedColors.bgSecondary)
             .horizontalScroll(scrollState)
     ) {
-        // 表头
         Row {
             block.headers.forEachIndexed { c, header ->
                 Text(
@@ -541,14 +465,12 @@ private fun TableView(block: MarkdownBlock.Table) {
                 )
             }
         }
-        // 表头分隔线（滚动容器内需显式宽度）
         Box(
             modifier = Modifier
                 .width(tableWidth)
                 .height(1.dp)
                 .background(extendedColors.borderSubtle)
         )
-        // 表数据
         block.rows.forEachIndexed { rowIndex, row ->
             Row {
                 row.forEachIndexed { c, cell ->
@@ -574,9 +496,6 @@ private fun TableView(block: MarkdownBlock.Table) {
     }
 }
 
-/**
- * 水平分隔线
- */
 @Composable
 private fun ThematicBreakView() {
     val extendedColors = LocalExtendedColors.current
@@ -589,19 +508,11 @@ private fun ThematicBreakView() {
     )
 }
 
-// ---------------------------------------------------------------------------
-// 行内片段构建
-// ---------------------------------------------------------------------------
-
-/** 组合内带行内公式的富文本结果 */
 private data class AnnotatedMarkdown(
     val annotated: AnnotatedString,
     val inlineContent: Map<String, InlineTextContent>
 )
 
-/**
- * 组合内构建富文本（带主题色缓存键与行内公式位图）
- */
 @Composable
 private fun MarkdownText(
     segments: List<TextSegment>,
@@ -620,12 +531,6 @@ private fun MarkdownText(
     )
 }
 
-/**
- * 构建带行内公式的富文本
- *
- * 行内公式从 Plain 片段中以 $...$ 提取（与 web 端 remark-mask 相同的启发式：
- * 定界符内侧不留空白），位图同步渲染（行内公式规模小，耗时可忽略）
- */
 @Composable
 private fun rememberAnnotatedMarkdown(
     segments: List<TextSegment>,
@@ -640,7 +545,6 @@ private fun rememberAnnotatedMarkdown(
     val bitmaps = remember(mathKeys, onSurface, textSizePx) {
         mathKeys.associateWith { latex -> renderMathBitmap(latex, onSurface.toArgb(), textSizePx) }
     }
-    // InlineTextContent 为 @Composable 构造，需在组合上下文完成
     val mathIds = remember(mathKeys) { mathKeys.mapIndexed { i, _ -> "$MATH_TAG$i" } }
     val mathContents = remember(bitmaps, mathIds) {
         mutableMapOf<String, InlineTextContent>().apply {
@@ -665,13 +569,6 @@ private fun rememberAnnotatedMarkdown(
     }
 }
 
-/**
- * 将行内片段序列构建为富文本（非组合函数，可在 remember 计算中使用）
- *
- * - 链接以 URL_TAG 注解承载地址，供点击手势解析
- * - 加粗文字使用模块分类色（对齐 web 端 .prose strong 的 --module-color）
- * - 行内公式以内嵌内容承载，未渲染成功的回退为等宽源文本
- */
 private fun buildAnnotatedMarkdown(
     segments: List<TextSegment>,
     extendedColors: FandexExtendedColors,
@@ -688,7 +585,6 @@ private fun buildAnnotatedMarkdown(
         segments.forEach { segment ->
             when (segment) {
                 is TextSegment.Plain -> {
-                    // 拆分行内公式
                     var rest = segment.text
                     while (rest.isNotEmpty()) {
                         val match = INLINE_MATH_RE.find(rest)
@@ -702,7 +598,6 @@ private fun buildAnnotatedMarkdown(
                         if (id != null && mathContents.containsKey(id)) {
                             appendInlineContent(id, "［公式］")
                         } else {
-                            // 回退：等宽源文本
                             withStyle(
                                 SpanStyle(fontFamily = FontFamily.Monospace, color = primaryColor)
                             ) { append(latex) }
@@ -727,7 +622,6 @@ private fun buildAnnotatedMarkdown(
                 is TextSegment.InlineCode -> withStyle(
                     SpanStyle(
                         fontFamily = InlineCodeStyle.fontFamily,
-                        // 亮色浅底深字 / 暗色深底浅字（对齐 web 端行内代码观感）
                         background = codeBgColor,
                         color = extendedColors.codeText
                     )
@@ -756,13 +650,8 @@ private fun buildAnnotatedMarkdown(
     return AnnotatedMarkdown(annotated, mathContents)
 }
 
-/**
- * 行内公式正则：$...$，内容不含 $ 与换行、且定界符内侧不留空白
- * （"价格 $5 和 $10" 这类货币写法不会误判）
- */
 private val INLINE_MATH_RE = Regex("\\$([^\\$\n\\s][^$\n]*[^$\n\\s]|[^$\n\\s])\\$")
 
-/** 从片段集合中提取全部行内公式（作为位图缓存键） */
 private fun extractInlineMath(segments: List<TextSegment>): List<String> {
     val keys = mutableListOf<String>()
     segments.forEach { segment ->
@@ -773,19 +662,8 @@ private fun extractInlineMath(segments: List<TextSegment>): List<String> {
     return keys.distinct()
 }
 
-// ---------------------------------------------------------------------------
-// 块级公式预提取
-// ---------------------------------------------------------------------------
-
-/** 解析分段：isMath 为 true 时 text 为公式体 */
 private data class ParsedSegment(val isMath: Boolean, val text: String)
 
-/**
- * 围栏感知的 $$...$$ 预提取
- *
- * 代码围栏（``` / ~~~）内出现的 $$ 视为普通文本不参与提取；
- * 跨行公式块被切出后，剩余文本保持行结构供 commonmark 正常解析
- */
 private fun splitMathSegments(markdown: String): List<ParsedSegment> {
     val segments = mutableListOf<ParsedSegment>()
     val lines = markdown.split('\n')
@@ -819,14 +697,12 @@ private fun splitMathSegments(markdown: String): List<ParsedSegment> {
             val rest = trimmed.removePrefix("$$")
             val inlineClose = rest.indexOf("$$")
             if (inlineClose >= 0) {
-                // 单行 $$...$$
                 flush()
                 segments.add(ParsedSegment(true, rest.take(inlineClose)))
                 buf.append(rest.substring(inlineClose + 2)).append('\n')
                 i++
                 continue
             }
-            // 跨行块：向后查找闭合 $$
             val mathLines = mutableListOf<String>()
             if (rest.isNotBlank()) mathLines.add(rest)
             var j = i + 1
@@ -848,7 +724,6 @@ private fun splitMathSegments(markdown: String): List<ParsedSegment> {
                 i = j + 1
                 continue
             }
-            // 未闭合：按普通文本处理
             buf.append(line).append('\n')
             i++
             continue
@@ -860,22 +735,12 @@ private fun splitMathSegments(markdown: String): List<ParsedSegment> {
     return segments
 }
 
-/**
- * 目录条目
- *
- * @param level 标题级别（2-4）
- * @param title 标题文本
- * @param blockIndex 对应块在块列表中的下标（用于滚动定位）
- */
 data class TocEntry(
     val level: Int,
     val title: String,
     val blockIndex: Int
 )
 
-/**
- * 从块列表提取目录（H2-H4）
- */
 fun extractToc(blocks: List<MarkdownBlock>): List<TocEntry> {
     return blocks.mapIndexed { index, block ->
         if (block is MarkdownBlock.Heading && block.level in 2..4) {

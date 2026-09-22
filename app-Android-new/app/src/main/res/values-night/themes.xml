@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 开屏主题（深色）：近黑底 + 品牌图标，避免深色模式启动白闪 -->
     <style name="Theme.FANDEX.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/bg_primary_dark</item>
         <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>

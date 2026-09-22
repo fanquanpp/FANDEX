@@ -1,41 +1,11 @@
-/**
- * 首页布局样式（ark-ui 设计语言）
- * -----------------------------------------------------------------------------
- * 从 components/HomeLayout.astro 提取的布局样式，包含：
- * - 首页导航栏（固定顶部、毛玻璃背景、sticky 定位、品牌 Logo 标记）
- * - 首页主内容区（撑满剩余视口高度）
- * - 导航操作链接（方框风格、悬停浮起）
- * - GitHub 链接（带品牌色悬停反馈）
- * - 全屏按钮（移动端显示）
- * - 移动端响应式适配（768px 断点）
- *
- * 设计语言（ark-ui）：
- * - 毛玻璃导航栏，克制半透明（85% 不透明度 + 12px 模糊）
- * - 直角偏小圆角（4px）的操作按钮，工业信息系统风格
- * - 层次感通过背景色阶 + 边框 + 微阴影实现
- * - 交互反馈通过位移、颜色变化、边框转色
- * - 所有颜色引用 ark 语义令牌，[data-theme] 自动切换
- *
- * 归入 @layer components：低于 pages/islands/utilities，高于 base/tokens
- * -----------------------------------------------------------------------------
- */
 @layer components {
 
-  /* ============================================================
-   * 1. 首页导航栏
-   * ------------------------------------------------------------
-   * sticky 顶部，毛玻璃背景，下方分隔线
-   * z-index 100 确保浮于内容之上
-   * ============================================================ */
   .home-nav {
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--space-inline-md);
     padding: 0 var(--space-6);
-    /* 毛玻璃背景：ark 头部令牌驱动。
-       不透明度提高到 95% 并去掉 saturate，避免背景装饰的砖红/波纹
-       透过半透明导航层形成"肉色"色偏，保持冷灰中性色 */
     background: color-mix(in oklch, var(--color-bg-primary) 95%, transparent);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -44,20 +14,16 @@
     top: 0;
     z-index: 100;
     height: var(--nav-height);
-    /* 移除 overflow-x: auto，导航栏固定显示不滑动
-       内容超出时由 flex-shrink 和响应式隐藏控制，而非横向滚动 */
     overflow: hidden;
     transition:
       background-color var(--motion-duration-fast) var(--motion-easing-out),
       border-color var(--motion-duration-fast) var(--motion-easing-out);
   }
 
-  /* 隐藏 webkit 滚动条 */
   .home-nav::-webkit-scrollbar {
     display: none;
   }
 
-  /* 左侧区域：Logo */
   .nav-left {
     display: flex;
     align-items: center;
@@ -65,7 +31,6 @@
     min-width: 0;
   }
 
-  /* 右侧区域：操作按钮组 */
   .nav-right {
     display: flex;
     align-items: center;
@@ -73,13 +38,6 @@
     flex-shrink: 0;
   }
 
-  /* ============================================================
-   * 2. Logo（品牌文字 + 下划线动画）
-   * ------------------------------------------------------------
-   * 设计：纯文字 Logo，hover 时下划线从左到右展开
-   * 交互：相对定位 + ::after 伪元素实现下划线动画
-   * 移除原 hover 变色 + 背景色反馈，保持品牌文字克制
-   * ============================================================ */
   .nav-logo {
     display: inline-flex;
     align-items: center;
@@ -92,22 +50,14 @@
     letter-spacing: 0.04em;
     padding: 4px 8px;
     border-radius: var(--radius-sm, 2px);
-    /* 相对定位：为 ::after 下划线提供定位上下文 */
     position: relative;
-    /* 仅保留 color 过渡（移除 background 过渡）
-       下划线动画通过 ::after 的 width 过渡实现 */
     transition: color var(--motion-duration-fast) var(--motion-easing-out);
   }
 
-  /* hover 变色：文字切换为主品牌色（与下划线同色系），平滑过渡
-   * 与全局 components.css 的 .nav-logo:hover 保持一致（全站统一） */
   .nav-logo:hover {
     color: var(--color-accent-base);
   }
 
-  /* 下划线伪元素：默认 width:0，hover 时展开至 100%
-   * 位于文字底部，使用主题强调色，与 hero 风格统一
-   * 不使用 background-color 变化（需求：删除悬停背景色反馈） */
   .nav-logo::after {
     content: '';
     position: absolute;
@@ -125,10 +75,6 @@
     width: calc(100% - 16px);
   }
 
-  /* Logo 文字（-Index 后缀已移除，保持简洁品牌名）
-   * 注意：components.css 全局导入了同名 .logo-text 类（文档页导航栏使用），
-   * 此处必须显式覆盖 background/color/height/padding/border-radius 等属性，
-   * 否则 components.css 的深色背景样式会泄漏到首页，导致文字显示异常。 */
   .logo-text {
     display: inline-block;
     white-space: nowrap;
@@ -142,54 +88,28 @@
     letter-spacing: 0.04em;
   }
 
-  /* ============================================================
-   * 3. GitHub 链接按钮
-   * ------------------------------------------------------------
-   * 基础样式由 .fndx-icon-btn--labeled 统一提供（透明背景 + 无边框）
-   * ============================================================ */
   .nav-github-link {
-    /* display/align/size/background/color/border/transition/hover 均由 .fndx-icon-btn--labeled 提供 */
     text-decoration: none;
   }
 
-  /* GitHub 文字（移动端隐藏） */
   .nav-github-text {
     white-space: nowrap;
   }
 
-  /* ============================================================
-   * 4. 全屏按钮
-   * ------------------------------------------------------------
-   * 默认隐藏，移动端显示；基础样式由 .fndx-icon-btn 统一提供
-   * ============================================================ */
   .nav-fullscreen-btn {
-    /* display/align/size/background/color/border/transition/hover 均由 .fndx-icon-btn 提供 */
-    display: none; /* 默认隐藏，移动端显示 */
+    display: none;
   }
 
-  /* ============================================================
-   * 5. 首页主内容区
-   * ------------------------------------------------------------
-   * 固定高度撑满剩余视口，内部滚动
-   * 使用 height 而非 min-height 防止快速滑动时 body 扩展产生无限空页面
-   * ============================================================ */
   .home-main {
     height: calc(100vh - var(--nav-height));
     height: calc(100dvh - var(--nav-height));
     overflow-y: auto;
-    /* 禁止过度滚动传播，防止链式滚动导致空白区域 */
     overscroll-behavior-y: none;
   }
 
-  /* ============================================================
-   * 6. 响应式适配
-   * ============================================================ */
-
-  /* 移动端：隐藏操作链接文字，显示全屏按钮 */
   @media (max-width: 767.98px) {
     .home-nav {
       padding: 0 var(--space-4);
-      /* 移动端禁用 backdrop-filter，避免与 sticky 叠加导致滚动卡顿 */
       backdrop-filter: none;
       -webkit-backdrop-filter: none;
       background: var(--color-bg-primary);
@@ -203,13 +123,11 @@
       display: none;
     }
 
-    /* 移动端 Logo 文字略小 */
     .nav-logo {
       font-size: 0.95rem;
     }
   }
 
-  /* 超小屏：进一步紧凑 */
   @media (max-width: 480px) {
     .home-nav {
       padding: 0 var(--space-2);

@@ -48,16 +48,6 @@ import com.fandex.app.ui.components.ThemeQuickToggle
 import com.fandex.app.ui.components.TopDock
 import com.fandex.app.ui.theme.LocalExtendedColors
 
-/**
- * 语法速览页
- *
- * 对齐 Web 端 /syntax 页面，并提级至与首页同等级的视觉层次：
- * - 头部统计横幅：语言 / 语法点 / 文档总量一览（StatsBar）
- * - 语言列表：序号 + 几何图标 + 名称 + 语法点与文档双计数药丸（预构建索引，含主题色）
- * - 点击进入具体语言的语法卡片列表
- *
- * 动效：加载 / 内容切换 Crossfade；语言条目轻量入场（仅首次）
- */
 @Composable
 fun SyntaxScreen(
     onModuleClick: (String) -> Unit,
@@ -72,7 +62,6 @@ fun SyntaxScreen(
 
     val index by viewModel.index.collectAsState()
 
-    // 入场门控：内容就绪后的下一帧置 true，触发首次 stagger 入场
     var hasEntered by remember { mutableStateOf(false) }
     val dataReady = index.languages.isNotEmpty()
     LaunchedEffect(dataReady) {
@@ -101,7 +90,6 @@ fun SyntaxScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // 加载 / 内容切换：220ms 淡入淡出
             Crossfade(
                 targetState = dataReady,
                 animationSpec = tweenNormal(),
@@ -116,7 +104,6 @@ fun SyntaxScreen(
                     }
                 } else {
                     val languages = index.languages
-                    // 头部统计：语言数 / 语法点总数 / 文档总数（从预构建索引聚合）
                     val totalPoints = languages.sumOf { it.count }
                     val totalDocs = languages.sumOf { it.docCount }
 
@@ -125,7 +112,6 @@ fun SyntaxScreen(
                         contentPadding = PaddingValues(16.dp),
                         verticalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
-                        // 统计横幅（提级：与首页同级的内容锚点）
                         item(key = "stats") {
                             StatsBar(
                                 stats = listOf(
@@ -153,12 +139,6 @@ fun SyntaxScreen(
     }
 }
 
-/**
- * 语法语言项（提级版）
- *
- * 对齐 web 端语言切换项并增强信息密度：
- * 模块内序号 + 几何图标 + 名称 + 语法点（强调色药丸）与文档数（中性药丸）双计数
- */
 @Composable
 private fun SyntaxLanguageItem(
     language: com.fandex.app.data.model.SyntaxLanguage,
@@ -181,7 +161,6 @@ private fun SyntaxLanguageItem(
             .padding(horizontal = 12.dp, vertical = 12.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 模块内学习顺序序号（等宽字，次级色）
         Text(
             text = "%02d".format(position + 1),
             style = MaterialTheme.typography.labelMedium,
@@ -190,7 +169,6 @@ private fun SyntaxLanguageItem(
         )
         Spacer(modifier = Modifier.width(10.dp))
 
-        // 几何图标（索引提供的 2 字符标识，等宽字体）
         ModuleIcon(
             label = language.icon.ifEmpty { language.title.take(2) },
             color = accent
@@ -214,7 +192,6 @@ private fun SyntaxLanguageItem(
             )
         }
 
-        // 语法点计数（强调色药丸）
         Text(
             text = "${language.count} 语法点",
             style = MaterialTheme.typography.labelSmall,
@@ -226,7 +203,6 @@ private fun SyntaxLanguageItem(
                 .padding(horizontal = 8.dp, vertical = 2.dp)
         )
         Spacer(modifier = Modifier.width(6.dp))
-        // 文档数（中性药丸）
         Text(
             text = "${language.docCount} 篇",
             style = MaterialTheme.typography.labelSmall,

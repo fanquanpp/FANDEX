@@ -1,38 +1,19 @@
 ---
 import EntryWaveBorder from '@/components/EntryWaveBorder.astro';
-/**
- * 首页
- * 展示所有学习模块，按分类分组显示
- * 包含 Hero 区域（统计信息）、分类模块网格、页脚
- *
- * 样式与交互逻辑已拆分至独立文件：
- * - styles/pages/index.css       页面级样式（容器、Hero、分类网格、响应式）
- * - lib/home-interactions.ts     客户端脚本（分类折叠/展开）
- */
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import ModuleCard from '@/components/ModuleCard.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import Footer from '@/components/Footer.astro'
-// 通过 Service 层获取数据，UI 层禁止直接调用 getCollection
 import { getDocStats, getAllModules, getCategories, getModulesByCategory } from '@/services'
-// 功能入口单一数据源（桌面端构建 webOnly 过滤在函数内部完成）
 import { getFeatureEntries } from '@/lib/feature-entries'
 import '@/styles/pages/index.css'
 
-// 通过 doc-service 获取文档统计（总数、模块数、分类数、标签数）
 const stats = await getDocStats()
-// 通过 module-service 获取全部模块（只读数组），用于首页模块计数
 const allModules = getAllModules()
 
-// 功能入口单一数据源来自 lib/feature-entries（与文档页顶栏直达链接、
-// 子页 FeatureNav、移动端功能面板同源）；入场波浪签名的错峰延迟
-// 由渲染序号 --entry-i 驱动 CSS calc 自动计算，与添加顺序/数量解耦；
-// 桌面端构建无在线前端（webOnly 过滤，序号随实际渲染重排）
 const heroEntries = getFeatureEntries(`${import.meta.env.BASE_URL}`)
 
-// 通过 module-service 获取分类信息并按分类分组模块
-// getCategories() 已按 categoryOrder 顺序返回 { id, label, color }
 const grouped = getCategories()
   .map(cat => ({
     key: cat.id,
@@ -47,21 +28,14 @@ const grouped = getCategories()
   <SEO slot="head" title="FANDEX" description="循序渐进的自学之旅，从第一行代码到理解整个世界。覆盖工具链、开发语言、数据库、计算机科学、工程基础设施与数据技术六大领域" type="website" />
 
   <div class="home-page">
-    <!-- 几何背景装饰层 · home 变体：品牌光晕 + S 曲线 + 涟漪环 + 三角切片等 -->
     <GeoBgDecor variant="home" />
-    <!-- Hero 区域：站点标题和统计信息 -->
     <section class="hero">
-      <!-- Hero 标题：FAN/DEX 分离 + 渐变背景动效 + 残影伪元素
-           data-text 用于 ::after 残影伪元素通过 attr() 读取 -->
       <h1 class="hero-title" data-text="FANDEX">
         <span class="hero-title-fan">FAN</span><span class="hero-title-dex">DEX</span>
       </h1>
-      <!-- 统计数据 + 功能入口同一行容器
-           左侧：模块/文档数统计；右侧：功能入口（heroEntries 单一数据源，纯文字 + SVG border 描边动画） -->
       <div class="hero-stats-row">
         <div class="hero-stats">
           <div class="stat-item">
-            <!-- data-countup 提供滚动计数目标值；min-width 锁定最终值宽度，计数期间不挤压兄弟元素 -->
             <span class="stat-num" data-countup={allModules.length} style={`min-width:${String(allModules.length).length}ch`}>{allModules.length}</span>
             <span class="stat-label" data-i18n="home.modules">模块</span>
           </div>
@@ -71,11 +45,6 @@ const grouped = getCategories()
             <span class="stat-label" data-i18n="home.docs">文档</span>
           </div>
         </div>
-        <!-- 功能入口区：heroEntries 单一数据源渲染，纯文字按钮 + SVG 路径签名动画
-             使用二次贝塞尔曲线（Q 命令）绘制手绘风格波浪路径，
-             hover 时 stroke-dashoffset 从 250 → 0 实现路径书写动画；
-             入场错峰延迟由 --entry-i 序号驱动（见 index.css entry-path-intro），
-             各入口颜色统一使用项目标题主题色 var(--color-accent-base) -->
         <nav class="hero-entries" aria-label="功能入口" data-i18n-aria="home.entriesAria">
           {heroEntries.map((entry, i) => (
             <a
@@ -93,22 +62,15 @@ const grouped = getCategories()
         </nav>
       </div>
 
-      <!-- 终端模拟面板：工业科幻品牌签名（Endfield 冷光终端）
-           逐字输出初始化序列；光标为末行真实 readonly 输入框的原生插入符，
-           不渲染粗细与色彩，宽度/颜色/闪烁节奏完全跟随浏览器默认；
-           纯装饰（aria-hidden），动效由 lib/home-terminal.ts 驱动，
-           prefers-reduced-motion 时静态显示全文 -->
       <div class="hero-terminal" aria-hidden="true">
         <div class="hero-terminal__bar">
           <span class="hero-terminal__title">fandex://init</span>
           <span class="hero-terminal__rec">[REC]</span>
         </div>
-        <!-- 注意：body 消费 pre-wrap 语义，code 与 input 之间不得插入空白文本节点 -->
         <div class="hero-terminal__body" data-terminal><code data-terminal-log></code><input class="hero-terminal__input" data-terminal-input type="text" readonly tabindex="-1" autocomplete="off" autocapitalize="off" spellcheck="false" /></div>
       </div>
     </section>
 
-    <!-- 按分类展示模块卡片（横向无限滑动选择器） -->
     {grouped.map(group => (
       <section class="category-section fndx-scroll-reveal" data-category={group.key}>
         <div class="category-header">
@@ -144,12 +106,10 @@ const grouped = getCategories()
       </section>
     ))}
 
-    <!-- 页脚：极简单行版权（后续重新设计） -->
     <Footer />
   </div>
 </HomeLayout>
 
-<!-- 客户端交互脚本：分类区域折叠/展开 + 统计数字滚动计数 + 终端逐字输出 -->
 <script>
   import '@/lib/home-interactions';
   import '@/lib/stat-count-up';

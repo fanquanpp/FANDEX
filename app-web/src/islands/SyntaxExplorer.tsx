@@ -1,38 +1,11 @@
-/**
- * 语法速览交互岛（SyntaxExplorer）
- * =============================================================================
- * 功能概述：
- * - 语言切换：通过彩色语言 chip 过滤语法卡片
- * - 关键词筛选：对当前语言卡片做子串匹配（小节/写法/公式/代码），
- *   URL 同步 ?lang=&q= 支持分享与刷新恢复；筛选态显示全部命中（不分批）
- * - 按需加载：卡片数据按语言拆分到 public/syntax-data/<module>.json，
- *   切换语言时 fetch 对应分块并缓存，避免页面内嵌 2MB 数据
- * - 速查卡片：复用首页模块卡片体系（.module-card 特效），
- *   缩小为"图标 + 小节 + 写法 + 公式"的紧凑入口
- * - 悬浮面板：点击卡片后弹出详情面板（Radix Dialog），
- *   展示完整公式、示例代码、复制按钮与完整文档入口；
- *   支持上一条/下一条切换（按钮与左右方向键）
- *
- * 数据流：
- *   languages prop（页面内嵌索引）→ activeId state → fetch 语言分块
- *   → cards state → query 筛选 → 网格渲染；点击卡片 → selected state → 悬浮面板
- *
- * 设计说明：
- * - 并发保护：请求序号 ref 保证快速切换语言时旧响应不会覆盖新状态
- * - 缓存：已加载语言分块存于 Map ref，再次切换零网络开销
- * - 无障碍：chip 使用 aria-pressed；面板由 Radix Dialog 提供
- *   焦点陷阱、Escape 关闭与 aria 语义
- */
 
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import * as DialogPrimitive from '@radix-ui/react-dialog';
 import { useLang } from '@/lib/use-lang';
 import { t } from '@/lib/i18n';
-// 复用首页模块卡片样式（顶部色条、hover 边框/阴影、几何图标、标题变色）
 import '@/styles/components/module-card.css';
 import '@/styles/islands/syntax-explorer.css';
 
-/** 语法速览语言元数据（与 syntax-service 类型一致） */
 interface SyntaxLanguage {
   id: string;
   title: string;
@@ -42,7 +15,6 @@ interface SyntaxLanguage {
   docCount: number;
 }
 
-/** 单张语法速查卡片 */
 interface SyntaxCard {
   id: string;
   docTitle: string;
@@ -50,38 +22,27 @@ interface SyntaxCard {
   name: string;
   formula: string;
   code: string;
-  /** 构建期 Shiki 高亮 HTML（双主题 CSS 变量方案）；空串表示无高亮，回退纯文本 */
   codeHtml: string;
   lang: string;
   truncated: boolean;
 }
 
-/** 语言分块 JSON 结构（scripts/build-syntax.mjs 输出） */
 interface SyntaxLanguageData {
   module: string;
   cards: SyntaxCard[];
 }
 
-/** SyntaxExplorer 组件入参 */
 interface SyntaxExplorerProps {
-  /** 语言索引列表（由页面通过 syntax-service 提供） */
   languages: SyntaxLanguage[];
-  /** 站点 base 路径（GitHub Pages 为 /FANDEX/），用于拼接数据与文档链接 */
   base: string;
 }
 
-/** 单批渲染的卡片数量：兼顾首屏密度与滚动性能（筛选态不分批，直接展示全部命中） */
 const PAGE_SIZE = 36;
-/** 复制成功提示持续时长（毫秒） */
 const COPIED_MS = 1600;
-/** 未指定语言时的默认选中项（优先常用语言） */
 const DEFAULT_LANGUAGE = 'javascript';
-/** 首页滚动容器选择器：面板打开时锁定滚动 */
 const HOME_MAIN_SELECTOR = '.home-main';
-/** 关键词筛选防抖时长（毫秒） */
 const QUERY_DEBOUNCE_MS = 160;
 
-/** 从 URL 查询参数恢复初始语言与筛选词（缺省回落默认语言、空词） */
 function readStateFromUrl(languages: SyntaxLanguage[]): { lang: string; q: string } {
   if (typeof window === 'undefined') return { lang: languages[0]?.id ?? '', q: '' };
   const params = new URLSearchParams(window.location.search);
@@ -93,7 +54,6 @@ function readStateFromUrl(languages: SyntaxLanguage[]): { lang: string; q: strin
   };
 }
 
-/** 把语言与筛选词同步回 URL（默认值不写入，保持地址干净） */
 function syncStateUrl(lang: string, query: string): void {
   const params = new URLSearchParams();
   if (lang && lang !== DEFAULT_LANGUAGE) params.set('lang', lang);
@@ -107,46 +67,26 @@ function syncStateUrl(lang: string, query: string): void {
   );
 }
 
-/**
- * 语法速览交互岛
- * 提供语言切换、紧凑速查卡片、悬浮详情面板与代码复制能力
- */
 export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
-  /** 界面语言（全岛文案双语，订阅全局切换） */
   const lang = useLang();
-  /** 当前选中的语言 ID（首帧从 URL 恢复） */
   const [activeId, setActiveId] = useState<string>(() => readStateFromUrl(languages).lang);
-  /** 关键词筛选词（立即回显，防抖后参与过滤与 URL 同步） */
   const [query, setQuery] = useState<string>(() => readStateFromUrl(languages).q);
-  /** 实际参与过滤的筛选词（防抖后的值） */
   const [appliedQuery, setAppliedQuery] = useState<string>(() => readStateFromUrl(languages).q);
-  /** 当前语言的卡片列表；null 表示尚未加载完成 */
   const [cards, setCards] = useState<SyntaxCard[] | null>(null);
-  /** 是否正在加载语言分块 */
   const [loading, setLoading] = useState(false);
-  /** 加载失败标记；false 表示正常（文案渲染时按当前语言取字典） */
   const [error, setError] = useState(false);
-  /** 当前可见卡片数量（分批渲染，仅无筛选词时生效） */
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
-  /** 悬浮面板当前展示的卡片；null 表示面板关闭 */
   const [selected, setSelected] = useState<SyntaxCard | null>(null);
-  /** 最近一次复制成功的卡片 ID，用于按钮反馈 */
   const [copiedId, setCopiedId] = useState('');
-  /** 已加载语言分块缓存：切换回已访问语言时零网络开销 */
   const cacheRef = useRef<Map<string, SyntaxCard[]>>(new Map());
-  /** 请求序号：防止快速切换时旧响应覆盖新语言状态 */
   const requestSeqRef = useRef(0);
-  /** 复制反馈定时器句柄（组件卸载时清理） */
   const copiedTimerRef = useRef<number | undefined>(undefined);
-  /** 筛选词防抖定时器句柄 */
   const queryTimerRef = useRef<number | undefined>(undefined);
-  /** 搜索框 DOM 引用（"/" 快捷键聚焦） */
   const searchInputRef = useRef<HTMLInputElement | null>(null);
 
   const active = languages.find((lang) => lang.id === activeId);
   const activeColor = active?.color || 'var(--color-accent-base)';
 
-  /** 应用筛选词后的命中卡片（子串匹配：小节/写法/公式/代码，全部小写化） */
   const filteredCards = useMemo(() => {
     const needle = appliedQuery.trim().toLowerCase();
     if (!cards) return [];
@@ -160,22 +100,14 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
     );
   }, [cards, appliedQuery]);
 
-  /** 筛选词生效时关闭分批：目标驱动检索一次看到全部命中 */
   const isFiltering = appliedQuery.trim() !== '';
   const visibleCards = isFiltering ? filteredCards : filteredCards.slice(0, visibleCount);
 
-  /**
-   * 切换语言：清空旧卡片并触发对应分块加载
-   * @param id - 目标语言 ID
-   */
   function selectLanguage(id: string): void {
     if (id === activeId) return;
     setActiveId(id);
   }
 
-  /**
-   * 更新筛选词：输入立即回显，防抖后写入 appliedQuery 参与过滤
-   */
   function handleQueryInput(next: string): void {
     setQuery(next);
     window.clearTimeout(queryTimerRef.current);
@@ -185,7 +117,6 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
     }, QUERY_DEBOUNCE_MS);
   }
 
-  /** 清空筛选词并回焦搜索框 */
   function clearQuery(): void {
     window.clearTimeout(queryTimerRef.current);
     setQuery('');
@@ -194,12 +125,10 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
     searchInputRef.current?.focus();
   }
 
-  // 语言/筛选词变化时同步 URL（replaceState，不产生历史记录）
   useEffect(() => {
     syncStateUrl(activeId, appliedQuery);
   }, [activeId, appliedQuery]);
 
-  // "/" 快捷键聚焦搜索框（输入类元素聚焦时不接管）
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
@@ -212,7 +141,6 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, []);
 
-  // 面板打开期间的左右方向键：在命中列表内切换上一条/下一条
   useEffect(() => {
     if (!selected) return;
     const onKeyDown = (event: KeyboardEvent) => {
@@ -230,11 +158,6 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [selected, filteredCards]);
 
-  /**
-   * 复制代码到剪贴板
-   * @param cardId - 卡片 ID（用于复制按钮反馈）
-   * @param code - 待复制的代码文本
-   */
   async function copyCode(cardId: string, code: string): Promise<void> {
     try {
       await navigator.clipboard.writeText(code);
@@ -248,16 +171,9 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
     }
   }
 
-  /**
-   * 加载语言分块并更新卡片状态
-   * 使用请求序号防止竞态：仅当响应仍是最新请求时写入状态
-   * useCallback 稳定化：依赖仅 base（prop，挂载后不变），供切换语言 effect 引用
-   * @param id - 语言 ID
-   */
   const loadLanguage = useCallback(
     async (id: string): Promise<void> => {
       const seq = ++requestSeqRef.current;
-      // 已缓存数据直接渲染，无需网络请求
       const cached = cacheRef.current.get(id);
       if (cached) {
         setCards(cached);
@@ -271,14 +187,12 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
       setVisibleCount(PAGE_SIZE);
       try {
         const response = await fetch(`${base}syntax-data/${id}.json`, {
-          // 静态分块不可变，允许浏览器复用缓存
           cache: 'force-cache',
         });
         if (!response.ok) throw new Error(`HTTP ${response.status}`);
         const data = (await response.json()) as SyntaxLanguageData;
         const cardList = Array.isArray(data.cards) ? data.cards : [];
         cacheRef.current.set(id, cardList);
-        // 竞态保护：仅最新请求可写入状态
         if (seq !== requestSeqRef.current) return;
         setCards(cardList);
       } catch {
@@ -291,18 +205,15 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
     [base],
   );
 
-  // 语言切换或首次挂载时加载对应分块
   useEffect(() => {
     if (!activeId) return;
     void loadLanguage(activeId);
-    // 组件卸载时清理复制反馈与筛选词防抖定时器
     return () => {
       window.clearTimeout(copiedTimerRef.current);
       window.clearTimeout(queryTimerRef.current);
     };
   }, [activeId, loadLanguage]);
 
-  // 面板打开时锁定首页滚动容器，关闭后恢复
   useEffect(() => {
     const main = document.querySelector<HTMLElement>(HOME_MAIN_SELECTOR);
     if (!main) return;

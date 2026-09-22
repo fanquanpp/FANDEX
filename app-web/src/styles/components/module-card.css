@@ -1,31 +1,5 @@
-/**
- * 模块卡片样式（ark-ui 设计语言）
- * -----------------------------------------------------------------------------
- * 从 components/ModuleCard.astro 提取的组件样式，包含：
- * - 卡片容器（纵向布局、边框 + 微阴影、悬停上浮 + 阴影加深）
- * - 模块图标（分类色背景、反色文字、圆角方块）
- * - 卡片标题（单行省略、悬停主题色）与描述（两行省略）
- * - 移动端响应式适配（768px 断点）
- *
- * 设计语言（ark-ui）：
- * - 卡片浮起感：1px 边框 + xs 阴影，悬停时阴影加深至 default
- * - 直角偏小圆角（4px），工业信息系统风格
- * - 位移微交互：hover 上浮 4px，active 下沉 2px
- * - 边框转色：hover 时边框转为强调色，强化可点击感
- * - 颜色全部引用 ark 语义令牌，支持 [data-theme] 双主题
- *
- * 归入 @layer components
- * -----------------------------------------------------------------------------
- */
 @layer components {
 
-  /* ============================================================
-   * 1. 卡片容器
-   * ------------------------------------------------------------
-   * 纵向布局，1px 边框 + 微阴影
-   * 悬停时上浮 4px，阴影加深，边框转色
-   * 紧凑化：缩小 padding/gap，降低整体视觉权重
-   * ============================================================ */
   .module-card {
     display: flex;
     flex-direction: column;
@@ -36,8 +10,6 @@
     border: 1px solid var(--color-border-light);
     border-radius: var(--radius-md, 4px);
     box-shadow: var(--shadow-xs);
-    /* 动效令牌驱动：hover/active 即时反馈（ark: 直接交互 75ms instant）
-       使用 instant 确保 hover 无迟钝卡顿感，跟手响应 */
     transition:
       transform var(--motion-duration-instant) var(--motion-easing-out),
       background-color var(--motion-duration-instant) var(--motion-easing-out),
@@ -49,8 +21,6 @@
     isolation: isolate;
   }
 
-  /* 卡片顶部装饰线：悬停时从左展开，使用模块分类色（--module-color）
-     非 web 主题青色，确保每个模块分类的视觉色系统一 */
   .module-card::before {
     content: '';
     position: absolute;
@@ -65,7 +35,6 @@
     z-index: 1;
   }
 
-  /* 悬停反馈：ark 边框转色 + 阴影加深，边框转为模块分类色 */
   .module-card:hover {
     background: var(--color-bg-hover);
     border-color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 50%, transparent);
@@ -76,7 +45,6 @@
     transform: scaleX(1);
   }
 
-  /* 按压下沉：tap 反馈 */
   .module-card:active {
     transform: translateY(-2px) scale(0.99);
     box-shadow: var(--shadow-sm);
@@ -87,11 +55,6 @@
     outline-offset: 2px;
   }
 
-  /* ============================================================
-   * 2. 卡片头部（图标 + 标题同一行）
-   * ------------------------------------------------------------
-   * 紧凑横向布局，图标与标题水平排列，降低卡片整体高度
-   * ============================================================ */
   .card-header {
     display: flex;
     align-items: center;
@@ -99,40 +62,23 @@
     min-width: 0;
   }
 
-  /* ============================================================
-   * 3. 模块图标（几何科技风重构）
-   * ------------------------------------------------------------
-   * 设计理念：
-   * - 去卡通化：移除实心填色大方块，改用透明底 + 细边框
-   * - 几何感：近直角圆角(3px)、等宽字体、紧凑尺寸(22px)
-   * - 科技感：分类色作为文字与边框，背景为分类色微透(8%)
-   * - 分类色由 ModuleCard.astro 通过 --module-color CSS 变量注入
-   * ============================================================ */
   .card-icon {
-    /* 精简尺寸：22px，配合标题同行布局降低视觉权重 */
     width: 22px;
     height: 22px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    /* 几何感：极小圆角，近乎直角 */
     border-radius: 3px;
-    /* 科技感：透明底 + 细边框 + 分类色文字
-       color-mix 使分类色以低透明度融入背景，避免实色卡通方块 */
     background: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 8%, transparent);
     border: 1px solid color-mix(in srgb, var(--module-color, var(--color-accent-base)) 38%, transparent);
     color: var(--module-color, var(--color-accent-base));
-    /* 等宽字体强化代码/技术语义 */
     font-family: var(--font-family-mono);
     font-weight: 600;
     font-size: 0.6rem;
     letter-spacing: 0;
     line-height: 1;
     flex-shrink: 0;
-    /* 去除卡通投影，仅保留极细内高光强化几何边缘清晰度 */
     box-shadow: inset 0 1px 0 color-mix(in srgb, var(--color-fg-inverse) 6%, transparent);
-    /* 动效预留：hover 时背景/边框浓度提升 + 微缩放
-       使用 instant 确保即时反馈无卡顿 */
     transition:
       background-color var(--motion-duration-instant) var(--motion-easing-out),
       border-color var(--motion-duration-instant) var(--motion-easing-out),
@@ -141,7 +87,6 @@
     text-transform: uppercase;
   }
 
-  /* 几何装饰：左上角小直角标记，强化技术坐标系视觉语义 */
   .card-icon::before {
     content: '';
     position: absolute;
@@ -156,15 +101,11 @@
     pointer-events: none;
   }
 
-  /* 悬停：背景与边框浓度提升 */
   .module-card:hover .card-icon {
     background: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 16%, transparent);
     border-color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 60%, transparent);
   }
 
-  /* ============================================================
-   * 4. 卡片标题
-   * ============================================================ */
   .card-title {
     font-family: var(--font-family-heading);
     font-size: 0.85rem;
@@ -181,14 +122,10 @@
     min-width: 0;
   }
 
-  /* 悬停时标题变为模块分类色（非 web 主题青色） */
   .module-card:hover .card-title {
     color: var(--module-color, var(--color-accent-base));
   }
 
-  /* 卡片描述：最多显示两行，超出省略
-   * 统一高度：min-height 固定为两行空间（2 行 × 1.5 行高 = 3em），
-   * 短描述卡片与两行描述卡片高度一致；em 单位随各断点字号自动适配 */
   .card-desc {
     font-size: 0.72rem;
     color: var(--color-text-secondary);
@@ -202,11 +139,6 @@
     -webkit-box-orient: vertical;
   }
 
-  /* ============================================================
-   * 5. 响应式适配
-   * ============================================================ */
-
-  /* 移动端卡片撑满宽度 */
   @media (max-width: 767.98px) {
     .module-card {
       width: 100%;
@@ -228,7 +160,6 @@
     }
   }
 
-  /* 超小屏：进一步紧凑 */
   @media (max-width: 480px) {
     .module-card {
       padding: var(--space-1) var(--space-2);

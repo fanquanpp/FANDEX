@@ -42,16 +42,6 @@ import com.fandex.app.ui.components.ThemeQuickToggle
 import com.fandex.app.ui.components.TopDock
 import com.fandex.app.ui.theme.LocalExtendedColors
 
-/**
- * 模块详情页
- *
- * 对齐 Web 端模块列表页：
- * - 顶部栏（模块标题 + 返回 + 模块色竖条装饰）
- * - 模块描述
- * - 文档列表（条目行层次 + stagger 入场）
- *
- * 动效：Loading / Error / Success 切换 Crossfade；列表项轻量入场（仅首次）
- */
 @Composable
 fun ModuleScreen(
     moduleId: String,
@@ -67,7 +57,6 @@ fun ModuleScreen(
 
     val state by viewModel.state.collectAsState()
 
-    // 入场门控：内容就绪后的下一帧置 true，触发首次 stagger 入场
     var hasEntered by remember { mutableStateOf(false) }
     val dataReady = state is ModuleUiState.Success
     LaunchedEffect(dataReady) {
@@ -87,7 +76,6 @@ fun ModuleScreen(
                 showNavActions = false,
                 showHome = true,
                 onHome = onHome,
-                // 模块色竖条装饰
                 accentHex = (state as? ModuleUiState.Success)?.accentHex,
                 themeQuickToggle = { ThemeQuickToggle(viewModel = viewModel()) }
             )
@@ -98,7 +86,6 @@ fun ModuleScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // 状态切换：220ms 淡入淡出
             Crossfade(
                 targetState = state,
                 animationSpec = tweenNormal(),
@@ -136,9 +123,6 @@ fun ModuleScreen(
     }
 }
 
-/**
- * 模块内容
- */
 @Composable
 private fun ModuleContent(
     module: Module,
@@ -155,7 +139,6 @@ private fun ModuleContent(
         contentPadding = PaddingValues(top = 8.dp, bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 模块描述（多彩分类色竖条点缀 + 入场动效）
         item(key = "description") {
             Row(
                 modifier = Modifier
@@ -187,7 +170,6 @@ private fun ModuleContent(
             }
         }
 
-        // 文档列表（条目行 + 入场动效 + 重排动画）
         itemsIndexed(
             items = docs,
             key = { _, doc -> doc.slug }

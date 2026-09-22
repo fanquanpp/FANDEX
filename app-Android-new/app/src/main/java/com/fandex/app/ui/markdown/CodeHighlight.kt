@@ -10,14 +10,6 @@ import com.fandex.app.ui.theme.LocalExtendedColors
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 
-/**
- * 组合内的高亮代码文本（异步计算）
- *
- * 统一文档代码块与语法速查卡片的取色与缓存逻辑。
- * 高亮为 CPU 密集操作，放在 Default 调度器执行：
- * 先以纯文本立即呈现（无阻塞），完成后无缝替换为高亮版本，
- * 避免长代码块在主线程解析造成滚动与页面切换卡顿
- */
 @Composable
 fun rememberHighlightedCode(code: String, language: String): AnnotatedString {
     val extendedColors = LocalExtendedColors.current

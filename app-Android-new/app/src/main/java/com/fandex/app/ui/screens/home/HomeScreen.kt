@@ -51,19 +51,6 @@ import com.fandex.app.ui.components.ThemeQuickToggle
 import com.fandex.app.ui.components.TopDock
 import com.fandex.app.ui.theme.LocalExtendedColors
 
-/**
- * 首页
- *
- * 参考旧版 FANDEX-App 主页设计：开门见山直入内容
- * - 顶部 Dock：抽屉菜单 + 品牌名 + 常驻功能按钮
- * - 分类筛选 chips（多彩，选中态高亮）
- * - 模块内容列表（按分类分组）
- *
- * 动效：
- * - Loading / Error / Success 状态切换使用 Crossfade（220ms）
- * - 首次进入成功态时，chips / 最近浏览 / 区块标题 / 模块卡片
- *   以 fandexEntrance 做 stagger 入场（仅首次播放一次）
- */
 @Composable
 fun HomeScreen(
     onModuleClick: (String) -> Unit,
@@ -77,10 +64,8 @@ fun HomeScreen(
     val state by viewModel.state.collectAsState()
     val recentDocs by viewModel.recentDocs.collectAsState()
 
-    // 当前筛选分类（null = 全部）
     var selectedCategory by remember { mutableStateOf<String?>(null) }
 
-    // 入场门控：内容就绪后的下一帧置 true，触发首次 stagger 入场
     var hasEntered by remember { mutableStateOf(false) }
     val dataReady = state is HomeUiState.Success
     LaunchedEffect(dataReady) {
@@ -110,7 +95,6 @@ fun HomeScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // 状态切换：220ms 淡入淡出
             Crossfade(
                 targetState = state,
                 animationSpec = tweenNormal(),
@@ -124,7 +108,6 @@ fun HomeScreen(
                     )
                     is HomeUiState.Success -> {
                         val data = current
-                        // 筛选后的分类列表
                         val visibleCategories = selectedCategory
                             ?.let { id -> data.categories.filter { it.id == id } }
                             ?: data.categories
@@ -145,11 +128,6 @@ fun HomeScreen(
     }
 }
 
-/**
- * 首页内容（成功态）
- *
- * @param entranceBases 各分类区块的入场下标基数（前置区块数累计，保证 stagger 递增）
- */
 @Composable
 private fun HomeContent(
     categories: List<CategoryInfo>,
@@ -160,8 +138,6 @@ private fun HomeContent(
     onModuleClick: (String) -> Unit,
     onDocClick: (String, String) -> Unit
 ) {
-    // 入场下标基数：chips 占 0；最近浏览标题占 1、卡片占 2..n+1；
-    // 各分类区块按（标题 + 模块数）累计，保证 stagger 下标全局递增
     val entranceBases = remember(categories, recentDocs) {
         var acc = recentDocs.size + 2
         categories.map { category ->
@@ -176,7 +152,6 @@ private fun HomeContent(
         contentPadding = PaddingValues(bottom = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // 分类筛选 chips（横滑，多彩，选中态高亮；逐个 stagger 入场）
         item(key = "filters") {
             LazyRow(
                 contentPadding = PaddingValues(horizontal = 16.dp),
@@ -213,7 +188,6 @@ private fun HomeContent(
             }
         }
 
-        // 最近浏览（有历史时展示，紧凑单行）
         if (recentDocs.isNotEmpty()) {
             item(key = "recent") {
                 RecentDocsSection(
@@ -224,7 +198,6 @@ private fun HomeContent(
             }
         }
 
-        // 分类模块内容（筛选切换时对位置变化做重排动画）
         itemsIndexed(
             items = categories,
             key = { _, category -> category.id }
@@ -240,9 +213,6 @@ private fun HomeContent(
     }
 }
 
-/**
- * 最近浏览区块（紧凑横滑，直达文档）
- */
 @Composable
 private fun RecentDocsSection(
     docs: List<com.fandex.app.data.prefs.HistoryEntry>,
@@ -252,7 +222,6 @@ private fun RecentDocsSection(
     val extendedColors = LocalExtendedColors.current
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        // 区块标题
         SectionHeader(
             title = "最近浏览",
             modifier = Modifier
@@ -301,11 +270,6 @@ private fun RecentDocsSection(
     }
 }
 
-/**
- * 分类区块
- *
- * @param entranceBase 区块内元素入场的下标基数（标题在前，卡片依次递增）
- */
 @Composable
 private fun CategorySection(
     category: CategoryInfo,
@@ -320,7 +284,6 @@ private fun CategorySection(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 分类标题栏
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -335,7 +298,6 @@ private fun CategorySection(
             )
         }
 
-        // 模块卡片列表（带分类内学习顺序编号 + stagger 入场）
         Column(
             modifier = Modifier.padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -356,9 +318,6 @@ private fun CategorySection(
     }
 }
 
-/**
- * 加载中视图
- */
 @Composable
 private fun LoadingView() {
     Box(
@@ -369,9 +328,6 @@ private fun LoadingView() {
     }
 }
 
-/**
- * 错误视图
- */
 @Composable
 private fun ErrorView(message: String, onRetry: () -> Unit) {
     val extendedColors = LocalExtendedColors.current

@@ -1,44 +1,7 @@
-/**
- * 首页样式（ark-ui 设计语言）
- * -----------------------------------------------------------------------------
- * 从 pages/index.astro 提取的页面级样式，包含：
- * - 首页容器（作为装饰层定位上下文，保留 sticky 子元素行为）
- * - Hero 区域：徽章、站点标题、描述、统计数据栏、快捷链接
- * - 分类区域：极简分类标题栏（圆点 + 标签 + 计数 + 导航按钮 + 折叠）
- * - 模块卡片横向无限滑动选择器（边缘渐变层叠显现 + 克隆循环）
- * - 移动端响应式适配（768px / 480px / 360px 三档断点）
- * - 入场动效（CSS + motion 令牌，零 JS，prefers-reduced-motion 降级）
- *
- * 设计语言（ark-ui）：
- * - 工业信息系统风格，克制有力
- * - 直角偏小圆角，信息密度高
- * - 层次感通过背景色阶 + 微阴影实现
- * - 交互反馈通过位移和颜色变化
- * - 所有颜色消费 ark 语义令牌，主题切换自动跟随
- * - 禁止点状装饰：指示器使用 2-3px 竖条，计数徽章使用直角小圆角
- *
- * 横向滑动器设计要点：
- * - 分类标题栏使用圆点指示器 + 计数药丸
- * - 卡片 flex 横向排列，固定宽度，原生横向滚动
- * - 边缘渐变遮罩实现"渐变层叠显现"效果
- * - JS 克隆卡片集实现前向无限循环（圆圈循环）
- * - 导航按钮控制左右滚动，悬停反馈即时（instant 75ms）
- * - 预留动效扩展点：.feature-track 支持后续接入 Motion 高级预设
- *
- * 层级归属：@layer pages（介于 components 与 islands 之间）
- */
 
 @layer pages {
-  /* ============================================================
-   * 1. 首页容器
-   * ============================================================
-   * 作为装饰层的定位上下文；
-   * 不设置 overflow:hidden，避免破坏内部子元素的 sticky 定位行为；
-   * 装饰层的溢出裁切由 .geo-bg-decor 自身的 overflow:hidden 负责。
-   */
   .home-page {
     position: relative;
-    /* 自适应桌面端宽度 94% */
     width: 94vw;
     max-width: 100%;
     min-height: calc(100vh - var(--nav-height));
@@ -47,26 +10,17 @@
     padding: 0 var(--space-8) var(--space-16);
   }
 
-  /* 确保首页内容层在几何装饰层之上 */
   .home-page > section,
   .home-page > footer {
     position: relative;
     z-index: 1;
   }
 
-  /* ============================================================
-   * 2. Hero 区域
-   * ----------------------------------------------------------------
-   * 首屏视觉焦点：徽章 → 标题 → 描述 → 统计数据栏 → 快捷链接
-   * 使用大间距营造呼吸感，居中对齐保持仪式感
-   * ark 风格：克制的渐变光晕、几何分割线、强对比标题
-   * ============================================================ */
   .hero {
     position: relative;
     text-align: center;
     padding: var(--space-8) 0 var(--space-6);
     margin-bottom: var(--space-6);
-    /* 底部 ark 风格分割线：渐变淡出 */
     border-bottom: 1px solid transparent;
     background-image: linear-gradient(
       to right,
@@ -80,19 +34,6 @@
     background-repeat: no-repeat;
   }
 
-  /* 站点标题：FAN/DEX 分离 + 渐变背景动效 + 残影伪元素
-   * ----------------------------------------------------------------
-   * 设计灵感（参考 para-mask + para-ghost 模式，自主重构）：
-   * - FAN 与 DEX 拆分为两个 span，独立控制渐变背景与色相
-   * - 渐变背景 + background-clip: text 实现文字渐变填充
-   * - bgPan keyframes 驱动背景位置缓慢移动，待机呼吸感
-   * - hover 时加速背景滚动 + 微缩放，强化交互反馈
-   * - ::after 残影伪元素使用 attr(data-text) 复制文字
-   *   通过 -webkit-text-stroke 形成轮廓残影，z-index:-1 位于本体之下
-   * - white-space:nowrap + text-align:center 防止长标题（如 Vue 3 学习路线）
-   *   在残影中换行导致错位，保证与本体始终对齐
-   * - ghostIdle keyframes 让残影微小浮动，hover 时逆方向位移形成视差
-   * 性能：仅动画 transform 与 background-position，GPU 加速，60fps */
   .hero-title {
     font-family: var(--font-family-heading);
     font-size: 3rem;
@@ -104,10 +45,7 @@
     align-items: baseline;
     cursor: default;
     position: relative;
-    /* 强制单行：保证残影伪元素与本体严格对齐，避免长标题换行错位 */
     white-space: nowrap;
-    /* 渐变背景 + background-clip: text 实现文字渐变填充
-     * 使用 var(--color-accent-base) 与前景色组合，主题切换自动跟随 */
     background: linear-gradient(
       135deg,
       var(--color-fg-primary) 0%,
@@ -119,18 +57,13 @@
     -webkit-background-clip: text;
     background-clip: text;
     color: transparent;
-    /* 待机动画：背景缓慢移动，呼吸感 */
     animation: heroBgPan 12s linear infinite alternate;
-    /* hover 过渡时长缓动消费 --motion-* 令牌 */
     transition:
       transform var(--motion-duration-slow) var(--motion-easing-out),
       letter-spacing var(--motion-duration-slow) var(--motion-easing-out);
   }
 
   .hero-title:hover {
-    /* hover 反馈：微缩放 + 字距微增。
-       不通过修改 animation-duration 加速背景——运行时改写时长会按新时长
-       重映射当前进度，背景位置会肉眼可见地跳变 */
     transform: scale(1.02);
     letter-spacing: 0.16em;
   }
@@ -140,10 +73,6 @@
     100% { background-position: 100% 100%; }
   }
 
-  /* 残影伪元素：attr(data-text) 复制标题文本
-   * - 位于本体下方（z-index:-1），透明填充 + 描边轮廓，形成视觉层次
-   * - 不换行 + 水平居中，长标题也能与本体严格对齐
-   * - ghostIdle 动画微小浮动，hover 时残影逆方向位移，形成视差效果 */
   .hero-title::after {
     content: attr(data-text);
     position: absolute;
@@ -156,14 +85,12 @@
     -webkit-text-stroke: 1px color-mix(in oklch, var(--color-accent-base) 40%, transparent);
     z-index: -1;
     opacity: 0.5;
-    /* 残影待机动画：微小位移浮动 */
     animation: heroGhostIdle 4s ease-in-out infinite alternate;
     transition:
       transform 0.6s cubic-bezier(0.2, 1, 0.3, 1),
       opacity 0.4s ease,
       -webkit-text-stroke 0.4s ease;
     pointer-events: none;
-    /* 让残影稍微偏移到左上方，形成视觉错位 */
     transform: translate(-3px, -3px);
   }
 
@@ -174,8 +101,6 @@
     -webkit-text-stroke: 1.5px color-mix(in oklch, var(--color-accent-base) 70%, transparent);
   }
 
-  /* 子页面（在线前端/语法速览/学习路线等）Hero 标题缩小
-   * 避免长文本（如"TypeScript 学习路线"）在残影中换行产生视觉残影 */
   .home-page--sub .hero-title {
     font-size: 2.1rem;
     letter-spacing: 0.12em;
@@ -191,7 +116,6 @@
     100% { transform: translate(-4px, -4px); }
   }
 
-  /* 尊重用户减少动效偏好：禁用背景动画与残影浮动 */
   @media (prefers-reduced-motion: reduce) {
     .hero-title,
     .hero-title::after {
@@ -200,22 +124,14 @@
     }
   }
 
-  /* FAN 部分独立色相：使用主题强调色，强化品牌识别
-   * 通过单独 span 继承背景渐变，hover 时与本体同步动画 */
   .hero-title-fan {
-    /* 父级已设置 background-clip: text，此处继承即可 */
     display: inline-block;
   }
 
-  /* DEX 部分独立色相：保持与 FAN 协调的渐变 */
   .hero-title-dex {
     display: inline-block;
   }
 
-  /* 统计数据 + 功能入口同一行容器
-   * ----------------------------------------------------------------
-   * flex 布局：左侧统计数据，右侧功能入口按钮组
-   * 响应式：移动端自动换行堆叠 */
   .hero-stats-row {
     display: flex;
     align-items: center;
@@ -225,7 +141,6 @@
     margin-top: var(--space-2);
   }
 
-  /* 统计数据栏 — ark 风格：数字突出、标签克制 */
   .hero-stats {
     display: flex;
     align-items: center;
@@ -259,7 +174,6 @@
     text-transform: uppercase;
   }
 
-  /* 统计项之间的分隔线 — ark 垂直分割 */
   .stat-divider {
     width: 1px;
     height: 28px;
@@ -272,16 +186,6 @@
     );
   }
 
-  /* 功能入口区：纯文字按钮 + SVG 路径签名动画
-   * ----------------------------------------------------------------
-   * 设计重构（与 hero-stats 同行，紧凑布局）：
-   * - 移除图标，仅保留文字（与 GitHub 导航按钮风格统一）
-   * - 背景透明，无边框（border 由 SVG path 提供，实现路径书写动画）
-   * - SVG .entry-border 使用二次贝塞尔曲线（Q 命令）绘制手绘风格波浪路径
-   * - preserveAspectRatio="none" 让路径拉伸适配按钮尺寸
-   * - hover 时 stroke-dashoffset 从 250 → 0，实现路径从无到有的书写动画
-   * - 各入口颜色统一使用项目标题主题色 var(--color-accent-base)
-   * 性能：仅动画 stroke-dashoffset，GPU 加速 */
   .hero-entries {
     display: flex;
     gap: var(--space-1);
@@ -289,7 +193,6 @@
     flex-wrap: wrap;
   }
 
-  /* 入口按钮：纯文字 + 透明背景 + 相对定位（为 SVG border 提供定位上下文） */
   .entry-btn {
     position: relative;
     display: inline-flex;
@@ -321,8 +224,6 @@
     outline-offset: 2px;
   }
 
-  /* SVG border：绝对定位填满按钮，pointer-events:none 不干扰点击
-   * preserveAspectRatio="none" 让 path 拉伸适配按钮尺寸 */
   .entry-border {
     position: absolute;
     inset: 0;
@@ -332,12 +233,6 @@
     overflow: visible;
   }
 
-  /* path 路径签名动画：stroke-dasharray + stroke-dashoffset 实现书写效果
-   * 使用二次贝塞尔曲线（Q 命令）绘制手绘风格波浪路径
-   * pathLength 等效为 250（通过 dasharray 设置）
-   * 默认 offset:250 完全隐藏，hover 时 offset:0 完全显示
-   * stroke-width: 2 + stroke-linecap: round 营造手写笔触质感
-   * transition 0.8s cubic-bezier(0.4, 0, 0.2, 1) 模拟书写节奏 */
   .entry-border path {
     fill: none;
     stroke: var(--color-accent-base);
@@ -353,7 +248,6 @@
     stroke-dashoffset: 0;
   }
 
-  /* 尊重用户减少动效偏好：禁用路径动画，直接显示边框 */
   @media (prefers-reduced-motion: reduce) {
     .entry-border path {
       stroke-dashoffset: 0;
@@ -361,7 +255,6 @@
     }
   }
 
-  /* 入口名称 */
   .entry-name {
     white-space: nowrap;
     position: relative;
@@ -369,7 +262,6 @@
     padding-bottom: 3px;
   }
 
-  /* 下划线标记：默认弱可见，hover 时增强，明确按钮可点击语义 */
   .entry-name::after {
     content: '';
     position: absolute;
@@ -392,16 +284,6 @@
     transform: scaleX(1);
   }
 
-  /* ============================================================
-   * 2.5 终端模拟面板（工业科幻品牌签名）
-   * ----------------------------------------------------------------
-   * Hero 下方居中的"开机自检"终端：
-   * - 近黑代码底 + 细边框 + 直角小圆角，与代码块同一套表面语言
-   * - 标题栏左侧 mono 路径标记，右侧 [REC] 呼吸指示（文字标记，非圆点）
-   * - 输出内容由 lib/home-terminal.ts 逐字写入，光标为末行真实输入框的
-   *   原生插入符（不渲染粗细与色彩，跟随浏览器默认）
-   * - min-height 锁定面板高度，逐字输出过程中不产生布局位移
-   * ============================================================ */
   .hero-terminal {
     max-width: 560px;
     margin: var(--space-6) auto 0;
@@ -418,8 +300,6 @@
     align-items: center;
     justify-content: space-between;
     padding: 6px 12px;
-    /* 标题栏在两种主题下都保持"深色终端"表面：
-       以代码底色为基微量提亮，与机身一体，避免浅色模式下出现突兀灰带 */
     background: color-mix(in srgb, var(--color-fg-primary) 5%, var(--color-code-bg));
     border-bottom: 1px solid color-mix(in srgb, var(--color-fg-primary) 10%, transparent);
   }
@@ -431,7 +311,6 @@
     color: color-mix(in srgb, var(--color-code-text) 72%, transparent);
   }
 
-  /* [REC] 呼吸指示：警示色 mono 文字标记（替代圆点录制指示） */
   .hero-terminal__rec {
     font-family: var(--font-family-mono, monospace);
     font-size: 0.66rem;
@@ -457,9 +336,6 @@
     overflow: hidden;
   }
 
-  /* 末行提示符输入框：真实 readonly <input>，插入符由浏览器原生渲染
-     （粗细、色彩与闪烁节奏跟随系统默认，不消费任何主题令牌），
-     这里仅抹去输入框自身的外观，使其融入终端文本流 */
   .hero-terminal__input {
     display: block;
     width: 100%;
@@ -476,54 +352,24 @@
     caret-color: auto;
   }
 
-  /* 减少动效：[REC] 停止闪烁（光标为原生插入符，节奏由系统管理） */
   @media (prefers-reduced-motion: reduce) {
     .hero-terminal__rec {
       animation: none;
     }
   }
 
-  /* ============================================================
-   * 3. 分类区域（极简现代横向滑动器）
-   * ----------------------------------------------------------------
-   * 结构：
-   *   <section class="category-section">
-   *     <div class="category-header">
-   *       <button class="category-header__lead" data-toggle>
-   *         <span class="category-dot"></span>
-   *         <span class="category-tag"></span>
-   *         <span class="category-count"></span>
-   *         <svg class="toggle-icon"></svg>
-   *       </button>
-   *       <div class="category-header__actions">
-   *         <button class="category-nav-btn" data-nav="-1"></button>
-   *         <button class="category-nav-btn" data-nav="1"></button>
-   *       </div>
-   *     </div>
-   *     <div class="feature-scroller" data-scroller>
-   *       <div class="feature-track" data-track>...</div>
-   *     </div>
-   *   </section>
-   * ============================================================ */
   .category-section {
     margin-bottom: var(--space-8);
-    /* grid-template-rows 过渡实现折叠/展开顺滑动画
-       - 默认 auto 1fr：标题栏自适应 + 内容区占据剩余空间
-       - 折叠时 auto 0fr：内容行高度过渡到 0
-       - 比 max-height 方案更精准（过渡到实际内容高度，无延迟）
-       - contain: layout style 隔离布局计算，提升折叠/展开性能 */
     display: grid;
     grid-template-rows: auto 1fr;
     transition: grid-template-rows var(--motion-duration-normal) var(--motion-easing-out);
     contain: layout style;
   }
 
-  /* 折叠态：内容行归零，顺滑收起 */
   .category-section.collapsed {
     grid-template-rows: auto 0fr;
   }
 
-  /* 分类标题栏：极简单行，去除重型装饰 */
   .category-header {
     display: flex;
     align-items: center;
@@ -533,9 +379,7 @@
     margin-bottom: var(--space-2);
   }
 
-  /* 标题栏左侧可点击区域（折叠/展开触发器） */
   .category-header__lead {
-    /* 相对定位：作为 .entry-border SVG 描边的定位上下文 */
     position: relative;
     display: inline-flex;
     align-items: center;
@@ -556,11 +400,6 @@
     background: var(--color-bg-hover);
   }
 
-  /* 标题按钮同款 SVG 波浪描边（与 Hero 入口一致）
-   * ----------------------------------------------------------------
-   * .entry-border 复用 Hero 区的绝对定位描边结构；
-   * 描边颜色改为跟随分类主题色（--marker-color 已注入按钮内联样式），
-   * hover 时 stroke-dashoffset 从 250 → 0 执行路径书写动画 */
   .category-header__lead .entry-border path {
     stroke: var(--marker-color, var(--color-accent-base));
   }
@@ -574,8 +413,6 @@
     outline-offset: 2px;
   }
 
-  /* 几何色条指示器：替代旧版圆点（去卡通化，几何科技风格）
-     3px 宽竖条 + 分类色，与 card-icon 的几何美学统一 */
   .category-marker {
     width: 3px;
     height: 14px;
@@ -589,7 +426,6 @@
     height: 18px;
   }
 
-  /* 分类标签文字（h2 语义层级，尺寸协调） */
   .category-tag {
     font-size: 0.95rem;
     font-weight: 700;
@@ -597,7 +433,6 @@
     letter-spacing: 0.04em;
   }
 
-  /* 计数药丸：克制信息密度的现代标识 */
   .category-count {
     font-size: 0.72rem;
     color: var(--color-fg-tertiary);
@@ -609,7 +444,6 @@
     line-height: 1.5;
   }
 
-  /* 折叠箭头图标 */
   .toggle-icon {
     color: var(--color-fg-tertiary);
     transition: transform var(--motion-duration-normal) var(--motion-easing-out),
@@ -620,35 +454,26 @@
     color: var(--color-fg-secondary);
   }
 
-  /* 折叠状态：箭头旋转 */
   .category-section.collapsed .toggle-icon {
     transform: rotate(-90deg);
   }
 
-  /* 折叠状态下隐藏滑动器
-     配合 grid-template-rows 过渡，改用 overflow + min-height
-     保留 display 避免动画期间完全移除（display:none 无法过渡） */
   .feature-scroller {
     overflow: hidden;
     min-height: 0;
   }
 
-  /* 标题栏右侧操作区：导航按钮 */
   .category-header__actions {
     display: flex;
     align-items: center;
     gap: var(--space-inline-xs);
   }
 
-  /* 导航按钮：基础样式与统一特效由 .fndx-icon-btn 提供，
-   * 此处仅保留 30px 紧凑尺寸覆盖与方向性图标位移（左右滚动方向提示） */
   .category-nav-btn {
-    /* display/align/background/color/border/transition/hover/focus 均由 .fndx-icon-btn 提供 */
     width: 30px;
     height: 30px;
   }
 
-  /* 方向性图标微位移：向左/向右滚动按钮悬停时图标沿滚动方向平移（与上下篇导航一致） */
   @media (hover: hover) {
     .category-nav-btn[data-nav='-1']:hover svg {
       transform: translateX(-2px) scale(1.08);
@@ -659,39 +484,14 @@
     }
   }
 
-  /* ============================================================
-   * 4. 横向无限滑动选择器（回转寿司式 · 真·双向无限循环）
-   * ----------------------------------------------------------------
-   * .feature-scroller：transform 驱动的视窗容器（overflow:hidden）
-   * .feature-track：flex 横向排列，JS 克隆一份卡片集实现无缝循环
-   * 卡片固定宽度，flex 不收缩，保证循环一致性
-   *
-   * 交互说明（由 home-interactions.ts 驱动）：
-   * - requestAnimationFrame 驱动 transform: translateX(offset) 自动滚动
-   * - offset 取模回绕实现真·无限循环（无 scroll 边界限制）
-   * - 鼠标拖拽：pointerdown/move/up 实现跟手滑动，暂停自动滚动
-   * - 导航按钮：JS 平滑过渡到新 offset
-   * - 悬停暂停：mouseenter/mouseleave 控制各模块独立暂停
-   *
-   * 关键：overflow 必须为 hidden，不能使用 auto/scroll
-   * 因为 transform 驱动不依赖原生滚动，overflow:auto 会产生滚动边界
-   * 导致"开头不能左滑、结尾回弹"的劣质体验
-   * ============================================================ */
   .feature-scroller {
     position: relative;
-    /* 必须 hidden：transform 驱动不需要原生滚动能力
-       auto/scroll 会引入滚动边界，破坏无限循环体验 */
     overflow: hidden;
-    /* 鼠标拖拽光标：grab 提示可拖拽，is-dragging 时切换为 grabbing */
     cursor: grab;
-    /* 拖拽时禁用文本选中，避免拖拽划选文字 */
     -webkit-user-select: none;
     user-select: none;
-    /* 预留动效扩展点：后续可接入 Motion 惯性滑行 */
   }
 
-  /* 循环滚动态：两侧渐隐遮罩，让被裁切的克隆卡片呈现"渐入渐出"意图，
-     消除静态截图/首屏中"半截卡片"的破碎感（所有分类行均循环滚动） */
   .feature-scroller {
     -webkit-mask-image: linear-gradient(
       to right,
@@ -703,34 +503,22 @@
     mask-image: linear-gradient(to right, transparent 0, #000 4%, #000 96%, transparent 100%);
   }
 
-  /* 拖拽进行中：切换光标 */
   .feature-scroller.is-dragging {
     cursor: grabbing;
   }
 
-  /* 滑动轨道：横向 flex，宽度由内容撑开（含克隆集 2x 宽度）
-     will-change: transform 优化 requestAnimationFrame 驱动的动画性能 */
   .feature-track {
     display: flex;
     gap: var(--space-4);
     padding: var(--space-1) 0;
     width: max-content;
-    /* 提示浏览器将 transform 提升为独立合成层，减少重绘开销 */
     will-change: transform;
   }
 
-  /* 卡片在滑动器中固定宽度，不收缩
-     移除 scroll-snap-align：避免与拖拽和无限循环重置产生抖动
-     紧凑化：200px 适配缩小后的卡片整体视觉权重 */
   .feature-track .module-card {
     flex: 0 0 200px;
   }
 
-  /* ============================================================
-   * 5. 响应式适配
-   * ============================================================ */
-
-  /* 移动端适配（768px 以下） */
   @media (max-width: 767.98px) {
     .home-page {
       padding: 0 var(--space-4) var(--space-12);
@@ -764,15 +552,11 @@
       height: 20px;
     }
 
-    /* 移动端统计与功能入口纵向堆叠，入口独占一行三列网格
-       （保持 flex 横排会把 3 个入口挤到统计右侧，过载难读） */
     .hero-stats-row {
       flex-direction: column;
       gap: var(--space-4);
     }
 
-    /* 移动端功能入口：两列网格（web 构建 4 个入口 2x2 均衡铺满，
-       避免单数落单；桌面构建 3 个入口为 2+1，窄屏下仍然紧凑） */
     .hero-entries {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -785,7 +569,6 @@
       font-size: 0.85rem;
     }
 
-    /* 滑动器卡片宽度收窄 */
     .feature-track .module-card {
       flex: 0 0 200px;
     }
@@ -803,14 +586,12 @@
       font-size: 0.72rem;
     }
 
-    /* 移动端导航按钮稍小 */
     .category-nav-btn {
       width: 28px;
       height: 28px;
     }
   }
 
-  /* 小屏幕适配（480px 以下） */
   @media (max-width: 480px) {
     .hero-title {
       font-size: 1.6rem;
@@ -820,19 +601,16 @@
       font-size: 1.3rem;
     }
 
-    /* 小屏入口按钮进一步收窄（保持三列） */
     .entry-btn {
       padding: 8px 4px;
       font-size: 0.78rem;
     }
 
-    /* 小屏终端面板：字号微降，锁定的 min-height 相应收缩 */
     .hero-terminal__body {
       font-size: 0.66rem;
       min-height: 6em;
     }
 
-    /* 小屏卡片进一步收窄 */
     .feature-track .module-card {
       flex: 0 0 170px;
     }
@@ -860,7 +638,6 @@
       overflow: hidden;
     }
 
-    /* 小屏幕隐藏统计分隔线 */
     .stat-divider {
       display: none;
     }
@@ -869,14 +646,11 @@
       gap: var(--space-4);
     }
 
-    /* 小屏导航按钮隐藏（依赖原生触屏滑动） */
     .category-header__actions {
       display: none;
     }
   }
 
-  /* 480px 以下超小屏：hero-stats 保持横向紧凑排布（数字+标签收窄），
-     不再纵向堆叠，避免子页面 Hero 占据过高首屏空间 */
   @media (max-width: 480px) {
     .hero-stats {
       gap: var(--space-4);
@@ -888,35 +662,12 @@
     }
   }
 
-  /* ============================================================
-   * 6. 入场动效 v2（CSS + motion 令牌，零 JS 编排）
-   * ----------------------------------------------------------------
-   * 首屏入场时序（总长约 1s，一次性的"开机的仪式感"）：
-   *   0.04s 标题上滑 + 字距收势（0.26em 收拢至基础字距）
-   *   0.16s 统计栏上滑（数字随后由 stat-count-up.ts 滚动计数起跳）
-   *   0.26s 功能入口上滑，三个波浪边框路径依次"签名式"划过再隐去
-   *   0.42s Hero 底部分割线从中心向两侧展开
-   * 依据 ark-ui 设计语言：
-   * - 直接交互 / 入场 150-250ms，区域揭示 400-600ms（--motion-duration-slower）
-   * - 非纯 opacity，附 Y 方向位移（fndx-slide-up / 专属 keyframes）
-   * - 入场动画一律 fill: backwards：结束后不锁定关键帧，
-   *   元素回到基础样式，hover 过渡不受动画填充干扰
-   * 可访问性：prefers-reduced-motion 启用时整体禁用
-   * ============================================================ */
-
-  /* 标题：待机渐变呼吸（heroBgPan）与入场动画合并为一条多动画声明。
-     修复：旧版用单值 animation 声明入场，覆盖了第 2 节的 heroBgPan，
-     导致首屏渐变呼吸失效，且 hover 改 animation-duration 会让已结束的
-     入场动画重新进入活动期产生"二次淡入"抖动 */
   .hero-title {
     animation:
       heroBgPan 12s linear infinite alternate,
       hero-title-in var(--motion-duration-slower) var(--motion-easing-out) 0.04s backwards;
   }
 
-  /* 标题入场：字距从 0.26em 收拢 + 上滑 + 渐显。
-     故意省略 to 关键帧：动画自动过渡到元素基础值，
-     首页 0.15em / 移动端 0.1em / 子页面 0.12em 各断点自动适配 */
   @keyframes hero-title-in {
     from {
       opacity: 0;
@@ -925,7 +676,6 @@
     }
   }
 
-  /* 统计栏与功能入口：依次上滑（数字计数由 stat-count-up.ts 接棒） */
   .hero-stats {
     animation: fndx-slide-up var(--motion-duration-normal) var(--motion-easing-out) 0.16s backwards;
   }
@@ -934,12 +684,6 @@
     animation: fndx-slide-up var(--motion-duration-normal) var(--motion-easing-out) 0.26s backwards;
   }
 
-  /* 功能入口波浪边框：入场时依次"签名式"划过再隐去（一次性），之后恢复
-     hover 触发的路径书写交互；fill: backwards 结束后回到基础隐藏态（offset:250），
-     与 hover 过渡互不干扰。
-     错峰延迟由按钮上的 --entry-i 渲染序号统一计算（0.14s 步进，起拍 0.5s），
-     新增/删减入口自动参与错峰，不按 nth-child 硬编码——入口数量随构建
-     （桌面端无在线前端）或迭代增减时不再出现覆盖不全的割裂 */
   @keyframes entry-path-intro {
     0% { stroke-dashoffset: 250; }
     40% { stroke-dashoffset: 0; }
@@ -952,7 +696,6 @@
     animation-delay: calc(0.5s + var(--entry-i, 0) * 0.14s);
   }
 
-  /* Hero 底部分割线：从中心向两侧展开（背景渐变线宽度 0% → 100%） */
   .hero {
     animation: hero-rule-in var(--motion-duration-slower) var(--motion-easing-out) 0.42s backwards;
   }
@@ -962,8 +705,6 @@
     to { background-size: 100% 1px; }
   }
 
-  /* 模块卡片：滑动器内错峰入场（前 8 张依次显现，其余同步，避免长延迟）
-   * 注：JS 克隆的卡片（aria-hidden）不参与入场动画 */
   .feature-track .module-card:not([aria-hidden='true']) {
     animation: fndx-slide-up var(--motion-duration-normal) var(--motion-easing-out) both;
   }
@@ -976,8 +717,6 @@
   .feature-track .module-card:not([aria-hidden='true']):nth-child(7) { animation-delay: 0.28s; }
   .feature-track .module-card:not([aria-hidden='true']):nth-child(8) { animation-delay: 0.32s; }
 
-  /* 可访问性：用户启用减少动效时禁用所有入场动画
-     （入口边框在第 2 节的降级规则中已置为常显 offset:0） */
   @media (prefers-reduced-motion: reduce) {
     .hero,
     .hero-title,
