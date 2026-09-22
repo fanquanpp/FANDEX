@@ -1,5 +1,5 @@
 {
-  "$description": "FANDEX 原始颜色令牌 — FANDEX 品牌冷青-青绿色板原值，无语义",
+  "$description": "FANDEX 原始颜色令牌 — FANDEX 品牌初音未来青绿色板（锚定 #39C5BB），无语义",
   "color": {
     "$type": "color",
     "neutral": {
@@ -20,36 +20,36 @@
       "1050": { "$value": "#EBEFF3", "$description": "FANDEX 浅色主背景（冷雾灰，Task 4.2 配方：亮度 L* 97.9→94.3，主文字对比度 16.7:1）" }
     },
     "cyan": {
-      "100": { "$value": "#053645", "$description": "深青（active 态，浅色模式强调色整体下移一档，FANDEX primary-900）" },
-      "200": { "$value": "#085263", "$description": "中深青（hover 态，浅色模式，FANDEX primary-800）" },
-      "300": { "$value": "#0B6E7E", "$description": "青色基准（浅色模式强调色，Task 4.2：新背景上 WCAG AA 5.1:1，FANDEX primary-700）" },
-      "400": { "$value": "#00BCD4", "$description": "中亮青（active 态，深色模式）" },
-      "500": { "$value": "#00E5FF", "$description": "亮青（深色模式强调色）" },
-      "600": { "$value": "#4FF2FF", "$description": "极亮青（hover 态，深色模式）" }
+      "100": { "$value": "#084743", "$description": "深青绿（active 态，浅色模式强调色整体下移一档，FANDEX primary-900）" },
+      "200": { "$value": "#0E655F", "$description": "中深青绿（hover 态，浅色模式，FANDEX primary-800）" },
+      "300": { "$value": "#14716A", "$description": "青绿基准（浅色模式强调色，新背景上 WCAG AA 5.05:1，FANDEX primary-700）" },
+      "400": { "$value": "#00D6C7", "$description": "中亮青绿（active 态，深色模式）" },
+      "500": { "$value": "#39C5BB", "$description": "初音未来主题色原值（深色模式强调色）" },
+      "600": { "$value": "#4FFFF2", "$description": "极亮青绿（hover 态，深色模式）" }
     },
     "primary": {
-      "50": { "$value": "#E6FBFC", "$description": "FANDEX primary-50" },
-      "100": { "$value": "#C6F3F5", "$description": "FANDEX primary-100" },
-      "200": { "$value": "#99E8EC", "$description": "FANDEX primary-200" },
-      "300": { "$value": "#66D8E0", "$description": "FANDEX primary-300" },
-      "400": { "$value": "#33C5D1", "$description": "FANDEX primary-400" },
-      "500": { "$value": "#14B0BE", "$description": "FANDEX primary-500" },
-      "600": { "$value": "#0E8C9C", "$description": "FANDEX primary-600（色阶过渡值，Task 4.2 起浅色强调色基准为 primary-700）" },
-      "700": { "$value": "#0B6E7E", "$description": "FANDEX primary-700" },
-      "800": { "$value": "#085263", "$description": "FANDEX primary-800" },
-      "900": { "$value": "#053645", "$description": "FANDEX primary-900" }
+      "50": { "$value": "#EEFCFB", "$description": "FANDEX primary-50" },
+      "100": { "$value": "#CBF6F3", "$description": "FANDEX primary-100" },
+      "200": { "$value": "#A2ECE7", "$description": "FANDEX primary-200" },
+      "300": { "$value": "#74DCD5", "$description": "FANDEX primary-300" },
+      "400": { "$value": "#58D0C7", "$description": "FANDEX primary-400" },
+      "500": { "$value": "#39C5BB", "$description": "FANDEX primary-500（初音未来 Hatsune Miku 主题色原值）" },
+      "600": { "$value": "#26ABA2", "$description": "FANDEX primary-600（色阶过渡值，浅色强调色基准为 primary-700）" },
+      "700": { "$value": "#14716A", "$description": "FANDEX primary-700" },
+      "800": { "$value": "#0E655F", "$description": "FANDEX primary-800" },
+      "900": { "$value": "#084743", "$description": "FANDEX primary-900" }
     },
     "accent": {
-      "50": { "$value": "#E5FBFF", "$description": "FANDEX accent-50" },
-      "100": { "$value": "#B8F2FF", "$description": "FANDEX accent-100" },
-      "200": { "$value": "#7EE9FF", "$description": "FANDEX accent-200" },
-      "300": { "$value": "#3DDDFF", "$description": "FANDEX accent-300" },
-      "400": { "$value": "#00C8F0", "$description": "FANDEX accent-400（深色主色）" },
-      "500": { "$value": "#00A6CC", "$description": "FANDEX accent-500" },
-      "600": { "$value": "#0085A6", "$description": "FANDEX accent-600" },
-      "700": { "$value": "#006680", "$description": "FANDEX accent-700" },
-      "800": { "$value": "#004859", "$description": "FANDEX accent-800" },
-      "900": { "$value": "#002D38", "$description": "FANDEX accent-900" }
+      "50": { "$value": "#E5FFFD", "$description": "FANDEX accent-50" },
+      "100": { "$value": "#B8FFFA", "$description": "FANDEX accent-100" },
+      "200": { "$value": "#80FFF6", "$description": "FANDEX accent-200" },
+      "300": { "$value": "#40FFF1", "$description": "FANDEX accent-300" },
+      "400": { "$value": "#00FFED", "$description": "FANDEX accent-400（深色主色）" },
+      "500": { "$value": "#00CCBD", "$description": "FANDEX accent-500" },
+      "600": { "$value": "#00A69A", "$description": "FANDEX accent-600" },
+      "700": { "$value": "#008076", "$description": "FANDEX accent-700" },
+      "800": { "$value": "#005E58", "$description": "FANDEX accent-800" },
+      "900": { "$value": "#00403B", "$description": "FANDEX accent-900" }
     },
     "success": {
       "light": { "$value": "#16A34A", "$description": "成功色（浅色模式）" },
@@ -64,8 +64,8 @@
       "dark": { "$value": "#EF4444", "$description": "危险色（深色模式，提亮）" }
     },
     "info": {
-      "light": { "$value": "#0B6E7E", "$description": "信息色（浅色模式，Task 4.2：同新强调色基准 FANDEX primary-700）" },
-      "dark": { "$value": "#00E5FF", "$description": "信息色（深色模式，同亮青）" }
+      "light": { "$value": "#14716A", "$description": "信息色（浅色模式，同强调色基准 FANDEX primary-700）" },
+      "dark": { "$value": "#39C5BB", "$description": "信息色（深色模式，同初音未来主题色）" }
     },
     "shadow": {
       "black": { "$value": "#000000", "$description": "阴影色（黑色基底）" }
