@@ -21,9 +21,9 @@ prerequisites:
 
 ## 前置知识
 
-- [模块解析与现代工具链](/module/typescript/330-ModuleResolutionModernToolchains)：理解 bundler 与 node 两种解析模式是划分工程的前提。
-- [TypeScript 工程化配置](/module/typescript/350-TypeScriptEngineeringConfig)：本篇的 tsconfig 划分建立在工程配置体系之上。
-- [tsc 编译器命令](/module/typescript/370-TscCompilerCommands)：`tsc --build` 是普通 `tsc` 的构建编排增强版。
+- [模块解析与现代工具链](/typescript/330-ModuleResolutionModernToolchains)：理解 bundler 与 node 两种解析模式是划分工程的前提。
+- [TypeScript 工程化配置](/typescript/350-TypeScriptEngineeringConfig)：本篇的 tsconfig 划分建立在工程配置体系之上。
+- [tsc 编译器命令](/typescript/370-TscCompilerCommands)：`tsc --build` 是普通 `tsc` 的构建编排增强版。
 
 ## 学习目标
 

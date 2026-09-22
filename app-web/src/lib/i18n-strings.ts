@@ -75,6 +75,8 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
 
   'breadcrumb.home': { zh: '首页', en: 'Home' },
   'breadcrumb.page': { zh: '第 {n} 页', en: 'Page {n}' },
+  'breadcrumb.ariaLabel': { zh: '面包屑', en: 'Breadcrumb' },
+  'readingProgress.ariaLabel': { zh: '阅读进度', en: 'Reading progress' },
 
   'modulePage.docCount': { zh: '共 {n} 篇', en: '{n} docs' },
   'modulePage.docCountAria': { zh: '本模块共 {n} 篇文档', en: '{n} documents in this module' },
@@ -167,6 +169,7 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'code.copyAria': { zh: 'Copy code', en: 'Copy code' },
   'code.headingAnchorAria': { zh: '标题锚点链接', en: 'Heading anchor link' },
   'code.mermaidCaption': { zh: 'mermaid 图表', en: 'mermaid diagram' },
+  'code.mermaidError': { zh: '图表渲染失败，已保留源码', en: 'Diagram failed to render, source kept' },
 
   'error404.title': { zh: '页面未找到', en: 'Page not found' },
   'error404.desc': { zh: '地址不存在或内容已被移动。', en: 'The address does not exist or the content has moved.' },

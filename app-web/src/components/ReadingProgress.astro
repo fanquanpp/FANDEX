@@ -18,6 +18,7 @@ const scrollConfig = JSON.stringify({ container: scrollContainer });
       class="fndx-reading-progress"
       role="progressbar"
       aria-label="阅读进度"
+      data-i18n-aria="readingProgress.ariaLabel"
       aria-valuenow={0}
       aria-valuemin={0}
       aria-valuemax={100}
@@ -35,6 +36,11 @@ const scrollConfig = JSON.stringify({ container: scrollContainer });
   let prevScrollHandler: (() => void) | null = null;
   let prevScrollContainer: HTMLElement | null = null;
 
+  // 站点滚动容器是 #app-main 而非 window，Astro ClientRouter 只恢复 window 滚动，
+  // 后退/前进时需自行恢复文档阅读位置
+  const SCROLL_KEY_PREFIX = 'fandex-doc-scroll:';
+  let pendingPopRestore = false;
+
   function readScrollConfig(progressEl: HTMLElement): string {
     const raw = progressEl.getAttribute('data-reading-progress-config');
     if (!raw) return '#app-main';
@@ -43,6 +49,14 @@ const scrollConfig = JSON.stringify({ container: scrollContainer });
       return parsed.container || '#app-main';
     } catch {
       return '#app-main';
+    }
+  }
+
+  function saveScrollPosition(container: HTMLElement): void {
+    try {
+      sessionStorage.setItem(SCROLL_KEY_PREFIX + window.location.pathname, String(container.scrollTop));
+    } catch {
+      /* sessionStorage 不可用时静默降级 */
     }
   }
 
@@ -101,6 +115,35 @@ const scrollConfig = JSON.stringify({ container: scrollContainer });
     prevScrollHandler = onScroll;
     prevScrollContainer = scrollContainer;
   }
+
+  window.addEventListener('popstate', () => {
+    pendingPopRestore = true;
+  });
+
+  // 离开当前文档前保存阅读位置（内部导航与刷新/关闭都覆盖）
+  document.addEventListener('astro:before-swap', () => {
+    const container = document.getElementById('app-main');
+    if (container) saveScrollPosition(container);
+  });
+  window.addEventListener('pagehide', () => {
+    if (!pendingPopRestore) {
+      const container = document.getElementById('app-main');
+      if (container) saveScrollPosition(container);
+    }
+  });
+
+  document.addEventListener('astro:after-swap', () => {
+    if (!pendingPopRestore) return;
+    pendingPopRestore = false;
+    const container = document.getElementById('app-main');
+    if (!container) return;
+    try {
+      const raw = sessionStorage.getItem(SCROLL_KEY_PREFIX + window.location.pathname);
+      if (raw) container.scrollTop = Number(raw);
+    } catch {
+      /* sessionStorage 不可用时静默降级 */
+    }
+  });
 
   initReadingProgress();
   document.addEventListener('astro:page-load', initReadingProgress);

@@ -14,13 +14,14 @@ export function remarkAdmonition() {
       const firstTextChild = firstChild.children?.[0];
       if (!firstTextChild || firstTextChild.type !== 'text') return;
 
-      const match = firstTextChild.value.match(/^\[!(\w+)\]\s*/i);
+      // 兼容 GitHub 可折叠标记 [!TIP]+ / [!TIP]-，避免 +/- 残留在正文
+      const match = firstTextChild.value.match(/^\[!(\w+)\][+-]?\s*/i);
       if (!match) return;
 
       const admType = (match[1] || '').toLowerCase();
       if (!admType || !types.includes(admType)) return;
 
-      firstTextChild.value = firstTextChild.value.replace(/^\[!\w+\]\s*/, '');
+      firstTextChild.value = firstTextChild.value.replace(/^\[!\w+\][+-]?\s*/, '');
 
       if (firstTextChild.value.trim() === '' && firstChild.children.length === 1) {
         node.children.shift();

@@ -154,6 +154,8 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
   import { t } from '@/lib/i18n';
 
   let prevObserver: IntersectionObserver | null = null;
+  let prevScrollContainer: HTMLElement | null = null;
+  let prevScrollHandler: (() => void) | null = null;
 
   const TOC_COLLAPSE_PREFIX = 'fandex-toc-collapsed:';
 
@@ -195,6 +197,18 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
   }
 
   function initTocHighlight(): void {
+    // 先清理上一页遗留的 observer 与滚动监听，即使本页无目录也要断开，
+    // 否则旧 observer 会继续引用已分离的标题节点造成泄漏
+    if (prevObserver) {
+      prevObserver.disconnect();
+      prevObserver = null;
+    }
+    if (prevScrollContainer && prevScrollHandler) {
+      prevScrollContainer.removeEventListener('scroll', prevScrollHandler);
+      prevScrollContainer = null;
+      prevScrollHandler = null;
+    }
+
     const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.fndx-toc__link[data-toc-slug]');
     if (tocLinks.length === 0) return;
 
@@ -248,10 +262,6 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
       });
     });
 
-    if (prevObserver) {
-      prevObserver.disconnect();
-      prevObserver = null;
-    }
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
@@ -275,6 +285,25 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
     headingElements.forEach((el) => observer.observe(el));
 
     prevObserver = observer;
+
+    // 滚动到文档底部时强制高亮最后一个标题：
+    // 短结尾章节的标题可能永远进不了 IntersectionObserver 的判定带
+    if (headingElements.length > 0) {
+      const lastSlug = headingElements[headingElements.length - 1]!.id;
+      let rafScrollId: number | null = null;
+      const onScroll = (): void => {
+        if (rafScrollId !== null) return;
+        rafScrollId = requestAnimationFrame(() => {
+          rafScrollId = null;
+          if (mainEl.scrollTop + mainEl.clientHeight >= mainEl.scrollHeight - 4) {
+            highlightActive(lastSlug);
+          }
+        });
+      };
+      mainEl.addEventListener('scroll', onScroll, { passive: true });
+      prevScrollContainer = mainEl;
+      prevScrollHandler = onScroll;
+    }
 
     initTocCollapse();
 

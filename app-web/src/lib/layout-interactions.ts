@@ -177,6 +177,9 @@ function initCopyButtons(): void {
   document.querySelectorAll('pre > code').forEach((codeEl) => {
     const pre = codeEl.parentElement;
     if (!pre) return;
+    // mermaid 源码块由 mermaid-render 异步替换为图表，包进 code-block 会产生
+    // 双层边框、多余语言徽标与复制按钮
+    if (pre.getAttribute('data-language') === 'mermaid') return;
 
     const parent = pre.parentElement;
     if (!parent) return;
@@ -290,11 +293,19 @@ function initHeadingAnchors(): void {
     if (heading.dataset.anchorBound === 'true') return;
     heading.dataset.anchorBound = 'true';
 
-    const anchor = document.createElement('a');
-    anchor.className = 'heading-anchor';
-    anchor.href = `#${heading.id}`;
-    anchor.setAttribute('aria-label', t('code.headingAnchorAria'));
-    anchor.textContent = '#';
+    // '#' 锚点由构建期 rehype-autolink-headings（behavior: 'append'）注入，
+    // 这里只补绑定点击行为：复制链接 + 平滑滚动；无锚点时兜底追加
+    let anchor = heading.querySelector<HTMLAnchorElement>(':scope > a.heading-anchor');
+    if (!anchor) {
+      anchor = document.createElement('a');
+      anchor.className = 'heading-anchor';
+      anchor.href = `#${heading.id}`;
+      anchor.setAttribute('aria-hidden', 'true');
+      anchor.tabIndex = -1;
+      anchor.textContent = '#';
+      heading.appendChild(anchor);
+    }
+
     anchor.addEventListener('click', (e) => {
       e.preventDefault();
       const url = `${window.location.origin}${window.location.pathname}#${heading.id}`;
@@ -302,8 +313,9 @@ function initHeadingAnchors(): void {
         void navigator.clipboard.writeText(url);
       }
       window.history.replaceState(null, '', `#${heading.id}`);
+      // scrollIntoView 按 scroll-margin-top 落点，标题不会被置顶标题栏遮住
+      heading.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
-    heading.appendChild(anchor);
   });
 }
 

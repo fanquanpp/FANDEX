@@ -21,9 +21,9 @@ TypeScript 的类型在编译产物中被完全擦除：`interface Ticket` 在�
 
 ## 前置知识
 
-- [类型安全的环境变量](/module/typescript/590-TypeSafeEnvVar)：环境变量是最典型的运行时边界之一。
-- [类型安全的表单校验](/module/typescript/600-TypeSafeFormValidation)：表单是另一个高频校验场景。
-- [类型安全的 API Client](/module/typescript/570-TypeSafeAPIClient)：请求响应边界校验的工程化落地。
+- [类型安全的环境变量](/typescript/590-TypeSafeEnvVar)：环境变量是最典型的运行时边界之一。
+- [类型安全的表单校验](/typescript/600-TypeSafeFormValidation)：表单是另一个高频校验场景。
+- [类型安全的 API Client](/typescript/570-TypeSafeAPIClient)：请求响应边界校验的工程化落地。
 
 ## 学习目标
 
