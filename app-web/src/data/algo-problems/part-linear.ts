@@ -1,12 +1,6 @@
 import type { AlgoProblem } from './types';
 
-/**
- * 算法题图鉴 · 线性结构篇
- * 链表 / 栈与队列（单调栈）/ 字符串
- * 题面为便于学习的概括复述，参考实现为 Python。
- */
 export const LINEAR_PROBLEMS: AlgoProblem[] = [
-  // ==================== 链表 ====================
   {
     slug: 'reverse-linked-list',
     lc: 206,
@@ -281,7 +275,6 @@ export const LINEAR_PROBLEMS: AlgoProblem[] = [
     related: ['060-LinkedList'],
   },
 
-  // ==================== 栈与队列 ====================
   {
     slug: 'valid-parentheses',
     lc: 20,
@@ -527,7 +520,6 @@ export const LINEAR_PROBLEMS: AlgoProblem[] = [
     related: ['040-StackAndQueue', '140-RecursionAndBacktracking'],
   },
 
-  // ==================== 字符串 ====================
   {
     slug: 'longest-common-prefix',
     lc: 14,

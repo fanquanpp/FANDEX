@@ -24,24 +24,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.fandex.app.ui.theme.LocalExtendedColors
 
-/**
- * 侧边栏"检查更新"设置项
- *
- * 功能：在抽屉设置区提供"检查更新"按钮，点击触发手动检查，
- *       检查中展示加载指示，并在下方展示可选的说明/结果提示文字
- *
- * 输入：
- *   - onClick：点击回调
- *   - isChecking：是否正在检查中（true 显示加载指示并禁用点击）
- *   - hint：可选的说明提示文字（在按钮下方一行展示）
- *   - modifier：布局修饰符
- *
- * 设计原则：
- *   - 默认显示 SystemUpdate 图标，检查中切换为加载指示
- *   - 文字使用 labelLarge 字号保持与新端抽屉视觉一致
- *   - 提示文字使用 labelSmall + 次级色，弱化视觉权重
- *   - 底色/文字颜色取自 MaterialTheme.colorScheme，适配暗色/亮色主题
- */
 @Composable
 fun UpdateSettingsItem(
     onClick: () -> Unit,
@@ -62,7 +44,6 @@ fun UpdateSettingsItem(
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            /* 状态图标：检查中显示加载指示，否则显示更新图标 */
             if (isChecking) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(18.dp),
@@ -78,7 +59,6 @@ fun UpdateSettingsItem(
                 )
             }
 
-            /* 文字标签 */
             Text(
                 text = if (isChecking) "正在检查..." else "检查更新",
                 style = MaterialTheme.typography.labelLarge,
@@ -90,7 +70,6 @@ fun UpdateSettingsItem(
             )
         }
 
-        /* 说明/结果提示文字（非空且非检查中时显示） */
         if (hint.isNotBlank() && !isChecking) {
             Spacer(modifier = Modifier.size(2.dp))
             Text(

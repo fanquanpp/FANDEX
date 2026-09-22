@@ -1,31 +1,18 @@
-/**
- * FANDEX 代码高亮与代码块样式
- *
- * 功能概述：
- * 定义 Astro/Shiki 代码块（.astro-code）、行内代码、自定义代码块组件
- * （.code-block）、复制按钮、语言标签、以及暗色/亮色主题切换的代码
- * 高亮样式。支持移动端响应式适配。
- *
- * 层级归属：@layer components（避免未分层 CSS 覆盖 ark 令牌导致主题切换失效）
- */
 
-/* 归入 @layer components，确保优先级低于 tokens 层 */
 @layer components {
 
-/* ========== Astro/Shiki 代码块基础样式 ========== */
 .astro-code {
   margin: 1em 0;
   padding: 1.25em 1em;
   border: 1px solid var(--color-border-strong);
-  background: var(--color-bg-code) !important; /* !important 覆盖 Shiki 内联样式 */
+  background: var(--color-bg-code) !important;
   font-family: var(--font-family-code);
   font-size: 0.875em;
   line-height: 1.6;
-  overflow-x: auto; /* 长代码横向滚动 */
+  overflow-x: auto;
   position: relative;
 }
 
-/* ========== 行内代码（非 pre 内的 code） ========== */
 :not(pre) > code {
   font-family: var(--font-family-code);
   background: var(--color-bg-code);
@@ -35,35 +22,27 @@
   border: 1px solid var(--color-border-light);
 }
 
-/* ========== 自定义代码块容器 ========== */
 .code-block {
   margin: 1em 0;
   border: 1px solid var(--color-border-strong);
   position: relative;
 }
 
-/* ========== 复制按钮 ==========
- * 基础样式由 .fndx-icon-btn--labeled 统一提供（透明背景 + 无边框 + 统一悬停）
- * 此处仅保留 .copied 状态与浮动定位变体 */
 .copy-btn {
-  /* display/align/size/background/color/border/transition/hover 均由 .fndx-icon-btn--labeled 提供 */
   cursor: pointer;
 }
 
-/* 已复制状态：使用成功色标识（覆盖基类的悬停背景） */
 .copy-btn.copied {
   background-color: color-mix(in oklch, var(--color-success-base) 20%, transparent);
   color: var(--color-success-base);
 }
 
-/* ========== 代码块内浮动复制按钮 ========== */
-/* 复制按钮浮动定位到代码块右上角 */
 .code-block .copy-btn {
   position: absolute;
   top: 8px;
   right: 8px;
   z-index: 2;
-  opacity: 0.6; /* 默认半透明，减少视觉干扰 */
+  opacity: 0.6;
   transition:
     opacity var(--motion-duration-normal),
     background-color var(--motion-duration-instant) var(--motion-easing-out),
@@ -73,22 +52,15 @@
     transform var(--motion-duration-instant) var(--motion-easing-out);
 }
 
-/* 代码块悬停时复制按钮完全显示 */
 .code-block:hover .copy-btn {
   opacity: 1;
 }
 
-/* ========== 横向溢出指示 ==========
- * 由 lib/layout-interactions.ts 的 initCodeOverflow 检测：
- * pre 内容超宽且未滚动到最右端时，容器获得 .has-overflow，
- * 右缘 28px 渐隐遮罩提示"右侧还有内容"；滚到底自动消隐。
- * prefers-reduced-motion 无关（纯静态遮罩，无动画）。 */
 .code-block.has-overflow pre {
   -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
   mask-image: linear-gradient(to right, #000 calc(100% - 28px), transparent 100%);
 }
 
-/* ========== 代码块内 pre 元素 ========== */
 .code-block pre {
   margin: 0;
   padding: 1.25em 1em;
@@ -97,13 +69,10 @@
   font-size: 0.875em;
   line-height: 1.6;
   background: var(--color-bg-code);
-  /* 移除 pre 自身边框，使用外层 .code-block 的边框
-     原实现保留 .astro-code 的 border 导致双重边框，内容与边框脱节 */
   border: none;
   border-radius: 0;
 }
 
-/* 代码块内 code 元素：去除独立样式 */
 .code-block pre code {
   background: none;
   padding: 0;
@@ -112,10 +81,6 @@
   line-height: inherit;
 }
 
-/* ========== 语言标签（通过 data-lang 属性显示） ========== */
-/* 利用 CSS attr() 函数从 data-lang 属性读取语言名。
- * 位置：左上角 mono 大写小字（Stripe 式工具栏语言），
- * 与右上角的复制按钮各占一角、互不遮挡，因此无需悬停淡出 */
 .code-block[data-lang]::before {
   content: attr(data-lang);
   position: absolute;
@@ -135,28 +100,24 @@
   z-index: 1;
 }
 
-/* ========== Shiki 双主题切换 ========== */
-/* 暗色模式下使用 --shiki-dark CSS 变量控制代码颜色 */
 html[data-theme='dark'] .astro-code,
 html[data-theme='dark'] .astro-code span {
   color: var(--shiki-dark) !important;
   background-color: var(--shiki-dark-bg) !important;
 }
 
-/* 亮色模式下使用 --shiki-light CSS 变量控制代码颜色 */
 html[data-theme='light'] .astro-code,
 html[data-theme='light'] .astro-code span {
   color: var(--shiki-light) !important;
   background-color: var(--shiki-light-bg) !important;
 }
 
-/* ========== 移动端响应式适配 ========== */
 @media (max-width: 767.98px) {
   .astro-code {
     padding: 1em 0.75em;
-    font-size: 0.8em; /* 移动端字号缩小 */
+    font-size: 0.8em;
     max-width: 100%;
-    -webkit-overflow-scrolling: touch; /* iOS 惯性滚动 */
+    -webkit-overflow-scrolling: touch;
   }
 
   .code-block {
@@ -170,22 +131,16 @@ html[data-theme='light'] .astro-code span {
     -webkit-overflow-scrolling: touch;
   }
 
-  /* 移动端复制按钮缩小 */
   .copy-btn {
     padding: 3px 8px;
     font-size: 0.78em;
   }
 
-  /* 移动端语言标签缩小 */
   .code-block[data-lang]::before {
     font-size: 0.6em;
     padding: 0.15em 0.5em;
   }
 }
-
-/* ========== Mermaid 图表容器 ==========
-   由 lib/mermaid-render.ts 将 ```mermaid 代码块替换为 figure.mermaid-figure：
-   卡片化容器 + 横向滚动包裹层 + 等宽小说明文字，与代码块同一套边框/圆角语言 */
 
 .mermaid-figure {
   margin: 1.25em 0;
@@ -203,7 +158,6 @@ html[data-theme='light'] .astro-code span {
   justify-content: center;
 }
 
-/* mermaid 输出的 SVG：限制最大宽度，超出时由包裹层横向滚动 */
 .mermaid-scroll svg {
   max-width: 100%;
   height: auto;
@@ -219,10 +173,9 @@ html[data-theme='light'] .astro-code span {
   text-transform: uppercase;
 }
 
-/* 加载态：渲染期间原代码块降低透明度，提示正在转换 */
 pre.mermaid-loading {
   opacity: 0.45;
   transition: opacity var(--motion-duration-instant, 150ms) ease-out;
 }
 
-} /* end @layer components */
+}

@@ -31,17 +31,6 @@ import com.fandex.app.data.model.DocIndexEntry
 import com.fandex.app.ui.common.pressScale
 import com.fandex.app.ui.theme.LocalExtendedColors
 
-/**
- * 文档列表项
- *
- * 对齐 Web 端 DocumentListItem 组件设计，并做"条目行"层次化处理：
- * - bgElevated 底 + 1dp borderSubtle 边框 + 4dp 直角小圆角（与页面背景分层）
- * - 左侧 3dp 分类色竖条保留（多彩点缀）
- * - 编号 / 标题 / 描述 / 难度标签 / 更新日期
- * - 按压缩放反馈；条目间距由调用方 LazyColumn spacedBy(8.dp) 控制
- *
- * @param moduleLabel 模块归属标签（搜索结果展示来源，普通列表不展示）
- */
 @Composable
 fun DocListItem(
     doc: DocIndexEntry,
@@ -49,13 +38,11 @@ fun DocListItem(
     modifier: Modifier = Modifier,
     moduleLabel: String? = null,
     accent: Color = MaterialTheme.colorScheme.primary,
-    /** 序号标签（如 "01"，体现文档阅读顺序） */
     indexLabel: String? = null
 ) {
     val extendedColors = LocalExtendedColors.current
     val interaction = remember { MutableInteractionSource() }
 
-    // 条目行：外层 16dp 屏幕边距 + 卡片化条目本体
     Row(
         modifier = modifier
             .fillMaxWidth()
@@ -68,7 +55,6 @@ fun DocListItem(
             .padding(horizontal = 12.dp, vertical = 10.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 阅读顺序编号
         if (indexLabel != null) {
             Text(
                 text = indexLabel,
@@ -80,7 +66,6 @@ fun DocListItem(
             Spacer(modifier = Modifier.width(8.dp))
         }
 
-        // 编号竖条（多彩分类色）
         Box(
             modifier = Modifier
                 .width(3.dp)
@@ -95,7 +80,6 @@ fun DocListItem(
             modifier = Modifier.weight(1f),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            // 模块归属标签（搜索场景）
             if (!moduleLabel.isNullOrEmpty()) {
                 Text(
                     text = moduleLabel,
@@ -124,10 +108,8 @@ fun DocListItem(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
-                // 难度标签
                 DifficultyBadge(difficulty = doc.difficulty)
 
-                // 更新日期
                 if (doc.updated.isNotEmpty()) {
                     Text(
                         text = doc.updated,
@@ -140,11 +122,6 @@ fun DocListItem(
     }
 }
 
-/**
- * 难度标签
- *
- * 公共组件：文档列表项与文档详情页共用
- */
 @Composable
 fun DifficultyBadge(difficulty: String) {
     val (label, color) = when (difficulty) {

@@ -1,49 +1,20 @@
-/**
- * 前端实验室灵感画廊：设计成品库（数据模块）
- *
- * 功能概述：
- *   - 收录 25 个可交互的前端设计成品，覆盖加载动画、按钮交互、卡片效果、
- *     文本动效、背景氛围、实用组件六类高频场景
- *   - 每个成品自带完整 HTML/CSS/JS 源码，可在画廊中实时预览，
- *     一键载入编辑器查看与修改
- *   - 成品代码全部为本仓库原创实现（参考社区流行效果的通用模式后重写），
- *     代码内注释与命名保持教学可读性
- *
- * 约定：
- *   - 成品源码运行在画廊/编辑器的沙箱 iframe 中，与站点样式完全隔离，
- *     因此源码内部使用独立配色，不消费站点令牌
- *   - 新增成品只需向 SHOWCASE_ITEMS 追加条目，画廊自动按 GROUPS 渲染
- */
 
-/** 成品分组结构 */
 export interface ShowcaseGroup {
-  /** 分组 ID（对应成品的 groupId） */
   id: string;
-  /** 分组名 */
   name: string;
-  /** 分组一句话说明 */
   desc: string;
 }
 
-/** 成品条目结构 */
 export interface ShowcaseItem {
-  /** 成品 ID（唯一，用于 key 与地址定位） */
   id: string;
-  /** 成品名称 */
   name: string;
-  /** 所属分组 ID */
   groupId: string;
-  /** 一句话说明（实现要点） */
   desc: string;
-  /** 成品 HTML 源码 */
   html: string;
-  /** 成品 CSS 源码 */
   css: string;
-  /** 成品 JS 源码 */
   js: string;
 }
 
-/** 成品分组（画廊侧栏展示顺序） */
 export const SHOWCASE_GROUPS: readonly ShowcaseGroup[] = [
   { id: 'loaders', name: '加载动画', desc: '等待也要有质感' },
   { id: 'buttons', name: '按钮交互', desc: '点击与悬停微反馈' },
@@ -54,11 +25,7 @@ export const SHOWCASE_GROUPS: readonly ShowcaseGroup[] = [
   { id: 'fandex', name: 'FANDEX 风格', desc: '本站同源的设计语言' },
 ];
 
-/** 成品库（画廊网格展示顺序与分组顺序一致） */
 export const SHOWCASE_ITEMS: readonly ShowcaseItem[] = [
-  /* ============================================================
-     加载动画
-     ============================================================ */
   {
     id: 'loader-dual-ring',
     name: '双环旋转',
@@ -100,9 +67,6 @@ export const SHOWCASE_ITEMS: readonly ShowcaseItem[] = [
     js: "// mask 挖空比 border 方案更自由：环带粗细、缺口范围都能精确控制\nconsole.log('渐变流光环：conic-gradient + mask');",
   },
 
-  /* ============================================================
-     按钮交互
-     ============================================================ */
   {
     id: 'btn-shine',
     name: '高光扫过',
@@ -145,9 +109,6 @@ export const SHOWCASE_ITEMS: readonly ShowcaseItem[] = [
     js: "// 双行文字叠在裁切窗口里，hover 时整列上移一行高度即完成换字\nconsole.log('滑动换字：overflow 裁切 + translateY');",
   },
 
-  /* ============================================================
-     卡片效果
-     ============================================================ */
   {
     id: 'card-tilt',
     name: '3D 视差跟随',
@@ -191,9 +152,6 @@ export const SHOWCASE_ITEMS: readonly ShowcaseItem[] = [
       "const stage = document.getElementById('stage');\n// 光斑坐标写在容器上，两张卡片共享同一组变量，靠近哪张哪张亮\nstage.addEventListener('pointermove', (e) => {\n  stage.querySelectorAll('.spot-card').forEach((card) => {\n    const rect = card.getBoundingClientRect();\n    card.style.setProperty('--mx', e.clientX - rect.left + 'px');\n    card.style.setProperty('--my', e.clientY - rect.top + 'px');\n  });\n});",
   },
 
-  /* ============================================================
-     文本动效
-     ============================================================ */
   {
     id: 'text-gradient-flow',
     name: '渐变流动文字',
@@ -237,9 +195,6 @@ export const SHOWCASE_ITEMS: readonly ShowcaseItem[] = [
       "const title = document.getElementById('stagger');\nfunction play() {\n  const chars = Array.from(title.textContent);\n  title.textContent = '';\n  chars.forEach((ch, i) => {\n    const span = document.createElement('span');\n    span.className = 'ch';\n    span.textContent = ch;\n    // 每个字延迟 70ms，制造接力感\n    span.style.animationDelay = i * 70 + 'ms';\n    title.appendChild(span);\n  });\n}\nplay();\ndocument.querySelector('.replay').addEventListener('click', play);",
   },
 
-  /* ============================================================
-     背景氛围
-     ============================================================ */
   {
     id: 'bg-aurora',
     name: '极光渐变',
@@ -282,9 +237,6 @@ export const SHOWCASE_ITEMS: readonly ShowcaseItem[] = [
       "const night = document.getElementById('night');\nconst COUNT = 90;\nfor (let i = 0; i < COUNT; i++) {\n  const star = document.createElement('i');\n  star.className = 'star';\n  // 每颗星的位置、大小、节奏全部随机，避免整齐划一的假感\n  const size = Math.random() * 2 + 1;\n  star.style.width = star.style.height = size + 'px';\n  star.style.left = Math.random() * 100 + '%';\n  star.style.top = Math.random() * 100 + '%';\n  star.style.setProperty('--dur', Math.random() * 3 + 2 + 's');\n  star.style.setProperty('--delay', Math.random() * 4 + 's');\n  night.appendChild(star);\n}",
   },
 
-  /* ============================================================
-     实用组件
-     ============================================================ */
   {
     id: 'widget-toggle',
     name: '开关 Switch',
@@ -340,11 +292,6 @@ export const SHOWCASE_ITEMS: readonly ShowcaseItem[] = [
       "const easeOut = (t) => 1 - Math.pow(1 - t, 3);\nfunction countUp(el) {\n  const target = Number(el.dataset.target);\n  const suffix = el.dataset.suffix || '';\n  const duration = 1600;\n  let start = null;\n  function frame(now) {\n    if (start === null) start = now;\n    const progress = Math.min((now - start) / duration, 1);\n    const value = Math.round(easeOut(progress) * target);\n    el.textContent = value.toLocaleString() + suffix;\n    if (progress < 1) requestAnimationFrame(frame);\n  }\n  requestAnimationFrame(frame);\n}\n// 进入视口才开始计数，避免用户还没看到就播完\nconst observer = new IntersectionObserver(\n  (entries) => {\n    entries.forEach((entry) => {\n      if (!entry.isIntersecting) return;\n      countUp(entry.target);\n      observer.unobserve(entry.target);\n    });\n  },\n  { threshold: 0.6 },\n);\ndocument.querySelectorAll('.stat-num').forEach((el) => observer.observe(el));",
   },
 
-  /* ============================================================
-     FANDEX 风格：复刻本站真实设计语法（深底 #0A0E14 / 强调青
-     #00C8F0 / 浅色模式强调 #0B6E7E / 分类色 / 直角 4px / 竖条
-     刻度线），源码为独立实现，色值取自站点设计令牌
-     ============================================================ */
   {
     id: 'fdx-module-card',
     name: '模块入口卡片',
@@ -407,10 +354,6 @@ export const SHOWCASE_ITEMS: readonly ShowcaseItem[] = [
   },
 ];
 
-/**
- * 按分组归类成品（画廊渲染辅助）
- * @returns Map：分组 ID -> 该组成品列表
- */
 export function groupShowcaseItems(): Map<string, ShowcaseItem[]> {
   const map = new Map<string, ShowcaseItem[]>();
   for (const group of SHOWCASE_GROUPS) {

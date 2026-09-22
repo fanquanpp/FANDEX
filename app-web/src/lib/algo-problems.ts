@@ -1,26 +1,9 @@
-/**
- * 算法题图鉴视图交互脚本（web 端，挂载于算法教学页 ?view=problems 视图）
- * -----------------------------------------------------------------------------
- * 职责：
- * 1. 分类 / 难度 / 本机进度筛选：芯片点击切换，卡片按 data-cat / data-diff
- *    与 localStorage 进度（lib/ap-progress.ts）过滤
- * 2. 关键词搜索：题名 / 英文名 / 标签 / 摘要的子串匹配（150ms 防抖）
- * 3. 命中计数与空状态展示；空态提供"清除关键词 / 重置全部筛选"恢复动作
- * 4. 已掌握 / 待复习标记：卡片角标按钮切换，实时同步状态 chip 计数
- * 5. 状态同步到 URL 查询参数（?cat=&diff=&q=&status=），支持分享与刷新恢复；
- *    跳转详情页前把筛选上下文存 sessionStorage，详情页返回链接据此恢复视图
- *
- * 兼容 ClientRouter：astro:page-load 重新绑定（dataset 防重入），
- * astro:before-swap 移除 document 级监听器并清理定时器。
- */
 
 import { countMarks, readFilterContext, readProblemMarks, saveFilterContext, toggleProblemMark } from '@/lib/ap-progress';
 import { t } from '@/lib/i18n';
 
-/** 状态筛选值 */
 type StatusFilter = 'all' | 'solved' | 'review';
 
-/** 当前筛选状态 */
 interface FilterState {
   cat: string;
   diff: string;
@@ -28,12 +11,9 @@ interface FilterState {
   q: string;
 }
 
-/** 搜索防抖定时器（页面清理时置空） */
 let searchTimer: ReturnType<typeof setTimeout> | null = null;
-/** before-swap 清理函数列表 */
 const cleanups: Array<() => void> = [];
 
-/** 从 URL 查询参数恢复初始筛选状态（默认全量） */
 function readStateFromUrl(): FilterState {
   const params = new URLSearchParams(window.location.search);
   const status = params.get('status') ?? 'all';
@@ -45,10 +25,8 @@ function readStateFromUrl(): FilterState {
   };
 }
 
-/** 把筛选状态同步到 URL（默认值不写入，保持地址干净） */
 function syncUrl(state: FilterState): void {
   const params = new URLSearchParams();
-  // 双视图合并后保留视图参数：筛选交互不得把地址打回教程视图
   const view = new URLSearchParams(window.location.search).get('view');
   if (view) params.set('view', view);
   if (state.cat !== 'all') params.set('cat', state.cat);
@@ -63,7 +41,6 @@ function syncUrl(state: FilterState): void {
   );
 }
 
-/** 更新一组芯片的选中态样式与 aria-pressed */
 function setActiveChip(root: HTMLElement, attr: string, value: string): void {
   const key = `filter${attr.charAt(0).toUpperCase()}${attr.slice(1)}`;
   root.querySelectorAll<HTMLButtonElement>(`[data-filter-${attr}]`).forEach((chip) => {
@@ -73,7 +50,6 @@ function setActiveChip(root: HTMLElement, attr: string, value: string): void {
   });
 }
 
-/** 刷新状态筛选 chip 的本机计数 */
 function refreshStatusCounts(root: HTMLElement): void {
   const counts = countMarks();
   root.querySelectorAll<HTMLElement>('[data-ap-status-count]').forEach((el) => {
@@ -83,7 +59,6 @@ function refreshStatusCounts(root: HTMLElement): void {
   });
 }
 
-/** 应用筛选：遍历卡片计算可见性，更新计数与空状态，并同步 URL */
 function applyFilter(root: HTMLElement, state: FilterState): void {
   const items = root.querySelectorAll<HTMLElement>('[data-algo-item]');
   const query = state.q.trim().toLowerCase();
@@ -112,13 +87,11 @@ function applyFilter(root: HTMLElement, state: FilterState): void {
   syncUrl(state);
 }
 
-/** 绑定题图鉴筛选交互（每次页面切换后由 astro:page-load 调用） */
 function initProblemsFilter(): void {
   const root = document.querySelector<HTMLElement>('[data-algo-problems]');
   if (!root || root.dataset.filterBound === 'true') return;
   root.dataset.filterBound = 'true';
 
-  // 初始状态：URL 参数优先，恢复芯片选中态与搜索框内容
   const state = readStateFromUrl();
   setActiveChip(root, 'cat', state.cat);
   setActiveChip(root, 'diff', state.diff);
@@ -128,7 +101,6 @@ function initProblemsFilter(): void {
   refreshStatusCounts(root);
   applyFilter(root, state);
 
-  // 分类 / 难度 / 状态芯片：点击更新状态并重筛
   const onChipClick = (attr: 'cat' | 'diff' | 'status') => (event: Event) => {
     const key = `filter${attr.charAt(0).toUpperCase()}${attr.slice(1)}`;
     const chip = (event.currentTarget as HTMLElement).dataset[key];
@@ -144,7 +116,6 @@ function initProblemsFilter(): void {
   root.querySelectorAll('[data-filter-diff]').forEach((chip) => chip.addEventListener('click', onDiffClick));
   root.querySelectorAll('[data-filter-status]').forEach((chip) => chip.addEventListener('click', onStatusClick));
 
-  // 已掌握 / 待复习标记：切换 localStorage 并重筛（状态筛选下卡片可能隐去）
   const onMarkClick = (event: Event) => {
     const btn = event.currentTarget as HTMLElement;
     const item = btn.closest<HTMLElement>('[data-algo-item]');
@@ -158,7 +129,6 @@ function initProblemsFilter(): void {
   };
   root.querySelectorAll('[data-mark]').forEach((btn) => btn.addEventListener('click', onMarkClick));
 
-  // 空态恢复动作：清除关键词 / 重置全部筛选
   const onClearQuery = () => {
     state.q = '';
     if (searchInput) searchInput.value = '';
@@ -178,7 +148,6 @@ function initProblemsFilter(): void {
   root.querySelector('[data-ap-clear-q]')?.addEventListener('click', onClearQuery);
   root.querySelector('[data-ap-reset]')?.addEventListener('click', onResetAll);
 
-  // 搜索框：150ms 防抖后重筛
   const onSearchInput = () => {
     if (searchTimer) clearTimeout(searchTimer);
     searchTimer = setTimeout(() => {
@@ -188,13 +157,11 @@ function initProblemsFilter(): void {
   };
   searchInput?.addEventListener('input', onSearchInput);
 
-  // 卡片跳转详情前：把当前筛选上下文存会话存储，详情页"返回"链接据此恢复
   const onCardClick = () => {
     saveFilterContext(window.location.search);
   };
   root.querySelectorAll('[data-algo-item] a').forEach((link) => link.addEventListener('click', onCardClick));
 
-  // 页面切换前清理：document 级监听器与防抖定时器
   cleanups.push(() => {
     if (searchTimer) {
       clearTimeout(searchTimer);
@@ -209,7 +176,6 @@ function initProblemsFilter(): void {
   });
 }
 
-/** 把单题标记集合同步到卡片的标记按钮选中态 */
 function syncItemMarks(item: HTMLElement, marks: { solved?: boolean; review?: boolean }): void {
   item.querySelectorAll<HTMLElement>('[data-mark]').forEach((btn) => {
     const on = btn.dataset.mark === 'solved' ? Boolean(marks.solved) : Boolean(marks.review);
@@ -218,15 +184,10 @@ function syncItemMarks(item: HTMLElement, marks: { solved?: boolean; review?: bo
   });
 }
 
-/** before-swap 统一清理入口 */
 function cleanupProblemsFilter(): void {
   cleanups.splice(0).forEach((fn) => fn());
 }
 
-/**
- * 详情页：绑定已掌握 / 待复习标记按钮，并把"返回题图鉴"链接恢复为
- * 离开列表页时的筛选视图（sessionStorage 上下文）
- */
 function initProblemDetailProgress(): void {
   const root = document.querySelector<HTMLElement>('[data-apd-progress]');
   if (!root || root.dataset.progressBound === 'true') return;
@@ -234,7 +195,6 @@ function initProblemDetailProgress(): void {
 
   const slug = root.dataset.apdSlug ?? '';
 
-  // 初始选中态
   const sync = () => {
     const marks = readProblemMarks(slug);
     root.querySelectorAll<HTMLElement>('[data-ap-detail-mark]').forEach((btn) => {
@@ -255,8 +215,6 @@ function initProblemDetailProgress(): void {
     });
   });
 
-  // 返回链接恢复筛选上下文：默认地址已携带 ?view=problems，
-  // 会话上下文按参数名合并（同名字段以离开列表页时的值为准），避免出现双问号
   const backLink = document.querySelector<HTMLAnchorElement>('[data-apd-back]');
   if (backLink) {
     const context = readFilterContext();
@@ -269,7 +227,6 @@ function initProblemDetailProgress(): void {
   }
 }
 
-// 浏览器专属代码：模块顶层执行守卫，避免构建期求值报错
 if (!import.meta.env.SSR && typeof document !== 'undefined') {
   document.addEventListener('astro:page-load', () => {
     initProblemsFilter();
@@ -277,4 +234,3 @@ if (!import.meta.env.SSR && typeof document !== 'undefined') {
   });
   document.addEventListener('astro:before-swap', cleanupProblemsFilter);
 }
-

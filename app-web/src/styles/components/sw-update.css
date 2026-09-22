@@ -1,17 +1,8 @@
-/**
- * 内容更新提示条样式（lib/sw-update）
- * -----------------------------------------------------------------------------
- * SWR 后台刷新发现页面更新时，由 sw-update.ts 动态创建的底部细条。
- * 设计约束：直角小圆角（--radius-md 以内）、左侧竖条强调（禁止圆点装饰）、
- * 动效全部消费 --motion-* 语义令牌并提供 reduced-motion 降级。
- * -----------------------------------------------------------------------------
- */
 
 .sw-update-bar {
   position: fixed;
   bottom: var(--space-4);
   left: 50%;
-  /* 隐藏态下沉至视口外，is-visible 后浮入 */
   transform: translate(-50%, calc(100% + var(--space-4)));
   z-index: 90;
   display: flex;
@@ -29,7 +20,6 @@
     opacity var(--motion-duration-slow) var(--motion-easing-out);
 }
 
-/* 左侧竖条强调刻度（替代点状装饰的仓库统一做法） */
 .sw-update-bar::before {
   content: '';
   flex: none;
@@ -85,7 +75,6 @@
   background: var(--color-bg-hover);
 }
 
-/* 减少动效：跳过浮入过渡，直接显隐 */
 @media (prefers-reduced-motion: reduce) {
   .sw-update-bar {
     transition: none;

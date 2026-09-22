@@ -2,16 +2,7 @@ package com.fandex.app.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-/**
- * FANDEX 原始颜色令牌
- *
- * 与 shd-shared/styles/tokens.css 逐值对齐（web 端唯一真值源）：
- * - 中性色阶：冷青近黑 -> 冷雾灰白，支撑双主题背景体系
- * - 青色色阶：浅色模式强调色为深青 cyan-300 (#0B6E7E)，深色模式为亮青 cyan-500 (#00C8F0)
- * - 状态色：成功 / 警告 / 危险 / 信息，深色模式整体提亮
- */
 object PrimitiveColors {
-    // 中性色阶
     val Neutral0 = Color(0xFF000000)
     val Neutral50 = Color(0xFF0A0E14)
     val Neutral100 = Color(0xFF11161E)
@@ -28,7 +19,6 @@ object PrimitiveColors {
     val Neutral1000 = Color(0xFFE2E8EC)
     val Neutral1050 = Color(0xFFEBEFF3)
 
-    // 青色色阶
     val Cyan100 = Color(0xFF053645)
     val Cyan200 = Color(0xFF085263)
     val Cyan300 = Color(0xFF0B6E7E)
@@ -36,7 +26,6 @@ object PrimitiveColors {
     val Cyan500 = Color(0xFF00C8F0)
     val Cyan600 = Color(0xFF3DDDFF)
 
-    // 状态色
     val SuccessLight = Color(0xFF16A34A)
     val SuccessDark = Color(0xFF22C55E)
     val WarningLight = Color(0xFFEA580C)
@@ -47,12 +36,6 @@ object PrimitiveColors {
     val InfoDark = Color(0xFF00C8F0)
 }
 
-/**
- * 模块分类颜色
- *
- * 与 shd-shared/metadata/modules.json categoryColors 一致（兜底值，
- * 运行时优先使用 modules.json 下发的 categoryColors）
- */
 object CategoryColors {
     val Tools = Color(0xFF4F5BD5)
     val Frontend = Color(0xFFD63031)

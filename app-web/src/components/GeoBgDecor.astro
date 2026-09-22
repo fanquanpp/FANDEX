@@ -1,31 +1,5 @@
 ---
-/**
- * 几何背景装饰层通用组件
- *
- * 功能概述：
- * 根据视图变体渲染对应的构成主义几何装饰 div 组合。
- * 所有装饰层均设置 aria-hidden="true"，对辅助技术不可见。
- * 内部通过静态配置表 GEO_DECOR_CONFIG 维护各变体的装饰 div 列表，
- * 避免在各视图中重复书写冗长的装饰层标记。
- *
- * 适配来源：参考 KeMuONEXueKao 的 React 版 GeoBgDecor，重写为 Astro 组件。
- *
- * 变体说明（装饰规则：禁止点状元素，统一竖条/刻度线/几何切片）：
- * - home：首页 Hero 区，S 曲线 + 涟漪环 + 三角切片 + 轨道环等动态装饰
- * - docs：文档详情页，网格底纹 + 几何线条 + 动态元素（克制 7 项）
- * - list：模块/标签列表页，网格底纹 + 平行斜线 + 十字坐标点 + 动态元素
- * - learning-path：学习路线页，网格底纹 + 竖条点阵装饰（点状装饰统一为竖条）
- * - minimal：轻量变体，网格底纹 + 竖条刻度线（搜索/404 等辅助页）
- * - loading：加载态变体，网格底纹 + 小点阵（参考 KeMuONEXueKao 的 loading 变体）
- * - error：错误态变体，网格底纹 + 竖条刻度线（参考 KeMuONEXueKao 的 error 变体）
- * - info：信息页变体，类似 docs 但更克制，用于 about/disclaimer/privacy 等信息页
- *
- * 注意：原有的"颜色光晕类"装饰（geo-glow-primary-tl/accent-br/info-bl）已移除，
- *      因其包含 filter:blur 与 radial-gradient 发散色晕效果，与"克制有质感"的
- *      构成主义审美不符，且在低端设备上会显著影响渲染性能。
- */
 
-/** 支持的视图变体类型 */
 export type GeoBgVariant =
   | 'home'
   | 'docs'
@@ -37,15 +11,9 @@ export type GeoBgVariant =
   | 'info'
   | 'playground';
 
-/** 装饰层单项：可仅为类名字符串，或携带内联 style 的对象（适配带定位的装饰元素） */
 type GeoDecorItem = string | { readonly className: string; readonly style?: string };
 
-/**
- * 各变体对应的装饰层 div 配置
- * - 数组顺序对应装饰 div 的书写顺序，保证视觉一致
- */
 const GEO_DECOR_CONFIG: Record<GeoBgVariant, GeoDecorItem[]> = {
-  /** 首页：S 曲线 + 涟漪环 + 三角切片等 7 项扩展装饰 */
   home: [
     'geo-curve-s',
     'geo-ripple-tr',
@@ -57,9 +25,6 @@ const GEO_DECOR_CONFIG: Record<GeoBgVariant, GeoDecorItem[]> = {
     'geo-orbit-ring',
     'geo-crosshair',
   ],
-  /** 文档详情页：网格底纹 + 几何线条 + 动态元素
-   *  克制使用 7 项装饰，营造专注但不单调的阅读氛围
-   *  所有装饰均为低饱和度/低透明度，不干扰文字阅读 */
   docs: [
     'geo-bg-grid',
     'geo-curve-s',
@@ -69,7 +34,6 @@ const GEO_DECOR_CONFIG: Record<GeoBgVariant, GeoDecorItem[]> = {
     'geo-pulse-ring',
     'geo-float-block',
   ],
-  /** 列表页：网格底纹 + 平行斜线 + 十字坐标点 + 多位置动态元素 */
   list: [
     'geo-bg-grid',
     'geo-parallel-lines',
@@ -79,7 +43,6 @@ const GEO_DECOR_CONFIG: Record<GeoBgVariant, GeoDecorItem[]> = {
     'geo-chevron-stack',
     'geo-bezier-flow',
   ],
-  /** 学习路线页：点状/环形装饰全部替换为竖条装饰，保持构成主义几何语言 */
   'learning-path': [
     'geo-bg-grid',
     'geo-curve-s',
@@ -90,14 +53,9 @@ const GEO_DECOR_CONFIG: Record<GeoBgVariant, GeoDecorItem[]> = {
     'geo-float-block',
     'geo-bars-float',
   ],
-  /** 轻量变体：网格底纹 + 竖条刻度线（搜索/404 等辅助页，无点状元素） */
   minimal: ['geo-bg-grid', 'geo-bars-marks'],
-  /** 加载态：网格底纹 + 小点阵（参考 KeMuONEXueKao 的 loading 变体，保持克制不分散注意力） */
   loading: ['geo-bg-grid', 'geo-dots-sm'],
-  /** 错误态：网格底纹 + 竖条刻度线 + 竖条脉冲 + 扫描线（克制的动态背景） */
   error: ['geo-bg-grid', 'geo-bars-marks', 'geo-bars-pulse', 'geo-scan-line'],
-  /** 信息页变体：类似 docs 但更克制，用于 about/disclaimer/privacy 等信息页
-   *  相比 docs 移除 bezier-flow 动态弧线，保留几何线条，营造沉稳的阅读氛围 */
   info: [
     'geo-bg-grid',
     'geo-curve-s',
@@ -106,7 +64,6 @@ const GEO_DECOR_CONFIG: Record<GeoBgVariant, GeoDecorItem[]> = {
     'geo-pulse-ring',
     'geo-float-block',
   ],
-  /** 在线前端实验场变体：网格底纹 + 尖括号对 + 终端方块 + 扫描线 + 代码光标等动态装饰 */
   playground: [
     'geo-bg-grid',
     'geo-bracket-pair',
@@ -122,11 +79,9 @@ const GEO_DECOR_CONFIG: Record<GeoBgVariant, GeoDecorItem[]> = {
 };
 
 interface Props {
-  /** 视图变体，决定渲染哪些装饰层 */
   variant?: GeoBgVariant;
 }
 
-/** 从 Props 解构 variant，默认 minimal 以保证未指定时的安全回退 */
 const { variant = 'minimal' } = Astro.props;
 const items = GEO_DECOR_CONFIG[variant];
 ---

@@ -1,31 +1,6 @@
-/**
- * FANDEX 构成主义几何背景装饰系统
- *
- * 功能概述：
- * 受俄国构成主义 / 包豪斯 / 至上主义启发，为页面提供克制有质感的几何背景装饰。
- * 全部元素绝对定位 + pointer-events:none，不干扰内容交互与阅读。
- * 支持亮色/暗色双主题，移动端降级隐藏重型装饰，尊重 prefers-reduced-motion。
- *
- * 装饰母题：网格 / 圆弧切片 / 对角粗线 / 错位方块 / 曲线波纹 / 十字坐标 /
- *          点阵变体 / 平行线束 / 同心环 / 斜纹底纹 / 三角切片 /
- *          螺旋 / 贝塞尔流 / 脉冲环 / 漂浮方块
- * 装饰规则：禁止点状元素（圆点/点阵），统一为竖条、刻度线与几何切片
- *
- * 适配来源：参考 KeMuONEXueKao 项目装饰系统，映射至 FANDEX 设计令牌
- *
- * 层级归属：@layer components（避免未分层 CSS 覆盖 ark 令牌导致主题切换失效）
- */
 
-/* 归入 @layer components，确保优先级低于 tokens 层 */
 @layer components {
 
-/* ===================================================================
-   装饰容器 · 固定定位铺满视口（不随页面滚动）
-   -------------------------------------------------------------------
-   使用 position: fixed 使背景装饰固定在视口，滚动时保持不动。
-   但内部装饰元素仍保留 CSS 动画（旋转/脉冲/漂浮），并非静态内容。
-   z-index: 0 确保装饰位于内容之下，pointer-events:none 不干扰交互。
-   =================================================================== */
 .geo-bg-decor {
   position: fixed;
   inset: 0;
@@ -34,12 +9,6 @@
   z-index: 0;
 }
 
-/* ===================================================================
-   构成主义网格底纹 · 径向遮罩聚焦 + 缓慢漂移
-   -------------------------------------------------------------------
-   网格底纹添加 60s 缓慢漂移动画，增强"非静态"感，
-   同时不分散阅读注意力（位移幅度小，周期长）。
-   =================================================================== */
 .geo-bg-grid {
   position: absolute;
   inset: -64px;
@@ -62,11 +31,6 @@
   }
 }
 
-/* ===================================================================
-   曲线波纹类
-   =================================================================== */
-
-/* 大型 S 形曲线 · 左下到右上 */
 .geo-curve-s {
   position: absolute;
   left: -5%;
@@ -79,12 +43,10 @@
   pointer-events: none;
 }
 
-/* 暗色主题下使用亮色曲线 */
 [data-theme='dark'] .geo-curve-s {
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 800 280' preserveAspectRatio='none'><path d='M0,220 C150,220 250,40 400,80 C550,120 650,260 800,180' fill='none' stroke='%236ea8fe' stroke-width='1.5' opacity='0.22'/></svg>");
 }
 
-/* 圆形涟漪 · 同心圆扩散（右上角向外） */
 .geo-ripple-tr {
   position: absolute;
   top: -120px;
@@ -107,11 +69,6 @@
   opacity: 0.6;
 }
 
-/* ===================================================================
-   十字坐标类
-   =================================================================== */
-
-/* 工程坐标十字 · 散布点缀（5 点矩阵） */
 .geo-cross-marks {
   position: absolute;
   inset: 0;
@@ -126,11 +83,6 @@
   opacity: 0.7;
 }
 
-/* ===================================================================
-   点阵变体类
-   =================================================================== */
-
-/* 大点阵 · 疏（24px 间距） */
 .geo-dots-lg {
   position: absolute;
   inset: 0;
@@ -141,7 +93,6 @@
   mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000 30%, transparent 85%);
 }
 
-/* 小点阵 · 密（12px 间距） */
 .geo-dots-sm {
   position: absolute;
   inset: 0;
@@ -152,7 +103,6 @@
   mask-image: radial-gradient(ellipse 60% 50% at 80% 80%, #000 0%, transparent 75%);
 }
 
-/* 径向点阵 · 中心向外渐淡 */
 .geo-dots-radial {
   position: absolute;
   width: 280px;
@@ -168,11 +118,6 @@
   mask-image: radial-gradient(circle at center, #000 20%, transparent 70%);
 }
 
-/* ===================================================================
-   竖条装饰类（学习路线页专用 · 点状装饰统一为竖条）
-   =================================================================== */
-
-/* 竖条坐标点缀 · 5 组竖向刻度（替代十字坐标点阵） */
 .geo-bars-marks {
   position: absolute;
   inset: 0;
@@ -199,7 +144,6 @@
     calc(60% - 1px) 45%;
 }
 
-/* 竖向点阵 · 竖线栅格（替代径向点阵） */
 .geo-bars-radial {
   position: absolute;
   width: 280px;
@@ -220,7 +164,6 @@
   mask-image: radial-gradient(circle at center, #000 20%, transparent 70%);
 }
 
-/* 竖条脉冲 · 竖向刻度呼吸扩散（替代脉冲环） */
 .geo-bars-pulse {
   position: absolute;
   width: 160px;
@@ -253,11 +196,6 @@
   }
 }
 
-/* ===================================================================
-   平行线束类
-   =================================================================== */
-
-/* 平行斜线束（3 条对角线） */
 .geo-parallel-lines {
   position: absolute;
   top: 0;
@@ -294,11 +232,6 @@
   mask-image: linear-gradient(to bottom, transparent, #000 30%, #000 70%, transparent);
 }
 
-/* ===================================================================
-   斜纹底纹类
-   =================================================================== */
-
-/* 斜纹方块底（45deg 细斜纹） */
 .geo-hatch-block {
   position: absolute;
   width: 120px;
@@ -313,11 +246,6 @@
   pointer-events: none;
 }
 
-/* ===================================================================
-   三角切片类
-   =================================================================== */
-
-/* 直角三角形 · 右上角 */
 .geo-triangle-rt {
   position: absolute;
   top: 80px;
@@ -330,15 +258,6 @@
   pointer-events: none;
 }
 
-/* ===================================================================
-   动态装饰类 · v3 扩展
-   =================================================================== */
-
-/* 说明：原有的"颜色光晕类"（geo-glow-primary-tl / geo-glow-accent-br /
-   geo-glow-info-bl）已移除，因其包含 filter:blur 与 radial-gradient 发散色晕，
-   与"克制有质感"的构成主义审美不符，且在低端设备上会显著影响渲染性能。 */
-
-/* 逆时针螺旋 · 多层圆环嵌套 */
 .geo-spiral-ccw {
   position: absolute;
   width: 180px;
@@ -377,7 +296,6 @@
   }
 }
 
-/* 贝塞尔曲线流 · 双弧线交错 */
 .geo-bezier-flow {
   position: absolute;
   width: 320px;
@@ -419,7 +337,6 @@
   }
 }
 
-/* V 形堆叠 · 多层 chevron */
 .geo-chevron-stack {
   position: absolute;
   width: 120px;
@@ -442,7 +359,6 @@
   mask-image: radial-gradient(circle at center, #000 40%, transparent 80%);
 }
 
-/* 脉冲环 · 中心扩散 */
 .geo-pulse-ring {
   position: absolute;
   width: 160px;
@@ -477,7 +393,6 @@
   }
 }
 
-/* 漂浮方块 · 垂直微浮动 */
 .geo-float-block {
   position: absolute;
   width: 64px;
@@ -516,11 +431,6 @@
   }
 }
 
-/* ===================================================================
-   代码主题装饰类 · Playground 变体专属
-   =================================================================== */
-
-/* 尖括号对 · 代码语法符号（< >），左右各一枚，构成编程语境 */
 .geo-bracket-pair {
   position: absolute;
   top: 12%;
@@ -539,7 +449,6 @@
   background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 230 130' preserveAspectRatio='none'><path d='M40,12 L14,65 L40,118' fill='none' stroke='%236ea8fe' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.75'/><path d='M190,12 L216,65 L190,118' fill='none' stroke='%236ea8fe' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' opacity='0.4'/><path d='M70,52 L84,65 L70,78' fill='none' stroke='%23f09070' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round' opacity='0.45'/></svg>");
 }
 
-/* 终端方块 · 迷你终端窗口：标题栏圆点 + 提示符行 */
 .geo-terminal-block {
   position: absolute;
   bottom: 12%;
@@ -554,7 +463,6 @@
   background: color-mix(in srgb, var(--color-bg-card) 42%, transparent);
 }
 
-/* 标题栏：三条竖刻度 + 底部细分隔线（禁止圆点装饰） */
 .geo-terminal-block::before {
   content: '';
   position: absolute;
@@ -572,7 +480,6 @@
   background-repeat: no-repeat;
 }
 
-/* 提示符行：命令行风格文本 */
 .geo-terminal-block::after {
   content: '> run playground';
   position: absolute;
@@ -584,11 +491,6 @@
   color: var(--color-fg-tertiary);
 }
 
-/* ===================================================================
-   强化动效装饰 · v4（首页 / 学习路线 / 实验场专属）
-   =================================================================== */
-
-/* 扫描线：实验场背景横向光带缓慢下移，营造终端扫描氛围 */
 .geo-scan-line {
   position: absolute;
   left: 0;
@@ -616,7 +518,6 @@
   }
 }
 
-/* 代码光标：实验场右下角闪烁方块，呼应终端编辑语境 */
 .geo-code-cursor {
   position: absolute;
   bottom: 16%;
@@ -641,7 +542,6 @@
   }
 }
 
-/* 漂浮竖条组：学习路线右侧竖向刻度缓慢上下错动 */
 .geo-bars-float {
   position: absolute;
   top: 22%;
@@ -671,7 +571,6 @@
   }
 }
 
-/* 轨道环：首页右上角缓慢旋转的虚线环，构成主义机械感 */
 .geo-orbit-ring {
   position: absolute;
   top: 10%;
@@ -707,7 +606,6 @@
   }
 }
 
-/* 十字瞄准：首页左下角细线十字缓慢呼吸，强化工程坐标语义 */
 .geo-crosshair {
   position: absolute;
   left: 4%;
@@ -754,9 +652,6 @@
   }
 }
 
-/* ===================================================================
-   移动端响应式 · 隐藏重型装饰保留轻量点缀
-   =================================================================== */
 @media (max-width: 767.98px) {
   .geo-curve-s,
   .geo-parallel-lines,
@@ -795,9 +690,6 @@
   }
 }
 
-/* ===================================================================
-   尊重用户运动偏好 · 关闭动画
-   =================================================================== */
 @media (prefers-reduced-motion: reduce) {
   .geo-bg-grid,
   .geo-spiral-ccw,
@@ -814,4 +706,4 @@
   }
 }
 
-} /* end @layer components */
+}

@@ -1,54 +1,17 @@
-/* =============================================================================
- * FANDEX 主题切换样式 — tokens 层扩展
- * -----------------------------------------------------------------------------
- * 职责：管理 light/dark 主题切换的 CSS 机制
- * 1. color-scheme 声明（启用浏览器原生控件主题）
- * 2. [data-theme] 属性选择器（用户手动切换主题）
- * 3. prefers-color-scheme 媒体查询（跟随系统主题）
- * 4. 主题切换过渡（平滑颜色变化）
- * -----------------------------------------------------------------------------
- * 主题策略：
- * - 默认跟随系统（prefers-color-scheme）
- * - [data-theme="light"] 强制浅色
- * - [data-theme="dark"] 强制深色
- * - color-scheme 控制浏览器原生控件（滚动条、表单）主题
- * - [data-theme] 选择器控制自定义颜色令牌（原 light-dark() 已迁移）
- * -----------------------------------------------------------------------------
- * 引用：spec.md 第三章 3.2 主题策略 / 第三章 3.3.1 theme.css
- * =============================================================================
- */
 
 @layer tokens {
-  /* === 默认：跟随系统主题 === */
   :root {
     color-scheme: light dark;
   }
 
-  /* === 强制浅色模式 === */
   [data-theme='light'] {
     color-scheme: light;
   }
 
-  /* === 强制深色模式 === */
   [data-theme='dark'] {
     color-scheme: dark;
   }
 
-  /* === 跟随系统：当未设置 data-theme 时，由 prefers-color-scheme 决定 === */
-  /* 注意：原 light-dark() 函数方案已迁移为 [data-theme] 选择器方案，
-     因 Tailwind v4 解析器在 @theme 块外不支持 light-dark() 与 var() 混合写法 */
-
-  /* === 主题切换过渡 === */
-  /* 过渡范围收窄，提升主题切换性能
-   * -------------------------------------------------------------------------
-   * 原方案：全局 * 选择器，所有元素颜色过渡 → 大面积重绘，性能差
-   * 新方案：仅 .doc-page 内的元素应用颜色过渡（文档阅读页内容区）
-   * 原因：
-   * - View Transitions API 已接管主题切换的视觉过渡（圆形扩散动画）
-   * - CSS 颜色过渡作为降级方案，仅需覆盖文档内容区
-   * - 大面积元素（.geo-bg-decor/.app-nav/.fndx-sidebar）的过渡会导致严重重绘
-   * - 非文档页（首页）的主题切换由 View Transitions 处理，无需 CSS 过渡
-   * 仅在未声明 prefers-reduced-motion 时生效 */
   :root:not([data-no-transition]) .doc-page * {
     transition: background-color var(--motion-duration-fast) var(--motion-easing-out),
                 border-color var(--motion-duration-fast) var(--motion-easing-out),
@@ -57,23 +20,15 @@
                 stroke var(--motion-duration-fast) var(--motion-easing-out);
   }
 
-  /* === 主题切换瞬间禁用过渡（防止首次加载闪烁） === */
-  /* 在 <html> 添加 data-theme-loading 属性可临时禁用所有过渡 */
   [data-theme-loading] * {
     transition: none !important;
   }
 }
 
-/* === 主题指示器（components 层） === */
 @layer components {
-  /* 主题切换按钮容器
-   * 基础按钮样式（尺寸/圆角/背景/悬停）由 .fndx-icon-btn 统一基类提供，
-   * 此处仅保留图标显隐逻辑（日/月切换） */
   .fndx-theme-toggle {
-    /* display/align/size/background/color/transition 均由 .fndx-icon-btn 提供 */
   }
 
-  /* 浅色模式下显示太阳图标，深色模式下显示月亮图标 */
   .fndx-theme-toggle__icon--sun {
     display: block;
   }
@@ -82,8 +37,6 @@
     display: none;
   }
 
-  /* 深色模式覆盖：太阳图标隐藏，月亮图标显示
-     原 light-dark() 已迁移为 [data-theme='dark'] 选择器方案 */
   [data-theme='dark'] .fndx-theme-toggle__icon--sun {
     display: none;
   }

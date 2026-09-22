@@ -1,23 +1,6 @@
-/**
- * Playground 样式（前端实验：HTML/CSS/JS 三栏编辑工作台）
- *
- * 美术统一说明（与首页/语法速览/学习路线同一套设计语言，但保留个性化）：
- *   - 实验场首页复用站点 Hero 体系（styles/pages/index.css），几何装饰使用
- *     GeoBgDecor 的 playground 专属变体（网格 + 尖括号 + 终端方块）
- *   - 入口卡片沿用 module-card 语法：顶部强调色条、几何图标框、hover 边框转色
- *   - 难度标签复用站点 fndx-badge（soft/pill + 语义色）
- *   - 编辑器工作区以克制为主：面板标题使用等宽小号大写 + 强调色刻度线
- *   - 全部颜色/间距/圆角/阴影引用 FANDEX 设计令牌，亮/暗主题自动切换
- *   - 图标一律使用自绘 SVG（PgIcon），不使用 emoji 与位图
- *   - 禁止点状装饰（圆点/胶囊圆点/点阵），状态指示与标记统一为竖条或几何刻度
- */
 @layer components {
 
-  /* ============================================================
-     Playground 页面通用
-     ============================================================ */
   .pg-page {
-    /* 在线前端页：占满 home-main 剩余高度，工作台内部自行滚动 */
     height: 100%;
     display: flex;
     flex-direction: column;
@@ -29,7 +12,6 @@
     min-height: 0;
   }
 
-  /* 通用按钮：与站点 fndx 按钮同语法（透明底 + 细边框 + 2px 直角） */
   .pg-btn {
     display: inline-flex;
     align-items: center;
@@ -69,7 +51,6 @@
     outline-offset: 2px;
   }
 
-  /* 幽灵变体：中性悬停（边框加深 + 文字提亮），强调色只留给激活/主操作 */
   .pg-btn--ghost {
     border-color: var(--color-border-light);
     background: var(--color-bg-card);
@@ -110,8 +91,6 @@
     font-size: 11px;
   }
 
-  /* 编辑器开关按钮：紧凑等宽标签；激活态 = 中性底色 + 底缘 2px 强调色刻度
-     （不使用整片强调色渲染，避免 SaaS 式彩色胶囊感） */
   .pg-btn--editors {
     height: 24px;
     padding: 0 9px;
@@ -127,7 +106,6 @@
     box-shadow: inset 0 -2px 0 var(--color-accent-base);
   }
 
-  /* 顶部工具栏（前端实验与编程练习共用） */
   .pg-toolbar {
     display: flex;
     align-items: center;
@@ -165,7 +143,6 @@
     gap: 6px;
   }
 
-  /* 保存状态：竖条指示 + 等宽文本（禁止圆点装饰） */
   .pg-save-state {
     margin-left: auto;
     display: inline-flex;
@@ -193,7 +170,6 @@
     background: var(--color-warning-base);
   }
 
-  /* 写入失败：危险色提示，明确"未保存"避免假报安心 */
   .pg-save-state--error {
     color: var(--color-danger-base);
   }
@@ -202,7 +178,6 @@
     background: var(--color-danger-base);
   }
 
-  /* 工具栏提示：格式化结果等轻量反馈 */
   .pg-toolbar-note {
     margin-left: auto;
     font-family: var(--font-family-mono);
@@ -226,9 +201,6 @@
     border-bottom: 1px solid color-mix(in srgb, var(--color-warning-base) 30%, transparent);
   }
 
-  /* ============================================================
-     前端实验工作区
-     ============================================================ */
   .pg-frontend {
     height: 100%;
     display: flex;
@@ -259,7 +231,6 @@
     flex: 1;
     min-height: 0;
     overflow: hidden;
-    /* 边界使用强调色系分隔，1px 间隙清晰但不厚重 */
     background: var(--color-border-default);
   }
 
@@ -272,7 +243,6 @@
     overflow: hidden;
   }
 
-  /* 上下布局：三个编辑器横向并排，预览区位于下方 */
   .pg-editors--top {
     flex-direction: row;
   }
@@ -291,7 +261,6 @@
     overflow: hidden;
   }
 
-  /* 面板标题：等宽小号大写 + 左侧强调色刻度线（代码工具语境） */
   .pg-pane-head {
     display: flex;
     align-items: center;
@@ -313,7 +282,6 @@
     transform: translateY(-50%);
     width: 2px;
     height: 12px;
-    /* 面板标签竖条跟随页面主题色（前端技术分类色，--pg-color 由页面注入） */
     background: var(--pg-color, var(--color-accent-base));
     opacity: 0.65;
   }
@@ -363,10 +331,6 @@
     overflow: hidden;
   }
 
-  /* CodeMirror 主题变量：
-   * - 选中态使用中性灰，避免彩色遮罩遮挡代码类型
-   * - 亮色模式加深编辑器背景，并将语法色切换为深饱和色，保证可读性
-   * - 暗色模式恢复浅色语法色与深色背景 */
   .pg-cm-box {
     --cm-selection-bg: rgba(108, 120, 135, 0.28);
     --cm-bg: var(--color-neutral-800, #bcc8d0);
@@ -397,7 +361,6 @@
     font-size: 12px;
   }
 
-  /* 分隔条 */
   .pg-splitter {
     background: var(--color-border-default);
     position: relative;
@@ -419,7 +382,6 @@
     background: var(--color-accent-base);
   }
 
-  /* 面板间分隔条（HTML/CSS/JS 三栏边界可拖拽） */
   .pg-pane-splitter {
     flex-shrink: 0;
     background: var(--color-border-default);
@@ -429,13 +391,11 @@
     transition: background-color var(--motion-duration-instant) var(--motion-easing-out);
   }
 
-  /* 左右布局：面板上下堆叠，分隔条为横向条 */
   .pg-pane-splitter--left {
     height: 3px;
     cursor: row-resize;
   }
 
-  /* 上下布局：面板横向并排，分隔条为纵向条 */
   .pg-pane-splitter--top {
     width: 3px;
     cursor: col-resize;
@@ -454,7 +414,6 @@
     cursor: inherit !important;
   }
 
-  /* 预览区域 */
   .pg-preview {
     display: flex;
     flex-direction: column;
@@ -520,7 +479,6 @@
     background: #ffffff;
   }
 
-  /* 控制台：极简瘦条（占屏最小化），纯文本输出不做视觉修饰 */
   .pg-console {
     display: flex;
     flex-direction: column;
@@ -570,7 +528,6 @@
     font-family: var(--font-family-body);
   }
 
-  /* 日志行：纯文本，仅以文字颜色区分警告/错误，无底色与徽标 */
   .pg-console-line {
     padding: 1px 0;
   }
@@ -591,14 +548,12 @@
     color: inherit;
   }
 
-  /* CodeMirror 懒加载占位：与 pane-body 同底色的静默骨架，无布局跳动 */
   .pg-cm-fallback {
     flex: 1;
     min-height: 0;
     background: var(--color-bg-code);
   }
 
-  /* 作品库抽屉：沿用站点卡片语法（细边框 + 悬浮转色） */
   .pg-drawer-mask {
     position: fixed;
     inset: 0;
@@ -608,7 +563,6 @@
     justify-content: flex-end;
   }
 
-  /* 确认面板复用遮罩层，但内容水平居中 */
   .pg-drawer {
     width: min(380px, 92vw);
     height: 100%;
@@ -727,12 +681,6 @@
     color: var(--color-accent-fg);
   }
 
-  /* ============================================================
-     动效优化：页面入场 + 区块错峰揭示
-     ------------------------------------------------------------
-     前端实验工作台入场使用 pg-fade-in，
-     所有动效在 prefers-reduced-motion 下关闭
-     ============================================================ */
   @keyframes pg-fade-in {
     from {
       opacity: 0;
@@ -744,7 +692,6 @@
     }
   }
 
-  /* 前端实验：工具栏下滑 + 工作区淡入 */
   .pg-frontend .pg-toolbar {
     animation: pg-fade-in var(--motion-duration-normal) var(--motion-easing-out) both;
   }
@@ -761,9 +708,6 @@
     }
   }
 
-  /* ============================================================
-     响应式适配
-     ============================================================ */
   @media (max-width: 720px) {
     .pg-toolbar {
       padding: 6px 10px;
@@ -792,10 +736,6 @@
 
   }
 
-  /* ============================================================
-     在线前端（前端实验）工具栏：双行结构
-     第一行：返回 / 标题 / 保存状态；第二行：面板开关与操作组
-     ============================================================ */
   .pg-toolbar-row {
     display: flex;
     align-items: center;
@@ -812,8 +752,6 @@
     margin-left: auto;
   }
 
-  /* 面板开关激活态（仅窄屏标签页焦点）：强调色底 + 顶部 2px 刻度线；
-     限定窄屏断点，桌面端统一走 .is-on 的中性 + 底缘刻度样式 */
   @media (max-width: 720px) {
     .pg-btn--editors.is-active {
       color: var(--color-accent-base);
@@ -823,7 +761,6 @@
     }
   }
 
-  /* 新建模板菜单容器（锚定新建按钮） */
   .pg-new-wrap {
     position: relative;
     display: inline-flex;
@@ -843,7 +780,6 @@
     border-color: color-mix(in srgb, var(--color-accent-base) 55%, transparent);
   }
 
-  /* 模板菜单：卡片式浮层，直角小圆角 + 1px 边框，与抽屉同语言 */
   .pg-menu {
     position: absolute;
     top: calc(100% + 6px);
@@ -898,7 +834,6 @@
     color: var(--color-fg-tertiary);
   }
 
-  /* 菜单打开时的透明点击关闭层 */
   .pg-menu-mask {
     position: fixed;
     inset: 0;
@@ -906,9 +841,6 @@
     background: transparent;
   }
 
-  /* ============================================================
-   * 快捷键说明面板：轻量居中弹层（Esc / 点击遮罩关闭）
-   * ============================================================ */
   .pg-keys-mask {
     position: fixed;
     inset: 0;
@@ -992,20 +924,11 @@
     color: var(--color-text-tertiary);
   }
 
-  /* 控制台错误计数徽章：直角 + 危险色描边（禁止圆点） */
   .pg-count--danger {
     color: var(--color-danger-base);
     border-color: color-mix(in srgb, var(--color-danger-base) 55%, transparent);
   }
 
-  /* ============================================================
-     灵感画廊（设计成品库）
-     ------------------------------------------------------------
-     全屏面板：左侧分组导航 + 右侧成品网格
-     每张卡片内嵌沙箱 iframe 实时运行成品效果，滚动进入
-     视口后按需加载；入场动效消费 --motion-* 令牌
-     ============================================================ */
-  /* 遮罩层：位于作品库抽屉之上 */
   .pg-sc-mask {
     position: fixed;
     inset: 0;
@@ -1017,7 +940,6 @@
     padding: clamp(0px, 2.5vw, 24px);
   }
 
-  /* 面板主体：卡片底 + 细边框，入场轻微上浮 */
   .pg-sc-panel {
     display: flex;
     flex-direction: column;
@@ -1042,7 +964,6 @@
     }
   }
 
-  /* 头部：标题 + 关闭按钮，左侧强调色刻度线 */
   .pg-sc-head {
     display: flex;
     align-items: center;
@@ -1094,7 +1015,6 @@
     min-height: 0;
   }
 
-  /* 分组导航：竖条激活指示（禁止圆点装饰） */
   .pg-sc-nav {
     display: flex;
     flex-direction: column;
@@ -1137,7 +1057,6 @@
     color: var(--color-fg-primary);
   }
 
-  /* 激活分组：左缘 3px 竖条 + 中性底色（不做整片强调色渲染） */
   .pg-sc-group.is-active {
     border-left-color: var(--color-accent-base);
     background: var(--color-bg-card);
@@ -1165,7 +1084,6 @@
     color: var(--color-fg-tertiary);
   }
 
-  /* 成品网格：滚动容器内自适应多列 */
   .pg-sc-body {
     flex: 1;
     min-height: 0;
@@ -1179,7 +1097,6 @@
     gap: 12px;
   }
 
-  /* 成品卡片：预览区 + 元信息区，hover 边框转强调色 */
   .pg-sc-card {
     display: flex;
     flex-direction: column;
@@ -1197,7 +1114,6 @@
     box-shadow: var(--shadow-lg, 0 8px 24px rgba(0, 0, 0, 0.25));
   }
 
-  /* 预览区：固定纵横比，深色底衬托成品效果 */
   .pg-sc-preview {
     position: relative;
     aspect-ratio: 16 / 10;
@@ -1225,7 +1141,6 @@
     color: var(--color-fg-tertiary);
   }
 
-  /* 元信息：名称/说明在左，载入按钮在右 */
   .pg-sc-meta {
     display: flex;
     align-items: center;
@@ -1265,14 +1180,12 @@
     flex-shrink: 0;
   }
 
-  /* 灵感画廊动效降级：reduced-motion 下关闭入场动画 */
   @media (prefers-reduced-motion: reduce) {
     .pg-sc-panel {
       animation: none;
     }
   }
 
-  /* 窄屏：画廊布局单列化，分组导航变为横向滚动 */
   @media (max-width: 860px) {
     .pg-sc-layout {
       grid-template-columns: 1fr;
@@ -1313,8 +1226,6 @@
     }
   }
 
-  /* 窄屏：工具栏双行收紧，编辑器面板切换为标签页行为
-     仅显示 is-active 面板，配合工具栏 HTML/CSS/JS 按钮切换单屏聚焦 */
   @media (max-width: 767.98px) {
     .pg-toolbar {
       padding: 6px 10px;

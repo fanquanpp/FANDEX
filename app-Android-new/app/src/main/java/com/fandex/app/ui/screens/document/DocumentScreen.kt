@@ -73,15 +73,6 @@ import com.fandex.app.ui.markdown.TocEntry
 import com.fandex.app.ui.theme.LocalExtendedColors
 import kotlinx.coroutines.launch
 
-/**
- * 文档详情页
- *
- * 对齐 Web 端文档详情页：
- * - 顶部栏（标题 + 目录 + 返回）与阅读进度条
- * - 文档元信息（难度 / 更新日期 / 阅读时长）
- * - 前置知识、Markdown 渲染正文、相关文档推荐
- * - 上下篇导航
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DocumentScreen(
@@ -102,15 +93,13 @@ fun DocumentScreen(
     val listState = rememberLazyListState()
     val success = state as? DocumentUiState.Success
 
-    // 入场门控：内容就绪后的下一帧置 true，触发元信息与引用区块的轻量入场
     var hasEntered by remember { mutableStateOf(false) }
     LaunchedEffect(success != null) {
         if (success != null) hasEntered = true
     }
 
-    // 目录滚动目标：块下标 -> 列表项下标（meta 与前置知识位于块之前）
     fun listItemIndexOfBlock(blockIndex: Int): Int {
-        var index = 1 // meta
+        var index = 1
         if ((success?.prerequisites?.size ?: 0) > 0) index++
         return index + blockIndex
     }
@@ -118,7 +107,6 @@ fun DocumentScreen(
     Scaffold(
         bottomBar = {
             if (success != null) {
-                // 底部导航入场：内容加载完成时自底部 24dp 滑入 + 淡入（仅一次）
                 val enterState = remember {
                     MutableTransitionState(false).apply { targetState = true }
                 }
@@ -151,11 +139,9 @@ fun DocumentScreen(
                     showNavActions = false,
                     showHome = true,
                     onHome = onHome,
-                    // 模块色竖条装饰
                     accentHex = success?.accentHex,
                     themeQuickToggle = { ThemeQuickToggle(viewModel = viewModel()) },
                     pageActions = {
-                        // 字号增减（移植自旧端文章页顶栏交互）
                         FontScaleControls(viewModel = viewModel())
                         val toc = success?.toc.orEmpty()
                         if (toc.isNotEmpty()) {
@@ -167,7 +153,6 @@ fun DocumentScreen(
                         }
                     }
                 )
-                // 阅读进度条
                 if (success != null) {
                     ReadingProgressBar(
                         listState = listState,
@@ -211,7 +196,6 @@ fun DocumentScreen(
                         contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
                         verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        // 文档元信息（轻量入场）
                         item(key = "meta") {
                             Box(
                                 modifier = Modifier.fandexEntrance(index = 0, visible = hasEntered)
@@ -220,7 +204,6 @@ fun DocumentScreen(
                             }
                         }
 
-                        // 前置知识（轻量入场）
                         if (data.prerequisites.isNotEmpty()) {
                             item(key = "prereq") {
                                 Box(
@@ -236,12 +219,10 @@ fun DocumentScreen(
                             }
                         }
 
-                        // 正文分块渲染（加粗文字使用模块分类色，对齐 web 端）
                         itemsIndexed(data.blocks, key = { index, _ -> "block-$index" }) { _, block ->
                             renderer.Block(block, accentColor = CategoryColor.parse(data.accentHex))
                         }
 
-                        // 相关文档（轻量入场）
                         if (data.related.isNotEmpty()) {
                             item(key = "related") {
                                 Box(
@@ -259,7 +240,6 @@ fun DocumentScreen(
 
                     }
 
-                    // 回到顶部：滚过前几屏内容后出现
                     BackToTopButton(
                         listState = listState,
                         modifier = Modifier
@@ -272,11 +252,6 @@ fun DocumentScreen(
     }
 }
 
-/**
- * 回到顶部悬浮按钮
- *
- * 长文档滚过前三项后出现，点击平滑回滚到页首
- */
 @Composable
 private fun BackToTopButton(listState: LazyListState, modifier: Modifier = Modifier) {
     val visible by remember {
@@ -308,21 +283,14 @@ private fun BackToTopButton(listState: LazyListState, modifier: Modifier = Modif
     }
 }
 
-/** 计算列表总项数（进度条分母） */
 private fun totalItemsOf(state: DocumentUiState.Success): Int {
-    var count = 1 // meta
+    var count = 1
     if (state.prerequisites.isNotEmpty()) count++
     count += state.blocks.size
     if (state.related.isNotEmpty()) count++
     return count
 }
 
-/**
- * 阅读进度条
- *
- * 按列表可见项占比估算阅读进度，与 web 端滚动进度对应；
- * 进度值经 animateFloatAsState 平滑，避免滚动时跳变
- */
 @Composable
 private fun ReadingProgressBar(listState: LazyListState, totalItems: Int) {
     val progress by remember(totalItems) {
@@ -334,7 +302,6 @@ private fun ReadingProgressBar(listState: LazyListState, totalItems: Int) {
             }
         }
     }
-    // 进度平滑过渡（220ms 减速）
     val animatedProgress by animateFloatAsState(
         targetValue = progress,
         animationSpec = tweenNormal(),
@@ -348,9 +315,6 @@ private fun ReadingProgressBar(listState: LazyListState, totalItems: Int) {
     )
 }
 
-/**
- * 目录按钮 + 底部目录面板
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 private fun DocumentTocButton(
@@ -362,7 +326,6 @@ private fun DocumentTocButton(
     val scope = rememberCoroutineScope()
     val sheetState = rememberModalBottomSheetState()
 
-    // 目录按钮（统一走 FdxIconButton，20dp 图标 + 按压缩放）
     FdxIconButton(
         icon = Icons.AutoMirrored.Filled.MenuBook,
         contentDescription = "目录",
@@ -397,7 +360,6 @@ private fun DocumentTocButton(
                             .clickable {
                                 showSheet = false
                                 scope.launch {
-                                    // 平滑滚动到目标小节
                                     listState.animateScrollToItem(index = indexOfBlock(entry.blockIndex))
                                 }
                             }
@@ -414,9 +376,6 @@ private fun DocumentTocButton(
     }
 }
 
-/**
- * 文档元信息
- */
 @Composable
 private fun DocMetaInfo(data: DocumentUiState.Success) {
     val extendedColors = LocalExtendedColors.current
@@ -451,9 +410,6 @@ private fun DocMetaInfo(data: DocumentUiState.Success) {
     }
 }
 
-/**
- * 前置知识 / 相关文档区块
- */
 @Composable
 private fun DocRefSection(
     title: String,
@@ -465,7 +421,6 @@ private fun DocRefSection(
     val accent = CategoryColor.parse(accentHex)
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        // 区块标题
         Row(verticalAlignment = Alignment.CenterVertically) {
             Box(
                 modifier = Modifier
@@ -514,11 +469,6 @@ private fun DocRefSection(
 
 
 
-/**
- * 常驻上下篇导航底栏
- *
- * 阅读过程中始终可见，点击直达上 / 下一篇（多彩分类色点缀）
- */
 @Composable
 private fun PersistentDocNav(
     prev: DocIndexEntry?,
@@ -536,7 +486,6 @@ private fun PersistentDocNav(
             .padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 上一篇
         Row(
             modifier = Modifier
                 .weight(1f)
@@ -572,7 +521,6 @@ private fun PersistentDocNav(
             }
         }
 
-        // 下一篇
         Row(
             modifier = Modifier
                 .weight(1f)
@@ -610,4 +558,3 @@ private fun PersistentDocNav(
         }
     }
 }
-

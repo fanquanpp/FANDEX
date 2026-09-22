@@ -48,19 +48,8 @@ import com.fandex.app.ui.components.ThemeQuickToggle
 import com.fandex.app.ui.components.TopDock
 import com.fandex.app.ui.theme.LocalExtendedColors
 
-/** 阶段刻度条的最大刻度数，超出部分以「+N」提示 */
 private const val MAX_STAGE_TICKS = 8
 
-/**
- * 学习路线页
- *
- * 对齐 Web 端 /learning-path 页面，并提级至与首页同等级的视觉层次：
- * - 头部统计横幅：路径 / 阶段总量一览（StatsBar）
- * - 路径列表：序号徽标 + 分类色 + 阶段刻度条（几何刻度线，直读进度感）
- * - 点击进入具体路径的阶段与节点
- *
- * 动效：状态切换 Crossfade；路径条目轻量入场（仅首次）
- */
 @Composable
 fun LearningPathScreen(
     onPathClick: (String) -> Unit,
@@ -75,7 +64,6 @@ fun LearningPathScreen(
 
     val state by viewModel.state.collectAsState()
 
-    // 入场门控：内容就绪后的下一帧置 true，触发首次 stagger 入场
     var hasEntered by remember { mutableStateOf(false) }
     val dataReady = state is LearningPathUiState.Success
     LaunchedEffect(dataReady) {
@@ -104,7 +92,6 @@ fun LearningPathScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // 状态切换：220ms 淡入淡出
             Crossfade(
                 targetState = state,
                 animationSpec = tweenNormal(),
@@ -132,7 +119,6 @@ fun LearningPathScreen(
                     }
                     is LearningPathUiState.Success -> {
                         val paths = current.paths
-                        // 头部统计：路径数 / 阶段总数
                         val totalStages = paths.sumOf { it.stageCount }
 
                         LazyColumn(
@@ -140,7 +126,6 @@ fun LearningPathScreen(
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            // 统计横幅（提级：与首页同级的内容锚点）
                             item(key = "stats") {
                                 StatsBar(
                                     stats = listOf(
@@ -168,11 +153,6 @@ fun LearningPathScreen(
     }
 }
 
-/**
- * 学习路径项（提级版）
- *
- * 序号徽标 + 标题/描述 + 阶段刻度条（几何刻度线，直读学习跨度）+ 阶段计数药丸
- */
 @Composable
 private fun LearningPathItem(
     entry: LearningPathSummary,
@@ -195,7 +175,6 @@ private fun LearningPathItem(
             .padding(14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 序号徽标：分类色描边小方块 + 等宽序号（替代单调色条，信息量与视觉层级更高）
         Box(
             modifier = Modifier
                 .clip(RoundedCornerShape(3.dp))
@@ -232,7 +211,6 @@ private fun LearningPathItem(
                     overflow = TextOverflow.Ellipsis
                 )
             }
-            // 阶段刻度条：每阶段一根 2dp 竖条（几何刻度线，非点状），超出上限以「+N」提示
             if (entry.stageCount > 0) {
                 Spacer(modifier = Modifier.height(6.dp))
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -258,7 +236,6 @@ private fun LearningPathItem(
             }
         }
 
-        // 阶段计数药丸
         if (entry.stageCount > 0) {
             Spacer(modifier = Modifier.width(8.dp))
             Text(

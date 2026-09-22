@@ -46,12 +46,6 @@ import com.fandex.app.ui.components.ThemeQuickToggle
 import com.fandex.app.ui.components.TopDock
 import com.fandex.app.ui.theme.LocalExtendedColors
 
-/**
- * 学习路径详情页
- *
- * 展示某技术的学习路径：阶段（标题 + 副标题）与节点
- * 节点带难度标签与摘要，点击跳转对应文档
- */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LearningPathDetailScreen(
@@ -71,7 +65,6 @@ fun LearningPathDetailScreen(
     val accentHex by viewModel.accentHex.collectAsState()
     val accent = CategoryColor.parse(accentHex)
 
-    // 入场门控：内容就绪后的下一帧置 true，触发首次 stagger 入场
     var hasEntered by remember { mutableStateOf(false) }
     val dataReady = state is LearningPathDetailUiState.Success
     LaunchedEffect(dataReady) {
@@ -101,7 +94,6 @@ fun LearningPathDetailScreen(
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // 状态切换：220ms 淡入淡出
             Crossfade(
                 targetState = state,
                 animationSpec = tweenNormal(),
@@ -134,7 +126,6 @@ fun LearningPathDetailScreen(
                             contentPadding = PaddingValues(16.dp),
                             verticalArrangement = Arrangement.spacedBy(16.dp)
                         ) {
-                            // 摘要
                             if (path.summary.isNotEmpty()) {
                                 item(key = "summary") {
                                     Text(
@@ -147,7 +138,6 @@ fun LearningPathDetailScreen(
                                     )
                                 }
                             }
-                            // 阶段（stagger 入场 + 重排动画）
                             itemsIndexed(
                                 path.stages,
                                 key = { _, stage -> stage.id.ifEmpty { stage.title } }
@@ -170,9 +160,6 @@ fun LearningPathDetailScreen(
     }
 }
 
-/**
- * 阶段项
- */
 @Composable
 private fun StageItem(
     moduleId: String,
@@ -192,7 +179,6 @@ private fun StageItem(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 阶段标题与副标题（多彩分类色）
         Text(
             text = stage.title,
             style = MaterialTheme.typography.titleMedium,
@@ -206,7 +192,6 @@ private fun StageItem(
                 color = extendedColors.fgSecondary
             )
         }
-        // 节点列表
         stage.nodes.forEach { node ->
             Row(
                 modifier = Modifier
@@ -251,5 +236,3 @@ private fun StageItem(
         }
     }
 }
-
-

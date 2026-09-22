@@ -1,15 +1,4 @@
-/**
- * 算法教学页样式（教程课程表 + 页内题图鉴视图 + 外部平台推荐）
- * -----------------------------------------------------------------------------
- * 与学习路线页同源的美术语言：复用 index.css 的 Hero/统计/入口样式，
- * 页面专属类统一 algo-（教学/视图切换/外部推荐）/ ap-（题图鉴列表）/ apd-（题目详情）前缀。
- * 题图鉴列表视图已并入算法教学页（2026-09-19 入口扁平化），样式随迁。
- * 约束：无点状装饰（统一竖条/几何刻度）、直角小圆角、动效全部消费 --motion-* 令牌。
- */
 
-/* ============================================================
- * 通用：分区标题（3px 竖条 + 标签 + 计数，延续分类标题语言）
- * ============================================================ */
 .algo-section,
 .ap-section-head {
   margin-block: var(--space-8) var(--space-4);
@@ -28,8 +17,6 @@
   width: 3px;
   height: 14px;
   border-radius: 1px;
-  /* 章节竖条跟随模块主题色：单元色 --unit-color -> 页面主题色 --page-color
-   * -> 题目难度色 --ap-color -> 品牌青兜底 */
   background: var(--unit-color, var(--page-color, var(--ap-color, var(--color-accent-base))));
   align-self: center;
   flex-shrink: 0;
@@ -57,9 +44,6 @@
   color: var(--color-text-tertiary);
 }
 
-/* ============================================================
- * 算法教学页：单元章节与文档卡片
- * ============================================================ */
 .algo-units {
   display: flex;
   flex-direction: column;
@@ -72,7 +56,6 @@
   gap: var(--space-2);
 }
 
-/* 文档卡片：与 lp-tech-card 同款视觉（顶部装饰线悬停展开） */
 .algo-doc-card {
   --card-color: var(--unit-color, var(--page-color, var(--color-accent-base)));
   position: relative;
@@ -130,7 +113,6 @@
   min-width: 0;
 }
 
-/* 编号章：mono 小号，几何方块底 */
 .algo-doc-card__no {
   flex-shrink: 0;
   padding: 2px 5px;
@@ -162,7 +144,6 @@
   color: var(--card-color);
 }
 
-/* 难度角标：入门/进阶/深入（教学文档 frontmatter 映射） */
 .algo-doc-card__level {
   flex-shrink: 0;
   font-family: var(--font-family-mono);
@@ -185,7 +166,6 @@
   overflow: hidden;
 }
 
-/* 卡片入场：上滑淡入（与学习路线卡片一致） */
 .algo-unit__grid .algo-doc-card {
   animation: fndx-slide-up var(--motion-duration-normal) var(--motion-easing-out) both;
 }
@@ -195,9 +175,6 @@
     animation: none;
   }
 }
-/* ============================================================
- * 题图鉴列表页：筛选栏
- * ============================================================ */
 .ap-filter {
   display: flex;
   flex-direction: column;
@@ -229,7 +206,6 @@
   min-width: 3.5em;
 }
 
-/* 分类/难度芯片 */
 .ap-chip {
   appearance: none;
   border: 1px solid var(--color-border-light);
@@ -276,7 +252,6 @@
   color: color-mix(in srgb, var(--page-color, var(--color-accent-base)) 75%, var(--color-text-secondary));
 }
 
-/* 搜索框：mono 输入 */
 .ap-search {
   flex: 1;
   min-width: 140px;
@@ -301,7 +276,6 @@
   border-color: var(--color-border-focus);
 }
 
-/* 命中计数行 */
 .ap-count {
   font-family: var(--font-family-mono);
   font-size: 0.66rem;
@@ -310,9 +284,6 @@
   margin: 0 0 var(--space-2);
 }
 
-/* ============================================================
- * 题图鉴列表页：题目卡片
- * ============================================================ */
 .ap-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
@@ -368,8 +339,6 @@
   outline-offset: 2px;
 }
 
-/* 拉伸链接：卡片内容包在 a 内，::after 覆盖整卡作为点击热区，
- * 进度标记按钮以更高 z-index 悬于热区之上 */
 .ap-card__link {
   display: flex;
   flex-direction: column;
@@ -395,7 +364,6 @@
   outline-offset: -2px;
 }
 
-/* 本机进度标记行：已掌握 / 待复习角标（卡片右下角） */
 .ap-card__marks {
   position: relative;
   z-index: 2;
@@ -405,7 +373,6 @@
   margin-top: var(--space-1);
 }
 
-/* 标记按钮：细线方框 + 语义色激活态（对勾 = 已掌握，星 = 待复习） */
 .ap-mark {
   display: inline-flex;
   align-items: center;
@@ -491,7 +458,6 @@
   color: var(--ap-color, var(--color-accent-base));
 }
 
-/* 难度徽章：竖条 + 文字（非实心色块，克制） */
 .ap-badge {
   flex-shrink: 0;
   display: inline-flex;
@@ -561,12 +527,10 @@
   line-height: 1.4;
 }
 
-/* 筛选隐藏：display:flex 会覆盖 hidden 的默认样式，需显式回收 */
 .ap-card[hidden] {
   display: none;
 }
 
-/* 命中计数行：计数 + 本机进度说明 */
 .ap-count-row {
   display: flex;
   align-items: baseline;
@@ -582,7 +546,6 @@
   letter-spacing: 0.03em;
 }
 
-/* 空状态 */
 .ap-empty {
   padding: var(--space-8) var(--space-4);
   text-align: center;
@@ -597,7 +560,6 @@
   margin: 0 0 var(--space-3);
 }
 
-/* 空态恢复动作：清除关键词 / 重置全部筛选 */
 .ap-empty__actions {
   display: flex;
   justify-content: center;
@@ -609,16 +571,12 @@
   display: none;
 }
 
-/* ============================================================
- * 题目详情页
- * ============================================================ */
 .apd {
   max-width: 860px;
   margin-inline: auto;
   padding-inline: var(--space-4);
 }
 
-/* 面包屑：mono 路径风格 */
 .apd-crumb {
   display: flex;
   align-items: center;
@@ -643,7 +601,6 @@
   color: var(--color-border-light);
 }
 
-/* 题目头部 */
 .apd-head {
   margin-bottom: var(--space-6);
   padding-bottom: var(--space-4);
@@ -684,7 +641,6 @@
   margin-top: var(--space-2);
 }
 
-/* 本机进度标记行：已掌握 / 待复习（带文字的大号变体） */
 .apd-progress {
   display: flex;
   align-items: center;
@@ -717,7 +673,6 @@
   color: var(--color-text-tertiary);
 }
 
-/* 章节区块 */
 .apd-sec {
   margin-block: var(--space-6);
 }
@@ -733,7 +688,6 @@
   color: var(--color-fg-primary);
 }
 
-/* 题意正文 */
 .apd-statement p {
   margin: 0 0 var(--space-2);
   font-size: 0.82rem;
@@ -745,7 +699,6 @@
   margin-bottom: 0;
 }
 
-/* 思路讲解：有序分点 + 竖条标记 */
 .apd-idea {
   list-style: none;
   counter-reset: idea;
@@ -776,7 +729,6 @@
   color: var(--ap-color, var(--color-accent-base));
 }
 
-/* 参考实现折叠块 */
 .apd-code summary {
   display: inline-flex;
   align-items: center;
@@ -825,7 +777,6 @@
   overflow: hidden;
 }
 
-/* Shiki 输出容器：清零预设边距，行高与字号贴近文档页 */
 .apd-code__body pre {
   margin: 0;
   padding: var(--space-4);
@@ -834,7 +785,6 @@
   border-radius: 0;
 }
 
-/* 复杂度与信息卡 */
 .apd-meta {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
@@ -863,7 +813,6 @@
   color: var(--color-fg-primary);
 }
 
-/* 关联教程芯片 */
 .apd-rel {
   display: flex;
   flex-wrap: wrap;
@@ -912,7 +861,6 @@
   outline-offset: 2px;
 }
 
-/* 上一篇 / 下一篇 */
 .apd-nav {
   display: flex;
   justify-content: space-between;
@@ -971,7 +919,6 @@
   visibility: hidden;
 }
 
-/* 图鉴返回条（详情页底部） */
 .apd-back {
   display: flex;
   justify-content: center;

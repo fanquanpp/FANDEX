@@ -1,10 +1,5 @@
 import type { AlgoProblem } from './types';
 
-/**
- * 算法题图鉴 · 图论篇
- * BFS / DFS / 拓扑排序 / 并查集 / Dijkstra
- * 题面为便于学习的概括复述，参考实现为 Python。
- */
 export const GRAPH_PROBLEMS: AlgoProblem[] = [
   {
     slug: 'number-of-islands',

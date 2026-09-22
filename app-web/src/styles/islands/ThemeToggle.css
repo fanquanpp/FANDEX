@@ -1,29 +1,8 @@
-/**
- * 主题切换按钮（Islands 层）
- * -----------------------------------------------------------------------------
- * 与 theme.css 的 .fndx-theme-toggle 共享命名，本文件补充岛屿交互专属样式：
- * - SSR 透明占位（避免水合后 CLS）
- * - 客户端挂载淡入
- *
- * 统一设计：与 .fndx-icon-btn 基类共享 ghost 风格（透明背景 + 无边框），
- * 悬停行为由 .fndx-icon-btn 统一控制，此处仅补充 Islands 专属行为。
- *
- * 归入 @layer islands：低于 utilities、高于 components，
- * 避免未分层 CSS 覆盖 @layer tokens 导致主题切换失效。
- *
- * 性能说明：已移除 View Transitions 圆形扩散动画（root 快照合成在复杂
- * DOM 场景下导致严重卡顿）；图标旋转过渡亦由 Motion React 改为纯 CSS 实现，
- * 主题切换组件不再携带任何动画运行时。
- * -----------------------------------------------------------------------------
- */
 @layer islands {
-  /* 日/月双图标叠放容器：按钮作为定位上下文 */
   .fndx-theme-toggle {
     position: relative;
   }
 
-  /* 图标叠放与旋转交叉过渡（纯 CSS，替代 Motion React）
-     透明 + 旋转 -90deg 隐藏，可见态旋转回 0deg，形成切换时的旋入旋出效果 */
   .fndx-theme-icon {
     position: absolute;
     inset: 0;
@@ -44,7 +23,6 @@
     transform: rotate(0deg) scale(1);
   }
 
-  /* 减弱动态效果偏好下直接切换，不做旋转过渡 */
   @media (prefers-reduced-motion: reduce) {
     .fndx-theme-icon {
       transition: none;
@@ -52,11 +30,7 @@
     }
   }
 
-  /* 主题切换按钮基础容器
-     复用 theme.css 的 .fndx-theme-toggle 通用样式（透明背景 + 无边框），
-     此处补充 Islands 专属的 SSR 占位与挂载淡入 */
   .fndx-theme-toggle {
-    /* SSR 阶段透明占位，避免水合后图标突然出现造成 CLS */
     opacity: 0;
     pointer-events: none;
     transition:
@@ -68,13 +42,11 @@
       transform var(--motion-duration-instant) var(--motion-easing-out);
   }
 
-  /* 客户端挂载完成：淡入并启用交互 */
   .fndx-theme-toggle--ready {
     opacity: 1;
     pointer-events: auto;
   }
 
-  /* 焦点可见：可访问性焦点环（与 .fndx-icon-btn 保持一致） */
   .fndx-theme-toggle:focus-visible {
     outline: 2px solid var(--color-border-focus);
     outline-offset: 2px;

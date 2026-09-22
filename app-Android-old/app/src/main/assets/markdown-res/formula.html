@@ -1,14 +1,4 @@
 <!DOCTYPE html>
-<!--
-  FANDEX appold 离线公式渲染宿主页（KaTeX）
-  由 WebViewRenderers.kt 通过 URL 参数传入渲染数据：
-    c    - 公式内容（URL-safe Base64，UTF-8）
-    d    - 是否块级渲染（1 = displayMode）
-    dark - 暗色模式（1 = 暗色）
-    fg   - 前景文字色（#RRGGBB）
-  渲染完成后通过 FandexHeight.onHeight 回报文档高度，
-  Compose 侧据此设置 WebView 实际高度，避免滚动嵌套。
--->
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8">

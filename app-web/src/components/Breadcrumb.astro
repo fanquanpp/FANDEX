@@ -1,14 +1,4 @@
 ---
-/**
- * 面包屑导航组件
- * 显示当前页面的层级路径，支持移动端省略中间层级
- * 包含侧边栏开关按钮（仅在有侧边栏时显示）
- *
- * 双语：items 可携带 i18nKey（字典键），渲染 data-i18n 属性供运行时切换；
- * 未携带的项（模块/文档标题等内容层）保持原文
- *
- * 样式已拆分至 styles/components/breadcrumb.css
- */
 import '@/styles/components/breadcrumb.css';
 
 const { items, hasSidebar = false } = Astro.props as {
@@ -18,7 +8,6 @@ const { items, hasSidebar = false } = Astro.props as {
 ---
 
 <nav class="breadcrumb">
-  <!-- 侧边栏开关按钮：仅文档页显示 -->
   {
     hasSidebar && (
       <button class="nav-toggle" id="nav-toggle" aria-label="菜单">
@@ -39,7 +28,6 @@ const { items, hasSidebar = false } = Astro.props as {
   }
   {
     items.map((item, i) => {
-      // 当层级超过2时，移动端隐藏中间层级，显示省略号
       const isMobileHidden = items.length > 2 && i > 0 && i < items.length - 1;
       return (
         <>
@@ -77,4 +65,3 @@ const { items, hasSidebar = false } = Astro.props as {
     })
   }
 </nav>
-

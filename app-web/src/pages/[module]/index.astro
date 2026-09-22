@@ -1,9 +1,4 @@
 ---
-/**
- * 模块文档列表页（第 1 页）
- * 第 2 页起由 [module]/page/[page].astro 承载，两者共用 ModulePageContent 组件。
- * 超大模块（300+ 篇）经分页后单页体积与 viewport 预取带宽显著下降。
- */
 import Layout from '@/components/Layout.astro';
 import SEO from '@/components/SEO.astro';
 import Sidebar from '@/components/Sidebar.astro';
@@ -24,7 +19,6 @@ if (!meta) {
   return Astro.redirect(`${import.meta.env.BASE_URL}404`);
 }
 
-// 通过 doc-service 获取当前模块的文档列表（已按 order 升序排序）
 const sortedDocs = await getDocsByModule(module);
 
 const totalPages = Math.ceil(sortedDocs.length / MODULE_PAGE_SIZE);
@@ -37,7 +31,7 @@ const totalPages = Math.ceil(sortedDocs.length / MODULE_PAGE_SIZE);
     description={meta.description}
     canonical={new URL(Astro.url.pathname, Astro.site).href}
   />
-  {/* 分页关系提示：便于搜索引擎理解第 1 页与后续分页的关系 */}
+  {}
   {totalPages > 1 && <link rel="next" href={new URL(`${Astro.url.pathname}page/2/`, Astro.site).href} slot="head" />}
   <Sidebar slot="sidebar" moduleId={module} />
 

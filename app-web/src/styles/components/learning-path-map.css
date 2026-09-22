@@ -1,16 +1,4 @@
-/**
- * 学习路径思维导图组件样式
- * -----------------------------------------------------------------------------
- * 设计说明：
- * - 全部自绘 SVG，样式基于 ark 语义令牌，支持明暗双主题
- * - 主题色通过 --lp-color（技术分类色）注入，节点/阶段/连线统一取色
- * - 禁止点状装饰：序号/徽标/指示均使用直角小圆角与竖条刻度
- * - 归入 @layer components，避免覆盖未分层样式
- */
 @layer components {
-  /* ============================================================
-   * 主容器：统计条 + 画布 + 图例
-   * ============================================================ */
   .lp-map {
     --lp-color: var(--color-accent-base);
     display: flex;
@@ -36,9 +24,6 @@
     justify-content: flex-end;
   }
 
-  /* ============================================================
-   * 控制条
-   * ============================================================ */
   .lp-controls {
     display: inline-flex;
     align-items: center;
@@ -57,7 +42,6 @@
     color: var(--color-fg-secondary);
   }
 
-  /* 键盘快捷键提示条 */
   .lp-map__shortcuts {
     display: flex;
     flex-wrap: wrap;
@@ -67,7 +51,6 @@
     color: var(--color-fg-tertiary);
   }
 
-  /* 触屏设备没有物理键盘，快捷键提示无意义，直接隐藏 */
   @media (pointer: coarse) {
     .lp-map__shortcuts {
       display: none;
@@ -91,9 +74,6 @@
     color: var(--color-fg-secondary);
   }
 
-  /* ============================================================
-   * 画布
-   * ============================================================ */
   .lp-map__body {
     display: grid;
     grid-template-columns: minmax(0, 1fr) 320px;
@@ -131,7 +111,6 @@
     cursor: grabbing;
   }
 
-  /* 连线：默认中性色，根节点连线由阶段色内联驱动 */
   .lp-edge {
     fill: none;
     stroke: var(--color-border-strong);
@@ -139,9 +118,6 @@
     opacity: 0.72;
   }
 
-  /* ============================================================
-   * 根节点（技术入口）
-   * ============================================================ */
   .lp-root {
     outline: none;
   }
@@ -181,9 +157,6 @@
     fill: var(--color-fg-tertiary);
   }
 
-  /* ============================================================
-   * 阶段列
-   * ============================================================ */
   .lp-stage__toggle {
     cursor: pointer;
     outline: none;
@@ -252,19 +225,14 @@
     transition: transform var(--motion-duration-normal) var(--motion-easing-out);
   }
 
-  /* 折叠后箭头旋转为向下，表示可展开 */
   .lp-stage__chevron--collapsed {
     transform: rotate(90deg);
   }
 
-  /* 阶段顶部主题色装饰线 */
   .lp-stage__accent {
     stroke-width: 2;
   }
 
-  /* ============================================================
-   * 知识点节点
-   * ============================================================ */
   .lp-node {
     cursor: pointer;
     outline: none;
@@ -285,7 +253,6 @@
       fill var(--motion-duration-instant) var(--motion-easing-out);
   }
 
-  /* 卡片基础投影：柔和层次，hover 时加深 */
   .lp-node__rect {
     filter: drop-shadow(0 1px 2px rgba(10, 14, 20, 0.08));
   }
@@ -294,7 +261,6 @@
     filter: drop-shadow(0 2px 5px rgba(10, 14, 20, 0.16));
   }
 
-  /* 待补充节点：虚线边框 + 警示色 */
   .lp-node__rect--planned {
     stroke: color-mix(in oklch, var(--color-warning-base) 62%, var(--color-border-strong));
     stroke-dasharray: 5 4;
@@ -306,7 +272,6 @@
     fill: color-mix(in oklch, var(--lp-color) 6%, var(--color-bg-card));
   }
 
-  /* 悬停微抬升：作用于内层 .lp-node__lift，不覆盖外层定位 transform（避免节点跳位/抽搐） */
   .lp-node__lift {
     transform-box: fill-box;
     transform-origin: center;
@@ -354,9 +319,6 @@
     fill: var(--color-danger-base);
   }
 
-  /* ============================================================
-   * 详情面板
-   * ============================================================ */
   .lp-panel {
     --lp-panel-color: var(--color-accent-base);
     display: flex;
@@ -376,7 +338,6 @@
     color: var(--color-fg-secondary);
   }
 
-  /* 空状态：自绘导图示意 + 引导文案 */
   .lp-panel__empty-svg {
     width: 150px;
     height: 90px;
@@ -487,7 +448,6 @@
     color: var(--color-fg-secondary);
   }
 
-  /* 阅读文档主按钮 */
   .lp-panel__doc-link {
     display: inline-flex;
     align-items: center;
@@ -509,7 +469,6 @@
     background: color-mix(in oklch, var(--lp-panel-color) 16%, transparent);
   }
 
-  /* 待补充提示 */
   .lp-panel__notice {
     padding: var(--space-2) var(--space-3);
     border-left: 3px solid var(--color-warning-base);
@@ -519,7 +478,6 @@
     color: var(--color-fg-secondary);
   }
 
-  /* 官方资料兜底链接 */
   .lp-panel__official {
     display: inline-flex;
     align-items: center;
@@ -535,7 +493,6 @@
     color: var(--lp-panel-color);
   }
 
-  /* 定位按钮：幽灵风格 */
   .lp-panel__locate {
     display: inline-flex;
     align-items: center;
@@ -566,9 +523,6 @@
     color: var(--color-fg-tertiary);
   }
 
-  /* ============================================================
-   * 图例
-   * ============================================================ */
   .lp-map__legend {
     display: flex;
     flex-wrap: wrap;
@@ -617,11 +571,6 @@
     background: var(--color-danger-base);
   }
 
-  /* ============================================================
-   * 学习进度（roadmap.sh 式三态 + Duolingo 式进度环）
-   * ============================================================ */
-
-  /* --- 工具栏进度环 --- */
   .lp-progress {
     display: flex;
     align-items: center;
@@ -638,14 +587,12 @@
     height: 30px;
   }
 
-  /* 环轨道：细弱底色 */
   .lp-progress__track {
     fill: none;
     stroke: var(--color-border-light);
     stroke-width: 3.5;
   }
 
-  /* 环填充：技术主题色，末端圆角；比例由 stroke-dasharray 内联控制 */
   .lp-progress__fill {
     fill: none;
     stroke: var(--lp-color);
@@ -674,7 +621,6 @@
     letter-spacing: 0.06em;
   }
 
-  /* 学习中读数：仅存在学习节点时出现 */
   .lp-progress__learning {
     padding: 2px 8px;
     border: 1px solid color-mix(in srgb, var(--color-accent-base) 40%, transparent);
@@ -685,7 +631,6 @@
     white-space: nowrap;
   }
 
-  /* --- 节点三态：学习中（青色刻度）/ 已完成（绿色对勾 + 状态字色） --- */
   .lp-node__progress-mark {
     fill: var(--color-accent-base);
   }
@@ -706,7 +651,6 @@
     fill: var(--color-success-base);
   }
 
-  /* 已完成节点：标题弱化 + 边框覆成功色，传达"收起不必再盯" */
   .lp-node--done .lp-node__title {
     fill: var(--color-fg-secondary);
   }
@@ -715,12 +659,10 @@
     stroke: color-mix(in srgb, var(--color-success-base) 45%, var(--color-border-default));
   }
 
-  /* 学习中节点：边框覆强调色 */
   .lp-node--learning .lp-node__rect {
     stroke: color-mix(in srgb, var(--color-accent-base) 55%, var(--color-border-default));
   }
 
-  /* --- 详情面板进度分段选择 --- */
   .lp-panel__progress {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -757,7 +699,6 @@
     color: var(--color-accent-base);
   }
 
-  /* 已完成态激活：绿色系反馈 */
   .lp-panel__progress-btn.is-done.is-active {
     border-color: color-mix(in srgb, var(--color-success-base) 50%, transparent);
     color: var(--color-success-base);
@@ -768,7 +709,6 @@
     outline-offset: 1px;
   }
 
-  /* --- 图例：进度状态项（3px 竖条刻度，与难度色条同语言） --- */
   .lp-legend-state {
     width: 3px;
     height: 12px;
@@ -784,9 +724,6 @@
     background: var(--color-success-base);
   }
 
-  /* ============================================================
-   * 响应式
-   * ============================================================ */
   @media (max-width: 1024px) {
     .lp-map__body {
       grid-template-columns: minmax(0, 1fr);
@@ -802,7 +739,6 @@
       height: 430px;
     }
 
-    /* 移动端进度环隐藏文字读数，仅保留环形与数值 */
     .lp-progress__label,
     .lp-progress__learning {
       display: none;

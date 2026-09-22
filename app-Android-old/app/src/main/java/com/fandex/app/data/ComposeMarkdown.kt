@@ -74,60 +74,23 @@ import com.fandex.app.ui.components.LocalStrings
 import com.fandex.app.ui.theme.LocalMarkdownColorScheme
 import com.fandex.app.ui.theme.MarkdownColorScheme
 
-/** 日志 TAG */
 private const val TAG = "ComposeMarkdown"
 
-/**
- * Compose 原生 Markdown 渲染器
- *
- * 功能：使用 commonmark-java 解析 Markdown AST，遍历节点使用 Compose 原生组件渲染
- * 输入：Markdown 文本、字体缩放比例（颜色方案通过 LocalMarkdownColorScheme 注入）
- * 输出：Compose 原生 UI 组件树（完全不使用 WebView）
- *
- * 设计原则：
- * - AST 遍历递归渲染，每个节点类型对应独立 Composable
- * - 行内格式使用 AnnotatedString.Builder + pushStyle/pop 实现
- * - 代码块使用 horizontalScroll + monospace font
- * - 表格使用 Row/Column 布局，支持横向滚动
- * - 颜色使用 LocalMarkdownColorScheme 注入的 MarkdownColorScheme
- * - 支持字体缩放（fontSizeScale 参数，0.8-1.4）
- * - 支持深色/浅色模式（由 FANDEXTheme 通过 CompositionLocalProvider 自动注入）
- */
-
-/** commonmark 解析器（线程安全，全局复用） */
 private val markdownParser: Parser = Parser.builder()
     .extensions(listOf(TablesExtension.create(), StrikethroughExtension.create()))
     .build()
 
-/**
- * Markdown 预处理：转换 LaTeX 数学公式和 [TOC] 目录标记
- *
- * 输入：原始 Markdown 文本
- * 输出：处理后的 Markdown 文本
- *
- * 流程：
- * 1. 块级公式 $$...$$ -> 围栏代码块 ```math ... ```
- * 2. 行内公式 $...$ -> 行内代码 `...`（带 $ 前后缀标记）
- *    注意：表格行内的行内公式不替换，避免反引号破坏表格语法
- * 3. [TOC] / [[toc]] / {:toc} -> 移除（目录标记在离线应用中无法跳转）
- */
 @VisibleForTesting
 internal fun PreprocessMarkdown(markdown: String): String {
-    /* 第一步：处理块级公式 $$...$$（必须先处理，避免被行内公式匹配干扰） */
-    /* 使用非贪婪匹配，支持多行公式 */
     var result = Regex("""\$\$\s*([\s\S]*?)\s*\$\$""").replace(markdown) { match ->
         val formula = match.groupValues[1].trim()
         "```math\n${formula}\n```"
     }
 
-    /* 第二步：逐行处理行内公式 $...$。
-       v4.2.1 修复：表格行内公式此前被整体跳过，导致表格中的公式以原始 LaTeX 文本展示。
-       现对表格行同样转换，但先把公式内的 | 转义为 \vert，避免竖线被误判为表格列分隔符。 */
     val blockFormulaPattern = Regex("""```math[\s\S]*?```""")
     val inlineMathPattern = Regex("""(?<!\$)\$(?!\$)(.+?)(?<!\$)\$(?!\$)""")
     result = result.lineSequence().joinToString("\n") { line ->
         if (line.trimStart().startsWith("|")) {
-            /* 表格行：转换 $...$ 并保护竖线字符 */
             blockFormulaPattern.replace(line) { it.value }.let { processedLine ->
                 inlineMathPattern.replace(processedLine) { match ->
                     val formula = match.groupValues[1].replace("|", "\\vert ")
@@ -135,7 +98,6 @@ internal fun PreprocessMarkdown(markdown: String): String {
                 }
             }
         } else {
-            /* 非表格行：替换行内公式为行内代码 */
             blockFormulaPattern.replace(line) { it.value }.let { processedLine ->
                 inlineMathPattern.replace(processedLine) { match ->
                     val formula = match.groupValues[1]
@@ -145,7 +107,6 @@ internal fun PreprocessMarkdown(markdown: String): String {
         }
     }
 
-    /* 第三步：移除 [TOC] / [[toc]] / {:toc} 目录标记 */
     result = result.replace(Regex("""^\[TOC\]\s*$""", RegexOption.MULTILINE), "")
     result = result.replace(Regex("""^\[\[toc\]\]\s*$""", RegexOption.MULTILINE), "")
     result = result.replace(Regex("""^\{:toc\}\s*$""", RegexOption.MULTILINE), "")
@@ -153,19 +114,6 @@ internal fun PreprocessMarkdown(markdown: String): String {
     return result
 }
 
-/**
- * Markdown 内容主 Composable
- *
- * 输入：
- * - markdown: Markdown 原始文本
- * - fontSizeScale: 字体缩放比例（0.8-1.4，默认 1.0）
- *
- * 输出：Compose 原生渲染的 Markdown 内容
- *
- * 流程：从 LocalMarkdownColorScheme 读取颜色方案 -> 解析 Markdown -> 遍历 AST -> 递归渲染各节点类型
- *
- * 说明：颜色方案由 FANDEXTheme 通过 CompositionLocalProvider 注入，无需传入 isDarkMode 参数
- */
 @Composable
 fun MarkdownContent(
     markdown: String,
@@ -191,18 +139,6 @@ fun MarkdownContent(
     }
 }
 
-/**
- * 渲染块级节点序列
- *
- * 输入：
- * - node: 起始节点（遍历其后续兄弟）
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：按顺序渲染所有块级兄弟节点
- *
- * 流程：遍历 node 的兄弟链表，根据节点类型分派到对应渲染函数
- */
 @Composable
 private fun RenderBlockNodes(
     node: Node?,
@@ -225,7 +161,6 @@ private fun RenderBlockNodes(
             is HtmlBlock -> RenderHtmlBlock(current, colorScheme, fontSizeScale)
             is Image -> RenderImagePlaceholder(current, colorScheme, fontSizeScale)
             else -> {
-                /* 未知块级节点，尝试递归渲染其子节点 */
                 if (current.firstChild != null) {
                     RenderBlockNodes(current.firstChild, colorScheme, fontSizeScale)
                 }
@@ -235,18 +170,6 @@ private fun RenderBlockNodes(
     }
 }
 
-/**
- * 渲染标题 h1-h6
- *
- * 输入：
- * - heading: Heading 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：带左边框装饰的标题文本
- *
- * 流程：根据 level 选择字号和样式 -> 构建左边框装饰 -> 渲染行内内容
- */
 @Composable
 private fun RenderHeading(
     heading: Heading,
@@ -312,18 +235,6 @@ private fun RenderHeading(
     }
 }
 
-/**
- * 渲染段落
- *
- * 输入：
- * - paragraph: Paragraph 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：两端对齐的段落文本
- *
- * 流程：构建行内 AnnotatedString -> 渲染两端对齐文本
- */
 @Composable
 private fun RenderParagraph(
     paragraph: Paragraph,
@@ -345,18 +256,6 @@ private fun RenderParagraph(
     )
 }
 
-/**
- * 渲染无序列表
- *
- * 输入：
- * - bulletList: BulletList 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：带自定义圆点的无序列表
- *
- * 流程：遍历 ListItem 子节点 -> 渲染圆点 + 内容
- */
 @Composable
 private fun RenderBulletList(
     bulletList: BulletList,
@@ -374,18 +273,6 @@ private fun RenderBulletList(
     }
 }
 
-/**
- * 渲染有序列表
- *
- * 输入：
- * - orderedList: OrderedList 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：带数字编号的有序列表
- *
- * 流程：遍历 ListItem 子节点 -> 递增编号 -> 渲染编号 + 内容
- */
 @Composable
 private fun RenderOrderedList(
     orderedList: OrderedList,
@@ -405,20 +292,6 @@ private fun RenderOrderedList(
     }
 }
 
-/**
- * 渲染列表项
- *
- * 输入：
- * - listItem: ListItem 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- * - isOrdered: 是否有序列表
- * - orderNumber: 有序列表编号
- *
- * 输出：带前缀标记的列表项
- *
- * 流程：渲染圆点或编号 -> 渲染列表项内容（可能包含子列表）
- */
 @Composable
 private fun RenderListItem(
     listItem: ListItem,
@@ -433,7 +306,6 @@ private fun RenderListItem(
         modifier = Modifier.fillMaxWidth().padding(vertical = 2.dp),
         verticalAlignment = Alignment.Top
     ) {
-        /* 列表前缀标记 */
         if (isOrdered) {
             Text(
                 text = "$orderNumber.",
@@ -461,7 +333,6 @@ private fun RenderListItem(
             }
         }
 
-        /* 列表项内容 */
         Column(modifier = Modifier.weight(1f)) {
             var child = listItem.firstChild
             while (child != null) {
@@ -491,18 +362,6 @@ private fun RenderListItem(
     }
 }
 
-/**
- * 渲染引用块
- *
- * 输入：
- * - blockQuote: BlockQuote 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：带左边框和背景色的引用块
- *
- * 流程：构建左边框 + 背景色容器 -> 递归渲染引用内子节点
- */
 @Composable
 private fun RenderBlockQuote(
     blockQuote: BlockQuote,
@@ -533,20 +392,6 @@ private fun RenderBlockQuote(
     }
 }
 
-/**
- * 渲染围栏代码块
- *
- * 输入：
- * - codeBlock: FencedCodeBlock 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：带语言标签、复制按钮、语法高亮、水平滚动的代码块
- *
- * 流程：提取语言和代码 -> 语法高亮 -> 渲染语言标签 + 复制按钮 + 代码内容
- *
- * v3.1.0 增强：当语言为 math 时，调用 MathFormulaBlock 渲染 LaTeX 公式
- */
 @Composable
 private fun RenderFencedCodeBlock(
     codeBlock: FencedCodeBlock,
@@ -554,14 +399,12 @@ private fun RenderFencedCodeBlock(
     fontSizeScale: Float
 ) {
     val context = LocalContext.current
-    /* 从 CompositionLocal 获取当前语言文案，用于代码块顶部语言标签与复制按钮 */
     val strings = LocalStrings.current
     val codeFontSize = 13.sp * fontSizeScale
     val language = codeBlock.info.trim()
     val code = codeBlock.literal
     val isCopied = remember { mutableStateOf(false) }
 
-    /* v4.2.1：mermaid 语言走离线 WebView 图表渲染路径（原实现按普通代码展示） */
     if (language.lowercase() == "mermaid") {
         Column(
             modifier = Modifier
@@ -577,7 +420,6 @@ private fun RenderFencedCodeBlock(
                     shape = RoundedCornerShape(6.dp)
                 )
         ) {
-            /* 顶部栏：Mermaid 标签 + 复制按钮 */
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -608,13 +450,11 @@ private fun RenderFencedCodeBlock(
                     )
                 }
             }
-            /* 图表内容：调用 MermaidDiagramView 离线渲染（失败时回退展示源码） */
             MermaidDiagramView(code = code.trim(), colorScheme = colorScheme)
         }
         return
     }
 
-    /* v3.1.0：math 语言走 LaTeX 公式渲染路径（v4.2.1 起改用 KaTeX 离线渲染） */
     if (language.lowercase() == "math") {
         Column(
             modifier = Modifier
@@ -630,7 +470,6 @@ private fun RenderFencedCodeBlock(
                     shape = RoundedCornerShape(6.dp)
                 )
         ) {
-            /* 顶部栏：LaTeX 标签 + 复制按钮 */
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -661,7 +500,6 @@ private fun RenderFencedCodeBlock(
                     )
                 }
             }
-            /* 公式内容：v4.2.1 起调用 KaTeX 离线渲染（原 Compose 子集解析仅支持少量命令） */
             MathWebViewBlock(
                 formula = code.trim(),
                 colorScheme = colorScheme,
@@ -671,7 +509,6 @@ private fun RenderFencedCodeBlock(
         return
     }
 
-    /* 语法高亮处理 */
     val highlightedCode = remember(code, language) {
         ApplySyntaxHighlight(code, language, colorScheme)
     }
@@ -690,7 +527,6 @@ private fun RenderFencedCodeBlock(
                 shape = RoundedCornerShape(6.dp)
             )
     ) {
-        /* 顶部栏：语言标签 + 复制按钮（始终显示，保证代码块头部信息完整） */
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -699,7 +535,6 @@ private fun RenderFencedCodeBlock(
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            /* 语言标签 */
                 Text(
                     text = when {
                         language == "math" -> strings.latexLabel
@@ -712,7 +547,6 @@ private fun RenderFencedCodeBlock(
                 modifier = Modifier.weight(1f)
             )
 
-            /* 复制按钮 */
             TextButton(
                 onClick = {
                     CopyToClipboard(context, code)
@@ -729,7 +563,6 @@ private fun RenderFencedCodeBlock(
             }
         }
 
-        /* 代码内容（水平可滚动） */
         val scrollState = rememberScrollState()
         Box(
             modifier = Modifier
@@ -748,18 +581,6 @@ private fun RenderFencedCodeBlock(
     }
 }
 
-/**
- * 渲染缩进代码块
- *
- * 输入：
- * - codeBlock: IndentedCodeBlock 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：等宽字体的代码块（无语言标签）
- *
- * 流程：提取代码文本 -> 渲染为等宽字体文本
- */
 @Composable
 private fun RenderIndentedCodeBlock(
     codeBlock: IndentedCodeBlock,
@@ -795,16 +616,6 @@ private fun RenderIndentedCodeBlock(
     }
 }
 
-/**
- * 渲染水平分割线
- *
- * 输入：
- * - colorScheme: 颜色方案
- *
- * 输出：水平分割线
- *
- * 流程：使用 HorizontalDivider 渲染
- */
 @Composable
 private fun RenderThematicBreak(colorScheme: MarkdownColorScheme) {
     HorizontalDivider(
@@ -816,18 +627,6 @@ private fun RenderThematicBreak(colorScheme: MarkdownColorScheme) {
     )
 }
 
-/**
- * 渲染表格头部
- *
- * 输入：
- * - tableHead: TableHead 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：带背景色的表头行
- *
- * 流程：遍历 TableRow -> 遍历 TableCell -> 渲染表头单元格
- */
 @Composable
 private fun RenderTableHead(
     tableHead: TableHead,
@@ -848,18 +647,6 @@ private fun RenderTableHead(
     }
 }
 
-/**
- * 渲染表格主体
- *
- * 输入：
- * - tableBody: TableBody 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：表格数据行
- *
- * 流程：遍历 TableRow -> 渲染数据单元格
- */
 @Composable
 private fun RenderTableBody(
     tableBody: TableBody,
@@ -883,25 +670,6 @@ private fun RenderTableBody(
     }
 }
 
-/**
- * 渲染表格行
- *
- * 输入：
- * - tableRow: TableRow 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- * - isHeader: 是否表头行
- * - isEvenRow: 是否偶数行（用于交替背景色）
- *
- * 输出：水平排列的表格单元格行
- *
- * 流程：遍历 TableCell -> 渲染每个单元格（使用 weight(1f) 均分宽度）
- *
- * 修复：
- * - 移除 width(IntrinsicSize.Min)，改用 weight(1f) 均分列宽
- * - 整个表格使用 horizontalScroll 支持横向滚动
- * - 表格外层包装确保列对齐
- */
 @Composable
 private fun RenderTableRow(
     tableRow: TableRow,
@@ -918,7 +686,6 @@ private fun RenderTableRow(
     }
     val cellTextColor = if (isHeader) colorScheme.tableHeaderFg else colorScheme.onBackground
 
-    /* 收集当前行的所有单元格 */
     val cells = mutableListOf<TableCell>()
     var cell = tableRow.firstChild
     while (cell != null) {
@@ -928,7 +695,6 @@ private fun RenderTableRow(
         cell = cell.next
     }
 
-    /* 每列使用 weight(1f) 均分宽度，确保列对齐 */
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -956,18 +722,6 @@ private fun RenderTableRow(
     }
 }
 
-/**
- * 渲染 HTML 块（降级为纯文本显示）
- *
- * 输入：
- * - htmlBlock: HtmlBlock 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：以等宽字体显示 HTML 源码
- *
- * 流程：提取 literal -> 渲染为等宽文本
- */
 @Composable
 private fun RenderHtmlBlock(
     htmlBlock: HtmlBlock,
@@ -988,18 +742,6 @@ private fun RenderHtmlBlock(
     )
 }
 
-/**
- * 渲染图片占位符
- *
- * 输入：
- * - image: Image 节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：图片 alt 文本占位符
- *
- * 流程：提取 alt 文本 -> 渲染占位框
- */
 @Composable
 private fun RenderImagePlaceholder(
     image: Image,
@@ -1025,18 +767,6 @@ private fun RenderImagePlaceholder(
     }
 }
 
-/**
- * 构建行内节点的 AnnotatedString
- *
- * 输入：
- * - node: 起始行内节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：包含所有行内格式的 AnnotatedString
- *
- * 流程：遍历行内节点链表 -> 根据节点类型应用 SpanStyle -> 递归处理嵌套
- */
 private fun BuildInlineAnnotatedString(
     node: Node?,
     colorScheme: MarkdownColorScheme,
@@ -1047,19 +777,6 @@ private fun BuildInlineAnnotatedString(
     return builder.toAnnotatedString()
 }
 
-/**
- * 递归追加行内节点到 AnnotatedString.Builder
- *
- * 输入：
- * - builder: AnnotatedString 构建器
- * - node: 当前行内节点
- * - colorScheme: 颜色方案
- * - fontSizeScale: 字体缩放
- *
- * 输出：无（直接修改 builder）
- *
- * 流程：遍历兄弟链表 -> 根据节点类型 pushStyle/pop -> 递归处理子节点
- */
 private fun AppendInlineNodes(
     builder: AnnotatedString.Builder,
     node: Node?,
@@ -1076,13 +793,10 @@ private fun AppendInlineNodes(
                 builder.append(" ")
             }
             is Code -> {
-                /* v3.1.0：检测行内数学公式 `$...$`，按 LaTeX 渲染 */
                 val literal = current.literal
                 val isInlineMath = literal.startsWith("$") && literal.endsWith("$") && literal.length >= 3
                 if (isInlineMath) {
-                    /* 提取公式内容（去掉首尾 $） */
                     val formula = literal.substring(1, literal.length - 1)
-                    /* 用主色 + 斜体渲染数学公式 AnnotatedString */
                     val mathAnnotated = renderInlineMath(
                         formula = formula,
                         colorScheme = colorScheme,
@@ -1090,7 +804,6 @@ private fun AppendInlineNodes(
                     )
                     builder.append(mathAnnotated)
                 } else {
-                    /* 行内代码：背景色 + 等宽字体 */
                     builder.pushStyle(SpanStyle(
                         fontFamily = FontFamily.Monospace,
                         fontSize = 13.sp * fontSizeScale,
@@ -1102,13 +815,11 @@ private fun AppendInlineNodes(
                 }
             }
             is Emphasis -> {
-                /* 斜体 */
                 builder.pushStyle(SpanStyle(fontStyle = FontStyle.Italic))
                 AppendInlineNodes(builder, current.firstChild, colorScheme, fontSizeScale)
                 builder.pop()
             }
             is StrongEmphasis -> {
-                /* 粗体 */
                 builder.pushStyle(SpanStyle(
                     fontWeight = FontWeight.Bold,
                     color = colorScheme.primary
@@ -1117,7 +828,6 @@ private fun AppendInlineNodes(
                 builder.pop()
             }
             is Strikethrough -> {
-                /* 删除线 */
                 builder.pushStyle(SpanStyle(
                     textDecoration = TextDecoration.LineThrough,
                     color = colorScheme.onSurfaceVariant
@@ -1126,7 +836,6 @@ private fun AppendInlineNodes(
                 builder.pop()
             }
             is Link -> {
-                /* 链接：带下划线和主色 */
                 builder.pushStyle(SpanStyle(
                     color = colorScheme.primary,
                     textDecoration = TextDecoration.Underline
@@ -1135,7 +844,6 @@ private fun AppendInlineNodes(
                 builder.pop()
             }
             is Image -> {
-                /* 行内图片：显示 alt 文本占位 */
                 val altText = current.title ?: current.destination.ifBlank { "img" }
                 builder.pushStyle(SpanStyle(
                     color = colorScheme.onSurfaceVariant,
@@ -1145,7 +853,6 @@ private fun AppendInlineNodes(
                 builder.pop()
             }
             else -> {
-                /* 未知行内节点，尝试递归处理子节点 */
                 if (current.firstChild != null) {
                     AppendInlineNodes(builder, current.firstChild, colorScheme, fontSizeScale)
                 }
@@ -1155,18 +862,6 @@ private fun AppendInlineNodes(
     }
 }
 
-/**
- * 应用语法高亮（轻量级关键字匹配）
- *
- * 输入：
- * - code: 代码文本
- * - language: 编程语言标识
- * - colorScheme: 颜色方案
- *
- * 输出：带语法高亮 SpanStyle 的 AnnotatedString
- *
- * 流程：先转义代码文本 -> 按语言匹配关键字 -> 使用 token 替换法避免重叠 -> 还原 token 为高亮 span
- */
 @VisibleForTesting
 internal fun ApplySyntaxHighlight(
     code: String,
@@ -1175,7 +870,6 @@ internal fun ApplySyntaxHighlight(
 ): AnnotatedString {
     if (code.isBlank()) return AnnotatedString(code)
 
-    /* LaTeX 数学公式：不做语法高亮，直接返回纯文本 */
     if (language.lowercase() == "math") {
         return AnnotatedString(code)
     }
@@ -1184,26 +878,21 @@ internal fun ApplySyntaxHighlight(
     val tokens = mutableListOf<TokenSpan>()
     val escapedCode = code
 
-    /* 第一步：提取字符串和注释 token（优先级最高，避免内部被二次匹配） */
     val stringPattern = Regex("""(["'])(?:(?!\1|\\).|\\.)*\1""")
     val singleLineCommentPattern = Regex("""//[^\n]*""")
     val blockCommentPattern = Regex("""/\*[\s\S]*?\*/""")
     val hashCommentPattern = Regex("""#[^\n]*""")
     val sqlCommentPattern = Regex("""--[^\n]*""")
 
-    /* 第二步：根据语言选择关键字集合 */
     val keywords = LanguageKeywords[language.lowercase()] ?: emptySet()
 
-    /* 第三步：扫描所有 token 位置 */
     val processedRanges = mutableListOf<IntRange>()
 
-    /* 字符串 token */
     stringPattern.findAll(escapedCode).forEach { match ->
         tokens.add(TokenSpan(match.range, colorScheme.hlString))
         processedRanges.add(match.range)
     }
 
-    /* 注释 token（根据语言选择注释风格） */
     val commentPatterns = when {
         language.lowercase() in listOf("python", "ruby", "yaml") -> listOf(hashCommentPattern)
         language.lowercase() == "sql" -> listOf(sqlCommentPattern, blockCommentPattern)
@@ -1219,7 +908,6 @@ internal fun ApplySyntaxHighlight(
         }
     }
 
-    /* 关键字 token */
     if (keywords.isNotEmpty()) {
         val keywordPattern = Regex("""\b(${keywords.joinToString("|")})\b""")
         keywordPattern.findAll(escapedCode).forEach { match ->
@@ -1230,7 +918,6 @@ internal fun ApplySyntaxHighlight(
         }
     }
 
-    /* 数字 token */
     val numberPattern = Regex("""\b(\d+\.?\d*(?:e[+-]?\d+)?)\b""", RegexOption.IGNORE_CASE)
     numberPattern.findAll(escapedCode).forEach { match ->
         if (!processedRanges.any { it.overlaps(match.range) }) {
@@ -1238,23 +925,19 @@ internal fun ApplySyntaxHighlight(
         }
     }
 
-    /* 第四步：按位置排序 token，构建 AnnotatedString */
     tokens.sortBy { it.range.first }
 
     var lastEnd = 0
     for (token in tokens) {
-        /* 追加 token 之前的普通文本 */
         if (token.range.first > lastEnd) {
             builder.append(escapedCode.substring(lastEnd, token.range.first))
         }
-        /* 追加带高亮的 token 文本 */
         builder.pushStyle(SpanStyle(color = token.color, fontWeight = FontWeight.Medium))
         builder.append(escapedCode.substring(token.range.first, token.range.last + 1))
         builder.pop()
         lastEnd = token.range.last + 1
     }
 
-    /* 追加剩余普通文本 */
     if (lastEnd < escapedCode.length) {
         builder.append(escapedCode.substring(lastEnd))
     }
@@ -1262,17 +945,6 @@ internal fun ApplySyntaxHighlight(
     return builder.toAnnotatedString()
 }
 
-/**
- * 复制文本到剪贴板
- *
- * 输入：
- * - context: Android Context
- * - text: 要复制的文本
- *
- * 输出：无（将文本写入系统剪贴板）
- *
- * 流程：获取 ClipboardManager -> 创建 ClipData -> 设置主剪贴板
- */
 private fun CopyToClipboard(context: Context, text: String) {
     try {
         val clipboard = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
@@ -1283,49 +955,21 @@ private fun CopyToClipboard(context: Context, text: String) {
     }
 }
 
-/**
- * 判断两个 IntRange 是否重叠
- *
- * 输入：另一个 IntRange
- * 输出：是否重叠
- */
 private fun IntRange.overlaps(other: IntRange): Boolean {
     return this.first <= other.last && other.first <= this.last
 }
 
-/**
- * 语法高亮 Token 数据类
- *
- * 属性：
- * - range: 在源代码中的字符范围
- * - color: 高亮颜色
- */
 private data class TokenSpan(
     val range: IntRange,
     val color: Color
 )
 
-/**
- * 标题渲染配置
- *
- * 属性：
- * - fontSize: 标题字号
- * - borderColor: 左边框颜色
- * - borderWidth: 左边框宽度
- */
 private data class HeadingConfig(
     val fontSize: TextUnit,
     val borderColor: Color,
     val borderWidth: Dp
 )
 
-/**
- * 各语言关键字映射表
- *
- * 功能：为语法高亮提供各编程语言的关键字集合
- * 输入：语言名称（小写）
- * 输出：该语言的关键字集合
- */
 private val LanguageKeywords: Map<String, Set<String>> = mapOf(
     "javascript" to setOf(
         "async", "await", "break", "case", "catch", "class", "const", "continue",

@@ -1,22 +1,7 @@
 package com.fandex.app.data
 
-/**
- * 字符串集合管理
- *
- * 功能：提供应用全局 UI 文本（简体中文）
- * 输出：所有 UI 文本的简体中文版本
- *
- * 默认语言：简体中文（唯一语言）
- * 文档内容语言：仅中文
- *
- * v3.1.0 变更：移除英语（EN）与日语（JA），仅保留简体中文与繁体中文，
- *              减少安装包体积并聚焦核心用户群体
- * v3.7.0 变更：移除繁体中文（ZH_TW），仅保留简体中文作为唯一语言，
- *              删除多语言切换机制与 Language 枚举，简化为单一 default 字符串集合
- */
 object Strings {
 
-    /** 语言字符串集合 */
     data class LangStrings(
         val appName: String,
         val welcomeBack: String,
@@ -51,7 +36,6 @@ object Strings {
         val latexLabel: String,
         val mermaidLabel: String,
         val codeLabel: String,
-        /* v3.1.0 新增：检查更新相关文案 */
         val checkUpdate: String,
         val checkingUpdate: String,
         val updateAvailable: String,
@@ -65,22 +49,18 @@ object Strings {
         val updateNoUpdate: String,
         val updateCheckFailed: String,
         val updateSize: String,
-        /* v3.1.0 新增：侧边栏开关项文案 */
         val splashScreen: String,
         val dynamicBackground: String,
         val autoCheckUpdate: String,
-        /* v3.6.0 新增：UI 显示大小调节文案 */
         val displaySize: String,
         val displaySizeHint: String,
         val displaySizeSmall: String,
         val displaySizeLarge: String,
-        /* v3.1.0 新增：更新自检说明提示文字 */
         val updateCheckHint: String,
         val updateAutoCheckHint: String,
         val updateNetworkHint: String
     )
 
-    /** 简体中文字符串集合（唯一语言） */
     val default: LangStrings = LangStrings(
         appName = "FANDEX",
         welcomeBack = "欢迎回来",

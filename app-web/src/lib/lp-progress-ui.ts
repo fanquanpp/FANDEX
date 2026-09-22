@@ -1,23 +1,6 @@
-/**
- * 学习路线进度直显（总览页 + 单技术地图页共用）
- * -----------------------------------------------------------------------------
- * 功能直达迭代（2026-09-19）：
- * 1. 单技术地图页：进入即记录「最近学习的技术」（localStorage fandex-lp-last），
- *    作为总览页「继续上次学习」直达芯片的数据源
- * 2. 总览页 hero：读取最近学习记录，点亮「继续上次」芯片，一步回到上次的地图
- * 3. 总览页技术卡片：读取三态进度表（fandex-lp-progress，islands/learning-path/
- *    progress.ts 同源键名），在卡片上直接标注「已完成 x / N · 学习中 y」，
- *    不进入地图即可看到每门技术的真实学习进度
- *
- * 兼容 ClientRouter：astro:page-load 重新绑定（dataset 防重入）；
- * localStorage 不可用（隐私模式）时全部静默降级为隐藏。
- * 徽章文案经 lib/i18n 的 t() 取当前语言（UI 双语）。
- */
 import { t } from './i18n';
 
-/** 最近学习记录键 */
 const LAST_KEY = 'fandex-lp-last';
-/** 三态进度表键（与 islands/learning-path/progress.ts 的 STORAGE_KEY 同源） */
 const PROGRESS_KEY = 'fandex-lp-progress';
 
 interface LastVisit {
@@ -26,7 +9,6 @@ interface LastVisit {
   ts?: number;
 }
 
-/** 进度表：技术模块 -> 节点 ID -> learning/done */
 type ProgressStore = Record<string, Record<string, 'learning' | 'done'>>;
 
 function readJson<T>(key: string): T | null {
@@ -38,7 +20,6 @@ function readJson<T>(key: string): T | null {
   }
 }
 
-/** 总览页：点亮「继续上次学习」直达芯片 */
 function initResumeChip(hub: HTMLElement): void {
   const wrap = hub.querySelector<HTMLElement>('[data-lp-resume]');
   if (!wrap) return;
@@ -50,7 +31,6 @@ function initResumeChip(hub: HTMLElement): void {
   if (!link || !name) return;
   link.href = `${base}learning-path/${last.module}/`;
   name.textContent = last.title;
-  // 芯片色块跟随目标技术的分类主题色（--lp-colors：module -> 分类色，构建期注入）
   try {
     const colors = hub.dataset.lpColors ? (JSON.parse(hub.dataset.lpColors) as Record<string, string>) : null;
     const color = colors?.[last.module];
@@ -61,7 +41,6 @@ function initResumeChip(hub: HTMLElement): void {
   wrap.hidden = false;
 }
 
-/** 总览页：技术卡片标注本机学习进度（已完成 / 学习中） */
 function initCardBadges(hub: HTMLElement): void {
   const store = readJson<ProgressStore>(PROGRESS_KEY) ?? {};
   hub.querySelectorAll<HTMLElement>('[data-lp-module]').forEach((card) => {
@@ -88,9 +67,7 @@ function initCardBadges(hub: HTMLElement): void {
   });
 }
 
-/** 绑定两个表面（每次页面切换后由 astro:page-load 调用） */
 function initLpProgressUi(): void {
-  // 总览页：继续上次 + 卡片进度徽章
   const hub = document.querySelector<HTMLElement>('[data-lp-hub]');
   if (hub && hub.dataset.lpHubBound !== 'true') {
     hub.dataset.lpHubBound = 'true';
@@ -98,7 +75,6 @@ function initLpProgressUi(): void {
     initCardBadges(hub);
   }
 
-  // 单技术地图页：记录最近学习（总览页直达芯片的数据源）
   const tech = document.querySelector<HTMLElement>('[data-lp-tech]');
   if (tech && tech.dataset.lpTechBound !== 'true') {
     tech.dataset.lpTechBound = 'true';
@@ -117,7 +93,6 @@ function initLpProgressUi(): void {
   }
 }
 
-// 浏览器专属代码：模块顶层执行守卫，避免构建期求值报错
 if (!import.meta.env.SSR && typeof document !== 'undefined') {
   document.addEventListener('astro:page-load', initLpProgressUi);
 }

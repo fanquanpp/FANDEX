@@ -66,32 +66,22 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
-/**
- * 抽屉 ViewModel
- *
- * 提供抽屉所需的站点统计、分类模块导航数据与主题控制
- * （设置收纳进抽屉，参考旧版 FANDEX-App 的抽屉面板设计）
- */
 class DrawerViewModel(application: Application) : AndroidViewModel(application) {
 
     private val container = (application as FandexApp).container
 
-    /** 分类模块数据 */
     private val _categories = MutableStateFlow<List<CategoryInfo>>(emptyList())
     val categories: StateFlow<List<CategoryInfo>> = _categories.asStateFlow()
 
-    /** 站点统计 */
     private val _stats = MutableStateFlow(DrawerStats())
     val stats: StateFlow<DrawerStats> = _stats.asStateFlow()
 
-    /** 模块文档计数（模块导航行展示） */
     private val _moduleCounts = MutableStateFlow<Map<String, Int>>(emptyMap())
     val moduleCounts: StateFlow<Map<String, Int>> = _moduleCounts.asStateFlow()
 
     val themeMode: StateFlow<ThemeMode> = container.themePreferences.themeMode
         .stateIn(viewModelScope, SharingStarted.Eagerly, ThemeMode.SYSTEM)
 
-    /** 全局字号缩放倍率（0.8-1.4，默认 1.0） */
     val fontScale: StateFlow<Float> = container.themePreferences.fontScale
         .stateIn(viewModelScope, SharingStarted.Eagerly, ThemePreferences.DEFAULT_FONT_SCALE)
 
@@ -109,7 +99,6 @@ class DrawerViewModel(application: Application) : AndroidViewModel(application) 
                     moduleCount = docStats.moduleCount,
                     docCount = docStats.docCount
                 )
-                // 各模块文档计数
                 _moduleCounts.value = container.docRepository.docIndex()
                     .groupingBy { it.module }.eachCount()
             }
@@ -120,34 +109,23 @@ class DrawerViewModel(application: Application) : AndroidViewModel(application) 
         viewModelScope.launch { container.themePreferences.setThemeMode(mode) }
     }
 
-    /** 写入全局字号缩放（自动收敛到 0.8-1.4 区间） */
     fun setFontScale(scale: Float) {
         viewModelScope.launch { container.themePreferences.setFontScale(scale) }
     }
 }
 
-/** 抽屉统计信息 */
 data class DrawerStats(
     val categoryCount: Int = 0,
     val moduleCount: Int = 0,
     val docCount: Int = 0
 )
 
-/** 抽屉导航项 */
 private data class DrawerNav(
     val icon: ImageVector,
     val label: String,
     val route: String
 )
 
-/**
- * 应用抽屉面板
- *
- * 功能布局参考旧版 FANDEX-App 抽屉，采用固定分区结构：
- * - 固定顶部：品牌头部 + 快捷导航 + 主题三选（不随内容滚动）
- * - 滚动区域：模块快速导航（多彩分类分组 + 计数）
- * - 固定底部：免责声明
- */
 @Composable
 fun AppDrawer(
     currentRoute: String,
@@ -174,9 +152,6 @@ fun AppDrawer(
     )
 
     Column(modifier = Modifier.fillMaxWidth()) {
-        // ---------------------------------------------------------------
-        // 固定顶部：品牌头部
-        // ---------------------------------------------------------------
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -210,24 +185,18 @@ fun AppDrawer(
             }
         }
 
-        // 品牌头部与固定分区之间的 1dp 分割线：增强分区层次
         HorizontalDivider(color = extendedColors.borderSubtle)
 
-        // ---------------------------------------------------------------
-        // 固定顶部：快捷导航（当前路由高亮，选中底色平滑过渡）
-        // ---------------------------------------------------------------
         navItems.forEach { item ->
             val selected = currentRoute == item.route ||
                 (item.route != com.fandex.app.ui.navigation.Routes.HOME &&
                     currentRoute.startsWith(item.route))
-            // 选中态背景色 180ms 平滑过渡
             val itemBackground by animateColorAsState(
                 targetValue = if (selected) MaterialTheme.colorScheme.primary.copy(alpha = 0.10f)
                 else Color.Transparent,
                 animationSpec = tween(durationMillis = 180),
                 label = "drawerNavBg"
             )
-            // 图标与文字颜色随选中态过渡
             val itemTint by animateColorAsState(
                 targetValue = if (selected) MaterialTheme.colorScheme.primary
                 else extendedColors.fgSecondary,
@@ -261,9 +230,6 @@ fun AppDrawer(
         Spacer(modifier = Modifier.height(4.dp))
         HorizontalDivider(color = extendedColors.borderSubtle)
 
-        // ---------------------------------------------------------------
-        // 固定顶部：主题三选（紧凑分段）
-        // ---------------------------------------------------------------
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -308,12 +274,8 @@ fun AppDrawer(
 
         HorizontalDivider(color = extendedColors.borderSubtle)
 
-        // ---------------------------------------------------------------
-        // 固定顶部：设置区（字号缩放 + 更新自检）
-        // ---------------------------------------------------------------
         DrawerSectionTitle("显示设置")
 
-        // 全局字号缩放：0.8-1.4，步长 0.1 共 7 档（移植自旧端 fontSizeScale 交互）
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -340,12 +302,11 @@ fun AppDrawer(
             Slider(
                 value = fontScale,
                 onValueChange = { newValue ->
-                    // 步长 0.1，量化到 0.8/0.9/1.0/1.1/1.2/1.3/1.4
                     val stepped = (newValue * 10).roundToInt() / 10f
                     viewModel.setFontScale(stepped.coerceIn(0.8f, 1.4f))
                 },
                 valueRange = 0.8f..1.4f,
-                steps = 5, // 7 档 = 6 区间 = 5 个步长分隔点
+                steps = 5,
                 modifier = Modifier.fillMaxWidth()
             )
         }
@@ -354,7 +315,6 @@ fun AppDrawer(
 
         DrawerSectionTitle("应用更新")
 
-        // 自动检查更新开关：开启时每日后台静默检查一次
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -385,14 +345,12 @@ fun AppDrawer(
             )
         }
 
-        // 手动检查更新：检查中展示加载指示，结果通过 hint 文字反馈
         UpdateSettingsItem(
             onClick = { updateViewModel.checkForUpdate(manual = true) },
             isChecking = checkState is CheckState.Checking,
             hint = updateHintOf(checkState, autoCheckEnabled)
         )
 
-        // 忽略版本：存在被忽略版本时展示，可一键恢复提醒
         if (ignoredVersion.isNotBlank()) {
             Row(
                 modifier = Modifier
@@ -424,9 +382,6 @@ fun AppDrawer(
 
         HorizontalDivider(color = extendedColors.borderSubtle)
 
-        // ---------------------------------------------------------------
-        // 滚动区域：模块快速导航（多彩分类）
-        // ---------------------------------------------------------------
         Column(
             modifier = Modifier
                 .weight(1f)
@@ -435,7 +390,6 @@ fun AppDrawer(
             DrawerSectionTitle("模块导航")
             categories.forEach { category ->
                 val color = CategoryColor.parse(category.colorHex)
-                // 分类小节标题
                 Row(
                     modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -455,7 +409,6 @@ fun AppDrawer(
                         fontWeight = FontWeight.SemiBold
                     )
                 }
-                // 模块行（点击直达模块页，带分类内序号与计数）
                 category.modules.forEachIndexed { index, module ->
                     val interaction = remember { MutableInteractionSource() }
                     Row(
@@ -504,9 +457,6 @@ fun AppDrawer(
             }
         }
 
-        // ---------------------------------------------------------------
-        // 固定底部：免责声明
-        // ---------------------------------------------------------------
         HorizontalDivider(color = extendedColors.borderSubtle)
         Text(
             text = "内容由人工与 AI 共同编写，请结合官方文档独立验证",
@@ -517,11 +467,6 @@ fun AppDrawer(
     }
 }
 
-/**
- * 检查更新结果提示文字
- *
- * 依据检查状态机给出一条简要反馈（Idle / Checking 时不提示）
- */
 private fun updateHintOf(state: CheckState, autoCheckEnabled: Boolean): String = when (state) {
     is CheckState.UpToDate -> "当前已是最新版本"
     is CheckState.Failed -> state.message
@@ -529,7 +474,6 @@ private fun updateHintOf(state: CheckState, autoCheckEnabled: Boolean): String =
     else -> if (autoCheckEnabled) "每日联网时自动检查" else "自动检查已关闭"
 }
 
-/** 抽屉分区标题 */
 @Composable
 private fun DrawerSectionTitle(title: String) {    Row(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp),
@@ -552,7 +496,6 @@ private fun DrawerSectionTitle(title: String) {    Row(
     }
 }
 
-/** 抽屉统计项 */
 @Composable
 private fun DrawerStat(value: String, label: String) {
     val extendedColors = LocalExtendedColors.current
@@ -572,7 +515,6 @@ private fun DrawerStat(value: String, label: String) {
     }
 }
 
-/** 统计项分割竖线 */
 @Composable
 private fun DrawerStatDivider() {
     Box(
@@ -584,7 +526,6 @@ private fun DrawerStatDivider() {
     )
 }
 
-/** Color 亮度粗判 */
 private fun Color.isLightDrawer(): Boolean {
     val lum = 0.299 * red + 0.587 * green + 0.114 * blue
     return lum > 0.6

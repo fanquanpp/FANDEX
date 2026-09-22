@@ -1,23 +1,9 @@
-/**
- * 学习路径页面样式（总览页 + 单技术地图页）
- * -----------------------------------------------------------------------------
- * 设计说明：
- * - 页面容器与 Hero 完全复用首页美术（index.css），与语法速览页保持一致
- * - 技术卡片按分类分组，覆盖进度条使用自绘 SVG
- * - 技术切换 chip 栏与语法速览语言切换栏同款（吸顶 + 毛玻璃 + 主题色竖条）
- * - 禁止点状装饰：状态徽标/芯片使用直角小圆角，指示统一为竖条刻度
- * - 归入 @layer pages
- */
 @layer pages {
-  /* 思维导图内容层：置于几何装饰层之上 */
   .home-page .lp-map {
     position: relative;
     z-index: 1;
   }
 
-  /* ============================================================
-   * 官方文档入口（技术页 Hero 下方）
-   * ============================================================ */
   .lp-docs {
     display: flex;
     flex-wrap: wrap;
@@ -27,21 +13,16 @@
     margin-bottom: var(--space-4);
   }
 
-  /* ============================================================
-   * 分类区块
-   * ============================================================ */
   .lp-category {
     margin-bottom: var(--space-8);
   }
 
-  /* 分类标题：复用首页 category-header 组件类，仅调整纵向间距 */
   .lp-category__title {
     margin: 0 0 var(--space-4);
     justify-content: flex-start;
     position: relative;
   }
 
-  /* 分类标题常驻曲线装饰：波浪线始终可见，高亮段循环书写动画 */
   .lp-category__curve {
     position: absolute;
     left: 0;
@@ -77,12 +58,6 @@
     gap: var(--space-4);
   }
 
-  /* ============================================================
-   * 职业路线规划区
-   * ------------------------------------------------------------
-   * 以职业目标组织知识体系：阶段路线 + 模块芯片 + 职业阶梯，
-   * 卡片底部带常驻波浪曲线动画（与分类标题装饰统一）
-   * ============================================================ */
   .lp-careers {
     position: relative;
     z-index: 1;
@@ -107,8 +82,6 @@
     width: 3px;
     height: 15px;
     border-radius: 1px;
-    /* 分区竖条采用五职业主题色纵向渐变（--career-ramp 由页面注入），
-     * 呼应下方各职业卡各自的分类主题色，不再使用站点品牌青 */
     background: var(--career-ramp, var(--color-accent-base));
     opacity: 0.8;
   }
@@ -132,7 +105,6 @@
     gap: var(--space-4);
   }
 
-  /* 职业卡片：紧凑三栏总览（职业信息 | 学习阶段 | 职业阶梯） */
   .lp-career {
     --career-color: var(--color-accent-base);
     position: relative;
@@ -177,7 +149,6 @@
     transform: scaleX(1);
   }
 
-  /* 卡片底部常驻曲线动画 */
   .lp-career__curve {
     position: absolute;
     left: 0;
@@ -206,7 +177,6 @@
     stroke-width: 1.8;
     stroke-dasharray: 430;
     stroke-dashoffset: 430;
-    /* 时长按 dasharray 等速换算（430/230 * 3.6s），与分类曲线流光速度一致 */
     animation: lp-curve-flow 6.7s linear infinite;
   }
 
@@ -255,7 +225,6 @@
     font-weight: 600;
     letter-spacing: 0.02em;
     color: var(--color-fg-primary);
-    /* 中文主标不折行：挤压空间由英文副标以省略号吸收（2026-09-19 评审修复） */
     white-space: nowrap;
   }
 
@@ -302,14 +271,12 @@
     margin-bottom: 10px;
   }
 
-  /* 主信息区：标题 + 说明 + 知识体系芯片 */
   .lp-career__main {
     display: flex;
     flex-direction: column;
     min-width: 0;
   }
 
-  /* 路线阶段：三列并排，相邻阶段用 CSS 直角箭头连接 */
   .lp-career__route {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -386,7 +353,6 @@
     background: color-mix(in srgb, var(--career-color) 7%, transparent);
   }
 
-  /* 职业阶梯：纵向紧凑列表，左侧竖条刻度 */
   .lp-career__ladder {
     display: flex;
     flex-direction: column;
@@ -405,7 +371,6 @@
     color: var(--color-text-tertiary);
   }
 
-  /* 阶梯箭头：左侧竖条刻度，替代箭头圆点 */
   .lp-career__step::before {
     content: '';
     position: absolute;
@@ -422,9 +387,6 @@
     opacity: 1;
   }
 
-  /* ============================================================
-   * 技术卡片
-   * ============================================================ */
   .lp-tech-card {
     --card-color: var(--color-accent-base);
     position: relative;
@@ -448,7 +410,6 @@
       box-shadow var(--motion-duration-instant) var(--motion-easing-out);
   }
 
-  /* 顶部装饰线：悬停时从左展开（与首页模块卡片一致） */
   .lp-tech-card::before {
     content: '';
     position: absolute;
@@ -483,7 +444,6 @@
     outline-offset: 2px;
   }
 
-  /* 卡片入场动画：与语法速览卡片一致的上滑淡入 */
   .lp-tech-grid .lp-tech-card {
     animation: fndx-slide-up var(--motion-duration-normal) var(--motion-easing-out) both;
   }
@@ -524,7 +484,6 @@
       border-color var(--motion-duration-instant) var(--motion-easing-out);
   }
 
-  /* 几何装饰：左上角小直角标记 */
   .lp-tech-card__icon::before {
     content: '';
     position: absolute;
@@ -612,7 +571,6 @@
     color: var(--color-warning-base);
   }
 
-  /* 覆盖进度条：自绘 SVG */
   .lp-tech-card__bar {
     display: block;
     width: 100%;
@@ -627,11 +585,6 @@
     fill: var(--card-color);
   }
 
-  /* ============================================================
-   * 技术切换 chip 栏（与语法速览语言切换栏同款）
-   * ------------------------------------------------------------
-   * sticky 吸顶 + 毛玻璃背景，chip 激活态使用技术主题色
-   * ============================================================ */
   .lp-tech-chips {
     position: sticky;
     top: 0;
@@ -690,7 +643,6 @@
     opacity: 1;
   }
 
-  /* 知识点计数：弱化信息，避免视觉噪音（与语法速览语言计数一致） */
   .lp-tech-chip__count {
     font-size: 0.88em;
     color: var(--color-text-tertiary);
@@ -719,9 +671,6 @@
     background-color: color-mix(in oklch, var(--lp-color) 6%, transparent);
   }
 
-  /* ============================================================
-   * 移动端适配
-   * ============================================================ */
   @media (max-width: 767.98px) {
     .lp-career {
       grid-template-columns: 1fr;
@@ -763,13 +712,6 @@
     }
   }
 
-  /* ============================================================
-   * 功能直达迭代（2026-09-19）：继续上次学习 + 卡片进度徽章
-   * ------------------------------------------------------------
-   * 「继续上次」芯片：hero 下方，由 lib/lp-progress-ui.ts 读取
-   * fandex-lp-last 点亮，一步回到上次浏览的技术地图；
-   * 徽章：技术卡片下方，直接标注本机三态进度汇总
-   * ============================================================ */
   .lp-resume {
     display: flex;
     align-items: center;
@@ -793,7 +735,6 @@
     align-items: center;
     gap: var(--space-2);
     padding: var(--space-1) var(--space-3);
-    /* 直达芯片跟随目标技术的分类主题色（--resume-color 由 lp-progress-ui 点亮时注入） */
     border: 1px solid color-mix(in srgb, var(--resume-color, var(--color-accent-base)) 40%, transparent);
     border-radius: 999px;
     background: color-mix(in srgb, var(--resume-color, var(--color-accent-base)) 8%, transparent);

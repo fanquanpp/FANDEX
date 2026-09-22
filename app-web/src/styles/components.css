@@ -1,71 +1,41 @@
-/**
- * FANDEX 组件样式
- *
- * 功能概述：
- * 定义项目所有 UI 组件的样式，包括应用布局（导航栏、侧边栏、主内容区）、
- * 面包屑导航、文件列表、模块卡片、文档上下导航、术语提示/弹窗、
- * 代码运行按钮等。支持移动端响应式和暗色主题适配。
- *
- * 层级归属：@layer components（避免未分层 CSS 覆盖 ark 令牌导致主题切换失效）
- */
 
-/* 归入 @layer components，确保优先级低于 tokens 层，主题切换正常工作 */
 @layer components {
 
-/* ========== 应用整体布局（CSS Grid） ========== */
 .app-layout {
   display: grid;
-  grid-template-rows: var(--nav-height) 1fr; /* 第一行导航栏，第二行内容区 */
-  grid-template-columns: var(--sidebar-width) 1fr; /* 左侧边栏 + 右主内容 */
+  grid-template-rows: var(--nav-height) 1fr;
+  grid-template-columns: var(--sidebar-width) 1fr;
   height: 100vh;
-  height: 100dvh; /* 动态视口高度，适配移动端 */
-  /* 列宽变化时平滑过渡，配合侧边栏折叠/展开动画 */
+  height: 100dvh;
   transition: grid-template-columns var(--motion-duration-normal) var(--motion-easing-out);
 }
 
-/* 侧边栏折叠态：grid 列宽归零，主内容区扩展填满（:has 选择器检测折叠状态） */
 .app-layout:has(.fndx-sidebar.is-collapsed) {
   grid-template-columns: 0 1fr;
 }
 
-/* 无侧边栏时的布局：单列 */
 .app-layout.no-sidebar {
   grid-template-columns: 1fr;
 }
 
 .app-layout.no-sidebar .app-main {
-  grid-column: 1 / -1; /* 占满整行 */
+  grid-column: 1 / -1;
 }
 
-/* 双栏布局（含 TOC）：侧边栏 + 主内容
- * TOC 本页目录栏使用 position:fixed 固定在右侧，脱离 grid 流，
- * 避免侧边栏折叠/展开时 grid 列宽变化导致 TOC 水平位移（需求2 修复）
- * 主内容区通过 margin-right 预留 TOC 宽度，防止内容被遮挡 */
 .app-layout.has-toc {
   grid-template-columns: var(--sidebar-width) 1fr;
 }
 
-/* 双栏布局折叠态：侧边栏归零，主内容占满 */
 .app-layout.has-toc:has(.fndx-sidebar.is-collapsed) {
   grid-template-columns: 0 1fr;
 }
 
-/* 桌面端：主内容区预留 TOC 宽度的 margin，确保 fixed 定位的 TOC 不遮挡内容
- *
- * 为何用 margin-right 而非 padding-right（滚动条重叠修复）：
- * - .app-main 设有 overflow-y:auto，滚动条出现在盒子右边缘
- * - padding-right 不改变盒子边缘位置，main 盒子仍延伸到视口最右侧
- * - 导致 main 滚动条与 TOC 内部 .fndx-toc__nav 的滚动条在视口最右侧完全重叠
- * - 改用 margin-right 让 main 盒子整体缩窄，盒子右边缘移至 TOC 左侧
- * - main 滚动条出现在 TOC 左侧，与 TOC 滚动条分离，三栏滚动条各就各位
- * - TOC fixed 覆盖在 main 的 margin 区域上（margin 区域透明不渲染内容），等效遮挡防护 */
 @media (min-width: 1024px) {
   .app-layout.has-toc .app-main {
     margin-right: var(--toc-width, 16rem);
   }
 }
 
-/* 大屏端：TOC 宽度增大，同步调整 margin */
 @media (min-width: 1280px) {
   .app-layout.has-toc .app-main {
     margin-right: var(--toc-width-xl, 16rem);
@@ -84,16 +54,14 @@
   }
 }
 
-/* 移动端：侧边栏隐藏，单列布局 */
 @media (max-width: 767.98px) {
   .app-layout {
     grid-template-columns: 1fr;
   }
 }
 
-/* ========== 顶部导航栏 ========== */
 .app-nav {
-  grid-column: 1 / -1; /* 导航栏横跨整行 */
+  grid-column: 1 / -1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -110,7 +78,6 @@
   overflow: hidden;
 }
 
-/* 移动端禁用 backdrop-filter：与 sticky 定位叠加会导致每帧重绘，严重卡顿 */
 @media (max-width: 767.98px) {
   .app-nav {
     backdrop-filter: none;
@@ -119,20 +86,14 @@
   }
 }
 
-/* 导航栏左侧区域：Logo + 侧边栏切换 */
 .nav-left {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  flex-shrink: 0; /* 防止被压缩导致内容重叠 */
+  flex-shrink: 0;
   min-width: 0;
 }
 
-/* Logo 容器
- * 与首页 home-layout.css 的 .nav-logo 特效保持一致（全站统一）：
- * - 相对定位：为 ::after 下划线提供定位上下文
- * - hover 仅展开下划线，不改变文字颜色、不出现背景色
- * ============================================================ */
 .nav-logo {
   display: inline-flex;
   align-items: center;
@@ -146,20 +107,14 @@
   padding: 4px 8px;
   border-radius: var(--radius-sm, 2px);
   cursor: pointer;
-  /* 相对定位：为 ::after 下划线提供定位上下文（与首页特效一致） */
   position: relative;
-  /* 仅保留 color 过渡（移除 background 过渡），下划线动画通过 ::after 的 width 过渡实现 */
   transition: color var(--motion-duration-fast) var(--motion-easing-out);
 }
 
-/* hover 变色：文字切换为主品牌色（与下划线同色系），平滑过渡
- * 与首页 home-layout.css 的 .nav-logo:hover 保持一致（全站统一） */
 .nav-logo:hover {
   color: var(--color-accent-base);
 }
 
-/* 下划线伪元素：默认 width:0，hover 时展开至 100%
- * 位于文字底部，使用主题强调色，与首页 hero 风格统一 */
 .nav-logo::after {
   content: '';
   position: absolute;
@@ -177,7 +132,6 @@
   width: calc(100% - 16px);
 }
 
-/* Logo 文字：透明背景，与首页风格统一（消除旧版深色背景残留） */
 .logo-text {
   display: inline-block;
   white-space: nowrap;
@@ -192,51 +146,39 @@
   letter-spacing: 0.04em;
 }
 
-/* 导航栏右侧区域 */
 .nav-right {
   display: flex;
   align-items: center;
   gap: var(--space-2);
-  flex-shrink: 0; /* 防止被压缩导致按钮重叠 */
+  flex-shrink: 0;
 }
 
-/* GitHub 链接按钮：基础样式由 .fndx-icon-btn--labeled 统一提供
- * 此处仅保留移动端文字隐藏（home-layout.css 中有首页专用定义） */
 .nav-github-link {
-  /* display/align/size/background/color/border/transition/hover 均由 .fndx-icon-btn--labeled 提供 */
   text-decoration: none;
 }
 
-/* GitHub 文字（移动端隐藏） */
 .nav-github-text {
   white-space: nowrap;
 }
 
-/* 全站搜索按钮文字：样式由 .fndx-icon-btn--labeled 统一提供，此处仅约束换行 */
 .nav-search-text {
   white-space: nowrap;
 }
 
 @media (max-width: 767.98px) {
   .nav-github-text {
-    display: none; /* 移动端只显示图标 */
+    display: none;
   }
 }
 
-/* 回到顶部按钮：基础样式由 .fndx-icon-btn 提供（透明背景 + 无边框 + 统一悬停）
- * 此处仅保留 Top 文字标注与移动端适配 */
 .nav-back-to-top {
-  /* display/align/size/background/color/border/transition/hover 均由 .fndx-icon-btn--labeled 提供 */
   flex-shrink: 0;
 }
 
-/* Top 文字标注样式：字号/字重/字距由 .fndx-icon-btn--labeled 统一控制，
- * 此处仅保留 nowrap 防换行 */
 .nav-back-to-top-text {
   white-space: nowrap;
 }
 
-/* 移动端回到顶部按钮适配：窄屏隐藏文字仅保留图标 */
 @media (max-width: 767.98px) {
   .nav-back-to-top {
     padding: 0;
@@ -247,34 +189,24 @@
   }
 }
 
-/* ========== 侧边栏 ==========
- * 注：侧边栏样式已迁移至 @fandex/styles 的 .fndx-sidebar 命名规范，
- * 旧 .app-sidebar 类已废弃。移动端抽屉模式与滚动锁定由 layout-components.css 控制。
- */
-
-/* ========== 主内容区 ========== */
 .app-main {
   grid-row: 2;
   grid-column: 2;
   overflow-y: auto;
-  min-height: 0; /* 允许 Grid 子元素纵向正确收缩 */
-  min-width: 0; /* 允许 Grid 子元素横向正确收缩
-    修复：缺少 min-width:0 时，宽内容（代码块/表格）撑开列宽，
-    侧边栏折叠后 1fr 列扩展挤压 TOC 列，导致三栏布局坍缩 */
-  overflow-anchor: auto; /* 浏览器锚点滚动优化 */
+  min-height: 0;
+  min-width: 0;
+  overflow-anchor: auto;
   -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: none; /* 禁止纵向过度滚动传播 */
+  overscroll-behavior-y: none;
 }
 
-/* 移动端主内容区适配 */
 @media (max-width: 767.98px) {
   .app-main {
     grid-column: 1 / -1;
-    padding-bottom: 64px; /* 为底部导航栏留出空间 */
+    padding-bottom: 64px;
   }
 }
 
-/* ========== 移动端底部导航栏 ========== */
 .mobile-nav {
   display: none;
 }
@@ -287,7 +219,6 @@
     left: 0;
     right: 0;
     height: 56px;
-    /* 移动端使用纯色背景，避免 backdrop-filter 与 fixed 叠加导致每帧重绘卡顿 */
     background: var(--color-bg-primary);
     backdrop-filter: none;
     -webkit-backdrop-filter: none;
@@ -295,7 +226,6 @@
     z-index: 150;
   }
 
-  /* 底部导航链接项 */
   .mobile-nav-link {
     flex: 1;
     display: flex;
@@ -313,7 +243,7 @@
     border: none;
     padding: 0;
     outline: none;
-    -webkit-tap-highlight-color: transparent; /* 移除移动端点击高亮 */
+    -webkit-tap-highlight-color: transparent;
   }
 
   .mobile-nav-link:hover {
@@ -330,7 +260,6 @@
   }
 }
 
-/* ========== 面包屑导航 ========== */
 .breadcrumb {
   display: flex;
   align-items: center;
@@ -343,10 +272,9 @@
   margin-left: auto;
   margin-right: auto;
   flex-wrap: nowrap;
-  overflow: hidden; /* 超长面包屑截断 */
+  overflow: hidden;
 }
 
-/* 移动端面包屑适配 */
 @media (max-width: 767.98px) {
   .breadcrumb {
     font-size: 0.75em;
@@ -355,7 +283,6 @@
     gap: 2px;
   }
 
-  /* 面包屑项文字溢出省略 */
   .breadcrumb .bc-link,
   .breadcrumb .bc-current {
     white-space: nowrap;
@@ -365,11 +292,10 @@
   }
 
   .breadcrumb .bc-current {
-    max-width: 160px; /* 当前页名称允许更长 */
+    max-width: 160px;
   }
 }
 
-/* 模块卡片 */
 .module-card {
   background: var(--color-bg-primary);
   padding: var(--space-4);
@@ -385,16 +311,12 @@
 
 .module-card:hover {
   background: var(--color-bg-hover);
-  /* 移除悬停上浮 transform: translateY(-2px)，统一为直角边框样式反馈 */
 }
 
-/* 模块卡片悬停阴影 */
 .module-card.card-hovered {
   box-shadow: var(--shadow-md);
 }
 
-/* ========== PWA 安装指引浮层（lib/pwa-install.ts 创建） ========== */
-/* iOS Safari 无安装事件：点击「安装应用」按钮后在导航栏下方展示操作指引 */
 .install-tip {
   position: fixed;
   top: calc(var(--nav-height, 48px) + 6px);
@@ -419,7 +341,6 @@
   }
 }
 
-/* ========== 文档上下篇导航 ========== */
 .doc-nav {
   display: flex;
   justify-content: space-between;
@@ -432,12 +353,10 @@
   margin-right: auto;
 }
 
-/* 空的导航项隐藏 */
 .doc-nav > div:empty {
   display: none;
 }
 
-/* 移动端文档导航适配 */
 @media (max-width: 767.98px) {
   .doc-nav {
     gap: var(--space-2);
@@ -450,12 +369,9 @@
   }
 }
 
-/* 导航按钮（上/下篇）：基础样式由 .fndx-icon-btn--labeled 提供，
- * 此处仅保留 flex 布局与移动端适配（doc-nav.css 中有更具体的样式） */
 .nav-btn {
-  /* display/align/size/background/color/border/transition/hover 均由 .fndx-icon-btn--labeled 提供 */
   flex: 1;
-  min-width: 0; /* 允许 flex 子元素收缩 */
+  min-width: 0;
   text-decoration: none;
 }
 
@@ -465,22 +381,14 @@
   }
 }
 
-/* 移动端导航标签隐藏 */
 @media (max-width: 767.98px) {
   .nav-label {
     display: none;
   }
 }
 
-/* 注：旧 .app-sidebar 滚动条样式已废弃，滚动条由 .fndx-sidebar__scroll 的 scrollbar-width/scrollbar-color 控制 */
-
-/* ========== 顶栏功能直达链接（文档页 Layout，入口扁平化）==========
- * 文档页此前无任何子级功能页入口，唯一可见通路是回首页找 hero 入口；
- * 此处把四个顶级功能入口常驻文档页顶栏，≥768px 显示，
- * 窄屏（<768px）由底部导航「功能」面板（.feature-sheet）承接。
- * 当前页高亮用底部短刻度线（几何刻度语言，与页脚分区标题竖条同源）。 */
 .header-feature-links {
-  display: none; /* 窄屏隐藏，避免与底部导航功能面板重复 */
+  display: none;
 }
 
 @media (min-width: 768px) {
@@ -489,7 +397,6 @@
     align-items: center;
     gap: var(--space-4);
     margin-left: var(--space-4);
-    /* 允许在窄桌面压缩：优先保 logo 与右侧操作按钮不重叠 */
     min-width: 0;
     overflow: hidden;
   }
@@ -526,9 +433,6 @@
   }
 }
 
-/* ========== 移动端功能直达面板 ==========
- * 底部导航「功能」按钮唤起，列出全部子级功能页入口（含题图鉴等次级页），
- * 一步直达不再依赖父级页中转；仅 <768px 渲染交互，桌面端保持 display:none。 */
 .feature-sheet-backdrop,
 .feature-sheet {
   display: none;
@@ -557,7 +461,6 @@
     position: fixed;
     left: 0;
     right: 0;
-    /* 悬于底部导航（56px）之上，不遮蔽导航本体 */
     bottom: 56px;
     background: var(--color-bg-primary);
     border-top: 1px solid var(--color-border-strong);
@@ -590,7 +493,6 @@
     display: flex;
     align-items: center;
     gap: var(--space-3);
-    /* 触控目标下限 */
     min-height: 48px;
     padding: 0 var(--space-5);
     color: var(--color-fg-primary);
@@ -623,4 +525,4 @@
   }
 }
 
-} /* end @layer components */
+}

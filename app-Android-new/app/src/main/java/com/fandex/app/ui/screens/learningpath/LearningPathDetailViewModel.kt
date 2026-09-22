@@ -11,18 +11,12 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
-/**
- * 学习路径详情页状态
- */
 sealed class LearningPathDetailUiState {
     object Loading : LearningPathDetailUiState()
     data class Success(val path: LearningPath) : LearningPathDetailUiState()
     data class Error(val message: String) : LearningPathDetailUiState()
 }
 
-/**
- * 学习路径详情 ViewModel
- */
 class LearningPathDetailViewModel(application: Application) : AndroidViewModel(application) {
 
     private val container = (application as FandexApp).container
@@ -30,11 +24,9 @@ class LearningPathDetailViewModel(application: Application) : AndroidViewModel(a
     private val _state = MutableStateFlow<LearningPathDetailUiState>(LearningPathDetailUiState.Loading)
     val state: StateFlow<LearningPathDetailUiState> = _state.asStateFlow()
 
-    /** 路径标题（模块中文名，索引缺失时回退模块 ID） */
     private val _title = MutableStateFlow("")
     val title: StateFlow<String> = _title.asStateFlow()
 
-    /** 路径分类色（辅助装饰用多彩色） */
     private val _accentHex = MutableStateFlow("#4F5BD5")
     val accentHex: StateFlow<String> = _accentHex.asStateFlow()
 
@@ -60,7 +52,6 @@ class LearningPathDetailViewModel(application: Application) : AndroidViewModel(a
     }
 
     companion object {
-        /** 日志 TAG */
         private const val TAG = "LearningPathDetailViewModel"
     }
 }

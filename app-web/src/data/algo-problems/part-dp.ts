@@ -1,10 +1,5 @@
 import type { AlgoProblem } from './types';
 
-/**
- * 算法题图鉴 · 动态规划篇
- * 线性 DP / 背包 / 子序列 / 网格与字符串 DP
- * 题面为便于学习的概括复述，参考实现为 Python。
- */
 export const DP_PROBLEMS: AlgoProblem[] = [
   {
     slug: 'climbing-stairs',

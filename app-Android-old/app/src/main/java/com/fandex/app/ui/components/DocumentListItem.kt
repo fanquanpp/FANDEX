@@ -23,22 +23,6 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.fandex.app.data.Document
 
-/**
- * 文档列表项组件
- *
- * 功能：渲染侧边栏/列表中的单个文档项，支持高亮当前文档
- * 输入：
- *   - document: 文档数据
- *   - accentColor: 分类强调色（用于左侧圆点）
- *   - isCurrent: 是否为当前文档（true 时高亮显示）
- *   - onClick: 点击回调（module, slug, title）
- * 输出：圆点 + 标题的横向列表项
- *
- * 设计说明：
- *   1. 统一文档列表项的视觉与交互，消除 SidebarContent 中的内联渲染
- *   2. 通过 isCurrent 参数控制高亮（背景色与字重变化）
- *   3. 透明背景兜底，避免在非高亮场景下出现意外背景
- */
 @Composable
 fun DocumentListItem(
     document: Document,
@@ -59,7 +43,6 @@ fun DocumentListItem(
             .padding(horizontal = 8.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        /* 左侧分类色圆点 */
         Box(
             modifier = Modifier
                 .size(6.dp)

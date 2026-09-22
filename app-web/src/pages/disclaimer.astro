@@ -1,13 +1,4 @@
 ---
-/**
- * 免责声明页（/disclaimer/）
- * -----------------------------------------------------------------------------
- * 站内常驻法律文本页：与根目录 DISCLAIMER.md 内容同步（本页为网页渲染版）。
- * 独立静态页（同 404.astro 模式）：自带 head 与主题预置脚本，不依赖
- * BaseLayout（法律页无需侧边栏/搜索/命令面板）。
- * 排版复用 site.css 内的 .prose 文档排版规则；页头与布局使用品牌语言
- * （mono 技术标记、竖条刻度、直角小圆角，禁点状装饰）。
- */
 import '@/styles/site.css';
 import GeoBgDecor from '@/components/GeoBgDecor.astro';
 import { SITE } from '@/lib/constants';
@@ -51,7 +42,6 @@ const UPDATED = '2026-09-19';
         }
         document.documentElement.setAttribute('data-theme', theme);
         document.documentElement.style.colorScheme = theme;
-        // 界面语言同步声明（与 BaseLayout 内联脚本同构，独立页自带）
         try {
           var savedLang = localStorage.getItem('fandex-lang');
           if (savedLang === 'en') {
@@ -70,7 +60,6 @@ const UPDATED = '2026-09-19';
     <div class="legal-page">
       <GeoBgDecor variant="error" />
       <main class="legal-container">
-        <!-- 页头：mono 路径标记 + 标题 + 更新日期（法律正文保持中文，仅界面壳双语） -->
         <header class="legal-head">
           <p class="legal-marker" aria-hidden="true">fandex://legal/disclaimer</p>
           <h1 class="legal-title" data-i18n="footer.disclaimer">免责声明</h1>
@@ -155,7 +144,6 @@ const UPDATED = '2026-09-19';
       </main>
     </div>
 
-    <!-- 界面语言 DOM 应用器：英文用户访问时界面壳文案随全局偏好切换 -->
     <script>
       import '@/lib/i18n-dom';
     </script>
@@ -163,7 +151,6 @@ const UPDATED = '2026-09-19';
 </html>
 
 <style>
-  /* 免责声明页布局：窄栏阅读宽度 + 品牌页头（mono 标记 / 竖条刻度） */
   .legal-page {
     position: relative;
     min-height: 100vh;
@@ -184,7 +171,6 @@ const UPDATED = '2026-09-19';
     border-bottom: 1px solid var(--color-border-light);
   }
 
-  /* mono 技术路径标记：品牌签名（与终端面板标题同语言） */
   .legal-marker {
     margin: 0 0 var(--space-2);
     font-family: var(--font-family-mono, monospace);
@@ -208,12 +194,10 @@ const UPDATED = '2026-09-19';
     color: var(--color-fg-tertiary);
   }
 
-  /* prose 在文档页布局中的默认边距由父容器提供，这里手动给窄栏内边距 */
   .legal-prose {
     padding-inline-end: var(--space-2);
   }
 
-  /* 出口按钮：直角小圆角 + 1px 边框（与 404 出口同语言） */
   .legal-actions {
     margin-top: var(--space-7);
   }

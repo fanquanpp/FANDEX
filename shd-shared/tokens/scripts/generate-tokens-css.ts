@@ -1,38 +1,9 @@
 #!/usr/bin/env tsx
-/**
- * FANDEX 设计令牌 CSS 生成器
- *
- * 功能概述：
- * 将 W3C Design Tokens Format Module（2025.10）格式的 JSON 令牌转换为 CSS Variables。
- * - 读取 primitive/semantic/component 三层 JSON 令牌
- * - 解析 {reference} 花括号引用语法
- * - 合并浅色/深色主题为 CSS light-dark() 函数
- * - 处理 W3C 复合类型（shadow/transition）转为 CSS shorthand
- * - 输出到 shd-shared/styles/tokens.css
- *
- * 生成策略：
- * 1. primitive 层：直接输出原值（如 --color-neutral-1050: #FFFFFF）
- * 2. semantic 层颜色：解析引用为 primitive 变量，合并 light/dark 为 light-dark()
- * 3. semantic 层非颜色：解析引用为 primitive 变量（如 --space-page-x: var(--space-4)）
- * 4. component 层：解析引用为 semantic 变量（如 --button-primary-default-bg: var(--color-accent-base)）
- *
- * CSS 变量命名规则：
- * - 路径点号转为破折号：color.bg.primary → --color-bg-primary
- * - 数字保留：color.neutral.1050 → --color-neutral-1050
- * - camelCase 转为 kebab-case：paddingX → padding-x
- *
- * 运行方式：pnpm --filter @fandex/tokens run build:css
- */
 
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from 'node:fs';
 import { join, dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-// ============================================================================
-// 类型定义
-// ============================================================================
-
-/** 令牌节点：W3C DTCG 格式的令牌对象 */
 interface TokenNode {
   $value?: TokenRawValue;
   $type?: string;
@@ -40,28 +11,20 @@ interface TokenNode {
   [key: string]: TokenNode | TokenRawValue | string | undefined;
 }
 
-/** 令牌原始值：可能是字符串、数字、数组、对象 */
 type TokenRawValue = string | number | boolean | object | Array<object | string | number>;
 
-/** 扁平化后的令牌条目 */
 interface FlatToken {
-  /** 令牌路径（如 color.neutral.1050） */
   path: string;
-  /** 原始 $value */
   value: TokenRawValue;
-  /** $type 声明（可能继承自父节点） */
   type?: string;
-  /** $description 描述 */
   description?: string;
 }
 
-/** shadow 复合类型的维度值结构 */
 interface DimensionValue {
   value: number;
   unit: string;
 }
 
-/** shadow 复合类型结构 */
 interface ShadowComposite {
   color: string;
   offsetX: DimensionValue;
@@ -70,34 +33,17 @@ interface ShadowComposite {
   spread: DimensionValue;
 }
 
-/** transition 复合类型结构 */
 interface TransitionComposite {
   duration: string;
   delay: string;
   timingFunction: string | number[];
 }
 
-// ============================================================================
-// 路径与文件工具
-// ============================================================================
-
-/** 当前脚本所在目录（shd-shared/tokens/scripts/） */
 const SCRIPT_DIR = dirname(fileURLToPath(import.meta.url));
-/** 令牌根目录（shd-shared/tokens/） */
 const TOKENS_DIR = resolve(SCRIPT_DIR, '..');
-/** 共享层根目录（shd-shared/） */
 const SHARED_DIR = resolve(TOKENS_DIR, '..');
-/** CSS 输出路径（shd-shared/styles/tokens.css） */
 const CSS_OUTPUT = join(SHARED_DIR, 'styles', 'tokens.css');
 
-/**
- * 将令牌路径转换为 CSS 变量名
- * - color.neutral.1050 → --color-neutral-1050
- * - color.bg.primary → --color-bg-primary
- * - button.primary.default.bg → --button-primary-default-bg
- * - space.page.x-lg → --space-page-x-lg（已是 kebab）
- * - font.letterSpacing.label → --font-letter-spacing-label（camelCase 转 kebab）
- */
 function pathToVarName(path: string): string {
   return (
     '--' +
@@ -108,11 +54,6 @@ function pathToVarName(path: string): string {
   );
 }
 
-/**
- * 读取指定层目录下的所有 JSON 令牌文件
- * @param layer - primitive | semantic | component
- * @returns 文件名（不含扩展名）到解析后 JSON 对象的映射
- */
 function loadLayerTokens(layer: 'primitive' | 'semantic' | 'component'): Record<string, TokenNode> {
   const layerDir = join(TOKENS_DIR, layer);
   const result: Record<string, TokenNode> = {};
@@ -138,20 +79,8 @@ function loadLayerTokens(layer: 'primitive' | 'semantic' | 'component'): Record<
   return result;
 }
 
-// ============================================================================
-// 令牌扁平化
-// ============================================================================
-
-/** W3C DTCG 保留属性前缀，扁平化时跳过 */
 const RESERVED_KEYS = new Set(['$value', '$type', '$description']);
 
-/**
- * 递归扁平化令牌树，收集所有带 $value 的叶子节点
- * @param node - 当前令牌节点
- * @param prefix - 当前路径前缀（如 "color"）
- * @param parentType - 继承自父节点的 $type
- * @returns 扁平化后的令牌条目数组
- */
 function flattenTokens(
   node: TokenNode,
   prefix: string,
@@ -159,10 +88,8 @@ function flattenTokens(
 ): FlatToken[] {
   const tokens: FlatToken[] = [];
 
-  // 当前节点的 $type（优先使用自身声明，否则继承父节点）
   const currentType = node.$type ?? parentType;
 
-  // 如果当前节点有 $value，说明是叶子令牌
   if (node.$value !== undefined) {
     tokens.push({
       path: prefix,
@@ -173,7 +100,6 @@ function flattenTokens(
     return tokens;
   }
 
-  // 递归处理子节点
   for (const [key, child] of Object.entries(node)) {
     if (RESERVED_KEYS.has(key)) continue;
     if (child === null || typeof child !== 'object') continue;
@@ -185,17 +111,8 @@ function flattenTokens(
   return tokens;
 }
 
-// ============================================================================
-// 引用解析
-// ============================================================================
-
-/** 引用语法正则：匹配 {path.to.token}（注意结尾必须是 } 而非 )） */
 const REFERENCE_PATTERN = /^\{(.+)\}$/;
 
-/**
- * 构建全量令牌查找表
- * key 为令牌路径（如 color.neutral.1050），value 为 FlatToken
- */
 function buildTokenMap(allTokens: FlatToken[]): Map<string, FlatToken> {
   const map = new Map<string, FlatToken>();
   for (const token of allTokens) {
@@ -204,30 +121,15 @@ function buildTokenMap(allTokens: FlatToken[]): Map<string, FlatToken> {
   return map;
 }
 
-/**
- * 判断值是否为引用字符串（形如 {path.to.token}）
- */
 function isReference(value: unknown): value is string {
   return typeof value === 'string' && REFERENCE_PATTERN.test(value);
 }
 
-/**
- * 提取引用路径（{color.neutral.1050} → color.neutral.1050）
- */
 function extractRefPath(ref: string): string {
   const match = REFERENCE_PATTERN.exec(ref);
   return match ? match[1] : ref;
 }
 
-// ============================================================================
-// 值转 CSS 字符串
-// ============================================================================
-
-/**
- * 将 W3C shadow 复合对象转为 CSS box-shadow shorthand
- * 单层：{color, offsetX, offsetY, blur, spread} → "offsetX offsetY blur spread color"
- * 多层：数组 → "layer1, layer2"
- */
 function shadowToCss(value: TokenRawValue, isInset = false): string {
   const formatSingle = (shadow: ShadowComposite): string => {
     const x = `${shadow.offsetX.value}${shadow.offsetX.unit}`;
@@ -244,44 +146,19 @@ function shadowToCss(value: TokenRawValue, isInset = false): string {
   return formatSingle(value as ShadowComposite);
 }
 
-/**
- * 将 W3C transition 复合对象转为 CSS transition shorthand
- * {duration, delay, timingFunction} → "duration delay timingFunction"
- * timingFunction 可能是引用（var()）或 cubicBezier 数组
- */
 function transitionToCss(value: TokenRawValue, tokenMap: Map<string, FlatToken>): string {
   const trans = value as TransitionComposite;
-  // 解析 duration：可能是引用或原值
   const duration = resolveValueToCss(trans.duration, tokenMap);
-  // 解析 delay
   const delay = resolveValueToCss(trans.delay, tokenMap);
-  // 解析 timingFunction：可能是引用或 cubicBezier 数组
   const timing = resolveValueToCss(trans.timingFunction, tokenMap);
   return `${duration} ${delay} ${timing}`;
 }
 
-/**
- * 将 cubicBezier 数组 [x1, y1, x2, y2] 转为 CSS cubic-bezier() 函数
- */
 function cubicBezierToCss(points: number[]): string {
   return `cubic-bezier(${points.join(', ')})`;
 }
 
-/**
- * 将单个令牌值解析为 CSS 字符串（递归解析引用）
- *
- * 解析规则：
- * - 字符串原值（#000000、1rem、150ms）→ 直接返回
- * - 数字 → 直接返回字符串形式
- * - 引用字符串（{path}）→ 查找令牌表，递归解析
- *   - 若引用的是 primitive 层令牌 → 返回 var(--primitive-var)
- *   - 若引用的是 semantic/component 层令牌 → 返回 var(--semantic-var)
- * - 数组（cubicBezier）→ cubic-bezier()
- * - shadow 复合对象 → box-shadow shorthand
- * - transition 复合对象 → transition shorthand
- */
 function resolveValueToCss(value: TokenRawValue, tokenMap: Map<string, FlatToken>): string {
-  // 1. 字符串：可能是原值或引用
   if (typeof value === 'string') {
     if (isReference(value)) {
       const refPath = extractRefPath(value);
@@ -290,71 +167,49 @@ function resolveValueToCss(value: TokenRawValue, tokenMap: Map<string, FlatToken
         console.warn(`[警告] 未找到引用: ${refPath}`);
         return `var(${pathToVarName(refPath)})`;
       }
-      // 引用解析为 var()，保持 CSS 变量引用关系
       return `var(${pathToVarName(refPath)})`;
     }
-    // 原值字符串直接返回
     return value;
   }
 
-  // 2. 数字
   if (typeof value === 'number') {
     return String(value);
   }
 
-  // 3. 数组：可能是 cubicBezier 或双层 shadow
   if (Array.isArray(value)) {
-    // 判断是否为 cubicBezier（4 个数字）
     if (value.length === 4 && value.every((v) => typeof v === 'number')) {
       return cubicBezierToCss(value as number[]);
     }
-    // 判断是否为 shadow 数组（元素是对象且含 color 字段）
     if (value.length > 0 && typeof value[0] === 'object' && value[0] !== null && 'color' in value[0]) {
       return shadowToCss(value);
     }
-    // 其他数组：逐项解析后逗号连接
     return value.map((v) => resolveValueToCss(v, tokenMap)).join(', ');
   }
 
-  // 4. 对象：可能是 shadow 或 transition 复合类型
   if (typeof value === 'object' && value !== null) {
     const obj = value as Record<string, unknown>;
-    // shadow 复合类型：含 color 和 offsetX 字段
     if ('color' in obj && 'offsetX' in obj) {
       return shadowToCss(value);
     }
-    // transition 复合类型：含 duration 和 timingFunction 字段
     if ('duration' in obj && 'timingFunction' in obj) {
       return transitionToCss(value, tokenMap);
     }
-    // 未知对象类型：JSON 序列化（兜底）
     console.warn(`[警告] 未知复合类型: ${JSON.stringify(value)}`);
     return JSON.stringify(value);
   }
 
-  // 5. 布尔值或其他类型（兜底）
   return String(value);
 }
 
-// ============================================================================
-// CSS 生成
-// ============================================================================
-
-/** CSS 变量条目 */
 interface CssVarEntry {
   name: string;
   value: string;
   description?: string;
 }
 
-/**
- * 生成 primitive 层 CSS 变量
- * primitive 层令牌直接输出原值
- */
 function generatePrimitiveVars(primitiveTokens: FlatToken[]): CssVarEntry[] {
   const entries: CssVarEntry[] = [];
   for (const token of primitiveTokens) {
-    // primitive 层值不包含引用，直接解析为 CSS 字符串
     const cssValue = resolveValueToCss(token.value, new Map());
     entries.push({
       name: pathToVarName(token.path),
@@ -365,24 +220,11 @@ function generatePrimitiveVars(primitiveTokens: FlatToken[]): CssVarEntry[] {
   return entries;
 }
 
-/** 语义层 CSS 变量生成结果：root 为浅色默认值，dark 为深色覆盖值 */
 interface SemanticVarsResult {
-  /** 浅色模式变量（放入 :root） */
   root: CssVarEntry[];
-  /** 深色模式覆盖变量（放入 [data-theme='dark']） */
   dark: CssVarEntry[];
 }
 
-/**
- * 生成 semantic 层 CSS 变量
- *
- * 主题策略（不使用 light-dark()，改用 [data-theme] 选择器）：
- * - 颜色令牌：light 值放入 :root，dark 值放入 [data-theme='dark'] 覆盖块
- *   原因：Tailwind CSS v4 的 CSS 解析器不支持在 @theme 块外使用 light-dark()
- *   与 var() 混合的写法，会报 "Invalid custom property, expected a value" 错误。
- *   使用 [data-theme] 选择器是 Tailwind 社区推荐的双主题方案（见 #15083）。
- * - 非颜色令牌：解析引用为 var()，仅放入 :root（无主题差异）
- */
 function generateSemanticVars(
   semanticTokens: Record<string, TokenNode>,
   tokenMap: Map<string, FlatToken>,
@@ -390,25 +232,21 @@ function generateSemanticVars(
   const rootEntries: CssVarEntry[] = [];
   const darkEntries: CssVarEntry[] = [];
 
-  // 分离颜色 light/dark 与其他令牌
   const colorLight = semanticTokens['color.light'];
   const colorDark = semanticTokens['color.dark'];
   const otherSemanticKeys = Object.keys(semanticTokens).filter(
     (k) => k !== 'color.light' && k !== 'color.dark',
   );
 
-  // 1. 处理颜色语义令牌（light 放入 :root，dark 放入 [data-theme='dark']）
   if (colorLight && colorDark) {
     const lightFlat = flattenTokens(colorLight, '');
     const darkFlat = flattenTokens(colorDark, '');
 
-    // 构建 dark 令牌查找表（path -> value）
     const darkMap = new Map<string, FlatToken>();
     for (const t of darkFlat) {
       darkMap.set(t.path, t);
     }
 
-    // light 值全部放入 :root
     for (const lightToken of lightFlat) {
       const fullPath = lightToken.path;
       const lightCss = resolveValueToCss(lightToken.value, tokenMap);
@@ -419,7 +257,6 @@ function generateSemanticVars(
       });
     }
 
-    // dark 值放入 [data-theme='dark'] 覆盖块
     for (const darkToken of darkFlat) {
       const fullPath = darkToken.path;
       const darkCss = resolveValueToCss(darkToken.value, tokenMap);
@@ -431,13 +268,10 @@ function generateSemanticVars(
     }
   }
 
-  // 2. 处理非颜色语义令牌（space/size/font/radius/shadow/motion）
-  // 仅放入 :root（无主题差异）
   for (const key of otherSemanticKeys) {
     const node = semanticTokens[key];
     const flat = flattenTokens(node, '');
     for (const token of flat) {
-      // 跳过自引用令牌
       if (isReference(token.value)) {
         const refPath = extractRefPath(token.value as string);
         if (refPath === token.path) {
@@ -456,10 +290,6 @@ function generateSemanticVars(
   return { root: rootEntries, dark: darkEntries };
 }
 
-/**
- * 生成 component 层 CSS 变量
- * component 层令牌引用 semantic 层，解析为 var()
- */
 function generateComponentVars(
   componentTokens: Record<string, TokenNode>,
   tokenMap: Map<string, FlatToken>,
@@ -467,7 +297,6 @@ function generateComponentVars(
   const entries: CssVarEntry[] = [];
 
   for (const [key, node] of Object.entries(componentTokens)) {
-    // 使用空前缀扁平化：文件顶层键即作为路径首段（如 button.primary.default.bg）
     const flat = flattenTokens(node, '');
     for (const token of flat) {
       const cssValue = resolveValueToCss(token.value, tokenMap);
@@ -482,9 +311,6 @@ function generateComponentVars(
   return entries;
 }
 
-/**
- * 将 CSS 变量条目数组渲染为 CSS 文本块
- */
 function renderCssBlock(entries: CssVarEntry[], indent = '  '): string {
   const lines: string[] = [];
   for (const entry of entries) {
@@ -496,22 +322,16 @@ function renderCssBlock(entries: CssVarEntry[], indent = '  '): string {
   return lines.join('\n');
 }
 
-// ============================================================================
-// 主函数
-// ============================================================================
-
 function main(): void {
   console.log('========================================');
   console.log('FANDEX 设计令牌 CSS 生成器');
   console.log('========================================\n');
 
-  // 1. 加载所有层令牌
   console.log('[步骤 1] 加载 JSON 令牌文件...');
   const primitiveRaw = loadLayerTokens('primitive');
   const semanticRaw = loadLayerTokens('semantic');
   const componentRaw = loadLayerTokens('component');
 
-  // 2. 扁平化所有令牌，构建查找表
   console.log('\n[步骤 2] 扁平化令牌并构建引用查找表...');
   const allFlat: FlatToken[] = [];
 
@@ -519,22 +339,14 @@ function main(): void {
     allFlat.push(...flattenTokens(node, ''));
   }
   for (const [key, node] of Object.entries(semanticRaw)) {
-    // 颜色 light/dark 特殊处理：扁平化时路径需保留区分
     if (key === 'color.light' || key === 'color.dark') {
-      // 颜色语义令牌在 generateSemanticVars 中单独处理
-      // 但仍需加入 tokenMap 供 component 层引用
-      // 使用空前缀扁平化，路径为 color.bg.primary（与引用路径一致）
       const flat = flattenTokens(node, '');
-      // 注意：light/dark 同路径会冲突，这里以 light 为准（component 层引用的是语义名）
       for (const t of flat) {
         if (!allFlat.some((existing) => existing.path === t.path)) {
           allFlat.push(t);
         }
       }
     } else {
-      // 非颜色语义令牌：扁平化后去重，不覆盖 primitive 层已存在的同名令牌
-      // 原因：semantic/size.json 中 size.icon.sm 引用 {size.icon.sm}（primitive 同名令牌），
-      // 若 semantic 覆盖 primitive，tokenMap 中该路径的值变为引用字符串，导致自引用循环
       const flat = flattenTokens(node, '');
       for (const t of flat) {
         if (!allFlat.some((existing) => existing.path === t.path)) {
@@ -550,12 +362,10 @@ function main(): void {
   const tokenMap = buildTokenMap(allFlat);
   console.log(`[信息] 共加载 ${allFlat.length} 个令牌`);
 
-  // 3. 生成各层 CSS 变量
   console.log('\n[步骤 3] 生成 CSS 变量...');
 
   const primitiveFlat: FlatToken[] = [];
   for (const [key, node] of Object.entries(primitiveRaw)) {
-    // 使用空前缀扁平化：文件顶层键即作为路径首段（如 color.neutral.1050）
     primitiveFlat.push(...flattenTokens(node, ''));
   }
   const primitiveVars = generatePrimitiveVars(primitiveFlat);
@@ -567,7 +377,6 @@ function main(): void {
   const componentVars = generateComponentVars(componentRaw, tokenMap);
   console.log(`[信息] component 层: ${componentVars.length} 个变量`);
 
-  // 4. 组装完整 CSS 文件
   console.log('\n[步骤 4] 组装 CSS 文件...');
 
   const header = `/**
@@ -631,7 +440,6 @@ ${renderCssBlock(semanticVars.dark, '    ')}
 }
 `;
 
-  // 5. 写入文件
   console.log(`\n[步骤 5] 写入 CSS 文件: ${CSS_OUTPUT}`);
   const outputDir = dirname(CSS_OUTPUT);
   if (!existsSync(outputDir)) {

@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- 浅色主题：冷雾灰窗口底色，避免启动期与 Compose 内容色差 -->
     <style name="Theme.FANDEX" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
@@ -8,7 +7,6 @@
         <item name="android:windowLightStatusBar">true</item>
     </style>
 
-    <!-- 开屏主题：品牌图标 + 冷雾灰底（core-splashscreen 统一管理退出动画） -->
     <style name="Theme.FANDEX.Starting" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">@color/bg_primary_light</item>
         <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher</item>

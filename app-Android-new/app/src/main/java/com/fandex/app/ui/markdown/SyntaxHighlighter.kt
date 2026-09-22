@@ -5,22 +5,8 @@ import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.withStyle
 
-/**
- * 轻量语法高亮器
- *
- * 单遍扫描代码文本，按语言族规则输出带样式的 AnnotatedString：
- * - 注释（行注释 / 块注释）
- * - 字符串（含转义与 Python 三引号）
- * - 数字（含十六进制、浮点、类型后缀）
- * - 关键字 / 函数名 / 类型名
- * - 注解与装饰器（@interface、@Decorator）、C 预处理指令、Shell 变量
- * - HTML / CSS / YAML / Markdown 使用各自简化规则
- *
- * 设计目标：离线、零依赖、移动端可接受的近似高亮，不追求编译级精确
- */
 object SyntaxHighlighter {
 
-    /** 代码高亮色板（由主题注入浅色 / 深色两套取值） */
     data class Palette(
         val text: Int,
         val keyword: Int,
@@ -32,14 +18,8 @@ object SyntaxHighlighter {
         val tag: Int
     )
 
-    /** 单个高亮片段 */
     private data class Span(val start: Int, val end: Int, val style: SpanStyle)
 
-    // ---------------------------------------------------------------------
-    // 语言族配置
-    // ---------------------------------------------------------------------
-
-    /** 通用扫描配置（C 族 / Python / Lua / SQL / Shell 等） */
     private class LangConfig(
         val lineComments: List<String> = emptyList(),
         val blockComment: Pair<String, String>? = null,
@@ -51,7 +31,6 @@ object SyntaxHighlighter {
         val dollarVar: Boolean = false
     )
 
-    /** 语言名 -> 扫描配置 */
     private val configs: Map<String, LangConfig> = buildMap {
         val cKeywords = setOf(
             "auto", "break", "case", "char", "const", "continue", "default", "do", "double",
@@ -209,7 +188,6 @@ object SyntaxHighlighter {
         ))
     }
 
-    /** 语言名归一化，映射到配置键 */
     private fun configKey(language: String): String {
         val lang = language.trim().lowercase()
         return when (lang) {
@@ -228,16 +206,6 @@ object SyntaxHighlighter {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // 对外入口
-    // ---------------------------------------------------------------------
-
-    /**
-     * 高亮代码文本
-     *
-     * @param code 代码原文
-     * @param language 围栏语言标记（如 kotlin、bash），空或未知时按纯文本处理
-     */
     fun highlight(code: String, language: String, palette: Palette): AnnotatedString {
         val key = configKey(language)
         val spans = when (key) {
@@ -259,10 +227,6 @@ object SyntaxHighlighter {
         }
     }
 
-    // ---------------------------------------------------------------------
-    // 通用扫描器（C 族 / Python / Lua / SQL / Shell / YAML / JSON）
-    // ---------------------------------------------------------------------
-
     private fun tokenizeGeneric(code: String, cfg: LangConfig, p: Palette): List<Span> {
         val spans = mutableListOf<Span>()
         val keywordStyle = SpanStyle(color = color(p.keyword))
@@ -277,7 +241,6 @@ object SyntaxHighlighter {
         outer@ while (i < n) {
             val ch = code[i]
 
-            // 行注释
             for (start in cfg.lineComments) {
                 if (code.startsWith(start, i)) {
                     val end = code.indexOf('\n', i).let { if (it < 0) n else it }
@@ -287,7 +250,6 @@ object SyntaxHighlighter {
                 }
             }
 
-            // 块注释
             val block = cfg.blockComment
             if (block != null && code.startsWith(block.first, i)) {
                 val end = code.indexOf(block.second, i + block.first.length)
@@ -297,7 +259,6 @@ object SyntaxHighlighter {
                 continue@outer
             }
 
-            // Python 三引号字符串
             if (cfg.tripleQuotes && (code.startsWith("\"\"\"", i) || code.startsWith("'''", i))) {
                 val delim = code.substring(i, i + 3)
                 val end = code.indexOf(delim, i + 3)
@@ -307,7 +268,6 @@ object SyntaxHighlighter {
                 continue@outer
             }
 
-            // 字符串（含转义）
             if (ch in cfg.stringDelims) {
                 var j = i + 1
                 while (j < n) {
@@ -324,7 +284,6 @@ object SyntaxHighlighter {
                 continue@outer
             }
 
-            // 数字
             if (ch.isDigit() || (ch == '.' && i + 1 < n && code[i + 1].isDigit())) {
                 var j = i + 1
                 while (j < n && (code[j].isLetterOrDigit() || code[j] == '.' || code[j] == '_')) j++
@@ -333,23 +292,19 @@ object SyntaxHighlighter {
                 continue@outer
             }
 
-            // 标识符 / 关键字 / 函数 / 类型
             if (ch.isLetter() || ch == '_' || ch == '$') {
                 var j = i + 1
                 while (j < n && (code[j].isLetterOrDigit() || code[j] == '_')) j++
                 val word = code.substring(i, j)
                 when {
                     word in cfg.keywords -> spans.add(Span(i, j, keywordStyle))
-                    // 后随 "(" 视为函数调用
                     nextNonSpace(code, j) == '(' -> spans.add(Span(i, j, functionStyle))
-                    // 大写开头视为类型（近似规则）
                     word[0].isUpperCase() -> spans.add(Span(i, j, annotationStyle))
                 }
                 i = j
                 continue@outer
             }
 
-            // 注解 / 装饰器：@word
             if (cfg.decoratorAt && ch == '@' && i + 1 < n && code[i + 1].isLetter()) {
                 var j = i + 1
                 while (j < n && (code[j].isLetterOrDigit() || code[j] == '_' || code[j] == '.')) j++
@@ -358,7 +313,6 @@ object SyntaxHighlighter {
                 continue@outer
             }
 
-            // C 预处理指令：行首 #word（含整行参数）
             if (cfg.preprocessorHash && ch == '#' && atLineStart(code, i)) {
                 var j = i + 1
                 while (j < n && code[j].isLetter()) j++
@@ -367,7 +321,6 @@ object SyntaxHighlighter {
                 continue@outer
             }
 
-            // Shell 变量：$var / ${var}
             if (cfg.dollarVar && ch == '$' && i + 1 < n && (code[i + 1].isLetterOrDigit() || code[i + 1] == '{')) {
                 var j = i + 1
                 if (code[j] == '{') {
@@ -386,10 +339,6 @@ object SyntaxHighlighter {
         return spans
     }
 
-    // ---------------------------------------------------------------------
-    // HTML / XML 简化规则
-    // ---------------------------------------------------------------------
-
     private fun tokenizeHtml(code: String, p: Palette): List<Span> {
         val spans = mutableListOf<Span>()
         val tagStyle = SpanStyle(color = color(p.tag))
@@ -400,7 +349,6 @@ object SyntaxHighlighter {
         val n = code.length
         var i = 0
         while (i < n) {
-            // 注释
             if (code.startsWith("<!--", i)) {
                 val end = code.indexOf("-->", i)
                 val stop = if (end < 0) n else end + 3
@@ -408,25 +356,20 @@ object SyntaxHighlighter {
                 i = stop
                 continue
             }
-            // 标签内部
             if (code[i] == '<') {
                 val tagEnd = code.indexOf('>', i)
                 val stop = if (tagEnd < 0) n else tagEnd + 1
-                // 标签名（<name 或 </name）
                 var j = i + 1
                 if (j < n && code[j] == '/') j++
                 val nameStart = j
                 while (j < n && code[j].isLetterOrDigit()) j++
                 if (j > nameStart) spans.add(Span(nameStart, j, tagStyle))
-                // 属性名
                 var k = j
                 while (k < stop) {
                     if (code[k] == '=' ) {
-                        // 回溯属性名
                         var s = k - 1
                         while (s > j && !code[s].isWhitespace()) s--
                         spans.add(Span(s + 1, k, attrStyle))
-                        // 属性值
                         var v = k + 1
                         if (v < stop && (code[v] == '"' || code[v] == '\'')) {
                             val quote = code[v]
@@ -447,10 +390,6 @@ object SyntaxHighlighter {
         return spans
     }
 
-    // ---------------------------------------------------------------------
-    // CSS 简化规则
-    // ---------------------------------------------------------------------
-
     private fun tokenizeCss(code: String, p: Palette): List<Span> {
         val spans = mutableListOf<Span>()
         val keywordStyle = SpanStyle(color = color(p.keyword))
@@ -463,7 +402,6 @@ object SyntaxHighlighter {
         var i = 0
         var inBlock = false
         while (i < n) {
-            // 注释
             if (code.startsWith("/*", i)) {
                 val end = code.indexOf("*/", i + 2)
                 val stop = if (end < 0) n else end + 2
@@ -494,14 +432,12 @@ object SyntaxHighlighter {
                     i = j
                 }
                 ch == '#' && i + 1 < n && code[i + 1].isLetterOrDigit() -> {
-                    // 十六进制色值
                     var j = i + 1
                     while (j < n && code[j].isLetterOrDigit()) j++
                     spans.add(Span(i, j, numberStyle))
                     i = j
                 }
                 ch.isLetter() && inBlock -> {
-                    // 块内标识符：属性名（后随冒号）
                     var j = i + 1
                     while (j < n && (code[j].isLetterOrDigit() || code[j] == '-')) j++
                     if (nextNonSpace(code, j) == ':') spans.add(Span(i, j, propertyStyle))
@@ -512,10 +448,6 @@ object SyntaxHighlighter {
         }
         return spans
     }
-
-    // ---------------------------------------------------------------------
-    // Markdown 简化规则
-    // ---------------------------------------------------------------------
 
     private fun tokenizeMarkdown(code: String, p: Palette): List<Span> {
         val spans = mutableListOf<Span>()
@@ -534,24 +466,17 @@ object SyntaxHighlighter {
         return spans
     }
 
-    // ---------------------------------------------------------------------
-    // 工具函数
-    // ---------------------------------------------------------------------
-
-    /** 跳过空白后的下一个字符 */
     private fun nextNonSpace(code: String, from: Int): Char {
         var i = from
         while (i < code.length && code[i].isWhitespace()) i++
         return if (i < code.length) code[i] else ' '
     }
 
-    /** 是否位于行首（前面只有空白） */
     private fun atLineStart(code: String, index: Int): Boolean {
         var i = index - 1
         while (i >= 0 && (code[i] == ' ' || code[i] == '\t')) i--
         return i < 0 || code[i] == '\n'
     }
 
-    /** ARGB 整数转 Compose 颜色 */
     private fun color(argb: Int) = androidx.compose.ui.graphics.Color(argb)
 }

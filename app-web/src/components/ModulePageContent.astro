@@ -1,29 +1,12 @@
 ---
-/**
- * 模块页共享内容组件（页头 + 文档列表 + 分页控件）
- * 由 [module]/index.astro（第 1 页）与 [module]/page/[page].astro（第 2 页起）复用，
- * 保证分页前后页头、列表与样式完全一致。
- *
- * 分页说明：
- * - 每页 PAGE_SIZE 篇，超大模块（如 python/java 300+ 篇）列表页从 ~180KB 降至 ~40KB/页，
- *   同时减少 viewport 预取在列表页的一次性带宽压力；
- * - 第 2 页起路由为 {module}/page/{n}/，不使用 Astro paginate()：
- *   paginate 的 [...page] rest 参数会与文档详情路由 [module]/[slug] 冲突，
- *   且 page/1/ 会与 index.astro 产生重复页面，故手动分页并跳过第 1 页。
- */
 import { categoryColors, getPrimaryCategory } from '@/lib/modules';
 import { MODULE_PAGE_SIZE } from '@/lib/constants';
-// docSlug 由 modules.ts 唯一定义，通过 services 桶文件统一导出
 import { docSlug, type DocEntry, type Module } from '@/services';
 
 interface Props {
-  /** 模块 ID */
   module: string;
-  /** 模块元数据（getModule 结果，调用方已校验存在） */
   meta: Module;
-  /** 当前页码（从 1 开始） */
   page: number;
-  /** 该模块全量文档（已按 order 升序，由调用方通过 doc-service 获取） */
   docs: DocEntry[];
 }
 
@@ -35,7 +18,6 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
 const totalPages = Math.max(1, Math.ceil(docs.length / MODULE_PAGE_SIZE));
 const pageDocs = docs.slice((page - 1) * MODULE_PAGE_SIZE, page * MODULE_PAGE_SIZE);
 
-/** 分页链接：第 1 页固定为模块首页，第 n 页为 page/n/ */
 function pageHref(n: number): string {
   return n <= 1 ? `${baseUrl}${module}/` : `${baseUrl}${module}/page/${n}/`;
 }
@@ -48,7 +30,7 @@ function pageHref(n: number): string {
       <p class="header-desc">{meta.description}</p>
     </div>
     <div class="header-docs">
-      {/* 文档总数 chip */}
+      {}
       <span
         class="doc-chip doc-chip--count"
         aria-label={`本模块共 ${docs.length} 篇文档`}
@@ -122,8 +104,8 @@ function pageHref(n: number): string {
             href={`${baseUrl}${module}/${docSlug(doc.id)}/`}
             class="doc-list-link"
           >
-            {/* SVG border 描边动画：hover 时 rect 从隐藏到显示，实现描边效果
-                preserveAspectRatio="none" 让 rect 拉伸适配链接尺寸 */}
+            {
+}
             <svg class="doc-list-border" aria-hidden="true" preserveAspectRatio="none">
               <rect x="1" y="1" width="calc(100% - 2px)" height="calc(100% - 2px)"></rect>
             </svg>
@@ -201,9 +183,6 @@ function pageHref(n: number): string {
 </div>
 
 <style>
-  /* 模块文档列表页样式 — 归入 @layer pages，避免未分层 CSS 覆盖 ark 令牌
-   * 紧凑化重构：减小图标尺寸、优化间距、添加 max-width 防止大屏越界
-   * 宽度自适应桌面端 94vw，移除 48rem 限制 */
   @layer pages {
   .module-page {
     padding: var(--space-2) var(--space-4);
@@ -242,8 +221,6 @@ function pageHref(n: number): string {
     flex-basis: 100%;
   }
 
-  /* 官方文档链接区：紧贴 header-body 下方，顶部分隔线区分层级
-   * 仅在模块配置了 officialDocs 时渲染，几何科技风格、紧凑无装饰 */
   .header-docs {
     display: flex;
     flex-wrap: wrap;
@@ -252,8 +229,6 @@ function pageHref(n: number): string {
     border-top: 1px solid var(--color-border-light);
   }
 
-  /* 文档链接 chip：透明底 + 细边框，悬停使用模块分类色
-   * 直角设计（border-radius: 2px）保持几何科技风格一致性 */
   .doc-chip {
     display: inline-flex;
     align-items: center;
@@ -277,7 +252,6 @@ function pageHref(n: number): string {
     background-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 6%, transparent);
   }
 
-  /* chip 前置图标：根据 type 区分（docs=书 / api=代码 / spec=文件） */
   .doc-chip-icon {
     display: inline-flex;
     align-items: center;
@@ -286,12 +260,10 @@ function pageHref(n: number): string {
     opacity: 0.85;
   }
 
-  /* chip 标签文本 */
   .doc-chip-label {
     letter-spacing: 0.01em;
   }
 
-  /* 外链图标：默认弱化，悬停时显眼 */
   .doc-chip-external {
     opacity: 0.5;
     transition: opacity var(--motion-duration-instant) var(--motion-easing-out);
@@ -301,12 +273,10 @@ function pageHref(n: number): string {
     opacity: 1;
   }
 
-  /* API 类型 chip：使用代码符号图标色调微调 */
   .doc-chip--api .doc-chip-icon {
     opacity: 1;
   }
 
-  /* spec 类型 chip：规范文档，图标饱和度略高 */
   .doc-chip--spec .doc-chip-icon {
     opacity: 1;
   }
@@ -326,10 +296,6 @@ function pageHref(n: number): string {
     border-bottom: none;
   }
 
-  /* 文档链接：flex-wrap 允许标题与描述分行显示，增高卡片以容纳多行内容
-   * 布局：第一行 = 图标 + 序号 + 难度 + 标题；第二行 = 描述（flex-basis: 100% 强制换行）
-   * 左侧竖线装饰：移除 border-radius 圆角，改为几何直角线条
-   * SVG border 描边动画：相对定位 + .doc-list-border 绝对定位填满链接 */
   .doc-list-link {
     display: flex;
     align-items: center;
@@ -346,15 +312,11 @@ function pageHref(n: number): string {
                 border-color var(--motion-duration-instant) var(--motion-easing-out);
   }
 
-  /* 悬停：统一使用 --module-color 驱动背景与边框色（与 sidebar__link / toc__link 一致） */
   .doc-list-link:hover {
     background-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 8%, var(--color-bg-hover));
     border-left-color: color-mix(in oklch, var(--module-color, var(--color-accent-base)) 60%, transparent);
   }
 
-  /* SVG border 描边动画（替代已删除的脉冲闪光特效）
-   * rect 通过 stroke-dasharray + stroke-dashoffset 实现描边动画：
-   * 默认 offset:1000 完全隐藏（pathLength 等效），hover 时 offset:0 完全显示 */
   .doc-list-border {
     position: absolute;
     inset: 0;
@@ -379,7 +341,6 @@ function pageHref(n: number): string {
     stroke-dashoffset: 0;
   }
 
-  /* 尊重用户减少动效偏好：禁用描边动画，直接显示边框 */
   @media (prefers-reduced-motion: reduce) {
     .doc-list-border rect {
       stroke-dashoffset: 0;
@@ -387,7 +348,6 @@ function pageHref(n: number): string {
     }
   }
 
-  /* 文档图标：紧凑化 24px，使用模块分类色而非青色 */
   .doc-list-icon {
     width: 24px;
     height: 24px;
@@ -412,7 +372,6 @@ function pageHref(n: number): string {
     min-width: 1.8em;
   }
 
-  /* 标题：允许完整显示，超长时换行而非截断 */
   .doc-list-title {
     font-family: var(--font-family-heading);
     font-size: 0.82em;
@@ -443,14 +402,12 @@ function pageHref(n: number): string {
     color: var(--color-warning-base);
   }
 
-  /* 进阶难度标识：加强背景色强调（原 --color-danger 变量语义令牌为 --color-error） */
   .diff-advanced {
     background: color-mix(in srgb, var(--color-danger-base) 28%, var(--color-bg-primary));
     color: var(--color-danger-base);
     font-weight: 600;
   }
 
-  /* 描述：独占一行显示 —— flex-basis:100% 强制换行到新行 */
   .doc-list-desc {
     flex-basis: 100%;
     padding-left: calc(24px + var(--space-2));
@@ -460,7 +417,6 @@ function pageHref(n: number): string {
     word-break: break-word;
   }
 
-  /* 分页控件：直角几何风格，与列表边框语言一致 */
   .pager {
     display: flex;
     align-items: center;
@@ -499,5 +455,5 @@ function pageHref(n: number): string {
     color: var(--color-text-tertiary);
     letter-spacing: 0.02em;
   }
-  } /* end @layer pages */
+  }
 </style>

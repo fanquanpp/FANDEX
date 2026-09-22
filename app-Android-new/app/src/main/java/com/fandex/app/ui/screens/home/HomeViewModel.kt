@@ -14,9 +14,6 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
-/**
- * 首页状态
- */
 sealed class HomeUiState {
     object Loading : HomeUiState()
     data class Success(
@@ -27,12 +24,6 @@ sealed class HomeUiState {
     data class Error(val message: String) : HomeUiState()
 }
 
-/**
- * 首页 ViewModel
- *
- * 聚合分类模块视图与站点统计；主页开门见山直入内容，
- * Hero 与设置类信息已移除（设置收纳于抽屉）
- */
 class HomeViewModel(application: Application) : AndroidViewModel(application) {
 
     private val container = (application as FandexApp).container
@@ -40,7 +31,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     private val _state = MutableStateFlow<HomeUiState>(HomeUiState.Loading)
     val state: StateFlow<HomeUiState> = _state.asStateFlow()
 
-    /** 最近浏览（最新在前） */
     val recentDocs: StateFlow<List<HistoryEntry>> = container.historyPreferences.history
         .stateIn(viewModelScope, SharingStarted.Lazily, emptyList())
 
@@ -62,7 +52,6 @@ class HomeViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     companion object {
-        /** 日志 TAG */
         private const val TAG = "HomeViewModel"
     }
 }

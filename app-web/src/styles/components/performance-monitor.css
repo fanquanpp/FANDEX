@@ -1,19 +1,5 @@
-/**
- * 性能监控面板样式
- * -----------------------------------------------------------------------------
- * 从 PerformanceMonitor.astro 提取的样式，包含：
- * - 浮动面板容器（固定右下角，可折叠）
- * - Web Vitals 指标卡片网格（good/needs-improvement/poor 三档色条）
- * - 分位数汇总（p50/p75/p95）
- * - 资源加载瀑布图（名称 + 时间条 + 耗时）
- * - 操作按钮（导出/清空）
- * - 暗色模式适配
- *
- * 注：外部 CSS 导入为全局样式，:global() 包裹已移除
- */
 
 @layer components {
-/* 性能监控面板：固定右下角浮动卡片 */
 .perf-monitor {
   position: fixed;
   right: 16px;
@@ -98,7 +84,6 @@
   letter-spacing: 0.5px;
 }
 
-/* Web Vitals 指标卡片网格 */
 .perf-vitals-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
@@ -136,7 +121,6 @@
   color: var(--color-fg-primary);
 }
 
-/* 汇总区域 */
 .perf-summary {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -156,7 +140,6 @@
   color: var(--color-text-secondary);
 }
 
-/* 资源瀑布图 */
 .perf-waterfall {
   display: flex;
   flex-direction: column;

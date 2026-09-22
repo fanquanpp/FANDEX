@@ -1,18 +1,4 @@
 ---
-/**
- * 算法教学页（教程课程表 + 题图鉴双视图 + 外部平台推荐）
- * -----------------------------------------------------------------------------
- * 入口扁平化（2026-09-19）：
- *   - 原独立子页「算法题图鉴」并入本页，成为页内可直切的第二视图：
- *     点击 hero「题图鉴」或视图切换器一步直达刷题功能，不再中转介绍页
- *   - 视图状态同步 URL（?view=problems），深链 / 刷新 / 分享均可还原
- *   - 题目详情页仍位于 /algorithms/problems/<slug>/（内容页，非介绍页）
- *   - 新增「外部刷题平台推荐」：力扣 / PracHub / NeetCode 等第三方资源，
- *     附免责声明（详见 disclaimer 页），仓库维护者不对第三方内容负责
- *
- * 教程组织：algorithm 模块全部教程按学习曲线重组为单元章节课程表，
- * 形成"学教程 -> 站内刷题 -> 外部平台进阶"的完整闭环。
- */
 import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
@@ -31,32 +17,19 @@ import {
   countByDifficulty,
   type AlgoDifficulty,
 } from '@/data/algo-problems'
-// 复用首页 Hero / 统计 / 功能入口样式，保证美术与学习路线页完全一致
 import '@/styles/pages/index.css'
 import '@/styles/pages/algorithms.css'
 
 const base = import.meta.env.BASE_URL
 
-/**
- * 页面主题色：algorithm 模块主分类色（计算机科学）。
- * 单元章节各自的色块跟随 unit.color（模块分类色），
- * 页面级色块（视图切换器 / 题图鉴筛选 / 章节兜底竖条）统一取本页主题色，
- * 不再使用站点品牌青（品牌青仅保留给首页 Hero 与导航入口）。
- */
 const pageColor = categoryColors.cs
 
-/** 教学文档难度标签字典键（frontmatter.difficulty -> 界面短标签） */
 const LEVEL_KEYS: Record<string, string> = {
   beginner: 'algo.level.beginner',
   intermediate: 'algo.level.intermediate',
   advanced: 'algo.level.advanced',
 }
 
-/**
- * 单元章节定义：slug 分组即学习曲线
- * （顺序参考「数据结构 -> 排序查找 -> 设计范式 -> 图论 -> 字符串 -> 高级结构 -> 实战」）
- * 展示文案（标题/描述）收于 i18n 字典（algoUnit.*），en 字段保留为 mono 装饰标记
- */
 const UNITS = [
   {
     id: 'foundation',
@@ -152,11 +125,9 @@ const UNITS = [
   },
 ]
 
-// 拉取 algorithm 模块全部文档并建立 slug 索引（构建期一次查询）
 const algoDocs = await getDocsByModule('algorithm')
 const docBySlug = new Map(algoDocs.map((doc) => [docSlug(doc.id), doc]))
 
-/** 组装单元视图模型：slug 映射到真实文档元数据，失效 slug 自动剔除 */
 const units = UNITS.map((unit) => ({
   ...unit,
   docs: unit.slugs
@@ -174,7 +145,6 @@ const units = UNITS.map((unit) => ({
     .filter((doc): doc is NonNullable<typeof doc> => doc !== null),
 })).filter((unit) => unit.docs.length > 0)
 
-// 兜底：未归入任何单元的文档并入「更多专题」，防止内容扩充后遗漏
 const mappedSlugs = new Set<string>(UNITS.flatMap((unit) => [...unit.slugs]))
 const restDocs = algoDocs.filter((doc) => !mappedSlugs.has(docSlug(doc.id)))
 if (restDocs.length > 0) {
@@ -195,29 +165,18 @@ if (restDocs.length > 0) {
   } as (typeof units)[number])
 }
 
-// 聚合统计：教程篇数 / 单元数 / 题库题量
 const docTotal = algoDocs.length
 const problemTotal = ALGO_PROBLEMS.length
 
-// 题图鉴视图：统计与枚举数据（构建期计算）
 const catCounts = countByCategory()
 const diffCounts = countByDifficulty()
 
-/** 难度 -> 语义色 token 名（卡片主题色与徽章配色） */
 const DIFF_COLOR: Record<AlgoDifficulty, string> = {
   easy: 'success',
   medium: 'warning',
   hard: 'danger',
 }
 
-/**
- * 外部资源推荐（第三方资源，中性描述），按用途分组：
- * - 刷题与竞赛：题库规模 / 面试真实度 / 竞赛训练各有侧重，互补不重复
- * - 可视化学习：算法与数据结构的过程演示，与教程模板代码对照观看
- * - 计划与追踪：刷题计划生成与进度统计
- * - 公开课与视频：体系化课程与"为什么这样解"的思路讲解
- * 全部为外部独立平台，其内容与服务由各自运营方提供，免责声明见 disclaimer 页。
- */
 const EXTERNAL_GROUPS = [
   {
     id: 'practice',
@@ -404,10 +363,8 @@ const EXTERNAL_GROUPS = [
   />
 
   <div class="home-page home-page--sub" data-algo-page style={`--page-color:${pageColor}`}>
-    <!-- 几何背景装饰：复用学习路线变体（竖条刻度语言） -->
     <GeoBgDecor variant="learning-path" />
 
-    <!-- Hero 区域：复用首页美术（渐变标题 + 统计 + SVG 描边入口） -->
     <section class="hero">
       <h1 class="hero-title" data-text="算法教学">
         <span class="hero-title-fan">算法</span><span class="hero-title-dex">教学</span>
@@ -431,14 +388,12 @@ const EXTERNAL_GROUPS = [
           </div>
         </div>
 
-        <!-- 功能入口：题图鉴直达链接（点击即切页内视图，不再中转独立页） -->
         <FeatureNav
           extra={[{ href: `?view=problems`, label: '题图鉴', tooltip: '直达刷题视图：经典算法题与讲解', labelKey: 'algo.atlasEntry.name', tooltipKey: 'algo.atlasEntry.tooltip' }]}
         />
       </div>
     </section>
 
-    <!-- 视图切换器：教程 / 刷题两大功能一步直达（sticky 常驻可达） -->
     <div class="algo-views" data-algo-views role="group" aria-label="教程与题图鉴视图切换" data-i18n-aria="algo.viewsAria">
       <button type="button" class="algo-views__tab is-active" data-view-tab="tutorials" aria-pressed="true">
         <span data-i18n="algo.tabTutorials">教程课程表</span>
@@ -450,7 +405,6 @@ const EXTERNAL_GROUPS = [
       </button>
     </div>
 
-    <!-- 视图一：单元章节课程表（默认视图） -->
     <div class="algo-units" data-algo-view="tutorials">
       {units.map((unit) => (
         <section class="algo-section" id={unit.id} data-unit={unit.id} style={`--unit-color:${unit.color}`}>
@@ -482,7 +436,6 @@ const EXTERNAL_GROUPS = [
       ))}
     </div>
 
-    <!-- 视图二：题图鉴（原独立子页并入；筛选交互由 lib/algo-problems.ts 驱动） -->
     <section data-algo-view="problems" data-algo-problems hidden>
       <div class="ap-filter">
         <div class="ap-filter__row">
@@ -544,7 +497,6 @@ const EXTERNAL_GROUPS = [
         </div>
       </div>
 
-      <!-- 命中计数行：附本机进度说明（进度仅存当前浏览器） -->
       <div class="ap-count-row">
         <p class="ap-count" data-filter-count aria-live="polite"></p>
         <span class="ap-count-note" data-i18n="ap.countNote">掌握 / 复习标记仅保存在当前浏览器</span>
@@ -610,7 +562,6 @@ const EXTERNAL_GROUPS = [
         ))}
       </div>
 
-      <!-- 空状态：筛选无命中时显示，附恢复动作 -->
       <div class="ap-empty" data-ap-empty hidden>
         <p data-i18n="ap.empty">没有匹配的题目</p>
         <div class="ap-empty__actions">
@@ -620,17 +571,30 @@ const EXTERNAL_GROUPS = [
       </div>
     </section>
 
-    <!-- 外部资源推荐：站内闭环之后的进阶出口（第三方资源 + 免责声明） -->
     <section class="algo-ext" aria-label="外部刷题平台推荐" data-i18n-aria="algoExt.title" data-algo-ext>
       <header class="algo-ext__head">
         <h2 class="algo-section__title" data-i18n="algoExt.title">外部刷题平台推荐</h2>
         <span class="algo-ext__note" data-i18n="algoExt.note">第三方资源 · 刷题 / 可视化 / 计划 / 公开课，按需进阶</span>
       </header>
       {EXTERNAL_GROUPS.map((group) => (
-        <div class="algo-ext__group">
+        <div class="algo-ext__group" data-ext-group>
           <h3 class="algo-ext__group-title">
-            <span data-i18n={group.labelKey}>{t(group.labelKey)}</span>
-            <em>{group.en}</em>
+            <button
+              class="algo-ext__group-toggle"
+              type="button"
+              data-ext-toggle
+              aria-expanded="true"
+              aria-label={`折叠/展开 ${t(group.labelKey)} 分组`}
+              data-i18n-aria="algoExt.toggleGroup"
+              data-i18n-params={JSON.stringify({ label: t(group.labelKey) })}
+            >
+              <span data-i18n={group.labelKey}>{t(group.labelKey)}</span>
+              <em>{group.en}</em>
+              <span class="algo-ext__group-count">{group.platforms.length}</span>
+              <svg class="toggle-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" aria-hidden="true">
+                <polyline points="6 9 12 15 18 9" />
+              </svg>
+            </button>
           </h3>
           <div class="algo-ext__grid">
             {group.platforms.map((platform) => (
@@ -644,7 +608,7 @@ const EXTERNAL_GROUPS = [
                 <div class="algo-ext__card-head">
                   <h4 class="algo-ext__name">{platform.name}</h4>
                   <span class="algo-ext__tag">{platform.tag}</span>
-                  <svg class="algo-ext__arrow" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                  <svg class="algo-ext__arrow" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
                     <line x1="7" y1="17" x2="17" y2="7" />
                     <polyline points="8 7 17 7 17 16" />
                   </svg>
@@ -667,13 +631,11 @@ const EXTERNAL_GROUPS = [
 </HomeLayout>
 
 <style>
-  /* 锚点跳转留出吸顶切换器的高度，避免标题被遮挡 */
   .algo-units,
   [data-algo-ext] {
     scroll-margin-top: 72px;
   }
 
-  /* 视图切换器：sticky 常驻，深滚动时仍可一步互切两大功能 */
   .algo-views {
     position: sticky;
     top: 0;
@@ -730,7 +692,6 @@ const EXTERNAL_GROUPS = [
     background: color-mix(in srgb, var(--page-color, var(--color-accent-base)) 10%, transparent);
   }
 
-  /* 外部平台推荐区 */
   .algo-ext {
     margin-block: var(--space-10) var(--space-8);
   }
@@ -749,16 +710,22 @@ const EXTERNAL_GROUPS = [
     color: var(--color-text-tertiary);
   }
 
-  /* 用途分组：mono 英文副标记与单元章节头部同语言 */
+  .algo-ext__group {
+    display: grid;
+    grid-template-rows: auto 1fr;
+    transition: grid-template-rows var(--motion-duration-normal) var(--motion-easing-out);
+  }
+
+  .algo-ext__group.collapsed {
+    grid-template-rows: auto 0fr;
+  }
+
   .algo-ext__group + .algo-ext__group {
-    margin-top: var(--space-6);
+    margin-top: var(--space-4);
   }
 
   .algo-ext__group-title {
-    display: flex;
-    align-items: baseline;
-    gap: var(--space-2);
-    margin: 0 0 var(--space-3);
+    margin: 0;
     font-family: var(--font-family-heading);
     font-size: 0.8rem;
     font-weight: var(--font-weight-semibold, 600);
@@ -773,18 +740,71 @@ const EXTERNAL_GROUPS = [
     color: var(--color-text-tertiary);
   }
 
+  .algo-ext__group-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-left: calc(-1 * var(--space-2));
+    padding: var(--space-1) var(--space-2);
+    border: none;
+    border-radius: var(--radius-sm, 2px);
+    background: none;
+    font: inherit;
+    color: var(--color-fg-primary);
+    cursor: pointer;
+    transition: background-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .algo-ext__group-toggle:hover {
+    background: var(--color-bg-hover);
+  }
+
+  .algo-ext__group-toggle:focus-visible {
+    outline: 2px solid var(--color-border-focus);
+    outline-offset: 2px;
+  }
+
+  .algo-ext__group-count {
+    font-size: 0.66rem;
+    color: var(--color-fg-tertiary);
+    font-variant-numeric: tabular-nums;
+    padding: 1px 8px;
+    border-radius: var(--radius-md, 4px);
+    background: var(--color-bg-elevated);
+    border: 1px solid var(--color-border-subtle);
+    line-height: 1.5;
+  }
+
+  .algo-ext__group-toggle .toggle-icon {
+    color: var(--color-fg-tertiary);
+    transition:
+      transform var(--motion-duration-normal) var(--motion-easing-out),
+      color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .algo-ext__group-toggle:hover .toggle-icon {
+    color: var(--color-fg-secondary);
+  }
+
+  .algo-ext__group.collapsed .toggle-icon {
+    transform: rotate(-90deg);
+  }
+
   .algo-ext__grid {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: var(--space-3);
+    gap: var(--space-2);
+    overflow: hidden;
+    min-height: 0;
+    padding: var(--space-1) 0 var(--space-2);
   }
 
   .algo-ext__card {
     position: relative;
     display: flex;
     flex-direction: column;
-    gap: var(--space-2);
-    padding: var(--space-4) var(--space-4) var(--space-3);
+    gap: var(--space-1);
+    padding: var(--space-3) var(--space-3) var(--space-2);
     border: 1px solid var(--color-border-light);
     border-radius: var(--radius-md);
     background: var(--color-bg-card);
@@ -796,7 +816,6 @@ const EXTERNAL_GROUPS = [
       transform var(--motion-duration-fast) var(--motion-easing-out);
   }
 
-  /* 顶部类别色条：hover 展开，与模块卡片同语言 */
   .algo-ext__card::before {
     content: '';
     position: absolute;
@@ -834,7 +853,7 @@ const EXTERNAL_GROUPS = [
   .algo-ext__name {
     margin: 0;
     font-family: var(--font-family-heading);
-    font-size: 0.9rem;
+    font-size: 0.82rem;
     font-weight: var(--font-weight-semibold, 600);
     color: var(--color-fg-primary);
   }
@@ -861,15 +880,19 @@ const EXTERNAL_GROUPS = [
 
   .algo-ext__desc {
     margin: 0;
-    font-size: 0.74rem;
-    line-height: 1.65;
+    font-size: 0.7rem;
+    line-height: 1.6;
     color: var(--color-text-secondary);
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 3;
+    overflow: hidden;
   }
 
   .algo-ext__host {
     margin-top: auto;
     font-family: var(--font-family-mono);
-    font-size: 0.62rem;
+    font-size: 0.58rem;
     letter-spacing: 0.05em;
     color: var(--color-text-tertiary);
   }
@@ -887,7 +910,6 @@ const EXTERNAL_GROUPS = [
     text-underline-offset: 2px;
   }
 
-  /* 单元序号：mono 竖排装饰，与标题基线对齐（跟随单元主题色） */
   .algo-section__index {
     font-family: var(--font-family-mono);
     font-size: 0.66rem;
@@ -926,7 +948,6 @@ const EXTERNAL_GROUPS = [
       display: none;
     }
 
-    /* 切换器占满一行，窄屏下统计行不再拥挤 */
     .algo-views {
       display: flex;
       width: 100%;
@@ -943,8 +964,8 @@ const EXTERNAL_GROUPS = [
   }
 </style>
 
-<!-- 题图鉴筛选交互 + 双视图直切 -->
 <script>
   import '@/lib/algo-problems';
   import '@/lib/algo-views';
+  import '@/lib/algo-ext';
 </script>

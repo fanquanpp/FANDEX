@@ -1,27 +1,3 @@
-/**
- * 前端实验沙箱（CodePen 风格编辑器）
- *
- * 功能概述：
- *   - 三栏编辑器（HTML/CSS/JS）+ 实时预览 iframe + 控制台面板
- *   - 支持顶部/左右两种布局、面板显隐切换、拖拽调整预览区比例
- *   - 编辑内容自动保存到浏览器 IndexedDB，刷新不丢失
- *   - 本地作品库：另存为新作品、打开历史作品、删除作品
- *   - 模板库：新建时可选空白页 / 交互示例 / CSS 动画三个起步模板
- *   - 灵感画廊：内置 25 个前端设计成品（加载动画/按钮/卡片/文本/背景/
- *     组件六类），实时预览效果并一键把源码载入编辑器
- *   - 快捷键：Ctrl/Cmd + Enter 运行预览
- *   - URL 同步：打开/另存作品后同步 ?pen= 参数，刷新不丢上下文
- *   - 窄屏（≤768px）下面板开关自动变为标签页行为，单屏聚焦当前编辑器
- *
- * 安全与性能：
- *   - 预览 iframe 使用 sandbox 隔离，用户代码运行在独立不透明源
- *   - 自动运行采用防抖（600ms），避免每次按键都重建 iframe
- *   - 控制台日志上限 200 条，防止长期运行撑爆内存
- *   - 所有数据仅存本地，不提供分享/上传/导出功能
- *
- * UI 双语：界面文案经 lib/i18n 的 t() 取当前语言（useLang 订阅全局切换）；
- * 模板初始代码与作品内容（用户数据）不参与翻译。
- */
 
 import {
   Fragment,
@@ -51,30 +27,21 @@ import { useSplitPanes, type PaneKey } from './use-split-panes';
 import { useLang } from '@/lib/use-lang';
 import { t, type Lang } from '@/lib/i18n';
 
-/** 起步模板结构（新建时可选；name/desc 走 i18n 字典键） */
 interface PenTemplate {
-  /** 模板 ID */
   id: string;
-  /** 模板名称字典键 */
   nameKey: string;
-  /** 模板一句话说明字典键 */
   descKey: string;
-  /** HTML 初始代码 */
   html: string;
-  /** CSS 初始代码 */
   css: string;
-  /** JS 初始代码 */
   js: string;
 }
 
-/** 空白模板内容（与旧版默认草稿一致的最小结构） */
 const BLANK_HTML = '<h1>你好，FANDEX</h1>\n<button id="demo">点我</button>\n<p id="tip">打开控制台查看输出</p>';
 const BLANK_CSS =
   'body {\n  font-family: var(--font-family-body, sans-serif);\n  text-align: center;\n  padding: 40px 16px;\n}\nbutton {\n  padding: 8px 20px;\n  border-radius: 8px;\n  border: 1px solid #0B6E7E;\n  background: #E6FBFC;\n  color: #0B6E7E;\n  cursor: pointer;\n}';
 const BLANK_JS =
   "const tip = document.getElementById('tip');\nconst btn = document.getElementById('demo');\nbtn.addEventListener('click', () => {\n  tip.textContent = '点击次数 +1';\n  console.log('按钮被点击');\n});\nconsole.log('预览已就绪');";
 
-/** 起步模板列表（新建菜单展示顺序；名称/说明见字典 pg.template.*） */
 const TEMPLATES: readonly PenTemplate[] = [
   { id: 'blank', nameKey: 'pg.template.interactive.name', descKey: 'pg.template.interactive.desc', html: BLANK_HTML, css: BLANK_CSS, js: BLANK_JS },
   {
@@ -96,7 +63,6 @@ const TEMPLATES: readonly PenTemplate[] = [
   },
 ];
 
-/** 默认草稿：取第一个模板（交互示例） */
 const DEFAULT_TEMPLATE: FrontendPen = {
   id: 'draft',
   title: '未命名作品',
@@ -116,24 +82,12 @@ const DEFAULT_TEMPLATE: FrontendPen = {
   lastOpenedAt: 0,
 };
 
-/** 存储用量预警阈值（占比） */
 const STORAGE_WARN_RATIO = 0.85;
 
-/**
- * 视口窄于 700px 时新作品默认上下堆叠：
- * 左右分栏在窄屏下编辑器与预览各占约一半宽度，两者都不可用。
- * 仅影响新建草稿的初始值；已保存作品保持用户上次的布局选择。
- */
 function narrowPreferredLayout(): FrontendLayout {
   return typeof window !== 'undefined' && window.innerWidth < 700 ? 'top' : 'left';
 }
 
-/** 编辑器面板 key（从分栏 Hook 再导出，模板/工具栏共用） */
-
-/**
- * 格式化时间戳为本地时间字符串
- * @param ts - 时间戳（毫秒）；0 表示未保存（文案走 i18n 字典）
- */
 function formatTime(ts: number, lang: Lang): string {
   if (!ts) return t('pg.unsaved', undefined, lang);
   const d = new Date(ts);
@@ -141,20 +95,12 @@ function formatTime(ts: number, lang: Lang): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
 }
 
-/**
- * 格式化字节数为可读文本
- * @param bytes - 字节数
- */
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
   if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
   return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 }
 
-/**
- * 同步地址栏 ?pen= 参数（replaceState，不产生历史记录）
- * @param penId - 作品 ID；传 null 时移除参数回到草稿态
- */
 function syncPenUrl(penId: string | null): void {
   const url = new URL(window.location.href);
   if (penId) {
@@ -165,44 +111,24 @@ function syncPenUrl(penId: string | null): void {
   window.history.replaceState(null, '', url.toString());
 }
 
-/** 前端实验沙箱主组件 */
 function FrontendLab() {
-  /** 界面语言（工作台全部 UI 文案双语，订阅全局切换） */
   const lang = useLang();
-  /** 当前编辑中的作品 */
   const [pen, setPen] = useState<FrontendPen>(DEFAULT_TEMPLATE);
-  /** 是否打开作品库面板 */
   const [showLibrary, setShowLibrary] = useState(false);
-  /** 是否打开新建模板菜单 */
   const [showTemplates, setShowTemplates] = useState(false);
-  /** 是否打开灵感画廊 */
   const [showGallery, setShowGallery] = useState(false);
-  /** 是否打开快捷键说明面板 */
   const [showShortcuts, setShowShortcuts] = useState(false);
-  /** 作品库列表 */
   const [library, setLibrary] = useState<FrontendPen[]>([]);
-  /** 是否正在格式化代码 */
   const [formatting, setFormatting] = useState(false);
-  /** 工具栏提示（格式化结果等） */
   const [toolbarNote, setToolbarNote] = useState('');
-  /** 存储用量提示（存数值，文案渲染期按当前语言取字典） */
   const [storageWarning, setStorageWarning] = useState<{ used: string; quota: string } | null>(null);
-  /** 当前作品字节数（用于本地占用提示）：纯派生值，随 pen 渲染期计算 */
   const penBytes = useMemo(() => estimatePenBytes(pen), [pen]);
-  /** 窄屏标签页：当前聚焦的编辑器面板 */
   const [activePane, setActivePane] = useState<PaneKey>('html');
 
-  /**
-   * 更新作品内容的通用入口
-   * 字节估算由持久化/预览 Hook 外的渲染期派生，无需在此处重复计算
-   */
   const updatePen = useCallback((patch: Partial<FrontendPen>) => {
     setPen((prev) => ({ ...prev, ...patch }));
   }, []);
 
-  // 窄屏首建草稿默认上下堆叠：DEFAULT_TEMPLATE 是模块常量（构建期 SSR 求值，
-  // 不能读视口），故在客户端首渲染期做一次守卫式校正——仅未落盘的初始草稿
-  // （id=draft 且 createdAt=0）触发，已保存作品保持用户上次的布局选择
   const [narrowLayoutChecked, setNarrowLayoutChecked] = useState(false);
   if (!narrowLayoutChecked) {
     setNarrowLayoutChecked(true);
@@ -214,7 +140,6 @@ function FrontendLab() {
     );
   }
 
-  // 布局域：编辑器/预览分栏与三栏权重拖拽（split 供持久化与网格模板消费）
   const {
     split,
     setSplit,
@@ -227,7 +152,6 @@ function FrontendLab() {
     handlePaneSplitMove,
     handlePaneSplitEnd,
   } = useSplitPanes({ pen, updatePen });
-  // 预览域：srcdoc 构建、自动/手动运行、快捷键与控制台消息
   const {
     previewDoc,
     runId,
@@ -237,17 +161,11 @@ function FrontendLab() {
     handleRun,
     resetPreview,
   } = usePreviewRuntime({ pen });
-  // 持久化域：防抖自动保存与页面隐藏兜底落盘
   const { saveState, setSaveState } = usePenPersistence({ pen, split });
 
-  /**
-   * 挂载时读取本地草稿与存储用量
-   */
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      // 深链优先级：?showcase= 载入图鉴成品 > ?pen= 打开指定作品 > 恢复草稿；
-      // ?panel=gallery 打开时直接展开灵感画廊面板
       const params = new URLSearchParams(window.location.search);
       const showcaseId = params.get('showcase');
       const openGallery = params.get('panel') === 'gallery';
@@ -258,7 +176,6 @@ function FrontendLab() {
         ? SHOWCASE_ITEMS.find((s) => s.id === showcaseId)
         : undefined;
       if (showcase) {
-        // 图鉴深链：用户从功能主页/图鉴主动点击而来，直接载入无需覆盖确认
         target = {
           ...DEFAULT_TEMPLATE,
           layout: narrowPreferredLayout(),
@@ -276,7 +193,6 @@ function FrontendLab() {
         target = await loadPenDraft();
       }
       if (!cancelled && target) {
-        // 兼容历史作品：缺失 paneWeights/split 时回退默认值
         const opened = {
           ...target,
           paneWeights: target.paneWeights ?? { html: 1, css: 1, js: 1 },
@@ -286,10 +202,8 @@ function FrontendLab() {
         setPen(opened);
         setSplit(opened.split ?? 0.5);
         resetPreview(opened);
-        // 地址栏与实际打开的作品保持一致（草稿态移除参数）
         syncPenUrl(target.id !== 'draft' ? target.id : null);
       }
-      // 深链参数一次性消费：应用后清除地址参数，刷新不再重复覆盖草稿
       if (showcaseId || openGallery) {
         window.history.replaceState(null, '', window.location.pathname + window.location.hash);
       }
@@ -312,10 +226,6 @@ function FrontendLab() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /**
-   * 格式化三个编辑器（HTML/CSS/JS 使用各自语言解析器）
-   * 仅更新发生变化的编辑器，避免无意义重绘
-   */
   const handleFormat = useCallback(async () => {
     if (formatting) return;
     setFormatting(true);
@@ -346,9 +256,6 @@ function FrontendLab() {
     setFormatting(false);
   }, [formatting, pen.html, pen.css, pen.js, updatePen]);
 
-  /**
-   * 将当前作品另存为新作品（复制到作品库），并同步地址栏参数
-   */
   const handleSaveAsNew = useCallback(async () => {
     const now = Date.now();
     const newId =
@@ -369,10 +276,6 @@ function FrontendLab() {
     syncPenUrl(newId);
   }, [pen, setSaveState]);
 
-  /**
-   * 智能保存（Ctrl/Cmd+S）：草稿另存为新作品；已保存作品原地更新，
-   * 避免连续保存产生重复副本（CodePen 的 Save / Fork 双语义）
-   */
   const handleSave = useCallback(async () => {
     if (pen.id === 'draft') {
       await handleSaveAsNew();
@@ -385,8 +288,6 @@ function FrontendLab() {
     setSaveState('saved');
   }, [pen, handleSaveAsNew, setSaveState]);
 
-  // 全局快捷键：Ctrl/Cmd+S 保存、Shift+Alt+F 格式化、? 打开快捷键说明。
-  // 输入类元素聚焦时仅放行 Ctrl/Cmd+S 与 Shift+Alt+F（组合键不干扰打字）
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement | null;
@@ -419,10 +320,6 @@ function FrontendLab() {
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [handleSave, handleFormat, showShortcuts]);
 
-  /**
-   * 按模板新建草稿（会覆盖当前未另存的编辑内容，需用户确认）
-   * @param template - 目标模板；缺省时使用交互示例模板
-   */
   const handleNewDraft = useCallback(
     (template: PenTemplate) => {
       const isUntouched =
@@ -452,11 +349,6 @@ function FrontendLab() {
     [pen, resetPreview, lang],
   );
 
-  /**
-   * 把灵感画廊成品载入编辑器（覆盖当前草稿，需用户确认）
-   * 确认策略与新建草稿一致：草稿有改动时提醒覆盖；作品态只提示切换且不影响已保存内容
-   * @param item - 目标成品
-   */
   const handleLoadShowcase = useCallback(
     (item: ShowcaseItem) => {
       const isUntouched =
@@ -487,19 +379,13 @@ function FrontendLab() {
     [pen, resetPreview, lang],
   );
 
-  /**
-   * 打开作品库面板并刷新列表
-   */  const handleOpenLibrary = useCallback(async () => {
+const handleOpenLibrary = useCallback(async () => {
     setLibrary(await loadPens());
     setShowLibrary(true);
   }, []);
 
-  /**
-   * 打开作品库中的某条作品，并同步地址栏参数
-   */
   const handleOpenPen = useCallback(async (item: FrontendPen) => {
     const now = Date.now();
-    // 兼容历史作品：缺失 paneWeights/split 时回退默认值
     const opened = {
       ...item,
       paneWeights: item.paneWeights ?? { html: 1, css: 1, js: 1 },
@@ -514,19 +400,12 @@ function FrontendLab() {
     syncPenUrl(opened.id);
   }, [resetPreview, setSplit]);
 
-  /**
-   * 删除作品库中的一条作品（用户主动操作，带确认）
-   */
   const handleDeletePen = useCallback(async (item: FrontendPen) => {
     if (!window.confirm(t('pg.deleteConfirm', { title: item.title }, lang))) return;
     await deletePen(item.id);
     setLibrary(await loadPens());
   }, [lang]);
 
-  /**
-   * 切换编辑器面板可见性；窄屏下同时把该面板设为标签页焦点
-   * @param key - 面板 key
-   */
   const togglePane = useCallback(
     (key: PaneKey) => {
       setActivePane(key);
@@ -539,7 +418,6 @@ function FrontendLab() {
     [pen, updatePen],
   );
 
-  /** 编辑器区域网格模板（按布局方向生成） */
   const workspaceStyle = useMemo<CSSProperties>(() => {
     const ratio = `${split * 100}%`;
     return pen.layout === 'left'
@@ -547,7 +425,6 @@ function FrontendLab() {
       : { gridTemplateColumns: '100%', gridTemplateRows: `${ratio} 3px 1fr` };
   }, [pen.layout, split]);
 
-  /** 当前打开的编辑器语言映射 */
   const editors = useMemo(
     () =>
       [
@@ -557,9 +434,7 @@ function FrontendLab() {
       ] as const,
     [pen.showHtml, pen.showCss, pen.showJs],
   );
-  /** 可见编辑器列表（用于在相邻面板间插入分隔条） */
   const visibleEditors = editors.filter((editor) => editor.visible);
-  /** 窄屏标签页实际生效的面板：活动面板被收起时回退到首个可见面板 */
   const effectivePane = visibleEditors.some((editor) => editor.key === activePane)
     ? activePane
     : (visibleEditors[0]?.key ?? null);

@@ -1,43 +1,19 @@
-/**
- * 界面文案双语字典（zh / en）单一数据源
- * =============================================================================
- * 职责：
- * - 收录全站 UI/UX 文案（导航、按钮、提示、面板、图例等）的中英双语版本
- * - 文档正文、教学内容、模块/文档标题等内容层不进入本字典（保持中文）
- * - 供三层消费：
- *   1. Astro 组件服务端渲染：t('key') 输出中文初始文本（SEO 与无 JS 降级）
- *   2. 运行时 DOM 应用器（lib/i18n-dom）：按 data-i18n 属性切换 textContent/aria 等
- *   3. React 岛屿（lib/use-lang + t）：订阅语言变化后重渲染
- *
- * 约定：
- * - 键名按「域名.语义」平面命名，与 data-i18n 属性值一一对应
- * - 中文值必须与历史 SSR 文案逐字一致（zh 模式页面字节级不变）
- * - 插值用 {n}/{p}/{t}/{q} 等花括号占位符，由 t() 与 DOM 应用器统一替换
- * - 品牌展示元素（hero 大标题、FANDEX 字标、mono 技术标记）不翻译，
- *   与 logo 同属品牌视觉
- * =============================================================================
- */
 
-/** 单条文案的双语结构 */
 export interface I18nEntry {
   zh: string;
   en: string;
 }
 
-/** 全站 UI 文案字典（平面键，按域名分组注释） */
 export const UI_STRINGS: Record<string, I18nEntry> = {
-  // ========== 主题切换按钮（ThemeToggle 岛） ==========
   'theme.tooltipLight': { zh: '亮色模式', en: 'Light mode' },
   'theme.tooltipDark': { zh: '暗色模式', en: 'Dark mode' },
   'theme.switchLight': { zh: '切换到亮色模式', en: 'Switch to light mode' },
   'theme.switchDark': { zh: '切换到暗色模式', en: 'Switch to dark mode' },
 
-  // ========== 语言切换按钮 ==========
   'langToggle.label': { zh: 'EN', en: '中' },
   'langToggle.aria': { zh: '切换到英文界面', en: 'Switch to Chinese' },
   'langToggle.tooltip': { zh: 'English', en: '中文' },
 
-  // ========== 顶栏 / 移动端导航（Layout + HomeLayout） ==========
   'nav.search': { zh: '搜索', en: 'Search' },
   'nav.searchAria': { zh: '搜索', en: 'Search' },
   'nav.searchTooltip': { zh: '搜索（Ctrl+K）', en: 'Search (Ctrl+K)' },
@@ -61,7 +37,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'nav.featureSheetAria': { zh: '功能直达', en: 'Quick features' },
   'nav.featureSheetTitle': { zh: '功能直达', en: 'Quick features' },
 
-  // ========== 功能入口（lib/feature-entries 单一数据源） ==========
   'feature.home.name': { zh: '首页', en: 'Home' },
   'feature.home.tooltip': { zh: '返回首页', en: 'Back to home' },
   'feature.playground.name': { zh: '在线前端', en: 'Frontend Lab' },
@@ -75,7 +50,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'feature.sheet.problems.name': { zh: '算法题图鉴', en: 'Problem Atlas' },
   'feature.sheet.problems.tooltip': { zh: '经典算法题与讲解', en: 'Classic problems with walkthroughs' },
 
-  // ========== 侧边栏（Sidebar） ==========
   'sidebar.asideAria': { zh: '侧边栏', en: 'Sidebar' },
   'sidebar.close': { zh: '关闭侧边栏', en: 'Close sidebar' },
   'sidebar.collapse': { zh: '折叠侧边栏', en: 'Collapse sidebar' },
@@ -90,22 +64,18 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'sidebar.moduleToggle.expand': { zh: '展开 {title} 文档列表', en: 'Expand {title} doc list' },
   'sidebar.moduleToggle.collapse': { zh: '收起 {title} 文档列表', en: 'Collapse {title} doc list' },
 
-  // ========== 目录大纲（TableOfContents） ==========
   'toc.title': { zh: '本页目录', en: 'On this page' },
   'toc.asideAria': { zh: '本页目录', en: 'On this page' },
   'toc.collapse': { zh: '折叠子目录', en: 'Collapse sub-sections' },
   'toc.expand': { zh: '展开子目录', en: 'Expand sub-sections' },
   'toc.other': { zh: '其他', en: 'Other' },
 
-  // ========== 文档底部导航（DocNav） ==========
   'docNav.prev': { zh: '上一篇', en: 'Previous' },
   'docNav.next': { zh: '下一篇', en: 'Next' },
 
-  // ========== 面包屑 ==========
   'breadcrumb.home': { zh: '首页', en: 'Home' },
   'breadcrumb.page': { zh: '第 {n} 页', en: 'Page {n}' },
 
-  // ========== 模块文档列表页（ModulePageContent） ==========
   'modulePage.docCount': { zh: '共 {n} 篇', en: '{n} docs' },
   'modulePage.docCountAria': { zh: '本模块共 {n} 篇文档', en: '{n} documents in this module' },
   'modulePage.openExternal': { zh: '{label}（在新标签页打开）', en: '{label} (opens in a new tab)' },
@@ -117,14 +87,12 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'modulePage.next': { zh: '下一页', en: 'Next' },
   'modulePage.status': { zh: '第 {p} / {t} 页', en: 'Page {p} / {t}' },
 
-  // ========== 文档详情页 ==========
   'doc.prereq': { zh: '前置知识: ', en: 'Prerequisites: ' },
   'doc.difficulty.beginner': { zh: '入门', en: 'Beginner' },
   'doc.difficulty.intermediate': { zh: '中级', en: 'Intermediate' },
   'doc.difficulty.advanced': { zh: '高级', en: 'Advanced' },
   'doc.min': { zh: 'min', en: 'min' },
 
-  // ========== 首页 ==========
   'home.modules': { zh: '模块', en: 'modules' },
   'home.docs': { zh: '文档', en: 'docs' },
   'home.entriesAria': { zh: '功能入口', en: 'Feature entries' },
@@ -132,7 +100,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'home.scrollLeft': { zh: '向左滚动', en: 'Scroll left' },
   'home.scrollRight': { zh: '向右滚动', en: 'Scroll right' },
 
-  // ========== 页脚（Footer） ==========
   'footer.tagline': {
     zh: '循序渐进，从第一行代码到理解整个世界。',
     en: 'Step by step, from your first line of code to understanding the world.',
@@ -157,7 +124,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
     en: 'Copyright (c) {year} {author} · Self-taught CS platform · For learning reference only',
   },
 
-  // ========== 搜索命令面板（lib/search-palette） ==========
   'search.title': { zh: '全站搜索', en: 'Site search' },
   'search.placeholder': { zh: '搜索文档、语法与知识点', en: 'Search docs, syntax and topics' },
   'search.inputAria': { zh: '搜索关键词', en: 'Search keywords' },
@@ -173,7 +139,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'search.startHint': { zh: '输入关键词开始检索，或从下方入口进入', en: 'Type to search, or pick an entry below' },
   'search.recentHint': { zh: '最近浏览与功能入口', en: 'Recent views and feature entries' },
   'search.untitled': { zh: '未命名文档', en: 'Untitled document' },
-  // 搜索面板功能入口（与 feature-entries 同文案、独立键名以便运行时拼装）
   'search.entry.playground': { zh: '在线前端', en: 'Frontend Lab' },
   'search.entry.playgroundCrumb': { zh: '在线编写与运行代码', en: 'Write and run code in the browser' },
   'search.entry.gallery': { zh: '灵感图鉴', en: 'Showcase' },
@@ -189,24 +154,20 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'search.entry.modules': { zh: '模块总览', en: 'All modules' },
   'search.entry.modulesCrumb': { zh: '全部分类与模块', en: 'All categories and modules' },
 
-  // ========== SW 更新提示条（lib/sw-update） ==========
   'swUpdate.updated': { zh: '内容已更新', en: 'Content updated' },
   'swUpdate.refresh': { zh: '立即刷新', en: 'Refresh now' },
   'swUpdate.close': { zh: '关闭', en: 'Close' },
   'swUpdate.closeAria': { zh: '关闭更新提示', en: 'Dismiss update notice' },
 
-  // ========== PWA 安装（lib/pwa-install） ==========
   'pwa.iosTip': {
     zh: '在浏览器「分享」菜单中选择「添加到主屏幕 / 安装应用」即可离线使用。',
     en: 'Open the browser Share menu and choose "Add to Home Screen / Install App" for offline use.',
   },
 
-  // ========== 代码块与正文交互（lib/layout-interactions / mermaid） ==========
   'code.copyAria': { zh: 'Copy code', en: 'Copy code' },
   'code.headingAnchorAria': { zh: '标题锚点链接', en: 'Heading anchor link' },
   'code.mermaidCaption': { zh: 'mermaid 图表', en: 'mermaid diagram' },
 
-  // ========== 404 页 ==========
   'error404.title': { zh: '页面未找到', en: 'Page not found' },
   'error404.desc': { zh: '地址不存在或内容已被移动。', en: 'The address does not exist or the content has moved.' },
   'error404.invalid': { zh: '失效链接', en: 'Broken link' },
@@ -214,13 +175,11 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'error404.backHome': { zh: '返回首页', en: 'Back to home' },
   'error404.learningPath': { zh: '学习路线', en: 'Learning Path' },
 
-  // ========== 免责声明页（正文为法律文本，仅界面壳双语） ==========
   'legal.updatedPrefix': { zh: '最后更新', en: 'Last updated' },
   'legal.updatedSuffix': { zh: '生效于全部端（网页 / 桌面 / Android）', en: 'applies to all platforms (web / desktop / Android)' },
   'legal.backHome': { zh: '返回首页', en: 'Back to home' },
   'legal.exitsAria': { zh: '免责页出口', en: 'Legal page exits' },
 
-  // ========== 语法速览页 ==========
   'syntaxPage.languages': { zh: '语言', en: 'languages' },
   'syntaxPage.cards': { zh: '语法点', en: 'syntax cards' },
   'syntaxPage.docs': { zh: '文档', en: 'docs' },
@@ -228,7 +187,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'syntaxPage.quickLabel': { zh: '直达', en: 'Jump' },
   'syntaxPage.quickTooltip': { zh: '直达 {title} 语法速查', en: 'Jump to {title} syntax cards' },
 
-  // ========== 语法速览岛（SyntaxExplorer） ==========
   'syntax.langsAria': { zh: '语法语言切换', en: 'Switch language' },
   'syntax.filterPlaceholder': { zh: '筛选语法点（小节 / 写法 / 公式 / 代码）', en: 'Filter cards (section / name / formula / code)' },
   'syntax.filterAria': { zh: '筛选当前语言的语法点', en: 'Filter syntax cards of the current language' },
@@ -255,7 +213,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'syntax.viewDoc': { zh: '查看 {title} 完整文档', en: 'View full {title} docs' },
   'syntax.close': { zh: '关闭', en: 'Close' },
 
-  // ========== 学习路线总览页 ==========
   'lp.techs': { zh: '门技术', en: 'tracks' },
   'lp.nodes': { zh: '知识点', en: 'topics' },
   'lp.published': { zh: '篇已发布', en: 'published' },
@@ -273,7 +230,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'lp.badgeDoneTotal': { zh: '已完成 {n} / {t}', en: '{n} / {t} done' },
   'lp.badgeLearning': { zh: '学习中 {n}', en: '{n} learning' },
 
-  // 学习路线页：职业卡文案（页面 UI 文案，随界面语言切换）
   'lpCareer.frontend.title': { zh: '前端工程师', en: 'Frontend Engineer' },
   'lpCareer.frontend.desc': {
     zh: '从 HTML / CSS / JavaScript 起步，经 TypeScript 与主流框架进阶，最终走向工程化与架构设计。',
@@ -330,12 +286,10 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'lpCareer.data.ladder2': { zh: '进阶 · 数据管道设计', en: 'Mid · data pipeline design' },
   'lpCareer.data.ladder3': { zh: '专家 · 数据平台架构', en: 'Expert · data platform architecture' },
 
-  // ========== 单技术学习路线页 ==========
   'lpTech.stages': { zh: '阶段', en: 'stages' },
   'lpTech.overview': { zh: '总览', en: 'Overview' },
   'lpTech.switchAria': { zh: '切换学习路线', en: 'Switch learning path' },
 
-  // ========== 学习路径思维导图岛（learning-path/*） ==========
   'lpMap.progressAria': { zh: '学习进度：已完成 {done} / 共 {total} 个知识点，学习中 {learning} 个', en: 'Progress: {done} of {total} topics done, {learning} in learning' },
   'lpMap.done': { zh: '已完成', en: 'Completed' },
   'lpMap.learning': { zh: '学习中 {n}', en: 'Learning {n}' },
@@ -387,7 +341,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'lpMap.panelFooter': { zh: '{title} 学习路线', en: '{title} learning path' },
   'lpMap.nodeAria': { zh: '{title}（{state}，点击查看详情）', en: '{title} ({state}, click for details)' },
 
-  // ========== 算法教学页（教程课程表 + 题图鉴双视图） ==========
   'algo.units': { zh: '大单元', en: 'units' },
   'algo.docs': { zh: '篇教程', en: 'tutorials' },
   'algo.problems': { zh: '道配套习题', en: 'problems' },
@@ -408,13 +361,13 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'algoExt.group.visual': { zh: '可视化学习', en: 'Visualizations' },
   'algoExt.group.plan': { zh: '计划与追踪', en: 'Plans & Tracking' },
   'algoExt.group.course': { zh: '公开课与视频', en: 'Courses & Videos' },
+  'algoExt.toggleGroup': { zh: '折叠/展开 {label} 分组', en: 'Collapse or expand the {label} group' },
   'algoExt.disclaimerPre': {
     zh: '以上为外部第三方平台，其内容、账号与服务均由各自运营方提供；收录仅为学习资源参考，不构成合作或背书，本站不对使用外部资源产生的各类问题承担责任。详见',
     en: 'The above are external third-party platforms whose content, accounts and services are provided by their operators; listed for learning reference only, without partnership or endorsement, and we are not liable for issues arising from them. See the ',
   },
   'algoExt.disclaimerPost': { zh: '。', en: ' for details.' },
 
-  // 算法教学单元（页面 UI 文案，随界面语言切换）
   'algoUnit.foundation.title': { zh: '基础与分析', en: 'Foundations' },
   'algoUnit.foundation.desc': { zh: '复杂度思维起步，吃透数组、栈队列、链表与哈希等线性结构的实现细节。', en: 'Start with complexity thinking and master arrays, stacks, queues, linked lists and hash tables.' },
   'algoUnit.tree.title': { zh: '树形结构', en: 'Trees' },
@@ -434,7 +387,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'algoUnit.more.title': { zh: '更多专题', en: 'More' },
   'algoUnit.more.desc': { zh: '尚未归入上述单元的算法专题文档。', en: 'Algorithm topics not yet grouped into the units above.' },
 
-  // ========== 算法题图鉴视图（并入算法教学页） ==========
   'ap.catLabel': { zh: '分类', en: 'Category' },
   'ap.diffLabel': { zh: '难度', en: 'Difficulty' },
   'ap.statusLabel': { zh: '进度', en: 'Progress' },
@@ -454,7 +406,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'ap.reset': { zh: '重置全部筛选', en: 'Reset all filters' },
   'ap.hitCount': { zh: '命中 {s} / {t} 道题', en: '{s} / {t} problems matched' },
 
-  // ========== 算法题详情页 ==========
   'apd.crumbAria': { zh: '面包屑', en: 'Breadcrumb' },
   'apd.algorithms': { zh: '算法教学', en: 'Algorithms' },
   'apd.atlas': { zh: '算法题图鉴', en: 'Problem Atlas' },
@@ -479,7 +430,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'apd.next': { zh: 'NEXT · 下一题', en: 'NEXT · next' },
   'apd.back': { zh: '返回题图鉴', en: 'Back to atlas' },
 
-  // ========== 在线编程工作台岛（FrontendLab） ==========
   'pg.backHome': { zh: '首页', en: 'Home' },
   'pg.backHomeAria': { zh: '返回首页', en: 'Back to home' },
   'pg.titlePlaceholder': { zh: '作品标题', en: 'Pen title' },
@@ -544,7 +494,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'pg.confirmLoadDraft': { zh: '当前草稿尚未另存为作品，载入成品会覆盖草稿内容，是否继续？', en: 'The current draft is not saved yet; loading a showcase will overwrite it. Continue?' },
   'pg.deleteConfirm': { zh: '确定删除作品「{title}」？删除后无法恢复。', en: 'Delete the pen "{title}"? This cannot be undone.' },
   'pg.unsaved': { zh: '未保存', en: 'Unsaved' },
-  // 模板（工作台内置草稿模板，属界面功能入口文案）
   'pg.template.interactive.name': { zh: '交互示例', en: 'Interactive demo' },
   'pg.template.interactive.desc': { zh: '按钮点击 + 控制台输出', en: 'Button click + console output' },
   'pg.template.animation.name': { zh: 'CSS 动画', en: 'CSS animation' },
@@ -552,7 +501,6 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'pg.template.blank.name': { zh: '空白页面', en: 'Blank page' },
   'pg.template.blank.desc': { zh: '从零开始自由编写', en: 'Free writing from scratch' },
 
-  // ========== 灵感画廊（ShowcaseGallery） ==========
   'pgSc.previewTitle': { zh: '{name} 预览', en: '{name} preview' },
   'pgSc.placeholder': { zh: '滚动到可视区域后加载预览', en: 'Scroll into view to load the preview' },
   'pgSc.loadAria': { zh: '把「{name}」的源码载入编辑器', en: 'Load "{name}" source into the editor' },

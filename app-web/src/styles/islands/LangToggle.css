@@ -1,21 +1,8 @@
-/**
- * 语言切换按钮（Islands 层）
- * -----------------------------------------------------------------------------
- * LangToggle.astro 的专属样式：mono 短标签（EN / 中）排布。
- * 基础交互（透明背景 + 无边框 + 悬停/焦点）由 .fndx-icon-btn 统一提供，
- * 此处仅补充文字标注的字体与字距——品牌 mono 技术标记语言。
- *
- * 纯 DOM 组件无水合过程，无需 SSR 占位与挂载淡入（与 ThemeToggle 的差异点）。
- * 归入 @layer islands：低于 utilities、高于 components，
- * 避免未分层 CSS 覆盖 @layer tokens。
- * -----------------------------------------------------------------------------
- */
 @layer islands {
   .fndx-lang-toggle {
     position: relative;
   }
 
-  /* mono 短标签：EN / 中。固定最小宽度避免两态切换时按钮抖动 */
   .fndx-lang-toggle__label {
     font-family: var(--font-family-mono, monospace);
     font-size: 0.68rem;
@@ -26,7 +13,6 @@
     text-align: center;
   }
 
-  /* 焦点可见：可访问性焦点环（与 .fndx-icon-btn / .fndx-theme-toggle 保持一致） */
   .fndx-lang-toggle:focus-visible {
     outline: 2px solid var(--color-border-focus);
     outline-offset: 2px;

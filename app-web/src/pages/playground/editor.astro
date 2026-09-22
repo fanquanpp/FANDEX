@@ -1,12 +1,4 @@
 ---
-/**
- * 旧路径重定向：/playground/editor/ -> /playground/（2026-09-19 入口扁平化）
- * -----------------------------------------------------------------------------
- * 工作台上移至 /playground/ 后，本页仅负责接续旧深链与历史收藏：
- *   - 行内脚本拼接来源查询串与哈希后瞬时跳转（?showcase / ?panel / ?pen 不丢失）
- *   - meta refresh 兜底：无 JS 环境仍可达工作台（仅丢查询参数）
- *   - noindex：重定向页不参与索引，规范地址收敛到 /playground/
- */
 import BaseLayout from '@/components/BaseLayout.astro'
 
 const base = import.meta.env.BASE_URL
@@ -15,11 +7,8 @@ const target = `${base}playground/`
 
 <BaseLayout title="在线前端工作台">
   <meta slot="head" name="robots" content="noindex, follow" />
-  <!-- 1 秒延迟兜底：给上方查询保留脚本让路（0 秒会在解析期抢跑丢掉查询串）；
-       无 JS 环境由本 meta 接管跳转，仅丢查询参数 -->
   <meta slot="head" http-equiv="refresh" content={`1; url=${target}`} />
   <script is:inline define:vars={{ target }}>
-    // 查询保留跳转：解析即执行，先于 meta refresh 兜底，深链参数不丢失
     location.replace(target + location.search + location.hash);
   </script>
   <noscript>

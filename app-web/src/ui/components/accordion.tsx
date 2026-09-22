@@ -1,21 +1,3 @@
-/**
- * Accordion 手风琴组件
- *
- * 功能概述：
- * - 基于 @radix-ui/react-accordion 实现无障碍手风琴
- * - 支持单展开/多展开模式（type="single" | "multiple"）
- * - 支持键盘导航（方向键切换、Enter/Space 展开）
- * - 包含 Accordion/AccordionItem/AccordionTrigger/AccordionContent 子组件
- * - 展开/折叠带 fade + slide 动画
- *
- * 使用示例：
- *   <Accordion type="single" collapsible>
- *     <AccordionItem value="item-1">
- *       <AccordionTrigger>第一节</AccordionTrigger>
- *       <AccordionContent>内容</AccordionContent>
- *     </AccordionItem>
- *   </Accordion>
- */
 
 import * as AccordionPrimitive from '@radix-ui/react-accordion';
 import { ChevronDown } from 'lucide-react';
@@ -23,7 +5,6 @@ import type * as React from 'react';
 
 import { cn } from '@/lib/utils';
 
-/** Accordion 根组件：控制展开/折叠状态，支持 single（默认）与 multiple 两种模式 */
 function Accordion({
   className,
   ...props
@@ -33,7 +14,6 @@ function Accordion({
   );
 }
 
-/** AccordionItem 单个可展开项容器，底部带分隔边框 */
 function AccordionItem({
   className,
   ...props
@@ -47,12 +27,6 @@ function AccordionItem({
   );
 }
 
-/**
- * AccordionTrigger 手风琴触发器
- *
- * 点击切换展开/折叠。激活态旋转 180 度（chevron-down 图标）。
- * 外层包裹 AccordionHeader 提供正确的 h3 语义标签。
- */
 function AccordionTrigger({
   className,
   children,
@@ -75,7 +49,6 @@ function AccordionTrigger({
   );
 }
 
-/** AccordionContent 展开时显示的内容，含 fade + slide 动画，overflow-hidden 防止内容超出容器 */
 function AccordionContent({
   className,
   children,

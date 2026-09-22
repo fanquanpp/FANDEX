@@ -1,11 +1,5 @@
 package com.fandex.app.ui.navigation
 
-/**
- * 路由定义
- *
- * 单 Activity 架构下所有页面的路由常量
- * （设置收纳于抽屉，无独立路由；底部导航已移除，改为顶部 Dock）
- */
 object Routes {
     const val HOME = "home"
     const val MODULE = "module/{moduleId}"

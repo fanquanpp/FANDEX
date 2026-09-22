@@ -1,23 +1,3 @@
-/**
- * FANDEX Windows 桌面端便携版构建编排
- * -----------------------------------------------------------------------------
- * 便携版定位：免安装、解压即用、不写注册表、可放 U 盘随身携带。
- * 产物：FANDEX-Portable-<版本>.zip（内含 FANDEX.exe 与运行所需 DLL）
- *
- * 流程：
- *   1. 复用 app-desktop 的 Tauri 配置执行 `tauri build --no-bundle`：
- *      - beforeBuildCommand 自动完成 app-web 静态构建与 playground 剔除
- *      - --no-bundle 跳过 NSIS 安装包打包，仅产出裸 exe
- *   2. 收集 target/release 下的 FANDEX.exe 与同目录运行所需 DLL
- *   3. 通过 PowerShell Compress-Archive 打包为 zip（Windows 原生，无额外依赖）
- *
- * 与安装版（app-desktop，NSIS）的差异：
- *   - 不写注册表、无开始菜单/卸载项；删除文件夹即完成卸载
- *   - 首次运行不触发 WebView2 安装引导（需系统自带 WebView2，Win10/11 默认内置）
- *
- * 用法（仓库根执行）：
- *   pnpm --filter @fandex/desktop-portable build
- */
 import { execSync } from 'node:child_process';
 import {
   copyFileSync, existsSync, mkdirSync, readdirSync, readFileSync, rmSync,
@@ -33,12 +13,10 @@ const releaseDir = join(tauriDir, 'target', 'release');
 const distDir = join(__dirname, 'dist');
 const stagingDir = join(distDir, 'FANDEX-Portable');
 
-/** 从 app-desktop 的 tauri.conf.json 读取版本号，用于产物命名 */
 const tauriConf = JSON.parse(readFileSync(join(tauriDir, 'tauri.conf.json'), 'utf-8'));
 const version = tauriConf.version || '0.0.0';
 const productName = tauriConf.productName || 'FANDEX';
 
-// 1. 构建 Tauri 裸 exe（--no-bundle 跳过 NSIS，web 构建由 beforeBuildCommand 完成）
 console.log('[1/3] 构建 Tauri 裸 exe（--no-bundle，跳过 NSIS 安装包）...');
 execSync('pnpm --filter @fandex/desktop exec tauri build --no-bundle', {
   cwd: repoRoot,
@@ -46,13 +24,6 @@ execSync('pnpm --filter @fandex/desktop exec tauri build --no-bundle', {
   env: { ...process.env, DESKTOP_BUILD: '1' },
 });
 
-/**
- * 定位 Tauri 裸 exe 产物
- * -----------------------------------------------------------------------------
- * Tauri 2 的裸 exe 以 Cargo 包名产出（本仓库为 fandex-desktop.exe），
- * productName（FANDEX）只作用于 NSIS 安装包命名，因此不能假设 FANDEX.exe 存在。
- * 候选顺序：productName → Cargo 包名 → release 根目录首个 .exe 兜底。
- */
 const cargoName = (
   readFileSync(join(tauriDir, 'Cargo.toml'), 'utf-8').match(/^\s*name\s*=\s*"([^"]+)"/m) || []
 )[1];
@@ -70,19 +41,15 @@ if (!exePath) {
 }
 console.log(`定位到便携版主程序：${exePath}`);
 
-// 2. 收集 exe 与运行所需 DLL
 console.log('[2/3] 收集运行文件...');
 rmSync(stagingDir, { recursive: true, force: true });
 mkdirSync(stagingDir, { recursive: true });
-/* zip 内统一命名为 FANDEX.exe，与便携版说明保持一致 */
 copyFileSync(exePath, join(stagingDir, 'FANDEX.exe'));
-/* WebView2Loader.dll 等运行时依赖与 exe 同目录产出，一并收集 */
 for (const name of readdirSync(releaseDir)) {
   if (name.toLowerCase().endsWith('.dll')) {
     copyFileSync(join(releaseDir, name), join(stagingDir, name));
   }
 }
-/* 附带便携版说明文件 */
 writeFileSync(
   join(stagingDir, 'README-便携版.txt'),
   [
@@ -99,7 +66,6 @@ writeFileSync(
   'utf-8'
 );
 
-// 3. PowerShell 原生压缩打包
 console.log('[3/3] 打包 zip...');
 const zipName = `FANDEX-Portable-v${version}.zip`;
 const zipPath = join(distDir, zipName);

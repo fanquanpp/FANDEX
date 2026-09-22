@@ -1,12 +1,6 @@
 import type { AlgoProblem } from './types';
 
-/**
- * 算法题图鉴 · 枚举与设计篇
- * 回溯 / 贪心 / 设计与位运算
- * 题面为便于学习的概括复述，参考实现为 Python。
- */
 export const ENUM_PROBLEMS: AlgoProblem[] = [
-  // ==================== 回溯 ====================
   {
     slug: 'subsets',
     lc: 78,
@@ -274,7 +268,6 @@ export const ENUM_PROBLEMS: AlgoProblem[] = [
     related: ['140-RecursionAndBacktracking'],
   },
 
-  // ==================== 贪心 ====================
   {
     slug: 'best-time-to-buy-and-sell-stock',
     lc: 121,
@@ -451,7 +444,6 @@ export const ENUM_PROBLEMS: AlgoProblem[] = [
     related: ['130-GreedyAlgorithm'],
   },
 
-  // ==================== 设计与位运算 ====================
   {
     slug: 'lru-cache',
     lc: 146,

@@ -1,18 +1,3 @@
-/**
- * FANDEX Android 内容生成脚本
- *
- * 从 cnt-content/full 与 shd-shared/metadata 生成 Android assets 资源
- *
- * 用法: node scripts/generate-content.mjs
- *
- * 生成内容:
- * 1. assets/metadata/modules.json (从 shd-shared/metadata 复制)
- * 2. assets/metadata/doc-index.json (从 cnt-content/full 解析 frontmatter)
- * 3. assets/metadata/learning-path/*.json (从 shd-shared/metadata 复制)
- * 4. assets/metadata/syntax-index.json (从 app-web/src/data 复制，语言元数据与统计)
- * 5. assets/syntax-data/*.json (从 app-web/public/syntax-data 复制)
- * 6. assets/docs/{moduleId}/{docSlug}.md (从 cnt-content/full 复制)
- */
 
 import { readFileSync, writeFileSync, mkdirSync, readdirSync, statSync, copyFileSync, existsSync, rmSync } from 'fs';
 import { join, basename, dirname, relative } from 'path';
@@ -20,38 +5,26 @@ import { fileURLToPath } from 'url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-// 项目根目录（从 app-Android-new/scripts 上两级到 FANDEX 根目录）
 const ROOT = join(__dirname, '..', '..');
 const ANDROID_ASSETS = join(ROOT, 'app-Android-new', 'app', 'src', 'main', 'assets');
 
-// 内容源
 const CONTENT_DIR = join(ROOT, 'cnt-content', 'full');
 const METADATA_DIR = join(ROOT, 'shd-shared', 'metadata');
 const SYNTAX_DIR = join(ROOT, 'app-web', 'public', 'syntax-data');
-// web 端预构建的语法语言索引（语言元数据、卡片数统计）
 const SYNTAX_INDEX_SRC = join(ROOT, 'app-web', 'src', 'data', 'syntax-index.json');
 
-/**
- * 确保目录存在
- */
 function ensureDir(dir) {
     if (!existsSync(dir)) {
         mkdirSync(dir, { recursive: true });
     }
 }
 
-/**
- * 复制文件
- */
 function copyFile(src, dest) {
     ensureDir(dirname(dest));
     copyFileSync(src, dest);
     console.log(`  [复制] ${relative(ROOT, dest)}`);
 }
 
-/**
- * 递归获取目录下所有文件
- */
 function walkDir(dir, ext = '.md') {
     const results = [];
     if (!existsSync(dir)) return results;
@@ -69,9 +42,6 @@ function walkDir(dir, ext = '.md') {
     return results;
 }
 
-/**
- * 解析 Markdown frontmatter
- */
 function parseFrontmatter(content) {
     const fmRegex = /^---\s*\n([\s\S]*?)\n---\s*\n/;
     const match = content.match(fmRegex);
@@ -114,9 +84,6 @@ function parseFrontmatter(content) {
     return fm;
 }
 
-/**
- * 步骤 2: 生成 doc-index.json
- */
 function generateDocIndex() {
     console.log('\n[2/6] 生成 doc-index.json...');
     const docs = [];
@@ -127,19 +94,15 @@ function generateDocIndex() {
         const fm = parseFrontmatter(content);
         if (!fm) continue;
 
-        // 获取相对于 content 目录的路径
         const relPath = relative(CONTENT_DIR, filePath);
         const pathParts = relPath.split(/[/\\]/);
 
-        // 模块 ID 来自目录名（去掉前缀编号）
         const moduleDir = pathParts[0];
         const moduleId = moduleDir.replace(/^\d+-/, '');
 
-        // 文档 slug 来自文件名（去掉 .md 后缀）
         const fileName = pathParts[pathParts.length - 1];
         const docSlug = fileName.replace(/\.md$/, '');
 
-        // 跳过 MERGED 文件
         if (docSlug.includes('MERGED')) continue;
 
         docs.push({
@@ -154,7 +117,6 @@ function generateDocIndex() {
         });
     }
 
-    // 排序
     docs.sort((a, b) => {
         if (a.module !== b.module) return a.module.localeCompare(b.module);
         return a.order - b.order;
@@ -166,9 +128,6 @@ function generateDocIndex() {
     console.log(`  [生成] doc-index.json (${docs.length} 篇文档)`);
 }
 
-/**
- * 步骤 3: 复制学习路径数据
- */
 function copyLearningPaths() {
     const srcDir = join(METADATA_DIR, 'learning-path');
     if (!existsSync(srcDir)) {
@@ -184,9 +143,6 @@ function copyLearningPaths() {
     }
 }
 
-/**
- * 步骤 4: 复制语法速查数据
- */
 function copySyntaxData() {
     console.log('\n[4/6] 复制语法语言索引...');
     if (existsSync(SYNTAX_INDEX_SRC)) {
@@ -209,13 +165,9 @@ function copySyntaxData() {
     }
 }
 
-/**
- * 步骤 6: 复制文档内容
- */
 function copyDocs() {
     console.log('\n[6/6] 复制文档内容...');
     const mdFiles = walkDir(CONTENT_DIR, '.md');
-    // 清理 assets/docs 下已不在内容源中的残留模块目录，保证生成幂等
     const validIds = new Set(
         readdirSync(CONTENT_DIR)
             .filter(e => statSync(join(CONTENT_DIR, e)).isDirectory())
@@ -240,13 +192,9 @@ function copyDocs() {
         const moduleId = moduleDir.replace(/^\d+-/, '');
         const fileName = pathParts[pathParts.length - 1];
 
-        // 跳过 MERGED 文件
         if (fileName.includes('MERGED')) continue;
 
         const dest = join(ANDROID_ASSETS, 'docs', moduleId, fileName);
-        // 行尾归一化为 LF：内容源在 Windows 编辑器间流转会产生 CRLF，
-        // Android 端 frontmatter 围栏正则对 CRLF 敏感（ICU 引擎对
-        // "\s*\n" 与 JVM 行为不一致），统一输出 LF 保证三端解析一致
         const normalized = readFileSync(filePath, 'utf-8')
             .replace(/\r\n/g, '\n')
             .replace(/\r/g, '\n');
@@ -258,9 +206,6 @@ function copyDocs() {
     console.log(`  [完成] 复制 ${count} 篇文档`);
 }
 
-/**
- * 主流程
- */
 function main() {
     console.log('=== FANDEX Android 内容生成 ===');
     console.log(`Android assets 目录: ${ANDROID_ASSETS}`);

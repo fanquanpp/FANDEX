@@ -1,20 +1,4 @@
-/**
- * FANDEX 全局基础样式
- *
- * 功能概述：
- * 定义全局重置、根元素、body、链接、选区、滚动条、触控设备适配、
- * 减弱动画偏好、以及提示块（Admonition）组件的完整样式系统。
- * 提示块支持 7 种语义类型（note/tip/warning/danger/caution/info/important），
- * 并包含暗色主题适配。
- *
- * 层级归属：
- * - 全局重置 → @layer reset
- * - body/html/链接/滚动条 → @layer base
- * - 提示块组件 → @layer components
- * 所有样式必须归入 @layer，避免未分层 CSS 覆盖 @layer tokens 中的 ark 令牌
- */
 
-/* ========== 全局重置 ========== */
 @layer reset {
   *,
   *::before,
@@ -25,7 +9,6 @@
   }
 }
 
-/* ========== 根元素与页面主体 ========== */
 @layer base {
   html {
     font-size: 16px;
@@ -36,7 +19,7 @@
     min-height: 100vh;
     min-height: 100dvh;
     font-family: var(--font-family-body);
-    font-size: 1.0625rem; /* 17px，略大于基准字号，提升中文可读性 */
+    font-size: 1.0625rem;
     line-height: 1.85;
     color: var(--color-fg-primary);
     background: var(--color-bg-primary);
@@ -52,7 +35,6 @@
     overscroll-behavior: none;
   }
 
-  /* ========== 全局链接 ========== */
   a {
     color: var(--color-accent-base);
     text-decoration: none;
@@ -61,13 +43,11 @@
     color: var(--color-primary-hover);
   }
 
-  /* ========== 文字选区 ========== */
   ::selection {
     background: var(--color-accent-base);
     color: var(--color-text-inverse);
   }
 
-  /* ========== 可选中元素覆盖（代码、输入框等需要允许复制） ========== */
   code,
   pre,
   input,
@@ -78,7 +58,6 @@
     user-select: text;
   }
 
-  /* ========== 自定义滚动条 ========== */
   ::-webkit-scrollbar {
     width: 8px;
     height: 8px;
@@ -100,7 +79,6 @@
     background: var(--color-text-tertiary);
   }
 
-  /* ========== 触控设备适配：移除悬停效果 ========== */
   @media (hover: none) and (pointer: coarse) {
     a:hover,
     button:hover,
@@ -120,7 +98,6 @@
     }
   }
 
-  /* ========== 减弱动画偏好：尊重用户系统设置 ========== */
   @media (prefers-reduced-motion: reduce) {
     *,
     *::before,
@@ -133,16 +110,8 @@
   }
 }
 
-/* ===== 提示块（Admonition）组件 =====
-   --------------------------------------------------------------------
-   主题策略：所有颜色派生自 ark 语义令牌（--color-info-base 等），
-   通过 color-mix 动态混合背景，无需为每种类型单独写 [data-theme='dark']
-   覆盖块——主题切换时语义令牌自动翻转，提示块跟随翻转。
-   -------------------------------------------------------------------- */
 @layer components {
-  /* 基础提示块样式 */
   .admonition {
-    /* 默认变量：由各语义类型覆盖 */
     --admonition-accent: var(--color-info-base);
     --admonition-bg: color-mix(in srgb, var(--admonition-accent) 8%, var(--color-bg-elevated));
     --admonition-border: var(--admonition-accent);
@@ -157,11 +126,9 @@
     color: var(--admonition-text);
     font-size: 0.95em;
     line-height: 1.75;
-    /* 提示块轻微浮起：ark 阴影系统 */
     box-shadow: var(--shadow-xs);
   }
 
-  /* 提示块标题 */
   .admonition .admonition-title {
     font-weight: 700;
     font-size: 0.95em;
@@ -170,24 +137,20 @@
     color: var(--admonition-title-text);
   }
 
-  /* 标题前缀图标 */
   .admonition .admonition-title::before {
     margin-right: 6px;
     font-style: normal;
   }
 
-  /* 最后一个段落去除底部间距 */
   .admonition p:last-child {
     margin-bottom: 0;
   }
 
-  /* 嵌套提示块间距调整 */
   .admonition .admonition {
     margin-top: var(--space-4);
     margin-bottom: 0;
   }
 
-  /* --- note 提示块：信息色（青），用于一般说明 --- */
   .admonition-note {
     --admonition-accent: var(--color-info-base);
   }
@@ -195,7 +158,6 @@
     content: '\2139\FE0E';
   }
 
-  /* --- tip 提示块：成功色（绿），用于实用技巧 --- */
   .admonition-tip {
     --admonition-accent: var(--color-success-base);
   }
@@ -203,7 +165,6 @@
     content: '\1F4A1';
   }
 
-  /* --- warning 提示块：警告色（橙），用于注意事项 --- */
   .admonition-warning {
     --admonition-accent: var(--color-warning-base);
   }
@@ -211,7 +172,6 @@
     content: '\26A0\FE0E';
   }
 
-  /* --- danger 提示块：危险色（红），用于危险操作警告 --- */
   .admonition-danger {
     --admonition-accent: var(--color-danger-base);
   }
@@ -219,7 +179,6 @@
     content: '\1F6D1';
   }
 
-  /* --- caution 提示块：警告色变体（橙），用于谨慎操作 --- */
   .admonition-caution {
     --admonition-accent: var(--color-warning-base);
   }
@@ -227,7 +186,6 @@
     content: '\1F525';
   }
 
-  /* --- info 提示块：信息色（青），用于补充信息 --- */
   .admonition-info {
     --admonition-accent: var(--color-info-base);
   }
@@ -235,7 +193,6 @@
     content: '\2139\FE0E';
   }
 
-  /* --- important 提示块：强调色（青），用于重要强调 --- */
   .admonition-important {
     --admonition-accent: var(--color-accent-base);
   }
@@ -243,9 +200,6 @@
     content: '\2757';
   }
 
-  /* ===== 暗色主题提示块适配 =====
-     语义令牌已通过 [data-theme='dark'] 自动翻转，
-     此处仅为深色模式调整背景混合比例（提高对比度）。 */
   [data-theme='dark'] .admonition {
     --admonition-bg: color-mix(in srgb, var(--admonition-accent) 14%, var(--color-bg-elevated));
   }

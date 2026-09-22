@@ -41,14 +41,7 @@ import com.fandex.app.ui.common.tweenFast
 import com.fandex.app.ui.theme.CategoryColors
 import com.fandex.app.ui.theme.LocalExtendedColors
 
-/**
- * 分类色工具
- *
- * 全局唯一的分类色解析入口（模块卡片 / 抽屉导航 / 筛选 chips 共用），
- * 避免各页面自行解析造成色彩不统一
- */
 object CategoryColor {
-    /** 解析十六进制色值，非法时回退到工具链默认色 */
     fun parse(hex: String): Color {
         val normalized = hex.removePrefix("#")
         return runCatching {
@@ -57,18 +50,6 @@ object CategoryColor {
     }
 }
 
-/**
- * 共享小图标按钮
- *
- * 统一顶栏图标按钮的规格：32dp 触达区 + 4dp 直角小圆角 + 透明底；
- * 按下时给出双重反馈：bgHover 底色过渡 + 0.94 按压缩放，
- * 全应用顶栏与页面工具区的裸 IconButton 统一替换为此组件
- * （ModalBottomSheet 内部按钮与 FAB 除外）
- *
- * @param tint 图标着色，默认取主题 onSurface 语义色（深浅色自动跟随）；
- *             不再落回 LocalContentColor——本组件的自绘 Box 容器不提供
- *             contentColor，未指定时 Icon 会退化为默认黑色，深色模式下不可读
- */
 @Composable
 fun FdxIconButton(
     icon: ImageVector,
@@ -83,7 +64,6 @@ fun FdxIconButton(
     val interaction = remember { MutableInteractionSource() }
     val pressed by interaction.collectIsPressedAsState()
 
-    // 按下底色过渡：透明 -> bgHover（快速反馈节奏）；禁用时降低不透明度
     val background by animateColorAsState(
         targetValue = if (pressed && enabled) extendedColors.bgHover else Color.Transparent,
         animationSpec = tweenFast(),
@@ -113,12 +93,6 @@ fun FdxIconButton(
     }
 }
 
-/**
- * 区块标题（共享）
- *
- * 3px 分类色竖条 + 粗体标题 + 可选计数药丸，
- * 首页分类区 / 最近浏览 / 语法分组等统一使用
- */
 @Composable
 fun SectionHeader(
     title: String,
@@ -165,24 +139,12 @@ fun SectionHeader(
     }
 }
 
-/**
- * 筛选数据模型
- */
 data class FilterOption(
     val id: String,
     val label: String,
     val color: Color = Color.Unspecified
 )
 
-/**
- * 分类筛选 chips（共享）
- *
- * 对齐旧版首页筛选行：横向滑动 chip 组，
- * 选中态以分类色微透底 + 分类色文字 + 分类色边框高亮（点击选择的视觉提示），
- * 未选中态为线框样式；
- * 选中 / 未选中的底色、边框色、文字色均以 animateColorAsState 平滑过渡，
- * 选中瞬间叠加 springBouncy 缩放脉冲（与按压 pressScale 变换相乘）
- */
 @Composable
 fun FilterChipRow(
     options: List<FilterOption>,
@@ -204,7 +166,6 @@ fun FilterChipRow(
             } else option.color
             val interaction = remember { MutableInteractionSource() }
 
-            // 选中 / 未选中三态颜色平滑过渡
             val bg by animateColorAsState(
                 targetValue = if (selected) accent.copy(alpha = 0.12f) else extendedColors.bgElevated,
                 animationSpec = tweenFast(),
@@ -235,7 +196,6 @@ fun FilterChipRow(
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                // 选中态左侧色条（几何提示，非圆点）
                 if (selected) {
                     Box(
                         modifier = Modifier
@@ -257,15 +217,6 @@ fun FilterChipRow(
     }
 }
 
-/**
- * 页面级统计横幅（Hero Stats Bar）
- *
- * 语法速览 / 学习路线等功能页的头部统计带，与首页同等级的视觉锚点：
- * 左侧 3dp 品牌竖条 + 深底卡面，内部横向排布多组「大数字 + 小标签」，
- * 数字使用等宽字体强调量感，标签使用次级前景色
- *
- * @param stats 统计项列表，Pair(数值, 标签)
- */
 @Composable
 fun StatsBar(
     stats: List<Pair<String, String>>,
@@ -283,7 +234,6 @@ fun StatsBar(
             .heightIn(min = 64.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 左侧品牌竖条（几何提示，与全站 SectionHeader 同语言）
         Box(
             modifier = Modifier
                 .width(3.dp)
@@ -302,7 +252,6 @@ fun StatsBar(
         ) {
             stats.forEachIndexed { index, (value, label) ->
                 if (index > 0) {
-                    // 组间分隔刻度线（1dp 竖线，非点状装饰）
                     Box(
                         modifier = Modifier
                             .width(1.dp)

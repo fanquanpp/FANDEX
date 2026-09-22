@@ -1,32 +1,5 @@
 ---
-/**
- * 性能监控面板组件 (PerformanceMonitor)
- *
- * 功能概述：
- * 仅在开发环境渲染的浮动性能监控面板，实时显示当前页面的 Web Vitals 指标
- * （LCP / INP / CLS / TTFB / FCP）与资源加载瀑布图（PerformanceObserver
- * Resource Timing），并在 bundle 超出预算时显示警告。
- *
- * 使用方式：
- *   import PerformanceMonitor from '@/components/PerformanceMonitor.astro';
- *   <PerformanceMonitor />  // 仅在 import.meta.env.DEV 时渲染
- *
- * 数据来源：
- * - 指标数据：通过 observability-service 从 localStorage 读取（WebVitalsTracker 采集）
- * - 资源瀑布：PerformanceObserver 监听 'resource' 类型条目，实时绘制
- * - Bundle 警告：构建期分析结果（开发期硬编码提示）
- *
- * 设计原则：
- * - 仅开发环境渲染，生产构建自动跳过（避免影响线上性能）
- * - 暗色模式适配：通过 CSS 变量跟随全局主题
- * - 不影响页面布局：position: fixed 浮动定位
- *
- * 样式与交互逻辑已拆分至独立文件：
- * - styles/components/performance-monitor.css  面板样式
- * - lib/performance-monitor.ts                  客户端脚本（Vitals 渲染、瀑布图、定时刷新）
- */
 
-// 仅在开发环境渲染组件内容；生产环境直接返回空
 const isDev = import.meta.env.DEV;
 import '@/styles/components/performance-monitor.css';
 ---
@@ -92,7 +65,6 @@ import '@/styles/components/performance-monitor.css';
   </aside>
 )}
 
-<!-- 客户端交互脚本：Vitals 渲染、瀑布图、定时刷新、导出/清空 -->
 <script>
   import '@/lib/performance-monitor';
 </script>

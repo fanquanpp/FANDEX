@@ -3,36 +3,15 @@ package com.fandex.app.data.repository
 import com.fandex.app.data.model.DocFrontmatter
 import com.fandex.app.data.model.FandexDoc
 
-/**
- * Markdown frontmatter 解析器
- *
- * 从 DocRepository 提取为独立 internal 对象，便于单元测试覆盖；
- * 解析行为与原 DocRepository 私有实现完全一致。
- *
- * 覆盖 FANDEX 标准 10 字段：order, title, module, category, difficulty,
- * description, author, updated, related, prerequisites
- */
 internal object FrontmatterParser {
 
-    /** frontmatter 围栏正则：文件开头 --- 包裹的 YAML 块 */
     private val frontmatterRegex = Regex("""^---\s*\n(.*?)\n---\s*\n""", RegexOption.DOT_MATCHES_ALL)
 
-    /**
-     * 解析 Markdown：分离 frontmatter（YAML）与正文
-     *
-     * @param content 原始 Markdown 文本
-     * @param slug 文档 slug（无 frontmatter 或缺 title 时作为标题兜底）
-     */
     fun parseMarkdown(content: String, slug: String): FandexDoc {
-        /* 统一 CRLF/CR -> LF：内容源经 Windows 编辑器流转会出现 CRLF 行尾，
-           Android ICU 正则对 "\s*\n" 叠加 \r 的回溯与 JVM 行为不一致，
-           会令 frontmatter 围栏匹配失败（标题退化为 slug、YAML 泄漏进正文）。
-           先归一化行尾再解析，保证各正则引擎下行为稳定 */
         val normalized = content.replace("\r\n", "\n").replace('\r', '\n')
         val match = frontmatterRegex.find(normalized)
 
         if (match == null) {
-            // 无 frontmatter：整篇作为正文，标题以 slug 兜底
             return FandexDoc(
                 slug = slug,
                 frontmatter = DocFrontmatter(title = slug),
@@ -48,12 +27,6 @@ internal object FrontmatterParser {
         )
     }
 
-    /**
-     * 简易 YAML frontmatter 解析
-     *
-     * 仅支持"键: 值"与列表项"- 'xxx'"两种形态，足够覆盖标准字段；
-     * 缺失字段按默认值兜底（order=0、difficulty=beginner、author=fanquanpp 等）
-     */
     fun parseFrontmatter(yaml: String, slug: String): DocFrontmatter {
         var order = 0
         var title = slug
@@ -66,14 +39,12 @@ internal object FrontmatterParser {
         val related = mutableListOf<String>()
         val prerequisites = mutableListOf<String>()
 
-        // 当前正在收集的列表字段（related / prerequisites 二选一，非空即结束）
         var currentList: MutableList<String>? = null
 
         for (rawLine in yaml.split("\n")) {
             val trimmed = rawLine.trim()
             if (trimmed.isEmpty()) continue
 
-            // 处理列表项（related / prerequisites 的 "- 'module/文件名'" 行）
             if (currentList != null && trimmed.startsWith("- ")) {
                 currentList.add(trimmed.removePrefix("- ").trim().trim('\'', '"'))
                 continue
@@ -95,7 +66,6 @@ internal object FrontmatterParser {
                 "description" -> description = value
                 "author" -> author = value
                 "updated" -> updated = value
-                // 值为空表示列表字段开始，后续 "- x" 行进入收集
                 "related" -> if (value.isEmpty()) currentList = related
                 "prerequisites" -> if (value.isEmpty()) currentList = prerequisites
             }
