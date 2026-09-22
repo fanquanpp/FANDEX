@@ -7,7 +7,8 @@
     "database": "数据库",
     "cs": "计算机科学",
     "math": "数学",
-    "cloud": "云与基础设施"
+    "cloud": "云与基础设施",
+    "gamedev": "游戏开发"
   },
   "categoryColors": {
     "tools": "#4f5bd5",
@@ -16,7 +17,8 @@
     "database": "#00b894",
     "cs": "#8854d0",
     "math": "#6c5ce7",
-    "cloud": "#e05a2b"
+    "cloud": "#e05a2b",
+    "gamedev": "#0abde3"
   },
   "categoryOrder": [
     "tools",
@@ -25,7 +27,8 @@
     "database",
     "cs",
     "math",
-    "cloud"
+    "cloud",
+    "gamedev"
   ],
   "modules": [
     {
@@ -913,6 +916,97 @@
         "database"
       ],
       "folder_order": 43
+    },
+    {
+      "id": "godot",
+      "title": "Godot 引擎",
+      "icon": "Gt",
+      "description": "Godot 4.7 游戏引擎：节点场景模型、信号资源、2D 与瓦片地图、UI 动画音频、跨平台导出，以及 Konado 视觉小说框架与 Gode JS/TS 脚本生态",
+      "categories": [
+        "gamedev"
+      ],
+      "folder_order": 44,
+      "officialDocs": [
+        {
+          "label": "Godot 官方文档（stable）",
+          "url": "https://docs.godotengine.org/en/stable/",
+          "type": "docs"
+        },
+        {
+          "label": "Godot 4.7 发布说明",
+          "url": "https://godotengine.org/releases/4.7/",
+          "type": "docs"
+        },
+        {
+          "label": "Konado 官方文档",
+          "url": "https://godothub.com/oss/konado/zh/latest/",
+          "type": "docs"
+        },
+        {
+          "label": "Gode 官方文档",
+          "url": "https://godothub.com/oss/gode/zh/",
+          "type": "docs"
+        },
+        {
+          "label": "Godot 引擎源码仓库",
+          "url": "https://github.com/godotengine/godot",
+          "type": "api"
+        }
+      ]
+    },
+    {
+      "id": "gdscript",
+      "title": "GDScript",
+      "icon": "Gd",
+      "description": "Godot 内置脚本语言：变量类型与集合、函数与 Callable、面向对象、信号与协程、注解导出、官方风格指南与设计模式",
+      "categories": [
+        "gamedev"
+      ],
+      "folder_order": 45,
+      "officialDocs": [
+        {
+          "label": "GDScript 官方文档",
+          "url": "https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/index.html",
+          "type": "docs"
+        },
+        {
+          "label": "GDScript 语言参考（gdscript_basics）",
+          "url": "https://docs.godotengine.org/en/stable/tutorials/scripting/gdscript/gdscript_basics.html",
+          "type": "docs"
+        },
+        {
+          "label": "GDScript 中文教程（godothub，代码 MIT 开源）",
+          "url": "https://godothub.com/oss/gdscript-tutorial/",
+          "type": "docs"
+        }
+      ]
+    },
+    {
+      "id": "renpy",
+      "title": "Ren'Py",
+      "icon": "Rp",
+      "description": "Ren'Py 视觉小说引擎：脚本语言与角色对话、图像转场与 ATL、屏幕语言、存档回滚、多语言翻译与全平台发布",
+      "categories": [
+        "gamedev"
+      ],
+      "folder_order": 46,
+      "officialDocs": [
+        {
+          "label": "Ren'Py 官方文档",
+          "url": "https://www.renpy.org/doc/html/",
+          "type": "docs"
+        },
+        {
+          "label": "Ren'Py 快速上手手册",
+          "url": "https://www.renpy.org/doc/html/quickstart.html",
+          "type": "docs"
+        },
+        {
+          "label": "Ren'Py 引擎源码仓库",
+          "url": "https://github.com/renpy/renpy",
+          "type": "api"
+        }
+      ]
     }
   ],
   "modulePrerequisites": {
@@ -972,6 +1066,9 @@
     ],
     "mongodb": [
       "sql"
+    ],
+    "gdscript": [
+      "godot"
     ]
   }
 }

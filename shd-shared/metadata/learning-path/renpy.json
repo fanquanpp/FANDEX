@@ -1,0 +1,100 @@
+{
+  "version": "1.0.0",
+  "module": "renpy",
+  "summary": "从安装 Ren'Py 到发布多平台视觉小说：剧本语言、图像转场、屏幕语言、存档回滚与多语言翻译。",
+  "stages": [
+    {
+      "id": "start",
+      "title": "入门",
+      "subtitle": "安装 Ren'Py，写出第一段对话",
+      "nodes": [
+        {
+          "id": "renpy-000",
+          "title": "Ren'Py 入门与项目创建",
+          "doc": "010-RenPyOverviewAndSetup"
+        },
+        {
+          "id": "renpy-001",
+          "title": "第一个剧本：对话与角色",
+          "doc": "020-FirstScriptSayAndCharacters"
+        }
+      ]
+    },
+    {
+      "id": "story",
+      "title": "剧本核心",
+      "subtitle": "图像转场、控制流、变量与文本",
+      "nodes": [
+        {
+          "id": "renpy-002",
+          "title": "图像、场景与转场",
+          "doc": "030-ImagesSceneShowAndTransitions"
+        },
+        {
+          "id": "renpy-003",
+          "title": "标签、控制流与选项菜单",
+          "doc": "040-LabelsControlFlowAndMenus"
+        },
+        {
+          "id": "renpy-004",
+          "title": "变量、Python 语句与存储",
+          "doc": "050-VariablesPythonAndStores"
+        },
+        {
+          "id": "renpy-005",
+          "title": "文本：插值、标签与 NVL 模式",
+          "doc": "060-TextInterpolationAndTags"
+        }
+      ]
+    },
+    {
+      "id": "visual",
+      "title": "表现与界面",
+      "subtitle": "ATL 动画、屏幕语言与音视频",
+      "nodes": [
+        {
+          "id": "renpy-006",
+          "title": "ATL：变换与动画",
+          "doc": "070-ATLTransformsAndAnimation"
+        },
+        {
+          "id": "renpy-007",
+          "title": "屏幕语言与界面",
+          "doc": "080-ScreensAndScreenLanguage"
+        },
+        {
+          "id": "renpy-008",
+          "title": "音频与视频",
+          "doc": "090-AudioAndVideo"
+        }
+      ]
+    },
+    {
+      "id": "ship",
+      "title": "完善与发布",
+      "subtitle": "存档回滚、GUI 定制、翻译与打包",
+      "nodes": [
+        {
+          "id": "renpy-009",
+          "title": "存档、读档与回滚",
+          "doc": "100-SaveLoadAndRollback"
+        },
+        {
+          "id": "renpy-010",
+          "title": "GUI 定制与样式系统",
+          "doc": "110-GuiStylesAndCustomization"
+        },
+        {
+          "id": "renpy-011",
+          "title": "翻译与多语言",
+          "doc": "120-TranslationLocalization"
+        },
+        {
+          "id": "renpy-012",
+          "title": "打包发布与全平台分发",
+          "doc": "130-BuildingDistributions"
+        }
+      ]
+    }
+  ]
+}
