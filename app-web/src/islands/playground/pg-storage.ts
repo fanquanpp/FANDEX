@@ -77,12 +77,15 @@ function idbAll<T>(storeName: string): Promise<T[]> {
   return withStore<T[]>(storeName, 'readonly', (store) => store.getAll() as IDBRequest<T[]>);
 }
 
+// 草稿记录固定以 DRAFT_PEN_KEY 为键存取；历史版本曾把记录写在 pen.id（'draft'）下，
+// 读取时兼容迁移，避免老用户已有草稿丢失。
 export const DRAFT_PEN_KEY = 'frontend';
+const LEGACY_DRAFT_KEY = 'draft';
 
 export async function savePenDraft(pen: FrontendPen): Promise<boolean> {
   if (!isClient) return false;
   try {
-    await idbPut(STORE_DRAFTS, pen);
+    await idbPut(STORE_DRAFTS, { ...pen, id: DRAFT_PEN_KEY });
     return true;
   } catch {
     return false;
@@ -93,7 +96,14 @@ export async function loadPenDraft(): Promise<FrontendPen | null> {
   if (!isClient) return null;
   try {
     const pen = await idbGet<FrontendPen>(STORE_DRAFTS, DRAFT_PEN_KEY);
-    return pen ?? null;
+    if (pen) return pen;
+    const legacy = await idbGet<FrontendPen>(STORE_DRAFTS, LEGACY_DRAFT_KEY);
+    if (legacy) {
+      await idbPut(STORE_DRAFTS, { ...legacy, id: DRAFT_PEN_KEY });
+      await idbDelete(STORE_DRAFTS, LEGACY_DRAFT_KEY);
+      return legacy;
+    }
+    return null;
   } catch {
     return null;
   }

@@ -1,3 +1,4 @@
+import type { PointerEvent as ReactPointerEvent } from 'react';
 import { useLang } from '@/lib/use-lang';
 import { t, type Lang } from '@/lib/i18n';
 import type { NodeProgress, NodeVM } from './types';
@@ -106,8 +107,15 @@ export default function MapNode(props: Props) {
     className: `lp-node${selected ? ' lp-node--selected' : ''}${
       hovered ? ' lp-node--hovered' : ''
     }${progress ? ` lp-node--${progress}` : ''}`,
-    onPointerEnter: () => onHover(node.id),
-    onPointerLeave: () => onHover(null),
+    'data-node-id': node.id,
+    onPointerEnter: (event: ReactPointerEvent<SVGGElement>) => {
+      // 仅鼠标触发 hover：触摸设备 tap 也会派发 pointerenter 且 pointerleave
+      // 常常不触发，会把详情面板永久钉在最后一次点按的节点上
+      if (event.pointerType === 'mouse') onHover(node.id);
+    },
+    onPointerLeave: (event: ReactPointerEvent<SVGGElement>) => {
+      if (event.pointerType === 'mouse') onHover(null);
+    },
   };
 
   const stateText = statusText(node, progress, lang);

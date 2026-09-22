@@ -145,6 +145,7 @@ function FrontendLab() {
     setSplit,
     dragging,
     editorsRef,
+    workspaceRef,
     handleSplitStart,
     handleSplitMove,
     handleSplitEnd,
@@ -161,7 +162,9 @@ function FrontendLab() {
     handleRun,
     resetPreview,
   } = usePreviewRuntime({ pen });
-  const { saveState, setSaveState } = usePenPersistence({ pen, split });
+  // 初始深链/草稿加载完成前禁止自动保存，防止默认模板覆盖已存草稿
+  const [bootstrapped, setBootstrapped] = useState(false);
+  const { saveState, setSaveState } = usePenPersistence({ pen, split, autosaveEnabled: bootstrapped });
 
   useEffect(() => {
     let cancelled = false;
@@ -188,6 +191,8 @@ function FrontendLab() {
       } else if (penId) {
         const pens = await loadPens();
         target = pens.find((p) => p.id === penId) ?? null;
+        // 深链指向已删除/不存在的作品时清掉失效参数，避免刷新后反复解析失败
+        if (!target && !cancelled) syncPenUrl(null);
       }
       if (!target) {
         target = await loadPenDraft();
@@ -210,7 +215,9 @@ function FrontendLab() {
       if (!cancelled && openGallery) {
         setShowGallery(true);
       }
-      setLibrary(await loadPens());
+      if (!cancelled) setBootstrapped(true);
+      const pens = await loadPens();
+      if (!cancelled) setLibrary(pens);
       const usage = await getStorageUsage();
       if (!cancelled && usage.quotaBytes > 0 && usage.usageBytes / usage.quotaBytes > STORAGE_WARN_RATIO) {
         setStorageWarning({
@@ -264,29 +271,46 @@ function FrontendLab() {
         : `pen-${now}-${Math.random().toString(36).slice(2, 10)}`;
     const newPen: FrontendPen = {
       ...pen,
+      split,
       id: newId,
       title: pen.title.trim() || '未命名作品',
       createdAt: now,
       updatedAt: now,
       lastOpenedAt: now,
-    };    await savePen(newPen);
+    };
+    try {
+      await savePen(newPen);
+    } catch {
+      setSaveState('error');
+      return;
+    }
     setPen(newPen);
     setLibrary(await loadPens());
     setSaveState('saved');
     syncPenUrl(newId);
-  }, [pen, setSaveState]);
+  }, [pen, split, setSaveState]);
 
   const handleSave = useCallback(async () => {
     if (pen.id === 'draft') {
       await handleSaveAsNew();
       return;
     }
-    const saved: FrontendPen = { ...pen, updatedAt: Date.now(), lastOpenedAt: Date.now() };
-    await savePen(saved);
+    const saved: FrontendPen = {
+      ...pen,
+      split,
+      updatedAt: Date.now(),
+      lastOpenedAt: Date.now(),
+    };
+    try {
+      await savePen(saved);
+    } catch {
+      setSaveState('error');
+      return;
+    }
     setPen(saved);
     setLibrary(await loadPens());
     setSaveState('saved');
-  }, [pen, handleSaveAsNew, setSaveState]);
+  }, [pen, split, handleSaveAsNew, setSaveState]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
@@ -297,28 +321,51 @@ function FrontendLab() {
           target.tagName === 'TEXTAREA' ||
           target.isContentEditable);
 
-      if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
+      if ((event.ctrlKey || event.metaKey) && !event.shiftKey && event.key.toLowerCase() === 's') {
         event.preventDefault();
         void handleSave();
         return;
       }
-      if (event.shiftKey && event.altKey && event.key.toLowerCase() === 'f') {
+      // 用 event.code 识别按键：macOS 上 Option 会把 event.key 变成 'ƒ' 等字符
+      if (event.shiftKey && event.altKey && event.code === 'KeyF') {
         event.preventDefault();
         void handleFormat();
         return;
       }
-      if (event.key === 'Escape' && showShortcuts) {
-        setShowShortcuts(false);
-        return;
+      // Escape 只关最上层弹层，并用 stopImmediatePropagation 拦住画廊等兄弟监听器
+      if (event.key === 'Escape') {
+        if (showTemplates) {
+          event.stopImmediatePropagation();
+          setShowTemplates(false);
+          return;
+        }
+        if (showLibrary) {
+          event.stopImmediatePropagation();
+          setShowLibrary(false);
+          return;
+        }
+        if (showShortcuts) {
+          event.stopImmediatePropagation();
+          setShowShortcuts(false);
+          return;
+        }
       }
-      if (event.key === '?' && !event.ctrlKey && !event.metaKey && !event.altKey && !isTyping) {
+      if (
+        event.key === '?' &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        !isTyping &&
+        !showGallery &&
+        !showLibrary
+      ) {
         event.preventDefault();
         setShowShortcuts((v) => !v);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [handleSave, handleFormat, showShortcuts]);
+  }, [handleSave, handleFormat, showShortcuts, showTemplates, showLibrary, showGallery]);
 
   const handleNewDraft = useCallback(
     (template: PenTemplate) => {
@@ -605,7 +652,7 @@ const handleOpenLibrary = useCallback(async () => {
       )}
 
       {/* 主工作区 */}
-      <div className="pg-workspace" style={workspaceStyle}>
+      <div className="pg-workspace" style={workspaceStyle} ref={workspaceRef}>
         {/* 编辑器区域 */}
         <section
           className={`pg-editors pg-editors--${pen.layout}`}
@@ -744,8 +791,8 @@ const handleOpenLibrary = useCallback(async () => {
                 {consoleEntries.length === 0 ? (
                   <div className="pg-console-empty">{t('pg.consoleEmpty', undefined, lang)}</div>
                 ) : (
-                  consoleEntries.map((entry, index) => (
-                    <div className={`pg-console-line pg-console-line--${entry.kind}`} key={`${entry.time}-${index}`}>
+                  consoleEntries.map((entry) => (
+                    <div className={`pg-console-line pg-console-line--${entry.kind}`} key={entry.id}>
                       <pre className="pg-console-text">{entry.text}</pre>
                     </div>
                   ))

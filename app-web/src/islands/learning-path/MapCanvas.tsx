@@ -89,15 +89,26 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
     }
   }, [onScaleChange]);
 
+  useEffect(
+    () => () => {
+      if (scaleRafRef.current) {
+        cancelAnimationFrame(scaleRafRef.current);
+        scaleRafRef.current = 0;
+      }
+    },
+    [],
+  );
+
   const zoomAt = useCallback(
-    (cx: number, cy: number, factor: number) => {
+    (cx: number, cy: number, factor: number): boolean => {
       const t = transformRef.current;
       const nextK = Math.min(MAX_SCALE, Math.max(MIN_SCALE, t.k * factor));
-      if (nextK === t.k) return;
+      if (nextK === t.k) return false;
       t.x = cx - ((cx - t.x) * nextK) / t.k;
       t.y = cy - ((cy - t.y) * nextK) / t.k;
       t.k = nextK;
       applyTransform();
+      return true;
     },
     [applyTransform],
   );
@@ -204,9 +215,18 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
     const svg = svgRef.current;
     if (!svg) return;
     const onWheel = (event: WheelEvent) => {
-      event.preventDefault();
+      // Firefox 鼠标滚轮上报 deltaMode=line（deltaY 约为 ±3），需归一化为像素再换算缩放
+      let delta = event.deltaY;
+      if (event.deltaMode === 1) delta *= 16;
+      else if (event.deltaMode === 2) delta *= 100;
       const rect = svg.getBoundingClientRect();
-      zoomAt(event.clientX - rect.left, event.clientY - rect.top, Math.exp(-event.deltaY * 0.0012));
+      const changed = zoomAt(
+        event.clientX - rect.left,
+        event.clientY - rect.top,
+        Math.exp(-delta * 0.0012),
+      );
+      // 缩放已达边界时不再吞掉滚动，让页面可以继续滚动
+      if (changed) event.preventDefault();
     };
     svg.addEventListener('wheel', onWheel, { passive: false });
     return () => svg.removeEventListener('wheel', onWheel);
@@ -218,10 +238,13 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
   };
 
   const onPointerDown = (event: React.PointerEvent<SVGSVGElement>) => {
+    // 每次按压先清掉上一手势的 moved 残留：pointercancel / 双指升级结束时不会触发
+    // click 来重置它，若不清会把下一次对节点的点击误判为拖拽结束而吞掉
+    dragRef.current.active = false;
+    dragRef.current.moved = false;
     pointersRef.current.set(event.pointerId, { x: event.clientX, y: event.clientY });
 
     if (pointersRef.current.size === 2) {
-      dragRef.current.active = false;
       const [firstPoint, secondPoint] = [...pointersRef.current.values()];
       if (!firstPoint || !secondPoint) return;
       pinchRef.current = {
@@ -304,8 +327,14 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
   useEffect(() => {
     const mapRoot = containerRef.current?.closest('.lp-map');
     const onKeyDown = (event: KeyboardEvent) => {
+      if (event.defaultPrevented) return;
       const target = event.target as HTMLElement | null;
-      if (target && /^(INPUT|TEXTAREA|SELECT)$/i.test(target.tagName)) return;
+      if (
+        target &&
+        (/^(INPUT|TEXTAREA|SELECT)$/i.test(target.tagName) || target.isContentEditable)
+      ) {
+        return;
+      }
       if (event.metaKey || event.ctrlKey || event.altKey) return;
 
       const t = transformRef.current;
@@ -318,13 +347,13 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
         case '=': {
           if (!container) return;
           const { width: vw, height: vh } = viewportSize(container);
-          zoomAt(vw / 2, vh / 2, 1.2);
+          zoomAt(vw / 2, vh / 2, 1.25);
           break;
         }
         case '-': {
           if (!container) return;
           const { width: vw, height: vh } = viewportSize(container);
-          zoomAt(vw / 2, vh / 2, 1 / 1.2);
+          zoomAt(vw / 2, vh / 2, 1 / 1.25);
           break;
         }
         case '0':
@@ -363,10 +392,6 @@ const MapCanvas = forwardRef<MapCanvasHandle, Props>(function MapCanvas(
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [zoomAt, fit, reset, applyTransform, onClearSelection]);
-
-  useEffect(() => {
-    containerRef.current?.focus({ preventScroll: true });
-  }, []);
 
   return (
     <div

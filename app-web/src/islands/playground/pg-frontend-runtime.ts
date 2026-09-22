@@ -73,8 +73,9 @@ export function buildPreviewDoc(pen: Pick<FrontendPen, 'html' | 'css' | 'js'>): 
     '</style>',
     '</head>',
     '<body>',
-    pen.html,
+    // 桥接脚本必须先于用户 HTML 注入，否则用户内联 <script> 的早期日志与报错无法捕获
     CONSOLE_BRIDGE,
+    pen.html,
     '<script>',
     js,
     '<\/script>',
@@ -82,6 +83,8 @@ export function buildPreviewDoc(pen: Pick<FrontendPen, 'html' | 'css' | 'js'>): 
     '</html>',
   ].join('\n');
 }
+
+let consoleEntrySeq = 0;
 
 export function parsePreviewMessage(
   event: MessageEvent,
@@ -93,7 +96,8 @@ export function parsePreviewMessage(
   const kind = data.kind;
   if (kind !== 'log' && kind !== 'info' && kind !== 'warn' && kind !== 'error') return null;
   const text = typeof data.text === 'string' ? data.text.slice(0, MAX_LOG_TEXT) : '';
-  return { kind, text, time: Date.now() };
+  consoleEntrySeq += 1;
+  return { kind, text, time: Date.now(), id: consoleEntrySeq };
 }
 
 export function estimatePenBytes(pen: FrontendPen): number {

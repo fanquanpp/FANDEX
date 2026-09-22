@@ -2,6 +2,7 @@
 import '@/styles/site.css';
 import '@/styles/pages/error.css';
 import GeoBgDecor from '@/components/GeoBgDecor.astro';
+import ThemeLangBootstrap from '@/components/ThemeLangBootstrap.astro';
 import { SITE } from '@/lib/constants';
 import { MINIMAL_CSP } from '@/lib/csp';
 
@@ -31,30 +32,7 @@ const base = import.meta.env.BASE_URL;
       type="font/woff2"
       crossorigin
     />
-    <script is:inline>
-      (function () {
-        var raw = localStorage.getItem('fandex-theme');
-        var theme;
-        if (raw === 'dark' || raw === 'light') {
-          theme = raw;
-        } else {
-          theme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-        }
-        document.documentElement.setAttribute('data-theme', theme);
-        document.documentElement.style.colorScheme = theme;
-        try {
-          var savedLang = localStorage.getItem('fandex-lang');
-          if (savedLang === 'en') {
-            document.documentElement.setAttribute('data-lang', 'en');
-            document.documentElement.setAttribute('lang', 'en');
-          } else {
-            document.documentElement.setAttribute('data-lang', 'zh');
-          }
-        } catch (e) {
-          /* localStorage 不可用时保持 SSR 中文 */
-        }
-      })();
-    </script>
+    <ThemeLangBootstrap />
   </head>
   <body>
     <div class="error-page">

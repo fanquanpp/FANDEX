@@ -24,4 +24,6 @@ export interface ConsoleEntry {
   kind: 'log' | 'info' | 'warn' | 'error';
   text: string;
   time: number;
+  /** 单调递增 id，用作列表 key（同毫秒多条日志时 time 会重复） */
+  id: number;
 }

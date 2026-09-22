@@ -30,6 +30,8 @@ let listEl: HTMLElement | null = null;
 let statusEl: HTMLElement | null = null;
 let debounceTimer: number | undefined;
 let activeIndex = -1;
+// 递增序号：异步搜索返回时丢弃过期结果，防止慢查询后到覆盖新结果
+let searchSeq = 0;
 
 async function loadPagefind(): Promise<PagefindAPI | null> {
   if (pagefindInstance) return pagefindInstance;
@@ -97,10 +99,17 @@ function renderGroup(label: string, entries: QuickEntry[]): void {
     a.setAttribute('role', 'option');
     a.setAttribute('aria-selected', 'false');
     a.href = entry.href;
-    a.innerHTML = `
-      <span class="search-palette__title">${entry.title}</span>
-      ${entry.crumb ? `<span class="search-palette__crumb">${entry.crumb}</span>` : ''}
-    `;
+    // 用 textContent 组装，标题/面包屑不经 HTML 转义即可安全插入
+    const title = document.createElement('span');
+    title.className = 'search-palette__title';
+    title.textContent = entry.title;
+    a.appendChild(title);
+    if (entry.crumb) {
+      const crumb = document.createElement('span');
+      crumb.className = 'search-palette__crumb';
+      crumb.textContent = entry.crumb;
+      a.appendChild(crumb);
+    }
     a.addEventListener('click', () => {
       saveRecent({ title: entry.title, href: entry.href });
       closePalette();
@@ -183,6 +192,7 @@ async function runSearch(query: string): Promise<void> {
     return;
   }
 
+  const seq = ++searchSeq;
   const pagefind = await loadPagefind();
   if (!pagefind) {
     statusEl.textContent = t('search.noIndex');
@@ -193,6 +203,8 @@ async function runSearch(query: string): Promise<void> {
   try {
     const { results } = await pagefind.search(query);
     const datas = await Promise.all(results.slice(0, MAX_RESULTS).map((r) => r.data()));
+    // 过期响应：期间用户又输入了新查询，直接丢弃本轮结果
+    if (seq !== searchSeq) return;
     listEl.innerHTML = '';
     activeIndex = datas.length > 0 ? 0 : -1;
 
@@ -214,11 +226,22 @@ async function runSearch(query: string): Promise<void> {
       const href = data.url.startsWith(BASE) ? data.url : `${BASE}${data.url.replace(/^\//, '')}`;
       a.href = href;
       const crumb = data.breadcrumbs?.map((b) => b.title).filter(Boolean).join(' / ');
-      a.innerHTML = `
-        <span class="search-palette__title">${data.meta?.title ?? t('search.untitled')}</span>
-        ${crumb ? `<span class="search-palette__crumb">${crumb}</span>` : ''}
-        <span class="search-palette__excerpt">${data.excerpt}</span>
-      `;
+      // 标题/面包屑是纯文本，经 textContent 插入；excerpt 是 Pagefind 构建期产出的
+      // 受控 HTML（仅含 <mark> 标记），按其 API 约定经 innerHTML 插入
+      const title = document.createElement('span');
+      title.className = 'search-palette__title';
+      title.textContent = data.meta?.title ?? t('search.untitled');
+      a.appendChild(title);
+      if (crumb) {
+        const crumbEl = document.createElement('span');
+        crumbEl.className = 'search-palette__crumb';
+        crumbEl.textContent = crumb;
+        a.appendChild(crumbEl);
+      }
+      const excerpt = document.createElement('span');
+      excerpt.className = 'search-palette__excerpt';
+      excerpt.innerHTML = data.excerpt;
+      a.appendChild(excerpt);
       a.addEventListener('click', () => {
         saveRecent({ title: data.meta?.title ?? t('search.untitled'), href });
         closePalette();
@@ -228,7 +251,9 @@ async function runSearch(query: string): Promise<void> {
     });
     selectFirstItem();
   } catch {
-    statusEl.textContent = t('search.searchFailed');
+    if (seq === searchSeq) {
+      statusEl.textContent = t('search.searchFailed');
+    }
   }
 }
 
@@ -282,15 +307,15 @@ function closePalette(): void {
 
 if (!import.meta.env.SSR && typeof window !== 'undefined') {
   window.addEventListener('keydown', (e) => {
-  if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
-    e.preventDefault();
-    if (panel?.open) {
-      closePalette();
-    } else {
-      openPalette();
+    if ((e.ctrlKey || e.metaKey) && (e.key === 'k' || e.key === 'K')) {
+      e.preventDefault();
+      if (panel?.open) {
+        closePalette();
+      } else {
+        openPalette();
+      }
     }
-  }
-});
+  });
 
 function bindTrigger(): void {
   document.querySelectorAll<HTMLElement>('[data-search-trigger]').forEach((btn) => {
