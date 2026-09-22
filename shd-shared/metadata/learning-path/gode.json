@@ -1,0 +1,75 @@
+{
+  "version": "1.0.0",
+  "module": "gode",
+  "summary": "用 JavaScript 与 TypeScript 开发 Godot：从插件安装与第一个脚本，到互操作、元数据、npm 工程化、调试与导出。",
+  "stages": [
+    {
+      "id": "start",
+      "title": "起步",
+      "subtitle": "原理、安装与第一个 TS 脚本",
+      "nodes": [
+        {
+          "id": "gode-000",
+          "title": "Gode 是什么与插件安装",
+          "doc": "010-GodeOverviewAndInstallation"
+        },
+        {
+          "id": "gode-001",
+          "title": "第一个 TypeScript 脚本",
+          "doc": "020-FirstTypeScriptScript"
+        }
+      ]
+    },
+    {
+      "id": "interop",
+      "title": "引擎互通",
+      "subtitle": "godot 模块、对象生命周期与 GDScript 互操作",
+      "nodes": [
+        {
+          "id": "gode-002",
+          "title": "Godot API 调用与对象生命周期",
+          "doc": "030-GodotApiInterop"
+        },
+        {
+          "id": "gode-003",
+          "title": "与 GDScript 互操作及 Autoload",
+          "doc": "040-GDScriptInteropAndAutoload"
+        },
+        {
+          "id": "gode-004",
+          "title": "元数据：导出属性信号与 RPC",
+          "doc": "050-MetadataExportsSignalsRpc"
+        }
+      ]
+    },
+    {
+      "id": "engineer",
+      "title": "工程化",
+      "subtitle": "TypeScript 配置与 npm 依赖治理",
+      "nodes": [
+        {
+          "id": "gode-005",
+          "title": "TypeScript 配置与编译流程",
+          "doc": "060-TypeScriptConfigAndCompilation"
+        },
+        {
+          "id": "gode-006",
+          "title": "npm 依赖与工程化",
+          "doc": "070-NpmWorkflow"
+        }
+      ]
+    },
+    {
+      "id": "ship",
+      "title": "调试与发布",
+      "subtitle": "断点调试与跨平台导出",
+      "nodes": [
+        {
+          "id": "gode-007",
+          "title": "调试与项目导出",
+          "doc": "080-DebuggingAndExporting"
+        }
+      ]
+    }
+  ]
+}
