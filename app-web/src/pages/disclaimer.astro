@@ -6,7 +6,7 @@ import { SITE } from '@/lib/constants';
 import { MINIMAL_CSP } from '@/lib/csp';
 
 const base = import.meta.env.BASE_URL;
-const UPDATED = '2026-09-19';
+const UPDATED = '2026-09-23';
 ---
 
 <html lang={SITE.lang}>
@@ -18,10 +18,10 @@ const UPDATED = '2026-09-19';
     <title>免责声明 | {SITE.title}</title>
     <meta
       name="description"
-      content="FANDEX 免责声明：内容仅供编程学习与教育参考、在线前端实验场本地运行说明、本地存储与隐私、第三方商标归属与责任限制。"
+      content="FANDEX 免责声明：内容仅供编程学习与教育参考、前端实验室本地运行说明、本地存储与隐私、第三方商标归属与责任限制。中英双语。"
     />
     <meta property="og:title" content="免责声明 | FANDEX" />
-    <meta property="og:description" content="FANDEX 免责声明：教育用途、实验场本地运行、隐私与商标声明。" />
+    <meta property="og:description" content="FANDEX 免责声明：教育用途、前端实验室本地运行、隐私与商标声明。中英双语。" />
     <meta property="og:type" content="article" />
 
     <link rel="stylesheet" href={`${base}fonts/fonts.css`} />
@@ -39,14 +39,20 @@ const UPDATED = '2026-09-19';
       <GeoBgDecor variant="info" />
       <main class="legal-container">
         <header class="legal-head">
-          <p class="legal-marker" aria-hidden="true">fandex://legal/disclaimer</p>
+          <div class="legal-head-row">
+            <p class="legal-marker" aria-hidden="true">fandex://legal/disclaimer</p>
+            <div class="legal-lang" role="group" aria-label="Language">
+              <button type="button" class="legal-lang-btn is-active" data-legal-lang="zh">中文</button>
+              <button type="button" class="legal-lang-btn" data-legal-lang="en">English</button>
+            </div>
+          </div>
           <h1 class="legal-title" data-i18n="footer.disclaimer">免责声明</h1>
           <p class="legal-updated">
             <span data-i18n="legal.updatedPrefix">最后更新</span> <time datetime={UPDATED}>{UPDATED}</time> · <span data-i18n="legal.updatedSuffix">生效于全部端（网页 / 桌面 / Android）</span>
           </p>
         </header>
 
-        <article class="prose legal-prose">
+        <article class="prose legal-prose" data-legal-article="zh">
           <p>
             在使用 FANDEX（含网站、Windows 桌面端与 Android 应用）提供的全部内容前，请仔细阅读本声明。
             下载、克隆、浏览或以任何方式使用本仓库内容，即视为你已阅读并同意本声明的全部条款。
@@ -65,17 +71,17 @@ const UPDATED = '2026-09-19';
             文档中的代码示例以<strong>教学演示</strong>为目的编写，优先保证可读性与易懂性，通常不包含生产环境所需的安全加固、异常兜底与性能优化。直接用于生产环境前，请自行完成安全评审与充分测试。因直接复制、运行或改编本站代码示例而产生的任何后果（包括但不限于数据丢失、服务中断、安全漏洞），由使用者自行承担。
           </p>
 
-          <h2>3. 在线前端实验场（前端实验室）</h2>
+          <h2>3. 前端实验室（在线前端实验场）</h2>
           <p>
-            实验场中编写与运行的 HTML / CSS / JavaScript 代码<strong>仅在你的浏览器本地执行</strong>，不经过任何服务器编译或托管；本项目为开源项目，<a href="https://github.com/fanquanpp/FANDEX" target="_blank" rel="noopener noreferrer">源码可审计</a>，以此自证不含数据上传行为。
+            前端实验室中编写与运行的 HTML / CSS / JavaScript 代码<strong>仅在你的浏览器本地执行</strong>，不经过任何服务器编译或托管；本项目为开源项目，<a href="https://github.com/fanquanpp/FANDEX" target="_blank" rel="noopener noreferrer">源码可审计</a>，以此自证不含数据上传行为。
           </p>
           <p>
-            你在实验场中编写的代码、草稿与偏好设置仅保存在你本地浏览器的 IndexedDB / localStorage 中，清除浏览器数据或更换设备即不可恢复，请自行备份重要内容。灵感图鉴中的成品示例按"原样"提供，仅作学习参考，不担保其在生产环境的可用性与安全性。请勿利用实验场运行违反法律法规或他人权益的代码；由此产生的一切责任由使用者自行承担。
+            你在实验室中编写的代码、草稿与偏好设置仅保存在你本地浏览器的 IndexedDB / localStorage 中，清除浏览器数据或更换设备即不可恢复，请自行备份重要内容。灵感画廊中的成品示例按"原样"提供，仅作学习参考，不担保其在生产环境的可用性与安全性。请勿利用实验室运行违反法律法规或他人权益的代码；由此产生的一切责任由使用者自行承担。
           </p>
 
           <h2>4. 本地存储与隐私</h2>
           <p>
-            本项目<strong>无账号系统、无自建服务器、无统计埋点、无广告追踪</strong>；网站为纯静态构建产物。浏览器本地存储仅用于功能性目的：主题偏好、侧边栏状态、最近浏览文档、学习路线进度标记、实验场草稿（localStorage / IndexedDB），这些数据不离开你的设备。
+            本项目<strong>无账号系统、无自建服务器、无统计埋点、无广告追踪</strong>；网站为纯静态构建产物。浏览器本地存储仅用于功能性目的：主题与语言偏好、侧边栏状态、最近浏览文档、学习路线进度标记、实验室草稿（localStorage / IndexedDB），这些数据不离开你的设备。
           </p>
           <p>
             网站托管于 GitHub Pages，访问行为受
@@ -116,6 +122,117 @@ const UPDATED = '2026-09-19';
           </p>
         </article>
 
+        <article class="prose legal-prose" data-legal-article="en" hidden>
+          <p>
+            Please read this notice carefully before using any content provided by FANDEX
+            (including the website, the Windows desktop app, and the Android app). Downloading,
+            cloning, browsing, or otherwise using this repository means you have read and agreed
+            to all terms below.
+          </p>
+
+          <h2>1. Nature of the content (educational reference only)</h2>
+          <p>
+            All content on this site (including but not limited to documents, code examples,
+            learning paths, and syntax cheat cards) is provided for <strong>programming study and
+            educational reference</strong> only. It does not constitute advice on careers, hiring,
+            investment, legal, medical, or business decisions, and cannot replace a qualified
+            professional in any field.
+          </p>
+          <p>
+            Technical content ages quickly. APIs, commands, and best practices described in the
+            documents may change with new releases. Always defer to the official documentation of
+            each technology before running any command or code. Learning paths and time estimates
+            are based on general experience, vary from person to person, and are not a promise of
+            any learning outcome.
+          </p>
+
+          <h2>2. Code and examples</h2>
+          <p>
+            Code examples are written for <strong>teaching purposes</strong> and favor readability
+            over production concerns such as security hardening, error handling, and performance.
+            Review and test them thoroughly before using them in production. Any consequence of
+            copying, running, or adapting examples from this site (including data loss, service
+            interruption, or security issues) is borne by the user.
+          </p>
+
+          <h2>3. Frontend Lab (the online playground)</h2>
+          <p>
+            HTML / CSS / JavaScript written and run in the Frontend Lab <strong>executes only in
+            your browser</strong>; no server compiles or hosts it. The project is open source and
+            <a href="https://github.com/fanquanpp/FANDEX" target="_blank" rel="noopener noreferrer">auditable</a>,
+            which is our proof that no data is uploaded.
+          </p>
+          <p>
+            Code, drafts, and preferences you create in the lab are stored only in your browser's
+            IndexedDB / localStorage and are unrecoverable once browser data is cleared or you
+            switch devices — please back up anything important. Showcase examples are provided
+            "as is" for learning reference only, with no guarantee of production fitness or
+            security. Do not use the lab to run code that violates laws or the rights of others;
+            you are solely responsible for such use.
+          </p>
+
+          <h2>4. Local storage and privacy</h2>
+          <p>
+            This project has <strong>no accounts, no servers of its own, no analytics, and no ad
+            tracking</strong>; the website is a purely static build. Browser storage is used for
+            functional purposes only: theme and language preferences, sidebar state, recently
+            viewed documents, learning-path progress, and lab drafts (localStorage / IndexedDB).
+            None of this data leaves your device.
+          </p>
+          <p>
+            The website is hosted on GitHub Pages, where access is subject to the
+            <a href="https://docs.github.com/en/site-policy/github-privacy-statement" target="_blank" rel="noopener noreferrer">GitHub Privacy Statement</a>.
+            The Android app's update check calls the GitHub Releases API, handled by GitHub under
+            its own privacy policy.
+          </p>
+
+          <h2>5. Third-party links and trademarks</h2>
+          <p>
+            Third-party links (MDN, official docs, etc.) are provided for learning purposes only.
+            We are not responsible for their availability, accuracy, or privacy practices, and
+            linking is not an endorsement.
+          </p>
+          <p>
+            Practice platforms listed in the algorithm course (LeetCode, PracHub, NeetCode,
+            Luogu, Codeforces, NowCoder, AtCoder, VisuAlgo, and similar resources) are operated
+            independently. Listing them is a learning reference, not a partnership or endorsement.
+            Accounts, payments, privacy, and any issues arising from those platforms are between
+            you and the platform; the maintainers of this repository accept no responsibility.
+          </p>
+          <p>
+            All third-party product names, trademarks, and logos mentioned (Java, React, Kotlin,
+            etc.) belong to their respective owners. They appear here for <strong>identification
+            and technical explanation</strong> only and imply no affiliation with or endorsement
+            by this repository.
+          </p>
+
+          <h2>6. Accuracy</h2>
+          <p>
+            Despite writing and review passes (including reference-integrity audits), mistakes can
+            happen. If you find an error, please open an
+            <a href="https://github.com/fanquanpp/FANDEX/issues" target="_blank" rel="noopener noreferrer">Issue</a>
+            or a
+            <a href="https://github.com/fanquanpp/FANDEX/pulls" target="_blank" rel="noopener noreferrer">Pull Request</a>.
+            Until a fix lands, official documentation remains the final authority.
+          </p>
+
+          <h2>7. Limitation of liability</h2>
+          <p>
+            To the maximum extent permitted by applicable law, the authors and contributors of
+            this repository are <strong>not liable</strong> for any direct, indirect, incidental,
+            special, or consequential damages arising from the use of, or inability to use, this
+            content. Any action you take based on this repository is at your own risk.
+          </p>
+
+          <h2>8. License</h2>
+          <p>
+            Content is provided under the
+            <a href="https://github.com/fanquanpp/FANDEX/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>.
+            This notice applies alongside the MIT License; if they conflict, the MIT License
+            prevails. The Markdown source lives at the repository root as <code>DISCLAIMER.md</code>.
+          </p>
+        </article>
+
         <nav class="legal-actions" aria-label="免责页出口" data-i18n-aria="legal.exitsAria">
           <a href={base} class="legal-btn" data-i18n="legal.backHome">返回首页</a>
         </nav>
@@ -124,6 +241,43 @@ const UPDATED = '2026-09-19';
 
     <script>
       import '@/lib/i18n-dom';
+
+      // 免责声明双语：跟随站点语言偏好，也可用页内按钮即时切换
+      const buttons = document.querySelectorAll<HTMLButtonElement>('.legal-lang-btn');
+      const articles = document.querySelectorAll<HTMLElement>('[data-legal-article]');
+
+      function applyLegalLang(lang: string) {
+        articles.forEach((article) => {
+          article.hidden = article.dataset.legalArticle !== lang;
+        });
+        buttons.forEach((btn) => {
+          btn.classList.toggle('is-active', btn.dataset.legalLang === lang);
+        });
+      }
+
+      function currentLang(): string {
+        try {
+          return localStorage.getItem('fandex-lang') === 'en' ? 'en' : 'zh';
+        } catch {
+          return 'zh';
+        }
+      }
+
+      applyLegalLang(currentLang());
+
+      buttons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const lang = btn.dataset.legalLang === 'en' ? 'en' : 'zh';
+          try {
+            localStorage.setItem('fandex-lang', lang);
+          } catch {
+            /* 存储不可用时仅本次生效 */
+          }
+          document.documentElement.lang = lang === 'en' ? 'en' : 'zh-CN';
+          applyLegalLang(lang);
+          document.dispatchEvent(new CustomEvent('fandex:langchange'));
+        });
+      });
     </script>
   </body>
 </html>
@@ -149,12 +303,44 @@ const UPDATED = '2026-09-19';
     border-bottom: 1px solid var(--color-border-light);
   }
 
+  .legal-head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+  }
+
   .legal-marker {
-    margin: 0 0 var(--space-2);
+    margin: 0;
     font-family: var(--font-family-mono, monospace);
     font-size: 0.72rem;
     letter-spacing: 0.08em;
     color: var(--color-fg-tertiary);
+  }
+
+  .legal-lang {
+    display: inline-flex;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm, 2px);
+    overflow: hidden;
+  }
+
+  .legal-lang-btn {
+    padding: 4px 12px;
+    border: none;
+    background: transparent;
+    font-size: 0.75rem;
+    color: var(--color-fg-tertiary);
+    cursor: pointer;
+    transition:
+      color var(--motion-duration-instant) var(--motion-easing-out),
+      background-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .legal-lang-btn.is-active {
+    background: color-mix(in srgb, var(--color-accent-base) 14%, transparent);
+    color: var(--color-accent-base);
   }
 
   .legal-title {

@@ -220,3 +220,4 @@ Code-Wiki.md
 
 # Obsidian 工作区配置（本地编辑器状态，不入库）
 .obsidian/
+.tmp*.png

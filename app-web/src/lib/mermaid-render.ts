@@ -39,8 +39,57 @@ async function getThemedMermaid(): Promise<MermaidAPI> {
       layout: 'dagre',
       look: 'classic',
       theme: theme === 'dark' ? 'dark' : 'neutral',
-      fontFamily:
-        "var(--font-family-body, system-ui), -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif",
+      // diagram-design 纪律：单一强调色（品牌青）、无阴影、间距对齐 4px 栅格
+      themeVariables:
+        theme === 'dark'
+          ? {
+              primaryColor: '#0E5560',
+              primaryTextColor: '#EBEFF3',
+              primaryBorderColor: '#39C5BB',
+              lineColor: '#39C5BB',
+              secondaryColor: '#0E3B38',
+              tertiaryColor: '#10201D',
+              textColor: '#CCD5DB',
+              mainBkg: '#0E5560',
+              nodeBorder: '#39C5BB',
+              clusterBkg: 'transparent',
+              clusterBorder: '#2A3538',
+              titleColor: '#EBEFF3',
+              edgeLabelBackground: '#141414',
+              noteBkgColor: '#123B36',
+              noteTextColor: '#EBEFF3',
+              noteBorderColor: '#39C5BB',
+              fontSize: '15px',
+            }
+          : {
+              primaryColor: '#EEFCFB',
+              primaryTextColor: '#10403C',
+              primaryBorderColor: '#14716A',
+              lineColor: '#26ABA2',
+              secondaryColor: '#E6F5F2',
+              tertiaryColor: '#F2FAF8',
+              textColor: '#2A3538',
+              mainBkg: '#EEFCFB',
+              nodeBorder: '#14716A',
+              clusterBkg: 'transparent',
+              clusterBorder: '#BCC8D0',
+              titleColor: '#141414',
+              edgeLabelBackground: '#FFFFFF',
+              noteBkgColor: '#E6F5F2',
+              noteTextColor: '#10403C',
+              noteBorderColor: '#14716A',
+              fontSize: '15px',
+            },
+      themeCSS: `
+        /* diagram-design：去掉所有投影，图形只靠描边与填充表达层次 */
+        .node rect, .node circle, .node ellipse, .node polygon, .node path { filter: none; }
+        rect rect, polygon { filter: none; }
+        .label { font-weight: 500; }
+        .edgePath .path { stroke-width: 1.5px; }
+        .cluster rect { rx: 4px; ry: 4px; }
+      `,
+      flowchart: { curve: 'basis', nodeSpacing: 24, rankSpacing: 40, useMaxWidth: true, padding: 12 },
+      sequence: { diagramMarginX: 12, diagramMarginY: 12, boxMargin: 12, useMaxWidth: true },
     });
     configuredTheme = theme;
   }

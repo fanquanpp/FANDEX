@@ -76,13 +76,12 @@ p {
   margin: var(--space-4) 0;
   line-height: var(--font-line-height-relaxed);
   color: var(--color-fg-primary);
-  text-align: justify;
 }
 
-/* inter-character 只适用于 CJK 排版，英文段落会拉伸单词间距 */
-:lang(zh) p,
-:lang(zh-CN) p {
-  text-justify: inter-character;
+/* 两端对齐只保留在正文阅读区（.prose）：UI 段落（卡片描述等）使用起点对齐，
+   否则中英混排被 inter-character 拉开出 "G o d o t" 式字距 */
+.prose p {
+  text-align: justify;
 }
 
 ul,
@@ -874,6 +873,16 @@ dfn {
   .prose {
     padding: 0 var(--space-4);
     font-size: 0.88em;
+  }
+
+  /* 移动端悬浮控件更多，锚点跳转留出更大的避让高度，避免标题被吸顶栏压住 */
+  .prose h1,
+  .prose h2,
+  .prose h3,
+  .prose h4,
+  .prose h5,
+  .prose h6 {
+    scroll-margin-top: calc(var(--nav-height) + 44px);
   }
 
   .prose h1 {
