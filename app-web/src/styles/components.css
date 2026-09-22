@@ -234,7 +234,7 @@
     justify-content: center;
     gap: 2px;
     color: var(--color-text-secondary);
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-family: var(--font-family-heading);
     cursor: pointer;
     text-decoration: none;
