@@ -2,38 +2,38 @@
 @layer tokens {
 :root {
 
-  --fandex-color-primary-50: var(--color-primary-50, #E6FBFC);
-  --fandex-color-primary-100: var(--color-primary-100, #C6F3F5);
-  --fandex-color-primary-200: var(--color-primary-200, #99E8EC);
-  --fandex-color-primary-300: var(--color-primary-300, #66D8E0);
-  --fandex-color-primary-400: var(--color-primary-400, #33C5D1);
-  --fandex-color-primary-500: var(--color-primary-500, #14B0BE);
-  --fandex-color-primary-600: var(--color-primary-600, #0E8C9C);
-  --fandex-color-primary-700: var(--color-primary-700, #0B6E7E);
-  --fandex-color-primary-800: var(--color-primary-800, #085263);
-  --fandex-color-primary-900: var(--color-primary-900, #053645);
+  --fandex-color-primary-50: var(--color-primary-50, #EEFCFB);
+  --fandex-color-primary-100: var(--color-primary-100, #CBF6F3);
+  --fandex-color-primary-200: var(--color-primary-200, #A2ECE7);
+  --fandex-color-primary-300: var(--color-primary-300, #74DCD5);
+  --fandex-color-primary-400: var(--color-primary-400, #58D0C7);
+  --fandex-color-primary-500: var(--color-primary-500, #39C5BB);
+  --fandex-color-primary-600: var(--color-primary-600, #26ABA2);
+  --fandex-color-primary-700: var(--color-primary-700, #14716A);
+  --fandex-color-primary-800: var(--color-primary-800, #0E655F);
+  --fandex-color-primary-900: var(--color-primary-900, #084743);
 
-  --fandex-color-secondary-50: var(--color-accent-50, #E5FBFF);
-  --fandex-color-secondary-100: var(--color-accent-100, #B8F2FF);
-  --fandex-color-secondary-200: var(--color-accent-200, #7EE9FF);
-  --fandex-color-secondary-300: var(--color-accent-300, #3DDDFF);
-  --fandex-color-secondary-400: var(--color-accent-400, #00C8F0);
-  --fandex-color-secondary-500: var(--color-accent-500, #00A6CC);
-  --fandex-color-secondary-600: var(--color-accent-600, #0085A6);
-  --fandex-color-secondary-700: var(--color-accent-700, #006680);
-  --fandex-color-secondary-800: var(--color-accent-800, #004859);
-  --fandex-color-secondary-900: var(--color-accent-900, #002D38);
+  --fandex-color-secondary-50: var(--color-accent-50, #E5FFFD);
+  --fandex-color-secondary-100: var(--color-accent-100, #B8FFFA);
+  --fandex-color-secondary-200: var(--color-accent-200, #80FFF6);
+  --fandex-color-secondary-300: var(--color-accent-300, #40FFF1);
+  --fandex-color-secondary-400: var(--color-accent-400, #00FFED);
+  --fandex-color-secondary-500: var(--color-accent-500, #00CCBD);
+  --fandex-color-secondary-600: var(--color-accent-600, #00A69A);
+  --fandex-color-secondary-700: var(--color-accent-700, #008076);
+  --fandex-color-secondary-800: var(--color-accent-800, #005E58);
+  --fandex-color-secondary-900: var(--color-accent-900, #00403B);
 
-  --fandex-color-accent-50: var(--color-accent-50, #E5FBFF);
-  --fandex-color-accent-100: var(--color-accent-100, #B8F2FF);
-  --fandex-color-accent-200: var(--color-accent-200, #7EE9FF);
-  --fandex-color-accent-300: var(--color-accent-300, #3DDDFF);
-  --fandex-color-accent-400: var(--color-accent-400, #00C8F0);
-  --fandex-color-accent-500: var(--color-accent-500, #00A6CC);
-  --fandex-color-accent-600: var(--color-accent-600, #0085A6);
-  --fandex-color-accent-700: var(--color-accent-700, #006680);
-  --fandex-color-accent-800: var(--color-accent-800, #004859);
-  --fandex-color-accent-900: var(--color-accent-900, #002D38);
+  --fandex-color-accent-50: var(--color-accent-50, #E5FFFD);
+  --fandex-color-accent-100: var(--color-accent-100, #B8FFFA);
+  --fandex-color-accent-200: var(--color-accent-200, #80FFF6);
+  --fandex-color-accent-300: var(--color-accent-300, #40FFF1);
+  --fandex-color-accent-400: var(--color-accent-400, #00FFED);
+  --fandex-color-accent-500: var(--color-accent-500, #00CCBD);
+  --fandex-color-accent-600: var(--color-accent-600, #00A69A);
+  --fandex-color-accent-700: var(--color-accent-700, #008076);
+  --fandex-color-accent-800: var(--color-accent-800, #005E58);
+  --fandex-color-accent-900: var(--color-accent-900, #00403B);
 
   --fandex-color-neutral-50: var(--color-neutral-1050, #EBEFF3);
   --fandex-color-neutral-100: var(--color-neutral-1000, #E2E8EC);

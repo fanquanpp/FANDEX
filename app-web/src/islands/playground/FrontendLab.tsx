@@ -38,7 +38,7 @@ interface PenTemplate {
 
 const BLANK_HTML = '<h1>你好，FANDEX</h1>\n<button id="demo">点我</button>\n<p id="tip">打开控制台查看输出</p>';
 const BLANK_CSS =
-  'body {\n  font-family: var(--font-family-body, sans-serif);\n  text-align: center;\n  padding: 40px 16px;\n}\nbutton {\n  padding: 8px 20px;\n  border-radius: 8px;\n  border: 1px solid #0B6E7E;\n  background: #E6FBFC;\n  color: #0B6E7E;\n  cursor: pointer;\n}';
+  'body {\n  font-family: var(--font-family-body, sans-serif);\n  text-align: center;\n  padding: 40px 16px;\n}\nbutton {\n  padding: 8px 20px;\n  border-radius: 8px;\n  border: 1px solid #14716A;\n  background: #EEFCFB;\n  color: #14716A;\n  cursor: pointer;\n}';
 const BLANK_JS =
   "const tip = document.getElementById('tip');\nconst btn = document.getElementById('demo');\nbtn.addEventListener('click', () => {\n  tip.textContent = '点击次数 +1';\n  console.log('按钮被点击');\n});\nconsole.log('预览已就绪');";
 
