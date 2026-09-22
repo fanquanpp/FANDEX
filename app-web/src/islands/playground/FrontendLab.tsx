@@ -83,6 +83,14 @@ const DEFAULT_TEMPLATE: FrontendPen = {
 };
 
 const STORAGE_WARN_RATIO = 0.85;
+const GUIDE_SEEN_KEY = 'fandex-pg-guide-v1';
+
+function makePenId(): string {
+  const now = Date.now();
+  return typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
+    ? crypto.randomUUID()
+    : `pen-${now}-${Math.random().toString(36).slice(2, 10)}`;
+}
 
 function narrowPreferredLayout(): FrontendLayout {
   return typeof window !== 'undefined' && window.innerWidth < 700 ? 'top' : 'left';
@@ -117,7 +125,7 @@ function FrontendLab() {
   const [showLibrary, setShowLibrary] = useState(false);
   const [showTemplates, setShowTemplates] = useState(false);
   const [showGallery, setShowGallery] = useState(false);
-  const [showShortcuts, setShowShortcuts] = useState(false);
+  const [showGuide, setShowGuide] = useState(false);
   const [library, setLibrary] = useState<FrontendPen[]>([]);
   const [formatting, setFormatting] = useState(false);
   const [toolbarNote, setToolbarNote] = useState('');
@@ -215,6 +223,23 @@ function FrontendLab() {
       if (!cancelled && openGallery) {
         setShowGallery(true);
       }
+      // 首次到访且无深链意图时自动弹出上手指南；存储不可用则不打扰
+      if (!cancelled && !showcaseId && !openGallery && !penId) {
+        let guideSeen: boolean;
+        try {
+          guideSeen = window.localStorage.getItem(GUIDE_SEEN_KEY) === '1';
+        } catch {
+          guideSeen = true; // 存储不可用时不打扰
+        }
+        if (!guideSeen) {
+          setShowGuide(true);
+          try {
+            window.localStorage.setItem(GUIDE_SEEN_KEY, '1');
+          } catch {
+            /* 隐私模式下无法记忆，仅本次引导 */
+          }
+        }
+      }
       if (!cancelled) setBootstrapped(true);
       const pens = await loadPens();
       if (!cancelled) setLibrary(pens);
@@ -263,12 +288,27 @@ function FrontendLab() {
     setFormatting(false);
   }, [formatting, pen.html, pen.css, pen.js, updatePen]);
 
+  // 预览导出：新窗口与下载都走一次性 blob URL，避免污染站点同源文档
+  const openPreviewInNewWindow = useCallback(() => {
+    const blob = new Blob([previewDoc], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank', 'noopener');
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }, [previewDoc]);
+
+  const downloadPenHtml = useCallback(() => {
+    const blob = new Blob([previewDoc], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const anchor = document.createElement('a');
+    anchor.href = url;
+    anchor.download = `${pen.title.trim() || 'fandex-pen'}.html`;
+    anchor.click();
+    window.setTimeout(() => URL.revokeObjectURL(url), 60_000);
+  }, [previewDoc, pen.title]);
+
   const handleSaveAsNew = useCallback(async () => {
     const now = Date.now();
-    const newId =
-      typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function'
-        ? crypto.randomUUID()
-        : `pen-${now}-${Math.random().toString(36).slice(2, 10)}`;
+    const newId = makePenId();
     const newPen: FrontendPen = {
       ...pen,
       split,
@@ -334,6 +374,11 @@ function FrontendLab() {
       }
       // Escape 只关最上层弹层，并用 stopImmediatePropagation 拦住画廊等兄弟监听器
       if (event.key === 'Escape') {
+        if (showGuide) {
+          event.stopImmediatePropagation();
+          setShowGuide(false);
+          return;
+        }
         if (showTemplates) {
           event.stopImmediatePropagation();
           setShowTemplates(false);
@@ -342,11 +387,6 @@ function FrontendLab() {
         if (showLibrary) {
           event.stopImmediatePropagation();
           setShowLibrary(false);
-          return;
-        }
-        if (showShortcuts) {
-          event.stopImmediatePropagation();
-          setShowShortcuts(false);
           return;
         }
       }
@@ -360,12 +400,12 @@ function FrontendLab() {
         !showLibrary
       ) {
         event.preventDefault();
-        setShowShortcuts((v) => !v);
+        setShowGuide((v) => !v);
       }
     };
     window.addEventListener('keydown', onKeyDown);
     return () => window.removeEventListener('keydown', onKeyDown);
-  }, [handleSave, handleFormat, showShortcuts, showTemplates, showLibrary, showGallery]);
+  }, [handleSave, handleFormat, showGuide, showTemplates, showLibrary, showGallery]);
 
   const handleNewDraft = useCallback(
     (template: PenTemplate) => {
@@ -452,6 +492,20 @@ const handleOpenLibrary = useCallback(async () => {
     await deletePen(item.id);
     setLibrary(await loadPens());
   }, [lang]);
+
+  const handleDuplicatePen = useCallback(async (item: FrontendPen) => {
+    const now = Date.now();
+    const copy: FrontendPen = {
+      ...item,
+      id: makePenId(),
+      title: `${item.title || '未命名作品'} 副本`,
+      createdAt: now,
+      updatedAt: now,
+      lastOpenedAt: now,
+    };
+    await savePen(copy);
+    setLibrary(await loadPens());
+  }, []);
 
   const togglePane = useCallback(
     (key: PaneKey) => {
@@ -622,12 +676,12 @@ const handleOpenLibrary = useCallback(async () => {
             <button
               type="button"
               className="pg-btn pg-btn--ghost"
-              onClick={() => setShowShortcuts((v) => !v)}
-              aria-expanded={showShortcuts}
-              title={t('pg.keysTitle', undefined, lang)}
+              onClick={() => setShowGuide(true)}
+              aria-expanded={showGuide}
+              title={t('pg.guideTitle', undefined, lang)}
             >
-              <PgIcon name="keyboard" size={14} />
-              <span>{t('pg.keys', undefined, lang)}</span>
+              <PgIcon name="book" size={14} />
+              <span>{t('pg.guide', undefined, lang)}</span>
             </button>
             <button
               type="button"
@@ -748,6 +802,22 @@ const handleOpenLibrary = useCallback(async () => {
               <button
                 type="button"
                 className="pg-btn pg-btn--ghost pg-btn--sm"
+                onClick={openPreviewInNewWindow}
+                title={t('pg.openNewTitle', undefined, lang)}
+              >
+                <PgIcon name="external" size={12} />
+              </button>
+              <button
+                type="button"
+                className="pg-btn pg-btn--ghost pg-btn--sm"
+                onClick={downloadPenHtml}
+                title={t('pg.downloadTitle', undefined, lang)}
+              >
+                <PgIcon name="download" size={12} />
+              </button>
+              <button
+                type="button"
+                className="pg-btn pg-btn--ghost pg-btn--sm"
                 onClick={handleRun}
                 title={t('pg.rerunTitle', undefined, lang)}
               >
@@ -806,63 +876,149 @@ const handleOpenLibrary = useCallback(async () => {
       {/* 新建模板菜单的点击关闭层 */}
       {showTemplates && <div className="pg-menu-mask" onClick={() => setShowTemplates(false)} />}
 
-      {/* 快捷键说明面板：轻量居中弹层（Esc / 点击遮罩关闭） */}
-      {showShortcuts && (
-        <div className="pg-keys-mask" onClick={() => setShowShortcuts(false)}>
+      {/* 上手指南：首次到访自动弹出，也可从工具栏随时打开 */}
+      {showGuide && (
+        <div className="pg-keys-mask" onClick={() => setShowGuide(false)}>
           <div
-            className="pg-keys"
+            className="pg-guide"
             role="dialog"
             aria-modal="true"
-            aria-label={t('pg.keysPanelAria', undefined, lang)}
+            aria-label={t('pg.guideAria', undefined, lang)}
             onClick={(e) => e.stopPropagation()}
           >
             <header className="pg-keys__head">
               <span className="pg-keys__title">
-                <PgIcon name="keyboard" size={14} />
-                {t('pg.keysPanelTitle', undefined, lang)}
+                <PgIcon name="book" size={14} />
+                {t('pg.guidePanelTitle', undefined, lang)}
               </span>
               <button
                 type="button"
                 className="pg-btn pg-btn--ghost pg-btn--sm"
-                onClick={() => setShowShortcuts(false)}
+                onClick={() => setShowGuide(false)}
                 title={t('pg.closeAria', undefined, lang)}
               >
                 <PgIcon name="close" size={14} />
               </button>
             </header>
-            <div className="pg-keys__body">
-              <div className="pg-keys__row">
-                <span className="pg-keys__desc">{t('pg.keysRun', undefined, lang)}</span>
-                <span className="pg-keys__combo">
-                  <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Enter</kbd>
-                </span>
+
+            <p className="pg-guide__welcome">{t('pg.guideWelcome', undefined, lang)}</p>
+
+            <section className="pg-guide__section">
+              <h3 className="pg-guide__heading">{t('pg.guideStepsTitle', undefined, lang)}</h3>
+              <ol className="pg-guide__steps">
+                <li>{t('pg.guideStep1', undefined, lang)}</li>
+                <li>{t('pg.guideStep2', undefined, lang)}</li>
+                <li>{t('pg.guideStep3', undefined, lang)}</li>
+              </ol>
+            </section>
+
+            <section className="pg-guide__section">
+              <h3 className="pg-guide__heading">{t('pg.guideStartTitle', undefined, lang)}</h3>
+              <div className="pg-guide__start">
+                <button
+                  type="button"
+                  className="pg-btn pg-btn--ghost"
+                  onClick={() => {
+                    setShowGuide(false);
+                    setShowTemplates(true);
+                  }}
+                >
+                  <PgIcon name="plus" size={13} />
+                  <span>{t('pg.guideStartTemplate', undefined, lang)}</span>
+                </button>
+                <button
+                  type="button"
+                  className="pg-btn pg-btn--ghost"
+                  onClick={() => {
+                    setShowGuide(false);
+                    setShowGallery(true);
+                  }}
+                >
+                  <PgIcon name="gallery" size={13} />
+                  <span>{t('pg.guideStartGallery', undefined, lang)}</span>
+                </button>
+                <button
+                  type="button"
+                  className="pg-btn pg-btn--ghost"
+                  onClick={() => {
+                    setShowGuide(false);
+                    void handleOpenLibrary();
+                  }}
+                >
+                  <PgIcon name="folder" size={13} />
+                  <span>{t('pg.guideStartLibrary', undefined, lang)}</span>
+                </button>
               </div>
-              <div className="pg-keys__row">
-                <span className="pg-keys__desc">{t('pg.keysFormat', undefined, lang)}</span>
-                <span className="pg-keys__combo">
-                  <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>F</kbd>
-                </span>
+            </section>
+
+            <section className="pg-guide__section">
+              <h3 className="pg-guide__heading">{t('pg.guideFeaturesTitle', undefined, lang)}</h3>
+              <ul className="pg-guide__features">
+                <li>{t('pg.guideF1', undefined, lang)}</li>
+                <li>{t('pg.guideF2', undefined, lang)}</li>
+                <li>{t('pg.guideF3', undefined, lang)}</li>
+                <li>{t('pg.guideF4', undefined, lang)}</li>
+                <li>{t('pg.guideF5', undefined, lang)}</li>
+                <li>{t('pg.guideF6', undefined, lang)}</li>
+              </ul>
+            </section>
+
+            <section className="pg-guide__section">
+              <h3 className="pg-guide__heading">{t('pg.guideKeysTitle', undefined, lang)}</h3>
+              <div className="pg-keys__body">
+                <div className="pg-keys__row">
+                  <span className="pg-keys__desc">{t('pg.keysRun', undefined, lang)}</span>
+                  <span className="pg-keys__combo">
+                    <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>Enter</kbd>
+                  </span>
+                </div>
+                <div className="pg-keys__row">
+                  <span className="pg-keys__desc">{t('pg.keysFormat', undefined, lang)}</span>
+                  <span className="pg-keys__combo">
+                    <kbd>Shift</kbd> + <kbd>Alt</kbd> + <kbd>F</kbd>
+                  </span>
+                </div>
+                <div className="pg-keys__row">
+                  <span className="pg-keys__desc">{t('pg.keysSave', undefined, lang)}</span>
+                  <span className="pg-keys__combo">
+                    <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>S</kbd>
+                  </span>
+                </div>
+                <div className="pg-keys__row">
+                  <span className="pg-keys__desc">{t('pg.keysPanel', undefined, lang)}</span>
+                  <span className="pg-keys__combo">
+                    <kbd>?</kbd>
+                  </span>
+                </div>
+                <div className="pg-keys__row">
+                  <span className="pg-keys__desc">{t('pg.keysClose', undefined, lang)}</span>
+                  <span className="pg-keys__combo">
+                    <kbd>Esc</kbd>
+                  </span>
+                </div>
               </div>
-              <div className="pg-keys__row">
-                <span className="pg-keys__desc">{t('pg.keysSave', undefined, lang)}</span>
-                <span className="pg-keys__combo">
-                  <kbd>Ctrl</kbd>/<kbd>Cmd</kbd> + <kbd>S</kbd>
-                </span>
+            </section>
+
+            <section className="pg-guide__section">
+              <h3 className="pg-guide__heading">{t('pg.guideLearnTitle', undefined, lang)}</h3>
+              <div className="pg-guide__learn">
+                <a className="pg-guide__link" href={`${import.meta.env.BASE_URL}javascript/`}>
+                  {t('pg.guideLearnJs', undefined, lang)}
+                </a>
+                <a className="pg-guide__link" href={`${import.meta.env.BASE_URL}css/`}>
+                  {t('pg.guideLearnCss', undefined, lang)}
+                </a>
+                <a className="pg-guide__link" href={`${import.meta.env.BASE_URL}html5/`}>
+                  {t('pg.guideLearnHtml', undefined, lang)}
+                </a>
+                <a className="pg-guide__link" href={`${import.meta.env.BASE_URL}syntax/`}>
+                  {t('pg.guideLearnSyntax', undefined, lang)}
+                </a>
+                <a className="pg-guide__link" href={`${import.meta.env.BASE_URL}algorithms/`}>
+                  {t('pg.guideLearnAlgo', undefined, lang)}
+                </a>
               </div>
-              <div className="pg-keys__row">
-                <span className="pg-keys__desc">{t('pg.keysPanel', undefined, lang)}</span>
-                <span className="pg-keys__combo">
-                  <kbd>?</kbd>
-                </span>
-              </div>
-              <div className="pg-keys__row">
-                <span className="pg-keys__desc">{t('pg.keysClose', undefined, lang)}</span>
-                <span className="pg-keys__combo">
-                  <kbd>Esc</kbd>
-                </span>
-              </div>
-            </div>
-            <p className="pg-keys__note">{t('pg.keysNote', undefined, lang)}</p>
+            </section>
           </div>
         </div>
       )}
@@ -890,7 +1046,31 @@ const handleOpenLibrary = useCallback(async () => {
             <div className="pg-drawer-body">
               {library.length === 0 ? (
                 <div className="pg-drawer-empty">
-                  {t('pg.libraryEmpty', undefined, lang)}
+                  <p>{t('pg.libraryEmpty', undefined, lang)}</p>
+                  <div className="pg-lib-empty-actions">
+                    <button
+                      type="button"
+                      className="pg-btn pg-btn--ghost pg-btn--sm"
+                      onClick={() => {
+                        setShowLibrary(false);
+                        setShowTemplates(true);
+                      }}
+                    >
+                      <PgIcon name="plus" size={12} />
+                      <span>{t('pg.guideStartTemplate', undefined, lang)}</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="pg-btn pg-btn--ghost pg-btn--sm"
+                      onClick={() => {
+                        setShowLibrary(false);
+                        setShowGallery(true);
+                      }}
+                    >
+                      <PgIcon name="gallery" size={12} />
+                      <span>{t('pg.guideStartGallery', undefined, lang)}</span>
+                    </button>
+                  </div>
                 </div>
               ) : (
                 library.map((item) => (
@@ -904,6 +1084,14 @@ const handleOpenLibrary = useCallback(async () => {
                     <div className="pg-lib-actions">
                       <button type="button" className="pg-btn pg-btn--ghost pg-btn--sm" onClick={() => void handleOpenPen(item)}>
                         {t('pg.open', undefined, lang)}
+                      </button>
+                      <button
+                        type="button"
+                        className="pg-btn pg-btn--ghost pg-btn--sm"
+                        onClick={() => void handleDuplicatePen(item)}
+                        title={t('pg.duplicateTitle', undefined, lang)}
+                      >
+                        {t('pg.duplicate', undefined, lang)}
                       </button>
                       <button
                         type="button"

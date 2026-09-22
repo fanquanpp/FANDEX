@@ -27,6 +27,9 @@ export type PgIconName =
   | 'spark'
   | 'gallery'
   | 'keyboard'
+  | 'book'
+  | 'download'
+  | 'external'
   ;
 
 const PATHS: Record<PgIconName, ReactNode> = {
@@ -150,6 +153,26 @@ const PATHS: Record<PgIconName, ReactNode> = {
       <rect x="3" y="7" width="18" height="11" rx="1.5" />
       <path d="M6 10.5h.01M9 10.5h.01M12 10.5h.01M15 10.5h.01M18 10.5h.01" />
       <path d="M7 14.5h10" />
+    </>
+  ),
+  book: (
+    <>
+      <path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5Z" />
+      <path d="M4 20.5V5.5M20 18v3H6.5" />
+      <path d="M9 7.5h7M9 11h5" />
+    </>
+  ),
+  download: (
+    <>
+      <path d="M12 3v12m0 0 4.5-4.5M12 15l-4.5-4.5" />
+      <path d="M4 17v2.5A1.5 1.5 0 0 0 5.5 21h13a1.5 1.5 0 0 0 1.5-1.5V17" />
+    </>
+  ),
+  external: (
+    <>
+      <path d="M14 4h6v6" />
+      <path d="M20 4 11 13" />
+      <path d="M19 14v5a1.5 1.5 0 0 1-1.5 1.5h-12A1.5 1.5 0 0 1 4 19V7a1.5 1.5 0 0 1 1.5-1.5H10" />
     </>
   ),
 };
