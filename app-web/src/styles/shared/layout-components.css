@@ -784,7 +784,7 @@
 
   .fndx-sidebar__subtitle {
     margin: var(--space-1) 0 0;
-    font-size: 0.6875rem;
+    font-size: 0.75rem;
     color: var(--color-fg-tertiary);
     letter-spacing: 0.02em;
   }

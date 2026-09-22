@@ -30,8 +30,7 @@ h6 {
 
 h1 {
   font-size: var(--font-size-4xl);
-  font-weight: var(--font-weight-extrabold);
-  letter-spacing: var(--font-letter-spacing-tighter);
+  font-weight: var(--font-weight-bold);
   margin-top: 0.8em;
   margin-bottom: 0.6em;
 }

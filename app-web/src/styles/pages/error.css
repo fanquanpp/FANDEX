@@ -55,7 +55,7 @@
 .error-code {
   font-family: var(--font-family-heading);
   font-size: clamp(5rem, 16vw, 8.5rem);
-  font-weight: 800;
+  font-weight: 700;
   line-height: 1;
   letter-spacing: 0.02em;
   color: transparent;

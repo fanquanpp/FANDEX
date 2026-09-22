@@ -26,14 +26,13 @@
       "body": { "$value": "{font.weight.normal}", "$description": "正文字重" },
       "emphasis": { "$value": "{font.weight.medium}", "$description": "强调字重" },
       "heading": { "$value": "{font.weight.bold}", "$description": "标题字重" },
-      "display": { "$value": "{font.weight.extrabold}", "$description": "展示字重" }
+      "display": { "$value": "{font.weight.bold}", "$description": "展示字重（品牌展示字体实有最大字重，避免合成加粗）" }
     },
     "lineHeight": {
       "$type": "number",
       "heading": { "$value": "{font.lineHeight.tight}", "$description": "标题行高" },
       "subheading": { "$value": "{font.lineHeight.snug}", "$description": "副标题行高" },
-      "body": { "$value": "{font.lineHeight.relaxed}", "$description": "正文行高（中文优化）" },
-      "reading": { "$value": "{font.lineHeight.loose}", "$description": "长文阅读行高" }
+      "body": { "$value": "{font.lineHeight.relaxed}", "$description": "正文行高（中文优化）" }
     },
     "letterSpacing": {
       "$type": "dimension",

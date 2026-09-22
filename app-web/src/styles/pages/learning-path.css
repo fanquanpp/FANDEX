@@ -261,7 +261,7 @@
 
   .lp-career__desc {
     margin: 0;
-    font-size: 0.74rem;
+    font-size: 0.75rem;
     line-height: 1.7;
     color: var(--color-text-secondary);
     display: -webkit-box;
@@ -312,7 +312,7 @@
 
   .lp-career__stage-label {
     font-family: var(--font-family-heading);
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     font-weight: 600;
     letter-spacing: 0.03em;
     color: var(--career-color);
@@ -536,7 +536,7 @@
 
   .lp-tech-card__desc {
     margin: 0;
-    font-size: 0.72rem;
+    font-size: 0.75rem;
     color: var(--color-text-secondary);
     line-height: 1.5;
     min-height: 3em;
@@ -610,7 +610,7 @@
     background: transparent;
     color: var(--color-text-secondary);
     font-family: var(--font-family-heading);
-    font-size: 0.74em;
+    font-size: 0.8em;
     letter-spacing: 0.02em;
     text-decoration: none;
     transition:
@@ -656,7 +656,7 @@
     border: 1px solid var(--color-border-light);
     border-radius: 2px;
     font-family: var(--font-family-heading);
-    font-size: 0.66rem;
+    font-size: 0.75rem;
     color: var(--color-text-secondary);
     text-decoration: none;
     transition:
@@ -725,7 +725,7 @@
 
   .lp-resume__label {
     font-family: var(--font-family-mono);
-    font-size: 0.66rem;
+    font-size: 0.7rem
     letter-spacing: 0.06em;
     color: var(--color-text-tertiary);
   }
@@ -772,7 +772,7 @@
   .lp-tech-card__progress {
     display: block;
     font-family: var(--font-family-mono);
-    font-size: 0.64rem;
+    font-size: 0.7rem;
     letter-spacing: 0.04em;
     color: var(--card-color);
   }

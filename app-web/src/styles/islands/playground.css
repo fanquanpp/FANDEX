@@ -900,7 +900,7 @@
     align-items: center;
     gap: 3px;
     font-family: var(--font-family-mono);
-    font-size: 0.64rem;
+    font-size: 0.65rem;
     color: var(--color-text-tertiary);
     white-space: nowrap;
   }
@@ -911,7 +911,7 @@
     border-radius: var(--radius-sm, 2px);
     background: var(--color-bg-card);
     font-family: var(--font-family-mono);
-    font-size: 0.62rem;
+    font-size: 0.65rem;
     line-height: 1.5;
     color: var(--color-text-secondary);
   }
@@ -920,7 +920,7 @@
     margin: var(--space-3) 0 0;
     padding-top: var(--space-2);
     border-top: 1px dashed var(--color-border-light);
-    font-size: 0.66rem;
+    font-size: 0.7rem;
     color: var(--color-text-tertiary);
   }
 

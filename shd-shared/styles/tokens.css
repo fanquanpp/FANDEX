@@ -420,16 +420,14 @@
     --font-weight-emphasis: var(--font-weight-medium);
     /* 标题字重 */
     --font-weight-heading: var(--font-weight-bold);
-    /* 展示字重 */
-    --font-weight-display: var(--font-weight-extrabold);
+    /* 展示字重（品牌展示字体实有最大字重，避免合成加粗） */
+    --font-weight-display: var(--font-weight-bold);
     /* 标题行高 */
     --font-line-height-heading: var(--font-line-height-tight);
     /* 副标题行高 */
     --font-line-height-subheading: var(--font-line-height-snug);
     /* 正文行高（中文优化） */
     --font-line-height-body: var(--font-line-height-relaxed);
-    /* 长文阅读行高 */
-    --font-line-height-reading: var(--font-line-height-loose);
     /* 标题字距 */
     --font-letter-spacing-heading: var(--font-letter-spacing-tight);
     /* 展示字距 */
