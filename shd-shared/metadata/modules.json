@@ -11,14 +11,14 @@
     "gamedev": "游戏开发"
   },
   "categoryColors": {
-    "tools": "#4f5bd5",
-    "frontend": "#d63031",
-    "backend": "#e17055",
-    "database": "#00b894",
-    "cs": "#8854d0",
-    "math": "#6c5ce7",
-    "cloud": "#e05a2b",
-    "gamedev": "#0abde3"
+    "tools": "#0000FF",
+    "frontend": "#EE0000",
+    "backend": "#FF4004",
+    "database": "#00FFCC",
+    "cs": "#9900FF",
+    "math": "#9999FF",
+    "cloud": "#FF8800",
+    "gamedev": "#66CCFF"
   },
   "categoryOrder": [
     "tools",

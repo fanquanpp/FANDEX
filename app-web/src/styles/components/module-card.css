@@ -71,7 +71,7 @@
     border-radius: 3px;
     background: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 8%, transparent);
     border: 1px solid color-mix(in srgb, var(--module-color, var(--color-accent-base)) 38%, transparent);
-    color: var(--module-color, var(--color-accent-base));
+    color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 75%, var(--color-fg-primary));
     font-family: var(--font-family-mono);
     font-weight: 600;
     font-size: 0.6rem;
@@ -123,7 +123,7 @@
   }
 
   .module-card:hover .card-title {
-    color: var(--module-color, var(--color-accent-base));
+    color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 75%, var(--color-fg-primary));
   }
 
   .card-desc {

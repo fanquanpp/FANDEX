@@ -708,7 +708,7 @@ dfn {
 }
 
 .prose strong {
-  color: var(--module-color, var(--color-accent-base));
+  color: color-mix(in srgb, var(--module-color, var(--color-accent-base)) 75%, var(--color-fg-primary));
   font-weight: 700;
 }
 
@@ -838,7 +838,6 @@ dfn {
   background: color-mix(in srgb, var(--color-danger) 16%, var(--color-bg-card));
 }
 
-/* info / caution / important 三类此前无样式，静默回退为默认色 */
 .prose .admonition-info {
   border-left-color: var(--color-primary-500);
 }
