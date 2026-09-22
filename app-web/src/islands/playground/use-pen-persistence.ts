@@ -9,6 +9,8 @@ export type SaveState = 'saved' | 'saving' | 'error';
 interface UsePenPersistenceOptions {
   pen: FrontendPen;
   split: number;
+  /** 初始草稿/深链加载完成前为 false，避免默认模板覆盖已存的草稿 */
+  autosaveEnabled: boolean;
 }
 
 interface UsePenPersistenceResult {
@@ -16,7 +18,7 @@ interface UsePenPersistenceResult {
   setSaveState: React.Dispatch<React.SetStateAction<SaveState>>;
 }
 
-export function usePenPersistence({ pen, split }: UsePenPersistenceOptions): UsePenPersistenceResult {
+export function usePenPersistence({ pen, split, autosaveEnabled }: UsePenPersistenceOptions): UsePenPersistenceResult {
   const [saveState, setSaveState] = useState<SaveState>('saved');
 
   const latestPenRef = useRef<FrontendPen | null>(null);
@@ -24,8 +26,14 @@ export function usePenPersistence({ pen, split }: UsePenPersistenceOptions): Use
     latestPenRef.current = pen;
   }, [pen]);
 
+  const enabledRef = useRef(autosaveEnabled);
+  useEffect(() => {
+    enabledRef.current = autosaveEnabled;
+  }, [autosaveEnabled]);
+
   const flushPen = useCallback(
     (source: FrontendPen) => {
+      if (!enabledRef.current) return;
       const now = Date.now();
       const payload: FrontendPen = {
         ...source,
@@ -43,6 +51,7 @@ export function usePenPersistence({ pen, split }: UsePenPersistenceOptions): Use
   );
 
   useEffect(() => {
+    if (!autosaveEnabled) return;
     const timer = setTimeout(async () => {
       setSaveState('saving');
       const now = Date.now();
@@ -65,7 +74,7 @@ export function usePenPersistence({ pen, split }: UsePenPersistenceOptions): Use
       }
     }, AUTOSAVE_MS);
     return () => clearTimeout(timer);
-  }, [pen, split]);
+  }, [pen, split, autosaveEnabled]);
 
   useEffect(() => {
     const onHidden = () => {

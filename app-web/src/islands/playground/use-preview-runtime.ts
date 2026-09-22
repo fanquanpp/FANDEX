@@ -34,6 +34,8 @@ export function usePreviewRuntime({ pen }: UsePreviewRuntimeOptions): UsePreview
     const timer = setTimeout(() => {
       setPreviewDoc(buildPreviewDoc(previewContent));
       setRunId((n) => n + 1);
+      // 每次重跑清空控制台，避免旧运行的日志与新运行混淆、错误计数失真
+      setConsoleEntries([]);
     }, AUTORUN_MS);
     return () => clearTimeout(timer);
   }, [previewContent, pen.autoRun]);
@@ -63,6 +65,7 @@ export function usePreviewRuntime({ pen }: UsePreviewRuntimeOptions): UsePreview
   const handleRun = useCallback(() => {
     setPreviewDoc(buildPreviewDoc(pen));
     setRunId((n) => n + 1);
+    setConsoleEntries([]);
   }, [pen]);
 
   const resetPreview = useCallback((next: FrontendPen) => {

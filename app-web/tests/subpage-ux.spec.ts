@@ -127,6 +127,30 @@ test.describe('功能页扁平化与 UX 交互验证', () => {
     });
   });
 
+  test('在线前端工作台：草稿自动保存与刷新恢复', async ({ page }) => {
+    await page.goto(`${BASE}playground/`);
+    await page.waitForSelector('.pg-toolbar');
+    const jsEditor = page.locator('.pg-pane-body .cm-content').nth(2);
+    await jsEditor.click();
+    await page.keyboard.press('Control+End');
+    await page.keyboard.type('/* DRAFT_MARKER_FANDEX */');
+    // 自动保存防抖 800ms：等待足够时间确保草稿真正落库，再刷新验证恢复
+    await page.waitForTimeout(1500);
+    await page.reload();
+    await page.waitForSelector('.pg-toolbar');
+    await expect(page.locator('.pg-pane-body .cm-content').nth(2)).toContainText(
+      'DRAFT_MARKER_FANDEX',
+      { timeout: 5000 },
+    );
+    await page.evaluate(() => localStorage.clear());
+    await page.evaluate(async () => {
+      const req = indexedDB.deleteDatabase('fandex-playground');
+      await new Promise((resolve) => {
+        req.onsuccess = req.onerror = req.onblocked = resolve;
+      });
+    });
+  });
+
   test('学习路径：D/L/S 进度快捷键 + 重置按钮', async ({ page }) => {
     await page.goto(`${BASE}learning-path/javascript/`);
     await page.waitForSelector('.lp-map');

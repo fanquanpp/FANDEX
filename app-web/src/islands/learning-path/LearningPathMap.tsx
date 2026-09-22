@@ -3,7 +3,12 @@ import { useLang } from '@/lib/use-lang';
 import { t } from '@/lib/i18n';
 import type { NodeProgress, TechProgress, TechVM } from './types';
 import { computeMapLayout } from './map-layout';
-import { clearTechProgress, readTechProgress, writeNodeProgress } from './progress';
+import {
+  PROGRESS_STORAGE_KEY,
+  clearTechProgress,
+  readTechProgress,
+  writeNodeProgress,
+} from './progress';
 import MapCanvas, { type MapCanvasHandle } from './MapCanvas';
 import MapControls from './MapControls';
 import MapDetailPanel from './MapDetailPanel';
@@ -25,7 +30,20 @@ export default function LearningPathMap({ tech, base }: Props) {
   );
   const [scale, setScale] = useState(100);
   const canvasRef = useRef<MapCanvasHandle>(null);
-  const [progress, setProgress] = useState<TechProgress>(() => readTechProgress(tech.module));
+  // 初始为空、挂载后再读取：水合渲染期间读 localStorage 会造成 SSR/客户端标记不一致
+  const [progress, setProgress] = useState<TechProgress>({});
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 水合后同步本地进度，必须延迟到 effect
+    setProgress(readTechProgress(tech.module));
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === PROGRESS_STORAGE_KEY) {
+        setProgress(readTechProgress(tech.module));
+      }
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [tech.module]);
 
   const layout = useMemo(
     () => computeMapLayout(tech.stages, collapsedStageIds),
@@ -66,6 +84,19 @@ export default function LearningPathMap({ tech, base }: Props) {
     setSelectedId(null);
     setHoverId(null);
   }, []);
+
+  // 关闭详情面板后把焦点还给来源节点，键盘/读屏用户不会丢失位置
+  const handleClosePanel = useCallback(() => {
+    const id = selectedId ?? hoverId;
+    setSelectedId(null);
+    setHoverId(null);
+    if (id) {
+      const node = document.querySelector<SVGGElement>(
+        `.lp-node[data-node-id="${CSS.escape(id)}"]`,
+      );
+      node?.focus?.({ preventScroll: true });
+    }
+  }, [selectedId, hoverId]);
 
   const handleToggleStage = useCallback((id: string) => {
     setCollapsedStageIds((prev) => {
@@ -189,10 +220,7 @@ export default function LearningPathMap({ tech, base }: Props) {
           color={tech.color}
           progress={panelNode ? (progress[panelNode.id] ?? null) : null}
           onSetProgress={handleSetProgress}
-          onClose={() => {
-            setSelectedId(null);
-            setHoverId(null);
-          }}
+          onClose={handleClosePanel}
           onFocus={handleLocate}
         />
       </div>

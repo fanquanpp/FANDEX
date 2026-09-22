@@ -18,6 +18,7 @@ interface UseSplitPanesResult {
   setSplit: React.Dispatch<React.SetStateAction<number>>;
   dragging: boolean;
   editorsRef: React.RefObject<HTMLElement | null>;
+  workspaceRef: React.RefObject<HTMLDivElement | null>;
   handleSplitStart: (e: ReactPointerEvent<HTMLDivElement>) => void;
   handleSplitMove: (e: ReactPointerEvent<HTMLDivElement>) => void;
   handleSplitEnd: () => void;
@@ -32,6 +33,8 @@ export function useSplitPanes({ pen, updatePen }: UseSplitPanesOptions): UseSpli
   const dragRef = useRef<{ start: number; value: number } | null>(null);
   const paneDragRef = useRef<{ a: PaneKey; b: PaneKey; start: number; wa: number; wb: number } | null>(null);
   const editorsRef = useRef<HTMLElement | null>(null);
+  // split 以工作区（而非整个窗口）的尺寸为百分比基准，拖动必须量同一元素，否则滑块跟不上光标
+  const workspaceRef = useRef<HTMLDivElement | null>(null);
 
   const handleSplitStart = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -49,7 +52,11 @@ export function useSplitPanes({ pen, updatePen }: UseSplitPanesOptions): UseSpli
   const handleSplitMove = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
       if (!dragRef.current) return;
-      const total = pen.layout === 'left' ? window.innerWidth : window.innerHeight;
+      const el = workspaceRef.current;
+      const total = el
+        ? (pen.layout === 'left' ? el.clientWidth : el.clientHeight)
+        : (pen.layout === 'left' ? window.innerWidth : window.innerHeight);
+      if (total <= 0) return;
       const delta = (pen.layout === 'left' ? e.clientX : e.clientY) - dragRef.current.start;
       const next = Math.min(SPLIT_MAX, Math.max(SPLIT_MIN, dragRef.current.value + delta / total));
       setSplit(next);
@@ -109,6 +116,7 @@ export function useSplitPanes({ pen, updatePen }: UseSplitPanesOptions): UseSpli
     setSplit,
     dragging,
     editorsRef,
+    workspaceRef,
     handleSplitStart,
     handleSplitMove,
     handleSplitEnd,

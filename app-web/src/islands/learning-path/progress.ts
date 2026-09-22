@@ -1,16 +1,36 @@
 import type { NodeProgress, TechProgress } from './types';
 
-const STORAGE_KEY = 'fandex-lp-progress';
+export const PROGRESS_STORAGE_KEY = 'fandex-lp-progress';
+
+const STORAGE_KEY = PROGRESS_STORAGE_KEY;
 
 type ProgressStore = Record<string, TechProgress>;
+
+const VALID_STATES: ReadonlySet<string> = new Set(['learning', 'done']);
+
+function sanitizeTechProgress(value: unknown): TechProgress {
+  if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
+  const result: TechProgress = {};
+  for (const [nodeId, state] of Object.entries(value as Record<string, unknown>)) {
+    if (typeof state === 'string' && VALID_STATES.has(state)) {
+      result[nodeId] = state as NodeProgress;
+    }
+  }
+  return result;
+}
 
 function readStore(): ProgressStore {
   if (typeof window === 'undefined' || typeof localStorage === 'undefined') return {};
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (!raw) return {};
-    const parsed = JSON.parse(raw) as ProgressStore;
-    return parsed && typeof parsed === 'object' ? parsed : {};
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+    const store: ProgressStore = {};
+    for (const [module, tech] of Object.entries(parsed as Record<string, unknown>)) {
+      store[module] = sanitizeTechProgress(tech);
+    }
+    return store;
   } catch {
     return {};
   }

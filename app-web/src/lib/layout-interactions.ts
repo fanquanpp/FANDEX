@@ -158,8 +158,18 @@ function initFullscreenToggle(): void {
     document.addEventListener('fullscreenchange', onFullscreenChange);
   }
 
-  if (localStorage.getItem('fandex-fullscreen') === 'true' && !document.fullscreenElement) {
+  if (readFullscreenFlag() === 'true' && !document.fullscreenElement) {
     document.documentElement.requestFullscreen().catch(() => {});
+  }
+}
+
+function readFullscreenFlag(): string | null {
+  // localStorage 在隐私模式/被站点设置禁用时会抛异常，这里必须容错，
+  // 否则会中断本模块后续初始化（复制按钮、快捷键、SW 注册等）
+  try {
+    return localStorage.getItem('fandex-fullscreen');
+  } catch {
+    return null;
   }
 }
 

@@ -246,15 +246,18 @@ async function checkNo100vh() {
 
 async function checkNoConsoleLog() {
   let found = [];
-  await walkDir(SRC, '.ts', async (full) => {
-    const content = await readFile(full, 'utf-8');
-    const lines = content.split('\n');
-    lines.forEach((line, i) => {
-      if (/\bconsole\.(log|debug)\b/.test(line) && !line.includes('//')) {
-        found.push(`${full}:${i + 1}: ${line.trim()}`);
-      }
+  // 同时覆盖 .tsx（React 岛屿）与 .astro（组件 frontmatter），只扫 .ts 会漏掉大部分源码
+  for (const ext of ['.ts', '.tsx', '.astro']) {
+    await walkDir(SRC, ext, async (full) => {
+      const content = await readFile(full, 'utf-8');
+      const lines = content.split('\n');
+      lines.forEach((line, i) => {
+        if (/\bconsole\.(log|debug)\b/.test(line) && !line.includes('//')) {
+          found.push(`${full}:${i + 1}: ${line.trim()}`);
+        }
+      });
     });
-  });
+  }
   if (found.length === 0) pass('No console.log/debug in source');
   else {
     for (const f of found) warn(`Console log: ${f}`);
