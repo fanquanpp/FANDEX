@@ -21,9 +21,9 @@ TypeScript 的类型大多靠手写声明，但有三个操作符能直接"从�
 
 ## 前置知识
 
-- [类型系统基础](/module/typescript/080-BasicTypeSystem)：联合类型与类型别名是本篇的操作对象。
-- [接口与类型别名](/module/typescript/100-InterfaceTypeAlias)：keyof 与索引访问主要作用于接口与对象类型。
-- [工具类型原理](/module/typescript/490-UtilityTypePrinciple)：本篇的三个操作符是工具类型的实现材料。
+- [类型系统基础](/typescript/080-BasicTypeSystem)：联合类型与类型别名是本篇的操作对象。
+- [接口与类型别名](/typescript/100-InterfaceTypeAlias)：keyof 与索引访问主要作用于接口与对象类型。
+- [工具类型原理](/typescript/490-UtilityTypePrinciple)：本篇的三个操作符是工具类型的实现材料。
 
 ## 学习目标
 

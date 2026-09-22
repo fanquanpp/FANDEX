@@ -39,6 +39,11 @@ const readingTime = computeReadingTime(doc.body || '');
 
 const navigation = await getDocNavigation(module, slug);
 
+// 与 TableOfContents 的过滤/最小数量逻辑保持一致：不足时彻底不渲染 toc 插槽，
+// 否则 Layout 会保留 has-toc 的 16rem 右栏留白
+const tocHeadings = headings.filter((h) => h.depth >= 2 && h.depth <= 3);
+const showToc = tocHeadings.length >= 3;
+
 const breadcrumb = [
   { label: '首页', href: `${import.meta.env.BASE_URL}`, i18nKey: 'breadcrumb.home' },
   { label: meta?.title || module, href: `${import.meta.env.BASE_URL}${module}/` },
@@ -66,7 +71,7 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     sortedDocs={sortedDocs}
   />
 
-  <TableOfContents slot="toc" headings={headings} style={moduleColorStyle} />
+  {showToc && <TableOfContents slot="toc" headings={headings} style={moduleColorStyle} />}
 
   <div class="doc-page" style={moduleColorStyle} id="doc-root" data-module={module} data-slug={slug}>
     <GeoBgDecor variant="docs" />

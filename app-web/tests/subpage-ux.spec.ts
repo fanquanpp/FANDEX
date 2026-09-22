@@ -151,6 +151,39 @@ test.describe('功能页扁平化与 UX 交互验证', () => {
     });
   });
 
+  test('文档页阅读体验：标题锚点、面包屑与模块入口', async ({ page }) => {
+    await page.goto(`${BASE}typescript/210-KeyofTypeofIndexedAccessTypes/`);
+    await page.waitForSelector('.prose');
+
+    // 标题文本不再是超链接（此前 behavior:wrap 会把整个标题包进 a 标签），
+    // '#' 锚点由构建期注入且不带嵌套结构
+    const heading = page.locator('.prose h2').first();
+    await expect(heading).not.toContainText('[');
+    const anchorInHeading = heading.locator('> a');
+    await expect(anchorInHeading).toHaveClass(/heading-anchor/);
+    await expect(heading.locator('> a')).toHaveCount(1);
+
+    // 点击 '#' 锚点：复制链接并把 hash 写入地址栏
+    await page.context().grantPermissions(['clipboard-read', 'clipboard-write']);
+    await anchorInHeading.click();
+    await expect
+      .poll(() => page.evaluate(() => decodeURIComponent(window.location.hash)))
+      .not.toBe('');
+
+    // 前置知识区修复后的站内链接可直达（此前带 /module/ 前缀 404）
+    const resp = await page.request.get(
+      `${BASE}typescript/080-BasicTypeSystem/`,
+    );
+    expect(resp.status()).toBe(200);
+
+    // 模块首页有面包屑且当前项标记 aria-current
+    await page.goto(`${BASE}typescript/`);
+    await expect(page.locator('nav.breadcrumb .bc-current')).toHaveAttribute(
+      'aria-current',
+      'page',
+    );
+  });
+
   test('学习路径：D/L/S 进度快捷键 + 重置按钮', async ({ page }) => {
     await page.goto(`${BASE}learning-path/javascript/`);
     await page.waitForSelector('.lp-map');

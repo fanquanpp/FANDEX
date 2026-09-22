@@ -8,8 +8,8 @@ export function rehypeLazyImages() {
       if (node.tagName !== 'img') return;
       if (!node.properties) node.properties = {};
 
-      if (!node.properties.width) node.properties.width = 800;
-      if (!node.properties.height) node.properties.height = 450;
+      // 不伪造 width/height：错误的 16:9 占位在真实图片比例不符时反而造成二次回流。
+      // 保持浏览器按图片比例自然布局，避免错误预留尺寸带来的 CLS。
 
       if (!node.properties.decoding) {
         node.properties.decoding = 'async';

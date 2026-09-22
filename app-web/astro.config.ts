@@ -80,12 +80,24 @@ export default defineConfig({
       remarkPlugins: [
         remarkEmoji, // Emoji 短代码转换
         remarkMath, // 数学公式语法解析（$...$ 和 $$...$$）
-        remarkAdmonition, // 自定义提示块（:::note、:::tip 等）
+        remarkAdmonition, // 自定义提示块（GitHub 风格：> [!NOTE] / > [!TIP] / > [!WARNING] 等）
         [remarkInternalLinks, { base: SITE_BASE }], // 站内根相对链接补 base 前缀（GitHub Pages 项目站点必需）
       ],
       rehypePlugins: [
         rehypeSlug, // 为标题添加 id
-        [rehypeAutolinkHeadings, { behavior: 'wrap' }], // 标题锚点链接（包裹整个标题）
+        // 标题锚点：SSR 直接在 h2/h3 末尾追加 '#' 锚点。此前 behavior:'wrap' 会把整个
+        // 标题文本包进链接，继承 .prose a 样式导致标题看起来像超链接，且客户端
+        // initHeadingAnchors 再追加一个 # 会产生嵌套 <a> 的非法结构
+        [
+          rehypeAutolinkHeadings,
+          {
+            behavior: 'append',
+            test: (element: { tagName: string }) =>
+              element.tagName === 'h2' || element.tagName === 'h3',
+            content: { type: 'text', value: '#' },
+            properties: { class: 'heading-anchor', ariaHidden: 'true', tabIndex: -1 },
+          },
+        ],
         [rehypeKatex, { output: 'mathml' }],
         rehypeLazyImages, // 图片懒加载（添加 loading="lazy"）
         rehypeWrapTables, // 表格包裹：将 table 包入 <div class="table-wrap"> 以承担横向滚动，规避 display:table 与 overflow-x:auto 冲突

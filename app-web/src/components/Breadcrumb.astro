@@ -7,10 +7,10 @@ const { items, hasSidebar = false } = Astro.props as {
 };
 ---
 
-<nav class="breadcrumb">
+<nav class="breadcrumb" aria-label="面包屑" data-i18n-aria="breadcrumb.ariaLabel">
   {
     hasSidebar && (
-      <button class="nav-toggle" id="nav-toggle" aria-label="菜单">
+      <button class="nav-toggle" id="nav-toggle" aria-label="展开侧边栏" data-i18n-aria="sidebar.expandAria" aria-controls="app-sidebar">
         <svg
           width="18"
           height="18"
@@ -29,19 +29,19 @@ const { items, hasSidebar = false } = Astro.props as {
   {
     items.map((item, i) => {
       const isMobileHidden = items.length > 2 && i > 0 && i < items.length - 1;
+      // 移动端中间项折叠为一个省略号：仅第一处显示“/ …”，其余中间项的
+      // 前导分隔线一并隐藏，避免出现 “首页 / … / / 标题” 这类重复分隔
+      const sepHiddenOnMobile = isMobileHidden && i !== 1;
       return (
         <>
-          {i > 0 && <span class="bc-sep">/</span>}
-          {isMobileHidden ? (
-            <>
-              <span class="bc-ellipsis" aria-hidden="true">
-                ...
-              </span>
-              <span class="bc-sep bc-sep-mobile" aria-hidden="true">
-                /
-              </span>
-            </>
-          ) : null}
+          {i > 0 && (
+            <span class={`bc-sep${sepHiddenOnMobile ? ' bc-sep-hide-mobile' : ''}`}>/</span>
+          )}
+          {isMobileHidden && i === 1 && (
+            <span class="bc-ellipsis" aria-hidden="true">
+              ...
+            </span>
+          )}
           {item.href ? (
             <a
               href={item.href}
@@ -54,6 +54,7 @@ const { items, hasSidebar = false } = Astro.props as {
           ) : (
             <span
               class={`bc-current${isMobileHidden ? ' bc-mobile-hide' : ''}`}
+              aria-current={isMobileHidden ? undefined : 'page'}
               data-i18n={item.i18nKey}
               data-i18n-params={item.i18nParams ? JSON.stringify(item.i18nParams) : undefined}
             >

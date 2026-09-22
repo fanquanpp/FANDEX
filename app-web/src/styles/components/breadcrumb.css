@@ -52,10 +52,6 @@
   font-family: var(--font-family-heading);
 }
 
-.bc-sep-mobile {
-  display: none;
-}
-
 .bc-link {
   color: var(--color-text-secondary);
 }
@@ -84,8 +80,8 @@
     display: inline;
   }
 
-  .bc-sep-mobile {
-    display: inline;
+  .bc-sep-hide-mobile {
+    display: none;
   }
 
   .bc-mobile-hide {

@@ -99,6 +99,14 @@ function initScrollMemory(): void {
       sidebarScroll.scrollTop = Number(saved);
       sessionStorage.removeItem(SIDEBAR_SCROLL_KEY);
     });
+  } else {
+    // 无已保存偏移时把当前文档条目滚入可视区，长列表下当前位置一目了然
+    requestAnimationFrame(() => {
+      const active = sidebarScroll.querySelector<HTMLElement>(
+        '.fndx-sidebar__link.is-active, [aria-current="page"]',
+      );
+      active?.scrollIntoView({ block: 'nearest' });
+    });
   }
 
   sidebarScroll.querySelectorAll<HTMLAnchorElement>('a[href]').forEach((link) => {

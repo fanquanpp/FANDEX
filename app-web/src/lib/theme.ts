@@ -30,6 +30,8 @@ export function applyTheme(theme: Theme): void {
   document.documentElement.setAttribute('data-theme', theme);
   document.documentElement.style.colorScheme = theme;
   updateMetaThemeColor(theme);
+  // 广播主题变更：Mermaid 图表等需按主题重绘的组件监听此事件
+  document.dispatchEvent(new CustomEvent('fandex:themechange', { detail: { theme } }));
 }
 
 export function setTheme(theme: Theme): void {
