@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 类型只存在于编译期：用 Schema 库补上运行时这一环。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-22'
 related:
   - 'typescript/590-TypeSafeEnvVar'
   - 'typescript/600-TypeSafeFormValidation'

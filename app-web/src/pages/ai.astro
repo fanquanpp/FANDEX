@@ -1,0 +1,644 @@
+---
+import '@/styles/site.css';
+import GeoBgDecor from '@/components/GeoBgDecor.astro';
+import ThemeLangBootstrap from '@/components/ThemeLangBootstrap.astro';
+import { SITE } from '@/lib/constants';
+import { AI_SETTINGS_CSP } from '@/lib/csp';
+import { t } from '@/lib/i18n';
+import { AI_CHANNEL_ACTIVE, AI_DEFAULT_MODEL, AI_PROVIDERS } from '@/lib/ai';
+
+const base = import.meta.env.BASE_URL;
+const orca = AI_PROVIDERS.orca;
+// 通道总闸：false（预留阶段）时展示"未激活"横幅；激活后横幅自动消失
+const channelActive = AI_CHANNEL_ACTIVE;
+---
+
+<html lang={SITE.lang}>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="Content-Security-Policy" content={AI_SETTINGS_CSP} />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <meta name="robots" content="noindex" />
+    <title>{t('ai.pageTitle')} | {SITE.title}</title>
+    <meta name="description" content={t('ai.pageDesc')} />
+
+    <link rel="stylesheet" href={`${base}fonts/fonts.css`} />
+    <link
+      rel="preload"
+      href={`${base}fonts/jetbrains-mono-400.woff2`}
+      as="font"
+      type="font/woff2"
+      crossorigin
+    />
+    <ThemeLangBootstrap />
+  </head>
+  <body>
+    <div class="ai-page">
+      <GeoBgDecor variant="info" />
+      <main class="ai-container">
+        <header class="ai-head">
+          <div class="ai-head-row">
+            <p class="ai-marker" aria-hidden="true">fandex://settings/ai</p>
+            <div class="ai-lang" role="group" aria-label="Language">
+              <button type="button" class="ai-lang-btn is-active" data-ai-lang="zh">中文</button>
+              <button type="button" class="ai-lang-btn" data-ai-lang="en">English</button>
+            </div>
+          </div>
+          <h1 class="ai-title" data-i18n="ai.pageTitle">AI 设置</h1>
+          <p class="ai-subtitle" data-i18n="ai.pageDesc">
+            可选 AI 服务商（Provider）的接入通道设置。FANDEX 不提供 AI 服务本身，仅提供通道。
+          </p>
+          {!channelActive && (
+            <div class="ai-dormant" data-ai-dormant role="note">
+              <p class="ai-dormant-title" data-i18n="ai.dormantTitle">
+                通道预留中：本版本不包含任何 AI 功能
+              </p>
+              <p class="ai-dormant-body" data-i18n="ai.dormantBody">
+                本页仅搭建接入架构：你可以预先选择服务商并保存本机偏好，但在后续版本激活之前，FANDEX
+                不会发起任何 AI 请求。
+              </p>
+            </div>
+          )}
+        </header>
+
+        <section class="ai-card" aria-labelledby="ai-provider-title">
+          <h2 id="ai-provider-title" class="ai-card-title" data-i18n="ai.providerTitle">AI 服务商</h2>
+          <p class="ai-provider-name">{orca.name}</p>
+          <p class="ai-provider-desc" data-i18n="ai.providerDesc">
+            OpenAI
+            兼容的多上游模型网关：一个密钥即可调用多家模型服务商，按上游原价计费，并提供限量的免费模型（ID
+            以 -free 结尾）。
+          </p>
+
+          <div class="ai-paths">
+            <article class="ai-path">
+              <h3 class="ai-path-title" data-i18n="ai.pathPlatformTitle">方式一：OrcaRouter 平台密钥</h3>
+              <p class="ai-path-body" data-i18n="ai.pathPlatformBody">
+                在 OrcaRouter
+                控制台创建密钥（sk-orca- 开头，可设额度与有效期），粘贴到下方输入框。密钥只保存在你自己的浏览器中：FANDEX
+                无服务器，不经手、不收集、不回显明文。
+              </p>
+              <a class="ai-link" href={orca.consoleKeysUrl} target="_blank" rel="noopener noreferrer" data-i18n="ai.keysLink">
+                前往控制台获取密钥
+              </a>
+            </article>
+            <article class="ai-path">
+              <h3 class="ai-path-title" data-i18n="ai.pathByokTitle">方式二：BYOK 挂载自有上游密钥</h3>
+              <p class="ai-path-body" data-i18n="ai.pathByokBody">
+                在 OrcaRouter
+                控制台挂载你自己的上游 API 密钥（BYOK），由 OrcaRouter
+                负责加密存储（保存后永不返回原文，只显示掩码标签）。BYOK
+                流量可能产生平台费（默认 5%，以控制台显示为准），由 OrcaRouter
+                从你的账单中扣除，与 FANDEX 无关。
+              </p>
+              <a class="ai-link" href={orca.consoleByokUrl} target="_blank" rel="noopener noreferrer" data-i18n="ai.byokLink">
+                前往 BYOK 配置
+              </a>
+            </article>
+          </div>
+        </section>
+
+        <section class="ai-card" aria-labelledby="ai-form-title">
+          <h2 id="ai-form-title" class="ai-card-title" data-i18n="ai.keyLabel">API 密钥</h2>
+
+          <div class="ai-field">
+            <label class="ai-label" for="ai-key">API Key</label>
+            <div class="ai-key-row">
+              <input
+                id="ai-key"
+                class="ai-input ai-input--mono"
+                type="password"
+                autocomplete="off"
+                spellcheck="false"
+                placeholder={t('ai.keyPlaceholder')}
+                data-i18n-placeholder="ai.keyPlaceholder"
+              />
+              <button id="ai-key-toggle" type="button" class="ai-btn ai-btn--ghost" aria-pressed="false" data-i18n="ai.keyShow">
+                显示
+              </button>
+            </div>
+            <p id="ai-key-status" class="ai-status" aria-live="polite"></p>
+          </div>
+
+          <div class="ai-field">
+            <label class="ai-check">
+              <input id="ai-remember" type="checkbox" />
+              <span data-i18n="ai.rememberLabel">
+                在本设备记住密钥（写入本机 localStorage，绝不离开设备）
+              </span>
+            </label>
+            <p class="ai-hint" data-i18n="ai.rememberNote">
+              默认不勾选：密钥仅保存在当前页面会话内存中，刷新页面即失效。
+            </p>
+          </div>
+
+          <div class="ai-field">
+            <label class="ai-label" for="ai-model" data-i18n="ai.modelLabel">默认模型 ID</label>
+            <input id="ai-model" class="ai-input ai-input--mono" type="text" value={AI_DEFAULT_MODEL} autocomplete="off" spellcheck="false" />
+            <p class="ai-hint" data-i18n="ai.modelHint">
+              例如 orcarouter/free（免费路由）或 openai/gpt-4o-mini。注意：免费模型 ID 以 -free
+              结尾，去掉后缀会正常计费。
+            </p>
+          </div>
+
+          <div class="ai-actions">
+            <button id="ai-save" type="button" class="ai-btn ai-btn--primary" data-i18n="ai.save">保存设置</button>
+            <button id="ai-clear" type="button" class="ai-btn ai-btn--ghost" data-i18n="ai.clear">清除本机 AI 数据</button>
+            <button id="ai-test" type="button" class="ai-btn ai-btn--ghost" data-i18n="ai.test">测试连接</button>
+          </div>
+          <p id="ai-save-status" class="ai-status" aria-live="polite"></p>
+          <p id="ai-test-status" class="ai-status" aria-live="polite"></p>
+        </section>
+
+        <section class="ai-card" aria-labelledby="ai-resp-title">
+          <h2 id="ai-resp-title" class="ai-card-title" data-i18n="ai.responsibilityTitle">责任与隐私要点</h2>
+          <ul class="ai-list">
+            <li data-i18n="ai.resp1">
+              FANDEX 仅提供接入选项，不提供 AI 服务本身，不对 AI 输出内容的准确性、合法性负责。
+            </li>
+            <li data-i18n="ai.resp2">
+              使用 AI 服务产生的全部费用由你自行承担；BYOK 平台费（默认 5%）由 OrcaRouter
+              收取，与 FANDEX 无关。
+            </li>
+            <li data-i18n="ai.resp3">
+              你的密钥与请求内容不经过任何 FANDEX 服务器，由你的浏览器直连 OrcaRouter。
+            </li>
+            <li data-i18n="ai.resp4">
+              请求数据会经由 OrcaRouter 转发给上游模型服务商，请自行阅读并同意其服务条款与隐私政策。
+            </li>
+          </ul>
+          <p class="ai-hint">
+            <a class="ai-link" href={`${base}disclaimer/`} data-i18n="ai.disclaimerLink">查看完整免责声明</a>
+            {' · '}
+            <a class="ai-link" href={orca.docsUrl} target="_blank" rel="noopener noreferrer" data-i18n="ai.orcaDocsLink">OrcaRouter 文档</a>
+            {' · '}
+            <a class="ai-link" href={orca.dataHandlingUrl} target="_blank" rel="noopener noreferrer" data-i18n="ai.orcaDataLink">OrcaRouter 数据处理说明</a>
+          </p>
+        </section>
+
+        <nav class="ai-exits" aria-label={t('ai.exitsAria')} data-i18n-aria="ai.exitsAria">
+          <a href={base} class="ai-btn ai-btn--ghost" data-i18n="legal.backHome">返回首页</a>
+        </nav>
+      </main>
+    </div>
+
+    <script>
+      import '@/lib/i18n-dom';
+      import { getLang, setLang, t } from '@/lib/i18n';
+      import {
+        AI_DEFAULT_MODEL,
+        clearApiKey,
+        getApiKey,
+        loadAiSettings,
+        maskApiKey,
+        resetAllAiData,
+        saveAiSettings,
+        setApiKey,
+        verifyOrcaConnection,
+      } from '@/lib/ai';
+
+      // 本页为纯静态表单：设置写本机 localStorage（不含密钥明文），
+      // 密钥经 src/lib/ai/settings.ts 隔离存放（会话内存或本机 localStorage）。
+      // 不打印任何日志：密钥与请求内容一律不落 console。
+
+      function initAiSettingsForm(): void {
+        const keyInput = document.querySelector<HTMLInputElement>('#ai-key');
+        const keyToggle = document.querySelector<HTMLButtonElement>('#ai-key-toggle');
+        const rememberInput = document.querySelector<HTMLInputElement>('#ai-remember');
+        const modelInput = document.querySelector<HTMLInputElement>('#ai-model');
+        const saveBtn = document.querySelector<HTMLButtonElement>('#ai-save');
+        const clearBtn = document.querySelector<HTMLButtonElement>('#ai-clear');
+        const testBtn = document.querySelector<HTMLButtonElement>('#ai-test');
+        const keyStatus = document.querySelector<HTMLParagraphElement>('#ai-key-status');
+        const saveStatus = document.querySelector<HTMLParagraphElement>('#ai-save-status');
+        const testStatus = document.querySelector<HTMLParagraphElement>('#ai-test-status');
+        if (
+          !keyInput ||
+          !keyToggle ||
+          !rememberInput ||
+          !modelInput ||
+          !saveBtn ||
+          !clearBtn ||
+          !testBtn ||
+          !keyStatus ||
+          !saveStatus ||
+          !testStatus
+        ) {
+          return;
+        }
+
+        const flashStatus = (target: HTMLParagraphElement, message: string): void => {
+          target.textContent = message;
+          window.setTimeout(() => {
+            if (target.textContent === message) target.textContent = '';
+          }, 3000);
+        };
+
+        const renderKeyState = (): void => {
+          const settings = loadAiSettings();
+          modelInput.value = settings.model;
+          rememberInput.checked = settings.keyStorage === 'device';
+          const existing = getApiKey();
+          if (existing) {
+            const storedLabel =
+              settings.keyStorage === 'device'
+                ? t('ai.keyStoredDevice')
+                : t('ai.keyStoredSession');
+            keyStatus.textContent = `${t('ai.keySavedAs', { mask: maskApiKey(existing) })} · ${storedLabel}`;
+          } else {
+            keyStatus.textContent = t('ai.keyNotSet');
+          }
+          keyToggle.textContent =
+            keyInput.type === 'password' ? t('ai.keyShow') : t('ai.keyHide');
+        };
+
+        saveBtn.addEventListener('click', () => {
+          const previous = loadAiSettings();
+          const remember = rememberInput.checked;
+          const mode = remember ? 'device' : 'session';
+          const key = keyInput.value.trim();
+          if (key.length > 0) {
+            setApiKey(key, mode);
+          } else if (!remember && previous.keyStorage === 'device') {
+            // 取消"记住"且未输入新密钥：丢弃此前的本机密钥
+            clearApiKey();
+          }
+          saveAiSettings({
+            provider: 'orca',
+            enabled: true,
+            model: modelInput.value.trim() || AI_DEFAULT_MODEL,
+            keyStorage: mode,
+          });
+          keyInput.value = '';
+          renderKeyState();
+          flashStatus(saveStatus, t('ai.saved'));
+        });
+
+        clearBtn.addEventListener('click', () => {
+          resetAllAiData();
+          keyInput.value = '';
+          rememberInput.checked = false;
+          modelInput.value = AI_DEFAULT_MODEL;
+          renderKeyState();
+          flashStatus(saveStatus, t('ai.cleared'));
+        });
+
+        testBtn.addEventListener('click', async () => {
+          testBtn.disabled = true;
+          testStatus.textContent = t('ai.testing');
+          try {
+            const key = getApiKey();
+            if (!key) {
+              testStatus.textContent = t('ai.testNoKey');
+              return;
+            }
+            const result = await verifyOrcaConnection({ key });
+            testStatus.textContent = result.ok
+              ? t('ai.testOk', { n: String(result.modelCount ?? 0) })
+              : t('ai.testFail', { message: result.error?.message ?? 'unknown' });
+          } catch {
+            testStatus.textContent = t('ai.testFail', { message: 'unknown' });
+          } finally {
+            testBtn.disabled = false;
+          }
+        });
+
+        keyToggle.addEventListener('click', () => {
+          const show = keyInput.type === 'password';
+          keyInput.type = show ? 'text' : 'password';
+          keyToggle.setAttribute('aria-pressed', show ? 'true' : 'false');
+          renderKeyState();
+        });
+
+        document.addEventListener('fandex:langchange', renderKeyState);
+        renderKeyState();
+      }
+
+      initAiSettingsForm();
+
+      // 页内语言切换：走 setLang 标准路径（写 fandex-lang、更新 data-lang 并广播，
+      // i18n-dom 据此应用全页文案）
+      const langButtons = document.querySelectorAll<HTMLButtonElement>('[data-ai-lang]');
+
+      const syncLangButtons = (): void => {
+        const lang = getLang();
+        langButtons.forEach((b) => {
+          b.classList.toggle('is-active', (b.dataset.aiLang ?? 'zh') === lang);
+        });
+      };
+
+      langButtons.forEach((btn) => {
+        btn.addEventListener('click', () => {
+          setLang(btn.dataset.aiLang === 'en' ? 'en' : 'zh');
+          syncLangButtons();
+        });
+      });
+
+      document.addEventListener('fandex:langchange', syncLangButtons);
+      syncLangButtons();
+    </script>
+  </body>
+</html>
+
+<style>
+  .ai-page {
+    position: relative;
+    min-height: 100vh;
+    min-height: 100dvh;
+  }
+
+  .ai-container {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: var(--space-8) var(--space-4) var(--space-10);
+  }
+
+  .ai-head {
+    margin-bottom: var(--space-6);
+    padding-bottom: var(--space-4);
+    border-bottom: 1px solid var(--color-border-light);
+  }
+
+  .ai-head-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-3);
+    margin-bottom: var(--space-2);
+  }
+
+  .ai-marker {
+    margin: 0;
+    font-family: var(--font-family-mono, monospace);
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    color: var(--color-fg-tertiary);
+  }
+
+  .ai-lang {
+    display: inline-flex;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm, 2px);
+    overflow: hidden;
+  }
+
+  .ai-lang-btn {
+    padding: 4px 12px;
+    border: none;
+    background: transparent;
+    font-size: 0.75rem;
+    color: var(--color-fg-tertiary);
+    cursor: pointer;
+    transition:
+      color var(--motion-duration-instant) var(--motion-easing-out),
+      background-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .ai-lang-btn.is-active {
+    background: color-mix(in srgb, var(--color-accent-base) 14%, transparent);
+    color: var(--color-accent-base);
+  }
+
+  .ai-title {
+    margin: 0;
+    font-family: var(--font-family-heading);
+    font-size: 1.8rem;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.04em;
+    color: var(--color-fg-primary);
+  }
+
+  .ai-subtitle {
+    margin: var(--space-2) 0 0;
+    font-size: var(--font-size-secondary);
+    color: var(--color-fg-tertiary);
+    line-height: var(--font-line-height-body);
+  }
+
+  .ai-dormant {
+    margin-top: var(--space-4);
+    padding: var(--space-3) var(--space-4);
+    border: 1px solid color-mix(in srgb, var(--color-accent-base) 40%, transparent);
+    border-left-width: 3px;
+    border-radius: var(--radius-md, 4px);
+    background: color-mix(in srgb, var(--color-accent-base) 8%, transparent);
+  }
+
+  .ai-dormant-title {
+    margin: 0;
+    font-size: var(--font-size-secondary);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent-base);
+  }
+
+  .ai-dormant-body {
+    margin: var(--space-1) 0 0;
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-secondary);
+    line-height: var(--font-line-height-body);
+  }
+
+  .ai-card {
+    margin-bottom: var(--space-5);
+    padding: var(--space-5);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-md, 4px);
+    background: color-mix(in srgb, var(--color-bg-primary, transparent) 60%, transparent);
+  }
+
+  .ai-card-title {
+    margin: 0 0 var(--space-3);
+    font-family: var(--font-family-heading);
+    font-size: 1.05rem;
+    font-weight: var(--font-weight-bold);
+    letter-spacing: 0.04em;
+    color: var(--color-fg-primary);
+  }
+
+  .ai-provider-name {
+    margin: 0 0 var(--space-1);
+    font-family: var(--font-family-mono, monospace);
+    font-size: 0.92rem;
+    font-weight: var(--font-weight-bold);
+    color: var(--color-accent-base);
+    letter-spacing: 0.04em;
+  }
+
+  .ai-provider-desc {
+    margin: 0 0 var(--space-4);
+    font-size: var(--font-size-secondary);
+    color: var(--color-fg-secondary);
+    line-height: var(--font-line-height-body);
+  }
+
+  .ai-paths {
+    display: grid;
+    gap: var(--space-3);
+  }
+
+  @media (min-width: 640px) {
+    .ai-paths {
+      grid-template-columns: 1fr 1fr;
+    }
+  }
+
+  .ai-path {
+    padding: var(--space-3);
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm, 2px);
+  }
+
+  .ai-path-title {
+    margin: 0 0 var(--space-2);
+    font-size: var(--font-size-secondary);
+    font-weight: var(--font-weight-bold);
+    color: var(--color-fg-primary);
+  }
+
+  .ai-path-body {
+    margin: 0 0 var(--space-2);
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+    line-height: var(--font-line-height-body);
+  }
+
+  .ai-field {
+    margin-bottom: var(--space-4);
+  }
+
+  .ai-label {
+    display: block;
+    margin-bottom: var(--space-1);
+    font-size: var(--font-size-caption);
+    font-weight: var(--font-weight-bold);
+    letter-spacing: var(--font-letter-spacing-label);
+    color: var(--color-fg-secondary);
+  }
+
+  .ai-key-row {
+    display: flex;
+    gap: var(--space-2);
+  }
+
+  .ai-input {
+    width: 100%;
+    padding: 9px 12px;
+    border: 1px solid var(--color-border-strong, var(--color-border-light));
+    border-radius: var(--radius-sm, 2px);
+    background: transparent;
+    color: var(--color-fg-primary);
+    font-size: var(--font-size-secondary);
+  }
+
+  .ai-input--mono {
+    font-family: var(--font-family-mono, monospace);
+    letter-spacing: 0.02em;
+  }
+
+  .ai-input:focus-visible {
+    outline: 2px solid var(--color-accent-base);
+    outline-offset: 1px;
+  }
+
+  .ai-check {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-2);
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-secondary);
+    cursor: pointer;
+  }
+
+  .ai-check input {
+    margin-top: 2px;
+    accent-color: var(--color-accent-base);
+  }
+
+  .ai-hint {
+    margin: var(--space-1) 0 0;
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-tertiary);
+    line-height: var(--font-line-height-body);
+  }
+
+  .ai-status {
+    margin: var(--space-2) 0 0;
+    min-height: 1.2em;
+    font-family: var(--font-family-mono, monospace);
+    font-size: var(--font-size-caption);
+    color: var(--color-fg-secondary);
+  }
+
+  .ai-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-top: var(--space-4);
+  }
+
+  .ai-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 9px 18px;
+    border-radius: var(--radius-md, 4px);
+    font-size: var(--font-size-secondary);
+    text-decoration: none;
+    cursor: pointer;
+    white-space: nowrap;
+    transition:
+      color var(--motion-duration-instant) var(--motion-easing-out),
+      border-color var(--motion-duration-instant) var(--motion-easing-out),
+      background-color var(--motion-duration-instant) var(--motion-easing-out);
+  }
+
+  .ai-btn--primary {
+    border: 1px solid var(--color-accent-base);
+    background: var(--color-accent-base);
+    color: var(--color-text-inverse, #ffffff);
+  }
+
+  .ai-btn--primary:hover {
+    background: color-mix(in srgb, var(--color-accent-base) 85%, #000000);
+  }
+
+  .ai-btn--ghost {
+    border: 1px solid var(--color-border-strong, var(--color-border-light));
+    background: transparent;
+    color: var(--color-fg-secondary);
+  }
+
+  .ai-btn--ghost:hover {
+    color: var(--color-accent-base);
+    border-color: color-mix(in srgb, var(--color-accent-base) 50%, transparent);
+  }
+
+  .ai-btn:disabled {
+    opacity: 0.55;
+    cursor: wait;
+  }
+
+  .ai-list {
+    margin: 0 0 var(--space-3);
+    padding-inline-start: 1.2em;
+    display: grid;
+    gap: var(--space-2);
+    font-size: var(--font-size-secondary);
+    color: var(--color-fg-secondary);
+    line-height: var(--font-line-height-body);
+  }
+
+  .ai-link {
+    color: var(--color-accent-base);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  .ai-exits {
+    margin-top: var(--space-7);
+    display: flex;
+    gap: var(--space-3);
+  }
+</style>

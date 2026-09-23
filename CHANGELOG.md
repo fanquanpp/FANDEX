@@ -39,6 +39,16 @@
   Princeton Algorithms、Berkeley CS 61B、Back To Back SWE、
   WilliamFiset）；分组标签与区块副注中英双语，算法页 SEO 描述与
   disclaimer（网页版、仓库版）平台列举同步更新；
+- **AI 接入通道（预留，未激活）**：新增网页端 AI 设置页 `/ai/` 与
+  `src/lib/ai/` 通道模块（服务商注册表、OpenAI 兼容请求客户端、密钥
+  隔离存储层），支持将 OrcaRouter 配置为可选 Provider——OrcaRouter
+  为 OpenAI 兼容的多上游模型网关（`api.orcarouter.ai`，浏览器直连已
+  验证 CORS 放行），提供平台密钥与 BYOK 两种由用户自行配置的密钥方式，
+  设置页内附控制台跳转、连通性测试（`/v1/models` 校验密钥）与责任
+  声明；密钥默认仅存会话内存、勾选后写入本机 localStorage，FANDEX
+  不收集不记录；通道总闸 `AI_CHANNEL_ACTIVE` 默认 false，本版本不发起
+  任何 AI 对话请求，仅预留架构；页脚「项目资源」新增入口（桌面端剔除
+  该页与链接，`/ai/` 页使用独立 CSP 仅放行该 API 域名，并 noindex）；
 
 ### 修复
 
@@ -74,6 +84,11 @@
 
 ### 变更
 
+- **免责声明扩展 AI 通道条款**：仓库版 `DISCLAIMER.md` 与网页版免责声明页
+  同步新增「AI 接入通道（预留）」一节（中英双语），明确 FANDEX 仅提供
+  接入选项不提供 AI 服务、密钥仅存本机、费用用户自担、数据经 OrcaRouter
+  转发需自行接受其隐私政策，原第 5-9 节顺延为第 6-10 节；README 新增
+  「关于 AI 功能的说明」章节；
 - **web 端依赖全量升级**：lockfile 全量重解析至各依赖当前最新版——
   mermaid 11 → 12（12 默认布局引擎换 ELK、默认外观换 neo，渲染初始化
   显式固定 dagre + classic，约 520 篇含图表文档观感与升级前一致）；

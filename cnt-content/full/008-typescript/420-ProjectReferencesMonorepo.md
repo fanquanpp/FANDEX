@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: tsc --build、project references 与大仓里的 TypeScript 组织。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-22'
 related:
   - 'typescript/330-ModuleResolutionModernToolchains'
   - 'typescript/350-TypeScriptEngineeringConfig'

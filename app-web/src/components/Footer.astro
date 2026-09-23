@@ -77,6 +77,9 @@ const yearRange =
         >
           MIT License
         </a>
+        {!IS_DESKTOP_BUILD && (
+          <a href={`${base}ai/`} class="fndx-footer__link" data-i18n="footer.aiSettings">AI 设置</a>
+        )}
         <a href={`${base}disclaimer/`} class="fndx-footer__link" data-i18n="footer.disclaimer">免责声明</a>
       </nav>
     </div>

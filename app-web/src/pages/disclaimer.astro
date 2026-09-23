@@ -89,7 +89,20 @@ const UPDATED = '2026-09-23';
             约束；Android 端的更新检查会访问 GitHub Releases API，该请求由 GitHub 按其隐私政策处理。
           </p>
 
-          <h2>5. 第三方链接与商标</h2>
+          <h2>5. AI 接入通道（预留）</h2>
+          <p>
+            FANDEX 仅提供 AI 服务商（Provider，当前为 OrcaRouter）的<strong>可选接入通道</strong>与本机设置入口（网页端
+            <code>/ai/</code> 页），<strong>不提供 AI 服务本身</strong>，不对任何 AI 输出内容的准确性、合法性负责。通道默认关闭：不配置密钥即不会产生任何 AI 网络请求。
+          </p>
+          <p>
+            你在设置页填写的 API 密钥仅保存在你自己的浏览器中（默认仅当前页面会话内存；勾选"在本设备记住"后写入本机
+            localStorage）；本项目无服务器、不收集、不缓存、不记录任何密钥。配置后，AI
+            请求由你的浏览器<strong>直连</strong>所选服务商（如 api.orcarouter.ai）并经由其转发给上游模型服务商：请自行阅读并同意
+            OrcaRouter 及对应服务商的服务条款与隐私政策（OrcaRouter 声明不持久化提示词与输出内容；BYOK
+            模式可能收取默认 5% 的平台费，以其控制台显示为准）；使用 AI 功能产生的全部费用由你自行承担，与 FANDEX 无关。桌面端构建剔除该页，保持完全离线。
+          </p>
+
+          <h2>6. 第三方链接与商标</h2>
           <p>
             文档中引用的第三方网站链接（如 MDN、各技术官方文档）仅出于学习目的提供，对其内容的可用性、准确性与隐私实践不承担任何责任；外部链接不构成背书。
           </p>
@@ -100,7 +113,7 @@ const UPDATED = '2026-09-23';
             文中提及的所有第三方产品名称、商标与 Logo（如 Java、React、Kotlin 等），其权利归各自所有者所有。它们在文档中的出现仅为<strong>技术说明之用途</strong>，不代表与本仓库存在任何合作、归属或背书关系。
           </p>
 
-          <h2>6. 内容准确性</h2>
+          <h2>7. 内容准确性</h2>
           <p>
             本站内容虽经编写与校验流程（含引用完整性审计），仍可能存在疏漏或错误。如果你发现内容错误，欢迎通过
             <a href="https://github.com/fanquanpp/FANDEX/issues" target="_blank" rel="noopener noreferrer">Issue</a>
@@ -109,12 +122,12 @@ const UPDATED = '2026-09-23';
             反馈；但在修正之前，请以官方文档作为最终依据。
           </p>
 
-          <h2>7. 责任限制</h2>
+          <h2>8. 责任限制</h2>
           <p>
             在适用法律允许的最大范围内，本仓库作者与贡献者<strong>不对</strong>因使用或无法使用本仓库内容而产生的任何直接、间接、附带、特殊或后果性损害承担责任。你因使用本仓库内容而采取的任何行动，风险由你自行承担。
           </p>
 
-          <h2>8. 许可</h2>
+          <h2>9. 许可</h2>
           <p>
             本仓库内容在
             <a href="https://github.com/fanquanpp/FANDEX/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>
@@ -186,7 +199,28 @@ const UPDATED = '2026-09-23';
             its own privacy policy.
           </p>
 
-          <h2>5. Third-party links and trademarks</h2>
+          <h2>5. AI provider channel (reserved)</h2>
+          <p>
+            FANDEX only provides an <strong>optional integration channel</strong> for an AI provider
+            (currently OrcaRouter) with a local settings page (the web-only
+            <code>/ai/</code> page). It does <strong>not</strong> provide the AI service itself and is
+            not responsible for the accuracy or legality of any AI output. The channel is off by
+            default: without a configured key, no AI network request is ever made.
+          </p>
+          <p>
+            Any API key you enter on the settings page stays in your own browser (in the current
+            page session by default; in this device's localStorage only if you explicitly tick
+            "remember on this device"). This project has no servers and never collects, caches, or
+            logs keys. Once configured, AI requests go <strong>directly</strong> from your browser to
+            the selected provider (e.g. api.orcarouter.ai) and are forwarded by it to upstream model
+            providers: please read and accept the terms and privacy policies of OrcaRouter and the
+            relevant providers yourself (OrcaRouter states it does not persist prompts or outputs;
+            BYOK traffic may incur a default 5% platform fee as shown in its console). All costs are
+            borne by you and are unrelated to FANDEX. The desktop build excludes this page and stays
+            fully offline.
+          </p>
+
+          <h2>6. Third-party links and trademarks</h2>
           <p>
             Third-party links (MDN, official docs, etc.) are provided for learning purposes only.
             We are not responsible for their availability, accuracy, or privacy practices, and
@@ -206,7 +240,7 @@ const UPDATED = '2026-09-23';
             by this repository.
           </p>
 
-          <h2>6. Accuracy</h2>
+          <h2>7. Accuracy</h2>
           <p>
             Despite writing and review passes (including reference-integrity audits), mistakes can
             happen. If you find an error, please open an
@@ -216,7 +250,7 @@ const UPDATED = '2026-09-23';
             Until a fix lands, official documentation remains the final authority.
           </p>
 
-          <h2>7. Limitation of liability</h2>
+          <h2>8. Limitation of liability</h2>
           <p>
             To the maximum extent permitted by applicable law, the authors and contributors of
             this repository are <strong>not liable</strong> for any direct, indirect, incidental,
@@ -224,7 +258,7 @@ const UPDATED = '2026-09-23';
             content. Any action you take based on this repository is at your own risk.
           </p>
 
-          <h2>8. License</h2>
+          <h2>9. License</h2>
           <p>
             Content is provided under the
             <a href="https://github.com/fanquanpp/FANDEX/blob/main/LICENSE" target="_blank" rel="noopener noreferrer">MIT License</a>.

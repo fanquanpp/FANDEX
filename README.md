@@ -176,6 +176,31 @@ push 后 CI 自动构建并发布 GitHub Release（`--no-push` 只改文件与�
 
 版本变更历史见 [CHANGELOG.md](CHANGELOG.md)。
 
+## 关于 AI 功能的说明
+
+FANDEX 本身不提供 AI 服务。网页端提供可选的 AI 服务商（Provider）接入通道，当前支持
+[OrcaRouter](https://www.orcarouter.ai/)（OpenAI 兼容的多上游模型网关），设置入口见页脚
+"AI 设置"（`/ai/`）。你可以在设置中选择接入 OrcaRouter 作为 AI 提供商，使用你自有的
+API Key 来启用相关功能。
+
+- **功能性质**：FANDEX 仅提供接入选项，不提供 AI 服务本身，也不对 AI 输出内容的
+  准确性、合法性负责。通道默认关闭——不配置密钥即不会产生任何 AI 网络请求。
+- **密钥来源**：两种方式均由你自行配置，FANDEX 均不经手——(1) 在
+  [OrcaRouter 控制台](https://www.orcarouter.ai/console/keys)创建平台密钥后填入
+  FANDEX 设置；(2) 在 [BYOK 页面](https://www.orcarouter.ai/console/byok)挂载你自己的
+  上游密钥（由 OrcaRouter 加密存储，保存后永不返回原文）。
+- **密钥保存**：API Key 仅保存在你自己的浏览器中（默认仅当前会话内存；勾选"在本设备
+  记住"后写入本机 localStorage）。FANDEX 无账号、无自建服务器、无统计埋点，不会收集、
+  缓存、记录或传输你的密钥。
+- **费用归属**：使用 AI 功能产生的所有费用由你自行承担，与 FANDEX 项目无关。BYOK 模式
+  下 OrcaRouter 可能收取平台费（默认 5%），该费用由 OrcaRouter 从你的账单中扣除。
+- **数据流向**：配置后，请求由你的浏览器直连 `api.orcarouter.ai`，并经由 OrcaRouter
+  转发给上游 AI 服务商；请自行阅读并同意
+  [OrcaRouter 数据处理说明](https://docs.orcarouter.ai/operations/data-handling)及对应
+  服务商的服务条款与隐私政策。OrcaRouter 声明不持久化提示词与输出内容。
+- **如你不希望使用任何 AI 功能**：请不要配置 API Key，该功能将保持关闭；也可以随时在
+  设置页一键清除本机 AI 数据。桌面端构建不包含该通道，完全离线。
+
 ## 贡献
 
 欢迎修正文档错误、补充知识点与报告问题。仓库采用 `main`（受保护发布主线）+
@@ -191,6 +216,6 @@ push 后 CI 自动构建并发布 GitHub Release（`--no-push` 只改文件与�
 - 学习内容仅供教育参考，不构成职业、投资或任何专业建议；在线前端实验场的代码仅在
   用户浏览器本地运行、数据仅存本地；本项目无账号、无自建服务器、无统计埋点。
 - 完整条款见 [DISCLAIMER.md](DISCLAIMER.md)（含教育用途、代码示例、实验场、隐私、
-  商标归属与责任限制九节）；网站访客可在页脚「免责声明」直达
+  AI 接入通道、商标归属与责任限制十节）；网站访客可在页脚「免责声明」直达
   [网页版](https://fanquanpp.github.io/FANDEX/disclaimer/)。
 - 贡献内容的许可与引用规范见 [CONTRIBUTING.md](CONTRIBUTING.md)「许可与免责」。

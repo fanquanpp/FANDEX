@@ -23,9 +23,12 @@ if (!existsSync(dist)) {
   process.exit(1);
 }
 
-console.log('[2/2] 剔除前端实验室（playground）产物...');
+console.log('[2/2] 剔除网页端专属产物（前端实验室、AI 设置页）...');
 const playgroundDir = join(dist, 'playground');
 if (existsSync(playgroundDir)) rmSync(playgroundDir, { recursive: true });
+// AI 设置页为浏览器直连外部 API 的通道入口，桌面端保持完全离线，一并剔除
+const aiDir = join(dist, 'ai');
+if (existsSync(aiDir)) rmSync(aiDir, { recursive: true });
 
 console.log('桌面端前端产物就绪：', dist);
 console.log('注意：此时 dist 为桌面变体（base=/），仅供 Tauri 打包，勿直接部署为 web 站点');
