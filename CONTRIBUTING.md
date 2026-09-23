@@ -124,7 +124,7 @@ main 的 PR 与发版」时验证；本地预览时仍可随时运行。
 | 工作流 | 触发 | 内容 |
 | --- | --- | --- |
 | deploy.yml | push main 与指向 main 的 PR（带路径过滤） | 构建 + 类型检查 + 内容审计 + QA 门禁；仅 push 到 main 时发布 GitHub Pages |
-| lighthouse.yml | 定时 / 手动 | Lighthouse 性能基线巡检 |
+| lighthouse.yml | push main 与指向 main 的 PR（带路径过滤）/ 手动 | Lighthouse 性能基线巡检 |
 
 Android 与桌面端的 CI 构建工作流（android-build / desktop-build /
 android-release）已退役：安装包由维护者本地构建并随 GitHub Release
@@ -182,10 +182,12 @@ pnpm release 4.5.0      # 指定版本号（4.5、5 等缩写自动补全）
 pnpm release --no-push  # 只改文件与提交，不推送（用于演练）
 ```
 
-脚本自动完成：五处版本文件同步（根/app-web package.json、tauri.conf.json、
-app-desktop-portable/package.json、Android versionName）、versionCode +1、
-CHANGELOG「未发布」段迁移、commit + tag + push；push 后 Release 工作流自动
-构建三端安装包并发布 GitHub Release。
+脚本自动完成：七处版本文件同步（根 / app-web / app-desktop /
+app-desktop-portable 的 package.json、tauri.conf.json、Cargo.toml 与
+Cargo.lock）、Android versionCode +1 与 versionName 同步、CHANGELOG
+「未发布」段迁移、commit + tag + push；安装包由维护者本地构建并随
+GitHub Release 分发（CI 构建工作流已退役），Release 说明按 CHANGELOG
+对应版本段落整理。
 
 ## 许可与免责
 

@@ -28,9 +28,9 @@ pnpm --filter @fandex/desktop build
 cd app-desktop && npx tauri build
 ```
 
-产物位于 `src-tauri/target/release/bundle/nsis/`。CI 环境下由
-`desktop-build.yml`（构建校验）与 `android-release.yml`（v* 标签发布）
-自动完成，安装包统一命名为 `FANDEX-Setup-<版本>.exe` 进入 GitHub Release。
+产物位于 `src-tauri/target/release/bundle/nsis/`。CI 构建工作流已退役，
+安装包由维护者本地构建后随 GitHub Release 分发，统一命名为
+`FANDEX-Setup-<版本>.exe`。
 
 ## 与 web 端的关系
 

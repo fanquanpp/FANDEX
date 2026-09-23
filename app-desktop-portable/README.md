@@ -35,8 +35,8 @@ pnpm --filter @fandex/desktop-portable build
 2. 收集 `target/release` 下的 `FANDEX.exe` 与运行所需 DLL；
 3. 通过 PowerShell `Compress-Archive`（Windows 原生）打包为 zip。
 
-## CI 集成
+## 分发
 
-`.github/workflows/android-release.yml` 的 desktop 任务在打 `v*` 标签时会
-同时构建安装包与便携版，并将
-`FANDEX-Portable-<tag>.zip` 一并上传到 GitHub Release。
+CI 构建工作流已退役：便携版 zip 由维护者本地构建（`pnpm --filter
+@fandex/desktop-portable build`）后随 GitHub Release 上传，命名为
+`FANDEX-Portable-<tag>.zip`。

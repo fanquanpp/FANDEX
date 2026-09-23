@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 通知栏小图标：与启动图前景同构的品牌 F 字标（单色剪影，系统仅取 alpha 通道） -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="24dp"
+    android:height="24dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 40,33 L 47,33 L 47,75 L 40,75 Z"/>
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 40,33 L 68,33 L 68,41 L 40,41 Z"/>
+
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M 40,50 L 64,50 L 64,58 L 40,58 Z"/>
+
+</vector>

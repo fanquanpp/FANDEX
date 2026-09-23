@@ -30,11 +30,7 @@ const cargoName = (
 const candidates = [productName, cargoName]
   .filter((name, index, list) => name && list.indexOf(name) === index)
   .map((name) => join(releaseDir, `${name}.exe`));
-let exePath = candidates.find(existsSync);
-if (!exePath) {
-  const fallback = readdirSync(releaseDir).find((name) => name.toLowerCase().endsWith('.exe'));
-  if (fallback) exePath = join(releaseDir, fallback);
-}
+const exePath = candidates.find(existsSync);
 if (!exePath) {
   console.error(`未找到构建产物 exe（候选：${candidates.map((p) => p.split('\\').pop()).join('、')}），便携版打包终止`);
   process.exit(1);
