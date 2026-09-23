@@ -1,4 +1,15 @@
 use tauri::{Manager, WebviewUrl, WebviewWindowBuilder};
+use tauri_plugin_window_state::{StateFlags, WindowExt};
+
+// 窗口状态仅保存/恢复几何信息：VISIBLE 一旦在隐藏（Ctrl+Alt+F）状态下被
+// 保存，下次启动会被还原为隐藏，表现为「应用已运行但窗口不出现」；
+// DECORATIONS 无恢复价值。
+fn window_state_flags() -> StateFlags {
+    StateFlags::SIZE
+        .union(StateFlags::POSITION)
+        .union(StateFlags::MAXIMIZED)
+        .union(StateFlags::FULLSCREEN)
+}
 
 const KEYBOARD_INIT_SCRIPT: &str = r#"
 (function () {
@@ -49,7 +60,12 @@ pub fn run() {
         .plugin(tauri_plugin_single_instance::init(|app, _args, _cwd| {
             raise_main_window(app);
         }))
-        .plugin(tauri_plugin_window_state::Builder::default().build())
+        // 见 window_state_flags 注释：仅保存几何状态。
+        .plugin(
+            tauri_plugin_window_state::Builder::default()
+                .with_state_flags(window_state_flags())
+                .build(),
+        )
         .setup(|app| {
             let window = WebviewWindowBuilder::new(app, "main", WebviewUrl::App("index.html".into()))
                 .title("FANDEX")
@@ -59,10 +75,7 @@ pub fn run() {
                 .disable_drag_drop_handler()
                 .initialization_script(KEYBOARD_INIT_SCRIPT)
                 .build()?;
-            {
-                use tauri_plugin_window_state::{StateFlags, WindowExt};
-                window.restore_state(StateFlags::all())?;
-            }
+            window.restore_state(window_state_flags())?;
 
             #[cfg(desktop)]
             {

@@ -17,6 +17,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import androidx.work.WorkerParameters
 import com.fandex.app.BuildConfig
+import com.fandex.app.R
 import com.fandex.app.data.prefs.readAutoCheckEnabledOnce
 import com.fandex.app.data.prefs.readIgnoredVersionOnce
 import java.io.IOException
@@ -117,7 +118,7 @@ class UpdateCheckWorker(
             )
 
             val notification = NotificationCompat.Builder(context, channelId)
-                .setSmallIcon(android.R.drawable.stat_sys_download_done)
+                .setSmallIcon(R.drawable.ic_notification)
                 .setContentTitle("发现新版本 v${info.latestVersion}")
                 .setContentText("点击查看更新详情并下载")
                 .setContentIntent(pendingIntent)

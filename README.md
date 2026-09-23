@@ -6,7 +6,7 @@
 
 **FANDEX 是一套面向零基础学习者的全栈自学体系，也是学成之后的随身语法速查伴侣。**
 
-38 个技术模块、1743 篇中文教学文档、4300+ 条语法速查、979 个学习路径知识点，
+43 个技术模块、1803 篇中文教学文档、4300+ 条语法速查、1069 个学习路径知识点，
 从"计算机是如何工作的"讲到数据库、后端、云原生与软件架构。网页、Windows 桌面端、
 Android 双端共享同一内容体系，全部内容离线可用。
 
@@ -21,7 +21,7 @@ submodule）：内容单一来源 `cnt-content/full`，模块元数据唯一来�
   预览、首次到访上手指南（三步上手 / 起点选择 / 学习连接）、
   预览新窗口打开与作品导出 HTML、作品库副本与深链直达（`?showcase=<id>`）；
   桌面端构建自动剔除该功能；
-- **学习路线**：思维导图式技术知识链（35 门技术 · 979 个知识点），节点三态进度
+- **学习路线**：思维导图式技术知识链（43 门技术 · 1069 个知识点），节点三态进度
   标记（未学习/学习中/已完成）与工具栏总进度环；
 - **算法教学**：algorithm 模块 30 篇教程按学习曲线重组为 8 大单元课程表，
   页内直切算法题图鉴（95 道经典题，分类 / 难度筛选与本机进度标记），并按
@@ -136,7 +136,7 @@ Release 分发（CI 构建工作流已退役），日常使用建议直接下载
 
 ```mermaid
 flowchart LR
-    A["cnt-content/full\n38 模块 · 1743 篇"] --> B["content-sync\n元数据自动补全"]
+    A["cnt-content/full\n43 模块 · 1803 篇"] --> B["content-sync\n元数据自动补全"]
     B --> C["app-web\nContent Collections"]
     B --> D["app-Android-new\ngenerate-content.mjs"]
     B --> E["app-Android-old\ngenerate-legacy-content.mjs"]
@@ -163,7 +163,7 @@ CI），带路径过滤；Android 与桌面端采用「触发器 + reusable work
 | 工作流 | 触发 | 职责 |
 | --- | --- | --- |
 | `deploy.yml` | push `main` / PR | typecheck、内容审计、网站构建 + QA 门禁、发布 GitHub Pages |
-| `lighthouse.yml` | 定时 / 手动 | Lighthouse 性能基线巡检 |
+| `lighthouse.yml` | push `main` / PR / 手动 | Lighthouse 性能基线巡检 |
 
 Android 与桌面端的打包构建工作流（android-build / desktop-build /
 android-release）已退役：安装包目前由维护者本地构建并上传
@@ -172,11 +172,13 @@ versionCode 与 Tauri/Cargo），但不再有 CI 自动构建安装包。
 两个存留工作流固定运行在 `ubuntu-24.04`（2026-10 GitHub runner
 镜像迁移 Ubuntu 26 前的主动锁定）。
 
-发布说明自动提取 CHANGELOG 对应版本段落（`FANDEX-<tag>.apk`、
-`FANDEX-Legacy-<tag>.apk` 与 `FANDEX-Setup-<tag>.exe`）。日常发版使用
-`pnpm release [版本号]`：自动 patch +1（或指定版本）、同步五处版本文件、
-Android versionCode +1、迁移 CHANGELOG「未发布」段并 commit + tag + push，
-push 后 CI 自动构建并发布 GitHub Release（`--no-push` 只改文件与提交）。
+日常发版使用 `pnpm release [版本号]`：自动 patch +1（或指定版本）、同步
+七处版本文件（根 / app-web / app-desktop / app-desktop-portable 的
+package.json、tauri.conf.json、Cargo.toml 与 Cargo.lock）与 Android
+versionCode + versionName、迁移 CHANGELOG「未发布」段并 commit + tag + push
+（`--no-push` 只改文件与提交）。安装包（`FANDEX-<tag>.apk`、
+`FANDEX-Legacy-<tag>.apk`、`FANDEX-Setup-<tag>.exe` 与便携版 zip）由维护者
+本地构建后随 GitHub Release 上传，Release 说明按 CHANGELOG 对应版本段落整理。
 
 版本变更历史见 [CHANGELOG.md](CHANGELOG.md)。
 

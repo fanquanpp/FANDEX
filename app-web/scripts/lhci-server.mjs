@@ -29,11 +29,17 @@ const server = createServer(async (req, res) => {
     if (!filePath.startsWith(DIST + sep) && filePath !== DIST) throw new Error('path traversal');
 
     const info = await stat(filePath).catch(() => null);
+    let status = 200;
     if (info?.isDirectory()) filePath = join(filePath, 'index.html');
-    else if (!info) filePath = join(DIST, '404.html');
+    else if (!info) {
+      // 缺失资源回退 404.html 时必须携带真实 404 状态：
+      // 冒烟测试与 Lighthouse 都依赖状态码判定可达性，200 会令断言恒真
+      filePath = join(DIST, '404.html');
+      status = 404;
+    }
 
     const body = await readFile(filePath);
-    res.writeHead(200, { 'content-type': MIME[extname(filePath).toLowerCase()] ?? 'application/octet-stream' });
+    res.writeHead(status, { 'content-type': MIME[extname(filePath).toLowerCase()] ?? 'application/octet-stream' });
     res.end(body);
   } catch {
     res.writeHead(500);

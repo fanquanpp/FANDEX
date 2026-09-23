@@ -54,6 +54,14 @@
 
 ### 修复
 
+- **桌面端隐藏退出后启动窗口隐形**：窗口状态保存/恢复此前含 VISIBLE 标志，
+  若应用在 `Ctrl+Alt+F` 隐藏状态下退出（如关机、注销），下次启动会被还原为
+  隐藏——进程已在运行但窗口不出现，仅能靠全局快捷键找回。窗口状态现仅覆盖
+  几何信息（大小 / 位置 / 最大化 / 全屏）；便携版打包同步移除「候选产物
+  缺失时抓取任意 exe」的过宽兜底，改为直接终止打包；
+- **冒烟测试可达性断言恒真**：本地静态服务器对缺失资源回退 404.html 时仍
+  返回 200，导航直达链接可达性断言（nav-depth）形同虚设；现回退时携带
+  真实 404 状态码，Playwright 与 Lighthouse 的可达性判定恢复效力；
 - **学习路线地图全量失效**：2026-09 全库文档编号重构后，36 张技术地图
   共 979 个知识点节点仍指向旧编号，各技术统计全部显示"待补充"、思维导图
   文档链接 404。已按 slug 谱系全量重映射（973 自动 + 6 人工裁定），
@@ -113,6 +121,18 @@
 
 ### 变更
 
+- **Android release 签名缺失即失败**：assembleRelease / bundleRelease 执行
+  前校验 keystore 与密码完整性，缺失时构建直接终止——原先静默回退 debug
+  签名，debug 签名的 release 包一旦发布，存量用户会因签名不一致无法升级；
+  更新通知小图标改用与启动图同构的品牌 F 字标（原为系统下载完成图标）；
+- **文档统计与 CI 描述校准**：README 数字更新至实际规模（43 个技术模块、
+  1803 篇文档、1069 个学习路径知识点，原 38 / 1743 / 979 为历史口径）；
+  README / CONTRIBUTING 与桌面端、便携版、旧版 Android README 移除已退役
+  工作流（desktop-build / android-build / android-release）的过时描述，
+  修正 lighthouse.yml 触发条件（push main / PR / 手动，非定时）与发版脚本
+  「七处版本文件同步」描述；`.env.example` 由无关的第三方 API 密钥模板
+  改写为 web 端真实环境变量说明（PUBLIC_SITE_URL / DESKTOP_BUILD /
+  ANALYZE_BUNDLE / LHCI_PORT）；
 - **全项目审计修复与 CI 加固**：CSP 收紧（移除 script-src 的 `data:`、
   style-src 与 connect-src 的 jsdelivr——站点无对应加载行为，jsdelivr
   仅为工作台动态 import prettier 保留在 script-src）；两个 CI 工作流
