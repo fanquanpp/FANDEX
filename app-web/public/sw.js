@@ -1,6 +1,8 @@
 
 const CACHE_NAME = 'fandex-v8';
-const BASE = '/FANDEX/';
+// 站点 base 从 SW 注册作用域推导：web 构建为 /FANDEX/，桌面变体构建为 /
+// （此前硬编码 /FANDEX/ 会让非 GitHub Pages 路径部署下 SW 静默丢弃全部请求）
+const BASE = new URL(self.registration.scope).pathname;
 const OFFLINE_URL = `${BASE}offline.html`;
 const HTML_CACHE_LIMIT = 40;
 

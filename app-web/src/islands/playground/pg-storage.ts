@@ -147,17 +147,3 @@ export async function getStorageUsage(): Promise<{ quotaBytes: number; usageByte
     return { quotaBytes: 0, usageBytes: 0 };
   }
 }
-
-export async function clearAllPlaygroundData(): Promise<void> {
-  if (!isClient) return;
-  const db = await openDb();
-  await new Promise<void>((resolve, reject) => {
-    const tx = db.transaction([STORE_PENS, STORE_DRAFTS, STORE_RECORDS], 'readwrite');
-    tx.objectStore(STORE_PENS).clear();
-    tx.objectStore(STORE_DRAFTS).clear();
-    tx.objectStore(STORE_RECORDS).clear();
-    tx.oncomplete = () => resolve();
-    tx.onerror = () => reject(tx.error ?? new Error('清空数据失败'));
-    tx.onabort = () => reject(tx.error ?? new Error('清空数据失败'));
-  });
-}

@@ -12,6 +12,9 @@ const PARSER_BY_LANGUAGE: Record<FormattableLanguage, string> = {
   python: 'python',
 };
 
+// 失败说明以 i18n 键返回（调用方负责按当前语言翻译），避免模块内硬编码中文
+export type FormatNoteKey = 'pg.format.unsupported' | 'pg.format.loadFailed' | 'pg.format.failed';
+
 async function loadPlugin(parser: string): Promise<unknown> {
   // 使用变量 URL + @vite-ignore，确保 Vite 构建期不解析 CDN 地址
   const pluginUrl = `${PRETTIER_BASE}/plugins/${parser}.mjs`;
@@ -21,10 +24,10 @@ async function loadPlugin(parser: string): Promise<unknown> {
 export async function formatCode(
   language: string,
   code: string,
-): Promise<{ code: string; note: string }> {
+): Promise<{ code: string; noteKey: FormatNoteKey | '' }> {
   const parser = PARSER_BY_LANGUAGE[language as FormattableLanguage];
   if (!parser) {
-    return { code, note: '该语言暂不支持自动格式化' };
+    return { code, noteKey: 'pg.format.unsupported' };
   }
   try {
     const standaloneUrl = `${PRETTIER_BASE}/standalone.mjs`;
@@ -35,7 +38,7 @@ export async function formatCode(
       }
     ).format;
     if (typeof format !== 'function') {
-      return { code, note: '格式化组件加载失败' };
+      return { code, noteKey: 'pg.format.loadFailed' };
     }
     const plugins = [await loadPlugin(parser)];
     if (parser === 'babel' || parser === 'babel-ts') {
@@ -49,8 +52,8 @@ export async function formatCode(
       semi: true,
       singleQuote: true,
     });
-    return { code: formatted, note: '' };
+    return { code: formatted, noteKey: '' };
   } catch {
-    return { code, note: '格式化失败，已保留原代码' };
+    return { code, noteKey: 'pg.format.failed' };
   }
 }

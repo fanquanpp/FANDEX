@@ -1,8 +1,6 @@
 
 const isClientSide = typeof window !== 'undefined' && typeof window.localStorage !== 'undefined';
 
-const debounceTimers = new Map<string, ReturnType<typeof setTimeout>>();
-
 export function getItem(key: string): string | null {
   if (!isClientSide) return null;
   try {
@@ -46,19 +44,6 @@ export function setJSON<T>(key: string, value: T): void {
   } catch {
     // 序列化失败（循环引用等）静默降级
   }
-}
-
-export function setItemDebounced(key: string, value: string, delay = 300): void {
-  if (!isClientSide) return;
-  const existingTimer = debounceTimers.get(key);
-  if (existingTimer) {
-    clearTimeout(existingTimer);
-  }
-  const timer = setTimeout(() => {
-    setItem(key, value);
-    debounceTimers.delete(key);
-  }, delay);
-  debounceTimers.set(key, timer);
 }
 
 export function onStorageChange(

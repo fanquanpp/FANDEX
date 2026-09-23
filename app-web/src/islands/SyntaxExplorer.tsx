@@ -69,9 +69,28 @@ function syncStateUrl(lang: string, query: string): void {
 
 export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
   const lang = useLang();
-  const [activeId, setActiveId] = useState<string>(() => readStateFromUrl(languages).lang);
-  const [query, setQuery] = useState<string>(() => readStateFromUrl(languages).q);
-  const [appliedQuery, setAppliedQuery] = useState<string>(() => readStateFromUrl(languages).q);
+  // 水合安全初始化：SSR 与客户端首帧必须同构（避免 ?lang/?q 深链造成恢复性水合错配），
+  // 深链参数在挂载后一次性应用
+  const [activeId, setActiveId] = useState<string>(
+    () => languages.find((item) => item.id === DEFAULT_LANGUAGE)?.id ?? languages[0]?.id ?? '',
+  );
+  const [query, setQuery] = useState<string>('');
+  const [appliedQuery, setAppliedQuery] = useState<string>('');
+
+  useEffect(() => {
+    const fromUrl = readStateFromUrl(languages);
+    /* eslint-disable react-hooks/set-state-in-effect --
+       一次性深链同步：静态构建拿不到请求参数，SSR 首帧必须与客户端同构默认值，
+       挂载后读取 URL 并应用是唯一入口 */
+    if (fromUrl.lang && fromUrl.lang !== activeId) setActiveId(fromUrl.lang);
+    if (fromUrl.q) {
+      setQuery(fromUrl.q);
+      setAppliedQuery(fromUrl.q);
+    }
+    /* eslint-enable react-hooks/set-state-in-effect */
+    // 仅在挂载时应用一次深链参数
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
   const [cards, setCards] = useState<SyntaxCard[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(false);
@@ -131,7 +150,7 @@ export function SyntaxExplorer({ languages, base }: SyntaxExplorerProps) {
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey) return;
+      if (event.key !== '/' || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
       const target = event.target as HTMLElement | null;
       if (target && (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable)) return;
       event.preventDefault();

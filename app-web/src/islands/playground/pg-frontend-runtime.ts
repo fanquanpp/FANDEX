@@ -8,20 +8,8 @@ function escapeCloser(code: string): string {
   return code.replace(/<\/script/gi, '<\\/script').replace(/<\/style/gi, '<\\/style');
 }
 
-function formatValue(value: unknown): string {
-  if (value === null) return 'null';
-  if (value === undefined) return 'undefined';
-  if (typeof value === 'string') return value;
-  if (typeof value === 'function') return `[Function ${value.name || 'anonymous'}]`;
-  if (typeof value === 'object') {
-    try {
-      return JSON.stringify(value);
-    } catch {
-      return String(value);
-    }
-  }
-  return String(value);
-}
+// 预览 iframe 内的 console 桥接自带一份等价 fmt（注入脚本无法复用宿主函数），
+// 此处不再保留宿主侧副本
 
 const CONSOLE_BRIDGE = `
 <script>
@@ -104,5 +92,3 @@ export function estimatePenBytes(pen: FrontendPen): number {
   const payload = `${pen.title}\n${pen.html}\n${pen.css}\n${pen.js}`;
   return new TextEncoder().encode(payload).length;
 }
-
-export { formatValue };

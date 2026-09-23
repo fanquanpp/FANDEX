@@ -122,8 +122,8 @@ pnpm --filter @fandex/desktop build   # web 构建 + playground 剔除 + 前端�
 cd app-desktop && npx tauri build     # 打包 NSIS 安装包（需 Rust 工具链）
 ```
 
-需要 Rust stable 与 MSVC 工具链；CI 会自动构建（见 desktop-build.yml），
-日常使用建议直接下载 Release 安装包。
+需要 Rust stable 与 MSVC 工具链；安装包由维护者本地构建后随
+Release 分发（CI 构建工作流已退役），日常使用建议直接下载 Release 安装包。
 
 ## 内容管线
 
@@ -163,10 +163,14 @@ CI），带路径过滤；Android 与桌面端采用「触发器 + reusable work
 | 工作流 | 触发 | 职责 |
 | --- | --- | --- |
 | `deploy.yml` | push `main` / PR | typecheck、内容审计、网站构建 + QA 门禁、发布 GitHub Pages |
-| `android-build.yml` | push `main` / PR | 双端 APK 并行构建校验（reusable） |
-| `desktop-build.yml` | push `main` / PR | Windows 桌面端安装包构建与"前端实验室"剔除校验（reusable） |
-| `android-release.yml` | push `v*` 标签 | 构建三端安装包并发布 GitHub Release |
 | `lighthouse.yml` | 定时 / 手动 | Lighthouse 性能基线巡检 |
+
+Android 与桌面端的打包构建工作流（android-build / desktop-build /
+android-release）已退役：安装包目前由维护者本地构建并上传
+Release；`pnpm release [版本号]` 仍会同步全部版本文件（含 Android
+versionCode 与 Tauri/Cargo），但不再有 CI 自动构建安装包。
+两个存留工作流固定运行在 `ubuntu-24.04`（2026-10 GitHub runner
+镜像迁移 Ubuntu 26 前的主动锁定）。
 
 发布说明自动提取 CHANGELOG 对应版本段落（`FANDEX-<tag>.apk`、
 `FANDEX-Legacy-<tag>.apk` 与 `FANDEX-Setup-<tag>.exe`）。日常发版使用
