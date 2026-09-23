@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 三个类型操作符：从值世界提取类型的三把钥匙。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-22'
 related:
   - 'typescript/080-BasicTypeSystem'
   - 'typescript/100-InterfaceTypeAlias'

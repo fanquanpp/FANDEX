@@ -53,3 +53,26 @@ test('在线前端工作台：FrontendLab 冒烟', async ({ page }) => {
   await page.waitForTimeout(2_000);
   expect(errors, '工作台不应有未捕获异常（FrontendLab 冒烟守卫）').toEqual([]);
 });
+
+test('AI 设置页渲染：通道预留横幅与页脚入口', async ({ page }) => {
+  const errors = trackPageErrors(page);
+  await page.goto('/FANDEX/ai/');
+  await expect(page.locator('h1')).toHaveText(/AI/);
+  await expect(page.locator('[data-ai-dormant]')).toBeVisible();
+  expect(errors, 'AI 设置页不应有未捕获异常').toEqual([]);
+});
+
+test('AI 设置页交互：保存密钥后仅显示掩码且写入本机设置', async ({ page }) => {
+  await page.goto('/FANDEX/ai/');
+  await page.fill('#ai-key', 'sk-orca-test-abcd1234');
+  await page.click('#ai-save');
+  await expect(page.locator('#ai-key-status')).toContainText('****1234');
+  const stored = await page.evaluate(() => localStorage.getItem('fandex-ai-settings') ?? '');
+  expect(stored).not.toContain('sk-orca-test');
+  const keyStored = await page.evaluate(() => localStorage.getItem('fandex-ai-key'));
+  expect(keyStored, '未勾选记住时密钥不得落盘').toBeNull();
+  // 清除入口：一键清空本机 AI 数据
+  await page.click('#ai-clear');
+  const cleared = await page.evaluate(() => localStorage.getItem('fandex-ai-settings'));
+  expect(cleared, '清除后不应残留 AI 设置').toBeNull();
+});
