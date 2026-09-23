@@ -1,5 +1,5 @@
 
-import { countMarks, readFilterContext, readProblemMarks, saveFilterContext, toggleProblemMark } from '@/lib/ap-progress';
+import { countMarks, pruneProblemMarks, readFilterContext, readProblemMarks, saveFilterContext, toggleProblemMark } from '@/lib/ap-progress';
 import { t } from '@/lib/i18n';
 
 type StatusFilter = 'all' | 'solved' | 'review';
@@ -98,6 +98,12 @@ function initProblemsFilter(): void {
   setActiveChip(root, 'status', state.status);
   const searchInput = root.querySelector<HTMLInputElement>('[data-filter-search]');
   if (searchInput) searchInput.value = state.q;
+  // 题库重组后本地标记可能残留已下线题目：先按当前题表修剪再计数与过滤
+  const validSlugs = new Set<string>();
+  root.querySelectorAll<HTMLElement>('[data-algo-item]').forEach((item) => {
+    if (item.dataset.slug) validSlugs.add(item.dataset.slug);
+  });
+  pruneProblemMarks(validSlugs);
   refreshStatusCounts(root);
   applyFilter(root, state);
 

@@ -96,7 +96,7 @@ pnpm sync          # 内容自动同步（补全元数据、注册模块、清�
 pnpm typecheck     # 全仓类型检查（app-web astro check + shd-shared/tokens）
 ```
 
-内容类改动建议再跑 `node app-web/scripts/content-audit.mjs` 确认无 HIGH 级
+内容类改动建议再跑 `pnpm --filter @fandex/web audit:content` 确认无 HIGH 级
 问题。web 完整构建（`pnpm build:web`）不再作为推送前置，由 CI 在「指向
 main 的 PR 与发版」时验证；本地预览时仍可随时运行。
 

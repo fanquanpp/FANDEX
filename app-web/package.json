@@ -9,6 +9,7 @@
     "sync": "node scripts/content-sync.mjs",
     "build:syntax": "node scripts/build-syntax.mjs",
     "audit:learning-path": "node scripts/audit-learning-path.mjs",
+    "audit:content": "node scripts/content-audit.mjs",
     "lint": "eslint .",
     "test:smoke": "playwright test",
     "dev": "node scripts/content-sync.mjs && node scripts/check-tokens-drift.mjs && node scripts/build-stats.mjs && node scripts/build-syntax.mjs && astro dev",

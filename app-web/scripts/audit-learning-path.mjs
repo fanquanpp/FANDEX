@@ -8,7 +8,8 @@ const ROOT = join(__dirname, '..', '..');
 const MAP_DIR = join(ROOT, 'shd-shared', 'metadata', 'learning-path');
 const MODULES_PATH = join(ROOT, 'shd-shared', 'metadata', 'modules.json');
 const CONTENT_DIR = join(ROOT, 'cnt-content', 'full');
-const REPORT_DIR = join(ROOT, '.trae', 'documents');
+// 报告输出到仓库根 .reports/（.gitignore 排除，不入库）
+const REPORT_DIR = join(ROOT, '.reports');
 
 const officialLinkSchema = z.object({
   label: z.string().min(1),

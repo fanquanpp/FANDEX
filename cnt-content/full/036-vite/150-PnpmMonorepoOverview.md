@@ -131,12 +131,13 @@ FANDEX 本身就是一个典型的 pnpm Monorepo：
 ```text
 FANDEX/
   app-web/               # Web 应用（Astro + React）
-  app-desktop/           # 桌面应用（Tauri + Expo）
-  app-android/           # Android 应用（Expo）
-  shd-shared/            # 共享层（tokens、utils、assets）
-  tls-tools/             # 工具链（ID 分配、清单生成）
-  thd-third-party/       # 第三方组件封装
-  dcs-docs/              # 文档目录
+  app-desktop/           # 桌面应用（Tauri 2，内嵌 Web 构建产物）
+  app-desktop-portable/  # 桌面便携版（与 app-desktop 共用构建）
+  app-Android-new/       # Android 应用（Kotlin + Jetpack Compose）
+  app-Android-old/       # Android 旧栈归档线（已冻结）
+  cnt-content/           # 内容单一来源（教学文档与语法速览）
+  shd-shared/            # 共享层（tokens、metadata、utils、assets）
+  scripts/               # 仓库级自动化脚本
   pnpm-workspace.yaml    # workspace 配置
   package.json
 ```
@@ -145,14 +146,16 @@ FANDEX/
 
 ```yaml
 packages:
-  - 'app-*'
+  - 'app-web'
+  - 'app-desktop'
+  - 'app-desktop-portable'
   - 'shd-shared'
-  - 'shd-shared/*'
-  - 'tls-tools'
-  - 'thd-third-party/*'
+  - 'shd-shared/tokens'
+  - 'shd-shared/utl-utils'
+  - 'shd-shared/assets'
 ```
 
-**结构设计原则**：可部署的应用（app-*）与可复用的库（shd-shared、thd-third-party）分开；工具链单独（tls-tools）；glob 模式保证新增目录自动纳入管理。
+**结构设计原则**：可部署的应用（app-*）与可复用的共享层（shd-shared 及其子包）分开；workspace 显式列举包目录，新增共享子包时同步补入。
 
 ## 4. catalog：依赖版本的"单一事实来源"
 

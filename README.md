@@ -55,7 +55,6 @@ FANDEX/                        # 仓库根（唯一 .git 所在）
 ├── app-Android-old/    # Android 应用 · 旧技术栈归档线（已冻结，仅修阻断缺陷）
 ├── cnt-content/        # 内容层：full/ 全量文档、syntax/ 语法速览素材
 ├── shd-shared/         # 共享层：设计令牌（tokens/）、模块元数据、图标资产
-├── thd-third-party/    # 第三方组件 / 插件 / 适配器
 └── scripts/            # 仓库级自动化脚本（release.mjs 一键发版）
 ```
 
@@ -217,8 +216,8 @@ API Key 来启用相关功能。
 
 ## 许可与免责
 
-- 本仓库内容以 [MIT License](LICENSE) 许可发布；`thd-third-party/licenses/` 存放第三方
-  组件的许可文本。
+- 本仓库内容以 [MIT License](LICENSE) 许可发布；引用或改编的第三方内容均在
+  对应文档中注明原始出处与许可。
 - 学习内容仅供教育参考，不构成职业、投资或任何专业建议；在线前端实验场的代码仅在
   用户浏览器本地运行、数据仅存本地；本项目无账号、无自建服务器、无统计埋点。
 - 完整条款见 [DISCLAIMER.md](DISCLAIMER.md)（含教育用途、代码示例、实验场、隐私、

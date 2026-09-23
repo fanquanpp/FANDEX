@@ -76,3 +76,34 @@ export function clearTechProgress(module: string): TechProgress {
   writeStore(store);
   return {};
 }
+
+/**
+ * 按当前地图的有效节点修剪本地进度：文档编号重构后，进度存储里会残留
+ * 已失效的节点编号（既不显示也无法清除）。技术地图挂载时以本次有效
+ * 节点集合为准修剪并回写，总览页徽章随之自愈。
+ */
+export function pruneTechProgress(
+  module: string,
+  validNodeIds: ReadonlySet<string>,
+): TechProgress {
+  const store = readStore();
+  const tech = store[module];
+  if (!tech) return {};
+  let changed = false;
+  const pruned: TechProgress = {};
+  for (const [nodeId, state] of Object.entries(tech)) {
+    if (validNodeIds.has(nodeId)) {
+      pruned[nodeId] = state;
+    } else {
+      changed = true;
+    }
+  }
+  if (!changed) return tech;
+  if (Object.keys(pruned).length === 0) {
+    delete store[module];
+  } else {
+    store[module] = pruned;
+  }
+  writeStore(store);
+  return pruned;
+}
