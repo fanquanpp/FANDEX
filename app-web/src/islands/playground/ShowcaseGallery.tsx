@@ -112,6 +112,20 @@ export default function ShowcaseGallery({ open, onClose, onLoad }: GalleryProps)
     return () => window.removeEventListener('keydown', onKeyDown);
   }, [open, onClose]);
 
+  // 焦点管理（无障碍）：打开时把焦点移入面板，关闭时归还给之前的触发元素
+  const panelRef = useRef<HTMLDivElement | null>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    restoreFocusRef.current = document.activeElement as HTMLElement | null;
+    panelRef.current?.focus();
+    return () => {
+      restoreFocusRef.current?.focus();
+      restoreFocusRef.current = null;
+    };
+  }, [open]);
+
   if (!open) return null;
 
   const items: ShowcaseItem[] =
@@ -134,7 +148,7 @@ export default function ShowcaseGallery({ open, onClose, onLoad }: GalleryProps)
 
   return (
     <div className="pg-sc-mask" role="dialog" aria-modal="true" aria-label={t('pgSc.maskAria', undefined, lang)}>
-      <div className="pg-sc-panel">
+      <div ref={panelRef} tabIndex={-1} className="pg-sc-panel">
         {/* 面板头部：标题与关闭 */}
         <header className="pg-sc-head">
           <span className="pg-sc-title">

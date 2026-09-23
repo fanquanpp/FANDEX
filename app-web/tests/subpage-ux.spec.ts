@@ -104,13 +104,22 @@ test.describe('功能页扁平化与 UX 交互验证', () => {
     await page.evaluate(() => localStorage.removeItem('fandex-ap-progress'));
   });
 
-  test('在线前端工作台：快捷键面板 + Ctrl+S 另存', async ({ page }) => {
+  test('在线前端工作台：指南面板 + Ctrl+S 另存', async ({ page }) => {
+    // 首访引导会自动弹出并覆盖编辑器（fandex-pg-guide-v1 未写入时），
+    // 本测试针对「? 手动打开指南」路径，先种子已阅标记跳过自动弹出
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem('fandex-pg-guide-v1', '1');
+      } catch {
+        /* 忽略 */
+      }
+    });
     await page.goto(`${BASE}playground/`);
     await page.waitForSelector('.pg-toolbar');
     await page.keyboard.press('Shift+Slash');
-    await expect(page.locator('.pg-keys')).toBeVisible();
+    await expect(page.locator('.pg-keys-mask .pg-guide')).toBeVisible();
     await page.keyboard.press('Escape');
-    await expect(page.locator('.pg-keys')).toBeHidden();
+    await expect(page.locator('.pg-keys-mask')).toBeHidden();
     await page.keyboard.press('Control+s');
     await page.waitForFunction(() => new URLSearchParams(location.search).has('pen'), undefined, {
       timeout: 5000,
@@ -128,6 +137,14 @@ test.describe('功能页扁平化与 UX 交互验证', () => {
   });
 
   test('在线前端工作台：草稿自动保存与刷新恢复', async ({ page }) => {
+    // 同上：跳过首访自动引导，避免其遮罩拦截编辑器点击
+    await page.addInitScript(() => {
+      try {
+        localStorage.setItem('fandex-pg-guide-v1', '1');
+      } catch {
+        /* 忽略 */
+      }
+    });
     await page.goto(`${BASE}playground/`);
     await page.waitForSelector('.pg-toolbar');
     const jsEditor = page.locator('.pg-pane-body .cm-content').nth(2);

@@ -33,7 +33,7 @@ function handleMetric(metric: Metric): void {
     // Service 层异常时静默忽略
   }
   if (import.meta.env.DEV) {
-    console.log(
+    console.log( // 仅 DEV 环境的诊断输出（非生产日志）
       `[WebVitals] ${metric.name} = ${metric.value.toFixed(2)} (${metric.rating})`,
       metric
     );

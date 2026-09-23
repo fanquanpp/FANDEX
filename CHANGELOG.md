@@ -4,8 +4,10 @@
 格式参考 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)，
 版本号遵循语义化版本（SemVer）。
 
-> 发布说明约定：`android-release.yml` 工作流在打 `v*` 标签发布时，
-> 会自动提取本文档中对应 `## [vX.Y.Z]` 段落作为 GitHub Release 说明。
+> 发布说明约定：`pnpm release` 发版时会把「未发布」段迁移为
+> `## [vX.Y.Z]` 段落，该段落即 GitHub Release 说明的来源
+> （`android-release.yml` 自动提取工作流已退役，Release 说明由
+> 维护者按对应版本段落整理）。
 
 ## [未发布]
 
@@ -66,6 +68,30 @@
   RSS 频道级 link 同步指向站点首页；
 - **首页标题 hover 跳帧**：hero 标题 hover 时改写 `animation-duration`
   导致背景进度按新时长重映射、肉眼可见跳变，移除改写保留缩放与字距反馈；
+- **工作台弹层与存储健壮性**：作品库打开 / 删除 / 复制在 IndexedDB 异常
+  （配额满、隐私模式）下不再产生未捕获 Promise 拒绝（会触发全站
+  「无未捕获异常」冒烟门禁），改为错误态与工具栏提示；引导 / 画廊 /
+  作品库三处弹层补焦点管理（打开移入面板、关闭归还触发元素）；
+  格式化失败提示、未命名标题与「副本」后缀接入 i18n，英文界面不再
+  出现中文残留；标题输入默认改占位文案（消费端各自回退）；
+- **Service Worker 桌面变体失效**：`sw.js` 硬编码 `/FANDEX/` 前缀，
+  非 GitHub Pages base 部署下全部请求被跳过、预缓存 404；改为从
+  SW 注册作用域推导 base；
+- **搜索面板竞态崩溃**：面板在 Pagefind 加载 / 搜索等待期间被关闭时
+  继续写已置空引用导致未捕获 TypeError，改为捕获本轮引用并在过期后
+  丢弃；语言切换后关闭面板避免旧语言 chrome 残留；工作台弹层打开时
+  `Ctrl+K` 不再抢焦点；`Shift+/` 打开引导不再被语法页 `/` 快捷键截胡；
+- **语法速览深链水合错配**：`?lang/?q` 直链在客户端水合时与 SSR 状态
+  不一致（React 恢复性错配闪烁），改为同构默认值 + 挂载后一次性应用；
+- **首页 marquee resize 布局抖动**：窗口拖动时读-写-读循环无节流，
+  rAF 合帧 + 克隆补位上限；网页端刷新后不再尝试自动恢复全屏
+  （无手势调用被拒绝产生控制台噪音，恢复逻辑收敛到桌面端运行时）；
+- **Android 更新安装静默失败**：Android 11+ 包可见性过滤下
+  `resolveActivity` 对系统安装器可能误报 null 导致更新无法调起，
+  清单补 `<queries>` 声明并改由 `ActivityNotFoundException` 兜底；
+  `generate-content.mjs` 资产清理正则 `/^d+-/` 笔误修正为 `/^\d+-/`
+  （原清理逻辑永不命中，跑成全量重拷）；过时的「CI 构建已自动执行」
+  注释同步修正；
 
 ### 性能
 
@@ -75,6 +101,9 @@
 - **动效令牌收敛与节奏统一**：语法速览面板开合动画时长缓动改消费
   `--motion-*` 令牌；首页标题 hover 过渡令牌化；学习路径分类/职业两条
   流光曲线按路径长度等速校正（原长曲线流速快近一倍的不协调）；
+- **前端实验室懒加载 chunk 瘦身**：移除编辑器从未使用的 CodeMirror
+  语言包（python / cpp 与 legacy-modes 共 9 种语言模式——工作台仅编辑
+  HTML / CSS / JS），依赖同步移除，减小工作台懒加载 chunk 与安装体积；
 
 ### 内容
 
@@ -84,6 +113,18 @@
 
 ### 变更
 
+- **全项目审计修复与 CI 加固**：CSP 收紧（移除 script-src 的 `data:`、
+  style-src 与 connect-src 的 jsdelivr——站点无对应加载行为，jsdelivr
+  仅为工作台动态 import prettier 保留在 script-src）；两个 CI 工作流
+  锁定 `ubuntu-24.04`（2026-10 runner 镜像迁移 Ubuntu 26 前主动锁定）
+  并补齐根 tsconfig / .npmrc / scripts 路径过滤；content-sync 在 git
+  历史为空（浅克隆）时硬失败，避免全站 updated 被静默改写为当天；
+  qa-check 大文件告警不再对 HTML 页面逐条刷屏（由 1.5MB 专项检查
+  把关，警告 197 → 14 条真信号），BASE 与 astro.config 同源取
+  DESKTOP_BUILD；根 typescript 与 workspace catalog 对齐（7 → 6.0.3）、
+  engines pnpm 提升至 >=11；README / CONTRIBUTING / CHANGELOG 头注
+  移除已退役的 android-build / desktop-build / android-release 工作流
+  描述，注明安装包由维护者本地构建；
 - **免责声明扩展 AI 通道条款**：仓库版 `DISCLAIMER.md` 与网页版免责声明页
   同步新增「AI 接入通道（预留）」一节（中英双语），明确 FANDEX 仅提供
   接入选项不提供 AI 服务、密钥仅存本机、费用用户自担、数据经 OrcaRouter

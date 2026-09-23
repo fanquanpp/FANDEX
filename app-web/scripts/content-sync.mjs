@@ -96,7 +96,15 @@ function loadGitDates() {
       if (currentDate && !map.has(t)) map.set(t, currentDate);
     }
   } catch {
-    // 非 git 环境（如 CI 浅克隆异常）时降级为空表，updated 将取文件手写值或今天
+    // git 命令本身失败（无 git 等）时降级为空表
+  }
+  // 关键守卫：仓库存在但历史为空（浅克隆 / fetch-depth 不足）时，
+  // 空表会让全部文档的 updated 被静默改写为今天，构建产物日期集体失真。
+  // 此时必须硬失败，提示检查 checkout 深度，而不是带病产出。
+  if (map.size === 0 && existsSync(join(ROOT, '.git'))) {
+    console.error('[content-sync] git 历史为空（浅克隆或 fetch-depth 不足），无法推导 updated 字段。');
+    console.error('[content-sync] 请以完整历史检出仓库（CI 中 actions/checkout 需 fetch-depth: 0）。');
+    process.exit(1);
   }
   return map;
 }

@@ -123,10 +123,13 @@ main 的 PR 与发版」时验证；本地预览时仍可随时运行。
 
 | 工作流 | 触发 | 内容 |
 | --- | --- | --- |
-| android-build.yml | push main 与指向 main 的 PR（带路径过滤） | 双端 Android APK 并行构建校验 |
-| desktop-build.yml | push main 与指向 main 的 PR（带路径过滤） | Windows 桌面端构建 + 前端实验室剔除校验 |
 | deploy.yml | push main 与指向 main 的 PR（带路径过滤） | 构建 + 类型检查 + 内容审计 + QA 门禁；仅 push 到 main 时发布 GitHub Pages |
-| android-release.yml | push `v*` 标签 | 构建三端安装包并发布 GitHub Release |
+| lighthouse.yml | 定时 / 手动 | Lighthouse 性能基线巡检 |
+
+Android 与桌面端的 CI 构建工作流（android-build / desktop-build /
+android-release）已退役：安装包由维护者本地构建并随 GitHub Release
+分发，提交涉及 `app-Android-new` / `app-desktop` 的改动时请在本地
+完成构建自测（Gradle / Tauri）。
 
 所有构建前会自动运行 `content-sync.mjs`；deploy 工作流中的 `content-audit.mjs`
 门禁会在出现 HIGH 级内容质量问题时阻断构建。注意：push 到 `dev` 不触发

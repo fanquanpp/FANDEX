@@ -4,7 +4,8 @@ import { join } from 'node:path';
 
 const DIST = 'dist';
 const SRC = 'src';
-const BASE = '/FANDEX/';
+// 与 astro.config.ts 的 SITE_BASE 同源：桌面变体（DESKTOP_BUILD=1）base 为 /
+const BASE = process.env.DESKTOP_BUILD === '1' ? '/' : '/FANDEX/';
 let errors = 0;
 let warnings = 0;
 
@@ -153,10 +154,13 @@ async function checkLargeFiles() {
   const LARGE_THRESHOLD = 500 * 1024;
   const largeFiles = [];
   await walkDir(DIST, '', async (full) => {
+    // HTML 页面体积由 checkOversizedPages（1.5MB）单独把关；
+    // 长文档页内联 Shiki/KaTeX 常态超 500KB，逐条告警只会淹没真信号
+    if (full.endsWith('.html')) return;
     const s = await stat(full);
     if (s.size > LARGE_THRESHOLD) largeFiles.push({ path: full, size: s.size });
   });
-  if (largeFiles.length === 0) pass('No files over 500KB');
+  if (largeFiles.length === 0) pass('No non-HTML assets over 500KB');
   else {
     for (const f of largeFiles) {
       warn(`Large file: ${f.path} (${(f.size / 1024).toFixed(0)}KB)`);

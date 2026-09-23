@@ -13,7 +13,7 @@ local.properties
 /legacy
 
 # 内容资产（由 scripts/generate-content.mjs 从 cnt-content 生成，不入库；
-# 本地构建 APK 前需先运行该脚本，CI 构建已自动执行）
+# 本地构建 APK 前需先手动运行该脚本——CI 构建工作流已退役）
 /app/src/main/assets/docs/
 /app/src/main/assets/metadata/
 /app/src/main/assets/syntax-data/

@@ -8,6 +8,15 @@
 
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
+    <!-- Android 11+ 包可见性：声明要调起的 APK 安装器 intent，
+         否则隐式跳转可能因可见性过滤而静默失败 -->
+    <queries>
+        <intent>
+            <action android:name="android.intent.action.VIEW" />
+            <data android:mimeType="application/vnd.android.package-archive" />
+        </intent>
+    </queries>
+
     <application
         android:name=".FandexApp"
         android:allowBackup="true"

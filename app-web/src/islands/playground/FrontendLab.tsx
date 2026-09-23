@@ -42,7 +42,7 @@ const BLANK_HTML = '<h1>你好，FANDEX</h1>\n<button id="demo">点我</button>\
 const BLANK_CSS =
   'body {\n  font-family: var(--font-family-body, sans-serif);\n  text-align: center;\n  padding: 40px 16px;\n}\nbutton {\n  padding: 8px 20px;\n  border-radius: 8px;\n  border: 1px solid #14716A;\n  background: #EEFCFB;\n  color: #14716A;\n  cursor: pointer;\n}';
 const BLANK_JS =
-  "const tip = document.getElementById('tip');\nconst btn = document.getElementById('demo');\nbtn.addEventListener('click', () => {\n  tip.textContent = '点击次数 +1';\n  console.log('按钮被点击');\n});\nconsole.log('预览已就绪');";
+  "const tip = document.getElementById('tip');\nconst btn = document.getElementById('demo');\nbtn.addEventListener('click', () => {\n  tip.textContent = '点击次数 +1';\n  console.log('按钮被点击');\n});\nconsole.log('预览已就绪');"; // 演示模板：教学示例本身含 console.log
 
 // 默认示例：FANDEX 字标页（渐变流动标题 + 交互计数），开箱即展示站点设计语言
 const FANDEX_HTML =
@@ -62,7 +62,7 @@ const TEMPLATES: readonly PenTemplate[] = [
     html: '<div class="stage">\n  <div class="box box-a"></div>\n  <div class="box box-b"></div>\n  <div class="box box-c"></div>\n</div>',
     css:
       '.stage {\n  display: flex;\n  gap: 24px;\n  justify-content: center;\n  align-items: center;\n  height: 100vh;\n  background: #101418;\n}\n.box {\n  width: 48px;\n  height: 48px;\n  animation: pulse 1.6s ease-in-out infinite;\n}\n.box-a { background: #35C4DC; border-radius: 4px; }\n.box-b { background: #E8B93E; border-radius: 24px; animation-delay: 0.2s; }\n.box-c { background: #E05A4E; border-radius: 4px; transform: rotate(45deg); animation-delay: 0.4s; }\n@keyframes pulse {\n  0%, 100% { transform: translateY(0) rotate(0deg); }\n  50% { transform: translateY(-24px) rotate(8deg); }\n}',
-    js: "console.log('纯 CSS 动画：无需 JavaScript');",
+    js: "console.log('纯 CSS 动画：无需 JavaScript');", // 演示模板：教学示例本身含 console.log
   },
   {
     id: 'empty',
@@ -70,13 +70,15 @@ const TEMPLATES: readonly PenTemplate[] = [
     descKey: 'pg.template.blank.desc',
     html: '<h1>空白页面</h1>\n<p>从这里开始你的作品</p>',
     css: 'body {\n  font-family: sans-serif;\n  padding: 40px 16px;\n  text-align: center;\n}',
-    js: "console.log('开始编写吧');",
+    js: "console.log('开始编写吧');", // 演示模板：教学示例本身含 console.log
   },
 ];
 
 const DEFAULT_TEMPLATE: FrontendPen = {
   id: 'draft',
-  title: '未命名作品',
+  // 空标题 = 未命名：输入框展示 pg.titlePlaceholder 占位文案，
+  // 另存 / 作品库 / 导出等消费端各自回退（pg.untitled / fandex-pen）
+  title: '',
   html: TEMPLATES[0]!.html,
   css: TEMPLATES[0]!.css,
   js: TEMPLATES[0]!.js,
@@ -148,6 +150,31 @@ function FrontendLab() {
   const [consoleHeight, setConsoleHeight] = useState(200);
   const [consoleResizing, setConsoleResizing] = useState(false);
   const consoleDragRef = useRef<{ startY: number; startH: number } | null>(null);
+
+  // 弹层焦点管理（无障碍）：打开时把焦点移入弹层面板，关闭时归还给之前的触发元素
+  const guidePanelRef = useRef<HTMLDivElement | null>(null);
+  const drawerRef = useRef<HTMLElement | null>(null);
+  const restoreFocusRef = useRef<HTMLElement | null>(null);
+
+  useEffect(() => {
+    if (!showGuide) return;
+    restoreFocusRef.current = document.activeElement as HTMLElement | null;
+    guidePanelRef.current?.focus();
+    return () => {
+      restoreFocusRef.current?.focus();
+      restoreFocusRef.current = null;
+    };
+  }, [showGuide]);
+
+  useEffect(() => {
+    if (!showLibrary) return;
+    restoreFocusRef.current = document.activeElement as HTMLElement | null;
+    drawerRef.current?.focus();
+    return () => {
+      restoreFocusRef.current?.focus();
+      restoreFocusRef.current = null;
+    };
+  }, [showLibrary]);
 
   const handleConsoleResizeStart = useCallback(
     (e: ReactPointerEvent<HTMLDivElement>) => {
@@ -307,7 +334,7 @@ function FrontendLab() {
       { key: 'js' as PaneKey, lang: 'javascript', value: pen.js },
     ];
     const results = await Promise.all(
-      targets.map((t) => formatCode(t.lang, t.value)),
+      targets.map((item) => formatCode(item.lang, item.value)),
     );
     const patch: Partial<FrontendPen> = {};
     const notes: string[] = [];
@@ -316,16 +343,16 @@ function FrontendLab() {
       if (result.code !== target.value) {
         patch[target.key] = result.code;
       }
-      if (result.note) notes.push(result.note);
+      if (result.noteKey) notes.push(t(result.noteKey, undefined, lang));
     });
     if (Object.keys(patch).length > 0) {
       updatePen(patch);
     }
     if (notes.length > 0) {
-      setToolbarNote(notes.join('；'));
+      setToolbarNote(notes.join(' · '));
     }
     setFormatting(false);
-  }, [formatting, pen.html, pen.css, pen.js, updatePen]);
+  }, [formatting, pen.html, pen.css, pen.js, updatePen, lang]);
 
   // 预览导出：新窗口与下载都走一次性 blob URL，避免污染站点同源文档
   const openPreviewInNewWindow = useCallback(() => {
@@ -352,7 +379,7 @@ function FrontendLab() {
       ...pen,
       split,
       id: newId,
-      title: pen.title.trim() || '未命名作品',
+      title: pen.title.trim() || t('pg.untitled', undefined, lang),
       createdAt: now,
       updatedAt: now,
       lastOpenedAt: now,
@@ -367,7 +394,7 @@ function FrontendLab() {
     setLibrary(await loadPens());
     setSaveState('saved');
     syncPenUrl(newId);
-  }, [pen, split, setSaveState]);
+  }, [pen, split, setSaveState, lang]);
 
   const handleSave = useCallback(async () => {
     if (pen.id === 'draft') {
@@ -518,18 +545,27 @@ const handleOpenLibrary = useCallback(async () => {
       split: item.split ?? 0.5,
       lastOpenedAt: now,
     };
-    await savePen(opened);
+    try {
+      await savePen(opened);
+    } catch {
+      // 打开是内存态操作，落盘失败（配额 / 隐私模式）不阻塞编辑
+      setSaveState('error');
+    }
     setPen(opened);
     setSplit(opened.split ?? 0.5);
     resetPreview(opened);
     setShowLibrary(false);
     syncPenUrl(opened.id);
-  }, [resetPreview, setSplit]);
+  }, [resetPreview, setSplit, setSaveState]);
 
   const handleDeletePen = useCallback(async (item: FrontendPen) => {
     if (!window.confirm(t('pg.deleteConfirm', { title: item.title }, lang))) return;
-    await deletePen(item.id);
-    setLibrary(await loadPens());
+    try {
+      await deletePen(item.id);
+      setLibrary(await loadPens());
+    } catch {
+      setToolbarNote(t('pg.storageError', undefined, lang));
+    }
   }, [lang]);
 
   const handleDuplicatePen = useCallback(async (item: FrontendPen) => {
@@ -537,14 +573,18 @@ const handleOpenLibrary = useCallback(async () => {
     const copy: FrontendPen = {
       ...item,
       id: makePenId(),
-      title: `${item.title || '未命名作品'} 副本`,
+      title: `${item.title || t('pg.untitled', undefined, lang)} ${t('pg.copySuffix', undefined, lang)}`,
       createdAt: now,
       updatedAt: now,
       lastOpenedAt: now,
     };
-    await savePen(copy);
-    setLibrary(await loadPens());
-  }, []);
+    try {
+      await savePen(copy);
+      setLibrary(await loadPens());
+    } catch {
+      setToolbarNote(t('pg.storageError', undefined, lang));
+    }
+  }, [lang]);
 
   const togglePane = useCallback(
     (key: PaneKey) => {
@@ -939,6 +979,8 @@ const handleOpenLibrary = useCallback(async () => {
       {showGuide && (
         <div className="pg-keys-mask" onClick={() => setShowGuide(false)}>
           <div
+            ref={guidePanelRef}
+            tabIndex={-1}
             className="pg-guide"
             role="dialog"
             aria-modal="true"
@@ -1092,7 +1134,7 @@ const handleOpenLibrary = useCallback(async () => {
       {/* 本地作品库面板 */}
       {showLibrary && (
         <div className="pg-drawer-mask" onClick={() => setShowLibrary(false)}>
-          <aside className="pg-drawer" onClick={(e) => e.stopPropagation()}>
+          <aside ref={drawerRef} tabIndex={-1} className="pg-drawer" onClick={(e) => e.stopPropagation()}>
             <div className="pg-drawer-head">
               <span className="pg-drawer-title">
                 <PgIcon name="folder" size={15} />

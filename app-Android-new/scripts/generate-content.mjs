@@ -171,7 +171,7 @@ function copyDocs() {
     const validIds = new Set(
         readdirSync(CONTENT_DIR)
             .filter(e => statSync(join(CONTENT_DIR, e)).isDirectory())
-            .map(e => e.replace(/^d+-/, ''))
+            .map(e => e.replace(/^\d+-/, ''))
     );
     const docsRoot = join(ANDROID_ASSETS, 'docs');
     if (existsSync(docsRoot)) {

@@ -193,28 +193,33 @@ async function runSearch(query: string): Promise<void> {
   }
 
   const seq = ++searchSeq;
+  // 捕获本轮引用：面板可能在 await 期间被关闭（closePalette 置空模块引用），
+  // 之后只写捕获的节点，写前校验引用是否已换代
+  const status = statusEl;
+  const list = listEl;
   const pagefind = await loadPagefind();
+  if (!status || statusEl !== status || listEl !== list) return;
   if (!pagefind) {
-    statusEl.textContent = t('search.noIndex');
+    status.textContent = t('search.noIndex');
     return;
   }
 
-  statusEl.textContent = t('search.searching');
+  status.textContent = t('search.searching');
   try {
     const { results } = await pagefind.search(query);
     const datas = await Promise.all(results.slice(0, MAX_RESULTS).map((r) => r.data()));
-    // 过期响应：期间用户又输入了新查询，直接丢弃本轮结果
-    if (seq !== searchSeq) return;
-    listEl.innerHTML = '';
+    // 过期响应：期间用户又输入了新查询，或面板已关闭/重建，直接丢弃本轮结果
+    if (seq !== searchSeq || statusEl !== status || listEl !== list) return;
+    list.innerHTML = '';
     activeIndex = datas.length > 0 ? 0 : -1;
 
     if (datas.length === 0) {
-      statusEl.textContent = t('search.noResults', { q: query });
+      status.textContent = t('search.noResults', { q: query });
       renderGroup(t('search.features'), quickEntries());
       selectFirstItem();
       return;
     }
-    statusEl.textContent = t('search.resultCount', { n: results.length });
+    status.textContent = t('search.resultCount', { n: results.length });
 
     datas.forEach((data) => {
       const li = document.createElement('li');
@@ -251,8 +256,8 @@ async function runSearch(query: string): Promise<void> {
     });
     selectFirstItem();
   } catch {
-    if (seq === searchSeq) {
-      statusEl.textContent = t('search.searchFailed');
+    if (seq === searchSeq && statusEl === status) {
+      status.textContent = t('search.searchFailed');
     }
   }
 }
@@ -311,7 +316,12 @@ if (!import.meta.env.SSR && typeof window !== 'undefined') {
       e.preventDefault();
       if (panel?.open) {
         closePalette();
-      } else {
+        return;
+      }
+      // 前端实验室等页面有自己的模态弹层（引导 / 画廊 / 作品库抽屉），
+      // 此时不要抢焦点打开搜索面板
+      const otherModalOpen = document.querySelector('.pg-keys-mask, .pg-sc-mask, .pg-drawer-mask');
+      if (!otherModalOpen) {
         openPalette();
       }
     }
@@ -334,9 +344,9 @@ document.addEventListener('astro:page-load', () => {
 });
 
 subscribeLang(() => {
-  if (panel?.open) {
-    void runSearch(inputEl?.value.trim() ?? '');
-  }
+  // 面板 chrome（aria-label / placeholder / 页脚）在创建时定格，
+  // 语言切换后直接关闭，下次打开按新语言重建
+  if (panel) closePalette();
 });
 
 document.addEventListener('astro:page-load', () => {

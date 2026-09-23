@@ -1396,3 +1396,11 @@
     }
   }
 }
+
+/* 弹层面板为 programmatic focus 落点（焦点管理见 FrontendLab/ShowcaseGallery），
+   容器本身不绘制焦点环，键盘可达性由内部控件与 Esc 负责 */
+.pg-guide:focus,
+.pg-drawer:focus,
+.pg-sc-panel:focus {
+  outline: none;
+}

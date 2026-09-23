@@ -1,16 +1,18 @@
 
 export const MAIN_CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net data:",
-  "style-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+  // script-src 的 jsdelivr 供前端实验室按需 import prettier 格式化插件（script-src 管控动态 import）；
+  // 不放行 data: 脚本、CDN 样式与 CDN connect（站点无对应加载行为）
+  "script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net",
+  "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   "img-src 'self' data:",
-  "connect-src 'self' https://cdn.jsdelivr.net",
+  "connect-src 'self'",
 ].join('; ');
 
 export const DESKTOP_CSP = [
   "default-src 'self'",
-  "script-src 'self' 'unsafe-inline' data:",
+  "script-src 'self' 'unsafe-inline'",
   "style-src 'self' 'unsafe-inline'",
   "font-src 'self' data:",
   "img-src 'self' data:",

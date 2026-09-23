@@ -9,33 +9,11 @@ import { searchKeymap, highlightSelectionMatches } from '@codemirror/search';
 import { html } from '@codemirror/lang-html';
 import { css } from '@codemirror/lang-css';
 import { javascript } from '@codemirror/lang-javascript';
-import { python } from '@codemirror/lang-python';
-import { cpp } from '@codemirror/lang-cpp';
-import { StreamLanguage } from '@codemirror/language';
-import { java, csharp, kotlin } from '@codemirror/legacy-modes/mode/clike';
-import { go } from '@codemirror/legacy-modes/mode/go';
-import { rust } from '@codemirror/legacy-modes/mode/rust';
-import { lua } from '@codemirror/legacy-modes/mode/lua';
-import { standardSQL } from '@codemirror/legacy-modes/mode/sql';
-import { shell } from '@codemirror/legacy-modes/mode/shell';
 import { tags } from '@lezer/highlight';
 
-export type EditorLanguage =
-  | 'html'
-  | 'css'
-  | 'javascript'
-  | 'typescript'
-  | 'python'
-  | 'c'
-  | 'cpp'
-  | 'java'
-  | 'kotlin'
-  | 'go'
-  | 'rust'
-  | 'csharp'
-  | 'lua'
-  | 'sql'
-  | 'shell';
+// 前端实验室仅编辑 HTML / CSS / JS：按需收敛语言支持，避免把
+// python/cpp/legacy-modes 等未用语言打包进工作台懒加载 chunk
+export type EditorLanguage = 'html' | 'css' | 'javascript';
 
 export interface CodeMirrorBoxProps {
   value: string;
@@ -50,29 +28,6 @@ function languageSupport(language: EditorLanguage) {
       return html();
     case 'css':
       return css();
-    case 'typescript':
-      return javascript({ typescript: true });
-    case 'python':
-      return python();
-    case 'c':
-    case 'cpp':
-      return cpp();
-    case 'java':
-      return StreamLanguage.define(java);
-    case 'kotlin':
-      return StreamLanguage.define(kotlin);
-    case 'go':
-      return StreamLanguage.define(go);
-    case 'rust':
-      return StreamLanguage.define(rust);
-    case 'csharp':
-      return StreamLanguage.define(csharp);
-    case 'lua':
-      return StreamLanguage.define(lua);
-    case 'sql':
-      return StreamLanguage.define(standardSQL);
-    case 'shell':
-      return StreamLanguage.define(shell);
     case 'javascript':
     default:
       return javascript();

@@ -158,7 +158,10 @@ function initFullscreenToggle(): void {
     document.addEventListener('fullscreenchange', onFullscreenChange);
   }
 
-  if (readFullscreenFlag() === 'true' && !document.fullscreenElement) {
+  // 仅桌面端（Tauri）恢复上次全屏状态：浏览器无手势调用会被拒绝并产生
+  // 控制台噪音，且对用户是意外行为
+  const isTauriRuntime = '__TAURI__' in window;
+  if (isTauriRuntime && readFullscreenFlag() === 'true' && !document.fullscreenElement) {
     document.documentElement.requestFullscreen().catch(() => {});
   }
 }

@@ -337,11 +337,19 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
   };
   scroller.addEventListener('wheel', onWheel, { passive: false });
 
+  // resize 触发的量宽 + 克隆补位是读-写-读布局抖动，用 rAF 合帧并设克隆上限
+  let resizeRafId: number | null = null;
   const handleResize = (): void => {
-    state.cardSetWidth = measureCardSetWidth();
-    while (track.scrollWidth < scroller.clientWidth + state.cardSetWidth) {
-      cloneSet();
-    }
+    if (resizeRafId !== null) return;
+    resizeRafId = window.requestAnimationFrame(() => {
+      resizeRafId = null;
+      state.cardSetWidth = measureCardSetWidth();
+      let guard = 0;
+      while (track.scrollWidth < scroller.clientWidth + state.cardSetWidth && guard < 10) {
+        cloneSet();
+        guard += 1;
+      }
+    });
   };
   window.addEventListener('resize', handleResize);
 
@@ -351,6 +359,9 @@ function initScroller(scroller: HTMLElement, rowIndex: number): void {
     }
     if (state.inertiaRafId !== null) {
       cancelAnimationFrame(state.inertiaRafId);
+    }
+    if (resizeRafId !== null) {
+      cancelAnimationFrame(resizeRafId);
     }
     window.removeEventListener('resize', handleResize);
     scroller.removeEventListener('wheel', onWheel);

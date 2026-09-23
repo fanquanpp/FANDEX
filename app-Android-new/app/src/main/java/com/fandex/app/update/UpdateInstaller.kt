@@ -38,10 +38,9 @@ class UpdateInstaller(private val context: Context) {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
 
-            if (intent.resolveActivity(context.packageManager) == null) {
-                return false
-            }
-
+            // 不用 resolveActivity() 预检：Android 11+ 包可见性过滤下它对
+            // 系统安装器可能误报 null，导致更新静默失败（清单已声明 queries）。
+            // 直接调起，交给 ActivityNotFoundException 兜底。
             context.startActivity(intent)
             return true
         } catch (e: Exception) {

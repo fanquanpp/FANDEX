@@ -11,6 +11,9 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
+      - 'tsconfig.json'
+      - '.npmrc'
+      - 'scripts/**'
       - '.github/workflows/lighthouse.yml'
   pull_request:
     branches: [main]
@@ -21,6 +24,9 @@ on:
       - 'package.json'
       - 'pnpm-lock.yaml'
       - 'pnpm-workspace.yaml'
+      - 'tsconfig.json'
+      - '.npmrc'
+      - 'scripts/**'
       - '.github/workflows/lighthouse.yml'
   workflow_dispatch:
 
@@ -34,7 +40,7 @@ concurrency:
 jobs:
   lighthouse:
     name: Lighthouse audit
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 20
     steps:
       - name: Checkout repository
