@@ -165,9 +165,13 @@ if (noPush) {
     git(['push', 'origin', 'HEAD']);
     git(['push', 'origin', tag]);
     console.log('已推送版本提交与标签（安装包构建工作流已退役，不再自动触发构建）。');
-  } catch (e) {
-    console.error('[warn] 推送失败（main 可能受分支保护）。请手动执行:');
-    console.error(`  git push origin HEAD && git push origin ${tag}`);
+  } catch {
+    // main 受分支保护（Changes must be made through a pull request）时，
+    // 直推会被远端拒绝：把当前发版提交推到分支走 PR 合入，再补推标签。
+    console.error('[warn] 直推 main 被分支保护拒绝。请改走 PR 合入:');
+    console.error(`  1. git branch release/${tag} && git push origin release/${tag}`);
+    console.error('  2. 向 main 发起 PR 并合并（版本提交与 CHANGELOG 迁移都在其中）');
+    console.error(`  3. git push origin ${tag}`);
     process.exit(1);
   }
 }
