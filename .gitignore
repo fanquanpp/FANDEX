@@ -151,6 +151,9 @@ app-web/src/content/docs/
 # Trae IDE 工作区
 .trae/
 
+# 本地审计/报告产物（audit-learning-path 等）
+.reports/
+
 # Cursor
 .cursor/
 .cursorignore

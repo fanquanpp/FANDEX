@@ -139,7 +139,7 @@ sync 时自动回收，无需手工清理。删除后如果有其他文档通过
 
 ```bash
 pnpm sync                                          # 补全元数据（幂等）
-node app-web/scripts/content-audit.mjs             # 内容审计，确认无 HIGH 级问题
+pnpm --filter @fandex/web audit:content            # 内容审计，确认无 HIGH 级问题
 ```
 
 推送前至少跑 `pnpm sync`；完整构建验证由 CI 在「指向 main 的 PR 与发版」时

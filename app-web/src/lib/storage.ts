@@ -34,6 +34,8 @@ export function getJSON<T>(key: string): T | null {
   try {
     return JSON.parse(raw) as T;
   } catch {
+    // 值已损坏且无法自行恢复：移除以免每次读取都重复解析失败
+    removeItem(key);
     return null;
   }
 }

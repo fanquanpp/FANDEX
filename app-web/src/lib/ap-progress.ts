@@ -63,6 +63,23 @@ export function countMarks(): { solved: number; review: number } {
   return { solved, review };
 }
 
+/**
+ * 按当前题表的有效题目修剪本地标记：题库重组后，存储里会残留已下线
+ * 题目的标记（既不显示也无法清除）。题库页挂载时以本次有效题号集合
+ * 为准修剪并回写，状态计数随之自愈。
+ */
+export function pruneProblemMarks(validSlugs: ReadonlySet<string>): void {
+  const store = readStore();
+  let changed = false;
+  for (const slug of Object.keys(store)) {
+    if (!validSlugs.has(slug)) {
+      delete store[slug];
+      changed = true;
+    }
+  }
+  if (changed) writeStore(store);
+}
+
 export function saveFilterContext(search: string): void {
   if (typeof sessionStorage === 'undefined') return;
   try {

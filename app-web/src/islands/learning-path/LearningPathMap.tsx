@@ -6,6 +6,7 @@ import { computeMapLayout } from './map-layout';
 import {
   PROGRESS_STORAGE_KEY,
   clearTechProgress,
+  pruneTechProgress,
   readTechProgress,
   writeNodeProgress,
 } from './progress';
@@ -34,8 +35,13 @@ export default function LearningPathMap({ tech, base }: Props) {
   const [progress, setProgress] = useState<TechProgress>({});
 
   useEffect(() => {
+    // 文档编号重构后本地进度可能残留失效节点：挂载时按当前地图修剪后同步
+    const validNodeIds = new Set<string>();
+    for (const stage of tech.stages) {
+      for (const node of stage.nodes) validNodeIds.add(node.id);
+    }
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 水合后同步本地进度，必须延迟到 effect
-    setProgress(readTechProgress(tech.module));
+    setProgress(pruneTechProgress(tech.module, validNodeIds));
     const onStorage = (event: StorageEvent) => {
       if (event.key === PROGRESS_STORAGE_KEY) {
         setProgress(readTechProgress(tech.module));
@@ -43,7 +49,7 @@ export default function LearningPathMap({ tech, base }: Props) {
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, [tech.module]);
+  }, [tech.module, tech.stages]);
 
   const layout = useMemo(
     () => computeMapLayout(tech.stages, collapsedStageIds),

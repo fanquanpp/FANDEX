@@ -68,6 +68,30 @@ android {
         }
     }
 
+    // release 签名缺失时立即失败：debug 签名的 release 包一旦发布，
+    // 已装用户会因签名不一致无法升级。上面的 buildTypes 回退逻辑仅供
+    // 非分发任务（本地 compile 等）完成配置，真正打包前在此拦截。
+    gradle.taskGraph.whenReady {
+        val shipsReleaseBinary = allTasks.any { task ->
+            (task.name.startsWith("assemble") || task.name.startsWith("bundle")) &&
+                task.name.endsWith("Release")
+        }
+        if (shipsReleaseBinary) {
+            val release = signingConfigs.getByName("release")
+            val keystoreReady = release.storeFile?.exists() == true &&
+                !release.storePassword.isNullOrBlank() &&
+                !release.keyAlias.isNullOrBlank() &&
+                !release.keyPassword.isNullOrBlank()
+            if (!keystoreReady) {
+                throw GradleException(
+                    "release 签名未配置完整（缺少 fandex-release.jks 或 storePassword/keyAlias/keyPassword）。" +
+                        "请设置环境变量 FANDEX_KEYSTORE_PASSWORD / FANDEX_KEY_ALIAS / FANDEX_KEY_PASSWORD，" +
+                        "或在 local.properties 配置同名属性；已禁止回退 debug 签名产出 release 包。"
+                )
+            }
+        }
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_21
         targetCompatibility = JavaVersion.VERSION_21
@@ -88,30 +112,6 @@ android {
 kotlin {
     compilerOptions {
         jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21
-    }
-}
-
-// release 签名缺失时立即失败：debug 签名的 release 包一旦发布，
-// 已装用户会因签名不一致无法升级。上面的 buildTypes 回退逻辑仅供
-// 非分发任务（本地 compile 等）完成配置，真正打包前在此拦截。
-gradle.taskGraph.whenReady {
-    val shipsReleaseBinary = allTasks.any { task ->
-        (task.name.startsWith("assemble") || task.name.startsWith("bundle")) &&
-            task.name.endsWith("Release")
-    }
-    if (shipsReleaseBinary) {
-        val release = signingConfigs.getByName("release")
-        val keystoreReady = release.storeFile?.exists() == true &&
-            !release.storePassword.isNullOrBlank() &&
-            !release.keyAlias.isNullOrBlank() &&
-            !release.keyPassword.isNullOrBlank()
-        if (!keystoreReady) {
-            throw GradleException(
-                "release 签名未配置完整（缺少 fandex-release.jks 或 storePassword/keyAlias/keyPassword）。" +
-                    "请设置环境变量 FANDEX_KEYSTORE_PASSWORD / FANDEX_KEY_ALIAS / FANDEX_KEY_PASSWORD，" +
-                    "或在 local.properties 配置同名属性；已禁止回退 debug 签名产出 release 包。"
-            )
-        }
     }
 }
 
