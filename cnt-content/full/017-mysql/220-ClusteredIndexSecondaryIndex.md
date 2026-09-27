@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 200
 title: 聚簇索引与二级索引
 module: 'mysql'
 category: 数据库

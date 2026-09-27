@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 80
 title: SQL 数据定义与高级对象
 module: 'mysql'
 category: 数据库

@@ -29,7 +29,8 @@ JavaScript 是唯一一个"浏览器免费送运行环境"的主流语言——�
 ## 前置知识
 
 - 会打开浏览器开发者工具（[零基础计算机常识](/start/020-ComputerBasicsForBeginners) 末节）；
-- 知道按 `F12`，找到 Console（控制台）标签。
+- 知道按 `F12`，找到 Console（控制台）标签；
+- 「存进文件」一节会用终端 `cd` 与 `node` 运行脚本（[终端与 Shell 基础](/start/040-TerminalAndShellBasics)）。
 
 ## 第一行代码
 
@@ -187,9 +188,9 @@ checkGuess(62);   // 直到输出"猜中了"
 1. 用 VS Code 在 `my-code/week1` 新建 `guess.js`，把上面两段代码完整粘贴进去，并在文件末尾补一段让程序"自己玩"的循环（先照抄，细节后续模块会讲）：
 
 ```javascript
-let guess = 50;
+let guess = 1;
 while (!checkGuess(guess)) {
-  guess = guess + 1;    // 演示用笨办法：从 50 开始逐个加一
+  guess = guess + 1;    // 演示用笨办法：从 1 开始逐个加一，1 到 100 内必然命中
 }
 ```
 
@@ -220,4 +221,4 @@ node guess.js
 
 ## 下一步
 
-体验了"机器擅长重复计算"，下一篇用 [Python 写一个真正实用的小工具](/start/070-FirstProgramPython)——记账程序，感受脚本语言解决日常问题的爽感；然后对比两门语言，选择你的主线方向。
+体验了"机器擅长重复计算"，下一篇用 [Python 写一个真正实用的小工具](/start/070-FirstProgramPython)——记账程序，感受脚本语言解决日常问题的爽感；然后对比两门语言，选择你的主线方向。已经决定 JS 就是主线、不等第二门体验的：直接进入 [JavaScript 是什么](/javascript/010-WhatIsJavaScript) 系统学习，本篇随时回来翻。

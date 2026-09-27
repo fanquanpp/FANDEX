@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 560
 title: ES2023-ES2026 新特性全景
 module: 'javascript'
 category: 前端技术
@@ -14,7 +14,6 @@ related:
   - 'javascript/610-TemporalJavaScriptAPI'
 prerequisites:
   - 'javascript/080-FunctionScopeClosure'
-  - 'javascript/230-MapSetWeakMapWeakSet'
 ---
 
 ## 0. 一句话理解

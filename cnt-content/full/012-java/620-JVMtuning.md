@@ -1,5 +1,5 @@
 ---
-order: 620
+order: 490
 title: JVM 调优
 module: 'java'
 category: 后端技术

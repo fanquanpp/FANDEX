@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 310
 title: 泛型进阶
 module: 'java'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 960
+order: 770
 title: Java 性能调优
 module: 'java'
 category: 后端技术

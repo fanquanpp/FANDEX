@@ -10,7 +10,6 @@ updated: '2026-09-12'
 related:
   - 'redis/010-OverviewCoreDataStructure'
   - 'redis/020-KeyManagement'
-  - 'redis/040-ListSetZSetCommand'
 prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---

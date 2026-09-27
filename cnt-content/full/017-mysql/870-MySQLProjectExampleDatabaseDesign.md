@@ -1,5 +1,5 @@
 ---
-order: 870
+order: 840
 title: MySQL 项目示例：电商数据库设计
 module: 'mysql'
 category: 数据库

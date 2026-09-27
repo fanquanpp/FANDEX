@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 390
 title: 元类与单例模式
 module: 'python'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 240
 title: Promise 构造器
 module: 'javascript'
 category: 前端技术

@@ -1,563 +1,276 @@
 ---
 order: 20
-title: Python 概述与环境配置
+title: Python 概述与环境搭建：给电脑装上翻译官
 module: 'python'
 category: 后端技术
 difficulty: beginner
-description: Python 发展历程、版本特性与开发环境搭建。
+description: 用「给电脑雇翻译官」讲清解释器是什么、官网安装包与 uv/pyenv 版本管理器的分工、三系统安装要点与两条验证命令，附装机高频报错的真实调试实录与练习。
 author: fanquanpp
 updated: '2026-09-12'
 related:
+  - 'python/030-PyenvUvManage'
+  - 'python/040-PythonVirtualEnv'
   - 'python/050-ProgramStructureBasicSyntax'
-  - 'python/090-VariableConstant'
-prerequisites: []
+  - 'shell/100-EnvVarPath'
+prerequisites:
+  - 'python/010-WhatIsPython'
 ---
 
 ## 前置知识
 
-- [Python 是什么：最友好的第一门通用语言](/python/010-WhatIsPython)：建议先完成前一篇的学习
+- 已完成 [Python 是什么](/python/010-WhatIsPython)：知道 Python 是解释型语言、见过两次「跑起来」的样子。
+
+还没读完前一篇也没关系，只要知道：你写的 Python 代码需要一位「翻译官」来执行，本文负责把它请上你的电脑。
 
 ## 学习目标
 
-- 掌握「0.1 Python 入门核心能力清单」的核心机制、典型用法与常见陷阱
-- 掌握「1. Python 概述 (Overview)」的核心机制、典型用法与常见陷阱
-- 掌握「2. 应用领域 (Applications)」的核心机制、典型用法与常见陷阱
-- 掌握「3. 环境搭建 (Environment Setup)」的核心机制、典型用法与常见陷阱
-- 掌握「4. 解释器与 IDE (Interpreters & IDEs)」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用一句话说清「解释器」是什么，以及 `python 文件名.py` 运行时背后发生了什么；
+2. 独立完成 Windows / macOS / Linux 任一系统的 Python 安装，并用两条命令验证通过；
+3. 判断什么时候用官网安装包、什么时候需要 uv/pyenv 版本管理器，说出两者的分工；
+4. 看懂 `python --version` 的输出，判断版本是否达标（3.12 及以上）；
+5. 遇到「python 不是内部或外部命令」「敲 python 弹出应用商店」这类装机高频现场，能按三步定位修复。
 
-## 0.1 Python 入门核心能力清单
+预计 40 到 60 分钟（含一次完整安装与验证），含 3 组修改实验与 4 道练习。
 
-### 语法、内置类型与常用方法
+## 1. 你现在要解决什么问题
 
-| 类型 | 常用操作 | 解决的问题 | 常见误区 |
-| --- | --- | --- | --- |
-| `str` | `split`、`join`、`strip`、`replace`、`format` | 文本清洗和格式化 | 字符串不可变，方法返回新对象 |
-| `list` | `append`、`extend`、`sort`、切片 | 有序可变集合 | 遍历时直接删除元素容易跳项 |
-| `tuple` | 解包、作为不可变记录 | 固定结构数据 | 单元素元组必须写逗号 |
-| `dict` | `get`、`items`、`setdefault` | 键值映射 | 直接索引不存在键会抛 `KeyError` |
-| `set` | `add`、`union`、`intersection` | 去重和集合运算 | 集合无顺序，不能依赖输出顺序 |
-| `pathlib.Path` | `exists`、`read_text`、`write_text` | 跨平台文件路径 | 拼接路径不要手写斜杠 |
+你在 010 篇看过两段能跑的 Python 代码，跃跃欲试想写自己的记账程序。打开终端敲下 `python --version`，屏幕上却是一行冷冰冰的中文：
 
-### 工程起步命令
+```text
+'python' 不是内部或外部命令，也不是可运行的程序
+或批处理文件。
+```
+
+（macOS / Linux 上是另一副面孔：`zsh: command not found: python`。）
+
+原因很直白：电脑只认 0 和 1。你写的 `print('你好')` 是人类语言，CPU 一个字都看不懂。**想让电脑替你干活，第一步是给它雇一位翻译官**——专门把 Python 代码逐条翻译成 CPU 能执行的指令。这位翻译官就是 **Python 解释器**，而你在终端敲的 `python` 这条命令，就是在呼叫它。
+
+翻译官还没上岗，所以终端根本找不到这个人。本文解决三件事：解释器是什么、怎么把它装上、怎么确认它真的上岗了。
+
+## 2. 先查岗，再安装
+
+先别急着下载——很多电脑上其实已经有翻译官了（macOS 与多数 Linux 出厂自带）。在终端运行：
 
 ```bash
 python --version
-python -m venv .venv
-python -m pip install --upgrade pip
-python -m pip install pytest
-python -m pytest
 ```
 
-### 第一个可测试函数
+预期输出（数字随你装的版本不同，重点是 `Python 3` 开头）：
 
-```python
-def normalize_name(name: str) -> str:
-    return name.strip().title()
-
-
-def test_normalize_name() -> None:
-    assert normalize_name('  ada lovelace ') == 'Ada Lovelace'
+```text
+Python 3.14.1
 ```
 
-从第一天就把函数、类型标注和测试放在一起练习，可以避免只会在交互式环境里写临时代码。
+对照结果做判断：
 
+- 看到 `Python 3.12` 及以上：翻译官已在岗，直接跳到第 6 节做全套验证；
+- 看到 `Python 2.x`：这是「前任翻译官」，2020 年就停止维护了，必须新装新版；
+- 看到本文开头的报错：确实没人上岗，继续往下装。
 
-
-> 本节为增量补充，帮助你选择 Python 版本与包管理方式。
-
-- Python：3.14.x 为当前稳定主线（最新补丁 3.14.6，2026-06-10）；3.13 处于维护期；3.15 开发中。企业新项目推荐 3.12+，避免使用已停止支持的旧版本。
-- 包管理：入门用官方 `pip + venv`；新项目可选用 `uv`（官方文档推荐的高性能安装器）与 `pyproject.toml` 标准。
-- 类型标注：typing 能力持续增强，建议从第一天就写类型注解，配合 mypy/pyright 做静态检查。
-
-
-## 1. Python 概述 (Overview)
-
-Python 是由 **Guido van Rossum** 于 1989 年圣诞节期间开始设计的一种高级脚本语言。它以英国电视喜剧《Monty Python's Flying Circus》命名，于 1991 年发布第一个正式版本。Python 的设计哲学强调代码可读性和简洁性，提倡 "优雅"、"明确"、"简单" 的编程风格。
-
-### 1.1 核心特点 (Key Features)
-
-| 特点             | 描述                                                      | 优势                          |
-| :--------------- | :-------------------------------------------------------- | :---------------------------- |
-| **简单易学**     | 语法接近自然语言，强制缩进提高代码可读性                  | 学习曲线平缓，上手快          |
-| **解释执行**     | 源码由 Python 解释器逐行转换成字节码运行，无需显式编译    | 开发效率高，调试方便          |
-| **动态类型**     | 变量不需要声明类型，运行时自动确定                        | 代码简洁，灵活性高            |
-| **丰富的库**     | 拥有庞大的标准库 (Battery Included) 和第三方库生态 (PyPI) | 避免重复造轮子，开发效率高    |
-| **跨平台**       | 支持 Windows, Linux, macOS 等多种操作系统                 | 一次编写，多处运行            |
-| **多范式**       | 支持面向对象、函数式、过程式编程                          | 适应不同编程风格和场景        |
-| **自动内存管理** | 内置垃圾回收机制，无需手动管理内存                        | 减少内存泄漏，提高代码可靠性  |
-| **扩展性**       | 可以与 C/C++ 等语言无缝集成                               | 性能关键部分可以用 C/C++ 实现 |
-
-### 1.3 Python 2 vs Python 3
-
-| 方面         | Python 2               | Python 3                |
-| :----------- | :--------------------- | :---------------------- |
-| **打印语句** | `print "Hello"`        | `print("Hello")`        |
-| **整数除法** | `3 / 2 = 1`            | `3 / 2 = 1.5`           |
-| **字符串**   | ASCII 字符串和 Unicode | 统一使用 Unicode        |
-| **异常处理** | `except Exception, e`  | `except Exception as e` |
-| **xrange**   | 存在 `xrange()`        | 统一使用 `range()`      |
-| **迭代器**   | 需要调用 `iter()`      | 直接可迭代              |
-| **官方支持** | 2020 年停止支持        | 持续更新                |
-
-## 2. 应用领域 (Applications)
-
-Python 的 versatility 使其在多个领域都有广泛应用：
-
-### 2.1 数据科学与机器学习
-
-- **数据处理**: NumPy, Pandas, SciPy
-- **数据可视化**: Matplotlib, Seaborn, Plotly
-- **机器学习**: Scikit-learn, XGBoost, LightGBM
-- **深度学习**: TensorFlow, PyTorch, Keras
-- **自然语言处理**: NLTK, spaCy, Transformers
-
-### 2.2 Web 开发
-
-- **全栈框架**: Django, Pyramid
-- **微框架**: Flask, FastAPI, Bottle
-- **API 开发**: FastAPI, Flask-RESTful
-- **异步框架**: FastAPI, Tornado, aiohttp
-- **前端集成**: Django REST Framework, Flask + React
-
-### 2.3 自动化与运维
-
-- **配置管理**: Ansible, SaltStack
-- **容器编排**: Kubernetes (Python 客户端)
-- **监控系统**: Prometheus, Grafana (Python 集成)
-- **自动化脚本**: 文件处理、系统管理、网络操作
-- **CI/CD**: Jenkins, GitHub Actions (Python 脚本)
-
-### 2.4 网络爬虫与数据采集
-
-- **爬虫框架**: Scrapy, PySpider
-- **HTTP 客户端**: Requests, aiohttp
-- **HTML 解析**: BeautifulSoup, lxml
-- **数据提取**: Scrapy Selector, XPath
-- **反爬处理**: Selenium, Playwright
-
-### 2.5 游戏开发
-
-- **游戏引擎**: Pygame, Pyglet
-- **3D 游戏**: Panda3D, Blender Game Engine
-- **游戏工具**: PyOpenGL, PySDL2
-- **游戏 AI**: 强化学习、路径规划
-
-### 2.6 科学计算与工程
-
-- **数值计算**: NumPy, SciPy
-- **符号计算**: SymPy
-- **图像处理**: OpenCV, PIL/Pillow
-- **信号处理**: SciPy.signal
-- **仿真模拟**: PySimulator, PyDy
-
-### 2.7 其他领域
-
-- **物联网**: MicroPython, CircuitPython
-- **区块链**: Web3.py, pyethereum
-- **桌面应用**: PyQt, Tkinter, wxPython
-- **移动应用**: Kivy, BeeWare
-- **教育与教学**: 适合初学者的编程语言
-
-## 3. 环境搭建 (Environment Setup)
-
-### 3.1 安装 Python
-
-#### 3.1.1 Windows 安装
-
-1. **下载安装包**: 访问 [Python 官网](https://www.python.org/downloads/) 下载最新版本的 Python 安装包
-2. **运行安装程序**:
-
-- 勾选 "Add Python to PATH" (非常重要)
-- 选择 "Customize installation"
-- 确保勾选所有必要的组件
-
-3. **完成安装**:
-
-- 点击 "Install Now"
-- 等待安装完成
-
-4. **验证安装**:
-
-```cmd
- python --version
- pip --version
-```
-
-#### 3.1.2 macOS 安装
-
-1. **使用 Homebrew** (推荐):
+再补一条能真正「干活」的验证——让翻译官现场翻译一句话：
 
 ```bash
- brew install python
+python -c "print('翻译官就位')"
 ```
 
-2. **使用安装包**:
+`-c` 的意思是：把后面引号里的字符串当作 Python 代码，直接执行。预期输出：
 
-- 从官网下载 macOS 安装包
-- 运行安装程序
-- 按照向导完成安装
+```text
+翻译官就位
+```
 
-3. **验证安装**:
+两条都通过，环境已经可用；装的过程出了岔子，后面的调试实录全用得上。
+
+## 3. 发生了什么：解释器与两种运行方式
+
+`python --version` 和 `python -c` 背后是同一个程序：Windows 上叫 `python.exe`，macOS / Linux 上通常叫 `python3`。你从官网下载的就是 **CPython**——用 C 语言写的官方参考实现。解释器的实现不止一种（跑在 JVM 上的 Jython、给单片机用的 MicroPython），新人阶段一律用 CPython。
+
+它的工作流程一句话讲完：把源码文本读进来，编译成中间指令（字节码），再在自己的虚拟机上逐条执行。「解释型语言」说的就是这个全自动的过程——你只管写代码，翻译的活它全包，改一行跑一次，不用手动编译。
+
+010 篇见过的两种用法，对应解释器的两张面孔：
+
+- `python`（不带参数）：进入交互模式，在 `>>>` 提示符后逐行喂代码，适合试语法；
+- `python 文件名.py`：执行整个脚本文件，这是写程序的正常形态。
+
+## 4. 两条安装路线：官网安装包与版本管理器
+
+装翻译官有两条路，分工完全不同：
+
+**路线一：官网安装包（本篇走这条）。** 打开 https://www.python.org/downloads/ ，网站会自动识别你的系统并推荐最新稳定版，下载、安装、完成。它一次安装一个固定版本，全局生效。入门期你只需要一个 Python，这条路线最短。
+
+**路线二：版本管理器 pyenv 与 uv。** 什么时候才需要？当你同时维护两个项目——A 项目要求 3.10、B 项目要求 3.13——就需要一条命令切换版本的工具。现在不用装、不用学，知道有这回事即可，细节见 [pyenv 与 uv 版本管理](/python/030-PyenvUvManage)；与它配套的「每个项目一套独立依赖」叫虚拟环境，见 [Python 与虚拟环境](/python/040-PythonVirtualEnv)。
+
+**版本怎么选：** 装 3.12 及以上的最新稳定版，当前稳定主线是 3.14.x。Python 每年 10 月发一个大版本，安全补丁只发给受支持的版本线，新项目不要用已停维护的旧版本——与 010 篇口径一致。
+
+## 5. 三大系统安装要点
+
+### Windows
+
+1. 官网下载安装包，双击运行；
+2. 安装器第一个界面，**必须勾选「Add python.exe to PATH」**——这一步是告诉 Windows「翻译官住在哪里」，是全文最重要的一次单击；
+3. 点 Install Now，等进度条走完。
+
+忘了勾怎么办：最省事的修法是卸载重装、这次勾上；手动改环境变量（PATH 是终端找程序的「地址簿」）的方法见 [环境变量与 PATH](/shell/100-EnvVarPath)。
+
+另一个高频现象：没装 Python 的 Windows 机器上敲 `python`，弹出的是 Microsoft Store 商店页面——那是 Windows 预设的「应用执行别名」，不是安装成功。装了官网版仍弹商店的话，到「设置 → 应用 → 高级应用设置 → 应用执行别名」，把 python.exe 与 python3.exe 两项关掉，重开终端再试。
+
+### macOS
+
+系统自带的 python3 版本偏旧且由系统锁定，**不要动它**（部分系统工具依赖它）。装新版二选一：
+
+- Homebrew 方式（前提是装过 brew）：
 
 ```bash
- python3 --version
- pip3 --version
+brew install python
 ```
 
-#### 3.1.3 Linux 安装
+- 或用官网安装包，双击走完向导。
 
-#### Ubuntu/Debian
+### Linux（Ubuntu / Debian 为例）
 
 ```bash
- # 更新包列表
- sudo apt update
- # 安装 Python 3.10+
- sudo apt install python3 python3-pip python3-venv
- # 验证安装
- python3 --version
- pip3 --version
+sudo apt update
+sudo apt install python3 python3-pip python3-venv
 ```
 
-#### CentOS/RHEL
+CentOS / RHEL 把第一条换成 `sudo dnf install python3 python3-pip python3-venv` 即可。`python3-pip` 用来装第三方库，`python3-venv` 用来建虚拟环境，040 篇会用到，一并装上省事。
+
+**命令名差异：** Windows 装完后命令是 `python`（还有个等价短命令 `py`）；macOS 与 Linux 通常是 `python3`。为避免混乱，下文统一写 `python`，macOS / Linux 读者请自动替换。
+
+## 6. 验证：两条命令与预期输出
+
+安装完成后，**重开一个终端**（别用安装前就开着的旧窗口，它读不到新配置），做全套验证。
+
+第一条，查版本：
 
 ```bash
- # 安装 Python 3.10+
- sudo dnf install python3 python3-pip python3-venv
- # 验证安装
- python3 --version
- pip3 --version
+python --version
 ```
 
-### 3.2 包管理
+预期输出（你的数字可能更新）：
 
-#### 3.2.1 pip 基础使用
+```text
+Python 3.14.1
+```
+
+第二条，让它真干活：
 
 ```bash
- # 安装包
- pip install requests
- # 安装特定版本
- pip install requests==2.31.0
- # 升级包
- pip install --upgrade requests
- # 卸载包
- pip uninstall requests
- # 查看已安装包
- pip list
- # 导出依赖
- pip freeze > requirements.txt
- # 安装依赖
- pip install -r requirements.txt
+python -c "print('环境就绪')"
 ```
 
-#### 3.2.2 虚拟环境
+预期输出：
 
-虚拟环境可以隔离不同项目的依赖，避免版本冲突：
+```text
+环境就绪
+```
+
+顺带确认随行的 pip（安装第三方库用，用法详见 040 篇）：
 
 ```bash
- # 创建虚拟环境
- python -m venv venv
- # 激活虚拟环境
- # Linux/macOS
- source venv/bin/activate
- # Windows
- .\venv\Scripts\activate
- # 退出虚拟环境
- deactivate
- # 删除虚拟环境
- # Linux/macOS
- rm -rf venv
- # Windows
- rmdir /s venv
+pip --version
 ```
 
-#### 3.2.3 包管理工具
+预期输出（路径与数字因机器而异，关键是括号里显示的 Python 版本与你刚装的对得上）：
 
-| 工具       | 特点                | 适用场景     |
-| :--------- | :------------------ | :----------- |
-| **pip**    | 官方包管理工具      | 基本包管理   |
-| **pipenv** | 结合 pip 和虚拟环境 | 项目依赖管理 |
-| **poetry** | 现代化包管理工具    | 复杂项目管理 |
-| **conda**  | 跨语言包管理        | 数据科学项目 |
+```text
+pip 26.1.2 from C:\Users\you\...\site-packages\pip (python 3.14)
+```
 
-### 3.3 环境变量配置
+判断标准一句话：**版本号是 Python 3 开头且不低于 3.12，三条命令都正常回应——环境合格，随时开工。**
 
-#### 3.3.1 Windows
+## 7. 修改实验
 
-1. 右键 "此电脑" → "属性" → "高级系统设置" → "环境变量"
-2. 在 "系统变量" 中找到 "Path"，点击 "编辑"
-3. 添加 Python 安装目录和 Scripts 目录（如 `C:\Program Files\Python310` 和 `C:\Program Files\Python310\Scripts`）
-4. 点击 "确定" 保存配置
-5. 重启命令行窗口使配置生效
+以下每条都**先预测输出，再运行验证**。
 
-#### 3.3.2 Linux/macOS
+实验一：把 `-c` 里的内容换成算式（`**` 是乘方，010 篇见过）：
 
 ```bash
- # 编辑 bash 配置文件
- nano ~/.bashrc # 或 ~/.zshrc
- # 添加 Python 路径
- export PATH="$PATH:/usr/local/bin/python3"
- export PATH="$PATH:/usr/local/bin/pip3"
- # 使配置生效
- source ~/.bashrc # 或 ~/.zshrc
+python -c "print(2 ** 10)"
 ```
 
-## 4. 解释器与 IDE (Interpreters & IDEs)
-
-### 4.1 Python 解释器
-
-| 解释器          | 特点                            | 适用场景         |
-| :-------------- | :------------------------------ | :--------------- |
-| **CPython**     | 官方默认解释器，用 C 编写       | 大多数应用场景   |
-| **PyPy**        | 即时编译 (JIT) 解释器，性能更高 | 性能要求高的场景 |
-| **Jython**      | 运行在 JVM 上的 Python 解释器   | Java 集成        |
-| **IronPython**  | 运行在 .NET 上的 Python 解释器  | .NET 集成        |
-| **MicroPython** | 为微控制器优化的 Python 实现    | 物联网设备       |
-
-### 4.2 集成开发环境 (IDE)
-
-| IDE                    | 特点                                               | 适用场景             |
-| :--------------------- | :------------------------------------------------- | :------------------- |
-| **PyCharm**            | 功能最全的专业 IDE，支持智能代码补全、调试、测试等 | 大型项目开发         |
-| **Visual Studio Code** | 轻量级编辑器，配合 Python 插件，功能强大           | 通用开发、跨语言项目 |
-| **Jupyter Notebook**   | 交互式开发环境，支持代码、文本、可视化混合         | 数据分析、机器学习   |
-| **Spyder**             | 科学计算专用 IDE，类似 MATLAB                      | 科学计算、数据分析   |
-| **Thonny**             | 初学者友好的 IDE，内置调试器                       | 学习 Python、教学    |
-| **Sublime Text**       | 轻量快速的编辑器，配合插件使用                     | 快速编辑、小型项目   |
-
-### 4.3 实用工具
-
-| 工具           | 功能                       | 用途               |
-| :------------- | :------------------------- | :----------------- |
-| **IPython**    | 增强的交互式 Python 解释器 | 交互式开发、调试   |
-| **JupyterLab** | Jupyter Notebook 的升级版  | 数据科学、可视化   |
-| **pytest**     | 强大的测试框架             | 单元测试、集成测试 |
-| **black**      | 代码格式化工具             | 保持代码风格一致   |
-| **flake8**     | 代码检查工具               | 代码质量检查       |
-| **mypy**       | 静态类型检查工具           | 类型检查、代码质量 |
-| **virtualenv** | 虚拟环境管理工具           | 依赖隔离           |
-| **tox**        | 测试自动化工具             | 多环境测试         |
-
-## 5. 第一个 Python 程序
-
-### 5.1 简单示例
-
-```python
- # hello.py
- print("Hello, Python!")
- # 变量和数据类型
- name = "Python"
- version = 3.12
- is_great = version >= 3.12
- print(f"{name} version {version} is great: {is_great}")
- # 列表和循环
- languages = ["Python", "Java", "C++", "JavaScript"]
- for lang in languages:
-  print(f"I love {lang}!")
- # 函数定义
- def greet(name):
-  return f"Hello, {name}!"
- print(greet("World"))
-```
-
-### 5.2 运行程序
+实验二：拼接两个词：
 
 ```bash
- # 直接运行
- python hello.py
- # 交互式运行
- python
- >
- Hello, Python!
- >
- # 使用 IPython
- ipython
- in [1]: print("Hello, Python!")
- Hello, Python!
- in [2]: exit()
+python -c "print('Py' + 'thon')"
 ```
 
-## 6. 最佳实践
-
-### 6.1 代码风格
-
-- **PEP 8**: 遵循 Python 官方代码风格指南
-- 缩进使用 4 个空格
-- 每行不超过 79 个字符
-- 空行分隔逻辑块
-- 命名规范：
-- 函数和变量：snake_case
-- 类名：CamelCase
-- 常量：UPPER_CASE
-- **代码格式化**: 使用 black 自动格式化代码
+实验三：故意运行一个不存在的文件，认识你的第一个运行期报错：
 
 ```bash
- pip install black
- black your_script.py
+python ledger.py
 ```
 
-### 6.2 项目结构
+预期输出（路径随你的机器与所在目录变化）：
 
-```mermaid
-flowchart TD
-    T0["project/"]
-    T1["README.md"]
-    T2["requirements.txt"]
-    T3["setup.py"]
-    T4["project/"]
-    T5["__init__.py"]
-    T6["module1.py"]
-    T7["module2.py"]
-    T8["tests/"]
-    T9["__init__.py"]
-    T10["test_module.py"]
-    T11["examples/"]
-    T12["example.py"]
-    T0 --> T1
-    T0 --> T2
-    T0 --> T3
-    T0 --> T4
-    T7 --> T8
-    T10 --> T11
-    T11 --> T12
+```text
+python: can't open file 'C:\Users\you\ledger.py': [Errno 2] No such file or directory
 ```
 
-### 6.3 依赖管理
+按「读报错三步」走一遍：最后一行 `[Errno 2] No such file or directory` 说明「找不到文件」；引号里是它去找的完整路径——盯着看，常能发现文件名打错了、或人不在文件所在目录。修法：先 `cd` 到文件所在目录再运行，或补全文件名。
 
-- **使用虚拟环境**：为每个项目创建独立的虚拟环境
-- **固定依赖版本**：在 requirements.txt 中指定精确版本
-- **定期更新依赖**：使用 `pip list --outdated` 检查过时的依赖
-- **使用锁文件**：对于生产环境，使用 pipenv 或 poetry 的锁文件
+## 8. 常见错误与调试实录
 
-### 6.4 测试
+**错误一：`'python' 不是内部或外部命令`（Windows）或 `command not found: python`（macOS / Linux）。**
+定位三步：第一步，认清这不是 Python 报的错，是**终端**说「我找不到叫 python 的程序」；第二步，问自己翻译官装没装，没装先装；第三步，装了还报错，就是 PATH 里没有它——Windows 十有八九是漏勾了「Add python.exe to PATH」，卸载重装勾上最快，手动补配置走 [环境变量与 PATH](/shell/100-EnvVarPath)。
 
-- **单元测试**：使用 pytest 编写和运行测试
+**错误二：敲 `python` 弹出 Microsoft Store。**
+判断标志：弹出来的是商店窗口而非版本号。这不是 Python 的问题，是 Windows 的应用执行别名在抢戏，按第 5 节的步骤关掉两个别名项即可。
+
+**错误三：`python --version` 显示 `Python 2.7.18`。**
+老服务器（如 CentOS 7）和老教材里常见。Python 2 已于 2020 年停止维护，不要在它上面练习。修法：安装 Python 3，用 `python3` 命令调用新版；**不要卸载系统自带的旧版**——有些系统工具依赖它，让新旧共存、各叫各名才是正解。
+
+## 9. 实际项目中的使用场景
+
+- 你今天装的这套解释器，与生产环境里跑的是同一个概念：服务器用 Docker 镜像（比如 `python:3.14`）部署时，镜像里装的就是这位翻译官，你的代码原样能跑；
+- 团队里「为什么你机器上好好的」这类纠纷，一半源于两人 Python 版本不同——排查的第一句话永远是互报 `python --version`；
+- CI 流水线（如 GitHub Actions 的 setup-python 步骤）做的事和本文一样：报一个版本号，把解释器装到构建机上。
+
+## 10. 本模块学习地图
+
+一句话路线：你刚装好的解释器，接下来先交给 [pyenv 与 uv 版本管理](/python/030-PyenvUvManage) 与 [虚拟环境](/python/040-PythonVirtualEnv) 管理成体系，然后在 [程序结构基本语法](/python/050-ProgramStructureBasicSyntax) 写下你的第一个程序、经 [控制流](/python/060-ControlFlow) 与 [基本数据类型](/python/070-BasicDataType) 打牢语法地基，再由 [变量与常量](/python/090-VariableConstant) 与 [函数详解](/python/100-FunctionDetailed) 教你把代码组织成型——本模块之后的全部篇目都长在这条主线上。
+
+## 11. 小练习
+
+**预测题**（5 分钟）：不运行，先写下你预测的输出，再用 `python -c` 验证：
 
 ```bash
- pip install pytest
- pytest tests/
+python -c "print('3' + '14')"
 ```
 
-- **测试覆盖率**：使用 coverage.py 检查测试覆盖率
+答案（先写完再看）：输出是 `314` 而不是 `17`——加号用在字符串上是拼接，不是加法。
 
-```bash
- pip install coverage
- coverage run -m pytest
- coverage report
-```
+**修改题**（5 分钟）：把验证命令改成一次输出两行文字。提示：字符串里的 `\n` 表示换行。预期输出是上下两行你指定的内容。
 
-### 6.5 性能优化
+**修 Bug 题**（10 分钟）：同事的 Windows 电脑刚用官网安装包装完 Python，运行 `python --version` 仍然报「'python' 不是内部或外部命令」。请说出：问题出在哪一步、漏掉的那次单击是什么、两步内的修复方案。
 
-- **使用适当的数据结构**：选择合适的容器类型
-- **避免全局变量**：减少全局变量的使用
-- **使用生成器**：对于大型数据集，使用生成器节省内存
-- **性能分析**：使用 cProfile 分析代码性能
+**挑战题**（15 分钟）：为自己建一张「环境验证卡」：写下验证版本与验证执行能力的两条命令、各自的预期输出，实际运行核对后存进笔记；并在卡片上回答——如果版本号低于 3.12，你应该做什么。
 
-```python
- import cProfile
- cProfile.run('your_function()')
-```
+## 12. 与之前和之后的知识的关系
 
-- **使用 PyPy**：对于性能关键的代码，考虑使用 PyPy 解释器
+- 往前：010 篇说 Python 是「解释型语言」，本文把「解释型」落到一个具体的程序上——把它装上、验证它、看懂它的两张面孔；
+- 往后：030 与 040 接手版本与依赖管理；050 起你将在自己的机器上写程序，本文这两条验证命令会变成你的每日晨检。
 
-### 6.6 安全
+## 13. 官方文档
 
-- **避免注入攻击**：使用参数化查询处理 SQL
-- **处理用户输入**：验证和清理用户输入
-- **使用安全的依赖**：定期检查依赖的安全漏洞
+- 下载页：https://www.python.org/downloads/
+- Windows 平台使用说明：https://docs.python.org/zh-cn/3/using/windows.html
+- macOS 平台使用说明：https://docs.python.org/zh-cn/3/using/mac.html
+- Unix / Linux 平台使用说明：https://docs.python.org/zh-cn/3/using/unix.html
 
-```bash
- pip install safety
- safety check
-```
+## 14. 自我检查
 
-- **使用 HTTPS**：在网络通信中使用 HTTPS
-- **密码处理**：使用 hashlib 或 bcrypt 处理密码
+- 能不看笔记说出解释器是什么、`-c` 参数的作用；
+- 在自己的机器上三条验证命令一次跑通，且知道达标线是 3.12 及以上；
+- 能说出官网安装包与 pyenv / uv 的分工边界，以及什么时候才需要后者；
+- 「不是内部或外部命令」「弹出商店」「显示 Python 2.7」三种现场，都知道第一步查什么。
 
-### 7.2 书籍
+## 本章总结
 
-- **《Python 编程：从入门到实践》** - Eric Matthes
-- **《流畅的 Python》** - Luciano Ramalho
-- **《Python cookbook》** - David Beazley & Brian K. Jones
-- **《Effective Python》** - Brett Slatkin
-- **《Python 数据分析》** - Wes McKinney
+电脑不认识 Python 代码，认识它的是解释器——一个装进电脑的翻译官程序。入门期用官网安装包装一个 3.12 及以上的稳定版（当前主线 3.14.x）即可，Windows 记住勾选「Add python.exe to PATH」，macOS 与 Linux 用 `python3` 呼叫且不动系统自带版本；`python --version` 与 `python -c "print(...)"` 两条命令是你的验证标准；多版本与依赖管理是 uv/pyenv 和虚拟环境的分工，需要时再去学。
 
-### 7.3 在线教程
+## 下一步
 
-- **Python 官方教程**: [https://docs.python.org/3/tutorial/](https://docs.python.org/3/tutorial/)
-- **Real Python**: [https://realpython.com/](https://realpython.com/)
-- **Python.org 学习资源**: [https://www.python.org/learn/](https://www.python.org/learn/)
-- **Codecademy Python 课程**: [https://www.codecademy.com/learn/learn-python-3](https://www.codecademy.com/learn/learn-python-3)
-- **Coursera Python 课程**: [https://www.coursera.org/courses?query=python](https://www.coursera.org/courses?query=python)
-
-### 7.4 社区与论坛
-
-- **Stack Overflow**: [https://stackoverflow.com/questions/tagged/python](https://stackoverflow.com/questions/tagged/python)
-- **Python 官方论坛**: [https://discuss.python.org/](https://discuss.python.org/)
-- **Reddit r/Python**: [https://www.reddit.com/r/Python/](https://www.reddit.com/r/Python/)
-- **Python 中文社区**: [https://python.org.cn/](https://python.org.cn/)
-
-### 7.5 实践项目
-
-- **Python 官方实践项目**: [https://wiki.python.org/moin/BeginnersGuide/Projects](https://wiki.python.org/moin/BeginnersGuide/Projects)
-- **Real Python 项目**: [https://realpython.com/tutorials/projects/](https://realpython.com/tutorials/projects/)
-- **GitHub 上的 Python 项目**: [https://github.com/topics/python](https://github.com/topics/python)
-
-## 8. 常见问题与解决方案
-
-### 8.1 安装问题
-
-| 问题                  | 原因                      | 解决方案                                       |
-| :-------------------- | :------------------------ | :--------------------------------------------- |
-| **Python 命令未找到** | 环境变量未配置            | 检查 PATH 环境变量，确保 Python 安装目录已添加 |
-| **pip 命令未找到**    | pip 未安装或未添加到 PATH | 重新安装 Python 并勾选 "Add Python to PATH"    |
-| **依赖安装失败**      | 网络问题或权限不足        | 使用 `--user` 选项或检查网络连接               |
-
-### 8.2 运行问题
-
-| 问题           | 原因                               | 解决方案                                |
-| :------------- | :--------------------------------- | :-------------------------------------- |
-| **语法错误**   | 代码语法不正确                     | 检查代码缩进、括号匹配、语法格式        |
-| **模块未找到** | 模块未安装或路径问题               | 使用 pip 安装模块，检查 Python 路径     |
-| **版本兼容性** | 代码使用了不兼容的 Python 版本特性 | 检查 Python 版本，修改代码或升级 Python |
-
-### 8.3 性能问题
-
-| 问题             | 原因                     | 解决方案                               |
-| :--------------- | :----------------------- | :------------------------------------- |
-| **代码运行缓慢** | 算法效率低或数据结构不当 | 优化算法，使用更合适的数据结构         |
-| **内存使用过高** | 处理大量数据时未优化     | 使用生成器、分批处理、释放不需要的变量 |
-| **导入时间长**   | 导入了过多模块           | 只导入需要的模块，使用延迟导入         |
-
-### 8.4 其他问题
-
-| 问题         | 原因                     | 解决方案                                 |
-| :----------- | :----------------------- | :--------------------------------------- |
-| **编码问题** | 文件编码与系统编码不匹配 | 在文件开头添加 `# -*- coding: utf-8 -*-` |
-| **权限错误** | 没有文件或目录的访问权限 | 检查文件权限，使用管理员权限运行         |
-| **依赖冲突** | 不同包之间的依赖冲突     | 使用虚拟环境隔离依赖，固定依赖版本       |
-
-## 9. 总结
-
-Python 是一种功能强大、简单易学的编程语言，拥有丰富的库生态和广泛的应用场景。通过正确的环境搭建、良好的代码风格和最佳实践，可以充分发挥 Python 的优势，提高开发效率。
-
-### 9.1 关键要点
-
-- **版本选择**: 推荐使用 Python 3.10+，Python 2 已停止官方支持
-- **环境管理**: 使用虚拟环境隔离项目依赖
-- **代码风格**: 遵循 PEP 8 代码风格指南
-- **依赖管理**: 固定依赖版本，定期更新
-- **测试**: 编写单元测试，确保代码质量
-- **性能**: 根据需要优化代码性能
-- **安全**: 注意代码安全，避免常见安全问题
-
-### 9.2 未来发展
-
-Python 作为一种不断发展的编程语言，未来将继续在以下方面演进：
-
-- **性能提升**: 持续优化解释器性能
-- **类型系统**: 增强静态类型支持
-- **异步编程**: 改进异步 I/O 支持
-- **标准库**: 扩展和更新标准库
-- **生态系统**: 丰富第三方库生态
-  Python 的学习是一个持续的过程，随着版本的更新和技术的发展，需要不断学习和实践，才能更好地掌握和应用 Python 技术。
+进入 [pyenv 与 uv 版本管理](/python/030-PyenvUvManage)：把「只有一个 Python」升级成「要哪个版本就有哪个版本」。如果你暂时用不上多版本，也可以直奔 [程序结构基本语法](/python/050-ProgramStructureBasicSyntax) 写下第一个程序，需要时再回来补这一课。

@@ -130,12 +130,12 @@ Remove-Item b.txt         # PowerShell 同样
 
 ```bash
 pwd                  # 假设输出 .../my-code/todo
-cat plan.txt         # 相对路径：从 todo 出发找
+cat backup.txt       # 相对路径：从 todo 出发找（第 6 步留下的那个）
 cat ../week1/notes.txt   # .. 先回到 my-code，再进 week1
 cat C:\Users\你\Documents\my-code\week1\notes.txt   # 绝对路径（mac 用 / 开头形式）
 ```
 
-三条 `cat` 结果一致。何时用哪种：**脚本里写相对路径**（项目挪到别的电脑也能跑），**与人交流或报错定位用绝对路径**（无歧义）。
+后两条 `cat` 读的是同一个文件，结果完全一致——这就是相对路径与绝对路径等价的现场证明。何时用哪种：**脚本里写相对路径**（项目挪到别的电脑也能跑），**与人交流或报错定位用绝对路径**（无歧义）。
 
 ## 为什么教程总说"新开一个终端"
 

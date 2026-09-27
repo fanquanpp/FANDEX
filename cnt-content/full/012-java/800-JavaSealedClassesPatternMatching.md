@@ -1,5 +1,5 @@
 ---
-order: 800
+order: 610
 title: 密封类与模式匹配
 module: 'java'
 category: 后端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'java/450-JavaRecordClass'
-  - 'java/380-JavaEnumAdvanced'
   - 'java/160-AbstractClassInterface'
 prerequisites:
   - 'java/450-JavaRecordClass'

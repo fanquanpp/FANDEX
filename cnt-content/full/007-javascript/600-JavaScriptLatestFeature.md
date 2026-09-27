@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 570
 title: JavaScript 最新特性与运行时
 module: 'javascript'
 category: 前端技术

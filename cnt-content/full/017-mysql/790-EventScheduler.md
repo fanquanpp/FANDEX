@@ -1,5 +1,5 @@
 ---
-order: 790
+order: 760
 title: 事件调度器：数据库里的定时任务
 module: 'mysql'
 category: 数据库
@@ -14,7 +14,6 @@ related:
   - 'mysql/850-MySQLConfigOps'
 prerequisites:
   - 'mysql/100-DML'
-  - 'mysql/080-DDL'
 ---
 
 ## 问题引入：过期数据谁来清

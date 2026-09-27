@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 390
 title: DOM 操作与事件
 module: 'javascript'
 category: 前端技术

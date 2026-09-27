@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 170
 title: 查询优化：统计信息、代价与执行计划
 module: 'postgresql'
 category: 数据库

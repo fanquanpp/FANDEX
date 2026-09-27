@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 350
 title: 派生表优化：合并、物化与 LATERAL
 module: 'mysql'
 category: 数据库

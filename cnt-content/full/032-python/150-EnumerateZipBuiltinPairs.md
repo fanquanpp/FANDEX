@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 140
 title: enumerate 与 zip 详解
 module: 'python'
 category: 后端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'python/140-BuiltinDataStructure'
-  - 'python/260-Itertools'
 prerequisites:
   - 'python/140-BuiltinDataStructure'
 ---

@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 310
 title: 装饰器进阶
 module: 'python'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 250
 title: Python subprocess 子进程
 module: 'python'
 category: 后端技术
@@ -9,8 +9,6 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'python/810-PythonCLI'
-  - 'python/820-ArgparseCli'
-  - 'python/390-SysOsPlatform'
 prerequisites: []
 ---
 

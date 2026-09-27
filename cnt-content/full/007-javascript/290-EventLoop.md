@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 270
 title: 事件循环
 module: 'javascript'
 category: 前端技术

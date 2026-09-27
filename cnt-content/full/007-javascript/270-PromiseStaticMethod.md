@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 250
 title: Promise 静态方法
 module: 'javascript'
 category: 前端技术

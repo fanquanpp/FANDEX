@@ -6,7 +6,9 @@
     "cloud",
     "cs"
   ],
-  "prerequisites": [],
+  "prerequisites": [
+    "cs-fundamentals"
+  ],
   "officialDocs": [
     {
       "label": "RFC 编辑器",

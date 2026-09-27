@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 280
 title: LISTEN/NOTIFY：数据库内置的消息总线
 module: 'postgresql'
 category: 数据库
@@ -11,8 +11,7 @@ related:
   - 'postgresql/380-TriggerEventTrigger'
   - 'postgresql/260-ParallelQuery'
   - 'postgresql/160-SystemArchitecture'
-prerequisites:
-  - 'postgresql/020-PsqlCLI'
+prerequisites: []
 ---
 
 ## 问题引入：数据变了，怎么"喊一嗓子"

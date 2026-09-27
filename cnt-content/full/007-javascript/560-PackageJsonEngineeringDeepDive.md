@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 530
 title: package.json 深入与前端工程化配置
 module: 'javascript'
 category: 前端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'javascript/540-NpmManager'
-  - 'javascript/550-PackageManagerCommands'
   - 'vite/150-PnpmMonorepoOverview'
 prerequisites:
   - 'javascript/520-NodeJsInstall'

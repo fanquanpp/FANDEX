@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 50
 title: 位图
 module: 'redis'
 category: 数据库

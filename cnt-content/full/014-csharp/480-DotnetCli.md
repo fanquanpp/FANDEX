@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 470
 title: C# .NET CLI 命令
 module: 'csharp'
 category: 后端技术

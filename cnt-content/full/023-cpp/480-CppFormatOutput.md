@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 460
 title: C++格式化输出
 module: 'cpp'
 category: 计算机科学

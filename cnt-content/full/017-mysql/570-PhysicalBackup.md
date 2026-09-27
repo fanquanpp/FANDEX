@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 550
 title: 物理备份
 module: 'mysql'
 category: 数据库

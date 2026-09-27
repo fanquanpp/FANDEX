@@ -5,7 +5,10 @@
   "categories": [
     "frontend"
   ],
-  "prerequisites": [],
+  "prerequisites": [
+    "html5",
+    "css"
+  ],
   "officialDocs": [
     {
       "label": "官方文档",

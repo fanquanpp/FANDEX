@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 470
 title: 防抖与节流
 module: 'javascript'
 category: 前端技术

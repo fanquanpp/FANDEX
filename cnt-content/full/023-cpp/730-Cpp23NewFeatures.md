@@ -1,5 +1,5 @@
 ---
-order: 730
+order: 680
 title: C++23 新特性
 module: 'cpp'
 category: 计算机科学

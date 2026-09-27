@@ -5,7 +5,9 @@
   "categories": [
     "cs"
   ],
-  "prerequisites": [],
+  "prerequisites": [
+    "start"
+  ],
   "officialDocs": [
     {
       "label": "cppreference C",

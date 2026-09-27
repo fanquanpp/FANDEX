@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 240
 title: Python 与加密
 module: 'python'
 category: 后端技术

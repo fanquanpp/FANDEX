@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 160
 title: 字符集与排序规则：中文与 emoji 的头号坑
 module: 'mysql'
 category: 数据库
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-19'
 related:
   - 'mysql/070-MySQLDataTypeConstraint'
-  - 'mysql/210-IndexManagement'
   - 'mysql/230-CompositeIndexLeftmostPrefixPrinciple'
 prerequisites:
   - 'mysql/070-MySQLDataTypeConstraint'

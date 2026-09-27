@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 480
 title: 重做日志
 module: 'mysql'
 category: 数据库

@@ -1,5 +1,5 @@
 ---
-order: 460
+order: 440
 title: 事务与锁机制
 module: 'mysql'
 category: 数据库

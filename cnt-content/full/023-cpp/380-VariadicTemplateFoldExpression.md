@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 360
 title: 可变参数模板与折叠表达式
 module: 'cpp'
 category: 计算机科学

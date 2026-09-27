@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 170
 title: 相等契约救急锦囊： equals 与 hashCode
 module: 'java'
 category: 后端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'java/210-CollectionFrameworkDetailed'
-  - 'java/250-JavaObjectsUtility'
   - 'java/450-JavaRecordClass'
 prerequisites:
   - 'java/150-OOP'

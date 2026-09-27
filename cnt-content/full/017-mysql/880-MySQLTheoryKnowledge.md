@@ -1,5 +1,5 @@
 ---
-order: 880
+order: 850
 title: MySQL 理论知识点
 module: 'mysql'
 category: 数据库

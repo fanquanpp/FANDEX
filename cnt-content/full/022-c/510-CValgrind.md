@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 490
 title: C Valgrind 内存检测
 module: 'c'
 category: 计算机科学
@@ -10,7 +10,6 @@ updated: '2026-09-12'
 related:
   - 'c/210-MemoryManagement'
   - 'c/200-DynamicMemoryManagement'
-  - 'c/500-CDebugGdb'
 prerequisites:
   - 'c/210-MemoryManagement'
 ---

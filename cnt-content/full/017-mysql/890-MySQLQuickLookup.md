@@ -1,5 +1,5 @@
 ---
-order: 890
+order: 860
 title: MySQL 语法速查手册
 module: 'mysql'
 category: 数据库

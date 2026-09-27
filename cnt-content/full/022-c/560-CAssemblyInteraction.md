@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 540
 title: C 与汇编交互
 module: 'c'
 category: 计算机科学

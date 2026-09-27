@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 350
 title: 内存泄漏排查
 module: 'javascript'
 category: 前端技术

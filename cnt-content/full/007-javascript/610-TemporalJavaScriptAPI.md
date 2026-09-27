@@ -1,5 +1,5 @@
 ---
-order: 610
+order: 580
 title: Temporal 日期时间 API
 module: 'javascript'
 category: 前端技术

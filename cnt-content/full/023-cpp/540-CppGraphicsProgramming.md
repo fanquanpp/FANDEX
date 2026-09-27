@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 520
 title: C++图形编程
 module: 'cpp'
 category: 计算机科学

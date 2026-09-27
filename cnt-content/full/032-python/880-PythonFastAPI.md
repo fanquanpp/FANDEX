@@ -1,5 +1,5 @@
 ---
-order: 880
+order: 640
 title: Python 与 FastAPI
 module: 'python'
 category: 后端技术

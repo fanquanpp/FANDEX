@@ -1,5 +1,5 @@
 ---
-order: 660
+order: 450
 title: 协程与 asyncio
 module: 'python'
 category: 后端技术

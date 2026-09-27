@@ -1,5 +1,5 @@
 ---
-order: 630
+order: 600
 title: 不可变数据结构：从 Records & Tuples 到现代方案
 module: 'javascript'
 category: 前端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'javascript/200-DeepShallowCopy'
-  - 'javascript/230-MapSetWeakMapWeakSet'
   - 'javascript/210-ObjectStaticMethods'
 prerequisites:
   - 'javascript/190-PrototypeChainClassEssence'

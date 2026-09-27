@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 60
 title: 可更新视图：把虚拟表当真表写
 module: 'postgresql'
 category: 数据库
@@ -8,12 +8,10 @@ description: PostgreSQL 视图的可写能力全景：自动可更新视图的�
 author: fanquanpp
 updated: '2026-09-19'
 related:
-  - 'postgresql/130-ViewMaterializedView'
   - 'postgresql/380-TriggerEventTrigger'
   - 'postgresql/500-RowLevelSecurity'
   - 'postgresql/150-GeneratedColumn'
-prerequisites:
-  - 'postgresql/130-ViewMaterializedView'
+prerequisites: []
 ---
 
 ## 前置知识

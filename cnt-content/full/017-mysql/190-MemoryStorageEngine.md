@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 180
 title: Memory 存储引擎：内存表的能力与陷阱
 module: 'mysql'
 category: 数据库
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-19'
 related:
   - 'mysql/180-MyISAMStorageEngine'
-  - 'mysql/210-IndexManagement'
   - 'mysql/220-ClusteredIndexSecondaryIndex'
   - 'mysql/380-GroupByOrderByOptimization'
 prerequisites:

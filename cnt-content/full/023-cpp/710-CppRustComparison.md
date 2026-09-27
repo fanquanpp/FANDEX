@@ -1,5 +1,5 @@
 ---
-order: 710
+order: 670
 title: C++与 Rust 对比
 module: 'cpp'
 category: 计算机科学

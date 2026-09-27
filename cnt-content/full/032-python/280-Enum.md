@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 200
 title: Python enum 枚举
 module: 'python'
 category: 后端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'python/480-OOPAdvanced'
-  - 'python/540-TypingAdvanced'
 prerequisites:
   - 'python/480-OOPAdvanced'
 ---

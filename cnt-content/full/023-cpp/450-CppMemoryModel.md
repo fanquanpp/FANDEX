@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 430
 title: C++内存模型
 module: 'cpp'
 category: 计算机科学

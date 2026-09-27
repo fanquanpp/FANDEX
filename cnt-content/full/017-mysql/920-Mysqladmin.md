@@ -1,5 +1,5 @@
 ---
-order: 920
+order: 880
 title: mysqladmin：一条命令的运维工具箱
 module: 'mysql'
 category: 数据库
@@ -8,12 +8,10 @@ description: mysqladmin 命令行工具实战：存活探测与状态速览、�
 author: fanquanpp
 updated: '2026-09-19'
 related:
-  - 'mysql/910-CLI'
   - 'mysql/850-MySQLConfigOps'
   - 'mysql/860-PerformanceTuningSecurity'
   - 'mysql/740-SQLInjectionBasicsDetection'
 prerequisites:
-  - 'mysql/910-CLI'
   - 'start/030-DevEnvironmentSetup'
 ---
 

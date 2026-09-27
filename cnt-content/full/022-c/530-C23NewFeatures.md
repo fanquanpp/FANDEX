@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 510
 title: C23 新特性
 module: 'c'
 category: 计算机科学

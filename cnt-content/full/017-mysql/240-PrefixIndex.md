@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 220
 title: 前缀索引：长字符串列的空间优化术
 module: 'mysql'
 category: 数据库

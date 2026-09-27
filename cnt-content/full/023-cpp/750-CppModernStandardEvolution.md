@@ -1,5 +1,5 @@
 ---
-order: 750
+order: 700
 title: C++26 与最新标准
 module: 'cpp'
 category: 计算机科学

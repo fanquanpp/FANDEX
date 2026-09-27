@@ -1,5 +1,5 @@
 ---
-order: 910
+order: 720
 title: Java 与 Redis
 module: 'java'
 category: 后端技术

@@ -27,7 +27,7 @@ const PI = 3.14159;
 **基本写法：var 声明**
 `var <变量名> = <值>;`
 ```javascript
-// 声明函数级作用域变量
+// 函数级作用域变量（新代码请用 let/const；var 仅供读懂旧代码）
 var name = "Alice";
 ```
 

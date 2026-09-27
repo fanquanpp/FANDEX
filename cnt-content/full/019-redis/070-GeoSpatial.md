@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 60
 title: 地理空间
 module: 'redis'
 category: 数据库

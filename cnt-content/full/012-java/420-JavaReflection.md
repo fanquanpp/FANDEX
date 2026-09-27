@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 320
 title: Java 反射
 module: 'java'
 category: 后端技术

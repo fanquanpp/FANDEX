@@ -5,7 +5,9 @@
   "categories": [
     "backend"
   ],
-  "prerequisites": [],
+  "prerequisites": [
+    "start"
+  ],
   "officialDocs": [
     {
       "label": "官方文档",

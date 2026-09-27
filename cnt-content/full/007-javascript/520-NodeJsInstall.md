@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 500
 title: Node.js 安装：把 JS 跑在浏览器之外
 module: 'javascript'
 category: 前端技术
@@ -65,7 +65,7 @@ winget install OpenJS.NodeJS.LTS
 
 ```bash
 # macOS：官网 .pkg，或 Homebrew（brew 装的是目录化的版本，便于日后 nvm 接管）
-brew install node@22
+brew install node@24
 ```
 
 ```bash
@@ -81,7 +81,7 @@ sudo apt-get install -y nodejs
 装完**必须新开终端**（已开的窗口持有旧 PATH，感知不到新装——初学阶段半数"装了没用"都栽在这）。依次执行：
 
 ```bash
-node -v      # 查证一：可执行文件在 PATH 里吗？输出 v22.x 即通
+node -v      # 查证一：可执行文件在 PATH 里吗？输出 v24.x 即通
 npm -v       # 查证二：随装的包管理器在吗？
 node -e "console.log('引擎可用：' + process.version)"
              # 查证三：引擎真的能执行代码（不只是文件存在）

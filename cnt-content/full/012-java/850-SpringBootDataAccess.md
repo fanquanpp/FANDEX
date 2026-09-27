@@ -1,5 +1,5 @@
 ---
-order: 850
+order: 660
 title: SpringBoot 数据访问
 module: 'java'
 category: 后端技术
@@ -18,7 +18,6 @@ prerequisites:
   - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
   - 'java/830-SpringBootAdvanced'
   - 'java/210-CollectionFrameworkDetailed'
-  - 'java/730-JDBCDatabaseConnection'
 ---
 
 ## 前置知识

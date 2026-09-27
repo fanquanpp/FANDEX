@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 230
 title: 索引条件下推 ICP：把过滤推到引擎层
 module: 'mysql'
 category: 数据库

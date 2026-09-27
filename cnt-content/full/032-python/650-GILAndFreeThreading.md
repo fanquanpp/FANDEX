@@ -1,5 +1,5 @@
 ---
-order: 650
+order: 440
 title: GIL 与自由线程
 module: 'python'
 category: 后端技术

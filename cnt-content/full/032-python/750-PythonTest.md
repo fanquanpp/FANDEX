@@ -1,5 +1,5 @@
 ---
-order: 750
+order: 530
 title: Python 与测试
 module: 'python'
 category: 后端技术

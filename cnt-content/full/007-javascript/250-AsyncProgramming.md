@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 230
 title: 异步编程
 module: 'javascript'
 category: 前端技术

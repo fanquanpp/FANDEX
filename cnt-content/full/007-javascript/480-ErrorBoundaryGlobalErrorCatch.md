@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 460
 title: 错误边界与全局错误捕获
 module: 'javascript'
 category: 前端技术

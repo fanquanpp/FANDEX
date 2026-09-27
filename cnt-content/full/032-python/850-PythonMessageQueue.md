@@ -1,5 +1,5 @@
 ---
-order: 850
+order: 610
 title: Python 与消息队列
 module: 'python'
 category: 后端技术

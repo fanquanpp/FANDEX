@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 210
 title: 联合索引与最左前缀：B+ 树的排序魔法
 module: 'mysql'
 category: 数据库
@@ -13,7 +13,6 @@ related:
   - 'mysql/250-IndexConditionPushdown'
   - 'mysql/310-IndexFailureScene'
 prerequisites:
-  - 'mysql/210-IndexManagement'
   - 'mysql/220-ClusteredIndexSecondaryIndex'
 ---
 

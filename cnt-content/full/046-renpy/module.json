@@ -2,8 +2,12 @@
   "title": "Ren'Py",
   "icon": "Rp",
   "description": "Ren'Py 视觉小说引擎：脚本语言与角色对话、图像转场与 ATL、屏幕语言、存档回滚、多语言翻译与全平台发布",
-  "categories": ["gamedev"],
-  "prerequisites": [],
+  "categories": [
+    "gamedev"
+  ],
+  "prerequisites": [
+    "python"
+  ],
   "officialDocs": [
     {
       "label": "Ren'Py 官方文档",

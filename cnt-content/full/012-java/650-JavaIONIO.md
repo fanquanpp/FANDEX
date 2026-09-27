@@ -1,5 +1,5 @@
 ---
-order: 650
+order: 520
 title: JavaIO 与 NIO
 module: 'java'
 category: 后端技术

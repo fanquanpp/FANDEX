@@ -1,5 +1,5 @@
 ---
-order: 950
+order: 760
 title: Java 与安全
 module: 'java'
 category: 后端技术

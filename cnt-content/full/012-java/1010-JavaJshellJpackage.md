@@ -1,5 +1,5 @@
 ---
-order: 1010
+order: 820
 title: JShell 与 JPackage 交互环境
 module: 'java'
 category: 后端技术
@@ -8,7 +8,6 @@ description: 用 jshell 即时验证语法与 API，用 jpackage 打出平台原
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'java/1020-JavaCommandLineTools'
   - 'java/740-JavaBuildTool'
   - 'java/020-JavaOverviewDevEnv'
 prerequisites:

@@ -1,5 +1,5 @@
 ---
-order: 680
+order: 650
 title: Service Worker 与 PWA
 module: 'javascript'
 category: 前端技术

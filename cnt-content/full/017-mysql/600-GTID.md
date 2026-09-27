@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 580
 title: GTID 全局事务标识符
 module: 'mysql'
 category: 数据库

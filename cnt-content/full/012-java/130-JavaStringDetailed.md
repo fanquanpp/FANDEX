@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 120
 title: Java 字符串详解
 module: 'java'
 category: 后端技术
@@ -10,7 +10,6 @@ updated: '2026-09-12'
 related:
   - 'java/050-DataTypeConversion'
   - 'java/100-MethodDetailed'
-  - 'java/140-JavaStringFormat'
 prerequisites:
   - 'java/050-DataTypeConversion'
 ---

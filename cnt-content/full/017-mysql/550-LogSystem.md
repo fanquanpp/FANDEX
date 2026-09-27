@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 530
 title: 日志系统
 module: 'mysql'
 category: 数据库

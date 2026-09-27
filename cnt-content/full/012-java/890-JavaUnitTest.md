@@ -1,5 +1,5 @@
 ---
-order: 890
+order: 700
 title: Java 单元测试
 module: 'java'
 category: 后端技术

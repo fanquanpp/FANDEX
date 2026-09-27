@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 240
 title: 全文索引
 module: 'mysql'
 category: 数据库

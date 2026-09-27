@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 530
 title: C++游戏开发
 module: 'cpp'
 category: 计算机科学

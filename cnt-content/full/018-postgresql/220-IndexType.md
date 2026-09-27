@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 140
 title: 索引类型
 module: 'postgresql'
 category: 数据库

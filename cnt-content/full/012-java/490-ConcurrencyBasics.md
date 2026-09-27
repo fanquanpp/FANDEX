@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 390
 title: 并发编程基础
 module: 'java'
 category: 后端技术

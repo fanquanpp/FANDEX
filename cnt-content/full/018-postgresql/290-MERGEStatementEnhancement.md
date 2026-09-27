@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 210
 title: MERGE 语句增强
 module: 'postgresql'
 category: 数据库
@@ -10,11 +10,9 @@ updated: '2026-09-12'
 related:
   - 'postgresql/280-PartitionPruningPartitionJoin'
   - 'postgresql/080-AdvancedSQL'
-  - 'postgresql/040-DML'
   - 'postgresql/300-FullTextSearch'
 prerequisites:
   - 'postgresql/010-OverviewInstallConfig'
-  - 'postgresql/040-DML'
 ---
 
 ## 1. MERGE 是什么，为什么需要它

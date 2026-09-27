@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 430
 title: 锁分类：从全局锁到临键锁的全景图
 module: 'mysql'
 category: 数据库

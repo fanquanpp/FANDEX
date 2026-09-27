@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 360
 title: JavaScript 模块化
 module: 'javascript'
 category: 前端技术
