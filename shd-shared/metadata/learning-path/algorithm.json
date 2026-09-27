@@ -1,101 +1,218 @@
 {
-  "version": "1.0.0",
+  "version": "1.2.0",
   "module": "algorithm",
-  "summary": "从复杂度分析到基础与高级数据结构，覆盖经典算法、动态规划与算法理论。",
+  "summary": "从复杂度分析到面试实战：数据结构、图论、动态规划与经典算法策略。",
   "stages": [
     {
-      "id": "data-structure",
-      "title": "数据结构基础",
-      "subtitle": "复杂度分析与线性/树形结构",
+      "id": "analysis",
+      "title": "复杂度分析",
+      "subtitle": "时间与空间复杂度入门",
       "nodes": [
         {
-          "id": "algorithm-001",
+          "id": "algorithm-010",
           "title": "算法分析基础与学习路线",
           "doc": "010-AlgorithmAnalysisBasics"
+        }
+      ]
+    },
+    {
+      "id": "linear",
+      "title": "线性结构与排序查找",
+      "subtitle": "数组、链表、栈队列、排序与基础查找",
+      "nodes": [
+        {
+          "id": "algorithm-020",
+          "title": "数组与动态数组",
+          "doc": "020-ArrayAndDynamicArray"
         },
         {
-          "id": "algorithm-002",
-          "title": "栈与队列",
-          "doc": "040-StackAndQueue"
-        },
-        {
-          "id": "algorithm-003",
+          "id": "algorithm-060",
           "title": "链表",
           "doc": "060-LinkedList"
         },
         {
-          "id": "algorithm-004",
+          "id": "algorithm-040",
+          "title": "栈与队列",
+          "doc": "040-StackAndQueue"
+        },
+        {
+          "id": "algorithm-030",
+          "title": "排序算法",
+          "doc": "030-SortAlgorithm"
+        },
+        {
+          "id": "algorithm-050",
+          "title": "搜索算法",
+          "doc": "050-SearchAlgorithm"
+        }
+      ]
+    },
+    {
+      "id": "hashtree",
+      "title": "哈希与树",
+      "subtitle": "哈希表、二叉树与堆",
+      "nodes": [
+        {
+          "id": "algorithm-070",
+          "title": "哈希表",
+          "doc": "070-HashTable"
+        },
+        {
+          "id": "algorithm-080",
           "title": "树",
           "doc": "080-Tree"
         },
         {
-          "id": "algorithm-005",
-          "title": "分治算法",
-          "doc": "120-DivideAndConquer"
+          "id": "algorithm-090",
+          "title": "堆与优先队列",
+          "doc": "090-HeapAndPriorityQueue"
         }
       ]
     },
     {
-      "id": "classic",
-      "title": "经典算法",
-      "subtitle": "递归、查找与动态规划",
+      "id": "adv-ds",
+      "title": "进阶数据结构",
+      "subtitle": "平衡树、并查集、线段树、树状数组与概率结构",
       "nodes": [
         {
-          "id": "algorithm-101",
-          "title": "递归与回溯",
-          "doc": "140-RecursionAndBacktracking"
-        },
-        {
-          "id": "algorithm-102",
-          "title": "动态规划",
-          "doc": "160-DynamicProgramming"
-        },
-        {
-          "id": "algorithm-103",
+          "id": "algorithm-100",
           "title": "平衡树与高级树",
           "doc": "100-BalancedTreeAdvanced"
         },
         {
-          "id": "algorithm-104",
-          "title": "查找算法",
-          "doc": "170-BinarySearchAlgorithms"
-        },
-        {
-          "id": "algorithm-105",
+          "id": "algorithm-180",
           "title": "并查集",
           "doc": "180-UnionFind"
-        }
-      ]
-    },
-    {
-      "id": "advanced",
-      "title": "高级专题",
-      "subtitle": "高级数据结构与算法理论",
-      "nodes": [
+        },
         {
-          "id": "algorithm-201",
+          "id": "algorithm-190",
+          "title": "线段树",
+          "doc": "190-SegmentTree"
+        },
+        {
+          "id": "algorithm-200",
           "title": "树状数组",
           "doc": "200-FenwickTree"
         },
         {
-          "id": "algorithm-202",
+          "id": "algorithm-210",
+          "title": "跳跃表",
+          "doc": "210-SkipList"
+        },
+        {
+          "id": "algorithm-220",
           "title": "布隆过滤器",
           "doc": "220-BloomFilter"
+        }
+      ]
+    },
+    {
+      "id": "search",
+      "title": "二分与搜索",
+      "subtitle": "二分查找体系与变体",
+      "nodes": [
+        {
+          "id": "algorithm-170",
+          "title": "查找算法",
+          "doc": "170-BinarySearchAlgorithms"
+        }
+      ]
+    },
+    {
+      "id": "graph",
+      "title": "图算法",
+      "subtitle": "遍历、最短路、最小生成树与拓扑排序",
+      "nodes": [
+        {
+          "id": "algorithm-110",
+          "title": "图算法",
+          "doc": "110-GraphAlgorithms"
         },
         {
-          "id": "algorithm-203",
-          "title": "动态规划状态压缩",
-          "doc": "240-BitmaskDynamicProgramming"
-        },
-        {
-          "id": "algorithm-204",
+          "id": "algorithm-260",
           "title": "Kruskal 算法",
           "doc": "260-KruskalAlgorithm"
         },
         {
-          "id": "algorithm-205",
+          "id": "algorithm-250",
+          "title": "Floyd-Warshall 算法",
+          "doc": "250-FloydWarshall"
+        },
+        {
+          "id": "algorithm-270",
+          "title": "拓扑排序",
+          "doc": "270-TopologicalSorting"
+        }
+      ]
+    },
+    {
+      "id": "strategy",
+      "title": "算法策略",
+      "subtitle": "分治、贪心、回溯与动态规划",
+      "nodes": [
+        {
+          "id": "algorithm-120",
+          "title": "分治算法",
+          "doc": "120-DivideAndConquer"
+        },
+        {
+          "id": "algorithm-130",
+          "title": "贪心算法",
+          "doc": "130-GreedyAlgorithm"
+        },
+        {
+          "id": "algorithm-140",
+          "title": "递归与回溯",
+          "doc": "140-RecursionAndBacktracking"
+        },
+        {
+          "id": "algorithm-160",
+          "title": "动态规划",
+          "doc": "160-DynamicProgramming"
+        },
+        {
+          "id": "algorithm-240",
+          "title": "动态规划状态压缩",
+          "doc": "240-BitmaskDynamicProgramming"
+        }
+      ]
+    },
+    {
+      "id": "strings",
+      "title": "字符串算法",
+      "subtitle": "字符串处理与 KMP",
+      "nodes": [
+        {
+          "id": "algorithm-150",
+          "title": "字符串算法",
+          "doc": "150-StringAlgorithms"
+        },
+        {
+          "id": "algorithm-230",
+          "title": "KMP 字符串匹配",
+          "doc": "230-KmpStringMatching"
+        }
+      ]
+    },
+    {
+      "id": "theory",
+      "title": "理论综合与面试",
+      "subtitle": "理论推导、网络流与刷题指南",
+      "nodes": [
+        {
+          "id": "algorithm-280",
           "title": "算法理论知识点",
           "doc": "280-AlgorithmTheory"
+        },
+        {
+          "id": "algorithm-290",
+          "title": "网络流",
+          "doc": "290-NetworkFlow"
+        },
+        {
+          "id": "algorithm-300",
+          "title": "LeetCode 刷题指南",
+          "doc": "300-LeetCodeInterviewGuide"
         }
       ]
     }

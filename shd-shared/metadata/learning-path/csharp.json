@@ -126,11 +126,6 @@
           "id": "csharp-207",
           "title": "C# 正则表达式",
           "doc": "470-RegularExpression"
-        },
-        {
-          "id": "csharp-208",
-          "title": "C# HttpClient 网络请求",
-          "doc": "490-NetworkingHttp"
         }
       ]
     },

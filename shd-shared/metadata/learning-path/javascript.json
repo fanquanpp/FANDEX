@@ -1,5 +1,5 @@
 {
-  "version": "2.0.0",
+  "version": "1.2.0",
   "module": "javascript",
   "summary": "从 JavaScript 零基础语法、对象与函数出发，覆盖原型、异步、DOM、模块化与工程实践，达到计算机本科前端开发水平。",
   "stages": [
@@ -173,20 +173,6 @@
           "doc": "220-ES6NewFeatures",
           "desc": "ES6 至 ES2024 重要新特性的形式化定义、工程实践与生产案例：解构赋值、展开运算符、Symbol、Proxy、可选链、空值合并、Records & Tuples、装饰器、模",
           "difficulty": "intermediate"
-        },
-        {
-          "id": "js-021",
-          "title": "JavaScript Map/Set/WeakMap/WeakSet 语法速查",
-          "doc": "230-MapSetWeakMapWeakSet",
-          "desc": "JavaScript Map/Set/WeakMap/WeakSet 语法速查 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
-          "id": "js-022",
-          "title": "JavaScript ArrayBuffer 与 TypedArray 语法速查",
-          "doc": "240-ArrayBufferTypedArray",
-          "desc": "JavaScript ArrayBuffer 与 TypedArray 语法速查 的完整教学讲解。",
-          "difficulty": "beginner"
         }
       ]
     },
@@ -406,13 +392,6 @@
           "difficulty": "advanced"
         },
         {
-          "id": "js-050",
-          "title": "JavaScript 包管理命令速查（npm/pnpm/yarn）",
-          "doc": "550-PackageManagerCommands",
-          "desc": "JavaScript 包管理命令速查（npm/pnpm/yarn） 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
           "id": "js-051",
           "title": "JavaScript console API 语法速查",
           "doc": "580-ConsoleAPI",
@@ -437,6 +416,21 @@
           "id": "js-pkg-json",
           "title": "package.json 与工程化配置",
           "doc": "560-PackageJsonEngineeringDeepDive"
+        },
+        {
+          "id": "javascript-520",
+          "title": "Node.js 安装",
+          "doc": "520-NodeJsInstall"
+        },
+        {
+          "id": "javascript-530",
+          "title": "nvm 版本管理",
+          "doc": "530-NvmVersionManage"
+        },
+        {
+          "id": "javascript-540",
+          "title": "npm 包管理",
+          "doc": "540-NpmManager"
         }
       ]
     },
@@ -531,6 +525,11 @@
           "desc": "取消、超时与流式读取",
           "difficulty": "intermediate",
           "doc": "440-FetchApiAndAbortController"
+        },
+        {
+          "id": "javascript-710",
+          "title": "JavaScript 学习总结",
+          "doc": "710-JavaScriptLearningSummary"
         }
       ]
     }

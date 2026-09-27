@@ -79,24 +79,10 @@
           "difficulty": "intermediate"
         },
         {
-          "id": "java-010",
-          "title": "Java Arrays 工具类语法速查手册",
-          "doc": "120-JavaArraysUtility",
-          "desc": "Java Arrays 工具类语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
           "id": "java-011",
           "title": "Java 字符串详解",
           "doc": "130-JavaStringDetailed",
           "desc": "String 不可变性、字符串常量池、== 与 equals、StringBuilder/StringBuffer、常用 API 与正则表达式基础，零基础保姆级讲解。",
-          "difficulty": "beginner"
-        },
-        {
-          "id": "java-012",
-          "title": "Java String.format/printf/MessageFormat 语法速查手册",
-          "doc": "140-JavaStringFormat",
-          "desc": "Java String.format/printf/MessageFormat 语法速查手册 的完整教学讲解。",
           "difficulty": "beginner"
         }
       ]
@@ -135,13 +121,6 @@
           "difficulty": "intermediate"
         },
         {
-          "id": "java-017",
-          "title": "Java try-with-resources 与异常链语法速查手册",
-          "doc": "190-JavaTryWithResources",
-          "desc": "Java try-with-resources 与异常链语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
           "id": "java-tag-equals-hashcode",
           "title": "相等契约救急锦囊：equals 与 hashCode",
           "doc": "200-EqualsHashCodeContract",
@@ -161,27 +140,6 @@
           "doc": "210-CollectionFrameworkDetailed",
           "desc": "List、Set、Map 体系及迭代器与比较器。",
           "difficulty": "intermediate"
-        },
-        {
-          "id": "java-019",
-          "title": "Java Iterator/Iterable/Spliterator 语法速查手册",
-          "doc": "230-JavaIteratorIterable",
-          "desc": "Java Iterator/Iterable/Spliterator 语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
-          "id": "java-020",
-          "title": "Java Comparator/Comparable 语法速查手册",
-          "doc": "240-JavaComparatorComparable",
-          "desc": "Java Comparator/Comparable 语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
-          "id": "java-021",
-          "title": "Java Objects 工具类语法速查手册",
-          "doc": "250-JavaObjectsUtility",
-          "desc": "Java Objects 工具类语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
         },
         {
           "id": "java-022",
@@ -219,13 +177,6 @@
           "difficulty": "intermediate"
         },
         {
-          "id": "java-026",
-          "title": "Java Optional 类",
-          "doc": "310-JavaOptionalClass",
-          "desc": "Java Optional 类 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
           "id": "java-027",
           "title": "Java函数式编程",
           "doc": "330-JavaFunctionalProgramming",
@@ -237,13 +188,6 @@
           "title": "日期时间救急锦囊：LocalDate / LocalDateTime / DateTimeFormatter",
           "doc": "340-LocalDateBasics",
           "desc": "20 行学会打印当前时间、解析字符串、格式化输出，告别老 Date API。",
-          "difficulty": "beginner"
-        },
-        {
-          "id": "java-028",
-          "title": "Java 时间格式化 DateTimeFormatter/ZoneId 语法速查手册",
-          "doc": "350-JavaTimeFormatting",
-          "desc": "Java 时间格式化 DateTimeFormatter/ZoneId 语法速查手册 的完整教学讲解。",
           "difficulty": "beginner"
         }
       ]
@@ -268,25 +212,11 @@
           "difficulty": "intermediate"
         },
         {
-          "id": "java-030",
-          "title": "Java 枚举进阶 EnumSet/EnumMap/枚举单例语法速查手册",
-          "doc": "380-JavaEnumAdvanced",
-          "desc": "Java 枚举进阶 EnumSet/EnumMap/枚举单例语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
           "id": "java-031",
           "title": "泛型详解",
           "doc": "390-GenericDetailed",
           "desc": "泛型类、泛型方法、通配符与类型擦除。",
           "difficulty": "intermediate"
-        },
-        {
-          "id": "java-032",
-          "title": "Java 类型擦除与桥接方法语法速查手册",
-          "doc": "400-JavaTypeErasure",
-          "desc": "Java 类型擦除与桥接方法语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
         },
         {
           "id": "java-033",
@@ -401,27 +331,6 @@
           "difficulty": "advanced"
         },
         {
-          "id": "java-048",
-          "title": "Java Executor 与 ForkJoin",
-          "doc": "540-ExecutorForkJoinPool",
-          "desc": "Java Executor 与 ForkJoin 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
-          "id": "java-049",
-          "title": "Java 同步器 CountDownLatch/CyclicBarrier/Phaser 语法速查手册",
-          "doc": "550-JavaCountDownLatchCyclicBarrier",
-          "desc": "Java 同步器 CountDownLatch/CyclicBarrier/Phaser 语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
-          "id": "java-050",
-          "title": "Java 阻塞队列 BlockingQueue 语法速查手册",
-          "doc": "560-JavaBlockingQueue",
-          "desc": "Java 阻塞队列 BlockingQueue 语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
           "id": "java-051",
           "title": "Java与虚拟线程",
           "doc": "570-JavaVirtualThread",
@@ -499,20 +408,6 @@
           "difficulty": "intermediate"
         },
         {
-          "id": "java-060",
-          "title": "Java NIO 通道与缓冲区",
-          "doc": "660-JavaNIOChannelBuffer",
-          "desc": "Java NIO 通道与缓冲区 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
-          "id": "java-061",
-          "title": "Java Path 与 Files 语法速查手册",
-          "doc": "670-JavaPathFiles",
-          "desc": "Java Path 与 Files 语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
           "id": "java-062",
           "title": "Java序列化",
           "doc": "680-JavaSerialization",
@@ -534,25 +429,11 @@
           "difficulty": "advanced"
         },
         {
-          "id": "java-065",
-          "title": "Java HttpClient 与 WebSocket 语法速查手册",
-          "doc": "710-JavaHttpClientWebSocket",
-          "desc": "Java HttpClient 与 WebSocket 语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
           "id": "java-066",
           "title": "Java与数据库连接",
           "doc": "720-JavaDatabaseConnection",
           "desc": "JDBC 规范、连接池原理、事务管理、ORM 框架与高性能数据库访问最佳实践。",
           "difficulty": "intermediate"
-        },
-        {
-          "id": "java-067",
-          "title": "Java JDBC 数据库连接",
-          "doc": "730-JDBCDatabaseConnection",
-          "desc": "Java JDBC 数据库连接 的完整教学讲解。",
-          "difficulty": "beginner"
         }
       ]
     },
@@ -567,20 +448,6 @@
           "doc": "740-JavaBuildTool",
           "desc": "Maven与Gradle",
           "difficulty": "intermediate"
-        },
-        {
-          "id": "java-069",
-          "title": "Maven pom.xml 配置语法速查手册",
-          "doc": "750-MavenPomConfiguration",
-          "desc": "Maven pom.xml 配置语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
-          "id": "java-070",
-          "title": "Gradle build.gradle 配置语法速查手册",
-          "doc": "760-GradleBuildConfiguration",
-          "desc": "Gradle build.gradle 配置语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner"
         },
         {
           "id": "java-071",
@@ -727,13 +594,6 @@
           "title": "JShell 与 JPackage 交互环境",
           "doc": "1010-JavaJshellJpackage",
           "desc": "启动 REPL 交互环境 的完整教学讲解。",
-          "difficulty": "beginner"
-        },
-        {
-          "id": "java-092",
-          "title": "Java 命令行工具 javac/java/jar/jshell/jpackage 语法速查手册",
-          "doc": "1020-JavaCommandLineTools",
-          "desc": "Java 命令行工具 javac/java/jar/jshell/jpackage 语法速查手册 的完整教学讲解。",
           "difficulty": "beginner"
         },
         {

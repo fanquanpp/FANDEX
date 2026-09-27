@@ -72,6 +72,39 @@ function walk(dir) {
         }
       });
 
+      // 练习密度：教学主线长文应含练习环节（LOW，用于追踪实践密度债务）
+      const diff = asText(data.difficulty) || 'beginner';
+      if (
+        (diff === 'beginner' || diff === 'intermediate') &&
+        body.length > 8000 &&
+        !/(练习|动手|挑战|预测|修 ?Bug|自我检查)/.test(body)
+      ) {
+        issues.push({
+          file: full,
+          issue: 'NO_EXERCISE: 教学长文缺少练习/动手/挑战环节',
+          severity: 'low',
+        });
+      }
+
+      // 安全红旗：明文密码比对或关闭证书校验而无警告语境（MEDIUM）
+      const plaintextPwd =
+        /password\s*=\s*%s|password\s*=\s*:\w+|password\s*=\s*\?|password\s*=\s*'[^']*'|AND\s+password/i.test(body);
+      if (plaintextPwd && !/(哈希|bcrypt|argon2|Argon2|密码散列|加密存储)/.test(body)) {
+        issues.push({
+          file: full,
+          issue: 'SAFETY_PWD: 疑似明文密码比对且无哈希语境',
+          severity: 'medium',
+        });
+      }
+      const certOff = /(CERT_NONE|check_hostname\s*=\s*False)/.test(body);
+      if (certOff && !/(不推荐|危险|警告|中间人|MITM|自签名)/.test(body)) {
+        issues.push({
+          file: full,
+          issue: 'SAFETY_TLS: 关闭证书校验且无警告语境',
+          severity: 'medium',
+        });
+      }
+
       if (body.length > 10000 && !body.includes('## 前置知识') && !body.includes('## 学习目标')) {
         issues.push({
           file: full,

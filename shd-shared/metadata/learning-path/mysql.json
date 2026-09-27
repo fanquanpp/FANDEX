@@ -1,169 +1,515 @@
 {
-  "version": "1.0.0",
+  "version": "1.2.0",
   "module": "mysql",
-  "summary": "从数据库设计与存储引擎出发，覆盖索引、事务、锁机制与高可用实践。",
+  "summary": "从 SQL 语法到 InnoDB 内核：建表、查询优化、事务 MVCC、日志备份、高可用与安全。",
   "stages": [
     {
-      "id": "basics",
-      "title": "入门基础",
-      "subtitle": "存储引擎与 SQL 基础",
+      "id": "start",
+      "title": "课程入口",
+      "subtitle": "怎么用本课程、学习地图、术语与练习环境",
       "nodes": [
         {
-          "id": "mysql-g001",
-          "title": "???????",
-          "desc": "??/??/?????????",
-          "difficulty": "beginner",
+          "id": "mysql-010",
+          "title": "本课程使用指南（先读这里）",
           "doc": "010-HowToUseThisCourse"
         },
         {
-          "id": "mysql-g002",
-          "title": "?????",
-          "desc": "??????????",
-          "difficulty": "beginner",
+          "id": "mysql-020",
+          "title": "学习路线图",
           "doc": "020-Roadmap"
         },
         {
-          "id": "mysql-g003",
-          "title": "???",
-          "desc": "?????????",
-          "difficulty": "beginner",
+          "id": "mysql-030",
+          "title": "术语表（零基础版）",
           "doc": "030-Glossary"
         },
         {
-          "id": "mysql-g004",
-          "title": "SQL ????",
-          "desc": "???? 10 ???????",
-          "difficulty": "beginner",
+          "id": "mysql-040",
+          "title": "SQL 沙箱练习",
           "doc": "040-SQLPlayground"
-        },
+        }
+      ]
+    },
+    {
+      "id": "basics",
+      "title": "SQL 基础与库表设计",
+      "subtitle": "DDL/DML/DQL、多表查询、视图与字符集",
+      "nodes": [
         {
-          "id": "mysql-001",
+          "id": "mysql-050",
           "title": "MySQL 概述与数据库设计",
           "doc": "050-MySQLOverviewDatabaseDesign"
         },
         {
-          "id": "mysql-002",
-          "title": "MyISAM存储引擎",
+          "id": "mysql-060",
+          "title": "MySQL 环境搭建",
+          "doc": "060-MySQLEnvSetup"
+        },
+        {
+          "id": "mysql-070",
+          "title": "MySQL 数据类型与约束",
+          "doc": "070-MySQLDataTypeConstraint"
+        },
+        {
+          "id": "mysql-090",
+          "title": "SQL 数据定义与高级对象",
+          "doc": "090-SQLDataDefinitionAdvanced"
+        },
+        {
+          "id": "mysql-100",
+          "title": "MySQL DML 数据操作",
+          "doc": "100-DML"
+        },
+        {
+          "id": "mysql-110",
+          "title": "SQL 数据操作与查询",
+          "doc": "110-SQLDataOperationQuery"
+        },
+        {
+          "id": "mysql-120",
+          "title": "MySQL DQL 查询语法速查手册",
+          "doc": "120-DQL"
+        },
+        {
+          "id": "mysql-130",
+          "title": "SQL 函数与高级查询",
+          "doc": "130-SQLFunctionAndAdvancedQuery"
+        },
+        {
+          "id": "mysql-140",
+          "title": "多表联查详解",
+          "doc": "140-MultiTableJoinDetailed"
+        },
+        {
+          "id": "mysql-150",
+          "title": "进阶查询与多表操作",
+          "doc": "150-AdvancedQueryMultiTableOperation"
+        },
+        {
+          "id": "mysql-160",
+          "title": "视图：虚拟表与权限的守门人",
+          "doc": "160-View"
+        },
+        {
+          "id": "mysql-170",
+          "title": "字符集与排序规则",
+          "doc": "170-CharsetCollation"
+        }
+      ]
+    },
+    {
+      "id": "engines",
+      "title": "存储引擎",
+      "subtitle": "MyISAM、Memory 与 NDB 的取舍",
+      "nodes": [
+        {
+          "id": "mysql-180",
+          "title": "MyISAM 存储引擎",
           "doc": "180-MyISAMStorageEngine"
         },
         {
-          "id": "mysql-003",
+          "id": "mysql-190",
+          "title": "Memory 存储引擎",
+          "doc": "190-MemoryStorageEngine"
+        },
+        {
+          "id": "mysql-200",
+          "title": "NDB Cluster",
+          "doc": "200-NDBCluster"
+        }
+      ]
+    },
+    {
+      "id": "index",
+      "title": "索引",
+      "subtitle": "聚簇、联合、前缀、函数索引与失效场景",
+      "nodes": [
+        {
+          "id": "mysql-220",
           "title": "聚簇索引与二级索引",
           "doc": "220-ClusteredIndexSecondaryIndex"
         },
         {
-          "id": "mysql-004",
-          "title": "前缀索引",
+          "id": "mysql-230",
+          "title": "联合索引与最左前缀",
+          "doc": "230-CompositeIndexLeftmostPrefixPrinciple"
+        },
+        {
+          "id": "mysql-240",
+          "title": "前缀索引：长字符串列的空间优化术",
           "doc": "240-PrefixIndex"
         },
         {
-          "id": "mysql-005",
-          "title": "索引失效场景",
-          "doc": "310-IndexFailureScene"
+          "id": "mysql-250",
+          "title": "索引条件下推 ICP",
+          "doc": "250-IndexConditionPushdown"
         },
         {
-          "id": "mysql-006",
+          "id": "mysql-260",
+          "title": "全文索引",
+          "doc": "260-FullTextIndex"
+        },
+        {
+          "id": "mysql-270",
+          "title": "索引提示与强制索引",
+          "doc": "270-IndexHintForceIndex"
+        },
+        {
+          "id": "mysql-280",
+          "title": "不可见索引",
+          "doc": "280-InvisibleIndex"
+        },
+        {
+          "id": "mysql-290",
+          "title": "函数索引：给表达式建索引",
+          "doc": "290-FunctionalIndex"
+        },
+        {
+          "id": "mysql-300",
+          "title": "索引统计信息与直方图",
+          "doc": "300-IndexStatsHistogram"
+        },
+        {
+          "id": "mysql-310",
+          "title": "索引失效场景",
+          "doc": "310-IndexFailureScene"
+        }
+      ]
+    },
+    {
+      "id": "tuning",
+      "title": "查询优化",
+      "subtitle": "EXPLAIN、慢日志、优化器与 JOIN 算法",
+      "nodes": [
+        {
+          "id": "mysql-320",
+          "title": "EXPLAIN 输出详解",
+          "doc": "320-EXPLAINDetailed"
+        },
+        {
+          "id": "mysql-330",
+          "title": "MySQL 索引与执行计划",
+          "doc": "330-MySQLIndexExecutionPlan"
+        },
+        {
+          "id": "mysql-340",
+          "title": "慢查询日志",
+          "doc": "340-SlowQueryLog"
+        },
+        {
+          "id": "mysql-350",
+          "title": "优化器追踪",
+          "doc": "350-OptimizerTrace"
+        },
+        {
+          "id": "mysql-360",
           "title": "子查询优化",
           "doc": "360-SubqueryOptimization"
         },
         {
-          "id": "mysql-007",
+          "id": "mysql-370",
+          "title": "派生表优化",
+          "doc": "370-DerivedTableOptimization"
+        },
+        {
+          "id": "mysql-380",
+          "title": "GROUP BY 与 ORDER BY 优化",
+          "doc": "380-GroupByOrderByOptimization"
+        },
+        {
+          "id": "mysql-390",
+          "title": "JOIN 算法",
+          "doc": "390-JOINAlgorithm"
+        },
+        {
+          "id": "mysql-400",
+          "title": "索引原理与性能优化",
+          "doc": "400-IndexPrinciplePerformanceOptimization"
+        }
+      ]
+    },
+    {
+      "id": "innodb",
+      "title": "InnoDB 与事务",
+      "subtitle": "架构、隔离级别、MVCC、锁与死锁",
+      "nodes": [
+        {
+          "id": "mysql-410",
+          "title": "InnoDB 体系架构",
+          "doc": "410-InnoDBSystemArchitecture"
+        },
+        {
+          "id": "mysql-420",
           "title": "事务隔离级别底层实现",
           "doc": "420-TransactionIsolationImplementation"
         },
         {
-          "id": "mysql-008",
+          "id": "mysql-430",
+          "title": "MVCC 原理",
+          "doc": "430-MVCCPrinciple"
+        },
+        {
+          "id": "mysql-440",
+          "title": "MVCC 快照读与当前读",
+          "doc": "440-MVCCSnapshotCurrentRead"
+        },
+        {
+          "id": "mysql-450",
+          "title": "锁分类：从全局锁到临键锁的全景图",
+          "doc": "450-LockClassification"
+        },
+        {
+          "id": "mysql-460",
+          "title": "事务与锁机制",
+          "doc": "460-TransactionLockMechanism"
+        },
+        {
+          "id": "mysql-470",
+          "title": "间隙锁与临键锁解决幻读",
+          "doc": "470-GapLockNextKeyLockSolutionPhantomRead"
+        },
+        {
+          "id": "mysql-480",
           "title": "死锁检测与处理",
           "doc": "480-DeadlockDetectionHandling"
         }
       ]
     },
     {
-      "id": "index",
-      "title": "索引优化",
-      "subtitle": "索引、执行计划与复制",
+      "id": "logs",
+      "title": "日志与备份",
+      "subtitle": "Binlog/Redo/Undo、两阶段提交与 PITR",
       "nodes": [
         {
-          "id": "mysql-101",
-          "title": "二进制日志",
+          "id": "mysql-490",
+          "title": "二进制日志 binlog",
           "doc": "490-Binlog"
         },
         {
-          "id": "mysql-102",
+          "id": "mysql-500",
+          "title": "重做日志",
+          "doc": "500-RedoLog"
+        },
+        {
+          "id": "mysql-510",
+          "title": "撤销日志",
+          "doc": "510-UndoLog"
+        },
+        {
+          "id": "mysql-520",
+          "title": "Redo 与 Undo 与 Binlog 写入时机",
+          "doc": "520-RedoUndoBinlogWriteTiming"
+        },
+        {
+          "id": "mysql-530",
+          "title": "两阶段提交",
+          "doc": "530-TwoPhaseCommit"
+        },
+        {
+          "id": "mysql-540",
+          "title": "分布式事务",
+          "doc": "540-DistributedTransaction"
+        },
+        {
+          "id": "mysql-550",
+          "title": "日志系统",
+          "doc": "550-LogSystem"
+        },
+        {
+          "id": "mysql-560",
           "title": "逻辑备份",
           "doc": "560-LogicalBackup"
         },
         {
-          "id": "mysql-103",
-          "title": "进阶查询与多表操作",
-          "doc": "150-AdvancedQueryMultiTableOperation"
+          "id": "mysql-570",
+          "title": "物理备份",
+          "doc": "570-PhysicalBackup"
         },
         {
-          "id": "mysql-104",
-          "title": "InnoDB-Cluster",
-          "doc": "630-InnoDBCluster"
-        },
-        {
-          "id": "mysql-105",
-          "title": "SSL-TLS加密",
-          "doc": "710-SSLEncryption"
-        },
-        {
-          "id": "mysql-106",
-          "title": "MySQL 索引与执行计划",
-          "doc": "330-MySQLIndexExecutionPlan"
-        },
-        {
-          "id": "mysql-107",
-          "title": "复制与高可用",
-          "doc": "640-ReplicationHA"
-        },
-        {
-          "id": "mysql-108",
-          "title": "存储过程与函数",
-          "doc": "770-StoredProcedureAndFunction"
+          "id": "mysql-580",
+          "title": "基于时间点恢复 PITR",
+          "doc": "580-PITR"
         }
       ]
     },
     {
-      "id": "arch",
-      "title": "架构实战",
-      "subtitle": "锁、事务与速查手册",
+      "id": "ha",
+      "title": "高可用与水平扩展",
+      "subtitle": "复制、GTID、组复制、分区与分库分表",
       "nodes": [
         {
-          "id": "mysql-201",
-          "title": "索引原理与性能优化",
-          "doc": "400-IndexPrinciplePerformanceOptimization"
+          "id": "mysql-590",
+          "title": "主从复制",
+          "doc": "590-Replication"
         },
         {
-          "id": "mysql-202",
-          "title": "间隙锁与临键锁解决幻读",
-          "doc": "470-GapLockNextKeyLockSolutionPhantomRead"
+          "id": "mysql-600",
+          "title": "GTID 全局事务标识符",
+          "doc": "600-GTID"
         },
         {
-          "id": "mysql-203",
-          "title": "事务与锁机制",
-          "doc": "460-TransactionLockMechanism"
+          "id": "mysql-610",
+          "title": "并行复制",
+          "doc": "610-ParallelReplication"
         },
         {
-          "id": "mysql-204",
+          "id": "mysql-620",
+          "title": "组复制",
+          "doc": "620-GroupReplication"
+        },
+        {
+          "id": "mysql-630",
+          "title": "InnoDB Cluster",
+          "doc": "630-InnoDBCluster"
+        },
+        {
+          "id": "mysql-640",
+          "title": "复制与高可用",
+          "doc": "640-ReplicationHA"
+        },
+        {
+          "id": "mysql-650",
+          "title": "主从复制延迟原因与解决",
+          "doc": "650-ReplicationDelayCauseSolution"
+        },
+        {
+          "id": "mysql-660",
+          "title": "分区表",
+          "doc": "660-PartitionedTable"
+        },
+        {
+          "id": "mysql-670",
+          "title": "分库分表策略",
+          "doc": "670-ShardingStrategy"
+        },
+        {
+          "id": "mysql-680",
+          "title": "分库分表中间件",
+          "doc": "680-ShardingMiddleware"
+        }
+      ]
+    },
+    {
+      "id": "security",
+      "title": "安全与权限",
+      "subtitle": "账号权限、加密与 SQL 注入攻防",
+      "nodes": [
+        {
+          "id": "mysql-690",
+          "title": "账户与权限管理",
+          "doc": "690-AccountPermissionManagement"
+        },
+        {
+          "id": "mysql-710",
+          "title": "SSL/TLS 加密连接",
+          "doc": "710-SSLEncryption"
+        },
+        {
+          "id": "mysql-720",
+          "title": "数据加密：InnoDB TDE 与密钥管理",
+          "doc": "720-DataEncryption"
+        },
+        {
+          "id": "mysql-730",
+          "title": "防火墙插件",
+          "doc": "730-FirewallPlugin"
+        },
+        {
+          "id": "mysql-740",
           "title": "SQL 注入基础与检测",
           "doc": "740-SQLInjectionBasicsDetection"
         },
         {
-          "id": "mysql-205",
+          "id": "mysql-750",
+          "title": "SQL 注入攻击类型与实战",
+          "doc": "750-SQLInjectionAttackTypePractice"
+        },
+        {
+          "id": "mysql-760",
+          "title": "SQL 注入防御策略",
+          "doc": "760-SQLInjectionDefenseStrategy"
+        }
+      ]
+    },
+    {
+      "id": "advanced",
+      "title": "高级特性与运维",
+      "subtitle": "存储过程、JSON、新特性、运维与项目实战",
+      "nodes": [
+        {
+          "id": "mysql-770",
+          "title": "存储过程与函数",
+          "doc": "770-StoredProcedureAndFunction"
+        },
+        {
+          "id": "mysql-780",
+          "title": "触发器与事件",
+          "doc": "780-TriggerEvent"
+        },
+        {
+          "id": "mysql-790",
+          "title": "事件调度器",
+          "doc": "790-EventScheduler"
+        },
+        {
+          "id": "mysql-800",
+          "title": "JSON 模式验证与聚合函数",
+          "doc": "800-JSONSchemaValidationAggregate"
+        },
+        {
+          "id": "mysql-810",
+          "title": "JSON 类型与 JSON_TABLE",
+          "doc": "810-JSONTypeJSONTable"
+        },
+        {
+          "id": "mysql-820",
+          "title": "MySQL9 新特性与并行查询",
+          "doc": "820-MySQL9NewFeatures"
+        },
+        {
+          "id": "mysql-830",
+          "title": "VECTOR 向量类型",
+          "doc": "830-VectorType"
+        },
+        {
+          "id": "mysql-840",
+          "title": "MySQL 8.4 升级指南",
+          "doc": "840-MySQL84UpgradeGuide"
+        },
+        {
+          "id": "mysql-850",
+          "title": "MySQL 配置与运维",
+          "doc": "850-MySQLConfigOps"
+        },
+        {
+          "id": "mysql-860",
+          "title": "性能调优与安全",
+          "doc": "860-PerformanceTuningSecurity"
+        },
+        {
+          "id": "mysql-870",
+          "title": "MySQL 项目示例",
+          "doc": "870-MySQLProjectExampleDatabaseDesign"
+        },
+        {
+          "id": "mysql-880",
           "title": "MySQL 理论知识点",
           "doc": "880-MySQLTheoryKnowledge"
         },
         {
-          "id": "mysql-206",
-          "title": "MySQL 索引管理",
-          "doc": "210-IndexManagement"
+          "id": "mysql-890",
+          "title": "MySQL 语法速查手册",
+          "doc": "890-MySQLQuickLookup"
         },
         {
-          "id": "mysql-207",
-          "title": "视图 语法速查手册",
-          "doc": "160-View"
+          "id": "mysql-900",
+          "title": "MySQL 应用控制器设计与实践",
+          "doc": "900-MySQLApplicationController"
+        },
+        {
+          "id": "mysql-920",
+          "title": "mysqladmin",
+          "doc": "920-Mysqladmin"
         }
       ]
     }
