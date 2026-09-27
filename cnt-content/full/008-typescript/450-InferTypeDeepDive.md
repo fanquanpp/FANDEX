@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 430 的分发与 440 的 infer 在本篇组装：完整推导 DeepReadonly、MyAwaited、ParametersToObject 三个工具类型，每个都走「目标、思路、实现、用例与预期」流程，含 TS2589 深度限制调试实录与类型体操的可维护性边界。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/430-ConditionalTypeDistribute'
   - 'typescript/440-ConditionalTypeInfer'

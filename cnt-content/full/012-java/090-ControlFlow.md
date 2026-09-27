@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以猜数字游戏（python/060 与 javascript/060 的 Java 版）讲透判断与重复：if/else、Java 14 箭头 switch、while/for/for-each、break 与 continue、死循环与 Ctrl+C 急救、060 Integer 比较陷阱的循环版回收，附 unreachable statement 调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'java/060-WrapperCacheTrap'
   - 'java/080-OperatorExpression'

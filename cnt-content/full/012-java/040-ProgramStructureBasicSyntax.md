@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 以订单小计程序为主线讲透源文件骨架：语句与块、作用域边界、三种注释、包与 import 的最小使用、驼峰命名约定，附 cannot find symbol 的两副面孔与缺括号报错的调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'java/030-QuickStart'
   - 'java/050-DataTypeConversion'

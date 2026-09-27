@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 对比 Python 装解释器的差异，建立 JDK = 编译器 + 运行时的心智模型：JDK/JRE/JVM 三者关系图、三平台一行安装 JDK 21+ LTS、javac 与 java 双命令验证、IDE 选择，附真实报错调试实录。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/010-WhatIsJava'
   - 'java/030-QuickStart'

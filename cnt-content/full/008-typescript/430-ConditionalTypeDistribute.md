@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "用「根据输入类型选返回类型的存档加载器」引入，讲透 T extends U ? X : Y、嵌套条件、分布式条件类型与 never 的空联合行为，并揭开 Exclude/Extract 的真面目，附可运行实验与真实报错调试实录。"
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/440-ConditionalTypeInfer'
   - 'typescript/450-InferTypeDeepDive'
