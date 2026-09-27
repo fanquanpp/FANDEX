@@ -90,3 +90,33 @@ sync：死链清理 53 项、order 重排 407 篇、新文档注册；audit:cont
 - 6 篇保留占位文的改造；30 组 MERGE 中未由删除覆盖的部分；29 篇 SPLIT；
 - 各模块出口项目篇与 roadmap 其余路线的检验项目绑定；
 - SAFETY_PWD 9 处人工复核。
+
+---
+
+# 批次三（2026-09-27 晚）：后续批次与出口项目
+
+## 一、修改了什么、为什么
+
+1. **SAFETY_PWD 9 处人工复核完成**：javascript/640（正则教学样本）、mysql 复制家族 570/590/600/620/640（复制凭据配置）、mysql/740/750（注入攻防示例）、redis/210（Sentinel 客户端）——均为合理教学场景，逐处补上最小权限/密钥管理/加密存储/哈希语境注释；门禁 SAFETY_PWD 归零。
+2. **6 篇保留占位文全部改造为真教学文**：css/400-ModernColorSpace（oklch/color-mix/渐进增强）、css/710-ScopeAtRule（作用域边界与降级）、css/690-GridQuickStart（Grid 入门，与 250 深水篇声明分工）、css/700-Transform3D（变换与合成层性能）、vue3/270-Vue3ViteBuildConfig、react/460-ReactViteToolchainCommand（两篇结构对称、案例不同；CRA 退场后的现在时工具链）。至此「的完整教学讲解。」占位文清零。
+3. **批次五重写 7 篇**：javascript 090（数组高阶方法）/100（this 四规则一例外）/250（异步入门）/410（DOM 与事件），html5 010/020/030 入门链。累计重写 39 篇。
+4. **出口项目篇 CREATE 2 篇**：git/430-GitCapstoneProject（Level 4：真实仓库的分支/约定式提交/冲突/tag 全流程，user stories A1-A9+E1-E3）、python/975-PythonCapstoneProject（Level 6-7：记账原型升级为可安装的 ledger CLI，P1-P12+E1-E3，提示梯度从高到无）。两篇已挂载学习路径（git 43 节点、python 81 节点）。
+5. **修复 2 处 YAML frontmatter 解析错误**（css/690 未加引号的 `display: grid`、css/710 以 @ 开头的 title），HIGH 回归为 0。
+
+## 二、删除了什么
+
+本批无删除。
+
+## 三、MERGE/SPLIT 精确盘点
+
+- MERGE 30 组：8 组已由 DELETE 消化、2 组由分工重构解决、20 组待各模块深水区批次（清单已回写 document-migration-map.md 第二节）；
+- SPLIT 29 篇：维持待办——需先确立「进阶参考层」的站点信息架构（大文件是拆为教学篇还是降级为参考书），这是唯一的架构级待决项，已单独标注。
+
+## 四、门禁记录（批次三）
+
+sync：新文档注册、order 补全；audit:content：HIGH 0、SAFETY_PWD 0；audit-learning-path：0 errors / 0 warnings / 孤儿 0；typecheck：0 errors；test:smoke：20/20；emoji 扫描：本次改动文件全干净（mysql/170 的 3 处 😀 为既有 utf8mb4 教学示例字符，非本次引入，处置权留维护者）。
+
+## 五、累计状态与遗留
+
+- 教学文体达标文档：39 篇重写 + 2 篇毕业项目 + 140/150 两篇路线篇，共 43 篇新文体；
+- 遗留：javascript 深水区与各后端模块主线重写、20 组 MERGE、29 篇 SPLIT（依赖参考层架构决策）、其余模块出口项目篇。

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 协程与事件循环核心 API：asyncio.run、Task、TaskGroup、超时控制与异步上下文。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/640-ConcurrentProgramming'
   - 'python/910-PythonWebSocket'

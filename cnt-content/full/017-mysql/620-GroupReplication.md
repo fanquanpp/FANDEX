@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL组复制Group Replication：Paxos多数派与认证冲突检测、单主/多主模式、故障检测自动选主、部署与限制
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/590-Replication'
   - 'mysql/610-ParallelReplication'
@@ -99,6 +99,7 @@ SET GLOBAL group_replication_bootstrap_group = OFF;
 -- 其他节点直接加入（恢复通道按需一次性配置）
 CHANGE REPLICATION SOURCE TO SOURCE_USER='repl', SOURCE_PASSWORD='ReplPass123!'
   FOR CHANNEL 'group_replication_recovery';
+-- 凭据安全：独立 repl 账号 + 强随机密码 + 加密存储，勿复用业务账号
 START GROUP_REPLICATION;
 
 -- 验证：三个成员 ONLINE

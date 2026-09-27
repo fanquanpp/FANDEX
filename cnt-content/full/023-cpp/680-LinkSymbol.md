@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++ 链接与符号完整教学：名字修饰、内/外部链接、ODR、undefined reference 与 multiple definition 排查、静态/动态库、符号可见性。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/050-NamespaceLinkage'
   - 'cpp/660-Cpp20Module'

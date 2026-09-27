@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL物理备份：Percona XtraBackup原理与增量备份、内置Clone插件、MySQL Enterprise Backup对比与选型
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/500-RedoLog'
   - 'mysql/550-LogSystem'
@@ -47,6 +47,8 @@ XtraBackup 是社区最常用的物理热备工具。注意**版本必须与服�
 
 ```bash
 # 1. 全量备份（热备，业务不中断；需要足够的权限与文件系统空间）
+#    凭据安全：生产环境用 mysql_config_editor 配 --login-path（口令经加密存储在登录路径文件中），
+#    避免密码明文留在命令行与 shell 历史
 xtrabackup --backup --target-dir=/backup/full \
   --user=root --password='xxx' --host=127.0.0.1
 

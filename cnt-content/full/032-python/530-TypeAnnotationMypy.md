@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Python类型注解与mypy详解：typing模块、泛型、Protocol、TypeVar、Literal、TypedDict与渐进式类型系统。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/560-DataClassFieldDefault'
   - 'python/510-DecoratorAdvanced'

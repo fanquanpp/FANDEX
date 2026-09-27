@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 从三处复制的结算逻辑讲起：参数设计、返回值、局部作用域、可变默认参数事故、docstring 与类型提示，最后把排行榜封装成函数库，附真实 TypeError 调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/140-BuiltinDataStructure'
   - 'python/110-ArgsKwargsUnpacking'

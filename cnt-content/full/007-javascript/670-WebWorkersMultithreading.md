@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Worker、SharedArrayBuffer 与 Atomics：让主线程之外真正并行。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/300-EventLoopDetailed'
   - 'javascript/250-AsyncProgramming'

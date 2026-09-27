@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL主从复制：异步复制、半同步复制、全同步复制的原理、配置与切换
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/570-PhysicalBackup'
   - 'mysql/580-PITR'
@@ -68,6 +68,8 @@ CHANGE REPLICATION SOURCE TO
 START REPLICA;
 SHOW REPLICA STATUS\G
 ```
+
+> 安全提醒：`SOURCE_PASSWORD` 是复制账号凭据——`repl` 账号只授 `REPLICATION REPLICA` 最小权限，密码用强随机值并纳入密钥管理与加密存储；传输加密见 [SSL 加密](/mysql/710-SSLEncryption)，静态加密见 [数据加密](/mysql/720-DataEncryption)。
 
 > MySQL 8.0.22 起推荐 GTID 自动定位，省去手工找 binlog 位点：
 > `CHANGE REPLICATION SOURCE TO ... SOURCE_AUTO_POSITION = 1`（详见 GTID 一章）。

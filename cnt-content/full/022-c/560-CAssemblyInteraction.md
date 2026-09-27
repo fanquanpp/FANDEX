@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C语言与汇编交互：GCC/Clang内联汇编、操作数约束、内存屏障、原子操作、SIMD加速、外部汇编与跨架构支持。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'c/410-CrossPlatformProgramming'
   - 'c/550-EmbeddedCProgramming'

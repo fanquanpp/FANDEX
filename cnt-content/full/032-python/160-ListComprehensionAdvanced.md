@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 列表/字典/集合推导式与生成器表达式
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/090-VariableConstant'
   - 'python/070-BasicDataType'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 注入原理、检测方法与防御策略入门。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/890-MySQLQuickLookup'
   - 'mysql/900-MySQLApplicationController'
@@ -98,6 +98,8 @@ SQL 注入可以按照不同的方式分类：
 
 **代码分析**：
 这段代码的问题在于直接将用户输入拼接到 SQL 语句中，没有任何过滤或转义。当用户输入正常的用户名和密码时，查询正常工作。但如果攻击者输入特殊的字符或 SQL 语句，就可以破坏原有查询的逻辑。
+
+**双层防线提醒**：这段代码即使改成参数化查询，也只是防住了注入；密码本身的正确处理是注册时哈希存储、登录时验证哈希。注入防御与密码哈希各自独立、缺一不可，完整写法见 [SQL 注入防御策略](/mysql/760-SQLInjectionDefenseStrategy) 的 `verify_login` 与 1.8.3 节。
 
 #### 2.1.2 正常登录
 

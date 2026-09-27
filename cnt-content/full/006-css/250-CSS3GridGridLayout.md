@@ -22,7 +22,7 @@ prerequisites:
 
 - [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
 
-> 前置依赖：基础选择器与盒模型。本篇为完整版，可配合 068-Grid 速查复习。
+> 前置依赖：基础选择器与盒模型。本篇为完整版，讲全部容器与项目属性；只想要快速上手的入门路线，见 [CSS Grid 快速上手](/css/690-GridQuickStart)。
 
 ## 1. 核心概念
 
@@ -1887,4 +1887,4 @@ Grid 布局是一种强大的二维布局系统，具有以下优势：
 - 对比 Flexbox：`css/240-CSS3FlexboxFlexLayout`；
 - 响应式：`css/370-ResponsiveDesign`；
 - 实战：`css/680-CSSProjectExampleResponsiveHomepage`；
-- 简版速查：`css/690-GridQuickStart`。
+- 快速上手入门：`css/690-GridQuickStart`。

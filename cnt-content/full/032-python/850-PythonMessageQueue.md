@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: RabbitMQ与Kafka
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/900-ConfigManagement'
   - 'python/500-Decorator'

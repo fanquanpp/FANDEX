@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: ssl 模块速查：SSL/TLS 上下文、证书加载与校验模式，含禁用校验的风险警告。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related: []
 prerequisites: []
 ---

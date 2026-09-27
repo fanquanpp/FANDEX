@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL高级SQL：窗口函数、CTE与递归CTE、横向连接、分组集与高级聚合
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'postgresql/270-PartitionedTable'
   - 'postgresql/280-PartitionPruningPartitionJoin'

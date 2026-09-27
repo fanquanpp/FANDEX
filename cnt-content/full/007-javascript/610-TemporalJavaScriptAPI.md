@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TC39 Temporal 现代日期时间 API——类型体系、时区算法、历法支持、Duration 运算与工程实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/460-StorageForTheWeb'
   - 'javascript/470-IndexedDBADatabaseInYourBrowser'

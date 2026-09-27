@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++ 三大词表类型完整教学：optional 表示可能没有值、variant 表示若干类型之一、any 表示运行期任意类型，含选型对比与常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/300-CppTuplePair'
   - 'cpp/730-Cpp23NewFeatures'

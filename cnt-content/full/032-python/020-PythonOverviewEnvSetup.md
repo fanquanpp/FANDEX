@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用「给电脑雇翻译官」讲清解释器是什么、官网安装包与 uv/pyenv 版本管理器的分工、三系统安装要点与两条验证命令，附装机高频报错的真实调试实录与练习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/030-PyenvUvManage'
   - 'python/040-PythonVirtualEnv'

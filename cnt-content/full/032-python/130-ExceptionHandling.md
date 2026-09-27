@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 异常体系、try-except、自定义异常与上下文管理器。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/740-PackagePublish'
   - 'python/460-OOP'

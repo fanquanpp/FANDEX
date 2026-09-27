@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 以「同一份代码为什么在浏览器和 Node 里行为不同」为问题主线，建立运行环境 = 引擎 + 宿主 API 的心智模型，讲清 ECMAScript 与版本节奏，附动手实验与调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/010-WhatIsJavaScript'
   - 'javascript/030-ProgramStructureBasicSyntax'

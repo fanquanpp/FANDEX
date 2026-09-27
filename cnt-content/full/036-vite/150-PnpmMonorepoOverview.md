@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: pnpm 与 Monorepo 工程化：workspace、内容寻址存储、依赖隔离、catalog、任务编排与发布
 author: fanquanpp
-updated: '2026-09-24'
+updated: '2026-09-27'
 related:
   - 'vite/010-ViteOverview'
   - 'devops/140-CICDPipeline'

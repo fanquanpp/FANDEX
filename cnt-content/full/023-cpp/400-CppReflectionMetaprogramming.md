@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 编译期反射与代码生成
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/700-CppCodeStyle'
   - 'cpp/590-CppWebAssembly'

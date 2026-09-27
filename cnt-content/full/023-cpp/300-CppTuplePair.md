@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++ tuple 与 pair 完整教学：构造与访问、字典序比较、tie/apply/tuple_cat、多返回值实践、C++23 tuple-like 增强。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/320-StructuredBinding'
   - 'cpp/310-CppVariantOptionalAny'

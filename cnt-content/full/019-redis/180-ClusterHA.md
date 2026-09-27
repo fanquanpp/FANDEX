@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 主从复制、哨兵模式自动故障转移、Redis Cluster无中心分片、集群代理、Redis Flex混合存储、Redis for AI套件。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-27'
 related:
   - 'redis/010-OverviewCoreDataStructure'
   - 'redis/140-PersistenceModule'

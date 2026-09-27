@@ -1,191 +1,212 @@
 ---
 order: 30
-title: 环境搭建与第一个网页
+title: 环境准备与第一个页面：浏览器加编辑器就够了
 module: 'html5'
 category: 前端技术
 difficulty: beginner
-description: 零基础第一课：安装编辑器、创建并保存 .html 文件、用浏览器打开、认识 F12 开发者工具。
+description: 网页开发没有「装环境」这回事：一个浏览器加一个编辑器就是全部。建立 first-page 项目并跑通「改、存、刷、看」的即时反馈循环，对照双击打开与 Live Server 两种工作方式，用 DevTools 把 HTML/CSS/JS 三层连起来检查，并掌握页面白屏的排查三步。
 author: fanquanpp
 updated: '2026-09-12'
 related:
+  - 'html5/040-DocTypeDeclaration'
   - 'html5/050-HTML5CommentsAndEntities'
-  - 'html5/020-HTML5OverviewCoreFeature'
+  - 'html5/060-MetadataCharacterEncoding'
+  - 'html5/070-HTML5BlockVsInline'
+  - 'start/060-FirstProgramJavaScript'
   - 'shell/060-VSCodeInstall'
-  - 'shell/050-IDEEditorSelection'
-prerequisites: []
+prerequisites:
+  - 'html5/020-HTML5OverviewCoreFeature'
+  - 'start/030-DevEnvironmentSetup'
 ---
 
-## 0.1 HTML 入门实战清单：从文件到页面结构
+## 前置知识
 
-### 必会标签与用途
+- 已读 [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)：知道 DOCTYPE 与字符编码各是干什么的；
+- 已在 [开发环境搭建](/start/030-DevEnvironmentSetup) 装好 VS Code 与浏览器。还没装也不拦路：本篇 2.1 给出两分钟安装路径，或者先用记事本顶替——所有实验照样跑得通。
 
-| 标签 | 作用 | 初学者必须掌握的属性 | 常见错误 |
-| --- | --- | --- | --- |
-| `<!doctype html>` | 告诉浏览器使用标准模式解析页面 | 无 | 写错或遗漏后，旧浏览器可能进入怪异模式 |
-| `<html>` | 整个 HTML 文档根元素 | `lang` | 忘记写 `lang="zh-CN"` 会影响翻译、朗读和搜索理解 |
-| `<head>` | 放页面元数据，不直接展示正文 | 无 | 把正文内容误放进 `head` |
-| `<meta>` | 声明字符集、视口、SEO 信息 | `charset`、`name`、`content` | 忘记 `charset="UTF-8"` 导致中文乱码 |
-| `<title>` | 浏览器标签页标题 | 无 | 与正文标题混淆，或所有页面标题都一样 |
-| `<body>` | 放用户可见内容 | 全局属性 | 把脚本、样式和内容混在一起且缺少结构 |
-| `<h1>` 到 `<h6>` | 标题层级 | 全局属性 | 为了字体大小乱跳级，而不是表达结构 |
-| `<p>` | 段落 | 全局属性 | 在段落里塞块级复杂布局 |
-| `<a>` | 链接与页面跳转 | `href`、`target`、`rel` | 新窗口打开外链时忘记 `rel="noopener"` |
-| `<img>` | 图片内容 | `src`、`alt`、`width`、`height` | 省略 `alt` 或不写尺寸导致布局抖动 |
+**与 start/030 的分工**：那篇管「装工具」，本篇只管「建工作流」——不重复安装任何软件，只回答：工具装好之后，网页开发每天的实际动作是什么。
 
-### 第一份标准模板
+## 学习目标
 
-```html
-<!doctype html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>我的第一个网页</title>
-  </head>
-  <body>
-    <h1>你好，HTML</h1>
-    <p>这是我亲手创建的第一个网页。</p>
-  </body>
-</html>
-```
+读完本文你将能够：
 
-### 调试动作
+1. 跑通网页开发的最小工作流——编辑器改代码、保存、浏览器刷新、看效果——并说清每一拍归谁管；
+2. 说出双击打开（file://）与 Live Server（http://localhost）的区别，以及从哪一刻起必须换用后者；
+3. 用 DevTools 的 Elements、Styles、Console 三个面板，把同一页面的结构层、外观层、行为层连起来检查；
+4. 遇到页面白屏，按「没保存 → 路径错 → 大小写不符」三步排查，并用 Ctrl+U 拿到铁证；
+5. 把练习文件收进 first-page 项目文件夹，开始用项目化的方式管理代码。
 
-1. 在 Elements 面板中选中 `<h1>`，确认浏览器真的解析出了标题节点。
-2. 修改 `<title>` 后刷新页面，观察浏览器标签页变化。
-3. 故意删除 `</p>` 再打开 Elements，观察浏览器如何自动修复错误结构。
-4. 用 Console 输入 `document.title`，确认 JavaScript 可以读取 HTML 元数据。
+预计 40 到 60 分钟，包含 1 个贯穿项目与 4 道练习。
 
+## 1. 问题引入：装环境？网页开发不需要
 
-## 0. 学习目标（可验证）
+学其他语言的同学还在配解释器、设环境变量、装虚拟机，你这边——010 已经双击打开过自己写的网页了，**环境早就齐了**。浏览器免费送了网页的全部运行环境：读 HTML、算 CSS、跑 JS 都是它的本职；编辑器负责写字。就这两个角色，没有第三个。
 
-- [ ] 能在电脑上新建一个 `.html` 文件并用记事本或 VS Code 编辑
-- [ ] 能用浏览器打开这个文件并看到内容
-- [ ] 能打开 F12 开发者工具，说出 Elements 和 Console 是干什么的
+所以本篇不装任何软件（一个 VS Code 插件除外，它只是提速器）。要做的是把「凑合能跑」升级成「顺手好跑」：给练习文件安个家，把四拍循环提速，并给工作流配上第一件调试武器 DevTools——前两篇你只用过它的 Elements，今天把三层看全。
 
-## 1. 一句话理解
+## 2. 工具盘点：两个角色，两条纪律
 
-> 网页本质上就是一个"写满了标签的文本文件"。你负责用编辑器写它，浏览器负责读懂并画出来；这两件事打通了，后面所有的 HTML 学习都有地方落地。
+### 2.1 编辑器：VS Code
 
-## 2. 第一步：安装编辑器（5 分钟）
+写字工具，本身不运行网页。安装与界面速览见 [VS Code 安装配置](/shell/060-VSCodeInstall)（或 [开发环境搭建](/start/030-DevEnvironmentSetup)），两分钟的事。两条纪律：
 
-写代码需要一个编辑器。推荐 **VS Code**（免费、跨平台、前端标配）：
+- 记事本可以起步，**Word 绝对不行**——它会往文件里塞隐藏格式字符，浏览器读到就是乱码；
+- 记事本没有语法高亮和配对提示，标签一多就看花眼；VS Code 给配对标签高亮，少写一个 `</div>` 当场能看出来。
 
-1. 打开官网 <https://code.visualstudio.com/>，下载对应系统的安装包；
-2. 一路"下一步"安装完成；
-3. 安装后打开 VS Code，界面分成三块：左边是文件列表、中间是编辑区、顶部有菜单。
+### 2.2 浏览器：Chrome 或 Edge
 
-> 也可以先用系统自带的"记事本"起步（零成本），等写到第 3 篇再换 VS Code 也不迟。VS Code 的完整安装与配置见 `shell/060-VSCodeInstall`。
+既是运行环境又是调试器，按 F12 掏出全套工具。用顺手的那个即可；本篇以 Chrome 为例（Edge 同源，几乎一致）。
 
-**讲解：**
+## 3. 建项目：first-page 文件夹
 
-1. 编辑器只是"写字工具"，它本身不运行网页；真正运行网页的是浏览器。
-2. 记事本能写代码，但没有语法高亮和自动补全；VS Code 有，所以长期学习用它。
-3. 不要用 Word 写代码：Word 会插入隐藏格式字符，导致网页显示异常。
-
-## 3. 第二步：新建文件并保存为 .html（2 分钟）
-
-### 3.1 桌面新建文本文档
-
-1. 在桌面空白处右键 → "新建" → "文本文档"；
-2. 把文件名从 `新建文本文档.txt` 改为 `index.html`；
-3. 如果改完名字后缀还是 `.txt`，说明系统隐藏了扩展名，需要打开显示：
-   - Windows 资源管理器 → 顶部"查看" → 勾选"文件扩展名"；
-   - 然后再重命名一次，确保是 `index.html`。
-
-**讲解：**
-
-1. 后缀 `.html` 告诉浏览器"这是网页文件"，双击才会用浏览器打开。
-2. `index` 是网站首页的约定名称：服务器默认找 `index.html`。
-3. 显示扩展名是零基础第一道坎，看不到后缀就改不了类型，这一步必须会。
-
-### 3.2 用编辑器打开
-
-1. 右键 `index.html` → "打开方式" → 选择 VS Code（或记事本）；
-2. 在编辑器里输入内容后按 `Ctrl+S` 保存；
-3. 以后修改文件，都是"编辑器里改 → 保存 → 浏览器刷新"三步循环。
-
-## 4. 第三步：用浏览器打开（1 分钟）
-
-保存后关闭编辑器，回到桌面：
-
-1. 双击 `index.html`，默认浏览器会打开它；
-2. 如果双击打开的还是编辑器，右键 → "打开方式" → 选择 Chrome/Edge；
-3. 想再次预览修改结果：回到浏览器按 `F5` 或 `Ctrl+R` 刷新。
-
-**讲解：**
-
-1. 双击打开文件用的是"本地文件协议"（地址栏以 `file://` 开头），适合学习阶段。
-2. 后期做网站时改用 `http://localhost` 本地服务器访问，效果一样但能力更强（见 035 综合项目）。
-3. 刷新是开发者的日常操作：改代码后忘记刷新，会以为"没生效"。
-
-## 5. 第四步：认识 F12 开发者工具（3 分钟）
-
-在已打开的网页上按 `F12`（或右键 → "检查"），浏览器下方/右侧会弹出开发者工具。零基础先认识三个面板：
-
-| 面板 | 一句话用途 | 现在能做什么 |
-| --- | --- | --- |
-| Elements（元素） | 查看页面结构 | 点选左边小箭头，再点页面任意文字，能定位到它的 HTML 代码 |
-| Console（控制台） | 看错误和日志 | 输入 `1 + 1` 回车，看到 `2`；有报错会显示红色信息 |
-| Network（网络） | 看加载了哪些文件 | 刷新页面，能看到 `index.html` 这条记录 |
-
-**讲解：**
-
-1. Elements 面板是学习 HTML 的"透视镜"：看到的每一个结构都能对应到代码。
-2. Console 面板是以后学 JavaScript 的"草稿纸"。
-3. 关掉工具：按 F12 或点面板右上角的 ×。
-
-## 6. 第一个网页（5 分钟）
-
-在 `index.html` 里输入下面的内容（建议手敲，不要复制）：
+别再把文件散在桌面。新建文件夹 `first-page`，在里面新建 `index.html`，完整内容如下：
 
 ```html
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>我的第一个网页</title>
-  </head>
-  <body>
-    <h1>你好，世界！</h1>
-    <p>我正在学习 HTML。</p>
-  </body>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <title>first-page 起步页</title>
+  <style>
+    h1 { color: #1d4ed8; }
+  </style>
+</head>
+<body>
+  <h1>我的工作流通了</h1>
+  <p>改这一行文字，保存，刷新，看变化。</p>
+  <button id="cheer">点我一下</button>
+  <script>
+    const button = document.getElementById('cheer');
+    button.addEventListener('click', function () {
+      console.log('按钮被点了，当前时间：' + new Date().toLocaleTimeString());
+    });
+  </script>
+</body>
 </html>
 ```
 
-**讲解：**
+比 010 的页面多了两小块，凑齐三件套的三层：
 
-1. `<!DOCTYPE html>` 声明文档类型，告诉浏览器"这是 HTML5"，必须写在第一行。
-2. `<html>` 是整张网页的根标签；`<head>` 放"配置"（比如标题），`<body>` 放"内容"。
-3. `<title>` 里的文字显示在浏览器标签页上，不出现在页面正文中。
-4. `<h1>` 是一级标题，`<p>` 是段落；标签成对出现，`</p>` 表示结束。
-5. 保存后刷新浏览器：标签页标题、页面大标题、段落文字都应该正确显示。
+- `<style>` 块里一条 CSS 规则，把 h1 染成蓝色——「化妆」的最小样本。真实项目会把样式拆到单独的 .css 文件（[CSS 是什么](/css/010-WhatIsCSS) 演示过拆法），练习阶段先住一个屋便于观察；
+- `<script>` 块里四行 JavaScript，给按钮装了「被点击时打印一行日志」的监听。[第一门语言体验](/start/060-FirstProgramJavaScript) 里你在控制台玩过 `console.log`——现在它住进了页面文件，专职「行为」。
 
-## 7. 常见问题（遇到再查）
+JS 语法先不抠，JavaScript 模块从头教；`const` 和 `function` 先混个眼熟。
 
-| 问题 | 原因 | 解决 |
+## 4. 两种打开方式：双击 vs Live Server
+
+### 4.1 先用老办法确认它活着
+
+双击 index.html。预期效果：页面有蓝色大标题、一行说明文字、一个按钮；按 F12 切到 Console，没有红色报错；点一下按钮，Console 打印一行「按钮被点了，当前时间：…」。三层全部就位。
+
+### 4.2 再装提速器 Live Server
+
+VS Code 左侧点「扩展」图标（四个方块），搜索 `Live Server`，点 Install——本篇唯一的安装动作。装完回到 index.html，右下角状态栏出现 **Go Live**，点它。预期效果：默认浏览器自动弹出新标签页，地址栏是：
+
+```text
+http://127.0.0.1:5500/index.html
+```
+
+两种方式对照：
+
+| | 双击打开 | Live Server |
 | --- | --- | --- |
-| 双击打开的还是编辑器 | 系统默认打开方式没设对 | 右键 → 打开方式 → 选择浏览器 |
-| 改完代码页面没变化 | 忘记保存或没刷新 | Ctrl+S 保存，再按 F5 刷新 |
-| 页面出现乱码 | 文件保存编码不是 UTF-8 | VS Code 右下角把编码改为 UTF-8 后重新保存 |
-| 文件名还是 .txt | 扩展名被隐藏 | 打开"显示文件扩展名"再重命名 |
-| 标签页标题不显示 | title 写错位置 | 检查 `<title>` 是否在 `<head>` 内 |
+| 地址栏 | `file:///C:/...`（读硬盘文件） | `http://127.0.0.1:5500`（本机伪装成服务器） |
+| 保存后 | 手动按 F5 刷新 | 自动刷新，浏览器不用碰 |
+| 能力 | 单文件练习够用 | 与真实网站一致，多文件、网络请求的实验不受限 |
+| 定位 | 自行车 | 电动车，去的是同一个地方 |
 
-## 8. 动手试试
+结论：现在双击照样能学；从「多文件、要发网络请求」起必须换 Live Server。装上它，十分钟后你就回不去了。
 
-### 入门版（必做）
+## 5. 即时反馈循环：前端的心跳
 
-1. 把 `<p>` 里的文字改成你的名字，保存并刷新；
-2. 按 F12，用 Elements 面板的箭头工具点一下页面标题，看它高亮的是哪一行代码。
+对着 first-page 完整跑一遍循环，每一拍都有预期：
 
-### 进阶版（选做）
+1. 把 `<p>` 里的文字改成自己的话 → 保存 → 刷新（Live Server 免刷新）→ 页面文字变化；
+2. 把 `<title>` 改成 `first-page 2.0` → 刷新 → 标签页标题变了，正文纹丝不动（head 与 body 分工，010 讲过）；
+3. 把 style 里的 `#1d4ed8` 改成 `crimson` → 刷新 → 标题变红；
+4. 把 script 里的 `'按钮被点了，当前时间：'` 改成 `'收到点击：'` → 保存刷新 → 点按钮 → Console 打印新文案。
 
-1. 在 `<body>` 里再加一个 `<h2>` 和一段 `<p>`，猜一猜 `<h2>` 会比 `<h1>` 小还是大；
-2. 在 Console 面板输入 `document.title` 回车，看返回什么，对照 `<title>` 标签理解。
+改、存、刷、看——这四拍就是前端开发的心跳，以后所有页面都在这个节拍里长大。立一条纪律：**怀疑代码之前，先怀疑没刷新**。
 
-## 9. 一句话记住
+## 6. DevTools 三层联动：一个面板看全三件套
 
-> 网页 = 编辑器写出的 `.html` 文本 + 浏览器读它画出来；改代码的三步循环是"保存 → 刷新 → 看结果"，遇到问题先按 F12。
+在 first-page 页面上按 F12，依次做四件事：
 
-## 10. 下一步
+1. **Elements（结构层）**：点面板左上角箭头图标（或 `Ctrl+Shift+C`），再点页面上的蓝色标题——面板里 `<h1>` 当场高亮。你点的不是「一张图」，是一个标签；
+2. **Styles（外观层）**：就在 Elements 右侧，能看到 `h1 { color: #1d4ed8; }`。点中颜色值改成 `green` 回车——标题当场变绿。改的是内存副本，刷新即还原；试出满意的值再誊回文件；
+3. **Console（行为层）**：输入 `document.title` 回车：
 
-你已经完成了网页制作的完整闭环。接下来 001-004 四篇前置课会依次补上零基础必懂的概念：注释与特殊字符（001）、块级与行内元素（002）、div 与 span 容器（003）、id/class/style 全局属性（004）；然后 `020-HTML5OverviewCoreFeature` 会用 5 分钟写第二个网页，并拆解刚才那几行代码背后的含义。
+预期输出：
+
+```text
+'first-page 起步页'
+```
+
+JS 能读到页面元信息。再点几下按钮，看日志一条条排下来。
+
+4. **串起来看**：Elements 是素坯（结构），Styles 是化妆（外观），Console 是操偶（行为）——010 的三件套类比，在同一个工具里各占一个面板。排查「页面不对劲」先问：结构不对（Elements）、样式不对（Styles），还是行为不对（Console）？
+
+## 7. 常见错误与调试实录：页面白屏排查三步
+
+症状：双击或刷新之后，页面一片白，什么都没有。别慌，九成的白屏落在下面三步里：
+
+**第一步：没保存。** 最便宜也最高频。看 VS Code 标签页——文件名旁有圆点就是没存，Ctrl+S（macOS 用 Cmd+S）后刷新。铁证法：白屏页面上按 `Ctrl+U`，浏览器实际拿到的文本和你刚写的不一致，就是保存环节的锅。
+
+**第二步：路径错。** 你打开的可能不是你以为的那个文件。对照两个地址：地址栏 `file:///` 后面的路径，和编辑器正在改的文件，是同一个吗？页面内链接与资源路径写错同理——`href="pages/about.html"` 而文件其实在根目录，点过去就是白屏或「找不到文件」错误页。通过 http 访问时，F12 的 Console 留下原文：
+
+```text
+GET http://127.0.0.1:5500/pages/about.html net::ERR_FILE_NOT_FOUND
+```
+
+读法：报错里的路径 → 对照硬盘实际位置 → 改 href 或挪文件。
+
+**第三步：大小写不符。** Windows 不区分大小写，`Index.html` 与 `index.html` 本地都能开，你以为没写错；部署到 Linux 服务器（严格区分大小写）立刻 404。规矩从今天立：**文件名一律小写，引用与实际逐字符一致**。
+
+三步都不中再回来——那时候的问题开始有意思了，线索通常就在 F12 的 Console 里。
+
+## 8. 实际场景
+
+- 真实项目的日常：以后上了框架与构建工具，工具更花哨，但「改、存、刷、看」的节拍一个字不变；
+- Live Server 的 `http://127.0.0.1:5500` 是部署的预演：以后网站放上真服务器，浏览器与服务器之间就是同一类对话（networking 模块深讲）；
+- 帮别人看页面：让对方按 F12 截图 Elements 与 Console，比远程瞎猜快十倍。
+
+## 9. 小练习
+
+预测题（5 分钟）：把 script 里的文案改成 `'收到点击：'`，**故意不保存**，直接去浏览器点按钮。Console 打印旧文案还是新文案？
+
+答案（写完再对照）：旧文案。浏览器跑的是硬盘上保存过的版本——「先保存再怀疑代码」就是这么来的。
+
+修改题（10 分钟）：加第二个按钮 `<button id="date">今天几号</button>`，script 末尾追加三行：`getElementById` 拿到它，`addEventListener('click', ...)`，点击时打印 `new Date().toLocaleDateString()`。验收：两个按钮各打各的日志，互不干扰；Console 无红色报错。
+
+修Bug 题（10 分钟）：同学发来项目文件夹，说「index.html 打开白屏」。你检查发现：文件夹里确实有 index.html；VS Code 标签页上文件名旁有圆点；页面里还有一行 `<a href="About.html">关于本站</a>`，而实际文件叫 `about.html`。按本篇三步说出问题与修法。
+
+答案（修完再对照）：问题一，没保存（圆点未消）——Ctrl+S；问题二，大小写不符——本地侥幸能开，迟早要炸的雷，href 改成 `about.html`。两条都在白屏三步之内。
+
+挑战题（半小时，不看正文独立完成）：把 first-page 扩成两页小站。新建 `about.html`（结构同 index.html，标题与正文换成自我介绍），两页互链（`<a href="about.html">` 与 `<a href="index.html">`），各自 `<title>` 不同。验收清单：双击 index.html 能点到 about 再点回来；Live Server 下改 about.html 保存即自动刷新；两页 Console 都无红色报错；在 about 页执行 `document.title`，返回它自己的标题。
+
+## 10. 与之前和之后的知识的关系
+
+- 之前：[开发环境搭建](/start/030-DevEnvironmentSetup) 装好工具，[网页是什么](/html5/010-WhatIsWebpage) 造了第一个页面，[HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature) 给了全景——本篇把三者拧成每天可用的流程；
+- 跨模块：[第一门语言体验](/start/060-FirstProgramJavaScript) 里控制台玩过的 console.log，今天住进了页面；[CSS 是什么](/css/010-WhatIsCSS) 演示的 Styles 改妆，今天你用同款手法改了颜色；
+- 本模块之后：[DOCTYPE 声明](/html5/040-DocTypeDeclaration) 深讲第一行那五个词；[注释与实体](/html5/050-HTML5CommentsAndEntities)、[元信息与字符编码](/html5/060-MetadataCharacterEncoding) 解释 head 里「先混个眼熟」的两行；[块级与行内元素](/html5/070-HTML5BlockVsInline) 回答「为什么 h1 独占一行、a 只占自己的位置」。
+
+## 11. 官方文档
+
+- MDN「HTML 结构化 Web 内容」入门模块：https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Structuring_content
+- MDN HTML 元素参考：https://developer.mozilla.org/zh-CN/docs/Web/HTML
+
+## 12. 自我检查
+
+- 能不看笔记跑通完整循环，说清双击打开与 Live Server 的地址栏区别（file:// 与 http://）；
+- 能在 first-page/index.html 里指出哪几行是 HTML、哪几行是 CSS、哪几行是 JS；
+- 会用 Elements 定位元素、在 Styles 里现场改颜色、在 Console 里读 `document.title`；
+- 白屏三步能背出来，知道用 Ctrl+U 拿铁证；
+- 「文件名一律小写」的规矩立住了，能说清为什么（Windows 侥幸，服务器不饶）。
+
+## 本章总结
+
+网页开发没有装环境这回事：浏览器是运行环境，编辑器是写字工具。本篇建立了 first-page 项目，跑通了「改、存、刷、看」的即时反馈循环，用 Live Server 把刷新变成自动，并用 DevTools 的 Elements、Styles、Console 把三件套连起来检查。页面白屏按「没保存、路径错、大小写不符」三步排查，Ctrl+U 是拿铁证的手段。
+
+## 下一步
+
+工作流通了，开始正式学标签。进入 [DOCTYPE 声明](/html5/040-DocTypeDeclaration)：把你每个页面第一行的那五个词讲透——标准模式与怪异模式的恩怨、为什么它必须站在第一行。之后注释、字符编码、块级与行内会接连登场。

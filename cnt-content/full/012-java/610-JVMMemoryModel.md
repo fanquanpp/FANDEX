@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: JVM 内存模型深度解析：运行时数据区、JMM 形式化、分代 GC 算法、对象内存布局、现代收集器（G1/ZGC/Shenandoah）、内存调优与生产案例。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/510-ConcurrencyDetailed'
   - 'java/620-JVMtuning'

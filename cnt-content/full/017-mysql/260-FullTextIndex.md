@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL全文索引：FULLTEXT索引创建、自然语言模式、布尔模式、n-gram解析器与中文分词
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/230-CompositeIndexLeftmostPrefixPrinciple'
   - 'mysql/250-IndexConditionPushdown'

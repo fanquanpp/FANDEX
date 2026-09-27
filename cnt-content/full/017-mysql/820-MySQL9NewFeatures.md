@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 'MySQL 9.x新特性：VECTOR向量类型与HeatWave边界、JSON增强、窗口函数能力边界、函数索引、innodb_parallel_read_threads适用面'
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-27'
 related:
   - 'mysql/720-DataEncryption'
   - 'mysql/330-MySQLIndexExecutionPlan'

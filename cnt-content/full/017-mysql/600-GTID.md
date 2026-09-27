@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL全局事务标识符GTID：格式与生命周期、gtid_mode在线开启、基于GTID的复制与故障切换、8.4 Tagged GTID与运维
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/590-Replication'
   - 'mysql/610-ParallelReplication'
@@ -80,6 +80,7 @@ CHANGE REPLICATION SOURCE TO
   SOURCE_USER = 'repl',
   SOURCE_PASSWORD = 'ReplPass123!',
   SOURCE_AUTO_POSITION = 1;
+-- 凭据安全：repl 账号仅授复制最小权限，密码强随机并纳入密钥管理与加密存储
 START REPLICA;
 
 -- 观察进度

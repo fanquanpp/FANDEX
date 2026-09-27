@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: OpenGL与Vulkan图形编程
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/740-Cpp23Cpp26NewFeatures'
   - 'cpp/530-CppNetworkProgramming'

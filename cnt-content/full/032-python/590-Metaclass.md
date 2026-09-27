@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 元类与类创建过程的深度解析，涵盖 type、__new__/__init__/__call__、__init_subclass__ 与企业级应用。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/160-ListComprehensionAdvanced'
   - 'python/080-OperatorExpression'

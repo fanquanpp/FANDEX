@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java ThreadLocal 内存泄漏的可达性分析、弱引用 Key 设计、线程池复用场景、Scoped Values（JEP 446）演进与生产级防御方案
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/510-ConcurrencyDetailed'
   - 'java/520-CompletableFutureAsync'

@@ -1,12 +1,12 @@
 ---
-order: 740
+order: 750
 title: Python 与自动化
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: 文件、任务调度、Web 与 DevOps 自动化的工程实践，覆盖 pathlib、APScheduler、Celery、Airflow、Playwright、Fabric、subprocess 等核心工具链。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/1020-PythonComputerVision'
   - 'python/960-WebScrapingWithPython'

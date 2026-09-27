@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从「结算逻辑复制三遍，改一处漏两处」讲起：参数与返回值、函数声明与表达式、作用域链、闭包「函数记住了出生地」与最小计数器、箭头函数预告、rest 参数，附 xxx is not a function 与 Cannot access 调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/070-ObjectArray'
   - 'javascript/090-ArrayHigherOrderMethod'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用游戏角色状态与排行榜场景讲透 Python 变量：名字绑定对象、可变与不可变、别名陷阱、常量约定与 typing.Final，附预测题与调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/070-BasicDataType'
   - 'python/100-FunctionDetailed'

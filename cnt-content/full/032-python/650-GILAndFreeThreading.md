@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 全局解释器锁的来龙去脉与 free-threading 时代的并发选型。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/630-MultiprocessingMultithreading'
   - 'python/640-ConcurrentProgramming'

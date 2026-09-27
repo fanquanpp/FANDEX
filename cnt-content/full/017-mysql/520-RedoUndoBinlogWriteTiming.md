@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB Redo Log、Undo Log 与 Binlog 的写入时机、写入顺序与崩溃恢复机制。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/400-IndexPrinciplePerformanceOptimization'
   - 'mysql/780-TriggerEvent'

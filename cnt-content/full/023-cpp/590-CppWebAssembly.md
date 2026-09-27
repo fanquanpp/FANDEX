@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++编译为WebAssembly
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/710-CppRustComparison'
   - 'cpp/700-CppCodeStyle'

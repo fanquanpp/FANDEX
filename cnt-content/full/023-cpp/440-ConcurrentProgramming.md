@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++11/14/17/20多线程编程、互斥量、条件变量、原子操作、异步编程与并发设计模式。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/750-CppModernStandardEvolution'
   - 'cpp/240-CppSTLContainersIterators'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C23（ISO/IEC 9899:2024）核心新特性教学：nullptr、constexpr、typeof、auto、属性、_BitInt、#embed 与标准库新增函数，含可运行示例与常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'c/520-C23C2y'
   - 'c/540-AttributeCompilerExtension'

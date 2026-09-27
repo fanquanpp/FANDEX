@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 命令行工具开发
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/430-PythonLog'
   - 'python/750-PythonTest'

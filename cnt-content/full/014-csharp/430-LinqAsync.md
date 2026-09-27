@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: LINQ 常用算子、async/await、取消令牌与并发集合的速查手册，附可运行的完整示例与高频陷阱解析。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'csharp/110-CSharpLINQFunctionalProgramming'
   - 'csharp/080-CAsyncProgramming'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: SelectMany、Join/GroupJoin、集合运算、ToLookup、Chunk 等进阶算子的速查手册，附完整示例与易错点解析。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'csharp/430-LinqAsync'
   - 'csharp/120-LINQDeep'

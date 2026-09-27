@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB MVCC 机制详解：快照读与当前读的区别、ReadView 创建时机、Undo Log 版本链与一致性非锁定读原理。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/290-FunctionalIndex'
   - 'mysql/770-StoredProcedureAndFunction'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 在上一章的实验页面上解剖规则集结构，速战 color/background/font-size/padding 四个属性，现场制造并裁决「两处规则打架」，用继承实验分清哪些样式会传给孩子、哪些不会。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-27'
 related:
   - 'css/010-WhatIsCSS'
   - 'css/050-CSS3BoxModelDetailed'

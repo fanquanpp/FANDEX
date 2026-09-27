@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: System.Text.Json 的 JsonSerializer、选项控制、自定义转换器、多态与源生成的速查手册，附完整示例与易错点解析。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'csharp/450-FileAndStream'
   - 'csharp/300-CSharpAPI'

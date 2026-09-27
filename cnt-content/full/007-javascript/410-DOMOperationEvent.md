@@ -1,1385 +1,289 @@
 ---
 order: 390
-title: DOM 操作与事件
+title: DOM 操作与事件：按钮点了没反应的时候
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
-description: DOM 树操作、事件模型与事件委托。
+description: 从「按钮点了没反应——你还没认识 DOM」讲起：DOM 树与节点、querySelector 查询、textContent 与 innerHTML 的取舍（XSS 一句话红线）、classList、addEventListener 与事件对象、事件冒泡初次现身，以「添加待办 + 完成切换」收尾，附 Cannot read properties of null 与 defer 调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
-  - 'javascript/630-ImmutableDataStructures'
-  - 'javascript/070-ObjectArray'
-  - 'javascript/600-JavaScriptLatestFeature'
-  - 'javascript/380-JavaScriptModular'
-prerequisites: []
+  - 'javascript/420-BOMBrowserObjectModel'
+  - 'javascript/430-WebAPIBrowserInterface'
+  - 'javascript/440-FetchApiAndAbortController'
+  - 'javascript/700-JavaScriptProjectExampleTodoApp'
+prerequisites:
+  - 'javascript/020-JavaScriptOverviewRuntimeEnv'
+  - 'javascript/090-ArrayHigherOrderMethod'
 ---
 
 ## 前置知识
 
-- [模块打包原理与 Tree Shaking](/javascript/400-ModuleBundlingAndTreeShaking)：建议先完成前一篇的学习
+- 已完成 [JavaScript 概述与运行环境](/javascript/020-JavaScriptOverviewRuntimeEnv)：知道 JS 跑在浏览器和 Node 里——本文只在浏览器，Node 没有 DOM，`document` 是 undefined；
+- 已完成 [数组高阶方法](/javascript/090-ArrayHigherOrderMethod)：会把函数当参数传，addEventListener 的第二个参数就是它。
+
+没学过 090 也能跟：回调只需要「把函数当值传」，用到时现场解释。
 
 ## 学习目标
 
-- 掌握「1. DOM 基础 (DOM Basics)」的核心机制、典型用法与常见陷阱
-- 掌握「2. 查询与遍历 (Query & Traverse)」的核心机制、典型用法与常见陷阱
-- 掌握「3. 创建与插入节点 (Create & Insert)」的核心机制、典型用法与常见陷阱
-- 掌握「在大量简单元素场景下，innerHTML 可能比逐个 createElement 更快，但需注意 XSS 风险。」的核心机制、典型用法与常见陷阱
-- 掌握「4. 属性操作 (Attribute Operations)」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 把 HTML 说成一棵树，区分元素节点与文本节点，用 querySelector/querySelectorAll 查询元素；
+2. 区分 textContent 与 innerHTML，背出「用户输入只进 textContent」的 XSS 红线；
+3. 用 classList 切换类名，用 addEventListener 挂监听，从事件对象读出「谁被点了」；
+4. 预测事件冒泡顺序，修复脚本早于元素执行导致的 `Cannot read properties of null`；
+5. 从零写出「添加待办 + 点击切换完成」的小交互。
 
-## 1. DOM 基础 (DOM Basics)
+预计 60 到 75 分钟。
 
-### 1.1 DOM 树结构
+## 1. 你现在要解决什么问题
 
-DOM（Document Object Model）把 HTML 文档表示为一棵节点树。浏览器解析 HTML 后，会构建如下结构：
+第一次把 JS 放进网页：页面上有个按钮，想点了它计数加一，代码写好了，按钮无动于衷。
 
-```mermaid
-flowchart TD
-    T0["document"]
-    T1["html"]
-    T2["head"]
-    T3["meta"]
-    T4["title"]
-    T5["link"]
-    T6["body"]
-    T7["header"]
-    T8["nav"]
-    T9["main"]
-    T10["section"]
-    T11["article"]
-    T12["footer"]
-    T0 --> T1
-    T1 --> T2
-    T0 --> T3
-    T0 --> T4
-    T0 --> T5
-    T5 --> T6
-    T5 --> T7
-    T0 --> T8
-    T8 --> T9
-    T0 --> T10
-    T0 --> T11
-    T11 --> T12
+先别急着查代码——你还没认识 JS 怎么「看见」按钮。浏览器打开网页时把 HTML 解析成一棵对象树，树的根交到你手上，叫 `document`。**JS 摸到页面的一切，都从 document 顺藤摸瓜。** 这里埋一颗雷：`querySelector` 查不到不报错，安静返回 `null`——第 11 节引爆。
+
+## 2. 最小可运行示例：让按钮有反应
+
+保存两个文件到同一文件夹，浏览器打开 html：
+
+```html
+<!DOCTYPE html>
+<html>
+  <body>
+    <button id="like-btn">点赞 0</button>
+    <script src="script.js"></script>
+  </body>
+</html>
 ```
 
-每个 HTML 标签对应一个**元素节点**，标签内的文本对应**文本节点**。
+```javascript
+const btn = document.querySelector('#like-btn');
+let count = 0;
 
-### 1.2 节点类型
-
-DOM 中有 12 种节点类型，最常用的有：
-| 节点类型 | `nodeType` 值 | 说明 | 示例 |
-|:--|:--|:--|:--|
-| `Element` | 1 | 元素节点 | `<div>`, `<p>` |
-| `Text` | 3 | 文本节点 | 标签间的文字 |
-| `Comment` | 8 | 注释节点 | `<!-- comment -->` |
-| `Document` | 9 | 文档节点 | `document` |
-| `DocumentType` | 10 | 文档类型 | `<!DOCTYPE html>` |
-| `DocumentFragment` | 11 | 文档片段 | 轻量级容器 |
-
-```js
-const el = document.querySelector('div');
-el.nodeType;
-el.nodeName;
-const text = el.firstChild;
-text.nodeType;
-text.nodeName;
+btn.addEventListener('click', () => {   // 「点击发生时，请调用这个函数」
+  count = count + 1;
+  btn.textContent = '点赞 ' + count;
+});
 ```
 
-### 1.3 节点关系
+预期行为：点一下变「点赞 1」，再点变「点赞 2」。控制台无报错。
 
-```mermaid
-flowchart TD
-    T0["parentElement"]
-    T1["firstChild / firstElementChild"]
-    T2["child1"]
-    T3["child2 (previousSibling ← → nextSibling)"]
-    T4["child3"]
-    T5["lastChild / lastElementChild"]
-    T0 --> T1
-    T0 --> T2
-    T0 --> T3
-    T0 --> T4
-    T0 --> T5
+三个零件——查询、改文本、登记监听——接下来逐个拆开。
+
+## 3. DOM 树与节点
+
+DOM（Document Object Model，文档对象模型）就是第 1 节那棵树。以 `<ul><li>任务一</li></ul>` 为例，层级是 `document → body → ul → li → "任务一"`：标签是**元素节点**，文字是**文本节点**，嵌套结构就是树本身。
+
+最关键的一句：**节点是一个个 JS 对象**——DOM 是浏览器递给 JS 的对象接口，操作它和操作 070 篇的对象没有本质区别。Node 里没有这棵树，所以没有 `document`。
+
+## 4. 查询：querySelector 与 querySelectorAll
+
+选择器语法与 CSS 完全一致：
+
+```javascript
+document.querySelector('#app');      // 按 id：第一个匹配的元素
+
+const items = document.querySelectorAll('.item');   // 全部匹配项
+items.forEach((el) => console.log(el.textContent)); // NodeList 可直接 forEach
 ```
 
-**节点导航属性**：
+预期输出（ul 里放两条 li 时）：
 
-```js
-const el = document.querySelector('li');
-el.parentNode;
-el.parentElement;
-el.childNodes;
-el.children;
-el.firstChild;
-el.firstElementChild;
-el.lastChild;
-el.lastElementChild;
-el.previousSibling;
-el.previousElementSibling;
-el.nextSibling;
-el.nextElementSibling;
+```text
+任务一
+任务二
 ```
 
-**`Node` vs `Element` 属性区别**：
+两个高频坑：NodeList **不是数组**——有 forEach，没有 map/filter（第 11 节错误二），要数组方法先 `Array.from(items)`；**查不到不报错**——querySelector 返回 `null`，querySelectorAll 返回空集合。
 
-- `childNodes` / `firstChild` / `nextSibling`：包含所有节点类型（文本、注释等）
-- `children` / `firstElementChild` / `nextElementSibling`：只包含元素节点
+## 5. 改内容：textContent 与 innerHTML
+
+两种改法，能力与风险完全不同：
+
+```javascript
+const userInput = '<img src=x onerror=alert(1)>';   // 假装是用户提交的评论
+
+el.textContent = userInput;   // 当纯文本：原样显示这串字符，安全
+el.innerHTML = userInput;     // 当 HTML 解析：img 标签真的生成，onerror 真的执行
+```
+
+`textContent` 当**纯文本**，写什么显示什么；`innerHTML` 当 **HTML 解析**，内容来自用户时恶意脚本会随标签一起执行——这就是 XSS（跨站脚本攻击）的入口。一句话红线：**用户输入只能进 textContent；innerHTML 的内容必须出自你自己的代码或经过清洗。**
+
+## 6. 改外观：classList
+
+类名是 JS 与 CSS 的分界线：CSS 写 .done 长什么样，JS 只负责给谁加 .done。
+
+```javascript
+const li = document.querySelector('.task');
+
+li.classList.add('done');          // 加类
+li.classList.remove('done');       // 删类
+li.classList.toggle('done');       // 有则删、无则加：切换
+```
+
+配套 CSS：`.done { text-decoration: line-through; color: gray; }`。预期行为：toggle 后出现删除线且变灰，再执行一次恢复。**改类名而不是改样式**：JS 不堆颜色字符串，样式全留在 CSS 里——第 9 节的原材料。
+
+## 7. 事件：addEventListener 与事件对象
+
+点击、打字、按键——浏览器把「发生了一件事」叫**事件**：无法预知何时发生，只能提前登记「这类事发生时，调用我这个函数」。给输入框挂 `input` 监听：`input.addEventListener('input', (e) => console.log(e.target.value))`，逐字打出 hi 会依次打印 `h`、`hi`。
+
+浏览器会造一个**事件对象**传给回调：`e.target` 是目标元素（用户到底点了谁），`e.type` 是事件类型；`console.log(e)` 可展开看全部成员。常用事件先记四个：`click`、`input`、`keydown`、`submit`。
+
+## 8. 事件冒泡的第一次现身
+
+给每条待办单独挂监听？列表会增删，新元素没挂上就漏。先看一个现象：
 
 ```html
 <ul id="list">
-  <li>A</li>
-  <li>B</li>
+  <li><button>A</button></li>
+  <li><button>B</button></li>
 </ul>
 ```
 
-```js
-const list = document.getElementById('list');
-list.childNodes.length;
-list.children.length;
-```
-
----
-
-## 2. 查询与遍历 (Query & Traverse)
-
-### 2.1 常用查询 API
-
-```js
-const app = document.getElementById('app');
-const firstBtn = document.querySelector('button');
-const items = document.querySelectorAll('.item');
-```
-
-| API                      | 返回类型         | 动态/静态 | 兼容性 |
-| :----------------------- | :--------------- | :-------- | :----- |
-| `getElementById`         | Element / null   | —         | IE6+   |
-| `getElementsByClassName` | HTMLCollection   | 动态      | IE9+   |
-| `getElementsByTagName`   | HTMLCollection   | 动态      | IE6+   |
-| `querySelector`          | Element / null   | —         | IE8+   |
-| `querySelectorAll`       | NodeList（静态） | 静态      | IE8+   |
-
-### 2.2 节点集合差异
-
-- `NodeList` 可能是静态也可能是动态（取决于来源）
-- `HTMLCollection` 通常是动态集合（会随 DOM 变化）
-
-```js
-const liveList = document.getElementsByClassName('item');
-const staticList = document.querySelectorAll('.item');
-document.body.append(document.createElement('div'));
-liveList.length;
-staticList.length;
-```
-
-工程实践里，若要数组方法：
-
-```js
-const arr = Array.from(document.querySelectorAll('.item'));
-const arr2 = [...document.querySelectorAll('.item')];
-```
-
-### 2.3 `closest()` 与 `matches()`
-
-```js
-const btn = document.querySelector('button');
-btn.closest('.card');
-btn.closest('.card').querySelector('.title');
-btn.matches('.primary');
-btn.matches('button');
-```
-
-- `closest(selector)`：从自身开始向上查找，返回最近的匹配祖先（或自身）
-- `matches(selector)`：检查元素是否匹配选择器，返回 `boolean`
-
-### 2.4 遍历 DOM 树
-
-```js
-function walkDOM(node, callback) {
-  callback(node);
-  node = node.firstChild;
-  while (node) {
-    walkDOM(node, callback);
-    node = node.nextSibling;
-  }
-}
-walkDOM(document.body, (node) => {
-  if (node.nodeType === 1) {
-    console.log(node.tagName);
-  }
+```javascript
+document.querySelector('#list').addEventListener('click', (e) => {
+  console.log('ul 收到点击，目标是：', e.target.textContent);
 });
-```
 
----
-
-## 3. 创建与插入节点 (Create & Insert)
-
-### 3.1 创建元素与文本
-
-```js
-const li = document.createElement('li');
-li.className = 'item';
-li.textContent = 'hello';
-const text = document.createTextNode('world');
-```
-
-优先使用 `textContent` 来设置文本，避免把不可信内容当作 HTML 解析。
-
-### 3.2 插入与移动
-
-- `parent.append(child)`：追加（可追加多个参数）
-- `parent.prepend(child)`：头部插入
-- `node.before(x)` / `node.after(x)`：在节点前后插入
-- `parent.replaceChild(newNode, oldNode)`：替换
-- `node.replaceWith(newNode)`：替换自身
-  节点插入时会发生"移动"，不会复制：
-
-```js
-const a = document.querySelector('#a');
-const b = document.querySelector('#b');
-const x = document.querySelector('#x');
-b.append(x);
-```
-
-### 3.3 复制节点
-
-```js
-const original = document.querySelector('.card');
-const copy = original.cloneNode(true);
-document.body.append(copy);
-```
-
-- `cloneNode(false)`（默认）：浅克隆，只复制元素本身
-- `cloneNode(true)`：深克隆，复制元素及其所有子节点
-  [警告] **注意**：克隆不会复制事件监听器和 `data-*` 属性中通过 JS 设置的值。
-
-### 3.4 删除节点
-
-```js
-const el = document.querySelector('.item');
-el.remove();
-const parent = document.querySelector('.list');
-const child = parent.querySelector('.item');
-parent.removeChild(child);
-```
-
-- `el.remove()`：现代 API，直接删除自身
-- `parent.removeChild(child)`：经典 API，返回被删除的节点
-
-### 3.5 批量更新：DocumentFragment
-
-批量创建并一次性插入可减少重排重绘：
-
-```js
-const frag = document.createDocumentFragment();
-for (let i = 0; i < 1000; i++) {
-  const div = document.createElement('div');
-  div.textContent = String(i);
-  frag.append(div);
-}
-document.body.append(frag);
-```
-
-Fragment 插入时，其子节点会被插入，Fragment 本身不会成为 DOM 的一部分。
-**现代替代方案**：直接构建 HTML 字符串
-
-```js
-const html = Array.from({ length: 1000 }, (_, i) => `<div>${i}</div>`).join('');
-container.innerHTML = html;
-```
-
-## 在大量简单元素场景下，`innerHTML` 可能比逐个 `createElement` 更快，但需注意 XSS 风险。
-
-## 4. 属性操作 (Attribute Operations)
-
-### 4.1 HTML 属性 vs DOM 属性
-
-```html
-<input id="name" type="text" value="hello" class="input-field" data-role="username" />
-```
-
-```js
-const input = document.getElementById('name');
-input.getAttribute('type');
-input.getAttribute('value');
-input.getAttribute('class');
-input.type;
-input.value;
-input.className;
-```
-
-**关键区别**：
-| 对比项 | HTML 属性 (`getAttribute`) | DOM 属性 (`obj.prop`) |
-|:--|:--|:--|
-| 来源 | HTML 标签上的属性 | DOM 对象的属性 |
-| 值类型 | 始终是字符串 | 可以是任意类型 |
-| 同步性 | 初始值，不随用户输入变化 | 实时值（如 `input.value`） |
-| 自定义属性 | `getAttribute('data-x')` | `dataset.x` |
-
-```js
-input.value = 'changed';
-input.getAttribute('value');
-input.value;
-input.setAttribute('value', 'new default');
-input.getAttribute('value');
-```
-
-### 4.2 `setAttribute` / `getAttribute` / `removeAttribute`
-
-```js
-const img = document.querySelector('img');
-img.setAttribute('src', 'photo.jpg');
-img.setAttribute('alt', 'A photo');
-img.getAttribute('src');
-img.removeAttribute('alt');
-img.hasAttribute('alt');
-```
-
-### 4.3 `dataset`（自定义数据属性）
-
-```html
-<div id="user" data-user-id="42" data-role="admin" data-last-login="2026-01-01">User Info</div>
-```
-
-```js
-const el = document.getElementById('user');
-el.dataset.userId;
-el.dataset.role;
-el.dataset.lastLogin;
-el.dataset.status = 'active';
-el.dataset.newField = 'value';
-```
-
-**命名规则**：
-
-- HTML 中 `data-user-id` → JS 中 `dataset.userId`（短横线转驼峰）
-- `dataset` 的值始终是字符串
-- 设置新属性时驼峰会自动转为短横线
-
-### 4.4 布尔属性
-
-```html
-<input type="checkbox" checked disabled /> <button disabled>Click</button>
-```
-
-```js
-const checkbox = document.querySelector('input[type="checkbox"]');
-checkbox.hasAttribute('checked');
-checkbox.checked;
-checkbox.getAttribute('checked');
-checkbox.checked = checkbox.setAttribute('checked', '');
-```
-
-## 布尔属性（`checked`、`disabled`、`selected`、`readonly`）推荐使用 DOM 属性而非 `setAttribute`。
-
-## 5. 样式操作 (Style Operations)
-
-### 5.1 `style` 属性（行内样式）
-
-```js
-const el = document.querySelector('.box');
-el.style.width = '200px';
-el.style.backgroundColor = 'red';
-el.style.fontSize = '16px';
-el.style.display = 'none';
-el.style.display = '';
-```
-
-**注意**：
-
-- `style` 只能读写行内样式，无法获取 CSS 类或 `<style>` 中的样式
-- CSS 属性名需转为驼峰：`background-color` → `backgroundColor`
-- 设置空字符串 `''` 可移除行内样式
-
-### 5.2 `classList`（类名操作）
-
-```js
-const el = document.querySelector('.box');
-el.classList.add('active');
-el.classList.remove('hidden');
-el.classList.toggle('dark-mode');
-el.classList.toggle('visible', window.innerWidth > 768);
-el.classList.contains('active');
-el.classList.replace('old-class', 'new-class');
-el.className = 'box active dark-mode';
-```
-
-| 方法                    | 说明                                       |
-| :---------------------- | :----------------------------------------- |
-| `add(...tokens)`        | 添加一个或多个类名                         |
-| `remove(...tokens)`     | 移除一个或多个类名                         |
-| `toggle(token, force?)` | 切换类名，`force` 为 `` 添加，`false` 移除 |
-| `contains(token)`       | 是否包含指定类名                           |
-| `replace(old, new)`     | 替换类名                                   |
-
-**`className` vs `classList`**：
-
-```js
-el.className = 'box active';
-el.className += ' dark-mode';
-el.classList.add('active', 'dark-mode');
-```
-
-推荐使用 `classList`，语义更清晰且不会意外覆盖已有类名。
-
-### 5.3 `getComputedStyle`（计算样式）
-
-获取元素最终应用的样式（包括 CSS 继承、层叠、默认值）：
-
-```js
-const el = document.querySelector('.box');
-const styles = window.getComputedStyle(el);
-styles.width;
-styles.height;
-styles.backgroundColor;
-styles.fontSize;
-styles.marginTop;
-styles.getPropertyValue('margin-top');
-```
-
-**注意**：
-
-- 返回的是**只读**的 `CSSStyleDeclaration` 对象
-- 返回的值是**计算值**（如 `font-size: 2em` 可能返回 `32px`）
-- 简写属性（如 `margin`）可能返回空字符串，需查具体子属性（如 `marginTop`）
-
-### 5.4 获取元素尺寸与位置
-
-```js
-const el = document.querySelector('.box');
-el.offsetWidth;
-el.offsetHeight;
-el.clientWidth;
-el.clientHeight;
-el.scrollWidth;
-el.scrollHeight;
-el.offsetTop;
-el.offsetLeft;
-el.offsetParent;
-el.scrollTop;
-el.scrollLeft;
-```
-
-**尺寸属性对比**：
-| 属性 | 包含 padding | 包含 border | 包含 scrollbar | 包含溢出内容 |
-|:--|:--|:--|:--|:--|
-| `clientWidth/Height` | [完成] | [错误] | [错误] | [错误] |
-| `offsetWidth/Height` | [完成] | [完成] | [完成] | [错误] |
-| `scrollWidth/Height` | [完成] | [错误] | [错误] | [完成] |
-**获取精确位置**：
-
-```js
-const rect = el.getBoundingClientRect();
-rect.top;
-rect.right;
-rect.bottom;
-rect.left;
-rect.width;
-rect.height;
-rect.x;
-rect.y;
-```
-
-## `getBoundingClientRect()` 返回相对于**视口**的位置，随滚动变化。
-
-## 6. 事件系统 (Events)
-
-### 6.1 监听与移除
-
-```js
-function onClick(e) {
-  console.log('clicked', e.target);
-}
-const btn = document.querySelector('#btn');
-btn.addEventListener('click', onClick);
-btn.removeEventListener('click', onClick);
-```
-
-移除监听必须使用同一个函数引用，因此匿名函数不便于移除。
-**`addEventListener` 第三个参数**：
-
-```js
-btn.addEventListener('click', handler, {
-  capture: false,
-  once: true,
-  passive: True,
-});
-```
-
-| 选项      | 说明                                                        |
-| :-------- | :---------------------------------------------------------- |
-| `capture` | 在捕获阶段触发（默认 `false`，冒泡阶段）                    |
-| `once`    | 触发一次后自动移除（默认 `false`）                          |
-| `passive` | 声明不会调用 `preventDefault`，优化滚动性能（默认 `false`） |
-
-### 6.2 捕获与冒泡
-
-DOM 事件传播的三个阶段：
-
-```
- 1. 捕获阶段（Capture）：window → document → ... → 目标父元素
- 2. 目标阶段（Target）：目标元素本身
- 3. 冒泡阶段（Bubble）：目标父元素 → ... → document → window
-```
-
-```html
-<div id="outer">
-  <div id="inner">
-    <button id="btn">Click</button>
-  </div>
-</div>
-```
-
-```js
-document.getElementById('outer').addEventListener(
-  'click',
-  (e) => {
-    console.log('outer capture', e.eventPhase);
-  },
-  true
+document.querySelector('li button').addEventListener('click', () =>
+  console.log('按钮自己收到点击')
 );
-document.getElementById('outer').addEventListener('click', (e) => {
-  console.log('outer bubble', e.eventPhase);
-});
-document.getElementById('inner').addEventListener(
-  'click',
-  (e) => {
-    console.log('inner capture', e.eventPhase);
-  },
-  true
-);
-document.getElementById('inner').addEventListener('click', (e) => {
-  console.log('inner bubble', e.eventPhase);
-});
-document.getElementById('btn').addEventListener('click', (e) => {
-  console.log('btn target', e.eventPhase);
-});
 ```
 
-点击按钮后输出顺序：
+预期输出（点击按钮 A）：
 
-```
- outer capture 1
- inner capture 1
- btn target 2
- inner bubble 3
- outer bubble 3
+```text
+按钮自己收到点击
+ul 收到点击，目标是： A
 ```
 
-**`eventPhase` 值**：1 = 捕获，2 = 目标，3 = 冒泡
+明明只点了按钮，ul 的监听也触发了——事件**命中目标后沿父级一路向上**（button → li → ul → body……），像水泡往上冒，所以叫**冒泡**（bubbling）。父元素靠 `e.target` 分辨「孩子们里谁被点了」，一个监听管一整个列表，新加的条目自动被覆盖。本文只要求理解「会往上冒」；三个阶段、stopPropagation、事件委托的完整版图，[Web API 与浏览器接口](/javascript/430-WebAPIBrowserInterface) 讲透。
 
-### 6.3 事件对象常用属性与方法
+## 9. 完整小交互：待办清单的单项
 
-```js
-btn.addEventListener('click', (e) => {
-  e.target;
-  e.currentTarget;
-  e.type;
-  e.bubbles;
-  e.cancelable;
-  e.timeStamp;
-  e.isTrusted;
-  e.preventDefault();
-  e.stopPropagation();
-  e.stopImmediatePropagation();
-});
+把零件全部组装：输入 + 添加 + 点击切换完成。这是 [项目实战：待办应用](/javascript/700-JavaScriptProjectExampleTodoApp) 的最小内核，700 篇把它长成完整项目。
+
+```html
+<!DOCTYPE html>
+<html>
+  <body>
+    <input class="new-task" />
+    <button class="add-btn">添加</button>
+    <ul class="task-list"></ul>
+    <script src="todo.js" defer></script>
+  </body>
+</html>
 ```
 
-| 属性/方法                    | 说明                                 |
-| :--------------------------- | :----------------------------------- |
-| `target`                     | 触发事件的元素（最内层）             |
-| `currentTarget`              | 绑定事件监听的元素（等于 `this`）    |
-| `preventDefault()`           | 阻止默认行为（如表单提交、链接跳转） |
-| `stopPropagation()`          | 阻止事件继续传播（捕获/冒泡）        |
-| `stopImmediatePropagation()` | 阻止传播 + 阻止同元素上的后续监听器  |
+```javascript
+const input = document.querySelector('.new-task');
+const addBtn = document.querySelector('.add-btn');
+const list = document.querySelector('.task-list');
 
-### 6.4 事件委托 (Event Delegation)
-
-当列表项动态增删时，把监听挂在父元素上更稳：
-
-```js
-const list = document.querySelector('#list');
-list.addEventListener('click', (e) => {
-  const item = e.target.closest('.item');
-  if (!item) return;
-  console.log('item clicked', item.dataset.id);
-});
-```
-
-**事件委托的优势**：
-
-1. **减少内存**：不需要为每个子元素绑定监听器
-2. **动态元素**：新增子元素自动拥有事件处理
-3. **统一管理**：代码更集中、更易维护
-   **适用场景**：
-
-```js
-document.addEventListener('click', (e) => {
-  if (e.target.matches('.modal-overlay')) {
-    closeModal();
-  }
-});
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeModal();
-  }
-});
-```
-
-**不适合委托的场景**：
-
-- `focus`/`blur` 事件（不冒泡，需用 `focusin`/`focusout` 替代）
-- `mousemove`/`touchmove` 等高频事件（委托反而增加判断开销）
-- 需要精确 `currentTarget` 的场景
-
-### 6.5 自定义事件
-
-```js
- const event = new CustomEvent('userLogin', {
-  bubbles: true,
-  detail: { userId: 42, username: 'alice' }
- }
- document.dispatchEvent(event)
- document.addEventListener('userLogin', (e) => {
-  console.log('User logged in:', e.detail.username)
- }
-```
-
-**应用场景**：
-
-```js
-class TodoList extends HTMLElement {
-  addTodo(text) {
-    const todo = { id: Date.now(), text };
-    this.dispatchEvent(
-      new CustomEvent('todo-added', {
-        bubbles: true,
-        detail: todo,
-      })
-    );
-  }
-}
-document.querySelector('todo-list').addEventListener('todo-added', (e) => {
-  console.log('New todo:', e.detail.text);
-});
-```
-
-### 6.6 常用事件类型汇总
-
-| 分类 | 事件                                                     | 说明     |
-| :--- | :------------------------------------------------------- | :------- |
-| 鼠标 | `click`, `dblclick`, `mousedown`, `mouseup`, `mousemove` | 鼠标交互 |
-| 鼠标 | `mouseenter`, `mouseleave`, `mouseover`, `mouseout`      | 鼠标悬停 |
-| 键盘 | `keydown`, `keyup`, `keypress`(已废弃)                   | 键盘输入 |
-| 表单 | `input`, `change`, `submit`, `focus`, `blur`             | 表单交互 |
-| 滚动 | `scroll`, `wheel`                                        | 滚动行为 |
-| 触摸 | `touchstart`, `touchmove`, `touchend`                    | 移动端   |
-| 拖拽 | `dragstart`, `drag`, `dragend`, `drop`                   | 拖放操作 |
-| 资源 | `load`, `error`, `DOMContentLoaded`                      | 资源加载 |
-| 视口 | `resize`, `scroll`, `visibilitychange`                   | 视口变化 |
-
----
-
-## 7. 性能优化 (Performance)
-
-### 7.1 避免布局抖动 (Layout Thrashing)
-
-读布局信息（如 `offsetHeight`）会触发布局计算；写样式会使布局失效。交替读写会导致反复布局。
-
-```js
-const items = document.querySelectorAll('.item');
-items.forEach((item) => {
-  const height = item.offsetHeight;
-  item.style.height = height * 2 + 'px';
-});
-```
-
-优化：批量读取，再批量写入：
-
-```js
-const items = document.querySelectorAll('.item');
-const heights = Array.from(items, (item) => item.offsetHeight);
-items.forEach((item, i) => {
-  item.style.height = heights[i] * 2 + 'px';
-});
-```
-
-或使用 `requestAnimationFrame`：
-
-```js
-function updateLayout() {
-  const height = el.offsetHeight;
-  requestAnimationFrame(() => {
-    el.style.height = height * 2 + 'px';
-  });
-}
-```
-
-### 7.2 `innerHTML` 的取舍
-
-- 优点：构建复杂结构时省代码
-- 风险：容易引入 XSS；会重建子树导致事件丢失
-  当内容来自不可信输入时，不要直接拼接 `innerHTML`。
-
-### 7.3 DocumentFragment 与批量操作
-
-```js
-const frag = document.createDocumentFragment();
-for (let i = 0; i < 100; i++) {
+function addTodo() {
+  const text = input.value.trim();
+  if (!text) return;
   const li = document.createElement('li');
-  li.textContent = `Item ${i}`;
-  frag.append(li);
+  li.textContent = text;                 // 用户输入，只走 textContent（第 5 节红线）
+  list.append(li);
+  input.value = '';
 }
-list.append(frag);
+
+addBtn.addEventListener('click', addTodo);
+
+list.addEventListener('click', (e) => {
+  if (e.target.tagName === 'LI') {       // 靠冒泡统一监听所有待办
+    e.target.classList.toggle('done');
+  }
+});
 ```
 
-Fragment 的优势：
+预期行为：输入「买牛奶」点添加，列表出现一条；点击变灰加删除线，再点恢复。
 
-- 不触发重排（不在 DOM 中）
-- 插入时 Fragment 自身不进入 DOM 树
-- 一次重排代替 N 次重排
+## 10. 修改实验
 
-### 7.4 事件节流与防抖
+实验一：加一个完成计数徽章 `<span class="counter"></span>`，每次切换后用 `querySelectorAll('.task-list .done')` 数出数量并更新。
 
-高频事件（`scroll`、`resize`、`input`、`mousemove`）需要节流或防抖：
+实验二：支持按 Enter 添加——给 input 挂 `keydown` 监听，`e.key === 'Enter'` 时调用 addTodo（MDN 搜 keydown）。
 
-```js
-function debounce(fn, delay) {
-  let timer = null;
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
-  };
-}
-function throttle(fn, interval) {
-  let lastTime = 0;
-  return function (...args) {
-    const now = Date.now();
-    if (now - lastTime >= interval) {
-      lastTime = now;
-      fn.apply(this, args);
-    }
-  };
-}
-window.addEventListener(
-  'resize',
-  debounce(() => {
-    console.log('Resized:', window.innerWidth);
-  }, 200)
+## 11. 常见错误与调试实录
+
+**错误一：`Cannot read properties of null (reading 'addEventListener')`。** 全网新手第一报错。复现：把 script 标签挪进 head。浏览器控制台真实报错：
+
+```text
+Uncaught TypeError: Cannot read properties of null (reading 'addEventListener')
+```
+
+三步定位：读报错——在 `null` 身上读属性，调用它的变量是 null；验真身——报错行前加 `console.log(btn)`，输出 null；想时序——**执行脚本时按钮还不存在**。修法首选 `defer`：
+
+```html
+<script src="script.js" defer></script>
+```
+
+defer 让脚本先下载，**等 HTML 全部解析完再按顺序执行**——查询必然找得到人（放 body 末尾是等效老办法）。看到这个报错，先查两件事：选择器拼错没有、脚本是否跑在元素前面。
+
+**错误二：`items.map is not a function`。** 080 篇的手滑换了个马甲：
+
+```javascript
+const items = document.querySelectorAll('.item');
+const texts = items.map((el) => el.textContent);   // NodeList 不是数组
+```
+
+真实报错：
+
+```text
+Uncaught TypeError: items.map is not a function
+```
+
+NodeList 有 forEach，却没有 map/filter/reduce，要数组方法先 `Array.from(items)`。080 篇的 `typeof` 验真身在这里同样好使。
+
+## 12. 实际项目中的使用场景
+
+- 无框架交互：表单校验、暗色模式开关、下拉菜单——今天的东西直接撑起这些；
+- 框架时代的地基：React/Vue 最终也要变成真实 DOM，框架在替你干第 9 节的活；状态一多「数据变界面跟着变」会失控——700 篇演示分层，框架解决同一件事。
+
+## 13. 小练习
+
+预测题（5 分钟）：沿用第 8 节的 HTML，执行下面的代码后点击按钮 B，控制台输出几行？
+
+```javascript
+document.querySelectorAll('#list button').forEach((b) =>
+  b.addEventListener('click', () => console.log('按钮：' + b.textContent))
 );
-window.addEventListener(
-  'scroll',
-  throttle(() => {
-    console.log('Scrolled:', window.scrollY);
-  }, 100)
+document.querySelector('#list').addEventListener('click', () =>
+  console.log('ul 也听到了')
 );
 ```
 
-**防抖 vs 节流**：
-| 对比项 | 防抖 (Debounce) | 节流 (Throttle) |
-|:--|:--|:--|
-| 触发时机 | 停止操作后延迟触发 | 按固定间隔触发 |
-| 类比 | 电梯等人 | 红绿灯 |
-| 适用场景 | 搜索输入、窗口调整 | 滚动事件、拖拽 |
+修改题（15 分钟）：给第 9 节加「清空已完成」按钮：点击移除所有带 done 类的待办（提示：`el.remove()`）。验收：两条完成后点它，两条消失，未完成的还在。
 
-### 7.5 虚拟 DOM 概念
+修 Bug 题（10 分钟）：页面已经用了 defer，按钮却毫无反应，控制台报 `Cannot read properties of null (reading 'addEventListener')`。HTML 里按钮是 `<button id="save-btn">`，app.js 第一行是 `document.querySelector('#save_btn')`。按三步定位并修复。
 
-直接操作 DOM 的代价高（重排重绘），现代框架引入虚拟 DOM 来优化：
+挑战题（半小时）：把待办升级为「点击待办旁的删除按钮，只删这一条」。要求：删除按钮带 `data-id`，监听挂在 ul 上（用冒泡），回调里用 `e.target.closest('li')` 找到所属待办再移除。验收：只删被点的；点文字仍切换完成；新增待办不用重新挂监听也能删。提示：`e.target` 与 `e.currentTarget` 的差别是关键。
 
-```js
-const vnode = {
-  tag: 'div',
-  props: { className: 'container' },
-  children: [
-    { tag: 'h1', children: 'Hello' },
-    { tag: 'p', children: 'World' },
-  ],
-};
-```
+## 14. 与之前和之后的知识的关系
 
-**虚拟 DOM 的工作流程**：
+- 往前：[运行环境](/javascript/020-JavaScriptOverviewRuntimeEnv) 解释了本文为什么只在浏览器；[数组高阶方法](/javascript/090-ArrayHigherOrderMethod) 的「函数当参数」是 addEventListener 的日常；拉真实数据渲染进页面，接 [异步编程入门](/javascript/250-AsyncProgramming) 的 fetch；
+- 往后：[BOM 浏览器对象模型](/javascript/420-BOMBrowserObjectModel) 管树外的窗口与地址栏；[Web API 与浏览器接口](/javascript/430-WebAPIBrowserInterface) 把冒泡与委托讲透；[fetch 与 AbortController](/javascript/440-FetchApiAndAbortController) 接手网络请求；[项目实战：待办应用](/javascript/700-JavaScriptProjectExampleTodoApp) 把第 9 节长成完整工程。
 
-1. 用 JS 对象描述 UI 结构（虚拟 DOM 树）
-2. 状态变化时，创建新的虚拟 DOM 树
-3. Diff 算法比较新旧虚拟 DOM 树差异
-4. 只将差异部分更新到真实 DOM（最小化 DOM 操作）
-   **虚拟 DOM 的优势**：
+## 15. 官方文档
 
-- 批量更新：多次状态变更合并为一次 DOM 更新
-- 最小化操作：只更新变化的部分
-- 跨平台：虚拟 DOM 可以渲染到不同目标（DOM、Canvas、Native）
-  **何时直接操作 DOM**：
-- 简单交互（不需要框架时）
-- 性能极端敏感的场景（如动画、Canvas）
-- 与框架配合的底层操作（如 D3.js 与 React 结合）
+- MDN DOM 入门：https://developer.mozilla.org/zh-CN/docs/Web/API/Document_Object_Model
+- querySelector：https://developer.mozilla.org/zh-CN/docs/Web/API/Document/querySelector
+- classList：https://developer.mozilla.org/zh-CN/docs/Web/API/Element/classList
+- addEventListener：https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget/addEventListener
 
-### 7.6 `passive` 事件监听器
+## 16. 自我检查
 
-```js
- document.addEventListener('touchstart', handler, { passive:  })
- document.addEventListener('wheel', handler, { passive:  })
-```
+- 能说出两类节点的关系，解释「Node 里为什么没有 document」；
+- 能预测 querySelector 查不到时的返回值，说出头号报错全文；
+- 能背出「用户输入只进 textContent」的红线及理由；
+- 拿到头号报错，能按三步定位并用 defer 修复。
 
-`passive: ` 告诉浏览器该监听器不会调用 `preventDefault()`，浏览器可以立即开始滚动而不必等待 JS 执行完毕。
-Chrome 对 `touchstart`/`touchmove` 默认使用 passive 监听器。
+## 本章总结
 
----
+浏览器把 HTML 解析成对象树交给 JS，根是 document：querySelector 查人（查不到返回 null），textContent 改纯文本（用户输入的安全通道），classList 管类名，addEventListener 登记回调（事件对象告诉你谁被点了）。事件命中目标后沿父级向上冒泡，父元素因此一个监听管住整个列表。最常见崩溃是脚本跑在元素前面——查询拿到 null，addEventListener 一调就炸，defer 是标准解法。这些零件合起来就是待办单项交互，也是 700 篇项目的地基。
 
-## 8. 安全要点 (Security)
+## 下一步
 
-### 8.1 XSS 防护
-
-- 不可信文本：用 `textContent`
-
-```js
-const userInput = '<img src=x onerror=alert(1)>';
-el.textContent = userInput;
-el.innerHTML = userInput;
-```
-
-- 不可信 URL：校验协议（避免 `javascript:`）、限制域名
-
-```js
-function isSafeUrl(url) {
-  try {
-    const parsed = new URL(url, location.href);
-    return ['http:', 'https:'].includes(parsed.protocol);
-  } catch {
-    return false;
-  }
-}
-```
-
-### 8.2 `innerHTML` 安全
-
-```js
-const name = getUserInput();
-el.innerHTML = `<p>Hello, ${name}</p>`;
-```
-
-**安全替代方案**：
-
-```js
-const p = document.createElement('p');
-p.textContent = `Hello, ${name}`;
-el.append(p);
-```
-
-或使用 `DOMPurify` 库：
-
-```js
-import DOMPurify from 'dompurify';
-el.innerHTML = DOMPurify.sanitize(untrustedHtml);
-```
-
-### 8.3 事件监听器泄漏
-
-```js
-class Modal {
-  constructor() {
-    this.onKeydown = this.onKeydown.bind(this);
-  }
-  open() {
-    document.addEventListener('keydown', this.onKeydown);
-  }
-  close() {
-    document.removeEventListener('keydown', this.onKeydown);
-  }
-  onKeydown(e) {
-    if (e.key === 'Escape') this.close();
-  }
-}
-```
-
-**常见泄漏场景**：
-
-- SPA 路由切换时未移除全局事件监听
-- 组件销毁时未清理 `setInterval`/`setTimeout`
-- 闭包引用了已移除的 DOM 节点
-
-### 8.4 模板渲染安全
-
-优先使用成熟框架或做统一的转义/白名单策略：
-
-```js
-function escapeHtml(str) {
-  const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
-  return str.replace(/[&<>"']/g, (c) => map[c]);
-}
-el.innerHTML = `<p>${escapeHtml(userInput)}</p>`;
-```
-
----
-
-## 节点获取
-
-**基本写法：getElementById**
-`document.getElementById(<id>)`
-```javascript
-// 通过 ID 获取单个元素
-let el = document.getElementById("app");
-```
-
----
-
-**基本写法：querySelector**
-`document.querySelector(<选择器>)`
-```javascript
-// 通过 CSS 选择器获取首个匹配元素
-let el = document.querySelector(".item");
-```
-
----
-
-**基本写法：querySelectorAll**
-`document.querySelectorAll(<选择器>)`
-```javascript
-// 获取所有匹配元素返回 NodeList
-let els = document.querySelectorAll(".item");
-```
-
----
-
-## 节点创建
-
-**基本写法：createElement**
-`document.createElement(<标签名>)`
-```javascript
-// 创建元素节点
-let div = document.createElement("div");
-```
-
----
-
-**基本写法：createTextNode**
-`document.createTextNode(<文本>)`
-```javascript
-// 创建文本节点
-let text = document.createTextNode("hello");
-```
-
----
-
-**基本写法：DocumentFragment 批量插入**
-`document.createDocumentFragment()`
-```javascript
-// 使用片段批量插入减少重排
-let frag = document.createDocumentFragment();
-items.forEach(item => {
-    let li = document.createElement("li");
-    li.textContent = item;
-    frag.appendChild(li);
-});
-list.appendChild(frag);
-```
-
----
-
-## 节点插入与删除
-
-**基本写法：appendChild**
-`<父节点>.appendChild(<节点>)`
-```javascript
-// 在末尾追加子节点
-document.body.appendChild(div);
-```
-
----
-
-**基本写法：insertBefore**
-`<父节点>.insertBefore(<新节点>, <参考节点>)`
-```javascript
-// 在参考节点前插入
-parent.insertBefore(newNode, refNode);
-```
-
----
-
-**基本写法：removeChild**
-`<父节点>.removeChild(<节点>)`
-```javascript
-// 移除子节点
-parent.removeChild(child);
-```
-
----
-
-**基本写法：replaceChild**
-`<父节点>.replaceChild(<新节点>, <旧节点>)`
-```javascript
-// 替换子节点
-parent.replaceChild(newNode, oldNode);
-```
-
----
-
-## 现代节点 API
-
-**基本写法：append**
-`<父节点>.append(<节点或文本>)`
-```javascript
-// 追加多个节点或文本字符串
-parent.append(node1, "text", node2);
-```
-
----
-
-**基本写法：prepend**
-`<父节点>.prepend(<节点或文本>)`
-```javascript
-// 在开头插入
-parent.prepend(newNode);
-```
-
----
-
-**基本写法：before 与 after**
-`<节点>.before(<节点>)`
-```javascript
-// 在节点前或后插入兄弟节点
-el.before(newNode);
-el.after(anotherNode);
-```
-
----
-
-**基本写法：remove**
-`<节点>.remove()`
-```javascript
-// 节点自移除
-el.remove();
-```
-
----
-
-**基本写法：replaceWith**
-`<节点>.replaceWith(<新节点>)`
-```javascript
-// 节点自替换
-oldEl.replaceWith(newEl);
-```
-
----
-
-## 属性操作
-
-**基本写法：getAttribute setAttribute**
-`<元素>.setAttribute(<名称>, <值>)`
-```javascript
-// 读写 HTML 属性
-el.setAttribute("data-id", "1");
-let id = el.getAttribute("data-id");
-```
-
----
-
-**基本写法：dataset 自定义属性**
-`<元素>.dataset.<名称>`
-```javascript
-// 读写 data-* 自定义属性
-el.dataset.userId = "42";
-let id = el.dataset.userId;
-```
-
----
-
-**基本写法：hasAttribute removeAttribute**
-`<元素>.removeAttribute(<名称>)`
-```javascript
-// 检查与移除属性
-el.hasAttribute("disabled");
-el.removeAttribute("disabled");
-```
-
----
-
-## classList 操作
-
-**基本写法：add remove**
-`<元素>.classList.add(<类名>)`
-```javascript
-// 添加移除类名
-el.classList.add("active");
-el.classList.remove("hidden");
-```
-
----
-
-**基本写法：toggle**
-`<元素>.classList.toggle(<类名>)`
-```javascript
-// 切换类名存在则移除否则添加
-el.classList.toggle("open");
-```
-
----
-
-**基本写法：contains**
-`<元素>.classList.contains(<类名>)`
-```javascript
-// 判断是否包含类名
-if (el.classList.contains("active")) {}
-```
-
----
-
-## 样式操作
-
-**基本写法：内联样式**
-`<元素>.style.<属性> = <值>`
-```javascript
-// 读写内联样式需用驼峰命名
-el.style.backgroundColor = "#fff";
-```
-
----
-
-**基本写法：getComputedStyle**
-`window.getComputedStyle(<元素>)`
-```javascript
-// 获取最终计算样式
-let style = window.getComputedStyle(el);
-let color = style.color;
-```
-
----
-
-**基本写法：cssText 批量设置**
-`<元素>.style.cssText = "<样式字符串>"`
-```javascript
-// 批量设置内联样式
-el.style.cssText = "color:red;font-size:14px;";
-```
-
----
-
-## 事件绑定
-
-**基本写法：addEventListener**
-`<元素>.addEventListener(<事件>, <回调>, [<选项>])`
-```javascript
-// 添加事件监听器
-el.addEventListener("click", e => {});
-```
-
----
-
-**基本写法：removeEventListener**
-`<元素>.removeEventListener(<事件>, <回调>)`
-```javascript
-// 移除事件监听需同一回调引用
-el.removeEventListener("click", handler);
-```
-
----
-
-**基本写法：once 选项**
-`<元素>.addEventListener(<事件>, <回调>, { once: true })`
-```javascript
-// once 表示只触发一次后自动移除
-el.addEventListener("click", fn, { once: true });
-```
-
----
-
-**基本写法：capture 捕获阶段**
-`<元素>.addEventListener(<事件>, <回调>, { capture: true })`
-```javascript
-// 在捕获阶段触发
-el.addEventListener("click", fn, { capture: true });
-```
-
----
-
-**基本写法：passive 提升滚动性能**
-`<元素>.addEventListener(<事件>, <回调>, { passive: true })`
-```javascript
-// passive 声明不调用 preventDefault 优化滚动
-window.addEventListener("touchmove", fn, { passive: true });
-```
-
----
-
-## 事件对象
-
-**基本写法：preventDefault**
-`<事件>.preventDefault()`
-```javascript
-// 阻止默认行为如表单提交链接跳转
-a.addEventListener("click", e => e.preventDefault());
-```
-
----
-
-**基本写法：stopPropagation**
-`<事件>.stopPropagation()`
-```javascript
-// 阻止事件冒泡
-el.addEventListener("click", e => e.stopPropagation());
-```
-
----
-
-**基本写法：stopImmediatePropagation**
-`<事件>.stopImmediatePropagation()`
-```javascript
-// 阻止冒泡并阻止同元素其他监听器
-el.addEventListener("click", e => e.stopImmediatePropagation());
-```
-
----
-
-## 事件委托
-
-**基本写法：事件委托模式**
-`<父节点>.addEventListener(<事件>, <回调>)`
-```javascript
-// 利用冒泡在父节点统一处理
-list.addEventListener("click", e => {
-    let item = e.target.closest(".item");
-    if (item) handle(item);
-});
-```
-
----
-
-**基本写法：closest 匹配祖先**
-`<元素>.closest(<选择器>)`
-```javascript
-// 从当前元素向上查找匹配选择器的最近祖先
-let card = e.target.closest(".card");
-```
-
----
-
-## 自定义事件
-
-**基本写法：CustomEvent**
-`new CustomEvent(<名称>, { detail: <数据> })`
-```javascript
-// 创建带数据的自定义事件
-let evt = new CustomEvent("login", { detail: { user: "Tom" } });
-el.dispatchEvent(evt);
-```
-
----
-
-**基本写法：dispatchEvent**
-`<元素>.dispatchEvent(<事件>)`
-```javascript
-// 同步派发事件触发监听器
-el.dispatchEvent(new Event("ready"));
-```
-
----
-
-## 遍历与查找
-
-**基本写法：parentNode parentElement**
-`<元素>.parentElement`
-```javascript
-// 获取父节点
-let parent = el.parentElement;
-```
-
----
-
-**基本写法：children childNodes**
-`<元素>.children`
-```javascript
-// children 返回元素集合 childNodes 含文本节点
-let kids = el.children;
-```
-
----
-
-**基本写法：nextElementSibling**
-`<元素>.nextElementSibling`
-```javascript
-// 获取下一个兄弟元素节点
-let next = el.nextElementSibling;
-```
-
----
-
-## MutationObserver
-
-**基本写法：观察 DOM 变化**
-`new MutationObserver(<回调>)`
-```javascript
-// 监听子节点属性变化
-let observer = new MutationObserver(muts => {});
-observer.observe(el, { childList: true, subtree: true });
-```
-
----
-
-**基本写法：disconnect 断开**
-`<observer>.disconnect()`
-```javascript
-// 停止观察
-observer.disconnect();
-```
-
----
-
-## IntersectionObserver
-
-**基本写法：可见性观察**
-`new IntersectionObserver(<回调>, [<选项>])`
-```javascript
-// 监听元素进入视口用于懒加载
-let io = new IntersectionObserver(entries => {
-    entries.forEach(e => {
-        if (e.isIntersecting) loadImage(e.target);
-    });
-});
-io.observe(img);
-```
-
----
-
-**基本写法：rootMargin**
-`new IntersectionObserver(<回调>, { rootMargin: "<边距>" })`
-```javascript
-// 提前预加载设置根边距
-let io = new IntersectionObserver(fn, { rootMargin: "100px" });
-```
-
----
-
-## ResizeObserver
-
-**基本写法：尺寸变化观察**
-`new ResizeObserver(<回调>)`
-```javascript
-// 监听元素尺寸变化
-let ro = new ResizeObserver(entries => {
-    entries.forEach(e => console.log(e.contentRect.width));
-});
-ro.observe(el);
-```
-
----
-
-## 实用模式
-
-**基本写法：事件委托结合 dataset**
-`<父节点>.addEventListener(<事件>, <回调>)`
-```javascript
-// 通过 dataset 传递上下文数据
-list.addEventListener("click", e => {
-    let item = e.target.closest("[data-id]");
-    if (item) console.log(item.dataset.id);
-});
-```
-
----
-
-**基本写法：批量绑定事件**
-`<元素列表>.forEach(<元素> => <元素>.addEventListener(<事件>, <回调>))`
-```javascript
-// 为多个元素绑定相同事件
-document.querySelectorAll(".btn")
-    .forEach(btn => btn.addEventListener("click", onClick));
-```
+进入 [BOM 浏览器对象模型](/javascript/420-BOMBrowserObjectModel)：从树里的元素走向树外的浏览器——窗口、地址栏、历史记录。

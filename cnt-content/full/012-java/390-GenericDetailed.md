@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 泛型类、泛型方法、通配符与类型擦除。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/160-AbstractClassInterface'
   - 'java/180-ExceptionHandlingMechanism'

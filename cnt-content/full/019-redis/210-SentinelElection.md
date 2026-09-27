@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis Sentinel 哨兵选举机制：主观下线、客观下线、Leader 选举与 Raft 算法、故障转移流程。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'redis/270-SkipListAndSortedSet'
   - 'redis/200-ReplicationBuffer'
@@ -207,6 +207,8 @@ sentinel = Sentinel([
 master = sentinel.master_for('mymaster', password='xxx')
 slave = sentinel.slave_for('mymaster', password='xxx')
 ```
+
+> 凭据安全：`password` 对应 Redis 的 requirepass/ACL 口令——生产环境用强随机值并纳入密钥管理，避免明文散落在脚本里；Redis ACL 内部以哈希存储口令，跨公网访问建议启用 TLS。
 
 > 注意区分两个多数：**客观下线（ODOWN）只要求 quorum 个 Sentinel 确认**，
 > 而**执行故障转移的 Leader 选举必须获得全体 Sentinel 的多数票（> N/2）**。

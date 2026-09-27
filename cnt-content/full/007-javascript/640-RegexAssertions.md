@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 正则表达式先行断言（Lookahead）与后行断言（Lookbehind）的形式化理论、自动机基础、V8/SpiderMonkey 实现细节与企业级文本处理实践，对标 MIT 6.004 计算理论课程水准。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/110-Regex'
   - 'javascript/120-ES2018RegExpNamedCaptureGroups'
@@ -2090,7 +2090,7 @@ class StaticAnalyzer {
 const analyzer = new StaticAnalyzer();
 
 const code = `
-const password = 'admin123';
+const password = 'admin123'; // 弱密码样本（教学用）：真实系统的密码必须哈希存储
 function getUser(id) {
   const sql = "SELECT * FROM users WHERE id = " + id;
   return db.query(sql);

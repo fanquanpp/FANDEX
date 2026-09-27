@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Python实现设计模式
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/140-BuiltinDataStructure'
   - 'python/210-Regex'

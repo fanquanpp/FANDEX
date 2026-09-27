@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 综合运用 DOM、异步与模块化的项目实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/430-WebAPIBrowserInterface'
   - 'javascript/500-DebugPerformanceOptimization'

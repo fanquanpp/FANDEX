@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 从一个会算错的 is_even 函数开始，写出你人生第一组自动化测试：断言、测试用例三要素、回归测试的真正含义，附真实 AssertionError 调试实录与梯度练习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'software-testing/020-TestConceptPrinciple'
   - 'software-testing/030-TestLevels'

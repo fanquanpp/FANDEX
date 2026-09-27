@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL 扩展模块详解：PostGIS 地理空间、pgvector 向量搜索、pg_stat_statements 性能分析。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'postgresql/440-LogicalPhysicalReplicationCompare'
   - 'postgresql/110-JSONBJSONDifference'

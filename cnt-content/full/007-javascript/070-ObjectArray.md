@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从「一个玩家三行变量，一百个玩家怎么办」讲起：对象字面量、点与方括号取值的分界、数组下标与 push/pop、玩家数组的嵌套结构，附 Cannot read properties of undefined 真实报错与三步定位、预测题与挑战题。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/060-ControlFlow'
   - 'javascript/080-FunctionScopeClosure'

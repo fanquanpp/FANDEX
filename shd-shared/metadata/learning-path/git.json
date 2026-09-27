@@ -245,6 +245,11 @@
           "id": "git-420",
           "title": "git-gc 仓库垃圾回收",
           "doc": "420-GitGc"
+        },
+        {
+          "id": "git-430",
+          "title": "Git 毕业项目：像团队一样管理一个真实仓库",
+          "doc": "430-GitCapstoneProject"
         }
       ]
     }

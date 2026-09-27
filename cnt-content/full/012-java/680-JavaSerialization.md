@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 序列化与反序列化
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/600-JVMGC'
   - 'java/420-JavaReflection'

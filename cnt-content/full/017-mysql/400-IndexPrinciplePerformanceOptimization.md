@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 索引结构、覆盖索引、最左前缀与查询调优。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/770-StoredProcedureAndFunction'
   - 'mysql/440-MVCCSnapshotCurrentRead'

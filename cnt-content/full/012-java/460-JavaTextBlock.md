@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 文本块与字符串模板
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/980-JavaKubernetes'
   - 'java/450-JavaRecordClass'

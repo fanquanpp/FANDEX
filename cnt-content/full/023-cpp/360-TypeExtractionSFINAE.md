@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++类型萃取与SFINAE详解：type_traits与编译期类型判断。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/150-SmartPointerCircularReference'
   - 'cpp/070-LambdaCaptureDetailed'

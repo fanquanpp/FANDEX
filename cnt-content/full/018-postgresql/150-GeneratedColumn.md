@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL生成列：STORED生成列、VIRTUAL生成列、表达式计算与索引支持
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'postgresql/520-AuditLog'
   - 'postgresql/090-SequenceAutoIncrement'

@@ -1,12 +1,12 @@
 ---
-order: 790
+order: 800
 title: Python 理论知识点
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: GIL 机制、内存管理、字节码与运行时模型。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/300-FileIOContextManager'
   - 'python/970-PythonProjectExampleWebCrawlerDataAnalysis'

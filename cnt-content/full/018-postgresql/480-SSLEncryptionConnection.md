@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL 传输加密完整落地：自签证书生成、服务端与客户端配置、pg_hba 强制策略、sslmode 六档语义与 cert 双向认证，含常见连接报错排查。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-27'
 related:
   - 'postgresql/490-RoleBasedPermissionManagement'
   - 'postgresql/510-DataEncryptionStorage'
