@@ -1,766 +1,320 @@
 ---
 order: 50
-title: 数据类型与类型转换
+title: 数据类型转换：int 与 double 相加，结果是谁
 module: 'java'
 category: 后端技术
 difficulty: beginner
-description: 基本类型、引用类型、自动装箱与类型转换规则。
+description: 以订单金额混算为主线讲透类型转换：隐式提升链、强制转换的截断与回绕、char 参与运算、Integer.MAX_VALUE + 1 的溢出现场与 Math.addExact 防御、parseInt 与 NumberFormatException 实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'java/030-QuickStart'
   - 'java/040-ProgramStructureBasicSyntax'
+  - 'java/060-WrapperCacheTrap'
   - 'java/070-VariableConstant'
-  - 'java/370-JavaAnnotationsTutorial'
+  - 'java/080-OperatorExpression'
 prerequisites:
-  - 'java/020-JavaOverviewDevEnv'
+  - 'java/040-ProgramStructureBasicSyntax'
 ---
 
 ## 前置知识
 
-- [程序结构与基本语法](/java/040-ProgramStructureBasicSyntax)：建议先完成前一篇的学习
+- 已完成 [程序结构与基本语法](/java/040-ProgramStructureBasicSyntax)：会声明变量、知道语句与花括号块；
+- [快速上手](/java/030-QuickStart) 里 NumberFormatException 惊鸿一瞥，本文让它登堂入室。
+
+没学过 040 请先回去；本文只用最基础的声明与打印。
 
 ## 学习目标
 
-- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
-- 掌握「1. 数据类型分类」的核心机制、典型用法与常见陷阱
-- 掌握「2. 基本数据类型详解」的核心机制、典型用法与常见陷阱
-- 掌握「3. 引用数据类型」的核心机制、典型用法与常见陷阱
-- 掌握「4. 类型转换」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 预测混合类型运算的结果类型（int + double、byte + byte、char + int）；
+2. 说出隐式提升链，并解释为什么两个 byte 相加不能直接赋给 byte；
+3. 预测强制转换的两种后果：截断（(int) 3.99 是 3）与回绕（(byte) 130 是 -126）；
+4. 解释 Integer.MAX_VALUE + 1 为什么是 -2147483648，并用 Math.addExact 把静默错误变成响亮报错；
+5. 用 parseInt / parseDouble 把命令行参数转成数字，读懂 NumberFormatException。
 
-## 0. 本节阅读指引（先读这一节）
+预计 45 到 60 分钟，含 3 组动手实验与 4 道练习。
 
-本篇是「数据类型与类型转换」，目标：分清 8 种基本类型与引用类型，理解自动/强制转换规则。
+## 1. 问题引入：int 和 double 相加，结果是谁
 
-零基础第一遍只读：
+订单小计要升级：蛋糕单价 28.5 元（double），数量 2 份（int）。`2 + 28.5` 的结果是谁的类型？真正要紧的是**类型**——它决定这个值还能不能装回原来的变量、会不会悄悄变形。先跑现象，再给规则。
 
-1. 第 1 节 数据类型分类、2. 基本数据类型详解、3. 引用数据类型；
-2. 第 4 节 类型转换；5. 类型转换的特殊情况（装箱拆箱、类型提升、字符串拼接）建议一并看，最常踩坑。
+## 2. 实验：谁说了算
 
-可跳过：浮点精度等二进制细节不理解不阻塞，二刷再看；6-7 节浏览即可。
-
-> 记住：小范围自动转大范围，大范围强转小范围可能丢精度。
-
-
-## 1. 数据类型分类
-
-Java 是一种强类型语言，数据类型分为两大类：
-
-### 1.1 基本数据类型 (Primitive Types)
-
-- **存储方式**：直接存储在栈内存中，值存储在变量分配的内存空间里。
-- **特点**：占用空间小，存取速度快。
-- **种类**：共有 8 种基本数据类型，分为四大类。
-
-### 1.2 引用数据类型 (Reference Types)
-
-- **存储方式**：存储在堆内存中，栈内存中存储的是对象的引用（地址）。
-- **特点**：占用空间较大，存取速度相对较慢。
-- **种类**：类 (Class)、接口 (Interface)、数组 (Array)、枚举 (Enum) 等。
-
-## 2. 基本数据类型详解
-
-### 2.1 整数类型
-
-| 类型    | 占用字节 | 默认值 | 取值范围                 | 适用场景                       |
-| ------- | -------- | ------ | ------------------------ | ------------------------------ |
-| `byte`  | 1        | 0      | -128 ~ 127               | 节省内存，适用于存储小范围整数 |
-| `short` | 2        | 0      | -32,768 ~ 32,767         | 适用于存储中等范围整数         |
-| `int`   | 4        | 0      | -2^31 ~ 2^31-1 (约 21亿) | 最常用的整数类型               |
-| `long`  | 8        | 0L     | -2^63 ~ 2^63-1           | 适用于存储大范围整数           |
-
-**示例**：
+新建 MixedDemo.java：
 
 ```java
- byte b = 100; // 正确，在 byte 范围内
- short s = 1000; // 正确，在 short 范围内
- int i = 100000; // 正确，在 int 范围内
- long l = 10000000000L; // 注意：需要加 L 后缀
+public class MixedDemo {
+    public static void main(String[] args) {
+        int pieces = 2;
+        double price = 28.5;
+        System.out.println(pieces + price);
+        System.out.println(price * pieces);
+    }
+}
 ```
 
-### 2.2 浮点数类型
+预期输出：
 
-| 类型     | 占用字节 | 默认值 | 精度                    | 适用场景                             |
-| -------- | -------- | ------ | ----------------------- | ------------------------------------ |
-| `float`  | 4        | 0.0f   | 单精度，约 7 位小数     | 节省内存，适用于对精度要求不高的场景 |
-| `double` | 8        | 0.0d   | 双精度，约 15-17 位小数 | 最常用的浮点数类型，精度更高         |
-
-**示例**：
-
-```java
- float f = 3.14f; // 注意：需要加 F 后缀
- double d = 3.1415926535; // double 是默认的浮点数类型
+```text
+30.5
+57.0
 ```
 
-### 2.3 字符类型
+结果都带小数：int 与 double 一起运算，结果是 double。规则：**参与运算的操作数，先统一提升到其中最大的类型，再计算**——这叫**隐式类型提升**。
 
-| 类型   | 占用字节 | 默认值   | 取值范围  | 适用场景                        |
-| ------ | -------- | -------- | --------- | ------------------------------- |
-| `char` | 2        | '\u0000' | 0 ~ 65535 | 存储单个字符，使用 Unicode 编码 |
+## 3. 隐式提升：小类型自动升舱
 
-**示例**：
+数字六种基本类型排成一条升舱链：
 
-```java
- char c1 = 'A'; // 字符字面量
- char c2 = 65; // ASCII 码，对应 'A'
- char c3 = '\u0041'; // Unicode 编码，对应 'A'
+```text
+byte → short → int → long → float → double
 ```
 
-### 2.4 布尔类型
-
-| 类型      | 占用字节     | 默认值 | 取值范围 | 适用场景     |
-| --------- | ------------ | ------ | -------- | ------------ |
-| `boolean` | 1 (依赖 JVM) | false  | / false  | 用于条件判断 |
-
-**示例**：
+char 也在这条链上（从 int 起步），第 5 节验证。升舱免费，赋值时右边类型不大于左边就直接放行：
 
 ```java
- boolean flag = true;
- boolean isReady = false;
+int i = 10;
+double d = i;           // int → double，自动
+long big = i;           // int → long，自动
+double sum = i + 0.5;   // i 先提升为 double，再相加
 ```
 
-## 3. 引用数据类型
-
-### 3.1 类 (Class)
-
-- **定义**：使用 `class` 关键字定义的类型。
-- **示例**：`String`, `Integer`, `ArrayList` 等。
-  **示例**：
+反方向不免费。看两个 byte 相加：
 
 ```java
- String str = "Hello, Java!"; // 字符串对象
- ArrayList<String> list = new ArrayList<>(); // 集合对象
-```
-
-### 3.2 接口 (Interface)
-
-- **定义**：使用 `interface` 关键字定义的类型。
-- **示例**：`Runnable`, `Comparable` 等。
-  **示例**：
-
-```java
- Runnable runnable = () -> System.out.println("Hello");
-```
-
-### 3.3 数组 (Array)
-
-- **定义**：使用 `[]` 符号定义的类型。
-- **示例**：`int[]`, `String[]` 等。
-  **示例**：
-
-```java
- int[] numbers = {1, 2, 3, 4, 5};
- String[] names = new String[3];
-```
-
-## 4. 类型转换
-
-### 4.1 自动类型转换 (Implicit Conversion)
-
-**定义**：小容量类型向大容量类型的转换，由编译器自动完成。
-**转换规则**：
-
-- **整数类型**：`byte` → `short` → `int` → `long`
-- **浮点类型**：`float` → `double`
-- **整数到浮点**：`byte` → `short` → `int` → `long` → `float` → `double`
-- **字符到整数**：`char` → `int` → `long` → `float` → `double`
-  **示例**：
-
-```java
- byte b = 100;
- short s = b; // 自动转换：byte → short
- int i = s; // 自动转换：short → int
- long l = i; // 自动转换：int → long
- float f = l; // 自动转换：long → float
- double d = f; // 自动转换：float → double
- char c = 'A';
- int i2 = c; // 自动转换：char → int，值为 65
-```
-
-### 4.2 强制类型转换 (Explicit Conversion)
-
-**定义**：大容量类型向小容量类型的转换，需要显式指定目标类型。
-**语法**：`(目标类型) 表达式`
-**注意事项**：
-
-- 可能导致**数据溢出**或**精度丢失**。
-- 应该在转换前检查值是否在目标类型的范围内。
-  **示例**：
-
-```java
- // 精度丢失
- double pi = 3.14159;
- int num = (int) pi; // 结果为 3，小数部分被截断
- // 数据溢出
- int i = 130;
- byte b = (byte) i; // 结果为 -126，因为 130 超出了 byte 的范围
- // 安全的强制转换
- int i2 = 100;
- byte b2 = (byte) i2; // 结果为 100，在 byte 范围内
-```
-
-### 4.3 基本类型与引用类型的转换
-
-#### 4.3.1 装箱 (Boxing)
-
-**定义**：将基本类型转换为对应的包装类。
-**示例**：
-
-```java
- int i = 100;
- integer iObj = Integer.valueOf(i); // 手动装箱
- integer iObj2 = i; // 自动装箱（Java 5+）
- boolean b = true;
- Boolean bObj = Boolean.valueOf(b); // 手动装箱
- Boolean bObj2 = b; // 自动装箱
-```
-
-#### 4.3.2 拆箱 (Unboxing)
-
-**定义**：将包装类转换为对应的基本类型。
-**示例**：
-
-```java
- integer iObj = 100;
- int i = iObj.intValue(); // 手动拆箱
- int i2 = iObj; // 自动拆箱（Java 5+）
- Boolean bObj = true;
- boolean b = bObj.booleanValue(); // 手动拆箱
- boolean b2 = bObj; // 自动拆箱
-```
-
-### 4.4 字符串与基本类型的转换
-
-#### 4.4.1 基本类型转字符串
-
-**方法**：
-
-1. 使用 `String.valueOf()` 方法
-2. 使用 `+` 运算符
-3. 使用包装类的 `toString()` 方法
-   **示例**：
-
-```java
- int i = 100;
- String s1 = String.valueOf(i); // 方法 1
- String s2 = i + "";
-  // 方法 2
- String s3 = Integer.toString(i); // 方法 3
- double d = 3.14;
- String s4 = String.valueOf(d);
- String s5 = d + "";
- String s6 = Double.toString(d);
-```
-
-#### 4.4.2 字符串转基本类型
-
-**方法**：使用包装类的静态 `parseXxx()` 方法。
-**示例**：
-
-```java
- String s1 = "100";
- int i = Integer.parseInt(s1);
- String s2 = "3.14";
- double d = Double.parseDouble(s2);
- String s3 = "";
- boolean b = Boolean.parseBoolean(s3);
-```
-
-## 5. 类型转换的特殊情况
-
-### 5.1 整数默认类型
-
-- **整数字面量**：默认类型为 `int`。
-- **长整型**：需要在数值后加 `L` 或 `l`（建议使用大写 `L`，避免与数字 `1` 混淆）。
-  **示例**：
-
-```java
- int i = 100; // 正确
- long l1 = 100; // 正确，int 自动转换为 long
- long l2 = 10000000000L; // 必须加 L，否则会超出 int 范围
-```
-
-### 5.2 浮点数默认类型
-
-- **浮点数字面量**：默认类型为 `double`。
-- **单精度浮点数**：需要在数值后加 `F` 或 `f`。
-  **示例**：
-
-```java
- double d = 3.14; // 正确
- float f1 = (float) 3.14; // 强制转换
- float f2 = 3.14f; // 正确，加 F 后缀
-```
-
-### 5.3 运算中的类型提升
-
-- **规则**：在运算中，`byte`, `short`, `char` 类型会先提升为 `int` 类型再进行计算。
-- **结果类型**：运算结果的类型为参与运算的最高类型。
-  **示例**：
-
-```java
- byte b1 = 10;
- byte b2 = 20;
- // byte b3 = b1 + b2; // 错误：b1 + b2 结果为 int 类型
- int i = b1 + b2; // 正确
- int i1 = 100;
- double d1 = 3.14;
- double d2 = i1 + d1; // 结果为 double 类型
-```
-
-### 5.4 字符串拼接
-
-- **规则**：使用 `+` 运算符时，若有一方为字符串，则整体变为字符串连接。
-- **运算顺序**：从左到右依次计算。
-  **示例**：
-
-```java
- int i = 10;
- int j = 20;
- String s = "Result: " + i + j; // 结果为 "Result: 1020"
- String s2 = "Result: " + (i + j); // 结果为 "Result: 30"
- // 混合类型
- String s3 = "Pi is " + 3.14; // 结果为 "Pi is 3.14"
- String s4 = 10 + 20 + " is the sum"; // 结果为 "30 is the sum"
-```
-
-## 6. 类型转换的最佳实践
-
-### 6.1 避免数据溢出
-
-- **检查范围**：在进行强制类型转换前，检查值是否在目标类型的范围内。
-- **使用包装类的方法**：使用包装类的 `MIN_VALUE` 和 `MAX_VALUE` 常量进行范围检查。
-  **示例**：
-
-```java
- int i = 130;
- if (i >= Byte.MIN_VALUE && i <= Byte.MAX_VALUE) {
-  byte b = (byte) i;
-  System.out.println("转换成功: " + b);
- }
-  System.out.println("转换失败：值超出 byte 范围");
- }
-```
-
-### 6.2 避免精度丢失
-
-- **使用适当的类型**：根据需要选择合适的浮点类型。
-- **BigDecimal**：对于需要精确计算的场景，使用 `BigDecimal` 类。
-  **示例**：
-
-```java
- // 精度丢失问题
- double d1 = 0.1;
- double d2 = 0.2;
- double sum = d1 + d2; // 结果为 0.30000000000000004
- // 使用 BigDecimal
- import java.math.BigDecimal;
- BigDecimal bd1 = new BigDecimal("0.1");
- BigDecimal bd2 = new BigDecimal("0.2");
- BigDecimal bdSum = bd1.add(bd2); // 结果为 0.3
-```
-
-### 6.3 合理使用装箱和拆箱
-
-- **自动装箱/拆箱**：Java 5+ 支持自动装箱和拆箱，但应避免在循环中频繁使用，可能影响性能。
-- **缓存机制**：包装类对某些值有缓存机制（如 `Integer` 对 -128 到 127 的值），可以提高性能。
-  **示例**：
-
-```java
- // 缓存机制示例
- integer i1 = 100;
- integer i2 = 100;
- System.out.println(i1 == i2); // 结果为 true，因为 100 在缓存范围内
- integer i3 = 200;
- integer i4 = 200;
- System.out.println(i3 == i4); // 结果为 false，因为 200 不在缓存范围内
- System.out.println(i3.equals(i4)); // 结果为 true，推荐使用 equals 比较
-```
-
-### 6.4 字符串转换的安全性
-
-- **异常处理**：在将字符串转换为基本类型时，应捕获 `NumberFormatException` 异常。
-- **空值检查**：在转换前检查字符串是否为 `null`。
-  **示例**：
-
-```java
- String s = "123";
- try {
-  int i = Integer.parseInt(s);
-  System.out.println("转换成功: " + i);
- }
-  System.out.println("转换失败: " + e.getMessage());
- }
- // 空值检查
- String s2 = null;
- if (s2 != null) {
-  int i2 = Integer.parseInt(s2);
- }
-  System.out.println("字符串为 null");
- }
-```
-
-## 7. 实际应用示例
-
-### 7.1 示例 1：温度转换
-
-```java
- import java.util.Scanner;
- public class TemperatureConverter {
-  public static void main(String[] args) {
-  Scanner sc = new Scanner(System.in);
-  System.out.print("请输入摄氏度: ");
-  double celsius = sc.nextDouble();
-  // 转换为华氏度
-  double fahrenheit = celsius * 9 / 5 + 32;
-  System.out.println(celsius + " 摄氏度 = " + fahrenheit + " 华氏度");
-  sc.close();
-  }
- }
-```
-
-### 7.2 示例 2：计算圆的面积
-
-```java
- import java.util.Scanner;
- public class CircleArea {
-  public static void main(String[] args) {
-  Scanner sc = new Scanner(System.in);
-  System.out.print("请输入圆的半径: ");
-  double radius = sc.nextDouble();
-  // 计算面积
-  double area = Math.PI * radius * radius;
-  System.out.println("圆的面积: " + area);
-  sc.close();
-  }
- }
-```
-
-## 整数类型
-
-**基本写法：byte 类型**
-`byte <变量名> = <值>;`
-```java
-// 声明 1 字节整数
-byte b = 100;
-```
-
----
-
-**基本写法：short 类型**
-`short <变量名> = <值>;`
-```java
-// 声明 2 字节整数
-short s = 1000;
-```
-
----
-
-**基本写法：int 类型**
-`int <变量名> = <值>;`
-```java
-// 声明 4 字节整数（默认）
-int i = 100000;
-```
-
----
-
-**基本写法：long 类型**
-`long <变量名> = <值>L;`
-```java
-// 声明 8 字节整数必须加 L 后缀
-long l = 10000000000L;
-```
-
----
-
-## 浮点数类型
-
-**基本写法：float 类型**
-`float <变量名> = <值>F;`
-```java
-// 声明单精度浮点数必须加 F 后缀
-float f = 3.14f;
-```
-
----
-
-**基本写法：double 类型**
-`double <变量名> = <值>;`
-```java
-// 声明双精度浮点数（默认）
-double d = 3.1415926535;
-```
-
----
-
-## 字符类型
-
-**基本写法：字符字面量**
-`char <变量名> = '<字符>';`
-```java
-// 使用字符字面量声明
-char c1 = 'A';
-```
-
----
-
-**基本写法：ASCII 码赋值**
-`char <变量名> = <ASCII码>;`
-```java
-// 使用 ASCII 码赋值
-char c2 = 65;
-```
-
----
-
-**基本写法：Unicode 编码赋值**
-`char <变量名> = '\u<编码>';`
-```java
-// 使用 Unicode 编码赋值
-char c3 = '\u0041';
-```
-
----
-
-## 布尔类型
-
-**基本写法：布尔类型**
-`boolean <变量名> = <true|false>;`
-```java
-// 声明布尔类型变量
-boolean flag = true;
-```
-
----
-
-## 引用数据类型
-
-**基本写法：类类型声明**
-`<类名> <变量名> = new <类名>();`
-```java
-// 声明集合对象
-ArrayList<String> list = new ArrayList<>();
-```
-
----
-
-**基本写法：字符串声明**
-`String <变量名> = "<字符串>";`
-```java
-// 声明字符串对象
-String str = "Hello, Java!";
-```
-
----
-
-**基本写法：数组类型声明**
-`<类型>[] <变量名> = { <元素> };`
-```java
-// 声明并初始化数组
-int[] numbers = {1, 2, 3, 4, 5};
-```
-
----
-
-## 自动类型转换
-
-**基本写法：小类型转大类型**
-`<大类型> <变量名> = <小类型变量>;`
-```java
-// byte 自动转换为 short
-byte b = 100;
-short s = b;
-```
-
----
-
-**基本写法：int 转 long**
-`long <变量名> = <int变量>;`
-```java
-// int 自动转换为 long
-int i = 100;
-long l = i;
-```
-
----
-
-**基本写法：char 转 int**
-`int <变量名> = <char变量>;`
-```java
-// char 自动转换为 int
-char c = 'A';
-int i = c;
-```
-
----
-
-## 强制类型转换
-
-**基本写法：强制类型转换**
-`(<目标类型>) <表达式>`
-```java
-// double 强制转换为 int
-double pi = 3.14159;
-int num = (int) pi;
-```
-
----
-
-**基本写法：int 转 byte**
-`byte <变量名> = (byte) <int变量>;`
-```java
-// int 强制转换为 byte
-int i = 100;
-byte b = (byte) i;
-```
-
----
-
-## 装箱与拆箱
-
-**基本写法：手动装箱**
-`<包装类> <变量名> = <包装类>.valueOf(<基本类型>);`
-```java
-// int 手动装箱为 Integer
-int i = 100;
-Integer iObj = Integer.valueOf(i);
-```
-
----
-
-**基本写法：自动装箱**
-`<包装类> <变量名> = <基本类型>;`
-```java
-// int 自动装箱为 Integer
-Integer iObj = 100;
-```
-
----
-
-**基本写法：手动拆箱**
-`<基本类型> <变量名> = <包装类变量>.<xxxValue>();`
-```java
-// Integer 手动拆箱为 int
-Integer iObj = 100;
-int i = iObj.intValue();
-```
-
----
-
-**基本写法：自动拆箱**
-`<基本类型> <变量名> = <包装类变量>;`
-```java
-// Integer 自动拆箱为 int
-Integer iObj = 100;
-int i = iObj;
-```
-
----
-
-## 字符串与基本类型转换
-
-**基本写法：基本类型转字符串**
-`String <变量名> = String.valueOf(<基本类型>);`
-```java
-// int 转换为字符串
-int i = 100;
-String s = String.valueOf(i);
-```
-
----
-
-**基本写法：字符串转 int**
-`int <变量名> = Integer.parseInt(<字符串>);`
-```java
-// 字符串转换为 int
-String s = "100";
-int i = Integer.parseInt(s);
-```
-
----
-
-**基本写法：字符串转 double**
-`double <变量名> = Double.parseDouble(<字符串>);`
-```java
-// 字符串转换为 double
-String s = "3.14";
-double d = Double.parseDouble(s);
-```
-
----
-
-**基本写法：字符串转 boolean**
-`boolean <变量名> = Boolean.parseBoolean(<字符串>);`
-```java
-// 字符串转换为 boolean
-String s = "true";
-boolean b = Boolean.parseBoolean(s);
-```
-
----
-
-## 运算中的类型提升
-
-**基本写法：byte 运算提升为 int**
-`int <变量名> = <byte变量1> + <byte变量2>;`
-```java
-// 两个 byte 相加结果为 int
 byte b1 = 10;
 byte b2 = 20;
-int i = b1 + b2;
+byte sum = b1 + b2;     // 编译失败
 ```
 
----
+```text
+MixedDemo.java:10: error: incompatible types: possible lossy conversion from int to byte
+        byte sum = b1 + b2;
+                    ^
+1 error
+```
 
-**基本写法：int 与 double 运算**
-`double <变量名> = <int变量> + <double变量>;`
+byte、short、char 参与运算一律先提升为 int（字节码算术指令只有四档）——小杯倒大杯免费，倒回去要亲自动手。修法：`int sum = b1 + b2;`，或执意要 byte 就写 `(byte) (b1 + b2)`——括号不能省，见第 9 节错误三。
+
+## 4. 强制转换：把大杯硬倒进小杯
+
+语法：`(目标类型) 值`，两种后果都要亲眼见过一次。
+
+后果一：**截断**（浮点转整数）：
+
 ```java
-// int 与 double 运算结果为 double
-int i = 100;
-double d = 3.14;
-double result = i + d;
+double price = 3.99;
+int whole = (int) price;
+System.out.println(whole);
 ```
 
----
+预期输出：
 
-## 字符串拼接
+```text
+3
+```
 
-**基本写法：字符串与数字拼接**
-`String <变量名> = <字符串> + <数字>;`
+不是四舍五入，是直接砍掉小数。想四舍五入找 `Math.round`；想精确算钱见第 10 节。
+
+后果二：**回绕**（大整数转小整数）：
+
 ```java
-// 字符串与数字拼接
-String s = "Result: " + 42;
+int over = 130;
+byte small = (byte) over;
+System.out.println(small);
 ```
 
----
+预期输出：
 
-**基本写法：括号优先拼接**
-`String <变量名> = <字符串> + (<表达式>);`
+```text
+-126
+```
+
+130 超出 byte 范围 -128 到 127，写 (byte) 时编译器的态度是「行，后果自负」：130 回绕成 -126。不报错、不崩溃、数字悄悄变脸——真实项目管这叫数据静默损坏，比崩溃难查十倍。
+
+## 5. char 参与运算：字符其实是数字
+
 ```java
-// 使用括号先计算再拼接
-String s = "Result: " + (10 + 20);
+public class CharMath {
+    public static void main(String[] args) {
+        char letter = 'A';
+        System.out.println(letter + 1);
+        System.out.println((char) (letter + 1));
+        System.out.println('a' - 'A');
+    }
+}
 ```
 
----
+预期输出：
 
-## BigDecimal 精确计算
+```text
+66
+B
+32
+```
 
-**基本写法：创建 BigDecimal**
-`BigDecimal <变量名> = new BigDecimal("<数值>");`
+char 底层是 0 到 65535 的整数（Unicode 码位），'A' 就是 65；参与运算时提升为 int，所以 `letter + 1` 是 66 而非 "A1"，想要字符就强转回 char。`'a' - 'A'` 得 32，正是大小写的码表距离。注意 `'A'` 是 char、`"A"` 是字符串，`"A" + 1` 才得 "A1"，规则在 [运算符与表达式](/java/080-OperatorExpression) 展开。
+
+## 6. 溢出实验：Integer.MAX_VALUE + 1
+
+int 是 32 位整数，天花板 `Integer.MAX_VALUE` = 2147483647（约 21 亿），地板 `Integer.MIN_VALUE` = -2147483648——这个量级在累计播放量一类场景真实存在。
+
 ```java
-// 使用字符串创建 BigDecimal
-BigDecimal bd = new BigDecimal("0.1");
+public class OverflowDemo {
+    public static void main(String[] args) {
+        int max = Integer.MAX_VALUE;
+        System.out.println(max);
+
+        int overflow = max + 1;
+        System.out.println(overflow);
+
+        int safe = Math.addExact(max, 1);
+        System.out.println(safe);
+    }
+}
 ```
 
----
+运行，预期输出：
 
-**基本写法：BigDecimal 加法**
-`BigDecimal <结果> = <bd1>.add(<bd2>);`
+```text
+2147483647
+-2147483648
+Exception in thread "main" java.lang.ArithmeticException: integer overflow
+        at java.base/java.lang.Math.addExact(Math.java:872)
+        at OverflowDemo.main(OverflowDemo.java:9)
+```
+
+（at 行号随 JDK 版本不同，读法照 030。）
+
+三件事：
+
+1. `max + 1` **没有报错、没有异常**，直接从天花板翻到地板（int 用二进制补码存数，顶到头再进一位、符号位翻转）——纯粹的静默错误；
+2. `Math.addExact(max, 1)` 是防御：同样溢出，但它**响亮地炸**（ArithmeticException），把静默错误变成当场暴露。配套还有 subtractExact、multiplyExact；
+3. 更大的数换 long（上限约 9.2 × 10^18），再不够换 BigInteger；金额、库存这类「数字绝不能悄悄错」的场景，addExact 是便宜的保险。
+
+## 7. 字符串转数字：命令行参数的正确打开方式
+
+030 里 args 拿到的全是字符串，"3" 不能直接当数字算。转换入口是包装类的 parse 系列：
+
 ```java
-// 两个 BigDecimal 相加
-BigDecimal bd1 = new BigDecimal("0.1");
-BigDecimal bd2 = new BigDecimal("0.2");
-BigDecimal sum = bd1.add(bd2);
+public class ParseDemo {
+    public static void main(String[] args) {
+        int count = Integer.parseInt(args[0]);
+        double price = Double.parseDouble(args[1]);
+        System.out.println("数量 " + count + "，单价 " + price);
+        System.out.println("合计 " + count * price);
+    }
+}
 ```
+
+运行 `java ParseDemo 3 28.5`，预期输出：
+
+```text
+数量 3，单价 28.5
+合计 85.5
+```
+
+喂坏输入 `java ParseDemo 三 28.5`：
+
+```text
+Exception in thread "main" java.lang.NumberFormatException: For input string: "三"
+        at java.base/java.lang.Integer.parseInt(Integer.java:671)
+        at ParseDemo.main(ParseDemo.java:3)
+```
+
+030 见过它一次（"九十九"）。at 链最后一行指向你文件里 parse 那行——案发现场永远在调用处。两个额外陷阱：带空格或单位（"28.5元"）抛异常；把 "28.5" 喂给 parseInt（只认整数）也抛。防御（try/catch）在 [异常处理机制](/java/180-ExceptionHandlingMechanism) 展开；反方向 `"" + 42` 或 `String.valueOf(42)`，细节归 [运算符与表达式](/java/080-OperatorExpression)。
+
+## 8. 修改实验
+
+实验一（5 分钟）：把 OverflowDemo 的 `int max` 改成 `long max = Integer.MAX_VALUE;`，预测 max + 1 现在输出多少再运行（2147483648——升舱到 long，不溢出；addExact 那行同步删掉）。
+
+实验二（10 分钟）：三连预测。设 `int subtotal = 83;`，依次预测并运行 `subtotal / 2`、`(double) subtotal / 2`、`(double) (subtotal / 2)`（41 / 41.5 / 41.0：整除砍小数、先升舱再除、除完才升舱）。
+
+实验三（10 分钟）：字母后移加密：`char c = 'F';`，输出后移 1 位与后移 3 位的字符（先写预期：G 与 I，再核对）。把 'F' 换成 'y'，越过 'z' 之后发生了什么？
+
+## 9. 常见错误与调试实录
+
+错误一：long 忘加 L 后缀：
+
+```java
+long views = 10000000000;
+```
+
+```text
+Stats.java:3: error: integer number too large
+        long views = 10000000000;
+                     ^
+1 error
+```
+
+整数字面量默认 int，100 亿超上限。加 L：`10000000000L`；小写 l 与数字 1 难分，约定用大写。
+
+错误二：float 忘加 F 后缀。浮点字面量默认是 double，装进 float 会报 `error: incompatible types: possible lossy conversion from double to float`，加 F 后缀（0.9f）解决；日常一律用 double，float 只在省内存的特定场景出现。
+
+错误三：强转只作用于紧挨着的那一个值。`(double) (subtotal / 2)` 与 `(double) subtotal / 2` 结果不同（实验二的 41.0 与 41.5）。口诀：想让谁变 double，括号就把谁整个圈住，或把一个操作数直接写成 double（如 `totalScore / 2.0`）。
+
+## 10. 实际项目中的使用场景
+
+- 命令行工具与配置解析：parse 系列是「字符串进、数字算」的第一站；
+- 金额计算：`0.1 + 0.2` 得 0.30000000000000004。精确算钱用 java.math.BigDecimal 或以「分」为单位用 long，入门期记住：**double 不碰钱**；
+- 游戏数值：血量、计数器用 int，坐标、系数用 double；累加统计用 Math.addExact 或升 long 防溢出。
+
+## 11. 小练习
+
+预测题（5 分钟）：把下面片段放进 main 方法体，程序输出什么？先写答案再运行：
+
+```java
+byte b = 127;
+b = (byte) (b + 1);
+System.out.println(b);
+System.out.println('B' + 1);
+```
+
+（验证：第一行 -128，127 回绕到地板；第二行 67，char 提升为 int。）
+
+修改题（10 分钟）：给 ParseDemo 加折扣参数，运行 `java ParseDemo 3 28.5 0.5` 输出「折后合计 42.75」。要求：新增 parseDouble 读取 args[2]，先算好预期值（3 × 28.5 × 0.5）再验证一致。
+
+修 Bug 题（15 分钟）：程序想输出两名玩家的平均分 87.5，实际输出 87.0。定位原因并修复，要求修复后输出 87.5：
+
+```java
+public class AverageBug {
+    public static void main(String[] args) {
+        int totalScore = 175;
+        int players = 2;
+        double average = (double) (totalScore / players);
+        System.out.println("平均分 " + average);
+    }
+}
+```
+
+（原因在括号的位置：先整除得 87，再升舱已经晚了。）
+
+挑战题（半小时）：写一个 Stats 类，接收两个命令行整数分数，输出总分与平均分。验收：`java Stats 90 86` 输出「总分 176」「平均 88.0」；再运行 `java Stats 九十 86`，用 030 的 at 链读法指出案发行号。提示（思路）：args[0]、args[1] 分别 parseInt，平均分先升舱再除；展开（关键写法）：`(a + b) / 2.0`。
+
+## 12. 与之前和之后的知识的关系
+
+- 往前：[程序结构与基本语法](/java/040-ProgramStructureBasicSyntax) 的订单小计今天升级出小数价格；[快速上手](/java/030-QuickStart) 的 NumberFormatException 与 args 正式归位；
+- 往后：[包装类缓存陷阱](/java/060-WrapperCacheTrap) 揭开 Integer 的另一面——装箱就是编译器帮你调 valueOf，下一篇证明；[变量与常量](/java/070-VariableConstant) 讲声明的更多姿势与 final 常量；[运算符与表达式](/java/080-OperatorExpression) 把 + 的拼接与除法规则讲全；[异常处理机制](/java/180-ExceptionHandlingMechanism) 教你接住 NumberFormatException；
+- 主线不变：040 → 050（本文）→ 060 → 070。
+
+## 13. 官方文档
+
+- Oracle Java Tutorials「Primitive Data Types」：https://docs.oracle.com/javase/tutorial/java/nutsandbolts/datatypes.html
+- Integer 类 Javadoc（MAX_VALUE、parseInt、addExact 的官方说明）：https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/Integer.html
+- Java 语言规范 JLS 第 5 章「Conversions and Contexts」（转换与提升的权威定义）：https://docs.oracle.com/javase/specs/jls/se21/html/jls-5.html
+
+## 14. 自我检查
+
+- 能不查资料画出升舱链，并解释两个 byte 相加为什么编译不过；
+- 能说出 (int) 3.99 与 (byte) 130 的结果，以及为什么编译器放行强转却拦下隐式缩小；
+- 能现场解释 2147483647 + 1 为什么是 -2147483648，并写出 Math.addExact 防御版；
+- 拿到带 NumberFormatException 的报错，能用 at 链指认案发行号；合上文档能写出 ParseDemo 并正确处理命令行参数。
+
+## 本章总结
+
+混合运算时操作数统一提升到最大类型，升舱链 byte → short → int → long → float → double，char 从 int 起步；反向要强转，代价是截断（(int) 3.99 得 3）或回绕（(byte) 130 得 -126）。int 顶到天花板再进一就回绕成负数，Math.addExact 把静默溢出变成 ArithmeticException。字符串转数字走 parseInt / parseDouble，坏输入抛 NumberFormatException，at 链指认现场。double 不碰钱，整除会砍小数，强转只管紧挨的一个值。
+
+## 下一步
+
+进入 [包装类缓存陷阱](/java/060-WrapperCacheTrap)：Integer 不只是 int 的工具箱，两个 127 相等、两个 128 却不等——Java 的一道著名面试题正在等你。
