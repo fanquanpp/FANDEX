@@ -1,1319 +1,273 @@
 ---
 order: 30
-title: C++ 基础语法
+title: 第一个程序与第一颗子弹：基本语法与未定义行为
 module: 'cpp'
 category: 计算机科学
 difficulty: beginner
-description: C++ 基本语法、注释、标识符与关键字。
+description: 从空文件夹写出最小 main.cpp 并两步跑通，覆盖语句注释、cin/cout 最小交互与 int main 返回值的意义；再用越界数组实验正式引入未定义行为（UB），附 expected ';' 与 undefined reference to 'main' 两类真实报错的调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'cpp/020-CppOverviewAndModernStandard'
   - 'cpp/040-CppTypeSystem'
+  - 'cpp/050-NamespaceLinkage'
   - 'cpp/080-CppReferenceTypes'
-prerequisites: []
+  - 'cpp/120-CppPointers'
+prerequisites:
+  - 'cpp/020-CppOverviewAndModernStandard'
 ---
 
 ## 前置知识
 
-- [C++ 概述与现代标准](/cpp/020-CppOverviewAndModernStandard)：建议先完成前一篇的学习
+- 已完成 [C++ 概述与现代标准](/cpp/020-CppOverviewAndModernStandard)：`g++ --version` 能出版本号，知道 `-std=c++23` 开关是干什么的；
+- 不需要 C++ 语法基础——变量与类型的完整规则在下一篇 [类型系统](/cpp/040-CppTypeSystem)，本文用到只做最小解释。
 
 ## 学习目标
 
-- 掌握「1. 数据类型 (Data Types)」的核心机制、典型用法与常见陷阱
-- 掌握「2. 控制流 (Control Flow)」的核心机制、典型用法与常见陷阱
-- 掌握「3. 输入输出 (I/O)」的核心机制、典型用法与常见陷阱
-- 掌握「4. 命名空间 (Namespace)」的核心机制、典型用法与常见陷阱
-- 掌握「5. 作用域 (Scope)」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 从空文件夹写出最小可运行的 main.cpp，说出编译与运行两步各自发生了什么；
+2. 说出 `int main()` 返回值去了哪里，并在终端里亲眼看到它；
+3. 用 `std::cin` / `std::cout` 完成一次最小的人机交互；
+4. 读懂 `expected ';'` 与 `undefined reference to 'main'` 两类真实报错，按读报错三步定位；
+5. 复现一次越界数组实验，用自己的话解释未定义行为（UB）——C++ 与托管语言的根本差异。
 
-## 1. 数据类型 (Data Types)
+预计 45 到 60 分钟，含 4 组实验、4 道练习。
 
-C++ 具有丰富的类型系统，分为基本类型和复合类型。
+## 1. 问题引入：第一颗子弹
 
-### 1.1 基本数据类型
+C++ 之父 Bjarne Stroustrup 有句流传很广的吐槽：「用 C 打穿自己的脚很容易；用 C++ 更难，但一旦打中，整条腿都会炸掉。」今天你同时拿到两样东西：**第一个程序**，和**第一颗子弹**——一段编译通过、结果却不可预测的代码。读完本文你就明白这句吐槽在说什么。
 
-| 类型                 | 描述                   | 大小 (字节) | 示例                                             |
-| :------------------- | :--------------------- | :---------- | :----------------------------------------------- |
-| **整数类型**         |                        |             |                                                  |
-| `char`               | 字符                   | 1           | `char c = 'A';`                                  |
-| `unsigned char`      | 无符号字符             | 1           | `unsigned char uc = 255;`                        |
-| `short`              | 短整数                 | 2           | `short s = 32767;`                               |
-| `unsigned short`     | 无符号短整数           | 2           | `unsigned short us = 65535;`                     |
-| `int`                | 整数                   | 4           | `int x = 10;`                                    |
-| `unsigned int`       | 无符号整数             | 4           | `unsigned int ux = 4294967295;`                  |
-| `long`               | 长整数                 | 4 或 8      | `long l = 1000000;`                              |
-| `unsigned long`      | 无符号长整数           | 4 或 8      | `unsigned long ul = 1000000;`                    |
-| `long long`          | 长长整数 (C++11)       | 8           | `long long ll = 10000000000;`                    |
-| `unsigned long long` | 无符号长长整数 (C++11) | 8           | `unsigned long long ull = 18446744073709551615;` |
-| **浮点类型**         |                        |             |                                                  |
-| `float`              | 单精度浮点数           | 4           | `float f = 3.14f;`                               |
-| `double`             | 双精度浮点数           | 8           | `double d = 3.1415926535;`                       |
-| `long double`        | 长双精度浮点数         | 8 或 16     | `long double ld = 3.14159265358979323846;`       |
-| **布尔类型**         |                        |             |                                                  |
-| `bool`               | 布尔值                 | 1           | `bool is_valid = true;`                          |
+## 2. 最小可运行的 main.cpp
 
-> 注意：C++ 标准只规定各类型的**最小宽度与相对大小**，具体字节数随平台变化。
-> 表中「4 或 8」的典型差异来自系统 ABI：`long` 在 Windows（MSVC）上为 4 字节，
-> 在 Linux/macOS 上为 8 字节。需要固定位宽时使用 `<cstdint>` 中的
-> `int32_t`/`int64_t` 等定宽类型。
-| **空类型**           |                        |             |                                                  |
-| `void`               | 无类型                 | -           | 用于函数返回或通用指针                           |
-
-### 1.2 复合数据类型
-
-| 类型       | 描述               | 示例                                            |
-| :--------- | :----------------- | :---------------------------------------------- |
-| **数组**   | 相同类型元素的集合 | `int arr[5] = {1, 2, 3, 4, 5};`                 |
-| **字符串** | 字符序列           | `std::string s = "Hello C++";`                  |
-| **指针**   | 存储内存地址       | `int* p = &x;`                                  |
-| **引用**   | 变量的别名         | `int& ref = x;`                                 |
-| **结构体** | 不同类型成员的集合 | `struct Person { std::string name; int age; };` |
-| **联合体** | 共用内存的不同类型 | `union Data { int i; float f; char c; };`       |
-| **枚举**   | 命名常量集合       | `enum Color { RED, GREEN, BLUE };`              |
-| **类**     | 面向对象的类型     | `class MyClass { /* ... */ };`                  |
-
-### 1.3 类型修饰符
-
-| 修饰符      | 描述                 | 示例                                                                         |
-| :---------- | :------------------- | :--------------------------------------------------------------------------- |
-| `signed`    | 有符号类型 (默认)    | `signed int x = -10;`                                                        |
-| `unsigned`  | 无符号类型           | `unsigned int y = 10;`                                                       |
-| `short`     | 短类型               | `short s = 100;`                                                             |
-| `long`      | 长类型               | `long l = 1000000;`                                                          |
-| `const`     | 常量类型             | `const int MAX = 100;`                                                       |
-| `volatile`  | 易变类型             | `volatile int flag = 0;`                                                     |
-| `constexpr` | 编译期常量 (C++11)   | `constexpr int factorial(int n) { return n <= 1 ? 1 : n * factorial(n-1); }` |
-| `auto`      | 自动类型推断 (C++11) | `auto i = 10;`                                                               |
-| `decltype`  | 类型推导 (C++11)     | `decltype(i) j = 20;`                                                        |
-
-### 1.4 类型转换
-
-#### 1.4.1 隐式类型转换
+新建一个空文件夹（比如 cpp-lab），在里面创建 main.cpp：
 
 ```cpp
- int i = 10;
- double d = i; // 隐式转换：int -> double
- char c = 'A';
- i = c; // 隐式转换：char -> int
-```
-
-#### 1.4.2 显式类型转换
-
-```cpp
- // C 风格转换
- double d = 3.14;
- int i = (int)d; // 截断小数部分
- // C++ 风格转换
- // static_cast: 静态类型转换
- i = static_cast<int>(d);
- // dynamic_cast: 动态类型转换（用于多态）
- Base* base = new Derived();
- Derived* derived = dynamic_cast<Derived*>(base);
- // const_cast: 移除 const 修饰
- const int& const_ref = i;
- int& ref = const_cast<int&>(const_ref);
- // reinterpret_cast: 重新解释类型
- int* p = &i;
- long addr = reinterpret_cast<long>(p);
-```
-
-## 2. 控制流 (Control Flow)
-
-### 2.1 条件判断
-
-#### 2.1.1 if 语句
-
-```cpp
- // 基本 if 语句
- int score = 85;
- if (score >= 90) {
-  std::cout << "优秀" << std::endl;
- }
-  std::cout << "良好" << std::endl;
- }
-  std::cout << "及格" << std::endl;
- }
-  std::cout << "不及格" << std::endl;
- }
- // 嵌套 if 语句
- int x = 10, y = 20;
- if (x > 0) {
-  if (y > 0) {
-  std::cout << "x 和 y 都是正数" << std::endl;
-  } else {
-  std::cout << "x 是正数，y 不是正数" << std::endl;
-  }
- }
- // 使用逻辑运算符
- int a = 5, b = 10, c = 15;
- if (a > 0 && b > 0 && c > 0) {
-  std::cout << "所有数都是正数" << std::endl;
- }
- if (a > 10 || b > 10 || c > 10) {
-  std::cout << "至少有一个数大于 10" << std::endl;
- }
-```
-
-#### 2.1.2 switch 语句
-
-```cpp
- // 基本 switch 语句
- int day = 3;
- switch (day) {
-  case 1:
-  std::cout << "星期一" << std::endl;
-  break;
-  case 2:
-  std::cout << "星期二" << std::endl;
-  break;
-  case 3:
-  std::cout << "星期三" << std::endl;
-  break;
-  case 4:
-  std::cout << "星期四" << std::endl;
-  break;
-  case 5:
-  std::cout << "星期五" << std::endl;
-  break;
-  case 6:
-  case 7:
-  std::cout << "周末" << std::endl;
-  break;
-  default:
-  std::cout << "无效的日期" << std::endl;
-  break;
- }
- // 使用枚举的 switch 语句
- enum Color { RED, GREEN, BLUE };
- Color color = GREEN;
- switch (color) {
-  case RED:
-  std::cout << "红色" << std::endl;
-  break;
-  case GREEN:
-  std::cout << "绿色" << std::endl;
-  break;
-  case BLUE:
-  std::cout << "蓝色" << std::endl;
-  break;
-  default:
-  std::cout << "未知颜色" << std::endl;
-  break;
- }
- // 使用枚举类的 switch 语句 (C++11)
- enum class Direction { UP, DOWN, LEFT, RIGHT };
- Direction dir = Direction::UP;
- switch (dir) {
-  case Direction::UP:
-  std::cout << "向上" << std::endl;
-  break;
-  case Direction::DOWN:
-  std::cout << "向下" << std::endl;
-  break;
-  case Direction::LEFT:
-  std::cout << "向左" << std::endl;
-  break;
-  case Direction::RIGHT:
-  std::cout << "向右" << std::endl;
-  break;
- }
-```
-
-### 2.2 循环结构
-
-#### 2.2.1 for 循环
-
-```cpp
- // 传统 for 循环
- for (int i = 0; i < 10; ++i) {
-  std::cout << i << " ";
- }
- std::cout << std::endl;
- // 循环变量作用域控制
- {
-  for (int i = 0; i < 5; ++i) {
-  std::cout << i << " ";
-  }
-  // i 在这里不可见
- }
- // 多变量 for 循环
- for (int i = 0, j = 10; i < 5 && j > 5; ++i, --j) {
-  std::cout << "i: " << i << ", j: " << j << std::endl;
- }
- // 范围 for 循环 (C++11)
- std::vector<int> numbers = {1, 2, 3, 4, 5};
- for (int num : numbers) {
-  std::cout << num << " ";
- }
- std::cout << std::endl;
- // 使用 auto 的范围 for 循环 (C++11)
- for (auto num : numbers) {
-  std::cout << num << " ";
- }
- std::cout << std::endl;
- // 使用 const 引用的范围 for 循环（避免复制）
- for (const auto& num : numbers) {
-  std::cout << num << " ";
- }
- std::cout << std::endl;
- // 使用引用的范围 for 循环（可以修改元素）
- for (auto& num : numbers) {
-  num *= 2; // 每个元素都乘以 2
- }
- // 遍历数组
- int arr[] = {10, 20, 30, 40, 50};
- for (int x : arr) {
-  std::cout << x << " ";
- }
- std::cout << std::endl;
-```
-
-#### 2.2.2 while 循环
-
-```cpp
- // 基本 while 循环
- int i = 0;
- while (i < 10) {
-  std::cout << i << " ";
-  ++i;
- }
- std::cout << std::endl;
- // 无限循环（需要内部 break）
- i = 0;
- while (true) {
-  std::cout << i << " ";
-  ++i;
-  if (i >= 10) {
-  break;
-  }
- }
- std::cout << std::endl;
- // 基于条件的 while 循环
- std::string input;
- while (true) {
-  std::cout << "输入 'quit' 退出: ";
-  std::cin >> input;
-  if (input == "quit") {
-  break;
-  }
-  std::cout << "你输入了: " << input << std::endl;
- }
-```
-
-#### 2.2.3 do-while 循环
-
-```cpp
- // 基本 do-while 循环
- int i = 0;
- do {
-  std::cout << i << " ";
-  ++i;
- }
- std::cout << std::endl;
- // 至少执行一次的情况
- std::string password;
- do {
-  std::cout << "请输入密码: ";
-  std::cin >> password;
- }
- std::cout << "密码正确！" << std::endl;
-```
-
-### 2.3 跳转语句
-
-#### 2.3.1 break 语句
-
-```cpp
- // 在 for 循环中使用 break
- for (int i = 0; i < 10; ++i) {
-  if (i == 5) {
-  break; // 跳出循环
-  }
-  std::cout << i << " ";
- }
- // 输出: 0 1 2 3 4
- // 在 while 循环中使用 break
- int j = 0;
- while (j < 10) {
-  if (j == 5) {
-  break;
-  }
-  std::cout << j << " ";
-  ++j;
- }
- // 在 switch 语句中使用 break
- int value = 2;
- switch (value) {
-  case 1:
-  std::cout << "值为 1" << std::endl;
-  break;
-  case 2:
-  std::cout << "值为 2" << std::endl;
-  break; // 没有这个 break 会继续执行下一个 case
-  case 3:
-  std::cout << "值为 3" << std::endl;
-  break;
- }
-```
-
-#### 2.3.2 continue 语句
-
-```cpp
- // 在 for 循环中使用 continue
- for (int i = 0; i < 10; ++i) {
-  if (i % 2 == 0) {
-  continue; // 跳过当前迭代
-  }
-  std::cout << i << " ";
- }
- // 输出: 1 3 5 7 9
- // 在 while 循环中使用 continue
- int j = 0;
- while (j < 10) {
-  ++j;
-  if (j % 2 == 0) {
-  continue;
-  }
-  std::cout << j << " ";
- }
- // 在范围 for 循环中使用 continue
- std::vector<int> nums = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
- for (auto num : nums) {
-  if (num % 3 == 0) {
-  continue;
-  }
-  std::cout << num << " ";
- }
-```
-
-#### 2.3.3 return 语句
-
-```cpp
- // 基本 return 语句
- int add(int a, int b) {
-  return a + b; // 返回值并结束函数
- }
- // 提前返回
- bool is_even(int n) {
-  if (n % 2 == 0) {
-  return true; // 提前返回
-  }
-  return false;
- }
- // 返回引用
- int& get_largest(int& a, int& b) {
-  if (a > b) {
-  return a;
-  }
-  return b;
- }
- // 返回空
- void print_hello() {
-  std::cout << "Hello!" << std::endl;
-  return; // 可选
- }
- int main() {
-  int result = add(5, 3);
-  std::cout << "5 + 3 = " << result << std::endl;
-  int x = 10, y = 20;
-  int& largest = get_largest(x, y);
-  largest = 100; // 修改返回的引用
-  std::cout << "x: " << x << ", y: " << y << std::endl;
-  return 0; // 结束主函数
- }
-```
-
-#### 2.3.4 goto 语句（不推荐使用）
-
-```cpp
- // 基本 goto 语句
- int main() {
-  int i = 0;
- loop:
-  std::cout << i << " ";
-  ++i;
-  if (i < 10) {
-  goto loop; // 跳转到标签处
-  }
-  return 0;
- }
- // 使用 goto 跳出多层循环
- void nested_loops() {
-  for (int i = 0; i < 10; ++i) {
-  for (int j = 0; j < 10; ++j) {
-  if (i * j > 20) {
-  goto exit_loops; // 跳出所有循环
-  }
-  std::cout << "i: " << i << ", j: " << j << std::endl;
-  }
-  }
- exit_loops:
-  std::cout << "跳出循环" << std::endl;
- }
- // 使用 goto 进行错误处理
- bool process_data() {
-  // 模拟错误
-  bool error = true;
-  if (error) {
-  goto error_handler;
-  }
-  // 正常处理
-  return true;
- error_handler:
-  std::cout << "处理错误" << std::endl;
-  return false;
- }
-```
-
-## 3. 输入输出 (I/O)
-
-### 3.1 标准输入输出
-
-#### 3.1.1 输出
-
-```cpp
- #include <iostream>
- int main() {
-  // 基本输出
-  std::cout << "Hello, C++!" << std::endl;
-  // 多个值输出
-  int x = 10;
-  double y = 3.14;
-  std::cout << "x = " << x << ", y = " << y << std::endl;
-  // 使用 endl 换行并刷新缓冲区
-  std::cout << "Line 1" << std::endl;
-  std::cout << "Line 2" << std::endl;
-  // 使用 \n 仅换行
-  std::cout << "Line 1\nLine 2" << std::endl;
-  // 输出布尔值
-  bool flag = true;
-  std::cout << "Flag: " << flag << std::endl; // 输出 1
-  std::cout << std::boolalpha << "Flag: " << flag << std::endl; // 输出
-  // 输出字符和字符串
-  char c = 'A';
-  std::string s = "Hello";
-  std::cout << "Character: " << c << std::endl;
-  std::cout << "String: " << s << std::endl;
-  return 0;
- }
-```
-
-#### 3.1.2 输入
-
-```cpp
- #include <iostream>
- #include <string>
- int main() {
-  // 输入整数
-  int x;
-  std::cout << "Enter an integer: ";
-  std::cin >> x;
-  std::cout << "You entered: " << x << std::endl;
-  // 输入浮点数
-  double y;
-  std::cout << "Enter a double: ";
-  std::cin >> y;
-  std::cout << "You entered: " << y << std::endl;
-  // 输入布尔值
-  bool flag;
-  std::cout << "Enter a boolean (0 or 1): ";
-  std::cin >> flag;
-  std::cout << "You entered: " << std::boolalpha << flag << std::endl;
-  // 输入字符
-  char c;
-  std::cout << "Enter a character: ";
-  std::cin >> c;
-  std::cout << "You entered: " << c << std::endl;
-  // 输入字符串（遇到空格停止）
-  std::string name;
-  std::cout << "Enter your name: ";
-  std::cin >> name;
-  std::cout << "Hello, " << name << "!" << std::endl;
-  // 输入一行字符串
-  std::string line;
-  std::cout << "Enter a line: ";
-  std::cin.ignore(); // 忽略之前的换行符
-  std::getline(std::cin, line);
-  std::cout << "You entered: " << line << std::endl;
-  // 输入多个值
-  int a, b;
-  std::cout << "Enter two integers: ";
-  std::cin >> a >> b;
-  std::cout << "You entered: " << a << " and " << b << std::endl;
-  return 0;
- }
-```
-
-#### 3.1.3 输入验证
-
-```cpp
- #include <iostream>
- #include <limits>
- int main() {
-  int age;
-  // 验证输入是否为整数
-  while (true) {
-  std::cout << "Enter your age: ";
-  if (std::cin >> age) {
-  // 输入成功
-  break;
-  } else {
-  // 输入失败，清除错误状态
-  std::cin.clear();
-  // 忽略无效输入
-  std::cin.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
-  std::cout << "Invalid input. Please enter a number." << std::endl;
-  }
-  }
-  std::cout << "Your age is: " << age << std::endl;
-  return 0;
- }
-```
-
-### 3.2 格式化输出
-
-```cpp
- #include <iostream>
- #include <iomanip>
- int main() {
-  // 设置输出宽度
-  std::cout << std::setw(10) << "Name" << std::setw(10) << "Age" << std::endl;
-  std::cout << std::setw(10) << "Alice" << std::setw(10) << 25 << std::endl;
-  std::cout << std::setw(10) << "Bob" << std::setw(10) << 30 << std::endl;
-  // 设置填充字符
-  std::cout << std::setw(10) << std::setfill('*') << "Hello" << std::endl;
-  // 设置精度
-  double pi = 3.1415926535;
-  std::cout << "Pi: " << std::setprecision(5) << pi << std::endl;
-  // 固定精度
-  std::cout << "Pi (fixed): " << std::fixed << std::setprecision(2) << pi << std::endl;
-  // 科学计数法
-  double large_num = 123456789.123456;
-  std::cout << "Large number: " << std::scientific << large_num << std::endl;
-  // 十六进制输出
-  int x = 255;
-  std::cout << "Hex: " << std::hex << x << std::endl;
-  std::cout << "Hex (uppercase): " << std::hex << std::uppercase << x << std::endl;
-  // 八进制输出
-  std::cout << "Octal: " << std::oct << x << std::endl;
-  // 重置为十进制
-  std::cout << "Decimal: " << std::dec << x << std::endl;
-  // 显示正负号
-  int positive = 10;
-  int negative = -10;
-  std::cout << "Positive: " << std::showpos << positive << std::endl;
-  std::cout << "Negative: " << negative << std::endl;
-  std::cout << std::noshowpos; // 关闭显示正负号
-  // 显示前导零
-  int num = 42;
-  std::cout << "With leading zeros: " << std::setw(5) << std::setfill('0') << num << std::endl;
-  return 0;
- }
-```
-
-### 3.3 文件输入输出
-
-```cpp
- #include <iostream>
- #include <fstream>
- #include <string>
- int main() {
-  // 写入文件
-  std::ofstream outfile("example.txt");
-  if (outfile.is_open()) {
-  outfile << "Hello, File!" << std::endl;
-  outfile << "This is a test." << std::endl;
-  outfile << "Number: " << 42 << std::endl;
-  outfile.close();
-  std::cout << "File written successfully." << std::endl;
-  } else {
-  std::cerr << "Unable to open file for writing." << std::endl;
-  }
-  // 读取文件
-  std::ifstream infile("example.txt");
-  if (infile.is_open()) {
-  std::string line;
-  std::cout << "File contents:" << std::endl;
-  while (std::getline(infile, line)) {
-  std::cout << line << std::endl;
-  }
-  infile.close();
-  } else {
-  std::cerr << "Unable to open file for reading." << std::endl;
-  }
-  return 0;
- }
-```
-
-### 3.4 字符串流
-
-```cpp
- #include <iostream>
- #include <sstream>
- #include <string>
- int main() {
-  // 输出字符串流
-  std::stringstream ss;
-  ss << "Name: " << "Alice" << ", Age: " << 25 << ", Score: " << 95.5;
-  std::string result = ss.str();
-  std::cout << "String stream result: " << result << std::endl;
-  // 输入字符串流
-  std::string data = "10 3.14 Hello";
-  std::stringstream input_ss(data);
-  int i;
-  double d;
-  std::string s;
-  input_ss >> i >> d >> s;
-  std::cout << "Parsed values: " << i << ", " << d << ", " << s << std::endl;
-  // 格式化数字为字符串
-  std::stringstream format_ss;
-  format_ss << std::fixed << std::setprecision(2) << 3.14159;
-  std::string pi_str = format_ss.str();
-  std::cout << "Formatted pi: " << pi_str << std::endl;
-  return 0;
- }
-```
-
-## 4. 命名空间 (Namespace)
-
-### 4.1 命名空间的定义
-
-```cpp
- // 定义命名空间
- namespace MyNamespace {
-  int add(int a, int b) {
-  return a + b;
-  }
-  namespace Nested {
-  int multiply(int a, int b) {
-  return a * b;
-  }
-  }
- }
- int main() {
-  // 使用命名空间
-  int result1 = MyNamespace::add(5, 3);
-  int result2 = MyNamespace::Nested::multiply(5, 3);
-  std::cout << "5 + 3 = " << result1 << std::endl;
-  std::cout << "5 * 3 = " << result2 << std::endl;
-  return 0;
- }
-```
-
-### 4.2 using 声明
-
-```cpp
- #include <iostream>
- // 使用命名空间中的特定成员
- using std::cout;
- using std::endl;
- int main() {
-  cout << "Hello, C++!" << endl;
-  return 0;
- }
-```
-
-### 4.3 using 指令
-
-```cpp
- #include <iostream>
- // 使用整个命名空间
- using namespace std;
- int main() {
-  cout << "Hello, C++!" << endl;
-  return 0;
- }
-```
-
-### 4.4 命名空间别名
-
-```cpp
- #include <iostream>
- namespace long_namespace_name {
-  void func() {
-  std::cout << "Function in long namespace" << std::endl;
-  }
- }
- // 命名空间别名
- namespace lnn = long_namespace_name;
- int main() {
-  lnn::func();
-  return 0;
- }
-```
-
-## 5. 作用域 (Scope)
-
-### 5.1 块作用域
-
-```cpp
- int main() {
-  // 全局作用域
-  int global_var = 10;
-  if (true) {
-  // 块作用域
-  int local_var = 20;
-  std::cout << "local_var: " << local_var << std::endl;
-  std::cout << "global_var: " << global_var << std::endl;
-  }
-  // 这里无法访问 local_var
-  std::cout << "global_var: " << global_var << std::endl;
-  return 0;
- }
-```
-
-### 5.2 函数作用域
-
-```cpp
- void func() {
-  // 函数作用域
-  int func_var = 100;
-  std::cout << "func_var: " << func_var << std::endl;
- }
- int main() {
-  // 这里无法访问 func_var
-  func();
-  return 0;
- }
-```
-
-### 5.3 类作用域
-
-```cpp
- class MyClass {
- public:
-  int public_var; // 类作用域
- private:
-  int private_var; // 类作用域
- }
- int main() {
-  MyClass obj;
-  obj.public_var = 10; // 可以访问
-  // obj.private_var = 20; // 无法访问，private 成员
-  return 0;
- }
-```
-
-### 5.4 命名空间作用域
-
-```cpp
- namespace MyNS {
-  int ns_var = 1000; // 命名空间作用域
- }
- int main() {
-  std::cout << MyNS::ns_var << std::endl;
-  return 0;
- }
-```
-
----
-
-## 头文件包含
-
-**系统头文件写法：包含系统头文件**
-`#include <<header>>`
-```cpp
-// 包含输入输出流头文件
 #include <iostream>
-```
 
----
-
-**用户头文件写法：包含自定义头文件**
-`#include "<header>"`
-```cpp
-// 包含当前目录下的头文件
-#include "myheader.h"
-```
-
----
-
-## 命名空间
-
-**基本写法：使用命名空间**
-`using namespace <name>;`
-```cpp
-// 使用标准命名空间
-using namespace std;
-```
-
----
-
-**作用域写法：使用命名空间中的特定成员**
-`using <namespace>::<member>;`
-```cpp
-// 使用 std::cout
-using std::cout;
-```
-
----
-
-**限定写法：使用完整限定名**
-`<namespace>::<member>`
-```cpp
-// 使用完整限定名
-std::cout << "Hello" << std::endl;
-```
-
----
-
-**定义写法：自定义命名空间**
-`namespace <name> { ... }`
-```cpp
-// 定义命名空间
-namespace MyMath {
-    int add(int a, int b) { return a + b; }
-}
-```
-
----
-
-## 输入输出
-
-**输出写法：标准输出**
-`std::cout << <value>;`
-```cpp
-// 输出字符串到标准输出
-std::cout << "Hello C++";
-```
-
----
-
-**换行写法：输出并换行**
-`std::cout << <value> << std::endl;`
-```cpp
-// 输出并换行
-std::cout << "Hello" << std::endl;
-```
-
----
-
-**输入写法：标准输入**
-`std::cin >> <variable>;`
-```cpp
-// 从标准输入读取
-int age;
-std::cin >> age;
-```
-
----
-
-**多值输入写法：连续读取多个值**
-`std::cin >> <var1> >> <var2>;`
-```cpp
-// 连续读取多个值
-int a, b;
-std::cin >> a >> b;
-```
-
----
-
-## main 函数
-
-**无参写法：无参数主函数**
-`int main() { ... return 0; }`
-```cpp
-// 无参数形式的 main 函数
 int main() {
-    std::cout << "Hello" << std::endl;
+    std::cout << "Hello, C++!" << '\n';
     return 0;
 }
 ```
 
----
+逐行看：`#include <iostream>` 引入标准库的输入输出工具；`int main()` 是程序入口，操作系统从这里开始执行；`std::cout << ...` 把右侧文字送进标准输出，`std::` 是标准库前缀（050 篇讲透）；`return 0;` 向操作系统报告「正常结束」，第 5 节眼见为实。
 
-**带参写法：命令行参数主函数**
-`int main(int argc, char *argv[]) { ... }`
+语法规则只需三条：**语句以分号结尾；花括号圈代码块；注释两种**——`//` 到行尾，`/* ... */` 跨多行。变量与类型的细节下一篇展开，本文用到的 `int`（整数）与 `std::string`（文本）先会照抄。
+
+## 3. 编译与运行：两步
+
+在该目录打开终端。
+
+第一步，编译（源码翻译成机器码，020 篇的心智模型）：
+
+```bash
+g++ -std=c++23 main.cpp -o main
+```
+
+预期输出：**没有任何输出**，目录里多出产物 `main`（Windows 的 MinGW 下是 `main.exe`）。没有消息就是好消息——编译器只在不满时才说话。
+
+第二步，运行：
+
+```bash
+./main
+```
+
+预期输出：
+
+```text
+Hello, C++!
+```
+
+（Windows 的 cmd 里输入 `main`，Git Bash 里同样用 `./main`。）
+
+两个细节：`-o main` 给产物起名，不写默认叫 `a.out` 或 `a.exe`（Windows）；`./` 表示「当前目录里的这个文件」，不加它 Linux/macOS 会去系统 PATH 里找而找不到。还有一条：改完代码必须**重新编译**再运行，跑的永远是上一次编译的产物。
+
+## 4. 一次最小交互：cin 与 cout
+
+让程序开口问你话。新建 main2.cpp：
+
 ```cpp
-// argc 为参数个数，argv 为参数字符串数组
-int main(int argc, char *argv[]) {
-    for (int i = 0; i < argc; i++) {
-        std::cout << argv[i] << std::endl;
-    }
+#include <iostream>
+#include <string>
+
+int main() {
+    std::string name;
+    int age = 0;
+    std::cout << "你叫什么? ";
+    std::cin >> name;
+    std::cout << "几岁? ";
+    std::cin >> age;
+    std::cout << name << " 今年 " << age << " 岁\n";
     return 0;
 }
 ```
 
----
+编译运行（`g++ -std=c++23 main2.cpp -o main2`），交互与预期输出（你输入的内容跟在问句后）：
 
-## 变量声明与初始化
-
-**基本写法：变量声明与初始化**
-`<type> <var_name> = <value>;`
-```cpp
-// 声明并初始化变量
-int x = 10;
+```text
+你叫什么? 小狐
+几岁? 14
+小狐 今年 14 岁
 ```
 
----
+- `std::string` 是标准库的字符串类型，先会声明，040 篇讲透；
+- `std::cin >> x` 与 cout 方向相反：箭头指向变量，数据流进变量；遇空格就停、读一个词；
+- 一条语句可以连读：`std::cin >> name >> age;`。
 
-**直接初始化写法：构造函数式初始化**
-`<type> <var_name>(<value>);`
-```cpp
-// 直接初始化
-int x(10);
-```
+## 5. int main() 的返回值：给谁看的 0
 
----
+`return 0` 不是仪式。main 的返回值是程序的**退出码（exit code）**：0 约定为成功，非零约定为出错。Shell 脚本、CI 流水线、构建工具都靠它判断成败。
 
-**列表初始化写法：C++11 列表初始化**
-`<type> <var_name>{<value>};`
-```cpp
-// 列表初始化
-int x{10};
-```
+眼见为实。把 main.cpp 的 `return 0;` 改成 `return 3;`，重新编译运行，再让 shell 报出上一条命令的退出码：
 
----
-
-**auto 写法：自动类型推导**
-`auto <var_name> = <value>;`
-```cpp
-// 编译器自动推导类型
-auto x = 10;
-```
-
----
-
-**decltype 写法：推导表达式类型**
-`decltype(<expression>) <var_name>;`
-```cpp
-// 推导表达式的类型
-int a = 10;
-decltype(a) b = 20;
-```
-
----
-
-**const 写法：常量声明**
-`const <type> <var_name> = <value>;`
-```cpp
-// 声明常量
-const int MAX_SIZE = 100;
-```
-
----
-
-**constexpr 写法：编译期常量**
-`constexpr <type> <var_name> = <value>;`
-```cpp
-// 编译期常量
-constexpr int SIZE = 10;
-```
-
----
-
-## 注释
-
-**单行写法：单行注释**
-`// <注释内容>`
-```cpp
-// 这是一个单行注释
-int x = 10;
-```
-
----
-
-**多行写法：多行注释**
-`/* <注释内容> */`
-```cpp
-/*
- * 这是一个多行注释
- * 可以跨越多行
- */
-int y = 20;
-```
-
----
-
-## 引用
-
-**基本写法：左值引用**
-`<type>& <ref_name> = <var>;`
-```cpp
-// 引用是变量的别名
-int x = 10;
-int& ref = x;
-```
-
----
-
-**常量引用写法：const 引用**
-`const <type>& <ref_name> = <value>;`
-```cpp
-// 常量引用，不能通过引用修改值
-const int& ref = 10;
-```
-
----
-
-**右值引用写法：C++11 右值引用**
-`<type>&& <ref_name> = <value>;`
-```cpp
-// 右值引用，绑定到临时值
-int&& rref = 10;
-```
-
----
-
-## 指针
-
-**基本写法：指针声明与初始化**
-`<type>* <ptr_name> = &<var>;`
-```cpp
-// ptr 指向 x 的地址
-int x = 10;
-int* ptr = &x;
-```
-
----
-
-**空指针写法：C++11 nullptr**
-`<type>* <ptr_name> = nullptr;`
-```cpp
-// 初始化为空指针
-int* ptr = nullptr;
-```
-
----
-
-**智能指针写法：unique_ptr**
-`std::unique_ptr<<type>> <ptr> = std::make_unique<<type>>(<args>);`
-```cpp
-#include <memory>
-// 独占所有权的智能指针
-std::unique_ptr<int> p = std::make_unique<int>(10);
-```
-
----
-
-**智能指针写法：shared_ptr**
-`std::shared_ptr<<type>> <ptr> = std::make_shared<<type>>(<args>);`
-```cpp
-#include <memory>
-// 共享所有权的智能指针
-std::shared_ptr<int> p = std::make_shared<int>(10);
-```
-
----
-
-## 类型转换
-
-**static_cast 写法：静态类型转换**
-`static_cast<<target_type>>(<expression>)`
-```cpp
-// 静态类型转换
-double pi = 3.14;
-int rounded = static_cast<int>(pi);
-```
-
----
-
-**dynamic_cast 写法：动态类型转换**
-`dynamic_cast<<target_type>>(<expression>)`
-```cpp
-// 动态类型转换（用于多态类型）
-Base* base = new Derived();
-Derived* derived = dynamic_cast<Derived*>(base);
-```
-
----
-
-**const_cast 写法：常量转换**
-`const_cast<<target_type>>(<expression>)`
-```cpp
-// 添加或移除 const
-const int* cp = &x;
-int* p = const_cast<int*>(cp);
-```
-
----
-
-**reinterpret_cast 写法：重解释转换**
-`reinterpret_cast<<target_type>>(<expression>)`
-```cpp
-// 重解释类型转换
-long addr = reinterpret_cast<long>(ptr);
-```
-
----
-
-## 异常处理
-
-**基本写法：try-catch**
-`try { ... } catch (<type> <e>) { ... }`
-```cpp
-// 异常处理
-try {
-    throw std::runtime_error("Error");
-} catch (const std::exception& e) {
-    std::cerr << e.what() << std::endl;
-}
-```
-
----
-
-**抛出写法：抛出异常**
-`throw <expression>;`
-```cpp
-// 抛出异常
-throw std::runtime_error("Something went wrong");
-```
-
----
-
-**多 catch 写法：捕获多种异常**
-`try { ... } catch (<type1> <e>) { ... } catch (<type2> <e>) { ... }`
-```cpp
-// 捕获多种异常
-try {
-    // 可能抛出不同异常的代码
-} catch (const std::runtime_error& e) {
-    std::cerr << e.what() << std::endl;
-} catch (const std::logic_error& e) {
-    std::cerr << e.what() << std::endl;
-}
-```
-
----
-
-## 编译命令
-
-**单文件写法：编译单个源文件**
-`g++ <source.cpp> -o <output>`
 ```bash
-# 编译 hello.cpp 生成可执行文件 hello
-g++ hello.cpp -o hello
+./main
+echo $?
 ```
 
----
+预期输出：
 
-**标准写法：指定 C++ 标准**
-`g++ -std=c++17 <source.cpp> -o <output>`
-```bash
-# 使用 C++17 标准编译
-g++ -std=c++17 hello.cpp -o hello
+```text
+3
 ```
 
----
+（Windows 的 cmd 用 `echo %ERRORLEVEL%`。）
 
-## C++23/26 新特性
+真实场景：CI 流水线判定「构建失败」，看的就是编译器的退出码——你写下的 return，是整条流水线的信号灯。
 
-**基本写法：C++23 std::print**
-`std::print("<格式>", <参数>);`
+## 6. 第一颗子弹：越界数组与未定义行为
+
+新建 bullet.cpp：
+
 ```cpp
-// 格式化输出到 stdout，支持 {} 占位符
-#include <print>
-std::print("Hello, {}! Value = {}\n", "World", 42);
-// 输出：Hello, World! Value = 42
-```
+#include <iostream>
 
-**基本写法：C++23 std::println**
-`std::println("<格式>", <参数>);`
-```cpp
-// 自动换行的格式化输出
-#include <print>
-std::println("Sum of {} and {} is {}", 3, 5, 8);
-// 输出：Sum of 3 and 5 is 8（自动换行）
-```
-
-**基本写法：C++23 if consteval**
-`if consteval { }`
-```cpp
-// 编译期分支判断：仅在常量求值上下文中执行
-constexpr int compute(int x) {
-    if consteval {
-        return x * 2;  // 编译期执行
-    } else {
-        return x + 1;  // 运行期执行
-    }
+int main() {
+    int scores[3] = {90, 85, 77};   // 合法下标只有 0、1、2
+    std::cout << "第四个元素: " << scores[3] << '\n';
+    return 0;
 }
 ```
 
-**基本写法：C++23 多维下标运算符**
-`operator[](size_t x, size_t y)`
-```cpp
-// 支持多维下标访问，简化矩阵类设计
-class Matrix {
-    int data[3][3];
-public:
-    // 多参数 operator[]
-    int& operator[](size_t i, size_t j) {
-        return data[i][j];
-    }
-};
-Matrix m;
-m[1, 2] = 42;  // 直接多维访问
+先预测再动手：会发生什么？报错？输出 0？崩溃？
+
+编译（`g++ -std=c++23 bullet.cpp -o bullet`）：**静默通过**，一个字都不说（开警告与优化的某些组合会提示下标越界，默认多半沉默）。运行：**结果不可预测**——我这次运行输出了一串与分数无关的随机值，每次还可能不同；换台机器，可能正常打印、可能崩溃、也可能看起来一切正常。
+
+这个现象有正式名字：**未定义行为（Undefined Behavior，UB）**——标准把这类代码的运行结果交给「未定义」，编译器生成什么机器码都合法，操作系统怎么处置都合法。它不是「随机报错」，是彻底放弃承诺。
+
+对照托管语言：Java 越界时 JVM 当场拦下程序，报出 `ArrayIndexOutOfBoundsException` 与行号；Python 抛 `IndexError`。它们为安全付了「每次访问都查边界」的运行时税；C++ 不收这笔税，数组访问没有边界检查——这正是 010 篇零开销抽象的代价面：性能全给你，安全责任也全给你。
+
+三句话钉住概念：
+
+1. UB 的代码编译往往通过——编译器拦得住语法错，拦不住所有作死；
+2. UB 的表现不可预测——同一文件，换编译器、换优化级别、换机器，都可能「换一种错法」，最难查；
+3. 对策不是背清单，而是换工具——[类型系统](/cpp/040-CppTypeSystem) 讲清规则，240 篇的 `std::vector` 替裸数组（它的 `at()` 会检查越界），130 篇起的智能指针接管内存。
+
+## 7. 常见错误与调试实录
+
+报错一：`expected ';'`。删掉 main.cpp 第 4 行行尾的分号，重新编译：
+
+```text
+main.cpp: In function 'int main()':
+main.cpp:5:5: error: expected ';' before 'return'
+    5 |     return 0;
+      |     ^~~~~~
+      |     ;
 ```
 
-**基本写法：C++23 static call operator**
-`static operator()(<参数>) { }`
-```cpp
-// 静态调用运算符：无需实例即可调用
-class Calculator {
-public:
-    static int operator()(int a, int b) {
-        return a + b;
-    }
-};
-// 直接通过类型名调用
-int result = Calculator()(3, 4);  // 返回 7
+读报错三步：文件与行号（main.cpp:5）→ `error:` 后的原因（return 前少了个分号）→ `^` 指向现场。规律：**编译器指的行号是它发现不对劲的地方，真凶常在上一行行尾**。报错时也没有产物生成——编译错误拦在运行之前，与第 6 节的 UB 构成两个极端。
+
+报错二：`undefined reference to 'main'`。写一个没有 main 的文件 lib.cpp，直接编译成可执行文件（`g++ -std=c++23 lib.cpp -o lib`）。典型报错如下（省略随发行版不同的路径前缀；Windows MinGW 下出自 ld.exe，关键词不变）：
+
+```text
+/usr/bin/ld: Scrt1.o: in function `_start':
+(.text+0x1b): undefined reference to `main'
+collect2: error: ld returned 1 exit status
 ```
 
-**基本写法：C++26 = delete 原因**
-`= delete("reason");`
-```cpp
-// = delete 支持说明删除原因
-class NonCopyable {
-public:
-    NonCopyable() = default;
-    // 禁用拷贝构造并说明原因
-    NonCopyable(const NonCopyable&) = delete("该类不允许拷贝构造");
-    NonCopyable& operator=(const NonCopyable&) = delete("该类不允许拷贝赋值");
-};
-```
+读报错三步：报错来自 `ld`（链接器）而非语法检查 → 关键词说「找不到入口 main」→ 两种常见起因：① 文件里真没有 main（拼成 `Main`、`mian` 都算）；② 编译时漏掉了含 main 的源文件（多文件工程在 050 篇展开）。退出码同样非零。
 
-**基本写法：C++26 pack indexing**
-`typename...<T>[N]`
-```cpp
-// 模板参数包索引：直接访问参数包中第 N 个类型
-template <typename... Ts>
-using First = Ts...[0];  // 取参数包第一个类型
-template <typename... Ts>
-using Last = Ts...[sizeof...(Ts) - 1];  // 取参数包最后一个类型
-// 使用
-First<int, double, char> a = 10;   // a 为 int
-Last<int, double, char> b = 3.14;  // b 为 double
-```
+报错三（无声版）：编译失败了，`./main` 却「还能跑」——跑的是上一次编译的旧产物，你以为新改的代码有 bug。习惯：看到 error 先数几条，**从第一条修起**（后面常是连锁反应），零报错后再运行。
 
-**基本写法：C++26 hazard pointer**
-`std::hazard_pointer<<T>>`
+## 8. 修改实验
+
+实验一（5 分钟）：把问候改成两行——第一行程序名，第二行你的名字。先写预期输出再运行核对。
+
+实验二（5 分钟）：把 `return 0` 改成 `return 42`，重新编译后用 `echo $?` 验证，再改回 0。
+
+实验三（5 分钟）：把 bullet.cpp 的 `scores[3]` 改成 `scores[2]`，先预测再运行。预期输出 `第四个元素: 77`——合法下标之内，C++ 给你完全确定的世界；边界之外才是未定义。
+
+实验四（10 分钟）：开警告重编译 `g++ -std=c++23 -Wall -Wextra bullet.cpp -o bullet`，看编译器说了什么（部分组合会给出下标越界警告；警告不是报错，但值得逐条读完——`-Wall -Wextra` 从今天起作为默认编译命令）。
+
+## 9. 实际项目中的使用场景
+
+- **退出码是自动化世界的接头暗号**：脚本调用你的 C++ 工具时靠 `$?` 分支；Linux 惯例 0 成功、非 0 各有含义；
+- **真实项目里最凶的 bug 往往不报错**：游戏「昨天还好好的，换了优化就崩」，排查心法就是第 6 节——先怀疑越界、未初始化这类 UB，再怀疑逻辑；
+- **团队门禁**：`-Wall -Wextra` 零警告是很多团队的上游要求，从第一个程序就养成习惯。
+
+## 10. 小练习
+
+预测题（5 分钟）：不运行，写出下面程序的输出：
+
 ```cpp
-// 危险指针：用于无锁数据结构的安全内存回收
-#include <hazard_pointer>
-// 获取危险指针
-std::hazard_pointer hp = std::make_hazard_pointer();
-// 保护对象指针，防止被回收
-hp.protect(ptr);
-// 操作受保护对象
-if (hp.get() != nullptr) {
-    hp.get()->do_something();
+#include <iostream>
+
+int main() {
+    std::cout << "A";
+    std::cout << "B" << '\n';
+    std::cout << "C" << '\n';
+    return 0;
 }
-// 离开作用域自动释放保护
 ```
 
-**基本写法：C++26 RCU(Read-Copy-Update)**
-`std::rcu<<T>>`
+（验证：跑通后核对——第一行没带换行，A 和 B 挤在一行，输出两行：`AB` 与 `C`。）
+
+修改题（15 分钟）：把第 4 节的交互程序改成问两个问题（最爱的游戏、每周游戏小时数），输出一行自我介绍。验收：交互两轮，输出与预期逐字一致。
+
+修 Bug 题（15 分钟）：下面程序编译报错附后。按读报错三步定位修复，修好后 `-Wall -Wextra` 零警告通过：
+
 ```cpp
-// RCU：读多写少场景的无锁同步原语
-#include <rcu>
-// 读端：在 RCU 域中安全访问共享数据
-std::rcu_reader reader;
-auto* p = shared_ptr.load();
-if (p) p->read_data();
-// 写端：复制更新后原子替换，并延迟回收旧数据
-auto* new_data = new Data(*p);
-new_data->update();
-shared_ptr.store(new_data);
-std::rcu_retire(p);  // 等待所有读者退出后回收
+#include <iostream>
+
+int main() {
+    std::cout << "存档加载完成"
+    return 0;
+}
 ```
+
+```text
+main.cpp: In function 'int main()':
+main.cpp:4:5: error: expected ';' before 'return'
+    4 |     return 0;
+      |     ^~~~~~
+```
+
+挑战题（半小时）：写一个 score.cpp：定义长度为 4 的 int 数组存四局分数，用循环求总分与最高分，分别打印。验收：正常版本输出两行，`-Wall -Wextra` 零警告；再故意把循环上界写成 `<= 4` 复现一次 UB，把实际表现写进注释，最后改回 `< 4`。提示：循环骨架 `for (int i = 0; i < 4; ++i) { ... }`，循环体用 `scores[i]` 取元素；for 的逐词拆解本模块中段展开，先照抄骨架。
+
+## 11. 与之前和之后的知识的关系
+
+- 往前：[C++ 是什么](/cpp/010-WhatIsCpp) 的「编译到机器码」模型今天跑通；[C++ 概述与现代标准](/cpp/020-CppOverviewAndModernStandard) 的 `-std=c++23` 开关今天用上；
+- 往后：[类型系统](/cpp/040-CppTypeSystem) 讲透今天混眼熟的 int、std::string 与整数除法截断；[命名空间与链接](/cpp/050-NamespaceLinkage) 解开 `std::` 前缀与 `undefined reference` 背后的链接机制；
+- 更远：080 与 120 篇的引用、指针把 UB 深水区（悬垂、越界）系统化；160 篇 RAII 之后你会明白，为什么现代 C++ 能把 UB 的高发区基本清零。
+
+## 12. 官方文档
+
+- cppreference 的 main 函数页：https://en.cppreference.com/w/cpp/language/main_function
+- isocpp FAQ（含 undefined behavior 条目）：https://isocpp.org/faq
+- GCC 警告选项手册：https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+
+## 13. 自我检查
+
+- 能从空文件夹在 5 分钟内重建 main.cpp 并两步跑通；
+- 能说出退出码 0 与非 0 的约定，并在终端里查到它；
+- 能复述 UB 三句话，并举出托管语言在同样场景下的行为；
+- 给出 `expected ';'` 或 `undefined reference to 'main'` 的报错，能按三步定位；
+- 知道从今天起默认编译命令要带 `-Wall -Wextra`。
+
+## 本章总结
+
+一个 main.cpp、两步命令，你跑通了第一个 C++ 程序：语句以分号结尾，花括号圈代码块，`cin`/`cout` 管交互，main 的返回值是给操作系统与脚本的退出码。第一颗子弹 `scores[3]` 教了最重要的一课：编译器拦得住语法的错（`expected ';'`），拦不住合法但作死的代码（未定义行为）——这是 C++ 与托管语言的根本分界，也是本模块后面所有安全工具（类型系统、vector、智能指针）存在的理由。
+
+## 下一步
+
+进入 [C++ 类型系统](/cpp/040-CppTypeSystem)：int、double、char、bool、std::string 逐一讲透——类型是 C++ 一切规则的起点，也是你读懂除 UB 之外所有报错的地基。

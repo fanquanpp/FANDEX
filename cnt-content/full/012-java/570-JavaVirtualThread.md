@@ -20,6 +20,8 @@ prerequisites:
   - 'java/330-JavaFunctionalProgramming'
 ---
 
+> 定位说明：本篇为进阶参考书（参考层），面向已完成本模块主线的读者；入门请先走学习路径前序阶段。定位标准见 docs/standards/reference-layer.md（仓库）。
+
 ## 前置知识
 
 - [Java 阻塞队列 BlockingQueue 语法速查手册](/java/560-JavaBlockingQueue)：建议先完成前一篇的学习

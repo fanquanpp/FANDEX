@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 以「你在浏览器里看到的每一个页面，骨子里都是一个文本文件」建立网页心智模型：HTML/CSS/JavaScript 三件套分工、右键源代码与 F12 Elements 的区别、URL 与 HTTP 一句话预告，并现场写出第一个双击就能打开的 HTML 页面。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'html5/020-HTML5OverviewCoreFeature'
   - 'html5/030-HTML5EnvSetupFirstPage'

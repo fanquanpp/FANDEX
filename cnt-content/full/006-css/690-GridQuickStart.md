@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: "从「Flex 管一行，整页三栏加页眉页脚谁来管」出发，用 display: grid 与 fr 单位搭出第一张网格，用 repeat(auto-fill, minmax()) 做出不写媒体查询的响应式卡片墙，再用 grid-template-areas 画出博客页面骨架，并给出 Grid 与 Flex 的分工决策表。"
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'css/240-CSS3FlexboxFlexLayout'
   - 'css/250-CSS3GridGridLayout'

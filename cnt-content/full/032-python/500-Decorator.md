@@ -1,1176 +1,354 @@
 ---
 order: 300
-title: 装饰器
+title: 装饰器：给函数穿外套
 module: 'python'
 category: 后端技术
 difficulty: intermediate
-description: Python装饰器详解：函数装饰器、类装饰器、带参数装饰器、functools.wraps与实用装饰器模式。
+description: 从十个接口函数复制十遍耗时统计讲起：函数是对象、@ 语法糖三步演进、functools.wraps 保住元信息、带参数装饰器初见，附计时/重试/权限三个最小件与 wrapper 名字污染调试实录。
 author: fanquanpp
 updated: '2026-09-27'
 related:
-  - 'python/810-PythonCLI'
-  - 'python/900-ConfigManagement'
-  - 'python/850-PythonMessageQueue'
-  - 'python/940-PythonGrpc'
-prerequisites: []
+  - 'python/510-DecoratorAdvanced'
+  - 'python/110-ArgsKwargsUnpacking'
+  - 'python/460-OOP'
+prerequisites:
+  - 'python/100-FunctionDetailed'
+  - 'python/130-ExceptionHandling'
 ---
 
 ## 前置知识
 
-- [Python 与配置管理：从环境变量到云原生动态配置的工程实践](/python/900-ConfigManagement)：建议先完成前一篇的学习
+- 已完成 [函数详解](/python/100-FunctionDetailed)：知道函数是对象、参数进返回值出——100 篇说过「函数能当参数传」，本文把这句话真正用起来；
+- 已完成 [异常处理](/python/130-ExceptionHandling)：会写 try/except、会 raise，第 4、5 节的重试与权限装饰器靠它上岗。
+
+代码里会成对出现 `*args, **kwargs`，完整规则在 [110 篇](/python/110-ArgsKwargsUnpacking)。本文只用「收下一切调用参数并原样转发」这一个固定搭配，照抄即可。
 
 ## 学习目标
 
-- 掌握「1. 装饰器基础」的核心机制、典型用法与常见陷阱
-- 掌握「2. 函数装饰器」的核心机制、典型用法与常见陷阱
-- 掌握「3. 类装饰器」的核心机制、典型用法与常见陷阱
-- 掌握「4. 实用装饰器模式」的核心机制、典型用法与常见陷阱
-- 掌握「5. 常见问题与解决方案」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 把 `@装饰器` 还原成一行普通赋值 `func = decorator(func)`，说清两者完全等价；
+2. 从零手写一个不修改原函数代码的计时装饰器，装饰任意签名的函数；
+3. 用 `functools.wraps` 保住原函数的 `__name__` 与 `__doc__`，说出不加它的真实代价；
+4. 读懂带参数装饰器的三层嵌套，形成「每层各吃一类东西」的直觉；
+5. 见到「所有函数名都变成 wrapper」的日志时，三步定位到装饰器本身。
 
-## 1. 装饰器基础
+预计 60 分钟，含 1 组动手实验与 3 道练习，产出计时、重试、权限三个可复用的最小装饰器。
 
-### 1.1 什么是装饰器
+## 1. 你现在要解决什么问题
 
-装饰器是一种高级Python语法，用于在不修改原函数代码的情况下，动态地给函数增加功能。装饰器本质上是一个高阶函数，接收一个函数作为参数，返回一个新函数。
-
-```python
-# 装饰器的本质
-def my_decorator(func):
-    def wrapper(*args, **kwargs):
-        # 前置增强
-        print("Before function call")
-        # 调用原函数
-        result = func(*args, **kwargs)
-        # 后置增强
-        print("After function call")
-        return result
-    return wrapper
-
-# 应用装饰器
-@my_decorator
-def say_hello(name):
-    print(f"Hello, {name}!")
-
-# 等价于: say_hello = my_decorator(say_hello)
-say_hello("Alice")
-# Before function call
-# Hello, Alice!
-# After function call
-```
-
-### 1.2 装饰器的执行时机
-
-```python
-def decorator(func):
-    print(f"装饰器被调用，装饰函数: {func.__name__}")
-    def wrapper(*args, **kwargs):
-        print(f"wrapper被调用")
-        return func(*args, **kwargs)
-    return wrapper
-
-@decorator  # 此时就执行了decorator函数，而非调用greet时
-def greet():
-    print("Hello!")
-
-# 输出: 装饰器被调用，装饰函数: greet
-# 此时greet已经被替换为wrapper
-
-greet()
-# 输出: wrapper被调用
-#        Hello!
-```
-
-## 2. 函数装饰器
-
-### 2.1 基本装饰器模式
+十个接口函数，领导要求每个都统计耗时：
 
 ```python
 import time
-import functools
 
-# 计时装饰器
-def timer(func):
-    @functools.wraps(func)  # 保留原函数的元信息
-    def wrapper(*args, **kwargs):
+def api_login():
+    start = time.perf_counter()
+    time.sleep(0.5)                 # 模拟网络请求
+    cost = time.perf_counter() - start
+    print(f"api_login 耗时 {cost:.2f} 秒")
+    return "登录成功"
+
+# api_order、api_pay……一共十个，每个都要塞这四行
+```
+
+四行统计代码复制十遍是四十行；明天要「秒改毫秒」，又得十处逐一改，漏一处排查半天。100 篇的规矩是「逻辑出现第三次必须封装」——但这段重复代码包着的是每个函数自己的身体，普通函数装不下「包裹一个函数」这件事。装饰器就是为它而生。
+
+## 2. 三步演进：手写最小装饰器
+
+### 步骤一：普通包装——函数传进去，包装版还回来
+
+REPL 先验证地基（先预测再回车）：
+
+```python
+>>> def greet():
+...     return "你好"
+...
+>>> hi = greet          # 没有括号：把函数本身赋给新名字
+>>> hi()
+'你好'
+```
+090 篇的绑定规则对函数同样成立。最直接的想法是把函数传进统计函数：`with_timing(api_login)` 在函数内部调用它并计时——统计代码确实只剩一份，但十个调用点全要改成这个形态。换思路：写一个 timed，**不调用函数，而是返回一个自带统计的新函数**，再把旧名字重新绑到它身上：
+
+```python
+import time
+
+def timed(func):
+    def wrapper():
         start = time.perf_counter()
-        result = func(*args, **kwargs)
-        end = time.perf_counter()
-        print(f"{func.__name__} 耗时: {end - start:.4f}秒")
+        result = func()                 # wrapper 里留着 func 的引用
+        cost = time.perf_counter() - start
+        print(f"{func.__name__} 耗时 {cost:.2f} 秒")
         return result
-    return wrapper
+    return wrapper                      # 把包装版交出去
 
-@timer
-def slow_function():
-    time.sleep(1)
-    return "Done"
+def api_login():
+    time.sleep(0.5)
+    return "登录成功"
 
-result = slow_function()  # slow_function 耗时: 1.0012秒
-print(result)  # Done
+api_login = timed(api_login)            # 名字重新绑定到包装版
+
+print(api_login())
 ```
 
-### 2.2 functools.wraps 的重要性
+预期输出：
+
+```text
+api_login 耗时 0.50 秒
+登录成功
+```
+
+调用点一行没改。090 篇说过 `=` 只是换绑定：名字 `api_login` 现在贴在 wrapper 上，原函数被 wrapper 揣在怀里。剩下十个函数要写十行 `api_xxx = timed(api_xxx)`——还嫌烦。
+
+### 步骤二：@ 语法糖
+
+把那行重新绑定挪到 def 头上，就是 @：
 
 ```python
-import functools
+@timed
+def api_login():
+    time.sleep(0.5)
+    return "登录成功"
+```
 
-# 不使用wraps：原函数信息丢失
-def bad_decorator(func):
+`@timed` 与 `api_login = timed(api_login)` 完全等价，一个字不多一个字不少。所以装饰器没有任何魔法：它是**接收一个函数、返回一个新函数**的普通函数。这句等价展开是装饰器的全部本质，任何困惑都先写回这一行。
+
+两个工程补丁。补丁一，任意签名：`api_login` 没参数，`settle(name, threshold=85)` 有参数，wrapper 写死空括号就废了。把 wrapper 的签名固定搭配成收发两用：
+
+```python
+def wrapper(*args, **kwargs):          # 收下一切调用参数
+    result = func(*args, **kwargs)     # 原样转发
+```
+
+补丁二是保住元信息——先看一桩事故。另外注意执行时机：在 timed 函数体（wrapper 之外）加一行 `print(f"包住 {func.__name__}")`，运行整个文件会发现它在**所有业务输出之前**出现——@ 语句在 def 执行时就调用了 timed 并完成换绑，不是等到调用那一刻。
+
+## 3. 调试实录：函数名集体变成 wrapper
+
+排行榜函数库加了装饰器后，同事跑测试打印函数名：
+
+```python
+print(settle.__name__)    # 以为输出 settle，实际输出 wrapper
+print(settle.__doc__)     # 以为输出 docstring，实际输出 None
+```
+
+原因就是步骤二的等价展开：`settle = timed(settle)` 之后，名字 settle 贴在 wrapper 上，`__name__`、`__doc__` 自然是 wrapper 自己的——绑定规则没有例外。后果不止难看：日志与监控常按 `__name__` 聚合，十个被装饰函数在报表里全叫 wrapper；`help()` 读不到文档，签名检查也只剩 `(*args, **kwargs)`。
+
+修复只需一行，`functools.wraps` 把原函数的元信息复制到 wrapper 头上：
+
+```python
+from functools import wraps
+
+def timed(func):
+    @wraps(func)                      # 就差这一行
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
     return wrapper
 
-@bad_decorator
-def my_function():
-    """这是my_function的文档字符串"""
-    pass
+@timed
+def settle(name, threshold=85):
+    """结算一名玩家"""
+    return f"{name}: 平均 85.7"
 
-print(my_function.__name__)   # "wrapper"（不是"my_function"！）
-print(my_function.__doc__)    # None（文档丢失！）
-
-# 使用wraps：保留原函数信息
-def good_decorator(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
-    return wrapper
-
-@good_decorator
-def my_function2():
-    """这是my_function2的文档字符串"""
-    pass
-
-print(my_function2.__name__)  # "my_function2"
-print(my_function2.__doc__)   # "这是my_function2的文档字符串"
+print(settle.__name__, "|", settle.__doc__)
 ```
 
-### 2.3 带参数的装饰器
+预期输出：
+
+```text
+settle | 结算一名玩家
+```
+
+纪律：**写装饰器永远加 `@wraps(func)`**。想拿回最初那个函数，wraps 顺手设置了 `__wrapped__` 属性。
+
+## 4. 带参数的装饰器初见：三层嵌套
+
+重试次数不该写死在装饰器里，得让使用方传——`@retry(times=3)` 比 `@retry` 多了个括号，多出来的就是「装饰器工厂」这一层。用一个永远失败的网络请求，顺便看「最后一次也失败」的行为：
 
 ```python
-import functools
+from functools import wraps
 
-# 三层嵌套：最外层接收装饰器参数
-def retry(max_attempts=3, delay=1):
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            for attempt in range(1, max_attempts + 1):
+def retry(times):                        # 第一层：吃装饰器参数
+    def decorator(func):                 # 第二层：吃被装饰函数
+        @wraps(func)
+        def wrapper(*args, **kwargs):    # 第三层：吃调用参数
+            for attempt in range(times):
                 try:
                     return func(*args, **kwargs)
-                except Exception as e:
-                    if attempt == max_attempts:
-                        raise
-                    print(f"第{attempt}次尝试失败: {e}，{delay}秒后重试...")
-                    time.sleep(delay)
+                except ConnectionError:
+                    if attempt == times - 1:
+                        raise            # 最后一次也失败：原样抛出
+                    print(f"第 {attempt + 1} 次失败，自动重试")
         return wrapper
     return decorator
 
-@retry(max_attempts=3, delay=2)
-def unstable_api_call():
-    import random
-    if random.random() < 0.7:
-        raise ConnectionError("API不可用")
-    return "Success"
+@retry(times=3)
+def fetch_data():
+    raise ConnectionError("网络超时")     # 永远失败
 
-# 使用
-result = unstable_api_call()
+try:
+    fetch_data()
+except ConnectionError:
+    print("重试 3 次后放弃，原样抛出")
 ```
 
-### 2.4 多个装饰器叠加
+预期输出：
+
+```text
+第 1 次失败，自动重试
+第 2 次失败，自动重试
+重试 3 次后放弃，原样抛出
+```
+
+现场感：`@retry(times=3)` 的等价展开是 `fetch_data = retry(times=3)(fetch_data)`——先调用 `retry(times=3)` 拿到真正的装饰器 decorator，再用它装饰函数。三层各吃一类东西：**最外层吃配置，中间层吃函数，最内层吃调用参数**。为什么必须三层、带不带括号的边界在哪，[装饰器深水区](/python/510-DecoratorAdvanced) 逐层拆给你看。
+
+## 5. 实际场景：权限检查
 
 ```python
-import functools
+from functools import wraps
 
-def bold(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        return f"<b>{func(*args, **kwargs)}</b>"
+def require_login(func):
+    @wraps(func)
+    def wrapper(user, *args, **kwargs):
+        if not user["logged_in"]:
+            raise PermissionError("请先登录")     # 130 篇的异常上岗
+        return func(user, *args, **kwargs)
     return wrapper
 
-def italic(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        return f"<i>{func(*args, **kwargs)}</i>"
-    return wrapper
+@require_login
+def delete_save(user, slot):
+    return f"已删除 {user['name']} 的存档 {slot}"
 
-# 装饰器从下到上执行（靠近函数的先执行）
-@bold      # 第二步：加粗
-@italic    # 第一步：斜体
-def greet(name):
-    return f"Hello, {name}"
+admin = {"name": "小明", "logged_in": True}
+guest = {"name": "游客", "logged_in": False}
 
-print(greet("Alice"))  # <b><i>Hello, Alice</i></b>
-
-# 等价于: greet = bold(italic(greet))
+print(delete_save(admin, 3))
+try:
+    delete_save(guest, 3)
+except PermissionError as e:
+    print(f"拦截: {e}")
 ```
 
-## 3. 类装饰器
+预期输出：
 
-### 3.1 用类作为装饰器
-
-```python
-import functools
-
-class CountCalls:
-    """统计函数调用次数的类装饰器"""
-
-    def __init__(self, func):
-        functools.update_wrapper(self, func)
-        self.func = func
-        self.count = 0
-
-    def __call__(self, *args, **kwargs):
-        self.count += 1
-        print(f"{self.func.__name__} 已被调用 {self.count} 次")
-        return self.func(*args, **kwargs)
-
-@CountCalls
-def say_hi(name):
-    return f"Hi, {name}!"
-
-say_hi("Alice")  # say_hi 已被调用 1 次
-say_hi("Bob")    # say_hi 已被调用 2 次
-print(say_hi.count)  # 2
+```text
+已删除 小明 的存档 3
+拦截: 请先登录
 ```
 
-### 3.2 装饰类
+`delete_save` 的函数体没有一个字提到登录——检查逻辑住在 wrapper 里，想给另外二十个函数加上，每个头上加一行即可。计时、重试、权限这类「与业务无关、又处处要用」的逻辑叫横切关注点，装饰器是它们的标准住址。至此三个最小件备齐：计时（第 2 节）、重试（第 4 节）、权限（本节）。
+
+## 6. 修改实验
+
+基于以上代码，每个先预测再运行：
+
+1. 把第 2 节说的 `print(f"包住 {func.__name__}")` 真的加进 timed 函数体——它在所有业务输出之前出现几次？被装饰几个函数就出现几次；
+2. 给 wrapper 加前置日志 `print(f"调用 {func.__name__}")`，装饰一个带默认参数的函数并只传位置实参，确认转发后默认值依然生效；
+3. 把 `@retry(times=3)` 改成 `@retry(times=1)`，fetch_data 还能成功吗？对照 `range(times)` 与「最后一次失败就 raise」想清楚再运行。
+
+## 7. 常见错误与调试实录
+
+实录一：装饰器忘了 `return wrapper`。
 
 ```python
-def add_repr(cls):
-    """为类自动添加__repr__方法"""
-    def __repr__(self):
-        attrs = ", ".join(f"{k}={v!r}" for k, v in self.__dict__.items())
-        return f"{cls.__name__}({attrs})"
-
-    cls.__repr__ = __repr__
-    return cls
-
-def add_eq(cls):
-    """为类自动添加__eq__方法（基于所有属性）"""
-    def __eq__(self, other):
-        if not isinstance(other, cls):
-            return False
-        return self.__dict__ == other.__dict__
-
-    cls.__eq__ = __eq__
-    return cls
-
-@add_repr
-@add_eq
-class Point:
-    def __init__(self, x, y):
-        self.x = x
-        self.y = y
-
-p1 = Point(1, 2)
-p2 = Point(1, 2)
-print(p1)          # Point(x=1, y=2)
-print(p1 == p2)    # True
-```
-
-## 4. 实用装饰器模式
-
-### 4.1 缓存装饰器
-
-```python
-import functools
-
-def memoize(func):
-    """带TTL的缓存装饰器"""
-    cache = {}
-
-    @functools.wraps(func)
-    def wrapper(*args):
-        if args in cache:
-            return cache[args]
-        result = func(*args)
-        cache[args] = result
-        return result
-
-    wrapper.cache = cache
-    wrapper.cache_clear = lambda: cache.clear()
-    return wrapper
-
-@memoize
-def fibonacci(n):
-    if n <= 1:
-        return n
-    return fibonacci(n - 1) + fibonacci(n - 2)
-
-print(fibonacci(100))  # 瞬间完成（缓存加速）
-
-# Python内置: functools.lru_cache
-@functools.lru_cache(maxsize=128)
-def expensive_compute(n):
-    print(f"Computing {n}...")
-    return n * n
-
-expensive_compute(5)   # Computing 5... → 25
-expensive_compute(5)   # 25（缓存命中）
-print(expensive_compute.cache_info())  # CacheInfo(hits=1, misses=1, ...)
-```
-
-### 4.2 类型检查装饰器
-
-```python
-import functools
-
-def typecheck(**expected_types):
-    """运行时类型检查装饰器"""
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(*args, **kwargs):
-            # 检查位置参数
-            import inspect
-            sig = inspect.signature(func)
-            bound = sig.bind(*args, **kwargs)
-            bound.apply_defaults()
-
-            for param_name, expected_type in expected_types.items():
-                if param_name in bound.arguments:
-                    value = bound.arguments[param_name]
-                    if not isinstance(value, expected_type):
-                        raise TypeError(
-                            f"参数 '{param_name}' 期望类型 {expected_type.__name__}，"
-                            f"实际类型 {type(value).__name__}"
-                        )
-
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
-
-@typecheck(name=str, age=int)
-def create_user(name, age):
-    return f"User: {name}, Age: {age}"
-
-print(create_user("Alice", 25))   # 正常
-# create_user("Alice", "25")      # TypeError
-```
-
-### 4.3 单例模式装饰器
-
-```python
-import functools
-
-def singleton(cls):
-    """单例模式装饰器"""
-    instances = {}
-
-    @functools.wraps(cls)
-    def get_instance(*args, **kwargs):
-        if cls not in instances:
-            instances[cls] = cls(*args, **kwargs)
-        return instances[cls]
-
-    return get_instance
-
-@singleton
-class DatabaseConnection:
-    def __init__(self, host="localhost"):
-        self.host = host
-        print(f"连接到数据库: {host}")
-
-db1 = DatabaseConnection("server1")  # 连接到数据库: server1
-db2 = DatabaseConnection("server2")  # 已有实例，不再创建
-print(db1 is db2)  # True
-```
-
-### 4.4 权限验证装饰器
-
-```python
-import functools
-
-def require_role(*roles):
-    """权限验证装饰器"""
-    def decorator(func):
-        @functools.wraps(func)
-        def wrapper(user, *args, **kwargs):
-            if user.role not in roles:
-                raise PermissionError(
-                    f"用户 '{user.name}' 角色 '{user.role}' 无权执行此操作，"
-                    f"需要角色: {', '.join(roles)}"
-                )
-            return func(user, *args, **kwargs)
-        return wrapper
-    return decorator
-
-class User:
-    def __init__(self, name, role):
-        self.name = name
-        self.role = role
-
-@require_role("admin", "moderator")
-def delete_post(user, post_id):
-    return f"帖子 {post_id} 已删除"
-
-admin = User("Alice", "admin")
-guest = User("Bob", "guest")
-
-print(delete_post(admin, 1))  # "帖子 1 已删除"
-# delete_post(guest, 1)       # PermissionError
-```
-
-## 5. 常见问题与解决方案
-
-### 5.1 装饰器导致函数签名丢失
-
-```python
-# 问题：装饰后函数签名变为wrapper的签名
-import inspect
-
-def my_decorator(func):
+# deco.py
+def timed(func):
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
+    # 忘了把 wrapper 交出去
+
+@timed
+def hello():
+    return "hi"
+
+hello()
+```
+
+报错（Python 3.12 实录）：
+
+```text
+Traceback (most recent call last):
+  File "deco.py", line 11, in <module>
+    hello()
+    ~~~~~^^
+TypeError: 'NoneType' object is not callable
+```
+
+读报错三步：崩溃在 `hello()` 调用行；`'NoneType' object is not callable` 说明 hello 的值是 None；问题上移到 @timed——`timed(hello)` 返回了 None，因为函数体没有 return。def 时不报错、调用时才崩，这正是它难查的原因。它的近亲是 wrapper 里忘了 `return result`：不报错，但原函数的返回值悄悄变成 None，排查思路相同。
+
+实录二：给不带参数的装饰器误加了括号——`@timed()` 是先调用 `timed()`，没给 func 参数，当场崩：
+
+```text
+TypeError: timed() missing 1 required positional argument: 'func'
+```
+
+@ 后面必须跟「能接收函数的东西」：裸装饰器直接给名字，带参数的装饰器给工厂调用。分界线在 510 篇讲透。
+
+## 8. 小练习
+
+预测题（5 分钟，先写全部输出与顺序，再运行对照）：
+
+```python
+def loud(func):
+    print("定义时就响")
+    def wrapper():
+        return func().upper()
     return wrapper
 
-@my_decorator
-def greet(name: str, age: int = 25) -> str:
-    return f"Hello, {name}!"
+@loud
+def greet():
+    return "hi"
 
-print(inspect.signature(greet))  # (*args, **kwargs) 而非 (name, age)
-
-# 解决方案：使用functools.wraps
-import functools
-
-def good_decorator(func):
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
-    return wrapper
-
-@good_decorator
-def greet2(name: str, age: int = 25) -> str:
-    return f"Hello, {name}!"
-
-print(inspect.signature(greet2))  # (name: str, age: int = 25) -> str
+print(greet())
 ```
 
-### 5.2 装饰器与类方法
+参考答案（先算再看）：先输出 `定义时就响`，再输出 `HI`。@ 在 def 时执行 loud 一次，print(greet()) 时跑的只有 wrapper。
+
+修改题（10 分钟）：把第 5 节的 require_login 升级为带参数的 `require_role(role)`：user["role"] 与传入角色不符时抛 `PermissionError(f"需要 {role} 权限")`。验收：`@require_role("admin")` 装饰 delete_save 后，admin 调用输出 `已删除 小明 的存档 3`，guest 调用输出 `拦截: 需要 admin 权限`。这是你第一次实弹三层结构。
+
+挑战题（半小时，不给代码）：写装饰器 `log_calls`，调用前打印 `调用 <函数名>，参数: <args元组>`，调用后打印 `返回: <返回值>`，并保住原函数元信息。验收：
 
 ```python
-class MyClass:
-    # 实例方法装饰器：第一个参数是self
-    @timer
-    def instance_method(self):
-        time.sleep(0.1)
+@log_calls
+def add(a, b):
+    return a + b
 
-    # 类方法装饰器：第一个参数是cls
-    @classmethod
-    @timer
-    def class_method(cls):
-        time.sleep(0.1)
-
-    # 静态方法装饰器
-    @staticmethod
-    @timer
-    def static_method():
-        time.sleep(0.1)
-
-    # 注意装饰器顺序：@classmethod/@staticmethod 应在最外层
+assert add(2, 3) == 5
+assert add.__name__ == "add"
 ```
 
-## 6. 总结与最佳实践
+运行时应输出：
 
-### 6.1 装饰器选择指南
-
-| 场景         | 推荐方式            |
-| :----------- | :------------------ |
-| 简单增强     | 函数装饰器          |
-| 需要维护状态 | 类装饰器            |
-| 需要参数     | 三层嵌套装饰器      |
-| 缓存         | functools.lru_cache |
-| 方法装饰     | 注意self/cls参数    |
-
-### 6.2 最佳实践
-
-1. **始终使用 functools.wraps**：保留原函数元信息
-2. **保持装饰器简单**：一个装饰器只做一件事
-3. **通用装饰器用 \*args, **kwargs\*\*：兼容各种函数签名
-4. **提供撤销机制**：如 `cache_clear()` 方法
-5. **文档化装饰器行为**：说明装饰器对函数的影响
-6. **避免过度使用**：装饰器增加调试难度，简单逻辑直接写在函数中
-## 基本装饰器
-
-**换行写法：定义基本装饰器**
-`def <装饰器名>(func):`
-`    def wrapper(*args, **kwargs):`
-`        <前置处理>`
-`        result = func(*args, **kwargs)`
-`        <后置处理>`
-`        return result`
-`    return wrapper`
-
-```python
-# 定义基本装饰器
-def my_decorator(func):
-    def wrapper(*args, **kwargs):
-        print("函数执行前")
-        result = func(*args, **kwargs)
-        print("函数执行后")
-        return result
-    return wrapper
+```text
+调用 add，参数: (2, 3)
+返回: 5
 ```
 
----
+提示：参数转发用 `*args, **kwargs`；展开：f-string 打印 args 时自动呈现元组形态 `(2, 3)`，不用手动拼括号。
 
-**基本写法：使用装饰器**
-`@<装饰器名>`
-`def <函数名>(<参数>): <语句>`
+## 9. 什么时候该用 / 不该用装饰器
 
-```python
-# 使用装饰器装饰函数
-@my_decorator
-def say_hello(name):
-    print(f"Hello, {name}!")
-```
+该用：同一段逻辑要套在多个函数外面，且业务函数不该知道它的存在；改动方式是「包裹」而非「修改」函数本体。不该用：逻辑只服务一个函数——直接写在函数里更直白；需要改变函数签名或返回值结构——装饰器对调用方透明，透明也意味着难追踪，叠加超过两三层就该警惕。真实库里它们无处不在：FastAPI 的 `@app.get`、pytest 的 fixture、@dataclass，学完 510 篇你都能读懂机制。
 
----
+## 10. 与之前和之后的知识的关系
 
-**基本写法：手动应用装饰器**
-`<函数> = <装饰器>(<函数>)`
+- 往前：100 篇「函数是对象」在本文第一次当主角；090 篇的名字换绑定是 @ 的全部本质；130 篇的 try/except 支撑重试与权限；
+- 往后：[装饰器深水区](/python/510-DecoratorAdvanced) 拆三层机制、类装饰器、叠加顺序与标准库装饰器；[110 篇](/python/110-ArgsKwargsUnpacking) 把 `*args`、`**kwargs` 讲透；[面向对象](/python/460-OOP) 的 `__call__` 是类装饰器的地基。
 
-```python
-# 手动应用装饰器
-def say_hello(name):
-    print(f"Hello, {name}!")
+## 官方文档
 
-say_hello = my_decorator(say_hello)
-```
+- functools（wraps 的权威参考）：https://docs.python.org/zh-cn/3/library/functools.html
+- PEP 318（装饰器语法的来源）：https://peps.python.org/pep-0318/
 
----
+## 自我检查
 
-## 带参数的装饰器
+- 能把 `@timed` 写回等价赋值语句，说清 wrapper 里必须有 func 调用与 result 返回；
+- 能默写三层结构中「吃配置的层、吃函数的层、吃调用参数的层」各自的位置，并说出 @wraps 防的是什么；
+- 拿到 `'NoneType' object is not callable` 能想到「装饰器忘了 return」这条路径。
 
-**换行写法：定义带参数的装饰器**
-`def <装饰器名>(<参数>):`
-`    def decorator(func):`
-`        def wrapper(*args, **kwargs): <语句>`
-`        return wrapper`
-`    return decorator`
+## 本章总结
 
-```python
-# 定义带参数的装饰器
-def repeat(times):
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            for _ in range(times):
-                result = func(*args, **kwargs)
-            return result
-        return wrapper
-    return decorator
-```
+装饰器是「接收函数、返回新函数」的普通函数，@ 只是把 `func = decorator(func)` 挪到 def 头上，发生在定义时。wrapper 用 `*args, **kwargs` 原样转发调用参数并代交返回值；`@wraps(func)` 用一行保住 `__name__`、`__doc__` 与签名。带参数的装饰器多一层吃配置的工厂：`@retry(times=3)` 等价于 `retry(times=3)(fetch_data)`。计时、重试、权限三个最小件已进工具箱——机制层面的几笔账，下一篇算清。
 
----
+## 下一步
 
-**基本写法：使用带参数的装饰器**
-`@<装饰器名>(<参数>)`
-`def <函数名>(<参数>): <语句>`
-
-```python
-# 使用带参数的装饰器
-@repeat(times=3)
-def greet(name):
-    print(f"Hello, {name}!")
-```
-
----
-
-## functools.wraps 保留元信息
-
-**换行写法：使用 @wraps 保留元信息**
-`from functools import wraps`
-`def <装饰器名>(func):`
-`    @wraps(func)`
-`    def wrapper(*args, **kwargs): <语句>`
-`    return wrapper`
-
-```python
-# 使用 @wraps 保留原函数的元信息
-from functools import wraps
-
-def my_decorator(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        print(f"调用 {func.__name__}")
-        return func(*args, **kwargs)
-    return wrapper
-```
-
----
-
-## 类装饰器
-
-**换行写法：使用类作为装饰器**
-`class <装饰器类>:`
-`    def __init__(self, func): self.func = func`
-`    def __call__(self, *args, **kwargs): <语句>`
-
-```python
-# 使用类作为装饰器
-class CountCalls:
-    def __init__(self, func):
-        self.func = func
-        self.count = 0
-
-    def __call__(self, *args, **kwargs):
-        self.count += 1
-        print(f"调用次数: {self.count}")
-        return self.func(*args, **kwargs)
-```
-
----
-
-**基本写法：使用类装饰器**
-`@<装饰器类>`
-`def <函数名>(<参数>): <语句>`
-
-```python
-# 使用类装饰器
-@CountCalls
-def say_hello():
-    print("Hello!")
-```
-
----
-
-## 带参数的类装饰器
-
-**换行写法：定义带参数的类装饰器**
-`class <装饰器类>:`
-`    def __init__(self, <参数>): <语句>`
-`    def __call__(self, func): <返回包装函数>`
-
-```python
-# 定义带参数的类装饰器
-class Repeat:
-    def __init__(self, times):
-        self.times = times
-
-    def __call__(self, func):
-        def wrapper(*args, **kwargs):
-            for _ in range(self.times):
-                result = func(*args, **kwargs)
-            return result
-        return wrapper
-```
-
----
-
-## 方法装饰器
-
-**换行写法：装饰类的方法**
-`class <类名>:`
-`    @<装饰器名>`
-`    def <方法名>(self, <参数>): <语句>`
-
-```python
-# 装饰类的方法
-class MyClass:
-    @my_decorator
-    def my_method(self):
-        print("方法执行")
-```
-
----
-
-## 属性装饰器
-
-**基本写法：使用 @property 定义属性**
-`@property`
-`def <属性名>(self): return <值>`
-
-```python
-# 使用 @property 定义只读属性
-class Circle:
-    def __init__(self, radius):
-        self._radius = radius
-
-    @property
-    def area(self):
-        return 3.14159 * self._radius ** 2
-```
-
----
-
-**基本写法：使用 @staticmethod 定义静态方法**
-`@staticmethod`
-`def <方法名>(<参数>): <语句>`
-
-```python
-# 使用 @staticmethod 定义静态方法
-class MathHelper:
-    @staticmethod
-    def add(a, b):
-        return a + b
-```
-
----
-
-**基本写法：使用 @classmethod 定义类方法**
-`@classmethod`
-`def <方法名>(cls, <参数>): <语句>`
-
-```python
-# 使用 @classmethod 定义类方法
-class Counter:
-    count = 0
-
-    @classmethod
-    def increment(cls):
-        cls.count += 1
-        return cls.count
-```
-
----
-
-## 多个装饰器叠加
-
-**换行写法：叠加多个装饰器**
-`@<装饰器1>`
-`@<装饰器2>`
-`def <函数名>(<参数>): <语句>`
-
-```python
-# 叠加多个装饰器（从下往上执行）
-@decorator1
-@decorator2
-def my_function():
-    print("Hello")
-```
-
----
-
-## 常用内置装饰器
-
-**基本写法：使用 @staticmethod**
-`@staticmethod`
-`def <方法名>(<参数>): <语句>`
-
-```python
-# 使用 @staticmethod
-class MyClass:
-    @staticmethod
-    def static_method():
-        return "静态方法"
-```
-
----
-
-**基本写法：使用 @classmethod**
-`@classmethod`
-`def <方法名>(cls, <参数>): <语句>`
-
-```python
-# 使用 @classmethod
-class MyClass:
-    @classmethod
-    def class_method(cls):
-        return "类方法"
-```
-
----
-
-**基本写法：使用 @property**
-`@property`
-`def <属性名>(self): <语句>`
-
-```python
-# 使用 @property
-class MyClass:
-    @property
-    def value(self):
-        return self._value
-```
-
----
-
-**基本写法：使用 @abstractmethod**
-`@abstractmethod`
-`def <方法名>(self): <语句>`
-
-```python
-# 使用 @abstractmethod 定义抽象方法
-from abc import ABC, abstractmethod
-
-class Animal(ABC):
-    @abstractmethod
-    def speak(self):
-        pass
-```
-
----
-
-**基本写法：使用 @dataclass**
-`@dataclass`
-`class <类名>: <类体>`
-
-```python
-# 使用 @dataclass
-from dataclasses import dataclass
-
-@dataclass
-class Point:
-    x: float
-    y: float
-```
-
----
-
-**基本写法：使用 @lru_cache**
-`@lru_cache(maxsize=<n>)`
-`def <函数名>(<参数>): <语句>`
-
-```python
-# 使用 @lru_cache 缓存函数结果
-from functools import lru_cache
-
-@lru_cache(maxsize=128)
-def fibonacci(n):
-    if n < 2:
-        return n
-    return fibonacci(n - 1) + fibonacci(n - 2)
-```
-
----
-
-## 装饰器实战
-
-**换行写法：计时装饰器**
-`def <装饰器名>(func):`
-`    @wraps(func)`
-`    def wrapper(*args, **kwargs):`
-`        start = time.time()`
-`        result = func(*args, **kwargs)`
-`        end = time.time()`
-`        print(f"耗时: {end - start}")`
-`        return result`
-`    return wrapper`
-
-```python
-# 计时装饰器
-import time
-from functools import wraps
-
-def timer(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        start = time.time()
-        result = func(*args, **kwargs)
-        end = time.time()
-        print(f"{func.__name__} 耗时: {end - start:.4f} 秒")
-        return result
-    return wrapper
-```
-
----
-
-**换行写法：日志装饰器**
-`def <装饰器名>(func):`
-`    @wraps(func)`
-`    def wrapper(*args, **kwargs):`
-`        print(f"调用 {func.__name__}, 参数: {args}, {kwargs}")`
-`        result = func(*args, **kwargs)`
-`        print(f"返回: {result}")`
-`        return result`
-`    return wrapper`
-
-```python
-# 日志装饰器
-from functools import wraps
-
-def logger(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        print(f"调用 {func.__name__}, 参数: {args}, {kwargs}")
-        result = func(*args, **kwargs)
-        print(f"返回: {result}")
-        return result
-    return wrapper
-```
-
----
-
-**换行写法：权限验证装饰器**
-`def <装饰器名>(<权限参数>):`
-`    def decorator(func):`
-`        @wraps(func)`
-`        def wrapper(*args, **kwargs):`
-`            if not <检查权限>: raise <异常>`
-`            return func(*args, **kwargs)`
-`        return wrapper`
-`    return decorator`
-
-```python
-# 权限验证装饰器
-from functools import wraps
-
-def require_role(role):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            if not has_role(role):
-                raise PermissionError(f"需要 {role} 权限")
-            return func(*args, **kwargs)
-        return wrapper
-    return decorator
-```
-
----
-
-**换行写法：重试装饰器**
-`def <装饰器名>(max_retries=<n>):`
-`    def decorator(func):`
-`        @wraps(func)`
-`        def wrapper(*args, **kwargs):`
-`            for attempt in range(max_retries):`
-`                try: return func(*args, **kwargs)`
-`                except <异常>: <处理>`
-`        return wrapper`
-`    return decorator`
-
-```python
-# 重试装饰器
-import time
-from functools import wraps
-
-def retry(max_retries=3, delay=1):
-    def decorator(func):
-        @wraps(func)
-        def wrapper(*args, **kwargs):
-            for attempt in range(max_retries):
-                try:
-                    return func(*args, **kwargs)
-                except Exception as e:
-                    if attempt == max_retries - 1:
-                        raise
-                    time.sleep(delay)
-        return wrapper
-    return decorator
-```
-
----
-
-**换行写法：缓存装饰器**
-`def <装饰器名>(func):`
-`    cache = {}`
-`    @wraps(func)`
-`    def wrapper(*args):`
-`        if args not in cache: cache[args] = func(*args)`
-`        return cache[args]`
-`    return wrapper`
-
-```python
-# 自定义缓存装饰器
-from functools import wraps
-
-def memoize(func):
-    cache = {}
-    @wraps(func)
-    def wrapper(*args):
-        if args not in cache:
-            cache[args] = func(*args)
-        return cache[args]
-    return wrapper
-```
-
----
-
-## 装饰器类实战
-
-**换行写法：使用类实现计数装饰器**
-`class <装饰器类>:`
-`    def __init__(self, func):`
-`        self.func = func`
-`        self.count = 0`
-`    def __call__(self, *args, **kwargs):`
-`        self.count += 1`
-`        return self.func(*args, **kwargs)`
-
-```python
-# 使用类实现计数装饰器
-class CountCalls:
-    def __init__(self, func):
-        self.func = func
-        self.count = 0
-
-    def __call__(self, *args, **kwargs):
-        self.count += 1
-        print(f"调用次数: {self.count}")
-        return self.func(*args, **kwargs)
-```
-
----
-
-## 装饰器堆栈
-
-**换行写法：多个装饰器组合使用**
-`@<装饰器1>`
-`@<装饰器2>`
-`@<装饰器3>`
-`def <函数名>(<参数>): <语句>`
-
-```python
-# 多个装饰器组合使用
-@timer
-@logger
-@retry(max_retries=3)
-def fetch_data(url):
-    print(f"从 {url} 获取数据")
-    return "data"
-```
-
----
-
-## 装饰器与元信息
-
-**基本写法：访问装饰后的函数名**
-`<函数>.__name__`
-
-```python
-# 访问装饰后的函数名（使用 @wraps 保留原信息）
-@my_decorator
-def my_function():
-    pass
-
-print(my_function.__name__)
-```
-
----
-
-**基本写法：访问装饰后的函数文档**
-`<函数>.__doc__`
-
-```python
-# 访问装饰后的函数文档
-@my_decorator
-def my_function():
-    """这是函数文档"""
-    pass
-
-print(my_function.__doc__)
-```
-
----
-
-## functools 模块工具
-
-**基本写法：使用 @wraps**
-`@wraps(<原函数>)`
-
-```python
-# 使用 @wraps 保留原函数元信息
-from functools import wraps
-
-def my_decorator(func):
-    @wraps(func)
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
-    return wrapper
-```
-
----
-
-**基本写法：使用 @lru_cache**
-`@lru_cache(maxsize=<n>)`
-
-```python
-# 使用 @lru_cache 实现缓存
-from functools import lru_cache
-
-@lru_cache(maxsize=128)
-def expensive_function(n):
-    return sum(i * i for i in range(n))
-```
-
----
-
-**基本写法：使用 @cache**
-`@cache`
-
-```python
-# 使用 @cache 无限缓存
-from functools import cache
-
-@cache
-def fibonacci(n):
-    if n < 2:
-        return n
-    return fibonacci(n - 1) + fibonacci(n - 2)
-```
-
----
-
-**基本写法：使用 @cached_property**
-`@cached_property`
-`def <属性名>(self): <语句>`
-
-```python
-# 使用 @cached_property 缓存属性计算结果
-from functools import cached_property
-
-class Circle:
-    def __init__(self, radius):
-        self.radius = radius
-
-    @cached_property
-    def area(self):
-        return 3.14159 * self.radius ** 2
-```
-
----
-
-**基本写法：使用 @singledispatch**
-`@singledispatch`
-`def <函数名>(<参数>): <语句>`
-
-```python
-# 使用 @singledispatch 实现函数重载
-from functools import singledispatch
-
-@singledispatch
-def process(data):
-    raise TypeError(f"不支持的类型: {type(data)}")
-
-@process.register
-def _(data: int):
-    return f"处理整数: {data}"
-```
-
----
-
-**基本写法：注册 singledispatch 处理器**
-`@<函数>.register`
-`def _(<参数>: <类型>): <语句>`
-
-```python
-# 注册 singledispatch 的字符串处理器
-@process.register
-def _(data: str):
-    return f"处理字符串: {data}"
-```
-
----
-
-## 装饰器与类型注解
-
-**换行写法：带类型注解的装饰器**
-`from typing import Callable, TypeVar`
-`T = TypeVar("T")`
-`def <装饰器名>(func: Callable[..., T]) -> Callable[..., T]:`
-`    def wrapper(*args, **kwargs) -> T: return func(*args, **kwargs)`
-`    return wrapper`
-
-```python
-# 带类型注解的装饰器
-from typing import Callable, TypeVar, Any
-from functools import wraps
-
-T = TypeVar("T")
-
-def my_decorator(func: Callable[..., T]) -> Callable[..., T]:
-    @wraps(func)
-    def wrapper(*args: Any, **kwargs: Any) -> T:
-        print("装饰器执行")
-        return func(*args, **kwargs)
-    return wrapper
-```
+进入 [装饰器深水区](/python/510-DecoratorAdvanced)：三层嵌套逐层追踪、叠加顺序推演、类装饰器与标准库三件套——500 篇建好的模型，在那里上强度。

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 以 create-vue 生成的 vite.config.ts 逐行拆解为线索，讲清 dev/build/preview 三命令、@ 别名、开发代理与环境变量 VITE_ 前缀约定，附真实报错的调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'vue3/020-Vue3QuickStartGuide'
   - 'vite/050-ViteEnvModes'

@@ -14,6 +14,8 @@ related:
 prerequisites: []
 ---
 
+> 定位说明：本篇为进阶参考书（参考层），面向已完成本模块主线的读者；入门请先走学习路径前序阶段。定位标准见 docs/standards/reference-layer.md（仓库）。
+
 ## 学习目标
 
 本文是「PostgreSQL」模块的第 17 篇，难度定位为进阶。重点内容：MVCC多版本并发控制、快照隔离、事务隔离级别、锁机制、死锁检测、VACUUM机制与冻结。
