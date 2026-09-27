@@ -140,3 +140,30 @@ sync：新文档注册；audit:content：HIGH 0、SAFETY 0；audit-learning-path
 ## 三、遗留（截至本批）
 
 - 重写 48 篇 / 新文体合计 52 篇；余 17 组 MERGE；各深水区批次推进 SPLIT 物理拆分；其余模块出口项目篇（java/go/cpp 等随主线重写顺延）。
+
+---
+
+# 批次五（2026-09-28）：MERGE 四模块五组消化、java/cpp 主线打通与出口项目补齐
+
+## 一、修改了什么、为什么
+
+1. **五组 MERGE 消化（「主教学+深水区」分工重构模式，含首个三连组）**：
+   - javascript 590/600：ES2023-2026 按年份实用导览 + 采用策略深水区（引擎节奏差、转译 vs polyfill、Stage 0-4 流程），示例 Node 24 实测；
+   - typescript 430/440/450 三连：条件类型入门与分发 → infer 专题 → 组合实战（DeepReadonly/MyAwaited/ParametersToObject），报错原文 TS 6.0.3 实测（含修正三处社区讹传）；
+   - java 390/410：泛型入门（PECS 口诀）+ 类型擦除深水区（javap 实证、桥方法、通配符捕获），JDK 25 实测；
+   - mysql 320/330：EXPLAIN 逐列读懂（type 阶梯每级配可运行 SQL）+ 优化器成本与索引失效六大现场（EXPLAIN ANALYZE 实测）；并发现修复 210-IndexManagement 的悬空链接；
+   - cpp 090/100：移动语义心智模型 + noexcept/moved-from/容器真实行为深水区。
+2. **java 主线 040-100 七篇打通**：程序结构、类型转换（溢出与 addExact）、包装类缓存陷阱（127 面试题）、变量与常量、运算符（040 悬念回收）、控制流（猜数字 Java 版）、方法详解（值传递真相、重载红线、递归出口）。
+3. **cpp 主线 040-120 七篇打通**：类型系统（sizeof/CTAD）、命名空间与链接（三文件工程）、Lambda（捕获与悬垂）、移动语义双篇（上述）、完美转发与引用折叠（static_assert 验证）、指针（与引用分工、悬垂、const 读法、sanitizers 实战）。
+4. **出口项目补齐至 5 模块**：java/1020（控制台任务管理器，J1-J10）与 cpp/790（零依赖 Buffer 库，C1-C10 + sanitizers 纪律），已挂载学习路径。
+5. 批次执行说明：部分子代理在返回阶段因配额/网络中断，产出已先行落盘；接手方以「旧模板标记归零 + 练习齐备 + 篇幅达标」三项校验确认完整性后继续，未重复生产。
+
+## 二、门禁记录（批次五）
+
+sync：新文档注册、死链清理 1 项；audit:content：HIGH 0（中途拦截 ts/430 一处 YAML 解析错误并修复）、SAFETY 0；audit-learning-path：0 errors / 0 warnings / 孤儿 0；typecheck：0 errors；test:smoke：20/20；emoji 扫描：49 个改动文件干净。
+
+## 三、累计状态与遗留
+
+- 累计重写 71 篇 + 毕业项目 5 篇（git/python/javascript/java/cpp）+ 路线篇 2 篇 + 占位文改造 6 篇 = 新文体 84 篇；
+- MERGE 30 组消化 18 组（含本轮 5 组），余 12 组：python 570/580、630/640/650、660/670；typescript 530/540；java 480/490/500/510；mysql 430/440；c 200/210、220/230、520/530；cpp 130/140、350/360、370/380、430/440；
+- 遗留：各深水区批次重写与 SPLIT 物理拆分（参考层标准已解锁）、其余模块出口项目随主线重写顺延。
