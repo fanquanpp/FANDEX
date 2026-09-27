@@ -430,6 +430,11 @@
           "doc": "970-PythonProjectExampleWebCrawlerDataAnalysis"
         },
         {
+          "id": "python-975",
+          "title": "Python 毕业项目：记账 CLI 的完整工程化",
+          "doc": "975-PythonCapstoneProject"
+        },
+        {
           "id": "python-980",
           "title": "Python 与自动化",
           "doc": "980-PythonAutomationCookbook"
