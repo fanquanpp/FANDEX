@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: SQLAlchemy 深度剖析：从 Core SQL 表达式到 ORM Unit of Work、会话生命周期、N+1 查询治理与企业级架构实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/880-PythonFastAPI'
   - 'python/800-PythonDatabaseMigration'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java 并发编程详解：JMM 形式化、synchronized 锁升级、AQS 原理、CAS、原子类、线程池、CompletableFuture、虚拟线程。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/620-JVMtuning'
   - 'java/210-CollectionFrameworkDetailed'

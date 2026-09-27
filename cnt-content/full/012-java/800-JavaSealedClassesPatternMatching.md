@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: sealed、record 与 switch 模式匹配：现代 Java 的代数数据类型表达。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/450-JavaRecordClass'
   - 'java/160-AbstractClassInterface'

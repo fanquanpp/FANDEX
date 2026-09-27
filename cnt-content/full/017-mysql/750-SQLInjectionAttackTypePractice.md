@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 联合注入、盲注、报错注入与绕过技巧。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-27'
 related:
   - 'mysql/900-MySQLApplicationController'
   - 'mysql/740-SQLInjectionBasicsDetection'
@@ -329,6 +329,9 @@ if (mysqli_num_rows($result) > 0) {
     echo "登录失败！";
 }
 ?>
+```
+
+> 安全语境：本篇所有「危险代码」仅用于理解攻击面。真实系统的登录必须同时做两件事——参数化查询防注入、密码哈希存储防拖库，完整实现见 [SQL 注入防御策略](/mysql/760-SQLInjectionDefenseStrategy)。
 ```
 
 #### 2.1.3 攻击 Payload

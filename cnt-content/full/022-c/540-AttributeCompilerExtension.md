@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: GCC/Clang/MSVC 属性语法、C23 标准属性、跨编译器扩展与工程实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'c/230-AlignmentMemoryLayout'
   - 'c/080-ControlFlow'

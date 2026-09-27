@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: BIO、NIO、AIO、零拷贝、Reactor模式与字节码层面原理
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/420-JavaReflection'
   - 'java/680-JavaSerialization'

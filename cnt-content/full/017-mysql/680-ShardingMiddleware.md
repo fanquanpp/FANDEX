@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 分库分表中间件全景：先问要不要分片、分片键与路由策略设计、ShardingSphere 与 Vitess 对比选型、跨分片查询的四种化解手段与分布式 ID。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-27'
 related:
   - 'mysql/660-PartitionedTable'
   - 'mysql/670-ShardingStrategy'

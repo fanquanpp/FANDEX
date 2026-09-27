@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 异常体系、try-catch-finally、自定义异常与最佳实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/150-OOP'
   - 'java/160-AbstractClassInterface'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java反射与动态代理详解：JVM规范、Class文件结构、JDK Proxy、CGLib、MethodHandle、Spring AOP 原理。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/520-CompletableFutureAsync'
   - 'java/530-ThreadLocalMemoryLeak'

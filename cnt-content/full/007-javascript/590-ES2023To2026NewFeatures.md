@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 按"解决什么问题"串讲 ES2023-ES2025 全部定稿特性，并梳理 ES2026/ES2027 批次的 Temporal、显式资源管理与其余定稿提案。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/310-IteratorHelper'
   - 'javascript/600-JavaScriptLatestFeature'

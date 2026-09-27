@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Python装饰器进阶详解：带参数装饰器、类装饰器、functools.wraps。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/520-ContextManager'
   - 'python/570-Descriptor'

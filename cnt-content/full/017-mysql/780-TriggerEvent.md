@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL触发器（BEFORE/AFTER、INSERT/UPDATE/DELETE）与事件调度器详解。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-27'
 related:
   - 'mysql/440-MVCCSnapshotCurrentRead'
   - 'mysql/400-IndexPrinciplePerformanceOptimization'

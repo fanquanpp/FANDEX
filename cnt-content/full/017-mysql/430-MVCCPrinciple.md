@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB MVCC原理：隐藏列、Read View 四要素、undo log版本链可见性判断算法、RC与RR差异与Purge机制
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/420-TransactionIsolationImplementation'
   - 'mysql/450-LockClassification'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用「给数据起名字」讲透 let/const/var 取舍与 var 事故现场，盘点七种原始类型、typeof 的历史 bug、模板字符串与 == 的坑，附 ReferenceError/TypeError 调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/030-ProgramStructureBasicSyntax'
   - 'javascript/050-DataTypeOperator'

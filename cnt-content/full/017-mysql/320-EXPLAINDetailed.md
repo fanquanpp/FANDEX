@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL EXPLAIN执行计划详解：type、key、key_len、rows、filtered、Extra字段语义、FORMAT=TREE与EXPLAIN ANALYZE实战诊断
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/310-IndexFailureScene'
   - 'mysql/340-SlowQueryLog'

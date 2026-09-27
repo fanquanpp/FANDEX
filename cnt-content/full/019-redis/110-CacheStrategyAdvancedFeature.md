@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 过期键删除、内存淘汰策略、事务与乐观锁、Lua脚本、发布订阅、管道、客户端缓存、ACL、TLS、慢查询日志。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'redis/140-PersistenceModule'
   - 'redis/180-ClusterHA'

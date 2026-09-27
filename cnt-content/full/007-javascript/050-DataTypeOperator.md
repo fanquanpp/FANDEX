@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用「排行榜算平均分、购物车算总价」讲透算术运算符与 % 的三用途、比较与逻辑、短路求值、优先级、拼接对比模板字符串，附 NaN 自检与真实报错调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/040-VariableDataType'
   - 'javascript/060-ControlFlow'

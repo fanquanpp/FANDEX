@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL索引失效场景全解：函数操作、隐式转换、隐式字符集、LIKE前缀、OR条件、联合索引断裂、排序失效与函数索引解法
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/300-IndexStatsHistogram'
   - 'mysql/320-EXPLAINDetailed'

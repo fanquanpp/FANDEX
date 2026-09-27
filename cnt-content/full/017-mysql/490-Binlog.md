@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: binlog 全景：与 redo log 的本质分工、三种格式与 ROW 为王的原因、关键参数（sync_binlog/expire）、内部两阶段提交、恢复与清理实战。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-27'
 related:
   - 'mysql/500-RedoLog'
   - 'mysql/530-TwoPhaseCommit'

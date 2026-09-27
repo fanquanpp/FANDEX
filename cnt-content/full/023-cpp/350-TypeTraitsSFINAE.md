@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 类型特征与编译期类型判断
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/190-ExceptionSecurity'
   - 'cpp/430-MultithreadingConcurrency'

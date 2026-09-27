@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 语言特性与设计哲学对比
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/740-Cpp23Cpp26NewFeatures'
   - 'cpp/580-CppPythonInteraction'

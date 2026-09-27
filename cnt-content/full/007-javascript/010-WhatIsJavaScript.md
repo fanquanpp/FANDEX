@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 面向完全零基础读者，讲清 JavaScript 的定位、能做什么、在哪里运行，并写出第一段可执行的代码。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/020-JavaScriptOverviewRuntimeEnv'
   - 'javascript/520-NodeJsInstall'

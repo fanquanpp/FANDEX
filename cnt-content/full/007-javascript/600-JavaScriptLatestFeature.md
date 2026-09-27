@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: ES2024-2026 新特性、V8 引擎原理、Node.js 22+、Deno 2.0、Bun 运行时与 WebAssembly 进阶。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/070-ObjectArray'
   - 'javascript/410-DOMOperationEvent'

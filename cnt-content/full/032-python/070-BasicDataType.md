@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用游戏角色档案讲透 int/float/str/bool/list/tuple/dict/set 七类数据的「什么时候用哪种」决策表、f-string 最小用法与类型转换，附 ValueError/TypeError 真实调试实录与四类练习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/060-ControlFlow'
   - 'python/080-OperatorExpression'

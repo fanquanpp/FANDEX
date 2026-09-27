@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL VACUUM机制：自动清理、FREEZE、可见性映射与空间回收
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-27'
 related:
   - 'postgresql/190-LockMechanism'
   - 'postgresql/200-DeadlockDetectionHandling'

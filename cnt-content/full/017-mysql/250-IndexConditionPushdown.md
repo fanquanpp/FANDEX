@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 用一次回表成本的故事讲透 Index Condition Pushdown：没有 ICP 时过滤发生在哪、ICP 把什么推到了哪里、EXPLAIN 里如何确认，以及它与覆盖索引的边界。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-27'
 related:
   - 'mysql/220-ClusteredIndexSecondaryIndex'
   - 'mysql/240-PrefixIndex'

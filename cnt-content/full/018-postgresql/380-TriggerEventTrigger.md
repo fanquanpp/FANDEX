@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL触发器与事件触发器：行级触发器、语句级触发器、DDL事件触发器与触发器函数
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'postgresql/310-GeoSpatialObject'
   - 'postgresql/370-StoredProcedureAndFunction'

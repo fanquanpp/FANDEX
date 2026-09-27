@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 把普通文件夹变成仓库并完成人生第一次提交：init、status、add、commit、log 全流程与工作区/暂存区/仓库的三层现场感，含 not a git repository、nothing added to commit、Please tell me who you are 三个真实报错实录与一个建仓小项目。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'git/010-Git'
   - 'git/020-GitInstallConfig'

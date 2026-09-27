@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 列表推导、字典推导、生成器表达式与迭代器。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/950-PythonVectorDatabase'
   - 'python/710-PythonAdvancedLatestFeature'

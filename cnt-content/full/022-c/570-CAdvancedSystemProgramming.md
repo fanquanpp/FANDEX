@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 高级数据结构、内存管理、文件系统、网络编程与并发模型。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'c/430-StdioFileIO'
   - 'c/590-CLanguageTheory'

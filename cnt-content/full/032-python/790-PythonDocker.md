@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Python容器化
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/060-ControlFlow'
   - 'python/860-PythonCeleryDistributedTaskQueue'

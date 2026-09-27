@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用「HTML 是素坯，CSS 是化妆师」建立 CSS 心智模型：结构与外观分离、一条规则如何改变整页、三种引入方式预告，并在本篇内从零建出 experiment.html 与 styles.css 完成 DevTools 现场改妆实验。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'css/020-CSS3OverviewBasicSyntax'
   - 'css/030-CSSHowItWorks'

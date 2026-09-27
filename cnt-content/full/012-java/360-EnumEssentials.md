@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 零基础 20 行学会 enum：有身份证的常量，别再用 public static final int。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/370-JavaAnnotationsTutorial'
   - 'java/090-ControlFlow'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL 静态数据加密：keyring 插件体系、表空间加密实操、redo/undo 与 binlog 的加密盲区、主密钥轮换、与 PostgreSQL TDE 现状的对照。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-27'
 related:
   - 'mysql/710-SSLEncryption'
   - 'mysql/730-FirewallPlugin'

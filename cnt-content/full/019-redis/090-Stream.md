@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis Stream消息队列：消费者组、消息确认、消息积压与XREAD/XADD命令
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-27'
 related:
   - 'redis/050-NumberStats'
   - 'redis/070-GeoSpatial'

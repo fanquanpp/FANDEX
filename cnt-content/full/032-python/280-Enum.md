@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: enum 模块全解：定义枚举、IntEnum/StrEnum/Flag、auto 赋值、别名规则与工程实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/480-OOPAdvanced'
 prerequisites:

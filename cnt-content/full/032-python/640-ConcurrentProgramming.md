@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Python并发编程详解：多线程、多进程、GIL、线程池、进程池与asyncio异步编程。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/040-PythonVirtualEnv'
   - 'python/770-PythonCodeQuality'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 20 行学会打印当前时间、解析字符串、格式化输出，告别老 Date API。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/180-ExceptionHandlingMechanism'
 prerequisites:

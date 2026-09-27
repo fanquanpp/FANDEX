@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript 事件循环模型——HTML 规范、Node.js 实现、微任务/宏任务、渲染调度
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/330-ProxyAndReflect'
   - 'javascript/210-ObjectStaticMethods'

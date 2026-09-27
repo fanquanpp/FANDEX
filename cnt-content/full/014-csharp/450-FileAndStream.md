@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: File/Path/Directory、FileStream、StreamReader/Writer、BinaryReader/Writer 与 using 资源管理的速查手册，附完整示例与易错点解析。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'csharp/460-JsonSerialization'
   - 'csharp/230-SpanMemory'

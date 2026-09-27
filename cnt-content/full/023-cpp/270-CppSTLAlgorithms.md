@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: STL 算法库全解：非修改式、修改式、排序、搜索、数值、分区、堆、C++17 并行算法、C++20 Ranges、C++23 容器算法，含复杂度分析、迭代器约束、企业级实战与陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/210-OperatorOverloading'
   - 'cpp/200-CppOOPBasics'

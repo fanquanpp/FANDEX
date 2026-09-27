@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: dotnet CLI 全流程速查：项目创建、构建运行、NuGet 依赖、发布 AOT、测试与工具管理，附完整工作流示例与易错点。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'csharp/020-CSharpOverviewEnvSetup'
   - 'csharp/340-CSharpTestEngineering'

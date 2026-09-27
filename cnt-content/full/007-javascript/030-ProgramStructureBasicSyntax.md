@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 以「在浏览器控制台把单行命令攒成多行程序」为主线，讲透语句与分号、代码块与缩进、注释、console.log 调试习惯，用播放列表打印程序贯穿全篇，附 SyntaxError 调试实录与四类练习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'javascript/020-JavaScriptOverviewRuntimeEnv'
   - 'javascript/040-VariableDataType'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java CompletableFuture 异步编排的形式语义、CompletionStage 接口代数、Completion 栈内部结构、Java 9 API 增强、Project Loom 与虚拟线程场景下的演进路径
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/510-ConcurrencyDetailed'
   - 'java/530-ThreadLocalMemoryLeak'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: Redis Hash 命令全解：对象存储与购物车模式、listpack/hashtable 编码转换、7.4 字段级过期与 8.0 HGETDEL/HGETEX/HSETEX、大哈希防御。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'redis/010-OverviewCoreDataStructure'
   - 'redis/020-KeyManagement'

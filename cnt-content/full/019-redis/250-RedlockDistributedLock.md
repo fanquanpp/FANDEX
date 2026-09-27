@@ -6,7 +6,7 @@ module: 'redis'
 category: 数据库
 difficulty: advanced
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'redis/110-CacheStrategyAdvancedFeature'
   - 'redis/240-LuaScriptAtomicExecution'

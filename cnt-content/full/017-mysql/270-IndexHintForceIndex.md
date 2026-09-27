@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: USE INDEX、FORCE INDEX、IGNORE INDEX 三种提示的正确用法：优化器为什么会选错索引、三种提示的语义差异、作为临时止血手段的完整流程与戒断原则。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-27'
 related:
   - 'mysql/250-IndexConditionPushdown'
   - 'mysql/280-InvisibleIndex'

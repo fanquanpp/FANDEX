@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB死锁检测与处理：等待图算法、死锁日志解读、data_locks与sys.innodb_lock_waits锁排查、预防策略与重试
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/450-LockClassification'
   - 'mysql/540-DistributedTransaction'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 标准算法、lambda 表达式、函数对象与范围库。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/440-ConcurrentProgramming'
   - 'cpp/170-CppCoreGuidelinesResourceManagement'

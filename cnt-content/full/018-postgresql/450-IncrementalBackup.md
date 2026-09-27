@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL增量备份：PG17 pg_basebackup --incremental与pg_combinebackup、backup_manifest、WAL归档与PITR恢复
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'postgresql/400-PhysicalReplicationSlot'
   - 'postgresql/420-LogicalDecodingOutputPlugin'

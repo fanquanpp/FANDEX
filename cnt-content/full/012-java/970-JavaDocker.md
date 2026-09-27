@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java容器化部署
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/920-JavaMessageQueue'
   - 'java/910-JavaRedis'

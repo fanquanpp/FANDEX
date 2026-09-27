@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 综合运用结构体、文件 I/O 和动态内存管理的学生成绩管理系统。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'c/590-CLanguageTheory'
   - 'c/570-CAdvancedSystemProgramming'

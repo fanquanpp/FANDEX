@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Python打包与发布详解：setuptools、pyproject.toml。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/530-TypeAnnotationMypy'
   - 'python/560-DataClassFieldDefault'

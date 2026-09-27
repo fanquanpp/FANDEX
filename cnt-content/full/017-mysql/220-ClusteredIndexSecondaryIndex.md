@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL InnoDB聚簇索引与二级索引：B+树结构、回表查询、覆盖索引与索引优化策略
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'mysql/190-MemoryStorageEngine'
   - 'mysql/230-CompositeIndexLeftmostPrefixPrinciple'

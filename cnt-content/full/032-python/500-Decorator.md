@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Python装饰器详解：函数装饰器、类装饰器、带参数装饰器、functools.wraps与实用装饰器模式。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/810-PythonCLI'
   - 'python/900-ConfigManagement'

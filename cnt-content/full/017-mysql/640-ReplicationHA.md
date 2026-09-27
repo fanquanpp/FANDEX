@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL复制架构：binlog格式、半同步/异步/延迟/组复制、InnoDB Cluster、备份恢复策略
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-27'
 related:
   - 'mysql/590-Replication'
   - 'mysql/620-GroupReplication'
@@ -150,6 +150,7 @@ CHANGE REPLICATION SOURCE TO
     SOURCE_LOG_FILE='mysql-bin.000001',
     SOURCE_LOG_POS=157,
     GET_SOURCE_PUBLIC_KEY=1;   -- caching_sha2_password 需要
+-- 凭据安全：独立 repl 账号 + 强随机密码 + 加密存储，传输走 TLS（见 710 篇）
 
 -- 启动复制
 START REPLICA;  -- MySQL 8.0+ 使用 START REPLICA（替代 START SLAVE）

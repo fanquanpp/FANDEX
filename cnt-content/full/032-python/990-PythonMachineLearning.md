@@ -1,12 +1,12 @@
 ---
-order: 750
+order: 760
 title: Python 与机器学习
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: scikit-learn与ML基础
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'python/840-PythonRedis'
   - 'python/930-PythonGraphQL'
