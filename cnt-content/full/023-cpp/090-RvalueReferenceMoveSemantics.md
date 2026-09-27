@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用「传递 1 GB 玩家存档」的场景建立移动语义心智模型：左值右值判别、拷贝与移动的耗时对照实验、std::move 的真实含义与 moved-from 约定，附 use after move 调试实录。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'cpp/080-CppReferenceTypes'
   - 'cpp/100-MoveSemanticsDetailed'

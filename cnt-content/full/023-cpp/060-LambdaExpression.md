@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 以「排行榜要按分数、名字、等级排序，为每个字段写一个函数？」引入，五段拆解最小 Lambda [](){}，讲透与 std::sort 的配合（附预期输出）、捕获列表 [] / [=] / [&] / [x] 的取值时机与悬垂引用陷阱（-Wshadow 真实警告与逃逸作用域的运行时事故），附 'x' is not captured、capture of non-variable、use of deleted function 三类真实报错的调试实录，mutable 与尾置返回类型各一句话。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cpp/070-LambdaCaptureDetailed'
   - 'cpp/080-CppReferenceTypes'

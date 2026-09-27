@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 以「两个 .cpp 都定义了叫 helper 的函数，链接器炸了」引入，讲透命名空间隔离、using 的正确姿势与头文件里禁 using namespace 的原因、内部链接与外部链接（static 与匿名命名空间）、三文件工程 math_utils.h/.cpp/main.cpp 的完整分工与 g++ 编译命令，附 multiple definition 与 undefined reference 两类真实报错的调试实录，ODR 一句话收尾。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cpp/060-LambdaExpression'
   - 'cpp/680-LinkSymbol'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 从 Object 盒子塞进 Integer 运行时才炸讲起：泛型类、接口、方法三件套，菱形与类型推断，通配符 extends/super 的生产者-消费者读法，Raw Type 警示与 incompatible types 报错实录。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/410-JavaGenericsTutorial'
   - 'java/210-CollectionFrameworkDetailed'

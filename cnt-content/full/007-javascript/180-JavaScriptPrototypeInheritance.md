@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从「给一百个玩家挂同一个升级方法，难道要复制一百份」讲起：函数的 prototype 样板间、Object.getPrototypeOf 实验看见 __proto__ 链、属性查找沿链上溯与「读上溯、写只写自己」、new 的四步拆解（衔接 this 篇的 new 绑定）、class 是原型的语法糖与类字段分工，附方法挂错地方的 TypeError 与循环引用打印陷阱调试实录。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/100-ThisKeywordDeepDive'
   - 'javascript/190-PrototypeChainClassEssence'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 390 讲怎么用，本篇讲运行时发生了什么：用 getClass 与 javap 实证类型擦除、有界类型参数改写擦除目标、new T() 与泛型数组禁令的真实报错、桥方法与通配符捕获惯用法。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/390-GenericDetailed'
   - 'java/210-CollectionFrameworkDetailed'

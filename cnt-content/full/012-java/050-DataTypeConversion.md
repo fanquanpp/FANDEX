@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 以订单金额混算为主线讲透类型转换：隐式提升链、强制转换的截断与回绕、char 参与运算、Integer.MAX_VALUE + 1 的溢出现场与 Math.addExact 防御、parseInt 与 NumberFormatException 实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'java/040-ProgramStructureBasicSyntax'
   - 'java/060-WrapperCacheTrap'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以排行榜平均分回收 040 埋下的 74 悬念：算术与整数除法、比较与逻辑短路、三元运算符、位运算的一句话定位、优先级与括号，附 possible lossy conversion 真实报错与浮点精度陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'java/040-ProgramStructureBasicSyntax'
   - 'java/050-DataTypeConversion'

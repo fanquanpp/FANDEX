@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 从空文件夹写出最小 main.cpp 并两步跑通，覆盖语句注释、cin/cout 最小交互与 int main 返回值的意义；再用越界数组实验正式引入未定义行为（UB），附 expected ';' 与 undefined reference to 'main' 两类真实报错的调试实录。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'cpp/040-CppTypeSystem'
   - 'cpp/050-NamespaceLinkage'
