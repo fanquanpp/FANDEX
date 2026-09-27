@@ -120,3 +120,23 @@ sync：新文档注册、order 补全；audit:content：HIGH 0、SAFETY_PWD 0；
 
 - 教学文体达标文档：39 篇重写 + 2 篇毕业项目 + 140/150 两篇路线篇，共 43 篇新文体；
 - 遗留：javascript 深水区与各后端模块主线重写、20 组 MERGE、29 篇 SPLIT（依赖参考层架构决策）、其余模块出口项目篇。
+
+---
+
+# 批次四（2026-09-27 深夜）：javascript 深水区 MERGE 消化、java/cpp 主线启动与参考层决策
+
+## 一、修改了什么、为什么
+
+1. **javascript 两组 MERGE 消化（分工重构模式）**：290/300-EventLoop 重写为「主教学（心智模型与三步口诀）+ 深水区专题（清空时机实证、Node 六阶段、rAF/rIC、两道完整推演）」；180/190-原型链同模式（180 心智模型与 new 四步、190 三角关系推演/继承演进/instanceof 真相）。两对均互相声明分工、实验零重复。MERGE 进度 30 组中 13 组消化、余 17 组。
+2. **java/cpp 模块主线启动**：java 010/020/030（JVM 心智模型、JDK/JRE/JVM 三层、HelloWorld 与 main 签名拆解；Java 25 LTS 经 WebSearch 核实）、cpp 010/020/030（零开销抽象、三次大版本、UB 概念正面教学）。累计重写 48 篇。
+3. **参考层架构决策落地**：决策为「文档内定位约定，不改站点信息架构」，标准落成 docs/standards/reference-layer.md（判据、义务、SPLIT 三问）；28 篇 SPLIT 候选统一注入定位声明块（python/090 已重写为教学文移出清单）。29 篇 SPLIT 子项解锁。
+4. **javascript 出口项目**：715-JavaScriptCapstoneProject（Level 5-6 书签管理器，J1-J10+E1-E4，与 700 示例篇声明分工），挂载学习路径（javascript 69 节点）。
+5. **python 500/510 装饰器双篇**按分工重构消化（500 心智模型三步演进、510 三层嵌套/类装饰器/叠加顺序/标准库三例）。
+
+## 二、门禁记录（批次四）
+
+sync：新文档注册；audit:content：HIGH 0、SAFETY 0；audit-learning-path：0 errors / 0 warnings / 孤儿 0；typecheck：0 errors；test:smoke：20/20；emoji 扫描：52 个改动文件干净。
+
+## 三、遗留（截至本批）
+
+- 重写 48 篇 / 新文体合计 52 篇；余 17 组 MERGE；各深水区批次推进 SPLIT 物理拆分；其余模块出口项目篇（java/go/cpp 等随主线重写顺延）。
