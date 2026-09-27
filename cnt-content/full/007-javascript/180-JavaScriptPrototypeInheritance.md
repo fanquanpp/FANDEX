@@ -1,839 +1,439 @@
 ---
 order: 180
-title: JavaScript 原型与继承
+title: 原型与继承：方法只写一次，一百个玩家共享
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
-description: 原型链、构造函数、class 语法与继承模式。
+description: 从「给一百个玩家挂同一个升级方法，难道要复制一百份」讲起：函数的 prototype 样板间、Object.getPrototypeOf 实验看见 __proto__ 链、属性查找沿链上溯与「读上溯、写只写自己」、new 的四步拆解（衔接 this 篇的 new 绑定）、class 是原型的语法糖与类字段分工，附方法挂错地方的 TypeError 与循环引用打印陷阱调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'javascript/340-ProxyReflectPractice'
-  - 'javascript/390-ModuleDynamicImportCodeSplitting'
-  - 'javascript/110-Regex'
-  - 'javascript/480-ErrorBoundaryGlobalErrorCatch'
-prerequisites: []
+  - 'javascript/100-ThisKeywordDeepDive'
+  - 'javascript/190-PrototypeChainClassEssence'
+  - 'javascript/210-ObjectStaticMethods'
+  - 'javascript/140-CustomErrorTypes'
+prerequisites:
+  - 'javascript/070-ObjectArray'
+  - 'javascript/100-ThisKeywordDeepDive'
 ---
 
 ## 前置知识
 
-- [柯里化与偏函数](/javascript/170-CurryAndFunctionComposition)：建议先完成前一篇的学习
+- 已完成 [对象与数组：一百个玩家怎么办](/javascript/070-ObjectArray)：会用对象装「一个玩家的属性」、用数组装「一串玩家」；
+- 已完成 [this 关键字：四条规则，一个例外](/javascript/100-ThisKeywordDeepDive)：记得 new 绑定——当时只记了「this 是引擎刚造的新对象」这个现象，本篇把这个新对象的来路拆开。
+
+没读过 100 也能跟：用到 this 的地方我都会一句带回上下文，但「谁调用，this 就指向谁」你得有印象。
+
+分工声明：本篇负责把原型的心智模型立起来——方法怎么共享、属性怎么沿链查找、new 到底做了什么、class 糖衣下面是什么；[原型链深水区](/javascript/190-PrototypeChainClassEssence) 负责拆机制——prototype、\_\_proto\_\_、constructor 三角关系、Object.create 与 setPrototypeOf、继承模式演进、instanceof 真相。两篇实验不重复，读完本篇再去深水区。
 
 ## 学习目标
 
-- 掌握「1. 原型与原型链 (Prototype & Prototype Chain)」的核心机制、典型用法与常见陷阱
-- 掌握「2. 构造函数与 new (Constructor & new)」的核心机制、典型用法与常见陷阱
-- 掌握「3. __proto__、prototype、constructor 三角关系」的核心机制、典型用法与常见陷阱
-- 掌握「4. Object.create() 与 Object.setPrototypeOf()」的核心机制、典型用法与常见陷阱
-- 掌握「5. 继承的常见实现 (Common Inheritance Patterns)」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用 Object.getPrototypeOf 现场验证「实例的原型就是构造函数的 prototype」，并把一条原型链走到 null；
+2. 预测任意属性读取会沿原型链上溯到哪一层命中，并说出「读沿链上溯、写只写自己」；
+3. 按「造对象、接原型、跑函数、交对象」四步解释 new 的每一步，接上 100 篇的 new 绑定；
+4. 把任何 class 写法逐行翻译回「构造函数 + prototype」写法，并解释方法为什么全实例共享一份；
+5. 诊断「方法挂错地方」一类的 TypeError，并避开对象打印的两个陷阱。
 
+预计 60 到 75 分钟，含 3 组修改实验与 4 道练习。
 
-## 1. 原型与原型链 (Prototype & Prototype Chain)
+示例都在 Node 里跑：存成 `.js` 文件用 `node 文件名` 运行，或直接粘进 `node` 交互模式。每个示例都先预测再看输出。
 
-### 1.1 什么是原型
+## 1. 你现在要解决什么问题
 
-在 JavaScript 中，对象的属性查找并不只发生在对象自身。当访问 `obj.x` 时：
+070 篇用对象和数组解决了「一百个玩家的**数据**怎么办」。现在策划提了新需求：每个玩家都要能升级。第一反应——每个玩家对象里写一个方法：
 
-1. 先在 `obj` 自身属性中查找 `x`
-2. 找不到则沿着 `[Prototype](Prototype)`（俗称"原型"）指向的对象继续查找
-3. 直到 `null` 为止（链尾）
-   这个沿着 `[Prototype](Prototype)` 向上查找的结构就是原型链。
+```javascript
+const p1 = { name: '小明', level: 1, levelUp() { this.level += 1; } };
+const p2 = { name: '阿花', level: 1, levelUp() { this.level += 1; } };
+// ……第 3 到第 100 个玩家，每人抄一份 levelUp
 
-### 1.2 `__proto__`、`Object.getPrototypeOf` 与 `prototype`
-
-- `Object.getPrototypeOf(obj)`：读取对象的原型（推荐）
-- `Object.setPrototypeOf(obj, proto)`：设置对象的原型（不推荐，影响性能）
-- `obj.__proto__`：历史遗留访问器（不推荐）
-- `Fn.prototype`：函数对象特有属性，用于 `new Fn()` 创建实例时的原型指向
-  它们的关系可以用一句话记住：
-- 实例对象通过 `[Prototype](Prototype)` 链接到构造函数的 `prototype`
-
-```js
-function Foo() {}
-const x = new Foo();
-Object.getPrototypeOf(x) === Foo.prototype;
+console.log(p1.levelUp === p2.levelUp);   // 同一个函数吗？
 ```
 
-### 1.3 原型链的终点
+预期输出：
 
-原型链的终点是 `null`。完整的查找路径：
+```text
+false
+```
 
-```js
-function Person(name) {
-  this.name = name;
+`===` 比较函数时问的是「是不是同一个函数对象」。false 的意思是：一百个玩家手里攥着一百份一模一样的 levelUp。三个问题随之而来：
+
+- 浪费：一百个函数对象白白占内存；
+- 难改：升级规则变了（比如升级还回血），要改一百处；
+- 致命：想给所有玩家补一个新方法 cheer，已经创建出来的老玩家怎么办？对象字面量是「出生即定型」，没有任何入口给一百个对象统一补发方法。
+
+问题浓缩成一句：**方法放在哪儿，才能让一百个对象共用一份、还支持事后补发？** JavaScript 给出的答案是「原型」。往下读之前，把这个问题带在身上。
+
+## 2. 构造函数与 prototype：公共样板间
+
+JavaScript 里每个普通函数出生时都自带一个属性 `prototype`，它的值是一个普通对象。约定俗成的用法：**数据写在函数体里（每个实例一份），方法挂在 `prototype` 上（所有实例共享一份）**。
+
+```javascript
+function Player(name) {
+  this.name = name;      // this 是谁？100 篇的 new 绑定：引擎刚造的新对象
+  this.level = 1;
 }
-Person.prototype.say = function () {
-  return `I am ${this.name}`;
+
+// 方法不写进函数体，挂到样板间上
+Player.prototype.levelUp = function () {
+  this.level += 1;
 };
-const p = new Person('Alice');
-p.say();
-p.hasOwnProperty('name');
-p.toString();
-p.hasOwnProperty === Object.prototype.hasOwnProperty;
+
+const p1 = new Player('小明');
+const p2 = new Player('阿花');
+
+p1.levelUp();
+console.log(p1.level, p2.level);          // 只动了 p1？
+console.log(p1.levelUp === p2.levelUp);   // 同一个函数吗？
 ```
 
-查找 `p.toString()` 的过程：
+预期输出：
 
-```
- p → Person.prototype → Object.prototype → null
-```
-
-每一层都找不到 `toString`，直到 `Object.prototype` 上才找到。
-
-### 1.4 原型链可视化
-
-```mermaid
-flowchart TD
-    P[p 实例对象<br/>name: "Alice"] -->|__proto__| PP[Person.prototype<br/>say, constructor]
-    PP -->|__proto__| OP[Object.prototype<br/>hasOwnProperty, toString, valueOf…]
-    OP -->|__proto__| Null[null]
+```text
+2 1
+true
 ```
 
----
+升级规则改了也不用改一百处——样板间里那一份改了，所有人都用新版。为什么 `p1.levelUp` 能调用到样板间里的方法？因为 `new Player(...)` 造出来的每个实例，都连着 `Player.prototype`。这张连线图不是背的，下一节用工具现场量出来：
 
-## 2. 构造函数与 `new` (Constructor & new)
-
-### 2.1 `new` 的执行过程
-
-`new Fn(...args)` 的关键步骤可以理解为：
-
-1. 创建一个新对象 `obj`
-2. 设置 `obj.[Prototype](Prototype) = Fn.prototype`
-3. 执行 `Fn`，并把 `this` 绑定到 `obj`
-4. 若 `Fn` 显式返回对象，则返回该对象；否则返回 `obj`
-   用伪代码表示：
-
-```js
-function myNew(Fn, ...args) {
-  const obj = Object.create(Fn.prototype);
-  const ret = Fn.apply(obj, args);
-  return ret !== null && (typeof ret === 'object' || typeof ret === 'function') ? ret : obj;
-}
+```text
+p1 ──→ { name: '小明', level: 2 }        实例：只放每个玩家不同的数据
+        │
+        │  出生时由 new 接好的一条隐形连线
+        ↓
+Player.prototype ──→ { levelUp: … }      样板间：所有玩家共享的方法
+        │
+        ↓
+Object.prototype ──→ { toString: … }     所有对象的公共样板间
+        │
+        ↓
+null                                     链的终点
 ```
 
-### 2.2 构造函数返回值的影响
+## 3. 用 Object.getPrototypeOf 看见这条链
 
-```js
-function Foo() {
-  this.x = 1;
-  return { y: 2 };
-}
-const a = new Foo();
-a.x;
-a.y;
-function Bar() {
-  this.x = 1;
-  return 42;
-}
-const b = new Bar();
-b.x;
+引擎给了测量工具：`Object.getPrototypeOf(对象)` 返回它的「上一级」。别背图，逐行先预测再运行：
+
+```javascript
+function Player(name) { this.name = name; }
+const p1 = new Player('小明');
+
+console.log(Object.getPrototypeOf(p1) === Player.prototype);   // p1 的上一级是？
+console.log(Object.getPrototypeOf({}) === Object.prototype);   // 普通对象的上一级是？
+console.log(Object.getPrototypeOf([]) === Array.prototype);    // 数组的上一级是？
+console.log(Object.getPrototypeOf(Object.prototype));          // 链的终点是？
 ```
 
-**规则**：构造函数如果返回一个**对象**，则 `new` 的结果就是该对象；如果返回**非对象**（或无 `return`），则返回 `this`。
+预期输出：
 
-### 2.3 构造函数的 `constructor` 属性
-
-每个函数的 `prototype` 对象默认有一个 `constructor` 属性，指回函数本身：
-
-```js
-function Foo() {}
-Foo.prototype.constructor === Foo;
-const x = new Foo();
-x.constructor === Foo;
+```text
+true
+true
+true
+null
 ```
 
-[警告] 如果手动替换了 `prototype`，需要修复 `constructor`：
+第三行顺手解开一个老谜题：为什么数组有 `push`、普通对象没有？因为 `push` 住在 `Array.prototype` 这个样板间里，数组一出生就连着它。把整条链打印出来：
 
-```js
-function Foo() {}
-Foo.prototype = {
-  constructor: Foo,
-  method() {
-    return 'hello';
-  },
-};
-```
+```javascript
+function Player(name) { this.name = name; }
+const p1 = new Player('小明');
 
----
-
-## 3. `__proto__`、`prototype`、`constructor` 三角关系
-
-### 3.1 三角关系图解
-
-```mermaid
-flowchart TD
-    Foo[Foo 构造函数] -->|Foo.prototype| FP[Foo.prototype 原型对象]
-    FP -->|constructor| Foo
-    FP -->|method1| M1[method1()]
-    FP -->|__proto__| OP[Object.prototype]
-    Foo -->|__proto__| FuncProto[Function.prototype<br/>Foo 本质上也是函数对象]
-    X[x 实例] -->|x.__proto__| FP
-    X -->|x.constructor| Foo
-```
-
-### 3.2 核心等式
-
-```js
-function Foo() {}
-const x = new Foo();
-x.__proto__ === Foo.prototype;
-Foo.prototype.constructor === Foo;
-x.constructor === Foo;
-Foo.__proto__ === Function.prototype;
-Foo.prototype.__proto__ === Object.prototype;
-Object.prototype.__proto__ === null;
-```
-
-### 3.3 函数对象的原型链
-
-函数本身也是对象，它的原型链：
-
-```
- Foo → Function.prototype → Object.prototype → null
-```
-
-```js
- function Foo() {}
- Foo.__proto__ === Function.prototype
- function.prototype.__proto__ === Object.prototype
- Object.prototype.__proto__ === null
-```
-
-### 3.4 原型链的完整查找路径示例
-
-```js
-function Animal(name) {
-  this.name = name;
-}
-Animal.prototype.eat = function () {
-  return `${this.name} is eating`;
-};
-function Dog(name, breed) {
-  Animal.call(this, name);
-  this.breed = breed;
-}
-dog.prototype = Object.create(Animal.prototype);
-dog.prototype.constructor = Dog;
-dog.prototype.bark = function () {
-  return `${this.name} says woof!`;
-};
-const d = new Dog('Rex', 'Shepherd');
-d.bark();
-d.eat();
-d.toString();
-```
-
-查找路径：
-
-```
- d → Dog.prototype → Animal.prototype → Object.prototype → null
-```
-
----
-
-## 4. `Object.create()` 与 `Object.setPrototypeOf()`
-
-### 4.1 `Object.create(proto, propertyDescriptors)`
-
-创建一个新对象，并将其 `[Prototype](Prototype)` 设置为 `proto`：
-
-```js
-const base = {
-  greet() {
-    return `Hello, I am ${this.name}`;
-  },
-};
-const alice = Object.create(base);
-alice.name = 'Alice';
-alice.greet();
-Object.getPrototypeOf(alice) === base;
-```
-
-第二个参数可以定义属性描述符：
-
-```js
- const bob = Object.create(base, {
-  name: {
-  value: 'Bob',
-  writable: true,
-  enumerable: true,
-  configurable:
+function showChain(obj) {
+  let cur = obj;
+  while (cur !== null) {
+    if (cur === obj) {
+      console.log('(自己) ' + JSON.stringify(cur));
+    } else {
+      console.log('(原型层) ' + cur.constructor.name);
+    }
+    cur = Object.getPrototypeOf(cur);
   }
- }
- bob.greet()
+  console.log('(终点) null');
+}
+showChain(p1);
 ```
 
-### 4.2 `Object.create(null)`——纯净字典对象
+预期输出：
 
-```js
-const dict = Object.create(null);
-dict.key = 'value';
-dict.toString;
-dict.hasOwnProperty;
-'key' in dict;
+```text
+(自己) {"name":"小明"}
+(原型层) Player
+(原型层) Object
+(终点) null
 ```
 
-用途：当需要用对象做纯字典时，避免原型链上的属性干扰（如 `toString`、`hasOwnProperty`）。
+代码里出现了 `constructor`——它是每个原型层自带的名字牌，写着这块样板间属于哪个函数。它本身是 [原型链深水区](/javascript/190-PrototypeChainClassEssence) 的主角，本篇只借它当层名用，先混个眼熟。
 
-### 4.3 `Object.setPrototypeOf(obj, proto)`
+## 4. 属性查找：读沿链上溯，写只写自己
 
-运行时修改对象的原型：
+现在能解释 `p1.levelUp` 的调用过程了。读 `p1.某属性` 时，引擎按固定路线找：
 
-```js
-const proto = {
-  greet() {
-    return 'hello';
-  },
-};
-const obj = { name: 'test' };
-Object.setPrototypeOf(obj, proto);
-obj.greet();
+1. 先看 p1 自己身上有没有；
+2. 没有就到上一级 `Player.prototype` 找；
+3. 还没有就到 `Object.prototype` 找；
+4. 到 null 都没有，返回 undefined。
+
+```javascript
+function Player(name) { this.name = name; }
+Player.prototype.levelUp = function () { this.level = (this.level || 1) + 1; };
+const p1 = new Player('小明');
+
+console.log(p1.name);      // 自己身上有
+console.log(p1.levelUp);   // 自己没有，样板间有
+console.log(p1.toString);  // 样板间也没有，Object.prototype 有
+console.log(p1.hasGold);   // 全链都没有
 ```
 
-[警告] **强烈不推荐**在性能敏感代码中使用，原因：
+预期输出：
 
-1. 修改已有对象的原型会使 V8 的隐藏类（Hidden Class）优化失效
-2. 所有后续属性访问都会变慢（退化为字典模式）
-3. 各浏览器引擎对此操作都有性能惩罚
-   **替代方案**：用 `Object.create()` 在创建时就确定原型关系。
-
-### 4.4 `Object.getPrototypeOf(obj)`
-
-安全地读取对象原型：
-
-```js
-function Foo() {}
-const x = new Foo();
-Object.getPrototypeOf(x) === Foo.prototype;
-Object.getPrototypeOf(Foo.prototype) === Object.prototype;
-Object.getPrototypeOf(Object.prototype) === null;
+```text
+小明
+[Function: levelUp]
+[Function: toString]
+undefined
 ```
 
----
+写规则只有一句，但和读不一样：**赋值只落在对象自己身上，原型层毫发无损**。`p1.level = 5` 是在 p1 身上新建自有属性，不会顺着链往上改。这条规则在 190 篇还会碰见更刁钻的边界情况。
 
-## 5. 继承的常见实现 (Common Inheritance Patterns)
+还有一块拼图别丢：`p1.levelUp()` 里共享的函数怎么知道该升级谁的等级？100 篇的隐式绑定——点号前是 p1，所以方法里的 this 就是 p1。**方法共享一份，数据各用各的**，这两条合起来才是原型的心智模型全貌。
 
-### 5.1 原型链继承
+## 5. new 到底做了什么：四步拆解
 
-```js
-function Parent() {
-  this.colors = ['red', 'blue'];
+「构造函数 + prototype」是一条装配线，`new Player('小明')` 看着是一步，底下是四步：
+
+1. 造一个全新的空对象；
+2. 把它的原型接到 `Player.prototype`（第 3 节验证过的那条连线）；
+3. 以这个新对象为 this 执行函数体——100 篇的 new 绑定，当时只记了现象，现在知道 this 指向的新对象从哪来了；
+4. 函数跑完，把新对象交还给你。例外：构造函数显式 return 一个对象时，返回那个对象——知道有这回事就行，日常 class 写法用不到。
+
+前两步可以在构造函数里现场验证：
+
+```javascript
+function Player(name) {
+  console.log('第 1、2 步刚完成：this =', this, '连着样板间？',
+    Object.getPrototypeOf(this) === Player.prototype);
+  this.name = name;      // 第 3 步：往新对象上挂数据
 }
-Parent.prototype.say = function () {
-  return 'parent';
-};
-function Child() {}
-Child.prototype = new Parent();
-Child.prototype.constructor = Child;
-const c1 = new Child();
-const c2 = new Child();
-c1.colors.push('green');
-c2.colors;
+Player.prototype.levelUp = function () {};
+
+const p = new Player('小明');
+console.log(p);            // 第 4 步交出来的东西
 ```
 
-问题：
+预期输出：
 
-- `Child.prototype` 上共享 `Parent` 实例状态（若 Parent 构造函数里初始化引用类型，会导致实例间共享）
-- 无法向 `Parent` 构造函数传参
-
-### 5.2 借用构造函数继承（构造函数继承）
-
-```js
-function Parent(name) {
-  this.name = name;
-  this.colors = ['red', 'blue'];
-}
-Parent.prototype.say = function () {
-  return this.name;
-};
-function Child(name) {
-  Parent.call(this, name);
-}
-const c1 = new Child('Alice');
-const c2 = new Child('Bob');
-c1.colors.push('green');
-c1.colors;
-c2.colors;
-c1.say;
+```text
+第 1、2 步刚完成：this = {} 连着样板间？ true
+{ name: '小明' }
 ```
 
-优点：可传参、每个实例独立状态。缺点：方法无法复用（每次实例化都复制一份），且无法继承原型上的方法。
+注意最后一行：打印出来的 p 只有 `{ name: '小明' }`，那条连向样板间的线看不见——`console.log` 只显示自有属性。这个「打印陷阱」第 8 节细说。
 
-### 5.3 组合继承
+## 6. class：原型的语法糖
 
-结合两者优点：在 `Child` 中 `Parent.call(this, ...)` 初始化实例属性，再用原型链复用方法。
+ES6 之后你见到的多数代码长这样。和第 5 节的装配线逐行对照：
 
-```js
-function Parent(name) {
-  this.name = name;
-  this.colors = ['red', 'blue'];
-}
-Parent.prototype.say = function () {
-  return this.name;
-};
-function Child(name, age) {
-  Parent.call(this, name);
-  this.age = age;
-}
-Child.prototype = Object.create(Parent.prototype);
-Child.prototype.constructor = Child;
-const c1 = new Child('Alice', 20);
-const c2 = new Child('Bob', 25);
-c1.colors.push('green');
-c1.colors;
-c2.colors;
-c1.say();
-```
-
-这也是 ES5 下最常用、最稳定的写法之一。
-**缺点**：`Parent` 构造函数被调用了两次（`Parent.call(this, ...)` 和 `Object.create(Parent.prototype)` 中的隐式调用），存在冗余。
-
-### 5.4 寄生组合继承（最优 ES5 方案 [完成]）
-
-通过寄生方式避免 `Parent` 构造函数的重复调用：
-
-```js
-function inheritPrototype(Child, Parent) {
-  const prototype = Object.create(Parent.prototype);
-  prototype.constructor = Child;
-  Child.prototype = prototype;
-}
-function Parent(name) {
-  this.name = name;
-  this.colors = ['red', 'blue'];
-}
-Parent.prototype.say = function () {
-  return this.name;
-};
-function Child(name, age) {
-  Parent.call(this, name);
-  this.age = age;
-}
-inheritPrototype(Child, Parent);
-Child.prototype.introduce = function () {
-  return `${this.say()}, age ${this.age}`;
-};
-const c = new Child('Alice', 20);
-c.say();
-c.introduce();
-c instanceof Child;
-c instanceof Parent;
-```
-
-**优点**：
-
-- `Parent` 构造函数只调用一次
-- 原型链保持完整
-- 实例属性独立，方法共享
-  这是 ES5 时代最完美的继承方案，也是很多库（如 Vue 2.x）内部使用的继承方式。
-
-### 5.5 ES6 `class`/`extends` 的本质
-
-`class` 只是更清晰的语法糖，底层仍然是原型链：
-
-- 实例方法在 `Child.prototype`
-- 静态方法在 `Child` 本身
-- `extends` 建立两条链：
-- `Child.__proto__ = Parent`（继承静态方法）
-- `Child.prototype.__proto__ = Parent.prototype`（继承实例方法）
-
-```js
-class Parent {
+```javascript
+class Player {
   constructor(name) {
-    this.name = name;
-    this.colors = ['red', 'blue'];
+    this.name = name;      // 四步里的第 3 步
+    this.level = 1;
   }
-  say() {
-    return this.name;
-  }
-  static version() {
-    return 1;
+  levelUp() {              // 等价于 Player.prototype.levelUp = function () { … }
+    this.level += 1;
   }
 }
-class Child extends Parent {
-  constructor(name, age) {
-    super(name);
-    this.age = age;
-  }
-  introduce() {
-    return `${this.say()}, age ${this.age}`;
-  }
+
+console.log(typeof Player);                                   // class 的真身是？
+console.log(Player.prototype.levelUp);                        // 方法挂在哪？
+const p1 = new Player('小明');
+console.log(Object.getPrototypeOf(p1) === Player.prototype);  // 接的还是同一条链吗？
+```
+
+预期输出：
+
+```text
+function
+[Function: levelUp]
+true
+```
+
+class 没有发明新机器：它就是「构造函数 + 挂原型」写成一体，外加两条纪律——必须 new 调用（直接 `Player()` 报 TypeError）、方法自动不可枚举。记住这句：**class 是原型的语法糖，糖衣下面还是那四步**。语法糖不是贬义——少写样板、少踩坑，前提是你知道糖下面是什么。
+
+class 还有「字段」语法，正好把实例和原型各归其位：
+
+```javascript
+class Counter {
+  count = 0;                   // 类字段：每个实例一份，等价于 constructor 里 this.count = 0
+  inc() { this.count += 1; }   // 方法：挂在原型上，所有实例共享一份
 }
-const c = new Child('Alice', 20);
-c.say();
-c.introduce();
-c instanceof Child;
-c instanceof Parent;
-Child.version();
+
+const c1 = new Counter();
+const c2 = new Counter();
+console.log(c1.inc === c2.inc);   // 同一个函数吗？
 ```
 
-**`class` 继承的注意事项**：
+预期输出：
 
-```js
-class Parent {
-  constructor() {
-    this.type = 'parent';
-  }
-}
-class Child extends Parent {
-  constructor() {
-    console.log(this);
-    super();
-    console.log(this);
-  }
-}
+```text
+true
 ```
 
-在 `class` 的 `constructor` 中，`this` 在 `super()` 调用前不可用，否则报 `ReferenceError`。
+需要钉死 this 的回调（100 篇事件修复的第三种写法）就写成箭头函数字段：`handleClick = () => { … }`。它写在每个实例上、每实例一份，换来 this 终生不变——共享还是独立，现在你有依据做选择了。
 
-### 5.6 继承方式对比总结
+## 7. 修改实验
 
-| 继承方式     | 原型方法 | 实例属性独立 | 可传参 | 调用父构造次数 | 推荐度 |
-| :----------- | :------- | :----------- | :----- | :------------- | :----- |
-| 原型链继承   | [完成]   | [错误]       | [错误] | 1              |        |
-| 构造函数继承 | [错误]   | [完成]       | [完成] | 1              |        |
-| 组合继承     | [完成]   | [完成]       | [完成] | 2              |        |
-| 寄生组合继承 | [完成]   | [完成]       | [完成] | 1              |        |
-| ES6 class    | [完成]   | [完成]       | [完成] | 1              |        |
+实验一（事后补发方法）：在创建 p1、p2 之后，再补一行 `Player.prototype.cheer = function () { return this.name + ' 呐喊助威'; }`。先预测 p1 能不能调用 cheer，再运行。开局那个「老玩家怎么办」的问题在这里出答案。
 
----
+实验二（共享与遮蔽）：先预测 `p1.levelUp === p2.levelUp`；然后执行 `p1.levelUp = function () { this.level += 2; }`，再预测这个等式的结果、以及两人各升级一次后 level 差多少。运行验证：p1 身上长出了一份新方法，把原型那份挡住了——「写只写自己」的现场版。
 
-## 6. 属性查找、遮蔽与删除 (Lookup, Shadowing, Delete)
+实验三（换条链走走）：把第 3 节的 `showChain(p1)` 换成 `showChain([])` 和 `showChain(new Date())`。先预测各打几层、层名是什么，再运行。
 
-### 6.1 属性查找机制
+## 8. 常见错误与调试实录
 
-```js
-const base = { x: 1, y: 2 };
-const obj = Object.create(base);
-obj.z = 3;
-obj.z;
-obj.x;
-obj.y;
-obj.w;
+**错误一：方法挂错地方，`TypeError: xxx is not a function`。** 三种挂法里只有一种是共享的，另两种都会出事：
+
+```javascript
+function Enemy(kind) { this.kind = kind; }
+
+Enemy.attack = function () { return this.kind + ' 发起攻击'; };   // 挂错：挂到了函数自己身上
+const e = new Enemy('史莱姆');
+console.log(e.attack());
 ```
 
-查找过程：`obj 自身 → base → Object.prototype → null`
+真实报错（Node 原文）：
 
-### 6.2 属性遮蔽（Shadowing）
-
-子对象自有属性会遮蔽原型链同名属性：
-
-```js
-const base = { x: 1 };
-const obj = Object.create(base);
-obj.x = 2;
-obj.x;
-base.x;
-delete obj.x;
-obj.x;
+```text
+TypeError: e.attack is not a function
 ```
 
-### 6.3 属性设置与遮蔽规则
+三步定位：
 
-给对象属性赋值时，有三种情况：
+1. **读报错**：e.attack 不是函数——e 身上没有 attack，或者它不是函数；
+2. **验对象**：插一行 `console.log(e.attack, Enemy.attack)`，输出 `undefined [Function: attack]`——attack 存在，但住在 Enemy 函数自己身上，实例的链上根本没有它；
+3. **找位置**：`Enemy.attack = …` 把方法挂到了构造函数自己（那是给「静态方法」留的位置），实例够不着。修复一行：
 
-```js
-const base = {
-  x: 1,
-  get y() {
-    return this._y || 10;
-  },
-  set y(val) {
-    this._y = val;
-  },
-};
-const obj = Object.create(base);
-obj.x = 100;
-obj.x;
-base.x;
-obj.y = 200;
-obj.y;
-obj._y;
+```javascript
+Enemy.prototype.attack = function () { return this.kind + ' 发起攻击'; };
+console.log(e.attack());   // 史莱姆 发起攻击
 ```
 
-**规则**：
+另外两种病根同源：把方法挂到了某一个实例上（`e.attack = …`，只有它自己会用）；把方法写进了函数体（不报错，但回到第 1 节的一百份复制）。还有一个陷阱别踩：方法挂在原型上之后，`console.log(e)` 里**看不到** attack——console.log 只显示自有属性，看不见不等于没挂上，能调用就是挂上了。
 
-1. 如果属性在自身且可写 → 直接修改自身属性
-2. 如果属性在原型链上且是数据属性（可写）→ 在自身创建新属性（遮蔽）
-3. 如果属性在原型链上是 getter/setter → 调用 setter，不会自动遮蔽
+**错误二：循环引用打印陷阱。** 原型学会了，你开始给对象之间挂关系：玩家带着公会，公会成员列表里又是玩家：
 
-### 6.4 删除属性
+```javascript
+const guild = { name: '晨风', members: [] };
+const p1 = { name: '小明' };
+p1.guild = guild;
+guild.members.push(p1);
 
-- `delete obj.x` 只能删除自有属性，删不掉原型上的 `x`
-- `in` 会沿原型链查找；`Object.hasOwn(obj, key)` 只看自有属性
-
-```js
-const base = { x: 1 };
-const obj = Object.create(base);
-obj.x = 2('x' in obj);
-Object.hasOwn(obj, 'x');
-delete obj.x;
-Object.hasOwn(obj, 'x');
-obj.x;
+console.log(guild);            // Node 能处理环，但会打标记
+JSON.stringify(guild);         // 序列化直接炸
 ```
 
-### 6.5 属性枚举与检测方法对比
+预期输出（第一行是 Node 的打印原文，第二段是报错原文）：
 
-```js
- const base = { inherited:  }
- const obj = Object.create(base)
- obj.own =
- Object.defineProperty(obj, 'hidden', { value: 1, enumerable: false })
- 'own' in obj
- 'inherited' in obj
- 'hidden' in obj
- Object.hasOwn(obj, 'own')
- Object.hasOwn(obj, 'inherited')
- Object.hasOwn(obj, 'hidden')
- Object.keys(obj)
- Object.getOwnPropertyNames(obj)
- for (const key in obj) { console.log(key) }
+```text
+<ref *1> { name: '晨风', members: [ { name: '小明', guild: [Circular *1] } ] }
+TypeError: Converting circular structure to JSON
+    --> starting at object with constructor 'Object'
 ```
 
-| 方法                         | 自有可枚举 | 自有不可枚举 | 继承可枚举 |
-| :--------------------------- | :--------- | :----------- | :--------- |
-| `in`                         | [完成]     | [完成]       | [完成]     |
-| `Object.hasOwn`              | [完成]     | [完成]       | [错误]     |
-| `Object.keys`                | [完成]     | [错误]       | [错误]     |
-| `Object.getOwnPropertyNames` | [完成]     | [完成]       | [错误]     |
-| `for...in`                   | [完成]     | [错误]       | [完成]     |
+`<ref *1>` 和 `[Circular *1]` 是 Node 的标记：*1 位置的对象出现了第二次，别再展开。`JSON.stringify` 没这个容错，直接抛 TypeError。修复思路：调试时用 `console.log` 看（认标记就行）；真要序列化，先拆掉环或者给 stringify 传 replacer 过滤掉会成环的键。注意区分：这是「引用成环，打印炸」；原型链本身永远到 null 就停，不会成环——要是有人硬造原型环，引擎会当场拒绝，见 190 篇。
 
----
+## 9. 实际项目中的使用场景
 
-## 7. 原型链判断方法
+- 游戏实体、UI 组件这类「大量实例 + 固定行为」的对象：方法一律上原型或 class。一千个敌人共用一份攻击函数，实例上只放血量、位置这些各自不同的数据；
+- 类字段箭头函数钉 this 在事件绑定里常见（100 篇的第三种修复），代价是每实例一份——别把所有方法都写成箭头字段；
+- 别随手给内置原型补方法（`Array.prototype.first = …`）：会和别的库、和语言未来新增的方法撞名。想扩展行为，优先用工具函数或组合；
+- 读老代码、读 polyfill、读工具库源码时会遇到大量 prototype 写法：本篇的心智模型就是解码器，[原型链深水区](/javascript/190-PrototypeChainClassEssence) 再给你进阶密码本。
 
-### 7.1 `instanceof`
+## 10. 小练习
 
-检测构造函数的 `prototype` 是否出现在某个实例对象的原型链上：
+预测题（5 分钟，先写答案再运行）：
 
-```js
- function Foo() {}
- const x = new Foo()
- x instanceof Foo
- x instanceof Object
- Foo instanceof Function
- function instanceof Object
- Object instanceof Function
+```javascript
+function Player() {}
+Player.prototype.hp = 100;
+const a = new Player();
+a.hp = 70;
+const b = new Player();
+console.log(a.hp, b.hp);
 ```
 
-**`instanceof` 的实现原理**：
+对照（先写再看）：
 
-```js
-function myInstanceof(obj, Constructor) {
-  if (typeof Constructor !== 'function') throw new TypeError('Right-hand side is not callable');
-  let proto = Object.getPrototypeOf(obj);
-  while (proto !== null) {
-    if (proto === Constructor.prototype) return;
-    proto = Object.getPrototypeOf(proto);
-  }
-  return false;
-}
-myInstanceof(x, Foo);
-myInstanceof(x, Object);
-myInstanceof(x, Array);
+```text
+70 100
 ```
 
-**`instanceof` 的局限性**：
+赋值只落在 a 自己身上（遮住原型的 100）；b 自己没有 hp，读时沿链上溯拿到 100。
 
-```js
-const str = 'hello';
-str instanceof String;
-const obj = Object.create(null);
-obj instanceof Object;
+修改题（10 分钟）：把第 1 节的一百玩家字面量版改成共享版——写构造函数 Player，name 与 level 挂实例，levelUp 挂原型。验收断言：
+
+```javascript
+console.assert(p1.levelUp === p2.levelUp, 'levelUp 应共享同一份');
+console.assert(Object.getPrototypeOf(p1) === Player.prototype, '实例应连着样板间');
 ```
 
-- 原始值使用 `instanceof` 始终返回 `false`
-- `Object.create(null)` 创建的对象没有原型链，`instanceof Object` 也返回 `false`
-- 跨 iframe/realm 时，不同全局对象的 `Array.prototype` 不同，`instanceof` 会失效
+修 Bug 题（15 分钟）：下面的代码想给每个敌人一个特殊技，运行真实报错。按三步定位并修复：
 
-### 7.2 `isPrototypeOf()`
-
-检测一个对象是否存在于另一个对象的原型链上：
-
-```js
-function Animal() {}
-function Dog() {}
-dog.prototype = Object.create(Animal.prototype);
-dog.prototype.constructor = Dog;
-const d = new Dog();
-Animal.prototype.isPrototypeOf(d);
-dog.prototype.isPrototypeOf(d);
-Object.prototype.isPrototypeOf(d);
+```javascript
+function Boss(name) { this.name = name; }
+Boss.roar = function () { return this.name + ' 发出咆哮'; };
+const boss = new Boss('黑龙');
+console.log(boss.roar());
 ```
 
-**`instanceof` vs `isPrototypeOf`**：
+真实报错：
 
-```js
-d instanceof Dog;
-dog.prototype.isPrototypeOf(d);
-d instanceof Animal;
-Animal.prototype.isPrototypeOf(d);
+```text
+TypeError: boss.roar is not a function
 ```
 
-| 对比项   | `instanceof`                 | `isPrototypeOf`                |
-| :------- | :--------------------------- | :----------------------------- |
-| 语法     | `obj instanceof Constructor` | `prototype.isPrototypeOf(obj)` |
-| 关注点   | 构造函数                     | 原型对象                       |
-| 跨 realm | [错误] 可能失效              | [完成] 不受影响                |
-| 原始值   | 始终 `false`                 | 始终 `false`                   |
+提示：roar 挂到了谁身上？修复后预期输出 `黑龙 发出咆哮`。修完追加一问：`Boss.roar()` 直接调用能跑吗？能打出什么？（this 是 Boss 函数自己，this.name 是 undefined。）
 
-### 7.3 更可靠的类型判断
+挑战题（半小时，不给代码）：写构造函数 Wizard——name 与 mana = 100 挂实例，castSkill 挂原型（施法扣 40 蓝并返回施法描述字符串）。验收断言：
 
-```js
-Object.prototype.toString.call([]);
-Object.prototype.toString.call({});
-Object.prototype.toString.call('hello');
-Object.prototype.toString.call(42);
-Object.prototype.toString.call(null);
-Object.prototype.toString.call(undefined);
-Object.prototype.toString.call(() => {});
-Object.prototype.toString.call(new Date());
-Object.prototype.toString.call(/regex/);
+```javascript
+const w1 = new Wizard('小明');
+const w2 = new Wizard('阿花');
+console.assert(w1.castSkill === w2.castSkill, 'castSkill 应共享同一份');
+w1.castSkill();
+console.assert(w1.mana === 60 && w2.mana === 100, '只有 w1 掉了蓝');
+console.assert(Object.getPrototypeOf(w1) === Wizard.prototype, '应连在 Wizard.prototype 上');
 ```
 
-## `Object.prototype.toString` 是最可靠的类型判断方法，不受跨 realm 影响。
+「提示」：new 四步里第 3 步负责挂数据，方法别写进函数体；「展开」：函数体里只写 `this.name = name; this.mana = 100;`，方法在构造函数外面用 `Wizard.prototype.castSkill = function () { … }` 挂。
 
-## 8. 工程实践与性能 (Best Practices & Performance)
+## 11. 与之前和之后的知识的关系
 
-### 8.1 原型链性能
+- 往前：070 篇的「一百个玩家」在数据层面收官，本篇在行为层面收官——数据进实例，行为上原型；100 篇 new 绑定的「新对象」找到了出生地：第 2 步接原型、第 3 步当 this；090 篇「数组能 push、普通对象不能」的谜底在第 3 节——push 住在 Array.prototype 样板间里；
+- 往后：[原型链深水区](/javascript/190-PrototypeChainClassEssence) 拆三角关系、继承演进与 instanceof 真相；[自定义错误类型](/javascript/140-CustomErrorTypes) 的 extends Error 是 class 继承最常见的实战；[Object 扩展](/javascript/210-ObjectStaticMethods) 收纳 Object.create、Object.getPrototypeOf 等静态方法的完整清单。
 
-属性查找沿原型链逐层搜索，链越长查找越慢：
+## 12. 官方文档
 
-```js
-const a = { x: 1 };
-const b = Object.create(a);
-const c = Object.create(b);
-const d = Object.create(c);
-const e = Object.create(d);
-console.time('own');
-for (let i = 0; i < 1e6; i++) {
-  e.y = 1;
-  void e.y;
-}
-console.timeEnd('own');
-console.time('deep');
-for (let i = 0; i < 1e6; i++) {
-  void e.x;
-}
-console.timeEnd('deep');
-```
+- MDN 继承与原型链：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Inheritance_and_the_prototype_chain
+- Object.getPrototypeOf：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/getPrototypeOf
+- class：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Classes
+- 公共类字段：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Classes/Public_class_fields
 
-实践建议：避免过深的原型链（一般不超过 3-4 层）。
+## 13. 自我检查
 
-### 8.2 避免运行时修改原型
+- 能不翻资料说出 new 的四步，并在构造函数里用一行代码验证前两步；
+- 能用 Object.getPrototypeOf 把任意对象的原型链打印到 null；
+- 给一段代码能预测「读」落在链上哪一层、「写」落在谁身上；
+- 能把一段 class 逐行翻译回「构造函数 + prototype」写法；
+- 看到 `xxx is not a function` 能列出「挂错地方」的三种可能：挂到实例、挂到函数自己、写进了函数体。
 
-- 避免运行时频繁 `Object.setPrototypeOf`：会使对象"退化"，影响 JIT 优化
-- 避免运行时修改 `Fn.prototype`：会影响所有已创建的实例
-- 优先用 `class`/`extends` 或 `Object.create` 明确建立原型关系
+## 本章总结
 
-```js
-function Foo() {}
-const a = new Foo();
-Foo.prototype.method = function () {
-  return 'new method';
-};
-a.method();
-Foo.prototype = {
-  otherMethod() {
-    return 'other';
-  },
-};
-a.otherMethod;
-a.method();
-```
+原型是一百个对象共用一份方法的方式：方法挂在函数的 `prototype` 样板间上，new 造实例时自动把实例连到样板间——这条连线可以用 Object.getPrototypeOf 随时验证。属性读取沿「自己、样板间、Object.prototype、null」上溯命中即停，赋值只写自己；共享方法配 100 篇的隐式绑定，方法共享一份、数据各用各的。new 的四步（造对象、接原型、跑函数、交对象）解释了 this 新对象的来路；class 只是这四步的包装，字段归实例、方法归原型。调试两条纪律：`xxx is not a function` 先查方法挂到了谁身上；console.log 只显示自有属性，看见循环引用标记要认得收手。
 
-### 8.3 对需要枚举的对象
+## 下一步
 
-- 尽量用 `Object.keys`/`Object.entries`（只枚举自有可枚举属性）
-- 对安全敏感输入，避免把外部数据直接合并到对象原型链相关位置
-- 使用 `Object.hasOwn()` 代替 `obj.hasOwnProperty()`（更安全，避免 `hasOwnProperty` 被遮蔽）
-
-```js
-const obj = Object.create(null);
-obj.hasOwnProperty;
-Object.hasOwn(obj, 'key');
-```
-
-### 8.4 方法定义的最佳位置
-
-```js
-function Person(name) {
-  this.name = name;
-}
-Person.prototype.greet = function () {
-  return `Hello, ${this.name}`;
-};
-const p1 = new Person('Alice');
-const p2 = new Person('Bob');
-p1.greet === p2.greet;
-```
-
-## 方法定义在原型上，所有实例共享同一个函数引用，节省内存。如果定义在构造函数内，每次 `new` 都会创建新的函数对象。
-
-## 9. 安全注意：原型污染 (Prototype Pollution)
-
-### 9.1 什么是原型污染
-
-当把不可信输入合并到对象时，若允许写入 `__proto__`/`constructor.prototype` 等字段，可能污染全局对象原型，导致权限绕过或逻辑劫持。
-
-```js
-function merge(target, source) {
-  for (const key in source) {
-    target[key] = source[key];
-  }
-}
-const payload = JSON.parse('{"__proto__":{"isAdmin":true}}');
-merge({}, payload)({}).isAdmin;
-```
-
-### 9.2 防御措施
-
-实践建议：
-
-- 合并用户输入时做 key 白名单或过滤：`__proto__`、`prototype`、`constructor`
-- 对纯字典对象使用 `Object.create(null)`，避免原型链
-
-```js
- const dict = Object.create(null)
- dict['__proto__'] = { polluted:  }
- ({}).polluted
-```
-
-- 使用 `Object.defineProperty` 设置 `__proto__` 为不可配置
-
-```js
-function safeMerge(target, source) {
-  const dangerous = ['__proto__', 'constructor', 'prototype'];
-  for (const key of Object.keys(source)) {
-    if (dangerous.includes(key)) continue;
-    target[key] = source[key];
-  }
-  return target;
-}
-```
-
-- 使用 `Map` 代替普通对象存储键值对
-
-```js
- const map = new Map()
- map.set('__proto__', { polluted:  })
- map.get('__proto__')
- ({}).polluted
-```
-
-### 9.3 深层原型污染
-
-不仅 `__proto__`，嵌套路径也可能导致污染：
-
-```json
- {
-  "constructor": {
-  "prototype": {
-  "isAdmin":
-  }
-  }
- }
-```
-
-防御：递归合并时，对每一层的 key 都做危险 key 过滤。
+进入 [原型链深水区](/javascript/190-PrototypeChainClassEssence)：心智模型已经立住——那边拆机制。constructor 为什么查得到、Object.create 和 setPrototypeOf 的用法与代价、继承从借用构造函数到 class extends 的演进、instanceof 的真实原理，全在那边。

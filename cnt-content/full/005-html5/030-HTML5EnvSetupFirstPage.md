@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 网页开发没有「装环境」这回事：一个浏览器加一个编辑器就是全部。建立 first-page 项目并跑通「改、存、刷、看」的即时反馈循环，对照双击打开与 Live Server 两种工作方式，用 DevTools 把 HTML/CSS/JS 三层连起来检查，并掌握页面白屏的排查三步。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'html5/040-DocTypeDeclaration'
   - 'html5/050-HTML5CommentsAndEntities'
