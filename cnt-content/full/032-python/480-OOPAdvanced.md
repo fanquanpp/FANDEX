@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 280
 title: Python 面向对象进阶
 module: 'python'
 category: 后端技术
@@ -9,11 +9,9 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'python/460-OOP'
-  - 'python/470-OOPFundamentals'
   - 'python/570-Descriptor'
   - 'python/550-DataClassPydantic'
-prerequisites:
-  - 'python/470-OOPFundamentals'
+prerequisites: []
 ---
 
 ## 从"会写类"到"会设计类"

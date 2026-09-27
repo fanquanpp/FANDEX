@@ -202,4 +202,4 @@ print(f"合计：{total} 元")
 
 ## 下一步
 
-带着你的主线选择，进入 [全库学习路线总览](/start/080-LearningRouteOverview)，把 12 个月的地图铺开；随后到 [技术栈路线图](/roadmap/010-RoadmapOverview) 找到你的专属路线，正式开始阶段 1。
+主线已定：选定 Python 的正式开工，进入 [Python 是什么：最友好的第一门通用语言](/python/010-WhatIsPython)；选定 JS 的进入 [JavaScript 是什么](/javascript/010-WhatIsJavaScript)。之后再到 [全库学习路线总览](/start/080-LearningRouteOverview) 把 12 个月的地图铺开，在 [技术栈路线图](/roadmap/010-RoadmapOverview) 找到你的专属路线。语言先行，路线图不急。

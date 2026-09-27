@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 250
 title: Collectors.groupingBy 详解
 module: 'java'
 category: 后端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'java/300-StreamAPI'
-  - 'java/310-JavaOptionalClass'
   - 'java/330-JavaFunctionalProgramming'
 prerequisites:
   - 'java/300-StreamAPI'

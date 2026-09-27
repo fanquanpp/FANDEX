@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 280
 title: 枚举救急锦囊：定义、构造函数与 switch
 module: 'java'
 category: 后端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'java/370-JavaAnnotationsTutorial'
-  - 'java/380-JavaEnumAdvanced'
   - 'java/090-ControlFlow'
 prerequisites:
   - 'java/150-OOP'

@@ -1,5 +1,5 @@
 ---
-order: 730
+order: 510
 title: Python 与打包发布
 module: 'python'
 category: 后端技术

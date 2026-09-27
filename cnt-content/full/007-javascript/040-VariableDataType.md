@@ -1,1394 +1,283 @@
 ---
 order: 40
-title: 变量与数据类型
+title: 变量与数据类型：给数据起名字
 module: 'javascript'
 category: 前端技术
 difficulty: beginner
-description: var/let/const、原始类型、引用类型与类型转换。
+description: 用「给数据起名字」讲透 let/const/var 取舍与 var 事故现场，盘点七种原始类型、typeof 的历史 bug、模板字符串与 == 的坑，附 ReferenceError/TypeError 调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'javascript/020-JavaScriptOverviewRuntimeEnv'
   - 'javascript/030-ProgramStructureBasicSyntax'
   - 'javascript/050-DataTypeOperator'
-  - 'javascript/060-ControlFlow'
-prerequisites: []
+  - 'javascript/070-ObjectArray'
+  - 'javascript/220-ES6NewFeatures'
+prerequisites:
+  - 'javascript/030-ProgramStructureBasicSyntax'
 ---
 
 ## 前置知识
 
-- [程序结构与基本语法](/javascript/030-ProgramStructureBasicSyntax)：建议先完成前一篇的学习
+- 已完成 [程序结构基本语法](/javascript/030-ProgramStructureBasicSyntax)：会写多行程序、知道代码块与注释，并照抄过几次 `const` 和 `let`。那两次「照抄」就是伏笔；没读过也能跟，语法都会当场解释，但建议先补。
 
 ## 学习目标
 
-- 掌握「1. 引入方式 (Inclusion)」的核心机制、典型用法与常见陷阱
-- 掌握「2. 语句与注释 (Statements & Comments)」的核心机制、典型用法与常见陷阱
-- 掌握「3. 变量声明 (Variable Declarations)」的核心机制、典型用法与常见陷阱
-- 掌握「4. 标识符规范 (Identifiers)」的核心机制、典型用法与常见陷阱
-- 掌握「5. 严格模式 (Strict Mode)」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用 `let` 与 `const` 声明变量，说出「默认 const、会重新赋值才 let」的选择规则；
+2. 预测 `var` 在提升与函数作用域场景下的行为，读旧代码不慌；
+3. 报出七种原始类型，用 `typeof` 检查值的类型，并解释 `typeof null` 的历史 bug；
+4. 用模板字符串拼带变量的句子，替代 `+` 拼接；
+5. 解释 `==` 与 `===` 的差别，独立修复 `Cannot access 'x' before initialization` 与 `Assignment to constant variable`。
 
-## 1. 引入方式 (Inclusion)
+预计 45 到 60 分钟，包含 3 个修改实验与 4 道练习。
 
-JavaScript 可以通过多种方式引入到网页中，每种方式都有其适用场景和特点。
+## 1. 你现在要解决什么问题
 
-### 1.1 内部脚本 (Inline Script)
-
-**语法**: 在 HTML 文件中使用 `<script>` 标签包裹 JavaScript 代码。
-**示例**:
-
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>内部脚本示例</title>
-  </head>
-  <body>
-    <h1>Hello, JavaScript!</h1>
-    <script>
-      // 内部脚本
-      console.log('Hello from inline script!');
-      // 定义函数
-      function greet() {
-        alert('Hello, world!');
-      }
-      // 调用函数
-      greet();
-    </script>
-  </body>
-</html>
-```
-
-**特点**:
-
-- 简单直接，适合小型脚本
-- 代码与 HTML 混合，不利于维护
-- 页面加载时执行
-
-### 1.2 外部文件 (External Script)
-
-**语法**: 使用 `<script src="path/to/script.js"></script>` 引入外部 JavaScript 文件。
-**示例**:
-**HTML 文件**:
-
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>外部脚本示例</title>
-  </head>
-  <body>
-    <h1>Hello, JavaScript!</h1>
-    <script src="app.js"></script>
-  </body>
-</html>
-```
-
-**app.js 文件**:
+上一篇的播放列表程序是这样的：
 
 ```javascript
-// 外部脚本
-console.log('Hello from external script!');
-function greet() {
-  alert('Hello, world!');
-}
-greet();
+console.log('===== 我的播放列表 =====');
+console.log('正在播放：起风了');
+console.log('下一首：晴天');
+console.log('共 3 首歌曲');
 ```
 
-**特点**:
+现在提三个需求：歌名能换、列表支持任意长度、文案改成「精选歌单」。打开代码你会发现：`'起风了'` 写死了，换歌要找到那一行；「共 3 首歌曲」的 3 是裸数字，加歌后忘了改，程序就撒谎；文案散落各处，没有一样东西叫「歌单标题」。
 
-- 代码与 HTML 分离，便于维护
-- 可重用性高
-- 可以被浏览器缓存
-- 页面加载时执行
+缺的是同一件东西：**给数据起名字**。起名字之后，值能复用、含义自解释、改一处全局生效——这就是变量。
 
-### 1.3 现代模块 (ESM - ES Modules)
+## 2. 先不要看解释，先试试看
 
-**语法**: 使用 `<script type="module" src="main.js"></script>` 引入 ES 模块。
-**示例**:
-**HTML 文件**:
-
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>ES 模块示例</title>
-  </head>
-  <body>
-    <h1>Hello, JavaScript!</h1>
-    <script type="module" src="main.js"></script>
-  </body>
-</html>
-```
-
-**main.js 文件**:
+在浏览器控制台逐行输入，每行先预测再回车：
 
 ```javascript
-// 导入模块
-import { greet } from './utils.js';
-console.log('Hello from ES module!');
-greet();
+const singer = '买辣椒也用券';
+singer = '周杰伦';
 ```
 
-**utils.js 文件**:
+第二行的实际结果是 `Uncaught TypeError: Assignment to constant variable.`——`const` 的名字不许换值；换成 `let` 就正常。带着「何时用 const、何时用 let」往下读。
+
+## 3. 最小可运行示例
+
+给播放列表的数据起上名字：
 
 ```javascript
-// 导出模块
-export function greet() {
-  alert('Hello from module!');
-}
+const playlistTitle = '我的播放列表';   // 不会变的：用 const
+let nowPlaying = '起风了';              // 会变的：用 let
+const songCount = 3;
+
+console.log('===== ' + playlistTitle + ' =====');
+console.log('正在播放：' + nowPlaying);
+
+nowPlaying = '晴天';                    // 换歌了：重新赋值
+console.log('正在播放：' + nowPlaying);
+console.log('共 ' + songCount + ' 首歌曲');
 ```
 
-**特点**:
+预期输出：
 
-- 支持模块化开发
-- 变量默认是局部作用域
-- 支持 `import` 和 `export` 语法
-- 延迟执行 (defer)
-- 跨域需要 CORS 支持
-
-### 1.4 脚本加载顺序
-
-**正常脚本** (`<script>`):
-
-- 页面解析到脚本标签时立即执行
-- 执行过程中暂停 HTML 解析
-  **延迟脚本** (`<script defer>`):
-- 脚本会在 HTML 解析完成后执行
-- 多个 defer 脚本按顺序执行
-- 适合外部脚本
-  **异步脚本** (`<script async>`):
-- 脚本会在下载完成后立即执行
-- 不阻塞 HTML 解析
-- 多个 async 脚本执行顺序不确定
-- 适合独立的脚本，如统计代码
-  **示例**:
-
-```html
-<!-- 正常脚本 -->
-<script src="normal.js"></script>
-<!-- 延迟脚本 -->
-<script src="deferred.js" defer></script>
-<!-- 异步脚本 -->
-<script src="async.js" async></script>
-<!-- ES 模块默认延迟执行 -->
-<script type="module" src="module.js"></script>
+```text
+===== 我的播放列表 =====
+正在播放：起风了
+正在播放：晴天
+共 3 首歌曲
 ```
 
-## 2. 语句与注释 (Statements & Comments)
+三个名字各司其职：不再换值的用 const，会重新赋值的用 let。那串 `+` 看着啰嗦——记住这个不满，第 6 节的模板字符串就是来消灭它的。
 
-### 2.1 语句 (Statements)
+## 4. 核心概念：let、const 与 var 三兄弟
 
-JavaScript 语句是执行特定操作的指令，通常以分号 (`;`) 结尾。
-**基本语句**:
+取舍标准一句话：**默认 const，会重新赋值才 let，var 只为读懂旧代码存在。**
+
+`let` 与 `const` 都遵守上一篇的块级作用域（大括号里声明，出圈失效），都禁止重复声明，差别只有一条：`let` 允许重新赋值，`const` 不允许——所以第 2 节的赋值在 const 下爆炸、在 let 下正常。`const` 还有个反直觉的真面目：它锁的是「名字不能再指别处」，不是「内容不可变」——`const player` 仍可改 `player.name`，给 player 整个换对象才报 `Assignment to constant variable`（对象细节 070 篇展开）。
+
+### var 的事故现场
+
+`var` 是 2015 年前的唯一选择，三个特性制造过无数事故。你得认识它怎么坑人。
+
+事故一：块内声明泄漏到块外。`var` 无视花括号，变量属于整个函数：
 
 ```javascript
-// 变量声明语句
-let x = 10;
-// 赋值语句
-x = 20;
-// 函数调用语句
-console.log(x);
-// 条件语句
-if (x > 15) {
-  console.log('x 大于 15');
-}
-// 循环语句
-for (let i = 0; i < 5; i++) {
-  console.log(i);
-}
-```
-
-**分号使用**:
-
-- 分号在 JavaScript 中是可选的，但推荐使用
-- 自动分号插入 (ASI) 会在某些情况下自动添加分号
-- 为了代码的一致性和避免潜在问题，建议始终使用分号
-  **代码块**:
-- 使用大括号 `{}` 包裹的语句集合
-- 创建块级作用域
-
-```javascript
-{
-  let blockVar = '只在块内可见';
-  console.log(blockVar); // 输出: 只在块内可见
-}
-console.log(blockVar); // 报错: blockVar is not defined
-```
-
-### 2.2 注释 (Comments)
-
-注释是代码中不会被执行的文本，用于解释代码的功能和逻辑。
-**单行注释**:
-
-- 使用 `//` 开头
-- 注释从 `//` 开始到行尾
-
-```javascript
-// 这是一个单行注释
-let x = 10; // 这也是一个单行注释
-```
-
-**多行注释**:
-
-- 使用 `/*` 开始，`*/` 结束
-- 可以跨越多行
-
-```javascript
-/*
- 这是一个
- 多行注释
- */
-let y = 20;
-```
-
-**文档注释**:
-
-- 使用 `/**` 开始，`*/` 结束
-- 用于生成 API 文档
-- 支持 JSDoc 语法
-
-```javascript
-/**
- * 计算两个数的和
- * @param {number} a - 第一个数
- * @param {number} b - 第二个数
- * @returns {number} 两个数的和
- */
-function add(a, b) {
-  return a + b;
-}
-```
-
-**注释最佳实践**:
-
-- 注释应该解释代码的"为什么"，而不是"是什么"
-- 保持注释与代码同步
-- 避免过多的注释，代码本身应该清晰易懂
-- 使用文档注释记录函数、类和模块
-
-## 3. 变量声明 (Variable Declarations)
-
-JavaScript 提供了三种变量声明方式：`var`、`let` 和 `const`。
-
-### 3.1 var
-
-**特点**:
-
-- 函数作用域
-- 存在变量提升 (Hoisting)
-- 可以重复声明
-- 可以在声明前使用
-  **示例**:
-
-```javascript
-// 变量提升 - 可以在声明前使用
-console.log(x); // 输出: undefined
-var x = 10;
-// 函数作用域
-function test() {
-  var y = 20;
-  console.log(y); // 输出: 20
-}
-test();
-console.log(y); // 报错: y is not defined
-// 重复声明
-var x = 30;
-console.log(x); // 输出: 30
-```
-
-**注意**: `var` 由于其作用域和变量提升的特性，容易导致意外的行为，因此不推荐使用。
-
-### 3.2 let
-
-**特点**:
-
-- 块级作用域
-- 不存在变量提升
-- 不能重复声明
-- 声明后可以修改值
-  **示例**:
-
-```javascript
-// 不存在变量提升
-console.log(z); // 报错: z is not defined
-let z = 10;
-// 块级作用域
-if (true) {
-  let z = 20;
-  console.log(z); // 输出: 20
-}
-console.log(z); // 输出: 10
-// 不能重复声明
-// let z = 30; // 报错: Identifier 'z' has already been declared
-// 可以修改值
-z = 30;
-console.log(z); // 输出: 30
-```
-
-**推荐**: `let` 适用于需要在作用域内修改值的变量。
-
-### 3.3 const
-
-**特点**:
-
-- 块级作用域
-- 不存在变量提升
-- 不能重复声明
-- 必须初始化
-- 不能修改值（但对象和数组的内容可以修改）
-  **示例**:
-
-```javascript
-// 必须初始化
-// const PI; // 报错: Missing initializer in const declaration
-const PI = 3.14159;
-// 块级作用域
-if (true) {
-  const PI = 3.14;
-  console.log(PI); // 输出: 3.14
-}
-console.log(PI); // 输出: 3.14159
-// 不能修改值
-// PI = 3.14; // 报错: Assignment to constant variable
-// 对象和数组的内容可以修改
-const person = { name: 'Alice' };
-person.name = 'Bob'; // 允许
-console.log(person); // 输出: { name: "Bob" }
-const numbers = [1, 2, 3];
-numbers.push(4); // 允许
-console.log(numbers); // 输出: [1, 2, 3, 4]
-// 但不能重新赋值
-// person = { name: "Charlie" }; // 报错: Assignment to constant variable
-// numbers = [4, 5, 6]; // 报错: Assignment to constant variable
-```
-
-**推荐**: `const` 适用于不需要修改值的常量，是默认的变量声明方式。
-
-### 3.4 变量提升 (Hoisting)
-
-变量提升是 JavaScript 的一种机制，其中变量和函数声明会被提升到作用域的顶部。
-**var 提升**:
-
-- 变量声明会被提升，但赋值不会
-- 函数声明会被完全提升
-  **示例**:
-
-```javascript
-// var 变量提升
-console.log(a); // 输出: undefined
-var a = 10;
-console.log(a); // 输出: 10
-// 函数声明提升
-foo(); // 输出: Hello
-function foo() {
-  console.log('Hello');
-}
-// 函数表达式不会提升
-bar(); // 报错: bar is not a function
-var bar = function () {
-  console.log('Hello');
-};
-```
-
-**let 和 const 提升**:
-
-- 声明会被提升，但处于"暂存死区" (Temporal Dead Zone, TDZ)
-- 在声明前访问会报错
-  **示例**:
-
-```javascript
-// 暂存死区
-console.log(b); // 报错: Cannot access 'b' before initialization
-let b = 20;
-console.log(c); // 报错: Cannot access 'c' before initialization
-const c = 30;
-```
-
-## 4. 标识符规范 (Identifiers)
-
-标识符是变量、函数、类、属性等的名称。
-
-### 4.1 命名规则
-
-- **允许的字符**: 字母 (a-z, A-Z)、数字 (0-9)、下划线 (\_)、美元符号 ($)
-- **不能以数字开头**
-- **区分大小写**: `myVar` 和 `myvar` 是不同的标识符
-- **不能使用保留字** (如 `let`、`const`、`function` 等)
-
-### 4.2 命名约定
-
-**变量和函数**:
-
-- 使用小驼峰命名法 (lowerCamelCase)
-- 变量名应该清晰表达其用途
-  **示例**:
-
-```javascript
-let userName = 'Alice';
-let userAge = 30;
-function calculateTotalPrice(items) {
-  // 函数体
-}
-```
-
-**常量**:
-
-- 使用大驼峰命名法 (UPPER_SNAKE_CASE)
-- 常量名应该全大写，单词间用下划线分隔
-  **示例**:
-
-```javascript
-const MAX_SIZE = 100;
-const API_URL = 'https://api.example.com';
-```
-
-**类**:
-
-- 使用大驼峰命名法 (PascalCase)
-- 类名应该是名词，首字母大写
-  **示例**:
-
-```javascript
-class User {
-  constructor(name, age) {
-    this.name = name;
-    this.age = age;
+function checkBattle(active) {      // 函数的写法先混个眼熟，080 讲透
+  if (active) {
+    var message = '战斗开始';
   }
+  console.log(message);             // active 为 false 时，你猜打印什么？
 }
+checkBattle(false);
 ```
 
-**对象属性**:
+预期输出：
 
-- 使用小驼峰命名法 (lowerCamelCase)
-- 与变量命名一致
-  **示例**:
-
-```javascript
-const user = {
-  firstName: 'Alice',
-  lastName: 'Smith',
-  emailAddress: 'alice@example.com',
-};
-```
-
-**函数参数**:
-
-- 使用小驼峰命名法 (lowerCamelCase)
-- 参数名应该清晰表达其用途
-  **示例**:
-
-```javascript
-function createUser(firstName, lastName, email) {
-  // 函数体
-}
-```
-
-### 4.3 命名最佳实践
-
-- **语义化**: 变量名应该清晰表达其用途
-- **简洁**: 变量名应该简洁但不失明确
-- **一致**: 在整个项目中保持命名风格一致
-- **避免缩写**: 除非是广为人知的缩写 (如 `API`、`URL`)
-- **避免单个字符**: 除非是循环计数器或数学变量
-  **好的命名示例**:
-- `userName` 而不是 `u` 或 `usrNm`
-- `calculateTotalPrice` 而不是 `calc` 或 `total`
-- `isActive` 而不是 `active` (布尔变量使用 `is` 或 `has` 前缀)
-- `MAX_ITERATIONS` 而不是 `max`
-
-## 5. 严格模式 (Strict Mode)
-
-严格模式是 JavaScript 的一种执行模式，通过 `"use strict";` 指令开启。
-
-### 5.1 开启严格模式
-
-**全局严格模式**:
-
-- 在脚本的顶部添加 `"use strict";`
-  **示例**:
-
-```javascript
-'use strict';
-// 严格模式下的代码
-let x = 10;
-```
-
-**函数严格模式**:
-
-- 在函数内部添加 `"use strict";`
-  **示例**:
-
-```javascript
-function strictFunction() {
-  'use strict';
-  // 严格模式下的代码
-  let y = 20;
-}
-```
-
-**ES 模块**:
-
-- ES 模块默认启用严格模式，无需添加 `"use strict";`
-
-### 5.2 严格模式的限制
-
-**严格模式禁止的行为**:
-
-1. **未声明的变量**: 不允许使用未声明的变量
-
-```javascript
-'use strict';
-x = 10; // 报错: x is not defined
-```
-
-2. **重复的参数名**: 不允许函数有重复的参数名
-
-```javascript
-'use strict';
-function foo(a, a) {
-  // 报错: Duplicate parameter name not allowed in this context
-  console.log(a);
-}
-```
-
-3. **删除变量、函数或参数**: 不允许使用 `delete` 操作符删除变量、函数或参数
-
-```javascript
-'use strict';
-let x = 10;
-delete x; // 报错: Delete of an unqualified identifier in strict mode.
-```
-
-4. **八进制字面量**: 不允许使用八进制字面量
-
-```javascript
-'use strict';
-let x = 010; // 报错: Octal literals are not allowed in strict mode.
-```
-
-5. **with 语句**: 不允许使用 `with` 语句
-
-```javascript
-'use strict';
-with (Math) {
-  // 报错: Strict mode code may not include a with statement
-  console.log(PI);
-}
-```
-
-6. **this 指向**: 在全局函数中，`this` 不再指向全局对象，而是 `undefined`
-
-```javascript
-'use strict';
-function foo() {
-  console.log(this); // 输出: undefined
-}
-foo();
-```
-
-7. **eval 作用域**: `eval` 语句在严格模式下有自己的作用域，不会污染外部作用域
-
-```javascript
-'use strict';
-let x = 10;
-eval('var x = 20; console.log(x);'); // 输出: 20
-console.log(x); // 输出: 10
-```
-
-### 5.3 严格模式的好处
-
-- **消除不合理的语法**: 禁止一些容易出错的语法
-- **提高运行效率**: 某些操作在严格模式下执行更快
-- **增强安全性**: 减少潜在的安全漏洞
-- **提前发现错误**: 将静默错误变为显式错误
-- **为未来的 JavaScript 版本做准备**: 严格模式的规则更接近未来的 JavaScript 标准
-
-## 6. 代码风格 (Code Style)
-
-一致的代码风格有助于提高代码的可读性和可维护性。
-
-### 6.1 缩进
-
-- 使用 2 或 4 个空格进行缩进
-- 保持一致的缩进风格
-  **示例**:
-
-```javascript
-// 2 空格缩进
-function foo() {
-  if (true) {
-    console.log('Hello');
-  }
-}
-// 4 空格缩进
-function bar() {
-  if (true) {
-    console.log('Hello');
-  }
-}
-```
-
-### 6.2 空格
-
-- 操作符两边添加空格
-- 逗号后添加空格
-- 函数参数列表中，逗号后添加空格
-- 花括号前后添加空格
-  **示例**:
-
-```javascript
-// 好的风格
-let x = 10 + 5;
-const arr = [1, 2, 3];
-function foo(a, b) {
-  // 函数体
-}
-// 不好的风格
-let x = 10 + 5;
-const arr = [1, 2, 3];
-function foo(a, b) {
-  // 函数体
-}
-```
-
-### 6.3 换行
-
-- 每行代码长度控制在 80-120 个字符以内
-- 运算符后换行
-- 长函数参数或对象字面量换行
-  **示例**:
-
-```javascript
- // 长表达式换行
- const result = a + b + c + d + e +
-  f + g + h;
- // 长函数参数换行
- function foo(
-  parameter1,
-  parameter2,
-  parameter3
- )
-  // 函数体
- }
- // 长对象字面量换行
- const user = {
-  name: "Alice",
-  age: 30,
-  email: "alice@example.com",
-  address: {
-  street: "123 Main St",
-  city: "New York"
-  }
- }
-```
-
-### 6.4 分号
-
-- 始终使用分号结束语句
-- 避免依赖自动分号插入 (ASI)
-  **示例**:
-
-```javascript
-// 好的风格
-let x = 10;
-console.log(x);
-// 不好的风格
-let x = 10;
-console.log(x);
-```
-
-### 6.5 引号
-
-- 选择单引号或双引号，保持一致
-- 字符串中包含引号时，使用相反的引号或转义
-  **示例**:
-
-```javascript
-// 使用单引号
-let name = 'Alice';
-let message = 'She said, "Hello!"';
-// 使用双引号
-let name = 'Alice';
-let message = "She said, 'Hello!'";
-```
-
-## 7. 常见错误与解决方案
-
-### 7.1 变量作用域错误
-
-**错误**: 变量泄露到全局作用域
-**原因**: 使用 `var` 或未声明的变量
-**解决方案**:
-
-- 使用 `let` 或 `const` 声明变量
-- 封装代码到函数或模块中
-  **示例**:
-
-```javascript
-// 错误
-function test() {
-  x = 10; // 未声明的变量，会泄露到全局作用域
-}
-test();
-console.log(x); // 输出: 10
-// 正确
-function test() {
-  let x = 10; // 块级作用域变量
-}
-test();
-console.log(x); // 报错: x is not defined
-```
-
-### 7.2 变量提升错误
-
-**错误**: 在声明前使用变量
-**原因**: 不了解变量提升的机制
-**解决方案**:
-
-- 始终在使用变量前声明
-- 使用 `let` 或 `const` 避免变量提升问题
-  **示例**:
-
-```javascript
-// 错误
-console.log(x); // 输出: undefined
-var x = 10;
-// 正确
-let x = 10;
-console.log(x); // 输出: 10
-```
-
-### 7.3 严格模式错误
-
-**错误**: 在严格模式下使用被禁止的语法
-**原因**: 不了解严格模式的限制
-**解决方案**:
-
-- 熟悉严格模式的规则
-- 修复被禁止的语法
-  **示例**:
-
-```javascript
-'use strict';
-// 错误
-x = 10; // 未声明的变量
-// 正确
-let x = 10;
-```
-
-### 7.4 命名错误
-
-**错误**: 使用无效的标识符
-**原因**: 不了解标识符的命名规则
-**解决方案**:
-
-- 遵循标识符命名规则
-- 使用语义化的命名
-  **示例**:
-
-```javascript
- // 错误
- let 123abc = 10; // 不能以数字开头
- let let = 20; // 不能使用保留字
- // 正确
- let abc123 = 10;
- let myLet = 20;
-```
-
-## 8. 实战示例
-
-### 8.1 模块化开发
-
-**项目结构**:
-
-```mermaid
-flowchart TD
-    T0["project/"]
-    T1["index.html"]
-    T2["main.js"]
-    T3["utils/"]
-    T4["math.js"]
-    T5["string.js"]
-    T0 --> T1
-    T0 --> T2
-    T0 --> T3
-    T3 --> T4
-    T3 --> T5
-```
-
-**index.html**:
-
-```html
-<!DOCTYPE html>
-<html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>模块化开发示例</title>
-  </head>
-  <body>
-    <h1>模块化开发示例</h1>
-    <div id="result"></div>
-    <script type="module" src="main.js"></script>
-  </body>
-</html>
-```
-
-**utils/math.js**:
-
-```javascript
-/**
- * 数学工具函数
- */
-/**
- * 计算两个数的和
- * @param {number} a - 第一个数
- * @param {number} b - 第二个数
- * @returns {number} 两个数的和
- */
-export function add(a, b) {
-  return a + b;
-}
-/**
- * 计算两个数的差
- * @param {number} a - 被减数
- * @param {number} b - 减数
- * @returns {number} 两个数的差
- */
-export function subtract(a, b) {
-  return a - b;
-}
-```
-
-**utils/string.js**:
-
-```javascript
-/**
- * 字符串工具函数
- */
-/**
- * capitalize
- * @param {string} str - 输入字符串
- * @returns {string} 首字母大写的字符串
- */
-export function capitalize(str) {
-  return str.charAt(0).toUpperCase() + str.slice(1);
-}
-/**
- * 字符串反转
- * @param {string} str - 输入字符串
- * @returns {string} 反转后的字符串
- */
-export function reverse(str) {
-  return str.split('').reverse().join('');
-}
-```
-
-**main.js**:
-
-```javascript
-'use strict';
-// 导入模块
-import { add, subtract } from './utils/math.js';
-import { capitalize, reverse } from './utils/string.js';
-// 使用导入的函数
-const sum = add(10, 5);
-const difference = subtract(10, 5);
-const capitalized = capitalize('hello');
-const reversed = reverse('hello');
-// 显示结果
-const resultDiv = document.getElementById('result');
-resultDiv.innerHTML = `
-  <p>10 + 5 = ${sum}</p>
-  <p>10 - 5 = ${difference}</p>
-  <p>capitalize('hello') = ${capitalized}</p>
-  <p>reverse('hello') = ${reversed}</p>
- `;
-console.log('模块化开发示例执行完成');
-```
-
-### 8.2 严格模式应用
-
-**示例**:
-
-```javascript
-'use strict';
-// 严格模式下的代码
-// 1. 必须声明变量
-let userName = 'Alice';
-const MAX_AGE = 120;
-// 2. 不能使用未声明的变量
-// age = 30; // 报错: age is not defined
-// 3. 不能使用重复的参数名
-// function foo(a, a) { // 报错: Duplicate parameter name not allowed in this context
-// console.log(a);
-// }
-// 4. 不能删除变量
-// delete userName; // 报错: Delete of an unqualified identifier in strict mode.
-// 5. 不能使用八进制字面量
-// let octal = 010; // 报错: Octal literals are not allowed in strict mode.
-// 6. 不能使用 with 语句
-// with (Math) { // 报错: Strict mode code may not include a with statement
-// console.log(PI);
-// }
-// 7. this 指向 undefined
-function test() {
-  console.log(this); // 输出: undefined
-}
-test();
-// 8. eval 有自己的作用域
-let x = 10;
-eval("var x = 20; console.log('Inside eval:', x);"); // 输出: Inside eval: 20
-console.log('Outside eval:', x); // 输出: 10
-console.log('严格模式示例执行完成');
-```
-
-## 9. 总结
-
-JavaScript 的程序结构和基本语法是学习 JavaScript 的基础。通过理解引入方式、语句与注释、变量声明、标识符规范和严格模式等概念，你可以编写更加规范、高效和安全的 JavaScript 代码。
-
-- **引入方式**: 选择适合的脚本引入方式，考虑加载顺序和性能
-- **语句与注释**: 编写清晰的语句，使用适当的注释解释代码
-- **变量声明**: 优先使用 `const` 和 `let`，避免使用 `var`
-- **标识符规范**: 遵循命名规则和约定，提高代码可读性
-- **严格模式**: 启用严格模式，减少错误，提高代码质量
-- **代码风格**: 保持一致的代码风格，提高代码可维护性
-  掌握这些基础概念后，你可以更深入地学习 JavaScript 的高级特性，如函数、对象、异步编程等，为构建复杂的应用打下坚实的基础。
-
----
-
-## 变量声明
-
-**基本写法：let 声明**
-`let <变量名> = <值>;`
-```javascript
-// 声明可变变量
-let age = 18;
-```
-
----
-
-**基本写法：const 声明**
-`const <常量名> = <值>;`
-```javascript
-// 声明不可变常量
-const PI = 3.14159;
-```
-
----
-
-**基本写法：var 声明**
-`var <变量名> = <值>;`
-```javascript
-// 声明函数级作用域变量
-var name = "Alice";
-```
-
----
-
-**基本写法：多变量声明**
-`let <变量1> = <值1>, <变量2> = <值2>;`
-```javascript
-// 一次声明多个变量
-let x = 1, y = 2, z = 3;
-```
-
----
-
-**基本写法：解构声明**
-`let { <属性1>, <属性2> } = <对象>;`
-```javascript
-// 对象解构声明变量
-let { name, age } = user;
-```
-
----
-
-**基本写法：数组解构声明**
-`let [ <变量1>, <变量2> ] = <数组>;`
-```javascript
-// 数组解构声明变量
-let [first, second] = numbers;
-```
-
----
-
-## 原始数据类型
-
-**基本写法：Number 类型**
-`let <变量> = <数字>;`
-```javascript
-// 声明数字类型
-let count = 42;
-```
-
----
-
-**基本写法：浮点数**
-`let <变量> = <浮点数>;`
-```javascript
-// 声明浮点数
-let price = 9.99;
-```
-
----
-
-**基本写法：String 类型**
-`let <变量> = "<字符串>";`
-```javascript
-// 声明字符串
-let name = "Hello";
-```
-
----
-
-**基本写法：模板字符串**
-`let <变量> = \`<模板>\`;`
-```javascript
-// 使用模板字符串嵌入变量
-let greeting = `Hello, ${name}!`;
-```
-
----
-
-**基本写法：Boolean 类型**
-`let <变量> = <true|false>;`
-```javascript
-// 声明布尔值
-let isActive = true;
-```
-
----
-
-**基本写法：null 值**
-`let <变量> = null;`
-```javascript
-// 声明空值
-let data = null;
-```
-
----
-
-**基本写法：undefined 值**
-`let <变量> = undefined;`
-```javascript
-// 声明未定义值
-let value = undefined;
-```
-
----
-
-**基本写法：Symbol 类型**
-`let <变量> = Symbol("<描述>");`
-```javascript
-// 创建唯一符号
-let id = Symbol("id");
-```
-
----
-
-**基本写法：BigInt 类型**
-`let <变量> = <大整数>n;`
-```javascript
-// 声明大整数
-let big = 9007199254740991n;
+```text
+undefined
 ```
-
----
 
-## 引用数据类型
+不报错，静默给个 undefined。同一函数把 var 换成 let，false 这一路直接抛 `Uncaught ReferenceError: message is not defined`——错得更早、更响，而这正是我们要的：错误在离根因最近的地方爆炸，而不是三行后莫名其妙。
 
-**基本写法：Object 类型**
-`let <变量> = { <键>: <值> };`
-```javascript
-// 声明对象
-let user = { name: "Alice", age: 25 };
-```
+事故二：提升（hoisting）。声明被引擎悄悄挪到作用域开头，赋值留在原地：
 
----
-
-**基本写法：Array 类型**
-`let <变量> = [ <元素1>, <元素2> ];`
 ```javascript
-// 声明数组
-let numbers = [1, 2, 3];
+console.log(playerName);            // undefined，而不是报错
+var playerName = '小明';
 ```
 
----
+你「用了还没赋值的变量」，引擎不拦，还发个 undefined 让程序继续跑。let/const 在声明前访问则直接报错（第 9 节实录），把问题按死在第一现场。
 
-**基本写法：Function 类型**
-`let <变量> = function() { };`
-```javascript
-// 声明函数表达式
-let greet = function() {
-};
-```
+事故三：重复声明静默通过。`var total = 200; var total = 0;` 合法，谁覆盖了谁没人知道；换成 let 立刻 `Uncaught SyntaxError: Identifier 'total' has already been declared`。
 
----
+**一行规则：新代码用 let/const；var 只用来读懂 2015 年前的旧代码。**
 
-**基本写法：Date 类型**
-`let <变量> = new Date();`
-```javascript
-// 创建日期对象
-let now = new Date();
-```
+## 5. 数据类型盘点：七种原始类型加对象
 
----
+名字起好了，名字上挂的值也分种类。JS 的值分两大类：七种原始类型（primitive）与对象（object，包括数组、函数，070 起展开）。用 `typeof` 逐个点名：
 
-**基本写法：RegExp 类型**
-`let <变量> = /<模式>/<标志>;`
 ```javascript
-// 创建正则表达式
-let pattern = /hello/gi;
+console.log(typeof 42);             // "number"
+console.log(typeof '起风了');        // "string"
+console.log(typeof true);           // "boolean"
+console.log(typeof undefined);      // "undefined"
+console.log(typeof null);           // "object" —— 注意，这是历史 bug
+console.log(typeof Symbol('id'));   // "symbol"
+console.log(typeof 10n);            // "bigint"
 ```
-
----
 
-## 类型检查
+- **number**：整数小数同一个类型（`42` 与 `3.14` 都是 number），有精度坑 `0.1 + 0.2 !== 0.3`，下一篇展开；
+- **string**：三种引号包起来的文本，反引号是下一节的模板字符串；**boolean**：只有 `true` 与 `false`，比较运算的产物；
+- **undefined**：系统说「还没赋值」，声明了 `let hp;` 就去读，得到 undefined；**null**：你说「故意空着」。分工：undefined 是引擎的默认，null 是程序员的表态；
+- **symbol** 与 **bigint**：唯一标识符、超大整数（数字后加 n），入门期极少用，见到认识即可。
 
-**基本写法：typeof 操作符**
-`typeof <变量>`
-```javascript
-// 获取变量类型字符串
-let type = typeof name;
-```
+然后是那个著名的坑：`typeof null` 返回 `"object"` 而不是 `"null"`。1995 年 JS 第一版十天赶工，null 的底层类型标签与对象撞号；发现时浏览器已装遍世界，修复会破坏无数网站，bug 被永久冻结。结论：**判断 null 用 `value === null`，别用 typeof。** 另外 `typeof []` 也是 `"object"`，区分工具在 070 篇。
 
----
-
-**基本写法：instanceof 操作符**
-`<对象> instanceof <构造函数>`
-```javascript
-// 检查对象是否为某构造函数的实例
-let isArray = arr instanceof Array;
-```
+## 6. 模板字符串：消灭 + 号拼接
 
----
+第 3 节那串 `'共 ' + songCount + ' 首歌曲'` 能用，但引号和加号交错，读着费劲。反引号（`` ` ``）包起来的模板字符串专门解决这个问题：
 
-**基本写法：Array.isArray**
-`Array.isArray(<变量>)`
 ```javascript
-// 检查变量是否为数组
-let isArray = Array.isArray(numbers);
-```
+const song = '起风了';
+let likes = 120000;
 
----
-
-**基本写法：Object.prototype.toString**
-`Object.prototype.toString.call(<变量>)`
-```javascript
-// 获取对象精确类型
-let type = Object.prototype.toString.call(obj);
+console.log(`正在播放：${song}`);      // 正在播放：起风了
+console.log(`点赞数：${likes}`);       // 点赞数：120000
+likes = likes + 1;
+console.log(`点赞数：${likes}`);      // 点赞数：120001 —— ${} 里可以先运算
 ```
 
----
+`${}` 里先求值再嵌入，放变量、放表达式都行。模板字符串还能直接跨行——不用 `\n`，拼多行卡片、HTML 片段体验极佳。规则朴素：**需要嵌入变量的拼接，一律用模板字符串**。
 
-## 类型转换
+## 7. 类型转换坑：== 与 ===
 
-**基本写法：转字符串**
-`String(<值>)`
-```javascript
-// 将值转换为字符串
-let str = String(123);
-```
+一道真实面试题：「`1 == '1'`、`1 === '1'`、`0 == ''` 分别输出什么？为什么几乎所有团队规范都禁用 ==？」
 
----
-
-**基本写法：toString 方法**
-`<值>.toString()`
 ```javascript
-// 调用 toString 方法转换
-let str = (123).toString();
+console.log(1 == '1');    // true  —— == 把 '1' 转成数字再比
+console.log(1 === '1');   // false —— === 类型不同，直接判否
+console.log(0 == '');     // true  —— '' 被转成 0
+console.log(0 === '');    // false
+console.log(null == undefined);   // true —— 规范特批的一对
 ```
 
----
+`==`（宽松相等）比较前先做隐式类型转换，规则繁琐到能单独写一章，产出是一堆「看似相等」的值：`0 == ''`、`'' == false`、`'0' == false` 全是 true。`===`（严格相等）先比类型再比值，行为可以全部预测——规范禁用 == 的理由就在这：**不让代码的正确性依赖一张背不下来的转换表**。结论：业务代码一律 `===` / `!==`；== 唯一还值得写的场景是 `x == null`（同时判掉 null 和 undefined）。类型转换的更多坑（字符串参与算术、NaN）下一篇集中处理。
 
-**基本写法：转数字**
-`Number(<值>)`
-```javascript
-// 将字符串转换为数字
-let num = Number("123");
-```
+## 8. 修改实验
 
----
+实验一：把第 3 节程序里所有 `+` 拼接改成模板字符串，输出必须与原文逐字一致。
 
-**基本写法：parseInt**
-`parseInt(<字符串>, <基数>)`
-```javascript
-// 解析整数
-let num = parseInt("42px", 10);
-```
+实验二：在第 3 节末尾加 `nowPlaying = '平凡之路';` 并再打印一次，预测输出；然后把 `let nowPlaying` 改成 `const` 再跑，读出报错原文。
 
----
+实验三：把第 4 节事故一的 `var message` 换成 `let message`，分别用 `checkBattle(true)` 和 `checkBattle(false)` 调用，预测两次结果（一次正常打印、一次报错）再验证。
 
-**基本写法：parseFloat**
-`parseFloat(<字符串>)`
-```javascript
-// 解析浮点数
-let num = parseFloat("3.14abc");
-```
+## 9. 常见错误与调试实录
 
----
+错误一：声明前就使用。运行：
 
-**基本写法：转布尔**
-`Boolean(<值>)`
 ```javascript
-// 将值转换为布尔
-let bool = Boolean(0);
+console.log(total);      // 我想先看看它现在是多少
+let total = 0;
 ```
 
----
+报错（真实文本，浏览器控制台）：
 
-**基本写法：双重否定转布尔**
-`!!<值>`
-```javascript
-// 使用双重否定转换为布尔
-let bool = !!value;
+```text
+Uncaught ReferenceError: Cannot access 'total' before initialization
 ```
-
----
 
-## 变量作用域
+读报错三步：一看类型，`ReferenceError` 是「名字够不着」类问题；二读原因，「before initialization」说明 total 存在但还没轮到初始化——这是 let/const 的「暂时性死区」，声明前的区域不许碰；三定位，把声明挪到使用前面即可。对照第 4 节：同样的错用 var 写只会得到静默 undefined——let 用报错换来早炸，这是进步。
 
-**基本写法：全局作用域**
-`<变量名> = <值>;`
-```javascript
-// 不使用关键字声明为全局变量
-globalVar = 10;
-```
+错误二：给 const 重新赋值。
 
----
-
-**基本写法：函数作用域**
-`function <函数>() { var <变量> = <值>; }`
 ```javascript
-// var 声明的变量为函数级作用域
-function test() {
-    var functionVar = 10;
-}
+const maxLevel = 60;
+maxLevel = 99;
 ```
 
----
+报错（真实文本）：
 
-**基本写法：块级作用域**
-`{ let <变量> = <值>; }`
-```javascript
-// let 声明的变量为块级作用域
-{
-    let blockVar = 10;
-}
+```text
+Uncaught TypeError: Assignment to constant variable.
 ```
 
----
-
-## 变量提升
-
-**基本写法：var 提升**
-`console.log(<变量>); var <变量> = <值>;`
-```javascript
-// var 声明的变量会提升值为 undefined
-console.log(x);
-var x = 10;
-```
+读报错三步：文案指名道姓；定位到对 const 赋值的那行；三问语义——这个值在业务上真的会变吗？会就改成 let。别无脑把 const 全改 let：只有「真的会重新赋值」的名字才配 let。
 
----
+## 10. 实际项目中的使用场景
 
-**基本写法：let 暂时性死区**
-`console.log(<变量>); let <变量> = <值>;`
-```javascript
-// let 声明的变量在声明前访问会报错
-// console.log(y);
-// let y = 10;
-```
+- 配置常量集中在文件顶部：`const API_BASE_URL = 'https://api.example.com';`、`const MAX_RETRY = 3;`。全大写命名是给读代码的人的信号：这值不该被改；
+- 运行中变化的状态用 let：`let hp = 100;`、`let currentPage = 1;`，页面动态行为建立在这些「会变的值」上；渲染文本用模板字符串：聊天消息、商品卡片、通知模板，本质都是「固定骨架 + ${} 插槽」；
+- 读旧代码看到 var，脑内翻译成 let，同时想起三事故：块泄漏、提升、重复声明。
 
----
+## 11. 小练习
 
-## 常量特性
+预测题（5 分钟）：不运行，写出下面代码的完整输出：
 
-**基本写法：const 不可重新赋值**
-`const <常量> = <值>;`
 ```javascript
-// const 声明的常量不能重新赋值
-const MAX = 100;
+console.log(playerLevel);
+var playerLevel = 10;
+console.log(playerLevel);
 ```
 
----
+（先写答案再往下看。答案：`undefined` 和 `10`。var 只提升声明不提升赋值，第一行打印的是「已声明、未赋值」。）
 
-**基本写法：const 对象属性可变**
-`const <对象> = { }; <对象>.<属性> = <值>;`
-```javascript
-// const 对象的属性可以修改
-const obj = {};
-obj.name = "Alice";
-```
+修改题（10 分钟）：把第 3 节程序改成模板字符串版本，再追加 `let nextSong = '平凡之路';` 与一行 `下一首：${nextSong}` 输出。全篇不允许出现 `+` 拼接。
 
----
+修 Bug 题（10 分钟）：下面的程序想扣血，运行报错。按「读报错三步」定位并修复：
 
-**基本写法：冻结对象**
-`Object.freeze(<对象>)`
 ```javascript
-// 冻结对象使其属性不可变
-const frozen = Object.freeze({});
+const hp = 100;
+hp = hp - 30;
+console.log(`当前血量：${hp}`);
 ```
 
----
-
-## ES2025 新数据类型
-
-**基本写法：Float16Array 半精度浮点数组**
-`new Float16Array([<元素>])`
-```javascript
-// 创建半精度浮点数组节省内存适合机器学习场景
-let arr = new Float16Array([1.0, 2.5, 3.14]);
-```
+报错（真实文本）：`Uncaught TypeError: Assignment to constant variable.`
 
----
+（提示：hp 在业务上会变。答案：`const hp` 改为 `let hp`，输出 `当前血量：70`。）
 
-**基本写法：Iterator 协议对象**
-`<对象>[Symbol.iterator] = function() { return { next: () => ({ value, done }) }; }`
-```javascript
-// 自定义迭代器协议对象支持 for-of 与扩展运算符
-let range = {
-    [Symbol.iterator]() {
-        let n = 0;
-        return {
-            next: () => ({ value: n++, done: n > 3 })
-        };
-    }
-};
-```
+挑战题（15 分钟）：写一个「玩家名片」程序：用 const 声明昵称与金币数、用 let 声明等级，输出三行名片（昵称 / 等级 / 金币）。验收清单：不变的名字全部 const、会变的全部 let；全篇零 `+` 拼接；把等级从 10 改成 99 时只改一处声明。
 
-## 练习：修 Bug（先找错，再看答案）
+## 12. 与之前和之后的知识的关系
 
-1. 下面代码输出什么？
+- 往前：[程序结构基本语法](/javascript/030-ProgramStructureBasicSyntax) 里你照抄了 `const`/`let`，本文兑现承诺把它们讲透；
+- 往后：[数据类型与运算符](/javascript/050-DataTypeOperator) 盘点运算符家族——`typeof` 就是其中一员；[对象与数组](/javascript/070-ObjectArray) 展开 `const` 锁引用的完整规则；[ES6 新特性](/javascript/220-ES6NewFeatures) 讲清这些现代写法的来龙去脉。
 
-```javascript
-console.log(typeof null);
-console.log(0.1 + 0.2 === 0.3);
-```
+## 13. 官方文档
 
-答案：`typeof null` 是 `"object"`（历史遗留 bug，了解即可）；`0.1 + 0.2 === 0.3` 是 `false`（IEEE 754 浮点误差），用 `Number.EPSILON` 或保留小数位比较。
+- let 声明：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/let
+- const 声明：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/const
+- JavaScript 数据类型与数据结构：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Data_structures
+- 相等比较（== 与 === 的规范差异）：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Equality_comparisons_and_sameness
 
-2. 比较结果是什么？
+## 14. 自我检查
 
-```javascript
-console.log(1 == '1');
-console.log(1 === '1');
-```
+- 能不看资料说出「默认 const、会变才 let、var 只读旧代码」并给出理由；
+- 能预测 var 提升与块泄漏场景的行为，说清「undefined 是静默的坏，报错是响亮的好」；
+- 能报出七种原始类型，解释 typeof null 的来历，知道判 null 用 `=== null`；
+- 能用模板字符串替代 + 拼接；
+- 拿到 `Cannot access ... before initialization` 与 `Assignment to constant variable`，能三步内定位修复。
 
-答案：`true`（隐式转换）与 `false`（严格比较）。业务代码一律使用 `===`。
+## 本章总结
 
-3. 涉及金额时为什么不能直接加减？
+变量是给值起的名字：默认 const，会重新赋值才 let，var 因块泄漏、提升、重复声明三宗罪退居「只读旧代码」；值的家族是七种原始类型加对象，typeof 能点名但有 null 这个永久的坑；拼接文本用模板字符串；比较一律 ===，不把正确性押在隐式转换上。数据有了名字，下一篇让它们算起来。
 
-```javascript
-const price = 0.1 + 0.2;
-console.log(price === 0.3); // false
-```
+## 下一步
 
-答案：浮点误差问题；涉及金额时用整数分单位计算或 `BigInt`。
+进入 [数据类型与运算符](/javascript/050-DataTypeOperator)：排行榜要算平均分、购物车要算总价，运算符登场。

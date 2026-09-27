@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 270
 title: Redis 8 新特性
 module: 'redis'
 category: 数据库
@@ -8,11 +8,9 @@ description: Redis 8 全景：AGPLv3 三许可、内置 JSON/时间序列/概率
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'redis/300-NewFeatures7'
   - 'redis/100-VectorSet'
   - 'redis/010-OverviewCoreDataStructure'
-prerequisites:
-  - 'redis/300-NewFeatures7'
+prerequisites: []
 ---
 
 ## 1. 学习目标与前置知识

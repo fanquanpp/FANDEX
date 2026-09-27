@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 240
 title: Stream API
 module: 'java'
 category: 后端技术

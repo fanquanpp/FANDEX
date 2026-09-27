@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 560
 title: 基于时间点恢复 PITR：删库后的最后防线
 module: 'mysql'
 category: 数据库

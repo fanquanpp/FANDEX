@@ -1,5 +1,5 @@
 ---
-order: 660
+order: 630
 title: JavaScript 理论知识点
 module: 'javascript'
 category: 前端技术

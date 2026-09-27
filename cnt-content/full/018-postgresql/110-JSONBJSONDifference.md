@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 40
 title: JSONB 与 JSON 差异
 module: 'postgresql'
 category: 数据库

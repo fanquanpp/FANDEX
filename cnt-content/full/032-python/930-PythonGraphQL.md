@@ -1,5 +1,5 @@
 ---
-order: 930
+order: 690
 title: Python 与 GraphQL
 module: 'python'
 category: 后端技术

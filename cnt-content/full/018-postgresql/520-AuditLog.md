@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 430
 title: 审计日志：谁在什么时候动了什么
 module: 'postgresql'
 category: 数据库

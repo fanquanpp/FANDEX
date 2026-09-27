@@ -2,8 +2,12 @@
   "title": "Godot 引擎",
   "icon": "Gt",
   "description": "Godot 4.7 游戏引擎：节点场景模型、信号资源、2D 与瓦片地图、UI 动画音频、跨平台导出，以及 Konado 视觉小说框架与 Gode JS/TS 脚本生态",
-  "categories": ["gamedev"],
-  "prerequisites": [],
+  "categories": [
+    "gamedev"
+  ],
+  "prerequisites": [
+    "start"
+  ],
   "officialDocs": [
     {
       "label": "Godot 官方文档（stable）",

@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 220
 title: Python http.client HTTP 客户端
 module: 'python'
 category: 后端技术
@@ -7,9 +7,7 @@ difficulty: beginner
 description: http.client 底层客户端：连接与请求、响应解析、头处理、异常层级与 keep-alive 复用。
 author: fanquanpp
 updated: '2026-09-12'
-related:
-  - 'python/330-HttpxRequests'
-  - 'python/310-NetworkSocketHttp'
+related: []
 prerequisites: []
 ---
 

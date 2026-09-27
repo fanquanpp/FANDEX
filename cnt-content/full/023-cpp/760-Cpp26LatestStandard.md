@@ -1,5 +1,5 @@
 ---
-order: 760
+order: 710
 title: C++26 最新标准
 module: 'cpp'
 category: 计算机科学
@@ -10,7 +10,6 @@ updated: '2026-09-12'
 related:
   - 'cpp/750-CppModernStandardEvolution'
   - 'cpp/730-Cpp23NewFeatures'
-  - 'cpp/720-Cpp20Overview'
   - 'cpp/020-CppOverviewAndModernStandard'
   - 'cpp/400-CppReflectionMetaprogramming'
   - 'cpp/440-ConcurrentProgramming'

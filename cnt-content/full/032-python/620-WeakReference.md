@@ -1,5 +1,5 @@
 ---
-order: 620
+order: 410
 title: 弱引用
 module: 'python'
 category: 后端技术

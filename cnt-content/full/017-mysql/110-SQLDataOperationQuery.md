@@ -1,949 +1,276 @@
 ---
-order: 110
-title: SQL 数据操作与查询
+order: 100
+title: SQL 数据操作与查询：把一张排行榜表管起来
 module: 'mysql'
 category: 数据库
 difficulty: intermediate
-description: INSERT/UPDATE/DELETE、SELECT 基础与条件查询。
+description: 用游戏排行榜的完整生命周期串起 INSERT/SELECT/UPDATE/DELETE：建表脚本、批量插入、带条件更新、事务防误操作、聚合统计，附真实报错调试与梯度练习。
 author: fanquanpp
 updated: '2026-09-13'
 related:
-  - 'mysql/090-SQLDataDefinitionAdvanced'
-  - 'mysql/180-MyISAMStorageEngine'
-  - 'mysql/190-MemoryStorageEngine'
+  - 'mysql/100-DML'
+  - 'mysql/120-DQL'
+  - 'mysql/140-MultiTableJoinDetailed'
 prerequisites:
-  - 'mysql/160-View'
+  - 'mysql/100-DML'
 ---
 
 ## 前置知识
 
-建议先阅读以下内容再进入本文：
+- [DML 语法](/mysql/100-DML)：认识 INSERT/UPDATE/DELETE 的基本写法；
+- 一个能执行 SQL 的环境：装好的 MySQL 客户端，或直接用本模块的 [SQL Playground](/mysql/040-SQLPlayground)。
 
-- [视图语法速查手册](/mysql/160-View)
+本篇与相邻两篇的分工：[DML 语法](/mysql/100-DML) 逐条讲增删改的语法，[DQL](/mysql/120-DQL) 逐条讲查询语法；**本篇负责把它们串成一条真实的工作流**——围绕同一张表，从建好、灌数据、改数据、查统计到安全地删，每一步都先预测结果再执行。
 
-## 1. SQL 概述
+## 学习目标
 
-### 1.1 SQL 是什么
+读完本文你将能够：
 
-SQL（Structured Query Language，结构化查询语言）是一种用于管理关系型数据库的标准编程语言。SQL 由 IBM 在 1970 年代开发，后来成为 ANSI（美国国家标准协会）和 ISO（国际标准化组织）的标准。
+1. 用一段现成脚本建表并批量灌入测试数据，全程知道每一行在做什么；
+2. 写出「加分」「上榜前三」「统计平均分」这类真实需求的 SQL，并预测返回行数；
+3. 理解为什么 `UPDATE` 忘写 `WHERE` 是新手第一大事故，并用事务 + 回滚给自己上保险；
+4. 读懂 `ERROR 1064`、`ERROR 1054`、`ERROR 1364` 三种高频报错并独立修复。
 
-### 1.2 SQL 语句分类
+预计 60 到 90 分钟，全程动手。
 
-| 分类    | 全称                         | 说明                             | 典型语句               |
-| :------ | :--------------------------- | :------------------------------- | :--------------------- |
-| **DDL** | Data Definition Language     | 数据定义语言，用于定义数据库对象 | CREATE、ALTER、DROP    |
-| **DML** | Data Manipulation Language   | 数据操作语言，用于操作数据       | INSERT、UPDATE、DELETE |
-| **DQL** | Data Query Language          | 数据查询语言，用于查询数据       | SELECT                 |
-| **DCL** | Data Control Language        | 数据控制语言，用于控制权限       | GRANT、REVOKE          |
-| **TCL** | Transaction Control Language | 事务控制语言，用于管理事务       | COMMIT、ROLLBACK       |
+## 1. 你现在要解决什么问题
 
-### 1.3 SQL 基本规则
+假设你在给一个小游戏做排行榜，需求很朴素：
 
-- SQL 语句以分号 `;` 结尾
-- SQL 不区分大小写（但习惯上关键字大写）
-- 字符串值使用单引号 `' '` 包裹
-- 注释使用 `--` 或 `/* */`
+- 玩家注册后要「存进去」；
+- 玩家对局结束要「加分」；
+- 排行榜页面要「显示前三名」和「平均分」；
+- 玩家注销账号要「删掉」；
+- 老板说「把所有人的分数上调 10% 做活动」——你手一抖少写了半句 SQL，全表数据就毁了。
 
-## 2. DML (数据操作语言) - Data Manipulation Language
+单条的 INSERT/UPDATE 语法你已经认识，但把它们连起来、并且不毁数据，是另一回事。本文用一个 `players` 表把这一切走一遍。
 
-DML 用于插入、更新、删除数据。
+## 2. 先建表灌数据：直接可运行的脚本
 
-### 2.1 插入数据详解
+连接数据库后，选中你的练习库（`USE test;`），整段执行：
 
-#### 2.1.1 基本 INSERT
-
-```sql
- inSERT INTO users (id, username, email, password, age)
- VALUES (1, '张三', 'zhangsan@example.com', 'encrypted_pass', 25);
- inSERT INTO users (username, email, password, age)
- VALUES ('张三', 'zhangsan@example.com', 'encrypted_pass', 25);
- inSERT INTO users SET
-  username = '李四',
-  email = 'lisi@example.com',
-  password = 'encrypted_pass',
-  age = 30;
-```
-
-#### 2.1.2 批量插入
-
-```sql
- inSERT INTO users (username, email, password, age) VALUES
- ('王五', 'wangwu@example.com', 'pass1', 28),
- ('赵六', 'zhaoliu@example.com', 'pass2', 32),
- ('钱七', 'qianqi@example.com', 'pass3', 27);
- inSERT INTO users (username, email) VALUES
- ('孙八', 'sunba@example.com'),
- ('周九', 'zhoujiu@example.com');
-```
-
-#### 2.1.3 插入查询结果
-
-```sql
- inSERT INTO users (username, email, password, age)
- SELECT username, email, password, age FROM old_users WHERE status = 1;
- inSERT IGNORE INTO users (username, email)
- SELECT username, email FROM temp_users;
-```
-
-#### 2.1.4 INSERT 高级用法
-
-```sql
- inSERT INTO users (id, username, email) VALUES (1, '张三', 'new_email@example.com')
- ON DUPLICATE KEY UPDATE email = 'new_email@example.com', updated_at = NOW();
- inSERT IGNORE INTO users (username, email) VALUES ('张三', 'test@example.com');
- replace INTO users (id, username, email) VALUES (1, '张三', 'new_email@example.com');
- inSERT INTO users (username, email) VALUES ('测试', 'test@example.com');
- SELECT LAST_INSERT_ID();
-```
-
-### 2.2 更新数据详解
-
-#### 2.2.1 基本 UPDATE
-
-```sql
- UPDATE users SET age = 26 WHERE id = 1;
- UPDATE users SET age = age + 1 WHERE age < 30;
- UPDATE users
- SET age = 27, email = 'new_email@example.com', updated_at = NOW()
- WHERE id = 1;
-```
-
-#### 2.2.2 UPDATE 高级用法
-
-```sql
- UPDATE users u
- JOIN user_profiles p ON u.id = p.user_id
- SET u.avatar = p.avatar_url, u.status = p.status
- WHERE u.id = 1;
- UPDATE users
- SET balance = (SELECT SUM(amount) FROM orders WHERE user_id = users.id)
- WHERE id = 1;
- UPDATE users SET last_login_time = NOW() WHERE last_login_time IS NULL;
- START TRANSACTION;
- UPDATE accounts SET balance = balance - 100 WHERE id = 1;
- UPDATE accounts SET balance = balance + 100 WHERE id = 2;
- commit;
-```
-
-#### 2.2.3 UPDATE 实战示例
-
-```sql
- UPDATE employees_info SET Employees_name = '王西' WHERE Employees_id = 'xz100101';
- UPDATE employees_info SET Post_id = 'xs1001' WHERE Employees_id = 'xs100103';
- UPDATE customer_info
- SET Customer_name = '柳甜', Customer_Birth = NULL, Telephone = '13879008942'
- WHERE Customer_name = '柳田';
- UPDATE sales_list SET Sales_Number = Sales_Number + 5 WHERE Sales_Number < 10;
- UPDATE orders SET status = 3, shipped_at = NOW() WHERE status = 2 AND shipped_at IS NULL;
-```
-
-### 2.3 删除数据详解
-
-#### 2.3.1 基本 DELETE
-
-```sql
- delete FROM users WHERE id = 1;
- delete FROM users WHERE status = 0 AND created_at < '2024-01-01';
- delete FROM users;
- delete FROM users ORDER BY created_at DESC LIMIT 10;
-```
-
-#### 2.3.2 DELETE 高级用法
-
-```sql
- delete u FROM users u
- JOIN inactive_users i ON u.email = i.email
- WHERE u.status = 0;
- delete FROM users WHERE id IN (SELECT user_id FROM old_users WHERE created_at < '2023-01-01');
- delete FROM users WHERE id = 1; -- 订单表中的相关记录会自动删除
-```
-
-#### 2.3.3 DELETE 与 TRUNCATE 区别
-
-| 特性   | DELETE             | TRUNCATE             |
-| :----- | :----------------- | :------------------- |
-| 速度   | 慢（一行一行删除） | 快（直接删除数据页） |
-| 事务   | 记录日志，可回滚   | 不记录日志，不可回滚 |
-| 自增ID | 不会重置           | 重置为 1             |
-| WHERE  | 支持               | 不支持               |
-| 触发器 | 触发 DELETE 触发器 | 不触发               |
-
-#### 2.3.4 DELETE 实战示例
-
-```sql
- delete FROM mark WHERE studentno = 'xx100104' AND courseno = 'kc1002';
- delete FROM orders WHERE status = 5 AND created_at < DATE_SUB(NOW(), INTERVAL 30 DAY);
- delete FROM logs WHERE created_at < DATE_SUB(NOW(), INTERVAL 3 MONTH);
-```
-
-### 2.4 数据操作最佳实践
-
-```sql
- SELECT * FROM users WHERE id = 1 FOR UPDATE;
- START TRANSACTION;
- UPDATE users SET status = 0 WHERE last_login_time < '2023-01-01';
- UPDATE stats SET inactive_users = inactive_users + 1;
- commit;
- EXPLAIN UPDATE users SET status = 0 WHERE last_login_time < '2023-01-01';
- delete FROM logs WHERE created_at < '2023-01-01' LIMIT 1000;
-```
-
-## 3. DQL (数据查询语言) - Data Query Language
-
-DQL 是最重要的 SQL 部分，用于从数据库中查询数据。
-
-### 3.1 基础查询详解
-
-#### 3.1.1 SELECT 基础语法
-
-```sql
- SELECT * FROM users;
- SELECT id, username, email FROM users;
- SELECT username, price, quantity, price * quantity AS total FROM order_items;
- SELECT
-  id AS user_id,
-  username AS name,
-  email AS "邮箱地址"
- from users;
- SELECT
-  username,
-  price,
-  quantity,
-  price * quantity AS subtotal,
-  price * quantity * 0.1 AS tax
- from order_items;
- SELECT DISTINCT status FROM users;
- SELECT DISTINCT province, city FROM addresses;
-```
-
-#### 3.1.2 列类型转换
-
-```sql
- SELECT CONCAT(username, ' (', email, ')') AS user_info FROM users;
- SELECT CONCAT_WS(' - ', province, city, district) AS full_address FROM addresses;
- SELECT CAST(price AS CHAR) FROM products;
- SELECT CONVERT(price, CHAR) FROM products;
- SELECT DATE_FORMAT(created_at, '%Y年%m月%d日') AS formatted_date FROM users;
-```
-
-### 3.2 条件查询详解
-
-#### 3.2.1 WHERE 子句
-
-```sql
- SELECT * FROM users WHERE age > 25;
- SELECT * FROM users WHERE age >= 25;
- SELECT * FROM users WHERE age < 30;
- SELECT * FROM users WHERE age <= 30;
- SELECT * FROM users WHERE age = 25;
- SELECT * FROM users WHERE age != 25;
- SELECT * FROM users WHERE age <> 25;
-```
-
-#### 3.2.2 逻辑运算符
-
-```sql
- SELECT * FROM users WHERE age > 25 AND status = 1;
- SELECT * FROM users WHERE age > 20 AND age < 30 AND gender = '男';
- SELECT * FROM users WHERE status = 1 OR status = 2;
- SELECT * FROM users WHERE username = '张三' OR username = '李四';
- SELECT * FROM users WHERE NOT status = 0;
- SELECT * FROM users WHERE NOT (age < 20 OR age > 30);
- SELECT * FROM users
- WHERE (age > 25 AND status = 1) OR (age < 20 AND status = 2);
-```
-
-#### 3.2.3 范围查询
-
-```sql
- SELECT * FROM users WHERE age BETWEEN 20 AND 30;
- SELECT * FROM users WHERE created_at BETWEEN '2024-01-01' AND '2024-12-31';
- SELECT * FROM users WHERE age NOT BETWEEN 20 AND 30;
-```
-
-#### 3.2.4 IN 和 NOT IN
-
-```sql
- SELECT * FROM users WHERE status IN (1, 2, 3);
- SELECT * FROM users WHERE username IN ('张三', '李四', '王五');
- SELECT * FROM users WHERE id IN (SELECT user_id FROM vip_users);
- SELECT * FROM users WHERE status NOT IN (0, -1);
-```
-
-#### 3.2.5 LIKE 模糊查询
-
-```sql
- SELECT * FROM users WHERE username LIKE '张%'; -- 以张开头
- SELECT * FROM users WHERE username LIKE '%张%'; -- 包含张
- SELECT * FROM users WHERE username LIKE '%张'; -- 以张结尾
- SELECT * FROM users WHERE username LIKE '张_'; -- 张后面一个字
- SELECT * FROM users WHERE username LIKE '__张'; -- 张前面两个字
- SELECT * FROM users WHERE phone LIKE '138%'; -- 手机号以138开头
- SELECT * FROM users WHERE email LIKE '%@gmail.com'; -- Gmail邮箱
- SELECT * FROM users WHERE username NOT LIKE '%admin%';
- SELECT * FROM users WHERE username LIKE '%100%%' ESCAPE '%';
-```
-
-#### 3.2.6 NULL 值查询
-
-```sql
- SELECT * FROM users WHERE email IS NULL;
- SELECT * FROM users WHERE deleted_at IS NULL;
- SELECT * FROM users WHERE email IS NOT NULL;
-```
-
-#### 3.2.7 条件查询实战
-
-```sql
- SELECT * FROM employees_info WHERE Employees_sex = '女';
- SELECT * FROM employees_info WHERE Employees_sex = '女' AND Hiredate < '2015-01-01';
- SELECT *, YEAR(NOW()) - YEAR(Hiredate) AS 工龄
- from employees_info
- WHERE YEAR(NOW()) - YEAR(Hiredate) > 15;
- SELECT * FROM employees_info WHERE Post_id BETWEEN 'cg1001' AND 'hr1001';
- SELECT * FROM employees_info WHERE Post_id IN ('cg1001', 'hr1001');
- SELECT * FROM employees_info WHERE Employees_name LIKE '%王%';
- SELECT *, YEAR(NOW()) - YEAR(Customer_Birth) AS 年龄
- from customer_info
- WHERE YEAR(NOW()) - YEAR(Customer_Birth) > 30;
- SELECT * FROM customer_info WHERE Customer_Birth IS NULL;
-```
-
-### 3.3 排序与分页详解
-
-#### 3.3.1 ORDER BY 排序
-
-```sql
- SELECT * FROM users ORDER BY age ASC;
- SELECT * FROM users ORDER BY age; -- 默认升序
- SELECT * FROM users ORDER BY created_at DESC;
- SELECT * FROM users ORDER BY status ASC, age DESC;
- SELECT *, age * 365 AS days_alive FROM users ORDER BY days_alive DESC;
- SELECT *, price * quantity AS subtotal FROM order_items ORDER BY subtotal DESC;
- SELECT id, username, email FROM users ORDER BY 3; -- 按第3列排序
-```
-
-#### 3.3.2 LIMIT 分页
-
-```sql
- SELECT * FROM users LIMIT 10;
- SELECT * FROM users LIMIT 10 OFFSET 10;
- SELECT * FROM users LIMIT 10, 10; -- 简写形式
- SELECT * FROM users ORDER BY id DESC LIMIT 5;
- SELECT * FROM users ORDER BY id LIMIT 10 OFFSET 0;
- SELECT * FROM users ORDER BY id LIMIT 10 OFFSET 10;
- SELECT * FROM users ORDER BY id LIMIT 10 OFFSET 20;
- SELECT * FROM users LIMIT 1;
-```
-
-### 3.4 分组查询详解
-
-#### 3.4.1 GROUP BY 基础
-
-```sql
- SELECT status, COUNT(*) AS count FROM users GROUP BY status;
- SELECT province, city, COUNT(*) AS count FROM users GROUP BY province, city;
- SELECT status, AVG(age) AS avg_age FROM users GROUP BY status;
- SELECT status, SUM(balance) AS total_balance FROM users GROUP BY status;
-```
-
-#### 3.4.2 HAVING 子句
-
-HAVING 用于过滤分组后的结果，WHERE 用于过滤分组前的记录。
-
-```sql
- SELECT status, COUNT(*) AS count
- from users
- GROUP BY status
- HAVING count > 10;
- SELECT status, AVG(age) AS avg_age, COUNT(*) AS count
- from users
- WHERE age > 0 -- 先过滤
- GROUP BY status -- 再分组
- HAVING count > 5; -- 最后过滤分组结果
- SELECT status, COUNT(*) AS count, AVG(age) AS avg_age
- from users
- GROUP BY status
- HAVING count > 10 AND avg_age > 25;
-```
-
-#### 3.4.3 GROUP BY 实战
-
-```sql
- SELECT COUNT(Customer_name) AS 人数, Customer_sex AS 性别
- from customer_info GROUP BY Customer_sex;
- SELECT Commodity_id, SUM(Sales_Number) AS 总数
- from sales_list GROUP BY Commodity_id;
- SELECT Commodity_id, AVG(Sales_price) AS 平均售价
- from sales_list
- GROUP BY Commodity_id
- HAVING AVG(Sales_price) > 1500;
- SELECT Commodity_id, SUM(Sales_Number) AS 总数量
- from sales_list
- GROUP BY Commodity_id
- HAVING SUM(Sales_Number) > 50;
-```
-
-#### 3.4.4 GROUP BY 注意事项
-
-```sql
- SELECT status, COUNT(*) FROM users GROUP BY status;
- SELECT ANY_VALUE(id), status, COUNT(*) FROM users GROUP BY status;
-```
-
-### 3.5 聚合函数详解
-
-#### 3.5.1 常用聚合函数
-
-| 函数         | 说明       | 示例                                             |
-| :----------- | :--------- | :----------------------------------------------- |
-| COUNT        | 计数       | COUNT(\*)、COUNT(column)、COUNT(DISTINCT column) |
-| SUM          | 求和       | SUM(price)、SUM(quantity)                        |
-| AVG          | 平均值     | AVG(price)                                       |
-| MAX          | 最大值     | MAX(price)、MAX(created_at)                      |
-| MIN          | 最小值     | MIN(price)、MIN(created_at)                      |
-| GROUP_CONCAT | 拼接字符串 | GROUP_CONCAT(username SEPARATOR ',')             |
-
-#### 3.5.2 COUNT 用法
-
 ```sql
- SELECT COUNT(*) FROM users;
- SELECT COUNT(email) FROM users;
- SELECT COUNT(DISTINCT status) FROM users;
- SELECT COUNT(DISTINCT province, city) FROM users;
-```
-
-#### 3.5.3 聚合函数综合示例
-
-```sql
- SELECT SUM(Purchase_price * Purchase_Number) AS 总成本 FROM purchase_list;
- SELECT
-  AVG(Purchase_Number) AS 平均采购数量,
-  MAX(Purchase_Number) AS 最大采购数量,
-  MIN(Purchase_Number) AS 最小采购数量
- from purchase_list;
- SELECT
-  Purchase_id,
-  SUM(Purchase_Number) AS 总量,
-  AVG(Purchase_Number) AS 平均,
-  MAX(Purchase_Number) AS 最大,
-  MIN(Purchase_Number) AS 最小
- from purchase_list
- GROUP BY Purchase_id;
-```
-
----
-
-## 插入数据
-
-**单行写法：指定列插入单行**
-`INSERT INTO <表名> (<列名>[, <列名>...]) VALUES (<值>[, <值>...])`
-```sql
--- 指定列插入单行数据
-INSERT INTO users (id, username, email, password, age)
-VALUES (1, '张三', 'zhangsan@example.com', 'encrypted_pass', 25);
-```
-
-**单行写法：省略自增列插入**
-`INSERT INTO <表名> (<非自增列>[, ...]) VALUES (<值>[, ...])`
-```sql
--- 省略自增主键列插入数据
-INSERT INTO users (username, email, password, age)
-VALUES ('张三', 'zhangsan@example.com', 'encrypted_pass', 25);
-```
-
-**换行写法：SET 语法插入**
-`INSERT INTO <表名> SET <列名> = <值>[, <列名> = <值>...]`
-```sql
--- 使用 SET 形式插入数据
-INSERT INTO users SET
-  username = '李四',
-  email = 'lisi@example.com',
-  password = 'encrypted_pass',
-  age = 30;
-```
-
-**换行写法：批量插入多行**
-`INSERT INTO <表名> (<列名>) VALUES (<值1>), (<值2>)[, ...]`
-```sql
--- 批量插入多行数据
-INSERT INTO users (username, email, password, age) VALUES
-('王五', 'wangwu@example.com', 'pass1', 28),
-('赵六', 'zhaoliu@example.com', 'pass2', 32),
-('钱七', 'qianqi@example.com', 'pass3', 27);
-```
-
-**换行写法：插入查询结果**
-`INSERT INTO <表名> (<列名>) SELECT <列名> FROM <源表> [WHERE <条件>]`
-```sql
--- 从旧表迁移符合条件的数据
-INSERT INTO users (username, email, password, age)
-SELECT username, email, password, age FROM old_users WHERE status = 1;
-```
-
-**换行写法：插入或更新**
-`INSERT INTO <表名> (<列名>) VALUES (<值>) ON DUPLICATE KEY UPDATE <列名> = <值>`
-```sql
--- 主键冲突时更新指定字段
-INSERT INTO users (id, username, email) VALUES (1, '张三', 'new@example.com')
-ON DUPLICATE KEY UPDATE email = 'new@example.com', updated_at = NOW();
-```
-
-**单行写法：忽略冲突插入**
-`INSERT IGNORE INTO <表名> (<列名>) VALUES (<值>)`
-```sql
--- 主键冲突时跳过插入
-INSERT IGNORE INTO users (username, email) VALUES ('张三', 'test@example.com');
-```
-
-**单行写法：替换插入**
-`REPLACE INTO <表名> (<列名>) VALUES (<值>)`
-```sql
--- 主键冲突时删除原行再插入
-REPLACE INTO users (id, username, email) VALUES (1, '张三', 'new@example.com');
-```
+CREATE TABLE players (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  name VARCHAR(30) NOT NULL,
+  score INT NOT NULL DEFAULT 0,
+  level INT NOT NULL DEFAULT 1,
+  updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+);
 
-**单行写法：获取自增 ID**
-`SELECT LAST_INSERT_ID();`
-```sql
--- 插入后获取自增主键值
-SELECT LAST_INSERT_ID();
+INSERT INTO players (name, score, level) VALUES
+  ('小明', 1250, 8),
+  ('阿黄', 980, 6),
+  ('Rain', 2410, 15),
+  ('Nova', 760, 5),
+  ('老K', 1520, 10);
 ```
 
----
+逐点说明这些建表决定：
 
-## 更新数据
+- `AUTO_INCREMENT`：id 不用手填，每插一行自动加一，适合做主键；
+- `NOT NULL DEFAULT`：分数不许空、缺省 0，等级缺省 1——让数据库替你挡住脏数据；
+- `updated_at ... ON UPDATE CURRENT_TIMESTAMP`：行每次被修改，时间戳自动刷新，排查「这条数据什么时候变的」全靠它。
 
-**单行写法：更新单列**
-`UPDATE <表名> SET <列名> = <值> WHERE <条件>`
-```sql
--- 更新指定行的单列
-UPDATE users SET age = 26 WHERE id = 1;
-```
+## 3. 最小可运行示例：增查改三连
 
-**单行写法：基于原值更新**
-`UPDATE <表名> SET <列名> = <列名> <运算符> <值> WHERE <条件>`
-```sql
--- 基于原值进行累加更新
-UPDATE users SET age = age + 1 WHERE age < 30;
-```
+**先查一遍，确认数据真的进去了**：
 
-**换行写法：多列更新**
-`UPDATE <表名> SET <列名> = <值>[, <列名> = <值>...] WHERE <条件>`
 ```sql
--- 同时更新多个字段
-UPDATE users
-SET age = 27, email = 'new@example.com', updated_at = NOW()
-WHERE id = 1;
+SELECT * FROM players;
 ```
 
-**换行写法：JOIN 关联更新**
-`UPDATE <表1> [AS <别名>] JOIN <表2> [AS <别名>] ON <条件> SET <列名> = <值>`
-```sql
--- 关联其他表更新数据
-UPDATE users u
-JOIN user_profiles p ON u.id = p.user_id
-SET u.avatar = p.avatar_url, u.status = p.status
-WHERE u.id = 1;
-```
+预期输出（顺序可能不同，内容一致）：
 
-**换行写法：子查询更新**
-`UPDATE <表名> SET <列名> = (SELECT <聚合> FROM <表> WHERE <条件>)`
-```sql
--- 用子查询结果更新字段
-UPDATE users
-SET balance = (SELECT SUM(amount) FROM orders WHERE user_id = users.id)
-WHERE id = 1;
+```text
++----+--------+-------+-------+---------------------+
+| id | name   | score | level | updated_at          |
++----+--------+-------+-------+---------------------+
+|  1 | 小明   |  1250 |     8 | 2026-09-27 10:00:00 |
+|  2 | 阿黄   |   980 |     6 | 2026-09-27 10:00:00 |
+|  3 | Rain   |  2410 |    15 | 2026-09-27 10:00:00 |
+|  4 | Nova   |   760 |     5 | 2026-09-27 10:00:00 |
+|  5 | 老K    |  1520 |    10 | 2026-09-27 10:00:00 |
++----+--------+-------+-------+---------------------+
+5 rows in set (0.00 sec)
 ```
-
----
 
-## 删除数据
+**加分**：Rain 打完一局赢了 300 分——注意「在原值上加」的写法，不是先查出来再算：
 
-**单行写法：条件删除**
-`DELETE FROM <表名> WHERE <条件>`
 ```sql
--- 删除符合条件的行
-DELETE FROM users WHERE id = 1;
+UPDATE players SET score = score + 300 WHERE id = 3;
+SELECT name, score FROM players WHERE id = 3;
 ```
 
-**单行写法：范围删除**
-`DELETE FROM <表名> WHERE <条件1> AND <条件2>`
-```sql
--- 删除符合多条件的行
-DELETE FROM users WHERE status = 0 AND created_at < '2024-01-01';
-```
+预期：`Rain` 的分数变成 `2710`。
 
-**单行写法：排序后删除指定行数**
-`DELETE FROM <表名> ORDER BY <列名> [ASC|DESC] LIMIT <行数>`
-```sql
--- 按排序删除前 N 行
-DELETE FROM users ORDER BY created_at DESC LIMIT 10;
-```
+**排行榜**：显示分数前三名，先名次后分数：
 
-**换行写法：JOIN 关联删除**
-`DELETE <别名> FROM <表1> [AS <别名>] JOIN <表2> [AS <别名>] ON <条件> WHERE <条件>`
 ```sql
--- 关联其他表删除数据
-DELETE u FROM users u
-JOIN inactive_users i ON u.email = i.email
-WHERE u.status = 0;
+SELECT name, score FROM players ORDER BY score DESC LIMIT 3;
 ```
 
-**换行写法：子查询删除**
-`DELETE FROM <表名> WHERE <列名> IN (SELECT <列名> FROM <表> WHERE <条件>)`
-```sql
--- 用子查询结果删除数据
-DELETE FROM users WHERE id IN (SELECT user_id FROM old_users WHERE created_at < '2023-01-01');
-```
+预期输出：
 
-**单行写法：清空表**
-`TRUNCATE TABLE <表名>`
-```sql
--- 清空表数据并重置自增值
-TRUNCATE TABLE users;
+```text
++--------+-------+
+| name   | score |
++--------+-------+
+| Rain   |  2710 |
+| 老K    |  1520 |
+| 小明   |  1250 |
++--------+-------+
+3 rows in set (0.00 sec)
 ```
 
----
+`ORDER BY score DESC` 是「按分数从高到低」，`LIMIT 3` 是「只取前三」——排行榜页面的核心 SQL 就这两句。
 
-## 基础查询
+## 4. 发生了什么：操作与验证的循环
 
-**单行写法：查询所有列**
-`SELECT * FROM <表名>`
-```sql
--- 查询表中所有字段
-SELECT * FROM users;
-```
-
-**单行写法：查询指定列**
-`SELECT <列名>[, <列名>...] FROM <表名>`
-```sql
--- 查询指定列数据
-SELECT id, username, email FROM users;
-```
+上面三步演示的是数据库开发的基本节奏：**每一次写操作之后，紧跟一条验证查询**。客户端每次执行都会告诉你影响行数（`Rows matched: 1  Changed: 1`），学会读它，你就知道自己的 SQL 实际改了几行——这个习惯在第 5 节救你的命。
 
-**单行写法：列别名**
-`SELECT <列名> [AS] <别名>`
-```sql
--- 使用别名查询字段
-SELECT username AS name, email AS "邮箱地址" FROM users;
-```
+## 5. 调试实录：手一抖的全表更新
 
-**单行写法：计算列别名**
-`SELECT <表达式> AS <别名>`
-```sql
--- 计算列并设置别名
-SELECT price, quantity, price * quantity AS total FROM order_items;
-```
+现在复现那个事故。需求是「给 id 为 2 的玩家加 10 分」，手快写漏了条件：
 
-**单行写法：单列去重**
-`SELECT DISTINCT <列名> FROM <表名>`
 ```sql
--- 查询单列去重结果
-SELECT DISTINCT status FROM users;
+START TRANSACTION;
+UPDATE players SET score = score + 10;
+SELECT COUNT(*) AS affected FROM players WHERE score > 10000;
+ROLLBACK;
 ```
 
-**单行写法：多列去重**
-`SELECT DISTINCT <列名1>, <列名2>[, ...] FROM <表名>`
-```sql
--- 查询多列组合去重结果
-SELECT DISTINCT province, city FROM addresses;
-```
+输出关键行是 `Query OK, 5 rows affected`——**五个人全部被加了 10 分**。因为 `UPDATE` 没有 `WHERE` 时作用于全表。这段代码故意包在事务里：
 
----
+- `START TRANSACTION` 开始记账；
+- 后续所有修改暂时只对你可见；
+- `ROLLBACK` 整体反悔，回到事务开始前的状态；
+- 确认无误时才执行 `COMMIT` 提交。
 
-## 条件查询
+立即养成肌肉记忆：**在生产库上写 UPDATE/DELETE，先 `START TRANSACTION`，跑完检查影响行数与抽样数据，再 `COMMIT`**。重新执行一遍正确版本并提交：
 
-**单行写法：大于比较**
-`WHERE <列名> > <值>`
 ```sql
--- 查询年龄大于 25 的用户
-SELECT * FROM users WHERE age > 25;
+START TRANSACTION;
+UPDATE players SET score = score + 10 WHERE id = 2;
+SELECT name, score FROM players WHERE id = 2;   -- 确认 990
+COMMIT;
 ```
 
-**单行写法：大于等于比较**
-`WHERE <列名> >= <值>`
-```sql
--- 查询年龄大于等于 25 的用户
-SELECT * FROM users WHERE age >= 25;
-```
+## 6. 核心概念：聚合与删除
 
-**单行写法：小于比较**
-`WHERE <列名> < <值>`
-```sql
--- 查询年龄小于 30 的用户
-SELECT * FROM users WHERE age < 30;
-```
+**统计**：排行榜后台要显示「当前参赛人数与平均分」：
 
-**单行写法：不等于比较**
-`WHERE <列名> <!=|<>> <值>`
 ```sql
--- 查询年龄不等于 25 的用户
-SELECT * FROM users WHERE age != 25;
+SELECT COUNT(*) AS total_players, AVG(score) AS avg_score, MAX(score) AS top_score
+FROM players;
 ```
 
-**单行写法：AND 逻辑与**
-`WHERE <条件1> AND <条件2>`
-```sql
--- 查询同时满足多条件的用户
-SELECT * FROM users WHERE age > 25 AND status = 1;
-```
+预期输出一行：`total_players` 为 5，`avg_score` 约 1378，`top_score` 为 2710。`COUNT/AVG/MAX` 这类函数对**整组行**计算，返回一行结果，与前面的「每行一条」查询本质不同（分组聚合在 [DQL](/mysql/120-DQL) 展开）。
 
-**单行写法：OR 逻辑或**
-`WHERE <条件1> OR <条件2>`
-```sql
--- 查询满足任一条件的用户
-SELECT * FROM users WHERE status = 1 OR status = 2;
-```
+**删除**：玩家 Nova 注销账号：
 
-**单行写法：NOT 逻辑非**
-`WHERE NOT <条件>`
 ```sql
--- 查询不满足条件的用户
-SELECT * FROM users WHERE NOT status = 0;
+DELETE FROM players WHERE id = 4;
+SELECT COUNT(*) FROM players;   -- 4
 ```
 
-**换行写法：括号组合条件**
-`WHERE (<条件1> AND <条件2>) OR (<条件3> AND <条件4>)`
-```sql
--- 使用括号组合复杂条件
-SELECT * FROM users
-WHERE (age > 25 AND status = 1) OR (age < 20 AND status = 2);
-```
+`DELETE` 的规则与 `UPDATE` 完全一致：没有 `WHERE` 就是清全表，同样要走事务。
 
-**单行写法：数值范围查询**
-`WHERE <列名> [NOT] BETWEEN <起始> AND <结束>`
-```sql
--- 查询年龄在 20 到 30 之间的用户
-SELECT * FROM users WHERE age BETWEEN 20 AND 30;
-```
+## 7. 常见错误与调试实录
 
-**单行写法：日期范围查询**
-`WHERE <日期列> BETWEEN '<起始日期>' AND '<结束日期>'`
-```sql
--- 查询指定日期范围内的用户
-SELECT * FROM users WHERE created_at BETWEEN '2024-01-01' AND '2024-12-31';
-```
+错误一，语法错。把 `INSERT` 手滑写成小写混乱：
 
-**单行写法：IN 多值匹配**
-`WHERE <列名> [NOT] IN (<值1>, <值2>[, ...])`
 ```sql
--- 查询状态为指定值的用户
-SELECT * FROM users WHERE status IN (1, 2, 3);
+inSERT INTO players (name) VALUES ('x');
 ```
 
-**单行写法：IN 子查询**
-`WHERE <列名> IN (SELECT <列名> FROM <表名>)`
-```sql
--- 查询属于 VIP 用户表的用户
-SELECT * FROM users WHERE id IN (SELECT user_id FROM vip_users);
-```
+真实报错：
 
-**单行写法：前缀模糊查询**
-`WHERE <列名> [NOT] LIKE '<前缀>%'`
-```sql
--- 查询以指定字符开头的用户名
-SELECT * FROM users WHERE username LIKE '张%';
+```text
+ERROR 1064 (42000): You have an error in your SQL syntax; check the manual that corresponds to your MySQL server version for the right syntax to use near 'inSERT INTO players (name) VALUES ('x')' at line 1
 ```
 
-**单行写法：包含模糊查询**
-`WHERE <列名> LIKE '%<子串>%'`
-```sql
--- 查询包含指定字符的用户名
-SELECT * FROM users WHERE username LIKE '%张%';
-```
+1064 的读法：引号里从出错位置附近开始看。本例报错位置就是整句开头——关键字拼错了。MySQL 关键字不区分大小写，`inSERT` 本身合法，真正的坑通常是少了逗号、引号不配对、括号没闭合。
 
-**单行写法：单字符匹配模糊查询**
-`WHERE <列名> LIKE '<前缀>_'`
-```sql
--- 查询指定前缀加单字符的用户名
-SELECT * FROM users WHERE username LIKE '张_';
-```
+错误二，列名错：
 
-**单行写法：指定转义符模糊查询**
-`WHERE <列名> LIKE '<模式>' ESCAPE '<转义符>'`
 ```sql
--- 使用指定转义符查询包含百分号的数据
-SELECT * FROM users WHERE username LIKE '%100\%%' ESCAPE '\';
+SELECT scor FROM players;
 ```
 
-**单行写法：查询空值**
-`WHERE <列名> IS NULL`
-```sql
--- 查询邮箱为空的用户
-SELECT * FROM users WHERE email IS NULL;
-```
+真实报错：
 
-**单行写法：查询非空值**
-`WHERE <列名> IS NOT NULL`
-```sql
--- 查询已删除的用户
-SELECT * FROM users WHERE deleted_at IS NOT NULL;
+```text
+ERROR 1054 (42S22): Unknown column 'scor' in 'field list'
 ```
 
----
+1054 直接告诉你哪个名字不存在，九成是拼错，用 `DESC players;`（看表结构）核对。
 
-## 排序与分页
+错误三，非空列没给值：
 
-**单行写法：升序排序**
-`ORDER BY <列名> ASC`
 ```sql
--- 按年龄升序排序
-SELECT * FROM users ORDER BY age ASC;
+INSERT INTO players (id, score) VALUES (10, 100);
 ```
 
-**单行写法：降序排序**
-`ORDER BY <列名> DESC`
-```sql
--- 按创建时间降序排序
-SELECT * FROM users ORDER BY created_at DESC;
-```
+真实报错（严格模式下）：
 
-**单行写法：多列排序**
-`ORDER BY <列名1> [ASC|DESC], <列名2> [ASC|DESC]`
-```sql
--- 先按状态升序再按年龄降序排序
-SELECT * FROM users ORDER BY status ASC, age DESC;
+```text
+ERROR 1364 (HY000): Field 'name' doesn't have a default value
 ```
 
-**单行写法：按列位置排序**
-`ORDER BY <列位置序号>`
-```sql
--- 按查询列的位置序号排序
-SELECT id, username, email FROM users ORDER BY 3;
-```
+这是第 2 节的 `NOT NULL` 在工作——建表时的约束此刻变成了报错，挡住了脏数据。给上 `name` 即可。
 
-**单行写法：取前 N 行**
-`LIMIT <行数>`
-```sql
--- 取前 10 行数据
-SELECT * FROM users LIMIT 10;
-```
+## 8. 修改实验
 
-**单行写法：分页查询**
-`LIMIT <行数> OFFSET <偏移>`
-```sql
--- 查询第 2 页数据（每页 10 行）
-SELECT * FROM users LIMIT 10 OFFSET 10;
-```
+1. 把排行榜查询改成「显示分数高于全表平均分的玩家」——先跑第 6 节的 AVG 记下数值，再用 `WHERE score > 数字` 实现；进阶：一行 SQL 里用子查询完成（预告 130 篇）；
+2. 把 `LIMIT 3` 改成 `LIMIT 3 OFFSET 1`，预测输出第几名到第几名，运行验证（这是「分页」的雏形）；
+3. 故意写一次 `ERROR 1054`：把某条查询的列名删掉一个字母，读报错、修好它。
 
-**单行写法：分页简写形式**
-`LIMIT <偏移>, <行数>`
-```sql
--- 使用简写形式分页查询
-SELECT * FROM users LIMIT 10, 10;
-```
+## 9. 小练习
 
-**单行写法：排序后取前 N 行**
-`SELECT * FROM <表名> ORDER BY <列名> [DESC] LIMIT <行数>`
-```sql
--- 按降序排序后取前 5 行
-SELECT * FROM users ORDER BY id DESC LIMIT 5;
-```
+预测题（不执行，先写答案）：`UPDATE players SET level = level + 1 WHERE score > 1500;` 执行后客户端报告 `2 rows affected`，请写出是哪两位玩家升了级，再用查询验证。
 
----
+修改题：写一条 SQL 让「所有等级小于 10 的玩家」分数加 50，要求先在事务里执行、验证影响行数正确后再提交。
 
-## 分组查询
+修 Bug 题：下面这条排行榜 SQL 报 `ERROR 1064`，找出两处语法错误并修复：
 
-**换行写法：单列分组统计**
-`SELECT <分组列>, <聚合函数>(<列名>) FROM <表名> GROUP BY <分组列>`
 ```sql
--- 按状态分组统计用户数量
-SELECT status, COUNT(*) AS count FROM users GROUP BY status;
+SELECTE name, score FORM players ORDER BY score DESC LIMIT 3;
 ```
 
-**换行写法：多列分组统计**
-`SELECT <列名1>, <列名2>, <聚合函数>(<列名>) FROM <表名> GROUP BY <列名1>, <列名2>`
-```sql
--- 按省份和城市分组统计用户数量
-SELECT province, city, COUNT(*) AS count FROM users GROUP BY province, city;
-```
+挑战题（不看提示自己写）：一次查询同时给出「总分最高的玩家姓名」与「全表平均分」，只允许用一个 SELECT 语句。提示：聚合函数可以混在普通列里，但要想清楚 `MAX(score)` 和 `AVG(score)` 能不能和 `name` 同行返回，动手试试再下结论。
 
-**换行写法：分组求平均值**
-`SELECT <分组列>, AVG(<列名>) FROM <表名> GROUP BY <分组列>`
-```sql
--- 按状态分组求平均年龄
-SELECT status, AVG(age) AS avg_age FROM users GROUP BY status;
-```
+## 10. 什么时候应该 / 不应该这样用
 
-**换行写法：分组过滤**
-`SELECT <列名> FROM <表名> GROUP BY <列名> HAVING <过滤条件>`
-```sql
--- 过滤分组结果只保留数量大于 10 的组
-SELECT status, COUNT(*) AS count
-FROM users
-GROUP BY status
-HAVING count > 10;
-```
+应该：一切对生产数据的写操作走事务；每次写完紧跟验证查询；批量灌测试数据用一条多值 INSERT。
 
-**换行写法：WHERE 与 HAVING 组合**
-`SELECT <列名> FROM <表名> WHERE <条件> GROUP BY <列名> HAVING <过滤条件>`
-```sql
--- 先过滤行再分组最后过滤分组
-SELECT status, AVG(age) AS avg_age, COUNT(*) AS count
-FROM users
-WHERE age > 0
-GROUP BY status
-HAVING count > 5 AND avg_age > 25;
-```
+不应该：在没有 `WHERE` 保险的情况下直接对生产表跑 UPDATE/DELETE；用 `DELETE` 清大表（那是 100-DML 里 `TRUNCATE` 的活，注意它不能回滚的代价）；把「先查出来在代码里算，再写回去」当成加分方式——数据库自己会算。
 
----
+## 11. 与之前和之后的知识的关系
 
-## 聚合函数
+- 往前：[DML 语法](/mysql/100-DML) 给了你单词表，本文把它们排成了句子；建表约束的作用在第 2、7 节兑现；
+- 往后：[DQL](/mysql/120-DQL) 把 `WHERE/ORDER BY/GROUP BY` 系统展开——你在这里用过的 `ORDER BY score DESC LIMIT 3` 将获得完整理论；多表场景见 [多表连接](/mysql/140-MultiTableJoinDetailed)；
+- 更远：第 5 节的事务只是「会回滚」级别，事务的隔离级别与 MVCC 在 420 篇之后展开。
 
-**单行写法：总行数计数**
-`COUNT(*)`
-```sql
--- 统计表的总行数
-SELECT COUNT(*) FROM users;
-```
+## 12. 官方文档
 
-**单行写法：非空计数**
-`COUNT(<列名>)`
-```sql
--- 统计邮箱非空的行数
-SELECT COUNT(email) FROM users;
-```
+- INSERT 语法：https://dev.mysql.com/doc/refman/8.4/en/insert.html
+- UPDATE 语法：https://dev.mysql.com/doc/refman/8.4/en/update.html
+- SELECT 语法（含 LIMIT/OFFSET）：https://dev.mysql.com/doc/refman/8.4/en/select.html
+- 事务语法（START TRANSACTION/COMMIT/ROLLBACK）：https://dev.mysql.com/doc/refman/8.4/en/commit.html
+- 服务端错误码总表（1064/1054/1364 都在这查）：https://dev.mysql.com/doc/mysql-errors/8.4/en/server-error-reference.html
 
-**单行写法：去重计数**
-`COUNT(DISTINCT <列名>)`
-```sql
--- 统计状态去重后的数量
-SELECT COUNT(DISTINCT status) FROM users;
-```
+## 13. 自我检查
 
-**单行写法：求和**
-`SUM(<列名>)`
-```sql
--- 统计所有用户余额总和
-SELECT SUM(balance) AS total_balance FROM users;
-```
+- 能不看教程完成「建表、插五行、出前三名榜、统计平均分」全流程；
+- 能说清 `UPDATE` 忘写 `WHERE` 的后果与事务防护步骤；
+- 拿到 1064/1054/1364 报错，各自知道第一步看哪里；
+- 养成了「写操作后立即验证影响行数」的习惯。
 
-**单行写法：求平均值**
-`AVG(<列名>)`
-```sql
--- 统计用户平均年龄
-SELECT AVG(age) AS avg_age FROM users;
-```
+## 本章总结
 
-**单行写法：求最大值**
-`MAX(<列名>)`
-```sql
--- 查询商品最高价格
-SELECT MAX(price) AS max_price FROM products;
-```
+真实的数据工作不是一条条孤立语法，而是「写、验、改、查」的循环：写操作用事务兜底，改完立刻验证，查询先预测行数。INSERT/UPDATE/DELETE/SELECT 四件套加上 ORDER BY/LIMIT/聚合函数，已经能支撑一个小排行榜的全部后端需求——也是你后续所有 SQL 学习的骨架。
 
-**单行写法：求最小值**
-`MIN(<列名>)`
-```sql
--- 查询商品最低价格
-SELECT MIN(price) AS min_price FROM products;
-```
+## 下一步
 
-**换行写法：分组拼接字符串**
-`GROUP_CONCAT(<列名> [SEPARATOR '<分隔符>'])`
-```sql
--- 按状态分组拼接用户名
-SELECT status, GROUP_CONCAT(username SEPARATOR ',') AS names
-FROM users GROUP BY status;
-```
+进入 [DQL 数据查询语言](/mysql/120-DQL)，把本文里用过的每一个查询片段展开讲透。

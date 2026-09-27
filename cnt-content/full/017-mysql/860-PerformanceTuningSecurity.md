@@ -1,5 +1,5 @@
 ---
-order: 860
+order: 830
 title: 性能调优与安全
 module: 'mysql'
 category: 数据库

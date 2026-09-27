@@ -1,5 +1,5 @@
 ---
-order: 670
+order: 460
 title: 异步编程详解
 module: 'python'
 category: 后端技术

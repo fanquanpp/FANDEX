@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 370
 title: Java 模块系统
 module: 'java'
 category: 后端技术

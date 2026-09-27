@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 210
 title: 现代文件读写救急锦囊： Files.readString / writeString
 module: 'java'
 category: 后端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'java/280-IOStreamFileOperation'
-  - 'java/670-JavaPathFiles'
   - 'java/300-StreamAPI'
 prerequisites:
   - 'java/180-ExceptionHandlingMechanism'

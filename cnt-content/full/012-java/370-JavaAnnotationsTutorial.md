@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 290
 title: 枚举与注解
 module: 'java'
 category: 后端技术

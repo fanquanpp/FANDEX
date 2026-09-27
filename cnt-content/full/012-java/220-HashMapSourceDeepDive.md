@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 190
 title: HashMap 源码详解
 module: 'java'
 category: 后端技术
@@ -10,7 +10,6 @@ updated: '2026-09-12'
 related:
   - 'java/210-CollectionFrameworkDetailed'
   - 'java/200-EqualsHashCodeContract'
-  - 'java/230-JavaIteratorIterable'
 prerequisites:
   - 'java/210-CollectionFrameworkDetailed'
 ---

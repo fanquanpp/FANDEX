@@ -1,10 +1,10 @@
 ---
-order: 360
+order: 230
 title: Python ssl 安全套接字
 module: 'python'
 category: 后端技术
 difficulty: beginner
-description: Python ssl 安全套接字 的完整教学讲解。
+description: ssl 模块速查：SSL/TLS 上下文、证书加载与校验模式，含禁用校验的风险警告。
 author: fanquanpp
 updated: '2026-09-12'
 related: []
@@ -54,7 +54,7 @@ ctx.load_verify_locations("ca-bundle.crt")
 **基本写法：禁用主机名检查**
 `ctx.check_hostname = False`
 ```python
-# 关闭主机名校验（不推荐）
+# 危险：不再核验对端身份，仅限本地调试自签名服务
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ```
@@ -62,11 +62,13 @@ ctx.check_hostname = False
 **基本写法：调整验证模式**
 `ctx.verify_mode = ssl.CERT_NONE`
 ```python
-# 关闭证书验证（不推荐）
+# 危险：完全关闭证书验证，仅限本地调试自签名服务
 ctx = ssl.create_default_context()
 ctx.check_hostname = False
 ctx.verify_mode = ssl.CERT_NONE
 ```
+
+上面两段是本模块最危险的配置：`check_hostname = False` 加 `verify_mode = ssl.CERT_NONE` 等于宣布「我不核对对方是谁」。中间人（MITM）攻击者可以伪造证书冒充目标服务器，解密、篡改、重放你的全部流量，而客户端毫无察觉。唯一合理场景是本地调试自签名服务，且应注释说明原因；证书校验报错的正确处理是修复证书链、系统时间或 CA 信任库，而不是关掉校验。生产代码、联网工具与任何处理用户数据的程序禁止出现这两行。
 
 **基本写法：设置最低 TLS 版本**
 `ctx.minimum_version = ssl.TLSVersion.TLSv1_2`

@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 200
 title: 学生选课系统项目（集合综合实战）
 module: 'java'
 category: 后端技术
@@ -9,11 +9,8 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'java/210-CollectionFrameworkDetailed'
-  - 'java/240-JavaComparatorComparable'
-  - 'java/250-JavaObjectsUtility'
 prerequisites:
   - 'java/210-CollectionFrameworkDetailed'
-  - 'java/240-JavaComparatorComparable'
 ---
 
 ## 0. 本节阅读指引（先读这一节）

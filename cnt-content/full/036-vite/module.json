@@ -5,7 +5,9 @@
   "categories": [
     "frontend"
   ],
-  "prerequisites": [],
+  "prerequisites": [
+    "javascript"
+  ],
   "officialDocs": [
     {
       "label": "官方文档",

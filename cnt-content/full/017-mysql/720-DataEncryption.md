@@ -1,5 +1,5 @@
 ---
-order: 720
+order: 690
 title: 数据加密：InnoDB TDE 与密钥管理
 module: 'mysql'
 category: 数据库

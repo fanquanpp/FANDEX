@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 370
 title: 增量备份
 module: 'postgresql'
 category: 数据库
@@ -10,7 +10,6 @@ updated: '2026-09-12'
 related:
   - 'postgresql/400-PhysicalReplicationSlot'
   - 'postgresql/420-LogicalDecodingOutputPlugin'
-  - 'postgresql/460-PgDumpRestore'
   - 'postgresql/390-StreamingReplication'
 prerequisites:
   - 'postgresql/010-OverviewInstallConfig'

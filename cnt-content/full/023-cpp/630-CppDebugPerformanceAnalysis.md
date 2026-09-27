@@ -1,5 +1,5 @@
 ---
-order: 630
+order: 610
 title: C++ 调试与性能分析
 module: 'cpp'
 category: 计算机科学

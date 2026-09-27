@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 140
 title: 抽象类与接口
 module: 'java'
 category: 后端技术

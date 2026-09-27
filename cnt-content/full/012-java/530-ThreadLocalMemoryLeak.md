@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 430
 title: ThreadLocal 内存泄漏
 module: 'java'
 category: 后端技术

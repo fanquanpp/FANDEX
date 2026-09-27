@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 290
 title: Python 基础数据类型：从对象模型到工程实践的深度解析
 module: 'python'
 category: 后端技术

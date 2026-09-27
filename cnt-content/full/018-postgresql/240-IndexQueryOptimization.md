@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 160
 title: 索引与查询优化
 module: 'postgresql'
 category: 数据库

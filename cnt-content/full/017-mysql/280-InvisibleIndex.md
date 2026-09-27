@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 260
 title: 不可见索引：安全删除索引的唯一姿势
 module: 'mysql'
 category: 数据库
@@ -11,9 +11,7 @@ related:
   - 'mysql/270-IndexHintForceIndex'
   - 'mysql/290-FunctionalIndex'
   - 'mysql/300-IndexStatsHistogram'
-  - 'mysql/210-IndexManagement'
 prerequisites:
-  - 'mysql/210-IndexManagement'
   - 'mysql/220-ClusteredIndexSecondaryIndex'
 ---
 

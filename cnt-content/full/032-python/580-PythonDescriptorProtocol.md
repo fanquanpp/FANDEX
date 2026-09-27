@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 370
 title: Python 描述符协议：属性访问的底层机制与工程实践
 module: 'python'
 category: 后端技术

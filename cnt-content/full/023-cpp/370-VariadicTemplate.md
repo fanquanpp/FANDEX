@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 350
 title: 变参模板
 module: 'cpp'
 category: 计算机科学

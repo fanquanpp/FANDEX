@@ -1,5 +1,5 @@
 ---
-order: 770
+order: 740
 title: 存储过程与函数
 module: 'mysql'
 category: 数据库

@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 150
 title: 列表推导式进阶
 module: 'python'
 category: 后端技术

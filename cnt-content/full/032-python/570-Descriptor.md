@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 360
 title: 描述符
 module: 'python'
 category: 后端技术

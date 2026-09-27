@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 270
 title: 函数索引：给表达式建索引
 module: 'mysql'
 category: 数据库

@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 300
 title: EXPLAIN 输出详解
 module: 'mysql'
 category: 数据库

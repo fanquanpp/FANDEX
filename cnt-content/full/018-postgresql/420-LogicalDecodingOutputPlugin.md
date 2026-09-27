@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 340
 title: 逻辑解码与输出插件：把 WAL 变成事件流
 module: 'postgresql'
 category: 数据库

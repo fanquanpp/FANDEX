@@ -1,5 +1,5 @@
 ---
-order: 750
+order: 720
 title: SQL 注入攻击类型与实战
 module: 'mysql'
 category: 数据库

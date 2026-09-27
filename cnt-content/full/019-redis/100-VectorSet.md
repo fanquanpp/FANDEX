@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 80
 title: 向量集
 module: 'redis'
 category: 数据库

@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 20
 title: 高级 SQL
 module: 'postgresql'
 category: 数据库

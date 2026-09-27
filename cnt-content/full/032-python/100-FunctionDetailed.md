@@ -1,1347 +1,406 @@
 ---
 order: 100
-title: 函数详解
+title: 函数详解：不重复自己
 module: 'python'
 category: 后端技术
 difficulty: intermediate
-description: 函数定义、参数类型、lambda 表达式与高阶函数。
+description: 从三处复制的结算逻辑讲起：参数设计、返回值、局部作用域、可变默认参数事故、docstring 与类型提示，最后把排行榜封装成函数库，附真实 TypeError 调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'python/960-WebScrapingWithPython'
-  - 'python/980-PythonAutomationCookbook'
-  - 'python/750-PythonTest'
-  - 'python/430-PythonLog'
-prerequisites: []
+  - 'python/140-BuiltinDataStructure'
+  - 'python/110-ArgsKwargsUnpacking'
+  - 'python/130-ExceptionHandling'
+  - 'python/530-TypeAnnotationMypy'
+  - 'python/460-OOP'
+prerequisites:
+  - 'python/090-VariableConstant'
+  - 'python/070-BasicDataType'
 ---
 
 ## 前置知识
 
-- [Python 与自动化](/python/980-PythonAutomationCookbook)：建议先完成前一篇的学习
+- 已完成 [变量与常量](/python/090-VariableConstant)：知道「变量是名字绑定对象」，见过 `UnboundLocalError` 实录；
+- 已完成 [内置数据结构](/python/140-BuiltinDataStructure)：会对列表 `append`、取 `len`，会读写字典。
+
+只在 070 篇认识过这两种容器也可以读。这是模块承上启下的一篇：前面的零件在这里组装成「能复用的程序」。
 
 ## 学习目标
 
-- 掌握「1. 函数基本语法 (Basic Syntax)」的核心机制、典型用法与常见陷阱
-- 掌握「2. 参数类型 (Parameter Types)」的核心机制、典型用法与常见陷阱
-- 掌握「3. 匿名函数 (Lambda)」的核心机制、典型用法与常见陷阱
-- 掌握「4. 装饰器 (Decorators)」的核心机制、典型用法与常见陷阱
-- 掌握「5. 高阶函数 (Higher-Order Functions)」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 把复制了三遍的结算逻辑封装成一个函数，说清「参数进、返回值出」的数据流；
+2. 用位置参数、关键字参数与默认值设计好用的函数签名；
+3. 预测函数内赋值的行为，并用 `None` 默认值修掉「共享列表」的事故；
+4. 给函数写 docstring 与最小类型提示；
+5. 把排行榜逻辑重构成可复用、可断言的函数库。
 
-## 1. 函数基本语法 (Basic Syntax)
+预计 60 到 75 分钟，含 1 组实验、4 道练习与 1 个综合小项目。
 
-函数是封装逻辑的可重用代码块，用于组织和简化代码。
+## 1. 你现在要解决什么问题
 
-### 1.1 定义与调用 (Definition & Invocation)
+同样的结算逻辑，复制了三遍：
 
 ```python
- # 基本函数定义
- def greet(name, msg="Hello"):
-  """
-  函数文档字符串 | Docstring
-  Args:
-  name (str): 用户名
-  msg (str): 问候消息，默认为 "Hello"
-  Returns:
-  str: 格式化的问候消息
-  """
-  return f"{msg}, {name}!"
- # 调用函数
- print(greet("Alice")) # 输出: Hello, Alice!
- print(greet("Bob", "Hi")) # 输出: Hi, Bob!
- # 无返回值的函数
- def print_message(message):
-  """打印消息"""
-  print(f"Message: {message}")
- print_message("Hello, World!") # 输出: Message: Hello, World!
- # 多返回值函数
- def get_user_info():
-  """返回用户信息"""
-  name = "Alice"
-  age = 30
-  city = "New York"
-  return name, age, city # 返回元组
- user_name, user_age, user_city = get_user_info()
- print(f"Name: {user_name}, Age: {user_age}, City: {user_city}")
- # 空函数
- def placeholder():
-  """占位函数"""
-  pass # 空语句
+players = {"小明": [92, 87, 78], "小红": [95, 99, 91], "小刚": [60, 75, 81]}
+
+# 结算小明
+total = sum(players["小明"])
+average = total / len(players["小明"])
+if average >= 85:
+    status = "达标"
+else:
+    status = "未达标"
+print(f"小明: 总分 {total}，平均 {average:.1f}，{status}")
+# 结算小红 —— 复制
+total = sum(players["小红"])
+average = total / len(players["小红"])
+if average >= 85:
+    status = "达标"
+else:
+    status = "未达标"
+print(f"小红: 总分 {total}，平均 {average:.1f}，{status}")
+# 结算小刚 —— 又复制，而且手滑把 85 敲成了 58
+total = sum(players["小刚"])
+average = total / len(players["小刚"])
+if average >= 58:
+    status = "达标"
+else:
+    status = "未达标"
+print(f"小刚: 总分 {total}，平均 {average:.1f}，{status}")
 ```
 
-### 1.2 参数传递 (Parameter Passing)
+预期输出：
 
-Python 中采用**引用传递** (Pass by Object Reference) 的方式传递参数：
-
-- **不可变对象 (int, str, tuple)**: 修改形参不会影响实参
-- **可变对象 (list, dict, set)**: 修改形参的内容会影响实参
-
-```python
- # 不可变对象示例
- def modify_immutable(x):
-  x = x + 1
-  print(f"Inside function: x = {x}")
- num = 10
- modify_immutable(num)
- print(f"Outside function: num = {num}") # 输出: 10（实参未改变）
- # 可变对象示例
- def modify_mutable(lst):
-  lst.append(4)
-  print(f"Inside function: lst = {lst}")
- my_list = [1, 2, 3]
- modify_mutable(my_list)
- print(f"Outside function: my_list = {my_list}") # 输出: [1, 2, 3, 4]（实参被修改）
- # 重新绑定可变对象
- def rebind_mutable(lst):
-  lst = [4, 5, 6] # 重新绑定局部变量
-  print(f"Inside function: lst = {lst}")
- my_list = [1, 2, 3]
- rebind_mutable(my_list)
- print(f"Outside function: my_list = {my_list}") # 输出: [1, 2, 3]（实参未改变）
+```text
+小明: 总分 257，平均 85.7，达标
+小红: 总分 285，平均 95.0，达标
+小刚: 总分 216，平均 72.0，达标
 ```
 
-## 2. 参数类型 (Parameter Types)
+最后一行是错的：小刚 72 分低于 85，应该是「未达标」。但 85 被敲成 58 之后，输出看起来一切正常——**复制粘贴的事故不会在粘贴时爆炸，而在你意想不到的时刻**。三天后策划说「达标线改成 90」，要改三处，改一处漏两处几乎是必然。函数的使命只有一个：**把重复的逻辑写成一份，让不同的数据复用它**。
 
-Python 支持多种类型的函数参数：
+## 2. 先不要看解释，先试试看
 
-### 2.1 位置参数 (Positional Parameters)
-
-位置参数是最基本的参数类型，必须按顺序传递：
+进入 REPL，逐段输入并先预测：
 
 ```python
- def add(a, b):
-  return a + b
- print(add(3, 5)) # 输出: 8
- # print(add(3)) # 错误: 缺少位置参数 b
+>>> def add(a, b):
+...     return a + b
+...
+>>> add(2, 3) * 10
+50
+
+>>> def add_bad(a, b):
+...     print(a + b)
+...
+>>> add_bad(2, 3)
+5
+>>> add_bad(2, 3) * 10
 ```
 
-### 2.2 关键字参数 (Keyword Parameters)
+两个函数的第一个输出都是 5，看起来只差一个词。但最后一步 `* 10`，两边会同样顺利吗？第 4 节揭晓。
 
-关键字参数允许通过参数名指定值，顺序可以任意：
+## 3. 最小可运行示例：结算函数
+
+把三份复制收编成一个函数，保存为 `settle.py` 并运行：
 
 ```python
- def greet(name, age):
-  return f"Hello, {name}! You are {age} years old."
- print(greet(name="Alice", age=30)) # 输出: Hello, Alice! You are 30 years old.
- print(greet(age=25, name="Bob")) # 输出: Hello, Bob! You are 25 years old.
+def settle(name, scores, threshold=85):
+    total = sum(scores)
+    average = total / len(scores)
+    if average >= threshold:
+        status = "达标"
+    else:
+        status = "未达标"
+    return f"{name}: 总分 {total}，平均 {average:.1f}，{status}"
+
+print(settle("小明", [92, 87, 78]))
+print(settle("小红", [95, 99, 91]))
+print(settle("小刚", [60, 75, 81]))
+print(settle("小刚", [60, 75, 81], threshold=60))
 ```
 
-### 2.3 默认参数 (Default Parameters)
+预期输出：
 
-默认参数为参数提供默认值，当调用时未提供该参数时使用：
-
-```python
- def greet(name, msg="Hello", age=None):
-  if age:
-  return f"{msg}, {name}! You are {age} years old."
-  return f"{msg}, {name}!"
- print(greet("Alice")) # 输出: Hello, Alice!
- print(greet("Bob", "Hi")) # 输出: Hi, Bob!
- print(greet("Charlie", age=25)) # 输出: Hello, Charlie! You are 25 years old.
- # 陷阱: 不要使用可变对象作为默认参数
- def add_item(item, items=[]): # 危险：默认参数在函数定义时只计算一次
-  items.append(item)
-  return items
- print(add_item(1)) # 输出: [1]
- print(add_item(2)) # 输出: [1, 2]（意外：使用了同一个列表）
- # 正确的做法
- def add_item_safe(item, items=None):
-  if items is None:
-  items = []
-  items.append(item)
-  return items
- print(add_item_safe(1)) # 输出: [1]
- print(add_item_safe(2)) # 输出: [2]（正确：每次创建新列表）
+```text
+小明: 总分 257，平均 85.7，达标
+小红: 总分 285，平均 95.0，达标
+小刚: 总分 216，平均 72.0，未达标
+小刚: 总分 216，平均 72.0，达标
 ```
 
-### 2.4 可变参数 (\*args)
+18 行复制缩成一个定义加四次调用；85 到 58 的手滑不再可能——阈值只写一处，第四行还证明它能按需覆盖。
 
-可变参数允许接收任意数量的位置参数，会将这些参数打包成一个元组：
+## 4. 发生了什么：定义与调用
+
+`def settle(name, scores, threshold=85):` 把一段代码打包成**函数对象**，并把名字 `settle` 绑定到它——和 090 篇的 `=` 是同一种绑定。打包不等于执行：**函数体只在被调用时才跑**。调用时发生两件事：**参数绑定**——把 `"小明"` 贴给 `name`、列表贴给 `scores`，与 `name = "小明"` 同种绑定，别名行为遵循 090 篇；**执行到 return**——立即结束函数，把后面的值交回调用处。
+
+第 2 节的悬念揭晓：`add_bad` 只有 `print` 没有 `return`，函数本身交回 `None`，那步运算等于 `None * 10`，当场崩溃（完整报错在第 11 节）。**「看着有输出」和「交回了值」是两回事**——新手函数的头号陷阱。
+
+## 5. 参数设计：位置、关键字与默认值
+
+**位置参数**按顺序对号入座，数量必须吻合。**关键字参数**用 `名字=值` 传，可读性大增且顺序自由。**默认值**让参数可选：签名 `create_player(name, level=1, region="国服")` 允许 `create_player("小明")` 用全套默认值、`create_player("小红", level=10)` 只覆盖一项、`create_player("小刚", region="亚服", level=5)` 乱序覆盖。
+
+两条语法与设计规则：
+
+1. 有默认值的参数必须排在无默认值后面（`def f(a, b=1)` 合法，`def f(a=1, b)` 直接语法错误）；
+2. 调用时位置实参在前、关键字实参在后，`settle(name="小刚", [60, 75, 81])` 这样的写法是语法错误。
+
+数量给多了会当场收到 `TypeError: settle() takes from 2 to 3 positional arguments but 4 were given`——「允许几个」「实际几个」都报了。参数个数不固定时，`*args` 与 `**kwargs` 分别收集多余的位置与关键字参数；先混个眼熟，[第 110 篇](/python/110-ArgsKwargsUnpacking) 用整篇讲透星号。
+
+## 6. 返回值：参数进，返回值出
+
+函数与外界的正当通道只有两条：参数进，返回值出（「返回多个值」是打包成元组，见 110 篇）。先看更重要的模式——**早退**：
 
 ```python
- def sum_numbers(*args):
-  """计算任意数量数字的和"""
-  total = 0
-  for num in args:
-  total += num
-  return total
- print(sum_numbers(1, 2, 3)) # 输出: 6
- print(sum_numbers(1, 2, 3, 4, 5)) # 输出: 15
- print(sum_numbers()) # 输出: 0
- # 解包序列作为可变参数
- numbers = [1, 2, 3, 4, 5]
- print(sum_numbers(*numbers)) # 输出: 15
+def average_of(scores):
+    if len(scores) == 0:
+        return 0.0          # 早退：没有数据就不往下算
+    return sum(scores) / len(scores)
+
+print(average_of([]))       # 0.0
+print(average_of([92, 87])) # 89.5
 ```
 
-### 2.5 关键字可变参数 (\*\*kwargs)
+080 篇那个 `ZeroDivisionError`，在这里变成「先检查、再计算」的守卫条款：危险输入在函数门口就被拦下。函数一执行到 `return` 就结束，特殊情况与主逻辑各归各位。
 
-关键字可变参数允许接收任意数量的关键字参数，会将这些参数打包成一个字典：
+## 7. 作用域：函数内赋值是局部的
+
+本文只讲一条规则：**函数体里赋过值的名字都是局部的**，函数一结束就消失。
 
 ```python
- def print_person(**kwargs):
-  """打印人物信息"""
-  for key, value in kwargs.items():
-  print(f"{key}: {value}")
- print_person(name="Alice", age=30, city="New York")
- # 输出:
- # name: Alice
- # age: 30
- # city: New York
- # 解包字典作为关键字可变参数
- person_info = {"name": "Bob", "age": 25, "city": "London"}
- print_person(**person_info)
+MIN_SCORE = 60
+
+def is_passed(score):
+    verdict = score >= MIN_SCORE    # 读外面的名字：允许
+    return verdict
+
+print(is_passed(75))    # True
+# print(verdict)        # NameError：verdict 是局部名字，函数外不存在
 ```
 
-### 2.6 混合使用不同类型的参数
+需要外部数据就走参数。`count = count + 1` 为何在函数里崩出 `UnboundLocalError`，090 篇第 8 节有完整实录，本文不重复。记一条纪律：**数据一律参数进、返回值出；全局常量只读不写**。
 
-参数定义的顺序必须是：位置参数 → 默认参数 → 可变参数 → 关键字可变参数
+## 8. 可变默认参数：一场真实事故
+
+默认值是数字与字符串时相安无事，换成列表立刻失控：
 
 ```python
- def mixed_params(a, b, c=10, *args, **kwargs):
-  print(f"a: {a}, b: {b}, c: {c}")
-  print(f"args: {args}")
-  print(f"kwargs: {kwargs}")
- mixed_params(1, 2, 3, 4, 5, 6, name="Alice", age=30)
- # 输出:
- # a: 1, b: 2, c: 3
- # args: (4, 5, 6)
- # kwargs: {'name': 'Alice', 'age': 30}
+def add_member(member, roster=[]):
+    roster.append(member)
+    return roster
+
+team_a = add_member("小明")
+print(team_a)
+team_b = add_member("小红")
+print(team_b)
 ```
 
-## 3. 匿名函数 (Lambda)
+预期输出——请先预测再运行，多数人会错：
 
-Lambda 函数是一种小型的匿名函数，使用 `lambda` 关键字定义：
-
-### 3.1 基本语法
-
-```python
- # 基本语法: lambda arguments: expression
- add = lambda x, y: x + y
- print(add(5, 5)) # 输出: 10
- # 无参数
- greet = lambda: "Hello, World!"
- print(greet()) # 输出: Hello, World!
- # 单个参数
- square = lambda x: x ** 2
- print(square(4)) # 输出: 16
- # 多个参数
- max_num = lambda x, y: x if x > y else y
- print(max_num(10, 20)) # 输出: 20
+```text
+['小明']
+['小明', '小红']
 ```
 
-### 3.2 Lambda 函数的应用场景
-
-Lambda 函数常用于需要简短函数的场景，如作为高阶函数的参数：
+小红的队伍里凭空躺着小明。原因：**默认值在 `def` 执行时创建一次，之后所有调用共享同一个列表对象**——每次不传 `roster` 的调用都在往同一个对象 append。函数把这个默认值一直揣在身上：
 
 ```python
- # 与 map() 结合
- numbers = [1, 2, 3, 4, 5]
- squared = list(map(lambda x: x ** 2, numbers))
- print(squared) # 输出: [1, 4, 9, 16, 25]
- # 与 filter() 结合
- even_numbers = list(filter(lambda x: x % 2 == 0, numbers))
- print(even_numbers) # 输出: [2, 4]
- # 与 sorted() 结合
- students = [
-  {"name": "Alice", "grade": 85},
-  {"name": "Bob", "grade": 92},
-  {"name": "Charlie", "grade": 78}
- ]
- # 按分数排序
- sorted_by_grade = sorted(students, key=lambda student: student["grade"], reverse=True)
- print(sorted_by_grade)
- # 与 reduce() 结合
- from functools import reduce
- product = reduce(lambda x, y: x * y, numbers)
- print(product) # 输出: 120
- # 作为返回值
- def make_adder(n):
-  return lambda x: x + n
- add5 = make_adder(5)
- print(add5(10)) # 输出: 15
+print(add_member.__defaults__)    # (['小明', '小红'],)
 ```
 
-## 4. 装饰器 (Decorators)
-
-装饰器是一种特殊的函数，用于修改其他函数的行为，而不改变其源代码：
-
-### 4.1 基本装饰器
+修法是固定搭配「`None` 默认值 + 函数内新建」：
 
 ```python
- def timer(func):
-  """计算函数执行时间的装饰器"""
-  import time
-  def wrapper(*args, **kwargs):
-  start_time = time.time()
-  result = func(*args, **kwargs)
-  end_time = time.time()
-  print(f"{func.__name__} 执行时间: {end_time - start_time:.4f} 秒")
-  return result
-  return wrapper
- @timer # 等价于: slow_function = timer(slow_function)
- def slow_function():
-  """模拟耗时操作"""
-  import time
-  time.sleep(1)
-  print("Function executed")
- slow_function()
+def add_member(member, roster=None):
+    if roster is None:
+        roster = []
+    roster.append(member)
+    return roster
 ```
 
-### 4.2 带参数的装饰器
+规则：**默认值永远用不可变对象**（`None`、数字、字符串、元组）；要「可变的空容器」就写 `=None` 再在函数里新建。这个坑在官方 FAQ 里挂了十几年。
+
+## 9. 文档字符串与类型提示
+
+函数写完只是开始。两件低成本高回报的事：
+
+**docstring**：函数体第一行写三引号字符串（第 13 节函数库每个函数都带了），`help(settle)` 能把它读出来。**类型提示**：把参数与返回值的类型写进签名：
 
 ```python
- def repeat(n):
-  """重复执行函数 n 次的装饰器"""
-  def decorator(func):
-  def wrapper(*args, **kwargs):
-  for i in range(n):
-  result = func(*args, **kwargs)
-  return result
-  return wrapper
-  return decorator
- @repeat(3) # 传递参数给装饰器
- def say_hello(name):
-  print(f"Hello, {name}!")
- say_hello("Alice")
- # 输出:
- # Hello, Alice!
- # Hello, Alice!
- # Hello, Alice!
+def settle(name: str, scores: list[float], threshold: int = 85) -> str:
 ```
 
-### 4.3 保留原函数信息
+认清边界：注解写给人看、给工具看，**解释器运行时不强制**——类型错误要靠 mypy 在运行前抓（`list[float]` 需要 Python 3.9+）。完整工作流见 [类型注解与 mypy](/python/530-TypeAnnotationMypy)。
 
-使用 `functools.wraps` 保留原函数的元数据：
+## 10. 修改实验
 
-```python
- import functools
- def my_decorator(func):
-  @functools.wraps(func) # 保留原函数信息
-  def wrapper(*args, **kwargs):
-  print("Before function execution")
-  result = func(*args, **kwargs)
-  print("After function execution")
-  return result
-  return wrapper
- @my_decorator
- def example():
-  """示例函数"""
-  print("Function executed")
- example()
- print(f"Function name: {example.__name__}")
- print(f"Function docstring: {example.__doc__}")
-```
+以下实验基于 `settle.py`，每个先预测再运行：
 
-### 4.4 装饰器链
+1. 把达标线默认值改成 90 重跑——谁的达标状态变了？再删掉第四个调用的 `threshold=60`，体会「一处定义，处处生效」；
+2. 把调用改成 `settle(threshold=85, name="测试", scores=[100])`——关键字乱序也能跑通；把 `[100]` 挪到 `name` 的位置就跑不通，这就是位置参数的规矩；
+3. 把 `average_of` 的早退分支删掉，用 `average_of([])` 调用——080 篇的 `ZeroDivisionError` 当场复活。
 
-多个装饰器可以同时应用于一个函数：
+## 11. 常见错误与调试实录
+
+把 `print` 当 `return` 用：
 
 ```python
- def decorator1(func):
-  def wrapper(*args, **kwargs):
-  print("Decorator 1 before")
-  result = func(*args, **kwargs)
-  print("Decorator 1 after")
-  return result
-  return wrapper
- def decorator2(func):
-  def wrapper(*args, **kwargs):
-  print("Decorator 2 before")
-  result = func(*args, **kwargs)
-  print("Decorator 2 after")
-  return result
-  return wrapper
- @decorator1
- @decorator2
- def my_function():
-  print("Function executed")
- my_function()
- # 输出顺序:
- # Decorator 1 before
- # Decorator 2 before
- # Function executed
- # Decorator 2 after
- # Decorator 1 after
-```
-
-## 5. 高阶函数 (Higher-Order Functions)
-
-高阶函数是指接收函数作为参数或返回函数的函数：
-
-### 5.1 接收函数作为参数
-
-```python
- def apply_function(func, value):
-  """应用函数到值"""
-  return func(value)
- def square(x):
-  return x ** 2
- def cube(x):
-  return x ** 3
- print(apply_function(square, 5)) # 输出: 25
- print(apply_function(cube, 5)) # 输出: 125
- print(apply_function(lambda x: x + 1, 5)) # 输出: 6
-```
-
-### 5.2 返回函数
-
-```python
- def make_multiplier(n):
-  """返回一个乘以 n 的函数"""
-  def multiplier(x):
-  return x * n
-  return multiplier
- double = make_multiplier(2)
- triple = make_multiplier(3)
- print(double(5)) # 输出: 10
- print(triple(5)) # 输出: 15
-```
-
-### 5.3 内置高阶函数
-
-#### 5.3.1 `map()`
-
-`map()` 函数对序列中的每个元素应用一个函数：
-
-```python
- # 基本用法
- numbers = [1, 2, 3, 4, 5]
- squared = list(map(lambda x: x ** 2, numbers))
- print(squared) # 输出: [1, 4, 9, 16, 25]
- # 多个序列
- numbers1 = [1, 2, 3]
- numbers2 = [4, 5, 6]
- summed = list(map(lambda x, y: x + y, numbers1, numbers2))
- print(summed) # 输出: [5, 7, 9]
- # 自定义函数
- def to_upper(s):
-  return s.upper()
- words = ["hello", "world", "python"]
- upper_words = list(map(to_upper, words))
- print(upper_words) # 输出: ['HELLO', 'WORLD', 'PYTHON']
-```
-
-#### 5.3.2 `filter()`
-
-`filter()` 函数根据函数结果过滤序列中的元素：
-
-```python
- # 基本用法
- numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
- even_numbers = list(filter(lambda x: x % 2 == 0, numbers))
- print(even_numbers) # 输出: [2, 4, 6, 8, 10]
- # 过滤非空字符串
- words = ["hello", "", "world", "", "python"]
- non_empty = list(filter(lambda s: s, words))
- print(non_empty) # 输出: ['hello', 'world', 'python']
- # 自定义函数
- def is_positive(n):
-  return n > 0
- numbers = [-5, -3, 0, 2, 7, -1]
- positive_numbers = list(filter(is_positive, numbers))
- print(positive_numbers) # 输出: [2, 7]
-```
-
-#### 5.3.3 `reduce()`
-
-`reduce()` 函数对序列中的元素进行累积计算：
-
-```python
- from functools import reduce
- # 基本用法
- numbers = [1, 2, 3, 4, 5]
- sum_result = reduce(lambda x, y: x + y, numbers)
- print(sum_result) # 输出: 15
- # 带初始值
- product_result = reduce(lambda x, y: x * y, numbers, 10) # 初始值为 10
- print(product_result) # 输出: 1200 (10 * 1 * 2 * 3 * 4 * 5)
- # 连接字符串
- words = ["Hello", " ", "World", "!"]
- sentence = reduce(lambda x, y: x + y, words)
- print(sentence) # 输出: Hello World!
- # 查找最大值
- numbers = [3, 1, 4, 1, 5, 9, 2, 6]
- max_value = reduce(lambda x, y: x if x > y else y, numbers)
- print(max_value) # 输出: 9
-```
-
-## 6. 函数作用域 (Function Scope)
-
-Python 中的变量作用域遵循 LEGB 规则：
-
-1. **Local (L)**: 局部作用域，在函数内部定义的变量
-2. **Enclosing (E)**: 嵌套作用域，在嵌套函数的外层函数中定义的变量
-3. **Global (G)**: 全局作用域，在模块级别定义的变量
-4. **Built-in (B)**: 内置作用域，Python 内置的变量和函数
-
-### 6.1 局部作用域
-
-```python
- def my_function():
-  local_var = "local"
-  print(local_var) # 可以访问局部变量
- my_function()
- # print(local_var) # 错误: 无法访问局部变量
-```
-
-### 6.2 全局作用域
-
-```python
- global_var = "global"
- def my_function():
-  print(global_var) # 可以访问全局变量
- my_function()
- print(global_var) # 可以访问全局变量
-```
-
-### 6.3 修改全局变量
-
-```python
- global_var = "global"
- def my_function():
-  global global_var # 声明要修改全局变量
-  global_var = "modified global"
-  print(global_var)
- my_function()
- print(global_var) # 输出: modified global
-```
-
-### 6.4 嵌套作用域
-
-```python
- def outer_function():
-  outer_var = "outer"
-  def inner_function():
-  nonlocal outer_var # 声明要修改嵌套作用域变量
-  outer_var = "modified outer"
-  print(outer_var)
-  inner_function()
-  print(outer_var) # 输出: modified outer
- outer_function()
-```
-
-## 7. 递归函数 (Recursive Functions)
-
-递归函数是调用自身的函数，用于解决可以分解为相同子问题的问题：
-
-### 7.1 基本递归
-
-```python
- def factorial(n):
-  """计算阶乘"""
-  if n <= 1:
-  return 1
-  return n * factorial(n - 1)
- print(factorial(5)) # 输出: 120
- # 斐波那契数列
- def fibonacci(n):
-  """计算斐波那契数列第 n 项"""
-  if n <= 1:
-  return n
-  return fibonacci(n - 1) + fibonacci(n - 2)
- print(fibonacci(10)) # 输出: 55
-```
-
-### 7.2 递归的注意事项
-
-- **基线条件**: 必须有一个明确的终止条件
-- **递归深度**: Python 默认递归深度限制为 1000
-- **性能**: 某些递归实现可能效率低下，可考虑使用记忆化或迭代
-
-```python
- # 记忆化优化斐波那契
- from functools import lru_cache
- @lru_cache(maxsize=None)
- def fibonacci_memo(n):
-  if n <= 1:
-  return n
-  return fibonacci_memo(n - 1) + fibonacci_memo(n - 2)
- print(fibonacci_memo(100)) # 快速计算大值
- # 迭代实现斐波那契
- def fibonacci_iterative(n):
-  if n <= 1:
-  return n
-  a, b = 0, 1
-  for _ in range(2, n + 1):
-  a, b = b, a + b
-  return b
- print(fibonacci_iterative(100)) # 更高效
-```
-
-## 8. 函数式编程 (Functional Programming)
-
-函数式编程是一种编程范式，强调使用纯函数、不可变数据和高阶函数：
-
-### 8.1 纯函数
-
-纯函数是指没有副作用且相同输入总是产生相同输出的函数：
-
-```python
- # 纯函数
- def add(a, b):
-  return a + b
- # 非纯函数（有副作用）
- total = 0
- def add_to_total(x):
-  global total
-  total += x
-  return total
-```
-
-### 8.2 不可变数据
-
-函数式编程鼓励使用不可变数据，避免修改现有数据：
-
-```python
- # 不可变操作
- numbers = [1, 2, 3]
- # 创建新列表而不是修改原列表
- new_numbers = [x * 2 for x in numbers]
- print(numbers) # 原列表不变: [1, 2, 3]
- print(new_numbers) # 新列表: [2, 4, 6]
- # 使用元组（不可变）
- point = (1, 2)
- # point[0] = 3 # 错误: 元组不可修改
-```
-
-### 8.3 函数式编程工具
-
-```python
- from functools import reduce
- # 组合函数
- def compose(f, g):
-  return lambda x: f(g(x))
- def add_one(x):
-  return x + 1
- def multiply_by_two(x):
-  return x * 2
- # 先加 1，再乘以 2
- add_one_then_multiply_by_two = compose(multiply_by_two, add_one)
- print(add_one_then_multiply_by_two(5)) # 输出: 12
- # 管道操作
- from functools import reduce
- def pipe(data, *functions):
-  return reduce(lambda x, func: func(x), functions, data)
- result = pipe(
-  5,
-  lambda x: x + 1, # 6
-  lambda x: x * 2, # 12
-  lambda x: x - 3 # 9
- )
- print(result) # 输出: 9
-```
-
-## 9. 函数最佳实践
-
-### 9.1 函数设计
-
-- **单一职责**: 每个函数应该只做一件事情
-- **函数长度**: 保持函数简洁，通常不超过 50 行
-- **命名规范**: 使用小写字母和下划线，函数名应该描述其功能
-- **文档字符串**: 为函数添加详细的文档字符串
-- **参数数量**: 尽量减少参数数量，通常不超过 5 个
-
-### 9.2 性能优化
-
-- **避免重复计算**: 使用缓存或记忆化
-- **避免不必要的全局变量**: 优先使用函数参数和返回值
-- **使用适当的数据结构**: 选择合适的数据结构提高性能
-- **生成器**: 对于大型数据集，使用生成器节省内存
-
-### 9.3 代码风格
-
-- **缩进**: 使用 4 个空格进行缩进
-- **空行**: 在函数定义之间使用空行
-- **注释**: 为复杂的逻辑添加注释
-- **类型提示**: 使用类型提示提高代码可读性
-
-```python
- # 使用类型提示
- def greet(name: str, age: int) -> str:
-  """问候函数"""
-  return f"Hello, {name}! You are {age} years old."
- # 类型提示的好处
- # 1. 提高代码可读性
- # 2. 支持静态类型检查
- # 3. 提供更好的代码补全
-```
-
----
-
-## 函数定义
-
-**基本写法：定义无参函数**
-`def <函数名>(): <语句>`
-
-```python
-# 定义无参函数
-def greet():
-    print("Hello, World!")
-```
-
----
-
-**基本写法：定义带参函数**
-`def <函数名>(<参数>): <语句>`
-
-```python
-# 定义带参函数
-def greet(name):
-    print(f"Hello, {name}!")
-```
-
----
-
-**单行写法：定义单行函数**
-`def <函数名>(<参数>): return <表达式>`
-
-```python
-# 定义单行函数
-def square(x): return x * x
-```
-
----
-
-**换行写法：定义多参数函数**
-`def <函数名>(`
-`    <参数1>,`
-`    <参数2>,`
-`    <参数3>,`
-`): <语句>`
-
-```python
-# 定义多参数函数（换行书写）
-def create_user(
-    name,
-    age,
-    email,
-):
-    return {"name": name, "age": age, "email": email}
-```
-
----
-
-## 函数调用
-
-**基本写法：调用无参函数**
-`<函数名>()`
-
-```python
-# 调用无参函数
-greet()
-```
-
----
-
-**基本写法：按位置传参调用**
-`<函数名>(<参数1>, <参数2>)`
-
-```python
-# 按位置传参调用函数
-greet("Alice")
-```
-
----
-
-**基本写法：按关键字传参调用**
-`<函数名>(<参数名>=<值>)`
-
-```python
-# 按关键字传参调用函数
-greet(name="Alice")
-```
-
----
-
-**换行写法：多参数函数调用**
-`<函数名>(`
-`    <参数1>=<值1>,`
-`    <参数2>=<值2>,`
-`)`
-
-```python
-# 多参数函数调用（换行书写）
-create_user(
-    name="Alice",
-    age=30,
-    email="alice@example.com",
-)
-```
-
----
-
-## 返回值
-
-**基本写法：返回单个值**
-`return <值>`
-
-```python
-# 返回单个值
+# calc.py
 def add(a, b):
-    return a + b
+    print(a + b)
+
+result = add(2, 3)
+print(result * 10)
 ```
 
----
+报错（真实文本）：
 
-**单行写法：返回多个值（元组）**
-`return <值1>, <值2>, <值3>`
-
-```python
-# 返回多个值（作为元组）
-def get_user_info():
-    return "Alice", 30, "alice@example.com"
+```text
+Traceback (most recent call last):
+  File "calc.py", line 5, in <module>
+    print(result * 10)
+          ~~~~~^~~~~~
+TypeError: unsupported operand type(s) for *: 'NoneType' and 'int'
 ```
 
----
+读报错三步：`line 5` 是崩溃点；`'NoneType' and 'int'` 说明 `result` 是 `None`；问题上移——`add` 没有 `return`，改成 `return a + b` 即修复。以后见到 `NoneType` 参与运算，先怀疑「函数忘了返回值」。
 
-**基本写法：无返回值（隐式返回 None）**
-`def <函数名>(): <语句>`
+## 12. 实际项目中的使用场景
 
-```python
-# 无返回值的函数（隐式返回 None）
-def print_message(msg):
-    print(msg)
-```
+- 函数签名就是接口：参数名与默认值是给同事的文档，类型提示是给工具的合同；参数进、返回值出的函数才可测试（见 [测试基础](/software-testing/010-TestBasicsMethod)）。
 
----
+边界：逻辑出现第二次就警觉、第三次必须封装；不要写大杂烩函数，不要用 `global`，不要拿可变对象当默认值，不要把 `print` 当返回值。
 
-**基本写法：显式返回 None**
-`return None`
+## 13. 综合小项目：排行榜函数库
+
+把排行榜逻辑收编成 `leaderboard.py`——每个函数只做一件事，互相复用：
 
 ```python
-# 显式返回 None
-def process(data):
-    if not data:
-        return None
-    return data
-```
-
----
-
-## 默认参数
-
-**基本写法：定义带默认值的参数**
-`def <函数名>(<参数>=<默认值>): <语句>`
-
-```python
-# 定义带默认值的参数
-def greet(name="World"):
-    print(f"Hello, {name}!")
-```
-
----
-
-**基本写法：混合必选和默认参数**
-`def <函数名>(<必选参数>, <参数>=<默认值>): <语句>`
-
-```python
-# 混合必选参数和默认参数
-def create_user(name, age=18, active=True):
-    return {"name": name, "age": age, "active": active}
-```
-
----
-
-## 可变参数
-
-**基本写法：使用 *args 收集位置参数**
-`def <函数名>(*<args>): <语句>`
-
-```python
-# 使用 *args 收集位置参数
-def sum_all(*args):
-    return sum(args)
-```
-
----
-
-**基本写法：使用 **kwargs 收集关键字参数**
-`def <函数名>(**<kwargs>): <语句>`
-
-```python
-# 使用 **kwargs 收集关键字参数
-def print_info(**kwargs):
-    for key, value in kwargs.items():
-        print(f"{key}: {value}")
-```
-
----
-
-**换行写法：组合使用必选、默认、可变参数**
-`def <函数名>(`
-`    <必选参数>,`
-`    <参数>=<默认值>,`
-`    *<args>,`
-`    **<kwargs>,`
-`): <语句>`
-
-```python
-# 组合使用各类参数
-def create_profile(
-    name,
-    age=18,
-    *hobbies,
-    **metadata,
-):
-    profile = {"name": name, "age": age, "hobbies": hobbies}
-    profile.update(metadata)
-    return profile
-```
-
----
-
-## 参数解包
-
-**基本写法：使用 * 解包列表或元组**
-`<函数名>(*<序列>)`
-
-```python
-# 使用 * 解包列表作为位置参数
-def add(a, b, c):
-    return a + b + c
-
-numbers = [1, 2, 3]
-print(add(*numbers))
-```
-
----
-
-**基本写法：使用 ** 解包字典**
-`<函数名>(**<字典>)`
-
-```python
-# 使用 ** 解包字典作为关键字参数
-def greet(name, greeting):
-    print(f"{greeting}, {name}!")
-
-params = {"name": "Alice", "greeting": "Hi"}
-greet(**params)
-```
-
----
-
-## 仅关键字参数
-
-**基本写法：使用 * 强制关键字参数**
-`def <函数名>(*, <参数>): <语句>`
-
-```python
-# 使用 * 强制后面的参数为关键字参数
-def connect(host, *, port, timeout):
-    print(f"Connecting to {host}:{port}, timeout={timeout}")
-```
-
----
-
-**基本写法：在 *args 后定义关键字参数**
-`def <函数名>(*<args>, <参数>=<默认值>): <语句>`
-
-```python
-# 在 *args 后定义仅关键字参数
-def func(*args, debug=False):
-    if debug:
-        print(f"args: {args}")
-    return sum(args)
-```
-
----
-
-## 仅位置参数
-
-**基本写法：使用 / 强制位置参数**
-`def <函数名>(<参数1>, <参数2>, /): <语句>`
-
-```python
-# 使用 / 强制前面的参数为位置参数
-def divide(a, b, /):
-    return a / b
-```
-
----
-
-**换行写法：组合位置参数和关键字参数**
-`def <函数名>(`
-`    <位置参数>, /,`
-`    <普通参数>,`
-`    *, <关键字参数>,`
-`): <语句>`
-
-```python
-# 组合位置参数、普通参数和关键字参数
-def process_data(
-    data, /,
-    transform=None,
-    *,
-    validate=False,
-):
-    if transform:
-        data = transform(data)
-    if validate:
-        data = validate(data)
-    return data
-```
-
----
-
-## Lambda 表达式
-
-**单行写法：基本 lambda 表达式**
-`lambda <参数>: <表达式>`
-
-```python
-# 基本 lambda 表达式
-square = lambda x: x * x
-print(square(5))
-```
-
----
-
-**单行写法：多参数 lambda 表达式**
-`lambda <参数1>, <参数2>: <表达式>`
-
-```python
-# 多参数 lambda 表达式
-add = lambda a, b: a + b
-print(add(3, 5))
-```
-
----
-
-**单行写法：带默认值的 lambda 表达式**
-`lambda <参数>=<默认值>: <表达式>`
-
-```python
-# 带默认值的 lambda 表达式
-greet = lambda name="World": f"Hello, {name}!"
-print(greet())
-```
-
----
-
-**基本写法：在 sorted() 中使用 lambda**
-`sorted(<可迭代对象>, key=lambda <参数>: <表达式>)`
-
-```python
-# 在 sorted() 中使用 lambda 作为 key
-students = [("Alice", 85), ("Bob", 92), ("Charlie", 78)]
-sorted_students = sorted(students, key=lambda x: x[1])
-```
-
----
-
-**基本写法：在 map() 中使用 lambda**
-`map(lambda <参数>: <表达式>, <可迭代对象>)`
-
-```python
-# 在 map() 中使用 lambda
-numbers = [1, 2, 3, 4, 5]
-squares = list(map(lambda x: x ** 2, numbers))
-```
-
----
-
-**基本写法：在 filter() 中使用 lambda**
-`filter(lambda <参数>: <条件>, <可迭代对象>)`
-
-```python
-# 在 filter() 中使用 lambda
-numbers = [1, 2, 3, 4, 5, 6]
-evens = list(filter(lambda x: x % 2 == 0, numbers))
-```
-
----
-
-## 高阶函数
-
-**基本写法：函数作为参数**
-`def <函数名>(<函数参数>, <其他参数>): <语句>`
-
-```python
-# 函数作为参数传递
-def apply(func, value):
-    return func(value)
-
-result = apply(lambda x: x * 2, 5)
-```
-
----
-
-**基本写法：函数作为返回值**
-`def <函数名>(): return <函数>`
-
-```python
-# 函数作为返回值
-def make_multiplier(factor):
-    return lambda x: x * factor
-
-double = make_multiplier(2)
-print(double(5))
-```
-
----
-
-**基本写法：使用 map() 函数**
-`map(<函数>, <可迭代对象>)`
-
-```python
-# 使用 map() 对可迭代对象应用函数
-numbers = [1, 2, 3, 4, 5]
-squares = list(map(lambda x: x ** 2, numbers))
-```
-
----
-
-**基本写法：使用 filter() 函数**
-`filter(<函数>, <可迭代对象>)`
-
-```python
-# 使用 filter() 过滤可迭代对象
-numbers = [1, 2, 3, 4, 5, 6]
-evens = list(filter(lambda x: x % 2 == 0, numbers))
-```
-
----
-
-**基本写法：使用 reduce() 函数**
-`reduce(<函数>, <可迭代对象>)`
-
-```python
-# 使用 reduce() 累积计算
-from functools import reduce
-numbers = [1, 2, 3, 4, 5]
-product = reduce(lambda x, y: x * y, numbers)
-```
-
----
-
-## 闭包
-
-**换行写法：定义闭包**
-`def <外部函数>(<参数>):`
-`    def <内部函数>(<参数>): <语句>`
-`    return <内部函数>`
-
-```python
-# 定义闭包
-def make_counter():
-    count = 0
-    def counter():
-        nonlocal count
-        count += 1
-        return count
-    return counter
-```
-
----
-
-**基本写法：使用闭包**
-`<变量> = <外部函数>()`
-
-```python
-# 使用闭包
-counter = make_counter()
-print(counter())
-print(counter())
-```
-
----
-
-## 递归
-
-**基本写法：递归函数**
-`def <函数名>(<参数>): if <条件>: return <基线> else: return <递归调用>`
-
-```python
-# 递归计算阶乘
-def factorial(n):
-    if n <= 1:
-        return 1
+def average(scores):
+    """平均分；空列表返回 0.0，不抛 ZeroDivisionError。"""
+    if len(scores) == 0:
+        return 0.0
+    return sum(scores) / len(scores)
+
+
+def settle(name, scores, threshold=85):
+    """结算一名玩家，返回一行报告。"""
+    avg = average(scores)
+    if avg >= threshold:
+        status = "达标"
     else:
-        return n * factorial(n - 1)
+        status = "未达标"
+    return f"{name}: 平均 {avg:.1f}，{status}"
+
+
+def report(players, threshold=85):
+    """打印整份榜单的结算报告，返回达标人数。"""
+    passed = 0
+    for name in players:
+        scores = players[name]
+        print(settle(name, scores, threshold))
+        if average(scores) >= threshold:
+            passed += 1
+    return passed
+
+
+players = {"小明": [92, 87, 78], "小红": [95, 99, 91], "小刚": [60, 75, 81]}
+
+qualified = report(players)
+print(f"共 {qualified} 人达标")
 ```
 
----
+预期输出：
 
-**基本写法：尾递归优化（Python 不支持，仅作示例）**
-`def <函数名>(<参数>, <累加器>): if <条件>: return <累加器> else: return <递归调用>`
+```text
+小明: 平均 85.7，达标
+小红: 平均 95.0，达标
+小刚: 平均 72.0，未达标
+共 2 人达标
+```
+
+三个设计点：**组合代替复制**——`settle` 调 `average`，`report` 调 `settle`，18 行复制变成一条流水线；**前几篇在此会师**——`avg >= threshold` 是 080 的比较运算，`players[name]` 是 090 的绑定，数据全走参数与返回值；这个文件已经是一个**模块**，别的文件 `from leaderboard import settle` 就能复用（见 720 篇）。
+
+## 14. 小练习
+
+预测题（5 分钟，先写答案再运行）：
 
 ```python
-# 尾递归形式的阶乘（Python 不优化）
-def factorial_tail(n, acc=1):
-    if n <= 1:
-        return acc
-    else:
-        return factorial_tail(n - 1, n * acc)
+def double(x):
+    x = x * 2
+    return x
+
+n = 5
+result = double(n)
+print(n, result)
+
+def greet(name, greeting="你好"):
+    return greeting + "，" + name
+
+print(greet("小明"))
+print(greet("小明", "早上好"))
+print(greet(greeting="晚上好", name="小红"))
 ```
 
----
+参考答案（先算再看）：`5 10`——函数内对 `x` 赋值是局部的，外面的 `n` 纹丝不动（090 与第 7 节的合体应用）；后面三行是 `你好，小明`、`早上好，小明`、`晚上好，小红`。
 
-## 函数注解
+修改题（10 分钟）：给 `settle` 升级输出，达标报出高出多少、未达标报出差多少，例如 `小明: 平均 85.7，达标（高出 0.7 分）`。只需要算术与 f-string。
 
-**基本写法：参数类型注解**
-`def <函数名>(<参数>: <类型>): <语句>`
+修 Bug 题（15 分钟）：购物车订单串单了。先预测输出，运行对照，再按第 8 节修复：
 
 ```python
-# 参数类型注解
-def greet(name: str) -> str:
-    return f"Hello, {name}!"
+# cart.py
+def add_item(item, cart=[]):
+    cart.append(item)
+    return cart
+
+order_a = add_item("苹果")
+order_b = add_item("牛奶")
+print(order_a)
+print(order_b)
 ```
 
----
+真实行为演示——你会看到：
 
-**基本写法：返回值类型注解**
-`def <函数名>(<参数>) -> <返回类型>: <语句>`
+```text
+['苹果', '牛奶']
+['苹果', '牛奶']
+```
+
+订单 A 的购物车凭空多出一瓶牛奶。按第 8 节修好，重跑到两行分别是 `['苹果']` 与 `['牛奶']`。
+
+挑战题（半小时，不给代码）：给 `leaderboard.py` 新增函数 `best(players)`，返回平均分最高的玩家名，空字典返回 `None`。验收断言：
 
 ```python
-# 返回值类型注解
-def add(a: int, b: int) -> int:
-    return a + b
+assert best({"甲": [50, 60], "乙": [80]}) == "乙"
+assert best({}) is None
 ```
 
----
+提示：维护「目前为止最高」的两个变量，边遍历边更新。展开：`for` 加 `if` 比较即可，不需要排序；排整张榜单等 160 篇的 `sorted`。
 
-**基本写法：使用 Optional 类型注解**
-`def <函数名>(<参数>: Optional[<类型>]) -> <类型>: <语句>`
+## 15. 与之前和之后的知识的关系
 
-```python
-# 使用 Optional 类型注解
-from typing import Optional
+- 往前：[变量与常量](/python/090-VariableConstant) 的绑定行为就是参数传递，可变默认参数事故正是别名规则在签名上的重演；080 的 `ZeroDivisionError` 在本文进化成早退守卫；
+- 往后：[第 110 篇](/python/110-ArgsKwargsUnpacking) 补齐 `*args`、`**kwargs` 与解包；[异常处理](/python/130-ExceptionHandling) 教函数体面报错；[面向对象](/python/460-OOP) 的方法就是住在类里的函数；[类型注解与 mypy](/python/530-TypeAnnotationMypy) 把第 9 节讲成完整工作流。
 
-def find_user(user_id: int) -> Optional[dict]:
-    if user_id == 1:
-        return {"id": 1, "name": "Alice"}
-    return None
-```
+## 官方文档
 
----
+- 函数定义（权威参考）：https://docs.python.org/zh-cn/3/reference/compound_stmts.html#function-definitions
+- 编程 FAQ（含默认参数求值时机）：https://docs.python.org/zh-cn/3/faq/programming.html
+- PEP 257（docstring 约定）：https://peps.python.org/pep-0257/
 
-**基本写法：使用 List 类型注解**
-`def <函数名>(<参数>: List[<类型>]) -> <类型>: <语句>`
+## 自我检查
 
-```python
-# 使用 List 类型注解
-from typing import List
+- 能不看示例写出「参数进、返回值出」的函数，并说清 `print` 与 `return` 的区别；
+- 能预测共享默认列表的输出，用 `__defaults__` 验证并用 `None` 默认值修复；
+- 拿到重复三遍的代码块，能十分钟内收编成带默认参数与 docstring 的函数。
 
-def sum_numbers(numbers: List[int]) -> int:
-    return sum(numbers)
-```
+## 本章总结
 
----
+函数是把逻辑打包复用的正道：`def` 绑定名字，调用时绑定参数，`return` 交回值（没有就是 `None`）。签名三板斧是位置参数、关键字参数、默认值；数据只走参数进、返回值出，函数内赋值都是局部的。可变默认参数是 FAQ 级经典事故——默认值在定义时创建一次并被所有调用共享，修法永远是 `None` 加函数内新建。签名即文档：docstring 给人读，类型提示给工具查。排行榜函数库证明前几篇的零件已能组装成真正的程序。
 
-**基本写法：使用 Dict 类型注解**
-`def <函数名>(<参数>: Dict[<键类型>, <值类型>]) -> <类型>: <语句>`
+## 下一步
 
-```python
-# 使用 Dict 类型注解
-from typing import Dict
-
-def get_value(data: Dict[str, int], key: str) -> int:
-    return data.get(key, 0)
-```
-
----
-
-**基本写法：使用 Union 类型注解**
-`def <函数名>(<参数>: Union[<类型1>, <类型2>]) -> <类型>: <语句>`
-
-```python
-# 使用 Union 类型注解
-from typing import Union
-
-def process(data: Union[str, bytes]) -> str:
-    if isinstance(data, bytes):
-        return data.decode()
-    return data
-```
-
----
-
-## 函数属性
-
-**基本写法：访问函数注解**
-`<函数>.__annotations__`
-
-```python
-# 访问函数的注解信息
-def greet(name: str) -> str:
-    return f"Hello, {name}!"
-
-print(greet.__annotations__)
-```
-
----
-
-**基本写法：访问函数文档字符串**
-`<函数>.__doc__`
-
-```python
-# 访问函数的文档字符串
-def greet(name):
-    """向用户打招呼"""
-    return f"Hello, {name}!"
-
-print(greet.__doc__)
-```
-
----
-
-**基本写法：访问函数名**
-`<函数>.__name__`
-
-```python
-# 访问函数的名称
-def my_function():
-    pass
-
-print(my_function.__name__)
-```
-
----
-
-## 偏函数
-
-**基本写法：使用 partial 创建偏函数**
-`partial(<函数>, <固定参数>)`
-
-```python
-# 使用 partial 创建偏函数
-from functools import partial
-
-def power(base, exponent):
-    return base ** exponent
-
-square = partial(power, exponent=2)
-print(square(5))
-```
-
----
-
-## 函数缓存
-
-**基本写法：使用 lru_cache 缓存函数结果**
-`@lru_cache(maxsize=<n>)`
-
-```python
-# 使用 lru_cache 缓存函数结果
-from functools import lru_cache
-
-@lru_cache(maxsize=128)
-def fibonacci(n):
-    if n < 2:
-        return n
-    return fibonacci(n - 1) + fibonacci(n - 2)
-```
-
----
-
-**基本写法：使用 cache 无限缓存**
-`@cache`
-
-```python
-# 使用 cache 无限缓存
-from functools import cache
-
-@cache
-def expensive_computation(n):
-    return sum(i * i for i in range(n))
-```
+进入 [\*args、\*\*kwargs 与解包](/python/110-ArgsKwargsUnpacking)：当参数个数本身都不固定时，星号登场——那是参数系统的最后一块拼图。

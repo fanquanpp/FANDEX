@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 340
 title: 注解处理器
 module: 'java'
 category: 后端技术

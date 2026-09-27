@@ -1,5 +1,5 @@
 ---
-order: 900
+order: 660
 title: Python 与配置管理：从环境变量到云原生动态配置的工程实践
 module: 'python'
 category: 后端技术

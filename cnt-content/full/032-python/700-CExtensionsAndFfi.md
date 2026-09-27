@@ -1,5 +1,5 @@
 ---
-order: 700
+order: 480
 title: C 扩展与 FFI
 module: 'python'
 category: 后端技术
@@ -10,7 +10,6 @@ updated: '2026-09-12'
 related:
   - 'python/630-MultiprocessingMultithreading'
   - 'python/690-PythonPerformance'
-  - 'python/680-ProfilingOptimization'
 prerequisites:
   - 'python/630-MultiprocessingMultithreading'
 ---

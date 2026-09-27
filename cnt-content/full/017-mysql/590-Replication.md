@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 570
 title: 主从复制
 module: 'mysql'
 category: 数据库

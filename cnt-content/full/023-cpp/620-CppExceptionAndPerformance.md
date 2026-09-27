@@ -1,5 +1,5 @@
 ---
-order: 620
+order: 600
 title: C++ 异常处理与性能优化
 module: 'cpp'
 category: 计算机科学

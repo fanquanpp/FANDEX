@@ -1,5 +1,5 @@
 ---
-order: 460
+order: 440
 title: 内存序与无锁编程
 module: 'cpp'
 category: 计算机科学

@@ -175,7 +175,7 @@ export class HealthController {
 | 事项 | 现状 |
 | --- | --- |
 | 框架版本 | NestJS 12 已发布（ESM-ready、原生支持 Standard Schema），11 仍被广泛使用 |
-| 运行时 | 推荐 Node.js 22 LTS |
+| 运行时 | 推荐 Node.js 24 LTS（22 已进入 Maintenance，仅存量项目继续使用） |
 | 语言 | TypeScript 5.x |
 | ESM | 核心包提供 ESM 导出，存量 CJS 项目可渐进迁移 |
 | Standard Schema | ValidationPipe 等可直接消费 zod、valibot、arktype 等实现 |

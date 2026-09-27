@@ -89,6 +89,7 @@ function main() {
   let warnings = 0;
   const rows = [];
   const gapRows = [];
+  const coveredByModule = new Map();
 
   for (const id of index.order) {
     if (!existsSync(join(MAP_DIR, `${id}.json`))) {
@@ -144,6 +145,8 @@ function main() {
             errors++;
           } else {
             docs++;
+            if (!coveredByModule.has(map.module)) coveredByModule.set(map.module, new Set());
+            coveredByModule.get(map.module).add(node.doc);
           }
         } else {
           gaps++;
@@ -176,6 +179,23 @@ function main() {
       warnings++;
     }
   }
+
+  // 反向覆盖率：已存在但不在任何学习路径节点内的文档（路径孤儿）
+  let totalOrphans = 0;
+  for (const [folder, slugs] of docsByFolder) {
+    const moduleId = folderByModule.get(folder);
+    const covered = coveredByModule.get(moduleId);
+    if (!covered) continue; // 无地图的模块由上方 WARN 覆盖
+    const orphans = [...slugs].filter((s) => !covered.has(s));
+    if (orphans.length > 0) {
+      totalOrphans += orphans.length;
+      warnings++;
+      console.warn(
+        `[ORPHAN] ${moduleId} ${orphans.length}/${slugs.size} 篇文档不在学习路径内: ${orphans.slice(0, 8).join(', ')}${orphans.length > 8 ? ' ...' : ''}`,
+      );
+    }
+  }
+  console.log(`路径孤儿合计: ${totalOrphans} 篇`);
 
   const total = rows.reduce((acc, r) => acc + r.nodes, 0);
   const totalDocs = rows.reduce((acc, r) => acc + r.docs, 0);

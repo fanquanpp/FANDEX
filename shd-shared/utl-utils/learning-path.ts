@@ -39,6 +39,11 @@ export { default as nestjsMap } from '../metadata/learning-path/nestjs.json';
 export { default as startMap } from '../metadata/learning-path/start.json';
 export { default as roadmapMap } from '../metadata/learning-path/roadmap.json';
 export { default as mongodbMap } from '../metadata/learning-path/mongodb.json';
+export { default as godotMap } from '../metadata/learning-path/godot.json';
+export { default as gdscriptMap } from '../metadata/learning-path/gdscript.json';
+export { default as renpyMap } from '../metadata/learning-path/renpy.json';
+export { default as godeMap } from '../metadata/learning-path/gode.json';
+export { default as konadoMap } from '../metadata/learning-path/konado.json';
 
 export type KnowledgeDifficulty = 'beginner' | 'intermediate' | 'advanced';
 

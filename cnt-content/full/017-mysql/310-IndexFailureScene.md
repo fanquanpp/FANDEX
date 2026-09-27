@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 290
 title: 索引失效场景
 module: 'mysql'
 category: 数据库

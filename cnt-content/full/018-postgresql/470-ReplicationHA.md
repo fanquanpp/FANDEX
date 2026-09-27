@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 380
 title: 复制与高可用
 module: 'postgresql'
 category: 数据库

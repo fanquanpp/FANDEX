@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 260
 title: C++ STL 算法与函数对象
 module: 'cpp'
 category: 计算机科学

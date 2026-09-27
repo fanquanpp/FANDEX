@@ -1,181 +1,468 @@
 {
-  "version": "2.0.0",
+  "version": "1.2.0",
   "module": "python",
-  "summary": "从 Python 基础语法与数据结构出发，覆盖并发、Web 开发与自动化生态。",
+  "summary": "从零基础到能写 Web 服务与自动化脚本的 Python 主线：环境、语法、标准库、面向对象、并发与工程化。",
   "stages": [
     {
-      "id": "basics",
-      "title": "基础语法",
-      "subtitle": "类型系统与常用生态",
+      "id": "env",
+      "title": "环境与第一次运行",
+      "subtitle": "从安装解释器到跑通第一个脚本",
       "nodes": [
         {
-          "id": "python-001",
+          "id": "python-010",
+          "title": "Python 是什么",
+          "doc": "010-WhatIsPython"
+        },
+        {
+          "id": "python-020",
           "title": "Python 概述与环境配置",
           "doc": "020-PythonOverviewEnvSetup"
         },
         {
-          "id": "python-002",
-          "title": "Python 描述符协议：属性访问的底层机制与工程实践",
-          "doc": "580-PythonDescriptorProtocol"
+          "id": "python-030",
+          "title": "pyenv 与 uv 版本管理",
+          "doc": "030-PyenvUvManage"
         },
         {
-          "id": "python-003",
-          "title": "列表推导式进阶",
-          "doc": "160-ListComprehensionAdvanced"
-        },
-        {
-          "id": "python-004",
-          "title": "元类",
-          "doc": "590-Metaclass"
-        },
-        {
-          "id": "python-005",
-          "title": "Python与FastAPI",
-          "doc": "880-PythonFastAPI"
-        },
-        {
-          "id": "python-006",
-          "title": "Python与Redis",
-          "doc": "840-PythonRedis"
-        },
-        {
-          "id": "python-007",
-          "title": "Python与Docker",
-          "doc": "790-PythonDocker"
-        },
-        {
-          "id": "python-008",
-          "title": "Python与NLP",
-          "doc": "1010-PythonAndNLP"
+          "id": "python-040",
+          "title": "Python 与虚拟环境",
+          "doc": "040-PythonVirtualEnv"
         }
       ]
     },
     {
-      "id": "advanced",
-      "title": "进阶特性",
-      "subtitle": "并发、类型注解与 CI/CD",
+      "id": "syntax",
+      "title": "语法基础",
+      "subtitle": "变量、类型、运算、条件与循环",
       "nodes": [
         {
-          "id": "python-101",
-          "title": "Python与自动化",
-          "doc": "980-PythonAutomationCookbook"
+          "id": "python-050",
+          "title": "程序结构与基本语法",
+          "doc": "050-ProgramStructureBasicSyntax"
         },
         {
-          "id": "python-102",
-          "title": "Python 与配置管理：从环境变量到云原生动态配置的工程实践",
-          "doc": "900-ConfigManagement"
+          "id": "python-060",
+          "title": "控制流",
+          "doc": "060-ControlFlow"
         },
         {
-          "id": "python-103",
-          "title": "Python与CI-CD",
-          "doc": "780-PythonCICD"
+          "id": "python-070",
+          "title": "基础数据类型",
+          "doc": "070-BasicDataType"
         },
         {
-          "id": "python-104",
-          "title": "Python与设计模式",
-          "doc": "610-PythonDesignPattern"
+          "id": "python-080",
+          "title": "运算符与表达式",
+          "doc": "080-OperatorExpression"
         },
         {
-          "id": "python-105",
-          "title": "并发编程",
-          "doc": "640-ConcurrentProgramming"
+          "id": "python-090",
+          "title": "变量与常量",
+          "doc": "090-VariableConstant"
+        }
+      ]
+    },
+    {
+      "id": "functions",
+      "title": "函数与数据组织",
+      "subtitle": "函数、异常、内置容器与推导式",
+      "nodes": [
+        {
+          "id": "python-100",
+          "title": "函数详解",
+          "doc": "100-FunctionDetailed"
         },
         {
-          "id": "python-106",
+          "id": "python-110",
+          "title": "*args、**kwargs 与解包",
+          "doc": "110-ArgsKwargsUnpacking"
+        },
+        {
+          "id": "python-130",
+          "title": "异常处理",
+          "doc": "130-ExceptionHandling"
+        },
+        {
+          "id": "python-140",
+          "title": "内置数据结构",
+          "doc": "140-BuiltinDataStructure"
+        },
+        {
+          "id": "python-150",
+          "title": "enumerate 与 zip 详解",
+          "doc": "150-EnumerateZipBuiltinPairs"
+        },
+        {
+          "id": "python-160",
+          "title": "列表推导式进阶",
+          "doc": "160-ListComprehensionAdvanced"
+        }
+      ]
+    },
+    {
+      "id": "stdlib",
+      "title": "生成器与常用标准库",
+      "subtitle": "迭代器、文本处理、时间、数学与序列化",
+      "nodes": [
+        {
+          "id": "python-170",
           "title": "推导式与生成器",
           "doc": "170-ComprehensionGenerator"
         },
         {
-          "id": "python-107",
-          "title": "弱引用",
-          "doc": "620-WeakReference"
+          "id": "python-180",
+          "title": "生成器与协程",
+          "doc": "180-GeneratorCoroutine"
         },
         {
-          "id": "python-108",
-          "title": "类型注解与mypy",
-          "doc": "530-TypeAnnotationMypy"
+          "id": "python-210",
+          "title": "正则表达式",
+          "doc": "210-Regex"
+        },
+        {
+          "id": "python-230",
+          "title": "Python decimal 与 fractions",
+          "doc": "230-DecimalFractions"
+        },
+        {
+          "id": "python-280",
+          "title": "Python enum 枚举",
+          "doc": "280-Enum"
         }
       ]
     },
     {
-      "id": "practice",
-      "title": "实战速查",
-      "subtitle": "面向对象、标准库与网络请求",
+      "id": "io-net",
+      "title": "文件、网络与系统",
+      "subtitle": "文件 IO、HTTP 客户端、数据库与进程管理",
       "nodes": [
         {
-          "id": "python-201",
-          "title": "面向对象编程",
-          "doc": "460-OOP"
+          "id": "python-300",
+          "title": "文件 I/O 与上下文管理器",
+          "doc": "300-FileIOContextManager"
         },
         {
-          "id": "python-202",
-          "title": "Python 理论知识点",
-          "doc": "1030-PythonTheoryKnowledge"
+          "id": "python-320",
+          "title": "Python http.client HTTP 客户端",
+          "doc": "320-HttpClient"
         },
         {
-          "id": "python-203",
-          "title": "Python itertools 迭代工具",
-          "doc": "260-Itertools"
-        },
-        {
-          "id": "python-204",
-          "title": "Python sys/os 平台接口",
-          "doc": "390-SysOsPlatform"
-        },
-        {
-          "id": "python-205",
-          "title": "Python 字符串格式化与方法",
-          "doc": "120-StringFormattingMethods"
-        },
-        {
-          "id": "python-206",
+          "id": "python-360",
           "title": "Python ssl 安全套接字",
           "doc": "360-SslCrypto"
         },
         {
-          "id": "python-207",
-          "title": "Python 字符串与文本处理",
-          "doc": "200-StringText"
+          "id": "python-370",
+          "title": "Python 与加密",
+          "doc": "370-PythonAndCryptography"
         },
         {
-          "id": "python-208",
-          "title": "Python httpx 与 requests",
-          "doc": "330-HttpxRequests"
+          "id": "python-380",
+          "title": "Python subprocess 子进程",
+          "doc": "380-Subprocess"
         }
       ]
     },
     {
-      "id": "specialized",
-      "title": "专项进阶",
-      "subtitle": "占位补全：待展开的专项主题",
+      "id": "oop",
+      "title": "面向对象与进阶机制",
+      "subtitle": "类、装饰器、描述符、元类与设计模式",
       "nodes": [
         {
-          "id": "py-901",
+          "id": "python-460",
+          "title": "面向对象编程",
+          "doc": "460-OOP"
+        },
+        {
+          "id": "python-480",
+          "title": "Python 面向对象进阶",
+          "doc": "480-OOPAdvanced"
+        },
+        {
+          "id": "python-490",
+          "title": "Python 基础数据类型",
+          "doc": "490-DataTypeObjectModelDeepDive"
+        },
+        {
+          "id": "python-500",
+          "title": "装饰器",
+          "doc": "500-Decorator"
+        },
+        {
+          "id": "python-510",
+          "title": "装饰器进阶",
+          "doc": "510-DecoratorAdvanced"
+        },
+        {
+          "id": "python-520",
+          "title": "上下文管理器",
+          "doc": "520-ContextManager"
+        },
+        {
+          "id": "python-530",
+          "title": "类型注解与 mypy",
+          "doc": "530-TypeAnnotationMypy"
+        },
+        {
+          "id": "python-550",
+          "title": "数据类与 Pydantic",
+          "doc": "550-DataClassPydantic"
+        },
+        {
+          "id": "python-560",
+          "title": "数据类与字段默认值",
+          "doc": "560-DataClassFieldDefault"
+        },
+        {
+          "id": "python-570",
+          "title": "描述符",
+          "doc": "570-Descriptor"
+        },
+        {
+          "id": "python-580",
+          "title": "Python 描述符协议",
+          "doc": "580-PythonDescriptorProtocol"
+        },
+        {
+          "id": "python-590",
+          "title": "元类",
+          "doc": "590-Metaclass"
+        },
+        {
+          "id": "python-600",
+          "title": "元类与单例模式",
+          "doc": "600-MetaclassSingleton"
+        },
+        {
+          "id": "python-610",
+          "title": "Python 与设计模式",
+          "doc": "610-PythonDesignPattern"
+        },
+        {
+          "id": "python-620",
+          "title": "弱引用",
+          "doc": "620-WeakReference"
+        }
+      ]
+    },
+    {
+      "id": "concurrency",
+      "title": "并发与性能",
+      "subtitle": "多线程、多进程、异步与性能优化",
+      "nodes": [
+        {
+          "id": "python-630",
+          "title": "多进程与多线程",
+          "doc": "630-MultiprocessingMultithreading"
+        },
+        {
+          "id": "python-640",
+          "title": "并发编程",
+          "doc": "640-ConcurrentProgramming"
+        },
+        {
+          "id": "python-650",
           "title": "GIL 与自由线程",
-          "desc": "并发选型与 free-threading",
-          "difficulty": "advanced",
           "doc": "650-GILAndFreeThreading"
         },
         {
-          "id": "py-902",
+          "id": "python-660",
+          "title": "协程与 asyncio",
+          "doc": "660-CoroutineAsyncio"
+        },
+        {
+          "id": "python-670",
+          "title": "异步编程详解",
+          "doc": "670-AsyncProgrammingDetailed"
+        },
+        {
+          "id": "python-690",
+          "title": "Python 与性能优化",
+          "doc": "690-PythonPerformance"
+        },
+        {
+          "id": "python-700",
           "title": "C 扩展与 FFI",
-          "desc": "ctypes/cffi 与原生调用",
-          "difficulty": "advanced",
           "doc": "700-CExtensionsAndFfi"
+        }
+      ]
+    },
+    {
+      "id": "engineering",
+      "title": "工程化",
+      "subtitle": "日志、打包发布、测试与 CI",
+      "nodes": [
+        {
+          "id": "python-430",
+          "title": "Python 与日志",
+          "doc": "430-PythonLog"
         },
         {
-          "id": "py-903",
-          "title": "*args、**kwargs 与解包",
-          "desc": "可变参数完全指南",
-          "difficulty": "beginner",
-          "doc": "110-ArgsKwargsUnpacking"
+          "id": "python-710",
+          "title": "Python 进阶与最新特性",
+          "doc": "710-PythonAdvancedLatestFeature"
         },
         {
-          "id": "py-904",
-          "title": "enumerate 与 zip 详解",
-          "desc": "并行遍历组合函数",
-          "difficulty": "beginner",
-          "doc": "150-EnumerateZipBuiltinPairs"
+          "id": "python-720",
+          "title": "模块、包与工程化",
+          "doc": "720-ModulePackageEngineering"
+        },
+        {
+          "id": "python-730",
+          "title": "Python 与打包发布",
+          "doc": "730-PythonPackagingEvolution"
+        },
+        {
+          "id": "python-740",
+          "title": "打包与发布",
+          "doc": "740-PackagePublish"
+        },
+        {
+          "id": "python-750",
+          "title": "Python 与测试",
+          "doc": "750-PythonTest"
+        },
+        {
+          "id": "python-770",
+          "title": "Python 与代码质量",
+          "doc": "770-PythonCodeQuality"
+        },
+        {
+          "id": "python-780",
+          "title": "Python 与 CI/CD",
+          "doc": "780-PythonCICD"
+        }
+      ]
+    },
+    {
+      "id": "ecosystem",
+      "title": "生态与实战",
+      "subtitle": "Web 框架、异步任务、爬虫与 AI 应用",
+      "nodes": [
+        {
+          "id": "python-790",
+          "title": "Python 与 Docker",
+          "doc": "790-PythonDocker"
+        },
+        {
+          "id": "python-800",
+          "title": "Python 与数据库迁移",
+          "doc": "800-PythonDatabaseMigration"
+        },
+        {
+          "id": "python-810",
+          "title": "Python 与 CLI",
+          "doc": "810-PythonCLI"
+        },
+        {
+          "id": "python-830",
+          "title": "Python 与 SQLAlchemy",
+          "doc": "830-PythonSQLAlchemy"
+        },
+        {
+          "id": "python-840",
+          "title": "Python 与 Redis",
+          "doc": "840-PythonRedis"
+        },
+        {
+          "id": "python-850",
+          "title": "Python 与消息队列",
+          "doc": "850-PythonMessageQueue"
+        },
+        {
+          "id": "python-860",
+          "title": "Python 与 Celery",
+          "doc": "860-PythonCeleryDistributedTaskQueue"
+        },
+        {
+          "id": "python-870",
+          "title": "Python 与 OAuth2",
+          "doc": "870-PythonOAuth2"
+        },
+        {
+          "id": "python-880",
+          "title": "Python 与 FastAPI",
+          "doc": "880-PythonFastAPI"
+        },
+        {
+          "id": "python-890",
+          "title": "Python 与 Django",
+          "doc": "890-PythonDjango"
+        },
+        {
+          "id": "python-900",
+          "title": "Python 与配置管理",
+          "doc": "900-ConfigManagement"
+        },
+        {
+          "id": "python-910",
+          "title": "Python 与 WebSocket",
+          "doc": "910-PythonWebSocket"
+        },
+        {
+          "id": "python-920",
+          "title": "Python 与 Jupyter",
+          "doc": "920-PythonJupyter"
+        },
+        {
+          "id": "python-930",
+          "title": "Python 与 GraphQL",
+          "doc": "930-PythonGraphQL"
+        },
+        {
+          "id": "python-940",
+          "title": "Python 与 gRPC",
+          "doc": "940-PythonGrpc"
+        },
+        {
+          "id": "python-950",
+          "title": "Python 与向量数据库",
+          "doc": "950-PythonVectorDatabase"
+        },
+        {
+          "id": "python-960",
+          "title": "Python 与 Web 爬虫",
+          "doc": "960-WebScrapingWithPython"
+        },
+        {
+          "id": "python-970",
+          "title": "Python 项目示例",
+          "doc": "970-PythonProjectExampleWebCrawlerDataAnalysis"
+        },
+        {
+          "id": "python-980",
+          "title": "Python 与自动化",
+          "doc": "980-PythonAutomationCookbook"
+        },
+        {
+          "id": "python-990",
+          "title": "Python 与机器学习",
+          "doc": "990-PythonMachineLearning"
+        },
+        {
+          "id": "python-1000",
+          "title": "Python 与深度学习",
+          "doc": "1000-PythonDeepLearning"
+        },
+        {
+          "id": "python-1010",
+          "title": "Python 与 NLP",
+          "doc": "1010-PythonAndNLP"
+        },
+        {
+          "id": "python-1020",
+          "title": "Python 与计算机视觉",
+          "doc": "1020-PythonComputerVision"
+        },
+        {
+          "id": "python-1030",
+          "title": "Python 理论知识点",
+          "doc": "1030-PythonTheoryKnowledge"
+        },
+        {
+          "id": "python-1040",
+          "title": "Python 学习总结",
+          "doc": "1040-PythonLearningSummary"
         }
       ]
     }

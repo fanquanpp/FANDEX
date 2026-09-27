@@ -1,5 +1,5 @@
 ---
-order: 790
+order: 600
 title: Java 新特性与生态
 module: 'java'
 category: 后端技术

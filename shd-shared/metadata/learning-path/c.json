@@ -121,11 +121,6 @@
           "id": "c-205",
           "title": "C POSIX 与系统调用速查",
           "doc": "420-CPosixSystemCall"
-        },
-        {
-          "id": "c-206",
-          "title": "C gdb 调试 语法速查手册",
-          "doc": "500-CDebugGdb"
         }
       ]
     },
@@ -378,13 +373,6 @@
           "desc": "C23 新特性 的完整教学讲解。",
           "difficulty": "beginner",
           "doc": "530-C23NewFeatures"
-        },
-        {
-          "id": "c-336",
-          "title": "C 编译器命令 语法速查手册",
-          "desc": "C 编译器命令 语法速查手册 的完整教学讲解。",
-          "difficulty": "beginner",
-          "doc": "480-CCompilerOptions"
         },
         {
           "id": "c-337",

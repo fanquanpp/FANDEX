@@ -2,8 +2,12 @@
   "title": "Redis",
   "icon": "Rd",
   "description": "内存键值数据库：核心数据结构、缓存策略、持久化、集群高可用与 ACL 安全",
-  "categories": ["database"],
-  "prerequisites": [],
+  "categories": [
+    "database"
+  ],
+  "prerequisites": [
+    "sql"
+  ],
   "officialDocs": [
     {
       "label": "官方文档",

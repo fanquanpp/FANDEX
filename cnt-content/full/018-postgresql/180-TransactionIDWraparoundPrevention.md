@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 100
 title: 事务 ID 回卷预防
 module: 'postgresql'
 category: 数据库

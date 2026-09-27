@@ -1,228 +1,197 @@
 ---
 order: 20
-title: Git 安装配置
+title: Git 安装与配置：装完只是开始，配置才是你签名
 module: 'git'
 category: 工具链
 difficulty: beginner
-description: Git 在三大系统下的安装、首次配置清单（身份/编辑器/默认分支）与凭据管理。
+description: 三大系统一行命令安装 Git 并验证，讲透 user.name/user.email 为什么必须配（每个提交的署名与 GitHub 贡献图），global 常用三件套、仓库级覆盖实验与出口检查清单；SSH 与 HTTPS 的选择只做预告。
 author: fanquanpp
 updated: '2026-09-12'
 related:
+  - 'git/010-Git'
   - 'git/030-GitEnvConfigInit'
-  - 'shell/020-WindowsEnvConfigTutorial'
-  - 'shell/030-MacOSEnvConfigTutorial'
+  - 'git/150-GitRemoteRepoOperation'
+  - 'shell/100-EnvVarPath'
 prerequisites:
-  - 'shell/010-DevEnvSetup'
+  - 'git/010-Git'
 ---
 
-## 安装前要知道的三件事
+## 前置知识
 
-1. **装哪个渠道**：优先用系统包管理器（winget / brew / apt），升级方便、版本可控；「官网下载安装包」仅适合无法用包管理器的环境。
-2. **装完先配什么**：Git 首次提交前必须配置 `user.name` 与 `user.email`（它们会写进每个提交的 author 字段），以及 `init.defaultBranch`（新仓库的默认分支名）。
-3. **版本要求**：本教程假定较新版本（2.30+）；`git switch`/`git restore` 需要 2.23+，`git maintenance` 需要 2.36+。老版本（如 CentOS 7 自带的 1.8）建议通过包管理器或源码升级。
+- 已完成 [Git 是什么](/git/010-Git)：知道版本控制解决什么、仓库/提交/工作区三个词。
 
-## 各系统安装
+没装 Git 也可以，第 2 节就是安装；[开发环境搭建](/start/030-DevEnvironmentSetup) 里装过的，直接从验证开始核对。
 
-| 系统 | 推荐渠道 | 附带组件 | 备注 |
-| :--- | :------- | :------- | :--- |
-| Windows | winget（或官网安装包） | Git Bash、Git Credential Manager | 一并装好终端与凭据管理 |
-| macOS | Homebrew | 无 | 系统自带 git 通常偏旧 |
-| Ubuntu/Debian | apt | 无 | 需要新版时用 PPA |
-| Fedora/RHEL | dnf / yum | 无 | EPEL 或源码编译取新版 |
+## 学习目标
 
-**Windows：winget 一条命令**
+读完本文你将能够：
 
-```bash
-winget install Git.Git        # Git for Windows：含 Git Bash 与 Git Credential Manager
-winget upgrade Git.Git        # 后续升级
-```
+1. 一行命令安装或升级 Git 并验证当前生效的是哪一份；
+2. 配置 `user.name` 与 `user.email`，说出它们被写进提交的哪个字段、GitHub 认领提交靠什么；
+3. 完成全局配置三件套，看到 master 提示时用一行命令解决；
+4. 用仓库级配置实现公司邮箱与个人邮箱的切换。
 
-安装包自带 **Git Bash**（推荐终端环境）与**凭据管理器**（GCM，首次 push 时弹窗登录并安全存储凭据）。
+## 1. 问题：装完就算会了？配置才是你签名
 
-**macOS：Homebrew**
+两个高频翻车现场：第一次 `git commit`，Git 直接拒绝，报错 `*** Please tell me who you are.`——它不知道该署谁的名；几个月后代码推上 GitHub，主页贡献图一片灰——提交里的邮箱和账号绑定的邮箱对不上，GitHub 不认领。
 
-```bash
-brew install git              # 系统自带的老版本会被 /opt/homebrew/bin/git 优先
-brew upgrade git
-```
+原因都在同一处：**每一个提交都会永久写上作者信息（姓名与邮箱）**，它来自安装后配置的 `user.name` 和 `user.email`。配置只花五分钟，却印在之后每条历史里；配错了再改，已写进历史的旧提交不会跟着变。所以顺序是：装好 → 立刻配好 → 验证过关再往下走。
 
-**Linux（Ubuntu/Debian 与 RHEL 系）**
+## 2. 安装：三系统各一行
+
+优先用系统包管理器；官网安装包 `https://git-scm.com/downloads` 是兜底，Windows 安装包全部保持默认即可（默认即社区共识），会一并装上 Git Bash 终端与凭据管理器。
 
 ```bash
-sudo apt-get install git      # Ubuntu / Debian
-sudo dnf install git          # Fedora / 新版 RHEL
-sudo yum install git          # 旧版 CentOS / RHEL
+winget install Git.Git        # Windows（或官网安装包一路默认）
+brew install git              # macOS（Homebrew，见 brew.sh）
+sudo apt install git          # Ubuntu / Debian
 ```
 
-## 安装验证
+升级同样各一行（`winget upgrade` / `brew upgrade` / `apt upgrade`）。macOS 自带的 Git 通常偏旧，Homebrew 装的新版会优先生效。本教程假定 2.30 以上版本。
+
+## 3. 验证：装的是哪一份
+
+**新开一个终端窗口**（刚装的软件对安装前打开的窗口不可见），运行：
 
 ```bash
 git --version
-# git version 2.51.0           ← 主版本达到 2.30+ 即可跟上本教程
-which git                      # 确认路径（Windows Git Bash / macOS 用 which，验证是否为包管理器版本）
 ```
 
-## 首次配置清单
+预期输出（数字不必相同，`2.` 开头即正常）：
 
-Git 配置分三级（system → global → 仓库级），就近覆盖，日常只用 global 与仓库级。新机器五分钟清单：
-
-```bash
-# 1) 身份：写进每个提交，务必真实可联系
-git config --global user.name "张三"
-git config --global user.email "zhangsan@example.com"
-
-# 2) 默认分支名：新仓库不再出现 master 警告
-git config --global init.defaultBranch main
-
-# 3) 编辑器：交互式命令（rebase -i、commit 不带 -m）用得到
-git config --global core.editor "code --wait"
-
-# 4) 大小写敏感与行尾（按平台）
-git config --global core.ignorecase false        # Linux/macOS 提醒大小写差异
-git config --global core.autocrlf input          # macOS/Linux；Windows 用 true
-
-# 5) 常用别名（可选但回报极高）
-git config --global alias.st "status -sb"
-git config --global alias.lg "log --oneline --graph --decorate --all"
+```text
+git version 2.51.0
 ```
 
-验证配置并查看来源（排障时能看出哪一级在生效）：
+机器里有多份 Git 时，用 `which git`（Windows `where git`）看当前生效的那份住在哪，输出形如 `/opt/homebrew/bin/git` 都正常。装了却找不到命令的排查见第 8 节。
 
-```bash
-git config --global --list     # 全局配置
-git config user.email          # 当前生效值
-git config --list --show-origin | grep user.email   # 值 + 来自哪个文件
-```
+## 4. 必配：user.name 与 user.email
 
-三级配置的物理位置与用途：
-
-| 级别 | 文件位置 | 典型内容 |
-| :--- | :------- | :------- |
-| system | `<安装目录>/etc/gitconfig` | 全机统一策略（一般不动） |
-| global | `~/.gitconfig`（Windows 为 `%USERPROFILE%\.gitconfig`） | 个人身份、别名、全局忽略 |
-| 仓库级 | `<仓库>/.git/config` | 该项目特例（如公司邮箱） |
-
-同名配置就近覆盖：仓库级 > global > system。详细的配置项讲解（行尾、凭据缓存、reftable 等）见 [环境配置与初始化](git/030-GitEnvConfigInit)。
-
-行尾处理（`core.autocrlf`）按平台一次配好，能省掉团队里大半「整文件被改动」的噪音：
-
-| 取值 | 行为 | 适合 |
-| :--- | :--- | :--- |
-| `true` | 检出转 CRLF，提交转 LF | Windows |
-| `input` | 检出不变，提交转 LF | macOS / Linux |
-| `false` | 完全不转换（需配 `.gitattributes` 管控） | 全 Linux 团队或严格仓库 |
-
-公司项目要求工位邮箱时，用仓库级覆盖全局：
-
-```bash
-cd work-project
-git config user.email "zhangsan@company.com"    # 不带 --global 即仓库级
-```
-
-## 凭据与拉取认证
-
-```bash
-# HTTPS + 凭据管理器（Git for Windows 默认自带）
-git config --global credential.helper manager
-
-# SSH（推荐长期方案）：生成密钥并把公钥加到平台
-ssh-keygen -t ed25519 -C "zhangsan@example.com"
-cat ~/.ssh/id_ed25519.pub      # 复制到 GitHub/Gitee/GitLab 的 SSH Keys 设置
-ssh -T git@github.com          # 验证连通
-```
-
-## 完整会话：新机器五分钟初始化
-
-把本文浓缩成一段可整体粘贴执行的脚本（按需替换身份信息）：
-
-```bash
-# 1) 安装（按平台三选一）
-winget install Git.Git            # Windows；macOS: brew install git；Debian: sudo apt-get install git
-
-# 2) 验证
-git --version
-
-# 3) 身份与默认行为
-git config --global user.name "张三"
-git config --global user.email "zhangsan@example.com"
-git config --global init.defaultBranch main
-git config --global core.editor "code --wait"
-
-# 4) 顺手配置：行尾、别名、全局忽略
-git config --global core.autocrlf input      # Windows 改为 true
-git config --global alias.st "status -sb"
-git config --global alias.lg "log --oneline --graph --decorate --all"
-printf '.DS_Store\nThumbs.db\n*.swp\n' > ~/.gitignore_global
-git config --global core.excludesFile ~/.gitignore_global
-
-# 5) 凭据（SSH）
-ssh-keygen -t ed25519 -C "zhangsan@example.com"
-cat ~/.ssh/id_ed25519.pub                    # 添加到平台的 SSH Keys
-ssh -T git@github.com
-
-# 6) 冒烟测试
-git config --list --show-origin | head       # 检查配置来源
-git clone git@github.com:github/gitignore.git /tmp/gi && rm -rf /tmp/gi
-```
-
-跑完第 6 步无报错，即可进入日常开发（下一站：[环境配置与初始化](git/030-GitEnvConfigInit) 深入各项配置）。
-
-## 常见问题
-
-- **提交时报 `Please tell me who you are`**：没配 user.name/email，按上面清单补齐后重新 commit。
-- **clone/push 反复要求密码**：HTTPS 走凭据管理器或改用 SSH 远程（`git remote set-url origin git@github.com:user/repo.git`）。
-- **`git init` 警告 `hint: Using 'master' as the name...`**：未配 `init.defaultBranch`；配置后新仓库默认为 main（存量仓库改名见分支管理篇）。
-- **Windows 中文乱码**：`git config --global core.quotepath false`（文件名转义）并使用 Git Bash。
-
-## 命令速查
-
-**安装**
-
-`winget install Git.Git`
-```bash
-winget install Git.Git                     # Windows
-brew install git                           # macOS
-sudo apt-get install git                   # Ubuntu/Debian
-```
-
-**身份配置**
-
-`git config --global user.name "<用户名>"`
 ```bash
 git config --global user.name "张三"
 git config --global user.email "zhangsan@example.com"
-git config user.name "李四"                 # 仅当前仓库生效
 ```
 
-**默认分支与编辑器**
+两条规则的细节：名字带空格时**必须加引号**，否则 `Zhang` 和 `San` 会被当成两个参数；`--global` 对这台机器的所有仓库生效，不带它只对当前仓库生效（第 7 节实验二用）；邮箱写真实可联系的——Git 不验证真伪，但 GitHub 靠邮箱认领提交，打算用 GitHub 就填账号绑定的那个。
 
-`git config --global init.defaultBranch main`
+配置写进用户主目录的 `~/.gitconfig`（Windows 是 `%USERPROFILE%\.gitconfig`）。Git 配置分 system/global/仓库级三级、就近覆盖，细节在 [环境配置与初始化](/git/030-GitEnvConfigInit) 展开。读回验证 `git config user.name` 与 `git config user.email`，预期各输出一行：`张三`、`zhangsan@example.com`。
+
+## 5. global 常用三件套
+
+身份之外，新机器再配一条 `init.defaultBranch`，就凑齐了日常最常用的三件套：
+
 ```bash
+# 三件套：身份 + 默认分支名
+git config --global user.name "张三"
+git config --global user.email "zhangsan@example.com"
 git config --global init.defaultBranch main
-git config --global core.editor "code --wait"
 ```
 
-**别名**
+`init.defaultBranch` 决定 `git init` 新建仓库时的默认分支名。不配置的话，每次建仓库都会附赠一段提示：
 
-`git config --global alias.<别名> "<命令>"`
-```bash
-git config --global alias.st "status -sb"
-git config --global --unset alias.st       # 删除别名
+```text
+hint: Using 'master' as the name for the initial branch. This default branch name
+hint: is subject to change. To configure the initial branch name to use in all
+（后略：Git 自己给出了可照抄的解法命令与改名命令）
 ```
 
-**查看与验证**
+照抄提示里的 `git config --global init.defaultBranch main`，提示消失，新仓库默认分支为 `main`（旧仓库改名见 [Git 分支管理](/git/100-GitBranchManagement)）。
 
-`git config --list --show-origin`
+顺手可配第四件编辑器：`git config --global core.editor "code --wait"`，让 `git commit` 不带 `-m` 时弹出 VS Code 而不是困住新手的 vim。
+
+用 `git config --global --list` 一次看全所有配置，输出形如 `user.name=张三`、`init.defaultbranch=main`（键名统一小写）。想知道某个值来自哪一级文件，用 `git config --list --show-origin`，每行输出前带文件路径——排障利器，详解在 [环境配置与初始化](/git/030-GitEnvConfigInit)。
+
+## 6. SSH 还是 HTTPS：先混个眼熟
+
+以后把仓库放到 GitHub 时，远程地址有两种长相：
+
+```text
+https://github.com/user/repo.git      ← HTTPS：凭据管理器帮你记密码
+git@github.com:user/repo.git          ← SSH：一对密钥，配好后免输密码
+```
+
+本文两样都不配。怎么选、密钥怎么生成、首次连接的指纹确认，全部推迟到 [远程仓库操作](/git/150-GitRemoteRepoOperation)。
+
+## 7. 修改实验
+
+实验一（2 分钟）：`git config --global user.name "Zhang San"` 后读回，先预测再运行；然后把值改回常用名。结论：`git config` 是直接覆盖写，改配置不需要卸载重装。
+
+实验二（5 分钟）：仓库级覆盖 global。新建空文件夹 `test-repo` 进入后运行（`git init` 下一篇正式讲，先照抄）：
+
 ```bash
-git --version
-git config --list --show-origin
+git init
+git config user.email "work@company.com"
 git config user.email
 ```
 
-**凭据与 SSH**
+预测：读回的是 `work@company.com` 还是全局的 `zhangsan@example.com`？`cd` 回主目录再读呢？「就近覆盖」就是真实工作流：公司项目用仓库级配工位邮箱，个人项目用全局邮箱。
 
-`ssh-keygen -t ed25519 -C "<邮箱>"`
-```bash
-ssh-keygen -t ed25519 -C "zhangsan@example.com"
-ssh -T git@github.com
+## 8. 常见错误与调试实录
+
+**错误一：装完了，`git --version` 还是命令找不到。**
+
+```text
+bash: git: command not found
 ```
+
+```text
+'git' 不是内部或外部命令，也不是可运行的程序或批处理文件。
+```
+
+两种可能：没装成，或装了但 PATH 没生效。先重开终端再试（最高频原因）；仍失败则检查安装时是否勾选「添加到 PATH」，必要时重装；PATH 深入排查见 [环境变量与 PATH](/shell/100-EnvVarPath)。
+
+**错误二：`git init` 时弹出一大段 master 提示。** 即第 5 节的 `hint:` 原文。规则：**Git 的提示末尾几乎总带着可照抄的命令，先读再动手**。
+
+**错误三：提交时报 `*** Please tell me who you are.`** 没配身份，Git 拒绝提交，解法是第 4 节的两条命令。完整原文在 [基础操作](/git/050-GitBasicOperation) 的调试实录里——只有真正 commit 时才撞得上它。
+
+## 9. 出口检查
+
+四条命令逐条运行，全部命中预期才算过关：
+
+```bash
+git --version                           # 以 git version 开头
+git config user.name                    # 读回你设置的名字
+git config user.email                   # 读回你设置的邮箱
+git config --global init.defaultBranch  # 输出 main
+```
+
+最后一条若**没有任何输出**，说明还没配置，回第 5 节补上。四条全过，本机 Git 达到「可以开始干活」的状态。
+
+## 10. 实际项目场景
+
+- **多身份切换**：公司仓库用工位邮箱、开源项目用个人邮箱，靠仓库级覆盖实现（实验二就是完整流程）；FANDEX 的 500 多次提交，每条的作者信息都来自某一次 config；
+- **贡献图认领**：GitHub 用邮箱把提交关联到账号，邮箱配错的最直观后果就是「我天天提交，主页却全灰」；
+- **换新机器**：五分钟流程就是本文目录——装（第 2 节）→ 三件套（第 5 节）→ 出口检查（第 9 节）。
+
+## 练习
+
+预测题（5 分钟）：依次运行三条命令，先写输出再核对：`git config --global user.name "Li Hua"`、`git config user.name`、`git config --global user.name "Li Hua Wang"`。第三条故意不加引号——如果报错，报错在提醒什么？（运行完把名字改回常用值。）
+
+修改题（10 分钟）：任选一个文件夹照抄实验二前三行配仓库级邮箱；`git config --global --list` 确认它**不出现在**全局列表，`git config user.email` 确认就近覆盖生效。收尾用 `git config --unset user.email`（不带 `--global` 即仓库级）撤销。
+
+修 Bug 题（5 分钟）：同学运行 `git init` 得到第 5 节那段 `hint:`，问「是不是报错，要不要重装 Git」。按读报错三步回答他，并写出消灭提示的那行命令。
+
+挑战题（30 分钟）：找一台没配过的电脑或虚拟机，不看本文完成「安装 → 验证 → 三件套」。验收清单：`git --version` 有输出；`git config user.name`/`user.email` 能读回；`git config --global init.defaultBranch` 输出 `main`。
+
+## 与之前和之后的知识的关系
+
+本模块按 010 → 020 → 030 → 040 → 050 → 060 推进。往前：[Git 是什么](/git/010-Git) 解释了为什么需要签名与快照。往后：[环境配置与初始化](/git/030-GitEnvConfigInit) 把三级配置与 `git init` 讲透；[忽略规则 .gitignore 深入](/git/040-GitignoreDeepDive) 处理「哪些文件不进仓库」；[基础操作](/git/050-GitBasicOperation) 开始 add、commit 实战，`Please tell me who you are` 在那里完整拆解；[三棵树](/git/060-ThreeTrees) 讲清快照底层。
+
+## 官方文档
+
+- `git config` 手册（配置项权威列表）：https://git-scm.com/docs/git-config
+- Pro Git 中文版「初次运行 Git 前的配置」：https://git-scm.com/book/zh/v2
+
+## 自我检查
+
+- 能说出 `user.name`/`user.email` 写进提交的哪个字段、GitHub 认领靠哪个；
+- 能解释三级配置的覆盖顺序，看到 master 的 `hint:` 就能写出消除它的命令；
+- 换新电脑能不看文档完成安装到出口检查的全流程。
+
+## 本章总结
+
+安装一行命令，验证看 `git --version` 与 `which/where git`。身份是每个提交的署名，`user.email` 还决定 GitHub 是否认领提交；三件套是身份、`init.defaultBranch`、（可选）编辑器。配置三级就近覆盖，仓库级覆盖是多身份的钥匙。Git 的提示自带解法命令，先读再动手。
+
+## 下一步
+
+进入 [环境配置与初始化](/git/030-GitEnvConfigInit)：把三级机制与 `git init` 建仓库的动作一次讲透。

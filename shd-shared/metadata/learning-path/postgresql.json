@@ -96,21 +96,6 @@
           "id": "postgresql-203",
           "title": "JSONB与JSON差异",
           "doc": "110-JSONBJSONDifference"
-        },
-        {
-          "id": "postgresql-204",
-          "title": "PostgreSQL DML 数据操作",
-          "doc": "040-DML"
-        },
-        {
-          "id": "postgresql-205",
-          "title": "PostgreSQL psql CLI 命令",
-          "doc": "020-PsqlCLI"
-        },
-        {
-          "id": "postgresql-206",
-          "title": "模式（Schema）管理 语法速查手册",
-          "doc": "050-SchemaManagement"
         }
       ]
     }

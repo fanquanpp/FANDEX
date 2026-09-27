@@ -5,7 +5,9 @@
   "categories": [
     "database"
   ],
-  "prerequisites": [],
+  "prerequisites": [
+    "sql"
+  ],
   "officialDocs": [
     {
       "label": "官方文档",

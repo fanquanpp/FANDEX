@@ -1,5 +1,5 @@
 ---
-order: 760
+order: 730
 title: SQL 注入防御策略
 module: 'mysql'
 category: 数据库
@@ -36,38 +36,60 @@ prerequisites:
 3. 用户输入作为参数绑定到已编译的语句
 4. 数据库知道这些值是数据，不会被解释为 SQL 代码
 
+**安全前提（先读这段再看示例）**：参数化查询只解决「输入被当成 SQL 执行」的问题，不解决「密码明文存储」的问题。本节示例为聚焦注入防御，`users` 表的 `password` 列按明文比对——真实项目严禁这样做。登录验证的正确分工是两层：参数化查询负责把用户输入挡在 SQL 结构之外，密码哈希（bcrypt 或 Argon2）负责让数据库即使被拖库也泄露不出原始密码。注册时哈希入库、登录时按用户名取哈希在应用层验证，写法见本节 PyMySQL 示例中的 `verify_login` 与 1.8.3 节。
+
 #### 1.1.2 Python (PyMySQL)
 
 ```python
- import pymysql
- def safe_login(username, password):
-  connection = pymysql.connect(
-  host='localhost',
-  user='root',
-  password='password',
-  database='test'
-  )
-  try:
-  cursor = connection.cursor()
-  # 使用参数化查询
-  sql = "SELECT * FROM users WHERE username = %s AND password = %s"
-  # 注意：%s 是占位符，不是字符串格式化
-  cursor.execute(sql, (username, password))
-  result = cursor.fetchone()
-  return result
-  finally:
-  connection.close()
- # 高级用法：多次执行同一查询
- def batch_insert(users):
-  connection = pymysql.connect(host='localhost', user='root', password='password', database='test')
-  try:
-  cursor = connection.cursor()
-  sql = "INSERT INTO users (username, email) VALUES (%s, %s)"
-  # 批量插入
-  cursor.executemany(sql, users)
-  connection.commit()
-  finally:
-  connection.close()
+import pymysql
+import bcrypt
+
+def safe_login(username, password):
+    """参数化查询版登录：防住了注入，但密码仍是明文比对（教学用）"""
+    connection = pymysql.connect(
+        host='localhost',
+        user='root',
+        password='password',
+        database='test'
+    )
+    try:
+        cursor = connection.cursor()
+        # 参数化查询：%s 是占位符，不是字符串格式化
+        # 注意：这版仍假设 password 列存明文——真实项目禁止，见下方 verify_login
+        sql = "SELECT * FROM users WHERE username = %s AND password = %s"
+        cursor.execute(sql, (username, password))
+        return cursor.fetchone()
+    finally:
+        connection.close()
+
+def verify_login(username, password):
+    """生产版登录验证：数据库存密码哈希，密码本身不参与 SQL 比对"""
+    connection = pymysql.connect(
+        host='localhost', user='root', password='password', database='test'
+    )
+    try:
+        cursor = connection.cursor()
+        # 只按用户名取哈希；注册时已用 bcrypt 哈希入库（见 1.8.3）
+        sql = "SELECT password_hash FROM users WHERE username = %s"
+        cursor.execute(sql, (username,))
+        row = cursor.fetchone()
+        if row is None:
+            return False  # 与密码错误返回同样的提示，防止用户名枚举
+        return bcrypt.checkpw(password.encode('utf-8'), row[0].encode('utf-8'))
+    finally:
+        connection.close()
+
+def batch_insert(users):
+    connection = pymysql.connect(
+        host='localhost', user='root', password='password', database='test'
+    )
+    try:
+        cursor = connection.cursor()
+        sql = "INSERT INTO users (username, email) VALUES (%s, %s)"
+        cursor.executemany(sql, users)
+        connection.commit()
+    finally:
+        connection.close()
 ```
 
 #### 1.1.3 Python (SQLAlchemy ORM)
@@ -110,7 +132,7 @@ prerequisites:
  <?php
  function safe_login($username, $password) {
   $pdo = new PDO('mysql:host=localhost;dbname=test', 'root', 'password');
-  // 使用预处理语句
+  // 使用预处理语句（防注入正确；生产环境密码列应存哈希并在应用层验证，见 1.8.3）
   $stmt = $pdo->prepare("SELECT * FROM users WHERE username = ? AND password = ?");
   $stmt->execute([$username, $password]);
   return $stmt->fetch();
@@ -144,7 +166,7 @@ prerequisites:
   public User safeLogin(String username, String password) throws SQLException {
   String url = "jdbc:mysql://localhost:3306/test";
   Connection conn = DriverManager.getConnection(url, "root", "password");
-  // 使用 PreparedStatement
+  // 使用 PreparedStatement（防注入正确；生产环境密码列应存哈希并在应用层验证，见 1.8.3）
   String sql = "SELECT * FROM users WHERE username = ? AND password = ?";
   PreparedStatement pstmt = conn.prepareStatement(sql);
   pstmt.setString(1, username);

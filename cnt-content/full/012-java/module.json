@@ -5,7 +5,9 @@
   "categories": [
     "backend"
   ],
-  "prerequisites": [],
+  "prerequisites": [
+    "cs-fundamentals"
+  ],
   "officialDocs": [
     {
       "label": "官方文档",

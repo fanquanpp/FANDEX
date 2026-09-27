@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 440
 title: 高级 SQL 与扩展
 module: 'postgresql'
 category: 数据库

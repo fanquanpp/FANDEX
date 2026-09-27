@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 560
 title: C 语言项目示例：学生成绩管理系统
 module: 'c'
 category: 计算机科学

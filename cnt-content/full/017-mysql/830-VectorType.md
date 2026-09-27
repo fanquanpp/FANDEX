@@ -1,5 +1,5 @@
 ---
-order: 830
+order: 800
 title: VECTOR 向量类型：MySQL 里的嵌入向量
 module: 'mysql'
 category: 数据库

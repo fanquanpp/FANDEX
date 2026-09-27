@@ -45,6 +45,11 @@ import {
   startMap,
   roadmapMap,
   mongodbMap,
+  godotMap,
+  gdscriptMap,
+  renpyMap,
+  godeMap,
+  konadoMap,
 } from '@fandex/utils/learning-path';
 import docIndex from '@/data/doc-index.json';
 import { getModule, categoryColors, getPrimaryCategory } from '@/lib/modules';
@@ -119,6 +124,11 @@ const technologyMaps: Readonly<Record<string, TechnologyMap>> = {
   start: startMap as unknown as TechnologyMap,
   roadmap: roadmapMap as unknown as TechnologyMap,
   mongodb: mongodbMap as unknown as TechnologyMap,
+  godot: godotMap as unknown as TechnologyMap,
+  gdscript: gdscriptMap as unknown as TechnologyMap,
+  renpy: renpyMap as unknown as TechnologyMap,
+  gode: godeMap as unknown as TechnologyMap,
+  konado: konadoMap as unknown as TechnologyMap,
 };
 
 const docTitleMap = new Map<string, string>(

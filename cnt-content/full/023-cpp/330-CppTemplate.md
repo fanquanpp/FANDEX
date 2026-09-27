@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 310
 title: C++ 模板
 module: 'cpp'
 category: 计算机科学

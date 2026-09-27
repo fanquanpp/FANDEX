@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 420
 title: CompletableFuture 异步编排
 module: 'java'
 category: 后端技术

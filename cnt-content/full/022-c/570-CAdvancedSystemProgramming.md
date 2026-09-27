@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 550
 title: C 语言高级特性与系统编程
 module: 'c'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 250
 title: 索引提示与强制索引：什么时候该替优化器做决定
 module: 'mysql'
 category: 数据库

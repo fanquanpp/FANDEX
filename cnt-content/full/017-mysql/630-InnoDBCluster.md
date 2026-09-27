@@ -1,5 +1,5 @@
 ---
-order: 630
+order: 610
 title: InnoDB Cluster：官方开箱即用的高可用方案
 module: 'mysql'
 category: 数据库

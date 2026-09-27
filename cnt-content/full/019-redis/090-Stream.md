@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 70
 title: Redis Stream
 module: 'redis'
 category: 数据库

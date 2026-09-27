@@ -1,5 +1,5 @@
 ---
-order: 670
+order: 640
 title: Web Workers 多线程
 module: 'javascript'
 category: 前端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'javascript/300-EventLoopDetailed'
-  - 'javascript/240-ArrayBufferTypedArray'
   - 'javascript/250-AsyncProgramming'
 prerequisites:
   - 'javascript/300-EventLoopDetailed'

@@ -88,29 +88,9 @@
           "doc": "030-HashCommand"
         },
         {
-          "id": "redis-203",
-          "title": "Redis List/Set/ZSet 命令",
-          "doc": "040-ListSetZSetCommand"
-        },
-        {
-          "id": "redis-204",
-          "title": "Redis 发布订阅命令",
-          "doc": "080-PubSubCommand"
-        },
-        {
           "id": "redis-205",
           "title": "Redis Key 管理与过期命令速查手册",
           "doc": "020-KeyManagement"
-        },
-        {
-          "id": "redis-206",
-          "title": "Redis 安全与 ACL 命令速查手册",
-          "doc": "290-ACL"
-        },
-        {
-          "id": "redis-207",
-          "title": "Redis 7.0+ 新特性命令速查手册",
-          "doc": "300-NewFeatures7"
         }
       ]
     }

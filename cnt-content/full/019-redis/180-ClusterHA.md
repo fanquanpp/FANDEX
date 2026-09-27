@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 160
 title: 集群与高可用
 module: 'redis'
 category: 数据库

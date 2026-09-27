@@ -11,12 +11,14 @@ related:
   - 'javascript/020-JavaScriptOverviewRuntimeEnv'
   - 'javascript/520-NodeJsInstall'
   - 'html5/010-WhatIsWebpage'
-prerequisites: []
+prerequisites:
+  - 'start/060-FirstProgramJavaScript'
 ---
 
 ## 前置知识
 
-- 会开关浏览器、会打字即可。本篇不需要任何编程经验，所有概念第一次出现时都会解释。
+- 会开关浏览器、会打字即可。本篇不需要任何编程经验，所有概念第一次出现时都会解释；
+- 想先热身的读者，推荐先读 [第一门语言体验：JavaScript 与浏览器控制台](/start/060-FirstProgramJavaScript)，亲手敲过前 20 行代码再来，本文会更顺；直接从这里开始也没有问题。
 
 ## 学习目标
 

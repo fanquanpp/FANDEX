@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 500
 title: Redo 与 Undo 与 Binlog 写入时机
 module: 'mysql'
 category: 数据库

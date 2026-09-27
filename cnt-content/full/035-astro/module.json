@@ -5,7 +5,12 @@
   "categories": [
     "frontend"
   ],
-  "prerequisites": [],
+  "prerequisites": [
+    "html5",
+    "css",
+    "javascript",
+    "typescript"
+  ],
   "officialDocs": [
     {
       "label": "官方文档",

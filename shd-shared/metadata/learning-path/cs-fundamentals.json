@@ -1,151 +1,376 @@
 {
-  "version": "1.0.0",
+  "version": "1.2.0",
   "module": "cs-fundamentals",
-  "summary": "覆盖计算机科学核心知识，从组成原理、操作系统到网络、分布式与信息安全。",
+  "summary": "计算机科班核心一图打通：组成原理、操作系统、网络、编译、分布式与软件工程。",
   "stages": [
     {
-      "id": "basics",
-      "title": "核心基础",
-      "subtitle": "体系结构、存储与编程基础",
+      "id": "overview",
+      "title": "总览与编程范式",
+      "subtitle": "计算机全景、程序基本概念与范式",
       "nodes": [
         {
-          "id": "cs-fundamentals-001",
+          "id": "cs-fundamentals-010",
           "title": "计算机科学概述",
           "doc": "010-ComputerOverview"
         },
         {
-          "id": "cs-fundamentals-002",
-          "title": "计算机网络",
-          "doc": "270-ComputerNetwork"
-        },
-        {
-          "id": "cs-fundamentals-003",
-          "title": "计算机组成原理",
-          "doc": "100-ComputerPrinciple"
-        },
-        {
-          "id": "cs-fundamentals-004",
-          "title": "存储系统",
-          "doc": "120-StorageSystem"
-        },
-        {
-          "id": "cs-fundamentals-005",
-          "title": "分布式系统",
-          "doc": "410-DistributedSystem"
-        },
-        {
-          "id": "cs-fundamentals-006",
-          "title": "信息安全基础",
-          "doc": "550-InformationSecurityBasics"
-        },
-        {
-          "id": "cs-fundamentals-007",
-          "title": "数据库系统原理",
-          "doc": "590-DatabaseSystemPrinciple"
-        },
-        {
-          "id": "cs-fundamentals-008",
-          "title": "计算机体系结构基础",
-          "doc": "080-ComputerArchitectureBasics"
-        },
-        {
-          "id": "cs-fundamentals-009",
-          "title": "数的表示与编码",
-          "doc": "060-NumberRepresentationEncoding"
-        },
-        {
-          "id": "cs-fundamentals-010",
+          "id": "cs-fundamentals-020",
           "title": "程序设计基础",
           "doc": "020-ProgrammingBasics"
         },
         {
-          "id": "cs-fundamentals-011",
+          "id": "cs-fundamentals-030",
           "title": "函数与模块化",
           "doc": "030-FunctionModular"
         },
         {
-          "id": "cs-fundamentals-012",
+          "id": "cs-fundamentals-040",
           "title": "编程范式基础",
           "doc": "040-ProgrammingParadigmBasics"
         }
       ]
     },
     {
-      "id": "system",
-      "title": "系统原理",
-      "subtitle": "操作系统、内存与调度",
+      "id": "digital",
+      "title": "数制与数据表示",
+      "subtitle": "数字逻辑、编码与数据运算",
       "nodes": [
         {
-          "id": "cs-fundamentals-101",
-          "title": "操作系统进阶",
-          "doc": "160-OperatingSystemAdvanced"
+          "id": "cs-fundamentals-050",
+          "title": "数字逻辑",
+          "doc": "050-DigitalLogic"
         },
         {
-          "id": "cs-fundamentals-102",
-          "title": "多媒体技术",
-          "doc": "600-MultimediaTechnology"
+          "id": "cs-fundamentals-060",
+          "title": "数的表示与编码",
+          "doc": "060-NumberRepresentationEncoding"
         },
         {
-          "id": "cs-fundamentals-103",
-          "title": "设计模式",
-          "doc": "570-DesignPattern"
-        },
-        {
-          "id": "cs-fundamentals-104",
-          "title": "编程语言理论",
-          "doc": "510-ProgrammingLanguageTheory"
-        },
-        {
-          "id": "cs-fundamentals-105",
-          "title": "进程PCB与线程TCB",
-          "doc": "170-PCBThreadTCB"
-        },
-        {
-          "id": "cs-fundamentals-106",
-          "title": "内存分段与分页",
-          "doc": "210-MemorySegmentationAndPaging"
-        },
-        {
-          "id": "cs-fundamentals-107",
-          "title": "磁盘调度",
-          "doc": "240-DiskScheduling"
+          "id": "cs-fundamentals-070",
+          "title": "数据表示与运算",
+          "doc": "070-DataRepresentationOperation"
         }
       ]
     },
     {
-      "id": "advanced",
-      "title": "高级专题",
-      "subtitle": "网络、并发与编译优化",
+      "id": "arch",
+      "title": "计算机组成",
+      "subtitle": "体系结构、流水线、存储与总线",
       "nodes": [
         {
-          "id": "cs-fundamentals-201",
-          "title": "进程间通信",
-          "doc": "260-IPC"
+          "id": "cs-fundamentals-080",
+          "title": "计算机体系结构基础",
+          "doc": "080-ComputerArchitectureBasics"
         },
         {
-          "id": "cs-fundamentals-202",
-          "title": "TCP拥塞控制",
+          "id": "cs-fundamentals-090",
+          "title": "计算机体系结构",
+          "doc": "090-ComputerArchitecture"
+        },
+        {
+          "id": "cs-fundamentals-100",
+          "title": "计算机组成原理",
+          "doc": "100-ComputerPrinciple"
+        },
+        {
+          "id": "cs-fundamentals-110",
+          "title": "指令流水线",
+          "doc": "110-InstructionPipeline"
+        },
+        {
+          "id": "cs-fundamentals-120",
+          "title": "存储系统",
+          "doc": "120-StorageSystem"
+        },
+        {
+          "id": "cs-fundamentals-130",
+          "title": "总线与接口",
+          "doc": "130-BusAndInterface"
+        },
+        {
+          "id": "cs-fundamentals-140",
+          "title": "并行计算",
+          "doc": "140-ParallelComputing"
+        }
+      ]
+    },
+    {
+      "id": "os",
+      "title": "操作系统",
+      "subtitle": "进程线程、内存、文件系统与 IPC",
+      "nodes": [
+        {
+          "id": "cs-fundamentals-150",
+          "title": "操作系统",
+          "doc": "150-OperatingSystem"
+        },
+        {
+          "id": "cs-fundamentals-160",
+          "title": "操作系统进阶",
+          "doc": "160-OperatingSystemAdvanced"
+        },
+        {
+          "id": "cs-fundamentals-170",
+          "title": "进程 PCB 与线程 TCB",
+          "doc": "170-PCBThreadTCB"
+        },
+        {
+          "id": "cs-fundamentals-180",
+          "title": "协程与并发模型",
+          "doc": "180-CoroutinesAndConcurrencyModels"
+        },
+        {
+          "id": "cs-fundamentals-190",
+          "title": "中断与系统调用",
+          "doc": "190-InterruptAndSystemCall"
+        },
+        {
+          "id": "cs-fundamentals-200",
+          "title": "用户态与内核态切换",
+          "doc": "200-UserModeKernelModeSwitch"
+        },
+        {
+          "id": "cs-fundamentals-210",
+          "title": "内存分段与分页",
+          "doc": "210-MemorySegmentationAndPaging"
+        },
+        {
+          "id": "cs-fundamentals-220",
+          "title": "页面置换算法",
+          "doc": "220-PageReplacementAlgorithm"
+        },
+        {
+          "id": "cs-fundamentals-230",
+          "title": "文件系统 inode",
+          "doc": "230-FileSystemInode"
+        },
+        {
+          "id": "cs-fundamentals-240",
+          "title": "磁盘调度",
+          "doc": "240-DiskScheduling"
+        },
+        {
+          "id": "cs-fundamentals-250",
+          "title": "零拷贝",
+          "doc": "250-ZeroCopy"
+        },
+        {
+          "id": "cs-fundamentals-260",
+          "title": "进程间通信",
+          "doc": "260-IPC"
+        }
+      ]
+    },
+    {
+      "id": "network",
+      "title": "计算机网络",
+      "subtitle": "TCP/IP、HTTP(S)、DNS、CDN 与安全",
+      "nodes": [
+        {
+          "id": "cs-fundamentals-270",
+          "title": "计算机网络",
+          "doc": "270-ComputerNetwork"
+        },
+        {
+          "id": "cs-fundamentals-280",
+          "title": "计算机网络进阶",
+          "doc": "280-ComputerNetworkAdvanced"
+        },
+        {
+          "id": "cs-fundamentals-290",
+          "title": "网络协议深度解析",
+          "doc": "290-NetworkProtocolDeep"
+        },
+        {
+          "id": "cs-fundamentals-300",
+          "title": "TCP 拥塞控制",
           "doc": "300-TCPControl"
         },
         {
-          "id": "cs-fundamentals-203",
-          "title": "CDN原理",
+          "id": "cs-fundamentals-310",
+          "title": "TCP 粘包与拆包",
+          "doc": "310-TCPMessageFraming"
+        },
+        {
+          "id": "cs-fundamentals-320",
+          "title": "HTTP 缓存策略",
+          "doc": "320-HTTPCacheStrategy"
+        },
+        {
+          "id": "cs-fundamentals-330",
+          "title": "HTTPS 握手过程",
+          "doc": "330-HTTPSHandshake"
+        },
+        {
+          "id": "cs-fundamentals-340",
+          "title": "DNS 解析流程",
+          "doc": "340-DNSFlow"
+        },
+        {
+          "id": "cs-fundamentals-350",
+          "title": "CDN 原理",
           "doc": "350-CDNPrinciple"
         },
         {
-          "id": "cs-fundamentals-204",
-          "title": "ARP协议与ARP欺骗",
+          "id": "cs-fundamentals-360",
+          "title": "WebSocket 帧格式",
+          "doc": "360-WebSocketFrameFormat"
+        },
+        {
+          "id": "cs-fundamentals-370",
+          "title": "QUIC 协议",
+          "doc": "370-QUIC"
+        },
+        {
+          "id": "cs-fundamentals-380",
+          "title": "ARP 协议与 ARP 欺骗",
           "doc": "380-ARPProtocolSpoofing"
         },
         {
-          "id": "cs-fundamentals-205",
+          "id": "cs-fundamentals-390",
+          "title": "BGP 路由协议",
+          "doc": "390-BGPRoute"
+        },
+        {
+          "id": "cs-fundamentals-400",
+          "title": "网络安全",
+          "doc": "400-NetworkSecurity"
+        }
+      ]
+    },
+    {
+      "id": "compile",
+      "title": "分布式与编译原理",
+      "subtitle": "分布式系统与编译器六阶段",
+      "nodes": [
+        {
+          "id": "cs-fundamentals-410",
+          "title": "分布式系统",
+          "doc": "410-DistributedSystem"
+        },
+        {
+          "id": "cs-fundamentals-420",
+          "title": "编译原理",
+          "doc": "420-CompilePrinciple"
+        },
+        {
+          "id": "cs-fundamentals-430",
+          "title": "词法分析",
+          "doc": "430-LexicalAnalysis"
+        },
+        {
+          "id": "cs-fundamentals-440",
           "title": "语法分析",
           "doc": "440-GrammarAnalysis"
         },
         {
-          "id": "cs-fundamentals-206",
+          "id": "cs-fundamentals-450",
+          "title": "语义分析",
+          "doc": "450-SemanticAnalysis"
+        },
+        {
+          "id": "cs-fundamentals-460",
+          "title": "中间代码",
+          "doc": "460-IntermediateCode"
+        },
+        {
+          "id": "cs-fundamentals-470",
           "title": "代码优化",
           "doc": "470-CodeOptimization"
+        },
+        {
+          "id": "cs-fundamentals-480",
+          "title": "目标代码生成",
+          "doc": "480-TargetCodeGeneration"
+        },
+        {
+          "id": "cs-fundamentals-490",
+          "title": "编译原理进阶",
+          "doc": "490-CompilePrincipleAdvanced"
+        },
+        {
+          "id": "cs-fundamentals-500",
+          "title": "编译与运行时",
+          "doc": "500-CompileAndRuntime"
+        },
+        {
+          "id": "cs-fundamentals-510",
+          "title": "编程语言理论",
+          "doc": "510-ProgrammingLanguageTheory"
+        }
+      ]
+    },
+    {
+      "id": "theory",
+      "title": "计算理论",
+      "subtitle": "算法设计、自动机、离散数学与信息安全",
+      "nodes": [
+        {
+          "id": "cs-fundamentals-520",
+          "title": "算法设计与分析",
+          "doc": "520-AlgorithmDesignAnalysis"
+        },
+        {
+          "id": "cs-fundamentals-530",
+          "title": "形式语言与自动机",
+          "doc": "530-FormalLanguageAndAutomata"
+        },
+        {
+          "id": "cs-fundamentals-540",
+          "title": "离散数学",
+          "doc": "540-DiscreteMathematics"
+        },
+        {
+          "id": "cs-fundamentals-550",
+          "title": "信息安全基础",
+          "doc": "550-InformationSecurityBasics"
+        }
+      ]
+    },
+    {
+      "id": "engineering",
+      "title": "软件工程与拓展领域",
+      "subtitle": "软件工程、数据库原理、AI、图形学与 HCI",
+      "nodes": [
+        {
+          "id": "cs-fundamentals-560",
+          "title": "软件工程",
+          "doc": "560-SoftwareEngineering"
+        },
+        {
+          "id": "cs-fundamentals-570",
+          "title": "设计模式",
+          "doc": "570-DesignPattern"
+        },
+        {
+          "id": "cs-fundamentals-580",
+          "title": "软件体系结构",
+          "doc": "580-SoftwareSystemStructure"
+        },
+        {
+          "id": "cs-fundamentals-590",
+          "title": "数据库系统原理",
+          "doc": "590-DatabaseSystemPrinciple"
+        },
+        {
+          "id": "cs-fundamentals-600",
+          "title": "多媒体技术",
+          "doc": "600-MultimediaTechnology"
+        },
+        {
+          "id": "cs-fundamentals-610",
+          "title": "人工智能基础",
+          "doc": "610-AIFundamentals"
+        },
+        {
+          "id": "cs-fundamentals-620",
+          "title": "计算机图形学",
+          "doc": "620-ComputerGraphics"
+        },
+        {
+          "id": "cs-fundamentals-630",
+          "title": "人机交互",
+          "doc": "630-HCI"
         }
       ]
     }

@@ -12,7 +12,6 @@ related:
   - 'cpp/040-CppTypeSystem'
   - 'cpp/730-Cpp23NewFeatures'
   - 'cpp/750-CppModernStandardEvolution'
-  - 'cpp/720-Cpp20Overview'
   - 'c/020-CLanguageOverview'
 prerequisites: []
 ---

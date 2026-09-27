@@ -1,5 +1,5 @@
 ---
-order: 1040
+order: 800
 title: Python 学习总结：核心知识体系回顾
 module: 'python'
 category: 后端技术

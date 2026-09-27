@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 320
 title: 慢查询日志：性能优化的起点
 module: 'mysql'
 category: 数据库

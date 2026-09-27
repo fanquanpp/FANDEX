@@ -1,5 +1,5 @@
 ---
-order: 920
+order: 680
 title: Python 与 Jupyter：交互式计算、数据分析与可复现研究
 module: 'python'
 category: 后端技术

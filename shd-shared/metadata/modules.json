@@ -1093,11 +1093,38 @@
     "svg": [
       "html5"
     ],
+    "java": [
+      "cs-fundamentals"
+    ],
     "kotlin": [
       "java"
     ],
+    "csharp": [
+      "cs-fundamentals"
+    ],
+    "go": [
+      "start"
+    ],
+    "sql": [
+      "start"
+    ],
+    "mysql": [
+      "sql"
+    ],
     "postgresql": [
       "sql"
+    ],
+    "redis": [
+      "sql"
+    ],
+    "algorithm": [
+      "javascript"
+    ],
+    "cs-fundamentals": [
+      "start"
+    ],
+    "c": [
+      "start"
     ],
     "cpp": [
       "c"
@@ -1105,11 +1132,39 @@
     "devops": [
       "git"
     ],
+    "networking": [
+      "cs-fundamentals"
+    ],
     "cybersecurity": [
       "networking"
     ],
     "cloud-computing": [
       "devops"
+    ],
+    "software-testing": [
+      "python"
+    ],
+    "python": [
+      "start"
+    ],
+    "rust": [
+      "start"
+    ],
+    "shell": [
+      "start"
+    ],
+    "astro": [
+      "html5",
+      "css",
+      "javascript",
+      "typescript"
+    ],
+    "vite": [
+      "javascript"
+    ],
+    "tailwind": [
+      "html5",
+      "css"
     ],
     "nextjs": [
       "react",
@@ -1118,11 +1173,20 @@
     "nestjs": [
       "typescript"
     ],
+    "roadmap": [
+      "start"
+    ],
     "mongodb": [
       "sql"
     ],
+    "godot": [
+      "start"
+    ],
     "gdscript": [
       "godot"
+    ],
+    "renpy": [
+      "python"
     ],
     "gode": [
       "godot"

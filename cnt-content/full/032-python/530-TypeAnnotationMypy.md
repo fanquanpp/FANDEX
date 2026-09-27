@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 330
 title: 类型注解与 mypy
 module: 'python'
 category: 后端技术

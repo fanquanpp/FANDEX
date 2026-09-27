@@ -5,7 +5,9 @@
   "categories": [
     "database"
   ],
-  "prerequisites": [],
+  "prerequisites": [
+    "start"
+  ],
   "officialDocs": [
     {
       "label": "ISO 标准索引",

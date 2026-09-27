@@ -1,5 +1,5 @@
 ---
-order: 680
+order: 640
 title: C++ 链接与符号
 module: 'cpp'
 category: 计算机科学
@@ -10,7 +10,6 @@ updated: '2026-09-12'
 related:
   - 'cpp/050-NamespaceLinkage'
   - 'cpp/660-Cpp20Module'
-  - 'cpp/650-CMakeBuild'
   - 'cpp/640-CppToolchain'
 prerequisites:
   - 'cpp/030-CppBasicSyntax'

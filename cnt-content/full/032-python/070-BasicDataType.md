@@ -1,675 +1,383 @@
 ---
 order: 70
-title: 基础数据类型
+title: 基本数据类型：数据是有形状的
 module: 'python'
 category: 后端技术
 difficulty: beginner
-description: 基础数据类型 的完整教学讲解。
+description: 用游戏角色档案讲透 int/float/str/bool/list/tuple/dict/set 七类数据的「什么时候用哪种」决策表、f-string 最小用法与类型转换，附 ValueError/TypeError 真实调试实录与四类练习。
 author: fanquanpp
 updated: '2026-09-12'
-related: []
-prerequisites: []
+related:
+  - 'python/060-ControlFlow'
+  - 'python/080-OperatorExpression'
+  - 'python/090-VariableConstant'
+  - 'python/140-BuiltinDataStructure'
+prerequisites:
+  - 'python/050-ProgramStructureBasicSyntax'
+  - 'python/060-ControlFlow'
 ---
 
-## 整数类型
+## 前置知识
 
-**基本写法：十进制整数**
-`<十进制> = 123`
+- 已完成 [程序结构与基本语法](/python/050-ProgramStructureBasicSyntax)：会写赋值语句并运行脚本；
+- 已完成 [控制流](/python/060-ControlFlow)：见过 if 与 for——本文两处示例用到 for，文中会说明，没学透也不影响主线。
+
+## 学习目标
+
+读完本文你将能够：
+
+1. 拿到一段数据，按决策表选出正确的类型并说出理由；
+2. 用 `type()` 查看任意数据的形状；
+3. 在 str 与 int/float 之间正确转换，看到 `ValueError` 能定位是哪个值转不动；
+4. 用 f-string 的最小用法把数字嵌进文字（细节在 120 篇）；
+5. 预测 list 的增删、tuple 的拒绝修改与 set 的去重行为。
+
+预计 45 到 60 分钟，含 3 组修改实验与 4 道练习。
+
+## 1. 你现在要解决什么问题
+
+数据有形状：分数是数字、名字是文字、装备是一排东西。写一个游戏角色档案，第一版随手一写：
 
 ```python
-# 十进制整数
-x = 123
+hp = "100"    # 血量，随手加了引号
+hp = hp - 30  # 掉血
 ```
 
----
+真实报错：
 
-**基本写法：二进制整数**
-`<二进制> = 0b<二进制串>`
-
-```python
-# 二进制整数（以 0b 开头）
-y = 0b1010
+```text
+Traceback (most recent call last):
+  File "player.py", line 2, in <module>
+    hp = hp - 30
+         ~~~^~~~
+TypeError: unsupported operand type(s) for -: 'str' and 'int'
 ```
 
----
+`"100"` 和 `100` 看起来一样，在 Python 眼里是两种东西：前者是**文字**，后者是**数字**，文字不能做减法。程序怎么知道一个值是什么形状？你又该怎么决定给每个值什么形状？这就是本文要解决的。
 
-**基本写法：八进制整数**
-`<八进制> = 0o<八进制串>`
+## 2. 最小可运行示例：type() 看形状
+
+把角色档案的每个字段都建出来，保存为 `types.py` 运行：
 
 ```python
-# 八进制整数（以 0o 开头）
-z = 0o123
+name = "小明"                      # 文字
+hp = 100                           # 整数
+speed = 7.5                        # 小数
+alive = True                       # 真 / 假
+bag = ["木剑", "面包", "面包"]      # 一排东西
+position = (12, 8)                 # 一组定死的坐标
+stats = {"hp": 100, "mp": 30}      # 按名字查的属性表
+
+print(type(name), type(hp), type(speed))
+print(type(alive), type(bag))
+print(type(position), type(stats))
 ```
 
----
+预期输出：
 
-**基本写法：十六进制整数**
-`<十六进制> = 0x<十六进制串>`
-
-```python
-# 十六进制整数（以 0x 开头）
-p = 0x1A
+```text
+<class 'str'> <class 'int'> <class 'float'>
+<class 'bool'> <class 'list'>
+<class 'tuple'> <class 'dict'>
 ```
 
----
+`type()` 返回值的类型。七种形状各管一摊，先看决策表，再逐个上手。
 
-## 整数运算
+## 3. 核心概念：什么时候用哪种
 
-**基本写法：加法运算**
-`<操作数1> + <操作数2>`
+| 类型 | 装什么 | 用在这 | 别用在这 |
+| --- | --- | --- | --- |
+| int / float | 数字：血量 100、移速 7.5 | 计数、次数、下标、运算 | 精确金额（用 int 存「分」，或见 230 篇 Decimal） |
+| str | 文字：名字、输入、展示 | 一切「内容」 | 拿去做算术的数 |
+| bool | True / False | 是否存活、是否完成 | 当数字参与运算 |
+| list | 一排可增删的东西：背包 | 有顺序、会变化的集合 | 不许被改动的数据 |
+| tuple | 一组定死的值：坐标 (12, 8) | 固定搭配 | 需要增删的集合 |
+| dict | 名字对值：{"hp": 100} | 按名字查属性 | 键会重复的数据 |
+| set | 一堆不重复的东西 | 去重、判断「在不在」 | 需要顺序或下标 |
+
+记忆抓手是三个问题：要不要算术（数字）、会不会变（list 与 tuple 之争）、按什么找（按顺序 list、按名字 dict、只关心有没有 set）。
+
+## 4. 逐个上手：最小示例与预期输出
+
+**int / float**：
 
 ```python
-# 整数加法
-addition = 10 + 5
+hp = 100
+speed = 7.5
+print(hp / 4)            # 除法永远得到 float
+print(10 // 3, 10 % 3)   # 整除取商、取余
+print(0.1 + 0.2)
 ```
 
----
-
-**基本写法：整除运算**
-`<操作数1> // <操作数2>`
-
-```python
-# 整除（向下取整）
-floor_division = 10 // 3
+```text
+25.0
+3 1
+0.30000000000000004
 ```
 
----
+最后一行不是 bug：小数以二进制存储必有舍入，0.1 加 0.2 差之毫厘。精确算钱的方案见 [小数与分数](/python/230-DecimalFractions)。
 
-**基本写法：取模运算**
-`<操作数1> % <操作数2>`
+**str**：
 
 ```python
-# 取模（求余数）
-modulo = 10 % 3
+name = "小明"
+print(len(name))
+print(name + "号玩家")
+print("胜" * 3)
 ```
 
----
-
-**基本写法：幂运算**
-`<操作数1> ** <操作数2>`
-
-```python
-# 幂运算
-power = 2 ** 3
+```text
+2
+小明号玩家
+胜胜胜
 ```
 
----
+`+` 两边必须都是文字；文字加数字会当场报错（第 7 节实录）。
 
-**基本写法：复合赋值运算**
-`<变量> <运算符>= <值>`
+**bool**：
 
 ```python
-# 复合赋值运算符
-x = 10
-x += 5
+hp = 100
+alive = True
+print(alive, not alive)
+print(hp == 100)         # 比较的结果就是 bool
+print(bool(0), bool(""))
 ```
 
----
-
-## 浮点数类型
-
-**基本写法：普通浮点数**
-`<浮点数> = <小数>`
-
-```python
-# 普通浮点数
-pi = 3.14159
+```text
+True False
+True
+False False
 ```
 
----
+为零、为空的算 False，非零非空算 True——060 篇 if 里的条件，本质就是 bool。
 
-**基本写法：科学记数法**
-`<科学记数法> = <尾数>e<指数>`
+**list**：
 
 ```python
-# 科学记数法
-avogadro = 6.022e23
+bag = ["木剑", "面包"]
+bag.append("红药水")
+print(bag, len(bag))
+print(bag[0], bag[-1])   # 下标从 0 开始；-1 是最后一个
 ```
 
----
-
-## 复数类型
-
-**基本写法：复数字面量**
-`<复数> = <实部> + <虚部>j`
-
-```python
-# 复数定义
-c1 = 3 + 4j
+```text
+['木剑', '面包', '红药水'] 3
+木剑 红药水
 ```
 
----
-
-**基本写法：使用 complex() 函数**
-`complex(<实部>, <虚部>)`
+**tuple**：
 
 ```python
-# 使用 complex() 创建复数
-c2 = complex(2, 5)
+position = (12, 8)
+x, y = position          # 一次拆给两个变量
+print(x, y)
 ```
 
----
-
-**基本写法：访问复数实部**
-`<复数>.real`
-
-```python
-# 获取复数的实部
-print(c1.real)
+```text
+12 8
 ```
 
----
+tuple 的存在意义是「不许改」：写 `position[0] = 20` 会被当场拒绝，报错原文见第 7 节。
 
-**基本写法：访问复数虚部**
-`<复数>.imag`
+**dict**：
 
 ```python
-# 获取复数的虚部
-print(c1.imag)
+stats = {"hp": 100, "mp": 30}
+print(stats["hp"])
+stats["mp"] = stats["mp"] - 10
+print(stats)
 ```
 
----
+```text
+100
+{'hp': 100, 'mp': 20}
+```
 
-## 数学函数
+键是名字，值是数据，像给每个格子贴标签。
 
-**基本写法：导入 math 模块**
-`import math`
+**set**：
 
 ```python
-# 导入数学模块
+bag = ["面包", "红药水", "面包"]
+print(set(bag))
+print("红药水" in set(bag))
+```
+
+```text
+{'面包', '红药水'}
+True
+```
+
+set 自动去重且**无序**：换台机器打印顺序可能不同，别依赖顺序。
+
+埋一句伏笔：list/dict/set 可以原地改，int/str/tuple 不可以——这个差异会造出「改了 b，a 也跟着变」的经典坑，细节在 [变量与常量](/python/090-VariableConstant) 讲透。
+
+## 5. f-string：把值嵌进文字（最小用法）
+
+```python
+name = "小明"
+hp = 86.5
+print(f"{name} 的血量是 {hp:.1f}")
+```
+
+```text
+小明 的血量是 86.5
+```
+
+引号前加 `f`，大括号里放变量或表达式；`:.1f` 表示保留一位小数。对齐、百分比、千分位等格式见 [字符串格式化与方法](/python/120-StringFormattingMethods)。
+
+## 6. 类型转换：int() / float() / str()
+
+从 `input()`、文件、网页读来的一切都是 str，计算前必须转换：
+
+```python
+hp_text = input("输入当前血量: ")   # 输入 80
+hp = int(hp_text)
+print(hp + 20)
+```
+
+输入 `80` 时输出 `100`。输入「八十」时真实报错：
+
+```text
+Traceback (most recent call last):
+  File "convert.py", line 2, in <module>
+    hp = int(hp_text)
+ValueError: invalid literal for int() with base 10: '八十'
+```
+
+读报错三步：最后一行的 `ValueError` 是类型；`invalid literal ... with base 10` 说明 int() 只认「长得像整数的文字」；冒号后回显了闯祸的原文 `'八十'`——问题在输入内容，不在代码结构。
+
+两个常用补充：
+
+```python
+print(int(float("3.14")))   # int 不认小数样式，先转 float 再取整
+print(str(100) + " 分")     # 反方向：数字转成文字后才能拼接
+```
+
+```text
+3
+100 分
+```
+
+## 7. 常见错误与调试实录
+
+错误一：文字减数字。第 1 节的现场完整走一遍三步：`TypeError` 指明「运算不支持这组操作数类型」；`for -: 'str' and 'int'` 说明减号左边是文字、右边是数字；`line 2` 定位到 `hp - 30`。修法：`hp = int("100")`，让两边同为数字。
+
+错误二：改 tuple。
+
+```python
+position = (12, 8)
+position[0] = 20
+```
+
+```text
+Traceback (most recent call last):
+  File "player.py", line 2, in <module>
+    position[0] = 20
+    ~~~~~~~~^^^
+TypeError: 'tuple' object does not support item assignment
+```
+
+tuple 拒绝修改是设计而非缺陷：坐标这类「定死的值」正需要这层保护。需要增删就换 list。
+
+错误三：浮点比较。
+
+```python
 import math
+print(0.1 + 0.2 == 0.3)
+print(math.isclose(0.1 + 0.2, 0.3))
 ```
 
----
+```text
+False
+True
+```
 
-**基本写法：调用 math 函数**
-`math.<函数>(<参数>)`
+不要用 `==` 比较两个浮点计算结果，改用 `math.isclose` 判断「足够接近」（math 模块在 240 篇展开）。第 4 节的 `0.30000000000000004` 就是根源。
+
+## 8. 修改实验
+
+1. 给第 4 节的 stats 加一个 `"atk"` 键（攻击力 15），用 f-string 打印「攻击力: 15」。预计 5 分钟；
+2. 把 position 改成三维坐标 (12, 8, 5)，一次拆给三个变量并打印。预计 5 分钟；
+3. 向第 4 节的 bag 里再放两件重复装备，先预测 `len(set(bag))` 再运行验证；连跑三次脚本，观察 set 的打印顺序。预计 5 分钟。
+
+## 9. 实际项目中的使用场景
+
+- 游戏存档与业务数据同构：角色属性用 dict，背包与订单明细用 list，坐标与时间段用 tuple，标签去重用 set；
+- 外部数据第一站：从文件、JSON、接口读来的一切先当 str 处理，转换后再计算（290 篇序列化、320 篇 HTTP 客户端都建立在本篇之上）；
+- 报表与日志：f-string 拼装人类可读的输出。
+
+## 10. 小练习
+
+预测题一（先写答案再运行）：
 
 ```python
-# 计算平方根
-print(math.sqrt(16))
+bag = ["红药水", "蓝药水", "红药水"]
+print(len(bag), len(set(bag)))
 ```
 
----
-
-**基本写法：向下取整**
-`math.floor(<浮点数>)`
+预测题二：
 
 ```python
-# 向下取整
-print(math.floor(3.9))
+print(int("7") + float("2.5"))
+print(str(7) + "0")
 ```
 
----
+（两题预期输出从后往前读：`3 2` 与 `9.5`、`70`。）
 
-**基本写法：向上取整**
-`math.ceil(<浮点数>)`
+修改题：把第 4 节的 stats 扩成完整角色卡（hp、mp、atk 三项），再写一段扣血代码：血量到 0 时把另一个变量 alive 改成 False 并打印验证。
+
+修 Bug 题：下面的战斗计算运行即报错。按读报错三步定位后修复：
 
 ```python
-# 向上取整
-print(math.ceil(3.1))
+hp_text = "100"
+damage_text = "30"
+hp = int(hp_text)
+print(hp - damage_text)
 ```
 
----
+```text
+Traceback (most recent call last):
+  File "battle.py", line 4, in <module>
+    print(hp - damage_text)
+          ~~~^~~~~~~~~~~~~
+TypeError: unsupported operand type(s) for -: 'int' and 'str'
+```
 
-## 字符串
-
-**基本写法：单引号字符串**
-`'<字符串>'`
+挑战题：建一个 dict 名叫 player，含 name（str）、hp（int）、alive（bool）、items（list，至少 3 件且恰好一件重复）、position（tuple）。用下面的断言自测：
 
 ```python
-# 单引号字符串
-s1 = 'Hello, World!'
+assert isinstance(player["alive"], bool)
+assert len(player["items"]) == len(set(player["items"])) + 1
+assert player["position"][0] + player["position"][1] == 20
 ```
 
----
+提示：第二条断言的关键是 set 去重后恰好少一个。展开：重复装备放两件相同的即可；坐标选 (12, 8) 这类前两项之和为 20 的组合。
 
-**基本写法：双引号字符串**
-`"<字符串>"`
+## 11. 与之前和之后的知识的关系
 
-```python
-# 双引号字符串
-s2 = "Hello, World!"
-```
+- 往前：050 篇的赋值语句从此知道自己在赋什么；060 篇里循环遍历的对象、if 里比较的结果，从此有了正式身份；
+- 往后：[运算符与表达式](/python/080-OperatorExpression) 讲透 `+` 在 str 与 int 上行为为何完全不同；[变量与常量](/python/090-VariableConstant) 兑现第 4 节的可变/不可变伏笔；[字符串格式化与方法](/python/120-StringFormattingMethods) 展开 f-string 全部用法；[内置数据结构](/python/140-BuiltinDataStructure) 深入 list/tuple/dict/set 的方法大全与性能。
 
----
+## 12. 官方文档
 
-**换行写法：三引号多行字符串**
-`'''<多行字符串>'''`
+- 内置类型总览：https://docs.python.org/zh-cn/3/library/stdtypes.html
+- 内置函数（int、float、str、type）：https://docs.python.org/zh-cn/3/library/functions.html
+- 浮点算术的官方说明：https://docs.python.org/zh-cn/3/tutorial/floatingpoint.html
 
-```python
-# 三引号字符串（支持多行）
-s3 = '''Hello,
-World!'''
-```
+## 13. 自我检查
 
----
+- 合上文档能复述决策表七行的「用在这 / 别用在这」；
+- 看到 ValueError 报错能指出是哪个值、转哪个类型失败；
+- 能预测 list 增删、tuple 赋值、set 去重三种行为；
+- 能用 f-string 输出保留一位小数的数字；
+- 能说出「可变 / 不可变」是哪几类之间的分界（细节允许现在不懂）。
 
-**基本写法：原始字符串**
-`r'<字符串>'`
+## 本章总结
 
-```python
-# 原始字符串（不转义）
-s4 = r'C:\path\to\file'
-```
+数据有形状：数字参与运算、文字承载内容、bool 表达真假、list 有序可变、tuple 定死不变、dict 按名查找、set 去重无序；str 到数字靠 int()/float() 转换，转不动就 ValueError；浮点有舍入，别用 == 比较计算结果。类型选对，后面的运算符、循环与函数才有的放矢。
 
----
+## 下一步
 
-**基本写法：字节字符串**
-`b'<字符串>'`
-
-```python
-# 字节字符串
-s5 = b'Hello'
-```
-
----
-
-## 字符串拼接
-
-**基本写法：使用 + 运算符拼接**
-`<字符串1> + <字符串2>`
-
-```python
-# 使用 + 拼接字符串
-full_name = "Alice" + " " + "Smith"
-```
-
----
-
-**基本写法：使用 * 运算符重复**
-`<字符串> * <次数>`
-
-```python
-# 使用 * 重复字符串
-print("Hello" * 3)
-```
-
----
-
-## 字符串切片
-
-**基本写法：获取单个字符**
-`<字符串>[<索引>]`
-
-```python
-# 获取指定位置的字符
-print(s[0])
-```
-
----
-
-**基本写法：切片操作**
-`<字符串>[<start>:<stop>:<step>]`
-
-```python
-# 切片获取子字符串
-print(s[0:5])
-```
-
----
-
-**基本写法：反转字符串**
-`<字符串>[::-1]`
-
-```python
-# 使用切片反转字符串
-print(s[::-1])
-```
-
----
-
-## 字符串方法
-
-**基本写法：转换为大写**
-`<字符串>.upper()`
-
-```python
-# 转换为大写
-print(s.upper())
-```
-
----
-
-**基本写法：查找子串位置**
-`<字符串>.find(<子串>)`
-
-```python
-# 查找子串位置
-print(s.find("World"))
-```
-
----
-
-**基本写法：替换子串**
-`<字符串>.replace(<旧子串>, <新子串>)`
-
-```python
-# 替换字符串中的子串
-print(s.replace("World", "Python"))
-```
-
----
-
-**基本写法：分割字符串**
-`<字符串>.split(<分隔符>)`
-
-```python
-# 按分隔符分割字符串
-print(s.split(", "))
-```
-
----
-
-**基本写法：连接字符串列表**
-`<分隔符>.join(<字符串列表>)`
-
-```python
-# 使用分隔符连接字符串列表
-print(", ".join(["Hello", "Python"]))
-```
-
----
-
-**基本写法：去除空白字符**
-`<字符串>.strip()`
-
-```python
-# 去除两端空白字符
-print(" Hello ".strip())
-```
-
----
-
-## 字符串格式化
-
-**基本写法：f-string 格式化**
-`f"<文本>{<表达式>}"`
-
-```python
-# f-string 基本用法
-name = "Alice"
-age = 30
-print(f"My name is {name} and I am {age} years old.")
-```
-
----
-
-**基本写法：f-string 格式化选项**
-`f"<文本>{<表达式>:<格式说明>}"`
-
-```python
-# f-string 浮点数格式化
-pi = 3.14159
-print(f"Pi is approximately {pi:.2f}")
-```
-
----
-
-**基本写法：format() 方法**
-`"<文本>{}".format(<参数>)`
-
-```python
-# 使用 format() 方法格式化
-print("My name is {} and I am {} years old.".format("Alice", 30))
-```
-
----
-
-**基本写法：% 运算符格式化**
-`"<格式>" % <值>`
-
-```python
-# C 风格 % 格式化
-print("My name is %s and I am %d years old." % ("Alice", 30))
-```
-
----
-
-## 布尔类型
-
-**基本写法：逻辑与运算**
-`<表达式> and <表达式>`
-
-```python
-# 逻辑与运算
-print(True and False)
-```
-
----
-
-**基本写法：逻辑或运算**
-`<表达式> or <表达式>`
-
-```python
-# 逻辑或运算
-print(True or False)
-```
-
----
-
-**基本写法：逻辑非运算**
-`not <表达式>`
-
-```python
-# 逻辑非运算
-print(not True)
-```
-
----
-
-**基本写法：布尔上下文判断**
-`if <对象>: <语句>`
-
-```python
-# 在布尔上下文中判断对象真假
-if "Hello":
-    print("非空字符串为真")
-```
-
----
-
-## 空值 None
-
-**基本写法：赋值为 None**
-`<变量> = None`
-
-```python
-# 赋值为 None
-x = None
-```
-
----
-
-**基本写法：使用 is 检查 None**
-`<变量> is None`
-
-```python
-# 使用 is 运算符检查 None
-x = None
-print(x is None)
-```
-
----
-
-## 类型转换
-
-**基本写法：转换为整数**
-`int(<值>)`
-
-```python
-# 转换为整数
-print(int("123"))
-```
-
----
-
-**基本写法：转换为浮点数**
-`float(<值>)`
-
-```python
-# 转换为浮点数
-print(float("3.14"))
-```
-
----
-
-**基本写法：转换为字符串**
-`str(<值>)`
-
-```python
-# 转换为字符串
-print(str(123))
-```
-
----
-
-**基本写法：转换为布尔值**
-`bool(<值>)`
-
-```python
-# 转换为布尔值
-print(bool(1))
-```
-
----
-
-**基本写法：转换为列表**
-`list(<可迭代对象>)`
-
-```python
-# 转换为列表
-print(list("Hello"))
-```
-
----
-
-**基本写法：转换为元组**
-`tuple(<可迭代对象>)`
-
-```python
-# 转换为元组
-print(tuple([1, 2, 3]))
-```
-
----
-
-**基本写法：转换为集合**
-`set(<可迭代对象>)`
-
-```python
-# 转换为集合（去重）
-print(set([1, 2, 3, 2, 1]))
-```
-
----
-
-**基本写法：转换为字典**
-`dict(<键值对序列>)`
-
-```python
-# 转换为字典
-print(dict([("a", 1), ("b", 2)]))
-```
-
----
-
-## 类型检查
-
-**基本写法：获取对象类型**
-`type(<对象>)`
-
-```python
-# 获取对象的类型
-print(type(42))
-```
-
----
-
-**基本写法：检查对象是否为指定类型**
-`isinstance(<对象>, <类型>)`
-
-```python
-# 检查对象是否为指定类型
-print(isinstance(42, int))
-```
-
----
-
-**基本写法：检查是否为多种类型之一**
-`isinstance(<对象>, (<类型1>, <类型2>))`
-
-```python
-# 检查对象是否为多种类型之一
-print(isinstance(42, (int, float)))
-```
-
----
-
-## Python 3.13+ 新特性
-
-**基本写法：type 参数支持复数形式**
-`type(<对象>, complex)`
-
-```python
-# Python 3.13 type() 第三参数支持复数形式（用于复数类型判断）
-x = 3 + 4j
-print(type(x, complex))
-```
-
----
-
-**基本写法：Python 3.13 改进的错误消息**
-`<表达式>  # 触发错误时高亮精确位置`
-
-```python
-# Python 3.13 改进的错误消息（更精确的错误定位）
-# 字典键访问错误会精确高亮具体键名,而非整行
-data = {"name": "Alice"}
-# data["age"]  # 触发 KeyError 时错误消息高亮 "age" 字符串本身
-```
-
----
-
-**基本写法：Python 3.14 t-string 模板字符串**
-`t"<文本>{<表达式>}"`
-
-```python
-# Python 3.14 t-string 模板字符串（返回 Template 对象,不立即求值）
-name = "Alice"
-template = t"Hello, {name}!"
-```
-
----
-
-**基本写法：Python 3.14 模板字符串渲染**
-`<模板>.render(<上下文字典>)`
-
-```python
-# Python 3.14 模板字符串渲染（调用 render 方法执行求值）
-template = t"Hello, {name}!"
-result = template.render({"name": "Alice"})
-print(result)
-```
-
----
-
-**基本写法：Python 3.13 自由线程模式**
-`python -X gil=0 <脚本>`
-
-```python
-# Python 3.13 自由线程模式（禁用 GIL,允许多线程真正并行）
-# 命令行执行：python -X gil=0 script.py
-# 需使用启用 --disable-gil 编译选项的 Python 解释器
-```
-
----
-
-**基本写法：Python 3.13 实验性 JIT**
-`python -X jit <脚本>`
-
-```python
-# Python 3.13 实验性 JIT 编译器（提升长运行任务性能）
-# 命令行执行：python -X jit script.py
-# 需使用启用 --enable-experimental-jit 编译选项的 Python 解释器
-```
+进入 [运算符与表达式](/python/080-OperatorExpression)：这些形状的数据加、减、比较、组合起来会发生什么。

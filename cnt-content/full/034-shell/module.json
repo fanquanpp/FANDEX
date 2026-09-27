@@ -5,7 +5,9 @@
   "categories": [
     "tools"
   ],
-  "prerequisites": [],
+  "prerequisites": [
+    "start"
+  ],
   "officialDocs": [
     {
       "label": "Bash 参考手册",

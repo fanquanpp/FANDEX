@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 250
 title: 跳表与有序集合
 module: 'redis'
 category: 数据库

@@ -1,674 +1,339 @@
 ---
 order: 50
-title: Git 基本操作
+title: Git 基础操作：init、add、commit，人生第一次提交
 module: 'git'
 category: 工具链
 difficulty: beginner
-description: add、commit、diff、log 与撤销操作。
+description: 把普通文件夹变成仓库并完成人生第一次提交：init、status、add、commit、log 全流程与工作区/暂存区/仓库的三层现场感，含 not a git repository、nothing added to commit、Please tell me who you are 三个真实报错实录与一个建仓小项目。
 author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'git/010-Git'
+  - 'git/020-GitInstallConfig'
   - 'git/030-GitEnvConfigInit'
-  - 'git/100-GitBranchManagement'
-  - 'git/150-GitRemoteRepoOperation'
-prerequisites: []
+  - 'git/040-GitignoreDeepDive'
+  - 'git/060-ThreeTrees'
+  - 'git/070-GitDiffStagingOperation'
+prerequisites:
+  - 'git/020-GitInstallConfig'
+  - 'git/030-GitEnvConfigInit'
 ---
 
-## 1. Git 工作区、暂存区和本地仓库
+## 前置知识
 
-### 1.1 概念解释
+- 已完成 [安装与配置](/git/020-GitInstallConfig)：Git 可用，`user.name`/`user.email` 已配好；
+- 已完成 [环境配置与初始化](/git/030-GitEnvConfigInit)：见过 `git init`，`init.defaultBranch` 已配为 `main`。
 
-- **工作区（Working Directory）**：项目目录下用户直接编辑的文件区域
-- **暂存区（Staging Area）**：位于 `.git/index` 文件中，用于保存即将提交的文件列表
-- **本地仓库（Local Repository）**：位于 `.git` 目录中，包含了完整的项目历史
+没读过 030 也能跟：`git init` 本文会从零完整走一遍，只是不再解释配置项。
 
-### 1.2 文件状态
+## 学习目标
 
-Git 中的文件有两种状态：
+读完本文你将能够：
 
-- **已追踪（Tracked）**：已被纳入版本控制的文件
-- 未修改（Unmodified）
-- 已修改（Modified）
-- 已暂存（Staged）
-- **未追踪（Untracked）**：不在版本控制中的新文件
+1. 用 `git init` 把任意文件夹变成仓库，说出 `.git` 是什么、删掉它的后果；
+2. 读 `git status` 的输出，说出未跟踪、已修改、已暂存各是哪个区的状态；
+3. 完成 add → commit 循环，写出半年后仍看得懂的提交信息；
+4. 亲手复现并修复 `nothing added to commit` 与 `Please tell me who you are` 两个真实报错；
+5. 完成小项目：给自己的代码目录建仓并做出 3 次有意义的提交。
 
-### 1.3 文件状态流转
+预计 60 到 90 分钟，含 1 个贯穿案例、3 组修改实验与 1 个小项目。
 
-```mermaid
-stateDiagram-v2
-    [*] --> 未追踪
-    未追踪 --> 已暂存: git add
-    已暂存 --> 未修改: git commit
-    未修改 --> 已修改: 编辑文件
-    已修改 --> 已暂存: git add
-    已修改 --> 未追踪: rm/删除文件
-```
+## 1. 问题：把一个文件夹变成仓库
 
-## 2. 状态管理
-
-### 2.1 查看状态
-
-```bash
- git status
-```
-
-输出说明：
-
-- `Changes to be committed`：暂存区中的文件（已暂存）
-- `Changes not staged for commit`：工作区中已修改但未暂存的文件
-- `Untracked files`：未追踪的新文件
-
-### 2.2 简略格式
-
-```bash
- git status -s
-```
-
-输出标记：
-
-- `??`：未追踪的文件
-- `A`：新添加到暂存区的文件
-- `M`：已修改的文件
-- `D`：已删除的文件
-
-## 3. 暂存与提交
-
-### 3.1 暂存操作
-
-```bash
- # 暂存单个文件
- git add <file>
- # 暂存所有文件
- git add .
- # 暂存所有已追踪文件的修改
- git add -u
- # 交互式暂存
- git add -p
-```
-
-### 3.2 提交操作
-
-```bash
- # 提交暂存区的文件
- git commit -m "commit message"
- # 提交所有已追踪文件的修改（跳过暂存）
- git commit -a -m "commit message"
- # 修改最后一次提交
- git commit --amend -m "new message"
- # 提交空目录（需要在里面添加 .gitkeep）
- git add directory/.gitkeep
- git commit -m "add directory"
-```
-
-### 3.3 提交信息规范
-
-推荐格式：
+你在写一个命令行记账程序。文件夹 `ledger/` 里目前只有一个 `ledger.txt`，记了两笔账：
 
 ```text
- <type>: <subject>
- <body>
- <footer>
+2026-09-27 早餐 -12
+2026-09-27 地铁 -4
 ```
 
-类型（type）：
+你打算长期写下去，改坏想回退、改到哪天有据可查——正是 [Git 是什么](/git/010-Git) 说的那三堵墙。现在动手让 Git 管住这个文件夹，并完成人生第一次提交。
 
-- `feat`：新功能
-- `fix`：bug 修复
-- `docs`：文档更新
-- `style`：格式调整
-- `refactor`：重构
-- `test`：测试相关
-- `chore`：构建/工具相关
-
-## 4. 查看历史
-
-### 4.1 查看提交历史
+先按直觉试试。进入文件夹，问 Git 一句「现在什么情况」：
 
 ```bash
- # 查看完整提交历史
- git log
- # 查看简洁的提交历史
- git log --oneline
- # 查看最近 N 次提交
- git log -n 5
- # 查看分支合并历史
- git log --graph --oneline --all
- # 查看特定文件的修改历史
- git log <file>
- # 查看某次提交的详细信息
- git show <commit-hash>
+cd ledger
+git status
 ```
 
-### 4.2 查看差异
+受挫了，Git 拒绝回答：
 
-```bash
- # 查看工作区与暂存区的差异
- git diff
- # 查看暂存区与上次提交的差异
- git diff --cached
- # 查看两个分支的差异
- git diff <branch1>..<branch2>
- # 查看特定文件的差异
- git diff <file>
-```
-
-## 5. 标签管理
-
-### 5.1 创建标签
-
-```bash
- # 创建轻量标签
- git tag <tag-name>
- # 创建附注标签
- git tag -a <tag-name> -m "tag message"
- # 为特定提交创建标签
- git tag -a <tag-name> <commit-hash> -m "tag message"
-```
-
-### 5.2 查看和操作标签
-
-```bash
- # 查看所有标签
- git tag
- # 查看标签详细信息
- git show <tag-name>
- # 删除标签
- git tag -d <tag-name>
- # 推送标签到远程
- git push <remote-name> <tag-name>
- # 推送所有标签到远程
- git push <remote-name> --tags
- # 检出到特定标签
- git checkout <tag-name>
-```
-
-## 6. 撤销操作
-
-### 6.1 撤销工作区修改
-
-```bash
- # 撤销单个文件的修改
- git checkout -- <file>
- # 撤销所有文件的修改
- git checkout -- .
- # 使用 git restore（Git 2.23+）
- git restore <file>
- git restore .
-```
-
-### 6.2 撤销暂存
-
-```bash
- # 撤销暂存（保留工作区修改）
- git reset HEAD <file>
- # 使用 git restore（Git 2.23+）
- git restore --staged <file>
-```
-
-### 6.3 撤销提交
-
-```bash
- # 软回退：撤销提交，保留修改在暂存区
- git reset --soft HEAD~1
- # 混合回退：撤销提交，保留修改在工作区
- git reset --mixed HEAD~1
- # 硬回退：撤销提交，丢弃所有修改
- git reset --hard HEAD~1
-```
-
-### 6.4 使用 git revert
-
-```bash
- # 创建一个新提交来撤销指定提交
- git revert <commit-hash>
- # 撤销多个提交
- git revert <commit-hash1> <commit-hash2>
-```
-
-**注意**：`git reset` 会改写历史，已推送到远程的提交不建议使用；`git revert` 是安全的撤销方式，会创建新的提交。
-
-## 7. 远程仓库操作
-
-### 7.1 添加和查看远程仓库
-
-```bash
- # 添加远程仓库
- git remote add origin <url>
- # 查看远程仓库
- git remote -v
- # 修改远程仓库 URL
- git remote set-url origin <new-url>
- # 删除远程仓库
- git remote remove origin
-```
-
-### 7.2 推送和拉取
-
-```bash
- # 推送到远程仓库
- git push origin main
- # 拉取远程仓库的更新
- git pull origin main
- # 获取远程仓库的更新（不合并）
- git fetch origin
-```
-
-## 8. 日常开发流程
-
-### 8.1 标准开发流程
-
-```bash
- # 1. 拉取最新代码
- git pull origin main
- # 2. 创建功能分支
- git checkout -b feature/new-feature
- # 3. 开发并提交
- git add .
- git commit -m "feat: add new feature"
- # 4. 推送到远程
- git push origin feature/new-feature
- # 5. 合并到主分支
- git checkout main
- git merge feature/new-feature
- git push origin main
- # 6. 删除功能分支
- git branch -d feature/new-feature
-```
-
-### 8.2 紧急修复流程
-
-```bash
- # 1. 创建修复分支
- git checkout -b hotfix/fix-bug
- # 2. 修复并提交
- git add .
- git commit -m "fix: fix critical bug"
- # 3. 合并到主分支和开发分支
- git checkout main
- git merge hotfix/fix-bug
- git checkout develop
- git merge hotfix/fix-bug
- # 4. 删除修复分支
- git branch -d hotfix/fix-bug
-```
-
-## 9. 最佳实践
-
-### 9.1 提交规范
-
-- **频繁提交**：小步快跑，每次提交只做一件事
-- **有意义的提交信息**：使用规范的提交信息格式
-- **不要提交半成品**：确保每次提交都是可运行的
-
-### 9.2 分支管理
-
-- **主分支保持稳定**：main 分支始终可部署
-- **功能分支开发**：每个功能在独立分支上开发
-- **及时合并和删除**：合并后及时删除功能分支
-
-### 9.3 常用快捷命令
-
-| 命令                     | 说明                    |
-| ------------------------ | ----------------------- |
-| `git stash`              | 暂存当前修改            |
-| `git stash pop`          | 恢复暂存的修改          |
-| `git stash list`         | 查看暂存列表            |
-| `git cherry-pick <hash>` | 选择性合并某个提交      |
-| `git rebase main`        | 变基到 main 分支        |
-| `git bisect`             | 二分查找引入 bug 的提交 |
-
----
-
-## 状态查看
-
-**基本写法：查看仓库状态**
-`git status`
-```bash
-# 显示工作区、暂存区文件状态
-git status;
-```
-
-**简略写法：短格式状态**
-`git status -s`
-```bash
-# 输出 ?? 未追踪 / A 新增暂存 / M 修改 / D 删除
-git status -s;
-```
-
----
-
-## 暂存操作
-
-**基本写法：暂存单个文件**
-`git add <file>`
-```bash
-# 暂存指定文件
-git add src/index.js;
-```
-
-**基本写法：暂存所有变更**
-`git add .`
-```bash
-# 暂存当前目录下所有文件
-git add .;
-```
-
-**单行写法：暂存多个文件**
-`git add <file1> <file2> <file3>`
-```bash
-# 一次性暂存多个文件
-git add src/index.js src/utils.js src/config.js;
-```
-
-**换行写法：暂存多个文件**
-`git add <file1> <file2> <file3>`
-```bash
-# 换行书写多个文件
-git add src/index.js \
-        src/utils.js \
-        src/config.js;
-```
-
-**基本写法：暂存已追踪文件**
-`git add -u`
-```bash
-# 暂存所有已追踪文件的修改（不含新文件）
-git add -u;
-```
-
-**基本写法：交互式暂存**
-`git add -p`
-```bash
-# 逐代码块确认是否暂存
-git add -p;
-```
-
----
-
-## 提交操作
-
-**基本写法：标准提交**
-`git commit -m "<message>"`
-```bash
-# 提交暂存区内容并附带消息
-git commit -m "feat: add login module";
-```
-
-**基本写法：跳过暂存提交**
-`git commit -a -m "<message>"`
-```bash
-# 自动暂存已追踪文件并提交
-git commit -a -m "fix: resolve crash";
-```
-
-**基本写法：修改最后一次提交**
-`git commit --amend -m "<message>"`
-```bash
-# 修改最近一次提交消息
-git commit --amend -m "feat: add login module v2";
-```
-
----
-
-## 提交信息规范
-
-**基本写法：约定式提交格式**
-`<type>: <subject>`
 ```text
-# type 取值：feat / fix / docs / style / refactor / test / chore
-feat: add user authentication
+fatal: not a git repository (or any of the parent directories): .git
 ```
 
----
+## 2. git init：一次性的动作
 
-## 查看历史
+报错在说：这里不是仓库。修法就是 `git init`：
 
-**基本写法：查看完整历史**
-`git log`
 ```bash
-# 查看完整提交历史
-git log;
+git init
 ```
 
-**基本写法：简洁历史**
-`git log --oneline`
+预期输出（路径随你的实际位置变化）：
+
+```text
+Initialized empty Git repository in C:/Users/you/projects/ledger/.git/
+```
+
+`git init` 只做一件事：在当前文件夹创建一个隐藏的 `.git` 目录。看一眼：
+
 ```bash
-# 每条提交一行显示
-git log --oneline;
+ls -a
 ```
 
-**基本写法：限制条数**
-`git log -n <count>`
+```text
+./  ../  .git/  ledger.txt
+```
+`.git` 就是 010 篇说的**账本**：历史快照、配置、暂存记录都住在里面。两条纪律：不要手动改里面的文件；不要删它（删了历史全没）。init 每个仓库只跑一次。
+
+若 init 时冒出 `hint: Using 'master' ...`，说明 `init.defaultBranch` 没配，回 [安装与配置](/git/020-GitInstallConfig) 补一条命令即可。
+
+## 3. git status：问 Git 现在什么情况
+
+修好了再来一遍：
+
 ```bash
-# 查看最近 5 次提交
-git log -n 5;
+git status
 ```
 
-**基本写法：图形化分支历史**
-`git log --graph --oneline --all`
+预期输出：
+
+```text
+On branch main
+
+No commits yet
+
+Untracked files:
+  (use "git add <file>..." to include in what will be committed)
+        ledger.txt
+
+nothing added to commit but untracked files present (use "git add" to track)
+```
+
+逐行读：`On branch main`——在 main 分支上（分支是 100 篇的主题，先混个眼熟）；`No commits yet`——仓库还没有提交；`Untracked files`——Git 看见了 `ledger.txt`，但还没开始管它。
+
+现在补上 010 篇欠你的细节。`git status` 之所以重要，是它在逐层汇报三个地方的现状：
+
+| 你的问题 | 回答的地方 | 谁在动它 |
+| --- | --- | --- |
+| 我改了什么、有什么新文件？ | **工作区**（眼前的文件） | 编辑器、程序 |
+| 哪些改动准备进下一次快照？ | **暂存区**（add 放进去的清单） | `git add` |
+| 历史上已经存了哪些快照？ | **仓库**（`.git` 里的提交历史） | `git commit` |
+
+此刻：工作区一个新文件，暂存区空，仓库空。三层完整模型是 [三棵树](/git/060-ThreeTrees) 的主角，本文先建立现场感。
+
+## 4. .gitignore：把杂物挡在门外
+
+记账程序以后会生成临时备份，造一个模拟一下（Windows 下 `echo` 同样可用）：
+
 ```bash
-# 查看所有分支的合并图
-git log --graph --oneline --all;
+echo "*.bak" > .gitignore
+echo "2026-09-27 备份一下" > ledger.txt.bak
 ```
 
-**基本写法：查看文件历史**
-`git log <file>`
+再看 `git status`：`ledger.txt.bak` 没有出现，但多了一个 `.gitignore`。规则一句话：**不想进仓库的文件，把文件名模式写进 `.gitignore`**，`*.bak` 即「所有以 .bak 结尾的文件」。`.gitignore` 本身需要入库——它保护的是整个团队的仓库整洁。模式语法、已被跟踪的文件怎么反悔，在 [忽略规则 .gitignore 深入](/git/040-GitignoreDeepDive)。
+
+## 5. add 与 commit：人生第一次提交
+
 ```bash
-# 查看 src/index.js 的修改历史
-git log src/index.js;
+git add ledger.txt
+git add .gitignore
 ```
 
-**基本写法：查看提交详情**
-`git show <commit-hash>`
+`add` 成功时没有任何输出（Unix 传统：没消息就是好消息）。再看 status：
+
+```text
+On branch main
+
+No commits yet
+
+Changes to be committed:
+  (use "git rm --cached <file>..." to unstage)
+        new file:   .gitignore
+        new file:   ledger.txt
+```
+
+`Changes to be committed`——暂存区里躺着两个文件，等着进下一次快照。为什么不一步到位？因为**暂存让你决定这次快照装哪些**：可以只提交一半改动，把没写完的留在工作区。这是 Git 与「整个文件夹复制」最大的行为差异。
+
+提交：
+
 ```bash
-# 查看指定提交的详情
-git show abc1234;
+git commit -m "feat: 记账程序初版, 记下前两笔账"
 ```
 
----
+预期输出：
 
-## 查看差异
+```text
+[main (root-commit) 3f2a1c9] feat: 记账程序初版, 记下前两笔账
+ 2 files changed, 3 insertions(+)
+ create mode 100644 .gitignore
+ create mode 100644 ledger.txt
+```
 
-**基本写法：工作区与暂存区差异**
-`git diff`
+读输出：`root-commit` 表示这是仓库第一个提交；`3f2a1c9` 是提交编号（哈希），以后指认它靠前几位；`2 files changed, 3 insertions(+)` 是这次快照装进 2 个新文件、共 3 行。注意编号旁的提交信息——**写什么信息，就是给半年后的你和同事留路标**。FANDEX 的惯例是前缀标类型：`feat:` 新功能、`fix:` 修 bug、`docs:` 改文档、`chore:` 杂务。没有团队规范就照这个来。
+
+看历史：
+
 ```bash
-# 查看未暂存的修改
-git diff;
+git log --oneline
 ```
 
-**基本写法：暂存区与上次提交差异**
-`git diff --cached`
+```text
+3f2a1c9 (HEAD -> main) feat: 记账程序初版, 记下前两笔账
+```
+
+`HEAD -> main` 的含义 110 篇讲，先知道它指着「你现在在哪」。去掉 `--oneline` 的完整版 `git log` 会显示作者、邮箱、日期——[安装与配置](/git/020-GitInstallConfig) 配的署名就落在每一行这里。
+
+## 6. 修改实验：一个文件的三种状态
+
+实验一（改完不 add，2 分钟）：
+
 ```bash
-# 查看已暂存但未提交的修改
-git diff --cached;
+echo "2026-09-27 晚饭 -25" >> ledger.txt
+git status
 ```
 
-**基本写法：分支间差异**
-`git diff <branch1>..<branch2>`
+```text
+On branch main
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   ledger.txt
+
+no changes added to commit (use "git add" and/or "git commit -a")
+```
+
+`modified`——Git 认识这个文件，且发现它和上一次快照不一样了。它与 `Untracked` 的区别：未跟踪是从没管过，已修改是管过之后又变了。
+
+实验二（add 一半再改一半，3 分钟）：
+
 ```bash
-# 比较 main 与 feature 分支差异
-git diff main..feature;
+git add ledger.txt
+echo "2026-09-27 买墨水 -15" >> ledger.txt
+git status
 ```
 
-**基本写法：文件差异**
-`git diff <file>`
+```text
+On branch main
+Changes to be committed:
+  (use "git restore --staged <file>..." to unstage)
+        modified:   ledger.txt
+
+Changes not staged for commit:
+  (use "git add <file>..." to update what will be committed)
+  (use "git restore <file>..." to discard changes in working directory)
+        modified:   ledger.txt
+```
+
+同一文件名出现两次不是 bug：暂存区存的是 `add` 那一瞬间的版本，之后的新改动还留在工作区——快照是暂存那一刻拍下的，不是提交那一刻。
+
+实验三（收尾提交，1 分钟）：
+
 ```bash
-# 查看 src/index.js 的修改
-git diff src/index.js;
+git add ledger.txt
+git commit -m "feat: 补记晚饭与买墨水两笔"
+git status
 ```
 
----
-
-## 撤销工作区修改
-
-**基本写法：撤销单个文件修改**
-`git checkout -- <file>`
-```bash
-# 撤销 src/index.js 的工作区修改
-git checkout -- src/index.js;
+```text
+[main 8b4e2f1] feat: 补记晚饭与买墨水两笔
+ 1 file changed, 2 insertions(+)
+On branch main
+nothing to commit, working tree clean
 ```
 
-**基本写法：撤销所有文件修改**
-`git checkout -- .`
-```bash
-# 撤销所有工作区修改
-git checkout -- .;
+`working tree clean`——三层一致，没有待处理的差异。这就是日常循环的完整一拍：**改 → add → commit → clean → 再改**。你每天与 Git 的相处，都是这一拍的重复。
+
+## 7. 常见错误与调试实录
+
+**错误一：只 commit 不 add。**
+
+```text
+nothing added to commit but untracked files present (use "git add" to track)
 ```
 
-**基本写法：使用 restore 撤销**
-`git restore <file>`
-```bash
-# 撤销指定文件修改（Git 2.23+）
-git restore src/index.js;
+或在有已修改文件时：
+
+```text
+no changes added to commit (use "git add" and/or "git commit -a")
 ```
 
----
+按读报错三步走：报错在说「没有东西可提交」；括号里的 `use "git add"...` 是 Git 把下一步命令写给了你；照做，`add` 后重新 commit。习惯：**Git 的报错末尾几乎总带着建议命令，先读完再动手**。
 
-## 撤销暂存
+**错误二：没配身份就 commit。**
 
-**基本写法：取消暂存（保留修改）**
-`git reset HEAD <file>`
-```bash
-# 将 src/index.js 移出暂存区
-git reset HEAD src/index.js;
+```text
+Author identity unknown
+
+*** Please tell me who you are.
+
+Run
+
+  git config --global user.email "you@example.com"
+  git config --global user.name "Your Name"
+
+to set your account's default identity.
+Omit --global to set the identity only in this repository.
+
+fatal: unable to auto-detect email address (got 'you@DESKTOP-ABC123.(none)')
 ```
 
-**基本写法：使用 restore 撤销暂存**
-`git restore --staged <file>`
-```bash
-# 取消暂存但保留工作区修改（Git 2.23+）
-git restore --staged src/index.js;
-```
+同样先读再修：报错自己给出了两条命令，照抄、换成你的信息即可——正是 [安装与配置](/git/020-GitInstallConfig) 第 4 节那两条。撞上它说明 020 篇的出口检查没做，回去补。
 
----
+**错误三：在仓库外面运行 Git 命令。** 即第 1 节的 `fatal: not a git repository ...`：当前目录和它的所有上级目录里都找不到 `.git`。处理：`cd` 回仓库目录；目录还没建仓就先 `git init`。
 
-## 撤销提交
+小贴士：`git commit` 忘带 `-m` 会弹出编辑器（默认常是 vim），写完按 `Esc` 输入 `:wq` 回车即提交；不想再见到 vim 就配 `core.editor`（020 篇第 5 节）。
 
-**基本写法：软回退**
-`git reset --soft HEAD~<n>`
-```bash
-# 撤销最近一次提交，修改保留在暂存区
-git reset --soft HEAD~1;
-```
+## 8. 实际项目场景
 
-**基本写法：混合回退**
-`git reset --mixed HEAD~<n>`
-```bash
-# 撤销最近一次提交，修改保留在工作区
-git reset --mixed HEAD~1;
-```
+- FANDEX 仓库 2900 多个文件、500 多次提交，日常工作流就是本文这一拍的放大版：改 → `git status` 核对 → `git add` 挑文件 → `git commit` 写信息。它的首条提交是 `feat: initialize FANDEX monorepo with web/desktop/android subprojects`（2026-07-22），半年后读历史，每条提交仍然自解释；
+- 它根目录 `.gitignore` 的第一段就是「密钥与签名材料，最高优先级，严禁入库」——忽略规则在生产仓库的第一用途是防事故，与第 4 节防 `.bak` 是同一件事的严重版；
+- 提交粒度：一次提交只做一件事。改坏了，靠提交编号能精确定位到「哪次改动引入的」。
 
-**基本写法：硬回退**
-`git reset --hard HEAD~<n>`
-```bash
-# 撤销最近一次提交并丢弃修改
-git reset --hard HEAD~1;
-```
+## 9. 小项目：给自己的代码目录建仓
 
-**基本写法：安全撤销（revert）**
-`git revert <commit-hash>`
-```bash
-# 创建反向提交撤销 abc1234
-git revert abc1234;
-```
+（30 分钟）挑一个你已有的文件夹——课程作业、脚本、笔记都行，别挑包含超大文件的——完成建仓与 3 次提交。
 
-**单行写法：撤销多个提交**
-`git revert <hash1> <hash2>`
-```bash
-# 撤销多个不连续的提交
-git revert abc1234 def5678;
-```
+验收清单：
 
----
+1. `git init` 后 `ls -a` 能看到 `.git`；
+2. 有 `.gitignore` 且至少排除一种临时文件（造一个匹配文件，`git status` 里不出现它）；
+3. `git log --oneline` 恰好 3 行，每行信息能独立说清做了什么（禁止 `1`、`update`）；
+4. 最后一次 `git status` 显示 `working tree clean`。
 
-## 远程仓库基础
+提示：每次提交前先 `git status` 确认进快照的清单。展开：第 2、3 次提交之间记得至少改一个已跟踪文件，否则会撞上错误一。
 
-**基本写法：添加远程仓库**
-`git remote add <name> <url>`
-```bash
-# 添加名为 origin 的远程仓库
-git remote add origin https://github.com/user/repo.git;
-```
+## 10. 练习
 
-**基本写法：查看远程仓库**
-`git remote -v`
-```bash
-# 显示远程仓库名称和地址
-git remote -v;
-```
+预测题（5 分钟，先写答案再验证）：在刚 init 的空仓库里依次运行 `touch a.txt`、`git add a.txt`、`touch b.txt`、`git status`。问：输出里会有哪几个区块？各列出哪个文件？
 
-**基本写法：修改远程仓库 URL**
-`git remote set-url <name> <new-url>`
-```bash
-# 更新 origin 的 URL
-git remote set-url origin https://github.com/user/new-repo.git;
-```
+修改题（10 分钟）：把实验二重来一遍，但 `add` 后**不再改动文件**——先预测 `git status` 显示几个区块再验证；然后补 add 并提交，用 `git log --oneline` 确认历史变成 3 行。
 
-**基本写法：删除远程仓库**
-`git remote remove <name>`
-```bash
-# 删除名为 origin 的远程仓库
-git remote remove origin;
-```
+修 Bug 题（15 分钟）：故意复现错误二——用 `git config --global --unset user.name` 和 `git config --global --unset user.email` 清掉身份，再做一次提交。撞上报错后按读报错三步修复（不许翻回第 7 节，答案就在报错文本里），最后用 `git config user.email` 读回验证。
 
----
+挑战题：即第 9 节小项目，四条验收清单全过为完成。
 
-## 推送与拉取
+## 与之前和之后的知识的关系
 
-**基本写法：推送到远程**
-`git push <remote> <branch>`
-```bash
-# 推送 main 分支到 origin
-git push origin main;
-```
+本模块按 010 → 020 → 030 → 040 → 050 → 060 推进。本文是前四篇的会师点：[Git 是什么](/git/010-Git) 的三个词全部落地，[安装与配置](/git/020-GitInstallConfig) 的署名出现在每条 `git log` 里，[环境配置与初始化](/git/030-GitEnvConfigInit) 的 `init` 支起第 2 节，[忽略规则](/git/040-GitignoreDeepDive) 在第 4 节只用了最简模式。往后：[三棵树](/git/060-ThreeTrees) 把三层现场感拆到机制层——为什么同一文件能同时出现在两个区；[git-diff 与暂存区操作](/git/070-GitDiffStagingOperation) 教你看「到底改了哪几行」；分支（100 篇）与远程（150 篇）在这套循环之上扩展。
 
-**基本写法：拉取远程更新**
-`git pull <remote> <branch>`
-```bash
-# 拉取 origin 的 main 分支并合并
-git pull origin main;
-```
+## 官方文档
 
-**基本写法：获取远程更新（不合并）**
-`git fetch <remote>`
-```bash
-# 获取 origin 的更新但不合并
-git fetch origin;
-```
+- 官方入门教程（与本文同路线）：https://git-scm.com/docs/gittutorial
+- Pro Git 中文版第 2 章「Git 基础」：https://git-scm.com/book/zh/v2
 
----
+## 自我检查
 
-## 暂存修改（stash）
+- 不看笔记，能说出 `status` 三个区块各对应哪一层；
+- 能解释 add 与 commit 为什么分两步、同一文件为何能同时出现在两个区块；
+- 撞上 `nothing added to commit` 时，30 秒内说出缺的那一步；
+- 知道删掉 `.git` 目录意味着什么。
 
-**基本写法：暂存当前修改**
-`git stash`
-```bash
-# 暂存当前所有修改
-git stash;
-```
+## 本章总结
 
-**基本写法：恢复暂存修改**
-`git stash pop`
-```bash
-# 恢复最近一次暂存的修改并删除该暂存
-git stash pop;
-```
+`git init` 造账本；`git status` 汇报工作区、暂存区、仓库三层现状；`.gitignore` 把杂物挡在门外；`git add` 决定快照装哪些；`git commit -m` 拍下带署名的快照并写清说明；`git log --oneline` 读历史。日常循环就是「改 → add → commit → clean」。报错先读末尾：Git 几乎总把下一步命令写给你。
 
-**基本写法：查看暂存列表**
-`git stash list`
-```bash
-# 查看所有暂存记录
-git stash list;
-```
+## 下一步
 
----
-
-## 选择性合并
-
-**基本写法：挑选提交合并**
-`git cherry-pick <commit-hash>`
-```bash
-# 将 abc1234 提交应用到当前分支
-git cherry-pick abc1234;
-```
+进入 [三棵树](/git/060-ThreeTrees)：三层现场感只是水面之上。下一篇拆开三层，你会明白实验二「同一文件出现两次」的机制，`reset` 与 `restore` 的行为也将变得可预测。

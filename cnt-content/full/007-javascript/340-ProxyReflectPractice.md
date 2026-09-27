@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 320
 title: Proxy 与 Reflect 实际应用
 module: 'javascript'
 category: 前端技术

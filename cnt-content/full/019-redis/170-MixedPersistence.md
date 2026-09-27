@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 150
 title: 混合持久化
 module: 'redis'
 category: 数据库

@@ -1,5 +1,5 @@
 ---
-order: 810
+order: 780
 title: JSON 类型与 JSON_TABLE
 module: 'mysql'
 category: 数据库

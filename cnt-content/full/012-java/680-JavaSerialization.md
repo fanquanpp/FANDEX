@@ -1,5 +1,5 @@
 ---
-order: 680
+order: 530
 title: Java 序列化
 module: 'java'
 category: 后端技术

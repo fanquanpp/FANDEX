@@ -1,101 +1,287 @@
 {
-  "version": "1.0.0",
+  "version": "1.2.0",
   "module": "software-testing",
-  "summary": "从测试基础与用例设计出发，覆盖自动化测试、性能测试与 CI 门禁。",
+  "summary": "从手写第一组断言到 CI 自动化与软件工程全景：用例设计、自动化、性能安全与工程实践。",
   "stages": [
     {
       "id": "basics",
-      "title": "测试基础",
-      "subtitle": "用例设计与测试类型",
+      "title": "测试入门",
+      "subtitle": "第一组断言、概念原则、级别与类型",
       "nodes": [
         {
-          "id": "software-testing-001",
-          "title": "测试基础与方法",
+          "id": "software-testing-010",
+          "title": "测试基础：让机器替你验证代码",
           "doc": "010-TestBasicsMethod"
         },
         {
-          "id": "software-testing-002",
-          "title": "性能与接口测试",
-          "doc": "140-PerformanceInterfaceTest"
-        },
-        {
-          "id": "software-testing-003",
+          "id": "software-testing-020",
           "title": "测试概念与原则",
           "doc": "020-TestConceptPrinciple"
         },
         {
-          "id": "software-testing-004",
-          "title": "测试类型",
-          "doc": "040-TestType"
+          "id": "software-testing-030",
+          "title": "测试层级",
+          "doc": "030-TestLevels"
         },
         {
-          "id": "software-testing-005",
-          "title": "边界值分析",
-          "doc": "060-BoundaryValueAnalysis"
+          "id": "software-testing-040",
+          "title": "测试类型",
+          "doc": "040-TestType"
         }
       ]
     },
     {
-      "id": "advanced",
-      "title": "自动化测试",
-      "subtitle": "自动化框架与 E2E",
+      "id": "design",
+      "title": "用例设计",
+      "subtitle": "等价类、边界值、白盒覆盖与功能自动化",
       "nodes": [
         {
-          "id": "software-testing-101",
+          "id": "software-testing-050",
+          "title": "等价类划分",
+          "doc": "050-EquivalenceClassPartition"
+        },
+        {
+          "id": "software-testing-060",
+          "title": "边界值分析",
+          "doc": "060-BoundaryValueAnalysis"
+        },
+        {
+          "id": "software-testing-070",
+          "title": "白盒测试覆盖度",
+          "doc": "070-WhiteBoxTestCoverage"
+        },
+        {
+          "id": "software-testing-080",
+          "title": "功能与自动化测试",
+          "doc": "080-FunctionalAndAutomatedTest"
+        }
+      ]
+    },
+    {
+      "id": "automation",
+      "title": "自动化测试",
+      "subtitle": "Selenium、pytest、JUnit 与接口自动化",
+      "nodes": [
+        {
+          "id": "software-testing-090",
           "title": "Selenium",
           "doc": "090-Selenium"
         },
         {
-          "id": "software-testing-102",
+          "id": "software-testing-100",
+          "title": "pytest",
+          "doc": "100-Pytest"
+        },
+        {
+          "id": "software-testing-110",
           "title": "JUnit5",
           "doc": "110-JUnit5"
         },
         {
-          "id": "software-testing-103",
+          "id": "software-testing-120",
+          "title": "API 自动化测试",
+          "doc": "120-APIAutomationTest"
+        },
+        {
+          "id": "software-testing-130",
+          "title": "API 自动化测试详解",
+          "doc": "130-APIAutomationTestDetailed"
+        }
+      ]
+    },
+    {
+      "id": "special",
+      "title": "性能与专项",
+      "subtitle": "JMeter、稳定性、安全与移动端测试",
+      "nodes": [
+        {
+          "id": "software-testing-140",
+          "title": "性能与接口测试",
+          "doc": "140-PerformanceInterfaceTest"
+        },
+        {
+          "id": "software-testing-150",
           "title": "JMeter",
           "doc": "150-JMeter"
         },
         {
-          "id": "software-testing-104",
-          "title": "自动化测试框架对比",
-          "doc": "210-AutomationTestFrameworkComparison"
-        },
-        {
-          "id": "software-testing-105",
+          "id": "software-testing-160",
           "title": "压力测试与稳定性测试",
           "doc": "160-StressAndStabilityTest"
+        },
+        {
+          "id": "software-testing-170",
+          "title": "安全与移动测试",
+          "doc": "170-SecurityAndMobileTest"
+        },
+        {
+          "id": "software-testing-180",
+          "title": "安全测试",
+          "doc": "180-SecurityTesting"
         }
       ]
     },
     {
       "id": "practice",
-      "title": "工程实践",
-      "subtitle": "CI 门禁与 Jest 测试",
+      "title": "工程化实践",
+      "subtitle": "测试替身、TDD/BDD、E2E、CI 与主流断言框架",
       "nodes": [
         {
-          "id": "software-testing-201",
-          "title": "测试双",
+          "id": "software-testing-190",
+          "title": "测试替身",
           "doc": "190-TestDouble"
         },
         {
-          "id": "software-testing-202",
-          "title": "CI-CD测试门禁",
+          "id": "software-testing-200",
+          "title": "TDD 与 BDD",
+          "doc": "200-TDDBDD"
+        },
+        {
+          "id": "software-testing-210",
+          "title": "自动化测试框架对比",
+          "doc": "210-AutomationTestFrameworkComparison"
+        },
+        {
+          "id": "software-testing-220",
+          "title": "E2E 端到端测试",
+          "doc": "220-E2ETest"
+        },
+        {
+          "id": "software-testing-230",
+          "title": "CI/CD 测试门禁",
           "doc": "230-CICDTest"
         },
         {
-          "id": "software-testing-203",
+          "id": "software-testing-240",
+          "title": "Jest 入门",
+          "doc": "240-JestBasics"
+        },
+        {
+          "id": "software-testing-250",
           "title": "Jest Mock 模拟",
           "doc": "250-JestMock"
         },
         {
-          "id": "software-testing-204",
+          "id": "software-testing-260",
+          "title": "Jest 异步测试",
+          "doc": "260-JestAsync"
+        },
+        {
+          "id": "software-testing-270",
           "title": "Jest 配置与快照",
           "doc": "270-JestConfig"
         },
         {
-          "id": "software-testing-205",
-          "title": "E2E 端到端测试",
-          "doc": "220-E2ETest"
+          "id": "software-testing-280",
+          "title": "Mockito 模拟",
+          "doc": "280-Mockito"
+        },
+        {
+          "id": "software-testing-290",
+          "title": "断言库",
+          "doc": "290-AssertionLibrary"
+        },
+        {
+          "id": "software-testing-300",
+          "title": "调试思想",
+          "doc": "300-DebugThinking"
+        }
+      ]
+    },
+    {
+      "id": "engineering",
+      "title": "软件工程全景",
+      "subtitle": "敏捷、需求、架构、重构与质量属性",
+      "nodes": [
+        {
+          "id": "software-testing-310",
+          "title": "软件工程概述",
+          "doc": "310-SoftwareEngineeringOverview"
+        },
+        {
+          "id": "software-testing-320",
+          "title": "敏捷开发",
+          "doc": "320-AgileDevelopment"
+        },
+        {
+          "id": "software-testing-330",
+          "title": "需求分析方法",
+          "doc": "330-RequirementAnalysisMethod"
+        },
+        {
+          "id": "software-testing-340",
+          "title": "UML 图详解",
+          "doc": "340-UMLGraphDetailed"
+        },
+        {
+          "id": "software-testing-350",
+          "title": "设计模式详解",
+          "doc": "350-DesignPatternDetailed"
+        },
+        {
+          "id": "software-testing-360",
+          "title": "代码重构",
+          "doc": "360-Refactoring"
+        },
+        {
+          "id": "software-testing-370",
+          "title": "软件度量",
+          "doc": "370-SoftwareMetrics"
+        },
+        {
+          "id": "software-testing-380",
+          "title": "技术债务管理",
+          "doc": "380-TechDebtManagement"
+        },
+        {
+          "id": "software-testing-390",
+          "title": "软件架构概述",
+          "doc": "390-SoftwareArchitectureOverview"
+        },
+        {
+          "id": "software-testing-400",
+          "title": "分层架构",
+          "doc": "400-LayeredArchitecture"
+        },
+        {
+          "id": "software-testing-410",
+          "title": "事件驱动架构",
+          "doc": "410-EventDrivenArchitecture"
+        },
+        {
+          "id": "software-testing-420",
+          "title": "质量属性",
+          "doc": "420-QualityAttribute"
+        },
+        {
+          "id": "software-testing-430",
+          "title": "领域驱动设计",
+          "doc": "430-DDD"
+        },
+        {
+          "id": "software-testing-440",
+          "title": "架构评估",
+          "doc": "440-ArchitectureEvaluation"
+        },
+        {
+          "id": "software-testing-450",
+          "title": "设计文档规范",
+          "doc": "450-DesignDocumentStandard"
+        },
+        {
+          "id": "software-testing-460",
+          "title": "Code Review 清单",
+          "doc": "460-CodeReviewChecklist"
+        },
+        {
+          "id": "software-testing-470",
+          "title": "技术方案评审",
+          "doc": "470-TechnicalReview"
+        },
+        {
+          "id": "software-testing-480",
+          "title": "知识管理",
+          "doc": "480-KnowledgeManagement"
         }
       ]
     }

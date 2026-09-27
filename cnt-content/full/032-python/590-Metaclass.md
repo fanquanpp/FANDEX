@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 380
 title: 元类
 module: 'python'
 category: 后端技术

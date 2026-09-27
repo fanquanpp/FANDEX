@@ -1,2004 +1,360 @@
 ---
 order: 80
-title: 函数、作用域与闭包
+title: 函数、作用域与闭包：不重复自己
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
-description: 函数声明、箭头函数、作用域链、闭包原理、this 绑定机制、高阶函数、柯里化、尾调用优化的形式化定义与工程实践。
+description: 从「结算逻辑复制三遍，改一处漏两处」讲起：参数与返回值、函数声明与表达式、作用域链、闭包「函数记住了出生地」与最小计数器、箭头函数预告、rest 参数，附 xxx is not a function 与 Cannot access 调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'javascript/640-RegexAssertions'
-  - 'javascript/130-UnicodePropertyEscape'
-  - 'javascript/140-CustomErrorTypes'
-  - 'javascript/220-ES6NewFeatures'
+  - 'javascript/070-ObjectArray'
+  - 'javascript/090-ArrayHigherOrderMethod'
+  - 'javascript/100-ThisKeywordDeepDive'
+  - 'javascript/150-HigherOrderFunction'
+  - 'javascript/350-MemoryManagementAndGarbageCollection'
+  - 'python/100-FunctionDetailed'
 prerequisites:
-  - 'javascript/060-ControlFlow'
+  - 'javascript/070-ObjectArray'
+  - 'javascript/040-VariableDataType'
 ---
 
 ## 前置知识
 
-- [对象与数组](/javascript/070-ObjectArray)：建议先完成前一篇的学习
+- 已完成 [对象与数组](/javascript/070-ObjectArray)：会对象字面量、数组下标、`push`/`pop` 与 for-of 遍历玩家数组；
+- 已完成 [变量与数据类型](/javascript/040-VariableDataType)：会 `let`/`const` 声明，知道七种原始类型。
+
+没学过 070 也能跟：示例只用最简单的对象和数组，用到就解释。这是模块承上启下的一篇——前面的零件在这里组装成「能复用的程序」。
 
 ## 学习目标
 
-- 掌握「1. 引言」的核心机制、典型用法与常见陷阱
-- 掌握「2. 历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「3. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「4. 理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「5. 代码示例」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 把复制三遍的结算逻辑封装成一个函数，说清「参数进、返回值出」的数据流；
+2. 区分函数声明与函数表达式，预测哪种能在定义之前调用、哪种会报错；
+3. 预测嵌套代码里变量的查找路径，解释内层与外层同名时谁赢；
+4. 用「函数记住了出生地」解释计数器为什么能一直计数，并写出最小闭包示例；
+5. 用 rest 参数写出接收任意多个参数的求和函数，并读懂 `TypeError: xxx is not a function` 报错。
 
-## 1. 引言
+预计 60 到 75 分钟，含 3 组修改实验与 4 道练习。
 
-函数是 JavaScript 中"一等公民"（first-class citizen）的抽象机制：它可以赋值给变量、作为参数传递、从函数返回、存储在数据结构中。这种设计让 JavaScript 拥有函数式编程的能力，但也带来了一些独特的语义——作用域链、闭包、`this` 绑定——这些机制是 React Hooks、Vue 响应式、Node.js 事件循环等现代框架与运行时的基石。
+## 1. 你现在要解决什么问题
 
-作用域决定变量可见性，闭包决定变量生命周期，`this` 决定函数执行上下文。三者共同构成了 JavaScript 函数的执行模型。本文档从历史演进、形式化定义、理论推导、工程实践、陷阱分析、案例研究六个维度系统讲解这三个核心概念，并扩展到高阶函数、柯里化、尾调用优化等函数式编程技术。
-
-## 2. 历史动机与背景
-
-### 2.1 JavaScript 函数演化时间线
-
-| 年份 | 关键里程碑 | 解决的核心问题 |
-| --- | --- | --- |
-| 1995 | Brendan Eich 受 Scheme 启发，将函数设计为一等公民 | 让 JS 具备函数式编程能力 |
-| 1995 | 函数声明 + 函数表达式 + `arguments` + `this` | 基础函数语义 |
-| 1999 | ES3 引入 `apply`、`call` | 显式 `this` 绑定 |
-| 2009 | ES5 引入 `bind`、严格模式、`Function.prototype.bind` | 永久 `this` 绑定、修复作用域泄漏 |
-| 2015 | ES6 引入箭头函数、`let`/`const` 块作用域、默认参数、剩余参数、解构参数 | 简化语法、修复 `this` 与 `arguments` 痛点 |
-| 2015 | ES6 引入生成器函数（`function*`） | 协程式异步编程、惰性序列 |
-| 2017 | ES8 引入 `async function` | 基于 Promise 的语法糖，简化异步代码 |
-| 2019 | ES10 引入 `flatMap`、`flat` | 函数式数组操作 |
-| 2021 | ES12 引入 `WeakRef`、`FinalizationRegistry` | 弱引用与对象终结回调 |
-| 2024 | ES15 引入 `Promise.withResolvers` | 函数式 Promise 构造简化 |
-
-### 2.2 设计动机分析
-
-JavaScript 函数的设计受三个历史因素影响：
-
-1. **Scheme 血统**：Brendan Eich 原本被要求设计一门"看起来像 Java 的 Scheme"，因此函数是一等公民，闭包是语言原生特性。这与 Java 当时不支持闭包形成对比。
-2. **Java 外壳**：为了迎合 1995 年的 Java 热潮，语法借鉴 Java 的 `function` 关键字（后来改为 `function`）。`this` 的引入是为了让 JS 像 Java 一样支持面向对象，但与 Scheme 风格冲突。
-3. **Web 浏览器环境**：DOM 事件回调要求函数作为参数传递，进一步强化了一等公民地位；但也引入了 `this` 在回调中丢失的问题。
-
-理解这三个历史因素，可以解释为什么 JavaScript 的函数与 `this` 看起来"奇怪"——它本质上是 Scheme 内核 + Java 语法 + 浏览器约束的混合体。
-
-## 3. 形式化定义
-
-### 3.1 函数的形式化定义
-
-JavaScript 函数可形式化为七元组：
-
-$$
-F = \langle \text{Params}, \text{Body}, \text{Closure}, \text{This}, \text{Args}, \text{HomeObject}, \text{Prototype} \rangle
-$$
-
-- $\text{Params}$：形参列表
-- $\text{Body}$：函数体（AST 节点）
-- $\text{Closure}$：词法环境引用（闭包）
-- $\text{This}$：`this` 绑定（动态或词法）
-- $\text{Args}$：`arguments` 对象（箭头函数无）
-- $\text{HomeObject}$：`super` 引用（仅方法定义）
-- $\text{Prototype}$：`Function.prototype` 引用
-
-### 3.2 作用域的形式化定义
-
-作用域是一个映射 $\sigma: \text{Identifier} \rightarrow \text{Location}$。作用域链是一个栈：
-
-$$
-\Sigma = [\sigma_0, \sigma_1, \dots, \sigma_n]
-$$
-
-变量查找算法：
-
-$$
-\text{lookup}(id, \Sigma) = \begin{cases}
-\sigma_n(id) & \text{if } id \in \text{dom}(\sigma_n) \\
-\text{lookup}(id, \Sigma \setminus \sigma_n) & \text{otherwise}
-\end{cases}
-$$
-
-JavaScript 使用**词法作用域**（lexical scope），即 $\Sigma$ 在函数定义时确定，而非调用时。这与 bash 等动态作用域语言不同。
-
-### 3.3 闭包的形式化定义
-
-闭包是一个二元组 $\langle F, \Sigma_F \rangle$，其中：
-
-- $F$ 是函数本身
-- $\Sigma_F$ 是函数定义时的作用域链快照
-
-闭包的求值规则：
-
-$$
-\text{eval}(\langle F, \Sigma_F \rangle, \text{args}) = \text{evalBody}(F.\text{Body}, \Sigma_F \cdot [\text{args}])
-$$
-
-这意味着即使函数在定义作用域外被调用，仍能访问定义时的变量。
-
-### 3.4 `this` 绑定的形式化语义
-
-设函数 $f$ 被调用为 `obj.method(args)`，则 `this` 绑定规则（按优先级从高到低）：
-
-1. **new 绑定**：`new F(args)` $\Rightarrow$ `this = \text{newly created object}`
-2. **显式绑定**：`f.call(obj, args)` $\Rightarrow$ `this = obj`
-3. **隐式绑定**：`obj.method(args)` $\Rightarrow$ `this = obj`
-4. **默认绑定**：`f(args)` $\Rightarrow$ `this = \text{globalThis}`（严格模式为 `undefined`）
-
-箭头函数没有自己的 `this`，它继承外层作用域的 `this`：
-
-$$
-\text{this}_{\text{arrow}} = \text{this}_{\text{enclosing}}
-$$
-
-### 3.5 高阶函数的形式化定义
-
-高阶函数（Higher-Order Function, HOF）是满足下列条件之一的函数：
-
-$$
-\text{HOF}: F \rightarrow F \text{ 或 } \text{HOF}: X \rightarrow F
-$$
-
-即接收函数作为参数或返回函数。常见高阶函数包括 `map`、`filter`、`reduce`、`compose`、`curry`。
-
-### 3.6 柯里化的形式化定义
-
-柯里化（Currying）将多元函数转换为一元函数链：
-
-$$
-\text{curry}: (X \times Y \rightarrow Z) \rightarrow (X \rightarrow (Y \rightarrow Z))
-$$
-
-例如：`add(a, b)` 柯里化为 `add(a)(b)`。
-
-### 3.7 尾调用的形式化定义
-
-尾调用（Tail Call）指函数的最后一步是调用另一个函数：
-
-$$
-\text{tailCall}: f(x) = g(y)
-$$
-
-尾调用优化（TCO）要求引擎复用当前栈帧，避免栈溢出。形式化：
-
-$$
-\text{Stack}_{\text{after TCO}} = \text{Stack}_{\text{before}} \setminus \text{frame}(f)
-$$
-
-ES6 在严格模式下规范了 TCO，但 Safari 是唯一广泛实现的引擎。
-
-## 4. 理论推导
-
-### 4.1 作用域链的查找复杂度
-
-设作用域链长度为 $n$，每次变量查找的最坏复杂度为 $O(n)$。优化手段：JavaScript 引擎将作用域链编译为跳表，常数因子小。
-
-推论：**避免深层嵌套**。在 100 层嵌套作用域中查找变量比顶层查找慢约 100 倍。
-
-### 4.2 闭包的内存开销
-
-闭包持有定义作用域的引用，导致该作用域中的所有变量无法被 GC。设作用域 $S$ 中变量总大小为 $|S|$，闭包 $C$ 引用 $S$ 的子集 $U_C \subseteq S$：
-
-$$
-\text{Memory}(C) = |S| \text{（实际保留整个作用域）}
-$$
-
-但现代引擎（V8、SpiderMonkey）实现了**变量逃逸分析**，仅保留 $U_C$：
-
-$$
-\text{Memory}_{\text{optimized}}(C) = |U_C|
-$$
-
-推论：**避免在闭包中保留大对象**，否则即使闭包只用一个变量，整个作用域也无法回收。
-
-### 4.3 `arguments` 与剩余参数的性能差异
-
-`arguments` 是类数组对象，每次访问需要属性查找。剩余参数 `...args` 是真数组，V8 内部优化为数组结构：
-
-$$
-T_{\text{access}}(\text{arguments}[i]) > T_{\text{access}}(\text{args}[i])
-$$
-
-差异约 5-10%，在热路径中显著。
-
-### 4.4 箭头函数与普通函数的内存对比
-
-箭头函数没有 `arguments`、`this`、`super`、`new.target` 绑定，内存占用更小：
-
-$$
-\text{Memory}(\text{arrow}) < \text{Memory}(\text{regular})
-$$
-
-V8 中差异约 32 字节/函数。在创建大量回调的场景下（如 `Array.prototype.map` 中），箭头函数更优。
-
-### 4.5 尾调用优化的栈空间
-
-未优化的尾调用：
-
-$$
-\text{Stack}_n = O(n) \text{（每层调用增加一个栈帧）}
-$$
-
-优化后的尾调用：
-
-$$
-\text{Stack}_n = O(1) \text{（复用栈帧）}
-$$
-
-因此递归算法在 TCO 下可处理任意深度输入，而不会栈溢出。
-
-### 4.6 闭包与不可变数据
-
-闭包可以构造不可变数据：
+游戏商店有三处要做结算：购买道具、批量补货、会员礼包。每处的规则一模一样——打九折、加 5 元邮费、算总价。你当时的选择是复制粘贴：
 
 ```javascript
-function createImmutable(value) {
-  return {
-    get: () => value,
-    set: (newValue) => createImmutable(newValue),
+// 购买道具
+const itemTotal = 80 * 0.9 + 5;
+console.log('道具结算：' + itemTotal);
+
+// 批量补货
+const bulkTotal = 300 * 0.9 + 5;
+console.log('补货结算：' + bulkTotal);
+
+// 会员礼包
+const giftTotal = 150 * 0.9 + 5;
+console.log('礼包结算：' + giftTotal);
+```
+
+预期输出：
+
+```text
+道具结算：77
+补货结算：275
+礼包结算：140
+```
+
+能跑。直到策划说「改成八五折」。你改了第一处的 `0.9`，想着待会儿改剩下的——然后忘了。上线后同一批商品两个价。**复制粘贴不是省事，是埋雷：三份一样的逻辑，改一处漏两处。**
+
+（Python 模块的 [函数详解](/python/100-FunctionDetailed) 开场是同一个案例，解法也一样：封装成函数。本篇按 JS 的写法走一遍，顺手补上 JS 特有的作用域链、闭包与箭头函数。）
+
+## 2. 最小可运行示例：一个函数管所有结算
+
+保存为 `checkout.js`：
+
+```javascript
+function checkout(price) {          // 定义一次
+  const total = price * 0.9 + 5;
+  return total;
+}
+
+console.log('道具结算：' + checkout(80));
+console.log('补货结算：' + checkout(300));
+console.log('礼包结算：' + checkout(150));
+```
+
+预期输出：
+
+```text
+道具结算：77
+补货结算：275
+礼包结算：140
+```
+
+折扣改八五折？只动 `0.9` 那一行，三处同时生效。这就是函数的全部意义：**逻辑写一遍，数据走参数进来，结果走返回值出去。**
+
+## 3. 发生了什么：参数进，返回值出
+
+拆开 `checkout` 的三段结构：
+
+- `function checkout(price)`：`price` 是**参数**——占位符，调用时才填上真值；
+- 函数体：干活的代码，`price` 像普通变量一样用；
+- `return total`：把结果**交出去**，函数到此结束，调用处 `checkout(80)` 就变成返回值 `77`。
+
+两个新手高频踩坑点：
+
+```javascript
+function demo(x) {
+  console.log('收到：' + x);
+  return x * 2;
+}
+
+const result = demo(21);   // result 是 42：返回值被接住
+demo(21);                  // 打印了，但返回值没人接，扔掉了
+```
+
+最后一条：**不写 return 的函数，返回值是 `undefined`**：
+
+```javascript
+function greet() { console.log('hi'); }
+const r = greet();         // 调用时打印 hi
+console.log(r);            // undefined：greet 的返回值
+```
+
+数据流一句话：**调用时把值拷给参数，结束时用 return 交出结果。** 函数里改参数不影响外面；要传出去的东西必须 return。这条纪律能挡掉一大批「为什么外面没变」的困惑。
+
+## 4. 函数声明与函数表达式：函数也是值
+
+JS 里函数是一等公民：函数本身就是**值**，可以像数字、字符串一样存进变量。三种主流写法：
+
+```javascript
+function checkoutA(price) {                     // 写法一：函数声明
+  return price * 0.9 + 5;
+}
+
+const checkoutB = function (price) {            // 写法二：函数表达式
+  return price * 0.9 + 5;
+};
+
+const checkoutC = (price) => price * 0.9 + 5;   // 写法三：箭头函数（表达式家族）
+```
+
+三者都能 `checkoutX(80)` 调用。差别先记一条：**声明有「提升」——定义写在调用后面也能用；表达式和普通变量一样，执行到那一行才存在。** 这是第 9 节真实报错的根源。
+
+箭头函数是表达式里最短的写法：单参数可省括号，函数体只有一句时可省 `return`。本篇先把它当语法糖用；它和普通函数还有更深的一层差别（`this`），[this 篇](/javascript/100-ThisKeywordDeepDive) 讲透，今天只需要认识这张脸。
+
+顶层工具函数（如结算、格式化）用**声明**，定义位置随意、提升友好；存进对象、要传来传去的函数用**表达式或箭头**——090 篇起你会天天传箭头函数，手感自然来。
+
+## 5. 作用域链：变量从出生地向外找
+
+函数嵌函数时，内层能看见哪些变量？看一个真实结构：
+
+```javascript
+const shopName = '老王商店';          // 全局：谁都能看见
+
+function checkout(price) {
+  const discount = 0.9;               // checkout 作用域
+
+  function addShipping(total) {
+    return total + 5;                 // 只用参数，最干净
+  }
+
+  const total = addShipping(price * discount);
+  console.log(shopName + ' 结算：' + total);   // 本层没有 → 外层找 → 全局找到
+  return total;
+}
+
+checkout(80);
+```
+
+预期输出：
+
+```text
+老王商店 结算：77
+```
+
+规则一句话：**查变量时从当前层出发，一层层往外找，找到就用，到全局还没找到才报 `ReferenceError`。** 这条链是「出生时」就定下来的，写在代码里的嵌套结构就是查找路线。
+
+同名遮蔽：内层声明的名字会**遮住**外层同名变量——外层的还在，只是这一层看不见它。
+
+## 6. 闭包：函数记住了出生地
+
+现场感受一下：`addShipping` 出生在 `checkout` 里，把它**返回出去**，在外面调用——它还记得出生地的变量吗？
+
+最小示例，计数器：
+
+```javascript
+function createCounter() {
+  let count = 0;                    // count 出生在 createCounter 里
+
+  return function () {
+    count = count + 1;              // 用的正是出生地的 count
+    return count;
   };
 }
+
+const nextRound = createCounter();  // 拿到这个内层函数
+console.log(nextRound());           // 1
+console.log(nextRound());           // 2
+console.log(nextRound());           // 3
+
+const otherMatch = createCounter(); // 另开一局，互不干扰
+console.log(otherMatch());          // 1
+console.log(nextRound());           // 4（第一局接着数）
 ```
 
-形式化：每次 `set` 创建新的闭包，原闭包的 `value` 不变：
+直觉说 `createCounter` 早就执行完了，`count` 应该被回收。实际它活着：**返回的内层函数带着对出生地的记挂活下去，`count` 也跟着活下去。** 这就是**闭包**——函数连同它出生时的那片作用域，打包成一体。
 
-$$
-\text{set}(\text{Immutable}(v), v') = \text{Immutable}(v')
-$$
+用 040 篇「变量是名字绑定对象」的视角想：`createCounter` 每调用一次，就造出一个新的 `count` 和一个新的内层函数；`nextRound` 与 `otherMatch` 各自记着各自的 `count`，所以互不干扰。闭包也是「私有变量」的来路：`count` 藏在函数背后，外面摸不到，只能通过返回的函数操作——比全局变量安全得多。
 
-这是函数式编程的核心思想。
+两个后话先记现象：闭包为什么可能拖累内存、怎么排查——[内存管理与垃圾回收](/javascript/350-MemoryManagementAndGarbageCollection) 与 [闭包内存泄漏](/javascript/360-ClosureMemoryLeakOptimization) 讲透；本篇只要求**能预测计数器行为**。
 
-## 5. 代码示例
+## 7. rest 参数：来多少个参数都接得住
 
-### 5.1 函数声明、表达式与箭头函数
+结算常要算好几项商品，参数个数不固定。rest 参数把它们全收进一个数组：
 
 ```javascript
-// 函数声明：存在提升，可在声明前调用
-console.log(add(2, 3)); // 输出: 5
-function add(a, b) {
-  return a + b;
+function sum(...prices) {           // prices 是一个真数组
+  let total = 0;
+  for (const p of prices) {         // 070 篇的 for-of 派上用场
+    total = total + p;
+  }
+  return total;
 }
 
-// 函数表达式：不存在提升
-const subtract = function (a, b) {
-  return a - b;
+console.log(sum(10, 20, 30));       // 60
+console.log(sum(1, 2, 3, 4, 5));    // 15
+console.log(sum());                 // 0（空数组加了个寂寞，但不出错）
+```
+
+`...prices` 读作「把剩下的参数全收进数组 `prices`」。它只能放在参数列表**最后**，前面可以有普通参数，如 `function order(user, ...items)`。旧代码里的同类写法叫 `arguments`，读老项目时认得即可，新代码一律用 rest。
+
+## 8. 修改实验
+
+实验一：给 `checkout` 加第二个参数 `shippingFee`，三处调用分别传 `5`、`0`、`8`，输出全部验证。
+
+实验二：`createCounter` 改成接收起始值，`createCounter(100)` 后第一脚踩出 `101`，并验证两局依旧互不干扰。
+
+实验三：仿照 `sum` 写一个 `max(...nums)`，用 for-of 加 if 找出最大值并返回。验收：`max(3, 9, 4)` 返回 `9`，`max(-5, -2)` 返回 `-2`（初值别设 0，想想为什么）。
+
+## 9. 常见错误与调试实录
+
+**错误一：`xxx is not a function`。** 来自一次真实手滑：
+
+```javascript
+const numbers = [10, 20, 30];
+console.log(numbers.jojn('-'));     // join 手滑打成 jojn
+```
+
+真实报错（Node 原文）：
+
+```text
+TypeError: numbers.jojn is not a function
+```
+
+三步定位：
+
+1. **读报错**：类型 `TypeError`，结尾 `is not a function`——意思是「你当函数调用的这个东西，不是函数」。名字就在报错里：`numbers.jojn`；
+2. **验真身**：报错行前加 `console.log(typeof numbers.jojn)`，输出 `undefined`——这个键不存在（多半拼写错误）。打出 `'number'`、`'string'` 之类，说明变量被别的东西占了，顺着赋值链查；
+3. **对照修正**：MDN 搜正确的方法名，改成 `numbers.join('-')`。
+
+**错误二：表达式先调用后定义。** 第 4 节埋的雷，现在引爆：
+
+```javascript
+checkout(80);                        // 第 1 行就想用
+
+const checkout = function (price) {  // 第 4 行才赋值
+  return price * 0.9 + 5;
 };
-console.log(subtract(5, 2)); // 输出: 3
-
-// 命名函数表达式：内部可递归，外部不可见
-const factorial = function fact(n) {
-  return n <= 1 ? 1 : n * fact(n - 1);
-};
-
-// 箭头函数：不绑定 this，没有 arguments
-const multiply = (a, b) => a * b;
-const double = (n) => n * 2;
-const greet = () => console.log('Hello');
-
-// 单表达式可省略 return
-const square = (x) => x * x;
-
-// 返回对象字面量需用括号
-const makeUser = (name, age) => ({ name, age });
 ```
 
-### 5.2 函数参数
+真实报错（Node 原文）：
 
-```javascript
-// 默认参数：替代 || 的 falsy 陷阱
-function greet(name = '世界') {
-  return `Hello, ${name}!`;
-}
-console.log(greet()); // "Hello, 世界!"
-console.log(greet('Alice')); // "Hello, Alice!"
-console.log(greet('')); // "Hello, !"（注意：空字符串不是 undefined）
-
-// 剩余参数：替代 arguments
-function sum(...numbers) {
-  return numbers.reduce((total, n) => total + n, 0);
-}
-console.log(sum(1, 2, 3, 4, 5)); // 15
-
-// 解构参数
-function printUser({ name, age }) {
-  console.log(`Name: ${name}, Age: ${age}`);
-}
-printUser({ name: 'Alice', age: 30 });
-
-// 解构参数 + 默认值
-function fetchUser({ id, fields = ['name', 'email'] } = {}) {
-  console.log(`Fetching user ${id}, fields: ${fields.join(', ')}`);
-}
-fetchUser({ id: 123 }); // fields 默认为 ['name', 'email']
-fetchUser(); // 报错：Cannot destructure 'id' of undefined
+```text
+ReferenceError: Cannot access 'checkout' before initialization
 ```
 
-### 5.3 作用域
+把 `const checkout = function ...` 换成 `function checkout(...)` 声明，程序立刻能跑——这就是「声明有提升」。看到 `before initialization`，就往报错行**上方**找表达式定义：挪上去，或改成函数声明。
+
+## 10. 实际项目中的使用场景
+
+- 工具函数库与游戏逻辑：格式化金额、校验表单字段、伤害计算、掉落判定，各封装成函数，全项目共用一份逻辑；
+- 何时该拆函数：同一段逻辑出现第二遍时（本篇开场就是标准）；一个函数只做一件事，说不清它「做什么」就是做太多了；
+- 不该做的：函数里偷偷修改外面的变量——数据走参数进、返回值出（Python 对 `global` 的差评同样成立）；「返回值没人接」式调用也属浪费；
+- 「把函数当值传来传去」从 [数组高阶方法](/javascript/090-ArrayHigherOrderMethod) 起成为日常，[高阶函数](/javascript/150-HigherOrderFunction) 讲透；现在只需记住：函数是值。
+
+## 11. 小练习
+
+预测题（5 分钟，先写答案再运行）：
 
 ```javascript
-// 全局作用域
-const globalVar = '全局变量';
-function test() {
-  console.log(globalVar); // 可访问
-}
-test();
-
-// 函数作用域
-function testFunc() {
-  const localVar = '局部变量';
-  console.log(localVar);
-}
-testFunc();
-// console.log(localVar); // 错误：localVar is not defined
-
-// 块级作用域（let/const）
-{
-  let blockVar = '块级变量';
-  const constBlockVar = '常量块级变量';
-  console.log(blockVar, constBlockVar);
-}
-// console.log(blockVar); // 错误：blockVar is not defined
-
-// var 的函数作用域（不是块作用域）
-for (var i = 0; i < 3; i++) {}
-console.log(i); // 输出: 3（var 泄漏到外层）
-
-// 模块作用域（ES Module）
-// export const moduleVar = '模块变量';
-// 仅在当前模块内可见，需通过 export 暴露
-```
-
-### 5.4 作用域链
-
-```javascript
-const globalVar = '全局';
-
+const name = '全局';
 function outer() {
-  const outerVar = '外部';
-
+  const name = '外层';
   function inner() {
-    const innerVar = '内部';
-    // 查找顺序：inner → outer → global
-    console.log(innerVar);   // '内部'
-    console.log(outerVar);   // '外部'
-    console.log(globalVar);  // '全局'
+    console.log(name);
   }
-
-  inner();
-  // console.log(innerVar); // 错误：innerVar is not defined
-}
-
-outer();
-```
-
-### 5.5 闭包基础
-
-```javascript
-// 闭包：函数 + 其词法环境的组合
-function createCounter() {
-  let count = 0; // 私有变量
-  return function () {
-    return ++count; // 闭包持有 count 的引用
-  };
-}
-
-const counter = createCounter();
-console.log(counter()); // 1
-console.log(counter()); // 2
-console.log(counter()); // 3
-
-// 每次调用 createCounter 创建独立的闭包
-const counter2 = createCounter();
-console.log(counter2()); // 1（与 counter 互不影响）
-
-// 闭包无法直接访问私有变量
-// counter.count; // undefined
-```
-
-### 5.6 闭包应用：计数器
-
-```javascript
-// 完整的计数器：封装多个操作
-function createCounter(initialValue = 0) {
-  let count = initialValue;
-  return {
-    increment: function () {
-      return ++count;
-    },
-    decrement: function () {
-      return --count;
-    },
-    reset: function () {
-      count = initialValue;
-      return count;
-    },
-    getCount: function () {
-      return count;
-    },
-  };
-}
-
-const counter = createCounter(10);
-console.log(counter.increment()); // 11
-console.log(counter.increment()); // 12
-console.log(counter.decrement()); // 11
-console.log(counter.reset());     // 10
-console.log(counter.getCount());  // 10
-```
-
-### 5.7 闭包应用：模块模式
-
-```javascript
-// 模块模式：IIFE + 闭包实现私有化
-const mathModule = (function () {
-  // 私有变量
-  const PI = 3.14159;
-
-  // 私有函数
-  function validateNumber(n) {
-    return typeof n === 'number' && !isNaN(n);
-  }
-
-  // 公共接口
-  return {
-    add: function (a, b) {
-      if (validateNumber(a) && validateNumber(b)) return a + b;
-      throw new TypeError('参数必须为数字');
-    },
-    subtract: function (a, b) {
-      if (validateNumber(a) && validateNumber(b)) return a - b;
-      throw new TypeError('参数必须为数字');
-    },
-    circleArea: function (r) {
-      return PI * r * r;
-    },
-    getPI: function () {
-      return PI;
-    },
-  };
-})();
-
-console.log(mathModule.add(5, 3));      // 8
-console.log(mathModule.circleArea(2));  // 12.56636
-console.log(mathModule.getPI());       // 3.14159
-// console.log(mathModule.PI);         // undefined（私有）
-```
-
-### 5.8 闭包应用：防抖与节流
-
-```javascript
-// 防抖：高频触发仅最后一次生效
-function debounce(func, delay) {
-  let timeoutId;
-  return function (...args) {
-    clearTimeout(timeoutId);
-    // 闭包持有 timeoutId 与 func、delay
-    timeoutId = setTimeout(() => {
-      func.apply(this, args);
-    }, delay);
-  };
-}
-
-// 节流：高频触发按固定频率执行
-function throttle(func, limit) {
-  let inThrottle = false;
-  let lastArgs = null;
-  return function (...args) {
-    if (!inThrottle) {
-      func.apply(this, args);
-      inThrottle = true;
-      setTimeout(() => {
-        inThrottle = false;
-        if (lastArgs) {
-          func.apply(this, lastArgs);
-          lastArgs = null;
-        }
-      }, limit);
-    } else {
-      lastArgs = args; // 保留最后一次调用的参数
-    }
-  };
-}
-
-// 使用
-const debouncedSearch = debounce((query) => {
-  console.log('搜索:', query);
-}, 300);
-```
-
-### 5.9 `this` 绑定规则
-
-```javascript
-// 默认绑定：独立函数调用
-function showThis() {
-  console.log(this);
-}
-showThis(); // window（严格模式下 undefined）
-
-// 隐式绑定：作为对象方法调用
-const obj = {
-  name: 'Alice',
-  show: function () {
-    console.log(this.name);
-  },
-};
-obj.show(); // 'Alice'
-
-// 隐式丢失：回调中 this 指向变化
-const { show } = obj;
-show(); // undefined（严格模式 TypeError）
-
-// 显式绑定：call/apply
-function greet(greeting) {
-  console.log(`${greeting}, ${this.name}!`);
-}
-const person = { name: 'Bob' };
-greet.call(person, 'Hello');   // 'Hello, Bob!'
-greet.apply(person, ['Hello']); // 'Hello, Bob!'
-
-// 硬绑定：bind
-const boundGreet = greet.bind(person, 'Hi');
-boundGreet(); // 'Hi, Bob!'
-
-// new 绑定：构造函数
-function Person(name) {
-  this.name = name;
-}
-const p = new Person('Carol');
-console.log(p.name); // 'Carol'
-```
-
-### 5.10 箭头函数的 `this`
-
-```javascript
-// 箭头函数继承外层 this
-const obj = {
-  name: 'Alice',
-  methods: function () {
-    // 普通函数回调：this 丢失
-    setTimeout(function () {
-      console.log(this.name); // undefined（严格模式 TypeError）
-    }, 100);
-
-    // 箭头函数回调：继承外层 this
-    setTimeout(() => {
-      console.log(this.name); // 'Alice'
-    }, 100);
-  },
-};
-
-obj.methods();
-
-// 箭头函数无法用 call/apply/bind 改变 this
-const arrowFunc = () => console.log(this);
-arrowFunc.call({ name: 'X' }); // 仍是定义时的 this
-```
-
-### 5.11 高阶函数
-
-```javascript
-// map：对每个元素应用函数
-const numbers = [1, 2, 3, 4, 5];
-const doubled = numbers.map((n) => n * 2);
-console.log(doubled); // [2, 4, 6, 8, 10]
-
-// filter：保留满足条件的元素
-const evens = numbers.filter((n) => n % 2 === 0);
-console.log(evens); // [2, 4]
-
-// reduce：归约
-const sum = numbers.reduce((acc, n) => acc + n, 0);
-console.log(sum); // 15
-
-// compose：从右向左组合函数
-function compose(...fns) {
-  return (x) => fns.reduceRight((acc, fn) => fn(acc), x);
-}
-
-const addOne = (x) => x + 1;
-const square = (x) => x * x;
-const addOneThenSquare = compose(square, addOne);
-console.log(addOneThenSquare(3)); // 16
-
-// pipe：从左向右组合
-function pipe(...fns) {
-  return (x) => fns.reduce((acc, fn) => fn(acc), x);
-}
-
-const squareThenAddOne = pipe(square, addOne);
-console.log(squareThenAddOne(3)); // 10
-```
-
-### 5.12 柯里化
-
-```javascript
-// 手写柯里化函数
-function curry(fn) {
-  return function curried(...args) {
-    // 参数足够则调用原函数
-    if (args.length >= fn.length) {
-      return fn.apply(this, args);
-    }
-    // 参数不足则返回新函数等待剩余参数
-    return function (...args2) {
-      return curried.apply(this, [...args, ...args2]);
-    };
-  };
-}
-
-// 使用
-const add = (a, b, c) => a + b + c;
-const curriedAdd = curry(add);
-console.log(curriedAdd(1)(2)(3));    // 6
-console.log(curriedAdd(1, 2)(3));    // 6
-console.log(curriedAdd(1)(2, 3));    // 6
-console.log(curriedAdd(1, 2, 3));    // 6
-
-// 实际应用：参数复用
-const log = curry((level, time, message) => {
-  console.log(`[${level}] ${time}: ${message}`);
-});
-
-const errorLog = log('ERROR');
-const errorLogNow = errorLog(new Date().toISOString());
-errorLogNow('数据库连接失败');
-```
-
-### 5.13 偏应用
-
-```javascript
-// 偏应用：固定部分参数，返回新函数
-function partial(fn, ...presetArgs) {
-  return function (...laterArgs) {
-    return fn.apply(this, [...presetArgs, ...laterArgs]);
-  };
-}
-
-const add = (a, b, c) => a + b + c;
-const add10 = partial(add, 10);
-console.log(add10(20, 30)); // 60
-
-// 与柯里化的区别：柯里化逐个参数，偏应用一次固定多个
-```
-
-### 5.14 记忆化
-
-```javascript
-// 记忆化：缓存函数结果，加速重复计算
-function memoize(fn) {
-  const cache = new Map();
-  return function (...args) {
-    const key = JSON.stringify(args);
-    if (cache.has(key)) {
-      return cache.get(key);
-    }
-    const result = fn.apply(this, args);
-    cache.set(key, result);
-    return result;
-  };
-}
-
-// 斐波那契数列：未记忆化 O(2^n)，记忆化 O(n)
-const fib = memoize(function (n) {
-  if (n < 2) return n;
-  return fib(n - 1) + fib(n - 2);
-});
-
-console.log(fib(40)); // 102334155（瞬间返回）
-```
-
-### 5.15 生成器函数
-
-```javascript
-// 生成器：可暂停的函数，用 yield 返回值
-function* idGenerator() {
-  let id = 1;
-  while (true) {
-    yield id++;
-  }
-}
-
-const gen = idGenerator();
-console.log(gen.next().value); // 1
-console.log(gen.next().value); // 2
-console.log(gen.next().value); // 3
-
-// 生成器实现迭代器
-function* range(start, end, step = 1) {
-  for (let i = start; i < end; i += step) {
-    yield i;
-  }
-}
-
-for (const n of range(0, 5)) {
-  console.log(n); // 0, 1, 2, 3, 4
-}
-
-// 无限序列：惰性求值
-function* naturalNumbers() {
-  let n = 1;
-  while (true) yield n++;
-}
-
-const naturals = naturalNumbers();
-console.log(naturals.next().value); // 1
-console.log(naturals.next().value); // 2
-```
-
-### 5.16 IIFE（立即调用函数表达式）
-
-```javascript
-// IIFE：创建独立作用域，避免污染全局
-(function () {
-  const privateVar = '私有';
-  console.log(privateVar);
-})();
-
-// 现代替代方案：块级作用域
-{
-  const privateVar = '私有';
-  console.log(privateVar);
-}
-
-// IIFE 用于模块化（已被 ES Module 替代）
-const counter = (function () {
-  let count = 0;
-  return {
-    next: () => ++count,
-    reset: () => (count = 0),
-  };
-})();
-
-console.log(counter.next()); // 1
-console.log(counter.next()); // 2
-```
-
-### 5.17 尾调用与尾递归
-
-```javascript
-// 普通递归：可能栈溢出
-function factorial(n) {
-  if (n <= 1) return 1;
-  return n * factorial(n - 1); // 不是尾调用：乘法在递归后
-}
-// factorial(100000); // RangeError: Maximum call stack size exceeded
-
-// 尾递归：可用 TCO 优化
-function factorialTail(n, acc = 1) {
-  if (n <= 1) return acc;
-  return factorialTail(n - 1, n * acc); // 尾调用
-}
-console.log(factorialTail(100000)); // Infinity（数值溢出但无栈溢出）
-
-// 严格模式下 Safari 支持 TCO
-// 'use strict';
-```
-
-## 6. 对比分析
-
-### 6.1 函数声明 vs 函数表达式 vs 箭头函数
-
-| 维度 | 函数声明 | 函数表达式 | 箭头函数 |
-| --- | --- | --- | --- |
-| 提升 | 是（包括函数体） | 仅变量声明 | 仅变量声明 |
-| `this` | 动态绑定 | 动态绑定 | 词法继承 |
-| `arguments` | 有 | 有 | 无 |
-| `prototype` | 有 | 有 | 无 |
-| 可作构造函数 | 是 | 是 | 否 |
-| `super` | 有（仅方法） | 有（仅方法） | 词法继承 |
-| 适用场景 | 顶层函数 | 回调 | 短回调 |
-
-### 6.2 var vs let vs const
-
-| 维度 | var | let | const |
-| --- | --- | --- | --- |
-| 作用域 | 函数 | 块 | 块 |
-| 提升 | 是（值为 undefined） | 是（TDZ） | 是（TDZ） |
-| 重复声明 | 允许 | 禁止 | 禁止 |
-| 重新赋值 | 允许 | 允许 | 禁止 |
-| 全局对象属性 | 是（window.x） | 否 | 否 |
-
-### 6.3 闭包 vs 类
-
-| 维度 | 闭包 | 类 |
-| --- | --- | --- |
-| 私有化 | 天然支持 | 需 # 私有字段 |
-| 方法绑定 | 自动绑定 | 需 bind 或箭头函数 |
-| 继承 | 通过原型链 | extends 关键字 |
-| 性能 | 每实例一份方法 | 方法在原型上共享 |
-| 内存 | 每实例一份闭包 | 方法共享，省内存 |
-
-### 6.4 call vs apply vs bind
-
-| 方法 | 参数形式 | 立即执行 | 永久绑定 |
-| --- | --- | --- | --- |
-| `call(this, arg1, arg2)` | 散列 | 是 | 否 |
-| `apply(this, [args])` | 数组 | 是 | 否 |
-| `bind(this, arg1, arg2)` | 散列 | 否（返回新函数） | 是 |
-
-### 6.5 柯里化 vs 偏应用
-
-| 维度 | 柯里化 | 偏应用 |
-| --- | --- | --- |
-| 参数传递 | 一次一个 | 一次多个 |
-| 链长度 | 等于参数个数 | 1 |
-| 适用场景 | 参数复用 | 固定配置 |
-
-## 7. 常见陷阱与反模式
-
-### 7.1 循环中 var 闭包变量共享
-
-```javascript
-// 反模式：var 在循环中创建闭包
-for (var i = 0; i < 5; i++) {
-  setTimeout(function () {
-    console.log(i); // 输出: 5, 5, 5, 5, 5
-  }, 100);
-}
-
-// 根因：var 是函数作用域，5 个闭包共享同一个 i
-
-// 修复 1：使用 let
-for (let i = 0; i < 5; i++) {
-  setTimeout(() => console.log(i), 100); // 0, 1, 2, 3, 4
-}
-
-// 修复 2：IIFE 创建独立作用域
-for (var i = 0; i < 5; i++) {
-  (function (j) {
-    setTimeout(() => console.log(j), 100); // 0, 1, 2, 3, 4
-  })(i);
-}
-```
-
-### 7.2 闭包导致内存泄漏
-
-```javascript
-// 反模式：闭包持有大对象
-function badClosure() {
-  const hugeData = new Array(1e6).fill('*');
-  return function () {
-    console.log('仅用了 hugeData.length');
-    // 即使不用 hugeData 的内容，引擎仍可能保留它
-  };
-}
-
-// 修复：仅保留需要的部分
-function goodClosure() {
-  const hugeData = new Array(1e6).fill('*');
-  const length = hugeData.length; // 仅保留 length
-  return function () {
-    console.log(length); // hugeData 可被 GC
-  };
-}
-```
-
-### 7.3 箭头函数误用为对象方法
-
-```javascript
-// 反模式：箭头函数作为对象方法，this 不指向对象
-const obj = {
-  name: 'Alice',
-  greet: () => {
-    console.log(this.name); // undefined
-  },
-};
-obj.greet();
-
-// 根因：箭头函数 this 继承外层，外层是模块作用域，this 是 undefined
-
-// 修复：使用普通函数
-const obj2 = {
-  name: 'Alice',
-  greet() {
-    console.log(this.name); // 'Alice'
-  },
-};
-obj2.greet();
-```
-
-### 7.4 箭头函数误用为构造函数
-
-```javascript
-// 反模式：箭头函数无法用 new 调用
-const Person = (name) => {
-  this.name = name;
-};
-
-// new Person('Alice'); // TypeError: Person is not a constructor
-
-// 修复：使用普通函数或类
-function Person(name) {
-  this.name = name;
-}
-const p = new Person('Alice');
-
-// 或使用 class
-class Person2 {
-  constructor(name) {
-    this.name = name;
-  }
-}
-```
-
-### 7.5 闭包中的 this 丢失
-
-```javascript
-// 反模式：回调中 this 丢失
-class Counter {
-  constructor() {
-    this.count = 0;
-  }
-  start() {
-    setInterval(function () {
-      this.count++; // TypeError: Cannot read property 'count' of undefined
-      console.log(this.count);
-    }, 1000);
-  }
-}
-
-// 修复 1：箭头函数
-start() {
-  setInterval(() => {
-    this.count++;
-    console.log(this.count);
-  }, 1000);
-}
-
-// 修复 2：bind
-start() {
-  setInterval(
-    function () {
-      this.count++;
-      console.log(this.count);
-    }.bind(this),
-    1000
-  );
-}
-
-// 修复 3：保存 this 引用
-start() {
-  const self = this;
-  setInterval(function () {
-    self.count++;
-    console.log(self.count);
-  }, 1000);
-}
-```
-
-### 7.6 闭包捕获循环变量（ES5 风格）
-
-```javascript
-// 反模式：经典面试题
-for (var i = 1; i <= 3; i++) {
-  setTimeout(function () {
-    console.log(i); // 4, 4, 4
-  }, i * 1000);
-}
-
-// 用户期望：1, 2, 3（间隔 1 秒）
-// 实际：4, 4, 4（在 1 秒后打印 3 个 4）
-
-// 修复 1：let
-for (let i = 1; i <= 3; i++) {
-  setTimeout(() => console.log(i), i * 1000);
-}
-
-// 修复 2：IIFE
-for (var i = 1; i <= 3; i++) {
-  (function (j) {
-    setTimeout(() => console.log(j), j * 1000);
-  })(i);
-}
-```
-
-### 7.7 默认参数的 falsy 陷阱
-
-```javascript
-// 反模式：用 || 作为默认值
-function greet(name) {
-  name = name || 'Guest'; // 空字符串、0、false 都会变成 'Guest'
-  console.log(name);
-}
-greet(''); // 'Guest'（错误：用户传入空字符串应保留）
-
-// 修复：使用默认参数
-function greet(name = 'Guest') {
-  console.log(name);
-}
-greet(''); // ''（正确）
-greet();    // 'Guest'
-```
-
-### 7.8 arguments 误用
-
-```javascript
-// 反模式：直接修改 arguments
-function badSum() {
-  arguments[0] = 10; // 修改 arguments 不会同步到形参（严格模式下）
-  return arguments[0] + arguments[1];
-}
-
-// 修复：使用剩余参数
-function goodSum(...args) {
-  args[0] = 10;
-  return args[0] + args[1];
-}
-
-// 反模式：将 arguments 作为数组传递
-function badCall() {
-  otherFunc(arguments); // 传递的是类数组对象，不是数组
-}
-
-// 修复：展开或转换
-function goodCall() {
-  otherFunc(...arguments);
-  // 或
-  otherFunc(Array.from(arguments));
-}
-```
-
-### 7.9 闭包引发 React Hooks 陷阱
-
-```javascript
-// 反模式：React useEffect 中的闭包陷阱
-function Counter() {
-  const [count, setCount] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      // 闭包捕获了 count 的初始值 0，永远显示 1
-      setCount(count + 1);
-    }, 1000);
-    return () => clearInterval(id);
-  }, []); // 依赖数组为空，闭包固定 count=0
-}
-
-// 修复 1：依赖数组加入 count
-useEffect(() => {
-  const id = setInterval(() => setCount(count + 1), 1000);
-  return () => clearInterval(id);
-}, [count]);
-
-// 修复 2：使用函数式更新
-useEffect(() => {
-  const id = setInterval(() => setCount((c) => c + 1), 1000);
-  return () => clearInterval(id);
-}, []);
-```
-
-## 8. 工程实践
-
-### 8.1 函数式工具库
-
-```javascript
-/**
- * 函数式工具库：生产级实现
- */
-const F = {
-  // compose：从右向左组合
-  compose: (...fns) => (x) => fns.reduceRight((acc, fn) => fn(acc), x),
-
-  // pipe：从左向右组合
-  pipe: (...fns) => (x) => fns.reduce((acc, fn) => fn(acc), x),
-
-  // curry：柯里化
-  curry: function curry(fn) {
-    return function curried(...args) {
-      if (args.length >= fn.length) return fn.apply(this, args);
-      return (...args2) => curried.apply(this, [...args, ...args2]);
-    };
-  },
-
-  // partial：偏应用
-  partial: (fn, ...preset) => (...later) => fn(...preset, ...later),
-
-  // memoize：记忆化
-  memoize: (fn, keyFn = JSON.stringify) => {
-    const cache = new Map();
-    return (...args) => {
-      const key = keyFn(args);
-      if (!cache.has(key)) cache.set(key, fn(...args));
-      return cache.get(key);
-    };
-  },
-
-  // once：仅执行一次
-  once: (fn) => {
-    let called = false;
-    let result;
-    return (...args) => {
-      if (called) return result;
-      called = true;
-      result = fn(...args);
-      return result;
-    };
-  },
-
-  // debounce：防抖
-  debounce: (fn, delay) => {
-    let timer;
-    return (...args) => {
-      clearTimeout(timer);
-      timer = setTimeout(() => fn(...args), delay);
-    };
-  },
-
-  // throttle：节流
-  throttle: (fn, limit) => {
-    let inThrottle = false;
-    return (...args) => {
-      if (!inThrottle) {
-        fn(...args);
-        inThrottle = true;
-        setTimeout(() => (inThrottle = false), limit);
-      }
-    };
-  },
-};
-
-// 使用示例
-const addLog = F.pipe(
-  (x) => x + 1,
-  (x) => x * 2,
-  (x) => console.log(x)
-);
-addLog(3); // 8
-```
-
-### 8.2 私有化封装
-
-```javascript
-// 方案 1：闭包
-function createCounter() {
-  let count = 0;
-  return {
-    increment: () => ++count,
-    decrement: () => --count,
-    get: () => count,
-  };
-}
-
-// 方案 2：WeakMap（用于类）
-const privateData = new WeakMap();
-
-class Counter {
-  constructor() {
-    privateData.set(this, { count: 0 });
-  }
-  increment() {
-    privateData.get(this).count++;
-  }
-  get count() {
-    return privateData.get(this).count;
-  }
-}
-
-// 方案 3：私有字段（ES2022+）
-class Counter2 {
-  #count = 0;
-  increment() {
-    this.#count++;
-  }
-  get count() {
-    return this.#count;
-  }
-}
-```
-
-### 8.3 状态机实现
-
-```javascript
-/**
- * 基于闭包的状态机
- * 适用于 UI 状态、协议解析等场景
- */
-function createMachine(initialState, transitions) {
-  let state = initialState;
-  let context = {};
-
-  return {
-    send: (event, payload) => {
-      const transition = transitions[state]?.[event];
-      if (transition) {
-        context = { ...context, ...payload };
-        state = typeof transition.target === 'function'
-          ? transition.target(context)
-          : transition.target;
-        transition.action?.(context);
-        return true;
-      }
-      return false;
-    },
-    getState: () => state,
-    getContext: () => context,
-  };
-}
-
-// 使用：登录状态机
-const authMachine = createMachine('loggedOut', {
-  loggedOut: {
-    login: { target: 'loggingIn', action: (ctx) => console.log('开始登录', ctx) },
-  },
-  loggingIn: {
-    success: { target: 'loggedIn' },
-    failure: { target: 'loggedOut' },
-  },
-  loggedIn: {
-    logout: { target: 'loggedOut' },
-  },
-});
-
-authMachine.send('login', { user: 'Alice' });
-console.log(authMachine.getState()); // 'loggingIn'
-authMachine.send('success');
-console.log(authMachine.getState()); // 'loggedIn'
-```
-
-## 9. 案例研究
-
-### 9.1 案例：Redux 的 createStore 实现
-
-Redux 的核心 `createStore` 是闭包的典型应用：
-
-```javascript
-/**
- * 简化版 Redux createStore
- * 演示闭包如何封装私有状态
- */
-function createStore(reducer, initialState) {
-  let state = initialState;
-  const listeners = [];
-
-  function getState() {
-    return state;
-  }
-
-  function dispatch(action) {
-    state = reducer(state, action);
-    // 通知所有订阅者
-    listeners.forEach((fn) => fn());
-    return action;
-  }
-
-  function subscribe(listener) {
-    listeners.push(listener);
-    // 返回取消订阅函数（也是闭包）
-    return () => {
-      const idx = listeners.indexOf(listener);
-      if (idx > -1) listeners.splice(idx, 1);
-    };
-  }
-
-  // 初始化状态
-  dispatch({ type: '@@INIT' });
-
-  return { getState, dispatch, subscribe };
-}
-
-// 使用
-function counterReducer(state = { count: 0 }, action) {
-  switch (action.type) {
-    case 'INCREMENT':
-      return { count: state.count + 1 };
-    case 'DECREMENT':
-      return { count: state.count - 1 };
-    default:
-      return state;
-  }
-}
-
-const store = createStore(counterReducer);
-const unsubscribe = store.subscribe(() => {
-  console.log('新状态:', store.getState());
-});
-
-store.dispatch({ type: 'INCREMENT' }); // 日志：新状态: { count: 1 }
-store.dispatch({ type: 'INCREMENT' }); // 日志：新状态: { count: 2 }
-unsubscribe();
-store.dispatch({ type: 'INCREMENT' }); // 无日志
-```
-
-### 9.2 案例：Vue 3 reactive 实现原理
-
-Vue 3 的响应式系统基于 Proxy + 闭包：
-
-```javascript
-/**
- * 简化版 Vue 3 reactive
- * 演示闭包在依赖收集中的应用
- */
-const targetMap = new WeakMap();
-let activeEffect = null;
-
-function effect(fn) {
-  activeEffect = fn;
-  fn(); // 触发依赖收集
-  activeEffect = null;
-}
-
-function track(target, key) {
-  if (!activeEffect) return;
-  let depsMap = targetMap.get(target);
-  if (!depsMap) {
-    depsMap = new Map();
-    targetMap.set(target, depsMap);
-  }
-  let dep = depsMap.get(key);
-  if (!dep) {
-    dep = new Set();
-    depsMap.set(key, dep);
-  }
-  dep.add(activeEffect);
-}
-
-function trigger(target, key) {
-  const depsMap = targetMap.get(target);
-  if (!depsMap) return;
-  const dep = depsMap.get(key);
-  if (dep) dep.forEach((fn) => fn());
-}
-
-function reactive(target) {
-  return new Proxy(target, {
-    get(obj, key) {
-      track(obj, key);
-      return Reflect.get(obj, key);
-    },
-    set(obj, key, value) {
-      const result = Reflect.set(obj, key, value);
-      trigger(obj, key);
-      return result;
-    },
-  });
-}
-
-// 使用
-const state = reactive({ count: 0 });
-effect(() => {
-  console.log('count 变化:', state.count);
-});
-state.count = 1; // 日志：count 变化: 1
-state.count = 2; // 日志：count 变化: 2
-```
-
-### 9.3 案例：异步流程控制
-
-基于闭包实现 Promise 链式调用：
-
-```javascript
-/**
- * 简化版 Promise 实现
- * 演示闭包在异步控制流中的应用
- */
-class MyPromise {
-  constructor(executor) {
-    this.state = 'pending';
-    this.value = undefined;
-    this.callbacks = [];
-
-    const resolve = (value) => {
-      if (this.state !== 'pending') return;
-      this.state = 'fulfilled';
-      this.value = value;
-      this.callbacks.forEach((cb) => cb.onFulfilled(value));
-    };
-
-    const reject = (reason) => {
-      if (this.state !== 'pending') return;
-      this.state = 'rejected';
-      this.value = reason;
-      this.callbacks.forEach((cb) => cb.onRejected(reason));
-    };
-
-    try {
-      executor(resolve, reject);
-    } catch (e) {
-      reject(e);
-    }
-  }
-
-  then(onFulfilled, onRejected) {
-    return new MyPromise((resolve, reject) => {
-      const handle = (callback, value, fallback) => {
-        try {
-          const result = callback ? callback(value) : fallback(value);
-          if (result instanceof MyPromise) {
-            result.then(resolve, reject);
-          } else {
-            resolve(result);
-          }
-        } catch (e) {
-          reject(e);
-        }
-      };
-
-      if (this.state === 'fulfilled') {
-        handle(onFulfilled, this.value, resolve);
-      } else if (this.state === 'rejected') {
-        handle(onRejected, this.value, reject);
-      } else {
-        this.callbacks.push({
-          onFulfilled: (v) => handle(onFulfilled, v, resolve),
-          onRejected: (r) => handle(onRejected, r, reject),
-        });
-      }
-    });
-  }
-
-  catch(onRejected) {
-    return this.then(null, onRejected);
-  }
-}
-```
-
-### 10.1 基础题
-
-**题目 1**：解释以下代码输出，并说明原因。
-
-```javascript
-var a = 1;
-function foo() {
-  console.log(a);
-  var a = 2;
-  console.log(a);
-}
-foo();
-```
-
-参考要点：
-- 第一次输出 `undefined`（var 提升，赋值未执行）
-- 第二次输出 `2`
-- 函数作用域内的 `var a` 覆盖了外层，但仍能访问到（在赋值前打印）
-
-**题目 2**：用闭包实现一个单例模式。
-
-参考要点：
-- 用 IIFE 创建闭包，保存 instance
-- 返回获取 instance 的函数
-- 第二次调用返回缓存的 instance
-
-### 10.2 进阶题
-
-**题目 3**：实现一个 `once(fn)` 高阶函数，使 fn 仅执行一次，后续调用返回第一次的结果。
-
-参考要点：
-- 用闭包保存 `called` 标志与 `result`
-- 第一次调用执行 fn 并缓存
-- 后续直接返回缓存
-
-**题目 4**：分析以下代码在严格模式与非严格模式下的差异：
-
-```javascript
-function outer() {
-  'use strict';
-  function inner() {
-    console.log(this);
-  }
-  inner();
-}
-outer();
-```
-
-参考要点：
-- 严格模式下 `inner()` 的 `this` 是 `undefined`
-- 非严格模式下 `this` 是 `globalThis`
-- 解释：默认绑定在严格模式下指向 undefined
-
-### 10.3 挑战题
-
-**题目 5**：实现 `curry(fn)` 函数，支持以下用法：
-
-```javascript
-const sum = curry((a, b, c, d) => a + b + c + d);
-sum(1)(2)(3)(4); // 10
-sum(1, 2)(3, 4); // 10
-sum(1, 2, 3, 4); // 10
-sum(1)(2, 3, 4); // 10
-```
-
-参考要点：
-- 用闭包保存已收集的参数
-- 检查参数总数是否达到 `fn.length`
-- 达到则调用，否则返回新函数继续收集
-
-**题目 6**：分析 React Hooks 的"闭包陷阱"原因，并给出至少 3 种解决方案。
-
-参考要点：
-- 原因：useEffect 的回调闭包捕获了渲染时的 state，更新后回调仍引用旧值
-- 方案 1：依赖数组加入依赖项
-- 方案 2：使用 useRef 保存最新值
-- 方案 3：使用函数式更新 `setState(prev => prev + 1)`
-- 方案 4：使用 useReducer 集中状态管理
-- 方案 5：在 effect 内重新订阅
-
-**题目 7**：解释为什么以下代码不会栈溢出（在支持 TCO 的引擎下）：
-
-```javascript
-function sum(n, acc = 0) {
-  if (n === 0) return acc;
-  return sum(n - 1, acc + n);
-}
-sum(1000000);
-```
-
-参考要点：
-- 最后一步是 `sum(n-1, acc+n)`，是尾调用
-- TCO 复用栈帧，栈空间为 O(1)
-- V8 暂未实现 TCO，Safari 已实现
-- 非严格模式下 V8 也不实现，需 `'use strict'`
-
-### 12.1 官方文档
-
-- [MDN - Functions](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Functions)
-- [MDN - Closures](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Closures)
-- [MDN - this](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Operators/this)
-- [TC39 Proposals](https://github.com/tc39/proposals)
-
-### 12.2 经典教材与论文
-
-- Kyle Simpson. *You Don't Know JS* 系列（6 卷）
-- Douglas Crockford. *JavaScript: The Good Parts*
-- Axel Rauschmayer. *Speaking JavaScript*
-- Brendan Eich. "JavaScript at Ten Years"（2005 演讲）
-- Dean Tribble. "Closures and State in JavaScript"（2018 OOPSLA）
-
-### 12.3 函数式编程方向
-
-- Brian Lonsdorf. *Professor Frisby's Mostly Adequate Guide to Functional Programming*
-- Miran Lipovača. *Learn You a Haskell for Great Good!*
-- Simon Peyton Jones. *The Implementation of Functional Programming Languages*
-
-### 12.4 引擎实现方向
-
-- [V8 Blog - Understanding ECMAScript](https://v8.dev/blog)
-- [SpiderMonkey Internals](https://spidermonkey.dev/)
-- [JavaScriptCore Source](https://github.com/WebKit/WebKit/tree/main/Source/JavaScriptCore)
-
-## 13. 附录
-
-### 13.1 函数定义方式速查
-
-| 方式 | 语法 | 提升 | this | arguments |
-| --- | --- | --- | --- | --- |
-| 函数声明 | `function f() {}` | 是 | 动态 | 有 |
-| 函数表达式 | `const f = function() {}` | 否 | 动态 | 有 |
-| 命名函数表达式 | `const f = function g() {}` | 否 | 动态 | 有 |
-| 箭头函数 | `const f = () => {}` | 否 | 词法 | 无 |
-| 方法简写 | `const obj = { f() {} }` | 否 | 动态 | 有 |
-| 生成器 | `function* f() {}` | 是 | 动态 | 有 |
-| 异步函数 | `async function f() {}` | 是 | 动态 | 有 |
-| 异步箭头 | `const f = async () => {}` | 否 | 词法 | 无 |
-| 类构造器 | `class F { constructor() {} }` | 否 | new 绑定 | 无 |
-| Function 构造器 | `new Function('a', 'return a')` | 否 | 动态 | 有 |
-
-### 13.2 `this` 绑定规则速查
-
-| 调用方式 | 示例 | `this` 指向 |
-| --- | --- | --- |
-| 默认调用 | `f()` | globalThis（严格模式 undefined） |
-| 隐式调用 | `obj.f()` | obj |
-| 显式调用 | `f.call(obj)` | obj |
-| 硬绑定 | `f.bind(obj)()` | obj（永久） |
-| new 调用 | `new F()` | 新创建的对象 |
-| 箭头函数 | `() => this` | 外层作用域的 this |
-| DOM 回调 | `btn.onclick = f` | 触发事件的元素 |
-
-### 13.3 作用域查找优先级
-
-1. 内层 `let`/`const`
-2. 内层 `var`
-3. 外层函数作用域
-4. 模块作用域
-5. 全局作用域
-6. 全局对象属性（如 `window.x`，仅未声明时）
-
-### 13.4 闭包应用场景
-
-| 场景 | 描述 |
-| --- | --- |
-| 私有化 | 隐藏内部状态，仅暴露方法 |
-| 模块模式 | IIFE + 闭包封装 |
-| 柯里化 | 多次调用累积参数 |
-| 防抖节流 | 保存定时器 ID |
-| React Hooks | useState 持有状态 |
-| Redux store | 持有 state 与订阅者列表 |
-| 中间件 | next 函数引用 |
-| 单例模式 | 缓存 instance |
-| 事件总线 | 保存订阅者列表 |
-| 状态机 | 持有当前状态与上下文 |
-
-### 13.5 更新日志
-
-- 2026-04-05：初始创建，涵盖函数定义、作用域、闭包、this 基础。
-- 2026-04-05：扩写内容，增加详细的函数定义、作用域、闭包和 this 指向的概念、示例和最佳实践。
-- 2026-07-21：金标准升级，新增形式化定义、理论推导、对比分析、陷阱反模式、案例研究（Redux、Vue3 reactive、Promise 实现）、习题、ACM 参考文献、延伸阅读，覆盖高阶函数、柯里化、偏应用、记忆化、生成器、尾调用优化等函数式编程技术。
-## 函数声明
-
-**基本写法：函数声明**
-`function <函数名>(<参数>) { }`
-```javascript
-// 声明一个函数
-function greet(name) {
-}
-```
-
----
-
-**基本写法：函数表达式**
-`let <变量> = function(<参数>) { };`
-```javascript
-// 将函数赋值给变量
-let greet = function(name) {
-};
-```
-
----
-
-**基本写法：具名函数表达式**
-`let <变量> = function <函数名>(<参数>) { };`
-```javascript
-// 函数表达式带名称用于内部递归
-let factorial = function compute(n) {
-};
-```
-
----
-
-## 箭头函数
-
-**基本写法：箭头函数单参数**
-`<参数> => <表达式>`
-```javascript
-// 单参数箭头函数直接返回
-let square = x => x * x;
-```
-
----
-
-**基本写法：箭头函数多参数**
-`(<参数1>, <参数2>) => <表达式>`
-```javascript
-// 多参数箭头函数直接返回
-let add = (a, b) => a + b;
-```
-
----
-
-**基本写法：箭头函数带函数体**
-`(<参数>) => { <语句> }`
-```javascript
-// 箭头函数带函数体需要 return
-let greet = (name) => {
-    return "Hello, " + name;
-};
-```
-
----
-
-**基本写法：无参数箭头函数**
-`() => <表达式>`
-```javascript
-// 无参数箭头函数
-let getRandom = () => Math.random();
-```
-
----
-
-**基本写法：箭头函数返回对象**
-`(<参数>) => ({ <属性>: <值> })`
-```javascript
-// 箭头函数直接返回对象字面量
-let createUser = (name) => ({ name: name, age: 0 });
-```
-
----
-
-## 参数处理
-
-**基本写法：默认参数**
-`function <函数名>(<参数> = <默认值>) { }`
-```javascript
-// 参数默认值
-function greet(name = "Guest") {
-}
-```
-
----
-
-**基本写法：剩余参数**
-`function <函数名>(...<参数名>) { }`
-```javascript
-// 收集剩余参数为数组
-function sum(...numbers) {
-}
-```
-
----
-
-**基本写法：arguments 对象**
-`arguments[<索引>]`
-```javascript
-// 访问函数的所有参数
-function logArgs() {
-    console.log(arguments[0]);
-}
-```
-
----
-
-## 函数调用
-
-**基本写法：普通调用**
-`<函数名>(<参数>)`
-```javascript
-// 直接调用函数
-greet("Alice");
-```
-
----
-
-**基本写法：call 调用**
-`<函数>.call(<this对象>, <参数1>, <参数2>)`
-```javascript
-// 指定 this 和参数调用函数
-greet.call(obj, "Alice");
-```
-
----
-
-**基本写法：apply 调用**
-`<函数>.apply(<this对象>, [<参数数组>])`
-```javascript
-// 指定 this 和参数数组调用函数
-greet.apply(obj, ["Alice"]);
-```
-
----
-
-**基本写法：bind 绑定**
-`<函数>.bind(<this对象>)`
-```javascript
-// 创建绑定了 this 的新函数
-let boundGreet = greet.bind(obj);
-```
-
----
-
-## 作用域
-
-**基本写法：全局作用域**
-`let <变量> = <值>;`
-```javascript
-// 在全局声明的变量
-let globalVar = 10;
-```
-
----
-
-**基本写法：函数作用域**
-`function <函数>() { var <变量> = <值>; }`
-```javascript
-// var 声明的变量为函数级作用域
-function test() {
-    var functionVar = 10;
-}
-```
-
----
-
-**基本写法：块级作用域**
-`{ let <变量> = <值>; }`
-```javascript
-// let 声明的变量为块级作用域
-{
-    let blockVar = 10;
-}
-```
-
----
-
-## 闭包
-
-**基本写法：闭包基本结构**
-`function <外部函数>() { let <变量>; return function() { }; }`
-```javascript
-// 内部函数访问外部函数的变量
-function createCounter() {
-    let count = 0;
-    return function() {
-        count++;
-    };
-}
-```
-
----
-
-**基本写法：使用闭包**
-`let <变量> = <外部函数>();`
-```javascript
-// 创建闭包并使用
-let counter = createCounter();
-counter();
-```
-
----
-
-**基本写法：闭包工厂**
-`function <工厂>(<配置>) { return function(<参数>) { }; }`
-```javascript
-// 闭包实现工厂函数
-function createMultiplier(factor) {
-    return function(number) {
-        return number * factor;
-    };
-}
-```
-
----
-
-**基本写法：模块模式**
-`const <模块> = (function() { let <私有变量>; return { <方法> }; })();`
-```javascript
-// 闭包实现模块模式
-const counter = (function() {
-    let count = 0;
-    return {
-        increment: function() { count++; }
-    };
-})();
-```
-
----
-
-## 递归
-
-**基本写法：递归结构**
-`function <函数名>(<参数>) { if (<基准条件>) return <基准值>; return <函数名>(<修改参数>); }`
-```javascript
-// 递归函数基本结构
-function factorial(n) {
-    if (n <= 1) return 1;
-    return n * factorial(n - 1);
-}
-```
-
----
-
-**基本写法：斐波那契递归**
-`function fibonacci(<参数>)`
-```javascript
-// 斐波那契数列递归实现
-function fibonacci(n) {
-    if (n <= 1) return n;
-    return fibonacci(n - 1) + fibonacci(n - 2);
+  return inner;
 }
+const speak = outer();
+speak();
 ```
-
----
 
-## 高阶函数
+这题同时考作用域链与闭包：`inner` 的 `name` 找到的是哪一个？为什么 `outer` 执行完了还找得到？
 
-**基本写法：函数作为参数**
-`function <函数>(<回调函数>) { <回调函数>(); }`
-```javascript
-// 接受函数作为参数
-function execute(callback) {
-    callback();
-}
-```
+修改题（10 分钟）：给 `checkout` 加参数 `discount`，调用时分别传 `0.9` 与 `0.85`，验证同一份代码出两套价格。再想一步：折扣该作参数传进来还是写死？说出取舍理由。
 
----
+修 Bug 题（15 分钟）：下面的代码想把结算金额保留两位小数再拼接，运行真实报错。按三步定位并修复（提示：问题出在对谁调用了 `toFixed`）：
 
-**基本写法：函数作为返回值**
-`function <函数>() { return function() { }; }`
 ```javascript
-// 返回函数作为结果
-function getHandler() {
-    return function() {
-    };
+function checkout(price) {
+  return price * 0.9 + 5;
 }
-```
-
----
-
-## 立即执行函数
-
-**基本写法：IIFE**
-`(function() { })();`
-```javascript
-// 立即执行函数表达式
-(function() {
-})();
-```
-
----
 
-**基本写法：带参数 IIFE**
-`(function(<参数>) { })(<值>);`
-```javascript
-// 带参数的立即执行函数
-(function(name) {
-})( "Alice");
+const checkoutMsg = checkout(80) + ' 元';
+console.log(checkoutMsg.toFixed(2));
 ```
 
----
+真实报错：
 
-**基本写法：箭头函数 IIFE**
-`(() => { })();`
-```javascript
-// 箭头函数立即执行
-(() => {
-})();
+```text
+TypeError: checkoutMsg.toFixed is not a function
 ```
-
----
 
-## this 关键字
+挑战题（半小时，不给代码）：写 `average(...scores)` 返回平均分。验收断言（`console.assert(条件, '失败提示')`，条件不成立才输出）：
 
-**基本写法：方法中的 this**
-`<对象>.<方法> = function() { this.<属性>; }`
 ```javascript
-// 方法中 this 指向调用对象
-let obj = {
-    name: "Alice",
-    getName: function() {
-        return this.name;
-    }
-};
+console.assert(average(80, 90, 100) === 90, '平均分应为 90');
+console.assert(average() === 0, '无参数应返回 0');
+console.assert(typeof average(1, 2) === 'number', '返回值必须是数字');
 ```
 
----
+提示分两级：「提示」空参数时 `sum()` 返回 0，除以 0 会得到什么？需要一个判断；「展开」本题断言只用能整除的数据。
 
-**基本写法：箭头函数中的 this**
-`<对象>.<方法> = () => { }`
-```javascript
-// 箭头函数继承外层 this
-let obj = {
-    name: "Alice",
-    getName: () => {
-    }
-};
-```
+## 12. 与之前和之后的知识的关系
 
----
+- 往前：[对象与数组](/javascript/070-ObjectArray) 的玩家数组马上可以交给函数统一结算；[变量与数据类型](/javascript/040-VariableDataType) 的「名字绑定」在作用域链与闭包里全面兑现；
+- 往后：[数组高阶方法](/javascript/090-ArrayHigherOrderMethod) 把函数当参数传给 map/filter；[this 篇](/javascript/100-ThisKeywordDeepDive) 补完箭头函数的另一半；[闭包内存泄漏](/javascript/360-ClosureMemoryLeakOptimization) 接手本篇按下不表的内存话题；[生成器](/javascript/320-GeneratorFunctions) 是「函数可以暂停」的进阶形态。
 
-## 函数属性
-
-**基本写法：函数 length**
-`<函数>.length`
-```javascript
-// 获取函数形参个数
-let paramCount = greet.length;
-```
+## 13. 官方文档
 
----
+- MDN 函数指南：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Functions
+- MDN 闭包：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Closures
+- rest 参数：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Functions/rest_parameters
+- `return` 语句：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/return
 
-**基本写法：函数 name**
-`<函数>.name`
-```javascript
-// 获取函数名称
-let funcName = greet.name;
-```
+## 14. 自我检查
 
----
+- 能不看资料写出「参数进、返回值出」的函数，并说出不写 return 时调用结果是什么；
+- 能解释函数声明与函数表达式的提升差别，并预测两种写法在「先调用后定义」下的命运；
+- 拿到一段嵌套代码，能逐层说出变量查找路径，并解释同名遮蔽；
+- 能现场写出 `createCounter` 并预测它与第二次调用实例的计数行为；
+- 拿到 `TypeError: xxx is not a function`，能说出三步排查，第一步就是 `typeof` 验真身。
 
-## 生成器函数
+## 本章总结
 
-**基本写法：生成器函数声明**
-`function* <函数名>() { yield <值>; }`
-```javascript
-// 声明生成器函数
-function* generator() {
-    yield 1;
-    yield 2;
-}
-```
+函数把一段逻辑打包：数据走参数进、结果走 return 出，同一逻辑只写一遍。函数是值——声明有提升，表达式执行到才存在；箭头函数是表达式家族的短写法，`this` 差别留给 100 篇。变量查找从出生地一层层向外，内层同名会遮蔽外层。返回出去的内层函数记得出生地的变量，这就是闭包——计数器因此能一直数，私有变量因此藏得住。rest 参数用 `...` 把任意个实参收成数组。最常撞的报错是 `xxx is not a function`：名字就在报错里，`typeof` 一验便知真身。
 
----
+## 下一步
 
-**基本写法：使用生成器**
-`let <迭代器> = <生成器函数>();`
-```javascript
-// 创建生成器迭代器
-let gen = generator();
-gen.next();
-```
+进入 [数组高阶方法](/javascript/090-ArrayHigherOrderMethod)：把函数当参数传出去，map 和 filter 会把你写过的「循环 + 判断」变成一行——函数作为值的正式登场。

@@ -1,5 +1,5 @@
 ---
-order: 740
+order: 710
 title: SQL 注入基础与检测
 module: 'mysql'
 category: 数据库
@@ -16,6 +16,10 @@ prerequisites:
   - 'mysql/890-MySQLQuickLookup'
 ---
 
+
+## 阅读前提
+
+本文与后续两篇（攻击类型演练、防御策略）只讨论注入的原理、检测思路与防御。任何注入实验都只在授权环境进行：本地虚拟机、DVWA、sqli-labs 等靶场，或获得书面授权的测试目标；对未授权系统尝试注入属于违法行为。
 
 ## 1. SQL 注入概述 (Overview)
 

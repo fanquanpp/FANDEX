@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 230
 title: 分布式锁与 Redlock
 description: 'Redis 分布式锁：单实例 SET NX PX + 唯一值 + Lua 安全释放、主从切换丢锁场景、Redlock 多数派算法与 Kleppmann/antirez 安全性争议、fencing token 与选型建议。'
 module: 'redis'

@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 30
 title: 序列与自增列
 module: 'postgresql'
 category: 数据库

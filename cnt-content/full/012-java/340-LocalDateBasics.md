@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 270
 title: 日期时间救急锦囊： LocalDate / LocalDateTime / DateTimeFormatter
 module: 'java'
 category: 后端技术
@@ -8,7 +8,6 @@ description: 20 行学会打印当前时间、解析字符串、格式化输出�
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'java/350-JavaTimeFormatting'
   - 'java/180-ExceptionHandlingMechanism'
 prerequisites:
   - 'java/050-DataTypeConversion'

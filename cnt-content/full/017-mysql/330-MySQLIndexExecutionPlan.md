@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 310
 title: MySQL 索引与执行计划
 module: 'mysql'
 category: 数据库

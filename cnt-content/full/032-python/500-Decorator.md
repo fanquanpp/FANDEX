@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 300
 title: 装饰器
 module: 'python'
 category: 后端技术

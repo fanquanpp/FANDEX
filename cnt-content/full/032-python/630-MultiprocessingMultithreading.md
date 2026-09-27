@@ -1,5 +1,5 @@
 ---
-order: 630
+order: 420
 title: 多进程与多线程
 module: 'python'
 category: 后端技术

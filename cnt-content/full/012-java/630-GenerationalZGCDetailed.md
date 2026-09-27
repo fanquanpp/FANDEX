@@ -1,5 +1,5 @@
 ---
-order: 630
+order: 500
 title: 分代 ZGC 详解
 module: 'java'
 category: 后端技术

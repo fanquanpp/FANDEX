@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 170
 title: MyISAM 存储引擎
 module: 'mysql'
 category: 数据库

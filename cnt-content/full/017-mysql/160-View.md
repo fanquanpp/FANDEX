@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 150
 title: 视图：虚拟表与权限的守门人
 module: 'mysql'
 category: 数据库
