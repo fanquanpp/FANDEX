@@ -583,6 +583,11 @@
           "difficulty": "advanced"
         },
         {
+          "id": "java-1020",
+          "title": "Java 毕业项目：控制台任务管理器",
+          "doc": "1020-JavaCapstoneProject"
+        },
+        {
           "id": "java-090",
           "title": "Java与GraalVM",
           "doc": "1000-JavaGraalVM",
