@@ -1,690 +1,353 @@
 ---
 order: 70
-title: 变量与常量
+title: 变量与常量：分数要变，用户名不能变
 module: 'java'
 category: 后端技术
 difficulty: beginner
-description: 变量声明、作用域、常量定义与命名规范。
+description: 以排行榜分数与登录用户名讲透 Java 变量：声明与初始化、花括号作用域、final 常量与 UPPER_CASE、var 类型推断的使用边界、引用变量与 060 装箱的呼应，附 variable might not have been initialized 调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'java/040-ProgramStructureBasicSyntax'
-  - 'java/050-DataTypeConversion'
-  - 'java/370-JavaAnnotationsTutorial'
-  - 'java/410-JavaGenericsTutorial'
+  - 'java/060-WrapperCacheTrap'
+  - 'java/080-OperatorExpression'
+  - 'java/100-MethodDetailed'
+  - 'java/150-OOP'
 prerequisites:
-  - 'java/020-JavaOverviewDevEnv'
+  - 'java/060-WrapperCacheTrap'
 ---
 
 ## 前置知识
 
-- [包装类缓存陷阱救急锦囊](/java/060-WrapperCacheTrap)：建议先完成前一篇的学习
+- 已完成 [包装类缓存陷阱](/java/060-WrapperCacheTrap)：认识 int 与 Integer 的分工、装箱与 equals 的正确姿势——本文第 6 节要在这个地基上盖楼；
+- [程序结构与基本语法](/java/040-ProgramStructureBasicSyntax) 让你见过「名字活在花括号里」的雏形，没读过也不影响，本文会带。
+
+同一幕你在 [python/090](/python/090-VariableConstant) 见过。Java 的不同：类型必须先声明，「不能变」能用关键字变成编译期保证。
 
 ## 学习目标
 
-- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
-- 掌握「1. 变量的概念与分类」的核心机制、典型用法与常见陷阱
-- 掌握「2. 变量的定义与初始化」的核心机制、典型用法与常见陷阱
-- 掌握「3. 变量的作用域与生命周期」的核心机制、典型用法与常见陷阱
-- 掌握「4. 常量」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 区分局部变量、参数、字段的作用域，解释为什么局部变量没有默认值；
+2. 用 final 声明常量，遵守 UPPER_CASE 约定，说出编译期常量合并这一现象；
+3. 判断何时该用 var（Java 10+），复述它的三条限制；
+4. 说出基本类型变量与引用变量各装的是什么，并与 060 的装箱对上号；
+5. 拿到 variable might not have been initialized，能三步定位并修复。
 
-## 0. 本节阅读指引（先读这一节）
+预计 45 到 60 分钟，含 3 组动手实验与 4 道练习。
 
-本篇是「变量与常量」，目标：会声明、初始化变量，理解作用域与 final 常量。
+## 1. 问题引入：排行榜的分数要变，登录的用户名不能变
 
-零基础第一遍只读：
-
-1. 第 1 节 变量的概念与分类、2. 变量的定义与初始化；
-2. 第 3 节 变量的作用域与生命周期、4. 常量、5. var 类型推断。
-
-可跳过：6-7 节（最佳实践与实际应用示例）第一遍浏览；枚举常量细节留到 029 枚举与注解。
-
-> 记住：变量先声明后使用；final 修饰的常量赋值后不可更改。
-
-
-## 1. 变量的概念与分类
-
-### 1.1 变量的概念
-
-变量是内存中存储数据的容器，其值可以在程序运行期间改变。变量具有以下特性：
-
-- **类型**：每个变量都有一个类型，决定了变量可以存储的数据种类和范围。
-- **名称**：变量的标识符，用于在程序中引用变量。
-- **值**：变量存储的具体数据。
-- **作用域**：变量可被访问的代码范围。
-- **生命周期**：变量从创建到销毁的时间段。
-
-### 1.2 变量的分类
-
-根据变量的定义位置和作用域，Java 中的变量可以分为以下几类：
-
-| 类型         | 定义位置                 | 作用域               | 生命周期                               | 默认值               |
-| ------------ | ------------------------ | -------------------- | -------------------------------------- | -------------------- |
-| **局部变量** | 方法、构造器或代码块内部 | 从定义处到所在块结束 | 从定义处到所在块结束                   | 无默认值，必须初始化 |
-| **成员变量** | 类中，方法之外           | 整个类               | 随对象的创建而存在，随对象的销毁而消失 | 有默认值             |
-| **静态变量** | 类中，使用 static 修饰   | 整个类               | 随类的加载而存在，随类的卸载而消失     | 有默认值             |
-
-## 2. 变量的定义与初始化
-
-### 2.1 变量的声明
-
-**语法**：`类型 变量名;`
-**示例**：
+排行榜小游戏有两个数据：分数，每赢一局就涨；用户名，登录后就不该再动。第一版：
 
 ```java
- int age; // 声明一个整型变量
- double salary; // 声明一个双精度浮点型变量
- String name; // 声明一个字符串变量
- boolean isActive; // 声明一个布尔型变量
-```
-
-### 2.2 变量的赋值
-
-**语法**：`变量名 = 值;`
-**示例**：
-
-```java
- age = 18; // 给整型变量赋值
- salary = 5000.50; // 给双精度浮点型变量赋值
- name = "John"; // 给字符串变量赋值
- isActive = true; // 给布尔型变量赋值
-```
-
-### 2.3 变量的声明与初始化
-
-**语法**：`类型 变量名 = 值;`
-**示例**：
-
-```java
- int age = 18; // 声明并初始化整型变量
- double salary = 5000.50; // 声明并初始化双精度浮点型变量
- String name = "John"; // 声明并初始化字符串变量
- boolean isActive = true; // 声明并初始化布尔型变量
-```
-
-### 2.4 多个变量的声明与初始化
-
-**语法**：`类型 变量名1, 变量名2 = 值, 变量名3;`
-**示例**：
-
-```java
- // 声明多个相同类型的变量
- int x, y = 5, z; // x 和 z 未初始化，y 初始化为 5
- // 建议：为了代码可读性，最好每行只声明一个变量
- int a;
- int b = 10;
- int c;
-```
-
-## 3. 变量的作用域与生命周期
-
-### 3.1 局部变量
-
-**定义**：在方法、构造器或代码块内部定义的变量。
-**特点**：
-
-- **作用域**：从定义处开始，到所在代码块结束。
-- **生命周期**：从定义处开始创建，到所在代码块结束时销毁。
-- **默认值**：没有默认值，必须显式初始化后才能使用。
-- **存储位置**：存储在栈内存中。
-  **示例**：
-
-```java
- public void method() {
-  int localVariable = 10; // 局部变量
-  if (localVariable > 5) {
-  int ifVariable = 20; // 局部变量，作用域在 if 块内
-  System.out.println(ifVariable); // 可以访问
-  }
-  // System.out.println(ifVariable); // 错误：ifVariable 超出作用域
-  System.out.println(localVariable); // 可以访问
- }
-```
-
-### 3.2 成员变量
-
-**定义**：在类中定义，方法之外的变量，也称为实例变量。
-**特点**：
-
-- **作用域**：整个类。
-- **生命周期**：随对象的创建而存在，随对象的销毁而消失。
-- **默认值**：有默认值，根据类型不同而不同。
-- **存储位置**：存储在堆内存中。
-  **默认值表**：
-  | 类型                           | 默认值   |
-  | ------------------------------ | -------- |
-  | `byte`, `short`, `int`, `long` | 0        |
-  | `float`, `double`              | 0.0      |
-  | `char`                         | '\u0000' |
-  | `boolean`                      | false    |
-  | 引用类型                       | null     |
-  | **示例**：                     |
-
-```java
- public class Person {
-  // 成员变量
-  String name; // 默认值为 null
-  int age; // 默认值为 0
-  boolean isAdult; // 默认值为 false
-  public void display() {
-  System.out.println("Name: " + name);
-  System.out.println("Age: " + age);
-  System.out.println("Is Adult: " + isAdult);
-  }
- }
- // 使用
- Person person = new Person();
- person.display(); // 输出默认值
- person.name = "John";
- person.age = 30;
- person.isAdult = true;
- person.display(); // 输出赋值后的值
-```
-
-### 3.3 静态变量
-
-**定义**：在类中定义，使用 `static` 关键字修饰的变量，也称为类变量。
-**特点**：
-
-- **作用域**：整个类。
-- **生命周期**：随类的加载而存在，随类的卸载而消失。
-- **默认值**：有默认值，与成员变量相同。
-- **存储位置**：存储在方法区的静态存储区。
-- **共享性**：所有对象共享同一个静态变量。
-  **示例**：
-
-```java
- public class Counter {
-  // 静态变量
-  public static int count = 0;
-  // 构造方法
-  public Counter() {
-  count++; // 每次创建对象时，count 加 1
-  }
-  public static void main(String[] args) {
-  Counter c1 = new Counter();
-  System.out.println("Count: " + Counter.count); // 输出 1
-  Counter c2 = new Counter();
-  System.out.println("Count: " + Counter.count); // 输出 2
-  Counter c3 = new Counter();
-  System.out.println("Count: " + Counter.count); // 输出 3
-  }
- }
-```
-
-## 4. 常量
-
-### 4.1 常量的概念
-
-常量是指在程序运行期间其值不可更改的量。常量可以提高代码的可读性和可维护性。
-
-### 4.2 字面常量
-
-字面常量是直接在代码中出现的常量值，包括以下类型：
-
-| 类型           | 示例                      | 说明                             |
-| -------------- | ------------------------- | -------------------------------- |
-| **整数常量**   | `100`, `123L`, `0xFF`     | 十进制、长整型、十六进制         |
-| **浮点常量**   | `3.14`, `3.14F`, `2.5e3`  | 双精度、单精度、科学计数法       |
-| **字符常量**   | `'A'`, `'\n'`, `'\u0041'` | 普通字符、转义字符、Unicode 字符 |
-| **字符串常量** | `"Hello"`, `"Java 17"`    | 字符串                           |
-| **布尔常量**   | ``, `false`               | 布尔值                           |
-| **空常量**     | `null`                    | 空引用                           |
-
-### 4.3 final 常量
-
-使用 `final` 关键字修饰的变量，一旦赋值，其值不可更改。
-**特点**：
-
-- **不可修改**：一旦赋值，就不能再修改。
-- **命名规范**：全大写，单词之间用下划线分隔。
-- **初始化**：必须在声明时或构造方法中初始化。
-  **示例**：
-
-```java
- // 类级别的 final 常量
- public static final double PI = 3.1415926535;
- public static final int MAX_SIZE = 100;
- // 实例级别的 final 常量
- public final int ID;
- // 构造方法中初始化
- public class Student {
-  public final int ID;
-  public final String NAME;
-  public Student(int id, String name) {
-  this.ID = id;
-  this.NAME = name;
-  }
- }
- // 局部 final 常量
- public void method() {
-  final int LOCAL_CONSTANT = 100;
-  // LOCAL_CONSTANT = 200; // 错误：final 变量不能修改
- }
-```
-
-### 4.4 枚举常量
-
-枚举是一种特殊的类，用于定义一组常量。
-**示例**：
-
-```java
- public enum Day {
-  MONDAY, TUESDAY, WEDNESDAY, THURSDAY, FRIDAY, SATURDAY, SUNDAY
- }
- // 使用
- Day today = Day.MONDAY;
- System.out.println("Today is " + today);
-```
-
-## 5. var 类型推断
-
-### 5.1 var 的概念
-
-Java 10 引入了 `var` 关键字，用于局部变量的类型推断。编译器会根据变量的初始值自动推断变量的类型。
-
-### 5.2 var 的使用
-
-**语法**：`var 变量名 = 值;`
-**特点**：
-
-- **仅限局部变量**：只能在方法、构造器或代码块内部使用。
-- **必须初始化**：声明时必须初始化，否则编译器无法推断类型。
-- **不可修改类型**：一旦推断出类型，就不能再更改。
-- **可读性**：应在类型明确的情况下使用，避免降低代码可读性。
-  **示例**：
-
-```java
- // 基本类型
- var count = 10; // 推断为 int
- var price = 3.14; // 推断为 double
- var flag = true; // 推断为 boolean
- var ch = 'A'; // 推断为 char
- // 引用类型
- var name = "Java"; // 推断为 String
- var list = new ArrayList<String>(); // 推断为 ArrayList<String>
- var map = new HashMap<String, Integer>(); // 推断为 HashMap<String, Integer>
- // 数组
- var numbers = new int[]{1, 2, 3, 4, 5}; // 推断为 int[]
- // 方法返回值
- var result = calculate(); // 推断为方法返回值的类型
-```
-
-### 5.3 var 的注意事项
-
-1. **不能用于成员变量**：`var` 只能用于局部变量，不能用于成员变量。
-2. **不能用于方法参数**：`var` 不能用于方法参数。
-3. **不能用于返回类型**：`var` 不能用于方法的返回类型。
-4. **不能用于数组声明**：`var[] arr = {1, 2, 3};` 是错误的，应该使用 `var arr = new int[]{1, 2, 3};`。
-5. **类型推断的局限性**：对于复杂的表达式，类型推断可能不够明确，影响代码可读性。
-   **示例**：
-
-```java
- // 错误用法
- // public var name = "John"; // 不能用于成员变量
- // 错误用法
- // public void method(var param) { ... } // 不能用于方法参数
- // 错误用法
- // public var method() { return 10; } // 不能用于返回类型
- // 错误用法
- // var[] arr = {1, 2, 3}; // 不能这样声明数组
- // 正确用法
- var arr = new int[]{1, 2, 3}; // 正确的数组声明方式
-```
-
-## 6. 变量与常量的最佳实践
-
-### 6.1 变量的命名规范
-
-- **局部变量**：使用小驼峰命名法，如 `userName`、`ageCount`。
-- **成员变量**：使用小驼峰命名法，如 `name`、`salary`。
-- **静态变量**：使用大驼峰命名法或全大写加下划线，如 `MAX_VALUE`、`DEFAULT_TIMEOUT`。
-- **命名原则**：
-- 变量名应具有描述性，能够清晰表达变量的用途。
-- 避免使用单个字母作为变量名（除了循环变量）。
-- 避免使用缩写，除非是广为人知的缩写。
-- 保持命名风格的一致性。
-
-### 6.2 常量的命名规范
-
-- **final 常量**：使用全大写，单词之间用下划线分隔，如 `PI`、`MAX_SIZE`。
-- **枚举常量**：使用全大写，单词之间用下划线分隔，如 `MONDAY`、`SUNDAY`。
-- **命名原则**：
-- 常量名应具有描述性，能够清晰表达常量的用途。
-- 避免使用魔法数字，应将常量定义为具名常量。
-- 保持命名风格的一致性。
-
-### 6.3 变量的使用建议
-
-1. **最小作用域原则**：变量的作用域应尽可能小，只在需要的地方定义。
-2. **初始化**：局部变量必须初始化后才能使用。
-3. **避免使用 null**：尽量避免将变量初始化为 `null`，可以使用空对象或默认值。
-4. **合理使用 var**：在类型明确的情况下使用 `var`，提高代码简洁性。
-5. **避免变量遮蔽**：避免在内部作用域中定义与外部作用域同名的变量。
-
-### 6.4 常量的使用建议
-
-1. **使用 final**：对于不需要修改的值，应使用 `final` 修饰。
-2. **集中管理**：将相关的常量集中定义在一个类中，便于管理和维护。
-3. **使用枚举**：对于一组相关的常量，应使用枚举类型。
-4. **避免硬编码**：避免在代码中直接使用字面常量，应定义为具名常量。
-
-## 7. 实际应用示例
-
-### 7.1 示例 1：学生信息管理
-
-```java
- public class Student {
-  // 成员变量
-  private String name;
-  private int age;
-  private double score;
-  // 构造方法
-  public Student(String name, int age, double score) {
-  this.name = name;
-  this.age = age;
-  this.score = score;
-  }
-  // 方法
-  public void display() {
-  System.out.println("Name: " + name);
-  System.out.println("Age: " + age);
-  System.out.println("Score: " + score);
-  }
-  public static void main(String[] args) {
-  // 创建学生对象
-  Student student1 = new Student("John", 18, 95.5);
-  Student student2 = new Student("Jane", 17, 92.0);
-  // 显示学生信息
-  System.out.println("Student 1:");
-  student1.display();
-  System.out.println("\nStudent 2:");
-  student2.display();
-  }
- }
-```
-
-### 7.2 示例 2：使用常量和枚举
-
-```java
- public class ConstantsDemo {
-  // 常量定义
-  public static final double PI = 3.1415926535;
-  public static final int MAX_STUDENTS = 50;
-  public static final String SCHOOL_NAME = "ABC School";
-  // 枚举定义
-  public enum Grade {
-  A, B, C, D, F
-  }
-  public static void main(String[] args) {
-  // 使用常量
-  System.out.println("PI: " + PI);
-  System.out.println("Max Students: " + MAX_STUDENTS);
-  System.out.println("School Name: " + SCHOOL_NAME);
-  // 使用枚举
-  Grade studentGrade = Grade.A;
-  System.out.println("Student Grade: " + studentGrade);
-  // 计算圆的面积
-  double radius = 5.0;
-  double area = PI * radius * radius;
-  System.out.println("Circle Area: " + area);
-  }
- }
-```
-
-### 7.3 示例 3：使用 var 类型推断
-
-```java
- import java.util.ArrayList;
- import java.util.HashMap;
- public class VarDemo {
-  public static void main(String[] args) {
-  // 基本类型
-  var count = 10;
-  var price = 3.14;
-  var flag = true;
-  var name = "Java";
-  System.out.println("Count: " + count);
-  System.out.println("Price: " + price);
-  System.out.println("Flag: " + flag);
-  System.out.println("Name: " + name);
-  // 引用类型
-  var list = new ArrayList<String>();
-  list.add("Apple");
-  list.add("Banana");
-  list.add("Orange");
-  System.out.println("\nFruits:");
-  for (var fruit : list) {
-  System.out.println(fruit);
-  }
-  // 映射
-  var map = new HashMap<String, Integer>();
-  map.put("John", 25);
-  map.put("Jane", 30);
-  map.put("Bob", 35);
-  System.out.println("\nAges:");
-  for (var entry : map.entrySet()) {
-  System.out.println(entry.getKey() + ": " + entry.getValue());
-  }
-  }
- }
-```
-
----
-
-## 变量声明
-
-**基本写法：声明变量**
-`<类型> <变量名>;`
-```java
-// 声明一个整型变量
-int age;
-```
-
----
-
-**基本写法：变量赋值**
-`<变量名> = <值>;`
-```java
-// 给已声明的变量赋值
-age = 18;
-```
-
----
-
-**基本写法：声明并初始化**
-`<类型> <变量名> = <值>;`
-```java
-// 声明并初始化整型变量
-int age = 18;
-```
-
----
-
-**单行写法：多变量声明**
-`<类型> <变量名1>, <变量名2> = <值>, <变量名3>;`
-```java
-// 一次声明多个相同类型的变量
-int x, y = 5, z;
-```
-
----
-
-## 局部变量
-
-**基本写法：局部变量声明**
-`<类型> <变量名> = <值>;`
-```java
-// 在方法内部声明局部变量
-public void method() {
-    int localVariable = 10;
+public class LeaderboardDemo {
+    public static void main(String[] args) {
+        int score = 1000;                 // 分数：每局都要变
+        final String username = "阿天";    // 用户名：登录后不该变
+
+        score = score + 150;              // 合法：变量重新赋值
+        System.out.println(username + " 当前分数 " + score);
+    }
 }
 ```
 
----
+预期输出：
 
-**基本写法：代码块内局部变量**
-`<类型> <变量名> = <值>;`
+```text
+阿天 当前分数 1150
+```
+
+如果哪天有人手滑，补一行 `username = "别人";`，你希望程序静默改掉用户名，还是当场拒绝？Java 选择后者——那行代码编译不过：
+
+```text
+LeaderboardDemo.java:8: error: cannot assign a value to final variable username
+        username = "别人";
+        ^
+1 error
+```
+
+`final` 就是那把锁。变量与常量的分工，就是本文的全部内容。
+
+## 2. 声明、初始化与赋值：局部变量没有默认值
+
+Java 的变量先声明类型再上岗：`int score;` 是声明，`score = 1000;` 是赋值（第一次赋值叫初始化），`int score = 1000;` 一步到位最常用。看着平平无奇，直到你手快，声明完直接用：
+
 ```java
-// 在 if 块内声明局部变量
-if (condition) {
-    int ifVariable = 20;
+public class InitDemo {
+    public static void main(String[] args) {
+        int bonus;                    // 只声明，没赋值
+        System.out.println(bonus);    // 试试直接用
+    }
 }
 ```
 
----
+编译当场翻车：
 
-## 成员变量
+```text
+InitDemo.java:4: error: variable bonus might not have been initialized
+        System.out.println(bonus);
+                           ^
+1 error
+```
 
-**基本写法：成员变量声明**
-`<修饰符> <类型> <变量名>;`
+读报错三步：类型——variable might not have been initialized，变量可能没初始化；位置——第 4 行的 `bonus`；原因——局部变量没有默认值，Java 故意不给：没赋值就敢用八成是忘了，宁可报错也不让脏数据溜进程序。
+
+（对照：方法外面的字段——[面向对象](/java/150-OOP) 的主角——有默认值，int 字段自动是 0；编译器只对局部变量下狠手。）
+
+## 3. 作用域：变量活在哪对花括号里
+
+040 说过「名字活在花括号里」，补上后半句：**局部变量的生死也跟着花括号走**。
+
 ```java
-// 在类中定义成员变量
-public class Person {
-    private String name;
+public class ScopeDemo {
+    public static void main(String[] args) {
+        int total = 300;               // main 的花括号里全程可用
+
+        if (total >= 200) {
+            int bonus = 50;            // 只活在 if 的花括号里
+            total = total + bonus;
+        }
+        System.out.println(total);     // 350：total 还活着
+
+        System.out.println(bonus);     // 出了花括号，名字已不存在
+    }
 }
 ```
 
----
+预期输出是 `350` 加一行编译报错——第 10 行的 `bonus` 已经出了 if 的花括号：
 
-**换行写法：多成员变量声明**
-`<修饰符> <类型> <变量名1>; <修饰符> <类型> <变量名2>;`
+```text
+ScopeDemo.java:10: error: cannot find symbol
+        System.out.println(bonus);
+                           ^
+  symbol:   variable bonus
+  location: class ScopeDemo
+1 error
+```
+
+cannot find symbol：声明它的花括号一合上，名字就消失。修法：把声明挪到需要它的那一层，或把计算留在括号里做完。下一篇 for 的 `i` 只活在 for 自己的括号里，[方法详解](/java/100-MethodDetailed) 的参数也是这条规则的下一站。
+
+## 4. 常量：final 给「不能变」上锁
+
+回到开头的用户名。`final` 表示「赋值之后不许再改」，违反者吃第 1 节那行报错：
+
 ```java
-// 在类中定义多个成员变量
-public class Person {
-    private String name;
-    private int age;
-    private boolean isAdult;
+public class GameConfig {
+    static final int MAX_RETRY = 3;             // 类级常量：全大写 + 下划线
+    static final String GAME_TITLE = "排行榜小游戏";
+
+    public static void main(String[] args) {
+        final int TODAY_BONUS = 100;            // 方法内的局部常量
+        System.out.println(GAME_TITLE + " 重试上限 " + MAX_RETRY + "，今日加成 " + TODAY_BONUS);
+    }
 }
 ```
 
----
+预期输出：
 
-## 静态变量
+```text
+排行榜小游戏 重试上限 3，今日加成 100
+```
 
-**基本写法：静态变量声明**
-`public static <类型> <变量名> = <值>;`
+三条约定：全大写加下划线命名（`MAX_RETRY` 而不是 `maxRetry`）；全程序共用的放类顶部 `static final`，方法里用的就地 `final`；同一个数字出现第三次时提名成常量，改需求只改一处。顺带一句现象：编译期就能算出值的常量（如 `MAX_RETRY = 3`），编译器会把它直接抄进每一处使用点——这叫编译期常量合并，知道即可。Python 靠约定加工具提醒，Java 是语言级强制，锁死就是锁死。
+
+## 5. var：让编译器替你写类型（Java 10+）
+
+右边一眼能看出类型时，类型名纯属复读。Java 10 起用 `var` 让编译器推断：
+
 ```java
-// 定义静态变量
-public class Counter {
-    public static int count = 0;
+public class VarDemo {
+    public static void main(String[] args) {
+        var score = 100;            // 推断为 int，不是「什么都能装」
+        var title = "排行榜";       // 推断为 String
+
+        score = score + 50;         // 仍然只能装 int
+        System.out.println(title + "：" + score);
+    }
 }
 ```
 
----
+预期输出：
 
-**基本写法：访问静态变量**
-`<类名>.<静态变量>`
-```java
-// 通过类名访问静态变量
-int currentCount = Counter.count;
+```text
+排行榜：150
 ```
 
----
+先把误解摁住：**var 不是动态类型**，类型在编译那一刻焊死。什么时候用：右边类型一目了然时（如 `var list = new ArrayList<String>();`）；什么时候别用：方法返回值看不出来时，逼读者跳去查签名，省两个字母赔可读性。三条限制：只限局部变量；必须当场初始化；推断后类型不可换。不给初始值，编译器无从推断：
 
-## final 常量
-
-**基本写法：类级别 final 常量**
-`public static final <类型> <常量名> = <值>;`
-```java
-// 定义不可修改的静态常量
-public static final double PI = 3.1415926535;
+```text
+VarNoInit.java:3: error: cannot infer type for local variable s
+        var s;
+            ^
+  (cannot use 'var' on variable without initializer)
+1 error
 ```
 
----
+## 6. 引用变量的本质：变量里装的是什么
 
-**基本写法：实例级别 final 常量**
-`public final <类型> <常量名>;`
+060 的装箱题现在有了地基。看一段对照：
+
 ```java
-// 定义在构造方法中初始化的常量
-public class Student {
-    public final int ID;
+public class RefDemo {
+    public static void main(String[] args) {
+        int a = 128;
+        int b = a;                  // 基本类型：把值复制一份
+        b = b + 1;
+        System.out.println(a);      // 128：a 不受影响
+
+        Integer x = 128;            // 060 的老朋友：装箱
+        Integer y = x;              // 引用复制：两个名字，同一个对象
+        System.out.println(x.equals(y));
+    }
 }
 ```
 
----
+预期输出：
 
-**基本写法：局部 final 常量**
-`final <类型> <常量名> = <值>;`
+```text
+128
+true
+```
+
+两类变量装的东西不一样：
+
+| 变量类型 | 变量里装的是 | 复制变量时 |
+| --- | --- | --- |
+| int、double、boolean 等 | 值本身 | 值被复制，各过各的 |
+| Integer、String、数组、集合等 | 对象的引用（类似地址） | 引用被复制，仍指向同一个对象 |
+
+遥控器比喻：**赋值递的是遥控器，不是再买一台电视**。x 与 y 拿着同一台电视的两把遥控器；060 的「128 == 128 为 false」正源于此——`==` 问「是不是同一台」，不是「看起来一样吗」。现阶段它只影响写 equals 的手（060 已立规矩）；真咬人要等数组与集合登场（[110](/java/110-ArrayDetailed)、[210](/java/210-CollectionFrameworkDetailed)）。
+
+## 7. 修改实验
+
+实验一（10 分钟）：把 InitDemo 的 `bonus` 改成在 if 和 else 两条分支里都赋值，预测编译结果再验证（通过——编译器确认每条路都有值）；删掉 else 再编译（报错回来）。
+
+实验二（5 分钟）：给 GameConfig 加 `static final int MAX_SCORE = 9999;`，再在 main 里写 `MAX_SCORE = 0;`。先写预测的报错原文再编译对照。
+
+实验三（5 分钟）：在 VarDemo 里加一行 `title = 42;`，预测报错再验证——title 已被推断为 String，装不进 int。
+
+## 8. 常见错误与调试实录
+
+错误一：重复声明同名变量。复制上一行改数值是最常见来源：
+
 ```java
-// 在方法内定义不可变变量
-public void method() {
-    final int LOCAL_CONSTANT = 100;
+int score = 100;
+int score = 200;    // 同一个作用域里，名字只能注册一次
+```
+
+```text
+RedeclareDemo.java:4: error: variable score is already defined in method main(String[])
+        int score = 200;
+            ^
+1 error
+```
+
+修法：删掉重复声明只留赋值，或换个有区分度的名字。
+
+错误二：条件分支只给一条路赋值。比第 2 节的裸用更隐蔽：
+
+```java
+int score = 74;
+int grade;
+if (score >= 60) {
+    grade = 1;                 // 及格了才赋值
 }
+System.out.println(grade);     // 不及格时 grade 是什么？
 ```
 
----
-
-## 枚举常量
-
-**单行写法：枚举定义**
-`public enum <枚举名> { <常量1>, <常量2> }`
-```java
-// 单行定义枚举
-public enum Day { MONDAY, TUESDAY, WEDNESDAY }
+```text
+error: variable grade might not have been initialized
+        System.out.println(grade);
+                           ^
 ```
 
----
+编译器看穿了：score 可能小于 60，那条路上 grade 没被赋值。修法二选一：补 else 覆盖另一条路，或声明时给默认值 `int grade = 0;`——它替你拦下了一次「不及格时打印随机值」的事故。
 
-**换行写法：枚举定义**
-`public enum <枚举名> { <常量1>, <常量2>, ... }`
+错误三：把 var 当万能容器。var 只在声明那一刻推断类型：
+
 ```java
-// 换行定义枚举
-public enum Day {
-    MONDAY,
-    TUESDAY,
-    WEDNESDAY,
-    THURSDAY,
-    FRIDAY,
-    SATURDAY,
-    SUNDAY
+var score = 100;     // 推断为 int
+score = "一百";       // 以为 var 什么都能装？
+```
+
+```text
+error: incompatible types: String cannot be converted to int
+        score = "一百";
+                ^
+```
+
+读法技巧：格式固定是「右边类型 cannot be converted to 左边变量的类型」，看到它先查等号两边各是什么。
+
+## 9. 实际项目中的使用场景
+
+- 配置常量集中放：`static final int MAX_UPLOAD_MB = 50;` 攒在类顶部，改配置只碰一处；
+- 最小作用域：变量在需要它的那一层声明，能进 if 块的别提到方法开头；
+- var 的团队惯例：右侧类型一目了然才用；字段、参数、返回值一律写全类型；
+- 与 060 口诀合流：可空选包装类、纯计算选基本类型——选型最终都落在「怎么声明变量」。
+
+## 10. 小练习
+
+预测题（5 分钟）：先写答案再运行：
+
+```java
+int x = 10;
+int y = x;
+y = y + 5;
+System.out.println(x);
+System.out.println(y);
+```
+
+（验证：10 与 15。int 复制的是值，改 y 动不了 x。）
+
+修改题（10 分钟）：给 GameConfig 加 `static final int WIN_STREAK_BONUS = 30;`，声明 `int bonus = 0;` 后用三次 `bonus = bonus + WIN_STREAK_BONUS;` 模拟连赢三局并输出，预期 `bonus = 90`。（加法运算符 [运算符与表达式](/java/080-OperatorExpression) 下一篇细讲，照抄即可。）
+
+修 Bug 题（15 分钟）：下面的程序想输出 20（未满百免运费），编译都过不去。按三步定位后修复：
+
+```java
+int price = 20;
+int shipping = 15;
+if (price > 100) {
+    int total = price + shipping;
+} else {
+    int total = price;
 }
+System.out.println(total);
 ```
 
----
-
-**基本写法：使用枚举常量**
-`<枚举名>.<常量名>`
-```java
-// 引用枚举常量
-Day today = Day.MONDAY;
+```text
+error: cannot find symbol
+        System.out.println(total);
+                           ^
+  symbol:   variable total
 ```
 
----
+（两个 total 各活在各自的花括号里。修法：把 total 的声明提到 if 外面，分支里只赋值——参考错误二的结构。）
 
-## var 类型推断
+挑战题（半小时）：写一个 ProfileCard 类：声明 `static final String GAME_TITLE` 与局部可变变量 `level`，输出「游戏名 | 等级 N」后模拟升一级再输出一行；最后在注释里默写：给 GAME_TITLE 赋新值会触发什么报错原文。验收：输出两行且等级递增。
 
-**基本写法：var 声明基本类型**
-`var <变量名> = <值>;`
-```java
-// 使用 var 推断整型
-var count = 10;
-```
+## 11. 与之前和之后的知识的关系
 
----
+- 往前：[包装类缓存陷阱](/java/060-WrapperCacheTrap) 的装箱机制在第 6 节归位——Integer 变量装的是引用，这正是 == 与 equals 分工的底层原因；040 的花括号规则升级成完整作用域。至此 040（语句与结构）→ 050（类型转换）→ 060（包装类）→ 070（本文）这条入门主线收尾；
+- 往后：[运算符与表达式](/java/080-OperatorExpression) 把 `score + bonus` 里的运算符讲全；[方法详解](/java/100-MethodDetailed) 的参数是作用域下一站；[面向对象](/java/150-OOP) 的字段（有默认值的那类变量）正式登场。
 
-**基本写法：var 声明字符串**
-`var <变量名> = "<字符串>";`
-```java
-// 使用 var 推断字符串类型
-var name = "Java";
-```
+## 12. 官方文档
 
----
+- Oracle Java Tutorials「Variables」：https://docs.oracle.com/javase/tutorial/java/nutsandbolts/variables.html
+- Java 官方教程 Language Basics（dev.java）：https://dev.java/learn/language-basics/
+- JEP 286「Local-Variable Type Inference」（var 的设计文档，Java 10）：https://openjdk.org/jeps/286
 
-**基本写法：var 声明集合**
-`var <变量名> = new <集合类><>();`
-```java
-// 使用 var 推断集合类型
-var list = new ArrayList<String>();
-```
+## 13. 自我检查
 
----
+- 能解释「为什么局部变量没有默认值、字段有」，并举出编译器拦下的事故；
+- 拿到 variable might not have been initialized 与 cannot find symbol，能分别说出成因与两种修法；
+- 能不查资料写出 `static final` 常量，说出 UPPER_CASE、编译期合并、final 锁三个要点；
+- 能说出 var 的三条限制并各举一个该用与不该用的例子；
+- 能用遥控器比喻解释两类变量的复制差异，接上 060 的 == 之谜。
 
-**基本写法：var 声明数组**
-`var <变量名> = new <类型>[]{ <元素> };`
-```java
-// 使用 var 推断数组类型
-var numbers = new int[]{1, 2, 3};
-```
+## 本章总结
+
+变量先声明类型再上岗；局部变量没有默认值，编译器用 variable might not have been initialized 强制「先赋值再用」。作用域跟着花括号走，出括号即报 cannot find symbol。final 给「不能变」上语言级的锁，常量全大写下划线命名，编译期可算出值的常量直接合并进使用点。var 只是让编译器替你写类型，声明即焊死，只限局部变量且必须当场初始化。基本类型变量装值、复制即分家；引用变量装引用、复制的是遥控器——060 的 == 之谜在此闭环。
+
+## 下一步
+
+进入 [运算符与表达式](/java/080-OperatorExpression)：`score = score + bonus` 里的加号藏着一个 040 留下的悬念——为什么 9 折算出来是 74 而不是 74.7？下一篇正面回收。

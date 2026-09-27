@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 以「一万人在线的排行榜为什么撑不住」引入，讲清 C++ 的定位、零开销抽象、与 C 的真实关系、编译到机器码的心智模型、主战场与版本策略，附现代 C++ 代码试读与常见误区实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'cpp/020-CppOverviewAndModernStandard'
   - 'c/020-CLanguageOverview'

@@ -1,978 +1,296 @@
 ---
 order: 40
-title: 程序结构与基本语法
+title: 程序结构与基本语法：把语句攒成程序
 module: 'java'
 category: 后端技术
 difficulty: beginner
-description: Java 程序结构、注释、标识符与关键字。
+description: 以订单小计程序为主线讲透源文件骨架：语句与块、作用域边界、三种注释、包与 import 的最小使用、驼峰命名约定，附 cannot find symbol 的两副面孔与缺括号报错的调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'java/020-JavaOverviewDevEnv'
   - 'java/030-QuickStart'
   - 'java/050-DataTypeConversion'
   - 'java/070-VariableConstant'
-prerequisites: []
+  - 'java/100-MethodDetailed'
+prerequisites:
+  - 'java/030-QuickStart'
 ---
 
 ## 前置知识
 
-- [快速入门](/java/030-QuickStart)：建议先完成前一篇的学习
+- 已完成 [快速上手](/java/030-QuickStart)：能独立写出 HelloWorld，见过一次 cannot find symbol。没吃透也没关系，用到处会回指；没读过请先回去跑通那个五行程序。
 
 ## 学习目标
 
-- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
-- 掌握「1. Java 程序结构」的核心机制、典型用法与常见陷阱
-- 掌握「2. 注释规范」的核心机制、典型用法与常见陷阱
-- 掌握「3. 标识符」的核心机制、典型用法与常见陷阱
-- 掌握「4. 关键字」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 说出源文件的三段结构（包声明、import、类），并解释为什么 System 不用 import；
+2. 判断一个变量在哪对花括号里可见，预测「出了块再用」的报错；
+3. 用三种注释分别写「给自己看的注脚」和「给 javadoc 工具看的文档」；
+4. 按驼峰约定命名类、变量与常量，说出它与 Python PEP 8 的对应关系；
+5. 写出第一个多行程序（订单小计），并独立修复 cannot find symbol。
 
-## 0. 本节阅读指引（先读这一节）
+预计 40 到 60 分钟，含 3 组动手实验与 4 道练习。
 
-本篇是「程序结构与基本语法」，目标：掌握 Java 源文件结构、注释、标识符、关键字与键盘录入。
+## 1. 问题引入：HelloWorld 跑通了，然后呢
 
-零基础第一遍只读：
+HelloWorld 只会说一句话。真实程序要做一连串事——比如算一笔订单小计，蛋糕 28 元买 2 份、曲奇 9 元买 3 份。今天不学新魔法，只回答两个问题：**语句怎么攒成程序，名字怎么起才不会三天后认不出自己写的代码**。
 
-1. 第 1 节 Java 程序结构（源文件、类、主方法）；
-2. 第 2 节 注释规范、3. 标识符、4. 关键字；
-3. 第 5 节 键盘录入，每段代码亲手敲一遍。
+## 2. 语句与块：程序的最小骨架
 
-可跳过：6-7 节（代码风格与实际应用示例）快速浏览；文末「Java 25+ 新特性」等速查小节留作查阅。
+- **语句**：一条完整指令，以分号结尾。`System.out.println("Hi");` 是，`int price = 9;` 也是；
+- **块（block）**：一对花括号 `{ }` 包起来的一组语句。main 方法体是块，类体也是块，块里还能套块。
 
-> 记住：本篇只解决「程序长什么样、名字怎么起」，不涉及算法与底层原理。
+程序从 main 第一行起，一条语句接一条执行到最后——顺序结构（分支与循环在 [控制流](/java/090-ControlFlow) 加入）。花括号必须成对出现，先闭方法再闭类，缺括号的报错见第 9 节。
 
+## 3. 作用域：名字活在哪对花括号里
 
-## 1. Java 程序结构
+Java 的规则是**先声明，后使用**：`int cakePrice = 28;` 声明一个 int 类型的名字（int 是下一篇的主角，照抄写法即可）。名字能被使用的范围叫**作用域**，规则只有一条：
 
-### 1.1 源文件结构
+**名字从声明行开始有效，到它所在的那对花括号闭合为止。** 花括号是名字的城墙，出了 `}` 就查无此人。
 
-一个典型的 Java 源文件包含以下部分：
-
-1. **包声明 (Package Declaration)**：指定源文件所属的包。
-2. **导入语句 (Import Statements)**：导入需要使用的类。
-3. **类定义 (Class Definition)**：定义一个或多个类。
-4. **方法定义 (Method Definition)**：在类中定义方法，包括主方法。
-5. **执行语句 (Statements)**：在方法中编写具体的代码逻辑。
-   **示例**：
+亲手验证，新建 CouponDemo.java：
 
 ```java
- /*
-  * 包声明
-  */
- package com.example;
- /*
-  * 导入语句
-  */
- import java.util.Scanner;
- import java.util.Date;
- /*
-  * 类定义
-  */
- public class HelloWorld {
-  /*
-  * 主方法
-  * 程序的入口点
-  */
-  public static void main(String[] args) {
-  // 执行语句
-  System.out.println("Hello, Java!");
-  // 创建 Date 对象
-  Date now = new Date();
-  System.out.println("当前时间: " + now);
-  }
- }
-```
-
-### 1.2 类的结构
-
-一个 Java 类通常包含以下部分：
-
-1. **修饰符 (Modifiers)**：如 `public`, `private`, `protected` 等。
-2. **类名 (Class Name)**：遵循大驼峰命名法。
-3. **继承关系 (Inheritance)**：使用 `extends` 关键字继承父类。
-4. **实现接口 (Interface Implementation)**：使用 `implements` 关键字实现接口。
-5. **成员变量 (Member Variables)**：类的属性。
-6. **构造方法 (Constructor)**：用于创建对象。
-7. **成员方法 (Member Methods)**：类的行为。
-   **示例**：
-
-```java
- package com.example;
- public class Student extends Person implements Serializable {
-  // 成员变量
-  private String studentId;
-  private String major;
-  // 构造方法
-  public Student() {
-  }
-  public Student(String name, int age, String studentId, String major) {
-  super(name, age);
-  this.studentId = studentId;
-  this.major = major;
-  }
-  // 成员方法
-  public String getStudentId() {
-  return studentId;
-  }
-  public void setStudentId(String studentId) {
-  this.studentId = studentId;
-  }
-  public String getMajor() {
-  return major;
-  }
-  public void setMajor(String major) {
-  this.major = major;
-  }
-  public void study() {
-  System.out.println(getName() + " is studying " + major);
-  }
- }
-```
-
-### 1.3 主方法
-
-主方法是 Java 程序的入口点，具有以下特点：
-
-- 修饰符：`public static void`
-- 方法名：`main`
-- 参数：`String[] args`
-  **示例**：
-
-```java
- public static void main(String[] args) {
-  // 程序从这里开始执行
-  System.out.println("Hello, World!");
-  // 处理命令行参数
-  for (int i = 0; i < args.length; i++) {
-  System.out.println("Argument " + i + ": " + args[i]);
-  }
- }
-```
-
-## 2. 注释规范
-
-### 2.1 单行注释
-
-**语法**：`// 注释内容`
-**示例**：
-
-```java
- // 这是一个单行注释
- int age = 18; // 定义年龄变量
-```
-
-### 2.2 多行注释
-
-**语法**：`/* 注释内容 */`
-**示例**：
-
-```java
- /*
-  * 这是一个多行注释
-  * 可以跨越多行
-  */
- int sum = 0;
- for (int i = 1; i <= 100; i++) {
-  sum += i; // 累加
- }
-```
-
-### 2.3 文档注释
-
-**语法**：`/** 注释内容 */`
-**示例**：
-
-```java
- /**
-  * 计算两个数的和
-  * @param a 第一个加数
-  * @param b 第二个加数
-  * @return 两个数的和
-  */
- public int add(int a, int b) {
-  return a + b;
- }
-```
-
-**常用的 Javadoc 标签**：
-
-| 标签       | 描述             | 示例                                              |
-| ---------- | ---------------- | ------------------------------------------------- |
-| `@author`  | 作者             | `@author John Doe`                                |
-| `@param`   | 参数说明         | `@param name 用户名`                              |
-| `@return`  | 返回值说明       | `@return 计算结果`                                |
-| `@throws`  | 异常说明         | `@throws IllegalArgumentException 参数错误时抛出` |
-| `@version` | 版本             | `@version 1.0`                                    |
-| `@since`   | 从哪个版本开始   | `@since 1.5`                                      |
-| `@see`     | 参考其他类或方法 | `@see java.util.ArrayList`                        |
-
-## 3. 标识符
-
-### 3.1 标识符的规则
-
-标识符是用于命名类、方法、变量、常量等的名称，必须遵循以下规则：
-
-1. **组成字符**：字母 (A-Z, a-z)、数字 (0-9)、下划线 (\_)、美元符号 ($)。
-2. **开头字符**：不能以数字开头。
-3. **关键字**：不能使用 Java 关键字作为标识符。
-4. **大小写敏感**：Java 是大小写敏感的，因此 `myVar` 和 `MyVar` 是不同的标识符。
-
-### 3.2 命名规范
-
-#### 3.2.1 类名和接口名
-
-- **命名规则**：大驼峰命名法 (Upper Camel Case)
-- **示例**：`HelloWorld`, `StudentInfo`, `UserService`
-
-#### 3.2.2 方法名和变量名
-
-- **命名规则**：小驼峰命名法 (Lower Camel Case)
-- **示例**：`getUserName`, `ageCount`, `calculateTotal`
-
-#### 3.2.3 包名
-
-- **命名规则**：全小写，使用点 (.) 分隔
-- **示例**：`com.example.util`, `org.apache.commons.io`
-
-#### 3.2.4 常量名
-
-- **命名规则**：全大写，使用下划线 (\_) 分隔
-- **示例**：`MAX_VALUE`, `DEFAULT_TIMEOUT`, `PI`
-
-#### 3.2.5 枚举常量
-
-- **命名规则**：全大写，使用下划线 (\_) 分隔
-- **示例**：`RED`, `GREEN`, `BLUE`
-
-### 3.3 命名最佳实践
-
-1. **含义明确**：标识符应该能够清晰地表达其用途。
-2. **避免缩写**：除非是广为人知的缩写（如 `URL`, `HTTP`），否则应使用完整的单词。
-3. **一致性**：在整个项目中保持命名风格的一致性。
-4. **长度适中**：标识符应该足够长以表达其含义，但也不应过长。
-   **示例**：
-
-```java
- // 不好的命名
- int a; // 含义不明确
- int cnt; // 使用了缩写
- int user_name; // 不符合小驼峰命名法
- // 好的命名
- int age; // 含义明确
- int count; // 使用完整单词
- int userName; // 符合小驼峰命名法
-```
-
-## 4. 关键字
-
-### 4.1 常用关键字
-
-Java 有 50 多个关键字，以下是一些常用的关键字：
-
-| 关键字       | 描述                   |
-| ------------ | ---------------------- |
-| `public`     | 公共访问修饰符         |
-| `private`    | 私有访问修饰符         |
-| `protected`  | 受保护的访问修饰符     |
-| `class`      | 定义类                 |
-| `interface`  | 定义接口               |
-| `extends`    | 继承类                 |
-| `implements` | 实现接口               |
-| `static`     | 静态修饰符             |
-| `final`      | 最终修饰符             |
-| `void`       | 无返回值               |
-| `return`     | 返回值                 |
-| `if`         | 条件语句               |
-| `else`       | 条件语句的分支         |
-| `for`        | 循环语句               |
-| `while`      | 循环语句               |
-| `do`         | 循环语句               |
-| `switch`     | 开关语句               |
-| `case`       | 开关语句的分支         |
-| `default`    | 开关语句的默认分支     |
-| `break`      | 跳出循环或开关语句     |
-| `continue`   | 跳过当前循环迭代       |
-| `try`        | 异常处理的开始         |
-| `catch`      | 捕获异常               |
-| `finally`    | 异常处理的最终块       |
-| `throw`      | 抛出异常               |
-| `throws`     | 声明方法可能抛出的异常 |
-| `new`        | 创建对象               |
-| `this`       | 当前对象的引用         |
-| `super`      | 父类的引用             |
-| `package`    | 包声明                 |
-| `import`     | 导入类                 |
-
-### 4.2 保留字和字面量
-
-除了关键字外，Java 还有一些保留字和字面量：
-
-- **保留字**：``, `false`, `null`
-- **字面量**：
-- 整数字面量：`123`, `0x1A`
-- 浮点数字面量：`3.14`, `2.5e3`
-- 布尔字面量：``, `false`
-- 字符字面量：`'A'`, `'\n'`
-- 字符串字面量：`"Hello"`
-- null 字面量：`null`
-
-## 5. 键盘录入
-
-### 5.1 使用 Scanner 类
-
-`java.util.Scanner` 是 Java 中用于获取控制台输入的常用类。
-**基本用法**：
-
-```java
- import java.util.Scanner;
- public class InputTest {
-  public static void main(String[] args) {
-  // 1. 创建 Scanner 对象
-  Scanner sc = new Scanner(System.in);
-  // 2. 获取不同类型的输入
-  System.out.print("请输入整数: ");
-  int num = sc.nextInt();
-  System.out.print("请输入浮点数: ");
-  double d = sc.nextDouble();
-  System.out.print("请输入布尔值: ");
-  boolean b = sc.nextBoolean();
-  // 注意：next() 会遇到空格停止
-  System.out.print("请输入字符串 (next()): ");
-  String str1 = sc.next();
-  // 读取换行符
-  sc.nextLine();
-  // nextLine() 会读取整行
-  System.out.print("请输入字符串 (nextLine()): ");
-  String str2 = sc.nextLine();
-  // 3. 输出结果
-  System.out.println("整数: " + num);
-  System.out.println("浮点数: " + d);
-  System.out.println("布尔值: " + b);
-  System.out.println("字符串 (next()): " + str1);
-  System.out.println("字符串 (nextLine()): " + str2);
-  // 4. 关闭 Scanner
-  sc.close();
-  }
- }
-```
-
-### 5.2 Scanner 类的常用方法
-
-| 方法            | 描述                         |
-| --------------- | ---------------------------- |
-| `next()`        | 读取一个单词（遇到空格停止） |
-| `nextLine()`    | 读取一整行                   |
-| `nextInt()`     | 读取一个整数                 |
-| `nextDouble()`  | 读取一个双精度浮点数         |
-| `nextBoolean()` | 读取一个布尔值               |
-| `nextByte()`    | 读取一个字节                 |
-| `nextShort()`   | 读取一个短整数               |
-| `nextLong()`    | 读取一个长整数               |
-| `nextFloat()`   | 读取一个单精度浮点数         |
-| `hasNext()`     | 检查是否还有输入             |
-| `hasNextInt()`  | 检查下一个输入是否是整数     |
-
-### 5.3 注意事项
-
-1. **输入缓冲区问题**：当使用 `nextInt()`, `nextDouble()` 等方法后，输入缓冲区中会留下换行符，此时使用 `nextLine()` 会读取到空字符串。解决方案是在使用 `nextLine()` 前先调用一次 `nextLine()` 来消耗换行符。
-2. **资源关闭**：使用完 Scanner 后，应该调用 `close()` 方法关闭资源，以避免资源泄漏。
-3. **异常处理**：当输入的数据类型与期望的类型不匹配时，会抛出 `InputMismatchException`，应该使用 try-catch 进行处理。
-   **示例**：
-
-```java
- import java.util.InputMismatchException;
- import java.util.Scanner;
- public class SafeInputTest {
-  public static void main(String[] args) {
-  Scanner sc = new Scanner(System.in);
-  int num = 0;
-  boolean valid = false;
-  while (!valid) {
-  System.out.print("请输入整数: ");
-  try {
-  num = sc.nextInt();
-  valid = true;
-  } catch (InputMismatchException e) {
-  System.out.println("输入错误，请重新输入整数!");
-  sc.next(); // 消耗错误的输入
-  }
-  }
-  System.out.println("输入的整数是: " + num);
-  sc.close();
-  }
- }
-```
-
-## 6. 代码风格与最佳实践
-
-### 6.1 缩进与空格
-
-- **缩进**：使用 4 个空格进行缩进，不要使用制表符 (Tab)。
-- **空格**：
-- 在运算符两侧添加空格：`a = b + c;`
-- 在逗号后添加空格：`method(a, b, c);`
-- 在大括号前添加空格：`if (condition) {`
-- 在小括号内侧不添加空格：`if(condition)` 应该写成 `if (condition)`
-
-### 6.2 代码块
-
-- **大括号**：使用 K&R 风格，即左大括号放在行尾，右大括号放在新行，与对应的控制语句对齐。
-  **示例**：
-
-```java
- // 好的风格
- if (condition) {
-  // 代码块
- }
-  // 代码块
- }
- // 不好的风格
- if (condition)
- {
-  // 代码块
- }
- else
- {
-  // 代码块
- }
-```
-
-### 6.3 行长度
-
-- **行长度**：每行代码的长度不应超过 80 个字符，超过时应换行。
-- **换行**：在逗号后或运算符前换行，缩进 8 个空格。
-  **示例**：
-
-```java
- // 好的风格
- int result = calculateValue(a, b, c, d)
-  + calculateValue(e, f, g, h)
-  - calculateValue(i, j, k, l);
- // 不好的风格
- int result = calculateValue(a, b, c, d) + calculateValue(e, f, g, h) - calculateValue(i, j, k, l);
-```
-
-### 6.4 命名约定
-
-- **类名**：使用大驼峰命名法，每个单词的首字母大写。
-- **方法名**：使用小驼峰命名法，第一个单词小写，后续单词首字母大写。
-- **变量名**：使用小驼峰命名法，应具有描述性。
-- **常量名**：使用全大写，单词之间用下划线分隔。
-- **包名**：使用全小写，单词之间用点分隔。
-
-### 6.5 注释
-
-- **单行注释**：用于解释单行代码的功能。
-- **多行注释**：用于解释代码块的功能。
-- **文档注释**：用于生成 API 文档，应包含类、方法的功能、参数、返回值等信息。
-
-### 6.6 其他最佳实践
-
-1. **避免使用魔术数字**：将常量定义为具名常量。
-2. **保持方法简洁**：每个方法应只做一件事，长度不应超过 50 行。
-3. **使用有意义的变量名**：变量名应能够清晰地表达其用途。
-4. **避免冗余代码**：不要重复编写相同的代码，应提取为方法。
-5. **使用 try-with-resources**：对于需要关闭的资源，使用 try-with-resources 语句。
-   **示例**：
-
-```java
- // 不好的风格
- for (int i = 0; i < 10; i++) {
-  // 代码
- }
- // 好的风格
- private static final int MAX_ITERATIONS = 10;
- for (int i = 0; i < MAX_ITERATIONS; i++) {
-  // 代码
- }
- // 使用 try-with-resources
- try (Scanner sc = new Scanner(System.in)) {
-  // 使用 sc
- }
-```
-
-## 7. 实际应用示例
-
-### 7.1 示例 1：简单的计算器
-
-```java
- import java.util.Scanner;
- public class Calculator {
-  public static void main(String[] args) {
-  Scanner sc = new Scanner(System.in);
-  System.out.print("请输入第一个数: ");
-  double num1 = sc.nextDouble();
-  System.out.print("请输入运算符 (+, -, *, /): ");
-  char operator = sc.next().charAt(0);
-  System.out.print("请输入第二个数: ");
-  double num2 = sc.nextDouble();
-  double result = 0;
-  boolean valid = true;
-  switch (operator) {
-  case '+':
-  result = num1 + num2;
-  break;
-  case '-':
-  result = num1 - num2;
-  break;
-  case '*':
-  result = num1 * num2;
-  break;
-  case '/':
-  if (num2 != 0) {
-  result = num1 / num2;
-  } else {
-  System.out.println("错误：除数不能为零!");
-  valid = false;
-  }
-  break;
-  default:
-  System.out.println("错误：无效的运算符!");
-  valid = false;
-  }
-  if (valid) {
-  System.out.println(num1 + " " + operator + " " + num2 + " = " + result);
-  }
-  sc.close();
-  }
- }
-```
-
-### 7.2 示例 2：学生信息管理
-
-```java
- import java.util.Scanner;
- public class StudentManager {
-  public static void main(String[] args) {
-  Scanner sc = new Scanner(System.in);
-  // 存储学生信息
-  String[] names = new String[5];
-  int[] ages = new int[5];
-  double[] scores = new double[5];
-  // 输入学生信息
-  for (int i = 0; i < names.length; i++) {
-  System.out.println("请输入第 " + (i + 1) + " 个学生的信息:");
-  System.out.print("姓名: ");
-  names[i] = sc.next();
-  System.out.print("年龄: ");
-  ages[i] = sc.nextInt();
-  System.out.print("成绩: ");
-  scores[i] = sc.nextDouble();
-  }
-  // 输出学生信息
-  System.out.println("\n学生信息列表:");
-  System.out.println("姓名\t年龄\t成绩");
-  System.out.println("------------------------");
-  for (int i = 0; i < names.length; i++) {
-  System.out.println(names[i] + "\t" + ages[i] + "\t" + scores[i]);
-  }
-  // 计算平均成绩
-  double sum = 0;
-  for (double score : scores) {
-  sum += score;
-  }
-  double average = sum / scores.length;
-  System.out.println("\n平均成绩: " + average);
-  sc.close();
-  }
- }
-```
-
----
-
-## 源文件结构
-
-**基本写法：包声明**
-`package <包名>;`
-```java
-// 声明源文件所属的包
-package com.example;
-```
-
----
-
-**基本写法：导入单个类**
-`import <全限定类名>;`
-```java
-// 导入需要使用的类
-import java.util.Scanner;
-```
-
----
-
-**基本写法：导入整个包**
-`import <包名>.*;`
-```java
-// 导入整个包下的所有类
-import java.util.*;
-```
-
----
-
-**基本写法：类定义**
-`<修饰符> class <类名> { }`
-```java
-// 定义一个公开类
-public class HelloWorld {
-}
-```
-
----
-
-**单行写法：简单类定义**
-`<修饰符> class <类名> { }`
-```java
-// 单行定义一个空类
-public class Empty { }
-```
-
----
-
-**换行写法：完整类定义**
-`<修饰符> class <类名> extends <父类> implements <接口> { <成员变量> <构造方法> <成员方法> }`
-```java
-// 定义带继承与接口实现的完整类
-public class Student extends Person implements Serializable {
-    private String studentId;
-    private String major;
-}
-```
-
----
-
-## 主方法
-
-**基本写法：主方法定义**
-`public static void main(String[] args) { }`
-```java
-// 定义程序入口方法
-public static void main(String[] args) {
-}
-```
-
----
-
-**基本写法：主方法输出**
-`public static void main(String[] args) { System.out.println(<内容>); }`
-```java
-// 在主方法中输出字符串
-public static void main(String[] args) {
-    System.out.println("Hello, World!");
-}
-```
-
----
-
-**基本写法：读取命令行参数**
-`<参数>[<索引>]`
-```java
-// 读取第一个命令行参数
-public static void main(String[] args) {
-    String firstArg = args[0];
-}
-```
-
----
-
-## 注释规范
-
-**基本写法：单行注释**
-`// <注释内容>`
-```java
-// 这是一个单行注释
-int age = 18;
-```
-
----
-
-**基本写法：多行注释**
-`/* <注释内容> */`
-```java
-/* 这是一个多行注释 */
-int sum = 0;
-```
-
----
-
-**换行写法：多行注释**
-`/* <注释内容> */`
-```java
-/*
- * 这是一个多行注释
- * 可以跨越多行
- */
-int sum = 0;
-```
-
----
-
-**基本写法：文档注释**
-`/** <注释内容> */`
-```java
-/** 计算两个数的和 */
-public int add(int a, int b) {
-    return a + b;
-}
-```
-
----
-
-**换行写法：文档注释带标签**
-`/** <描述> @param <参数名> <说明> @return <说明> */`
-```java
-/**
- * 计算两个数的和
- * @param a 第一个加数
- * @param b 第二个加数
- * @return 两个数的和
- */
-public int add(int a, int b) {
-    return a + b;
-}
-```
-
----
-
-## 标识符命名规范
-
-**基本写法：类名命名**
-`<UpperCamelCase>`
-```java
-// 类名使用大驼峰命名法
-HelloWorld
-```
-
----
-
-**基本写法：方法名命名**
-`<lowerCamelCase>`
-```java
-// 方法名使用小驼峰命名法
-getUserName
-```
-
----
-
-**基本写法：变量名命名**
-`<lowerCamelCase>`
-```java
-// 变量名使用小驼峰命名法
-ageCount
-```
-
----
-
-**基本写法：包名命名**
-`<全小写.分隔>`
-```java
-// 包名全小写使用点分隔
-com.example.util
-```
-
----
-
-**基本写法：常量名命名**
-`<UPPER_SNAKE_CASE>`
-```java
-// 常量名全大写使用下划线分隔
-MAX_VALUE
-```
-
----
-
-## 键盘录入
-
-**基本写法：创建 Scanner 对象**
-`Scanner <变量名> = new Scanner(System.in);`
-```java
-// 创建用于读取控制台输入的 Scanner 对象
-Scanner sc = new Scanner(System.in);
-```
-
----
-
-**基本写法：读取整数**
-`<Scanner对象>.nextInt();`
-```java
-// 读取用户输入的整数
-int num = sc.nextInt();
-```
-
----
-
-**基本写法：读取浮点数**
-`<Scanner对象>.nextDouble();`
-```java
-// 读取用户输入的浮点数
-double d = sc.nextDouble();
-```
-
----
-
-**基本写法：读取布尔值**
-`<Scanner对象>.nextBoolean();`
-```java
-// 读取用户输入的布尔值
-boolean b = sc.nextBoolean();
-```
-
----
-
-**基本写法：读取一个单词**
-`<Scanner对象>.next();`
-```java
-// 读取一个单词遇到空格停止
-String str = sc.next();
-```
-
----
-
-**基本写法：读取整行**
-`<Scanner对象>.nextLine();`
-```java
-// 读取整行输入
-String line = sc.nextLine();
-```
-
----
-
-**基本写法：关闭 Scanner**
-`<Scanner对象>.close();`
-```java
-// 关闭 Scanner 释放资源
-sc.close();
-```
-
----
-
-## 代码风格
-
-**基本写法：K&R 风格左大括号**
-`if (<条件>) { }`
-```java
-// 左大括号放在行尾
-if (condition) {
-}
-```
-
----
-
-**基本写法：try-with-resources**
-`try (<资源声明>) { }`
-```java
-// 自动关闭资源的 try 语句
-try (Scanner sc = new Scanner(System.in)) {
-}
-```
-
----
-
-## Java 25+ 新特性
-
-**基本写法：Java 21+ record 记录类**
-`public record <名称>(<字段>) { }`
-```java
-// 定义不可变的数据载体记录类
-public record Point(int x, int y) { }
-```
-
----
-
-**基本写法：Java 21+ sealed 密封类**
-`public sealed class <名称> permits <子类> { }`
-```java
-// 限制可继承的子类范围
-public sealed class Shape permits Circle, Square, Triangle { }
-```
-
----
-
-**基本写法：Java 21+ 模式匹配 switch**
-`switch (<obj>) { case <类型> <变量> -> <语句>; }`
-```java
-// 使用类型模式匹配的 switch 表达式
-String result = switch (obj) {
-    case Integer i -> "整数: " + i;
-    case String s -> "字符串: " + s;
-    default -> "未知类型";
-};
-```
-
----
-
-**基本写法：Java 21+ 文本块**
-`"""<多行文本>"""`
-```java
-// 使用三引号定义多行字符串
-String json = """
+public class CouponDemo {
+    public static void main(String[] args) {
+        int subtotal = 83;                  // 整个 main 里都能用
         {
-            "name": "Tom",
-            "age": 18
+            int coupon = 5;                 // 只在这对内层花括号里存在
+            System.out.println("会员立减 " + coupon + " 元");
         }
-        """;
-```
-
----
-
-**基本写法：Java 25+ 严格浮点（默认恢复 strictfp 行为）**
-`<修饰符> class <类名> { }`
-```java
-// Java 25 起默认采用严格浮点语义，无需显式声明 strictfp
-public class Calculator {
-    public double compute() {
-        return 0.1 + 0.2;  // 在所有平台上结果一致
+        System.out.println(coupon);         // 试图出块再用
     }
 }
 ```
 
----
+编译：
 
-**基本写法：Java 25+ scoped values**
-`ScopedValue.where(<name>, <value>).run(() -> { })`
-```java
-// 使用 ScopedValue 在线程作用域内共享不可变值
-private static final ScopedValue<String> USER_ID = ScopedValue.newInstance();
-ScopedValue.where(USER_ID, "user123").run(() -> {
-    System.out.println(USER_ID.get());
-});
+```text
+CouponDemo.java:8: error: cannot find symbol
+        System.out.println(coupon);
+                           ^
+  symbol:   variable coupon
+  location: class CouponDemo
+1 error
 ```
 
----
+读报错三步（030 教过）：`symbol: variable coupon` =「编译器不知道这个名字」——它的块在第 7 行闭合，第 8 行已注销。修法：块外还要用，就搬声明。
 
-**基本写法：Java 25+ structured concurrency**
-`try (var scope = new StructuredTaskScope.ShutdownOnFailure()) { }`
+## 4. 注释的三种写法
+
 ```java
-// 使用结构化并发管理多个子任务的生命周期
-try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
-    var task1 = scope.fork(() -> fetchUser());
-    var task2 = scope.fork(() -> fetchOrders());
-    scope.join().throwIfFailed();
-    var user = task1.get();
-    var orders = task2.get();
+// 单行注释：给"这一行"做注脚，解释为什么这么写
+
+/*
+ * 多行注释：解释一段代码的整体思路，
+ * 或临时禁用几行代码。
+ */
+
+/**
+ * 文档注释：写给 javadoc 工具看，能自动生成 API 文档网页。
+ */
+public class NoteDemo {
+    public static void main(String[] args) {
+        int cookiePrice = 9;    // 单位是元，不是分
+        System.out.println(cookiePrice * 3);
+    }
 }
 ```
 
----
+预期输出：
 
-**基本写法：Java 25+ virtual threads**
-`Thread.ofVirtual().start(() -> { })`
-```java
-// 启动虚拟线程执行轻量级并发任务
-Thread vThread = Thread.ofVirtual().start(() -> {
-    System.out.println("运行在虚拟线程: " + Thread.currentThread());
-});
+```text
+27
 ```
 
----
+纪律：注释解释**为什么**而不复述是什么；文档注释配合 javadoc 命令生成网页——标准库官方文档就是这么来的，`@param`、`@return` 标签在 [方法详解](/java/100-MethodDetailed) 补全。
 
-**基本写法：Java 25+ module info 模块声明**
-`module <模块名> { exports <包>; requires <模块>; }`
+## 5. 包与 import：Java 怎么找到类
+
+把购物车商品存成列表，标准库有现成的 `List`，直接用试试：
+
 ```java
-// 在 module-info.java 中声明模块依赖关系
-module com.example.app {
-    exports com.example.app.api;
-    requires java.sql;
-    requires transitive java.base;
+public class Cart {
+    public static void main(String[] args) {
+        List<String> items = List.of("草莓蛋糕", "可可曲奇");
+        System.out.println("购物车 " + items.size() + " 件：" + items);
+    }
 }
 ```
+
+编译报错：
+
+```text
+Cart.java:3: error: cannot find symbol
+        List<String> items = List.of("草莓蛋糕", "可可曲奇");
+        ^
+  symbol:   class List
+  location: class Cart
+1 error
+```
+
+又是 cannot find symbol，但注意 symbol 行：上次是 `variable coupon`，这次是 `class List`。**variable 是名字问题，class 是「这个类编译器不认识」**。List 住在标准库的 java.util 包里，在文件顶部加一行 `import java.util.List;` 再编译运行：
+
+```text
+购物车 2 件：[草莓蛋糕, 可可曲奇]
+```
+
+说透四件事：
+
+- **包就是目录**（030 预告过），`java.util.List` 读作「java.util 包里的 List 类」；**import 不是复制代码**，只是声明「下文直接写 List，指的是 java.util.List」；
+- **java.lang 包自动可用**（System、String、Integer 都在其中）——这就是 HelloWorld 不用 import 的原因；
+- `package com.example.shop;` 反向声明「我的类住在这个包里」，必须是文件第一行且目录层级一致，学习期可不写；
+- `List<String>` 的尖括号先混个眼熟，[集合框架详解](/java/210-CollectionFrameworkDetailed) 讲透。
+
+## 6. 命名规范：让三个月后的你认得代码
+
+Java 社区有一套人人遵守的命名约定（写过 Python 的话：PEP 8 之于 Python，就是这套约定之于 Java）：
+
+| 内容 | 约定 | 例子 |
+| --- | --- | --- |
+| 类名 | 大驼峰，每个单词首字母大写 | OrderSubtotal、ScoreBoard |
+| 方法名、变量名 | 小驼峰，首单词小写 | orderCount、printSubtotal |
+| 常量 | 全大写，下划线分隔 | MAX_RETRY、DEFAULT_PRICE |
+| 包名 | 全小写 | com.example.shop |
+
+硬规则（违反直接编译失败）：字母、数字、下划线、美元符组成，不能以数字开头，不能用关键字（class、int 等 50 多个），**大小写敏感**——order 和 Order 是两个名字。对比一眼：`int a;` 谁都看不懂，`int order_count;` 是 Python 写法，`int orderCount;` 才是 Java。
+
+## 7. 第一个多行小程序：订单小计
+
+把今天的东西全部拼起来，新建 OrderSubtotal.java：
+
+```java
+public class OrderSubtotal {
+    public static void main(String[] args) {
+        // 单价单位是元，数量单位是份
+        int cakePrice = 28;
+        int cakeCount = 2;
+        int cookiePrice = 9;
+        int cookieCount = 3;
+
+        // 小计 = 各商品 单价 × 数量 之和
+        int cakeSubtotal = cakePrice * cakeCount;
+        int cookieSubtotal = cookiePrice * cookieCount;
+        int subtotal = cakeSubtotal + cookieSubtotal;
+
+        System.out.println("==== 订单小计 ====");
+        System.out.println("草莓蛋糕 ×2：" + cakeSubtotal + " 元");
+        System.out.println("可可曲奇 ×3：" + cookieSubtotal + " 元");
+        System.out.println("合计：" + subtotal + " 元");
+    }
+}
+```
+
+编译运行，预期输出：
+
+```text
+==== 订单小计 ====
+草莓蛋糕 ×2：56 元
+可可曲奇 ×3：27 元
+合计：83 元
+```
+
+留一个伏笔：价格全是整数。如果蛋糕是 28.5 元呢？`int` 装不下小数，混进 `double` 后运算规则会变——这正是下一篇 [数据类型转换](/java/050-DataTypeConversion) 的开场问题。
+
+## 8. 修改实验
+
+实验一（5 分钟）：加第三样商品「热可可」，单价 12 元买 1 份，先写预期输出（合计 95 元）再核对。
+
+实验二（10 分钟）：删掉全部注释，隔五分钟重读，回答丢了哪些信息；再给 subtotal 行补一条「解释为什么」的注释。
+
+实验三（10 分钟）：把 `int subtotal = ...` 挪进一层新的内层花括号、最后一行 println 留在块外，先预测再验证——你将亲手复现第 3 节的报错。
+
+## 9. 常见错误与调试实录
+
+错误一：变量名打错（想打 orderCount 打成 orderCont）：
+
+```text
+Order.java:4: error: cannot find symbol
+        System.out.println("订单数：" + orderCont);
+                                       ^
+  symbol:   variable orderCont
+  location: class Order
+1 error
+```
+
+三步定位：行号 → symbol 行 → 逐字母对照声明。九成是拼写，IDE 会画红线并给出「did you mean」建议。
+
+错误二：缺右花括号。javac 报 `error: reached end of file while parsing`，且行号指向文件末尾——八成是前面某层 `{` 少了配对；IDE 自动格式化能让断层立刻现形。
+
+错误三：忘了 import（第 5 节 Cart 的现场）。口诀：看 symbol 行——`variable` 查拼写与作用域，`class` 查 import。030 说的「一成是缺少引入」你今天见过了。
+
+## 10. 实际项目中的使用场景
+
+- 真实项目的源文件永远遵循「package、import、类」三段式；日志里抛错的类名就是全限定名（如 com.example.shop.Order）。代码评审里「命名」是最高频的意见来源——名字起对，一半注释都可省掉。
+
+## 11. 小练习
+
+预测题（5 分钟）：把下面片段放进 main 方法体，两行 println 各输出什么？先写答案再运行验证：
+
+```java
+int hp = 100;
+{
+    int damage = 30;
+    hp = hp - damage;
+}
+System.out.println(hp);
+System.out.println(damage);
+```
+
+（验证：第一行 70；第二行编译失败，cannot find symbol，symbol: variable damage——城墙规则。）
+
+修改题（10 分钟）：给 OrderSubtotal 加会员 9 折：新增 `int discounted = subtotal * 9 / 10;` 并输出折后价。先算预期值再运行（结果是 74 而不是 74.7——整数运算把 0.7 丢哪了？把疑问带给下一篇）。
+
+修 Bug 题（15 分钟）：下面代码想输出最终分数，编译报错如下。按读报错三步定位并修复，说清 symbol 是 variable 还是 class、为什么：
+
+```java
+public class Score {
+    public static void main(String[] args) {
+        int score = 95;
+        {
+            int bonus = 5;
+            score = score + bonus;
+        }
+        System.out.println("最终分数 " + socre);
+    }
+}
+```
+
+```text
+Score.java:8: error: cannot find symbol
+        System.out.println("最终分数 " + socre);
+                                          ^
+  symbol:   variable socre
+  location: class Score
+1 error
+```
+
+挑战题（半小时）：写一个 Receipt 类输出收据：三样商品，每行一个小计，最后一行总计。要求：类名大驼峰、变量小驼峰、各留一条文档注释与单行注释、单价用变量。验收：javac 零报错；总计 = 各行小计之和；运行前已写出完整预期输出且逐行一致。提示（思路）：抄第 7 节骨架，两样改三样；展开（关键写法）：每样商品一对「单价 + 数量」变量，先算后打。
+
+## 12. 与之前和之后的知识的关系
+
+- 往前：[快速上手](/java/030-QuickStart) 的五行骨架，今天长成了完整的源文件三段式；
+- 往后：[数据类型转换](/java/050-DataTypeConversion) 解决小数价格与 int 的混算，也解释修改题丢掉的 0.7；[包装类缓存陷阱](/java/060-WrapperCacheTrap) 揭开 Integer 的另一面；[变量与常量](/java/070-VariableConstant) 展开变量与命名；[方法详解](/java/100-MethodDetailed) 教你把语句抽成方法；[控制流](/java/090-ControlFlow) 加上分支与循环；
+- 主线：040（本文）→ 050 → 060 → 070 是 Java 入门四部曲，按编号顺序学即可。
+
+## 13. 官方文档
+
+- Oracle Java Tutorials「Variables」（变量与作用域）：https://docs.oracle.com/javase/tutorial/java/nutsandbolts/variables.html
+- Oracle Java Tutorials「Packages」（包与 import 的完整规则）：https://docs.oracle.com/javase/tutorial/java/package/packages.html
+- Java 语言规范 JLS 第 6 章「Names」（标识符规则的权威定义）：https://docs.oracle.com/javase/specs/jls/se21/html/jls-6.html
+
+## 14. 自我检查
+
+- 能合上文档说出源文件三段式结构，并解释 System 为什么不用 import；
+- 给一个变量，能立刻说出它在哪对花括号里可见；
+- 看到 cannot find symbol，能按三步定位，并区分 symbol 是 variable 还是 class；
+- 能一次编译通过写出订单小计程序，输出与预期完全一致。
+
+## 本章总结
+
+源文件从上到下是包声明、import、类；语句以分号结尾，花括号把语句攒成块；名字活在自己所在的块里，出了 `}` 即失效。注释三种各司其职，解释为什么而不是什么。要用的类不在 java.lang 就 import。命名跟着社区约定走：类大驼峰、变量小驼峰、常量全大写。cannot find symbol 有两副面孔——variable 查拼写与作用域，class 查 import。
+
+## 下一步
+
+进入 [数据类型转换](/java/050-DataTypeConversion)：int 和 double 相加，结果是谁？带着订单里那个 28.5 元的问题过去。

@@ -1,5 +1,5 @@
 ---
-order: 830
+order: 840
 title: Java Swing 图形界面
 module: 'java'
 category: 后端技术

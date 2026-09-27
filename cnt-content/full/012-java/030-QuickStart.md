@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 写下最小可运行的 HelloWorld 并逐行解释；javac 编译与 java 运行两步走、main 方法签名逐词拆解、第一个编译错误与第一个运行时异常的真实报错实录，附修 Bug 练习与包结构预告。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
   - 'java/020-JavaOverviewDevEnv'
   - 'java/040-ProgramStructureBasicSyntax'

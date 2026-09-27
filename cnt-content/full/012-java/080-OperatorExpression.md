@@ -1,1025 +1,348 @@
 ---
 order: 80
-title: 运算符与表达式
+title: 运算符与表达式：整数除法吃掉了 0.7
 module: 'java'
 category: 后端技术
 difficulty: intermediate
-description: 算术、关系、逻辑、位运算及运算符优先级。
+description: 以排行榜平均分回收 040 埋下的 74 悬念：算术与整数除法、比较与逻辑短路、三元运算符、位运算的一句话定位、优先级与括号，附 possible lossy conversion 真实报错与浮点精度陷阱。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'java/650-JavaIONIO'
-  - 'java/780-JavaNewFeatures'
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
-  - 'java/830-SpringBootAdvanced'
+  - 'java/040-ProgramStructureBasicSyntax'
+  - 'java/050-DataTypeConversion'
+  - 'java/070-VariableConstant'
+  - 'java/090-ControlFlow'
 prerequisites:
-  - 'java/020-JavaOverviewDevEnv'
+  - 'java/070-VariableConstant'
 ---
 
 ## 前置知识
 
-- [变量与常量](/java/070-VariableConstant)：建议先完成前一篇的学习
+- 已完成 [变量与常量](/java/070-VariableConstant)：会声明初始化变量，知道基本类型与引用变量的分工；
+- [数据类型转换](/java/050-DataTypeConversion) 的提升与截断是本文的近亲，再见时你会认出来。
+
+跨语言提个醒：Python 的 `7 / 2` 得 3.5（`//` 才整除），JS 的 `7 / 2` 也得 3.5。Java 分得更细：**两个 int 相除，结果还是 int**。本文从这个差异讲起。
 
 ## 学习目标
 
-- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
-- 掌握「1. 运算符分类」的核心机制、典型用法与常见陷阱
-- 掌握「2. 表达式」的核心机制、典型用法与常见陷阱
-- 掌握「3. 运算符优先级」的核心机制、典型用法与常见陷阱
-- 掌握「4. 常见陷阱与最佳实践」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 预测两个 int 相除的结果，说清整数除法的取整规则，写出拿到小数的改法；
+2. 组合比较与逻辑运算符，解释 && 与 || 的短路，并用短路写出除零守卫；
+3. 用三元运算符把「二选一赋值」压成一行；
+4. 说出位运算符在什么场合才登场；
+5. 拿到 possible lossy conversion，能指认哪次赋值在丢精度并修复。
 
-## 0. 本节阅读指引（先读这一节）
+预计 45 到 60 分钟，含 3 组动手实验与 4 道练习。
 
-本篇是「运算符与表达式」。运算符是语法基础，但本篇含部分进阶内容，零基础按下面范围读即可。
+## 1. 问题引入：排行榜要算平均分
 
-零基础第一遍只读：
+排行榜要显示「场均得分」。三局合计 224 分、共 3 局，直觉说平均 74.7：
 
-1. 第 1 节 运算符分类中的算术、关系、逻辑、赋值、三元运算符；
-2. 第 2 节 表达式、3. 运算符优先级。
-
-可跳过：位运算深入原理、整数溢出处理、字符串拼接性能等小节第一遍只看结论，不深究。
-
-> 记住：&& 与 || 有短路效应；比较字符串内容用 equals()，不用 ==。
-
-
-## 1. 运算符分类
-
-### 1.1 算术运算符
-
-算术运算符用于执行基本的数学运算，包括加法、减法、乘法、除法和取模等。
-
-| 运算符         | 描述         | 示例 (a=10, b=3) | 结果           |
-| -------------- | ------------ | ---------------- | -------------- |
-| `+`            | 加法         | `a + b`          | 13             |
-| `-`            | 减法         | `a - b`          | 7              |
-| `*`            | 乘法         | `a * b`          | 30             |
-| `/`            | 除法         | `a / b`          | 3 (整数除法)   |
-| `%`            | 取模（取余） | `a % b`          | 1              |
-| `++`           | 自增         | `a++` (先用后加) | 10 (a 变为 11) |
-| `++`           | 自增         | `++a` (先加后用) | 11 (a 变为 11) |
-| `--`           | 自减         | `b--` (先用后减) | 3 (b 变为 2)   |
-| `--`           | 自减         | `--b` (先减后用) | 2 (b 变为 2)   |
-| **特殊用法**： |
-
-- `+` 运算符还可以用于字符串拼接：`"Hello" + "World"` 结果为 `"HelloWorld"`
-- 当 `+` 运算符两边有一个是字符串时，会将另一个操作数转换为字符串进行拼接
-  **示例**：
-
-```java
- // 基本算术运算
- int a = 10;
- int b = 3;
- System.out.println("a + b = " + (a + b)); // 13
- System.out.println("a - b = " + (a - b)); // 7
- System.out.println("a * b = " + (a * b)); // 30
- System.out.println("a / b = " + (a / b)); // 3 (整数除法)
- System.out.println("a % b = " + (a % b)); // 1
- // 自增和自减
- int c = 5;
- System.out.println("c++ = " + c++); // 5 (先用后加)
- System.out.println("c = " + c); // 6
- System.out.println("++c = " + ++c); // 7 (先加后用)
- // 字符串拼接
- String str1 = "Hello";
- String str2 = "World";
- System.out.println(str1 + " " + str2); // "Hello World"
- System.out.println("The answer is: " + 42); // "The answer is: 42"
-```
-
-### 1.2 关系运算符
-
-关系运算符用于比较两个值的大小关系，结果为 `boolean` 类型（``或`false`）。
-
-| 运算符     | 描述     | 示例 (a=10, b=3) | 结果  |
-| ---------- | -------- | ---------------- | ----- |
-| `==`       | 等于     | `a == b`         | false |
-| `!=`       | 不等于   | `a != b`         |       |
-| `>`        | 大于     | `a > b`          |       |
-| `<`        | 小于     | `a < b`          | false |
-| `>=`       | 大于等于 | `a >= b`         |       |
-| `<=`       | 小于等于 | `a <= b`         | false |
-| **注意**： |
-
-- 对于引用类型，`==` 比较的是对象的引用（内存地址），而不是对象的内容。要比较对象的内容，应使用 `equals()` 方法。
-  **示例**：
-
-```java
- // 基本类型比较
- int a = 10;
- int b = 3;
- System.out.println("a == b: " + (a == b)); // false
- System.out.println("a != b: " + (a != b)); //
- System.out.println("a > b: " + (a > b)); //
- System.out.println("a < b: " + (a < b)); // false
- System.out.println("a >= b: " + (a >= b)); //
- System.out.println("a <= b: " + (a <= b)); // false
- // 引用类型比较
- String s1 = "Hello";
- String s2 = "Hello";
- String s3 = new String("Hello");
- System.out.println("s1 == s2: " + (s1 == s2)); //  (字符串常量池)
- System.out.println("s1 == s3: " + (s1 == s3)); // false (不同对象)
- System.out.println("s1.equals(s3): " + s1.equals(s3)); //  (内容相同)
-```
-
-### 1.3 逻辑运算符
-
-逻辑运算符用于连接布尔表达式，结果为 `boolean` 类型。
-
-| 运算符         | 描述             | 短路特性                       | 示例 (a=true, b=false)   | 结果                           |
-| -------------- | ---------------- | ------------------------------ | ------------------------ | ------------------------------ |
-| `&&`           | 短路与           | 有（第一个为假则不计算第二个） | `a && b`                 | false                          |
-| `              |                  | `                              | 短路或                   | 有（第一个为真则不计算第二个） | `a  |     | b`  |     |
-| `!`            | 逻辑非           | 无                             | `!a`                     | false                          |
-| `&`            | 逻辑与（无短路） | 无（总是计算两个操作数）       | `a & b`                  | false                          |
-| `              | `                | 逻辑或（无短路）               | 无（总是计算两个操作数） | `a                             | b`  |     |
-| `^`            | 逻辑异或         | 无                             | `a ^ b`                  |                                |
-| **短路特性**： |
-
-- `&&`：如果第一个操作数为 `false`，则第二个操作数不会被计算
-- `||`：如果第一个操作数为 ``，则第二个操作数不会被计算
-  **示例**：
-
-```java
- // 短路与
- int x = 5;
- b boolean result1 = (x > 10) && (x++ > 0);
- System.out.println("result1: " + result1); // false
- System.out.println("x: " + x); // 5 (x++ 未执行)
- // 短路或
- int y = 5;
- b boolean result2 = (y < 10) || (y++ > 0);
- System.out.println("result2: " + result2); //
- System.out.println("y: " + y); // 5 (y++ 未执行)
- // 逻辑非
- boolean flag = true;
- System.out.println("!flag: " + !flag); // false
- // 逻辑异或
- boolean a = true;
- b boolean b = false;
- System.out.println("a ^ b: " + (a ^ b)); //
-```
-
-### 1.4 位运算符
-
-位运算符用于对二进制位进行操作，适用于整数类型（`byte`, `short`, `int`, `long`）。
-
-| 运算符     | 描述           | 示例 (a=6, b=3) | 二进制                 | 结果 |
-| ---------- | -------------- | --------------- | ---------------------- | ---- |
-| `&`        | 按位与         | `a & b`         | `110 & 011 = 010`      | 2    |
-| `          | `              | 按位或          | `a                     | b`   | `110 | 011 = 111` | 7   |
-| `^`        | 按位异或       | `a ^ b`         | `110 ^ 011 = 101`      | 5    |
-| `~`        | 按位取反       | `~a`            | `~00000110 = 11111001` | -7   |
-| `<<`       | 左移           | `a << 1`        | `110 << 1 = 1100`      | 12   |
-| `>>`       | 右移（带符号） | `a >> 1`        | `110 >> 1 = 011`       | 3    |
-| `>>>`      | 右移（无符号） | `a >>> 1`       | `110 >>> 1 = 011`      | 3    |
-| **说明**： |
-
-- `<<`：左移 n 位，相当于乘以 2 的 n 次方
-- `>>`：右移 n 位，相当于除以 2 的 n 次方（带符号）
-- `>>>`：无符号右移，高位补 0
-  **示例**：
-
-```java
- int a = 6; // 二进制: 110
- int b = 3; // 二进制: 011
- System.out.println("a & b = " + (a & b)); // 2 (010)
- System.out.println("a | b = " + (a | b)); // 7 (111)
- System.out.println("a ^ b = " + (a ^ b)); // 5 (101)
- System.out.println("~a = " + (~a)); // -7
- System.out.println("a << 1 = " + (a << 1)); // 12 (1100)
- System.out.println("a >> 1 = " + (a >> 1)); // 3 (011)
- System.out.println("a >>> 1 = " + (a >>> 1)); // 3 (011)
- // 负数的位运算
- int c = -6; // 二进制补码: 11111111111111111111111111111010
- System.out.println("c >> 1 = " + (c >> 1)); // -3 (带符号右移)
- System.out.println("c >>> 1 = " + (c >>> 1)); // 2147483645 (无符号右移)
-```
-
-### 1.5 赋值运算符
-
-赋值运算符用于给变量赋值，包括简单赋值和复合赋值。
-
-| 运算符     | 描述           | 示例       | 等价于        |
-| ---------- | -------------- | ---------- | ------------- |
-| `=`        | 简单赋值       | `a = 10`   | `a = 10`      |
-| `+=`       | 加法赋值       | `a += 5`   | `a = a + 5`   |
-| `-=`       | 减法赋值       | `a -= 5`   | `a = a - 5`   |
-| `*=`       | 乘法赋值       | `a *= 5`   | `a = a * 5`   |
-| `/=`       | 除法赋值       | `a /= 5`   | `a = a / 5`   |
-| `%=`       | 取模赋值       | `a %= 5`   | `a = a % 5`   |
-| `<<=`      | 左移赋值       | `a <<= 2`  | `a = a << 2`  |
-| `>>=`      | 右移赋值       | `a >>= 2`  | `a = a >> 2`  |
-| `>>>=`     | 无符号右移赋值 | `a >>>= 2` | `a = a >>> 2` |
-| `&=`       | 按位与赋值     | `a &= 5`   | `a = a & 5`   |
-| `          | =`             | 按位或赋值 | `a            | = 5` | `a = a | 5`  |
-| `^=`       | 按位异或赋值   | `a ^= 5`   | `a = a ^ 5`   |
-| **示例**： |
-
-```java
- int a = 10;
- // 简单赋值
- a = 20;
- System.out.println("a = " + a); // 20
- // 复合赋值
- a += 5; // 等价于 a = a + 5
- System.out.println("a += 5: " + a); // 25
- a -= 3; // 等价于 a = a - 3
- System.out.println("a -= 3: " + a); // 22
- a *= 2; // 等价于 a = a * 2
- System.out.println("a *= 2: " + a); // 44
- a /= 4; // 等价于 a = a / 4
- System.out.println("a /= 4: " + a); // 11
- a %= 3; // 等价于 a = a % 3
- System.out.println("a %= 3: " + a); // 2
-```
-
-### 1.6 三元运算符
-
-三元运算符是 Java 中唯一的三目运算符，用于根据条件表达式的值选择执行两个表达式中的一个。
-**语法**：`条件表达式 ? 表达式1 : 表达式2`
-**说明**：
-
-- 如果条件表达式为 ``，则执行表达式1并返回其结果
-- 如果条件表达式为 `false`，则执行表达式2并返回其结果
-  **示例**：
-
-```java
- // 基本用法
- int a = 10;
- int b = 20;
- int max = (a > b) ? a : b;
- System.out.println("Max: " + max); // 20
- // 嵌套使用
- int x = 5;
- int y = 10;
- int z = 15;
- int largest = (x > y) ? ((x > z) ? x : z) : ((y > z) ? y : z);
- System.out.println("Largest: " + largest); // 15
- // 用于赋值
- String result = (a > b) ? "a is larger" : "b is larger";
- System.out.println(result); // "b is larger"
-```
-
-## 2. 表达式
-
-### 2.1 表达式的概念
-
-表达式是由运算符和操作数组成的代码片段，用于计算一个值。表达式可以是简单的（如 `5 + 3`），也可以是复杂的（如 `(a + b) * c / d`）。
-
-### 2.2 表达式的类型
-
-根据表达式的结果类型，表达式可以分为以下几类：
-
-1. **算术表达式**：结果为数值类型，如 `a + b`, `x * y`
-2. **关系表达式**：结果为布尔类型，如 `a > b`, `x == y`
-3. **逻辑表达式**：结果为布尔类型，如 `a && b`, `x || y`
-4. **位表达式**：结果为整数类型，如 `a & b`, `x << y`
-5. **赋值表达式**：结果为赋值后变量的值，如 `a = 5`, `x += 3`
-6. **三元表达式**：结果为表达式1或表达式2的值，如 `(a > b) ? a : b`
-
-### 2.3 表达式的求值
-
-表达式的求值顺序取决于运算符的优先级和结合性。
-**结合性**：当多个运算符具有相同优先级时，表达式的求值顺序（从左到右或从右到左）。
-
-| 运算符     | 结合性   |
-| ---------- | -------- |
-| 算术运算符 | 从左到右 |
-| 关系运算符 | 从左到右 |
-| 逻辑运算符 | 从左到右 |
-| 赋值运算符 | 从右到左 |
-| 三元运算符 | 从右到左 |
-| **示例**： |
-
-```java
- // 结合性示例
- int a = 10;
- int b = 5;
- int c = 3;
- // 算术运算符：从左到右
- int result1 = a + b * c; // 等价于 a + (b * c) = 10 + 15 = 25
- System.out.println("result1: " + result1);
- // 赋值运算符：从右到左
- int x, y;
- x = y = 5; // 等价于 x = (y = 5)
- System.out.println("x: " + x + ", y: " + y); // x: 5, y: 5
- // 三元运算符：从右到左
- int a = 10;
- int b = 20;
- int c = 30;
- int result2 = a > b ? a : b > c ? b : c;
- // 等价于 a > b ? a : (b > c ? b : c)
- System.out.println("result2: " + result2); // 30
-```
-
-## 3. 运算符优先级
-
-运算符优先级决定了表达式中不同运算符的执行顺序。优先级高的运算符先执行，优先级低的运算符后执行。
-
-| 优先级     | 运算符                                                      | 结合性   |
-| ---------- | ----------------------------------------------------------- | -------- |
-| 1          | `()` `[]` `.`                                               | 从左到右 |
-| 2          | `!` `~` `++` `--` `+` (一元) `-` (一元)                     | 从右到左 |
-| 3          | `*` `/` `%`                                                 | 从左到右 |
-| 4          | `+` (二元) `-` (二元)                                       | 从左到右 |
-| 5          | `<<` `>>` `>>>`                                             | 从左到右 |
-| 6          | `<` `<=` `>` `>=` `instanceof`                              | 从左到右 |
-| 7          | `==` `!=`                                                   | 从左到右 |
-| 8          | `&`                                                         | 从左到右 |
-| 9          | `^`                                                         | 从左到右 |
-| 10         | `                                                           | `        | 从左到右 |
-| 11         | `&&`                                                        | 从左到右 |
-| 12         | `                                                           |          | `        | 从左到右 |
-| 13         | `? :`                                                       | 从右到左 |
-| 14         | `=` `+=` `-=` `*=` `/=` `%=` `<<=` `>>=` `>>>=` `&=` `^=` ` | =`       | 从右到左 |
-| **示例**： |
-
-```java
- // 优先级示例
- int a = 10;
- int b = 5;
- int c = 3;
- int d = 2;
- // 运算顺序：先乘除后加减
- int result1 = a + b * c - d;
- // 等价于 a + (b * c) - d = 10 + 15 - 2 = 23
- System.out.println("result1: " + result1);
- // 运算顺序：先括号内，后括号外
- int result2 = (a + b) * (c - d);
- // 等价于 (10 + 5) * (3 - 2) = 15 * 1 = 15
- System.out.println("result2: " + result2);
- // 运算顺序：先关系运算，后逻辑运算
- boolean result3 = a > b && c < d;
- // 等价于 (a > b) && (c < d) =  && false = false
- System.out.println("result3: " + result3);
-```
-
-## 4. 常见陷阱与最佳实践
-
-### 4.1 浮点精度问题
-
-**问题**：由于浮点数的存储方式（IEEE 754 标准），某些十进制小数无法精确表示，导致计算结果出现误差。
-**示例**：
-
-```java
- double a = 0.1;
- double b = 0.2;
- double c = a + b;
- System.out.println(c); // 输出 0.30000000000000004，而不是 0.3
-```
-
-**解决方案**：
-
-- 使用 `BigDecimal` 类进行精确计算
-- 对于货币等需要精确计算的场景，应使用 `BigDecimal`
-  **示例**：
-
-```java
- import java.math.BigDecimal;
- BigDecimal a = new BigDecimal("0.1");
- BigDecimal b = new BigDecimal("0.2");
- BigDecimal c = a.add(b);
- System.out.println(c); // 输出 0.3
-```
-
-### 4.2 整数溢出问题
-
-**问题**：当整数运算的结果超出其类型的取值范围时，会发生溢出，导致结果不正确。
-**示例**：
-
-```java
- int max = Integer.MAX_VALUE; // 2147483647
- int result = max + 1;
- System.out.println(result); // 输出 -2147483648，发生溢出
-```
-
-**解决方案**：
-
-- 使用更大范围的整数类型（如 `long`）
-- 在运算前检查是否会发生溢出
-- 使用 `Math.addExact()` 等方法，在溢出时抛出异常
-  **示例**：
-
-```java
- long max = Integer.MAX_VALUE;
- long result = max + 1;
- System.out.println(result); // 输出 2147483648，正确
- // 使用 Math.addExact()
- try {
-  int result2 = Math.addExact(Integer.MAX_VALUE, 1);
- }
-  System.out.println("发生溢出: " + e.getMessage());
- }
-```
-
-### 4.3 字符串拼接的性能问题
-
-**问题**：使用 `+` 运算符进行大量字符串拼接时，会创建多个临时字符串对象，影响性能。
-**解决方案**：
-
-- 对于少量字符串拼接，使用 `+` 运算符是可以接受的
-- 对于大量字符串拼接，应使用 `StringBuilder` 或 `StringBuffer`
-  **示例**：
-
-```java
- // 性能较差的方式
- String result = "";
- for (int i = 0; i < 1000; i++) {
-  result += " " + i;
- }
- // 性能较好的方式
- StringBuilder sb = new StringBuilder();
- for (int i = 0; i < 1000; i++) {
-  sb.append(" ").append(i);
- }
- String result = sb.toString();
-```
-
-### 4.4 短路运算符的使用
-
-**最佳实践**：
-
-- 当第二个操作数可能会导致异常或有副作用时，应使用短路运算符 (`&&`, `||`)
-- 当需要确保两个操作数都被计算时，应使用非短路运算符 (`&`, `|`)
-  **示例**：
-
-```java
- // 安全的空检查
- String str = null;
- if (str != null && str.length() > 0) {
-  // 只有当 str 不为 null 时，才会计算 str.length()
-  System.out.println("String length: " + str.length());
- }
- // 确保两个条件都被检查
- boolean condition1 = checkCondition1();
- boolean condition2 = checkCondition2();
- if (condition1 & condition2) {
-  // 无论 condition1 是什么，都会执行 checkCondition2()
-  System.out.println("Both conditions are ");
- }
-```
-
-### 4.5 位运算符的应用
-
-**位运算符的常见应用**：
-
-- 位掩码：用于表示一组布尔标志
-- 位操作：用于高效的数学运算
-- 加密和哈希算法：使用位运算进行数据变换
-  **示例**：
-
-```java
- // 位掩码示例
- int FLAG_READ = 1 << 0; // 0b0001
- int FLAG_WRITE = 1 << 1; // 0b0010
- int FLAG_EXECUTE = 1 << 2; // 0b0100
- int permissions = FLAG_READ | FLAG_WRITE; // 0b0011
- // 检查权限
- if ((permissions & FLAG_READ) != 0) {
-  System.out.println("Read permission granted");
- }
- // 高效的乘除运算
- int a = 10;
- int multiplyBy2 = a << 1; // 等价于 a * 2
- int divideBy2 = a >> 1; // 等价于 a / 2
- System.out.println("Multiply by 2: " + multiplyBy2); // 20
- System.out.println("Divide by 2: " + divideBy2); // 5
-```
-
-## 5. 实际应用示例
-
-### 5.1 示例 1：计算BMI指数
-
-```java
- import java.util.Scanner;
- public class BMICalculator {
-  public static void main(String[] args) {
-  Scanner sc = new Scanner(System.in);
-  System.out.print("请输入体重（公斤）: ");
-  double weight = sc.nextDouble();
-  System.out.print("请输入身高（米）: ");
-  double height = sc.nextDouble();
-  // 计算BMI
-  double bmi = weight / (height * height);
-  // 判断BMI等级
-  String level;
-  if (bmi < 18.5) {
-  level = "偏瘦";
-  } else if (bmi < 24) {
-  level = "正常";
-  } else if (bmi < 28) {
-  level = "偏胖";
-  } else {
-  level = "肥胖";
-  }
-  System.out.println("您的BMI指数: " + bmi);
-  System.out.println("体重等级: " + level);
-  sc.close();
-  }
- }
-```
-
-### 5.2 示例 2：判断闰年
-
 ```java
- import java.util.Scanner;
- public class LeapYearChecker {
-  public static void main(String[] args) {
-  Scanner sc = new Scanner(System.in);
-  System.out.print("请输入年份: ");
-  int year = sc.nextInt();
-  // 判断闰年
-  boolean isLeapYear = (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
-  if (isLeapYear) {
-  System.out.println(year + " 是闰年");
-  } else {
-  System.out.println(year + " 不是闰年");
-  }
-  sc.close();
-  }
- }
-```
+public class AvgDemo {
+    public static void main(String[] args) {
+        int total = 224;    // 三局分数合计
+        int count = 3;      // 局数
+        int avg = total / count;
 
-### 5.3 示例 3：使用位运算实现权限管理
-
-```java
- public class PermissionManager {
-  // 权限标志
-  public static final int PERMISSION_READ = 1 << 0; // 0b0001
-  public static final int PERMISSION_WRITE = 1 << 1; // 0b0010
-  public static final int PERMISSION_EXECUTE = 1 << 2; // 0b0100
-  public static final int PERMISSION_DELETE = 1 << 3; // 0b1000
-  public static void main(String[] args) {
-  // 分配权限
-  int userPermissions = PERMISSION_READ | PERMISSION_WRITE;
-  // 检查权限
-  System.out.println("Read permission: " + hasPermission(userPermissions, PERMISSION_READ));
-  System.out.println("Write permission: " + hasPermission(userPermissions, PERMISSION_WRITE));
-  System.out.println("Execute permission: " + hasPermission(userPermissions, PERMISSION_EXECUTE));
-  System.out.println("Delete permission: " + hasPermission(userPermissions, PERMISSION_DELETE));
-  // 添加权限
-  userPermissions |= PERMISSION_EXECUTE;
-  System.out.println("\nAfter adding execute permission:");
-  System.out.println("Execute permission: " + hasPermission(userPermissions, PERMISSION_EXECUTE));
-  // 移除权限
-  userPermissions &= ~PERMISSION_WRITE;
-  System.out.println("\nAfter removing write permission:");
-  System.out.println("Write permission: " + hasPermission(userPermissions, PERMISSION_WRITE));
-  }
-  public static boolean hasPermission(int permissions, int permission) {
-  return (permissions & permission) != 0;
-  }
- }
+        System.out.println("场均 " + avg);
+    }
+}
 ```
 
----
+预期输出：
 
-## 算术运算符
-
-**基本写法：加法运算**
-`<操作数1> + <操作数2>`
-```java
-// 两个整数相加
-int sum = 10 + 3;
+```text
+场均 74
 ```
 
----
+眼熟的 74——040 的订单小计埋的悬念（9 折算出 74 而不是 74.7），050 讲过截断，今天给完整答案：**问题不在打折，在整数除法**。`total / count` 两个操作数都是 int，Java 规定结果也必须是 int——小数部分直接扔掉（是向零取整，不是四舍五入），74.666... 变成 74。
 
-**基本写法：减法运算**
-`<操作数1> - <操作数2>`
-```java
-// 两个整数相减
-int diff = 10 - 3;
-```
+## 2. 想要 74.7：先把一个操作数变 double
 
----
+最直接的尝试是把结果交给 int 装——编译器连运行的机会都不给：
 
-**基本写法：乘法运算**
-`<操作数1> * <操作数2>`
 ```java
-// 两个整数相乘
-int product = 10 * 3;
+int avg = (double) total / count;    // 想让 total 先升舱再除
 ```
 
----
-
-**基本写法：除法运算**
-`<操作数1> / <操作数2>`
-```java
-// 两个整数相除取整
-int quotient = 10 / 3;
+```text
+AvgDemo.java:6: error: incompatible types: possible lossy conversion from double to int
+        int avg = (double) total / count;
+                                 ^
+1 error
 ```
 
----
+读报错三步：类型——从 double 转 int 可能丢东西（0.666 会被扔掉）；位置——第 6 行的赋值；原因——左边变量是 int，右边表达式算出来是 double，Java 拒绝静默丢精度。修法不是压报错，而是承认结果本该是小数：
 
-**基本写法：取模运算**
-`<操作数1> % <操作数2>`
 ```java
-// 取余数
-int remainder = 10 % 3;
+double avg = (double) total / count;
+System.out.println("场均 " + avg);
 ```
 
----
+预期输出：
 
-## 自增自减
-
-**基本写法：后置自增**
-`<变量>++`
-```java
-// 先使用后加 1
-int a = 5;
-int b = a++;
+```text
+场均 74.66666666666667
 ```
 
----
+规则一句话：**除号两边只要有一个是 double，整个除法就按小数来**。业务上恰好想要整数（「满 74 分才上榜」）时，int 除法反而是对的——取整不是 bug，是语义。想四舍五入用 `Math.round(avg)`，输出 75。
 
-**基本写法：前置自增**
-`++<变量>`
-```java
-// 先加 1 后使用
-int a = 5;
-int b = ++a;
-```
+## 3. 算术运算符全家福
 
----
+把 % 和自增一并看全，还是排行榜的数据：
 
-**基本写法：后置自减**
-`<变量>--`
 ```java
-// 先使用后减 1
-int a = 5;
-int b = a--;
+int wins = 17;
+int total = 20;
+System.out.println(wins / total);      // 0：整数除法又来了
+System.out.println(wins % total);      // 17：除不尽的余数
+System.out.println(125 % 60);          // 5：125 秒是 2 分 5 秒
+System.out.println((double) wins / total);   // 0.85：胜率
 ```
 
----
+预期输出：
 
-**基本写法：前置自减**
-`--<变量>`
-```java
-// 先减 1 后使用
-int a = 5;
-int b = --a;
+```text
+0
+17
+5
+0.85
 ```
 
----
+加减乘（`+` `-` `*`）如常工作；`%` 取余数，判偶数（`x % 2 == 0`）、循环轮换（`i % 3`）、时间换算全靠它；`+` 还有第二份工——字符串拼接，040 的 println 里你一直在用。自增自减各看一眼：
 
-## 字符串拼接
-
-**基本写法：字符串拼接**
-`<字符串> + <其他类型>`
 ```java
-// 字符串与字符串拼接
-String result = "Hello" + " " + "World";
+int combo = 5;
+System.out.println(combo++);    // 5：先把旧值交出去，再加
+System.out.println(combo);      // 6
+System.out.println(++combo);    // 7：先加，再把新值交出去
 ```
 
----
+预期输出：
 
-**基本写法：字符串与数字拼接**
-`<字符串> + <数字>`
-```java
-// 字符串与数字拼接
-String result = "The answer is: " + 42;
+```text
+5
+6
+7
 ```
-
----
 
-## 关系运算符
-
-**基本写法：等于比较**
-`<操作数1> == <操作数2>`
-```java
-// 比较两个值是否相等
-boolean result = (10 == 3);
-```
+单独一行写 `combo++` 时前后置没区别；塞进表达式后差异就成了坑——团队代码更推荐 `combo += 1;`，把意图写明白。
 
----
+## 4. 比较与逻辑：条件的原材料
 
-**基本写法：不等于比较**
-`<操作数1> != <操作数2>`
-```java
-// 比较两个值是否不相等
-boolean result = (10 != 3);
-```
+比较运算符产出 boolean（`score > 70`、`score == 74`、`score != 74`、`score >= 60`），是下一篇所有判断的燃料。注意 == 的安全区：基本类型之间放心用（比数值）——包装类那条纪律是 060 的事。
 
----
+逻辑运算符把条件串起来，重点在 && 与 || 的**短路**：左边已能定结论，右边根本不执行：
 
-**基本写法：大于比较**
-`<操作数1> > <操作数2>`
 ```java
-// 比较左边是否大于右边
-boolean result = (10 > 3);
-```
+public class ShortCircuitDemo {
+    public static void main(String[] args) {
+        int logins = 3;
+        boolean hot = logins > 2 && logins < 10;      // 两个条件都算
+        System.out.println(hot);
 
----
-
-**基本写法：小于比较**
-`<操作数1> < <操作数2>`
-```java
-// 比较左边是否小于右边
-boolean result = (10 < 3);
+        int clicks = 0;
+        boolean first = clicks > 10 && clicks++ > 0;  // 左边已 false
+        System.out.println(first + " / " + clicks);   // 右边的自增没跑
+    }
+}
 ```
 
----
+预期输出：
 
-**基本写法：大于等于比较**
-`<操作数1> >= <操作数2>`
-```java
-// 比较左边是否大于等于右边
-boolean result = (10 >= 3);
+```text
+true
+false / 0
 ```
 
----
+`clicks` 还是 0——`&&` 左边为 false 时右边被短路跳过。这不是冷知识，是安全带：
 
-**基本写法：小于等于比较**
-`<操作数1> <= <操作数2>`
 ```java
-// 比较左边是否小于等于右边
-boolean result = (10 <= 3);
+int games = 0;
+int total = 100;
+if (games != 0 && total / games > 10) {   // 短路保住除法
+    System.out.println("胜率爆表");
+}
+System.out.println("程序活着");
 ```
 
----
+预期输出：
 
-**基本写法：引用类型内容比较**
-`<对象1>.equals(<对象2>)`
-```java
-// 比较两个字符串内容是否相同
-String s1 = "Hello";
-String s2 = new String("Hello");
-boolean result = s1.equals(s2);
+```text
+程序活着
 ```
-
----
 
-## 逻辑运算符
+（没有守卫的话，整数除零当场抛 ArithmeticException: / by zero。）把危险操作放 `&&` 右边、安全检查放左边——守卫除零、守卫空引用（060 的 NPE 同款思路）都靠它。
 
-**基本写法：短路与**
-`<布尔表达式1> && <布尔表达式2>`
-```java
-// 第一个为 false 则不计算第二个
-boolean result = (x > 10) && (x++ > 0);
-```
+## 5. 三元运算符：二选一赋值的一行写法
 
----
+「满足条件取 A，否则取 B」出现频率极高，三元把它压成一行：
 
-**基本写法：短路或**
-`<布尔表达式1> || <布尔表达式2>`
 ```java
-// 第一个为 true 则不计算第二个
-boolean result = (y < 10) || (y++ > 0);
-```
+int score = 1280;
+String rank = score >= 1000 ? "王者" : "青铜";
+System.out.println(rank);
 
----
-
-**基本写法：逻辑非**
-`!<布尔表达式>`
-```java
-// 对布尔值取反
-boolean result = !flag;
+int a = 88;
+int b = 95;
+int max = a > b ? a : b;
+System.out.println("最高分 " + max);
 ```
 
----
+预期输出：
 
-**基本写法：逻辑异或**
-`<布尔表达式1> ^ <布尔表达式2>`
-```java
-// 相同为 false 不同为 true
-boolean result = true ^ false;
+```text
+王者
+最高分 95
 ```
 
----
+读法：条件 ? 成立时取的值 : 不成立时取的值。嵌套三元能写但极难读——超过一层就老实写 if/else，那是下一篇的主角。
 
-## 位运算符
-
-**基本写法：按位与**
-`<操作数1> & <操作数2>`
-```java
-// 二进制位与运算
-int result = 6 & 3;
-```
+## 6. 位运算一句话定位
 
----
+还有一组直接操作二进制位的运算符：`&`、`|`、`^`、`~`、`<<`、`>>`、`>>>`。一句话定位：**面试与底层用得多（权限位打包、哈希算法、JVM 内部），业务代码一年写不了几次**——`<< 1` 等于乘 2 这类技巧知道即可，业务里该用 `* 2` 就用 `* 2`，可读性优先。
 
-**基本写法：按位或**
-`<操作数1> | <操作数2>`
-```java
-// 二进制位或运算
-int result = 6 | 3;
-```
+## 7. 优先级与括号
 
----
+表达式一长谁先算？值得背的只有三条：乘除余高于加减；比较高于 `&&`、`&&` 高于 `||`；赋值几乎永远最后算。
 
-**基本写法：按位异或**
-`<操作数1> ^ <操作数2>`
 ```java
-// 二进制位异或运算
-int result = 6 ^ 3;
+int score = 10;
+boolean hot = score > 5 && score < 20;   // 比较先于 &&，不加括号也对
+int adjusted = score + 2 * 3;            // 16：乘法先于加法
+int forced = (score + 2) * 3;            // 36：括号改写优先级
+System.out.println(hot + " " + adjusted + " " + forced);
 ```
 
----
+预期输出：
 
-**基本写法：按位取反**
-`~<操作数>`
-```java
-// 二进制位取反
-int result = ~6;
+```text
+true 16 36
 ```
 
----
-
-**基本写法：左移**
-`<操作数> << <位数>`
-```java
-// 二进制位左移相当于乘以 2
-int result = 6 << 1;
-```
+完整优先级表不用背——**拿不准就加括号**，括号不要钱，还替三个月后的你省一次阅读考古。
 
----
+## 8. 修改实验
 
-**基本写法：右移**
-`<操作数> >> <位数>`
-```java
-// 二进制位右移相当于除以 2
-int result = 6 >> 1;
-```
+实验一（5 分钟）：把 AvgDemo 的 total 改成 225，先算预期值再运行——注意 avg 是 double，想清楚输出是 75.0 还是 75，再验证。
 
----
+实验二（5 分钟）：把 ShortCircuitDemo 的 `&&` 换成单个 `&`（对 boolean 同样当逻辑与用，但不短路），预测 clicks 变成几，运行验证，一句话写下两者区别。
 
-**基本写法：无符号右移**
-`<操作数> >>> <位数>`
-```java
-// 高位补 0 的右移
-int result = -6 >>> 1;
-```
+实验三（10 分钟）：用 `%` 写「每隔 3 局刷新一次榜单」：`int games = 7;`，当 `games % 3 == 0` 时输出「榜单刷新」。改 games 为 9 和 10，分别预测再验证。
 
----
+## 9. 常见错误与调试实录
 
-## 赋值运算符
+错误一：把 `==` 手滑写成 `=`。C 语言里这是静默 bug，Java 直接拒收：
 
-**基本写法：简单赋值**
-`<变量> = <值>`
 ```java
-// 给变量赋值
-int a = 10;
+int score = 74;
+if (score = 60) {           // 赋值混进条件里
+    System.out.println("pass");
+}
 ```
 
----
-
-**基本写法：加法复合赋值**
-`<变量> += <值>`
-```java
-// 等价于 a = a + 5
-int a = 10;
-a += 5;
+```text
+TypoDemo.java:5: error: incompatible types: int cannot be converted to boolean
+        if (score = 60) {
+                  ^
+1 error
 ```
-
----
 
-**基本写法：减法复合赋值**
-`<变量> -= <值>`
-```java
-// 等价于 a = a - 3
-int a = 10;
-a -= 3;
-```
+if 的条件必须是 boolean，而 `score = 60` 的结果是 int——强类型在这里救了你。修法：比数值写 `==`，赋值才用 `=`。
 
----
+错误二：浮点数的精确比较：
 
-**基本写法：乘法复合赋值**
-`<变量> *= <值>`
 ```java
-// 等价于 a = a * 2
-int a = 10;
-a *= 2;
+System.out.println(0.1 + 0.2);         // 你以为是 0.3
+System.out.println(0.1 + 0.2 == 0.3);  // 你以为是 true
 ```
 
----
+预期输出：
 
-**基本写法：除法复合赋值**
-`<变量> /= <值>`
-```java
-// 等价于 a = a / 4
-int a = 10;
-a /= 4;
+```text
+0.30000000000000004
+false
 ```
 
----
+二进制存不下 0.1，误差藏在第 17 位小数。浮点比较用容差：`Math.abs(0.1 + 0.2 - 0.3) < 1e-9`；金额计算直接上 BigDecimal（`new BigDecimal("0.1")`，用字符串构造）。
 
-**基本写法：取模复合赋值**
-`<变量> %= <值>`
-```java
-// 等价于 a = a % 3
-int a = 10;
-a %= 3;
-```
+错误三：整数溢出。050 讲过的 MAX_VALUE + 1 变负数，在连乘连加的统计里同样咬人。防御复习：预估量级换 long，或用 `Math.addExact(a, b)` 让溢出变成响亮的 ArithmeticException 而不是静默的错误结果。
 
----
+## 10. 实际项目中的使用场景
 
-## 三元运算符
+- 统计口径：胜率 `(double) wins / total`、场均分——先想清楚要整数截断还是小数，再决定操作数类型；
+- 短路守卫：`list != null && list.size() > 0`、`games != 0 && total / games > 10`，安全检查永远在危险操作左边；
+- 三元做默认值与标签：`String label = score >= 60 ? "及格" : "重修";`，省掉只为赋一个值的 if 块；
+- 常量参与运算：070 的 `static final double DISCOUNT = 0.9;` 配乘法，参数改一处生效全程序。
 
-**基本写法：三元运算符**
-`<条件表达式> ? <表达式1> : <表达式2>`
-```java
-// 根据条件选择值
-int max = (a > b) ? a : b;
-```
+## 11. 小练习
 
----
+预测题（5 分钟）：先写答案再运行：
 
-**基本写法：三元运算符赋值字符串**
-`<条件> ? "<字符串1>" : "<字符串2>"`
 ```java
-// 根据条件选择字符串
-String result = (a > b) ? "a is larger" : "b is larger";
+int a = 7;
+int b = 2;
+System.out.println(a / b);
+System.out.println(a % b);
+System.out.println((double) a / b);
+System.out.println(a / (double) b);
 ```
-
----
 
-## 运算符优先级
+（验证：3 / 1 / 3.5 / 3.5。后两行说明：升舱谁都行，除法看这一趟有没有 double 上车。）
 
-**基本写法：使用括号明确顺序**
-`(<表达式>)`
-```java
-// 使用括号改变运算顺序
-int result = (a + b) * (c - d);
-```
-
----
+修改题（10 分钟）：把 AvgDemo 改成四局（total 320、count 4），预测输出再验证（80.0）；只把 count 改回 3 再预测（106.66666666666667）并验证，说出两次输出格式为何不同。
 
-## 整数溢出处理
+修 Bug 题（15 分钟）：下面的程序想算胜率，运行当场崩溃。按三步定位，修复后要求输出 `胜率 0.0` 而不是崩溃（提示：第 4 节的守卫加第 5 节的三元）：
 
-**基本写法：溢出检查加法**
-`Math.addExact(<a>, <b>)`
 ```java
-// 溢出时抛出 ArithmeticException
-int result = Math.addExact(Integer.MAX_VALUE, 1);
+public class RateBug {
+    public static void main(String[] args) {
+        int wins = 17;
+        int total = 0;
+        double rate = wins / total;      // 这一行崩溃
+        System.out.println("胜率 " + rate);
+    }
+}
 ```
 
----
-
-**基本写法：使用更大类型**
-`long <变量名> = <int变量> + <值>;`
-```java
-// 使用 long 类型避免溢出
-long max = Integer.MAX_VALUE;
-long result = max + 1;
+```text
+Exception in thread "main" java.lang.ArithmeticException: / by zero
+	at RateBug.main(RateBug.java:5)
 ```
-
----
 
-## 字符串拼接性能
+挑战题（15 分钟）：只用 `/`、`%` 和字符串拼接，把 3671 秒拆成「X 小时 Y 分 Z 秒」。验收：输出与下面完全一致，不得手写任何数字：
 
-**基本写法：创建 StringBuilder**
-`StringBuilder <变量名> = new StringBuilder();`
-```java
-// 创建 StringBuilder 对象
-StringBuilder sb = new StringBuilder();
+```text
+1 小时 1 分 11 秒
 ```
 
----
+（提示：先算小时，余数再除 60；展开：`%` 与 `/` 组合，两层就够。）
 
-**基本写法：StringBuilder 追加**
-`<StringBuilder>.append(<内容>)`
-```java
-// 追加内容到 StringBuilder
-sb.append("Hello").append(" ").append("World");
-```
+## 12. 与之前和之后的知识的关系
 
----
+- 往前：[程序结构与基本语法](/java/040-ProgramStructureBasicSyntax) 埋的 74 悬念在第 1 节正面回收；[数据类型转换](/java/050-DataTypeConversion) 的提升链与截断是整数除法的一家人；[变量与常量](/java/070-VariableConstant) 存好的值，本文负责加工；
+- 往后：[控制流](/java/090-ControlFlow) 的 if 与 while，条件就是本文的比较与逻辑表达式；[数组详解](/java/110-ArrayDetailed) 的「遍历求平均」把 AvgDemo 推广到任意局数；[equals 与 hashCode 契约](/java/200-EqualsHashCodeContract) 把 == 与 equals 挖到对象判等的根部。
 
-**基本写法：转换为字符串**
-`<StringBuilder>.toString()`
-```java
-// 将 StringBuilder 转换为字符串
-String result = sb.toString();
-```
+## 13. 官方文档
 
----
+- Oracle Java Tutorials「Operators」：https://docs.oracle.com/javase/tutorial/java/nutsandbolts/operators.html
+- 运算符优先级速查表（官方小结）：https://docs.oracle.com/javase/tutorial/java/nutsandbolts/opsummary.html
+- Java 官方教程 Language Basics（dev.java）：https://dev.java/learn/language-basics/
 
-## 位运算应用
+## 14. 自我检查
 
-**基本写法：位掩码定义**
-`int <标志> = 1 << <位数>;`
-```java
-// 定义权限标志位
-int FLAG_READ = 1 << 0;
-```
+- 能不看资料说清「为什么 224 / 3 是 74」，并写出拿到 74.67 的两种等价改法；
+- 能现场解释短路的定义，并用 && 写出一个除零守卫；
+- 能写出三元语法，说出「嵌套超一层换 if/else」的边界；
+- 被问到位运算时，能一句话说清它该在哪类代码里出现；
+- 看到 possible lossy conversion 与 int cannot be converted to boolean，能分别说出成因与修法。
 
----
+## 本章总结
 
-**基本写法：位掩码组合**
-`<标志1> | <标志2>`
-```java
-// 组合多个权限标志
-int permissions = FLAG_READ | FLAG_WRITE;
-```
+两个 int 相除结果还是 int，向零取整丢小数——040 的 74 悬念完整答案；想要小数，给任一操作数升舱 double，而 int 变量装 double 会被 possible lossy conversion 拒收。% 取余，判偶轮换换算全靠它。比较产 boolean，&& 与 || 短路护住右边的危险操作，守卫除零与空引用。三元压缩二选一赋值，嵌套超一层换 if/else。位运算留给面试与底层。优先级背三条，拿不准就加括号；`=` 与 `==` 混用 Java 直接报错；浮点比较用容差，金额用 BigDecimal。
 
----
+## 下一步
 
-**基本写法：检查位掩码**
-`(<组合标志> & <单个标志>) != 0`
-```java
-// 检查是否包含某权限
-boolean hasRead = (permissions & FLAG_READ) != 0;
-```
+进入 [控制流](/java/090-ControlFlow)：本文算出的 true 和 false 终于要「指挥」程序了——判断走哪条路、重复做多少次，顺手把 python/060 与 javascript/060 写过的猜数字游戏翻成 Java 版。

@@ -1,565 +1,206 @@
 ---
 order: 100
-title: 方法详解
+title: 方法详解：把结算逻辑写成一个可复用的积木
 module: 'java'
 category: 后端技术
 difficulty: intermediate
-description: 方法定义、参数传递、方法重载与递归。
+description: 以「三处复制的结算逻辑，85 手滑成 58」引入，讲透方法定义与调用、值传递的真相、重载解析、递归与可变参数，附 cannot find symbol 与栈溢出调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'java/990-JavaWebAssembly'
-  - 'java/580-JavaReactiveProgramming'
-  - 'java/570-JavaVirtualThread'
-  - 'java/1000-JavaGraalVM'
+  - 'java/110-ArrayDetailed'
+  - 'java/150-OOP'
+  - 'java/170-JavaInnerClass'
+  - 'java/390-GenericDetailed'
 prerequisites:
-  - 'java/020-JavaOverviewDevEnv'
+  - 'java/090-ControlFlow'
 ---
 
-## 0. 本节阅读指引（先读这一节）
+## 前置知识
 
-本篇是「方法详解」，目标：会定义、调用方法，理解参数传递与重载。
+- 已完成 [控制流](/java/090-ControlFlow)：会 if/for/while 与数组遍历。
 
-零基础第一遍只读：
+## 学习目标
 
-1. 第 1 节 方法基本语法、2. 参数传递、3. 方法重载、5. 可变参数；
-2. 第 4 节 递归先掌握最简单的例子。
+读完本文你将能够：
 
-可跳过：6-8 节（最佳实践、实际应用案例、常见陷阱）第二遍细读；文末速查小节随用随查。
+1. 独立设计方法的签名：参数收什么、返回什么、名字是否表意；
+2. 解释 Java 只有值传递这句话的准确含义，并预测传递基本类型与对象引用的差异；
+3. 用重载为同一动作提供多种入参形态，并预测编译器选中了哪一个；
+4. 写出有出口的递归，识别 StackOverflowError。
 
-> 记住：方法调用时基本类型传值、引用类型传引用；重载看参数列表。
+预计 60 到 90 分钟。
 
+## 1. 你现在要解决什么问题
 
-## 1. 方法基本语法 (Basic Syntax)
+订单结算逻辑写了三处：购物车结账一处、优惠券核销一处、对账报表一处。某天单价字段改名，改了两处漏了一处，85 折被手滑写成 58 折——**同一逻辑出现多次，就是多次出错机会**。方法（method）是 Java 给你的第一剂解药：把逻辑命名、收口、复用。
 
-方法是执行特定任务的命名代码块，是Java中代码组织和复用的基本单位。
-
-### 1.1 方法定义
-
-```java
- /*
-  * 修饰符 返回值类型 方法名(参数列表) {
-  * // 方法体
-  * return 返回值;
-  * }
-  */
- public int add(int a, int b) {
-  return a + b;
- }
-```
-
-### 1.2 方法修饰符
-
-| 修饰符         | 说明                               | 适用范围       |
-| -------------- | ---------------------------------- | -------------- |
-| `public`       | 公共访问，任何类都可以访问         | 类、方法、变量 |
-| `protected`    | 受保护访问，同一包内或子类可以访问 | 方法、变量     |
-| `private`      | 私有访问，只有本类可以访问         | 方法、变量     |
-| `default`      | 默认访问，同一包内可以访问         | 类、方法、变量 |
-| `static`       | 静态方法，属于类而不是实例         | 方法、变量     |
-| `final`        | 最终方法，不能被重写               | 方法           |
-| `abstract`     | 抽象方法，没有实现体               | 方法           |
-| `synchronized` | 同步方法，线程安全                 | 方法           |
-
-### 1.3 方法调用
-
-- **非静态方法**: 必须通过对象实例调用
+## 2. 最小可运行示例
 
 ```java
- MyClass obj = new MyClass();
- int result = obj.add(1, 2);
-```
-
-- **静态方法**: 通过类名直接调用
-
-```java
- int result = Math.abs(-10);
-```
-
-### 1.4 方法返回值
-
-- **有返回值**: 必须使用 `return` 语句返回对应类型的值
-- **无返回值**: 使用 `void` 作为返回类型，可选使用 `return;` 提前结束方法
-
-## 2. 参数传递 (Parameter Passing)
-
-Java 中**只有值传递 (Pass by Value)**，但对于不同类型的参数，表现有所不同。
-
-### 2.1 基本类型参数
-
-- 传递值的副本
-- 修改形参不影响实参
-
-```java
- public void modify(int x) {
-  x = 10; // 只修改局部变量
- }
- int a = 5;
- modify(a);
- System.out.println(a); // 输出 5，实参不变
-```
-
-### 2.2 引用类型参数
-
-- 传递引用地址的副本
-- 修改形参指向的对象属性**会影响**原对象
-- 修改形参本身指向新对象**不会影响**原引用
-
-```java
- public void modifyArray(int[] arr) {
-  arr[0] = 100; // 修改数组元素，会影响原数组
-  arr = new int[5]; // 重新赋值，不会影响原引用
- }
- int[] array = {1, 2, 3};
- modifyArray(array);
- System.out.println(array[0]); // 输出 100
-```
-
-### 2.3 方法参数类型
-
-- **基本类型**: `byte`, `short`, `int`, `long`, `float`, `double`, `char`, `boolean`
-- **引用类型**: 类、接口、数组
-- **包装类型**: `Integer`, `Double` 等
-- **枚举类型**: `enum`
-- **注解类型**: `@interface`
-
-## 3. 方法重载 (Overloading)
-
-在同一个类中，方法名相同，但**参数列表不同**的方法。
-
-### 3.1 重载规则
-
-1. **参数列表必须不同**: 个数、类型或顺序不同
-2. **返回值类型可以不同**: 但不能作为重载的唯一依据
-3. **修饰符可以不同**: 但不能作为重载的唯一依据
-4. **异常类型可以不同**: 但不能作为重载的唯一依据
-
-### 3.2 重载示例
-
-```java
- // 基本类型重载
- public int add(int a, int b) { return a + b; }
- public double add(double a, double b) { return a + b; }
- public int add(int a, int b, int c) { return a + b + c; }
- // 引用类型重载
- public void print(String s) { System.out.println(s); }
- public void print(int[] arr) {
-  for (int i : arr) System.out.print(i + " ");
-  System.out.println();
- }
- // 参数顺序不同
- public void method(int a, String b) {}
- public void method(String a, int b) {}
-```
-
-### 3.3 重载的解析
-
-Java 编译器会根据实参的类型和数量选择最匹配的方法：
-
-1. 精确匹配
-2. 基本类型自动转换
-3. 向上转型
-4. 可变参数
-
-## 4. 递归 (Recursion)
-
-方法调用自身的过程，是一种解决问题的有效方法。
-
-### 4.1 递归的基本结构
-
-```java
- public returnType recursiveMethod(parameters) {
-  // 基准情况 (Base Case)
-  if (baseCondition) {
-  return baseValue;
-  }
-  // 递归步 (Recursive Step)
-  return recursiveMethod(modifiedParameters);
- }
-```
-
-### 4.2 递归示例
-
-#### 4.2.1 阶乘计算
-
-```java
- public int factorial(int n) {
-  if (n <= 1) return 1; // 基准情况
-  return n * factorial(n - 1); // 递归步
- }
-```
-
-#### 4.2.2 斐波那契数列
-
-```java
- public int fibonacci(int n) {
-  if (n <= 1) return n; // 基准情况
-  return fibonacci(n - 1) + fibonacci(n - 2); // 递归步
- }
-```
-
-#### 4.2.3 二分查找
-
-```java
- public int binarySearch(int[] arr, int target, int low, int high) {
-  if (low > high) return -1; // 基准情况：未找到
-  int mid = (low + high) / 2;
-  if (arr[mid] == target) return mid; // 基准情况：找到
-  if (arr[mid] > target) {
-  return binarySearch(arr, target, low, mid - 1); // 递归步：左半部分
-  } else {
-  return binarySearch(arr, target, mid + 1, high); // 递归步：右半部分
-  }
- }
-```
-
-### 4.3 递归的优缺点
-
-#### 优点
-
-- **代码简洁**: 递归代码通常比迭代代码更简洁易读
-- **问题分解**: 将复杂问题分解为相同的子问题
-- **适用于树形结构**: 如文件系统、DOM 树等
-
-#### 缺点
-
-- **栈溢出风险**: 递归深度过大可能导致 StackOverflowError
-- **性能开销**: 每次递归调用都会创建新的栈帧
-- **内存消耗**: 递归调用会占用更多内存
-
-### 4.4 递归的优化
-
-- **尾递归**: 递归调用是方法的最后一个操作，某些语言会优化为迭代
-- **记忆化**: 缓存中间结果，避免重复计算
-- **递归转迭代**: 对于深度较大的问题，考虑使用迭代
-
-## 5. 可变参数 (Variadic Arguments)
-
-Java 5 引入的特性，允许方法接受任意数量的参数。
-
-### 5.1 基本语法
-
-```java
- public returnType methodName(ParameterType... parameterName) {
-  // 方法体
- }
-```
-
-### 5.2 可变参数规则
-
-- **必须是最后一个参数**
-- **每个方法只能有一个可变参数**
-- **本质是数组**: 在方法内部，可变参数被当作数组处理
-
-### 5.3 可变参数示例
-
-```java
- // 计算任意数量整数的和
- public int sum(int... numbers) {
-  int total = 0;
-  for (int num : numbers) {
-  total += num;
-  }
-  return total;
- }
- // 打印任意数量的字符串
- public void printAll(String... messages) {
-  for (String msg : messages) {
-  System.out.println(msg);
-  }
- }
-```
-
-### 5.4 可变参数与数组
-
-- 可以直接传递数组给可变参数
-- 可变参数方法可以与数组参数方法重载
-
-```java
- public void process(int[] arr) {}
- public void process(int... nums) {}
- // 调用
- int[] array = {1, 2, 3};
- process(array); // 调用数组参数方法
- process(1, 2, 3); // 调用可变参数方法
-```
-
-## 6. 方法的最佳实践
-
-### 6.1 命名规范
-
-- 方法名使用动词或动词短语
-- 驼峰命名法（首字母小写，后续单词首字母大写）
-- 方法名应清晰描述方法的功能
-
-### 6.2 代码风格
-
-- 方法体不宜过长，通常不超过 30-50 行
-- 一个方法只做一件事
-- 使用有意义的参数名和局部变量名
-
-### 6.3 异常处理
-
-- 对于可能的异常，要么捕获处理，要么在方法签名中声明
-- 避免在方法中捕获所有异常而不做处理
-
-### 6.4 性能考虑
-
-- 避免在热点方法中创建不必要的对象
-- 对于频繁调用的方法，考虑使用静态方法
-- 对于大计算量的方法，考虑缓存结果
-
-## 7. 实际应用案例
-
-### 7.1 工具方法
-
-```java
- public class StringUtils {
-  // 检查字符串是否为空
-  public static boolean isEmpty(String str) {
-  return str == null || str.trim().isEmpty();
-  }
-  // 反转字符串
-  public static String reverse(String str) {
-  if (isEmpty(str)) return str;
-  StringBuilder sb = new StringBuilder(str);
-  return sb.reverse().toString();
-  }
- }
-```
-
-### 7.2 数学计算
-
-```java
- public class MathUtils {
-  // 计算最大公约数
-  public static int gcd(int a, int b) {
-  if (b == 0) return a;
-  return gcd(b, a % b);
-  }
-  // 计算最小公倍数
-  public static int lcm(int a, int b) {
-  return a * b / gcd(a, b);
-  }
- }
-```
-
-### 7.3 集合操作
-
-```java
- public class CollectionUtils {
-  // 检查集合是否为空
-  public static <T> boolean isEmpty(Collection<T> collection) {
-  return collection == null || collection.isEmpty();
-  }
-  // 安全地获取列表元素
-  public static <T> T getSafe(List<T> list, int index, T defaultValue) {
-  if (isEmpty(list) || index < 0 || index >= list.size()) {
-  return defaultValue;
-  }
-  return list.get(index);
-  }
- }
-```
-
-## 8. 常见陷阱
-
-### 8.1 递归陷阱
-
-- **栈溢出**: 递归深度过大导致 StackOverflowError
-- **无限递归**: 缺少基准情况或基准情况无法到达
-- **重复计算**: 未使用记忆化导致性能问题
-
-### 8.2 方法重载陷阱
-
-- **模糊调用**: 多个重载方法都可能匹配，导致编译错误
-- **自动装箱/拆箱**: 可能导致意外的重载选择
-
-### 8.3 参数传递陷阱
-
-- **引用类型修改**: 误以为修改形参引用会影响实参
-- **不可变对象**: 对不可变对象的修改不会生效
-
----
-
-## 方法定义
-
-**基本写法：有返回值方法**
-`<修饰符> <返回值类型> <方法名>(<参数列表>) { return <返回值>; }`
-```java
-// 定义返回 int 的方法
-public int add(int a, int b) {
-    return a + b;
+public class Settle {
+    static double settle(double price, int quantity) {
+        return price * quantity * 0.85;   // 统一 85 折逻辑，只写一遍
+    }
+
+    public static void main(String[] args) {
+        System.out.println(settle(10.0, 3));   // 25.5
+        System.out.println(settle(200.0, 1));  // 170.0
+    }
 }
 ```
 
----
+预期输出：
 
-**基本写法：无返回值方法**
-`<修饰符> void <方法名>(<参数列表>) { }`
+```text
+25.5
+170.0
+```
+
+`static` 暂时照抄（它属于类而不属于对象，[OOP](/java/150-OOP) 讲透）；`double` 是返回值类型；括号里是**形参**；调用时传入的是**实参**。
+
+## 3. 发生了什么：签名即契约
+
+`settle(double price, int quantity)` 这一行是方法与调用者之间的契约：你给我两个数，我还你一个折扣价。设计方法时先回答三个问题——**收什么、算什么、还什么**，签名自然就定了。命名同理：`settle`、`calc1`、`doIt` 三选一，未来读代码的人（包括你）只认 `settle`。
+
+## 4. 核心概念一：Java 只有值传递
+
+这是 Java 最常被误解的知识点，用实验说话：
+
 ```java
-// 定义无返回值的方法
-public void printMessage(String message) {
+static void tryChange(int x)      { x = 999; }
+static void tryChange(int[] arr)  { arr[0] = 999; }
+
+public static void main(String[] args) {
+    int n = 1;
+    int[] a = {1};
+    tryChange(n);
+    tryChange(a);
+    System.out.println(n);   // 1   —— 没变
+    System.out.println(a[0]); // 999 —— 变了
 }
 ```
 
----
+预期输出：`1` 和 `999`。解释：Java 把「实参的值」复制给形参。基本类型的值就是数字本身，副本怎么改都影响不到原件；数组的值是**引用（地址）**，副本与原件指向同一个对象——通过副本改对象内容，原件看得见；但让副本指向别的对象，原件不动。记住一句：**传的是值的副本；这个值可能是地址**。
 
-## 方法调用
+## 5. 核心概念二：重载（Overload）
 
-**基本写法：非静态方法调用**
-`<对象>.<方法名>(<参数>);`
+同名不同参，是同一个动作的多种形态：
+
 ```java
-// 通过对象实例调用方法
-MyClass obj = new MyClass();
-int result = obj.add(1, 2);
+static int    settle(int price)                  { return settle(price, 1); }
+static double settle(double price, int quantity) { return price * quantity * 0.85; }
 ```
 
----
+调用 `settle(10)` 时编译器按「实参与形参的类型最匹配」选中第一个。两条红线：**只有返回值不同不算重载**（编译报 duplicate method）；自动提升可能让调用命中你不想要的版本（传 `int` 给 `settle(double)` 合法但可能非本意）。
 
-**基本写法：静态方法调用**
-`<类名>.<方法名>(<参数>);`
+## 6. 核心概念三：递归要有出口
+
 ```java
-// 通过类名直接调用静态方法
-int result = Math.abs(-10);
-```
-
----
-
-## 参数传递
-
-**基本写法：基本类型参数**
-`<方法名>(<基本类型> <参数名>)`
-```java
-// 传递基本类型的副本
-public void modify(int x) {
-    x = 10;
-}
-```
-
----
-
-**基本写法：引用类型参数**
-`<方法名>(<引用类型>[] <参数名>)`
-```java
-// 传递引用地址的副本
-public void modifyArray(int[] arr) {
-    arr[0] = 100;
-}
-```
-
----
-
-## 方法重载
-
-**基本写法：参数数量不同重载**
-`<修饰符> <返回类型> <方法名>(<参数列表1>) { }`
-```java
-// 同名方法参数数量不同
-public int add(int a, int b) {
-    return a + b;
-}
-```
-
----
-
-**基本写法：参数类型不同重载**
-`<修饰符> <返回类型> <方法名>(<参数类型2>) { }`
-```java
-// 同名方法参数类型不同
-public double add(double a, double b) {
-    return a + b;
-}
-```
-
----
-
-## 递归
-
-**基本写法：递归结构**
-`<返回类型> <方法名>(<参数>) { if (<基准条件>) return <基准值>; return <方法名>(<修改参数>); }`
-```java
-// 递归方法基本结构
-public int factorial(int n) {
-    if (n <= 1) return 1;
+static long factorial(int n) {
+    if (n <= 1) return 1;          // 出口：没有它就是无限套娃
     return n * factorial(n - 1);
 }
 ```
 
----
+出口在前、规模递减，是递归的两大安全带。把出口注释掉再跑，你会收到 `StackOverflowError`——每层调用占一帧栈，栈深有限。Java 没有尾调用优化，深递归请改循环。
 
-**基本写法：斐波那契递归**
-`<返回类型> fibonacci(<参数>)`
+## 7. 可变参数
+
+同一类型、个数不定的入参用 `类型... 名`：
+
 ```java
-// 斐波那契数列递归实现
-public int fibonacci(int n) {
-    if (n <= 1) return n;
-    return fibonacci(n - 1) + fibonacci(n - 2);
-}
-```
-
----
-
-**基本写法：二分查找递归**
-`<返回类型> binarySearch(<参数>)`
-```java
-// 二分查找递归实现
-public int binarySearch(int[] arr, int target, int low, int high) {
-    if (low > high) return -1;
-    int mid = (low + high) / 2;
-    if (arr[mid] == target) return mid;
-    if (arr[mid] > target) {
-        return binarySearch(arr, target, low, mid - 1);
-    }
-    return binarySearch(arr, target, mid + 1, high);
-}
-```
-
----
-
-## 可变参数
-
-**基本写法：可变参数定义**
-`<修饰符> <返回类型> <方法名>(<参数类型>... <参数名>) { }`
-```java
-// 接受任意数量的参数
-public int sum(int... numbers) {
-    int total = 0;
-    for (int num : numbers) {
-        total += num;
-    }
+static double settleAll(double... prices) {
+    double total = 0;
+    for (double p : prices) total += p * 0.85;
     return total;
 }
+// settleAll(10, 20, 30) 与 settleAll(10) 都合法
 ```
 
----
+它本质是数组形参的语法糖；一个方法最多一个可变参数且必须最后。
 
-**基本写法：可变参数调用**
-`<方法名>(<元素1>, <元素2>, ...)`
+## 8. 常见错误与调试实录
+
+错误一：方法里用错名字，javac 给出：
+
+```text
+error: cannot find symbol
+  symbol:   variable prcie
+```
+
+读法：`symbol` 行直接告诉你拼错的名字（`prcie`），对照签名改正即可——030 篇见过它，这次注意 symbol 可能是变量也可能是方法。
+
+错误二：调用写成了 `double d = settle(10, 3);` 但方法没有返回值（声明为 `void`）：
+
+```text
+error: incompatible types: void cannot be converted to double
+```
+
+要么补返回值，要么去掉赋值。
+
+错误三：递归无出口或规模不减，运行时：
+
+```text
+Exception in thread "main" java.lang.StackOverflowError
+```
+
+排查动作：检查出口条件是否可达、每层规模是否向出口逼近。
+
+## 9. 修改实验
+
+1. 给 `settle` 增加 VIP 折扣参数 `double extraDiscount`，只有旧调用全部保持可编译（提示：用重载接住旧签名）；
+2. 把 `tryChange(String s) { s = "changed"; }` 补全并预测 main 里的结果，运行验证「字符串引用也是值传递」；
+3. 把 `factorial(20)` 改成 `long` 返回并观察溢出（对照 050 篇的回绕实验）。
+
+## 10. 小练习
+
+预测题（先写答案再运行）：交换方法的经典陷阱——
+
 ```java
-// 传入多个参数调用可变参数方法
-int result = sum(1, 2, 3, 4, 5);
+static void swap(int a, int b) { int t = a; a = b; b = t; }
+// main: int x=1, y=2; swap(x, y); 输出什么？
 ```
 
----
+修改题：写 `boolean isTriangle(int a, int b, int c)`，任意两边之和大于第三边返回 true；用 3 组数据自测，其中一组是恰好相等的边界。
 
-## 静态泛型方法
+修 Bug 题：下面的重载为什么编译失败？给出两种修复方案：
 
-**基本写法：静态泛型方法**
-`public static <T> void <方法名>(T <参数>) { }`
 ```java
-// 定义静态泛型方法
-public static <T> void staticGenericMethod(T value) {
-}
+static double convert(double c) { return c * 1.8 + 32; }
+static double convert(double f) { return (f - 32) / 1.8; }
 ```
 
----
+挑战题（不看提示）：写递归 `int sumDigits(int n)` 求各位数字之和（`sumDigits(2026)` 为 10）。要求：先写出口，再写递推；用 0（边界）、9（一位数）、2026（多位）三组数据验证。
 
-**基本写法：泛型方法类型推断**
-`public <T> T <方法名>(List<T> <参数>)`
-```java
-// 编译器自动推断类型
-public <T> T getFirstElement(List<T> list) {
-    return list.isEmpty() ? null : list.get(0);
-}
-```
+## 11. 什么时候应该 / 不应该抽方法
+
+应该：同一段逻辑出现第二次时；一个 main 超过约 40 行时（按动作切段）；逻辑需要测试时（方法可单测，main 不可）。
+
+不应该：为了「每个方法 5 行」而把强相关步骤撕碎（读代码要跳 5 跳反而更难）；用一个布尔参数让方法干两件不同的事（那是两个方法）。
+
+## 12. 与之前和之后的知识的关系
+
+- 往前：090 的循环体是本文抽取逻辑的原材料；060 的包装类在「传 Integer 进方法再赋值」时再次踩中值传递；
+- 往后：[数组](/java/110-ArrayDetailed) 的常见操作会全部方法化；[OOP](/java/150-OOP) 里方法将挂到类与对象身上，`static` 之谜届时揭晓；
+- 更远：[方法重载与泛型](/java/390-GenericDetailed) 是本文重载的进阶形态。
+
+## 13. 官方文档
+
+- 定义方法（Oracle 官方教程）：https://docs.oracle.com/javase/tutorial/java/javaOO/methods.html
+- 传递语义的权威表述（JLS 关于参数按值）：https://docs.oracle.com/javase/specs/jls/se21/html/jls-8.html#jls-8.4.1
+
+## 14. 自我检查
+
+- 能不看示例默写「契约三问」并给方法定签名；
+- 能向别人解释「Java 只有值传递」，并用 int 与 int[] 两个实验演示；
+- 能说出重载的两条红线；
+- 拿到 StackOverflowError 知道检查哪两处。
+
+## 本章总结
+
+方法是把逻辑命名收口的契约：签名写清收什么还什么；Java 传值的副本（值可能是地址）；重载按类型最匹配解析、返回值不参与；递归必备可达出口。这三件事把「复用」从复制粘贴升级为语言机制——下一篇把它们挂到对象的身上。
+
+## 下一步
+
+进入 [数组详解](/java/110-ArrayDetailed)，把方法用在一批批数据上；随后 [面向对象](/java/150-OOP) 登场，`static` 的谜底在那里揭晓。

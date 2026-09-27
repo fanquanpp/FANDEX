@@ -131,6 +131,11 @@
           "id": "cpp-207",
           "title": "C++ 链接与符号",
           "doc": "680-LinkSymbol"
+        },
+        {
+          "id": "cpp-790",
+          "title": "C++ 毕业项目：零依赖内存安全的数据缓冲库",
+          "doc": "790-CppCapstoneProject"
         }
       ]
     }
