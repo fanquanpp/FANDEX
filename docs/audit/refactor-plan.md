@@ -107,6 +107,6 @@
 - Phase 2（目标课程体系）：完成——20 个模块 modulePrerequisites 补齐、6 模块 stages 重建 + javascript 补孤儿（路径孤儿 734 → 0）、index 重排（start 1、roadmap 2）、反向覆盖率门禁接入；决策说明见 docs/curriculum/curriculum-map.md；
 - Phase 3（文档迁移映射）：完成——docs/audit/document-migration-map.md（DELETE 82 / MERGE 30 组 / SPLIT 29 / REWRITE 主线清单 / CREATE 清单）；
 - Phase 5（内容标准）：完成——docs/standards/ 六份 v1.0；
-- Phase 6（批量重构）：进行中——累计重写 26 篇（零基础主线全链：python、git、javascript 语法段、css 入门段、mysql 语法段 + 4 篇样板）；73 篇占位文安全删除（迁移映射已回写状态）；新增游戏开发路线与 AI 协作开发指南；
-- Phase 7（验收）：首轮假学生走查完成（22 篇主线、10 项发现全部修复，报告 docs/audit/fake-student-walkthrough-2026-09-27.md）；门禁全绿（sync/audit/learning-path/typecheck/smoke）；企业模拟与脱离教程测试待出口项目落地；
+- Phase 6（批量重构）：进行中——累计 39 篇重写 + 2 篇毕业项目 + 游戏路线与 AI 指南；73+0 篇占位文处置完毕（82 篇候选全部消化：73 删除、6 改造、3 重写）；MERGE 30 组中 10 组已消化、20 组待深水区批次；
+- Phase 7（验收）：假学生走查完成并全修复；门禁全绿（含新增 SAFETY/练习密度检查）；企业模拟与脱离教程测试随出口项目批次推进；
 - 变更报告：docs/audit/change-report-2026-09-27.md（含批次二）。
