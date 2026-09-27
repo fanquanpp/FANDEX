@@ -413,6 +413,11 @@
           "difficulty": "intermediate"
         },
         {
+          "id": "javascript-715",
+          "title": "JavaScript 毕业项目：书签管理器",
+          "doc": "715-JavaScriptCapstoneProject"
+        },
+        {
           "id": "js-pkg-json",
           "title": "package.json 与工程化配置",
           "doc": "560-PackageJsonEngineeringDeepDive"
