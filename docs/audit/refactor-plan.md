@@ -107,6 +107,6 @@
 - Phase 2（目标课程体系）：完成——20 个模块 modulePrerequisites 补齐、6 模块 stages 重建 + javascript 补孤儿（路径孤儿 734 → 0）、index 重排（start 1、roadmap 2）、反向覆盖率门禁接入；决策说明见 docs/curriculum/curriculum-map.md；
 - Phase 3（文档迁移映射）：完成——docs/audit/document-migration-map.md（DELETE 82 / MERGE 30 组 / SPLIT 29 / REWRITE 主线清单 / CREATE 清单）；
 - Phase 5（内容标准）：完成——docs/standards/ 六份 v1.0；
-- Phase 6（批量重构）：进行中——累计 73 篇重写 + 毕业项目 5 篇（git/python/javascript/java/cpp）+ 路线篇 2 篇 + 占位文改造 6 篇；java 040-100 与 cpp 040-120 主线打通；MERGE 余 12 组；SPLIT 已解锁随深水区批次执行；
-- Phase 7（验收）：假学生走查完成并全修复；门禁全绿（含新增 SAFETY/练习密度检查）；企业模拟与脱离教程测试随出口项目批次推进；
+- Phase 6（批量重构）：完成——MERGE 30/30 消化、SPLIT 落地（6 案 13 篇拆分 + 3 篇清理 + 22 篇参考层标注）、毕业项目 8 模块、新文体约 110 篇；剩余为日常维护性渐进改写；
+- Phase 7（验收）：假学生走查完成并全修复；全门禁长期绿（HIGH 0/孤儿 0/typecheck 0/smoke 20/20）；企业模拟与脱离教程测试由 8 个模块毕业项目承接；
 - 变更报告：docs/audit/change-report-2026-09-27.md（含批次二）。
