@@ -88,11 +88,7 @@ UTF-8 是一种变长编码，使用 1-4 个字节表示 Unicode 码点：
 | U+0800 ~ U+FFFF    | 3      | `1110xxxx 10xxxxxx 10xxxxxx`          |
 | U+10000 ~ U+10FFFF | 4      | `11110xxx 10xxxxxx 10xxxxxx 10xxxxxx` |
 
-中文字符"中"（U+4E2D）的 UTF-8 编码：
-
-$$
-\text{UTF-8} = \text{0xE4 0xB8 0xAD}
-$$
+中文字符"中"（U+4E2D）的 UTF-8 编码是三个字节：`0xE4 0xB8 0xAD`。
 
 ### 3.2 编码声明优先级
 

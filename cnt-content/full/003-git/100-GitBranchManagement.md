@@ -21,7 +21,7 @@ prerequisites: []
 分支的核心特点：
 
 - 分支是指向特定提交的指针
-- 默认分支为 `master` 或 `main`
+- 默认分支为 `main`（GitHub 约定；未配置的旧版 Git 可能生成 `master`，用 `git branch -M main` 纠正）
 - 分支操作轻量快速
 - 支持并行开发
 - 便于代码审查和测试
@@ -580,7 +580,7 @@ git push -u origin feature/login;
 # 紧急修复：hotfix/security-patch
 # 发布分支：release/v1.0.0
 # 开发分支：develop
-# 主分支：main / master
+# 主分支：main
 ```
 
 ---

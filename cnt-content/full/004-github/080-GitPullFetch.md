@@ -190,7 +190,7 @@ git pull --no-commit
 
 ## 五、拉取冲突处理（提前预告）
 
-`git pull` 合并时若双方改了同一处代码，就会停下等你解决。完整解法见 041 篇，这里先给出"止血三板斧"：
+`git pull` 合并时若双方改了同一处代码，就会停下等你解决。完整解法见 [GitHub 冲突解决](/github/100-GitConflictResolve)，这里先给出"止血三板斧"：
 
 ```bash
 # 合并冲突：中止（回到 pull 之前的状态）
@@ -240,9 +240,9 @@ git remote show origin | grep "HEAD branch"
 
 | 错误现象 | 报错信息（节选） | 原因分析 | 解决办法 |
 | --- | --- | --- | --- |
-| 工作区有未提交改动时 pull | `Your local changes to the following files would be overwritten by merge` | 本地未提交改动与远程更新重叠 | 先 `git stash` 暂存改动，pull 后再 `git stash pop` 恢复（见 045 篇） |
+| 工作区有未提交改动时 pull | `Your local changes to the following files would be overwritten by merge` | 本地未提交改动与远程更新重叠 | 先 `git stash` 暂存改动，pull 后再 `git stash pop` 恢复（见 [GitHub 暂存与回退](/github/140-GitStashReset)） |
 | pull 报不相关历史 | `refusing to merge unrelated histories` | 本地 init 仓库与远程仓库没有共同祖先 | 加 `--allow-unrelated-histories`（首次合并时用） |
-| pull 后出现冲突标记 | `Automatic merge failed; fix conflicts and then commit the result` | 双方修改了同一处代码 | 按 041 篇解决：编辑文件 → `git add` → `git merge --continue` |
+| pull 后出现冲突标记 | `Automatic merge failed; fix conflicts and then commit the result` | 双方修改了同一处代码 | 按 [GitHub 冲突解决](/github/100-GitConflictResolve) 解决：编辑文件 → `git add` → `git merge --continue` |
 | 误以为 fetch 后代码更新了 | fetch 后本地代码没变化 | 对 fetch 的认知偏差——它只更新 origin/main 分身 | 主动执行 `git merge origin/main` 或改用 `git pull` |
 | pull --rebase 冲突后不会收场 | 变基进行中，不知道下一步 | 没掌握 continue/abort/skip | 解决冲突后 `git add` + `git rebase --continue`；想放弃就 `git rebase --abort` |
 | 远程分支列表有"幽灵分支" | `git branch -r` 里出现远程已删除的分支 | 远程分支被删，但本地引用未清理 | `git fetch --prune` 或 `git remote prune origin` |

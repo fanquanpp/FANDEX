@@ -4,664 +4,286 @@ title: CSS Canvas 绘图
 module: 'css'
 category: 前端技术
 difficulty: intermediate
-description: Canvas绘图API与动画实战
+description: 从 CSS 的边界出发学 Canvas 2D：什么时候必须上画布、从零做一个像素画生成器（含高清屏 DPR 处理与 toBlob 导出）、路径/变换/合成模式核心 API、rAF 动画循环与性能清单。
 author: fanquanpp
 updated: '2026-09-13'
 related:
-  - 'css/550-CriticalRenderPathOptimization'
-  - 'css/480-CSSNativeNesting'
-  - 'css/630-CSSInJS'
-  - 'css/560-CSSArchitectureMethodology'
+  - 'html5/230-HTML5MultimediaCanvasDrawing'
+  - 'css/310-CSSFilters'
+  - 'css/330-CSSAnimationTransition'
+  - 'html5/290-WebWorkers'
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
 
 ## 前置知识
 
-建议先阅读以下内容再进入本文：
-
 - [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+- JavaScript 基础（DOM、事件、`requestAnimationFrame` 见 `javascript/027` 事件循环）。本篇代码量大于样式量。
 
-## 1. Canvas 概述 | Canvas Overview
+> 定位说明：本篇从 CSS 的视角切入 Canvas——先讲清 CSS 做不到什么、Canvas 补什么；Canvas 本身的完整体系见 `html5/230-HTML5MultimediaCanvasDrawing`，两篇互补。
 
-Canvas 是 HTML5 提供的一个绘图 API，通过 JavaScript 可以在网页上绘制各种图形、动画和交互效果。Canvas 元素提供了一个矩形区域，我们可以使用各种绘图命令在这个区域内绘制内容。
+## 1. 场景切入：CSS 够用与不够用的那条线
 
-### 1.1 Canvas 的特点
+你已经会用 CSS 画出很多东西：渐变、阴影、圆角、滤镜、遮罩，甚至配合 `clip-path` 做出复杂形状。FANDEX 网页端的律动背景、pixel-vault 的卡片描边，都是纯 CSS。但有些需求 CSS 一行都写不出来：
 
-- **像素级控制**：可以精确控制每个像素的颜色和位置
-- **丰富的绘图 API**：支持绘制路径、形状、文本、图像等
-- **动画支持**：可以通过 JavaScript 实现复杂的动画效果
-- **交互性**：可以响应鼠标和键盘事件，实现交互效果
-- **性能优势**：对于复杂的图形和动画，Canvas 通常比 DOM 操作更高效
+- **逐像素控制**：做一个像素画编辑器，用户点一格改一格的颜色；
+- **运行时生成图像**：把用户数据画成海报再导出 PNG；
+- **成百上千个独立运动的元素**：粒子背景、数据可视化的数千个节点——用 DOM + CSS 每个元素一帧一次重排，帧率立刻崩。
 
-### 1.2 Canvas 与 SVG 的区别
+这条线的判断标准是：**形状固定、数量有限 → CSS；像素级、动态生成、海量元素 → Canvas**。Canvas 是一块"内存里的位图"，你用 JavaScript 一笔一笔往里画，画完浏览器整块上屏。本篇的动手项目就是第一种场景：给 pixel-vault 做一个最小像素画生成器——16x16 网格点选上色、实时预览、导出 PNG。
 
-| 特性              | Canvas                 | SVG                  |
-| ----------------- | ---------------------- | -------------------- |
-| 绘制方式          | 基于像素               | 基于矢量             |
-| 缩放效果          | 放大后可能失真         | 放大后不失真         |
-| 事件处理          | 不支持元素级事件       | 支持元素级事件       |
-| 性能              | 适合绘制大量图形和动画 | 适合绘制少量复杂图形 |
-| 存储方式          | 存储为像素数据         | 存储为 XML 结构      |
-| ## 2. Canvas 基础 | Canvas Basics          |
+## 2. 动手：像素画生成器
 
-### 2.1 创建 Canvas 元素
+新建 `pixel-painter.html`，整份复制即可运行：
 
 ```html
-<canvas id="myCanvas" width="400" height="300"></canvas>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>像素画生成器</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 480px; margin: 32px auto; }
+    canvas { border: 2px solid #ccc; image-rendering: pixelated; touch-action: none; }
+    .bar { display: flex; gap: 12px; align-items: center; margin-bottom: 12px; }
+    input[type="color"] { width: 48px; height: 32px; }
+    button { padding: 6px 14px; border: none; border-radius: 6px;
+             background: #39C5BB; color: #fff; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <h3>16x16 像素画</h3>
+  <div class="bar">
+    <input type="color" id="color" value="#39C5BB" />
+    <button id="clear">清空</button>
+    <button id="export">导出 PNG</button>
+  </div>
+  <canvas id="board" width="320" height="320"></canvas>
+
+  <script>
+    const N = 16;                          // 16x16 格
+    const CELL = 20;                       // 每格 20 CSS 像素
+    const canvas = document.getElementById('board');
+    const ctx = canvas.getContext('2d');   // 画笔，所有绘制都通过它
+
+    // 高清屏处理：物理像素 = CSS 像素 x devicePixelRatio，否则画布会发虚
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = N * CELL * dpr;
+    canvas.height = N * CELL * dpr;
+    canvas.style.width = N * CELL + 'px';
+    canvas.style.height = N * CELL + 'px';
+    ctx.scale(dpr, dpr);
+
+    const grid = Array.from({ length: N }, () => Array(N).fill(null));
+
+    function render() {
+      ctx.clearRect(0, 0, N * CELL, N * CELL);
+      // 网格线
+      ctx.strokeStyle = '#eee';
+      for (let i = 0; i <= N; i++) {
+        ctx.beginPath();
+        ctx.moveTo(i * CELL, 0); ctx.lineTo(i * CELL, N * CELL);
+        ctx.moveTo(0, i * CELL); ctx.lineTo(N * CELL, i * CELL);
+        ctx.stroke();
+      }
+      // 已上色的格子
+      for (let y = 0; y < N; y++) {
+        for (let x = 0; x < N; x++) {
+          if (grid[y][x]) {
+            ctx.fillStyle = grid[y][x];
+            ctx.fillRect(x * CELL, y * CELL, CELL, CELL);
+          }
+        }
+      }
+    }
+
+    // 按住拖动连续上色：pointerdown/pointermove 一套通吃鼠标与触摸
+    let painting = false;
+    function paintAt(e) {
+      const rect = canvas.getBoundingClientRect();
+      const x = Math.floor((e.clientX - rect.left) / CELL);
+      const y = Math.floor((e.clientY - rect.top) / CELL);
+      if (x < 0 || y < 0 || x >= N || y >= N) return;
+      grid[y][x] = document.getElementById('color').value;
+      render();
+    }
+    canvas.addEventListener('pointerdown', (e) => {
+      painting = true;
+      canvas.setPointerCapture(e.pointerId);
+      paintAt(e);
+    });
+    canvas.addEventListener('pointermove', (e) => { if (painting) paintAt(e); });
+    canvas.addEventListener('pointerup', () => { painting = false; });
+
+    document.getElementById('clear').addEventListener('click', () => {
+      grid.forEach((row) => row.fill(null));
+      render();
+    });
+    document.getElementById('export').addEventListener('click', () => {
+      canvas.toBlob((blob) => {
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'pixel-art.png';
+        a.click();
+        URL.revokeObjectURL(a.href);
+      });
+    });
+
+    render();
+  </script>
+</body>
+</html>
 ```
 
-### 2.2 获取 Canvas 上下文
+动手清单：
 
-要在 Canvas 上绘图，首先需要获取 Canvas 的 2D 上下文：
+1. 选色后按住鼠标拖过网格，像素画成形；
+2. 点"导出 PNG"，下载的文件能直接当素材用——这就是"运行时生成图像"的最小闭环；
+3. 把 DPR 那四行删掉再在高分屏（手机或缩放 150% 的显示器）看：画布文字与线条明显发虚，体会为什么它必不可少。
+
+## 3. 讲为什么：一套"状态机 + 重绘"的心智模型
+
+像素画器只有 60 行，却包含了 Canvas 编程的全部主干，值得拆开看。
+
+### 3.1 一切从上下文开始
+
+`<canvas>` 元素本身只是容器，`getContext('2d')` 返回的 `ctx` 才是画笔。所有绘制都是对 ctx 的**有状态调用**：先设 `fillStyle` 再 `fillRect`，后面所有填充都沿用这个颜色，直到你改它。这和 CSS"每条规则独立生效"的气质完全不同——Canvas 更像拿着一支会换墨的笔画水彩。
 
 ```javascript
-const canvas = document.getElementById('myCanvas');
-const ctx = canvas.getContext('2d');
+ctx.fillStyle = '#39C5BB';
+ctx.fillRect(10, 10, 100, 50);     // 实心矩形
+ctx.strokeRect(120, 10, 100, 50);  // 描边矩形（颜色看 strokeStyle）
+ctx.clearRect(0, 0, w, h);         // 擦除（透明），动画每帧的第一步
 ```
 
-### 2.3 基本绘图操作
+### 3.2 路径：复杂形状的统一画法
 
-#### 2.3.1 绘制矩形
-
-```javascript
-// 填充矩形
-ctx.fillStyle = 'red';
-ctx.fillRect(10, 10, 100, 50);
-// 描边矩形
-ctx.strokeStyle = 'blue';
-ctx.lineWidth = 2;
-ctx.strokeRect(120, 10, 100, 50);
-// 清除矩形
-ctx.clearRect(230, 10, 100, 50);
-```
-
-#### 2.3.2 绘制路径
+矩形之外的一切形状（线、圆、多边形）都走同一套流程：`beginPath()` 开新路径 → `moveTo/lineTo/arc` 描点 → `fill()` 或 `stroke()` 落笔。
 
 ```javascript
-// 开始路径
-ctx.beginPath();
-// 移动到起始点
-ctx.moveTo(50, 100);
-// 绘制线条
-ctx.lineTo(150, 100);
-ctx.lineTo(100, 150);
-// 闭合路径
-ctx.closePath();
-// 填充路径
-ctx.fillStyle = 'green';
+ctx.beginPath();               // 忘了这句，新形状会和旧路径连成一体
+ctx.arc(100, 100, 40, 0, Math.PI * 2);  // 圆：圆心、半径、起止角
+ctx.fillStyle = '#ffd9e3';
 ctx.fill();
-// 描边路径
-ctx.strokeStyle = 'black';
+
+ctx.beginPath();
+ctx.moveTo(0, 0);
+ctx.lineTo(100, 100);
+ctx.strokeStyle = '#333';
 ctx.lineWidth = 2;
 ctx.stroke();
 ```
 
-#### 2.3.3 绘制圆形
+`beginPath` 是 Canvas 的头号坑：路径是**累积**的，不开新路径，`fill` 会把之前的路径一起填掉。排错口诀：每个新形状前先 `beginPath`。
+
+### 3.3 状态栈：save/restore 与变换
+
+`translate/rotate/scale` 改变后续所有绘制的坐标系，配 `save()`/`restore()` 入栈出栈，画出"局部坐标系"里的东西而不污染全局：
 
 ```javascript
-ctx.beginPath();
-ctx.arc(200, 125, 50, 0, Math.PI * 2);
-ctx.fillStyle = 'yellow';
-ctx.fill();
-ctx.strokeStyle = 'black';
-ctx.lineWidth = 2;
-ctx.stroke();
+ctx.save();
+ctx.translate(200, 100);        // 原点挪到 (200,100)
+ctx.rotate(Math.PI / 4);        // 之后画的都旋转 45 度
+ctx.fillRect(-25, -25, 50, 50); // 以新原点为中心画方块
+ctx.restore();                  // 坐标系原样恢复
 ```
 
-#### 2.3.4 绘制文本
+### 3.4 重绘循环：清除、更新、画
 
-```javascript
-ctx.font = '24px Arial';
-ctx.fillStyle = 'black';
-ctx.textAlign = 'center';
-ctx.fillText('Hello Canvas!', 200, 250);
-// 描边文本
-ctx.strokeStyle = 'red';
-ctx.lineWidth = 1;
-ctx.strokeText('Hello Canvas!', 200, 280);
-```
-
-## 3. Canvas 进阶 | Canvas Advanced
-
-### 3.1 渐变效果
-
-#### 3.1.1 线性渐变
-
-```javascript
-// 创建线性渐变
-const linearGradient = ctx.createLinearGradient(0, 0, 400, 0);
-linearGradient.addColorStop(0, 'red');
-linearGradient.addColorStop(0.5, 'yellow');
-linearGradient.addColorStop(1, 'green');
-// 使用渐变
-ctx.fillStyle = linearGradient;
-ctx.fillRect(0, 0, 400, 300);
-```
-
-#### 3.1.2 径向渐变
-
-```javascript
-// 创建径向渐变
-const radialGradient = ctx.createRadialGradient(200, 150, 0, 200, 150, 150);
-radialGradient.addColorStop(0, 'white');
-radialGradient.addColorStop(1, 'blue');
-// 使用渐变
-ctx.fillStyle = radialGradient;
-ctx.fillRect(0, 0, 400, 300);
-```
-
-### 3.2 图案填充
-
-```javascript
-// 创建图案
-const patternCanvas = document.createElement('canvas');
-patternCanvas.width = 20;
-patternCanvas.height = 20;
-const patternCtx = patternCanvas.getContext('2d');
-patternCtx.fillStyle = 'red';
-patternCtx.fillRect(0, 0, 10, 10);
-patternCtx.fillRect(10, 10, 10, 10);
-// 创建重复图案
-const pattern = ctx.createPattern(patternCanvas, 'repeat');
-// 使用图案
-ctx.fillStyle = pattern;
-ctx.fillRect(0, 0, 400, 300);
-```
-
-### 3.3 图像处理
-
-#### 3.3.1 绘制图像
-
-```javascript
-const img = new Image();
-img.src = 'image.jpg';
-img.onload = function () {
-  // 绘制完整图像
-  ctx.drawImage(img, 0, 0);
-  // 绘制缩放后的图像
-  ctx.drawImage(img, 0, 150, 200, 100);
-  // 绘制图像的一部分
-  ctx.drawImage(img, 100, 100, 200, 100, 200, 150, 200, 100);
-};
-```
-
-#### 3.3.2 图像变换
-
-```javascript
-const img = new Image();
-img.src = 'image.jpg';
-img.onload = function () {
-  // 保存当前状态
-  ctx.save();
-  // 平移
-  ctx.translate(100, 50);
-  // 旋转
-  ctx.rotate(Math.PI / 4);
-  // 缩放
-  ctx.scale(0.5, 0.5);
-  // 绘制图像
-  ctx.drawImage(img, 0, 0);
-  // 恢复之前的状态
-  ctx.restore();
-};
-```
-
-### 3.4 合成模式
-
-```javascript
-// 绘制第一个矩形
-ctx.fillStyle = 'red';
-ctx.fillRect(50, 50, 100, 100);
-// 设置合成模式
-ctx.globalCompositeOperation = 'source-over'; // 默认
-// ctx.globalCompositeOperation = 'source-in';
-// ctx.globalCompositeOperation = 'source-out';
-// ctx.globalCompositeOperation = 'destination-over';
-// ctx.globalCompositeOperation = 'destination-in';
-// ctx.globalCompositeOperation = 'destination-out';
-// ctx.globalCompositeOperation = 'lighter';
-// ctx.globalCompositeOperation = 'copy';
-// ctx.globalCompositeOperation = 'xor';
-// 绘制第二个矩形
-ctx.fillStyle = 'blue';
-ctx.fillRect(100, 100, 100, 100);
-```
-
-## 4. Canvas 动画 | Canvas Animation
-
-### 4.1 基本动画循环
+Canvas 没有"改某个元素"的概念，动画永远是**整帧重画**。像素画器的 `render()` 是最朴素的版本（事件触发重绘），连续动画则交给 `requestAnimationFrame`：
 
 ```javascript
 function animate() {
-  // 清除画布
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // 绘制动画内容
-  // ...
-  // 请求下一帧
-  requestAnimationFrame(animate);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);  // 1. 清
+  update();                                          // 2. 更新状态
+  draw();                                            // 3. 重画
+  requestAnimationFrame(animate);                    // 4. 下一帧（约 60fps）
 }
-// 开始动画
-animate();
+requestAnimationFrame(animate);
 ```
 
-### 4.2 移动动画
+`requestAnimationFrame` 而不是 `setInterval` 的原因：它与屏幕刷新同步、标签页切后台时自动暂停、掉帧时不堆叠回调。经典应用是弹跳球——维护 x/y 与速度 dx/dy，每帧累加并做边界反弹；把像素画器里任意一个格子的坐标动起来，就是这个例子的变体。
+
+## 4. 进阶 API 速览：图片、渐变与合成
+
+三个常用高阶能力，了解即可，用时回来查。
+
+**绘制图片**：`drawImage` 九参数形态能"取图一块、画到一处、缩放一尺寸"，是最常用的形态：
 
 ```javascript
-let x = 0;
-let y = 150;
-let dx = 2;
-let dy = 2;
-function animate() {
-  // 清除画布
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  // 绘制圆形
-  ctx.beginPath();
-  ctx.arc(x, y, 20, 0, Math.PI * 2);
-  ctx.fillStyle = 'red';
-  ctx.fill();
-  // 更新位置
-  x += dx;
-  y += dy;
-  // 边界检测
-  if (x + 20 > canvas.width || x - 20 < 0) {
-    dx = -dx;
-  }
-  if (y + 20 > canvas.height || y - 20 < 0) {
-    dy = -dy;
-  }
-  // 请求下一帧
-  requestAnimationFrame(animate);
-}
-// 开始动画
-animate();
+const img = new Image();
+img.onload = () => {
+  // drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh)
+  ctx.drawImage(img, 100, 100, 200, 100,  0, 0, 400, 200);  // 裁剪原图一块并放大绘制
+};
+img.src = 'photo.jpg';
 ```
 
-### 4.3 交互动画
+**程序化渐变与图案**：比 CSS 渐变更自由（可作 fillStyle 参与任意绘制）：
 
 ```javascript
-let isDrawing = false;
-let lastX = 0;
-let lastY = 0;
-// 鼠标按下事件
-canvas.addEventListener('mousedown', (e) => {
-  isDrawing = true;
-  [lastX, lastY] = [e.offsetX, e.offsetY];
-});
-// 鼠标移动事件
-canvas.addEventListener('mousemove', (e) => {
-  if (!isDrawing) return;
-  ctx.beginPath();
-  ctx.moveTo(lastX, lastY);
-  ctx.lineTo(e.offsetX, e.offsetY);
-  ctx.strokeStyle = 'black';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-  [lastX, lastY] = [e.offsetX, e.offsetY];
-});
-// 鼠标释放事件
-canvas.addEventListener('mouseup', () => {
-  isDrawing = false;
-});
-// 鼠标离开事件
-canvas.addEventListener('mouseout', () => {
-  isDrawing = false;
-});
+const g = ctx.createLinearGradient(0, 0, 400, 0);  // 或 createRadialGradient
+g.addColorStop(0, '#39C5BB');
+g.addColorStop(1, '#ffd9e3');
+ctx.fillStyle = g;
+ctx.fillRect(0, 0, 400, 300);
 ```
 
-## 5. Canvas 实战示例 | Canvas Practical Examples
+**合成模式**：`globalCompositeOperation` 控制新像素与已有像素的叠加方式，做遮罩擦除（`destination-out`）、发光叠加（`lighter`）必备：
 
-### 5.1 简单的绘图应用
-
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Canvas Drawing App</title>
-    <style>
-      canvas {
-        border: 1px solid black;
-        cursor: crosshair;
-      }
-      .controls {
-        margin-bottom: 10px;
-      }
-    </style>
-  </head>
-  <body>
-    <div class="controls">
-      <label for="color">Color:</label>
-      <input type="color" id="color" value="#000000" />
-      <label for="size">Size:</label>
-      <input type="range" id="size" min="1" max="20" value="2" />
-      <button id="clear">Clear</button>
-    </div>
-    <canvas id="canvas" width="600" height="400"></canvas>
-    <script>
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-      const colorInput = document.getElementById('color');
-      const sizeInput = document.getElementById('size');
-      const clearButton = document.getElementById('clear');
-      let isDrawing = false;
-      let lastX = 0;
-      let lastY = 0;
-      // 鼠标按下事件
-      canvas.addEventListener('mousedown', (e) => {
-        isDrawing = true;
-        [lastX, lastY] = [e.offsetX, e.offsetY];
-      });
-      // 鼠标移动事件
-      canvas.addEventListener('mousemove', (e) => {
-        if (!isDrawing) return;
-        ctx.beginPath();
-        ctx.moveTo(lastX, lastY);
-        ctx.lineTo(e.offsetX, e.offsetY);
-        ctx.strokeStyle = colorInput.value;
-        ctx.lineWidth = sizeInput.value;
-        ctx.stroke();
-        [lastX, lastY] = [e.offsetX, e.offsetY];
-      });
-      // 鼠标释放事件
-      canvas.addEventListener('mouseup', () => {
-        isDrawing = false;
-      });
-      // 鼠标离开事件
-      canvas.addEventListener('mouseout', () => {
-        isDrawing = false;
-      });
-      // 清除按钮点击事件
-      clearButton.addEventListener('click', () => {
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-      });
-    </script>
-  </body>
-</html>
+```javascript
+ctx.globalCompositeOperation = 'destination-out';
+// 之后再画的部分会变成"橡皮擦"，把下层像素抠掉
 ```
 
-### 5.2 粒子效果
+## 5. 坑点自检
 
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Canvas Particle Effect</title>
-    <style>
-      body {
-        margin: 0;
-        overflow: hidden;
-      }
-      canvas {
-        display: block;
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="canvas"></canvas>
-    <script>
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-      // 设置画布大小
-      canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
-      // 粒子数组
-      const particles = [];
-      const particleCount = 100;
-      // 创建粒子
-      for (let i = 0; i < particleCount; i++) {
-        particles.push({
-          x: Math.random() * canvas.width,
-          y: Math.random() * canvas.height,
-          size: Math.random() * 5 + 1,
-          speedX: Math.random() * 3 - 1.5,
-          speedY: Math.random() * 3 - 1.5,
-          color: `hsl(${Math.random() * 360}, 50%, 50%)`,
-        });
-      }
-      // 动画函数
-      function animate() {
-        // 清除画布
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // 更新和绘制粒子
-        for (let i = 0; i < particles.length; i++) {
-          const p = particles[i];
-          // 绘制粒子
-          ctx.beginPath();
-          ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-          ctx.fillStyle = p.color;
-          ctx.fill();
-          // 更新粒子位置
-          p.x += p.speedX;
-          p.y += p.speedY;
-          // 边界检测
-          if (p.x + p.size > canvas.width || p.x - p.size < 0) {
-            p.speedX = -p.speedX;
-          }
-          if (p.y + p.size > canvas.height || p.y - p.size < 0) {
-            p.speedY = -p.speedY;
-          }
-          // 连接粒子
-          for (let j = i; j < particles.length; j++) {
-            const p2 = particles[j];
-            const dx = p.x - p2.x;
-            const dy = p.y - p2.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            if (distance < 100) {
-              ctx.beginPath();
-              ctx.strokeStyle = p.color;
-              ctx.lineWidth = 0.2;
-              ctx.moveTo(p.x, p.y);
-              ctx.lineTo(p2.x, p2.y);
-              ctx.stroke();
-            }
-          }
-        }
-        // 请求下一帧
-        requestAnimationFrame(animate);
-      }
-      // 开始动画
-      animate();
-      // 窗口大小改变时调整画布大小
-      window.addEventListener('resize', () => {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-      });
-    </script>
-  </body>
-</html>
-```
-
-### 5.3 时钟效果
-
-```html
-<!DOCTYPE html>
-<html>
-  <head>
-    <title>Canvas Clock</title>
-    <style>
-      canvas {
-        display: block;
-        margin: 50px auto;
-        border: 1px solid black;
-        border-radius: 50%;
-      }
-    </style>
-  </head>
-  <body>
-    <canvas id="canvas" width="400" height="400"></canvas>
-    <script>
-      const canvas = document.getElementById('canvas');
-      const ctx = canvas.getContext('2d');
-      const centerX = canvas.width / 2;
-      const centerY = canvas.height / 2;
-      const radius = 180;
-      // 绘制时钟
-      function drawClock() {
-        // 清除画布
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
-        // 获取当前时间
-        const now = new Date();
-        const hours = now.getHours();
-        const minutes = now.getMinutes();
-        const seconds = now.getSeconds();
-        // 绘制表盘
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, radius, 0, Math.PI * 2);
-        ctx.fillStyle = 'white';
-        ctx.fill();
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        // 绘制刻度
-        for (let i = 0; i < 12; i++) {
-          const angle = (i / 12) * Math.PI * 2;
-          const x1 = centerX + Math.cos(angle) * (radius - 20);
-          const y1 = centerY + Math.sin(angle) * (radius - 20);
-          const x2 = centerX + Math.cos(angle) * (radius - 10);
-          const y2 = centerY + Math.sin(angle) * (radius - 10);
-          ctx.beginPath();
-          ctx.moveTo(x1, y1);
-          ctx.lineTo(x2, y2);
-          ctx.strokeStyle = 'black';
-          ctx.lineWidth = 2;
-          ctx.stroke();
-          // 绘制数字
-          const text = i === 0 ? '12' : i.toString();
-          ctx.font = '20px Arial';
-          ctx.fillStyle = 'black';
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          const textX = centerX + Math.cos(angle) * (radius - 40);
-          const textY = centerY + Math.sin(angle) * (radius - 40);
-          ctx.fillText(text, textX, textY);
-        }
-        // 绘制时针
-        const hourAngle = ((hours % 12) / 12) * Math.PI * 2 + (minutes / 60) * ((Math.PI * 2) / 12);
-        const hourX = centerX + Math.cos(hourAngle) * (radius - 80);
-        const hourY = centerY + Math.sin(hourAngle) * (radius - 80);
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.lineTo(hourX, hourY);
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 4;
-        ctx.stroke();
-        // 绘制分针
-        const minuteAngle = (minutes / 60) * Math.PI * 2 + (seconds / 60) * ((Math.PI * 2) / 60);
-        const minuteX = centerX + Math.cos(minuteAngle) * (radius - 60);
-        const minuteY = centerY + Math.sin(minuteAngle) * (radius - 60);
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.lineTo(minuteX, minuteY);
-        ctx.strokeStyle = 'black';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-        // 绘制秒针
-        const secondAngle = (seconds / 60) * Math.PI * 2;
-        const secondX = centerX + Math.cos(secondAngle) * (radius - 40);
-        const secondY = centerY + Math.sin(secondAngle) * (radius - 40);
-        ctx.beginPath();
-        ctx.moveTo(centerX, centerY);
-        ctx.lineTo(secondX, secondY);
-        ctx.strokeStyle = 'red';
-        ctx.lineWidth = 1;
-        ctx.stroke();
-        // 绘制中心点
-        ctx.beginPath();
-        ctx.arc(centerX, centerY, 5, 0, Math.PI * 2);
-        ctx.fillStyle = 'black';
-        ctx.fill();
-      }
-      // 绘制时钟并每秒更新
-      drawClock();
-      setInterval(drawClock, 1000);
-    </script>
-  </body>
-</html>
-```
-
-## 6. Canvas 性能优化 | Canvas Performance Optimization
-
-### 6.1 减少绘制操作
-
-- **批量绘制**：将多个绘制操作合并为一个路径
-- **避免频繁清除**：只清除需要更新的区域
-- **使用离屏 Canvas**：对于复杂的绘制，使用离屏 Canvas 预渲染
-
-### 6.2 优化图像操作
-
-- **使用适当的图像格式**：根据需要选择 JPEG、PNG 或 WebP
-- **压缩图像**：减少图像文件大小
-- **使用 CSS 缩放**：在绘制前使用 CSS 缩放图像
-
-### 6.3 优化动画
-
-- **使用 requestAnimationFrame**：代替 setTimeout 或 setInterval
-- **限制帧率**：对于不需要 60fps 的动画，限制帧率
-- **使用 transforms**：使用 translate、rotate、scale 等变换代替重新绘制
-
-### 6.4 内存管理
-
-- **释放不再使用的资源**：及时释放图像、路径等资源
-- **避免内存泄漏**：注意事件监听器的移除
-
-## 7. Canvas 最佳实践 | Canvas Best Practices
-
-### 7.1 代码组织
-
-- **模块化设计**：将 Canvas 相关代码封装为模块
-- **使用面向对象**：使用类和对象组织代码
-- **注释**：添加适当的注释，说明代码的功能和逻辑
-
-### 7.2 兼容性
-
-- **检测 Canvas 支持**：在使用 Canvas 前检测浏览器是否支持
-- **提供替代方案**：为不支持 Canvas 的浏览器提供替代内容
-
-### 7.3 安全性
-
-- **验证用户输入**：对于用户输入的坐标和尺寸，进行验证
-- **防止 XSS**：对于从用户输入生成的 Canvas 内容，进行适当的过滤
-
-### 7.4 可访问性
-
-- **提供替代文本**：为 Canvas 元素添加 alt 属性
-- **使用 ARIA 标签**：为 Canvas 元素添加适当的 ARIA 标签
-- **支持键盘导航**：对于交互式 Canvas，支持键盘导航
-
-## 8. 总结 | Summary
-
-Canvas 是 HTML5 提供的强大绘图 API，通过 JavaScript 可以在网页上创建各种图形、动画和交互效果。Canvas 具有像素级控制、丰富的绘图 API、动画支持和交互性等特点，适用于创建游戏、数据可视化、图像处理等应用。
-通过学习 Canvas 的基础操作、进阶特性和性能优化技巧，你可以创建各种复杂的图形和动画效果。在实际开发中，应根据具体需求选择合适的技术方案，并遵循相关的最佳实践，以创建高性能、可维护的 Canvas 应用。
-
-## 动手试试
-
-1. 在 Canvas 上画一个矩形、一个圆形和一行文字；
-2. 用 `requestAnimationFrame` 让图形动起来；
-3. 实现鼠标绘制（按下画线、松开停止）；
-4. 进阶挑战：用 `toBlob` 导出画布为 PNG。
-
-## 核心知识点
-
-> 一句话记住 Canvas：`getContext('2d')` 拿画笔，`fillRect`/路径/`arc` 画图形，`requestAnimationFrame` 做动画，像素级控制。
-
-- Canvas 是像素画布，SVG 是矢量；
-- 上下文 API：矩形、路径、文本、图像；
-- 动画：清除 → 更新 → 重绘循环；
-- 交互：鼠标事件 + 坐标换算；
-- 导出：`toDataURL`/`toBlob`；
-- 性能：减少每帧的绘制范围。
-
-## 注意事项与改进建议
-
-| 问题点 | 说明 | 改进方案 |
+| 现象 | 原因 | 修法 |
 | --- | --- | --- |
-| 忘记 beginPath | 路径粘连 | 每组图形前调用 |
-| 尺寸用 CSS 控制 | 模糊 | 用 width/height 属性 |
-| setInterval 动画 | 掉帧 | requestAnimationFrame |
-| 跨域图片导出 | 画布污染 | CORS 或同源资源 |
+| 画布在高分屏发虚 | 位图尺寸是 CSS 尺寸 1 倍 | DPR 三件套：属性尺寸乘 dpr、style 尺寸不变、`ctx.scale(dpr, dpr)` |
+| 图形越画越连成一片 | 忘 `beginPath()`，路径累积 | 每个新形状前开新路径 |
+| 画布显示比例不对/模糊 | 用 CSS 拉伸了默认 300x150 的位图 | 用 `width`/`height` 属性（或 JS）设真实位图尺寸 |
+| 动画卡顿、切后台回来狂跳 | 用了 `setInterval` | 改 `requestAnimationFrame`，时间差用帧间隔算 |
+| 满帧重绘拖慢页面 | 每帧清整幅、画全部 | 只清更新区域；静态背景分层到离屏 canvas |
+| 图片画上去但 `toDataURL/toBlob` 报安全错误 | 画过跨域且无 CORS 头的图，画布被"污染" | 图片服务返回 CORS 头并设 `img.crossOrigin = 'anonymous'` |
+| 想在点击处画但位置偏了 | 事件坐标是页面坐标 | `getBoundingClientRect()` 换算（见像素画器的 `paintAt`） |
 
-## 扩展学习
+## 6. 性能清单
 
-- 完整 Canvas：`html5/230-HTML5MultimediaCanvasDrawing`；
-- 动画：`css/330-CSSAnimationTransition`；
-- SVG 对比：`html5/210-SVG`。
+Canvas 性能问题只有一条主线：**每帧做了多少像素工作**。按收益排序：
+
+1. 减少每帧绘制范围：只 `clearRect` 与重画变化区域；
+2. 静态内容离屏预渲染：背景、网格这类不变的内容画进 `document.createElement('canvas')`，每帧 `drawImage` 贴上去一次即可；
+3. 批量路径：同色的一批形状合成一条路径再 `fill`；
+4. 粒子规模（几百上千个）还嫌慢时，把渲染搬进 Worker：`OffscreenCanvas`（`html5/290-WebWorkers` 有完整示例）；
+5. 导出用 `toBlob`（异步、内存友好），`toDataURL` 留给调试。
+
+## 7. 可访问性与降级
+
+两条与直觉不同的规则：
+
+- Canvas **没有 alt 属性**。替代文本的写法是把内容作为 canvas 的**子内容**（旧浏览器或读屏降级时展示）并配 `role="img"` 与 `aria-label`：
+
+```html
+<canvas id="chart" role="img" aria-label="近 12 个月投稿量柱状图">
+  你的浏览器不支持画布，图表数据见下方表格。
+  <table>……同数据的表格版本……</table>
+</canvas>
+```
+
+- 纯装饰性 Canvas（粒子背景）设 `aria-hidden="true"`，别让读屏用户听一段空白。
+
+## 8. 练习
+
+1. （必做）跑通像素画生成器，加一个"橡皮擦"模式：切换后点击格子变回透明（提示：`grid[y][x] = null`）；
+2. （必做）加"取色器"：右键点击格子把它的颜色读回颜色输入框（`<input type="color">` 的 `value` 可写）；
+3. （选做）把弹跳球动画写出来：一个圆在画布内匀速运动、四壁反弹（核心是 x += dx 与边界判断）；
+4. （选做）给像素画加"调色板"：固定 8 个预设色按钮，点击切换当前色，模拟复古游戏机的限色调色板；
+5. （选做）进阶：粒子连线背景（约 100 个粒子运动、距离小于阈值时画线连接），并按第 6 节清单优化到 60fps。
+
+## 9. 下一步
+
+- Canvas 的完整体系（WebGL、文本度量、像素读写 `getImageData`）：`html5/230-HTML5MultimediaCanvasDrawing`；
+- 同样能画图但走矢量路线的 SVG 及两者选型：`html5/210-SVG`；
+- "形状固定、数量有限"的场景回头用 CSS：渐变见 `css/260-Gradient`，滤镜见 `css/310-CSSFilters`，动画与过渡见 `css/330-CSSAnimationTransition`。

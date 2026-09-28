@@ -4,408 +4,206 @@ title: History API
 module: 'html5'
 category: 前端技术
 difficulty: intermediate
-description: History API（pushState、replaceState）
+description: 用 pushState 与 popstate 从零写一个迷你 SPA 路由：历史栈与 state 恢复、刷新 404 的服务端配置、hash 与 history 两种模式取舍，以及切换动画的 View Transitions 配合。
 author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'html5/300-ServiceWorkerPWA'
+  - 'css/340-CSSViewTransitions'
+  - 'html5/280-CrossDocumentCommunication'
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
 
-> 前置依赖：先接触过 SPA 路由概念（Vue Router 或 React Router）再读本篇。
+> 前置依赖：先接触过 SPA 路由概念（Vue Router 或 React Router）再读本篇；示例需要事件监听基础（`javascript/039`）。
 
-## pushState 与 replaceState
+## 1. 场景切入：后退键坏了的列表页
 
-**pushState 添加历史条目**
-`history.pushState([state], [unused], [url])`
-```javascript
-// 添加新历史条目
-history.pushState({ page: 'about' }, '', '/about');
+你在 FANDEX 网页端逛作品集：点进一幅像素画，URL 从 `/gallery` 变成 `/work/42`，详情在当前页内展示。你按了一下浏览器后退键想回列表——如果开发者偷懒只做了"内容切换"没管历史记录，后退键会直接把你踹回上一个网站，而不是回到 `/gallery`。
 
-// 不修改 URL
-history.pushState({ page: 'about' }, '');
+同理：筛选条件（`?tag=像素&sort=最新`）如果只存在内存里，用户一刷新就丢，也没法把带筛选结果的链接发给朋友。这两个问题的共同答案是 History API：**把界面状态写进 URL 和历史栈，让浏览器的后退/前进/刷新/分享四大基础设施替你干活**。
 
-// 带 state 对象
-history.pushState(
-  { userId: 123, section: 'profile' },
-  '',
-  '/users/123/profile'
-);
+Vue Router、React Router 的 history 模式，底层就是本篇这几个调用。读懂它们，框架的路由配置报错你就能自己排查。
 
-// 查询参数
-history.pushState(null, '', '?page=2&sort=desc');
+## 2. 动手：一个能进能退的迷你路由
 
-// 锚点
-history.pushState(null, '', '#section1');
+新建 `mini-spa.html`（走 localhost 或 Live Server 打开），整份复制即可运行：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>迷你路由</title>
+  <style>
+    nav a { margin-right: 16px; }
+    nav a.active { color: #39C5BB; font-weight: bold; }
+    main { border-top: 1px solid #eee; padding-top: 16px; min-height: 120px; }
+  </style>
+</head>
+<body>
+  <nav>
+    <a href="/">首页</a>
+    <a href="/gallery">画廊</a>
+    <a href="/about">关于</a>
+  </nav>
+  <main id="view"></main>
+
+  <script>
+    const view = document.getElementById('view');
+
+    const routes = {
+      '/': () => '<h2>首页</h2><p>欢迎来到 FANDEX 演示站。</p>',
+      '/gallery': () => '<h2>画廊</h2><p>这里是作品列表。</p>',
+      '/about': () => '<h2>关于</h2><p>一个教学用迷你路由。</p>',
+    };
+
+    function render() {
+      const path = location.pathname;
+      view.innerHTML = (routes[path] || routes['/'])();
+      document.querySelectorAll('nav a').forEach((a) =>
+        a.classList.toggle('active', a.getAttribute('href') === path)
+      );
+    }
+
+    // 拦截站内链接点击：改 URL + 渲染，不真正发起跳转
+    document.querySelector('nav').addEventListener('click', (e) => {
+      const link = e.target.closest('a');
+      if (!link) return;
+      e.preventDefault();
+      const path = link.getAttribute('href');
+      history.pushState({ path }, '', path);   // 入栈新条目
+      render();
+    });
+
+    // 前进/后退时浏览器只改 URL，渲染得自己做
+    window.addEventListener('popstate', render);
+
+    render(); // 首次加载
+  </script>
+</body>
+</html>
 ```
 
-**replaceState 修改当前条目**
-`history.replaceState([state], [unused], [url])`
-```javascript
-// 修改当前历史条目(不新增)
-history.replaceState({ page: 'home' }, '', '/home');
+动手清单：
 
-// 更新 state 但保留 URL
-history.replaceState({ updated: true }, '');
-```
+1. 点"画廊"，URL 变为 `/gallery`，内容切换，没有页面刷新；
+2. 按浏览器后退键，回到首页——后退键第一次"听话"了；
+3. 在 `/gallery` 按 F5 刷新，大概率 404——这不是 bug，是本篇最重要的一个"为什么"，见第 4 节；
+4. 把 `pushState` 换成 `replaceState` 再试：后退键会跳过画廊直接回到上一个网站，体会"替换当前条目"和"新增条目"的区别。
 
-**参数说明**
+## 3. 讲为什么：一套 API，两个角色
 
-| 参数      | 说明                                              |
-| --------- | ------------------------------------------------- |
-| `state`   | 状态对象(任意可序列化数据,最大约 640KB)         |
-| `unused`  | 历史保留参数,建议传 `''`                          |
-| `url`     | 新 URL(必须同源,可相对路径)                     |
-
-> **注意**:`pushState` 和 `replaceState` 不会触发 `popstate` 事件,也不会加载新页面。
-
----
-
-## 1. History API 概述
-
-History API 允许 JavaScript 操作浏览器的历史记录栈，实现无刷新页面导航。
-
-| 属性                | 说明                        |
-| ------------------- | --------------------------- |
-| `length`            | 历史记录栈中的条目数        |
-| `scrollRestoration` | 滚动恢复策略（auto/manual） |
-| `state`             | 当前历史条目的状态对象      |
-
-## 2. 导航方法
+### 3.1 写入历史的两个方法
 
 ```javascript
-history.back(); // 后退
-history.forward(); // 前进
-history.go(-2); // 后退2步
+// 新增一个历史条目：后退键会回到上一个 URL
+history.pushState(state, '', url);
+
+// 替换当前条目：后退键越过这里，直接回到上上个
+history.replaceState(state, '', url);
 ```
 
-## 3. popstate 事件
+参数表：
+
+| 参数 | 说明 |
+| --- | --- |
+| `state` | 随条目存储的状态对象，前进/后退时原样还给你。必须是可结构化克隆的数据；浏览器对序列化后的大小有限制且各实现不同（Firefox 约 16 MiB，WebKit 系更小），**只存 ID、页码这类轻量值**，大数据放 localStorage/IndexedDB，state 里只放钥匙 |
+| 第二参数 | 历史遗留，传空串 `''` |
+| `url` | 新 URL。**必须同源**，否则抛 SecurityError；可以传相对路径、查询串或 hash |
+
+两者的分工口诀：**push 用于"用户到达了一个新地方"，replace 用于"同一个地方换了个说法"**。典型 replace 场景：分页点击后把 `?page=2` 替换进当前条目；或登录后把带 `?code=xxx` 的 URL 清干净。
+
+### 3.2 读回状态的 popstate
+
+用户点后退/前进（或代码调 `back()`/`forward()`/`go(n)`）时，浏览器只做两件事：换 URL、触发 `popstate`。**渲染是你自己的事**：
 
 ```javascript
 window.addEventListener('popstate', (event) => {
-  if (event.state) renderPage(event.state.page);
+  // event.state 就是当初 pushState 存进去的对象
+  renderPage(event.state?.page ?? 'home');
 });
 ```
 
-## 4. SPA 路由实现
+最容易记错的点：**`pushState`/`replaceState` 自己不触发 `popstate`**。所以迷你路由里"导航函数"和"popstate 回调"都必须调 `render()`——很多教程封装成 `navigate()` 内部先 push 再 render，就是这个原因。
+
+### 3.3 顺手的辅助成员
 
 ```javascript
-class Router {
-  constructor() {
-    this.routes = {};
-    window.addEventListener('popstate', () => this.resolve());
-    document.addEventListener('click', (e) => {
-      const link = e.target.closest('a[href]');
-      if (link && link.origin === location.origin) {
-        e.preventDefault();
-        this.navigate(link.pathname);
-      }
-    });
-  }
-  addRoute(path, handler) {
-    this.routes[path] = handler;
-    return this;
-  }
-  navigate(path, state = {}) {
-    history.pushState(state, '', path);
-    this.resolve();
-  }
-  resolve() {
-    (this.routes[location.pathname] || this.routes['*'])?.(history.state);
-  }
-}
-```
+history.length;              // 当前会话的历史条目数（只读）
+history.state;               // 当前条目的 state（刷新后依然在）
+history.scrollRestoration;   // 'auto'（默认，浏览器自动恢复滚动） | 'manual'
 
-## 5. 注意事项
-
-- URL 必须同源
-- 状态对象有大小限制（约 640KB）
-- SPA 需服务端配置所有路由返回 index.html
-## History 对象属性
-
-**history 属性**
-```javascript
-history.length;                 // 历史栈中的条目数
-history.state;                  // 当前条目的状态对象
-history.scrollRestoration;      // 滚动恢复策略 'auto' | 'manual'
-```
-
-**scrollRestoration 设置**
-```javascript
-// 自动恢复滚动位置(默认)
-history.scrollRestoration = 'auto';
-
-// 手动管理滚动
+// 手动接管滚动恢复：SPA 常用，切换视图时自己 scrollTo
 history.scrollRestoration = 'manual';
+```
 
-// 查询
-if (history.scrollRestoration === 'manual') {
-  // 手动恢复
-  window.scrollTo(0, savedScrollY);
+后退回到长列表时滚动位置对不对，用户体验差别巨大。默认 `auto` 在纯浏览器导航下够用；SPA 动态渲染内容后往往需要 `manual` + 自行恢复。
+
+## 4. 讲为什么：刷新 404 是 history 模式的宿命
+
+迷你路由在 `/gallery` 刷新会 404，因为浏览器向服务器**真的请求了** `/gallery` 这个路径，而服务器上没有这个文件。这正是 history 路由的唯一硬性部署要求：**服务器把所有前端路由都兜底返回 `index.html`**，剩下的交给 JS 渲染。
+
+Nginx 的经典写法：
+
+```nginx
+location / {
+  try_files $uri $uri/ /index.html;
 }
 ```
 
----
+开发环境里，Vite（`historyApiFallback` 默认开启）和 Live Server 都已内置。对比一下 hash 模式：URL 写成 `/#/gallery`，hash 部分根本不会发给服务器，所以不需要任何配置、天然可部署到静态托管——代价是 URL 不干净、SEO 差、和页面锚点语义冲突。**hash 是部署能力不足时的退路，history 是正路**；现代平台（Vercel、Netlify、Cloudflare Pages）都有现成的 SPA fallback 开关，没有理由再选 hash。
 
-## 导航方法
+## 5. 进阶：把查询参数写进 URL
 
-**back / forward / go**
+列表页的筛选条件用 `URLSearchParams` 读写，配合 `replaceState`（筛选不该让后退键一步步回放）：
+
 ```javascript
-history.back();       // 后退一页
-history.forward();    // 前进一页
-history.go(-2);       // 后退 2 步
-history.go(1);        // 前进 1 步
-history.go(0);        // 刷新当前页
-```
-
-| 方法         | 说明               |
-| ------------ | ------------------ |
-| `back()`     | 等价于 `go(-1)`    |
-| `forward()`  | 等价于 `go(1)`     |
-| `go(n)`      | 前进/后退 n 步     |
-
----
-
-## popstate 事件
-
-**监听前进/后退**
-```javascript
-window.addEventListener('popstate', (event) => {
-  console.log('state:', event.state); // 历史条目的 state 对象
-  if (event.state) {
-    renderPage(event.state.page);
-  }
-});
-```
-
-**触发 popstate 的操作**
-- 浏览器后退按钮
-- 浏览器前进按钮
-- `history.back()` / `history.forward()` / `history.go()`
-- 点击带 `#` 锚点链接(同源)
-
-**手动触发(测试用)**
-```javascript
-// 不会触发 popstate
-history.pushState({ page: 'test' }, '', '/test');
-
-// 触发 popstate 事件
-window.dispatchEvent(new PopStateEvent('popstate', { state: history.state }));
-```
-
----
-
-## hashchange 事件
-
-**URL 锚点变化**
-```javascript
-window.addEventListener('hashchange', (event) => {
-  console.log('旧 hash:', event.oldURL);
-  console.log('新 hash:', event.newURL);
-  console.log('当前 hash:', location.hash);
-});
-
-// 通过修改 hash 触发
-location.hash = 'section2';
-```
-
----
-
-## SPA 路由实现
-
-**HashRouter 哈希路由**
-```javascript
-class HashRouter {
-  constructor() {
-    this.routes = {};
-    window.addEventListener('hashchange', () => this.resolve());
-    window.addEventListener('load', () => this.resolve());
-  }
-
-  addRoute(path, handler) {
-    this.routes[path] = handler;
-    return this;
-  }
-
-  navigate(path) {
-    location.hash = path;
-  }
-
-  resolve() {
-    const path = location.hash.slice(1) || '/';
-    (this.routes[path] || this.routes['*'])?.();
-  }
+function setPage(page) {
+  const url = new URL(location.href);
+  url.searchParams.set('page', String(page));
+  history.replaceState(history.state, '', url);
+  loadList(page);
 }
 
-// 使用
-const router = new HashRouter();
-router
-  .addRoute('/', () => renderHome())
-  .addRoute('/about', () => renderAbout())
-  .addRoute('/contact', () => renderContact());
-
-// 导航
-router.navigate('/about'); // URL 变为 #/about
+// 首次加载：从 URL 恢复状态（刷新、分享链接都不丢）
+const initialPage = Number(new URLSearchParams(location.search).get('page')) || 1;
+loadList(initialPage);
 ```
 
-**HistoryRouter History API 路由**
-```javascript
-class HistoryRouter {
-  constructor() {
-    this.routes = {};
-    window.addEventListener('popstate', () => this.resolve());
+这段模式值得背下来：**URL 是状态的第一存储**。组件挂载时先读 URL，任何状态变化先写 URL 再渲染——做到这一点，刷新、后退、分享三个能力自动到账。
 
-    // 拦截链接点击
-    document.addEventListener('click', (e) => {
-      const link = e.target.closest('a[href]');
-      if (link && link.origin === location.origin) {
-        e.preventDefault();
-        this.navigate(link.pathname);
-      }
-    });
-  }
+## 6. 坑点自检
 
-  addRoute(path, handler) {
-    this.routes[path] = handler;
-    return this;
-  }
-
-  navigate(path, state = {}) {
-    history.pushState(state, '', path);
-    this.resolve();
-  }
-
-  resolve() {
-    const path = location.pathname;
-    (this.routes[path] || this.routes['*'])?.(history.state);
-  }
-}
-
-// 使用
-const router = new HistoryRouter();
-router
-  .addRoute('/', () => renderHome())
-  .addRoute('/users', () => renderUsers())
-  .addRoute('/users/:id', () => renderUserDetail());
-```
-
----
-
-## URL 对象操作
-
-**URL 解析**
-```javascript
-const url = new URL('https://example.com/path?name=Alice&age=30#section');
-
-url.protocol; // 'https:'
-url.host;     // 'example.com'
-url.hostname; // 'example.com'
-url.port;     // ''
-url.pathname; // '/path'
-url.search;   // '?name=Alice&age=30'
-url.hash;     // '#section'
-url.origin;   // 'https://example.com'
-```
-
-**URLSearchParams 查询参数**
-```javascript
-const params = new URLSearchParams('?name=Alice&age=30');
-
-params.get('name');      // 'Alice'
-params.getAll('tag');    // 数组
-params.has('age');       // true
-params.set('age', '25'); // 修改
-params.append('tag', 'a'); // 添加
-params.delete('name');   // 删除
-params.toString();       // 'age=25&tag=a'
-
-// 遍历
-for (const [key, value] of params) {
-  console.log(key, value);
-}
-```
-
-**修改当前 URL 参数**
-```javascript
-const url = new URL(location.href);
-url.searchParams.set('page', '2');
-url.searchParams.delete('filter');
-history.pushState(null, '', url.toString());
-```
-
----
-
-## 注意事项
-
-**同源策略**
-```javascript
-// 错误:跨域 URL
-history.pushState(null, '', 'https://other.com/page'); // 抛出 SecurityError
-
-// 正确:同源 URL
-history.pushState(null, '', '/page');
-history.pushState(null, '', location.origin + '/page');
-```
-
-**state 大小限制**
-```javascript
-// 状态对象最大约 640KB(序列化后)
-history.pushState({ data: 'large data...' }, '', '/page');
-
-// 推荐用 sessionStorage / IndexedDB 存储大对象
-sessionStorage.setItem('pageState', JSON.stringify(largeData));
-history.pushState({ storageKey: 'pageState' }, '', '/page');
-```
-
-**服务端配置**
-```javascript
-// SPA 所有路由需服务端返回 index.html
-// Nginx 配置示例:
-// location / {
-//   try_files $uri $uri/ /index.html;
-// }
-```
-
-## 动手试试
-
-### 入门版（必做）
-
-1. 写三个按钮：跳转 `/page1`、`/page2`、返回上一页，分别用 `pushState` 和 `back()` 实现；
-2. 监听 `popstate`，在页面显示当前路径；
-3. 用 `replaceState` 把当前路径替换为 `/updated`，观察后退行为与 `pushState` 的差异。
-
-### 进阶版（选做）
-
-1. 实现一个 10 行的迷你路由：点击站内链接切换“首页/关于/联系”三个视图；
-2. 用 `URLSearchParams` 实现分页参数 `?page=1` 的读写；
-3. 对比 hash 路由与 history 路由在“直接刷新/分享链接”时的行为差异。
-
-## 核心知识点
-
-> 一句话记住 History API：`pushState` 加条目，`replaceState` 换当前；`popstate` 响应前进后退，路由刷新靠 JS 重渲染。
-
-- `pushState(state, '', url)` 新增历史条目，不刷新页面；
-- `replaceState` 替换当前条目，适合状态保存；
-- `popstate` 在前进/后退时触发，读取 `event.state` 恢复页面；
-- `back()`/`forward()`/`go(n)` 操作历史栈；
-- `pushState` 要求同源 URL，不触发 `popstate`；
-- hashchange 是更简单的替代方案，适合无需服务器配置的场景。
-
-## 注意事项与改进建议
-
-| 问题点 | 说明 | 改进方案 |
+| 现象 | 原因 | 修法 |
 | --- | --- | --- |
-| 刷新后 404 | history 路由刷新时服务器无对应文件 | 服务器配置 SPA fallback 到 index.html |
-| 忘记监听 `popstate` | 前进后退页面不更新 | 路由初始化时注册 `popstate` |
-| 站外链接被拦截 | 误拦截外部跳转 | 校验 `link.origin === location.origin` |
-| state 存超大对象 | 超过 640KB 抛异常 | 只存 ID 等轻量信息，数据放 Store/IndexedDB |
-| 用 hash 存业务状态 | URL 变脏且与锚点冲突 | 业务状态用 history 模式或查询参数 |
-| 忽略滚动恢复 | 后退后位置丢失 | 配合 `scrollRestoration` 或手动恢复 |
+| 后退后页面不变 | 没监听 `popstate`，或监听了但没重新渲染 | popstate 回调里必须重渲染 |
+| `popstate` 在 push 后没触发 | 正常行为，push 本就不触发 | `navigate()` 里 push 后手动渲染 |
+| 刷新 404 | 服务器没有 SPA fallback | Nginx `try_files` / 平台 rewrite 配置 |
+| 抛 SecurityError | `pushState` 传了跨域 URL | 只允许同源；跨域只能 `location.href` 真跳转 |
+| 全站链接都被拦截 | 委托监听时没判断来源 | 校验 `link.origin === location.origin`、`target !== '_blank'`、带 `download` 的放行 |
+| state 超限报错 | 塞了大对象 | state 只存 ID/页码，数据放外部存储 |
+| 后退后滚动位置乱跳 | SPA 动态渲染破坏了 `auto` 恢复 | `scrollRestoration = 'manual'` 自行恢复 |
+| 带筛选刷新全丢 | 状态只存在组件内存 | 参照第 5 节"URL 是状态的第一存储" |
 
-## 扩展学习
+## 7. 现代补充：导航这件事正在被重新设计
 
-- 路由框架：Vue Router / React Router 的 history 模式配置；
-- 前端路由原理：`javascript/390-ModuleDynamicImportCodeSplitting` 与路由懒加载；
-- URL 标准：`javascript/110-Regex` 或 WHATWG URL 规范；
-- 服务器配置：Nginx `try_files` 的 SPA fallback 写法。
+两个 2026 视角的动向，知道即可，生产仍以 `pushState` 体系为主：
+
+- **View Transitions API**：路由切换时两行代码拿到整页过渡动画（旧视图淡出、新视图淡入），与 `pushState` 完美配合——`document.startViewTransition(() => render())`，详见 `css/340-CSSViewTransitions`；
+- **Navigation API**（`navigation.addEventListener('navigate', ...)`）：Chrome/Safari 已实现，把"拦截导航、接管路由"标准化，Firefox 尚未跟上；框架作者值得关注，业务代码暂时不必直接依赖。
+
+框架层面（Vue Router / React Router / TanStack Router）早已封装好以上全部并处理了边缘情况；本篇的意义是让你在遇到"路由刷新 404""后退键行为诡异"时，能穿透框架看到浏览器这一层的真相。
+
+## 8. 练习
+
+1. （必做）给迷你路由加一个 `/work/42` 动态路由：解析 `location.pathname` 匹配 `/^\/work\/(\d+)$/`，渲染对应编号；
+2. （必做）实现"画廊滚动位置恢复"：离开画廊时把 `scrollY` 存进 state（`replaceState`），后退回来时恢复；
+3. （选做）用 `URLSearchParams` 实现 `?tag=&sort=` 筛选：改变时 `replaceState`，并把"清除筛选"做成一个普通链接（href 带真实参数，保证可分享）；
+4. （选做）对比实验：同一页面分别用 hash 与 history 模式部署到任一静态托管，验证 hash 免配置、history 需要重写规则。
+
+## 9. 下一步
+
+- 给路由切换加上过渡动画：`css/340-CSSViewTransitions`；
+- URL 参数只是状态共享的起点，跨窗口/跨 iframe 通信见 `html5/280-CrossDocumentCommunication`；
+- 让页面离线可用、后端 404 兜底后依然完整运行：`html5/300-ServiceWorkerPWA`。

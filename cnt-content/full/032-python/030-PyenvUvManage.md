@@ -9,6 +9,7 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'python/040-PythonVirtualEnv'
+  - 'python/045-PythonEnvToolsLandscape'
   - 'python/730-PythonPackagingEvolution'
   - 'python/650-GILAndFreeThreading'
 prerequisites:
@@ -22,261 +23,207 @@ prerequisites:
 ## pyenv-win 安装
 
 **基本写法：PowerShell 安装 pyenv-win**
-`irm https://github.com/pyenv-win/pyenv-win/raw/master/pyenv-win/install-pyenv-win.ps1 | iex`
 ```bash
 # 通过 PowerShell 脚本安装 pyenv-win
 irm https://github.com/pyenv-win/pyenv-win/raw/master/pyenv-win/install-pyenv-win.ps1 | iex
-```
 
 ---
 
 **基本写法：查看可安装版本**
-`pyenv install --list`
 ```bash
 # 列出所有可安装的 Python 版本
 pyenv install --list
-```
 
 ---
 
 **基本写法：安装指定版本**
-`pyenv install <版本号>`
 ```bash
 # 安装指定版本的 Python
 pyenv install 3.13.0
-```
 
 ---
 
 **基本写法：查看已安装版本**
-`pyenv versions`
 ```bash
 # 列出所有已安装的 Python 版本
 pyenv versions
-```
 
 ---
 
 ## pyenv 版本切换
 
 **基本写法：设置全局默认版本**
-`pyenv global <版本号>`
 ```bash
 # 设置全局默认 Python 版本
 pyenv global 3.13.0
-```
 
 ---
 
 **基本写法：设置项目本地版本**
-`pyenv local <版本号>`
 ```bash
 # 在当前项目目录生成 .python-version 文件
 pyenv local 3.11.9
-```
 
 ---
 
 **基本写法：设置当前 shell 版本**
-`pyenv shell <版本号>`
 ```bash
 # 仅在当前终端会话切换版本
 pyenv shell 3.12.8
-```
 
 ---
 
 **基本写法：卸载版本**
-`pyenv uninstall <版本号>`
 ```bash
 # 删除指定版本的 Python
 pyenv uninstall 3.9.5
-```
 
 ---
 
 ## uv 安装
 
 **基本写法：Windows 安装 uv**
-`powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"`
 ```bash
 # 通过官方脚本安装 uv（Windows）
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
-```
 
 ---
 
 **基本写法：Linux/macOS 安装 uv**
-`curl -LsSf https://astral.sh/uv/install.sh | sh`
 ```bash
 # 通过官方脚本安装 uv（Linux/macOS）
 curl -LsSf https://astral.sh/uv/install.sh | sh
-```
 
 ---
 
 **基本写法：通过 pip 安装 uv**
-`pip install uv`
 ```bash
 # 通过 pip 安装 uv
 pip install uv
-```
 
 ---
 
 **基本写法：通过 Homebrew 安装 uv**
-`brew install uv`
 ```bash
 # macOS 通过 Homebrew 安装
 brew install uv
-```
 
 ---
 
 ## uv Python 版本管理
 
 **基本写法：安装 Python 版本**
-`uv python install <版本号>`
 ```bash
 # 安装指定版本的 Python
 uv python install 3.13
-```
 
 ---
 
 **基本写法：批量安装多个版本**
-`uv python install <版本1> <版本2>`
 ```bash
 # 一次安装多个版本
 uv python install 3.13 3.12 3.11
-```
 
 ---
 
 **基本写法：查看可用版本**
-`uv python list`
 ```bash
 # 列出所有可用和已安装的版本
 uv python list
-```
 
 ---
 
 **基本写法：为项目锁定版本**
-`uv python pin <版本号>`
 ```bash
 # 写入 .python-version 文件锁定项目版本
 uv python pin 3.13
-```
 
 ---
 
 ## uv 项目管理
 
 **基本写法：初始化项目**
-`uv init <项目名>`
 ```bash
 # 创建标准 Python 项目结构
 uv init myproject
-```
 
 ---
 
 **基本写法：添加依赖**
-`uv add <包名>`
 ```bash
 # 添加包并自动更新 uv.lock
 uv add requests
-```
 
 ---
 
 **基本写法：添加开发依赖**
-`uv add --dev <包名>`
 ```bash
 # 添加开发依赖包
 uv add --dev pytest
-```
 
 ---
 
 **基本写法：运行脚本**
-`uv run <脚本>`
 ```bash
 # 自动激活虚拟环境并运行
 uv run main.py
-```
 
 ---
 
 **基本写法：创建虚拟环境**
-`uv venv`
 ```bash
 # 在当前目录创建 .venv 虚拟环境
 uv venv
-```
 
 ---
 
 **基本写法：指定 Python 版本创建环境**
-`uv venv --python <版本号>`
 ```bash
 # 使用指定 Python 版本创建虚拟环境
 uv venv --python 3.11
-```
 
 ---
 
 **基本写法：同步依赖**
-`uv sync`
 ```bash
 # 根据 uv.lock 同步安装所有依赖
 uv sync
-```
 
 ---
 
 **基本写法：升级与卸载 uv 自身**
-`uv self update` | `uv self version`
 ```bash
 # uv 自更新（独立安装版支持）
 uv self update
-```
 
 ---
 
 ## uv 命令行工具管理
 
 **基本写法：全局安装 CLI 工具**
-`uv tool install <工具>`
 ```bash
 # 把 ruff 安装为独立工具（隔离环境，不污染项目）
 uv tool install ruff
-```
 
 ---
 
 **基本写法：临时运行工具**
-`uvx <工具> <参数>`
 ```bash
 # uvx = uv tool run：不安装、拉起即用，用完即弃
 uvx ruff check .
 uvx pycowsay hello
-```
 
 ---
 
 ## 自由线程构建的安装
 
 **基本写法：安装带 t 后缀的构建**
-`uv python install <版本>t`
 ```bash
 # 安装 3.14 自由线程构建（无 GIL，详见 GIL 与自由线程一篇）
 uv python install 3.14t
 
 # 验证 GIL 状态
 uv run --python 3.14t python -c "import sys; print(sys._is_gil_enabled())"  # False
-```
 
 ---
 

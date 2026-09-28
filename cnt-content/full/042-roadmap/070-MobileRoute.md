@@ -42,7 +42,7 @@ flowchart TD
 
 **第 1 个月：Kotlin 语言**
 
-- [Kotlin 模块](/kotlin/010-WhatIsKotlin) 前半：语法、空安全（ Compared to Java 的最大心智差异）、函数与 Lambda、数据类、集合操作；
+- [Kotlin 模块](/kotlin/010-WhatIsKotlin) 前半：语法、空安全（与 Java 相比最大的心智差异）、函数与 Lambda、数据类、集合操作；
 - 有 Java 基础者可加速（Kotlin 与 Java 同在 JVM，[Java 模块](/java/010-WhatIsJava) 前半可作背景）；零基础者直接以 Kotlin 入门完全可行；
 - 动手：命令行版记账/TODO（复用 001-start 的项目思路，用 Kotlin 重写）。
 

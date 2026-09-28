@@ -1,523 +1,236 @@
 ---
 order: 90
-title: git-commit-amend 修补最近提交
+title: git commit --amend：提交后一分钟的后悔药
 module: 'git'
 category: 工具链
 difficulty: intermediate
-description: git commit --amend详解：修改最近提交的消息、内容与安全注意事项。
+description: 用「刚提交就发现错了」的三个真实场景讲透 commit --amend：改信息、补文件、修敏感内容，讲清 amend 是造新提交而非修改旧提交、哈希为什么变、reflog 怎么救，以及已推送提交的黄金法则。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'git/160-RemoteTrackingBranch'
-  - 'git/210-GitFlowGitHubFlow'
-prerequisites: []
+  - 'git/050-GitBasicOperation'
+  - 'git/260-GitReflog'
+  - 'git/270-GitRebase'
+  - 'github/060-GitCommitPush'
+prerequisites:
+  - 'git/050-GitBasicOperation'
+  - 'git/060-ThreeTrees'
 ---
 
-## 1. amend 概述
+## 前置知识
 
-### 1.1 什么是 amend
+- 已完成 [Git 基础操作](/git/050-GitBasicOperation)：会 add、commit，知道提交会永久写进历史；
+- 已完成 [三棵树模型](/git/060-ThreeTrees)：知道暂存区与 HEAD 的关系。
 
-`git commit --amend` 用于**修改最近一次提交**，可以修改提交消息或追加文件变更。
+## 学习目标
 
-### 1.2 amend 的本质
+读完本文你将能够：
 
-amend 并非"修改"提交，而是**创建新提交替换旧提交**：
+1. 用 `--amend` 修复刚犯的三类错误：提交信息写错、漏加文件、提交了不该提交的内容；
+2. 解释 amend 的本质是「造一个新提交替换旧提交」，说出旧提交的去向与找回方法；
+3. 执行黄金法则：判断一个提交能不能 amend，只看一件事——它推没推过；
+4. 用 `--no-edit`、`reset --soft HEAD~1` 处理 amend 覆盖不到的情况。
 
-```
-修改前: A---B---C (HEAD)
-修改后: A---B---C' (HEAD)  ← C' 是新提交，C 变为不可达
-```
+预计 30 分钟，全程动手。
 
-## 2. 基本用法
+## 1. 问题：刚敲完回车，你就后悔了
 
-### 2.1 修改提交消息
+三个高频翻车现场，你迟早都会遇上：
 
-```bash
-git commit --amend -m "新的提交消息"
-```
+1. 敲完 `git commit -m "fix: 修复登陆页校验"`，回车键落下的瞬间发现——「登陆」是错别字，应该是「登录」。这条信息要跟着这个项目一辈子；
+2. commit 完一跑测试，红了一个。修复文件忘了一起提交；
+3. 更糟：把含密钥的 `.env.local` 一起提交了。
 
-### 2.2 追加文件变更
+这三种情况都有同一个特点：**错误发生在最近一次提交里，而且还没推送**。这正是 `git commit --amend` 的适用场景——给最近一次提交开一扇一分钟的反悔窗。
 
-```bash
-# 忘记添加文件
-git add forgotten-file.js
-git commit --amend --no-edit    # 不修改消息，只追加文件
-```
+## 2. 最小实验：三次反悔
 
-### 2.3 同时修改消息和内容
+建一个练习仓库：
 
 ```bash
-git add new-file.js
-git commit --amend -m "feat: add auth with new file"
+mkdir amend-lab && cd amend-lab
+git init
+echo "console.log('hello')" > app.js
+git add app.js
+git commit -m "feat: 添加登陆日志"
 ```
 
-### 2.4 修改作者信息
+### 场景 1：改提交信息
 
 ```bash
-# 修改作者
-git commit --amend --author="New Name <new@email.com>"
-
-# 修改日期
-git commit --amend --date="2026-06-14T10:00:00"
+git commit --amend -m "feat: 添加登录日志"
 ```
 
-## 3. 安全注意事项
+Git 会打开默认编辑器让你确认（用 `-m` 则直接替换）。改完用 `git log --oneline -2` 对比：提交还是那个提交的功能，但哈希变了——比如从 `a1b2c3d` 变成 `e4f5g6h`。
 
-### 3.1 黄金法则
+### 场景 2：补漏掉的文件
 
-**不要 amend 已推送到远程的提交！**
+先复现事故：
 
 ```bash
-#  危险
-git push
-git commit --amend
-git push --force    # 会覆盖远程历史
-
-#  安全
-git commit --amend  # amend 未推送的提交
-git push            # 正常推送
+echo "function log(msg) { console.log(msg) }" > logger.js
+git commit -m "feat: 抽取日志函数"        # 忘了 add logger.js
+git status                               # 它还在工作区躺着
 ```
 
-确因独占分支改写历史需要覆盖远程时，用 `--force-with-lease` 代替裸 `--force`：它会校验远程仍停留在你上次看到的位置，避免覆盖他人在此期间推送的提交。
-
-### 3.2 恢复 amend 前的提交
+补救只需要两步：
 
 ```bash
-# 通过 reflog 找到 amend 前的提交
+git add logger.js
+git commit --amend --no-edit    # --no-edit：信息保持原样，只补充内容
+```
+
+`--no-edit` 是场景 2 的关键：你只是补内容，不想动信息。漏掉 `--no-edit` 也不致命，编辑器里原样保存退出即可。
+
+### 场景 3：提交了不该提交的东西
+
+```bash
+echo "API_KEY=sk-live-xxxxxxxx" > .env.local
+git add .env.local
+git commit -m "feat: 添加配置"    # 坏了，密钥进历史了
+```
+
+如果这是最近一次提交且未推送，amend 能救：
+
+```bash
+git rm --cached .env.local        # 从暂存区移除（保留本地文件）
+echo ".env.local" >> .gitignore   # 补上忽略规则，防止下次再犯
+git add .gitignore
+git commit --amend --no-edit
+```
+
+注意边界：amend 只在「最近一次提交、尚未推送」时是好药。密钥一旦推送过，就算改写历史删除，也可能已被别人克隆或被缓存——那时该做的是**立刻作废这个密钥**，再清理历史（见 [git gc 与对象清理](/git/420-GitGc) 与 GitHub 侧的 [Secret scanning](/github/290-SecretScanning)）。
+
+## 3. 为什么：amend 不是修改，是替换
+
+这是理解 amend 安全性的钥匙。Git 的提交对象**不可变**——没有任何命令能修改一个已存在的提交。`--amend` 做的事是：
+
+```text
+amend 前:  A---B---C   (HEAD -> main)
+amend 后:  A---B---C'  (HEAD -> main)     C' 是全新提交，哈希不同
+```
+
+分支指针从 C 挪到 C'，旧提交 C 不再被任何分支指向，变成「悬空对象」。它没有立刻消失——默认还在 reflog 里躺 90 天（见 [git reflog](/git/260-GitReflog)），随时可以找回：
+
+```bash
 git reflog
-# abc1234 HEAD@{0}: commit (amend): new message
-# def5678 HEAD@{1}: commit: old message  ← amend 前
+# e4f5g6h HEAD@{0}: commit (amend): feat: 添加登录日志
+# a1b2c3d HEAD@{1}: commit: feat: 添加登陆日志    <- amend 前的旧提交还在
 
-# 恢复
-git reset --soft def5678
+git reset --soft a1b2c3d    # 反悔 amend：退回旧提交（改动会回到暂存区）
 ```
 
-## 4. 实际场景
+所以 amend 是**安全的**，前提是你理解「替换」这个模型。它和另一条等价路子的区别值得想清楚：`git reset --soft HEAD~1` 再重新 commit 也能达到同样效果（撤销提交、重新组织、重新提交），amend 本质上就是这条路的快捷方式，只是不经过「暂存区大洗牌」，更不容易手滑。
 
-### 4.1 修复拼写错误
+## 4. 黄金法则：推没推过，决定能不能 amend
+
+只看一件事：**这个提交推送（push）到共享远程了吗？**
+
+- **没推送**：随便 amend。这是 amend 的专属时间窗；
+- **推送了**：默认不要 amend。amend 产生新哈希，本地历史和远程分叉，再推送就必须 `--force`，会把其他人的提交基座直接抽掉。
+
+如果确实是自己独占的分支（比如你个人的 PR 分支，确认没人基于它开发），改写后用 `--force-with-lease` 而不是裸 `--force`：
 
 ```bash
-git commit -m "feat: add authnetication"    # 拼写错误
-git commit --amend -m "feat: add authentication"
+git commit --amend -m "feat: 补充边界校验"
+git push --force-with-lease    # 远程若在你不注意时被更新过，推送会被拒绝而不是覆盖
 ```
 
-### 4.2 追加遗漏文件
+`--force-with-lease` 多了一道「远程还停在我上次看到的位置吗」的检查。团队仓库的 main 分支永远适用默认值：推送过，就用一次新提交去修正，而不是改写历史。
 
-```bash
-git commit -m "feat: add auth"
-git add test/auth.test.js                   # 忘记的测试文件
-git commit --amend --no-edit
+## 5. 顺手把信息写规范：Conventional Commits 速记
+
+既然 amend 最大的用途之一是修提交信息，值得顺手记住本仓库（FANDEX）实际在用的约定式提交格式：
+
+```text
+<类型>(可选作用域): <一句话描述>
+
+feat(auth): 支持 OAuth2 登录
+fix(login): 修正登录超时判断
+docs: 更新安装文档
 ```
 
-### 4.3 修改敏感信息
+常用类型：`feat` 新功能、`fix` 修 bug、`docs` 文档、`refactor` 重构、`test` 测试、`chore` 杂务。标题之后空一行可以写正文，用第二个 `-m` 传入：
 
 ```bash
-# 不小心提交了密码
-git add config.js
-git commit -m "feat: add config"
-# 发现 config.js 包含密码
-# 修改文件移除密码
-git add config.js
-git commit --amend --no-edit
-# 注意：旧提交仍存在于 reflog 中，需要 git gc 清理
-```
-## Conventional Commits 基础
-
-**基本写法：标准提交格式**
-`<类型>[可选作用域]: <描述>`
-```bash
-# 规范化提交信息基本结构
-feat: 添加用户登录功能
+git commit -m "fix(login): 修正登录超时判断" -m "Closes #42"
 ```
 
----
+团队项目里通常用 commitlint 加 Git 钩子强制校验格式，规则细节见 [Git Hook 与 Git LFS](/git/340-GitHookGitLFS)。信息写错了、忘了标类型，`--amend` 在推送前都能救。
 
-**基本写法：带作用域的提交**
-`<类型>(<作用域>): <描述>`
+## 5.5 amend 的冷门参数与多行信息
+
+改的不仅是信息，作者与日期也能修——最常见于「用公司电脑忘了切邮箱」：
+
 ```bash
-# 指定变更影响的模块
-feat(auth): 添加 OAuth2 登录
+git commit --amend --author="Atian <me@personal.dev>" --no-edit
+git commit --amend --date="2026-09-28T10:00:00" --no-edit
 ```
 
----
+注意 `--author` 只改这一个提交的作者字段，不改全局配置；要长期切换身份还是得改 `user.email`（见 [安装与配置](/git/020-GitInstallConfig)）。
 
-**基本写法：带破坏性变更标记**
-`<类型>!: <描述>`
+复杂提交信息不该挤在一行 `-m` 里。三种写法按场景选：
+
 ```bash
-# 用 ! 标记不兼容变更
-refactor!: 重构用户模型接口
-```
+# 多个 -m：每段之间自动空行，适合「标题 + 正文」
+git commit -m "feat: 添加导出功能" -m "支持 CSV 与 JSON 两种格式，见 #42"
 
----
-
-**基本写法：带作用域的破坏性变更**
-`<类型>(<作用域>)!: <描述>`
-```bash
-# 指定作用域的破坏性变更
-feat(api)!: 修改响应数据结构
-```
-
----
-
-## 提交类型
-
-**基本写法：新功能**
-`feat: <描述>`
-```bash
-# 新增功能特性
-feat: 添加导出 PDF 功能
-```
-
----
-
-**基本写法：修复 bug**
-`fix: <描述>`
-```bash
-# 修复缺陷
-fix: 修正登录跳转错误
-```
-
----
-
-**基本写法：文档变更**
-`docs: <描述>`
-```bash
-# 仅修改文档
-docs: 更新 README 安装步骤
-```
-
----
-
-**基本写法：样式调整**
-`style: <描述>`
-```bash
-# 不影响代码逻辑的格式调整
-style: 统一缩进为 4 空格
-```
-
----
-
-**基本写法：重构**
-`refactor: <描述>`
-```bash
-# 既不新增功能也不修复 bug 的代码重构
-refactor: 抽离用户认证逻辑
-```
-
----
-
-**基本写法：性能优化**
-`perf: <描述>`
-```bash
-# 提升性能的变更
-perf: 优化列表查询缓存
-```
-
----
-
-**基本写法：测试相关**
-`test: <描述>`
-```bash
-# 新增或修改测试
-test: 补充用户模块单元测试
-```
-
----
-
-**基本写法：构建系统**
-`build: <描述>`
-```bash
-# 修改构建系统或依赖
-build: 升级 webpack 到 5.0
-```
-
----
-
-**基本写法：CI 配置**
-`ci: <描述>`
-```bash
-# 修改持续集成配置
-ci: 添加自动部署流水线
-```
-
----
-
-**基本写法：杂项**
-`chore: <描述>`
-```bash
-# 其他不修改源码或测试的杂项
-chore: 更新 .gitignore
-```
-
----
-
-**基本写法：代码回退**
-`revert: <描述>`
-```bash
-# 回退某次提交
-revert: feat: 添加用户登录功能
-```
-
----
-
-## 完整提交信息结构
-
-**基本写法：带正文的提交**
-`<类型>: <描述>\n\n<正文>`
-```bash
-# 标题后空一行再写正文
-git commit -m "feat: 添加用户登录功能" -m "实现邮箱密码与 OAuth 两种方式"
-```
-
----
-
-**基本写法：带脚注的提交**
-`<类型>: <描述>\n\n<脚注>`
-```bash
-# 用脚注标记 issue 或破坏性变更
-git commit -m "fix: 修正登录超时" -m "Closes #123"
-```
-
----
-
-**基本写法：破坏性变更脚注**
-`<类型>: <描述>\n\nBREAKING CHANGE: <说明>`
-```bash
-# 用脚注详细说明不兼容变更
-git commit -m "feat!: 重构 API" -m "BREAKING CHANGE: 返回结构改为统一信封格式"
-```
-
----
-
-**基本写法：关联 issue**
-`<类型>: <描述>\n\nCloses #<编号>`
-```bash
-# 提交时关闭指定 issue
-git commit -m "fix: 修正订单计算" -m "Closes #456"
-```
-
----
-
-## 多行提交信息
-
-**基本写法：使用多个 -m 参数**
-`git commit -m "<标题>" -m "<正文>"`
-```bash
-# 多个 -m 自动以空行分隔
-git commit -m "feat: 添加导出功能" -m "支持导出为 CSV 与 JSON 格式"
-```
-
----
-
-**基本写法：使用 HEREDOC**
-`git commit -F - <<'EOF'`
-```bash
-# 通过 HEREDOC 传入复杂提交信息
+# HEREDOC：正文多段、带脚注时最可靠，不怕 shell 转义
 git commit -F - <<'EOF'
-feat: 添加导出功能
+feat(api)!: 响应结构改为统一信封格式
 
-支持导出为 CSV 与 JSON 格式
-Closes #789
+返回体从裸数据改为 { code, data, message } 信封。
+BREAKING CHANGE: 所有客户端需同步更新解析逻辑
+Closes #128
 EOF
-```
 
----
-
-**基本写法：从文件读取提交信息**
-`git commit -F <文件>`
-```bash
-# 从文件读取完整提交信息
-git commit -F commit-msg.txt
-```
-
----
-
-**基本写法：用编辑器撰写**
-`git commit`
-```bash
-# 不带 -m 时打开编辑器撰写
+# 不带 -m：Git 打开编辑器，第一行是标题，空一行后写正文
 git commit
 ```
 
----
+`feat!` 里的感叹号与正文里的 `BREAKING CHANGE:` 脚注是 Conventional Commits 标记破坏性变更的两种等价方式，前者醒目、后者能写细节，常用组合是两个都写。
 
-## 修改提交信息
+## 5.6 让规范自动落地：commitlint 与钩子
 
-**基本写法：修改最近一次提交信息**
-`git commit --amend -m "<新消息>"`
+格式靠自觉维持不了一周，工程做法是钩子里自动校验。以 pnpm 项目为例：
+
 ```bash
-# 修改最近一次提交的描述
-git commit --amend -m "feat: 添加导出功能"
+pnpm add -D @commitlint/cli @commitlint/config-conventional
+echo "export default { extends: ['@commitlint/config-conventional'] }" > commitlint.config.mjs
+echo "fix: 修正登录超时" | pnpm commitlint     # 先手动试一条，无输出即通过
 ```
 
----
+再配合 husky 的 `commit-msg` 钩子（安装见 [Git Hook 与 Git LFS](/git/340-GitHookGitLFS)），钩子文件里只需一行：
 
-**基本写法：保留原提交信息修改**
-`git commit --amend --no-edit`
 ```bash
-# 仅追加文件不变更信息
-git commit --amend --no-edit
+pnpm commitlint --edit "$1"
 ```
 
----
+之后每次 commit 自动校验，不合格直接拒绝。真有紧急情况可以 `git commit --no-verify` 跳过钩子——这是逃生门不是日常通道，用了要在事后补一条规范的提交说明。
 
-**基本写法：修改历史提交信息**
-`git rebase -i <提交>^`
-```bash
-# 交互式 rebase 改写历史
-git rebase -i HEAD~3
-```
+顺带交代工具现状：早期教程常见 `standard-version` 自动生成 CHANGELOG，该工具已停止维护，2026 年的继任者是 release-please 与 semantic-release，思路相同（按提交类型自动定版本、写日志、发 Release）。想改更早提交的规范问题则超出 amend 能力，走 [交互式 rebase](/git/280-InteractiveRebase) 的 reword。
 
----
+## 6. 坑点与自检
 
-## commitizen 工具
+- **坑 1：对已推送提交 amend 后 push 被拒**。哈希分叉了，属正常保护。先确认分支确实归你独占，再 `--force-with-lease`；不确定就 `git reset --soft HEAD~1` 重新做一次正常提交。
+- **坑 2：amend 之后「丢」了半天改动**。大概率是把别的改动暂存进去一起吞了。amend 会把**当前整个暂存区**与上一提交合并，动手前先 `git status` 看清暂存区里装了什么（见 [git diff 与暂存区](/git/070-GitDiffStagingOperation)）。
+- **坑 3：想改的不是最近一次提交**。amend 只够得着 HEAD。更早的提交要用交互式 rebase 的 `reword`，见 [交互式 rebase](/git/280-InteractiveRebase)。
 
-**基本写法：安装 commitizen**
-`npm install -g commitizen`
-```bash
-# 全局安装交互式提交工具
-npm install -g commitizen
-```
+自检三问：
 
----
+1. 这个提交推送过吗？（没推 → 可以 amend）
+2. 暂存区里现在装的是什么？（`git status` + `git diff --staged`）
+3. 我记得 amend 前的哈希在哪找吗？（`git reflog`）
 
-**基本写法：初始化 conventional 适配器**
-`commitizen init cz-conventional-changelog --save-dev`
-```bash
-# 项目内配置 conventional 适配器
-commitizen init cz-conventional-changelog --save-dev
-```
+## 7. 练习
 
----
+1. 基础：在 amend-lab 里连续做一次「错字提交 + amend 修正」，用 `git reflog` 找到旧提交并 `reset --soft` 回去，再 amend 一次，体会旧提交并未消失。
+2. 场景：复现「漏了文件」的事故并用 `--no-edit` 修复；然后故意漏掉 `--no-edit`，观察编辑器行为。
+3. 思考：`git commit --amend` 和「`reset --soft HEAD~1` + 重新 commit」结果有什么细小差别？（提示：作者日期。amend 默认保留原作者日期，会更新 committer 日期。）
+4. 实战：翻翻你自己项目的 `git log --oneline -5`，找一条想改的信息——如果它还没推送，现在就 amend 掉；推送过的话，写一条 `docs:` 或 `fix:` 的新提交修正认知。
 
-**基本写法：用 git cz 代替 git commit**
-`git cz`
-```bash
-# 启动交互式提交表单
-git cz
-```
+## 下一步
 
----
-
-## commitlint 校验
-
-**基本写法：安装 commitlint**
-`npm install --save-dev @commitlint/cli @commitlint/config-conventional`
-```bash
-# 安装 commitlint 与 conventional 配置
-npm install --save-dev @commitlint/cli @commitlint/config-conventional
-```
-
----
-
-**基本写法：配置 commitlint**
-`echo "module.exports = { extends: ['@commitlint/config-conventional'] };" > commitlint.config.js`
-```bash
-# 创建 commitlint 配置文件
-echo "module.exports = { extends: ['@commitlint/config-conventional'] };" > commitlint.config.js
-```
-
----
-
-**基本写法：校验提交信息**
-`echo "<消息>" | commitlint`
-```bash
-# 校验单条提交信息格式
-echo "feat: 添加登录" | commitlint
-```
-
----
-
-**基本写法：从最近提交校验**
-`commitlint --from=<提交> --to=<提交>`
-```bash
-# 校验范围内的所有提交
-commitlint --from=HEAD~5 --to=HEAD
-```
-
----
-
-## 自动生成变更日志
-
-**基本写法：安装 standard-version**
-`npm install --save-dev standard-version`
-```bash
-# 安装自动版本与日志工具
-npm install --save-dev standard-version
-```
-
----
-
-**基本写法：生成版本与日志**
-`npx standard-version`
-```bash
-# 根据 conventional 提交生成 CHANGELOG
-npx standard-version
-```
-
----
-
-**基本写法：指定发布类型**
-`npx standard-version --release-as <类型>`
-```bash
-# 强制发布为主版本/次版本/修订版
-npx standard-version --release-as major
-```
-
----
-
-**基本写法：使用 conventional-changelog**
-`npx conventional-changelog -p angular -i CHANGELOG.md -s`
-```bash
-# 按 angular 预设生成变更日志
-npx conventional-changelog -p angular -i CHANGELOG.md -s
-```
-
----
-
-## 配套钩子校验
-
-**基本写法：在 commit-msg 钩子中校验**
-`.husky/commit-msg`
-```bash
-# 用 husky 钩子调用 commitlint
-npx --no-install commitlint --edit "$1"
-```
-
----
-
-**基本写法：跳过钩子校验**
-`git commit --no-verify -m "<消息>"`
-```bash
-# 紧急情况跳过校验（不推荐）
-git commit --no-verify -m "fix: 紧急修复"
-```
-
----
-
-## Angular 提交规范
-
-**基本写法：Angular 类型**
-`<type>(<scope>): <subject>`
-```bash
-# Angular 规范要求主题全小写且不超过 72 字符
-feat(auth): add oauth2 login
-```
-
----
-
-**基本写法：主题用祈使句**
-`<类型>: <动词原形> <宾语>`
-```bash
-# 主题用祈使句现在时
-feat: add export feature
-```
-
----
-
-**基本写法：正文换行控制**
-`<每行不超过 72 字符>`
-```bash
-# 正文每行限制 72 字符便于阅读
-git commit -m "feat: add export" -m "支持 CSV 与 JSON 两种格式导出"
-```
+- [git reflog](/git/260-GitReflog)：amend、reset、rebase 的万能后悔药，本文只用了它一成功力；
+- [交互式 rebase](/git/280-InteractiveRebase)：改写更早的提交、合并多个提交；
+- [git reset 三种重置模式](/git/300-GitReset)：理解 `--soft` 为什么是 amend 的孪生兄弟。

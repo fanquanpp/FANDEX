@@ -238,7 +238,7 @@ git clean -i
 | 错误现象 | 报错信息（节选） | 原因分析 | 解决办法 |
 | --- | --- | --- | --- |
 | stash 后新文件不见了 | pop 后新建的文件没恢复 | stash 默认不含未跟踪文件 | 暂存时用 `git stash -u` |
-| pop 时冲突 | `CONFLICT (content): Merge conflict in ...` | 暂存的改动与当前工作区冲突 | 按 041 篇解决冲突；pop 失败不会删记录，解决后 `git stash drop` 手动清理 |
+| pop 时冲突 | `CONFLICT (content): Merge conflict in ...` | 暂存的改动与当前工作区冲突 | 按 [GitHub 冲突解决](/github/100-GitConflictResolve) 解决冲突；pop 失败不会删记录，解决后 `git stash drop` 手动清理 |
 | 误用 --hard 丢改动 | 工作区改动全部消失 | `--hard` 回退会丢弃未提交改动 | 立即用 `git reflog` + `git reset --hard <原ID>` 抢救 |
 | reset 后 push 被拒 | `! [rejected] ... (non-fast-forward)` | 回退的是已推送提交，历史分叉 | 改用 `git revert` 生成反向提交后再 push |
 | apply 与 pop 分不清 | 恢复后记录还在/没了 | 混淆两者语义 | pop 删记录、apply 留记录；按需选择 |

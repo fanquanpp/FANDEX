@@ -136,7 +136,7 @@ git config --global credential.helper libsecret
 
 ### 4.3 备选方案：SSH 密钥
 
-SSH 密钥使用非对称加密，配置一次即可长期使用，且不受 2FA 动态码影响（详见 004 篇《SSH 与 HTTPS 远程配置》）。对频繁推送的开发者，SSH 是更省心的选择。
+SSH 密钥使用非对称加密，配置一次即可长期使用，且不受 2FA 动态码影响（详见 [SSH 与 HTTPS](/github/040-SSHHTTPS)）。对频繁推送的开发者，SSH 是更省心的选择。
 
 ### 4.4 账户恢复的最后防线：多条恢复路径
 
@@ -169,6 +169,6 @@ GitHub 官方建议**配置两种以上恢复方式**，避免单一方式失效
 
 ### 延伸阅读
 
-- GitHub 平台整体概览，见 001 篇《GitHub 概述》。
-- SSH 密钥与 HTTPS+PAT 的完整对比配置，见 004 篇《SSH 与 HTTPS 远程配置》。
-- 令牌管理与多账户切换，见 020 篇《GitHub CLI》。
+- GitHub 平台整体概览，见 [GitHub 是什么](/github/010-GitHubOverview)。
+- SSH 密钥与 HTTPS+PAT 的完整对比配置，见 [SSH 与 HTTPS](/github/040-SSHHTTPS)。
+- 令牌管理与多账户切换，见 [GitHub CLI](/github/440-GitHubCLI)。

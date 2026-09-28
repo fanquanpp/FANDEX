@@ -222,6 +222,6 @@ gh codespace ports visibility 3000:public
 
 ### 延伸阅读
 
-- 在 codespace 中使用 GitHub CLI 操作仓库/PR，见 020 篇《GitHub CLI》。
-- 容器与镜像相关概念，可参考 023 篇《GitHub Packages》。
-- 云端环境下的 CI/CD 自动化，见 029 篇《GitHub Actions 与 CI/CD》。
+- 在 codespace 中使用 GitHub CLI 操作仓库/PR，见 [GitHub CLI](/github/440-GitHubCLI)。
+- 容器与镜像相关概念，可参考 [GitHub Packages](/github/340-GitHubPackages)。
+- 云端环境下的 CI/CD 自动化，见 [GitHub Actions 与 CI/CD](/github/370-GitHubActionsCICD)。

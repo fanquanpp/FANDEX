@@ -230,6 +230,6 @@ SECURITY.md @security-lead
 
 ### 延伸阅读
 
-- 分支命令操作速查（创建/切换/删除/重命名），见 037-045 篇 Git 模块文档。
-- 团队协作规范（提交信息/PR 模板/审查清单），见 005 篇《协作开发规范》。
-- 代码所有者自动分配审查，见 025 篇《CODEOWNERS》。
+- 分支命令操作速查（创建/切换/删除/重命名），Git 模块 010-430 篇均有涉及，分支操作详见 [Git 分支管理](/git/100-GitBranchManagement)。
+- 团队协作规范（提交信息/PR 模板/审查清单），见 [协作开发规范](/github/150-CollaborationDevelopmentStandard)。
+- 代码所有者自动分配审查，见 [CODEOWNERS 代码所有者](/github/190-CODEOWNERS)。

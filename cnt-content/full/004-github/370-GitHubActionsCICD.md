@@ -400,7 +400,7 @@ permissions:
 
 - **密钥入库**：所有密钥放 Secrets，代码里绝不硬编码。
 - **固定版本**：Action 固定主版本或 SHA；优先使用官方 `actions/*` 与已验证作者（verified creator）发布的 Action。
-- **开启 CodeQL**：集成代码扫描（见 019 篇）。
+- **开启 CodeQL**：集成代码扫描（见 [CodeQL 代码扫描](/github/300-CodeQLCodeScanning)）。
 - **云部署用 OIDC 代替长期密钥**：工作流可向云厂商（AWS/Azure/GCP 等）申请短时身份令牌，免去把长期 Access Key 存进 Secrets——在 job 上声明 `permissions: { id-token: write }`，由各云厂商的官方登录 Action 完成互换。
 - **公共工作流要防注入**：`github.event` 中来自外部的字段（PR 标题、分支名、Issue 正文等）直接拼进 `run:` 存在被注入执行的风险，先经环境变量中转或校验后再用。
 

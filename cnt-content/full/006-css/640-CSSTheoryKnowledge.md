@@ -18,7 +18,12 @@ prerequisites:
 
 > 0基础速通：先掌握 003/009/016 再读本篇；本篇是理论串讲，可分段查阅，不要一次读完。
 
+## 渲染流水线总览
+
+从拿到 HTML/CSS 到屏幕显示，浏览器要经历六个阶段：
+
 ```text
+    Parse (解析 HTML/CSS，构建 DOM 树与 CSSOM 树)
          |
          v
     Attachment (DOM + CSSOM --> Render Tree)

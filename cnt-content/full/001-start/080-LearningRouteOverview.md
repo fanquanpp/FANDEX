@@ -19,7 +19,7 @@ related:
 
 这是 001-start 模块的收官篇。读完你将获得：
 
-1. 本库 36 个模块的全景认知：它们分几类、各自回答什么问题；
+1. 本库 43 个模块的全景认知：它们分几类、各自回答什么问题；
 2. 一张按时间展开的 12 个月学习地图；
 3. "每个模块怎么学"的标准动作，以及何时算学到位。
 
@@ -27,23 +27,25 @@ related:
 
 已完成本模块前七篇，确定了主线语言（JS 或 Python，或已有基础直接沿用）。
 
-## 本库全景：六类模块各司其职
+## 本库全景：七大类模块各司其职
 
-本仓库 36 个模块按内容性质分六大类（Web 端首页按此分组，颜色一致）：
+本仓库 43 个模块按内容性质分七大类（Web 端首页按此分组，颜色一致）：
 
 | 分类 | 模块 | 回答的问题 |
 | --- | --- | --- |
-| 工具链 | markdown、git、github、shell、001-start | 如何高效写作、管版本、用命令行 |
-| 前端 | html5、css、javascript、typescript、vue3、react、svg、tailwind、vite、astro、nextjs | 网页与界面如何构建 |
-| 后端与语言 | javascript、typescript、python、java、kotlin、go、c、cpp、csharp、rust、nestjs | 服务端与系统如何编写 |
-| 数据库 | sql、mysql、postgresql、redis | 数据如何存取与调优 |
-| 计算机科学 | cs-fundamentals、algorithm、042-roadmap | 底层原理与长期能力 |
+| 工具链 | start、markdown、git、github、shell | 如何高效起步、写作、管版本、用命令行 |
+| 前端 | html5、css、javascript、typescript、vue3、react、svg、astro、vite、tailwind、nextjs | 网页与界面如何构建 |
+| 后端与语言 | java、kotlin、csharp、go、python、rust、nestjs | 服务端与系统如何编写 |
+| 数据库 | sql、mysql、postgresql、redis、mongodb | 数据如何存取与调优 |
+| 计算机科学 | cs-fundamentals、algorithm、c、cpp、roadmap | 底层原理与长期能力 |
 | 云与工程 | devops、networking、cybersecurity、cloud-computing、software-testing | 系统如何上线、稳定、安全 |
+| 游戏开发 | godot、gdscript、renpy、gode、konado | 可玩的互动世界如何构建 |
 
-两点重要说明：
+三点重要说明：
 
-1. **javascript 和 typescript 同时挂前端与后端**：JS 是浏览器唯一原生语言（前端必修），Node 又让它能写服务端（全栈主力），这是它市场需求最大的结构性原因；
-2. **cs-fundamentals 是唯一贯穿始终的模块**：它覆盖组成原理、操作系统、网络、编译、分布式、离散数学等大学核心课程，零基础阶段只需要读它前几篇（计算机概述、编程基础），其余部分按路线图在各阶段滚动插入。
+1. **javascript 和 typescript 是前后端通吃的枢纽**：它们是浏览器唯一原生语言（前端必修），Node 生态（nestjs 模块）又让同一门语言写服务端（全栈主力），这是 JS/TS 市场需求最大的结构性原因；
+2. **cs-fundamentals 是唯一贯穿始终的模块**：它覆盖组成原理、操作系统、网络、编译、分布式、离散数学等大学核心课程，零基础阶段只需要读它前几篇（计算机概述、编程基础），其余部分按路线图在各阶段滚动插入；
+3. **游戏板块是独立的第五大方向**：Godot 4 引擎加 GDScript 为主干，Ren'Py（视觉小说）与 Gode（在 Godot 里写 TypeScript）为分支，零基础也可以直接选它当主线（见 [游戏开发路线](/roadmap/140-GameDevRoute)）。
 
 ## 阶段 1（第 1 到 3 个月）：主线语言与它的地基
 
@@ -68,14 +70,15 @@ related:
 
 ## 阶段 2（第 4 到 6 个月）：按方向分流
 
-从这一步开始，跟着 [技术栈路线图](/roadmap/010-RoadmapOverview) 里你的专属路线走。四个大方向的阶段 2 概貌：
+从这一步开始，跟着 [技术栈路线图](/roadmap/010-RoadmapOverview) 里你的专属路线走。五个大方向的阶段 2 概貌：
 
 - **前端/全栈**：html5 → css → 主线框架（react 或 vue3）→ typescript → vite/tailwind；
 - **后端（Java/Go/Python/Node）**：对应后端语言进阶 → sql（必须）→ nestjs/spring 类框架 → mysql；
 - **数据/AI**：python 进阶 → sql → numpy/pandas 生态 → cs-fundamentals 数学篇；
-- **移动端**：kotlin（Android 为主）→ compose → 对应后端基础。
+- **移动端**：kotlin（Android 为主）→ compose → 对应后端基础；
+- **游戏**：godot → gdscript → 2D 玩法与 UI → 第一个可玩的小游戏。
 
-无论哪个方向，**sql 都是必修**——它是数据世界的通用语，也是面试必考。算法保持每天 1 题的手感。
+无论哪个方向，**sql 都是必修**——它是数据世界的通用语，也是面试必考。算法保持每天 1 题的手感（游戏方向权重略低，可减半）。
 
 ## 阶段 3（第 7 到 12 个月）：工程化与深度
 
@@ -83,7 +86,7 @@ related:
 
 - **数据库深入**：mysql 或 postgresql 的索引、事务、调优部分（对应你的主栈选一个深入）；
 - **网络与安全**：networking 模块全读，cybersecurity 读基础与 Web 安全部分；
-- **部署与运维**：devops 模块（Linux、容器、CI/CD），把自己的项目部署上线；
+- **部署与运维**：devops 模块（Linux、容器、CI/CD），把自己的项目部署上线（游戏方向对应 itch.io 等平台发布，见 [游戏开发路线](/roadmap/140-GameDevRoute) 阶段 2）；
 - **缓存与性能**：redis 模块核心章节；
 - **项目冲刺**：完成路线图中标注的 2 到 3 个作品集项目，写成简历可用的形态。
 
@@ -118,7 +121,7 @@ related:
 
 ## 检验清单
 
-- 能说出六大分类各自的定位与至少三个模块名；
+- 能说出七大分类各自的定位与至少三个模块名；
 - 能画出自己未来 12 个月的三阶段地图（写在笔记里）；
 - 知道每个模块的五步标准动作与"学到位"的判断标准；
 - 已确定自己的主线语言与方向，准备进入路线图模块。
