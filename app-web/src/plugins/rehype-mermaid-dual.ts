@@ -4,7 +4,7 @@ import { join } from 'node:path';
 import type { MermaidConfig } from 'mermaid';
 import { createMermaidRenderer, type MermaidRenderer } from 'mermaid-isomorphic';
 import { chromium } from 'playwright';
-import type { Element, Nodes } from 'hast';
+import type { Element, ElementContent, Nodes } from 'hast';
 import { fromHtml } from 'hast-util-from-html';
 import { visit } from 'unist-util-visit';
 
@@ -142,18 +142,23 @@ async function renderTheme(
 
   const config = theme === 'light' ? lightConfig : darkConfig;
   try {
-    const settled = await instance(
-      pending.map((index) => sources[index]),
-      { mermaidConfig: config, prefix: `fandex-${theme}` },
-    );
-    settled.forEach((result, slot) => {
+    const batchSources: string[] = [];
+    for (const index of pending) {
+      const source = sources[index];
+      if (source !== undefined) batchSources.push(source);
+    }
+    const settled = await instance(batchSources, { mermaidConfig: config, prefix: `fandex-${theme}` });
+    for (let slot = 0; slot < settled.length; slot += 1) {
+      const result = settled[slot];
       const index = pending[slot];
+      if (result === undefined || index === undefined) continue;
       if (result.status === 'fulfilled' && result.value.svg) {
         const withSize = ensureResponsiveSvg(result.value.svg);
         results[index] = withSize;
-        writeCache(cacheKey(sources[index], theme), withSize);
+        const source = sources[index];
+        if (source !== undefined) writeCache(cacheKey(source, theme), withSize);
       }
-    });
+    }
   } catch (err) {
     // 浏览器不可用属于环境问题：全局停用构建期渲染（回退客户端），避免逐篇刷警告
     if (err instanceof Error && /launch|browser|Executable/i.test(err.message)) {
@@ -183,12 +188,18 @@ function collectText(node: Nodes): string {
 
 function codeLanguage(node: Element): string {
   const classes = node.properties?.className;
-  if (Array.isArray(classes)) return classes.find((c) => String(c).startsWith('language-'))?.slice(9) ?? '';
-  if (typeof classes === 'string') return classes.replace(/^language-/, '');
-  return '';
+  if (Array.isArray(classes)) {
+    for (const value of classes) {
+      const name = String(value);
+      if (name.startsWith('language-')) return name.slice(9);
+    }
+    return '';
+  }
+  const raw = typeof classes === 'string' ? classes : '';
+  return raw.replace(/^language-/, '');
 }
 
-function el(tagName: string, properties: Element['properties'], children: Nodes[]): Element {
+function el(tagName: string, properties: Element['properties'], children: ElementContent[]): Element {
   return { type: 'element', tagName, properties, children };
 }
 
@@ -249,12 +260,16 @@ export function rehypeMermaidDual() {
         const parsed = fromHtml(svg, { fragment: true }).children.filter(
           (child): child is Element => child.type === 'element',
         );
-        (wrapper as Element & { children: Nodes[] }).children = parsed;
+        wrapper.children = parsed;
       };
       const canvas = figure.children[0];
-      if (canvas.type === 'element' && canvas.children.length >= 2) {
-        svgElement(canvas.children[0] as Element, light);
-        svgElement(canvas.children[1] as Element, dark);
+      if (canvas && canvas.type === 'element') {
+        const lightWrap = canvas.children[0];
+        const darkWrap = canvas.children[1];
+        if (lightWrap && lightWrap.type === 'element' && darkWrap && darkWrap.type === 'element') {
+          svgElement(lightWrap, light);
+          svgElement(darkWrap, dark);
+        }
       }
 
       Object.assign(block.pre, figure);
