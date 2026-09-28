@@ -210,6 +210,47 @@ aws ec2 create-snapshot --volume-id vol-12345 --description "Volume backup"
 
 ---
 
+## AMI 镜像管理
+
+**基本写法：镜像类型**
+| 类型 | 说明 | 适用 |
+| :--- | :--- | :--- |
+| 公共镜像 | 云商提供的官方镜像 | 标准化部署 |
+| 自定义镜像（AMI） | 基于实例或快照创建的私有镜像 | 快速复制整台环境 |
+| 共享镜像 | 其他账号共享的镜像 | 跨账号协作 |
+| 市场镜像 | 第三方预装软件镜像 | 快速搭建 |
+
+---
+
+**基本写法：从实例创建自定义镜像**
+`aws ec2 create-image --instance-id <实例ID> --name <名称> [--no-reboot]`
+```bash
+# 把配置好的实例打成镜像（--no-reboot 不停机，但落盘数据可能不完整）
+aws ec2 create-image --instance-id i-1234567890abcdef0 \
+  --name "myapp-v2.3.1" --description "Application image v2.3.1" --no-reboot
+```
+
+---
+
+**基本写法：跨区域复制镜像**
+`aws ec2 copy-image --source-region <源区域> --source-image-id <镜像ID> --region <目标区域>`
+```bash
+# 多区域部署时先复制镜像
+aws ec2 copy-image --source-region us-east-1 --source-image-id ami-12345 \
+  --region us-west-2 --name "myapp-v2.3.1-west"
+```
+
+---
+
+**基本写法：共享镜像给其他账号**
+`aws ec2 modify-image-attribute --image-id <镜像ID> --launch-permission ...`
+```bash
+aws ec2 modify-image-attribute --image-id ami-12345 \
+  --launch-permission "Add=[{UserId=123456789012}]"
+```
+
+---
+
 ## 弹性 IP
 
 **基本写法：分配弹性 IP**
