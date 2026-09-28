@@ -83,7 +83,7 @@ flowchart LR
 实操手册（新增文档 / 模块、常见问题排查）见 [CONTENT-GUIDE.md](CONTENT-GUIDE.md)；
 完整协作流程见 [CONTRIBUTING.md](CONTRIBUTING.md)；全项目强约束见 [AGENTS.md](AGENTS.md)。
 
-## 维护要点（给人类维护者）
+## 维护要点
 
 - **内容是第一公民**：改内容 = 改 `cnt-content/full` 下的 md，跑一次 `pnpm sync`
   即完成全部派生数据更新；改坏引用会被 sync 自动修复或明确报错。
