@@ -62,6 +62,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Install Playwright Chromium (mermaid build-time rendering)
+        run: pnpm --filter @fandex/web exec playwright install --with-deps chromium
+
       - name: Audit production dependencies (block on high severity)
         run: pnpm -C app-web audit --prod --audit-level high
 

@@ -171,6 +171,12 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'code.headingAnchorAria': { zh: '标题锚点链接', en: 'Heading anchor link' },
   'code.mermaidCaption': { zh: 'mermaid 图表', en: 'mermaid diagram' },
   'code.mermaidError': { zh: '图表渲染失败，已保留源码', en: 'Diagram failed to render, source kept' },
+  'code.mermaidZoomIn': { zh: '放大图表', en: 'Zoom in diagram' },
+  'code.mermaidZoomOut': { zh: '缩小图表', en: 'Zoom out diagram' },
+  'code.mermaidReset': { zh: '重置视图', en: 'Reset view' },
+  'code.mermaidFullscreen': { zh: '全屏查看图表', en: 'View diagram fullscreen' },
+  'code.mermaidExitFullscreen': { zh: '退出全屏', en: 'Exit fullscreen' },
+  'code.mermaidSource': { zh: '查看 / 隐藏图表源码', en: 'Toggle diagram source' },
 
   'error404.title': { zh: '页面未找到', en: 'Page not found' },
   'error404.desc': { zh: '地址不存在或内容已被移动。', en: 'The address does not exist or the content has moved.' },

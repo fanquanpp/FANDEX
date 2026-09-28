@@ -1,4 +1,6 @@
 ---
+// KaTeX 官方样式与字体：文档页按需加载（仅在含公式的页面实际消费字体）
+import 'katex/dist/katex.min.css';
 import Layout from '@/components/Layout.astro';
 import SEO from '@/components/SEO.astro';
 import Sidebar from '@/components/Sidebar.astro';
@@ -327,5 +329,5 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
 </style>
 
 <script>
-  import '@/lib/mermaid-render';
+  import '@/lib/mermaid-interactions';
 </script>
