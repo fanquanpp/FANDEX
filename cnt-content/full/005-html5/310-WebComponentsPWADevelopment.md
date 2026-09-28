@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 330
 title: Web Components 与 PWA 开发
 module: 'html5'
 category: 前端技术

@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/030-DevEnvironmentSetup'
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'start/060-FirstProgramJavaScript'
   - 'shell/010-DevEnvSetup'

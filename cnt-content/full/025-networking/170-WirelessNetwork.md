@@ -75,7 +75,7 @@ WiFi 7（802.11be，2024 年定稿并开始认证）在 WiFi 6 之上再增强�
 
 ```mermaid
 flowchart LR
-    AP["瘦 AP"] <..>|"CAPWAP 控制隧道 UDP 5246（配置/管理）"| AC["AC 无线控制器"]
+    AP["瘦 AP"] <-.->|"CAPWAP 控制隧道 UDP 5246（配置/管理）"| AC["AC 无线控制器"]
     AP <-.->|"CAPWAP 数据隧道 UDP 5247"| AC
     AC --- CORE["核心交换机"]
     STA["无线终端"] --- AP

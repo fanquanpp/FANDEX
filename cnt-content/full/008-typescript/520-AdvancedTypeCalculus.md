@@ -1,12 +1,12 @@
 ---
-order: 520
+order: 530
 title: 高级类型与类型演算
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: 映射类型、条件类型、模板字面量类型与类型体操。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/300-DeclarationFileWriting'
   - 'typescript/330-ModuleResolutionModernToolchains'

@@ -110,7 +110,7 @@ prerequisites:
 /* 检测伪元素与后代组合 */
 @supports selector(a::after) {
   .link::after {
-    content: " ↗";
+    content: " →";
   }
 }
 ```

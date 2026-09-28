@@ -1,5 +1,5 @@
 ---
-order: 630
+order: 640
 title: 类型安全的路由
 module: 'typescript'
 category: 前端技术

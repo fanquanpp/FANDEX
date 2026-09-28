@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 330
 title: 装饰器：给函数穿外套
 module: 'python'
 category: 后端技术

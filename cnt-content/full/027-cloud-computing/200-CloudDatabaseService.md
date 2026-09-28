@@ -106,14 +106,19 @@ Aurora 是 AWS 自研的云原生关系数据库，核心创新在于**存储计
 
 ```mermaid
 flowchart TD
-    subgraph Aurora[Aurora 架构]
-        subgraph Compute[计算层]
-            W[Writer Instance]
-            R1[Reader 1 Instance]
-            R2[Reader 2 Instance]
+    subgraph Aurora["Aurora 架构"]
+        subgraph Compute["计算层"]
+            W["Writer Instance"]
+            R1["Reader 1 Instance"]
+            R2["Reader 2 Instance"]
         end
-        subgraph Storage[Aurora Storage 6 副本/3 AZ]
-            P1[P1 AZ-A] P2[P2 AZ-A] P3[P3 AZ-B] P4[P4 AZ-B] P5[P5 AZ-C] P6[P6 AZ-C]
+        subgraph Storage["Aurora Storage 6 副本/3 AZ"]
+            P1["P1 AZ-A"]
+            P2["P2 AZ-A"]
+            P3["P3 AZ-B"]
+            P4["P4 AZ-B"]
+            P5["P5 AZ-C"]
+            P6["P6 AZ-C"]
         end
         W --> Storage
         R1 --> Storage

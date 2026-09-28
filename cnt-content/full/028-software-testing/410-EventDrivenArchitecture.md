@@ -130,7 +130,7 @@ prerequisites: []
 
 ```mermaid
 flowchart TD
-    E[事件流]<br/>1 AccountCreated {id: A1}<br/>2 MoneyDeposited {amt: 500}<br/>3 MoneyDeposited {amt: 300}<br/>4 MoneyWithdrawn {amt: 100}
+    E["事件流<br/>1 AccountCreated {id: A1}<br/>2 MoneyDeposited {amt: 500}<br/>3 MoneyDeposited {amt: 300}<br/>4 MoneyWithdrawn {amt: 100}"]
 ```
 
 - 事件是**追加写**的（append-only）：只增不改不删

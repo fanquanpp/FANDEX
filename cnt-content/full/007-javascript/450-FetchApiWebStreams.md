@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 450
 title: 网络请求 API
 module: 'javascript'
 category: 前端技术

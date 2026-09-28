@@ -247,24 +247,24 @@ Go 的 channel 类型是 **linear type**（线性类型）的弱化版本：发�
 
 ```mermaid
 flowchart TD
-    A[chansend1(ch, v)] --> B[ch.lock.acquire()]
-    B --> C{ch.closed == 1?}
-    C -- Yes --> P1[panic: send on closed channel]
-    C -- No --> D[sg := ch.recvq.dequeue]
-    D --> E{sg != nil（有等待 recv）?}
-    E -- Yes --> F[sendDirect(sg, v)]
-    F --> G[goready(sg.g)]
-    G --> H[ch.lock.release()]
-    H --> I[return]
-    E -- No --> J{ch.qcount < ch.dataqsiz?}
-    J -- Yes（有缓冲空间） --> K[buf[sendx] = v]
-    K --> L[sendx = (sendx+1) mod dataqsiz]
-    L --> M[qcount++]
-    M --> N[ch.lock.release()]
-    N --> O[return]
-    J -- No（buf 已满） --> Q[gopark(chanpark)]
-    Q --> R[将 sudog 入 sendq]
-    R --> S[ch.lock.release()]
+    A["chansend1(ch, v)"] --> B["ch.lock.acquire()"]
+    B --> C{"ch.closed == 1?"}
+    C -- Yes --> P1["panic: send on closed channel"]
+    C -- No --> D["sg := ch.recvq.dequeue"]
+    D --> E{"sg != nil（有等待 recv）?"}
+    E -- Yes --> F["sendDirect(sg, v)"]
+    F --> G["goready(sg.g)"]
+    G --> H["ch.lock.release()"]
+    H --> I["return"]
+    E -- No --> J{"ch.qcount < ch.dataqsiz?"}
+    J -- Yes（有缓冲空间） --> K["buf[sendx] = v"]
+    K --> L["sendx = (sendx+1) mod dataqsiz"]
+    L --> M["qcount++"]
+    M --> N["ch.lock.release()"]
+    N --> O["return"]
+    J -- No（buf 已满） --> Q["gopark(chanpark)"]
+    Q --> R["将 sudog 入 sendq"]
+    R --> S["ch.lock.release()"]
 ```
 
 #### 3.1.1 直接传递优化（sendDirect）
@@ -292,24 +292,24 @@ func sendDirect(t *_type, sg *sudog) {
 
 ```mermaid
 flowchart TD
-    A[chanrecv1(ch, &v)] --> B[ch.lock.acquire()]
-    B --> D[sg := ch.sendq.dequeue]
-    D --> E{sg != nil（有等待 send）?}
-    E -- Yes --> F[recvDirect(sg, v)]
-    F --> G[goready(sg.g)]
-    G --> H[ch.lock.release()]
-    H --> I[return true]
-    E -- No --> J{ch.qcount > 0?}
-    J -- Yes（buf 有数据） --> K[v = buf[recvx]]
-    K --> L[recvx = (recvx+1) mod dataqsiz]
-    L --> M[qcount--]
-    M --> N[ch.lock.release()]
-    N --> O[return true]
-    J -- No（buf 空） --> Q{ch.closed?}
-    Q -- Yes --> R[return zero, false]
-    Q -- No --> S[gopark(chanpark)]
-    S --> T[sudog 入 recvq]
-    T --> U[ch.lock.release()]
+    A["chanrecv1(ch, &v)"] --> B["ch.lock.acquire()"]
+    B --> D["sg := ch.sendq.dequeue"]
+    D --> E{"sg != nil（有等待 send）?"}
+    E -- Yes --> F["recvDirect(sg, v)"]
+    F --> G["goready(sg.g)"]
+    G --> H["ch.lock.release()"]
+    H --> I["return true"]
+    E -- No --> J{"ch.qcount > 0?"}
+    J -- Yes（buf 有数据） --> K["v = buf[recvx]"]
+    K --> L["recvx = (recvx+1) mod dataqsiz"]
+    L --> M["qcount--"]
+    M --> N["ch.lock.release()"]
+    N --> O["return true"]
+    J -- No（buf 空） --> Q{"ch.closed?"}
+    Q -- Yes --> R["return zero, false"]
+    Q -- No --> S["gopark(chanpark)"]
+    S --> T["sudog 入 recvq"]
+    T --> U["ch.lock.release()"]
 ```
 
 #### 3.2.1 closed channel 的 recv 语义

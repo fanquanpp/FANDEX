@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 390
 title: 模块动态导入与代码分割
 module: 'javascript'
 category: 前端技术

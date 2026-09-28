@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 多版本 Python 管理两件套：pyenv/pyenv-win 版本切换与 uv 一体化（解释器、依赖、工具、锁文件）。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'python/040-PythonVirtualEnv'
   - 'python/045-PythonEnvToolsLandscape'

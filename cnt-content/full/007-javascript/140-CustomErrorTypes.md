@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「接口报错只有一句 Request failed，分不清超时还是没登录」为主线，讲透七种内置错误的诊断含义、class extends Error 标准写法、cause 错误链与 AggregateError 批量失败，附 JSON.stringify 吞错误信息、堆栈还原等工程实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'javascript/480-ErrorBoundaryGlobalErrorCatch'
   - 'javascript/440-FetchApiAndAbortController'

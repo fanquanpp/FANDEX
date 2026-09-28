@@ -1,5 +1,5 @@
 ---
-order: 460
+order: 470
 title: React 的 Vite 工具链：脚手架现状与 vite.config.ts 实战
 module: 'react'
 category: 前端技术

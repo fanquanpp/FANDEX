@@ -20,14 +20,16 @@ prerequisites: []
 
 ```mermaid
 flowchart TD
-    subgraph CP[Control Plane]
-        API[API Server] SCH[Scheduler] CM[Controller Manager]
-        ETCD[etcd 集群状态存储]
+    subgraph CP["Control Plane"]
+        API["API Server"]
+        SCH["Scheduler"]
+        CM["Controller Manager"]
+        ETCD["etcd 集群状态存储"]
     end
-    N1[Node 1<br/>kubelet Proxy Pods]
-    N2[Node 2<br/>kubelet Proxy Pods]
-    N3[Node 3<br/>kubelet Proxy Pods]
-    NN[Node N<br/>kubelet Proxy Pods]
+    N1["Node 1<br/>kubelet Proxy Pods"]
+    N2["Node 2<br/>kubelet Proxy Pods"]
+    N3["Node 3<br/>kubelet Proxy Pods"]
+    NN["Node N<br/>kubelet Proxy Pods"]
     CP --> N1
     CP --> N2
     CP --> N3

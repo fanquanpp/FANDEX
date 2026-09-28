@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 260
 title: Promise 构造器
 module: 'javascript'
 category: 前端技术
@@ -2556,20 +2556,20 @@ flowchart TD
 
 ```mermaid
 flowchart TD
-    A[resolve(x)] --> B{x === this?}
-    B -- Yes --> R1[reject(TypeError)]
-    B -- No --> C{x 是 Promise?}
-    C -- Yes --> R2[采用 x 的状态]
-    C -- No --> D{x 是对象/函数?}
-    D -- No --> R3[fulfill(x)]
-    D -- Yes --> E[try { then = x.then }]
-    E -- 抛错 --> R4[reject(err)]
-    E --> F{then 是函数?}
-    F -- No --> R5[fulfill(x)]
-    F -- Yes --> G[调用 then.call(x, resolveY, rejectY)]
-    G --> H[resolveY(y) → 递归 resolve(y)]
-    G --> I[rejectY(r) → reject(r)]
-    G --> J[抛错 → reject(err)（若未调用 resolve/reject）]
+    A["resolve(x)"] --> B{"x === this?"}
+    B -- Yes --> R1["reject(TypeError)"]
+    B -- No --> C{"x 是 Promise?"}
+    C -- Yes --> R2["采用 x 的状态"]
+    C -- No --> D{"x 是对象/函数?"}
+    D -- No --> R3["fulfill(x)"]
+    D -- Yes --> E["try { then = x.then }"]
+    E -- 抛错 --> R4["reject(err)"]
+    E --> F{"then 是函数?"}
+    F -- No --> R5["fulfill(x)"]
+    F -- Yes --> G["调用 then.call(x, resolveY, rejectY)"]
+    G --> H["resolveY(y) → 递归 resolve(y)"]
+    G --> I["rejectY(r) → reject(r)"]
+    G --> J["抛错 → reject(err)（若未调用 resolve/reject）"]
 ```
 
 ---
@@ -2578,20 +2578,20 @@ flowchart TD
 
 ```mermaid
 flowchart LR
-    subgraph All[Promise.all]
-        A1[p1] --> A2[fulfilled]
-        A2 --> A3[[v1, v2, v3]]
+    subgraph All["Promise.all"]
+        A1["p1"] --> A2["fulfilled"]
+        A2 --> A3[["v1, v2, v3"]]
     end
-    subgraph Race[Promise.race]
-        R1[p1] --> R2[第一个 settled → resolve/reject]
+    subgraph Race["Promise.race"]
+        R1["p1"] --> R2["第一个 settled → resolve/reject"]
     end
-    subgraph Settled[Promise.allSettled]
-        S1[p1] --> S2[fulfilled → v1]
-        S2 --> S3[[{v1}, {r2}, {v3}]]
+    subgraph Settled["Promise.allSettled"]
+        S1["p1"] --> S2["fulfilled → v1"]
+        S2 --> S3[["{v1}, {r2}, {v3}"]]
     end
-    subgraph Any[Promise.any]
-        Y1[p1] --> Y2[第一个 fulfilled → resolve]
-        Y2 --> Y3[全部 rejected → AggregateError]
+    subgraph Any["Promise.any"]
+        Y1["p1"] --> Y2["第一个 fulfilled → resolve"]
+        Y2 --> Y3["全部 rejected → AggregateError"]
     end
 ```
 

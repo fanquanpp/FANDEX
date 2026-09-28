@@ -1,5 +1,5 @@
 ---
-order: 670
+order: 710
 title: Python 与 WebSocket
 module: 'python'
 category: 后端技术

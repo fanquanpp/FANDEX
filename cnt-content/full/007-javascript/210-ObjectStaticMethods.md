@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「对象加工的四个日常任务」为主线，一次配齐 keys/values/entries、fromEntries、groupBy、hasOwn、assign、is 六件套，讲透属性描述符与 configurable 单向门，附遍历顺序数字键前置、Object.create(null) 判存在翻车等实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'javascript/200-DeepShallowCopy'
   - 'javascript/190-PrototypeChainClassEssence'

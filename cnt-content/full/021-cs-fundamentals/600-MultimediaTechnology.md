@@ -114,7 +114,16 @@ $$F(u,v) = \frac{1}{4}C(u)C(v)\sum_{x=0}^{7}\sum_{y=0}^{7}f(x,y)\cos\frac{(2x+1)
 
 ```mermaid
 flowchart LR
-    I[I] B1[B] B2[B] P1[P] B3[B] B4[B] P2[P] B5[B] B6[B] I2[I]
+    I[I]
+    B1[B]
+    B2[B]
+    P1[P]
+    B3[B]
+    B4[B]
+    P2[P]
+    B5[B]
+    B6[B]
+    I2[I]
     I --- B1 --- B2 --- P1 --- B3 --- B4 --- P2 --- B5 --- B6 --- I2
 ```
 

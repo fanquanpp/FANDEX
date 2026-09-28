@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 用 FANDEX 岛屿与一个评论表单的真实场景学会 React 19 核心新特性：use()、Actions、useActionState、useFormStatus、useOptimistic，以及 RSC、流式 SSR 与文档元数据。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/040-HooksDeep'
   - 'react/050-ContextGlobalState'

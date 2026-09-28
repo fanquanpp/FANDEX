@@ -43,11 +43,11 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    S[搜索]
-    S --> ST[静态查找 数组/链表<br/>线性 O(n)/二分 O(log n)/哈希 O(1)]
-    S --> U[无信息搜索 状态空间图<br/>BFS O(V+E)/DFS O(V+E)/UCS O(E log V)/IDDFS O(b^d)]
-    S --> I[有信息搜索 状态空间图+启发式<br/>A* O(b^d)/IDA* O(b^d)/贪婪 GBFS/WIDA*]
-    S --> G[对抗搜索 博弈树<br/>Minimax O(b^d)/MCTS/Alpha-Beta O(b^(d/2))]
+    S["搜索"]
+    S --> ST["静态查找 数组/链表<br/>线性 O(n)/二分 O(log n)/哈希 O(1)"]
+    S --> U["无信息搜索 状态空间图<br/>BFS O(V+E)/DFS O(V+E)/UCS O(E log V)/IDDFS O(b^d)"]
+    S --> I["有信息搜索 状态空间图+启发式<br/>A* O(b^d)/IDA* O(b^d)/贪婪 GBFS/WIDA*"]
+    S --> G["对抗搜索 博弈树<br/>Minimax O(b^d)/MCTS/Alpha-Beta O(b^(d/2))"]
 ```
 
 **搜索算法的四大评估指标**：
@@ -1881,11 +1881,11 @@ def bidirectional_buggy(graph, start, end):
 
 ```mermaid
 flowchart TD
-    S[搜索算法]
-    S --> ST[静态查找 数组/链表<br/>线性 O(n)/二分 O(log n)/哈希 O(1)]
-    S --> U[无信息搜索 状态空间图<br/>BFS O(V+E)/DFS O(V+E)/双向BFS O(b^(d/2))/IDDFS O(b^d) O(d)]
-    S --> I[有信息搜索 状态空间图+启发式<br/>A* O(b^d)/IDA* O(b^d)/贪婪 GBFS/WIDA*]
-    S --> G[对抗搜索 博弈树<br/>Minimax O(b^d)/MCTS/Alpha-Beta O(b^(d/2))]
+    S["搜索算法"]
+    S --> ST["静态查找 数组/链表<br/>线性 O(n)/二分 O(log n)/哈希 O(1)"]
+    S --> U["无信息搜索 状态空间图<br/>BFS O(V+E)/DFS O(V+E)/双向BFS O(b^(d/2))/IDDFS O(b^d) O(d)"]
+    S --> I["有信息搜索 状态空间图+启发式<br/>A* O(b^d)/IDA* O(b^d)/贪婪 GBFS/WIDA*"]
+    S --> G["对抗搜索 博弈树<br/>Minimax O(b^d)/MCTS/Alpha-Beta O(b^(d/2))"]
 ```
 
 ### 20.2 三大核心论证方法

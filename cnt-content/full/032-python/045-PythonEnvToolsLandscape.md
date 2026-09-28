@@ -1,6 +1,14 @@
 ---
+order: 50
 title: Python 环境工具全景：venv/uv/poetry/conda 怎么选
+module: 'python'
+category: 后端技术
+difficulty: beginner
 description: 以「接手一个工具各异的团队仓库」为场景，横向看清 venv、virtualenv、pip、poetry、conda、uv 的分工与取舍：靠锁文件识别项目工具链、各工具核心命令、pip 与 uv 的数量级差距、conda 管非 Python 依赖的独特价值，附新项目决策清单与跨语言对照。
+author: fanquanpp
+updated: '2026-09-28'
+related: []
+prerequisites: []
 ---
 
 ## 前置知识

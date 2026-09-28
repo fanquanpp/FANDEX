@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从「给全站做主题切换」的真实场景学会 provide / inject：响应式注入、InjectionKey 类型安全、readonly 加修改方法的状态保护模式，以及异步调用与 SSR 单例污染两大坑。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'vue3/110-ComponentSystem'
   - 'vue3/100-CustomComposableWrapper'

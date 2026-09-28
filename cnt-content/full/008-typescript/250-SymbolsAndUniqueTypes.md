@@ -1,12 +1,12 @@
 ---
-order: 250
+order: 260
 title: 符号与唯一类型
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: Symbol、unique symbol 与品牌类型的类型论基础、形式语义与生产级模式
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/260-CovarianceContravariance'
   - 'typescript/240-ThisTypePolymorphism'

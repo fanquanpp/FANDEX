@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 360
 title: 自定义数据属性
 module: 'html5'
 category: 前端技术
@@ -1618,7 +1618,7 @@ const user = JSON.parse(el.dataset.user);
 > 一句话记住 data-*：`data-` 是便签，`dataset` 是抽屉；连字符转驼峰，值都是字符串；轻量数据用它，复杂状态交给 JS。
 
 - `data-*` 属性为开发者保留，浏览器不产生内置行为；
-- `dataset` 读写自动映射：`data-user-id` ↔ `dataset.userId`；
+- `dataset` 读写自动映射：`data-user-id` <-> `dataset.userId`；
 - 所有值都是字符串，数字需 `Number()` 转换；
 - 事件委托 + `closest('[data-id]')` 是列表场景的标准组合；
 - CSS 属性选择器可直接基于 `data-*` 控制样式；

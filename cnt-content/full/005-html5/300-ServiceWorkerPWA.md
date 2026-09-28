@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 320
 title: Service Worker 与 PWA
 module: 'html5'
 category: 前端技术

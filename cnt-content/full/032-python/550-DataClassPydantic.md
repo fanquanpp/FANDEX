@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 370
 title: 数据类与 Pydantic
 module: 'python'
 category: 后端技术

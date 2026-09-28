@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 600
 title: Temporal 日期时间 API
 module: 'javascript'
 category: 前端技术
@@ -1669,7 +1669,7 @@ console.log(exactSeconds);  // 2678400（31 天）
    - 展示：用 withCalendar() 转换到用户偏好历法显示
    - 事件提醒：每个事件记录用户的历法偏好，计算下次触发时转换为 Instant
    - 历法切换：仅改变展示层，存储层不变
-   - 跨历法转换：用 PlainDate.withCalendar() 实现公历↔农历↔伊斯兰历
+   - 跨历法转换：用 PlainDate.withCalendar() 实现公历<->农历<->伊斯兰历
 
 ---
 

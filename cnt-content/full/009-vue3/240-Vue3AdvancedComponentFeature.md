@@ -204,7 +204,7 @@ const AsyncComponentWithOptions = defineAsyncComponent({
     <div class="node-content" @click="toggleExpanded">
       {{ node.name }}
       <span v-if="node.children && node.children.length > 0">
-        {{ expanded ? '▼' : '▶' }}
+        {{ expanded ? '▼' : '→' }}
       </span>
     </div>
     <div v-if="node.children && node.children.length > 0 && expanded" class="node-children">

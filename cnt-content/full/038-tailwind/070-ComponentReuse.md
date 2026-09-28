@@ -4,7 +4,7 @@ title: Tailwind CSS 组件复用
 module: 'tailwind'
 category: 前端技术
 difficulty: intermediate
-description: Tailwind CSS 组件复用方案对比：纯工具类组件封装 / @apply 提取 / CSS 变量组合，配 cva + clsx + tailwind-merge 工程化实践，附适用场景决策表
+description: Tailwind CSS 组件复用方案对比：纯工具类组件封装 / @apply 提取 / CSS 变量组合，配 cva + clsx + tailwind-merge 工程化实践，附适用场景决策表与真实仓库参考
 author: fanquanpp
 updated: '2026-09-12'
 related:
@@ -14,6 +14,17 @@ prerequisites:
   - 'tailwind/030-UtilityCore'
 ---
 
+## 前置知识
+
+- [Tailwind CSS 核心概念与工具类](/tailwind/030-UtilityCore)：工具类与状态变体的基础写法。
+- [Tailwind CSS 主题定制与设计令牌](/tailwind/050-ThemeCustomization)：语义令牌是方案三的地基。
+
+## 学习目标
+
+- 能对比三种复用方案（组件封装 / `@apply` / CSS 变量组合）的适用边界，为项目做出选型。
+- 能用 cva 声明组件变体、用 `cn()`（clsx + tailwind-merge）安全合并内外部类名。
+- 能说清 `@apply` 在 v4 作用域样式中的 `@reference` 前置条件。
+- 能按决策表为具体场景挑选方案，并避免"类名冲突结果不可预测"的经典陷阱。
 
 ## 0. 先打个比方：从"预制菜"到"中央厨房"
 
@@ -25,7 +36,7 @@ prerequisites:
 - **调料包**：把固定的调料配比装成一包（对应：`@apply` 提取样式）；
 - **统一供应链**：所有餐厅从同一供应商进货、共用一套原材料标准（对应：CSS 变量组合 + 设计令牌）。
 
-本篇文章采用**对比驱动**的讲法：把三种主流复用方案放在一起对比——各自的写法、原理、优劣、适用场景，最后给出工程化组合方案（cva + clsx + tailwind-merge）和一张决策速查表。
+本篇采用**对比驱动**的讲法：把三种主流复用方案放在一起对比——各自的写法、原理、优劣、适用场景，最后给出工程化组合方案（cva + clsx + tailwind-merge）和一张决策速查表。
 
 ## 1. 三种复用方案总览
 
@@ -78,7 +89,7 @@ export function Button({ variant = 'primary', children }) {
 
 - **单一事实来源**：类名组合只存在组件文件里，全局搜索 `rounded-lg` 就能找到所有按钮；
 - **类型安全**：TypeScript 的 props 定义天然约束了调用方的取值范围；
-- **与框架生态契合**：React/Vue/Svelte 的组件模型就是为这种复用设计的。
+- **与框架生态契合**：React/Vue/Svelte/Astro 的组件模型就是为这种复用设计的。
 
 ## 3. 方案二：@apply 提取样式
 
@@ -156,7 +167,7 @@ export function Button({ variant = 'primary', children }) {
 
 ### 4.1 直观理解
 
-第三张牌最"隐形"却最根本：把颜色、间距、圆角等取值沉淀为设计令牌（承接第 5 篇），组件里全部使用语义类。这样"换肤"时只改令牌，所有组件自动跟随。
+第三张牌最"隐形"却最根本：把颜色、间距、圆角等取值沉淀为设计令牌（见第 5 篇），组件里全部使用语义类。这样"换肤"时只改令牌，所有组件自动跟随。
 
 ### 4.2 示例
 
@@ -183,6 +194,8 @@ export function Button({ variant = 'primary', children }) {
 ## 5. 工程化组合：cva + clsx + tailwind-merge
 
 当组件出现多个维度（variant、size、状态）时，手工三元表达式会爆炸。业界（shadcn/ui 等主流实践）的标准答案是三个小工具组合使用。
+
+一个可以佐证其主流程度的观察：你正在阅读的本站（FANDEX 仓库，Astro + React + Tailwind 4）虽然以静态内容为主，`package.json` 里也常备着 `class-variance-authority`、`clsx`、`tailwind-merge` 三件套，并按 shadcn/ui 惯例保留了 `components.json`——凡是 React + Tailwind 的项目，这三个包几乎是默认装配。
 
 ### 5.1 clsx：条件类名的可读写法
 
@@ -283,11 +296,13 @@ export function Button({ variant, size, className, children }) {
 </Button>
 ```
 
-工作流程说明：`cva` 负责按 variant/size 生成基础类名 → `clsx` 负责拼接条件类名 → `twMerge` 负责消除冲突（外部 `className` 的 `w-full` 不会与内部的宽度类打架）。
+工作流程说明：`cva` 负责按 variant/size 生成基础类名 -> `clsx` 负责拼接条件类名 -> `twMerge` 负责消除冲突（外部 `className` 的 `w-full` 不会与内部的宽度类打架）。
+
+在 Astro 岛屿架构里的用法完全一致：交互组件是 React 岛，工具函数 `cn()` 放在共享目录被多个岛屿 import；纯静态的 `.astro` 模板部分则直接写完整类名字符串，不需要动态合并。
 
 ## 6. 补充零件：@utility 自定义工具类
 
-如果需要一个"不属于任何组件、也不属于默认工具类"的新能力，v4 提供了 `@utility` 指令（上一篇文章介绍过）。它和 `@apply` 的区别在于：`@apply` 是"组合已有工具类"，`@utility` 是"创建全新的工具类"：
+如果需要一个"不属于任何组件、也不属于默认工具类"的新能力，v4 提供了 `@utility` 指令（第 5 篇介绍过）。它和 `@apply` 的区别在于：`@apply` 是"组合已有工具类"，`@utility` 是"创建全新的工具类"：
 
 ```css
 /* 创建全新工具类：文字渐变 */
@@ -316,7 +331,7 @@ export function Button({ variant, size, className, children }) {
 | 全新的、不属于任何组件的工具能力 | `@utility` | 原生指令，支持变体 |
 | 品牌换色 / 多主题切换 | 设计令牌（方案三）打底 | 改一处、全站生效 |
 
-## 8. 常见错误与对策
+## 8. 坑点与自检
 
 | 常见错误 | 报错 / 现象 | 原因 | 解决办法 |
 | --- | --- | --- | --- |
@@ -328,6 +343,25 @@ export function Button({ variant, size, className, children }) {
 | `@apply` 里用了未定义的类名 | 编译报错 `Cannot apply unknown utility class` | 类名拼写错误或令牌未定义 | 检查拼写；自定义类先定义在 `@theme` 中 |
 | 忘记给组件加 `className` 透传 | 调用方无法覆盖样式 | 组件没有接收外部类名 | 组件 props 增加 `className` 并用 `cn()` 合并 |
 
-## 9. 一句话记忆
+自检清单：
+
+- [ ] 能说出三种复用方案各自的适用项目形态，并解释"组件项目不写 @apply"的理由
+- [ ] 能解释 tailwind-merge 解决的问题，并说出"CSS 优先级与 class 书写顺序无关"这个前提
+- [ ] 能用 cva 定义一个双维度（variant x size）变体，并让 props 获得类型提示
+- [ ] 能写出 `cn()` 并说明 clsx 与 twMerge 各自负责哪一步
+- [ ] 知道作用域样式里用 `@apply` 需要 `@reference`
+
+## 9. 动手实践
+
+1. **三元 vs cva 重构对比**：先写一个用嵌套三元表达式拼接类名的徽章组件（variant x size x disabled 三维度），再用 cva 重写一遍，对比行数与可读性。提示：给 cva 版本补上 `VariantProps` 类型后，把 variant 拼错看 TypeScript 是否报错。
+2. **冲突复现实验**：写一个内部带 `px-4` 的卡片组件，调用方传 `className="px-8"`，分别在"直接拼接"与"cn() 合并"两种实现下打开 DevTools 查看最终 class 与实际内边距。提示：多做几次生产构建再比较，"时对时错"正是编译顺序变化的体现。
+3. **令牌打底改造**：把自己项目里的按钮组件从 `bg-blue-600` 改为 `bg-primary`（令牌见第 5 篇），然后在 `@theme` 里换一次品牌色，确认组件代码零改动完成换肤。提示：全站搜索 `blue-600` 检查还有没有漏网组件。
+
+## 10. 一句话记忆
 
 **复用三板斧：组件封装管结构（框架项目首选）、`@apply` 管纯 CSS 沉淀、设计令牌管全局取值；工程化收尾用 `cva + cn()` 管变体和类名冲突——先定方案，再写代码。**
+
+## 11. 下一步
+
+- 变体语法与类名族的完整参考，回到[核心概念与工具类](/tailwind/030-UtilityCore)随查随用。
+- 语义令牌的搭建与运行时换肤，见[主题定制与设计令牌](/tailwind/050-ThemeCustomization)。

@@ -1,12 +1,12 @@
 ---
-order: 470
+order: 480
 title: 映射类型进阶
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: 键重映射、模板映射与递归映射类型
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/150-TypeGuardCustomGuard'
   - 'typescript/140-IndexSignatureDynamicProperty'

@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 350
 title: JavaScript 垃圾回收与内存管理
 module: 'javascript'
 category: 前端技术

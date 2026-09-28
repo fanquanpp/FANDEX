@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 500
 title: 调试与性能优化
 module: 'javascript'
 category: 前端技术

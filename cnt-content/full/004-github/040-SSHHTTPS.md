@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: SSH 与 HTTPS 远程配置对比、公钥配置、HTTPS+PAT 配置指南与故障排查。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'github/020-AccountRegister2FA'
   - 'github/030-RepositoryCreateCloneArchiveDelete'

@@ -191,9 +191,9 @@ $$
 
 ```mermaid
 flowchart LR
-    S[新 s] -->|ε| N1[N(r1)]
-    N1 -->|ε| N2[N(r2)]
-    N2 -->|ε| T[新 t]
+    S["新 s"] -->|ε| N1["N(r1)"]
+    N1 -->|ε| N2["N(r2)"]
+    N2 -->|ε| T["新 t"]
 ```
 
 
@@ -201,9 +201,9 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    S[新 s] -->|ε| N1[N(r1)]
-    N1 -->|ε| T[新 t]
-    S -->|ε| N2[N(r2)]
+    S["新 s"] -->|ε| N1["N(r1)"]
+    N1 -->|ε| T["新 t"]
+    S -->|ε| N2["N(r2)"]
     N2 -->|ε| T
 ```
 
@@ -211,8 +211,8 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    S[新 s] -->|ε| N[N(r)]
-    N -->|ε| T[t]
+    S["新 s"] -->|ε| N["N(r)"]
+    N -->|ε| T["t"]
     N -->|ε| S
     T -->|ε| N
 ```
@@ -307,8 +307,8 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    S6[状态 6] -->|ε| N[b|c NFA]
-    N -->|ε| S7[状态 7]
+    S6["状态 6"] -->|ε| N["b|c NFA"]
+    N -->|ε| S7["状态 7"]
     N -->|ε| S6
     S7 -->|ε| N
 ```

@@ -1146,7 +1146,7 @@ public partial class ResponsivePage : ContentPage
 | 模式 | 数据流向 | 适用场景 |
 |------|----------|----------|
 | OneWay | Source → Target | 只读显示 |
-| TwoWay | Source ↔ Target | 表单输入 |
+| TwoWay | Source <-> Target | 表单输入 |
 | OneWayToSource | Target → Source | 用户输入仅写回源 |
 | OneTime | 初始化时同步 | 静态数据展示 |
 

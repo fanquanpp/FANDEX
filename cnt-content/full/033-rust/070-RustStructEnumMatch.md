@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 结构体与 impl、枚举与 Option、match 模式匹配与 if let
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'rust/050-RustOwnershipBorrowing'
   - 'rust/080-RustErrorHandling'

@@ -4,24 +4,24 @@ title: Tailwind CSS 安装与配置
 module: 'tailwind'
 category: 前端技术
 difficulty: beginner
-description: Tailwind CSS 安装与配置：Vite/React/Astro 项目接入教程、@import 与 @source 详解、Tailwind 3 与 4 配置差异对照
+description: Tailwind CSS 安装与配置：Vite/React/Astro 项目接入教程、@import 与 @source 详解、Tailwind 3 与 4 配置差异对照，附 FANDEX 仓库的真实接线参考
 author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'tailwind/030-UtilityCore'
+  - 'tailwind/050-ThemeCustomization'
   - 'css/130-CSS3SelectorSystem'
 prerequisites:
   - 'css/130-CSS3SelectorSystem'
 ---
 
-
 ## 0. 装修开工前的准备
 
-把写网页比作装修一套房子：HTML 是房子的结构（墙、门、窗的位置），CSS 是装修（墙面的颜色、家具的摆放）。而 Tailwind 就是一套"预制墙板 + 标准五金件"的装修方案——但再好的建材，也得先完成"水电进场、工具就位"才能开工。本篇文章就是安装配置的"开工手册"。
+把写网页比作装修一套房子：HTML 是房子的结构（墙、门、窗的位置），CSS 是装修（墙面的颜色、家具的摆放）。而 Tailwind 就是一套"预制墙板 + 标准五金件"的装修方案——但再好的建材，也得先完成"水电进场、工具就位"才能开工。本篇就是安装配置的"开工手册"。
 
-装修开工前要做三件事：确认房屋属于哪种户型（项目类型）、确认水电到位（Node.js 环境）、选择施工方案（接入方式）。对应到 Tailwind 就是：
+开工前要做三件事：确认房屋属于哪种户型（项目类型）、确认水电到位（Node.js 环境）、选择施工方案（接入方式）。
 
-第一，判断项目类型：是 Vite 脚手架项目（React/Vue/Svelte/Astro），还是 Next.js 这类基于 webpack 的项目，还是完全没有构建工具的纯 HTML 页面——不同项目对应不同接入方式。
+第一，判断项目类型：是 Vite 脚手架项目（React/Vue/Svelte/Astro），还是 Next.js 这类走 PostCSS 链的项目，还是完全没有构建工具的纯 HTML 页面——不同项目对应不同接入方式。
 
 第二，确认环境就绪：Tailwind 4 的安装与构建依赖 Node.js 20 及以上版本，先运行 `node -v` 检查版本。
 
@@ -50,7 +50,7 @@ ls package.json
 
 ## 2. 方式一：Vite 插件接入（官方推荐，最省心）
 
-这是官方文档首推的方式，适用于 Vite 项目以及所有基于 Vite 的框架（React、Vue、Svelte、SolidJS、Astro 等）。整个接入过程只有五步。
+这是官方文档首推的方式，适用于 Vite 项目以及所有基于 Vite 的框架（React、Vue、Svelte、SolidJS 等）。整个接入过程只有五步。
 
 ### 第 1 步：创建 Vite 项目
 
@@ -208,17 +208,13 @@ npx @tailwindcss/cli -i ./src/input.css -o ./dist/output.css --minify
 </html>
 ```
 
-## 5. Astro 项目接入
+## 5. Astro 项目接入：一个真实仓库的完整接线
 
 Astro 底层使用 Vite，因此接入方式与第 2 节几乎一致，只有配置位置不同：插件要挂在 `astro.config.mjs` 的 `vite` 字段下。
-
-### 第 1 步：安装依赖
 
 ```bash
 pnpm add tailwindcss @tailwindcss/vite
 ```
-
-### 第 2 步：注册插件
 
 ```js
 // astro.config.mjs
@@ -231,8 +227,6 @@ export default defineConfig({
   },
 })
 ```
-
-### 第 3 步：在全局布局中导入 CSS
 
 ```css
 /* src/styles/global.css */
@@ -252,6 +246,33 @@ import '../styles/global.css'
 ```
 
 之后即可在任意 `.astro` 组件的模板中直接使用工具类。注意：Astro 在 v3 之前有官方的 `@astrojs/tailwind` 集成包，v4 之后官方推荐直接用 Vite 插件方式，二者选其一，不要重复配置。
+
+看一个真实项目会长成什么样。你正在阅读的本站（FANDEX 仓库，Astro + React + Tailwind 4）的接线分三处，与上面的最小配置一一对应，只是在每处多了"规模化"的考量：
+
+```ts
+// astro.config.ts（FANDEX 实际结构，节选）
+import tailwindcss from '@tailwindcss/vite'
+
+export default defineConfig({
+  vite: {
+    plugins: [tailwindcss()], // 与最小配置相同：一个插件，没有多余参数
+  },
+  // ...markdown、sitemap 等与本篇无关的配置
+})
+```
+
+```css
+/* src/styles/tailwind.css（FANDEX 实际结构，节选） */
+@import 'tailwindcss';
+
+/* 令牌桥接：@theme inline 让外部 CSS 变量变成工具类，详见第 5 篇 */
+@theme inline {
+  --color-primary-500: var(--fandex-color-primary-500);
+  /* ...其余色阶同理 */
+}
+```
+
+第三处在布局里：入口 CSS 由根布局统一引入，且样式按职责拆成多个文件（`typography.css`、`components.css`、`site.css` 等），全部汇入同一个入口。这带出一条规模化的经验：**`@import "tailwindcss"` 必须是入口文件的第一条导入**，其余自定义 CSS 写在它后面——Tailwind 的级联层（theme/base/components/utilities）以导入顺序铺底，工具类位于最后一层，自定义样式才不会"误伤"工具类。
 
 ## 6. 深度理解：@import "tailwindcss" 到底做了什么
 
@@ -346,8 +367,20 @@ npx @tailwindcss/upgrade
 | 动态拼接类名 | `bg-${color}-500` 不生效 | 扫描器按完整字符串匹配，拼接无法识别 | 维护完整类名映射表或用 `@source inline()` |
 | v3 指令残留 | `@tailwind base;` 报错 | v4 移除了这三条指令 | 改为 `@import "tailwindcss";` |
 | 重复配置 | 样式重复或冲突 | 同时使用了旧集成包（如 `@astrojs/tailwind`）与 Vite 插件 | 只保留一种接入方式 |
+| 导入顺序错误 | 自定义样式盖不住工具类（或反之） | Tailwind 未作为入口第一条导入，级联层错位 | `@import "tailwindcss"` 放在入口 CSS 首行 |
 | 修改后不生效 | 改了配置没反应 | Vite 缓存或监听失效 | 重启开发服务器 |
 
-## 11. 一句话记忆
+## 11. 动手实践
+
+1. **三条路各走一遍**：分别用 Vite 插件、CLI 两条方式搭起最小项目（PostCSS 方式可与 Next.js 学习配合），各自完成"蓝色方块"验证。提示：对比三者的依赖数量——Vite 插件方案最少。
+2. **接入扩容**：在 Vite 项目里新建 `styles/typography.css`，写几条正文样式，在入口文件里让 Tailwind 导入位于它之前，然后验证"工具类仍能覆盖自定义样式"。提示：把导入顺序反过来再试一次，观察级联层的作用。
+3. **扫描边界实验**：在项目外建一个目录，往里写一个带 `bg-purple-500` 的 HTML 文件，分别用 `@source` 纳入与移出，观察产物 CSS 里该类是否出现。提示：构建后直接在产物里搜索 `purple`。
+
+## 12. 一句话记忆
 
 安装 Tailwind 4 只有两步：装包（`tailwindcss` + 对应构建插件）与写一行 `@import "tailwindcss";`——剩下的扫描范围用 `@source` 按需补充，配置从 `tailwind.config.js` 搬进了 CSS。
+
+## 13. 下一步
+
+- 令牌怎么定义、`@theme` 怎么写，见[主题定制与设计令牌](/tailwind/050-ThemeCustomization)——安装完成后通常第一个动作就是接入自己的品牌令牌。
+- 工具类的完整清单与命名规律，见[核心概念与工具类](/tailwind/030-UtilityCore)。

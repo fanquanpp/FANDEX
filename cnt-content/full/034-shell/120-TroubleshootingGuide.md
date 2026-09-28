@@ -93,7 +93,7 @@ taskkill /PID <PID> /F
 
 ```bash
 # 验证 PATH 里到底有没有某个目录
-echo “$PATH” | tr ':' '\n' | grep -n “node”   # 逐行列出含 node 的 PATH 条目
+echo "$PATH" | tr ':' '\n' | grep -n "node"   # 逐行列出含 node 的 PATH 条目
 
 # 验证命令解析到哪个可执行文件（同名命令排查）
 type -a node        # bash/zsh：列出所有同名命中，第一个优先生效

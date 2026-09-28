@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: "以音乐平台并发拉取千张专辑封面为任务背景，讲透 Future 的惰性本质、tokio 运行时、join!/spawn/select!/timeout 四种并发模式与四大陷阱（同步阻塞、跨 await 持锁、非 Send、递归 async），附前后耗时对比实测。"
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'rust/140-RustEcosystemProject'
   - 'rust/100-RustGenericTrait'

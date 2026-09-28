@@ -1,5 +1,5 @@
 ---
-order: 620
+order: 650
 title: Python 与 Celery：分布式任务队列的设计、实现与工程实践
 module: 'python'
 category: 后端技术

@@ -1,12 +1,12 @@
 ---
-order: 270
+order: 280
 title: 装饰器详解
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: TypeScript装饰器与元编程
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/470-MappedTypeAdvanced'
   - 'typescript/230-GenericConstraintDefault'

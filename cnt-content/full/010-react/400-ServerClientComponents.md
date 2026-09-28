@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 410
 title: Server Components 与 Client-Components
 module: 'react'
 category: 前端技术

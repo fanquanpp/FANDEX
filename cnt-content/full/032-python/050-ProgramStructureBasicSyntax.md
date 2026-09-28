@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 60
 title: 程序结构基本语法：写下你的第一个程序
 module: 'python'
 category: 后端技术

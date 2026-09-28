@@ -1,5 +1,7 @@
 # 渲染失败的 mermaid 图清单（自动诊断，修复后删除本文件）
 
+修复记录（2026-09-28）：以上 72 张已全部清零，当前渲染失败数为 0（`render-mermaid` 输出 light 70/70、dark 70/70）。实际修复 69 张损坏图（其中 1 张同源损坏在 150-AdvancedQueryMultiTableOperation.md 还有 7 处重复，一并修复；另含 310/340/590 三篇 6 处「JSON 代码块围栏缺失被吞入 mermaid 块」的结构修复）；040-StackAndQueue.md 与 060-ContainerOrchestration.md 的 3 条记录在当前内容中已无对应 mermaid 块（内容重写），无需修复。
+
 共 72 张。修复方式：节点文本含 ()、'、{}、[] 等特殊字符时用双引号包住文本，如 A["resolve(x)"]；注释必须独占一行以 %% 开头。
 
 ## ..\cnt-content\full\007-javascript\260-PromiseConstructorDeepDive.md

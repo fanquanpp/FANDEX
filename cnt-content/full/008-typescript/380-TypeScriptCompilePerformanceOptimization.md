@@ -1,12 +1,12 @@
 ---
-order: 380
+order: 390
 title: TypeScript 编译与性能优化
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: TypeScript 编译流程、增量编译、类型检查优化与构建工具集成：编译器架构、性能模型、复杂度分析、tsconfig 调优、项目引用、CI/CD 策略与生产级性能优化。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/390-TypeScriptMigrationPractice'
   - 'typescript/440-ConditionalTypeInfer'
@@ -246,7 +246,7 @@ $$
 
 ```
 core → utils → ui
-         ↘ api → app
+         → api → app
 ```
 
 拓扑排序：`[core], [utils], [ui, api], [app]`，最大并行度为 2（`ui` 与 `api` 可并行）。$\blacksquare$

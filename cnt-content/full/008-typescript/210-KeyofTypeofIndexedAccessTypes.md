@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 220
 title: keyof、typeof 与索引访问类型
 module: 'typescript'
 category: 前端技术

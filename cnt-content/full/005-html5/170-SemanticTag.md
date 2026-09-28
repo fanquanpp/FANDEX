@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从"接手一份全 div 的页面"这个真实场景出发：亲手把 div 汤改造成 header/nav/main/article/aside/footer 地标结构，用 DevTools 无障碍树验证效果，讲清 article 与 section 的辨析口诀与三类常见翻车点。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'html5/080-HTML5DivSpanContainers'
   - 'html5/070-HTML5BlockVsInline'

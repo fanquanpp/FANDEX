@@ -249,6 +249,8 @@ dsn := "user=postgres dbname=mydb sslmode=disable"
 conn, _ := otelpq.Open(dsn)
 ```
 
+> 注意：`otelpq` 对应的 `lib/pq` 驱动已进入维护模式。新项目按 [Go 与数据库](/go/340-GoDatabase) 的建议使用 pgx 时，应改用其对应的插桩包 `go.opentelemetry.io/contrib/instrumentation/github.com/jackc/pgx/v5/otelpgx`（通过 `otelpgx.ConnectConfig` 建连或 `otelpgx.NewTracer` 配置）。
+
 ### 6. 手动创建 Span
 
 在业务逻辑中手动创建 Span：

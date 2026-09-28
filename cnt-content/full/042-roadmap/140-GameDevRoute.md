@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'roadmap/130-TwelveMonthPlanTemplate'
 ---

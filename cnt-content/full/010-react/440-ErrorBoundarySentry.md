@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 450
 title: 错误边界与 Sentry 集成
 module: 'react'
 category: 前端技术

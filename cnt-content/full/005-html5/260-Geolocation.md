@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 Geolocation API 做一个"附近活动"入口：单次定位与持续追踪、权限状态查询与被拒兜底、Haversine 距离与地理围栏，以及定位隐私的正确姿势。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'html5/310-WebComponentsPWADevelopment'
   - 'html5/250-DragAPI'

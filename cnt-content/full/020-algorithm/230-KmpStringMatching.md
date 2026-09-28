@@ -1721,7 +1721,7 @@ graph TD
     C --> C3[next 数组]
     C --> C4[KMP 自动机]
     D --> D1[next 递推关系]
-    D --> D2[时间复杂度 O(n+m)]
+    D --> D2["时间复杂度 O(n+m)"]
     D --> D3[正确性证明 不变式]
     D --> D4[比较下界 2n-m]
     D --> D5[nextval 优化]

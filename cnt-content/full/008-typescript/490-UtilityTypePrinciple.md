@@ -1,12 +1,12 @@
 ---
-order: 490
+order: 500
 title: 工具类型实现原理
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: 内置工具类型的实现与自定义
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/290-NamespaceModule'
   - 'typescript/130-EnumAdvanced'

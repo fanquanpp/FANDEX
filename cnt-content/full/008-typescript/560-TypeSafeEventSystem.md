@@ -1,12 +1,12 @@
 ---
-order: 560
+order: 570
 title: 类型安全的事件系统
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: 类型安全事件系统的形式语义、构建器模式、异步事件、反应式扩展与生产级实现
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/460-ConditionalMappedType'
   - 'typescript/310-TypeScriptTypeDeclarationModuleResolution'

@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 260
 title: Python ssl 安全套接字
 module: 'python'
 category: 后端技术

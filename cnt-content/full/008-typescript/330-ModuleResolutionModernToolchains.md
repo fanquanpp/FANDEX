@@ -1,12 +1,12 @@
 ---
-order: 330
+order: 340
 title: 模块解析策略
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: TypeScript 模块解析策略的形式语义、Node.js 包解析算法、exports 字段、路径映射与生产级配置
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/270-DecoratorDetailed'
   - 'typescript/300-DeclarationFileWriting'

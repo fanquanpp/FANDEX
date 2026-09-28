@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 以两个项目抢同一个包的真实冲突切入，动手创建并管理第一个 venv：创建、激活、装包、导出 requirements、删除重建，再用 uv 走一遍等价的现代路线，附 Windows 激活报错实录与四类练习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'python/030-PyenvUvManage'
   - 'python/045-PythonEnvToolsLandscape'

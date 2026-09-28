@@ -160,7 +160,7 @@ p.interactive()
 
 ```mermaid
 flowchart TD
-    C[Chunk 结构<br/>prev_size 前一个 chunk 大小<br/>size | A|M|P 本 chunk 大小+标志位<br/>fd 前向指针 空闲时有效<br/>bk 后向指针 空闲时有效<br/>数据区]
+    C["Chunk 结构<br/>prev_size 前一个 chunk 大小<br/>size | A|M|P 本 chunk 大小+标志位<br/>fd 前向指针 空闲时有效<br/>bk 后向指针 空闲时有效<br/>数据区"]
 ```
 
 Fast Bins：≤ 0x80 字节（单链表 LIFO）；Small Bins：≤ 0x400 字节（双链表 FIFO）；Large Bins：> 0x400 字节（按大小排序）；Unsorted Bin：释放后先进入，分配时再分类

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 嵌入式系统C编程要点
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'c/490-StaticAnalysisDebug'
   - 'c/410-CrossPlatformProgramming'

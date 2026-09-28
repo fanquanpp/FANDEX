@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以对比驱动方式讲解 git pull 与 git fetch 的区别与适用场景，覆盖远程更新同步、远程跟踪分支与拉取冲突处理，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

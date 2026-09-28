@@ -348,7 +348,7 @@ Logback 的核心数据结构是 `ILoggingEvent`，其生命周期分为五个�
 
 ```mermaid
 flowchart TD
-    Log[logger.info('msg')] --> Event[LoggingEvent 创建<br/>捕获时间戳、MDC 快照、调用者栈]
+    Log["logger.info('msg')"] --> Event["LoggingEvent 创建<br/>捕获时间戳、MDC 快照、调用者栈"]
     Event --> Turbo[TurboFilter 链<br/>全局过滤器，性能敏感]
     Turbo --> Level[Level 判断<br/>与 Logger 有效级别比较]
     Level --> Loop[Appender 循环]

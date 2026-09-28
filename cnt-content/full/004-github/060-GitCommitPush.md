@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以「一个功能从写到推上 GitHub」的完整节奏讲 add / commit / push：暂存的挑选粒度（-p）、commit -am 陷阱、push -u 追踪关系、推送被拒的标准处置、force-with-lease 安全线，附 vim 卡住与 non-fast-forward 等七个真实报错对照表。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'git/050-GitBasicOperation'
   - 'git/070-GitDiffStagingOperation'

@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 80
 title: 基本数据类型：数据是有形状的
 module: 'python'
 category: 后端技术

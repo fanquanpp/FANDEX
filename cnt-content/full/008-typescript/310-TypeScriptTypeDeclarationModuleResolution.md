@@ -1,12 +1,12 @@
 ---
-order: 310
+order: 320
 title: TypeScript 类型声明与模块解析
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: TypeScript 声明文件（.d.ts）结构、模块解析策略（Node/NodeNext/Bundler）、ESM/CJS 互操作、路径映射与包导出的全面工程指南
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/510-RecursiveTypeDeepOperation'
   - 'typescript/460-ConditionalMappedType'
@@ -1310,7 +1310,9 @@ flowchart TD
     T0 --> T2
     T0 --> T3
     T0 --> T4
-jsonc
+```
+
+```jsonc
 // @types/lodash/package.json
 {
   "name": "@types/lodash",
@@ -1663,7 +1665,9 @@ flowchart TD
     T3 --> T5
     T3 --> T6
     T3 --> T7
-typescript
+```
+
+```typescript
 // tsup.config.ts
 import { defineConfig } from 'tsup';
 
@@ -1676,7 +1680,9 @@ export default defineConfig({
   clean: true,
   treeshake: true,
 });
-jsonc
+```
+
+```jsonc
 // package.json
 {
   "name": "my-lib",
@@ -1731,7 +1737,9 @@ flowchart TD
     T14 --> T15
     T14 --> T16
     T14 --> T17
-jsonc
+```
+
+```jsonc
 // tsconfig.base.json
 {
   "compilerOptions": {
@@ -1744,7 +1752,9 @@ jsonc
     "sourceMap": true
   }
 }
-jsonc
+```
+
+```jsonc
 // packages/shared/tsconfig.json
 {
   "extends": "../../tsconfig.base.json",
@@ -1754,7 +1764,9 @@ jsonc
   },
   "include": ["src"]
 }
-jsonc
+```
+
+```jsonc
 // packages/web/tsconfig.json
 {
   "extends": "../../tsconfig.base.json",
@@ -1813,7 +1825,9 @@ flowchart TD
     T0 --> T2
     T6 --> T7
     T6 --> T8
-jsonc
+```
+
+```jsonc
 // tsconfig.json
 {
   "compilerOptions": {

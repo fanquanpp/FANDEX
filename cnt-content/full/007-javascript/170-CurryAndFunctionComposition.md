@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「同一个前缀在几十处调用里复制粘贴」为问题主线，讲透偏函数固定参数、柯里化分批收参、pipe/compose 组合管道，亲手实现 curry 与 pipe，附漏调一层括号、bind 首参误传对象等调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'javascript/150-HigherOrderFunction'
   - 'javascript/160-RecursionTailCallOptimization'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以问题驱动方式讲解 Git 合并冲突的产生原理、冲突标记解读、完整解决流程与预防策略，覆盖 merge/rebase/cherry-pick 冲突场景，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

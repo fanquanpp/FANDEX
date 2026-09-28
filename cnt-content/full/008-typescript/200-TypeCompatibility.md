@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 210
 title: 类型兼容性（结构化类型系统）
 module: 'typescript'
 category: 前端技术

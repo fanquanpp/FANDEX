@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Vec、HashMap、HashSet、String 与迭代器链式操作
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'rust/050-RustOwnershipBorrowing'
   - 'rust/100-RustGenericTrait'

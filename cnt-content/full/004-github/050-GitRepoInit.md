@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以「把本地项目放上 GitHub」为主线讲透三条起点路径（先 clone、后关联、gh 一步到位）：git init 与 main 分支约定、origin 是什么、push -u 建立了什么、克隆自动做的三件事，附 not a git repository 与认证失败等真实报错对照表。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'git/050-GitBasicOperation'
   - 'github/030-RepositoryCreateCloneArchiveDelete'

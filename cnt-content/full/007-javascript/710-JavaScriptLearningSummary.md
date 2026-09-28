@@ -1,5 +1,5 @@
 ---
-order: 680
+order: 700
 title: JavaScript 学习总结：核心知识体系回顾
 module: 'javascript'
 category: 前端技术

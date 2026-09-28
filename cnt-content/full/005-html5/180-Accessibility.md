@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以"只用 Tab 键走完一个页面"的真实测试切入：亲手体验焦点流转、用读屏视角理解可访问名，掌握 label/alt/aria-label/aria-expanded 最小 ARIA 集，会修 div 当按钮、模态焦点丢失、placeholder 冒充 label 三类高频翻车。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'html5/170-SemanticTag'
   - 'html5/190-HTML5FormValidation'

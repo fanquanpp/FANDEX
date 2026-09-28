@@ -99,10 +99,10 @@ ALB 基于请求内容进行路由：
 
 ```mermaid
 flowchart TD
-    R1[IF Host = api.example.com AND Path = /users/* → Forward to user-service]
-    R2[IF Host = api.example.com AND Path = /orders/* → Forward to order-service]
-    R3[IF Path = /static/* → Redirect to CDN]
-    R4[IF Header[X-Canary] = true → Forward to canary-service 10%]
+    R1["IF Host = api.example.com AND Path = /users/* → Forward to user-service"]
+    R2["IF Host = api.example.com AND Path = /orders/* → Forward to order-service"]
+    R3["IF Path = /static/* → Redirect to CDN"]
+    R4["IF Header[X-Canary] = true → Forward to canary-service 10%"]
 ```
 
 ### 2.3 负载均衡算法

@@ -42,11 +42,11 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    S[排序]
-    S --> I[内部排序<br/>比较排序 Ω(n log n)<br/>插入类：插入/希尔<br/>交换类：冒泡/快排<br/>堆排选择类/归并归并类]
-    S --> E[外部排序<br/>多路归并]
-    S --> D[分布排序<br/>计数排序 O(n+k)/基数排序 O(d(n+k))/桶排序 O(n+k) 平均]
-    S --> M[混合排序<br/>内省排序 Musser 1997/Timsort Peters 2002]
+    S["排序"]
+    S --> I["内部排序<br/>比较排序 Ω(n log n)<br/>插入类：插入/希尔<br/>交换类：冒泡/快排<br/>堆排选择类/归并归并类"]
+    S --> E["外部排序<br/>多路归并"]
+    S --> D["分布排序<br/>计数排序 O(n+k)/基数排序 O(d(n+k))/桶排序 O(n+k) 平均"]
+    S --> M["混合排序<br/>内省排序 Musser 1997/Timsort Peters 2002"]
 ```
 
 **比较排序下界**（Lower Bound of Comparison Sort）：任何基于比较的排序算法在最坏情况下至少需要 $\Omega(n \log n)$ 次比较。这一理论下界由决策树模型证明（详见 §3.2），意味着归并排序与堆排序已经达到了比较排序的最优。
@@ -1185,11 +1185,11 @@ def _merge(arr, low, mid, high, temp):
 
 ```mermaid
 flowchart TD
-    S[排序]
-    S --> C[比较排序 Ω(n log n)<br/>插入类：插入/希尔<br/>交换类：冒泡/快排/堆排/归并]
-    S --> N[非比较排序 O(n)<br/>计数/基数 LSD MSD/桶]
-    S --> E[外部排序 O(n log n / M)<br/>多路归并/替换选择/Fibonacci/多步归并]
-    S --> M[混合排序 工业级<br/>introsort Musser 1997 堆排+快排+插入排序<br/>Timsort Peters 2002 自然 run+二分插入+归并栈]
+    S["排序"]
+    S --> C["比较排序 Ω(n log n)<br/>插入类：插入/希尔<br/>交换类：冒泡/快排/堆排/归并"]
+    S --> N["非比较排序 O(n)<br/>计数/基数 LSD MSD/桶"]
+    S --> E["外部排序 O(n log n / M)<br/>多路归并/替换选择/Fibonacci/多步归并"]
+    S --> M["混合排序 工业级<br/>introsort Musser 1997 堆排+快排+插入排序<br/>Timsort Peters 2002 自然 run+二分插入+归并栈"]
 ```
 
 ### 13.2 三大核心论证方法

@@ -1,12 +1,12 @@
 ---
-order: 290
+order: 300
 title: 命名空间与模块
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: TypeScript命名空间、ES模块、CommonJS模块、模块解析策略与声明文件详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/240-ThisTypePolymorphism'
   - 'typescript/250-SymbolsAndUniqueTypes'

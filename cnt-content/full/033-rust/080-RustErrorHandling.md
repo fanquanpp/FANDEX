@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: panic 与 Result、? 运算符、unwrap/expect、自定义错误与错误转换
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'rust/070-RustStructEnumMatch'
   - 'rust/100-RustGenericTrait'

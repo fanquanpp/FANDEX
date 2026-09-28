@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从 CSS 的边界出发学 Canvas 2D：什么时候必须上画布、从零做一个像素画生成器（含高清屏 DPR 处理与 toBlob 导出）、路径/变换/合成模式核心 API、rAF 动画循环与性能清单。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'html5/230-HTML5MultimediaCanvasDrawing'
   - 'css/310-CSSFilters'

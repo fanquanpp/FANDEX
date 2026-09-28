@@ -1,12 +1,12 @@
 ---
-order: 300
+order: 310
 title: 声明文件编写
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: TypeScript 声明文件（.d.ts）的语法结构、模块声明、全局类型增强、UMD 声明、声明合并规则、三斜线指令、DefinitelyTyped 生态与发布实践的形式化定义与工程指南
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/310-TypeScriptTypeDeclarationModuleResolution'
   - 'typescript/230-GenericConstraintDefault'

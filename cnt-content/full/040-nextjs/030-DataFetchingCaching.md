@@ -81,7 +81,7 @@ await fetch("https://api.example.com/price", { next: { revalidate: 60 } })
 **讲解：**
 
 1. **默认值反转的原因**：隐式缓存让"为什么页面没更新"成为高频疑难；15 把"是否缓存"的选择权还给开发者，第三方库发出的 fetch 也不再被框架偷偷缓存。
-2. `cache: "no-store"` 与 `next: { revalidate: 0 }` 等价，都会让页面进入动态渲染，构建日志里该路由标记为 `ƒ`（Dynamic）。
+2. `cache: "no-store"` 与 `next: { revalidate: 0 }` 等价，都会让页面进入动态渲染，构建日志里该路由会被标记为动态（Dynamic）。
 3. `next.revalidate: 60` 就是 ISR：用户 60 秒内读到缓存（速度快），后台异步再生（新鲜度有界）。这是"静态的速度 + 可控的陈旧度"的折中，内容型页面的主力武器。
 4. `fetch` 的 `next.tags` 可以给缓存打标签，配合按需失效使用（见第 4 节）。
 

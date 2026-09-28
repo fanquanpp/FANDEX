@@ -1,5 +1,5 @@
 ---
-order: 185
+order: 190
 title: satisfies 的形式语义与类型论视角
 module: 'typescript'
 category: 前端技术

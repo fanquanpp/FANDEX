@@ -32,11 +32,11 @@ prerequisites:
 
 ```
 Internet ←→ Untrust(外网)
-               ↕
+               <->
             DMZ(隔离区)：Web服务器、邮件服务器
-               ↕
+               <->
             Trust(内网)：办公网络
-               ↕
+               <->
             Management(管理区)：运维管理
 ```
 

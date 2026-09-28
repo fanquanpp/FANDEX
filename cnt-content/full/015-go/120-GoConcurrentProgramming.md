@@ -65,19 +65,19 @@ func main() {
 
 ```mermaid
 flowchart TD
-    G[G goroutine 协程，用户级轻量线程]
-    M[M machine 操作系统线程]
-    PP[P processor 逻辑处理器，持有本地运行队列]
-    S[Scheduler]
-    S --> P0[P0 [G G]]
-    S --> P1[P1 [G G]]
-    S --> P2[P2 [G G]]
-    S --> P3[P3 [G G]]
-    S --> GQ[全局队列 [G G G]]
-    P0 --> M0[M0]
-    P1 --> M1[M1]
-    P2 --> M2[M2]
-    P3 --> M3[M3]
+    G["G goroutine 协程，用户级轻量线程"]
+    M["M machine 操作系统线程"]
+    PP["P processor 逻辑处理器，持有本地运行队列"]
+    S["Scheduler"]
+    S --> P0["P0 [G G]"]
+    S --> P1["P1 [G G]"]
+    S --> P2["P2 [G G]"]
+    S --> P3["P3 [G G]"]
+    S --> GQ["全局队列 [G G G]"]
+    P0 --> M0["M0"]
+    P1 --> M1["M1"]
+    P2 --> M2["M2"]
+    P3 --> M3["M3"]
 ```
 
 调度策略：

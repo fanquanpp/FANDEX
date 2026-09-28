@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 550
 title: package.json 深入与前端工程化配置
 module: 'javascript'
 category: 前端技术

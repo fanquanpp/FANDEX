@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub 仓库创建、克隆、归档、删除的完整操作指南：从开新店到关店的全流程向导。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'github/010-GitHubOverview'
   - 'github/020-AccountRegister2FA'
@@ -138,7 +138,7 @@ git push origin main                   # 推送本地更新
 
 ### 3.4 切换仓库可见性与协作权限
 
-**可见性切换**（公开 ↔ 私有）：进入仓库 **Settings → Danger Zone → Change repository visibility**。
+**可见性切换**（公开 <-> 私有）：进入仓库 **Settings → Danger Zone → Change repository visibility**。
 
 - 公开转私有：仓库立即从公开索引消失，原公开链接变 404；之前别人 Fork 的副本不受影响。
 - 私有转公开：**务必先审计**历史提交、Issue、Wiki 中是否有密钥、密码、个人信息，再执行切换。

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Issues 模板配置、Labels 标签体系、Milestones 里程碑管理、自动化关闭关键词与项目板衔接。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'github/290-SecretScanning'
   - 'github/300-CodeQLCodeScanning'

@@ -1,5 +1,5 @@
 ---
-order: 780
+order: 820
 title: Python 与 NLP
 module: 'python'
 category: 后端技术

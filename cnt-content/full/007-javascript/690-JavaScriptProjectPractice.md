@@ -1,5 +1,5 @@
 ---
-order: 660
+order: 680
 title: 典型项目实战
 module: 'javascript'
 category: 前端技术

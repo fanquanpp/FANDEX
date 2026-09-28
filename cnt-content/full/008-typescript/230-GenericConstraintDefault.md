@@ -1,12 +1,12 @@
 ---
-order: 230
+order: 240
 title: 泛型约束与默认值
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: 泛型约束、默认类型参数与条件泛型
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/140-IndexSignatureDynamicProperty'
   - 'typescript/470-MappedTypeAdvanced'

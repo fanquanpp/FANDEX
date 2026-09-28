@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 正则表达式 Unicode 属性转义机制、形式语义、性能调优与生产实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'javascript/120-ES2018RegExpNamedCaptureGroups'
   - 'javascript/640-RegexAssertions'
@@ -274,7 +274,7 @@ flowchart TD
 | ---- | ---- | -------- |
 | `Emoji` | Emoji 相关字符 | 笑脸, 庆祝, 0-9（基础数字） |
 | `Emoji_Presentation` | 默认以 Emoji 形式显示 | 笑脸, 庆祝 |
-| `Extended_Pictographic` | 扩展图形字符（含所有 Emoji） | 笑脸, 庆祝, ⌚ |
+| `Extended_Pictographic` | 扩展图形字符（含所有 Emoji） | 笑脸, 庆祝, 时钟 |
 | `White_Space` | 空白字符 | 空格, 制表符, 换行 |
 | `Hex_Digit` | 十六进制数字 | 0-9, A-F, a-f |
 | `ASCII` | ASCII 字符 | U+0000 至 U+007F |

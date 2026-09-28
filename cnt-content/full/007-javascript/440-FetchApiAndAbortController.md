@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 440
 title: fetch 与 AbortController
 module: 'javascript'
 category: 前端技术

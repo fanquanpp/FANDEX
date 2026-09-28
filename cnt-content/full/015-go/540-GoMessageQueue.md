@@ -157,6 +157,8 @@ sub, _ := js.Subscribe("orders.*", func(msg *nats.Msg) {
 
 Kafka 是分布式流处理平台，适合大规模数据处理场景。Go 社区常用的客户端是 confluent-kafka-go。
 
+> 客户端选型提示：confluent-kafka-go 依赖系统的 librdkafka（涉及 CGO），交叉编译与容器镜像会麻烦一些。纯 Go 实现的 `github.com/IBM/sarama` 与 `github.com/twmb/franz-go` 无此负担，其中 franz-go 协议实现新、性能好，无 CGO 约束时可优先考虑。本节示例以 confluent-kafka-go 演示，概念在各客户端间通用。
+
 #### 1. 安装与初始化
 
 ```bash

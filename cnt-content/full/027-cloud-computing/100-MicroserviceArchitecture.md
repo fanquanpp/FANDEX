@@ -68,14 +68,17 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    subgraph O[订单上下文]
-        OS[OrderService] OD[OrderDB]
+    subgraph O["订单上下文"]
+        OS["OrderService"]
+        OD["OrderDB"]
     end
-    subgraph I[库存上下文]
-        IS[InventorySvc] ID[InventoryDB]
+    subgraph I["库存上下文"]
+        IS["InventorySvc"]
+        ID["InventoryDB"]
     end
-    subgraph P[支付上下文]
-        PS[PaymentService] PD[PaymentDB]
+    subgraph P["支付上下文"]
+        PS["PaymentService"]
+        PD["PaymentDB"]
     end
 ```
 

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用真实项目里的主题令牌与路由表切入，讲清 satisfies「只验证、不拓宽」的语义：与类型注解、as 断言的三方对比，as const satisfies 组合模式，以及拓宽、数组、泛型推断等典型坑点。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/185-SatisfiesTypeTheory'
   - 'typescript/170-ConstAssertion'

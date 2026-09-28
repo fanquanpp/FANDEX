@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Rust 环境搭建：rustup 工具链管理、cargo、rust-analyzer 与第一个程序，附常见问题排查。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'rust/040-RustBasicSyntax'
   - 'rust/020-RustOverview'

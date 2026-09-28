@@ -518,7 +518,7 @@ app:
 ```
 
 > **特性**：
-> - 支持 relaxed binding（`maxItems` ↔ `max-items` ↔ `MAX_ITEMS`）
+> - 支持 relaxed binding（`maxItems` <-> `max-items` <-> `MAX_ITEMS`）
 > - 支持 `Duration` 解析（`30s`、`PT30S`、`30000ms`）
 > - 支持 `DataSize` 解析（`10MB`、`1024B`）
 > - JSR-303 校验（`@Validated` + `@NotNull`、`@Min`）

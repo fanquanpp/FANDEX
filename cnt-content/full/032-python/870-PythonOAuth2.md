@@ -1,5 +1,5 @@
 ---
-order: 630
+order: 660
 title: Python 与 OAuth2
 module: 'python'
 category: 后端技术

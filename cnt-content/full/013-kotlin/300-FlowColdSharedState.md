@@ -1156,10 +1156,10 @@ shared.collect { println(it) }
 
 ```mermaid
 flowchart TD
-    UI[UI Layer Compose / View<br/>collectAsStateWithLifecycle()]
-    VM[ViewModel / Presenter<br/>StateFlow&lt;UiState&gt;<br/>SharedFlow&lt;UiEvent&gt;]
-    Dom[Domain / UseCase<br/>suspend fun / Flow&lt;T&gt;]
-    Data[Data / Repository<br/>Flow&lt;T&gt; from DB / Network]
+    UI["UI Layer Compose / View<br/>collectAsStateWithLifecycle()"]
+    VM["ViewModel / Presenter<br/>StateFlow&lt;UiState&gt;<br/>SharedFlow&lt;UiEvent&gt;"]
+    Dom["Domain / UseCase<br/>suspend fun / Flow&lt;T&gt;"]
+    Data["Data / Repository<br/>Flow&lt;T&gt; from DB / Network"]
     UI --> VM --> Dom --> Data
 ```
 

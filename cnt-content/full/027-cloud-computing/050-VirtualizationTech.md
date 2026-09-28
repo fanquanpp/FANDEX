@@ -84,7 +84,7 @@ flowchart TD
     subgraph User[User Space]
         Q1[QEMU vCPU0]
         Q2[QEMU vCPU1]
-        KIO[/dev/kvm ioctl]
+        KIO["/dev/kvm ioctl"]
     end
     subgraph Kernel[Kernel Space]
         KM[KVM Kernel Module<br/>vCPU Thread / MMU EPT]

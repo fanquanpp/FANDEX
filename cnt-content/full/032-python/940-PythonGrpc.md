@@ -1,5 +1,5 @@
 ---
-order: 700
+order: 740
 title: Python 与 gRPC
 module: 'python'
 category: 后端技术

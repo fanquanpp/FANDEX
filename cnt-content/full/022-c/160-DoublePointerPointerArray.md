@@ -187,8 +187,8 @@ int ***ppp = &pp;     /* 三级指针：指向 int ** */
 
 ```mermaid
 flowchart LR
-    A[0x1000 a=1 0x1004 b=2 0x1008 c=3 0x100c d=4 0x1010 e=5]
-    ARR[arr[0] 0x2000→a<br/>arr[1] 0x2008→b<br/>arr[2] 0x2010→c<br/>arr[3] 0x2018→d<br/>arr[4] 0x2020→e]
+    A["0x1000 a=1 0x1004 b=2 0x1008 c=3 0x100c d=4 0x1010 e=5"]
+    ARR["arr[0] 0x2000→a<br/>arr[1] 0x2008→b<br/>arr[2] 0x2010→c<br/>arr[3] 0x2018→d<br/>arr[4] 0x2020→e"]
     A --- ARR
 ```
 
@@ -358,8 +358,8 @@ int *arr[5] = {&a, &b, &c, &d, &e};
 
 ```mermaid
 flowchart LR
-    A[0x1000 arr[0]=1 0x1004 arr[1]=2 0x1008 arr[2]=3 0x100c arr[3]=4 0x1010 arr[4]=5]
-    P[ptr 0x2000 → 指向整个 arr 数组]
+    A["0x1000 arr[0]=1 0x1004 arr[1]=2 0x1008 arr[2]=3 0x100c arr[3]=4 0x1010 arr[4]=5"]
+    P["ptr 0x2000 → 指向整个 arr 数组"]
     P --- A
 ```
 
@@ -411,7 +411,10 @@ int main(int argc, char **argv) {
 
 ```mermaid
 flowchart LR
-    AV[argv] --> A0[[0] → ./program]<br/>A1[[1] → hello]<br/>A2[[2] → world]<br/>A3[[3] → NULL]
+    AV["argv"] --> A0["[0] → ./program"]
+    AV --> A1["[1] → hello"]
+    AV --> A2["[2] → world"]
+    AV --> A3["[3] → NULL"]
 ```
 
 注意 `argv[argc]` 标准保证为 NULL（C99 §5.1.2.2.1），便于循环遍历。
@@ -438,8 +441,8 @@ int (*ptr)[5] = &arr;   /* ptr 指向整个数组 */
 
 ```mermaid
 flowchart LR
-    A[0x1000 arr[0]=1 0x1004 arr[1]=2 0x1008 arr[2]=3 0x100c arr[3]=4 0x1010 arr[4]=5]
-    P[ptr 0x2000 → 0x1000 指向整个 arr 数组]
+    A["0x1000 arr[0]=1 0x1004 arr[1]=2 0x1008 arr[2]=3 0x100c arr[3]=4 0x1010 arr[4]=5"]
+    P["ptr 0x2000 → 0x1000 指向整个 arr 数组"]
     P --- A
 ```
 

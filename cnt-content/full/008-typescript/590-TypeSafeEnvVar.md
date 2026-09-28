@@ -1,12 +1,12 @@
 ---
-order: 590
+order: 600
 title: 类型安全的环境变量
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: 构建类型安全的环境变量管理系统，涵盖字面量类型、映射类型、Zod 运行时校验、多环境配置与生产级最佳实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/630-TypeSafeConfigSystem'
   - 'typescript/620-TypeSafeRoute'
@@ -1249,7 +1249,9 @@ flowchart TD
     T5 --> T6
     T5 --> T7
     T5 --> T8
-typescript
+```
+
+```typescript
 // packages/shared-config/src/env.schema.ts
 import { z } from 'zod';
 
@@ -2213,7 +2215,7 @@ flowchart TD
     E --> E2[期望类型]
     E --> E3[实际值（脱敏）]
     E --> E4[修复建议]
-    E --> E5[process.exit(1)]
+    E --> E5["process.exit(1)"]
     D --> F[加载配置对象]
     F --> G[注册全局单例]
 ```

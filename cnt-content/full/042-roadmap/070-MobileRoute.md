@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'kotlin/010-WhatIsKotlin'
   - 'roadmap/020-FrontendRoute'

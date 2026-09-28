@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React.memo、useMemo/useCallback、代码分割、虚拟化、并发特性、Profiler 与性能分析。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/060-React19NewFeatures'
   - 'react/070-RouteDataFetch'

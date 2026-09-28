@@ -1,12 +1,12 @@
 ---
-order: 360
+order: 370
 title: tsconfig 严格模式
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: 以 FANDEX 仓库两份真实 tsconfig 为例，讲透 strict 总开关与各子选项的实际效果：null 检查、隐式 any、函数参数逆变、属性初始化、catch 未知类型，以及 noUncheckedIndexedAccess 与 exactOptionalPropertyTypes 两个「编外」选项的取舍。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/680-TypeScript6And7CompilerEvolution'
   - 'typescript/350-TypeScriptEngineeringConfig'

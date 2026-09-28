@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 220
 title: React 与 TypeScript
 module: 'react'
 category: 前端技术

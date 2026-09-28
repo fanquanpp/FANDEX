@@ -240,9 +240,9 @@ in = new GZIPInputStream(in);         // 装饰：解压
 
 ```mermaid
 flowchart TD
-    S[Subject<br/>attach(observer)<br/>detach(observer)<br/>notify()]
-    S -->|Observer.update()| O1[ConcreteObserver1]
-    S -->|Observer.update()| O2[ConcreteObserver2]
+    S["Subject<br/>attach(observer)<br/>detach(observer)<br/>notify()"]
+    S -->|"Observer.update()"| O1["ConcreteObserver1"]
+    S -->|"Observer.update()"| O2["ConcreteObserver2"]
 ```
 
 **场景**：消息通知、事件监听、发布订阅系统（这就是事件驱动架构的雏形，见本模块「事件驱动架构」一文）。

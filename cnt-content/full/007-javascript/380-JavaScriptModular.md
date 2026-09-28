@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 380
 title: JavaScript 模块化
 module: 'javascript'
 category: 前端技术
@@ -2297,21 +2297,21 @@ console.log(process.version);
 
 ```mermaid
 flowchart TD
-    A[require('lodash')] --> B{核心模块?}
-    B -- 是 --> C[返回内置模块]
-    B -- 否 --> D{相对路径?}
-    D -- 是 --> E[查找文件]
-    E --> E1[./math]
-    E --> E2[./math.js]
-    E --> E3[./math.json]
-    E --> E4[./math.node]
-    E --> E5[./math/index.js]
-    E --> E6[./math/package.json main]
-    D -- 否 --> F[node_modules 查找]
-    F --> F1[/当前/node_modules/lodash]
-    F --> F2[/父/node_modules/lodash]
-    F --> F3[/祖父/node_modules/lodash]
-    F --> F4[/node_modules/lodash]
+    A["require('lodash')"] --> B{"核心模块?"}
+    B -- 是 --> C["返回内置模块"]
+    B -- 否 --> D{"相对路径?"}
+    D -- 是 --> E["查找文件"]
+    E --> E1["./math"]
+    E --> E2["./math.js"]
+    E --> E3["./math.json"]
+    E --> E4["./math.node"]
+    E --> E5["./math/index.js"]
+    E --> E6["./math/package.json main"]
+    D -- 否 --> F["node_modules 查找"]
+    F --> F1["/当前/node_modules/lodash"]
+    F --> F2["/父/node_modules/lodash"]
+    F --> F3["/祖父/node_modules/lodash"]
+    F --> F4["/node_modules/lodash"]
 ```
 
 ### B.2 ESM 解析流程

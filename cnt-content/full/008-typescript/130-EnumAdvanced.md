@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 编译一个真实的 enum 看它生成了什么：数字枚举的反向映射、字符串枚举与序列化、const enum 与打包器的冲突、erasableSyntaxOnly 下的处境，以及 as const 对象替代方案的完整落地与决策表。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/170-ConstAssertion'
   - 'typescript/180-SatisfiesOperator'

@@ -39,12 +39,15 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    A([开始]) --> B[输入 N]
-    B --> C[sum = 0]<br/>D[i = 1]
-    C --> E{i <= N?}
-    E -- 否 --> F[输出 sum] --> G([结束])
-    E -- 是 --> H[sum = sum + i]<br/>I[i = i + 1]
-    H --> E
+    A([开始]) --> B["输入 N"]
+    B --> C["sum = 0"]
+    B --> D["i = 1"]
+    C --> E{"i <= N?"}
+    D --> E
+    E -- 否 --> F["输出 sum"] --> G([结束])
+    E -- 是 --> H["sum = sum + i"]
+    H --> I["i = i + 1"]
+    I --> E
 ```
 
 ### 1.3 用代码对应流程图

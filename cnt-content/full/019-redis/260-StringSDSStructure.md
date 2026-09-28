@@ -59,7 +59,7 @@ struct __attribute__((packed)) sdshdr16 {
 
 ```mermaid
 flowchart LR
-    L[len 1字节<br/>5] --> A[alloc 1字节<br/>10] --> F[flags 1字节<br/>s8] --> B[buf[] 11字节 alloc+1<br/>'Hello'] --> Z[\0 1字节<br/>0]
+    L["len 1字节<br/>5"] --> A["alloc 1字节<br/>10"] --> F["flags 1字节<br/>s8"] --> B["buf[] 11字节 alloc+1<br/>'Hello'"] --> Z["\0 1字节<br/>0"]
 ```
 
 len = 5：已使用 5 字节；alloc = 10：总容量 10 字节（不含 header 和 \0）；剩余空间 = alloc - len = 5 字节

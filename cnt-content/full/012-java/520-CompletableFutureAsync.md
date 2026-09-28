@@ -1430,9 +1430,9 @@ CompletableFuture<String> fetchWrongOrder() {
 
 ```mermaid
 flowchart TD
-    API[API 层（Controller）<br/>接收请求，返回 CompletableFuture&lt;Response&gt;] --> SVC[Service 层<br/>业务编排：thenCompose / thenCombine / allOf<br/>异常恢复：exceptionally / handle<br/>超时控制：orTimeout / completeOnTimeout]
-    SVC --> CL[Client 层（HTTP / DB / Redis）<br/>异步调用：supplyAsync(阻塞调用, ioPool)<br/>重试机制：exceptionallyCompose]
-    CL --> EX[Executor 层<br/>ioPool：IO 密集（200 线程）<br/>cpuPool：CPU 密集（N-1 线程）<br/>virtualThreadPool：JDK 21+ 虚拟线程]
+    API["API 层（Controller）<br/>接收请求，返回 CompletableFuture&lt;Response&gt;"] --> SVC["Service 层<br/>业务编排：thenCompose / thenCombine / allOf<br/>异常恢复：exceptionally / handle<br/>超时控制：orTimeout / completeOnTimeout"]
+    SVC --> CL["Client 层（HTTP / DB / Redis）<br/>异步调用：supplyAsync(阻塞调用, ioPool)<br/>重试机制：exceptionallyCompose"]
+    CL --> EX["Executor 层<br/>ioPool：IO 密集（200 线程）<br/>cpuPool：CPU 密集（N-1 线程）<br/>virtualThreadPool：JDK 21+ 虚拟线程"]
 ```
 
 ### 7.2 命名约定与可读性

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Rust 编程语言概述：设计目标、所有权与借用、Cargo 生态、学习路线与工程实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'c/110-EnumTypedef'
   - 'cpp/330-CppTemplate'

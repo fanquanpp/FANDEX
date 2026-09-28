@@ -1,12 +1,12 @@
 ---
-order: 350
+order: 360
 title: TypeScript 工程化配置
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: tsconfig 详解、项目引用、增量编译与 monorepo 配置。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/590-TypeSafeEnvVar'
   - 'typescript/670-TypeScript5xNewFeatures'

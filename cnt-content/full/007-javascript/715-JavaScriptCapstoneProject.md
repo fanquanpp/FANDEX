@@ -1,5 +1,5 @@
 ---
-order: 690
+order: 710
 title: JavaScript 毕业项目：个人书签管理器
 description: JavaScript 模块出口项目：从需求清单出发做纯前端书签与阅读清单管理器——localStorage 持久化、URL 校验与 favicon、标签筛选、JSON 导入导出、键盘快捷键与 ES Modules 拆分。只给需求、验收断言与提示，不给答案代码。
 module: 'javascript'

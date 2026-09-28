@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub Actions 与 CI/CD 总纲：以智能工厂流水线为类比，讲透 CI/CD 概念、workflow 文件结构（name/on/jobs/steps）、Actions 市场使用与工程最佳实践。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'github/180-PullRequestCompleteCollaborationFlow'
   - 'github/360-GitHubPagesMultiSolution'
@@ -65,7 +65,7 @@ GitHub 官方把 Actions 的组件划分为六个概念，层级从小到大依�
 
 ```
 workflow（工作流）→ jobs（任务）→ steps（步骤）→ actions（动作）/ shell 命令
-                                        ↕
+                                        <->
                     runner（运行器：执行这些任务的机器）
                     event（事件：触发流水线开动的信号）
 ```

@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 420
 title: Next.js App Router
 module: 'react'
 category: 前端技术

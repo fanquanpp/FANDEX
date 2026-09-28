@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 360
 title: 闭包的内存泄露与优化
 module: 'javascript'
 category: 前端技术

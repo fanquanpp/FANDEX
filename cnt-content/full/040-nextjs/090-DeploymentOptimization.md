@@ -28,25 +28,27 @@ prerequisites:
 npm run build
 ```
 
-Next.js 16 起，开发与生产构建**默认都由 Turbopack 完成**（Turbopack 在 16 转正为默认打包器，官方数据生产构建提速 2-5 倍）；有自定义 webpack 配置的存量项目可临时用 `next build --webpack` 退回。构建结束会打印两类信息：
+Next.js 16 起，开发与生产构建**默认都由 Turbopack 完成**（Turbopack 在 16 转正为默认打包器，官方数据生产构建提速 2-5 倍）；有自定义 webpack 配置的存量项目可临时用 `next build --webpack` 退回。构建结束会打印两类信息（下为文本转写；真实输出中 Next.js 标志与每行行首是绿色对勾符号）：
 
 ```text
-   ▲ Next.js 16 (Turbopack)
+Next.js 16 (Turbopack)
 
- ✓ Compiled successfully in 615ms
- ✓ Finished TypeScript in 1114ms
- ✓ Collecting page data in 208ms
- ✓ Generating static pages in 239ms
+Compiled successfully in 615ms
+Finished TypeScript in 1114ms
+Collecting page data in 208ms
+Generating static pages in 239ms
 
 Route (app)
- ○ /                    静态：构建时生成一次
- ● /blog/[id]           ISR：静态 + 定时再生
- ƒ /dashboard           动态：每次请求渲染
+  /                    静态：构建时生成一次
+  /blog/[id]           ISR：静态 + 定时再生
+  /dashboard           动态：每次请求渲染
 ```
+
+（文本转写说明：真实日志中 Next.js 标志与成功行行首为绿色对勾符号；Route 清单里每条路由前还有一个符号标记——静态是空心圆、ISR 是实心圆、动态是斜体字母 f。）
 
 **讲解：**
 
-1. 构建日志里 `○` 表示静态（SSG）、`●` 表示 ISR、`ƒ` 表示动态（SSR/按请求渲染）。新项目应尽量让更多页面落在 `○` 与 `●`——它们可以被 CDN 直接缓存，成本最低、速度最快。
+1. 构建日志里空心圆标记表示静态（SSG）、实心圆表示 ISR、斜体 f 表示动态（SSR/按请求渲染）。新项目应尽量让更多页面落在静态与 ISR 两类——它们可以被 CDN 直接缓存，成本最低、速度最快。
 2. 16 的构建输出会展示每个阶段的耗时（编译、类型检查、收集页面数据、生成静态页），定位"构建慢在哪一步"不再靠猜。
 3. `next dev` 与 `next build` 在 16 起使用**独立的输出目录**，二者可并发执行；框架还会加锁文件防止同一项目同时跑多个 dev 或 build 实例互相覆盖产物。
 4. 产物默认输出到 `.next/`，是"给服务器读的中间产物"，不要手工改动或直接部署这个目录。自托管/Docker 部署推荐配合 `output: "standalone"`（见第 5 节），它会生成一个只含运行必需文件的精简目录。
@@ -174,14 +176,14 @@ CMD ["node", "server.js"]
 
 ## 6. 动手试试
 
-1. 把项目部署到 Vercel（`vercel` 命令或 GitHub 导入），对照第 1 节读懂构建日志中每个路由的 `○/●/ƒ` 标记。
+1. 把项目部署到 Vercel（`vercel` 命令或 GitHub 导入），对照第 1 节读懂构建日志中每个路由的静态/ISR/动态符号标记。
 2. 写出上文的多阶段 Dockerfile，本地 `docker build` 后 `docker run -p 3000:3000` 验证，再用 `docker image ls` 对比 standalone 与完整 `node_modules` 的镜像体积差。
 3. 用 Lighthouse 跑一次首页性能报告，按第 4 节的表挑一项优化（最常见：给首屏图片加 `priority`），复测对比 LCP 变化。
 4. 故意把一个密钥加 `NEXT_PUBLIC_` 前缀构建一次，在浏览器源代码里找到它，再改回来——亲眼看一次泄漏路径，比背十遍规则有效。
 
 ## 7. 一句话记住
 
-> 构建看日志标记：`○` 静态、`●` ISR、`ƒ` 动态，能静态就静态；密钥只进服务端变量，`NEXT_PUBLIC_` 即公开；图片字体交给 next/image 与 next/font；部署三选一——Vercel 省心、standalone + Docker 可控、纯静态才考虑 export；性能问题按"静态化 -> 资源优化 -> 渲染调优"的顺序动刀。
+> 构建看日志标记：空心圆静态、实心圆 ISR、斜体 f 动态，能静态就静态；密钥只进服务端变量，`NEXT_PUBLIC_` 即公开；图片字体交给 next/image 与 next/font；部署三选一——Vercel 省心、standalone + Docker 可控、纯静态才考虑 export；性能问题按"静态化 -> 资源优化 -> 渲染调优"的顺序动刀。
 
 - 缓存与渲染策略决定了路由能不能静态化，见第 3 篇《Next.js 数据获取与缓存》、第 6 篇《渲染策略与缓存》与第 7 篇《缓存体系与 Cache Components 深入》。
 - 安全响应头、HTTPS 与 proxy 配置，见第 8 篇《认证、代理与安全》。

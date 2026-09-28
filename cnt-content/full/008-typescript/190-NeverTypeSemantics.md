@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 200
 title: never 类型完整语义
 module: 'typescript'
 category: 前端技术

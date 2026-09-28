@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 430
 title: Project References 与 Monorepo
 module: 'typescript'
 category: 前端技术

@@ -52,11 +52,16 @@ prerequisites:
 
 ```mermaid
 flowchart LR
-    subgraph A[表A]
-        A1[1] A2[2] A3[3] A4[4]
+    subgraph A["表A"]
+        A1["1"]
+        A2["2"]
+        A3["3"]
+        A4["4"]
     end
-    subgraph B[表B]
-        B1[A] B2[B] B3[C]
+    subgraph B["表B"]
+        B1["A"]
+        B2["B"]
+        B3["C"]
     end
     A1 --- B1
     A2 --- B2
@@ -83,11 +88,16 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    subgraph A[表A]
-        A1[1] A2[2] A3[3] A4[4]
+    subgraph A["表A"]
+        A1["1"]
+        A2["2"]
+        A3["3"]
+        A4["4"]
     end
-    subgraph B[表B]
-        B1[A] B2[B] B3[C]
+    subgraph B["表B"]
+        B1["A"]
+        B2["B"]
+        B3["C"]
     end
     A1 --- B1
     A2 --- B2
@@ -114,11 +124,16 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    subgraph A[表A]
-        A1[1] A2[2] A3[3] A4[4]
+    subgraph A["表A"]
+        A1["1"]
+        A2["2"]
+        A3["3"]
+        A4["4"]
     end
-    subgraph B[表B]
-        B1[A] B2[B] B3[C]
+    subgraph B["表B"]
+        B1["A"]
+        B2["B"]
+        B3["C"]
     end
     A1 --- B1
     A2 --- B2
@@ -151,11 +166,16 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    subgraph A[表A]
-        A1[1] A2[2] A3[3] A4[4]
+    subgraph A["表A"]
+        A1["1"]
+        A2["2"]
+        A3["3"]
+        A4["4"]
     end
-    subgraph B[表B]
-        B1[A] B2[B] B3[C]
+    subgraph B["表B"]
+        B1["A"]
+        B2["B"]
+        B3["C"]
     end
     A1 --- B1
     A2 --- B2

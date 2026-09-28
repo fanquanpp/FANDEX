@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 110
 title: 函数详解：不重复自己
 module: 'python'
 category: 后端技术

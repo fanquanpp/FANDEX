@@ -1,12 +1,12 @@
 ---
-order: 240
+order: 250
 title: this 类型与多态
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: TypeScript中this类型与多态this
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/530-TypeGymnasticsPracticalPatterns'
   - 'typescript/260-CovarianceContravariance'

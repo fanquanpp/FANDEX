@@ -226,16 +226,20 @@ $$
 
 ```mermaid
 flowchart TD
-    GLB[全球负载均衡 DNS/CDN]
-    subgraph RA[区域 A]
-        ALB1[ALB 多 AZ]
-        AZ1[AZ1] AZ2[AZ2] AZ3[AZ3]
-        DB1[数据库主]
+    GLB["全球负载均衡 DNS/CDN"]
+    subgraph RA["区域 A"]
+        ALB1["ALB 多 AZ"]
+        AZ1["AZ1"]
+        AZ2["AZ2"]
+        AZ3["AZ3"]
+        DB1["数据库主"]
     end
-    subgraph RB[区域 B]
-        ALB2[ALB 多 AZ]
-        BZ1[AZ1] BZ2[AZ2] BZ3[AZ3]
-        DB2[数据库从]
+    subgraph RB["区域 B"]
+        ALB2["ALB 多 AZ"]
+        BZ1["AZ1"]
+        BZ2["AZ2"]
+        BZ3["AZ3"]
+        DB2["数据库从"]
     end
     GLB --> ALB1
     GLB --> ALB2

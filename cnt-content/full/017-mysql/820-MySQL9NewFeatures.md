@@ -87,7 +87,7 @@ FROM product_embeddings;
 社区版 MySQL 9.x 提供的向量函数是三类**纯转换/取维**函数：
 
 ```sql
--- 字符串 ↔ 向量 互转（二进制存储，4 字节浮点/维）
+-- 字符串 <-> 向量 互转（二进制存储，4 字节浮点/维）
 SELECT STRING_TO_VECTOR('[0.1, 0.2, 0.3]');       -- 别名 TO_VECTOR
 SELECT VECTOR_TO_STRING(embedding) FROM documents LIMIT 1;
 SELECT VECTOR_DIM(embedding) FROM documents LIMIT 1;  -- 返回维度

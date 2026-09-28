@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以对比驱动方式讲解 git merge 与 git rebase 两种分支整合路线的原理、适用场景与选择原则，覆盖快进合并、三方合并与交互式变基，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

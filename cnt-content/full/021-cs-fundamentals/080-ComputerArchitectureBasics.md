@@ -45,10 +45,10 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    subgraph Mem[存储器]<br/>指令1 指令2 指令3 数据1 数据2
+    subgraph Mem["存储器：指令1 指令2 指令3 数据1 数据2"]
     end
-    Mem -->|取指令| C[控制器<br/>指令寄存器/程序计数器]
-    Mem -->|读/写数据| A[运算器<br/>累加器/ALU]
+    Mem -->|取指令| C["控制器<br/>指令寄存器/程序计数器"]
+    Mem -->|读/写数据| A["运算器<br/>累加器/ALU"]
 ```
 
 ### 1.3 冯·诺依曼瓶颈

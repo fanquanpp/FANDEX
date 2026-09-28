@@ -1,12 +1,12 @@
 ---
-order: 460
+order: 470
 title: 条件类型与映射类型
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: TypeScript条件类型、infer关键字、映射类型、模板字面量类型与类型体操实战，含形式化定义、推导与工程实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/450-InferTypeDeepDive'
   - 'typescript/510-RecursiveTypeDeepOperation'

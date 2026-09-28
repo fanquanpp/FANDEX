@@ -340,12 +340,12 @@ Mark Word 在不同锁状态下的位布局（64 位 JVM）：
 
 ```mermaid
 flowchart TD
-    MW[Mark Word（64 bits）]
-    MW --> U[无锁：hash(25) / age(4) / 0 / 01]
-    MW --> B[偏向锁：thread(54) / epoch(2) / 1 / 01]
-    MW --> L[轻量锁：ptr_to_lock_record(62) / 00]
-    MW --> H[重量锁：ptr_to_heavy_monitor(62) / 10]
-    MW --> G[GC 标记：- / 11]
+    MW["Mark Word（64 bits）"]
+    MW --> U["无锁：hash(25) / age(4) / 0 / 01"]
+    MW --> B["偏向锁：thread(54) / epoch(2) / 1 / 01"]
+    MW --> L["轻量锁：ptr_to_lock_record(62) / 00"]
+    MW --> H["重量锁：ptr_to_heavy_monitor(62) / 10"]
+    MW --> G["GC 标记：- / 11"]
 ```
 
 字段说明：

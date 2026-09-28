@@ -1,5 +1,5 @@
 ---
-order: 650
+order: 680
 title: Python 与 Django
 module: 'python'
 category: 后端技术

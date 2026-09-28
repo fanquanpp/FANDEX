@@ -1,5 +1,5 @@
 ---
-order: 700
+order: 710
 title: TypeScript 项目示例：类型安全的 API 客户端
 module: 'typescript'
 category: 前端技术

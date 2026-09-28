@@ -1,6 +1,14 @@
 ---
+order: 700
 title: 配置进阶模式参考：多环境分层、特性开关与配置源全景
+module: 'python'
+category: 后端技术
+difficulty: beginner
 description: 面向已完成配置管理主线的参考篇：Dynaconf 多环境分层、运行期特性开关与动态配置、Kubernetes ConfigMap/Secret 注入、配置的测试策略与密钥威胁模型，附配置库 / 配置格式 / 配置源三张全景对照表，以及配置热更新的复杂度警示。
+author: fanquanpp
+updated: '2026-09-28'
+related: []
+prerequisites: []
 ---
 
 ## 前置知识

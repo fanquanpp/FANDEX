@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/070-FirstProgramPython'
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'roadmap/010-RoadmapOverview'
   - 'roadmap/130-TwelveMonthPlanTemplate'

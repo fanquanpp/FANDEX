@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以寄存柜与时光机类比驱动讲解 git stash 暂存系列与 git reset/revert/restore/clean 回退系列命令，覆盖软/混合/硬回退三档选择与撤销安全原则，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

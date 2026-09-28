@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 340
 title: WebSocket
 module: 'html5'
 category: 前端技术

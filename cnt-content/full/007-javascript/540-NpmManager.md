@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 540
 title: npm 包管理：读懂现代项目的铁三角
 module: 'javascript'
 category: 前端技术

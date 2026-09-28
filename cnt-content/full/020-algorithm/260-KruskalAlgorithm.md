@@ -47,12 +47,12 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    M[最小生成树 MST]
-    M --> K[Kruskal 1956<br/>边排序贪心 O(E log E)<br/>稀疏图优/并查集]
-    M --> P[Prim 1957<br/>点扩展贪心 O(V²)/O(E log V)<br/>稠密图优/优先队列]
-    M --> B[Borůvka 1926<br/>分治合并 O(E log V)<br/>并行友好/分量合并]
-    P --> J[Jarník 1930<br/>Prim 前身]
-    P --> KKT[Karger-Klein-Tarjan 1995<br/>随机化线性 O(E) 期望]
+    M["最小生成树 MST"]
+    M --> K["Kruskal 1956<br/>边排序贪心 O(E log E)<br/>稀疏图优/并查集"]
+    M --> P["Prim 1957<br/>点扩展贪心 O(V²)/O(E log V)<br/>稠密图优/优先队列"]
+    M --> B["Borůvka 1926<br/>分治合并 O(E log V)<br/>并行友好/分量合并"]
+    P --> J["Jarník 1930<br/>Prim 前身"]
+    P --> KKT["Karger-Klein-Tarjan 1995<br/>随机化线性 O(E) 期望"]
 ```
 
 ### 1.2 算法在图算法家族中的位置

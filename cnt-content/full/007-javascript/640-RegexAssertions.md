@@ -1,12 +1,12 @@
 ---
-order: 610
+order: 630
 title: 正则断言
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: 正则表达式先行断言（Lookahead）与后行断言（Lookbehind）的形式化理论、自动机基础、V8/SpiderMonkey 实现细节与企业级文本处理实践，对标 MIT 6.004 计算理论课程水准。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/110-Regex'
   - 'javascript/120-ES2018RegExpNamedCaptureGroups'

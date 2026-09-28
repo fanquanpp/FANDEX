@@ -183,8 +183,9 @@ $$
 
 ```mermaid
 flowchart TD
-    OD[按需实例 N 个<br/>核心容量，保证基线] + SP[Spot 实例 M 个<br/>弹性容量，可被中断]
-    OD --> T[总容量 = N + M<br/>保证容量 ≥ N]
+    OD["按需实例 N 个<br/>核心容量，保证基线"]
+    SP["Spot 实例 M 个<br/>弹性容量，可被中断"]
+    OD --> T["总容量 = N + M<br/>保证容量 ≥ N"]
     SP --> T
 ```
 

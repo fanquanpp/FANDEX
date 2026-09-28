@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 340
 title: 装饰器深水区：机制拆解与工程模式
 module: 'python'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 350
+order: 380
 title: 数据类与字段默认值
 module: 'python'
 category: 后端技术

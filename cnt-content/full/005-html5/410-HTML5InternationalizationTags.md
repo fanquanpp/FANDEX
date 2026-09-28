@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 430
 title: 专项：东亚文字与国际化标签
 module: 'html5'
 category: 前端技术

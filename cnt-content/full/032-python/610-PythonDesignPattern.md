@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 430
 title: Python 与设计模式
 module: 'python'
 category: 后端技术

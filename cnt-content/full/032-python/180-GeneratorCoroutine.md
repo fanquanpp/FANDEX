@@ -1,12 +1,12 @@
 ---
-order: 170
+order: 190
 title: 生成器深水区：send、yield from 与惰性流水线
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: 以「不爆内存地分析几 GB 日志」为任务，讲生成器的双向通信（send/throw/close）、yield from 委托与返回值、多级惰性流水线，最后说清生成器协程与 async/await 的血缘，附生成器耗尽陷阱实录与四类练习。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/170-ComprehensionGenerator'
   - 'python/660-CoroutineAsyncio'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 分支创建、合并、变基与分支策略。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'git/030-GitEnvConfigInit'
   - 'git/050-GitBasicOperation'

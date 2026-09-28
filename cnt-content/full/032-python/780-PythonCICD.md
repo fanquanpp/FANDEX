@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 580
 title: Python 与 CI/CD
 module: 'python'
 category: 后端技术

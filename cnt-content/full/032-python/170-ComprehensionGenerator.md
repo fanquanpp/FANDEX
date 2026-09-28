@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 180
 title: 推导式与生成器
 module: 'python'
 category: 后端技术

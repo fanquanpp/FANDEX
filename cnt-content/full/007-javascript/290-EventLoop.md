@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 290
 title: 事件循环：setTimeout(fn, 0) 为什么不是立刻执行
 module: 'javascript'
 category: 前端技术

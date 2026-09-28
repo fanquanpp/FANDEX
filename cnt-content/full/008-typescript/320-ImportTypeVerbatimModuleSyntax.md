@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 330
 title: import type 与 verbatimModuleSyntax
 module: 'typescript'
 category: 前端技术

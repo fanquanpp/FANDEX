@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 440
 title: 并发渲染与可中断更新
 module: 'react'
 category: 前端技术

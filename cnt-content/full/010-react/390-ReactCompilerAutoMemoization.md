@@ -1,12 +1,12 @@
 ---
-order: 390
+order: 400
 title: React Compiler 自动记忆化
 module: 'react'
 category: 前端技术
 difficulty: advanced
 description: 从删掉项目里 useMemo 的真实动机出发，学会 React Compiler（v1.0）的启用配置、编译产物原理、Rules of React 前提与渐进式迁移策略，理解 2026 年还需要不需要手写 memo。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/080-PerformanceOptimization'
   - 'react/040-HooksDeep'

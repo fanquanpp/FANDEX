@@ -45,11 +45,11 @@ Jack Edmonds 在 1971 年《Matroids and the greedy algorithm》（Mathematical 
 
 ```mermaid
 flowchart TD
-    G[贪心算法]
-    G --> GT[图论贪心<br/>Kruskal 1956/Prim 1957]
-    G --> C[编码压缩<br/>Huffman 1952/Shannon 1948]
-    G --> S[调度问题<br/>活动选择/区间调度 O(n log n)]
-    G --> K[背包问题<br/>分数背包/任务调度 O(n log n)]
+    G["贪心算法"]
+    G --> GT["图论贪心<br/>Kruskal 1956/Prim 1957"]
+    G --> C["编码压缩<br/>Huffman 1952/Shannon 1948"]
+    G --> S["调度问题<br/>活动选择/区间调度 O(n log n)"]
+    G --> K["背包问题<br/>分数背包/任务调度 O(n log n)"]
 ```
 
 **贪心与动态规划的本质区别**：
@@ -995,11 +995,11 @@ def dijkstra_buggy(adj, src):
 
 ```mermaid
 flowchart TD
-    G[贪心算法]
-    G --> GT[图论贪心<br/>Kruskal 1956/Prim 1957 → MST<br/>Dijkstra 1959 O((V+E)logV) → Google Maps]
-    G --> C[编码压缩<br/>Huffman 1952/Shannon 1948 → DEFLATE/JPEG]
-    G --> S[调度问题<br/>活动选择 O(n log n)/区间调度 Dilworth]
-    G --> K[背包问题<br/>分数背包/任务调度 SJF]
+    G["贪心算法"]
+    G --> GT["图论贪心<br/>Kruskal 1956/Prim 1957 → MST<br/>Dijkstra 1959 O((V+E)logV) → Google Maps"]
+    G --> C["编码压缩<br/>Huffman 1952/Shannon 1948 → DEFLATE/JPEG"]
+    G --> S["调度问题<br/>活动选择 O(n log n)/区间调度 Dilworth"]
+    G --> K["背包问题<br/>分数背包/任务调度 SJF"]
 ```
 
 ### 17.2 三大核心论证方法

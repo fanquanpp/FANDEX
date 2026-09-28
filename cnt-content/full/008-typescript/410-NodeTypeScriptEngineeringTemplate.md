@@ -1,12 +1,12 @@
 ---
-order: 410
+order: 420
 title: Node.js 与 TypeScript 工程化
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: 一份开箱即用的 Node.js + TypeScript 工程骨架：目录结构、tsconfig 双配置、开发与构建脚本、常见坑位。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/350-TypeScriptEngineeringConfig'
   - 'typescript/360-TsconfigStrictMode'

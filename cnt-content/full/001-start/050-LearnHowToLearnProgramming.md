@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/010-ProgrammingStartGuide'
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'start/060-FirstProgramJavaScript'
   - 'start/080-LearningRouteOverview'

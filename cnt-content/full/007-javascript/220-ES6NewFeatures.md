@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「打开现代项目源码，满屏符号看不懂」为问题主线，一次收齐日常必用的现代语法：解构、展开与剩余、可选链、空值合并、逻辑赋值、类字段与私有字段，附解构默认值只认 undefined、?. 不能赋值等陷阱，并给出 2026 年各提案的真实落地状态。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'javascript/590-ES2023To2026NewFeatures'
   - 'javascript/600-JavaScriptLatestFeature'

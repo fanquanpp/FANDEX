@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 570
 title: Python 与代码质量
 module: 'python'
 category: 后端技术

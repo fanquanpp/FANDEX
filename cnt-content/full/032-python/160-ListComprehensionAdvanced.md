@@ -1,12 +1,12 @@
 ---
-order: 150
+order: 160
 title: 列表推导式进阶：把三行循环压成一行
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 以音游成绩单清洗为线索，从「for + append」机械改写法讲透列表推导式：过滤与变换、字典与集合推导式、嵌套与海象运算符、生成器表达式省内存，附可读性红线与四类练习。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/140-BuiltinDataStructure'
   - 'python/150-EnumerateZipBuiltinPairs'

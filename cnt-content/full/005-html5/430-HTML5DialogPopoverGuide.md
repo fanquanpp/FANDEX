@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 450
 title: 专项： dialog 与 popover 深度指南
 module: 'html5'
 category: 前端技术
