@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- TCP 三次握手建立连接的过程（见 [TCP 连接管理](cs-fundamentals/300-TCPControl)）——TLS 握手发生在 TCP 连接建立之后；
+- TCP 三次握手建立连接的过程（见 [TCP 连接管理](/cs-fundamentals/300-TCPControl)）——TLS 握手发生在 TCP 连接建立之后；
 - 对称加密（加解密同一把钥匙，快）与非对称加密（公钥加密私钥解，慢）的基本概念；
 - 哈希与消息认证码（MAC）：验证内容未被篡改。
 

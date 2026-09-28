@@ -54,7 +54,7 @@ flowchart TD
     例: Java (javac + JIT), JavaScript (V8)
 ```
 
-> 跨模块引用：[Java](/java/010-WhatIsJava)的编译模型是典型的混合模式：javac编译为字节码，JIT在运行时编译为机器码。[C语言](/c/010-CZeroBasisStart)使用传统的AOT编译模型。[概述](overview)的停机问题决定了编译器无法完美分析所有程序属性。
+> 跨模块引用：[Java](/java/010-WhatIsJava)的编译模型是典型的混合模式：javac编译为字节码，JIT在运行时编译为机器码。[C语言](/c/010-CZeroBasisStart)使用传统的AOT编译模型。[概述](/cs-fundamentals/010-ComputerOverview)的停机问题决定了编译器无法完美分析所有程序属性。
 
 ---
 
@@ -90,7 +90,7 @@ Token定义:
 
 ### 2.2 正则表达式与有限自动机
 
-词法分析的理论基础是正则表达式和有限自动机（参见[离散数学](discrete-math)的自动机理论）：
+词法分析的理论基础是正则表达式和有限自动机（参见[离散数学](/cs-fundamentals/540-DiscreteMathematics)的自动机理论）：
 
 ```
 正则表达式 -> NFA -> DFA -> 最小化DFA -> 词法分析器
@@ -633,7 +633,7 @@ flowchart TD
     更激进的大小优化
 ```
 
-> 跨模块引用：[体系结构](architecture)的流水线和缓存特性影响指令调度的优化策略。[操作系统](os)的虚拟内存影响代码布局优化的决策。[C++](/cpp/010-WhatIsCpp)的模板元编程在编译期执行计算，是编译器优化的极端案例。
+> 跨模块引用：[体系结构](/cs-fundamentals/090-ComputerArchitecture)的流水线和缓存特性影响指令调度的优化策略。[操作系统](/cs-fundamentals/150-OperatingSystem)的虚拟内存影响代码布局优化的决策。[C++](/cpp/010-WhatIsCpp)的模板元编程在编译期执行计算，是编译器优化的极端案例。
 
 ---
 
@@ -793,7 +793,7 @@ flowchart TD
     C1_0 --> C2_0
 ```
 
-> 跨模块引用：[体系结构](architecture)的ISA决定了指令选择和调度的策略。[操作系统](os)的虚拟内存和进程地址空间布局影响链接器的设计。[C语言](/c/010-CZeroBasisStart)的编译模型是经典的分离编译+链接模型。
+> 跨模块引用：[体系结构](/cs-fundamentals/090-ComputerArchitecture)的ISA决定了指令选择和调度的策略。[操作系统](/cs-fundamentals/150-OperatingSystem)的虚拟内存和进程地址空间布局影响链接器的设计。[C语言](/c/010-CZeroBasisStart)的编译模型是经典的分离编译+链接模型。
 
 ---
 

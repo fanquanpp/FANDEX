@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: "以「代码如何点亮屏幕上的一颗像素」为主线，用一条完整旅程串起 CPU、内存、存储与操作系统，并给出本模块从组成原理到网络的递进地图。"
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/020-ProgrammingBasics'
   - 'cs-fundamentals/080-ComputerArchitectureBasics'

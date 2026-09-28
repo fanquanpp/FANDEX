@@ -18,8 +18,8 @@ prerequisites:
 
 ## 前置知识
 
-- TCP 的可靠传输、按序交付与拥塞控制（见 [TCP 连接管理](cs-fundamentals/300-TCPControl)）；
-- TLS 1.3 的 1-RTT/0-RTT 概念（见 [HTTPS 握手过程](cs-fundamentals/330-HTTPSHandshake)）；
+- TCP 的可靠传输、按序交付与拥塞控制（见 [TCP 连接管理](/cs-fundamentals/300-TCPControl)）；
+- TLS 1.3 的 1-RTT/0-RTT 概念（见 [HTTPS 握手过程](/cs-fundamentals/330-HTTPSHandshake)）；
 - HTTP/2 的多路复用与队头阻塞概念。
 
 ## 学习目标
@@ -103,7 +103,7 @@ flowchart LR
 
 ### 4.1 流模型与帧
 
-QUIC 报文（UDP 数据报内）由**帧（frame）**组成：STREAM 帧携带流数据，ACK 帧确认，FLOW_CONTROL 相关帧管理流量控制。流量控制在两个粒度上同时进行（流级 + 连接级），避免一条流占满整条连接的缓冲。与 WebSocket 帧类似（见 [WebSocket 帧格式](cs-fundamentals/360-WebSocketFrameFormat)），这也是"长度前缀"式的自描述结构，但 QUIC 报文头本身被加密保护，中间设备几乎无法读取。
+QUIC 报文（UDP 数据报内）由**帧（frame）**组成：STREAM 帧携带流数据，ACK 帧确认，FLOW_CONTROL 相关帧管理流量控制。流量控制在两个粒度上同时进行（流级 + 连接级），避免一条流占满整条连接的缓冲。与 WebSocket 帧类似（见 [WebSocket 帧格式](/cs-fundamentals/360-WebSocketFrameFormat)），这也是"长度前缀"式的自描述结构，但 QUIC 报文头本身被加密保护，中间设备几乎无法读取。
 
 ### 4.2 拥塞控制与丢包恢复
 

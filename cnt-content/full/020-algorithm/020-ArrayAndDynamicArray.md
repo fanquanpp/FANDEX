@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: "以「arr[i] 为什么是 O(1)」引入：连续内存与寻址公式、插入删除的搬家代价、list 扩容的均摊分析实测，双指针与滑动窗口技巧预告。"
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/030-SortAlgorithm'

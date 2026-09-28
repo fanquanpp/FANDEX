@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- 词法分析输出的记号流概念（见 [词法分析](cs-fundamentals/430-LexicalAnalysis)）；
+- 词法分析输出的记号流概念（见 [词法分析](/cs-fundamentals/430-LexicalAnalysis)）；
 - 树形数据结构与递归的熟练使用；
 - 四则运算的结合性与优先级的直觉。
 
@@ -65,7 +65,7 @@ factor -> '(' expr ')' | NUM          （因子：括号或数字）
 
 ### 2.2 为什么叫"上下文无关"
 
-替换非终结符时只看它本身，不依赖它周围是什么——这种"局部展开"性质让解析可以用栈式自动机高效实现。与之对照，需要依赖上下文的检查（变量先声明后使用、类型匹配）推迟到 [语义分析](cs-fundamentals/450-SemanticAnalysis)。CFG 恰好处在表达力够用、解析可高效的甜点上（见 [形式语言与自动机](cs-fundamentals/530-FormalLanguageAndAutomata) 的乔姆斯基层次）。
+替换非终结符时只看它本身，不依赖它周围是什么——这种"局部展开"性质让解析可以用栈式自动机高效实现。与之对照，需要依赖上下文的检查（变量先声明后使用、类型匹配）推迟到 [语义分析](/cs-fundamentals/450-SemanticAnalysis)。CFG 恰好处在表达力够用、解析可高效的甜点上（见 [形式语言与自动机](/cs-fundamentals/530-FormalLanguageAndAutomata) 的乔姆斯基层次）。
 
 ### 2.3 二义性：一文法两棵树
 

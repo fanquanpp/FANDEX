@@ -2030,13 +2030,13 @@ Borůvka 的分布式优势：
 
 ### 13.4 相关算法文档
 
-- [并查集](algorithm/并查集.md)：Kruskal 算法的核心数据结构
-- [图算法](algorithm/图算法.md)：图算法总览
-- [贪心算法](algorithm/贪心算法.md)：贪心范式总论
-- [Floyd-Warshall 算法](algorithm/Floyd-Warshall算法.md)：全源最短路径
-- [拓扑排序](algorithm/拓扑排序.md)：DAG 线性排序
-- [堆与优先队列](algorithm/堆与优先队列.md)：Prim 算法的核心数据结构
-- [算法分析基础与学习路线](algorithm/算法分析基础与学习路线.md)：算法分析基础
+- [并查集](/algorithm/180-UnionFind)：Kruskal 算法的核心数据结构
+- [图算法](/algorithm/110-GraphAlgorithms)：图算法总览
+- [贪心算法](/algorithm/130-GreedyAlgorithm)：贪心范式总论
+- [Floyd-Warshall 算法](/algorithm/250-FloydWarshall)：全源最短路径
+- [拓扑排序](/algorithm/270-TopologicalSorting)：DAG 线性排序
+- [堆与优先队列](/algorithm/090-HeapAndPriorityQueue)：Prim 算法的核心数据结构
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)：算法分析基础
 
 ## 14. 术语表
 

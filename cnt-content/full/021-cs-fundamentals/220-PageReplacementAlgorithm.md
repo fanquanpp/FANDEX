@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- 虚拟内存与按需调页：物理页不足时内核会"换出"某些页（见 [内存分段与分页](cs-fundamentals/210-MemorySegmentationAndPaging)）；
+- 虚拟内存与按需调页：物理页不足时内核会"换出"某些页（见 [内存分段与分页](/cs-fundamentals/210-MemorySegmentationAndPaging)）；
 - 缺页异常是 major fault 时需要磁盘 I/O（毫秒级），这是置换算法存在意义的根源；
 - 基础数据结构：队列、链表、哈希表。
 

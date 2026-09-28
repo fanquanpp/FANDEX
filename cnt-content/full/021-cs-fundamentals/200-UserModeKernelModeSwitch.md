@@ -18,8 +18,8 @@ prerequisites:
 
 ## 前置知识
 
-- 系统调用的发起方式（见 [中断与系统调用](cs-fundamentals/190-InterruptAndSystemCall)）；
-- 进程地址空间与页表的基本概念（见 [内存分段与分页](cs-fundamentals/210-MemorySegmentationAndPaging)）；
+- 系统调用的发起方式（见 [中断与系统调用](/cs-fundamentals/190-InterruptAndSystemCall)）；
+- 进程地址空间与页表的基本概念（见 [内存分段与分页](/cs-fundamentals/210-MemorySegmentationAndPaging)）；
 - 寄存器与程序状态字的基本认识。
 
 ## 学习目标
@@ -86,7 +86,7 @@ flowchart TB
 
 一次系统调用的完整轨迹是：`syscall` 指令（模式切换，进入内核）→ 内核执行服务例程 → `sysret`（模式切换回用户态）。全程**不发生进程切换**——CPU 始终在为同一个进程服务，只是"换了一副面孔"。
 
-只有当内核在处理过程中决定调度（如时间片耗尽、进程睡眠等 I/O），才会额外发生进程切换：保存旧进程上下文、可能更换页表基址（CR3）、恢复新进程上下文（详见 [进程 PCB 与线程 TCB](cs-fundamentals/170-PCBThreadTCB)）。**"系统调用一定很慢因为要换进程"是常见误解**——慢的根源是模式切换本身与安全检查，而不是进程切换。
+只有当内核在处理过程中决定调度（如时间片耗尽、进程睡眠等 I/O），才会额外发生进程切换：保存旧进程上下文、可能更换页表基址（CR3）、恢复新进程上下文（详见 [进程 PCB 与线程 TCB](/cs-fundamentals/170-PCBThreadTCB)）。**"系统调用一定很慢因为要换进程"是常见误解**——慢的根源是模式切换本身与安全检查，而不是进程切换。
 
 ## 5. 切换的具体动作与开销
 
@@ -167,7 +167,7 @@ syscall getpid (进内核): 120 ns/次
 
 ## 8. 实战场景
 
-- **Web 服务器调优**：每请求若产生上百次小系统调用（逐个 `read`/`write`、频繁 `futex`），合并缓冲与批量 I/O 往往立竿见影；io_uring 与 `TCP_NODELAY`/`TCP_CORK`（见 [TCP 粘包与拆包](cs-fundamentals/310-TCPMessageFraming)）是常用组合。
+- **Web 服务器调优**：每请求若产生上百次小系统调用（逐个 `read`/`write`、频繁 `futex`），合并缓冲与批量 I/O 往往立竿见影；io_uring 与 `TCP_NODELAY`/`TCP_CORK`（见 [TCP 粘包与拆包](/cs-fundamentals/310-TCPMessageFraming)）是常用组合。
 - **数据库与存储引擎**：LSM 树用 WAL 批量刷盘、group commit 把多次 `fsync` 合并，本质都是摊薄模式切换与设备 I/O 的固定成本。
 - **容器与安全沙箱**：gVisor 类方案在用户态实现一个"迷你内核"拦截系统调用，用兼容性换取隔离强度，代价正是成倍增加的跨界次数——理解切换成本才能评估其性能取舍。
 
