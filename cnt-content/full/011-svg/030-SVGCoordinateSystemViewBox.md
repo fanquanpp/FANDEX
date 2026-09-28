@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: "以「100x100 的画布怎么装进 48x48 的按钮」引入，讲透视口与 viewBox 的分工、preserveAspectRatio 的 meet/slice 对照、y 轴向下与数学坐标的差异，附图标失真的排查实录。"
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'svg/020-SVGBasicSyntaxDocStructure'
   - 'svg/040-SVGBasicShapeDetailed'

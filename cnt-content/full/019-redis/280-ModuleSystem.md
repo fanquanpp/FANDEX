@@ -8,16 +8,20 @@ description: Redis模块系统：RedisJSON、RedisTimeSeries、RediSearch、Redi
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'redis/170-MixedPersistence'
-  - 'redis/190-DisklessReplication'
-  - 'redis/260-StringSDSStructure'
-  - 'redis/270-SkipListAndSortedSet'
+  - 'redis/310-RedisNewFeatures8'
+  - 'redis/140-PersistenceModule'
+  - 'redis/100-VectorSet'
 prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---
 
 
 ## 1. 模块系统概述
+
+> **Redis 8+ 读者请注意**：本文第 2 至 5 节介绍的 RedisJSON、RedisTimeSeries、
+> RediSearch、RedisBloom 能力，在 Redis Open Source 8.0 起**已内建于内核**，
+> 命令开箱即用，无需按模块加载（详见《Redis 8 新特性》）。模块系统本身仍是
+> Redis 的正式扩展机制，主要用于第三方或自研模块——这正是本文的主题。
 
 Redis 模块系统是 Redis 4.0 引入的扩展机制，允许开发者使用 C 语言编写自定义模块，为 Redis 添加新的数据类型和命令，而无需修改 Redis 核心代码。
 
@@ -257,8 +261,8 @@ RedisBloom 提供概率数据结构：布隆过滤器、布谷鸟过滤器、计
 ### 5.1 布隆过滤器（Bloom Filter）
 
 ```redis
-# 创建布隆过滤器
-BF.CREATE emails FILTER 0.01 ERROR RATE 1000000 CAPACITY
+# 创建布隆过滤器（ERROR 目标误判率，CAPACITY 预估容量）
+BF.CREATE emails ERROR 0.01 CAPACITY 1000000
 
 # 添加元素
 BF.ADD emails "user@example.com"
@@ -357,11 +361,11 @@ AI.TENSORGET output VALUES
 
 ### 7.3 redis-cell
 
-基于滑动窗口的限流模块：
+基于令牌桶算法的限流模块（与第 6 节是同一个模块，此处展示参数含义）：
 
 ```redis
 CL.THROTTLE my_limit 100 400 60 1
-# 参数：key, max_burst, count_per_period, period, quantity
+# 参数：key, max_burst(桶容量), count_per_period(周期内配额), period(周期秒), quantity(本次消耗)
 ```
 
 ## 8. 模块开发基础
@@ -417,4 +421,7 @@ RedisModuleType *MyType = RedisModule_CreateDataType(
 | RedisCell       | 限流         | API 限流           | 活跃     |
 | RedisAI         | ML 推理      | 实时推理           | 活跃     |
 
-**Redis Stack**：Redis 官方将常用模块打包为 Redis Stack，包含 RedisJSON、RediSearch、RedisTimeSeries、RedisBloom 等模块，开箱即用。
+**Redis Stack 与 Redis 8**：历史上官方将常用模块打包为 Redis Stack
+（RedisJSON、RediSearch、RedisTimeSeries、RedisBloom），开箱即用；8.0 起这些
+能力全部并入 Redis Open Source 内核，Redis Stack 独立发行版停止更新，新部署
+直接使用 Redis 8+，模块机制留给第三方扩展。

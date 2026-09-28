@@ -24,7 +24,7 @@ prerequisites:
   **隐式流程（response_type=token）与密码模式（grant_type=password）已废弃**，
   下文相关命令仅用于检测目标是否仍在暴露这些不安全流程。
 - 四个角色：资源所有者（用户）、客户端（应用）、授权服务器（发 Token）、资源服务器（验 Token）。
-- 协议原理与 SAML/OIDC 对比见 032-IdentityAccessManagement。
+- 协议原理与 SAML/OIDC 对比见 300-IdentityAccessManagement。
 
 ## OAuth2 端点探测
 

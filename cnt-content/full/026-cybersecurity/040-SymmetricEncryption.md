@@ -214,5 +214,5 @@ key = kdf.derive(password.encode())
 对称加密受量子威胁远小于公钥算法：Grover 算法「仅」把暴力破解加速平方根量级，
 即 AES-128 的有效安全强度从 128 位降至约 64 位（已显不足），而 **AES-256
 仍有约 128 位强度，属于可长期依赖的选择**——这也是「密钥长度宁可选 256 位」
-的前瞻性理由。真正需要迁移的是 RSA/ECC 等公钥算法，见 016-AsymmetricEncryption
+的前瞻性理由。真正需要迁移的是 RSA/ECC 等公钥算法，见 050-AsymmetricEncryption
 的后量子密码一节。

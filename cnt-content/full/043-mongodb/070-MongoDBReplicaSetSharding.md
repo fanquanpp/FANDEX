@@ -79,7 +79,7 @@ rs.reconfig(cfg)
 
 ## 4. 读写语义三件套：readPreference / readConcern / writeConcern
 
-三者各管一件事：**读偏好管"读谁"，读关注管"读到的多可信"，写关注管"写多稳才算成功"**（readConcern 与 writeConcern 的细节语义在 006 第 6 节已展开，这里补上读偏好与组合）。
+三者各管一件事：**读偏好管"读谁"，读关注管"读到的多可信"，写关注管"写多稳才算成功"**（readConcern 与 writeConcern 的细节语义在 060 第 6 节已展开，这里补上读偏好与组合）。
 
 readPreference 五个取值：`primary`（只读主）、`primaryPreferred`（主优先）、`secondary`（只读从）、`secondaryPreferred`（从优先）、`nearest`（就近）。读从节点时建议配 `maxStalenessSeconds` 限制从节点最大延迟（下限 90 秒，以官方文档为准）。
 
@@ -165,8 +165,8 @@ rs.initiate({
 **讲解：**
 
 1. rs 配置里写的是容器名，因为成员之间走容器网络；从宿主机连接时加 `?directConnection=true` 直连单个节点做管理，或在 `/etc/hosts` 里把 mongo1/2/3 映射到 127.0.0.1。
-2. 生产副本集必须配 keyFile 内部认证（见安全篇 008）与 majority 写关注，本例为了演示省略了认证。
-3. 搭好后把 006 的转账事务跑一遍：单机 mongod 会直接报错，副本集上则正常提交——事务的第一道门槛就是环境。
+2. 生产副本集必须配 keyFile 内部认证（见安全篇 080）与 majority 写关注，本例为了演示省略了认证。
+3. 搭好后把 060 的转账事务跑一遍：单机 mongod 会直接报错，副本集上则正常提交——事务的第一道门槛就是环境。
 
 ## 6. 分片集群：mongos、config server 与 shard
 
@@ -236,4 +236,4 @@ sh.setBalancerState(false) // 大批量导入等窗口期可暂停（办完事�
 4. shard key 四原则：高基数、非单调、贴合查询、想好不可逆；递增键配 hashed。
 5. 学习环境一条命令：`mongod --replSet rs0` 加 `rs.initiate()`。
 
-延伸阅读：副本集是多文档事务（006）的运行前提；分片集合的索引设计见 004；建模范式见 005。官方文档关键词：Replication、Replica Set Members、Sharding Introduction、Shard Key，各默认值与版本差异以官方文档为准。
+延伸阅读：副本集是多文档事务（060）的运行前提；分片集合的索引设计见 040；建模范式见 050。官方文档关键词：Replication、Replica Set Members、Sharding Introduction、Shard Key，各默认值与版本差异以官方文档为准。

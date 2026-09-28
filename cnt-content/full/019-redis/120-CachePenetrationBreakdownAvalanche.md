@@ -4,10 +4,11 @@ title: 缓存穿透击穿雪崩
 module: 'redis'
 category: 数据库
 difficulty: intermediate
-description: Redis 缓存三大问题：缓存穿透（布隆过滤器）、缓存击穿（互斥锁）、缓存雪崩（随机TTL）的原理与解决方案。
+description: 用一次促销事故串起缓存三大问题：穿透（空值缓存与 Redis 8 内置布隆过滤器）、击穿（互斥锁与逻辑过期）、雪崩（随机 TTL 与多级防护），附可直接运行的实验代码。
 author: fanquanpp
 updated: '2026-09-28'
 related:
+  - 'redis/060-BitMapRedis'
   - 'redis/230-PipeTransactionAtomic'
   - 'redis/240-LuaScriptAtomicExecution'
   - 'redis/130-MemoryEvictionPolicy'
@@ -15,285 +16,312 @@ prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---
 
+## 1. 一次促销开场的事故回放
 
-## 1. 缓存穿透
+周五晚 8 点，商品详情页做限时秒杀。开场 30 秒后，数据库连接池耗尽，
+页面 500。事后复盘发现流量根本不是「太大」，而是走错了路：
 
-### 1.1 问题描述
+- 一批恶意请求在刷不存在的商品 ID：缓存查不到，数据库也查不到，
+  每个请求都穿透到底层——这是**穿透**；
+- 秒杀商品本身是热点键，TTL 恰好在 8:00:00 过期，1000 个并发同时
+  去数据库回源——这是**击穿**；
+- 运营批量导入的 10000 个商品预设了同一个 1 小时 TTL，8:00:00 集体
+  失效——这是**雪崩**。
 
-查询**不存在的数据**，缓存无法命中，请求直达数据库：
+三个问题经常一起爆发，因为它们共享同一个放大器：**缓存 MISS 后请求
+直达数据库，而数据库的抗压能力比 Redis 低两三个数量级**。本文按
+「现象 → 当场能跑的解法 → 为什么有效 → 代价」逐个拆。
 
-```
-用户请求: GET /user/999999 (不存在)
-  → Redis: MISS (无缓存)
-  → MySQL: MISS (无数据)
-  → 返回空，不缓存
+准备环境（Redis 8 自带布隆过滤器，无需装任何模块）：
 
-下次请求: GET /user/999999
-  → Redis: MISS
-  → MySQL: MISS
-  → ... 重复穿透
-```
-
-### 1.2 攻击场景
-
-```
-恶意请求大量不存在的ID:
-  GET /user/-1
-  GET /user/99999999
-  GET /user/abc
-  → 全部穿透到数据库 → 数据库压力过大
+```bash
+docker run -d --name redis8 -p 6379:6379 redis:8
+docker exec -it redis8 redis-cli
 ```
 
-### 1.3 解决方案
+## 2. 缓存穿透：查「一定不存在」的数据
 
-**方案1：缓存空值**
+### 2.1 现象与判断
+
+```
+用户请求: GET /item/999999 (不存在)
+  → Redis: MISS    (缓存不存「不存在」)
+  → MySQL: MISS    (没有这行)
+  → 返回空，什么也不缓存
+下一个请求继续打穿……
+```
+
+判断特征：**同一批 key 反复 MISS，且数据库也始终为空**。攻击者用
+随机 ID 或负数 ID 扫接口时最典型。
+
+### 2.2 解法一：缓存空值（第一道，也是最简单的）
 
 ```python
-def get_user(user_id):
-    # 查缓存
-    data = redis.get(f"user:{user_id}")
+import json, redis
+
+r = redis.Redis(decode_responses=True)
+NULL_SENTINEL = "__NULL__"
+
+def get_item(item_id: int):
+    key = f"item:{item_id}"
+    data = r.get(key)
     if data is not None:
-        if data == "NULL":
-            return None  # 缓存的空值
-        return json.loads(data)
+        return None if data == NULL_SENTINEL else json.loads(data)
 
-    # 查数据库
-    data = db.query("SELECT * FROM users WHERE id = %s", user_id)
-    if data:
-        redis.setex(f"user:{user_id}", 3600, json.dumps(data))
+    db_data = db.query_item(item_id)
+    if db_data:
+        r.setex(key, 3600, json.dumps(db_data))   # 命中缓存 1 小时
     else:
-        # 缓存空值，短TTL
-        redis.setex(f"user:{user_id}", 60, "NULL")
-    return data
+        r.setex(key, 60, NULL_SENTINEL)           # 空值只缓存 60 秒
+    return db_data
 ```
 
-**方案2：布隆过滤器**
+要点：空值的 TTL 必须**远短于正常值**（数据一旦被创建，不能让用户
+看 1 小时的「不存在」）；哨兵值要与合法 JSON 区分。
 
-```mermaid
-flowchart TD
-    R[请求] --> BF[布隆过滤器]
-    BF -->|可能存在| Q[查缓存] --> DB[查数据库]
-    BF -->|一定不存在| RET[直接返回]
+### 2.3 解法二：布隆过滤器（海量 key 时标配）
+
+空值缓存对「每次都换新随机 ID」的攻击无效（每个 key 只存 60 秒，
+攻击面无限大）。这时在缓存前面加一道「这个 key 值得查吗」的闸门：
+
+```bash
+# Redis 8 内置布隆过滤器，开箱即用
+BF.RESERVE items:bf 0.001 10000000     # 目标误判率 0.1%，预计 1000 万元素
+BF.ADD items:bf "item:1001"
+BF.EXISTS items:bf "item:1001"         # 1：可能存在
+BF.EXISTS items:bf "item:999999"       # 0：一定不存在，请求到此为止
+BF.INFO items:bf                       # 查看实际容量与误判率
 ```
 
-```python
-# 初始化：将所有有效ID加入布隆过滤器
-for user_id in db.query("SELECT id FROM users"):
-    bf.add(user_id)
-
-def get_user(user_id):
-    # 布隆过滤器检查
-    if not bf.exists(user_id):
-        return None  # 一定不存在
-
-    # 正常查询流程
-    data = redis.get(f"user:{user_id}")
-    if data:
-        return json.loads(data)
-    data = db.query(...)
-    if data:
-        redis.setex(f"user:{user_id}", 3600, json.dumps(data))
-    return data
-```
-
-**布隆过滤器原理**：
+布隆过滤器的回答只有两种：「一定不存在」和「可能存在」。所以它只能
+拦请求，不能当存储用：
 
 ```
-位数组 + 多个哈希函数
+位数组 + k 个哈希函数
 
-添加元素 x:
-  h1(x) % m → 位置设为1
-  h2(x) % m → 位置设为1
-  h3(x) % m → 位置设为1
-
-查询元素 y:
-  检查 h1(y), h2(y), h3(y) 位置是否全为1
-  全为1 → 可能存在（有误判率）
-  有0   → 一定不存在
+添加 x:  h1(x) % m、h2(x) % m、h3(x) % m 三处位置全部置 1
+查询 y:  三个位置只要有一个 0 → 一定不存在（无漏报）
+         三个位置全 1 → 可能存在（有误判，误判率见下）
 
 误判率: P ≈ (1 - e^(-kn/m))^k
-  m: 位数组大小
-  k: 哈希函数数量
-  n: 已插入元素数量
+  m: 位数组长度   k: 哈希函数个数   n: 已插入元素数
 ```
 
-| 方案       | 优点       | 缺点                           |
-| ---------- | ---------- | ------------------------------ |
-| 缓存空值   | 简单、通用 | 浪费内存、短TTL需维护          |
-| 布隆过滤器 | 空间高效   | 有误判率、需预加载、不支持删除 |
-
-## 2. 缓存击穿
-
-### 2.1 问题描述
-
-**热点Key过期**瞬间，大量并发请求同时穿透到数据库：
-
-```
-热点Key: "hot:item:1" (TTL=3600s)
-
-T=3600s: Key过期
-  1000个并发请求同时到达
-  → 全部MISS
-  → 1000个请求同时查数据库
-  → 数据库压力飙升
-```
-
-### 2.2 解决方案
-
-**方案1：互斥锁（Mutex Lock）**
+接入业务代码（Python 侧对应 BF.ADD / BF.EXISTS）：
 
 ```python
-def get_hot_data(key):
-    data = redis.get(key)
+def get_item_v2(item_id: int):
+    if not r.bf().exists("items:bf", str(item_id)):
+        return None                      # 一定不存在，数据库零压力
+
+    data = r.get(f"item:{item_id}")      # 走正常缓存流程
+    if data is not None:
+        return None if data == NULL_SENTINEL else json.loads(data)
+    db_data = db.query_item(item_id)
+    if db_data:
+        r.setex(f"item:{item_id}", 3600, json.dumps(db_data))
+    return db_data
+```
+
+两个方案的取舍：
+
+| 方案       | 优点       | 缺点                                     |
+| ---------- | ---------- | ---------------------------------------- |
+| 缓存空值   | 简单、通用 | 恶意随机 ID 下内存与键数不可控           |
+| 布隆过滤器 | 空间极省   | 有误判率、需预加载、**不支持删除**       |
+
+「不支持删除」的补救：商品下架场景用布谷鸟过滤器（`CF.ADD/CF.DEL`，
+Redis 8 同样内置，允许删除但空间略高），或定期全量重建布隆过滤器。
+新增元素记得双写（入数据库的同时 BF.ADD），否则新数据会被误拦。
+
+### 2.4 顺带一提：缓存击穿防护里的「单机版布隆」
+
+如果只是「判断 ID 段是否合法」（如 ID 必须为正且小于已知最大值），
+连布隆过滤器都不用——一行范围校验就能拦掉大多数攻击。过滤器是给
+「合法 ID 空间稀疏且不可枚举」的场景准备的，别上来就堆组件。
+
+## 3. 缓存击穿：热点 key 过期的瞬间
+
+### 3.1 现象与判断
+
+```
+热点 key: hot:item:1 (TTL=3600s)
+T=3600s: key 过期
+  1000 个并发同时 MISS
+  → 1000 个请求同时回源数据库
+```
+
+判断特征：MISS 集中在**个别 key**、且时间点与过期时间对齐。
+它与穿透的区别：穿透查的是「不存在」；击穿查的是「存在且很热」。
+
+### 3.2 解法一：互斥锁（只放一个人去回源）
+
+```python
+import time
+
+def get_hot(key):
+    data = r.get(key)
     if data:
         return json.loads(data)
 
-    # 尝试获取互斥锁
     lock_key = f"lock:{key}"
-    if redis.set(lock_key, "1", nx=True, ex=5):  # 5秒锁超时
+    got_lock = r.set(lock_key, "1", nx=True, ex=5)   # 5 秒锁超时兜底
+    if got_lock:
         try:
-            # 获得锁，查数据库
-            data = db.query(...)
-            if data:
-                redis.setex(key, 3600, json.dumps(data))
+            data = db.query_hot(key)
+            r.setex(key, 3600, json.dumps(data))
             return data
         finally:
-            redis.delete(lock_key)
-    else:
-        # 未获得锁，等待重试
-        time.sleep(0.1)
-        return get_hot_data(key)  # 递归重试
+            r.delete(lock_key)
+    # 没抢到锁：稍等片刻再读缓存（回源者马上会写回）
+    time.sleep(0.05)
+    return get_hot_with_limit(key, depth=3)          # 递归要有层数上限
 ```
 
-**方案2：逻辑过期**
+要点：`SET ... NX EX` 一条命令完成「抢锁 + 定时自动释放」，防止持有者
+崩溃后死锁；递归重试必须有深度上限，否则锁超时后整条请求链会栈爆炸。
+
+### 3.3 解法二：逻辑过期（不阻塞，返回旧值）
+
+互斥锁的代价是「排队」。对响应时间极敏感的场景改成：key 永不过期，
+把过期时间写进值里，过期后异步刷新、先返回旧数据：
 
 ```python
-def get_hot_data(key):
-    data = redis.get(key)
-    if data:
-        obj = json.loads(data)
-        if obj['expire_time'] > time.time():
-            return obj['data']  # 逻辑未过期
-        else:
-            # 逻辑过期，异步更新
-            threading.Thread(target=refresh_cache, args=(key,)).start()
-            return obj['data']  # 返回旧数据
-    return None
+import threading, time, json
 
-def refresh_cache(key):
-    lock_key = f"lock:{key}"
-    if redis.set(lock_key, "1", nx=True, ex=10):
-        data = db.query(...)
-        obj = {
-            'data': data,
-            'expire_time': time.time() + 3600
-        }
-        redis.set(key, json.dumps(obj))  # 不设TTL
-        redis.delete(lock_key)
+def get_hot_logical(key):
+    raw = r.get(key)
+    if raw is None:
+        return None                        # 冷启动仍需一次性回源
+    obj = json.loads(raw)
+    if obj["expire_at"] > time.time():
+        return obj["data"]                 # 逻辑未过期，直接用
+    # 逻辑过期：抢锁异步刷新，当前请求拿旧值就走
+    if r.set(f"lock:{key}", "1", nx=True, ex=10):
+        threading.Thread(target=refresh, args=(key,), daemon=True).start()
+    return obj["data"]
+
+def refresh(key):
+    try:
+        data = db.query_hot(key)
+        r.set(key, json.dumps({
+            "data": data,
+            "expire_at": time.time() + 3600,
+        }))                                # 注意：不设 TTL
+    finally:
+        r.delete(f"lock:{key}")
 ```
 
-**方案3：永不过期 + 异步刷新**
+两个方案对比：
 
-```python
-# 缓存不设TTL，由后台任务定期刷新
-# 适合数据量小、更新频率固定的场景
-```
+| 方案     | 一致性   | 可用性           | 复杂度 |
+| -------- | -------- | ---------------- | ------ |
+| 互斥锁   | 强一致   | 有排队延迟       | 低     |
+| 逻辑过期 | 最终一致 | 高（永不阻塞）   | 中     |
 
-| 方案     | 一致性   | 可用性 | 复杂度 |
-| -------- | -------- | ------ | ------ |
-| 互斥锁   | 强一致   | 等待   | 低     |
-| 逻辑过期 | 最终一致 | 高     | 中     |
-| 永不过期 | 最终一致 | 最高   | 低     |
+补充两个零代码手段：把热点 key 的过期时间错峰（下一节的随机 TTL
+同样适用于热点）；运维侧对极少数核心 key 直接「预热 + 不设 TTL +
+定时任务刷新」，即方案三「永不过期 + 异步刷新」，适合数据量小、
+更新频率固定的场景。
 
-## 3. 缓存雪崩
+## 4. 缓存雪崩：大量 key 同时失效
 
-### 3.1 问题描述
-
-大量Key**同时过期**，或缓存服务宕机，导致请求全部穿透到数据库：
+### 4.1 现象与判断
 
 ```
-场景1: 大量Key同时过期
-  10000个Key的TTL都是 3600s
-  1小时后全部过期 → 10000个请求同时查数据库
-
-场景2: Redis 宕机
-  Redis不可用 → 所有请求穿透到数据库
+场景1: 10000 个 key 的 TTL 都是 3600s → 1 小时后集体过期
+场景2: Redis 实例宕机 → 全部请求穿透
 ```
 
-### 3.2 解决方案
+与击穿的区别在「面」：击穿是个别热点，雪崩是成片 key 或缓存整体。
 
-**方案1：随机TTL**
+### 4.2 解法一：随机 TTL（一行代码的疫苗）
 
 ```python
 import random
 
-base_ttl = 3600  # 基础TTL: 1小时
-random_ttl = random.randint(0, 600)  # 随机0-10分钟
-
-redis.setex(key, base_ttl + random_ttl, value)
-# TTL: 3600 ~ 4200 秒，分散过期时间
+base_ttl = 3600                       # 基础 1 小时
+jitter = random.randint(0, 600)       # 0-10 分钟抖动
+r.setex(key, base_ttl + jitter, value)
 ```
 
-**方案2：多级缓存**
+批量导入、定时预热这类「同批同 TTL」的数据，必须加抖动。TTL 分布
+摊开后，过期时刻不会形成尖峰。
+
+### 4.3 解法二：多级缓存
 
 ```
-请求 → 本地缓存 (Caffeine/Guava)
-     → Redis 缓存
-     → 数据库
-
-L1 本地缓存: TTL=60s，容量小
-L2 Redis:    TTL=3600s，容量大
-L3 数据库:   持久化
-
-即使 Redis 宕机，本地缓存仍可挡住部分请求
+请求 → 本地缓存 (Caffeine/Guava) → Redis → 数据库
+L1 本地: TTL=60s，容量小，挡住热点重复读
+L2 Redis: TTL=3600s，容量大
+即使 Redis 短暂不可用，L1 仍能挡住部分请求
 ```
 
-**方案3：熔断降级**
+注意 L1 引入的新问题：多实例间 L1 不一致（可接受 60 秒误差才用）、
+本地缓存的主动失效广播（Pub/Sub 通知各实例清 L1）。
+
+### 4.4 解法三：熔断降级与高可用
 
 ```python
 from circuitbreaker import circuit
 
 @circuit(failure_threshold=5, recovery_timeout=30)
 def get_data(key):
-    data = redis.get(key)
+    data = r.get(key)
     if data:
         return json.loads(data)
-    data = db.query(...)
-    return data
+    return db.query(key)
 
-# 熔断后返回降级数据
 def get_data_fallback(key):
-    return {"message": "服务繁忙，请稍后重试"}
+    return {"message": "服务繁忙，请稍后重试"}   # 兜底响应，保住可用性
 ```
 
-**方案4：Redis 高可用**
+熔断解决「Redis 挂了之后数据库跟着挂」的连锁反应；根治靠高可用：
+Sentinel 自动故障转移（redis/210）、Cluster 分片 + 副本（redis/220），
+重要业务再加跨机房容灾。雪崩预案是「假设缓存会消失」设计系统。
 
-```
-- Redis Sentinel: 自动故障转移
-- Redis Cluster: 分片 + 副本
-- 跨机房部署: 异地多活
-```
-
-## 4. 综合防护策略
-
-### 4.1 防护层次
+## 5. 综合防护：把四层闸门排成流水线
 
 ```mermaid
 flowchart TD
     S1[1. 限流：控制请求速率] --> S2[2. 布隆过滤器：拦截无效请求]
-    S2 --> S3[3. 本地缓存：L1 缓存]
-    S3 --> S4[4. Redis 缓存：L2 缓存 随机TTL]
-    S4 --> S5[5. 互斥锁：防止击穿]
+    S2 --> S3[3. 本地缓存：L1 短 TTL]
+    S3 --> S4[4. Redis：L2 随机 TTL]
+    S4 --> S5[5. 互斥锁/逻辑过期：防热点击穿]
     S5 --> S6[6. 熔断降级：保护数据库]
     S6 --> S7[7. 数据库：最终数据源]
 ```
 
-### 4.2 监控指标
+自检清单（每条都能在压测前验证）：
 
-```
-- 缓存命中率: hit / (hit + miss) > 95%
-- 穿透率: miss / total < 5%
-- 数据库QPS: 不超过阈值
-- Redis 内存使用: < 80%
-- Key 过期分布: 是否集中
-```
+- 随机抓 100 个缓存 key 的 TTL（`TTL` 命令），确认没有成片的相同值；
+- 用一个不存在的 ID 连打 100 次，确认数据库查询次数为 0（空值缓存
+  或过滤器生效）；
+- 把热点 key 手动 `DEL` 掉，同时压 500 并发，观察数据库 QPS 峰值
+  是否超过个位数（互斥锁生效）；
+- 停掉 Redis，确认服务返回降级响应而不是 500（熔断生效）。
+
+监控指标基线：缓存命中率 `hits / (hits + misses)` 大于 95%；
+穿透率 `misses / total` 小于 5%；数据库 QPS 不超过阈值；Redis 内存
+低于 80%（`INFO memory`）；TTL 分布无尖峰。命中率骤降往往是三问题
+的前兆，先看趋势再查原因。
+
+## 6. 练习
+
+1. 本地起 Redis 8，建一个误判率 1% 的布隆过滤器，插入 10 万元素后
+   用 `BF.INFO` 对比设计值与实际值；再故意查 1000 个未插入元素，
+   统计误判次数，验证量级。
+2. 把 2.3 节的 `get_item_v2` 补上「新增商品后 BF.ADD 双写」逻辑，
+   思考：漏掉双写会发生什么？多久后用户才能查到新商品？
+3. 构造 5000 个同 TTL 的 key，写脚本在过期时刻打点压测；再加随机
+   TTL 后重跑，对比数据库 QPS 曲线。
+
+## 7. 下一步
+
+- 《位图》（redis/060-BitMapRedis）：布隆过滤器的位运算亲戚，以及
+  「首次出现」类判断的另一种实现；
+- 《管道、事务与原子性》（redis/230-PipeTransactionAtomic）与
+  《Lua 脚本原子执行》（redis/240-LuaScriptAtomicExecution）：
+  本文的互斥锁是 SET NX 单命令版，多步原子操作需要事务/Lua；
+- 《内存淘汰策略》（redis/130-MemoryEvictionPolicy）：雪崩之外，
+  缓存数据还可能被主动淘汰，理解两者边界。

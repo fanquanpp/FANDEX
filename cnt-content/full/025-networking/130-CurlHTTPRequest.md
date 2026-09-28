@@ -4,7 +4,7 @@ title: curl HTTP 请求
 module: 'networking'
 category: 云与基础设施
 difficulty: beginner
-description: curl 调试 HTTP：常用请求参数、Header 与 Cookie 处理、HTTPS 证书与代理调试。
+description: curl 实战学习笔记：从对接一个第三方 API 的真实场景出发，学会读 -v 详细输出、收发各类请求体、管理 Cookie 会话、设置超时重试与代理，并用 -w 时间分解定位延迟。
 author: fanquanpp
 updated: '2026-09-12'
 related:
@@ -15,359 +15,220 @@ prerequisites:
   - 'networking/120-HTTPProtocol'
 ---
 
-## curl 基本 GET 请求
+## 场景：对接第三方 API，先用手把话说明白
 
-**基本写法：发送 GET 请求**
-`curl <URL>`
+你要给项目接一个天气 API。文档写着「POST /v1/query，JSON 体，Bearer 认证」。写代码之前，
+先用 curl 把这一次对话完整地手动走通——参数对不对、返回什么结构、错误码长什么样，
+一分钟内全部确认。等代码写完出了问题，curl 又是复现和切割责任的第一工具（CI 脚本、
+服务器上没有 Postman，但 curl 无处不在）。
+
+本文所有示例都可以对着真实站点练，比如本笔记库的网页端 `https://fanquanpp.github.io/FANDEX/`。
+
+## 动手：第一个请求，以及如何看懂 -v
+
 ```bash
-# 获取网页内容
-curl https://example.com
+curl https://fanquanpp.github.io/FANDEX/ -o /dev/null -s -w "%{http_code}\n"
+# 200
 ```
 
-**基本写法：显示响应头**
-`curl -I <URL>`
+`-o /dev/null` 丢弃正文，`-w` 打印状态码——这是「只关心通不通」的最小请求。
+接下来是 curl 最重要的一个开关，看完整对话：
+
 ```bash
-# 只获取响应头
-curl -I https://example.com
+curl -v https://example.com -o /dev/null
 ```
 
-**基本写法：显示详细通信过程**
-`curl -v <URL>`
-```bash
-# 显示请求和响应详细信息
-curl -v https://example.com
+`-v` 输出分三种前缀，学会读它，后面 80% 的调试都靠它：
+
+```text
+* Host example.com:443 was resolved.        ← * 过程性信息：DNS、TCP、TLS 每一步
+* Connected to example.com ... port 443
+* TLS 1.3 connection using TLS_AES_256_GCM_SHA384
+> GET / HTTP/2                              ← > 发出去的请求（你说了什么）
+> Host: example.com
+< HTTP/2 200                                ← < 收到的响应（对方回了什么）
+< content-type: text/html; ...
 ```
 
-**基本写法：跟随重定向**
-`curl -L <URL>`
+排查「接口不对」时永远先 `-v`：确认发出去的请求真的是你以为的那样
+（方法、头、请求体），再看响应。大多数「API 有 bug」最后发现是发错了东西。
+
+## 收发数据：方法与请求体
+
 ```bash
-# 跟随 301/302 重定向
-curl -L https://example.com
-```
-
-**基本写法：保存到文件**
-`curl -o <文件> <URL>`
-```bash
-# 保存响应到文件
-curl -o page.html https://example.com
-```
-
-**基本写法：使用原文件名保存**
-`curl -O <URL>`
-```bash
-# 使用 URL 中的文件名保存
-curl -O https://example.com/file.zip
-```
-
----
-
-## POST 请求
-
-**基本写法：发送 POST 请求**
-`curl -X POST <URL>`
-```bash
-# 发送 POST 请求
-curl -X POST https://api.example.com/users
-```
-
-**基本写法：发送表单数据**
-`curl -d "<数据>" <URL>`
-```bash
-# 发送表单数据
+# 表单格式（application/x-www-form-urlencoded），-d 隐含 POST
 curl -d "name=John&age=30" https://api.example.com/users
-```
 
-**基本写法：发送 JSON 数据**
-`curl -H "Content-Type: application/json" -d '<JSON>' <URL>`
-```bash
-# 发送 JSON 格式数据
-curl -H "Content-Type: application/json" -d '{"name":"John","age":30}' https://api.example.com/users
-```
+# JSON：必须显式给 Content-Type，-d 不会自动设置
+curl -H "Content-Type: application/json" \
+     -d '{"name":"John","age":30}' https://api.example.com/users
 
-**基本写法：从文件发送数据**
-`curl -d @<文件> <URL>`
-```bash
-# 从文件读取数据发送
-curl -d @data.json https://api.example.com/users
-```
+# 请求体从文件读（大 JSON / 带特殊字符时救命的写法）
+curl -H "Content-Type: application/json" -d @data.json https://api.example.com/users
 
-**基本写法：表单文件上传**
-`curl -F "<字段>=@<文件>" <URL>`
-```bash
-# 上传文件
+# multipart 文件上传（-F 自动设置 multipart/form-data 边界）
 curl -F "file=@photo.jpg" https://api.example.com/upload
 ```
 
----
+其他方法照语义用：
 
-## HTTP 方法
-
-**基本写法：PUT 请求**
-`curl -X PUT -d '<数据>' <URL>`
 ```bash
-# 更新资源
-curl -X PUT -H "Content-Type: application/json" -d '{"name":"Jane"}' https://api.example.com/users/1
-```
-
-**基本写法：DELETE 请求**
-`curl -X DELETE <URL>`
-```bash
-# 删除资源
+curl -X PUT    -H "Content-Type: application/json" -d '{"name":"Jane"}' https://api.example.com/users/1
+curl -X PATCH  -d '{"age":31}' https://api.example.com/users/1
 curl -X DELETE https://api.example.com/users/1
+curl -I https://example.com          # HEAD：只要响应头
 ```
 
-**基本写法：PATCH 请求**
-`curl -X PATCH -d '<数据>' <URL>`
+注意语义：`-d` 一出现方法就默认变成 POST（覆盖 -d 但想 GET 的场景用 `-G` 把数据拼到
+URL 上）；`-X` 只是显式指定方法，别用 `-X POST` 去「修」一个本来就该带请求体的请求。
+
+## 头与认证
+
 ```bash
-# 部分更新资源
-curl -X PATCH -d '{"age":31}' https://api.example.com/users/1
-```
+# 任意自定义头，可叠加
+curl -H "Authorization: Bearer abc123" \
+     -H "X-Request-Id: trace-42" https://api.example.com/secure
 
-**基本写法：HEAD 请求**
-`curl -I <URL>`
-```bash
-# 只获取响应头
-curl -I https://example.com
-```
-
----
-
-## 请求头设置
-
-**基本写法：添加请求头**
-`curl -H "<头部>: <值>" <URL>`
-```bash
-# 添加自定义请求头
-curl -H "Authorization: Bearer token123" https://api.example.com/users
-```
-
-**基本写法：添加多个请求头**
-`curl -H "<头部1>" -H "<头部2>" <URL>`
-```bash
-# 添加多个请求头
-curl -H "Authorization: Bearer token" -H "Content-Type: application/json" https://api.example.com/users
-```
-
-**基本写法：设置 User-Agent**
-`curl -A "<UA>" <URL>`
-```bash
-# 设置 User-Agent
+# 快捷方式：改 UA、伪造 Referer（测试防盗链时常用）
 curl -A "Mozilla/5.0" https://example.com
-```
-
-**基本写法：设置 Referer**
-`curl -e "<URL>" <URL>`
-```bash
-# 设置 Referer
 curl -e "https://google.com" https://example.com
-```
 
----
-
-## 认证
-
-**基本写法：基本认证**
-`curl -u <用户>:<密码> <URL>`
-```bash
-# HTTP 基本认证
+# HTTP Basic 认证（用户名:密码，curl 自动编码进 Authorization 头）
 curl -u admin:secret https://api.example.com/admin
-```
 
-**基本写法：Bearer Token 认证**
-`curl -H "Authorization: Bearer <token>" <URL>`
-```bash
-# Bearer Token 认证
-curl -H "Authorization: Bearer abc123" https://api.example.com/secure
-```
-
-**基本写法：客户端证书认证**
-`curl --cert <证书> --key <私钥> <URL>`
-```bash
-# 使用客户端证书
+# mTLS 客户端证书（企业内网 API 网关常见）
 curl --cert client.pem --key key.pem https://api.example.com
 ```
 
-**基本写法：跳过证书验证**
-`curl -k <URL>`
+遇到自签证书/内网 CA 报 `SSL certificate problem` 时：
+
 ```bash
-# 忽略 SSL 证书验证
-curl -k https://self-signed.example.com
+curl -k https://self-signed.example.com          # 临时诊断可用
+curl --cacert internal-ca.pem https://internal.example.com   # 正解：指定信任的 CA
 ```
 
----
+`-k` 只该出现在你**正在排查证书本身**的会话里；写进脚本等于给整个链路拆掉身份验证。
+配套原理见 cybersecurity/090-HTTPSPrinciple。
 
-## Cookie 处理
+## 会话：用 Cookie 文件模拟登录流
 
-**基本写法：发送 Cookie**
-`curl -b "<cookie>" <URL>`
+很多后台 API 要求先登录。用 `-c` 存、`-b` 取，两个动作可以指向同一文件：
+
 ```bash
-# 发送 Cookie
-curl -b "session=abc123" https://example.com/dashboard
+# 第一步：登录，保存服务器下发的 Cookie
+curl -c cookies.txt -d "user=admin&pass=secret" https://example.com/login
+
+# 第二步：带着会话访问受保护页面
+curl -b cookies.txt https://example.com/dashboard
+
+# 一步到位的写法：读旧 + 存新（会话续期的标准姿势）
+curl -b cookies.txt -c cookies.txt https://example.com/dashboard
 ```
 
-**基本写法：从文件加载 Cookie**
-`curl -b <文件> <URL>`
+也可以手工塞一个 Cookie 测试服务端行为：`curl -b "session=abc123" https://example.com/dashboard`。
+
+## 超时与重试：无人值守脚本的生命线
+
 ```bash
-# 从 cookie 文件加载
-curl -b cookies.txt https://example.com
+curl --connect-timeout 5 https://example.com    # 连接（TCP+TLS）最多等 5 秒
+curl --max-time 10 https://example.com          # 整个请求（含传输）最多 10 秒
+curl --retry 3 --retry-delay 2 https://example.com   # 失败重试 3 次，间隔 2 秒
 ```
 
-**基本写法：保存 Cookie 到文件**
-`curl -c <文件> <URL>`
+两个值要分开理解：`--connect-timeout` 管「能不能连上」（对端挂了/防火墙 DROP 时会等
+系统 TCP 超时，默认可长达两分钟）；`--max-time` 管「总共等多久」（防对端连上但慢慢吐字）。
+生产脚本通常两个都设。
+
+最大的坑在这里：**curl 遇到 HTTP 404/500 时退出码仍是 0**——脚本会把失败当成功继续跑。
+写脚本务必加 `--fail`（HTTP 错误码时以退出码 22 失败；`--fail-with-body` 还能保留错误响应）：
+
 ```bash
-# 保存响应中的 Cookie
-curl -c cookies.txt https://example.com/login
+curl -fsS --max-time 10 https://api.example.com/health || echo "health check failed"
 ```
 
-**基本写法：同时保存和使用 Cookie**
-`curl -b <文件> -c <文件> <URL>`
+## 代理：公司内网与抓包调试的必经之路
+
 ```bash
-# 加载并更新 Cookie
-curl -b cookies.txt -c cookies.txt https://example.com
+curl -x http://proxy.example.com:8080 https://example.com      # HTTP(S) 代理
+curl --socks5 proxy.example.com:1080 https://example.com       # SOCKS5 代理
+curl -x http://user:pass@proxy.example.com:8080 https://example.com   # 带认证
+curl --noproxy "*" https://internal.example.com                # 对内网直连
 ```
 
----
+curl 也读环境变量 `http_proxy` / `https_proxy` / `no_proxy`——「明明 curl 能通程序不通」
+的排查第一步：`env | grep -i proxy`，环境变量里的旧代理配置是常见元凶。系统性的
+代理配置见 networking/370-ProxyConfig。
 
-## 超时与重试
+## 测量：用 -w 把一次请求拆成时间线
 
-**基本写法：设置连接超时**
-`curl --connect-timeout <秒数> <URL>`
+这是 curl 对排障最有价值的形态。`-w` 支持一系列变量，一次看清延迟花在哪：
+
 ```bash
-# 设置 5 秒连接超时
-curl --connect-timeout 5 https://example.com
+curl -o /dev/null -s \
+  -w 'dns: %{time_namelookup}s  tcp: %{time_connect}s  tls: %{time_appconnect}s\nfirstbyte: %{time_starttransfer}s  total: %{time_total}s\nhttp: %{http_code}  size: %{size_download}B\n' \
+  https://fanquanpp.github.io/FANDEX/
 ```
 
-**基本写法：设置总超时**
-`curl --max-time <秒数> <URL>`
+读法（相邻两行的差就是各阶段耗时）：
+
+| 变量                  | 含义                     | 偏大说明什么             |
+| :-------------------- | :----------------------- | :----------------------- |
+| time_namelookup       | DNS 解析完成             | 解析器慢，或 DNS 链路问题 |
+| time_connect          | TCP 握手完成             | 网络往返慢（远端机房？） |
+| time_appconnect       | TLS 握手完成             | 证书链长/握手慢          |
+| time_starttransfer    | 收到首字节               | 服务端处理慢             |
+| time_total            | 全部完成                 | 传输量大或带宽瓶颈       |
+
+对比测速神器：对同一 URL 跑 5 次取中位数，先于一切性能工具。
+
 ```bash
-# 设置 10 秒总超时
-curl --max-time 10 https://example.com
+# 其他常用输出形态
+curl -s https://api.example.com/data | python3 -m json.tool   # 美化 JSON（有 jq 换 jq）
+curl -s https://example.com                                    # -s 静默，适合脚本与管道
 ```
-
-**基本写法：重试请求**
-`curl --retry <次数> <URL>`
-```bash
-# 失败时重试 3 次
-curl --retry 3 https://example.com
-```
-
-**基本写法：重试并延迟**
-`curl --retry <次数> --retry-delay <秒数> <URL>`
-```bash
-# 重试 3 次，每次间隔 2 秒
-curl --retry 3 --retry-delay 2 https://example.com
-```
-
----
-
-## 代理设置
-
-**基本写法：使用 HTTP 代理**
-`curl -x <代理地址> <URL>`
-```bash
-# 通过 HTTP 代理访问
-curl -x http://proxy.example.com:8080 https://example.com
-```
-
-**基本写法：使用 SOCKS5 代理**
-`curl --socks5 <代理地址> <URL>`
-```bash
-# 通过 SOCKS5 代理访问
-curl --socks5 proxy.example.com:1080 https://example.com
-```
-
-**基本写法：代理认证**
-`curl -x http://<用户>:<密码>@<代理> <URL>`
-```bash
-# 代理认证
-curl -x http://user:pass@proxy.example.com:8080 https://example.com
-```
-
-**基本写法：忽略代理**
-`curl --noproxy <域名> <URL>`
-```bash
-# 指定域名不使用代理
-curl --noproxy example.com https://example.com
-```
-
----
-
-## 输出格式化
-
-**基本写法：输出到标准错误**
-`curl -o /dev/null -w "<格式>" <URL>`
-```bash
-# 只输出 HTTP 状态码
-curl -o /dev/null -w "%{http_code}\n" https://example.com
-```
-
-**基本写法：输出详细信息**
-`curl -w "<格式>" <URL>`
-```bash
-# 输出响应时间和状态码
-curl -w "HTTP Code: %{http_code}\nTime: %{time_total}s\n" -o /dev/null https://example.com
-```
-
-**基本写法：JSON 美化输出**
-`curl -s <URL> | python3 -m json.tool`
-```bash
-# 美化 JSON 输出
-curl -s https://api.example.com/data | python3 -m json.tool
-```
-
-**基本写法：静默模式**
-`curl -s <URL>`
-```bash
-# 静默模式不显示进度
-curl -s https://example.com
-```
-
----
 
 ## 下载控制
 
-**基本写法：断点续传**
-`curl -C - -o <文件> <URL>`
 ```bash
-# 断点续传下载
-curl -C - -o bigfile.zip https://example.com/bigfile.zip
-```
+curl -O https://example.com/file.zip                 # 用 URL 里的文件名保存
+curl -o myname.zip https://example.com/file.zip      # 自定义文件名
+curl -C - -o bigfile.zip https://example.com/bigfile.zip   # 断点续传（-C - 自动找断点）
+curl --limit-rate 1M -o file.zip https://example.com/file.zip  # 限速（模拟弱网测试）
+curl -r 0-1024 -o part.bin https://example.com/file.bin        # Range 分段（断点/并发下载的底层）
 
-**基本写法：限速下载**
-`curl --limit-rate <速度> -o <文件> <URL>`
-```bash
-# 限制下载速度为 1MB/s
-curl --limit-rate 1M -o file.zip https://example.com/file.zip
-```
-
-**基本写法：多部分下载**
-`curl -r <范围> -o <文件> <URL>`
-```bash
-# 下载文件的 0-1024 字节
-curl -r 0-1024 -o part.bin https://example.com/file.bin
-```
-
----
-
-## 实用组合
-
-**基本写法：测试接口性能**
-`curl -o /dev/null -s -w "时间: %{time_total}s\n大小: %{size_download}字节\n" <URL>`
-```bash
-# 测试接口响应时间和大小
-curl -o /dev/null -s -w "时间: %{time_total}s\n大小: %{size_download}字节\n" https://api.example.com
-```
-
-**基本写法：下载并解压**
-`curl -sL <URL> | tar xz`
-```bash
-# 下载并解压 tar.gz 文件
+# 管道直通：边下边解压安装包（官网安装脚本都是这个套路）
 curl -sL https://example.com/archive.tar.gz | tar xz
 ```
 
-**基本写法：检查证书过期时间**
-`curl -vI <URL> 2>&1 | grep -i expire`
-```bash
-# 检查 HTTPS 证书过期时间
-curl -vI https://example.com 2>&1 | grep -i expire_date
-```
+`-L` 跟随重定向，下载场景几乎必带——很多下载链接是 302 出来的。
+
+## 坑点与自检
+
+| 坑点 | 事实 |
+| :--- | :--- |
+| 脚本裸用 curl | HTTP 404/500 退出码也是 0，必须 `-f`/`--fail-with-body` + `||` 处理 |
+| 只设 max-time 不设 connect-timeout | 对端失联时会吃满系统 TCP 超时，脚本「卡死两分钟」多由此来 |
+| JSON 忘了 Content-Type | 服务端按表单解析，报「参数缺失」，-v 一看便知 |
+| `-k` 写进脚本 | 证书校验被整体关闭，中间人可自由替换内容；用 --cacert 指定内网 CA |
+| 重试 POST 下单接口 | 非幂等请求盲目 --retry 会重复下单；先确认接口幂等性再重试 |
+| 下载忘加 -L | 拿到的是 302 跳转页而不是文件 |
+
+自检清单：能用 -v 的 `*`/`>`/`<` 三种行复述一次完整请求吗？能写出「带超时、失败重试、
+HTTP 错误即失败」的脚本级 curl 吗？时间分解五段各自的含义说得出吗？
+
+## 练习
+
+1. 对 `https://fanquanpp.github.io/FANDEX/` 跑 -w 时间分解，共 5 次，标出最慢的阶段
+   并解释（提示：TLS 握手占了从 0 到 time_appconnect 的全部）。
+2. 用 httpbin.org 练习：`curl -v -d '{"x":1}' -H "Content-Type: application/json" https://httpbin.org/post`，
+   在 `-v` 的 `<` 区确认服务端确实收到了你的头和请求体。
+3. 把「登录存 Cookie -> 带 Cookie 访问」两步连成一个脚本，中途故意改错密码，
+   观察 `-c` 文件里有没有会话。
+4. 用 `--limit-rate 100k` 下载一个 5MB 文件，期间用 networking/270-Tcpdump 的命令抓包，
+   对照观察慢速传输的包间隔。
+
+## 下一步
+
+- networking/140-WgetDownload：批量下载与递归抓取的场景该换工具了。
+- networking/370-ProxyConfig：本文代理一节的全量展开。
+- networking/120-HTTPProtocol：本文每个动作背后对应的协议语义。

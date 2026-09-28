@@ -80,7 +80,7 @@ aws iam list-policies --scope Local --query \
 ```
 
 配套措施：实例角色最小化（宁可多个窄角色也不共用宽角色）、SSRF 防护
-（见 011-SSRFAttack）、出网代理白名单。
+（见 230-SSRFAttack）、出网代理白名单。
 
 ## 4. 常见错误配置 Top 清单
 
@@ -118,7 +118,7 @@ flowchart TB
 
 ## 6. 云原生安全左移
 
-把安全检查塞进交付流水线（与 018-SecureDevelopment 的 SDL 呼应）：
+把安全检查塞进交付流水线（与 340-SecureDevelopment 的 SDL 呼应）：
 
 ```yaml
 # CI 流水线安全阶段示例（伪配置）
@@ -138,7 +138,7 @@ stages:
 ```
 
 运行时兜底：K8s 的 Pod Security Standards（禁 privileged、只读根文件系统）、
-NetworkPolicy 默认拒绝、服务网格 mTLS——与零信任思想一致（见 031-ZeroTrustArchitecture）。
+NetworkPolicy 默认拒绝、服务网格 mTLS——与零信任思想一致（见 320-ZeroTrustArchitecture）。
 
 ## 7. 云合规与取证注意
 

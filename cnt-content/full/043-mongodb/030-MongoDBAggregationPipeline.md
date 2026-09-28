@@ -145,8 +145,8 @@ db.books.aggregate([
 
 - 尽量把 `$match` 放在最前面，先缩小数据量再分组；
 - `$lookup` 的关联字段要建索引；
-- 分组字段（`$group` 的 `_id`）建索引也能显著提速；
-- 聚合结果很大时加 `$limit`，或用 `allowDiskUse: true` 允许磁盘临时文件。
+- `$group` 本身是内存哈希，索引帮不上它，但给分组键建索引能让它前面的 `$match`/`$sort` 走索引，间接提速；按唯一键去重的 `$group` 还可能被优化成 DISTINCT_SCAN；
+- 聚合结果很大时加 `$limit`，或用 `allowDiskUse: true` 允许磁盘临时文件（默认内存上限 100MB，超出直接报错）。
 
 ## 8. 动手试试
 

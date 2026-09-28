@@ -62,7 +62,7 @@ sequenceDiagram
 
 - 断言必须验签，且**校验签名作用域覆盖整段断言**（曾有 XXE 与包装签名绕过）。
 - 严格校验 `Audience`（断言只给这个 SP 用）与 `NotBefore/NotOnOrAfter` 时间窗。
-- 禁用断言中的 DTD（同样存在 XXE 风险，见 029-XXEAttack）。
+- 禁用断言中的 DTD（同样存在 XXE 风险，见 240-XXEAttack）。
 
 ### 2.2 CAS：简单直接的票据协议
 
@@ -105,7 +105,7 @@ Token 存储     ：浏览器端尽量不用 localStorage（XSS 可窃取）；H
 最小 scope     ：按需请求权限，审批页与实际能力一致
 ```
 
-协议细节与命令行实测见 049-OAuth2OIDC。
+协议细节与命令行实测见 310-OAuth2OIDC。
 
 ## 4. OIDC 与 ID Token
 
@@ -154,7 +154,7 @@ claims = jwt.decode(token, public_key, algorithms=["RS256"], audience="api.examp
 
 - 短有效期（access_token 5-30 分钟）+ 刷新令牌轮换；需要立即失效时配黑名单/短 TTL 网关校验。
 - 声明最小化：`sub`、角色、过期即可，业务详情查询接口获取。
-- 库与配置固定算法白名单、校验 `iss/aud/exp`，见 001 模块 JWT 章节的自检命令。
+- 库与配置固定算法白名单、校验 `iss/aud/exp`，见 010-SecurityBasicsDefense 的 JWT 一节。
 
 ## 6. IAM 落地清单
 

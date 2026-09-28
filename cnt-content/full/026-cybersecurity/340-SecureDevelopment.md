@@ -74,7 +74,7 @@ STRIDE 六类威胁与安全属性一一对应：
 
 ## 3. 安全编码核心实践
 
-原则速览（展开见 025-SecureCodingPrinciples 与 026-InputValidation）：
+原则速览（展开见 330-SecureCodingPrinciples 与 170-InputValidation）：
 最小权限、默认拒绝、纵深防御、失败安全、不信任输入。以下是评审中最容易漏的细节：
 
 ```python
@@ -153,7 +153,7 @@ jobs:
 制品完整性：构建产物签名（cosign/jar 签名），部署时验签
 依赖锁定  ：lockfile 提交仓库，CI 禁止隐式升级（npm ci / pip --require-hashes）
 密钥管理  ：运行时从 KMS/Secret Manager 注入，仓库中零密钥
-监控回流  ：生产 WAF/SIEM 告警按代码位置回流修复（见 010-SOC、035-WAFRule）
+监控回流  ：生产 WAF/SIEM 告警按代码位置回流修复（见 550-SOC、350-WAFRule）
 漏洞响应  ：对外披露渠道（security.txt），明确的 SLA：Critical 72h 内出补丁
 ```
 

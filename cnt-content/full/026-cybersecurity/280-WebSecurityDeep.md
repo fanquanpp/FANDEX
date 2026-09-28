@@ -18,14 +18,14 @@ prerequisites:
 
 ## 1. 本文定位
 
-本模块的专项文档（044-SQLInjection、005-XSSAttack、007-CSRFAttack、011-SSRFAttack、
-029-XXEAttack 等）逐类拆解了具体漏洞。本文从**更高视角**回答三个综合问题：
+本模块的专项文档（180-SQLInjection、190-XSSAttack、210-CSRFAttack、230-SSRFAttack、
+240-XXEAttack 等）逐类拆解了具体漏洞。本文从**更高视角**回答三个综合问题：
 
 1. 这些漏洞背后共通的失败模式是什么？
 2. 把多个漏洞串成攻击链时，防御者该在哪里布防？
 3. API 与无状态认证（JWT）时代，漏洞形态发生了什么变化？
 
-前置知识：HTTP 基础与 OWASP Top 10（见 028-OWASPTop10Detailed）。
+前置知识：HTTP 基础与 OWASP Top 10（见 160-OWASPTop10Detailed）。
 
 ## 2. 注入与脚本类漏洞的共性原理
 
@@ -98,7 +98,7 @@ def get_order(order):
 ```
 
 配套手段：不可猜测的资源标识（UUID v4）、管理接口独立网段/独立认证、
-自动化越权测试（双账号重放，见 028 第 2 节）。
+自动化越权测试（双账号重放，见 160-OWASPTop10Detailed 的 A01 一节）。
 
 ## 4. JWT 与 API 时代的认证安全
 
@@ -134,7 +134,7 @@ claims = jwt.decode(token, public_key, algorithms=["RS256"],
 | 密钥放载荷          | base64 解码即泄露          | 载荷只放标识与过期       |
 
 密钥强度自检（HS256 弱密钥可离线爆破，hashcat -m 16500）与完整攻击手法
-见 001 模块 JWT 章节与 032-IdentityAccessManagement。
+见 010-SecurityBasicsDefense 的 JWT 一节与 300-IdentityAccessManagement。
 
 ## 5. API 攻防要点
 
@@ -142,7 +142,7 @@ API 与网页的威胁差异：接口天然可被脚本化调用、返回结构�
 
 ```text
 认证      ：机器对机器用客户端凭据流程（OAuth 2.0），绝不用用户密码换 token
-授权      ：每个端点显式声明所需 scope/角色，拒绝默认放行（见 049-OAuth2OIDC）
+授权      ：每个端点显式声明所需 scope/角色，拒绝默认放行（见 310-OAuth2OIDC）
 输入      ：Schema 校验（JSON Schema/Pydantic）替代手工 if
 限流      ：按 API Key + IP + 用户三维度；返回 429 与 Retry-After
 数据收缩  ：响应字段按角色过滤，防止对象属性级泄露（序列化层控制）
@@ -158,7 +158,7 @@ OWASP API Security Top 10 把「对象级授权失效（BOLA/IDOR）」「对象
 以下链路综合了本文各节，展示多漏洞如何组合（渗透测试报告的典型结构）：
 
 ```text
-1. 信息收集：证书透明度日志发现测试子域 test-api.example.com（见 023-InformationGathering）
+1. 信息收集：证书透明度日志发现测试子域 test-api.example.com（见 380-InformationGathering）
 2. 入口     ：测试环境 Swagger 未鉴权暴露（A05 安全配置错误）
 3. 越权     ：接口 /v1/users/{id} 未校验归属，遍历导出用户手机号（BOLA）
 4. 凭证     ：导出数据中含内部 SSO 链接 + state 泄露的 OAuth 授权码（redirect_uri 校验缺失）

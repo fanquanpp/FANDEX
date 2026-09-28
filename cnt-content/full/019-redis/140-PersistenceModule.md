@@ -194,6 +194,12 @@ repl-diskless-load swapdb     # 先加载到备用数据库，成功后切换
 
 ## 5. Redis 模块
 
+> **Redis 8+ 重要变化**：下文的 JSON、时间序列、概率结构（BF/CF/CMS/TOPK）、
+> 全文检索（FT.*）与 T-Digest 能力，在 Redis Open Source 8.0 起**已内建于内核**，
+> 命令开箱即用，无需任何 `--loadmodule` 安装。`loadmodule` 写法只适用于
+> Redis 7.x + Redis Stack 的旧部署，或第三方模块（见第 6 节）。命令语法本身
+> 两个版本一致，下面的示例在 Redis 8 上可直接运行。
+
 ### 5.1 RedisJSON
 
 ```bash
@@ -371,12 +377,15 @@ MODULE UNLOAD rejson
 
 ### 6.2 模块生态
 
-| 模块            | 功能               | 适用场景              |
-| :-------------- | :----------------- | :-------------------- |
-| RedisJSON       | JSON 文档存储      | 文档型数据、配置管理  |
-| RediSearch      | 全文检索与二级索引 | 搜索引擎、自动补全    |
-| RedisBloom      | 概率数据结构       | 去重、频率统计、Top-K |
-| RedisTimeSeries | 时间序列数据库     | 监控指标、IoT 数据    |
-| RedisGraph      | 图数据库           | 社交关系、知识图谱    |
-| RedisCell       | 限流器             | API 限流、速率控制    |
-| T-Digest        | 分位数估算         | 延迟监控、SLA 告警    |
+> Redis 8 起，下表前四项与 T-Digest 已并入开源内核，作为「内置能力」随
+> redis-server 分发；模块机制本身仍然保留，用于加载第三方扩展。
+
+| 模块/能力       | 功能               | 适用场景              | 8.0+ 现状                     |
+| :-------------- | :----------------- | :-------------------- | :---------------------------- |
+| RedisJSON       | JSON 文档存储      | 文档型数据、配置管理  | 内建于内核（JSON 命令）       |
+| RediSearch      | 全文检索与二级索引 | 搜索引擎、自动补全    | 内建于内核（查询引擎 FT.*）   |
+| RedisBloom      | 概率数据结构       | 去重、频率统计、Top-K | 内建于内核（BF/CF/CMS/TOPK）  |
+| RedisTimeSeries | 时间序列数据库     | 监控指标、IoT 数据    | 内建于内核（TS.* 命令）       |
+| T-Digest        | 分位数估算         | 延迟监控、SLA 告警    | 内建于内核（TDIGEST 命令）    |
+| RedisGraph      | 图数据库           | 社交关系、知识图谱    | 已停止维护，8.0 不包含        |
+| RedisCell       | 限流器             | API 限流、速率控制    | 仍为第三方模块，需单独加载    |

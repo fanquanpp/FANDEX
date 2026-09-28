@@ -17,7 +17,6 @@ prerequisites:
 ---
 
 
-﻿# 字符串 SDS 结构
 
 ---
 

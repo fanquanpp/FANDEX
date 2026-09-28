@@ -80,7 +80,7 @@ BITFIELD_RO sign:u42 GET u31 0
 
 ## 4. 应用场景
 
-### 3.1 用户在线状态
+### 4.1 用户在线状态
 
 ```redis
 -- 用户上线
@@ -93,7 +93,7 @@ GETBIT online:users 42
 BITCOUNT online:users
 ```
 
-### 3.2 用户标签
+### 4.2 用户标签
 
 ```redis
 -- 用户42有标签0和标签3
@@ -103,7 +103,7 @@ SETBIT user:42:tags 3 1
 BITCOUNT user:42:tags
 ```
 
-### 3.3 活跃用户统计
+### 4.3 活跃用户统计
 
 ```redis
 -- 每日活跃用户位图

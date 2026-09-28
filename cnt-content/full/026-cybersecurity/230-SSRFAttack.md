@@ -91,7 +91,7 @@ http://169.254.169.254/metadata/instance?api-version=2021-02-01
 
 AWS 对此的架构级对策是 **IMDSv2**：获取令牌必须先发 PUT 请求并携带自定义头，
 GET 型 SSRF 无法完成此交互。应在云主机上强制启用 IMDSv2 并禁用 IMDSv1
-（详见 013-CloudSecurity 第 3 节）；实例角色权限同步最小化——
+（详见 530-CloudSecurity 第 3 节）；实例角色权限同步最小化——
 SSRF 的最终危害等于「该实例角色能做什么」。
 
 ### 2.4 协议利用
