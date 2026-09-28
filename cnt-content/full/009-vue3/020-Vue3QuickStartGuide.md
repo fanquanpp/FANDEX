@@ -1,396 +1,311 @@
 ---
 order: 20
-title: Vue3 快速入门指南
+title: 第一个组件：从 createApp 到页面渲染
 module: 'vue3'
 category: 前端技术
 difficulty: beginner
-description: 从零搭建 Vue3 项目，速览 SFC 结构、响应式、组件通信、路由与状态管理，并规避新手常见陷阱。
+description: 顺着 main.js 的 createApp 追问「组件怎么变成页面」：script setup 顶层绑定直达模板、ref 初见（带 .value 的盒子）、事件绑定做出最小计数器、子组件的导入与注册，附变量忘了 .value、组件解析失败、变量名拼错三类真实报错调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'vue3/010-OverviewEnv'
   - 'vue3/030-Vue3TemplateSyntax'
-  - 'vue3/040-Vue3DirectiveSystem'
-prerequisites: []
+  - 'vue3/050-ReactiveSystem'
+  - 'vue3/110-ComponentSystem'
+prerequisites:
+  - 'vue3/010-OverviewEnv'
+  - 'javascript/090-ArrayHigherOrderMethod'
 ---
-
-## 学习目标
-
-- 用官方脚手架 create-vue 从零创建并跑起一个 Vue3 项目
-- 认识单文件组件（SFC）三段式结构与 `<script setup>` 的基本写法
-- 速览响应式数据、组件通信（props / emits / v-model）、路由与状态管理
-- 知道新手最容易踩的几个坑，遇到报错能自己定位
 
 ## 前置知识
 
-- HTML / CSS / JavaScript（ES Module 基础）：参见 [html5](/html5/010-WhatIsWebpage) 与 [javascript](/javascript/010-WhatIsJavaScript) 模块
-- 命令行基本操作（cd、npm 命令）
+- 已完成[概述与环境](/vue3/010-OverviewEnv)：能跑起 create-vue 项目，认得 SFC 三段结构；
+- 已完成[数组高阶方法](/javascript/090-ArrayHigherOrderMethod)：会定义与调用函数，接受「参数进、返回值出」。
 
-## 1. 环境搭建
+不需要更多背景。本文回答上一篇留下的问题：index.html 里只有一个空 div，页面内容是怎么进去的。
 
-### 1.1 安装 Node.js
+## 学习目标
 
-Vue3 项目需要 Node.js 环境，推荐安装最新的 LTS 版本：
+读完本文你将能够：
 
-- 访问 [Node.js 官网](https://nodejs.org/) 下载并安装 LTS 版本
-- 安装完成后，在终端运行以下命令验证：
+1. 逐行说出 main.js 各行代码的作用，解释 createApp 与 mount 的分工；
+2. 写出一个 SFC，并解释 `<script setup>` 顶层声明的变量为什么模板能直接用；
+3. 用 ref 声明会变的数据，说清「脚本里要 .value、模板里不用」这条规则的来历；
+4. 写出一个完整可跑的计数器组件，并预测每次点击后页面的变化；
+5. 把界面拆成父子组件并完成注册，读懂 `Failed to resolve component` 报错。
 
-```bash
-node -v
-npm -v
+预计 45 到 60 分钟。
+
+## 1. 你现在要解决什么问题
+
+上一篇你改过 App.vue，页面跟着变。但有个细节一直没交代：index.html 的 body 里只有 `<div id="app"></div>`，你的 template、script、style 都不在里面——浏览器最终显示的「星陨峡谷」，是怎么进到这个空 div 里的？
+
+追一遍水路，入口在 src/main.js：
+
+```javascript
+import './assets/main.css';   // 脚手架自带的全局样式，与本篇无关
+
+import { createApp } from 'vue';
+import App from './App.vue';
+
+createApp(App).mount('#app');
 ```
 
-### 1.2 用官方脚手架创建项目
+去掉样式那行，剩下三句，每句一个动作：
 
-Vue 官方推荐 create-vue 脚手架，底层基于 Vite，交互式勾选 TypeScript、Vue Router、Pinia、Vitest 等选项：
+1. 从 vue 包里拿 createApp 函数；
+2. 把 App.vue 变成一个「应用」；
+3. `mount('#app')` 让这个应用接管页面上的空 div，App 模板渲染出的内容填进去。
 
-```bash
-# 官方脚手架（推荐）
-npm create vue@latest
-# 通用 Vite 模板（轻量替代）
-npm create vite@latest my-vue3-app -- --template vue
-```
+链条就是：**main.js 用 createApp 启动应用并挂到空壳上，App.vue 的 template 渲染成壳里的内容**——入口管启动，组件管内容，Vue 项目大半的文件分工随之清楚。
 
-> Vue CLI（@vue/cli）已停止新功能开发，仅用于维护存量项目，新项目不应使用。
-
-## 2. 项目结构
-
-一个典型的 Vue3 项目结构如下：
-
-```mermaid
-flowchart TD
-    T0["my-vue3-project/"]
-    T1["public/"]
-    T2["favicon.ico"]
-    T3["src/"]
-    T4["assets/"]
-    T5["components/"]
-    T6["HelloWorld.vue"]
-    T7["router/"]
-    T8["index.ts"]
-    T9["stores/"]
-    T10["counter.ts"]
-    T11["views/"]
-    T12["HomeView.vue"]
-    T13["AboutView.vue"]
-    T14["App.vue"]
-    T15["main.ts"]
-    T16["index.html"]
-    T17["package.json"]
-    T18["vite.config.ts"]
-    T19["tsconfig.json"]
-    T0 --> T1
-    T0 --> T3
-    T3 --> T4
-    T3 --> T5
-    T3 --> T7
-    T3 --> T9
-    T3 --> T11
-    T3 --> T14
-    T3 --> T15
-    T0 --> T16
-    T0 --> T17
-    T0 --> T18
-    T0 --> T19
-```
-
-要点：`main.ts` 是入口（createApp 挂载 App.vue），`App.vue` 是根组件，`views/` 放路由页面、`components/` 放可复用组件是约定俗成的分工。
-
-## 3. 单文件组件（SFC）结构
-
-Vue3 组件是 `.vue` 单文件组件，由三段组成：`<template>` 模板、`<script setup>` 逻辑、`<style scoped>` 样式：
+## 2. script setup：顶层声明，模板直接用
 
 ```vue
 <template>
-  <div class="hello">
-    <h1>{{ message }}</h1>
-    <button @click="count++">点击计数: {{ count }}</button>
-  </div>
+  <p>当前玩家：{{ playerName }}</p>
 </template>
 
-<script setup lang="ts">
+<script setup>
+const playerName = '阿天';
+</script>
+```
+
+预期行为：页面显示「当前玩家：阿天」。
+
+`<script setup>` 的规则一句话：**在这个标签顶层声明的任何东西——变量、函数、导入的组件——模板都能直接用，不用 return。** 这不是魔法，是编译器把顶层声明统统交给模板（细节见 280 篇）。没有 setup 的旧写法要手动 return 给模板；`<script setup>` 砍掉了这道手续。函数同理，顶层声明的函数直接当事件处理器用——4 节的计数器马上就用。
+
+## 3. ref 初见：带 .value 的盒子
+
+普通变量不会让界面更新——`let playerName = '阿天'` 改一百次，页面纹丝不动。要界面跟着变，数据必须让 Vue 追踪得到，Vue 给的工具叫 ref：
+
+```vue
+<template>
+  <p>当前玩家：{{ playerName }}</p>
+  <button @click="playerName = '小满'">换人</button>
+</template>
+
+<script setup>
 import { ref } from 'vue';
 
-const message = ref('Hello Vue3!');
+const playerName = ref('阿天');
+</script>
+```
+
+预期行为：初始显示「阿天」，点按钮变成「小满」——这次界面更新了，因为 playerName 是 ref。
+
+把 ref 理解成**一个带 .value 的盒子**：盒子里装着真正的值，`playerName.value` 才是「阿天」本身。Vue 盯着每个盒子，谁被换了值，就刷新所有用到它的地方。由此产生一条规则：
+
+```javascript
 const count = ref(0);
+
+count.value++;   // 脚本里：读写都要过 .value（对盒子开口）
+// 模板里直接写 count：Vue 自动替你取 .value（自动解包）
+```
+
+为什么这样设计？值藏在盒子里，Vue 才有机会在取值、改值时装上监听——直接监听普通变量，JavaScript 做不到。盒子内部怎么追踪、reactive 和它什么关系，是[响应式系统](/vue3/050-ReactiveSystem)的主题；本篇记住口诀即可：**脚本里过 .value，模板里直接用。**
+
+## 4. 动手：最小计数器
+
+把 App.vue 整个替换成，先跑起来再解释：
+
+```vue
+<template>
+  <h1>战绩</h1>
+  <p>当前分数：{{ score }}</p>
+  <button @click="add">加一分</button>
+  <button @click="reset">重置</button>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const score = ref(0);
+
+function add() {
+  score.value = score.value + 1;
+}
+
+function reset() {
+  score.value = 0;
+}
 </script>
 
 <style scoped>
-.hello {
-  text-align: center;
-  margin-top: 2rem;
+button {
+  margin-right: 8px;
 }
 </style>
 ```
 
-三个关键点：
+预期行为：初始显示「当前分数：0」；点「加一分」三次，分数变成 3；点「重置」回到 0。全程页面不刷新，p 标签里的数字自己变。
 
-1. `{{ }}` 插值自动解包 ref，模板里写 `count` 而不是 `count.value`。
-2. `<script setup>` 顶层声明的变量、函数、导入的组件，模板都能直接使用，无需 return。
-3. `scoped` 让样式只作用于当前组件，避免全局污染。
+逐行对照这条链：score 是盒子，装着 0；模板里 `{{ score }}` 声明「这里显示盒子里的值」；add 函数改盒子；Vue 发现盒子变了，刷新页面。函数名不带括号是「点击时再调用」，带括号是「现在就调用一次」，区别 030 篇细说。
 
-## 4. 核心概念速览
+一个词先混个眼熟：`reactive`，专门包对象，让你直接改属性；取舍与解构陷阱在 050 篇。入门记一条：**拿不准就用 ref。**
 
-### 4.1 组合式 API 三件套
+## 5. 组件注册：把界面拆成文件
+
+页面长大会变成一整坨。Vue 的拆法是组件：每个 .vue 文件一个，谁要用谁导入。
+
+新建 src/components/RankItem.vue：
 
 ```vue
-<script setup lang="ts">
-import { ref, computed, onMounted } from 'vue';
+<template>
+  <li>{{ name }}：{{ score }}</li>
+</template>
 
-// 响应式数据
-const count = ref(0);
-// 计算属性：依赖变化自动重算，且有缓存
-const doubleCount = computed(() => count.value * 2);
-// 生命周期钩子
-onMounted(() => {
-  console.log('组件挂载完成');
+<script setup>
+defineProps({
+  name: String,
+  score: Number
 });
-// 方法
-function increment() {
-  count.value++;
+</script>
+```
+
+`defineProps` 声明「本组件接受哪些数据」，像函数的形参表——父子通信的完整规则在[组件系统](/vue3/110-ComponentSystem)展开。
+
+父组件里导入并使用：
+
+```vue
+<template>
+  <ul>
+    <RankItem name="阿天" :score="980" />
+    <RankItem name="小满" :score="870" />
+  </ul>
+</template>
+
+<script setup>
+import RankItem from './components/RankItem.vue';
+</script>
+```
+
+预期行为：页面显示两行——「阿天：980」「小满：870」。
+
+三步：import 进来 → `<script setup>` 顶层导入即自动注册 → 模板里当标签用。`:score="980"` 里的冒号是把数字 980（而不是字符串 "980"）传过去；冒号是什么、为什么需要它，030 篇的 v-bind 讲透。
+
+组件名必须大写开头：`<rank-item />` 会被当作原生标签，浏览器不认识，页面直接少一块——调试实录里就是它。
+
+## 6. 修改实验
+
+实验一：给计数器加第三个按钮「减一分」，允许分数变成负数。先预测点击后的显示，再验证。
+
+实验二：把 add 改成每次加 10，观察更新是否依旧即时——数据改动与界面更新的间隔小到感知不到。
+
+实验三：把 `{{ score }}` 改成 `{{ score.value }}`，先预测显示什么再保存（提示：模板里的 score 已是解包后的数字），观察后改回来。
+
+## 7. 常见错误与调试实录
+
+**错误一：脚本里忘写 .value。** 把 add 改成 `score++`，点击按钮，浏览器控制台报：
+
+```text
+Uncaught TypeError: Assignment to constant variable.
+```
+
+三步定位：
+
+1. 读报错：V8 在说「你给一个 const 变量重新赋值了」。score 是 const 声明的盒子，`score++` 想把盒子整个换掉——你真正想改的是盒子里的值；
+2. 验真身：报错定位到 add 里那一行，检查是不是少了 .value；
+3. 修正：写成 `score.value++`。这条规则有反面：模板里 `@click="score++"` 反而是对的——模板已自动解包。「脚本 .value、模板不用」的口诀能避开九成此类问题。
+
+**错误二：组件标签没被认出来。** 把导入语句注释掉，模板里仍写 `<RankItem />`，页面上榜单凭空消失，控制台报：
+
+```text
+[Vue warn] Failed to resolve component: RankItem
+```
+
+三步定位：
+
+1. 读报错：Vue 找不到叫 RankItem 的组件，只能原样输出这个标签，内容自然没了；
+2. 验真身：检查 `<script setup>` 里的 import——被注释、路径写错、根本没写，都是常见原因；
+3. 修正：补上 import。报错里的名字区分大小写，模板里写什么就找什么。
+
+**错误三：模板里变量名拼错。** 把 `{{ score }}` 手滑写成 `{{ scre }}`，那个位置直接空白，控制台报：
+
+```text
+[Vue warn] Property "scre" was accessed during render but is not defined on instance.
+```
+
+三步定位：报错把拼错的名字原样告诉你——回 script setup 对拼写即可。开发警告都带 `[Vue warn]` 前缀，逐条读完再动手，比盯着空白页面猜快。
+
+## 8. 实际项目中的使用场景
+
+- 一个功能一个组件是 Vue 项目的默认组织方式：计数器、表单、卡片都可以是独立 .vue 文件，本站的交互块也是这么拆的；
+- ref 是使用频率最高的 API：表单草稿、加载状态、弹窗开关全靠它；对象场景的另一种选择 reactive 见 050 篇；
+- main.js 在真实项目里还负责安装插件（路由、状态库），链式写法 `createApp(App).use(router).mount('#app')` 在 200、210 篇用到时再展开。
+
+## 9. 小练习
+
+预测题（5 分钟，先写答案再运行）：
+
+```vue
+<template>
+  <p>{{ hp }}</p>
+  <p>{{ hp.value }}</p>
+  <button @click="hp = hp + 10">回血</button>
+</template>
+
+<script setup>
+import { ref } from 'vue';
+
+const hp = ref(50);
+</script>
+```
+
+两个 p 初始各显示什么？点两次按钮后呢？（预期答案：50 与空白——模板里 hp 已是数字，数字上取 .value 得到 undefined，渲染为空；两次点击后第一个 p 显示 70。）
+
+修改题（10 分钟）：给 4 节的计数器加「操作记录」：再声明一个 ref 记录加分的次数，界面显示「已加 N 次」，重置时一并归零。
+
+修 Bug 题（15 分钟）：下面的组件点击按钮后分数不动，控制台真实报错如下。按三步定位并修复：
+
+```vue
+<script setup>
+import { ref } from 'vue';
+
+const score = ref(0);
+
+function add() {
+  score = score + 1;
 }
 </script>
-```
-
-### 4.2 响应式：ref 与 reactive
-
-```vue
-<script setup lang="ts">
-import { ref, reactive, toRefs } from 'vue';
-
-// 基本类型用 ref，读写要经过 .value
-const count = ref(0);
-// 对象可以用 reactive，直接改属性
-const user = reactive({
-  name: '张三',
-  age: 20
-});
-// 解构 reactive 对象要用 toRefs，否则失去响应性
-const { name, age } = toRefs(user);
-</script>
-```
-
-经验法则：基本类型一律 `ref`；组合式函数返回对象时用 `ref` + 直接返回整个对象更简单，`reactive` 的解构陷阱见 [响应式系统](/vue3/050-ReactiveSystem)。
-
-### 4.3 组件通信
-
-#### 父传子（Props）
-
-```vue
-<!-- 父组件 -->
-<template>
-  <ChildComponent :message="parentMessage" />
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import ChildComponent from './ChildComponent.vue';
-
-const parentMessage = ref('来自父组件的消息');
-</script>
-```
-
-```vue
-<!-- 子组件 ChildComponent.vue -->
-<template>
-  <div>{{ message }}</div>
-</template>
-
-<script setup lang="ts">
-defineProps<{
-  message: string;
-}>();
-</script>
-```
-
-#### 子传父（Emits）
-
-```vue
-<!-- 子组件 -->
-<template>
-  <button @click="emit('update', '来自子组件的消息')">发送消息</button>
-</template>
-
-<script setup lang="ts">
-const emit = defineEmits<{
-  (e: 'update', message: string): void;
-}>();
-</script>
-```
-
-```vue
-<!-- 父组件 -->
-<template>
-  <ChildComponent @update="handleUpdate" />
-  <div>{{ childMessage }}</div>
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import ChildComponent from './ChildComponent.vue';
-
-const childMessage = ref('');
-function handleUpdate(message: string) {
-  childMessage.value = message;
-}
-</script>
-```
-
-#### 双向绑定（defineModel，Vue 3.4+）
-
-表单类组件用 `defineModel` 一个宏搞定双向绑定，不用再手写 props + emits 对：
-
-```vue
-<!-- 子组件 CustomInput.vue -->
-<template>
-  <input v-model="model" placeholder="请输入" />
-</template>
-
-<script setup lang="ts">
-const model = defineModel<string>();
-</script>
-```
-
-```vue
-<!-- 父组件 -->
-<template>
-  <CustomInput v-model="text" />
-</template>
-
-<script setup lang="ts">
-import { ref } from 'vue';
-import CustomInput from './CustomInput.vue';
-
-const text = ref('');
-</script>
-```
-
-## 5. 路由与状态管理
-
-### 5.1 Vue Router
-
-安装（create-vue 勾选 Router 会自动完成）：
-
-```bash
-npm install vue-router
-```
-
-基本配置：
-
-```ts
-// src/router/index.ts
-import { createRouter, createWebHistory } from 'vue-router';
-import Home from '../views/HomeView.vue';
-
-const routes = [
-  {
-    path: '/',
-    name: 'Home',
-    component: Home
-  },
-  {
-    path: '/about',
-    name: 'About',
-    // 路由级组件用动态 import 懒加载
-    component: () => import('../views/AboutView.vue')
-  }
-];
-
-const router = createRouter({
-  history: createWebHistory(),
-  routes
-});
-
-export default router;
-```
-
-在 `main.ts` 中 `app.use(router)`，模板里用 `<RouterView />` 渲染当前路由组件、`<RouterLink to="/about">` 做导航。系统学习见 [Vue Router 详解](/vue3/190-VueRouterDetailed)。
-
-### 5.2 Pinia 状态管理
-
-安装：
-
-```bash
-npm install pinia
-```
-
-定义 Store：
-
-```ts
-// src/stores/counter.ts
-import { defineStore } from 'pinia';
-
-export const useCounterStore = defineStore('counter', {
-  state: () => ({
-    count: 0
-  }),
-  actions: {
-    increment() {
-      this.count++;
-    }
-  },
-  getters: {
-    doubleCount: (state) => state.count * 2
-  }
-});
-```
-
-使用：
-
-```vue
-<script setup lang="ts">
-import { useCounterStore } from '../stores/counter';
-
-const counterStore = useCounterStore();
-</script>
 
 <template>
-  <div>
-    <p>Count: {{ counterStore.count }}</p>
-    <p>Double: {{ counterStore.doubleCount }}</p>
-    <button @click="counterStore.increment">Increment</button>
-  </div>
+  <p>{{ score }}</p>
+  <button @click="add">加一分</button>
 </template>
 ```
 
-> 注意：不要对 store 解构后直接使用（会丢响应性），需要解构时用 `storeToRefs(store)`。详见 [Pinia 状态管理详解](/vue3/210-PiniaStateManagementDetailed)。
+真实报错：
 
-## 6. 构建与部署
-
-### 6.1 构建生产版本
-
-```bash
-npm run build
+```text
+Uncaught TypeError: Assignment to constant variable.
 ```
 
-构建产物生成在 `dist` 目录，本地预览用 `npm run preview`。
+挑战题（半小时，不给代码）：做一个双人记分板：两个 ref 分别记阿天与小满的分数，各一个「加分」按钮，另有「重置全部」按钮；标题显示当前领先者的名字，平局显示「持平」。验收：初始 0 比 0 与「持平」；阿天加分后标题变「阿天」；小满追平后变回「持平」；重置全部恢复初始。提示分两级：「提示」两个数比大小可以直接写在模板三元里；「展开」领先者名字用嵌套三元——先判 aScore > bScore，再判 aScore < bScore，剩下的就是持平。
 
-### 6.2 部署选项
+## 10. 与之前和之后的知识的关系
 
-- **静态托管**：GitHub Pages、Vercel、Netlify 等
-- **服务器部署**：Nginx、Apache 等（history 路由需配置回退到 index.html）
-- **容器化部署**：Docker
+- 往前：010 篇留下「内容怎么进空 div」的问题在本文开头收尾；090 篇「函数是值」支撑了 @click 直接传函数名；
+- 往后：030 篇讲透模板里能写什么（插值、指令、缩写），040 篇收编指令系统；050 篇揭开 ref 盒子的追踪机制；110 篇展开父子组件通信——本文 defineProps 与 `:score` 的伏笔都在那里兑现。
 
-## 7. 新手常见陷阱
+## 11. 官方文档
 
-| 陷阱 | 现象 | 正确做法 |
-| --- | --- | --- |
-| 忘写 `.value` | 脚本里改了数据视图不动 | `ref` 在 `<script>` 中必须 `count.value++`，模板中才自动解包 |
-| 解构 reactive/props | 解构出来的值不再是响应式 | 用 `toRefs`，props 解构依赖 Vue 3.5+；store 用 `storeToRefs` |
-| v-for 忘加 key | 列表更新错乱、动画异常 | `<li v-for="item in list" :key="item.id">`，key 用稳定 id 而非 index |
-| 直接改 props | 控制台警告且数据流混乱 | 子组件通过 `emit` 通知父组件修改 |
-| 用 index 当 key 且列表会增删排序 | 复用错组件、输入框串值 | 换成业务唯一 id |
+- 响应式基础（ref）：https://cn.vuejs.org/guide/essentials/reactivity-core.html
+- 组件基础：https://cn.vuejs.org/guide/essentials/component-basics.html
+- 应用与实例（createApp）：https://cn.vuejs.org/api/application.html
 
-## 8. 快速开发提示
+## 12. 自我检查
 
-1. **使用 TypeScript**：提供类型安全，减少运行时错误
-2. **使用 ESLint 和 Prettier**：保持代码风格一致
-3. **安装 Vue - Official（原 Volar）扩展**：Vue3 官方推荐的 VS Code 扩展，配合 vue-tsc 做类型检查
-4. **安装 Vue DevTools 浏览器扩展**：可视化查看组件树、状态与路由，调试效率翻倍
-5. **组件拆分**：将复杂组件拆分为更小的、可复用的组件
-6. **使用 composables**：提取可复用逻辑，见 [自定义 Hook](/vue3/090-CustomHook)
-7. **性能优化**：列表页可考虑 `v-memo`、`v-once`，进阶见 [性能优化实践](/vue3/340-PerformanceOptimization)
+- 能不看资料逐行解释 main.js 的三行核心代码；
+- 能说出「脚本里过 .value，模板里直接用」并解释原因；
+- 能在 60 秒内默写出带加分与重置的计数器组件；
+- 看到 `Failed to resolve component` 能依次排查导入注释、路径、拼写三处；
+- 知道组件名必须大写开头的原因。
 
-## 9. 小结
+## 本章总结
 
-通过本指南你已经能从零创建 Vue3 项目、写出基本的 SFC 组件并跑通路由与状态管理。下一步建议按顺序学习：[模板语法](/vue3/030-Vue3TemplateSyntax) → [指令系统](/vue3/040-Vue3DirectiveSystem) → [组件系统](/vue3/110-ComponentSystem) → [响应式系统](/vue3/050-ReactiveSystem)，逐步建立完整的 Vue3 知识体系。
+main.js 用 createApp(App) 启动应用、mount('#app') 把根组件渲染进空壳，页面内容全部来自组件。`<script setup>` 让顶层声明的变量与函数直达模板。ref 是带 .value 的盒子：脚本里读写都要过 .value，模板里自动解包直接用；普通变量改了页面不动，ref 变了界面自己更新。组件注册三步：import、顶层导入即注册、模板里当标签用，名字大写开头。`Assignment to constant variable` 十有八九是脚本里忘了 .value；`Failed to resolve component` 先查 import。
+
+## 下一步
+
+进入[Vue3 模板语法](/vue3/030-Vue3TemplateSyntax)：花括号里能放什么、不能放什么，v-if、v-for、冒号和 @ 各自的分工，一次讲清。

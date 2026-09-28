@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Redis 内存淘汰策略详解：LRU、LFU、Random、TTL 四类八种策略的原理、配置与适用场景。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'redis/240-LuaScriptAtomicExecution'
   - 'redis/120-CachePenetrationBreakdownAvalanche'

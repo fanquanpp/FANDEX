@@ -29,7 +29,7 @@ prerequisites:
 
 要彻底理解这两类事故，需要先分清两个概念：
 
-- **字符集（character set）**：字符如何编码成字节。`utf8mb4` 里"张"占 3 字节、"😀"占 4 字节；
+- **字符集（character set）**：字符如何编码成字节。`utf8mb4` 里"张"占 3 字节、一个 U+1F600 级别的表情形符占 4 字节（本文以 `UNHEX('F09F9880')` 写入该字符，转义写法同时把 4 字节编码亮给你看）；
 - **排序规则（collation）**：字符如何比较与排序。`'a' = 'A'` 成立与否、`ORDER BY name` 按什么语言规则排，全由它决定。
 
 ## 第一课：MySQL 的 utf8 是假的
@@ -109,19 +109,19 @@ ci               case insensitive —— 'A' = 'a' 成立
 ## 动手环节：制造并修复一次"emoji 崩溃"
 
 ```sql
--- 1. 复现事故一：utf8 存 emoji
+-- 1. 复现事故一：utf8 存 4 字节表情（用 UNHEX 写入 U+1F600，编码 F0 9F 98 80）
 CREATE TABLE cs_demo_legacy (name VARCHAR(50)) CHARACTER SET utf8;
 -- 8.0 里 utf8 即 utf8mb3
-INSERT INTO cs_demo_legacy VALUES ('张三😀');
+INSERT INTO cs_demo_legacy VALUES (CONCAT('张三', UNHEX('F09F9880')));
 -- ERROR 1366: Incorrect string value ... （复现！）
 
 -- 2. 正确姿势：utf8mb4
 CREATE TABLE cs_demo (
   name VARCHAR(50) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci
 ) ENGINE=InnoDB;
-INSERT INTO cs_demo VALUES ('张三😀');
+INSERT INTO cs_demo VALUES (CONCAT('张三', UNHEX('F09F9880')));
 SELECT name, LENGTH(name) AS bytes, CHAR_LENGTH(name) AS chars FROM cs_demo;
--- LENGTH=7（张三 6 字节 + emoji 4 字节…此处为 10）注意区分字节与字符两个函数
+-- LENGTH=10（张三 6 字节 + 表情 4 字节）、CHAR_LENGTH=3，注意区分字节与字符两个函数
 
 -- 3. 大小写不敏感验证
 SELECT 'ABC' = 'abc' COLLATE utf8mb4_0900_ai_ci AS eq_ai_ci;   -- 1

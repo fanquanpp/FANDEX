@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 类型论基础、结构化类型、子类型理论、类型推导、泛型多态与类型级计算的形式语义与工程实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/280-DecoratorStandardImpl'
   - 'typescript/690-TypeScriptProjectExampleTypeSafeAPIClient'

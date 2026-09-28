@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从「三个成员手算 6 字节，sizeof 却说 12」出发理解对齐动机，用 alignof 与 offsetof 实验量出三条 padding 规则，学会 #pragma pack 与 C11 _Alignas，附栈溢出调试实录。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'c/230-AlignmentMemoryLayout'
   - 'c/130-StructAndUnion'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 承接变参模板的深水区篇：四种折叠形态各配可运行实验（一元左右折叠用减法看到方向差异、二元折叠救空包）、逗号折叠遍历包与流插入折叠、make_tuple 与完美转发两类包展开模式，附空包一元折叠与移位误当输出的调试实录，预告 C++26 包下标。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'cpp/370-VariadicTemplate'
   - 'cpp/110-PerfectForwardingReferenceCollapse'

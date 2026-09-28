@@ -1,170 +1,208 @@
 ---
 order: 10
-title: C# 是什么：.NET 世界的通用语言
+title: "C# 是什么：一场从 Windows 专属到跨平台开源的大逆转"
 module: 'csharp'
 category: 后端技术
 difficulty: beginner
-description: 面向零基础读者介绍 C# 的定位、运行机制、版本现状与应用版图，完成第一个控制台程序并理解工具链。
+description: "以『微软把 Windows 专属语言改造成跨平台开源语言』的大逆转引入：.NET 开源跨平台史、游戏后端桌面三大主战场、与 Java 的同源对照表、.NET 10 与 C# 14 的版本节奏，附在线运行实验与查证练习。"
 author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'csharp/020-CSharpOverviewEnvSetup'
   - 'csharp/250-CSharpDotNet'
+  - 'csharp/370-CSharpGameDevUnity'
+  - 'java/010-WhatIsJava'
   - 'cs-fundamentals/020-ProgrammingBasics'
 prerequisites:
-  - 'cs-fundamentals/020-ProgrammingBasics'
+  - 'start/080-LearningRouteOverview'
+  - 'roadmap/030-BackendJavaRoute'
 ---
 
-## C# 在技术版图中的位置
+## 前置知识
 
-C#（读作 C Sharp）是微软 .NET 平台的主力语言。它的应用版图横跨：**企业服务端**（ASP.NET Core，与 Java Spring 定位相当）、**Windows 桌面应用**（WPF）、**游戏开发**（Unity 引擎使用 C# 作为脚本语言，全球过半手游由 Unity 驱动）、**跨平台客户端**（MAUI）。
+- 已看过 [编程学习路线总览](/start/080-LearningRouteOverview)：知道自己为什么站在 C# 这一站。还没看过也不影响，本文自足。
+- 正在走 [Java 后端路线](/roadmap/030-BackendJavaRoute) 的同学有专属福利：C# 与 Java 同源，学过 Java 或正在学 Java，都能近乎无缝地迁移到 C#——本模块与 java 模块互相链接、概念一一对应，两边对照着学效率翻倍。
 
-一句话定位：**语法气质接近 Java 的现代企业语言，外加游戏开发这张王牌。**
+本文不要求任何编程基础，也不会出现需要逐词理解的代码。
 
-## 它如何运行：虚拟机路线
+## 学习目标
 
-C# 与 Java 走同一条技术路线——编译成中间语言，由运行时执行：
+读完本文你将能够：
+
+1. 用一句话说出 C# 的定位，并列出它的三大主战场与各自的代表技术；
+2. 讲清「Windows 专属 → 跨平台开源」这场逆转发生了什么，以及它对你学 C# 的三个直接影响；
+3. 说出 .NET 与 C# 两条版本线的发布节奏，知道初学者该装哪个版本、为什么；
+4. 拿到一段简单的 Java 打印代码，能大致写出对应的 C# 写法；
+5. 在官方文档里找到 C# 入门的权威入口与版本支持信息。
+
+预计 30 到 45 分钟，含 2 个在线动手实验与 3 道练习。
+
+## 1. 问题引入：一句过时的常识
+
+假设你在网上搜「C# 适合学吗」，翻到的高赞回答很可能还写着：「C# 是微软的语言，只能在 Windows 上跑。」如果你信了这句话，今天会同时错过两件事：给全球过半手游写游戏逻辑的 Unity 脚本语言，以及一个在 Linux 服务器上能与企业级 Java 分庭抗礼的开源运行时。
+
+这句「常识」曾经是对的。但微软后来做了一场罕见的大逆转：**把一门 Windows 专属的闭源语言，改造成了跨平台的开源语言**。主流语言里做到这一点的屈指可数。这场逆转怎么发生的、为什么直接决定你今天怎么学 C#，往下看。
+
+## 2. 核心概念一：大逆转——从 .NET Framework 到统一的 .NET
+
+整段历史压缩成三个时间点，只留对学习者有用的部分：
 
 ```mermaid
 flowchart LR
-    A[你写的 .cs 文件] --> B[编译成 IL 中间码]
-    B --> C[.NET Runtime 执行]
-    C --> D[Windows]
-    C --> E[Linux]
-    C --> F[macOS]
+    A["2002-2014<br/>.NET Framework<br/>Windows 专属"] --> B["2014-2016<br/>.NET Core 开源重写<br/>首次跑上 Linux/macOS"]
+    B --> C["2020 至今<br/>统一为 .NET<br/>每年 11 月发新版"]
 ```
 
-## 它如何运行：编译、IL 与运行时
+- **逆转之前**：老 .NET Framework 与 Windows 深度绑定，C# 背上「Windows 专属」的名声；
+- **2014 到 2016**：微软宣布开源并重写运行时，2016 年 .NET Core 1.0 发布——同一个 C#，第一次官方支持 Linux 与 macOS。源码至今在 GitHub 的 dotnet/runtime 仓库公开开发；
+- **2020 年**：微软把 Framework 与 Core 两条产品线合并成统一的「.NET」，版本号直接跳到 .NET 5。从此只有「.NET」一个名字，每年 11 月发一个大版本。
 
-上面说"编译成中间语言"，实际链条比一句话更长，值得初学者建立正确的心智模型：
+这场逆转对你的三个直接影响：
 
-1. **编译期**：Roslyn 编译器把 `.cs` 源码翻译成 **IL**（Intermediate Language，中间语言）和元数据，打包成 `.dll` 程序集。此时类型检查已经完成——绝大多数错误在你运行之前就被拦下。
-2. **运行期（JIT）**：.NET Runtime 把 IL **按方法**即时编译成本机机器码，并做分层优化（先快速出结果，热点代码再深度优化）。
-3. **运行期（AOT，可选）**：发布时直接把全部 IL 预编译成本机码（Native AOT），牺牲一点灵活性换取毫秒级启动与更小内存占用，是服务端小服务与客户端分发的热门选择。
+1. **一套环境走天下**：Windows、macOS、Linux 装的是同一个 SDK，教程和代码全部通用；
+2. **部署不再绑死**：ASP.NET Core 服务跑在 Linux 容器里是常规操作，Docker 官方镜像、GitHub Actions 都有良好支持；
+3. **学的是真主流**：微软官方与开源社区双驱动，C# 长期稳居主流编程语言排行前列。
 
-自动内存管理与垃圾回收同样内置，初学者无需手动管内存。这套"IL + 运行时 + GC"的组合与 JVM 是同一思路，所以 C# 与 Java 的性能特征、生态形态也高度相似。
+## 3. 核心概念二：主战场——C# 靠什么吃饭
 
-现代 .NET（自 .NET 5 起统一）是真正跨平台的开源运行时，Linux 服务器上运行 C# 服务已是常规操作。
+设想你的目标是做一款小游戏，再给它配一个后端排行榜服务。C# 恰好两条线都能打满：
 
-## 版本现状：先记住两条线
+| 主战场 | 代表技术 | 现状 |
+| --- | --- | --- |
+| 游戏开发 | Unity 引擎脚本语言 | 全球过半的手游由 Unity 制作，C# 是唯一官方脚本语言 |
+| 企业后端 | ASP.NET Core | 与 Java Spring 定位相当，跑在 Linux 服务器与容器里 |
+| 桌面与跨平台客户端 | WPF、WinForms、MAUI | Windows 桌面主力；MAUI 一套代码出 Android/iOS/Windows/macOS |
 
-C# 的版本号与 .NET 的版本号是两条线，每年 11 月同步发布一个大版本：
+关键事实：三个战场共享同一套语言地基，差异全在框架层。所以入门阶段只管学语言本体，方向以后再选。游戏方向见 [Unity 游戏开发](/csharp/370-CSharpGameDevUnity)，后端方向见 [Web API](/csharp/300-CSharpAPI)。
 
-| C# 版本 | 随附 .NET | 发布时间 | 代表特性 |
-|---------|-----------|---------|---------|
-| C# 12 | .NET 8（LTS） | 2023.11 | 主构造函数、集合表达式 |
-| C# 13 | .NET 9（STS） | 2024.11 | `params` 集合、`Lock` 类型 |
-| C# 14 | .NET 10（LTS） | 2025.11 | 扩展成员、`field` 关键字 |
+## 4. 核心概念三：与 Java 同源对照
 
-初学者的选择很简单：**装最新的 LTS（长期支持版）**。企业新项目也推荐 LTS，因为它的安全支持期长达三年；STS（标准期限支持）只维护 18 个月。本模块的示例默认基于 .NET 10 / C# 14，绝大多数语法在 .NET 8 上同样可用。
+一句定位先立住：**学过 Java 或正在学 Java，都能无缝迁移到 C#；本仓库的 java 模块与本模块互为对照教材。**
 
-## 第一行代码的现代方式
+两者师出同门不是比喻：C# 首席设计师 Anders Hejlsberg 主导设计时，Java 已成名多年；两门语言都编译成中间码、由虚拟机执行、自带垃圾回收，连关键字都大量重合。日常最常撞上的差异只有几处：
 
-安装 .NET SDK 后，两行命令创建并运行项目：
+| 维度 | C# | Java |
+| --- | --- | --- |
+| 运行方式 | 编译为 IL，.NET Runtime（JIT/AOT）执行 | 编译为字节码，JVM 执行 |
+| 类型系统 | 静态强类型 | 静态强类型 |
+| 程序入口 | 顶级语句一行即可，或 Main 方法 | 必须是类里的 main 方法 |
+| 打印一行 | `Console.WriteLine("Hi");` | `System.out.println("Hi");` |
+| 字符串嵌变量 | `$"第 {i} 名"` | `"第 " + i + " 名"` |
+| 包管理 | NuGet | Maven / Gradle |
+| 企业后端框架 | ASP.NET Core | Spring Boot |
 
-```bash
-dotnet new console -o Hello   # 生成控制台项目模板
-cd Hello && dotnet run        # 运行
-```
+学过 Java 的同学，把 [Java 快速上手](/java/030-QuickStart) 的 HelloWorld 与本文第 5 节并排看一遍，迁移的感觉立刻就有了；`System.out.println` 与 `Console.WriteLine` 的相似度是两个生态同源的最直白证据。
 
-打开生成的 `Program.cs`，核心只有一行：
+## 5. 第一口味道：一行代码的 C#
+
+概念说完，先尝一口味道。装好环境之后（下一篇的事），C# 的入口程序 `Program.cs` 全文可以只有一行：
 
 ```csharp
 Console.WriteLine("你好，C#");
 ```
 
-较新版本的模板甚至省略了类的声明骨架——微软在不断降低入门样板代码。你可以把这一行改成循环：
+预期输出：
+
+```text
+你好，C#
+```
+
+加个循环，让它问候三次：
 
 ```csharp
-for (int i = 1; i <= 100; i++)
+for (var i = 1; i <= 3; i++)
 {
     Console.WriteLine($"第 {i} 次问候");
 }
 ```
 
-`$"..."` 是字符串插值，花括号里可以直接放变量，与 Kotlin 的 `$name` 异曲同工。
-
-## 一个稍微完整的例子
-
-下面的程序把"定义数据、处理数据、输出结果"三个环节都走了一遍。整个文件可直接替换 `Program.cs` 后 `dotnet run`：
-
-```csharp
-// 记录类型：一行定义一个不可变的数据结构（C# 9+）
-record Student(string Name, int Score);
-
-var students = new List<Student>
-{
-    new("张三", 82),
-    new("李四", 95),
-    new("王五", 74),
-};
-
-// LINQ：声明式地过滤、排序、投影
-var top2 = students
-    .Where(s => s.Score >= 80)
-    .OrderByDescending(s => s.Score)
-    .Take(2)
-    .Select(s => $"{s.Name}({s.Score}分)");
-
-foreach (var line in top2)
-{
-    Console.WriteLine(line);
-}
-```
-
-运行输出：
+预期输出：
 
 ```text
-李四(95分)
-张三(82分)
+第 1 次问候
+第 2 次问候
+第 3 次问候
 ```
 
-`record`、`Where`、字符串插值这些名字现在不必深究——它们分别对应本模块的[面向对象](/csharp/040-CSharpOOP)与 [LINQ](/csharp/110-CSharpLINQFunctionalProgramming) 章节。这里只需要体会：**C# 写起来可以非常简洁**。
+这段代码现在不需要逐词理解，只需要感受两件事：`$` 后面的字符串里，`{i}` 会被替换成变量的值（叫字符串插值，第三篇正式讲）；对照上一节的表格，Java 要用加号拼半天的事，C# 一个花括号解决。
 
-## 动手环节：修改并观察
+## 6. 核心概念四：版本现状——两条线，一个选择
 
-把输出文字换成自己的名字；再加一个 `if` 判断，让程序在数字大于 50 时输出"过半了"。保存后 `dotnet run`，立即看到效果。**改一点、跑一次**的节奏与任何语言通用。
+C# 的版本号与 .NET 的版本号是两条线，**每年 11 月同步发布一个大版本**，偶数为 LTS（长期支持，约三年），奇数为 STS（标准期支持，18 个月）：
 
-## 与其他语言速览对照
+| .NET 版本 | 随附 C# | 发布 | 支持类型 |
+| --- | --- | --- | --- |
+| .NET 8 | C# 12 | 2023.11 | LTS |
+| .NET 9 | C# 13 | 2024.11 | STS |
+| .NET 10 | C# 14 | 2025.11 | LTS，支持到 2028.11 |
 
-| 维度 | C# | Java | Python |
-|------|----|------|--------|
-| 类型系统 | 静态强类型 | 静态强类型 | 动态类型 |
-| 运行方式 | IL + JIT/AOT | 字节码 + JIT | 解释 + 字节码 |
-| 主战场 | 企业后端、游戏（Unity）、桌面 | 企业后端、安卓 | 数据、脚本、AI |
-| 异步模型 | `async/await`（C# 5 首创） | 虚拟线程 / CompletableFuture | `asyncio` |
-| 包管理 | NuGet | Maven/Gradle | pip |
+初学者的选择很简单：**装最新的 LTS，也就是 .NET 10 / C# 14**。企业新项目同理。本模块示例默认基于 .NET 10 / C# 14，绝大多数语法在 .NET 8 上同样可用。C# 14 的两个代表特性（扩展成员、field 关键字）属于进阶内容，到 [C# 14 新特性](/csharp/220-CSharp14NewFeatures) 再见。
 
-如果你有 Java 背景，几乎可以"平移"——类、接口、继承、泛型概念一一对应；如果你有 Python 背景，需要适应静态类型声明，但 `var`（类型推断）和 LINQ 会让你找回部分灵活感。
+版本事实会随时间变化，发布节奏以官方下载页为准（写作时于 2026-09 核实）：https://dotnet.microsoft.com/zh-cn/download/dotnet
 
-## 学习路线图
+## 7. 常见困惑与边界
 
-本模块文档按"语言基础 -> 语言进阶 -> 平台与框架 -> 专题深潜"四层组织，建议路径如下：
+**「C、C++、C# 是一家吗？」**——名字像，是三门独立语言。C# 语法借鉴了 C++ 与 Java，但与 C/C++ 没有源码层面的兼容关系。井号取自音乐记号「升半音」，寓意比 C++ 更进一步。
 
-```mermaid
-flowchart TD
-    A[001 是什么] --> B[002 环境搭建]
-    B --> C[003 基础语法]
-    C --> D[004 面向对象]
-    D --> E[006 泛型与集合]
-    E --> F[007 异步 / 008 LINQ]
-    F --> G[009 高级特性 / 017 记录类型 / 016 模式匹配]
-    G --> H[011 .NET 平台 / 025 依赖注入 / 024 EF Core / 026 Web API]
-    H --> I[专题深潜：019 Span / 030 状态机 / 035 DI 生命周期 / 036 GC]
+**「Unity 里的 C# 和这里学的一样吗？」**——语言层面完全一致；差异在运行时（Unity 用 Mono/IL2CPP，API 是 .NET 的子集）。语法基础全部通用，先在本模块打好地基，再去 [Unity 两章](/csharp/370-CSharpGameDevUnity) 搬进引擎。
+
+**「C# 只能在 Windows 上用吗？」**——本文开头已经回答：不能这么说了，而且这是全篇最重要的一句话。
+
+## 8. 动手环节：在线跑通第一段代码
+
+机器上还没装环境？不用等，浏览器里就能跑。
+
+实验一：打开 https://dotnetfiddle.net （在线运行 C# 的常用站点），把第 5 节的循环示例贴进去运行，核对输出是否一致。
+
+实验二：把 `i <= 3` 改成 `i <= 5`。先在纸上写出预期五行输出，再运行核对。**先预测、再运行**，这个习惯将贯穿整个模块。
+
+## 9. 实际场景中的使用
+
+- **选方向**：三大主战场决定你后续走哪条框架线——游戏线学 Unity，后端线学 ASP.NET Core，桌面线学 WPF/MAUI；
+- **技术选型**：第 4 节的对照表就是团队选型速查表，「C# 还是 Java」的争论可以用它对齐语言；
+- **面试与简历**：「C# 与 Java 的异同」是后端面试常见题，本文表格可直接当提纲；
+- **查证习惯**：版本、支持期这类会过期的信息，永远以官方页面为准，这是工程师的基本功。
+
+## 10. 小练习
+
+预测题（5 分钟）：下面代码输出什么？先写答案，再用 dotnetfiddle 验证。
+
+```csharp
+var game = "方块坠落";
+var level = 7;
+Console.WriteLine($"你在 {game} 的第 {level} 关");
 ```
 
-无需按编号线性通读：先走完主线（1-11），再按兴趣跳专题。每篇文档的 `related` 与文末"下一步"都给出了相邻节点。
+（验证：运行后与手写答案逐字符核对，花括号外的一个空格都算数。）
 
-## 常见困惑
+修改题（5 分钟）：把第 5 节的循环改成从 5 数到 1（提示：for 的三段各改一处）。先写出预期五行输出，再运行核对。
 
-**"C、C++、C# 是一家吗？"**——C# 由微软设计，语法借鉴了 C++ 与 Java，但它是独立的现代语言，与 C/C++ 没有源码层面的兼容关系。名字里的井号取自音乐记号"升半音"，寓意"比 C++ 更进一步"。
+挑战题（15 分钟）：打开 https://dotnet.microsoft.com/zh-cn/download/dotnet 查证三件事：当前最新 LTS 是哪个版本；按发布节奏，下一个版本属于 LTS 还是 STS、计划何时发布；企业项目为什么不急着追最新版。验收：能说出 .NET 11 计划 2026.11 发布、属于 STS（18 个月支持期）、所以生产环境等下一个 LTS 更稳。
 
-**"学 C# 能做什么方向？"**——三大主流：.NET 企业后端、Unity 游戏逻辑、Windows 桌面与跨平台客户端。语法基础完全一致，方向差异在框架层。
+## 11. 与之前和之后的知识的关系
 
-**"C# 只能在 Windows 上用吗？"**——不是。自 .NET Core（2016）起，.NET 就是一个开源跨平台运行时，Windows/Linux/macOS 均为一等公民；Docker 官方镜像、GitHub Actions 都对其有良好支持。
+- 往前：[编程学习路线总览](/start/080-LearningRouteOverview) 的路线图上，这是语言起点站之一；[Java 后端路线](/roadmap/030-BackendJavaRoute) 的后端地图上，C# 与 Java 是并排的两条同源路线，随时可以互相切换；
+- 往后：下一篇装环境（020），再下一篇写第一段像样的程序（030），然后进入 [面向对象](/csharp/040-CSharpOOP)；
+- 更远：方向三选一之后，游戏线去 [Unity 游戏开发](/csharp/370-CSharpGameDevUnity)，后端线去 [Web API](/csharp/300-CSharpAPI)，平台机制深挖去 [.NET 平台](/csharp/250-CSharpDotNet)。
 
-**" Unity 里的 C# 和这里学的一样吗？"**——语言层面一致，但 Unity 当前默认使用 C# 9 语法与 .NET Standard 2.1 API 子集，运行时为 Mono/IL2CPP（CoreCLR 迁移仍在推进中）。语法基础完全通用，详见[Unity 游戏开发两章](/csharp/370-CSharpGameDevUnity)。
+## 12. 官方文档
+
+- C# 官方导览（Tour of C#，含浏览器内交互示例）：https://learn.microsoft.com/dotnet/csharp/tour-of-csharp/
+- .NET 下载与版本支持信息：https://dotnet.microsoft.com/zh-cn/download/dotnet
+- C# 语言参考：https://learn.microsoft.com/dotnet/csharp/language-reference/
+
+## 13. 自我检查
+
+- 能不看本文说出 C# 的三大主战场与各自的代表技术；
+- 能用三句话讲清大逆转：Core 开源跨平台 → 统一为 .NET 5+ → 每年 11 月发版；
+- 能说出为什么初学者装 LTS 而不是刚出的最新版；
+- 给一段 Java 的打印代码，能写出对应的 C# 写法；
+- 知道版本支持期这类信息该去哪个官方页面核实。
+
+## 本章总结
+
+C# 是 .NET 平台的主力语言，微软用十年把它从 Windows 专属改造成了跨平台开源——.NET Core 重写、2020 年统一为 .NET、每年 11 月发新版。它的三大主战场是 Unity 游戏、ASP.NET Core 企业后端与 WPF/MAUI 桌面客户端，语言地基完全相同。它与 Java 师出同门：同为静态强类型、同为虚拟机路线，学过一门就能快速迁移另一门。初学者装最新的 LTS（.NET 10 / C# 14）即可。
 
 ## 下一步
 
-进入 [C# 概述与环境搭建](/csharp/020-CSharpOverviewEnvSetup) 开始主线；面向对象部分建议与 java 模块对照学习，两者概念一一对应、语法互证。
+进入 [C# 概述与环境搭建](/csharp/020-CSharpOverviewEnvSetup)：五分钟装好 .NET SDK，两条命令让你的机器跑起第一个 C# 程序。

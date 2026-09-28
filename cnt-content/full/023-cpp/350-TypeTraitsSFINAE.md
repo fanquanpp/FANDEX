@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: "以「只接受整型的 serialize 传 string 爆出上百行模板错误」引入，讲透 is_integral_v 与 enable_if 最小用法、SFINAE 一句话原则、void_t 探测惯用法，并用真实报错对照 static_assert 人话报错与 C++20 concepts。"
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'cpp/360-TypeExtractionSFINAE'
   - 'cpp/410-Cpp20Concept'

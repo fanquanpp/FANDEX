@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 回顾 TypeScript 模块的核心知识体系：类型标注与收窄、泛型与类型体操、tsconfig 工程配置、编译性能与类型安全实践，并用虚拟歌手音乐平台的示例串联全部要点。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/010-WhyTypeScript'
   - 'typescript/070-TSBasicsGenerics'

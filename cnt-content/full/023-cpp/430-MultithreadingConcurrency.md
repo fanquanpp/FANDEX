@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: "以「图片批量缩放单线程约 10 秒、四线程约 3 秒」引入，讲透 std::thread 创建与 join 的最小生命周期、detach 的危险一句话、非原子计数丢失更新的竞态对照实验与 mutex 加 lock_guard 修复，警告数据竞争是未定义行为并与 030 篇 UB 呼应，最后给出 atomic 最小替换示例与 ThreadSanitizer 实录。"
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'cpp/440-ConcurrentProgramming'
   - 'cpp/160-RAIIResourceManagement'

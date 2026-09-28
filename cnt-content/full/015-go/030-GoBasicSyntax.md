@@ -1,1133 +1,372 @@
 ---
 order: 30
-title: Go 基础语法
+title: 基本语法：Hello Go 与强制的大括号
 module: 'go'
 category: 后端技术
 difficulty: beginner
-description: 变量与常量、基本类型、零值、类型转换、字符串、指针、控制流与 defer 语句。
+description: 从最小 main.go 出发学会包与 import、变量三式与零值、for 三形态与无括号的 if；附 unused import 真实报错、go vet 提示实录与四道练习。
 author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'go/020-GoOverviewEnvSetup'
   - 'go/040-GoFunctionMethod'
   - 'go/050-GoDataStructure'
-prerequisites: []
+  - 'go/060-GoInterfaceComposition'
+prerequisites:
+  - 'go/020-GoOverviewEnvSetup'
 ---
 
 ## 前置知识
 
-- [Go 概述与环境配置](/go/020-GoOverviewEnvSetup)：建议先完成前一篇的学习
+- 已完成 [工具链与环境搭建](/go/020-GoOverviewEnvSetup)：go version 有输出，hello-go 模块里 go run main.go 能跑通。
+
+没跟上也不影响：第一节用两句命令补建模块。
 
 ## 学习目标
 
-- 掌握「1. 变量与常量」的核心机制、典型用法与常见陷阱
-- 掌握「2. 基本数据类型」的核心机制、典型用法与常见陷阱
-- 掌握「3. 字符串」的核心机制、典型用法与常见陷阱
-- 掌握「4. 指针」的核心机制、典型用法与常见陷阱
-- 掌握「5. 控制流」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 写出并跑通最小 main.go，逐行说出每个词的作用；
+2. 用变量三式中的合适一种声明数据，并预测未初始化变量的零值；
+3. 看到 imported and not used 与 declared and not used 报错，10 秒内说出修法；
+4. 用 for 的三种形态分别实现同一个计数任务；
+5. 用 go vet 抓出「编译器放行、运行时才暴露」的 Printf 格式错误。
 
-## 1. 变量与常量
+预计 45 到 60 分钟，含 3 组实验与 4 道练习。
 
-### 1.1 变量声明
+## 1. 问题引入：Hello Go 与强制的大括号
 
-Go 提供多种变量声明方式，推荐在函数内使用短变量声明：
+Python 的 if 用冒号加缩进，C 与 Java 的 if 条件带括号。Go 的规定很特别：**条件不写括号，大括号却必须写**。
 
-```go
-// 完整声明（可省略类型，由编译器推断）
-var name string = "Go"
-var age = 15
+正确的写法是 `if score > 90 {`；写成 `if score > 90` 单独成行，编译直接拒绝。
 
-// 批量声明
-var (
-    x    int     = 10
-    y    float64 = 3.14
-    flag bool    = true
-)
+强制大括号不是审美洁癖：2014 年 Apple 的 goto fail 漏洞，根源正是一个 if 后没加大括号，受条件保护的校验代码在条件外继续执行，证书校验被跳过。Go 从语法层面没收了这个选项。
 
-// 短变量声明（仅限函数内，最常用）
-city := "Beijing"
-count := 100
+大括号为什么不能另起一行？Go 在行尾自动插入分号——以标识符、`)`、`}` 等结尾的行尾会补分号，于是 `if score > 90` 单独成行时行尾已被补分号，`{` 跟不上来。附带的好处：Go 代码永远不需要手写分号。
 
-// 未初始化则使用零值
-var score int       // 0
-var title string    // ""（空字符串）
-var done bool       // false
-```
+## 2. 最小 main.go 与 go run
 
-### 1.2 常量
+进入上一篇建好的 hello-go 模块（没跟上就补建：mkdir hello-go，进入后执行 go mod init hello-go），把 main.go 覆盖成：
 
 ```go
-// 常量在编译时确定，不能使用 := 声明
-const Pi = 3.14159
-const Language = "Go"
+package main
 
-// 批量声明
-const (
-    StatusOK    = 200
-    StatusError = 500
-)
+import "fmt"
 
-// iota 常量生成器
-const (
-    Sunday    = iota // 0
-    Monday           // 1
-    Tuesday          // 2
-    Wednesday        // 3
-    Thursday         // 4
-    Friday           // 5
-    Saturday         // 6
-)
-
-// iota 高级用法：位运算标志
-const (
-    ReadPermission   = 1 << iota // 1  (001)
-    WritePermission              // 2  (010)
-    ExecutePermission            // 4  (100)
-)
-
-// 跳过值
-const (
-    _  = iota // 跳过 0
-    KB = 1 << (10 * iota) // 1 << 10 = 1024
-    MB                     // 1 << 20
-    GB                     // 1 << 30
-    TB                     // 1 << 40
-)
-```
-
-## 2. 基本数据类型
-
-### 2.1 类型一览
-
-| 类别   | 类型                                          | 说明                              |
-| :----- | :-------------------------------------------- | :-------------------------------- |
-| 布尔   | `bool`                                        | `true` 或 `false`                 |
-| 整数   | `int8`, `int16`, `int32`, `int64`, `int`      | 有符号整数                        |
-| 整数   | `uint8`, `uint16`, `uint32`, `uint64`, `uint` | 无符号整数                        |
-| 整数   | `byte`                                        | `uint8` 的别名                    |
-| 整数   | `rune`                                        | `int32` 的别名，表示 Unicode 码点 |
-| 浮点   | `float32`, `float64`                          | IEEE 754 浮点数                   |
-| 复数   | `complex64`, `complex128`                     | 复数                              |
-| 字符串 | `string`                                      | 不可变字节序列                    |
-| 指针   | `*T`                                          | 指向类型 T 的指针                 |
-
-> **注意**：`int` 和 `uint` 的大小取决于平台（32 位或 64 位），优先使用 `int`。
-
-### 2.2 零值
-
-Go 中所有变量在声明时若未初始化，会自动赋予零值：
-
-```go
-var (
-    i    int        // 0
-    f    float64    // 0.0
-    b    bool       // false
-    s    string     // ""
-    ptr  *int       // nil
-    sl   []int      // nil
-    m    map[string]int // nil
-    ch   chan int   // nil
-    fn   func()     // nil
-    err  error      // nil
-)
-```
-
-> 零值是 Go 的重要设计理念——变量总是有明确定义的值，不存在"未初始化"状态。
-
-### 2.3 类型转换
-
-Go 没有隐式类型转换，所有转换必须显式进行：
-
-```go
-var i int = 42
-var f float64 = float64(i)    // int → float64
-var u uint = uint(f)          // float64 → uint
-
-// 字符串与数值转换（使用 strconv 包）
-s := strconv.Itoa(42)         // int → string: "42"
-n, err := strconv.Atoi("42")  // string → int: 42
-
-f2 := strconv.FormatFloat(3.14, 'f', 2, 64) // float64 → string: "3.14"
-f3, err := strconv.ParseFloat("3.14", 64)    // string → float64
-
-// 字符串与字节切片
-bytes := []byte("hello")      // string → []byte
-str := string(bytes)          // []byte → string
-
-// rune 与 string
-r := '世'
-fmt.Printf("%c %U\n", r, r)  // 世 U+4E16
-```
-
-## 3. 字符串
-
-### 3.1 字符串基础
-
-Go 字符串是不可变的 UTF-8 字节序列：
-
-```go
-s := "Hello, 世界"
-
-// 字节长度 vs 字符数
-fmt.Println(len(s))                    // 13（字节数）
-fmt.Println(utf8.RuneCountInString(s)) // 9（字符数）
-
-// 遍历字节
-for i := 0; i < len(s); i++ {
-    fmt.Printf("%x ", s[i]) // 48 65 6c 6c 6f 2c 20 e4 b8 96 e7 95 8c
-}
-
-// 遍历 rune（正确处理 Unicode）
-for i, r := range s {
-    fmt.Printf("%d:%c ", i, r) // 0:H 1:e 2:l 3:l 4:o 5:, 6:  7:世 10:界
+func main() {
+    fmt.Println("Hello, Go")
 }
 ```
 
-### 3.2 字符串操作
+```bash
+go run main.go
+```
+
+预期输出：
+
+```text
+Hello, Go
+```
+
+逐行拆：`package main` 加 main 函数是可执行入口的固定约定；`import "fmt"` 引入标准库的格式化输出包；`func main()` 是入口函数；`fmt.Println` 打印一行并换行，参数间自动加空格。
+
+`func` 这个词今天先混个眼熟——完整语法（参数、返回值、多返回值）在 [函数与方法](/go/040-GoFunctionMethod) 讲透，本文只需要会改函数体里的内容。
+
+## 3. 包与 import：unused import 直接编译失败
+
+import 的规则：**导入多少包，就必须用多少包**。给 main.go 加一个 import 但不用它：
 
 ```go
+package main
+
+import "fmt"
+import "os"
+
+func main() {
+    fmt.Println("Hello, Go")
+}
+```
+
+```bash
+go run main.go
+```
+
+预期输出：
+
+```text
+# command-line-arguments
+./main.go:4:2: imported and not used: "os"
+```
+
+读报错三步：`./main.go:4:2` 指向文件、行、列；`imported and not used` 是原因；"os" 是涉事包。这就是上一篇说的纪律性格：Go 宁可编译失败，也不让死代码进仓库。（Go 1.24 前措辞是 `"os" imported and not used`，读法相同。）
+
+现在把 `import "os"` 删掉，程序恢复可运行。多包导入用 import 加圆括号分组，go fmt 会按字母序排好。反方向错误也存在：用了没导入的包报 undefined: fmt，第 9 节实录。
+
+## 4. 变量三式：:= 是主角
+
+Go 声明变量有三式，用武之地各不相同：
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    player := "星尘"      // 式一：短声明，函数内首选
+    level := 12
+
+    var maxLevel int = 60 // 式二：完整式，显式强调类型
+    var combo float64     // 式三：零值式，先占位后赋值
+    combo = 3.5
+
+    const maxRetry = 3    // 常量：编译期确定
+
+    fmt.Println(player, level, maxLevel, combo, maxRetry)
+}
+```
+
+预期输出：
+
+```text
+星尘 12 60 3.5 3
+```
+
+三个要点：
+
+1. **:= 只能用在函数内**，且左边必须是新变量；包级变量（函数外）必须用 var——函数外写 := 会报 syntax error: non-declaration statement outside function body；
+2. **未初始化的变量自动获得零值**：int 是 0，float64 是 0，string 是空串 ""，bool 是 false（`var hp int` 的 hp 出生即 0）；
+3. **声明了不用的变量是编译错误**（上一篇实录过）：`declared and not used: combo`。别提前声明，用到时再声明。
+
+## 5. for：唯一的循环，三种形态
+
+Go 没有 while——**循环关键字只有 for 一个**，三种形态覆盖其他语言所有循环的场景：
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    // 形态一：三段式（初始化；条件；后置），最常用
+    for i := 3; i >= 1; i-- {
+        fmt.Println("倒计时", i)
+    }
+
+    // 形态二：只有条件，等价于其他语言的 while
+    hp := 100
+    for hp > 0 {
+        hp -= 30
+        fmt.Println("受到 30 点伤害，剩余血量", hp)
+    }
+
+    // 形态三：无限循环，配 break 退出
+    score := 0
+    for {
+        score += 40
+        if score >= 100 { // if 下一节讲，先混个眼熟
+            fmt.Println("积分达到", score, "点，结算完成")
+            break
+        }
+    }
+}
+```
+
+预期输出：
+
+```text
+倒计时 3
+倒计时 2
+倒计时 1
+受到 30 点伤害，剩余血量 70
+受到 30 点伤害，剩余血量 40
+受到 30 点伤害，剩余血量 10
+受到 30 点伤害，剩余血量 -20
+积分达到 120 点，结算完成
+```
+
+三个观察点：
+
+1. 形态一里声明的 i 只活在循环内；
+2. 形态二像 while：hp 变成 -20 后条件不成立，循环结束；
+3. 形态三没有条件，永不停止——除非 break；循环变量忘了变化就是死循环，Ctrl+C 中断。
+
+遍历集合的第四种形态 for range 在 [数据结构](/go/050-GoDataStructure) 展开；Go 1.22 起还能 `for i := range 5` 直接数到 5。
+
+## 6. if：无括号，还有免费的作用域
+
+if 的结构与大多数语言一致，只是不写括号。放进 main 里（score := 85）：
+
+```go
+if score >= 90 {
+    fmt.Println("段位：传奇")
+} else if score >= 80 {
+    fmt.Println("段位：大师")
+} else {
+    fmt.Println("段位：钻石")
+}
+```
+
+预期输出：
+
+```text
+段位：大师
+```
+
+Go 的 if 还有一个免费赠品：**条件前可以塞一句初始化**，声明的变量只在 if 块内可见：
+
+```go
+if bonus := 10; score+bonus >= 90 {
+    fmt.Println("加成后达到大师线:", bonus) // bonus 只在这个块里存在
+}
+```
+
+（预期输出：`加成后达到大师线: 10`；块外再用 bonus 报 undefined。）这个形态在处理错误时会爆发——`if err := doSomething(); err != nil` 是 Go 代码里最常见的开头，[错误处理](/go/070-GoErrorHandling) 让你天天写它。
+
+## 7. 第一编译错误与 go vet 提示实录
+
+### 编译错误：大括号没闭合
+
+故意删掉 main 的右大括号，go run main.go 直接报：
+
+```text
+# command-line-arguments
+./main.go:7:1: syntax error: unexpected EOF, expected }
+```
+
+（要点是 unexpected EOF——读到文件末尾还没等到 `}`。）编译器把不完整的程序拦在运行之前：语法问题零容忍。
+
+### go vet：编译器不管的，它来管
+
+编译器只查语法与类型。这段完全合法：
+
+```go
+package main
+
+import "fmt"
+
+func main() {
+    fmt.Printf("最终积分: %d 分\n", "一百二十")
+}
+```
+
+go run 直接放行，输出却是这样：
+
+```text
+最终积分: %!d(string=一百二十) 分
+```
+
+`%d` 是整数占位符，塞进去的却是字符串——fmt 没崩溃，把尴尬写在输出里。go vet 专门抓这类「编译能过但大概率是 bug」的模式：
+
+```bash
+go vet
+```
+
+预期输出：
+
+```text
+# hello-go
+./main.go:6:2: Printf format %d has arg #1 of wrong type string
+```
+
+vet 与编译器的分工：**编译器抓语法与类型错，vet 抓模式错**（go test 默认自动跑一部分 vet 检查）。修法：换成数字 120。
+
+## 8. 修改实验
+
+实验一：把 player 改成你的名字，函数体末尾加 `level = level + 1` 并再打印一次。预测两次 level 是否不同再运行——`:=` 声明新变量，`=` 给已有变量赋值。
+
+实验二：把倒计时（形态一）改用形态二实现，输出完全一致；只许改 for 那一行。
+
+实验三：把 if 示例的 score 依次改成 90 与 80。先写预期段位再运行——边界值 90 落进 >= 90 的分支。
+
+## 9. 常见错误与调试实录
+
+错误一：用了没导入的包。删掉 import "fmt" 但保留 fmt.Println：
+
+```text
+# command-line-arguments
+./main.go:6:2: undefined: fmt
+```
+
+undefined 意思是「名字不存在」。三步定位：查拼写、查是否导入、查导入路径——九成是拼写或漏导入。
+
+错误二：`{` 另起一行（C/Java 肌肉记忆）：
+
+```go
+func main()
+{
+```
+
+```text
+./main.go:5:12: syntax error: unexpected newline, expected { after function signature
+```
+
+原因仍是第 1 节的分号自动插入。修法：`{` 与语句同行。（措辞随版本略异，关键词 unexpected newline。）
+
+## 10. 实际项目中的使用场景
+
+- 命令行工具与后台程序：形态三无限循环加 break 是交互式 CLI 与监听程序的骨架（配信号处理退出，见 [Go 信号处理](/go/430-GoSignalHandling)）；
+- 状态推进与分档：形态二适合血量、积分、重试次数；if 链处理段位分档，真实代码里的 err 检查就是条件前初始化；
+- go vet 进流水线：CI 里 `go vet ./...` 是比编译更严的一道关。
+
+## 11. 小练习
+
+预测题（5 分钟）：写出下面程序的输出再运行验证：
+
+```go
+n := 5
+for n > 0 {
+    n -= 2
+}
+fmt.Println(n)
+```
+
+（验证：n 依次为 5、3、1、-1，-1 不满足条件时循环结束。）
+
+修改题（15 分钟）：把倒计时改成只输出 1 到 10 的偶数，保持形态一。验收：五行输出 2 4 6 8 10；i-- 变 i++。
+
+修 Bug 题（15 分钟）：下面的程序编译失败，报错原文如下。按读报错三步说出原因，给两个修法——一个删代码，一个用上它（提示：strings.Contains 判断包含）：
+
+```go
+package main
+
+import "fmt"
 import "strings"
 
-s := "Hello, World"
-
-// 查找与判断
-strings.Contains(s, "World")       // true
-strings.HasPrefix(s, "Hello")      // true
-strings.HasSuffix(s, "World")      // true
-strings.Index(s, "World")          // 7
-strings.Count(s, "l")              // 3
-
-// 变换
-strings.ToUpper(s)                  // "HELLO, WORLD"
-strings.ToLower(s)                  // "hello, world"
-strings.TrimSpace("  hi  ")        // "hi"
-strings.Trim("==hi==", "=")        // "hi"
-strings.Replace(s, "World", "Go", 1) // "Hello, Go"
-strings.ReplaceAll(s, "l", "L")    // "HeLLo, WorLd"
-
-// 拆分与合并
-parts := strings.Split("a,b,c", ",")    // ["a", "b", "c"]
-joined := strings.Join(parts, "-")      // "a-b-c"
-fields := strings.Fields("  a  b  c ")  // ["a", "b", "c"]
-
-// 字符串构建（避免频繁拼接）
-var b strings.Builder
-b.WriteString("Hello")
-b.WriteString(", ")
-b.WriteString("World")
-result := b.String() // "Hello, World"
-```
-
-### 3.3 原始字符串
-
-```go
-// 反引号包围，不处理转义
-raw := `C:\Users\name\file.txt`
-multi := `
-第一行
-第二行
-第三行
-`
-```
-
-## 4. 指针
-
-### 4.1 指针基础
-
-```go
-x := 42
-p := &x          // p 是 *int 类型，指向 x 的地址
-
-fmt.Println(p)   // 0xc0000b2008（内存地址）
-fmt.Println(*p)  // 42（解引用，获取地址处的值）
-
-*p = 100         // 通过指针修改值
-fmt.Println(x)   // 100
-```
-
-### 4.2 指针的零值
-
-```go
-var p *int        // nil（零值）
-if p != nil {
-    fmt.Println(*p) // 安全检查
-}
-// *p = 10        // panic: nil 指针解引用
-```
-
-### 4.3 指针与函数
-
-```go
-// 值传递：函数内修改不影响外部
-func doubleVal(n int) {
-    n *= 2
-}
-
-// 指针传递：函数内修改影响外部
-func doublePtr(n *int) {
-    *n *= 2
-}
-
 func main() {
-    x := 10
-    doubleVal(x)
-    fmt.Println(x)  // 10（未变）
-
-    doublePtr(&x)
-    fmt.Println(x)  // 20（已变）
+    fmt.Println("背包整理完成")
 }
 ```
 
-### 4.4 new 函数
-
-```go
-// new(T) 分配零值内存并返回指针
-p := new(int)     // *int 类型，指向 0
-*p = 42
-fmt.Println(*p)   // 42
-
-// 等价于
-var v int
-p2 := &v
-```
-
-> **Go 指针 vs C 指针**：Go 没有指针运算（不能 `p++`），更安全。
-
-## 5. 控制流
-
-### 5.1 if 语句
-
-```go
-// 基本形式（条件不需要括号）
-if x > 0 {
-    fmt.Println("positive")
-} else if x < 0 {
-    fmt.Println("negative")
-} else {
-    fmt.Println("zero")
-}
-
-// 初始化语句（变量作用域限定在 if 块内）
-if err := doSomething(); err != nil {
-    fmt.Println("Error:", err)
-    // err 仅在此块内可见
-}
-```
-
-### 5.2 for 循环
-
-Go 只有 `for` 一种循环语句，但功能涵盖所有场景：
-
-```go
-// 经典三段式
-for i := 0; i < 10; i++ {
-    fmt.Println(i)
-}
-
-// while 风格
-n := 1
-for n < 100 {
-    n *= 2
-}
-
-// 无限循环
-for {
-    if shouldBreak() {
-        break
-    }
-}
-
-// for-range（遍历集合）
-nums := []int{1, 2, 3}
-for i, v := range nums {
-    fmt.Printf("index=%d value=%d\n", i, v)
-}
-
-// Go 1.22+ for-range 整数
-for i := range 5 {
-    fmt.Println(i) // 0, 1, 2, 3, 4
-}
-
-// 只需要索引或值
-for i := range nums { /* 只取索引 */ }
-for _, v := range nums { /* 只取值 */ }
-```
-
-### 5.3 switch 语句
-
-```go
-// 基本形式（自动 break，不穿透）
-day := "Monday"
-switch day {
-case "Monday":
-    fmt.Println("周一")
-case "Tuesday":
-    fmt.Println("周二")
-default:
-    fmt.Println("其他")
-}
-
-// 多值匹配
-switch color {
-case "red", "green", "blue":
-    fmt.Println("基础颜色")
-}
-
-// 穿透（fallthrough）
-switch n := 2; n {
-case 1:
-    fmt.Println("一")
-    fallthrough
-case 2:
-    fmt.Println("二")   // 即使匹配 2，也会执行
-    fallthrough
-case 3:
-    fmt.Println("三")   // fallthrough 继续执行
-}
-
-// 无条件 switch（替代 if-else 链）
-score := 85
-switch {
-case score >= 90:
-    fmt.Println("A")
-case score >= 80:
-    fmt.Println("B")
-case score >= 70:
-    fmt.Println("C")
-default:
-    fmt.Println("D")
-}
-```
-
-### 5.4 break 与 continue
-
-```go
-for i := 0; i < 10; i++ {
-    if i == 3 {
-        continue // 跳过本次迭代
-    }
-    if i == 7 {
-        break    // 退出循环
-    }
-    fmt.Println(i) // 0, 1, 2, 4, 5, 6
-}
-
-// 标签跳转（跳出外层循环）
-outer:
-for i := 0; i < 3; i++ {
-    for j := 0; j < 3; j++ {
-        if i == 1 && j == 1 {
-            break outer // 跳出外层循环
-        }
-        fmt.Printf("(%d,%d) ", i, j)
-    }
-}
-// 输出: (0,0) (0,1) (0,2) (1,0)
-```
-
-## 6. defer 语句
-
-`defer` 将函数调用推迟到所在函数返回之前执行，常用于资源清理。
-
-### 6.1 基本用法
-
-```go
-func readFile(path string) {
-    file, err := os.Open(path)
-    if err != nil {
-        return
-    }
-    defer file.Close() // 确保文件关闭
-
-    // 读取文件...
-}
-```
-
-### 6.2 defer 执行顺序
-
-多个 defer 按**后进先出（LIFO）**顺序执行：
-
-```go
-func main() {
-    defer fmt.Println("第一")  // 最后执行
-    defer fmt.Println("第二")  // 第二执行
-    defer fmt.Println("第三")  // 最先执行
-    fmt.Println("主函数")
-}
-// 输出:
-// 主函数
-// 第三
-// 第二
-// 第一
-```
-
-### 6.3 defer 参数求值
-
-defer 语句的参数在声明时立即求值，而非执行时：
-
-```go
-func main() {
-    x := 10
-    defer fmt.Println(x) // 输出 10（声明时求值）
-    x = 20
-    fmt.Println(x)       // 输出 20
-}
-// 输出: 20, 10
-```
-
-### 6.4 defer 与返回值
-
-defer 可以修改命名返回值：
-
-```go
-func double() (result int) {
-    defer func() {
-        result *= 2 // 修改返回值
-    }()
-    return 5 // result = 5，然后 defer 执行 result *= 2
-}
-// double() 返回 10
-```
-
-### 6.5 defer 性能考虑
-
-```go
-// defer 在循环中可能有性能开销（Go 1.13+ 已大幅优化）
-// 简单场景可以直接调用
-func process(items []string) {
-    for _, item := range items {
-        f, err := os.Open(item)
-        if err != nil {
-            continue
-        }
-        // 在热路径循环中，直接调用可能比 defer 更高效
-        processFile(f)
-        f.Close()
-    }
-}
-```
-## 变量声明
-
-**基本写法：显式声明变量类型和初始值**
-`var <变量名> <类型> = <值>`
-```go
-// 显式声明变量类型和初始值
-var name string = "Go";
-```
-
-**基本写法：类型推断声明**
-`var <变量名> = <值>`
-```go
-// 自动推断类型
-var age = 15;
-```
-
-**单行写法：批量声明多个变量**
-`var ( <变量1> <类型1> = <值1>; <变量2> <类型2> = <值2> )`
-```go
-// 单行批量声明多个变量
-var ( x int = 10; y float64 = 3.14; flag bool = true );
-```
-
-**换行写法：批量声明多个变量**
-`var ( ... )`
-```go
-// 换行书写批量声明
-var (
-    x    int     = 10
-    y    float64 = 3.14
-    flag bool    = true
-);
-```
-
-**基本写法：短变量声明**
-`<变量名> := <值>`
-```go
-// 仅限函数内使用，自动推断类型
-city := "Beijing";
-```
-
-**基本写法：零值声明**
-`var <变量名> <类型>`
-```go
-// 未初始化的变量使用零值
-var score int; // 0
-```
-
----
-
-## 常量
-
-**基本写法：常量声明**
-`const <名称> = <值>`
-```go
-// 声明常量
-const Pi = 3.14159;
-```
-
-**单行写法：批量声明常量**
-`const ( <名称1> = <值1>; <名称2> = <值2> )`
-```go
-// 单行批量声明常量
-const ( StatusOK = 200; StatusError = 500 );
-```
-
-**换行写法：批量声明常量**
-`const ( ... )`
-```go
-// 换行书写批量声明
-const (
-    StatusOK    = 200
-    StatusError = 500
-);
-```
-
-**基本写法：iota 常量生成器**
-`const ( <名称> = iota ... )`
-```go
-// iota 从 0 开始自动递增
-const (
-    Sunday    = iota // 0
-    Monday           // 1
-    Tuesday          // 2
-);
-```
-
-**基本写法：iota 位运算标志**
-`const ( <名称> = 1 << iota ... )`
-```go
-// 位运算生成权限标志
-const (
-    ReadPermission   = 1 << iota // 1  (001)
-    WritePermission              // 2  (010)
-    ExecutePermission            // 4  (100)
-);
-```
-
-**基本写法：iota 跳过值**
-`_ = iota`
-```go
-// 跳过 0，从 1024 开始
-const (
-    _  = iota
-    KB = 1 << (10 * iota) // 1024
-    MB                    // 1048576
-);
-```
-
----
-
-## 类型转换
-
-**基本写法：显式类型转换**
-`<目标类型>(<值>)`
-```go
-// int 转 float64
-var i int = 42;
-var f float64 = float64(i);
-```
-
-**基本写法：int 转 string**
-`strconv.Itoa(<整数>)`
-```go
-// int 转 string
-s := strconv.Itoa(42);
-```
-
-**基本写法：string 转 int**
-`strconv.Atoi(<字符串>)`
-```go
-// string 转 int
-n, err := strconv.Atoi("42");
-```
-
-**基本写法：string 转 []byte**
-`[]byte(<字符串>)`
-```go
-// string 转 []byte
-bytes := []byte("hello");
-```
-
-**基本写法：[]byte 转 string**
-`string(<字节切片>)`
-```go
-// []byte 转 string
-str := string(bytes);
-```
-
----
-
-## 字符串操作
-
-**基本写法：字符串字节长度**
-`len(<字符串>)`
-```go
-// 字节数（UTF-8 编码）
-fmt.Println(len("Hello, 世界")); // 13
-```
-
-**基本写法：字符串字符数**
-`utf8.RuneCountInString(<字符串>)`
-```go
-// 字符数（正确处理 Unicode）
-fmt.Println(utf8.RuneCountInString("Hello, 世界")); // 9
-```
-
-**基本写法：按 rune 遍历字符串**
-`for i, r := range <字符串>`
-```go
-// 按 rune 遍历，正确处理 Unicode
-for i, r := range "Hello" {
-    fmt.Printf("%d:%c ", i, r);
-}
-```
-
-**基本写法：判断子串是否存在**
-`strings.Contains(<字符串>, <子串>)`
-```go
-// 查找子串
-strings.Contains("Hello, World", "World"); // true
-```
-
-**基本写法：判断前缀**
-`strings.HasPrefix(<字符串>, <前缀>)`
-```go
-// 判断前缀
-strings.HasPrefix("Hello, World", "Hello"); // true
-```
-
-**基本写法：判断后缀**
-`strings.HasSuffix(<字符串>, <后缀>)`
-```go
-// 判断后缀
-strings.HasSuffix("Hello, World", "World"); // true
-```
-
-**基本写法：查找子串位置**
-`strings.Index(<字符串>, <子串>)`
-```go
-// 查找子串位置
-strings.Index("Hello, World", "World"); // 7
-```
-
-**基本写法：转大写**
-`strings.ToUpper(<字符串>)`
-```go
-// 转大写
-strings.ToUpper("Hello"); // "HELLO"
-```
-
-**基本写法：转小写**
-`strings.ToLower(<字符串>)`
-```go
-// 转小写
-strings.ToLower("Hello"); // "hello"
-```
-
-**基本写法：去除首尾空白**
-`strings.TrimSpace(<字符串>)`
-```go
-// 去除首尾空白
-strings.TrimSpace("  hi  "); // "hi"
-```
-
-**基本写法：替换字符串**
-`strings.Replace(<字符串>, <旧>, <新>, <次数>)`
-```go
-// 替换字符串
-strings.Replace("Hello", "l", "L", 1); // "HeLlo"
-```
-
-**基本写法：拆分字符串**
-`strings.Split(<字符串>, <分隔符>)`
-```go
-// 拆分字符串
-parts := strings.Split("a,b,c", ",");
-```
-
-**基本写法：合并字符串**
-`strings.Join(<切片>, <分隔符>)`
-```go
-// 合并字符串
-joined := strings.Join(parts, "-");
-```
-
-**基本写法：字符串构建**
-`strings.Builder`
-```go
-// 使用 Builder 高效构建字符串
-var b strings.Builder;
-b.WriteString("Hello");
-b.WriteString(", World");
-result := b.String();
-```
-
-**基本写法：原始字符串**
-`` `<内容> ``
-```go
-// 反引号包围的原始字符串
-raw := `C:\Users\name\file.txt`;
-```
-
----
-
-## 指针
-
-**基本写法：取地址**
-`&<变量>`
-```go
-// 取地址
-x := 42;
-p := &x; // p 是 *int 类型
-```
-
-**基本写法：解引用**
-`*<指针>`
-```go
-// 解引用获取值
-fmt.Println(*p); // 42
-```
-
-**基本写法：通过指针修改值**
-`*<指针> = <值>`
-```go
-// 通过指针修改值
-*p = 100;
-```
-
-**基本写法：nil 指针检查**
-`if <指针> != nil`
-```go
-// nil 指针检查
-var p *int;
-if p != nil {
-    fmt.Println(*p);
-}
-```
-
-**基本写法：指针传递**
-`func <函数名>(<参数> *<类型>)`
-```go
-// 指针传递修改外部变量
-func doublePtr(n *int) {
-    *n *= 2;
-}
-```
-
-**基本写法：new 函数**
-`new(<类型>)`
-```go
-// new 分配零值内存
-p := new(int);
-*p = 42;
-```
-
----
-
-## if 语句
-
-**基本写法：基本 if 语句**
-`if <条件> { ... }`
-```go
-// 基本条件判断
-if x > 0 {
-    fmt.Println("positive");
-} else if x < 0 {
-    fmt.Println("negative");
-} else {
-    fmt.Println("zero");
-}
-```
-
-**基本写法：带初始化的 if**
-`if <初始化>; <条件> { ... }`
-```go
-// 初始化语句中的变量仅在此块可见
-if err := doSomething(); err != nil {
-    fmt.Println("Error:", err);
-}
-```
-
----
-
-## for 循环
-
-**基本写法：经典三段式**
-`for <初始化>; <条件>; <后置> { ... }`
-```go
-// 经典 for 循环
-for i := 0; i < 10; i++ {
-    fmt.Println(i);
-}
-```
-
-**基本写法：while 风格**
-`for <条件> { ... }`
-```go
-// while 风格循环
-n := 1;
-for n < 100 {
-    n *= 2;
-}
-```
-
-**基本写法：无限循环**
-`for { ... }`
-```go
-// 无限循环
-for {
-    if shouldBreak() {
-        break;
-    }
-}
-```
-
-**基本写法：for-range 遍历**
-`for <索引>, <值> := range <集合> { ... }`
-```go
-// 遍历切片
-nums := []int{1, 2, 3};
-for i, v := range nums {
-    fmt.Printf("index=%d value=%d\n", i, v);
-}
-```
-
-**基本写法：Go 1.22+ for-range 整数**
-`for i := range <整数> { ... }`
-```go
-// 遍历 0 到 4
-for i := range 5 {
-    fmt.Println(i);
-}
-```
-
----
-
-## switch 语句
-
-**基本写法：基本 switch**
-`switch <表达式> { case ... }`
-```go
-// 基本 switch 语句
-switch day {
-case "Monday":
-    fmt.Println("周一");
-case "Tuesday":
-    fmt.Println("周二");
-default:
-    fmt.Println("其他");
-}
-```
-
-**基本写法：多值匹配**
-`case <值1>, <值2>, <值3>:`
-```go
-// 多值匹配
-switch color {
-case "red", "green", "blue":
-    fmt.Println("基础颜色");
-}
-```
-
-**基本写法：fallthrough 穿透**
-`fallthrough`
-```go
-// fallthrough 继续执行下一个 case
-switch n := 2; n {
-case 1:
-    fmt.Println("一");
-    fallthrough;
-case 2:
-    fmt.Println("二");
-    fallthrough;
-case 3:
-    fmt.Println("三");
-}
-```
-
-**基本写法：无条件 switch**
-`switch { case <条件>: ... }`
-```go
-// 无条件 switch
-score := 85;
-switch {
-case score >= 90:
-    fmt.Println("A");
-case score >= 80:
-    fmt.Println("B");
-default:
-    fmt.Println("D");
-}
-```
-
----
-
-## break 与 continue
-
-**基本写法：continue 跳过**
-`continue`
-```go
-// 跳过当前迭代
-for i := 0; i < 10; i++ {
-    if i == 3 {
-        continue;
-    }
-    fmt.Println(i);
-}
-```
-
-**基本写法：break 退出**
-`break`
-```go
-// 退出循环
-for i := 0; i < 10; i++ {
-    if i == 7 {
-        break;
-    }
-    fmt.Println(i);
-}
-```
-
-**基本写法：标签跳转**
-`break <标签>`
-```go
-// 标签跳转跳出外层循环
-outer:
-for i := 0; i < 3; i++ {
-    for j := 0; j < 3; j++ {
-        if i == 1 && j == 1 {
-            break outer;
-        }
-    }
-}
-```
-
----
-
-## defer 语句
-
-**基本写法：基本 defer**
-`defer <函数调用>`
-```go
-// 确保文件关闭
-func readFile(path string) {
-    file, err := os.Open(path);
-    if err != nil {
-        return;
-    }
-    defer file.Close();
-}
-```
-
-**基本写法：defer 执行顺序**
-`defer <函数调用>`
-```go
-// 多个 defer 按后进先出执行
-defer fmt.Println("第一");  // 最后执行
-defer fmt.Println("第二");  // 第二执行
-defer fmt.Println("第三");  // 最先执行
-```
-
-**基本写法：defer 参数求值**
-`defer <函数>(<参数>)`
-```go
-// 参数在声明时求值
-x := 10;
-defer fmt.Println(x); // 输出 10
-x = 20;
-```
-
-**基本写法：defer 修改命名返回值**
-`defer func() { ... }()`
-```go
-// defer 修改命名返回值
-func double() (result int) {
-    defer func() {
-        result *= 2;
-    }();
-    return 5;
-}
-```
-
----
-
-## Go 1.24+ 新特性
-
-**基本写法：Go 1.24 generic type aliases**
-`type <别名>[T] = <类型>[T]`
-```go
-// 泛型类型别名：为泛型类型定义简短别名
-type List[T] = []T
-type Map[K, V] = map[K]V
-type Set[T comparable] = map[T]struct{}
-// 使用别名声明变量
-var names List[string] = []string{"Go", "Rust"}
-var ages Map[string, int] = map[string]int{"Alice": 30}
-```
-
-**基本写法：Go 1.23 range-over-func（1.22 为 GOEXPERIMENT=rangefunc 实验）**
-`for <x> := range <func> { }`
-```go
-// range 遍历函数：迭代器函数签名为 func(yield func(T) bool)
-// Go 1.22 以 GOEXPERIMENT=rangefunc 预览，Go 1.23 起正式稳定并配套 iter 包
-func gen(yield func(int) bool) {
-    for i := 0; i < 3; i++ {
-        if !yield(i * 10) {
-            return
-        }
-    }
-}
-// 使用 range-over-func 直接遍历函数
-for v := range gen {
-    fmt.Println(v) // 依次输出 0 10 20
-}
-```
-
-**基本写法：Go 1.24 weak pointer 与清理回调**
-`weak.Make(<obj>)` / `runtime.AddCleanup(<obj>, <cleanup>, <arg>)`
-```go
-// runtime.AddCleanup 注册清理回调，是 SetFinalizer 的安全替代；
-// 配套的 weak 包（weak.Make/weak.Pointer）提供不阻止 GC 的弱引用
-type Big struct{ data [1024]byte }
-obj := &Big{}
-obj.data[0] = 42
-// 当 obj 被 GC 回收时执行清理函数，arg 作为参数传入
-runtime.AddCleanup(obj, func(arg int) {
-    fmt.Println("对象被回收，传入参数 =", arg)
-}, 100)
-// 主动解除引用，等待 GC 触发清理
-obj = nil
-runtime.GC()
-```
-
-**基本写法：toolchain 指令（Go 1.21）与 tool 指令（Go 1.24）**
 ```text
-// go.mod：toolchain 指令自 Go 1.21 引入，锁定本模块使用的工具链版本；
-// GOTOOLCHAIN=auto（默认）时会按需自动下载对应工具链
-module example.com/myapp
-
-go 1.24.0
-
-toolchain go1.24.3
-
-// Go 1.24 新增 tool 指令：把 stringer 等开发期工具纳入模块依赖
-tool golang.org/x/tools/cmd/stringer
-```
-```bash
-# 添加 tool 依赖后，用 go tool 子命令直接调用
-go get -tool golang.org/x/tools/cmd/stringer
-go tool stringer -type=Status
+# command-line-arguments
+./main.go:4:2: imported and not used: "strings"
 ```
 
-**基本写法：Go 1.26 new(expr) 内置函数**
-`new(<expr>)`
-```go
-// Go 1.26：new 支持任意表达式，返回指向表达式结果的指针
-x := 42
-// 直接对表达式结果取地址
-p := new(x*2 + 1) // *int，指向值为 85 的内存
-fmt.Println(*p)   // 输出 85
-// 等价于传统写法
-// v := x*2 + 1; p := &v
-```
+挑战题（半小时）：写「受伤模拟器」：血量 100，每次受伤 7 点，形态二循环到血量不大于 0，输出每次的剩余血量与总次数；结束后 if 分档：小于 10 次「轻伤」，小于 15 次「重伤」，否则「阵亡」。验收：输出行数与总次数一致（共 15 次）；go vet 零告警。提示（思路）：计数器循环外初始化；展开（关键写法）：hits++ 累加，分档放循环后。
+
+## 12. 与之前和之后的知识的关系
+
+- 往前：[Go 是什么](/go/010-WhatIsGo) 的纪律性格今天以真实报错落地；[工具链与环境搭建](/go/020-GoOverviewEnvSetup) 的 go run、go fmt、go vet 每天都在用；
+- 往后：[函数与方法](/go/040-GoFunctionMethod) 拆分 main 里的逻辑，多返回值是错误处理的前奏；[数据结构](/go/050-GoDataStructure) 引入切片与 map，for 的 range 形态才算集齐；[接口与组合](/go/060-GoInterfaceComposition) 之后你的类型能接入标准库的一切；
+- 主线回顾：010 认识 Go → 020 装环境 → 030 语法骨架 → 040 函数与方法，入门四部曲只剩最后一步。
+
+## 13. 官方文档
+
+- A Tour of Go 的 Basics 一章：https://go.dev/tour/basics
+- 语言规范（25 个关键字的权威清单）：https://go.dev/ref/spec
+- fmt 包文档（Println 与 Printf 的占位符）：https://pkg.go.dev/fmt
+
+## 14. 自我检查
+
+- 能合上文档写出最小 main.go 并解释每行作用；给出未初始化的 int、string、bool 声明，能立刻说出零值；
+- 能说出 := 与 var 的使用边界（函数内新变量，包级与显式类型用 var）；
+- 能用三种 for 形态各写一个从 5 数到 1 的循环；
+- 能解释编译器与 go vet 的分工，并复述 %d 塞字符串时的真实输出。
+
+## 本章总结
+
+Hello Go 只有五行：package main 加 import 加 main 函数是入口骨架。包的纪律是导入即使用，unused import 与 unused variable 都是编译错误；变量三式以 := 为主角、零值兜底；for 是唯一的循环关键字，三段式、条件式、无限式覆盖全部场景；if 无括号、大括号强制，条件前还能塞一句初始化。编译器拦语法错，go vet 拦模式错。
+
+## 下一步
+
+进入 [函数与方法](/go/040-GoFunctionMethod)：把 main 里的逻辑拆成自己的函数，多返回值与 error 的世界从那里开始。

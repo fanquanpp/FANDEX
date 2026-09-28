@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: RDB快照、AOF日志、混合持久化、无盘复制；RedisJSON、RedisTimeSeries、RedisBloom、RediSearch、Cuckoo Filter、T-Digest；统一模块化架构。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'redis/010-OverviewCoreDataStructure'
   - 'redis/180-ClusterHA'
