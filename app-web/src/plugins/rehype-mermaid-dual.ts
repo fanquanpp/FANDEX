@@ -119,14 +119,34 @@ function writeCache(key: string, svg: string): void {
   }
 }
 
+/**
+ * 缓存键用源码规范化：与预渲染脚本（render-mermaid.mjs）共用同一算法。
+ * remark 会把引用块/列表里代码块的 "> " 标记与缩进剥掉，原始文本与脚本
+ * 正则捕获的原文因此不同；mermaid 语义对行首空白不敏感，按行剥掉行首
+ * 空白与引用标记后两侧即可对齐。
+ */
+function canonicalSource(source: string): string {
+  return source
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map((line) => line.replace(/^[ \t>]+/, '').replace(/[ \t]+$/, ''))
+    .join('\n')
+    .trim();
+}
+
 function cacheKey(source: string, theme: 'light' | 'dark'): string {
-  const hash = createHash('sha256').update(CACHE_VERSION).update(theme).update(source).digest('hex');
+  const hash = createHash('sha256')
+    .update(CACHE_VERSION)
+    .update(theme)
+    .update(canonicalSource(source))
+    .digest('hex');
   return `${theme}-${hash.slice(0, 32)}`;
 }
 
 async function renderTheme(
   sources: string[],
   theme: 'light' | 'dark',
+  cacheOnly: boolean,
 ): Promise<(string | null)[]> {
   const results: (string | null)[] = new Array(sources.length).fill(null);
   const pending: number[] = [];
@@ -136,6 +156,7 @@ async function renderTheme(
     else pending.push(index);
   });
   if (pending.length === 0) return results;
+  if (cacheOnly) return results;
 
   const instance = getRenderer();
   if (!instance) return results;
@@ -169,6 +190,24 @@ async function renderTheme(
     console.warn(`[mermaid-dual] ${theme} 主题渲染失败，相关图表回退为源码块:`, err);
   }
   return results;
+}
+
+/**
+ * 渲染入口：正式构建的图表一律由 scripts/render-mermaid.mjs 预渲染进缓存，
+ * 本插件只做缓存直读；缓存未命中（极少见的提取差异长尾）不再现场起浏览器——
+ * 那会让 CI 构建被逐图 30s 超时拖垮——而是保留代码块交给客户端兜底渲染。
+ * 仅当显式设置 FANDEX_MERMAID_BUILD_RENDER=1 时才允许插件现场渲染
+ * （本地排查缓存一致性时使用）。
+ */
+async function renderWithPolicy(
+  sources: string[],
+  theme: 'light' | 'dark',
+): Promise<(string | null)[]> {
+  const cached = await renderTheme(sources, theme, true);
+  if (cached.every((svg) => svg !== null) || process.env.FANDEX_MERMAID_BUILD_RENDER !== '1') {
+    return cached;
+  }
+  return renderTheme(sources, theme, false);
 }
 
 /** mermaid 输出的 svg 自带固定 width/height，这里改为由 CSS 控制的响应式尺寸 */
@@ -234,8 +273,8 @@ export function rehypeMermaidDual() {
 
     const sources = blocks.map((block) => block.source);
     const [lightSvgs, darkSvgs] = await Promise.all([
-      renderTheme(sources, 'light'),
-      renderTheme(sources, 'dark'),
+      renderWithPolicy(sources, 'light'),
+      renderWithPolicy(sources, 'dark'),
     ]);
 
     blocks.forEach((block, index) => {

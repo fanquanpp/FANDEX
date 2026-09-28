@@ -64,8 +64,24 @@ const darkConfig = {
 
 const checkOnly = process.argv.includes('--check');
 
+// 缓存键源码规范化：与 rehype-mermaid-dual.ts 的 canonicalSource 保持一致。
+// 引用块/列表内代码块被 remark 剥掉 "> " 与缩进，按行剥掉行首空白与引用
+// 标记后，脚本正则捕获的原文与构建期插件拿到的文本键值一致。
+function canonicalSource(source) {
+  return source
+    .replace(/\r\n?/g, '\n')
+    .split('\n')
+    .map((line) => line.replace(/^[ \t>]+/, '').replace(/[ \t]+$/, ''))
+    .join('\n')
+    .trim();
+}
+
 function cacheKey(source, theme) {
-  const hash = createHash('sha256').update(CACHE_VERSION).update(theme).update(source).digest('hex');
+  const hash = createHash('sha256')
+    .update(CACHE_VERSION)
+    .update(theme)
+    .update(canonicalSource(source))
+    .digest('hex');
   return `${theme}-${hash.slice(0, 32)}`;
 }
 
@@ -81,12 +97,13 @@ function walkMarkdown(dir, acc) {
 function collectSources() {
   const files = walkMarkdown(CONTENT_DIR, []);
   const sources = new Map(); // source -> count
-  const blockPattern = /```mermaid\r?\n([\s\S]*?)```/g;
+  // 兼容 3 个及以上的反引号围栏、语言标记后的行尾空白
+  const blockPattern = /(`{3,})mermaid[ \t]*\r?\n([\s\S]*?)\1/g;
   for (const file of files) {
     const raw = readFileSync(file, 'utf-8');
     let match;
     while ((match = blockPattern.exec(raw)) !== null) {
-      const source = match[1].trim();
+      const source = match[2].trim();
       if (source) sources.set(source, (sources.get(source) ?? 0) + 1);
     }
   }
