@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 520
 title: Java 理论知识点： JVM 原理、类加载机制与内存管理
 module: 'java'
 category: 后端技术

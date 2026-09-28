@@ -1,5 +1,5 @@
 ---
-order: 680
+order: 690
 title: Java 与微服务
 module: 'java'
 category: 后端技术

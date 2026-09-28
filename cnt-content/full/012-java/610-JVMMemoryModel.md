@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 490
 title: JVM 内存模型
 module: 'java'
 category: 后端技术

@@ -4,14 +4,14 @@ title: Kotlin 作用域函数
 module: 'kotlin'
 category: 后端技术
 difficulty: beginner
-description: let、run、with、apply、also 五大作用域函数深度剖析
+description: 用一张"两轴选型表"学会 let/run/with/apply/also：先动手配置一个真实的数据库连接池，再讲内联零开销的原理与 this 遮蔽、嵌套地狱等坑点。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'kotlin/090-ExtensionFunction'
+  - 'kotlin/080-ScopeFunctionDifference'
+  - 'kotlin/130-NullSafetyDetailed'
   - 'kotlin/110-KotlinCollectionOperation'
   - 'kotlin/560-KotlinDSL'
-  - 'kotlin/130-NullSafetyDetailed'
   - 'kotlin/050-KotlinClassObject'
 prerequisites:
   - 'kotlin/020-KotlinOverviewEnvSetup'
@@ -21,157 +21,151 @@ prerequisites:
 
 ## 前置知识
 
-- [Flow 与响应式流](/kotlin/290-FlowReactiveStream)：建议先完成前一篇的学习
+- [Kotlin 基本语法](/kotlin/030-KotlinBasicSyntax)：会写 val、函数调用与字符串模板；
+- [函数与 Lambda](/kotlin/040-KotlinFunctionAndLambda)：知道什么是 Lambda、`it` 是什么。
 
 ## 学习目标
 
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「对比分析」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 说出五个作用域函数在"引用方式"与"返回值"两根轴上的位置，见到新代码能立刻认出用的哪个；
+2. 用 `apply` 替代 Builder 与"变量名重复八遍"的配置代码；
+3. 用 `?.let` 优雅处理可空值，用 `also` 在链式调用里插日志不打断链条；
+4. 解释作用域函数为什么零开销（inline 内联），以及 this 遮蔽什么时候会咬人；
+5. 按团队惯例在 apply（改状态）与 also（只做副作用）之间正确取舍。
 
-## 历史动机与背景
+预计 60 分钟，含 3 组动手实验与 4 道练习。五个函数的深层差异与记忆技巧在姊妹篇 [作用域函数差异详解](/kotlin/080-ScopeFunctionDifference)。
 
-### 早期 Java 的冗余代码问题
+## 1. 问题引入：变量名写了八遍
 
-在 Java 6/7 时代，开发者经常面对以下冗余代码：
+假设你在写 quaver 这样的桌面工具，启动时要配置一个数据库连接池（HikariCP）。Java 风格写法：
 
-```java
-// Java 风格：典型的"初始化-配置-使用"模式
-StringBuilder sb = new StringBuilder();
-sb.append("Hello");
-sb.append(", ");
-sb.append("World");
-String result = sb.toString();
+```kotlin
+val ds = HikariDataSource()
+ds.jdbcUrl = "jdbc:postgresql://localhost:5432/quaver"
+ds.username = "quaver"
+ds.password = System.getenv("DB_PASS")
+ds.maximumPoolSize = 10
+ds.connectionTimeout = 30_000
+```
 
-// Java 风格：空检查后的处理
-User user = getUser();
-if (user != null) {
-    String name = user.getName();
-    System.out.println(name);
+`ds` 出现了五次，每次都只是"往同一个对象上堆配置"。这种"对同一个对象做一串操作"的代码形态在 Kotlin 里遍地都是：配置对象、初始化 View、拼 StringBuilder。作用域函数（scope functions）就是标准库给这五种场景的统一解法——**开一个临时作用域，让对象在里面少出场甚至不出场**：
+
+```kotlin
+val ds = HikariDataSource().apply {
+    jdbcUrl = "jdbc:postgresql://localhost:5432/quaver"   // 隐式接收者，省略 this.
+    username = "quaver"
+    password = System.getenv("DB_PASS")
+    maximumPoolSize = 10
+    connectionTimeout = 30_000
 }
 ```
 
-这种模式存在三个问题：
+功能完全一样，`ds` 只出现一次，配置项像一张清单一样竖着排。这就是作用域函数的全部动机：不是新能力，是同一件事的更好读法。
 
-1. **重复的变量名引用**：`sb`、`user` 在每个语句中重复出现，增加视觉噪音。
-2. **临时变量污染作用域**：`sb`、`user` 等中间变量在后续代码中可见，但实际只用一次。
-3. **空检查样板代码**：`if (x != null) { ... }` 在 Java 中无处不在。
+## 2. 一张表记住五个函数
 
-### Groovy 与 Ruby 的启发
+五个函数只差两个开关。横轴是**块内怎么引用对象**（`it` 显式参数 / `this` 隐式接收者），纵轴是**整个表达式返回什么**（对象本身 / 块的最后一行）：
 
-Groovy 在 2003 年左右引入了 `with` 方法，允许在闭包内用 `it` 引用对象：
+| 函数 | 块内引用 | 返回值 | 一句话定位 |
+| ---- | -------- | ------ | ---------- |
+| `apply` | `this`（可省略） | 对象本身 | 配置对象，配完还给你 |
+| `also` | `it` | 对象本身 | 顺手做点副作用，不打断链条 |
+| `let` | `it` | 块结果 | 空安全处理、链式转换 |
+| `run` | `this`（可省略） | 块结果 | 对象上做一段计算并拿结果 |
+| `with` | `this`（可省略） | 块结果 | 同 run，但对象写在前面（非扩展函数） |
 
-```groovy
-def sb = new StringBuilder().with {
-    append("Hello")
-    append(", ")
-    append("World")
-    toString()  // 返回值
+先记两个"返回对象本身"的（apply、also，结尾字母 a——as-is，原样奉还），剩下三个都返回块结果。再记引用方式：apply/run/with 用 this（配置属性时能省略前缀，最适合"堆配置"），let/also 用 it（显式、无歧义，适合"把对象当参数"）。
+
+签名贴出来供对照（都标记了 inline，见第 4 节）：
+
+```kotlin
+inline fun <T, R> T.let(block: (T) -> R): R          // it, 返回块结果
+inline fun <T, R> T.run(block: T.() -> R): R         // this, 返回块结果
+inline fun <T, R> with(receiver: T, block: T.() -> R): R  // 同 run，普通函数
+inline fun <T> T.apply(block: T.() -> Unit): T       // this, 返回对象本身
+inline fun <T> T.also(block: (T) -> Unit): T         // it, 返回对象本身
+```
+
+## 3. 动手做：五个函数各干一件事
+
+### 3.1 apply：配置对象
+
+除了 3.0 节的连接池，Java 标准库对象是重灾区：
+
+```kotlin
+val props = Properties().apply {
+    setProperty("url", "jdbc:postgresql://localhost/quaver")
+    setProperty("user", "quaver")
+    setProperty("password", "secret")
 }
 ```
 
-Ruby 也提供了类似的 `tap` 方法（用于调试）和 `then` 方法（用于链式转换）。这些设计启发了 Kotlin 团队在语言层面提供更系统的作用域函数。
+它也常被用来替代 Builder：Google 官方 Android 文档里的 `Intent().apply { action = ...; data = ... }` 就是教科书案例。自己写的类里，Builder 的每个 `return this` 方法都可以省掉，直接暴露 var + apply。
 
-### Kotlin 1.0 的标准化设计
+### 3.2 also：链中插桩
 
-Kotlin 1.0（2016 年 2 月发布）在标准库中一次性引入了五个作用域函数。设计团队（主要由 Andrey Breslav 主导）选择了不同的组合策略，覆盖两个维度的四种组合：
-
-| 维度 | 维度取值 |
-| ---- | -------- |
-| 引用方式 | `this`（隐式接收者） / `it`（显式参数） |
-| 返回值 | 对象本身 / Lambda 结果 |
-
-五个函数覆盖了这四种组合中的一个或多个：
-
-| 函数 | 引用方式 | 返回值 | 主要用途 |
-| ---- | -------- | ------ | -------- |
-| `let` | `it` | Lambda 结果 | 空安全、转换 |
-| `run` | `this` | Lambda 结果 | 计算、初始化 |
-| `with` | `this` | Lambda 结果 | 配置对象（非扩展函数） |
-| `apply` | `this` | 对象本身 | 初始化、Builder 模式 |
-| `also` | `it` | 对象本身 | 副作用、链式调用 |
-
-这种设计让开发者在不同场景下有明确的最优选择，而不是像 Groovy 那样只有一个 `with` 函数应对所有场景。
-
-## 形式化定义
-
-### 函数签名
-
-五个作用域函数的标准签名如下：
+`also` 返回对象本身，所以能塞进任何链式调用的中间而不断链——这是它与 apply 在用法上的核心分工：
 
 ```kotlin
-// let：T 的扩展函数，参数为 (T) -> R，返回 R
-public inline fun <T, R> T.let(block: (T) -> R): R
-
-// run：T 的扩展函数，参数为 T.() -> R，返回 R
-public inline fun <T, R> T.run(block: T.() -> R): R
-
-// with：普通函数，参数为 T 和 T.() -> R，返回 R
-public inline fun <T, R> with(receiver: T, block: T.() -> R): R
-
-// apply：T 的扩展函数，参数为 T.() -> Unit，返回 T
-public inline fun <T> T.apply(block: T.() -> Unit): T
-
-// also：T 的扩展函数，参数为 (T) -> Unit，返回 T
-public inline fun <T> T.also(block: (T) -> Unit): T
+val request = HttpRequest.newBuilder(URI.create(url))
+    .also { log.debug("请求 {}", it.uri()) }     // it 显式，一眼看出在操作谁
+    .header("Authorization", token)
+    .also { require(it.header().isNotEmpty()) }  // 顺手校验
+    .build()
 ```
 
-### 类型论视角
+### 3.3 let：空安全的标配搭档
 
-从类型论角度，作用域函数都是**恒等函子（Identity Functor）**的变体。设 $F$ 为恒等函子：
-
-$$
-F : \text{Type} \to \text{Type}, \quad F(T) = T
-$$
-
-那么：
-
-- `let` 实现了 **map** 操作：$T \to (T \to R) \to R$
-- `also` 实现了 **tap**（副作用）：$T \to (T \to \text{Unit}) \to T$
-- `apply` 是 `also` 的 `this` 版本：$T \to (T \to \text{Unit}_{\text{this}}) \to T$
-
-形式化地，`apply` 的语义可表示为：
-
-$$
-\text{apply}(t, f) \triangleq f(t); \text{return } t
-$$
-
-而 `let` 的语义为：
-
-$$
-\text{let}(t, f) \triangleq f(t)
-$$
-
-### 内联语义
-
-所有作用域函数都标记为 `inline`，意味着编译器会将函数调用内联到调用处。形式化地，对于 `let`：
-
-$$
-\text{compile}(\text{obj.let}\{ f(it) \}) \equiv \text{compile}(f(\text{obj}))
-$$
-
-这保证了作用域函数在运行时**零开销**——不会创建额外的 Lambda 对象（除非 Lambda 捕获了外部变量），也不会有函数调用开销。
-
-## 理论推导
-
-### 编译产物的对比
-
-考虑以下代码：
+`?.let` 是 Kotlin 空处理最常见的组合拳：只有非空才执行块，块内 `it` 是非空类型：
 
 ```kotlin
-val result = "hello".let { it.uppercase() }
+val user: User? = findUser(id)
+
+// Java 式写法不是不行，但 ?.let 把"非空才做"压缩成一行
+user?.let { sendWelcomeEmail(it.email) }
+
+// 与 Elvis 组合：非空转换，空则给默认
+val displayName: String = user?.let { "${it.lastName} ${it.firstName}" } ?: "访客"
 ```
 
-由于 `let` 是 inline 函数，编译后的字节码等价于：
+### 3.4 run 与 with：算个结果
 
-```java
-String result = "hello".toUpperCase();
+两者等价，区别只是对象写在哪边。适合"在对象上做多步计算，最后要个结果"：
+
+```kotlin
+val summary = with(scores) {
+    val avg = average()
+    "共 ${size} 题，均分 ${"%.1f".format(avg)}"
+}
+
+// run 的扩展形式还能直接接在对象后面
+val lineCount = File("answers.txt").run {
+    if (exists()) readLines().size else 0
+}
+
+// 不接收对象的 run 也是合法的：一个临时作用域，中间变量不外泄
+val report = run {
+    val temp = loadRawStats()     // temp 在块外不可见，不污染外部作用域
+    temp.filter { it > 0 }.sum()
+}
 ```
 
-类似地：
+实验一：把第 1 节的 Hikari 配置分别用 `also`（全部 `it.` 前缀）和 `with` 改写一遍，编译运行确认结果一致，然后体会三种写法里哪种"清单感"最好——选型是口味问题，先知道它们等价。
+
+实验二：把下面的命令式代码改写成"apply + 集合操作"，运行对比输出：
+
+```kotlin
+val playlist = mutableListOf<String>()
+playlist.add("Melt")
+playlist.add("Rolling Girl")
+playlist.shuffle()
+println(playlist)
+```
+
+## 4. 为什么敢到处用：inline 零开销
+
+五个函数全部是 `inline`：编译器把函数体和 Lambda 体直接展开到调用处，不创建 Lambda 对象、没有函数调用开销。所以：
 
 ```kotlin
 val sb = StringBuilder().apply {
@@ -180,1587 +174,113 @@ val sb = StringBuilder().apply {
 }
 ```
 
-编译后等价于：
+字节码与手写的 `val sb = StringBuilder(); sb.append("a"); sb.append("b")` 等价。性能敏感的热路径也照用不误。唯一的例外：Lambda 捕获了外部 `var` 变量时，编译器要把它包装成 Ref 对象（闭包的老规矩），循环百万次才需要在意——那种场合用 `fold` 或普通 for 循环即可。
 
-```java
-StringBuilder sb = new StringBuilder();
-sb.append("a");
-sb.append("b");
-```
+正因为零开销，Kotlin 生态的 DSL（Gradle Kotlin DSL、Ktor 路由、kotlinx.html）大量以"带接收者的 Lambda"（`T.() -> Unit`，apply/run/with 的块类型）为地基。你在 `build.gradle.kts` 里写的每一层大括号，本质上都是本篇的语法。
 
-这种内联特性使作用域函数在性能敏感场景下也完全可用。
+## 5. 坑点一：this 遮蔽
 
-### Lambda 捕获的开销分析
-
-虽然函数本身被内联，但 Lambda 表达式如果捕获了外部变量，仍会创建 `Function1` 对象。考虑：
+用 this 的三个函数（apply/run/with）把隐式接收者换了人。块内写 `name` 时，它到底是谁的 name？
 
 ```kotlin
-val prefix = ">"
-val result = "hello".let { prefix + it.uppercase() }
-```
+class QuizApp {
+    val title = "Quaver"
 
-此时 Lambda 捕获了 `prefix`，编译后会生成类似以下的代码：
-
-```java
-String prefix = ">";
-String result = Functions1.invoke(prefix, "hello");  // 仍有对象分配
-```
-
-为了避免这种开销，Kotlin 编译器会尝试将捕获的局部变量作为参数传入内联后的代码块。但对于捕获的 `var` 变量或闭包变量，仍需包装为 `Ref` 对象。
-
-### this 与 it 的可读性权衡
-
-`this` 与 `it` 的选择不仅是风格问题，还涉及作用域冲突：
-
-- **this 的优势**：在配置对象时，`this.方法()` 可省略 `this.`，代码简洁。
-- **this 的劣势**：当 Lambda 内需要访问外层 `this` 时，需用 `this@OuterClass` 限定，容易出错。
-- **it 的优势**：显式参数，无歧义，可重命名（`let { value -> ... }`）。
-- **it 的劣势**：每次调用都需写 `it.方法()`，配置代码较冗长。
-
-### 返回值对链式调用的影响
-
-返回 `this` 的 `apply` 和 `also` 适合链式调用：
-
-```kotlin
-val result = obj
-    .also { log("created") }
-    .apply { configure() }
-    .also { log("configured") }
-```
-
-返回 Lambda 结果的 `let` 和 `run` 适合链式转换：
-
-```kotlin
-val result = "hello"
-    .let { it.uppercase() }
-    .let { it + "!" }
-    .let { it.length }
-```
-
-两种返回值类型的组合形成了链式 DSL 的基础。
-
-## 代码示例
-
-### 示例 1：五个函数的基础用法
-
-```kotlin
-package fandex.scope.basic
-
-/**
- * 五大作用域函数基础用法对比。
- * 通过同一个对象演示五个函数的行为差异。
- */
-
-data class Person(var name: String, var age: Int) {
-    fun greet() = "Hi, I'm $name"
-}
-
-fun main() {
-    val person = Person("Alice", 30)
-    
-    // let：用 it 引用，返回 Lambda 结果
-    val letResult: String = person.let { 
-        it.name + " is " + it.age + " years old" 
-    }
-    println("let: $letResult")
-    
-    // run：用 this 引用，返回 Lambda 结果
-    val runResult: String = person.run { 
-        "$name is $age years old"  // 省略 this.
-    }
-    println("run: $runResult")
-    
-    // with：非扩展函数，用 this 引用，返回 Lambda 结果
-    val withResult: String = with(person) { 
-        greet() + " and I'm $age"  // 省略 this.
-    }
-    println("with: $withResult")
-    
-    // apply：用 this 引用，返回对象本身
-    val applyResult: Person = person.apply { 
-        name = "Bob"  // 等价于 this.name = "Bob"
-        age = 25
-    }
-    println("apply: $applyResult (person === applyResult: ${person === applyResult})")
-    
-    // also：用 it 引用，返回对象本身
-    val alsoResult: Person = person.also { 
-        it.name = "Charlie"
-        it.age = 40
-    }
-    println("also: $alsoResult (person === alsoResult: ${person === alsoResult})")
-}
-```
-
-### 示例 2：空安全场景下的 let
-
-```kotlin
-package fandex.scope.nullsafety
-
-/**
- * let 在空安全检查中的应用。
- * Kotlin 的 ?. 操作符与 let 组合，可以替代 Java 的 if-null 检查。
- */
-
-data class User(val name: String, val email: String?)
-
-fun main() {
-    val user: User? = getUserFromDb()
-    
-    // 反模式：Java 风格的空检查
-    if (user != null) {
-        println("Name: ${user.name}")
-        println("Email: ${user.email ?: "N/A"}")
-    }
-    
-    // Kotlin 风格：使用 ?.let
-    user?.let { u ->
-        println("Name: ${u.name}")
-        println("Email: ${u.email ?: "N/A"}")
-    }
-    
-    // 注意：let 块内的 u 是非空类型，编译器智能转换
-    
-    // 多个可空值的链式处理
-    val emailLength: Int? = user?.email?.let { 
-        println("Processing email: $it")
-        it.length 
-    }
-    println("Email length: $emailLength")
-}
-
-fun getUserFromDb(): User? = User("Alice", "alice@example.com")
-```
-
-### 示例 3：apply 用于对象初始化
-
-```kotlin
-package fandex.scope.apply
-
-import java.util.Properties
-import javax.sql.DataSource
-import com.zaxxer.hikari.HikariConfig
-import com.zaxxer.hikari.HikariDataSource
-
-/**
- * apply 在对象初始化场景下的典型应用。
- * 替代 Builder 模式，无需额外的 Builder 类。
- */
-
-// 配置对象
-class ServerConfig {
-    var host: String = "localhost"
-    var port: Int = 8080
-    var maxConnections: Int = 100
-    var timeoutMs: Long = 5000
-    var enableSsl: Boolean = false
-    
-    override fun toString() = "ServerConfig(host=$host, port=$port, maxConn=$maxConnections)"
-}
-
-fun main() {
-    // 用 apply 初始化配置对象
-    val config = ServerConfig().apply {
-        host = "0.0.0.0"
-        port = 8443
-        maxConnections = 200
-        timeoutMs = 10000
-        enableSsl = true
-    }
-    println(config)
-    
-    // 用 apply 配置 Java 标准库对象
-    val props = Properties().apply {
-        setProperty("user", "admin")
-        setProperty("password", "secret")
-        setProperty("url", "jdbc:postgresql://localhost/db")
-    }
-    println("Properties: ${props.getProperty("user")}")
-    
-    // 用 apply 配置 HikariCP 数据源
-    val dataSource: DataSource = HikariDataSource().apply {
-        jdbcUrl = "jdbc:postgresql://localhost:5432/mydb"
-        username = "dbuser"
-        password = "dbpass"
-        maximumPoolSize = 10
-        connectionTimeout = 30000
-    })
-    
-    println("DataSource ready: ${dataSource.connection != null}")
-}
-```
-
-### 示例 4：also 用于链式调用与副作用
-
-```kotlin
-package fandex.scope.also
-
-/**
- * also 在链式调用与副作用场景下的应用。
- * also 的核心价值是"插入副作用而不打断链式调用"。
- */
-
-data class HttpRequest(
-    val url: String,
-    val method: String,
-    val headers: Map<String, String>,
-    val body: String?
-)
-
-class HttpRequestBuilder {
-    var url: String = ""
-    var method: String = "GET"
-    private val headers = mutableMapOf<String, String>()
-    var body: String? = null
-    
-    fun header(key: String, value: String) = apply { 
-        headers[key] = value 
-    }
-    
-    fun build() = HttpRequest(url, method, headers.toMap(), body)
-}
-
-fun main() {
-    // 使用 also 在链式调用中插入日志
-    val request = HttpRequestBuilder()
-        .apply {
-            url = "https://api.example.com/users"
-            method = "POST"
-            body = """{"name": "Alice"}"""
+    fun buildWindow() {
+        Window().apply {
+            setTitle(title)        // 险：这个 title 是 Window 的（若有），不是 QuizApp 的
+            setTitle(this@QuizApp.title)  // 想用外层的必须显式限定
         }
-        .also { println("[构建] 请求对象已创建: $it") }  // 副作用：日志
-        .also { validateRequest(it) }                    // 副作用：校验
-        .build()
-        .also { println("[完成] 最终请求: $it") }
-    
-    println("\n最终请求 URL: ${request.url}")
-}
 
-fun validateRequest(builder: HttpRequestBuilder) {
-    require(builder.url.startsWith("http")) { "URL 必须以 http 开头" }
-    require(builder.method in listOf("GET", "POST", "PUT", "DELETE")) { "不支持的 HTTP 方法" }
+        // 若 Window 没有同名字段，title 才会"漏"到外层——行为对但读者懵
+    }
 }
 ```
 
-### 示例 5：run 用于计算与初始化
+规则：**块内要同时用"外面的成员"和"对象自己的成员"时，改用 let/also**，让 `it` 与 `this` 各司其职：
 
 ```kotlin
-package fandex.scope.run
-
-import java.io.File
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-
-/**
- * run 在计算与一次性初始化场景下的应用。
- * run 适合"创建一个临时作用域，计算并返回结果"。
- */
-
-fun main() {
-    // 场景 1：计算某个复杂表达式的结果
-    val formattedDate = run {
-        val now = LocalDateTime.now()
-        val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss")
-        now.format(formatter)
-    }
-    println("Formatted date: $formattedDate")
-    
-    // 场景 2：从文件读取配置
-    val config = run {
-        val file = File("config.properties")
-        if (file.exists()) {
-            file.readText()
-        } else {
-            "default config"
-        }
-    }
-    println("Config: $config")
-    
-    // 场景 3：用 run 在对象上执行多个操作并返回结果
-    val file = File("output.txt")
-    val lineCount = file.run {
-        writeText("line1\nline2\nline3\n")
-        readLines().size
-    }
-    println("Line count: $lineCount")
-    
-    // 场景 4：避免变量名污染
-    val result = run {
-        val tempData = loadTempData()  // 临时变量
-        val processed = tempData.filter { it > 0 }
-        processed.sum()
-    }  // tempData 与 processed 在此处作用域外不可见
-    println("Sum: $result")
-}
-
-fun loadTempData() = listOf(1, -2, 3, 4, -5)
-```
-
-### 示例 6：with 用于配置已有对象
-
-```kotlin
-package fandex.scope.with
-
-import javax.swing.*
-
-/**
- * with 在配置已有对象场景下的应用。
- * with 是唯一一个非扩展函数的作用域函数，适合"对某个对象进行一系列操作"。
- */
-
-fun main() {
-    // 场景 1：配置 Swing 组件
-    val button = JButton()
-    with(button) {
-        text = "Click me"
-        toolTipText = "Click this button to submit"
-        bounds = java.awt.Rectangle(10, 10, 100, 30)
-        addActionListener { println("Button clicked!") }
-    }
-    println("Button: ${button.text}")
-    
-    // 场景 2：对集合进行一系列操作
-    val numbers = mutableListOf(1, 2, 3, 4, 5)
-    with(numbers) {
-        add(6)
-        add(7)
-        removeAt(0)
-        shuffle()
-    }
-    println("Numbers: $numbers")
-    
-    // 场景 3：构建字符串
-    val sb = StringBuilder()
-    with(sb) {
-        append("Name: Alice\n")
-        append("Age: 30\n")
-        append("Email: alice@example.com\n")
-    }
-    println("Profile:\n$sb")
+Window().also { w ->
+    w.setTitle(title)   // title 无歧义地指 QuizApp 的
 }
 ```
 
-### 示例 7：组合使用与 DSL
+嵌套 DSL 里的解法是标签限定 `this@Outer`，但那是 DSL 作者的义务；日常业务代码选 it 版本省心得多。
+
+## 6. 坑点二：let 嵌套地狱
+
+`?.let` 好用，但一层套一层就是灾难：
 
 ```kotlin
-package fandex.scope.dsl
-
-/**
- * 作用域函数组合使用与 DSL 构建。
- * 通过组合不同的作用域函数，可以构建出表达力强的 DSL。
- */
-
-class HtmlBuilder {
-    private val elements = mutableListOf<String>()
-    
-    fun head(block: HeadBuilder.() -> Unit) {
-        val builder = HeadBuilder()
-        builder.block()
-        elements.add("<head>${builder.build()}</head>")
-    }
-    
-    fun body(block: BodyBuilder.() -> Unit) {
-        val builder = BodyBuilder()
-        builder.block()
-        elements.add("<body>${builder.build()}</body>")
-    }
-    
-    fun build() = "<html>\n${elements.joinToString("\n")}\n</html>"
-}
-
-class HeadBuilder {
-    private val elements = mutableListOf<String>()
-    fun title(text: String) = elements.add("<title>$text</title>")
-    fun meta(name: String, content: String) = elements.add("""<meta name="$name" content="$content">""")
-    fun build() = elements.joinToString("\n")
-}
-
-class BodyBuilder {
-    private val elements = mutableListOf<String>()
-    fun h1(text: String) = elements.add("<h1>$text</h1>")
-    fun p(text: String) = elements.add("<p>$text</p>")
-    fun build() = elements.joinToString("\n")
-}
-
-fun html(block: HtmlBuilder.() -> Unit): String {
-    return HtmlBuilder().apply(block).build()
-}
-
-fun main() {
-    // 用作用域函数构建的 DSL
-    val document = html {
-        head {
-            title("My Page")
-            meta("description", "A demo page")
-        }
-        body {
-            h1("Welcome")
-            p("This is a paragraph.")
-        }
-    }
-    
-    println(document)
-    
-    // 组合 let、also、apply、run 处理复杂业务
-    val processed = listOf("Alice", "Bob", "Charlie")
-        .also { println("原始列表: $it") }
-        .map { it.uppercase() }
-        .also { println("大写转换: $it") }
-        .filter { it.length > 3 }
-        .let { it.joinToString(", ") }
-        .run { "Result: $this" }
-    
-    println(processed)
-}
-```
-
-## 对比分析
-
-### 五个函数的二维分类表
-
-| 函数 | 引用方式 | 返回值 | 是否扩展函数 | 典型用途 |
-| ---- | -------- | ------ | ------------ | -------- |
-| `let` | `it` | Lambda 结果 | 是 | 空安全、转换 |
-| `run` | `this` | Lambda 结果 | 是 | 计算、初始化 |
-| `with` | `this` | Lambda 结果 | 否（普通函数） | 配置已有对象 |
-| `apply` | `this` | 对象本身 | 是 | 初始化、Builder |
-| `also` | `it` | 对象本身 | 是 | 副作用、链式调用 |
-
-### let vs run：转换 vs 计算
-
-| 维度 | let | run |
-| ---- | --- | --- |
-| 引用方式 | `it`（显式） | `this`（隐式） |
-| 参数命名 | 可重命名（`let { x -> ... }`） | 不可命名 |
-| 可读性 | 显式，无歧义 | 简洁，但有冲突风险 |
-| 适用场景 | 空安全、转换、链式映射 | 计算、临时作用域 |
-
-### apply vs also：配置 vs 副作用
-
-| 维度 | apply | also |
-| ---- | ----- | ---- |
-| 引用方式 | `this` | `it` |
-| 典型场景 | 设置属性（`name = "x"`） | 调用方法（`log(it)`） |
-| 可读性 | 属性赋值简洁 | 方法调用清晰 |
-| 风险 | `this` 冲突时易出错 | 无冲突 |
-
-### 作用域函数 vs 显式变量赋值
-
-| 维度 | 作用域函数 | 显式变量 |
-| ---- | ---------- | -------- |
-| 代码行数 | 较少 | 较多 |
-| 作用域 | 限制在 Lambda 内 | 持续到代码块结束 |
-| 可读性 | 熟悉者高效，新手困惑 | 普遍清晰 |
-| 调试 | Lambda 内断点需注意 | 直接断点 |
-| 性能 | inline 零开销 | 零开销 |
-
-### 与其他语言类似构造的对比
-
-| 语言 | 类似构造 | 与 Kotlin 对应 |
-| ---- | -------- | -------------- |
-| Java | 无原生支持 | 需用 Builder 模式 |
-| Groovy | `with { }` | 类似 `apply` |
-| Ruby | `tap`、`then` | `also`、`let` |
-| Swift | `withUnsafePointer` 等 | 不直接对应 |
-| Scala | 无内置，可用 implicit 类模拟 | 自定义扩展 |
-| JavaScript | 无原生支持 | 需用 IIFE |
-
-## 常见陷阱与反模式
-
-### 陷阱 1：过度嵌套导致可读性下降
-
-```kotlin
-// 反模式：嵌套作用域函数导致代码难以阅读
-val result = user?.let { u ->
+// 反模式：四层 let，读的人要在脑子里维护一个栈
+val city = user?.let { u ->
     u.address?.let { addr ->
-        addr.city?.let { city ->
-            city.zipCode?.let { zip ->
-                zip.prefix?.let { prefix ->
-                    prefix.take(3)
-                }
-            }
+        addr.city?.let { c ->
+            c.name?.let { it.uppercase() }
         }
     }
 }
 
-// 正确做法：使用安全调用链
-val result = user?.address?.city?.zipCode?.prefix?.take(3)
+// 正解：安全调用链一行解决
+val city = user?.address?.city?.name?.uppercase()
 ```
 
-**生产事故案例**：某团队在重构用户档案模块时，过度使用 `let` 嵌套（4 层以上），导致后续维护时难以追踪逻辑。Code Review 时被指出改为安全调用链后，代码行数从 25 行减少到 1 行。
+判断标准：块里**只有一行对 it 的安全调用**时，let 是多余的，`?.` 链就够了。let 真正的用武之地是"非空才执行的**语句**"（发邮件、写库、弹窗）和"需要拿块结果"的转换。多层结构里用 `?.let` 只在最外层做一次，内层交给安全调用链。
 
-### 陷阱 2：apply 内部误用返回值
+## 7. 坑点三：apply 与 also 的分工默契
+
+编译器不拦着你用 `also` 改对象状态，但团队约定值得遵守，因为读者靠函数名预测意图：
 
 ```kotlin
-// 反模式：在 apply 内部尝试返回值
-val config = Config().apply {
-    val computed = computeValue()  // 这个 computed 只在 apply 内部可见
-    name = computed                // 正确：赋值给属性
-    // return computed             // 编译错误
-    computed                       // 无效：apply 返回的是 this，不是 computed
-}
-
-// 正确做法：用 run 计算后赋值
-val config = Config().apply {
-    name = computeValue()
-}
+// 约定俗成：apply 改状态，also 只做副作用
+list.apply { add(4); add(5) }              // "我在配置这个对象"
+list.also { log.info("size=${it.size}") }  // "我只是路过打个日志"
 ```
 
-### 陷阱 3：this 引用歧义
+在 `also` 里偷偷改对象，等于让读者以"只读副作用"预期读到了变更逻辑，评审时通常会被打回。同理，`apply` 里塞十行业务计算也不合适——那是 `run` 的地盘。
+
+自查口诀：**改对象用 apply，打日志用 also，空检查用 let，要结果用 run/with**。选错不报错，但代码会"读起来怪"。
+
+## 易错点与最佳实践
+
+**错误一：能一行安全调用链解决却写嵌套 let。** 见第 6 节。
+**错误二：在 apply/with/run 的 this 块里引用外层同名字段而不自知。** 见第 5 节；同时访问双方时换 let/also。
+**错误三：在 also 里改对象、在 apply 里做计算。** 违反命名意图，换回各自地盘。
+**错误四：`?.let { it.xxx }` 里再写 `it?.xxx`。** `?.let` 已保证 it 非空，多余的 `?.` 是噪音。
+**错误五：循环里 `list.add(Config().apply {...})` 三行套一层。** 用 `map` 表达"一批对象从一批输入生成"更直白。
+**最佳实践**：嵌套不超过两层；Lambda 块超过十行就提取成具名函数（扩展函数形式还能保留接收者语法）；不确定用哪个时先写显式 val 中间变量——清晰永远优先于炫技，作用域函数是可读性工具，不是必需品。
+
+## 本篇小结
+
+- 两轴定位：apply/also 返回对象本身（链式友好），let/run/with 返回块结果；apply/run/with 用 this（省前缀），let/also 用 it（无歧义）；
+- `?.let` 处理"非空才执行"，但单行安全调用时 `?.` 链更短；
+- inline 保证零开销，热路径随便用；DSL 的地基正是"带接收者的 Lambda"；
+- this 遮蔽是 this 系函数的最大风险，块内外成员都用时改用 it 系；
+- 团队默契：apply 改状态、also 打日志，选错不报错但伤可读性。
+
+## 动手实践
+
+1. **连接池重构**：把第 1 节的 Hikari 配置补齐 `maxLifetime` 与 `poolName` 两个字段，并在链尾用 `also` 打一条"数据源已创建: $poolName"日志。思路：一个表达式完成，中间不出现两次变量名。
+2. **捉 this**：定义 `class A { val name = "A"; fun test() { B().apply { println(name) } } } class B { val name = "B" }`，先猜输出再运行验证；然后把 apply 换成 also 让两句都打印。
+3. **选型练习**：给出五个场景各选一个函数并说明理由——(a) 给新建的对话框设标题与按钮；(b) 在 map 链中间打印调试；(c) 可空 token 非空时才发请求；(d) 统计文件行数并返回；(e) 对已有窗口做一串操作后返回窗口标题。
+4. **排错练习**：找出下面的 bug（编译通过，但结果不对）：
 
 ```kotlin
-class Outer {
-    val name = "Outer"
-    
-    fun test() {
-        val person = Person("Alice", 30)
-        
-        // 反模式：在 apply 内部，this 指向 person，导致外层 this 被遮蔽
-        person.apply {
-            println(this.name)       // 输出 "Alice"，而非 "Outer"
-            println(this@Outer.name) // 输出 "Outer"，需显式限定
-        }
-        
-        // 正确做法：用 also 避免歧义
-        person.also {
-            println(this.name)  // 输出 "Outer"，this 指向 Outer
-            println(it.name)    // 输出 "Alice"
-        }
-    }
-}
-
-data class Person(val name: String, val age: Int)
-```
-
-**生产事故案例**：某 Android 应用在 `Activity` 内使用 `apply` 配置 `View`，误将 `this` 当作 `Activity`，导致调用 `findViewById` 等 Activity 方法时报 `NoSuchMethodError`。修复方案：在 `apply` 内部访问外层对象时使用 `this@Activity` 限定。
-
-### 陷阱 4：在 also 中修改对象状态
-
-```kotlin
-// 反模式：also 语义上应该是"副作用"（不修改对象），但实际可以修改
-val list = mutableListOf(1, 2, 3)
-list.also { 
-    it.add(4)  // 修改了对象，违背 also 的语义
-}
-
-// 正确做法：用 apply 修改对象状态
-list.apply { 
-    add(4)  // 语义清晰：修改对象
-}
-
-// 或者：用 also 做纯副作用
-list.also { 
-    println("Before modification: $it")  // 只读，不修改
-}
-```
-
-虽然 Kotlin 编译器不强制约束，但社区共识是：
-
-- `apply`：修改对象状态
-- `also`：仅做副作用（日志、校验、通知），不修改对象
-
-### 陷阱 5：let 与 ?: 的优先级混淆
-
-```kotlin
-val user: User? = getUser()
-
-// 反模式：let 与 ?: 优先级混淆
-val result = user?.let { it.name } ?: "Anonymous"
-// 期望：user 不为空时返回 name，否则返回 "Anonymous"
-// 实际：正确（let 优先级高于 ?:）
-
-// 但这种写法更清晰：
-val result = if (user != null) user.name else "Anonymous"
-// 或
-val result = user?.name ?: "Anonymous"
-```
-
-### 陷阱 6：在循环中误用 apply 创建多个对象
-
-```kotlin
-// 反模式：在循环中误用 apply，每次都创建新对象
-val configs = mutableListOf<Config>()
-for (i in 1..10) {
-    configs.add(Config().apply {
-        id = i
-        name = "config_$i"
-    })
-}
-
-// 正确做法：用 map 一气呵成
-val configs = (1..10).map { i ->
-    Config().apply {
-        id = i
-        name = "config_$i"
-    }
-}
-```
-
-## 工程实践
-
-### 实践 1：团队编码规范建议
-
-```kotlin
-package fandex.scope.guidelines
-
-/**
- * 团队级作用域函数使用规范（建议）。
- * 
- * 规范要点：
- * 1. 优先使用最语义化的函数
- * 2. 避免超过 2 层嵌套
- * 3. Lambda 内代码不超过 10 行
- * 4. 配置对象用 apply，副作用用 also
- * 5. 空安全用 ?.let，但避免过度嵌套
- */
-
-// 推荐：用 apply 配置对象
-val server = Server().apply {
-    host = "0.0.0.0"
-    port = 8080
-    maxConnections = 100
-}
-
-// 推荐：用 also 插入日志或校验
-server.also { 
-    log("Server created: $it") 
-    validate(it)
-}
-
-// 推荐：用 let 做链式转换
-val result = getUser()
-    ?.let { it.name }
-    ?.let { it.uppercase() }
-    ?.let { "Hello, $it" }
-
-// 不推荐：超过 2 层嵌套
-// val x = a?.let { b?.let { c?.let { ... } } }
-
-// 不推荐：Lambda 内代码过长
-// val x = obj.apply {
-//     // 20 行配置代码...应该提取为独立函数
-// }
-
-// 推荐：长配置提取为独立函数
-val server = Server().apply { 
-    configureDefaults()
-    configureSsl()
-}
-
-fun Server.configureDefaults() {
-    host = "0.0.0.0"
-    port = 8080
-}
-
-fun Server.configureSsl() {
-    enableSsl = true
-    certPath = "/etc/ssl/cert.pem"
-}
-
-class Server {
-    var host: String = ""
-    var port: Int = 0
-    var maxConnections: Int = 0
-    var enableSsl: Boolean = false
-    var certPath: String = ""
-}
-
-fun log(msg: String) = println(msg)
-fun validate(s: Server) = require(s.port in 1..65535)
-fun getUser() = User("Alice")
-
-data class User(val name: String)
-```
-
-### 实践 2：性能敏感场景的使用
-
-```kotlin
-package fandex.scope.performance
-
-/**
- * 性能敏感场景下的作用域函数使用建议。
- * 
- * 核心原则：
- * 1. 作用域函数本身零开销（inline）
- * 2. 但 Lambda 捕获外部变量仍会创建 Function 对象
- * 3. 热路径下避免捕获 var 变量
- */
-
-// 反模式：热路径中捕获 var 变量
-fun inefficient(data: List<Int>): Int {
-    var sum = 0
-    data.forEach { 
-        sum += it  // 捕获 sum（Ref 对象）
-    }
-    return sum
-}
-
-// 推荐：避免捕获，直接使用 for 循环
-fun efficient(data: List<Int>): Int {
-    var sum = 0
-    for (item in data) {
-        sum += item
-    }
-    return sum
-}
-
-// 推荐：用 fold/reduce 避免捕获
-fun functional(data: List<Int>): Int {
-    return data.fold(0) { acc, item -> acc + item }
-}
-
-// 在初始化阶段，作用域函数无性能差异
-class Config {
-    var a: Int = 0
-    var b: Int = 0
-    var c: Int = 0
-}
-
-fun main() {
-    // 这两种写法在编译后性能完全一致
-    val config1 = Config().apply {
-        a = 1
-        b = 2
-        c = 3
-    }
-    
-    val config2 = Config().also {
-        it.a = 1
-        it.b = 2
-        it.c = 3
-    }
-    
-    val config3 = Config().also {
-        val c = it  // 局部变量，避免重复解引用
-        c.a = 1
-        c.b = 2
-        c.c = 3
-    }
-}
-```
-
-### 实践 3：测试中的应用
-
-```kotlin
-package fandex.scope.testing
-
-import org.junit.Test
-import kotlin.test.assertEquals
-import kotlin.test.assertNotNull
-
-/**
- * 作用域函数在测试代码中的应用。
- * 测试代码常需要构建复杂对象，作用域函数能显著简化。
- */
-
-data class TestUser(
-    val id: String,
-    val name: String,
-    val email: String?,
-    val roles: List<String>
-)
-
-class UserService {
-    fun findById(id: String): TestUser? = 
-        if (id == "1") TestUser("1", "Alice", "alice@example.com", listOf("admin"))
-        else null
-    
-    fun findAll(): List<TestUser> = listOf(
-        TestUser("1", "Alice", "alice@example.com", listOf("admin")),
-        TestUser("2", "Bob", null, listOf("user"))
-    )
-}
-
-class UserServiceTest {
-    private val service = UserService()
-    
-    @Test
-    fun `find by id returns user when exists`() {
-        // 用 let 简化空安全断言
-        val user = service.findById("1")
-        user?.let {
-            assertEquals("Alice", it.name)
-            assertNotNull(it.email)
-            assertEquals(listOf("admin"), it.roles)
-        } ?: error("User should not be null")
-    }
-    
-    @Test
-    fun `find by id returns null when not exists`() {
-        val user = service.findById("999")
-        assertEquals(null, user)
-    }
-    
-    @Test
-    fun `find all returns all users`() {
-        val users = service.findAll()
-        
-        // 用 also 打印调试信息
-        users.also { println("Found ${it.size} users") }
-        
-        assertEquals(2, users.size)
-        assertEquals("Alice", users[0].name)
-    }
-    
-    @Test
-    fun `build test fixture with apply`() {
-        // 用 apply 构建测试数据
-        val expected = TestUser(
-            id = "1",
-            name = "Alice",
-            email = "alice@example.com",
-            roles = listOf("admin")
-        )
-        
-        val actual = service.findById("1")
-        assertEquals(expected, actual)
-    }
-}
-```
-
-### 实践 4：Android View 绑定
-
-```kotlin
-package fandex.scope.android
-
-import android.view.LayoutInflater
-import android.view.ViewGroup
-import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
-
-/**
- * Android 开发中作用域函数的典型应用：View 绑定与 RecyclerView Adapter。
- */
-
-class UserAdapter(
-    private val users: List<String>
-) : RecyclerView.Adapter<UserAdapter.ViewHolder>() {
-    
-    class ViewHolder(val textView: TextView) : RecyclerView.ViewHolder(textView)
-    
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
-        // 用 apply 配置 TextView
-        val textView = TextView(parent.context).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
-            textSize = 16f
-            setPadding(16, 16, 16, 16)
-        }
-        return ViewHolder(textView)
-    }
-    
-    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
-        // 用 also 添加日志
-        holder.textView.text = users[position].also { 
-            println("Binding user: $it") 
-        }
-    }
-    
-    override fun getItemCount() = users.size
-}
-
-// 在 Activity 中使用
-class MainActivity {
-    private var adapter: UserAdapter? = null
-    
-    fun onCreate() {
-        // 用 ?.let 做空安全
-        adapter?.let { 
-            it.updateData(listOf("Alice", "Bob"))
+class Game {
+    var score = 0
+    fun register(playerName: String) {
+        Player(playerName).apply {
+            score += 10        // 本想给 Game 加分
         }
     }
 }
-
-// 模拟类
-class UserAdapter2(private val users: List<String>) {
-    fun updateData(newUsers: List<String>) {}
-}
+class Player(val name: String) { var score = 0 }
 ```
 
-## 案例研究
+思路：apply 块内 `score` 解析到 Player 的字段（隐式接收者优先），Game 的分数纹丝不动。修法：块外 `score += 10`，或块内 `this@Game.score += 10`，或改用 also 让 this 保持指向 Game。
 
-### 案例 1：某金融系统配置加载模块
+## 下一步
 
-**业务场景**：某金融系统需要从多个数据源（数据库、配置文件、环境变量）加载配置，并合并为统一的配置对象。
-
-**重构前**（Java 风格）：
-
-```kotlin
-fun loadConfig(): SystemConfig {
-    val config = SystemConfig()
-    
-    val dbConfig = loadFromDb()
-    config.dbHost = dbConfig.host
-    config.dbPort = dbConfig.port
-    
-    val fileConfig = loadFromFile()
-    config.fileTimeout = fileConfig.timeout
-    config.fileRetry = fileConfig.retry
-    
-    val envConfig = loadFromEnv()
-    config.envName = envConfig.name
-    
-    return config
-}
-```
-
-**重构后**（使用作用域函数）：
-
-```kotlin
-fun loadConfig(): SystemConfig = SystemConfig().apply {
-    loadFromDb().let { 
-        dbHost = it.host
-        dbPort = it.port
-    }
-    loadFromFile().let {
-        fileTimeout = it.timeout
-        fileRetry = it.retry
-    }
-    loadFromEnv().also {
-        println("Loading from env: ${it.name}")  // 副作用
-    }.let {
-        envName = it.name
-    }
-}
-```
-
-**效果**：代码行数从 12 行减少到 10 行，更重要的是消除了中间变量，配置逻辑一目了然。
-
-### 案例 2：某电商 App 购物车计算
-
-**业务场景**：购物车需要计算总价、应用折扣、添加运费，并返回最终价格。
-
-**实现**：
-
-```kotlin
-data class CartItem(val name: String, val price: Double, val quantity: Int)
-data class Discount(val code: String, val percentage: Double)
-
-class ShoppingCart {
-    private val items = mutableListOf<CartItem>()
-    private var discount: Discount? = null
-    
-    fun addItem(item: CartItem) = apply { items.add(item) }
-    
-    fun applyDiscount(code: String, percentage: Double) = apply { 
-        discount = Discount(code, percentage) 
-    }
-    
-    fun calculateTotal(): Double = items
-        .map { it.price * it.quantity }
-        .sum()
-        .let { total -> 
-            discount?.let { total * (1 - it.percentage / 100) } ?: total 
-        }
-        .let { it + 10.0 }  // 运费
-        .also { println("Final total: $it") }
-}
-
-fun main() {
-    val cart = ShoppingCart()
-        .apply {
-            addItem(CartItem("Book", 20.0, 2))
-            addItem(CartItem("Pen", 5.0, 3))
-            applyDiscount("SAVE10", 10.0)
-        }
-        .also { println("Cart created with ${it.itemCount} items") }
-    
-    val total = cart.calculateTotal()
-    println("Total: $total")
-}
-```
-
-### 案例 3：某后端服务 HTTP 客户端构建
-
-**业务场景**：某微服务需要构建一个高度可配置的 HTTP 客户端，支持超时、重试、拦截器等。
-
-**实现**：
-
-```kotlin
-import java.net.http.HttpClient
-import java.time.Duration
-
-class HttpClientBuilder {
-    private var connectTimeout: Duration = Duration.ofSeconds(30)
-    private var requestTimeout: Duration = Duration.ofSeconds(60)
-    private val interceptors = mutableListOf<(String) -> String>()
-    private var retryCount: Int = 0
-    
-    fun connectTimeout(duration: Duration) = apply { connectTimeout = duration }
-    fun requestTimeout(duration: Duration) = apply { requestTimeout = duration }
-    fun addInterceptor(interceptor: (String) -> String) = apply { interceptors.add(interceptor) }
-    fun retry(count: Int) = apply { retryCount = count }
-    
-    fun build(): HttpClient = HttpClient.newBuilder()
-        .connectTimeout(connectTimeout)
-        .also { 
-            println("Building client with timeout: $connectTimeout") 
-        }
-        .also { 
-            if (retryCount > 0) {
-                println("Retry enabled: $retryCount times")
-            }
-        }
-        .build()
-}
-
-fun main() {
-    val client = HttpClientBuilder()
-        .connectTimeout(Duration.ofSeconds(10))
-        .requestTimeout(Duration.ofSeconds(30))
-        .addInterceptor { url -> "Bearer token" }
-        .retry(3)
-        .also { println("Builder configured") }
-        .build()
-        .also { println("Client built: $it") }
-}
-```
-
-### 基础题
-
-**习题 1**：以下代码的输出是什么？
-
-```kotlin
-val result = "hello".let { 
-    it.uppercase() 
-}.run { 
-    this + "!" 
-}.also { 
-    println(it) 
-}
-println("Final: $result")
-```
-
-**参考答案要点**：
-- 输出顺序：
-  1. `HELLO!`（also 内的 println）
-  2. `Final: HELLO!`
-- 关键点：
-  - `let` 返回 Lambda 结果 `"HELLO"`
-  - `run` 返回 Lambda 结果 `"HELLO!"`
-  - `also` 返回对象本身 `"HELLO!"`，同时打印 `it`
-
-**习题 2**：用 `apply` 简化以下代码。
-
-```kotlin
-val list = mutableListOf<Int>()
-list.add(1)
-list.add(2)
-list.add(3)
-```
-
-**参考答案要点**：
-
-```kotlin
-val list = mutableListOf<Int>().apply {
-    add(1)
-    add(2)
-    add(3)
-}
-```
-
-### 进阶题
-
-**习题 3**：分析以下代码的问题并给出改进方案。
-
-```kotlin
-val user = getUser()
-val name = user?.let { it?.name }
-```
-
-**参考答案要点**：
-- 问题：`it` 已经是非空类型（`?.let` 已保证），`it?.name` 中的 `?.` 多余
-- 改进：
-
-```kotlin
-val name = user?.let { it.name }
-// 或更简洁：
-val name = user?.name
-```
-
-**习题 4**：实现一个自定义作用域函数 `tap`，行为类似 Ruby 的 `tap`：接收一个对象，执行副作用函数，返回原对象。
-
-**参考答案要点**：
-
-```kotlin
-inline fun <T> T.tap(block: (T) -> Unit): T {
-    block(this)
-    return this
-}
-
-// 使用
-val result = listOf(1, 2, 3)
-    .tap { println("Original: $it") }
-    .map { it * 2 }
-    .tap { println("After map: $it") }
-    .filter { it > 2 }
-    .tap { println("After filter: $it") }
-```
-
-### 挑战题
-
-**习题 5**：在不使用 `apply` 的情况下，用 `also` 模拟 `apply` 的行为，并分析二者的差异。
-
-**参考答案要点**：
-
-```kotlin
-inline fun <T> T.applyImitation(block: T.() -> Unit): T = also { 
-    it.block()  // 在 also 内部调用 block，将 this 设为 it
-}
-
-// 差异分析：
-// 1. apply 直接以 this 调用 block，编译器内联后无任何额外开销
-// 2. applyImitation 在 also 内部调用 block，多了一层函数调用
-// 3. applyImitation 中的 block 是 T.() -> Unit，调用时需通过 it 访问
-// 4. 真正的 apply 中 block 是 T.() -> Unit，调用时 this 直接是接收者
-```
-
-**习题 6**：分析作用域函数在 Kotlin DSL 中的核心作用，并以 `kotlinx.html` 库为例说明。
-
-**参考答案要点**：
-- 核心作用：
-  1. 提供隐式接收者，简化嵌套 DSL
-  2. 控制作用域，限制子 DSL 只能访问特定方法
-  3. 通过 `inline` 保证零开销
-- `kotlinx.html` 示例：
-
-```kotlin
-html {
-    head {
-        title { +"My Page" }
-    }
-    body {
-        div {
-            p { +"Hello" }
-        }
-    }
-}
-```
-
-- 每个块都是一个 `Tag.() -> Unit` 类型的 Lambda，`this` 是对应的 Tag 对象
-- 子 DSL 只能调用该 Tag 的方法，编译器保证类型安全
-
-### 官方文档
-
-- **Kotlin Scope Functions**：https://kotlinlang.org/docs/scope-functions.html
-  - 官方对五个作用域函数的详细说明与选型建议
-- **Kotlin Inline Functions**：https://kotlinlang.org/docs/inline-functions.html
-  - 理解 `inline` 关键字对作用域函数性能的影响
-- **Kotlin Null Safety**：https://kotlinlang.org/docs/null-safety.html
-  - `?.let` 模式的理论基础
-
-### 经典教材
-
-- **《Kotlin in Action》**（Dmitry Jemerov、Svetlana Isakova 著）：第 5 章对作用域函数有详细讨论
-- **《Effective Kotlin》**（Marcin Moskala 著）：包含多个关于作用域函数使用的最佳实践条目
-- **《Kotlin Cookbook》**（Ken Kousen 著）：实战场景下的作用域函数应用
-
-### 前沿论文
-
-- **Designing DSLs in Kotlin**（Roman Elizarov, 2018）：作用域函数在 DSL 设计中的核心作用
-- **Inline Functions for Performance**（Kotlin Team, 2017）：inline 关键字的实现原理
-
-### 开源项目
-
-- **kotlinx.html**：https://github.com/Kotlin/kotlinx.html
-  - 大量使用作用域函数构建 HTML DSL
-- **Ktor**：https://github.com/ktorio/ktor
-  - 路由配置 DSL 使用作用域函数
-- **Gradle Kotlin DSL**：https://github.com/gradle/kotlin-dsl
-  - 构建脚本的 DSL 基于 Kotlin 作用域函数
-
-## let 函数
-
-**基本写法：let 转换对象**
-`<obj>.let { <body with it> }`
-```kotlin
-// let 返回 Lambda 结果
-val length = "Kotlin".let { it.length };
-```
-
-**基本写法：let 处理可空值**
-`<obj>?.let { <body with it> }`
-```kotlin
-// let 安全调用非空值
-nickname?.let {
-    println("Length: ${it.length}");
-}
-```
-
-**基本写法：let 链式调用**
-`<obj>.let { <transform> }.let { <transform> }`
-```kotlin
-// let 链式转换
-val result = "Hello".let { it.uppercase() }.let { it + "!" };
-```
-
-**基本写法：let 与 Elvis 结合**
-`<obj>?.let { <transform> } ?: <default>`
-```kotlin
-// let 与 Elvis 结合提供默认值
-val length: Int = nickname?.let { it.length } ?: 0;
-```
-
----
-
-## run 函数
-
-**基本写法：run 执行代码块**
-`<obj>.run { <body with this> }`
-```kotlin
-// run 返回 Lambda 结果，this 指向对象
-val length = "Kotlin".run { length };
-```
-
-**基本写法：run 配置对象**
-`<obj>.run { <body with this> }`
-```kotlin
-// run 配置对象并返回结果
-val result = StringBuilder().run {
-    append("Hello");
-    append(", Kotlin");
-    toString();
-}
-```
-
-**基本写法：run 作为顶层函数**
-`run { <body> }`
-```kotlin
-// run 作为顶层函数执行代码块
-val value = run {
-    val a = 10;
-    val b = 20;
-    a + b;
-}
-```
-
----
-
-## with 函数
-
-**基本写法：with 执行多个操作**
-`with(<obj>) { <body with this> }`
-```kotlin
-// with 非扩展版本，对同一对象执行多个操作
-val greeting = with(StringBuilder()) {
-    append("Hello");
-    append(", Kotlin");
-    toString();
-}
-```
-
-**基本写法：with 配置对象**
-`with(<obj>) { <body with this> }`
-```kotlin
-// with 配置对象
-val person = Person();
-with(person) {
-    name = "Alice";
-    age = 25;
-}
-```
-
-**基本写法：with 返回结果**
-`val <name> = with(<obj>) { <body with this> }`
-```kotlin
-// with 返回结果
-val description = with(person) {
-    "$name, $age years old";
-}
-```
-
----
-
-## apply 函数
-
-**基本写法：apply 配置对象**
-`<obj>.apply { <body with this> }`
-```kotlin
-// apply 返回原对象，this 指向对象
-val person = Person().apply {
-    name = "Alice";
-    age = 25;
-}
-```
-
-**基本写法：apply 配置 Builder**
-`<obj>.apply { <body with this> }`
-```kotlin
-// apply 配置 Builder 对象
-val builder = AlertDialog.Builder(context).apply {
-    setTitle("Title");
-    setMessage("Message");
-    setPositiveButton("OK") { _, _ -> };
-}
-```
-
-**基本写法：apply 链式调用**
-`<obj>.apply { <body> }.apply { <body> }`
-```kotlin
-// apply 链式配置
-val list = mutableListOf<String>().apply {
-    add("a");
-    add("b");
-}.apply {
-    add("c");
-}
-```
-
----
-
-## also 函数
-
-**基本写法：also 执行附加操作**
-`<obj>.also { <body with it> }`
-```kotlin
-// also 返回原对象，it 指向对象
-val person = Person("Alice", 25).also {
-    println("Created: $it");
-}
-```
-
-**基本写法：also 日志记录**
-`<obj>.also { <body with it> }`
-```kotlin
-// also 用于日志记录
-val result = compute().also {
-    println("Computed: $it");
-}
-```
-
-**基本写法：also 链式调用**
-`<obj>.also { <body> }.also { <body> }`
-```kotlin
-// also 链式附加操作
-val list = mutableListOf(1, 2, 3).also {
-    println("Initial: $it");
-}.also {
-    it.add(4);
-    println("After add: $it");
-}
-```
-
----
-
-## 作用域函数对比
-
-**基本写法：let 与 also 对比**
-`<obj>.let { <transform> } // vs <obj>.also { <body> }`
-```kotlin
-// let 返回 Lambda 结果，also 返回原对象
-val length = "Kotlin".let { it.length };  // 返回 Int
-val str = "Kotlin".also { println(it); };  // 返回 String
-```
-
-**基本写法：apply 与 run 对比**
-`<obj>.apply { <body> } // vs <obj>.run { <body> }`
-```kotlin
-// apply 返回原对象，run 返回 Lambda 结果
-val builder = StringBuilder().apply { append("a"); };  // 返回 StringBuilder
-val text = StringBuilder().run { append("a"); toString(); };  // 返回 String
-```
-
-**基本写法：with 与 run 对比**
-`with(<obj>) { <body> } // vs <obj>.run { <body> }`
-```kotlin
-// with 是非扩展函数，run 是扩展函数
-val result1 = with(StringBuilder()) { toString(); };
-val result2 = StringBuilder().run { toString(); };
-```
-
----
-
-## 作用域函数选择
-
-**基本写法：let 用于转换**
-`<obj>?.let { <transform> }`
-```kotlin
-// let 典型场景：转换可空值
-val length: Int? = nickname?.let { it.length };
-```
-
-**基本写法：run 用于计算**
-`<obj>.run { <body with this> }`
-```kotlin
-// run 典型场景：对象上执行计算
-val isValid = userInput.run {
-    trim().isNotEmpty() && length >= 3;
-}
-```
-
-**基本写法：with 用于多操作**
-`with(<obj>) { <body with this> }`
-```kotlin
-// with 典型场景：对同一对象执行多个操作
-with(person) {
-    name = "Alice";
-    age = 25;
-    email = "alice@example.com";
-}
-```
-
-**基本写法：apply 用于配置**
-`<obj>.apply { <body with this> }`
-```kotlin
-// apply 典型场景：配置对象
-val intent = Intent().apply {
-    action = "ACTION_VIEW";
-    data = Uri.parse("https://example.com");
-}
-```
-
-**基本写法：also 用于附加操作**
-`<obj>.also { <body with it> }`
-```kotlin
-// also 典型场景：附加操作（日志、调试）
-val list = mutableListOf(1, 2, 3).also {
-    println("List created: $it");
-}
-```
-
----
-
-## 作用域函数实战
-
-**基本写法：let 处理可空值**
-`<obj>?.let { <body with it> } ?: <default>`
-```kotlin
-// let 处理可空值并提供默认值
-val name = nullableName?.let { it.trim() } ?: "Unknown";
-```
-
-**基本写法：apply 配置并返回**
-`<obj>.apply { <body with this> }`
-```kotlin
-// apply 配置对象并返回
-val person = Person().apply {
-    name = "Alice";
-    age = 25;
-    email = "alice@example.com";
-}
-```
-
-**基本写法：also 链式调试**
-`<obj>.also { <body> }.<method>()`
-```kotlin
-// also 链式调试
-val result = listOf(1, 2, 3)
-    .also { println("Original: $it"); }
-    .map { it * 2 }
-    .also { println("Mapped: $it"); }
-    .filter { it > 2 };
-```
-
-**基本写法：run 计算并返回**
-`<obj>.run { <body with this> }`
-```kotlin
-// run 计算并返回结果
-val summary = data.run {
-    val total = sum();
-    val avg = average();
-    "Total: $total, Avg: $avg";
-}
-```
-
-**基本写法：with 多操作返回**
-`val <name> = with(<obj>) { <body with this> }`
-```kotlin
-// with 多操作并返回结果
-val report = with(database) {
-    val count = queryCount();
-    val max = queryMax();
-    "Count: $count, Max: $max";
-}
-```
-
----
-
-## 作用域函数与可空类型
-
-**基本写法：let 处理可空值**
-`<obj>?.let { <body with it> }`
-```kotlin
-// let 安全调用非空值
-nullableValue?.let {
-    println(it);
-}
-```
-
-**基本写法：apply 配置可空对象**
-`<obj>?.apply { <body with this> }`
-```kotlin
-// apply 安全配置可空对象
-nullableBuilder?.apply {
-    append("Hello");
-    append(", Kotlin");
-}
-```
-
-**基本写法：run 处理可空对象**
-`<obj>?.run { <body with this> }`
-```kotlin
-// run 安全执行可空对象
-nullableString?.run {
-    println(length);
-}
-```
-
-**基本写法：also 处理可空对象**
-`<obj>?.also { <body with it> }`
-```kotlin
-// also 安全附加操作
-nullableValue?.also {
-    println("Value: $it");
-}
-```
-
----
-
-## 作用域函数与集合
-
-**基本写法：let 转换集合**
-`<list>.let { <transform> }`
-```kotlin
-// let 转换集合
-val size = list.let { it.size };
-```
-
-**基本写法：apply 配置集合**
-`<list>.apply { <body with this> }`
-```kotlin
-// apply 配置可变集合
-val list = mutableListOf<Int>().apply {
-    add(1);
-    add(2);
-    add(3);
-}
-```
-
-**基本写法：also 调试集合**
-`<list>.also { <body with it> }`
-```kotlin
-// also 调试集合
-val filtered = list
-    .filter { it > 0 }
-    .also { println("Filtered: $it"); }
-```
-
-**基本写法：run 计算集合**
-`<list>.run { <body with this> }`
-```kotlin
-// run 计算集合
-val result = list.run {
-    filter { it > 0 }.sum();
-}
-```
-
-**基本写法：with 多操作集合**
-`with(<list>) { <body with this> }`
-```kotlin
-// with 对集合执行多个操作
-val info = with(list) {
-    "Size: $size, First: ${firstOrNull()}, Last: ${lastOrNull()}";
-}
-```
+- [作用域函数差异详解](/kotlin/080-ScopeFunctionDifference)：五函数在返回值、接收者、上下文对象命名上的逐项对比与更多反例；
+- [空安全详解](/kotlin/130-NullSafetyDetailed)：`?.let` 背后的类型系统设计；
+- [Kotlin DSL](/kotlin/560-KotlinDSL)：作用域函数如何长成 Gradle 脚本与 Ktor 路由的样子。

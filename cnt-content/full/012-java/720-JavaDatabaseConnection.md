@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 570
 title: Java 与数据库连接
 module: 'java'
 category: 后端技术
@@ -20,7 +20,7 @@ prerequisites:
 
 ## 前置知识
 
-- [Java HttpClient 与 WebSocket 语法速查手册](/java/710-JavaHttpClientWebSocket)：建议先完成前一篇的学习
+- [网络编程](/java/700-NetworkProgrammingDeepDive)：建议先完成前一篇的学习
 
 ## 学习目标
 

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 从最小 main.go 出发学会包与 import、变量三式与零值、for 三形态与无括号的 if；附 unused import 真实报错、go vet 提示实录与四道练习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/020-GoOverviewEnvSetup'
   - 'go/040-GoFunctionMethod'

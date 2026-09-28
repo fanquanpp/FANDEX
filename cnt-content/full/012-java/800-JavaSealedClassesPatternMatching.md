@@ -1,5 +1,5 @@
 ---
-order: 610
+order: 620
 title: 密封类与模式匹配
 module: 'java'
 category: 后端技术
@@ -21,7 +21,7 @@ prerequisites:
 ## 前置知识
 
 - [Record 类](/java/450-JavaRecordClass)：record 的不可变语义与自动生成成员，是模式匹配解构的载体。
-- [枚举进阶](/java/380-JavaEnumAdvanced)：枚举是"固定实例集合"，密封类是"固定子类型集合"，两者互为对照。
+- [枚举救急锦囊](/java/360-EnumEssentials)：枚举是"固定实例集合"，密封类是"固定子类型集合"，两者互为对照。
 - [抽象类与接口](/java/160-AbstractClassInterface)：理解继承的开放性，才能体会"封闭"的价值。
 
 ## 学习目标

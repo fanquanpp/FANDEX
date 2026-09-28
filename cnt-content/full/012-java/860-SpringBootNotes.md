@@ -1,5 +1,5 @@
 ---
-order: 670
+order: 680
 title: Spring Boot 学习笔记
 module: 'java'
 category: 后端技术

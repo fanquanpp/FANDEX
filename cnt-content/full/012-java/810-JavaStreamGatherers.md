@@ -1,5 +1,5 @@
 ---
-order: 620
+order: 630
 title: Java Stream Gatherers
 description: JDK 24 转正的 Stream Gatherers（JEP 485）：windowFixed、windowSliding、scan、fold、mapConcurrent 内置收集器与自定义 Gatherer 完整教程。
 module: 'java'

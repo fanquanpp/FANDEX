@@ -1,5 +1,5 @@
 ---
-order: 640
+order: 650
 title: SpringBoot 进阶
 module: 'java'
 category: 后端技术

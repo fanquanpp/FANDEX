@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 590
 title: Java 设计模式
 module: 'java'
 category: 后端技术
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- [Gradle build.gradle 配置语法速查手册](/java/760-GradleBuildConfiguration)：建议先完成前一篇的学习
+- [Java 构建工具](/java/740-JavaBuildTool)：建议先完成前一篇的学习
 
 ## 学习目标
 

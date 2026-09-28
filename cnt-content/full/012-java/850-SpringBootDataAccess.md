@@ -1,5 +1,5 @@
 ---
-order: 660
+order: 670
 title: SpringBoot 数据访问
 module: 'java'
 category: 后端技术

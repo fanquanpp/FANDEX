@@ -1,5 +1,5 @@
 ---
-order: 800
+order: 810
 title: Java 与 WebAssembly
 module: 'java'
 category: 后端技术

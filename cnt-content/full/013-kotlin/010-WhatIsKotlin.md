@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 从 JetBrains 的真实痛点出发理解 Kotlin 的定位：与 Java 100% 互操作、Android 官方首选、空安全内建于类型系统、编译到 JVM/JS/Native 多目标；用 Playground 跑通第一个程序并制造第一个编译错误。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'kotlin/020-KotlinOverviewEnvSetup'
   - 'kotlin/130-NullSafetyDetailed'

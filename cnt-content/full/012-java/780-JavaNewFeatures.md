@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 600
 title: Java 新特性
 module: 'java'
 category: 后端技术

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 以三行 HelloWorld 起步，用游戏战绩程序讲透 Kotlin 基础语法：val/var 与不可变优先、类型推断、字符串模板、if/when 表达式、for 与区间，附 unresolved reference 真实报错实录与四道练习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'kotlin/020-KotlinOverviewEnvSetup'
   - 'kotlin/040-KotlinFunctionAndLambda'

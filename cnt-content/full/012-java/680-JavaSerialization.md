@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 540
 title: Java 序列化
 module: 'java'
 category: 后端技术
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- [Java Path 与 Files 语法速查手册](/java/670-JavaPathFiles)：建议先完成前一篇的学习
+- [JavaIO 与 NIO](/java/650-JavaIONIO)：建议先完成前一篇的学习
 
 ## 学习目标
 

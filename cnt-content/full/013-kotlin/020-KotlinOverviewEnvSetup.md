@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用 Playground、IntelliJ IDEA、命令行 kotlinc 三条路径分别跑通 Kotlin：编译出 jar 并用 java -classpath 运行、弄懂 HelloKt 类名规则、修掉 command not found 与缺 stdlib 的真实报错，附 Gradle 最小结构一句话。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'kotlin/010-WhatIsKotlin'
   - 'kotlin/030-KotlinBasicSyntax'
@@ -147,6 +147,25 @@ Hello, Kotlin!
 3. **懒人捷径**：编译时加 `-include-runtime`，标准库会打进 jar，之后 `java -jar hello.jar` 一步运行。发布程序常用它，但学习期建议先用 classpath 版本——多一行命令，换来对产物的清晰认知。
 
 嫌 stdlib 路径太长？这就是构建工具存在的理由：真实项目用 Gradle 管理一切，见下一节。
+
+### kotlinc 常用参数速查
+
+日常「编译 -> 运行」之外的参数，用到时回来查：
+
+| 需求 | 命令 |
+| ---- | ---- |
+| 打出自包含可执行 jar（带运行时） | `kotlinc Main.kt -include-runtime -d app.jar`，然后 `java -jar app.jar` |
+| 只编译出 .class 不打包 | `kotlinc Main.kt -d out/` |
+| 指定目标字节码版本 | `kotlinc Main.kt -jvm-target 21 -d app.jar` |
+| 编译为 JavaScript | `kotlinc -js Main.kt -output app.js` |
+| 编译为原生二进制 | `kotlinc-native Main.kt -o app` |
+| 执行脚本 | `kotlinc -script build.kts` |
+| 当计算器用 | `kotlinc -e "println(1 + 2)"` |
+| 引第三方 jar | `kotlinc -cp "lib/*" Main.kt -d app.jar` |
+| 与 Java 模块系统交互 | `kotlinc -module-path mods Main.kt -d out` |
+| 严格检查 Java 可空性注解 | `kotlinc -Xjsr305=strict Main.kt -d out` |
+
+生成文档、跑测试这类事交给构建工具：文档用 Dokka（`./gradlew dokkaHtml`），编译任务用 `./gradlew compileKotlin`，想看字节码则 `javap -p -c out/MainKt.class`。
 
 ## 5. Gradle 一句话
 

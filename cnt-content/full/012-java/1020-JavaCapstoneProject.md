@@ -1,5 +1,5 @@
 ---
-order: 830
+order: 840
 title: Java 毕业项目：控制台任务管理器的完整工程化
 description: Java 模块出口项目（Level 6）：把入门链学到的语法能力组装成一个可测试、可打包、带 README 的控制台任务管理器，user stories 验收、提示从高到无。
 module: 'java'

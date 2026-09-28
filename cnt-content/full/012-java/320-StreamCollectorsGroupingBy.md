@@ -23,7 +23,7 @@ prerequisites:
 ## 前置知识
 
 - [Stream API](/java/300-StreamAPI)：流的创建、中间操作与终结操作的基本用法。
-- [Optional 类](/java/310-JavaOptionalClass)：理解 downstream 中 `minBy`、`maxBy` 返回值的包装方式。
+- [Stream API](/java/300-StreamAPI)：理解 downstream 中 `minBy`、`maxBy` 返回值经 Optional 包装的方式。
 - [函数式编程](/java/330-JavaFunctionalProgramming)：函数组合思想是 downstream 嵌套的灵魂。
 
 ## 学习目标

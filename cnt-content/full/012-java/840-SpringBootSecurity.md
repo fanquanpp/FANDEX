@@ -1,5 +1,5 @@
 ---
-order: 650
+order: 660
 title: SpringBoot 安全
 module: 'java'
 category: 后端技术
