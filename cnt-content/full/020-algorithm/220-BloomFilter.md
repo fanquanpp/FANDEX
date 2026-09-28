@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 布隆过滤器（Bloom Filter）：一种空间高效的概率数据结构，由 Burton H. Bloom 1970《Space/Time Trade-offs in Hash Coding with Allowable Errors》Communications of the ACM 13(7):422-426 DOI:10.1145/362686.362692 提出。利用 k 个独立哈希函数将元素映射到 m 位的位数组，实现 O(k) 时间复杂度的成员查询，无假阴性但允许可控假阳性。本章涵盖 Bloom 原始动机、假阳性率 $P = (1 - e^{-kn/m})^k$ 的完整推导、最优哈希函数个数 $k_{\text{opt}} = (m/n)\ln 2$ 的极值分析、Counting Bloom Filter（Fan et al. 1998 USENIX Summary Cache）、Compressed Bloom Filter（Mitzenmacher 2002）、Cuckoo Filter（Fan et al. 2014 ACM TOCT）、Spectral Bloom Filter、Stable Bloom Filter 等变种；对比 Hash Set、Skip List、HyperLogLog、Cuckoo Filter 的空间/时间/精度权衡；附 Python/C++/Java 三语言实现、工业级应用（Cassandra、HBase、PostgreSQL、Chrome、Bitcoin SPV、Squid Proxy、Bigtable）。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/210-SkipList'
@@ -17,7 +17,9 @@ prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
 ---
 
-> 定位说明：本篇为进阶参考书（参考层），面向已完成本模块主线的读者；入门请先走学习路径前序阶段。定位标准见 docs/standards/reference-layer.md（仓库）。
+> 使用方式：本篇是概率型数据结构的参考深水篇，适合带着具体问题来查；哈希基础见主线篇目（哈希表 070）。
+
+爬虫调度器要判断 10 亿个 URL 是否抓取过，缓存层要挡住对不存在 key 的穿透查询，内存预算却只有几百 MB——哈希表装不下，代价太高。布隆过滤器的答案：用 k 个哈希函数把每个元素映射到 m 位位数组上，查询「一定不存在或可能存在」，假阳性率可控（比如 1%），空间比精确结构省一个数量级。本篇讲清它的数学保证（误判率公式与参数选择）、五种语言实现与 Cassandra、Chrome、Bitcoin 等工业案例，读完后你能算出自己的场景该用多大数组、几个哈希函数，以及什么时候该换布谷鸟过滤器。
 
 ## 前置知识
 
@@ -2381,3 +2383,11 @@ graph TD
 ---
 
 *本文档由 FANDEX Content Engineering 团队依据《内容工程规范》12 项质量基准编写，最后审阅日期：2026-07-20。*
+
+## 读完自检
+
+- 布隆过滤器的两条核心保证是什么？（「不存在」绝对准确；「存在」可能是误报）
+- 误判率由哪三个量决定？元素数翻倍后怎么维持误判率？（位数组大小 m、哈希个数 k、已插入元素数 n；按最优 k 与 m/n 比例扩容）
+- 为什么布隆过滤器不支持删除？（一个位可能被多个元素共享，删除会破坏其他元素的存在性判断；要删除换计数布隆或布谷鸟过滤器）
+- 什么场景绝对不能用布隆过滤器做最终判断？（扣款、权限这类不可误判的决策——它只能做「大概率不存在就快速拒绝」的预筛）
+- 给定 n 与目标误判率 p，能默写最优参数：k = (m/n)ln2，m = -n·ln p / (ln2)^2。

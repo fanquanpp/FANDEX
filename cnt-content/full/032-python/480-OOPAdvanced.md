@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 320
 title: Python 面向对象进阶
 module: 'python'
 category: 后端技术

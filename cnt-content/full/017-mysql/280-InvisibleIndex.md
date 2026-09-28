@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: INVISIBLE 关键字的完整使用法：索引维护成本从哪来、为什么直接删除是高危操作、不可见索引如何把删除变成可回滚的灰度实验。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-29'
 related:
   - 'mysql/270-IndexHintForceIndex'
   - 'mysql/290-FunctionalIndex'

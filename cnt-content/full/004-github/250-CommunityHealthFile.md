@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 'GitHub社区健康文件深度解析：以"社区公约"清单为主线，逐一讲解 CONTRIBUTING、CODE_OF_CONDUCT、SUPPORT、SECURITY、CODEOWNERS 等文件与默认文件机制。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'github/180-PullRequestCompleteCollaborationFlow'
   - 'github/360-GitHubPagesMultiSolution'
@@ -203,7 +203,7 @@ GitHub 提供一键模板：仓库 → **Add file → Create new file** → 文�
 
 ### 6.1 CODEOWNERS：指定代码审查负责人
 
-在 `.github/190-CODEOWNERS` 中声明"谁负责哪些路径"，PR 改动这些路径时自动指定审查人：
+在 `.github/CODEOWNERS` 中声明"谁负责哪些路径"，PR 改动这些路径时自动指定审查人（详见 [CODEOWNERS](/github/190-CODEOWNERS)）：
 
 ```text
 # 全局默认

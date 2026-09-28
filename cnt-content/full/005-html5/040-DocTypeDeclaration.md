@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: DOCTYPE与HTML Living Standard
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'html5/190-HTML5FormValidation'
   - 'html5/230-HTML5MultimediaCanvasDrawing'
@@ -43,7 +43,7 @@ DOCTYPE（Document Type Declaration）是 HTML 文档的第一行，用于告知
 
 **讲解：**
 
-- `<!DOCTYPE html>` 必须位于文档第一行，连前面的空行或注释都不能有；
+- `<!DOCTYPE html>` 必须位于文档最前面（按现行解析规则，前面最多允许空白字符与 BOM；注释在规范上不会触发怪异模式，但老版 IE 曾会误判，实践中一律不要在它前面放任何东西）；
 - 它不是 HTML 标签，而是一条“处理指令”，浏览器读取后进入标准渲染模式；
 - 大小写不敏感，社区习惯统一大写。
 

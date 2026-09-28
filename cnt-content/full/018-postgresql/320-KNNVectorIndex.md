@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 270
 title: KNN 向量索引：pgvector 与 AI 应用的相似度检索
 module: 'postgresql'
 category: 数据库

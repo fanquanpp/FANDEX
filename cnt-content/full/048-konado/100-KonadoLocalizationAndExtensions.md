@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 做多语言剧情与界面切换，用好内置 KS 编辑器，接入设置成就与 C 井 Web 工具扩展
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/090-KonadoSceneAssetsAndCustomization'
   - 'konado/010-KonadoOverviewAndInstall'
@@ -14,16 +14,7 @@ prerequisites:
   - 'konado/090-KonadoSceneAssetsAndCustomization'
 ---
 
-这是 Konado 系列的最后一篇，收束三件事：让游戏说多种语言（界面本地化与剧情本地化）、让编写剧本这件事本身更高效（内置 KS 编辑器与日志诊断体系），以及把几个官方扩展组件纳入你的工具箱——设置系统、成就系统、C# 适配层 Konado.NET 与 Web 工具。文末还附了从 2.4 升级到 2.8 的注意事项摘要，供维护旧项目的读者查阅。
-
-## 学习目标
-
-- 理解 Konado 基于 Godot TranslationServer 的本地化体系，会做界面语言切换与剧情多语言；
-- 掌握本地化剧本的文件命名、查找顺序，以及"可改演出、不可改结构"的约束；
-- 会使用内置 KS 编辑器的补全、跳转、诊断与断点调试能力；
-- 会读 KonadoLogger 日志与 runtime_failure_reported 故障字典，理解错误码体系；
-- 了解四个扩展组件：KonadoSettings、KonadoAchievements、Konado.NET、Konado WebTool；
-- 掌握从 2.4 升级到 2.8 的改名对照与不兼容要点。
+几何构成（speed-rouge）准备发布时又冒出三个需求：海外玩家要求英语与日语剧情；运营想在玩家通关时发成就；Web 试玩版里按 F12 调试发现开发者工具弹不出来。这三件事分别对应本篇的三块内容：本地化、官方扩展组件（设置与成就）、以及 Web 工具。作为 Konado 系列的最后一篇，还顺带收束两件日常最常用的能力——内置 KS 编辑器与日志诊断体系，并附上从 2.4 升级到 2.8 的注意事项摘要，供维护旧项目的读者查阅。
 
 ## 本地化：站在 TranslationServer 肩上
 
@@ -169,14 +160,23 @@ Konado.Runtime.Api.KonadoApi.DialogueManagerApi?.BindDialogueManager(manager);
 
 完整升级步骤、逐项差异与迁移工具用法，以官方升级文档为准：https://godothub.com/oss/konado/zh/latest/tutorial/upgrade-2.8.html
 
-## 小结
+## 坑点与自检
 
-- 本地化直接复用 Godot TranslationServer：持久化切换用 KonadoSettings.set_setting("display", "language", ...)，会话级用 TranslationServer.set_locale；内置界面自带五语 .po 翻译；
-- 剧情本地化按 chapter.zh_Hans.ks 等命名，查找顺序为完整语言码、推导语言与书写系统、基础语言、默认剧情；演出参数可改，指令类型、控制流与稳定指令 ID 必须与基础一致（演出差异警告、结构差异错误）；运行时切换用 reload_localized_script(locale)；
-- 内置 KS 编辑器提供指令树插入、语法高亮、参数与资源补全、Ctrl+点击跳转、悬停签名、查找引用与安全重命名、最多三条修复建议的实时诊断，以及带变量现场的断点调试；保存自动重编译 KonadoShot，无效内容可保存但不刷新；
-- 诊断体系：KonadoLogger 写 user://konado_log.log，覆盖层可经 enable_overlay_log 关闭；runtime_failure_reported 携带完整 failure 字典；错误码按 AC/AH/AU/CA/CP/DL/RS/RT/SC/VA 十个模块前缀稳定编号，KonadoResult 以 ok 字段约定成败；
-- 扩展组件：KonadoSettings（JSON 配置、三种控件、平台过滤、setting_changed 信号）、KonadoAchievements（counter/flag 条件、剧本 achievement 指令联动、可独立运行、面板层 100 与弹窗层 110）、Konado.NET（先主插件再构建 C# 再启用适配层的顺序、KonadoApi 全能力映射、多管理器 BindDialogueManager）、Konado WebTool（放行浏览器快捷键、allow_in_release 默认 false、改配置后 refresh_shortcuts）；
-- 2.4 升级 2.8：KND_ 全面改名为 Konado 前缀、存档不兼容、用户代码需手动替换类型名。
+- 翻译后的剧情一读档就跳错位置——本地化版本改了控制流或增删了选项，结构差异是错误；演出可变、结构不可变，稳定指令 ID 必须与基础剧本一致；
+- 切了语言但自定义界面没变——自定义 UI 要监听 NOTIFICATION_TRANSLATION_CHANGED 并跟随 TranslationServer，别自己另写一套切换；
+- Konado.NET 启用后报 "Unable to load addon script ... KonadoDotNetPlugin.cs"——C# 项目还没构建；顺序是先启用主插件、再构建 C#、再启用 Konado.NET、最后重开项目；
+- Web 导出里 F12 没反应——Godot 4.x Web 导出捕获了全部快捷键，启用 Konado WebTool 放行，改配置后记得 refresh_shortcuts()；release 包默认不注入（allow_in_release 默认 false）；
+- 多管理器场景 C# 绑定失效——按节点 BindDialogueManager 手动绑定，不依赖节点名称；
+- 成就面板弹窗层级异常——面板默认层 100、解锁通知默认层 110，与模板图层约定对应，别占用 120 及以上；
+- 自检问题一：剧情本地化"可改"与"不可改"的边界是什么？（文本与演出参数可改；指令类型、控制流、稳定指令 ID 不可改）
+- 自检问题二：玩家用日语存档、中文读档为什么能正常恢复？（存档记录的是指令位置与稳定键，两语言版本结构一致，所以指向同一条指令）
+- 自检问题三：2.4 升 2.8 最坏的结果是什么？（存档不兼容作废、手写代码里的 KND_ 类型名需手动替换，升级前要读官方对照表）
+
+## 练习
+
+1. 给一段示例剧本做简中与英语两个版本，运行时用 reload_localized_script 切换，验证读档跨语言仍能恢复到同一句；
+2. 故意在英语版里删掉一个选项，观察加载如何失败，体会"结构不可变"为什么是存档安全的底线；
+3. 接入 KonadoAchievements：JSON 里定义一个 counter 成就，剧本里 achievement increment 推进，回退跨越后再重放，验证"只增不减"。
 
 ## 参考链接
 

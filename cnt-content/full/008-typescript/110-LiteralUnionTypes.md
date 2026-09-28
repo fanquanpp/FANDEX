@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 字面量类型、联合类型、可辨识联合的形式语义、类型论基础与穷尽性检查的工程实践
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/100-InterfaceTypeAlias'
   - 'typescript/220-FunctionGeneric'
@@ -14,12 +14,13 @@ related:
   - 'typescript/120-IntersectionTypeMerge'
   - 'typescript/440-ConditionalTypeInfer'
   - 'typescript/480-MappedTypeKeyRemap'
-prerequisites: []
+prerequisites:
+  - 'typescript/100-InterfaceTypeAlias'
 ---
 
 ## 前置知识
 
-- [类型兼容性（结构化类型系统）](/typescript/200-TypeCompatibility)：建议先完成前一篇的学习
+- [接口与类型别名](/typescript/100-InterfaceTypeAlias)：本篇的字面量与联合要挂在类型别名上使用
 
 ## 学习目标
 
@@ -34,16 +35,13 @@ prerequisites: []
 
 ## 0. 为什么需要这一篇（先读）
 
-> 一句话直觉：类型推断 = 你家的"智能管家"。你不写类型，TS 会根据你给的值自动猜出类型；猜对了你少打字，猜错了它立刻提醒你。
+> 一句话直觉：字面量类型把「值的具体身份」变成类型，联合类型把「多种可能」装进一个类型。两者合起来，就能让「只能是这几种取值之一」的约束写进代码。
 
-JavaScript 里 `let x = 1` 就是数字、`"a"` 就是字符串，写起来很自由；TypeScript 想保持这份自由，又不想失去类型安全，于是有了**类型推断（Inference）**：能自动推断的地方不强制你写注解，只有推断不出来时才要求你写。
-
-本节导航：
+JavaScript 里 `status` 可以是任意字符串，拼错了运行时才炸；TypeScript 用 `type Status = 'draft' | 'published' | 'archived'` 把合法取值锁死，拼错当场报红。本篇读法导航：
 
 1. 先看"字面量类型与联合类型"（基础，必读）；
-2. 再看"类型推断的规则"（核心，必读）；
-3. 最后看"可辨识联合"与实战示例（进阶，第一遍可浏览）；
-4. 理论推导与形式化定义（含 ADT 符号）——按开头的统一规则直接跳过。
+2. 再看"可辨识联合"与实战示例（核心，必读）；
+3. 理论推导与形式化定义（含 ADT 符号）——按开头的统一规则直接跳过。
 
 ## 引言：从 JavaScript 的灵活性到 TypeScript 的精确性
 

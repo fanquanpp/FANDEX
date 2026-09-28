@@ -4,623 +4,235 @@ title: 事务与锁机制
 module: 'mysql'
 category: 数据库
 difficulty: intermediate
-description: ACID 特性、隔离级别、MVCC 与锁类型。
+description: 在两个终端里亲手复现并发扣费翻车，掌握事务与锁的动手层：隔离级别实测、FOR UPDATE 悲观锁、乐观锁、死锁复现与长事务排查。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-29'
 related:
-  - 'mysql/670-ShardingStrategy'
-  - 'mysql/810-JSONTypeJSONTable'
-  - 'mysql/850-MySQLConfigOps'
-  - 'mysql/890-MySQLQuickLookup'
+  - 'mysql/420-TransactionIsolationImplementation'
+  - 'mysql/430-MVCCPrinciple'
+  - 'mysql/450-LockClassification'
+  - 'mysql/480-DeadlockDetectionHandling'
 prerequisites:
-  - 'mysql/160-View'
+  - 'mysql/120-DQL'
 ---
 
-## 前置知识
+## 场景：两笔并发扣费，余额算错了一次
 
-建议先阅读以下内容再进入本文：
+充电账户余额 100 元，用户在两个 App 窗口几乎同时发起两笔 30 元扣费。预期余额 40 元，实际变成了 70 元。伪代码是这样写的：
 
-- [视图语法速查手册](/mysql/160-View)
-
-## 1. 事务特性 (ACID)
-
-### 1.1 原子性 (Atomicity)
-
-- **定义**：事务是一个不可分割的工作单位，事务中的操作要么全部成功，要么全部失败
-- **实现原理**：通过 Undo Log 实现，当事务失败时，回滚到事务开始前的状态
-- **示例**：银行转账操作，扣款和存款要么同时成功，要么同时失败
-
-### 1.2 一致性 (Consistency)
-
-- **定义**：事务执行前后，数据库从一个一致性状态转换到另一个一致性状态
-- **实现原理**：由应用程序和数据库共同保证，数据库确保数据的完整性约束
-- **示例**：转账前后，两个账户的总金额保持不变
-
-### 1.3 隔离性 (Isolation)
-
-- **定义**：多个事务并发执行时，一个事务的执行不应影响其他事务的执行
-- **实现原理**：通过锁机制和 MVCC 实现
-- **示例**：两个事务同时操作同一数据时，不会互相干扰
-
-### 1.4 持久性 (Durability)
-
-- **定义**：事务提交后，其结果永久保存到数据库，即使系统崩溃也不会丢失
-- **实现原理**：通过 Redo Log 实现，事务提交时将修改记录到 Redo Log
-- **示例**：事务提交后，即使数据库重启，修改仍然存在
-
-## 2. 事务隔离级别 (Isolation Levels)
-
-### 2.1 隔离级别的类型
-
-| 隔离级别                    | 脏读   | 不可重复读 | 幻读            | 并发性能 |
-| :-------------------------- | :----- | :--------- | :-------------- | :------- |
-| 读未提交 (Read Uncommitted) | 可能   | 可能       | 可能            | 最高     |
-| 读已提交 (Read Committed)   | 不可能 | 可能       | 可能            | 高       |
-| 可重复读 (Repeatable Read)  | 不可能 | 不可能     | 不可能 (InnoDB) | 中       |
-| 串行化 (Serializable)       | 不可能 | 不可能     | 不可能          | 最低     |
-
-### 2.2 各隔离级别的特点
-
-#### 2.2.1 读未提交 (Read Uncommitted)
-
-- **特点**：事务可以读取其他事务未提交的数据
-- **问题**：可能出现脏读
-- **适用场景**：对数据一致性要求不高的场景
-
-#### 2.2.2 读已提交 (Read Committed)
-
-- **特点**：事务只能读取其他事务已提交的数据
-- **问题**：可能出现不可重复读
-- **适用场景**：大多数应用场景
-
-#### 2.2.3 可重复读 (Repeatable Read)
-
-- **特点**：MySQL InnoDB 默认隔离级别，保证同一事务中多次读取同一数据的结果一致
-- **问题**：在其他数据库中可能出现幻读，但 InnoDB 通过 Next-Key Lock 解决了这个问题
-- **适用场景**：对数据一致性要求较高的场景
-
-#### 2.2.4 串行化 (Serializable)
-
-- **特点**：事务串行执行，完全隔离
-- **问题**：并发性能最差
-- **适用场景**：对数据一致性要求极高的场景
-
-### 2.3 设置隔离级别
-
-```sql
- SELECT @@transaction_isolation;
- SET GLOBAL transaction_isolation = 'READ-COMMITTED';
- SET SESSION transaction_isolation = 'REPEATABLE-READ';
+```text
+1. 读出余额 balance = 100
+2. 计算 100 - 30 = 70
+3. 写回 70
 ```
 
-## 3. MVCC (多版本并发控制)
-
-### 3.1 MVCC 概述
-
-MVCC (Multi-Version Concurrency Control) 是 InnoDB 实现隔离级别的核心技术，它通过保存数据的多个版本，实现了读写并发，提高了数据库的并发性能。
-
-### 3.2 MVCC 的工作原理
-
-#### 3.2.1 数据版本管理
-
-- **行记录中的隐藏列**：
-- `DB_TRX_ID`：事务 ID，记录最后修改该行的事务 ID
-- `DB_ROLL_PTR`：回滚指针，指向 Undo Log 中的历史版本
-- `DB_ROW_ID`：行 ID，自增，用于聚簇索引
-
-#### 3.2.2 Undo Log
-
-- **作用**：保存数据的历史版本，用于事务回滚和 MVCC
-- **类型**：
-- `INSERT Undo Log`：记录插入操作，事务提交后可删除
-- `UPDATE Undo Log`：记录更新操作，事务提交后需要保留，用于 MVCC
-- `DELETE Undo Log`：记录删除操作，事务提交后需要保留，用于 MVCC
-
-#### 3.2.3 ReadView
-
-- **作用**：判断数据版本的可见性
-- **组成**：
-- `m_ids`：当前活跃事务的 ID 集合
-- `min_trx_id`：活跃事务中最小的 ID
-- `max_trx_id`：下一个将要分配的事务 ID
-- `creator_trx_id`：创建 ReadView 的事务 ID
-
-#### 3.2.4 可见性判断规则
-
-- 如果数据的 `DB_TRX_ID` 等于 `creator_trx_id`，则可见
-- 如果数据的 `DB_TRX_ID` 小于 `min_trx_id`，则可见
-- 如果数据的 `DB_TRX_ID` 大于等于 `max_trx_id`，则不可见
-- 如果数据的 `DB_TRX_ID` 在 `m_ids` 中，则不可见；否则可见
-
-### 3.3 MVCC 在不同隔离级别下的表现
-
-- **读未提交**：不使用 MVCC，直接读取最新数据
-- **读已提交**：每次查询都会创建新的 ReadView
-- **可重复读**：事务开始时创建 ReadView，之后不再创建
-- **串行化**：不使用 MVCC，使用锁机制
-
-## 4. 锁机制 (Locks)
-
-### 4.1 锁的分类
-
-#### 4.1.1 按粒度分类
-
-- **行锁**：锁定单行数据，粒度最小，并发性能最高
-- **页锁**：锁定数据页，粒度中等
-- **表锁**：锁定整个表，粒度最大，并发性能最低
-
-#### 4.1.2 按类型分类
-
-- **共享锁 (S Lock)**：读锁，允许并发读，阻塞写
-- **排他锁 (X Lock)**：写锁，阻塞读写
-- **意向共享锁 (IS Lock)**：表级锁，表示事务准备对表中的某些行加共享锁
-- **意向排他锁 (IX Lock)**：表级锁，表示事务准备对表中的某些行加排他锁
-
-#### 4.1.3 按算法分类
-
-- **记录锁 (Record Lock)**：锁定单行记录
-- **间隙锁 (Gap Lock)**：锁定索引间隙，防止插入
-- **临键锁 (Next-Key Lock)**：记录锁 + 间隙锁，解决幻读
-- **插入意向锁 (Insert Intention Lock)**：插入操作时的间隙锁
-
-### 4.2 锁的使用场景
-
-#### 4.2.1 共享锁
+两个请求都执行了这段代码：请求 A 读到 100 写回 70，请求 B 也读到 100（A 还没提交）也写回 70。一笔扣费凭空消失——教科书叫**丢失更新**。这类事故的防线不是代码写仔细点，而是事务与锁。本篇全部实验都可以开两个 mysql 客户端窗口跟着做。
 
 ```sql
--- 共享锁：8.0+ 推荐 FOR SHARE（旧写法 LOCK IN SHARE MODE 已废弃）
-SELECT * FROM users WHERE id = 1 FOR SHARE;
+CREATE TABLE accounts (
+  user_id   INT PRIMARY KEY,
+  name      VARCHAR(50) NOT NULL,
+  balance   DECIMAL(10,2) NOT NULL
+);
+INSERT INTO accounts VALUES (1, '车主小陈', 100.00);
 ```
 
-#### 4.2.2 排他锁
+约定：下文用「会话 A」「会话 B」表示两个独立的客户端连接。
+
+## 动手一：事务三板斧与保存点
 
 ```sql
- SELECT * FROM users WHERE id = 1 FOR UPDATE;
- INSERT INTO users (name) VALUES ('John');
- UPDATE users SET name = 'John' WHERE id = 1;
- delete FROM users WHERE id = 1;
-```
-
-#### 4.2.3 间隙锁和临键锁
-
-- **间隙锁**：在可重复读隔离级别下，使用范围查询时会自动添加间隙锁
-- **临键锁**：InnoDB 默认使用的锁算法，解决幻读问题
-
-### 4.3 锁的兼容性
-
-|                 | 共享锁 (S) | 排他锁 (X) | 意向共享锁 (IS) | 意向排他锁 (IX) |
-| :-------------- | :--------- | :--------- | :-------------- | :-------------- |
-| 共享锁 (S)      | 兼容       | 冲突       | 兼容            | 冲突            |
-| 排他锁 (X)      | 冲突       | 冲突       | 冲突            | 冲突            |
-| 意向共享锁 (IS) | 兼容       | 冲突       | 兼容            | 兼容            |
-| 意向排他锁 (IX) | 冲突       | 冲突       | 兼容            | 兼容            |
-
-## 5. 死锁 (Deadlocks)
-
-### 5.1 死锁的定义
-
-死锁是指两个或多个事务相互等待对方释放锁的状态，导致所有事务都无法继续执行。
-
-### 5.2 死锁的产生条件
-
-- **互斥条件**：资源不能被共享，一次只能被一个事务使用
-- **请求与保持条件**：事务已经保持了至少一个资源，又提出了新的资源请求
-- **不剥夺条件**：事务获得的资源在未使用完之前，不能被强行剥夺
-- **循环等待条件**：若干事务之间形成头尾相接的循环等待资源关系
-
-### 5.3 死锁的检测与处理
-
-#### 5.3.1 死锁检测
-
-```sql
- SHOW ENGINE INNODB STATUS;
- SET GLOBAL innodb_deadlock_detect = ON;
-```
-
-#### 5.3.2 死锁处理
-
-- **自动检测**：InnoDB 会自动检测死锁，并回滚其中一个事务
-- **手动处理**：当死锁检测关闭时，需要手动处理
-
-### 5.4 死锁的预防
-
-- **按固定顺序访问表**：避免循环等待
-- **减小事务粒度**：减少事务持有锁的时间
-- **使用索引**：避免全表扫描，减少锁的范围
-- **避免长时间事务**：尽快提交或回滚事务
-- **使用较低的隔离级别**：减少锁的竞争
-- **设置合理的锁超时**：`SET SESSION innodb_lock_wait_timeout = 30;`
-
-## 6. 事务的实现原理
-
-### 6.1 日志系统
-
-#### 6.1.1 Redo Log
-
-- **作用**：保证事务的持久性
-- **工作原理**：事务提交时，将修改记录到 Redo Log，即使系统崩溃，重启后也可以通过 Redo Log 恢复数据
-- **特点**：顺序写入，性能高
-
-#### 6.1.2 Undo Log
-
-- **作用**：保证事务的原子性和 MVCC
-- **工作原理**：记录数据的历史版本，用于事务回滚和 MVCC 查询
-- **特点**：逆序写入，支持多版本
-
-### 6.2 两阶段提交
-
-- **准备阶段**：事务将修改写入 Undo Log 和 Redo Log，但不提交
-- **提交阶段**：事务提交，释放锁
-
-### 6.3 事务的状态
-
-- **活跃 (Active)**：事务正在执行
-- **部分提交 (Partially Committed)**：事务执行完成，但修改还未写入磁盘
-- **提交 (Committed)**：事务已提交
-- **失败 (Failed)**：事务执行失败
-- **中止 (Aborted)**：事务已回滚
-
-## 7. 事务的最佳实践
-
-### 7.1 事务设计最佳实践
-
-- **保持事务简短**：减少事务持有锁的时间
-- **避免在事务中进行网络操作**：网络操作可能导致事务长时间持有锁
-- **避免在事务中进行大量计算**：计算操作可能导致事务长时间持有锁
-- **合理设置隔离级别**：根据业务需求选择合适的隔离级别
-- **使用批量操作**：减少事务数量
-
-### 7.2 锁的使用最佳实践
-
-- **使用索引**：避免全表扫描，减少锁的范围
-- **选择合适的锁粒度**：根据业务需求选择合适的锁粒度
-- **避免死锁**：按固定顺序访问表，减小事务粒度
-- **使用乐观锁**：对于并发冲突较少的场景，使用乐观锁
-- **监控锁等待**：定期检查锁等待情况
-
-### 7.3 性能优化
-
-- **使用连接池**：减少连接创建和销毁的开销
-- **批量提交**：减少事务提交的次数
-- **合理使用索引**：提高查询效率，减少锁的竞争
-- **监控事务性能**：定期分析慢事务
-- **优化 SQL**：减少事务中的复杂查询
-
-## 8. 实际案例分析
-
-### 8.1 案例 1：死锁排查
-
-**问题**：应用程序出现死锁错误
-**分析**：
-
-1. 查看死锁日志：`SHOW ENGINE INNODB STATUS;`
-2. 发现两个事务相互等待对方的锁
-3. 分析 SQL 语句，发现访问表的顺序不同
-   **解决方案**：
-4. 统一访问表的顺序
-5. 减小事务粒度
-6. 使用索引优化查询
-
-### 8.2 案例 2：事务性能优化
-
-**问题**：事务执行时间过长，导致并发性能下降
-**分析**：
-
-1. 查看慢查询日志
-2. 发现事务中包含大量计算和网络操作
-3. 事务持有锁的时间过长
-   **解决方案**：
-4. 将计算和网络操作移到事务外
-5. 拆分大事务为小事务
-6. 优化 SQL 查询
-
-### 8.3 案例 3：隔离级别选择
-
-**问题**：应用程序出现幻读
-**分析**：
-
-1. 检查隔离级别：`SELECT @@transaction_isolation;`
-2. 发现使用的是读已提交隔离级别
-3. 业务需求需要可重复读
-   **解决方案**：
-4. 将隔离级别设置为可重复读：`SET SESSION transaction_isolation = 'REPEATABLE-READ';`
-5. 优化查询，使用索引
-
-## 9. 常见问题与解决方案
-
-### 9.1 事务超时
-
-**问题**：事务执行时间过长，导致超时
-**解决方案**：
-
-- 减小事务粒度
-- 优化 SQL 查询
-- 增加超时时间：`SET SESSION innodb_lock_wait_timeout = 60;`
-
-### 9.2 死锁
-
-**问题**：应用程序出现死锁错误
-**解决方案**：
-
-- 按固定顺序访问表
-- 减小事务粒度
-- 使用索引优化查询
-- 监控死锁日志
-
-### 9.3 并发性能低
-
-**问题**：并发访问时性能下降
-**解决方案**：
-
-- 使用合理的隔离级别
-- 优化锁的使用
-- 提高索引效率
-- 使用连接池
-
-### 9.4 数据一致性问题
-
-**问题**：事务执行后数据不一致
-**解决方案**：
-
-- 确保事务的 ACID 特性
-- 使用合适的隔离级别
-- 检查应用程序逻辑
-- 定期备份数据
-
-## 10. 总结
-
-事务和锁机制是 MySQL 数据库并发控制的核心，通过理解 ACID 特性、隔离级别、MVCC 原理和锁机制，可以有效地设计和优化数据库应用，提高并发性能，保证数据一致性。
-
-### 核心要点
-
-- **事务特性**：ACID（原子性、一致性、隔离性、持久性）
-- **隔离级别**：读未提交、读已提交、可重复读、串行化
-- **MVCC**：多版本并发控制，通过 Undo Log 和 ReadView 实现
-- **锁机制**：行锁、表锁、共享锁、排他锁、间隙锁等
-- **死锁**：预防和处理死锁的方法
-- **最佳实践**：事务设计、锁的使用、性能优化
-
-### 学习建议
-
-- **实践**：通过实际操作熟悉事务和锁的使用
-- **分析**：使用 `SHOW ENGINE INNODB STATUS;` 分析死锁
-- **监控**：监控事务性能和锁等待情况
-- **优化**：根据实际情况调整事务和锁的使用
-- **持续学习**：关注 MySQL 的新特性和优化技巧
-
----
-
-## 事务控制
-
-**单行写法：开启事务**
-`START TRANSACTION` / `BEGIN`
-```sql
--- 开启事务
+-- 承接前文：另有一张充电订单表 charge_orders(user_id, kwh, amount)，字段示意
+-- 会话 A：充电订单与扣费必须同生共死
 START TRANSACTION;
-```
-
-**换行写法：提交事务**
-`COMMIT`
-```sql
--- 提交事务并持久化变更
-START TRANSACTION;
-INSERT INTO users (username, email) VALUES ('张三', 'zhangsan@example.com');
-UPDATE accounts SET balance = balance - 100 WHERE user_id = 1;
-UPDATE accounts SET balance = balance + 100 WHERE user_id = 2;
+    INSERT INTO charge_orders(user_id, kwh, amount)
+    VALUES (1, 25.00, 30.00);
+    UPDATE accounts SET balance = balance - 30 WHERE user_id = 1;
 COMMIT;
 ```
 
-**单行写法：回滚事务**
-`ROLLBACK`
-```sql
--- 回滚事务撤销变更
-ROLLBACK;
-```
+把扣费和订单放进一个事务：要么两条都生效，要么都不生效（回滚后余额和订单表都回到原样）。验证回滚很简单，把 COMMIT 换成 ROLLBACK 再查一次。
 
-**换行写法：使用保存点**
-`SAVEPOINT <保存点名>` / `ROLLBACK TO <保存点名>`
+复杂流程里只反悔一半，用保存点：
+
 ```sql
--- 使用保存点部分回滚
 START TRANSACTION;
-INSERT INTO users (username) VALUES ('张三');
-SAVEPOINT sp1;
-INSERT INTO users (username) VALUES ('李四');
-ROLLBACK TO sp1;
+    UPDATE accounts SET balance = balance - 30 WHERE user_id = 1;
+    SAVEPOINT after_deduct;
+    INSERT INTO charge_orders(user_id, kwh, amount) VALUES (1, 25, 30);
+    -- 发现订单重复了，只撤掉插入这一步
+    ROLLBACK TO after_deduct;
 COMMIT;
 ```
 
-**单行写法：释放保存点**
-`RELEASE SAVEPOINT <保存点名>`
+两个常见意外要现在就知道：连接断开或客户端退出时，未提交事务自动回滚；事务里执行 DDL（ALTER/DROP 等）会**隐式提交**当前事务——"改个表结构顺便"发生在事务里，会把前面没提交的修改一起提交掉。
+
+## 动手二：亲手复现并发异常
+
+### 实验一：不可重复读与隔离级别
+
 ```sql
--- 释放指定保存点
-RELEASE SAVEPOINT sp1;
-```
-
----
-
-## 隔离级别
-
-**单行写法：查看隔离级别**
-`SELECT @@transaction_isolation`
-```sql
--- 查看当前事务隔离级别
-SELECT @@transaction_isolation;
-```
-
-**单行写法：查看旧变量名隔离级别（仅 5.7 及更早，8.0 已移除该变量）**
-`SELECT @@tx_isolation`（5.7）
-```sql
--- 5.7 及更早版本使用旧变量名；8.0 起请改用 @@transaction_isolation
-SELECT @@tx_isolation;
-```
-
-**单行写法：设置会话隔离级别**
-`SET SESSION TRANSACTION ISOLATION LEVEL <级别>`
-```sql
--- 设置会话隔离级别为读已提交
+-- 会话 A
 SET SESSION TRANSACTION ISOLATION LEVEL READ COMMITTED;
-```
-
-**单行写法：设置全局隔离级别**
-`SET GLOBAL TRANSACTION ISOLATION LEVEL <级别>`
-```sql
--- 设置全局隔离级别为可序列化
-SET GLOBAL TRANSACTION ISOLATION LEVEL SERIALIZABLE;
-```
-
-**单行写法：通过变量设置全局隔离级别**
-`SET GLOBAL transaction_isolation = '<级别>'`
-```sql
--- 通过变量设置全局隔离级别
-SET GLOBAL transaction_isolation = 'READ-COMMITTED';
-```
-
-**单行写法：通过变量设置会话隔离级别**
-`SET SESSION transaction_isolation = '<级别>'`
-```sql
--- 通过变量设置会话隔离级别
-SET SESSION transaction_isolation = 'REPEATABLE-READ';
-```
-
----
-
-## 锁机制
-
-**单行写法：加共享锁**
-`SELECT ... FOR SHARE`（8.0+ 推荐；旧写法 LOCK IN SHARE MODE 已废弃）
-```sql
--- 查询时加共享锁
-SELECT * FROM users WHERE id = 1 FOR SHARE;
-```
-
-**单行写法：加排他锁**
-`SELECT ... FOR UPDATE`
-```sql
--- 查询时加排他锁
-SELECT * FROM users WHERE id = 1 FOR UPDATE;
-```
-
-**单行写法：INSERT 自动加排他锁**
-`INSERT INTO <表名> (<列名>) VALUES (<值>)`
-```sql
--- 插入操作自动加排他锁
-INSERT INTO users (name) VALUES ('John');
-```
-
-**单行写法：UPDATE 自动加排他锁**
-`UPDATE <表名> SET <列名> = <值> WHERE <条件>`
-```sql
--- 更新操作自动加排他锁
-UPDATE users SET name = 'John' WHERE id = 1;
-```
-
-**单行写法：DELETE 自动加排他锁**
-`DELETE FROM <表名> WHERE <条件>`
-```sql
--- 删除操作自动加排他锁
-DELETE FROM users WHERE id = 1;
-```
-
----
-
-## 锁等待与超时
-
-**单行写法：查看锁等待超时**
-`SELECT @@innodb_lock_wait_timeout`
-```sql
--- 查看锁等待超时时间
-SELECT @@innodb_lock_wait_timeout;
-```
-
-**单行写法：设置锁等待超时**
-`SET SESSION innodb_lock_wait_timeout = <秒数>`
-```sql
--- 设置锁等待超时为 30 秒
-SET SESSION innodb_lock_wait_timeout = 30;
-```
-
----
-
-## 死锁检测
-
-**单行写法：查看 InnoDB 状态**
-`SHOW ENGINE INNODB STATUS`
-```sql
--- 查看死锁日志
-SHOW ENGINE INNODB STATUS;
-```
-
-**单行写法：开启死锁检测**
-`SET GLOBAL innodb_deadlock_detect = ON`
-```sql
--- 开启死锁检测
-SET GLOBAL innodb_deadlock_detect = ON;
-```
-
----
-
-## 事务实战
-
-**换行写法：转账事务**
-`START TRANSACTION; <DML>; COMMIT;`
-```sql
--- 转账事务保证原子性
 START TRANSACTION;
-UPDATE accounts SET balance = balance - 1000 WHERE user_id = 1;
-UPDATE accounts SET balance = balance + 1000 WHERE user_id = 2;
+SELECT balance FROM accounts WHERE user_id = 1;   -- 100.00
+
+-- 会话 B
+START TRANSACTION;
+UPDATE accounts SET balance = balance - 30 WHERE user_id = 1;
+COMMIT;
+
+-- 会话 A 再读一次
+SELECT balance FROM accounts WHERE user_id = 1;   -- 70.00，变了！
+```
+
+同一事务内两次读取结果不同，这就是不可重复读。把会话 A 的隔离级别换成默认的 REPEATABLE READ 重做一遍，第二次读仍是 100——可重复读名副其实。
+
+```sql
+SELECT @@transaction_isolation;                    -- 看当前级别
+SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;
+```
+
+四个级别禁止的异常一览（InnoDB 默认 REPEATABLE READ）：
+
+| 隔离级别 | 脏读 | 不可重复读 | 幻读 |
+| --- | --- | --- | --- |
+| READ UNCOMMITTED | 可能 | 可能 | 可能 |
+| READ COMMITTED | 阻止 | 可能 | 可能 |
+| REPEATABLE READ（默认） | 阻止 | 阻止 | 基本阻止 |
+| SERIALIZABLE | 阻止 | 阻止 | 阻止 |
+
+"基本阻止"的原因：RR 下普通 SELECT 是**快照读**（靠 MVCC 看旧版本，不加锁），而 UPDATE 这类**当前读**用临键锁挡住范围内的插入，两条路一起把幻读压住。内部实现见 [MVCC 原理](/mysql/430-MVCCPrinciple)与[间隙锁与临键锁](/mysql/470-GapLockNextKeyLockSolutionPhantomRead)。
+
+### 实验二：丢失更新依然会发生
+
+在 RR 下重做开头的并发扣费：两个事务都先 SELECT 读余额，再 UPDATE 写回计算结果——**快照读拿到了同样的旧值，丢失更新照样发生**。隔离级别解决的是"你能看见什么"，不解决"你基于旧值做的决定"。要解决丢失更新，需要锁或原子操作，见下一节。
+
+## 动手三：并发扣费的三种正确姿势
+
+### 姿势一：原子 UPDATE（首选）
+
+```sql
+-- 不读出来算，让数据库在行上直接算
+UPDATE accounts
+SET balance = balance - 30
+WHERE user_id = 1 AND balance >= 30;
+-- ROW_COUNT() = 0 说明余额不足，事务回滚
+```
+
+没有"读-算-写"三步，就没有丢失更新的入口。能用一条 UPDATE 表达的业务规则，永远优先这条路线。
+
+### 姿势二：悲观锁 FOR UPDATE
+
+```sql
+-- 会话 A
+START TRANSACTION;
+SELECT balance FROM accounts WHERE user_id = 1 FOR UPDATE;  -- 行被 A 锁住
+-- 会话 B 此时执行同样的 SELECT ... FOR UPDATE 会阻塞等待
+UPDATE accounts SET balance = balance - 30 WHERE user_id = 1;
+COMMIT;                                                     -- B 才被放行
+```
+
+FOR UPDATE 对行加排他锁，把"读-算-写"整段串行化，逻辑再复杂也不会错。代价是并发度下降和死锁风险。只读共享用 `FOR SHARE`（8.0 推荐写法，旧写法 LOCK IN SHARE MODE 已废弃）。等锁有超时：`innodb_lock_wait_timeout` 默认 50 秒。
+
+### 姿势三：乐观锁（version 号）
+
+```sql
+ALTER TABLE accounts ADD COLUMN version INT NOT NULL DEFAULT 0;
+
+-- 读出 version
+SELECT balance, version FROM accounts WHERE user_id = 1;   -- (100, 0)
+-- 程序计算新余额 70，带版本号写回
+UPDATE accounts SET balance = 70, version = version + 1
+WHERE user_id = 1 AND version = 0;
+-- 影响行数为 0：说明期间有人先改过，重新读取再试
+```
+
+不锁行，用"提交时版本没变"来赌没有并发冲突；冲突了就重试。读多写少、冲突概率低的场景比悲观锁吞吐高。两种路线的系统对比见[乐观锁与悲观锁](/sql/410-OptimisticPessimisticLock)。
+
+## 死锁现场：五分钟复现一次
+
+```sql
+-- 会话 A
+START TRANSACTION;
+UPDATE accounts SET balance = balance - 10 WHERE user_id = 1;   -- 锁住用户 1
+
+-- 会话 B
+START TRANSACTION;
+UPDATE accounts SET balance = balance - 10 WHERE user_id = 2;   -- 锁住用户 2
+
+-- 会话 A：转给用户 2
+UPDATE accounts SET balance = balance + 10 WHERE user_id = 2;   -- 等 B
+
+-- 会话 B：转给用户 1
+UPDATE accounts SET balance = balance + 10 WHERE user_id = 1;
+-- ERROR 1213: Deadlock found ... 会话 B 被回滚，会话 A 的这条执行成功
+```
+
+互相持有对方要的锁，形成循环等待，InnoDB 自动检测并回滚代价较小的事务（错误码 1213）。查看现场：
+
+```sql
+SHOW ENGINE INNODB STATUS;   -- LATEST DETECTED DEADLOCK 段落：两边各持有什么、在等什么
+SET GLOBAL innodb_print_all_deadlocks = ON;   -- 所有死锁记入错误日志
+```
+
+预防顺序（从根到叶）：固定加锁顺序（都先锁用户 ID 小的）；事务尽量短；UPDATE/SELECT FOR UPDATE 都走索引（不走索引会升级成大范围锁）；重试是被回滚一方的标准动作。检测机制与更多现场见[死锁检测与处理](/mysql/480-DeadlockDetectionHandling)。
+
+## 坑点与自检
+
+### 坑一：长事务拖垮清理与回滚
+
+```sql
+-- 找出正在跑的事务，关注时长
+SELECT trx_id, trx_started, trx_state, trx_rows_locked, trx_mysql_thread_id
+FROM information_schema.INNODB_TRX
+ORDER BY trx_started;
+```
+
+事务开着不提交，MVCC 旧版本没法清理（undo 膨胀）、锁一直持有。纪律：事务里不放 RPC/HTTP 调用、不放用户交互；批量任务按 1000 行一批分事务提交。
+
+### 坑二：autocommit 的双刃剑
+
+MySQL 默认 `autocommit=1`，单条语句自动提交。它掩盖的坑是：有人以为自己在事务里，实际每条 DML 都独立提交（半成品状态落库）。反过来，框架里常驻 `BEGIN` 却不提交的长事务是连接池耗尽的常见元凶。自检：`SELECT @@autocommit;`，并确认框架的事务边界注解真的生效。
+
+### 坑三：任务队列并发取任务的正确姿势
+
+多 worker 抢任务（超时关单、重试队列）最怕两个 worker 拿到同一批：
+
+```sql
+-- SKIP LOCKED：跳过已被别的 worker 锁定的行（MySQL 8.0+）
+START TRANSACTION;
+SELECT session_id FROM charge_sessions
+WHERE status = 'pending'
+ORDER BY session_id
+LIMIT 10 FOR UPDATE SKIP LOCKED;
+UPDATE charge_sessions SET status = 'processing' WHERE session_id IN (...);
 COMMIT;
 ```
 
-**换行写法：条件提交**
-`IF <条件> THEN COMMIT; ELSE ROLLBACK; END IF`
-```sql
--- 检查余额后决定提交或回滚
-START TRANSACTION;
-UPDATE accounts SET balance = balance - 1000 WHERE user_id = 1;
-UPDATE accounts SET balance = balance + 1000 WHERE user_id = 2;
+配合 NOWAIT（拿不到锁立即报错）可以做成"宁可返回空也不排队"。这是 8.0 后任务队列类需求的标准答案。
 
-IF (SELECT balance FROM accounts WHERE user_id = 1) < 0 THEN
-  ROLLBACK;
-ELSE
-  COMMIT;
-END IF;
-```
+### 坑四：把日志当黑盒
 
-**换行写法：订单创建事务**
-`START TRANSACTION; <DML>; SET @变量; <DML>; COMMIT;`
-```sql
--- 订单创建事务包含订单和订单项
-START TRANSACTION;
-INSERT INTO orders (user_id, total_amount) VALUES (1, 500);
-SET @order_id = LAST_INSERT_ID();
-INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
-  (@order_id, 101, 2, 200),
-  (@order_id, 102, 1, 100);
-UPDATE products SET stock = stock - 3 WHERE id IN (101, 102);
-COMMIT;
-```
+事务的持久性（redo）、原子性（undo）与两者的两阶段提交，是这套机制的底层账本，本篇刻意不展开——直接进入对应的专题：[Redo Log](/mysql/500-RedoLog)、[Undo Log](/mysql/510-UndoLog)、[两阶段提交](/mysql/530-TwoPhaseCommit)。
 
-**换行写法：悲观锁查询**
-`SELECT ... FOR UPDATE`
-```sql
--- 先锁定再更新
-SELECT * FROM users WHERE id = 1 FOR UPDATE;
-UPDATE users SET status = 0 WHERE last_login_time < '2023-01-01';
-```
+### 自检清单
 
-**换行写法：批量删除事务**
-`START TRANSACTION; <DML>; COMMIT;`
-```sql
--- 批量更新避免长事务
-START TRANSACTION;
-UPDATE users SET status = 0 WHERE last_login_time < '2023-01-01';
-UPDATE stats SET inactive_users = inactive_users + 1;
-COMMIT;
-```
+- 并发改余额，能说出三种姿势分别适用什么冲突率吗？
+- 知道当前会话的隔离级别，并且能解释快照读与当前读的差别吗？
+- 写多表事务前想好加锁顺序了吗？被 1213 回滚后有重试吗？
+- 事务里没有 RPC、没有 DDL、有批量上限吗？
 
-**单行写法：分批删除**
-`DELETE FROM <表名> WHERE <条件> LIMIT <N>`
-```sql
--- 分批删除避免锁表
-DELETE FROM logs WHERE created_at < '2023-01-01' LIMIT 1000;
-```
+## 练习
+
+1. 复现实验一的不可重复读，然后把级别切到 REPEATABLE READ 验证消失；再在会话 B 用 FOR UPDATE + COMMIT，观察 RR 下的会话 A 是否能看到新值（提示：不会，为什么）。
+2. 用姿势一的原子 UPDATE 实现"余额不足则整单失败"，并用两个并发会话验证不出现丢失更新。
+3. 用姿势二复现实验二的丢失更新场景，验证 FOR UPDATE 挡住了它；记录会话 B 等待的时长与报错。
+4. 复现本文的死锁，用 SHOW ENGINE INNODB STATUS 找到 LATEST DETECTED DEADLOCK，读懂两个事务各自持有和等待的锁。
+5. 给 charge_sessions 建一个 1000 行待处理队列，用 SKIP LOCKED 起两个并发会话各取 10 条，验证两批不重叠。
+
+## 下一步
+
+- 隔离级别的实现内幕：[事务隔离级别的实现](/mysql/420-TransactionIsolationImplementation)、[MVCC 原理](/mysql/430-MVCCPrinciple)、[快照读与当前读](/mysql/440-MVCCSnapshotCurrentRead)；
+- 锁的分类学与临键锁：[锁分类](/mysql/450-LockClassification)、[间隙锁与幻读](/mysql/470-GapLockNextKeyLockSolutionPhantomRead)；
+- 日志与恢复：[Redo Log](/mysql/500-RedoLog)、[Undo Log](/mysql/510-UndoLog)、[两阶段提交](/mysql/530-TwoPhaseCommit)。

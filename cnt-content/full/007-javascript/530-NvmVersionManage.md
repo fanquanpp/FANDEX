@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 540
 title: nvm 版本管理：理解"切换"的本质
 module: 'javascript'
 category: 前端技术

@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 240
 title: MERGE 语句增强
 module: 'postgresql'
 category: 数据库

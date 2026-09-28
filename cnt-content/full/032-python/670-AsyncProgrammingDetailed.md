@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 500
 title: "异步深水区：异常传播、超时取消与阻塞陷阱"
 module: 'python'
 category: 后端技术

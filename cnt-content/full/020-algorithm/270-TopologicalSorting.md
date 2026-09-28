@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: '拓扑排序（Topological Sort）算法：Arthur B. Kahn 1962《Topological Sorting of Large Networks》Communications of the ACM 5(11):558-562 DOI:10.1145/368996.369025 提出的入度法（Kahn 算法/BFS），与 Robert Endre Tarjan 1972《Depth-First Search and Linear Graph Algorithms》SIAM Journal on Computing 1(2):146-160 DOI:10.1137/0201010 给出的 DFS 后序逆序线性时间算法共同构成两大主流方案。Donald E. Knuth 在《The Art of Computer Programming, Volume 1: Fundamental Algorithms》§2.2.3 系统化讨论拓扑排序与计算机科学中的等价问题。本文涵盖 DAG（有向无环图）的形式化定义、Kahn 与 DFS 算法的正确性证明、与强连通分量（Tarjan 1972）及关键路径法（CPM, Kelly-Walker 1957；PERT, Malcolm-Roseboom-Clark-Fazar 1959）的关系、编译器依赖分析、Make/Build 系统、课程先修关系、并行任务调度等工业级应用，附 Python/C++/Java 多语言实现。'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/110-GraphAlgorithms'
@@ -19,7 +19,9 @@ prerequisites:
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
-> 定位说明：本篇为进阶参考书（参考层），面向已完成本模块主线的读者；入门请先走学习路径前序阶段。定位标准见 docs/standards/reference-layer.md（仓库）。
+> 使用方式：本篇是拓扑排序的参考深水篇，适合带着具体问题来查；图遍历基础见[图算法](/algorithm/110-GraphAlgorithms)。
+
+选课系统里「高等数学」必须先于「线性代数」，构建系统里必须先编译依赖库再链接主程序，Excel 里公式必须先算它引用的单元格——只要任务之间存在先后依赖，就需要拓扑排序：把有向无环图（DAG）的顶点排成一条合法的执行顺序。本篇覆盖 Kahn 与 DFS 后序逆序两大算法、字典序最小变体、环检测与关键路径（CPM），读完后你能检测依赖环、排出任务顺序、并算出整组任务的最短完成时间。
 
 ## 前置知识
 
@@ -2587,3 +2589,11 @@ class Solution:
 - [OI Wiki: 拓扑排序](https://oi-wiki.org/graph/topo/)：中文竞赛向讲解，含 Kahn 算法与 DFS 实现（中文，免费）。
 
 > 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。
+
+## 读完自检
+
+- 拓扑排序存在的充要条件是什么？（图是 DAG；含环时不存在）
+- Kahn 算法怎么顺带检测环？（结束后结果序列长度小于顶点数，说明剩余顶点构成环）
+- DFS 后序逆序为什么正确？压栈时机错在哪？（顶点完成后才入栈，完成时间逆序保证所有后继排在其前；前序入栈会得到反序）
+- 拓扑序与关键路径什么关系？（先求拓扑序，再按序做 DAG 上的最长路 DP，事件最早发生时间即关键路径）
+- 依赖任务并求最短总工期：能完整说出「建图、拓扑序、最早/最晚时间、找零松弛活动」四步。

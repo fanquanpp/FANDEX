@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 240
 title: Python enum 枚举
 module: 'python'
 category: 后端技术

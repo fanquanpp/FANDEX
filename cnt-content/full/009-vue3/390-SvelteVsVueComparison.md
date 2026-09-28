@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 410
 title: Svelte 精要与 Vue 对照
 module: 'vue3'
 category: 前端技术

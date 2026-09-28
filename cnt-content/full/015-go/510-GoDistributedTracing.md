@@ -1,53 +1,36 @@
 ---
 order: 510
-title: Go 与分布式追踪
+title: Go 与分布式追踪：一次请求到底慢在哪一跳
 module: 'go'
 category: 后端技术
 difficulty: advanced
-description: OpenTelemetry Go 实战：Span 与采样、OTLP 导出、HTTP/gRPC 集成、trace_id 关联日志与工程化要点。
+description: 以"接口 P99 偶发 3 秒但日志看不出慢在哪"为主线学 OpenTelemetry：Span 与父子链、stdout 导出跑通第一段链路、otelhttp/otelgrpc 一行接入、采样策略、trace_id 串起 slog 日志，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
+  - 'go/380-GoLog'
+  - 'go/520-GoGRPC'
+  - 'go/140-ContextDetailed'
   - 'go/480-GoMiddleware'
-  - 'go/490-GoOAuth2'
-  - 'go/500-GoRateLimiting'
-  - 'go/160-GoroutineChannelPrinciple'
 prerequisites:
   - 'go/020-GoOverviewEnvSetup'
 ---
 
-## 前置知识
+## 真实场景：P99 三秒，日志却都说自己很快
 
-建议先阅读以下内容再进入本文：
+网关日志显示 300ms 就把请求转出去了；订单服务日志显示自己只用了 280ms；用户服务显示 20ms 返回。可用户端 P99 就是 3 秒。四个服务各说各话，时间对不上——因为每个服务只知道"我处理了多久"，不知道"我等下游等了多久、请求在我这之前走了多久"。
 
-- [Go 概述与环境配置](/go/020-GoOverviewEnvSetup)
+缺的是一张全程时间线：从用户发出请求开始，每一跳的开始、结束、耗时、状态，串在同一条记录里。这就是分布式追踪。事实标准是 OpenTelemetry（OTel）：Trace 是一次请求的全程记录（由全局 Trace ID 标识），Span 是其中一个操作单元（谁调了谁、耗时多少、带什么属性），Span 组成树；跨服务传播靠 context 里的 Trace ID/Span ID。
 
-## 概述
+## 动手第一步：stdout 导出，五分钟看到父子链
 
-分布式追踪是一种监控技术，用于跟踪请求在分布式系统中的完整路径。当用户发起一个请求，这个请求可能经过网关、多个微服务、数据库、消息队列等组件。分布式追踪记录每个环节的耗时和状态，帮助开发者定位性能瓶颈和故障原因。OpenTelemetry 是当前最主流的分布式追踪标准，Go 语言有官方的 SDK 支持。
-
-## 基础概念
-
-在开始编码之前，需要理解分布式追踪的几个核心概念：
-
-- **Trace（追踪）**：一个请求从发起到完成的完整过程，由一个全局唯一的 Trace ID 标识。
-- **Span（跨度）**：Trace 中的一个操作单元，记录了操作的名称、开始时间、持续时间和属性。一个 Trace 由多个 Span 组成树状结构。
-- **Context Propagation（上下文传播）**：在服务间传递 Trace ID 和 Span ID，确保跨服务的请求能关联到同一个 Trace。
-- **Exporter（导出器）**：将追踪数据发送到后端系统（如 Jaeger、Zipkin、Prometheus）。
-- **Sampler（采样器）**：决定哪些请求需要记录追踪数据，避免在高流量下产生过多数据。
-
-## 快速上手
-
-首先安装 OpenTelemetry Go SDK：
+不装任何后端，先把追踪数据打印到标准输出，亲眼看到 Trace 结构：
 
 ```bash
 go get go.opentelemetry.io/otel
 go get go.opentelemetry.io/otel/sdk
 go get go.opentelemetry.io/otel/exporters/stdout/stdouttrace
-go get go.opentelemetry.io/otel/sdk/trace
 ```
-
-快速上手的示例可以完整运行（`go run main.go`），追踪数据以 JSON 打印到标准输出，每行一个 Span，包含 `Name`、`SpanContext`（其中的 `TraceID` 在父子 Span 间相同）、`StartTime`、`Duration` 与资源属性。看到父子 Span 共享同一个 `TraceID`，就说明追踪链路已经通了。
 
 ```go
 package main
@@ -65,102 +48,56 @@ import (
 )
 
 func main() {
-    // 创建导出器（将追踪数据输出到标准输出）
     exporter, err := stdouttrace.New(stdouttrace.WithPrettyPrint())
     if err != nil {
         log.Fatal(err)
     }
 
-    // 创建 TracerProvider
+    // TracerProvider：追踪数据的"总开关"，进程级初始化一次
     tp := sdktrace.NewTracerProvider(
-        sdktrace.WithBatcher(exporter),
+        sdktrace.WithBatcher(exporter), // 攒批导出
         sdktrace.WithResource(resource.NewWithAttributes(
             semconv.SchemaURL,
-            semconv.ServiceNameKey.String("my-app"), // 服务名称
+            semconv.ServiceNameKey.String("order-service"), // 这是哪台服务发的
         )),
     )
-    defer tp.Shutdown(context.Background())
-
-    // 设置为全局 TracerProvider
+    defer tp.Shutdown(context.Background()) // 不 Shutdown 会丢缓冲区里的数据
     otel.SetTracerProvider(tp)
 
-    // 获取 Tracer
-    tracer := otel.Tracer("my-app")
+    tracer := otel.Tracer("order-service")
 
-    // 创建一个 Span
+    // 父 Span：接到 ctx 上
     ctx, span := tracer.Start(context.Background(), "process-order")
     defer span.End()
 
-    // 在 Span 中添加属性
-    span.SetAttributes(semconv.ServiceVersionKey.String("1.0.0"))
-
-    // 记录事件
     span.AddEvent("开始处理订单")
-
-    // 业务逻辑
-    doWork(ctx)
-
-    span.AddEvent("订单处理完成")
+    doWork(ctx) // ctx 继续往下传
     fmt.Println("处理完成")
 }
 
 func doWork(ctx context.Context) {
-    tracer := otel.Tracer("my-app")
-    // 创建子 Span
-    _, span := tracer.Start(ctx, "query-database")
+    tracer := otel.Tracer("order-service")
+    _, span := tracer.Start(ctx, "query-database") // 从 ctx 挂到父 Span 下
     defer span.End()
-
-    // 模拟数据库查询
-    span.AddEvent("执行 SQL 查询")
 }
 ```
-
-## 详细用法
-
-### 1. 初始化 TracerProvider：OTLP 导出
-
-生产环境将追踪数据通过 OTLP 协议发往后端。注意：旧的 `go.opentelemetry.io/otel/exporters/jaeger` 导出器已被官方废弃并从 SDK 中移除——Jaeger 自 1.35 起原生接受 OTLP 协议，迁移方案是统一改用 OTLP 导出器（gRPC 走 4317 端口，HTTP 走 4318 端口）：
 
 ```bash
-go get go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp
+go run main.go
 ```
 
-```go
-import (
-    "go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp"
-    sdktrace "go.opentelemetry.io/otel/sdk/trace"
-)
+预期输出（JSON 行，节选关键字段）：
 
-func InitTracer(ctx context.Context, endpoint string) (*sdktrace.TracerProvider, error) {
-    // OTLP/HTTP 导出器：endpoint 填 collector 或 Jaeger 的 OTLP 入口，
-    // 生产上通常只配 OTEL_EXPORTER_OTLP_ENDPOINT 环境变量而不硬编码
-    exporter, err := otlptracehttp.New(ctx,
-        otlptracehttp.WithEndpoint(endpoint),
-        otlptracehttp.WithInsecure(), // 内网 collector 一般明文；出网关用 TLS 时去掉
-    )
-    if err != nil {
-        return nil, err
-    }
-
-    tp := sdktrace.NewTracerProvider(
-        sdktrace.WithBatcher(exporter), // 批量导出，攒够一批或超时再发
-        sdktrace.WithResource(resource.NewWithAttributes(
-            semconv.SchemaURL,
-            semconv.ServiceNameKey.String("order-service"),
-            semconv.ServiceVersionKey.String("1.0.0"),
-        )),
-        // 采样策略：始终采样（开发环境）
-        sdktrace.WithSampler(sdktrace.AlwaysSample()),
-    )
-
-    otel.SetTracerProvider(tp)
-    return tp, nil
-}
+```text
+{"Name":"query-database","SpanContext":{"TraceID":"4bf92f35...","SpanID":"00f067aa..."}}
+{"Name":"process-order","SpanContext":{"TraceID":"4bf92f35...","SpanID":"8e0c9f43..."}}
 ```
 
-### 2. HTTP 服务集成
+关键观察：两个 Span 的 `TraceID` 相同、`SpanID` 不同——父子关系成立，一条链路就成型了。跑通这一步，剩下的全是"把同一套机制接到 HTTP/gRPC 上"。
 
-在 HTTP 服务器中集成追踪，自动为每个请求创建 Span：
+## 动手第二步：接入 HTTP 服务与客户端
+
+真实链路在服务之间。服务端用 otelhttp 中间件，每个请求自动生成 Span；客户端用 otelhttp Transport，请求自动携带追踪头：
 
 ```bash
 go get go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
@@ -169,209 +106,45 @@ go get go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp
 ```go
 import (
     "net/http"
+
     "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 )
 
 func main() {
-    // 初始化追踪
-    tp, _ := InitTracer("http://localhost:14268/api/traces")
+    tp, _ := InitTracer() // 第一步的初始化，OTLP 配置见下文
     defer tp.Shutdown(context.Background())
 
-    // 使用 otelhttp 中间件自动追踪 HTTP 请求
     mux := http.NewServeMux()
-    mux.HandleFunc("/orders", handleOrders)
+    mux.HandleFunc("/orders", func(w http.ResponseWriter, r *http.Request) {
+        // 从请求 context 取出中间件创建的 Span
+        span := trace.SpanFromContext(r.Context())
+        span.SetAttributes(attribute.String("order.channel", "web"))
+        w.Write([]byte("订单列表"))
+    })
 
-    // 包装路由，自动创建 Span
-    handler := otelhttp.NewHandler(mux, "http-server")
-    http.ListenAndServe(":8080", handler)
+    // 一行接入：此后每个请求都有 Span
+    http.ListenAndServe(":8080", otelhttp.NewHandler(mux, "http-server"))
 }
 
-func handleOrders(w http.ResponseWriter, r *http.Request) {
-    // 从请求中获取 Span，添加属性
-    span := trace.SpanFromContext(r.Context())
-    span.SetAttributes(attribute.String("http.method", r.Method))
-
-    // 业务逻辑
-    w.Write([]byte("订单列表"))
-}
-```
-
-### 3. HTTP 客户端集成
-
-追踪 HTTP 客户端请求，将追踪上下文传播到下游服务：
-
-```go
-import "go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
-
-// 创建带追踪的 HTTP 客户端
-client := &http.Client{
+// 调下游时用带追踪的客户端：追踪头自动注入请求
+var client = &http.Client{
     Transport: otelhttp.NewTransport(http.DefaultTransport),
 }
-
-// 请求会自动携带追踪头，下游服务可以关联到同一个 Trace
-resp, err := client.Get("http://order-service:8080/orders")
 ```
 
-### 4. gRPC 集成
+gRPC 同样一行：`grpc.NewServer(grpc.StatsHandler(otelgrpc.NewServerHandler()))`，客户端 `grpc.NewClient(addr, grpc.WithStatsHandler(otelgrpc.NewClientHandler()))`。上游的 Span 与下游的 Span 在同一棵树上，开头"时间对不上"的问题就从结构上消失了——Jaeger 的瀑布图里，每一段等待都有名字。
 
-```bash
-go get go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc
-```
+## 动手第三步：trace_id 写进日志，两个排查入口打通
 
-```go
-import "go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
-
-// gRPC 服务器
-server := grpc.NewServer(
-    grpc.StatsHandler(otelgrpc.NewServerHandler()),
-)
-
-// gRPC 客户端：NewClient 异步建连，超时控制在每次调用的 context 上
-conn, _ := grpc.NewClient(
-    "localhost:50051",
-    grpc.WithStatsHandler(otelgrpc.NewClientHandler()),
-)
-```
-
-### 5. 数据库集成
-
-追踪数据库查询：
-
-```bash
-go get go.opentelemetry.io/contrib/instrumentation/github.com/lib/pq/otelpq
-```
-
-```go
-import "go.opentelemetry.io/contrib/instrumentation/github.com/lib/pq/otelpq"
-
-// 使用带追踪的数据库连接
-dsn := "user=postgres dbname=mydb sslmode=disable"
-conn, _ := otelpq.Open(dsn)
-```
-
-> 注意：`otelpq` 对应的 `lib/pq` 驱动已进入维护模式。新项目按 [Go 与数据库](/go/340-GoDatabase) 的建议使用 pgx 时，应改用其对应的插桩包 `go.opentelemetry.io/contrib/instrumentation/github.com/jackc/pgx/v5/otelpgx`（通过 `otelpgx.ConnectConfig` 建连或 `otelpgx.NewTracer` 配置）。
-
-### 6. 手动创建 Span
-
-在业务逻辑中手动创建 Span：
-
-```go
-func ProcessOrder(ctx context.Context, orderID string) error {
-    tracer := otel.Tracer("order-service")
-
-    // 创建 Span
-    ctx, span := tracer.Start(ctx, "ProcessOrder",
-        trace.WithAttributes(attribute.String("order.id", orderID)),
-    )
-    defer span.End()
-
-    // 步骤1：验证订单
-    if err := validateOrder(ctx, orderID); err != nil {
-        // 记录错误
-        span.RecordError(err)
-        span.SetStatus(codes.Error, err.Error())
-        return err
-    }
-
-    // 步骤2：扣减库存
-    if err := deductInventory(ctx, orderID); err != nil {
-        span.RecordError(err)
-        span.SetStatus(codes.Error, err.Error())
-        return err
-    }
-
-    span.SetStatus(codes.Ok, "处理成功")
-    return nil
-}
-
-func validateOrder(ctx context.Context, orderID string) error {
-    tracer := otel.Tracer("order-service")
-    _, span := tracer.Start(ctx, "validateOrder")
-    defer span.End()
-    // 验证逻辑...
-    return nil
-}
-```
-
-### 7. Span 属性和事件
-
-```go
-// 设置属性（用于筛选和搜索）
-span.SetAttributes(
-    attribute.String("user.id", "12345"),
-    attribute.Int("order.items", 3),
-    attribute.Float64("order.total", 299.9),
-)
-
-// 添加事件（记录 Span 中的关键时刻）
-span.AddEvent("payment_received",
-    trace.WithAttributes(attribute.String("payment.method", "credit_card")),
-)
-
-// 记录错误
-span.RecordError(err)
-span.SetStatus(codes.Error, "处理失败")
-```
-
-## 常见场景
-
-### 场景一：微服务调用链追踪
-
-请求从网关到多个微服务的完整调用链：
-
-```go
-// 网关服务：创建根 Span
-ctx, span := tracer.Start(r.Context(), "gateway.handle")
-defer span.End()
-
-// 调用用户服务（自动传播追踪上下文）
-userClient.GetUser(ctx, userID)
-
-// 调用订单服务
-orderClient.GetOrders(ctx, userID)
-```
-
-### 场景二：性能瓶颈定位
-
-通过 Span 的耗时数据找到慢操作：
-
-```go
-ctx, span := tracer.Start(ctx, "database.query")
-start := time.Now()
-
-// 执行查询
-rows, err := db.QueryContext(ctx, sql)
-
-duration := time.Since(start)
-span.SetAttributes(attribute.Float64("query.duration_ms", float64(duration.Milliseconds())))
-```
-
-### 场景三：错误追踪
-
-记录错误发生的位置和上下文：
-
-```go
-if err != nil {
-    span.RecordError(err)
-    span.SetStatus(codes.Error, err.Error())
-    span.SetAttributes(
-        attribute.String("error.type", "database"),
-        attribute.String("error.query", query),
-    )
-}
-```
-
-### 场景四：trace_id 关联结构化日志
-
-排查问题时"先搜日志、再追链路"是常规动路，把当前 Span 的 Trace ID 写进日志才能把两边串起来。Go 1.21 的 `log/slog` 配合 `trace.SpanContextFromContext` 可以做成一个通用的日志注入中间件：
+追踪后端（Jaeger/Tempo）回答"哪一跳慢"，日志系统回答"当时发生了什么"。把两者串起来只要一件事：每条日志带上当前 trace_id。Go 1.21 的 slog 配合 OTel 做成通用辅助函数：
 
 ```go
 import (
     "log/slog"
+
     "go.opentelemetry.io/otel/trace"
 )
 
-// 从 context 提取追踪信息，附加到每条日志
 func LoggerWithTrace(ctx context.Context) *slog.Logger {
     sc := trace.SpanContextFromContext(ctx)
     if !sc.IsValid() {
@@ -383,88 +156,92 @@ func LoggerWithTrace(ctx context.Context) *slog.Logger {
     )
 }
 
-// 业务代码：日志与 Span 出现在同一个调用上下文里
 func HandleOrder(ctx context.Context, orderID string) {
     logger := LoggerWithTrace(ctx)
     logger.Info("订单开始处理", "order", orderID)
-    // 输出：2026-09-09T10:00:00 level=INFO msg="订单开始处理" order=ord-1
-    //       trace_id=4bf92f3577b34da6a3ce929d0e0e4736 span_id=00f067aa0ba902b7
 }
 ```
 
-这样在 Jaeger/Tempo 里看到慢 Span 后，复制 `trace_id` 去日志系统检索即可直达现场，反向亦然。多数采集方案（如 OTLP 日志、Loki）也支持按这两个字段自动建索引。
+实际输出的日志行：
 
-## 注意事项与常见错误
-
-1. **必须 Shutdown TracerProvider**：程序退出前必须调用 `tp.Shutdown(ctx)`，否则缓冲区中的追踪数据可能丢失。
-
-2. **Context 传递**：追踪上下文通过 `context.Context` 传递。如果函数间没有传递 Context，追踪链路会断裂。
-
-3. **采样策略**：生产环境不应使用 `AlwaysSample`，这会产生大量追踪数据。推荐使用概率采样：
-
-```go
-// 采样 10% 的请求
-sdktrace.WithSampler(sdktrace.TraceIDRatioBased(0.1))
+```text
+2026-09-09T10:00:00 level=INFO msg="订单开始处理" order=ord-1 trace_id=4bf92f3577b34da6a3ce929d0e0e4736 span_id=00f067aa0ba902b7
 ```
 
-4. **Span 命名**：Span 名称应该简洁明确，如 `GET /users`、`database.query`，避免使用动态值（如用户 ID）作为 Span 名称。
+工作流从此定型：Jaeger 里发现慢 Span，复制 trace_id 到日志系统直达现场；反过来在错误日志里看到 trace_id，粘进 Jaeger 看完整链路。这是追踪落地后收益最高的一步，多数采集方案（OTLP 日志、Loki）还能按这两个字段自动建索引。
 
-5. **不要在热路径创建过多 Span**：每个 Span 有一定开销，不要在循环中为每次迭代创建 Span。
+## 讲为什么：初始化一次、采样、错误记录
 
-6. **Exporter 选择**：开发环境用 stdout 导出器，生产环境用 Jaeger/Zipkin/Tempo 等专业后端。
+生产接线的三件事：
 
-## 进阶用法
+**一，导出走 OTLP。** 旧的 jaeger 导出器已被官方废弃并从 SDK 移除——Jaeger 自 1.35 起原生接受 OTLP，统一走 OTLP 导出器（gRPC 4317，HTTP 4318）。endpoint 通常用环境变量 `OTEL_EXPORTER_OTLP_ENDPOINT` 配置而非硬编码：
 
-### 自定义传播格式
-
-```go
-import "go.opentelemetry.io/otel/propagation"
-
-// 设置全局传播器（默认使用 W3C Trace Context）
-otel.SetTextMapPropagator(propagation.TraceContext{})
-
-// 也可以使用 B3 格式（兼容 Zipkin）
-import "go.opentelemetry.io/contrib/propagators/b3"
-otel.SetTextMapPropagator(b3.New())
+```bash
+go get go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracehttp
 ```
 
-### Metrics 集成
-
-OpenTelemetry 同时支持追踪和指标：
-
 ```go
-import "go.opentelemetry.io/otel/metric"
-
-meter := otel.Meter("my-app")
-counter, _ := meter.Int64Counter("orders.total",
-    metric.WithDescription("订单总数"),
+exporter, err := otlptracehttp.New(ctx,
+    otlptracehttp.WithEndpoint(endpoint),
+    otlptracehttp.WithInsecure(), // 内网 collector 明文；出网关改用 TLS
 )
 
-// 记录指标
-counter.Add(ctx, 1, attribute.String("status", "completed"))
+tp := sdktrace.NewTracerProvider(
+    sdktrace.WithBatcher(exporter),
+    sdktrace.WithResource(resource.NewWithAttributes(
+        semconv.SchemaURL,
+        semconv.ServiceNameKey.String("order-service"),
+        semconv.ServiceVersionKey.String("1.0.0"),
+    )),
+    sdktrace.WithSampler(sdktrace.TraceIDRatioBased(0.1)), // 生产采样 10%
+)
+otel.SetTracerProvider(tp)
 ```
 
-### Baggage 传播
+**二，采样决定数据量。** 全量采样在高峰期每秒能产生几十万 Span，存储与带宽都是钱。按 Trace ID 比例采样（`TraceIDRatioBased`）的妙处在于：同一链路的所有服务对同一个 Trace ID 做独立判断，判断结果天然一致——要么全链路都采，要么全丢，不会出现半条链路。开发环境可以 `AlwaysSample()`，生产按流量定比例。
 
-在跨服务调用中传递业务数据：
+**三，错误要显式记录。** Span 不会自动感知你的业务错误：
 
 ```go
-import "go.opentelemetry.io/otel/baggage"
-
-// 设置 baggage
-member, _ := baggage.NewMember("user.id", "12345")
-b, _ := baggage.New(member)
-ctx = baggage.ContextWithBaggage(ctx, b)
-
-// 在下游服务中读取
-b = baggage.FromContext(ctx)
-userID := b.Member("user.id").Value()
+if err != nil {
+    span.RecordError(err)                    // 记录异常详情与时间点
+    span.SetStatus(codes.Error, err.Error()) // 把 Span 标红
+    return err
+}
 ```
 
-## 本篇小结
+业务节点上手动加 Span 的模式固定为"Start 拿到新 ctx、defer End、SetAttributes/RecordError"——注意必须用 `Start` 返回的 ctx 往下传，父子的挂接全靠它。
 
-1. 分布式追踪的三要素：Trace 用全局 ID 串起请求全程，Span 记录每个操作的耗时与属性，Context 传播保证跨服务关联；OpenTelemetry 是当前事实标准。
-2. 标准接线：`TracerProvider` + 资源属性 + 采样器在启动时初始化一次并 `Shutdown` 收尾；HTTP/gRPC 用 otelhttp/otelgrpc 的 handler 与 transport 一行接入。
-3. 追踪上下文完全依赖 `context.Context` 传递，函数签名丢掉 ctx 链路就断；跨进程由 W3C Trace Context 头承载，导出统一走 OTLP（旧 Jaeger 导出器已移除）。
-4. 生产环境用 `TraceIDRatioBased` 概率采样控制数据量；Span 命名用稳定的操作名，错误用 `RecordError` + `SetStatus` 记录。
-5. 把 `trace_id` 注入 slog 结构化日志，打通"日志检索"与"链路分析"两个排查入口，是追踪落地后收益最高的一步。
+## 坑点与自检
+
+**坑 1：退出不 Shutdown。** Batcher 在内存里攒批，进程被杀时缓冲区数据全丢。优雅关闭序列里必须有 `tp.Shutdown(ctx)`。
+
+**坑 2：函数签名丢 ctx。** 追踪上下文只活在 context.Context 里。哪个调用链上有人"顺手"把 ctx 换成 `context.Background()`，那条链路从此断开，下游 Span 变成无父孤儿。context 的传递纪律见 [Context 详解](/go/140-ContextDetailed)。
+
+**坑 3：Span 名带动态值。** `GET /users/12345` 会让后端聚合出几万个不同名的 Span，聚合彻底失效。名字用稳定操作名（`GET /users`、`database.query`），用户 ID 这类信息放 attribute。
+
+**坑 4：热路径循环里建 Span。** 每批 1000 条消息建 1000 个 Span，追踪的开销反噬业务。循环体聚合为一个 Span，或者用事件（AddEvent）记录批内细节。
+
+**坑 5：中间件顺序。** otelhttp 中间件要放在最外层（先于鉴权、日志中间件），否则部分请求绕过追踪或 trace_id 进不了日志。
+
+自检——能不看文档回答这些吗：
+
+1. Trace、Span、Context 传播三者各解决什么问题？父子关系靠什么建立？
+2. 为什么所有服务日志都要带 trace_id？它打通了哪两个排查入口？
+3. 为什么旧 Jaeger 导出器被移除？现在生产导出统一走什么协议与端口？
+4. TraceIDRatioBased 采样如何保证"要么全链路采、要么全不采"？
+5. span.RecordError 与 SetStatus 的分工？Span 命名的规则是什么？
+6. 列出至少三个"链路断裂"的常见原因。
+
+## 练习
+
+1. 跑通第一步的程序，把 `doWork` 改成再嵌套一层 Span，验证三个 Span 的 TraceID 相同、SpanID 各异、树状结构正确。
+2. 写两个小程序（服务 A 调服务 B），都用 otelhttp 接入并用 stdout 导出，用 httptest 或真端口联通一次，对比两个进程输出的 TraceID——应完全一致。
+3. 部署本地 Jaeger（`docker run -p 16686:16686 -p 4318:4318 jaegertracing/all-in-one`），把导出器换成 OTLP/HTTP 指向 localhost:4318，在 UI 里找到你的链路，对照瀑布图指出每个 Span 的耗时占比。
+
+## 下一步
+
+- 日志侧的完整工程实践：[Go 日志](/go/380-GoLog)；
+- 追踪挂载的服务端结构：[Go 与 HTTP 服务](/go/470-GoHTTP)与[Go 中间件](/go/480-GoMiddleware)；
+- ctx 传递为什么是铁律：[Context 详解](/go/140-ContextDetailed)；
+- gRPC 链路的接入点：[Go 与 gRPC](/go/520-GoGRPC)。

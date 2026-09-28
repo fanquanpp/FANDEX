@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 actor 指令族调度立绘，用 background 九种效果切场景，用 cam 与 asyncam 控制镜头
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/030-KonadoScriptDialogue'
   - 'konado/060-KonadoAdvancedInstructions'
@@ -14,17 +14,7 @@ prerequisites:
   - 'konado/030-KonadoScriptDialogue'
 ---
 
-视觉小说的"演出感"来自三件事：谁站在台上（立绘）、背后是什么（背景）、镜头怎么动（运镜）。Konado 把这三件事分别交给 actor 指令族、background 指令与 cam/asyncam 指令。本篇逐一讲清这些指令的语法与细节，最后用一段完整剧本把它们串起来。
-
-## 学习目标
-
-- 会用 actor show、actor exit、actor move、actor change、actor motion 调度立绘。
-- 理解区块索引机制：division 等分与水平坐标的含义。
-- 理解 actor change 的两种状态转场与动态媒体降级。
-- 会用 background 指令搭配九种内置切换效果与自定义效果名。
-- 会用 play bgm、stop bgm、play sfx 播放与停止音频。
-- 会用同步 cam 与异步 asyncam 完成运镜，并知道何时选哪个。
-- 理解 KonadoCameraMarker 机位节点的作用与放置方式。
+几何构成（speed-rouge）里有一段剧情：主角打完 Boss 走到雨中的街道，立绘从左右两侧登场，镜头缓缓推近，背景从街道淡入回忆中的教室。这段"演出感"由三件事构成：谁站在台上（立绘）、背后是什么（背景）、镜头怎么动（运镜）。Konado 把这三件事分别交给 actor 指令族、background 指令与 cam/asyncam 指令。本篇逐一讲清语法与细节，最后用一段完整剧本把它们串起来——写完跑一遍，你就有了自己剧本的第一场"戏"。
 
 ## 舞台背后的分工
 
@@ -200,9 +190,29 @@ yuki "谢谢你。我们回家吧。"
 - ren 用 actor move 走近一步到 2 号位；cam move 推向 closeup 机位给告白特写，同步阻塞 1.5 秒保证情绪完整。
 - 收尾连续三步：erase 擦除切换到教室背景，actor exit 送走 ren，cam reset 回到默认机位。
 
-## 小结
+## 坑点与自检
 
-舞台演出三件套各有分工。立绘交给 actor 指令族：show 按"区块索引"（画面等分 division 份，默认 5，建议用 1 到 division-1）登场，重复 show 转为新状态；exit 退场；move 换位；change 切状态，能提供状态帧的角色用预乘 Alpha 像素交融，否则淡出淡入（actor_state_transition_enabled 与 actor_state_transition_duration 可配置，动态媒体自动降级）；motion 播放舞台动作，时长省略按动画自身、0 禁用、正数缩放。背景交给 background：九种内置效果 none/fade/erase/blinds/wave/vortex/windmill/cyberglitch/blink，也接受自定义效果名并回退淡入淡出。音频 play bgm/stop bgm/play sfx 即时执行不阻塞。运镜分同步 cam（move/reset/shake，阻塞）与异步 asyncam（不阻塞，stop 定格全部异步 Tween）；机位由背景场景中名称唯一的 KonadoCameraMarker 定义，它只存数据，渲染交给模板相机。
+- 角色"消失"在画面边上——at 写了 0 或 division（最左/最右边缘），官方建议日常用 1 到 division-1；也检查是不是忘了 division 是等分数不是像素；
+- actor change 后立绘瞬间切换、没有转场动画——角色场景没提供状态帧时自动降级为淡出淡入；动态媒体（视频/Spine/Live2D）永远走安全转场，这是设计行为；
+- cam move 写了机位名却不动——确认该名称的 KonadoCameraMarker 放在背景场景里且名称唯一，剧本写的 ID 就是 marker 的节点名；
+- 想给普通背景换相机成了 marker——KonadoCameraMarker 只存位置与缩放数据，不渲染；渲染者是模板相机，两者不能互换；
+- asyncam shake 期间剧情被卡住等抖动结束——那是同步 cam 的行为；氛围动效选 asyncam，情绪重点镜头才选 cam；
+- 自检问题一：at 2 在默认配置下是什么位置？（5 等分的第 2 条分割线，画面中间）
+- 自检问题二：重复 actor show 同一角色会怎样？（不报错不重复创建，节点转为新状态）
+- 自检问题三：background bg1 custom 合法吗？（合法——背景场景只要准备了 enter_custom/exit_custom 动画，找不到对应动画且效果非 none 时以淡入淡出兜底）
+
+## 练习
+
+1. 跑通综合示例：准备 school_gate 与 classroom 两个背景（含 closeup 机位）、yuki 与 ren 两个角色，观察重复 show、motion、shake、推镜的实际效果；
+2. 把告白的 cam move 改成 asyncam move，对比两种运镜下玩家连点时的节奏差别，写下你会在哪种桥段选哪个；
+3. 给自己的背景场景做一个 custom 切换效果：在 AnimationPlayer 里加 enter_custom 与 exit_custom 动画，验证剧本 background xxx custom 走的是你的动画而不是兜底淡入淡出。
+
+## 下一步
+
+- 剧情分岔与状态记忆：变量、选项与分支（050 篇）；
+- 更多演出指令（天气、滤镜、等待等）：进阶指令（060 篇）；
+- 存档如何把舞台状态一起存下来：存档与回退（080 篇）；
+- 动作与剧情共存的实例：https://github.com/fanquanpp/geometric-construct
 
 ## 参考链接
 

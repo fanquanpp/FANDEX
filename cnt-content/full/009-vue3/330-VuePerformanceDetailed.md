@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 340
 title: Vue 性能优化详解
 module: 'vue3'
 category: 前端技术

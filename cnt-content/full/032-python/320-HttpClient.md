@@ -1,19 +1,19 @@
 ---
-order: 250
+order: 260
 title: Python http.client HTTP 客户端
 module: 'python'
 category: 后端技术
 difficulty: beginner
 description: http.client 底层客户端：连接与请求、响应解析、头处理、异常层级与 keep-alive 复用。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related: []
 prerequisites: []
 ---
 
 ## 为什么还要学底层 HTTP 客户端
 
-实际项目发请求应该用 `requests` 或 `httpx`（见 [Httpx 与 Requests](/python/330-HttpxRequests)）——它们有会话、连接池、重试与友好的 API。那 `http.client` 的价值在哪？它是标准库里**最贴近 HTTP 协议本身**的客户端：连接、请求行、头、体、响应全部亲手操作。读懂数它，"连接复用为什么必须先读完响应体""Content-Length 与 chunked 的区别"这些排查问题时的关键细节才有了着落。把它当作 HTTP 协议的"手动挡练习车"，日常开车还是自动挡。
+实际项目发请求应该用 `requests` 或 `httpx`（两者选型与用法对比见 [Python 与 Web 爬虫](/python/960-WebScrapingWithPython) 的 HTTP 客户端章节）——它们有会话、连接池、重试与友好的 API。那 `http.client` 的价值在哪？它是标准库里**最贴近 HTTP 协议本身**的客户端：连接、请求行、头、体、响应全部亲手操作。读懂数它，"连接复用为什么必须先读完响应体""Content-Length 与 chunked 的区别"这些排查问题时的关键细节才有了着落。把它当作 HTTP 协议的"手动挡练习车"，日常开车还是自动挡。
 
 ## HTTPConnection
 

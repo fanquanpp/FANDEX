@@ -1,443 +1,185 @@
 ---
 order: 130
-title: 合并冲突解决
+title: 合并冲突解决：从「CONFLICT 提示别慌」到五分钟解完
 module: 'git'
 category: 工具链
 difficulty: intermediate
-description: Git合并冲突的产生机制、解决策略与预防方法。
+description: 以「两个人同时改了同一个组件」这个必经场景切入，动手走一遍冲突标记的阅读、三种解决路径与放弃合并的出口，讲清三方比较的判定原理，并补上 rebase 时 ours/theirs 语义反转和 pnpm-lock 冲突这两个实战大坑。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'git/110-HEADPointerBranchEssence'
-  - 'git/340-GitHookGitLFS'
-prerequisites: []
+  - 'git/270-GitRebase'
+  - 'github/100-GitConflictResolve'
+prerequisites:
+  - 'git/100-GitBranchManagement'
 ---
 
-## 1. 冲突概述
+## 前置知识
 
-### 1.1 什么是合并冲突
+- 会开分支、合并（见 [Git 分支管理](/git/100-GitBranchManagement)）；
+- 知道工作区 / 暂存区 / 仓库三棵树的分工（见 [三棵树模型](/git/060-ThreeTrees)）。
 
-当两个分支修改了**同一文件的同一位置**时，Git 无法自动决定采用哪个版本，就会产生合并冲突。
+## 学习目标
 
-### 1.2 冲突标记
+读完全文你将能够：
+
+1. 判断哪些改动会冲突、哪些不会（三方比较的判定规则）；
+2. 按「读标记 → 改文件 → add → commit」的流程解掉一次真实冲突；
+3. 知道 `--ours` / `--theirs`、`-X ours` / `-X theirs`、`merge=union` 各自的适用边界；
+4. 避开两个大坑：rebase 中 ours/theirs 语义反转、`pnpm-lock.yaml` 冲突不该手解。
+
+## 1. 问题：你们改了同一个文件
+
+必经场景：你在 `fix/reader` 分支上改了 `Reader.tsx` 的头部布局，同事在 `feat/search` 分支也改了同一个位置，他先合进了 main。你合并时：
+
+```bash
+git merge main
+# Auto-merging app-web/src/Reader.tsx
+# CONFLICT (content): Merge conflict in app-web/src/Reader.tsx
+# Automatic merge failed; fix conflicts and then commit the result.
+```
+
+先理解 Git 什么时候才会把问题扔给你：
+
+| 情况 | 结果 |
+| :--- | :--- |
+| 改了不同文件 | 自动合并 |
+| 同一文件的不同位置 | 自动合并 |
+| 同一位置双方都改了 | 内容冲突 |
+| 一方改、一方删同一个文件 | modify/delete 冲突 |
+
+判定基准是**共同祖先**：Git 拿「你的版本 / 对方版本 / 分叉前的共同版本」做三方比较。同一位置只有一方改了，Git 采纳改动；两边各改各的，Git 不敢仲裁，标记冲突交给你。
+
+打开冲突文件，会看到这样的标记：
 
 ```text
 <<<<<<< HEAD
-当前分支的内容
+const HEADER_HEIGHT = 64;      // 你的版本（当前分支）
 =======
-合并分支的内容
->>>>>>> feature
+const HEADER_HEIGHT = 72;      // 对方的版本（被合进来的）
+>>>>>>> main
 ```
 
-| 标记              | 含义             |
-| :---------------- | :--------------- |
-| `<<<<<<< HEAD`    | 当前分支内容开始 |
-| `=======`         | 分隔线           |
-| `>>>>>>> feature` | 合并分支内容结束 |
+三行的含义：`<<<<<<<` 到 `=======` 是当前分支内容，`=======` 到 `>>>>>>>` 是对方内容。你的任务只有一个：把这三块标记替换成最终想要的那份内容。
 
-### 1.3 会不会冲突的判定
-
-- 修改不同文件 → 自动合并
-- 修改同一文件的不同位置（互不相邻）→ 自动合并
-- 同一位置双方都改 → 冲突（内容冲突）
-- 一方修改、另一方删除同一文件 → 冲突（modify/delete 冲突，Git 不敢替你决定留哪个）
-
-共同祖先是判定基准：Git 对「你的版本 / 对方版本 / 共同祖先」做三方比较，只有**同一位置相对祖先各改各的**才无法仲裁。
-
-## 2. 冲突解决流程
-
-### 2.1 标准流程
+## 2. 动手：五步解掉一次冲突
 
 ```bash
-# 1. 尝试合并
-git merge feature
-# CONFLICT (content): Merge conflict in src/index.js
-
-# 2. 查看冲突文件
+# 1. 看哪些文件在冲突状态
 git status
 # Unmerged paths:
-#   both modified:   src/index.js
+#   both modified:   app-web/src/Reader.tsx
 
-# 3. 打开冲突文件，手动解决
-vim src/index.js
+# 2. 打开文件，逐处处理标记，保留正确内容
+#    （编辑器装上冲突高亮插件，VS Code 自带「Accept Current/Incoming」按钮）
 
-# 4. 标记为已解决
-git add src/index.js
+# 3. 标记该文件已解决
+git add app-web/src/Reader.tsx
 
-# 5. 完成合并
+# 4. 所有冲突文件 add 完，提交完成合并
 git commit
-```
 
-### 2.2 查看冲突详情
-
-```bash
-# 列出冲突文件
-git diff --name-only --diff-filter=U
-
-# 查看冲突内容
-git diff
-
-# 查看三方视图
-git mergetool
-```
-
-## 3. 解决策略
-
-### 3.1 手动解决
-
-编辑冲突文件，删除冲突标记，保留正确内容：
-
-```text
-<!-- 冲突内容 -->
-<<<<<<< HEAD
-const API_URL = "https://api.example.com/v2";
-=======
-const API_URL = "https://api.staging.com/v2";
->>>>>>> feature
-
-<!-- 解决后 -->
-const API_URL = "https://api.example.com/v2";
-```
-
-### 3.2 选择一方
-
-```bash
-# 采用当前分支版本
-git checkout --ours file.txt
-
-# 采用合并分支版本
-git checkout --theirs file.txt
-
-# 对特定文件选择
-git checkout --ours src/config.js
-git checkout --theirs src/styles.css
-```
-
-### 3.3 策略化批量取舍
-
-```bash
-# 冲突处一律采用当前分支（谨慎：会静默丢弃对方改动）
-git merge -X ours feature
-
-# 冲突处一律采用对方分支
-git merge -X theirs feature
-```
-
-注意 `-X ours/-X theirs` 只在**冲突行**上偏向一侧，非冲突改动仍会正常合并；与 `git merge -s ours`（整体忽略对方全部内容）是两回事。
-
-「双方修改都保留」（如变更日志类逐行追加的文件）要用 **union 合并驱动**——通过 `.gitattributes` 声明，而不是 `-X` 选项：
-
-```bash
-echo "CHANGELOG.md merge=union" >> .gitattributes   # 声明该文件用 union 驱动
-git merge feature
-```
-
-union 驱动把双方的行都保留下来，不做语义判断，仅适合「只增不改」的纯追加型文本文件。
-
-### 3.4 放弃合并
-
-```bash
-# 放弃当前合并，回到合并前状态
+# 随时想反悔：
 git merge --abort
-
-# 如果已经部分解决
-git reset --hard HEAD
 ```
 
-## 4. 复杂冲突场景
-
-### 4.1 多文件冲突
+三个常用辅助命令：
 
 ```bash
-# 批量选择 ours/theirs
-git checkout --ours .
-git checkout --theirs .
-
-# 逐文件处理
-for file in $(git diff --name-only --diff-filter=U); do
-    echo "Conflict in: $file"
-    # 手动处理每个文件
-done
+git diff --name-only --diff-filter=U   # 只列冲突文件
+git diff                               # 冲突现场上下文
+git mergetool                          # 起三方合并 GUI 工具
 ```
 
-### 4.2 重命名冲突
+## 3. 讲原理：几种「批量取舍」的边界
+
+### checkout --ours / --theirs：整个文件选一边
 
 ```bash
-# 一方重命名、一方修改内容
-# CONFLICT (modify/delete): ...
-
-# 查看重命名情况
-git diff --name-status --diff-filter=R
+git checkout --ours   src/config.js   # 整个文件用当前分支版本
+git checkout --theirs src/config.js   # 整个文件用对方版本
+git add src/config.js                 # 别忘了 add
 ```
 
-### 4.3 子模块冲突
+粒度是整个文件，不是冲突行。适合锁文件之外的二进制、生成物。
+
+**大坑：rebase 时语义是反的。** rebase 的本质是把你的提交重放到新基底上，重放过程中「当前分支」是基底（别人的提交），你的改动反而是 incoming。所以在 rebase 冲突里，`--ours` 指基底、`--theirs` 指**你自己的改动**。手快选错，丢的正是你自己刚写的代码。拿不准就 `git log --merge --oneline` 看看两边各是哪些提交。
+
+### merge -X ours / -X theirs：只在冲突行偏向一边
 
 ```bash
-# 子模块指向不同提交
-git ls-tree HEAD path/to/submodule
-# 选择正确的提交
-cd path/to/submodule
-git checkout correct-commit
-cd ..
-git add path/to/submodule
+git merge -X ours main      # 冲突行用我的，其余改动照常合并
+git merge -X theirs main
 ```
 
-## 5. 预防冲突
+注意它和 `git merge -s ours`（策略级）完全不同：`-s ours` 会**整体丢弃对方全部内容**，历史显示合并了但代码一行没进来，是著名的翻车选项。
 
-### 5.1 工作流策略
+### merge=union：双方都保留
 
-| 策略               | 说明                  |
-| :----------------- | :-------------------- |
-| **频繁同步**       | 经常从主分支拉取更新  |
-| **小步提交**       | 每次提交只做一件事    |
-| **短生命周期分支** | 功能分支尽快合并      |
-| **模块化代码**     | 减少多人修改同一文件  |
-| **代码所有者**     | CODEOWNERS 指定负责人 |
-
-### 5.2 减少冲突的编码习惯
-
-- 避免大范围格式化修改
-- 将公共配置与业务逻辑分离
-- 使用接口/抽象减少直接依赖
-- 新增代码而非修改共享代码
-
-### 5.3 预合并检查
+变更日志这类「只追加」的文件，冲突手解毫无意义：
 
 ```bash
-# 合并前检查是否有冲突
-git merge --no-commit --no-ff feature
-git diff --check     # 检查冲突标记
-git merge --abort    # 放弃测试合并
-```
-## 冲突标记格式
-
-**基本写法：冲突标记结构**
-`<<<<<<< HEAD ... ======= ... >>>>>>> <分支名>`
-```text
-# 冲突标记格式
-<<<<<<< HEAD
-当前分支的内容
-=======
-合并分支的内容
->>>>>>> feature
-```
-
----
-
-## 冲突解决标准流程
-
-**基本写法：尝试合并**
-`git merge <分支名>`
-```bash
-# 合并 feature 分支到当前分支
-git merge feature;
-```
-
-**基本写法：查看冲突文件**
-`git status`
-```bash
-# 查看冲突状态
-git status;
-```
-
-**基本写法：标记冲突已解决**
-`git add <file>`
-```bash
-# 将解决冲突后的文件加入暂存区
-git add src/index.js;
-```
-
-**基本写法：完成合并提交**
-`git commit`
-```bash
-# 提交合并结果
-git commit;
-```
-
----
-
-## 查看冲突详情
-
-**基本写法：列出冲突文件**
-`git diff --name-only --diff-filter=U`
-```bash
-# 列出所有冲突文件
-git diff --name-only --diff-filter=U;
-```
-
-**基本写法：查看冲突内容**
-`git diff`
-```bash
-# 查看冲突内容
-git diff;
-```
-
-**基本写法：使用合并工具**
-`git mergetool`
-```bash
-# 启动配置的合并工具
-git mergetool;
-```
-
----
-
-## 选择一方版本
-
-**基本写法：采用当前分支版本**
-`git checkout --ours <file>`
-```bash
-# 采用当前分支版本的 src/config.js
-git checkout --ours src/config.js;
-```
-
-**基本写法：采用合并分支版本**
-`git checkout --theirs <file>`
-```bash
-# 采用合并分支版本的 src/styles.css
-git checkout --theirs src/styles.css;
-```
-
----
-
-## 合并策略选项
-
-**基本写法：冲突时采用当前分支**
-`git merge -X ours <分支名>`
-```bash
-# 冲突行偏向当前分支，非冲突改动仍正常合并
-git merge -X ours feature
-```
-
-**基本写法：冲突时采用合并分支**
-`git merge -X theirs <分支名>`
-```bash
-# 冲突行偏向对方分支
-git merge -X theirs feature
-```
-
-**基本写法：双方修改都保留（union 合并驱动）**
-`echo "<文件> merge=union" >> .gitattributes`
-```bash
-# 适合纯追加型文件（如变更日志）：双方新增行都保留
 echo "CHANGELOG.md merge=union" >> .gitattributes
 ```
 
----
+union 驱动把双方新增的行都保留，不做语义判断，只适合纯追加文本。
 
-## 放弃合并
+### 特殊冲突：锁文件不要手解
 
-**基本写法：放弃当前合并**
-`git merge --abort`
+monorepo 里最常见的冲突文件是 `pnpm-lock.yaml`——两个人各自 `pnpm install` 都会改它。手解哈希块必然出错，正确做法是**冲突后重新生成**：
+
 ```bash
-# 放弃当前合并操作
-git merge --abort;
+git checkout --theirs pnpm-lock.yaml   # 先随便选一边，恢复可解析状态
+pnpm install                            # 依据所有 package.json 重新生成锁文件
+git add pnpm-lock.yaml
 ```
 
-**基本写法：硬重置放弃合并**
-`git reset --hard HEAD`
+同样的思路适用于 `package-lock.json`、`Cargo.lock` 等一切锁文件：它们是生成物，重生成永远比手解可靠。
+
+## 4. 预防：冲突是流程问题，不是技术问题
+
+| 策略 | 做法 |
+| :--- | :--- |
+| 频繁同步 | 功能分支每天从 main 拉一次 |
+| 小步提交 | 提交只做一件事，PR 只解决一个问题 |
+| 短命分支 | 分支活不过两三天 |
+| 别做全库格式化 | 一次格式化提交毁掉所有人的 blame 和合并 |
+| 文件分工 | 用 [CODEOWNERS](/github/190-CODEOWNERS) 明确归属，减少两人同改一个文件 |
+
+合并前还可以做一次「演习」：
+
 ```bash
-# 强制回到合并前的 HEAD 状态
-git reset --hard HEAD;
+git merge --no-commit --no-ff main   # 试合并但不提交
+git diff --check                     # 检查冲突标记与空白错误
+git merge --abort                    # 放弃演习
 ```
 
----
+## 5. 坑点与自检
 
-## 多文件冲突处理
+| 现象 | 原因 | 处理 |
+| :--- | :--- | :--- |
+| 解完冲突 `git status` 还显示 unmerged | 忘了 `git add` | add 后再 commit |
+| 提交时提示 conflict markers 还在 | 文件里残留 `<<<<<<<` | `grep -rn "<<<<<<<" .` 找出来清掉 |
+| rebase 时把别人的改动当成自己的丢了 | ours/theirs 语义反转 | `git log --merge` 核对两边；丢了去 [reflog](/git/260-GitReflog) 找回 |
+| 合并后 main 上没拿到对方代码 | 误用了 `merge -s ours` | 检查历史里的合并策略，重新合并 |
+| 手解 `pnpm-lock.yaml` 后 install 报错 | 锁文件哈希块拼错 | 删掉重生成：`pnpm install` |
+| 冲突越解越乱 | 手里混了多个操作 | `git merge --abort` 回到干净起点重来 |
 
-**基本写法：批量采用 ours**
-`git checkout --ours .`
-```bash
-# 批量采用当前分支版本
-git checkout --ours .;
-```
+自检三问：
 
-**基本写法：批量采用 theirs**
-`git checkout --theirs .`
-```bash
-# 批量采用合并分支版本
-git checkout --theirs .;
-```
+1. 冲突标记的四行里（`<<<<<<<`、`=======`、`>>>>>>>`），哪两行之间是对方的内容？
+2. rebase 冲突里的 `--ours` 指谁？
+3. 你项目里冲突最多的文件是哪个？它该手解还是重生成？
 
-**基本写法：逐文件处理冲突**
-`for file in $(git diff --name-only --diff-filter=U)`
-```bash
-# 遍历所有冲突文件逐个处理
-for file in $(git diff --name-only --diff-filter=U); do
-    echo "Conflict in: $file"
-done
-```
+## 6. 练习
 
----
+1. 制造一次冲突：开两个分支改同一行，合并触发冲突，完整走一遍五步流程。
+2. 在一个测试仓库里分别执行 `git merge -X ours` 和 `git merge -s ours`，`git diff` 对比两种结果，亲眼看到 `-s ours` 丢代码。
+3. 给你的仓库加一条 `.gitattributes`：把锁文件和 CHANGELOG 声明成合适的合并策略。
 
-## 重命名冲突
+## 下一步
 
-**基本写法：查看重命名情况**
-`git diff --name-status --diff-filter=R`
-```bash
-# 查看重命名的文件
-git diff --name-status --diff-filter=R;
-```
-
----
-
-## 子模块冲突
-
-**基本写法：查看子模块指向的提交**
-`git ls-tree HEAD <子模块路径>`
-```bash
-# 查看子模块指向的提交
-git ls-tree HEAD path/to/submodule;
-```
-
-**基本写法：进入子模块目录**
-`cd <子模块路径>`
-```bash
-# 进入子模块目录
-cd path/to/submodule;
-```
-
-**基本写法：切换到正确的提交**
-`git checkout <提交哈希>`
-```bash
-# 切换到正确的提交
-git checkout correct-commit;
-```
-
-**基本写法：返回主仓库**
-`cd ..`
-```bash
-# 返回主仓库
-cd ..;
-```
-
-**基本写法：添加子模块**
-`git add <子模块路径>`
-```bash
-# 添加子模块
-git add path/to/submodule;
-```
-
----
-
-## 预合并检查
-
-**基本写法：测试合并（不提交）**
-`git merge --no-commit --no-ff <分支名>`
-```bash
-# 测试合并但不提交
-git merge --no-commit --no-ff feature;
-```
-
-**基本写法：检查冲突标记**
-`git diff --check`
-```bash
-# 检查空白错误和冲突标记
-git diff --check;
-```
-
-**基本写法：放弃测试合并**
-`git merge --abort`
-```bash
-# 放弃测试合并
-git merge --abort;
-```
+- rebase 流程中的冲突与历史改写：[git rebase](/git/270-GitRebase)
+- 冲突解砸了怎么救：[git reflog](/git/260-GitReflog)
+- 平台上带审查的冲突处理：[GitHub 冲突解决](/github/100-GitConflictResolve)

@@ -1,12 +1,12 @@
 ---
-order: 380
+order: 390
 title: 数据类与字段默认值
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: Python 数据类与字段默认值深度剖析：从 dataclass 装饰器到 field 工厂、不可变性与企业级模型设计。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/530-TypeAnnotationMypy'
   - 'python/570-Descriptor'
@@ -455,7 +455,7 @@ print(g2.items)  # [] — 独立的列表
 ```python
 from dataclasses import dataclass, field
 import uuid
-from datetime import datetime
+from datetime import datetime, timezone
 
 @dataclass
 class User:
@@ -741,7 +741,7 @@ print(config)                   # AppConfig(app_name='ProdApp', debug=False, dat
 ```python
 from dataclasses import dataclass, field, asdict
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 
 @dataclass
 class UserResponse:
@@ -1165,7 +1165,7 @@ class Good:
 
 ```python
 from dataclasses import dataclass, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 
 @dataclass
 class Event:
@@ -1553,7 +1553,7 @@ print(settings.debug)  # True
 
 ```python
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import datetime, timezone
 from typing import Any, Dict
 import uuid
 
@@ -1561,7 +1561,7 @@ import uuid
 class Event:
     """事件基类（不可变）"""
     event_id: str = field(default_factory=lambda: str(uuid.uuid4()))
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     metadata: Dict[str, Any] = field(default_factory=dict)
 
 @dataclass(frozen=True)
@@ -1716,7 +1716,7 @@ print(bob.has_permission(Permission.DELETE))   # False
 
 ```python
 from dataclasses import dataclass, field, asdict
-from datetime import datetime
+from datetime import datetime, timezone
 from enum import Enum, auto
 from typing import Any, Dict, Optional
 import json
@@ -1730,7 +1730,7 @@ class LogLevel(Enum):
 @dataclass
 class LogEntry:
     """结构化日志条目"""
-    timestamp: datetime = field(default_factory=datetime.utcnow)
+    timestamp: datetime = field(default_factory=lambda: datetime.now(timezone.utc))
     level: LogLevel = LogLevel.INFO
     message: str = ""
     logger_name: str = ""

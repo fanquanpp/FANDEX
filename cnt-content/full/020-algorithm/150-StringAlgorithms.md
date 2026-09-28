@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 字符串匹配的形式化定义（模式串在主串中的出现位置搜索）、KMP/Boyer-Moore/Rabin-Karp/Sunday/Z 函数等单模式匹配、Aho-Corasick 多模式匹配、后缀数组（倍增/DC3/SA-IS 线性算法）、后缀自动机（endpos 等价类）、后缀树（Ukkonen 线性算法）以及字符串动态规划（LCS、编辑距离、最长回文）的系统化讲解，覆盖复杂度证明、多语言实现（Python/C++/Java）。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'algorithm/160-DynamicProgramming'
   - 'algorithm/140-RecursionAndBacktracking'
@@ -22,7 +22,9 @@ prerequisites:
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
-> 定位说明：本篇为进阶参考书（参考层），面向已完成本模块主线的读者；入门请先走学习路径前序阶段。定位标准见 docs/standards/reference-layer.md（仓库）。
+> 使用方式：本篇是字符串算法的参考合集（深水篇），适合带着具体问题来查；单模式匹配的主线学习请从 [KMP 字符串匹配](/algorithm/230-KmpStringMatching)开始。
+
+搜索引擎要秒级在万亿网页中找关键词，代码 diff 要找两个版本的最长公共子序列，风控系统要在一亿条评论里实时过滤敏感词——它们背后是同一族字符串算法，区别只在「模式串有几个、文本是否多变、要查的是匹配还是相似度」。本篇一册收齐 KMP/Z 函数、Trie 与 AC 自动机、后缀数组与后缀自动机的定义、构造与选型决策树，读完后你能按「三问」为文本处理任务选对武器，并理解每个结构解决的是哪个具体瓶颈。
 
 ## 前置知识
 
@@ -3268,3 +3270,11 @@ AC 自动机的 fail 指针构建本质上是 Trie 树上的 BFS，与图遍历�
 - [CP-Algorithms: Suffix Array](https://cp-algorithms.com/string/suffix-array.html)：后缀数组的 O(n log n) 构造、LCP 与去重子串计数等应用（英文，免费，竞赛社区维护的权威参考）。
 
 > 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。
+
+## 读完自检
+
+- 前缀函数与 Z 函数各回答什么问题？两者能互相推导吗？（每个位置的最长相等前后缀；每个位置与后缀的最长公共前缀；可以互相推出）
+- 单模式、多模式、文本多变三种场景分别选什么？（KMP/Boyer-Moore；AC 自动机；后缀数组或后缀自动机）
+- Trie 与 AC 自动机的关系是什么？（AC = Trie 加上失配指针，多模式匹配在一张状态图上跑完）
+- 后缀数组解决了暴力比较后缀的什么瓶颈？（后缀排序 O(n log n)，配合 LCP 把「任意两个后缀的公共前缀」变成区间最小值查询）
+- 能按「模式串个数、文本可变性、查询类型」三问为一个真实文本任务选对结构。

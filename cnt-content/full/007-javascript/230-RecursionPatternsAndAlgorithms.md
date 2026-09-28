@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 240
 title: 递归算法模式：互递归、记忆化、分治与回溯
 module: 'javascript'
 category: 前端技术

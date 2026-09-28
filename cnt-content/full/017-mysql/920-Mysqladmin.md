@@ -1,5 +1,5 @@
 ---
-order: 880
+order: 890
 title: mysqladmin：一条命令的运维工具箱
 module: 'mysql'
 category: 数据库

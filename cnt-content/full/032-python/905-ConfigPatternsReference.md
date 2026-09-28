@@ -1,5 +1,5 @@
 ---
-order: 700
+order: 710
 title: 配置进阶模式参考：多环境分层、特性开关与配置源全景
 module: 'python'
 category: 后端技术

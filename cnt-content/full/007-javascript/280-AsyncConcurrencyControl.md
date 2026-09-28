@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 290
 title: 异步并发控制
 module: 'javascript'
 category: 前端技术

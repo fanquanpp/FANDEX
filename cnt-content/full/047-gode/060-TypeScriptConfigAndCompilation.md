@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 理解 tsconfig 自动生成与编译时机，按需开启更严格检查或接入 Node 类型
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'gode/010-GodeOverviewAndInstallation'
   - 'gode/070-NpmWorkflow'
@@ -14,16 +14,7 @@ prerequisites:
   - 'gode/010-GodeOverviewAndInstallation'
 ---
 
-前几篇的代码都"开箱即用"，本篇揭开背后的机制：TypeScript 何时被编译、编译产物放在哪、tsconfig.json 从哪来、哪些选项值得调整。理解编译模型后，你既能放心地忽略生成的 JavaScript，也能按需收紧类型检查或接入 Node 类型。
-
-## 学习目标
-
-- 记住编译模型：编辑、运行、导出三个时机自动编译，输出到 `res://.gode/build/typescript/`。
-- 理解"生成的 JavaScript 是内部细节"，不挂场景、不提交。
-- 读懂自动生成的 tsconfig.json 默认模板的每一项。
-- 会做三类常见调整：接入 Node 全局类型、开启更严格检查、适配 Monorepo。
-- 知道编译诊断在哪里报告、编译由谁承担。
-- 建立正确的版本控制约定：忽略 `.gode/` 与 `.godot/`。
+前几篇的代码都"开箱即用"——你在 Quaver 式项目里保存 theory.ts，按 F5 就能跑，从没执行过任何编译命令。那 TypeScript 是什么时候变成 JavaScript 的？产物在哪、会不会污染仓库、tsconfig.json 从哪来？本篇揭开这套机制：理解编译模型后，你既能放心地忽略生成的 JavaScript，也能按需收紧类型检查或接入 Node 类型。
 
 ## 编译模型
 
@@ -109,14 +100,21 @@ Gode 自动读取项目根目录的 `res://tsconfig.json`；文件不存在时�
 - 开发期的编辑器扩展由 `gode_editor.gdextension.template` 模板生成到 `res://.godot/gode/`，属于本机生成物，随 `.godot/` 一起忽略即可。
 - 生成的 JavaScript（`res://.gode/build/typescript/`）既不提交，也不挂场景。
 
-## 小结
+## 坑点与自检
 
-- `.ts` 在编辑、运行、导出时自动编译为 ESM JavaScript，输出 `res://.gode/build/typescript/`；场景始终引用 `.ts` 原文件，生成的 JS 不挂场景、不提交。
-- tsconfig.json 从项目根目录读取，缺失时从内置模板自动创建；默认模板开启 strict、isolatedModules、experimentalDecorators，types 为空数组。
-- 要 Node 全局类型就安装 @types/node 并把 `"node"` 加入 types；更严格规范启用 noImplicitOverride 与 noUncheckedIndexedAccess；Monorepo 调整 include/exclude。
-- 编译失败在 Godot 输出面板报告 TypeScript 诊断；2.4.0 起编译由编辑器扩展 GodeTypeScriptCompiler 承担。
-- 内置 tsc 位于 `addons/gode/tsc/`，常规开发无需 Node.js/npm。
-- 版本控制：忽略 `.gode/` 与 `.godot/`，提交 tsconfig.json 与 TS 源码。
+- 场景里挂了生成的 `.js` 而不是 `.ts`——绕过编译管线，改动不再生效；场景永远引用 `.ts` 原文件；
+- `git status` 里冒出一堆 `.gode/`、`.godot/` 变更——都是生成物，加入忽略名单；tsconfig.json 则必须提交；
+- 想用 Node 的 `process`/`Buffer` 类型报"找不到名称"——默认模板 `types: []` 不含任何全局类型包，安装 @types/node 并把 `"node"` 加入 types；
+- 开了 `noUncheckedIndexedAccess` 后一堆红色报错——这是新规则在起作用，逐条修复即可确认生效，不是配置坏了；
+- 自检问题一：`.ts` 在哪三个时机被编译、产物输出到哪？（编辑、运行、导出；`res://.gode/build/typescript/`）
+- 自检问题二：为什么本地导入不写后缀能通过类型检查？（`moduleResolution: "Bundler"` 的打包器风格解析）
+- 自检问题三：常规开发需要装 Node.js 吗？（不需要，tsc 内置在 `addons/gode/tsc/`；只有引入 npm 依赖才需要工具链）
+
+## 练习
+
+1. 故意把一个 `.ts` 文件写成有类型错误的版本，保存后在 Godot 输出面板找到诊断（文件、行号、原因），再修好；
+2. 给项目开启 `noImplicitOverride`，观察哪些重写方法被点名补上 override；
+3. 检查你的版本控制配置：确认 `.gode/` 与 `.godot/` 被忽略、tsconfig.json 已提交。
 
 ## 参考链接
 

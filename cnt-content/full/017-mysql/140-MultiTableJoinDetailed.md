@@ -4,567 +4,238 @@ title: 多表联查详解
 module: 'mysql'
 category: 数据库
 difficulty: intermediate
-description: 内连接、外连接、交叉连接与自连接。
+description: 用充电桩运营数据掌握 MySQL 多表联查：内连接、外连接与 LEFT JOIN 找孤儿行、同城配对的自连接、三表联查与行数膨胀的根源。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
-  - 'mysql/420-TransactionIsolationImplementation'
-  - 'mysql/430-MVCCPrinciple'
-  - 'mysql/450-LockClassification'
-  - 'mysql/480-DeadlockDetectionHandling'
+  - 'mysql/150-AdvancedQueryMultiTableOperation'
+  - 'mysql/390-JOINAlgorithm'
+  - 'sql/150-JoinQuery'
 prerequisites:
-  - 'mysql/160-View'
+  - 'mysql/120-DQL'
 ---
 
+## 场景：运营数据散在三张表里
 
-
-## 1. 联查基础概念
-
-### 1.1 什么是多表联查
-
-多表联查是指通过一定的条件将两个或多个表的数据关联在一起，从而获取更丰富的信息。
+充电桩平台的表按职责拆开：站点表、设备表、充电订单表。运营想知道"每个站点的充电收入"，就必须把三张表拼起来——这正是关系数据库分表存储后每天要做的事。
 
 ```sql
- SELECT 列列表
- from 表1
- JOIN 表2 ON 连接条件
- JOIN 表3 ON 连接条件
- WHERE 过滤条件;
+CREATE TABLE stations (
+  station_id INT PRIMARY KEY,
+  name       VARCHAR(50) NOT NULL,
+  city       VARCHAR(20) NOT NULL
+);
+
+CREATE TABLE chargers (
+  charger_id INT PRIMARY KEY,
+  station_id INT NOT NULL,
+  power_kw   DECIMAL(5,1) NOT NULL,
+  status     ENUM('online','offline','fault') NOT NULL,
+  FOREIGN KEY (station_id) REFERENCES stations(station_id)
+);
+
+CREATE TABLE charge_sessions (
+  session_id BIGINT PRIMARY KEY,
+  charger_id INT NOT NULL,
+  started_at DATETIME NOT NULL,
+  kwh        DECIMAL(7,2) NOT NULL,
+  amount     DECIMAL(8,2) NOT NULL,
+  FOREIGN KEY (charger_id) REFERENCES chargers(charger_id)
+);
+
+INSERT INTO stations VALUES
+(1, '滨江服务区站', '杭州'),
+(2, '萧山机场站',   '杭州'),
+(3, '虹桥枢纽站',   '上海');
+
+INSERT INTO chargers VALUES
+(11, 1, 120.0, 'online'),
+(12, 1,  60.0, 'fault'),
+(13, 2, 120.0, 'online'),
+(14, 2, 180.0, 'offline'),
+(15, 3, 240.0, 'online');
+
+INSERT INTO charge_sessions VALUES
+(9001, 11, '2026-09-01 08:15:00', 45.20, 67.80),
+(9002, 11, '2026-09-01 14:40:00', 52.00, 78.00),
+(9003, 13, '2026-09-02 10:05:00', 38.50, 57.75),
+(9004, 15, '2026-09-02 16:20:00', 61.00, 91.50);
 ```
 
-### 1.2 联查的必要性
+注意一个关键事实：**14 号桩（offline）从来没有产生过订单，3 号站虹桥只有一根桩且有订单，但假如没有订单的桩挂在没有订单的站呢**——外连接要解决的就是"不匹配的行去哪了"。
 
-| 场景             | 单表查询     | 多表联查 |
-| ---------------- | ------------ | -------- |
-| 获取单一实体信息 | [x] 适用     | [ ] 冗余 |
-| 获取关联实体信息 | [ ] 无法完成 | [x] 适用 |
-| 数据完整性       | 有限         | 完整     |
+## 动手：四种连接逐一试
 
-### 1.3 关系数据库中的表关系
-
-- **一对一关系**：如用户表和用户详情表
-- **一对多关系**：如部门表和员工表
-- **多对多关系**：如学生表和课程表（需中间表）
-
----
-
-## 2. 联查类型详解
-
-### 2.1 INNER JOIN（内连接）
-
-**定义**：只返回两个表中匹配连接条件的行。
-**Venn 图表示**：两个集合的交集
-
-```mermaid
-flowchart LR
-    subgraph A["表A"]
-        A1["1"]
-        A2["2"]
-        A3["3"]
-        A4["4"]
-    end
-    subgraph B["表B"]
-        B1["A"]
-        B2["B"]
-        B3["C"]
-    end
-    A1 --- B1
-    A2 --- B2
-    A3 --- B3
-```
-
-**语法**：
+### INNER JOIN：只留两边都匹配的行
 
 ```sql
- SELECT *
- from table1
- inNER JOIN table2 ON table1.id = table2.id;
- SELECT *
- from table1
- JOIN table2 ON table1.id = table2.id;
+SELECT s.name AS station, c.charger_id, c.power_kw
+FROM stations s
+INNER JOIN chargers c ON c.station_id = s.station_id;
 ```
 
-**示例**：
+每个桩都挂在某个站下，五行全保留。`INNER` 可省略，写 `JOIN` 默认就是内连接。ON 后面是两表的关联条件，通常写"从表外键 = 主表主键"。
+
+把第三张表接上，就是最常见的三表联查——按站点统计充电收入：
 
 ```sql
- SELECT e.emp_name, d.dept_name
- from employees e
- inNER JOIN departments d ON e.dept_id = d.dept_id;
+SELECT s.name, SUM(cs.amount) AS revenue, COUNT(cs.session_id) AS sessions
+FROM stations s
+JOIN chargers  c  ON c.station_id = s.station_id
+JOIN charge_sessions cs ON cs.charger_id = c.charger_id
+GROUP BY s.station_id, s.name
+ORDER BY revenue DESC;
 ```
 
-### 2.2 LEFT JOIN（左外连接）
+注意聚合的是 `COUNT(cs.session_id)` 而不是 `COUNT(*)`——原因在坑点二。
 
-**定义**：返回左表的所有行，以及右表中匹配的行；右表不匹配的部分用 NULL 填充。
-**Venn 图表示**：左集合全部 + 交集部分
+### LEFT JOIN：左表全保留，右边补 NULL
 
-```mermaid
-flowchart LR
-    subgraph A["表A"]
-        A1["1"]
-        A2["2"]
-        A3["3"]
-        A4["4"]
-    end
-    subgraph B["表B"]
-        B1["A"]
-        B2["B"]
-        B3["C"]
-    end
-    A1 --- B1
-    A2 --- B2
-    A3 --- B3
-```
-
-**语法**：
+"哪些桩从未产生过订单？"内连接答不了——没订单的桩根本不会出现在结果里：
 
 ```sql
- SELECT *
- from table1
- LEFT JOIN table2 ON table1.id = table2.id;
+SELECT c.charger_id, c.status, cs.session_id
+FROM chargers c
+LEFT JOIN charge_sessions cs ON cs.charger_id = c.charger_id
+WHERE cs.session_id IS NULL;          -- 右边没匹配上 => 14 号桩
 ```
 
-**示例**：
+LEFT JOIN 的语义：左表每一行都保留；右表没有匹配行时，右表各列填 NULL。配一个 `WHERE 右表.主键 IS NULL` 就是标准的"找孤儿行"手法（反连接）。
+
+方向反过来就是 RIGHT JOIN，语义相同。实际写 SQL 的惯例是**统一用 LEFT JOIN，把想全保留的表放左边**——RIGHT JOIN 读起来要换个方向思考，团队代码里少见。
+
+### FULL OUTER JOIN：MySQL 没有，用 UNION 模拟
+
+MySQL 不支持 FULL OUTER JOIN（PostgreSQL 原生支持）。想同时保留两侧未匹配行时，左右各查一遍再合并：
 
 ```sql
- SELECT d.dept_name, e.emp_name
- from departments d
- LEFT JOIN employees e ON d.dept_id = e.dept_id;
+SELECT c.charger_id, cs.session_id
+FROM chargers c LEFT JOIN charge_sessions cs ON cs.charger_id = c.charger_id
+UNION
+SELECT c.charger_id, cs.session_id
+FROM chargers c RIGHT JOIN charge_sessions cs ON cs.charger_id = c.charger_id;
 ```
 
-### 2.3 RIGHT JOIN（右外连接）
+UNION 会去重（两侧都匹配上的行只留一份），这也正是模拟 FULL JOIN 需要它的原因。要保留重复行用 UNION ALL，但在这里会算重。
 
-**定义**：返回右表的所有行，以及左表中匹配的行；左表不匹配的部分用 NULL 填充。
-**Venn 图表示**：右集合全部 + 交集部分
+### 自连接：同一张表和自己拼
 
-```mermaid
-flowchart LR
-    subgraph A["表A"]
-        A1["1"]
-        A2["2"]
-    end
-    subgraph B["表B"]
-        B1["A"]
-        B2["B"]
-        B3["C"]
-        B4["D"]
-    end
-    A1 --- B1
-    A2 --- B2
-```
-
-**语法**：
+"同城有哪些站点，方便互相调拨运维？"站点表和自己连接，关联条件是城市相同、站点不同：
 
 ```sql
- SELECT *
- from table1
- RIGHT JOIN table2 ON table1.id = table2.id;
+SELECT a.name AS station_a, b.name AS station_b, a.city
+FROM stations a
+JOIN stations b ON a.city = b.city AND a.station_id < b.station_id;
+-- 结果：滨江服务区站 x 萧山机场站（杭州）
 ```
 
-**示例**：
+自连接的本质是给同一张表起两个别名，当成两张独立表用。`a.station_id < b.station_id` 让每对站点只出现一次（去掉 (A,B) 与 (B,A) 的镜像和 A=A 的自身配对）。经典同款：员工表里"员工-上级"配对，分类表里"子类-父类"配对。
+
+### CROSS JOIN 与 USING
 
 ```sql
- SELECT o.order_id, u.username
- from users u
- RIGHT JOIN orders o ON u.id = o.user_id;
+-- 笛卡尔积：3 站 x 3 时段 = 9 行，生成巡检排班矩阵的底表
+SELECT s.name, t.slot
+FROM stations s
+CROSS JOIN (
+    SELECT '06:00-14:00' AS slot
+    UNION ALL SELECT '14:00-22:00' UNION ALL SELECT '22:00-06:00'
+) t;
+
+-- 两表同名列关联时，USING 是 ON 的简写（结果里同名列只出现一次）
+SELECT s.name, c.power_kw
+FROM stations s JOIN chargers c USING (station_id);
 ```
 
-### 2.4 FULL JOIN（全外连接）
+CROSS JOIN 常被拿来当"行生成器"用（本例的时段表就是这么拼的）。NATURAL JOIN 按全部同名列自动连接，列名一变就悄悄改语义，生产代码不要用。
 
-**定义**：返回两个表的所有行，不匹配的部分用 NULL 填充。
-**注意**：MySQL 不直接支持 FULL JOIN，需要通过 `UNION` 模拟。
-**Venn 图表示**：两个集合的并集
+## 为什么：行数膨胀是理解一切连接的地基
 
-```mermaid
-flowchart LR
-    subgraph A["表A"]
-        A1["1"]
-        A2["2"]
-        A3["3"]
-    end
-    subgraph B["表B"]
-        B1["A"]
-        B2["B"]
-        B3["C"]
-        B4["D"]
-    end
-    A1 --- B1
-    A2 --- B2
-```
+判断一条联查结果对不对，先算行数。 charger_sessions 与 chargers 是**多对一**：一个桩多笔订单。联查后行数 = 订单数（每笔订单恰好带出它桩和站的信息），这个方向安全。
 
-**语法**：
+反过来，**一对多方向的聚合**就是事故高发区：
 
 ```sql
- SELECT *
- from table1
- LEFT JOIN table2 ON table1.id = table2.id
- UNION
- SELECT *
- from table1
- RIGHT JOIN table2 ON table1.id = table2.id;
+-- 想算每个站有几根桩 + 几笔订单，直接联三表再 COUNT(*) 就错了：
+-- 站 1 有 2 根桩，订单都挂在桩 11 上，联查后站 1 有 2 笔订单 x ... 行数被桩数放大
 ```
 
-### 2.5 CROSS JOIN（交叉连接）
+一对多联查的结果里，"一"侧的每一行会随"多"侧重复出现。所以：**COUNT 主表用 `COUNT(DISTINCT 主表.主键)` 或先聚合子表再 JOIN**；SUM 更危险，金额会被成倍放大。这是所有报表联查的第一自检项。
 
-**定义**：返回两个表的笛卡尔积，即左表的每一行与右表的每一行组合。
-**注意**：结果行数 = 左表行数 × 右表行数，通常需要配合 WHERE 条件过滤。
-**语法**：
+ON 与 WHERE 的执行时机差异也源于此：外连接的"补 NULL 行"发生在连接阶段，之后 WHERE 再过滤——把右表条件写进 WHERE 会把补出来的 NULL 行过滤掉，LEFT JOIN 退化成 INNER JOIN。这条链的完整推演在 [SELECT 执行顺序](/sql/080-SelectExecutionOrder)。
+
+## 坑点与自检
+
+### 坑一：忘写连接条件，行数爆表
 
 ```sql
- SELECT * FROM table1 CROSS JOIN table2;
- SELECT * FROM table1, table2;
- SELECT * FROM table1 CROSS JOIN table2 WHERE condition;
+-- 逗号连接 = CROSS JOIN：5 桩 x 4 订单 = 20 行垃圾数据
+SELECT * FROM chargers c, charge_sessions cs;
 ```
 
-**示例**：
+症状是结果行数远超预期、同值行大量重复。自检：**联查结果行数先于内容检查**，心里要有一个预期行数（多对一 = 多表行数；一对多 = 膨胀）。
+
+### 坑二：LEFT JOIN 后的 COUNT
 
 ```sql
- SELECT d.dept_name, e.emp_name
- from departments d
- CROSS JOIN employees e;
+-- 想统计每个站的订单数，包括 0 单的站
+SELECT s.name, COUNT(*) AS cnt          -- 错：0 单的站显示 1（一行全 NULL 的行）
+FROM stations s
+LEFT JOIN chargers c ON c.station_id = s.station_id
+LEFT JOIN charge_sessions cs ON cs.charger_id = c.charger_id
+GROUP BY s.station_id, s.name;
+
+-- 正确：COUNT 带表名前缀的右表列，NULL 不计数
+SELECT s.name, COUNT(cs.session_id) AS cnt;
 ```
 
-### 2.6 NATURAL JOIN（自然连接）
+自检：LEFT JOIN 之后写聚合，**全部用 `COUNT(右表.列)`，禁止 `COUNT(*)`**。
 
-**定义**：自动根据相同列名进行连接，不需要指定连接条件。
-**注意**：使用时要谨慎，确保列名相同且语义一致。
-**语法**：
+### 坑三：右表条件放错位置，LEFT JOIN 静默退化
 
 ```sql
- SELECT * FROM employees NATURAL JOIN departments;
- SELECT * FROM employees NATURAL LEFT JOIN departments;
- SELECT * FROM employees NATURAL RIGHT JOIN departments;
+-- 错误：只看 9 月订单，但写在 WHERE 里 => 从没在 9 月充过电的桩整行消失
+SELECT c.charger_id, cs.session_id
+FROM chargers c
+LEFT JOIN charge_sessions cs ON cs.charger_id = c.charger_id
+WHERE cs.started_at >= '2026-09-01';
+
+-- 正确：时间条件属于"匹配规则"，写进 ON
+SELECT c.charger_id, cs.session_id
+FROM chargers c
+LEFT JOIN charge_sessions cs
+       ON cs.charger_id = c.charger_id
+      AND cs.started_at >= '2026-09-01';
 ```
 
-### 2.7 USING 子句
+判别口诀：**这个条件筛的是"匹配什么"（进 ON）还是"留下什么"（进 WHERE）**。想保留左表全部行，右表条件一律进 ON。
 
-**定义**：当两个表有相同列名时，可以使用 USING 简化连接语法。
-**语法**：
+### 坑四：连接条件写错列，不报错但数据错
+
+ON `c.station_id = cs.charger_id` 这类"类型兼容但语义无关"的列相等不会报任何错，只会给出错误的匹配。防御手段：外键约束（建表时写好）、联查前先单表 SELECT 熟悉各表主键、结果抽查几行人工核对。
+
+### 性能预览：这条 JOIN 打算怎么执行
+
+连接快不快，取决于被驱动表关联列上有没有索引：
 
 ```sql
- SELECT e.emp_name, d.dept_name
- from employees e
- JOIN departments d USING (dept_id);
+-- 给从表的关联列建索引（外键在 MySQL InnoDB 会自动建，手工删过就要补）
+SHOW INDEX FROM chargers;
+EXPLAIN SELECT ... ;   -- 见 mysql/320-EXPLAINDetailed
 ```
 
-**等价于**：
+嵌套循环、哈希连接这些算法层面的展开见 [JOIN 算法](/mysql/390-JOINAlgorithm)。
 
-```sql
- SELECT e.emp_name, d.dept_name
- from employees e
- JOIN departments d ON e.dept_id = d.dept_id;
-```
+## 练习
 
----
+1. 查出"每个站点的桩数和订单数"，要求 0 单的站也出现且显示 0（提示：LEFT JOIN + COUNT 明细列）。
+2. 查出从未产生订单的**站点**（而不是桩）。先想清楚：14 号桩会让它所在的站免于"孤儿"判定吗？
+3. 用自连接找出"同站同功率"的桩对（提示：`a.charger_id < b.charger_id` 去重）。
+4. 把三表收入统计改写成"先按桩聚合订单，再 JOIN 站点"的两段式，对比结果是否一致，并解释哪种写法在订单表巨大时更稳。
+5. 构造一条 WHERE 让 LEFT JOIN 退化的查询，再用 EXPLAIN 观察 type 列从 ALL/ref 的变化，验证"退化是可以被观测的"。
 
-## 3. 联查执行原理
+## 下一步
 
-### 3.1 联查执行顺序
-
-```sql
- SELECT 列列表 -- 5. 选择列
- from 表1 -- 1. 加载表1
- JOIN 表2 ON 条件 -- 2. 联查表2
- JOIN 表3 ON 条件 -- 3. 联查表3
- WHERE 过滤条件 -- 4. 过滤行
- GROUP BY 分组列 -- 6. 分组
- HAVING 分组过滤 -- 7. 分组过滤
- ORDER BY 排序列 -- 8. 排序
- LIMIT 限制行数; -- 9. 限制结果
-```
-
-### 3.2 联查算法
-
-#### 3.2.1 Nested Loop Join（嵌套循环连接）
-
-**原理**：外层循环遍历驱动表，内层循环遍历被驱动表。
-**适用场景**：小表驱动大表
-
-```sql
- EXPLAIN
- SELECT e.emp_name, d.dept_name
- from employees e
- JOIN departments d ON e.dept_id = d.dept_id;
-```
-
-**执行过程**：
-
-1. 遍历 employees 表（驱动表）
-2. 对于每个员工，查找对应的部门（被驱动表）
-3. 如果 departments.dept_id 有索引，效率很高
-
-#### 3.2.2 Hash Join（哈希连接）
-
-**原理**：先将小表构建成哈希表，然后扫描大表进行哈希匹配。
-**适用场景**：大表之间的连接，MySQL 8.0+ 支持
-
-```sql
- SELECT /*+ HASH_JOIN(d) */
-  e.emp_name, d.dept_name
- from employees e
- JOIN departments d ON e.dept_id = d.dept_id;
-```
-
-**执行过程**：
-
-1. 将 departments 表构建成哈希表（key: dept_id, value: dept_name）
-2. 扫描 employees 表，对每个 dept_id 进行哈希查找
-3. 返回匹配的结果
-
-#### 3.2.3 Merge Join（合并连接）
-
-**原理**：先对两个表按连接列排序，然后并行扫描合并。
-**适用场景**：连接列已排序或有索引
-**执行过程**：
-
-1. 对 employees 按 dept_id 排序
-2. 对 departments 按 dept_id 排序
-3. 并行扫描两个有序表，合并匹配行
-
-### 3.3 驱动表选择
-
-**规则**：
-
-1. 小表作为驱动表，减少外层循环次数
-2. 如果有 WHERE 条件过滤，优先选择过滤后结果集小的表
-3. 查看执行计划中的 `type` 和 `rows` 字段判断
-
-```sql
- EXPLAIN ANALYZE
- SELECT e.emp_name, d.dept_name
- from employees e
- JOIN departments d ON e.dept_id = d.dept_id;
-```
-
----
-
-## 4. 联查实战场景
-
-### 4.1 一对多关系联查
-
-```sql
- SELECT
-  o.order_id,
-  o.order_date,
-  oi.product_name,
-  oi.quantity,
-  oi.price
- from orders o
- JOIN order_items oi ON o.order_id = oi.order_id
- WHERE o.order_date >= '2024-01-01';
-```
-
-### 4.2 多对多关系联查
-
-```sql
- SELECT
-  s.student_name,
-  c.course_name
- from students s
- JOIN student_course sc ON s.student_id = sc.student_id
- JOIN courses c ON sc.course_id = c.course_id
- WHERE c.course_name = '数学';
-```
-
-### 4.3 自连接
-
-```sql
- SELECT
-  e.emp_name AS 员工,
-  m.emp_name AS 上级
- from employees e
- LEFT JOIN employees m ON e.manager_id = m.emp_id;
- with RECURSIVE emp_hierarchy AS (
-  SELECT emp_id, emp_name, manager_id, 1 AS level
-  FROM employees
-  WHERE manager_id IS NULL
-  UNION ALL
-  SELECT e.emp_id, e.emp_name, e.manager_id, eh.level + 1
-  FROM employees e
-  JOIN emp_hierarchy eh ON e.manager_id = eh.emp_id
- )
- SELECT * FROM emp_hierarchy ORDER BY level, emp_id;
-```
-
-### 4.4 三表及以上联查
-
-```sql
- SELECT
-  u.username,
-  o.order_id,
-  o.order_date,
-  p.product_name,
-  oi.quantity,
-  oi.price
- from users u
- JOIN orders o ON u.id = o.user_id
- JOIN order_items oi ON o.order_id = oi.order_id
- JOIN products p ON oi.product_id = p.product_id
- WHERE o.order_date BETWEEN '2024-01-01' AND '2024-01-31';
-```
-
-### 4.5 条件联查
-
-```sql
- SELECT
-  e.emp_name,
-  d.dept_name,
-  COUNT(o.order_id) AS order_count
- from employees e
- JOIN departments d ON e.dept_id = d.dept_id
- LEFT JOIN orders o ON e.emp_id = o.emp_id
- WHERE d.dept_name = '技术部'
-  AND e.hire_date < '2020-01-01'
- GROUP BY e.emp_id, e.emp_name, d.dept_name
- HAVING COUNT(o.order_id) > 10;
-```
-
----
-
-## 5. 联查性能优化
-
-### 5.1 索引优化
-
-**原则**：确保连接列和 WHERE 条件列有索引
-
-```sql
- CREATE INDEX idx_employees_dept_id ON employees(dept_id);
- CREATE INDEX idx_orders_user_id ON orders(user_id);
- CREATE INDEX idx_orders_user_date ON orders(user_id, order_date);
- CREATE UNIQUE INDEX idx_users_email ON users(email);
-```
-
-### 5.2 减少数据量
-
-**策略**：
-
-1. 使用 WHERE 条件提前过滤数据
-2. 只选择需要的列，避免 SELECT \*
-3. 使用 LIMIT 限制结果集
-
-```sql
- SELECT * FROM employees JOIN departments ON ...;
- SELECT e.emp_name, d.dept_name
- from employees e
- JOIN departments d ON e.dept_id = d.dept_id
- WHERE e.status = 1
- LIMIT 100;
-```
-
-### 5.3 优化连接顺序
-
-**原则**：小表驱动大表
-
-```sql
- EXPLAIN
- SELECT e.emp_name, o.order_id
- from employees e
- JOIN orders o ON e.emp_id = o.emp_id;
-```
-
-### 5.4 使用提示优化器
-
-```sql
- SELECT /*+ INDEX(e idx_employees_dept_id) */
-  e.emp_name, d.dept_name
- from employees e
- JOIN departments d ON e.dept_id = d.dept_id;
- SELECT /*+ HASH_JOIN(d) */
-  e.emp_name, d.dept_name
- from employees e
- JOIN departments d ON e.dept_id = d.dept_id;
- SELECT /*+ MERGE_JOIN(d) */
-  e.emp_name, d.dept_name
- from employees e
- JOIN departments d ON e.dept_id = d.dept_id;
-```
-
-### 5.5 避免复杂子查询
-
-**优化前**：
-
-```sql
- SELECT emp_name
- from employees
- WHERE dept_id IN (SELECT dept_id FROM departments WHERE dept_name LIKE '%技术%');
-```
-
-**优化后**：
-
-```sql
- SELECT e.emp_name
- from employees e
- JOIN departments d ON e.dept_id = d.dept_id
- WHERE d.dept_name LIKE '%技术%';
-```
-
----
-
-## 6. 常见问题与解决方案
-
-### 6.1 重复数据问题
-
-**问题**：联查后出现重复行
-**原因**：一对多关系导致的笛卡尔积
-**解决方案**：
-
-```sql
- SELECT DISTINCT e.emp_name
- from employees e
- JOIN orders o ON e.emp_id = o.emp_id;
- SELECT e.emp_name
- from employees e
- JOIN orders o ON e.emp_id = o.emp_id
- GROUP BY e.emp_id, e.emp_name;
-```
-
-### 6.2 NULL 值处理
-
-**问题**：外连接后出现 NULL 值
-**解决方案**：
-
-```sql
- SELECT
-  e.emp_name,
-  COALESCE(d.dept_name, '无部门') AS dept_name
- from employees e
- LEFT JOIN departments d ON e.dept_id = d.dept_id;
- SELECT
-  e.emp_name,
-  IFNULL(d.dept_name, '无部门') AS dept_name
- from employees e
- LEFT JOIN departments d ON e.dept_id = d.dept_id;
-```
-
-### 6.3 性能问题
-
-**问题**：联查慢
-**解决方案**：
-
-1. 检查索引是否存在
-2. 分析执行计划
-3. 优化连接顺序
-4. 减少返回数据量
-
-```sql
- EXPLAIN ANALYZE
- SELECT ...
- SHOW INDEX FROM employees;
- SHOW VARIABLES LIKE 'slow_query_log';
-```
-
-### 6.4 连接条件错误
-
-**问题**：返回结果不符合预期
-**常见错误**：
-
-- 忘记写连接条件（导致笛卡尔积）
-- 连接条件错误（导致错误匹配）
-- 使用错误的连接类型
-  **解决方案**：
-
-```sql
- SELECT * FROM employees, departments; -- 笛卡尔积
- SELECT * FROM employees e JOIN departments d ON e.dept_id = d.dept_id;
- SELECT * FROM employees e JOIN departments d ON e.emp_id = d.dept_id;
- SELECT * FROM employees e JOIN departments d ON e.dept_id = d.dept_id;
-```
+- 联查之上做分组报表、窗口排名，进入[进阶查询与多表操作](/mysql/150-AdvancedQueryMultiTableOperation)；
+- 连接的底层执行算法（NLJ、Hash Join）见 [JOIN 算法](/mysql/390-JOINAlgorithm)；
+- 016 模块的通用版讲解在 [连接查询](/sql/150-JoinQuery)与[半连接与反连接](/sql/180-SemiAntiJoin)。

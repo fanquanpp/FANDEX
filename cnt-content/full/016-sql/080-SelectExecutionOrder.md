@@ -4,530 +4,202 @@ title: SELECT 执行顺序
 module: 'sql'
 category: 数据库
 difficulty: intermediate
-description: SQL SELECT语句的逻辑执行顺序：FROM→JOIN→WHERE→GROUP BY→HAVING→SELECT→ORDER BY→LIMIT的完整解析
+description: 从一个别名报错出发，逐段验证 SELECT 的逻辑执行顺序 FROM 到 LIMIT，并解释它带来的别名作用域、HAVING 与 LEFT JOIN 三类经典坑。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'sql/090-DataType'
-  - 'sql/100-Constraint'
   - 'sql/050-FilterCondition'
   - 'sql/060-AggregateFunction'
+  - 'sql/070-GROUPBYGroupingSet'
+  - 'sql/150-JoinQuery'
 prerequisites:
   - 'sql/020-OverviewStandard'
 ---
 
-## 1. 执行顺序概述
+## 场景：一条"看起来没错"的查询报错了
 
-SQL 是声明式语言，编写顺序与逻辑执行顺序不同。理解逻辑执行顺序是编写正确、高效查询的基础。
-
-### 1.1 编写顺序 vs 执行顺序
-
-**编写顺序**：
+继续用播客平台的数据。有人在算"年收入超过阈值的节目"时写了这条查询：
 
 ```sql
-SELECT   -- 5. 选择列
-FROM     -- 1. 数据源
-JOIN     -- 2. 连接
-WHERE    -- 3. 行过滤
-GROUP BY -- 4. 分组
-HAVING   -- 5. 分组过滤
-ORDER BY -- 6. 排序
-LIMIT    -- 7. 限制行数
+SELECT show_name, played_at * 0 AS placeholder, COUNT(*) AS cnt
+FROM plays
+WHERE cnt >= 2          -- 报错：column "cnt" does not exist
+GROUP BY show_name;
 ```
 
-**逻辑执行顺序**：
+COUNT 明明在 SELECT 里起了别名 `cnt`，WHERE 为什么看不见？反过来，把条件挪到 ORDER BY 里用 `cnt` 却又能用：
+
+```sql
+SELECT show_name, COUNT(*) AS cnt
+FROM plays
+GROUP BY show_name
+ORDER BY cnt DESC;      -- 合法，全部数据库都支持
+```
+
+要解释这一对矛盾，只有一个入口：**SQL 的书写顺序和执行顺序不是一回事**。
+
+## 动手：把执行顺序一步步验证出来
+
+### 先记住这条链
 
 ```text
 FROM → JOIN → WHERE → GROUP BY → HAVING → SELECT → DISTINCT → ORDER BY → LIMIT
 ```
 
-### 1.2 为什么要理解执行顺序
+书写顺序是 `SELECT ... FROM ... WHERE ... GROUP BY ... HAVING ... ORDER BY ... LIMIT`，执行却从 FROM 开始。下面每个阶段都配一个可以在自己库上跑的小实验，比背结论有效。
 
-1. **别名作用域**：SELECT 中定义的别名在 WHERE 中不可用，但在 ORDER BY 中可用
-2. **聚合函数位置**：聚合函数只能出现在 SELECT、HAVING、ORDER BY 中
-3. **性能优化**：尽早过滤数据减少后续处理量
-
-## 2. 各阶段详解
-
-### 2.1 FROM — 数据源确定
-
-FROM 子句首先确定查询的数据源，生成虚拟表 VT1。
+准备数据：
 
 ```sql
--- 单表
-SELECT * FROM employees;
-
--- 子查询作为数据源
-SELECT * FROM (
-    SELECT dept_id, COUNT(*) AS cnt
-    FROM employees
-    GROUP BY dept_id
-) AS dept_counts;
-```
-
-### 2.2 JOIN — 连接操作
-
-按 JOIN 类型将多个表连接，生成虚拟表 VT2。
-
-```
-执行过程：
-1. 交叉连接（笛卡尔积）：VT2 = VT1 × JOIN表
-2. ON 过滤：保留满足 ON 条件的行
-3. 外部行添加：
-   - LEFT JOIN：添加左表未匹配行（右表列填 NULL）
-   - RIGHT JOIN：添加右表未匹配行（左表列填 NULL）
-   - FULL JOIN：添加两侧未匹配行
-   - INNER JOIN：不添加
-```
-
-```sql
--- 多表连接按从左到右顺序执行
-SELECT e.name, d.dept_name, j.job_title
-FROM employees e
-JOIN departments d ON e.dept_id = d.id        -- 先连接
-JOIN jobs j ON e.job_id = j.id                 -- 再连接
-```
-
-### 2.3 WHERE — 行级过滤
-
-对 VT2 中的每一行应用 WHERE 条件，保留满足条件的行生成 VT3。
-
-```sql
--- WHERE 中不能使用聚合函数
--- 错误：
-SELECT dept_id, COUNT(*) AS cnt
-FROM employees
-WHERE COUNT(*) > 5      -- 语法错误！
-GROUP BY dept_id;
-
--- 正确：使用 HAVING
-SELECT dept_id, COUNT(*) AS cnt
-FROM employees
-GROUP BY dept_id
-HAVING COUNT(*) > 5;
-```
-
-**WHERE 中不能使用 SELECT 别名**：
-
-```sql
--- 错误：WHERE 中不能引用 SELECT 别名
-SELECT name, salary * 12 AS annual_salary
-FROM employees
-WHERE annual_salary > 100000;  -- 错误！
-
--- 正确：重复表达式
-SELECT name, salary * 12 AS annual_salary
-FROM employees
-WHERE salary * 12 > 100000;
-```
-
-### 2.4 GROUP BY — 分组
-
-按 GROUP BY 列对 VT3 分组，每组生成一行，得到虚拟表 VT4。
-
-```sql
-SELECT dept_id, COUNT(*) AS emp_count, AVG(salary) AS avg_salary
-FROM employees
-WHERE status = 'active'
-GROUP BY dept_id;
-```
-
-**GROUP BY 规则**：
-
-- SELECT 中的非聚合列必须出现在 GROUP BY 中
-- GROUP BY 中使用 SELECT 别名：MySQL、PostgreSQL、SQLite 允许（方言扩展）；SQL Server、Oracle 不允许，坚持写原始表达式最稳
-- NULL 值被分到同一组
-
-```sql
--- MySQL 允许 SELECT 别名在 GROUP BY 中
-SELECT YEAR(created_at) AS yr, COUNT(*)
-FROM orders
-GROUP BY yr;  -- MySQL 可以，PostgreSQL 也可以
-
--- SQL 标准写法
-SELECT YEAR(created_at) AS yr, COUNT(*)
-FROM orders
-GROUP BY YEAR(created_at);
-```
-
-### 2.5 HAVING — 分组过滤
-
-对 VT4 中的分组应用 HAVING 条件，保留满足条件的分组生成 VT5。
-
-```sql
-SELECT dept_id, AVG(salary) AS avg_salary
-FROM employees
-GROUP BY dept_id
-HAVING AVG(salary) > 50000;     -- 过滤分组
-
--- HAVING 可以使用聚合函数，WHERE 不可以
--- HAVING 中引用 SELECT 别名（部分数据库支持）
-SELECT dept_id, AVG(salary) AS avg_salary
-FROM employees
-GROUP BY dept_id
-HAVING avg_salary > 50000;      -- MySQL 支持，PostgreSQL 不支持
-```
-
-### 2.6 SELECT — 列选择与计算
-
-从 VT5 中选择指定列，计算表达式，生成虚拟表 VT6。
-
-```sql
-SELECT
-    dept_id,
-    COUNT(*) AS emp_count,
-    AVG(salary) AS avg_salary,
-    RANK() OVER (ORDER BY AVG(salary) DESC) AS salary_rank
-FROM employees
-GROUP BY dept_id;
-```
-
-**SELECT 阶段的关键操作**：
-
-1. **表达式计算**：算术运算、函数调用、CASE 表达式
-2. **别名赋值**：AS 子句定义别名
-3. **DISTINCT 去重**：去除重复行
-
-### 2.7 DISTINCT — 去重
-
-```sql
--- DISTINCT 在 SELECT 之后执行
-SELECT DISTINCT dept_id
-FROM employees;
-
--- DISTINCT 与 ORDER BY 结合
-SELECT DISTINCT dept_id
-FROM employees
-ORDER BY dept_id;
-```
-
-### 2.8 ORDER BY — 排序
-
-对 VT6 按 ORDER BY 指定的列排序，生成游标 VC1。
-
-```sql
--- ORDER BY 可以使用 SELECT 别名
-SELECT name, salary * 12 AS annual_salary
-FROM employees
-ORDER BY annual_salary DESC;    -- 正确！
-
--- ORDER BY 可以使用聚合函数
-SELECT dept_id, AVG(salary) AS avg_salary
-FROM employees
-GROUP BY dept_id
-ORDER BY AVG(salary) DESC;      -- 正确！
-
--- ORDER BY 可以使用列序号（不推荐）
-SELECT dept_id, AVG(salary)
-FROM employees
-GROUP BY dept_id
-ORDER BY 2 DESC;                -- 按第2列排序
-```
-
-### 2.9 LIMIT / OFFSET — 结果限制
-
-从 VC1 中截取指定范围的行，返回最终结果。
-
-```sql
--- SQL 标准
-SELECT name, salary
-FROM employees
-ORDER BY salary DESC
-FETCH FIRST 10 ROWS ONLY;
-
--- MySQL / PostgreSQL
-SELECT name, salary
-FROM employees
-ORDER BY salary DESC
-LIMIT 10 OFFSET 20;   -- 跳过20行，取10行（第3页，每页10条）
-```
-
-## 3. 完整执行顺序示例
-
-```sql
-SELECT
-    d.dept_name,
-    COUNT(e.id) AS emp_count,
-    AVG(e.salary) AS avg_salary
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id AND e.status = 'active'
-WHERE d.region = 'East'
-GROUP BY d.id, d.dept_name
-HAVING COUNT(e.id) > 5
-ORDER BY avg_salary DESC
-LIMIT 10;
-```
-
-**逐步执行**：
-
-| 步骤 | 子句     | 操作                             |
-| ---- | -------- | -------------------------------- |
-| 1    | FROM     | 读取 departments 表              |
-| 2    | JOIN     | LEFT JOIN employees，ON 条件匹配 |
-| 3    | WHERE    | 过滤 region = 'East' 的部门      |
-| 4    | GROUP BY | 按 (d.id, d.dept_name) 分组      |
-| 5    | HAVING   | 过滤员工数 > 5 的分组            |
-| 6    | SELECT   | 选择 dept_name, COUNT, AVG       |
-| 7    | ORDER BY | 按 avg_salary 降序排序           |
-| 8    | LIMIT    | 取前 10 行                       |
-
-## 4. 常见陷阱与解决方案
-
-### 4.1 别名作用域问题
-
-```sql
--- 陷阱：WHERE 中使用 SELECT 别名
-SELECT YEAR(created_at) AS yr, COUNT(*)
-FROM orders
-WHERE yr = 2026           -- 错误！yr 在 WHERE 中不可用
-GROUP BY YEAR(created_at);
-
--- 解决方案1：重复表达式
-SELECT YEAR(created_at) AS yr, COUNT(*)
-FROM orders
-WHERE YEAR(created_at) = 2026
-GROUP BY YEAR(created_at);
-
--- 解决方案2：使用 CTE
-WITH yearly_orders AS (
-    SELECT *, YEAR(created_at) AS yr
-    FROM orders
-)
-SELECT yr, COUNT(*)
-FROM yearly_orders
-WHERE yr = 2026
-GROUP BY yr;
-```
-
-### 4.2 LEFT JOIN + WHERE 陷阱
-
-```sql
--- 陷阱：WHERE 条件使 LEFT JOIN 退化为 INNER JOIN
-SELECT d.dept_name, e.name
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id
-WHERE e.status = 'active';   -- 过滤掉了没有员工的部门！
-
--- 正确：将条件移到 ON 子句
-SELECT d.dept_name, e.name
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id AND e.status = 'active';
-```
-
-### 4.3 聚合与非聚合列混用
-
-```sql
--- 陷阱：SELECT 中有非聚合列未出现在 GROUP BY 中
-SELECT dept_id, name, AVG(salary)   -- name 未分组！
-FROM employees
-GROUP BY dept_id;
-
--- 解决方案1：将 name 加入 GROUP BY
-SELECT dept_id, name, AVG(salary)
-FROM employees
-GROUP BY dept_id, name;
-
--- 解决方案2：使用聚合函数处理 name
-SELECT dept_id, MAX(name) AS rep_name, AVG(salary)
-FROM employees
-GROUP BY dept_id;
-```
-
-## 5. 小结
-
-- 初学者要点：逻辑执行顺序是 `FROM → JOIN → WHERE → GROUP BY → HAVING → SELECT → DISTINCT → ORDER BY → LIMIT`；记住两条铁律——WHERE 里不能用 SELECT 别名、聚合过滤必须用 HAVING。
-- 别名作用域：WHERE 不可用、GROUP BY 看方言（MySQL/PG/SQLite 可用）、ORDER BY 全库可用；跨方言 SQL 用原始表达式最稳。
-- LEFT JOIN 的行保留语义发生在 JOIN 阶段，之后 WHERE 对"右表列 IS NULL"的过滤会让外连接退化为内连接——右表条件要写进 ON。
-- 进阶注意：执行顺序是**逻辑**顺序，优化器实际执行时会重排（谓词下推、连接重排序），所以"WHERE 先执行所以性能更好"这类说法要结合执行计划验证，不能死记。
-- 排版顺序与执行顺序的差异，也是 `SELECT` 里算好的列在 `WHERE` 里不可见的根源；需要复用时优先考虑 CTE（见 [CTE 通用表表达式](/sql/230-CTE)）。
-
-## SQL 逻辑执行顺序
-
-**基本写法：完整执行顺序**
-`FROM → JOIN → WHERE → GROUP BY → HAVING → SELECT → DISTINCT → ORDER BY → LIMIT`
-```sql
--- SQL 子句逻辑执行顺序（非书写顺序）
--- 1. FROM      确定数据源表
--- 2. JOIN      执行连接
--- 3. WHERE     行级过滤
--- 4. GROUP BY  分组
--- 5. HAVING    组级过滤
--- 6. SELECT    选择列与聚合
--- 7. DISTINCT  去重
--- 8. ORDER BY  排序
--- 9. LIMIT     限制行数
-```
-
----
-
-**基本写法：FROM 与 JOIN 先执行**
-`FROM <表1> JOIN <表2> ON <条件>`
-```sql
--- 先确定数据源再过滤
-SELECT e.name, d.dept_name
-FROM employees e
-JOIN departments d ON e.dept_id = d.id
-WHERE e.salary > 5000;
-```
-
----
-
-**基本写法：WHERE 在 GROUP BY 前执行**
-`WHERE <行条件> GROUP BY <列>`
-```sql
--- WHERE 过滤行，再对结果分组
-SELECT dept, COUNT(*) AS cnt
-FROM employees
-WHERE status = 'active'
-GROUP BY dept;
-```
-
----
-
-**基本写法：HAVING 在 GROUP BY 后执行**
-`GROUP BY <列> HAVING <组条件>`
-```sql
--- HAVING 过滤分组后的结果
-SELECT dept, AVG(salary) AS avg_sal
-FROM employees
-GROUP BY dept
-HAVING AVG(salary) > 50000;
-```
-
----
-
-**基本写法：SELECT 列别名在 ORDER BY 可用**
-`SELECT <列> AS <别名> ORDER BY <别名>`
-```sql
--- 别名在 ORDER BY 中可用，在 WHERE 中不可用
-SELECT name, salary * 12 AS annual_salary
-FROM employees
-ORDER BY annual_salary DESC;
--- 以下会报错：WHERE 中不能使用别名
--- WHERE annual_salary > 100000
-```
-
----
-
-**基本写法：WHERE 中不能用聚合函数**
-`-- 聚合函数过滤必须用 HAVING`
-```sql
--- 错误：WHERE 中不能用 COUNT/SUM 等
--- SELECT dept FROM employees WHERE COUNT(*) > 5 GROUP BY dept;
-
--- 正确：使用 HAVING
-SELECT dept FROM employees
-GROUP BY dept
-HAVING COUNT(*) > 5;
-```
-
----
-
-## 各阶段说明
-
-**基本写法：FROM 阶段**
-`FROM <表> [AS <别名>]`
-```sql
--- 表别名在 FROM 阶段生效，后续均可使用
-SELECT e.name, e.salary
-FROM employees AS e
-WHERE e.salary > 5000;
-```
-
----
-
-**基本写法：WHERE 阶段行过滤**
-`WHERE <条件表达式>`
-```sql
--- WHERE 不支持聚合函数，支持普通函数
-SELECT name, UPPER(name) AS upper_name
-FROM employees
-WHERE YEAR(hire_date) = 2024;
-```
-
----
-
-**基本写法：GROUP BY 分组**
-`GROUP BY <列1>, <列2>`
-```sql
--- 多列分组
-SELECT dept, job_title, COUNT(*) AS cnt
-FROM employees
-GROUP BY dept, job_title;
-```
-
----
-
-**基本写法：SELECT 表达式计算**
-`SELECT <列|表达式|聚合函数>`
-```sql
--- SELECT 阶段计算列值
-SELECT
-  name,
-  salary,
-  salary * 1.1 AS new_salary,
-  CASE WHEN salary > 50000 THEN '高' ELSE '低' END AS level
-FROM employees;
-```
-
----
-
-**基本写法：DISTINCT 去重**
-`SELECT DISTINCT <列>`
-```sql
--- DISTINCT 在 SELECT 之后执行
-SELECT DISTINCT dept FROM employees;
-```
-
----
-
-**基本写法：ORDER BY 排序**
-`ORDER BY <列> [ASC|DESC]`
-```sql
--- ORDER BY 可使用列名、别名或列序号
-SELECT name, salary FROM employees
-ORDER BY 2 DESC;
--- 等价于 ORDER BY salary DESC
-```
-
----
-
-**基本写法：LIMIT 分页**
-`LIMIT <行数> [OFFSET <偏移>]`
-```sql
--- 分页查询
-SELECT name, salary FROM employees
-ORDER BY salary DESC
-LIMIT 10 OFFSET 20;
--- 或 MySQL 简写
-LIMIT 20, 10;
-```
-
----
-
-## 子查询执行顺序
-
-**基本写法：子查询先于外查询执行**
-`SELECT * FROM <表> WHERE <列> IN (SELECT <列> FROM <表>)`
-```sql
--- 子查询先执行，结果传给外查询
-SELECT name FROM employees
-WHERE dept_id IN (
-  SELECT id FROM departments WHERE location = '北京'
+CREATE TABLE plays (
+    id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    show_name  VARCHAR(100) NOT NULL,
+    platform   VARCHAR(20)  NOT NULL,
+    played_at  TIMESTAMP    NOT NULL
 );
+
+INSERT INTO plays (show_name, platform, played_at) VALUES
+('代码夜话', 'ios',     '2026-09-01 08:10:00'),
+('代码夜话', 'ios',     '2026-09-01 21:40:00'),
+('代码夜话', 'android', '2026-09-02 07:05:00'),
+('早班机',   'android', '2026-09-02 07:30:00'),
+('早班机',   'web',     '2026-09-03 09:15:00'),
+('早班机',   'web',     '2026-09-03 09:20:00');
 ```
 
----
+### 第 1-2 步：FROM 与 JOIN 先确定数据从哪来
 
-**基本写法：相关子查询逐行执行**
-`SELECT * FROM <表> t1 WHERE <列> > (SELECT AVG(<列>) FROM <表> t2 WHERE t2.<列> = t1.<列>)`
+FROM 把数据源（表、子查询、视图）取出来；JOIN 在此之上把多张表按 ON 条件拼在一起。**表别名在这一步生效**，所以后面所有子句都能用它——包括 SELECT 和 WHERE。
+
+### 第 3 步：WHERE 过滤行，此刻还没有"组"
+
+WHERE 逐行过滤。验证两件事：
+
 ```sql
--- 相关子查询：外查询每行都触发一次子查询
-SELECT e1.name, e1.salary
-FROM employees e1
-WHERE e1.salary > (
-  SELECT AVG(e2.salary)
-  FROM employees e2
-  WHERE e2.dept_id = e1.dept_id
-);
+-- 实验 1：WHERE 里不能用聚合函数，因为"组"还不存在
+SELECT show_name, COUNT(*) AS cnt
+FROM plays
+WHERE COUNT(*) >= 2     -- 语法错误
+GROUP BY show_name;
+
+-- 实验 2：WHERE 里不能用 SELECT 别名，因为 SELECT 还没执行
+SELECT show_name, COUNT(*) AS cnt
+FROM plays
+WHERE cnt >= 2          -- 报错：找不到列 cnt
+GROUP BY show_name;
 ```
+
+两个错误是同一个原因：WHERE 执行时，聚合和别名都还没有发生。聚合条件的过滤要用 HAVING。
+
+### 第 4-5 步：GROUP BY 与 HAVING 处理"组"
+
+GROUP BY 把行折叠成组；HAVING 对组做过滤。HAVING 里既可以用聚合函数，也可以用（部分数据库的）别名：
+
+```sql
+SELECT show_name, COUNT(*) AS cnt
+FROM plays
+GROUP BY show_name
+HAVING COUNT(*) >= 2;    -- 稳妥写法：重复聚合表达式
+```
+
+别名在 GROUP BY/HAVING 里能不能用是**方言差异**：MySQL、PostgreSQL、SQLite 允许，SQL Server、Oracle 不允许。跨数据库的 SQL 一律写原始表达式。
+
+### 第 6-8 步：SELECT、DISTINCT、ORDER BY
+
+SELECT 到这里才执行：算表达式、起别名。所以：
+
+- 别名在 ORDER BY 里可用（它排在 SELECT 之后）；
+- DISTINCT 在 SELECT 之后去重；
+- ORDER BY 排序，是最后一个能引用 SELECT 别名的地方。
+
+### 第 9 步：LIMIT/OFFSET 截取
+
+MySQL/PostgreSQL 用 `LIMIT n OFFSET m`，SQL 标准写法是 `FETCH FIRST n ROWS ONLY`。分页要和 ORDER BY 搭配，否则每页顺序不稳定（见坑点三）。
+
+### 完整走一遍
+
+```sql
+SELECT d.region, p.show_name, COUNT(*) AS cnt          -- 6. SELECT
+FROM plays p                                            -- 1. FROM
+JOIN show_meta d ON p.show_name = d.show_name           -- 2. JOIN
+WHERE p.played_at >= '2026-09-01'
+  AND p.played_at <  '2026-09-08'                       -- 3. WHERE
+GROUP BY d.region, p.show_name                          -- 4. GROUP BY
+HAVING COUNT(*) >= 2                                    -- 5. HAVING
+ORDER BY cnt DESC                                       -- 7. ORDER BY
+LIMIT 10;                                               -- 8. LIMIT
+```
+
+对照检查：p 别名在 SELECT/WHERE 都能用（FROM 已定义）；WHERE 不能有聚合；HAVING 只能跟在 GROUP BY 后；ORDER BY 用别名合法。
+
+## 为什么：声明式语言只说"要什么"
+
+SQL 是声明式语言：你声明结果长什么样，执行路径由优化器决定。这条链叫**逻辑执行顺序**——它是语义上的处理顺序，决定了哪些名字在哪个子句可见；不是物理执行顺序。优化器实际执行时会谓词下推、重排连接、并行扫描，可能先做 WHERE 的过滤再扫描。
+
+所以正确的用法是：**用逻辑顺序推演语义正确性**（别名、聚合的位置），**用执行计划验证性能**（见[执行计划](/sql/430-ExecutionPlan)）。"WHERE 写在前面就跑得快"属于把两者混为一谈。
+
+## 坑点与自检
+
+### 坑一：WHERE 把 LEFT JOIN 退化成 INNER JOIN
+
+执行顺序里 JOIN 在 WHERE 之前，这直接推出一个高频 bug：
+
+```sql
+-- 本意：所有节目都保留，只展示活跃播放行为
+SELECT p.show_name, e.title
+FROM shows p
+LEFT JOIN episodes e ON p.show_name = e.show_name
+   AND e.is_published = true;          -- 条件放 ON：LEFT JOIN 语义成立
+
+-- 错误：条件放进 WHERE，未上架的行（e 列全 NULL）被过滤，
+-- "没有已上架单集"的节目整个消失，LEFT JOIN 名存实亡
+SELECT p.show_name, e.title
+FROM shows p
+LEFT JOIN episodes e ON p.show_name = e.show_name
+WHERE e.is_published = true;
+```
+
+规则：**右表的过滤条件想保留左表全部行，就写进 ON；写在 WHERE 里就把外连接变成了内连接**。反过来，想专门找出"没有匹配行"的左表记录，倒是靠 `WHERE 右表.列 IS NULL`，这是刻意的用法。
+
+### 坑二：别名作用域速查
+
+| 子句 | 能否用 SELECT 别名 | 原因 |
+| --- | --- | --- |
+| FROM 里的表别名 | 反向成立 | FROM 最先执行 |
+| WHERE | 否 | SELECT 未执行 |
+| GROUP BY | 方言差异 | MySQL/PG/SQLite 可，SQL Server/Oracle 不可 |
+| HAVING | 方言差异 | 同上 |
+| ORDER BY | 可 | 执行在 SELECT 之后 |
+
+别名复用表达式时（WHERE 和 SELECT 各写一遍 `salary * 12`），嫌重复就上 CTE，把算好的列先物化一层（见[CTE](/sql/230-CTE)）。
+
+### 坑三：无 ORDER BY 的 LIMIT 分页
+
+LIMIT 在排序之后执行，这条链是对的；但如果**根本没写 ORDER BY**，行的顺序由执行路径决定，同一页数据两次查询可能不一样，分页就会丢行、重行。自检：**凡是带 LIMIT 的查询，必须能指出它是按什么排的**。
+
+### 坑四：聚合与非聚合列混用
+
+```sql
+-- show_name 没出现在 GROUP BY 里，也没被聚合：语义不明，标准数据库直接报错
+SELECT show_name, platform, COUNT(*) FROM plays GROUP BY show_name;
+
+-- 两种正解：要么全进 GROUP BY，要么对它聚合
+SELECT show_name, platform, COUNT(*) FROM plays GROUP BY show_name, platform;
+SELECT show_name, MAX(platform) AS any_platform, COUNT(*) FROM plays GROUP BY show_name;
+```
+
+老版本 MySQL 默认容忍这种写法（取任意一行的值），5.7 起默认 `ONLY_FULL_GROUP_BY` 关掉了这个坑。见过"别的库能跑"的旧 SQL 报错时，先想到这里。
+
+## 练习
+
+1. 不看上文，默写九步逻辑执行顺序，然后解释为什么 HAVING 不能出现在 GROUP BY 之前。
+2. 写一条查询：每档节目的播放次数，只保留 9 月第一周的数据，只要播放次数最多的前 2 档。分别标注每行 SQL 对应执行链的第几步。
+3. 把练习 2 的 HAVING 条件改写为等价的"先算全部再过滤"的 CTE 版本，体会别名为什么在 CTE 内层可用。
+4. 构造一个 LEFT JOIN + WHERE 退化的例子（用 shows/episodes 两张表），先证明退化发生（结果行数变少），再把条件挪进 ON 修复。
+5. 解释为什么 `ORDER BY cnt DESC LIMIT 1` 能拿到"播放次数最多的节目"，而 `WHERE cnt = MAX(cnt)` 永远是错的。
+
+## 下一步
+
+- WHERE 的条件形态直接决定索引能否生效，见[过滤条件](/sql/050-FilterCondition)的 SARGable 一节；
+- 分组与分组集的展开见[GROUP BY 与分组集](/sql/070-GROUPBYGroupingSet)；
+- 想看优化器真实的物理执行顺序，进入[执行计划](/sql/430-ExecutionPlan)。

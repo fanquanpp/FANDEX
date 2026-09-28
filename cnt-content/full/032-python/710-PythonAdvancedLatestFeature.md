@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 530
 title: Python 进阶与最新特性
 module: 'python'
 category: 后端技术

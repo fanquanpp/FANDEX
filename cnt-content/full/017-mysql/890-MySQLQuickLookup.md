@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 常用 SQL 语句、函数与配置参数速查。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-29'
 related:
   - 'mysql/460-TransactionLockMechanism'
   - 'mysql/850-MySQLConfigOps'
@@ -218,21 +218,21 @@ prerequisites:
 ### 插入数据
 
 ```sql
- inSERT INTO table(col1, col2) VALUES(val1, val2);
- inSERT INTO table(col1, col2) VALUES
+ INSERT INTO table(col1, col2) VALUES(val1, val2);
+ INSERT INTO table(col1, col2) VALUES
   (v1, v2),
   (v3, v4),
   (v5, v6);
- inSERT INTO table(cols) VALUES(vals)
+ INSERT INTO table(cols) VALUES(vals)
  ON DUPLICATE KEY UPDATE col = new_val;
  replace INTO table(cols) VALUES(vals);
- inSERT INTO users(username, email, password)
+ INSERT INTO users(username, email, password)
  VALUES ('zhangsan', 'zhang@example.com', '123456');
- inSERT INTO users(username, email, password) VALUES
+ INSERT INTO users(username, email, password) VALUES
   ('lisi', 'li@example.com', '654321'),
   ('wangwu', 'wang@example.com', 'abc123'),
   ('zhaoliu', 'zhao@example.com', 'xyz789');
- inSERT INTO users(id, username, email)
+ INSERT INTO users(id, username, email)
  VALUES (1, 'zhangsan_new', 'zhang_new@example.com')
  ON DUPLICATE KEY UPDATE username = VALUES(username), email = VALUES(email);
 ```
@@ -468,9 +468,9 @@ prerequisites:
  UPDATE accounts SET balance = balance + 100 WHERE id = 2;
  commit;
  BEGIN;
- inSERT INTO orders (...) VALUES (...);
+ INSERT INTO orders (...) VALUES (...);
  SAVEPOINT order_saved;
- inSERT INTO order_items (...) VALUES (...);
+ INSERT INTO order_items (...) VALUES (...);
  if error THEN
   ROLLBACK TO order_saved;
  END IF;

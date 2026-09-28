@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 440
 title: 行级安全策略
 module: 'postgresql'
 category: 数据库

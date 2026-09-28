@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: LeetCode 刷题指南（方法论与路线篇）系统化阐述刷题总路线（按题型顺序而非题号推进：哈希与双指针、链表、栈与单调栈、二分、滑动窗口与前缀和、二叉树、BFS/DFS、回溯、动态规划、图与贪心）、读题与时间复杂度反推（$n \leq 20 \to O(2^n)$、$n \leq 100 \to O(n^3)$、$n \leq 10^5 \to O(n \log n)$）、三遍刷题法与四步解题法、遗忘曲线与间隔重复应对、错题本与复盘指标、周赛/双周赛训练策略、面试流程与沟通话术、工业级代码风格、在线评测平台演进史（ACM ICPC 1970、Google Code Jam 2003-2023、Codeforces 2009、AtCoder 2012、LeetCode 2015/中国 2018）、LeetCode/LintCode/HackerRank/CodeSignal/牛客网五大面试平台对比、FAANG 与字节跳动/腾讯/阿里巴巴面试风格对比、Hot 100/Top Interview 150/Grind 75/NeetCode 150 刷题清单对比、Python/C++/Java 面试语言选择。题型识别信号、解题模板与代表题（双指针/滑动窗口/二分/前缀和/单调栈/哈希/链表/二叉树/BFS-DFS/DP）见本模块《LeetCode 分类题型手册》。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/305-LeetCodeTopicPlaybook'
@@ -25,7 +25,9 @@ prerequisites:
   - 'algorithm/140-RecursionAndBacktracking'
 ---
 
-> 定位说明：本篇为进阶参考书（参考层），面向已完成本模块主线的读者；入门请先走学习路径前序阶段。定位标准见 docs/standards/reference-layer.md（仓库）。
+> 使用方式：本篇是刷题方法论的参考指南，回答「怎么练、按什么顺序练、面试怎么考」；每类题的模板与代表题见姊妹篇 [LeetCode 分类题型手册](/algorithm/305-LeetCodeTopicPlaybook)。
+
+三个月后就是面试季，LeetCode 上有 3000 多道题，从哪道开始？刷题最大的浪费不是题做得少，而是顺序混乱、不复盘、同类型题反复失手。本篇按「读题与复杂度反推 → 按类型而非题号的总路线 → 三遍刷题法与间隔复习 → 面试现场四步沟通」组织，读完后你能给自己排一张三个月的训练表，并知道每道错题该以什么动作回到错题本。
 
 > 姊妹篇：题型识别信号、解题模板与代表题（含预期输出）见 [LeetCode 分类题型手册](/algorithm/305-LeetCodeTopicPlaybook)。本篇回答"怎么练、按什么顺序练、面试怎么考"，手册回答"每类题怎么解"。
 
@@ -862,6 +864,14 @@ Grind 75 由前 Meta 工程师 ____________ 于 2022 年在 Blind 75 基础上�
 | 理论与网络流 | [算法理论知识点](/algorithm/280-AlgorithmTheory)、[网络流](/algorithm/290-NetworkFlow) | -（竞赛级进阶，见第 9.4 节） |
 
 建议读者按"算法分析基础 → 本篇总路线 → 《分类题型手册》逐类型突破 → 各专题文档深入"的顺序学习，形成从路线到模板再到理论深潜的完整知识闭环。
+
+## 读完自检
+
+- 拿到一道新题，数据范围反推复杂度的规则是什么？（n 到 10^5 想线性或线性对数，n 到 10^3 想平方，n 到 20 想指数级搜索或状压）
+- 为什么按类型刷题而不是按题号？（同类型题共享识别信号与模板，迁移效率远高于随机刷）
+- 三遍刷题法的三遍各做什么？（一遍求思路独立、二遍求一次写对、三遍求限时提速；卡住超时的题进入错题本）
+- 面试现场的四步沟通是什么？（复述确认、举小例子定边界、说清暴力再优化、边写边讲复杂度）
+- 能给自己排一张三个月训练表：类型顺序、每日题量、复习节奏与周赛安排。
 
 ---
 

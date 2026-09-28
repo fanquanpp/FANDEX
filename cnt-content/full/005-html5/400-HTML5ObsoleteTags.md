@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 老网页和旧代码里必遇的废弃标签清单：font、center、frameset、marquee 等，附现代替代方案与遇到老项目时的处理思路。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'html5/020-HTML5OverviewCoreFeature'
   - 'html5/040-DocTypeDeclaration'
@@ -66,7 +66,7 @@ frameset 把浏览器窗口切成多个独立框架，问题有三：
 2. 地址栏 URL 不随框架内容变化，无法分享具体页面；
 3. 可访问性差，读屏软件无法理解"窗口碎片"。
 
-所以 HTML5 直接移除了 frameset/frame，现代嵌入需求用 `<iframe>`（见 023-EmbeddedContent）。
+所以 HTML5 直接移除了 frameset/frame，现代嵌入需求用 `<iframe>`（见 220-EmbeddedContent）。
 
 ## 4. 浏览器还认这些标签吗
 

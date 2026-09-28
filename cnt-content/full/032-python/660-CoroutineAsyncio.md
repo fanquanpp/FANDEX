@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 490
 title: "协程与 asyncio：三个网页从 3 秒到 1 秒"
 module: 'python'
 category: 后端技术

@@ -4,116 +4,67 @@ title: 媒体查询
 module: 'css'
 category: 前端技术
 difficulty: intermediate
-description: CSS 媒体查询完整原理：@media 语法、媒体特性、响应式断点、深色模式与 matchMedia。
+description: "从「手机打开自己的页面缩成一团」出发，用 viewport meta 加移动优先断点让一套代码适配全设备，掌握 @media 语法解剖与区间新写法，收下深色模式、减少动画、hover 指针探测三个用户偏好查询，并划清媒体查询与容器查询的分工边界。"
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-29'
 related:
-  - 'css/330-CSSAnimationTransition'
-  - 'css/280-BorderRadius'
+  - 'css/370-ResponsiveDesign'
   - 'css/390-ContainerQuery'
-  - 'css/380-MobileAdaptation'
+  - 'css/410-CSSVariableCustomAttribute'
+  - 'css/460-FeatureQuery'
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
 
 ## 前置知识
 
-建议先阅读以下内容再进入本文：
+- 已完成 [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)；
+- 例子里的网格布局看不懂不影响主线，只把它当「一段会变的样式」，深入版见 [CSS3 Grid 网格布局](/css/250-CSS3GridGridLayout)。
 
-- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+## 学习目标
 
-## 1. 历史动机与发展脉络
+读完本文你将能够：
 
-2004 年前后，移动设备开始访问 Web，固定宽度布局在窄屏上需要横向滚动。2007 年 iPhone 发布后，响应式 Web 设计（Responsive Web Design）由 Ethan Marcotte 于 2010 年在 A List Apart 提出，其三大支柱是流式网格、弹性图片与媒体查询。
+1. 写出移动优先的断点体系：基础样式管窄屏，`min-width` 逐级增强；
+2. 解剖任何一条 `@media` 规则：媒体类型、媒体特性、逻辑操作符各管什么，并用区间新写法 `(400px <= width <= 800px)` 替代 min/max 拼接；
+3. 解释为什么缺了 viewport meta 手机上媒体查询会集体失效；
+4. 用 `prefers-color-scheme`、`prefers-reduced-motion`、`(hover: hover)` 响应系统偏好与设备能力；
+5. 在 JS 里用 `matchMedia` 监听同一套条件，并说清页面级响应（媒体查询）与组件级响应（容器查询）的分工。
 
-媒体查询本身起源于 CSS2 的媒体类型（`screen`、`print`、`aural`），Media Queries Level 3（2012 年成为 W3C Recommendation）引入媒体特性（width、orientation 等）与逻辑操作符；Media Queries Level 4（2017 年草案，2022 年前后稳定）新增 `prefers-color-scheme`、`prefers-reduced-motion`、`hover`、`pointer` 等用户偏好与交互能力特性。2023 年起容器查询（Container Queries，CSS Containment Level 3）获得主流浏览器支持，组件级响应式成为新方向，但媒体查询仍是页面级响应式的基石。
+预计 40 到 60 分钟，含 1 组动手实验与 4 道练习。
 
-```mermaid
-timeline
-    title 媒体查询演进
-    1998 : CSS2 引入媒体类型 screen/print
-    2010 : Ethan Marcotte 提出响应式设计
-    2012 : Media Queries 3 成为标准
-    2018 : prefers-color-scheme 被实现
-    2020 : prefers-reduced-motion 广泛支持
-    2023 : 容器查询主流支持，与媒体查询互补
+## 1. 问题引入：自己的页面在手机上缩成一团
+
+你把桌面版的周报站发给朋友，他用手机打开：页面按 980px 左右的宽度渲染再整体缩小，字小得要用两根手指放大才能看。你明明在 CSS 里写了「窄屏单列」的规则，为什么没生效？
+
+两个原因叠在一起：一是手机浏览器默认按约 980px 的「布局视口」渲染页面（模拟桌面浏览器），你的窄屏断点条件根本不成立；二是就算成立，你的规则也可能是「桌面优先」的覆盖式补丁，窄屏样式永远打不赢。解法是一套组合拳：**meta 声明真实视口宽度，移动优先的断点从窄到宽叠加增强**。这套组合拳就是本文的主线。
+
+## 2. 最小示例：单列到三列的移动优先网格
+
+`index.html` 的 head 里必须有这行（原因见 3.2）：
+
+```html
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 ```
 
-## 2. 形式化定义
-
-`@media` 规则由媒体查询列表构成，语法：
+`styles.css`：
 
 ```css
-@media <media-query-list> {
-  /* 条件成立时应用的样式 */
-}
-```
-
-媒体查询列表用逗号分隔多个查询，任一查询为真则整体为真（或语义）。单个查询由可选媒体类型、媒体特性与逻辑操作符组成：
-
-媒体类型：`all`（默认）、`screen`、`print`、`speech`。`not` 只能修饰整个查询（不能修饰单个特性）。
-
-媒体特性以 `(特性: 值)` 或 `(特性)` 形式书写：`(min-width: 768px)`、`(orientation: portrait)`、`(hover: hover)`。无值特性如 `(color)` 表示支持该特性。
-
-逻辑操作符：
-
-`and`：连接媒体类型与特性，全部成立才为真；
-
-`,`：查询列表分隔符，任一查询为真即为真；
-
-`not`：对整个查询取反；
-
-`only`：用于兼容不支持媒体查询的旧浏览器（现代已不必要，仍可保留）。
-
-范围语法（Media Queries Level 4）：`(400px <= width <= 800px)`、`(width >= 768px)` 是新的区间写法，可读性优于 `min/max`，现代浏览器均支持。
-
-```mermaid
-flowchart TD
-    A["@media screen and (min-width: 768px)"] --> B{"媒体类型为 screen?"}
-    B -- "是" --> C{"视口宽度 >= 768px?"}
-    C -- "是" --> D["应用样式"]
-    C -- "否" --> E["跳过样式"]
-    B -- "否" --> E
-```
-
-## 3. 理论推导与原理解析
-
-### 3.1 min-width 与 max-width 的不等式
-
-`min-width: 768px` 等价于 `width >= 768px`；`max-width: 767px` 等价于 `width <= 767px`。两者在 767/768 边界互补。移动优先策略使用 `min-width` 从窄到宽逐步增强；桌面优先策略使用 `max-width` 从宽到窄逐步降级。
-
-### 3.2 视口与布局视口
-
-媒体查询中的 `width` 指布局视口宽度（layout viewport），由 `<meta name="viewport" content="width=device-width, initial-scale=1">` 控制。缺失该 meta 时，移动浏览器使用默认视口宽度（如 980px），媒体查询将按 980px 判断，导致移动优先样式失效。因此响应式页面的第一步是正确设置 viewport meta。
-
-### 3.3 媒体查询的层叠行为
-
-媒体查询不改变 CSS 层叠优先级，只控制规则是否参与层叠。因此两条规则同时命中时，后定义者胜出。移动优先写法中，基础样式在前，`min-width` 增强在后，天然符合层叠顺序。
-
-### 3.4 与容器查询的分工
-
-媒体查询参照视口，解决“页面级”响应；容器查询参照最近的容器尺寸，解决“组件级”响应。一个卡片组件在窄侧栏与宽主区中应自适应容器，而不是依赖视口断点。容器查询需要父元素声明 `container-type: inline-size`，且不能替代媒体查询（页面级排版仍需视口信息）。
-
-## 4. 代码示例（带详尽注释）
-
-### 4.1 移动优先断点体系
-
-```css
-/* 基础样式：默认面向窄屏（移动优先） */
+/* 基础样式：默认面向窄屏，不包任何媒体查询 */
 .grid {
   display: grid;
-  grid-template-columns: 1fr; /* 单列 */
+  grid-template-columns: 1fr;
   gap: 16px;
 }
 
-/* 视口 >= 640px：两列 */
+/* 平板起：两列 */
 @media (min-width: 640px) {
   .grid {
     grid-template-columns: repeat(2, 1fr);
   }
 }
 
-/* 视口 >= 1024px：三列 */
+/* 桌面起：三列 */
 @media (min-width: 1024px) {
   .grid {
     grid-template-columns: repeat(3, 1fr);
@@ -121,1203 +72,167 @@ flowchart TD
 }
 ```
 
-讲解：断点 640/1024 是内容驱动的常用选择。移动优先的要点：基础样式无需媒体查询，增强逐级叠加，因此窄屏设备只加载最简样式。
+预期效果：手机上单列；把浏览器窗口从窄拉宽，640px 时变两列、1024px 时变三列，且不需要刷新。窄屏设备只吃到最简样式，增强逐级叠加——这就是移动优先：**为最受限的设备写默认值，再问「更大的屏幕能多给什么」**。
 
-### 4.2 深色模式
+## 3. 核心概念
+
+### 3.1 语法解剖：一条 @media 由三部分组成
 
 ```css
+@media screen and (min-width: 768px), print {
+  /* 命中条件之一即应用 */
+}
+```
+
+- **媒体类型**：`all`（默认）、`screen`、`print`。2000 年代还能见到 `speech`，实际项目里最常用的是省略类型直接写特性；
+- **媒体特性**：`(min-width: 768px)`、`(orientation: portrait)`、`(prefers-color-scheme: dark)`，写成「特性: 值」，无值特性如 `(color)` 表示「支持该能力」；
+- **逻辑操作符**：`and` 连接且语义；逗号分隔任一命中即真（或语义）；`not` 取反整个查询（不能只取反一个特性）；`only` 是给远古浏览器的历史兼容词，现代可删。
+
+区间新写法（Media Queries Level 4，2023 年起全主流支持）把 min/max 拼接变成数学不等式：
+
+```css
+@media (width >= 768px) { }              /* 等价 min-width: 768px */
+@media (768px <= width <= 1024px) { }    /* 只命中这个区间 */
+```
+
+新写法天然消灭「767 还是 768」的边界笔误，新项目建议直接用它。
+
+### 3.2 viewport meta：不写它，一切白搭
+
+媒体查询里的 `width` 指的是**布局视口**宽度。手机浏览器默认把布局视口设为约 980px 来模拟桌面——此时 `(max-width: 767px)` 永远为假，所有窄屏规则集体沉默，页面再被整体缩小塞进屏幕。`<meta name="viewport" content="width=device-width, initial-scale=1">` 把布局视口锁到设备真实宽度，媒体查询才有真实的判断依据。它是响应式的第一行代码，不是可选项。
+
+### 3.3 层叠行为：媒体查询不改优先级，只管「参不参赛」
+
+`@media` 内外的规则优先级算法完全一样，媒体查询只决定这批规则**是否参与层叠**。同优先级时仍是后写者胜。移动优先之所以顺：基础样式在前、增强断点在后，天然「后者覆盖前者」。反过来说，把宽屏规则写在文件末尾、窄屏补丁写在前面，就要靠优先级硬刚——自找麻烦。层叠的完整规则见 [层叠与继承](/css/160-CascadeInheritanceBasics)，现代的 `@layer` 加持见 [级联层](/css/450-CascadeLayer)。
+
+### 3.4 用户偏好查询：把「系统的设置」变成设计约束
+
+这组特性问的不是「设备多宽」，而是「用户怎么用设备」，是 2020 年代媒体查询的主角：
+
+```css
+/* 深色模式：只切变量，一套选择器管两种主题 */
 :root {
   --bg: #ffffff;
-  --text: #1f1f1f;
+  --text: #171717;
 }
-
-/* 用户系统偏好深色时切换变量 */
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg: #1f1f1f;
-    --text: #f0f0f0;
+    --bg: #171717;
+    --text: #f5f5f5;
   }
 }
+body { background: var(--bg); color: var(--text); }
 
-body {
-  background: var(--bg);
-  color: var(--text);
-}
-```
-
-讲解：`prefers-color-scheme` 读取操作系统或浏览器的深色偏好。通过 CSS 变量切换主题，一套选择器适配两种模式，避免重复编写整套样式。
-
-### 4.3 减少动画偏好
-
-```css
-/* 默认动画 */
-.banner {
-  animation: slide-in 0.6s ease;
-}
-
-/* 用户开启“减少动态效果”时关闭动画 */
+/* 减少动态效果：前庭敏感用户的一等公民权益 */
+.banner { animation: slide-in 0.6s ease; }
 @media (prefers-reduced-motion: reduce) {
-  .banner {
-    animation: none;
-    transition: none;
-  }
-}
-```
-
-讲解：`prefers-reduced-motion` 服务于前庭障碍与晕动症用户，是 WCAG 2.1 可访问性最佳实践。关闭动画的同时应保证内容立即可见（不要用 `opacity: 0` 残留）。
-
-### 4.4 打印样式
-
-```css
-/* 打印时隐藏导航与广告，展开正文 */
-@media print {
-  .navbar,
-  .sidebar,
-  .ad {
-    display: none !important;
-  }
-  main {
-    width: 100%;
-  }
-}
-```
-
-讲解：`print` 媒体类型为打印优化：隐藏非内容区域、设置黑白配色、避免分页截断。可用 `page-break-inside: avoid` 控制元素不跨页。
-
-### 4.5 方向与指针能力
-
-```css
-/* 横屏：两栏布局 */
-@media (orientation: landscape) {
-  .profile {
-    grid-template-columns: 200px 1fr;
-  }
+  .banner { animation: none; }
 }
 
-/* 主输入设备支持悬停：显示桌面悬停效果 */
+/* 只在真正有鼠标的设备启用悬停效果，触屏不粘住 */
 @media (hover: hover) and (pointer: fine) {
-  .item:hover {
-    transform: translateY(-2px);
-  }
+  .card:hover { transform: translateY(-2px); }
 }
 ```
 
-讲解：`orientation` 适配平板横竖屏；`hover`/`pointer` 区分触屏与鼠标设备，避免触屏设备出现无法取消的悬停态。
+深色模式与 CSS 变量是绝配——变量管「色值是什么」，媒体查询管「什么时候换」，组件层完全不感知主题切换。FANDEX 网页端的「设计令牌双主题」演示就是这个结构的完整实现：所有颜色收敛为令牌变量，`prefers-color-scheme` 只改令牌，可对照着拆。
 
-### 4.6 范围语法
+### 3.5 打印与方向
 
 ```css
-/* 新语法：只命中 768-1024 区间 */
-@media (768px <= width <= 1024px) {
-  .container {
-    padding: 24px;
-  }
+/* 打印：藏起导航广告，正文铺满，卡片不跨页截断 */
+@media print {
+  .navbar, .sidebar { display: none; }
+  main { width: 100%; }
+  .card { break-inside: avoid; }
+}
+
+/* 平板横屏切两栏 */
+@media (orientation: landscape) {
+  .profile { grid-template-columns: 200px 1fr; }
 }
 ```
 
-讲解：范围语法表达区间更直观，且避免 767/768 边界笔误。2023 年起所有主流浏览器支持，可放心用于现代项目。
+### 3.6 JS 侧的同一套条件
 
-### 4.7 JavaScript 中的媒体查询
+CSS 的媒体查询和 JS 的 `matchMedia` 读的是同一个判定器，两边写同一条字符串就能保证行为一致：
 
 ```js
-// 用 matchMedia 在 JS 中响应视口变化
 const mq = window.matchMedia('(min-width: 1024px)')
 
-function handleChange(e) {
-  // e.matches 表示当前是否命中
+function sync(e) {
   console.log('桌面布局:', e.matches)
 }
 
-mq.addEventListener('change', handleChange)
-handleChange(mq) // 初始化执行一次
+mq.addEventListener('change', sync) // 命中状态变化时触发
+sync(mq)                            // 初始化先手动执行一次
 ```
 
-讲解：`matchMedia` 返回 MediaQueryList，`change` 事件在命中状态变化时触发。注意使用 `addEventListener` 而非已废弃的 `addListener`，并清理监听避免泄漏。
+组件卸载时 `removeEventListener` 清理；已废弃的 `addListener`/`removeListener` 不要再用。
 
-### 4.8 响应式图片
+## 4. 修改实验
 
-```html
-<!-- 根据视口宽度选择图片资源 -->
-<img src="small.jpg"
-     srcset="small.jpg 480w, medium.jpg 960w, large.jpg 1440w"
-     sizes="(max-width: 640px) 100vw, 50vw"
-     alt="响应式示例图片">
-```
-
-讲解：`srcset` 按资源宽度声明候选，`sizes` 告诉浏览器图片在布局中的实际宽度，浏览器综合视口、DPR 与带宽自动选择。这是媒体查询之外的响应式图片标准方案。
-
-## 5. 对比分析
-
-### 5.1 媒体查询与容器查询
-
-| 维度 | 媒体查询 | 容器查询 |
-| --- | --- | --- |
-| 参照对象 | 视口 | 最近容器 |
-| 粒度 | 页面级 | 组件级 |
-| 前置条件 | 无 | 父元素 container-type |
-| 适用 | 整体布局 | 复用组件 |
-
-### 5.2 min-width 与 max-width 策略
-
-移动优先（min-width）代码路径短、性能好、渐进增强；桌面优先（max-width）适合改造存量桌面站点。新项目推荐移动优先。
-
-### 5.3 @media 与 @import media
-
-`<link media="...">` 与 `@import url(...) media` 也能条件加载样式表，但会额外产生请求；`@media` 内联规则没有请求开销。性能敏感场景优先内联媒体查询。
-
-## 6. 常见陷阱与最佳实践
-
-陷阱一：缺少 viewport meta，移动端媒体查询失效。
-
-陷阱二：断点基于固定设备（iPhone 宽度），设备碎片化导致维护失控。最佳实践：基于内容换行点选择断点。
-
-陷阱三：`max-width: 767px` 与 `min-width: 768px` 间隙或重叠。使用范围语法或统一取整策略。
-
-陷阱四：媒体查询嵌套在组件 scoped 样式中时，Vue/React 的 scoped 机制不影响媒体查询（媒体查询作用于全局视口），可放心使用。
-
-陷阱五：深色模式只改背景不改图片/阴影，出现刺眼白色卡片。最佳实践：用 CSS 变量覆盖全部颜色令牌。
-
-陷阱六：`prefers-reduced-motion: reduce` 下仍保留 `scroll-behavior: smooth`。应同时关闭平滑滚动。
-
-陷阱七：媒体查询中写 `not (min-width: 768px)` 的非法组合。`not` 修饰整个查询，等价写法为 `@media not all and (min-width: 768px)`。
-
-## 7. 工程实践
-
-### 7.1 断点设计令牌
-
-```css
-:root {
-  --bp-sm: 640px;
-  --bp-md: 768px;
-  --bp-lg: 1024px;
-  --bp-xl: 1280px;
-}
-```
-
-讲解：断点值收敛为令牌，配合注释说明每个断点的内容动机（如“列表换两列”“导航收起为汉堡”），避免随意新增断点。
-
-### 7.2 组合查询的组件化
-
-```css
-/* 桌面端且在浅色模式下：给卡片添加悬停投影 */
-@media (min-width: 1024px) and (prefers-color-scheme: light) {
-  .card:hover {
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.1);
-  }
-}
-```
-
-讲解：`and` 组合多个维度条件。组合越多越脆弱，建议每个查询只解决一个维度的适配。
-
-## 8. 案例研究：文档站点完整响应式方案
-
-需求：文档站桌面三栏（目录/正文/相关）、平板两栏、手机单栏，支持深色模式与减少动画。
-
-```css
-/* 移动优先基础：单栏 */
-.layout {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 16px;
-  padding: 16px;
-}
-
-/* 平板：正文 + 目录 */
-@media (min-width: 768px) {
-  .layout {
-    grid-template-columns: 240px 1fr;
-  }
-}
-
-/* 桌面：三栏 */
-@media (min-width: 1280px) {
-  .layout {
-    grid-template-columns: 240px 1fr 220px;
-  }
-}
-
-/* 深色模式变量覆盖 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #16181d;
-    --text: #e6e6e6;
-    --border: #2d3138;
-  }
-}
-
-/* 减少动画 */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-```
-
-讲解：方案分层清晰：布局断点解决结构，色彩变量解决主题，动画偏好解决无障碍。每层独立演进，互不干扰。`animation-duration: 0.01ms` 的技巧让动画“瞬间完成”而非硬性禁用，避免依赖动画完成的逻辑挂起。
-
-## 9. 知识要点总结与深入讲解
-
-媒体查询的条件本质是“视口/环境特性谓词”，命中则参与层叠。移动优先的核心是把默认样式写成窄屏最优，再用 `min-width` 逐级增强。
-
-用户偏好类媒体查询（深色、减少动画、对比度）是 CSS 与现代操作系统的桥梁，它们不是设备特性而是用户意图，理应获得更高优先级的设计关注。
-
-容器查询与媒体查询的分工可以总结为：页面排版问视口，组件排版问容器。两者配合才能覆盖现代响应式设计的全部场景。
-
-### 1. @media 语法
-
-```css
-@media screen and (min-width: 768px) {
-  /* 样式 */
-}
-```
-
-#### 媒体类型：`all`（默认）、`screen`、`print`、`speech`
-
-#### 逻辑操作符：`and`、逗号（or）、`not`、`only`
-
-### 1. 常用媒体特性
-
-```css
-@media (min-width: 768px) {
-} /* 视口宽度 */
-@media (orientation: portrait) {
-} /* 竖屏 */
-@media (prefers-color-scheme: dark) {
-} /* 深色模式 */
-@media (prefers-reduced-motion: reduce) {
-} /* 减少动画 */
-@media (hover: hover) {
-} /* 支持悬停 */
-@media (pointer: fine) {
-} /* 精确指针 */
-```
-
-### 2. 响应式断点
-
-```css
-.container {
-  padding: 1rem;
-}
-@media (min-width: 576px) {
-  .container {
-    padding: 1.5rem;
-  }
-}
-@media (min-width: 768px) {
-  .container {
-    padding: 2rem;
-  }
-}
-@media (min-width: 992px) {
-  .container {
-    max-width: 960px;
-    margin: 0 auto;
-  }
-}
-```
-
-### 3. 深色模式
-
-```css
-:root {
-  --bg: #fff;
-  --text: #333;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1a1a1a;
-    --text: #e0e0e0;
-  }
-}
-```
-
-### 4. JavaScript 检测
-
-```javascript
-const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-  console.log('深色模式:', e.matches);
-});
-```
-### 基础语法
-
-**基本写法：media 基本语法**
-`@media <条件> { <样式> }`
-```css
-/* 基本媒体查询 */
-@media screen {
-  body {
-    font-size: 16px;
-  }
-}
-```
-
----
-
-**基本写法：media 媒体类型**
-`@media <类型> { <样式> }`
-```css
-/* 指定媒体类型 */
-@media print {
-  body {
-    color: black;
-  }
-}
-```
-
----
-
-**基本写法：media screen 屏幕**
-`@media screen { <样式> }`
-```css
-/* 屏幕设备样式 */
-@media screen {
-  .container {
-    max-width: 1200px;
-  }
-}
-```
-
----
-
-**基本写法：media print 打印**
-`@media print { <样式> }`
-```css
-/* 打印样式 */
-@media print {
-  .no-print {
-    display: none;
-  }
-}
-```
-
----
-
-**基本写法：media all 所有**
-`@media all { <样式> }`
-```css
-/* 所有设备 */
-@media all {
-  body {
-    margin: 0;
-  }
-}
-```
-
----
-
-### 宽度查询
-
-**基本写法：max-width 最大宽度**
-`@media (max-width: <值>) { <样式> }`
-```css
-/* 屏幕宽度小于等于指定值 */
-@media (max-width: 768px) {
-  .container {
-    padding: 10px;
-  }
-}
-```
-
----
-
-**基本写法：min-width 最小宽度**
-`@media (min-width: <值>) { <样式> }`
-```css
-/* 屏幕宽度大于等于指定值 */
-@media (min-width: 768px) {
-  .container {
-    max-width: 720px;
-  }
-}
-```
-
----
-
-**基本写法：宽度范围**
-`@media (min-width: <值>) and (max-width: <值>) { <样式> }`
-```css
-/* 屏幕宽度在指定范围内 */
-@media (min-width: 768px) and (max-width: 1024px) {
-  .container {
-    width: 750px;
-  }
-}
-```
-
----
-
-### 高度查询
-
-**基本写法：max-height 最大高度**
-`@media (max-height: <值>) { <样式> }`
-```css
-/* 屏幕高度小于等于指定值 */
-@media (max-height: 500px) {
-  .header {
-    height: 40px;
-  }
-}
-```
-
----
-
-**基本写法：min-height 最小高度**
-`@media (min-height: <值>) { <样式> }`
-```css
-/* 屏幕高度大于等于指定值 */
-@media (min-height: 800px) {
-  .hero {
-    height: 600px;
-  }
-}
-```
-
----
-
-**基本写法：高度范围**
-`@media (min-height: <值>) and (max-height: <值>) { <样式> }`
-```css
-/* 屏幕高度在指定范围内 */
-@media (min-height: 600px) and (max-height: 900px) {
-  .hero {
-    height: 400px;
-  }
-}
-```
-
----
-
-### 方向查询
-
-**基本写法：orientation 横屏**
-`@media (orientation: landscape) { <样式> }`
-```css
-/* 横屏时应用 */
-@media (orientation: landscape) {
-  .layout {
-    flex-direction: row;
-  }
-}
-```
-
----
-
-**基本写法：orientation 竖屏**
-`@media (orientation: portrait) { <样式> }`
-```css
-/* 竖屏时应用 */
-@media (orientation: portrait) {
-  .layout {
-    flex-direction: column;
-  }
-}
-```
-
----
-
-### 分辨率查询
-
-**基本写法：min-resolution 最小分辨率**
-`@media (min-resolution: <值>dppx) { <样式> }`
-```css
-/* 高分辨率屏幕 */
-@media (min-resolution: 2dppx) {
-  .logo {
-    background-image: url('logo@2x.png');
-  }
-}
-```
-
----
-
-**基本写法：min-resolution dpi**
-`@media (min-resolution: <值>dpi) { <样式> }`
-```css
-/* 指定 dpi 分辨率 */
-@media (min-resolution: 192dpi) {
-  .logo {
-    background-image: url('logo@2x.png');
-  }
-}
-```
-
----
-
-### 逻辑操作符
-
-**基本写法：and 与操作**
-`@media (<条件1>) and (<条件2>) { <样式> }`
-```css
-/* 同时满足多个条件 */
-@media (min-width: 768px) and (max-width: 1024px) {
-  .container {
-    width: 750px;
-  }
-}
-```
-
----
-
-**基本写法：or 或操作**
-`@media (<条件1>), (<条件2>) { <样式> }`
-```css
-/* 满足任一条件 */
-@media (max-width: 480px), (min-width: 1200px) {
-  .sidebar {
-    display: none;
-  }
-}
-```
-
----
-
-**基本写法：not 非 操作**
-`@media not <条件> { <样式> }`
-```css
-/* 不满足条件时应用 */
-@media not print {
-  body {
-    background: white;
-  }
-}
-```
-
----
-
-**基本写法：only 仅**
-`@media only <类型> { <样式> }`
-```css
-/* 仅对支持媒体查询的设备应用 */
-@media only screen {
-  .container {
-    max-width: 1200px;
-  }
-}
-```
-
----
-
-**单行写法：多逻辑组合**
-`@media (<条件1>) and (<条件2>), (<条件3>) { <样式> }`
-```css
-/* 单行组合多个逻辑条件 */
-@media (min-width: 768px) and (orientation: landscape), (min-width: 1200px) { .layout { flex-direction: row; } }
-```
-
----
-
-**换行写法：多逻辑组合**
-`@media (<条件1>) and (<条件2>), (<条件3>) { <样式> }`
-```css
-/* 换行组合多个逻辑条件 */
-@media (min-width: 768px) and (orientation: landscape),
-       (min-width: 1200px) {
-  .layout {
-    flex-direction: row;
-  }
-}
-```
-
----
-
-### 用户偏好查询
-
-**基本写法：prefers-color-scheme 暗色**
-`@media (prefers-color-scheme: dark) { <样式> }`
-```css
-/* 用户偏好暗色主题 */
-@media (prefers-color-scheme: dark) {
-  body {
-    background-color: #1a1a1a;
-    color: #ffffff;
-  }
-}
-```
-
----
-
-**基本写法：prefers-color-scheme 亮色**
-`@media (prefers-color-scheme: light) { <样式> }`
-```css
-/* 用户偏好亮色主题 */
-@media (prefers-color-scheme: light) {
-  body {
-    background-color: #ffffff;
-    color: #333333;
-  }
-}
-```
-
----
-
-**基本写法：prefers-reduced-motion 减少动画**
-`@media (prefers-reduced-motion: reduce) { <样式> }`
-```css
-/* 用户偏好减少动画 */
-@media (prefers-reduced-motion: reduce) {
-  * {
-    animation-duration: 0.01ms !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-```
-
----
-
-**基本写法：prefers-reduced-motion 无偏好**
-`@media (prefers-reduced-motion: no-preference) { <样式> }`
-```css
-/* 用户无动画偏好 */
-@media (prefers-reduced-motion: no-preference) {
-  .box {
-    transition: transform 0.3s;
-  }
-}
-```
-
----
-
-**基本写法：prefers-contrast 高对比度**
-`@media (prefers-contrast: more) { <样式> }`
-```css
-/* 用户偏好高对比度 */
-@media (prefers-contrast: more) {
-  .text {
-    color: black;
-    background: white;
-  }
-}
-```
-
----
-
-**基本写法：prefers-contrast 低对比度**
-`@media (prefers-contrast: less) { <样式> }`
-```css
-/* 用户偏好低对比度 */
-@media (prefers-contrast: less) {
-  .text {
-    color: #666;
-    background: #f5f5f5;
-  }
-}
-```
-
----
-
-**基本写法：forced-colors 强制颜色**
-`@media (forced-colors: active) { <样式> }`
-```css
-/* 系统强制颜色模式 */
-@media (forced-colors: active) {
-  .button {
-    border: 1px solid ButtonText;
-  }
-}
-```
-
----
-
-### 设备特性查询
-
-**基本写法：hover 悬停支持**
-`@media (hover: hover) { <样式> }`
-```css
-/* 设备支持悬停 */
-@media (hover: hover) {
-  .button:hover {
-    background-color: #0056b3;
-  }
-}
-```
-
----
-
-**基本写法：hover 无悬停**
-`@media (hover: none) { <样式> }`
-```css
-/* 设备不支持悬停 */
-@media (hover: none) {
-  .button {
-    padding: 12px 24px;
-  }
-}
-```
-
----
-
-**基本写法：pointer 精确指针**
-`@media (pointer: fine) { <样式> }`
-```css
-/* 设备有精确指针 */
-@media (pointer: fine) {
-  .tooltip {
-    display: block;
-  }
-}
-```
-
----
-
-**基本写法：pointer 粗略指针**
-`@media (pointer: coarse) { <样式> }`
-```css
-/* 设备为粗略指针（触摸） */
-@media (pointer: coarse) {
-  .button {
-    padding: 12px 24px;
-  }
-}
-```
-
----
-
-**基本写法：any-pointer 任一精确**
-`@media (any-pointer: fine) { <样式> }`
-```css
-/* 任一输入设备为精确指针 */
-@media (any-pointer: fine) {
-  .tooltip {
-    display: block;
-  }
-}
-```
-
----
-
-**基本写法：any-hover 任一悬停**
-`@media (any-hover: hover) { <样式> }`
-```css
-/* 任一输入设备支持悬停 */
-@media (any-hover: hover) {
-  .button:hover {
-    background-color: #0056b3;
-  }
-}
-```
-
----
-
-### 视口特性查询
-
-**基本写法：aspect-ratio 宽高比**
-`@media (aspect-ratio: <宽>/<高>) { <样式> }`
-```css
-/* 指定宽高比 */
-@media (aspect-ratio: 16/9) {
-  .video {
-    width: 100%;
-  }
-}
-```
-
----
-
-**基本写法：min-aspect-ratio 最小宽高比**
-`@media (min-aspect-ratio: <宽>/<高>) { <样式> }`
-```css
-/* 宽高比大于指定值 */
-@media (min-aspect-ratio: 16/9) {
-  .layout {
-    flex-direction: row;
-  }
-}
-```
-
----
-
-**基本写法：max-aspect-ratio 最大宽高比**
-`@media (max-aspect-ratio: <宽>/<高>) { <样式> }`
-```css
-/* 宽高比小于指定值 */
-@media (max-aspect-ratio: 1/1) {
-  .layout {
-    flex-direction: column;
-  }
-}
-```
-
----
-
-### 媒体函数
-
-**基本写法：range 语法**
-`@media (width >= <值>) { <样式> }`
-```css
-/* 使用范围语法 */
-@media (width >= 768px) {
-  .container {
-    max-width: 720px;
-  }
-}
-```
+对第 2 节动手，每步先预测再刷新：
 
----
+1. 把 `min-width: 640px` 改成区间写法 `(640px <= width < 1024px)`：两列规则只在中间档生效，桌面回落到三列——体会区间语法的排他性；
+2. 追加 `@media (prefers-color-scheme: dark)` 切换 body 底色，再在系统设置里切深浅主题看联动；
+3. 给 `.grid` 加 `gap: clamp(8px, 2vw, 24px)`：断点没动，间距先流式起来——媒体查询与流式单位是互补不是二选一；
+4. 删掉 viewport meta（如果是在本地桌面浏览器实验，可用 DevTools 的设备模拟器验证）：窄屏模拟下断点全部失效——亲手复现第 1 节的事故。
 
-**基本写法：range 区间**
-`@media (<最小> <= width <= <最大>) { <样式> }`
-```css
-/* 使用区间语法 */
-@media (768px <= width <= 1024px) {
-  .container {
-    width: 750px;
-  }
-}
-```
-
----
-
-**基本写法：not 否定**
-`@media not (<条件>) { <样式> }`
-```css
-/* 否定条件 */
-@media not (prefers-color-scheme: dark) {
-  body {
-    background: white;
-  }
-}
-```
-
----
-
-### 媒体查询嵌套
-
-**基本写法：嵌套媒体查询**
-`<选择器> { @media <条件> { <样式> } }`
-```css
-/* CSS 原生嵌套 */
-.container {
-  width: 100%;
-  @media (min-width: 768px) {
-    max-width: 720px;
-  }
-}
-```
-
----
-
-**单行写法：嵌套多媒体查询**
-`<选择器> { @media <条件1> { <样式> } @media <条件2> { <样式> } }`
-```css
-/* 单行嵌套多个媒体查询 */
-.col { width: 100%; @media (min-width: 768px) { width: 50%; } @media (min-width: 1200px) { width: 33%; } }
-```
-
----
-
-**换行写法：嵌套多媒体查询**
-`<选择器> { @media <条件1> { <样式> } @media <条件2> { <样式> } }`
-```css
-/* 换行嵌套多个媒体查询 */
-.col {
-  width: 100%;
-  @media (min-width: 768px) {
-    width: 50%;
-  }
-  @media (min-width: 1200px) {
-    width: 33%;
-  }
-}
-```
-
----
-
-### @import 媒体查询
-
-**基本写法：@import 带媒体查询**
-`@import url("<文件>") <条件>;`
-```css
-/* 导入样式并应用媒体查询 */
-@import url("mobile.css") (max-width: 768px);
-```
-
----
-
-**基本写法：@import 多条件**
-`@import url("<文件>") <条件1> and <条件2>;`
-```css
-/* 导入样式并应用多条件 */
-@import url("tablet.css") (min-width: 768px) and (max-width: 1024px);
-```
-
----
-
-### @supports 特性查询
-
-**基本写法：supports 属性支持**
-`@supports (<属性>: <值>) { <样式> }`
-```css
-/* 检查属性支持 */
-@supports (display: grid) {
-  .container {
-    display: grid;
-  }
-}
-```
-
----
-
-**基本写法：supports not 不支持**
-`@supports not (<属性>: <值>) { <样式> }`
-```css
-/* 检查属性不支持 */
-@supports not (display: grid) {
-  .container {
-    display: flex;
-  }
-}
-```
-
----
-
-**基本写法：supports and 与**
-`@supports (<属性1>: <值>) and (<属性2>: <值>) { <样式> }`
-```css
-/* 同时检查多个属性支持 */
-@supports (display: grid) and (gap: 10px) {
-  .grid {
-    display: grid;
-    gap: 10px;
-  }
-}
-```
-
----
-
-**基本写法：supports or 或**
-`@supports (<属性1>: <值>) or (<属性2>: <值>) { <样式> }`
-```css
-/* 检查任一属性支持 */
-@supports (-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px)) {
-  .modal {
-    backdrop-filter: blur(10px);
-  }
-}
-```
-
----
-
-**基本写法：selector 选择器支持**
-`@supports selector(<选择器>) { <样式> }`
-```css
-/* 检查选择器支持 */
-@supports selector(:has(*)) {
-  .card:has(img) {
-    padding: 10px;
-  }
-}
-```
-
----
-
-### 断点规范
-
-**基本写法：移动优先断点**
-`@media (min-width: <值>) { <样式> }`
-```css
-/* 移动优先断点系统 */
-.container { width: 100%; }
-@media (min-width: 576px) { .container { max-width: 540px; } }
-@media (min-width: 768px) { .container { max-width: 720px; } }
-@media (min-width: 992px) { .container { max-width: 960px; } }
-@media (min-width: 1200px) { .container { max-width: 1140px; } }
-```
-
----
-
-**基本写法：桌面优先断点**
-`@media (max-width: <值>) { <样式> }`
-```css
-/* 桌面优先断点系统 */
-.container { max-width: 1140px; }
-@media (max-width: 1199px) { .container { max-width: 960px; } }
-@media (max-width: 991px) { .container { max-width: 720px; } }
-@media (max-width: 767px) { .container { max-width: 540px; } }
-@media (max-width: 575px) { .container { max-width: 100%; } }
-```
-
----
+## 5. 常见错误与调试实录
 
-### 常见媒体查询模式
+错误一：忘了 viewport meta。症状是手机上页面「整页缩小、字极小、断点全哑」。检查 head 第一区有没有 `width=device-width`；用 DevTools 设备模拟器（它会自动模拟真实视口）复现最直接。
 
-**基本写法：隐藏元素**
-`@media (max-width: <值>) { <选择器> { display: none; } }`
-```css
-/* 小屏隐藏元素 */
-@media (max-width: 768px) {
-  .sidebar {
-    display: none;
-  }
-}
-```
-
----
-
-**基本写法：切换布局**
-`@media (max-width: <值>) { <选择器> { flex-direction: column; } }`
-```css
-/* 小屏切换为列布局 */
-.layout {
-  display: flex;
-  flex-direction: row;
-}
-@media (max-width: 768px) {
-  .layout {
-    flex-direction: column;
-  }
-}
-```
-
----
-
-**基本写法：调整字号**
-`@media (max-width: <值>) { <选择器> { font-size: <值>; } }`
-```css
-/* 小屏调整字号 */
-.title {
-  font-size: 2rem;
-}
-@media (max-width: 768px) {
-  .title {
-    font-size: 1.5rem;
-  }
-}
-```
+错误二：767 与 768 之间漏缝。`max-width: 767px` 加 `min-width: 768px` 理论无缝，但实际写 `766.5px` 这类小数视口（缩放、折叠屏）时就漏。改用区间写法 `(width < 768px)` 与 `(width >= 768px)`，数学上互补，永不漏缝。
 
----
+错误三：桌面优先的补丁越打越多。基础样式按 1440px 写，再用 `max-width` 一层层往下覆盖，三档之后每条规则都在和前一条打架。重构方向：反转成移动优先；过渡期至少把同一属性的断点规则收敛到一处。
 
-**基本写法：调整间距**
-`@media (max-width: <值>) { <选择器> { padding: <值>; } }`
-```css
-/* 小屏调整间距 */
-.section {
-  padding: 40px;
-}
-@media (max-width: 768px) {
-  .section {
-    padding: 20px;
-  }
-}
-```
-
----
+错误四：断点跟着设备走而不是跟着内容走。照着 iPhone 15、iPad Pro 的宽度定断点，新设备一出就碎。断点应该在内容「开始难看」的地方取值：把窗口从宽往窄拖，正文行长超过约 70 字符、卡片挤成条时，那里就是断点。
 
-### 用户偏好媒体查询(2024)
-
-**基本写法：prefers-reduced-motion 减少动画**
-`@media (prefers-reduced-motion: reduce) { <样式> }`
-```css
-/* 用户偏好减少动画,关闭非必要动效 */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
-}
-```
+错误五：触屏上的 hover 粘滞。没有 hover 能力的设备上 `:hover` 样式会在点按后粘住不消失。悬停交互包进 `@media (hover: hover)`（第 2 节实验里那条组合），没有指针的设备直接给静态态。
 
----
+## 6. 实际场景
 
-**基本写法：prefers-color-scheme 色彩偏好**
-`@media (prefers-color-scheme: <dark|light>) { <样式> }`
-```css
-/* 用户系统级色彩偏好 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --bg: #1a1a1a;
-    --text: #ffffff;
-  }
-  body {
-    background-color: var(--bg);
-    color: var(--text);
-  }
-}
-```
+- 页面级响应：布局骨架、导航形态（侧栏换底部标签栏）、字号阶梯——视口级信息，媒体查询的主场；
+- 组件级响应：同一张卡片在侧栏和主区里表现不同——该容器查询出场（`container-type` 加 `@container`），见 [容器查询](/css/390-ContainerQuery)。分工口诀：**页面找视口，组件找容器**，两者长期共存而非替代；
+- 主题与无障碍：深浅主题、减少动画、强制深色（`forced-colors`）这类「尊重用户设置」的适配，全部走偏好查询；
+- 断点即令牌：把 640/1024/1440 写进 CSS 变量或设计令牌，团队与 JS 侧 `matchMedia` 共用一套数值——FANDEX 网页端的令牌体系把断点与色板一起纳入了双主题令牌清单，值得参考；
+- 打印与电子墨水：`@media print` 做导出友好的文档页。
 
----
+## 7. 小练习
 
-**基本写法：prefers-contrast 对比度偏好**
-`@media (prefers-contrast: <more|less|custom>) { <样式> }`
-```css
-/* 用户对比度偏好设置 */
-@media (prefers-contrast: more) {
-  .text {
-    color: black;
-    background: white;
-    border: 2px solid black;
-  }
-}
-```
+预测题（3 分钟）：视口宽 800px，`(min-width: 640px)` 和 `(max-width: 799px)` 两条规则分别命中吗？改成区间写法再表达一次第二条。（前者命中；后者命中；区间写法 `(640px <= width < 800px)`。）
 
----
+修改题（8 分钟）：给第 2 节加第四档 `min-width: 1440px`：容器限宽 1200px 居中。验收：超宽屏上内容不铺满全屏（行长可控），窄屏行为不变。
 
-**基本写法：prefers-reduced-transparency 减少透明**
-`@media (prefers-reduced-transparency: reduce) { <样式> }`
-```css
-/* 用户偏好减少透明度效果 */
-@media (prefers-reduced-transparency: reduce) {
-  .modal {
-    background-color: rgba(0, 0, 0, 0.95);
-  }
-  .glass {
-    backdrop-filter: none;
-    background-color: #f5f5f5;
-  }
-}
-```
+修 Bug 题（10 分钟）：同事的页面在手机上不响应，但桌面浏览器缩窄窗口时断点又都正常。给出你的排查顺序与最可能的根因。（提示：桌面缩窄改的是窗口宽度所以断点活着；手机上布局视口没被声明，默认 980px——查 viewport meta。）
 
----
+挑战题（半小时，不看正文独立完成）：把周报站首页做成完整响应式：窄屏单列、640 起两列、1024 起侧栏加正文双栏；全站颜色走变量并支持深色模式；动画一律尊重 `prefers-reduced-motion`。验收：无桌面优先补丁（只有 min-width 或区间写法）、断点数值与 JS 侧 matchMedia 用同一组常量、CSS 至少一条注释解释某个断点的取值依据。
 
-**基本写法：inverted-colors 反色模式**
-`@media (inverted-colors: inverted) { <样式> }`
-```css
-/* 系统级颜色反转模式 */
-@media (inverted-colors: inverted) {
-  /* 反色模式下调整图片避免二次反转 */
-  img,
-  video {
-    filter: invert(1);
-  }
-}
-```
+## 8. 与之前和之后的知识的关系
 
-## 动手试试
+- 之前：[层叠与继承](/css/160-CascadeInheritanceBasics) 解释了「断点内规则为什么盖得住基础样式」；[CSS 变量与自定义属性](/css/410-CSSVariableCustomAttribute) 是主题切换的执行器，媒体查询只拨开关；
+- 并行：[容器查询](/css/390-ContainerQuery) 接管组件级响应；[特性检测 @supports](/css/460-FeatureQuery) 与媒体查询长得像但问的问题不同——前者问「支不支持这个属性」，后者问「环境是什么样」；[移动端适配](/css/380-MobileAdaptation) 讲 rem/vw 这套尺寸策略，与断点配合；
+- 之后：[响应式设计](/css/370-ResponsiveDesign) 把 viewport、断点、流式单位、响应式图片组装成完整方法论。
 
-1. 写一个两栏布局，在 768px 断点以下变为单栏；
-2. 用 `prefers-color-scheme: dark` 给页面加深色主题；
-3. 用 `(min-width: 600px) and (max-width: 900px)` 测试区间命中；
-4. 进阶挑战：用 `prefers-reduced-motion` 关闭动画。
+## 9. 官方文档
 
-## 核心知识点
+- MDN「使用媒体查询」：https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_media_queries/Using_media_queries
+- MDN prefers-color-scheme 参考：https://developer.mozilla.org/zh-CN/docs/Web/CSS/@media/prefers-color-scheme
+- web.dev「响应式设计基础」：https://web.dev/learn/design
 
-> 一句话记住媒体查询：`@media (条件)` 按视口/系统偏好切换样式；断点用 min-width 移动优先，深色与减少动效都要考虑。
+## 10. 自我检查
 
-- 语法：`@media (min-width: 768px) { ... }`；
-- 移动优先：基础样式给移动端，`min-width` 向上增强；
-- 常用条件：`min-width`/`max-width`、`prefers-color-scheme`、`prefers-reduced-motion`、`orientation`；
-- 多个条件用 `and`/`or`/`not` 组合；
-- 断点跟着内容走，不跟设备走；
-- 深色模式只需覆盖颜色变量。
+- 能默写移动优先三档断点体系，并解释为什么基础样式不该包在媒体查询里；
+- 看到任何一条 @media 能拆出媒体类型、特性、操作符，并用区间写法改写 min/max；
+- 「手机上断点全哑」第一反应是查 viewport meta；
+- 能说出深色模式的推荐实现（变量加偏好查询）与减少动画的必要性；
+- 面对需求能判断该用媒体查询还是容器查询。
 
-## 注意事项与改进建议
+## 本章总结
 
-| 问题点 | 说明 | 改进方案 |
-| --- | --- | --- |
-| 断点拍脑袋 | 内容断裂 | 按内容实际需要设断点 |
-| 桌面优先 | 移动端体验差 | 移动优先 + min-width |
-| 大量重复媒体查询 | 维护困难 | 用 CSS 变量与容器查询配合 |
-| 忘记深色模式 | 夜间刺眼 | 颜色全部走变量并适配 |
-| 忽略 reduced-motion | 动效扰民 | 媒体查询关闭动画 |
+媒体查询让样式响应「环境」：viewport meta 先锁定真实布局视口，移动优先从窄屏基础样式起步，min-width 或区间语法逐级增强；@media 由类型、特性、操作符组成，层叠优先级不受它影响、只由书写顺序与优先级决定。用户偏好查询（深色模式、减少动画、hover/pointer）把系统设置变成设计约束，与 CSS 变量配合是主题系统的标准结构。页面级找媒体查询、组件级找容器查询，断点跟着内容取值并收敛为团队令牌。
 
-## 扩展学习
+## 下一步
 
-- 容器查询：`css/390-ContainerQuery`；
-- 响应式设计：`css/370-ResponsiveDesign`；
-- 移动适配：`css/380-MobileAdaptation`；
-- 可访问性：`css/500-AccessibleStyling`。
+进入 [响应式设计](/css/370-ResponsiveDesign)：断点只是零件，下一篇把 viewport、流式单位、弹性布局、响应式图片与本文的媒体查询组装成一套完整的响应式方法论。

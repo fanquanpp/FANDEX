@@ -1,1147 +1,247 @@
 ---
 order: 280
-title: Vue3 编译优化
+title: Vue3 编译优化：diff 之前，编译器已经替你剪过枝
 module: 'vue3'
 category: 前端技术
 difficulty: advanced
-description: 编译时优化与运行时优化
+description: 从「改一个数字为什么要遍历整棵树」讲起：用 SFC Playground 亲眼看编译产物，学会读静态提升、PatchFlag 枚举、Block 动态节点收集与事件缓存，再搞懂 v-memo、优化失效场景与 SSR 字符串编译，附手写 render 丢优化、v-for 下标 key 破坏复用两则实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'vue3/260-CustomDirectiveAdvanced'
-  - 'vue3/130-TransitionAnimation'
+  - 'vue3/050-ReactiveSystem'
+  - 'vue3/320-Vue3PerformancePractice'
   - 'vue3/350-Vue3SSR'
-  - 'vue3/070-LifecycleHook'
-prerequisites: []
+  - 'vue3/370-VaporMode'
+prerequisites:
+  - 'vue3/050-ReactiveSystem'
 ---
 
 ## 前置知识
 
-- [Transition 与动画](/vue3/130-TransitionAnimation)：建议先完成前一篇的学习
+- [响应式系统](/vue3/050-ReactiveSystem)：知道数据变化如何触发组件的渲染 effect——本篇讲「触发之后，patch 到底要干多少活」。
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 把任意模板丢进 Vue SFC Playground，读懂编译产物里的 hoisted、patchFlag、createBlock；
+2. 说出 PatchFlag 的枚举含义，解释「靶向更新」为什么不用遍历整棵树；
+3. 解释 Block（v-if / v-for 开新块）与 dynamicChildren 数组如何让 diff 跳过静态子树；
+4. 判断手头该不该用 v-memo / v-once，并说出哪些写法会让编译优化失效；
+5. 理解 SSR 编译产物（字符串拼接）与客户端编译的本质差异。
 
-### SSR 优化
+预计 60 到 80 分钟。
 
-```javascript
-// Vue 3 SSR 编译优化
-// 服务端渲染时，编译器会生成不同的代码
+## 1. 你现在要解决什么问题
 
-// 客户端渲染函数
-function render() {
-  return createBlock('div', null, [
-    _hoisted_1,
-    createVNode('p', null, _ctx.message, PatchFlags.TEXT),
-  ]);
-}
+阅读页正文模板很长：几百行结构化的段落、表格、代码块，动态内容只有进度百分比、目录高亮和三两处插值。改一下进度数字，心里冒出一个疑问：**Vue 是不是把整棵模板树重新 diff 了一遍？** 如果是，几百个节点里为一个数字遍历全树，未免太笨。
 
-// SSR 渲染函数（直接拼接字符串，无需 VNode）
-function ssrRender(_ctx, _push, _parent) {
-  _push(`<div>`);
-  _push(`<header><h1>标题</h1></header>`); // 静态内容直接输出字符串
-  _push(`<p>${_ctx.message}</p>`); // 动态内容插值
-  _push(`</div>`);
-}
-// SSR 模式下性能远优于客户端渲染
-```
-## 概述
+Vue 2 确实接近这个笨办法：每次更新生成整棵新 VNode 树，全量逐节点对比（靠 static 标记做了粗粒度跳过，但粒度很粗）。Vue 3 把优化搬进了**编译期**：模板是静态可分析的字符串，编译器在编译时就知道「哪块永远不变、哪块的哪个属性会变」，把这个信息写进产物，运行时 diff 直接照着剪枝。本篇的任务是把这套机制拆开看——而且要亲眼看，不是背名词。
 
-Vue 3 相比 Vue 2 在性能上有显著提升，其中编译器优化是核心因素之一。Vue 3 的编译器在模板编译阶段进行了多项优化，包括静态提升、预字符串化、PatchFlag 标记、Block Tree 收集和事件缓存等。这些优化使得 Vue 3 在更新时能够跳过大量不变的内容，只对动态部分进行精确的 diff 运算，从而大幅提升渲染性能。理解这些优化机制有助于编写更高性能的 Vue 应用。
+## 2. 动手：亲眼看到编译产物
 
-## 基础概念
+打开 Vue SFC Playground（play.vuejs.org），左边输入：
 
-**静态提升（Static Hoisting）**：编译器将模板中的静态节点提取到渲染函数外部，使其只创建一次。后续渲染时直接复用，避免重复创建 VNode。
-
-**预字符串化（Static Stringification）**：连续的静态节点会被合并为一个静态字符串 VNode，进一步减少 VNode 创建开销。
-
-**PatchFlag**：编译器为动态节点打上补丁标记，标记该节点哪些属性是动态的。更新时只需检查标记的属性，跳过静态属性。
-
-**Block Tree**：以组件根节点或 v-if/v-for 节点为 Block，收集所有动态子节点的引用。更新时只遍历动态节点列表，跳过整棵静态子树。
-
-**事件缓存**：编译器缓存内联事件处理函数，避免每次渲染都创建新的函数引用，减少不必要的子组件更新。
-
-**Tree Shaking**：Vue 3 的运行时支持基于 ES Module 的 Tree Shaking，未使用的 API 不会被打包进最终产物。
-
-## 快速上手
-
-### 静态提升
-
-```html
-<!-- 模板 -->
+```vue
 <template>
-  <div>
-    <p>静态内容</p>
-    <span>{{ dynamicText }}</span>
-  </div>
+  <section class="article">
+    <h1>固定标题</h1>
+    <p class="meta">共 3650 字</p>
+    <span>进度：{{ percent }}%</span>
+    <div :class="{ active: tocOpen }">目录</div>
+  </section>
 </template>
-javascript
-// 编译后的渲染函数（简化版）
-// 静态节点被提升到渲染函数外部
-const _hoisted_1 = createVNode('p', null, '静态内容');
-
-function render() {
-  return createVNode('div', null, [
-    _hoisted_1, // 直接复用，不重新创建
-    createVNode('span', null, _ctx.dynamicText, PatchFlags.TEXT),
-  ]);
-}
 ```
 
-### PatchFlag 标记
+右边勾选查看编译后的 render 函数（简化后长这样）：
 
-```html
-<template>
-  <div :class="className">{{ message }}</div>
-</template>
-javascript
-// 编译后：标记动态部分
-function render() {
-  return createVNode(
-    'div',
-    { class: _ctx.className }, // 动态 class
-    _ctx.message, // 动态文本
-    PatchFlags.CLASS | PatchFlags.TEXT // 标记：class 和 text 是动态的
-  );
-}
-
-// PatchFlags 枚举值
-// TEXT = 1          文本内容动态
-// CLASS = 2         class 动态
-// STYLE = 4         style 动态
-// PROPS = 8         非 class/style 的属性动态
-// FULL_PROPS = 16   完整属性动态（含 key 变化）
-// EVENT_HANDLERS = 32  事件处理动态
-// HOISTED = -1      静态提升的节点
-// CACHED = -2       缓存的节点
-```
-
-## 详细用法
-
-### 预字符串化
-
-```html
-<!-- 模板中有多个连续的静态节点 -->
-<template>
-  <div>
-    <header>
-      <h1>标题</h1>
-      <nav>
-        <a href="/">首页</a>
-        <a href="/about">关于</a>
-        <a href="/contact">联系</a>
-      </nav>
-    </header>
-    <main>{{ content }}</main>
-  </div>
-</template>
-javascript
-// 编译后：连续静态节点合并为一个字符串
-const _hoisted_1 = createStaticVNode(
-  '<header><h1>标题</h1><nav>' +
-    '<a href="/">首页</a>' +
-    '<a href="/about">关于</a>' +
-    '<a href="/contact">联系</a>' +
-    '</nav></header>',
-  6 // 节点数量，用于 hydration
+```js
+// 静态节点被提升到 render 函数外，只创建一次
+const _hoisted_1 = /*#__PURE__*/ _createStaticVNode(
+  '<h1>固定标题</h1><p class="meta">共 3650 字</p>'
 );
 
-function render() {
-  return createVNode('div', null, [
-    _hoisted_1, // 整个 header 被字符串化
-    createVNode('main', null, _ctx.content, PatchFlags.TEXT),
-  ]);
+function render(_ctx, _cache) {
+  return (_openBlock(), _createBlock('section', { class: 'article' }, [
+    _hoisted_1,                                        // 整块静态，diff 时直接跳过
+    _createElementVNode(
+      'span', null,
+      '进度：' + _toDisplayString(_ctx.percent) + '%',
+      1 /* TEXT */                                     // patchFlag：只有文本会变
+    ),
+    _createElementVNode(
+      'div',
+      { class: _normalizeClass({ active: _ctx.tocOpen }) },
+      '目录',
+      2 /* CLASS */                                    // patchFlag：只有 class 会变
+    ),
+  ]));
 }
 ```
 
-### Block Tree 与动态节点收集
+三个关键结构已经现身，下面逐个拆。
 
-```html
-<template>
-  <div class="container">
-    <h1>标题</h1>
-    <p v-if="showDesc">描述文字</p>
-    <ul>
-      <li v-for="item in list" :key="item.id">{{ item.name }}</li>
-    </ul>
-    <footer>底部</footer>
-  </div>
-</template>
-javascript
-// v-if 和 v-for 会创建新的 Block
-// 组件根节点是根 Block，收集所有动态子节点
+## 3. PatchFlag：给动态节点贴「哪里会变」的标签
 
-function render() {
-  return (
-    // 根 Block
-    createBlock('div', { class: 'container' }, [
-      // 静态节点不收集
-      createVNode('h1', null, '标题', -1 /* HOISTED */),
+`1 /* TEXT */` 就是 PatchFlag——编译器对每个含动态内容的节点打的标记位。常用枚举：
 
-      // v-if 创建 Block
-      _ctx.showDesc
-        ? (openBlock(), createBlock('p', { key: 0 }, '描述文字'))
-        : createCommentVNode('v-if', true),
+| 值  | 名称        | 含义                     |
+| --- | ----------- | ------------------------ |
+| 1   | TEXT        | 文本内容动态             |
+| 2   | CLASS       | class 动态               |
+| 4   | STYLE       | style 动态               |
+| 8   | PROPS       | 其他属性动态（附动态属性名列表） |
+| 16  | FULL_PROPS  | 属性完全动态（含 key）   |
+| 32  | STABLE_FRAGMENT 等 | 结构级标记        |
+| -1  | HOISTED     | 静态提升节点             |
+| -2  | CACHED      | 缓存节点（如事件缓存）   |
 
-      // v-for 创建 Block
-      (openBlock(true), // 使用 fragment block
-      renderList(_ctx.list, (item) => {
-        return createBlock('li', { key: item.id }, item.name, PatchFlags.TEXT);
-      })),
+它的价值在 diff 时的语义：标记是 TEXT 的节点，patch 只比较文本；标记是 CLASS 的，只比较 class。**「这个节点要不要更新」的判断从「逐属性浅比较」缩成「看一个数字」**。对照第 2 节：span 的 flag 是 TEXT，进度数字变化时运行时只碰这一个文本节点——你疑问的「全树遍历」根本不会发生。
 
-      // 静态节点不收集
-      createVNode('footer', null, '底部', -1 /* HOISTED */),
-    ])
-  );
-  // diff 时只遍历收集的动态节点，跳过 h1 和 footer
+多个动态来源按位或叠加（TEXT | CLASS = 3），运行时用位运算判断该检查哪几类——和 React Fiber 的 flags 异曲同工（编译器预先算好，运行时只消费）。
+
+## 4. Block 与 dynamicChildren：diff 直接抄「动态节点名单」
+
+`_openBlock() + _createBlock(...)` 是第二层机制。每个组件的根节点（以及每个 v-if / v-for 节点）是一个 **Block**，它在渲染时顺手把**所有带 PatchFlag 的后代节点**收进自己的 `dynamicChildren` 数组——静态节点压根不进名单。
+
+更新时的 patch 变成一个短循环：
+
+```js
+// 不再递归遍历整棵树，只走名单
+function patchBlock(oldBlock, newBlock) {
+  for (let i = 0; i < newBlock.dynamicChildren.length; i++) {
+    patch(oldBlock.dynamicChildren[i], newBlock.dynamicChildren[i]);
+  }
 }
 ```
 
-### 事件缓存
+diff 的规模从「节点总数」缩成「动态节点数」。阅读页几百个节点、动态 5 个，名单就 5 项。为什么 v-if / v-for 要开新 Block？因为结构可能整体增删，父 Block 没法稳定地按位置收集它们内部的动态节点——开新块后，块内各自维护名单，结构变化时整块进出，互不干扰。
 
-```html
-<template>
-  <button @click="count++">点击 {{ count }}</button>
-</template>
-javascript
-// 未缓存：每次渲染都创建新的函数
-function render_uncached() {
-  return createVNode(
-    'button',
-    {
-      onClick: ($event) => _ctx.count++,
-    },
-    '点击 ' + _ctx.count,
-    PatchFlags.TEXT
-  );
-}
+## 5. 静态提升与预字符串化：不变的连创建都省了
 
-// 缓存后：事件处理函数只创建一次
-function render_cached() {
-  return (
-    // 使用 withCtx 缓存事件处理器
-    withCtx(($event) => _ctx.count++, _cache || (_cache = []), 0)
-  );
-  // 实际编译结果：
-  // _cache[0] || (_cache[0] = ($event) => (_ctx.count++))
-  // 首次创建后缓存，后续直接使用缓存
-}
+第 2 节产物里的 `_hoisted_1` 是第三层：纯静态的 h1 和 p 被提升到 render 函数外，组件更新时连 VNode 都不重新创建，直接复用同一个引用。连续的静态片段（超过阈值）更进一步合并成一个 `createStaticVNode('...html字符串...')`——**整段 DOM 结构被压成一个字符串节点**，内存与创建成本都省掉。
+
+运行时指令 v-once 是这条思路的手动版：标记的节点（含插值）只渲染一次，此后跳过。但注意事项里那条建议依然成立——**先让编译器自动剪枝，v-once / v-memo 是测量之后才动的手术刀**，到处手标只会让模板变成谜语。
+
+## 6. 事件缓存：内联函数不再每次新建
+
+模板里写 `@click="count++"`，编译产物是：
+
+```js
+onClick: _cache[0] || (_cache[0] = ($event) => (_ctx.count++))
 ```
 
-## 常见场景
+内联事件处理器被缓存进 `_cache` 数组：首次渲染创建一次，之后每次渲染复用同一引用。这对「子组件接收函数 props」的场景是隐形的优化——引用稳定，子组件的 props 比较不会因为新函数而失效（对照 React 里 useCallback 解决的同一个问题，Vue 在编译层默认解决了）。
 
-### 优化前后对比
+## 7. v-memo：给大列表加「记忆开关」
 
-```html
-<!-- 优化前：所有节点都参与 diff -->
-<template>
-  <div>
-    <header class="static-header">
-      <h1>固定标题</h1>
-      <p>固定描述</p>
-    </header>
-    <main>
-      <p>{{ dynamicContent }}</p>
-    </main>
-    <footer class="static-footer">
-      <p>固定底部</p>
-    </footer>
-  </div>
-</template>
+列表 1000 条，点选其中一条，默认 1000 个列表项的动态节点都要进 patch 名单。v-memo 提供手动跳过：
 
-<!-- 优化后编译结果 -->
-<!-- header 和 footer 被静态提升 -->
-<!-- 只有 main 中的 p 节点参与 diff -->
-javascript
-// Vue 2 的渲染函数：全量 diff
-function render_v2() {
-  return _c('div', [
-    _c('header', { staticClass: 'static-header' }, [
-      _c('h1', [_v('固定标题')]),
-      _c('p', [_v('固定描述')]),
-    ]),
-    _c('main', [_c('p', [_v(_s(dynamicContent))])]),
-    _c('footer', { staticClass: 'static-footer' }, [_c('p', [_v('固定底部')])]),
-  ]);
-  // 每次更新都要遍历所有节点
-}
-
-// Vue 3 的渲染函数：靶向更新
-const _hoisted_1 = createStaticVNode(
-  '<header class="static-header"><h1>固定标题</h1><p>固定描述</p></header>',
-  3
-);
-const _hoisted_2 = createStaticVNode('<footer class="static-footer"><p>固定底部</p></footer>', 2);
-
-function render_v3() {
-  return createBlock('div', null, [
-    _hoisted_1,
-    createVNode('main', null, [createVNode('p', null, _ctx.dynamicContent, PatchFlags.TEXT)]),
-    _hoisted_2,
-  ]);
-  // 只 diff main 中的 p 节点
-}
-```
-
-### 编写高性能模板
-
-```html
-<!-- 不推荐：整个列表都是动态的 -->
-<template>
-  <div :class="containerClass">
-    <div v-for="item in items" :key="item.id">
-      <span>{{ item.name }}</span>
-      <span>{{ item.price }}</span>
-    </div>
-  </div>
-</template>
-
-<!-- 推荐：将静态部分提取出来 -->
-<template>
-  <div :class="containerClass">
-    <StaticHeader />
-    <!-- 静态内容独立为组件 -->
-    <div v-for="item in items" :key="item.id">
-      <!-- 使用 v-memo 跳过未变化的项 -->
-      <div v-memo="[item.name, item.price]">
-        <span>{{ item.name }}</span>
-        <span>{{ item.price }}</span>
-      </div>
-    </div>
-  </div>
-</template>
-```
-
-## 注意事项
-
-- **v-once 的使用**：`v-once` 可以让节点只渲染一次，后续更新跳过。但过度使用会使代码难以维护，通常让编译器自动优化即可。
-- **v-memo 的适用场景**：`v-memo` 适合大型 v-for 列表中只有部分项变化的场景，但不要在简单列表上使用，因为缓存本身也有开销。
-- **动态组件与 Block**：`<component :is="...">` 会导致编译器无法确定具体的节点结构，可能退化为全量 diff。尽量使用确定的组件标签。
-- **内联模板的局限**：内联模板（inline template）无法享受编译优化，因为编译器在编译父组件时无法看到子组件的模板内容。
-- **编译模式的差异**：开发模式和生产模式的编译结果不同，生产模式会移除开发辅助代码并启用所有优化。性能测试应在生产模式下进行。
-
-## 进阶用法
-
-### v-memo 深度优化
-
-```html
-<template>
-  <!-- v-memo：只在依赖变化时更新 -->
-  <div v-for="item in largeList" :key="item.id" v-memo="[item.selected]">
-    <!-- 只有 item.selected 变化时才会重新渲染 -->
-    <ExpensiveComponent :data="item" />
-    <span>{{ item.name }}</span>
-    <span :class="{ active: item.selected }"> {{ item.selected ? '已选中' : '未选中' }} </span>
-  </div>
-</template>
-javascript
-// v-memo 编译结果
-function render() {
-  return renderList(_ctx.largeList, (item) => {
-    return withMemo(
-      [item.selected], // 依赖数组
-      () =>
-        createBlock('div', { key: item.id }, [
-          createVNode(ExpensiveComponent, { data: item }, null, PatchFlags.PROPS),
-          createVNode('span', null, item.name, PatchFlags.TEXT),
-          createVNode(
-            'span',
-            {
-              class: { active: item.selected },
-            },
-            item.selected ? '已选中' : '未选中',
-            PatchFlags.CLASS | PatchFlags.TEXT
-          ),
-        ]),
-      _cache,
-      0
-    );
-  });
-}
-```
-
-### 自定义编译优化
-
-```javascript
-// vite.config.ts 中配置编译选项
-import { defineConfig } from 'vite';
-import vue from '@vitejs/plugin-vue';
-
-export default defineConfig({
-  plugins: [
-    vue({
-      template: {
-        // 编译器选项
-        compilerOptions: {
-          // 将所有自定义元素视为原生元素（跳过组件解析）
-          isCustomElement: (tag) => tag.startsWith('x-'),
-        },
-        // 自定义转换插件
-        transformAssetUrls: {
-          // 自定义资源 URL 转换
-        },
-      },
-    }),
-  ],
-});
-```
-
-## 静态提升 Static Hoisting
-
-**基本写法：静态节点提升到 render 函数外**
-`const <vnode> = createVNode('div', null, '静态')`
 ```vue
-<!-- 静态节点被提升避免每次渲染重建 -->
-<div class="header"><span>静态标题</span></div>
-```
-
----
-
-**基本写法：纯静态提升**
-`<div class="box">固定内容</div>`
-```vue
-<!-- 不含动态绑定的节点整体提升 -->
-<div class="box">固定内容</div>
-```
-
----
-
-## 补丁标记 PatchFlag
-
-**基本写法：编译器标记动态节点类型**
-`createVNode('div', null, text, PatchFlags.TEXT)`
-```vue
-<!-- 编译产物带 patchFlag 仅比对动态部分 -->
-<div>{{ message }}</div>
-```
-
----
-
-**基本写法：标记不同类型动态**
-`PatchFlags.TEXT | PatchFlags.CLASS | PatchFlags.PROPS`
-```vue
-<!-- 文本动态 -->
-<div>{{ msg }}</div>
-<!-- class 动态 -->
-<div :class="cls">文本</div>
-<!-- props 动态 -->
-<div :id="id">文本</div>
-```
-
----
-
-## 块级树 Block
-
-**基本写法：根节点收集动态子节点**
-`createBlock('div', null, [<children>], PatchFlags)`
-```vue
-<!-- 模板根节点自动作为 Block -->
-<template>
-  <div>
-    <p>静态</p>
-    <p>{{ msg }}</p>
-  </div>
-</template>
-```
-
----
-
-**基本写法：Block 数组优化 diff**
-`const <dynamicChildren> = []`
-```ts
-// Block 仅 diff 动态子节点跳过静态
-block.dynamicChildren = [dynamicVNode];
-```
-
----
-
-## v-if 优化的 key
-
-**基本写法：v-if/v-else 配 key 优化**
-`<div v-if="<条件>" key="a">`
-```vue
-<!-- 添加 key 提高复用判断 -->
-<div v-if="show" key="on">显示</div>
-<div v-else key="off">隐藏</div>
-```
-
----
-
-## v-for 优化的 key
-
-**基本写法：稳定唯一 key 加速 diff**
-`<div v-for="<项> in <列表>" :key="<项>.id">`
-```vue
-<!-- 使用稳定 key -->
-<div v-for="item in list" :key="item.id">{{ item.name }}</div>
-```
-
----
-
-## 缓存事件处理函数
-
-**基本写法：内联事件被缓存**
-`<button @click="<回调>">`
-```vue
-<!-- 编译器缓存事件处理避免每次创建 -->
-<button @click="onClick">点击</button>
-```
-
----
-
-**基本写法：内联表达式事件**
-`<button @click="count++">`
-```vue
-<!-- 缓存为函数 -->
-<button @click="count++">加</button>
-```
-
----
-
-## 静态属性合并
-
-**基本写法：静态 class style 合并为对象**
-`createElementVNode('div', { class: 'box' })`
-```vue
-<!-- 静态 class 提前计算 -->
-<div class="box">内容</div>
-```
-
----
-
-## v-once 一次性渲染
-
-**基本写法：标记节点只渲染一次**
-`<div v-once>{{ <静态值> }}</div>`
-```vue
-<!-- 编译为静态提升节点 -->
-<header v-once>{{ title }}</header>
-```
-
----
-
-## v-memo 记忆化
-
-**基本写法：依赖未变跳过子树 patch**
-`<div v-memo="[<依赖>]">`
-```vue
-<!-- 依赖不变跳过整个子树更新 -->
-<div v-memo="[item.id]">
+<div v-for="item in largeList" :key="item.id" v-memo="[item.selected]">
   <span>{{ item.name }}</span>
-  <span>{{ item.age }}</span>
+  <span :class="{ active: item.selected }">{{ item.selected ? '已选中' : '未选中' }}</span>
 </div>
 ```
 
----
+依赖数组 `[item.selected]` 未变的项，整棵子树 patch 直接跳过——点选一条，实际只 patch 一条。它编译为 `withMemo(deps, renderFn, cache, i)`，本质是运行时缓存 VNode。适用边界：**大列表（几百条以上）+ 只有小部分字段高频变化**，且依赖数组必须写全子树用到的所有响应式值（漏写 = 界面不更新，这是 v-memo 的经典事故）；小列表的缓存开销省不出收益，别用。
 
-## 内联事件缓存
+## 8. 优化什么时候失效
 
-**基本写法：内联函数自动缓存**
-`<button @click="<复杂表达式>">`
-```vue
-<!-- 表达式被提取并缓存 -->
-<button @click="onClick($event, id)">点击</button>
-```
+编译优化依赖「编译期能看到模板」。三类写法会让剪枝失效：
 
----
+1. **手写 render 函数 / JSX**：没有模板编译阶段，没有 PatchFlag 与 Block 名单，运行时全量 diff。不是不能用（动态性极强的场景反而需要），是要知道代价；
+2. **动态组件 `<component :is="x">`**：编译器无法预知节点结构，该位置退化为常规 diff——能写成确定标签就写确定标签；
+3. **v-for 用下标当 key**：严格说不是优化失效而是复用失效——节点身份错乱导致整段列表重建（020/120 篇同款问题，Vue 侧的修法一样：稳定业务 id）。
 
-## BlockTree 收集
+另外两件配置级的事：使用自定义元素（Web Components）时要在 vite.config 里声明 `isCustomElement: (tag) => tag.startsWith('x-')`，否则编译器按组件解析给出告警；性能数据必须在生产构建下测——开发模式的编译产物带额外校验与告警，不代表运行时表现。
 
-**基本写法：动态子节点收集到数组**
-`<block>.dynamicChildren`
-```ts
-// Block 仅遍历动态节点
-function patchBlock(n1, n2) {
-  for (let i = 0; i < n2.dynamicChildren.length; i++) {
-    patch(n1.dynamicChildren[i], n2.dynamicChildren[i]);
-  }
+## 9. SSR：同一模板，另一套编译产物
+
+服务端渲染（350 篇展开）时同一份模板编译成完全不同的形态——不创建 VNode，直接拼 HTML 字符串：
+
+```js
+// ssrRender：静态内容原样输出，动态内容插值
+function ssrRender(_ctx, _push, _parent) {
+  _push('<section class="article">');
+  _push('<h1>固定标题</h1><p class="meta">共 3650 字</p>'); // 静态直接吐字符串
+  _push(`<span>进度：${_toDisplayString(_ctx.percent)}%</span>`);
+  _push('</section>');
 }
 ```
 
----
+客户端那份产物此时换岗为「水合（hydration）」服务：把静态 HTML 与交互逻辑接上。正因为编译器知道哪些是静态字符串，水合时也能精确跳过它们——编译信息在 SSR 链路里被复用了两次。
 
-## 模板编译产物对比
+## 10. 修改实验
 
-**基本写法：编译前模板**
-`<div :id="<动态>"><span>静态</span></div>`
+实验一：把第 2 节模板粘进 SFC Playground，依次给 h1 加上 `{{ title }}`、给 section 加 `:style`，观察 `_hoisted_1` 的消解与 PatchFlag 的叠加——亲手验证「改动一个绑定，整个静态块失去提升资格」。
+
+实验二：写一个 500 条的列表（每条带选中态），先用 Performance 面板量点选一条的耗时；加 v-memo 后再量。预期：耗时降到接近十分之一。
+
+实验三：把某个小组件改写为手写 render 函数（h 调用），在产物对比里找 patchFlag 的缺失，体会「模板是给编译器的优化说明书」。
+
+## 11. 常见错误与调试实录
+
+**错误一：v-memo 依赖写漏，界面不更新。** 列表项里用了 `item.price`，v-memo 只写了 `[item.selected]`，价格改了界面纹丝不动且无告警。三步定位：数据变了界面没变、没有报错——先怀疑缓存类指令；验真身——v-memo 依赖数组之外的一切都「冻结」在缓存里；修正——把子树用到的全部响应式值列入依赖。纪律：v-memo 的依赖 = 子树扫描结果，一个不能少。
+
+**错误二：v-for 下标 key 的串位。** 列表中间插入一项后输入框内容错位、动画乱跳。原因与修法同 React（稳定 id），在此补充 Vue 侧的提示：编译器对无 key 的 v-for 给出 lint 告警，别用 eslint-disable 压掉它。
+
+**错误三：模板写太动态，全是绑定。** 有人为「灵活性」把每个属性都写成插值，结果产物里没有 hoisted、Block 名单接近全树——优化名存实亡。检查手段就是实验一：把产物拉出来看静态块还剩多少。策略与 320 篇的测量流程衔接：先 Profiler 确认真有更新开销，再回头审模板的「动态密度」。
+
+## 12. 实际项目中的使用场景
+
+- **代码评审用「动态密度」审模板**：大块纯展示结构保持纯静态（编译器自动提升），动态绑定集中在叶子；阅读页、文档站这类「静态为主、点缀动态」的页面是编译优化收益最大的形态；
+- **v-memo 用在已知热点**：虚拟列表行、千级表格的选中态切换——先量后加，加完再量；
+- **SSR 首屏**：编译期静态信息让水合跳过静态区，TTFB 与水合成本同时受益（350 篇）；
+- **展望 Vapor 模式**：Vue 3.6 的无虚拟 DOM 模式把这套思路推到终点——不生成 VNode，编译产物直接操作真实 DOM（370 篇）。PatchFlag 时代的「靶向 diff」在 Vapor 里变成「靶向更新」，理解本篇就是理解 Vapor 的前世。
+
+## 13. 小练习
+
+预测题（5 分钟）：下面模板编译后，几个节点进 dynamicChildren 名单？`_hoisted` 有几个？
+
 ```vue
-<!-- 源模板 -->
 <template>
-  <div :id="dynamicId"><span>静态</span></div>
+  <div>
+    <h2>标题</h2>
+    <p>{{ a }}</p>
+    <p>{{ b }}</p>
+    <footer>底部</footer>
+  </div>
 </template>
 ```
 
----
+（名单 2 个：两个 p 各带 TEXT flag；hoisted 0 个——两个静态节点因数量少于预字符串化阈值，只是普通提升或内联，h2/footer 不进名单。用 Playground 验证你的答案。）
 
-**基本写法：编译后渲染函数**
-`function render(_ctx) { return createVNode('div', { id: _ctx.dynamicId }, [staticVNode]) }`
-```ts
-// 编译产物
-function render(_ctx) {
-  return createVNode('div', { id: _ctx.dynamicId }, [
-    _hoisted_1 // 静态节点提升
-  ], PatchFlags.PROPS, ['id']);
-}
-```
+修改题（10 分钟）：给实验二的列表把 v-memo 依赖写全（含 price），并制造一次「漏依赖」bug 再修复，记录修复前后界面表现。
 
----
+修 Bug 题（15 分钟）：团队把手写 render 函数组件（动态表单生成器）性能劣化归因于「编译器没优化」。判断归因是否成立，给出两个方向：若无模板可写，优化该落在哪（数据结构、组件拆分、v-show 层级、手动 shouldComponentUpdate 类手段——Vue 里是让 props 稳定引用 + 细粒度组件边界）。
 
-## Slot 优化
+挑战题（30 分钟）：用 @vue/compiler-dom 在 Node 里 compile 一段模板，遍历产物 AST，统计 patchFlag 出现频次与 hoisted 数量，输出一份「模板动态密度报告」——这就是小型模板体检工具的雏形。
 
-**基本写法：编译作用域插槽**
-`<slot :<字段>="<值>" />`
-```vue
-<!-- 插槽编译为函数 -->
-<slot :item="item" />
-```
+## 14. 与之前和之后的知识的关系
 
----
+- 往前：050 篇的响应式触发是入口，本篇讲触发之后 patch 怎么省；030 篇模板语法里「模板是受约束的 DSL」的限制，正是编译期能静态分析的根源；
+- 往后：[Vue3 性能优化实践](/vue3/320-Vue3PerformancePractice) 把本篇机制放进完整优化流程（测量先行）；[Vue3 服务端渲染](/vue3/350-Vue3SSR) 消费 ssrRender 产物；[Vapor 模式](/vue3/370-VaporMode) 是编译优化的下一站。
 
-**基本写法：消费作用域插槽**
-`<template #default="{ <字段> }">`
-```vue
-<!-- 编译为接收 props 的函数 -->
-<template #default="{ item }">{{ item.name }}</template>
-```
+## 15. 官方文档
 
----
+- 渲染机制：https://cn.vuejs.org/guide/extras/rendering-mechanism
+- 编译器 Playground：https://play.vuejs.org/
+- v-memo / v-once：https://cn.vuejs.org/api/built-in-directives.html#v-memo
+- 渲染函数与 JSX：https://cn.vuejs.org/guide/extras/render-function
 
-## Fragment 多根节点
+## 16. 自我检查
 
-**基本写法：多根节点编译为 Fragment**
-`<><div/><div/></>`
-```vue
-<!-- 不再需要单一根节点 -->
-<template>
-  <header>头部</header>
-  <main>主体</main>
-</template>
-```
+- 能在 SFC Playground 里指出 hoisted、PatchFlag、Block 三者对应的产物片段；
+- 能说出 PatchFlag 至少五个枚举值及「靶向更新」的判断路径；
+- 能解释 v-if / v-for 为什么开新 Block，以及 dynamicChildren 如何缩短 diff；
+- 能说出三类优化失效写法与 v-memo 的适用边界、漏依赖后果；
+- 能描述 SSR 编译产物与客户端产物的差异及水合对编译信息的复用。
 
----
+## 本章总结
 
-## v-bind 合并
+Vue 3 的性能故事核心在编译期：模板是静态可分析的，编译器把「哪里不会变（静态提升、预字符串化）、哪里会变以及变什么（PatchFlag）、动态节点有哪些（Block 的 dynamicChildren 名单）、内联事件引用稳定（事件缓存）」全部写进产物，运行时 diff 从全树遍历缩成名单循环。v-memo / v-once 是手动挡，只给测量证实的热点。三类写法让优化失效：手写 render、动态组件、下标 key。SSR 编译产物是字符串拼接，静态信息在水合时二次复用。所有机制都指向同一句话：模板不只是给人写的，更是给编译器的优化说明书。
 
-**基本写法：v-bind 对象展开**
-`<div v-bind="<对象>">`
-```vue
-<!-- 编译为合并的 props 对象 -->
-<div v-bind="attrs">内容</div>
-```
+## 下一步
 
----
-
-## v-model 编译
-
-**基本写法：v-model 编译为 modelValue 与 update**
-`<input v-model="<值>" />`
-```vue
-<!-- 等价于 -->
-<input :model-value="value" @update:model-value="value = $event" />
-```
-
----
-
-## 自定义指令编译
-
-**基本写法：指令编译为 withDirectives**
-`withDirectives(createVNode(...), [[<指令>, <值>]])`
-```vue
-<!-- 模板指令 -->
-<div v-focus>内容</div>
-```
-
----
-
-## 编译器选项
-
-**基本写法：配置编译选项**
-`compilerOptions: { isCustomElement: <fn> }`
-```ts
-// vite.config.js
-vue({
-  template: {
-    compilerOptions: { isCustomElement: tag => tag.startsWith('x-') }
-  }
-})
-```
-
----
-
-## 编译模式 ssr
-
-**基本写法：SSR 编译模式**
-`compile(<模板>, { ssr: true })`
-```ts
-// 服务端编译为字符串拼接
-import { compile } from 'vue/compiler-ssr';
-const render = compile(template, { ssr: true });
-```
-
----
-
-## 性能对比
-
-**基本写法：Vue 3 比 Vue 2 性能提升**
-`{ 性能: '提升 1.3~2 倍', 包体积: '减少 40%' }`
-```ts
-// 编译优化使 Vue 3 渲染更快
-// Block + PatchFlag + 静态提升
-```
-
----
-
-## 源码映射
-
-**基本写法：开发环境启用 sourcemap**
-`vue({ template: { compilerOptions: { sourceMap: true } } })`
-```ts
-// 便于调试模板
-vue({ template: { compilerOptions: { sourceMap: true } } })
-```
-
----
-
-## 编译错误
-
-**基本写法：编译错误处理**
-`compile(<模板>) // 抛出错误`
-```ts
-// 模板语法错误编译期检测
-try {
-  compile('<div>');
-} catch (e) {
-  console.error(e);
-}
-```
-
----
-
-## 编译宏
-
-**基本写法：defineProps 与 defineEmits**
-`const <props> = defineProps(['<字段>'])`
-```vue
-<!-- 编译宏无需导入 -->
-<script setup>
-const props = defineProps(['count']);
-const emit = defineEmits(['change']);
-</script>
-```
-
----
-
-## defineOptions 宏
-
-**基本写法：script setup 中声明组件选项**
-`defineOptions({ name: '<组件名>' })`
-```vue
-<!-- Vue 3.3+ -->
-<script setup>
-defineOptions({ name: 'UserCard', inheritAttrs: false });
-</script>
-```
-## shallowRef 浅响应引用
-
-**基本写法：仅 .value 替换触发更新**
-`const <ref> = shallowRef(<对象>)`
-```ts
-// 适合大型不可变结构
-const data = shallowRef({ items: [] });
-data.value = { items: newArray }; // 触发
-data.value.items.push(1); // 不触发
-```
-
----
-
-## triggerRef 强制触发更新
-
-**基本写法：修改 shallowRef 内部后手动触发**
-`triggerRef(<shallowRef>)`
-```ts
-// 浅响应下深度修改后通知
-const state = shallowRef({ count: 0 });
-state.value.count++;
-triggerRef(state);
-```
-
----
-
-## shallowReactive 浅响应对象
-
-**基本写法：仅根属性响应**
-`const <state> = shallowReactive(<对象>)`
-```ts
-// 性能优化避免深层代理
-const state = shallowReactive({ foo: 1, nested: { bar: 2 } });
-state.foo++; // 响应
-state.nested.bar++; // 不响应
-```
-
----
-
-## customRef 自定义 ref
-
-**基本写法：自定义依赖追踪与触发**
-`const <ref> = customRef((<track>, <trigger>) => ({ get, set }))`
-```ts
-// 实现防抖 ref
-function useDebouncedRef(value, delay = 200) {
-  let timeout;
-  return customRef((track, trigger) => ({
-    get() { track(); return value; },
-    set(newValue) {
-      clearTimeout(timeout);
-      timeout = setTimeout(() => { value = newValue; trigger(); }, delay);
-    }
-  }));
-}
-```
-
----
-
-## readonly 只读代理
-
-**基本写法：创建只读响应式对象**
-`const <ro> = readonly(<reactive对象>)`
-```ts
-// 防止误修改
-const original = reactive({ count: 0 });
-const ro = readonly(original);
-```
-
----
-
-## shallowReadonly 浅只读
-
-**基本写法：仅根属性只读**
-`const <ro> = shallowReadonly(<对象>)`
-```ts
-// 根属性只读嵌套可改
-const state = shallowReadonly({ foo: 1, nested: { bar: 2 } });
-state.foo = 2; // 警告
-state.nested.bar = 3; // 允许
-```
-
----
-
-## computed 计算属性
-
-**基本写法：只读计算属性**
-`const <c> = computed(() => <计算>)`
-```ts
-// 自动缓存依赖未变不重算
-const double = computed(() => count.value * 2);
-```
-
----
-
-**基本写法：可写计算属性**
-`const <c> = computed({ get, set })`
-```ts
-// 提供 get 与 set
-const fullName = computed({
-  get: () => `${first.value} ${last.value}`,
-  set: (v) => { [first.value, last.value] = v.split(' '); }
-});
-```
-
----
-
-**基本写法：调试钩子**
-`computed(() => <计算>, { onTrack, onTrigger })`
-```ts
-// 开发期调试依赖
-const c = computed(() => state.count * 2, {
-  onTrack(e) { console.log('tracked', e); },
-  onTrigger(e) { console.log('triggered', e); }
-});
-```
-
----
-
-## watch 侦听器
-
-**基本写法：侦听 ref**
-`watch(<ref>, (<new>, <old>) => <逻辑>)`
-```ts
-// 监听 ref 变化
-watch(count, (newVal, oldVal) => console.log(newVal));
-```
-
----
-
-**基本写法：侦听 getter 函数**
-`watch(() => <reactive.字段>, <回调>)`
-```ts
-// 监听 reactive 属性
-watch(() => state.count, (n, o) => console.log(n));
-```
-
----
-
-**基本写法：侦听多个源**
-`watch([<源1>, <源2>], ([n1, n2]) => <逻辑>)`
-```ts
-// 同时监听多个源
-watch([count, () => state.name], ([n, name]) => console.log(n, name));
-```
-
----
-
-**基本写法：deep 深度监听**
-`watch(<源>, <回调>, { deep: true })`
-```ts
-// 对象深层变化触发
-watch(state, (n) => console.log(n), { deep: true });
-```
-
----
-
-**基本写法：immediate 立即执行**
-`watch(<源>, <回调>, { immediate: true })`
-```ts
-// 创建时立即执行一次
-watch(count, (n) => init(n), { immediate: true });
-```
-
----
-
-**基本写法：flush 调整时机**
-`watch(<源>, <回调>, { flush: 'post' })`
-```ts
-// post 在 DOM 更新后执行 pre 在更新前
-watch(count, cb, { flush: 'post' });
-```
-
----
-
-**基本写法：once 仅触发一次**
-`watch(<源>, <回调>, { once: true })`
-```ts
-// Vue 3.4 新增只监听一次，触发后自动停止
-watch(count, (n) => console.log(n), { once: true });
-```
-
----
-
-**基本写法：暂停恢复监听**
-`const { pause, resume } = watch(<源>, <回调>)`
-```ts
-// Vue 3.5 新增手动控制
-const { pause, resume } = watch(count, cb);
-pause();
-resume();
-```
-
----
-
-## watchEffect 副作用
-
-**基本写法：自动收集依赖**
-`watchEffect(() => <副作用>)`
-```ts
-// 自动追踪内部响应式依赖
-watchEffect(() => console.log(state.count));
-```
-
----
-
-**基本写法：清理副作用**
-`watchEffect((<onCleanup>) => <逻辑>)`
-```ts
-// 在重新执行前清理
-watchEffect((onCleanup) => {
-  const timer = setInterval(tick, 1000);
-  onCleanup(() => clearInterval(timer));
-});
-```
-
----
-
-**基本写法：调整执行时机**
-`watchEffect(() => <副作用>, { flush: 'post' })`
-```ts
-// pre 默认 post 在 DOM 后 sync 同步
-watchEffect(() => updateDOM(), { flush: 'post' });
-```
-
----
-
-## watchPostEffect
-
-**基本写法：post 模式的 watchEffect 简写**
-`watchPostEffect(() => <副作用>)`
-```ts
-// 等价 flush: 'post'
-watchPostEffect(() => console.log('DOM 更新后'));
-```
-
----
-
-## watchSyncEffect
-
-**基本写法：同步模式的 watchEffect 简写**
-`watchSyncEffect(() => <副作用>)`
-```ts
-// 等价 flush: 'sync'
-watchSyncEffect(() => console.log('同步执行'));
-```
-
----
-
-## toRef 与 toRefs
-
-**基本写法：toRef 单属性转 ref**
-`const <ref> = toRef(<reactive>, '<字段>')`
-```ts
-// 保持响应式关联
-const countRef = toRef(state, 'count');
-```
-
----
-
-**基本写法：toRefs 全部属性转 ref**
-`const <refs> = toRefs(<reactive>)`
-```ts
-// 配合解构
-const { count, name } = toRefs(state);
-```
-
----
-
-**基本写法：toRef 从普通值创建 ref**
-`const <ref> = toRef(<值>)`
-```ts
-// 等价 ref 但语义更清晰
-const r = toRef(1);
-```
-
----
-
-## unref 解包 ref
-
-**基本写法：获取 ref 或原值**
-`const <val> = unref(<maybeRef>)`
-```ts
-// 是 ref 返回 .value 否则原值
-const val = unref(maybeRef);
-```
-
----
-
-## isRef isReactive 判断
-
-**基本写法：判断响应式类型**
-`isRef(<值>); isReactive(<值>); isProxy(<值>)`
-```ts
-// 类型守卫
-if (isRef(val)) val.value;
-if (isReactive(val)) /* */;
-```
-
----
-
-## markRaw 永不代理
-
-**基本写法：标记对象跳过响应式**
-`const <raw> = markRaw(<对象>)`
-```ts
-// 第三方实例避免代理开销
-const chart = markRaw(echarts.init(dom));
-state.chart = chart;
-```
-
----
-
-## toRaw 获取原始对象
-
-**基本写法：读取代理背后的原始对象**
-`const <raw> = toRaw(<reactive>)`
-```ts
-// 用于调试或传递给非响应式代码
-const raw = toRaw(state);
-```
-
----
-
-## effectScope 作用域管理
-
-**基本写法：统一管理 effect 生命周期**
-`const <scope> = effectScope()`
-```ts
-// 集中停止所有 effect
-const scope = effectScope();
-scope.run(() => {
-  watch(count, cb);
-  watchEffect(() => /* */);
-});
-onUnmounted(() => scope.stop());
-```
-
----
-
-## getCurrentScope 当前作用域
-
-**基本写法：获取当前 effect scope**
-`const <scope> = getCurrentScope()`
-```ts
-// 在组合式函数中使用
-const scope = getCurrentScope();
-```
-
----
-
-## onScopeDispose 作用域清理
-
-**基本写法：注册作用域销毁回调**
-`onScopeDispose(() => <清理>)`
-```ts
-// 类似 onUnmounted 但作用域级
-onScopeDispose(() => clearInterval(timer));
-```
-
----
-
-## 响应式转换工具
-
-**基本写法：使用 reactive 解构 props 保持响应**
-`const { <字段> = <默认> } = defineProps(['<字段>'])`
-```vue
-<!-- Vue 3.5 响应式解构 -->
-<script setup>
-const { count = 0, msg = 'hi' } = defineProps(['count', 'msg']);
-</script>
-```
-
----
-
-## 异步组件与 Suspense
-
-**基本写法：defineAsyncComponent**
-`const <comp> = defineAsyncComponent(() => import(<路径>))`
-```ts
-// 异步加载组件
-const Async = defineAsyncComponent(() => import('./Heavy.vue'));
-```
-
----
-
-**基本写法：配置加载状态**
-`defineAsyncComponent({ loader, loadingComponent, errorComponent })`
-```ts
-// 完整配置
-const Async = defineAsyncComponent({
-  loader: () => import('./Heavy.vue'),
-  loadingComponent: Loading,
-  errorComponent: Error,
-  delay: 200,
-  timeout: 3000
-});
-```
+进入 [Vue3 性能优化实践](/vue3/320-Vue3PerformancePractice)：机制备齐，进入实战流程——怎么测、优化哪一层（响应式、渲染、体积、网络）、怎么验证优化真的有效。

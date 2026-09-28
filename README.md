@@ -90,9 +90,10 @@ flowchart LR
 - **脚本各司其职**：`content-sync.mjs`（元数据）、`render-mermaid.mjs`（图表缓存）、
   `build-syntax.mjs`（速查卡片）、`audit-learning-path.mjs`（路径数据完整性）。
   它们之间只通过文件与 JSON 交接，没有隐藏耦合。
-- **样式单一来源**：设计令牌在 `shd-shared/tokens/`（DTCG JSON），web 端副本由
-  `check-tokens-drift.mjs` 保障逐令牌一致；Android 的 Compose 色板目前是手工镜像，
-  与令牌真源的差异会在 drift 检查中作为提示输出，统一时以令牌 JSON 为准。
+- **样式单一来源**：设计令牌在 `shd-shared/tokens/`（DTCG JSON）。web 端副本与
+  Android 的 `TokenColors.kt`（`Theme.kt` 只做 Material 角色映射）均由它派生：
+  改 JSON 后运行 `pnpm --filter @fandex/tokens build:css && pnpm --filter @fandex/tokens generate:kt`，
+  `check-tokens-drift.mjs` 会硬校验两侧派生文件与真源逐值一致。
 - **发版**：`pnpm release [版本号]` 自动同步全部版本文件、CHANGELOG 并打 tag，
   安装包由维护者本地构建后随 GitHub Release 上传。
 

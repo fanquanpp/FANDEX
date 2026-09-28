@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 160
 title: VACUUM 调优与排障
 module: 'postgresql'
 category: 数据库

@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 440
 title: Vue3 学习总结：核心知识体系回顾
 module: 'vue3'
 category: 前端技术

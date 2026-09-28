@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 480
 title: IndexedDB 浏览器数据库
 module: 'javascript'
 category: 前端技术

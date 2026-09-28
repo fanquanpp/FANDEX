@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 类定义、访问修饰符、装饰器模式与元数据。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/220-FunctionGeneric'
   - 'typescript/110-LiteralUnionTypes'
@@ -17,7 +17,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [never 类型完整语义](/typescript/190-NeverTypeSemantics)：建议先完成前一篇的学习
+- [TS 前篇 03：类基础](/typescript/060-TSBasicsClasses)：本篇的修饰符与继承建立在类基础之上
 
 ## 学习目标
 

@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 380
 title: 订阅与发布：原生逻辑复制的完整落地
 module: 'postgresql'
 category: 数据库

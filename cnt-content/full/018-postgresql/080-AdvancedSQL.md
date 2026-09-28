@@ -4,249 +4,186 @@ title: 高级 SQL
 module: 'postgresql'
 category: 数据库
 difficulty: advanced
-description: PostgreSQL高级SQL：窗口函数、CTE与递归CTE、横向连接、分组集与高级聚合
+description: 在 psql 里用播客收听数据做三份报表，掌握 PG 特色高级 SQL：FILTER 条件聚合、DISTINCT ON、LATERAL、CTE 内联与 generate_series 补零日历。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-29'
 related:
   - 'postgresql/270-PartitionedTable'
-  - 'postgresql/280-PartitionPruningPartitionJoin'
-  - 'postgresql/290-MERGEStatementEnhancement'
+  - 'postgresql/530-AdvancedSQLExtension'
+  - 'sql/260-WindowFunction'
 prerequisites:
   - 'postgresql/010-OverviewInstallConfig'
 ---
 
-## 1. 窗口函数
+## 场景：产品经理的三份报表
+
+你接手一个播客平台的库。产品经理要看三份东西：
+
+1. 每档节目的**播放完成率**（听完次数除以播放次数，两者是同一行数据的两个条件）；
+2. 每档节目**最近一次播放**发生在哪天（每组取一行）；
+3. 每档节目**播放量前三的城市**（每组取 N 行）。
+
+普通 GROUP BY 答不了这三问。本篇边做边讲 PostgreSQL 的进阶武器，并顺路补上几个 PG 特有、别的数据库没有的能力。
 
 ```sql
--- 排名函数
-SELECT name, dept_id, salary,
-    RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rank,
-    DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS dense_rank,
-    ROW_NUMBER() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS row_num
-FROM employees;
+CREATE TABLE plays (
+    id         bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    show_name  text NOT NULL,
+    city       text NOT NULL,
+    finished   boolean NOT NULL,
+    played_at  timestamptz NOT NULL
+);
 
--- 累计聚合
-SELECT order_date, amount,
-    SUM(amount) OVER (ORDER BY order_date) AS cumulative,
-    AVG(amount) OVER (ORDER BY order_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_avg
-FROM daily_sales;
-
--- LAG/LEAD
-SELECT order_date, amount,
-    amount - LAG(amount) OVER (ORDER BY order_date) AS day_over_day
-FROM daily_sales;
-
--- FILTER 子句
-SELECT dept_id,
-    COUNT(*) AS total,
-    COUNT(*) FILTER (WHERE salary > 50000) AS high_earners
-FROM employees
-GROUP BY dept_id;
+INSERT INTO plays (show_name, city, finished, played_at) VALUES
+('代码夜话', '杭州', true,  '2026-09-01 08:10'),
+('代码夜话', '杭州', true,  '2026-09-01 21:40'),
+('代码夜话', '上海', false, '2026-09-02 12:00'),
+('代码夜话', '深圳', true,  '2026-09-03 19:30'),
+('早班机',   '北京', false, '2026-09-01 07:00'),
+('早班机',   '北京', true,  '2026-09-02 07:05'),
+('早班机',   '上海', true,  '2026-09-02 07:40'),
+('闲话芯片', '杭州', false, '2026-09-03 22:10');
 ```
 
-## 2. CTE 与递归 CTE
+## 动手一：FILTER 一次扫描算多个条件聚合
+
+完成率的分子分母是同一批行的两个子集，直觉写法是两个 CASE：
 
 ```sql
--- CTE
-WITH dept_stats AS (
-    SELECT dept_id, AVG(salary) AS avg_salary
-    FROM employees GROUP BY dept_id
+SELECT show_name,
+       COUNT(*) AS plays,
+       COUNT(*) FILTER (WHERE finished) AS finished_plays
+FROM plays
+GROUP BY show_name;
+```
+
+`COUNT(*) FILTER (WHERE 条件)` 只聚合满足条件的行，和 `SUM(CASE WHEN finished THEN 1 ELSE 0 END)` 完全等价，但意图直白，且能挂在**任何聚合函数**上：
+
+```sql
+-- 混用：总数、完成数、完成单的平均收听时长条件（示意）
+SELECT show_name,
+       COUNT(*) FILTER (WHERE finished)                        AS fin,
+       COUNT(*) FILTER (WHERE NOT finished)                    AS dropped,
+       MIN(played_at) FILTER (WHERE finished)                  AS first_finish
+FROM plays
+GROUP BY show_name;
+```
+
+FILTER 是 SQL 标准语法，PostgreSQL 与 SQLite 支持；MySQL 里写 CASE 版本即可。一次扫描出多个口径，这是报表查询的第一效率习惯。
+
+## 动手二：DISTINCT ON——每组取一行
+
+"每档节目最近一次播放"，通用 SQL 要窗口函数套子查询绕一圈，PostgreSQL 有专属写法：
+
+```sql
+SELECT DISTINCT ON (show_name) show_name, played_at, city
+FROM plays
+ORDER BY show_name, played_at DESC;
+```
+
+DISTINCT ON (列) 保留每组按 ORDER BY 排序后的**第一行**。语法纪律只有一条：**ORDER BY 必须以 DISTINCT ON 的列打头**（这里先按节目分组，再在组内按时间倒序），否则报错。想取"最早一次"就把 DESC 去掉；想控制组内并列时取哪行，在 ORDER BY 后面继续加列。
+
+它解决的是"每组任意一行/极值行"，比窗口函数少一层嵌套。移植性差是代价——这是 PG 专属扩展，MySQL/SQL Server 没有。
+
+## 动手三：LATERAL——每行做一次子查询
+
+"每档节目播放量前三的城市"，窗口函数和 DISTINCT ON 都能做，LATERAL 给出第三种形态，也是语义最灵活的一种：
+
+```sql
+SELECT s.show_name, top.city, top.cnt
+FROM (SELECT DISTINCT show_name FROM plays) s
+CROSS JOIN LATERAL (
+    SELECT city, COUNT(*) AS cnt
+    FROM plays p
+    WHERE p.show_name = s.show_name     -- 引用了外层的列
+    GROUP BY city
+    ORDER BY cnt DESC
+    LIMIT 3
+) top;
+```
+
+LATERAL 让子查询可以引用左侧的行：外层每档节目，内层都执行一次"取前三"。等价于把子查询变成一个"带参数的函数"。凡"每组 Top-N"“每行查最近 K 条"的形态，LATERAL 写法最自然，复杂条件（比如再 JOIN 别的表）也放得下。
+
+## 动手四：CTE 与 PG 12 的内联行为
+
+```sql
+WITH daily AS (
+    SELECT date_trunc('day', played_at)::date AS d,
+           COUNT(*) AS plays
+    FROM plays
+    GROUP BY 1
 )
-SELECT e.name, e.salary, ds.avg_salary
-FROM employees e JOIN dept_stats ds ON e.dept_id = ds.dept_id;
+SELECT d, plays,
+       plays - LAG(plays) OVER (ORDER BY d) AS day_diff
+FROM daily
+ORDER BY d;
+```
 
--- 递归 CTE
-WITH RECURSIVE org_tree AS (
-    SELECT emp_id, name, manager_id, 1 AS level
-    FROM employees WHERE manager_id IS NULL
-    UNION ALL
-    SELECT e.emp_id, e.name, e.manager_id, ot.level + 1
-    FROM employees e JOIN org_tree ot ON e.manager_id = ot.emp_id
+CTE 与派生表能力等价，但可命名、可复用、自上而下读。**PostgreSQL 12 起有一个重要行为变化**：只被引用一次、非递归、无副作用的 CTE 会被**内联**进主查询——优化器能穿过它做谓词下推，性能和派生表一样。想强制 CTE 物化成临时结果（老版本行为，适合"确实只算一次、后面多次引用"的场景），显式写：
+
+```sql
+WITH daily AS MATERIALIZED (SELECT ...) SELECT ... FROM daily a JOIN daily b ...;
+-- 多次引用的 CTE 本来就只算一次；MATERIALIZED 用于单引用但想挡住优化器重写的场合
+```
+
+从老版本 PG 迁移的查询如果发现某些 CTE"忽然变快/变慢"，先想到内联这条。
+
+递归 CTE 走组织树（report 老大是谁）：
+
+```sql
+CREATE TABLE staff (id int PRIMARY KEY, name text, manager_id int REFERENCES staff(id));
+INSERT INTO staff VALUES (1,'老板',NULL),(2,'内容负责人',1),(3,'主播A',2),(4,'主播B',2);
+
+WITH RECURSIVE org AS (
+    SELECT id, name, manager_id, 1 AS depth
+    FROM staff WHERE manager_id IS NULL
+  UNION ALL
+    SELECT s.id, s.name, s.manager_id, org.depth + 1
+    FROM staff s JOIN org ON s.manager_id = org.id
 )
-SELECT * FROM org_tree;
+SELECT * FROM org ORDER BY depth;
 ```
 
-## 3. 横向连接
+锚点 + UNION ALL + 递归引用自身，与 MySQL 同构；PG 额外允许 `UNION`（自动去重，防环安全网）。深度优先/环检测的展开见[递归 CTE](/sql/240-RecursiveCTE)。
+
+## 动手五：generate_series 补零日历
+
+报表要"没数据的日子也要出现"，PG 用内置函数现场生成序列，比递归 CTE 更直接：
 
 ```sql
--- LATERAL：每行执行子查询
-SELECT d.dept_name, top3.name, top3.salary
-FROM departments d,
-LATERAL (
-    SELECT name, salary FROM employees
-    WHERE dept_id = d.id
-    ORDER BY salary DESC LIMIT 3
-) top3;
+SELECT d::date AS day,
+       COALESCE(cnt, 0) AS plays
+FROM generate_series('2026-09-01'::timestamptz,
+                     '2026-09-30'::timestamptz,
+                     interval '1 day') g(d)
+LEFT JOIN (
+    SELECT date_trunc('day', played_at) AS pd, COUNT(*) AS cnt
+    FROM plays GROUP BY 1
+) t ON t.pd = g.d
+ORDER BY day;
 ```
 
-## 4. 分组集
+generate_series 能生成数字、时间戳序列，是时间填充、抽样、桶对齐类需求的瑞士军刀；配合 LATERAL 还能"每行展开成 N 行"。
 
-```sql
--- ROLLUP
-SELECT dept_id, job_title, SUM(salary)
-FROM employees
-GROUP BY ROLLUP (dept_id, job_title);
+## 坑点与自检
 
--- CUBE
-SELECT dept_id, job_title, SUM(salary)
-FROM employees
-GROUP BY CUBE (dept_id, job_title);
+- **窗口函数不能进 WHERE**：执行顺序上 WHERE 先于 SELECT。套一层 CTE 或子查询，外层过滤（原理见[SELECT 执行顺序](/sql/080-SelectExecutionOrder)）。
+- **DISTINCT ON 忘了 ORDER BY 前缀**：直接语法错误。反过来说，ORDER BY 的组内部分（played_at DESC）决定取哪行，别只写分组列。
+- **CTE 优化屏障**：默认内联，但写了 MATERIALIZED（或 CTE 里含易变函数）就成屏障，过滤条件不会下推，大表上可能差一个数量级。性能异常先 EXPLAIN 看有没有子查询被物化。
+- **FILTER 只配聚合函数**：窗口函数不能带 FILTER 子句；组内条件计数用 CASE 表达式窗口变通。
+- **group 后的列约束**：PG 对"SELECT 里出现未分组列"零容忍（没有 MySQL 老版本那种任意取值行为），看到的报错先检查 GROUP BY 是否缺列。
 
--- GROUPING SETS
-SELECT dept_id, job_title, SUM(salary)
-FROM employees
-GROUP BY GROUPING SETS ((dept_id, job_title), (dept_id), ());
-```
-## 窗口函数
+## 练习
 
-**换行写法：RANK 排名函数**
-`RANK() OVER (PARTITION BY <列名> ORDER BY <列名> [ASC|DESC])`
-```sql
--- 部门内薪资排名
-SELECT name, dept_id, salary,
-    RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS rank
-FROM employees;
-```
+1. 用 FILTER 一条查询同时给出：总播放数、完成数、未完成数、每个城市的完成数（提示：FILTER + 外层再 GROUP，或 FILTER 配合窗口函数分层做）。
+2. 用 DISTINCT ON 求"每档节目最早播放的城市"，再用窗口函数解同一问题，对比行数与可读性。
+3. 把 LATERAL Top-3 改写成 `ROW_NUMBER() OVER (PARTITION BY ...)` 版本，用 EXPLAIN ANALYZE 对比两者计划与耗时。
+4. 用 generate_series + LEFT JOIN 输出 9 月每周的播放数，要求空周显示 0（提示：date_trunc('week', ...)）。
+5. 在递归 CTE 里故意制造一个环（把老板的 manager_id 指向主播 A），观察无限递归现象，再用 UNION 去重版或路径数组法修复。
 
-**换行写法：DENSE_RANK 密集排名**
-`DENSE_RANK() OVER (PARTITION BY <列名> ORDER BY <列名> [ASC|DESC])`
-```sql
--- 部门内薪资密集排名
-SELECT name, dept_id, salary,
-    DENSE_RANK() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS dense_rank
-FROM employees;
-```
+## 下一步
 
-**换行写法：ROW_NUMBER 行号**
-`ROW_NUMBER() OVER (PARTITION BY <列名> ORDER BY <列名> [ASC|DESC])`
-```sql
--- 部门内按薪资生成行号
-SELECT name, dept_id, salary,
-    ROW_NUMBER() OVER (PARTITION BY dept_id ORDER BY salary DESC) AS row_num
-FROM employees;
-```
-
-**换行写法：累计求和**
-`SUM(<列名>) OVER (ORDER BY <列名>)`
-```sql
--- 按日期累计求和
-SELECT order_date, amount,
-    SUM(amount) OVER (ORDER BY order_date) AS cumulative
-FROM daily_sales;
-```
-
-**换行写法：移动平均**
-`AVG(<列名>) OVER (ORDER BY <列名> ROWS BETWEEN <范围>)`
-```sql
--- 7 日移动平均
-SELECT order_date, amount,
-    AVG(amount) OVER (ORDER BY order_date ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS moving_avg
-FROM daily_sales;
-```
-
-**换行写法：LAG 访问前一行**
-`LAG(<列名>[, <偏移量>[, <默认值>]]) OVER (ORDER BY <列名>)`
-```sql
--- 计算环比变化
-SELECT order_date, amount,
-    amount - LAG(amount) OVER (ORDER BY order_date) AS day_over_day
-FROM daily_sales;
-```
-
-**换行写法：LEAD 访问后一行**
-`LEAD(<列名>[, <偏移量>[, <默认值>]]) OVER (ORDER BY <列名>)`
-```sql
--- 访问下一行的金额
-SELECT order_date, amount,
-    LEAD(amount) OVER (ORDER BY ORDER_DATE) AS next_day_amount
-FROM daily_sales;
-```
-
-**换行写法：FILTER 条件聚合**
-`<聚合函数>(*) FILTER (WHERE <条件>)`
-```sql
--- 条件聚合统计高收入人数
-SELECT dept_id,
-    COUNT(*) AS total,
-    COUNT(*) FILTER (WHERE salary > 50000) AS high_earners
-FROM employees
-GROUP BY dept_id;
-```
-
----
-
-## CTE 与递归 CTE
-
-**换行写法：普通 CTE**
-`WITH <CTE 名称> AS (<SELECT 语句>) SELECT ...`
-```sql
--- 使用 CTE 简化复杂查询
-WITH dept_stats AS (
-    SELECT dept_id, AVG(salary) AS avg_salary
-    FROM employees GROUP BY dept_id
-)
-SELECT e.name, e.salary, ds.avg_salary
-FROM employees e JOIN dept_stats ds ON e.dept_id = ds.dept_id;
-```
-
-**换行写法：递归 CTE**
-`WITH RECURSIVE <CTE 名称> AS (<基础查询> UNION ALL <递归查询>) SELECT ...`
-```sql
--- 递归查询组织树
-WITH RECURSIVE org_tree AS (
-    SELECT emp_id, name, manager_id, 1 AS level
-    FROM employees WHERE manager_id IS NULL
-    UNION ALL
-    SELECT e.emp_id, e.name, e.manager_id, ot.level + 1
-    FROM employees e JOIN org_tree ot ON e.manager_id = ot.emp_id
-)
-SELECT * FROM org_tree;
-```
-
----
-
-## 横向连接
-
-**换行写法：LATERAL 横向连接**
-`SELECT <列名> FROM <表1>, LATERAL (<子查询>) AS <别名>`
-```sql
--- 每行执行子查询获取前 3 名
-SELECT d.dept_name, top3.name, top3.salary
-FROM departments d,
-LATERAL (
-    SELECT name, salary FROM employees
-    WHERE dept_id = d.id
-    ORDER BY salary DESC LIMIT 3
-) top3;
-```
-
----
-
-## 分组集
-
-**换行写法：ROLLUP 层次汇总**
-`GROUP BY ROLLUP (<列名>[, <列名>...])`
-```sql
--- 按部门和职位层次汇总薪资
-SELECT dept_id, job_title, SUM(salary)
-FROM employees
-GROUP BY ROLLUP (dept_id, job_title);
-```
-
-**换行写法：CUBE 多维汇总**
-`GROUP BY CUBE (<列名>[, <列名>...])`
-```sql
--- 按部门和职位多维汇总薪资
-SELECT dept_id, job_title, SUM(salary)
-FROM employees
-GROUP BY CUBE (dept_id, job_title);
-```
-
-**换行写法：GROUPING SETS 自定义分组集**
-`GROUP BY GROUPING SETS ((<列组合1>), (<列组合2>), ...)`
-```sql
--- 自定义分组集汇总薪资
-SELECT dept_id, job_title, SUM(salary)
-FROM employees
-GROUP BY GROUPING SETS ((dept_id, job_title), (dept_id), ());
-```
+- 窗口函数的完整体系（框架、滚动、分桶）见 016 模块[窗口函数](/sql/260-WindowFunction)与[窗口函数框架](/sql/270-WindowFunctionFramework)；
+- 分组集报表见[GROUP BY 与分组集](/sql/070-GROUPBYGroupingSet)；
+- LATERAL 与派生表的专题展开在[横向连接与派生表](/sql/200-LateralDerivedTable)；
+- 查询 beyond 单机：[并行查询](/postgresql/260-ParallelQuery)讲大表报表怎么吃满核。

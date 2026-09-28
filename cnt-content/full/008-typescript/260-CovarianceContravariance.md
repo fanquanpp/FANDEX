@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 中协变、逆变、双变与不变的型变关系，涵盖函数子类型理论、Liskov 替换原则、严格函数类型检查、数组协变陷阱与 React props 逆变等核心议题
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/520-AdvancedTypeCalculus'
   - 'typescript/530-TypeGymnasticsPracticalPatterns'
@@ -23,7 +23,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [类型体操实用模式](/typescript/530-TypeGymnasticsPracticalPatterns)：建议先完成前一篇的学习
+- [类型兼容性（结构化类型系统）](/typescript/200-TypeCompatibility)：赋值兼容的「看形状」规则是型变讨论的基础
 
 ## 学习目标
 

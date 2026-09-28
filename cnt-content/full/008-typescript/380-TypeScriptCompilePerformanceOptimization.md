@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 编译流程、增量编译、类型检查优化与构建工具集成：编译器架构、性能模型、复杂度分析、tsconfig 调优、项目引用、CI/CD 策略与生产级性能优化。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/390-TypeScriptMigrationPractice'
   - 'typescript/440-ConditionalTypeInfer'
@@ -27,7 +27,7 @@ prerequisites:
 
 ## 前置知识
 
-- [条件类型与 infer](/typescript/440-ConditionalTypeInfer)：建议先完成前一篇的学习
+- [tsc 编译器命令](/typescript/370-TscCompilerCommands)：tsc 的两种工作模式与诊断参数
 
 ## 学习目标
 

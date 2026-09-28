@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Swing 组件体系、事件驱动与 GUI 应用开发。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'java/700-NetworkProgrammingDeepDive'
   - 'java/880-SpringCloudMicroserviceDevelopment'
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- [Java 命令行工具 javac/java/jar/jshell/jpackage 语法速查手册](/java/1020-JavaCommandLineTools)：建议先完成前一篇的学习
+- [jshell 与 jpackage：Java 命令行工具实操](/java/1010-JavaJshellJpackage)：建议先完成前一篇的学习
 
 ## 学习目标
 

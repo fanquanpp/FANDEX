@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: TypeScript 声明文件（.d.ts）结构、模块解析策略（Node/NodeNext/Bundler）、ESM/CJS 互操作、路径映射与包导出的全面工程指南
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/510-RecursiveTypeDeepOperation'
   - 'typescript/460-ConditionalMappedType'
@@ -17,7 +17,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [条件类型与映射类型](/typescript/460-ConditionalMappedType)：建议先完成前一篇的学习
+- [命名空间与模块](/typescript/290-NamespaceModule)：import 语句与模块系统的基本规则
 
 ## 学习目标
 

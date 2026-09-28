@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 回顾 C++ 模块的核心知识体系：对象模型、RAII 与智能指针、移动语义、模板与 STL、现代 C++ 标准演进与并发工程实践，并用虚拟歌手音乐平台的示例串联全部要点。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-29'
 related:
   - 'cpp/010-WhatIsCpp'
   - 'cpp/160-RAIIResourceManagement'

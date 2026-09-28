@@ -1,5 +1,5 @@
 ---
-order: 610
+order: 620
 title: 显式资源管理：using 与 await using
 module: 'javascript'
 category: 前端技术

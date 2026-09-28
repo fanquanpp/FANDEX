@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 开源许可证对比与选择：MIT、Apache、GPL三大类许可证的权利义务对比表、选择方法与GitHub添加流程。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'github/170-BranchModelBranchRule'
   - 'github/070-GitignoreConfig'
@@ -279,6 +279,6 @@ license = { text = "MIT" }
 - SPDX 许可证清单：https://spdx.org/licenses/
 
 ### 延伸阅读
-- Gitignore 配置（仓库内其他关键配置文件的写法），见 004-github 模块 008 文档。
-- 依赖安全选项（许可证合规是依赖审查的一环），见 004-github 模块 010 文档。
-- Fork 工作流（fork 与许可证的兼容性问题），见 004-github 模块 011 文档。
+- [Gitignore 配置](/github/070-GitignoreConfig)（仓库内其他关键配置文件的写法）
+- [依赖安全选项](/github/270-DependencySecurityOptions)（许可证合规是依赖审查的一环）
+- [Fork 工作流](/github/200-ForkWorkflow)（fork 与许可证的兼容性问题）

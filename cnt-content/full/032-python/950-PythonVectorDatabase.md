@@ -1,5 +1,5 @@
 ---
-order: 750
+order: 760
 title: Python 与向量数据库
 module: 'python'
 category: 后端技术

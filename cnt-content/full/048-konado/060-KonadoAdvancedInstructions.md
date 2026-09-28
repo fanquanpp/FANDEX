@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 掌握 screentext 全屏叙事 signal waitsignal 与 Godot 侧联动以及成就指令与 end 的回退语义
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/050-KonadoVariablesAndBranching'
   - 'konado/080-KonadoSaveAndRollback'
@@ -14,18 +14,9 @@ prerequisites:
   - 'konado/050-KonadoVariablesAndBranching'
 ---
 
-在上一篇里，你已经能用变量、条件分支与选项让剧情"动"起来了。但一款成熟的视觉小说还需要更多舞台手段：章节标题的全屏字幕、把剧情事件抛给 GDScript 处理的信号、等待外部动画播完的阻塞指令，以及把玩家行为记录成成就（Achievement）的系统。本篇就把这些"进阶指令"一次讲透，并补上一块容易被忽视的内容：剧本导出时的加密保护。
+几何构成（speed-rouge）的 Boss 战剧情有三个需求：开打前打出一块全屏的章节标题；剧本暂停、等 Boss 登场动画播完再继续（演出由 GDScript 驱动）；击败 Boss 后解锁一个成就。对话框与选项解决不了这些——你需要 screentext、signal/waitsignal 与 achievement 这组进阶指令。在上一篇里，你已经能用变量、条件分支与选项让剧情"动"起来；本篇把这些进阶指令一次讲透，并补上一块容易被忽视的内容：剧本导出时的加密保护。
 
 这一组指令有一个共同的背景主题：回退（Rollback）。Konado 允许玩家退回上一句对话重新阅读（详见存档与回退一篇），那么当玩家回退跨越了 signal、achievement 这类"副作用指令"时会发生什么？本篇会逐一给出答案。理解这些语义，能帮你避免"成就被反复触发""音效重复播放"这类隐蔽 bug。
-
-## 学习目标
-
-- 会用 screentext 制作全屏居中的章节标题与叙事文本；
-- 理解 signal 指令与 custom_signal 信号的联动方式，以及它"可重放"的回退语义；
-- 会用 waitsignal 暂停对话，等待外部 GDScript 通过 emit_wait_signal 恢复播放；
-- 理解 end 指令的终止语义，以及它作为回退边界的含义；
-- 会使用 achievement unlock、increment、set_flag 三条成就指令，并理解"成就只增不减"的回退屏障设计；
-- 了解剧本导出加密的机制、密钥存放位置与补丁热更新的约束。
 
 ## screentext：全屏叙事文本
 
@@ -196,14 +187,22 @@ end
 
 配套的 GDScript 侧只需要两件事：连接 custom_signal 处理"播放音效"与"好感度变化"，并在雷暴动画结束时调用 emit_wait_signal("storm_done")。一个十几行的剧本，就完成了叙事、演出协作与成就记录的闭环。
 
-## 小结
+## 坑点与自检
 
-- screentext 以块语法制作 NVL 式全屏文本：逐行淡入、点击翻行、末行确认后淡出继续，适合章节标题与大段旁白；
-- signal 把任意文本内容发射给 GDScript 的 custom_signal，是可重放的副作用，回退跨越后重放会再次发射，快照外状态需自行保证幂等；
-- waitsignal 暂停对话等待外部触发，由 emit_wait_signal(信号名) 恢复，适合等待动画与小游戏；
-- end 立即终结当前对话流程，是回退边界，回退不能跨越已结束的剧本；
-- achievement unlock / increment / set_flag 三条成就指令是回退屏障：可跨越、不重放、只增不减；
-- 导出时通过预设的 Script Encryption Key 自动加密剧情数据，密钥落在 .godot/konado_export_credentials.cfg，补丁热更新必须同预设同密钥，它不替代专业 DRM。
+- signal 的处理函数里写文件、发网络请求，回退重放后同一请求发了两次——signal 是可重放副作用，快照外状态必须自己保证幂等（先检查再写入）；
+- 剧本卡在 waitsignal 不动——外部代码从未调用 emit_wait_signal(同名信号)，先确认信号名逐字符一致、调用路径真的会执行；
+- 玩家回退后成就消失或重复解锁——不会发生：成就指令是回退屏障，可跨越、不重放；若你的 UI 出现重复弹窗，检查的是接收端而不是剧本；
+- branch 结尾忘写 end，回退边界混乱或后续剧本内容被意外执行——每个分支与每个剧本文件都以 end 收束；
+- 补丁包换了导出预设，客户端解不开新剧情——补丁与主包必须同预设同密钥；密钥丢失等于断掉热更链路；
+- 自检问题一：signal 与 waitsignal 的方向分别是什么？（signal 剧本通知程序；waitsignal 剧本暂停等程序，由 emit_wait_signal 解除）
+- 自检问题二：end 的两个身份是什么？（终止当前对话流程；回退边界——回退不能跨越已执行过的 end）
+- 自检问题三：导出加密防的是什么？（通用工具直读 PCK 明文剧本，不替代专业 DRM）
+
+## 练习
+
+1. 跑通综合示例的雨夜过场：screentext 开场、signal 播雷声、waitsignal 等闪电动画、两条分支各自成就与好感度，GDScript 侧补齐连接与 emit_wait_signal；
+2. 制造一次"重复发射"事故：signal 处理函数里往文件追加一行，推进-回退-重放，观察文件里出现两行；再改成幂等写法修复；
+3. 配置一次带 Script Encryption Key 的导出，故意用另一个预设打补丁验证失败，再换回同密钥验证恢复，把结论写进你的发布清单。
 
 ## 参考链接
 

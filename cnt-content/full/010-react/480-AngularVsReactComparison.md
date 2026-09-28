@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 500
 title: Angular 精要与 React 对照
 module: 'react'
 category: 前端技术

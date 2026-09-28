@@ -1,5 +1,5 @@
 ---
-order: 690
+order: 700
 title: JavaScript 项目示例：待办事项应用
 module: 'javascript'
 category: 前端技术

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 中断分类（硬件中断与异常）、IDT 中断描述符表、中断处理流程与系统调用完整机制。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'cs-fundamentals/150-OperatingSystem'
   - 'cs-fundamentals/170-PCBThreadTCB'
@@ -20,13 +20,6 @@ prerequisites:
 - 进程与 CPU 的关系，程序计数器 PC 的作用（见 [进程 PCB 与线程 TCB](/cs-fundamentals/170-PCBThreadTCB)）；
 - 用户态与内核态的特权级概念（详见 [用户态与内核态切换](/cs-fundamentals/200-UserModeKernelModeSwitch)）；
 - 基础的 C 语言函数调用约定。
-
-## 学习目标
-
-- 区分中断、异常与系统调用三类"打断 CPU 正常执行流"的事件；
-- 描述一次中断处理的完整硬件加软件流程；
-- 理解 IDT（中断描述符表）的作用与中断向量号的含义；
-- 追踪一次 `write()` 从用户代码到内核的完整路径。
 
 ## 1. 概念引入：CPU 为什么需要"被打断"
 
@@ -162,16 +155,22 @@ int main(void) {
 - **实时性调优**：把关键线程绑定到与网卡中断不同的核（IRQ 亲和性），避免中断打断关键计算。
 - **安全加固**：系统调用是内核暴露的最小攻击面，seccomp 白名单正是基于调用号过滤。
 
-## 小结
+## 动手与自检
 
-初学者要点：
+动手两件事，验证本文机制真实存在：
 
-- 中断是外部的异步通知，异常是指令引发的同步事件，系统调用是程序主动请求内核服务的入口；三者共用"查表跳转 + 保存恢复现场"的硬件机制。
-- IDT 是内核登记的"中断处理函数表"，CPU 按向量号索引它。
-- 系统调用路径：库函数封装、专用指令（syscall/svc）、内核入口、系统调用表、具体实现。
+1. `strace -c ./你的程序`：统计程序的系统调用清单与耗时，找出行走次数最多的调用；
+2. `cat /proc/interrupts | head`：看每核的中断分布，再用 `watch -n1` 观察时钟中断（LOC 列）的增速是否与核数一致。
 
-进阶注意：
+自检问题：
 
-- fault（如缺页）处理完成后会重执行触发指令，trap 则直接继续——理解这一点才能读懂缺页密集型程序的 strace 输出。
-- 中断处理分顶半部/底半部，中断上下文不可睡眠；`/proc/interrupts` 与 `/proc/softirqs` 是排查中断负载的入口。
-- 系统调用开销（约几百纳秒）在高频小 I/O 场景不可忽略，vDSO、io_uring 等优化都围绕"少进出内核"展开（见 [用户态与内核态切换](/cs-fundamentals/200-UserModeKernelModeSwitch)）。
+- fault 与 trap 的返回行为差在哪？各举一个例子？（fault 修复后重执行触发指令，如缺页；trap 返回下一条指令，如系统调用）
+- 为什么中断处理程序里不能睡眠？（中断上下文不隶属任何进程、不可被调度，睡眠会阻塞整条中断线）
+- `write(fd, buf, n)` 从库函数到磁盘驱动经过哪几步？（glibc 组装、寄存器传参、syscall 指令、调用号查表、sys_write、页缓存判定）
+- 信号与中断的关系是什么？（机制独立：信号是内核向进程的用户态通知，中断是内核态的硬件响应；设计思想同源）
+
+## 下一步
+
+- 特权级切换的完整代价与 vDSO 优化：[用户态与内核态切换](/cs-fundamentals/200-UserModeKernelModeSwitch)；
+- 缺页异常的另一半：段页与虚拟内存（[内存分段与分页](/cs-fundamentals/210-MemorySegmentationAndPaging)）；
+- 减少 syscall 次数的工程实践：[零拷贝](/cs-fundamentals/250-ZeroCopy) 与 io_uring。

@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 210
 title: 并行查询
 module: 'postgresql'
 category: 数据库

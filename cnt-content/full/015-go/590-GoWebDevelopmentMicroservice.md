@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: net/http 标准库、Gin/Echo/Fiber 框架、中间件模式、RESTful API、gRPC、数据库操作、项目结构与容器化部署。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'go/100-GoGeneric'
   - 'go/110-GoStandardLibraryToolchain'
@@ -435,7 +435,8 @@ func main() {
 ### 5.3 客户端调用
 
 ```go
-conn, _ := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+// grpc.Dial 自 gRPC-Go 1.63 起废弃，新代码用 grpc.NewClient（懒连接，见 gRPC 一篇）
+conn, _ := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 defer conn.Close()
 
 client := pb.NewUserServiceClient(conn)

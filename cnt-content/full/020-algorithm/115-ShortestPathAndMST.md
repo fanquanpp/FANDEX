@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: '图最短路径三算法（Dijkstra、Bellman-Ford、Floyd-Warshall）与最小生成树双算法（Kruskal、Prim）的横向对照篇：松弛操作、堆优化 Dijkstra 的 Python/C++/Java 完整实现与贪心选择性质证明、负权失效反例、Bellman-Ford 与 SPFA 的负环检测、Floyd-Warshall DP 状态设计与正确性概要、A* 启发式搜索、Cut 性质下的 Kruskal 与 Prim 对照实现，附稠密图、稀疏图、负权、多源场景的选型决策表；单算法纵向深水见 250-FloydWarshall 与 260-KruskalAlgorithm。'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'algorithm/110-GraphAlgorithms'
   - 'algorithm/250-FloydWarshall'
@@ -20,7 +20,9 @@ prerequisites:
   - 'algorithm/110-GraphAlgorithms'
 ---
 
-> 定位说明：本篇为进阶参考书（参考层），面向已完成本模块主线的读者；入门请先走学习路径前序阶段。定位标准见 docs/standards/reference-layer.md（仓库）。
+> 使用方式：本篇是图论主题的参考深水篇（最短路与最小生成树册），适合带着具体问题来查；遍历基础请先读[图算法：表示与遍历](/algorithm/110-GraphAlgorithms)。
+
+地图 App 告诉你最快的回家路线，网络运维要给若干机房布最省钱的网线——前者是最短路径，后者是最小生成树，图上最经典的两类优化问题。它们共享一个核心动作：最短路靠「松弛」不断收紧距离估计，MST 靠「Cut 性质」不断安全地加边。本篇横向对照最短路三族（Dijkstra、Bellman-Ford/SPFA、Floyd-Warshall，外加启发式的 A*）与 MST 双算法（Kruskal、Prim），读完后你能回答最实用的问题：什么图该用哪个算法，负权边会破坏哪个算法的哪条假设。
 
 ## 前置知识
 
@@ -1267,3 +1269,12 @@ def kruskal_fixed(n, edges):
 - **Karger 最小割**：随机化收缩与 MST 的联系。
 
 算法竞赛训练、学术会议与社区资源（Codeforces 图论专题、SODA/STOC、CP-Algorithms 等）的完整清单见[图算法：表示与遍历](/algorithm/110-GraphAlgorithms)第 15 章。
+
+## 读完自检
+
+- Dijkstra 为什么不能处理负权边？负权该换谁？（贪心选择性质被破坏：已确定的最短距离可能被负边更新；换 Bellman-Ford/SPFA）
+- 松弛操作的形式是什么？Bellman-Ford 为什么 V-1 轮就够？（dist[v] = min(dist[v], dist[u]+w(u,v))；最短路径至多 V-1 条边，每轮至少固定一条）
+- 无负权的稀疏图与稠密图各选什么最短路算法？（稀疏：堆优化 Dijkstra O((V+E)logV)；稠密：朴素 Dijkstra O(V^2)）
+- Kruskal 与 Prim 各自依赖什么数据结构？分别适合什么图？（并查集判环 + 边排序，稀疏图；堆，稠密图）
+- Floyd-Warshall 的状态与转移方程能默写吗？（dp[k][i][j] = min(dp[k-1][i][j], dp[k-1][i][k]+dp[k-1][k][j])）
+- 判断题：MST 的总权唯一时，树本身也唯一吗？（不一定，等权边可产生不同树但总权相同）

@@ -1,12 +1,12 @@
 ---
-order: 660
+order: 670
 title: Web Workers 多线程
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: Worker、SharedArrayBuffer 与 Atomics：让主线程之外真正并行。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'javascript/300-EventLoopDetailed'
   - 'javascript/250-AsyncProgramming'
@@ -21,7 +21,7 @@ JavaScript 的主线程在同一时刻只能做一件事，任何超过几十毫
 ## 前置知识
 
 - [事件循环进阶](/javascript/300-EventLoopDetailed)：理解主线程为何会被长任务阻塞。
-- [ArrayBuffer 与 TypedArray](/javascript/240-ArrayBufferTypedArray)：二进制数据是 Worker 传输与共享内存的基础。
+- [ArrayBuffer 与类型化数组](/javascript/225-ArrayBufferAndTypedArrays)：二进制数据是 Worker 传输与共享内存的基础。
 - [异步编程](/javascript/250-AsyncProgramming)：Worker 通信结果通常用 Promise 组织。
 
 ## 学习目标

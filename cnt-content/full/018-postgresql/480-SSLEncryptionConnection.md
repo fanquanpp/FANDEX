@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 420
 title: SSL/TLS 加密连接：从证书到强制加密
 module: 'postgresql'
 category: 数据库

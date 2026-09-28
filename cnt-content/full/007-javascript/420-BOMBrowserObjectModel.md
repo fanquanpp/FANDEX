@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 430
 title: BOM 浏览器对象模型
 module: 'javascript'
 category: 前端技术

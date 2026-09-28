@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: CREATE/ALTER/DROP、视图、索引与存储过程。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-29'
 related:
   - 'mysql/060-MySQLEnvSetup'
   - 'mysql/070-MySQLDataTypeConstraint'
@@ -298,15 +298,15 @@ DDL 用于创建、修改和删除数据库对象，包括数据库、表、索�
 ```sql
  START TRANSACTION;
  BEGIN;
- inSERT INTO users (username, email) VALUES ('张三', 'zhangsan@example.com');
+ INSERT INTO users (username, email) VALUES ('张三', 'zhangsan@example.com');
  UPDATE accounts SET balance = balance - 100 WHERE user_id = 1;
  UPDATE accounts SET balance = balance + 100 WHERE user_id = 2;
  commit;
  ROLLBACK;
  START TRANSACTION;
- inSERT INTO users (username) VALUES ('张三');
+ INSERT INTO users (username) VALUES ('张三');
  SAVEPOINT sp1;
- inSERT INTO users (username) VALUES ('李四');
+ INSERT INTO users (username) VALUES ('李四');
  ROLLBACK TO sp1; -- 回滚到保存点
  commit;
 ```
@@ -339,9 +339,9 @@ DDL 用于创建、修改和删除数据库对象，包括数据库、表、索�
   COMMIT;
  END IF;
  START TRANSACTION;
- inSERT INTO orders (user_id, total_amount) VALUES (1, 500);
+ INSERT INTO orders (user_id, total_amount) VALUES (1, 500);
  SET @order_id = LAST_INSERT_ID();
- inSERT INTO order_items (order_id, product_id, quantity, price) VALUES
+ INSERT INTO order_items (order_id, product_id, quantity, price) VALUES
  (@order_id, 101, 2, 200),
  (@order_id, 102, 1, 100);
  UPDATE products SET stock = stock - 3 WHERE id IN (101, 102);
@@ -371,7 +371,7 @@ DDL 用于创建、修改和删除数据库对象，包括数据库、表、索�
   o.status,
   o.created_at
  from orders o
- inNER JOIN users u ON o.user_id = u.id;
+ INNER JOIN users u ON o.user_id = u.id;
  CREATE VIEW user_stats AS
  SELECT
   u.id,
@@ -414,8 +414,32 @@ DDL 用于创建、修改和删除数据库对象，包括数据库、表、索�
 
 ### 3.5 视图限制
 
+MySQL 视图有四条高频限制，建视图前先过一遍：
+
 ```sql
+-- 限制一：定义里不能含 FROM 子查询（MySQL 特有，PostgreSQL 无此限制）
+CREATE VIEW v_recent AS
+SELECT * FROM (SELECT * FROM users WHERE status = 1) AS t;
+-- ERROR 1349 (HY000): View's SELECT contains a subquery in the FROM clause
+-- 变通：把子查询拆成另一层视图，或把过滤逻辑交给查询方
+
+-- 限制二：视图不存数据，定义多复杂每次查询就重算多贵
+CREATE VIEW v_user_stats AS
+SELECT u.id, u.username, COUNT(o.id) AS order_count
+FROM users u LEFT JOIN orders o ON o.user_id = u.id
+GROUP BY u.id, u.username;
+SELECT * FROM v_user_stats;   -- 每次都是完整的两表 JOIN + 聚合
+
+-- 限制三：外层 ORDER BY 会覆盖视图内部的 ORDER BY，视图不保证输出顺序
+CREATE VIEW v_sorted AS
+SELECT * FROM users ORDER BY created_at;
+SELECT * FROM v_sorted;       -- 语义上无序，别依赖它
+
+-- 限制四：视图不能带参数。要"按条件变化的视图"只能查询时自己加 WHERE，
+-- 或改用存储过程（见 mysql/770-StoredProcedureAndFunction）
 ```
+
+另外，含 GROUP BY、DISTINCT、聚合的视图自动不可更新（只能读），MySQL 也不支持视图上的 INSTEAD OF 触发器（PostgreSQL 专属能力）。
 
 ## 4. 存储过程详解
 

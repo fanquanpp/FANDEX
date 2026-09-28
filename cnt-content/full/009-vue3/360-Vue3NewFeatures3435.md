@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 380
 title: Vue 3.4 / 3.5 新特性
 module: 'vue3'
 category: 前端技术

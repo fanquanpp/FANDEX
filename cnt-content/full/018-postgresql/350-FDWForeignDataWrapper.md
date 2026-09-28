@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 300
 title: FDW 外部数据包装器：在 SQL 里查一切
 module: 'postgresql'
 category: 数据库

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub Webhooks详解：按事件→Webhook→Payload→响应完整流程讲解订阅、投递、签名验证与服务器实现。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'github/320-RESTGraphQLAPI'
 prerequisites:
@@ -325,6 +325,6 @@ cloudflared tunnel --url http://localhost:3000
 - 创建 Webhooks：https://docs.github.com/zh/webhooks/using-webhooks/creating-webhooks
 
 ### 延伸阅读
-- REST 与 GraphQL API（Webhook 的"反面"——主动拉取），见 004-github 模块 021 文档。
-- GitHub Actions（工作流 `workflow_run` 事件与 Webhook 联动），见 004-github 模块 029 文档。
-- GitHub CLI（用 gh api 管理 Webhook），见 004-github 模块 020 文档。
+- [REST 与 GraphQL API](/github/320-RESTGraphQLAPI)（Webhook 的"反面"——主动拉取）
+- [GitHub Actions 与 CI/CD](/github/370-GitHubActionsCICD)（工作流 `workflow_run` 事件与 Webhook 联动）
+- [GitHub CLI](/github/440-GitHubCLI)（用 gh api 管理 Webhook）

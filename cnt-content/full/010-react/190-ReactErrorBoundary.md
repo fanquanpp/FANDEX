@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 210
 title: React 错误边界
 module: 'react'
 category: 前端技术

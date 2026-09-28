@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 使用槽位存档 API 保存恢复完整运行状态，理解上一句回滚的事务机制与 Backlog 点击回退
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/060-KonadoAdvancedInstructions'
   - 'konado/070-KonadoDialogueManagerApi'
@@ -14,20 +14,9 @@ prerequisites:
   - 'konado/070-KonadoDialogueManagerApi'
 ---
 
-视觉小说玩家对两个功能有近乎执念的期待：随时存档读档，以及看漏一句话后能退回去重看。Konado 把这两件事都做成了默认能力：槽位化的存档系统（Save System）、按句回退的上一句功能，以及可以点击任意历史条目直接跳回去的 Backlog（对话历史）面板。这一篇讲清它们的 API、内部机制与边界规则。
+几何构成（speed-rouge）做剧情测试时暴露了一个真实需求：玩家在 Boss 战前的剧情点选了分支 A，打输重来后剧情必须回到"选 A 之前"，而且玩家看漏了选项前的铺垫想退回去重看。视觉小说玩家对这类功能有近乎执念的期待：随时存档读档，看漏一句话能退回去重看。Konado 把这两件事都做成了默认能力：槽位化的存档系统（Save System）、按句回退的上一句功能，以及可以点击任意历史条目直接跳回去的 Backlog（对话历史）面板。这一篇讲清它们的 API、内部机制与边界规则。
 
 这三块能力共享同一套底层：Konado 的运行时是一个基于可逆事务的虚拟机，快照（Snapshot）与原子执行边界是所有恢复行为的基石。理解了"快照记录了什么、回退能跨越什么"，你就能预判任何边界情况下系统的行为，而不是靠猜。
-
-## 学习目标
-
-- 了解默认模板的 20 个存档槽位与快速存档约定；
-- 掌握存档 API：save_game、load_game、delete_save、get_save_info、get_all_save_info，并养成处理失败返回值的习惯；
-- 知道存档保存了哪些运行状态，以及读取时的多重校验机制；
-- 了解 .kns 存档文件的格式与完整性校验原理；
-- 理解上一句回退的事务机制：快照容量、同帧重放与安全停止；
-- 掌握回退边界规则：end 是边界、jump 可跨越、signal/asyncam 重放、成就不重放；
-- 会用 can_rollback/rollback、create_checkpoint/restore_checkpoint 与 timeline 便捷接口；
-- 会操作 Backlog 对话历史：条目字段、点击回退、dialogue_history API 与 rollback_policy。
 
 ## 存档系统概览
 
@@ -161,17 +150,23 @@ dialogue_manager.entry_committed            # 新条目提交时发射的信号
 
 最后与老牌引擎对照一句话：Ren'Py 玩家熟悉的"回滚看历史"体验，Konado 默认就提供点击历史行直接回退的等价能力；两者的机制差异，可延伸阅读本站 renpy 模块的相关篇目。
 
-## 小结
+## 坑点与自检
 
-- 默认 20 个槽位（0-19），槽位 0 为快速存档；模板功能栏已内置快速保存、快速读取与存档面板；
-- 存档 API 五件套 save_game/load_game/delete_save/get_save_info/get_all_save_info，返回值必须检查；
-- 存档在原子边界内保存指令位置、变量、对话框、角色、背景、相机与音频的完整状态，只能整体保存恢复；
-- 读取校验格式、编译器 ABI、剧本指纹与指令标识，无法准确恢复时明确失败，绝不静默跳错剧情；
-- .kns 文件位于 user://konado_saves/，带格式版本、长度与 SHA-256 校验，能发现损坏但不是加密；
-- 上一句回退复用可逆事务：快照保留 128 句与 4 MiB 预算、执行历史 512 条、同帧重放不闪现、失败进安全停止；
-- end 是唯一回退边界；jump 可跨越；signal/asyncam 重放时重新执行；成就可跨越不重放；
-- 编程接口 can_rollback/rollback/create_checkpoint/restore_checkpoint/get_execution_history/clear_execution_history，外加 timeline 的 can_step_back/step_back/previous_dialogue_steps；
-- Backlog 会话级内存历史，上限默认 256 条，字段含 kind/speaker/text/options/instruction_id/shot_path/line/serial/pending，点击已提交条目即回退到该句；dialogue_history 提供 entries/size/clear、entry_committed 信号与 rollback_policy（TRIM 默认/KEEP）。
+- 存档接口返回值不看，读档失败界面却显示"继续游戏"——save/load 返回 bool，失败必须给玩家明确反馈；
+- 升级游戏版本改了剧本，老存档一读就失败——这是设计行为：读取会校验编译器 ABI 与剧本指纹，无法准确恢复就明确失败，绝不静默跳错剧情；
+- 以为 .kns 有 SHA-256 校验就是加密——校验只发现损坏，不防篡改；有排行榜或防作弊需求要另行设计；
+- 玩家读档后 Backlog 还留着上个会话的历史——Backlog 是会级内存历史，不随存档走，这是约定不是 bug；
+- 剧本里没写 end，回退行为变得难以预测——每个剧本文件结尾用 end 收束，它是唯一的回退边界；
+- 一次性通知的 signal 在回退重放后又触发了一遍——把处理逻辑写成幂等，或把"绝不该撤销"的记录改用成就指令；
+- 自检问题一：存档能只存变量不存音频状态吗？（不能，原子边界内整体保存整体恢复，也因此不存在"忘了存某个节点"的坑）
+- 自检问题二：回退能跨过已执行过的 end 吗？（不能，end 是唯一回退边界；jump 可以跨越）
+- 自检问题三："回到本章开头"怎么实现最顺手？（章节开始处 create_checkpoint 带标签，按钮里 restore_checkpoint）
+
+## 练习
+
+1. 用存档 API 五件套自建一个迷你存档列表：get_all_save_info 渲染 20 个槽位状态，点格子 save_game/load_game，故意读空槽位验证失败分支；
+2. 制造一次回退跨越 signal：剧本里发射 signal 让代码弹提示，推进两句后回退，观察重放；再把处理改成幂等并验证不再重复；
+3. 在章节开头建带标签检查点，随意推进后恢复它，对比 create_checkpoint/restore_checkpoint 与按句 rollback 的粒度差别。
 
 ## 参考链接
 

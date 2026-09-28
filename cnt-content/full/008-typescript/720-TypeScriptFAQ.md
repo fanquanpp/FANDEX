@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 按主题整理 TypeScript 学习中的高频疑问：any/unknown、interface/type、as/satisfies、import type、推断与收窄等。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/020-HowToReadThisCourse'
   - 'typescript/080-BasicTypeSystem'
@@ -39,7 +39,7 @@ function fail(): never {
 }
 ```
 
-**详细说明**：`any` 是类型系统的"逃生门"，能不用就不用；`unknown` 是类型安全的"未知"，从外部来的数据都应该先用它接住，再通过类型守卫收窄（见 `016-TypeGuardCustomGuard`）；`never` 的完整语义见 `NeverTypeSemantics`。
+**详细说明**：`any` 是类型系统的"逃生门"，能不用就不用；`unknown` 是类型安全的"未知"，从外部来的数据都应该先用它接住，再通过类型守卫收窄（见[类型守卫与自定义守卫](/typescript/150-TypeGuardCustomGuard)）；`never` 的完整语义见[never 类型完整语义](/typescript/190-NeverTypeSemantics)。
 
 ## 2. interface 和 type 到底用哪个
 
@@ -53,7 +53,7 @@ function fail(): never {
 | 声明合并（同名自动合并） | 支持 | 不支持 |
 | 映射/条件/模板字面量类型 | 不支持 | 支持 |
 
-**详细说明**：interface 的声明合并让库的全局扩展成为可能（如给 `Window` 增加属性）；type 更灵活，是"给任何类型起名字"。社区惯例：先 interface，需要类型运算时换 type。完整对比见 `007-InterfaceTypeAlias`。
+**详细说明**：interface 的声明合并让库的全局扩展成为可能（如给 `Window` 增加属性）；type 更灵活，是"给任何类型起名字"。社区惯例：先 interface，需要类型运算时换 type。完整对比见[接口与类型别名](/typescript/100-InterfaceTypeAlias)。
 
 ## 3. as 断言、satisfies、类型注解什么区别
 
@@ -66,7 +66,7 @@ const c = { mode: "dev" } satisfies Record<string, string>;
 // 校验通过，且 c.mode 的类型是 "dev"（保留字面量，不拓宽）
 ```
 
-**详细说明**：`as` 能双向收窄/放宽类型，但也可能掩盖真实错误，能用注解或 satisfies 就别用 as；`satisfies` 是 TS 4.9+ 的"校验不改变"工具，完整讲解见 `049-SatisfiesOperator`。
+**详细说明**：`as` 能双向收窄/放宽类型，但也可能掩盖真实错误，能用注解或 satisfies 就别用 as；`satisfies` 是 TS 4.9+ 的"校验不改变"工具，完整讲解见[satisfies 操作符](/typescript/180-SatisfiesOperator)。
 
 ## 4. import type 和普通 import 什么区别
 
@@ -78,7 +78,7 @@ import { createUser, type User } from "./models";
 // User 是类型，编译后剔除
 ```
 
-**详细说明**：开启 `verbatimModuleSyntax` 后，类型必须显式写 `type`，否则报错。class 既是值又是类型，普通导入即可。详见 `ImportTypeVerbatimModuleSyntax`。
+**详细说明**：开启 `verbatimModuleSyntax` 后，类型必须显式写 `type`，否则报错。class 既是值又是类型，普通导入即可。详见[import type 与 verbatimModuleSyntax](/typescript/320-ImportTypeVerbatimModuleSyntax)。
 
 ## 5. 为什么 let 推断成 number，const 推断成 1
 
@@ -120,7 +120,7 @@ const getDog: () => Dog = () => ({ name: "d", bark() {} });
 const getAnimal: () => Animal = getDog; // 合法：返回 Dog 是 Animal 的子类型
 ```
 
-**详细说明**：参数逆变的直觉是"调用方可能传入任何 Animal"，所以处理函数必须能接受所有 Animal。完整理论见 `026-CovarianceContravariance`，入门版见 `TypeCompatibility`。
+**详细说明**：参数逆变的直觉是"调用方可能传入任何 Animal"，所以处理函数必须能接受所有 Animal。完整理论见[协变与逆变](/typescript/260-CovarianceContravariance)，入门版见[类型兼容性](/typescript/200-TypeCompatibility)。
 
 ## 8. enum 和 as const 对象怎么选
 
@@ -135,7 +135,7 @@ const Status = {
 type StatusValue = (typeof Status)[keyof typeof Status]; // "pending" | "done"
 ```
 
-**详细说明**：enum 在运行时生成额外对象，`const enum` 又被单文件编译限制；`as const` 对象与结构化类型天然兼容，现代项目更常用。详见 `030-EnumAdvanced` 与 `ConstAssertion`。
+**详细说明**：enum 在运行时生成额外对象，`const enum` 又被单文件编译限制；`as const` 对象与结构化类型天然兼容，现代项目更常用。详见[枚举进阶](/typescript/130-EnumAdvanced)与[as const 完整讲解](/typescript/170-ConstAssertion)。
 
 ## 9. 泛型箭头函数在 .tsx 里怎么写
 
@@ -150,13 +150,13 @@ const id = <T,>(x: T): T => x;
 const id2 = <T extends unknown>(x: T): T => x;
 ```
 
-**详细说明**：这只影响 .tsx 文件；.ts 文件不需要逗号。泛型基础见 `005-TSBasicsGenerics`。
+**详细说明**：这只影响 .tsx 文件；.ts 文件不需要逗号。泛型基础见[泛型基础](/typescript/070-TSBasicsGenerics)。
 
 ## 10. strict 模式到底开不开
 
 **一句话答案**：开。`strict` 是全家桶开关，包含 `strictNullChecks`、`noImplicitAny` 等；新项目一律开启，老项目逐步迁移。
 
-**详细说明**：`strict` 关掉后，null 可以赋给任何类型、隐式 any 不报错，类型安全形同虚设。每个开关的作用见 `057-TsconfigStrictMode`，迁移策略见 `050-TypeScriptMigrationPractice`。
+**详细说明**：`strict` 关掉后，null 可以赋给任何类型、隐式 any 不报错，类型安全形同虚设。每个开关的作用见[tsconfig 严格模式](/typescript/360-TsconfigStrictMode)，迁移策略见[迁移实战](/typescript/390-TypeScriptMigrationPractice)。
 
 ## 11. 报错信息看不懂怎么办
 
@@ -179,13 +179,13 @@ const id2 = <T extends unknown>(x: T): T => x;
 
 **一句话答案**：实现代码放 .ts，给第三方库补类型或声明全局变量用 .d.ts。
 
-**详细说明**：.d.ts 只含类型声明，不产生运行时代码；手写第三方类型适配、全局变量声明、模块扩展都需要它。完整讲解见 `021-DeclarationFileWriting`。
+**详细说明**：.d.ts 只含类型声明，不产生运行时代码；手写第三方类型适配、全局变量声明、模块扩展都需要它。完整讲解见[声明文件编写](/typescript/300-DeclarationFileWriting)。
 
 ## 13. 学了这么多类型，实战里怎么用
 
 **一句话答案**：从边界开始：接口输入输出用类型建模，外部数据先 unknown 再守卫，状态用联合类型，分支用穷尽检查。
 
-**详细说明**：完整可运行的例子见 `TypeScriptProjectExampleTodoApp`（前后端 TODO）与 `059-TypeScriptProjectExampleTypeSafeAPIClient`（类型安全 API 客户端）。
+**详细说明**：完整可运行的例子见[类型安全 TODO 应用](/typescript/700-TypeScriptProjectExampleTodoApp)（前后端 TODO）与[类型安全的 API 客户端](/typescript/690-TypeScriptProjectExampleTypeSafeAPIClient)（类型安全 API 客户端）。
 
 ## 14. 一句话记住
 
@@ -195,4 +195,4 @@ const id2 = <T extends unknown>(x: T): T => x;
 
 - 各问题对应正文章节已在文中给出；
 - 学习路线与阅读规则见 `typescript/020-HowToReadThisCourse`；
-- 术语速查见 `001-TypeScriptOverviewEnvSetup` 末尾的核心术语表。
+- 术语速查见[TypeScript 概述与环境配置](/typescript/030-TypeScriptOverviewEnvSetup)末尾的核心术语表。

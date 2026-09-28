@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 330
 title: 触发器与事件触发器
 module: 'postgresql'
 category: 数据库

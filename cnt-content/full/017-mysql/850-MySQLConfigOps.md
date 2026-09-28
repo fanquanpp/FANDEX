@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 参数调优、日志管理、备份恢复与监控。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-29'
 related:
   - 'mysql/810-JSONTypeJSONTable'
   - 'mysql/460-TransactionLockMechanism'
@@ -143,16 +143,16 @@ prerequisites:
 #### 1.3.1 插入数据
 
 ```sql
- inSERT INTO users (username, email, password, age) VALUES ('张三', 'zhangsan@example.com', 'encrypted_pass', 25);
- inSERT INTO users (username, email) VALUES ('李四', 'lisi@example.com');
- inSERT INTO users (username, email, password, age) VALUES
+ INSERT INTO users (username, email, password, age) VALUES ('张三', 'zhangsan@example.com', 'encrypted_pass', 25);
+ INSERT INTO users (username, email) VALUES ('李四', 'lisi@example.com');
+ INSERT INTO users (username, email, password, age) VALUES
  ('王五', 'wangwu@example.com', 'pass1', 30),
  ('赵六', 'zhaoliu@example.com', 'pass2', 28),
  ('钱七', 'qianqi@example.com', 'pass3', 35);
- inSERT INTO users (username, email, age)
+ INSERT INTO users (username, email, age)
  SELECT username, email, age FROM old_users WHERE status = 1;
- inSERT INTO users SET username='孙八', email='sunba@example.com', age=27;
- inSERT INTO users (id, username, email) VALUES (1, '张三', 'new_email@example.com')
+ INSERT INTO users SET username='孙八', email='sunba@example.com', age=27;
+ INSERT INTO users (id, username, email) VALUES (1, '张三', 'new_email@example.com')
  ON DUPLICATE KEY UPDATE email='new_email@example.com', updated_at=NOW();
  replace INTO users (id, username, email) VALUES (1, '张三', 'new_email@example.com');
  SELECT LAST_INSERT_ID();
@@ -180,7 +180,7 @@ prerequisites:
  SELECT status, AVG(age) AS avg_age FROM users GROUP BY status HAVING AVG(age) > 25;
  SELECT u.username, o.order_no, o.total_amount
  from users u
- inNER JOIN orders o ON u.id = o.user_id
+ INNER JOIN orders o ON u.id = o.user_id
  WHERE o.status = 2;
 ```
 
@@ -328,7 +328,7 @@ prerequisites:
  SHOW FULL PROCESSLIST;
  EXPLAIN SELECT u.username, o.total_amount
  from users u
- inNER JOIN orders o ON u.id = o.user_id
+ INNER JOIN orders o ON u.id = o.user_id
  WHERE o.created_at > '2024-01-01';
 ```
 

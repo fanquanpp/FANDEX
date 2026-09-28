@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 网络流算法：流网络形式化定义 (G,s,t,c,f)、最大流最小割定理、Ford-Fulkerson 方法 O(E·|f*|)、Edmonds-Karp 算法 O(VE²)、Dinic 算法 O(V²E)、Push-Relabel 算法 O(V²E)/O(V³)、ISAP、最小费用最大流、网络单纯形，覆盖二分图匹配、Project Selection、Image Segmentation、Baseball Elimination、Airline Scheduling 等工程应用，附多语言实现。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'algorithm/110-GraphAlgorithms'
   - 'algorithm/270-TopologicalSorting'
@@ -20,7 +20,9 @@ prerequisites:
   - 'cs-fundamentals/540-DiscreteMathematics'
 ---
 
-> 定位说明：本篇为进阶参考书（参考层），面向已完成本模块主线的读者；入门请先走学习路径前序阶段。定位标准见 docs/standards/reference-layer.md（仓库）。
+> 使用方式：本篇是网络流的参考深水篇，适合带着具体问题来查；图遍历与 BFS/DFS 基础见[图算法](/algorithm/110-GraphAlgorithms)。
+
+一张带容量限制的管道网，从源到汇最多能同时流多少？这是 1955 年 RAND 公司研究苏联铁路运输能力时的真实问题，也是网络流的起点。它的真正威力在于归约：二分图最大匹配、任务分配、图像分割、项目选择，都能化成一张流网络跑最大流。本篇从 Ford-Fulkerson 方法讲到 Edmonds-Karp、Dinic 与最小费用流，读完后你能识别「哪些问题里藏着一张流网络」，并为给定规模选对算法。
 
 ## 前置知识
 
@@ -3437,3 +3439,11 @@ _最后审阅：2026-07-18 · FANDEX Content Engineering_
 - [CP-Algorithms: Edmonds-Karp](https://cp-algorithms.com/graph/edmonds_karp.html)：Ford-Fulkerson 方法与 BFS 增广实现的英文权威参考（英文，免费）。
 
 > 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。
+
+## 读完自检
+
+- 流网络的两条约束是什么？（容量约束 f(u,v) <= c(u,v) 与守恒约束：除源汇外流入等于流出）
+- 增广路径上的可增流量怎么算？反向边为什么必须存在？（路径最小残量；反向边允许后续流量「反悔」，否则贪心会卡死）
+- 最大流最小割定理说了什么？如何用它证明二分图最大匹配等于最小点覆盖（König 定理）？
+- Edmonds-Karp 与 Dinic 分别靠什么获得多项式与更优复杂度？（BFS 选最短增广路 O(VE^2)；分层图加阻塞流 O(V^2 E)）
+- 拿到建模题能先问三问：谁是节点？谁是容量约束？最大化的量对应流的值还是费用？
