@@ -1,12 +1,12 @@
 ---
-order: 220
+order: 230
 title: 函数与泛型
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: 函数类型签名、泛型约束、条件类型与推断。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/080-BasicTypeSystem'
   - 'typescript/100-InterfaceTypeAlias'

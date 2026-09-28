@@ -1,12 +1,12 @@
 ---
-order: 400
+order: 420
 title: 专项：已废弃标签考古
 module: 'html5'
 category: 前端技术
 difficulty: beginner
 description: 老网页和旧代码里必遇的废弃标签清单：font、center、frameset、marquee 等，附现代替代方案与遇到老项目时的处理思路。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'html5/020-HTML5OverviewCoreFeature'
   - 'html5/040-DocTypeDeclaration'

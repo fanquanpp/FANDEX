@@ -4,639 +4,239 @@ title: 功能与自动化测试
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
-description: 功能测试执行、自动化测试脚本编写、Selenium 框架、Unittest/pytest 框架、测试数据管理与页面对象模式。
+description: 从手工功能测试走到自动化：用一次真实回归理解用例与缺陷报告，再看真实仓库的冒烟测试长什么样，会选自动化边界。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'software-testing/010-TestBasicsMethod'
-  - 'software-testing/140-PerformanceInterfaceTest'
-  - 'software-testing/170-SecurityAndMobileTest'
+  - 'software-testing/090-Selenium'
+  - 'software-testing/100-Pytest'
+  - 'software-testing/220-E2ETest'
 prerequisites: []
 ---
 
-## 学习目标
+前置知识：知道"测试用例"是什么即可，不需要编程基础——本文从纯手工操作
+开始，逐步走到代码。
 
-本文是「软件工程与测试」模块的第 8 篇，难度定位为进阶。重点内容：功能测试执行、自动化测试脚本编写、Selenium 框架、Unittest/pytest 框架、测试数据管理与页面对象模式。
+读完本文你应当能够：独立完成一轮手工功能回归并写出合格的缺陷报告；
+判断一个功能值不值得自动化；读懂一个真实仓库的自动化冒烟测试在验证什么。
 
-主要章节：
+## 1. 场景：入职第一天，手工回归登录功能
 
-- 1. 功能测试执行
-- 2. Selenium 测试框架
-- 3. Unittest 测试框架
-- 4. pytest 测试框架
-- 5. 测试数据管理
-- 6. 页面对象模式（POM）
-- ……共 7 个章节
+假设你刚进团队，测试负责人说："发布前把登录功能回归一遍。"你手上
+只有需求文档和测试环境地址。怎么做？
 
-## 1. 功能测试执行
+### 1.1 先列用例，再动手点
 
-### 1.1 功能测试流程
+不列用例直接乱点，测完说不清"我测过什么"。登录功能的最小用例集：
 
-```
-需求分析 → 用例设计 → 用例评审 → 测试执行 → 缺陷提交 → 回归验证 → 测试报告
-```
+| 用例       | 输入                     | 预期                   |
+| :--------- | :----------------------- | :--------------------- |
+| 正向       | 正确用户名 + 正确密码    | 跳转首页               |
+| 逆向       | 正确用户名 + 错误密码    | 提示错误，不跳转       |
+| 空值边界   | 用户名为空               | 提示"请输入用户名"     |
+| 超长边界   | 输入 1000 个字符的用户名 | 不崩溃，给出友好提示   |
+| SQL 注入串 | `' OR 1=1--`             | 当普通失败处理，不放行 |
 
-### 1.2 功能测试要点
+规律就三个词：**正向、逆向、边界**。手工测试的大部分遗漏，都是只测了
+正向。边界值与等价类怎么系统化地找，见《等价类划分》《边界值分析》。
 
-| 要点         | 说明                           |
-| :----------- | :----------------------------- |
-| **正向验证** | 验证功能正常流程是否正确       |
-| **逆向验证** | 验证异常输入是否正确处理       |
-| **边界验证** | 验证边界值和临界条件           |
-| **交互验证** | 验证功能间的联动和影响         |
-| **数据验证** | 验证数据的增删改查和一致性     |
-| **兼容验证** | 验证不同浏览器/设备/系统的表现 |
+### 1.2 发现问题：写一份合格的缺陷报告
 
-### 1.3 缺陷报告
+假设逆向用例失败了：点了登录按钮页面卡住。你需要提交缺陷报告。
+一份让开发不反感的报告长这样：
 
 ```yaml
-缺陷编号: BUG-2026-001
-标题: 用户登录后页面跳转失败
-严重程度: 严重
-优先级: 高
-复现步骤: 1. 打开登录页面
-  2. 输入正确用户名和密码
-  3. 点击登录按钮
-预期结果: 跳转到首页
-实际结果: 停留在登录页面，控制台报 500 错误
-环境: Chrome 120 / Windows 11 / 测试环境
-附件: screenshot.png
+标题: 登录失败后页面无响应，控制台报 500
+严重程度: 严重        # 崩溃/主流程阻断；优先级由项目排期定，两者不是一回事
+复现步骤:
+  - 打开 /login
+  - 输入正确用户名与错误密码
+  - 点击"登录"按钮
+预期结果: 表单下方提示"用户名或密码错误"
+实际结果: 页面无任何提示，浏览器控制台显示 POST /api/login 返回 500
+环境: Chrome 126 / Windows 11 / 测试环境（2026-09-28 构建）
+附件: screenshot.png、console.log
 ```
 
-## 2. Selenium 测试框架
+三要素缺一不可：**复现步骤**（别人照着能再次触发）、**预期 vs 实际**
+（差在哪）、**环境**（换台机器可能不复现）。"登录不了"五个字的缺陷
+报告，来回沟通的成本比写报告高十倍。
 
-### 2.1 Selenium 体系
+### 1.3 修完之后：回归的痛苦
 
-| 组件                   | 说明               |
-| :--------------------- | :----------------- |
-| **Selenium WebDriver** | 浏览器自动化驱动   |
-| **Selenium IDE**       | 浏览器录制回放插件 |
-| **Selenium Grid**      | 分布式并行测试     |
+开发修好了，你把六条用例再点一遍——十分钟后你意识到：下个迭代还会
+改登录，下下个迭代也是。**每一轮回归都在重复完全相同的操作**。这就是
+功能测试走向自动化的全部动机：把"人肉重复"变成"机器重复"。
 
-### 2.2 环境搭建
+## 2. 动手：看一个真实项目的自动化测试
 
-```bash
-# 安装 Selenium
-pip install selenium pytest
+自动化测试不是抽象概念，看真实仓库最快。FANDEX（就是你正在读的这个
+文档站）的 `app-web/tests/smoke.spec.ts` 是一组 Playwright 冒烟测试，
+在每次构建后验证站点"还活着"：
 
-# Selenium 4.6 起内置 Selenium Manager，会自动下载并缓存匹配的浏览器驱动，
-# 不再需要手工下载 chromedriver 或引入 webdriver-manager 这类第三方包
+```typescript
+import { expect, test, type Page } from '@playwright/test';
+
+function trackPageErrors(page: Page): Error[] {
+  const errors: Error[] = [];
+  page.on('pageerror', (err) => errors.push(err));
+  return errors;
+}
+
+test('首页渲染：标题、入口按钮与模块卡片', async ({ page }) => {
+  const errors = trackPageErrors(page);
+  await page.goto('/FANDEX/');
+  await expect(page).toHaveTitle(/FANDEX/i);
+  await expect(page.locator('a.entry-btn').first()).toBeVisible();
+  expect(errors, '首页不应有未捕获异常').toEqual([]);
+});
 ```
 
-> 历史项目里常见 `webdriver-manager` 自动管理驱动的写法（见 2.3），新代码
-> 直接 `webdriver.Chrome()` 即可，由 Selenium Manager 接管驱动。
+逐行读这段"陌生代码"，会发现它就是手工测试的翻版：
 
-### 2.3 WebDriver 基础操作
+| 手工动作                       | 自动化对应                                       |
+| :----------------------------- | :----------------------------------------------- |
+| 打开浏览器输入网址             | `page.goto('/FANDEX/')`                          |
+| 看一眼标题对不对               | `expect(page).toHaveTitle(...)`                  |
+| 找到入口按钮在哪               | `page.locator('a.entry-btn')`                    |
+| 打开 F12 看控制台有没有红色报错 | `page.on('pageerror')` 收集后断言为空            |
+| 下次发版再点一遍               | 每次构建自动跑一遍                               |
+
+想在本机复现：装好 Node 依赖后执行 `pnpm test:smoke`（内部就是
+`playwright test`），浏览器窗口自动打开、自动点击、自动断言。
+这个真实例子还藏着一层进阶信息：它**没有**验证任何像素级的视觉效果，
+只验证"标题在、按钮在、页面没炸"——这是冒烟测试的定位。什么该自动
+化、自动化到什么程度，见下一节。
+
+## 3. 为什么：自动化边界的判断标准
+
+不是所有测试都值得自动化。判断标准一条：**这个检查要不要反复执行，
+以及失败时机器能不能自己判断对错**。
+
+- 值得自动化：登录/下单等核心路径回归、API 契约、纯函数逻辑、
+  构建产物完整性（如 FANDEX 验证搜索索引生成）。
+- 不值得自动化：一次性验证、探索性测试（你根本不知道要点什么）、
+  需要人眼判断的视觉美感、频繁改版导致脚本天天重写的页面。
+
+另一个常见误区是"自动化 = UI 自动化"。测试金字塔里 UI 层只占小头，
+越往下越快越稳。FANDEX 那条"页面不应有未捕获异常"的断言之所以放在
+UI 层，是因为它验证的正是"整页组装"这个层级的问题。层级的完整论述
+见《测试层级》。
+
+## 4. 工具链：Python 侧的对应物
+
+上面例子是 TypeScript + Playwright。同样的思路在 Python 世界对应
+Selenium（驱动浏览器）+ pytest（组织用例）。本模块有两篇专文：
+《Selenium》与《Pytest》，这里只给最小对照，帮你把两边概念接上：
+
+| 概念         | Playwright (TS)         | Selenium + pytest (Python)            |
+| :----------- | :---------------------- | :------------------------------------ |
+| 打开页面     | `page.goto(url)`        | `driver.get(url)`                     |
+| 找元素       | `page.locator(sel)`     | `driver.find_element(By.ID, ...)`     |
+| 等待元素     | 内置自动等待            | `WebDriverWait` + 显式等待条件        |
+| 组织用例     | `test()` 函数           | `def test_xxx()` 函数                 |
+| 用例前置     | `test.beforeEach`       | `@pytest.fixture`                     |
+
+环境注意：Selenium 4.6 起内置 Selenium Manager 自动下载匹配的浏览器
+驱动，直接 `webdriver.Chrome()` 即可；老教程里的 `webdriver-manager`
+第三方包已不需要。
+
+### 4.1 unittest 与 pytest 怎么选
+
+Python 自带 unittest，无需安装；pytest 是当前社区默认选择。同一件事
+两边写法对比，一眼看出 pytest 胜在简洁：
 
 ```python
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-
-# 初始化浏览器
-driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-
-# 打开页面
-driver.get("https://www.example.com/login")
-
-# 获取页面信息
-print(driver.title)
-print(driver.current_url)
-
-# 退出浏览器
-driver.quit()
-```
-
-### 2.4 元素定位策略
-
-```python
-from selenium.webdriver.common.by import By
-
-# ID 定位（推荐，最快）
-element = driver.find_element(By.ID, "username")
-
-# Name 定位
-element = driver.find_element(By.NAME, "password")
-
-# Class 定位
-element = driver.find_element(By.CLASS_NAME, "btn-primary")
-
-# CSS 选择器（推荐，灵活）
-element = driver.find_element(By.CSS_SELECTOR, "#login-form input[type='text']")
-element = driver.find_element(By.CSS_SELECTOR, "div.card > h2.title")
-
-# XPath 定位（最强大）
-element = driver.find_element(By.XPATH, "//input[@id='username']")
-element = driver.find_element(By.XPATH, "//button[contains(text(), '登录')]")
-element = driver.find_element(By.XPATH, "//form[@id='login']//input[1]")
-
-# Link Text 定位
-element = driver.find_element(By.LINK_TEXT, "忘记密码")
-element = driver.find_element(By.PARTIAL_LINK_TEXT, "忘记")
-
-# Tag Name 定位
-elements = driver.find_elements(By.TAG_NAME, "input")
-```
-
-### 2.5 定位策略对比
-
-| 策略      | 速度 | 可读性 | 稳定性 | 推荐场景       |
-| :-------- | :--- | :----- | :----- | :------------- |
-| **ID**    | 最快 | 高     | 高     | 有唯一 ID 时   |
-| **CSS**   | 快   | 中     | 高     | 通用首选       |
-| **XPath** | 较慢 | 低     | 中     | 复杂定位       |
-| **Name**  | 快   | 高     | 中     | 表单元素       |
-| **Class** | 快   | 中     | 低     | 不推荐单独使用 |
-
-### 2.6 显式等待
-
-```python
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.common.by import By
-
-# 显式等待（推荐）
-wait = WebDriverWait(driver, timeout=10, poll_frequency=0.5)
-
-# 等待元素可见
-element = wait.until(EC.visibility_of_element_located((By.ID, "username")))
-
-# 等待元素可点击
-element = wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR, ".btn-login")))
-
-# 等待文本出现
-wait.until(EC.text_to_be_present_in_element((By.ID, "message"), "登录成功"))
-
-# 等待页面标题
-wait.until(EC.title_contains("首页"))
-
-# 自定义等待条件
-wait.until(lambda d: d.find_element(By.ID, "status").get_attribute("data-loaded") == "true")
-```
-
-### 2.7 完整登录测试示例
-
-```python
-from selenium import webdriver
-from selenium.webdriver.common.by import By
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from selenium.webdriver.chrome.service import Service
-from webdriver_manager.chrome import ChromeDriverManager
-import pytest
-
-class TestLogin:
-    """登录功能测试"""
-
-    def setup_method(self):
-        self.driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
-        self.wait = WebDriverWait(self.driver, 10)
-        self.driver.get("https://www.example.com/login")
-        self.driver.maximize_window()
-
-    def teardown_method(self):
-        self.driver.quit()
-
-    def test_login_success(self):
-        """正常登录"""
-        # 输入用户名
-        username = self.wait.until(EC.visibility_of_element_located((By.ID, "username")))
-        username.send_keys("admin")
-
-        # 输入密码
-        password = self.driver.find_element(By.ID, "password")
-        password.send_keys("123456")
-
-        # 点击登录
-        login_btn = self.driver.find_element(By.CSS_SELECTOR, ".btn-login")
-        login_btn.click()
-
-        # 验证跳转
-        self.wait.until(EC.title_contains("首页"))
-        assert "首页" in self.driver.title
-
-    def test_login_wrong_password(self):
-        """错误密码登录"""
-        username = self.wait.until(EC.visibility_of_element_located((By.ID, "username")))
-        username.send_keys("admin")
-
-        password = self.driver.find_element(By.ID, "password")
-        password.send_keys("wrong_password")
-
-        login_btn = self.driver.find_element(By.CSS_SELECTOR, ".btn-login")
-        login_btn.click()
-
-        # 验证错误提示
-        error_msg = self.wait.until(
-            EC.visibility_of_element_located((By.CSS_SELECTOR, ".error-message"))
-        )
-        assert "用户名或密码错误" in error_msg.text
-
-    def test_login_empty_fields(self):
-        """空字段登录"""
-        login_btn = self.wait.until(
-            EC.element_to_be_clickable((By.CSS_SELECTOR, ".btn-login"))
-        )
-        login_btn.click()
-
-        # 验证必填提示
-        username_error = self.driver.find_element(By.CSS_SELECTOR, "#username-error")
-        assert "请输入用户名" in username_error.text
-```
-
-## 3. Unittest 测试框架
-
-### 3.1 基础结构
-
-```python
+# unittest 写法（标准库自带）
 import unittest
 
-class Calculator:
-    """被测类"""
-    def add(self, a, b):
-        return a + b
-
-    def divide(self, a, b):
-        if b == 0:
-            raise ValueError("除数不能为零")
-        return a / b
-
 class TestCalculator(unittest.TestCase):
-    """计算器测试"""
-
     def setUp(self):
-        """每个测试方法前执行"""
         self.calc = Calculator()
-
-    def tearDown(self):
-        """每个测试方法后执行"""
-        pass
-
-    @classmethod
-    def setUpClass(cls):
-        """所有测试前执行一次"""
-        print("测试开始")
-
-    @classmethod
-    def tearDownClass(cls):
-        """所有测试后执行一次"""
-        print("测试结束")
 
     def test_add(self):
         self.assertEqual(self.calc.add(2, 3), 5)
-        self.assertEqual(self.calc.add(-1, 1), 0)
-        self.assertEqual(self.calc.add(0, 0), 0)
-
-    def test_divide(self):
-        self.assertEqual(self.calc.divide(6, 3), 2.0)
-        self.assertAlmostEqual(self.calc.divide(1, 3), 0.333, places=2)
 
     def test_divide_by_zero(self):
         with self.assertRaises(ValueError):
             self.calc.divide(1, 0)
-
-if __name__ == '__main__':
-    unittest.main()
 ```
-
-### 3.2 常用断言
-
-| 断言方法                          | 说明       |
-| :-------------------------------- | :--------- |
-| `assertEqual(a, b)`               | 相等       |
-| `assertNotEqual(a, b)`            | 不相等     |
-| `assertTrue(x)`                   | 为真       |
-| `assertFalse(x)`                  | 为假       |
-| `assertIs(a, b)`                  | 是同一对象 |
-| `assertIsNone(x)`                 | 为 None    |
-| `assertIn(a, b)`                  | a 在 b 中  |
-| `assertRaises(Exception)`         | 抛出异常   |
-| `assertAlmostEqual(a, b, places)` | 近似相等   |
-
-## 4. pytest 测试框架
-
-### 4.1 基础用法
 
 ```python
-import pytest
+# pytest 写法：普通函数 + 裸 assert，失败时自动给出详细差异
+def test_add():
+    assert Calculator().add(2, 3) == 5
 
-# 简单测试函数
-def test_addition():
-    assert 1 + 1 == 2
-
-def test_string_upper():
-    assert "hello".upper() == "HELLO"
-
-# 参数化测试
-@pytest.mark.parametrize("input_val, expected", [
-    (1, 2),
-    (2, 4),
-    (3, 6),
-    (0, 0),
-    (-1, -2),
-])
-def test_double(input_val, expected):
-    assert input_val * 2 == expected
+def test_divide_by_zero():
+    with pytest.raises(ValueError):
+        Calculator().divide(1, 0)
 ```
 
-### 4.2 Fixture 机制
+新项目直接 pytest；接手遗留的 unittest 用例不必迁移，pytest 能直接
+运行 unittest 风格的测试。
 
-```python
-import pytest
+### 4.2 数据驱动：用例与数据分离
 
-@pytest.fixture
-def sample_data():
-    """提供测试数据"""
-    return {"name": "张三", "age": 25, "email": "zhangsan@example.com"}
-
-@pytest.fixture
-def db_connection():
-    """模拟数据库连接"""
-    conn = {"connected": True, "data": []}
-    yield conn  # yield 之前的代码是 setup
-    conn["connected"] = False  # yield 之后的代码是 teardown
-
-def test_user_name(sample_data):
-    assert sample_data["name"] == "张三"
-
-def test_db_connection(db_connection):
-    assert db_connection["connected"] is True
-    db_connection["data"].append("record1")
-    assert len(db_connection["data"]) == 1
-```
-
-### 4.3 Fixture 作用域
-
-| 作用域       | 说明                         |
-| :----------- | :--------------------------- |
-| **function** | 每个测试函数执行一次（默认） |
-| **class**    | 每个测试类执行一次           |
-| **module**   | 每个模块执行一次             |
-| **session**  | 整个测试会话执行一次         |
-
-```python
-@pytest.fixture(scope="session")
-def app_client():
-    """整个测试会话只初始化一次"""
-    client = create_test_client()
-    yield client
-    client.close()
-
-@pytest.fixture(scope="module")
-def test_db():
-    """每个模块初始化一次"""
-    db = init_test_db()
-    yield db
-    db.cleanup()
-```
-
-### 4.4 标记（Mark）
-
-```python
-import pytest
-
-@pytest.mark.slow
-def test_large_dataset():
-    """慢速测试"""
-    pass
-
-@pytest.mark.smoke
-def test_basic_function():
-    """冒烟测试"""
-    pass
-
-@pytest.mark.skip(reason="功能未实现")
-def test_future_feature():
-    pass
-
-@pytest.mark.xfail(reason="已知缺陷 BUG-001")
-def test_known_bug():
-    assert 1 == 2
-
-# 运行指定标记
-# pytest -m smoke        只运行冒烟测试
-# pytest -m "not slow"   排除慢速测试
-```
-
-### 4.5 pytest 配置文件
-
-```ini
-# pytest.ini
-[pytest]
-testpaths = tests
-python_files = test_*.py
-python_classes = Test*
-python_functions = test_*
-addopts = -v --tb=short
-markers =
-    smoke: 冒烟测试
-    slow: 慢速测试
-    regression: 回归测试
-```
-
-## 5. 测试数据管理
-
-### 5.1 数据驱动测试
-
-```python
-import pytest
-import csv
-import json
-
-# CSV 数据驱动
-def load_test_data_csv(filepath):
-    with open(filepath, 'r', encoding='utf-8') as f:
-        reader = csv.DictReader(f)
-        return list(reader)
-
-# JSON 数据驱动
-def load_test_data_json(filepath):
-    with open(filepath, 'r', encoding='utf-8') as f:
-        return json.load(f)
-
-# 使用数据驱动
-@pytest.mark.parametrize("data", load_test_data_json("test_data/login.json"))
-def test_login_data_driven(data):
-    assert login(data["username"], data["password"]) == data["expected"]
-```
-
-### 5.2 测试数据文件
-
-文件 `test_data/login.json`，内容为纯 JSON（不含注释）：
+第 1 节登录用例表里的五行数据，适合做成数据文件而不是五行复制粘贴
+的代码：
 
 ```json
 [
   { "username": "admin", "password": "123456", "expected": "success" },
   { "username": "admin", "password": "wrong", "expected": "wrong_password" },
   { "username": "", "password": "123456", "expected": "empty_username" },
-  { "username": "admin", "password": "", "expected": "empty_password" },
-  { "username": "hack' OR 1=1--", "password": "any", "expected": "invalid_input" }
+  { "username": "admin' OR 1=1--", "password": "x", "expected": "invalid_input" }
 ]
 ```
 
-## 6. 页面对象模式（POM）
-
-### 6.1 POM 架构
-
-```mermaid
-flowchart TD
-    T0["project/"]
-    T1["pages/              # 页面对象层"]
-    T2["base_page.py    # 基础页面"]
-    T3["login_page.py   # 登录页面"]
-    T4["home_page.py    # 首页"]
-    T5["tests/              # 测试层"]
-    T6["test_login.py"]
-    T7["test_home.py"]
-    T8["test_data/          # 数据层"]
-    T9["login.json"]
-    T0 --> T1
-    T4 --> T5
-    T7 --> T8
-    T8 --> T9
-```
-
-### 6.2 基础页面封装
-
 ```python
-# pages/base_page.py
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
+import json, pytest
 
-class BasePage:
-    """页面基类，封装通用操作"""
+cases = json.load(open("test_data/login.json", encoding="utf-8"))
 
-    def __init__(self, driver):
-        self.driver = driver
-        self.wait = WebDriverWait(driver, 10)
-
-    def find_element(self, locator):
-        """查找元素（显式等待）"""
-        return self.wait.until(EC.visibility_of_element_located(locator))
-
-    def click(self, locator):
-        """点击元素"""
-        element = self.wait.until(EC.element_to_be_clickable(locator))
-        element.click()
-
-    def type_text(self, locator, text):
-        """输入文本"""
-        element = self.find_element(locator)
-        element.clear()
-        element.send_keys(text)
-
-    def get_text(self, locator):
-        """获取文本"""
-        return self.find_element(locator).text
-
-    def is_visible(self, locator):
-        """元素是否可见"""
-        try:
-            self.find_element(locator)
-            return True
-        except Exception:
-            return False
-
-    def wait_for_url_contains(self, text):
-        """等待 URL 包含指定文本"""
-        self.wait.until(EC.url_contains(text))
+@pytest.mark.parametrize("case", cases)
+def test_login(case):
+    assert login(case["username"], case["password"]) == case["expected"]
 ```
 
-### 6.3 登录页面对象
+加一条用例只改 JSON 不改代码，非程序员也能补充数据。这就是"数据驱动"。
 
-```python
-# pages/login_page.py
-from selenium.webdriver.common.by import By
-from pages.base_page import BasePage
+## 5. 坑点与自检
 
-class LoginPage(BasePage):
-    """登录页面对象"""
+1. **等待写死**。`time.sleep(3)` 等页面加载是 UI 自动化第一大坑：网快了
+   白等，网慢了照样挂。用显式等待（条件满足立刻继续）代替固定睡眠。
+2. **定位器脆**。用 `div:nth-child(3) > span` 这种结构定位，页面一改版
+   全崩。优先语义化定位：ID、`data-testid` 属性、可访问性角色。
+3. **自动化脚本自己坏了没人管**。失败被归因为"脚本又挂了"进而习惯性
+   忽略，真 bug 被淹没。脚本失败要当天处理，要么修要么删。
+4. **用例之间不独立**。用例 B 依赖用例 A 留下的登录状态，单独跑 B 就挂。
+   每条用例自己准备数据、自己清理。
+5. **缺陷报告缺环境信息**。"我这里好的"与"我这里坏的"争论半天，最后
+   发现是浏览器版本不同。环境写进报告，争论省掉。
 
-    # 元素定位器
-    USERNAME_INPUT = (By.ID, "username")
-    PASSWORD_INPUT = (By.ID, "password")
-    LOGIN_BUTTON = (By.CSS_SELECTOR, ".btn-login")
-    ERROR_MESSAGE = (By.CSS_SELECTOR, ".error-message")
-    REMEMBER_CHECKBOX = (By.ID, "remember")
+自检清单：
 
-    # 页面 URL
-    URL = "/login"
+- [ ] 手工回归覆盖了正向、逆向、边界三类用例
+- [ ] 缺陷报告含复现步骤、预期/实际、环境三要素
+- [ ] 自动化等待全部是条件等待，没有固定 sleep
+- [ ] 每条用例可以单独运行并通过
+- [ ] 新写的测试放进了每次构建都会执行的套件
 
-    def open(self):
-        self.driver.get(f"{self.base_url}{self.URL}")
-        return self
+## 6. 练习
 
-    def login(self, username: str, password: str):
-        """执行登录操作"""
-        self.type_text(self.USERNAME_INPUT, username)
-        self.type_text(self.PASSWORD_INPUT, password)
-        self.click(self.LOGIN_BUTTON)
-        return self
+1. 找一个你常用的网站（或本地起一个项目），手工设计登录或搜索功能的
+   用例集，覆盖正向/逆向/边界，并实际执行一轮。
+2. 故意造一个 bug（比如把前端某处改崩），按第 1.2 节模板写一份缺陷
+   报告，让朋友照着复现，检验步骤是否够精确。
+3. 克隆 FANDEX 仓库，运行 `pnpm install` 与 `pnpm test:smoke`，观察
+   冒烟测试的输出；再在 `smoke.spec.ts` 里加一条自己的断言（例如首页
+   某个具体文案可见）。
+4. 把第 1 题的用例表改写成第 4.2 节的 JSON 数据文件格式。
 
-    def get_error_message(self) -> str:
-        """获取错误提示"""
-        return self.get_text(self.ERROR_MESSAGE)
+## 7. 下一步
 
-    def is_login_button_enabled(self) -> bool:
-        """登录按钮是否可用"""
-        return self.find_element(self.LOGIN_BUTTON).is_enabled()
-```
-
-### 6.4 使用 POM 的测试
-
-```python
-# tests/test_login.py
-import pytest
-from pages.login_page import LoginPage
-
-class TestLogin:
-    """登录测试 - 使用 POM 模式"""
-
-    def test_login_success(self, driver):
-        login_page = LoginPage(driver)
-        login_page.open()
-        login_page.login("admin", "123456")
-
-        # 验证跳转到首页
-        assert "首页" in driver.title
-
-    def test_login_wrong_password(self, driver):
-        login_page = LoginPage(driver)
-        login_page.open()
-        login_page.login("admin", "wrong")
-
-        # 验证错误提示
-        assert "用户名或密码错误" in login_page.get_error_message()
-
-    @pytest.mark.parametrize("username,password,expected_msg", [
-        ("", "123456", "请输入用户名"),
-        ("admin", "", "请输入密码"),
-        ("admin", "wrong", "用户名或密码错误"),
-    ])
-    def test_login_invalid(self, driver, username, password, expected_msg):
-        login_page = LoginPage(driver)
-        login_page.open()
-        login_page.login(username, password)
-        assert expected_msg in login_page.get_error_message()
-```
-
-### 6.5 POM 优势
-
-| 优势         | 说明                                    |
-| :----------- | :-------------------------------------- |
-| **可维护性** | UI 变更只需修改页面对象，不影响测试用例 |
-| **可复用性** | 页面操作方法可在多个测试中复用          |
-| **可读性**   | 测试代码更接近业务语言                  |
-| **团队协作** | 页面对象与测试用例可并行开发            |
-
-## 小结
-
-- 初学者要点：功能测试的节奏是「正向 + 逆向 + 边界」三类用例都要有；
-  unittest 与 pytest 至少精通一个（新代码建议 pytest），Selenium 定位
-  优先 ID 与 CSS、等待只用显式等待。
-- 进阶注意：POM 的价值随用例数量增长，10 条以内可以不抽象；测试数据
-  与用例分离（JSON/YAML 数据驱动）是并行执行与多环境复用的前提；缺陷
-  报告里「实际结果 + 环境 + 复现步骤」三要素齐全，开发定位成本下降一
-  个量级；UI 自动化整体只占测试金字塔的小头，重活交给 API 层（见「API
-  自动化测试」）。
+- Selenium 定位、等待与 Page Object 的完整展开：见《Selenium》。
+- pytest fixture、参数化、配置文件：见《Pytest》。
+- 浏览器自动化选型与 flaky 治理：见《E2E 端到端测试》。
+- 用例设计方法学（等价类、边界值、判定表）：见《等价类划分》《边界值分析》。

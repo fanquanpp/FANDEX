@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 网络设计与规划：层次化设计、数据中心网络、SD-WAN与网络虚拟化
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'networking/380-NetworkStorageTechnology'
   - 'networking/190-NetworkDiagnosis'
@@ -23,9 +23,9 @@ prerequisites:
 
 ```
 核心层：高速交换，不做策略
-  ↕
+  <->
 汇聚层：策略执行，路由边界
-  ↕
+  <->
 接入层：终端接入，VLAN划分
 ```
 
@@ -43,7 +43,7 @@ prerequisites:
 
 ```
 核心/汇聚层（二层合一）
-  ↕
+  <->
 接入层
 ```
 
@@ -53,9 +53,14 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    S1[Spine1] S2[Spine2] S3[Spine3]
-    L1[Leaf1] L2[Leaf2] L3[Leaf3] L4[Leaf4]
-    SRV[服务器 服务器 服务器 服务器]
+    S1["Spine1"]
+    S2["Spine2"]
+    S3["Spine3"]
+    L1["Leaf1"]
+    L2["Leaf2"]
+    L3["Leaf3"]
+    L4["Leaf4"]
+    SRV["服务器 服务器 服务器 服务器"]
     S1 --- L1
     S1 --- L2
     S1 --- L3
@@ -110,7 +115,7 @@ flowchart TD
 
 ```
 分支站点 ←→ SD-WAN控制器 ←→ 总部/数据中心
-     ↕           ↕
+     <->           <->
   多链路      集中策略
 (MPLS/Internet/5G)
 ```
@@ -183,13 +188,13 @@ $$\text{所需带宽} = \text{用户数} \times \text{并发率} \times \text{�
 
 ```
 Internet ← Untrust
-    ↕
+    <->
 DMZ（Web/Mail）
-    ↕
+    <->
 Trust（内网办公）
-    ↕
+    <->
 Server Zone（服务器区）
-    ↕
+    <->
 Management（管理区）
 ```
 

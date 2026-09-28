@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 异步组件、动态组件、Teleport 与 Suspense。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'vue3/330-VuePerformanceDetailed'
   - 'vue3/340-PerformanceOptimization'
@@ -204,7 +204,7 @@ const AsyncComponentWithOptions = defineAsyncComponent({
     <div class="node-content" @click="toggleExpanded">
       {{ node.name }}
       <span v-if="node.children && node.children.length > 0">
-        {{ expanded ? '▼' : '▶' }}
+        {{ expanded ? '▼' : '→' }}
       </span>
     </div>
     <div v-if="node.children && node.children.length > 0 && expanded" class="node-children">

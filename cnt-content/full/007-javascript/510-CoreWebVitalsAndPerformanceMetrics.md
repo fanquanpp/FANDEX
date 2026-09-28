@@ -1,12 +1,12 @@
 ---
-order: 490
+order: 510
 title: 前端性能指标与 Core Web Vitals
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: '用 LCP、INP、CLS 三个核心指标学会量化"页面快不快"，并给出浏览器端采集与上报的完整示例。'
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/500-DebugPerformanceOptimization'
   - 'css/540-CSSPerformanceOptimizationDetailed'

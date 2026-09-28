@@ -1,1578 +1,373 @@
 ---
 order: 200
-title: 深拷贝与浅拷贝
+title: 深拷贝与浅拷贝：你复制的是门牌号，还是房子
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
-description: JavaScript深拷贝与浅拷贝详解：structuredClone、JSON方案缺陷与自定义实现。
+description: 以「草稿快照被原文连坐修改」为问题主线，讲透值语义与引用语义、赋值/浅拷贝/深拷贝三层区别，亲手用 structuredClone 与 WeakMap 标记法写支持循环引用的深拷贝，附 JSON 静默变形、freeze 只冻一层、原型链丢失等陷阱实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
-  - 'javascript/280-AsyncConcurrencyControl'
-  - 'javascript/220-ES6NewFeatures'
-  - 'javascript/490-DebounceThrottle'
-  - 'javascript/090-ArrayHigherOrderMethod'
-prerequisites: []
+  - 'javascript/070-ObjectArray'
+  - 'javascript/210-ObjectStaticMethods'
+  - 'javascript/630-ImmutableDataStructures'
+  - 'javascript/670-WebWorkersMultithreading'
+prerequisites:
+  - 'javascript/070-ObjectArray'
 ---
-
-
-
-# 深拷贝与浅拷贝（Deep Copy & Shallow Copy）
 
 ## 前置知识
 
-- [原型链继承与 class 本质](/javascript/190-PrototypeChainClassEssence)：建议先完成前一篇的学习
+- 已完成 [对象与数组](/javascript/070-ObjectArray)：会读写对象属性、遍历数组；
+- 见过 `const a = { ...b }` 这种写法即可，展开运算符的细节本文现场讲。
+
+本文是"每个项目迟早撞上"的问题：两个变量明明"复制"开了，改一个另一个却跟着变。
 
 ## 学习目标
 
-- 掌握「1. 历史动机与发展脉络（Historical Motivation & Evolution）」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义（Formal Definitions）」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析（Theoretical Derivation）」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例（Production-Ready Examples）」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析（Comparative Analysis）」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用"门牌号与房子"解释值类型与引用类型，预测赋值、浅拷贝、深拷贝三种操作后"改这边、那边动不动"；
+2. 区分浅拷贝的三种常用写法（展开运算符、`Object.assign`、数组拷贝方法）及其共同局限——只复制第一层；
+3. 用 `structuredClone` 完成日常深拷贝，并背出它的三个边界（函数会抛错、原型链会丢、getter/setter 会丢）；
+4. 识别 JSON 序列化拷贝的五类静默变形，判断它什么时候还能用；
+5. 亲手实现一个支持循环引用的深拷贝函数（WeakMap 标记法），并解释为什么必须用它。
 
-> 本篇对标 MIT 6.031（Software Construction）、Stanford CS107（Computer Organization & Systems）与 CMU 15-213（Introduction to Computer Systems）教学水准，系统讲授 JavaScript 中值语义与引用语义、深拷贝与浅拷贝的形式语义、算法实现与工程权衡。所有数学公式使用 KaTeX 渲染，参考文献采用 ACM Reference Format。
+预计 45 到 60 分钟，含 3 个动手实验与 4 道练习。
 
----
+## 1. 你现在要解决什么问题
 
-## 1. 历史动机与发展脉络（Historical Motivation & Evolution）
+文档站的编辑器需要一个"撤销"功能的第一步：用户每次保存草稿前，先留一份快照，出问题时能回滚。你写了这样的代码：
 
-### 1.1 值语义与引用语义的谱系
+```javascript
+const draft = {
+  title: '事件循环入门',
+  meta: { words: 2600, tags: ['async', 'basic'] },
+};
 
-值语义（value semantics）与引用语义（reference semantics）的区分可追溯至 1960 年代。ALGOL 60（Naur, 1960）首次明确区分"值调用"（call-by-value）与"名调用"（call-by-name）。Lisp 1.5（1962）引入了"cons 单元的引用语义"，即所有非原子对象通过指针共享。
+// 保存前拍快照
+const snapshot = draft;
 
-C 语言（1972, Dennis Ritchie）确立了"值传递为主、指针显式传递引用"的二分模型。Java（1995, James Gosling）将所有对象设计为引用类型，基本类型为值类型，这一设计被 JavaScript、Python、Ruby 等动态语言继承。
+// 用户继续编辑
+draft.title = '事件循环入门（修订版）';
+draft.meta.words = 2680;
+draft.meta.tags.push('advanced');
 
-### 1.2 JavaScript 的类型系统设计（1995–2009）
+// 三天后想回滚，读快照
+console.log(snapshot.title);      // 事件循环入门（修订版）
+console.log(snapshot.meta.words); // 2680
+```
 
-Brendan Eich 在 1995 年设计 JavaScript 时，借鉴 Java 的"基本类型 + 对象"二分：
+快照和草稿**同时变了**——`snapshot = draft` 根本没有产生第二份数据。这是每个 JS 工程师必经的第一课：**对象变量里存的不是数据本身，而是指向数据的"门牌号"**。赋值只是把门牌号抄了一份，房子还是同一栋。
 
-- **基本类型**（primitive）：`undefined` / `null` / `boolean` / `number` / `string`（ES6 新增 `symbol`，ES2020 新增 `bigint`）。基本类型按值传递，赋值与拷贝是"位拷贝"。
-- **引用类型**（object）：`Object` / `Array` / `Function` / `Date` / `RegExp` / `Map` / `Set` 等。引用类型按引用传递，赋值是"指针拷贝"。
+那你可能已经知道补救：用展开运算符"复制"一份。改一下试试：
 
-这种设计使得 JavaScript 的"浅拷贝"是默认行为——任何对象赋值都是引用共享，需要显式深拷贝才能获得独立副本。
+```javascript
+const snapshot = { ...draft };
+draft.title = '标题又改了';
+draft.meta.words = 2700;
 
-### 1.3 浅拷贝方法的演进
+console.log(snapshot.title);      // 事件循环入门（修订版）——第一层，守住了
+console.log(snapshot.meta.words); // 2700 ——嵌套层，失守了
+```
 
-| 版本 | 年份 | 方法 | 备注 |
+第一层守住了，嵌套的第二层照样失守。到这一步，你就站在本文要解决的正题上：**怎样才算真正"复制了一份房子"**。
+
+## 2. 先不要看解释，先试试看
+
+在控制台逐行敲，每行先预测 `true` 还是 `false`：
+
+```javascript
+const a = { inner: { n: 1 } };
+
+const b = a;                  // 赋值：抄门牌号
+const c = { ...a };           // 浅拷贝：复制第一层
+const d = structuredClone(a); // 深拷贝：整栋楼复制
+
+a.inner.n = 99;
+
+console.log(a.inner.n === b.inner.n);   // ?
+console.log(a.inner.n === c.inner.n);   // ?
+console.log(a.inner.n === d.inner.n);   // ?
+
+console.log(a === b);   // ?
+console.log(a === c);   // ?
+console.log(a === d);   // ?
+```
+
+结果分别是 `true, true, false` 和 `false, false, false`。这六行就是全部理论：
+
+| 操作 | 复制了什么 | 第一层联动？ | 嵌套层联动？ |
 | --- | --- | --- | --- |
-| ES3 | 1999 | `Array.prototype.slice()` | 浅拷贝数组 |
-| ES3 | 1999 | `Object.assign(target, ...sources)` | 实际由 ES2015 标准化，但早期 polyfill 广泛使用 |
-| ES5 | 2009 | `JSON.parse(JSON.stringify())` | "穷人版深拷贝"，但有诸多限制 |
-| ES2015 | 2015 | 展开运算符 `{ ...obj }` / `[...arr]` | 语法糖，等价 `Object.assign` |
-| ES2018 | 2018 | 对象展开 `{ ...obj }` 进入规范 | 此前仅数组展开 |
-| ES2019 | 2019 | `Array.prototype.flat` | 间接用于浅拷贝嵌套 |
+| 赋值 `b = a` | 门牌号 | 联动 | 联动 |
+| 浅拷贝 `{ ...a }` | 第一层的值；嵌套层仍是门牌号 | 不联动 | 联动 |
+| 深拷贝 `structuredClone(a)` | 整个引用图 | 不联动 | 不联动 |
 
-### 1.4 深拷贝的标准化历程
+补一个判等事实：对象之间的 `===` 比的是**门牌号**（同一栋房子才相等），跟内容毫无关系——所以 `a === c` 是 `false`，哪怕两个对象此刻内容一模一样。这也解释了为什么"用 `===` 判断两个对象是否相等"在 JS 里从来不是你以为的那件事。
 
-JavaScript 长期缺乏原生深拷贝方法。开发者依赖：
+## 3. 心智模型：七种原始值装在盒子里，对象只给门牌号
 
-1. **`JSON.parse(JSON.stringify())`**：最简但限制多（不支持 Date、RegExp、循环引用）。
-2. **lodash `_.cloneDeep`**：事实标准，支持循环引用、自定义类型。
-3. **Node.js `util.types.isExternal()` + 自定义实现**：服务端场景。
+JavaScript 把数据分成两族：
 
-**关键里程碑**：HTML 规范在 2022 年正式纳入 `structuredClone(value, transfer)` 方法，由 Anne van Kesteren（Mozilla）与 Domenic Denicola（Google）推动。该方法最初用于 `postMessage` 的跨 Realm 消息传递，后作为全局函数暴露。截至 2024 年，所有主流浏览器（Chrome 98+ / Firefox 94+ / Safari 15.4+）与 Node.js 17+ 均已支持。
+- **原始值**（number、string、boolean、null、undefined、symbol、bigint）：赋值、传参、比较都是"把盒子里的值抄一份"。`let x = 42; let y = x; y = 43;` 后 `x` 还是 42；
+- **引用类型**（对象、数组、函数、Map、Set……）：变量里存的是门牌号。`const a = b` 之后，`a` 和 `b` 指着同一栋房子，从任何一扇门进去改家具，两边看到的是同一件。
 
-### 1.5 设计哲学的转向
+浅拷贝的准确定义由此而来：**沿着门牌号走一层，把第一层的每样东西照抄**——原始值抄的是盒子，对象抄的还是门牌号。所以浅拷贝"第一层独立、深层联动"。深拷贝则是**递归地复制整个引用图**：遇到门牌号就跟着进去，把里面的东西也照抄，直到全是原始值为止。
 
-`structuredClone` 的出现标志着 JavaScript 从"依赖第三方库实现深拷贝"转向"语言原生支持"。这与 Web Workers、OffscreenCanvas、SharedArrayBuffer 等并行 API 的普及相关——跨线程通信需要结构化克隆算法（Structured Clone Algorithm）作为基础。
-
-> **设计注记**：`structuredClone` 的名称源于 HTML 规范中的"Structured Clone Algorithm"（§2.9 StructuredClone），该算法最初用于 `postMessage` 序列化对象。将其暴露为全局函数是 Web 平台"API 下沉"趋势的体现，类似 `fetch`、`URL`、`TextEncoder` 的标准化路径。
-
----
-
-## 2. 形式化定义（Formal Definitions）
-
-### 2.1 值类型与引用类型的形式化
-
-**定义 3.1.1（值类型）**：类型 $T$ 是值类型，当且仅当其变量直接存储数据本身，赋值操作 $b := a$ 产生 $a$ 的独立副本：
-
-$$\forall a, b : T, \quad (b := a) \implies (a \perp b) \land (\text{mutate}(b) \not\to \text{mutate}(a))$$
-
-其中 $a \perp b$ 表示 $a$ 与 $b$ 在内存中不共享任何存储。
-
-JavaScript 的基本类型（`undefined` / `null` / `boolean` / `number` / `string` / `symbol` / `bigint`）均为值类型。
-
-**定义 3.1.2（引用类型）**：类型 $T$ 是引用类型，当且仅当其变量存储指向数据的指针，赋值操作 $b := a$ 共享底层数据：
-
-$$\exists a, b : T, \quad (b := a) \implies (\text{ref}(a) = \text{ref}(b)) \land (\text{mutate}(b) \to \text{mutate}(a))$$
-
-JavaScript 的对象（`Object` / `Array` / `Function` / `Date` / `RegExp` / `Map` / `Set` 等）均为引用类型。
-
-### 2.2 浅拷贝的形式定义
-
-**定义 3.2.1（浅拷贝）**：对象 $o$ 的浅拷贝 $o'$ 满足：
-
-1. **顶层独立**：$o'$ 是新对象，$o \neq o'$（引用不同）。
-2. **属性共享**：对 $o$ 的每个直接属性 $k$，若属性值为引用类型 $r$，则 $o'.k = r$（与原对象共享引用）。
-
-形式化：
-
-$$\text{shallowCopy}(o) = o' \text{ s.t. } o' \neq o \land \forall k \in \text{keys}(o), o'.k = o.k$$
-
-即浅拷贝仅复制"第一层"的属性引用，嵌套对象仍共享。
-
-### 2.3 深拷贝的形式定义
-
-**定义 3.3.1（深拷贝）**：对象 $o$ 的深拷贝 $o'$ 满足：
-
-1. **完全独立**：$o'$ 与 $o$ 在引用图上无任何共享节点（递归地）。
-2. **结构同构**：$o'$ 与 $o$ 的结构完全相同（相同属性、相同嵌套层级、相同类型）。
-
-形式化（递归定义）：
-
-$$\text{deepCopy}(v) = \begin{cases} v & \text{若 } v \text{ 是基本类型} \\ \{\, k \mapsto \text{deepCopy}(v.k) \mid k \in \text{keys}(v) \,\} & \text{若 } v \text{ 是对象} \\ [\text{deepCopy}(v_0), \dots, \text{deepCopy}(v_{n-1})] & \text{若 } v \text{ 是数组} \end{cases}$$
-
-**关键约束**：循环引用 $o.a = o$ 必须保持——深拷贝后 $o'.a = o'$（同一个新对象，而非无限递归）。
-
-### 2.4 引用图（Reference Graph）
-
-对象的引用结构可用有向图 $G = (V, E)$ 表示：
-
-- 顶点集 $V$：所有对象节点（含基本类型值作为叶子）。
-- 边集 $E$：$(u, v) \in E$ 当且仅当 $u$ 的某属性指向 $v$。
-
-**浅拷贝**：复制根节点，共享所有子节点。
-
-**深拷贝**：复制整个可达子图（reachable subgraph），保持同构。
-
-循环引用在图中表现为环（cycle），深拷贝算法必须检测环以避免无限递归。
-
-### 2.5 时间复杂度形式化
-
-设对象 $o$ 的引用图有 $n$ 个节点、$m$ 条边，各拷贝方法的复杂度：
-
-| 方法 | 时间复杂度 | 空间复杂度 | 备注 |
-| --- | --- | --- | --- |
-| 浅拷贝（`Object.assign`） | $O(k)$，$k$ 为直接属性数 | $O(k)$ | 仅复制一层 |
-| `JSON` 方案 | $O(n + m)$ | $O(n)$ | 仅支持 JSON 兼容类型 |
-| `structuredClone` | $O(n + m)$ | $O(n)$ | 支持循环引用 |
-| 递归深拷贝（带环检测） | $O(n + m)$ | $O(n)$（递归栈 + WeakMap） | 通用 |
-| 递归深拷贝（无环检测） | 不终止（若存在环） | — | 危险 |
-
----
-
-## 3. 理论推导与原理解析（Theoretical Derivation）
-
-### 3.1 引用图同构的数学刻画
-
-深拷贝本质是构造一个**图同构**（graph isomorphism）。设原对象引用图为 $G = (V, E)$，深拷贝 $G' = (V', E')$，存在双射 $\phi : V \to V'$ 满足：
-
-$$\forall u, v \in V, \quad (u, v) \in E \iff (\phi(u), \phi(v)) \in E'$$
-
-且 $\phi$ 保持节点标签（类型、值）。对于循环引用 $o.a = o$，原图 $G$ 含自环 $(o, o)$，拷贝图 $G'$ 必须含 $(o', o')$，即 $o'.a = o'$。
-
-**定理 4.1.1**：若深拷贝算法 $\mathcal{A}$ 正确，则其构造的 $G'$ 与原图 $G$ 同构，且 $\phi(\text{root}) = \text{root}'$。
-
-证明：归纳于引用图的深度。基本类型节点直接复制；对象节点递归复制其所有属性边，由归纳假设子图同构，故整体同构。$\square$
-
-### 3.2 循环引用检测算法
-
-#### 3.2.1 WeakMap 标记法（推荐）
+这带来一个隐藏难题：如果房子里有一条走廊绕回房子本身呢？
 
 ```javascript
-// ES2015 — WeakMap 环检测
-function deepClone(obj, cache = new WeakMap()) {
-  if (obj === null || typeof obj !== 'object') return obj;
-  if (cache.has(obj)) return cache.get(obj);
-  const clone = Array.isArray(obj) ? [] : {};
-  cache.set(obj, clone);
-  for (const key of Reflect.ownKeys(obj)) {
-    clone[key] = deepClone(obj[key], cache);
-  }
-  return clone;
-}
-
-// 测试循环引用
-const a = { name: 'a' };
-a.self = a;
-const b = deepClone(a);
-console.log(b.self === b); // true，循环引用保持
+const root = { name: 'root' };
+root.self = root;          // 循环引用
 ```
 
-**正确性分析**：`WeakMap` 的键是对象的弱引用，不影响垃圾回收。每个对象仅复制一次，第二次遇到时从缓存返回，从而打破递归。
+天真的"递归到底"会沿着 `root.self` 永远走下去直到爆栈（160 篇的爆栈知识在这里重逢）。这是第 4 节自定义深拷贝要解决的核心问题。
 
-**复杂度**：时间 $O(n + m)$，空间 $O(n)$（WeakMap 存储 $n$ 个映射）。
+## 4. 动手：四种拷贝方法各就各位
 
-#### 3.2.2 DFS 父链表法
+### 4.1 浅拷贝三连
 
 ```javascript
-// ES2015 — 父链表法（不推荐，仅作对比）
-function deepCloneDFS(obj, parents = []) {
-  if (obj === null || typeof obj !== 'object') return obj;
-  const found = parents.find((p) => p.original === obj);
-  if (found) return found.clone;
-  const clone = Array.isArray(obj) ? [] : {};
-  parents.push({ original: obj, clone });
-  for (const key in obj) {
-    if (Object.hasOwn(obj, key)) {
-      clone[key] = deepCloneDFS(obj[key], parents);
-    }
-  }
-  parents.pop();
-  return clone;
-}
-```
+const obj = { a: 1, nested: { b: 2 } };
 
-**缺陷**：父链表查找是 $O(d)$（$d$ 为深度），最坏 $O(n^2)$；且 `parents.pop()` 在分支结构下会丢失跨分支的循环引用。`WeakMap` 法是工业标准。
-
-### 3.3 结构化克隆算法（Structured Clone Algorithm）
-
-`structuredClone` 实现的算法由 HTML 规范 §2.9 定义，核心步骤：
-
-1. **序列化（Serialize）**：将对象转换为与语言无关的格式（类似 JSON 但更丰富），记录循环引用的索引。
-2. **反序列化（Deserialize）**：从序列化格式重建对象，恢复循环引用。
-
-支持类型（部分）：
-
-- 基本类型：`undefined` / `null` / `boolean` / `number` / `string` / `bigint` / `symbol`（仅注册的 symbol）
-- 对象：`Object` / `Array` / `Map` / `Set` / `Date` / `RegExp` / `Error` / `Boolean` / `Number` / `String`
-- 二进制：`ArrayBuffer` / `TypedArray` / `DataView` / `Blob` / `File`
-- 循环引用：支持
-- 自定义类：降级为普通 `Object`（丢失原型链）
-
-不支持：
-
-- `Function`：抛出 `DataCloneError`
-- `Symbol`（未注册）：抛出 `DataCloneError`
-- DOM 节点：抛出 `DataCloneError`
-- `WeakMap` / `WeakSet`：抛出 `DataCloneError`
-- 原型链：丢失（拷贝后 `instanceof` 失效）
-
-### 3.4 写时复制（Copy-on-Write）的理论
-
-Immer 的 `produce` 实现了写时复制：浅拷贝整个状态树的开销 $O(n)$ 过大，但实际更新通常只涉及少数节点。COW 策略：
-
-1. 读取时共享原对象（零拷贝）。
-2. 写入时复制从根到被修改节点的路径（$O(\log n)$ 或 $O(d)$）。
-3. 未修改的子树继续共享。
-
-形式化：设原状态 $S$，更新操作 $\text{update}(S, \text{path}, \text{value})$ 产生 $S'$，COW 保证：
-
-$$\text{shared}(S, S') = |V| - |\text{path}|$$
-
-即只有路径上的节点被复制，其余 $|V| - |\text{path}|$ 个节点共享。这是持久化数据结构（persistent data structure）的核心思想，由 Okasaki（1999, *Purely Functional Data Structures*）系统化。
-
----
-
-## 4. 代码示例（Production-Ready Examples）
-
-### 4.1 工程项目配置
-
-```json
-{
-  "name": "clone-demo",
-  "version": "1.0.0",
-  "type": "module",
-  "engines": { "node": ">=18.0.0" },
-  "scripts": {
-    "start": "node src/index.js",
-    "test": "node --test"
-  },
-  "dependencies": {
-    "immer": "^10.0.3",
-    "lodash": "^4.17.21"
-  }
-}
-```
-
-### 4.2 浅拷贝方法对比
-
-#### 4.2.1 Object.assign
-
-```javascript
-// ES2015 — Object.assign 浅拷贝
-const original = { a: 1, b: { c: 2 } };
-const copy = Object.assign({}, original);
-
-copy.a = 99;            // 不影响原对象
-copy.b.c = 99;          // 影响原对象（共享 b 引用）
-
-console.log(original.a); // 1
-console.log(original.b.c); // 99 ← 浅拷贝陷阱
-```
-
-#### 4.2.2 展开运算符
-
-```javascript
-// ES2018 — 对象展开（与 Object.assign 等价）
-const original = { a: 1, b: { c: 2 } };
-const copy = { ...original };
-
-// 数组展开
+const s1 = { ...obj };                    // 展开运算符，最常用
+const s2 = Object.assign({}, obj);        // 老项目常见，效果相同
 const arr = [1, [2, 3]];
-const arrCopy = [...arr]; // 等价于 arr.slice()
+const s3 = arr.slice();                   // 数组浅拷贝
+const s4 = [...arr];                      // 数组展开，效果相同
 ```
 
-#### 4.2.3 数组浅拷贝
+三个都是浅拷贝，可互换。ES2023 又补了一批"返回新数组"的改动方法——`toSorted`、`toReversed`、`with`、`toSpliced`，它们天然只做浅拷贝就产出新数组，改历史数组时优先用它们而不是先拷再改。
+
+### 4.2 structuredClone：日常深拷贝的首选
+
+Node 17+ 与所有现代浏览器都内置了 `structuredClone`，它实现的是 HTML 规范的**结构化克隆算法**：
 
 ```javascript
-// ES5 — 数组浅拷贝的多种方式
-const arr = [1, { a: 2 }];
-
-const c1 = arr.slice();           // 经典方法
-const c2 = [...arr];              // ES2015
-const c3 = Array.from(arr);       // ES2015
-const c4 = arr.concat();          // ES3
-
-// 四者等价，均为浅拷贝
-```
-
-### 4.3 JSON 方案及其限制
-
-```javascript
-// ES5 — JSON 方案（"穷人版深拷贝"）
-const original = {
-  name: 'Alice',
-  age: 30,
-  birth: new Date('1994-01-01'),
-  pattern: /\d+/,
-  map: new Map([['k', 'v']]),
-  set: new Set([1, 2, 3]),
-  undef: undefined,
-  fn: () => console.log('hi'),
-  arr: [1, 2, 3],
+const src = {
+  when: new Date('2026-09-28'),
+  tags: new Set(['a', 'b']),
+  lookup: new Map([['k', 1]]),
+  self: null,
 };
+src.self = src;                            // 循环引用？没问题
 
-const copy = JSON.parse(JSON.stringify(original));
-
-// 检查失效场景
-console.log(copy.birth);      // "1994-01-01T00:00:00.000Z"（字符串，非 Date）
-console.log(copy.pattern);    // {}（空对象，非 RegExp）
-console.log(copy.map);        // {}（空对象，非 Map）
-console.log(copy.set);        // {}（空对象，非 Set）
-console.log(copy.undef);      // undefined（属性丢失）
-console.log(copy.fn);         // undefined（属性丢失）
-console.log(copy.arr);        // [1, 2, 3]（正常）
-
-// 循环引用直接抛错
-const cyclic = { a: 1 };
-cyclic.self = cyclic;
-// JSON.stringify(cyclic); // TypeError: Converting circular structure to JSON
+const copy = structuredClone(src);
+console.log(copy.lookup instanceof Map);   // true，Map 类型保留
+console.log(copy.self === copy);           // true，循环结构被正确重建
+console.log(copy.when instanceof Date);    // true
 ```
 
-**JSON 方案的七大限制**：
-
-1. `Date` → 字符串（ISO 8601）
-2. `RegExp` → 空对象 `{}`
-3. `Map` / `Set` → 空对象 `{}`
-4. `undefined` / `Function` / `Symbol` → 属性被丢弃
-5. `NaN` / `Infinity` → `null`
-6. 循环引用 → 抛 `TypeError`
-7. 原型链丢失（`instanceof` 失效）
-
-### 4.4 structuredClone（推荐方法）
+优点先行：支持循环引用、保留 Date/Map/Set/RegExp/ArrayBuffer 等内置类型。但它有三条硬边界，用之前必须知道：
 
 ```javascript
-// ES2022 — structuredClone 原生深拷贝
-const original = {
-  date: new Date('2024-01-01'),
-  regex: /\w+/g,
-  map: new Map([['key', 'value']]),
-  set: new Set([1, 2, 3]),
-  arr: new Int32Array([1, 2, 3]),
-  buf: new ArrayBuffer(8),
-  nested: { a: { b: { c: 1 } } },
+const user = {
+  name: '阿七',
+  greet() { return `hi ${this.name}`; },      // 函数
+  get nameUpper() { return this.name.toUpperCase(); },  // getter
 };
+Object.defineProperty(user, 'id', { value: 7 });        // 不可枚举属性
 
-const clone = structuredClone(original);
-
-// 验证深拷贝
-clone.nested.a.b.c = 99;
-console.log(original.nested.a.b.c); // 1（独立）
-console.log(clone.date instanceof Date); // true
-console.log(clone.map instanceof Map); // true
-console.log(clone.arr instanceof Int32Array); // true
-
-// 循环引用支持
-const cyclic = { name: 'cyclic' };
-cyclic.self = cyclic;
-const cyclicClone = structuredClone(cyclic);
-console.log(cyclicClone.self === cyclicClone); // true
-
-// 可转移对象（Transferable）
-const buf = new ArrayBuffer(1024);
-const bufClone = structuredClone(buf, [buf]); // 第二参数为 transfer list
-console.log(buf.byteLength); // 0 ← 原缓冲区被转移
-console.log(bufClone.byteLength); // 1024
+const c = structuredClone(user);
+console.log(c.greet);        // undefined —— 函数直接丢
+console.log(c.nameUpper);    // undefined —— getter 丢，只剩普通值
+console.log(c.id);           // undefined —— 不可枚举属性丢
 ```
 
-### 4.5 自定义深拷贝（支持循环引用）
+三条边界一句话：**structuredClone 只克隆"数据"，不克隆"行为与元信息"**——函数会抛 `DataCloneError`（在数据里直接含函数时）或丢失，原型链退化为普通 Object，getter/setter 变成静态值。含方法的对象、类实例，它不适合。
+
+### 4.3 JSON 序列化：能用但会静默变形
+
+老项目里最常见的 `JSON.parse(JSON.stringify(x))`，能力比 structuredClone 弱一截，而且它**不报错，悄悄改变数据**：
 
 ```javascript
-// ES2015 — 完整自定义深拷贝
-const deepClone = (obj, cache = new WeakMap()) => {
-  // 基本类型与 null 直接返回
-  if (obj === null || typeof obj !== 'object') return obj;
+const src = {
+  when: new Date('2026-09-28'),      // Date
+  miss: undefined,                    // undefined
+  fn: () => 1,                        // 函数
+  bad: NaN,                           // NaN
+  big: 9007199254740993n,             // BigInt
+  tags: new Set(['a']),               // Set
+};
+const out = JSON.parse(JSON.stringify(src));
+console.log(out);
+// { when: '2026-09-28T00:00:00.000Z', bad: null }
+// miss 与 fn 整个消失，big 直接 TypeError 抛错，tags 变成 {}
+```
 
-  // 循环引用检测
-  if (cache.has(obj)) return cache.get(obj);
+| 原值 | JSON 往返后 | 危险等级 |
+| --- | --- | --- |
+| `undefined`、函数、Symbol | 键被删除 | 高：数据悄悄缺失 |
+| `Date` | ISO 字符串 | 中：`instanceof Date` 变 false |
+| `NaN`、`Infinity` | `null` | 高：数值语义破坏 |
+| `Map`、`Set` | `{}` | 高：整块丢失 |
+| `BigInt` | 直接抛 TypeError | 低（至少会喊） |
+| 循环引用 | 直接抛 TypeError | 低（至少会喊） |
 
-  // 处理 Date
-  if (obj instanceof Date) {
-    return new Date(obj.getTime());
-  }
+结论：JSON 方案只配处理"纯数据、将来要发 JSON 接口"的对象（此时变形反而无害）；其余场景一律 structuredClone。
 
-  // 处理 RegExp
-  if (obj instanceof RegExp) {
-    return new RegExp(obj.source, obj.flags);
-  }
+### 4.4 自定义深拷贝：WeakMap 标记法
 
-  // 处理 Map
-  if (obj instanceof Map) {
-    const clone = new Map();
-    cache.set(obj, clone);
-    obj.forEach((value, key) => {
-      clone.set(deepClone(key, cache), deepClone(value, cache));
-    });
-    return clone;
-  }
+面试高频、阅读源码必备。需求：克隆普通对象与数组，支持循环引用。核心两个动作——**递归复制**，加**"见过的对象记在小本本上"**：
 
-  // 处理 Set
-  if (obj instanceof Set) {
-    const clone = new Set();
-    cache.set(obj, clone);
-    obj.forEach((value) => {
-      clone.add(deepClone(value, cache));
-    });
-    return clone;
-  }
+```javascript
+function deepClone(value, seen = new WeakMap()) {
+  // 原始值与函数：直接返回（函数不复制）
+  if (value === null || typeof value !== 'object') return value;
 
-  // 处理 ArrayBuffer
-  if (obj instanceof ArrayBuffer) {
-    return obj.slice(0);
-  }
+  // 已克隆过：直接还门牌号，斩断循环
+  if (seen.has(value)) return seen.get(value);
 
-  // 处理 TypedArray
-  if (ArrayBuffer.isView(obj)) {
-    const TypedArrayCtor = obj.constructor;
-    return new TypedArrayCtor(obj);
-  }
+  const clone = Array.isArray(value) ? [] : {};
+  seen.set(value, clone);            // 先登记"我正在克隆它"
 
-  // 处理 Array
-  if (Array.isArray(obj)) {
-    const clone = [];
-    cache.set(obj, clone);
-    for (let i = 0; i < obj.length; i++) {
-      clone[i] = deepClone(obj[i], cache);
-    }
-    return clone;
-  }
-
-  // 处理普通对象（保留原型链）
-  const proto = Object.getPrototypeOf(obj);
-  const clone = Object.create(proto);
-  cache.set(obj, clone);
-
-  // 使用 Reflect.ownKeys 包含 Symbol 属性
-  for (const key of Reflect.ownKeys(obj)) {
-    const descriptor = Object.getOwnPropertyDescriptor(obj, key);
-    if (descriptor.value) {
-      descriptor.value = deepClone(descriptor.value, cache);
-    }
-    Object.defineProperty(clone, key, descriptor);
+  for (const key of Reflect.ownKeys(value)) {
+    clone[key] = deepClone(value[key], seen);
   }
   return clone;
-};
-
-// 测试
-class Person {
-  constructor(name, friends = []) {
-    this.name = name;
-    this.friends = friends;
-  }
-  greet() { return `Hi, I'm ${this.name}`; }
 }
 
-const alice = new Person('Alice');
-alice.friends.push(alice); // 循环引用
-const aliceClone = deepClone(alice);
-
-console.log(aliceClone instanceof Person); // true（原型链保留）
-console.log(aliceClone.greet()); // "Hi, I'm Alice"
-console.log(aliceClone.friends[0] === aliceClone); // true（循环引用保持）
+// 验证循环引用
+const loop = { name: 'a' };
+loop.self = loop;
+const copy = deepClone(loop);
+console.log(copy.self === copy);          // true
+console.log(copy !== loop);               // true，是独立副本
 ```
 
-### 4.6 lodash _.cloneDeep 对比
+两个关键点值得背下来：
+
+1. **WeakMap 的键是"原对象"，值是"对应副本"**。递归再遇到同一个对象时查表直接返回副本，循环被斩断；用 `WeakMap` 而不是 `Map`，是因为键是对象且无强引用，原对象被垃圾回收时条目自动消失（机制见 [内存管理与垃圾回收](/javascript/350-MemoryManagementAndGarbageCollection)）；
+2. **先登记、后递归**（`seen.set` 放在循环之前）。放在之后，递归进入 `root.self` 时表里还没有 root，会再开一轮克隆直到爆栈——这是这个算法最常见的写错位置。
+
+生产中不必手写：`structuredClone` 覆盖 90% 场景，需要保留方法与原型时用 lodash 的 `cloneDeep`，React 项目里状态更新推荐 Immer（写时复制：改动按需产生新对象，避免整棵树克隆的性能开销）。
+
+## 5. 修改实验
+
+以下都在前文代码基础上改，每个先预测再运行。
+
+实验一：把 `deepClone` 里的 `seen.set(value, clone)` 挪到 for 循环之后，用 `loop` 验证会发生什么。（提示：RangeError，原因见第 4.4 节。）
+
+实验二：`Object.freeze` 只冻一层。`const frozen = Object.freeze({ meta: { tags: [] } })`，然后 `frozen.meta.tags.push('x')`，预测是否报错、`tags` 是否变了。（提示：冻结的是 `meta` 这个门牌号的指向，不是 `tags` 数组的内容。）
+
+实验三：`structuredClone` 一个类实例。定义 `class Point { constructor(x) { this.x = x; } double() { return this.x * 2; } }`，克隆后调用 `copy.double()`，观察报什么错、为什么。（提示：原型链丢了，`double` 不在克隆对象的原型上。）
+
+## 6. 常见错误与调试实录
+
+**错误一："深拷贝过了，怎么还是联动"——拷贝发生在错误的层。**
 
 ```javascript
-// lodash 4.x — _.cloneDeep 事实标准
-import _ from 'lodash';
-
-const original = {
-  date: new Date(),
-  regex: /test/gi,
-  map: new Map([['a', 1]]),
-  set: new Set([1, 2, 3]),
-  nested: { deep: { value: 42 } },
-};
-
-const clone = _.cloneDeep(original);
-console.log(_.isEqual(original, clone)); // true（深相等）
-console.log(original.nested !== clone.nested); // true（独立）
+const list = [{ id: 1 }, { id: 2 }];
+const copy = [...list];        // 本意：复制列表
+copy[0].id = 99;
+console.log(list[0].id);       // 99 —— 失守
 ```
 
-lodash 的 `cloneDeep` 优势：
+症状：列表克隆了，元素却还是共用的。定位三步：读现象——联动发生在"元素的属性"这一层，比克隆操作低一层；验证——`copy[0] === list[0]` 为 `true`，浅拷贝抄的是元素门牌号；结论——数组展开/`slice` 只负责数组这一层，元素是对象就照样联动。修法：`structuredClone(list)`，或逐元素 `{ ...item }`。
 
-- 支持更多类型（`Error` / `Symbol` 属性 / TypedArray）
-- 支持 `cloneCustomizer` 自定义克隆逻辑
-- 性能优化（针对常见类型有快路径）
-
-### 4.7 Immer 的写时复制
+**错误二：`JSON.parse(JSON.stringify())` 吃掉了 undefined 字段。**
 
 ```javascript
-// Immer — 不可变更新，写时复制
-import { produce } from 'immer';
+const config = { retries: undefined, timeout: 3000 };
+const saved = JSON.parse(JSON.stringify(config));
+console.log('retries' in saved);   // false —— 键没了
+```
 
-const state = {
-  users: [
-    { id: 1, name: 'Alice', age: 30 },
-    { id: 2, name: 'Bob', age: 25 },
-  ],
-  meta: { count: 2 },
-};
+症状：对象经过一次"保存再读取"，可选字段从"存在但为 undefined"变成"不存在"。后续 `Object.keys` 长度对不上、`in` 判断失效。定位：对比克隆前后 `Object.keys` 的差集，消失的键的值多为 undefined 或函数。修法：换 `structuredClone`；确实要走 JSON（比如存 localStorage）就在设计上禁止"undefined 当有意义的值"。
 
-const nextState = produce(state, (draft) => {
-  // 在 draft 上"修改"，Immer 内部用 Proxy 跟踪变更
-  draft.users[0].age = 31;  // 仅复制 users[0]，其余共享
-  draft.meta.count = 3;
+**错误三：把 `Object.freeze` 当深冻结用。**
+
+```javascript
+const state = Object.freeze({
+  filters: { category: 'basic' },
 });
-
-// 验证结构共享
-console.log(state.users === nextState.users); // false（users 数组被复制）
-console.log(state.users[0] === nextState.users[0]); // false（被修改的元素复制）
-console.log(state.users[1] === nextState.users[1]); // true（未修改的元素共享）
-console.log(state.meta === nextState.meta); // false（被修改）
+state.filters.category = 'all';   // 不报错，改成功了
 ```
 
-### 4.8 React 状态更新中的拷贝
+症状：顶层属性确实改不动（静默失败，严格模式报 TypeError），嵌套对象却随便改。原因：`freeze` 是浅冻结。修法：需要"整棵树不可变"时递归 `Object.freeze` 每一层，或直接用 Immutable.js 这类持久化数据结构（见 [不可变数据结构](/javascript/630-ImmutableDataStructures)）。顺带记住：**默认情况下对冻结对象赋值不报错**，非严格模式静默失败——"没报错"不等于"改成功"。
 
-```jsx
-// React 18 — 不可变状态更新（必须浅拷贝被修改的层级）
-function TodoList() {
-  const [todos, setTodos] = React.useState([
-    { id: 1, text: 'Learn JS', done: false },
-    { id: 2, text: 'Learn React', done: false },
-  ]);
+## 7. 实际项目中的使用场景
 
-  const toggle = (id) => {
-    setTodos((prev) =>
-      prev.map((todo) =>
-        todo.id === id ? { ...todo, done: !todo.done } : todo
-      )
-    );
-  };
+- React 状态更新的不可变范式：`setDocs([...docs])` 只换数组门牌号，React 才会重新渲染；深层改动要么整层展开重建，要么上 Immer。写错的最常见症状是"状态明明改了，界面不刷新"；
+- 撤销/重做（本文开头的快照）：每次操作前 `structuredClone` 一份压栈，回滚时出栈还原；
+- Web Workers 与 postMessage：主线程与 worker 之间传对象用的**正是结构化克隆算法**——这解释了为什么传过去的对象在另一边改了，这边不受影响，也解释了函数传不过去会抛 DataCloneError（见 [Web Workers 多线程](/javascript/670-WebWorkersMultithreading)）；
+- 测试夹具：给每个用例发一份独立配置副本 `structuredClone(baseConfig)`，用例之间互不污染——比手写"重置函数"可靠得多。
 
-  const add = (text) => {
-    setTodos((prev) => [...prev, { id: Date.now(), text, done: false }]);
-  };
+## 8. 小练习
 
-  return (
-    <ul>
-      {todos.map((t) => (
-        <li key={t.id} onClick={() => toggle(t.id)}>
-          {t.done ? '[x]' : '[ ]'} {t.text}
-        </li>
-      ))}
-    </ul>
-  );
+预测题（5 分钟，先写答案再运行验证）：
+
+```javascript
+const a = { list: [1, 2] };
+const b = structuredClone(a);
+const c = { ...a };
+
+a.list.push(3);
+console.log(b.list.length, c.list.length);
+```
+
+答案：`2 3`。深拷贝的 b 不受影响；浅拷贝的 c 与 a 共享同一个数组。
+
+修改题（10 分钟）：给第 4.4 节的 `deepClone` 加上 Date 支持——克隆出的对象里 `instanceof Date` 仍为 true。验收：`deepClone({ t: new Date() }).t instanceof Date` 为 true。（提示：`value instanceof Date` 时返回 `new Date(value.getTime())`。）
+
+修 Bug 题（15 分钟）：下面的撤销栈实现有 bug，真实症状是：点三次撤销，界面纹丝不动。找出根因并修复：
+
+```javascript
+const history = [];
+let current = { text: 'v1', meta: { chars: 2 } };
+
+function save() {
+  history.push(current);         // 想存快照
 }
-```
-
-**关键原则**：React 通过 `Object.is` 比较状态，必须返回新引用才能触发重渲染。但只需复制"被修改路径"上的对象，其余共享（结构性共享）。
-
----
-
-## 5. 对比分析（Comparative Analysis）
-
-### 5.1 与 TypeScript 的对比
-
-```typescript
-// TypeScript 5.x — 深拷贝的类型保留问题
-interface User {
-  name: string;
-  birth: Date;
+function undo() {
+  current = history.pop() ?? current;
 }
 
-const u: User = { name: 'Alice', birth: new Date('1994-01-01') };
-
-// JSON 方案丢失 Date 类型
-const u1 = JSON.parse(JSON.stringify(u)) as User;
-console.log(u1.birth instanceof Date); // false（TS 误判为 Date，实际是 string）
-
-// structuredClone 保留类型
-const u2 = structuredClone(u);
-console.log(u2.birth instanceof Date); // true
+current.text = 'v2';
+save();
+current.text = 'v3';
+save();
+undo();
+console.log(current.text);        // 期望 'v2'，实际 'v3'
 ```
 
-TypeScript 无法在类型层面区分"浅拷贝后的同类型"与"深拷贝后的同类型"，需依赖运行时检查。`structuredClone` 的类型签名：
+提示：`push(current)` 压进去的是门牌号，current 后来改了内容，栈里的"快照"跟着变。修法：`history.push(structuredClone(current))`。
 
-```typescript
-declare function structuredClone<T>(value: T, transfer?: Transferable[]): T;
-```
-
-### 5.2 与 Python 的对比
-
-```python
-# Python — copy 模块
-import copy
-
-original = {'a': [1, 2, 3], 'b': {'c': 4}}
-
-shallow = copy.copy(original)       # 浅拷贝
-deep = copy.deepcopy(original)       # 深拷贝（支持循环引用）
-
-# Python 的 deepcopy 支持自定义 __deepcopy__ 方法
-class Node:
-    def __init__(self, val):
-        self.val = val
-        self.next = None
-    def __deepcopy__(self, memo):
-        new = Node(copy.deepcopy(self.val, memo))
-        memo[id(self)] = new
-        new.next = copy.deepcopy(self.next, memo)
-        return new
-```
-
-| 维度 | JavaScript | Python |
-| --- | --- | --- |
-| 浅拷贝 | `Object.assign` / `{...}` | `copy.copy` |
-| 深拷贝 | `structuredClone` / lodash | `copy.deepcopy` |
-| 循环引用 | `structuredClone` 原生支持 | `deepcopy` 通过 `memo` 字典 |
-| 自定义克隆 | 无标准接口 | `__deepcopy__` 魔术方法 |
-| 性能 | `structuredClone` 较快 | `deepcopy` 较慢（反射开销） |
-
-### 5.3 与 Rust 的对比
-
-```rust
-// Rust — 所有权系统天然区分值语义与引用语义
-#[derive(Clone, Debug)]
-struct User { name: String, age: u32 }
-
-let u1 = User { name: "Alice".into(), age: 30 };
-let u2 = u1.clone(); // 显式深拷贝（derive Clone）
-let u3 = u1;         // 移动语义（move），u1 失效
-
-// Rust 没有"浅拷贝"——要么 clone（深拷贝），要么 move（所有权转移）
-// 引用通过 & 显式借用，编译期保证不悬空
-```
-
-| 维度 | JavaScript | Rust |
-| --- | --- | --- |
-| 默认语义 | 引用共享（浅） | 移动语义（move） |
-| 深拷贝 | `structuredClone` | `Clone::clone`（需 derive） |
-| 浅拷贝 | `Object.assign` | 无（通过 `Rc` / `Arc` 显式共享） |
-| 循环引用 | `WeakMap` 或 `structuredClone` | `Rc<RefCell<T>>` + 手动管理 |
-| 内存安全 | 运行时 GC | 编译期所有权保证 |
-
-### 5.4 与 Java 的对比
-
-```java
-// Java — Cloneable 接口与序列化
-class User implements Cloneable {
-    String name;
-    Date birth;
-
-    @Override
-    protected Object clone() throws CloneNotSupportedException {
-        User u = (User) super.clone(); // 浅拷贝
-        u.birth = (Date) this.birth.clone(); // 手动深拷贝
-        return u;
-    }
-}
-
-// 或通过序列化
-User deepCopy = SerializationUtils.clone(original); // Apache Commons
-```
-
-Java 的 `Cloneable` 接口被广泛批评（Joshua Bloch 在《Effective Java》第 13 条建议避免使用），主流方案是"拷贝构造器"或"序列化"。
-
----
-
-## 6. 常见陷阱与最佳实践（Pitfalls & Best Practices）
-
-### 6.1 陷阱：浅拷贝导致的跨组件状态污染
+挑战题（30 分钟，脱离示例）：实现 `patchFreeze(obj)`：递归冻结整棵对象树，返回原对象（不是副本）。要求处理数组，且对已经冻结的部分不重复工作。验收：
 
 ```javascript
-// 反模式：React 中浅拷贝嵌套对象
-const [state, setState] = useState({ user: { name: 'Alice' } });
-
-const updateName = (newName) => {
-  // 错误：仅复制了顶层 state，user 仍共享引用
-  setState({ ...state, user: { ...state.user, name: newName } });
-  // 正确：逐层展开
-};
+const state = patchFreeze({ a: { b: [1, 2] } });
+console.log(Object.isFrozen(state));
+console.log(Object.isFrozen(state.a));
+console.log(Object.isFrozen(state.a.b));
+// 三个都为 true；state.a.b.push(3) 在严格模式下抛 TypeError
 ```
 
-### 6.2 陷阱：`structuredClone` 丢失原型链
+提示（思路方向）：递归 + `Object.isFrozen` 剪枝 + 先冻结自身再遍历子级均可。展开（关键 API）：`Object.freeze`、`Object.values` 或 `Reflect.ownKeys`、`Object.isFrozen`。
 
-```javascript
-// 陷阱：structuredClone 不保留原型链
-class Animal {
-  constructor(name) { this.name = name; }
-  speak() { return `${this.name} makes a sound`; }
-}
+## 9. 与之前和之后的知识的关系
 
-const cat = new Animal('Cat');
-const clone = structuredClone(cat);
+- 往前：070 篇建立"对象是引用"的第一印象，本文把它展开成"赋值/浅拷贝/深拷贝"三层操作表；160 篇的"问题缩小一号"在 `deepClone` 里就是"克隆嵌套层"；
+- 往后：[Object 静态方法](/javascript/210-ObjectStaticMethods) 提供 `freeze`、`defineProperty` 等拷贝之外的另一手控制；[不可变数据结构](/javascript/630-ImmutableDataStructures) 给出"根本不拷贝、而是共享结构"的第三条路；[Generator 函数](/javascript/320-GeneratorFunctions) 之前，建议先确保本文的 `deepClone` 能独立写出。
 
-console.log(clone instanceof Animal); // false ← 原型链丢失
-// console.log(clone.speak()); // TypeError: clone.speak is not a function
+## 10. 官方文档
 
-// 解决方案：自定义深拷贝保留原型
-const deepCloneWithProto = (obj, cache = new WeakMap()) => {
-  if (obj === null || typeof obj !== 'object') return obj;
-  if (cache.has(obj)) return cache.get(obj);
-  const proto = Object.getPrototypeOf(obj);
-  const clone = Object.create(proto);
-  cache.set(obj, clone);
-  for (const key of Reflect.ownKeys(obj)) {
-    clone[key] = deepCloneWithProto(obj[key], cache);
-  }
-  return clone;
-};
+- MDN structuredClone：https://developer.mozilla.org/zh-CN/docs/Web/API/Window/structuredClone
+- HTML 规范·结构化克隆算法（可克隆类型表）：https://html.spec.whatwg.org/multipage/structured-data.html
+- MDN 展开运算符：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Spread_syntax
+- MDN Object.freeze（含浅冻结说明）：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
 
-const catClone = deepCloneWithProto(cat);
-console.log(catClone instanceof Animal); // true
-console.log(catClone.speak()); // "Cat makes a sound"
-```
+## 自我检查
 
-### 6.3 陷阱：深拷贝函数无法克隆
+- 能不看资料画出"赋值、浅拷贝、深拷贝"三层行为表，并解释对象 `===` 比的是什么；
+- 能说出 structuredClone 的三条边界（函数、原型链、getter/setter）与两个优点（循环引用、内置类型）；
+- 能背出 JSON 序列化拷贝至少四种静默变形，并判断什么场景下它反而合适；
+- 能徒手写出 WeakMap 标记法的 deepClone，并解释"先登记后递归"为什么不能颠倒。
 
-```javascript
-// 陷阱：函数无法被任何方法深拷贝
-const obj = { fn: () => 42 };
+## 本章总结
 
-// structuredClone(obj); // DataCloneError: fn could not be cloned
-// JSON 方案会丢弃 fn 属性
+对象变量存的是门牌号：赋值抄门牌号，浅拷贝只照抄第一层（深层仍联动），深拷贝递归复制整棵引用图。日常深拷贝首选 structuredClone，它处理循环引用与内置类型，但不克隆函数、原型与 getter；JSON 方案会静默删键、变形日期、丢 Map/Set，只配给"本来就要序列化"的纯数据用。手写深拷贝的核心是 WeakMap 标记法：见过的对象记表，先登记后递归，循环引用当场斩断。`Object.freeze` 只冻一层，React 的"改了不刷新"多半是浅拷贝门牌号没换。
 
-// 解决方案：保留引用（共享函数对象）
-const cloneWithFn = (obj) => {
-  const cache = new WeakMap();
-  const clone = (o) => {
-    if (typeof o === 'function') return o; // 函数直接共享
-    if (o === null || typeof o !== 'object') return o;
-    if (cache.has(o)) return cache.get(o);
-    const c = Array.isArray(o) ? [] : {};
-    cache.set(o, c);
-    for (const k of Reflect.ownKeys(o)) c[k] = clone(o[k]);
-    return c;
-  };
-  return clone(obj);
-};
-```
+## 下一步
 
-### 6.4 陷阱：深拷贝 `Map` 的键
-
-```javascript
-// 陷阱：Map 的键如果是对象，深拷贝后键引用变化
-const original = new Map();
-const keyObj = { id: 1 };
-original.set(keyObj, 'value');
-
-const clone = structuredClone(original);
-
-// 原键对象无法在新 Map 中查到
-console.log(clone.get(keyObj)); // undefined（键是新的对象）
-console.log([...clone.keys()][0] === keyObj); // false
-```
-
-### 6.5 陷阱：递归深拷贝的栈溢出
-
-```javascript
-// 陷阱：超深嵌套对象导致栈溢出
-const makeDeep = (depth) => {
-  let obj = { value: 'leaf' };
-  for (let i = 0; i < depth; i++) {
-    obj = { nested: obj };
-  }
-  return obj;
-};
-
-const deep = makeDeep(100000);
-// deepClone(deep); // RangeError: Maximum call stack size exceeded
-
-// 解决方案：迭代式深拷贝
-const deepCloneIterative = (root) => {
-  if (root === null || typeof root !== 'object') return root;
-  const cache = new WeakMap();
-  const stack = [{ original: root, parent: null, key: null }];
-  let cloneRoot = null;
-
-  while (stack.length) {
-    const { original, parent, key } = stack.pop();
-    if (cache.has(original)) {
-      if (parent) parent[key] = cache.get(original);
-      continue;
-    }
-    const clone = Array.isArray(original) ? [] : {};
-    cache.set(original, clone);
-    if (parent) parent[key] = clone;
-    else cloneRoot = clone;
-
-    for (const k of Reflect.ownKeys(original)) {
-      const v = original[k];
-      if (v !== null && typeof v === 'object') {
-        stack.push({ original: v, parent: clone, key: k });
-      } else {
-        clone[k] = v;
-      }
-    }
-  }
-  return cloneRoot;
-};
-
-console.log(deepCloneIterative(deep).nested.nested.value); // 'leaf'
-```
-
-### 6.6 最佳实践汇总
-
-1. **优先 `structuredClone`**：原生、快速、支持循环引用，是 2024 年后的首选。
-2. **保留原型链时用自定义深拷贝**：`structuredClone` 会丢失类实例的原型。
-3. **避免 JSON 方案**：仅适用于纯数据（无 Date / RegExp / Map / Set / 循环引用）。
-4. **React 中用不可变更新**：用 Immer 或逐层展开，避免深拷贝整个状态树。
-5. **函数不可克隆**：函数应设计为纯函数，通过引用共享。
-6. **超深嵌套用迭代**：递归深度 > 10000 时改用迭代实现避免栈溢出。
-7. **性能敏感场景用 Immer**：写时复制比全量深拷贝快数倍。
-
----
-
-## 7. 工程实践（Engineering Practice）
-
-### 7.1 构建与打包
-
-`structuredClone` 是 ES2022 / HTML 规范的原生 API，无需 polyfill（Node.js 17+ / 现代浏览器全支持）。对旧环境（IE11 / Node 16-），使用 `core-js` 或 `lodash`：
-
-```javascript
-// 兼容性处理
-const cloneDeep = typeof structuredClone === 'function'
-  ? structuredClone
-  : (await import('lodash/cloneDeep.js')).default;
-```
-
-### 7.2 性能基准测试
-
-```javascript
-// ES2015 — 深拷贝性能对比
-import { performance } from 'node:perf_hooks';
-import _ from 'lodash';
-
-// 构造测试数据：1000 个对象，每个含 10 层嵌套
-const makeData = (n, depth) => {
-  return Array.from({ length: n }, () => {
-    let obj = { v: Math.random() };
-    for (let i = 0; i < depth; i++) obj = { nested: obj };
-    return obj;
-  });
-};
-
-const data = makeData(1000, 10);
-
-const bench = (name, fn) => {
-  const t0 = performance.now();
-  fn();
-  console.log(`${name}: ${(performance.now() - t0).toFixed(2)} ms`);
-};
-
-bench('JSON', () => data.map((d) => JSON.parse(JSON.stringify(d))));
-bench('structuredClone', () => data.map((d) => structuredClone(d)));
-bench('lodash.cloneDeep', () => data.map((d) => _.cloneDeep(d)));
-```
-
-典型结果（Node 20, M1 MacBook Air, 1000 个 10 层嵌套对象）：
-
-| 方法 | 耗时（ms） | 相对倍数 |
-| --- | --- | --- |
-| `JSON` | 12.5 | 1.0x |
-| `structuredClone` | 18.7 | 1.5x |
-| `lodash.cloneDeep` | 32.4 | 2.6x |
-
-`JSON` 方案最快但限制最多；`structuredClone` 性能接近 JSON 且功能完整；`lodash` 最慢但兼容性最好。
-
-### 7.3 调试技巧
-
-1. **验证深拷贝正确性**：用 `assert.deepEqual` + `assert.notStrictEqual` 组合。
-
-```javascript
-import assert from 'node:assert';
-
-const original = { a: { b: 1 } };
-const clone = structuredClone(original);
-
-assert.deepEqual(original, clone);          // 深相等
-assert.notStrictEqual(original.a, clone.a); // 但引用不同
-```
-
-2. **检测循环引用**：用 `util.inspect` 或 `console.dir` 直接打印。
-
-3. **Chrome DevTools Memory**：拍摄堆快照，对比深拷贝前后的对象数量。
-
-### 7.4 ESLint 规则推荐
-
-```json
-{
-  "rules": {
-    "no-restricted-syntax": [
-      "error",
-      {
-        "selector": "CallExpression[callee.property.name='assign'][arguments.0.type='ObjectExpression']",
-        "message": "Object.assign({}, x) 是浅拷贝，嵌套对象会共享引用。如需深拷贝用 structuredClone。"
-      }
-    ],
-    "prefer-object-spread": "warn"
-  }
-}
-```
-
-### 7.5 与 Immer 集成的最佳实践
-
-```javascript
-// Immer — 配合 React/Redux 的不可变更新
-import { produce } from 'immer';
-
-// Redux reducer
-const initialState = {
-  users: [],
-  loading: false,
-};
-
-const reducer = (state = initialState, action) =>
-  produce(state, (draft) => {
-    switch (action.type) {
-      case 'ADD_USER':
-        draft.users.push(action.payload); // Immer 内部处理不可变
-        break;
-      case 'UPDATE_USER':
-        const user = draft.users.find((u) => u.id === action.payload.id);
-        if (user) Object.assign(user, action.payload);
-        break;
-      case 'SET_LOADING':
-        draft.loading = action.payload;
-        break;
-    }
-  });
-```
-
----
-
-## 8. 案例研究（Case Studies）
-
-### 8.1 lodash.cloneDeep 实现剖析
-
-lodash 4.17.21 的 `cloneDeep` 位于 `cloneDeep.js`，核心调用链：
-
-```
-cloneDeep(value) → baseClone(value, CLONE_DEEP_FLAG | CLONE_SYMBOLS_FLAG)
-```
-
-`baseClone` 的关键设计：
-
-- **初始化缓存**：用 `Stack` 数据结构（类似 WeakMap 但兼容旧环境）记录已克隆对象。
-- **类型分发**：根据 `getTag(value)` 分派到 `cloneRegExp` / `cloneDate` / `cloneMap` / `cloneSet` / `cloneArrayBuffer` / `cloneTypedArray` 等专用函数。
-- **属性复制**：用 `keysIn` 包含原型链上的可枚举属性。
-- **Symbol 属性**：`CLONE_SYMBOLS_FLAG` 控制是否克隆 Symbol 属性。
-
-源码节选（简化）：
-
-```javascript
-function baseClone(value, bitmask, customizer, key, object, stack) {
-  let result;
-  const isDeep = bitmask & CLONE_DEEP_FLAG;
-  const isFlat = bitmask & CLONE_FLAT_FLAG;
-  const isFull = bitmask & CLONE_SYMBOLS_FLAG;
-
-  if (customizer) {
-    result = object ? customizer(value, key, object, stack) : customizer(value);
-  }
-  if (result !== undefined) return result;
-  if (!isObject(value)) return value;
-
-  const isArr = Array.isArray(value);
-  if (isArr) {
-    result = initCloneArray(value);
-    if (!isDeep) return copyArray(value, result);
-  } else {
-    const tag = getTag(value);
-    const isFunc = tag == funcTag || tag == genTagTag;
-    if (isBuffer(value)) return cloneBuffer(value, isDeep);
-    if (tag == objectTag || tag == argsTag || (isFunc && !object)) {
-      result = isFlat || isFunc ? {} : initCloneObject(value);
-      if (!isDeep) return isFlat ? copySymbolsIn(value, copyArray(value, result)) : copySymbols(value, assignOwnProperty(result, value));
-    } else {
-      if (!cloneableTags[tag]) return object ? value : {};
-      result = initCloneByTag(value, tag, isDeep);
-    }
-  }
-  stack || (stack = new Stack());
-  const stacked = stack.get(value);
-  if (stacked) return stacked;
-  stack.set(value, result);
-
-  // ... 递归克隆属性
-  return result;
-}
-```
-
-### 8.2 Immer 的 Proxy 实现
-
-Immer 的核心是用 ES2015 `Proxy` 拦截对草稿的访问与修改：
-
-```javascript
-// Immer 简化原理
-const createDraft = (target) => {
-  const copy = { ...target }; // 浅拷贝
-  const modified = new Set();
-
-  return new Proxy(copy, {
-    get(t, key) {
-      return key in t ? t[key] : target[key]; // 优先读副本，回落原对象
-    },
-    set(t, key, value) {
-      t[key] = value; // 写入副本
-      modified.add(key); // 标记修改
-      return true;
-    },
-    // ... deleteProperty, has, ownKeys 等
-  });
-};
-
-const finalize = (draft, modified) => {
-  // 仅复制被修改的属性，其余共享原对象
-  // 实现结构性共享（structural sharing）
-};
-```
-
-Immer 通过 Proxy 实现"写时复制"，使得不可变更新的开销接近于直接修改。
-
-### 8.3 Redux Toolkit 的不可变更体系
-
-Redux Toolkit（RTK）默认集成 Immer，让 reducer 可以"直接修改"状态而保持不可变：
-
-```javascript
-// RTK — createSlice 自动使用 Immer
-import { createSlice } from '@reduxjs/toolkit';
-
-const todosSlice = createSlice({
-  name: 'todos',
-  initialState: [],
-  reducers: {
-    addTodo: (state, action) => {
-      // 看似 mutation，实为 Immer 的 Proxy
-      state.push(action.payload);
-    },
-    toggleTodo: (state, action) => {
-      const todo = state.find((t) => t.id === action.payload);
-      if (todo) todo.done = !todo.done;
-    },
-  },
-});
-```
-
-### 8.4 jQuery 的 $.extend
-
-jQuery 的 `$.extend` 是早期（2006 年）的深浅拷贝方案：
-
-```javascript
-// jQuery — $.extend 深浅拷贝
-const shallow = $.extend({}, obj);          // 浅拷贝
-const deep = $.extend(true, {}, obj);        // 深拷贝（第一个参数 true）
-
-// $.extend 的深拷贝有限制：不支持 Map/Set/Date 等
-```
-
-现代项目应改用 `structuredClone` 或 lodash。
-
-### 8.5 Node.js 的 v8.serialize
-
-Node.js 提供 `v8.serialize` / `v8.deserialize`，基于 V8 内部序列化格式，比 JSON 更强大：
-
-```javascript
-// Node.js — v8 序列化（支持更多类型）
-const v8 = require('v8');
-
-const original = {
-  date: new Date(),
-  map: new Map([['k', 'v']]),
-  buffer: Buffer.from('hello'),
-};
-
-const clone = v8.deserialize(v8.serialize(original));
-console.log(clone.date instanceof Date); // true
-console.log(clone.map instanceof Map);   // true
-```
-
-`v8.serialize` 是 Node.js 专有的，浏览器不可用；但功能比 `structuredClone` 更强（支持 `Buffer` 等 Node 类型）。
-
----
-
-### 填空题知识点讲解
-
-**常见疑问 6**：JavaScript 中基本类型有 ____ 种（含 ES2020 新增）。
-
-**解析讲解**：7（`undefined` / `null` / `boolean` / `number` / `string` / `symbol` / `bigint`）
-
----
-
-**常见疑问 7**：`Object.assign` 执行的是 ____ 拷贝。
-
-**解析讲解**：浅
-
----
-
-**常见疑问 8**：`structuredClone` 的第二参数是 ____，用于转移 ____ 对象的所有权。
-
-**解析讲解**：transfer list；Transferable（如 ArrayBuffer）
-
----
-
-**常见疑问 9**：深拷贝循环引用检测时，`WeakMap` 的键是 ____，值是 ____。
-
-**解析讲解**：原对象；克隆对象
-
----
-
-**常见疑问 10**：JSON 方案的七大限制中，`NaN` 与 `Infinity` 会被转为 ____。
-
-**解析讲解**：`null`
-
----
-
-### 编程题知识点讲解
-
-**常见疑问 11**：实现一个 `deepClone` 函数，支持循环引用、Date、RegExp、Map、Set。
-
-**解析讲解**：见 5.5 节完整实现。
-
----
-
-**常见疑问 12**：实现一个 `shallowEqual(obj1, obj2)` 函数，浅比较两个对象。
-
-**解析讲解**：
-
-```javascript
-// ES2015 — 浅相等比较
-const shallowEqual = (a, b) => {
-  if (Object.is(a, b)) return true;
-  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
-
-  const keysA = Object.keys(a);
-  const keysB = Object.keys(b);
-  if (keysA.length !== keysB.length) return false;
-
-  return keysA.every((k) => Object.is(a[k], b[k]));
-};
-
-console.log(shallowEqual({ a: 1, b: 2 }, { a: 1, b: 2 })); // true
-console.log(shallowEqual({ a: 1 }, { a: 1, b: 2 }));       // false
-```
-
----
-
-**常见疑问 13**：实现一个 `deepEqual(a, b)` 函数，递归比较两个值。
-
-**解析讲解**：
-
-```javascript
-// ES2015 — 深相等比较
-const deepEqual = (a, b) => {
-  if (Object.is(a, b)) return true;
-  if (typeof a !== 'object' || typeof b !== 'object' || a === null || b === null) return false;
-
-  if (a instanceof Date && b instanceof Date) return a.getTime() === b.getTime();
-  if (a instanceof RegExp && b instanceof RegExp) return a.source === b.source && a.flags === b.flags;
-
-  const keysA = Reflect.ownKeys(a);
-  const keysB = Reflect.ownKeys(b);
-  if (keysA.length !== keysB.length) return false;
-
-  return keysA.every((k) => deepEqual(a[k], b[k]));
-};
-
-console.log(deepEqual({ a: { b: 1 } }, { a: { b: 1 } })); // true
-console.log(deepEqual(new Date('2024-01-01'), new Date('2024-01-01'))); // true
-```
-
----
-
-**常见疑问 14**：用 Immer 的 `produce` 实现一个"向嵌套数组添加元素"的不可变更新。
-
-**解析讲解**：
-
-```javascript
-import { produce } from 'immer';
-
-const state = {
-  groups: [
-    { id: 1, items: ['a', 'b'] },
-    { id: 2, items: ['c'] },
-  ],
-};
-
-const addItem = (groupId, item) =>
-  produce(state, (draft) => {
-    const group = draft.groups.find((g) => g.id === groupId);
-    if (group) group.items.push(item);
-  });
-
-const nextState = addItem(1, 'd');
-console.log(state.groups[0].items);    // ['a', 'b']（原状态不变）
-console.log(nextState.groups[0].items); // ['a', 'b', 'd']
-console.log(state.groups[1] === nextState.groups[1]); // true（结构性共享）
-```
-
----
-
-### 11.1 书籍
-
-- **《You Don't Know JS: Types & Grammar》**（Kyle Simpson, 2015）：第 2 章详解值与引用。
-- **《JavaScript: The Definitive Guide》**（David Flanagan, 2020, 7th ed.）：第 6 章对象与第 7 章数组。
-- **《Effective JavaScript》**（David Herman, 2012）：第 4 章对象原型与复制。
-- **《High Performance JavaScript》**（Nicholas C. Zakas, 2010）：第 5 章分析对象克隆性能。
-- **《Programming TypeScript》**（Boris Cherny, 2019）：第 6 章类型系统与拷贝语义。
-
-### 11.2 论文与技术报告
-
-- Barbara Liskov. 1972. *A Design Methodology for Reliable Software Systems*. MIT Lincoln Lab.（CLU 语言中引用语义的起源）
-- Simon Peyton Jones and Simon Marlow. 2004. *Secrets of the Glasgow Haskell Compiler inliner*. Journal of Functional Programming 12, 4. DOI: <https://doi.org/10.1017/S0956796802004331>（与结构性共享相关）
-
-### 11.4 开源项目源码
-
-- **Immer**：<https://github.com/immerjs/immer>（Proxy + 写时复制实现）
-- **lodash cloneDeep**：<https://github.com/lodash/lodash/blob/main/cloneDeep.js>
-- **Immutable.js**：<https://github.com/immutable-js/immutable-js>（持久化数据结构）
-- **V8 structuredClone 实现**：<https://chromium.googlesource.com/v8/v8/+/main/src/objects/>
-
-### 11.5 进阶主题
-
-- **持久化数据结构（Persistent Data Structure）**：Okasaki 1999，结构性共享的数学基础。
-- **写时复制（Copy-on-Write）**：操作系统 fork 的经典技术，Immer 将其引入 JavaScript。
-- **跨 Realm 通信**：`postMessage` 与 `structuredClone` 共享算法，跨 iframe / Worker / Service Worker。
-- **SharedArrayBuffer 与 Atomics**：真正的零拷贝跨线程共享，配合 COOP/COEP 安全头使用。
-
----
-
-> **结语**：深拷贝与浅拷贝是 JavaScript 工程师必须掌握的基础概念，但其背后的值语义、引用语义、引用图同构、写时复制等理论，是通往高级架构的必经之路。`structuredClone` 的标准化终结了"深拷贝方案碎片化"的时代，但在性能敏感场景，Immer 的不可变更体系仍是首选。本篇对标 MIT 6.031 / Stanford CS107 / CMU 15-213 的教学水准，旨在为学习者提供从语法到理论、从原理到工程的完整视角。
-## 浅拷贝
-
-**基本写法：Object.assign**
-`Object.assign({}, <源对象>)`
-```javascript
-// 浅拷贝一级属性嵌套仍引用
-let copy = Object.assign({}, obj);
-```
-
----
-
-**基本写法：展开运算符**
-`{ ...<对象> }`
-```javascript
-// 对象展开为浅拷贝
-let copy = { ...obj };
-```
-
----
-
-**基本写法：数组展开**
-`[ ...<数组> ]`
-```javascript
-// 数组展开为浅拷贝
-let copy = [...arr];
-```
-
----
-
-**基本写法：slice 浅拷贝数组**
-`<数组>.slice()`
-```javascript
-// slice 无参返回新数组
-let copy = arr.slice();
-```
-
----
-
-**基本写法：concat 浅拷贝数组**
-`<数组>.concat()`
-```javascript
-// concat 无参返回新数组
-let copy = arr.concat();
-```
-
----
-
-**基本写法：Array.from**
-`Array.from(<数组>)`
-```javascript
-// 从可迭代对象创建新数组
-let copy = Array.from(arr);
-```
-
----
-
-## JSON 深拷贝
-
-**基本写法：JSON 序列化**
-`JSON.parse(JSON.stringify(<对象>))`
-```javascript
-// 简单深拷贝但无法处理函数 undefined 循环引用
-let deep = JSON.parse(JSON.stringify(obj));
-```
-
----
-
-**基本写法：JSON 限制**
-`JSON.parse(JSON.stringify(<含 Date 对象>))`
-```javascript
-// Date 会变成字符串 Map Set 丢失
-let obj = { d: new Date() };
-let copy = JSON.parse(JSON.stringify(obj));  // d 变为字符串
-```
-
----
-
-## 递归深拷贝
-
-**基本写法：基础递归深拷贝**
-`function <深拷贝>(<对象>) { }`
-```javascript
-// 递归处理对象和数组
-function deepClone(obj) {
-    if (obj === null || typeof obj !== "object") return obj;
-    if (Array.isArray(obj)) return obj.map(deepClone);
-    let copy = {};
-    for (let key in obj) {
-        if (obj.hasOwnProperty(key)) copy[key] = deepClone(obj[key]);
-    }
-    return copy;
-}
-```
-
----
-
-**基本写法：处理 Date RegExp**
-`function <深拷贝>(<对象>) { }`
-```javascript
-// 处理特殊对象类型
-function deepClone(obj) {
-    if (obj instanceof Date) return new Date(obj);
-    if (obj instanceof RegExp) return new RegExp(obj);
-    if (obj === null || typeof obj !== "object") return obj;
-    let copy = Array.isArray(obj) ? [] : {};
-    for (let key in obj) {
-        if (obj.hasOwnProperty(key)) copy[key] = deepClone(obj[key]);
-    }
-    return copy;
-}
-```
-
----
-
-## 循环引用处理
-
-**基本写法：使用 WeakMap 解决循环引用**
-`function <深拷贝>(<对象>, <hash>) { }`
-```javascript
-// WeakMap 记录已拷贝对象避免重复
-function deepClone(obj, hash = new WeakMap()) {
-    if (obj === null || typeof obj !== "object") return obj;
-    if (hash.has(obj)) return hash.get(obj);
-    let copy = Array.isArray(obj) ? [] : {};
-    hash.set(obj, copy);
-    for (let key in obj) {
-        if (obj.hasOwnProperty(key)) copy[key] = deepClone(obj[key], hash);
-    }
-    return copy;
-}
-```
-
----
-
-## Map Set 拷贝
-
-**基本写法：拷贝 Map**
-`new Map(<源 Map>)`
-```javascript
-// Map 浅拷贝
-let copy = new Map(map);
-```
-
----
-
-**基本写法：深拷贝 Map**
-`function <深拷贝Map>(<源>) { }`
-```javascript
-// 递归拷贝 Map 值
-function deepCloneMap(map, hash = new WeakMap()) {
-    if (hash.has(map)) return hash.get(map);
-    let copy = new Map();
-    hash.set(map, copy);
-    for (let [k, v] of map) copy.set(deepClone(k, hash), deepClone(v, hash));
-    return copy;
-}
-```
-
----
-
-**基本写法：拷贝 Set**
-`new Set(<源 Set>)`
-```javascript
-// Set 浅拷贝
-let copy = new Set(set);
-```
-
----
-
-## structuredClone
-
-**基本写法：structuredClone**
-`structuredClone(<对象>)`
-```javascript
-// 原生深拷贝支持循环引用 Date Map Set
-let deep = structuredClone(obj);
-```
-
----
-
-**基本写法：transfer 转移**
-`structuredClone(<对象>, { transfer: [<可转移对象>] })`
-```javascript
-// 转移 ArrayBuffer 提升性能源对象失效
-let buf = new ArrayBuffer(8);
-let copy = structuredClone(buf, { transfer: [buf] });
-```
-
----
-
-**基本写法：structuredClone 限制**
-`structuredClone(<含函数对象>)`
-```javascript
-// 不支持函数 DOM 节点抛出异常
-let obj = { fn: () => {} };
-structuredClone(obj);  // 抛出 DataCloneError
-```
-
----
-
-## 特殊对象拷贝
-
-**基本写法：拷贝 RegExp**
-`new RegExp(<源>)`
-```javascript
-// 复制正则对象
-let copy = new RegExp(regex);
-```
-
----
-
-**基本写法：拷贝 Date**
-`new Date(<源>)`
-```javascript
-// 复制日期对象
-let copy = new Date(date);
-```
-
----
-
-**基本写法：拷贝 Error**
-`new <Error类型>(<源>.message)`
-```javascript
-// 复制错误对象
-let copy = new Error(err.message);
-```
-
----
-
-## 自定义类拷贝
-
-**基本写法：通过构造器重建**
-`new <类>(<源对象>)`
-```javascript
-// 调用构造器重新创建实例
-class Point {
-    constructor(x, y) { this.x = x; this.y = y; }
-    clone() { return new Point(this.x, this.y); }
-}
-```
-
----
-
-## 性能对比
-
-**基本写法：浅拷贝性能最优**
-`{ ...<对象> }`
-```javascript
-// 浅拷贝最快但只复制一层
-let copy = { ...obj };
-```
-
----
-
-**基本写法：structuredClone 平衡**
-`structuredClone(<对象>)`
-```javascript
-// 原生 API 性能优于递归实现
-let copy = structuredClone(obj);
-```
-
----
-
-**基本写法：JSON 适合纯数据**
-`JSON.parse(JSON.stringify(<对象>))`
-```javascript
-// 纯数据场景 JSON 最快
-let copy = JSON.parse(JSON.stringify(data));
-```
-
----
-
-## 实用工具函数
-
-**基本写法：通用深拷贝工具**
-`function <deepClone>(<对象>) { }`
-```javascript
-// 综合处理各种类型的深拷贝
-function deepClone(obj, hash = new WeakMap()) {
-    if (obj === null || typeof obj !== "object") return obj;
-    if (obj instanceof Date) return new Date(obj);
-    if (obj instanceof RegExp) return new RegExp(obj);
-    if (obj instanceof Map) {
-        let copy = new Map(); hash.set(obj, copy);
-        for (let [k, v] of obj) copy.set(deepClone(k, hash), deepClone(v, hash));
-        return copy;
-    }
-    if (obj instanceof Set) {
-        let copy = new Set(); hash.set(obj, copy);
-        for (let v of obj) copy.add(deepClone(v, hash));
-        return copy;
-    }
-    if (hash.has(obj)) return hash.get(obj);
-    let copy = Array.isArray(obj) ? [] : {};
-    hash.set(obj, copy);
-    for (let key of Reflect.ownKeys(obj)) copy[key] = deepClone(obj[key], hash);
-    return copy;
-}
-```
-
----
-
-## 引用关系
-
-**基本写法：浅拷贝引用关系**
-`let <副本> = { ...<对象> }`
-```javascript
-// 嵌套对象仍共享引用
-let obj = { nested: { a: 1 } };
-let copy = { ...obj };
-copy.nested.a = 2;  // obj.nested.a 也变为 2
-```
-
----
-
-**基本写法：深拷贝独立**
-`let <副本> = structuredClone(<对象>)`
-```javascript
-// 深拷贝完全独立互不影响
-let obj = { nested: { a: 1 } };
-let copy = structuredClone(obj);
-copy.nested.a = 2;  // obj.nested.a 仍为 1
-```
+进入 [Object 静态方法](/javascript/210-ObjectStaticMethods)：拷贝与冻结只是 Object 工具箱的一角——keys/values/entries 三兄弟、groupBy 分组、hasOwn 判存在，这一整套静态方法是你每天都会摸的扳手，下一篇把它们一次配齐。

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 'MySQL 9.x新特性：VECTOR向量类型与HeatWave边界、JSON增强、窗口函数能力边界、函数索引、innodb_parallel_read_threads适用面'
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'mysql/720-DataEncryption'
   - 'mysql/330-MySQLIndexExecutionPlan'
@@ -87,7 +87,7 @@ FROM product_embeddings;
 社区版 MySQL 9.x 提供的向量函数是三类**纯转换/取维**函数：
 
 ```sql
--- 字符串 ↔ 向量 互转（二进制存储，4 字节浮点/维）
+-- 字符串 <-> 向量 互转（二进制存储，4 字节浮点/维）
 SELECT STRING_TO_VECTOR('[0.1, 0.2, 0.3]');       -- 别名 TO_VECTOR
 SELECT VECTOR_TO_STRING(embedding) FROM documents LIMIT 1;
 SELECT VECTOR_DIM(embedding) FROM documents LIMIT 1;  -- 返回维度

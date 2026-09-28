@@ -1,12 +1,12 @@
 ---
-order: 410
+order: 430
 title: 专项：东亚文字与国际化标签
 module: 'html5'
 category: 前端技术
 difficulty: beginner
 description: ruby 注音、bdi/bdo 双向文本隔离、lang/dir 属性深化：处理日文注音、中文拼音、阿拉伯文 RTL 排版的最后一公里。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'html5/060-MetadataCharacterEncoding'
   - 'html5/110-TextSemantic'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 索引签名、Record与动态属性访问
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/120-IntersectionTypeMerge'
   - 'typescript/150-TypeGuardCustomGuard'
@@ -27,7 +27,7 @@ prerequisites: []
 - 掌握「第四章 设计哲学」的核心机制、典型用法与常见陷阱
 - 掌握「第五章 语法与语义」的核心机制、典型用法与常见陷阱
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 ## 第一章 概述

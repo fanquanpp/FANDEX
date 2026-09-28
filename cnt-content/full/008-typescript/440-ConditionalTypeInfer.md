@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 450
 title: infer 专题：在类型层占位与推导
 module: 'typescript'
 category: 前端技术

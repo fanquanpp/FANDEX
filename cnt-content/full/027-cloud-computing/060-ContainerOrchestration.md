@@ -4,283 +4,162 @@ title: 容器与编排
 module: 'cloud-computing'
 category: 云与基础设施
 difficulty: intermediate
-description: Docker 容器技术、Kubernetes 编排、Helm 包管理与容器镜像仓库。
+description: 从手跑一个容器到让集群托管应用：用 Docker 与 kind 实操理解编排为什么存在，掌握 Deployment、Service、HPA 最小组合。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
-  - 'cloud-computing/010-CloudComputingBasics'
-  - 'cloud-computing/040-CloudNetworkStorage'
-  - 'cloud-computing/410-IaC'
-  - 'cloud-computing/020-IaaSPaaSSaaS'
+  - 'cloud-computing/070-DockerDeepAnalysis'
+  - 'cloud-computing/110-KubernetesCore'
+  - 'cloud-computing/150-HelmPackageManagement'
+  - 'cloud-computing/540-HarborRegistry'
 prerequisites: []
 ---
 
-## 学习目标
+前置知识：会用终端执行命令；装好 Docker Desktop（或 Linux 上的 Docker Engine）。
+不需要任何 Kubernetes 基础——本文就是云计算模块里带你从零摸到集群的那篇。
 
-本文是「云计算」模块的第 6 篇，难度定位为进阶。重点内容：Docker 容器技术、Kubernetes 编排、Helm 包管理与容器镜像仓库。
+读完本文你应当能够：说清容器和虚拟机的区别到底在哪；把一个本地服务打包成
+镜像并跑起来；用 kind 在自己电脑上起一个单机 Kubernetes 集群并部署应用；
+理解"编排"解决的三个问题分别对应哪些机制。
 
-主要章节：
+## 1. 场景：你写了个服务，想让它"一直活着"
 
-- 1. Docker 容器技术
-- 2. Kubernetes 编排
-- 3. Helm 包管理
-- 4. 容器镜像仓库
-- 小结
+假设你写了一个 Node 服务，在自己电脑上 `node main.js` 跑得好好的。
+现在要让别人也能用，问题立刻一个接一个：
 
-## 1. Docker 容器技术
+1. **"我这能跑"不算数**。你的机器有 Node 22、有依赖、有环境变量；
+   别人的服务器一样都没有。环境不一致是部署事故的头号来源。
+2. **进程挂了谁拉起来**。你下班了，服务崩了，谁负责重启？
+3. **流量涨了怎么办**。一个进程扛 100 人在线没问题，1000 人呢？
+   手动再起几个？端口怎么分？请求怎么分？
 
-### 1.1 Docker 核心概念
+容器解决第 1 个问题；**编排器（orchestrator）解决后两个**。这条线就是
+本文的地图：先容器，后编排。
 
-| 概念           | 说明                             |
-| :------------- | :------------------------------- |
-| **镜像**       | 只读模板，包含运行应用所需的一切 |
-| **容器**       | 镜像的运行实例，隔离的进程       |
-| **Dockerfile** | 构建镜像的指令文件               |
-| **Registry**   | 镜像仓库，存储和分发镜像         |
-| **Volume**     | 数据卷，持久化容器数据           |
-| **Network**    | 容器网络，容器间通信             |
+## 2. 动手：把服务装进容器
 
-### 1.2 Dockerfile 编写
+### 2.1 镜像与容器：一张快照和一个进程
+
+容器不是虚拟机。虚拟机虚拟出一整套硬件和操作系统；容器只是被 Linux
+内核的隔离机制（命名空间 + 控制组）圈起来的**一组普通进程**，共享宿主机
+内核。所以容器秒级启动、内存开销小，但里面"看到的世界"是精心裁剪过的。
+
+**镜像**是只读的文件系统快照（应用 + 运行时 + 依赖全部打包），
+**容器**是镜像跑起来的那个实例。类比：镜像是安装光盘，容器是装好后在跑的软件。
+
+### 2.2 从 Dockerfile 到运行中的容器
+
+最直接的动手方式：给上一节的服务写一个 Dockerfile。
 
 ```dockerfile
-# 多阶段构建 - Node.js 应用
-# 阶段1: 构建
-FROM node:20-alpine AS builder
+# 多阶段构建：第一阶段编译，第二阶段只带产物，镜像能小一半以上
+FROM node:22-alpine AS build
 WORKDIR /app
 COPY package*.json ./
 RUN npm ci
 COPY . .
 RUN npm run build
 
-# 阶段2: 运行
-FROM node:20-alpine
+FROM node:22-alpine
 WORKDIR /app
-COPY --from=builder /app/dist ./dist
-COPY --from=builder /app/node_modules ./node_modules
-COPY --from=builder /app/package.json ./
-
-# 非 root 用户
-RUN addgroup -g 1001 appgroup && adduser -u 1001 -G appgroup -s /bin/sh -D appuser
-USER appuser
-
+COPY --from=build /app/dist ./dist
+COPY --from=build /app/node_modules ./node_modules
+USER node                     # 不用 root 跑，出事时损失小
 EXPOSE 3000
-HEALTHCHECK --interval=30s --timeout=3s \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/health || exit 1
-
 CMD ["node", "dist/main.js"]
 ```
 
-### 1.3 Dockerfile 最佳实践
-
-| 实践              | 说明               |
-| :---------------- | :----------------- |
-| **多阶段构建**    | 减小最终镜像体积   |
-| **使用 Alpine**   | 基础镜像选择精简版 |
-| **合并 RUN 指令** | 减少镜像层数       |
-| **.dockerignore** | 排除不需要的文件   |
-| **非 root 运行**  | 安全性考虑         |
-| **固定版本标签**  | 避免使用 latest    |
-
-```dockerfile
-# 合并 RUN 指令减少层数
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends curl git && \
-    rm -rf /var/lib/apt/lists/*
+```bash
+docker build -t myapp:v1 .          # 把当前目录构建成镜像 myapp:v1
+docker run -d -p 3000:3000 myapp:v1 # 后台运行，宿主机 3000 端口映射进容器
+docker ps                           # 看到你的容器在跑
+docker logs -f <容器ID>              # 跟日志
+docker exec -it <容器ID> sh         # 钻进容器里看
 ```
 
-### 1.4 Docker Compose
+打开 `http://localhost:3000`——同一个服务，现在它装在快照里，任何装了
+Docker 的机器都能一条命令跑出**完全相同**的环境。问题 1 解决。
+
+Dockerfile 的层缓存、体积优化等进阶写法见《Docker 深入剖析》。
+
+### 2.3 单机多容器：Compose
+
+真实服务不止一个进程：应用、数据库、缓存各一个容器。手动 `docker run`
+三条还要管启动顺序，用 Compose 一个文件声明清楚：
 
 ```yaml
-# docker-compose.yml
-# 注：Compose v2 已弃用顶层 version 字段，写了会被忽略并告警，直接删掉即可
-
+# compose.yaml
 services:
   app:
-    build:
-      context: .
-      dockerfile: Dockerfile
-    ports:
-      - '3000:3000'
+    build: .
+    ports: ['3000:3000']
     environment:
-      - NODE_ENV=production
-      - DB_HOST=postgres
-      - REDIS_HOST=redis
+      DB_HOST: postgres
     depends_on:
       postgres:
-        condition: service_healthy
-      redis:
-        condition: service_started
-    restart: unless-stopped
-    deploy:
-      resources:
-        limits:
-          memory: 512M
-          cpus: '0.5'
+        condition: service_healthy   # 等数据库健康检查通过再起 app
 
   postgres:
     image: postgres:16-alpine
     environment:
       POSTGRES_DB: myapp
-      POSTGRES_USER: app
-      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
-    volumes:
-      - pgdata:/var/lib/postgresql/data
+      POSTGRES_PASSWORD: devpass     # 本地开发可以硬编码，生产绝不行
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U app -d myapp']
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 10s
-      timeout: 5s
-      retries: 5
-    secrets:
-      - db_password
-
-  redis:
-    image: redis:7-alpine
-    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
-    volumes:
-      - redisdata:/data
-
-  nginx:
-    image: nginx:alpine
-    ports:
-      - '80:80'
-      - '443:443'
-    volumes:
-      - ./nginx.conf:/etc/nginx/nginx.conf:ro
-    depends_on:
-      - app
-
-volumes:
-  pgdata:
-  redisdata:
-
-secrets:
-  db_password:
-    file: ./secrets/db_password.txt
 ```
-
-### 1.5 常用 Docker 命令
 
 ```bash
-# 镜像操作
-docker build -t myapp:v1 .              # 构建镜像
-docker images                            # 列出镜像
-docker push registry/myapp:v1           # 推送镜像
-docker rmi myapp:v1                     # 删除镜像
-
-# 容器操作
-docker run -d -p 3000:3000 --name app myapp:v1  # 运行容器
-docker ps                                # 运行中的容器
-docker logs -f app                       # 查看日志
-docker exec -it app sh                   # 进入容器
-docker stop app && docker rm app         # 停止并删除
-
-# Compose 操作
-docker compose up -d                     # 启动所有服务
-docker compose down -v                   # 停止并删除（含数据卷）
-docker compose logs -f app               # 跟踪日志
-docker compose ps                        # 服务状态
+docker compose up -d      # 一条命令起全部服务
+docker compose down       # 一条命令全停
 ```
 
-## 2. Kubernetes 编排
+到这里，一台机器上的容器化已经齐了。**接下来是本文真正的主题：
+机器不止一台时，谁来管？**
 
-### 2.1 K8s 核心概念
+## 3. 编排：把"一直活着"写成声明
 
-```mermaid
-flowchart TD
-    subgraph Cluster[Kubernetes Cluster]
-        CP[Control Plane<br/>API Server / etcd / Scheduler / Controller Mgr]
-        subgraph N1[Node 1]
-            P1[Pod A] P2[Pod B]
-            K1[kubelet kube-proxy]
-        end
-        subgraph N2[Node 2]
-            P3[Pod C] P4[Pod D]
-            K2[kubelet kube-proxy]
-        end
-        subgraph N3[Node 3]
-            P5[Pod E] P6[Pod F]
-            K3[kubelet kube-proxy]
-        end
-        CP --- N1
-        CP --- N2
-        CP --- N3
-    end
+### 3.1 为什么需要 Kubernetes
+
+十台机器、五十个容器的时候，Compose 那套"声明在哪个文件、起在哪个
+机器"就撑不住了。你需要一个系统持续回答三个问题：
+
+| 问题                     | 编排器的机制                             |
+| :----------------------- | :--------------------------------------- |
+| 容器放哪台机器跑？       | 调度器按资源余量自动挑选节点             |
+| 挂了怎么办？             | 控制器发现实际状态偏离期望，自动重建     |
+| 流量来了怎么分？         | Service 把一组容器当一个稳定的访问入口   |
+
+Kubernetes（下称 K8s）是当前事实标准的编排器。它最反直觉也最核心的
+思想是**声明式**：你不写"启动容器 A，然后启动容器 B"这种命令，
+而是写一份期望状态（"这个服务要 3 个副本"）提交给集群，集群里的控制器
+不停地把实际状态**往期望状态掰**。容器崩了？控制器发现只剩 2 个，自动
+补到 3。这个循环不需要人参与——问题 2 就此解决。
+
+### 3.2 动手：本地起一个真集群
+
+不用云、不用服务器，kind（Kubernetes in Docker）把整个集群塞进几个
+容器里，是 2026 年本地学习 K8s 的标准做法：
+
+```bash
+kind create cluster --name learn     # 几十秒后有一个单节点集群
+kubectl get nodes                    # 确认节点 Ready
 ```
 
-### 2.2 Pod
+现在部署应用。生产中不直接写 Pod，而是写 **Deployment**（管理 Pod 副本
+的上层资源）：
 
 ```yaml
-# pod.yaml
-apiVersion: v1
-kind: Pod
-metadata:
-  name: myapp-pod
-  labels:
-    app: myapp
-    tier: frontend
-spec:
-  containers:
-    - name: app
-      image: registry/myapp:v1
-      ports:
-        - containerPort: 3000
-      resources:
-        requests:
-          memory: '256Mi'
-          cpu: '250m'
-        limits:
-          memory: '512Mi'
-          cpu: '500m'
-      env:
-        - name: NODE_ENV
-          value: 'production'
-        - name: DB_PASSWORD
-          valueFrom:
-            secretKeyRef:
-              name: db-secret
-              key: password
-      livenessProbe:
-        httpGet:
-          path: /health
-          port: 3000
-        initialDelaySeconds: 15
-        periodSeconds: 20
-      readinessProbe:
-        httpGet:
-          path: /ready
-          port: 3000
-        initialDelaySeconds: 5
-        periodSeconds: 10
-    - name: log-sidecar
-      image: fluent/fluentd:latest
-      volumeMounts:
-        - name: log-volume
-          mountPath: /var/log/app
-  volumes:
-    - name: log-volume
-      emptyDir: {}
-```
-
-### 2.3 Deployment
-
-```yaml
-# deployment.yaml
+# deploy.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: myapp-deployment
-  labels:
-    app: myapp
+  name: myapp
 spec:
-  replicas: 3
+  replicas: 3                        # 期望：永远保持 3 个副本
   selector:
     matchLabels:
       app: myapp
-  strategy:
-    type: RollingUpdate
-    rollingUpdate:
-      maxSurge: 1 # 滚动更新时最多多出1个Pod
-      maxUnavailable: 0 # 滚动更新时不允许不可用
   template:
     metadata:
       labels:
@@ -288,116 +167,60 @@ spec:
     spec:
       containers:
         - name: app
-          image: registry/myapp:v2
-          ports:
-            - containerPort: 3000
+          image: myapp:v1
           resources:
-            requests:
-              memory: '256Mi'
-              cpu: '250m'
-            limits:
-              memory: '512Mi'
-              cpu: '500m'
+            requests:                # 申明需要多少：调度器按这个挑机器
+              cpu: 250m              # 250m = 0.25 核
+              memory: 256Mi
+            limits:                  # 最多用多少：超限会被限制或杀掉
+              cpu: 500m
+              memory: 512Mi
 ```
 
-### 2.4 Service
+```bash
+kubectl apply -f deploy.yaml   # 提交期望状态
+kubectl get pods               # 看到 3 个 myapp-xxxx 的 Pod
+kubectl delete pod myapp-xxxx  # 手动杀一个，几秒后自动补齐——声明式的直观体验
+```
+
+亲手删一个 Pod 再看它自动重建，比读十遍文档更能理解"控制器循环"。
+
+### 3.3 稳定入口：Service
+
+Pod 会死会生，IP 随之漂移，不能直接当访问地址。**Service** 用标签选中
+一组 Pod，提供一个稳定入口（问题 3 的答案）：
 
 ```yaml
-# service.yaml
 apiVersion: v1
 kind: Service
 metadata:
-  name: myapp-service
+  name: myapp
 spec:
   selector:
-    app: myapp
+    app: myapp            # 选中所有带这个标签的 Pod
   ports:
-    - protocol: TCP
-      port: 80 # Service 端口
-      targetPort: 3000 # Pod 端口
-  type: ClusterIP # 集群内部访问
+    - port: 80            # Service 端口
+      targetPort: 3000    # 容器端口
+  type: ClusterIP
 ```
 
-| Service 类型     | 说明                        | 适用场景     |
-| :--------------- | :-------------------------- | :----------- |
-| **ClusterIP**    | 集群内部 IP（默认）         | 内部服务通信 |
-| **NodePort**     | 节点端口映射（30000-32767） | 开发测试     |
-| **LoadBalancer** | 云商负载均衡器              | 生产对外服务 |
-| **ExternalName** | CNAME 映射到外部域名        | 外部服务引用 |
+| Service 类型     | 提供什么                       | 适用           |
+| :--------------- | :----------------------------- | :------------- |
+| **ClusterIP**    | 集群内部虚拟 IP（默认）        | 服务间调用     |
+| **NodePort**     | 每个节点开一个高位端口         | 开发调试       |
+| **LoadBalancer** | 向云商申请真实负载均衡器       | 生产对外暴露   |
+| **ExternalName** | 返回一条 CNAME                 | 引用外部服务   |
 
-### 2.5 Ingress
+集群外部访问 HTTP 服务，通常再加一层 **Ingress**（按域名/路径路由到不同
+Service）；新一代替代品是 Gateway API（2023 年起 GA，2026 年新集群多已
+默认采用）。这层的展开见《Kubernetes 网络》。
 
-```yaml
-# ingress.yaml
-apiVersion: networking.k8s.io/v1
-kind: Ingress
-metadata:
-  name: myapp-ingress
-  annotations:
-    nginx.ingress.kubernetes.io/ssl-redirect: 'true'
-    nginx.ingress.kubernetes.io/rate-limit: '100'
-spec:
-  ingressClassName: nginx
-  tls:
-    - hosts:
-        - api.example.com
-      secretName: tls-secret
-  rules:
-    - host: api.example.com
-      http:
-        paths:
-          - path: /v1
-            pathType: Prefix
-            backend:
-              service:
-                name: myapp-v1-service
-                port:
-                  number: 80
-          - path: /v2
-            pathType: Prefix
-            backend:
-              service:
-                name: myapp-v2-service
-                port:
-                  number: 80
-```
+### 3.4 流量涨了：HPA 自动扩缩容
 
-### 2.6 ConfigMap 与 Secret
+编排器还剩一件事没答：副本数"3"是写死的，谁来跟着流量改？答案还是
+声明式——把"什么时候扩"也写成 YAML，交给 **HPA（HorizontalPodAutoscaler）**：
 
 ```yaml
-# configmap.yaml
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: app-config
-data:
-  NODE_ENV: 'production'
-  LOG_LEVEL: 'info'
-  MAX_CONNECTIONS: '100'
-  app.json: |
-    {
-      "theme": "dark",
-      "language": "zh-CN"
-    }
-
----
-# secret.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-  name: db-secret
-type: Opaque
-data:
-  username: YWRtaW4= # base64("admin")
-  password: cGFzc3dvcmQxMjM= # base64("password123")
-stringData:
-  connection-string: 'postgresql://admin:password123@db:5432/myapp'
-```
-
-### 2.7 HPA 自动伸缩
-
-```yaml
-# hpa.yaml
 apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
@@ -406,7 +229,7 @@ spec:
   scaleTargetRef:
     apiVersion: apps/v1
     kind: Deployment
-    name: myapp-deployment
+    name: myapp
   minReplicas: 2
   maxReplicas: 10
   metrics:
@@ -415,235 +238,94 @@ spec:
         name: cpu
         target:
           type: Utilization
-          averageUtilization: 70
-    - type: Resource
-      resource:
-        name: memory
-        target:
-          type: Utilization
-          averageUtilization: 80
-  behavior:
+          averageUtilization: 70      # 平均 CPU 超 70% 开始扩
+  behavior:                           # 扩要快，缩要慢——防止抖动
     scaleUp:
       stabilizationWindowSeconds: 60
       policies:
         - type: Percent
-          value: 100
+          value: 100                  # 每分钟最多翻一倍
           periodSeconds: 60
     scaleDown:
-      stabilizationWindowSeconds: 300
+      stabilizationWindowSeconds: 300 # 缩容前观察 5 分钟
       policies:
         - type: Percent
           value: 10
           periodSeconds: 60
 ```
 
-### 2.8 常用 kubectl 命令
+扩缩容的负载均衡与云商弹性方案对照见《负载均衡与自动伸缩》。
+
+## 4. 打包与分发：Helm 与镜像仓库
+
+清单文件一多，就出现"同一套 YAML，测试和生产的参数不同"的复制粘贴
+地狱。**Helm** 把一组清单做成带参数的模板包（Chart），安装时传值：
 
 ```bash
-# 资源查看
-kubectl get pods -A                          # 所有命名空间的 Pod
-kubectl get deploy,svc,ing -n production     # 查看多种资源
-kubectl describe pod myapp-pod               # Pod 详情
-kubectl logs -f deployment/myapp -c app      # 跟踪日志
-
-# 资源操作
-kubectl apply -f deployment.yaml             # 应用配置
-kubectl delete -f deployment.yaml            # 删除资源
-kubectl scale deployment myapp --replicas=5  # 手动扩缩容
-
-# 调试
-kubectl exec -it myapp-pod -- sh             # 进入容器
-kubectl port-forward svc/myapp 8080:80       # 端口转发
-kubectl top pods                             # 资源使用
-
-# 滚动更新
-kubectl set image deployment/myapp app=registry/myapp:v3
-kubectl rollout status deployment/myapp
-kubectl rollout undo deployment/myapp        # 回滚
+helm install myapp ./myapp-chart -f values-prod.yaml -n production
+helm upgrade myapp ./myapp-chart -f values-prod.yaml   # 升级即改参数重装
+helm rollback myapp 1                                  # 回滚到第 1 个版本
 ```
 
-## 3. Helm 包管理
+Chart 结构、模板语法与 values 覆盖优先级见《Helm 包管理》，本文只需
+记住它的定位：**K8s 应用的 apt/npm**。
 
-### 3.1 Helm Chart 结构
-
-```mermaid
-flowchart TD
-    T0["myapp-chart/"]
-    T1["Chart.yaml          # Chart 元数据"]
-    T2["values.yaml         # 默认配置值"]
-    T3["templates/"]
-    T4["deployment.yaml"]
-    T5["service.yaml"]
-    T6["ingress.yaml"]
-    T7["configmap.yaml"]
-    T8["hpa.yaml"]
-    T9["_helpers.tpl    # 模板辅助函数"]
-    T10["NOTES.txt       # 安装后说明"]
-    T11["charts/             # 依赖 Chart"]
-    T12[".helmignore"]
-    T0 --> T1
-    T0 --> T2
-    T0 --> T3
-    T10 --> T11
-    T10 --> T12
-```
-
-### 3.2 Chart.yaml
-
-```yaml
-apiVersion: v2
-name: myapp
-description: My Application Helm Chart
-type: application
-version: 1.2.3 # Chart 版本
-appVersion: '2.3.1' # 应用版本
-dependencies:
-  - name: postgresql
-    version: '14.x.x'
-    repository: 'https://charts.bitnami.com/bitnami'
-    condition: postgresql.enabled
-  - name: redis
-    version: '18.x.x'
-    repository: 'https://charts.bitnami.com/bitnami'
-    condition: redis.enabled
-```
-
-### 3.3 values.yaml
-
-```yaml
-# 镜像配置
-image:
-  repository: registry/myapp
-  tag: '2.3.1'
-  pullPolicy: IfNotPresent
-
-# 副本数
-replicaCount: 3
-
-# 资源限制
-resources:
-  requests:
-    cpu: 250m
-    memory: 256Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
-
-# Service 配置
-service:
-  type: ClusterIP
-  port: 80
-
-# Ingress 配置
-ingress:
-  enabled: true
-  className: nginx
-  hosts:
-    - host: api.example.com
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-    - secretName: tls-secret
-      hosts:
-        - api.example.com
-
-# 自动伸缩
-autoscaling:
-  enabled: true
-  minReplicas: 2
-  maxReplicas: 10
-  targetCPUUtilizationPercentage: 70
-
-# 依赖开关
-postgresql:
-  enabled: true
-redis:
-  enabled: true
-```
-
-### 3.4 Helm 常用命令
+另一个分发问题：`image: myapp:v1` 里的镜像从哪来？本机 build 的镜像
+集群拉不到，需要推到**镜像仓库（Registry）**：
 
 ```bash
-# 添加仓库
-helm repo add bitnami https://charts.bitnami.com/bitnami
-helm repo update
-
-# 安装/升级
-helm install myapp ./myapp-chart -n production
-helm upgrade myapp ./myapp-chart -n production
-helm upgrade --install myapp ./myapp-chart -n production -f values-prod.yaml
-
-# 查看
-helm list -n production
-helm status myapp -n production
-helm history myapp -n production
-
-# 回滚
-helm rollback myapp 1 -n production
-
-# 卸载
-helm uninstall myapp -n production
-```
-
-## 4. 容器镜像仓库
-
-### 4.1 仓库类型
-
-| 类型         | 产品             | 特点       |
-| :----------- | :--------------- | :--------- |
-| **公有仓库** | Docker Hub、GHCR | 免费、公开 |
-| **云商仓库** | ECR、ACR、Harbor | 集成、安全 |
-| **私有仓库** | Harbor、Nexus    | 完全自控   |
-
-### 4.2 Harbor 私有仓库
-
-```bash
-# Docker 登录私有仓库
+# 推到自建 Harbor 仓库（公有仓库 Docker Hub / GHCR 流程相同）
+docker tag myapp:v1 harbor.example.com/proj/myapp:v1
 docker login harbor.example.com
+docker push harbor.example.com/proj/myapp:v1
 
-# 镜像标签与推送
-docker tag myapp:v1 harbor.example.com/project/myapp:v1
-docker push harbor.example.com/project/myapp:v1
-
-# 拉取镜像
-docker pull harbor.example.com/project/myapp:v1
-
-# K8s 使用私有仓库
+# 私有仓库需要凭证，K8s 里做成 Secret 挂给 Pod
 kubectl create secret docker-registry harbor-secret \
   --docker-server=harbor.example.com \
   --docker-username=admin \
-  --docker-password=Harbor12345 \
-  -n production
+  --docker-password=Harbor12345
 ```
 
-### 4.3 镜像安全扫描
+标签策略只有一条铁律：**别用 latest**。生产镜像用 Git SHA 或语义版本
+（`sha-abc1234`、`v2.3.1`），保证"线上跑的镜像"能精确对应到某次提交。
+ Harbor 的搭建与漏洞扫描见《Harbor 镜像仓库》。
 
-```bash
-# Trivy 扫描
-trivy image harbor.example.com/project/myapp:v1
+## 5. 坑点与自检
 
-# 扫描严重漏洞
-trivy image --severity HIGH,CRITICAL harbor.example.com/project/myapp:v1
+1. **Secret 不是加密**。`kubectl get secret` 看到的 base64 一秒解码，
+   它只是"不方便人眼读"。真正的保护靠 RBAC 权限和外部密钥管理系统
+   （如 Vault、云 KMS）。
+2. **requests/limits 不设或乱设**。不设 requests，调度器盲排，节点过载；
+   limits 给太小，应用莫名被 OOMKill，日志里只有一行 `Killed`。
+3. **把状态存进容器**。容器随时会被重建，写进容器文件系统的数据一重启
+   就没。有状态数据必须挂 Volume 或用数据库。
+4. **直接改 Pod**。`kubectl edit pod` 改的东西在下一次重建时全部蒸发，
+   因为 Pod 的"主人"是 Deployment。改期望就去改 Deployment 的 YAML。
+5. **本地 kind 通了，集群不通**。kind 里的镜像在本地，真实集群拉不到；
+   记得走仓库推送流程，别把"本地能跑"当成部署成功。
 
-# CI 中集成扫描
-trivy image --exit-code 1 --severity HIGH,CRITICAL myapp:v1
-```
+自检清单：
 
-### 4.4 镜像标签策略
+- [ ] 能向别人解释镜像与容器、Pod 与 Deployment 的区别
+- [ ] 本机能用 kind 起集群、部署、手动杀 Pod 看到自动重建
+- [ ] 生产的镜像标签不是 latest
+- [ ] Deployment 配置了 requests 与 limits
+- [ ] 有状态数据不在容器文件系统里
 
-| 标签         | 说明                       | 示例            |
-| :----------- | :------------------------- | :-------------- |
-| **Git SHA**  | 精确对应代码版本           | `sha-abc1234`   |
-| **语义版本** | 正式发布版本               | `v2.3.1`        |
-| **分支名**   | 开发分支构建               | `main-20260614` |
-| **latest**   | 最新构建（不推荐生产使用） | `latest`        |
+## 6. 练习
 
-## 小结
+1. 把任意一个自己写过的小服务容器化，用 `docker images` 对比多阶段
+   构建前后的镜像体积。
+2. 用 kind 起集群，把 `replicas` 改成 5 再 apply，观察滚动过程中
+   `kubectl get pods` 的输出变化。
+3. 故意把 Deployment 里的镜像名写错（不存在的 tag），apply 后用
+   `kubectl describe pod` 找出失败原因（ImagePullBackOff）。
+4. 给第 2 题的 Deployment 加一条 livenessProbe 指向一个不存在的路径，
+   观察容器被反复重启（CrashLoopBackOff），体会探针的威力与误配代价。
 
-- **初学者要点**：容器 = 隔离的进程 + 镜像分层文件系统；Dockerfile 的指令顺序决定
-  缓存命中率（先 COPY 依赖清单再 COPY 源码）；K8s 里 Deployment 管无状态、
-  Service 管访问入口、Ingress 管 HTTP 路由，三者是"应用上云"的最小组合。
-- **进阶注意**：Helm 解决的是"YAML 复用与参数化"，values 覆盖优先级（-f > --set >
-  默认值）要烂熟于心；镜像仓库的安全扫描（Trivy）应作为 CI 门禁；标签策略首选
-  Git SHA，保证镜像与代码的一一对应。
+## 7. 下一步
+
+- Pod、ConfigMap、探针等核心资源的完整拆解：见《Kubernetes 核心资源》。
+- 控制平面与节点的分工：见《Kubernetes 架构》。
+- 从 YAML 到可复用安装包：见《Helm 包管理》。
+- 镜像仓库自建与安全扫描：见《Harbor 镜像仓库》。

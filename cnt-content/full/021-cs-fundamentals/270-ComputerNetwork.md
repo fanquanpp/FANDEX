@@ -1,752 +1,248 @@
 ---
 order: 270
-title: 计算机网络
+title: "计算机网络：在浏览器按下回车之后"
 module: 'cs-fundamentals'
 category: 计算机科学
 difficulty: intermediate
-description: 计算机网络核心原理：协议栈、TCP/IP、路由、应用层协议、网络安全。
+description: "以「打开一个网页」引入：用 Python 亲手发一次裸 HTTP 请求、查一次 DNS、算一次子网，理解分层封装、DNS 解析、TCP 三次握手与挥手、可靠传输与拥塞控制、IP 与 NAT、HTTP 演进与 TLS，以及一套按层排障的调试工具箱。"
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
-  - 'cs-fundamentals/090-ComputerArchitecture'
   - 'cs-fundamentals/150-OperatingSystem'
-  - 'cs-fundamentals/050-DigitalLogic'
-  - 'cs-fundamentals/540-DiscreteMathematics'
+  - 'cs-fundamentals/290-NetworkProtocolDeep'
+  - 'cs-fundamentals/300-TCPControl'
+  - 'cs-fundamentals/330-HTTPSHandshake'
+  - 'cs-fundamentals/340-DNSFlow'
 prerequisites:
   - 'cs-fundamentals/010-ComputerOverview'
 ---
 
 ## 前置知识
 
-建议先阅读以下内容再进入本文：
+- 已完成 [计算机概述](/cs-fundamentals/010-ComputerOverview)；
+- 会基本的 Python（本文实验用标准库 socket，无需安装任何包）；
+- 建议先读过 [操作系统](/cs-fundamentals/150-OperatingSystem)——socket 正是它的「系统调用正门」在网络世界的入口。
 
-- [计算机科学概述](/cs-fundamentals/010-ComputerOverview)
+## 学习目标
 
-## 1. 网络体系结构
+读完本文你将能够：
 
-### 1.1 OSI七层模型 vs TCP/IP四层模型
+1. 用 30 行以内的 Python 裸发一次 HTTP 请求，并指出每一行对应网络分层的哪一层；
+2. 讲清「回车之后」的完整旅程：DNS 解析、TCP 握手、请求响应、连接关闭；
+3. 解释三次握手为什么是三次、TIME_WAIT 为什么存在；
+4. 用 ipaddress 模块做子网计算，说清私有地址与 NAT 的关系；
+5. 区分流量控制与拥塞控制，理解慢启动的「慢」其实不慢；
+6. 掌握一套按层排障的工具箱（ping、tracert、netstat、DNS 查询）。
 
-```mermaid
-flowchart TD
-    B0["7 Application | HTTP, DNS / 6 Presentation | TLS, JPEG"]
-    B1["5 Session | RPC, NFS"]
-    B0 --> B1
-    B2["4 Transport | Transport | TCP, UDP"]
-    B1 --> B2
-    B3["3 Network | Internet | IP, ICMP"]
-    B2 --> B3
-    B4["2 Data Link | Network Access | Ethernet / 1 Physical | 光纤, 双绞线"]
-    B3 --> B4
-    B5["HTTP | Data | 应用层"]
-    B4 --> B5
-    B6["TCP | HTTP | Data | 传输层"]
-    B5 --> B6
-    B7["IP | TCP | HTTP | Data | 网络层"]
-    B6 --> B7
-    B8["ETH | IP | TCP | HTTP | Data | FCS | 链路层"]
-    B7 --> B8
-```
+预计 75 到 105 分钟。
 
-### 1.2 协议栈的设计原则
+## 1. 你现在要解决什么问题
 
-```
-协议栈设计的核心原则:
+在地址栏敲下 `example.com` 按下回车，一秒后页面出现。这「一秒」里，你的请求可能穿过家里路由器、运营商、若干跨国节点，被翻译、被分段、被路由、被重组——而你和服务器上的程序，居然只是调用了几个「读写函数」。网络的全部魔法来自一个设计决定：**把复杂通信拆成一层一层，每层只做一件事、只跟相邻层打交道**。
 
-1. 分层抽象: 每层只关心本层的功能，通过接口与相邻层交互
-2. 封装/解封: 发送方逐层封装头部，接收方逐层解封
-3. 对等通信: 同一层的两个实体通过协议逻辑通信
-4. 透明传输: 每层对上层隐藏本层的实现细节
+理解这套分层，你就能回答日常问题的一半：「打不开网页是谁的错」——是域名解析坏了、是连接被拒、还是服务器本身挂了。另一半来自对 TCP 的理解：为什么视频电话用 UDP、下载文件用 TCP、网页越来越多地跑在 QUIC 上。
 
-端到端原则 (End-to-End Argument):
-  功能应在最高可能层实现
-  低层只提供最基本的传输服务
-  例: 可靠性由TCP(传输层)保证，而非每个路由器重传
-```
+## 2. 最小可运行实验：亲手发一次裸 HTTP
 
----
-
-## 2. 物理层与数据链路层
-
-### 2.1 以太网帧格式
-
-```
-Ethernet II 帧格式:
-
-| Preamble | SFD | Dst MAC | Src MAC | Type | Payload      | FCS |
-| 7B       | 1B  | 6B      | 6B      | 2B   | 46-1500B     | 4B  |
-
-Preamble: 7字节前导码 (时钟同步)
-SFD:      1字节帧起始定界符 (0xAB)
-Type:     上层协议类型 (0x0800=IP, 0x0806=ARP, 0x86DD=IPv6)
-FCS:      4字节CRC-32校验
-
-最小帧长: 64B (防止冲突检测失败)
-最大帧长: 1518B (标准) / 9022B (Jumbo Frame)
-```
-
-### 2.2 CSMA/CD协议
-
-```
-CSMA/CD (载波侦听多路访问/冲突检测):
-
-  1. 先听后发: 检测信道空闲才发送
-  2. 边发边听: 发送时持续检测冲突
-  3. 冲突停止: 检测到冲突立即停止
-  4. 随机重发: 等待随机时间后重试
-
-  二进制指数退避:
-    第k次冲突后, 从 [0, 2^k - 1] 中随机选择一个数r
-    等待 r * 2t (t = 传播延迟)
-    k 最大为16, 超过则放弃
-
-  冲突域:
-    共享同一信道的所有设备构成冲突域
-    交换机隔离冲突域, 集线器不隔离
-```
-
-### 2.3 ARP协议
-
-```
-ARP (Address Resolution Protocol): IP地址 -> MAC地址映射
-
-ARP请求/响应流程:
-
-  Host A (192.168.1.1) 想与 Host B (192.168.1.2) 通信
-  A不知道B的MAC地址
-
-  1. A发送ARP请求 (广播):
-     Dst MAC: FF:FF:FF:FF:FF:FF
-     "谁有 192.168.1.2? 请告诉 192.168.1.1"
-
-  2. B收到ARP请求, 发送ARP响应 (单播):
-     Dst MAC: A的MAC地址
-     "192.168.1.2 的MAC地址是 xx:xx:xx:xx:xx:xx"
-
-  3. A将映射缓存到ARP表 (TTL通常20分钟)
-
-ARP缓存表:
-  IP Address        MAC Address         TTL
-  192.168.1.2       00:11:22:33:44:55   1200s
-```
-
-### 2.4 交换机工作原理
-
-```
-交换机自学习算法:
-
-  交换机维护: MAC地址表 (MAC -> Port映射)
-
-  收到帧时:
-    1. 学习: 记录源MAC -> 入端口
-    2. 转发: 查找目的MAC
-       - 找到: 转发到对应端口
-       - 未找到: 泛洪到所有端口(除入端口)
-       - 广播地址: 泛洪
-
-  MAC地址表示例:
-    MAC Address       Port   VLAN
-    00:11:22:33:44:55  1     10
-    AA:BB:CC:DD:EE:FF  3     10
-    11:22:33:44:55:66  5     20
-
-  生成树协议 (STP):
-    防止环路, 通过阻塞冗余链路构建无环拓扑
-    根桥选举 -> 最短路径计算 -> 阻塞非最短路径端口
-```
-
----
-
-## 3. 网络层
-
-### 3.1 IP协议
-
-```
-IPv4头部格式:
-
-| Version | IHL | DSCP/ECN | Total Length |
-| Identification | Flags | Fragment Offset |
-| TTL | Protocol | Header Checksum |
-| Source IP Address (32b)          |
-| Destination IP Address (32b)     |
-| Options (variable)               |
-
-关键字段:
-  Version: 4 (IPv4)
-  IHL: 头部长度 (以4字节为单位, 最小5=20B)
-  TTL: 生存时间 (每经过一个路由器-1, 为0时丢弃)
-  Protocol: 上层协议 (6=TCP, 17=UDP, 1=ICMP)
-
-IPv6头部格式 (简化):
-
-| Version | Traffic Class | Flow Label |
-| Payload Length | Next Header | Hop Limit |
-| Source Address (128b)                        |
-| Destination Address (128b)                   |
-
-IPv4 vs IPv6:
-  地址长度: 32b vs 128b
-  头部: 可变(20-60B) vs 固定(40B)
-  分片: 路由器可分片 vs 仅源端分片
-  校验和: 有 vs 无(交给链路层和传输层)
-  配置: 手动/DHCP vs 自动(SLAAC)
-```
-
-### 3.2 子网划分与CIDR
-
-```
-IPv4地址分类:
-
-  A类: 1.0.0.0 - 126.0.0.0     /8   (网络位8, 主机位24)
-  B类: 128.0.0.0 - 191.255.0.0 /16  (网络位16, 主机位16)
-  C类: 192.0.0.0 - 223.255.255.0 /24 (网络位24, 主机位8)
-
-CIDR (无类域间路由):
-  打破类别边界, 自由划分网络位和主机位
-
-  例: 192.168.1.0/24
-    网络位: 24位
-    主机位: 8位 (可容纳254台主机)
-    子网掩码: 255.255.255.0
-
-  子网划分:
-    192.168.1.0/24 划分为4个子网:
-    192.168.1.0/26    (主机位6, 62台主机)
-    192.168.1.64/26
-    192.168.1.128/26
-    192.168.1.192/26
-
-  超网聚合:
-    192.168.0.0/24 + 192.168.1.0/24 = 192.168.0.0/23
-```
-
-### 3.3 路由算法
-
-```
-路由算法分类:
-
-1. 距离向量算法 (RIP):
-   每个路由器维护到所有目的地的距离向量
-   定期与邻居交换距离向量
-   Bellman-Ford方程: D(x,y) = min{ c(x,v) + D(v,y) }
-
-   RIP协议:
-     度量: 跳数 (最大15, 16=不可达)
-     更新: 每30秒
-     问题: 慢收敛、计数到无穷
-     解决: 水平分裂、毒性逆转
-
-2. 链路状态算法 (OSPF):
-   每个路由器维护完整的网络拓扑图
-   使用Dijkstra算法计算最短路径
-
-   OSPF协议:
-     度量: 代价 (通常与带宽成反比)
-     更新: 链路状态变化时立即泛洪
-     区域: 骨干区域(Area 0) + 非骨干区域
-     优点: 快速收敛、无环路
-
-3. 路径向量算法 (BGP):
-   用于自治系统(AS)间路由
-   交换到达目的地的路径信息
-
-   BGP协议:
-     eBGP: AS间交换路由
-     iBGP: AS内传播路由
-     路径属性: AS-PATH, NEXT-HOP, LOCAL-PREF
-     策略路由: 可基于商业策略选择路径
-```
-
-**Dijkstra算法伪代码**：
+不用浏览器、不用任何库，只用操作系统给的 socket 接口，把「发请求」压缩到最原始的形态：
 
 ```python
-def dijkstra(graph, source):
-    dist = {v: float('inf') for v in graph}
-    dist[source] = 0
-    visited = set()
-    while len(visited) < len(graph):
-        u = min((v for v in graph if v not in visited), key=lambda v: dist[v])
-        visited.add(u)
-        for v, cost in graph[u]:
-            if dist[u] + cost < dist[v]:
-                dist[v] = dist[u] + cost
-    return dist
+import socket
+
+# 第一步：域名变 IP（应用层找 DNS）
+print(socket.getaddrinfo("example.com", 80)[0][4])
+
+# 第二步：建立 TCP 连接（传输层三次握手）
+sock = socket.create_connection(("example.com", 80), timeout=5)
+
+# 第三步：按 HTTP 协议格式手写请求（应用层）
+request = (
+    "GET / HTTP/1.1\r\n"
+    "Host: example.com\r\n"
+    "Connection: close\r\n"
+    "\r\n"                          # 空行表示请求头结束
+)
+sock.sendall(request.encode())
+
+# 第四步：把响应读到对端关闭为止
+chunks = []
+while True:
+    part = sock.recv(4096)
+    if not part:
+        break
+    chunks.append(part)
+sock.close()
+
+response = b"".join(chunks).decode(errors="replace")
+head, _, body = response.partition("\r\n\r\n")
+print(head.split("\r\n")[0])        # 状态行
+print(body[:60])                    # 响应体开头
 ```
 
-### 3.4 ICMP协议
+预期输出（第一行可能因网络环境不同而是 301，见下方说明）：
 
-```
-ICMP (Internet Control Message Protocol): 网络层差错报告
-
-ICMP消息类型:
-  Type 0  Echo Reply          (ping响应)
-  Type 3  Destination Unreachable (目的不可达)
-  Type 5  Redirect            (重定向)
-  Type 8  Echo Request        (ping请求)
-  Type 11 Time Exceeded       (TTL超时, traceroute利用此)
-
-traceroute原理:
-  发送TTL=1的UDP包 -> 第1跳返回ICMP Time Exceeded
-  发送TTL=2的UDP包 -> 第2跳返回ICMP Time Exceeded
-  ...
-  直到到达目的地返回ICMP Port Unreachable
+```text
+('93.184.216.34', 80)
+HTTP/1.1 200 OK
+<!doctype html>
+<html>
+<head>
+    <title>Example Domain</title>
 ```
 
----
+这段代码就是网络的四层切片：`getaddrinfo` 是**应用层**的 DNS 查询；`create_connection` 在**传输层**完成了三次握手；`sendall` 发出的字符串是**应用层**的 HTTP 协议；而你完全不用管的「数据怎么变成电信号」发生在**物理层**。分段、寻址、重传这些脏活，全被 socket 接口下面的协议栈吃掉了——这就是抽象的力量，也是接下来要拆开看的东西。
 
-## 4. 传输层
+## 3. 发生了什么：一次请求的完整旅程
 
-### 4.1 TCP协议
+接续实验，把「回车之后」按时间排开：
 
-```
-TCP段格式:
+**第一站，DNS 解析**。浏览器先查本地缓存，没有就问操作系统配置的 DNS 服务器。一次完整的解析是「递归 + 迭代」的接力：你的电脑问本地 DNS（递归——你必须给我答案），本地 DNS 依次问根服务器、顶级域（.com）服务器、example.com 的权威服务器（迭代——本地 DNS 自己一步步问）。拿到 IP 后缓存起来（TTL 内不再问）。记录类型的常识：A 是域名对 IPv4，AAAA 对 IPv6，CNAME 是别名（很多 www 域名只是 CDN 的别名），MX 指邮件。完整解析流程与抓包分析在 [DNS 解析流程](/cs-fundamentals/340-DNSFlow)。
 
-| Source Port | Destination Port |
-| Sequence Number (32b)              |
-| Acknowledgment Number (32b)        |
-| Data | Reserved | Flags | Window   |
-| Checksum | Urgent Pointer          |
-| Options (variable)                 |
+**第二站，TCP 三次握手**。拿到 IP 后，浏览器向服务器的 80/443 端口发起 TCP 连接：
 
-关键字段:
-  Sequence Number: 数据的字节流编号
-  Ack Number:      期望收到的下一个字节编号
-  Flags: URG|ACK|PSH|RST|SYN|FIN
-  Window: 接收窗口大小 (流量控制)
+```text
+客户端                                   服务器
+   |  1. SYN（seq=x）：我想连，我的序号从 x 开始  |
+   |----------------------------------------->|
+   |  2. SYN+ACK（seq=y, ack=x+1）：好，从 x+1  |
+   |     接着发；我的序号从 y 开始               |
+   |<-----------------------------------------|
+   |  3. ACK（ack=y+1）：收到，从 y+1 接着发     |
+   |----------------------------------------->|
 ```
 
-### 4.2 TCP状态机
+为什么恰好三次？握手本质是**双向确认能力**：第三次之后，双方都确认了「我能发你能收」与「你能发我能收」，同时交换了初始序号（ISN）。两次不够——服务器无法确认自己的 SYN 确实送达；另外，两次握手会让网络上游荡的「旧连接请求」误建连。ISN 里掺了随机数，防的是序号预测攻击。
 
-```mermaid
-flowchart TD
-    B0["LISTEN"]
-    B1["SYN_RCVD"]
-    B0 --> B1
-    B2["SYN+ACK"]
-    B1 --> B2
-    B3["ESTABLISHED"]
-    B2 --> B3
-    B4["FIN_WAIT | CLOSE_WAIT / 1"]
-    B3 --> B4
-    B5["FIN / FIN_WAIT2"]
-    B4 --> B5
-    B6["FIN"]
-    B5 --> B6
-    B7["TIME_WAIT"]
-    B6 --> B7
-    B8["2MSL"]
-    B7 --> B8
-    B9["CLOSED"]
-    B8 --> B9
+**第三站，请求与响应**。连接建好，实验中的 HTTP 字符串被 TCP 切成段（segment）、编号发送；网络层给每段套上 IP 头（写清源 IP 与目的 IP）、交路由器逐跳转发；链路层再套以太网头（写清下一跳的 MAC）送到下一个节点。服务器逐层拆封，把 HTTP 请求交给 Web 服务程序，处理后再把 HTML 按同样的路反向送回。
+
+**第四站，挥手告别**。`Connection: close` 让任何一方可以发起关闭，需要**四次挥手**（比握手多一次）：因为 TCP 是全双工的，一方说「我发完了」（FIN）不代表另一方也发完了，所以两次单向关闭各需要 FIN + ACK。主动关闭方最后进入 **TIME_WAIT**，停留约 2 倍报文最大生存时间（MSL）：一是最后一个 ACK 丢了对方会重发 FIN，得留着应答；二是让本连接的迷路旧报文自然消亡，不污染下一个同端口的新连接。服务器侧高并发时大量 TIME_WAIT 占端口，就是这一设计留给运维的日常。
+
+## 4. 核心概念一：分层与封装
+
+把上面旅程中出现过的角色归位，就是 TCP/IP 四层（教学常用 OSI 七层做对照，后者多了表示层与会话层，工程上并入应用层）：
+
+| 层 | 职责 | 代表协议 | 地址体系 |
+| --- | --- | --- | --- |
+| 应用层 | 决定「传什么、什么格式」 | HTTP、DNS、TLS、SSH | 域名 / URL |
+| 传输层 | 进程到进程：端口、可靠性与顺序 | TCP、UDP | 端口号 |
+| 网络层 | 主机到主机：跨网寻址与路由 | IP、ICMP | IP 地址 |
+| 链路层 | 同一链路内一跳的传输 | 以太网、WiFi | MAC 地址 |
+
+发送方逐层**封装**（HTTP 数据前加 TCP 头成段、加 IP 头成包、加以太网头成帧），接收方逐层**解封**。每层只认识自己这层的头——路由器只看 IP 头（所以它工作在网络层），交换机只看 MAC 头（链路层）。同一段数据在每一跳的链路层头都会被换掉（下一跳的 MAC 不同），但 IP 头里的源和目的地址全程不变（NAT 除外，见第 5 节）。
+
+两个链路层常识先入袋：**ARP** 负责「IP 地址到 MAC 地址」的翻译——同一网段内广播一句「谁是 192.168.1.2」，对方单播应答自己的 MAC，结果缓存进 ARP 表（深水与攻击面见 [ARP 协议与欺骗](/cs-fundamentals/380-ARPProtocolSpoofing)）；**交换机**靠「源 MAC 自学习」建转发表，目的 MAC 未知就泛洪；跨网段的则交给路由器查路由表。早年共享网线靠 CSMA/CD「先听后发、冲突退避」抢信道，交换机普及后冲突域被隔离，这套协议只剩历史地位（WiFi 的 CSMA/CA 是它的近亲）。
+
+## 5. 核心概念二：IP 地址、子网与 NAT
+
+IPv4 地址是 32 位，写成四段点分十进制。/24 这种写法（CIDR）表示前 24 位是网络号、后 8 位是主机号——子网计算不该手算，让标准库代劳：
+
+```python
+import ipaddress
+
+net = ipaddress.ip_network("192.168.1.0/24")
+print(net.netmask, net.num_addresses - 2)   # 255.255.255.0 254
+
+# 切成 4 个 /26 子网，每个 62 台可用主机
+for sub in net.subnets(new_prefix=26):
+    print(sub, "可用主机:", sub.num_addresses - 2)
 ```
 
-### 4.3 TCP三次握手
+预期输出：
 
-```
-TCP三次握手:
-
-  Client                          Server
-  (CLOSED)                        (LISTEN)
-     |                               |
-     |  SYN, seq=x                   |
-     |------------------------------->|  SYN_RCVD
-     |                               |
-     |  SYN+ACK, seq=y, ack=x+1      |
-     |<-------------------------------|
-     |                               |
-     |  ACK, seq=x+1, ack=y+1        |
-     |------------------------------->|  ESTABLISHED
-     |                               |
-  ESTABLISHED                     ESTABLISHED
-
-为什么需要三次握手?
-  1. 确认双方的发送和接收能力正常
-  2. 同步双方的初始序列号(ISN)
-  3. 防止旧连接的SYN导致误建连
-
-ISN生成:
-  ISN = 基于时钟的计数器 + 随机偏移
-  防止序列号预测攻击
+```text
+255.255.255.0 254
+192.168.1.0/26 可用主机: 62
+192.168.1.64/26 可用主机: 62
+192.168.1.128/26 可用主机: 62
+192.168.1.192/26 可用主机: 62
 ```
 
-### 4.4 TCP四次挥手
-
-```
-TCP四次挥手:
-
-  Client                          Server
-  (ESTABLISHED)                   (ESTABLISHED)
-     |                               |
-     |  FIN, seq=u                   |
-     |------------------------------->|  CLOSE_WAIT
-     |                               |
-     |  ACK, ack=u+1                  |
-     |<-------------------------------|
-     |                               |
-     |          (Server发送剩余数据)    |
-     |                               |
-     |  FIN, seq=w                   |
-     |<-------------------------------|  LAST_ACK
-     |                               |
-     |  ACK, ack=w+1                 |
-     |------------------------------->|
-     |                               |
-  TIME_WAIT                       CLOSED
-  (等待2MSL)                         |
-     |                               |
-  CLOSED
-
-为什么需要TIME_WAIT?
-  1. 确保最后一个ACK能到达对方 (若丢失, 对方重发FIN)
-  2. 等待本连接的延迟报文消亡 (2MSL后旧报文必然被丢弃)
-
-MSL (Maximum Segment Lifetime): 报文最大生存时间, 通常2分钟
-```
-
-### 4.5 TCP可靠传输
-
-```
-TCP可靠传输机制:
-
-1. 序列号与确认:
-   每个字节有序列号
-   累积确认: ACK=n 表示n之前的所有数据已收到
-
-2. 超时重传:
-   RTO (Retransmission Timeout) 动态计算
-   RTO = SRTT + 4 * RTTVAR
-   SRTT = (1-a) * SRTT + a * RTT_sample  (a=1/8)
-   RTTVAR = (1-b) * RTTVAR + b * |SRTT - RTT_sample|  (b=1/4)
-
-3. 快速重传:
-   收到3个重复ACK -> 立即重传 (不等超时)
-   比超时重传更快检测丢包
-
-4. 选择确认 (SACK):
-   TCP选项, 允许接收方告知已收到的非连续块
-   避免不必要的重传
-
-滑动窗口:
-
-  发送窗口:
-  |---------- 已发送已确认 ----------|---- 已发送未确认 ----|---- 可发送 ----|---- 不可发送 ----|
-                                    |<--- 发送窗口 --->|
-
-  接收窗口:
-  |---------- 已接收确认 ----------|---- 可接收 ----|---- 不可接收 ----|
-                                   |<-- 接收窗口 -->|
-```
-
-### 4.6 TCP流量控制与拥塞控制
-
-```
-流量控制 (Flow Control): 防止发送方淹没接收方
-
-  接收方通过Window字段告知可用缓冲区
-  零窗口探测: 收到Window=0时, 发送方定期发1字节探测
-
-拥塞控制 (Congestion Control): 防止网络过载
-
-  四个算法:
-
-  1. 慢启动 (Slow Start):
-     cwnd从1 MSS开始, 每RTT翻倍 (指数增长)
-     直到cwnd达到ssthresh -> 切换到拥塞避免
-
-  2. 拥塞避免 (Congestion Avoidance):
-     每RTT cwnd增加1 MSS (线性增长)
-     直到检测到丢包
-
-  3. 快速重传 (Fast Retransmit):
-     3个重复ACK -> 立即重传丢失段
-     ssthresh = cwnd / 2
-     cwnd = ssthresh + 3 (TCP Reno)
-
-  4. 快速恢复 (Fast Recovery):
-     每收到一个重复ACK, cwnd增加1 MSS
-     收到新ACK -> cwnd = ssthresh, 进入拥塞避免
-
-  拥塞窗口变化图:
-  cwnd
-    ^
-    |         /\    /\
-    |        /  \  /  \
-    |       /    \/    \
-    |      /             \
-    |     /               \
-    |    /                 \
-    |   /                   \
-    +--+---+---+---+---+---+---> time
-     SS  CA  SS  CA  SS  CA
-         3dupACK  timeout
-```
-
-### 4.7 UDP协议
-
-```
-UDP数据报格式:
-
-| Source Port | Destination Port |
-| Length      | Checksum         |
-| Data                          |
-
-UDP vs TCP:
-
-| 特性     | TCP              | UDP           |
-|----------|------------------|---------------|
-| 连接     | 面向连接          | 无连接        |
-| 可靠性   | 可靠              | 不可靠        |
-| 顺序     | 有序              | 无序          |
-| 流量控制 | 有               | 无            |
-| 拥塞控制 | 有               | 无            |
-| 头部大小 | 20-60B           | 8B            |
-| 传输效率 | 低               | 高            |
-| 适用场景 | 文件/网页/邮件    | 视频/DNS/游戏 |
-
-QUIC协议 (HTTP/3):
-  基于UDP实现的可靠传输
-  集成TLS 1.3, 0-RTT握手
-  连接迁移 (基于Connection ID而非四元组)
-  解决TCP的队头阻塞问题
-```
-
-> 跨模块引用：[操作系统](os)的Socket接口是传输层的编程抽象。[Java](/java/010-WhatIsJava)的NIO/Netty框架封装了TCP/UDP的异步IO操作。[C语言](/c/010-CZeroBasisStart)的Berkeley Socket API是最底层的网络编程接口。
-
----
-
-## 5. 应用层
-
-### 5.1 DNS协议
-
-```
-DNS (Domain Name System): 域名 -> IP地址
-
-DNS层次结构:
-  根域 (.)
-  +-- 顶级域 (.com, .org, .net, .cn)
-      +-- 二级域 (google.com, baidu.com)
-          +-- 子域 (mail.google.com, www.baidu.com)
-
-DNS解析流程 (递归+迭代):
-
-  Client -> Local DNS -> Root DNS -> .com TLD DNS -> google.com权威DNS
-  Client <- Local DNS <- (缓存结果)
-
-DNS记录类型:
-  A     : 域名 -> IPv4地址
-  AAAA  : 域名 -> IPv6地址
-  CNAME : 域名别名
-  MX    : 邮件服务器
-  NS    : 权威DNS服务器
-  TXT   : 文本记录 (SPF, DKIM)
-  SOA   : 区域起始授权
-
-DNS报文格式:
-  | Header | Question | Answer | Authority | Additional |
-  Header: ID | Flags | QDCOUNT | ANCOUNT | NSCOUNT | ARCOUNT
-```
-
-### 5.2 HTTP协议
-
-```
-HTTP请求/响应模型:
-
-  Client                              Server
-     |  Request (GET /index.html)       |
-     |---------------------------------->|
-     |                                  |
-     |  Response (200 OK + Body)        |
-     |<----------------------------------|
-
-HTTP/1.1 请求格式:
-  GET /index.html HTTP/1.1
-  Host: www.example.com
-  Connection: keep-alive
-  Accept: text/html
-
-HTTP/1.1 响应格式:
-  HTTP/1.1 200 OK
-  Content-Type: text/html
-  Content-Length: 1234
-  Connection: keep-alive
-
-  <html>...</html>
-
-HTTP方法:
-  GET:    获取资源
-  POST:   提交数据
-  PUT:    替换资源
-  DELETE: 删除资源
-  HEAD:   获取头部
-  OPTIONS: 查询支持的方法
-
-HTTP状态码:
-  1xx: 信息 (100 Continue)
-  2xx: 成功 (200 OK, 201 Created, 204 No Content)
-  3xx: 重定向 (301 永久, 302 临时, 304 未修改)
-  4xx: 客户端错误 (400 Bad Request, 401 Unauthorized, 403 Forbidden, 404 Not Found)
-  5xx: 服务器错误 (500 Internal, 502 Bad Gateway, 503 Unavailable)
-```
-
-### 5.3 HTTP演进
-
-```
-HTTP版本演进:
-
-HTTP/1.0:
-  短连接, 每个请求需要新建TCP连接
-  问题: 连接建立开销大
-
-HTTP/1.1:
-  长连接 (Connection: keep-alive)
-  管道化 (pipelining, 但存在队头阻塞)
-  分块传输 (Transfer-Encoding: chunked)
-  缓存机制 (Cache-Control, ETag)
-
-HTTP/2:
-  二进制帧 (替代文本格式)
-  多路复用 (一个连接上并行多个流)
-  头部压缩 (HPACK)
-  服务器推送
-  解决: 应用层队头阻塞
-  未解决: TCP层队头阻塞 (一个包丢失阻塞所有流)
-
-HTTP/3 (QUIC):
-  基于UDP, 解决TCP队头阻塞
-  0-RTT连接建立
-  连接迁移 (移动网络切换不断连)
-  内置TLS 1.3
-```
-
-### 5.4 TLS协议
-
-```
-TLS 1.3握手流程:
-
-  Client                              Server
-     |  ClientHello                     |
-     |  (supported_versions, key_share) |
-     |---------------------------------->|
-     |                                  |
-     |  ServerHello                     |
-     |  (key_share, certificate,        |
-     |   certificate_verify, finished)  |
-     |<----------------------------------|
-     |                                  |
-     |  Finished                        |
-     |---------------------------------->|
-     |                                  |
-     |  Application Data (encrypted)    |
-     |<---------------------------------->|
-
-TLS 1.3 vs 1.2:
-  握手: 2-RTT -> 1-RTT
-  恢复: 1-RTT -> 0-RTT
-  密码套件: 精简为AEAD (AES-GCM, ChaCha20-Poly1305)
-  密钥交换: 仅支持ECDHE (前向保密)
-  移除: RSA密钥交换, CBC模式, SHA-1, 压缩
-```
-
----
-
-## 6. 网络安全
-
-### 6.1 加密基础
-
-```
-对称加密:
-  加密解密使用同一密钥
-  AES (128/192/256位)
-  速度快, 密钥分发困难
-
-非对称加密:
-  公钥加密, 私钥解密 (或反过来)
-  RSA, ECC
-  速度慢, 解决密钥分发问题
-
-数字签名:
-  发送方用私钥签名, 接收方用公钥验证
-  保证: 完整性 + 不可否认性
-
-数字证书:
-  CA (证书颁发机构) 签名绑定公钥和身份
-  证书链: Root CA -> Intermediate CA -> End Entity
-```
-
-### 6.2 防火墙与NAT
-
-```
-NAT (Network Address Translation):
-
-  私有地址范围:
-    10.0.0.0/8
-    172.16.0.0/12
-    192.168.0.0/16
-
-  NAT转换表:
-    内部地址:端口        外部地址:端口
-    192.168.1.5:1234  ->  203.0.113.1:5678
-
-  NAT类型:
-    SNAT (源NAT): 内网访问外网时转换源地址
-    DNAT (目的NAT): 外网访问内网时转换目的地址
-    PAT (端口地址转换): 多个内网地址共享一个公网IP
-
-  NAT穿越问题:
-    NAT破坏了端到端通信
-    解决: STUN, TURN, ICE
-```
-
-> 跨模块引用：[操作系统](os)的iptables/nftables实现了NAT和防火墙功能。[离散数学](discrete-math)的数论基础是RSA/ECC加密算法的理论支撑。[编译原理](compiler)的TLS实现涉及证书解析和协议状态机。
-
----
-
-## 7. 速查表
-
-### 7.1 协议栈速查
-
-| 层次 | 协议     | 端口 | 功能       |
-| ---- | -------- | ---- | ---------- |
-| 应用 | HTTP     | 80   | 网页       |
-| 应用 | HTTPS    | 443  | 安全网页   |
-| 应用 | DNS      | 53   | 域名解析   |
-| 应用 | SMTP     | 25   | 邮件发送   |
-| 应用 | SSH      | 22   | 远程登录   |
-| 传输 | TCP      | -    | 可靠传输   |
-| 传输 | UDP      | -    | 快速传输   |
-| 网络 | IP       | -    | 寻址路由   |
-| 网络 | ICMP     | -    | 差错报告   |
-| 网络 | ARP      | -    | 地址解析   |
-| 链路 | Ethernet | -    | 局域网     |
-| 链路 | WiFi     | -    | 无线局域网 |
-
-### 7.2 TCP状态速查
-
-| 状态        | 含义               | 转移                       |
-| ----------- | ------------------ | -------------------------- |
-| LISTEN      | 等待连接           | 收到SYN -> SYN_RCVD        |
-| SYN_SENT    | 已发SYN            | 收到SYN+ACK -> ESTABLISHED |
-| SYN_RCVD    | 已收SYN并发SYN+ACK | 收到ACK -> ESTABLISHED     |
-| ESTABLISHED | 连接建立           | 发FIN -> FIN_WAIT_1        |
-| FIN_WAIT_1  | 已发FIN            | 收ACK -> FIN_WAIT_2        |
-| FIN_WAIT_2  | 等待对方FIN        | 收FIN -> TIME_WAIT         |
-| CLOSE_WAIT  | 收到FIN            | 发FIN -> LAST_ACK          |
-| TIME_WAIT   | 等待2MSL           | 超时 -> CLOSED             |
-
-### 7.3 拥塞控制速查
-
-| 阶段     | 触发条件         | cwnd变化                |
-| -------- | ---------------- | ----------------------- |
-| 慢启动   | cwnd < ssthresh  | 指数增长                |
-| 拥塞避免 | cwnd >= ssthresh | 线性增长                |
-| 快速重传 | 3个重复ACK       | ssthresh=cwnd/2         |
-| 快速恢复 | 快速重传后       | cwnd=ssthresh+3         |
-| 超时重传 | RTO超时          | ssthresh=cwnd/2, cwnd=1 |
-
-### 7.4 HTTP状态码速查
-
-| 码段 | 含义       | 常见码                              |
-| ---- | ---------- | ----------------------------------- |
-| 2xx  | 成功       | 200 OK, 201 Created, 204 No Content |
-| 3xx  | 重定向     | 301 永久, 302 临时, 304 未修改      |
-| 4xx  | 客户端错误 | 400 Bad Request, 401/403/404        |
-| 5xx  | 服务端错误 | 500/502/503/504                     |
+减 2 是因为网络地址（全 0 主机位）与广播地址（全 1）不可分配给主机。32 位 IPv4 只有约 43 亿个地址，早就不够全球设备分，两招续命：**私有地址段 + NAT**。三个私有段（10.0.0.0/8、172.16.0.0/12、192.168.0.0/16）可以在千家万户的内网里重复使用，出门时由路由器做**网络地址转换**：内网多台设备共享一个公网 IP，靠「端口映射表」区分谁是谁——你家的路由器此刻就在干这事。代价是外网无法主动连进来（破坏了端到端），视频通话与 P2P 需要 STUN/TURN 这类「打洞」技术绕行。终极方案是 128 位地址的 IPv6，头更简洁、免 NAT，普及仍在路上。
+
+跨网选路（路由）的核心算法也在算法模块见过：距离向量（RIP，与邻居交换「到各地的距离」表，简单但收敛慢）、链路状态（OSPF，全网拓扑图上跑 Dijkstra）、路径向量（BGP，自治系统之间按商业策略选路，互联网的骨架）。Dijkstra 的完整实现见[图算法](/algorithm/110-GraphAlgorithms)，BGP 专题见 [BGP 路由](/cs-fundamentals/390-BGPRoute)。
+
+## 6. 核心概念三：TCP 的可靠，与它的克制
+
+UDP 的头只有 8 字节，发了就不管；TCP 多出的那几十字节与全部复杂性，都在兑现一个承诺：**字节流不丢、不重、不乱序**。实现靠四件事：
+
+- **编号与确认**：每个字节有序列号，ACK = n 表示「n 之前的全收到了」（累积确认）；
+- **超时重传**：发出后迟迟没等到确认就重发，超时时长按实测往返时间（RTT）动态调整；
+- **快速重传**：连续收到 3 个重复 ACK，不等超时立刻重发（丢包信号更强）；
+- **滑动窗口**：不用「发一个等一个」地空等，未确认的数据可以同时飞一批，窗口就是「在飞的上限」。
+
+窗口同时受两股力量约束，务必分清：
+
+- **流量控制**是对**接收方**的保护：对方通过窗口字段告诉你「我缓冲区只剩多少」，防止把接收方淹没；
+- **拥塞控制**是对**网络**的保护：发送方维护一个拥塞窗口 cwnd，探测网络的承受力。慢启动阶段每个往返翻倍（指数增长，其实一点也不慢），到达阈值后改为线性加一（拥塞避免）；一旦判定丢包，快速重传把窗口砍半重探，超时则直接回到慢启动。这条「指数冲高、线性爬坡、丢包砍半」的锯齿曲线，是互联网没有在被洪流挤爆的原因。
+
+深挖确认机制与拥塞算法（Reno、CUBIC、BBR）见 [TCP 控制](/cs-fundamentals/300-TCPControl)，报文结构与抓包见 [TCP 报文与粘包](/cs-fundamentals/310-TCPMessageFraming)。
+
+UDP 没有这些承诺，换来低延迟与简单，适合「丢一点无所谓、旧数据没意义」的场景：直播、游戏、DNS 查询。TCP 与 UDP 的选型口诀：**要完整找 TCP，要实时找 UDP**。而 HTTP/3 的 QUIC 协议（[QUIC 专篇](/cs-fundamentals/370-QUIC)）给出了第三种答案：在 UDP 上自己实现可靠与加密，甩掉 TCP 队头阻塞、把握手与加密合并省往返、切换 WiFi 时连接不断——这是 2026 年新协议的事实方向。
+
+## 7. 核心概念四：应用层三件套
+
+**DNS**（第 3 节已走完主流程）：记住三层角色（根、顶级域、权威）与两种查询（递归替你问到底、迭代告诉你下一步问谁），配 DNS 记录常识即可，抓包级细节在 [DNS 流程](/cs-fundamentals/340-DNSFlow)。
+
+**HTTP**：请求响应的文本协议。方法语义（GET 读、POST 交、PUT 整体替换、DELETE 删）、状态码分段（2xx 成功、3xx 重定向、4xx 客户端的错、5xx 服务器的错）是排障第一词汇。三个版本的演进各解决一个瓶颈：1.1 的长连接解决「每个请求一次握手」，2 的多路复用解决「排队等前一个响应」（应用层队头阻塞），3 的 QUIC 解决 TCP 层的队头阻塞。缓存与压缩的完整策略在 [HTTP 缓存策略](/cs-fundamentals/320-HTTPCacheStrategy)。
+
+**TLS**：HTTP 之上的一层加密壳（HTTPS = HTTP over TLS）。它用非对称加密（RSA/ECC）安全地交换对称密钥，之后用对称加密（AES 等）传数据——两全其美：密钥分发安全、传输速度快。证书由 CA 签名背书，浏览器验证证书链确认「对方真是 example.com」。TLS 1.3 把握手从 2 个往返压到 1 个、废掉一批老旧算法，完整握手流程在 [HTTPS 握手](/cs-fundamentals/330-HTTPSHandshake)，原理基础见 [网络安全基础](/cs-fundamentals/550-InformationSecurityBasics)。
+
+## 8. 调试实录：按层排障的工具箱
+
+网络故障的黄金法则：**从底层往上排查，先确定坏在哪一层**。
+
+- **链路/网络层**：`ping IP地址`（ICMP Echo）通不通。通，说明链路与路由没问题，往下查应用；不通，查网线、WiFi、路由器（Windows 的 `tracert IP` / macOS 与 Linux 的 `traceroute IP` 能看到在第几跳断掉——它利用 TTL 递增，每一跳路由器返回 ICMP 超时消息）；
+- **DNS 层**：`ping 域名` 不通但 `ping IP` 通，就是 DNS 坏了。验证：`nslookup 域名` 或 Python 的 `socket.getaddrinfo`；换公共 DNS（如 223.5.5.5 或 8.8.8.8）再试；
+- **传输层**：能 ping 通但连接被拒/超时，查端口。`netstat -an | findstr :443`（Windows）或 `ss -tlnp`（Linux）看本机监听；远程端口用 `Test-NetConnection host -Port 443`（Windows PowerShell）或 `nc -zv host 443` 探测。大量 TIME_WAIT 或 CLOSE_WAIT 堆积是服务端高并发的经典病象：前者是主动关闭方在等 2MSL，后者是「对方已关闭、你忘了关」，通常是代码漏了 `close()`；
+- **应用层**：连接全通但页面不对，读响应状态码：4xx 查客户端请求（404 路径错、401/403 权限），5xx 查服务端日志，3xx 查重定向配置。
+
+一个真实案例的走法：「网站打不开」→ ping 域名失败 → ping IP 成功 → 结论是 DNS 问题 → nslookup 发现域名解析到过期 IP → 清缓存或换 DNS，恢复。**五分钟定位，靠的是心里那张分层图。**
+
+## 9. 修改实验
+
+1. 把裸 HTTP 实验改成向 `http://example.com` 发送 `HEAD / HTTP/1.1`（只要响应头），观察 Content-Type、Content-Length 等头字段；再把路径换成不存在的 `/nope`，记录状态码变化；
+2. 用 `ipaddress` 把 `10.0.0.0/8` 依次切成 /16 与 /24，打印子网数量与每个子网的可用主机数，验证「前缀每加 1 位、子网数翻倍、每网主机减半」；
+3. 用 socket 对 `example.com` 的 443 端口 `create_connection`（不发任何数据），确认 TCP 握手能成功；再连一个肯定不存在的端口（如 81），对比「连接被拒」与「超时」两种异常——前者说明主机在但服务不在，后者可能在半路就被丢了；
+4. 查本机到任意网站的往返时间：`ping` 连发 10 次记录平均 RTT，估算「一次 TCP 握手 + 一次请求 + 一次响应」至少需要几个 RTT（答案藏在第 3 节里）。
+
+## 10. 小练习
+
+预测题（先写答案再验证）：`172.20.1.77/24` 的网络地址、广播地址、可用主机范围各是什么？把 `172.20.1.0/24` 再划出至少 50 个子网，前缀至少要多少位？
+
+修改题：把裸 HTTP 实验包成一个函数 `fetch(host, path)`，返回状态码与响应体；用它连续请求同一域名 5 次，并用 `time.perf_counter` 对比「每次新建连接」与「改用 HTTP/1.1 长连接（Connection: keep-alive，发多个请求）」的总耗时——亲眼看长连接省下几次握手。
+
+修 Bug 题：同事说「服务器宕机了」，你 ping 服务器 IP 通、`nc -zv 服务器 80` 也通，但浏览器打开超时。按第 8 节的分层法继续排查，指出「宕机」结论哪里不成立，并给出下一步两步操作（提示：本机代理或防火墙规则；响应头是否异常）。
+
+挑战题（不看提示）：用 UDP（`socket.socket(socket.AF_INET, socket.SOCK_DGRAM)`）实现一个迷你 DNS 查询：向公共 DNS（如 223.5.5.5）的 53 端口发送一个 A 记录查询报文并解析出 IP。允许查 RFC 1035 或用现成报文构造说明——重点体会「UDP 之上自己拼协议」与 QUIC 的动机同源。
+
+## 11. 什么时候你会需要这些知识
+
+写代码时：选 TCP 还是 UDP（要不要完整性）、要不要长连接（高频小请求）、超时与重试怎么设（RTT 的量级）。排障时：第 8 节的分层工具箱是从「打不开」到「定位到层」的固定动作。读架构文章时：CDN（[CDN 原理](/cs-fundamentals/350-CDNPrinciple)）、WebSocket（[帧格式](/cs-fundamentals/360-WebSocketFrameFormat)）、QUIC、HTTPS 全是本文概念的延伸，先有骨架再看分支，事半功倍。
+
+## 12. 与之前和之后的知识的关系
+
+- 往前：socket 是操作系统系统调用的一员（[操作系统](/cs-fundamentals/150-OperatingSystem)）；TCP 的滑动窗口与 040 篇的队列、070 篇的「空间换时间」思想同源；
+- 往后：深水十一篇按需取用——[网络进阶](/cs-fundamentals/280-ComputerNetworkAdvanced)、[协议深潜](/cs-fundamentals/290-NetworkProtocolDeep)、[TCP 控制](/cs-fundamentals/300-TCPControl)、[TCP 报文与粘包](/cs-fundamentals/310-TCPMessageFraming)、[HTTP 缓存](/cs-fundamentals/320-HTTPCacheStrategy)、[HTTPS 握手](/cs-fundamentals/330-HTTPSHandshake)、[DNS 流程](/cs-fundamentals/340-DNSFlow)、[CDN](/cs-fundamentals/350-CDNPrinciple)、[WebSocket](/cs-fundamentals/360-WebSocketFrameFormat)、[QUIC](/cs-fundamentals/370-QUIC)、[ARP 与欺骗](/cs-fundamentals/380-ARPProtocolSpoofing)、[BGP](/cs-fundamentals/390-BGPRoute)、[网络安全](/cs-fundamentals/400-NetworkSecurity)；
+- 更远：Dijkstra 最短路是 OSPF 的心脏（[图算法](/algorithm/110-GraphAlgorithms)）；拥塞窗口的「指数试探、失败回退」与算法模块的贪心与均摊思想一脉相承。
+
+## 13. 官方文档
+
+- Python socket 库（本文实验的全部接口）：https://docs.python.org/zh-cn/3/library/socket.html
+- MDN HTTP 文档（方法、状态码、头部权威参考）：https://developer.mozilla.org/zh-CN/docs/Web/HTTP
+- RFC 9110（HTTP 语义，最新标准）：https://httpwg.org/specs/rfc9110.html
+
+## 14. 自我检查
+
+- 能不看书画出「回车之后」的六步旅程，并标注每步发生在哪一层；
+- 能解释三次握手为什么不能是两次、TIME_WAIT 为什么存在；
+- 能用 ipaddress 完成子网划分并解释为什么减 2；
+- 能区分流量控制与拥塞控制的对象，说出慢启动到拥塞避免的切换条件；
+- 遇到「打不开网页」能按层报出排查动作与对应工具。
+
+## 本章总结
+
+网络是分层的艺术：应用层定格式（DNS、HTTP、TLS），传输层保进程对话（TCP 可靠、UDP 快捷），网络层管跨网寻址（IP、路由、NAT），链路层管一跳可达（以太网、ARP、交换机）。一次「回车」是 DNS 找人、TCP 握手、HTTP 对话、挥手告别四幕剧；而拥塞控制的锯齿曲线，是互联网上亿设备共享带宽却相安无事的隐形契约。排障的秘诀只有一条：按层而上，工具见第 8 节。
+
+## 下一步
+
+主线继续：[网络进阶](/cs-fundamentals/280-ComputerNetworkAdvanced)与[协议深潜](/cs-fundamentals/290-NetworkProtocolDeep)把各层协议摊开细讲；被 TCP 的锯齿曲线勾起兴趣就直接跳 [TCP 控制](/cs-fundamentals/300-TCPControl)。想换换口味，也可以切到 [分布式系统](/cs-fundamentals/410-DistributedSystem)，看单机网络长成跨机器系统之后的故事。

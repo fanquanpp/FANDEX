@@ -1,12 +1,12 @@
 ---
-order: 640
+order: 650
 title: SpringBoot 进阶
 module: 'java'
 category: 后端技术
 difficulty: intermediate
 description: SpringBoot高级特性
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/080-OperatorExpression'
   - 'java/820-SpringBasicsIoCAOPBeanLifecycle'

@@ -25,8 +25,10 @@ PostgreSQL（9.6+）采用**进程模型**实现并行查询：
 
 ```mermaid
 flowchart TD
-    B[Backend Leader<br/>用户连接进程]
-    B -->|Gather / Gather Merge| W1[Worker 1]<br/>W2[Worker 2]<br/>W3[Worker 3 后台工作进程]
+    B["Backend Leader<br/>用户连接进程"]
+    B -->|Gather / Gather Merge| W1["Worker 1"]
+    B -->|Gather / Gather Merge| W2["Worker 2"]
+    B -->|Gather / Gather Merge| W3["Worker 3 后台工作进程"]
 ```
 
 **Leader 进程**：接收查询、协调 Worker、合并结果

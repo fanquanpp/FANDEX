@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 离散数学核心：逻辑与证明、集合与关系、图论、组合计数、代数结构、形式语言与自动机。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/270-ComputerNetwork'
   - 'cs-fundamentals/050-DigitalLogic'
@@ -122,7 +122,7 @@ prerequisites:
 结论: 对所有 n >= 1, 公式成立
 ```
 
-> 跨模块引用：[概述](overview)的停机问题证明使用了反证法。[编译原理](compiler)的类型正确性证明使用了归纳法。[C语言](/c/010-CZeroBasisStart)的断言(assert)是命题逻辑在编程中的应用。
+> 跨模块引用：[概述](/cs-fundamentals/010-ComputerOverview)的停机问题证明使用了反证法。[编译原理](/cs-fundamentals/420-CompilePrinciple)的类型正确性证明使用了归纳法。[C语言](/c/010-CZeroBasisStart)的断言(assert)是命题逻辑在编程中的应用。
 
 ---
 
@@ -218,7 +218,7 @@ Cantor定理:
   即: 2^|A| > |A|
 ```
 
-> 跨模块引用：[操作系统](os)的进程等价类划分（同组进程）使用了等价关系。[计算机网络](network)的子网划分本质上是IP地址集合上的等价关系。[编译原理](compiler)的类型等价判断依赖于名字等价或结构等价关系。
+> 跨模块引用：[操作系统](/cs-fundamentals/150-OperatingSystem)的进程等价类划分（同组进程）使用了等价关系。[计算机网络](/cs-fundamentals/270-ComputerNetwork)的子网划分本质上是IP地址集合上的等价关系。[编译原理](/cs-fundamentals/420-CompilePrinciple)的类型等价判断依赖于名字等价或结构等价关系。
 
 ---
 
@@ -361,12 +361,12 @@ def dijkstra(graph, source):
   chi(平面图) <= 4  (四色定理)
 
 应用:
-  [编译原理](compiler)的寄存器分配: 干涉图着色
-  [操作系统](os)的资源分配: 无死锁检测
-  [计算机网络](network)的信道分配: 频率分配
+  [编译原理](/cs-fundamentals/420-CompilePrinciple)的寄存器分配: 干涉图着色
+  [操作系统](/cs-fundamentals/150-OperatingSystem)的资源分配: 无死锁检测
+  [计算机网络](/cs-fundamentals/270-ComputerNetwork)的信道分配: 频率分配
 ```
 
-> 跨模块引用：[计算机网络](network)的路由算法（OSPF）基于Dijkstra算法。[编译原理](compiler)的寄存器分配使用图着色算法。[操作系统](os)的资源分配图用于死锁检测。[设计模式](design-patterns)的组合模式形成树结构。
+> 跨模块引用：[计算机网络](/cs-fundamentals/270-ComputerNetwork)的路由算法（OSPF）基于Dijkstra算法。[编译原理](/cs-fundamentals/420-CompilePrinciple)的寄存器分配使用图着色算法。[操作系统](/cs-fundamentals/150-OperatingSystem)的资源分配图用于死锁检测。[设计模式](/cs-fundamentals/570-DesignPattern)的组合模式形成树结构。
 
 ---
 
@@ -472,7 +472,7 @@ def dijkstra(graph, source):
     Strassen: T(n) = 7T(n/2) + O(n^2) => T(n) = O(n^2.81)
 ```
 
-> 跨模块引用：[体系结构](architecture)的缓存关联度计算使用组合计数。[编译原理](compiler)的解析表构造使用容斥原理。[计算机网络](network)的子网划分使用组合计数。[概述](overview)的复杂性类分析使用递推关系和主定理。
+> 跨模块引用：[体系结构](/cs-fundamentals/090-ComputerArchitecture)的缓存关联度计算使用组合计数。[编译原理](/cs-fundamentals/420-CompilePrinciple)的解析表构造使用容斥原理。[计算机网络](/cs-fundamentals/270-ComputerNetwork)的子网划分使用组合计数。[概述](/cs-fundamentals/010-ComputerOverview)的复杂性类分析使用递推关系和主定理。
 
 ---
 
@@ -575,7 +575,7 @@ RSA加密:
   正确性: m^(e*d) = m^(1 + k*phi(n)) = m * (m^phi(n))^k = m (mod n)
 ```
 
-> 跨模块引用：[计算机网络](network)的RSA/ECC加密建立在数论和群论基础上。[编译原理](compiler)的哈希函数使用模运算。[C语言](/c/010-CZeroBasisStart)的整数溢出行为与模运算直接相关。[体系结构](architecture)的ALU实现了模2^n的算术运算。
+> 跨模块引用：[计算机网络](/cs-fundamentals/270-ComputerNetwork)的RSA/ECC加密建立在数论和群论基础上。[编译原理](/cs-fundamentals/420-CompilePrinciple)的哈希函数使用模运算。[C语言](/c/010-CZeroBasisStart)的整数溢出行为与模运算直接相关。[体系结构](/cs-fundamentals/090-ComputerArchitecture)的ALU实现了模2^n的算术运算。
 
 ---
 
@@ -584,7 +584,7 @@ RSA加密:
 ### 6.1 Chomsky层次
 
 ```
-Chomsky文法层次 (参见 [编译原理](compiler) 8.2节):
+Chomsky文法层次 (参见 [编译原理](/cs-fundamentals/420-CompilePrinciple) 8.2节):
 
 Type-0: 无限制文法
   产生式: alpha -> beta (无限制)
@@ -725,7 +725,7 @@ CFL的性质:
   例: {a^n b^n c^n | n >= 0} 不是CFL
 ```
 
-> 跨模块引用：[编译原理](compiler)的词法分析使用DFA/正则表达式，语法分析使用CFG/PDA。[概述](overview)的计算理论建立在Chomsky层次之上。[体系结构](architecture)的CPU控制单元本质上是有限状态机。
+> 跨模块引用：[编译原理](/cs-fundamentals/420-CompilePrinciple)的词法分析使用DFA/正则表达式，语法分析使用CFG/PDA。[概述](/cs-fundamentals/010-ComputerOverview)的计算理论建立在Chomsky层次之上。[体系结构](/cs-fundamentals/090-ComputerArchitecture)的CPU控制单元本质上是有限状态机。
 
 ---
 

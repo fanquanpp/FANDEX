@@ -1,12 +1,12 @@
 ---
-order: 720
+order: 730
 title: Java 与 Redis
 module: 'java'
 category: 后端技术
 difficulty: intermediate
 description: Redis缓存与数据结构
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/870-JavaMicroservice'
   - 'java/920-JavaMessageQueue'

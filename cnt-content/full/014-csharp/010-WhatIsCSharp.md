@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: "以『微软把 Windows 专属语言改造成跨平台开源语言』的大逆转引入：.NET 开源跨平台史、游戏后端桌面三大主战场、与 Java 的同源对照表、.NET 10 与 C# 14 的版本节奏，附在线运行实验与查证练习。"
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'csharp/020-CSharpOverviewEnvSetup'
   - 'csharp/250-CSharpDotNet'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C11原子操作与内存序
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'c/100-VarargsFunction'
   - 'c/340-SignalHandling'
@@ -861,7 +861,7 @@ atomic_signal_fence(memory_order_acquire);
 ## 同步关系
 
 **基本写法：发布订阅模式**
-`store(release)` ↔ `load(acquire)`
+`store(release)` 与配对的 `load(acquire)`
 ```c
 // 线程间建立先行关系
 // 线程 A

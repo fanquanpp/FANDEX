@@ -6,25 +6,156 @@ category: 游戏开发
 difficulty: beginner
 description: 用 label jump call return 组织剧本骨架，用 menu 提供选项分支并用 if 与 flag 变量驱动多结局
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-28'
 related: ['renpy/020-FirstScriptSayAndCharacters', 'renpy/030-ImagesSceneShowAndTransitions', 'renpy/050-VariablesPythonAndStores']
 prerequisites: ['renpy/020-FirstScriptSayAndCharacters']
 ---
 
-到目前为止，我们的剧本都是从上到下一条直线执行到底。真正的视觉小说需要岔路：玩家在选项面前做出选择，故事走向不同的支线，最后汇入不同的结局。本篇讲解 Ren'Py 的控制流四件套 label、jump、call、return，以及呈现选项的 menu 语句，最后用标志变量与 if 组合出多结局。
+到目前为止，我们的剧本都是从上到下一条直线执行到底。真正的视觉小说需要岔路：玩家在选项面前做出选择，故事走向不同的支线，最后汇入不同的结局。本篇带你从零搭出一段完整可玩的分支剧情：一次两难选择、两条支线、一个汇合点、按选择历史分档的结局。搭完这一段，Ren'Py 的控制流四件套——label、jump、call、return，加上 menu 语句——你就全部上手了。
 
-## 学习目标
+## 动手：分支再汇合的最小骨架
 
-- 深入理解 label：参数、局部标签与跨文件标签；
-- 会用 jump 做单向跳转，用 call 与 return 实现"去了还能回来"的调用；
-- 理解 from 子句与发布游戏时保护存档的关系；
-- 会用 menu 语句编写选项菜单；
-- 会用 if、elif、else 与 while 编写条件与循环逻辑；
-- 会用 default 与 $ 管理标志变量，驱动多结局。
+目标剧情：同学小邀你周末同去，你可以选"去看展"或"去书店"，不管选哪条，最后在车站汇合。新建或打开 script.rpy，写下：
 
-## label：给剧本定点命名
+```renpy
+define s = Character('小邀', color="#c8ffc8")
+define m = Character('我', color="#c8c8ff")
 
-label 把一个名字绑定到程序中的某个位置，是所有控制流的地标。除了已经用过的 start，label 还有三个进阶用法。
+label start:
+
+    s "周末有空吗？一起出去走走？"
+
+    menu:
+
+        "去看展吧。":
+            jump gallery
+
+        "去书店吧。":
+            jump book
+
+label gallery:
+
+    m "去看展吧，听说这期有印象派特展。"
+
+    jump station
+
+label book:
+
+    m "去书店吧，我想找一本绝版画集。"
+
+    jump station
+
+label station:
+
+    s "好，那周六上午车站见！"
+
+    ".:. Good Ending."
+
+    return
+```
+
+走读这段结构：
+
+- menu 语句后跟冒号，每个选项是"字符串 + 冒号"，其下再缩进一层写要执行的语句。玩家选中哪项，就执行哪项下面的缩进块；
+- 选"看展"执行 jump gallery 跳进 gallery 标签；选"书店"同理。jump 是单向跳转、不压栈——引擎不记住"从哪里来"，所以两条支线各自用 jump station 汇合到 station 标签；
+- station 播报汇合台词，显示 ".:. Good Ending." 结局文字，最后 return 结束游戏回到主菜单。
+
+保存运行：主菜单点 Start Game，做一次选择，确认两条路都通向车站。这就是"分支再汇合"的最小骨架，绝大多数商业视觉小说的章节内部都是这个形状的放大版。
+
+## 动手：用标志变量记下玩家的选择
+
+汇合点现在只会说同一句话。需求升级：选过书店的玩家，在车站会多聊一句画集。这需要"记住玩家选过什么"——标志变量（flag）：
+
+```renpy
+default book = False
+
+label book:
+
+    $ book = True
+
+    m "去书店吧，我想找一本绝版画集。"
+
+    jump station
+
+label station:
+
+    s "好，那周六上午车站见！"
+
+    if book:
+        s "对了，画集找到了记得借我看看。"
+    else:
+        s "听说特展的人很多，早点出门哦。"
+
+    ".:. Good Ending."
+
+    return
+```
+
+三件新东西：
+
+- default 语句在游戏开始（以及读档之后）检查变量 book 是否未定义，未定义则设为 False。用 default 声明的变量会参与存档与读档，是游戏过程中会变化的状态的标准声明方式——这与 define 声明不可变常量形成对照；
+- `$ book = True`：以 $ 开头的行是一条单行 Python 语句，把标志置真；
+- `if book:` 在汇合点分流，else 兜底。if 与 Python 一致，支持 elif 与 else：
+
+```renpy
+    if points >= 10:
+        jump best_ending
+    elif points >= 5:
+        jump good_ending
+    elif points >= 1:
+        jump bad_ending
+    else:
+        jump worst_ending
+```
+
+条件自上而下依次检查，命中哪个块就执行哪个块。menu 制造即时分支，标志变量与分数记录历史，汇合点用 if 汇总决算——这就是多结局游戏的全部零件。
+
+## 动手：把公共桥段抽成子程序
+
+两条支线如果都要播一段相同的"换衣服出门"过场，复制粘贴两遍太蠢。用 call 把它抽成可返回的子程序：
+
+```renpy
+label gallery:
+
+    call get_ready(30)
+    m "去看展吧，听说这期有印象派特展。"
+
+    jump station
+
+label book:
+
+    call get_ready(15)
+    $ book = True
+    m "去书店吧，我想找一本绝版画集。"
+
+    jump station
+
+label get_ready(minutes=10):
+
+    "你花了 [minutes] 分钟换好衣服出门。"
+
+    return
+```
+
+- call 跳到目标标签，但会把当前位置压入调用栈；目标里的 return 弹出栈顶，回到 call 之后继续执行。jump 与 call 的本质区别就在这一个栈上；
+- 子程序可以带参数：第一次传 30，第二次传 15，不传则用默认值 10。台词里的 [minutes] 会被插值；
+- call 还支持 expression 形式，目标由表达式算出，如 `call expression "get_" + "ready"`；当 call expression 还要附带参数时，必须插入 pass 关键字分隔：`call expression "get_ready" pass (minutes=20)`；
+- return 也可以携带表达式，结果存入特殊变量 _return，调用方可读取；
+- 子程序里最后一次 return 弹出空栈时——栈空，游戏回到主菜单。start 标签末尾的 return 正是靠这个行为收尾的。
+
+### from 子句与存档安全
+
+发布游戏后你可能继续更新剧本。若某个 call 没有 from 子句，更新后标签的位置发生变化，旧存档里记录的"返回位置"就可能失效，导致读档后返回栈损坏。from 子句相当于在 call 之后隐式插入一个同名标签，把返回点固定下来：
+
+```renpy
+    call get_ready(30) from _call_get_ready_1
+```
+
+手工为每个 call 写 from 很繁琐，构建（打包）时勾选 "Add from clauses to calls" 选项，Ren'Py 会自动为所有 call 补上 from 子句。发布正式版本时，记得打开这个选项。
+
+## 讲为什么：label 的进阶用法
+
+label 把名字绑定到程序中的某个位置，是所有控制流的地标。三个进阶用法：
 
 第一，label 可以带参数：
 
@@ -35,7 +166,7 @@ label sample2(a="default"):
     "a = [a]"
 ```
 
-调用时传入的值会赋给参数 a，台词里的 [a] 会被插值为它的值。需要注意：由 label 参数赋值的变量是动态作用域（dynamic scope）的——label 结束执行 return 时，这些变量会被还原为调用前的样子。
+调用时传入的值会赋给参数 a。需要注意：由 label 参数赋值的变量是动态作用域（dynamic scope）的——label 结束执行 return 时，这些变量会被还原为调用前的样子。
 
 第二，label 可以是局部的（local label）。以点号开头的标签从属于它上方最近的全局标签，适合在一个章节内部做细粒度跳转：
 
@@ -57,139 +188,13 @@ label .another_local:
     jump .local_label
 ```
 
-这里 .local_label 与 .another_local 都从属于 global_label，jump 用点号前缀即可在它们之间往来。8.5.0 起，局部标签的声明规则进一步放宽，可以在任何全局标签下跨文件声明。
+.local_label 与 .another_local 都从属于 global_label，jump 用点号前缀即可在它们之间往来。8.5.0 起，局部标签的声明规则进一步放宽，可以在任何全局标签下跨文件声明。
 
-第三，标签可以跨文件。Ren'Py 把 game 目录下所有 .rpy 文件等价地看作一个大文件，因此 jump 的目标可以写在任何文件里——这正是按章节拆分剧本文件的基础。
+第三，标签可以跨文件。Ren'Py 把 game 目录下所有 .rpy 文件等价地看作一个大文件，因此 jump 的目标可以写在任何文件里——这正是按章节拆分剧本文件的基础。jump expression 形式（`jump expression "sub" + "routine"`）在"目标由变量决定"时有用。
 
-## jump：一去不回的跳转
+## 条件与循环的边界
 
-jump 语句让执行跳到指定标签并继续：
-
-```renpy
-    jump loop_start
-```
-
-jump 也可以跳到由表达式算出的目标，即 jump expression 形式：
-
-```renpy
-    jump expression "sub" + "routine"
-```
-
-表达式的值 "sub" + "routine" 拼出 subroutine，跳转随之发生。这种写法在"目标由变量决定"时有用。
-
-关键特性：jump 不压栈。跳过去之后，引擎不会记住"从哪里来"，因此无法用 return 返回跳转点。需要能回来的跳转，请用下一节的 call。
-
-## call 与 return：可返回的调用
-
-call 同样跳到目标标签，但会把当前位置压入调用栈；目标里的 return 会弹出栈顶，回到 call 之后继续执行。call 还支持 expression 形式与参数，下面是官方示例的完整走读：
-
-```renpy
-label start:
-
-    e "First, we will call a subroutine."
-
-    call subroutine
-
-    call subroutine(2)
-
-    call expression "sub" + "routine" pass (count=3)
-
-    return
-
-label subroutine(count=1):
-
-    e "I came here [count] time(s)."
-    e "Next, we will return from the subroutine."
-
-    return
-```
-
-- 第一次 call subroutine 不带参数，subroutine 的参数 count 取默认值 1；
-- 第二次 call subroutine(2) 直接带参数，count 为 2；
-- 第三次用 call expression，目标由表达式 "sub" + "routine" 求出；当 call expression 还要附带参数时，必须插入 pass 关键字分隔表达式与参数，即写作 call expression 目标 pass (参数)；
-- subroutine 里两次执行 return：第一次弹栈回到 start 中对应的 call 之后，最后一次 return 弹出空栈——栈空时，游戏回到主菜单。
-
-return 还可以携带表达式，其结果会存入特殊变量 _return，调用方可以通过 _return 拿到返回值。
-
-### from 子句与存档安全
-
-发布游戏后你可能继续更新剧本。若某个 call 没有 from 子句，更新后标签的位置发生变化，旧存档里记录的"返回位置"就可能失效，导致读档后返回栈损坏。from 子句相当于在 call 之后隐式插入一个同名标签，把返回点固定下来：
-
-```renpy
-    call subroutine from _call_subroutine_1
-```
-
-手工为每个 call 写 from 很繁琐，构建（打包）时勾选 "Add from clauses to calls" 选项，Ren'Py 会自动为所有 call 补上 from 子句。发布正式版本时，记得打开这个选项。
-
-## menu：给玩家选择
-
-menu 语句在画面上呈现一组选项，玩家选中哪项，就执行哪项下面的缩进块。语法规则：menu 后跟冒号；每个选项是"字符串 + 冒号"，其下再缩进一层写要执行的语句。看官方示例：
-
-```renpy
-    s "Sure, but what's a \"visual novel?\""
-
-    menu:
-
-        "It's a videogame.":
-            jump game
-
-        "It's an interactive book.":
-            jump book
-
-label game:
-
-    m "It's a kind of videogame you can play on your computer."
-
-    jump marry
-
-label book:
-
-    m "It's like an interactive book."
-
-    jump marry
-
-label marry:
-
-    "And so, we become a visual novel creating duo."
-```
-
-走读这段结构完整的微型剧本：
-
-- Sylvie 反问"什么是视觉小说"，随后 menu 弹出两个选项；
-- 选 "It's a videogame." 执行 jump game，进入 game 标签；选 "It's an interactive book." 则进入 book 标签；
-- 两条支线各说一句台词后，都执行 jump marry 汇合到 marry 标签；
-- marry 里播报结局性的旁白。这就是"分支再汇合"的最小骨架。
-
-```mermaid
-flowchart TD
-    M["menu 选项"] --> G["label game"]
-    M --> B["label book"]
-    G --> J["jump marry"]
-    B --> J
-    J --> K["label marry 汇合点"]
-    K --> E["if book 检查标志"]
-    E --> P1["读者路线"]
-    E --> P2["游戏路线"]
-```
-
-## 条件与循环
-
-menu 负责玩家主动分支，if 语句负责程序自动分支。Ren'Py 的 if 与 Python 一致，支持 elif 与 else：
-
-```renpy
-    if points >= 10:
-        jump best_ending
-    elif points >= 5:
-        jump good_ending
-    elif points >= 1:
-        jump bad_ending
-    else:
-        jump worst_ending
-```
-
-条件自上而下依次检查，命中哪个块就执行哪个块，其余全部跳过。上面的写法按分数把玩家引向四个不同结局，是多结局游戏的核心模式。
-
-循环使用 while 语句，官方示例是一个倒数发射：
+if/elif/else 已在实战里用过。循环使用 while 语句：
 
 ```renpy
 label countdown:
@@ -206,29 +211,6 @@ label countdown:
 count 从 10 递减，每轮播报一句 "T-minus [count]."，归零后跳出循环显示 "Liftoff!"。注意一个限制：Ren'Py 脚本没有 continue、break、for 语句——需要提前退出或跳过一轮时，可以用跳转到 label 的方式模拟；遍历列表这类需求则要等到学习 Python 语句后再处理。
 
 如果某个分支暂时不想写内容，可以放一条 pass 语句占位，它什么都不做，只是为了满足"块里必须有语句"的语法。
-
-## 标志变量与多结局
-
-菜单分支之后，我们常常需要"记住玩家选过什么"，以便在汇合点给出不同的后续。这就需要标志变量（flag）。官方示例的做法分三步：
-
-```renpy
-# True if the player has decided to compare a VN to a book.
-default book = False
-
-label book:
-
-    $ book = True
-
-    m "It's like an interactive book."
-
-    jump marry
-```
-
-- default 语句在游戏开始（以及读档之后）检查变量 book 是否未定义，未定义则设为 False。用 default 声明的变量会参与存档与读档，是游戏过程中会变化的状态的标准声明方式——这与 define 声明不可变常量形成对照；
-- 玩家选择"它是互动书"走进 book 标签时，`$ book = True` 把标志置真。以 $ 开头的行是一条单行 Python 语句；
-- 之后在 marry 这样的汇合点，用 if book: ... else: ... 就能让两条支线呈现不同的台词与结局，实现"分支影响后续"。
-
-结合上一节的 if/elif/else 与 points 分数，你就有了多结局游戏的全部零件：menu 制造即时分支，标志变量与分数记录历史，汇合点用 if 汇总决算，最后各自显示 ".:. Good Ending." 一类的结局文字再 return。
 
 ## 特殊 label 一览
 
@@ -254,15 +236,26 @@ label main_menu:
 
 主菜单构建标签立即返回，游戏就会跳过主菜单直接开局——适合做章节选择式或演示型的短篇。其余特殊标签的详细行为，遇到具体需求时查阅官方 label 文档即可。
 
-## 小结
+## 坑点与自检
 
-- label 把名字绑定到程序点，可带参数（动态作用域，return 时还原），支持点号前缀的局部标签，且所有 .rpy 文件等价于一个大文件、标签可跨文件引用。
-- jump 单向跳转不压栈、无法返回，另有 jump expression 形式。
-- call 压栈调用，return 弹栈回到调用点；支持参数与 expression 形式（带参数时用 pass 分隔）；return 到空栈回主菜单，带表达式的返回值存入 _return；from 子句固定返回点，发布时勾选 "Add from clauses to calls" 自动补全以保护旧存档。
-- menu 呈现"字符串选项 + 冒号 + 缩进块"，是玩家分支的基本手段。
-- if/elif/else 自动分支，while 循环，Ren'Py 脚本没有 continue、break、for，pass 用于占位。
-- default 声明参与存档的初始值，$ 执行单行 Python 赋值，标志变量配合 if 在汇合点驱动多结局。
-- 特殊标签覆盖游戏生命周期各节点，label main_menu: return 可跳过主菜单直接开局。
+- 想用 return 回到 menu 之前的语句——jump 不压栈，回不去；需要能回来的跳转一律用 call；
+- 读档后角色像"失忆"，走错分支——状态变量用了 define 而不是 default。define 是常量、不参与存档，会变化的状态必须 default；
+- 某个选项永远选不中——检查上一轮 if/elif 的条件是否提前命中，条件自上而下短路；
+- 更新版本后旧存档读档崩溃——call 没写 from 子句。发布前勾选 "Add from clauses to calls"；
+- menu 选项写成了中文全角冒号"："——语法要求的英文冒号。选项格式是 "字符串": 加缩进块；
+- 自检问题：label 参数在 return 后会被还原，而 default 变量会随存档保留，两者谁能用来记录"玩家好感度"？后者。参数是临时的、动态作用域的。
+
+## 练习
+
+1. 给车站汇合点加第二个标志变量 gallery，让"先看展又去书店"（重玩不重置的情况下不可能，改成分支里把另一个选项也提一句）的台词与单选不同——体会标志变量的组合。
+2. 把"换衣服出门"子程序改造成返回值版本：return "天气不错"，在调用方用 `[ _return ]` 插值显示，验证 _return 的用法。
+3. 用 while 写一段"等公交"过场：播报三轮 "公交车还没来"，第三轮后 jump 到上车场景。故意在其中一轮用 jump 跳出，体会"没有 break"时的替代写法。
+
+## 下一步
+
+- 变量系统的完整规则（store、保存范围）：变量、Python 与 store（050 篇）；
+- 多结局的收尾仪式：第一个剧本篇（020 篇）末尾的 ".:. Good Ending." 约定；
+- 骨架有了，给场景加上立绘与转场：图像、场景与转场（030 篇）。
 
 ## 参考链接
 

@@ -1,12 +1,12 @@
 ---
-order: 770
+order: 780
 title: Java 性能调优
 module: 'java'
 category: 后端技术
 difficulty: advanced
 description: Java应用性能优化
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/970-JavaDocker'
   - 'java/930-JavaGraphQL'

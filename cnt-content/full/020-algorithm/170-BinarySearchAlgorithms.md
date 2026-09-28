@@ -43,11 +43,11 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    F[查找]
-    F --> SEQ[顺序查找 O(n)<br/>哨兵优化 O(n)]
-    F --> CMP[比较查找 O(log n)<br/>二分 O(log n)/插值 O(log log n)/斐波那契 O(log n)<br/>树形：BST O(log n) 平均、AVL O(log n) 最坏、红黑树 O(log n) 最坏、B树 O(log_d n)、跳表 O(log n) 期望]
-    F --> NUM[数字查找 O(L)<br/>Trie 树/Radix Tree]
-    F --> HASH[哈希查找 O(1) 平均<br/>链地址法/开放寻址 线性探针/二次探针/双重哈希]
+    F["查找"]
+    F --> SEQ["顺序查找 O(n)<br/>哨兵优化 O(n)"]
+    F --> CMP["比较查找 O(log n)<br/>二分 O(log n)/插值 O(log log n)/斐波那契 O(log n)<br/>树形：BST O(log n) 平均、AVL O(log n) 最坏、红黑树 O(log n) 最坏、B树 O(log_d n)、跳表 O(log n) 期望"]
+    F --> NUM["数字查找 O(L)<br/>Trie 树/Radix Tree"]
+    F --> HASH["哈希查找 O(1) 平均<br/>链地址法/开放寻址 线性探针/二次探针/双重哈希"]
 ```
 
 **特殊查找结构**：
@@ -2424,11 +2424,11 @@ Dijkstra 算法的核心操作是 `extract_min`（$V$ 次）与 `decrease_key`�
 记住 Bloch 2006 年的教训：哪怕是一个看似简单的 `mid = (left + right) / 2`，在 Java 标准库中存在了 9 年才被发现整数溢出 Bug。**编写查找算法时，永远验证循环不变式、永远测试边界条件、永远做基准测试**——这是 Knuth 在 TAOCP 中反复强调的工程哲学。
 
 > **下一步学习路径**：
-> - 想深入动态有序数据结构？请阅读 [平衡树与高级树](algorithm/平衡树与高级树)；
-> - 想理解跳表在工业中的真实应用？请阅读 [跳跃表](algorithm/跳跃表)；
-> - 想掌握字符串匹配的进阶算法？请阅读 [字符串算法](algorithm/字符串算法)；
-> - 想在图论中应用查找结构？请阅读 [图算法](algorithm/图算法)；
-> - 想系统化训练 LeetCode？请阅读 [LeetCode 刷题指南](algorithm/LeetCode刷题指南)。
+> - 想深入动态有序数据结构？请阅读 [平衡树与高级树](/algorithm/100-BalancedTreeAdvanced)；
+> - 想理解跳表在工业中的真实应用？请阅读 [跳跃表](/algorithm/210-SkipList)；
+> - 想掌握字符串匹配的进阶算法？请阅读 [字符串算法](/algorithm/150-StringAlgorithms)；
+> - 想在图论中应用查找结构？请阅读 [图算法](/algorithm/110-GraphAlgorithms)；
+> - 想系统化训练 LeetCode？请阅读 [LeetCode 刷题指南](/algorithm/300-LeetCodeInterviewGuide)。
 
 ---
 

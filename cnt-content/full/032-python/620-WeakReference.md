@@ -1,12 +1,12 @@
 ---
-order: 410
+order: 440
 title: 弱引用
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: Python弱引用详解：weakref模块、WeakKeyDictionary。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/510-DecoratorAdvanced'
   - 'python/570-Descriptor'

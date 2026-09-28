@@ -1,12 +1,12 @@
 ---
 order: 470
-title: C# .NET CLI 命令
+title: dotnet CLI：从克隆到发布的一条命令链
 module: 'csharp'
 category: 后端技术
 difficulty: beginner
-description: dotnet CLI 全流程速查：项目创建、构建运行、NuGet 依赖、发布 AOT、测试与工具管理，附完整工作流示例与易错点。
+description: 以"新机器上把一个 .NET 项目从零跑到发布"为主线串起 dotnet CLI：环境自检、建骨架、日常开发循环、依赖管理、三种发布形态、测试与工具管理，附坑点、自检清单与练习。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'csharp/020-CSharpOverviewEnvSetup'
   - 'csharp/340-CSharpTestEngineering'
@@ -15,454 +15,183 @@ prerequisites:
   - 'csharp/010-WhatIsCSharp'
 ---
 
-## SDK 与环境
+## 真实场景：新电脑，新同事，一条命令链
 
-**基本写法：查看版本**
-`dotnet --version`
+想象你刚入职，领到一台全新电脑。导师只丢给你一句话："把 `Shop` 这个服务拉下来，跑起来，再发布一个能拷给别人用的版本。" 本篇不背命令表，而是把这条链一步步走通——走完之后，`dotnet` 的十几个子命令自然就记住了，因为每一个都出现在它该出现的位置上。
+
+（时间设定在 2026 年：.NET 10 已于 2025 年 11 月发布且是 LTS；下文的命令在 .NET 8/9/10 上行为一致。）
+
+## 第一步：先问机器三个问题
+
+任何排查都从"机器上到底装了什么"开始：
+
 ```bash
-// 查看当前 .NET SDK 版本
-dotnet --version
+dotnet --version          # 当前默认使用的 SDK 版本，如 10.0.100
+dotnet --list-sdks        # 本机装了哪些 SDK（可能同时有多个）
+dotnet --list-runtimes    # 本机装了哪些运行时
 ```
 
----
+想看完整环境（SDK、运行时、系统信息、环境变量），一条 `dotnet --info` 全出来，报 issue 时贴它比贴截图有用。
 
-**基本写法：列出已装 SDK**
-`dotnet --list-sdks`
+**为什么先做这步**：`dotnet --version` 报出来的可能不是你以为的版本。机器上装了多个 SDK 时，默认用最新的一个；"我这里能编译、CI 上报错"的环境漂移多半源于此。团队的解法是把版本钉进仓库根目录的 `global.json`：
+
 ```bash
-// 列出本机所有 .NET SDK
-dotnet --list-sdks
+dotnet new globaljson --sdk-version 10.0.100 --roll-forward latestFeature
 ```
 
----
+这和 FANDEX 仓库用 `package.json` 的 `packageManager` 字段钉住 pnpm 版本是同一个思路：**环境约定写进仓库，而不是写进口口相传的文档**。
 
-**基本写法：列出已装运行时**
-`dotnet --list-runtimes`
+## 第二步：从零搭一个解决方案骨架
+
+不动现有仓库，先在临时目录练一遍。一个像样的 .NET 后端项目通常是"一个解决方案 + 多个项目"：
+
 ```bash
-// 列出本机所有 .NET 运行时
-dotnet --list-runtimes
+mkdir Shop && cd Shop
+dotnet new sln -n Shop                 # 解决方案：项目的花名册
+dotnet new classlib -n Shop.Core       # 类库：领域逻辑
+dotnet new console   -n Shop.App      # 控制台：入口程序
+
+dotnet sln Shop.sln add Shop.Core Shop.App   # 把项目登记进解决方案
+dotnet add Shop.App reference Shop.Core      # App 引用 Core
 ```
 
----
+`dotnet new list` 可以列出所有模板（console、classlib、webapi、xunit……），`dotnet new console -n MyApp -f net10.0` 可以指定目标框架。
 
-**基本写法：查看信息**
-`dotnet --info`
+**为什么要有 sln 这一层**：`.csproj` 描述单个项目，`.sln` 描述"这个仓库里有哪些项目、它们怎么分组"。Visual Studio、Rider、`dotnet build` 在仓库根目录看到 `.sln`，就知道要一起构建谁。没有它，每个项目各自为政。
+
+顺手记两个目录：`bin/` 放编译输出，`obj/` 放编译中间产物。两者都是生成物，`.gitignore` 里必须排除；出了奇怪的编译错误时，`dotnet clean` 清掉它们重试是标准操作。
+
+## 第三步：日常开发循环
+
+写代码时的循环就是三个命令：
+
 ```bash
-// 查看 SDK 与环境详细信息
-dotnet --info
+dotnet run --project src/Shop.App    # 编译并运行
+dotnet watch run                     # 文件一保存就自动重启，改一行看一次
+dotnet test                          # 跑所有测试项目
 ```
 
----
+`dotnet run` 的两个细节现在记下，能省掉半小时排查：
 
-## 项目创建
+**双横线是分界线**。`dotnet run arg1` 会报错——run 把 `arg1` 当成自己的选项了。要传给你的程序，写成：
 
-**基本写法：创建控制台应用**
-`dotnet new console -n <项目名>`
 ```bash
-// 创建控制台项目
-dotnet new console -n MyApp
+dotnet run --project src/Shop.App -- --name production --verbose
 ```
 
----
+双横线之后的内容才原样交给 `Main` 的 `args`。
 
-**基本写法：创建类库**
-`dotnet new classlib -n <库名>`
+**测试也有自己的日常**：
+
 ```bash
-// 创建类库项目
-dotnet new classlib -n MyLib
+dotnet test --filter "FullyQualifiedName~UserService"      # 只跑名字含 UserService 的测试
+dotnet test --collect:"XPlat Code Coverage"                 # 收集覆盖率（coverlet）
+dotnet test --logger "trx;LogFileName=test.trx"             # 结果写 trx，供 CI 解析
 ```
 
----
+测试工程本身的展开见 [C# 测试工程化](/csharp/340-CSharpTestEngineering)。
 
-**基本写法：创建 Web API**
-`dotnet new webapi -n <项目名>`
+## 第四步：管理依赖（NuGet）
+
+用到第三方库时：
+
 ```bash
-// 创建 ASP.NET Core Web API
-dotnet new webapi -n MyApi
+dotnet add package Newtonsoft.Json --version 13.0.3   # 装包并钉版本
+dotnet list package --outdated                        # 列出可升级的依赖
+dotnet remove package Newtonsoft.Json                 # 移除
 ```
 
----
+包的元数据直接写进 `.csproj` 的 `<PackageReference>`，提交它就是提交依赖清单，别人 `git clone` 后第一次 `build` 时会自动还原。
 
-**基本写法：指定框架**
-`dotnet new console -n <项目名> -f <框架>`
+**关于 `dotnet restore`**：`build`、`run`、`test` 内部都会先自动还原依赖，日常根本不用手动敲。它显式出场只有两个时机：CI 里想分离"还原失败"和"编译失败"两种错误时（先 `restore` 再 `--no-restore` build），以及离线排查包冲突时。清空本地 NuGet 缓存（包损坏、怀疑缓存脏了时用）：`dotnet nuget locals all --clear`。
+
+团队共享的命令行工具也走 NuGet：
+
 ```bash
-// 指定目标框架
-dotnet new console -n MyApp -f net8.0
+dotnet tool install -g dotnet-ef          # 全局安装，本机所有项目可用
+dotnet tool list -g                       # 看装了什么
+dotnet tool update -g dotnet-ef           # 升级
 ```
 
----
+但 `-g` 装的东西只在你机器上有。团队工具应该装在项目内：
 
-**基本写法：列出模板**
-`dotnet new list`
 ```bash
-// 列出所有可用项目模板
-dotnet new list
+dotnet tool install --local dotnet-ef
+git add .config/dotnet-tools.json          # 清单提交进仓库
+dotnet tool restore                        # 新同事一键复现
 ```
 
----
+## 第五步：发布——三种形态选一种
 
-## 构建与运行
+代码写完，`dotnet publish` 把它变成可部署的产物。三种形态对应三种交付对象：
 
-**基本写法：构建项目**
-`dotnet build [<项目>] [--configuration <配置>]`
 ```bash
-// 编译项目
-dotnet build
-dotnet build -c Release
-```
-
----
-
-**基本写法：运行项目**
-`dotnet run [--project <路径>]`
-```bash
-// 编译并运行
-dotnet run --project src/MyApp
-```
-
----
-
-**基本写法：运行时传参**
-`dotnet run -- <参数>`
-```bash
-// 双横线后的参数传给程序
-dotnet run -- arg1 arg2
-```
-
----
-
-**基本写法：清理生成**
-`dotnet clean [<项目>]`
-```bash
-// 清理编译输出
-dotnet clean
-```
-
----
-
-**基本写法：构建指定目标**
-`dotnet build -t:<目标>`
-```bash
-// 执行 MSBuild 目标
-dotnet build -t:Publish
-```
-
----
-
-## 依赖管理
-
-**基本写法：添加包**
-`dotnet add <项目> package <包名> [--version <版本>]`
-```bash
-// 添加 NuGet 包
-dotnet add package Newtonsoft.Json --version 13.0.1
-```
-
----
-
-**基本写法：移除包**
-`dotnet remove <项目> package <包名>`
-```bash
-// 移除 NuGet 包
-dotnet remove package Newtonsoft.Json
-```
-
----
-
-**基本写法：添加项目引用**
-`dotnet add <项目> reference <引用项目>`
-```bash
-// 添加项目引用
-dotnet add src/App reference src/Lib/Lib.csproj
-```
-
----
-
-**基本写法：移除项目引用**
-`dotnet remove <项目> reference <引用项目>`
-```bash
-// 移除项目引用
-dotnet remove src/App reference src/Lib/Lib.csproj
-```
-
----
-
-**基本写法：还原依赖**
-`dotnet restore [<项目>]`
-```bash
-// 还原 NuGet 依赖
-dotnet restore
-```
-
----
-
-**基本写法：列出包**
-`dotnet list <项目> package [--outdated]`
-```bash
-// 列出依赖包及可升级版本
-dotnet list package --outdated
-```
-
----
-
-## 发布与打包
-
-**基本写法：发布应用**
-`dotnet publish -c Release -o <输出目录>`
-```bash
-// 发布到指定目录
+# 形态一：框架依赖（默认）。产物小，但目标机器必须装有对应运行时
 dotnet publish -c Release -o ./publish
-```
 
----
-
-**基本写法：独立部署**
-`dotnet publish -c Release --self-contained true -r <RID>`
-```bash
-// 包含运行时，目标机器无需装 .NET
-dotnet publish -c Release --self-contained true -r win-x64
-```
-
----
-
-**基本写法：单文件发布**
-`dotnet publish -c Release -p:PublishSingleFile=true`
-```bash
-// 打包为单可执行文件
-dotnet publish -c Release -r linux-x64 -p:PublishSingleFile=true
-```
-
----
-
-**基本写法：AOT 原生编译**
-`dotnet publish -p:PublishAot=true -r <RID>`
-```bash
-// .NET 8+ 原生 AOT 编译
-dotnet publish -p:PublishAot=true -r win-x64
-```
-
----
-
-**基本写法：修剪未用代码**
-`dotnet publish -p:PublishTrimmed=true`
-```bash
-// 裁剪未使用程序集以减小体积
-dotnet publish -c Release -p:PublishTrimmed=true
-```
-
----
-
-## 测试
-
-**基本写法：运行测试**
-`dotnet test [<项目>]`
-```bash
-// 运行所有单元测试
-dotnet test
-```
-
----
-
-**基本写法：过滤测试**
-`dotnet test --filter <表达式>`
-```bash
-// 按名称过滤运行
-dotnet test --filter "FullyQualifiedName~UserService"
-```
-
----
-
-**基本写法：生成覆盖率**
-`dotnet test --collect:"XPlat Code Coverage"`
-```bash
-// 收集代码覆盖率（coverlet）
-dotnet test --collect:"XPlat Code Coverage"
-```
-
----
-
-**基本写法：详细日志**
-`dotnet test --logger <日志器>`
-```bash
-// 输出测试结果到 trx 文件
-dotnet test --logger "trx;LogFileName=test.trx"
-```
-
----
-
-## 解决方案管理
-
-**基本写法：创建解决方案**
-`dotnet new sln -n <方案名>`
-```bash
-// 创建 sln 解决方案
-dotnet new sln -n MySolution
-```
-
----
-
-**基本写法：添加项目到方案**
-`dotnet sln <方案> add <项目>`
-```bash
-// 把项目加入解决方案
-dotnet sln MySolution.sln add src/App/App.csproj
-```
-
----
-
-**基本写法：列出方案项目**
-`dotnet sln <方案> list`
-```bash
-// 列出解决方案中所有项目
-dotnet sln list
-```
-
----
-
-## 工具与缓存
-
-**基本写法：安装全局工具**
-`dotnet tool install -g <工具>`
-```bash
-// 全局安装 dotnet 工具
-dotnet tool install -g dotnet-ef
-```
-
----
-
-**基本写法：更新工具**
-`dotnet tool update -g <工具>`
-```bash
-// 更新全局工具
-dotnet tool update -g dotnet-ef
-```
-
----
-
-**基本写法：列出工具**
-`dotnet tool list -g`
-```bash
-// 列出已安装的全局工具
-dotnet tool list -g
-```
-
----
-
-**基本写法：清理 NuGet 缓存**
-`dotnet nuget locals all --clear`
-```bash
-// 清空本地 NuGet 缓存
-dotnet nuget locals all --clear
-```
-
----
-
-## EF Core 工具
-
-**基本写法：生成迁移**
-`dotnet ef migrations add <迁移名>`
-```bash
-// 添加 EF Core 迁移
-dotnet ef migrations add InitCreate
-```
-
----
-
-**基本写法：更新数据库**
-`dotnet ef database update`
-```bash
-// 应用迁移到数据库
-dotnet ef database update
-```
-
----
-
-**基本写法：根据数据库反向生成**
-`dotnet ef dbcontext scaffold "<连接串>" <提供程序>`
-```bash
-// 数据库优先生成模型
-dotnet ef dbcontext scaffold "Server=.;Db=App" Microsoft.EntityFrameworkCore.SqlServer
-```
-
----
-
-## 其他常用
-
-**基本写法：查看帮助**
-`dotnet <命令> --help`
-```bash
-// 查看命令帮助
-dotnet run --help
-```
-
----
-
-**基本写法：格式化代码**
-`dotnet format [<项目>]`
-```bash
-// 按.editorconfig 格式化代码
-dotnet format
-```
-
----
-
-**基本写法：生成强名称密钥**
-`sn -k <文件>`
-```bash
-// sn 是 .NET SDK 自带的强名称工具（非 dotnet 子命令），
-// 在开发者命令行或 SDK 安装目录中使用
-sn -k key.snk
-```
-
----
-
-## 完整示例：从零到发布的标准工作流
-
-一个典型 .NET 项目的命令行全流程：
-
-```bash
-# 1. 创建解决方案与两个项目
-dotnet new sln -n Shop
-dotnet new classlib -n Shop.Core        # 领域逻辑
-dotnet new console   -n Shop.App        # 入口程序
-
-# 2. 组织进解决方案并建立引用
-dotnet sln Shop.sln add Shop.Core Shop.App
-dotnet add Shop.App reference Shop.Core
-
-# 3. 添加 NuGet 依赖并锁定版本
-dotnet add Shop.App package Newtonsoft.Json --version 13.0.3
-
-# 4. 日常开发：边写边跑（保存自动重启用 watch）
-cd Shop.App && dotnet run
-dotnet watch run                         # 文件变更自动重启
-
-# 5. 质量门禁：测试 + Release 构建
-dotnet test
-dotnet build -c Release
-
-# 6. 发布：自包含单文件（目标机器无需安装 .NET）
-dotnet publish Shop.App -c Release -r win-x64 \
+# 形态二：自包含单文件。运行时打进去，拷给没装 .NET 的机器直接跑
+dotnet publish -c Release -r win-x64 \
     --self-contained true -p:PublishSingleFile=true -o ./publish
+
+# 形态三：原生 AOT。编译成原生代码，启动快、体积可控，但反射受限
+dotnet publish -c Release -r win-x64 -p:PublishAot=true -o ./publish
 ```
 
-`dotnet run` 后即可看到程序输出；`publish` 目录中的 `.exe` 可直接拷贝到任何 Windows x64 机器运行。把 `-r` 换成 `linux-x64`/`osx-arm64` 即可交叉发布到其他平台（RID 列表见微软文档）。
+`-r` 是 RID（运行时标识），决定为哪个平台编译：`win-x64`、`linux-x64`、`osx-arm64` 等，交叉发布就是换这个参数。`-c Release` 切换到优化构建；`-p:PublishTrimmed=true` 可以再裁掉没用到的框架代码减小自包含体积。
 
-## 常见陷阱
+三选一的判断标准：
 
-**`dotnet run` 传参要加双横线**。`dotnet run arg1` 会把 `arg1` 当成 run 命令自己的选项而报错；`dotnet run -- arg1 arg2` 之后的内容才会传给你的程序。
+- 发给**公司内部服务器**（装好了运行时）：形态一，最省事；
+- 发给**没装 .NET 的普通用户**：形态二，几十 MB 起步是正常的代价；
+- 追求**极速启动或最小内存**的 CLI/云函数：形态三，代价是反射和动态加载受限（JSON 序列化必须配源生成，见 [JSON 序列化](/csharp/460-JsonSerialization)）。
 
-**SDK 版本不匹配的隐性失败**。机器上装了多个 SDK 时，默认用最新的；团队协作应提交 `global.json`（`dotnet new globaljson` 生成）把 SDK 版本钉住，避免"我这里能编译、CI 上报错"的环境漂移。
+想手动触发某个 MSBuild 目标时，`dotnet build -t:Publish` 等价于 publish；查看某条命令的全部选项，`dotnet publish --help`。按 `.editorconfig` 统一团队格式：`dotnet format`。
 
-**`-f net8.0` 只指定目标框架**。它决定编译目标与可用 API，不决定 C# 语言版本——语言版本默认跟随目标框架，也可用 `<LangVersion>` 显式覆盖（如让 .NET 8 项目使用 `latest`）。两者要分开理解。
+## 坑点与自检
 
-**`dotnet restore` 现在通常无需手动执行**。`build`/`run`/`test` 内部都会先还原依赖；需要离线构建或排查包冲突时才显式调用，配合 `--no-restore` 跳过重复还原以加速 CI。
+**坑 1：`-f` 与语言版本是两码事。** `dotnet new console -f net10.0` 里的 `-f` 指定目标框架（决定可用 API），C# 语言版本默认跟随框架，但可在 `.csproj` 里用 `<LangVersion>` 覆盖（比如老项目想用新语法）。排查"这个语法为什么用不了"时，两个都要看。
 
-**自包含发布体积大是正常的**。`--self-contained` 会把整个运行时打进去（几十 MB 起步）；想要小体积用框架依赖部署（默认）或叠加 `PublishTrimmed=true` 裁剪、`PublishAot=true` 原生 AOT——但裁剪和 AOT 对反射依赖敏感（序列化要配源生成，见 [JSON 序列化](/csharp/460-JsonSerialization)）。
+**坑 2：SDK 漂移。** 升级机器 SDK 后 CI 突然红了，第一反应查 `global.json` 是否存在且版本合理。
 
-**工具安装的作用域**。`dotnet tool install -g` 装到用户目录（如 dotnet-ef），任何人可用；团队工具应装到项目内（加 `--local` 并提交 `.config/dotnet-tools.json`），让 `dotnet tool restore` 一键复现。
+**坑 3：自包含发布后体积吓人。** 不是 bug，运行时就在里面。要小：框架依赖 + 裁剪 + AOT，逐级换。
 
-## 分层小结
+**坑 4：`sn -k` 不是 dotnet 子命令。** 偶尔在老文档里见到给程序集签强名称的 `sn -k key.snk`，它是 SDK 自带的独立工具，在开发者命令行里直接可用；新项目基本不需要它，知道有这回事即可。
 
-- **记住**：`new`/`run`/`build`/`test`/`publish` 五个主干命令；`sln add` 组织项目；`add package` 装依赖。
-- **理解**：RID 与自包含/框架依赖两种发布模式；SDK 版本钉扎；`watch` 热重启。
-- **应用**：新项目先建 sln 再建项目；CI 中固定 SDK + `--no-restore` 提速；分发给非开发者用自包含单文件。测试命令的深入用法见 [C# 测试工程化](/csharp/340-CSharpTestEngineering)。
+自检——能不看文档回答这些吗：
+
+1. `dotnet run -- --port 8080` 里的双横线删掉会发生什么？
+2. 新同事克隆仓库后，用什么文件 + 哪条命令还原团队工具？
+3. 三种发布形态各自交付给谁？哪个对反射最不友好？
+4. `dotnet clean` 清的是什么？为什么 `bin/`、`obj/` 不进版本库？
+
+## 完整命令链回放
+
+把五步连起来，就是新机器上的标准动作：
+
+```bash
+dotnet --list-sdks && dotnet --version                  # 1. 问机器
+dotnet new globaljson --sdk-version 10.0.100            # 2. 钉版本
+dotnet new sln -n Shop
+dotnet new classlib -n Shop.Core
+dotnet new console -n Shop.App
+dotnet sln Shop.sln add Shop.Core Shop.App              # 3. 搭骨架
+dotnet add Shop.App reference Shop.Core
+dotnet add Shop.App package Newtonsoft.Json --version 13.0.3
+dotnet watch run                                        # 4. 开发循环
+dotnet test
+dotnet publish Shop.App -c Release -r win-x64 \
+    --self-contained true -p:PublishSingleFile=true -o ./publish   # 5. 发布
+```
+
+## 练习
+
+1. 在临时目录里按第二节的命令搭出 Shop 骨架，然后故意先删掉 `dotnet sln add` 那一步直接 `dotnet build`，观察输出差异，解释 sln 在其中的作用。
+2. 写一个读取 `args` 的控制台程序，分别用 `dotnet run --name x` 和 `dotnet run -- --name x` 运行，把两种报错/成功的结果记录下来。
+3. 同一个 console 项目分别用形态一和形态二发布，记录 `publish` 目录大小与目标机器（另一台没装 .NET 的机器或虚拟机）上的运行结果。
+
+## 下一步
+
+- 想系统了解 SDK、运行时、CLR 的关系：[C# 与 .NET](/csharp/250-CSharpDotNet)；
+- 测试命令的工程化用法（覆盖率门禁、CI 集成）：[C# 测试工程化](/csharp/340-CSharpTestEngineering)；
+- AOT 场景下 JSON 序列化为什么必须换源生成：[JSON 序列化](/csharp/460-JsonSerialization)；
+- 性能敏感路径的基准测试：[性能与基准测试](/csharp/400-DotnetPerformanceBenchmarking)。

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub 常见问题排查：权限问题、大文件、换行符、子模块、GPG 签名、Actions 配额。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'github/370-GitHubActionsCICD'
   - 'github/380-ActionsTrigger'
@@ -82,25 +82,28 @@ prerequisites:
 
 **修复**：
 
-1. **使用个人访问令牌（PAT）**：
+1. **首选：用 gh 接管凭据**（2026 年最省事的做法）：
+
+```bash
+ gh auth login
+ # 选 HTTPS 协议后，gh 会注册为 Git 的 credential helper
+ # git push / pull 从此自动认证，无需手动管理令牌
+```
+
+2. **手动方案：使用个人访问令牌（PAT）**：
 
 - 登录 GitHub，进入 **Settings → Developer settings → Personal access tokens → Fine-grained tokens**
 - 创建新令牌，设置适当的权限
-- 使用令牌作为密码进行认证
+- 推送时用令牌代替密码；配合下一条的 credential helper 存储，避免每次输入
 
-2. **配置 Git 凭据缓存**：
+3. **配置 Git 凭据缓存**：
 
 ```bash
  # 缓存凭据 1 小时
  git config --global credential.helper 'cache --timeout=3600'
 ```
 
-3. **更新远程仓库 URL**：
-
-```bash
- # 使用 HTTPS URL 并包含令牌
- git remote set-url origin https://<token>@github.com/username/repo.git
-```
+> 安全红线：不要把令牌直接拼进远程 URL（如 `https://<token>@github.com/...`）。这样令牌会明文写进 `.git/config`，`git remote -v` 一眼可见，还会随截图、分享目录泄露。令牌交给 credential helper（gh 或 manager-core）保管。
 
 ## 3. 大文件问题
 

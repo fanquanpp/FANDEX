@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: ARP 协议原理与 ARP 欺骗攻击：地址解析流程、欺骗原理与防御措施。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/360-WebSocketFrameFormat'
   - 'cs-fundamentals/370-QUIC'
@@ -20,7 +20,7 @@ prerequisites:
 
 - IP 地址与 MAC 地址的分工：IP 负责"端到端寻径"，MAC 负责"同一段内下一跳投递"；
 - 局域网广播：交换机会把广播帧发给同网段所有主机；
-- HTTP 明文传输的含义（HTTPS 见 [HTTPS 握手过程](cs-fundamentals/330-HTTPSHandshake)）。
+- HTTP 明文传输的含义（HTTPS 见 [HTTPS 握手过程](/cs-fundamentals/330-HTTPSHandshake)）。
 
 ## 学习目标
 

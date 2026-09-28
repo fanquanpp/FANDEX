@@ -1,12 +1,12 @@
 ---
-order: 560
+order: 570
 title: 类型安全的事件系统
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: 类型安全事件系统的形式语义、构建器模式、异步事件、反应式扩展与生产级实现
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/460-ConditionalMappedType'
   - 'typescript/310-TypeScriptTypeDeclarationModuleResolution'
@@ -28,7 +28,7 @@ prerequisites: []
 - 掌握「3. 类型推导规则与子类型关系」的核心机制、典型用法与常见陷阱
 - 掌握「4. 同步事件系统的实现」的核心机制、典型用法与常见陷阱
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 

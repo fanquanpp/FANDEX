@@ -1,12 +1,12 @@
 ---
-order: 290
+order: 300
 title: 命名空间与模块
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: TypeScript命名空间、ES模块、CommonJS模块、模块解析策略与声明文件详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/240-ThisTypePolymorphism'
   - 'typescript/250-SymbolsAndUniqueTypes'
@@ -27,7 +27,7 @@ prerequisites: []
 - 掌握「代码示例」的核心机制、典型用法与常见陷阱
 - 掌握「对比分析」的核心机制、典型用法与常见陷阱
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 

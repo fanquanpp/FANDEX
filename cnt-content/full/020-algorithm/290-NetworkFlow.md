@@ -1897,11 +1897,11 @@ flowchart TD
     Start([最大流问题]) --> Q1{是否需最小费用?}
     Q1 -->|是| MCMF[MCMF: SPFA 或 ZKW]
     Q1 -->|否| Q2{图规模?}
-    Q2 -->|< 100 节点| Q3{需强多项式?}
+    Q2 -->|"< 100 节点"| Q3{需强多项式?}
     Q2 -->|≥ 100 节点| Q4{是否单位容量?}
     Q3 -->|否| FF[Ford-Fulkerson]
     Q3 -->|是| EK[Edmonds-Karp]
-    Q4 -->|是| DinicUnit[Dinic O(E√V)]
+    Q4 -->|是| DinicUnit["Dinic O(E√V)"]
     Q4 -->|否| Q5{需最优常数?}
     Q5 -->|是| HLPP[Push-Relabel HLPP]
     Q5 -->|否| DinicStd[Dinic 标准实现]

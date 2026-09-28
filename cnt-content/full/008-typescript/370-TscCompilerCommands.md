@@ -1,12 +1,12 @@
 ---
-order: 370
+order: 380
 title: TypeScript tsc 编译命令速查手册
 module: 'typescript'
 category: 前端技术
 difficulty: beginner
 description: 按场景速查 tsc 的全部高频命令：编译与检查、watch 与增量、工程构建、诊断排查，并区分 tsc 与打包器的职责边界。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/030-TypeScriptOverviewEnvSetup'
   - 'typescript/350-TypeScriptEngineeringConfig'

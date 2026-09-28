@@ -1,12 +1,12 @@
 ---
-order: 210
+order: 220
 title: keyof、typeof 与索引访问类型
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: 三个类型操作符：从值世界提取类型的三把钥匙。
 author: fanquanpp
-updated: '2026-09-23'
+updated: '2026-09-28'
 related:
   - 'typescript/080-BasicTypeSystem'
   - 'typescript/100-InterfaceTypeAlias'

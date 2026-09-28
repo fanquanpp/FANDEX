@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Tailwind CSS v4 新特性时间线：Oxide 引擎、CSS-first 配置、自动内容检测、@tailwindcss/vite 插件、原生 @layer 级联与 @source/@utility/@custom-variant 新语法
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'tailwind/020-InstallConfig'
   - 'tailwind/050-ThemeCustomization'
@@ -252,8 +252,8 @@ v4 的默认调色板重新设计，改用 OKLCH 色彩空间并支持 P3 广色
 | 维度 | v3 调色板 | v4 调色板 |
 | --- | --- | --- |
 | 色彩空间 | RGB | OKLCH |
-| 色阶数量 | 每色相 10 阶（50-900） | 每色相 11 阶（50-950） |
-| 色相覆盖 | 22 个 | 22 个（含新增 olive 等） |
+| 色阶数量 | v3.0 为每色相 10 阶（50-900），后期补齐 950 | 每色相 11 阶（50-950） |
+| 色相覆盖 | 22 个 | 26 个（v4.2 新增 mauve、olive、mist、taupe 四个中性色） |
 | 视觉均匀度 | 部分色阶过渡不均 | 亮度、饱和度过渡均匀 |
 
 **迁移警示**：因为色彩空间改变，同一色阶号（如 `blue-500`）在 v4 下的最终显示颜色与 v3 不同。迁移后视觉观感可能变化，重点页面需逐页核对品牌色。

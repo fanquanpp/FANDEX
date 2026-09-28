@@ -1,12 +1,12 @@
 ---
-order: 790
+order: 830
 title: Python 与计算机视觉
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: OpenCV与图像处理
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/1000-PythonDeepLearning'
   - 'python/1010-PythonAndNLP'

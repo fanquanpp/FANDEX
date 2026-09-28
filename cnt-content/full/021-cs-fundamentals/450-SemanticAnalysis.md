@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译器语义分析：符号表管理、类型检查、作用域与类型转换。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/430-LexicalAnalysis'
   - 'cs-fundamentals/440-GrammarAnalysis'
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- 词法分析产出记号流、语法分析产出语法树（见 [词法分析](cs-fundamentals/430-LexicalAnalysis) 与 [语法分析](cs-fundamentals/440-GrammarAnalysis)）；
+- 词法分析产出记号流、语法分析产出语法树（见 [词法分析](/cs-fundamentals/430-LexicalAnalysis) 与 [语法分析](/cs-fundamentals/440-GrammarAnalysis)）；
 - 树与哈希表的基本操作；
 - 至少一门静态类型语言（C/Java/Go/TypeScript）的变量声明与类型体验。
 
@@ -45,7 +45,7 @@ int x = "hello" + 3;        // 语法上：声明语句，完全合法
 - 这个函数名的参数个数对吗？（签名不匹配）
 - `break` 出现在循环外合法吗？（上下文约束）
 
-语义分析的结果通常是**带类型与引用信息的语法树（AST 标注）**，交给后续生成中间代码（见 [中间代码](cs-fundamentals/460-IntermediateCode)）。它的两大工具：符号表（查"人"）与类型系统（查"话"）。
+语义分析的结果通常是**带类型与引用信息的语法树（AST 标注）**，交给后续生成中间代码（见 [中间代码](/cs-fundamentals/460-IntermediateCode)）。它的两大工具：符号表（查"人"）与类型系统（查"话"）。
 
 ## 2. 语法制导翻译与属性文法
 

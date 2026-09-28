@@ -1,12 +1,12 @@
 ---
-order: 730
+order: 770
 title: Python 项目示例：网页爬虫与数据分析
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 综合运用 requests、BeautifulSoup 与 pandas 的爬虫项目。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/130-ExceptionHandling'
   - 'python/300-FileIOContextManager'

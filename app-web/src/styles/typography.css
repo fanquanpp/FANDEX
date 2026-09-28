@@ -350,18 +350,30 @@ dfn {
   font-weight: var(--font-weight-medium);
 }
 
+/* 公式：KaTeX HTML 输出字号全局统一（覆盖 katex.css 默认 1.21em，
+   与正文保持稳定比例，不再随浏览器数学字体变化） */
 .katex {
-  font-size: 1.1em;
+  font-size: 1.06em;
 }
 
-.katex-display,
-.katex:has(> math[display='block']) {
+.katex-display {
   display: block;
   margin: var(--space-6) 0;
   overflow-x: auto;
   overflow-y: hidden;
   padding: var(--space-2) 0;
   text-align: center;
+}
+
+/* MathML 语义层只在视觉上隐藏（katex.css 已处理，这里兜底防无样式闪烁） */
+.katex-mathml {
+  position: absolute;
+  clip: rect(1px, 1px, 1px, 1px);
+  padding: 0;
+  border: 0;
+  height: 1px;
+  width: 1px;
+  overflow: hidden;
 }
 
 [data-theme='dark'] .katex {

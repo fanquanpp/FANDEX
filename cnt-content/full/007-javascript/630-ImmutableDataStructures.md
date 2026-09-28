@@ -1,12 +1,12 @@
 ---
-order: 600
+order: 620
 title: 不可变数据结构：从 Records & Tuples 到现代方案
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: Records & Tuples 提案撤回的始末与教训，以及冻结、值语义、结构共享等深不可变的现代替代方案。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/200-DeepShallowCopy'
   - 'javascript/210-ObjectStaticMethods'

@@ -1,12 +1,12 @@
 ---
-order: 600
+order: 630
 title: Python 与 Redis
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: Redis缓存与数据结构
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/860-PythonCeleryDistributedTaskQueue'
   - 'python/790-PythonDocker'

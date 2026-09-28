@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 综合布线工程设计、铜缆端接、光纤熔接、配线架安装、理线标识、室外光缆敷设、信息模块端接、施工工艺规范、网络测试与项目组织管理。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'networking/010-NetworkBasicsAndProtocol'
   - 'networking/040-NetworkSystemManagement'
@@ -75,7 +75,7 @@ T568A:
 
 | 线缆类型          | 一端线序 | 另一端线序 | 用途                   |
 | :---------------- | :------- | :--------- | :--------------------- |
-| 直通线(Straight)  | T568B    | T568B      | 主机↔交换机、路由↔交换 |
+| 直通线(Straight)  | T568B    | T568B      | 主机<->交换机、路由<->交换 |
 | 交叉线(Crossover) | T568A    | T568B      | 同类设备直连           |
 | 全反线(Rollover)  | 1→8翻转  | 8→1翻转    | Console 配置线         |
 

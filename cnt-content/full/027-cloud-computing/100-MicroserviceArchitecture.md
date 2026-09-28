@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 微服务架构设计：拆分策略、通信模式、数据管理与服务治理详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cloud-computing/240-CloudCostOptimization'
   - 'cloud-computing/090-TwelveFactorApp'
@@ -68,14 +68,17 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    subgraph O[订单上下文]
-        OS[OrderService] OD[OrderDB]
+    subgraph O["订单上下文"]
+        OS["OrderService"]
+        OD["OrderDB"]
     end
-    subgraph I[库存上下文]
-        IS[InventorySvc] ID[InventoryDB]
+    subgraph I["库存上下文"]
+        IS["InventorySvc"]
+        ID["InventoryDB"]
     end
-    subgraph P[支付上下文]
-        PS[PaymentService] PD[PaymentDB]
+    subgraph P["支付上下文"]
+        PS["PaymentService"]
+        PD["PaymentDB"]
     end
 ```
 

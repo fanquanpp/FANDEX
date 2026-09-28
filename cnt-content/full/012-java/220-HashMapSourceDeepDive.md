@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 数组+链表+红黑树：扩容、扰动与树化的源码级解析。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/210-CollectionFrameworkDetailed'
   - 'java/200-EqualsHashCodeContract'
@@ -24,7 +24,7 @@ prerequisites:
 
 - [集合框架详解](/java/210-CollectionFrameworkDetailed)：List、Set、Map 体系与 HashMap 的对外行为。
 - [equals 与 hashCode 契约](/java/200-EqualsHashCodeContract)：理解"哈希定位 + equals 判等"双闸门的前提。
-- [迭代器与 Iterable](/java/230-JavaIteratorIterable)：阅读 entrySet 遍历实现时会用到。
+- [集合框架详解](/java/210-CollectionFrameworkDetailed)：阅读 entrySet 遍历实现时会用到。
 
 ## 学习目标
 

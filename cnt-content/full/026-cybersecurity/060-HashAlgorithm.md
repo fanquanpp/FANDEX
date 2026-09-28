@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 哈希算法原理：SHA-1/SHA-2/SHA-3/MD5/Bcrypt 等算法详解与应用场景。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/560-IncidentResponse'
   - 'cybersecurity/050-AsymmetricEncryption'
@@ -237,4 +237,4 @@ key = hashlib.pbkdf2_hmac('sha256', password.encode(), salt, 600000, dklen=32)
   可变长度输出），新系统若追求吞吐可选；需要与现有生态对齐时仍以 SHA-2 系最稳。
 - **量子计算影响有限**：Grover 算法将暴力搜索加速平方根量级，等效于把 n 位输出
   的抗性降为 n/2 位——SHA-256 仍有 128 位等效抗性，无需专门迁移；
-  需要迁移的是基于分解/离散对数的公钥算法（见 016 第 6 节）。
+  需要迁移的是基于分解/离散对数的公钥算法（见 050-AsymmetricEncryption 的后量子密码一节）。

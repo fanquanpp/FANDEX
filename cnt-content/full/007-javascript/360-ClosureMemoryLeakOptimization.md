@@ -1,12 +1,12 @@
 ---
-order: 340
+order: 360
 title: 闭包的内存泄露与优化
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: JavaScript 闭包导致的内存泄露原理、形式化建模、检测方法与工程级优化策略，对标 V8 引擎实现与现代前端框架实践。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/380-JavaScriptModular'
   - 'javascript/250-AsyncProgramming'

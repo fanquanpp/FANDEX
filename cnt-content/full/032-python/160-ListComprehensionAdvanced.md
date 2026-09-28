@@ -1,2176 +1,316 @@
 ---
-order: 150
-title: 列表推导式进阶
+order: 160
+title: 列表推导式进阶：把三行循环压成一行
 module: 'python'
 category: 后端技术
 difficulty: intermediate
-description: 列表/字典/集合推导式与生成器表达式
+description: 以音游成绩单清洗为线索，从「for + append」机械改写法讲透列表推导式：过滤与变换、字典与集合推导式、嵌套与海象运算符、生成器表达式省内存，附可读性红线与四类练习。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
-  - 'python/090-VariableConstant'
-  - 'python/070-BasicDataType'
-  - 'python/080-OperatorExpression'
-  - 'python/590-Metaclass'
-prerequisites: []
+  - 'python/140-BuiltinDataStructure'
+  - 'python/150-EnumerateZipBuiltinPairs'
+  - 'python/165-PythonBytecodeInternals'
+  - 'python/170-ComprehensionGenerator'
+  - 'python/130-ExceptionHandling'
+prerequisites:
+  - 'python/140-BuiltinDataStructure'
+  - 'python/150-EnumerateZipBuiltinPairs'
 ---
 
 ## 前置知识
 
-- [协程与 asyncio](/python/660-CoroutineAsyncio)：建议先完成前一篇的学习
+- [内置数据结构](/python/140-BuiltinDataStructure)：会操作列表、字典、集合，知道 append 与 in；
+- [enumerate 与 zip](/python/150-EnumerateZipBuiltinPairs)：见过「遍历同时拿序号」的写法；
+- 基础 for 循环与 if：来自 [控制流](/python/060-ControlFlow)。
+
+本文解决的是品味问题：循环你会写了，但代码里十次有八次在重复同一个套路——「建个空列表，循环，筛选，append」。套路写多了，就该学它的官方简称。
 
 ## 学习目标
 
-- 掌握「摘要」的核心机制、典型用法与常见陷阱
-- 掌握「1. 历史动机与发展脉络」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与原理解析」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例（企业级 production-ready）」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用「三步机械改写法」把任何简单的 for + append 循环改写成列表推导式，也能把推导式读回循环；
+2. 掌握带 if 过滤、if-else 变换两种条件的位置区别——这是推导式最经典的坑；
+3. 会写字典推导式与集合推导式，解决「按规则建映射」「按规则去重」两类高频需求；
+4. 用生成器表达式替代「为了求和 / 求是否存在而临时建的列表」，省掉中间大列表；
+5. 划出可读性红线：什么时候该把推导式退回成普通循环。
 
-## 摘要
+预计 40 到 55 分钟，含 3 组修改实验与 4 道练习。
 
-本文档系统阐述 Python 推导式（comprehension）与生成器表达式（generator expression）的设计哲学、形式语义、底层实现与工程实践。内容覆盖 PEP 202（list comprehension）、PEP 274（dict/set comprehension）、PEP 289（generator expression）以及 PEP 704（推导式内变量作用域修订）等核心提案，从 CPython 字节码层面剖析推导式的执行模型，并对照 Haskell、Scala、Rust 等语言的同源构造。结合 NumPy、Pandas、CPython 标准库等真实案例，给出可运行的企业级 production-ready 代码、性能基准、陷阱分析与最佳实践。
+## 1. 你现在要解决什么问题
 
----
-
-## 1. 历史动机与发展脉络
-
-### 1.1 前史：函数式编程的数学根源
-
-推导式（comprehension）一词最早源自数学集合论中的 ZF 公理（Zermelo-Fraenkel set theory），其记法形如：
-
-$$
-S = \{ x^2 \mid x \in \mathbb{N}, x \bmod 2 = 0 \}
-$$
-
-该记法在 1970 年代由 Burstall 与 Darlington 引入函数式语言 NPL，随后被 Miranda、Haskell、SETL 等语言采纳。Haskell 的列表推导式语法成为现代主流语言的范本：
-
-```haskell
--- Haskell
-squares = [x^2 | x <- [1..10], x `mod` 2 == 0]
-```
-
-### 1.2 Python 早期：循环与 `map`/`filter` 的二元格局
-
-Python 0.9（1991 年 2 月）发布时，构建列表的标准方式是 `for` 循环与 `append`：
+你在给一个音游（比如某虚拟歌手音乐平台的新作）写成绩分析脚本。好友的成绩单长这样——每条记录是「歌名、难度、得分、是否 Full Combo」：
 
 ```python
-# Python 0.9 风格（伪代码）
-squares = []
-for x in range(10):
-    squares.append(x * x)
-```
-
-或者函数式风格：
-
-```python
-squares = list(map(lambda x: x * x, range(10)))
-evens = list(filter(lambda x: x % 2 == 0, range(20)))
-```
-
-`lambda` 表达式由 Amrit Prem 在 1994 年（Python 1.0）加入，但 `lambda` 在 Python 中受限于单行表达式，且与 `map`/`filter` 组合后可读性下降，社区长期呼吁引入 Haskell 风格的推导式语法。
-
-### 1.3 PEP 202：List Comprehension（2000 年）
-
-PEP 202 由 Barry Warsaw 于 2000 年 7 月提交，Python 2.0 正式引入列表推导式。语法设计如下：
-
-```python
-[expression for target in iterable if condition]
-```
-
-关键设计决策：
-
-1. **方括号定界**：与列表字面量一致，明确语义边界
-2. **`for` 在前，`if` 在后**：模仿自然语言"对...取...若..."
-3. **支持多 `for` 子句**：等价于嵌套循环
-4. **支持多 `if` 子句**：等价于 `and` 组合条件
-
-PEP 202 同时规定：推导式在 Python 2 中**泄漏循环变量到外层作用域**，这一行为在 Python 3 中被修正（详见 §4.3）。
-
-### 1.4 PEP 274：Dict/Set Comprehension（2001 年）
-
-PEP 274 由 Barry Warsaw 于 2001 年 10 月提交，但直到 Python 2.7 / 3.0 才落地。语法扩展：
-
-```python
-{key_expr: value_expr for target in iterable if condition}  # dict
-{expr for target in iterable if condition}                  # set
-```
-
-### 1.5 PEP 289：Generator Expression（2002 年）
-
-PEP 289 由 Raymond Hettinger 于 2002 年 1 月提交，Python 2.4 引入生成器表达式。核心动机：
-
-- 列表推导式需先构建完整列表，对大数据集造成内存压力
-- `sum()`、`any()`、`all()`、`dict()` 等内建函数只需逐项迭代，无需完整列表
-
-生成器表达式用圆括号定界，返回 generator 对象而非 list：
-
-```python
-total = sum(x * x for x in range(1000000))  # 不构建百万元素列表
-```
-
-### 1.6 PEP 3104 与 PEP 3110：异常与作用域修订（2006-2007）
-
-Python 3 修订了推导式作用域：
-
-- PEP 3104：引入 `nonlocal` 关键字
-- 推导式在 Python 3 中获得独立作用域，循环变量不再泄漏
-
-```python
-# Python 2
-x = 10
-squares = [x**2 for x in range(3)]
-print(x)  # 输出 2（泄漏！）
-
-# Python 3
-x = 10
-squares = [x**2 for x in range(3)]
-print(x)  # 输出 10（无泄漏）
-```
-
-### 1.7 PEP 704 与异步推导式（PEP 530, 6.x 演进）
-
-PEP 530（Python 3.6）引入异步推导式：
-
-```python
-result = [i async for i in aiter() if i % 2]
-```
-
-PEP 704（Python 3.12+）继续微调推导式行为，例如对 `await` 在推导式中的支持与作用域细节。
-
-### 1.8 PEP 8 与 PEP 579：风格演进
-
-PEP 8 明确建议：
-
-- 简单推导式优先于 `map`/`filter`
-- 推导式过长应拆分为多行或改用循环
-- 生成器表达式优先用于 `sum`/`any`/`all` 等聚合
-
-PEP 579（Python Enhancement Proposal 系列综述）将推导式列为 Python 函数式编程范式的核心元素。
-
-### 1.9 时间线一览
-
-| 年份 | Python 版本 | PEP | 事件 |
-| ---- | ----------- | --- | ---- |
-| 1991 | 0.9 | - | 早期 `for` + `append` 范式 |
-| 1994 | 1.0 | - | 引入 `lambda`、`map`、`filter` |
-| 2000 | 2.0 | PEP 202 | 列表推导式 |
-| 2002 | 2.4 | PEP 289 | 生成器表达式 |
-| 2008 | 2.7 / 3.0 | PEP 274 | dict/set 推导式 |
-| 2015 | 3.6 | PEP 530 | 异步推导式 |
-| 2023 | 3.12 | PEP 709 | 推导式内联优化 |
-| 2024+ | 3.13+ | - | JIT 与推导式性能持续优化 |
-
----
-
-## 2. 形式化定义
-
-### 2.1 EBNF 文法
-
-依据 Python Language Reference §6.2.4 / §6.3，推导式的形式文法定义如下（简化）：
-
-```ebnf
-comprehension ::=  comprehension_for (comp_for | comp_if)*
-comp_for      ::=  ["async"] "for" target_list "in" or_test [comp_iter]
-comp_if       ::=  "if" or_test [comp_iter]
-```
-
-完整的列表推导式文法：
-
-```ebnf
-list_display    ::=  "[" [starred_list | comprehension] "]"
-dict_display    ::=  "{" [key_datum_list | dict_comprehension] "}"
-set_display     ::=  "{" (starred_list | comprehension) "}"
-generator_expr  ::=  "(" expression comp_for ")"
-
-list_comprehension ::=  expression comp_for
-dict_comprehension ::=  expression ":" expression comp_for
-set_comprehension  ::=  expression comp_for
-```
-
-### 2.2 求值语义
-
-设推导式形式为：
-
-$$
-\text{comp} = [\, e \mid x_1 \leftarrow I_1, \dots, x_n \leftarrow I_n, p_1, \dots, p_m \,]
-$$
-
-其中 $e$ 为表达式，$x_i \leftarrow I_i$ 为 `for` 子句，$p_j$ 为 `if` 谓词。其语义定义为：
-
-$$
-\text{comp} = \left[ e[\vec{x} \mapsto \vec{v}] \;\middle|\; \vec{v} \in \prod_{i=1}^{n} I_i, \; \bigwedge_{j=1}^{m} p_j[\vec{x} \mapsto \vec{v}] \right]
-$$
-
-即对每个 `for` 子句产生的笛卡尔积中满足所有 `if` 谓词的组合，应用表达式 $e$ 求值，收集结果。
-
-### 2.3 求值顺序
-
-Python 推导式严格按 **从左到右** 的子句顺序求值，等价于嵌套 `for` 循环：
-
-```python
-# 推导式
-result = [f(x, y) for x in A for y in B if g(x, y)]
-
-# 等价循环
-result = []
-for x in A:
-    for y in B:
-        if g(x, y):
-            result.append(f(x, y))
-```
-
-### 2.4 CPython 实现模型
-
-在 CPython 中，推导式被编译为独立的函数对象（Python 3 中），其字节码等价于：
-
-```python
-def _comprehension_impl(_iter1, _iter2, ...):
-    result = []
-    for x in _iter1:
-        for y in _iter2:
-            if condition:
-                result.append(expression)
-    return result
-```
-
-可通过 `dis` 模块观察：
-
-```python
-import dis
-
-dis.dis(compile("[x**2 for x in range(10) if x % 2 == 0]", "<demo>", "eval"))
-```
-
-输出（节选）：
-
-```
-  1           0 LOAD_CONST               0 (<code object <listcomp> at 0x...>)
-              2 LOAD_CONST               1 ('<listcomp>')
-              4 MAKE_FUNCTION            0
-              6 LOAD_NAME                0 (range)
-              8 LOAD_CONST               2 (10)
-             10 CALL_FUNCTION            1
-             12 GET_ITER
-             14 CALL_FUNCTION            1
-             16 RETURN_VALUE
-```
-
-可以看到推导式被编译为 `<listcomp>` 函数对象，外层只负责调用。
-
-### 2.5 对象协议与迭代器协议
-
-推导式的 `for` 子句依赖迭代器协议（`__iter__` + `__next__`）。任何实现了 `__iter__` 返回 iterator 的对象都可作为可迭代对象。
-
-形式化定义：
-
-$$
-\text{Iterable} = \{ o \mid o.\text{\_\_iter\_\_}() : \text{Iterator} \}
-$$
-
-$$
-\text{Iterator} = \{ o \mid o.\text{\_\_iter\_\_}() = o \land o.\text{\_\_next\_\_}() : T \cup \{\text{StopIteration}\} \}
-$$
-
-### 2.6 生成器表达式的对象模型
-
-生成器表达式返回 `types.GeneratorType`，本质是带有 `gi_frame`、`gi_code`、`gi_yieldfrom` 属性的协程对象。其求值采用 **惰性求值**（lazy evaluation）：
-
-$$
-\text{genexp}(e, \vec{x}, \vec{I}, \vec{p}) = \text{Generator}(\lambda. \; \text{yield } e \text{ for } \vec{x} \text{ in } \vec{I} \text{ if } \vec{p})
-$$
-
-每次调用 `next(g)` 才推进一次迭代并求值 $e$，避免预先构建中间列表。
-
----
-
-## 3. 理论推导与原理解析
-
-### 3.1 时间复杂度分析
-
-设外层迭代长度为 $n$，内层为 $m$，过滤谓词命中率为 $\rho$，则推导式时间复杂度为：
-
-$$
-T(n, m, \rho) = \Theta(n \cdot m \cdot \rho)
-$$
-
-对于单层推导式：
-
-$$
-T(n) = \Theta(n) + \Theta(n) \cdot c_{\text{expr}} = \Theta(n \cdot c_{\text{expr}})
-$$
-
-其中 $c_{\text{expr}}$ 为表达式求值成本。
-
-### 3.2 空间复杂度分析
-
-列表推导式：
-
-$$
-S_{\text{list}} = \Theta(n \cdot \rho \cdot |e|)
-$$
-
-需一次性持有全部结果，$|e|$ 为单个结果对象大小。
-
-生成器表达式：
-
-$$
-S_{\text{genexp}} = \Theta(1) + \text{frame size}
-$$
-
-常数空间，仅保留当前帧与迭代器状态。
-
-### 3.3 作用域规则的形式化
-
-设外层作用域为 $\Gamma$，推导式内部作用域为 $\Gamma'$。在 Python 3+：
-
-$$
-\Gamma' = \Gamma \cup \{\text{loop vars}\}, \quad \text{loop vars} \notin \text{dom}(\Gamma)
-$$
-
-即推导式内部循环变量不污染外层作用域。但 **可读** 外层变量（闭包语义）：
-
-```python
-offset = 100
-result = [x + offset for x in range(5)]  # offset 在闭包中可读
-```
-
-### 3.4 字节码层面的内联优化（PEP 709, Python 3.12）
-
-Python 3.12 之前，推导式始终生成独立函数对象。PEP 709 引入内联优化：对于简单的推导式，编译器将其内联到外层字节码，省去函数调用开销。
-
-实测数据（CPython 3.12 vs 3.11，10 万次循环）：
-
-| 推导式形式 | Python 3.11 (μs) | Python 3.12 (μs) | 加速比 |
-| ---------- | ----------------- | ----------------- | ------ |
-| `[x for x in range(100)]` | 3.2 | 2.1 | 1.52× |
-| `[x**2 for x in range(100) if x % 2]` | 4.8 | 3.4 | 1.41× |
-| `{x: x**2 for x in range(100)}` | 4.5 | 3.1 | 1.45× |
-
-### 3.5 短路求值与惰性链
-
-生成器表达式支持流式管道，与 `itertools` 组合可实现复杂惰性计算：
-
-```python
-from itertools import islice, chain
-
-# 无限斐波那契序列的生成器表达式 + islice 取前 N 项
-def fib():
-    a, b = 0, 1
-    while True:
-        yield a
-        a, b = b, a + b
-
-# 取前 10 项的平方，求和
-total = sum(x**2 for x in islice(fib(), 10))
-# 等价于 0 + 1 + 1 + 4 + 9 + 25 + 64 + 169 + 441 + 1156 = 1870
-```
-
-数学表达：
-
-$$
-\text{total} = \sum_{i=0}^{9} F_i^2 = \sum_{i=0}^{9} F_i \cdot F_i = F_{10} \cdot F_{9} = 55 \times 34 = 1870
-$$
-
-该等式由 Catalan 恒等式给出：
-
-$$
-\sum_{i=0}^{n} F_i^2 = F_n \cdot F_{n+1}
-$$
-
-### 3.6 笛卡尔积与嵌套推导式
-
-嵌套 `for` 子句实现笛卡尔积：
-
-$$
-A \times B = \{(a, b) \mid a \in A, b \in B\}
-$$
-
-```python
-A = [1, 2, 3]
-B = ['a', 'b']
-product = [(a, b) for a in A for b in B]
-# [(1,'a'), (1,'b'), (2,'a'), (2,'b'), (3,'a'), (3,'b')]
-```
-
-### 3.7 矩阵转置的形式化
-
-给定矩阵 $M \in \mathbb{R}^{m \times n}$，其转置 $M^\top \in \mathbb{R}^{n \times m}$ 定义为：
-
-$$
-M^\top_{j,i} = M_{i,j}, \quad \forall i \in [0, m), j \in [0, n)
-$$
-
-用嵌套推导式实现：
-
-```python
-def transpose(matrix: list[list[float]]) -> list[list[float]]:
-    """矩阵转置"""
-    return [[row[j] for row in matrix] for j in range(len(matrix[0]))]
-
-M = [[1, 2, 3], [4, 5, 6]]
-assert transpose(M) == [[1, 4], [2, 5], [3, 6]]
-```
-
----
-
-## 4. 代码示例（企业级 production-ready）
-
-### 4.1 项目配置：`pyproject.toml`
-
-```toml
-[project]
-name = "comprehension-demo"
-version = "0.1.0"
-description = "Production-ready list comprehension patterns"
-requires-python = ">=3.11"
-authors = [{name = "FANDEX Team"}]
-
-dependencies = [
-    "pydantic>=2.5",
-    "numpy>=1.26",
-    "pandas>=2.1",
-    "polars>=0.20",
+scores = [
+    {"song": "Melt", "diff": "Master", "score": 1012000, "fc": True},
+    {"song": "Melt", "diff": "Hard", "score": 988000, "fc": True},
+    {"song": "Ghost Rule", "diff": "Master", "score": 994500, "fc": False},
+    {"song": "Rolling Girl", "diff": "Master", "score": 1009000, "fc": True},
+    {"song": "Rolling Girl", "diff": "Easy", "score": 610000, "fc": False},
 ]
-
-[project.optional-dependencies]
-dev = [
-    "pytest>=7.4",
-    "pytest-benchmark>=4.0",
-    "hypothesis>=6.90",
-    "mypy>=1.7",
-    "ruff>=0.1.6",
-]
-
-[tool.ruff]
-line-length = 100
-target-version = "py311"
-select = ["E", "F", "I", "N", "UP", "B", "C4", "SIM"]
-
-[tool.ruff.lint.per-file-ignores]
-"tests/*" = ["S101"]
-
-[tool.mypy]
-python_version = "3.11"
-strict = true
-warn_return_any = true
-disallow_untyped_defs = true
-
-[tool.pytest.ini_options]
-addopts = "-ra --strict-markers --benchmark-columns=min,mean,median,max"
-testpaths = ["tests"]
 ```
 
-### 4.2 基础推导式：4 种形式
+你想要四个东西：满分线以上的歌名列表、每首歌在 Master 难度的最高分映射、打出过 FC 的歌名集合（去重）、以及「有没有任何一关满分」这个 yes/no 问题。
+
+用你已经会的写法，每个需求都是同一个模子：
 
 ```python
-"""基础推导式：list / dict / set / generator。
+full_scores = []
+for s in scores:
+    if s["score"] >= 1009000:
+        full_scores.append(s["song"])
 
-Python 3.11+
-"""
-from __future__ import annotations
+best_master = {}
+for s in scores:
+    if s["diff"] == "Master" and s["score"] > best_master.get(s["song"], 0):
+        best_master[s["song"]] = s["score"]
 
-# 1. 列表推导式
-squares: list[int] = [x**2 for x in range(10)]
-evens: list[int] = [x for x in range(20) if x % 2 == 0]
-
-# 2. 字典推导式：单词长度映射
-word_len: dict[str, int] = {w: len(w) for w in ["hello", "world", "python"]}
-
-# 3. 集合推导式：去重模 5
-unique_mod5: set[int] = {x % 5 for x in range(20)}
-
-# 4. 生成器表达式：惰性求值
-total_squares: int = sum(x**2 for x in range(1_000_000))  # 不构建百万列表
-
-print(f"squares[:5] = {squares[:5]}")
-print(f"word_len = {word_len}")
-print(f"unique_mod5 = {sorted(unique_mod5)}")
-print(f"total_squares = {total_squares}")
+fc_songs = set()
+for s in scores:
+    if s["fc"]:
+        fc_songs.add(s["song"])
 ```
 
-### 4.3 嵌套推导式：矩阵扁平化与重建
+能跑，但你发现自己写了三遍「建容器、循环、if、塞进去」。列表推导式就是让这个模子消失的语法。学完本文，上面三段各自变成一行。
+
+## 2. 先不要看解释，先试试看
+
+打开 REPL（终端敲 `python`），逐行输入：
 
 ```python
-"""嵌套推导式：矩阵扁平化与重建。
-
-Python 3.11+
-"""
-from __future__ import annotations
-
-def flatten(matrix: list[list[int]]) -> list[int]:
-    """二维矩阵扁平化为一维列表。
-
-    Args:
-        matrix: 二维整数列表
-
-    Returns:
-        一维扁平化列表
-
-    Example:
-        >>> flatten([[1, 2], [3, 4]])
-        [1, 2, 3, 4]
-    """
-    return [x for row in matrix for x in row]
-
-def reshape_to_matrix(flat: list[int], cols: int) -> list[list[int]]:
-    """一维列表按指定列数重塑为二维矩阵。
-
-    Args:
-        flat: 一维列表
-        cols: 每行元素数
-
-    Returns:
-        二维矩阵
-
-    Raises:
-        ValueError: 当 cols 不能整除 len(flat) 时
-    """
-    if len(flat) % cols != 0:
-        raise ValueError(f"长度 {len(flat)} 不能被 cols={cols} 整除")
-    return [flat[i : i + cols] for i in range(0, len(flat), cols)]
-
-if __name__ == "__main__":
-    matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-    flat = flatten(matrix)
-    print(f"扁平化: {flat}")
-    restored = reshape_to_matrix(flat, 3)
-    print(f"重建: {restored}")
-    assert restored == matrix
+>>> scores = ["Melt", "Ghost Rule", "Rolling Girl", "Tell Your World"]
+>>> upper = [name.upper() for name in scores]
+>>> upper
+['MELT', 'GHOST RULE', 'ROLLING GIRL', 'TELL YOUR WORLD']
 ```
 
-### 4.4 多条件过滤与多重赋值
+一行干完了「建列表、循环、变换、收结果」四件事。读法是从左往右的英语语序：「取 `name` 变大写，对 scores 里的每个 name」。先用这个手感往下走，原理第 3 节讲。
+
+## 3. 三步机械改写法
+
+任何「循环 + append」都能按固定步骤改写。拿第 1 节的第一个需求演示：
 
 ```python
-"""多重 for + 多重 if + 解构赋值。
-
-Python 3.11+
-"""
-from __future__ import annotations
-
-# 元组解构
-points: list[tuple[int, int]] = [(1, 2), (3, 4), (5, 6)]
-doubled: list[tuple[int, int]] = [(2 * x, 2 * y) for x, y in points]
-
-# 字典项解构
-user_scores: dict[str, int] = {"alice": 90, "bob": 75, "carol": 88}
-high_performers: dict[str, int] = {
-    name: score for name, score in user_scores.items() if score >= 85
-}
-
-# 多 if 组合（等价于 and）
-numbers = range(100)
-result = [
-    n
-    for n in numbers
-    if n % 2 == 0  # 偶数
-    if n % 3 == 0  # 同时被 3 整除
-    if n > 10      # 大于 10
-]
-# 等价于 [n for n in numbers if n % 2 == 0 and n % 3 == 0 and n > 10]
-# 结果：[12, 18, 24, ..., 96]
-
-print(f"high_performers = {high_performers}")
-print(f"result[:5] = {result[:5]}")
+# 原始循环
+full_scores = []
+for s in scores:
+    if s["score"] >= 1009000:
+        full_scores.append(s["song"])
 ```
 
-### 4.5 与 `zip`、`enumerate` 组合
+- 第一步，找到**最后塞进列表的表达式**：`s["song"]`——它将成为推导式的开头；
+- 第二步，找到**循环谁**：`for s in scores`——原样搬到表达式后面；
+- 第三步，找到**剩余的 if 条件**：`s["score"] >= 1009000`——放在最末尾。
 
 ```python
-"""推导式与 zip / enumerate 组合。
-
-Python 3.11+
-"""
-from __future__ import annotations
-
-# zip + 推导式：并行迭代
-names = ["alice", "bob", "carol"]
-ages = [25, 30, 35]
-users: list[dict[str, int | str]] = [
-    {"name": n, "age": a} for n, a in zip(names, ages)
-]
-
-# enumerate + 推导式：带索引
-indexed: list[tuple[int, str]] = [(i, name) for i, name in enumerate(names, start=1)]
-
-# 反转字典
-original = {"a": 1, "b": 2, "c": 3}
-reversed_dict: dict[int, str] = {v: k for k, v in original.items()}
-
-print(f"users = {users}")
-print(f"indexed = {indexed}")
-print(f"reversed_dict = {reversed_dict}")
+full_scores = [s["song"] for s in scores if s["score"] >= 1009000]
 ```
 
-### 4.6 生成器管道：流式数据处理
+反过来读也一样：看到推导式，先找 `for`，再找末尾 `if`，最后看开头表达式，就能复原成循环。**读不出来的推导式就是坏推导式**——这是后面可读性一节的判断基准。
+
+修改实验一：把第 1 节收集 `fc_songs` 的循环按三步法改写成集合推导式（提示：把 `[]` 换成 `{}`，append 换成 add 的角色由语法自动承担）。对照答案：`fc_songs = {s["song"] for s in scores if s["fc"]}`。
+
+## 4. 两种条件，位置天差地别
+
+推导式里 if 能出现在两个位置，含义完全不同，这是新手第一大坑。
+
+**末尾的 if 是过滤器**：不满足的元素直接跳过，输出数量可能变少。
 
 ```python
-"""生成器表达式管道：流式处理大日志文件。
-
-模拟处理 1000 万条日志记录，零内存膨胀。
-Python 3.11+
-"""
-from __future__ import annotations
-
-import json
-import random
-from pathlib import Path
-from typing import Iterator
-
-def generate_logs(path: Path, n: int = 1_000_000) -> None:
-    """生成 n 条模拟日志到 path。"""
-    levels = ("INFO", "WARN", "ERROR", "DEBUG")
-    with path.open("w", encoding="utf-8") as f:
-        for _ in range(n):
-            record = {
-                "level": random.choices(levels, weights=[60, 20, 10, 10])[0],
-                "msg": "operation completed",
-                "duration_ms": random.randint(1, 500),
-            }
-            f.write(json.dumps(record) + "\n")
-
-def parse_logs(path: Path) -> Iterator[dict[str, object]]:
-    """逐行解析日志文件，返回生成器。"""
-    with path.open(encoding="utf-8") as f:
-        for line in f:
-            yield json.loads(line)
-
-def analyze_logs(path: Path) -> dict[str, float]:
-    """流式分析日志：计算各级别平均耗时。
-
-    采用生成器管道，避免构建完整列表。
-    """
-    logs = parse_logs(path)
-
-    # 生成器管道：filter -> map -> aggregate
-    errors = (log for log in logs if log["level"] == "ERROR")
-    durations = (log["duration_ms"] for log in errors)  # type: ignore[index]
-
-    count = 0
-    total = 0.0
-    for d in durations:
-        total += d  # type: ignore[operator]
-        count += 1
-
-    return {"error_count": count, "avg_duration_ms": total / count if count else 0.0}
-
-if __name__ == "__main__":
-    log_path = Path("sample.log")
-    if not log_path.exists():
-        generate_logs(log_path, n=100_000)
-    stats = analyze_logs(log_path)
-    print(f"统计: {stats}")
+masters = [s["song"] for s in scores if s["diff"] == "Master"]
+# 只留下 Master 难度的记录
 ```
 
-### 4.7 与 `itertools` 组合：复杂数据流
+**开头的 if-else 是变换器**：每个元素都必须产出一个结果，只是值不同，数量不变。
 
 ```python
-"""推导式 + itertools：复杂数据流处理。
-
-Python 3.11+
-"""
-from __future__ import annotations
-
-from itertools import chain, groupby, islice, starmap
-
-# 1. 链接多个生成器表达式
-def concatenated_squares(*ranges: range) -> list[int]:
-    """对多个 range 的平方进行链接。"""
-    squared_iters = (x**2 for r in ranges for x in r)
-    return list(squared_iters)
-
-# 2. groupby + 推导式：按首字符分组
-def group_by_first_letter(words: list[str]) -> dict[str, list[str]]:
-    """按首字母分组。"""
-    sorted_words = sorted(words, key=lambda w: w[0].lower())
-    return {
-        key: list(group)
-        for key, group in groupby(sorted_words, key=lambda w: w[0].lower())
-    }
-
-# 3. starmap + 推导式：对参数元组应用函数
-def compute_distances(points: list[tuple[float, float]]) -> list[float]:
-    """计算二维点到原点的距离。"""
-    import math
-
-    return list(starmap(lambda x, y: math.hypot(x, y), points))
-
-if __name__ == "__main__":
-    print(concatenated_squares(range(3), range(3, 5)))
-    print(group_by_first_letter(["apple", "banana", "avocado", "blueberry", "cherry"]))
-    print(compute_distances([(3, 4), (5, 12), (8, 15)]))
+labels = [s["song"] + "(满分线)" if s["score"] >= 1009000 else s["song"] for s in scores]
 ```
 
-### 4.8 异步推导式（PEP 530）
+记法：**过滤用没有 else 的 if，放最后；变换用带 else 的 if-else，放最前**。带 else 的 if 写到末尾是语法错误，因为末尾位置只认「过滤」语义。两者还可以组合：先末尾过滤、再开头变换——从左往右读正好是「取什么，从哪取，留哪些」。
+
+## 5. 字典与集合推导式：另外两个模子
+
+第 1 节的第二个需求（每首歌 Master 最高分）用字典推导式更顺：
 
 ```python
-"""异步推导式：async for。
-
-Python 3.11+
-"""
-from __future__ import annotations
-
-import asyncio
-from typing import AsyncIterator
-
-async def async_range(n: int) -> AsyncIterator[int]:
-    """异步范围迭代器。"""
-    for i in range(n):
-        await asyncio.sleep(0.001)  # 模拟 IO 等待
-        yield i
-
-async def main() -> None:
-    # 异步列表推导式
-    squares = [x**2 async for x in async_range(10) if x % 2 == 0]
-    print(f"async squares: {squares}")
-
-    # 异步生成器表达式
-    total = sum(x async for x in async_range(100))
-    print(f"async total: {total}")
-
-if __name__ == "__main__":
-    asyncio.run(main())
+best_master: dict[str, int] = {}
+for s in scores:
+    if s["diff"] == "Master":
+        best_master[s["song"]] = max(best_master.get(s["song"], 0), s["score"])
 ```
 
-### 4.9 数据类与 Pydantic 集成
+这类「边遍历边比较」的逻辑推导式写不了，老实写循环。但如果数据里每首歌 Master 只有一条记录，映射就是纯变换：
 
 ```python
-"""推导式 + Pydantic：批量数据建模。
-
-Python 3.11+
-"""
-from __future__ import annotations
-
-from pydantic import BaseModel, Field
-
-class User(BaseModel):
-    """用户模型。"""
-
-    id: int
-    name: str
-    age: int = Field(ge=0, le=150)
-
-# 从原始字典批量构造 Pydantic 模型
-raw_users = [
-    {"id": 1, "name": "alice", "age": 25},
-    {"id": 2, "name": "bob", "age": 30},
-    {"id": 3, "name": "carol", "age": 35},
-]
-
-users: list[User] = [User(**raw) for raw in raw_users]
-
-# 过滤成年用户
-adults: list[User] = [u for u in users if u.age >= 30]
-
-# 提取字段映射
-name_to_id: dict[str, int] = {u.name: u.id for u in users}
-
-print(f"users count: {len(users)}")
-print(f"adults: {[u.name for u in adults]}")
-print(f"name_to_id: {name_to_id}")
+best_master = {s["song"]: s["score"] for s in scores if s["diff"] == "Master"}
+# {键表达式: 值表达式 for ... if 过滤}
 ```
 
-### 4.10 类型注解与静态检查
+字典推导式的高频用途还有**反转映射**和**按规则换值**：
 
 ```python
-"""类型注解的推导式：配合 mypy --strict。
-
-Python 3.11+
-"""
-from __future__ import annotations
-
-from typing import TypeVar
-
-T = TypeVar("T")
-
-def deduplicate_preserve_order(items: list[T]) -> list[T]:
-    """去重并保留首次出现顺序。
-
-    Args:
-        items: 输入列表
-
-    Returns:
-        去重后的列表
-    """
-    seen: set[T] = set()
-    return [x for x in items if not (x in seen or seen.add(x))]
-
-def chunked(items: list[T], size: int) -> list[list[T]]:
-    """按 size 切分列表。"""
-    if size <= 0:
-        raise ValueError("size 必须为正整数")
-    return [items[i : i + size] for i in range(0, len(items), size)]
-
-if __name__ == "__main__":
-    print(deduplicate_preserve_order([1, 2, 2, 3, 3, 3, 4]))
-    print(chunked(list(range(10)), 3))
+diff_levels = {"Easy": 1, "Hard": 2, "Master": 3}
+rank_of = {name: i for i, name in enumerate(diff_levels)}   # 键值互换
 ```
 
----
+集合推导式（第 2 节实验已经见过）的核心价值是**顺路去重**：`{s["song"] for s in scores}` 直接得到出现过的歌名集合，不用先建列表再 `set()`。
 
-## 5. 对比分析
+三个推导式共用同一个语法骨架，只是容器的括号和「产出物」不同：
 
-### 5.1 跨语言对照表
+| 写法 | 括号 | 产出物 | 典型场景 |
+| --- | --- | --- | --- |
+| `[x for x in xs]` | 方括号 | 列表 | 变换 / 过滤出一批值 |
+| `{k: v for ...}` | 花括号带冒号 | 字典 | 建映射、反转映射 |
+| `{x for ...}` | 花括号 | 集合 | 收集并去重 |
+| `(x for ...)` | 圆括号 | 生成器 | 喂给 sum / any / all，不建列表 |
 
-| 语言 | 列表构造语法 | 惰性变体 | 内置聚合 | 备注 |
-| ---- | ----------- | -------- | -------- | ---- |
-| Python | `[e for x in xs if p]` | `(e for x in xs if p)` | `sum/any/all` | PEP 202/274/289 |
-| Haskell | `[e \| x <- xs, p]` | `e \| x <- xs, p`（list monad） | `sum/and/or` | ZF 记法鼻祖 |
-| Scala | `for (x <- xs if p) yield e` | `for { x <- xs if p } yield e`（LazyList） | `.sum/.forall` | for-comprehension |
-| Rust | `xs.iter().filter(\|&x\| p).map(\|&x\| e).collect()` | `xs.iter().filter(...).map(...)` | `.sum()` | 迭代器适配器 |
-| JavaScript | `xs.filter(x => p).map(x => e)` | 无内置惰性 | `reduce` | ES5+ 数组方法 |
-| Ruby | `xs.select { \|x\| p }.map { \|x\| e }` | `xs.lazy.select { }.map { }` | `.sum/.all?` | Enumerable |
-| C# (LINQ) | `from x in xs where p select e` | `xs.Where(...).Select(...)` (IQueryable) | `.Sum()` | 查询表达式 |
-| Java (Stream) | `xs.stream().filter(...).map(...).toList()` | `xs.stream()...` | `.reduce` | Java 8+ |
+## 6. 第四种：不想建列表时，用圆括号
 
-### 5.2 性能与可读性对比
-
-| 维度 | Python 推导式 | `map`/`filter` | `for` 循环 | Rust 迭代器 |
-| ---- | ------------- | --------------- | ---------- | ----------- |
-| 可读性（简单场景） | 高 | 中 | 中 | 中 |
-| 可读性（复杂场景） | 低 | 低 | 高 | 中 |
-| 性能（CPython） | 最快 | 中 | 慢 | 编译期优化 |
-| 性能（PyPy） | JIT 优化 | JIT 优化 | JIT 优化 | N/A |
-| 内存（list comp） | O(n) | O(n) | O(n) | O(1)（迭代器） |
-| 内存（genexp） | O(1) | O(1) | O(1) | O(1) |
-| 类型推断 | 弱（动态） | 弱 | 弱 | 强 |
-
-### 5.3 Rust 迭代器对比
-
-Rust 的迭代器适配器与 Python 生成器表达式在概念上等价，但 Rust 在编译期进行零成本抽象：
-
-```rust
-// Rust 等价实现
-let squares: Vec<i32> = (0..10)
-    .map(|x| x * x)
-    .filter(|&x| x % 2 == 0)
-    .collect();
-
-// 等价 Python
-squares = [x * x for x in range(10) if (x * x) % 2 == 0]
-```
-
-关键差异：
-
-1. **零成本抽象**：Rust 迭代器在 release 模式下编译为等价的 `for` 循环，无运行时开销
-2. **强类型推断**：Rust 编译器静态推断元素类型，Python 在运行时确定
-3. **所有权语义**：Rust 迭代器明确区分借用与所有权转移，Python 无此概念
-
-### 5.4 Haskell 列表单子对比
-
-Haskell 的列表推导式基于 list monad：
-
-```haskell
--- Haskell
-squares = [x^2 | x <- [0..9], even x]
-
--- 等价 do 记法
-squares' = do
-  x <- [0..9]
-  if even x then return (x^2) else []
-```
-
-Python 推导式与 Haskell 在语法上几乎一一对应，但：
-
-- Haskell 是 **纯函数式** + 惰性求值，列表推导式本身惰性
-- Python 列表推导式严格求值，生成器表达式才惰性
-
----
-
-## 6. 常见陷阱与最佳实践
-
-### 6.1 陷阱 1：可变默认参数与闭包
+第四个需求「有没有任何一关满分」只需要一个 yes / no。用列表推导式也能答：
 
 ```python
-# 反例：闭包捕获可变默认
-funcs = [lambda: i for i in range(3)]
-# 期望 [0, 1, 2]，实际 [2, 2, 2]
-print([f() for f in funcs])  # [2, 2, 2]
-
-# 修复：默认参数绑定当前值
-funcs = [lambda i=i: i for i in range(3)]
-print([f() for f in funcs])  # [0, 1, 2]
+any([s["score"] >= 1009000 for s in scores])   # True
 ```
 
-### 6.2 陷阱 2：副作用与外部状态
+但它有个浪费：为了一个布尔值，先把**所有**记录的比较结果存成了一个完整列表。把方括号换成圆括号——生成器表达式——结果逐个产出、随用随取，不占中间内存：
 
 ```python
-# 反例：在推导式中修改外部状态
-counter = 0
-result = [counter := counter + 1 for _ in range(5)]  # PEP 572 海象运算符
-# 可读性差，违反函数式原则
-
-# 正例：使用 enumerate
-result = list(range(1, 6))
+any(s["score"] >= 1009000 for s in scores)     # True，没有中间列表
 ```
 
-### 6.3 陷阱 3：嵌套过深导致可读性下降
+注意这里连圆括号都省了：生成器表达式作为函数唯一参数时，外层括号可以借用函数的。同类高频搭档：
 
 ```python
-# 反例：三层嵌套
-result = [
-    f(a, b, c)
-    for a in A
-    for b in B
-    if condition1(a, b)
-    for c in C
-    if condition2(a, b, c)
-]
-
-# 正例：拆分为显式循环
-result = []
-for a in A:
-    for b in B:
-        if not condition1(a, b):
-            continue
-        for c in C:
-            if condition2(a, b, c):
-                result.append(f(a, b, c))
+total = sum(s["score"] for s in scores)                 # 总分
+all_fc = all(s["fc"] for s in scores)                   # 是否全部 FC
+best = max(scores, key=lambda s: s["score"])            # 顺手认识一下 max 的 key
 ```
 
-### 6.4 陷阱 4：生成器表达式只能迭代一次
+数据量小的时候两者性能差别可以忽略；数据到十万行级别（日志、导出文件），差别就是「秒开」和「卡一下」。习惯从现在养起：**只为了 sum / any / all / max 这类一次性消费建的东西，用圆括号**。
 
-```python
-gen = (x**2 for x in range(5))
-print(list(gen))  # [0, 1, 4, 9, 16]
-print(list(gen))  # [] — 已耗尽！
-
-# 修复：如需多次迭代，转为列表或重新生成
-gen_factory = lambda: (x**2 for x in range(5))
-print(list(gen_factory()))
-print(list(gen_factory()))
-```
-
-### 6.5 陷阱 5：变量遮蔽
-
-```python
-# 反例：循环变量遮蔽外层
-x = 100
-result = [x for x in range(3)]  # x 在推导式内是新变量
-print(x)  # Python 3: 100（无泄漏）
-# 但若推导式内引用了外层 x 的语义，会出错
-```
-
-### 6.6 陷阱 6：大列表内存膨胀
-
-```python
-# 反例：构建千万元素列表求和
-total = sum([x**2 for x in range(10_000_000)])  # 占用 ~80MB 内存
-
-# 正例：使用生成器表达式
-total = sum(x**2 for x in range(10_000_000))  # 几乎零内存
-```
-
-### 6.7 陷阱 7：异常处理缺失
-
-```python
-# 反例：异常会终止整个推导式
-data = ["1", "2", "abc", "4"]
-# result = [int(x) for x in data]  # ValueError
-
-# 正例：使用辅助函数吞掉异常
-def safe_int(s: str) -> int | None:
-    try:
-        return int(s)
-    except ValueError:
-        return None
-
-result = [n for n in (safe_int(x) for x in data) if n is not None]
-print(result)  # [1, 2, 4]
-```
-
-### 6.8 陷阱 8：与字典推导式混淆
-
-```python
-# 反例：误用冒号
-# d = {x: for x in range(5)}  # SyntaxError
-
-# 正例：dict 推导式必须有 key: value
-d = {x: x**2 for x in range(5)}
-print(d)  # {0: 0, 1: 1, 2: 4, 3: 9, 4: 16}
-```
-
-### 6.9 陷阱 9：tuple 推导式不存在
-
-```python
-# 反例：圆括号会被解释为生成器表达式
-t = (x for x in range(5))  # 这是 generator，不是 tuple
-print(type(t))  # <class 'generator'>
-
-# 正例：用 tuple() 转换
-t = tuple(x for x in range(5))
-print(type(t), t)  # <class 'tuple'> (0, 1, 2, 3, 4)
-```
-
-### 6.10 陷阱 10：推导式内 await 限制
-
-```python
-# 反例：普通推导式内不能使用 await
-# result = [await f(x) for x in items]  # SyntaxError（Python < 3.6）
-
-# 正例：使用 async 推导式（Python 3.6+）
-# result = [x async for x in aiter() if await pred(x)]
-```
-
-### 6.11 最佳实践清单
-
-1. **优先用生成器表达式**处理大集合，避免内存膨胀
-2. **推导式不超过两层嵌套**，超过则改用显式循环
-3. **不在推导式中使用副作用**（赋值、print、IO）
-4. **类型注解必加**，配合 mypy 静态检查
-5. **测试覆盖**：使用 hypothesis 进行属性测试
-6. **性能基准**：用 pytest-benchmark 量化推导式 vs 循环差异
-7. **可读性优先**：超过 80 字符的推导式应折行或重构
-
----
-
-## 7. 工程实践
-
-### 7.1 构建与打包
+修改实验二：用 `python -m timeit` 分别测列表版与生成器版求和，体会「省掉中间列表」在量级上来后的意义：
 
 ```bash
-# 创建虚拟环境
-python -m venv .venv
-.venv\Scripts\activate  # Windows
-# source .venv/bin/activate  # Linux/macOS
-
-# 安装依赖
-pip install -e ".[dev]"
-
-# 运行测试
-pytest
-
-# 性能基准
-pytest tests/test_benchmark.py --benchmark-only
+python -m timeit -s "scores=[[i, i] for i in range(1000000)]" "sum(x[0] for x in scores)"
+python -m timeit -s "scores=[[i, i] for i in range(1000000)]" "sum([x[0] for x in scores])"
 ```
 
-### 7.2 虚拟环境与依赖锁定
+## 7. 嵌套、海象与作用域
 
-```bash
-# 使用 uv（推荐，10x 速度）
-uv venv
-uv pip install -e ".[dev]"
-
-# 锁定依赖
-uv pip compile pyproject.toml -o requirements.txt
-uv pip sync requirements.txt
-```
-
-### 7.3 性能基准测试
+**嵌套推导式**最典型的场景是矩阵转置。先看循环版，再看推导式：
 
 ```python
-"""pytest-benchmark：推导式 vs 循环 vs map/filter。
-
-运行: pytest tests/test_benchmark.py --benchmark-only
-Python 3.11+
-"""
-from __future__ import annotations
-
-import pytest
-
-def squares_comprehension(n: int) -> list[int]:
-    """列表推导式。"""
-    return [x**2 for x in range(n)]
-
-def squares_for_loop(n: int) -> list[int]:
-    """显式 for 循环。"""
-    result = []
-    for x in range(n):
-        result.append(x**2)
-    return result
-
-def squares_map_lambda(n: int) -> list[int]:
-    """map + lambda。"""
-    return list(map(lambda x: x**2, range(n)))
-
-@pytest.mark.parametrize("n", [100, 1000, 10000])
-@pytest.mark.benchmark
-def test_benchmark_squares(benchmark: pytest.Funcitem, n: int) -> None:
-    """基准测试。"""
-    result = benchmark(squares_comprehension, n)
-    assert len(result) == n
-```
-
-### 7.4 属性测试（Hypothesis）
-
-```python
-"""Hypothesis 属性测试：推导式等价性。
-
-Python 3.11+
-"""
-from __future__ import annotations
-
-from hypothesis import given, strategies as st
-
-def flatten_comp(matrix: list[list[int]]) -> list[int]:
-    return [x for row in matrix for x in row]
-
-def flatten_loop(matrix: list[list[int]]) -> list[int]:
-    result = []
-    for row in matrix:
-        for x in row:
-            result.append(x)
-    return result
-
-@given(st.lists(st.lists(st.integers(min_value=0, max_value=100), min_size=0, max_size=10), min_size=0, max_size=10))
-def test_flatten_equivalence(matrix: list[list[int]]) -> None:
-    """属性：推导式与循环结果相等。"""
-    assert flatten_comp(matrix) == flatten_loop(matrix)
-```
-
-### 7.5 调试技巧
-
-```python
-"""调试推导式的技巧。
-
-Python 3.11+
-"""
-from __future__ import annotations
-
-import dis
-import sys
-
-def inspect_comprehension() -> None:
-    """反汇编推导式字节码。"""
-    code = compile("[x**2 for x in range(10) if x % 2 == 0]", "<demo>", "eval")
-    dis.dis(code)
-    print(f"co_consts: {code.co_consts}")
-    print(f"co_names: {code.co_names}")
-
-def debug_with_intermediate() -> None:
-    """通过中间变量调试推导式。"""
-    data = [1, 2, 3, 4, 5]
-
-    # 反例：无法在推导式内部 print
-    # result = [print(f"processing {x}") or x**2 for x in data]
-
-    # 正例：拆分为循环调试
-    result = []
-    for x in data:
-        intermediate = x**2
-        # print(f"x={x}, square={intermediate}")  # 调试输出
-        result.append(intermediate)
-
-if __name__ == "__main__":
-    inspect_comprehension()
-```
-
-### 7.6 静态类型检查配置
-
-```toml
-# mypy.ini
-[mypy]
-python_version = 3.11
-strict = true
-warn_return_any = true
-disallow_untyped_defs = true
-disallow_any_generics = true
-check_untyped_defs = true
-
-# 推导式相关：确保类型推断正确
-[mypy-tests.*]
-disallow_untyped_defs = false
-```
-
-### 7.7 CI/CD 配置（GitHub Actions）
-
-```yaml
-# .github/workflows/ci.yml
-name: CI
-on: [push, pull_request]
-
-jobs:
-  test:
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ["3.11", "3.12", "3.13"]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install uv
-        run: pip install uv
-      - name: Install deps
-        run: uv pip install --system -e ".[dev]"
-      - name: Lint
-        run: ruff check .
-      - name: Format check
-        run: ruff format --check .
-      - name: Type check
-        run: mypy src/
-      - name: Test
-        run: pytest --benchmark-disable
-```
-
----
-
-## 8. 案例研究
-
-### 8.1 NumPy：从推导式到向量化
-
-NumPy 早期版本（2005 年发布前）大量使用推导式处理数组。现代 NumPy 推荐使用向量化操作：
-
-```python
-# 反例：用推导式逐元素平方
-import numpy as np
-
-arr = np.arange(1_000_000)
-squares_comp = np.array([x**2 for x in arr])  # 慢，且违背向量化
-
-# 正例：向量化运算
-squares_vec = arr**2  # 快 100x
-
-# 基准（100 万元素）
-# 推导式: 280 ms
-# 向量化: 2.5 ms
-```
-
-NumPy 源码（`numpy/core/src/multiarray/ctors.c`）内部用 C 实现的高效循环替代推导式，体现"Python 推导式适合控制流，向量化适合数据流"的设计哲学。
-
-### 8.2 Pandas：列推导式 vs `apply` vs 向量化
-
-```python
-import pandas as pd
-
-df = pd.DataFrame({"value": range(1_000_000)})
-
-# 1. 列表推导式（适合简单转换）
-df["squared"] = [x**2 for x in df["value"]]
-
-# 2. apply（不推荐，慢）
-df["squared"] = df["value"].apply(lambda x: x**2)
-
-# 3. 向量化（最快）
-df["squared"] = df["value"] ** 2
-
-# 基准（100 万元素）
-# 推导式: 180 ms
-# apply: 320 ms
-# 向量化: 2 ms
-```
-
-### 8.3 Polars：原生 Python 推导式的角色
-
-Polars（Rust 实现的 DataFrame 库）在 Python 层仍用推导式做控制流，但数据流交给 Rust 内核：
-
-```python
-import polars as pl
-
-df = pl.DataFrame({"value": range(1_000_000)})
-
-# 控制流用推导式
-columns = [f"col_{i}" for i in range(10)]
-
-# 数据流用 Polars 表达式
-df = df.with_columns([(pl.col("value") ** 2).alias("squared")])
-```
-
-### 8.4 CPython 标准库中的推导式
-
-CPython 标准库大量使用推导式。以 `lib/pathlib.py` 为例：
-
-```python
-# CPython 3.12 Lib/pathlib.py（节选）
-class Path:
-    def iterdir(self):
-        for name in self._accessor.listdir(self):
-            if name in ('.', '..'):
-                continue
-            yield self._make_child_relpath(name)
-
-    def glob(self, pattern):
-        # 标准库使用生成器表达式 + 递归
-        return (p for p in self.rglob(pattern) if p.match(pattern))
-```
-
-### 8.5 Instagram：Django 模板与推导式
-
-Instagram 后端使用 Django + 大量 Python 推导式处理用户数据。在其工程博客中提到：
-
-> "List comprehensions are 2-3x faster than equivalent for loops in CPython, due to specialized LIST_APPEND bytecode."
-
-参考 Instagram Engineering Blog（2017）：他们通过将热点路径的循环改写为推导式，在用户动态聚合模块获得了 30% 的吞吐量提升。
-
-### 8.6 YouTube：推荐系统中的流式管道
-
-YouTube 推荐系统早期用 Python + 生成器表达式构建流式管道，避免一次性加载百万级视频元数据：
-
-```python
-# 伪代码：视频推荐流式管道
-def recommend(user_id: int) -> Iterator[Video]:
-    candidates = get_candidates(user_id)  # 生成器
-    scored = ((v, score(user_id, v)) for v in candidates)  # 打分
-    filtered = ((v, s) for v, s in scored if s > THRESHOLD)  # 过滤
-    sorted_videos = sorted(filtered, key=lambda x: -x[1])  # 排序
-    return (v for v, _ in sorted_videos)  # 投影
-```
-
-### 8.7 Dropbox：文件系统遍历
-
-Dropbox 客户端使用推导式 + `os.walk` 实现高效的增量同步：
-
-```python
-import os
-from pathlib import Path
-
-def find_large_files(root: Path, min_size: int = 1024 * 1024) -> list[Path]:
-    """找出所有大于 min_size 的文件。
-
-    Args:
-        root: 根目录
-        min_size: 最小字节数
-
-    Returns:
-        大文件路径列表
-    """
-    return [
-        Path(dirpath) / filename
-        for dirpath, _, filenames in os.walk(root)
-        for filename in filenames
-        if (Path(dirpath) / filename).stat().st_size >= min_size
-    ]
-```
-
-### 8.8 CPython 字节码优化：PEP 709 实战
-
-Python 3.12 内联推导式后，CPython 测试套件观察到总体速度提升 5-10%：
-
-```python
-# Python 3.12 内联前
-$ python3.11 -m timeit -s "data = list(range(1000))" "[x**2 for x in data]"
-5000 loops, best of 5: 47.3 usec per loop
-
-# Python 3.12 内联后
-$ python3.12 -m timeit -s "data = list(range(1000))" "[x**2 for x in data]"
-10000 loops, best of 5: 31.2 usec per loop  # 加速 34%
-```
-
----
-
-### 填空题知识点讲解
-
-**Q1.** Python 列表推导式首次在 ________（PEP 编号）中提出，于 Python ________ 版本正式引入。
-
-**答案：PEP 202；Python 2.0**
-
----
-
-**Q2.** 生成器表达式由 PEP ________ 提出，于 Python ________ 版本引入。
-
-**答案：PEP 289；Python 2.4**
-
----
-
-**Q3.** 在 Python 3.12 中，PEP ________ 引入了推导式 ________ 优化，将简单推导式编译为内联字节码。
-
-**答案：PEP 709；内联（inlining）**
-
----
-
-**Q4.** 表达式 `(x for x in range(5))` 的类型是 ________，对其调用 `list()` 后再调用 `list()` 返回 ________。
-
-**答案：`types.GeneratorType`（或 `generator`）；`[]`（空列表，因为已耗尽）**
-
----
-
-**Q5.** 推导式 `[x for x in xs if x > 0]` 在 CPython 中等价于 `[x for x in filter(________, xs)]`。
-
-**答案：`lambda x: x > 0`**
-
----
-
-### 编程题知识点讲解
-
-**Q1.** 用一行推导式实现：给定整数列表，返回所有素数的平方。
-
-```python
-from math import isqrt
-
-def is_prime(n: int) -> bool:
-    if n < 2:
-        return False
-    for i in range(2, isqrt(n) + 1):
-        if n % i == 0:
-            return False
-    return True
-
-def squares_of_primes(numbers: list[int]) -> list[int]:
-    """返回素数平方列表。"""
-    return [n**2 for n in numbers if is_prime(n)]
-
-# 测试
-assert squares_of_primes([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]) == [4, 9, 25, 49]
-```
-
----
-
-**Q2.** 用生成器表达式实现：读取大文件 `data.csv`，逐行解析为 dict，过滤 `score >= 60` 的记录，计算平均分。
-
-```python
-import csv
-from pathlib import Path
-
-def average_passing_score(path: Path) -> float:
-    """流式计算及格记录的平均分。"""
-    with path.open(encoding="utf-8") as f:
-        reader = csv.DictReader(f)
-        records = (dict(r) for r in reader)
-        passing = (int(r["score"]) for r in records if int(r["score"]) >= 60)
-        total, count = 0, 0
-        for score in passing:
-            total += score
-            count += 1
-        return total / count if count else 0.0
-```
-
----
-
-**Q3.** 用嵌套推导式实现矩阵乘法 $C = A \times B$，其中 $A \in \mathbb{R}^{m \times k}$，$B \in \mathbb{R}^{k \times n}$。
-
-```python
-def matrix_multiply(A: list[list[float]], B: list[list[float]]) -> list[list[float]]:
-    """矩阵乘法 C = A × B。
-
-    Args:
-        A: m × k 矩阵
-        B: k × n 矩阵
-
-    Returns:
-        C: m × n 矩阵
-
-    Raises:
-        ValueError: 当 A 的列数与 B 的行数不匹配
-    """
-    if not A or not B or len(A[0]) != len(B):
-        raise ValueError("矩阵维度不匹配")
-
-    # B 转置以便按列取
-    B_T = list(zip(*B))
-
-    return [
-        [sum(a * b for a, b in zip(row_a, col_b)) for col_b in B_T]
-        for row_a in A
-    ]
-
-# 测试
-A = [[1, 2], [3, 4]]
-B = [[5, 6], [7, 8]]
-C = matrix_multiply(A, B)
-assert C == [[19, 22], [43, 50]]
-```
-
----
-
-**Q4.** 用字典推导式实现：将列表 `[("a", 1), ("b", 2), ("a", 3), ("c", 4), ("b", 5)]` 按首字段分组为 `{"a": [1, 3], "b": [2, 5], "c": [4]}`。
-
-```python
-from collections import defaultdict
-
-def group_pairs(pairs: list[tuple[str, int]]) -> dict[str, list[int]]:
-    """按键分组。"""
-    grouped: dict[str, list[int]] = defaultdict(list)
-    for k, v in pairs:
-        grouped[k].append(v)
-    return dict(grouped)
-
-# 测试
-pairs = [("a", 1), ("b", 2), ("a", 3), ("c", 4), ("b", 5)]
-result = group_pairs(pairs)
-assert result == {"a": [1, 3], "b": [2, 5], "c": [4]}
-```
-
-注意：直接用纯字典推导式实现分组较难，因为列表是可变的。`defaultdict` 是更惯用的方案。
-
----
-
-**Q5.** 实现函数 `take(n, gen)`，从生成器表达式取前 n 项，返回列表。
-
-```python
-from itertools import islice
-from typing import Iterator, TypeVar
-
-T = TypeVar("T")
-
-def take(n: int, gen: Iterator[T]) -> list[T]:
-    """取生成器前 n 项。"""
-    return list(islice(gen, n))
-
-# 测试
-gen = (x**2 for x in range(100))
-assert take(5, gen) == [0, 1, 4, 9, 16]
-```
-
----
-
-### 10.1 PEP 与官方文档
-
-[1] Warsaw, B. 2000. PEP 202: List Comprehensions. Python Enhancement Proposals. https://peps.python.org/pep-0202/. DOI: 10.5281/zenodo.10678420.
-
-[2] Warsaw, B. 2001. PEP 274: Dict Comprehensions. Python Enhancement Proposals. https://peps.python.org/pep-0274/.
-
-[3] Hettinger, R. 2002. PEP 289: Generator Expressions. Python Enhancement Proposals. https://peps.python.org/pep-0289/.
-
-[4] Brandl, G. and Cannon, B. 2015. PEP 530: Asynchronous Comprehensions. Python Enhancement Proposals. https://peps.python.org/pep-0530/.
-
-[5] Salmon, C. 2023. PEP 709: Inlined comprehensions. Python Enhancement Proposals. https://peps.python.org/pep-0709/.
-
-[6] Van Rossum, G. and Drake Jr, J.L. 2024. The Python Language Reference (3.13 ed.). Python Software Foundation. https://docs.python.org/3/reference/.
-
-### 10.2 学术论文
-
-[7] Burstall, R.M. and Darlington, J. 1977. A transformation system for developing recursive programs. Journal of the ACM (JACM) 24, 1 (Jan. 1977), 44–67. DOI: 10.1145/321992.321996.
-
-[8] Turner, D.A. 1982. Recursion equations as a programming language. In Functional Programming and its Applications. Cambridge University Press, 1–28.
-
-[9] Wadler, P. 1992. Comprehending monads. Mathematical Structures in Computer Science 2, 4 (Dec. 1992), 461–493. DOI: 10.1017/S0960129500001560.
-
-[10] Augusstson, L. 1999. Implementing Haskell overloading. In Proceedings of the 4th International Symposium on Functional Programming Languages and Computer Architecture (FPCA '89). ACM, 324–333. DOI: 10.1145/99370.99404.
-
-### 10.3 工业实践
-
-[11] Kloeckner, A. 2017. NumPy internals: Array iteration and vectorization. https://numpy.org/devdocs/dev/internals.html.
-
-[12] McKinney, W. 2017. Python for Data Analysis: Data Wrangling with Pandas, NumPy, and IPython (2nd ed.). O'Reilly Media.
-
-[13] Vingron, M. 2023. Polars: A fast DataFrame library. Journal of Open Source Software 8, 89 (Sept. 2023), 5700. DOI: 10.21105/joss.05700.
-
-[14] Hettinger, R. 2013. Python's comprehensions and generators. PyCon 2013 Tutorial. https://pycon.org/2013/.
-
-### 10.4 标准与规范
-
-[15] Van Rossum, G., Warsaw, B., and Coghlan, N. 2001. PEP 8: Style Guide for Python Code. Python Enhancement Proposals. https://peps.python.org/pep-0008/.
-
-[16] Smith, G. 2017. PEP 579: Refactoring the C API. Python Enhancement Proposals. https://peps.python.org/pep-0579/.
-
----
-
-### 11.1 书籍
-
-- **Ramalho, L. 2022.** *Fluent Python (2nd ed.)*. O'Reilly Media. — 第 2 章"An Array of Sequences"、第 7 章"Closures and Decorators"对推导式有深度剖析。
-- **Beazley, D. and Jones, B.K. 2013.** *Python Cookbook (3rd ed.)*. O'Reilly Media. — 第 1 章"Data Structures and Algorithms"涵盖大量推导式实战模式。
-- **McKinney, W. 2022.** *Python for Data Analysis (3rd ed.)*. O'Reilly Media. — 推导式与 Pandas 向量化的权衡。
-- **Slatkin, B. 2019.** *Effective Python (2nd ed.)*. Addison-Wesley. — 第 8 条"Use List Comprehensions Instead of map and filter"。
-- **Pilgrim, M. 2009.** *Dive Into Python 3*. Apress. — 第 4 章对推导式的进阶讨论。
-
-### 11.2 论文与文档
-
-- **PEP 202** — List Comprehensions
-- **PEP 274** — Dict Comprehensions
-- **PEP 289** — Generator Expressions
-- **PEP 530** — Asynchronous Comprehensions
-- **PEP 709** — Inlined comprehensions
-- **PEP 8** — Style Guide for Python Code（推导式相关章节）
-- **CPython Internals: Compilation of comprehensions** — https://github.com/python/cpython/blob/main/Python/compile.c
-
-### 11.4 相关 PEP 主题
-
-- **PEP 274** — Dict/Set Comprehensions
-- **PEP 3104** — `nonlocal` 关键字
-- **PEP 380** — `yield from` 语法
-- **PEP 525** — Asynchronous Generators
-- **PEP 572** — Assignment Expressions (海象运算符)
-- **PEP 695** — Type Parameter Syntax (Python 3.12)
-
-## 附录 A：速查表
-
-### A.1 推导式语法速查
-
-| 形式 | 语法 | 返回类型 | 求值策略 |
-| ---- | ---- | -------- | -------- |
-| 列表推导式 | `[expr for x in xs if p]` | `list` | 严格 |
-| 集合推导式 | `{expr for x in xs if p}` | `set` | 严格 |
-| 字典推导式 | `{k: v for x in xs if p}` | `dict` | 严格 |
-| 生成器表达式 | `(expr for x in xs if p)` | `generator` | 惰性 |
-| 异步列表推导式 | `[expr async for x in xs if p]` | `list` | 严格（异步） |
-| 异步生成器表达式 | `(expr async for x in xs if p)` | `async generator` | 惰性（异步） |
-
-### A.2 等价转换表
-
-| 推导式 | 等价循环 | 等价函数式 |
-| ------ | -------- | ---------- |
-| `[e for x in xs]` | `for x in xs: r.append(e)` | `list(map(lambda x: e, xs))` |
-| `[e for x in xs if p]` | `for x in xs: if p: r.append(e)` | `list(map(lambda x: e, filter(lambda x: p, xs)))` |
-| `sum(e for x in xs)` | `for x in xs: total += e` | `reduce(lambda a, x: a + e, xs, 0)` |
-| `{k: v for x in xs}` | `for x in xs: d[k] = v` | `dict(map(lambda x: (k, v), xs))` |
-
-### A.3 性能经验法则
-
-| 场景 | 推荐方案 | 备注 |
-| ---- | -------- | ---- |
-| 小数据（<1000） | 推导式 | 可读性优先 |
-| 中等数据（1k-1M） | 推导式 | 配合生成器表达式 |
-| 大数据（>1M） | 生成器表达式 | 内存 O(1) |
-| 超大数据（>100M） | 流式管道 + itertools | 避免构建中间列表 |
-| CPU 密集 + 数值 | NumPy 向量化 | 比 Python 推导式快 100× |
-| 多重过滤 | 拆分为显式循环 | 可读性优先 |
-
-### A.4 类型注解模板
-
-```python
-from typing import Iterable, Iterator, TypeVar
-
-T = TypeVar("T")
-K = TypeVar("K")
-V = TypeVar("V")
-
-# 列表推导式类型注解
-result_list: list[T] = [f(x) for x in items if p(x)]
-
-# 字典推导式类型注解
-result_dict: dict[K, V] = {k(x): v(x) for x in items if p(x)}
-
-# 生成器表达式类型注解
-result_gen: Iterator[T] = (f(x) for x in items if p(x))
-
-# 接收 Iterable 参数
-def process(items: Iterable[T]) -> list[T]:
-    return [transform(x) for x in items]
-```
-
----
-
-## 附录 B：术语表
-
-| 术语 | 英文 | 定义 |
-| ---- | ---- | ---- |
-| 推导式 | comprehension | 一种通过 `for`/`if` 子句从可迭代对象构建新容器的语法结构 |
-| 列表推导式 | list comprehension | 用方括号定界，返回 list 的推导式 |
-| 字典推导式 | dict comprehension | 用花括号定界并含 `key: value`，返回 dict |
-| 集合推导式 | set comprehension | 用花括号定界且无冒号，返回 set |
-| 生成器表达式 | generator expression | 用圆括号定界，返回 generator 的惰性推导式 |
-| 异步推导式 | async comprehension | 含 `async for` 子句的推导式，需在协程内使用 |
-| 闭包 | closure | 捕获外部作用域变量的内层函数 |
-| 惰性求值 | lazy evaluation | 仅在需要时才求值的策略 |
-| 严格求值 | strict/eager evaluation | 立即求值的策略 |
-| 迭代器协议 | iterator protocol | `__iter__` + `__next__` 双方法协议 |
-| 可迭代对象 | iterable | 实现 `__iter__` 的对象 |
-| 生成器 | generator | 含 `yield` 的函数或生成器表达式返回的对象 |
-| 作用域 | scope | 变量名的可见范围 |
-| 函数对象 | function object | 可调用对象，含 `__code__`、`__globals__` 等 |
-| 字节码 | bytecode | CPython 解释器执行的中间码 |
-| 内联优化 | inlining | 将函数调用展开到调用处的编译优化 |
-
----
-
-## 附录 C：版本演进时间线（详）
-
-### C.1 1991 - 1994：前推导式时代
-
-- **1991-02** Python 0.9 发布，仅支持 `for` + `append` 与 `map`/`filter`
-- **1994-01** Python 1.0 引入 `lambda` 表达式（PEP 8 早期版本）
-
-### C.2 2000 - 2002：推导式诞生
-
-- **2000-10** Python 2.0 发布，PEP 202 引入列表推导式
-- **2001-10** PEP 274 提案（dict/set 推导式）提交，但未立即落地
-- **2002-11** Python 2.4 发布，PEP 289 引入生成器表达式
-
-### C.3 2008 - 2015：现代化重构
-
-- **2008-12** Python 2.7 / 3.0 发布，dict/set 推导式落地
-- **2015-12** Python 3.6 发布，PEP 530 引入异步推导式
-
-### C.4 2023+：性能优化
-
-- **2023-10** Python 3.12 发布，PEP 709 引入推导式内联优化
-- **2024-10** Python 3.13 发布，自适应解释器与 JIT 进一步优化推导式
-- **未来** Python 3.14+ 计划进一步内联与类型特化
-
----
-
-## 附录 D：调试工具速查
-
-### D.1 字节码反汇编
-
-```python
-import dis
-
-# 反汇编单条推导式
-dis.dis(compile("[x**2 for x in range(10)]", "<demo>", "eval"))
-
-# 反汇编函数内的推导式
-def f():
-    return [x**2 for x in range(10)]
-
-dis.dis(f)
-```
-
-### D.2 内存分析
-
-```python
-import sys
-
-# 测量列表推导式内存
-list_result = [x**2 for x in range(1000)]
-print(f"list size: {sys.getsizeof(list_result)} bytes")
-
-# 测量生成器表达式内存
-gen_result = (x**2 for x in range(1000))
-print(f"generator size: {sys.getsizeof(gen_result)} bytes")
-# 通常 generator 仅 ~200 bytes，list 则随元素数线性增长
-```
-
-### D.3 性能计时
-
-```python
-import timeit
-
-# 推导式 vs 循环 vs map
-setup = "data = list(range(1000))"
-
-t_comp = timeit.timeit("[x**2 for x in data]", setup, number=10000)
-t_loop = timeit.timeit("""
-result = []
-for x in data:
-    result.append(x**2)
-""", setup, number=10000)
-t_map = timeit.timeit("list(map(lambda x: x**2, data))", setup, number=10000)
-
-print(f"comprehension: {t_comp:.3f}s")
-print(f"for loop: {t_loop:.3f}s")
-print(f"map+lambda: {t_map:.3f}s")
-```
-
----
-
-## 结语
-
-推导式是 Python 函数式编程范式的核心语法构造，融合了数学集合论的简洁与函数式语言的优雅。理解其形式语义、字节码实现与作用域规则，是成为 Python 高级工程师的必经之路。在大数据与异步编程时代，生成器表达式与异步推导式构成了流式数据处理的基础设施。
-
-掌握推导式的关键不在于记住语法，而在于理解其 **何时该用** 与 **何时不该用**：可读性优先，性能次之；简单场景用推导式，复杂场景用显式循环；大数据用生成器，小数据用列表。这正是 Python 之禅所言：
-
-> "Simple is better than complex. Complex is better than complicated. Readability counts."
-
-## 基本列表推导式
-
-**基本写法：基本列表推导式**
-`[<表达式> for <变量> in <可迭代对象>]`
-
-```python
-# 基本列表推导式
-squares = [x ** 2 for x in range(5)]
-```
-
----
-
-**基本写法：带条件的列表推导式**
-`[<表达式> for <变量> in <可迭代对象> if <条件>]`
-
-```python
-# 带条件的列表推导式
-evens = [x for x in range(10) if x % 2 == 0]
-```
-
----
-
-**基本写法：带 if-else 的列表推导式**
-`[<表达式1> if <条件> else <表达式2> for <变量> in <可迭代对象>]`
-
-```python
-# 带 if-else 的列表推导式
-labels = ["even" if x % 2 == 0 else "odd" for x in range(5)]
-```
-
----
-
-## 嵌套循环推导式
-
-**基本写法：嵌套 for 的列表推导式**
-`[<表达式> for <变量1> in <可迭代对象1> for <变量2> in <可迭代对象2>]`
-
-```python
-# 嵌套 for 的列表推导式
-pairs = [(x, y) for x in range(3) for y in range(3)]
-```
-
----
-
-**基本写法：带条件的嵌套推导式**
-`[<表达式> for <变量1> in <可迭代对象1> for <变量2> in <可迭代对象2> if <条件>]`
-
-```python
-# 带条件的嵌套推导式
-pairs = [(x, y) for x in range(3) for y in range(3) if x != y]
-```
-
----
-
-**换行写法：多行嵌套推导式**
-`[<表达式>`
-` for <变量1> in <可迭代对象1>`
-` for <变量2> in <可迭代对象2>]`
-
-```python
-# 多行嵌套推导式
-matrix = [
-    [x * y for y in range(3)]
-    for x in range(3)
-]
-```
-
----
-
-## 字典推导式
-
-**基本写法：基本字典推导式**
-`{<键表达式>: <值表达式> for <变量> in <可迭代对象>}`
-
-```python
-# 基本字典推导式
-squares = {x: x ** 2 for x in range(5)}
-```
-
----
-
-**基本写法：带条件的字典推导式**
-`{<键表达式>: <值表达式> for <变量> in <可迭代对象> if <条件>}`
-
-```python
-# 带条件的字典推导式
-even_squares = {x: x ** 2 for x in range(10) if x % 2 == 0}
-```
-
----
-
-**基本写法：反转字典键值**
-`{<值>: <键> for <键>, <值> in <字典>.items()}`
-
-```python
-# 反转字典的键和值
-original = {"a": 1, "b": 2, "c": 3}
-reversed_dict = {v: k for k, v in original.items()}
-```
-
----
-
-## 集合推导式
-
-**基本写法：基本集合推导式**
-`{<表达式> for <变量> in <可迭代对象>}`
-
-```python
-# 基本集合推导式
-squares = {x ** 2 for x in range(5)}
-```
-
----
-
-**基本写法：带条件的集合推导式**
-`{<表达式> for <变量> in <可迭代对象> if <条件>}`
-
-```python
-# 带条件的集合推导式
-even_squares = {x ** 2 for x in range(10) if x % 2 == 0}
-```
-
----
-
-## 生成器表达式
-
-**基本写法：基本生成器表达式**
-`(<表达式> for <变量> in <可迭代对象>)`
-
-```python
-# 基本生成器表达式
-squares_gen = (x ** 2 for x in range(5))
-print(next(squares_gen))
-```
-
----
-
-**基本写法：带条件的生成器表达式**
-`(<表达式> for <变量> in <可迭代对象> if <条件>)`
-
-```python
-# 带条件的生成器表达式
-evens_gen = (x for x in range(10) if x % 2 == 0)
-print(list(evens_gen))
-```
-
----
-
-## 复杂表达式
-
-**基本写法：函数调用在推导式中**
-`[<函数>(<参数>) for <变量> in <可迭代对象>]`
-
-```python
-# 函数调用在推导式中
-words = ["hello", "world"]
-upper_words = [word.upper() for word in words]
-```
-
----
-
-**基本写法：方法调用在推导式中**
-`[<对象>.<方法>() for <对象> in <可迭代对象>]`
-
-```python
-# 方法调用在推导式中
-strings = ["  hello  ", "  world  "]
-cleaned = [s.strip() for s in strings]
-```
-
----
-
-**基本写法：条件表达式在推导式中**
-`[<表达式1> if <条件> else <表达式2> for <变量> in <可迭代对象>]`
-
-```python
-# 条件表达式在推导式中
-numbers = [1, -2, 3, -4, 5]
-abs_values = [x if x >= 0 else -x for x in numbers]
-```
-
----
-
-## 使用 enumerate()
-
-**基本写法：使用 enumerate() 获取索引**
-`[(<索引>, <值>) for <索引>, <值> in enumerate(<可迭代对象>)]`
-
-```python
-# 使用 enumerate() 获取索引
-fruits = ["apple", "banana", "cherry"]
-indexed = [(i, fruit) for i, fruit in enumerate(fruits)]
-```
-
----
-
-**基本写法：enumerate() 指定起始索引**
-`[(<索引>, <值>) for <索引>, <值> in enumerate(<可迭代对象>, start=<n>)]`
-
-```python
-# enumerate() 指定起始索引
-indexed = [(i, fruit) for i, fruit in enumerate(fruits, start=1)]
-```
-
----
-
-## 使用 zip()
-
-**基本写法：使用 zip() 并行遍历**
-`[(<值1>, <值2>) for <值1>, <值2> in zip(<可迭代对象1>, <可迭代对象2>)]`
-
-```python
-# 使用 zip() 并行遍历
-names = ["Alice", "Bob"]
-ages = [25, 30]
-pairs = [(name, age) for name, age in zip(names, ages)]
-```
-
----
-
-## 字符串处理
-
-**基本写法：字符串分割与处理**
-`[<表达式> for <变量> in <字符串>.split(<分隔符>)]`
-
-```python
-# 字符串分割与处理
-sentence = "hello world python"
-words = [word.upper() for word in sentence.split()]
-```
-
----
-
-**基本写法：过滤字符串列表**
-`[<字符串> for <字符串> in <列表> if <条件>]`
-
-```python
-# 过滤字符串列表
-words = ["apple", "banana", "cherry", "date"]
-long_words = [word for word in words if len(word) > 5]
-```
-
----
-
-## 数学运算
-
-**基本写法：数学运算在推导式中**
-`[<表达式> for <变量> in <可迭代对象>]`
-
-```python
-# 数学运算在推导式中
-numbers = [1, 2, 3, 4, 5]
-doubled = [x * 2 for x in numbers]
-```
-
----
-
-**基本写法：使用数学函数**
-`[<函数>(<参数>) for <变量> in <可迭代对象>]`
-
-```python
-# 使用数学函数
-import math
-numbers = [1, 4, 9, 16, 25]
-roots = [math.sqrt(x) for x in numbers]
-```
-
----
-
-## 文件处理
-
-**基本写法：读取文件行并处理**
-`[<表达式> for <行> in <文件>]`
-
-```python
-# 读取文件行并处理
-with open("file.txt", "r") as f:
-    lines = [line.strip() for line in f]
-```
-
----
-
-**基本写法：过滤文件行**
-`[<行> for <行> in <文件> if <条件>]`
-
-```python
-# 过滤文件中的非空行
-with open("file.txt", "r") as f:
-    non_empty = [line.strip() for line in f if line.strip()]
-```
-
----
-
-## 嵌套列表展平
-
-**基本写法：展平嵌套列表**
-`[<元素> for <子列表> in <嵌套列表> for <元素> in <子列表>]`
-
-```python
-# 展平嵌套列表
-matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-flat = [num for row in matrix for num in row]
-```
-
----
-
-**基本写法：带条件的展平**
-`[<元素> for <子列表> in <嵌套列表> for <元素> in <子列表> if <条件>]`
-
-```python
-# 带条件的展平
-matrix = [[1, 2, 3], [4, 5, 6], [7, 8, 9]]
-evens = [num for row in matrix for num in row if num % 2 == 0]
-```
-
----
-
-## 使用 itertools
-
-**基本写法：使用 itertools.chain 展平**
-`list(chain.from_iterable(<嵌套列表>))`
-
-```python
-# 使用 itertools.chain 展平嵌套列表
-from itertools import chain
 matrix = [[1, 2, 3], [4, 5, 6]]
-flat = list(chain.from_iterable(matrix))
+transposed = [[row[col] for row in matrix] for col in range(3)]
+# [[1, 4], [2, 5], [3, 6]]
 ```
 
----
+读法：外层 `for col` 在后写但先执行，内层列表对每个 col 收集各行的对应位。两层是极限——**三层以上的嵌套推导式，几乎永远是普通循环更清楚**。
 
-**基本写法：使用 itertools.product 生成笛卡尔积**
-`[<表达式> for <变量1>, <变量2> in product(<可迭代对象1>, <可迭代对象2>)]`
+**海象运算符**（`:=`，3.8 起）让推导式里能「算一次、用两次」，最舒服的位置是「条件里算，开头用」：
 
 ```python
-# 使用 itertools.product 生成笛卡尔积
-from itertools import product
-colors = ["red", "blue"]
-sizes = ["S", "M", "L"]
-combinations = [(c, s) for c, s in product(colors, sizes)]
+import re
+lines = ["score=1012000", "song=Melt", "score=994500"]
+values = [int(m.group(1)) for line in lines if (m := re.fullmatch(r"score=(\d+)", line))]
+# [1012000, 994500] —— 正则匹配一次，开头直接用匹配结果
 ```
 
----
+说实话，海象一旦塞进太多逻辑就会牺牲可读性，只建议在「重复计算一个中间值」时使用。
 
-## 性能对比
-
-**基本写法：列表推导式 vs for 循环**
-`[<表达式> for <变量> in <可迭代对象>]`
+**作用域**：推导式有自己的小作用域，循环变量不会泄漏到外面——这点与普通 for 语句不同：
 
 ```python
-# 列表推导式（比 for 循环更快）
-squares = [x ** 2 for x in range(1000)]
+y = [x * 2 for x in range(3)]
+# x 在这里不存在，不会污染外部命名空间
 ```
 
----
+还有一个实用的现代行为：3.12 起推导式被内联实现，执行比旧版本更快。你不需要做什么，升级本身就在提速。
 
-**基本写法：使用 sum() 配合生成器**
-`sum(<表达式> for <变量> in <可迭代对象>)`
+## 8. 可读性红线：什么时候退回循环
+
+推导式的存在理由是「让简单变换一眼看穿」，超过这个范围就是负资产。红线清单：
+
+- **超过一个 for 或两个 if**：退回循环。`[f(x, y) for x in a for y in b if p(x) if q(y)]` 已经需要读者在脑子里展开循环了；
+- **开头表达式超过一次调用或三元**：比如 `[transform(deep_clean(x)) for x in xs if not skip(x)]`，抽个带名字的辅助函数，`[clean(x) for x in xs if keep(x)]` 立刻恢复可读；
+- **只要副作用不要结果**：往推导式里塞 print、写文件、发请求，是明确的反模式——读代码的人会以为你在收集结果。这种场景用普通 for；
+- **读一遍读不懂**：第 3 节的机械读法失败，就是最终裁决。代码是写给人看的，机器两种都认。
+
+一个务实的习惯：先写循环，跑对了，再按三步法收成推导式；收完读一遍，读不顺就退回去。写推导式不是目的，**让下一个人（三个月后的你）一眼看懂**才是。
+
+## 9. 常见坑点与真实报错
+
+坑一：把带 else 的 if 写到末尾。
 
 ```python
-# 使用 sum() 配合生成器表达式
-total = sum(x ** 2 for x in range(100))
+>>> [s for s in scores if s["score"] >= 1009000 else 0]
+  File "<stdin>", line 1
+    [s for s in scores if s["score"] >= 1009000 else 0]
+                                                ^^^^
+SyntaxError: invalid syntax
 ```
 
----
+报错指在 else 附近。回忆第 4 节：过滤 if 放末尾且不带 else；要 else 就整体挪到开头。
 
-## 多变量推导式
-
-**基本写法：多变量列表推导式**
-`[<表达式> for <变量1>, <变量2> in <可迭代对象>]`
+坑二：在推导式里访问还没绑定的名字。
 
 ```python
-# 多变量列表推导式
-pairs = [(a, b) for a, b in [(1, 2), (3, 4), (5, 6)]]
+>>> [x for x in range(3) if flag]
+NameError: name 'flag' is not defined
 ```
 
----
+推导式的作用域里，外面的变量要看清在何时定义；反过来推导式内部的变量也不会泄漏出去（第 7 节），两边都别想当然。
 
-**基本写法：多变量带条件推导式**
-`[<表达式> for <变量1>, <变量2> in <可迭代对象> if <条件>]`
+坑三：字典推导式键重复。`{s["song"]: s["score"] for s in scores}` 在同一首歌出现多次时**后面的覆盖前面的**，不报错、静默丢数据。数据可能有重复键时，先想清楚「留哪个」——通常那意味着老实写循环或先排序。
+
+坑四：对生成器表达式二次遍历。生成器是「一次性水条」，`total = sum(g)` 之后 `list(g)` 是空列表。要复用就先 `list(...)` 落成真列表。
+
+## 10. 什么时候应该 / 不应该
+
+应该：简单的变换、过滤、建映射、去重用推导式；一次性求和 / 判断用生成器表达式；先写循环跑通，再机械收拢。
+
+不应该：嵌套超过两层；在推导式里做副作用；为了炫技写超长单行；对可能重复的键做字典推导式而不考虑覆盖。
+
+## 11. 与之前和之后的知识的关系
+
+- 往前：本文是 [内置数据结构](/python/140-BuiltinDataStructure) 的「批量加工篇」——容器是原料，推导式是流水线；[enumerate 与 zip](/python/150-EnumerateZipBuiltinPairs) 的搭档在推导式里同样适用；
+- 往后：[推导式与生成器](/python/170-ComprehensionGenerator) 把圆括号那一支展开成完整的迭代器与生成器体系；[函数详解](/python/100-FunctionDetailed) 里的 `map` / `filter` 与推导式互为替代，团队里二选一保持一致；后续数据分析（pandas）与本文的「变换 - 过滤 - 聚合」思维一脉相承。
+
+## 12. 官方文档
+
+- 推导式（官方教程）：https://docs.python.org/zh-cn/3/tutorial/datastructures.html#list-comprehensions
+- 生成器表达式：https://docs.python.org/zh-cn/3/reference/expressions.html#generator-expressions
+- 海象运算符 PEP 572：https://peps.python.org/pep-0572/
+
+## 13. 自我检查
+
+- 能不看资料完成「循环与推导式」的双向改写，并说出三步法；
+- 能讲清末尾 if 与开头 if-else 的语义区别，并举一个各自报错的例子；
+- 能用字典推导式建映射、用集合推导式去重，并说出键覆盖的风险；
+- 能解释 sum 搭配圆括号比方括号好在哪；
+- 拿到一段三层嵌套推导式，能判断它该不该退回循环。
+
+## 练习
+
+预测题：`[n for n in range(10) if n % 3 == 0]` 的输出是什么？改成 `{n % 3 for n in range(10)}` 呢？先写下来再运行。
+
+修改题：把第 1 节的三段循环全部收成推导式（提示：Master 最高分那段需要先确认数据没有同歌同难度的重复记录；如果有，保留循环版并说明为什么）。
+
+排错题：下面的代码想收集所有 FC 歌名，运行却得到一列 None。找出病因并修复：
 
 ```python
-# 多变量带条件推导式
-sums = [a + b for a, b in [(1, 2), (3, 4), (5, 6)] if a + b > 5]
+fc = [print(s["song"]) for s in scores if s["fc"]]
 ```
 
----
+挑战题：给成绩单加一个派生等级（满分线以上 S，99 万以上 A，其余 B），用一条字典推导式建成 `{歌名+难度: 等级}` 映射；再用生成器表达式统计 S 级数量。自测：三种等级都要至少命中一条。
 
-## 字典转换为列表
+## 本章总结
 
-**基本写法：字典键转换为列表**
-`[<键> for <键> in <字典>]`
+推导式是「建容器、循环、过滤、塞结果」套路的语法简称：方括号产列表、花括号带冒号产字典、花括号产集合、圆括号产一次性生成器；三步机械改写法保证双向可读；末尾 if 过滤、开头 if-else 变换；sum / any / all 配圆括号省掉中间列表；超过两层嵌套或一行读不懂就退回循环——简洁是手段，可读才是目的。
 
-```python
-# 字典键转换为列表
-person = {"name": "Alice", "age": 30}
-keys = [key for key in person]
-```
+## 下一步
 
----
-
-**基本写法：字典值转换为列表**
-`[<值> for <值> in <字典>.values()]`
-
-```python
-# 字典值转换为列表
-values = [value for value in person.values()]
-```
-
----
-
-**基本写法：字典键值对转换为列表**
-`[(<键>, <值>) for <键>, <值> in <字典>.items()]`
-
-```python
-# 字典键值对转换为列表
-items = [(k, v) for k, v in person.items()]
-```
-
----
-
-**基本写法：带条件的字典过滤**
-`[(<键>, <值>) for <键>, <值> in <字典>.items() if <条件>]`
-
-```python
-# 带条件的字典过滤
-filtered = [(k, v) for k, v in person.items() if isinstance(v, str)]
-```
-
----
+推导式的圆括号一支远比「省内存」有料，进入 [推导式与生成器](/python/170-ComprehensionGenerator)：认识迭代器协议与 yield，学会写「用到哪个数才算哪个数」的惰性数据流。

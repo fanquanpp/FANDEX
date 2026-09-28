@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 CharacterBody2D 实现平台跳跃与俯视角移动，理解 move_and_slide 与碰撞形状的正确用法
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-28'
 related:
   - 'godot/060-InputEventsAndActions'
   - 'godot/070-TwoDGameObjects'
@@ -16,27 +16,21 @@ prerequisites:
   - 'godot/070-TwoDGameObjects'
 ---
 
-让角色在关卡里走动、跳跃、撞墙停下、站上斜坡，是绝大多数游戏的第一个需求。Godot 为此准备了 CharacterBody2D：一个完全由代码驱动的运动学（kinematic）碰撞体。本篇先用官方平台跳跃模板逐行拆解标准写法，再对比两套移动 API 的行为差异与适用场景，最后讲清碰撞形状（Collision Shape）的添加规则、形状家族的分工与常见误区。学完本篇，你就能写出可控手感的 2D 角色控制脚本。
+先看一个真实项目的目录。动作游戏几何构成（speed-rouge）里，玩家角色被拆成了这样几块：
 
-输入动作的创建（Input Map、is_action_just_pressed 等）在输入篇已经讲过，本篇直接使用；关卡地面怎么铺，见瓦片地图篇。
+```text
+scripts/entities/player.gd              总装
+scripts/entities/player/player_input.gd 只管读输入
+scripts/entities/player/movement_core.gd 只管速度与位移
+scripts/entities/player/mechanism_surface.gd 只管特殊表面（弹跳板、滑雪面）
+scripts/data/movement_tuning.gd         只放数值：速度、跳跃力、加速度
+```
 
-## 学习目标
+为什么要拆？因为平台游戏手感的打磨 90% 是在改数字：跳得再高一点、空中再飘一点。数值集中在 `movement_tuning.gd`，改手感就不用碰逻辑。而这一整套的地基，只是一个不到二十行的 CharacterBody2D 脚本。本篇就从这个最小骨架写起，最后你会明白几何构成的拆分是自然长出来的。
 
-- 理解 CharacterBody2D 的运动学定位：引擎不替你移动，一切移动由代码完成
-- 逐行读懂官方平台跳跃模板，养成在 _physics_process 中写移动代码的习惯
-- 区分 move_and_slide() 与 move_and_collide() 的行为差异，并知道何时选用哪一个
-- 用 motion_mode、up_direction、floor_max_angle 等属性适配平台与俯视角两种玩法
-- 掌握 CollisionShape2D 的添加规则、各形状类型的分工与易错点
+## 动手：官方平台跳跃模板
 
-## 1. CharacterBody2D 是什么
-
-CharacterBody2D 是"代码控制的运动学碰撞体"。与受物理引擎自动施力的刚体不同，CharacterBody2D 不受引擎自动施力，物理引擎也不会替它移动半步——所有移动都由你在代码里完成，引擎只负责在移动过程中做碰撞检测与响应。这让它的手感完全可控、行为完全可预测，是玩家角色、敌人、NPC 的首选节点。
-
-它最核心的属性是 velocity：Vector2 类型，表示每秒移动量。特别注意：velocity 会在帧与帧之间保留，这正是重力能够"累积"、角色越落越快的原因。
-
-## 2. 官方平台跳跃模板逐行讲解
-
-Godot 官方文档给出了一个最小可用的平台跳跃模板，先原样贴出：
+新建 CharacterBody2D 节点，挂 CollisionShape2D 子节点（形状选胶囊），挂上脚本：
 
 ```gdscript
 extends CharacterBody2D
@@ -53,30 +47,34 @@ func _physics_process(delta):
     move_and_slide()
 ```
 
-逐行解释：
+给它一块站得住脚的地面（StaticBody2D 加矩形碰撞，或直接用瓦片地图），运行，左右移动、跳跃就都通了。逐行解释：
 
-- extends CharacterBody2D：脚本挂在 CharacterBody2D 节点上（节点下还需一个 CollisionShape2D，见第 6 节）。
+- extends CharacterBody2D：脚本挂在 CharacterBody2D 节点上。
 - speed 与 jump_speed：水平速度与起跳速度。2D 坐标系 Y 轴向下为正，所以向上跳要赋负值。
-- 移动代码写在 _physics_process(delta) 中：它以固定速率调用（默认每秒 60 次，可在 Project Settings -> Physics -> Common -> Physics Fps 修改）。物理相关的一切必须放在这里，而不是与渲染帧率挂钩的 _process。
-- velocity += get_gravity() * delta：每个物理帧给速度累加重力加速度。velocity 跨帧保留，所以角色下落速度会持续增大。
-- 跳跃判定：Input.is_action_just_pressed("jump") 判断"jump"动作是否在本帧刚按下，并用 is_on_floor() 确认站在地面上。两个条件缺一不可——漏掉着地检查就会无限连跳。
-- var direction = Input.get_axis("ui_left", "ui_right")：返回 -1 到 1 的轴向值，负为左、正为右。
-- velocity.x = direction * speed：水平速度每帧直接设定（不累加），松开按键立即归 0，手感干脆。
-- move_and_slide()：真正执行移动，并在过程中处理碰撞与滑动。
+- 移动代码写在 `_physics_process(delta)` 中：它以固定速率调用（默认每秒 60 次，可在 Project Settings -> Physics -> Common -> Physics Fps 修改）。物理相关的一切必须放在这里，而不是与渲染帧率挂钩的 `_process`。
+- `velocity += get_gravity() * delta`：每个物理帧给速度累加重力加速度。velocity 跨帧保留，所以角色下落速度会持续增大。
+- 跳跃判定：`Input.is_action_just_pressed("jump")` 判断"jump"动作是否在本帧刚按下，并用 `is_on_floor()` 确认站在地面上。两个条件缺一不可——漏掉着地检查就会无限连跳。
+- `Input.get_axis("ui_left", "ui_right")`：返回 -1 到 1 的轴向值，负为左、正为右。
+- `velocity.x = direction * speed`：水平速度每帧直接设定（不累加），松开按键立即归 0，手感干脆。
+- `move_and_slide()`：真正执行移动，并在过程中处理碰撞与滑动。
 
-## 3. 两套移动 API
+跑通之后先做一件事：把 300.0 和 -400.0 改到你觉得"顺脚"。改数字调手感，就是几何构成把数值抽进 movement_tuning.gd 的全部动机——下一步你也会这样做。
 
-CharacterBody2D 提供两套移动方法，行为差别很大，务必分清。
+## 讲为什么：两套移动 API
 
-### 3.1 move_and_slide()：滑动移动，日常首选
+CharacterBody2D 是"代码控制的运动学碰撞体"。与受物理引擎自动施力的刚体不同，它不受引擎自动施力，物理引擎也不会替它移动半步——所有移动都由你在代码里完成，引擎只负责在移动过程中做碰撞检测与响应。这让它的手感完全可控、行为完全可预测，是玩家角色、敌人、NPC 的首选节点。它最核心的属性是 velocity：Vector2 类型，表示每秒移动量；velocity 会在帧与帧之间保留，这正是重力能够"累积"、角色越落越快的原因。
 
-move_and_slide() 无参数调用——它内部自动用 delta 计算位移，并最多循环 5 次来实现在墙面、斜坡上的平滑滑动。它还有一个重要副作用：会修改 velocity。例如落地时垂直速度被自动归零，不会把越落越快的速度"攒"在身体里。
+它提供两套移动方法，行为差别很大：
 
-读取本次移动中的碰撞：get_slide_collision_count() 返回碰撞数量，get_slide_collision(i) 取出每一条碰撞信息。注意它只统计真正改变了移动方向的碰撞，贴着墙平滑滑过的情况不会算作一次碰撞。
+### move_and_slide()：滑动移动，日常首选
 
-### 3.2 move_and_collide()：碰到就停，自己写响应
+`move_and_slide()` 无参数调用——它内部自动用 delta 计算位移，并最多循环 5 次来实现在墙面、斜坡上的平滑滑动。它还有一个重要副作用：会修改 velocity。例如落地时垂直速度被自动归零，不会把越落越快的速度"攒"在身体里。
 
-move_and_collide(motion: Vector2) 需要你自己传入本帧位移（通常是 velocity * delta），一旦发生碰撞就立即停下，没有任何自动响应；返回一个 KinematicCollision2D 对象携带碰撞详情，没碰上则返回 null。它适合需要自定义碰撞逻辑的场景，官方的子弹反弹示例就是典型：
+读取本次移动中的碰撞：`get_slide_collision_count()` 返回碰撞数量，`get_slide_collision(i)` 取出每一条碰撞信息。注意它只统计真正改变了移动方向的碰撞，贴着墙平滑滑过的情况不会算作一次碰撞。
+
+### move_and_collide()：碰到就停，自己写响应
+
+`move_and_collide(motion: Vector2)` 需要你自己传入本帧位移（通常是 velocity * delta），一旦发生碰撞就立即停下，没有任何自动响应；返回一个 KinematicCollision2D 对象携带碰撞详情，没碰上则返回 null。它适合需要自定义碰撞逻辑的场景，官方的子弹反弹示例就是典型：
 
 ```gdscript
 func _physics_process(delta):
@@ -87,13 +85,13 @@ func _physics_process(delta):
             collision.get_collider().hit()
 ```
 
-- velocity.bounce(collision.get_normal())：以碰撞面法线为镜面反射速度向量，实现反弹。
-- collision.get_collider() 拿到被撞对象；先用 has_method("hit") 探测它有没有 hit 方法，有则调用。这是 Godot 里典型的"鸭子类型"写法，比强行类型转换更松耦合。
+- `velocity.bounce(collision.get_normal())`：以碰撞面法线为镜面反射速度向量，实现反弹。
+- `collision.get_collider()` 拿到被撞对象；先用 `has_method("hit")` 探测它有没有 hit 方法，有则调用。这是 Godot 里典型的"鸭子类型"写法，比强行类型转换更松耦合。
 
-## 4. 关键属性与地面判定
+## 关键属性与俯视角变体
 
 - velocity：每秒位移量，跨帧保留，是两套 API 的共同输入。
-- motion_mode：运动模式。默认 MOTION_MODE_GROUNDED，平台视角：区分地面、墙与天花板，is_on_floor() 等判定可用。俯视角游戏（从上往下看的玩法）没有"上下"概念，应改为 MOTION_MODE_FLOATING，方向键推哪走哪，也不会有坡度、台阶的阻挡逻辑。
+- motion_mode：运动模式。默认 MOTION_MODE_GROUNDED，平台视角：区分地面、墙与天花板，is_on_floor() 等判定可用。俯视角游戏没有"上下"概念，应改为 MOTION_MODE_FLOATING，方向键推哪走哪，也不会有坡度、台阶的阻挡逻辑。
 - up_direction：定义"哪边是上"，默认 Vector2(0, -1)（屏幕上方）。is_on_floor()、is_on_wall()、is_on_ceiling() 三个判定都依赖它（在 GROUNDED 模式下）。
 - floor_max_angle：能站住的最大坡角，默认 45 度，超过就算墙。
 - wall_min_slide_angle：撞墙时开始滑动的最小角度，默认 15 度；近似正对的墙不会滑动，而是直接顶住。
@@ -114,17 +112,27 @@ func _physics_process(delta):
     move_and_slide()
 ```
 
-Input.get_vector 的四个参数依次为左、右、上、下动作名，返回归一化（长度为 1）的方向向量，因此斜向移动不会比直走更快。
+## 动手进阶：把模板长成几何构成的形状
 
-## 5. 三条铁律
+跑通最小版并调过手感后，按三个小步骤重构，每步做完都运行验证一次。
 
-初学者最常见的三类错误，官方文档反复强调，这里合并成三条铁律：
+第一步，数值出走。建 `movement_tuning.gd`（继承 Resource 或直接用常量类均可，教学版用最简单的常量预加载）：
 
-1. 移动代码放 _physics_process()。物理帧以固定步长推进，而 _process 跟随渲染帧率波动，把移动写错地方会导致运动不稳定、碰撞漏检。
-2. 不要给 move_and_slide() 传 velocity * delta。它内部已经处理了 delta，你再乘一次，角色就会以双倍速度移动。要自己乘 delta 的是 move_and_collide()。
-3. 不要直接改 position 来移动。对 position 赋值绕过了碰撞检测，角色会径直穿墙。正确姿势是设置 velocity（或算好本帧位移），再调用两套移动 API 之一。
+```gdscript
+# movement_tuning.gd
+class_name MovementTuning
 
-## 6. 碰撞形状：CollisionShape2D 与形状家族
+const SPEED := 300.0
+const JUMP_SPEED := -400.0
+```
+
+玩家脚本里 `var speed := MovementTuning.SPEED`。此后调手感只动这一个文件，改动在版本管理里一目了然。
+
+第二步，输入出走到 player_input.gd。让输入模块只回答"玩家想往哪走、想不想跳"，输出方向向量与布尔值，movement_core 拿结果做物理。这一刀切下去，将来接手柄重映射、录像回放（程序化生成输入，见输入篇）都不用动物理代码。
+
+第三步，特殊表面交给区域。弹跳板、加速带这类"踩上去行为不一样"的机关，在几何构成里由 mechanism_surface.gd 统一处理：机关本体是一个 Area2D，检测到角色进入后直接改写角色的 velocity（比如 `velocity.y = launch_speed`）。角色代码不需要认识每一个机关——这是一个可复用的模式：CharacterBody2D 只负责"常规物理"，一切非常规速度都由外部机关注入。
+
+## 碰撞形状：CollisionShape2D 与形状家族
 
 CharacterBody2D 自身没有形状，碰撞范围由 CollisionShape2D 子节点定义。使用规则有三条：
 
@@ -145,25 +153,38 @@ CharacterBody2D 自身没有形状，碰撞范围由 CollisionShape2D 子节点�
 
 编辑器里还有个更直观的 CollisionPolygon2D 节点：直接用多边形画出碰撞范围，构建模式（Build Mode）分 Solids（实心）与 Segments（仅边线段）两种。
 
-另外有个提效小技巧：选中 Sprite2D，打开 2D 视口上方工具栏的菜单，选择 Create CollisionPolygon2D Sibling，编辑器会按贴图轮廓自动生成一个碰撞多边形兄弟节点，还可以调整轮廓的简化程度。
+提效小技巧：选中 Sprite2D，打开 2D 视口上方工具栏的菜单，选择 Create CollisionPolygon2D Sibling，编辑器会按贴图轮廓自动生成一个碰撞多边形兄弟节点，还可以调整轮廓的简化程度。
 
-最后是两个易错点：
+## 坑点与自检
+
+三条铁律（官方文档反复强调的初学者三大错误）：
+
+1. 移动代码放 `_physics_process()`。物理帧以固定步长推进，而 `_process` 跟随渲染帧率波动，把移动写错地方会导致运动不稳定、碰撞漏检。
+2. 不要给 `move_and_slide()` 传 velocity * delta。它内部已经处理了 delta，你再乘一次，角色就会以双倍速度移动。要自己乘 delta 的是 `move_and_collide()`。
+3. 不要直接改 position 来移动。对 position 赋值绕过了碰撞检测，角色会径直穿墙。正确姿势是设置 velocity（或算好本帧位移），再调用两套移动 API 之一。
+
+再加两条形状相关的：
 
 - 不要平移、旋转、缩放 CollisionShape2D 节点本身，这会破坏物理引擎的 broad phase（宽相检测）优化。要调整形状位置，应移动 body，或修改形状资源的尺寸参数。
 - 动态物体（角色、可推动的箱子）的形状数量尽量少、形状尽量简单。物理开销主要来自形状数量，而不是单个形状的复杂度。
 
-## 小结
+自检问题：角色站在移动平台上跟着走两步就滑落；按下跳跃有时没反应。前者检查平台是否也在用物理方式移动（移动 StaticBody 也应改其位置于 `_physics_process`）；后者多半是 `is_action_just_pressed` 写在了 `_process` 里而移动判定在 `_physics_process` 里，两帧错位导致按键被跳过。
 
-- CharacterBody2D 是代码控制的运动学碰撞体，不受引擎自动施力，移动完全由你编写；velocity 跨帧保留。
-- 官方模板的骨架是：_physics_process 中累加重力、判定着地后跳跃、按轴向设定水平速度，最后 move_and_slide()。
-- move_and_slide() 无参、内部处理 delta、最多循环 5 次滑动、会改写 velocity；move_and_collide(velocity * delta) 碰到即停、返回 KinematicCollision2D 或 null，适合子弹反弹这类自定义响应。
-- 滑动碰撞用 get_slide_collision_count() 与 get_slide_collision(i) 读取，只统计改变移动方向的碰撞。
-- motion_mode 默认 GROUNDED，俯视角改用 FLOATING；is_on_floor 等判定依赖 up_direction；floor_max_angle 默认 45 度。
-- 三条铁律：移动写 _physics_process；move_and_slide() 不乘 delta；不直接改 position 移动。
-- CollisionShape2D 必须是 PhysicsBody2D 的直接子节点并指定 Shape2D 资源；凹形形状对 CharacterBody 无效；不要变换 CollisionShape2D 节点本身，动态物体形状宜少宜简。
+## 练习
+
+1. 给跳跃加"土狼时间"（离地后 0.1 秒内仍可起跳）：用 `get_tree().create_timer()` 或一个倒数计时器记录"离地时刻"，放宽 `is_on_floor()` 的判定窗口。改完把数值抽进 movement_tuning.gd。
+2. 做一个弹跳板：Area2D 加矩形碰撞，角色碰到后 velocity.y 被设为 -800，弹起高度明显超过普通跳跃。想一想为什么在 Area2D 的 body_entered 里改 velocity 是安全的，而在 `_process` 里随手改就不行。
+3. 把模板改成俯视角后，加一个"推箱子"：RigidBody2D 箱子加 push 动作，角色接触并按住 push 时给箱子施加冲量。观察 CharacterBody2D 与 RigidBody2D 相互推动时的行为差异。
+
+## 下一步
+
+- 地面从哪来：瓦片地图与关卡设计（090 篇），几何构成的 levels_native 关卡正是按幕分场组织的。
+- 跳跃落地时的音效与随机化：音频播放（120 篇）。
+- 输入动作的创建细节回看输入篇（060 篇），几何构成的真实输入表在那里逐项拆过。
 
 ## 参考链接
 
 - [使用 CharacterBody2D](https://docs.godotengine.org/en/stable/tutorials/physics/using_character_body_2d.html)
 - [2D 碰撞形状](https://docs.godotengine.org/en/stable/tutorials/physics/collision_shapes_2d.html)
 - [空闲与物理处理](https://docs.godotengine.org/en/stable/tutorials/scripting/idle_and_physics_processing.html)
+- 动作游戏几何构成 speed-rouge（本篇拆分结构的出处）：https://github.com/fanquanpp/geometric-construct

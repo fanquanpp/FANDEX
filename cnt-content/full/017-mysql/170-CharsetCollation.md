@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: MySQL 字符集体系一次讲透：utf8 与 utf8mb4 的历史坑、四级配置的继承规则、排序规则 ai_ci 后缀解读、乱码与索引失效两类经典事故。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'mysql/070-MySQLDataTypeConstraint'
   - 'mysql/230-CompositeIndexLeftmostPrefixPrinciple'
@@ -155,4 +155,4 @@ EXPLAIN SELECT * FROM t1 JOIN t2 USING (name);
 
 ## 下一步
 
-字符集是"数据长什么样"的地基，索引是"数据怎么找"的地基：带着本篇的字节/字符意识，进入 [索引管理](/mysql/210-IndexManagement) 与 [联合索引设计](/mysql/230-CompositeIndexLeftmostPrefixPrinciple)。
+字符集是"数据长什么样"的地基，索引是"数据怎么找"的地基：带着本篇的字节/字符意识，进入 [索引管理](/mysql/090-SQLDataDefinitionAdvanced) 与 [联合索引设计](/mysql/230-CompositeIndexLeftmostPrefixPrinciple)。

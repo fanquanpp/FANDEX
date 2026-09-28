@@ -1,12 +1,12 @@
 ---
-order: 810
+order: 820
 title: Java 与 GraalVM
 module: 'java'
 category: 后端技术
 difficulty: advanced
 description: GraalVM、Native Image、SubstrateVM、Truffle 框架与云原生 Java 的系统性深度剖析
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/100-MethodDetailed'
   - 'java/570-JavaVirtualThread'

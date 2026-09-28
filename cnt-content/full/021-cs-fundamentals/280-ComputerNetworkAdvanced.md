@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 计算机网络进阶：TCP拥塞控制、路由算法、SDN、QoS与网络性能分析
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/490-CompilePrincipleAdvanced'
   - 'cs-fundamentals/160-OperatingSystemAdvanced'
@@ -121,9 +121,9 @@ BGP 选路优先级：
 
 ```
 应用层（网络应用）
-    ↕ 北向 API
+    <-> 北向 API
 控制层（SDN 控制器）
-    ↕ 南向 API（OpenFlow）
+    <-> 南向 API（OpenFlow）
 基础设施层（交换机/路由器）
 ```
 

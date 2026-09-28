@@ -1217,7 +1217,7 @@ flowchart TD
     G -- 是 --> H[B+ 树]
     G -- 否 --> I[B 树]
     B -- 高并发 --> J{需要高并发?}
-    J -- 是 --> K[B-link 树 (Lehman-Yao)]
+    J -- 是 --> K["B-link 树 (Lehman-Yao)"]
     A -- 访问局部性强 --> L[Splay 树]
     A -- 教学用途 --> M{侧重?}
     M -- 工程实践 --> N[红黑树]

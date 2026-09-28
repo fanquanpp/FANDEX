@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 中断分类（硬件中断与异常）、IDT 中断描述符表、中断处理流程与系统调用完整机制。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/150-OperatingSystem'
   - 'cs-fundamentals/170-PCBThreadTCB'
@@ -17,8 +17,8 @@ prerequisites:
 
 ## 前置知识
 
-- 进程与 CPU 的关系，程序计数器 PC 的作用（见 [进程 PCB 与线程 TCB](cs-fundamentals/170-PCBThreadTCB)）；
-- 用户态与内核态的特权级概念（详见 [用户态与内核态切换](cs-fundamentals/200-UserModeKernelModeSwitch)）；
+- 进程与 CPU 的关系，程序计数器 PC 的作用（见 [进程 PCB 与线程 TCB](/cs-fundamentals/170-PCBThreadTCB)）；
+- 用户态与内核态的特权级概念（详见 [用户态与内核态切换](/cs-fundamentals/200-UserModeKernelModeSwitch)）；
 - 基础的 C 语言函数调用约定。
 
 ## 学习目标
@@ -174,4 +174,4 @@ int main(void) {
 
 - fault（如缺页）处理完成后会重执行触发指令，trap 则直接继续——理解这一点才能读懂缺页密集型程序的 strace 输出。
 - 中断处理分顶半部/底半部，中断上下文不可睡眠；`/proc/interrupts` 与 `/proc/softirqs` 是排查中断负载的入口。
-- 系统调用开销（约几百纳秒）在高频小 I/O 场景不可忽略，vDSO、io_uring 等优化都围绕"少进出内核"展开（见 [用户态与内核态切换](cs-fundamentals/200-UserModeKernelModeSwitch)）。
+- 系统调用开销（约几百纳秒）在高频小 I/O 场景不可忽略，vDSO、io_uring 等优化都围绕"少进出内核"展开（见 [用户态与内核态切换](/cs-fundamentals/200-UserModeKernelModeSwitch)）。

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub 仓库创建、克隆、归档、删除的完整操作指南：从开新店到关店的全流程向导。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'github/010-GitHubOverview'
   - 'github/020-AccountRegister2FA'
@@ -81,10 +81,10 @@ gh repo create my-notes-app --private
 ### 3.1 克隆命令
 
 ```bash
-# HTTPS 克隆（需要 PAT，见 004 篇）
+# HTTPS 克隆（需要 PAT，配置见 040-SSHHTTPS 篇）
 git clone https://github.com/OWNER/REPO.git
 
-# SSH 克隆（需要配置 SSH 密钥，见 004 篇）
+# SSH 克隆（需要配置 SSH 密钥，见 040-SSHHTTPS 篇）
 git clone git@github.com:OWNER/REPO.git
 
 # 克隆指定分支
@@ -138,7 +138,7 @@ git push origin main                   # 推送本地更新
 
 ### 3.4 切换仓库可见性与协作权限
 
-**可见性切换**（公开 ↔ 私有）：进入仓库 **Settings → Danger Zone → Change repository visibility**。
+**可见性切换**（公开 <-> 私有）：进入仓库 **Settings → Danger Zone → Change repository visibility**。
 
 - 公开转私有：仓库立即从公开索引消失，原公开链接变 404；之前别人 Fork 的副本不受影响。
 - 私有转公开：**务必先审计**历史提交、Issue、Wiki 中是否有密钥、密码、个人信息，再执行切换。
@@ -254,7 +254,7 @@ gh repo create ORG/repo-a --public --description "desc"
 
 ### 延伸阅读
 
-- 仓库与 GitHub 整体概念，见 001 篇《GitHub 概述》。
-- HTTPS 与 SSH 远程配置，见 004 篇《SSH 与 HTTPS 远程配置》。
-- 分支模型与分支保护规则，见 007 篇《分支模型与分支保护规则》。
-- 仓库迁移、镜像与批量管理，见 049 篇《Gh Repo 管理》。
+- 仓库与 GitHub 整体概念，见 [GitHub 是什么](/github/010-GitHubOverview)。
+- HTTPS 与 SSH 远程配置，见 [SSH 与 HTTPS](/github/040-SSHHTTPS)。
+- 分支模型与分支保护规则，见 [分支模型与分支保护规则](/github/170-BranchModelBranchRule)。
+- 仓库迁移、镜像与批量管理，见 [GitHub CLI 仓库管理](/github/480-GhRepoManage)。

@@ -142,25 +142,95 @@ html[data-theme='light'] .astro-code span {
   }
 }
 
+
+/* ===== Mermaid 图表（构建期渲染 SVG + 客户端 panzoom 交互） ===== */
+
 .mermaid-figure {
+  position: relative;
   margin: 1.25em 0;
   border: 1px solid var(--color-border-strong);
-  border-left: 3px solid var(--color-accent-base, var(--color-accent-base));
+  border-left: 3px solid var(--color-accent-base);
   border-radius: var(--radius-md, 4px);
   background: var(--color-bg-card);
   overflow: hidden;
 }
 
-.mermaid-scroll {
+.mermaid-canvas {
   padding: 1.25em 1em;
-  overflow-x: auto;
   display: flex;
   justify-content: center;
+  overflow: hidden;
 }
 
-.mermaid-scroll svg {
+.mermaid-svg {
+  min-width: 0;
+}
+
+.mermaid-svg svg {
   max-width: 100%;
   height: auto;
+  display: block;
+  margin-inline: auto;
+  cursor: grab;
+  touch-action: none;
+}
+
+.mermaid-svg svg:active {
+  cursor: grabbing;
+}
+
+/* 亮暗双套 SVG：按主题切换显示，主题切换零重绘 */
+.mermaid-svg.is-dark {
+  display: none;
+}
+
+[data-theme='dark'] .mermaid-svg.is-light,
+html[data-theme='dark'] .mermaid-svg.is-light {
+  display: none;
+}
+
+[data-theme='dark'] .mermaid-svg.is-dark,
+html[data-theme='dark'] .mermaid-svg.is-dark {
+  display: block;
+}
+
+.mermaid-toolbar {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  display: flex;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-control, 4px);
+  background: color-mix(in srgb, var(--color-bg-card) 88%, transparent);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  transition: opacity var(--motion-duration-instant, 150ms) ease-out;
+}
+
+.mermaid-figure:hover .mermaid-toolbar,
+.mermaid-figure:focus-within .mermaid-toolbar,
+.mermaid-figure.is-fullscreen .mermaid-toolbar {
+  opacity: 1;
+}
+
+.mermaid-tool-btn {
+  width: 26px;
+  height: 26px;
+}
+
+.mermaid-tool-btn svg {
+  width: 13px;
+  height: 13px;
+}
+
+.mermaid-source {
+  margin: 0;
+  padding: 1em;
+  border-top: 1px solid var(--color-border-light);
+  max-height: 60vh;
+  overflow: auto;
+  background: var(--color-bg-page, transparent);
 }
 
 .mermaid-caption {
@@ -173,9 +243,63 @@ html[data-theme='light'] .astro-code span {
   text-transform: uppercase;
 }
 
-pre.mermaid-loading {
+/* 全屏：图表占满视口，滚轮直接缩放 */
+.mermaid-figure.is-fullscreen,
+.mermaid-figure:fullscreen {
+  display: flex;
+  flex-direction: column;
+  margin: 0;
+  border: none;
+  border-radius: 0;
+  background: var(--color-bg-page);
+  width: 100vw;
+  height: 100vh;
+  height: 100dvh;
+}
+
+.mermaid-figure.is-fullscreen .mermaid-canvas,
+.mermaid-figure:fullscreen .mermaid-canvas {
+  flex: 1;
+  min-height: 0;
+  align-items: center;
+}
+
+.mermaid-figure.is-fullscreen .mermaid-svg svg,
+.mermaid-figure:fullscreen .mermaid-svg svg {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+.mermaid-figure.is-fullscreen .mermaid-toolbar,
+.mermaid-figure:fullscreen .mermaid-toolbar {
+  opacity: 1;
+}
+
+pre[data-language='mermaid'],
+pre[data-mermaid-state='loading'] {
+  opacity: 0.9;
+}
+
+pre[data-mermaid-state='loading'] {
   opacity: 0.45;
   transition: opacity var(--motion-duration-instant, 150ms) ease-out;
 }
 
+@media print {
+  .mermaid-toolbar {
+    display: none;
+  }
+
+  .mermaid-svg.is-dark {
+    display: none !important;
+  }
+
+  .mermaid-svg.is-light {
+    display: block !important;
+  }
+
+  .mermaid-source {
+    display: none !important;
+  }
+}
 }

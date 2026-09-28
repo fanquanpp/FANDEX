@@ -4,28 +4,35 @@ title: 概述与核心数据结构
 module: 'redis'
 category: 数据库
 difficulty: beginner
-description: Redis 8.0概述、字符串SDS、哈希、列表quicklist、集合、有序集合跳表、位图、HyperLogLog、GEO、Stream、Vector Set。
+description: Redis 8 上手第一课：从报名工具的真实需求认识五种核心结构（String/Hash/List/Set/ZSet），动手跑通、理解内存键值模型的取舍，并给出全模块学习路径。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
+  - 'redis/020-KeyManagement'
+  - 'redis/030-HashCommand'
+  - 'redis/040-ListSetCommands'
   - 'redis/140-PersistenceModule'
-  - 'redis/180-ClusterHA'
 prerequisites: []
 ---
 
-## 学习目标
+## 1. 从一个周末球局工具开始
 
-本文是「Redis 与 MongoDB」模块的第 1 篇，难度定位为入门。重点内容：Redis 8.0概述、字符串SDS、哈希、列表quicklist、集合、有序集合跳表、位图、HyperLogLog、GEO、Stream、Vector Set。
+假设你要给公司同事做一个「周末球局报名」小工具，需求很朴素：
 
-主要章节：
+| 需求                                   | 直觉做法（关系库思维）   | Redis 的做法            |
+| :------------------------------------- | :----------------------- | :---------------------- |
+| 记一个人报名信息（姓名/电话/备注）     | users 表插一行           | Hash：一个键一个对象    |
+| 报名顺序列表，先报先得                 | 自增 id 排序查询         | List：LPUSH 进队        |
+| 「张三报过名没有」的高频判断           | SELECT ... WHERE         | Set：SISMEMBER O(1)     |
+| 积分榜，随时查前 10 名                 | ORDER BY score LIMIT 10  | ZSet：ZRANGE 毫秒级     |
+| 报名成功计数器（防超员）               | UPDATE counter 行锁      | String：INCR 原子自增   |
 
-- 1. Redis 8.0 概述
-- 2. 字符串（SDS）
-- 3. 哈希（Hash）
-- 4. 列表（List）
-- 5. 集合（Set）
-- 6. 有序集合（ZSet）
-- ……共 11 个章节
+这张表就是 Redis 的世界观：**不是「存数据进表」，而是「把每个访问模式
+映射到一种现成的内存结构」**。结构选对了，你的代码里就没有锁、没有
+LIMIT、没有 JOIN——一条命令完成一次高频操作。
+
+本文目标：把这张表里的五种结构逐一跑通，理解为什么 Redis 能做到微秒级，
+最后给你一张全模块的导航图。
 
 > 选型前先了解版本与许可现状（信息截至 2026-09，最新版本以 redis.io/downloads 为准）。
 
@@ -34,412 +41,178 @@ prerequisites: []
 - 形态：Redis 8 起，原 Redis Stack 的能力（JSON、时间序列、概率结构、查询引擎等）已并入 Redis Open Source 内核，Redis Stack 独立发行版停止更新（官方于 2025-09-15 停止 6.2/7.2/7.4 版本补丁），新项目直接用 Redis 8+。
 - 配套工具：Redis Insight 图形化客户端、redis-cli 命令行。
 
-
-## 1. Redis 8.0 概述
-
-### 1.1 Redis 简介
-
-Redis（Remote Dictionary Server）是开源的**内存键值数据库**，支持丰富的数据结构、持久化、高可用和集群功能。Redis 8.0 引入了 Vector Set 等重要新特性。
-
-### 1.2 Redis 核心特性
-
-| 特性         | 说明                                     |
-| :----------- | :--------------------------------------- |
-| 内存存储     | 所有数据存储在内存，读写延迟微秒级       |
-| 丰富数据结构 | String、Hash、List、Set、ZSet、Stream 等 |
-| 持久化       | RDB 快照 + AOF 日志，混合持久化          |
-| 高可用       | 主从复制 + Sentinel 哨兵自动故障转移     |
-| 集群         | Redis Cluster 无中心分片集群             |
-| 内置扩展能力 | 8.0 起内核内置 JSON、时间序列、概率数据结构、查询引擎（原 Stack 能力） |
-| 单线程模型   | 命令执行单线程，I/O 多线程（6.0+，8.0 重新实现） |
-
-### 1.3 Redis 8.0 新特性
-
-```
-- Vector Set: 原生高维向量近似搜索数据结构（HNSW，8.0 以 beta 引入）
-- 查询引擎（Query Engine）: 支持集群横向扩展与垂直扩展，向量检索能力增强
-- I/O 线程重新实现: io-threads 参数可显著提升多核吞吐（默认 1）
-- 复制机制重构: 双流并行复制，全量同步期间峰值复制缓冲最多降低 35%
-- 新增 Hash 命令: HGETDEL / HGETEX / HSETEX（基于 7.4 的字段级过期 HFE）
-- ACL 新增类别: @bloom/@cms/@topk/@t-digest/@vector-set 等覆盖新数据结构
-```
-
-注意：Redis for AI、Redis Flex 属 Redis 商业产品（Redis Cloud / Redis Software）与
-解决方案层面的能力，不是开源内核（Redis Open Source）的配置项，不要在
-redis.conf 中寻找对应开关。
-
-## 2. 字符串（SDS）
-
-### 2.1 SDS 结构
-
-Redis 使用 SDS（Simple Dynamic String）替代 C 字符串：
-
-```c
-// SDS 结构
-struct sdshdr {
-    int len;       // 已使用长度
-    int free;      // 剩余空间
-    char buf[];    // 数据区
-};
-```
-
-| 特性       | C 字符串 | SDS                          |
-| :--------- | :------- | :--------------------------- |
-| 获取长度   | O(n)     | O(1)                         |
-| 缓冲区溢出 | 可能     | 不会（空间预分配）           |
-| 二进制安全 | 否       | 是（len 判断结尾）           |
-| 内存重分配 | 每次修改 | 最多 N 次（预分配+惰性释放） |
-
-### 2.2 常用命令
+## 2. 动手：十分钟搭好环境
 
 ```bash
-# 基本操作
-SET key value [EX seconds] [PX ms] [NX|XX] [KEEPTTL]
-GET key
-DEL key [key ...]
+# 用 Docker 起 Redis 8（生产请加密码与持久化配置，这里先跑通）
+docker run -d --name redis8 -p 6379:6379 redis:8
 
-# 设置带过期
-SET session:abc123 '{"user":"admin"}' EX 3600    # 1小时过期
-SET cache:home '<html>...</html>' EX 300          # 5分钟缓存
-
-# NX: 仅键不存在时设置（分布式锁）
-SET lock:order:123 "uuid-xxx" NX EX 30
-
-# 批量操作
-MSET key1 val1 key2 val2 key3 val3
-MGET key1 key2 key3
-
-# 数值操作
-SET counter 100
-INCR counter           # 101
-INCRBY counter 10      # 111
-DECRBY counter 5       # 106
-INCRBYFLOAT counter 2.5 # 108.5
-
-# 位操作
-SETBIT user:active:20240101 100 1    # 第100位设为1
-GETBIT user:active:20240101 100      # 返回1
-BITCOUNT user:active:20240101         # 统计活跃用户数
-BITOP AND result key1 key2            # 位运算
+# 进入命令行
+docker exec -it redis8 redis-cli
+127.0.0.1:6379> PING
+PONG                          # 连通性确认
 ```
 
-## 3. 哈希（Hash）
+不装 Docker 也可以去 redis.io 下载安装包，或直接用 Redis Insight
+（图形界面自带教程终端）。后文所有命令都可以照着敲，`>` 后是输入，
+`#` 后是返回或解释。
 
-### 3.1 底层编码
+## 3. 五种结构逐个跑通
 
-```
-Hash 底层编码:
-1. listpack（小对象）: field 数量 ≤ hash-max-listpack-entries 且值长度 ≤ hash-max-listpack-value
-2. hashtable（大对象）: 超过阈值时转换
-
-hashtable 结构:
-  dict → ht[0] + ht[1]（渐进式 rehash）
-  每个 ht: 数组 + 哈希函数（SipHash）
-```
-
-### 3.2 常用命令
+### 3.1 String：不只是字符串，还是计数器
 
 ```bash
-# 基本操作
-HSET user:1001 name "Alice" age 30 email "alice@example.com"
-HGET user:1001 name              # "Alice"
-HMGET user:1001 name age email   # 批量获取
-HGETALL user:1001                 # 获取所有字段
-HDEL user:1001 email              # 删除字段
-HLEN user:1001                    # 字段数量
+# 存取
+SET player:1001:name "张三"
+GET player:1001:name            # "张三"
 
-# 数值操作
-HINCRBY user:1001 age 1           # 年龄+1
-HINCRBYFLOAT user:1001 score 0.5  # 浮点数增加
-
-# 条件操作
-HSETNX user:1001 email "new@example.com"  # 仅字段不存在时设置
-
-# 判断与遍历
-HEXISTS user:1001 name            # 字段是否存在
-HKEYS user:1001                   # 所有字段名
-HVALS user:1001                   # 所有字段值
-HSCAN user:1001 MATCH "na*"       # 模式匹配遍历
+# 原子计数：场地容量 20 人，每报名一次 +1
+SET court:seats 0
+INCR court:seats                # 1
+INCR court:seats                # 2
+INCRBY court:seats 3            # 5
 ```
 
-## 4. 列表（List）
+为什么不用「GET 出来加 1 再 SET 回去」？两个请求同时 GET 会拿到同一个
+旧值，互相覆盖（丢失更新）。INCR 是单条命令，Redis 保证原子执行，
+天然并发安全——这是你第一次尝到「命令级原子性」的甜头。
 
-### 4.1 底层编码
+String 的底层是 Redis 自己实现的 SDS（简单动态字符串），O(1) 取长度、
+二进制安全，细节见《字符串 SDS 结构》（redis/260-StringSDSStructure）。
 
-```
-List 底层编码: quicklist
-  quicklist = listpack（压缩列表）+ 双向链表
-  每个节点是一个 listpack，中间节点可压缩（LZF 算法）
-
-配置参数:
-  list-max-listpack-size: 单个 listpack 大小限制
-  list-compress-depth: 压缩深度（0=不压缩，1=首尾不压缩）
-```
-
-### 4.2 常用命令
+### 3.2 Hash：一个键存一个对象
 
 ```bash
-# 队列操作（FIFO）
-LPUSH queue:tasks "task1" "task2"    # 左端入队
-RPOP queue:tasks                      # 右端出队
-
-# 栈操作（LIFO）
-LPUSH stack:undo "action1"
-LPOP stack:undo
-
-# 阻塞操作（消息队列场景）
-BLPOP queue:tasks 30    # 阻塞等待30秒
-BRPOP queue:tasks 0     # 无限等待
-
-# 查看与裁剪
-LLEN queue:tasks                       # 列表长度
-LRANGE queue:tasks 0 -1                # 查看所有元素
-LRANGE queue:tasks 0 9                 # 前10个
-LTRIM queue:tasks 0 99                 # 仅保留前100个
-
-# 指定位置操作
-LINDEX queue:tasks 0                   # 按索引获取
-LSET queue:tasks 0 "updated_task"      # 按索引设置
-LINSERT queue:tasks BEFORE "task2" "task1.5"  # 插入
-LREM queue:tasks 2 "task1"             # 删除指定值
+# 报名信息：键是对象名，字段是属性
+HSET player:1001 name "张三" phone "13800000000" level "B"
+HGET player:1001 name               # "张三"
+HINCRBY player:1001 games 1         # 参与场次 +1（字段级原子自增）
+HGETALL player:1001                 # 取回全部字段
 ```
 
-## 5. 集合（Set）
+对比 String 存 JSON：改一个字段要「取回-反序列化-改-序列化-写回」，
+并发下会互相覆盖；Hash 让你只动一个字段。什么时候仍然用 String 存
+JSON？对象总是整存整取、没有字段级并发修改时，JSON 反而更省事。
 
-### 5.1 底层编码
-
-```
-Set 底层编码:
-1. intset: 所有元素都是整数且数量 ≤ set-max-intset-entries（默认512）
-2. hashtable: 元素为哈希表的 key，value 为 NULL
-```
-
-### 5.2 常用命令
+### 3.3 List：有序、可重复、两端进出
 
 ```bash
-# 基本操作
-SADD tags:article:1 "redis" "database" "nosql"
-SREM tags:article:1 "nosql"
-SISMEMBER tags:article:1 "redis"       # 是否存在
-SMEMBERS tags:article:1                 # 所有成员
-SCARD tags:article:1                    # 成员数量
+# 报名顺序：先到先排
+LPUSH signup:order "player:1003"
+LPUSH signup:order "player:1001" "player:1002"
+LRANGE signup:order 0 2             # 看前 3 个报名者
+LLEN signup:order                   # 3
 
-# 随机操作
-SRANDMEMBER tags:article:1 2            # 随机取2个（不删除）
-SPOP tags:article:1                     # 随机弹出1个
-
-# 集合运算
-SADD set:a 1 2 3 4 5
-SADD set:b 3 4 5 6 7
-
-SINTER set:a set:b           # 交集: {3,4,5}
-SUNION set:a set:b           # 并集: {1,2,3,4,5,6,7}
-SDIFF set:a set:b            # 差集: {1,2}
-
-SINTERSTORE result set:a set:b   # 交集存入 result
-SUNIONSTORE result set:a set:b   # 并集存入 result
-SDIFFSTORE result set:a set:b    # 差集存入 result
-
-# 遍历
-SSCAN tags:article:1 MATCH "re*"
+# 候补队列消费：右端出队
+RPOP signup:order                   # "player:1003"（最早报名的先出）
 ```
 
-## 6. 有序集合（ZSet）
+List 一体两面：当队列（LPUSH+RPOP / BRPOP 阻塞版）、当栈（同端进出）、
+当定长时间线（LPUSH+LTRIM 只留最新 N 条）。命令全集与队列/栈套路见
+《List 与 Set 实战命令》（redis/040-ListSetCommands）。
 
-### 6.1 底层编码
-
-```mermaid
-flowchart LR
-    Top[最高层] --> L2a[第2层] --> L1a[第1层]
-    L2a --> L2b[第2层节点] --> L1b[第1层节点]
-    L2b --> L2c[第2层节点] --> L1c[第1层节点]
-```
-
-平均查询复杂度：O(logN)，空间复杂度：O(N)
-
-### 6.2 常用命令
+### 3.4 Set：无序去重 + O(1) 成员判断
 
 ```bash
-# 添加与更新
-ZADD leaderboard 100 "Alice" 95 "Bob" 88 "Charlie"
-ZADD leaderboard XX 105 "Alice"          # 仅更新已存在成员
-ZADD leaderboard NX 92 "David"           # 仅添加新成员
-ZADD leaderboard GT 110 "Alice"          # 仅当新分数更大时更新
-ZADD leaderboard LT 80 "Bob"             # 仅当新分数更小时更新
-
-# 查询
-ZSCORE leaderboard "Alice"               # 获取分数
-ZRANK leaderboard "Alice"                # 排名（升序，从0开始）
-ZREVRANK leaderboard "Alice"             # 排名（降序）
-
-# 范围查询（按分数）
-ZRANGEBYSCORE leaderboard 90 100         # 分数 90~100
-ZRANGEBYSCORE leaderboard -inf +inf      # 所有
-ZRANGEBYSCORE leaderboard (90 100        # 开区间 >90
-ZCOUNT leaderboard 90 100                # 计数
-
-# 范围查询（按排名）
-ZRANGE leaderboard 0 9 WITHSCORES        # 前10名（升序）
-ZREVRANGE leaderboard 0 9 WITHSCORES     # 前10名（降序）
-
-# 删除
-ZREM leaderboard "Charlie"
-ZREMRANGEBYRANK leaderboard 0 2          # 删除排名0~2
-ZREMRANGEBYSCORE leaderboard -inf 60     # 删除分数≤60
-
-# 聚合操作
-ZUNIONSTORE result 2 leaderboard1 leaderboard2 WEIGHTS 1 2 AGGREGATE SUM
-ZINTERSTORE result 2 leaderboard1 leaderboard2 AGGREGATE MAX
+SADD signup:set "player:1001" "player:1002"
+SADD signup:set "player:1001"       # 返回 0：已经报过名，自动去重
+SISMEMBER signup:set "player:1001"  # 1：高频判断不查全量
+SCARD signup:set                    # 报名人数
+SADD court:b "player:1002" "player:1005"
+SINTER signup:set court:b           # 两场都报的人（交集）
 ```
 
-## 7. 位图（Bitmap）
+「重复报名」这类业务规则，用 Set 的去重返回值一行代码就挡住了。交集、
+并集、差集还能回答「共同关注」「推荐好友」类问题，见 040 篇第 3 节。
+
+### 3.5 ZSet：带分数的排行榜
 
 ```bash
-# 位图操作（基于 String 类型）
-SETBIT sign:202401:1001 0 1     # 第1天签到
-SETBIT sign:202401:1001 6 1     # 第7天签到
-GETBIT sign:202401:1001 0       # 检查第1天是否签到
-BITCOUNT sign:202401:1001       # 本月签到次数
-BITPOS sign:202401:1001 1       # 第一个签到的天
-
-# 统计活跃用户
-SETBIT active:20240101 1001 1   # 用户1001活跃
-SETBIT active:20240101 1002 1   # 用户1002活跃
-BITCOUNT active:20240101        # 当日活跃用户数
-
-# 连续签到天数
-BITFIELD sign:202401:1001 GET u31 0  # 获取31位无符号整数
+ZADD ranking 1800 "player:1001" 1650 "player:1002" 1900 "player:1003"
+ZREVRANGE ranking 0 2 WITHSCORES    # 前 3 名（按分数降序）
+ZREVRANK ranking "player:1001"      # 1：第 2 名（从 0 数）
+ZINCRBY ranking 50 "player:1001"    # 打完一局加分，排名实时变化
+ZRANGEBYSCORE ranking (1800 +inf    # 分数严格高于 1800 的成员
 ```
 
-## 8. HyperLogLog
+ZSet 是 Redis 的招牌结构：插入、更新、按名次取区间都是 O(logN)，
+「排行榜」「延时队列」「滑动窗口限流」都靠它。底层是跳表 + 哈希表的
+组合，为什么两个结构都要，见《跳表与有序集合》（redis/270-SkipListAndSortedSet）。
 
-```bash
-# 基数估算（0.81% 标准误差，仅 12KB 内存）
-PFADD uv:20240101 "user1" "user2" "user3"
-PFADD uv:20240101 "user1" "user4"        # 重复不计数
-PFCOUNT uv:20240101                       # 估算独立访客数
+## 4. 为什么快：内存 + 单线程事件循环
 
-# 合并
-PFADD uv:20240102 "user2" "user3" "user5"
-PFMERGE uv:week uv:20240101 uv:20240102
-PFCOUNT uv:week                           # 合并后的独立访客数
-```
+理解两条设计前提，后面的很多「怪脾气」都能解释通：
 
-## 9. GEO（地理位置）
+1. **数据在内存**。磁盘数据库的毫秒级延迟主要是寻道与页缓存开销；
+   内存访问比它快几个数量级，Redis 把「全部数据放内存」作为前提，
+   持久化只做兜底（见 140 篇）。
+2. **命令执行单线程**。所有命令排队进入一个事件循环顺序执行，单条
+   命令天然原子，没有锁竞争。代价是：**任何慢命令都会拖住所有请求**——
+   这解释了为什么 KEYS、大集合 SMEMBERS、超大 offset 的 SETBIT 是
+   生产事故高发区（见第 6 节）。
 
-```bash
-# GEO 基于 ZSet 实现（使用 GeoHash 编码作为分数）
+Redis 8 时代这两条依然成立，只是外延扩展了：网络 I/O 可以多线程
+（io-threads），命令执行仍是单线程；8.0 对 I/O 线程实现做了重写，
+多核机器上吞吐提升明显。完整清单见《Redis 8 新特性》（redis/310-RedisNewFeatures8）。
 
-# 添加地理位置
-GEOADD locations 116.397 39.908 "北京" 121.474 31.230 "上海" 113.264 23.129 "广州"
+五种结构之外，Redis 8 还有更多「专用结构」：位图（签到/活跃）、
+HyperLogLog（UV 估算）、GEO（附近的人）、Stream（消息队列）、
+Vector Set（8.0 新增的向量相似检索）。它们的使用方式都在本文五种
+基础的延长线上，遇到对应需求再去翻对应篇目即可。
 
-# 计算距离
-GEODIST locations "北京" "上海" km       # 约 1067.5 km
+## 5. 结构选型速查
 
-# 范围查询
-GEORADIUS locations 116.397 39.908 500 km WITHDIST WITHCOORD COUNT 10
-GEORADIUSBYMEMBER locations "北京" 500 km WITHDIST
+| 你要做什么                        | 用什么  | 深入阅读                       |
+| :-------------------------------- | :------ | :----------------------------- |
+| 计数、限流、分布式锁的凭证        | String  | redis/260（底层）、redis/250   |
+| 对象的字段级读写                  | Hash    | redis/030-HashCommand          |
+| 队列、栈、最新动态                | List    | redis/040-ListSetCommands      |
+| 去重、成员判断、交并差            | Set     | redis/040-ListSetCommands      |
+| 排行榜、延时任务                  | ZSet    | redis/270-SkipListAndSortedSet |
+| 签到、日活、布尔矩阵              | Bitmap  | redis/060-BitMapRedis          |
+| 亿级去重计数（允许 0.81% 误差）   | HLL     | redis/050-NumberStats          |
+| 附近的人、门店搜索                | GEO     | redis/070-GeoSpatial           |
+| 可靠消息流、事件溯源              | Stream  | redis/090-Stream               |
+| 语义搜索、推荐召回（AI 场景）     | Vector Set | redis/100-VectorSet         |
 
-# Redis 6.2+ 推荐使用 GEOSEARCH
-GEOSEARCH locations FROMMEMBER "北京" BYRADIUS 500 km WITHDIST COUNT 10
-GEOSEARCH locations FROMLONLAT 116.397 39.908 BYBOX 500 500 km WITHDIST
+## 6. 坑点与自检
 
-# 获取坐标
-GEOPOS locations "北京"
+新手前三周最容易踩的五个坑，每条都来自真实事故：
 
-# GeoHash 编码
-GEOHASH locations "北京"
-```
+1. **KEYS 上生产**。`KEYS *` 全库扫描，百万键直接卡死所有请求。
+   自检：代码里搜 KEYS，生产只允许 SCAN（见 redis/020-KeyManagement）。
+2. **把雪花 ID 当 SETBIT 的 offset**。位图内存由最大 offset 决定，
+   `SETBIT k 4000000000 1` 一条命令申请约 500MB。自检：offset 必须
+   是稠密的小整数编号。
+3. **HGETALL/SMEMBERS/LRANGE 0 -1 不看体量**。全是 O(N) 命令，
+   百万级成员一次拉全量就是一次人为卡顿。自检：任何全量读先 LLEN/HLEN/SCARD。
+4. **以为「设置了过期就一定按时消失」**。过期删除是惰性+定期抽样的
+   组合，不是定时器；也别把它和「内存满了淘汰」混为一谈。
+   自检：能说清过期（expiry）与淘汰（eviction）的区别（redis/020、redis/130）。
+5. **在单线程面前跑长命令**。Lua 脚本里写百万次循环、删除百万成员的
+   大键用 DEL 而不是 UNLINK，都会造成秒级不可用。自检：所有批量操作
+   都有分批与超时预估。
 
-## 10. Stream
+## 7. 练习
 
-### 10.1 Stream 基本操作
+1. 用 docker 起 Redis 8，把第 3 节五种结构的命令全部敲一遍，每一组
+   记录「命令-返回值」，与本文对照。任何一个返回值对不上，先怀疑
+   参数顺序。
+2. 给球局工具补一个「防超员」逻辑：只用 INCR 与一个上限值 20，思考
+   并发下会不会超？如果需要「满了不再增加」，INCR 返回值怎么用？
+   （提示：INCR 返回自增后的值，超过 20 就 DECR 回去，或直接读返回值判断。）
+3. 把 3.2 节的报名对象改成「String 存 JSON」，再体验一次改 level 字段
+   的完整流程，对比 Hash 的差异，写两句话结论进你的笔记。
 
-```bash
-# 添加消息（ID 位置写 * 表示由服务器自动生成）
-XADD orders:2024 * name "Alice" product "Book" price 29.9
-# 返回: "1704067200000-0"（毫秒时间戳-序号）
+## 8. 下一步
 
-# 裁剪：maxlen 是 XADD 的选项，写在 ID 之前
-XADD orders:2024 MAXLEN ~ 10000 * name "Bob" product "Pen" price 5.5
-# maxlen ~ 10000: 近似裁剪到10000条（允许略超以提升性能）
+本模块建议按这条主线推进：
 
-# 读取消息
-XRANGE orders:2024 - +                    # 所有消息
-XRANGE orders:2024 - + COUNT 10           # 前10条
-XRANGE orders:2024 1704067200000-0 +      # 从指定ID开始
-XREVRANGE orders:2024 + - COUNT 5         # 最新5条
+- 数据结构与命令：020 Key 管理 → 030 Hash → 040 List/Set → 050 计数 →
+  060 位图 → 070 GEO → 090-094 Stream → 100 Vector Set；
+- 生产三板斧：110 缓存策略 → 120 缓存三大问题 → 130 内存淘汰；
+- 持久化与高可用：140-170 持久化 → 180-220 复制/哨兵/集群；
+- 进阶：230-250 事务/Lua/分布式锁，260-280 底层结构与模块，310 Redis 8 全景。
 
-# 读取新消息（非阻塞）
-XREAD COUNT 10 STREAMS orders:2024 $
-
-# 阻塞读取
-XREAD COUNT 10 BLOCK 5000 STREAMS orders:2024 $
-```
-
-### 10.2 消费者组
-
-```bash
-# 创建消费者组
-XGROUP CREATE orders:2024 order-processors $ MKSTREAM
-# $ = 从最新消息开始，0 = 从头开始
-
-# 消费者读取
-XREADGROUP GROUP order-processors consumer1 COUNT 1 STREAMS orders:2024 >
-
-# 确认消息
-XACK orders:2024 order-processors 1704067200000-0
-
-# 查看待处理消息
-XPENDING orders:2024 order-processors
-
-# 查看消费者组信息
-XINFO GROUPS orders:2024
-XINFO CONSUMERS orders:2024 order-processors
-
-# 转移未确认消息给其他消费者
-XCLAIM orders:2024 order-processors consumer2 3600 1704067200000-0
-```
-
-## 11. Vector Set（Redis 8.0 新增）
-
-### 11.1 Vector Set 概述
-
-Vector Set 是 Redis 8.0 新增的数据结构（以 beta 引入），支持**高维向量近似最近邻搜索（ANN）**，基于 HNSW（Hierarchical Navigable Small World）算法。命令族与 ZSet 相似（V 前缀）：VADD / VSIM / VEMB / VDIM / VCARD / VREM / VSETATTR / VGETATTR / VISMEMBER / VRANDMEMBER / VINFO / VLINKS。
-
-```bash
-# 添加向量（VALUES <维度> <值...> <元素名>；默认 int8 量化存储）
-VADD products:vec VALUES 8 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 item:1
-VADD products:vec VALUES 8 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 item:2
-VADD products:vec VALUES 8 0.9 0.8 0.7 0.6 0.5 0.4 0.3 0.2 item:3
-
-# 相似度搜索：VSIM + VALUES（按向量查）或 ELE（按已有元素查）
-VSIM products:vec VALUES 8 0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 COUNT 5
-VSIM products:vec ELE item:1 COUNT 3 WITHSCORES
-
-# 元素属性（JSON 字符串），可配合 FILTER 过滤
-VSETATTR products:vec item:1 '{"category":"electronics"}'
-VSIM products:vec ELE item:1 COUNT 5 FILTER '.category == "electronics"'
-
-# 取回向量 / 维度 / 删除元素
-VEMB products:vec item:1      # 返回量化后的向量值
-VDIM products:vec             # 维度
-VREM products:vec item:1
-
-# 查看信息
-VINFO products:vec
-```
-
-注意：不存在 VSET / VSEARCH / VGET / VDEL 命令；添加、检索、删除分别对应
-VADD / VSIM / VREM。属性查询语法为 JSON 路径风格（`.category == "..."`）。
-
-### 11.2 Vector Set vs pgvector
-
-| 维度     | Redis Vector Set | pgvector       |
-| :------- | :--------------- | :------------- |
-| 存储     | 内存             | 磁盘（可缓存） |
-| 延迟     | 微秒级           | 毫秒级         |
-| 索引算法 | HNSW             | HNSW / IVFFlat |
-| 持久化   | RDB/AOF          | 原生持久化     |
-| 适用场景 | 实时推荐、缓存   | 大规模向量检索 |
-| 数据量   | 受内存限制       | 受磁盘限制     |
+学完本篇你应该能回答：五种结构分别解决什么访问模式、Redis 为什么快、
+慢命令为什么会拖垮整个实例。带着这三个答案进入下一篇《Key 管理与过期策略》。

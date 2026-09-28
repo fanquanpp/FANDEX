@@ -1,12 +1,12 @@
 ---
-order: 480
+order: 490
 title: 映射类型与键重映射
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: TypeScript映射类型与键重映射详解：Mapped Types、as子句与高级模式。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/440-ConditionalTypeInfer'
   - 'typescript/380-TypeScriptCompilePerformanceOptimization'
@@ -15,7 +15,7 @@ related:
 prerequisites: []
 ---
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 

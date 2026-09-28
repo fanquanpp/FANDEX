@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 进制转换、原码反码补码、IEEE 754浮点数、ASCII与Unicode编码（入门学习笔记）。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/090-ComputerArchitecture'
   - 'cs-fundamentals/070-DataRepresentationOperation'
@@ -76,7 +76,7 @@ prerequisites:
   结果: FF
 ```
 
-### 1.4 二进制 ↔ 八进制
+### 1.4 二进制 <-> 八进制
 
 方法：**每3位二进制对应1位八进制**（因为 2³ = 8）。
 
@@ -94,7 +94,7 @@ prerequisites:
   结果: 101 010 111
 ```
 
-### 1.5 二进制 ↔ 十六进制
+### 1.5 二进制 <-> 十六进制
 
 方法：**每4位二进制对应1位十六进制**（因为 2⁴ = 16）。
 

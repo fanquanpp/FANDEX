@@ -1,445 +1,198 @@
 ---
 order: 70
-title: 链表
+title: "链表：改两根指针，不搬家"
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
-description: 单链表、双链表与环形链表的原理、操作复杂度分析与多语言实现，涵盖常见面试题型。
+description: "以「播放列表频繁插歌删歌」引入：亲手把单链表建出来，用实测看清按位访问的代价，掌握哨兵节点、三指针反转、快慢指针三大技巧，双链表与 LRU 缓存、环形链表与约瑟夫问题，以及链表六大坑。"
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'algorithm/030-SortAlgorithm'
-  - 'algorithm/050-SearchAlgorithm'
+  - 'algorithm/020-ArrayAndDynamicArray'
+  - 'algorithm/040-StackAndQueue'
   - 'algorithm/070-HashTable'
-  - 'algorithm/080-Tree'
+  - 'algorithm/090-HeapAndPriorityQueue'
 prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
 ---
 
 ## 前置知识
 
-建议先阅读以下内容再进入本文：
+- 已完成 [算法分析基础](/algorithm/010-AlgorithmAnalysisBasics)：会用大 O 描述代价；
+- 了解数组的连续内存模型（[数组与动态数组](/algorithm/020-ArrayAndDynamicArray)）——链表是它的镜像对照。
 
-- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)
+## 学习目标
 
-## 1. 链表概述
+读完本文你将能够：
 
-### 1.1 链表 vs 数组
+1. 用「指针」亲手实现一个单链表，并解释插入删除 O(1) 这个结论的前提（已知前驱）；
+2. 独立写出三大高频子程序：哨兵节点删除、三指针反转、快慢指针（找中点、判环、找环入口）；
+3. 用哈希表 + 双链表实现 LRU 缓存，说清为什么缺一不可；
+4. 用环形链表解约瑟夫问题，并推导递推公式；
+5. 识别链表的六大典型 bug（丢后继、丢尾指针、环上死循环等）并能自纠。
 
-链表和数组是两种最基本的线性数据结构，它们在内存模型上有根本差异：
+预计 60 到 90 分钟。
 
-| 维度         | 数组           | 链表                 |
-| ------------ | -------------- | -------------------- |
-| 内存布局     | 连续           | 离散（通过指针连接） |
-| 随机访问     | O(1)           | O(n)                 |
-| 头部插入     | O(n)           | O(1)                 |
-| 尾部插入     | O(1) amortized | O(n)/O(1)(有尾指针)  |
-| 任意位置插入 | O(n)           | O(1)(已知前驱)       |
-| 缓存局部性   | 好             | 差                   |
-| 空间开销     | 无额外         | 每节点多一个指针     |
+## 1. 你现在要解决什么问题
 
-### 1.2 缓存局部性分析
+你在给一个音乐播放器写播放列表：用户会频繁地在中间插歌、删歌、拖动调整顺序，但几乎不会说「给我第 8371 首歌」。用数组实现会很难受——[数组篇](/algorithm/020-ArrayAndDynamicArray)实测过，中间插入是 O(n)，一万首歌的列表每插一次就搬家五千次。
 
-数组在内存中连续存储，CPU缓存行（通常64字节）可以预取相邻元素，缓存命中率高。链表节点分散在堆内存各处，每次访问可能触发缓存未命中。
+链表是这类「频繁中间增删、顺序遍历为主」需求的答案：数据存在一个个**节点**里，每个节点带一根指向下一节点的指针。插一首歌只需要改两根指针，一个节点都不用搬。代价是失去了「按下标一步到位」的能力——本文会用实验让你亲眼看到这笔交易的两端。
 
-实际性能差异：遍历100万个int元素，数组约1ms，链表约5-10ms（取决于内存分配器）。
+## 2. 最小可运行实验：把链表建出来，再和数组比一次
 
-**类比**：数组像一排编了号的储物柜——知道编号就能一步走到任意柜子；链表像寻宝游戏——每个线索只写着"下一条线索在哪儿"，想找第 100 条线索必须依次走过前 99 条。这就是"随机访问 $O(1)$ vs $O(n)$"的直观来源，也解释了为什么链表"删除/插入只需改动一两根指针"：换掉某条线索上的字条即可，不必搬动后面的所有柜子。
-
-### 1.3 学习目标
-
-完成本文档学习后，你应当能够：
-
-1. **说出**单链表、双链表、循环链表各自支持的操作及时间复杂度，并解释"已知前驱时插入删除 $O(1)$"这一结论的前提；
-2. **手写**反转链表（迭代与递归）、快慢指针找中点、判环与找环入口、合并两个有序链表五个核心子程序，且能逐步追踪每一步指针变化；
-3. **运用**哨兵节点（dummy head）统一边界处理，解决删除、合并、分组翻转类面试题；
-4. **推导**环入口公式的数学证明与约瑟夫问题递推式 $f(n,m) = (f(n-1,m)+m) \bmod n$；
-5. **识别**链表题的六大常见陷阱（丢后继、丢尾指针、环上死循环、内存泄漏、中点奇偶差异、递归栈深）并给出修正方案。
-
-> 跨模块引用：链表在哈希表冲突处理中的应用参见 [哈希表](/algorithm/070-HashTable)。C++ STL list的实现参见 [C++基础](/cpp/030-CppBasicSyntax)。
-
----
-
-## 2. 单链表
-
-### 2.1 节点定义与基本操作
-
-单链表每个节点包含数据域和指向下一个节点的指针域。
+先建一个最朴素的单链表，并让它支持基本操作：
 
 ```python
-class ListNode:
-    def __init__(self, val=0, next=None):
+class Node:
+    """单链表节点：一个数据域，一根指针"""
+    def __init__(self, val, next=None):
         self.val = val
         self.next = next
 
-class SinglyLinkedList:
-    def __init__(self):
-        self.head = None
-        self.tail = None
-        self.size = 0
+def build_chain(vals):
+    """把列表建成链表，返回头节点。头插法：新节点总插在最前面"""
+    head = None
+    for v in reversed(vals):
+        head = Node(v, head)
+    return head
 
-    def add_at_head(self, val):
-        node = ListNode(val, self.head)
-        self.head = node
-        if self.tail is None:
-            self.tail = node
-        self.size += 1
+def to_list(head):
+    """遍历链表，收集所有值"""
+    result = []
+    curr = head
+    while curr:
+        result.append(curr.val)
+        curr = curr.next
+    return result
 
-    def add_at_tail(self, val):
-        node = ListNode(val)
-        if self.tail is None:
-            self.head = self.tail = node
-        else:
-            self.tail.next = node
-            self.tail = node
-        self.size += 1
-
-    def delete_at_head(self):
-        if self.head is None:
-            return None
-        val = self.head.val
-        self.head = self.head.next
-        if self.head is None:
-            self.tail = None
-        self.size -= 1
-        return val
-
-    def find(self, val):
-        curr = self.head
-        while curr:
-            if curr.val == val:
-                return curr
-            curr = curr.next
-        return None
-
-    def to_list(self):
-        result = []
-        curr = self.head
-        while curr:
-            result.append(curr.val)
-            curr = curr.next
-        return result
+chain = build_chain([1, 2, 3])
+print(to_list(chain))   # [1, 2, 3]
 ```
 
-```cpp
-struct ListNode {
-    int val;
-    ListNode* next;
-    ListNode(int v) : val(v), next(nullptr) {}
-};
+注意 `build_chain` 里 `Node(v, head)` 的写法：新节点出生时就把指针接在旧头上，`head` 再回指新节点——**全程只动了两根指针，没有任何搬动**。这就是头部插入 O(1) 的全部秘密。
 
-class SinglyLinkedList {
-    ListNode* head;
-    ListNode* tail;
-    int sz;
-public:
-    SinglyLinkedList() : head(nullptr), tail(nullptr), sz(0) {}
+接着实测链表最痛的地方——按位置访问。数组的 `arr[99999]` 是一次寻址，链表只能从头数九万九千九百九十九步：
 
-    void addAtHead(int val) {
-        ListNode* node = new ListNode(val);
-        node->next = head;
-        head = node;
-        if (!tail) tail = node;
-        sz++;
-    }
+```python
+import timeit
 
-    void addAtTail(int val) {
-        ListNode* node = new ListNode(val);
-        if (!tail) head = tail = node;
-        else { tail->next = node; tail = node; }
-        sz++;
-    }
+def walk_to(head, k):
+    """从 head 出发走 k 步，返回到达的节点的值"""
+    curr = head
+    for _ in range(k):
+        curr = curr.next
+    return curr.val
 
-    int deleteAtHead() {
-        if (!head) return -1;
-        int val = head->val;
-        ListNode* tmp = head;
-        head = head->next;
-        delete tmp;
-        if (!head) tail = nullptr;
-        sz--;
-        return val;
-    }
+arr = list(range(100000))
+chain = build_chain(list(range(100000)))
 
-    ListNode* find(int val) {
-        ListNode* curr = head;
-        while (curr) {
-            if (curr->val == val) return curr;
-            curr = curr->next;
-        }
-        return nullptr;
-    }
-};
+print(arr[99999])             # 立即输出 99999
+print(walk_to(chain, 99999))  # 逐个数，慢很多
+
+t_arr = timeit.timeit(lambda: arr[99999], number=100000)
+t_chain = timeit.timeit(lambda: walk_to(chain, 99999), number=1000)
+print(f"数组取第 10 万元素 x10 万次: {t_arr:.3f}s")
+print(f"链表数 10 万步     x1 千次: {t_chain:.3f}s")
 ```
 
-### 2.2 哨兵节点（Dummy Head）
+预期输出（数值因机器而异，量级关系稳定）：
 
-哨兵节点是一个不存储实际数据的头节点，用于简化边界处理：
+```text
+99999
+99999
+数组取第 10 万元素 x10 万次: 0.005s
+链表数 10 万步     x1 千次: 4.7s
+```
+
+读法：链表那次只重复了一千次，就已经比数组的十万次慢了近千倍——**单次数 10 万步约 47 微秒，数组单次寻址约 50 纳秒**，差三个数量级。这就是「链表用指针换灵活性」的账单。
+
+## 3. 发生了什么：指针即线索，线索会断
+
+链表像寻宝游戏：每个节点的线索卡上只写着「下一个节点在哪」。由此能推出一切性质：
+
+| 操作 | 复杂度 | 前提 |
+| --- | --- | --- |
+| 头部插入/删除 | O(1) | 持有 head |
+| 尾部插入 | O(1) | 额外维护尾指针 tail |
+| 查找第 i 个 / 按值查找 | O(n) | 只能从头顺着数 |
+| 已知前驱的插入/删除 | O(1) | **必须先站在 prev 上** |
+
+最后一行是链表一切技巧的核心：`prev.next = prev.next.next` 一句话完成删除，但你必须先走 O(n) 步**找到 prev**。所以严格说法是「插入删除 O(1)，定位 O(n)」——「链表插入快」不带前提就是错的。
+
+还有一个真实代价要诚实说：**缓存不友好**。数组连续存放，CPU 一次能预取一整段；链表节点散落在堆内存各处，每次跳转都可能 miss。这个差距在 Python 里被解释器开销掩盖，但在 C/C++ 里实测口径是：遍历 100 万个 int，数组约 1ms，链表约 5 到 10ms。工程选型时它是压过渐近复杂度的现实因素（第 13 节展开）。
+
+## 4. 核心技巧一：哨兵节点——把头节点变成普通节点
+
+需求：删掉链表里所有值为 2 的节点。难点在头节点没有「前驱」，普通删除逻辑对它不适用，要写特判。
+
+哨兵（dummy head）的做法：在真正的头前面挂一个**不存数据的假节点**，之后所有真实节点都有前驱了，一套逻辑走天下：
 
 ```python
 def remove_elements(head, val):
-    dummy = ListNode(0, head)
+    dummy = Node(0, head)      # 假头，值随便填
     prev = dummy
     while prev.next:
         if prev.next.val == val:
-            prev.next = prev.next.next
+            prev.next = prev.next.next   # 跳过待删节点
         else:
             prev = prev.next
-    return dummy.next
+    return dummy.next         # 真正的头可能已变，从假头后面取
 ```
 
-不使用哨兵时，删除头节点需要特殊处理；使用哨兵后，所有删除操作统一为"删除prev.next"。
+逐步追踪（链表 `1 -> 2 -> 3`，删 2）：
 
-**逐步追踪**（删除值为 2 的节点，链表 `1 -> 2 -> 3`）：
+| 步骤 | prev 站在 | prev.next 是 | 动作 | 链表状态 |
+| --- | --- | --- | --- | --- |
+| 初始 | dummy(0) | 1 | 1 不等于 2，prev 前进 | 0 -> 1 -> 2 -> 3 |
+| 1 | 1 | 2 | 等于 2，执行跳过 | 0 -> 1 -> 3 |
+| 2 | 1 | 3 | 3 不等于 2，prev 前进 | 0 -> 1 -> 3 |
+| 3 | 3 | None | 循环结束 | 返回 dummy.next 即 1 -> 3 |
 
-| 步骤 | prev | prev.next | 动作 | 链表状态 |
-| ---- | ---- | --------- | ---- | -------- |
-| 初始 | dummy(0) | 1 | 1 != 2，prev 前进 | 0 -> 1 -> 2 -> 3 |
-| 1 | 1 | 2 | 2 == 2，执行 `prev.next = prev.next.next` | 0 -> 1 -> 3 |
-| 2 | 1 | 3 | 3 != 2，prev 前进 | 0 -> 1 -> 3 |
-| 3 | 3 | None | 循环结束，返回 `dummy.next` | 1 -> 3 |
+追踪时把两件事写清楚：**prev 站在哪个节点、即将检查哪个节点**。绝大多数链表 bug 源于把这两者混为一谈。写任何涉及删除、合并的链表代码，先加哨兵——这是投入产出比最高的一行。
 
-追踪时建议把"prev 站在哪个节点、即将检查哪个节点"两件事写清楚——绝大多数链表 bug 都源于把这两者混为一谈。
+## 5. 核心技巧二：反转链表——三指针与「先拍快照」
 
-### 2.3 O(1) 删除给定节点：欺骗式删除及其局限
-
-常规删除需要前驱，但面试中有一道经典变体（LeetCode 237）：只给你待删节点的指针，不给头节点。解法是"欺骗式删除"——不删当前节点，而是把下一个节点复制过来再删掉下一个：
+反转是链表的「第一礼仪」：`1 -> 2 -> 3` 变成 `3 -> 2 -> 1`。难点在于把 `curr.next` 改指向前驱的那一刻，原来的后继线索就断了——必须先拍快照：
 
 ```python
-def delete_node(node):
-    """O(1) 删除给定节点（该节点不能是尾节点）"""
-    node.val = node.next.val      # 用后继的值覆盖当前节点
-    node.next = node.next.next    # 跳过后继节点
+def reverse_list(head):
+    prev, curr = None, head
+    while curr:
+        next_node = curr.next   # 第一步永远是拍快照
+        curr.next = prev        # 掉头指向
+        prev, curr = curr, next_node  # 双指针整体右移
+    return prev
 ```
 
-**局限必须说清楚**：一是尾节点无法处理（没有后继可复制）；二是若外部还持有指向原后继的引用，会观察到节点被"偷梁换柱"。这道题考察的是对"链表中节点的身份由指针定义"的理解，工程代码中不推荐这种语义含糊的写法。
+逐步追踪（`1 -> 2 -> 3`）：
 
-### 2.4 复杂度分析
+| 轮次开头 | prev | curr | 快照 next_node | 执行后 |
+| --- | --- | --- | --- | --- |
+| 初始 | None | 1 | 2 | 1 -> None |
+| 第 1 轮后 | 1 | 2 | 3 | 2 -> 1 -> None |
+| 第 2 轮后 | 2 | 3 | None | 3 -> 2 -> 1 -> None |
+| 第 3 轮后 | 3 | None | - | 循环结束，返回 prev = 3 |
 
-| 操作               | 时间 | 空间 |
-| ------------------ | ---- | ---- |
-| 头部插入           | O(1) | O(1) |
-| 尾部插入(有尾指针) | O(1) | O(1) |
-| 尾部插入(无尾指针) | O(n) | O(1) |
-| 查找               | O(n) | O(1) |
-| 删除(已知前驱)     | O(1) | O(1) |
-| 删除(已知节点指针) | O(n) | O(1) |
-
----
-
-## 3. 双链表
-
-### 3.1 节点定义与基本操作
-
-双链表每个节点额外包含指向前驱节点的指针，支持双向遍历。
+递归版更短，但递归深度等于链表长度：
 
 ```python
-class DoublyListNode:
-    def __init__(self, val=0, prev=None, next=None):
-        self.val = val
-        self.prev = prev
-        self.next = next
-
-class DoublyLinkedList:
-    def __init__(self):
-        self.head = None
-        self.tail = None
-
-    def add_at_head(self, val):
-        node = DoublyListNode(val, None, self.head)
-        if self.head:
-            self.head.prev = node
-        else:
-            self.tail = node
-        self.head = node
-
-    def add_at_tail(self, val):
-        node = DoublyListNode(val, self.tail, None)
-        if self.tail:
-            self.tail.next = node
-        else:
-            self.head = node
-        self.tail = node
-
-    def remove_node(self, node):
-        if node.prev:
-            node.prev.next = node.next
-        else:
-            self.head = node.next
-        if node.next:
-            node.next.prev = node.prev
-        else:
-            self.tail = node.prev
+def reverse_list_recursive(head):
+    if not head or not head.next:
+        return head
+    new_head = reverse_list_recursive(head.next)
+    head.next.next = head   # 让后继指回自己
+    head.next = None        # 断开旧线索，防成环
+    return new_head
 ```
 
-```cpp
-struct DoublyListNode {
-    int val;
-    DoublyListNode* prev;
-    DoublyListNode* next;
-    DoublyListNode(int v) : val(v), prev(nullptr), next(nullptr) {}
-};
+Python 默认递归上限约 1000 层，10 万节点的链表会直接 `RecursionError`。递归版适合展示思路，工程与面试终稿用迭代版。
 
-class DoublyLinkedList {
-    DoublyListNode* head;
-    DoublyListNode* tail;
-public:
-    DoublyLinkedList() : head(nullptr), tail(nullptr) {}
+## 6. 核心技巧三：快慢指针——中点、判环与环入口
 
-    void addAtHead(int val) {
-        auto node = new DoublyListNode(val);
-        node->next = head;
-        if (head) head->prev = node;
-        else tail = node;
-        head = node;
-    }
+快慢指针是链题的第一技巧，一套思想覆盖四个高频题型。起点：两指针都从头出发，快的一次走 2 步，慢的一次走 1 步。
 
-    void addAtTail(int val) {
-        auto node = new DoublyListNode(val);
-        node->prev = tail;
-        if (tail) tail->next = node;
-        else head = node;
-        tail = node;
-    }
-
-    void removeNode(DoublyListNode* node) {
-        if (node->prev) node->prev->next = node->next;
-        else head = node->next;
-        if (node->next) node->next->prev = node->prev;
-        else tail = node->prev;
-        delete node;
-    }
-};
-```
-
-### 3.2 LRU缓存中的双链表应用
-
-LRU（Least Recently Used）缓存使用哈希表+双链表实现O(1)的get和put操作：
-
-```python
-class LRUCache:
-    def __init__(self, capacity):
-        self.cap = capacity
-        self.cache = {}
-        self.head = DoublyListNode()
-        self.tail = DoublyListNode()
-        self.head.next = self.tail
-        self.tail.prev = self.head
-
-    def _remove(self, node):
-        node.prev.next = node.next
-        node.next.prev = node.prev
-
-    def _add_to_front(self, node):
-        node.next = self.head.next
-        node.prev = self.head
-        self.head.next.prev = node
-        self.head.next = node
-
-    def get(self, key):
-        if key not in self.cache:
-            return -1
-        node = self.cache[key]
-        self._remove(node)
-        self._add_to_front(node)
-        return node.val
-
-    def put(self, key, value):
-        if key in self.cache:
-            self._remove(self.cache[key])
-            del self.cache[key]
-        node = DoublyListNode(value)
-        node.key = key
-        self._add_to_front(node)
-        self.cache[key] = node
-        if len(self.cache) > self.cap:
-            lru = self.tail.prev
-            self._remove(lru)
-            del self.cache[lru.key]
-```
-
-注意头尾各挂一个哨兵：`_remove` 因此无需判断"是否为头/尾节点"，四个指针赋值无条件成立——这正是哨兵思想在双链表上的价值。get/put 均为 $O(1)$：哈希表负责"按 key 一步定位"，双链表负责"$O(1)$ 调整新旧顺序"，两者缺一不可。
-
-> 跨模块引用：LRU缓存的完整分析参见 [哈希表](/algorithm/070-HashTable)。
-
-### 3.3 单链表 vs 双链表：逐操作对比
-
-| 操作 | 单链表 | 双链表 |
-| ---- | ------ | ------ |
-| 已知前驱插入/删除 | $O(1)$ | $O(1)$ |
-| 已知节点删除自身 | $O(n)$（需找前驱） | $O(1)$ |
-| 反向遍历 | 不支持 | $O(n)$ |
-| 每节点空间开销 | 1 个指针 | 2 个指针 |
-| LRU 这类"频繁删任意节点"场景 | 需配合哈希表存前驱，实现繁琐 | 直接 $O(1)$，工业标准做法 |
-
-选型经验：需要"删给定节点"或双向遍历（如浏览器前进后退、文本编辑器撤销栈）选双链表；只做单向扫描（如邻接表、流式处理）选单链表省内存。
-
----
-
-## 4. 环形链表
-
-### 4.1 循环链表结构
-
-循环链表的尾节点指向头节点，形成环。常用于操作系统进程调度（轮转调度）、约瑟夫问题等。与普通链表相比，循环链表的遍历终止条件从 `curr != None` 变为"回到出发点"，任何节点都可以充当入口——这一性质让"轮转"语义（转一圈回到起点）可以零成本表达。
-
-### 4.2 约瑟夫问题
-
-n个人围成一圈，从第1个人开始报数，报到m的人出列，求最后剩下的人。
-
-**数学解法**：f(n,m) = (f(n-1,m) + m) % n，f(1,m) = 0
-
-**递推式的直觉推导**（这是理解该公式的关键，不是死记）：
-
-1. 给 $n$ 个人编号 $0 \dots n-1$，从 0 开始报数，报到 $m-1$ 的人（第 $m$ 个）出列，出列者是编号 $(m-1) \bmod n$；
-2. 出列后剩下 $n-1$ 人。把出列者的下一位重新看作"0 号"，问题变成规模为 $n-1$ 的同构子问题——设其解为 $f(n-1, m)$（这是子问题坐标系下的编号）；
-3. 把子问题的坐标系换回原坐标系：子问题的 0 号对应原坐标的 $m \bmod n$ 号，因此原坐标编号 = $(f(n-1,m) + m) \bmod n$；
-4. 边界：只剩 1 人时，幸存者编号为 0，即 $f(1,m)=0$。
-
-```python
-def josephus_math(n, m):
-    result = 0
-    for i in range(2, n + 1):
-        result = (result + m) % i
-    return result + 1
-
-def josephus_simulate(n, m):
-    people = list(range(1, n + 1))
-    idx = 0
-    while len(people) > 1:
-        idx = (idx + m - 1) % len(people)
-        people.pop(idx)
-    return people[0]
-```
-
-**交叉验证**（$n=5, m=3$）：模拟出列顺序为 3, 1, 5, 2，幸存者 4；数学解 `josephus_math(5, 3)` 返回 4。两者一致，建议用 $n \le 8$ 的小规模对拍验证实现。
-
-复杂度：数学解O(n)，模拟解O(nm)。
-
-```cpp
-int josephusMath(int n, int m) {
-    int result = 0;
-    for (int i = 2; i <= n; i++) {
-        result = (result + m) % i;
-    }
-    return result + 1;
-}
-```
-
-复杂度：数学解O(n)，模拟解O(nm)。
-
----
-
-## 5. 经典操作与技巧
-
-### 5.1 快慢指针
-
-快慢指针是链表最核心的技巧，两个指针以不同速度前进。
-
-**找中点**：快指针走两步，慢指针走一步，快指针到末尾时慢指针在中点。
-
-**判环**：快慢指针相遇则存在环。
-
-**找环入口**：快慢指针相遇后，一个指针从头部出发，另一个从相遇点出发，两者相遇即为环入口。
+**找中点**——快指针到终点时，慢指针恰在中点：
 
 ```python
 def find_middle(head):
@@ -448,462 +201,95 @@ def find_middle(head):
         slow = slow.next
         fast = fast.next.next
     return slow
+```
 
+**判环**——链表若带环（尾节点指回中间某节点），朴素遍历 `while curr` 永不终止。快慢指针则像操场跑圈：只要跑道是环，跑得快的人终会从后面套圈追上慢的人；直线跑道上快的人先到终点，永不相遇。
+
+```python
 def has_cycle(head):
     slow = fast = head
     while fast and fast.next:
         slow = slow.next
         fast = fast.next.next
-        if slow == fast:
+        if slow is fast:
             return True
     return False
+```
 
+**为何必相遇**：进入环后，快指针每轮比慢指针多走 1 步，两者的环上距离每轮严格减 1，至多环长 c 轮内必追上。正因为依赖「每轮减 1」，判环固定用 2 倍速——改成 3 倍速后距离每轮减 2，「必追上」的保证就没了（距离可能永远跳不过 0），不要自行换倍速。
+
+**找环入口**（LC-142）——相遇后，一个指针回到 head，两个指针同速前进，再次相遇处就是环入口。依据是一个简单等式：设 head 到入口距离 a，入口到相遇点距离 b，环长 c。快指针走了慢指针两倍的步数，多走的全部落在环上，故 `a + b = k·c`，于是 `a = (k-1)·c + (c - b)`——从 head 走 a 步，与从相遇点走 (k-1) 圈再走 c-b 步，终点相同，都是入口。
+
+```python
 def detect_cycle(head):
     slow = fast = head
     while fast and fast.next:
         slow = slow.next
         fast = fast.next.next
-        if slow == fast:
+        if slow is fast:
             ptr = head
-            while ptr != slow:
+            while ptr is not slow:
                 ptr = ptr.next
                 slow = slow.next
             return ptr
     return None
 ```
 
-```cpp
-ListNode* findMiddle(ListNode* head) {
-    ListNode *slow = head, *fast = head;
-    while (fast && fast->next) {
-        slow = slow->next;
-        fast = fast->next->next;
-    }
-    return slow;
-}
+顺带一提：`while fast and fast.next` 与 `while fast.next and fast.next.next` 两种循环条件在偶数长度链表上取到的「中点」不同（前者取后一个中点，后者取前一个）。回文判断、归并切分对中点位置敏感，**固定一种写法**并用长度 1/2/3/4 的链表逐一验证，能省掉一类隐蔽 bug。
 
-bool hasCycle(ListNode* head) {
-    ListNode *slow = head, *fast = head;
-    while (fast && fast->next) {
-        slow = slow->next;
-        fast = fast->next->next;
-        if (slow == fast) return true;
-    }
-    return false;
-}
+## 7. 调试实录：链表六大坑
 
-ListNode* detectCycle(ListNode* head) {
-    ListNode *slow = head, *fast = head;
-    while (fast && fast->next) {
-        slow = slow->next;
-        fast = fast->next->next;
-        if (slow == fast) {
-            ListNode* ptr = head;
-            while (ptr != slow) { ptr = ptr->next; slow = slow->next; }
-            return ptr;
-        }
-    }
-    return nullptr;
-}
-```
+### 坑 1：先改指针，后丢节点
 
-**类比**：操场跑道上，跑得快的人终会从后面"套圈"追上跑得慢的人——只要跑道是环，快慢必相遇；反之在直线跑道（无环链表）上，快指针先到终点，永不相遇。这就是判环的正确性直觉。
+`curr.next = curr.next.next` 直接覆盖，旧后继若无引用即永久丢失，链表从该处断裂。修正就是第 5 节的铁律：**先快照，再改指向**。
 
-**找中点逐步追踪**（链表 `1 -> 2 -> 3 -> 4 -> 5`，偶数长度 6 时见下）：
+### 坑 2：删尾节点后忘记维护 tail
 
-| 轮次 | slow 指向 | fast 指向 | 循环条件 fast/ fast.next |
-| ---- | --------- | --------- | ------------------------ |
-| 初始 | 1 | 1 | 成立 |
-| 1 | 2 | 3 | 成立 |
-| 2 | 3 | 5 | fast.next 为 None，退出 |
-
-返回 slow = 3，即 5 个节点的中点（第 3 个）。若链表为 `1 -> 2 -> 3 -> 4`，追踪结束条件在 fast 指向 4、fast.next 为 None 时触发，slow = 3——即偶数长度取"后一个中点"，这与 7.5 节陷阱 5 的讨论直接相关。
-
-**判环为何必相遇**：进入环后，快指针每轮比慢指针多走 1 步，两者的"环上距离"每轮严格减 1（模环长 c），故至多 $c$ 轮内必相遇。若快指针每次走 3 步，"距离"每轮减 2，当 c 为偶数时可能从 0 跳到 c-1 再跳回 0 之外形成 2-周期 miss——因此判环代码固定用"2 倍速"，不要自行改成其他倍速。
-
-**环入口的数学证明**：设head到环入口距离为a，环入口到相遇点距离为b，环长度为c。慢指针走到相遇点共走 a+b 步，快指针走 2(a+b) 步，多走的 a+b 全部消耗在环上，故 a+b 是环长 c 的整数倍：a+b = kc。于是：
-
-$$a = kc - b = (k-1)c + (c - b)$$
-
-其中 $c - b$ 恰是"相遇点沿环前进到环入口"的距离。这个等式说明：从 head 出发走 $a$ 步，与从相遇点出发走 $(k-1)c + (c-b)$ 步（即沿环走 $(k-1)$ 圈再走 $c-b$ 步），终点都是环入口。这正是 `detect_cycle` 中两个同速指针从 head 与相遇点同时出发、必在环入口相遇的原理。
-
-### 5.2 反转链表
+维护尾指针的实现里，删尾后必须回置 `tail`，否则尾部插入会接到已删除的节点上：
 
 ```python
-def reverse_list(head):
-    prev = None
-    curr = head
-    while curr:
-        next_node = curr.next
-        curr.next = prev
-        prev = curr
-        curr = next_node
-    return prev
+class LinkedList:
+    def __init__(self):
+        self.head = self.tail = None
 
-def reverse_list_recursive(head):
-    if not head or not head.next:
-        return head
-    new_head = reverse_list_recursive(head.next)
-    head.next.next = head
-    head.next = None
-    return new_head
-
-def reverse_between(head, left, right):
-    dummy = ListNode(0, head)
-    prev = dummy
-    for _ in range(left - 1):
-        prev = prev.next
-    curr = prev.next
-    for _ in range(right - left):
-        next_node = curr.next
-        curr.next = next_node.next
-        next_node.next = prev.next
-        prev.next = next_node
-    return dummy.next
-```
-
-```cpp
-ListNode* reverseList(ListNode* head) {
-    ListNode* prev = nullptr;
-    ListNode* curr = head;
-    while (curr) {
-        ListNode* nextNode = curr->next;
-        curr->next = prev;
-        prev = curr;
-        curr = nextNode;
-    }
-    return prev;
-}
-
-ListNode* reverseBetween(ListNode* head, int left, int right) {
-    ListNode* dummy = new ListNode(0);
-    dummy->next = head;
-    ListNode* prev = dummy;
-    for (int i = 0; i < left - 1; i++) prev = prev->next;
-    ListNode* curr = prev->next;
-    for (int i = 0; i < right - left; i++) {
-        ListNode* nextNode = curr->next;
-        curr->next = nextNode->next;
-        nextNode->next = prev->next;
-        prev->next = nextNode;
-    }
-    return dummy->next;
-}
-```
-
-**反转链表逐步追踪**（链表 `1 -> 2 -> 3`，迭代版三指针）：
-
-| 轮次开头 | prev | curr | next_node（先行保存） | 执行后 |
-| -------- | ---- | ---- | -------------------- | ------ |
-| 初始 | None | 1 | 2 | 1->None |
-| 第1轮后 | 1 | 2 | 3 | 2->1->None |
-| 第2轮后 | 2 | 3 | None | 3->2->1->None |
-| 第3轮后 | 3 | None | - | 循环结束，返回 prev=3 |
-
-注意 `next_node = curr.next` 永远是第一步：它是在给"唯一的后继线索"拍快照，之后 `curr.next = prev` 才敢覆盖这条线索。7.1 节的错误版本正是省略了这一步。
-
-### 5.3 合并有序链表
-
-```python
-def merge_two_lists(l1, l2):
-    dummy = ListNode()
-    curr = dummy
-    while l1 and l2:
-        if l1.val <= l2.val:
-            curr.next = l1
-            l1 = l1.next
+    def add_tail(self, val):
+        node = Node(val)
+        if self.tail is None:
+            self.head = self.tail = node
         else:
-            curr.next = l2
-            l2 = l2.next
-        curr = curr.next
-    curr.next = l1 or l2
-    return dummy.next
-
-def merge_k_lists(lists):
-    import heapq
-    dummy = ListNode()
-    curr = dummy
-    heap = []
-    for i, node in enumerate(lists):
-        if node:
-            heapq.heappush(heap, (node.val, i, node))
-    while heap:
-        val, i, node = heapq.heappop(heap)
-        curr.next = node
-        curr = curr.next
-        if node.next:
-            heapq.heappush(heap, (node.next.val, i, node.next))
-    return dummy.next
-```
-
-```cpp
-ListNode* mergeTwoLists(ListNode* l1, ListNode* l2) {
-    ListNode dummy(0);
-    ListNode* curr = &dummy;
-    while (l1 && l2) {
-        if (l1->val <= l2->val) { curr->next = l1; l1 = l1->next; }
-        else { curr->next = l2; l2 = l2->next; }
-        curr = curr->next;
-    }
-    curr->next = l1 ? l1 : l2;
-    return dummy.next;
-}
-```
-
----
-
-## 6. 经典面试题型
-
-### 6.1 题型分类与解题模板
-
-| 题型     | 核心技巧         | 代表题目     |
-| -------- | ---------------- | ------------ |
-| 反转系列 | 迭代/递归反转    | LC-206/92/25 |
-| 合并系列 | 双指针归并       | LC-21/23     |
-| 环检测   | 快慢指针         | LC-141/142   |
-| 相交链表 | 双指针交叉遍历   | LC-160       |
-| 回文链表 | 快慢指针+反转    | LC-234       |
-| 删除节点 | 哨兵+双指针      | LC-19/203/83 |
-| 排序链表 | 归并排序         | LC-148       |
-| 重排链表 | 找中点+反转+合并 | LC-143       |
-
-### 6.2 相交链表（LC-160）
-
-两个链表在某节点相交后共享后续节点。双指针交叉遍历：pA走完A后走B，pB走完B后走A，两者必在交点相遇（或同时为None）。
-
-```python
-def get_intersection_node(headA, headB):
-    if not headA or not headB:
-        return None
-    pA, pB = headA, headB
-    while pA != pB:
-        pA = pA.next if pA else headB
-        pB = pB.next if pB else headA
-    return pA
-```
-
-```cpp
-ListNode* getIntersectionNode(ListNode* headA, ListNode* headB) {
-    if (!headA || !headB) return nullptr;
-    ListNode *pA = headA, *pB = headB;
-    while (pA != pB) {
-        pA = pA ? pA->next : headB;
-        pB = pB ? pB->next : headA;
-    }
-    return pA;
-}
-```
-
-**正确性证明**：设A独有a个节点，B独有b个节点，共享c个节点。pA走a+c+b步，pB走b+c+a步，两者步数相等，必在交点相遇。
-
-### 6.3 删除链表倒数第N个节点（LC-19）
-
-快指针先走n步，然后快慢指针同时前进，快指针到末尾时慢指针在倒数第n+1个位置。
-
-```python
-def remove_nth_from_end(head, n):
-    dummy = ListNode(0, head)
-    fast = slow = dummy
-    for _ in range(n):
-        fast = fast.next
-    while fast.next:
-        fast = fast.next
-        slow = slow.next
-    slow.next = slow.next.next
-    return dummy.next
-```
-
-```cpp
-ListNode* removeNthFromEnd(ListNode* head, int n) {
-    ListNode* dummy = new ListNode(0);
-    dummy->next = head;
-    ListNode *fast = dummy, *slow = dummy;
-    for (int i = 0; i < n; i++) fast = fast->next;
-    while (fast->next) { fast = fast->next; slow = slow->next; }
-    ListNode* toDelete = slow->next;
-    slow->next = slow->next->next;
-    delete toDelete;
-    return dummy->next;
-}
-```
-
-### 6.4 回文链表（LC-234）
-
-找中点 -> 反转后半部分 -> 双指针比较 -> 恢复（可选）
-
-```python
-def is_palindrome(head):
-    if not head or not head.next:
-        return True
-    slow = fast = head
-    while fast.next and fast.next.next:
-        slow = slow.next
-        fast = fast.next.next
-    second_half = reverse_list(slow.next)
-    p1, p2 = head, second_half
-    result = True
-    while p2:
-        if p1.val != p2.val:
-            result = False
-            break
-        p1 = p1.next
-        p2 = p2.next
-    slow.next = reverse_list(second_half)
-    return result
-```
-
-### 6.5 K个一组翻转链表（LC-25）
-
-```python
-def reverse_k_group(head, k):
-    def get_kth(node, k):
-        while node and k > 0:
-            node = node.next
-            k -= 1
-        return node
-
-    dummy = ListNode(0, head)
-    group_prev = dummy
-    while True:
-        kth = get_kth(group_prev, k)
-        if not kth:
-            break
-        group_next = kth.next
-        prev, curr = kth.next, group_prev.next
-        while curr != group_next:
-            next_node = curr.next
-            curr.next = prev
-            prev = curr
-            curr = next_node
-        tmp = group_prev.next
-        group_prev.next = kth
-        group_prev = tmp
-    return dummy.next
-```
-
-### 6.6 两数相加（LC-2）
-
-数字按**逆序**存储在链表中（个位在头），求和并返回同格式链表。核心是"逐位相加 + 进位"，注意循环条件要包含 `carry`——它决定了结果的最高位：
-
-```python
-def add_two_numbers(l1, l2):
-    """两数相加（LC-2）：数字按逆序存储，返回和的逆序链表"""
-    dummy = ListNode()
-    curr = dummy
-    carry = 0
-    while l1 or l2 or carry:
-        s = (l1.val if l1 else 0) + (l2.val if l2 else 0) + carry
-        carry, digit = divmod(s, 10)      # 进位与本位一次算出
-        curr.next = ListNode(digit)
-        curr = curr.next
-        l1 = l1.next if l1 else None
-        l2 = l2.next if l2 else None
-    return dummy.next
-```
-
-**逐步追踪**（342 + 465，即 `(2->4->3) + (5->6->4)`）：
-
-| 轮 | l1 / l2 当前位 | s = 和 + 进位 | 本位输出 | carry |
-| -- | -------------- | ------------- | -------- | ----- |
-| 1 | 2 / 5 | 7 | 7 | 0 |
-| 2 | 4 / 6 | 10 | 0 | 1 |
-| 3 | 3 / 4 | 8 | 8 | 0 |
-
-输出 `7 -> 0 -> 8`，即 807。若删掉循环条件中的 `carry`，当两链等长且最高位产生进位（如 5 + 5 = 10）时会丢失最高位——这是本题最高频的提交错误。
-
-时间 $O(\max(m, n))$，空间 $O(1)$（不计输出）。
-
-### 6.7 旋转链表（LC-61）
-
-将链表每个节点向右移动 k 个位置。技巧是**先成环再断环**：遍历求长度 n 并找到尾节点，`k %= n` 后将尾节点接到头节点形成环，再走 `n - k - 1` 步找到新尾，从新尾处断开：
-
-```python
-def rotate_right(head, k):
-    """旋转链表（LC-61）：每个节点右移 k 位"""
-    if not head or not head.next or k == 0:
-        return head
-    n = 1
-    tail = head
-    while tail.next:
-        tail = tail.next
-        n += 1
-    k %= n                 # k 可能大于 n，先取模
-    if k == 0:
-        return head
-    tail.next = head       # 成环
-    new_tail = head
-    for _ in range(n - k - 1):   # 走到新尾（新头的前驱）
-        new_tail = new_tail.next
-    new_head = new_tail.next
-    new_tail.next = None   # 断环
-    return new_head
-```
-
-两个易错点：一是忘记 `k %= n`（k 可达 $10^9$，直接走 k 步会超时）；二是成环后忘记断开，导致结果链表带环、评测死循环。整个过程只需一次遍历求长度加一次定位，时间 $O(n)$、空间 $O(1)$，比"逐步旋转 k 次"的 $O(nk)$ 做法高效得多。
-
----
-
-## 7. 常见陷阱与调试
-
-链表题的大多数错误源于指针操作顺序不当或边界遗漏。以下按出现频率排列六个典型陷阱。
-
-### 7.1 陷阱 1：先改指针，后丢节点
-
-**错误代码**（反转链表）：
-
-```python
-def reverse_list_wrong(head):
-    curr = head
-    while curr:
-        curr.next = curr.next.next  # 错误：旧的后继直接丢失
-        curr = curr.next
-    return head
-```
-
-`curr.next` 一旦被覆盖，原后继节点若无其他引用便无法找回，链表从该处断裂。**修正**：先用临时变量保存后继，再改指针——反转三指针法中 `next_node = curr.next` 必须放在第一步。
-
-### 7.2 陷阱 2：删除尾节点后忘记维护尾指针
-
-维护 `tail` 指针的实现中，删除尾节点（或删除唯一节点）后必须回置 `tail`：
-
-```python
-class LinkedListWithTail(SinglyLinkedList):
-    """在 2.1 节实现的基础上补充尾部删除"""
+            self.tail.next = node
+            self.tail = node
 
     def remove_last(self):
         if self.head is None:
             return None
-        if self.head is self.tail:          # 唯一节点
+        if self.head is self.tail:            # 唯一节点
             val = self.head.val
             self.head = self.tail = None
-            self.size -= 1
             return val
         prev = self.head
-        while prev.next is not self.tail:   # 找倒数第二个节点
+        while prev.next is not self.tail:     # 走到倒数第二个
             prev = prev.next
         val = self.tail.val
         prev.next = None
-        self.tail = prev                    # 关键：更新尾指针
-        self.size -= 1
+        self.tail = prev                      # 关键：回置尾指针
         return val
 
-# 测试
-lst = LinkedListWithTail()
+lst = LinkedList()
 for v in [1, 2, 3]:
-    lst.add_at_tail(v)
+    lst.add_tail(v)
 lst.remove_last()
-print(lst.to_list())   # 输出: [1, 2]
+print(to_list(lst.head))                        # [1, 2]
 lst.remove_last(); lst.remove_last()
-print(lst.head is None and lst.tail is None)  # 输出: True
+print(lst.head is None and lst.tail is None)    # True
 ```
 
-### 7.3 陷阱 3：环链表上的普通遍历死循环
+### 坑 3：带环链表上的朴素遍历死循环
 
-带环链表不能用 `while curr` 这类朴素遍历——尾节点不指向 `None`，循环永不终止。判环必须用快慢指针（见 5.1 节）；调试时可设置步数上限或用哈希集合记录访问过的节点：
+带环链表不能用 `while curr` 遍历。除了快慢指针，还有一版 O(n) 空间的直观解法——哈希集合记足迹，调试时也好用：
 
 ```python
 def has_cycle_set(head):
-    """哈希集合判环：O(n) 时间、O(n) 空间，直观易懂"""
     seen = set()
     while head:
         if head in seen:
@@ -913,123 +299,295 @@ def has_cycle_set(head):
     return False
 ```
 
-### 7.4 陷阱 4：C++ 手写链表的内存泄漏
+### 坑 4：C++ 手写链表的内存释放顺序
 
-C++ 中每个 `new` 出的节点都必须 `delete`。删除节点时先保存待删指针再前进，否则悬空：
+C++ 里每个 `new` 的节点都要 `delete`，且必须**先保存后继再释放**：
 
 ```cpp
-// 错误：delete 前已覆盖指针
-void clear_wrong() {
-    while (head) {
-        delete head;
-        head = head->next;   // 未定义行为：使用已释放内存
-    }
-}
+// 错误：delete 之后再读 head->next，已释放内存
+while (head) { delete head; head = head->next; }
 
-// 正确：先保存后继
-void clear() {
-    while (head) {
-        ListNode* nxt = head->next;
-        delete head;
-        head = nxt;
-    }
-    tail = nullptr;
-    sz = 0;
-}
+// 正确：先拍快照
+while (head) { ListNode* nxt = head->next; delete head; head = nxt; }
 ```
 
-工程实践中优先使用 `std::unique_ptr<Node>` 管理节点生命周期，析构自动级联释放（深链表需注意递归析构深度）。
+工程上优先用 `std::unique_ptr` 管理节点，析构自动级联释放。
 
-### 7.5 陷阱 5：快慢指针求中点的奇偶差异
+### 坑 5：中点取前还是取后
 
-`while fast and fast.next` 与 `while fast.next and fast.next.next` 两种写法在偶数长度链表上取到的"中点"不同（前者取后一个，后者取前一个）。回文判断、归并排序切分对中点位置敏感，混用两种写法是隐蔽 bug 的常见来源。建议固定一种写法并用长度 1/2/3/4 的链表逐一验证。
+见第 6 节末尾：两种循环条件、两种中点，回文与归并场景必须固定一种并验证长度 1 到 4 的边界。
 
-### 7.6 陷阱 6：递归解法的栈深度限制
+### 坑 6：递归解法的栈深度
 
-递归反转、递归回文判断等写法递归深度等于链表长度。Python 默认递归上限约 1000 层，10 万节点的链表会触发 `RecursionError`；C++ 上深度链表递归则有栈溢出风险。面试中可提递归解法展示思路，但应主动说明其空间代价 $O(n)$ 并给出迭代版本。
+递归深度等于链表长度，Python 约 1000 层封顶。10 万节点的反转用递归会崩；递归写完应主动给出迭代版并说明取舍。
 
----
+## 8. 综合演练：双链表与 LRU 缓存
 
-## 8. 工程实践
+单链表只认「下一个」。双链表给每个节点再加一根 `prev`，换来两项能力：O(1) 反向遍历、**已知节点 O(1) 删除自身**（不需要前驱，节点自己就知道前驱是谁）。
 
-### 8.1 Linux 内核的侵入式链表（list_head）
-
-工程中最著名的链表实现是 Linux 内核的 `list_head`：它不是"节点里包含数据"，而是"数据结构里内嵌链表钩子"：
-
-```c
-// 简化示意：侵入式双向循环链表
-struct list_head {
-    struct list_head *prev, *next;
-};
-
-// 使用者把 list_head 内嵌在自己的结构体里
-struct task {
-    int pid;
-    struct list_head run_list;   // 钩子
-};
-
-// 由钩子指针反推宿主结构体地址（container_of 技巧）
-#define container_of(ptr, type, member) \
-    ((type *)((char *)(ptr) - offsetof(type, member)))
+```python
+class DNode:
+    def __init__(self, key=0, val=0, prev=None, next=None):
+        self.key, self.val = key, val
+        self.prev, self.next = prev, next
 ```
 
-这种"侵入式"设计的好处：同一个结构体可以同时挂在多个链表上（进程既在就绪队列又在哈希桶里）、链表操作不涉及内存分配（无锁失败点）、对数据类型零侵入（宏与 `offsetof` 完成类型擦除）。对比本文 2.1 节的"节点包含数据"写法，可以体会教学实现与工业实现的关注点差异。
+能力落到真实需求上就是 LRU 缓存（LC-146）：容量有限，`get`/`put` 都要 O(1)，满了淘汰「最久未使用」的键。方案是两个结构各出一样绝活：
 
-### 8.2 缓存不友好是真实代价
+- 哈希表负责「按 key 一步定位」——没有它，找节点要 O(n)；
+- 双链表负责「O(1) 调整新旧顺序」——没有它，把命中节点搬到「最近使用」端要 O(n)。
 
-1.1 节给出的性能差（遍历 100 万元素数组 1ms vs 链表 5-10ms）在工业选型中的含义是：**默认选数组，除非有明确的频繁中间插入/删除需求**。C++ 标准库的实践佐证：`std::vector` 在绝大多数场景胜过 `std::list`，以致 Herb Sutter 等人公开建议"几乎总是别用 std::list"；Python 的 `list` 底层干脆是动态数组，标准库根本没有链表类型，需要链表语义时用 `collections.deque`（双向块链表，兼顾缓存与两端 $O(1)$）。
+```python
+class LRUCache:
+    def __init__(self, capacity):
+        self.cap = capacity
+        self.map = {}                 # key -> DNode
+        self.head = DNode()           # 哨兵头：最近使用一侧
+        self.tail = DNode()           # 哨兵尾：最久未用一侧
+        self.head.next = self.tail
+        self.tail.prev = self.head
 
-### 8.3 节点内存管理：对象池与智能指针
+    def _remove(self, node):
+        node.prev.next = node.next
+        node.next.prev = node.prev
 
-高频分配/释放节点的场景（LRU 缓存、内存页管理）建议使用对象池（memory pool）：预分配节点数组，用空闲链表串起回收节点，`allocate`/`free` 退化为两次指针赋值，既避免 malloc 抖动，又让节点地址集中、改善缓存命中。C++ 中亦可用 `std::unique_ptr` 自动管理节点生命周期（见 7.4 节），但深链表的递归析构需改写为迭代。
+    def _add_front(self, node):
+        node.next = self.head.next
+        node.prev = self.head
+        self.head.next.prev = node
+        self.head.next = node
 
-### 8.4 GC 语言的环引用问题
+    def get(self, key):
+        if key not in self.map:
+            return -1
+        node = self.map[key]
+        self._remove(node)            # 从原位摘下
+        self._add_front(node)         # 搬到最近使用端
+        return node.val
 
-带环链表（含双向链表的两个哨兵互指）在引用计数型 GC（如 CPython 主 GC 补以分代回收、Swift ARC）中可能无法自动回收：循环引用使计数永不为零。CPython 的 `weakref`、Apple 的 `weak` 引用是标准解法——把"从属"方向的指针声明为弱引用，只保留"主导"方向的强引用。7.3 节"手动断环"的调试技巧与这一问题同源。
+    def put(self, key, value):
+        if key in self.map:
+            self._remove(self.map[key])
+        node = DNode(key, value)
+        self.map[key] = node
+        self._add_front(node)
+        if len(self.map) > self.cap:
+            lru = self.tail.prev      # 哨兵尾的前一个就是最久未用
+            self._remove(lru)
+            del self.map[lru.key]
 
----
+cache = LRUCache(2)
+cache.put(1, 1)
+cache.put(2, 2)
+print(cache.get(1))   # 1，此时 1 成为最近使用
+cache.put(3, 3)       # 容量满，淘汰最久未用的 2
+print(cache.get(2))   # -1
+```
 
-## 9. 链表操作速查表
+注意头尾各挂一个哨兵：`_remove` 因此无需判断「是否头/尾节点」，四条指针赋值无条件成立——第 4 节的哨兵思想在双链表上的第二次兑现。工程实现里一般还会把节点放进对象池复用，避免高频分配释放（见第 13 节）。
 
-| 操作           | 时间     | 空间 | 关键技巧                   |
-| -------------- | -------- | ---- | -------------------------- |
-| 头部插入       | O(1)     | O(1) | 直接操作head               |
-| 尾部插入       | O(1)\*   | O(1) | 维护tail指针               |
-| 查找           | O(n)     | O(1) | 线性遍历                   |
-| 删除(已知前驱) | O(1)     | O(1) | prev.next = prev.next.next |
-| 反转           | O(n)     | O(1) | 三指针迭代                 |
-| 找中点         | O(n)     | O(1) | 快慢指针                   |
-| 判环           | O(n)     | O(1) | 快慢指针                   |
-| 找环入口       | O(n)     | O(1) | 快慢指针+数学              |
-| 合并两个有序   | O(n+m)   | O(1) | 双指针                     |
-| 合并K个有序    | O(Nlogk) | O(k) | 最小堆                     |
-| 删除倒数第n    | O(n)     | O(1) | 快慢指针间隔n              |
-| 回文判断       | O(n)     | O(1) | 中点+反转                  |
+## 9. 环形链表的正用：约瑟夫问题
 
-\*有尾指针时
+环不总是 bug。n 个人围成一圈，从第 1 个开始报数，报到 m 的出列，求最后剩下的人——「转一圈回到起点」的语义用环形链表零成本表达。
 
----
+数学解是一个递推：`f(n, m) = (f(n-1, m) + m) mod n`，`f(1, m) = 0`。推导（理解它，别背它）：
 
-## 10. 小结
+1. n 人编号 0 到 n-1，出列者是编号 `(m-1) mod n`；
+2. 出列后剩 n-1 人，把出列者的下一位重新看作「0 号」，问题变成规模 n-1 的同构子问题，设其解为 f(n-1, m)；
+3. 换算回原坐标系：子问题的 0 号对应原编号 `m mod n`，所以原编号 = `(f(n-1, m) + m) mod n`；
+4. 只剩 1 人时幸存者编号为 0。
 
-**初学者要点**：
+```python
+def josephus_math(n, m):
+    result = 0
+    for i in range(2, n + 1):
+        result = (result + m) % i
+    return result + 1                     # 换回 1 起始编号
 
-1. 链表与数组的本质差异是**内存布局**：数组靠连续性与下标换随机访问，链表靠指针换 $O(1)$ 的已知前驱插入删除；
-2. 哨兵节点（dummy head）统一了"操作头节点"与"操作中间节点"的代码路径，几乎所有涉及删除/合并的题都值得加哨兵；
-3. 快慢指针是链表题的第一技巧：找中点、判环、找环入口、删倒数第 n 个，四个高频题型全部围绕它展开；
-4. 反转链表必须先写三行指针交换的正确顺序（保存后继、改指向、双指针前进），它是 K 个一组翻转、回文判断等进阶题的子程序。
+def josephus_simulate(n, m):
+    people = list(range(1, n + 1))
+    idx = 0
+    while len(people) > 1:
+        idx = (idx + m - 1) % len(people)
+        people.pop(idx)
+    return people[0]
 
-**进阶注意**：
+print(josephus_math(5, 3), josephus_simulate(5, 3))   # 4 4
+```
 
-1. 复杂度结论要带前提：`O(1) 插入`指已知前驱（或尾指针的尾部）情形，"查找 + 插入"整体仍是 $O(n)$；
-2. 缓存局部性是链表的真实短板：同样的遍历，数组常快一个数量级，工程选型需实测而非只看渐近复杂度；
-3. C++ 实现注意节点生命周期管理，优先智能指针；Java/Python 依赖 GC，但环结构会阻止回收，必要时手动断环；
-4. 递归解法空间 $O(n)$，面试写完递归后应主动给出迭代版本并说明两者取舍；
-5. 与相邻内容的联系：判环数学证明背后的不变式分析见 [算法分析基础](/algorithm/010-AlgorithmAnalysisBasics) 的摊还分析部分；合并 K 个有序链表的堆解法在 [堆与优先队列](/algorithm/090-HeapAndPriorityQueue) 中有更系统的展开。
+模拟出列顺序为 3, 1, 5, 2，幸存者 4，两解一致。数学解 O(n)，模拟解 O(nm)——小规模对拍验证、大规模用公式，是处理这类问题的标准姿势。
 
-## 延伸资源
+## 10. 经典题地图：从本文到题图鉴
 
-- [VisuAlgo: Linked List](https://visualgo.net/en/list)：新加坡国立大学的交互式可视化，可逐步动画演示单链表、双链表及基于它们的栈/队列操作的指针变化（英文，适合配合本文逐步追踪表使用）。
-- [Hello 算法](https://www.hello-algo.com/)：开源数据结构与算法入门书，链表一章提供中文图解与 Python/C++/Java/Go 等多语言可运行实现（中文，适合初学者系统补充）。
+掌握第 4 到 6 节的三大技巧后，链表经典题基本都能归位：
 
-> 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。
+| 题型 | 核心技巧 | 代表题（LeetCode） |
+| --- | --- | --- |
+| 反转系列 | 三指针 | 206 反转链表、25 K 个一组翻转 |
+| 合并系列 | 双指针归并 | 21 合并两个有序链表、23 合并 K 个 |
+| 环检测 | 快慢指针 | 141 环形链表、142 环形链表 II |
+| 定位删除 | 哨兵 + 快慢指针 | 19 删除倒数第 N 个 |
+| 相交链表 | 双指针交叉遍历 | 160 相交链表 |
+| 重排/回文 | 中点 + 反转 + 合并 | 143 重排链表、234 回文链表 |
+
+本站的[算法题图鉴](/algorithms)收有上表全部 LeetCode 题的图解、思路与参考实现（反转、合并、判环、找入口、删倒数第 N、相交、重排、K 组翻转、LRU），适合逐题过；VisuAlgo 的链表可视化（见文末）能逐帧看指针变化。这里只保留两道图鉴未收、但很能练手的题。
+
+**两数相加（LC-2）**：数字按逆序存进链表（个位在头），求和。核心是逐位相加加进位，**循环条件必须带上 carry**：
+
+```python
+def add_two_numbers(l1, l2):
+    dummy = Node(0)
+    curr, carry = dummy, 0
+    while l1 or l2 or carry:
+        s = (l1.val if l1 else 0) + (l2.val if l2 else 0) + carry
+        carry, digit = divmod(s, 10)
+        curr.next = Node(digit)
+        curr = curr.next
+        l1 = l1.next if l1 else None
+        l2 = l2.next if l2 else None
+    return dummy.next
+
+# 342 + 465：(2->4->3) + (5->6->4)
+h = add_two_numbers(build_chain([2, 4, 3]), build_chain([5, 6, 4]))
+print(to_list(h))   # [7, 0, 8]，即 807
+```
+
+逐步追踪：第 1 轮 2+5=7 无进位；第 2 轮 4+6=10，本位 0 进位 1；第 3 轮 3+4+1=8。若删掉循环条件里的 `carry`，5+5 这类「等长且最高位进位」的输入会丢最高位——本题最高频的提交错误。
+
+**旋转链表（LC-61）**：每个节点右移 k 位。技巧是先成环再断环：
+
+```python
+def rotate_right(head, k):
+    if not head or not head.next or k == 0:
+        return head
+    n, tail = 1, head
+    while tail.next:
+        tail = tail.next
+        n += 1
+    k %= n                     # k 可达 10^9，先取模
+    if k == 0:
+        return head
+    tail.next = head           # 成环
+    new_tail = head
+    for _ in range(n - k - 1): # 走到新尾（新头的前驱）
+        new_tail = new_tail.next
+    new_head = new_tail.next
+    new_tail.next = None       # 断环
+    return new_head
+
+print(to_list(rotate_right(build_chain([1, 2, 3, 4, 5]), 2)))   # [4, 5, 1, 2, 3]
+```
+
+两个易错点：忘写 `k %= n`（k 极大时超时）；成环后忘断开（结果带环，评测死循环）。整个过程 O(n) 时间 O(1) 空间，比「逐步转 k 次」的 O(nk) 高效得多。
+
+另外两个高频子程序直接给出，作为归并排序（链表版）与相交判断的积木：
+
+```python
+def merge_two_lists(l1, l2):
+    """合并两个有序链表：归并排序的积木"""
+    dummy = curr = Node(0)
+    while l1 and l2:
+        if l1.val <= l2.val:
+            curr.next, l1 = l1, l1.next
+        else:
+            curr.next, l2 = l2, l2.next
+        curr = curr.next
+    curr.next = l1 or l2       # 剩下的整段直接接上
+    return dummy.next
+
+def get_intersection_node(headA, headB):
+    """相交链表：pA 走完 A 走 B，pB 走完 B 走 A，必在交点相遇。
+    正确性：两边步数同为 a+c+b 与 b+c+a，相等。"""
+    if not headA or not headB:
+        return None
+    pA, pB = headA, headB
+    while pA is not pB:
+        pA = pA.next if pA else headB
+        pB = pB.next if pB else headA
+    return pA
+```
+
+## 11. 修改实验
+
+1. 把 `find_middle` 的循环条件换成 `while fast.next and fast.next.next`，对长度 4 和 5 的链表分别输出中点，确认「取前/取后」的差异；
+2. 给 `has_cycle` 加一个 3 倍速版本（`fast = fast.next.next.next`，注意判空），构造第 7 节坑 3 之外的带环链表对拍，观察两者都能检出，但用计时器比较收敛速度，体会「2 倍速每轮距离减 1」的收敛保证；
+3. 用 `timeit` 对比「头部插入 10 万元素」：数组 `insert(0, x)` 循环 vs 本文头插法建链——数组会卡到怀疑人生，链表瞬间完成，这是链表的主场；
+4. 把 LRU 缓存容量设为 1，连续 `put(1,1)`、`put(2,2)`、`get(1)`，手推每步的链表形状，再用代码验证你的推演。
+
+## 12. 小练习
+
+预测题（先写答案再运行）：
+
+```python
+a, b, c = Node(1), Node(2), Node(3)
+a.next, b.next = b, c
+b.next = a
+print(to_list(a))
+```
+
+这段代码运行后输出什么？会不会停？为什么？（提示：此刻谁还指着 c。）
+
+修改题：把 `remove_elements` 改成「重复元素保留一个」（LC-83：`1 -> 1 -> 2 -> 3 -> 3` 变 `1 -> 2 -> 3`），用有序输入验证；再想想为什么这题可以不加哨兵。
+
+修改题：判断回文链表（LC-234，如 `1 -> 2 -> 2 -> 1` 是回文），要求 O(n) 时间 O(1) 额外空间。组合拳：快慢指针找中点、反转后半段、双指针比较、（可选）再反转还原。参考骨架：
+
+```python
+def is_palindrome(head):
+    if not head or not head.next:
+        return True
+    slow = fast = head
+    while fast.next and fast.next.next:   # slow 停在前半段末尾
+        slow = slow.next
+        fast = fast.next.next
+    second_half = reverse_list(slow.next) # 复用第 5 节的三指针反转
+    p1, p2, ok = head, second_half, True
+    while p2:
+        if p1.val != p2.val:
+            ok = False
+            break
+        p1, p2 = p1.next, p2.next
+    slow.next = reverse_list(second_half) # 还原链表
+    return ok
+```
+
+用 `1 -> 2 -> 2 -> 1` 与 `1 -> 2 -> 3` 各验证一次，注意奇数长度时中点属于前半段、无需参与比较。
+
+修 Bug 题：同事写的删除倒数第 N 个总是删错位置，代码是「先遍历求长度 n，再正向走 `n - n` 步删除」——指出逻辑错误，改用第 6 节的快慢指针间隔法或修正正向步数，用 `[1, 2, 3, 4, 5]`、n=2 验证输出 `[1, 2, 3, 5]`。
+
+挑战题（不看提示）：实现「重排链表」`L0 -> Ln -> L1 -> Ln-1 -> ...`（LC-143），只用 O(1) 额外空间——组合第 6 节找中点、第 5 节反转、第 10 节合并三个子程序即可；用 `1 -> 2 -> 3 -> 4 -> 5` 验证输出 `1 -> 5 -> 2 -> 4 -> 3`。
+
+## 13. 什么时候应该 / 不应该用链表
+
+应该：频繁中间插删且持有前驱（或用双链表持有节点本身）、只需要顺序遍历、需要环形轮转语义（约瑟夫、轮转调度）、实现 LRU 这类「任意位置 O(1) 摘除」的复合结构。
+
+不应该：按下标随机访问（数组的主场）；以查找为主的场景（哈希表，070 篇）。**工业界的默认答案是数组**：C++ 社区长期的经验是 `std::vector` 在绝大多数场景胜过 `std::list`，Python 标准库干脆没有链表类型、需要两端 O(1) 时用 `collections.deque`（分块双向链表，兼顾缓存与两端操作）。渐近复杂度只是选型的一半，缓存局部性是另一半。
+
+两则值得知道的工程实现：一是 Linux 内核的侵入式链表 `list_head`——不是「节点里包含数据」，而是「数据结构里内嵌 prev/next 钩子」，同一个结构体能同时挂在多个链表上（进程既在就绪队列又在哈希桶里），靠 `container_of` 宏从钩子反推宿主地址；二是引用计数型内存管理（如 CPython）回收不了循环引用的双向链表，把「从属」方向声明为弱引用（`weakref`）或手动断环是标准解法。高频分配节点的场景（LRU、内存页管理）用对象池：预分配节点数组、空闲节点串成备用链，分配释放退化为两次指针赋值。
+
+## 14. 与之前和之后的知识的关系
+
+- 往前：数组篇的「连续内存」是本文一切对照的基准；010 篇的大 O 语言用来给「定位 O(n) + 操作 O(1)」拆账；
+- 往后：[栈与队列](/algorithm/040-StackAndQueue) 本质是「限制操作位置的链表/数组」；[哈希表](/algorithm/070-HashTable) 的链地址法用链表解决冲突，LRU 是两者合作的巅峰；[堆与优先队列](/algorithm/090-HeapAndPriorityQueue) 提供合并 K 个有序链表的 O(N log k) 解法；
+- 更远：操作系统内核的进程队列、内存页链，全是本文环形与双链表思想的工业级放大。
+
+## 15. 官方文档与延伸资源
+
+- collections.deque（Python 双端队列，头尾 O(1)）：https://docs.python.org/zh-cn/3/library/collections.html#collections.deque
+- VisuAlgo: Linked List（逐步动画看指针变化）：https://visualgo.net/en/list
+- Hello 算法（中文图解与多语言实现）：https://www.hello-algo.com/
+
+## 16. 自我检查
+
+- 能不看书写出：建链、哨兵删除、三指针反转、快慢指针找中点与判环；
+- 能解释「插入删除 O(1)」的前提，以及缓存不友好为什么让数组在工程上常胜出；
+- 能完整讲出 LRU 缓存中哈希表与双链表各负责什么；
+- 能推导约瑟夫递推式并用模拟解对拍；
+- 六大坑各能举出一个自己踩过或差点踩过的例子。
+
+## 本章总结
+
+链表把「顺序」从内存的连续性里解放出来，交给指针：换来已知前驱时 O(1) 的插删，付出按位访问 O(n) 与缓存不友好。三大技巧——哨兵统一边界、三指针反转、快慢指针——覆盖了绝大多数链表题；哈希表加双链表合作出 LRU，环形结构承接约瑟夫问题。选型口诀：随机访问找数组，中间插删找链表，按 key 秒查找哈希表。
+
+## 下一步
+
+进入 [栈与队列](/algorithm/040-StackAndQueue)：把本文的「限制操作位置」用到极致——只许一端进出的栈、一端进一端出的队列，以及它们如何撑起括号匹配、表达式求值与广度优先搜索。

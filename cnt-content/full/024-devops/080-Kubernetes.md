@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: K8s 架构、核心资源、存储、网络策略、Helm 与 Operator 模式。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'devops/040-NetworkSecurity'
   - 'devops/050-ContainerDocker'
@@ -14,34 +14,22 @@ related:
 prerequisites: []
 ---
 
-## 学习目标
-
-本文是「运维与中间件」模块的第 8 篇，难度定位为高级。重点内容：K8s 架构、核心资源、存储、网络策略、Helm 与 Operator 模式。
-
-主要章节：
-
-- 1. Kubernetes 架构
-- 2. 核心资源
-- 3. ConfigMap 与 Secret
-- 4. 自动扩缩容
-- 5. 存储
-- 6. 网络策略
-- ……共 20 个章节
-
 ## 1. Kubernetes 架构
 
 ### 1.1 整体架构
 
 ```mermaid
 flowchart TD
-    subgraph CP[Control Plane]
-        API[API Server] SCH[Scheduler] CM[Controller Manager]
-        ETCD[etcd 集群状态存储]
+    subgraph CP["Control Plane"]
+        API["API Server"]
+        SCH["Scheduler"]
+        CM["Controller Manager"]
+        ETCD["etcd 集群状态存储"]
     end
-    N1[Node 1<br/>kubelet Proxy Pods]
-    N2[Node 2<br/>kubelet Proxy Pods]
-    N3[Node 3<br/>kubelet Proxy Pods]
-    NN[Node N<br/>kubelet Proxy Pods]
+    N1["Node 1<br/>kubelet Proxy Pods"]
+    N2["Node 2<br/>kubelet Proxy Pods"]
+    N3["Node 3<br/>kubelet Proxy Pods"]
+    NN["Node N<br/>kubelet Proxy Pods"]
     CP --> N1
     CP --> N2
     CP --> N3

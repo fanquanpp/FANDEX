@@ -1,12 +1,12 @@
 ---
-order: 500
+order: 530
 title: 模块、包与工程化
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 模块导入、包结构、虚拟环境与依赖管理。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/710-PythonAdvancedLatestFeature'
   - 'python/170-ComprehensionGenerator'

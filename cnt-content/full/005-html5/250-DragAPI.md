@@ -4,430 +4,276 @@ title: 拖拽 API
 module: 'html5'
 category: 前端技术
 difficulty: intermediate
-description: drag/drop
+description: 用原生 Drag and Drop 从零做出一个文件拖入上传区与可排序列表：七事件的握手协议、dataTransfer 的读写规则、移动端为何失效与 Pointer Events 替代。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'html5/160-ProgressMeter'
-  - 'html5/310-WebComponentsPWADevelopment'
-  - 'html5/260-Geolocation'
+  - 'html5/140-ImagesAndResponsiveImages'
+  - 'html5/430-HTML5DialogPopoverGuide'
 prerequisites:
   - 'html5/020-HTML5OverviewCoreFeature'
 ---
 
 ## 前置知识
 
-建议先阅读以下内容再进入本文：
-
 - [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
+- JavaScript 事件监听基础（`javascript/001`-`005` 与 `javascript/039`，DOM 与事件）。本篇所有交互都靠事件驱动，没有事件基础会读不懂代码。
 
-> 前置要求：本节全部示例依赖 JavaScript 事件监听（dragstart/dragover/drop 等），请先完成 `javascript/001`-`005` 与 `javascript/039`（DOM 与事件）。
->
-> 测试提示：拖拽在本地 `file://` 打开大多可用，但部分浏览器行为受限，建议用 VS Code 的 Live Server 或 `npx serve` 起本地服务器（`http://localhost`）测试；移动端触摸不触发本 API，替代方案见第 5 章。
+> 测试提示：拖拽在 `file://` 直接打开大多可用，但部分浏览器行为受限，建议用 VS Code 的 Live Server 或 `npx serve` 起本地服务器测试；移动端触摸不触发本 API，替代方案见第 7 节。
 
-## 1. 拖拽 API 概述
+## 1. 场景切入：把图片拖进网页就上传
 
-HTML5 原生拖拽 API 允许用户通过拖拽操作在页面内或页面间移动元素和数据。
+你往 FANDEX 网页端传一张律动背景素材，或者往 pixel-vault 的作品上传页丢一张像素画：把文件从桌面按住、拖到浏览器窗口里，页面浮出一圈虚线框，一松手，文件进来了。网盘、邮箱、设计工具的网页版全都有这个交互。
 
-### 1.1 事件
+这类"拖入区"背后就是浏览器原生的 HTML5 Drag and Drop API。它不引入任何库，核心只有三步：
 
-| 事件        | 触发时机           | 用途                    |
-| ----------- | ------------------ | ----------------------- |
-| `dragstart` | 开始拖拽           | 设置拖拽数据            |
-| `drag`      | 拖拽过程中持续触发 | 更新状态                |
-| `dragend`   | 拖拽结束           | 清理状态                |
-| `dragenter` | 拖拽进入目标       | 高亮放置区域            |
-| `dragover`  | 拖拽在目标上方     | **必须 preventDefault** |
-| `dragleave` | 拖拽离开目标       | 取消高亮                |
-| `drop`      | 在目标上释放       | 处理放置逻辑            |
+1. 给源元素标 `draggable="true"`，在 `dragstart` 里"打包数据"；
+2. 给目标区域在 `dragover` 里"放行"（不拦截就收不到投放）；
+3. 在 `drop` 里"拆包处理"。
 
-## 2. 基本实现
+学完本篇你会做出两样东西：一个能接收桌面文件并预览的上传区，和一个拖拽排序的列表。
 
-```html
-<div id="draggable" draggable="true">拖拽我</div>
-<div id="dropzone">放置区域</div>
-```
+## 2. 动手：最小可运行的拖拽上传区
 
-```javascript
-const draggable = document.getElementById('draggable');
-const dropzone = document.getElementById('dropzone');
-
-draggable.addEventListener('dragstart', (e) => {
-  e.dataTransfer.setData('text/plain', e.target.id);
-  e.dataTransfer.effectAllowed = 'move';
-});
-
-dropzone.addEventListener('dragover', (e) => {
-  e.preventDefault(); // 必须！否则无法触发 drop
-});
-
-dropzone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  const id = e.dataTransfer.getData('text/plain');
-  dropzone.appendChild(document.getElementById(id));
-});
-```
-
-## 3. DataTransfer 对象
-
-```javascript
-e.dataTransfer.setData('text/plain', '文本数据');
-e.dataTransfer.setData('application/json', JSON.stringify({ id: 1 }));
-e.dataTransfer.effectAllowed = 'move';
-e.dataTransfer.dropEffect = 'copy';
-
-// 自定义拖拽图像
-const img = new Image();
-img.src = 'drag-icon.png';
-e.dataTransfer.setDragImage(img, 0, 0);
-```
-
-## 4. 文件拖拽
-
-```javascript
-dropzone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  const files = e.dataTransfer.files;
-for (const file of files) {
-    console.log(`文件名: ${file.name}, 大小: ${file.size} bytes`);
-  }
-});
-```
-
-## 5. 移动端兼容：Touch Events 替代方案
-
-HTML5 拖拽 API 是**桌面端专属**：触摸屏上不会触发 `dragstart/drop`。移动端做"拖拽排序、滑动放置"要用触摸事件（Touch Events）自己实现，或直接用成熟的库（如 SortableJS）。下面是最小实现骨架：
-
-```javascript
-const item = document.getElementById('drag-item');
-let offsetX = 0, offsetY = 0;
-
-item.addEventListener('touchstart', (e) => {
-  const touch = e.touches[0];
-  const rect = item.getBoundingClientRect();
-  offsetX = touch.clientX - rect.left;
-  offsetY = touch.clientY - rect.top;
-});
-
-item.addEventListener('touchmove', (e) => {
-  e.preventDefault(); // 阻止页面滚动
-  const touch = e.touches[0];
-  item.style.left = touch.clientX - offsetX + 'px';
-  item.style.top = touch.clientY - offsetY + 'px';
-});
-
-item.addEventListener('touchend', () => {
-  // 放置逻辑：判断落点、写回数据、恢复定位
-});
-```
-
-**讲解：**
-
-1. `touchstart` 记录手指按下位置与元素偏移，为后续移动计算基准。
-2. `touchmove` 里必须 `preventDefault()`，否则页面会跟着手指滚动。
-3. `e.touches[0]` 是第一个触点；多指场景还要处理 `e.changedTouches`。
-4. 生产项目优先用 SortableJS 等库：边界、排序、动画、无障碍都已处理好，不用重复造轮子。
-5. 别忘了样式：`touch-action: none` 或 `position: absolute` 才能让元素自由跟随手指。
-
-## draggable 属性
-
-**启用元素拖拽**
-`<element draggable="true | false">`
-
-```html
-<!-- 将元素标记为可拖拽 -->
-<div id="draggable" draggable="true">拖拽我</div>
-<div id="dropzone">放置区域</div>
-
-<!-- 图片和带 href 的链接默认可拖拽,无需设置 -->
-<img src="logo.png" alt="Logo" />
-<a href="/page">链接</a>
-```
-
----
-
-## 拖拽事件
-
-**事件触发顺序表**
-
-| 事件        | 触发对象   | 触发时机             | 用途                    |
-| ----------- | ---------- | -------------------- | ----------------------- |
-| `dragstart` | 拖拽元素   | 开始拖拽             | 设置拖拽数据            |
-| `drag`      | 拖拽元素   | 拖拽过程中持续触发   | 更新状态                |
-| `dragend`   | 拖拽元素   | 拖拽结束             | 清理状态                |
-| `dragenter` | 放置目标   | 拖拽进入目标         | 高亮放置区域            |
-| `dragover`  | 放置目标   | 拖拽在目标上方移动   | **必须 preventDefault** |
-| `dragleave` | 放置目标   | 拖拽离开目标         | 取消高亮                |
-| `drop`      | 放置目标   | 在目标上释放         | 处理放置逻辑            |
-
----
-
-## 基本拖拽实现
-
-**HTML 结构**
-`<div draggable="true">源</div> <div>目标</div>`
-
-```html
-<!-- 拖拽源与放置目标 -->
-<div id="draggable" draggable="true">拖拽我</div>
-<div id="dropzone">放置区域</div>
-```
-
-**JavaScript 事件绑定**
-`element.addEventListener('dragstart' | 'dragover' | 'drop', handler)`
-
-```javascript
-const draggable = document.getElementById('draggable');
-const dropzone = document.getElementById('dropzone');
-
-// 拖拽开始:设置数据与效果
-draggable.addEventListener('dragstart', (e) => {
-  e.dataTransfer.setData('text/plain', e.target.id); // 设置拖拽数据
-  e.dataTransfer.effectAllowed = 'move';             // 允许的效果:copy | move | link
-});
-
-// 拖拽悬停:必须阻止默认行为,否则无法触发 drop
-dropzone.addEventListener('dragover', (e) => {
-  e.preventDefault();
-  e.dataTransfer.dropEffect = 'move'; // 设置放置效果
-});
-
-// 拖拽进入:高亮目标
-dropzone.addEventListener('dragenter', (e) => {
-  e.preventDefault();
-  dropzone.classList.add('drag-over');
-});
-
-// 拖拽离开:取消高亮
-dropzone.addEventListener('dragleave', () => {
-  dropzone.classList.remove('drag-over');
-});
-
-// 放置:处理数据
-dropzone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  dropzone.classList.remove('drag-over');
-  const id = e.dataTransfer.getData('text/plain'); // 获取拖拽数据
-  const draggedEl = document.getElementById(id);
-  dropzone.appendChild(draggedEl);
-});
-```
-
----
-
-## DataTransfer 对象
-
-**DataTransfer 方法表**
-
-| 方法                              | 说明                          |
-| --------------------------------- | ----------------------------- |
-| `setData(format, data)`           | 设置指定格式的数据            |
-| `getData(format)`                 | 读取指定格式的数据            |
-| `clearData([format])`             | 清除数据                      |
-| `setDragImage(img, x, y)`         | 设置自定义拖拽图像            |
-| `types`                           | 只读属性,数据格式数组        |
-| `files`                           | 只读属性,FileList 对象       |
-| `items`                           | 只读属性,DataTransferItemList |
-
-**常用数据格式**
-`e.dataTransfer.setData('text/plain' | 'text/uri-list' | 'text/html', data)`
-
-```javascript
-// 设置多种格式的数据
-e.dataTransfer.setData('text/plain', '纯文本数据');
-e.dataTransfer.setData('text/uri-list', 'https://example.com');
-e.dataTransfer.setData('text/html', '<strong>HTML 数据</strong>');
-e.dataTransfer.setData('application/json', JSON.stringify({ id: 1, name: '张三' }));
-
-// 读取数据(在 drop 事件中)
-const text = e.dataTransfer.getData('text/plain');
-const json = JSON.parse(e.dataTransfer.getData('application/json'));
-```
-
-**拖拽效果设置**
-`e.dataTransfer.effectAllowed = 'copy | move | link | copyMove | all | none'`
-
-```javascript
-// 设置允许的效果
-e.dataTransfer.effectAllowed = 'copy';   // 仅复制
-e.dataTransfer.effectAllowed = 'move';   // 仅移动
-e.dataTransfer.effectAllowed = 'link';   // 仅链接
-e.dataTransfer.effectAllowed = 'copyMove'; // 复制或移动
-
-// 设置放置效果(在 dragover 事件中)
-e.dataTransfer.dropEffect = 'copy'; // copy | move | link | none
-```
-
-**自定义拖拽图像**
-`e.dataTransfer.setDragImage(<element>, <offsetX>, <offsetY>)`
-
-```javascript
-// 使用自定义图像作为拖拽预览
-draggable.addEventListener('dragstart', (e) => {
-  const img = new Image();
-  img.src = 'drag-icon.png';
-  e.dataTransfer.setDragImage(img, 10, 10); // 偏移量(像素)
-});
-```
-
----
-
-## 文件拖拽
-
-**获取拖入的文件**
-`e.dataTransfer.files` 或 `e.dataTransfer.items`
-
-```javascript
-// 处理拖拽上传的文件
-dropzone.addEventListener('drop', (e) => {
-  e.preventDefault();
-  const files = e.dataTransfer.files; // FileList 对象
-  for (const file of files) {
-    console.log(`文件名: ${file.name}`);
-    console.log(`大小: ${file.size} bytes`);
-    console.log(`类型: ${file.type}`);
-    console.log(`最后修改: ${new Date(file.lastModified).toLocaleString()}`);
-  }
-});
-```
-
-**异步读取文件内容**
-`file.text() | file.arrayBuffer() | reader.readAsDataURL(file)`
-
-```javascript
-// 读取文本文件
-const text = await file.text();
-
-// 读取为 ArrayBuffer
-const buffer = await file.arrayBuffer();
-
-// 使用 FileReader 读取为 Data URL(图片预览)
-const reader = new FileReader();
-reader.onload = (e) => {
-  const img = document.createElement('img');
-  img.src = e.target.result;
-  document.body.appendChild(img);
-};
-reader.readAsDataURL(file);
-```
-
----
-
-## 拖拽方向控制
-
-**仅允许垂直/水平拖拽**
-`if (Math.abs(dx) > Math.abs(dy)) { ... }`
-
-```javascript
-// 限制为水平拖拽
-let isDragging = false;
-let startX, startY;
-
-element.addEventListener('mousedown', (e) => {
-  isDragging = true;
-  startX = e.clientX;
-  startY = e.clientY;
-});
-
-document.addEventListener('mousemove', (e) => {
-  if (!isDragging) return;
-  const dx = e.clientX - startX;
-  const dy = e.clientY - startY;
-  // 仅水平方向有效
-  if (Math.abs(dx) > Math.abs(dy)) {
-    element.style.left = `${dx}px`;
-  }
-});
-
-document.addEventListener('mouseup', () => {
-  isDragging = false;
-});
-```
-
----
-
-## 注意事项
-
-- **dragover 必须 preventDefault**:否则 `drop` 事件不会触发
-- **数据类型一致性**:`setData` 和 `getData` 的 format 参数必须完全一致
-- **安全性**:拖拽内容来源不可信时,需进行数据校验,防止 XSS
-- **触摸设备**:原生 HTML5 拖拽 API 在移动端支持有限,需使用 polyfill 或自定义实现
-- **可访问性**:拖拽操作对屏幕阅读器不友好,需提供等价的非拖拽操作方式(如按钮)
-- **DataTransfer 生命周期**:`getData` 仅在 `drop` 事件中可读取,`dragstart` 中设置的数据在 `dragover` 中无法读取
-
-## 动手试试
-
-### 入门版（必做）
-
-先复制下面这个最小示例到本地 `drag.html`，双击打开即可试验：
+新建 `drag-upload.html`，整份复制即可运行：
 
 ```html
 <!DOCTYPE html>
 <html lang="zh-CN">
-  <head>
-    <meta charset="UTF-8" />
-    <title>拖拽最小示例</title>
-    <style>
-      #box { width: 120px; height: 60px; background: #1677ff; color: #fff;
-             display: flex; align-items: center; justify-content: center; }
-      #zone { width: 300px; height: 160px; margin-top: 20px;
-              border: 2px dashed #999; display: flex;
-              align-items: center; justify-content: center; }
-    </style>
-  </head>
-  <body>
-    <div id="box" draggable="true">拖拽我</div>
-    <div id="zone">放置区域</div>
-    <script>
-      const box = document.getElementById('box');
-      const zone = document.getElementById('zone');
-      box.addEventListener('dragstart', (e) => {
-        e.dataTransfer.setData('text/plain', 'box');
-      });
-      zone.addEventListener('dragover', (e) => e.preventDefault());
-      zone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        zone.textContent = '收到：' + e.dataTransfer.getData('text/plain');
-      });
-    </script>
-  </body>
+<head>
+  <meta charset="UTF-8" />
+  <title>拖拽上传区</title>
+  <style>
+    body { font-family: system-ui, sans-serif; max-width: 560px; margin: 40px auto; }
+    #zone {
+      padding: 48px 24px; text-align: center; color: #667;
+      border: 2px dashed #b8c0c8; border-radius: 12px;
+      transition: border-color .15s, background .15s;
+    }
+    /* 拖拽悬停在区域内时，JS 会挂 is-over 类 */
+    #zone.is-over {
+      border-color: #39C5BB; background: #39c5bb14; color: #0a7d76;
+    }
+    #preview { margin-top: 16px; max-width: 100%; border-radius: 8px; }
+  </style>
+</head>
+<body>
+  <div id="zone">把一张图片从桌面拖到这里</div>
+  <img id="preview" hidden alt="上传预览" />
+
+  <script>
+    const zone = document.getElementById('zone');
+    const preview = document.getElementById('preview');
+
+    // dragover 是开关：不 preventDefault，drop 永远不触发
+    zone.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    // dragenter / dragleave 只负责"视觉反馈"
+    zone.addEventListener('dragenter', () => zone.classList.add('is-over'));
+    zone.addEventListener('dragleave', () => zone.classList.remove('is-over'));
+
+    // drop 里才拿得到数据
+    zone.addEventListener('drop', (e) => {
+      e.preventDefault();
+      zone.classList.remove('is-over');
+
+      const file = e.dataTransfer.files[0];
+      if (!file || !file.type.startsWith('image/')) {
+        zone.textContent = '只支持图片文件';
+        return;
+      }
+      preview.src = URL.createObjectURL(file);
+      preview.hidden = false;
+      zone.textContent = '已接收：' + file.name;
+    });
+  </script>
+</body>
 </html>
 ```
 
-1. 实现“把卡片拖到垃圾桶删除”：一个可拖元素 + 一个放置区，drop 后移除元素；
-2. 在 `dragstart` 中写入 `text/plain` 数据，在 `drop` 中读取并显示；
-3. 实现文件拖拽：把图片拖到区域后，用 FileReader 在页面预览。
+动手清单：
 
-### 进阶版（选做）
+1. 从桌面拖一张图片进来，看到预览出现；
+2. 拖一个 `.txt` 文件进来，看到"只支持图片文件"；
+3. 把 `dragover` 里的 `e.preventDefault()` 注释掉再拖——`drop` 不触发了，这就是最多人踩的坑，先亲手踩一遍。
 
-1. 做一个可拖拽排序的列表：拖起一项，移动到其它项时交换位置；
-2. 用 `setDragImage` 自定义拖拽缩略图；
-3. 给放置区加高亮与禁用状态，拖拽进入时变色、离开时恢复。
+## 3. 讲为什么：一套七事件的握手协议
 
-## 核心知识点
+拖拽不是"一个事件"，而是源端和目标端之间的一次握手。两个角色各听各的事件：
 
-> 一句话记住拖拽：源端 `dragstart` 写数据，目标端 `dragover` 放行、`drop` 收数据；文件拖拽看 `dataTransfer.files`。
+| 事件 | 触发在谁身上 | 时机 | 你通常做什么 |
+| --- | --- | --- | --- |
+| `dragstart` | 被拖元素 | 按住并开始移动 | `setData` 打包数据 |
+| `drag` | 被拖元素 | 拖动全程持续触发 | 少用，避免高频逻辑 |
+| `dragend` | 被被拖元素 | 松手（无论是否成功） | 清理状态 |
+| `dragenter` | 放置目标 | 拖着进入目标 | 高亮目标 |
+| `dragover` | 放置目标 | 在目标上方持续触发 | `preventDefault()` 放行 |
+| `dragleave` | 放置目标 | 拖着离开目标 | 取消高亮 |
+| `drop` | 放置目标 | 在目标上松手 | `getData` 拆包处理 |
 
-- 被拖元素：`draggable="true"` + `dragstart`（写入数据）；
-- 放置区域：`dragover` 必须 `preventDefault()`，`drop` 处理放置；
-- `dataTransfer` 是数据与效果的载体：`setData`/`getData`/`effectAllowed`/`dropEffect`；
-- 文件拖拽：`e.dataTransfer.files` + FileReader/FormData 实现拖拽上传；
-- 生命周期：`dragstart` → `drag` → `dragend`，配合 `dragenter`/`dragleave` 做视觉反馈。
+两个为什么值得停下来想清楚：
 
-## 注意事项与改进建议
+**为什么 `dragover` 必须 `preventDefault()`？** 浏览器默认行为是"任何元素都不接受投放"。只有你在 `dragover` 里显式取消默认行为，浏览器才把这个区域登记为合法落点，后续才会派发 `drop`。这也顺便给了你选择权：只对部分区域 `preventDefault()`，就能天然实现"这里能放、那里不能放"。
 
-| 问题点 | 说明 | 改进方案 |
+**为什么 `dragover` 里读不到数据？** 拖着的东西可能跨窗口、跨应用飞行，恶意页面可以诱导你"拖着文件悬停"来偷读内容。所以浏览器规定：`getData` 只在 `drop` 里生效；在 `dragover` 阶段你只能看 `e.dataTransfer.types`（知道有哪些类型，看不到内容）。这是安全模型，不是 bug。
+
+## 4. 页面内拖拽：把卡片拖进回收站
+
+文件拖入只是"目标端"的故事。源端是页面元素时，先标 `draggable`（注意 `img` 和带 `href` 的 `a` 默认就可拖，无需设置），然后三步走：
+
+```html
+<ul id="list">
+  <li draggable="true">练习曲 No.1</li>
+  <li draggable="true">练习曲 No.2</li>
+  <li draggable="true">练习曲 No.3</li>
+</ul>
+<div id="trash">拖到这里删除</div>
+```
+
+```javascript
+const trash = document.getElementById('trash');
+let dragged = null;
+
+document.getElementById('list').addEventListener('dragstart', (e) => {
+  dragged = e.target;                       // 事件委托：监听在 ul 上
+  e.dataTransfer.setData('text/plain', e.target.textContent);
+  e.dataTransfer.effectAllowed = 'move';
+});
+
+trash.addEventListener('dragover', (e) => e.preventDefault());
+trash.addEventListener('drop', (e) => {
+  e.preventDefault();
+  dragged.remove();
+  trash.textContent = '已删除：' + e.dataTransfer.getData('text/plain');
+});
+```
+
+`effectAllowed`（源端声明）与 `dropEffect`（目标端表态）配合决定光标形态：`copy` 显示加号、`move` 显示移动箭头。目标是"复制进收藏夹"就设 `copy`，是"移走"就设 `move`——光标会替你把意图告诉用户。
+
+## 5. 进阶：拖拽排序列表
+
+排序 = 拖拽 + "插到哪一项之前"的判断。核心技巧是给每个列表项监听 `dragover`，用鼠标纵坐标和列表项中线比较，决定插到前面还是后面：
+
+```javascript
+const list = document.getElementById('list');
+let dragged = null;
+
+list.addEventListener('dragstart', (e) => {
+  dragged = e.target.closest('li');
+});
+
+list.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  const target = e.target.closest('li');
+  if (!target || target === dragged) return;
+  const rect = target.getBoundingClientRect();
+  const after = (e.clientY - rect.top) > rect.height / 2;
+  // insertBefore 把节点挪动（DOM 里同一节点移动等于"搬家"）
+  list.insertBefore(dragged, after ? target.nextElementSibling : target);
+});
+```
+
+配套样式可以让被经过的项出现一条插入指示线：
+
+```css
+li { padding: 10px 14px; border-bottom: 1px solid #eee; position: relative; }
+li::after {
+  content: ""; position: absolute; left: 0; right: 0; height: 2px;
+  background: #39C5BB; opacity: 0;
+}
+/* 拖拽经过时给视觉提示：拖到上半部提示插前面，下半部插后面 */
+li.hint-top::before, li.hint-bottom::after { opacity: 1; }
+```
+
+自测：拖起第 1 项放到第 3 项下半部，顺序应变成 2、3、1。做不出来多半是 `closest('li')` 没写——`e.target` 可能是 li 里面的文本节点对应的元素之外的东西。
+
+## 6. 坑点自检
+
+排查"拖拽没反应"，按这个清单过一遍：
+
+| 现象 | 原因 | 修法 |
 | --- | --- | --- |
-| 忘记 `preventDefault()` | `drop` 永远不触发 | `dragover` 中必须放行 |
-| 未设置 `draggable` | 元素不可拖 | 目标元素加 `draggable="true"` |
-| 数据只在 `dragstart` 写 | 其它事件中读取为空 | 统一在 `dragstart` 中 `setData` |
-| 忽略 `dropEffect` | 移动/复制行为不明确 | 按场景设置 move/copy |
-| 未处理 `dragend` 清理 | 状态残留 | 结束后复位视觉状态 |
-| 触屏设备不生效 | 原生 DnD 不支持触摸 | 触屏用 Pointer Events 或第三方库 |
+| drop 永远不触发 | `dragover` 没有 `preventDefault()` | 目标端放行，这是头号坑 |
+| 元素根本拖不起来 | 没写 `draggable="true"`（div 默认不可拖） | 源端显式标记 |
+| `getData` 拿到空串 | 在 `drop` 以外的事件里读数据 | 数据只在 `drop` 可读；`dragover` 只能看 `types` |
+| format 对不上 | `setData('text', ...)` 与 `getData('text/plain')` 不一致 | 两端用同一个类型字符串；推荐统一 `text/plain` |
+| 高亮闪烁 | `dragleave` 在拖影经过子元素时也会触发 | 用 `dragenter/dragleave` 计数器，或用 `:has()` 配合状态类 |
+| 拖影半透明难看 | 默认拖影是元素截图 | `setDragImage(element, x, y)` 换成预制缩略图 |
+| 松手后状态残留 | 没监听 `dragend` | 无论成败都触发，统一在这里复位 |
 
-## 扩展学习
+关于高亮闪烁，一个现代写法是放弃 `dragleave`，在 `dragover` 里持续"点亮"，靠 CSS 过渡掩盖抖动：
 
-- 文件读取：`html5/240-HTML5OfflineStorageWebAPI` 中 File API；
-- 触屏拖拽：`html5/260-Geolocation` 之外的 Pointer Events 教程；
-- 排序组件：Vue/React 生态中的 drag-and-drop 库（vuedraggable、dnd-kit）；
-- 无障碍：拖拽交互需要为键盘用户提供替代操作（如上下移动按钮）。
+```css
+#zone.is-over { border-color: #39C5BB; }
+#zone { transition: border-color .1s; }
+```
+
+```javascript
+zone.addEventListener('dragover', (e) => {
+  e.preventDefault();
+  zone.classList.add('is-over');
+  clearTimeout(zone._t);                 // 每次经过都续期
+});
+zone.addEventListener('drop', hideHint);
+zone.addEventListener('dragleave', () => {
+  zone._t = setTimeout(() => zone.classList.remove('is-over'), 80);
+});
+```
+
+## 7. 移动端：原生 API 不工作怎么办
+
+HTML5 Drag and Drop 是桌面鼠标交互的产物：触摸屏上拖动默认是"滚动页面"，`dragstart` 根本不会触发。三条路按优先级排：
+
+1. **生产项目直接用成熟库**（SortableJS、dnd-kit 等）：它们在底层同时监听 Pointer/Touch 事件，桌面移动端一套 API，边界检测、排序动画、无障碍都已处理好；
+2. **自己用 Pointer Events 实现**：`pointerdown` 记录偏移，`pointermove` 跟随，`setPointerCapture` 保证手指滑出元素也持续收到事件，配合 `touch-action: none` 阻止页面滚动；
+3. **换交互形态**：长按弹出菜单选"移到..."，或每项加"上移/下移"按钮——对无障碍反而更友好。
+
+最小 Pointer Events 骨架（要点版）：
+
+```javascript
+item.addEventListener('pointerdown', (e) => {
+  item.setPointerCapture(e.pointerId);
+  const rect = item.getBoundingClientRect();
+  const dx = e.clientX - rect.left;
+  const dy = e.clientY - rect.top;
+
+  const move = (ev) => {
+    item.style.transform =
+      `translate(${ev.clientX - dx - rect.left}px, ${ev.clientY - dy - rect.top}px)`;
+  };
+  const up = () => {
+    item.releasePointerCapture(e.pointerId);
+    item.removeEventListener('pointermove', move);
+    // 落点判定与数据写回在这里做
+  };
+  item.addEventListener('pointermove', move);
+  item.addEventListener('pointerup', up, { once: true });
+});
+```
+
+```css
+.item { touch-action: none; } /* 关键：声明"这个元素上的手势归我管" */
+```
+
+## 8. 无障碍与安全底线
+
+两件事在真实项目里不能省：
+
+- **给键盘用户留活路**：读屏用户拖不动东西。排序列表请配"上移/下移"按钮或等价命令；上传区配一个普通 `<input type="file">`。原则：拖拽必须是快捷方式，不能是唯一入口。
+- **不信任拖进来的内容**：`getData('text/html')` 里的 HTML 可能携带脚本。要么只用 `text/plain`，要么插入前消毒，永远不要 `innerHTML` 直塞。
+
+## 9. 练习
+
+1. （必做）把第 2 节的上传区扩展为支持多图：拖入多张时逐个生成缩略图网格，右键点击缩略图移除；
+2. （必做）实现"回收站"：页面内卡片拖入即删，拖错有 3 秒撤销提示（提示条可用 `<dialog>` 做确认）；
+3. （选做）给第 5 节排序列表加键盘支持：按住空格进入"拿起"状态，方向键移动，再按空格放下；
+4. （选做）拖拽文本进页面时，只接受纯文本并在下方渲染为 `<blockquote>`；包含 HTML 标签时提示"已按纯文本处理"。
+
+## 10. 下一步
+
+- 文件读进来了怎么用？File API 与 `URL.createObjectURL` 的细节在 `html5/140-ImagesAndResponsiveImages` 与 `html5/240-HTML5OfflineStorageWebAPI`；
+- 想给拖入确认做原生弹层？看 `html5/430-HTML5DialogPopoverGuide`；
+- 拖拽只是"手势交互"的一种，Pointer Events 的完整能力（多点触控、压感、笔倾斜）是通往移动端的正门，建议系统补一遍。

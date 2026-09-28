@@ -1,12 +1,12 @@
 ---
-order: 610
+order: 630
 title: 正则断言
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: 正则表达式先行断言（Lookahead）与后行断言（Lookbehind）的形式化理论、自动机基础、V8/SpiderMonkey 实现细节与企业级文本处理实践，对标 MIT 6.004 计算理论课程水准。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/110-Regex'
   - 'javascript/120-ES2018RegExpNamedCaptureGroups'
@@ -16,13 +16,13 @@ prerequisites:
   - 'javascript/110-Regex'
 ---
 
-> 前置：需先有正则基础（043）。
+> 前置：需先有正则基础，见[正则表达式](/javascript/110-Regex)。
 
 # 断言
 
 ## 前置知识
 
-- [Records 与 Tuples](/javascript/630-ImmutableDataStructures)：建议先完成前一篇的学习
+- [正则表达式](/javascript/110-Regex)：断言建立在字符类、量词与分组之上，先把前置正则篇读顺
 
 ## 学习目标
 

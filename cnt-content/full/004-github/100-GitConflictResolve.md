@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以问题驱动方式讲解 Git 合并冲突的产生原理、冲突标记解读、完整解决流程与预防策略，覆盖 merge/rebase/cherry-pick 冲突场景，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---
@@ -27,7 +27,7 @@ Git 遇到的情况一模一样：当两个分支**修改了同一文件的同�
 
 ### 1.1 冲突的唯一来源：三方合并
 
-回顾 040 篇的三方合并机制：合并时 Git 比较三个版本——我方（ours）、对方（theirs）、共同祖先（base）。冲突的产生规则只有一条：
+回顾 [GitHub 合并与变基](/github/090-GitMergeRebase) 的三方合并机制：合并时 Git 比较三个版本——我方（ours）、对方（theirs）、共同祖先（base）。冲突的产生规则只有一条：
 
 | 比较结果 | Git 的处理 |
 | --- | --- |
@@ -45,7 +45,7 @@ git merge feature        # 合并冲突
 git pull                 # 拉取远程更新时的合并冲突（本质也是 merge）
 git pull --rebase        # 变基冲突
 git cherry-pick abc1234  # 移植提交冲突
-git stash pop            # 恢复暂存冲突（见 045 篇）
+git stash pop            # 恢复暂存冲突（见 [GitHub 暂存与回退](/github/140-GitStashReset)）
 ```
 
 ### 1.3 冲突发生时的现象

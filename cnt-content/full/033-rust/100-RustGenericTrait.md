@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 泛型函数与结构体、Trait 定义实现、Trait 对象与生命周期标注
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'rust/090-RustCollectionsIterators'
   - 'rust/080-RustErrorHandling'
@@ -14,6 +14,21 @@ prerequisites:
   - 'rust/080-RustErrorHandling'
 ---
 
+## 前置知识
+
+- [集合与迭代器](/rust/090-RustCollectionsIterators)：迭代器与闭包的基本用法——本文会反复出现 `Iterator` trait。
+
+## 学习目标
+
+读完本文你将能够：
+
+1. 会写泛型函数与泛型结构体，理解单态化带来的零运行时开销；
+2. 会定义 trait 并为类型实现，掌握默认实现与 `impl Trait` 参数/返回语法；
+3. 分清静态分发（泛型）与动态分发（`Box<dyn Trait>`）的机制与取舍；
+4. 看懂生命周期省略规则，会在多输入引用等场景补 `'a` 标注；
+5. 了解 trait 中 `async fn` 的支持现状与 `dyn` 分发的限制。
+
+预计 75 分钟。
 
 ## 1. 从"万能插座"说起：泛型
 

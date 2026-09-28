@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: CDN 内容分发网络：边缘节点、回源机制、缓存策略与调度算法。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/310-TCPMessageFraming'
   - 'cs-fundamentals/340-DNSFlow'
@@ -18,8 +18,8 @@ prerequisites:
 
 ## 前置知识
 
-- HTTP 缓存语义：`Cache-Control`、`ETag`、304 协商（见 [HTTP 缓存策略](cs-fundamentals/320-HTTPCacheStrategy)）；
-- DNS 解析与 CNAME 记录（见 [DNS 解析流程](cs-fundamentals/340-DNSFlow)）——CDN 的流量调度就建立在它之上；
+- HTTP 缓存语义：`Cache-Control`、`ETag`、304 协商（见 [HTTP 缓存策略](/cs-fundamentals/320-HTTPCacheStrategy)）；
+- DNS 解析与 CNAME 记录（见 [DNS 解析流程](/cs-fundamentals/340-DNSFlow)）——CDN 的流量调度就建立在它之上；
 - 网络延迟的基本直觉：跨网/跨地域 RTT 是静态资源加载的主要瓶颈。
 
 ## 学习目标
@@ -114,7 +114,7 @@ cdn.example.com.  CNAME  cdn.example.com.w.examplecdn.com.   # 你的权威指�
 ...examplecdn.com.  A    111.63.x.x                          # CDN 权威（GSLB）给出边缘 IP
 ```
 
-CDN 的全局负载均衡（GSLB）权威服务器在应答时看的是**发起查询的递归解析器 IP**，用它近似用户位置与运营商：电信解析器问来 -> 返回电信边缘节点 IP；海外解析器 -> 返回海外节点。整个过程对用户完全透明（DNS 细节见 [DNS 解析流程](cs-fundamentals/340-DNSFlow)）。
+CDN 的全局负载均衡（GSLB）权威服务器在应答时看的是**发起查询的递归解析器 IP**，用它近似用户位置与运营商：电信解析器问来 -> 返回电信边缘节点 IP；海外解析器 -> 返回海外节点。整个过程对用户完全透明（DNS 细节见 [DNS 解析流程](/cs-fundamentals/340-DNSFlow)）。
 
 GSLB 的固有误差：递归解析器可能与用户不同城（如用户用公共 DNS），导致"就近"失准；此外 DNS 缓存让调度变更滞后。
 

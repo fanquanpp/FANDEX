@@ -1,12 +1,12 @@
 ---
-order: 190
+order: 200
 title: React 错误边界
 module: 'react'
 category: 前端技术
 difficulty: intermediate
 description: 错误边界（ErrorBoundary）完整指南：getDerivedStateFromError 与 componentDidCatch 的捕获范围、React 19 错误处理变化、react-error-boundary 生产用法与常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/170-StateManagementSolutionComparison'
   - 'react/180-ReactPerformance'

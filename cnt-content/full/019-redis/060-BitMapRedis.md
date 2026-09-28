@@ -1,12 +1,12 @@
 ---
-order: 50
+order: 60
 title: 位图
 module: 'redis'
 category: 数据库
 difficulty: intermediate
 description: Redis 位图 Bitmap：SETBIT/BITCOUNT/BITFIELD 位级统计、签到与活跃用户场景、内存估算与稀疏位图陷阱。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'redis/110-CacheStrategyAdvancedFeature'
   - 'redis/050-NumberStats'
@@ -80,7 +80,7 @@ BITFIELD_RO sign:u42 GET u31 0
 
 ## 4. 应用场景
 
-### 3.1 用户在线状态
+### 4.1 用户在线状态
 
 ```redis
 -- 用户上线
@@ -93,7 +93,7 @@ GETBIT online:users 42
 BITCOUNT online:users
 ```
 
-### 3.2 用户标签
+### 4.2 用户标签
 
 ```redis
 -- 用户42有标签0和标签3
@@ -103,7 +103,7 @@ SETBIT user:42:tags 3 1
 BITCOUNT user:42:tags
 ```
 
-### 3.3 活跃用户统计
+### 4.3 活跃用户统计
 
 ```redis
 -- 每日活跃用户位图

@@ -3,455 +3,325 @@ order: 360
 title: Vue 3.4 / 3.5 新特性
 module: 'vue3'
 category: 前端技术
-difficulty: beginner
-description: Vue 3.4（defineModel 稳定、同名简写、模板提速）与 3.5（响应式 props 解构、useTemplateRef、watch 暂停恢复）新特性速览，附 3.6 Vapor 进展。
+difficulty: intermediate
+description: 从一个真实组件库升级场景学会 Vue 3.4 与 3.5 的高频新特性：defineModel、同名简写、响应式 props 解构、useTemplateRef、useId、watch 暂停恢复与 onWatcherCleanup，附 3.6 Vapor 进展。
 author: fanquanpp
-updated: '2026-09-12'
-related: []
-prerequisites: []
+updated: '2026-09-28'
+related:
+  - 'vue3/110-ComponentSystem'
+  - 'vue3/060-ComputedCacheWatchTiming'
+  - 'vue3/370-VaporMode'
+  - 'vue3/310-Vue3WebComponents'
+prerequisites:
+  - 'vue3/020-Vue3QuickStartGuide'
+  - 'vue3/050-ReactiveSystem'
 ---
 
-## Vue 3.4 defineModel
+## 前置知识
 
-**基本写法：defineModel 简化 v-model**
-`const <model> = defineModel()`
+- [第一个组件](/vue3/020-Vue3QuickStartGuide)：会写 `<script setup>` 组件、知道 props 与 emit 怎么用
+- [响应式系统](/vue3/050-ReactiveSystem)：知道 `ref` / `reactive` 的区别，理解依赖收集的大致原理
+
+## 学习目标
+
+- 用 `defineModel` 把「双 prop + emit」的模板代码缩成一行，并处理 `v-model` 修饰符
+- 用 3.5 的响应式 props 解构、`useTemplateRef`、`useId` 替代三种旧写法
+- 用 `watch` 的 `once`、`pause` / `resume` 与 `onWatcherCleanup` 写出更干净的侦听逻辑
+- 知道 3.4 / 3.5 在性能上改了什么（模板解析提速、大数组深度监听提速、内存下降）
+- 了解 3.6（Vapor）当前的版本状态与升级策略
+
+## 场景：升级一个 2023 年的组件库
+
+假设你在维护 FANDEX 网页端里「前端实验室」用到的一套表单组件。仓库还是 Vue 3.3 时代写的，到处是这样的双向绑定样板：
+
 ```vue
-<!-- 替代手动 props 与 emits -->
+<!-- VersionInput.vue，Vue 3.3 时代的写法 -->
+<script setup>
+const props = defineProps({
+  modelValue: { type: String, default: '' },
+});
+const emit = defineEmits(['update:modelValue']);
+
+function onInput(event) {
+  emit('update:modelValue', event.target.value);
+}
+</script>
+
+<template>
+  <input :value="modelValue" @input="onInput" />
+</template>
+```
+
+父组件每多一个 `v-model` 字段，这段样板就要复制一份。2026 年的新项目早就不用这么写了：Vue 3.4 把 `defineModel` 转正为稳定 API，Vue 3.5 又补上了 props 解构、模板引用、唯一 ID 三块长期痛点。本文带你把这套旧组件逐步改成 3.4 / 3.5 风格，顺带讲清每个新特性解决的是什么问题。
+
+## 一、defineModel：把双向绑定压成一行
+
+### 动手：先做最简单的版本
+
+```vue
+<!-- VersionInput.vue，Vue 3.4+ -->
 <script setup>
 const model = defineModel();
 </script>
-<template><input v-model="model" /></template>
+
+<template>
+  <input v-model="model" />
+</template>
 ```
 
----
+父组件用法不变：
 
-**基本写法：命名模型**
-`const <model> = defineModel('<名称>')`
 ```vue
-<!-- 多个 v-model -->
+<!-- Parent.vue -->
+<script setup>
+import { ref } from 'vue';
+import VersionInput from './VersionInput.vue';
+
+const version = ref('');
+</script>
+
+<template>
+  <VersionInput v-model="version" />
+</template>
+```
+
+### 为什么一行就够了
+
+`v-model="version"` 编译后本来就是 `:model-value="version"` 加 `@update:model-value="version = $event"`。以前这两个「协议」要靠你手写 props 和 emits 声明来对接，现在 `defineModel()` 让编译器替你声明，并返回一个读写都会触发更新的 ref——写 `model.value = x` 内部就是 emit。
+
+### 命名模型：一个组件多个 v-model
+
+```vue
 <script setup>
 const firstName = defineModel('firstName');
 const lastName = defineModel('lastName');
 </script>
+
+<template>
+  <input v-model="firstName" placeholder="姓" />
+  <input v-model="lastName" placeholder="名" />
+</template>
 ```
 
----
-
-**基本写法：配置类型与默认值**
-`const <model> = defineModel({ type: <类型>, default: <值> })`
 ```vue
-<!-- 声明类型 -->
+<NameForm v-model:first-name="a" v-model:last-name="b" />
+```
+
+### 类型、默认值与修饰符
+
+```vue
 <script setup>
 const count = defineModel({ type: Number, default: 0 });
+
+// 第二个返回值是修饰符对象，对应 v-model.trim 里的 .trim
+const [text, modifiers] = defineModel({ default: '' });
+
+function onBlur() {
+  if (modifiers.trim) {
+    text.value = text.value.trim();
+  }
+}
 </script>
 ```
 
----
+### 坑点
 
-**基本写法：解构获取修饰符**
-`const [<model>, <modifiers>] = defineModel()`
+- `defineModel` 返回的是 ref，模板里直接 `v-model` 用，脚本里别忘了 `.value`。
+- 父组件必须绑定响应式数据（`ref` 或 state 里的字段）。如果父组件传的是普通常量，子组件写入时只更新不了任何东西，且开发环境会有警告。
+- 修饰符处理是「读时约定」：`modifiers.trim` 只告诉你父组件用了 `.trim`，真正裁剪逻辑要你自己写，框架不会替你 trim。
+
+### 自检
+
+把 `defineModel` 版本编译回等价的 3.3 代码，你应该能默写出：`props` 里的 `modelValue`、`emits` 里的 `update:modelValue`。写不出来就回上一节再看一遍。
+
+## 二、v-bind 同名简写：属性名单词只出现一次
+
+3.4 之前，属性名和变量名相同时也要写两遍：`:src="src"`。3.4 起可以直接写 `:src`：
+
 ```vue
-<!-- 获取 v-model 修饰符 -->
 <script setup>
-const [model, modifiers] = defineModel();
-if (modifiers.trim) model.value = model.value.trim();
+const src = '/logo.svg';
+const alt = 'FANDEX 徽标';
 </script>
+
+<template>
+  <img :src :alt />
+</template>
 ```
 
----
+适合「壳组件透传一堆同名字段」的场景。可读性下降的边界在于一行里挤了太多简写——只对同名的用简写，不同名的一律写全，团队 review 时一眼能分清哪个是变量、哪个是字符串。
 
-## Vue 3.4 v-bind 同名简写
+## 三、响应式 props 解构（3.5）：默认值不再需要 withDefaults
 
-**基本写法：属性名与变量名相同省略值**
-`<img :src :alt>`
+### 动手
+
 ```vue
-<!-- 简写形式 -->
-<script setup>
-import { ref } from 'vue';
-const src = ref('/a.jpg');
-const alt = ref('图片');
-</script>
-<template><img :src :alt /></template>
-```
-
----
-
-## Vue 3.4 defineModel 双向绑定
-
-**基本写法：父组件使用 v-model**
-`<子组件 v-model="<值>" />`
-```vue
-<!-- 父组件 -->
-<script setup>
-import { ref } from 'vue';
-import Child from './Child.vue';
-const text = ref('');
-</script>
-<template><Child v-model="text" /></template>
-```
-
----
-
-## Vue 3.5 响应式 props 解构
-
-**基本写法：直接解构 defineProps 保持响应**
-`const { <字段> = <默认值> } = defineProps(['<字段>'])`
-```vue
-<!-- Vue 3.5 编译器自动保持响应式 -->
-<script setup>
-const { count = 0, msg = 'hello' } = defineProps(['count', 'msg']);
-console.log(count);
-</script>
-```
-
----
-
-**基本写法：类型声明带默认值**
-`const { <字段> = <默认> } = defineProps<{ <字段>?: <类型> }>()`
-```vue
-<!-- TypeScript 写法 -->
 <script setup lang="ts">
-const { count = 0 }: { count?: number } = defineProps<{ count?: number }>();
+const { count = 0, msg = 'hello' } = defineProps<{
+  count?: number;
+  msg?: string;
+}>();
 </script>
+
+<template>
+  <p>{{ count }} / {{ msg }}</p>
+</template>
 ```
 
----
+### 为什么解构后还是响应式的
 
-## Vue 3.5 useTemplateRef
+3.5 之前，`props` 一旦被解构成普通变量，就与响应式系统断开了——这就是当年必须搞出 `withDefaults`、且模板里仍要写 `props.count` 的原因。3.5 的编译器在解构位置插入了响应式访问，`count` 在编译产物里仍然指向 `props.count`，所以父组件更新后子组件照常重渲染。默认值也回归了 JavaScript 本身的解构语法，`withDefaults` 在新代码里可以退休。
 
-**基本写法：语义化获取模板引用**
-`const <ref> = useTemplateRef('<名称>')`
+### 坑点
+
+- 解构发生在编译时，`watch(() => count, ...)` 这类写法要小心：编译器能处理传入解构变量的多数场景，但把解构结果塞进普通对象再读，就会丢响应式。拿不准时 `watch(() => props.count)` 永远不会错。
+- 这是 3.5 的编译器行为，**升级编译器**（create-vue / @vitejs/plugin-vue 新版本）即可用，不要求运行时升到 3.5。但建议 vue 与编译工具链一起升，避免版本错配。
+
+## 四、useTemplateRef（3.5）：拿 DOM 引用不再靠「同名 ref 变量」魔法
+
+### 动手：聚焦一个输入框
+
 ```vue
-<!-- 替代 ref(null) -->
 <script setup>
 import { useTemplateRef, onMounted } from 'vue';
+
 const inputRef = useTemplateRef('my-input');
-onMounted(() => inputRef.value?.focus());
+
+onMounted(() => {
+  inputRef.value?.focus();
+});
 </script>
-<template><input ref="my-input" /></template>
+
+<template>
+  <input ref="my-input" />
+</template>
 ```
 
----
+### 为什么要有这个 API
 
-## Vue 3.5 useId
+旧写法是声明一个**与 ref 属性同名**的 `ref(null)` 变量，靠模板编译器做「名字配对」。三个毛病：变量必须叫那个名字（不直观）、类型推断弱、配合 `v-for` 时容易拿错。`useTemplateRef` 把配对变成显式参数，名字只是字符串标签，返回值类型也由编译器推断成对应的 DOM 类型。
 
-**基本写法：生成唯一 ID**
-`const <id> = useId()`
+### 坑点
+
+- 参数必须与模板里 `ref="my-input"` 的字符串完全一致，拼错了运行时不报错、拿到的是 `null`。
+- 挂载前（比如 `setup` 同步阶段）`inputRef.value` 就是 `null`，访问 DOM 要放在 `onMounted` 或事件回调里。
+
+### 自检
+
+新建一个组件，要求：两个输入框，页面加载后焦点落在第二个。用 `useTemplateRef` 写完再对照：你是不是给两个 ref 起了不同的名字，并只在 `onMounted` 里访问了 DOM？
+
+## 五、useId（3.5）：label 和 input 的可靠配对
+
+表单可访问性要求 `<label for>` 与 `<input id>` 一一对应。手写 `id="name-input-1"` 在组件复用和 SSR 场景下必然撞车：
+
 ```vue
-<!-- SSR 一致的唯一 ID -->
 <script setup>
 import { useId } from 'vue';
+
 const id = useId();
 </script>
+
 <template>
-  <label :for="id">用户名</label>
+  <label :for="id">仓库地址</label>
   <input :id="id" />
 </template>
 ```
 
----
+`useId` 保证同一应用内唯一，且服务端与客户端渲染结果一致（SSR 不再水合警告）。FANDEX 网页端的 islands 是多实例共存的环境，这类 ID 生成必须由框架统一分配，手写计数器迟早出事。
 
-**基本写法：生成多个相关 ID**
-`const <id1> = useId(); const <id2> = useId()`
-```vue
-<!-- 表单元素关联 -->
-<script setup>
-import { useId } from 'vue';
-const labelId = useId();
-const inputId = useId();
-</script>
+衍生技巧：需要一组关联 ID（比如 `aria-describedby`）时，调两次 `useId` 各拿一个，不要手动拼接。
+
+## 六、watch 的三个新能力（3.4 / 3.5）
+
+### once：只触发一次（3.4）
+
+```ts
+import { watch } from 'vue';
+
+watch(filters, (v) => {
+  console.log('筛选条件首次确定', v);
+}, { once: true });
 ```
 
----
+替代「手动记个 flag 再 stop」的写法。
 
-## Vue 3.4 watch once 选项
+### pause / resume：暂停与恢复（3.5）
 
-**基本写法：watch 只触发一次**
-`watch(<源>, <回调>, { once: true })`
 ```ts
-// 监听一次后自动停止
-watch(count, (n) => console.log('首次变化', n), { once: true });
-```
+const { pause, resume, stop } = watch(query, doSearch);
 
----
-
-## Vue 3.5 watch 暂停与恢复
-
-**基本写法：手动暂停恢复监听**
-`const { pause, resume } = watch(<源>, <回调>)`
-```ts
-// 返回控制方法
-const { pause, resume, stop } = watch(count, cb);
+// 拉起编辑态时冻结自动搜索
 pause();
+// 保存后恢复
 resume();
-stop();
 ```
 
----
+3.5 之前 watcher 只能停不能停后再启，要暂停就得销毁重建，状态还得自己保存。
 
-## Vue 3.5 watch 深度监听性能优化
+### onWatcherCleanup：清理逻辑放回调旁边（3.5）
 
-**基本写法：深度监听性能提升 10 倍**
-`watch(<对象>, <回调>, { deep: true })`
 ```ts
-// 大型对象深度监听更快
-watch(bigObj, (n) => update(n), { deep: true });
-```
+import { watch, onWatcherCleanup } from 'vue';
 
----
-
-## Vue 3.5 shallowRef 数组优化
-
-**基本写法：shallowRef 性能提升**
-`const <ref> = shallowRef(<数组>)`
-```ts
-// 大型数组读取更快
-const list = shallowRef(hugeArray);
-```
-
----
-
-## Vue 3.5 内存优化
-
-**基本写法：响应式系统内存占用减少**
-`reactive(<对象>) // 内存更省`
-```ts
-// 3.5 重构了响应式 internals，大型响应式数组场景内存最多减少约 56%，
-// 大数组的深层操作速度最快提升 10 倍
-const state = reactive({ items: [] });
-```
-
----
-
-## Vue 3.5 onWatcherCleanup
-
-**基本写法：watch 内注册清理**
-`watch(<源>, (<n>, <old>, <onCleanup>) => <逻辑>)`
-```ts
-// 替代 onCleanup 参数
-watch(count, (n, old, onCleanup) => {
-  const timer = setInterval(tick, 1000);
-  onCleanup(() => clearInterval(timer));
-});
-```
-
----
-
-**基本写法：导入式 onWatcherCleanup**
-`import { onWatcherCleanup } from 'vue'`
-```ts
-// 在 watch 回调外注册
-import { onWatcherCleanup } from 'vue';
-watch(count, () => {
-  const timer = setInterval(tick, 1000);
+watch(source, () => {
+  const timer = setInterval(poll, 1000);
   onWatcherCleanup(() => clearInterval(timer));
 });
 ```
 
----
+下一次回调触发或 watcher 停止时，清理函数自动执行。它解决的是「清理代码离创建代码太远」的问题——旧写法里 `onCleanup` 是回调第三个参数，深层嵌套时容易漏；`onWatcherCleanup` 是显式导入的函数，在任何帮助函数里都能调，写在组合式函数里尤其顺手。
 
-## Vue 3.5 useHost
+### 坑点与自检
 
-**基本写法：获取自定义元素宿主**
-`const <host> = useHost()`
-```ts
-// 用于自定义元素场景
-import { useHost } from 'vue';
-const host = useHost();
-```
+- `pause()` 只暂停回调，不取消已经在跑的异步任务。轮询暂停要配合 `onWatcherCleanup` 或业务层 flag，别以为 pause 能掐断 setTimeout。
+- 自检：写一个「输入停止 500ms 后搜索，搜索中切换关键词要取消上一次请求」的逻辑，只允许用 `watch` + `onWatcherCleanup`，不许用 abort 之外的手动 flag。能写对，说明清理时机理解到位了。
 
----
+## 七、性能层面的改进：知道有这回事即可
 
-## Vue 3.5 useShadowRoot
+这些是「白拿」的优化，不需要你改代码，但要知道量级，免得重复造轮子：
 
-**基本写法：访问 shadow root**
-`const <root> = useShadowRoot()`
-```ts
-// 自定义元素 Shadow DOM 操作
-import { useShadowRoot } from 'vue';
-const root = useShadowRoot();
-```
+| 改进 | 版本 | 说明 |
+| :--- | :--- | :--- |
+| 模板解析器重写（状态机解析） | 3.4 | 解析效率约 2 倍，构建产物同时更小 |
+| SSR 渲染路径优化 | 3.4 | 服务端渲染吞吐提升 |
+| 深层响应式数组提速 | 3.5 | 大数组深度操作最快约 10 倍 |
+| 内存占用下降 | 3.5 | 响应式 internals 重构，大型响应式数组场景内存最多省约 56% |
+| computed / watch 依赖追踪重构 | 3.5 | API 不变，行为更精确 |
 
----
+结论：性能敏感的场景（长列表、大表单状态树）升级到 3.5.x 就有收益，不需要切第三方方案。
 
-## Vue 3.4 性能改进
+## 八、其他值得知道的点
 
-**基本写法：模板解析器速度提升**
-`compile(<模板>) // 解析更快`
-```ts
-// Vue 3.4 用基于状态机的解析器重写了模板编译前端，
-// 解析效率提升约 2 倍
-import { compile } from 'vue';
-```
+### Teleport 的 defer（3.5）
 
----
+`<Teleport defer to="#target">` 会等目标容器完成本轮挂载后再传送，解决「目标节点和 Teleport 在同一次更新里渲染、目标还不存在」的经典报错。
 
-**基本写法：SSR 渲染提速**
-`renderToString(<app>) // 服务端渲染更高效`
-```ts
-// 3.4 一并优化了 SSR 渲染路径，服务端渲染吞吐量明显提升
-import { renderToString } from 'vue/server-renderer';
-```
+### 自定义元素增强（3.5）
 
----
+`defineCustomElement` 场景新增 `useHost()`（拿宿主元素）与 `useShadowRoot()`（拿 Shadow Root），Vue 组件发布成 Web Component 时操作宿主样式和事件不再需要绕路。FANDEX 里若有组件要嵌入非 Vue 页面，这条是正路，详见[自定义元素](/vue3/310-Vue3WebComponents)。
 
-## Vue 3.4 defineModel 双向绑定原理
+### 3.4 顺带的稳定性确认
 
-**基本写法：编译为 props 与 emits**
-`<子组件 v-model="<值>" /> // 等价 :model-value + @update`
-```vue
-<!-- 编译产物等价 -->
-<Child :model-value="value" @update:model-value="value = $event" />
-```
+Teleport、KeepAlive 等内置组件在 3.4 已稳定；Suspense 保持实验性状态——生产代码里继续用 `defineAsyncComponent` 加 loading 组件，别把 Suspense 当稳定 API 依赖。
 
----
+## 九、3.6 与 Vapor：现在的状态和你的升级策略
 
-## Vue 3.4 内置组件改进
+截至 2026-09（以 npm dist-tags 为准）：Vue 稳定线是 3.5.x，3.6 处于 RC 阶段，核心特性即 [Vapor 模式](/vue3/370-VaporMode)——编译期直接生成定向 DOM 操作，跳过虚拟 DOM。组件 API 不变，是编译策略的变化。
 
-**基本写法：Teleport 与 KeepAlive 等内置组件 API 稳定；Suspense 仍为实验性**
-`<Teleport to="<选择器>">`
-```vue
-<!-- 内置组件 API 稳定 -->
-<Teleport to="body"><Modal /></Teleport>
-```
+生产策略三句话：
 
----
+1. 业务项目留在 3.5.x，等 3.6 稳定版。
+2. 3.6 稳定后，先在非关键项目验证组件库兼容性（重点盯依赖 `getCurrentInstance` 等底层 API 的库）。
+3. 升级本身是小版本行为：`npm install vue@latest` 配合迁移公告即可，3.4 / 3.5 的新特性都是增量 API，没有破坏性变更需要先处理。
 
-## Vue 3.4 defineModel 与修饰符
+## 练习
 
-**基本写法：自定义修饰符处理**
-`const [<model>, <modifiers>] = defineModel()`
-```vue
-<!-- 处理 v-model.trim 等 -->
-<script setup>
-const [model, modifiers] = defineModel();
-watch(model, (v) => {
-  if (modifiers.trim) model.value = v.trim();
-});
-</script>
-```
+1. 把本文开头那段 3.3 风格的 `VersionInput` 重写成 `defineModel` 版本，并支持 `v-model.trim`（父组件写 `<VersionInput v-model.trim="text" />` 时自动去首尾空格）。
+2. 写一个 `SearchBox` 组件：`useId` 生成 label 关联、`useTemplateRef` 聚焦、`watch` 加 500ms 防抖、用 `onWatcherCleanup` 清理定时器。
+3. 用 `defineModel('firstName')` / `defineModel('lastName')` 做一个双字段组件，父组件分别绑定两个不同的 ref，验证互不干扰。
 
----
+## 下一步
 
-## Vue 3.4 TypeScript 改进
-
-**基本写法：更精确的类型推断**
-`defineProps<{ <字段>: <类型> }>()`
-```ts
-// 类型推断更准确
-defineProps<{ name: string; age?: number }>();
-```
-
----
-
-## Vue 3.4 错误处理改进
-
-**基本写法：errorHandler 更详细**
-`app.config.errorHandler = (<err>, <instance>, <info>) => <逻辑>`
-```ts
-// info 包含更多上下文
-app.config.errorHandler = (err, instance, info) => {
-  console.error(err, info);
-};
-```
-
----
-
-## Vue 3.5 Reactive 内部重构
-
-**基本写法：依赖追踪与计算属性重构**
-`computed(<getter>) // 更快更省内存`
-```ts
-// 3.5 重构了 reactivity 核心（computed、watch、effect）：
-// 依赖追踪更精确、内存开销更低，API 保持不变，无需改代码
-const total = computed(() => state.items.reduce((s, i) => s + i.price, 0));
-```
-
----
-
-## Vue 3.5 自定义元素改进
-
-**基本写法：defineCustomElement 增强**
-`defineCustomElement(<组件>)`
-```ts
-// 自定义元素支持更多特性
-import { defineCustomElement } from 'vue';
-const MyElement = defineCustomElement(MyComponent);
-customElements.define('my-element', MyElement);
-```
-
----
-
-## Vue 3.5 Teleport 改进
-
-**基本写法：Teleport deferred 属性**
-`<Teleport defer to="<选择器>">`
-```vue
-<!-- 等目标挂载后再传送 -->
-<Teleport defer to="#modal-container">
-  <Modal />
-</Teleport>
-```
-
----
-
-## Vue 3.5 Suspense 改进
-
-**基本写法：Suspense 与异步组件**
-`<Suspense> <AsyncComponent /> <template #fallback>...</template> </Suspense>`
-```vue
-<!-- 注意：Vue 用 #fallback 插槽，不是 JSX 的 fallback 属性 -->
-<Suspense>
-  <AsyncComponent />
-  <template #fallback>
-    <Spinner />
-  </template>
-</Suspense>
-```
-
----
-
-## Vue 3.6 Vapor 模式进展
-
-**背景：3.6 的核心是 Vapor 模式**
-`// 编译期直接生成 DOM 操作，跳过虚拟 DOM`
-```ts
-// 截至 2026-09，Vue 3.6 处于 RC 阶段：
-// Vapor 已实现与虚拟 DOM 模式的功能对等，预计随后进入稳定版。
-// 两种模式可共存：在 vite 配置中将指定组件标记为 vapor 编译，
-// 其余组件维持虚拟 DOM，适合渐进式迁移。
-```
-
-**要点：**
-1. Vapor 是编译策略变化，组件 API（`ref`、`<script setup>`、defineModel 等）不变，存量代码几乎不用改。
-2. 依赖 `getCurrentInstance` 等底层 API 的库在 Vapor 下可能不兼容（如部分 Vuetify 场景），升级前确认组件库兼容声明。
-3. 生产项目在 3.6 稳定前继续使用 3.5.x；可在非关键路径试用 RC 反馈问题。
-
----
-
-## 版本迁移注意
-
-**基本写法：检查依赖兼容性**
-`npm install vue@3.5`
-```bash
-# 升级到 Vue 3.5
-npm install vue@3.5 vue-router pinia
-```
-
----
-
-**基本写法：使用迁移指南**
-`https://blog.vuejs.org/posts/vue-3-5`
-```bash
-# 参考官方迁移指南
-# 大部分 API 向后兼容
-```
-
----
-
-**基本写法：观望 3.6 时盯紧发布渠道**
-`https://vuejs.org/about/releases`
-```bash
-# 3.6（Vapor）稳定发布后，先在次要项目验证组件库兼容性
-# 再推进生产项目升级，具体节奏以官方 Releases 页为准
-```
+- [Vapor 模式与 Vue 3.6 展望](/vue3/370-VaporMode)：编译策略变化的原理与迁移路线
+- [组件系统](/vue3/110-ComponentSystem)：把 defineModel 放回组件通信全景里理解
+- [Computed 缓存与 watch 时机](/vue3/060-ComputedCacheWatchTiming)：watch 暂停恢复之外的时机细节

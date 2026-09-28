@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: HTTP 缓存策略：强缓存（Cache-Control、Expires）、协商缓存（ETag、Last-Modified）与缓存流程。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/250-ZeroCopy'
   - 'cs-fundamentals/260-IPC'
@@ -20,7 +20,7 @@ prerequisites:
 
 - HTTP 请求/响应的基本结构：方法、状态码、响应头；
 - 浏览器与服务器之间的往返成本：一次 RTT 通常数十毫秒，静态资源体积动辄数百 KB；
-- CDN 也是 HTTP 缓存的一种（见 [CDN 原理](cs-fundamentals/350-CDNPrinciple)），本文聚焦浏览器侧语义。
+- CDN 也是 HTTP 缓存的一种（见 [CDN 原理](/cs-fundamentals/350-CDNPrinciple)），本文聚焦浏览器侧语义。
 
 ## 学习目标
 
@@ -184,7 +184,7 @@ curl -si http://localhost:3000/ | head -1   # 输出 HTTP/1.1 304 Not Modified
 ## 7. 实战场景
 
 - **静态资源长缓存 + 指纹文件名**：webpack/Vite 输出的 `[contenthash]` 文件名就是为 `immutable` 服务的，配合 CDN 几乎零回源。
-- **API 局部缓存**：变更频率低且对实时性容忍的列表接口可设 `max-age=60, s-maxage=300`，把流量挡在源站之外（CDN 侧语义见 [CDN 原理](cs-fundamentals/350-CDNPrinciple)）。
+- **API 局部缓存**：变更频率低且对实时性容忍的列表接口可设 `max-age=60, s-maxage=300`，把流量挡在源站之外（CDN 侧语义见 [CDN 原理](/cs-fundamentals/350-CDNPrinciple)）。
 - **大版本发布**：发布瞬间同一页面可能引用新旧两套哈希文件，因此旧版本资源文件要保留一段时间再清理，避免正在浏览旧页面的用户请求 404。
 
 ## 小结

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: panic 与 Result、? 运算符、unwrap/expect、自定义错误与错误转换
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'rust/070-RustStructEnumMatch'
   - 'rust/100-RustGenericTrait'
@@ -14,6 +14,21 @@ prerequisites:
   - 'rust/070-RustStructEnumMatch'
 ---
 
+## 前置知识
+
+- [结构体、枚举与模式匹配](/rust/070-RustStructEnumMatch)：`Option` 与 `match` 的用法——`Result` 就是另一个枚举。
+
+## 学习目标
+
+读完本文你将能够：
+
+1. 分清 panic（不可恢复）与 `Result`（可恢复）各自的适用场景；
+2. 会用 `?` 传播错误，理解它背后的 `From` 转换机制；
+3. 会用 thiserror 为库定义精确错误枚举，用 anyhow 为应用快速兜底；
+4. 会写返回 `Result` 的 main 函数，让 CLI 工具以正确的退出码收场；
+5. 按场景对照表选择正确的错误处理写法，摆脱无脑 `unwrap`。
+
+预计 60 分钟。
 
 ## 1. 从"外卖送餐"说起：错误处理的两条路径
 

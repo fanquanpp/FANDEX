@@ -1,12 +1,12 @@
 ---
-order: 40
+order: 50
 title: 基数统计
 module: 'redis'
 category: 数据库
 difficulty: intermediate
-description: Redis基数统计HyperLogLog：去重计数、UV统计、误差控制与内存优化
+description: Redis 计数统计：INCR 精确计数器与 HyperLogLog 基数估算的选择、去重计数、UV 统计、误差控制与内存优化
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'redis/060-BitMapRedis'
   - 'redis/070-GeoSpatial'
@@ -15,11 +15,35 @@ prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---
 
-## 1. HyperLogLog 概述
+## 2. 先分清：精确计数与估算计数
+
+「计数」在 Redis 里有两套工具，选错会白费内存或引入不可接受的误差：
+
+| 工具       | 命令            | 精度 | 内存           | 能否取出明细 |
+| :--------- | :-------------- | :--- | :------------- | :----------- |
+| 字符串计数 | INCR / INCRBY   | 精确 | O(1)，几十字节 | 不能（只有总数） |
+| 位图       | SETBIT/BITCOUNT | 精确 | 按最大编号     | 能（按位还原） |
+| HyperLogLog| PFADD / PFCOUNT | 估算 | 固定 12KB      | 不能         |
+
+精确计数（INCR 家族）是各种计数器、限流器、库存的底座：
+
+```bash
+SET counter 100
+INCR counter            # 101（原子自增，并发安全）
+INCRBY counter 10       # 111
+DECRBY counter 5        # 106
+INCRBYFLOAT counter 2.5 # 108.5（浮点）
+```
+
+`INCR key` 在键不存在时自动从 0 开始，所以「首次访问 +1」不需要先
+GET 判断——这正是限流器 `INCR + EXPIRE` 的基础。误差零，代价是每个
+计数器一个键：上亿个不同 ID 各自计数时改用 HLL（下文）。
+
+## 3. HyperLogLog 概述
 
 HyperLogLog（HLL）是基数估计算法，用极小内存（12KB）估算集合中不同元素的数量，标准误差约 0.81%。
 
-## 2. 基本操作
+## 4. 基本操作
 
 ```redis
 PFADD key element [element ...]  -- 添加元素
@@ -40,16 +64,21 @@ PFMERGE uv:2026-week uv:2026-06-08 uv:2026-06-09 ... uv:2026-06-14
 PFCOUNT uv:2026-week
 ```
 
-## 3. 误差与内存
+## 5. 误差与内存
 
 | 特性   | HyperLogLog     | SET          |
 | ------ | --------------- | ------------ |
 | 内存   | 12KB            | 随元素数增长 |
 | 精度   | 约0.81%标准误差 | 精确         |
-| 百万UV | 12KB            | 约10MB       |
-| 亿级UV | 12KB            | 约1GB        |
+| 百万UV | 12KB            | 数十MB       |
+| 亿级UV | 12KB            | 数GB         |
 
-## 4. 应用场景
+数量级感受：Set 每个成员要付「哈希表条目 + 字符串对象」的存储成本，
+百万级短 ID 实测通常在几十 MB 量级（可用 `MEMORY USAGE key` 验证）；
+而 HLL 无论 1 万还是 1 亿个元素都固定约 12KB——代价是只能问「大约多少个」，
+不能列出成员、也不能判断某个元素是否加入过。
+
+## 6. 应用场景
 
 ```redis
 -- 网站UV统计

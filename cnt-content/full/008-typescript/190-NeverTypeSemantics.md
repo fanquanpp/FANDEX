@@ -1,12 +1,12 @@
 ---
-order: 190
+order: 200
 title: never 类型完整语义
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: never 作为空类型的完整语义：联合吸收、交叉吸收、穷尽检查、与 unknown 的对偶关系及其在泛型中的应用。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/110-LiteralUnionTypes'
   - 'typescript/120-IntersectionTypeMerge'

@@ -1,12 +1,12 @@
 ---
-order: 440
+order: 450
 title: 错误边界与 Sentry 集成
 module: 'react'
 category: 前端技术
 difficulty: advanced
 description: React错误边界与Sentry错误监控集成实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/420-React19NewAPI'
   - 'react/430-InterruptibleRendering'

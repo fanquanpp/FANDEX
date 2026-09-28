@@ -1,12 +1,12 @@
 ---
-order: 220
+order: 230
 title: React 测试
 module: 'react'
 category: 前端技术
 difficulty: intermediate
 description: React 组件测试实战：Vitest + Testing Library 技术栈、按角色查询的行为测试法、异步与网络 mock（MSW）、常见反模式与调试技巧。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/200-ReactForm'
   - 'react/210-ReactTypeScript'

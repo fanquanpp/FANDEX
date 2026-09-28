@@ -1,12 +1,12 @@
 ---
-order: 550
+order: 560
 title: 网络编程
 module: 'java'
 category: 后端技术
 difficulty: advanced
 description: Java网络编程基础、Socket编程、URL处理、NIO网络编程与HTTP客户端详解。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/860-SpringBootNotes'
   - 'java/880-SpringCloudMicroserviceDevelopment'

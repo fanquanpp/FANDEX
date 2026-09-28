@@ -1,12 +1,12 @@
 ---
-order: 510
+order: 540
 title: Python 与打包发布
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: Python 打包演进史、PEP 517/518/621 标准化、pyproject.toml 配置、wheel 与 sdist 构建、PyPI 发布流水线
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/210-Regex'
   - 'python/610-PythonDesignPattern'

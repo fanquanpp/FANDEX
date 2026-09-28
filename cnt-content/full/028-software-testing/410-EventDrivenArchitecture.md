@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 事件驱动架构、事件溯源、CQRS模式与应用。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'software-testing/400-LayeredArchitecture'
   - 'software-testing/420-QualityAttribute'
@@ -130,7 +130,7 @@ prerequisites: []
 
 ```mermaid
 flowchart TD
-    E[事件流]<br/>1 AccountCreated {id: A1}<br/>2 MoneyDeposited {amt: 500}<br/>3 MoneyDeposited {amt: 300}<br/>4 MoneyWithdrawn {amt: 100}
+    E["事件流<br/>1 AccountCreated {id: A1}<br/>2 MoneyDeposited {amt: 500}<br/>3 MoneyDeposited {amt: 300}<br/>4 MoneyWithdrawn {amt: 100}"]
 ```
 
 - 事件是**追加写**的（append-only）：只增不改不删

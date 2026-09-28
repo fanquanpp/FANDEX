@@ -1,12 +1,12 @@
 ---
-order: 460
+order: 480
 title: 错误边界与全局错误捕获
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: JavaScript错误边界与全局错误捕获：ErrorBoundary、window.onerror、unhandledrejection。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/180-JavaScriptPrototypeInheritance'
   - 'javascript/110-Regex'

@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 230
 title: Redis Cluster 哈希槽
 module: 'redis'
 category: 数据库

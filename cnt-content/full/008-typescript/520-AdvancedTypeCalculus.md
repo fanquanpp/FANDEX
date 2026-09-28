@@ -1,12 +1,12 @@
 ---
-order: 520
+order: 530
 title: 高级类型与类型演算
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: 映射类型、条件类型、模板字面量类型与类型体操。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/300-DeclarationFileWriting'
   - 'typescript/330-ModuleResolutionModernToolchains'
@@ -27,7 +27,7 @@ prerequisites: []
 - 掌握「4. 映射类型 (Mapped Types)」的核心机制、典型用法与常见陷阱
 - 掌握「5. 条件类型 (Conditional Types)」的核心机制、典型用法与常见陷阱
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 ## 1. 类型断言 (Type Assertions)
 

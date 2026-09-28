@@ -1,12 +1,12 @@
 ---
-order: 510
+order: 520
 title: 递归类型与深度操作
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: TypeScript 递归条件类型与深度类型操作的形式化定义、尾递归优化机制、DeepReadonly/DeepPartial/DeepRequired 实现原理、JSON 类型推导、循环引用处理与编译性能优化
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/430-ConditionalTypeDistribute'
   - 'typescript/450-InferTypeDeepDive'
@@ -28,7 +28,7 @@ prerequisites: []
 - 掌握「4. 理论推导」的核心机制、典型用法与常见陷阱
 - 掌握「5. 递归条件类型」的核心机制、典型用法与常见陷阱
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 ## 1. 学习导论

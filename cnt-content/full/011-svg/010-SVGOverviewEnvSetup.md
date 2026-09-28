@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: "以「图标放大三倍不糊」引入，讲清 SVG 用文本描述矢量的本质、位图与矢量的放大对照实验、主战场与三种嵌入方式预告，零工具起步。"
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'svg/020-SVGBasicSyntaxDocStructure'
   - 'svg/030-SVGCoordinateSystemViewBox'
@@ -104,7 +104,7 @@ prerequisites:
 ## 9. 与之前和之后的知识的关系
 
 - 往前：html5 模块的 `<img>` 是消费图片的默认方式，svg 给了你「自己生产图片」的能力；inline SVG 嵌入后每个形状可被 JS 操作（与 410 篇 DOM 知识接轨）；
-- 往后：020 篇补齐文档结构（defs 复用与分组），030 篇的 viewBox 是「响应式图标」的钥匙；css 模块的 fill 控制与 [Tailwind](/tailwind/010-WhatIsTailwind) 类尺寸工具是图标工程的下半场。
+- 往后：020 篇补齐文档结构（defs 复用与分组），030 篇的 viewBox 是「响应式图标」的钥匙；css 模块的 fill 控制与 [Tailwind](/tailwind/010-TailwindOverview) 类尺寸工具是图标工程的下半场。
 - 更远：图表库（ECharts/D3）输出的全是 SVG——本模块是数据可视化的地基。
 
 ## 10. 官方文档

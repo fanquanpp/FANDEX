@@ -1,12 +1,12 @@
 ---
-order: 500
+order: 510
 title: 模板字面量类型
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: TypeScript 模板字面量类型（Template Literal Types）的形式化定义、字符串模式匹配规则、内置字符串操作类型、CSS 属性类型、路由参数类型推导、SQL 类型安全与运行时模板字符串的对比
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/380-TypeScriptCompilePerformanceOptimization'
   - 'typescript/480-MappedTypeKeyRemap'
@@ -28,7 +28,7 @@ prerequisites: []
 - 掌握「4. 理论推导」的核心机制、典型用法与常见陷阱
 - 掌握「5. 内置字符串操作类型」的核心机制、典型用法与常见陷阱
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 ## 1. 学习导论

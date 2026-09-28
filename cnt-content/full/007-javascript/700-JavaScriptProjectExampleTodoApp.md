@@ -1,12 +1,12 @@
 ---
-order: 670
+order: 690
 title: JavaScript 项目示例：待办事项应用
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: 综合运用 DOM 操作、事件处理与本地存储的待办事项应用。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/690-JavaScriptProjectPractice'
   - 'javascript/570-NodeJsPerformanceOptimization'

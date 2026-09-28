@@ -1,12 +1,12 @@
 ---
-order: 690
+order: 700
 title: Spring Cloud 微服务开发
 module: 'java'
 category: 后端技术
 difficulty: intermediate
 description: Spring Cloud微服务架构与开发
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/860-SpringBootNotes'
   - 'java/700-NetworkProgrammingDeepDive'

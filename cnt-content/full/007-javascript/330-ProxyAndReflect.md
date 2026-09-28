@@ -1,12 +1,12 @@
 ---
-order: 310
+order: 330
 title: Proxy 与 Reflect
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: 深入解析 ES6 Proxy 与 Reflect 的元编程理论、代理不变量、Vue 3 响应式实现、MobX 代理模式等高级主题
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/170-CurryAndFunctionComposition'
   - 'javascript/320-GeneratorFunctions'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: Issues 模板配置、Labels 标签体系、Milestones 里程碑管理、自动化关闭关键词与项目板衔接。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'github/290-SecretScanning'
   - 'github/300-CodeQLCodeScanning'
@@ -245,7 +245,7 @@ jobs:
 
 **不要在公开 Issue 中报告安全漏洞**——漏洞细节一旦公开，等于给攻击者递刀。正确做法：
 
-1. 在仓库创建 `SECURITY.md`，说明漏洞上报渠道（建议用"私密漏洞报告"功能，见 019/018 篇）。
+1. 在仓库创建 `SECURITY.md`，说明漏洞上报渠道（建议用"私密漏洞报告"功能，见 [密钥扫描](/github/290-SecretScanning)）。
 2. 维护者通过 **Security → Security advisories** 创建私有通告，与报告者私密沟通细节。
 3. 修复发布后，再选择公开通告并登记 CVE 编号。
 
@@ -266,7 +266,7 @@ jobs:
 
 ### 延伸阅读
 
-- gh CLI 管理 Issue 与标签的命令速查，见 048 篇《Gh Issue 管理》与 056 篇《Gh Label》。
-- 项目看板（Projects）使用，见 012 篇《Projects 看板》。
-- 社区健康文件（CONTRIBUTING 等），见 026 篇《社区健康文件》。
-- 安全漏洞上报（Security advisories），见 019/018 篇。
+- gh CLI 管理 Issue 与标签的命令速查，见 [GitHub CLI Issue 管理](/github/470-GhIssueManage) 与 [gh label 命令速查手册](/github/550-GhLabel)。
+- 项目看板（Projects）使用，见 [Projects 看板](/github/220-ProjectsBoard)。
+- 社区健康文件（CONTRIBUTING 等），见 [社区健康文件](/github/250-CommunityHealthFile)。
+- 安全漏洞上报（Security advisories），见 [密钥扫描](/github/290-SecretScanning) 与 [Dependabot](/github/280-Dependabot)。

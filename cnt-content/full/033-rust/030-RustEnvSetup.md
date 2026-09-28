@@ -6,13 +6,29 @@ category: 后端技术
 difficulty: beginner
 description: Rust 环境搭建：rustup 工具链管理、cargo、rust-analyzer 与第一个程序，附常见问题排查。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'rust/040-RustBasicSyntax'
   - 'rust/020-RustOverview'
 prerequisites:
   - 'shell/010-DevEnvSetup'
 ---
+
+## 前置知识
+
+- 会打开终端执行命令（[开发环境搭建](/shell/010-DevEnvSetup)）；不需要任何 Rust 经验。
+
+## 学习目标
+
+读完本文你将能够：
+
+1. 用 rustup 装好 stable 工具链，并说清 stable/beta/nightly 三条通道的区别；
+2. 配好 VS Code + rust-analyzer，获得补全、类型提示与即时报错；
+3. 用 cargo 创建、构建、运行第一个项目，认识 Cargo.toml 与目录结构；
+4. 形成写代码到 cargo check、clippy、test 的日常开发循环；
+5. 独立排查 PATH 未生效、Windows 链接器缺失、依赖下载慢三类高频安装问题。
+
+预计 30 到 45 分钟。
 
 ## 1. 环境搭建前须知
 

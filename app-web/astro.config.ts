@@ -9,6 +9,7 @@ import { remarkAdmonition } from './src/plugins/remark-admonition';
 import { remarkInternalLinks } from './src/plugins/remark-internal-links';
 import { rehypeLazyImages } from './src/plugins/rehype-lazy-images';
 import { rehypeWrapTables } from './src/plugins/rehype-wrap-tables';
+import { rehypeMermaidDual } from './src/plugins/rehype-mermaid-dual';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkEmoji from 'remark-emoji';
@@ -84,6 +85,7 @@ export default defineConfig({
         [remarkInternalLinks, { base: SITE_BASE }], // 站内根相对链接补 base 前缀（GitHub Pages 项目站点必需）
       ],
       rehypePlugins: [
+        rehypeMermaidDual, // mermaid 构建期渲染为双主题内联 SVG（dev 跳过，由客户端兜底）
         rehypeSlug, // 为标题添加 id
         // 标题锚点：SSR 直接在 h2/h3 末尾追加 '#' 锚点。此前 behavior:'wrap' 会把整个
         // 标题文本包进链接，继承 .prose a 样式导致标题看起来像超链接，且客户端
@@ -98,7 +100,10 @@ export default defineConfig({
             properties: { class: 'heading-anchor', ariaHidden: 'true', tabIndex: -1 },
           },
         ],
-        [rehypeKatex, { output: 'mathml' }],
+        // 公式输出 html+mathml：KaTeX HTML 保证跨浏览器字号与基线一致
+        // （此前 mathml 输出依赖浏览器内置数学字体，字号飘忽、占比不稳），
+        // MathML 部分仅作为可复制/无障碍语义层，由 katex.css 隐藏视觉呈现
+        [rehypeKatex, { output: 'htmlAndMathml', strict: false }],
         rehypeLazyImages, // 图片懒加载（添加 loading="lazy"）
         rehypeWrapTables, // 表格包裹：将 table 包入 <div class="table-wrap"> 以承担横向滚动，规避 display:table 与 overflow-x:auto 冲突
       ],

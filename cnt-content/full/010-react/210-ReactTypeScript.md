@@ -1,12 +1,12 @@
 ---
-order: 210
+order: 220
 title: React 与 TypeScript
 module: 'react'
 category: 前端技术
 difficulty: intermediate
 description: React + TypeScript 实战：Props 与事件类型、Hooks 泛型、Context 类型安全模式、React 19 类型系统变化（ref 即 prop、useRef 必传初始值、JSX 命名空间迁移）与常用类型速查。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'react/190-ReactErrorBoundary'
   - 'react/200-ReactForm'

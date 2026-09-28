@@ -47,12 +47,12 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    M[最小生成树 MST]
-    M --> K[Kruskal 1956<br/>边排序贪心 O(E log E)<br/>稀疏图优/并查集]
-    M --> P[Prim 1957<br/>点扩展贪心 O(V²)/O(E log V)<br/>稠密图优/优先队列]
-    M --> B[Borůvka 1926<br/>分治合并 O(E log V)<br/>并行友好/分量合并]
-    P --> J[Jarník 1930<br/>Prim 前身]
-    P --> KKT[Karger-Klein-Tarjan 1995<br/>随机化线性 O(E) 期望]
+    M["最小生成树 MST"]
+    M --> K["Kruskal 1956<br/>边排序贪心 O(E log E)<br/>稀疏图优/并查集"]
+    M --> P["Prim 1957<br/>点扩展贪心 O(V²)/O(E log V)<br/>稠密图优/优先队列"]
+    M --> B["Borůvka 1926<br/>分治合并 O(E log V)<br/>并行友好/分量合并"]
+    P --> J["Jarník 1930<br/>Prim 前身"]
+    P --> KKT["Karger-Klein-Tarjan 1995<br/>随机化线性 O(E) 期望"]
 ```
 
 ### 1.2 算法在图算法家族中的位置
@@ -2030,13 +2030,13 @@ Borůvka 的分布式优势：
 
 ### 13.4 相关算法文档
 
-- [并查集](algorithm/并查集.md)：Kruskal 算法的核心数据结构
-- [图算法](algorithm/图算法.md)：图算法总览
-- [贪心算法](algorithm/贪心算法.md)：贪心范式总论
-- [Floyd-Warshall 算法](algorithm/Floyd-Warshall算法.md)：全源最短路径
-- [拓扑排序](algorithm/拓扑排序.md)：DAG 线性排序
-- [堆与优先队列](algorithm/堆与优先队列.md)：Prim 算法的核心数据结构
-- [算法分析基础与学习路线](algorithm/算法分析基础与学习路线.md)：算法分析基础
+- [并查集](/algorithm/180-UnionFind)：Kruskal 算法的核心数据结构
+- [图算法](/algorithm/110-GraphAlgorithms)：图算法总览
+- [贪心算法](/algorithm/130-GreedyAlgorithm)：贪心范式总论
+- [Floyd-Warshall 算法](/algorithm/250-FloydWarshall)：全源最短路径
+- [拓扑排序](/algorithm/270-TopologicalSorting)：DAG 线性排序
+- [堆与优先队列](/algorithm/090-HeapAndPriorityQueue)：Prim 算法的核心数据结构
+- [算法分析基础与学习路线](/algorithm/010-AlgorithmAnalysisBasics)：算法分析基础
 
 ## 14. 术语表
 

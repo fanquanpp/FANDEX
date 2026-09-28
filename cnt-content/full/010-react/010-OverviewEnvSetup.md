@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从「界面 = f(state)」这个函数式等式认识 React：组件是返回 JSX 的函数、用 Vite react 模板搭起项目、跑通并修改第一个组件；JSX 是 JS 扩展而非模板语言、与 Vue 模板的一句对照，附 default 导出缺失与 Objects are not valid as a React child 调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/020-ComponentProps'
   - 'react/030-StateEvent'

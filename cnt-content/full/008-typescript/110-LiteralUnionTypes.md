@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 字面量类型、联合类型、可辨识联合的形式语义、类型论基础与穷尽性检查的工程实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/100-InterfaceTypeAlias'
   - 'typescript/220-FunctionGeneric'
@@ -29,7 +29,7 @@ prerequisites: []
 - 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
 - 掌握「3. 字面量类型详解」的核心机制、典型用法与常见陷阱
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 ## 0. 为什么需要这一篇（先读）

@@ -1,12 +1,12 @@
 ---
-order: 260
+order: 270
 title: 协变与逆变
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: TypeScript 中协变、逆变、双变与不变的型变关系，涵盖函数子类型理论、Liskov 替换原则、严格函数类型检查、数组协变陷阱与 React props 逆变等核心议题
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/520-AdvancedTypeCalculus'
   - 'typescript/530-TypeGymnasticsPracticalPatterns'
@@ -15,7 +15,7 @@ related:
 prerequisites: []
 ---
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 

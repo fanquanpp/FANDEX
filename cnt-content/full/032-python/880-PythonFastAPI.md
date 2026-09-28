@@ -1,12 +1,12 @@
 ---
-order: 640
+order: 670
 title: Python 与 FastAPI
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: FastAPI 核心：路径操作、Pydantic 模型、依赖注入、中间件与生命周期。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/790-PythonDocker'
   - 'python/870-PythonOAuth2'

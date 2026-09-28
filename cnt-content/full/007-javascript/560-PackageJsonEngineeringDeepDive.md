@@ -1,12 +1,12 @@
 ---
-order: 530
+order: 550
 title: package.json 深入与前端工程化配置
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: package.json 全字段详解：exports 出口、engines、peerDependencies、包管理器脚本与 lint/format 工具链。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/540-NpmManager'
   - 'vite/150-PnpmMonorepoOverview'

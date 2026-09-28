@@ -4,105 +4,74 @@ title: Tailwind CSS 主题定制与设计令牌
 module: 'tailwind'
 category: 前端技术
 difficulty: intermediate
-description: Tailwind CSS 4 主题定制全攻略：@theme 设计令牌、@theme inline、@utility、OKLCH 色彩与运行时换肤，从品牌设计规范视角落地你的设计系统
+description: Tailwind CSS 4 主题定制实战：@theme 令牌声明、primitive/semantic/component 三层令牌、@theme inline 桥接 CSS 变量、data-theme 运行时换肤，以 FANDEX 仓库的真实令牌管线为案例
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'tailwind/020-InstallConfig'
+  - 'tailwind/060-ResponsiveDark'
   - 'tailwind/080-V4Features'
 prerequisites:
   - 'tailwind/020-InstallConfig'
 ---
 
+## 前置知识
 
-## 0. 先打个比方：装修前先出"设计图纸"
+- [Tailwind CSS 安装与配置](/tailwind/020-InstallConfig)：能跑起一个带 `@import "tailwindcss"` 的项目。
 
-想象你要装修一套新房。专业的设计公司不会让施工队"边装边想"，而是先出一整套**设计图纸**：墙漆用哪个色号、地板选什么材质、灯光的色温是多少、门把手是圆角还是直角……每一处细节都提前定好，施工队照图施工，整屋风格才能统一。
+## 学习目标
 
-网站开发也是一样。一个网站有成百上千个按钮、卡片、标题，如果每个页面各写各的颜色值，很容易出现"这个按钮的蓝和那个按钮的蓝不一样"的灾难。而 **Tailwind CSS 的"设计图纸"**，就是本篇文章的主角——**设计令牌（Design Token）与 @theme 配置**。
+- 能说清设计令牌是什么，并用 `@theme` 把一套品牌色、圆角、阴影注册成全站工具类。
+- 能按 primitive / semantic / component 三层组织令牌，理解"换肤只改基础层"的依赖方向。
+- 能用 `@theme inline` 把外部 CSS 变量桥接进 Tailwind，并说出它与普通 `@theme` 的取舍。
+- 能用 `data-theme` 属性 + 绘制前内联脚本实现亮暗换肤，且不闪白。
+- 能给令牌体系配上"漂移检查"，防止多份拷贝各改各的。
 
-Tailwind 4 之前，这份"图纸"写在一个叫 `tailwind.config.js` 的 JavaScript 文件里；Tailwind 4 之后，图纸直接写进 CSS，用 `@theme` 块声明。本篇文章就以"品牌设计规范"的视角，带你逐步建立一套属于自己的设计系统。
+## 0. 先从一个真实场景切入
 
-## 1. 设计令牌：网站的品牌设计规范
+想象你维护一个内容站：首页横幅、文档正文、代码块、侧栏导航，加起来用了上百处蓝色。某天品牌换色，从蓝改成青——如果你的样式里散落着 `#2563eb`、`#3b82f6`、`rgb(37,99,235)` 这些写死的值，这就是一次全站考古。设计令牌（Design Token）就是为这一刻准备的：**给每个设计决策起一个名字，全站只用名字，改值只改一处**。
 
-### 1.1 直观理解：给设计决策起名字
+这不是假想练习。你现在读的这个站点（FANDEX 仓库）就是这么做的：全部颜色、间距、圆角先以 W3C DTCG 格式的 JSON 令牌定义，由脚本生成一份纯 CSS 变量文件，再桥接进 Tailwind 4 的 `@theme`。本篇就沿着"概念 -> 自己动手 -> 真实仓库怎么做"的顺序走一遍。
 
-什么是设计令牌？一句话：**把"颜色、字体、间距、圆角、阴影"等设计决策，起一个有意义的名字，存成一个可复用的变量**。
+## 1. 设计令牌：给设计决策起名字
 
-举个例子，你家楼下的奶茶店有自己的品牌色——"暖阳橙" `#ff7a45`。如果店里每张海报都写一遍 `#ff7a45`，改版时就要全城找一遍所有海报。正确的做法是：定义一次"品牌橙"这个名字，所有海报引用它，改版时只改一处定义。
-
-设计令牌就是这个道理：
+一句话定义：**把颜色、字体、间距、圆角、阴影等设计决策，起一个有意义的名字，存成一个可复用的变量**。
 
 ```css
-/* 给"品牌橙"起个名字，全站共用 */
---color-brand-500: #ff7a45;
+/* 给"品牌主色"起个名字，全站共用 */
+--color-brand-500: #1677ff;
 ```
 
-以后写 `bg-brand-500`、`text-brand-500`，底层都是同一个值。改品牌色时，只动这一行。
+定义之后，`bg-brand-500`、`text-brand-500`、`border-brand-500` 底层都是同一个值。改品牌色时，只动这一行。
 
-### 1.2 为什么要从设计规范视角看主题
-
-一个成熟的主题定制，应该像品牌设计规范书一样分章节管理，Tailwind 4 的 `@theme` 恰好支持这种组织方式。一份完整的品牌规范通常包含六类，正好对应六类令牌：
-
-| 品牌规范章节 | Tailwind 令牌命名空间 | 生成的工具类示例 |
-| --- | --- | --- |
-| 品牌色板 | `--color-*` | `bg-primary`、`text-danger`、`border-primary` |
-| 字体体系 | `--font-*`、`--text-*` | `font-sans`、`text-lg` |
-| 间距体系 | `--spacing-*` | `p-4`、`m-2`、`gap-6` |
-| 圆角规范 | `--radius-*` | `rounded-card` |
-| 阴影规范 | `--shadow-*` | `shadow-card` |
-| 响应式断点 | `--breakpoint-*` | `md:`、`lg:` 前缀 |
-
-后续章节就按照这份"品牌规范书"逐章展开。
-
-## 2. @theme：Tailwind 4 的 CSS-first 配置核心
-
-### 2.1 直观理解：一张"声明台"
-
-在 Tailwind 4 中，配置从 JavaScript 文件迁移到了 CSS，核心入口就是一个 `@theme` 块。你可以把它想象成品牌规范书的"声明台"：**在这里声明的每一个变量，既是一个真实的 CSS 变量，又会自动生成对应的工具类**。
-
-### 2.2 原理：变量与工具类的映射
-
-`@theme` 为什么能同时产生"CSS 变量"和"工具类"两种产物？因为 Tailwind 4 的编译引擎（Rust 编写的 Oxide）会在构建时读取 `@theme` 块：一方面把变量原样输出到 `:root` 中（供 JS 和任意值使用），另一方面根据变量的**命名空间前缀**（如 `--color-`、`--font-`）生成对应的全套工具类。
+Tailwind 4 的令牌声明入口是 CSS 里的 `@theme` 块。它有个双重身份：**在这里声明的每个变量，既是真实的 CSS 变量（输出到 `:root`），又会按命名空间前缀自动生成全套工具类**。
 
 ```css
 /* src/styles/global.css —— 项目唯一的样式入口 */
 @import "tailwindcss";
 
-/* 品牌规范书的"声明台"：一次声明，两处生效 */
 @theme {
-  /* 色彩章节 */
-  --color-primary: #1677ff;          /* 生成 bg-primary / text-primary / border-primary ... */
-  --color-primary-hover: #4096ff;    /* 生成 bg-primary-hover 等 */
-  --color-surface: #ffffff;          /* 卡片、页面底色 */
-  --color-text-main: #1f1f1f;        /* 正文主色 */
+  /* --color- 前缀生成 bg-* / text-* / border-* 等全家桶 */
+  --color-primary: #1677ff;
+  --color-surface: #ffffff;
 
-  /* 字体章节 */
-  --font-sans: "Inter", system-ui, sans-serif;  /* 覆盖默认字体族 */
+  /* --radius- 前缀生成 rounded-card */
+  --radius-card: 12px;
 
-  /* 圆角章节 */
-  --radius-card: 12px;               /* 生成 rounded-card */
-
-  /* 阴影章节 */
-  --shadow-card: 0 2px 8px rgb(0 0 0 / 0.08);   /* 生成 shadow-card */
+  /* --shadow- 前缀生成 shadow-card */
+  --shadow-card: 0 2px 8px rgb(0 0 0 / 0.08);
 }
 ```
 
-### 2.3 在 HTML 中使用
-
 ```html
-<!-- 主按钮：bg-primary 指向品牌主色，rounded-card 指向 12px 圆角 -->
-<button class="bg-primary text-white rounded-card px-4 py-2 hover:bg-primary-hover">
-  主按钮
-</button>
+<!-- 主按钮：类名即品牌规范 -->
+<button class="bg-primary text-white rounded-card px-4 py-2">主按钮</button>
 
-<!-- 卡片：语义化令牌组合，修改一处全站生效 -->
-<div class="bg-surface shadow-card rounded-card text-text-main p-6">卡片内容</div>
+<!-- 卡片：语义类组合，改令牌一处全站生效 -->
+<div class="bg-surface shadow-card rounded-card p-6">卡片内容</div>
 ```
 
-### 2.4 命名空间速查表
-
-`@theme` 中的变量名前缀决定了它能生成哪些工具类，这是 Tailwind 4 主题定制的"语法核心"：
+命名空间速查（前缀决定生成什么工具类）：
 
 | 变量前缀 | 生成的工具类 | 说明 |
 | --- | --- | --- |
@@ -117,188 +86,164 @@ Tailwind 4 之前，这份"图纸"写在一个叫 `tailwind.config.js` 的 JavaS
 | `--animate-*` | `animate-*` | 动画 |
 | `--ease-*` | `ease-*` | 缓动函数 |
 
-> 提示：`--text-*` 既指字号也涵盖行高，Tailwind 内部用 `--text-lg--line-height` 这样的复合变量控制行高，不必深究，只需知道"字号也能量身定制"。
+> 提示：`--text-*` 还能用复合变量控制行高，如 `--text-hero--line-height: 1.2`，声明 `--text-hero: 2.5rem` 后即可用 `text-hero` 得到"字号 + 行高"成对的排版预设。
 
-## 3. 色彩令牌：网站的第一张脸
+## 2. 新增还是覆盖：动默认色板前的判断
 
-### 3.1 新增令牌 vs 覆盖默认令牌
+在 `@theme` 中定义 `--color-*` 有两种语义，务必分清：
 
-在 `@theme` 中定义 `--color-*` 有两种语义，新手务必分清：
-
-- **新增令牌**：定义 `--color-brand-500`，`bg-brand-500` 立即可用，**默认色板不受影响**，安全；
-- **覆盖默认令牌**：重新定义 `--color-blue-500`，会**覆盖 Tailwind 预设的蓝色 500**，影响所有使用 `blue-500` 的地方，需谨慎。
+- **新增令牌**：定义 `--color-brand-500`，`bg-brand-500` 立即可用，默认色板不受影响，安全；
+- **覆盖默认令牌**：重新定义 `--color-blue-500`，会替换 Tailwind 预设的蓝色 500，影响所有用到它的地方，需谨慎。
 
 ```css
 @theme {
-  /* 覆盖默认色板：把全站 blue-* 换成品牌蓝（影响面大，谨慎使用） */
+  /* 覆盖：把全站 blue-* 换成品牌蓝（影响面大，确认再动） */
   --color-blue-500: #1677ff;
-  --color-blue-600: #0958d9;
-  --color-blue-700: #003eb3;
 
-  /* 新增品牌色系：完全安全，默认色板不受影响 */
-  --color-brand-50: #e6f4ff;
-  --color-brand-100: #bae0ff;
+  /* 新增：完全安全的品牌色系 */
   --color-brand-500: #1677ff;
   --color-brand-600: #0958d9;
-  --color-brand-700: #003eb3;
 }
 ```
 
-推荐的组合策略是"**新增为主、覆盖为辅**"：日常开发优先用 `brand-*` 这类自定义色系；只有确需把默认色统一替换为品牌色时，才覆盖 `blue-*` 等默认命名。
+策略口诀：**新增为主、覆盖为辅**。日常用 `brand-*` 这类自定义色系；只有确需"全站默认色统一换成品牌色"时才覆盖 `blue-*`。
 
-### 3.2 认识 OKLCH 色彩空间
+各命名空间的实务要点，用一张速记表收拢：
 
-Tailwind 4 的默认调色板改用 **OKLCH 色彩空间**，它是 CSS 原生支持的颜色函数，三个参数分别是：亮度 L（0-1）、饱和度 C、色相 H（角度）。
+| 命名空间 | 实务要点 |
+| --- | --- |
+| 颜色 | v4 默认色板是 OKLCH 色彩空间，色阶过渡感知均匀；自己定义时写 HEX 完全没问题，框架会处理兼容 |
+| 字体 | `--font-sans` 覆盖默认字体栈，中文字体记得补 `"PingFang SC", "Microsoft YaHei"` 兜底 |
+| 间距 | 默认刻度是 0.25rem 的倍数；新增 `--spacing-18: 4.5rem` 后 `p-18`、`gap-18`、`w-18` 全部可用 |
+| 圆角/阴影 | `--radius-card`、`--shadow-card-hover` 这类语义命名，让"卡片规范"成为可检索的令牌 |
+| 断点 | 覆盖 `--breakpoint-sm: 560px` 改默认档；新增 `--breakpoint-3xl: 1920px` 自动生成 `3xl:` 前缀 |
+
+## 3. 动手：搭一套三层令牌体系
+
+单层令牌（所有变量平铺）在换肤时会露馅：暗色模式下 `--color-surface` 的值要从白变黑，可它可能同时被亮色专属的组件引用。成熟的做法是**分三层，依赖方向单一**：
+
+```text
+primitive（原始层）  原子取值，无语义：#0A0A0A、16px
+      ↑ 被引用
+semantic（语义层）   表达用途：--color-surface、--color-text-main（分亮暗两套值）
+      ↑ 被引用
+component（组件层）  组件专属：--color-btn-bg 引用 semantic
+```
+
+FANDEX 仓库就是这条路线的真实落地，流程分四步，你可以照着做：
+
+**第 1 步：令牌的"源"用 JSON 管理（DTCG 格式）。** 设计师在 Figma 等工具里维护的令牌，与代码里消费的令牌，用同一份机器可读的 JSON 表达：
+
+```json
+// shd-shared/tokens/color.semantic.json（节选示意）
+{
+  "color": {
+    "surface": {
+      "light": { "$value": "#FFFFFF" },
+      "dark": { "$value": "#141414" }
+    }
+  }
+}
+```
+
+**第 2 步：脚本把 JSON 生成纯 CSS 变量文件。** 生成物按选择器分作用域——`:root` 放浅色默认值，`[data-theme='dark']` 覆盖深色值：
 
 ```css
-@theme {
-  /* 用 oklch() 定义颜色：同一色系的色阶过渡更均匀、更符合人眼感知 */
-  --color-brand-500: oklch(0.623 0.214 259.8);
-  --color-brand-600: oklch(0.546 0.245 262.9);
+/* shd-shared/styles/tokens.css（生成产物，节选示意） */
+@layer tokens {
+  :root {
+    color-scheme: light;
+    /* primitive 层：原始取值 */
+    --color-neutral-50: #0A0A0A;
+    /* semantic 层：浅色默认 */
+    --fandex-color-surface: #FFFFFF;
+  }
+
+  [data-theme='dark'] {
+    color-scheme: dark;
+    /* semantic 层：深色覆盖，变量名不变，值换掉 */
+    --fandex-color-surface: #141414;
+  }
 }
 ```
 
-直观理解：同样是在 500、600、700 之间渐变，OKLCH 的明暗变化是"人眼觉得均匀"的，而传统 HEX/RGB 的色阶在人眼看来往往"中间偏亮或偏暗"。这就是为什么 Tailwind 4 用 OKLCH 重新设计整套色板。
-
-实际项目不必强求写 `oklch()`，**直接写 HEX（如 `#1677ff`）完全没问题**，Tailwind 会自动处理兼容性（对不支持 OKLCH 的浏览器生成兜底颜色）。OKLCH 的价值主要在你需要精心设计一套色阶时体现。
-
-### 3.3 语义令牌：让颜色名表达业务含义
-
-"品牌规范"进阶做法是把颜色分为三层：
-
-- **基础层**：原始取值，如 `--color-blue-500: #1677ff`；
-- **语义层**：表达业务语义，如 `--color-primary: var(--color-blue-500)`；
-- **组件层**：落到具体组件，如 `--color-btn-bg: var(--color-primary)`。
+**第 3 步：用 `@theme inline` 把外部变量桥接进 Tailwind。** 这是承上启下的一步——令牌本体在 `tokens.css` 里自管，Tailwind 只负责"把变量名暴露成工具类"：
 
 ```css
-@theme {
-  /* 基础层：真实取值 */
-  --color-blue-500: #1677ff;
-  --color-red-500: #f5222d;
+/* app-web/src/styles/tailwind.css（节选示意） */
+@import 'tailwindcss';
 
-  /* 语义层：通过 var() 引用基础层，形成依赖 */
-  --color-primary: var(--color-blue-500);
-  --color-danger: var(--color-red-500);
+@theme inline {
+  --color-primary-500: var(--fandex-color-primary-500);
+  --color-surface: var(--fandex-color-surface);
 }
 ```
 
-这样做的好处是：**未来换肤只改基础层，语义层与组件层零改动**。比如品牌蓝从 `#1677ff` 换成 `#0ea5e9`，只动 `--color-blue-500` 一行，所有用 `bg-primary` 的地方全部跟着变。
+桥接之后，`bg-surface` 在浅色下解析到白色变量、`data-theme='dark'` 时自动解析到深色变量——**组件里没有任何 dark: 前缀，换肤发生在变量层**。
 
-## 4. 字体令牌：排版体系的骨架
-
-字体体系是品牌规范的第二大板块。Tailwind 4 中，字体相关的命名空间主要有 `--font-*`（字体族）、`--text-*`（字号）、`--font-weight-*`（字重）：
-
-```css
-@theme {
-  /* 覆盖默认字体族：全站文字使用品牌字体 */
-  --font-sans: "Inter", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
-
-  /* 新增展示字体：标题用 */
-  --font-display: "Satoshi", "Inter", sans-serif;
-
-  /* 自定义一个"标题级"字号 */
-  --text-hero: 2.5rem;
-  --text-hero--line-height: 1.2;
-}
-```
+**第 4 步：运行时切换 `data-theme`，且要在绘制前完成。** FANDEX 的做法是在 `BaseLayout` 的 `<head>` 里放一段内联脚本，页面渲染第一帧之前就设好属性：
 
 ```html
-<h1 class="font-display text-hero">品牌标题</h1>
-<p class="font-sans">正文内容使用 --font-sans 定义的字体栈</p>
+<script>
+  // 内联在 head：晚于首帧就会出现"闪白/闪黑"（FOUC）
+  (function () {
+    var t = localStorage.getItem('theme') ?? 'light'
+    document.documentElement.dataset.theme = t
+  })()
+</script>
 ```
 
-## 5. 间距令牌：让页面呼吸感统一
+为什么选 `data-theme` 属性而不是 `.dark` 类？两者能力等价（第 5 篇的 `@custom-variant` 都能接），但属性选择器可以**直接作为 CSS 变量的作用域**（`[data-theme='dark'] { ... }`），令牌文件不必依赖 Tailwind 的变体机制就能完成换肤——令牌层与工具层解耦，这是三层架构能成立的前提。
 
-设计规范里通常规定"间距刻度"，比如 4px 的整数倍：4、8、12、16、24……Tailwind 默认的 `--spacing-*` 就是 0.25rem 的倍数。你可以新增自定义间距刻度：
+## 4. @theme 与 @theme inline：一字之差，两种命运
+
+当令牌引用另一个变量时（第 3 步的桥接），普通 `@theme` 与 `@theme inline` 的编译结果不同：
 
 ```css
-@theme {
-  /* 新增间距刻度：18 = 4.5rem，用于特殊大区块 */
-  --spacing-18: 4.5rem;
-  --spacing-128: 32rem;
-}
-```
-
-```html
-<!-- 大区块用自定义间距 -->
-<section class="p-18">内容</section>
-```
-
-新增的 `--spacing-18` 会自动让 `p-18`、`m-18`、`gap-18`、`w-18` 等所有间距类可用。
-
-## 6. 圆角与阴影：视觉质感的最后一块拼图
-
-```css
-@theme {
-  /* 圆角规范：卡片 12px，胶囊按钮 9999px */
-  --radius-card: 12px;
-  --radius-pill: 9999px;
-
-  /* 阴影规范：柔和卡片阴影 + 悬浮提升阴影 */
-  --shadow-card: 0 2px 8px rgb(0 0 0 / 0.08);
-  --shadow-card-hover: 0 4px 16px rgb(0 0 0 / 0.12);
-}
-```
-
-```html
-<div class="rounded-card shadow-card hover:shadow-card-hover transition-shadow">
-  悬浮时阴影加深，形成"卡片抬起来"的层次感
-</div>
-```
-
-## 7. 断点令牌：响应式布局的刻度
-
-断点也是品牌规范的一部分。Tailwind 4 用 `--breakpoint-*` 定义断点，**新增变量自动生成对应前缀，覆盖变量则改变默认断点**：
-
-```css
-@theme {
-  /* 覆盖默认断点：把 sm 从 640px 调整为 560px */
-  --breakpoint-sm: 560px;
-
-  /* 新增断点：自动生成 3xl: 前缀 */
-  --breakpoint-3xl: 1920px;
-}
-```
-
-```html
-<div class="grid grid-cols-1 3xl:grid-cols-4">
-  超大屏幕（≥1920px）下显示 4 列
-</div>
-```
-
-断点的完整用法在下一篇《响应式与暗色模式》中详述，这里只需记住：断点也是 `@theme` 里的一等公民。
-
-## 8. @theme inline：内联展开的取舍
-
-当你让一个令牌引用另一个令牌时，会面临"内联展开"还是"保留引用链"的选择：
-
-```css
-/* 普通 @theme：工具类输出 var(--color-primary)，运行时跟随变量变化 */
+/* 普通 @theme：工具类引用"令牌变量"本身 */
 @theme {
   --color-primary: var(--color-blue-600);
 }
 /* 编译结果：.bg-primary { background-color: var(--color-primary); } */
 
-/* @theme inline：把值直接内联到工具类，不保留变量引用链 */
+/* @theme inline：把值内联进工具类，跳过令牌变量这一跳 */
 @theme inline {
   --color-primary: var(--color-blue-600);
 }
 /* 编译结果：.bg-primary { background-color: var(--color-blue-600); } */
 ```
 
-两种写法各有用处：
+取舍判断：
 
-- **普通 `@theme`**：变量会作为真实 CSS 变量输出到 `:root`，工具类引用的是变量本身——适合希望"运行时能通过覆盖变量换肤"的场景（见第 10 节）；
-- **`@theme inline`**：工具类直接内联变量的解析值，不再经由全局变量中转——shadcn/ui 这类"在 `:root` / `.dark` 上自管变量、再暴露给 Tailwind"的主题方案，正是靠 `@theme inline` 引用这些外部变量实现暗色一键切换的。
+- **需要运行时换肤 -> 普通 `@theme`**。工具类引用令牌变量，覆盖变量即换肤；注意此时令牌要真的输出到 `:root` 才有东西可覆盖。
+- **令牌自管在别处（如独立的 tokens.css、shadcn/ui 式的 `.dark` 变量方案）-> `@theme inline`**。Tailwind 不重复输出这些变量，只负责让 `bg-primary` 指向外部变量；`data-theme` 切换作用域后，同一工具类自动拿到新值。
 
-官方文档特别提醒：当变量引用会跨作用域时（如 `--font-sans: var(--font-inter)`，而 `--font-inter` 定义在更深层选择器），必须用 `@theme inline`，否则 `var()` 可能在解析时取不到值而回退到兜底值。
+两个真实的坑，都来自 FANDEX 的实践记录：
 
-## 9. @utility：把设计规范固化为自定义工具类
+第一，**跨作用域引用必须 inline**。官方文档明确：当 `var()` 引用的变量定义在更深层选择器（如 `[data-theme='dark']`）时，若不走 `@theme inline`，编译期解析可能取不到值而回退兜底色——症状是"暗色模式下部分颜色死活不变"。
 
-有时候，你需要一个"不属于任何命名空间"的自定义工具类。Tailwind 4 提供了 `@utility` 指令，在 CSS 中即可注册一个全新的工具类，并支持搭配 `hover:`、`dark:` 等变体使用：
+第二，**别在 `@theme` 外混用 `light-dark()` 与 `var()`**。CSS 原生的 `light-dark()` 函数看起来是亮暗适配的"银弹"，但 Tailwind 4 的解析器在 `@theme` 块之外不支持 `light-dark()` 与 `var()` 混合写法——FANDEX 的令牌注释里专门记录了这一点，最终改用 `[data-theme]` 选择器方案。想在 `@theme` 内自定义颜色时也一样：要么写死值，要么走 `@theme inline` 引用外部变量，不要叠 `light-dark()`。
+
+## 5. 令牌的一致性防线：漂移检查
+
+三层令牌落地后会出现一个新问题：**同一份令牌存在于多处**（FANDEX 的令牌源在 `shd-shared/styles/tokens.css`，web 应用里有一份消费拷贝）。有人只改了拷贝、没改源，两边静默漂移，排查成本极高。
+
+解法是把"两份必须一致"变成机器断言。FANDEX 写了一个 drift 检查脚本（`check-tokens-drift.mjs`）：解析两份 CSS 里每个作用域（root / light / dark）的变量声明，逐项比对，发现差异立即报错，并挂在每次 `dev` 与 `build` 的最前面。
+
+```text
+检查逻辑（伪代码）：
+1. 读取源 tokens.css 与应用内拷贝，按作用域（root/light/dark）解析 --xxx: value
+2. 对每个作用域逐变量比对
+3. 有任何差异 -> 非零退出，构建失败
+```
+
+你不需要照抄这个脚本，但要带走这条纪律：**凡是"同一事实的多份拷贝"，都要有一条机器检查**。令牌、环境变量样例、API 类型定义，道理相同——一致性靠约定守不住，靠 CI 才守得住。
+
+## 6. @utility：令牌之外的补充
+
+需要一个"不属于任何命名空间"的自定义工具类时，用 `@utility` 指令注册，它自动支持 `hover:`、`dark:` 等变体组合：
 
 ```css
-/* 自定义工具类：文字渐变 */
 @utility text-gradient {
   background-image: linear-gradient(to right, #1677ff, #722ed1);
   -webkit-background-clip: text;
@@ -308,45 +253,44 @@ Tailwind 4 的默认调色板改用 **OKLCH 色彩空间**，它是 CSS 原生�
 ```
 
 ```html
-<!-- 像普通工具类一样使用，还能叠加变体 -->
 <h2 class="text-gradient hover:opacity-80">渐变标题</h2>
 ```
 
-`@utility` 相比 v3 时代"写 JS 插件注册工具类"的方式，心智负担小得多，是 Tailwind 4 自定义能力的首选。
+使用原则不变：偶尔的例外值用任意值语法；频繁出现的值提升为 `@theme` 令牌；成套的复合样式用 `@utility` 或组件封装。
 
-## 10. 运行时换肤：CSS-first 的核心红利
-
-因为令牌本质就是 CSS 变量，**运行时换肤（如亮色/暗色/品牌色切换）只需用 JS 覆盖变量值**，无需重新构建：
-
-```js
-// theme-switcher.js —— 运行时换肤
-const themes = {
-  light: { '--color-primary': '#1677ff', '--color-surface': '#ffffff' },
-  dark:  { '--color-primary': '#4096ff', '--color-surface': '#141414' },
-}
-
-function applyTheme(name) {
-  const vars = themes[name]
-  const root = document.documentElement
-  for (const [key, value] of Object.entries(vars)) {
-    root.style.setProperty(key, value)  // 覆盖 :root 上的令牌变量
-  }
-}
-```
-
-组件里全程使用语义类（`bg-primary`、`bg-surface`），切换主题时 JS 只改变量，样式代码零改动。这就是"CSS-first 配置 + CSS 变量"相比旧配置方案的核心红利。
-
-## 11. 常见错误与对策
+## 7. 坑点与自检
 
 | 常见错误 | 报错 / 现象 | 原因 | 解决办法 |
 | --- | --- | --- | --- |
-| 在 `@theme` 外定义 `--color-*` 却期待生成工具类 | `bg-primary` 无效，样式缺失 | 只有 `@theme` 内的令牌才会生成工具类 | 把令牌定义移入 `@theme`；`:root` 中的变量仅用于运行时覆盖 |
-| 定义 `--primary: #1677ff`（漏了 `color`） | `bg-primary` 不生效 | 变量前缀不属于任何命名空间 | 使用完整命名空间 `--color-primary` |
-| 覆盖 `--color-blue-500` 后全站蓝色"失控" | 多处蓝色意外改变 | 覆盖默认令牌影响所有引用处 | 优先用 `--color-brand-*` 新增色系，仅在有明确需求时覆盖默认令牌 |
-| 在 `@theme` 里嵌套选择器 | 编译报错或变量不生效 | `@theme` 要求变量定义在顶层 | 把嵌套内容移到 `@theme` 之外，`@theme` 只放顶层变量 |
-| 语义令牌换肤不生效 | 切换主题后颜色不变 | 用了 `@theme inline`，值被内联无法覆盖 | 需要运行时换肤的令牌用普通 `@theme` |
-| 用 `bg-[var(--color-primary)]` 写任意值 | 能运行但可读性差 | 忽略了令牌已生成工具类的事实 | 直接用 `bg-primary`，任意值仅用于一次性场景 |
+| 在 `@theme` 外定义 `--color-*` 却期待生成工具类 | `bg-primary` 无效 | 只有 `@theme` 内的令牌才生成工具类 | 令牌移入 `@theme`；外部变量用 `@theme inline` 桥接 |
+| 定义 `--primary: #1677ff`（漏了 `color`） | `bg-primary` 不生效 | 前缀不属于任何命名空间 | 用完整命名空间 `--color-primary` |
+| 覆盖 `--color-blue-500` 后全站蓝色"失控" | 多处蓝色意外改变 | 覆盖默认令牌影响所有引用处 | 优先新增 `brand-*`，覆盖仅限明确需求 |
+| 令牌引用跨作用域变量但没用 inline | 暗色下部分颜色不跟随 | 非 inline 编译在编译期解析 `var()`，深层选择器里的值取不到 | 桥接外部变量一律 `@theme inline` |
+| 需要运行时换肤的令牌用了 inline | 切换主题后颜色不变 | 值被内联，变量覆盖失效 | 换肤链路上的令牌走普通 `@theme` + 输出到 `:root` |
+| 用 `light-dark()` 混 `var()` 自定义颜色 | 编译解析异常或颜色回退 | Tailwind 4 解析器在 `@theme` 外不支持该组合 | 用 `[data-theme]` 选择器分作用域定义变量 |
+| 换肤闪白/闪黑 | 深色用户首帧看到白底 | `data-theme` 设置晚于首帧 | 内联脚本在 `<head>` 里同步执行 |
+| 令牌多份拷贝各改各的 | 同名变量两处值不一致 | 无一致性检查 | 补 drift 检查并接入构建流程 |
 
-## 12. 一句话记忆
+自检清单：
 
-**设计令牌 = 网站的装修设计图纸；`@theme` 声明令牌，一个变量同时变身"CSS 变量 + 全套工具类"，改一处、全站生效。**
+- [ ] 能说出 `@theme` 里一个变量的两重身份（CSS 变量 + 工具类来源）
+- [ ] 能画出 primitive / semantic / component 三层的依赖方向，并解释为什么箭头只能朝上
+- [ ] 能说清 `@theme` 与 `@theme inline` 各自的适用场景
+- [ ] 能解释为什么换肤脚本必须内联在 `<head>` 同步执行
+- [ ] 知道自己项目里令牌的"唯一事实源"在哪，改动要落在哪一层
+
+## 8. 动手实践
+
+1. **品牌色三级跳**：在练手项目里定义 `--color-brand-500`（primitive 值写死）-> `--color-primary: var(--color-brand-500)`（semantic 引用）-> 页面上用 `bg-primary`；然后把 `--color-brand-500` 换一个色值，确认所有 `bg-primary` 跟随。提示：观察 DevTools 里 `.bg-primary` 的计算值来自哪个变量。
+2. **inline 对照实验**：把第 1 步的桥接改成 `@theme inline`，再用 JS `document.documentElement.style.setProperty('--color-primary', '#0ea5e9')` 尝试运行时换色，对比普通 `@theme` 下的效果——亲手验证"inline 之后变量覆盖失效"。
+3. **给 FANDEX 式令牌补 dark 值**：照第 3 节的结构，给你的项目加 `[data-theme='dark']` 作用域，让 `--color-surface` 有亮暗两套值，并补上 `<head>` 内联切换脚本。提示：切换后到 DevTools 的 Computed 面板确认变量值真的换了作用域。
+
+## 9. 一句话记忆
+
+**设计令牌 = 起了名字的设计决策；`@theme` 声明令牌，一个变量同时变身"CSS 变量 + 全套工具类"；三层令牌 + `@theme inline` 桥接 + `data-theme` 作用域，就是"改一处、全站换肤"的完整管线——再补一条 drift 检查守住一致性。**
+
+## 10. 下一步
+
+- 亮暗切换的变体语法（`dark:`、`@custom-variant`）在[响应式与暗色模式](/tailwind/060-ResponsiveDark)系统展开，与本篇的 `data-theme` 方案配套食用。
+- 令牌落到组件的复用方式（cva + cn）见[组件复用](/tailwind/070-ComponentReuse)。
+- `@theme` 所属的 CSS-first 架构全景见[v4 新特性](/tailwind/080-V4Features)。

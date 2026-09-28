@@ -1,12 +1,12 @@
 ---
 order: 450
-title: C# JSON 序列化
+title: System.Text.Json：从对接一个第三方 API 学起
 module: 'csharp'
 category: 后端技术
 difficulty: beginner
-description: System.Text.Json 的 JsonSerializer、选项控制、自定义转换器、多态与源生成的速查手册，附完整示例与易错点解析。
+description: 以"对接一个 snake_case 的第三方 API"为主线学 System.Text.Json：往返序列化、选项配置、属性标注、自定义转换器、多态、DOM 与源生成，附高频陷阱、自检清单与练习。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'csharp/450-FileAndStream'
   - 'csharp/300-CSharpAPI'
@@ -15,394 +15,215 @@ prerequisites:
   - 'csharp/040-CSharpOOP'
 ---
 
-## 基本序列化
+## 真实场景：对接一个不迁就你的第三方 API
 
-**基本写法：序列化为 JSON**
-`JsonSerializer.Serialize(<对象>, [<选项>]);`
-```csharp
-// 对象转 JSON 字符串
-string json = JsonSerializer.Serialize(user);
-```
+需求来了：接入某物流平台的开放接口。它返回的 JSON 长这样：
 
----
-
-**基本写法：泛型序列化**
-`JsonSerializer.Serialize<<类型>>(<对象>);`
-```csharp
-// 显式指定类型序列化
-string json = JsonSerializer.Serialize<User>(user);
-```
-
----
-
-**基本写法：反序列化**
-`JsonSerializer.Deserialize<<类型>>(<json>);`
-```csharp
-// JSON 字符串转对象
-var user = JsonSerializer.Deserialize<User>(json);
-```
-
----
-
-**基本写法：异步序列化到流**
-`await JsonSerializer.SerializeAsync(<流>, <对象>);`
-```csharp
-// 异步写入流，适合大对象
-using var fs = File.Create("out.json");
-await JsonSerializer.SerializeAsync(fs, users);
-```
-
----
-
-**基本写法：异步反序列化**
-`await JsonSerializer.DeserializeAsync<<类型>>(<流>);`
-```csharp
-// 从流异步读取并反序列化
-using var fs = File.OpenRead("in.json");
-var data = await JsonSerializer.DeserializeAsync<List<User>>(fs);
-```
-
----
-
-## 序列化选项
-
-**基本写法：缩进格式化**
-`JsonSerializerOptions <变量> = new() { WriteIndented = true };`
-```csharp
-// 输出带缩进的可读 JSON
-var opts = new JsonSerializerOptions { WriteIndented = true };
-string json = JsonSerializer.Serialize(user, opts);
-```
-
----
-
-**基本写法：驼峰命名**
-`<选项>.PropertyNamingPolicy = JsonNamingPolicy.CamelCase;`
-```csharp
-// 属性名转为 camelCase
-var opts = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-```
-
----
-
-**基本写法：忽略 null 值**
-`<选项>.DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull;`
-```csharp
-// 值为 null 的属性不输出
-var opts = new JsonSerializerOptions
+```json
 {
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+  "order_id": "SF20260928",
+  "receiver_name": "张三",
+  "created_at": "2026-09-28 10:30:00",
+  "remark": null,
+  "packages": [
+    { "pkg_no": 1, "weight_kg": 2.5 }
+  ]
+}
+```
+
+三件不顺手的事：字段是 `snake_case` 而你的 C# 属性是 `PascalCase`；`remark` 可能为 `null`；`created_at` 不是标准 ISO 8601 格式。本篇就沿着"把这个响应变成 C# 对象、再把请求对象发回去"这条线，把 `System.Text.Json` 的核心能力全部过一遍。
+
+（.NET 8+ 自带 `System.Text.Json`，.NET 9/10 继续增强；下文示例在 .NET 9 上可直接运行。）
+
+## 动手：五分钟跑通第一次往返
+
+新建控制台项目，写下最小往返程序：
+
+```csharp
+using System.Text.Json;
+
+var order = new ShipmentOrder
+{
+    OrderId = "SF20260928",
+    ReceiverName = "张三",
+    CreatedAt = DateTime.Now,
 };
-```
 
----
+// 对象 -> JSON 字符串
+string json = JsonSerializer.Serialize(order);
+Console.WriteLine(json);
 
-**基本写法：允许尾随逗号与注释**
-`<选项>.ReadCommentHandling = JsonCommentHandling.Skip;`
-```csharp
-// 容忍注释与尾随逗号
-var opts = new JsonSerializerOptions
+// JSON 字符串 -> 对象（泛型版本显式标类型，非泛型版本省略）
+ShipmentOrder? copy = JsonSerializer.Deserialize<ShipmentOrder>(json);
+Console.WriteLine(copy!.ReceiverName);
+
+record ShipmentOrder
 {
-    ReadCommentHandling = JsonCommentHandling.Skip,
-    AllowTrailingCommas = true
-};
-```
-
----
-
-**基本写法：大小写不敏感**
-`<选项>.PropertyNameCaseInsensitive = true;`
-```csharp
-// 反序列化时属性名大小写不敏感
-var opts = new JsonSerializerOptions { PropertyNameCaseInsensitive = true };
-```
-
----
-
-## 属性控制
-
-**基本写法：自定义属性名**
-`[JsonPropertyName("<名称>")]`
-```csharp
-// 指定 JSON 中的属性名
-public class User
-{
-    [JsonPropertyName("user_name")]
-    public string Name { get; set; }
-}
-```
-
----
-
-**基本写法：忽略属性**
-`[JsonIgnore]`
-```csharp
-// 序列化时忽略该属性
-public class User
-{
-    public string Name { get; set; }
-    [JsonIgnore]
-    public string Password { get; set; }
-}
-```
-
----
-
-**基本写法：条件忽略**
-`[JsonIgnore(Condition = <条件>)]`
-```csharp
-// 仅在值为 null 时忽略
-[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
-public string? Nick { get; set; }
-```
-
----
-
-**基本写法：属性顺序**
-`[JsonPropertyOrder(<序号>)]`
-```csharp
-// 控制属性输出顺序
-public class User
-{
-    [JsonPropertyOrder(0)]
-    public int Id { get; set; }
-    [JsonPropertyOrder(1)]
-    public string Name { get; set; }
-}
-```
-
----
-
-## 集合与字典
-
-**基本写法：序列化集合**
-`JsonSerializer.Serialize(<集合>);`
-```csharp
-// 列表转 JSON 数组
-string json = JsonSerializer.Serialize(new List<int> { 1, 2, 3 });
-```
-
----
-
-**基本写法：字典序列化**
-`JsonSerializer.Serialize<<字典类型>>(<字典>);`
-```csharp
-// 字典转 JSON 对象
-var dict = new Dictionary<string, int> { ["a"] = 1 };
-string json = JsonSerializer.Serialize(dict);
-```
-
----
-
-**基本写法：非字符串键字典**
-`JsonSerializerOptions <变量> = new() { DictionaryKeyPolicy = <策略> };`
-```csharp
-// 非字符串键需要键策略或自定义转换器
-var opts = new JsonSerializerOptions { DictionaryKeyPolicy = JsonNamingPolicy.CamelCase };
-```
-
----
-
-## 自定义转换器
-
-**基本写法：实现 JsonConverter**
-`public class <类名> : JsonConverter<<类型>> { }`
-```csharp
-// 自定义类型转换器
-public class DateTimeConverter : JsonConverter<DateTime>
-{
-    public override DateTime Read(ref Utf8JsonReader reader, Type t, JsonSerializerOptions o)
-        => DateTime.Parse(reader.GetString()!);
-    public override void Write(Utf8JsonWriter writer, DateTime v, JsonSerializerOptions o)
-        => writer.WriteStringValue(v.ToString("yyyy-MM-dd"));
-}
-```
-
----
-
-**基本写法：应用转换器**
-`<选项>.Converters.Add(new <转换器>());`
-```csharp
-// 全局注册转换器
-var opts = new JsonSerializerOptions();
-opts.Converters.Add(new DateTimeConverter());
-```
-
----
-
-**基本写法：特性应用转换器**
-`[JsonConverter(typeof(<转换器>))]`
-```csharp
-// 单属性应用转换器
-public class Order
-{
-    [JsonConverter(typeof(DateTimeConverter))]
+    public string OrderId { get; set; } = "";
+    public string ReceiverName { get; set; } = "";
     public DateTime CreatedAt { get; set; }
 }
 ```
 
----
+能跑了，但输出是 `"OrderId":"SF20260928"`——PascalCase，第三方不认。接下来逐条对症下药。
 
-## 多态序列化
+## 对症下药：把选项配对
 
-**基本写法：声明派生类**
-`[JsonDerivedType(typeof(<派生类>), "<鉴别名>")]`
+### 一组选项解决命名、缩进与 null
+
 ```csharp
-// 基类声明所有派生类型
-[JsonDerivedType(typeof(Circle), "circle")]
-[JsonDerivedType(typeof(Square), "square")]
-public abstract class Shape { }
-```
-
----
-
-**基本写法：多态反序列化**
-`JsonSerializer.Deserialize<<基类>>(<json>);`
-```csharp
-// JSON 含 $type 字段自动识别类型
-Shape shape = JsonSerializer.Deserialize<Shape>(json);
-```
-
----
-
-## 流式读写 Utf8JsonReader/Writer
-
-**基本写法：Utf8JsonWriter 写入**
-`using var <写流> = new Utf8JsonWriter(<输出>);`
-```csharp
-// 手动生成 JSON，性能最高
-using var writer = new Utf8JsonWriter(File.Create("out.json"));
-writer.WriteStartObject();
-writer.WriteString("name", "Alice");
-writer.WriteNumber("age", 30);
-writer.WriteEndObject();
-```
-
----
-
-**基本写法：Utf8JsonReader 读取**
-`ref Utf8JsonReader <变量> = ...;`
-```csharp
-// 手动解析 JSON 字节，零分配
-var reader = new Utf8JsonReader(jsonBytes);
-while (reader.Read())
+var options = new JsonSerializerOptions
 {
-    if (reader.TokenType == JsonTokenType.PropertyName) { }
+    PropertyNamingPolicy = JsonNamingPolicy.SnakeCaseLower, // .NET 8+ 内置 snake_case；.CamelCase 亦常用
+    WriteIndented = true,                                   // 带缩进，人可读（日志/调试用）
+    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, // null 属性不输出
+    PropertyNameCaseInsensitive = true,                     // 反序列化时大小写不敏感
+};
+string json = JsonSerializer.Serialize(order, options);
+```
+
+.NET 8 之前想要 snake_case 只能逐属性标 `[JsonPropertyName("order_id")]`；如今命名策略直接覆盖全属性，个别特殊字段仍可用特性覆盖。容忍"脏 JSON"（带注释、带尾随逗号的配置文件）再加两个开关：
+
+```csharp
+var lenient = new JsonSerializerOptions
+{
+    ReadCommentHandling = JsonCommentHandling.Skip, // 跳过注释
+    AllowTrailingCommas = true,
+};
+```
+
+### 属性级精细控制
+
+```csharp
+public class User
+{
+    [JsonPropertyName("user_name")]   // 单个属性改名，优先级高于命名策略
+    public string Name { get; set; }
+
+    [JsonIgnore]                      // 永不序列化（密码、内部字段）
+    public string Password { get; set; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Nick { get; set; } // 仅在为 null 时不输出
+
+    [JsonPropertyOrder(0)]            // 控制输出顺序（默认按属性声明顺序）
+    public int Id { get; set; }
 }
 ```
 
----
+### 大响应走流式异步
 
-## 节点模型 JsonDocument/JsonNode
+几 MB 以上的响应别先整个读成 string，直接从流反序列化，省一半内存峰值：
 
-**基本写法：JsonDocument 只读解析**
-`using var <文档> = JsonDocument.Parse(<json>);`
 ```csharp
-// DOM 风格只读访问
-using var doc = JsonDocument.Parse(json);
-string name = doc.RootElement.GetProperty("name").GetString()!;
+using var fs = File.OpenRead("response.json");
+var data = await JsonSerializer.DeserializeAsync<List<ShipmentOrder>>(fs);
+
+using var outFs = File.Create("out.json");
+await JsonSerializer.SerializeAsync(outFs, data);
 ```
 
----
-
-**基本写法：JsonNode 可读写 DOM**
-`JsonNode <变量> = JsonNode.Parse(<json>);`
-```csharp
-// 可读写的 DOM
-JsonNode node = JsonNode.Parse(json)!;
-node["age"] = 31;
-string json2 = node.ToJsonString();
-```
-
----
-
-**基本写法：创建 JsonObject**
-`JsonObject <变量> = new() { ["<键>"] = <值> };`
-```csharp
-// 直接构造 JSON 对象
-var obj = new JsonObject { ["name"] = "Alice", ["age"] = 30 };
-string json = obj.ToJsonString();
-```
-
----
-
-## 源生成器
-
-**基本写法：JsonSerializerContext 源生成**
-`[JsonSerializable(typeof(<类型>))]`
-```csharp
-// 编译时生成序列化代码，AOT 友好
-[JsonSourceGenerationOptions(WriteIndented = true)]
-[JsonSerializable(typeof(User))]
-public partial class MyContext : JsonSerializerContext { }
-```
-
----
-
-**基本写法：使用源生成上下文**
-`JsonSerializer.Serialize(<对象>, <Context>.Default.<类型>);`
-```csharp
-// 使用生成的元数据序列化
-string json = JsonSerializer.Serialize(user, MyContext.Default.User);
-```
-
----
-
-## 完整示例：对象与 JSON 的往返
-
-以下程序可直接运行，演示序列化、选项控制与反序列化：
+### `created_at` 这种非常规格式：自定义转换器
 
 ```csharp
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-record User(int Id, string Name, string? Nick, string Password);
-
-var user = new User(1, "张三", null, "secret");
-
-var opts = new JsonSerializerOptions
+public class CnDateTimeConverter : JsonConverter<DateTime>
 {
-    WriteIndented = true,
-    PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-    DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-};
+    private const string Format = "yyyy-MM-dd HH:mm:ss";
 
-string json = JsonSerializer.Serialize(user, opts);
-Console.WriteLine(json);
+    public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        => DateTime.ParseExact(reader.GetString()!, Format, null);
 
-// 反序列化：属性名大小写默认敏感，来自前端时建议开启不敏感
-var copy = JsonSerializer.Deserialize<User>(json,
-    new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-Console.WriteLine(copy!.Name);
-
-// 输出：
-// {
-//   "id": 1,
-//   "name": "张三",
-//   "password": "secret"
-// }
-// 张三
-// （nick 为 null 被忽略；record 支持构造函数反序列化）
+    public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options)
+        => writer.WriteStringValue(value.ToString(Format));
+}
 ```
 
-## 常见陷阱
+两种挂载方式：全局挂 `options.Converters.Add(new CnDateTimeConverter())`，或单属性挂 `[JsonConverter(typeof(CnDateTimeConverter))]`。后者影响面小，优先用。
 
-**属性名默认完全区分大小写**。`System.Text.Json` 默认严格匹配 `Name` 与 `name`（这点与 Newtonsoft.Json 不同）。对接 JavaScript 前端或第三方 API 时，要么配 `PropertyNamingPolicy = CamelCase` 序列化 + `PropertyNameCaseInsensitive = true` 反序列化，要么在属性上标注 `[JsonPropertyName("...")]`。
+## 讲为什么：三个设计决定
 
-**复用同一个 `JsonSerializerOptions` 实例**。首次使用某组选项时，序列化器要为相关类型构建并缓存元数据，这一步开销不小。Web 应用中应把选项缓存为单例（ASP.NET Core 会自动缓存 `JsonOptions`）；每次 `new JsonSerializerOptions` 会让缓存失效，造成隐性性能损耗。
+**为什么默认大小写敏感？** 匹配是逐字符比较，宽松匹配要做额外的归一化和查找，热路径上不划算。安全上，严格匹配能避免 `user` 与 `USER` 意外命中同一属性。所以对接 JavaScript 生态（天然 camelCase）时，标准做法是"序列化配命名策略 + 反序列化开不敏感"或干脆 `[JsonPropertyName]` 点名。
 
-**循环引用会直接抛异常**。`Order.Customer.Address` 又指回 `Order` 这类对象图，默认配置下抛 `JsonException`（.NET 5+）而非死循环。双向导航属性序列化需要 `ReferenceHandler.Preserve`（输出 `$id`/`$ref`），更常见的解法是用 DTO 只序列化需要的单向数据。
+**为什么每次 `new JsonSerializerOptions` 是性能坑？** 序列化器首次见到"某组选项 + 某个类型"的组合时，要为它构建并缓存元数据（属性怎么读、怎么写），这一步开销可观。缓存键就是选项实例本身——每次 new 一个新实例，缓存全部失效。Web 应用里 ASP.NET Core 已经把全局选项做成单例；自己用时也应建一个 `static readonly JsonSerializerOptions` 复用。
 
-**不可变类型与 record**。`record` 与只有 `get`、带构造函数的类型都能反序列化——序列化器按参数名匹配构造函数参数（可用 `[JsonConstructor]` 指定）。但带 `init` 且无构造函数匹配路径的极端自定义类型需要注意：`record` 是"开箱即用"的最安全选择。
+**为什么 record 反序列化"开箱即用"？** `record` 的主构造函数参数名与属性名一致，序列化器能按参数名匹配构造函数直接构造对象（多个构造函数时用 `[JsonConstructor]` 指定）。这正是"模型层用 record"在序列化上的红利：不可变 + 不用手写映射。
 
-**`DictionaryKeyPolicy` 只影响序列化**。它控制字典键的命名策略（输出时转 camelCase），反序列化时并不做反向转换；非字符串键（如 `Dictionary<int, T>`）会被转成字符串键，读回来需要自定义转换器。API 设计上应尽量使用字符串键字典。
+## 进阶三件套：多态、DOM、源生成
 
-**默认不支持多态序列化**。声明类型是基类时，派生类的额外属性不会输出；必须用 `[JsonDerivedType]` 在基类上显式声明派生类型（配合类型鉴别符 `$type` 或自定义鉴别符字段），反序列化才能还原出正确子类。这是与 Newtonsoft.Json 行为差异最大的点之一。
+### 多态：默认关着，要显式开
 
-**源生成是 AOT/trimming 的硬要求**。`PublishAot` 或 `PublishTrimmed` 的应用不能依赖运行时反射，必须改用 `JsonSerializerContext` 源生成（见上文）并把上下文类型传给 `Serialize/Deserialize`。普通应用也建议在热路径使用源生成：更快、更省内存。
+声明类型是基类时，派生类的新增属性默认不输出，反序列化也不知道该 new 谁。必须在基类上声明派生类型：
 
-## 分层小结
+```csharp
+[JsonDerivedType(typeof(Circle), "circle")]
+[JsonDerivedType(typeof(Square), "square")]
+public abstract class Shape { }
 
-- **记住**：`JsonSerializer.Serialize/Deserialize`；`WriteIndented` 与 `CamelCase` 两个高频选项；`[JsonPropertyName]` 改名、`[JsonIgnore]` 忽略。
-- **理解**：选项实例应复用；大小写默认敏感；循环引用与多态需要显式声明；源生成与 AOT 的关系。
-- **应用**：对外 API 统一封装一份全局 `JsonSerializerOptions`；模型层全面使用 `record` + 特性标注；高并发/AOT 场景切换到 `JsonSerializerContext`。Web 场景的整体接入见 [C# Web API](/csharp/300-CSharpAPI)。
+// JSON 里自动带类型鉴别符，反序列化能还原出正确子类
+Shape shape = JsonSerializer.Deserialize<Shape>(json)!;
+```
+
+这是与 Newtonsoft.Json 行为差异最大的一点：Newtonsoft 默认输出 `$type`，System.Text.Json 默认什么都不做——前者有反序列化漏洞史，后者是刻意的安全选择。
+
+### 不想建模型时：DOM 两兄弟
+
+临时读一个字段、或者要改 JSON 中的某个值再存回，不必定义完整类型：
+
+```csharp
+// JsonDocument：只读，用完要 Dispose
+using var doc = JsonDocument.Parse(json);
+string name = doc.RootElement.GetProperty("receiver_name").GetString()!;
+
+// JsonNode：可读写
+JsonNode node = JsonNode.Parse(json)!;
+node["weight_total"] = 5.5;
+string updated = node.ToJsonString();
+
+// 也可以从零构造
+var obj = new JsonObject { ["name"] = "Alice", ["age"] = 30 };
+```
+
+### 源生成：AOT 的硬要求，热路径的加速器
+
+`PublishAot` 或 `PublishTrimmed` 的应用不能依赖运行时反射，序列化必须编译期生成。三步：
+
+```csharp
+// 1. 声明上下文，登记参与的类型
+[JsonSourceGenerationOptions(WriteIndented = true)]
+[JsonSerializable(typeof(ShipmentOrder))]
+public partial class AppJsonContext : JsonSerializerContext { }
+
+// 2/3. 调用时把上下文的类型信息传进去
+string json = JsonSerializer.Serialize(order, AppJsonContext.Default.ShipmentOrder);
+var copy = JsonSerializer.Deserialize(json, AppJsonContext.Default.ShipmentOrder);
+```
+
+普通应用也建议在热路径使用：省反射、省内存。源生成的原理与更多玩法见 [Source Generator](/csharp/240-SourceGenerator)。
+
+## 坑点与自检
+
+**坑 1：循环引用直接抛 `JsonException`。** `Order.Customer.Address` 又指回 `Order` 这类对象图，默认配置不死循环、直接报错。`ReferenceHandler.Preserve`（输出 `$id`/`$ref`）能救，但更常见的正解是用 DTO 只序列化单向需要的数据。
+
+**坑 2：`DictionaryKeyPolicy` 只管序列化。** 输出时键转 camelCase，读回来不做反向转换；`Dictionary<int, T>` 这类非字符串键会被转成字符串，读回需要自定义转换器。API 设计上尽量用字符串键。
+
+**坑 3：跨项目传选项。** 两个服务对同一类型用了不同选项，缓存里就是两套元数据——选项应按"用途"收敛成少数几个静态实例（对外 API 一套、内部日志一套）。
+
+自检——能不看文档回答这些吗：
+
+1. 为什么 `PropertyNameCaseInsensitive = true` 不该无脑全局开？
+2. 选项实例为什么必须复用？ASP.NET Core 帮你做了什么？
+3. 基类引用序列化派生对象，默认丢什么？怎么开？
+4. AOT 发布后序列化抛异常，第一反应查什么？
+
+## 练习
+
+1. 把物流 API 的响应定义成 record 模型，配一组全局选项完成反序列化；故意把 `PropertyNameCaseInsensitive` 去掉并改成 PascalCase 输入，观察哪些字段静默变成默认值。
+2. 给 `decimal` 写一个"输出为字符串"的转换器（金额字段避免浮点精度问题的常见做法），单属性挂载并验证往返。
+3. 用 `JsonNode` 读一个不重建模型的配置文件，把其中 `retry.count` 从 3 改成 5 后保存，再用 `JsonDocument` 验证修改生效。
+
+## 下一步
+
+- 对象与文件、流的关系，`using` 资源管理：[文件与流操作](/csharp/450-FileAndStream)；
+- Web API 里框架如何统一接管 JSON 选项：[C# Web API](/csharp/300-CSharpAPI)；
+- 源生成的完整机制与自写生成器：[Source Generator](/csharp/240-SourceGenerator)；
+- AOT 发布本身的取舍：[dotnet CLI](/csharp/480-DotnetCli)。

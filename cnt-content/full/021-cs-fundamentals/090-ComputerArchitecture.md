@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 计算机体系结构核心原理：冯诺依曼模型、指令集设计、流水线、存储层次、并行体系。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/010-ComputerOverview'
   - 'cs-fundamentals/150-OperatingSystem'
@@ -96,7 +96,7 @@ flowchart TD
 | 灵活性        | 高（代码即数据） | 低            |
 | 典型应用      | 通用计算机       | DSP、微控制器 |
 
-> 跨模块引用：[C语言](/c/010-CZeroBasisStart)的函数指针特性直接利用了冯诺依曼体系中"代码即数据"的本质。[操作系统](os)的虚拟内存管理通过MMU在冯诺依曼体系上实现了地址空间的隔离。
+> 跨模块引用：[C语言](/c/010-CZeroBasisStart)的函数指针特性直接利用了冯诺依曼体系中"代码即数据"的本质。[操作系统](/cs-fundamentals/150-OperatingSystem)的虚拟内存管理通过MMU在冯诺依曼体系上实现了地址空间的隔离。
 
 ---
 
@@ -104,7 +104,7 @@ flowchart TD
 
 ### 2.1 ISA的设计哲学
 
-ISA是硬件和软件之间的**接口契约**（参见[概述](overview)的抽象层级模型）。ISA定义了：
+ISA是硬件和软件之间的**接口契约**（参见[概述](/cs-fundamentals/010-ComputerOverview)的抽象层级模型）。ISA定义了：
 
 - 指令格式与编码
 - 寄存器集合
@@ -189,7 +189,7 @@ S-type (存储操作):
 5. 间接寻址:    JR   x1                  // 跳转到寄存器值
 ```
 
-> 跨模块引用：[编译原理](compiler)的代码生成阶段需要根据ISA选择合适的寻址模式和指令调度。[C语言](/c/010-CZeroBasisStart)的指针算术直接映射到基址偏移寻址模式。
+> 跨模块引用：[编译原理](/cs-fundamentals/420-CompilePrinciple)的代码生成阶段需要根据ISA选择合适的寻址模式和指令调度。[C语言](/c/010-CZeroBasisStart)的指针算术直接映射到基址偏移寻址模式。
 
 ---
 
@@ -332,7 +332,7 @@ GShare预测器:
   Reservation Station (RS): 等待操作数就绪
 ```
 
-> 跨模块引用：[操作系统](os)的进程上下文切换需要保存/恢复流水线状态。[编译原理](compiler)的指令调度需要理解流水线冒险以避免性能损失。
+> 跨模块引用：[操作系统](/cs-fundamentals/150-OperatingSystem)的进程上下文切换需要保存/恢复流水线状态。[编译原理](/cs-fundamentals/420-CompilePrinciple)的指令调度需要理解流水线冒险以避免性能损失。
 
 ---
 
@@ -514,7 +514,7 @@ flowchart TD
                                +--------------------------- Dirty
 ```
 
-> 跨模块引用：[操作系统](os)的内存管理建立在虚拟内存机制之上。[C语言](/c/010-CZeroBasisStart)的指针解引用触发完整的地址翻译链路。[C++](/cpp/010-WhatIsCpp)的智能指针在虚拟内存之上增加了语义层。
+> 跨模块引用：[操作系统](/cs-fundamentals/150-OperatingSystem)的内存管理建立在虚拟内存机制之上。[C语言](/c/010-CZeroBasisStart)的指针解引用触发完整的地址翻译链路。[C++](/cpp/010-WhatIsCpp)的智能指针在虚拟内存之上增加了语义层。
 
 ---
 

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: Git Flow与GitHub Flow两种分支工作流的深度对比分析，适用场景与最佳实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'git/280-InteractiveRebase'
   - 'git/320-GitRevertResetComparison'
@@ -165,7 +165,7 @@ git push -u origin add-login-button
 | 版本维护     | 支持多版本并行                | 仅维护最新版            |
 | 回滚策略     | `hotfix` 分支                 | `git revert` 或重新部署 |
 | CI/CD 集成   | release 分支触发              | main 合并触发           |
-| 冲突频率     | 高（develop ↔ main 双向合并） | 低（单向合并到 main）   |
+| 冲突频率     | 高（develop <-> main 双向合并） | 低（单向合并到 main）   |
 
 ### 3.2 部署节奏对比
 

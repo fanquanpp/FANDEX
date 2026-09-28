@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 无线网络：WiFi 标准演进（至 WiFi 7）、AC+AP 架构与 CAPWAP、WPA3 安全与 802.1X 认证、信道规划与漫游优化。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'networking/160-SwitchingAndRouting'
   - 'networking/220-NetworkSecurityTech'
@@ -75,7 +75,7 @@ WiFi 7（802.11be，2024 年定稿并开始认证）在 WiFi 6 之上再增强�
 
 ```mermaid
 flowchart LR
-    AP["瘦 AP"] <..>|"CAPWAP 控制隧道 UDP 5246（配置/管理）"| AC["AC 无线控制器"]
+    AP["瘦 AP"] <-.->|"CAPWAP 控制隧道 UDP 5246（配置/管理）"| AC["AC 无线控制器"]
     AP <-.->|"CAPWAP 数据隧道 UDP 5247"| AC
     AC --- CORE["核心交换机"]
     STA["无线终端"] --- AP

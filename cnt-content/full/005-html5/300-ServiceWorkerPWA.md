@@ -1,12 +1,12 @@
 ---
-order: 300
+order: 320
 title: Service Worker 与 PWA
 module: 'html5'
 category: 前端技术
 difficulty: advanced
 description: Service Worker 全生命周期（注册/安装/激活/fetch 拦截）、Cache Storage 缓存策略、Web App Manifest、推送通知与后台同步的 PWA 完整专项。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'html5/240-HTML5OfflineStorageWebAPI'
   - 'html5/310-WebComponentsPWADevelopment'

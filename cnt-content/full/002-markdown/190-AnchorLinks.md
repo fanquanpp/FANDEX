@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: '锚点机制：GitHub 标题 slug 规则、自定义锚点、页内与跨文档跳转的写法与排错。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'markdown/200-AutoTOC'
   - 'markdown/020-HeadingSyntax'
@@ -55,7 +55,7 @@ GitHub 的生成算法（对仓库文件、Issue、评论一致）分四步：
 两个高频误区：
 
 - **连字符不会被合并**：`A --- B` 这类标题生成 `a-----b`（原连字符照留、空格逐个转换），凭感觉写 `#a-b` 必然跳转失败；
-- **emoji 也参与 slug**：GitHub 会把 emoji 转成短代码文本（如 `## 🚀 发布` 生成 `#-发布`），这种标题不要依赖锚点链接。
+- **emoji 也参与 slug**：GitHub 会把 emoji 转成短代码文本（如 `## :rocket: 发布` 生成 `#-发布`），这种标题不要依赖锚点链接。
 
 GitLab 的规则与 GitHub 基本兼容；Obsidian、Hugo、VuePress 等各有细节差异（是否剔除中文、是否转拼音等）。跨平台文档的标题尽量用"字母数字 + 单个空格"，slug 才有一致性可言。
 

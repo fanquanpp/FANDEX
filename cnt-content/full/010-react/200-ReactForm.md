@@ -1,12 +1,12 @@
 ---
-order: 200
+order: 210
 title: React 表单处理
 module: 'react'
 category: 前端技术
 difficulty: beginner
 description: React 表单完整指南：受控与非受控组件的取舍、校验策略、React 19 form action 与 useActionState/useFormStatus、复杂表单库选型与常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/180-ReactPerformance'
   - 'react/190-ReactErrorBoundary'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: MySQL复制架构：binlog格式、半同步/异步/延迟/组复制、InnoDB Cluster、备份恢复策略
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'mysql/590-Replication'
   - 'mysql/620-GroupReplication'
@@ -437,12 +437,14 @@ ClusterSet 是跨数据中心的灾备方案，将多个 InnoDB Cluster 组成�
 
 ```mermaid
 flowchart TD
-    subgraph CS[InnoDB ClusterSet]
-        subgraph DC1[Primary Cluster DC1]
-            P[P] S1[S]
+    subgraph CS["InnoDB ClusterSet"]
+        subgraph DC1["Primary Cluster DC1"]
+            P["P"]
+            S1["S"]
         end
-        subgraph DC2[Replica Cluster DC2]
-            S2[S] S3[S]
+        subgraph DC2["Replica Cluster DC2"]
+            S2["S"]
+            S3["S"]
         end
         DC1 -->|异步复制| DC2
     end

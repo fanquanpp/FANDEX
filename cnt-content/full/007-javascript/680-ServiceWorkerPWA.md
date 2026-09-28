@@ -1,12 +1,12 @@
 ---
-order: 650
+order: 670
 title: Service Worker 与 PWA
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: 离线优先：Service Worker 生命周期、缓存策略与 PWA 安装体验。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/460-StorageForTheWeb'
   - 'javascript/430-WebAPIBrowserInterface'

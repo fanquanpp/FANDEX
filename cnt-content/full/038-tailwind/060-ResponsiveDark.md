@@ -4,9 +4,9 @@ title: Tailwind CSS 响应式与暗色模式
 module: 'tailwind'
 category: 前端技术
 difficulty: intermediate
-description: 'Tailwind CSS 响应式与暗色模式原理篇：从移动优先断点与 prefers-color-scheme 媒体查询讲起，掌握 sm:/md:/lg: 前缀、dark: 变体与 @custom-variant 策略切换'
+description: 'Tailwind CSS 响应式与暗色模式原理篇：从移动优先断点与 prefers-color-scheme 媒体查询讲起，掌握 sm:/md:/lg: 前缀、dark: 变体与 @custom-variant 策略切换，附 data-theme 生产级换肤实战'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'tailwind/040-LayoutFlexGrid'
   - 'tailwind/050-ThemeCustomization'
@@ -14,6 +14,16 @@ prerequisites:
   - 'tailwind/030-UtilityCore'
 ---
 
+## 前置知识
+
+- [Tailwind CSS 核心概念与工具类](/tailwind/030-UtilityCore)：变体前缀的语法基础。
+
+## 学习目标
+
+- 能解释媒体查询与移动优先策略，看懂断点前缀编译后的 CSS。
+- 能用 `dark:` 变体做跟随系统的暗色适配，并用 `@custom-variant` 切换为 class / data 属性策略。
+- 能落地一套"localStorage 记忆 + 系统偏好兜底 + 绘制前设置"的生产级换肤，且不闪白。
+- 能组合断点与状态变体（如 `dark:hover:`、`md:hidden`）表达复合条件。
 
 ## 0. 先打个比方：给"变形金刚"准备多套衣服
 
@@ -23,7 +33,7 @@ prerequisites:
 
 Tailwind CSS 用一套非常聪明的语法解决了这个问题：**把"变形条件"（视口宽度、系统明暗偏好）写成类名前缀**，比如 `md:grid-cols-2` 表示"当屏幕达到平板宽度时变成两列"，`dark:bg-gray-900` 表示"当系统处于暗色偏好时换成深色背景"。
 
-本篇文章采用**原理驱动**的讲法：先搞懂响应式和暗色模式背后的 CSS 原理，再学习 Tailwind 的语法糖，最后看代码。原理清楚了，再复杂的布局你都能自己推理出来。
+本篇采用**原理驱动**的讲法：先搞懂响应式和暗色模式背后的 CSS 原理，再学习 Tailwind 的语法糖，最后看代码。原理清楚了，再复杂的布局你都能自己推理出来。
 
 ## 1. 响应式原理：从媒体查询说起
 
@@ -185,11 +195,11 @@ Tailwind 4 把这道"明暗闸门"封装成 `dark:` 前缀。**无需任何配�
 </div>
 ```
 
-## 5. class 策略：让用户手动切换主题
+## 5. class / data 属性策略：让用户手动切换主题
 
-### 5.1 为什么需要 class 策略
+### 5.1 为什么需要手动切换
 
-系统策略（跟随系统偏好）适合"开箱即用"，但真实产品通常还要提供"**用户手动切换**"的功能——用户可能想在系统亮色时把网站调成暗色。这时 `prefers-color-scheme` 就不够用了，我们需要用 class 策略：**由 JS 在 `<html>` 元素上挂一个 `.dark` 类，`dark:` 变体检测这个类是否存在**。
+系统策略（跟随系统偏好）适合"开箱即用"，但真实产品通常还要提供"**用户手动切换**"的功能——用户可能想在系统亮色时把网站调成暗色。这时 `prefers-color-scheme` 就不够用了，我们需要换一种策略：**由 JS 在 `<html>` 元素上做一个标记，`dark:` 变体检测这个标记是否存在**。标记可以是 `.dark` 类，也可以是 `data-theme` 属性。
 
 ### 5.2 原理：@custom-variant 重新定义 dark
 
@@ -199,61 +209,78 @@ Tailwind 4 用 `@custom-variant` 指令重新定义 `dark:` 变体的匹配条�
 /* src/styles/global.css */
 @import "tailwindcss";
 
-/* 重新定义 dark 变体：当祖先元素存在 .dark 类时生效 */
+/* 写法一：class 策略——当祖先元素存在 .dark 类时生效 */
 @custom-variant dark (&:where(.dark, .dark *));
+
+/* 写法二：data 属性策略——当祖先元素 data-theme="dark" 时生效 */
+@custom-variant dark (&:where([data-theme='dark'], [data-theme='dark'] *));
 ```
 
-```html
-<html class="dark">
-  <body class="bg-white dark:bg-gray-900">内容</body>
-</html>
-```
+两种写法二选一。`&:where(...)` 是 CSS 选择器语法：`&` 代表当前元素，后半部分是匹配条件（自身或祖先带标记）。合起来就是：**只要祖先树里出现标记，`dark:` 样式就生效**。`:where()` 的选择器优先级恒为 0，保证不会干扰其他样式规则。
 
-`&:where(.dark, .dark *)` 是 CSS 选择器语法：`&` 代表当前元素，`.dark` 代表"元素自身或祖先有 `.dark` 类"，`.dark *` 代表"`.dark` 的后代元素"。合起来就是：**只要祖先树里出现 `.dark`，`dark:` 样式就生效**。`@where` 的选择器优先级恒为 0，保证不会干扰其他样式规则。
+### 5.3 生产级实战：data-theme + 绘制前内联脚本
 
-### 5.3 JS 切换 + 持久化
+手写切换只是两行 JS，但生产环境要多想三步。下面这套结构来自 FANDEX 仓库的真实实现，可以直接照抄：
 
-```js
-// theme-toggle.js —— 手动切换主题
-function toggleTheme() {
-  document.documentElement.classList.toggle('dark')
+第一步，**主题标记要能直接当 CSS 变量的作用域用**。令牌文件按选择器分亮暗两套值（令牌体系见第 5 篇）：
+
+```css
+/* tokens.css（节选）：变量名相同，值随作用域切换 */
+:root {
+  color-scheme: light;
+  --fandex-color-surface: #ffffff;
+}
+
+[data-theme='dark'] {
+  color-scheme: dark;
+  --fandex-color-surface: #141414;
 }
 ```
 
-进阶：配合 `localStorage` 持久化 + `matchMedia` 检测系统偏好，实现"跟随系统 + 手动覆盖"三态切换：
+第二步，**切换脚本必须内联在 `<head>`、同步执行**。放在底部或等 `DOMContentLoaded` 都会晚于首帧，深色用户会先看到一帧白底再跳黑——这个"闪白"（FOUC）一旦上线就很难被容忍：
+
+```html
+<head>
+  <script>
+    // 内联同步执行：必须在浏览器绘制第一帧之前设好 data-theme
+    (function () {
+      var saved = localStorage.getItem('theme')
+      var theme = saved ?? (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light')
+      document.documentElement.dataset.theme = theme
+    })()
+  </script>
+</head>
+```
+
+这段脚本同时处理了三件事：读用户的手动选择（localStorage）、没有选择时兜底系统偏好、在绘制前把标记挂到 `<html>` 上。
+
+第三步，**页面上提供一个三态切换**（亮 / 暗 / 跟随系统）：
 
 ```js
 // theme-manager.js —— 支持"亮色 / 暗色 / 跟随系统"三态
 function applyTheme(theme) {
   const root = document.documentElement
   if (theme === 'system') {
-    // 未显式设置时，跟随系统偏好
     localStorage.removeItem('theme')
     const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
-    root.classList.toggle('dark', prefersDark)
+    root.dataset.theme = prefersDark ? 'dark' : 'light'
   } else {
     localStorage.setItem('theme', theme)
-    root.classList.toggle('dark', theme === 'dark')
+    root.dataset.theme = theme
   }
 }
-// 建议在 <head> 内联执行一次，避免页面加载时"闪白/闪黑"（FOUC）
 ```
 
-### 5.4 data 属性策略
+FANDEX 选择 `data-theme` 属性而非 `.dark` 类还有一个架构理由：属性选择器可以直接作为令牌文件的作用域（第一步的 `[data-theme='dark'] { ... }`），令牌层不必依赖 Tailwind 的变体机制就能完成换肤，令牌与工具类从此解耦。另外注意：CSS 原生的 `light-dark()` 函数在这里帮不上忙——Tailwind 4 的解析器在 `@theme` 块之外不支持 `light-dark()` 与 `var()` 混合写法，这也是生产项目普遍选择选择器方案的原因。
 
-不想用 `.dark` 类？也可以改用 `data-theme` 属性，把 `@custom-variant` 的匹配条件换成属性选择器：
+### 5.4 两种策略怎么选
 
-```css
-@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
-```
+| 策略 | 写法 | 适合 |
+| --- | --- | --- |
+| class | `@custom-variant dark (&:where(.dark, .dark *))` | 简单项目、跟随 shadcn/ui 等社区惯例 |
+| data 属性 | `@custom-variant dark (&:where([data-theme='dark'], ...))` | 有独立令牌体系、需要亮暗之外多主题（如 `data-theme='sepia'`）的项目 |
 
-```html
-<html data-theme="dark">
-  <body class="bg-white dark:bg-black">内容</body>
-</html>
-```
-
-两种策略只是选择器不同，原理完全一致，按团队习惯选择即可。
+两种策略只是选择器不同，原理完全一致。扩展多个主题时 data 属性天然占优：`data-theme` 的取值可以继续加 `high-contrast`、`sepia` 等档位，每档一组变量即可。
 
 ## 6. 响应式与暗色的组合：变体叠加
 
@@ -273,7 +300,7 @@ Tailwind 的变体（断点前缀、状态前缀、暗色前缀）可以像积�
 - `dark:hover:bg-blue-400`：暗色模式下悬停时变亮蓝；
 - `md:px-6`：桌面端加大内边距。
 
-编译结果会生成 `@media (prefers-color-scheme: dark)` 内的 `:hover` 规则、`@media (width >= 768px)` 内的规则，各归其位、互不干扰。
+编译结果会生成 `@media (prefers-color-scheme: dark)`（或你自定义的选择器）内的 `:hover` 规则、`@media (width >= 768px)` 内的规则，各归其位、互不干扰。
 
 ### 6.2 典型示例：响应式导航栏
 
@@ -298,17 +325,37 @@ Tailwind 的变体（断点前缀、状态前缀、暗色前缀）可以像积�
 - `hidden md:flex`：默认隐藏，平板及以上显示（渐进增强）；
 - `md:hidden`：默认显示，平板及以上隐藏（反向控制）。
 
-## 7. 常见错误与对策
+## 7. 坑点与自检
 
 | 常见错误 | 报错 / 现象 | 原因 | 解决办法 |
 | --- | --- | --- | --- |
 | 只写了 `md:grid-cols-2` 没写基础类 | 手机上永远是默认布局 | 无前缀类才是基础样式，前缀类只在对应宽度生效 | 先写无前缀基础类（如 `grid-cols-1`），再写增强类 |
 | 断点类顺序写反（`lg:... md:...` 从大到小） | 行为诡异、难以排查 | 移动优先要求从小到大排列，保证代码可读 | 基础类在前，断点从小到大 |
-| 想用 class 策略但没写 `@custom-variant` | `dark:` 一直跟随系统，JS 切类无效 | 默认策略是 `prefers-color-scheme`，不是 class | 在 CSS 中加入 `@custom-variant dark (&:where(.dark, .dark *))` |
-| `dark:` 写在没有祖先 `.dark` 的元素上 | 暗色样式不生效 | class 策略要求 `.dark` 在元素祖先链上 | 把 `.dark` 加到 `<html>` 上（`document.documentElement`） |
-| 拼接动态类名 `bg-${color}-500` | 样式缺失 | 内容扫描只识别完整类名，无法解析拼接 | 使用完整类名，或用映射表（如 `const map = { red: 'bg-red-500' }`） |
+| 想用手动切换但没写 `@custom-variant` | `dark:` 一直跟随系统，JS 切类无效 | 默认策略是 `prefers-color-scheme`，不是 class/data | 在 CSS 中加入 `@custom-variant dark (...)` |
+| `dark:` 写在没有祖先标记的元素上 | 暗色样式不生效 | class/data 策略要求标记在元素祖先链上 | 把标记加到 `<html>` 上（`document.documentElement`） |
+| 切换脚本放在页面底部 | 深色用户首帧闪白 | 标记设置晚于首帧绘制 | 脚本内联在 `<head>` 同步执行 |
 | 深色模式下忘记处理图片/阴影 | 图片过亮、阴影突兀 | `dark:` 只覆盖显式书写的类 | 给图片加 `dark:opacity-80`、阴影换 `dark:shadow-none` 等 |
+| 拼接动态类名 `bg-${color}-500` | 样式缺失 | 内容扫描只识别完整类名，无法解析拼接 | 使用完整类名，或用映射表（如 `const map = { red: 'bg-red-500' }`） |
 
-## 8. 一句话记忆
+自检清单：
 
-**响应式 = "移动优先"断点闸门（`sm:`/`md:`/`lg:` 只是自动包一层媒体查询）；暗色 = `dark:` 变体（默认听系统，`@custom-variant` 后听 `.dark` 类）；二者都是"环境条件 + 类名前缀"的语法糖。**
+- [ ] 能手写出 `md:grid-cols-2` 编译后的媒体查询结构
+- [ ] 能解释"移动优先"为什么要求基础类在前、断点从小到大
+- [ ] 能默写 `@custom-variant` 的 class 与 data 属性两种写法
+- [ ] 能说出换肤脚本为什么必须内联在 `<head>` 同步执行
+- [ ] 能把"亮 / 暗 / 跟随系统"三态切换完整实现一遍
+
+## 8. 动手实践
+
+1. **三档卡片墙**：实现一个卡片列表，手机 1 列、平板 2 列、桌面 3 列，再用 `@theme` 把 `lg` 断点改成 1100px，观察布局变化。提示：改完断点后记得检查其他用 `lg:` 的地方是否被连带影响——这就是"覆盖默认令牌影响面大"的体感。
+2. **无闪白换肤**：按 5.3 节完整实现 `data-theme` 换肤（令牌两套值 + head 内联脚本 + 三态切换按钮），然后把内联脚本临时挪到 `</body>` 前，用 DevTools 的 Performance 面板或肉眼观察首帧闪白。提示：把系统设为深色后再刷新，差异最明显。
+3. **复合变体阅读训练**：解释 `dark:md:hover:bg-blue-400` 在什么时候生效（先口头说，再用浏览器改窗口宽度 + 开发者工具模拟 `prefers-color-scheme` 验证）。提示：语义从右往左读——悬停时、且视口达 md、且暗色。
+
+## 9. 一句话记忆
+
+**响应式 = "移动优先"断点闸门（`sm:`/`md:`/`lg:` 只是自动包一层媒体查询）；暗色 = `dark:` 变体（默认听系统，`@custom-variant` 后听 `.dark` 类或 `data-theme` 属性）；生产级换肤三件套——令牌分作用域、标记绘制前设置、三态记忆。**
+
+## 10. 下一步
+
+- 令牌与换肤的完整管线（JSON 源 -> tokens.css -> `@theme inline` 桥接）见[主题定制与设计令牌](/tailwind/050-ThemeCustomization)。
+- 组件内部的亮暗适配与状态联动（`group-hover:` 等）见[组件复用](/tailwind/070-ComponentReuse)。

@@ -17,7 +17,7 @@ prerequisites:
 
 ## 前置知识
 
-- 索引的增删基础（[索引管理](/mysql/210-IndexManagement)）；
+- 索引的增删基础（[索引管理](/mysql/090-SQLDataDefinitionAdvanced)）；
 - 二级索引的存储与维护成本（[聚簇索引与二级索引](/mysql/220-ClusteredIndexSecondaryIndex)）。
 
 ## 索引不是免费的：为什么想删它

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++11 原子操作、内存序、happens-before 关系与无锁编程的工程实践
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'cpp/690-DesignPatternCpp'
   - 'cpp/220-CppOOPAdvanced'
@@ -1605,7 +1605,7 @@ int b = a + 1;
 ---
 
 **基本写法：同步建立先行**
-`store(release) ↔ load(acquire)`
+`store(release)` 与配对的 `load(acquire)`
 ```cpp
 // release 操作 happens-before 配对的 acquire
 ready.store(true, std::memory_order_release);

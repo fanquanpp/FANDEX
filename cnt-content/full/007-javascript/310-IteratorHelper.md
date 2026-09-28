@@ -1,12 +1,12 @@
 ---
-order: 290
+order: 310
 title: 迭代器辅助方法
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: Iterator Helpers提案详解
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/470-IndexedDBADatabaseInYourBrowser'
   - 'javascript/260-PromiseConstructorDeepDive'

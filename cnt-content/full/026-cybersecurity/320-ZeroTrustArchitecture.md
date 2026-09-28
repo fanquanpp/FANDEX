@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 零信任架构：Never trust, always verify 原则、NIST SP 800-207 逻辑组件、BeyondCorp 与分阶段落地路线。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/290-AuthenticationAuthorization'
   - 'cybersecurity/300-IdentityAccessManagement'
@@ -122,7 +122,7 @@ Google 在 2011 年 aurora 攻击后转向的实践，已成为零信任的事�
 ```text
 阶段一（看清 + 身份收敛，约 0-6 个月）
   - 资产盘点：谁、什么设备、访问什么资源（无清单谈不上策略）
-  - 统一身份：SSO + MFA 强制覆盖全部 SaaS 与关键系统（见 032-IdentityAccessManagement）
+  - 统一身份：SSO + MFA 强制覆盖全部 SaaS 与关键系统（见 300-IdentityAccessManagement）
   - 特权收敛：管理员/服务账号最小化，消灭共享账号
 
 阶段二（入口替代 + 分段试点，约 6-18 个月）

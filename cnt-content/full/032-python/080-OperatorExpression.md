@@ -1,12 +1,12 @@
 ---
-order: 80
+order: 90
 title: 运算符与表达式：让数据算起来
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 用排行榜平均分与角色血条场景讲透 Python 运算符：/ 与 // 的分野、% 的分页与轮询、逻辑短路、增强赋值与优先级括号，附 TypeError 与 ZeroDivisionError 调试实录。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/070-BasicDataType'
   - 'python/090-VariableConstant'

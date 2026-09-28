@@ -1,12 +1,12 @@
 ---
-order: 370
+order: 380
 title: React 与 CI/CD
 module: 'react'
 category: 前端技术
 difficulty: intermediate
 description: React 项目 CI/CD 实战：GitHub Actions 完整流水线（缓存、typecheck/test/build）、环境变量安全边界、Playwright E2E、预览部署、包体积预算与常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/350-ReactD3'
   - 'react/360-ReactStorybook'

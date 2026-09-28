@@ -1,12 +1,12 @@
 ---
-order: 530
+order: 540
 title: Java 序列化
 module: 'java'
 category: 后端技术
 difficulty: intermediate
 description: 序列化与反序列化
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/600-JVMGC'
   - 'java/420-JavaReflection'
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- [Java Path 与 Files 语法速查手册](/java/670-JavaPathFiles)：建议先完成前一篇的学习
+- [JavaIO 与 NIO](/java/650-JavaIONIO)：建议先完成前一篇的学习
 
 ## 学习目标
 

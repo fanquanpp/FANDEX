@@ -1,502 +1,285 @@
 ---
 order: 150
-title: 连接查询
+title: 连接查询：把两张表按业务逻辑拼回一张
 module: 'sql'
 category: 数据库
 difficulty: intermediate
-description: SQL连接查询：INNER JOIN、LEFT JOIN、RIGHT JOIN、FULL JOIN、CROSS JOIN、NATURAL JOIN的语法、语义与性能
+description: 以播客平台「回声FM」的内容对账为练习场，动手掌握 INNER/LEFT/RIGHT/FULL/CROSS 五种 JOIN：外连接的 ON 与 WHERE 之别、反连接找"空壳行"、一对多连接的行数膨胀，以及 MySQL 没有 FULL JOIN 怎么办。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'sql/060-AggregateFunction'
-  - 'sql/070-GROUPBYGroupingSet'
   - 'sql/160-NaturalJoinUsing'
   - 'sql/170-SelfJoin'
+  - 'sql/180-SemiAntiJoin'
 prerequisites:
-  - 'sql/020-OverviewStandard'
+  - 'sql/040-DataQueryBasics'
 ---
 
-## 1. 连接查询概述
+## 1. 场景：数据拆在多张表里，问题却要一次回答
 
-连接（JOIN）是 SQL 最强大的特性之一，用于根据列之间的关系组合两个或多个表中的行。
+关系数据库把数据拆进不同的表（第 10 篇讲过为什么），但业务问题从来不按表来问。这周内容组提了三个：
 
-### 1.1 连接类型分类
+1. "每档节目配了几期？把数字挂在节目名后面。"——需要 `shows` 与 `episodes` **按关系拼起来**。
+2. "有几个刚开的节目还没上架任何单集？列出来催一下。"——需要**找出拼不上的行**。
+3. "做个分类 x 日期的统计骨架，没数据的日子也要占位。"——需要**两表全排列**。
 
-| 类型     | 关键字       | 说明                    |
-| -------- | ------------ | ----------------------- |
-| 内连接   | INNER JOIN   | 只返回匹配行            |
-| 左外连接 | LEFT JOIN    | 左表全部 + 右表匹配     |
-| 右外连接 | RIGHT JOIN   | 右表全部 + 左表匹配     |
-| 全外连接 | FULL JOIN    | 两表全部，不匹配填 NULL |
-| 交叉连接 | CROSS JOIN   | 笛卡尔积                |
-| 自然连接 | NATURAL JOIN | 同名列自动等值连接      |
+三个问题对应三种 JOIN：内连接、外连接的反向用法、交叉连接。这篇就用回声FM的三张表把 JOIN 一次做全。
 
-### 1.2 连接的基本语法
+### 1.1 练习场数据
+
+沿用[数据查询基础](/sql/040-DataQueryBasics)的三张表。为了演示"拼不上"，本文给 `shows` 补一档还没有单集的新节目：
 
 ```sql
-SELECT select_list
-FROM left_table [AS] alias
-[JOIN_TYPE] right_table [AS] alias
-ON join_condition;
+INSERT INTO shows VALUES (6, '科技早报', '科技', '阿澜', FALSE);
 ```
 
-## 2. INNER JOIN
+此时 `shows` 6 行、`episodes` 6 行，其中第 106 期时长为 NULL，第 105/106 期没有任何评分（若你已按[聚合函数](/sql/060-AggregateFunction)建了 `ratings` 表）。
 
-### 2.1 基本用法
+## 2. INNER JOIN：只留拼得上的行
 
 ```sql
--- 只返回两表中满足连接条件的行
-SELECT e.name, d.dept_name
-FROM employees e
-INNER JOIN departments d ON e.dept_id = d.id;
+SELECT s.title AS show_title, e.title AS episode_title, e.play_count
+FROM shows s
+JOIN episodes e ON e.show_id = s.id;
 ```
 
-### 2.2 等值连接与非等值连接
+`JOIN` 是 `INNER JOIN` 的简写。逐行理解：从 `shows` 拿一行，去 `episodes` 里找所有 `show_id` 等于这行 `id` 的行，一对多就输出多行。结果 6 行——单集都在，节目"科技早报"因为没有单集，**一行都不出现**。
+
+三个立即可用的要点：
+
+- **表别名**：`shows s` 给表起短名，多表查询里必须用别名前缀区分同名列。别名一定义，原表名在本次查询里就"退役"了。
+- **ON 后面是匹配条件**，绝大多数时候是"外键 = 主键"的等值条件。条件写错不报错，只是拼出错误结果——JOIN 类 bug 的隐蔽性全在于此。
+- **非等值连接**也是合法 JOIN：ON 里可以放 `BETWEEN`、`<` 等任意条件。比如给每期打时长档位：
 
 ```sql
--- 等值连接（最常见）
-SELECT e.name, d.dept_name
-FROM employees e
-JOIN departments d ON e.dept_id = d.id;
-
--- 非等值连接
-SELECT e.name, g.grade
-FROM employees e
-JOIN salary_grades g ON e.salary BETWEEN g.min_salary AND g.max_salary;
-```
-
-### 2.3 多表连接
-
-```sql
-SELECT e.name, d.dept_name, j.job_title
-FROM employees e
-JOIN departments d ON e.dept_id = d.id
-JOIN jobs j ON e.job_id = j.id
-WHERE d.region = 'East';
-```
-
-## 3. LEFT JOIN（左外连接）
-
-### 3.1 基本用法
-
-```sql
--- 返回左表所有行，右表无匹配时填 NULL
-SELECT d.dept_name, e.name
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id;
-```
-
-### 3.2 LEFT JOIN 的典型场景
-
-```sql
--- 场景1：查找没有员工的部门
-SELECT d.dept_name
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id
-WHERE e.id IS NULL;
-
--- 场景2：统计每个部门的员工数（包括0人部门）
-SELECT d.dept_name, COUNT(e.id) AS emp_count
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id
-GROUP BY d.id, d.dept_name;
-```
-
-### 3.3 LEFT JOIN + WHERE 陷阱
-
-```sql
--- 错误：WHERE 条件使 LEFT JOIN 退化为 INNER JOIN
-SELECT d.dept_name, e.name
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id
-WHERE e.status = 'active';  -- 过滤掉了没有员工的部门
-
--- 正确：将右表过滤条件移到 ON 子句
-SELECT d.dept_name, e.name
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id AND e.status = 'active';
-```
-
-## 4. RIGHT JOIN（右外连接）
-
-```sql
--- 返回右表所有行，左表无匹配时填 NULL
--- RIGHT JOIN 等价于交换表顺序的 LEFT JOIN
-SELECT e.name, d.dept_name
-FROM employees e
-RIGHT JOIN departments d ON e.dept_id = d.id;
-
--- 等价写法
-SELECT e.name, d.dept_name
-FROM departments d
-LEFT JOIN employees e ON e.dept_id = d.id;
-```
-
-> **最佳实践**：统一使用 LEFT JOIN，避免混用 LEFT/RIGHT 增加可读性难度。
-
-## 5. FULL JOIN（全外连接）
-
-### 5.1 基本用法
-
-```sql
--- 返回两表所有行，不匹配时填 NULL
-SELECT e.name, d.dept_name
-FROM employees e
-FULL JOIN departments d ON e.dept_id = d.id;
-```
-
-### 5.2 典型场景
-
-```sql
--- 场景1：查找两表不匹配的行
-SELECT e.name, d.dept_name
-FROM employees e
-FULL JOIN departments d ON e.dept_id = d.id
-WHERE e.id IS NULL OR d.id IS NULL;
-
--- 场景2：合并两表数据（去重 UNION）
-SELECT COALESCE(a.id, b.id) AS id,
-       COALESCE(a.name, b.name) AS name
-FROM table_a a
-FULL JOIN table_b b ON a.id = b.id;
-```
-
-### 5.3 MySQL 中的 FULL JOIN 替代
-
-MySQL 至今不支持 FULL JOIN（包括 9.7 LTS 与最新的 26.7 创新版）；SQLite 3.39+ 已支持。替代写法：
-
-```sql
--- 用 UNION 合并左连接与右连接（UNION 自动去重，防止完全匹配行重复）
-SELECT e.name, d.dept_name
-FROM employees e
-LEFT JOIN departments d ON e.dept_id = d.id
-UNION
-SELECT e.name, d.dept_name
-FROM employees e
-RIGHT JOIN departments d ON e.dept_id = d.id;
-```
-
-## 6. CROSS JOIN（交叉连接）
-
-### 6.1 基本用法
-
-```sql
--- 笛卡尔积：m行 × n行 = m×n行
-SELECT d.dept_name, j.job_title
-FROM departments d
-CROSS JOIN jobs j;
-
--- 隐式交叉连接
-SELECT d.dept_name, j.job_title
-FROM departments d, jobs j;
-```
-
-### 6.2 典型场景
-
-```sql
--- 场景1：生成日期×产品的组合矩阵
-SELECT d.date_key, p.product_id
-FROM dim_date d
-CROSS JOIN dim_product p
-WHERE d.date_key BETWEEN '2026-01-01' AND '2026-12-31';
-
--- 场景2：生成序列
-SELECT x.n, y.m
-FROM (SELECT generate_series(1, 12) AS n) x
-CROSS JOIN (SELECT generate_series(1, 31) AS m) y;
-```
-
-## 7. 连接的执行原理
-
-### 7.1 连接算法
-
-| 算法              | 时间复杂度               | 适用场景         |
-| ----------------- | ------------------------ | ---------------- |
-| Nested Loop Join  | $O(m \times n)$          | 小表驱动大表     |
-| Hash Join         | $O(m + n)$               | 等值连接，大表   |
-| Sort-Merge Join   | $O(m \log m + n \log n)$ | 已排序数据       |
-
-> **方言事实**：MySQL 8.0.18 起为无索引可用的等值连接提供 Hash Join，并在 8.0.20
-> 移除了旧的 Block Nested Loop（BNL）算法——所以"MySQL 只会嵌套循环"是过时印象；
-> PostgreSQL 一直内置 Nested Loop / Hash Join / Merge Join 三种算法并按代价自动选择。
-
-### 7.2 连接顺序优化
-
-```sql
--- 优化器可能重排连接顺序
--- 原始写法
-SELECT * FROM a JOIN b ON a.id = b.a_id JOIN c ON b.id = c.b_id;
-
--- 优化器可能选择更优顺序
--- 如：先连接小表 a 和 c，再连接 b
-```
-
-### 7.3 连接条件与过滤条件
-
-```sql
--- ON：连接条件，决定如何匹配行
--- WHERE：过滤条件，在连接后过滤结果
-
--- INNER JOIN 中 ON 和 WHERE 等价（逻辑上）
-SELECT * FROM a INNER JOIN b ON a.id = b.a_id AND a.status = 'active';
--- 等价于
-SELECT * FROM a INNER JOIN b ON a.id = b.a_id WHERE a.status = 'active';
-
--- OUTER JOIN 中 ON 和 WHERE 不等价
-SELECT * FROM a LEFT JOIN b ON a.id = b.a_id AND a.status = 'active';
--- a.status = 'active' 只影响右表匹配，左表行仍保留
-
-SELECT * FROM a LEFT JOIN b ON a.id = b.a_id WHERE a.status = 'active';
--- a.status = 'active' 过滤最终结果，左表不满足的行被移除
-```
-
-## 8. 多表连接最佳实践
-
-### 8.1 连接数控制
-
-```sql
--- 避免过多表连接（一般不超过 5-7 个）
--- 过多连接导致：
--- 1. 执行计划搜索空间指数增长
--- 2. 中间结果集膨胀
--- 3. 可读性下降
-
--- 替代方案：使用 CTE 拆分复杂查询
-WITH dept_employees AS (
-    SELECT d.dept_name, e.name, e.salary
-    FROM departments d
-    JOIN employees e ON d.id = e.dept_id
-)
-SELECT dept_name, name, salary
-FROM dept_employees
-WHERE salary > (SELECT AVG(salary) FROM dept_employees);
-```
-
-### 8.2 索引支持
-
-```sql
--- 连接列应建立索引
-CREATE INDEX idx_employees_dept_id ON employees(dept_id);
-CREATE INDEX idx_employees_job_id ON employees(job_id);
-
--- 覆盖索引避免回表
-CREATE INDEX idx_employees_dept_cover ON employees(dept_id, name, salary);
-```
-
-### 8.3 去重连接
-
-```sql
--- 连接导致行数膨胀时，先去重再连接
-SELECT d.dept_name, e_cnt.emp_count
-FROM departments d
+SELECT e.title, g.grade
+FROM episodes e
 JOIN (
-    SELECT dept_id, COUNT(*) AS emp_count
-    FROM employees
-    GROUP BY dept_id
-) e_cnt ON d.id = e_cnt.dept_id;
+  VALUES (0, 60, '短篇'), (60, 100, '标准'), (100, 9999, '长篇')
+) AS g(lo, hi, grade) ON e.duration_min >= g.lo AND e.duration_min < g.hi;
 ```
 
-## 9. 小结
+用一张"档位表"代替一长串 CASE WHEN，档位规则变了只改数据不改 SQL。PostgreSQL 原生支持 `VALUES ... AS 别名(列名)`；MySQL 8.0.19+ 也能在 FROM 里用表值构造器，但别名写法是 `(VALUES ROW(0,60,'短篇'), ...) AS g(lo, hi, grade)`。
 
-- 初学者要点：INNER JOIN 只要匹配行；LEFT JOIN 保留左表全部行、右表无匹配填 NULL；CROSS JOIN 是笛卡尔积，行数为两表行数的乘积，切勿在无意的逗号连接中触发。
-- 语义红线：外连接中，右表的过滤条件必须放在 ON 里；一旦写进 WHERE，LEFT JOIN 就退化为 INNER JOIN。这是连接查询出错率最高的一处。
-- "查找不匹配行"统一用 `LEFT JOIN ... WHERE 右表.主键 IS NULL`，配合 `COUNT(右表主键)` 才能把零匹配组数对（COUNT(*) 会把 NULL 行也数进去）。
-- 进阶注意：MySQL 没有 FULL JOIN，用 `LEFT JOIN UNION RIGHT JOIN` 模拟（UNION 的去重正好抵消两侧重复）；SQLite 3.39 起才有 RIGHT/FULL。
-- 连接性能取决于索引与算法：连接列建索引、让优化器选择 Nested Loop / Hash Join（MySQL 8.0.18+ 也有 Hash Join），多表连接前先 `EXPLAIN` 确认连接顺序与访问类型。
+### 2.1 三表连接：链式拼装
 
-## INNER JOIN
-
-**换行写法：内连接返回两表匹配行**
-`FROM <左表> INNER JOIN <右表> ON <条件>`
 ```sql
--- 查询员工及其所属部门名称
-SELECT e.name, d.dept_name
-FROM employees e
-INNER JOIN departments d ON e.dept_id = d.id;
+SELECT s.title, e.title, r.stars
+FROM shows s
+JOIN episodes e ON e.show_id = s.id
+JOIN ratings  r ON r.episode_id = e.id
+WHERE s.category = '科技';
 ```
 
-**换行写法：省略 INNER 的内连接**
-`FROM <左表> JOIN <右表> ON <条件>`
+规则：每一层 JOIN 都有自己的 ON，别混；驱动顺序（先拼谁）由优化器决定，你的书写顺序只是逻辑声明。
+
+## 3. LEFT JOIN：左表一行不能少
+
+问题 1 的完整版是"**每档**节目配了几期"——包括零期的。INNER JOIN 会把零期的节目挤掉，LEFT JOIN 不会：
+
 ```sql
--- 省略 INNER 关键字的内连接
-SELECT e.name, d.dept_name
-FROM employees e
-JOIN departments d ON e.dept_id = d.id;
+SELECT s.title, COUNT(e.id) AS episode_cnt
+FROM shows s
+LEFT JOIN episodes e ON e.show_id = s.id
+GROUP BY s.id, s.title
+ORDER BY episode_cnt;
 ```
 
-**换行写法：非等值连接**
-`FROM <左表> JOIN <右表> ON <非等值条件>`
-```sql
--- 根据薪资范围匹配薪资等级
-SELECT e.name, g.grade
-FROM employees e
-JOIN salary_grades g ON e.salary BETWEEN g.min_salary AND g.max_salary;
+```
+title       | episode_cnt
+------------|------------
+科技早报    | 0
+城市漫步指南 | 1
+深夜书桌    | 1
+增长手记    | 1
+代码与咖啡  | 2
+芯片江湖    | 1
 ```
 
-**换行写法：多表连接**
-`FROM <表 1> JOIN <表 2> ON ... JOIN <表 3> ON ...`
+LEFT JOIN 的语义：**左表全部行都保留，右表拼不上时用一行全 NULL 的"占位行"补位**。两个细节决定这类查询的对错：
+
+- 计数用 `COUNT(e.id)` 而不是 `COUNT(*)`：占位行也是一行，`COUNT(*)` 会把零期节目数成 1（回忆[聚合函数](/sql/060-AggregateFunction)的 NULL 规则——`COUNT(列)` 跳过 NULL）。
+- `GROUP BY s.id, s.title`：按主键分组保证组不重，SELECT 的 title 依赖函数依赖于 id，两种主流数据库都接受。
+
+### 3.1 反连接：专门找"拼不上"的行
+
+问题 2"哪些节目还没有单集"，把 LEFT JOIN 的占位行挑出来就是答案：
+
 ```sql
--- 连接员工表、部门表和职位表
-SELECT e.name, d.dept_name, j.job_title
-FROM employees e
-JOIN departments d ON e.dept_id = d.id
-JOIN jobs j ON e.job_id = j.id
-WHERE d.region = 'East';
-```
-
----
-
-## LEFT JOIN
-
-**换行写法：左外连接返回左表全部行**
-`FROM <左表> LEFT JOIN <右表> ON <条件>`
-```sql
--- 查询所有部门及其员工（包括没有员工的部门）
-SELECT d.dept_name, e.name
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id;
-```
-
-**换行写法：左连接查找无匹配行**
-`FROM <左表> LEFT JOIN <右表> ON <条件> WHERE <右表>.<列> IS NULL`
-```sql
--- 查找没有员工的部门
-SELECT d.dept_name
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id
+SELECT s.title
+FROM shows s
+LEFT JOIN episodes e ON e.show_id = s.id
 WHERE e.id IS NULL;
+-- 结果：科技早报
 ```
 
-**换行写法：左连接统计含零值分组**
-`FROM <左表> LEFT JOIN <右表> ON <条件> GROUP BY ...`
+"左表有、右表没有"是这个模式的固定形状：`LEFT JOIN ... WHERE 右表.键 IS NULL`。它和 `NOT EXISTS` 语义等价、通常性能也相当，工程上的选型讨论见[半连接与反半连接](/sql/180-SemiAntiJoin)。
+
+### 3.2 第一大坑：右表条件写进 WHERE，LEFT JOIN 白写了
+
+内容组追问："每档节目的**已完结**单集有几期？"（假设 `duration_min` 非空代表已完结）。直觉写法是错的：
+
 ```sql
--- 统计每个部门的员工数（包括 0 人部门）
-SELECT d.dept_name, COUNT(e.id) AS emp_count
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id
-GROUP BY d.id, d.dept_name;
+-- 错误：零期节目又消失了
+SELECT s.title, COUNT(e.id) AS done_cnt
+FROM shows s
+LEFT JOIN episodes e ON e.show_id = s.id
+WHERE e.duration_min IS NOT NULL
+GROUP BY s.id, s.title;
+
+-- 正确：右表的条件放进 ON
+SELECT s.title, COUNT(e.id) AS done_cnt
+FROM shows s
+LEFT JOIN episodes e ON e.show_id = s.id AND e.duration_min IS NOT NULL
+GROUP BY s.id, s.title;
 ```
 
-**换行写法：左连接右表过滤条件放 ON 子句**
-`FROM <左表> LEFT JOIN <右表> ON <条件> AND <右表过滤>`
+原理在执行顺序：WHERE 在 JOIN **之后**跑。占位行的 `duration_min` 是 NULL，`NULL IS NOT NULL` 为假，占位行被 WHERE 整行删掉——LEFT JOIN 退化回 INNER JOIN。而写在 ON 里的条件只决定"右表哪些行有资格来拼"，拼不上照样补占位行。
+
+自检口诀：**外连接时，左表条件放哪都行，右表条件只能放 ON**。（INNER JOIN 里 ON 和 WHERE 逻辑等价，随手感放；正因为如此，从 INNER 改成 LEFT 时这个坑才高频爆发。）
+
+## 4. RIGHT JOIN 与 FULL JOIN
+
+### 4.1 RIGHT JOIN：换个方向的 LEFT JOIN
+
 ```sql
--- 查询所有部门及活跃状态的员工（右表过滤条件放 ON 子句）
-SELECT d.dept_name, e.name
-FROM departments d
-LEFT JOIN employees e ON d.id = e.dept_id AND e.status = 'active';
+SELECT s.title, e.title
+FROM shows s
+RIGHT JOIN episodes e ON e.show_id = s.id;
 ```
 
----
+保留右表（episodes）全部行。它与 `FROM episodes LEFT JOIN shows ...` 完全等价，只是表的书写顺序不同。团队协作里建议**统一用 LEFT JOIN**（从主表出发从左往右读更自然），RIGHT JOIN 见到能读懂即可。
 
-## RIGHT JOIN
+### 4.2 FULL JOIN：两边都不能少，MySQL 没有
 
-**换行写法：右外连接返回右表全部行**
-`FROM <左表> RIGHT JOIN <右表> ON <条件>`
+对账场景："节目清单和单集清单，哪边有孤儿？"——没有单集的节目（左孤儿）和理论上不该存在、却挂着无效 show_id 的单集（右孤儿），一次找全：
+
 ```sql
--- 查询所有部门及其员工（包括没有员工的部门）
-SELECT e.name, d.dept_name
-FROM employees e
-RIGHT JOIN departments d ON e.dept_id = d.id;
+SELECT s.title AS show_title, e.title AS episode_title
+FROM shows s
+FULL JOIN episodes e ON e.show_id = s.id
+WHERE s.id IS NULL OR e.id IS NULL;
 ```
 
----
+FULL JOIN = LEFT JOIN 的结果 + 右表多出来的行。PostgreSQL、SQL Server、Oracle、SQLite 3.39+ 都支持；**MySQL 至今没有 FULL JOIN**，用两个方向的外连接拼：
 
-## FULL JOIN
-
-**换行写法：全外连接返回两表所有行**
-`FROM <左表> FULL JOIN <右表> ON <条件>`
 ```sql
--- 返回员工和部门的所有行，不匹配时填 NULL
-SELECT e.name, d.dept_name
-FROM employees e
-FULL JOIN departments d ON e.dept_id = d.id;
-```
+-- 写法一：UNION 自动去重，简单直接
+SELECT s.title, e.title
+FROM shows s LEFT JOIN episodes e ON e.show_id = s.id
+UNION
+SELECT s.title, e.title
+FROM shows s RIGHT JOIN episodes e ON e.show_id = s.id;
 
-**换行写法：全外连接查找不匹配行**
-`FROM <左表> FULL JOIN <右表> ON <条件> WHERE <左表>.<id> IS NULL OR <右表>.<id> IS NULL`
-```sql
--- 查找两表不匹配的行
-SELECT e.name, d.dept_name
-FROM employees e
-FULL JOIN departments d ON e.dept_id = d.id
-WHERE e.id IS NULL OR d.id IS NULL;
-```
-
-**换行写法：MySQL 用 UNION ALL 模拟全外连接**
-`LEFT JOIN ... UNION ALL RIGHT JOIN ... WHERE IS NULL`
-```sql
--- MySQL 不支持 FULL JOIN，使用 UNION ALL 替代
-SELECT e.name, d.dept_name
-FROM employees e
-LEFT JOIN departments d ON e.dept_id = d.id
+-- 写法二：UNION ALL 不去重，但只补右孤儿，更快
+SELECT s.title, e.title
+FROM shows s LEFT JOIN episodes e ON e.show_id = s.id
 UNION ALL
-SELECT e.name, d.dept_name
-FROM employees e
-RIGHT JOIN departments d ON e.dept_id = d.id
-WHERE e.id IS NULL;
+SELECT s.title, e.title
+FROM shows s RIGHT JOIN episodes e ON e.show_id = s.id
+WHERE s.id IS NULL;
 ```
 
----
+写法一靠 UNION 的去重抵消"两边都匹配"的重复行；写法二第二段只保留左连接漏掉的行，不产生重复，大表上更快。两段 SELECT 的列必须一一对应，这是[集合操作](/sql/210-SetOperation)的规矩。
 
-## CROSS JOIN
+## 5. CROSS JOIN：全排列，骨架与事故
 
-**换行写法：显式交叉连接（笛卡尔积）**
-`FROM <左表> CROSS JOIN <右表>`
+问题 3 要"分类 x 日期"的完整矩阵，哪怕某天某分类没有数据也要占位——这正是笛卡尔积的用武之地：
+
 ```sql
--- 生成部门和职位的笛卡尔积
-SELECT d.dept_name, j.job_title
-FROM departments d
-CROSS JOIN jobs j;
+-- PostgreSQL：现造一个 9 月的日期序列
+SELECT s.category, d.dt
+FROM (SELECT DISTINCT category FROM shows) s
+CROSS JOIN generate_series('2026-09-01'::date, '2026-09-07'::date, '1 day') AS d(dt)
+ORDER BY s.category, d.dt;
 ```
 
-**换行写法：隐式交叉连接**
-`FROM <表 1>, <表 2>`
+3 个分类 x 7 天 = 21 行，之后 LEFT JOIN 事实表补零，报表就不缺行了。CROSS JOIN 没有_ON，行数恒为两表行数的乘积——这也意味着它是事故高发区：
+
 ```sql
--- 使用逗号分隔的隐式交叉连接
-SELECT d.dept_name, j.job_title
-FROM departments d, jobs j;
+-- 事故写法：老式逗号连接，漏写 WHERE 条件就是全排列
+SELECT s.title, e.title FROM shows s, episodes e;   -- 7 x 6 = 42 行垃圾结果
 ```
 
----
+历史上 SQL 用逗号连接 + WHERE 写 JOIN，现代代码请一律显式 `JOIN ... ON`：语法上不写 ON 的 INNER JOIN 很多数据库直接报错，事故在编译期就被拦住。
 
-## 自连接
+## 6. 拼完之后：行数为什么不对
 
-**换行写法：表与自身连接**
-`FROM <表> AS <别名 1> JOIN <表> AS <别名 2> ON <条件>`
+JOIN 类查询最常被追问"行数怎么变多了/变少了"。三套解释，对号入座：
+
+### 6.1 变少：INNER JOIN 挤掉了拼不上的行
+
+正常语义。需要保留就用 LEFT/FULL JOIN。
+
+### 6.2 变多：一对多连接的行数膨胀
+
 ```sql
--- 查询员工及其经理
-SELECT
-  e.name AS employee,
-  m.name AS manager
-FROM employees e
-LEFT JOIN employees m ON e.manager_id = m.id;
+-- 想给每个单集旁边挂上"所属分类"，再统计每个分类的播放量
+SELECT s.category, SUM(e.play_count) AS total
+FROM shows s
+JOIN episodes e ON e.show_id = s.id
+GROUP BY s.category;
+-- 正确：一个单集只属于一个节目，无膨胀
+
+-- 但如果反过来：从单集表统计"每集被多少节目引用"，一对多方向变了
+-- shows 与 episodes 是 1:N，从 N 侧往 1 侧 JOIN 安全；
+-- 从 1 侧往 N 侧 JOIN 再聚合，粒度就翻了倍
 ```
 
-**换行写法：自连接查找同组数据**
-`FROM <表> AS <别名 1> JOIN <表> AS <别名 2> ON <条件>`
+判断标准：**JOIN 之后聚合，先想清楚"一行代表什么"**。若左右两边是多对多（比如听众 x 单集的收听记录连上会员订单），聚合前必须先把某一侧去重或预聚合：
+
 ```sql
--- 查找同一部门中薪资相同的员工
-SELECT a.name, b.name, a.salary
-FROM employees a
-JOIN employees b ON a.dept_id = b.dept_id AND a.salary = b.salary AND a.id < b.id;
+-- 先把收听明细按单集聚合，再 JOIN，杜绝膨胀
+WITH plays_per_ep AS (
+  SELECT episode_id, COUNT(*) AS play_cnt FROM listen_events GROUP BY episode_id
+)
+SELECT e.title, p.play_cnt
+FROM episodes e JOIN plays_per_ep p ON p.episode_id = e.id;
 ```
 
----
+### 6.3 变多：无意的 CROSS JOIN
 
-## USING 子句
+逗号连接漏条件、ON 条件列错（拿两个不相干的列做等值），都会产出笛卡尔积。结果行数异常时第一反应：`SELECT COUNT(*)` 对比连接前后行数。
 
-**换行写法：USING 指定同名列连接**
-`FROM <左表> JOIN <右表> USING (<列>)`
-```sql
--- 使用 USING 指定同名列连接
-SELECT e.name, department_id
-FROM employees e
-JOIN departments d USING (department_id);
-```
+## 7. 数据库怎么执行 JOIN（够用版）
 
-**换行写法：NATURAL JOIN 自动按同名列连接**
-`FROM <左表> NATURAL JOIN <右表>`
-```sql
--- 自动按同名列连接（不推荐，不可控）
-SELECT * FROM employees NATURAL JOIN departments;
-```
+优化器手里有三种算法，按代价自动选：
+
+| 算法           | 一句话原理                       | 适合场景           |
+| -------------- | -------------------------------- | ------------------ |
+| Nested Loop    | 外表一行行，去内表里找匹配       | 外表小、内表连接列有索引 |
+| Hash Join      | 小表建哈希表，大表逐行探测       | 大表等值连接、无索引 |
+| Merge Join     | 两边按连接键排序后归并           | 已排序或需排序输出 |
+
+方言事实更新一下旧印象：**MySQL 8.0.18 起有了 Hash Join**，8.0.20 移除了旧的 Block Nested-Loop——"MySQL 只会嵌套循环"的说法已过时；PostgreSQL 三种算法一直都有，靠代价模型自动挑。你需要做的是给连接列建索引（`episodes(show_id)`、`ratings(episode_id)` 这类外键列），让 Nested Loop 走得快，剩下交给优化器。
+
+多表连接（超过 5-7 张）时执行计划的搜索空间指数增长，人也读不懂。工程做法：先用 CTE 把"两表关系"算成中间结果，再和第三张表拼——复杂连接拆步骤的写法见[CTE](/sql/230-CTE)。
+
+## 8. 坑点清单与自检
+
+1. **外连接的右表条件进了 WHERE**：LEFT JOIN 静默退化为 INNER JOIN。口诀：右表条件只能放 ON。
+2. **零匹配组被数成 1**：LEFT JOIN 后计数用 `COUNT(右表.列)`，别用 `COUNT(*)`。
+3. **聚合结果翻倍**：一对多连接后再 SUM/AVG，先问"一行代表什么"，必要时预聚合再连。
+4. **逗号连接漏条件**：显式 JOIN ... ON，让事故在语法期暴露。
+5. **MySQL 写了 FULL JOIN**：直接语法错误。用第 4.2 节两种模拟写法。
+6. **ON 条件列错**：不报错只出鬼结果。写 JOIN 前先确认两表的关联列语义（外键 vs 主键）。
+7. **NATURAL JOIN / USING 的隐式行为**：按全部同名列自动匹配，表结构一变结果就变，团队代码里禁用，原理见[自然连接与 USING](/sql/160-NaturalJoinUsing)。
+
+## 9. 练习
+
+基于回声FM的表（含本文补的第 6 档节目）：
+
+1. 列出每个分类的节目数，分类下没有节目也要出现 0（本数据里每类都有，想想为什么结果是 3/2/1——提示：DISTINCT category 只有三行）。
+2. 找出没有任何评分的单集（LEFT JOIN 反连接），再对比 `NOT EXISTS` 写法。
+3. 每个主播名下"已上架单集"（时长非空）的期数，零期的主播也要出现。
+4. 用 CROSS JOIN 生成"主播 x 星期一至星期日"的 7 行 x 主播数 的排班骨架。
+5. （对账题）构造一条会行数膨胀的错误聚合，然后用"先聚合再 JOIN"修复它，前后各跑一次 COUNT 验证。
+6. （思考题）`LEFT JOIN b ON a.id = b.a_id WHERE b.col = 1` 与 `LEFT JOIN b ON a.id = b.a_id AND b.col = 1` 结果何时相同？何时不同？
+
+## 下一步
+
+- [半连接与反半连接](/sql/180-SemiAntiJoin)：EXISTS / NOT EXISTS 与反连接的选型细节。
+- [自连接](/sql/170-SelfJoin)：同一张表自己拼自己：层级、配对、去重。
+- [自然连接与 USING](/sql/160-NaturalJoinUsing)：同名列连接的简写与陷阱。
+- [CTE 公用表表达式](/sql/230-CTE)：把多表大查询拆成可读的流水线。

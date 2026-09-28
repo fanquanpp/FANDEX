@@ -1,12 +1,12 @@
 ---
-order: 490
+order: 500
 title: JVM 调优
 module: 'java'
 category: 后端技术
 difficulty: advanced
 description: JVM调优详解：堆参数、GC日志、MAT分析、G1/ZGC调优、生产级性能工程。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/790-JavaNewFeaturesEcosystem'
   - 'java/110-ArrayDetailed'

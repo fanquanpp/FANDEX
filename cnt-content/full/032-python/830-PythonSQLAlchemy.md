@@ -1,12 +1,12 @@
 ---
-order: 590
+order: 620
 title: Python 与 SQLAlchemy
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: SQLAlchemy 深度剖析：从 Core SQL 表达式到 ORM Unit of Work、会话生命周期、N+1 查询治理与企业级架构实践。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/880-PythonFastAPI'
   - 'python/800-PythonDatabaseMigration'
@@ -143,7 +143,7 @@ $$\forall r \in R, \exists k \in K, \phi(r) = k$$
 
 且 $\phi$ 保持以下不变量：
 
-1. **类型不变量**：$c$ 的实例类型与 $t$ 的字段类型兼容（如 `str` ↔ `VARCHAR`）。
+1. **类型不变量**：$c$ 的实例类型与 $t$ 的字段类型兼容（如 `str` <-> `VARCHAR`）。
 2. **标识不变量**：$c$ 的主键等于 $t$ 的主键。
 3. **关系不变量**：$c_1$ 引用 $c_2$ 等价于 $t_1$ 的外键引用 $t_2$ 的主键。
 

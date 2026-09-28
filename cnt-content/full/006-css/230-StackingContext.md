@@ -4,9 +4,9 @@ title: 层叠上下文
 module: 'css'
 category: 前端技术
 difficulty: intermediate
-description: z-index
+description: 层叠上下文：z-index 失效的根源，创建条件清单与层叠顺序规则。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'css/220-PositionDetailed'
   - 'css/200-FloatClear'

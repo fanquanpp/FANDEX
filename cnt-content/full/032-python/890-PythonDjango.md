@@ -1,12 +1,12 @@
 ---
-order: 650
+order: 680
 title: Python 与 Django
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: Django 核心：MVT 架构、ORM、Admin、表单、认证与 DRF 集成。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/790-PythonDocker'
   - 'python/860-PythonCeleryDistributedTaskQueue'

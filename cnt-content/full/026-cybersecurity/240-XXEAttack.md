@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: XXE（XML 外部实体注入）：实体机制原理、文件读取与 SSRF 利用链、盲注带外技巧与逐语言防御。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/230-SSRFAttack'
   - 'cybersecurity/160-OWASPTop10Detailed'
@@ -114,7 +114,7 @@ PHP 场景若启用了封装协议，可用 base64 过滤器读取含特殊字�
 <!ENTITY xxe SYSTEM "http://192.168.1.10:6379/">   <!-- 内网服务指纹探测 -->
 ```
 
-详细内网利用链见 011-SSRFAttack；此处强调：XXE 是 SSRF 的一种**协议级入口**，
+详细内网利用链见 230-SSRFAttack；此处强调：XXE 是 SSRF 的一种**协议级入口**，
 两者防御要叠加（禁 DTD + 出网管控）。
 
 ### 2.4 盲注 XXE（Blind/OOB）
@@ -238,7 +238,7 @@ parser.dtdHandling(false);              // 不处理 DTD
 | :------------------ | :---------------------------------------------- |
 | Burp Suite + Collaborator | 盲 XXE 回连检测的首选                     |
 | xxeserv / http.server     | 自建 OOB 接收端                           |
-| Nuclei / Nikto            | 模板化 XXE 探测（见 034-VulnerabilityScanTools） |
+| Nuclei / Nikto            | 模板化 XXE 探测（见 410-VulnerabilityScanTools） |
 
 ## 5. 完整实战场景
 

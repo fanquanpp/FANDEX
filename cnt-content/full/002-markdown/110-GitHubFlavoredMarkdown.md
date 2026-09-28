@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GFM 扩展全览：表格、任务列表、删除线、自动链接、脚注、警报块与 GitHub 平台特有行为。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'markdown/240-CommonMarkSpec'
   - 'markdown/100-Table'
@@ -18,7 +18,7 @@ prerequisites:
 ---
 
 > **认知导入（Layer 1 进阶层）**
-> 前置知识：001 语法总览（建议先掌握 Layer 0 基础语法）。
+> 前置知识：010 语法指南（建议先掌握 Layer 0 基础语法）。
 > 边界说明：GFM = CommonMark + 一组扩展。本篇是"地图"：每个扩展给出要点与跳转链接，单语法细节见对应专篇。
 > 强制练习：在 GitHub 的 Issue 编辑框里把本篇的扩展逐个粘贴预览，观察哪些生效。
 

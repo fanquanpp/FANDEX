@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 认证、角色与最小权限：把数据库的门锁好。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'mongodb/050-MongoDBSchemaDesign'
 prerequisites:
@@ -238,4 +238,4 @@ db.currentOp(true) // 有没有来源可疑的连接
 4. `bindIp` 只绑内网，副本集配 keyFile，跨网段上 TLS。
 5. 三条自查命令纳入巡检：`connectionStatus`、`getUsers`、`currentOp`。
 
-延伸阅读：安装与首次连接见 `001-MongoDBOverviewQuickStart`；生产落地全景见 `005-SchemaDesignEnterprise`；副本集的 keyFile 内部认证配合 `007-ReplicaSetSharding` 一起读。官方文档关键词：Security Checklist、Authentication、Built-in Roles、TLS，具体配置项以官方文档为准。
+延伸阅读：安装与首次连接见 010-MongoDBOverviewQuickStart；生产落地全景见 050-MongoDBSchemaDesign；副本集的 keyFile 内部认证配合 070-MongoDBReplicaSetSharding 一起读。官方文档关键词：Security Checklist、Authentication、Built-in Roles、TLS，具体配置项以官方文档为准。

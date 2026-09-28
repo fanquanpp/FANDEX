@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 监听数据变化的每一跳：Change Streams、resume token 与实时架构。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'mongodb/020-MongoDBCRUDOperations'
 prerequisites:
@@ -21,7 +21,7 @@ prerequisites:
 
 ## 1. Change Streams 是什么
 
-Change Streams 是构建在 **oplog** 之上的变更订阅接口：oplog 记录了副本集上的每一次写操作（见 007 第 2 节），变更流把它封装成一个"应用可订阅、可过滤、可断点续听"的游标。对应用来说，它就是一条打开 `$changeStream` 阶段的聚合管道——你在 003 学的管道语法在这里直接复用。
+Change Streams 是构建在 **oplog** 之上的变更订阅接口：oplog 记录了副本集上的每一次写操作（见 070 第 2 节），变更流把它封装成一个"应用可订阅、可过滤、可断点续听"的游标。对应用来说，它就是一条打开 `$changeStream` 阶段的聚合管道——你在 030 学的管道语法在这里直接复用。
 
 ```javascript
 // 一条 insert 事件长这样（节选）
@@ -40,7 +40,7 @@ Change Streams 是构建在 **oplog** 之上的变更订阅接口：oplog 记录
 1. 不需要读 `local` 库（那需要更高权限），走正常的聚合接口与权限体系。
 2. 天然支持管道过滤与投影，服务端就把噪音滤掉，省网络流量。
 3. 每条事件自带 resume token，断点续听是原生能力。
-4. 分片集群同样可用，事件全局有序。
+4. 分片集群同样可用；同一文档的事件保证有序，跨分片的全局顺序则不要依赖。
 
 前提条件：**副本集或分片集群**（oplog 存在才有得订阅）；事件按 oplog 顺序投递；除了增删改，drop、rename 等 DDL 也会产生事件（事件类型随版本增加，以官方文档为准）。
 
@@ -274,4 +274,4 @@ if (evt.operationType === "update" || evt.operationType === "delete") {
 4. resume token 每事件一个，持久化到 `checkpoints`；`ChangeStreamHistoryLost` 触发全量重建。
 5. 下游消费必须幂等，因为"先处理后推进断点"意味着重连时可能重复消费。
 
-延伸阅读：管道语法详见 `003-AggregationPipeline`（watch 就是管道）；事件里的增删改语义见 `002-CRUDOperations`；oplog 与副本集机制见 `007-ReplicaSetSharding`。官方文档关键词：Change Streams、Change Events、Resume a Change Stream，事件类型与选项以官方文档为准。
+延伸阅读：管道语法详见 030-MongoDBAggregationPipeline（watch 就是管道）；事件里的增删改语义见 020-MongoDBCRUDOperations；oplog 与副本集机制见 070-MongoDBReplicaSetSharding。官方文档关键词：Change Streams、Change Events、Resume a Change Stream，事件类型与选项以官方文档为准。

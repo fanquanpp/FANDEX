@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 设计模式核心：创建型、结构型、行为型模式，SOLID原则，模式间关系与选择策略。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/610-AIFundamentals'
   - 'cs-fundamentals/620-ComputerGraphics'
@@ -87,7 +87,7 @@ YAGNI (You Aren't Gonna Need It):
   a.doSomethingWithB()           -- 遵守
 ```
 
-> 跨模块引用：[操作系统](os)的内核架构（宏内核vs微内核）体现了开闭原则和接口隔离原则。[计算机网络](network)的协议栈分层是单一职责和依赖倒置的体现。[体系结构](architecture)的ISA是依赖倒置的经典案例。
+> 跨模块引用：[操作系统](/cs-fundamentals/150-OperatingSystem)的内核架构（宏内核vs微内核）体现了开闭原则和接口隔离原则。[计算机网络](/cs-fundamentals/270-ComputerNetwork)的协议栈分层是单一职责和依赖倒置的体现。[体系结构](/cs-fundamentals/090-ComputerArchitecture)的ISA是依赖倒置的经典案例。
 
 ---
 
@@ -445,9 +445,9 @@ class ReadWriteLock {
     }
 }
 
-跨模块引用: [操作系统](os)的读写锁 (pthread_rwlock)。
+跨模块引用: [操作系统](/cs-fundamentals/150-OperatingSystem)的读写锁 (pthread_rwlock)。
   [Java](java/overview)的ReentrantReadWriteLock。
-  [体系结构](architecture)的缓存一致性协议 (MESI) 是读写锁的硬件实现。
+  [体系结构](/cs-fundamentals/090-ComputerArchitecture)的缓存一致性协议 (MESI) 是读写锁的硬件实现。
 ```
 
 ### 6.3 Thread Pool (线程池)

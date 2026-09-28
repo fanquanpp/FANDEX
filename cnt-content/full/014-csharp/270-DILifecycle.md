@@ -1610,12 +1610,12 @@ public sealed class RetryingUserServiceDecorator(
    ```
 
 4. **用 dotnet-counters 监控 GC**：
-   ```
+```bash
    dotnet-counters monitor --process-id <pid> System.Runtime
    ```
 
 5. **用 dotnet-dump 抓取堆快照分析**：
-   ```
+```bash
    dotnet-dump collect --process-id <pid>
    dotnet-dump analyze dump.dmp
    > dumpheap -stat

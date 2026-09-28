@@ -1,12 +1,12 @@
 ---
-order: 310
+order: 330
 title: Web Components 与 PWA 开发
 module: 'html5'
 category: 前端技术
 difficulty: intermediate
 description: Web组件与渐进式Web应用开发
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'html5/220-EmbeddedContent'
   - 'html5/160-ProgressMeter'

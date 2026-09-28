@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 数组、切片底层原理、map 底层实现、struct、嵌套与组合、标签与 JSON 序列化。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/030-GoBasicSyntax'
   - 'go/040-GoFunctionMethod'
@@ -100,13 +100,17 @@ s7 := arr[:]    // [10 20 30 40 50]
 
 ```mermaid
 flowchart TD
-    subgraph Header[SliceHeader]
-        P[ptr 指针]
-        L[len 长度]
-        C[cap 容量]
+    subgraph Header["SliceHeader"]
+        P["ptr 指针"]
+        L["len 长度"]
+        C["cap 容量"]
     end
-    subgraph Arr[底层数组]
-        A0[10] A1[20] A2[30] A3[40] A4[50]
+    subgraph Arr["底层数组"]
+        A0["10"]
+        A1["20"]
+        A2["30"]
+        A3["40"]
+        A4["50"]
     end
     P --> A1
 ```
@@ -245,7 +249,7 @@ flowchart TD
     H --> F5[oldbuckets unsafe.Pointer：扩容时旧桶]
     H --> F6[...]
     B[bmap 桶，存储 8 个键值对]
-    B --> T[tophash[0-7] 哈希高 8 位]
+    B --> T["tophash[0-7] 哈希高 8 位"]
     B --> K[key0-key7]
     B --> V[val0-val7]
     B --> O[overflow pointer 溢出桶指针]

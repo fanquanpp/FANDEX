@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java CompletableFuture 异步编排的形式语义、CompletionStage 接口代数、Completion 栈内部结构、Java 9 API 增强、Project Loom 与虚拟线程场景下的演进路径
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/510-ConcurrencyDetailed'
   - 'java/530-ThreadLocalMemoryLeak'
@@ -1430,9 +1430,9 @@ CompletableFuture<String> fetchWrongOrder() {
 
 ```mermaid
 flowchart TD
-    API[API 层（Controller）<br/>接收请求，返回 CompletableFuture&lt;Response&gt;] --> SVC[Service 层<br/>业务编排：thenCompose / thenCombine / allOf<br/>异常恢复：exceptionally / handle<br/>超时控制：orTimeout / completeOnTimeout]
-    SVC --> CL[Client 层（HTTP / DB / Redis）<br/>异步调用：supplyAsync(阻塞调用, ioPool)<br/>重试机制：exceptionallyCompose]
-    CL --> EX[Executor 层<br/>ioPool：IO 密集（200 线程）<br/>cpuPool：CPU 密集（N-1 线程）<br/>virtualThreadPool：JDK 21+ 虚拟线程]
+    API["API 层（Controller）<br/>接收请求，返回 CompletableFuture&lt;Response&gt;"] --> SVC["Service 层<br/>业务编排：thenCompose / thenCombine / allOf<br/>异常恢复：exceptionally / handle<br/>超时控制：orTimeout / completeOnTimeout"]
+    SVC --> CL["Client 层（HTTP / DB / Redis）<br/>异步调用：supplyAsync(阻塞调用, ioPool)<br/>重试机制：exceptionallyCompose"]
+    CL --> EX["Executor 层<br/>ioPool：IO 密集（200 线程）<br/>cpuPool：CPU 密集（N-1 线程）<br/>virtualThreadPool：JDK 21+ 虚拟线程"]
 ```
 
 ### 7.2 命名约定与可读性

@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/030-DevEnvironmentSetup'
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'start/060-FirstProgramJavaScript'
   - 'shell/010-DevEnvSetup'
@@ -50,7 +50,7 @@ whoami
 # 输出当前用户名
 
 node --version
-# 输出 v22.x.x，证明上一篇的安装仍然有效
+# 输出 v24.x.x 之类的版本号，证明上一篇的安装仍然有效
 ```
 
 `pwd` 意为 print working directory（打印工作目录）。终端里你永远"站在"某个目录里，所有相对路径都从脚下出发。

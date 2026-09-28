@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 140
 title: 内存淘汰策略
 module: 'redis'
 category: 数据库
@@ -15,7 +15,6 @@ prerequisites:
 ---
 
 
-﻿# 内存淘汰策略
 
 ---
 

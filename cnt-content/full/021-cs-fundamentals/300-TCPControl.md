@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: TCP 拥塞控制全解：慢启动、拥塞避免、快速重传、快速恢复与 BBR 的设计思想。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/270-ComputerNetwork'
   - 'cs-fundamentals/290-NetworkProtocolDeep'
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- TCP 三次握手、确认号与序列号机制（见 [计算机网络](cs-fundamentals/270-ComputerNetwork)）；
+- TCP 三次握手、确认号与序列号机制（见 [计算机网络](/cs-fundamentals/270-ComputerNetwork)）；
 - 滑动窗口与流量控制的基本概念；
 - RTT（往返时延）、MSS（最大报文段长度）等术语。
 
@@ -169,7 +169,7 @@ retrans:0/12 retrans_rate:0.001 ...
 
 ## 7. 实战场景
 
-- **QUIC 的拥塞控制**：QUIC 把拥塞控制从内核搬到用户空间实现，默认算法同样是 CUBIC/BBR 一族，但可以随应用升级快速迭代（见 [QUIC 协议](cs-fundamentals/370-QUIC)）。
+- **QUIC 的拥塞控制**：QUIC 把拥塞控制从内核搬到用户空间实现，默认算法同样是 CUBIC/BBR 一族，但可以随应用升级快速迭代（见 [QUIC 协议](/cs-fundamentals/370-QUIC)）。
 - **视频会议与直播**：对延迟极敏感，常选 BBR 或应用层自带的 GCC/BBR 变体，避免队列积压带来的延迟抖动。
 - **大文件跨洋传输**：优先考虑开启 BBR 或增大初始 cwnd（`ip route change ... initcwnd`），配合多连接并行摊薄慢启动时间。
 

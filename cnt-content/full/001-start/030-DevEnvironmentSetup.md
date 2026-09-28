@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/020-ComputerBasicsForBeginners'
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'start/040-TerminalAndShellBasics'
   - 'git/010-Git'
@@ -95,10 +95,10 @@ git config --global init.defaultBranch main
 
 ```bash
 node --version
-# 期望输出类似：v22.14.0（22 开头即 LTS 系列）
+# 期望输出类似：v24.x.x（偶数大版本号即 LTS 系列）
 
 npm --version
-# 期望输出类似：10.9.0
+# 期望输出类似：11.x.x
 ```
 
 两个命令都有正常版本号输出，Node.js 就装好了。
@@ -117,7 +117,7 @@ npm --version
 ```bash
 python --version     # Windows
 python3 --version    # macOS
-# 期望输出类似：Python 3.13.2
+# 期望输出类似：Python 3.13.x 或 3.14.x
 ```
 
 如果 Windows 提示"python 不是内部或外部命令"，回到安装步骤检查 PATH 勾选；仍不行可重启电脑让环境变量生效。

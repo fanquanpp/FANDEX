@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 210
 title: 主从复制缓冲区
 module: 'redis'
 category: 数据库
@@ -41,9 +41,9 @@ prerequisites:
 
 ```mermaid
 flowchart LR
-    B[repl_backlog 定长环形缓冲区<br/>[cmd1][cmd2][cmd3]...[cmdN]]
-    B --> H[repl_backlog_histlen 有效数据起始]
-    B --> I[repl_backlog_idx 写入位置]
+    B["repl_backlog 定长环形缓冲区<br/>[cmd1][cmd2][cmd3]...[cmdN]"]
+    B --> H["repl_backlog_histlen 有效数据起始"]
+    B --> I["repl_backlog_idx 写入位置"]
 ```
 
 总大小：repl_backlog_size（默认 1MB）。新数据写入 repl_backlog_idx 位置，写满后环绕到开头覆盖最旧数据

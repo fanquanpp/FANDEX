@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 540
 title: "类型体操实用模式：类型层也要别重复自己"
 module: 'typescript'
 category: 前端技术

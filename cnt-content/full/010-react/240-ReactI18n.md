@@ -1,12 +1,12 @@
 ---
-order: 240
+order: 250
 title: React 国际化
 module: 'react'
 category: 前端技术
 difficulty: intermediate
 description: React 国际化实战：i18next/react-i18next 完整接入、翻译键组织与插值复数、Intl API（Collator/NumberFormat/DateTimeFormat）、RTL 布局与语言切换持久化。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/220-ReactTest'
   - 'react/230-ReactRouteAdvanced'

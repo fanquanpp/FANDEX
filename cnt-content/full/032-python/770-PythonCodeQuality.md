@@ -1,12 +1,12 @@
 ---
-order: 540
+order: 570
 title: Python 与代码质量
 module: 'python'
 category: 后端技术
 difficulty: beginner
 description: Ruff、Black与代码规范
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/920-PythonJupyter'
   - 'python/040-PythonVirtualEnv'

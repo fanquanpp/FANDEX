@@ -1,12 +1,12 @@
 ---
-order: 330
+order: 340
 title: 模块解析策略
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: TypeScript 模块解析策略的形式语义、Node.js 包解析算法、exports 字段、路径映射与生产级配置
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/270-DecoratorDetailed'
   - 'typescript/300-DeclarationFileWriting'
@@ -28,7 +28,7 @@ prerequisites: []
 - 掌握「3. 类型推导规则与子类型关系」的核心机制、典型用法与常见陷阱
 - 掌握「4. 五种 moduleResolution 策略详解」的核心机制、典型用法与常见陷阱
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 

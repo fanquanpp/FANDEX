@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 440
 title: 条件类型与分发：类型层的 if 语句
 module: 'typescript'
 category: 前端技术

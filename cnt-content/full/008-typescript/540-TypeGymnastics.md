@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 550
 title: "类型体操深水区：递归的边界、infer 的暗流与停手的时机"
 module: 'typescript'
 category: 前端技术

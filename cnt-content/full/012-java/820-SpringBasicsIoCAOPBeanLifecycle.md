@@ -1,12 +1,12 @@
 ---
-order: 630
+order: 640
 title: Spring 基础： IoC 容器、 AOP、 Bean 生命周期与企业级开发核心
 module: 'java'
 category: 后端技术
 difficulty: intermediate
 description: 系统阐述 Spring 框架的 IoC 容器、AOP、Bean 生命周期、依赖注入、事务管理、Spring MVC 与 Spring Boot 核心机制。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/780-JavaNewFeatures'
   - 'java/080-OperatorExpression'

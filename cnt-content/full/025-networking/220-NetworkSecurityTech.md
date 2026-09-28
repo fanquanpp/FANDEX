@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 网络安全技术：防火墙、IDS/IPS、VPN、NAT与访问控制
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'networking/020-OSITCPIPModel'
   - 'networking/160-SwitchingAndRouting'
@@ -32,11 +32,11 @@ prerequisites:
 
 ```
 Internet ←→ Untrust(外网)
-               ↕
+               <->
             DMZ(隔离区)：Web服务器、邮件服务器
-               ↕
+               <->
             Trust(内网)：办公网络
-               ↕
+               <->
             Management(管理区)：运维管理
 ```
 

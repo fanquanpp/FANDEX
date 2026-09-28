@@ -1,12 +1,12 @@
 ---
-order: 540
+order: 560
 title: Node.js 高级特性与性能优化
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: 异步编程模式、流处理、集群与 Worker、性能调优与安全实践。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/500-DebugPerformanceOptimization'
   - 'javascript/690-JavaScriptProjectPractice'

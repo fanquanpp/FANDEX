@@ -1,12 +1,12 @@
 ---
-order: 480
+order: 490
 title: JVM 内存模型
 module: 'java'
 category: 后端技术
 difficulty: advanced
 description: JVM 内存模型深度解析：运行时数据区、JMM 形式化、分代 GC 算法、对象内存布局、现代收集器（G1/ZGC/Shenandoah）、内存调优与生产案例。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/510-ConcurrencyDetailed'
   - 'java/620-JVMtuning'
@@ -340,12 +340,12 @@ Mark Word 在不同锁状态下的位布局（64 位 JVM）：
 
 ```mermaid
 flowchart TD
-    MW[Mark Word（64 bits）]
-    MW --> U[无锁：hash(25) / age(4) / 0 / 01]
-    MW --> B[偏向锁：thread(54) / epoch(2) / 1 / 01]
-    MW --> L[轻量锁：ptr_to_lock_record(62) / 00]
-    MW --> H[重量锁：ptr_to_heavy_monitor(62) / 10]
-    MW --> G[GC 标记：- / 11]
+    MW["Mark Word（64 bits）"]
+    MW --> U["无锁：hash(25) / age(4) / 0 / 01"]
+    MW --> B["偏向锁：thread(54) / epoch(2) / 1 / 01"]
+    MW --> L["轻量锁：ptr_to_lock_record(62) / 00"]
+    MW --> H["重量锁：ptr_to_heavy_monitor(62) / 10"]
+    MW --> G["GC 标记：- / 11"]
 ```
 
 字段说明：

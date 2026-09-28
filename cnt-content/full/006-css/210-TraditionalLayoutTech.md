@@ -4,783 +4,315 @@ title: 传统布局技术
 module: 'css'
 category: 前端技术
 difficulty: intermediate
-description: 浮动、定位、BFC 与经典布局方案。
+description: 读懂并迁移传统布局：float 与高度塌陷的四种修法、position 五种参照系、BFC 的规则与应用、圣杯/双飞翼布局原理，以及每一项在 Flex/Grid 时代的现代等价写法。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'css/050-CSS3BoxModelDetailed'
-  - 'css/130-CSS3SelectorSystem'
+  - 'css/200-FloatClear'
+  - 'css/220-PositionDetailed'
+  - 'css/230-StackingContext'
   - 'css/240-CSS3FlexboxFlexLayout'
-  - 'css/140-PseudoClassPseudoElement'
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
 
 ## 前置知识
 
-建议先阅读以下内容再进入本文：
-
 - [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+- [盒模型](/css/050-CSS3BoxModelDetailed)：本文反复用到宽度、margin 与文档流概念。
 
-> 前置依赖：先读 003 盒模型与 015 浮动。圣杯/双飞翼布局为进阶内容，0 基础可先跳过。
+> 篇幅定位：圣杯/双飞翼布局是进阶内容，零基础第一遍可只读第 1、2 节，第 4 节等接触老项目时再回来。
 
-## 0. 直觉：没有 Flexbox/Grid 的年代怎么排版
+## 0. 场景切入：接手一个 2015 年的老项目
 
-在 Flexbox 与 Grid 出现之前，网页排版靠两件“老工具”：浮动（`float`）和定位（`position`）。浮动让元素“靠边站”并让文字环绕，定位让元素“钉”在页面的某个位置。
+你被拉去维护一个老官网：三栏排版靠 `float`，弹窗靠 `position: absolute`，中间还有一行注释写着 `overflow: hidden 是为了清浮动，别删！`。同时你的新任务是把它慢慢迁到 Flex/Grid——迁错了哪根柱子就塌。
 
-现代项目已经很少用浮动做整体布局，但很多老代码、打印样式和特殊排版仍在用。理解它们，才能读懂历史代码，也更懂 Flexbox/Grid 解决了什么问题。
+传统布局技术就是这把"考古刷子"。学它的目的不是在新项目里用 float 拼页面（Flex/Grid 早已全面取代），而是三件事：
 
+1. **读懂老代码**：知道 `margin-left: -100%` 这种咒语在干什么；
+2. **用好定位**：`position` 系列不属于"历史"，吸顶、弹窗、角标今天仍然全靠它；
+3. **理解 BFC**：它解释了 margin 折叠、高度塌陷这一批"玄学"现象，Flex/Grid 时代依然会撞上。
 
-## 1. 浮动布局 (Float)
+## 1. 动手：一张能看到全部行为的实验页
 
-### 1.1 浮动基础
-
-浮动最初是为图文环绕设计的，后来被广泛用于布局。元素设置 `float` 后会脱离文档流，向指定方向靠拢，直到碰到容器边缘或另一个浮动元素。
-
-```css
-.float-left {
-  float: left;
-}
-.float-right {
-  float: right;
-}
-```
+新建 `legacy-lab.html`，整份复制运行。它包含浮动环绕、高度塌陷与四种修法：
 
 ```html
-<div class="container">
-  <div class="float-left" style="width:100px;height:100px;background:#e74c3c;">A</div>
-  <div class="float-left" style="width:100px;height:100px;background:#3498db;">B</div>
-  <p>这段文字会环绕在浮动元素旁边……</p>
-</div>
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>传统布局实验页</title>
+  <style>
+    .demo { border: 2px solid #39C5BB; padding: 8px; margin-bottom: 16px; }
+    .box { width: 100px; height: 100px; margin-right: 8px;
+           background: #ffd9e3; text-align: center; line-height: 100px; }
+
+    /* 实验一：浮动环绕 */
+    .float-left { float: left; }
+    .ring-text { color: #555; }
+
+    /* 实验二：塌陷现场（故意不修） */
+    .collapsed { border-color: #e05d5d; }
+
+    /* 实验三：修法——flow-root（现代推荐） */
+    .flow-rooted { display: flow-root; }
+  </style>
+</head>
+<body>
+  <h3>实验一：文字环绕（float 的本职工作）</h3>
+  <div class="demo">
+    <div class="box float-left">图</div>
+    <p class="ring-text">这段文字会环绕在方块右侧。float 诞生的唯一动机就是这种
+    报纸式图文混排，今天它仍然是唯一的 CSS 原生环绕方案——这也是它没被彻底淘汰的原因。</p>
+  </div>
+
+  <h3>实验二：高度塌陷（子元素全浮动，父容器高度归零）</h3>
+  <div class="demo collapsed">
+    <div class="box float-left">A</div>
+    <div class="box float-left">B</div>
+  </div>
+  <p>注意红色边框塌成了一条线：浮动元素不参与父容器的高度计算。</p>
+
+  <h3>实验三：一行修复</h3>
+  <div class="demo flow-rooted">
+    <div class="box float-left">A</div>
+    <div class="box float-left">B</div>
+  </div>
+
+  <h3>实验四：吸顶标题（position: sticky，传统与现代通用）</h3>
+  <div class="demo" style="height: 160px; overflow: auto;">
+    <p>滚动这个区域。</p>
+    <p style="position: sticky; top: 0; background: #39C5BB; color: #fff; padding: 6px;">
+      我会粘在容器顶部
+    </p>
+    <p>内容 1</p><p>内容 2</p><p>内容 3</p><p>内容 4</p><p>内容 5</p>
+  </div>
+</body>
+</html>
 ```
 
-> **效果图描述**：两个色块 A（红）、B（蓝）并排靠左，文字在右侧环绕排列。
+动手清单：
 
-### 1.2 浮动的副作用——高度塌陷
+1. 观察实验一的文字环绕，这是 float 依然不可替代的场景；
+2. 对比实验二与实验三的边框高度，理解"塌陷"和"修复"各是什么；
+3. 把实验三的 `display: flow-root` 依次换成 `overflow: hidden`、伪元素 clearfix（见第 2 节），三种修法效果相同但代价不同；
+4. 滚动实验四，sticky 是本文唯一直接推荐写进新项目的传统定位成员。
 
-当子元素全部浮动时，父容器无法感知子元素高度，导致"高度塌陷"：
+## 2. 讲为什么（一）：浮动、塌陷与四代修法
+
+### 2.1 float 的规则
+
+`float: left | right` 让元素脱离正常文档流的"块排列"，向指定方向靠到容器边缘或兄弟浮动元素旁，行内内容（文字）环绕它。两条必须背下来的推论：
+
+- **浮动元素不参与父容器高度计算**——全员浮动时父容器高度塌成 0（实验二）；
+- **`clear` 是给"想躲开浮动的块"用的**：`clear: left | right | both` 声明"我的顶部左侧/右侧/两侧不允许出现浮动元素"，效果是把自己挪到浮动元素下方。
+
+### 2.2 高度塌陷的修法演进
+
+| 方案 | 写法 | 评价 |
+| --- | --- | --- |
+| 额外空标签 | `<div style="clear:both"></div>` | 污染结构，已淘汰，但老项目里大量存在，见到要认得 |
+| `overflow: hidden` | 父容器 `overflow: hidden` | 有效，但会裁剪溢出内容（下拉菜单、阴影会被切） |
+| 伪元素 clearfix | `.clearfix::after { content: ""; display: block; clear: both; }` | 2010 年代的事实标准，老项目必见；旧写法里的 `*zoom: 1` 是 IE6/7 hack，现代代码直接删 |
+| `display: flow-root` | 父容器 `display: flow-root` | 现代标准答案：专为"创建 BFC 包含浮动"设计，无副作用。所有主流浏览器已支持多年 |
+
+新代码一律 `flow-root`；前三种的唯一价值是让你读得懂历史代码。float 属性本身、图文环绕与塌陷原理的更细拆解见 `css/200-FloatClear`。
+
+## 3. 讲为什么（二）：position 的五种参照系
+
+`position` 决定"元素以什么为基准摆放"，五种值本质是五种参照系：
+
+| 值 | 参照系 | 脱离文档流 | 典型用途 |
+| --- | --- | --- | --- |
+| `static` | 无（默认） | 否 | 一切定位的起点；`top/left` 对它无效 |
+| `relative` | 自己原来的位置 | 否（原位占坑） | 微调元素；**给 absolute 子元素当锚点** |
+| `absolute` | 最近的非 static 祖先（没有则相对初始包含块） | 是 | 弹窗、角标、下拉菜单 |
+| `fixed` | 视口 | 是 | 固定导航、回到顶部按钮 |
+| `sticky` | 滚动容器内的阈值 | 否 | 吸顶导航、表头、章节标题 |
 
 ```css
-.parent {
-  border: 2px solid #333;
-  /* 没有设置 height，子元素浮动后父元素高度为 0 */
-}
-.child {
-  float: left;
-  width: 100px;
-  height: 100px;
-}
-```
-
-```html
-<div class="parent">
-  <div class="child" style="background:#e74c3c;">A</div>
-  <div class="child" style="background:#3498db;">B</div>
-</div>
-<p>这段文字会紧贴在父容器下方，而非在子元素下方</p>
-```
-
-> **效果图描述**：父容器边框塌缩为一条线（高度为0），两个色块溢出，后续文字紧贴边框线。
-
-**讲解：** 浮动子元素不参与父元素的高度计算，父容器高度塌成 0，后续内容上移。解决办法见 1.3 的四种 clearfix 方案。
-
-### 1.3 清除浮动（Clearfix）方案汇总
-
-#### 方案一：额外标签法（不推荐）
-
-在浮动元素后添加一个空标签并设置 `clear: both`：
-
-```html
-<div class="parent">
-  <div class="child">A</div>
-  <div class="child">B</div>
-  <div style="clear:both;"></div>
-</div>
-```
-
-缺点：增加无语义标签，违反结构与表现分离原则。
-
-#### 方案二：父元素设置 `overflow: hidden`（BFC 法）
-
-```css
-.parent {
-  overflow: hidden;
-}
-```
-
-原理：触发 BFC，BFC 会包含浮动元素。但 `overflow: hidden` 会裁剪溢出内容，不适合需要溢出显示的场景。
-
-#### 方案三：伪元素清除法（推荐 [完成]）
-
-```css
-.clearfix::after {
-  content: '';
-  display: block;
-  clear: both;
-}
-.clearfix {
-  *zoom: 1;
-}
-```
-
-`*zoom: 1` 是 IE6/7 的 hack，触发 hasLayout 以兼容老浏览器。
-
-**讲解：** 伪元素法在容器末尾插入一个 `clear: both` 的隐藏块，是传统方案中的推荐写法；`*zoom` 仅为旧 IE 兼容，现代代码可删除。
-
-#### 方案四：现代 BFC 方案
-
-```css
-.parent {
-  display: flow-root;
-}
-```
-
-`display: flow-root` 专门为创建 BFC 设计，无副作用。浏览器支持：Chrome 58+、Firefox 53+、Safari 13+。
-
-**讲解：** `display: flow-root` 专门用于创建 BFC，无副作用、语义清晰，是清除浮动的现代标准写法。
-
-### 1.4 `clear` 属性详解
-
-```css
-.clear-left {
-  clear: left;
-}
-.clear-right {
-  clear: right;
-}
-.clear-both {
-  clear: both;
-}
-```
-
-- `clear: left`：元素顶部不允许有左浮动元素
-- `clear: right`：元素顶部不允许有右浮动元素
-- `clear: both`：两侧都不允许
-
----
-
-## 2. 定位系统 (Positioning)
-
-CSS `position` 属性控制元素的定位方式，配合 `top`/`right`/`bottom`/`left`/`z-index` 使用。
-
-### 2.1 `static`——默认定位
-
-所有元素默认 `position: static`，遵循正常文档流。`top`/`left` 等偏移属性无效。
-
-```css
-.box-static {
-  position: static;
-  top: 50px;
-  left: 100px;
-}
-```
-
-> **效果图描述**：元素位置无任何变化，`top`/`left` 不生效。
-
-### 2.2 `relative`——相对定位
-
-相对于**自身原位置**偏移，**不脱离文档流**，原位置仍保留空间。
-
-```css
-.box-relative {
-  position: relative;
-  top: 20px;
-  left: 30px;
-}
-```
-
-```html
-<div style="background:#ecf0f1;padding:20px;">
-  <span>前</span>
-  <span class="box-relative" style="background:#e74c3c;color:#fff;padding:5px;">相对定位</span>
-  <span>后</span>
-</div>
-```
-
-> **效果图描述**："相对定位"文字向右下偏移 30px/20px，但原位置仍留有空间，"前""后"文字位置不变。
-> **常见用途**：
-
-- 微调元素位置
-- 作为 `absolute` 子元素的定位参考
-
-### 2.3 `absolute`——绝对定位
-
-相对于**最近的非 static 祖先**偏移，**脱离文档流**，原位置不保留空间。
-
-```css
-.parent-abs {
-  position: relative;
-  width: 300px;
-  height: 200px;
-  background: #ecf0f1;
-}
-.child-abs {
+/* absolute 经典搭配：父 relative 打锚，子 absolute 定位 */
+.card { position: relative; }
+.card .close {
   position: absolute;
-  top: 20px;
-  right: 20px;
-  width: 80px;
-  height: 80px;
-  background: #e74c3c;
+  top: 8px; right: 8px;
 }
+
+/* fixed：始终钉在视口右下角 */
+.back-to-top { position: fixed; bottom: 30px; right: 30px; }
+
+/* sticky：滚到 top:0 时粘住，被父容器边界"推走"后失效 */
+.section-title { position: sticky; top: 0; }
 ```
 
+三个高频坑，记下来能省大量调试时间：
+
+1. **absolute 找不到锚点会满页跑**：忘了给父元素 `position: relative`，元素就相对整个页面定位；
+2. **transform/filer/perspective 会劫持 fixed**：祖先链上任何一个元素设置了这些属性，`fixed` 子元素的参照系就从视口变成那个祖先——"我写的是 fixed 怎么跟着滚了"的元凶；
+3. **sticky 的两个失效条件**：必须写至少一个 `top/bottom/left/right`；父容器或任何滚动祖先设了 `overflow: hidden/auto/scroll` 也会失效（`overflow: clip` 不算，这是它近年流行的原因之一）。
+
+`z-index` 只对非 static 定位元素生效，且受层叠上下文约束（`opacity < 1`、`transform`、`filter` 等都会创建上下文，子元素 z-index 再大也跳不出父级）——完整机制见 `css/230-StackingContext`。
+
+## 4. 讲为什么（三）：BFC，传统布局的"隔离舱"
+
+BFC（Block Formatting Context，块格式化上下文）是一块独立渲染区域：内部布局不影响外部。它的五条规则里最有用的三条：
+
+1. BFC 的高度计算**包含浮动子元素**（所以能修塌陷）；
+2. BFC 区域**不与浮动元素重叠**（所以能做自适应两栏）；
+3. 属于不同 BFC 的相邻块**不会发生 margin 折叠**（所以能阻止外边距合并，详见 `css/060-MarginCollapse`）。
+
+触发 BFC 的常用属性：
+
+| 属性 | 触发值 |
+| --- | --- |
+| `display` | `flow-root`、`flex`、`grid`、`inline-block`、`table-cell` 等 |
+| `overflow` | `hidden`、`auto`、`scroll`（非 `visible`） |
+| `position` | `absolute`、`fixed` |
+| `float` | 非 `none` |
+
+三个经典应用，全部对应实验页里能亲眼验证的行为：
+
+```css
+/* 应用一：包含浮动（修塌陷） */
+.wrapper { display: flow-root; }
+
+/* 应用二：阻止 margin 折叠——把其中一个块包进 BFC */
+.wrap { display: flow-root; }   /* 内部块的 margin 不再与外部折叠 */
+
+/* 应用三：左固定右自适应——右栏触发 BFC 后不与浮动的左栏重叠 */
+.left  { float: left; width: 200px; }
+.right { overflow: hidden; }    /* 或 display: flow-root */
+```
+
+应用三是"自适应两栏"的传统写法，原理巧但可读性差；同样的需求今天写 `display: flex` 一行完成。BFC 的价值在于**解释现象**：margin 为什么合并了、高度为什么塌了、文字为什么绕开浮动了——知道有"隔离舱"这回事，这些现象就不再是玄学。
+
+## 5. 进阶：圣杯与双飞翼，浮动时代的巅峰手艺
+
+三栏布局（左右定宽、中间自适应、**中间栏 DOM 靠前以优先渲染**）在只有 float 的年代是硬仗，两个经典解法值得当智力体操读懂。下面的版本已经去掉老 IE hack，可直接运行。
+
+### 5.1 圣杯布局
+
 ```html
-<div class="parent-abs">
-  <div class="child-abs"></div>
+<div class="holy-grail">
+  <div class="center">Center 主内容，DOM 第一</div>
+  <div class="left">Left 150px</div>
+  <div class="right">Right 200px</div>
 </div>
 ```
-
-> **效果图描述**：灰色容器内，红色方块紧贴右上角（距顶20px、距右20px）。
-> **关键要点**：
-
-- 若无已定位祖先，则相对于初始包含块（通常是 `<html>`）
-- 绝对定位元素的 `width: auto` 会收缩到内容宽度（类似浮动）
-- 常用于弹窗、下拉菜单、角标等
-
-### 2.4 `fixed`——固定定位
-
-相对于**浏览器视口**定位，**脱离文档流**，滚动页面时位置不变。
-
-```css
-.nav-fixed {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 50px;
-  background: #2c3e50;
-  color: #fff;
-  z-index: 1000;
-}
-.back-to-top {
-  position: fixed;
-  bottom: 30px;
-  right: 30px;
-  width: 50px;
-  height: 50px;
-  background: #3498db;
-  border-radius: 50%;
-  cursor: pointer;
-}
-```
-
-> **效果图描述**：深色导航栏始终固定在页面顶部；蓝色圆形"回到顶部"按钮固定在右下角。
-> **注意**：`fixed` 元素的包含块是视口，但如果祖先设置了 `transform`/`perspective`/`filter`，包含块会变为该祖先（这是一个常见"坑"）。
-
-### 2.5 `sticky`——粘性定位
-
-在特定滚动阈值内表现为 `relative`，超出阈值后表现为 `fixed`。
-
-```css
-.section-title {
-  position: sticky;
-  top: 0;
-  background: #fff;
-  padding: 10px;
-  border-bottom: 2px solid #3498db;
-  z-index: 10;
-}
-```
-
-```html
-<div style="height:2000px;">
-  <h2 class="section-title">第一章</h2>
-  <p>内容区域……（很长）</p>
-  <h2 class="section-title">第二章</h2>
-  <p>内容区域……（很长）</p>
-</div>
-```
-
-> **效果图描述**：滚动时，章节标题到达页面顶部后"粘住"，直到被下一个标题推出。
-> **关键要点**：
-
-- `sticky` 元素不会脱离文档流
-- 必须指定 `top`/`bottom`/`left`/`right` 中的至少一个
-- 父容器的高度是 sticky 的"活动范围"，超出父容器后 sticky 失效
-- 父容器不能设置 `overflow: hidden`/`auto`/`scroll`，否则 sticky 失效
-
-**讲解：** `sticky` 在滚动范围内保持原位，到达阈值（`top: 0`）后“粘住”不动，常用于吸顶导航与章节标题；它需要父容器有足够滚动空间才能生效。
-
-### 2.6 `z-index` 与层叠上下文
-
-`z-index` 仅对 `position` 非 `static` 的元素有效（`sticky` 除外，它天然创建层叠上下文）。
-
-```css
-.layer-1 {
-  position: absolute;
-  z-index: 1;
-  background: rgba(231, 76, 60, 0.7);
-}
-.layer-2 {
-  position: absolute;
-  z-index: 10;
-  background: rgba(52, 152, 219, 0.7);
-}
-.layer-3 {
-  position: absolute;
-  z-index: 5;
-  background: rgba(46, 204, 113, 0.7);
-}
-```
-
-**层叠上下文的创建条件**（部分）：
-
-- `position` 非 `static` + `z-index` 非 `auto`
-- `opacity` < 1
-- `transform` 非 `none`
-- `filter` 非 `none`
-- `will-change: transform`
-- `display: flex/grid` 子元素的 `z-index` 非 `auto`
-  > [警告] **常见坑**：子元素的 `z-index` 再高，也无法超越父级层叠上下文的限制。
-
----
-
-## 3. BFC（块格式化上下文）
-
-### 3.1 什么是 BFC
-
-BFC（Block Formatting Context）是 CSS 中一个独立的渲染区域，内部元素的布局不会影响外部元素。可以把它想象成一个**隔离的布局容器**。
-
-### 3.2 BFC 的布局规则
-
-1. 内部块级盒子垂直方向一个接一个排列
-2. 同一个 BFC 中，相邻块级盒子的垂直外边距会发生折叠（margin collapse）
-3. BFC 区域不会与浮动元素重叠
-4. BFC 可以包含浮动元素（解决高度塌陷）
-5. 计算 BFC 高度时，浮动元素也参与计算
-
-### 3.3 触发 BFC 的条件
-
-| 属性       | 值                                                                                                              |
-| :--------- | :-------------------------------------------------------------------------------------------------------------- |
-| `float`    | `left` / `right`（非 `none`）                                                                                   |
-| `position` | `absolute` / `fixed`                                                                                            |
-| `display`  | `inline-block` / `table-cell` / `table-caption` / `flex` / `inline-flex` / `grid` / `inline-grid` / `flow-root` |
-| `overflow` | `hidden` / `auto` / `scroll`（非 `visible`）                                                                    |
-| `contain`  | `layout` / `content` / `paint`                                                                                  |
-
-### 3.4 BFC 的典型应用
-
-#### 应用一：清除浮动（解决高度塌陷）
-
-```css
-.container {
-  display: flow-root;
-}
-```
-
-#### 应用二：防止 margin 折叠
-
-```html
-<div style="margin-bottom:20px;background:#e74c3c;">A</div>
-<div style="margin-top:30px;background:#3498db;">B</div>
-```
-
-> **效果图描述**：A 和 B 之间间距为 30px（取较大值），而非 50px。
-> 解决方案：将其中一个元素包裹在 BFC 容器中：
-
-```html
-<div style="margin-bottom:20px;background:#e74c3c;">A</div>
-<div style="overflow:hidden;">
-  <div style="margin-top:30px;background:#3498db;">B</div>
-</div>
-```
-
-> **效果图描述**：A 和 B 之间间距变为 50px（20+30），margin 不再折叠。
-
-#### 应用三：实现自适应两栏布局
-
-浮动元素不会与 BFC 区域重叠，利用这一点实现右侧自适应：
-
-```css
-.left {
-  float: left;
-  width: 200px;
-  height: 300px;
-  background: #e74c3c;
-}
-.right {
-  overflow: hidden;
-  height: 300px;
-  background: #3498db;
-}
-```
-
-```html
-<div class="left">固定宽度侧栏</div>
-<div class="right">自适应内容区</div>
-```
-
-> **效果图描述**：左侧红色固定 200px，右侧蓝色自动填满剩余宽度，不会跑到红色下方。
-
----
-
-## 4. 传统经典布局
-
-### 4.1 圣杯布局（Holy Grail Layout）
-
-三栏布局：中间自适应，两侧固定宽度。DOM 顺序中间栏优先渲染。
 
 ```css
 .holy-grail {
-  padding: 0 200px 0 150px;
+  display: flow-root;            /* 顺手解决塌陷 */
+  padding: 0 200px 0 150px;      /* 给两翼预留空间 */
+  min-width: 400px;
 }
 .holy-grail .center {
-  float: left;
-  width: 100%;
-  background: #ecf0f1;
-  min-height: 300px;
+  float: left; width: 100%; min-height: 200px; background: #eef3f6;
 }
 .holy-grail .left {
-  float: left;
-  width: 150px;
-  margin-left: -100%;
-  position: relative;
-  left: -150px;
-  background: #e74c3c;
-  min-height: 300px;
+  float: left; width: 150px; min-height: 200px; background: #ffd9e3;
+  margin-left: -100%;            /* 关键咒语一：整行上移，回到最左 */
+  position: relative; left: -150px;  /* 再相对自身挪进 padding 区 */
 }
 .holy-grail .right {
-  float: left;
-  width: 200px;
-  margin-left: -200px;
-  position: relative;
-  right: -200px;
-  background: #3498db;
-  min-height: 300px;
+  float: left; width: 200px; min-height: 200px; background: #d9f2ee;
+  margin-left: -200px;           /* 关键咒语二：拉回中栏右缘 */
+  position: relative; right: -200px;
 }
 ```
 
+读法：三栏全部浮动排成一行，中栏 `width: 100%` 占满整行；两个负 `margin` 把左右栏"提行"搬到中栏两侧，最后用 `relative` 微调推进父容器 padding 让出的空间里。
+
+### 5.2 双飞翼布局
+
+同样的目标，换一种留空间方式——不动父容器 padding，而是**给中栏多包一层**，用内层 margin 腾地方：
+
 ```html
-<div class="holy-grail clearfix">
-  <div class="center">Center（主内容区，优先渲染）</div>
-  <div class="left">Left（150px）</div>
-  <div class="right">Right（200px）</div>
+<div class="double-wing">
+  <div class="center-wrap">
+    <div class="center">Center 主内容</div>
+  </div>
+  <div class="left">Left 150px</div>
+  <div class="right">Right 200px</div>
 </div>
 ```
 
-> **效果图描述**：三栏并排——左侧红色 150px，中间灰色自适应，右侧蓝色 200px。中间栏在 DOM 中排在最前。
-> **核心原理**：
-
-1. 三栏均左浮动，中间栏 `width: 100%` 占满
-2. 左栏 `margin-left: -100%` 移到中间栏左侧
-3. 右栏 `margin-left: -200px` 移到中间栏右侧
-4. 父容器 `padding` 留出两侧空间，左右栏 `position: relative` 偏移到位
-
-### 4.2 双飞翼布局
-
-与圣杯布局目标相同，但实现方式不同：中间栏内部再包一层，用 `margin` 留空间而非父容器 `padding`。
-
 ```css
-.double-wing .center-wrap {
-  float: left;
-  width: 100%;
-}
+.double-wing { display: flow-root; min-width: 400px; }
+.double-wing .center-wrap { float: left; width: 100%; }
 .double-wing .center {
-  margin: 0 200px 0 150px;
-  background: #ecf0f1;
-  min-height: 300px;
+  margin: 0 200px 0 150px;       /* 空间留在自己身上 */
+  min-height: 200px; background: #eef3f6;
 }
 .double-wing .left {
-  float: left;
-  width: 150px;
+  float: left; width: 150px; min-height: 200px; background: #ffd9e3;
   margin-left: -100%;
-  background: #e74c3c;
-  min-height: 300px;
 }
 .double-wing .right {
-  float: left;
-  width: 200px;
+  float: left; width: 200px; min-height: 200px; background: #d9f2ee;
   margin-left: -200px;
-  background: #3498db;
-  min-height: 300px;
 }
 ```
 
-```html
-<div class="double-wing clearfix">
-  <div class="center-wrap">
-    <div class="center">Center（主内容区）</div>
-  </div>
-  <div class="left">Left（150px）</div>
-  <div class="right">Right（200px）</div>
-</div>
-```
+两者对比：
 
-> **效果图描述**：视觉效果与圣杯布局一致，但中间栏通过内部 margin 而非父容器 padding 留空间。
-> **圣杯 vs 双飞翼对比**：
->
-> | 对比项         | 圣杯布局                             | 双飞翼布局          |
-> | :------------- | :----------------------------------- | :------------------ |
-> | 留空间方式     | 父容器 `padding` + 子元素 `relative` | 中间栏内部 `margin` |
-> | DOM 层级       | 三栏同级                             | 中间栏多包一层      |
-> | `position`     | 左右栏需要 `relative`                | 不需要 `relative`   |
-> | 中间栏最小宽度 | 受 `padding` 约束                    | 受 `margin` 约束    |
-
-### 4.3 等高布局
-
-传统方式实现多列等高：
-
-```css
-.equal-height {
-  overflow: hidden;
-}
-.equal-height .col {
-  float: left;
-  width: 33.33%;
-  padding-bottom: 9999px;
-  margin-bottom: -9999px;
-  background: #ecf0f1;
-}
-.equal-height .col:nth-child(2) {
-  background: #bdc3c7;
-}
-.equal-height .col:nth-child(3) {
-  background: #95a5a6;
-}
-```
-
-> **效果图描述**：三列高度一致，以内容最多的列为准。利用超大 `padding-bottom` + 负 `margin-bottom` 实现。
-
----
-
-## 5. 居中方案汇总
-
-### 5.1 水平居中
-
-#### 行内元素 / 行内块元素
-
-```css
-.parent {
-  text-align: center;
-}
-```
-
-```html
-<div class="parent">
-  <span>行内元素居中</span>
-</div>
-```
-
-#### 定宽块级元素
-
-```css
-.child {
-  width: 200px;
-  margin: 0 auto;
-}
-```
-
-#### 不定宽块级元素
-
-```css
-.parent {
-  text-align: center;
-}
-.child {
-  display: inline-block;
-}
-```
-
-### 5.2 垂直居中
-
-#### 单行文本
-
-```css
-.single-line {
-  height: 50px;
-  line-height: 50px;
-}
-```
-
-#### 多行文本（table-cell）
-
-```css
-.parent {
-  display: table-cell;
-  vertical-align: middle;
-  height: 200px;
-}
-```
-
-#### 绝对定位 + transform
-
-```css
-.parent {
-  position: relative;
-  height: 200px;
-}
-.child {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-}
-```
-
-### 5.3 水平垂直居中
-
-#### 方案一：绝对定位 + transform（最经典）
-
-```css
-.parent {
-  position: relative;
-  width: 400px;
-  height: 300px;
-  background: #ecf0f1;
-}
-.child {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background: #e74c3c;
-  padding: 20px;
-  color: #fff;
-}
-```
-
-> **效果图描述**：红色方块精确居中在灰色容器正中央。
-> **优点**：无需知道子元素尺寸。**缺点**：`transform` 可能影响子元素的 `fixed` 定位。
-
-#### 方案二：绝对定位 + 负 margin（需已知尺寸）
-
-```css
-.child {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 200px;
-  height: 100px;
-  margin-top: -50px;
-  margin-left: -100px;
-}
-```
-
-**优点**：兼容性极好。**缺点**：需要知道子元素宽高。
-
-#### 方案三：绝对定位 + margin: auto（需已知尺寸）
-
-```css
-.child {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-  margin: auto;
-  width: 200px;
-  height: 100px;
-}
-```
-
-**原理**：绝对定位元素四边为 0 时，浏览器自动计算 `margin` 使其居中。
-
-#### 方案四：table-cell
-
-```css
-.parent {
-  display: table-cell;
-  vertical-align: middle;
-  text-align: center;
-  width: 400px;
-  height: 300px;
-}
-.child {
-  display: inline-block;
-}
-```
-
-**优点**：兼容 IE8+。**缺点**：`display: table-cell` 对布局有限制。
-
-#### 方案五：Flexbox（现代推荐 [完成]）
-
-```css
-.parent {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 300px;
-}
-```
-
-**优点**：最简洁，无需知道子元素尺寸。**缺点**：IE9 及以下不支持。
-
-#### 方案六：Grid（最现代）
-
-```css
-.parent {
-  display: grid;
-  place-items: center;
-  height: 300px;
-}
-```
-
-**优点**：代码最少。**缺点**：IE 不支持。
-
-### 5.4 居中方案对比总结
-
-| 方案                   | 需知尺寸 | 兼容性     | 代码量 | 适用场景     |
-| :--------------------- | :------- | :--------- | :----- | :----------- |
-| absolute + transform   | 否       | IE10+      | 少     | 通用         |
-| absolute + 负 margin   | 是       | IE6+       | 中     | 已知尺寸     |
-| absolute + margin:auto | 是       | IE8+       | 少     | 已知尺寸     |
-| table-cell             | 否       | IE8+       | 多     | 兼容旧浏览器 |
-| Flexbox                | 否       | IE10+      | 少     | 现代项目首选 |
-| Grid                   | 否       | 现代浏览器 | 最少   | 最新项目     |
-
----
-
-## 6. 总结
-
-虽然现代开发推荐使用 Flex/Grid，但理解 Float 和 Position 对维护旧项目和处理特定定位需求（如固定导航栏、弹窗）依然至关重要。
-**关键要点回顾**：
-
-- **浮动**：图文环绕 → 布局 → 高度塌陷 → clearfix / flow-root
-- **定位**：static（默认）→ relative（微调/参照）→ absolute（脱离流/弹窗）→ fixed（视口固定）→ sticky（滚动粘性）
-- **BFC**：隔离布局容器，解决塌陷/margin 折叠/自适应两栏
-- **经典布局**：圣杯/双飞翼是浮动布局的巅峰应用
-- **居中**：从传统 hack 到 Flex/Grid，方案越来越简洁
-
-## 7. 动手试试
-
-### 入门版（必做）
-
-1. 写两个浮动色块和一个段落，观察文字环绕；再给父容器加 `display: flow-root`，观察高度塌陷被修复；
-2. 用 `position: absolute` 做一个“右上角关闭按钮”，父元素记得加 `position: relative`；
-3. 用 `position: sticky` 做一个吸顶的章节标题，滚动页面观察效果。
-
-### 进阶版（选做）
-
-1. 复刻一个简化版圣杯布局（左、中、右三栏），再用 Flexbox 重写对比；
-2. 用 `absolute + transform` 实现水平垂直居中；
-3. 用 BFC 实现“左边固定、右边自适应”的两栏布局。
-
-## 8. 核心知识点
-
-> 一句话记住传统布局：`float` 让元素靠边站（记得清浮动），`position` 决定定位参照系；`relative` 是基准，`absolute` 脱离流，`sticky` 会吸顶。
-
-- `float`：文字环绕、横向排列，副作用是高度塌陷；
-- 清浮动四法：额外标签、`overflow: hidden`、伪元素 clearfix、`display: flow-root`；
-- `static`/`relative`/`absolute`/`fixed`/`sticky` 五种定位，参照系各不相同；
-- `absolute` 相对最近的非 static 祖先，`fixed` 相对视口，`sticky` 相对滚动容器；
-- BFC 可清除浮动、防止外边距合并、实现自适应两栏；
-- 居中优先 Flexbox/Grid，旧项目才用 absolute/table-cell。
-
-## 9. 注意事项与改进建议
-
-| 问题点 | 说明 | 改进方案 |
+| 对比项 | 圣杯 | 双飞翼 |
 | --- | --- | --- |
-| 浮动后忘记清 | 父容器高度塌陷 | 用 `display: flow-root` 或 clearfix |
-| `absolute` 找不到基准 | 相对整个页面跳动 | 给父元素加 `position: relative` |
-| 父容器 `overflow: hidden` | sticky 失效 | 用 `overflow: clip` 或调整结构 |
-| 用 float 做整体布局 | 维护困难 | 新项目用 Flexbox/Grid |
-| 负 margin 居中 | 尺寸变化就失效 | 用 transform 或 Flexbox |
-| 忽略 `z-index` 上下文 | 层级不符合预期 | 理解层叠上下文（见 `css/230-StackingContext`） |
+| 留空间方式 | 父容器 padding + 左右栏 relative 微调 | 中栏内层 margin |
+| DOM 结构 | 三栏同级 | 中栏多包一层 |
+| 是否需要 relative | 需要 | 不需要 |
+| 抗挤压 | 窄窗口时左右栏可能被挤错位 | 中栏内容区收窄，结构更稳 |
 
-## 10. 扩展学习
+另有等高列的传统 hack 一并收入：`padding-bottom: 9999px; margin-bottom: -9999px` 配合父容器 `overflow: hidden`，靠"把背景撑到无限深再裁掉"伪装等高。
 
-- 定位详解：`css/220-PositionDetailed`、`css/230-StackingContext`；
-- 浮动专题：`css/200-FloatClear`；
-- 现代布局：`css/240-CSS3FlexboxFlexLayout`、`css/250-CSS3GridGridLayout`；
-- 边距折叠：`css/060-MarginCollapse`；
-- 响应式：`css/370-ResponsiveDesign`。
+```css
+.equal-height { overflow: hidden; }
+.equal-height .col {
+  float: left; width: 33.33%;
+  padding-bottom: 9999px; margin-bottom: -9999px;
+}
+```
+
+### 5.3 迁移对照：同需求在现代 CSS 里怎么写
+
+读老代码是必须，写老代码是自找。同一批需求 2026 年的写法：
+
+| 需求 | 传统写法 | 现代写法 |
+| --- | --- | --- |
+| 三栏（中自适应） | 圣杯/双飞翼（约 20 行） | `display: grid; grid-template-columns: 150px 1fr 200px;` 一行 |
+| 左固定右自适应 | float + BFC | `display: flex;`（右栏 `flex: 1`） |
+| 等高多列 | padding/margin ±9999px | flex/grid **天然等高**，什么都不用做 |
+| 水平垂直居中 | absolute + translate（仍可用） | `display: grid; place-items: center;` |
+| 图文环绕 | `float` + flow-root | 仍然是 float——唯一没有现代替代的场景 |
+
+居中方案的传统全家族（table-cell、负 margin、absolute + margin:auto）在面试和考古中还常出现，新项目一律 `place-items: center`；absolute + `translate(-50%, -50%)` 在"浮层居中"里依然常见、依然正确，可以继续用。
+
+## 6. 坑点自检
+
+| 现象 | 原因 | 修法 |
+| --- | --- | --- |
+| 父容器高度为 0 | 子元素全浮动 | `display: flow-root`（新代码）或认识 clearfix（旧代码） |
+| 溢出内容被切掉 | 用 `overflow: hidden` 清浮动 | 换 `flow-root`；或确认确实要裁剪 |
+| absolute 元素满页乱跑 | 祖先没有定位锚点 | 父元素加 `position: relative` |
+| fixed 元素跟着滚动 | 祖先有 `transform/filter/perspective` | 去掉祖先的属性，或把浮层挪出该子树 |
+| sticky 不粘 | 少写 top/bottom 或祖先 `overflow` 非 visible | 补阈值；用 `overflow: clip` 替代 hidden |
+| z-index 调不动 | 父级创建了层叠上下文 | 查 `opacity/transform/filter`，见 `css/230-StackingContext` |
+| 两个块的间距不是 50px | 相邻 margin 折叠取大者 | 包 BFC 或改用单侧 margin，见 `css/060-MarginCollapse` |
+| 窗口一窄三栏就崩 | 圣杯布局天然抗挤压弱 | 新代码直接 Grid |
+
+## 7. 练习
+
+1. （必做）完成第 1 节实验页的全部四个实验，并把实验三的修法逐个替换验证；
+2. （必做）复刻第 5 节圣杯与双飞翼布局各一遍，然后把窗口拉窄，观察两者谁先崩、怎么崩；
+3. （必做）用 `position: sticky` 做一个"章节吸顶标题"：滚动时当前章标题钉在顶部，被下一章推出（参考实验四的容器写法）；
+4. （选做）把圣杯布局改写为 Grid 版本，对比代码行数与窄窗口行为；
+5. （选做）考古题：找任意一个开源老项目的 CSS，找出它清浮动用的方案（额外标签/overflow/clearfix 中的哪种），并说明换成 `flow-root` 是否安全。
+
+## 8. 下一步
+
+- 浮动的完整原理（视觉格式化模型视角）：`css/200-FloatClear`；
+- 定位与层叠的深水区：`css/220-PositionDetailed`、`css/230-StackingContext`；
+- 现代布局的正主：`css/240-CSS3FlexboxFlexLayout`、`css/250-CSS3GridGridLayout`；
+- margin 折叠专题：`css/060-MarginCollapse`。

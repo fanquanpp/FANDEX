@@ -2,8 +2,8 @@
 
 感谢你考虑为 FANDEX 做出贡献。本文档是完整的协作教程：从环境准备、内容写作、
 本地校验到提交、合并与发版。内容开发的逐步实操手册（含常见问题排查）见
-[CONTENT-GUIDE.md](CONTENT-GUIDE.md)；工程细节与 frontmatter 字段约束以
-[AGENTS.md](AGENTS.md) 为准；本仓库的差异只有「写内容」与「改应用」两类，
+[CONTENT-GUIDE.md](CONTENT-GUIDE.md)；frontmatter 字段的唯一事实源是
+`app-web/src/content.config.ts`；本仓库的差异只有「写内容」与「改应用」两类，
 教程对两者都适用。
 
 ## 仓库概览
@@ -78,8 +78,8 @@ git switch -c content/docker-networking
 
 **新增模块**：在 `cnt-content/full/` 下建模块文件夹（可省略编号，自动分配），
 并写入 `module.json`（`title` 必填，`icon` / `description` / `categories` /
-`prerequisites` / `officialDocs` 可选，schema 见 AGENTS.md），然后在其中
-正常添加文档。
+`prerequisites` / `officialDocs` 可选，schema 见
+`app-web/src/content.config.ts`），然后在其中正常添加文档。
 
 **调整顺序**：重命名文件编号即可，不要手改 `order` 字段。
 
@@ -96,9 +96,9 @@ pnpm sync          # 内容自动同步（补全元数据、注册模块、清�
 pnpm typecheck     # 全仓类型检查（app-web astro check + shd-shared/tokens）
 ```
 
-内容类改动建议再跑 `pnpm --filter @fandex/web audit:content` 确认无 HIGH 级
-问题。web 完整构建（`pnpm build:web`）不再作为推送前置，由 CI 在「指向
-main 的 PR 与发版」时验证；本地预览时仍可随时运行。
+内容类改动建议再跑 `pnpm --filter @fandex/web audit:content` 确认
+frontmatter 均可解析。web 完整构建（`pnpm build:web`）不再作为推送前置，
+由 CI 在「指向 main 的 PR 与发版」时验证；本地预览时仍可随时运行。
 
 ### 5. 提交
 
@@ -123,7 +123,7 @@ main 的 PR 与发版」时验证；本地预览时仍可随时运行。
 
 | 工作流 | 触发 | 内容 |
 | --- | --- | --- |
-| deploy.yml | push main 与指向 main 的 PR（带路径过滤） | 构建 + 类型检查 + 内容审计 + QA 门禁；仅 push 到 main 时发布 GitHub Pages |
+| deploy.yml | push main 与指向 main 的 PR（带路径过滤） | 构建 + 类型检查 + frontmatter 校验 + QA 门禁；仅 push 到 main 时发布 GitHub Pages |
 | lighthouse.yml | push main 与指向 main 的 PR（带路径过滤）/ 手动 | Lighthouse 性能基线巡检 |
 
 Android 与桌面端的 CI 构建工作流（android-build / desktop-build /
@@ -131,31 +131,32 @@ android-release）已退役：安装包由维护者本地构建并随 GitHub Rel
 分发，提交涉及 `app-Android-new` / `app-desktop` 的改动时请在本地
 完成构建自测（Gradle / Tauri）。
 
-所有构建前会自动运行 `content-sync.mjs`；deploy 工作流中的 `content-audit.mjs`
-门禁会在出现 HIGH 级内容质量问题时阻断构建。注意：push 到 `dev` 不触发
-任何 CI，构建验证发生在指向 main 的 PR 与发版时。
+所有构建前会自动运行 `content-sync.mjs`；deploy 工作流中的
+`content-audit.mjs` 只校验 frontmatter 可解析（解析失败会阻断构建）。
+注意：push 到 `dev` 不触发任何 CI，构建验证发生在指向 main 的 PR 与发版时。
 
 ### 7. 合并
 
 维护者审查通过后合并。合并方式与仓库历史保持一致，使用 merge commit；
 PR 合并后可删除特性分支。
 
-## 内容文档规范（重点）
+## 内容文档：管线如何处理你的文档
 
 内容维护遵循「作者只写内容，元数据自动补全」：构建与 CI 会先运行
 `content-sync.mjs` 自动补全 frontmatter 托管字段、注册新模块、清理死链。
-作者只需遵守：
+需要知道的机制：
 
 1. **文件命名**：文档 `NNN-EnglishName.md` 放入 `<NNN-模块id>/` 文件夹，
    文件名编号即学习顺序；新增模块文件夹时可省略编号（自动分配）；
 2. **frontmatter**：推荐手写 `title` 与 `description`，其余字段可省略
    （`order` / `module` / `category` / `author` / `updated` 由 sync 自动
-   生成，勿手写）；仅允许 AGENTS.md 规定的 10 个标准字段；
+   生成并覆盖手写值）；字段定义见 `app-web/src/content.config.ts`；
 3. **引用格式**：`related` 与 `prerequisites` 写 `module/文件名`（不带
    扩展名），死链会被自动删除；
-4. **新增模块**：模块文件夹内写 `module.json` 声明模块信息（schema 见
-   AGENTS.md），缺失时 sync 会生成骨架，请补写完善；
-5. **禁止 emoji**；图形需求使用 Mermaid 或 SVG；代码块必须标注语言；
+4. **新增模块**：模块文件夹内写 `module.json` 声明模块信息，缺失时 sync
+   会生成骨架，请补写完善；
+5. **唯一内容约束**：不使用 emoji（全项目强制，见 AGENTS.md）。代码块
+   标注语言可获得高亮；图示用 Mermaid，公式用 LaTeX，构建期渲染；
 6. **单一来源**：内容只写入 `cnt-content/full`，不修改三端应用内的生成产物
    （assets 目录），构建时由管线自动同步。
 
@@ -165,7 +166,6 @@ PR 合并后可删除特性分支。
 
 - [ ] 文档放入正确的模块文件夹，文件名编号符合学习顺序；
 - [ ] `title` / `description` 已填写（其余字段可不写）；
-- [ ] 代码示例语法正确、已标注语言；
 - [ ] 本地跑过 `pnpm sync` 无报错（web 构建验证由 CI 覆盖，本地无需 `pnpm build:web`）；
 - [ ] 无 emoji、无构建产物入库；
 - [ ] 提交信息符合 Conventional Commits；

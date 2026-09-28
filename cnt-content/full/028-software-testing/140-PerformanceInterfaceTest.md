@@ -4,470 +4,232 @@ title: 性能与接口测试
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
-description: LoadRunner 与 JMeter 性能测试、API 接口测试、Postman 工具使用、REST Assured 与接口 Mock。
+description: 从一次大促事故学性能测试：用 k6 完成第一次负载测试，读懂 P95 与吞吐量，理清负载、压力、稳定性测试的目标与工具选择。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
-  - 'software-testing/010-TestBasicsMethod'
-  - 'software-testing/080-FunctionalAndAutomatedTest'
-  - 'software-testing/170-SecurityAndMobileTest'
-  - 'software-testing/020-TestConceptPrinciple'
+  - 'software-testing/150-JMeter'
+  - 'software-testing/160-StressAndStabilityTest'
+  - 'software-testing/120-APIAutomationTest'
+  - 'software-testing/130-APIAutomationTestDetailed'
 prerequisites: []
 ---
 
-## 学习目标
+前置知识：知道 HTTP 接口的请求/响应长什么样；装好 Node.js 或任一运行时
+（k6 是独立的单个二进制，装完即用）。不需要先学 JMeter——本文用更轻的
+k6 做第一次动手，JMeter 与 LoadRunner 的定位在工具地图一节讲清。
 
-本文是「软件工程与测试」模块的第 14 篇，难度定位为进阶。重点内容：LoadRunner 与 JMeter 性能测试、API 接口测试、Postman 工具使用、REST Assured 与接口 Mock。
+读完本文你应当能够：区分负载/压力/稳定性/尖峰四类测试目标；给一个本地
+服务跑第一次负载测试并读懂分位延迟；说清"并发用户数"为什么不是"在线
+人数"；为接口测试设计三层断言。
 
-主要章节：
+## 1. 场景：大促开始十分钟，下单接口雪崩
 
-- 1. 性能测试概述
-- 2. JMeter 性能测试
-- 3. LoadRunner 性能测试
-- 4. API 接口测试
-- 5. Postman 工具
-- 6. 接口 Mock
-- ……共 7 个章节
+复盘一次典型事故：营销活动十点开始，流量是平时的五倍，十点十分下单
+接口超时告警，用户看到的是转圈和报错，订单量归零。事后复盘发现两个
+事实：
 
-## 1. 性能测试概述
+1. **这个接口从来没被压测过**。团队对"它能扛多少"一无所知，容量规划
+   靠拍脑袋。
+2. **单接口功能测试全绿**。每个接口单发请求都正常——直到一千个人同时
+   发。性能问题不是功能 bug，是"数量上去之后才暴露"的另一类 bug。
 
-### 1.1 性能测试分类
+性能测试的全部意义就一句话：**在用户替你发现容量上限之前，先在受控
+环境里自己找到它**。
 
-| 类型           | 目标                   | 典型指标           |
-| :------------- | :--------------------- | :----------------- |
-| **负载测试**   | 系统在预期负载下的表现 | 响应时间、吞吐量   |
-| **压力测试**   | 系统的极限承载能力     | 最大并发、崩溃点   |
-| **稳定性测试** | 长时间运行的可靠性     | 内存泄漏、性能衰减 |
-| **尖峰测试**   | 突发流量下的表现       | 恢复时间、错误率   |
-| **容量测试**   | 系统最大处理能力       | 数据量上限         |
+## 2. 先分清四类测试，别上来就压
 
-### 1.2 性能指标
+"压测"是口语，专业上先分清目标，因为不同目标的加压方式完全不同：
 
-| 指标           | 英文             | 说明                     |
-| :------------- | :--------------- | :----------------------- |
-| **响应时间**   | Response Time    | 请求发出到收到响应的时间 |
-| **吞吐量**     | Throughput       | 单位时间处理的请求数     |
-| **并发用户数** | Concurrent Users | 同一时刻向系统发起请求的用户数（注意：不等于「同时在线数」——在线用户大部分时间在浏览或思考，只有部分在发请求） |
-| **TPS**        | Transactions/s   | 每秒事务数               |
-| **QPS**        | Queries/s        | 每秒查询数               |
-| **错误率**     | Error Rate       | 失败请求占总请求的比例   |
-| **CPU 利用率** | CPU Usage        | 服务器 CPU 使用率        |
-| **内存利用率** | Memory Usage     | 服务器内存使用率         |
+| 类型       | 目标                       | 加压方式           | 典型问题           |
+| :--------- | :------------------------- | :----------------- | :----------------- |
+| **负载测试** | 预期负载下表现是否达标     | 固定在预期并发     | 日常高峰顶得住吗   |
+| **压力测试** | 找到系统的极限与崩溃形态   | 阶梯递增直到崩     | 上限多少，怎么崩的 |
+| **稳定性测试** | 长时间运行是否衰减       | 中等负载跑数小时起 | 有没有内存泄漏     |
+| **尖峰测试** | 突发流量冲击后的恢复       | 瞬时拉高再回落     | 大促瞬时流量扛得住吗 |
 
-## 2. JMeter 性能测试
+新手最常见错误：想做负载测试，实际跑了压力测试（一直加压到崩），
+拿到一个"极限 TPS"却回答不了"日常高峰的响应时间达标吗"。
 
-### 2.1 JMeter 核心概念
+## 3. 关键指标：并发用户数不等于在线人数
 
-```mermaid
-flowchart TD
-    T0["测试计划 (Test Plan)"]
-    T1["线程组 (Thread Group)        ← 模拟并发用户"]
-    T2["HTTP 请求采样器          ← 发送请求"]
-    T3["JSON 提取器             ← 提取响应数据"]
-    T4["断言                    ← 验证结果"]
-    T5["监听器                  ← 收集结果"]
-    T6["配置元件"]
-    T7["HTTP 请求默认值"]
-    T8["CSV 数据文件设置"]
-    T9["前置/后置处理器"]
-    T0 --> T1
-    T5 --> T6
-    T8 --> T9
+| 指标       | 说明                                                         |
+| :--------- | :----------------------------------------------------------- |
+| 响应时间   | 看 **P95/P99 分位**，不看平均值——平均 200ms 可能掩盖着 P99 3s 的长尾 |
+| 吞吐量     | 单位时间处理的请求数（TPS/QPS）                              |
+| 并发用户数 | 同一时刻正在发请求的用户数。**不等于在线数**：在线用户大部分时间在浏览，只有一小部分在发请求 |
+| 错误率     | 失败请求占比                                                 |
+| 资源占用   | 服务端 CPU、内存——判断瓶颈在哪台机器                         |
+
+"并发 1000"到底怎么估？典型换算：在线 10 万人，其中同时发请求的占
+1% 到 5%，即 1000 到 5000 并发。拍脑袋拍的是这个百分比，而它应该来自
+对生产访问日志的统计，不是经验直觉。
+
+## 4. 动手：用 k6 跑第一次负载测试
+
+### 4.1 准备一个被测服务
+
+任何本地 HTTP 服务都行。最快的办法是起一个公开的练习靶站（如
+`https://test.k6.io`），或本地 `docker run` 一个 nginx。**第一次练习
+不要压公司的真实环境**——压测本质是制造故障，打到生产等于事故。
+
+### 4.2 写第一个场景
+
+k6（Grafana 开源）用 JavaScript 写场景，安装后一个文件就能跑：
+
+```javascript
+// loadtest.js：模拟 20 个虚拟用户持续访问 30 秒
+import http from 'k6/http';
+import { check } from 'k6';
+
+export const options = {
+  vus: 20,              // 虚拟用户数（并发）
+  duration: '30s',
+  thresholds: {         // 及格线：不达标则命令退出码非 0，可直接进 CI
+    http_req_failed: ['rate<0.01'],                       // 错误率 < 1%
+    http_req_duration: ['p(95)<500'],                     // P95 < 500ms
+  },
+};
+
+export default function () {
+  const res = http.get('https://test.k6.io/');
+  check(res, {
+    '状态码 200': (r) => r.status === 200,
+    '响应包含标题': (r) => r.body.includes('test.k6.io'),
+  });
+}
 ```
-
-### 2.2 JMeter 脚本示例（.jmx 结构）
-
-```xml
-<!-- 线程组配置：模拟 100 并发用户 -->
-<ThreadGroup guiclass="ThreadGroupGui" testclass="ThreadGroup" testname="用户登录压测">
-  <intProp name="ThreadGroup.num_threads">100</intProp>
-  <intProp name="ThreadGroup.ramp_time">10</intProp>  <!-- 10秒内启动100线程 -->
-  <boolProp name="ThreadGroup.same_user_on_next_iteration">true</boolProp>
-  <stringProp name="ThreadGroup.on_sample_error">continue</stringProp>
-  <elementProp name="ThreadGroup.main_controller" elementType="LoopController">
-    <stringProp name="LoopController.loops">50</stringProp>  <!-- 每线程循环50次 -->
-  </elementProp>
-</ThreadGroup>
-
-<!-- HTTP 请求采样器 -->
-<HTTPSamplerProxy guiclass="HttpTestSampleGui" testclass="HTTPSamplerProxy" testname="登录接口">
-  <stringProp name="HTTPSampler.domain">api.example.com</stringProp>
-  <stringProp name="HTTPSampler.port">443</stringProp>
-  <stringProp name="HTTPSampler.protocol">https</stringProp>
-  <stringProp name="HTTPSampler.path">/api/login</stringProp>
-  <stringProp name="HTTPSampler.method">POST</stringProp>
-  <boolProp name="HTTPSampler.use_keepalive">true</boolProp>
-  <stringProp name="Argument.value">{"username":"admin","password":"123456"}</stringProp>
-</HTTPSamplerProxy>
-```
-
-### 2.3 JMeter 命令行执行
 
 ```bash
-# 非GUI模式执行（推荐用于压测）
-jmeter -n -t login_test.jmx -l results.jtl -e -o report/
-
-# 参数说明
-# -n  非GUI模式
-# -t  测试计划文件
-# -l  结果日志文件
-# -e  生成HTML报告
-# -o  报告输出目录
-
-# 远程分布式压测
-jmeter -n -t test.jmx -R server1:1099,server2:1099 -l results.jtl
+k6 run loadtest.js
 ```
 
-### 2.4 性能测试结果分析
+### 4.3 读懂输出
 
-| 指标         | 合格标准     | 需关注     | 严重     |
-| :----------- | :----------- | :--------- | :------- |
-| **响应时间** | < 200ms      | 200ms - 1s | > 1s     |
-| **错误率**   | < 0.1%       | 0.1% - 1%  | > 1%     |
-| **TPS**      | 满足业务需求 | 接近瓶颈   | 明显下降 |
-| **CPU**      | < 70%        | 70% - 85%  | > 85%    |
-| **内存**     | < 70%        | 70% - 85%  | > 85%    |
+跑完终端会给出各指标的统计，重点三行：
 
-上表是通用的经验参考线，使用时注意两点：其一，真实指标目标应来自业务
-SLO（预期用户量、竞争对标的体验），而不是照抄参考值；其二，响应时间要
-按**分位值**（P95/P99）评估而不是平均值或单次采样——平均 200ms 可能掩
-盖着 P99 高达 3s 的长尾，分位值语义与压测方法论见「压力测试与稳定性
-测试」。
+```
+http_req_duration..............: avg=180ms min=95ms med=170ms max=890ms p(90)=310ms p(95)=402ms
+http_req_failed................: 0.00%
+iterations.....................: 3241   107.9/s
+```
 
-## 3. LoadRunner 性能测试
+- `p(95)=402ms`：95% 的请求在 402ms 内完成——这才是"用户体感"的口径。
+- `http_req_failed`：失败率 0%，`check` 的断言失败也算在内。
+- `iterations` 后面的 `107.9/s` 就是实测吞吐量。
 
-### 3.1 LoadRunner 组件
+把 `vus` 从 20 逐步调到 50、100、200，记录每个档位的 P95 和吞吐量：
+**吞吐量还在涨，说明没到瓶颈；吞吐量不涨而延迟暴涨，说明到了**。
+这条曲线就是容量规划的原始材料。阶梯加压找拐点的完整方法论见
+《压力测试与稳定性测试》。
 
-| 组件           | 功能               |
-| :------------- | :----------------- |
-| **VuGen**      | 虚拟用户脚本生成器 |
-| **Controller** | 场景设计与执行控制 |
-| **Analysis**   | 结果分析与报告生成 |
+### 4.4 目标值从哪来
 
-### 3.2 脚本录制与增强
+上面的 `p(95)<500` 是编的。真实项目的及格线来自三处，优先级从高到低：
+
+1. **业务 SLO**：产品/运维约定的服务目标（与《监控与可观测性》里的
+   SLO 是同一套数，压测验收线应当与线上 SLO 一致）。
+2. **生产实测基线**：从监控里取当前 P95，留出 30% 到 50% 余量。
+3. 通用经验参考线（响应时间 P95 < 500ms、错误率 < 0.1%、CPU < 70%）
+   ——只在什么数据都没有时用于起步。
+
+## 5. 工具地图：k6、JMeter、LoadRunner
+
+三款工具覆盖了从开源到商业的光谱，选型看团队栈和预算：
+
+| 工具       | 形态                | 强项                         | 适合               |
+| :--------- | :------------------ | :--------------------------- | :----------------- |
+| **k6**     | JS 脚本、单二进制   | 阈值即代码、CI 集成顺滑      | API 压测、流水线内 |
+| **JMeter** | GUI 编排、Java      | 协议广、生态老牌             | 复杂场景、已有积累 |
+| **LoadRunner** | 商业套件        | 协议最全、企业级分析与报告   | 大型企业、特殊协议 |
+
+本模块《JMeter》专讲 JMeter 的线程组、采样器与分布式压测，这里只给
+LoadRunner 留一个概念锚点——它的三个核心词汇在任何工具里都有对应物：
+
+- **事务（transaction）**：把一组请求包成一个计时单元，对应 k6 的
+  `group` 或 JMeter 的事务控制器；
+- **思考时间（think time）**：模拟用户操作间的停顿，不加它测出的是
+  "机器人极限"而非真实负载；
+- **参数化（parameterization）**：每个虚拟用户用不同账号/数据，避免
+  缓存让结果失真。LoadRunner 脚本用 C 写，事务与思考时间长这样：
 
 ```c
-// LoadRunner 脚本示例（C语言）
 Action()
 {
-    // 事务开始
-    lr_start_transaction("login");
+    lr_start_transaction("login");              // 事务开始计时
 
-    // 设置参数化
     web_submit_data("login",
         "Action=https://api.example.com/login",
-        "Method=POST",
-        "RecContentType=application/json",
-        ITEMDATA,
-        "Name=username", "Value={username}", ENDITEM,  // 参数化
+        "Method=POST", ITEMDATA,
+        "Name=username", "Value={username}", ENDITEM,   // {username} 是参数化
         "Name=password", "Value={password}", ENDITEM,
         LAST);
 
-    // 检查点
-    web_reg_find("Text=token",
-        "SaveCount=token_count",
-        LAST);
-
-    // 事务结束
-    if (atoi(lr_eval_string("{token_count}")) > 0) {
-        lr_end_transaction("login", LR_PASS);
-    } else {
-        lr_end_transaction("login", LR_FAIL);
-    }
-
-    // 思考时间
-    lr_think_time(3);
-
+    lr_think_time(3);                           // 模拟用户填表单的 3 秒
+    lr_end_transaction("login", LR_PASS);       // 事务结束
     return 0;
 }
 ```
 
-### 3.3 场景设计
+## 6. 接口测试：性能之外的另一半
 
-| 场景类型     | 说明                 | 适用     |
-| :----------- | :------------------- | :------- |
-| **手动场景** | 手动设置虚拟用户数   | 精确控制 |
-| **目标场景** | 设定目标指标自动调整 | 目标导向 |
-| **真实场景** | 基于生产流量回放     | 接近真实 |
+本文标题里的"接口测试"指功能层面：请求对了，响应对不对？它的核心
+不是工具，是**三层断言**的意识：
 
-## 4. API 接口测试
+1. **状态码**：200/404/401 各就各位，异常输入也返回语义正确的码；
+2. **关键字段**：响应里业务关键字段的值正确（而不只是"有返回"）；
+3. **结构**：字段类型与必选项符合约定（JSON Schema 校验）。
 
-### 4.1 接口测试要点
+只断言状态码 200 是新手通病——接口挂了返回 `200 + {"error": ...}` 的
+现实比想象中多。工具上 Postman 适合手工探索与轻量集合，REST Assured
+（Java）、pytest + requests（Python）适合进 CI 的自动化，完整写法见
+《API 自动化测试》与《API 自动化测试详解》。
 
-| 测试维度     | 说明                        |
-| :----------- | :-------------------------- |
-| **功能验证** | 接口返回数据是否正确        |
-| **参数验证** | 必填/选填、类型、范围、边界 |
-| **异常处理** | 错误码、错误信息是否合理    |
-| **安全性**   | 认证、授权、SQL注入、XSS    |
-| **性能**     | 响应时间、并发能力          |
-| **兼容性**   | 不同版本接口的向下兼容      |
+依赖的服务还没开发完怎么办？**Mock**。但要区分两种用途：给开发联调
+用的 Mock 图快（内存里现写一个 Flask 路由即可）；给自动化测试用的
+Mock 必须可版本化、可进 CI（WireMock 这类），否则上游接口一改，Mock
+的假设悄悄过期，测试全绿而集成爆炸——彻底解法是契约测试，见
+《API 自动化测试详解》。Mock 的理论与打桩技术见《测试替身》。
 
-### 4.2 REST Assured（Java）
+## 7. 坑点与自检
 
-```java
-import io.restassured.RestAssured;
-import io.restassured.http.ContentType;
-import org.junit.jupiter.api.Test;
-import static io.restassured.RestAssured.*;
-import static org.hamcrest.Matchers.*;
+1. **用 GUI 模式施压**。JMeter 图形界面自身扛不住上千并发，数据失真。
+   施压一律命令行非 GUI 模式（`jmeter -n -t plan.jmx -l result.jtl`），
+   GUI 只用来编脚本。
+2. **压测环境与生产差异过大**。单机小内存容器压出的"极限"毫无参考
+   价值。环境配置（机器规格、数据库数据量、网络）应尽量对齐生产，
+   至少按比例缩放并记录差异。
+3. **忘了思考时间与参数化**。所有虚拟用户拿同一账号疯狂连发，测出的
+   是缓存与锁的极限，不是用户负载。参数化 + 思考时间是默认项。
+4. **只压单接口**。真实流量是接口组合与数据关联（登录、浏览、下单、
+   支付）。单接口达标不等于整链路达标，核心路径要按比例混合压。
+5. **压测没有监控**。只看压测工具的响应时间，不看服务端 CPU/内存/
+   连接数，崩了也不知道瓶颈在哪一层。压测时服务端监控必须同时开着。
+6. **对生产环境直接压**。没有隔离环境、没有限流保护、没有干路预案
+   就对生产施压，等于自己制造事故。
 
-class UserApiTest {
+自检清单：
 
-    @Test
-    void testGetUser() {
-        given()
-            .baseUri("https://api.example.com")
-            .header("Authorization", "Bearer token_value")
-        .when()
-            .get("/users/1")
-        .then()
-            .statusCode(200)
-            .body("id", equalTo(1))
-            .body("name", not(emptyString()))
-            .body("email", containsString("@"));
-    }
+- [ ] 能说出当前项目四类性能测试分别的目标与加压方式
+- [ ] 响应时间口径是 P95/P99，且及格线能追溯到 SLO 或生产基线
+- [ ] 并发数估算来自访问日志统计而非拍脑袋
+- [ ] 压测脚本有参数化与思考时间，施压用非 GUI 模式
+- [ ] 接口测试有状态码、关键字段、结构三层断言
 
-    @Test
-    void testCreateUser() {
-        given()
-            .baseUri("https://api.example.com")
-            .contentType(ContentType.JSON)
-            .body("{\"name\":\"张三\",\"email\":\"zhangsan@example.com\"}")
-        .when()
-            .post("/users")
-        .then()
-            .statusCode(201)
-            .body("id", greaterThan(0))
-            .body("name", equalTo("张三"));
-    }
+## 8. 练习
 
-    @Test
-    void testUpdateUser() {
-        given()
-            .baseUri("https://api.example.com")
-            .contentType(ContentType.JSON)
-            .header("Authorization", "Bearer token_value")
-            .body("{\"name\":\"李四\"}")
-        .when()
-            .put("/users/1")
-        .then()
-            .statusCode(200)
-            .body("name", equalTo("李四"));
-    }
+1. 对 `https://test.k6.io` 依次用 vus=1/10/50/100 各跑 30 秒，记录
+   P95 与吞吐量，画出"并发 - 吞吐量"关系，标出吞吐量不再增长的拐点。
+2. 给第 1 题的脚本加 `thresholds`，把 P95 及格线设为你实测基线的
+   1.3 倍，然后故意把 vus 加到远超拐点，观察阈值失败时的退出码。
+3. 找一个公开 API，设计三层断言：正常请求、不存在的资源（404）、
+   非法参数（400），分别断言状态码、关键字段与结构。
+4. 用访问日志（或现成统计）估算你所在项目高峰期的真实并发数，对照
+   当前压测覆盖的并发档位，评估缺口。
 
-    @Test
-    void testDeleteUser() {
-        given()
-            .baseUri("https://api.example.com")
-            .header("Authorization", "Bearer token_value")
-        .when()
-            .delete("/users/1")
-        .then()
-            .statusCode(204);
-    }
+## 9. 下一步
 
-    @Test
-    void testNotFound() {
-        given()
-            .baseUri("https://api.example.com")
-        .when()
-            .get("/users/99999")
-        .then()
-            .statusCode(404)
-            .body("error", equalTo("Not Found"));
-    }
-}
-```
-
-## 5. Postman 工具
-
-### 5.1 请求构建
-
-```
-POST https://api.example.com/api/login
-Headers:
-  Content-Type: application/json
-Body (raw JSON):
-{
-  "username": "admin",
-  "password": "123456"
-}
-```
-
-### 5.2 环境变量
-
-```javascript
-// 设置环境变量
-pm.environment.set('base_url', 'https://api.example.com');
-pm.environment.set('token', pm.response.json().token);
-
-// 获取环境变量
-const baseUrl = pm.environment.get('base_url');
-const token = pm.environment.get('token');
-
-// 环境配置
-// 开发环境: base_url = https://dev.api.example.com
-// 测试环境: base_url = https://test.api.example.com
-// 生产环境: base_url = https://api.example.com
-```
-
-### 5.3 断言脚本
-
-```javascript
-// 状态码断言
-pm.test('状态码为 200', function () {
-  pm.response.to.have.status(200);
-});
-
-// 响应体断言
-pm.test('返回 token', function () {
-  const json = pm.response.json();
-  pm.expect(json.token).to.be.a('string');
-  pm.expect(json.token.length).to.be.above(0);
-});
-
-// 响应头断言
-pm.test('Content-Type 为 JSON', function () {
-  pm.response.to.have.header('Content-Type', 'application/json; charset=utf-8');
-});
-
-// 响应时间断言
-pm.test('响应时间小于 500ms', function () {
-  pm.expect(pm.response.responseTime).to.be.below(500);
-});
-
-// JSON Schema 验证
-pm.test('响应符合 Schema', function () {
-  const schema = {
-    type: 'object',
-    required: ['id', 'name', 'email'],
-    properties: {
-      id: { type: 'integer' },
-      name: { type: 'string' },
-      email: { type: 'string', format: 'email' },
-    },
-  };
-  pm.expect(tv4.validate(pm.response.json(), schema)).to.be.true;
-});
-```
-
-### 5.4 Collection Runner
-
-```javascript
-// 集合执行顺序与数据传递
-
-// 1. 登录接口 - 保存 token
-pm.test('保存 token', function () {
-  const json = pm.response.json();
-  pm.environment.set('auth_token', json.token);
-});
-
-// 2. 后续接口 - 使用 token
-// Headers 中: Authorization: Bearer {{auth_token}}
-
-// 3. 数据清理 - 删除测试数据
-pm.sendRequest({
-  url: pm.environment.get('base_url') + '/test/cleanup',
-  method: 'POST',
-  header: { Authorization: 'Bearer ' + pm.environment.get('auth_token') },
-});
-```
-
-## 6. 接口 Mock
-
-### 6.1 Mock 概述
-
-Mock 是模拟接口行为的技术，用于在依赖服务不可用或未开发完成时进行测试。
-
-### 6.2 Python Mock 示例
-
-```python
-from unittest.mock import Mock, patch
-import pytest
-import requests
-
-# 被测函数
-def get_user_info(user_id: int) -> dict:
-    response = requests.get(f"https://api.example.com/users/{user_id}")
-    if response.status_code == 200:
-        return response.json()
-    return None
-
-# 使用 Mock 测试
-class TestGetUserInfo:
-    @patch('requests.get')
-    def test_get_user_success(self, mock_get):
-        # 配置 Mock 返回值
-        mock_get.return_value = Mock(
-            status_code=200,
-            json=lambda: {"id": 1, "name": "张三", "email": "zhangsan@example.com"}
-        )
-
-        result = get_user_info(1)
-
-        assert result["id"] == 1
-        assert result["name"] == "张三"
-        mock_get.assert_called_once_with("https://api.example.com/users/1")
-
-    @patch('requests.get')
-    def test_get_user_not_found(self, mock_get):
-        mock_get.return_value = Mock(status_code=404, json=lambda: {})
-
-        result = get_user_info(99999)
-
-        assert result is None
-```
-
-### 6.3 Flask Mock Server
-
-```python
-from flask import Flask, jsonify, request
-
-app = Flask(__name__)
-
-# 模拟用户接口
-@app.route('/api/users/<int:user_id>', methods=['GET'])
-def get_user(user_id):
-    users = {
-        1: {"id": 1, "name": "张三", "email": "zhangsan@example.com"},
-        2: {"id": 2, "name": "李四", "email": "lisi@example.com"},
-    }
-    user = users.get(user_id)
-    if user:
-        return jsonify(user)
-    return jsonify({"error": "Not Found"}), 404
-
-# 模拟登录接口
-@app.route('/api/login', methods=['POST'])
-def login():
-    data = request.get_json()
-    if data.get("username") == "admin" and data.get("password") == "123456":
-        return jsonify({"token": "mock_token_12345", "user_id": 1})
-    return jsonify({"error": "Invalid credentials"}), 401
-
-if __name__ == '__main__':
-    app.run(port=5000)
-```
-
-### 6.4 Mock 工具对比
-
-| 工具              | 类型      | 特点                | 适用场景   |
-| :---------------- | :-------- | :------------------ | :--------- |
-| **unittest.mock** | Python 库 | 代码级 Mock         | 单元测试   |
-| **Flask Mock**    | 轻量服务  | 快速搭建模拟 API    | 开发联调   |
-| **WireMock**      | 独立服务  | 丰富的请求匹配规则  | 集成测试   |
-| **MockServer**    | 独立服务  | Java 生态，功能强大 | 企业级项目 |
-| **Postman Mock**  | 内置功能  | 与 Collection 集成  | API 测试   |
-
-## 小结
-
-- 初学者要点：性能测试先分清「负载/压力/稳定性/尖峰」四类目标再选工具；
-  JMeter 施压必须用非 GUI 模式；接口测试的核心是「状态码 + 关键字段 +
-  结构」三层断言，而不是只看 200。
-- 进阶注意：响应时间指标要看分位值（P95/P99）而非平均值（语义详见
-  「压力测试与稳定性测试」）；LoadRunner 适合企业级协议与报告需求，
-  开源栈用 JMeter/k6 即可覆盖大多数场景；Mock 服务要区分「联调用」与
-  「测试用」——前者图快，后者必须可版本化、可进 CI（WireMock/Stub 服务器），
-  否则 Mock 假设过期就会变成联调事故（彻底解法见契约测试，「API 自动化
-  测试详解」）。
+- JMeter 线程组、采样器、分布式施压：见《JMeter》。
+- 阶梯加压找拐点、内存泄漏观察、稳定性方法论：见《压力测试与稳定性测试》。
+- 接口自动化进 CI 与契约测试：见《API 自动化测试》《API 自动化测试详解》。
+- 压测指标与线上监控对齐：见《监控与可观测性》（devops 模块）。

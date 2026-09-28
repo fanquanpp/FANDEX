@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 文件系统 inode 机制：inode 结构、目录项、超级块与 Ext4 文件系统。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/210-MemorySegmentationAndPaging'
   - 'cs-fundamentals/220-PageReplacementAlgorithm'
@@ -18,9 +18,9 @@ prerequisites:
 
 ## 前置知识
 
-- 磁盘以块（典型 4KB）为单位读写的常识（见 [磁盘调度](cs-fundamentals/240-DiskScheduling)）；
+- 磁盘以块（典型 4KB）为单位读写的常识（见 [磁盘调度](/cs-fundamentals/240-DiskScheduling)）；
 - 文件与目录的日常使用经验：`ls`、`mv`、`rm`、路径概念；
-- 页缓存的基本认识：读文件先查内存缓存（见 [内存分段与分页](cs-fundamentals/210-MemorySegmentationAndPaging)）。
+- 页缓存的基本认识：读文件先查内存缓存（见 [内存分段与分页](/cs-fundamentals/210-MemorySegmentationAndPaging)）。
 
 ## 学习目标
 
@@ -178,7 +178,7 @@ ls -li original.txt soft.txt
 - **安全审计**：`find / -nouser` 找无主文件、用 inode 判断文件是否被替换（对比备份的 inode 号与 ctime）；入侵者常用"改时间戳"伪装，但 inode 号通常无法保持。
 - **性能排查**：`df -i` 与 `df -h` 双查；`filefrag` 查看文件碎片化程度（extent 是否连续），碎片严重的虚拟机镜像应整理或重建。
 - **恢复误删**：链接计数归零后数据块并未立即擦除，`debugfs`/`extundelete` 类工具趁块未被复用前抢救——所以误删后第一件事是尽快让该分区只读。
-- **与页缓存的衔接**：读文件时内核按页缓存文件内容（基于 inode 与偏移），[页面置换算法](cs-fundamentals/220-PageReplacementAlgorithm) 决定哪些文件页被淘汰；这也是"读两次第二次快"的原因。
+- **与页缓存的衔接**：读文件时内核按页缓存文件内容（基于 inode 与偏移），[页面置换算法](/cs-fundamentals/220-PageReplacementAlgorithm) 决定哪些文件页被淘汰；这也是"读两次第二次快"的原因。
 
 ## 小结
 

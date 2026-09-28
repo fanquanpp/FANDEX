@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Web 应用防火墙：部署形态、ModSecurity 与 OWASP CRS 规则引擎、常见绕过手法与自写规则的工程实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/170-InputValidation'
   - 'cybersecurity/520-SecurityBaseline'
@@ -141,7 +141,7 @@ location /api/ {
 版本化：规则文件进 Git，变更走评审（谁改的、为何改、影响面）
 灰度：先 detection-only 模式上线新规则，观察日志再阻断
 回归：维护一组「必须拦截」与「必须放行」的请求样本，每次变更自动回放
-监控：WAF 日志接入 SIEM（见 010-SOC），关注误拦率与拦截来源分布
+监控：WAF 日志接入 SIEM（见 550-SOC），关注误拦率与拦截来源分布
 ```
 
 ## 6. 运营指标与常见陷阱

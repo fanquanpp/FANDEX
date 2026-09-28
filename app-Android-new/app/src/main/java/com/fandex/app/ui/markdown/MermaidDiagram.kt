@@ -62,6 +62,9 @@ fun MermaidDiagram(
         WebView(context).apply {
             settings.javaScriptEnabled = true
             settings.domStorageEnabled = true
+            // 固定 WebView 文字缩放：图表文字与网页端保持同一视觉尺度，
+            // 不随系统字体大小偏好膨胀（系统级无障碍仍由 Compose 文本承担）
+            settings.textZoom = 100
             setBackgroundColor(android.graphics.Color.TRANSPARENT)
             isVerticalScrollBarEnabled = false
             isHorizontalScrollBarEnabled = false

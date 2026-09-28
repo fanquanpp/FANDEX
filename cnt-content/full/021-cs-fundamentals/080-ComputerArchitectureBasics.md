@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 从零理解计算机体系结构：冯·诺依曼模型、CPU 工作原理、指令周期、存储层次与总线系统（入门学习笔记）。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/010-ComputerOverview'
   - 'cs-fundamentals/090-ComputerArchitecture'
@@ -45,10 +45,10 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    subgraph Mem[存储器]<br/>指令1 指令2 指令3 数据1 数据2
+    subgraph Mem["存储器：指令1 指令2 指令3 数据1 数据2"]
     end
-    Mem -->|取指令| C[控制器<br/>指令寄存器/程序计数器]
-    Mem -->|读/写数据| A[运算器<br/>累加器/ALU]
+    Mem -->|取指令| C["控制器<br/>指令寄存器/程序计数器"]
+    Mem -->|读/写数据| A["运算器<br/>累加器/ALU"]
 ```
 
 ### 1.3 冯·诺依曼瓶颈

@@ -1,12 +1,12 @@
 ---
-order: 250
+order: 270
 title: Promise 静态方法
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: Promise静态方法详解：allSettled、any、withResolvers及传统方法对比。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/190-PrototypeChainClassEssence'
   - 'javascript/300-EventLoopDetailed'

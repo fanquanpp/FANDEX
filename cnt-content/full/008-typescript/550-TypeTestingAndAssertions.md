@@ -1,12 +1,12 @@
 ---
-order: 550
+order: 560
 title: TypeScript 类型测试与断言
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: 给类型层 API 建回归防线：手写 Equal/Expect 断言、tsd 工具、@ts-expect-error 与 never 穷尽检查的完整用法。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/490-UtilityTypePrinciple'
   - 'typescript/180-SatisfiesOperator'

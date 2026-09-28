@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Kotlin Flow冷流与SharedFlow和StateFlow详解：响应式流原理、冷热流对比、状态管理实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'kotlin/230-CoroutineBasics'
   - 'kotlin/250-CoroutineDispatcherContext'
@@ -1156,10 +1156,10 @@ shared.collect { println(it) }
 
 ```mermaid
 flowchart TD
-    UI[UI Layer Compose / View<br/>collectAsStateWithLifecycle()]
-    VM[ViewModel / Presenter<br/>StateFlow&lt;UiState&gt;<br/>SharedFlow&lt;UiEvent&gt;]
-    Dom[Domain / UseCase<br/>suspend fun / Flow&lt;T&gt;]
-    Data[Data / Repository<br/>Flow&lt;T&gt; from DB / Network]
+    UI["UI Layer Compose / View<br/>collectAsStateWithLifecycle()"]
+    VM["ViewModel / Presenter<br/>StateFlow&lt;UiState&gt;<br/>SharedFlow&lt;UiEvent&gt;"]
+    Dom["Domain / UseCase<br/>suspend fun / Flow&lt;T&gt;"]
+    Data["Data / Repository<br/>Flow&lt;T&gt; from DB / Network"]
     UI --> VM --> Dom --> Data
 ```
 

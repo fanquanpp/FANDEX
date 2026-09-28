@@ -1,12 +1,12 @@
 ---
-order: 520
+order: 550
 title: 打包与发布
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: Python打包与发布详解：setuptools、pyproject.toml。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/530-TypeAnnotationMypy'
   - 'python/560-DataClassFieldDefault'

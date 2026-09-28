@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: localStorage、sessionStorage、IndexedDB 与 Web Workers。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'javascript/470-IndexedDBADatabaseInYourBrowser'
   - 'html5/230-HTML5MultimediaCanvasDrawing'
@@ -36,7 +36,8 @@ Web Storage 提供了一种在浏览器中存储键值对数据的机制，相�
 - 数据永久存储，除非手动清除
 - 同一域名下的所有页面共享数据
 - 数据不会随 HTTP 请求发送到服务器
-  **操作方法**：
+
+**操作方法**：
 
 ```javascript
 // 存储数据
@@ -77,7 +78,8 @@ console.log(storedUser.name); // 输出: Bob
 - 数据仅在当前会话 (标签页) 有效，关闭标签页即失效
 - 不同标签页之间的数据不共享
 - 刷新页面数据仍然保留
-  **操作方法**：
+
+**操作方法**：
 
 ```javascript
 // 存储数据

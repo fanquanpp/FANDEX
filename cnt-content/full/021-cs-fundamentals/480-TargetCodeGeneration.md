@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译器目标代码生成：寄存器分配、指令选择与指令调度。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/460-IntermediateCode'
   - 'cs-fundamentals/470-CodeOptimization'
@@ -17,7 +17,7 @@ prerequisites:
 ## 前置知识
 
 - CPU 寄存器与内存的层次：寄存器最快但数量有限（x86-64 通用寄存器 16 个）；
-- 中间代码（三地址码/SSA）与优化后的形态（见 [中间代码](cs-fundamentals/460-IntermediateCode) 与 [代码优化](cs-fundamentals/470-CodeOptimization)）；
+- 中间代码（三地址码/SSA）与优化后的形态（见 [中间代码](/cs-fundamentals/460-IntermediateCode) 与 [代码优化](/cs-fundamentals/470-CodeOptimization)）；
 - 指令流水线的基本概念：相邻指令存在数据依赖时需要等待（冒险）。
 
 ## 学习目标
@@ -80,7 +80,7 @@ flowchart LR
 
 ### 3.4 完整示例：手工分配一次
 
-对优化后的循环（见 [代码优化](cs-fundamentals/470-CodeOptimization) 的示例）：
+对优化后的循环（见 [代码优化](/cs-fundamentals/470-CodeOptimization) 的示例）：
 
 ```text
 IR：                            x86-64 汇编（分配后）：

@@ -668,12 +668,16 @@ ORDER BY transaction ASC;
 空间给操作系统（除表末尾的空页面特殊处理外）。标准 VACUUM 的执行
 流程可以分解为以下八个阶段：
 
-```mermaid
-flowchart TD
-    B0["标准 VACUUM 执行流程"]
-    B1["阶段1: 初始化 (initializing) / 获取 SHARE UPDATE EXCLUSIVE 锁 / 计算 OldestXmin 与 freeze 截止值 / v / 阶段2: 扫描堆表 (scanning heap) / 逐页扫描堆表，识别死元组 / 收集死元组的行指针到死元组数组 / 维护可见性映射 (VM) / 对全可见页面执行 FREEZE 操作 / v / 阶段3: 索引清理 (vacuuming indexes) / 遍历所有索引，删除指向死元组的索引项 / 可能使用并行索引清理 (PG13+) / v / 阶段4: 清理死元组 (cleaning up indexes) / 实际从堆表中移除死元组 / 更新 FSM (空闲空间映射) / v / 阶段5: 截断末尾空页 (truncating) / 尝试获取 ACCESS EXCLUSIVE 锁 / 截断表末尾的全空页面，返回空间给 OS / v / 阶段6: 最终清理 (performing final cleanup) / 清理索引残余 / 更新统计信息 / v / 阶段7: 事务提交 (committing) / 提交 VACUUM 的内部事务 / v / 阶段8: 完成 (completed)"]
-    B0 --> B1
-```
+标准 VACUUM 的执行流程可以分为八个阶段（细节见下一小节的阶段详解）：
+
+1. **初始化（initializing）**：获取 SHARE UPDATE EXCLUSIVE 锁；计算 OldestXmin 与 freeze 截止值。
+2. **扫描堆表（scanning heap）**：逐页扫描，识别死元组并收集其行指针；维护可见性映射；对全可见页面执行 FREEZE。
+3. **索引清理（vacuuming indexes）**：遍历所有索引，删除指向死元组的索引项；B-Tree 可用并行清理（PG 13+）。
+4. **清理死元组（vacuuming heap）**：从堆表移除死元组；更新 FSM（空闲空间映射）。
+5. **截断末尾空页（truncating）**：尝试获取 ACCESS EXCLUSIVE 锁，截断表末尾全空页面并把空间还给操作系统。
+6. **最终清理（performing final cleanup）**：清理索引残余、更新统计信息。
+7. **事务提交（committing）**：提交 VACUUM 的内部事务。
+8. **完成（completed）**。
 
 #### 4.1.1 阶段详解
 
@@ -1110,9 +1114,8 @@ PostgreSQL 官方博客与版本发布说明记录了每个版本中 VACUUM 机�
 |------|---------|------|---------|------|----------------|
 | 1 | ANSI X3.135-1992 | SQL-92 Standard | ANSI | https://www.contrib.andrew.cmu.edu/~shadow/sql/sql1992.txt | SQL 标准定义的事务隔离级别 |
 | 2 | ISO/IEC 9075:2016 | SQL:2016 Standard | ISO | https://www.iso.org/standard/63555.html | 现代 SQL 标准，含事务与并发控制 |
-| 3 | RFC 6235 | Care and Feeding of BGP Sessions | IETF | https://datatracker.ietf.org/doc/html/rfc6235 | （无直接关联，示例占位） |
-| 4 | Berenson et al. (1995) | A Critique of ANSI SQL Isolation Levels | 学术报告 | https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf | ANSI 隔离级别的批判性分析，PostgreSQL 隔离级别设计的理论依据 |
-| 5 | Gray & Reuter (1993) | Transaction Processing: Concepts and Techniques | 经典教材 | https://www.elsevier.com/books/transaction-processing/gray/978-1-55860-190-1 | 事务处理经典著作，MVCC 理论源头 |
+| 3 | Berenson et al. (1995) | A Critique of ANSI SQL Isolation Levels | 学术报告 | https://www.microsoft.com/en-us/research/wp-content/uploads/2016/02/tr-95-51.pdf | ANSI 隔离级别的批判性分析，PostgreSQL 隔离级别设计的理论依据 |
+| 4 | Gray & Reuter (1993) | Transaction Processing: Concepts and Techniques | 经典教材 | https://www.elsevier.com/books/transaction-processing/gray/978-1-55860-190-1 | 事务处理经典著作，MVCC 理论源头 |
 
 ### 7.8 引用使用说明
 

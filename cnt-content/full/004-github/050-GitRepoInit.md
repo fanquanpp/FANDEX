@@ -1,316 +1,142 @@
 ---
 order: 50
-title: GitHub 仓库初始化
+title: 本地仓库连接 GitHub：init、远程关联与首次推送
 module: 'github'
 category: 工具链
 difficulty: beginner
-description: 从零初始化 Git 仓库并完成首次提交的完整操作向导，覆盖 git init、git clone、git add、git commit，适合零基础学习者。
+description: 以「把本地项目放上 GitHub」为主线讲透三条起点路径（先 clone、后关联、gh 一步到位）：git init 与 main 分支约定、origin 是什么、push -u 建立了什么、克隆自动做的三件事，附 not a git repository 与认证失败等真实报错对照表。
 author: fanquanpp
-updated: '2026-09-12'
-related: []
-prerequisites: []
+updated: '2026-09-28'
+related:
+  - 'git/050-GitBasicOperation'
+  - 'github/030-RepositoryCreateCloneArchiveDelete'
+  - 'github/040-SSHHTTPS'
+  - 'github/060-GitCommitPush'
+prerequisites:
+  - 'github/010-GitHubOverview'
 ---
 
-## 开篇：像建房打地基一样初始化仓库
+## 前置知识
 
-想象你要在空地上建一栋房子。第一步不是砌墙，而是**打地基**：把地面整平、浇筑混凝土，划定"这块地属于这栋房子"。地基打好了，后面的砌墙、封顶、装修才有依靠。
+- 已完成 [GitHub 是什么](/github/010-GitHubOverview)：有账号，能用网页或 `gh` 建仓库；
+- 已完成 [Git 基础操作](/git/050-GitBasicOperation) 或至少照着做过一遍 init / add / commit；
+- `git config --global init.defaultBranch main` 已配置（[Git 环境配置](/git/030-GitEnvConfigInit) 的要求，没配的先补上）。
 
-Git 仓库也是这样。你的项目文件（代码、文档）就是"房子"，而 `git init` 就是"打地基"——它在项目目录里悄悄埋下一个名叫 `.git` 的隐藏文件夹，告诉 Git："从这一刻起，这块目录归我管，之后所有的版本历史都存在这里。"
+## 学习目标
 
-本篇文章就是一份**手把手操作向导**，带你走完从"一个普通文件夹"到"第一个提交诞生"的全过程。学完这一篇，你就拥有了"打地基 + 浇筑第一块楼板"的能力。
+读完本文你将能够：
 
----
+1. 按三种真实起点（远程先有仓库 / 本地先有仓库 / 从零开始）选择正确的接通路径；
+2. 解释 `origin`、`-u`、`git branch -M main` 各自做了什么，看懂 `git remote -v` 的输出；
+3. 说出 `git clone` 自动替你完成的三件事，以及手动关联时需要自己补哪些；
+4. 对照报错表排查首次推送的常见失败。
 
-## 一、动手前的准备：安装与身份设置
+预计 40 分钟，三条路径都建议亲手走一遍。
 
-### 1.1 检查 Git 是否安装
+## 1. 问题：本地仓库和 GitHub 仓库是两个仓库
 
-打开命令行（Windows 用 PowerShell 或 Git Bash，macOS/Linux 用终端），输入：
+一个新手常见误解：在 GitHub 网页上点了 Create repository，本地项目就「上传」了。并没有。**网页建仓只是在云端创建了空壳，本地仓库和它此刻毫无关系**——两者是各自独立的 Git 仓库，必须显式地「接线」：告诉本地仓库「你在云端有个副本，地址是某某 URL」。
 
-```bash
-# 查看 Git 版本，验证是否安装成功
-git --version
-```
+而接线的起点不止一种。现实中你只会遇到三种局面：
 
-输出示例（版本号以你实际安装为准）：
+1. **云端先有**：同事建好了仓库，或你从网页建的——你本地什么都还没有；
+2. **本地先有**：你已经 `git init` 写了一阵子，现在想放上去；
+3. **从零开始**：两边都还没有。
 
-```
-git version 2.43.0.windows.1
-```
+三种局面各有最优解，下面逐个动手。
 
-如果提示"command not found"或"无法识别"，说明尚未安装 Git，请到官网下载安装包（见文末参考链接）。
+## 2. 动手：三条路径
 
-### 1.2 设置提交身份（第一次必做）
+### 路径 1：云端先有仓库 —— git clone
 
-Git 要求每一次提交（commit）都记录"谁做的"，这个身份由 `user.name` 和 `user.email` 两个配置决定。注意：**这不是 GitHub 登录账号，而是写在提交记录里的署名**。
-
-```bash
-# 全局配置（对这台电脑上的所有仓库生效，建议只配一次）
-git config --global user.name "你的名字"
-git config --global user.email "你的邮箱@example.com"
-```
-
-配置说明：
-
-| 配置命令 | 作用范围 | 存储位置 |
-| --- | --- | --- |
-| `git config --global ...` | 当前用户所有仓库 | 用户主目录下的 `~/.gitconfig` |
-| `git config ...`（不带 --global） | 仅当前仓库 | 仓库内的 `.git/config` |
-
-> 原理小贴士：`--global` 写在前面是"全局"，不写就是"局部"。局部配置会覆盖全局配置。如果跳过这一步直接提交，Git 会报错并要求你先配置身份，这是新手最常见的第一个拦路虎。
-
----
-
-## 二、操作向导第一步：让普通目录变成仓库
-
-### 2.1 进入你的项目目录
+最常见于参与已有项目。克隆会把云端仓库完整复制到本地：
 
 ```bash
-# 创建练习目录（示例路径，可自行修改）
-mkdir my-first-project
-cd my-first-project
+git clone https://github.com/fanquanpp/pixel-vault.git
+cd pixel-vault
+git log --oneline -5     # 历史全在
+git remote -v            # 远程已配好
 ```
 
-### 2.2 初始化仓库：git init
+`git clone` 默默替你做了三件事，手动关联路径里你得自己补：
+
+1. 下载全部对象与历史，检出默认分支（`main`）的工作区；
+2. 添加名为 **origin** 的远程引用，指向克隆来源的 URL；
+3. 建立本地 `main` 与 `origin/main` 的追踪关系（所以克隆下来直接 `git pull` 就能用）。
+
+常用变体：`git clone -b dev <url>` 只检出指定分支；`git clone --depth 1 <url>` 浅克隆只取最近一次提交，大仓库快速查看时很好用（代价是历史不全，别在需要完整历史的仓库上用）。
+
+### 路径 2：本地先有仓库 —— remote add + push
+
+你已经写了一阵子的项目，现在要放上 GitHub：
 
 ```bash
-# 在当前目录初始化 Git 仓库
-git init
+cd my-project
+git status               # 确认这确实是个 Git 仓库且已有提交
 ```
 
-真实输出示例：
-
-```
-hint: Using 'master' as the name for the initial branch. This default branch name
-hint: is subject to change. To configure the initial branch name to use in all
-hint: of your new repositories, run:
-hint:
-hint:   git config --global init.defaultBranch main
-Initialized empty Git repository in C:/Users/you/my-first-project/.git/
-```
-
-**这一步发生了什么？** 原理上，`git init` 只做三件事：
-
-1. 创建 `.git` 隐藏文件夹——仓库的核心数据库（对象、引用、配置）都存在这里；
-2. 建立默认分支（新版 Git 多为 `master`，也可指定 `main`）；
-3. 准备暂存区（Index），等待第一个文件进入。
-
-> 重要提醒：**永远不要手工修改或删除 `.git` 文件夹**，它一坏，整个仓库的版本历史就没了。
-
-### 2.3 常用变体
+先在 GitHub 网页建一个**空仓库**（注意：这一种情况不要勾选 README 初始化，原因见第 3 节），然后：
 
 ```bash
-# 方式一：初始化时直接指定目录（目录不存在会自动创建）
-git init myproject
-
-# 方式二：指定默认分支名为 main（与 GitHub 默认一致，团队常用）
-git init -b main
-
-# 方式三：初始化裸仓库（没有工作区的"纯数据库"，仅用于服务器端）
-git init --bare project.git
+git remote add origin https://github.com/你的用户名/my-project.git
+git push -u origin main
 ```
 
-三种变体对比：
+两条命令各干一件事：
 
-| 命令 | 用途 | 适用场景 |
-| --- | --- | --- |
-| `git init` | 当前目录建仓库 | 本地新项目 |
-| `git init -b main` | 建仓库且默认分支叫 main | 准备推送到 GitHub 的项目 |
-| `git init --bare` | 裸仓库（无工作区） | 自建服务器、GitHub 内部存储原理 |
+- `git remote add origin <url>`：接线。在本地仓库登记一个叫 `origin` 的远程地址。`origin` 只是约定俗成的名字（来源仓库的意思），叫别的也能用，但全世界的教程都默认它，别标新立异；
+- `git push -u origin main`：把本地 `main` 推到 `origin`，**`-u`（`--set-upstream` 的缩写）建立追踪关系**。之后这个分支上 `git push`、`git pull` 不用再写全名，Git 知道往哪推、从哪拉。
 
----
+用 `git remote -v` 验证接线结果，应该看到 fetch（拉）和 push（推）两行相同的地址。
 
-## 三、操作向导第二步：创建文件并查看状态
+### 路径 3：从零开始 —— gh 一条命令
 
-### 3.1 创建第一个文件
+2026 年的新项目，用 [GitHub CLI](/github/440-GitHubCLI) 最省事：
 
 ```bash
-# 创建一个 README 文件（Windows 的 PowerShell 也支持 echo 写法）
-echo "# 我的第一个项目" > README.md
+gh repo create my-new-idea --private --source=. --push
 ```
 
-### 3.2 查看仓库状态：git status
+当前目录不是 Git 仓库时它还会先替你 `git init`。等价的手工流程是：`git init -b main` → 提交 → 网页建空仓 → 走路径 2。`git init -b main` 里的 `-b main` 直接指定初始分支名，即使忘了配 `init.defaultBranch` 也不会生出 `master`。
+
+## 3. 为什么：分支名约定与「空仓库」原则
+
+**为什么盯着 main 不放？** GitHub 上新建仓库的默认分支是 `main`，而你本地如果没配置，`git init` 出来的首个分支可能叫 `master`。名字不一致不会立刻报错，但推送时会出现「本地 master、远程 main」两套平行历史，协作时必乱。统一约定：**新项目一律 main**。已经init 成 master 的老仓库，补救只要两步：
 
 ```bash
-# 查看工作区和暂存区状态（养成随时查看的习惯）
-git status
+git branch -M main       # 把当前分支重命名为 main（-M = 强制改名）
+git push -u origin main  # 以 main 为准推送
 ```
 
-真实输出示例：
+**为什么路径 2 建仓时不能勾 README？** 本地仓库已有提交历史，云端如果被 README 初始化，远程就先有了一个你的本地没有的提交。两边的第一份历史对不上，push 会被拒（`fetch first`）。规则很简单：**先有本地、后建远程时，远程必须保持全空**；反过来克隆路径不受影响，因为云端先有内容，你拿到的就是它的副本。
 
-```
-On branch master
+## 4. 坑点与自检
 
-No commits yet
+| 报错/现象 | 原因 | 对策 |
+| :--- | :--- | :--- |
+| `fatal: not a git repository` | 当前目录没有 `.git` | 确认目录正确；不是仓库就先 `git init` |
+| `Please tell me who you are` | 没配 `user.name` / `user.email` | 按 [安装与配置](/git/020-GitInstallConfig) 配好身份 |
+| `nothing added to commit but untracked files present` | 文件没 `git add` 过就 commit | 先 add 再 commit（流程见 [提交与推送](/github/060-GitCommitPush)） |
+| `Authentication failed`（HTTPS） | GitHub 不接受账号密码 | `gh auth login` 或配置 SSH / PAT（见 [SSH 与 HTTPS](/github/040-SSHHTTPS)） |
+| push 被拒 `fetch first` | 远程已有本地没有的提交（常见于误勾 README 初始化） | `git pull origin main --allow-unrelated-histories` 后再推，或按第 3 节原则重建远程 |
+| 本地 master、远程 main 并存 | 初始分支名未统一 | `git branch -M main` 后按 main 推送 |
 
-Untracked files:
-  (use "git add <file>..." to include in what will be committed)
-        README.md
+自检四问：
 
-nothing added to commit but untracked files present (use "git add" to track)
-```
+1. `git remote -v` 有输出吗？地址对吗？
+2. `git branch --show-current` 显示的是 main 吗？
+3. 我这次建远程仓库时，勾没勾 README？（路径 2 应该没勾）
+4. `git push` 不带参数能推出去吗？（能，说明 `-u` 的追踪关系生效了）
 
-看懂输出：`Untracked files` 表示 README.md 是**未跟踪文件**——文件存在，但 Git 还没纳入管理。这正是"地基打好但砖还没码"的阶段。
+## 5. 练习
 
-### 3.3 简洁模式与细节模式
+1. 基础：克隆 FANDEX 仓库（或任意公开仓库），跑 `git remote -v` 与 `git branch --show-current`，对照第 2 节说出 clone 替你做了哪三件事。
+2. 场景：故意制造事故——本地 init 时不配 `init.defaultBranch`（或用 `git init` 旧默认），观察分支名，然后用 `git branch -M main` 纠正并完成推送。
+3. 对比：同一个项目分别用路径 2 和路径 3 接上 GitHub，感受 `gh repo create --source=. --push` 到底省掉了哪几步。
+4. 思考：`git clone --depth 1` 拿到的仓库缺什么？如果你 clone 它是为了提交 PR，会发生什么？（提示：PR 需要完整历史作为合并基础。）
 
-```bash
-# 简洁输出（?? 表示未跟踪，A 表示已暂存，M 表示已修改）
-git status -s
+## 下一步
 
-# 详细输出：附加文件差异内容
-git status -v
-```
-
----
-
-## 四、操作向导第三步：把文件放入暂存区
-
-### 4.1 添加文件：git add
-
-```bash
-# 将指定文件加入暂存区（暂存区 = 本次提交的"候选清单"）
-git add README.md
-
-# 查看状态确认（此时 README.md 前面出现 A）
-git status -s
-```
-
-输出示例：
-
-```
-A  README.md
-```
-
-### 4.2 git add 的常见用法
-
-```bash
-# 添加当前目录下所有改动（最常用）
-git add .
-
-# 添加所有变化（新增、修改、删除都算，等价于 git add -A）
-git add -A
-
-# 只添加已跟踪文件的修改和删除（不含新文件）
-git add -u
-
-# 添加指定目录
-git add src/components/
-
-# 交互式选择部分改动加入暂存区（精细控制）
-git add -p
-```
-
-### 4.3 文件移除与重命名
-
-```bash
-# 从工作区和暂存区同时移除文件
-git rm oldfile.txt
-
-# 仅从暂存区移除，但保留本地文件（例如不想把 .env 提交上去）
-git rm --cached .env
-
-# 递归移除整个目录
-git rm -r olddir/
-
-# 重命名文件并记录到暂存区
-git mv old.txt new.txt
-
-# 将文件移动到目录
-git mv file.txt src/
-
-# 把已暂存的文件撤出暂存区（内容不丢）
-git restore --staged index.js
-```
-
-> 原理说明：`git add` 不是"上传文件"，而是把文件的**当前快照**写入暂存区（Index）。如果你 add 之后又修改了文件，下一次提交记录的是暂存区里的旧版本，必须重新 add。理解这一点，很多"我改了为什么没生效"的困惑就解开了。
-
----
-
-## 五、操作向导第四步：完成首次提交
-
-### 5.1 提交：git commit
-
-```bash
-# 提交暂存区内容，-m 后面跟提交说明
-git commit -m "chore: 项目初始化，添加 README"
-```
-
-真实输出示例：
-
-```
-[master (root-commit) 7a3f9c1] chore: 项目初始化，添加 README
- 1 file changed, 1 insertion(+)
- create mode 100644 README.md
-```
-
-看懂输出：`root-commit` 表示这是该仓库的**第一个提交**（没有父提交）；`7a3f9c1` 是提交 ID（SHA-1 哈希的前 7 位）；`1 file changed, 1 insertion(+)` 表示本次改动规模。
-
-### 5.2 查看提交成果
-
-```bash
-# 确认提交成功
-git status
-# 输出应为：nothing to commit, working tree clean（工作区干净）
-
-# 查看提交历史
-git log --oneline
-# 输出示例：7a3f9c1 (HEAD -> master) chore: 项目初始化，添加 README
-```
-
-### 5.3 其他初始化相关命令
-
-```bash
-# 查看仓库配置（确认身份已生效）
-git config --list
-
-# 删除仓库重新初始化（慎用！会清空 .git 中的所有历史）
-# 在项目根目录执行：rm -rf .git  然后重新 git init
-```
-
----
-
-## 六、克隆远程仓库（另一种"拿地"方式）
-
-除了从零 `git init`，更常见的做法是**克隆（clone）**——把 GitHub 上已有的仓库完整复制到本地，历史记录、分支、标签全都带过来。
-
-```bash
-# 克隆仓库到当前目录（自动生成同名文件夹）
-git clone https://github.com/user/repo.git
-
-# 克隆到指定目录名
-git clone https://github.com/user/repo.git myapp
-
-# 仅克隆指定分支
-git clone -b develop https://github.com/user/repo.git
-
-# 浅克隆：只取最近 1 次提交（适合大仓库，速度快）
-git clone --depth 1 https://github.com/user/repo.git
-
-# 浅克隆：只取最近 5 次提交
-git clone --depth 5 https://github.com/user/repo.git
-
-# SSH 方式克隆（需先配置 SSH 密钥，免输密码）
-git clone git@github.com:user/repo.git
-```
-
-> 原理说明：`git clone` 内部做了三件事——下载仓库所有对象、建立默认分支并检出工作区、自动添加名为 `origin` 的远程仓库引用。所以克隆完成后直接 `git remote -v` 就能看到远程地址，不需要再手动配置。
-
----
-
-## 七、常见错误与对策表
-
-| 错误现象 | 报错信息（节选） | 原因分析 | 解决办法 |
-| --- | --- | --- | --- |
-| 命令找不到 | `fatal: not a git repository (or any of the parent directories): .git` | 当前目录不是 Git 仓库 | 确认已进入项目目录，先执行 `git init` |
-| 身份未配置 | `Author identity unknown` / `Please tell me who you are` | 没设置 user.name 和 user.email | 执行 `git config --global user.name "名字"` 和 `git config --global user.email "邮箱"` |
-| 提交时没内容 | `nothing added to commit but untracked files present` | 文件从未执行过 `git add` | 先 `git add <文件>` 或 `git add .` 再 commit |
-| 改了文件却提交了旧版 | 提交内容与最新修改不一致 | add 之后再编辑，暂存区还是旧快照 | 修改后重新执行 `git add`，或改用 `git commit -am "说明"`（仅限已跟踪文件） |
-| 误删 .git | 仓库历史全部丢失，无法回退 | 手工删除或移动了 .git 文件夹 | 无法恢复，只能重新 init；切记永远不动 .git |
-| 克隆报认证失败 | `Authentication failed for 'https://github.com/...'` | HTTPS 克隆私有仓库需要凭证 | 使用 SSH 方式克隆，或配置 credential helper（见 043 篇） |
-
----
-
-## 九、一句话记忆
-
-**`git init` 是给项目打地基（生成 .git 数据库），`git add` 是把材料搬进候选区（暂存区），`git commit` 是浇下第一块楼板（生成首个快照）——地基打好，版本控制的大厦从此拔地而起。**
+- [Git 提交与推送](/github/060-GitCommitPush)：本文打通了管道，这一篇讲管道里流的「水」——add / commit / push 的完整节奏；
+- [仓库创建、克隆、归档、删除](/github/030-RepositoryCreateCloneArchiveDelete)：仓库生命周期四件事的全景图；
+- [SSH 与 HTTPS](/github/040-SSHHTTPS)：推送认证失败时的根治方案。

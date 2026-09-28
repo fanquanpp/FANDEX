@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub CLI（gh）详解：安装认证、仓库/PR/Issue/Actions 常用命令与工作流提速技巧。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'github/290-SecretScanning'
   - 'github/300-CodeQLCodeScanning'
@@ -20,7 +20,7 @@ prerequisites:
 
 看电视时，你很少走到电视机前按物理按钮，而是用**遥控器（GitHub CLI）** 懒洋洋地换台、调音量。GitHub CLI（命令 `gh`）就是 GitHub 网页版的"遥控器"：不用在浏览器里点来点去，在终端里敲一行命令，就能完成建仓库、提 PR、管 Issue、查 Actions 等几乎全部操作。
 
-本篇采用**工具驱动**的结构：先安装"遥控器"（安装认证），再逐个"换台"（仓库/PR/Issue/Actions 等常用命令），最后分享把"遥控器"调教得更顺手的技巧（别名、扩展）。与 046-057 篇的 gh 专项命令速查相呼应，本篇侧重**整体上手路径与组合使用**。
+本篇采用**工具驱动**的结构：先安装"遥控器"（安装认证），再逐个"换台"（仓库/PR/Issue/Actions 等常用命令），最后分享把"遥控器"调教得更顺手的技巧（别名、扩展）。与本模块 450 至 560 篇的 gh 专项命令速查相呼应，本篇侧重**整体上手路径与组合使用**。
 
 ## 1. 安装与认证：拿到遥控器
 
@@ -307,7 +307,7 @@ gh config list
 
 ### 7.5 与 046-057 系列的关系
 
-本篇是 gh 的**整体上手路径**；046-057 篇按命令族给出速查手册：
+本篇是 gh 的**整体上手路径**；本模块 450 至 560 篇按命令族给出速查手册：
 
 | 主题 | 对应篇目 |
 | :--- | :--- |
@@ -345,8 +345,8 @@ gh config list
 
 ### 延伸阅读
 
-- gh 认证与多账户详解，见 046 篇《Gh CLI 认证》。
-- gh PR 管理速查，见 047 篇《Gh PR 管理》。
-- gh Issue 管理速查，见 048 篇《Gh Issue 管理》。
-- gh 仓库/Release/Workflow/Gist/扩展/API 命令，见 049-057 篇。
-- 凭据与 PAT 的底层原理，见 002/004 篇。
+- gh 认证与多账户详解，见 [GitHub CLI 认证配置](/github/450-GhCliAuth)。
+- gh PR 管理速查，见 [GitHub CLI PR 管理](/github/460-GhPrManage)。
+- gh Issue 管理速查，见 [GitHub CLI Issue 管理](/github/470-GhIssueManage)。
+- gh 仓库/Release/Workflow/Gist/扩展/API 命令，见 [GitHub CLI 仓库管理](/github/480-GhRepoManage) 起的各命令族速查。
+- 凭据与 PAT 的底层原理，见 [账户注册与双因素认证](/github/020-AccountRegister2FA) 与 [SSH 与 HTTPS](/github/040-SSHHTTPS)。

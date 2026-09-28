@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: "用游戏排行榜主线讲透 C# 基础语法：顶级语句与经典 Main 的隐式生成关系、var 编译期类型推断、字符串插值、if/for/foreach、文件范围命名空间与隐式 using，附 CS0103 真实编译报错实录与四道阶梯练习。"
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'csharp/040-CSharpOOP'
   - 'csharp/050-ValueTypeReferenceType'

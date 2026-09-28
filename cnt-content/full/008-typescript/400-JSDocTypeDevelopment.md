@@ -1,12 +1,12 @@
 ---
-order: 400
+order: 410
 title: JSDoc 类型驱动开发：不写 .ts 也有完整类型
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: 用 JSDoc 注释获得 TypeScript 级类型检查：checkJs、@type/@typedef/@import、dts 生成与适用边界。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/030-TypeScriptOverviewEnvSetup'
   - 'typescript/300-DeclarationFileWriting'

@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 610
 title: TypeScript 毕业项目：类型安全的 API 客户端库
 description: TypeScript 模块出口项目：从需求清单出发做一个类型安全的 API 客户端库——fetch 封装与泛型请求函数、端点类型映射表、unknown 收窄衔接运行时校验、判别式联合错误模型、Equal/Expect 类型测试、vitest 单元测试与 tsc 声明文件构建发布。只给需求、验收断言与提示，不给答案代码。
 module: 'typescript'

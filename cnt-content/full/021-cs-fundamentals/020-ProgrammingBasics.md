@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 算法流程图、控制结构、编译与解释、数据类型、运算符与表达式求值（入门学习笔记）。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/070-DataRepresentationOperation'
   - 'cs-fundamentals/030-FunctionModular'
@@ -39,12 +39,15 @@ prerequisites:
 
 ```mermaid
 flowchart TD
-    A([开始]) --> B[输入 N]
-    B --> C[sum = 0]<br/>D[i = 1]
-    C --> E{i <= N?}
-    E -- 否 --> F[输出 sum] --> G([结束])
-    E -- 是 --> H[sum = sum + i]<br/>I[i = i + 1]
-    H --> E
+    A([开始]) --> B["输入 N"]
+    B --> C["sum = 0"]
+    B --> D["i = 1"]
+    C --> E{"i <= N?"}
+    D --> E
+    E -- 否 --> F["输出 sum"] --> G([结束])
+    E -- 是 --> H["sum = sum + i"]
+    H --> I["i = i + 1"]
+    I --> E
 ```
 
 ### 1.3 用代码对应流程图

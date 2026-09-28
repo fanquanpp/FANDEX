@@ -1,12 +1,12 @@
 ---
-order: 450
+order: 470
 title: IndexedDB 浏览器数据库
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: 浏览器端事务型 NoSQL 数据库的形式语义、事务模型、索引机制与生产级工程实践
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/460-StorageForTheWeb'
   - 'javascript/310-IteratorHelper'

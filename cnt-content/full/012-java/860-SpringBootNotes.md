@@ -1,12 +1,12 @@
 ---
-order: 670
+order: 680
 title: Spring Boot 学习笔记
 module: 'java'
 category: 后端技术
 difficulty: intermediate
 description: Spring Boot 深度指南：自动配置原理、起步依赖、Actuator、Spring Data JPA、Spring Security、Spring Cloud 与生产级工程实践。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/290-LambdaFunctionalProgramming'
   - 'java/700-NetworkProgrammingDeepDive'
@@ -518,7 +518,7 @@ app:
 ```
 
 > **特性**：
-> - 支持 relaxed binding（`maxItems` ↔ `max-items` ↔ `MAX_ITEMS`）
+> - 支持 relaxed binding（`maxItems` <-> `max-items` <-> `MAX_ITEMS`）
 > - 支持 `Duration` 解析（`30s`、`PT30S`、`30000ms`）
 > - 支持 `DataSize` 解析（`10MB`、`1024B`）
 > - JSR-303 校验（`@Validated` + `@NotNull`、`@Min`）

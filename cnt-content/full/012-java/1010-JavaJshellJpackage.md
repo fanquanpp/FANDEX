@@ -1,12 +1,12 @@
 ---
-order: 820
+order: 830
 title: JShell 与 JPackage 交互环境
 module: 'java'
 category: 后端技术
 difficulty: beginner
 description: 用 jshell 即时验证语法与 API，用 jpackage 打出平台原生安装包。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/740-JavaBuildTool'
   - 'java/020-JavaOverviewDevEnv'

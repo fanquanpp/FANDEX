@@ -1,12 +1,12 @@
 ---
-order: 550
+order: 570
 title: JavaScript console API 语法速查手册
 module: 'javascript'
 category: 前端技术
 difficulty: beginner
 description: console 全家族 API 速查：分级输出、格式化、表格、计时计数、断言与生产环境治理。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/500-DebugPerformanceOptimization'
   - 'javascript/480-ErrorBoundaryGlobalErrorCatch'

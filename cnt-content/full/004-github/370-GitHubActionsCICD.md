@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GitHub Actions 与 CI/CD 总纲：以智能工厂流水线为类比，讲透 CI/CD 概念、workflow 文件结构（name/on/jobs/steps）、Actions 市场使用与工程最佳实践。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'github/180-PullRequestCompleteCollaborationFlow'
   - 'github/360-GitHubPagesMultiSolution'
@@ -65,7 +65,7 @@ GitHub 官方把 Actions 的组件划分为六个概念，层级从小到大依�
 
 ```
 workflow（工作流）→ jobs（任务）→ steps（步骤）→ actions（动作）/ shell 命令
-                                        ↕
+                                        <->
                     runner（运行器：执行这些任务的机器）
                     event（事件：触发流水线开动的信号）
 ```
@@ -400,7 +400,7 @@ permissions:
 
 - **密钥入库**：所有密钥放 Secrets，代码里绝不硬编码。
 - **固定版本**：Action 固定主版本或 SHA；优先使用官方 `actions/*` 与已验证作者（verified creator）发布的 Action。
-- **开启 CodeQL**：集成代码扫描（见 019 篇）。
+- **开启 CodeQL**：集成代码扫描（见 [CodeQL 代码扫描](/github/300-CodeQLCodeScanning)）。
 - **云部署用 OIDC 代替长期密钥**：工作流可向云厂商（AWS/Azure/GCP 等）申请短时身份令牌，免去把长期 Access Key 存进 Secrets——在 job 上声明 `permissions: { id-token: write }`，由各云厂商的官方登录 Action 完成互换。
 - **公共工作流要防注入**：`github.event` 中来自外部的字段（PR 标题、分支名、Issue 正文等）直接拼进 `run:` 存在被注入执行的风险，先经环境变量中转或校验后再用。
 

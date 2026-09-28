@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 从 Google 的三个工程痛点讲起——编译慢、依赖乱、新人上手难，建立 Go 的心智模型（编译型、垃圾回收、goroutine 内建），理解关键字少是特性、云原生事实标准的定位与一年两版的版本策略。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/020-GoOverviewEnvSetup'
   - 'cs-fundamentals/020-ProgrammingBasics'

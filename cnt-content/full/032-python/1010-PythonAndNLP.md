@@ -1,12 +1,12 @@
 ---
-order: 780
+order: 820
 title: Python 与 NLP
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 自然语言处理核心理论、spaCy/Transformers/NLTK 工程实践与 Transformer 注意力机制形式化推导
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/990-PythonMachineLearning'
   - 'python/1000-PythonDeepLearning'

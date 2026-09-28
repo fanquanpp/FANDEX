@@ -1,12 +1,12 @@
 ---
-order: 410
+order: 420
 title: Node.js 与 TypeScript 工程化
 module: 'typescript'
 category: 前端技术
 difficulty: intermediate
 description: 一份开箱即用的 Node.js + TypeScript 工程骨架：目录结构、tsconfig 双配置、开发与构建脚本、常见坑位。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/350-TypeScriptEngineeringConfig'
   - 'typescript/360-TsconfigStrictMode'
@@ -14,7 +14,7 @@ prerequisites:
   - 'typescript/030-TypeScriptOverviewEnvSetup'
 ---
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 

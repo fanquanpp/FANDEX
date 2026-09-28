@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: WebSocket 协议帧格式与心跳机制：帧结构、控制帧、数据帧与 Ping/Pong。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/340-DNSFlow'
   - 'cs-fundamentals/350-CDNPrinciple'
@@ -19,7 +19,7 @@ prerequisites:
 ## 前置知识
 
 - HTTP 协议的"请求-响应"模型：客户端不请求、服务器就不能说话；
-- TCP 字节流无消息边界（见 [TCP 粘包与拆包](cs-fundamentals/310-TCPMessageFraming)）——WebSocket 是在这条流上定义了边界的协议；
+- TCP 字节流无消息边界（见 [TCP 粘包与拆包](/cs-fundamentals/310-TCPMessageFraming)）——WebSocket 是在这条流上定义了边界的协议；
 - Base64 与 SHA-1 的基本概念（握手用到）。
 
 ## 学习目标
@@ -83,7 +83,7 @@ Sec-WebSocket-Accept: s3pPLMBiTxaQ9kYGzzhZRbK+xOo=
 | Masking-Key | 0 或 32 | 掩码密钥，仅客户端->服务端方向出现 |
 | Payload Data | 变长 | 扩展数据（若协商）+ 应用数据 |
 
-长度采用"小消息头内嵌、大消息扩展"的三级编码，让绝大多数小消息（聊天、信令）只花 2 字节头——对比 HTTP 每次数百字节的头部，这就是 WebSocket 适合高频小消息的根源。注意这也是一个"长度前缀"协议（见 [TCP 粘包与拆包](cs-fundamentals/310-TCPMessageFraming)），WS 的分帧逻辑由协议自带，应用层无需再设计。
+长度采用"小消息头内嵌、大消息扩展"的三级编码，让绝大多数小消息（聊天、信令）只花 2 字节头——对比 HTTP 每次数百字节的头部，这就是 WebSocket 适合高频小消息的根源。注意这也是一个"长度前缀"协议（见 [TCP 粘包与拆包](/cs-fundamentals/310-TCPMessageFraming)），WS 的分帧逻辑由协议自带，应用层无需再设计。
 
 ### 3.1 掩码：一个防投毒的安全设计
 
@@ -167,10 +167,10 @@ console.log({ fin, opcode, masked, len, payload: unmasked.toString() });
 ## 7. 常见陷阱与调试
 
 - **连接"无故"断开**：多数是中间设备的空闲超时。上线心跳（Ping/Pong 或应用层），周期取"最严格超时的一半"，如网关 60 秒超时就 25-30 秒跳一次。
-- **忘记处理半包与粘包**：自己基于 TCP 实现服务端时，帧可能跨 TCP 报文到达，必须先缓冲到"帧头声明的完整长度"再解析——WS 分帧不豁免字节流问题（同 [TCP 粘包与拆包](cs-fundamentals/310-TCPMessageFraming)）。
+- **忘记处理半包与粘包**：自己基于 TCP 实现服务端时，帧可能跨 TCP 报文到达，必须先缓冲到"帧头声明的完整长度"再解析——WS 分帧不豁免字节流问题（同 [TCP 粘包与拆包](/cs-fundamentals/310-TCPMessageFraming)）。
 - **服务端->客户端也加了掩码**：协议只要求客户端方向掩码，服务端带掩码会被标准客户端视为协议错误断开（1002）。
 - **单帧长度误判**：长度字段为 126/127 时不要把 126/127 本身当长度用，要继续读 2 或 8 字节扩展字段（64 位长度还需要处理大端序）。
-- **误用 wss 端口**：`wss://` 走 TLS（同 [HTTPS 握手](cs-fundamentals/330-HTTPSHandshake)），端口与证书都是 HTTPS 那一套；`ws://` 在 HTTPS 页面里会被浏览器混合内容策略拒绝。
+- **误用 wss 端口**：`wss://` 走 TLS（同 [HTTPS 握手](/cs-fundamentals/330-HTTPSHandshake)），端口与证书都是 HTTPS 那一套；`ws://` 在 HTTPS 页面里会被浏览器混合内容策略拒绝。
 
 ## 8. 实战场景
 

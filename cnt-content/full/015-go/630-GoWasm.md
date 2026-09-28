@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go 与 WebAssembly：Wasm 字节码、栈式虚拟机、syscall/js 桥接、WASI、TinyGo 与浏览器端企业级应用
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/620-GoCGO'
   - 'go/570-GoCodeGeneration'
@@ -219,7 +219,7 @@ $$
 
 从类型论视角，wasm 模块是一个 **封闭世界**（closed world）的类型系统：
 
-- 所有跨边界（Go ↔ JS）的值必须经过 **marshal/unmarshal**。
+- 所有跨边界（Go <-> JS）的值必须经过 **marshal/unmarshal**。
 - `js.Value` 是一个 **不透明类型**（opaque type），其内部表示对 Go 不可见。
 - 类型签名：$\text{JSValue} = \text{Ref}(\text{JSHeap})$，其中 $\text{Ref}$ 是引用类型构造子。
 
@@ -292,7 +292,7 @@ $$
 典型值（Chrome 120，M1 Pro）：
 
 - $T_{\text{marshal}}$（int/string）：约 50 ns。
-- $T_{\text{trampoline}}$：约 200 ns（涉及 wasm ↔ JS 边界切换）。
+- $T_{\text{trampoline}}$：约 200 ns（涉及 wasm <-> JS 边界切换）。
 - $T_{\text{unmarshal}}$：约 50 ns。
 
 因此，**频繁跨边界调用**（如每像素调用 `ctx.fillRect`）性能极差。应批量传递数据，在 Go 侧完成计算，最后一次性写回 JS。
@@ -766,7 +766,7 @@ brotli -q 11 main.wasm -o main.wasm.br
 ### 6.1 反模式：频繁跨边界调用
 
 ```go
-// BAD: 每像素调用 SetIndex，导致大量 wasm↔JS 边界切换
+// BAD: 每像素调用 SetIndex，导致大量 wasm<->JS 边界切换
 func badGrayscale(canvas js.Value) {
     ctx := canvas.Call("getContext", "2d")
     width := canvas.Get("width").Int()
@@ -1386,7 +1386,7 @@ func process(data js.Value) {
 }
 ```
 
-**问题**：每次调用 `data.Index(i)` 都涉及一次 wasm↔JS 边界切换，对于 length=10000 的数组，会有 10000 次边界调用，总开销约 2 ms。
+**问题**：每次调用 `data.Index(i)` 都涉及一次 wasm<->JS 边界切换，对于 length=10000 的数组，会有 10000 次边界调用，总开销约 2 ms。
 
 **优化方案**：
 

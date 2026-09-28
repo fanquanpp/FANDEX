@@ -1,12 +1,12 @@
 ---
-order: 250
+order: 260
 title: React 动画
 module: 'react'
 category: 前端技术
 difficulty: intermediate
 description: React 动画分层指南：CSS 过渡/动画驱动、退场动画与卸载时机、motion（Framer Motion）与 WAAPI、rAF 循环与 React 渲染解耦、prefers-reduced-motion。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/230-ReactRouteAdvanced'
   - 'react/240-ReactI18n'

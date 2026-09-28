@@ -1,12 +1,12 @@
 ---
-order: 620
+order: 640
 title: Intl 国际化 API（ECMA-402）
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: 内置国际化全家桶：Intl.NumberFormat、DateTimeFormat、Collator、Segmenter 等的正确用法与性能要点。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/610-TemporalJavaScriptAPI'
   - 'javascript/430-WebAPIBrowserInterface'

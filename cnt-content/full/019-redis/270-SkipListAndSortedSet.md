@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 280
 title: 跳表与有序集合
 module: 'redis'
 category: 数据库
@@ -8,10 +8,9 @@ description: Redis 跳表（Skiplist）数据结构详解：层级结构、概�
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'redis/280-ModuleSystem'
+  - 'redis/040-ListSetCommands'
+  - 'redis/100-VectorSet'
   - 'redis/260-StringSDSStructure'
-  - 'redis/200-ReplicationBuffer'
-  - 'redis/210-SentinelElection'
 prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---
@@ -223,3 +222,45 @@ rank = Σ span（沿路径经过的所有 span 之和）
 $$E(\text{总指针数}) = n \times \sum_{k=1}^{\infty} \frac{1}{4^{k-1}} = n \times \frac{4}{3} \approx 1.33n$$
 
 每个节点平均 1.33 个前进指针，加上 span 和 backward，空间开销约为纯链表的 2-3 倍。
+
+## 6. 命令补充：条件写入、聚合与按排名删除
+
+上文聚焦底层结构，这里补齐日常真正高频的命令面，可在 redis-cli 直接验证。
+
+```redis
+# 添加与更新（ZADD 的条件选项 6.2+）
+ZADD leaderboard 100 "Alice" 95 "Bob" 88 "Charlie"
+ZADD leaderboard XX 105 "Alice"     # 仅更新已存在成员，不新增
+ZADD leaderboard NX 92 "David"      # 仅添加新成员，不更新已有
+ZADD leaderboard GT 110 "Alice"     # 仅当新分数更大时才更新（打点类场景防回退）
+ZADD leaderboard LT 80 "Bob"        # 仅当新分数更小时才更新
+
+# 排名与分数
+ZSCORE leaderboard "Alice"          # 分数
+ZRANK leaderboard "Alice"           # 升序排名（从 0 开始）
+ZREVRANK leaderboard "Alice"        # 降序排名（排行榜第 N 名就是它）
+
+# 范围查询：分数区间与排名区间两套口径
+ZRANGEBYSCORE leaderboard 90 100 WITHSCORES   # 分数 90~100
+ZRANGEBYSCORE leaderboard (90 +inf            # ( 前缀表示开区间，>90
+ZCOUNT leaderboard 90 100
+ZRANGE leaderboard 0 9 WITHSCORES             # 按排名取前 10（升序）
+ZREVRANGE leaderboard 0 9 WITHSCORES          # 降序前 10（排行榜惯用）
+
+# 删除的三种口径
+ZREM leaderboard "Charlie"
+ZREMRANGEBYRANK leaderboard 0 2               # 按排名区间删
+ZREMRANGEBYSCORE leaderboard -inf 60          # 按分数区间删（清理低分）
+
+# 多集合聚合：权重与聚合方式
+ZUNIONSTORE result 2 zset1 zset2 WEIGHTS 1 2 AGGREGATE SUM
+ZINTERSTORE result 2 zset1 zset2 AGGREGATE MAX
+```
+
+两个易错点：
+
+- `ZRANGEBYSCORE` 的开区间写法是 `(90`（括号贴着数值），不是数学里的
+  `>90`；闭区间直接写 `90`。
+- `ZADD GT/LT` 只影响「是否更新分数」，成员不存在时仍然会新增——
+  「只在更优时更新，且绝不新增」需要 GT/LT 再配合 XX 一起用。
+

@@ -1,12 +1,12 @@
 ---
-order: 450
+order: 460
 title: 自定义 Hooks 复用逻辑
 module: 'react'
 category: 前端技术
 difficulty: advanced
 description: 高频自定义 Hook 实现与设计准则：useFetch、useDebounce、useLocalStorage、useEventListener 的可运行实现与常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/160-CustomHooksDesignPattern'
   - 'react/430-InterruptibleRendering'

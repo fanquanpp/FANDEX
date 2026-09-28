@@ -1,12 +1,12 @@
 ---
-order: 400
+order: 410
 title: Server Components 与 Client-Components
 module: 'react'
 category: 前端技术
 difficulty: advanced
 description: React Server Components与Client Components界限划分与最佳实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/380-ReactMonorepo'
   - 'react/390-ReactCompilerAutoMemoization'

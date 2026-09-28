@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Go 与正则表达式：regexp 包、RE2 语法、Thompson NFA 构造、Pike VM 算法、线性时间复杂度证明、跨引擎对比、性能优化、Unicode 支持与生产级最佳实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/430-GoSignalHandling'
   - 'go/420-GoFileMonitor'
@@ -191,9 +191,9 @@ $$
 
 ```mermaid
 flowchart LR
-    S[新 s] -->|ε| N1[N(r1)]
-    N1 -->|ε| N2[N(r2)]
-    N2 -->|ε| T[新 t]
+    S["新 s"] -->|ε| N1["N(r1)"]
+    N1 -->|ε| N2["N(r2)"]
+    N2 -->|ε| T["新 t"]
 ```
 
 
@@ -201,9 +201,9 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    S[新 s] -->|ε| N1[N(r1)]
-    N1 -->|ε| T[新 t]
-    S -->|ε| N2[N(r2)]
+    S["新 s"] -->|ε| N1["N(r1)"]
+    N1 -->|ε| T["新 t"]
+    S -->|ε| N2["N(r2)"]
     N2 -->|ε| T
 ```
 
@@ -211,8 +211,8 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    S[新 s] -->|ε| N[N(r)]
-    N -->|ε| T[t]
+    S["新 s"] -->|ε| N["N(r)"]
+    N -->|ε| T["t"]
     N -->|ε| S
     T -->|ε| N
 ```
@@ -307,8 +307,8 @@ flowchart LR
 
 ```mermaid
 flowchart LR
-    S6[状态 6] -->|ε| N[b|c NFA]
-    N -->|ε| S7[状态 7]
+    S6["状态 6"] -->|ε| N["b|c NFA"]
+    N -->|ε| S7["状态 7"]
     N -->|ε| S6
     S7 -->|ε| N
 ```

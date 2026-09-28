@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: OWASP Top 10（2021 正式版）逐项拆解：每类风险的原理、真实攻击示例、检测方法与修复清单。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/170-InputValidation'
   - 'cybersecurity/290-AuthenticationAuthorization'
@@ -155,7 +155,7 @@ subprocess.run(["convert", f"{filename}.png", "out.jpg"], shell=False)
 - 代码审计搜危险汇聚点：`execute(`、`os.system`、`exec`、`eval`、`Runtime.exec`。
 - 测试用探针：`'`、`"; sleep 5 --`、`$(id)`、`${7*7}`，观察响应差异或延迟。
 - 修复优先级：参数化查询 > 最小权限数据库账号 > 输入白名单校验 > WAF（最后防线）。
-- 专项展开见本模块 044-SQLInjection 与 048-CommandInjection。
+- 专项展开见本模块 180-SQLInjection 与 270-CommandInjection。
 
 ## 5. A04 不安全设计
 
@@ -194,7 +194,7 @@ subprocess.run(["convert", f"{filename}.png", "out.jpg"], shell=False)
 云配置         ：S3/OSS 桶公开读写、IAM 策略 Action: "*"、元数据 v1 未禁用
 ```
 
-修复思路是**基线化 + 自动化**：为每类环境维护加固基线（见本模块 033-SecurityBaseline），
+修复思路是**基线化 + 自动化**：为每类环境维护加固基线（见本模块 520-SecurityBaseline），
 用 IaC（Terraform/Ansible）+ 扫描（kube-bench、tfsec、CIS-CAT）保证漂移可发现。
 
 ## 7. A06 易受攻击的过时组件
@@ -236,7 +236,7 @@ MFA      ：对高价值操作强制多因素，优先 FIDO2/OTP 而非短信
 ```
 
 JWT 相关攻击（alg=none、RS256/HS256 混淆）与 OAuth/OIDC 实践见
-本模块 049-OAuth2OIDC 与 032-IdentityAccessManagement。
+本模块 310-OAuth2OIDC 与 300-IdentityAccessManagement。
 
 ## 9. A08 软件与数据完整性失败
 
@@ -245,7 +245,7 @@ JWT 相关攻击（alg=none、RS256/HS256 混淆）与 OAuth/OIDC 实践见
 对**更新、依赖、CI/CD 产物与序列化数据**的完整性验证缺失。三个高频场景：
 
 1. **不安全反序列化**：不可信数据被还原成对象，触发 gadget chain 导致 RCE
-   （详见 030-DeserializationVulnerability）。
+   （详见 260-DeserializationVulnerability）。
 2. **供应链**：不校验依赖签名/哈希，构建产物可被替换（typosquatting 投毒、
    CI 注入，如 2020 年 SolarWinds 事件）。
 3. **自动更新不校验签名**：客户端信任任何 HTTP 下的「更新包」。
@@ -267,7 +267,7 @@ JWT 相关攻击（alg=none、RS256/HS256 混淆）与 OAuth/OIDC 实践见
 ### 10.2 落地要点
 
 - 必记事件：登录成功/失败、权限变更、输入校验拒绝、订单与支付状态迁移、管理操作。
-- 日志格式结构化（JSON），时间同步（NTP），只追加存储（防篡改），集中到 SIEM（见 010-SOC）。
+- 日志格式结构化（JSON），时间同步（NTP），只追加存储（防篡改），集中到 SIEM（见 550-SOC）。
 - 日志本身是敏感数据：不记密码、Token、身份证号全量。
 - 用攻击注入测试告警链路（如故意触发一次暴力破解，验证能否收到告警）。
 
@@ -291,7 +291,7 @@ POST /fetch {"url": "http://169.254.169.254/latest/meta-data/iam/security-creden
 平台层   ：云元数据接口强制 IMDSv2（Token 头校验）、按需最小化 IAM 权限
 ```
 
-完整利用链与 DNS 重绑定等绕过手法见本模块 011-SSRFAttack。
+完整利用链与 DNS 重绑定等绕过手法见本模块 230-SSRFAttack。
 
 ## 12. 如何把 Top 10 用起来
 

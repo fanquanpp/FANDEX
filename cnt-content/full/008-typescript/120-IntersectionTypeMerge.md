@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 交叉类型、接口合并与类型覆盖
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/110-LiteralUnionTypes'
   - 'typescript/090-ClassAndDecorators'
@@ -27,7 +27,7 @@ prerequisites: []
 - 掌握「代码示例」的核心机制、典型用法与常见陷阱
 - 掌握「对比分析」的核心机制、典型用法与常见陷阱
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 ## 历史动机与背景

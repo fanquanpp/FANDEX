@@ -1,12 +1,12 @@
 ---
-order: 470
+order: 480
 title: JVM 垃圾回收
 module: 'java'
 category: 后端技术
 difficulty: advanced
 description: GC算法与垃圾回收器
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/500-JUCConcurrency'
   - 'java/590-JVMClassLoadingMechanism'

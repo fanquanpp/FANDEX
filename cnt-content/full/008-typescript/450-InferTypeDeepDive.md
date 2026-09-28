@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 460
 title: 组合实战：把条件类型与 infer 拼成真实工具
 module: 'typescript'
 category: 前端技术

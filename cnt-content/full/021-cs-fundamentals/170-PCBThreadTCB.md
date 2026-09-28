@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 进程控制块 PCB 与线程控制块 TCB 的结构、字段含义、组织方式与调度关系。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/150-OperatingSystem'
   - 'cs-fundamentals/190-InterruptAndSystemCall'
@@ -20,7 +20,7 @@ prerequisites:
 
 阅读本文前，你应当了解：
 
-- 进程是"正在运行的程序"这一基本概念（见 [操作系统](cs-fundamentals/150-OperatingSystem)）；
+- 进程是"正在运行的程序"这一基本概念（见 [操作系统](/cs-fundamentals/150-OperatingSystem)）；
 - CPU 寄存器与程序计数器（PC）的作用；
 - 程序与进程的区别：程序是静态的文件，进程是动态的执行实体。
 
@@ -112,7 +112,7 @@ TCB 的内容因此比 PCB 简单得多：核心是寄存器上下文、线程�
 
 - **用户级线程**：由线程库管理，内核不知道其存在。切换快（纯用户态），但一个线程阻塞系统调用会拖住整个进程；无法利用多核。
 - **内核级线程**：由内核直接管理调度，可并行跑在多核上，但管理需要进出内核。
-- **混合模型 / 现代主流**：Linux 采用"一对一"内核线程模型；Go 等语言运行时在内核线程之上再叠加用户态 goroutine（M:N 模型，见 [协程与并发模型](cs-fundamentals/180-CoroutinesAndConcurrencyModels)）。
+- **混合模型 / 现代主流**：Linux 采用"一对一"内核线程模型；Go 等语言运行时在内核线程之上再叠加用户态 goroutine（M:N 模型，见 [协程与并发模型](/cs-fundamentals/180-CoroutinesAndConcurrencyModels)）。
 
 ## 4. Linux 的实现：task_struct
 
@@ -215,7 +215,7 @@ int main(void) {
 
 - **fork 的返回值**：父进程中返回子进程 PID（>0），子进程中返回 0，失败返回 -1。靠返回值区分父子分支是 fork 编程的基础，误判会导致两个进程执行同一段逻辑。
 - **僵尸进程**：子进程退出后，内核保留其 PCB（退出状态）等父进程 `wait()` 读取；父进程不 wait，僵尸就一直占着 PID。调试时用 `ps aux | grep 'Z'` 定位，修复方向是父进程正确 wait 或忽略 `SIGCHLD`。
-- **线程竞态**：`counter++` 并非原子操作（读-改-写三条指令），多线程无锁自增结果会小于预期。需要互斥锁或原子操作（见 [操作系统](cs-fundamentals/150-OperatingSystem) 的同步章节）。
+- **线程竞态**：`counter++` 并非原子操作（读-改-写三条指令），多线程无锁自增结果会小于预期。需要互斥锁或原子操作（见 [操作系统](/cs-fundamentals/150-OperatingSystem) 的同步章节）。
 - **观察工具**：`strace -f` 跟踪 fork/clone 调用；`/proc/<pid>/status` 查看 PCB 中暴露的运行统计。
 
 ## 8. 实战场景

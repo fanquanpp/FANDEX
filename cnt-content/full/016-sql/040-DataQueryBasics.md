@@ -1,677 +1,422 @@
 ---
 order: 40
-title: 数据查询基础
+title: 数据查询基础：用 SELECT 问出第一个答案
 module: 'sql'
 category: 数据库
 difficulty: beginner
-description: SELECT 语句、WHERE 条件、排序、分页、去重、别名、表达式与聚合函数
+description: 以播客平台「回声FM」为练习场，从零学会 SELECT 的基本形状：选列、过滤、排序、分页、去重、别名与 CASE WHEN，并理解 NULL 与逻辑执行顺序这两个贯穿全模块的心智模型。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
-  - 'sql/020-OverviewStandard'
-  - 'sql/140-MultiTableQuery'
-  - 'sql/120-DML'
-prerequisites: []
+  - 'sql/030-SQLFirstSteps'
+  - 'sql/050-FilterCondition'
+  - 'sql/060-AggregateFunction'
+  - 'sql/080-SelectExecutionOrder'
+prerequisites:
+  - 'sql/030-SQLFirstSteps'
 ---
 
-## 学习目标
+## 1. 场景：你刚入职回声FM的数据组
 
-本文是「SQL」模块的第 4 篇，难度定位为入门。重点内容：SELECT 语句、WHERE 条件、排序、分页、去重、别名、表达式与聚合函数
+想象你加入一家播客平台「回声FM」，运营同事丢来一串真实问题：
 
-主要章节：
+- "昨晚《代码与咖啡》最新一期播放量多少？"
+- "把播放量最高的 5 个单集拉出来，我要发周报。"
+- "北京听众里有多少人填了手机号？"
+- "帮我把节目列表按分类排好序，一页 20 条发给我。"
 
-- 0. 五分钟上手：五条最常用的查询（先读这里）
-- WHERE 条件
-- LIKE 模式匹配
-- ORDER BY 排序
-- LIMIT / OFFSET 分页
-- DISTINCT 去重
-- ……共 15 个章节
+这些问题没有一个需要写代码——它们全部是**向数据库提问**，而提问的语言就是 `SELECT`。今天这节课的目标：让你能独立把上面四个问题翻译成 SQL，并且知道每一步数据库是怎么做的。
 
-## 0. 五分钟上手：五条最常用的查询（先读这里）
+### 1.1 先把练习场搭起来
 
-假设有一张 `users` 表，前五次查询覆盖日常 90% 的需求：
-
-**① 查询指定的几列**
+整篇文章我们只用三张小表。建议你边读边跑：任何能执行 SQL 的环境都可以（SQLite、PostgreSQL 17、MySQL 8.4 均可，个别方言差异文中会标注）。
 
 ```sql
-SELECT name, age FROM users;
+-- 节目表：一档播客节目
+CREATE TABLE shows (
+  id         INT PRIMARY KEY,
+  title      VARCHAR(100) NOT NULL,
+  category   VARCHAR(30),        -- 分类：科技 / 文化 / 商业
+  host       VARCHAR(50),        -- 主播
+  is_premium BOOLEAN NOT NULL DEFAULT FALSE  -- 是否付费节目
+);
+
+-- 单集表：节目下的每一期
+CREATE TABLE episodes (
+  id           INT PRIMARY KEY,
+  show_id      INT NOT NULL,
+  title        VARCHAR(100) NOT NULL,
+  duration_min INT,               -- 时长（分钟），未上架完的为 NULL
+  play_count   INT NOT NULL DEFAULT 0,
+  published_at DATE NOT NULL
+);
+
+-- 听众表
+CREATE TABLE listeners (
+  id        INT PRIMARY KEY,
+  nickname  VARCHAR(50) NOT NULL,
+  city      VARCHAR(30),
+  phone     VARCHAR(20),          -- 允许为 NULL：没填手机号
+  signup_at DATE NOT NULL
+);
 ```
 
-**讲解：** `SELECT` 后列出要看的列，用逗号分隔；只查需要的列能减少数据传输量。`SELECT *` 查全部列，方便但数据量大时慎用。
-
-**② 只查满足条件的行**
-
 ```sql
-SELECT * FROM users WHERE age > 18;
+INSERT INTO shows (id, title, category, host, is_premium) VALUES
+  (1, '代码与咖啡', '科技', '阿澜', FALSE),
+  (2, '深夜书桌',   '文化', '小满', FALSE),
+  (3, '增长手记',   '商业', '老周', TRUE),
+  (4, '芯片江湖',   '科技', '阿澜', TRUE),
+  (5, '城市漫步指南', '文化', '小满', FALSE);
+
+INSERT INTO episodes (id, show_id, title, duration_min, play_count, published_at) VALUES
+  (101, 1, '第 40 期：大模型创业这一年',   95, 51200, '2026-08-01'),
+  (102, 1, '第 41 期：一个程序员的退休计划', 88, 46800, '2026-08-15'),
+  (103, 2, '第 12 期：重读〈百年孤独〉',    76, 22100, '2026-07-20'),
+  (104, 3, '第 8 期：咖啡店的定价心理学',   64, 18900, '2026-08-05'),
+  (105, 4, '第 3 期：光刻机突围战',        112, 73500, '2026-08-10'),
+  (106, 5, '第 21 期：菜市场人类学',       NULL, 9800, '2026-08-20');
+
+INSERT INTO listeners (id, nickname, city, phone, signup_at) VALUES
+  (1, '夜航船', '北京', '13800001111', '2026-01-10'),
+  (2, '南方的风', '广州', NULL,           '2026-02-14'),
+  (3, '摩卡不加糖', '北京', '13800002222', '2026-03-01'),
+  (4, '阿基米德', '上海', NULL,           '2026-03-22'),
+  (5, '早八人',  '深圳', '13800003333', '2026-04-05');
 ```
 
-**讲解：** `WHERE` 是行级过滤器，只有满足条件的行才会返回；比较符包括 `>`、`<`、`>=`、`<=`、`=`、`<>`。
+数据只有十几行，但足够我们把每个子句都摸一遍。真实平台是几百万行，逻辑完全一样。
 
-**③ 排序**
+## 2. SELECT 的基本形状
+
+SELECT 要回答的问题永远是三段式：**要哪些列（SELECT）、从哪张表（FROM）、要哪些行（WHERE）**。
 
 ```sql
-SELECT * FROM users ORDER BY age DESC;
+-- 问题："把节目名单拉出来"
+SELECT title, host FROM shows;
 ```
 
-**讲解：** `ORDER BY` 按指定列排序，`DESC` 表示从大到小（降序），`ASC` 表示从小到大（升序，默认）。多列排序用逗号分隔，如 `ORDER BY age DESC, name ASC`。
-
-**④ 限制条数**
-
-```sql
-SELECT * FROM users LIMIT 5;
+```
+title       | host
+------------|------
+代码与咖啡  | 阿澜
+深夜书桌    | 小满
+增长手记    | 老周
+芯片江湖    | 阿澜
+城市漫步指南 | 小满
 ```
 
-**讲解：** `LIMIT 5` 只返回前 5 行，常用于分页与预览；配合 `ORDER BY` 才能得到“前几名”的稳定结果。
+三个要点：
 
-**⑤ 统计数量**
+- **只查需要的列**。`SELECT *` 表示"全部列"，适合临时探查，但业务代码里请写明列名：列少传输快，而且表结构一变，`*` 的下游代码就可能出错。
+- 列与列之间用逗号分隔，最后一列后面**不能**带逗号。
+- SQL 关键字不区分大小写，`select title from shows` 与上面等价。惯例是大写关键字、小写列名，让人一眼分清"关键字"和"数据"。
+
+### 2.1 计算列：SELECT 后面可以放表达式
+
+SELECT 的每一项不一定是列名，也可以是**对列做计算**：
 
 ```sql
-SELECT COUNT(*) FROM users;
+SELECT
+  title,
+  duration_min,
+  duration_min / 60.0 AS duration_hr,   -- 分钟转小时
+  play_count * 2     AS double_count    -- 随便一个演示表达式
+FROM episodes;
 ```
 
-**讲解：** `COUNT(*)` 统计总行数，返回一个数字；`COUNT(列名)` 只统计该列非 `NULL` 的行。
+`AS` 给计算结果起**别名**，否则列名会变成整串表达式。省略 `AS` 直接写空格也合法（`duration_min / 60.0 duration_hr`），但显式写 `AS` 更好读。
 
-**动手试试：** 在练习环境（如 SQLite）建一张 `users(id, name, age)` 表并插入几行数据，依次执行上面五条查询；再试着组合：`SELECT name FROM users WHERE age > 18 ORDER BY age DESC LIMIT 3`——你能说出它的含义吗？（答案：查询年龄大于 18 的用户名，按年龄从大到小排，只取前 3 个。）
+> 注意 `60.0` 而不是 `60`：很多数据库里整数除整数还是整数（SQLite/SQL Server 中 `95 / 60` 得 `1`），乘个 `1.0` 或 `60.0` 才会得到小数。这是新手最常见的"为什么结果是 0"问题。
 
-下面各节会逐一展开 `WHERE`、`ORDER BY`、`LIMIT` 与聚合函数的细节。
+### 2.2 别名的两条铁律
 
-## WHERE 条件
+别名一旦定义，能用在 `ORDER BY` 里，**不能**用在 `WHERE` 里：
 
-**单行写法：AND 组合条件**
-`WHERE <条件 1> AND <条件 2>;`
 ```sql
--- 查询 IT 部门且薪资大于 80000 的员工
-SELECT * FROM employees WHERE department = 'IT' AND salary > 80000;
+-- 可以：排序阶段在 SELECT 之后执行
+SELECT title, play_count * 1.0 / 10000 AS wan
+FROM episodes
+ORDER BY wan DESC;
+
+-- 报错：WHERE 阶段时别名还没出生
+SELECT title, play_count * 1.0 / 10000 AS wan
+FROM episodes
+WHERE wan > 3;          -- ERROR: column "wan" does not exist
 ```
 
-**单行写法：OR 组合条件**
-`WHERE <条件 1> OR <条件 2>;`
+为什么？记住执行顺序（第 9 节详述）：`WHERE` 在 `SELECT` 之前执行，等别名诞生时 `WHERE` 已经跑完了。想过滤就老老实实重写表达式：`WHERE play_count > 30000`。
+
+## 3. WHERE：先学会三招就够用
+
+WHERE 是**行级过滤器**，每行独立判断，为 TRUE 的行留下，为 FALSE 或 UNKNOWN 的行丢掉。
+
 ```sql
--- 查询 IT 或 HR 部门的员工
-SELECT * FROM employees WHERE department = 'IT' OR department = 'HR';
+-- 比较运算：=  <>  >  <  >=  <=
+SELECT title, play_count FROM episodes
+WHERE play_count > 30000;
+
+-- AND / OR 组合（AND 优先级高于 OR，拿不准就加括号）
+SELECT title FROM episodes
+WHERE duration_min > 90 OR play_count > 50000;
+
+-- IN：命中列表中任意一个值
+SELECT title FROM shows WHERE category IN ('科技', '商业');
+
+-- BETWEEN：闭区间，两头都包含
+SELECT title FROM episodes
+WHERE published_at BETWEEN '2026-08-01' AND '2026-08-31';
 ```
 
-**单行写法：NOT 取反条件**
-`WHERE NOT <条件>;`
+`IN` 与多个 `OR` 等价，但更短、更不容易写错；`BETWEEN a AND b` 等价于 `>= a AND <= b`（取反用 `NOT BETWEEN`）。
+
+### 3.1 LIKE：按样子匹配
+
 ```sql
--- 查询非 IT 部门的员工
-SELECT * FROM employees WHERE NOT department = 'IT';
+SELECT title FROM episodes WHERE title LIKE '第 4%';   -- "第 4"开头
+SELECT nickname FROM listeners WHERE nickname LIKE '%糖'; -- "糖"结尾
+SELECT phone FROM listeners WHERE phone LIKE '138%';    -- 138 开头
 ```
 
-**换行写法：括号组合条件**
-`WHERE (<条件 1> OR <条件 2>) AND <条件 3>;`
+两个通配符：`%` 匹配任意长度，`_` 匹配恰好一个字符。反例：`'138____1234'` 要求 4+1 个固定中间位，共 11 位。
+
+模式匹配在全表扫描时很贵（尤其 `%` 开头），索引与优化技巧见下一篇 [过滤条件](/sql/050-FilterCondition)——本节你只需会写。
+
+### 3.2 NULL：三分钟建立一个终生受用的观念
+
+NULL 不是 0，不是空字符串，而是"**这里没有值**"。它有一个反直觉的规则：
+
+> 任何值与 NULL 做比较（`= NULL`、`<> NULL`、`NULL > 1`……），结果都不是 TRUE 也不是 FALSE，而是 UNKNOWN。而 WHERE 只保留 TRUE。
+
+所以：
+
 ```sql
--- 查询 IT 或 HR 部门且薪资大于 50000 的员工
-SELECT * FROM employees
-WHERE (department = 'IT' OR department = 'HR') AND salary > 50000;
+SELECT * FROM listeners WHERE phone = NULL;      -- 永远返回 0 行，不报错！
+SELECT * FROM listeners WHERE phone IS NULL;     -- 正确：南方的风、阿基米德
+SELECT * FROM listeners WHERE phone IS NOT NULL; -- 正确：其余三人
 ```
 
----
+这个查询"看起来对、悄悄错"——不报错、返回 0 行，最危险。自检习惯：写完 `= NULL` 就问自己一句"我为什么不用 IS NULL"。
 
-## LIKE 模式匹配
+两个常用补救函数：
 
-**单行写法：前缀匹配**
-`WHERE <列> LIKE '<前缀>%';`
 ```sql
--- 查询姓"张"的用户
-SELECT * FROM users WHERE name LIKE '张%';
+SELECT nickname, COALESCE(phone, '未填写') AS phone_display FROM listeners;
+-- COALESCE 返回参数中第一个非 NULL 的值
+
+SELECT play_count / NULLIF(0, 0) FROM t;
+-- NULLIF(a, b)：a 等于 b 时返回 NULL，常用于防除零
 ```
 
-**单行写法：后缀匹配**
-`WHERE <列> LIKE '%<后缀>';`
-```sql
--- 查询 Gmail 邮箱用户
-SELECT * FROM users WHERE email LIKE '%@gmail.com';
-```
-
-**单行写法：包含匹配**
-`WHERE <列> LIKE '%<关键字>%';`
-```sql
--- 查询名字包含"华"的用户
-SELECT * FROM users WHERE name LIKE '%华%';
-```
-
-**单行写法：单字符匹配**
-`WHERE <列> LIKE '<前缀>_<后缀>';`
-```sql
--- 查询 138 开头 1234 结尾的 11 位手机号
-SELECT * FROM users WHERE phone LIKE '138____1234';
-```
-
-**单行写法：排除模式**
-`WHERE <列> NOT LIKE '<模式>';`
-```sql
--- 查询名字不以 admin 开头的用户
-SELECT * FROM users WHERE name NOT LIKE 'admin%';
-```
-
----
-
-### NULL 处理
-
-NULL 是 SQL 中的特殊值，表示"未知"或"不存在"，需要特别对待：
+## 4. ORDER BY：没有排序的"第一名"是不可信的
 
 ```sql
---  错误：NULL 不能用 = 比较
-SELECT * FROM users WHERE phone = NULL;      -- 返回 0 行
+-- 播放量从高到低
+SELECT title, play_count FROM episodes ORDER BY play_count DESC;
 
---  正确：使用 IS NULL
-SELECT * FROM users WHERE phone IS NULL;     -- 没有 phone 的用户
-SELECT * FROM users WHERE phone IS NOT NULL; -- 有 phone 的用户
-
--- NULL 与三值逻辑
--- NULL = NULL  → UNKNOWN（不是 TRUE）
--- NULL <> 1    → UNKNOWN（不是 TRUE）
--- NULL + 1     → NULL
--- NULL AND TRUE → UNKNOWN
--- NULL OR TRUE  → TRUE
-
--- COALESCE: 返回第一个非 NULL 值
-SELECT name, COALESCE(phone, '未填写') AS phone_display FROM users;
-
--- NULLIF: 如果相等则返回 NULL
-SELECT NULLIF(score, 0) AS safe_score FROM results; -- 避免除以零
-```
-
-## ORDER BY 排序
-
-```sql
--- 升序（默认）
-SELECT * FROM employees ORDER BY salary ASC;
-
--- 降序
-SELECT * FROM employees ORDER BY salary DESC;
-
--- 多列排序（优先级从左到右）
-SELECT * FROM employees ORDER BY department ASC, salary DESC;
+-- 先按分类升序，同类内按播放量降序（从左到右依次生效）
+SELECT title, category, play_count FROM shows
+JOIN episodes ON episodes.show_id = shows.id
+ORDER BY category ASC, play_count DESC;
 
 -- 按表达式排序
-SELECT * FROM products ORDER BY price * discount DESC;
-
--- 按列序号排序（不推荐，可读性差）
-SELECT name, salary FROM employees ORDER BY 2 DESC;
-
--- NULL 值排序位置
--- PostgreSQL: NULLS FIRST / NULLS LAST
-SELECT * FROM employees ORDER BY bonus DESC NULLS LAST;
-
--- MySQL: NULL 被视为最小值（ASC 在前，DESC 在后）
--- SQL Server: NULL 被视为最小值
--- Oracle: ASC 时 NULL 在后，DESC 时 NULL 在前
+SELECT title, duration_min FROM episodes ORDER BY duration_min / 60.0 DESC;
 ```
 
-## LIMIT / OFFSET 分页
+`ASC` 升序是默认值，可省略；`DESC` 降序必须写。**ORDER BY 几乎总是必写**：不指定顺序时数据库返回行的次序是不承诺的，今天碰巧像排好序，明天数据量一大就变——任何"取前 N 条"的查询，ORDER BY 都不能省。
+
+### 4.1 排序时 NULL 放哪边
+
+不同数据库答案不同，这是个高频坑：
 
 ```sql
--- MySQL / PostgreSQL / SQLite
-SELECT * FROM employees ORDER BY id LIMIT 10;           -- 前 10 条
-SELECT * FROM employees ORDER BY id LIMIT 10 OFFSET 20; -- 第 21-30 条
+-- PostgreSQL / Oracle：显式控制
+SELECT title, duration_min FROM episodes
+ORDER BY duration_min DESC NULLS LAST;
 
--- SQL Server (2012+)
-SELECT * FROM employees
-ORDER BY id
-OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY;
-
--- Oracle (12c+)
-SELECT * FROM employees
-ORDER BY id
-OFFSET 20 ROWS FETCH NEXT 10 ROWS ONLY;
-
--- 计算总页数的技巧（窗口函数）
-SELECT *, COUNT(*) OVER() AS total_count
-FROM employees
-ORDER BY id
-LIMIT 10;
+-- MySQL：NULL 被当作最小值（ASC 排最前，DESC 排最后）
+-- SQL Server：同样 NULL 最小，但无 NULLS FIRST/LAST 语法
 ```
 
-## DISTINCT 去重
+回声FM的例子里，`duration_min` 为 NULL 的单集是"未上架完"的第 106 期。做"最长的节目"榜单时，若不指定 `NULLS LAST`，PostgreSQL 的 `DESC` 默认把它排第一——榜单头名是个残次品。
+
+## 5. LIMIT / OFFSET：分页与其代价
 
 ```sql
--- 单列去重
-SELECT DISTINCT department FROM employees;
+-- 播放量前 5（PostgreSQL / MySQL / SQLite）
+SELECT title, play_count FROM episodes
+ORDER BY play_count DESC
+LIMIT 5;
 
--- 多列组合去重
-SELECT DISTINCT department, job_title FROM employees;
+-- 第 2 页，每页 2 条
+SELECT title, play_count FROM episodes
+ORDER BY play_count DESC
+LIMIT 2 OFFSET 2;
 
--- DISTINCT 与 NULL：所有 NULL 值被视为相同
-SELECT DISTINCT middle_name FROM users;
-
--- COUNT DISTINCT：统计不同值的数量
-SELECT COUNT(DISTINCT department) AS dept_count FROM employees;
-
--- PostgreSQL: 对多列去重计数
-SELECT COUNT(DISTINCT (department, job_title)) FROM employees;
-
--- MySQL: 使用子查询
-SELECT COUNT(*) FROM (
-  SELECT DISTINCT department, job_title FROM employees
-) AS t;
+-- SQL Server / Oracle 12c+ / 标准 SQL 写法
+SELECT title, play_count FROM episodes
+ORDER BY play_count DESC
+OFFSET 0 ROWS FETCH FIRST 5 ROWS ONLY;
 ```
 
-## 别名
+`LIMIT` 必须配 `ORDER BY`，否则"前 5 条"每次可能不一样。
+
+### 5.1 深分页：OFFSET 的隐藏账单
+
+`OFFSET 1000000` 的含义是：数据库老老实实读出前 100 万行、全部丢掉，再给你 10 行。页码越深越慢， listeners 一多后台就卡。
+
+成熟做法是**游标分页（Keyset Pagination）**：记住上一页最后一行的位置，下一页从它后面接着取。
 
 ```sql
--- 列别名
-SELECT first_name AS 名, salary AS 薪资 FROM employees;
-SELECT first_name 名, salary 薪资 FROM employees;  -- 省略 AS
-
--- 表别名
-SELECT e.first_name, d.department_name
-FROM employees e
-JOIN departments d ON e.dept_id = d.id;
-
--- 别名在 ORDER BY 中可用
-SELECT salary * 12 AS annual_salary
-FROM employees
-ORDER BY annual_salary DESC;
-
---  别名在 WHERE 中不可用（逻辑执行顺序原因）
---  错误
-SELECT salary * 12 AS annual_salary
-FROM employees
-WHERE annual_salary > 100000;
-
---  正确
-SELECT salary * 12 AS annual_salary
-FROM employees
-WHERE salary * 12 > 100000;
-
--- PostgreSQL / MySQL 扩展：HAVING 中可用别名
-SELECT department, COUNT(*) AS cnt
-FROM employees
-GROUP BY department
-HAVING cnt > 5;
+-- 第一页
+SELECT id, title FROM episodes ORDER BY id LIMIT 20;
+-- 下一页：把上一页最后一行的 id 传进来
+SELECT id, title FROM episodes WHERE id > 106 ORDER BY id LIMIT 20;
 ```
 
-### GROUP BY 分组
+它只走索引定位，代价与页码无关。局限：只能按单一方向顺序翻页，且排序列必须不重复（或组合成唯一键）。运营后台的"跳转到第 37 页"用 OFFSET，无限下滑的信息流用游标——按场景选。
+
+### 5.2 一并拿到总数
+
+分页 UI 常要显示"共 X 条"。传统做法发两条 SQL，窗口函数可以一条搞定（此处先见个面，第 26 篇展开）：
 
 ```sql
--- 基本分组
-SELECT department, COUNT(*) AS emp_count, AVG(salary) AS avg_salary
-FROM employees
-GROUP BY department;
-
--- 多列分组
-SELECT department, job_title, COUNT(*) AS cnt, AVG(salary) AS avg_salary
-FROM employees
-GROUP BY department, job_title;
-
--- GROUP BY 与 ORDER BY
-SELECT department, AVG(salary) AS avg_salary
-FROM employees
-GROUP BY department
-ORDER BY avg_salary DESC;
-
--- PostgreSQL: GROUP BY 别名
-SELECT department AS dept, COUNT(*) AS cnt
-FROM employees
-GROUP BY dept;  -- MySQL、SQLite 同样支持；SQL Server、Oracle 不支持（请用原始表达式）
+SELECT title, play_count, COUNT(*) OVER() AS total_count
+FROM episodes ORDER BY play_count DESC LIMIT 2;
 ```
 
-### HAVING 分组过滤
+## 6. DISTINCT：去重与"有几种"
 
 ```sql
--- HAVING: 对分组后的结果进行过滤
-SELECT department, COUNT(*) AS emp_count, AVG(salary) AS avg_salary
-FROM employees
-GROUP BY department
-HAVING COUNT(*) > 5 AND AVG(salary) > 50000;
+-- 平台有哪些分类？
+SELECT DISTINCT category FROM shows;        -- 科技 / 文化 / 商业
 
--- WHERE vs HAVING
--- WHERE: 分组前过滤（行级）
--- HAVING: 分组后过滤（组级）
+-- 组合去重：分类 x 是否付费 的每种组合一行
+SELECT DISTINCT category, is_premium FROM shows;
 
--- 示例：先过滤 2024 年入职的员工，再按部门分组，最后筛选人数 > 3 的部门
-SELECT department, COUNT(*) AS cnt
-FROM employees
-WHERE hire_date >= '2024-01-01'
-GROUP BY department
-HAVING COUNT(*) > 3;
+-- 去重计数：有多少种分类？
+SELECT COUNT(DISTINCT category) AS category_count FROM shows;
 ```
 
-## SELECT 语句
+要点：
 
-`SELECT` 是 SQL 中最常用的语句，用于从表中检索数据。其基本语法结构：
+- DISTINCT 作用于**整行组合**，不是只对写在前面的第一列。
+- 所有 NULL 被视为互相相同：`SELECT DISTINCT phone` 里多个 NULL 只出现一行。
+- `COUNT(DISTINCT col)` 只数不同值的个数，NULL 不计入。
+
+## 7. 第一课统计：聚合函数速览
+
+回答"多少、平均、最大最小"的是**聚合函数**——它把多行折叠成一个数：
 
 ```sql
-SELECT [DISTINCT] 列表达式 [, ...]
-FROM 表名
-[WHERE 条件]
-[GROUP BY 分组列 [, ...]]
-[HAVING 分组条件]
-[ORDER BY 排序列 [ASC|DESC] [, ...]]
-[LIMIT 数量 [OFFSET 偏移]];
+SELECT COUNT(*)                        AS episode_total,   -- 全部行数（含 NULL 行）
+       COUNT(duration_min)             AS has_duration,    -- 该列非 NULL 的行数
+       AVG(play_count)                 AS avg_plays,
+       MAX(play_count)                 AS top_plays,
+       MIN(published_at)               AS earliest_date
+FROM episodes;
 ```
 
-### 基本查询
+结果：`6 / 5 / 37050 / 73500 / 2026-07-20`。注意 `COUNT(*)` 与 `COUNT(duration_min)` 差 1——第 106 期的时长是 NULL。
+
+再配合 `GROUP BY` 就能分组统计（"每个分类的平均播放量"）：
 
 ```sql
--- 查询所有列（生产环境慎用 *）
-SELECT * FROM employees;
-
--- 查询指定列
-SELECT first_name, last_name, salary FROM employees;
-
--- 计算列
-SELECT first_name, salary, salary * 12 AS annual_salary FROM employees;
+SELECT category, AVG(episodes.play_count) AS avg_plays
+FROM shows
+JOIN episodes ON episodes.show_id = shows.id
+GROUP BY category;
 ```
 
-### SELECT 执行顺序
+> 判断 WHERE 还是 HAVING：**分组前**过滤行用 WHERE，**分组后**筛选组用 HAVING。细节在 [聚合函数](/sql/060-AggregateFunction) 与 [分组与分组集](/sql/070-GROUPBYGroupingSet) 展开。
 
-理解 SQL 的逻辑执行顺序对编写正确查询至关重要：
-
-```
-1. FROM        -- 确定数据源
-2. WHERE       -- 行级过滤
-3. GROUP BY    -- 分组
-4. HAVING      -- 组级过滤
-5. SELECT      -- 选择列 / 计算表达式
-6. DISTINCT    -- 去重
-7. ORDER BY    -- 排序
-8. LIMIT       -- 限制行数
-```
-
-> **注意**：这是逻辑执行顺序，数据库引擎实际执行时可能根据优化器决策调整。
-
-### 比较运算符
-
-| 运算符      | 含义                  | 示例                          |
-| ----------- | --------------------- | ----------------------------- |
-| `=`         | 等于                  | `WHERE age = 25`              |
-| `!=` / `<>` | 不等于                | `WHERE status != 'inactive'`  |
-| `>` / `<`   | 大于 / 小于           | `WHERE salary > 50000`        |
-| `>=` / `<=` | 大于等于 / 小于等于   | `WHERE age >= 18`             |
-| `<=>`       | 安全等于（NULL 安全） | `WHERE col <=> NULL`（MySQL） |
-
-### 逻辑运算符
+### 7.1 CASE WHEN：在 SELECT 里写 if/else
 
 ```sql
--- AND: 两个条件同时满足
-SELECT * FROM employees WHERE department = 'IT' AND salary > 80000;
-
--- OR: 任一条件满足
-SELECT * FROM employees WHERE department = 'IT' OR department = 'HR';
-
--- NOT: 取反
-SELECT * FROM employees WHERE NOT department = 'IT';
-
--- 组合使用（注意优先级：AND > OR）
-SELECT * FROM employees
-WHERE (department = 'IT' OR department = 'HR') AND salary > 50000;
-```
-
-### BETWEEN 和 IN
-
-```sql
--- BETWEEN: 范围查询（包含边界）
-SELECT * FROM products WHERE price BETWEEN 100 AND 500;
--- 等价于: WHERE price >= 100 AND price <= 500
-
--- IN: 集合匹配
-SELECT * FROM employees WHERE department IN ('IT', 'HR', 'Finance');
-
--- NOT IN: 排除集合
-SELECT * FROM employees WHERE department NOT IN ('IT', 'HR');
-
--- 子查询形式的 IN
-SELECT * FROM orders
-WHERE customer_id IN (
-  SELECT id FROM customers WHERE country = 'China'
-);
-```
-
-### 分页性能优化
-
-```sql
---  深分页性能差（OFFSET 需要跳过前面的行）
-SELECT * FROM orders ORDER BY id LIMIT 10 OFFSET 1000000;
-
---  游标分页（Keyset Pagination）—— 利用索引
-SELECT * FROM orders WHERE id > 1000000 ORDER BY id LIMIT 10;
-```
-
-## 表达式
-
-### 算术表达式
-
-```sql
-SELECT product_name, price, quantity, price * quantity AS total
-FROM order_items;
-
--- 运算符优先级：* / 高于 + -
-SELECT price * quantity - discount AS final_amount FROM order_items;
-```
-
-### 条件表达式 CASE WHEN
-
-```sql
--- 简单 CASE
 SELECT
-  department,
-  CASE department
-    WHEN 'IT' THEN '技术部'
-    WHEN 'HR' THEN '人力资源部'
-    WHEN 'Finance' THEN '财务部'
-    ELSE '其他部门'
-  END AS dept_name_cn
-FROM employees;
-
--- 搜索 CASE（更灵活，推荐）
-SELECT
-  name,
-  salary,
+  title,
+  duration_min,
   CASE
-    WHEN salary >= 100000 THEN '高薪'
-    WHEN salary >= 60000 THEN '中薪'
-    WHEN salary >= 30000 THEN '低薪'
-    ELSE '实习'
-  END AS salary_level
-FROM employees;
+    WHEN duration_min >= 100 THEN '长篇'
+    WHEN duration_min >= 60  THEN '标准'
+    WHEN duration_min <  60  THEN '短篇'
+    ELSE '未上架完'
+  END AS length_tier
+FROM episodes;
+```
 
--- CASE WHEN 在聚合中
+三种高频用法：
+
+```sql
+-- 1. 条件计数：一次查询同时数出多类
 SELECT
-  COUNT(*) AS total,
-  COUNT(CASE WHEN gender = 'M' THEN 1 END) AS male_count,
-  COUNT(CASE WHEN gender = 'F' THEN 1 END) AS female_count,
-  SUM(CASE WHEN salary > 50000 THEN salary ELSE 0 END) AS high_salary_total
-FROM employees;
+  COUNT(*) FILTER (WHERE is_premium)                  AS premium_cnt,   -- PostgreSQL 简写
+  COUNT(CASE WHEN is_premium THEN 1 END)              AS premium_classic -- 通用写法
+FROM shows;
 
--- PostgreSQL 专用简化写法
+-- 2. 行转列的雏形
 SELECT
-  COUNT(*) FILTER (WHERE gender = 'M') AS male_count,
-  COUNT(*) FILTER (WHERE gender = 'F') AS female_count
-FROM employees;
+  SUM(CASE WHEN category = '科技' THEN 1 ELSE 0 END) AS tech_cnt,
+  SUM(CASE WHEN category = '文化' THEN 1 ELSE 0 END) AS culture_cnt
+FROM shows;
+
+-- 3. ORDER BY 里的自定义顺序
+SELECT title, category FROM shows
+ORDER BY CASE category WHEN '科技' THEN 1 WHEN '商业' THEN 2 ELSE 3 END;
 ```
 
-## 聚合函数
+`COUNT(CASE WHEN ... THEN 1 END)` 能成立的原理仍是 NULL：条件不满足时 CASE 返回 NULL，`COUNT` 忽略 NULL。理解了三值逻辑，这类惯用法就不再是咒语。
 
-聚合函数对一组值进行计算，返回单个值。
+## 8. 谁说了算：SELECT 的逻辑执行顺序
 
-### 基本聚合函数
+同一段 SQL，写法顺序和执行顺序不一样。数据库按下面的顺序**逻辑上**执行：
 
-| 函数         | 含义             | 示例                                 |
-| ------------ | ---------------- | ------------------------------------ |
-| `COUNT(*)`   | 统计行数         | `SELECT COUNT(*) FROM users`         |
-| `COUNT(col)` | 统计非 NULL 值数 | `SELECT COUNT(phone) FROM users`     |
-| `SUM(col)`   | 求和             | `SELECT SUM(amount) FROM orders`     |
-| `AVG(col)`   | 平均值           | `SELECT AVG(salary) FROM employees`  |
-| `MAX(col)`   | 最大值           | `SELECT MAX(price) FROM products`    |
-| `MIN(col)`   | 最小值           | `SELECT MIN(created_at) FROM orders` |
-
-### 聚合函数与 NULL
-
-```sql
--- COUNT(*) 统计所有行，包括 NULL
--- COUNT(col) 忽略 NULL 值
-SELECT
-  COUNT(*) AS total_rows,
-  COUNT(bonus) AS bonus_count,    -- 不统计 NULL
-  AVG(bonus) AS avg_bonus         -- 忽略 NULL 计算
-FROM employees;
-
--- 如果需要将 NULL 计入 AVG
-SELECT AVG(COALESCE(bonus, 0)) AS avg_bonus_incl_null FROM employees;
+```
+1. FROM        确定数据源（本篇只有单表，多表在 JOIN 篇展开）
+2. WHERE       逐行过滤            ← 别名尚不存在
+3. GROUP BY    分组
+4. HAVING      组级过滤
+5. SELECT      计算列、起别名       ← 别名在这里出生
+6. DISTINCT    去重
+7. ORDER BY    排序                ← 可以用别名了
+8. LIMIT       截取行数
 ```
 
-### 常用统计模式
+这一张图能解释本篇所有"为什么"：
 
-```sql
--- 1. 占比计算
-SELECT
-  department,
-  COUNT(*) AS emp_count,
-  ROUND(COUNT(*) * 100.0 / SUM(COUNT(*)) OVER(), 2) AS pct
-FROM employees
-GROUP BY department;
+- 为什么 WHERE 里不能用别名？它跑在 SELECT 前面。
+- 为什么 ORDER BY 里能用别名？它跑在 SELECT 后面。
+- 为什么 `WHERE play_count > 30000` 之后再 `LIMIT 5` 得到的就是前五名？先过滤后截取。
+- 为什么 `COUNT(*) FILTER`、窗口函数不写在 WHERE 里？聚合与窗口都在第 5 步及以后才可计算。
 
--- 2. 累计统计
-SELECT
-  order_date,
-  SUM(amount) AS daily_amount,
-  SUM(SUM(amount)) OVER(ORDER BY order_date) AS cumulative_amount
-FROM orders
-GROUP BY order_date;
+> 这是**逻辑**顺序：优化器物理上可能重排（比如先用索引完成 WHERE 和 ORDER BY），但结果永远等价于按此顺序执行。完整推演见 [SELECT 执行顺序](/sql/080-SelectExecutionOrder)。
 
--- 3. 中位数（PostgreSQL）
-SELECT PERCENTILE_CONT(0.5) WITHIN GROUP(ORDER BY salary) AS median_salary
-FROM employees;
+## 9. 坑点清单与自检
 
--- 4. 众数（PostgreSQL）
-SELECT MODE() WITHIN GROUP(ORDER BY department) AS most_common_dept
-FROM employees;
+写完任何 SELECT，过一遍这五问：
 
--- 5. 标准差与方差
-SELECT
-  STDDEV(salary) AS salary_stddev,    -- 样本标准差
-  VARIANCE(salary) AS salary_variance  -- 样本方差
-FROM employees;
-```
+1. **该排序的地方排序了吗？** 想要"前 N""最新""第一名"，没有 ORDER BY 的结果不可信。
+2. **有没有 `= NULL`？** 改成 `IS NULL` / `IS NOT NULL`。
+3. **整数除法吞掉小数了吗？** `* 1.0` 或改用小数字面量。
+4. **`SELECT *` 是否要换成明确列名？** 业务代码中 `*` 会在表加列、改列时埋雷。
+5. **深分页用 OFFSET 还在变慢吗？** 换游标分页。
 
-## 小结
+MySQL 用户补一条：MySQL 的 `<=>` 是 NULL 安全等号（`phone <=> NULL` 等价于 `IS NULL`），标准 SQL 没有它，写可移植 SQL 时别用。
 
-- `SELECT` 是 SQL 查询的核心，理解逻辑执行顺序是编写正确查询的基础
-- `WHERE` 用于行级过滤，`HAVING` 用于组级过滤
-- `NULL` 需要使用 `IS NULL` / `IS NOT NULL` 判断，不能使用 `=`
-- `CASE WHEN` 是 SQL 中的条件表达式，功能强大且通用
-- 聚合函数自动忽略 `NULL`，`COUNT(*)` 除外
-- 分页查询中，游标分页（Keyset Pagination）比 `OFFSET` 更高效
-## SELECT 查询
+## 10. 练习
 
-**单行写法：查询所有列**
-`SELECT * FROM <表名>;`
-```sql
--- 查询员工表中的所有字段
-SELECT * FROM employees;
-```
+全部基于本篇的回声FM三张表，答案都能用文中讲过的句子拼出来：
 
-**单行写法：查询指定列**
-`SELECT <列名 1>, <列名 2> FROM <表名>;`
-```sql
--- 查询员工表中的姓名和薪资字段
-SELECT first_name, salary FROM employees;
-```
+1. 查询所有付费节目（`is_premium = TRUE`）的标题与主播，按标题排序。
+2. 查询时长超过 90 分钟的单集标题、时长（以小时显示，保留小数），按时长降序。
+3. 统计北京和上海各有多少听众填了手机号。（提示：`WHERE city IN (...) AND phone IS NOT NULL`，按 city 分组计数。）
+4. 找出播放量第二高的单集。（提示：`ORDER BY play_count DESC LIMIT 1 OFFSET 1`；再想想：如果两个单集播放量并列第一，这个答案哪里不对？）
+5. 给每个单集打标签：播放量 >= 50000 为"爆款"，>= 20000 为"腰部"，其余为"长尾"，输出标题与标签。
+6. （思考题）`SELECT DISTINCT host` 与 `SELECT host` 在回声FM的 shows 表上结果条数一样吗？为什么？
 
-**换行写法：查询多列并计算**
-`SELECT <列名 1>, <列名 2>, <表达式> AS <别名> FROM <表名>;`
-```sql
--- 查询姓名、薪资并计算年薪
-SELECT
-  first_name,
-  salary,
-  salary * 12 AS annual_salary
-FROM employees;
-```
+## 下一步
 
----
-
-## BETWEEN 范围查询
-
-**单行写法：范围查询（包含边界）**
-`WHERE <列> BETWEEN <下界> AND <上界>;`
-```sql
--- 查询价格在 100 到 500 之间的商品
-SELECT * FROM products WHERE price BETWEEN 100 AND 500;
-```
-
-**单行写法：排除范围**
-`WHERE <列> NOT BETWEEN <下界> AND <上界>;`
-```sql
--- 查询价格不在 100 到 500 之间的商品
-SELECT * FROM products WHERE price NOT BETWEEN 100 AND 500;
-```
-
----
-
-## IN 集合匹配
-
-**单行写法：集合匹配**
-`WHERE <列> IN (<值 1>, <值 2>, ...);`
-```sql
--- 查询 IT、HR、Finance 部门的员工
-SELECT * FROM employees WHERE department IN ('IT', 'HR', 'Finance');
-```
-
-**单行写法：排除集合**
-`WHERE <列> NOT IN (<值 1>, <值 2>, ...);`
-```sql
--- 查询非 IT、HR 部门的员工
-SELECT * FROM employees WHERE department NOT IN ('IT', 'HR');
-```
-
-**换行写法：子查询形式的 IN**
-`WHERE <列> IN (SELECT ...);`
-```sql
--- 查询来自中国的客户的订单
-SELECT * FROM orders
-WHERE customer_id IN (
-  SELECT id FROM customers WHERE country = 'China'
-);
-```
-
----
-
-## CASE WHEN 条件表达式
-
-**换行写法：简单 CASE 等值匹配**
-`CASE <列> WHEN <值> THEN <结果> [ELSE <结果>] END`
-```sql
--- 将部门代码转换为中文名称
-SELECT
-  department,
-  CASE department
-    WHEN 'IT' THEN '技术部'
-    WHEN 'HR' THEN '人力资源部'
-    WHEN 'Finance' THEN '财务部'
-    ELSE '其他部门'
-  END AS dept_name_cn
-FROM employees;
-```
-
-**换行写法：搜索 CASE 条件判断**
-`CASE WHEN <条件> THEN <结果> [ELSE <结果>] END`
-```sql
--- 根据薪资划分等级
-SELECT
-  name,
-  salary,
-  CASE
-    WHEN salary >= 100000 THEN '高薪'
-    WHEN salary >= 60000 THEN '中薪'
-    WHEN salary >= 30000 THEN '低薪'
-    ELSE '实习'
-  END AS salary_level
-FROM employees;
-```
-
-**换行写法：CASE WHEN 在聚合中使用**
-`COUNT(CASE WHEN <条件> THEN 1 END) AS <别名>`
-```sql
--- 统计男女员工数量及高薪总额
-SELECT
-  COUNT(*) AS total,
-  COUNT(CASE WHEN gender = 'M' THEN 1 END) AS male_count,
-  COUNT(CASE WHEN gender = 'F' THEN 1 END) AS female_count,
-  SUM(CASE WHEN salary > 50000 THEN salary ELSE 0 END) AS high_salary_total
-FROM employees;
-```
+- [过滤条件](/sql/050-FilterCondition)：WHERE 的完整语法、模式匹配性能、索引友好写法。
+- [聚合函数](/sql/060-AggregateFunction)：COUNT/SUM/AVG 的 NULL 细节与 DISTINCT 聚合。
+- [SELECT 执行顺序](/sql/080-SelectExecutionOrder)：把第 8 节那张图展开成完整推演。
+- 查询已经会了，接下来该学怎么把数据放进去：[数据操作](/sql/120-DML)。

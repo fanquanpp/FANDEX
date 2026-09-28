@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: SSH 与 HTTPS 远程配置对比、公钥配置、HTTPS+PAT 配置指南与故障排查。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'github/020-AccountRegister2FA'
   - 'github/030-RepositoryCreateCloneArchiveDelete'
@@ -256,6 +256,6 @@ git remote -v
 
 ### 延伸阅读
 
-- 2FA 与 PAT 的关系，见 002 篇《账户注册与双因素认证》。
-- gh CLI 自动管理凭据，见 020 篇《GitHub CLI》。
-- 仓库克隆与远程管理，见 003 篇《仓库创建、克隆、归档、删除》。
+- 2FA 与 PAT 的关系，见 [账户注册与双因素认证](/github/020-AccountRegister2FA)。
+- gh CLI 自动管理凭据，见 [GitHub CLI](/github/440-GitHubCLI)。
+- 仓库克隆与远程管理，见 [仓库创建、克隆、归档、删除](/github/030-RepositoryCreateCloneArchiveDelete)。

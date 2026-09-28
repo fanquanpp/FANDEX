@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: "手把手完成 C 的第一次编译与运行：装编译器、逐行拆解 hello.c、gcc 两步走、第一个编译错误的定位，并埋下内存与地址的第一颗种子。"
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'c/020-CLanguageOverview'
   - 'c/030-ProgramStructureBasicSyntax'

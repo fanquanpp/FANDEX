@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从「按钮点了数字纹丝不动」讲起：useState 三件套（当前值、setter、重渲染）、事件处理与合成事件直觉、函数式更新、不可变更新与引用比较、受控输入最小表单，附 Too many re-renders 无限循环调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/010-OverviewEnvSetup'
   - 'react/020-ComponentProps'

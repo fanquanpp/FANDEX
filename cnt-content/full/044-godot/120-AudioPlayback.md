@@ -6,59 +6,29 @@ category: 游戏开发
 difficulty: beginner
 description: 区分三种音频播放节点，理解总线音量与音高，掌握播放结束信号的准确行为
 author: fanquanpp
-updated: '2026-09-22'
-related: []
+updated: '2026-09-28'
+related: ['godot/110-AnimationAndTween']
 prerequisites:
   - 'godot/110-AnimationAndTween'
 ---
 
-音效与音乐承担了游戏一半的氛围，但 Godot 的音频系统模型其实非常直白：音频数据装在 AudioStream（音频流）资源里，播放器（Player）节点负责把它放出来。真正的难点在两处：面对三种播放器节点选哪个，以及 finished 这类信号的准确行为到底是什么。本篇就围绕这两点展开，最后用一个"背景音乐加随机脚步声"的实战把它们串起来。
+打开键盘编曲工具编趣 Quaver 的混音面板，你会看到一棵总线树：顶上是 Master 总线（挂了十段 EQ 与限制器），下面分 Music 与 Drum 两条汇集总线，再往下每条音轨都有自己独立的总线，各带音量、声像与效果。看起来很专业，但拆开看，这套结构的每一个零件都来自 Godot 最基础的三个播放节点和一条总线属性。本篇的目标是带你亲手搭一个缩小版：一条循环 BGM、一套随机脚步声、一个音量滑条，并把最容易踩坑的 finished 信号行为一次性搞清楚。
 
-## 学习目标
+## 动手：先选对播放节点
 
-- 分清 AudioStreamPlayer、AudioStreamPlayer2D、AudioStreamPlayer3D 的适用场景；
-- 掌握 stream、volume_db、pitch_scale、bus、max_polyphony 等核心属性的行为；
-- 说清 play、stop、seek 与 finished 信号的准确语义；
-- 会用 AudioStreamRandomizer 做随机音效；
-- 了解 Web 平台的音频限制，并完成一个 BGM 循环加随机脚步的组合示例。
+Godot 的音频模型非常直白：音频数据装在 AudioStream 资源里，播放器节点负责把它放出来。第一个决策是三种播放器选哪个，按"声音有没有空间位置"分：
 
-## 三种播放节点：按空间关系选
-
-- AudioStreamPlayer：非位置音频播放器，声音不分方位与远近，背景音乐（BGM）和 UI 音效用它；
+- AudioStreamPlayer：非位置音频播放器，声音不分方位与远近。BGM 和 UI 音效用它；
 - AudioStreamPlayer2D：2D 位置播放器，根据节点在 2D 世界中的位置计算左右声像与音量衰减——声音在角色左边就偏左耳，离得越远越小。挂在角色、怪物、发声物体上；
 - AudioStreamPlayer3D：3D 位置播放器，提供完整的 3D 定位，支持混响总线；多普勒（Doppler）效果需要手动启用。它还提供按渲染帧（Idle）或物理帧（Physics）更新的选项，物体移动越快，越应该选择与物理同步的更新方式，否则定位计算跟不上运动。
 
 一个常用的配套机制：Area2D 与 Area3D 区域可以把区域内播放器的声音重定向到指定总线。典型用法是"水下区域"：角色带着自己的播放器走进 Area2D，声音被转到经过滤波的水下总线，出区域再转回来，全程不用改播放器本身。
 
-## AudioStreamPlayer 的核心属性
+场景搭建：根 Node2D 下放两个 AudioStreamPlayer，分别命名 BGM 与 Footstep。BGM 拖一首完整曲子到 stream 属性（音乐文件建议 Ogg 或 MP3），Footstep 的 stream 稍后配随机化。
 
-- stream：要播放的 AudioStream 资源。注意：修改它会立刻停止当前播放；
-- volume_db：以分贝为单位的音量；另有 volume_linear，接受 0 到 1 的线性值并由引擎换算成分贝，做音量滑条时直接用它更直观；
-- pitch_scale：音高倍率，默认 1；2.0 正好升高一个八度。配合随机化可以做出千变万化的脚步与打击声；
-- playing：反映当前是否正在播放；autoplay：勾选后进入场景自动播放；
-- bus：输出总线（bus）名称，默认 &"Master"。要留意：把它设成一条不存在的总线时不会报错，而是静默回退到 Master——总线名拼错了声音照常出，问题被悄悄藏起来；
-- max_polyphony：最大复音数，默认 1。调大后同一个播放器可以同时叠放多个声音（比如连发的枪声），超出数量时切断最旧的声音；
-- stream_paused：暂停音频流，恢复后从中断处继续。
+## 动手：BGM 循环与随机脚步声
 
-## 播放控制与 finished 信号
-
-四个核心方法：play(from_position: float = 0.0) 从指定秒数开始播放；stop() 停止；seek(to_position) 跳转到指定位置；get_playback_position() 查询当前播放位置。
-
-两个行为细节必须咬文嚼字。第一，重复调用 play() 是从头重播，不是继续播放——想接着播，要么别乱调 play()，要么用 stream_paused 暂停后再恢复。第二，finished 信号只在音频自然播完时发出；手动调用 stop()，或节点退出场景树，都不会发出 finished。这意味着靠 finished 串联"播完一首自动换下一首"的播放列表是可靠的；但如果别处还会 stop() 这条音频，就不能指望 finished 来做收尾逻辑。
-
-## 音频资源：格式与随机化
-
-音频数据以 AudioStream 资源的形式存在，常用格式三种都能导入：WAV、Ogg Vorbis、MP3。一般经验是音效切片用 WAV，音乐用 Ogg 或 MP3，具体导入参数见官方音频流文档。
-
-AudioStreamRandomizer（随机音频流）是做自然感音效的利器：它本身也是一个 AudioStream，内部收录多条音频流，每次播放随机挑一条，还能为每条设置随机音高与音量范围。脚步声、打击声这类高频重复的音效，靠它一个节点配置就能告别"复制粘贴感"。
-
-## Web 平台的音频
-
-导出到 Web 时有两点特殊。一是播放方式：4.3 起默认使用 Sample 播放模式，延迟更低。二是浏览器的自动播放限制：页面加载后不允许直接出声，必须等用户与页面发生第一次交互（点击、按键）之后，音频才能启动。所以 Web 版的 BGM 要设计成"点击开始游戏"之后再播放，而不是进页面就响。
-
-## 实战：BGM 循环与随机脚步声
-
-组合前面的知识，做一个最常见的配置：一首循环播放的背景音乐，加一套随机脚步声。
+脚本挂根节点：
 
 ```gdscript
 extends Node2D
@@ -77,20 +47,64 @@ func _on_player_stepped() -> void:
     footstep.play()   # 重复调用是重播，对脚步声正合适
 ```
 
-两点说明：BGM 的循环没有依赖任何循环标志，而是把 finished 连接到 play()，自然播完自动重来；脚步声每次 play() 都从头播，正是短音效想要的行为。如果角色移动很快、脚步密集，可以把 Footstep 的 max_polyphony 调大，让连续的脚步声自然重叠而不是互相打断。
+两点说明：BGM 的循环没有依赖任何循环标志，而是把 finished 连接到 `play()`，自然播完自动重来；脚步声每次 `play()` 都从头播，正是短音效想要的行为。如果角色移动很快、脚步密集，可以把 Footstep 的 max_polyphony 调大，让连续的脚步声自然重叠而不是互相打断。
 
-## 易错点清单
+给 Footstep 配 AudioStreamRandomizer：在 stream 属性里新建 AudioStreamRandomizer 资源，往里加三到五条略有差异的脚步切片（音效切片用 WAV），并为每条设置随机音高与音量范围。AudioStreamRandomizer 本身也是一个 AudioStream，每次播放随机挑一条——脚步声、打击声这类高频重复的音效，靠它一个节点配置就能告别"复制粘贴感"。
+
+最后做音量滑条。给 BGM 加一条 HSlider，连接 value_changed：
+
+```gdscript
+func _on_volume_changed(value: float) -> void:
+    # volume_linear 接受 0 到 1 的线性值，由引擎换算成分贝
+    bgm.volume_linear = value
+```
+
+做滑条直接用 volume_linear 而不是 volume_db：线性值天然匹配滑条的 0 到 1 区间，不必自己算对数。
+
+## 讲为什么：属性与信号的准确语义
+
+AudioStreamPlayer 的核心属性：
+
+- stream：要播放的 AudioStream 资源。注意：修改它会立刻停止当前播放；
+- volume_db：以分贝为单位的音量；另有 volume_linear，接受 0 到 1 的线性值并由引擎换算成分贝；
+- pitch_scale：音高倍率，默认 1；2.0 正好升高一个八度。配合随机化可以做出千变万化的脚步与打击声。Quaver 内置音色的力度分层（pp/mf/ff 三档）在听觉上就是"音量 + 音高微调"的组合应用；
+- playing：反映当前是否正在播放；autoplay：勾选后进入场景自动播放；
+- bus：输出总线名称，默认 &"Master"。这就是 Quaver 那棵总线树的入口：把若干播放器的 bus 指到同一条自建总线，就能用一个 Volume 控制整组声音；
+- max_polyphony：最大复音数，默认 1。调大后同一个播放器可以同时叠放多个声音（比如连发的枪声），超出数量时切断最旧的声音；
+- stream_paused：暂停音频流，恢复后从中断处继续。
+
+四个核心方法：`play(from_position: float = 0.0)` 从指定秒数开始播放；`stop()` 停止；`seek(to_position)` 跳转到指定位置；`get_playback_position()` 查询当前播放位置。
+
+两个行为细节必须咬文嚼字。第一，重复调用 `play()` 是从头重播，不是继续播放——想接着播，要么别乱调 play()，要么用 stream_paused 暂停后再恢复。第二，finished 信号只在音频自然播完时发出；手动调用 `stop()`，或节点退出场景树，都不会发出 finished。这意味着靠 finished 串联"播完一首自动换下一首"的播放列表是可靠的；但如果别处还会 stop() 这条音频，就不能指望 finished 来做收尾逻辑。
+
+音频文件格式方面，WAV、Ogg Vorbis、MP3 三种都能导入。一般经验是音效切片用 WAV，音乐用 Ogg 或 MP3，具体导入参数见官方音频流文档。
+
+## Web 平台的音频
+
+导出到 Web 时有两点特殊。一是播放方式：4.3 起默认使用 Sample 播放模式，延迟更低。二是浏览器的自动播放限制：页面加载后不允许直接出声，必须等用户与页面发生第一次交互（点击、按键）之后，音频才能启动。所以 Web 版的 BGM 要设计成"点击开始游戏"之后再播放，而不是进页面就响。
+
+## 坑点与自检
 
 - 给 stream 赋值会立刻停止当前播放，切换曲目时别忘了这一点；
-- bus 指向不存在的总线会静默回退 Master，总线名拼错不报错；
+- bus 指向不存在的总线会静默回退 Master——总线名拼错不报错、声音照常出，问题被悄悄藏起来。搭总线树后逐条核对拼写；
 - 重复调用 play() 是重播，不是继续；
 - finished 在手动 stop() 与节点退出场景树时都不发出；
-- pitch_scale 为 2.0 才是一个八度；
-- Web 平台必须等首次用户交互后才有声音。
+- pitch_scale 为 2.0 才是一个八度，1.0 与 1.2 的差别很多人会想当然；
+- Web 平台必须等首次用户交互后才有声音；
+- 自检问题一：BGM 循环中途手动调了 stop() 做静音，恢复播放后 finished 再也不响、BGM 变成单次播放——因为 stop() 不会触发 finished，循环链断了。改用 stream_paused 做静音即可；
+- 自检问题二：音量滑条拉满反而比默认轻——检查滑条最大值是否为 1.0，以及是否误用了 volume_db 槽（分贝刻度 0 是"不变"，正数才是放大）。
 
-## 小结
+## 练习
 
-音频系统的选择逻辑一句话：有没有空间属性决定用哪种 Player，其余都是 AudioStreamPlayer 的属性题。四条行为背下来能避开九成 bug：stream 一改就停、bus 拼错静默回退、play 重复即重播、finished 只认自然播完。想让音效自然，交给 AudioStreamRandomizer 的随机挑流与随机音高；想让声音跟着场景走，交给 2D/3D 播放器加区域总线重定向。
+1. 给场景加一条自定义总线 SFX（音频面板右键添加），把 Footstep 的 bus 指过去，再给 SFX 总线加一个 Effect；用 `AudioServer.set_bus_volume_db()` 写一个一键静音所有音效的函数。
+2. 用 pitch_scale 随机化替代 AudioStreamRandomizer 的部分功能：给 Footstep 换回普通 WAV 流，在 `_on_player_stepped` 里每次设置 `footstep.pitch_scale = randf_range(0.9, 1.1)` 后再 play()。对比两种方案的听感与配置成本。
+3. 实现一个简单的播放列表：三条曲子依次播放，播完自动换下一首，全部播完从头再来。要求正确处理"中途切歌"——切歌用的 stop() 不能破坏 finished 链。
+
+## 下一步
+
+- 想知道 Quaver 的音色是怎么"合成"出来的、总线树如何组织混音与发送效果，可以直接读它的仓库：https://github.com/fanquanpp/quaver（scripts/synth_engine.gd 与混音面板代码）。
+- 角色移动与脚步触发的联动：角色移动与碰撞检测（080 篇）。
+- 声音跟着动画走：动画与补间（110 篇）里动画播放器的音频轨道。
 
 ## 参考链接
 
@@ -98,3 +112,4 @@ func _on_player_stepped() -> void:
 - [AudioStreamPlayer 类文档](https://docs.godotengine.org/en/stable/classes/class_audiostreamplayer.html)
 - [AudioStreamPlayer2D 类文档](https://docs.godotengine.org/en/stable/classes/class_audiostreamplayer2d.html)
 - [AudioStreamPlayer3D 类文档](https://docs.godotengine.org/en/stable/classes/class_audiostreamplayer3d.html)
+- 键盘编曲工具编趣 Quaver（总线树实战样本）：https://github.com/fanquanpp/quaver

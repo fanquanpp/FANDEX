@@ -1,12 +1,12 @@
 ---
-order: 300
+order: 320
 title: 生成器函数
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: 深入解析 ES6 生成器函数的协程语义、迭代器协议、异步生成器、与 async/await 的关系,以及无限流处理、co 库原理等高级主题
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/160-RecursionTailCallOptimization'
   - 'javascript/170-CurryAndFunctionComposition'

@@ -6,7 +6,7 @@ module: 'cs-fundamentals'
 category: 计算机科学
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/170-PCBThreadTCB'
   - 'cs-fundamentals/140-ParallelComputing'
@@ -17,9 +17,9 @@ prerequisites:
 
 ## 前置知识
 
-- 进程与线程的职责划分、上下文切换开销（见 [进程 PCB 与线程 TCB](cs-fundamentals/170-PCBThreadTCB)）；
+- 进程与线程的职责划分、上下文切换开销（见 [进程 PCB 与线程 TCB](/cs-fundamentals/170-PCBThreadTCB)）；
 - 阻塞式 I/O 的语义（`read` 等待数据期间线程挂起）；
-- 并行计算的基本概念（见 [并行计算](cs-fundamentals/140-ParallelComputing)）。
+- 并行计算的基本概念（见 [并行计算](/cs-fundamentals/140-ParallelComputing)）。
 
 ## 学习目标
 
@@ -55,7 +55,7 @@ prerequisites:
 | 阻塞行为 | 阻塞整个进程 | 阻塞该内核线程 | 让出执行权，载体线程继续跑别的 |
 | 单机可创建量 | 数百 | 数千至数万 | 数百万级 |
 
-协程便宜的根源在于两点：**切换发生在用户态**（不进内核，没有模式切换与调度器开销，见 [用户态与内核态切换](cs-fundamentals/200-UserModeKernelModeSwitch)）；**上下文极小**（只需要恢复执行点与栈顶几个寄存器，甚至只是一次状态机跳转）。
+协程便宜的根源在于两点：**切换发生在用户态**（不进内核，没有模式切换与调度器开销，见 [用户态与内核态切换](/cs-fundamentals/200-UserModeKernelModeSwitch)）；**上下文极小**（只需要恢复执行点与栈顶几个寄存器，甚至只是一次状态机跳转）。
 
 ## 3. 有栈协程与无栈协程
 
@@ -214,7 +214,7 @@ asyncio.run(main())
 
 - **在协程里调用阻塞函数**：同步的 `time.sleep`、数据库驱动、加密计算都会卡住整个载体线程，拖死同线程上所有协程。对策：换异步驱动，或把阻塞任务扔进线程池（`run_in_executor` / `spawn_blocking`）。
 - **函数着色问题**：无栈协程的 async 会沿调用链向上传染（"紫色函数"困境）；混合同步/异步代码库时的典型重构成本。
-- **以为协程利用多核**：asyncio 事件循环默认单线程，CPU 密集任务不会因此加速。协程解决的是**I/O 并发密度**，不是并行算力——后者靠多线程/多进程（见 [并行计算](cs-fundamentals/140-ParallelComputing)）。
+- **以为协程利用多核**：asyncio 事件循环默认单线程，CPU 密集任务不会因此加速。协程解决的是**I/O 并发密度**，不是并行算力——后者靠多线程/多进程（见 [并行计算](/cs-fundamentals/140-ParallelComputing)）。
 - **共享状态竞态依然存在**：协程在 await 点交错执行，没有锁保护的"检查后写入"照样出错；单线程事件循环免的是"任意指令间被抢占"，免不了"await 之间被插入"。
 - **调度饥饿**：事件循环里放一个长循环计算，其他协程全部饿死；把大计算切片（每片之间 await 一次）是通用解法。
 

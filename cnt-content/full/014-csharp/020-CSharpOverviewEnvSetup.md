@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: "装好 .NET SDK 并用 dotnet new 与 dotnet run 两步跑通第一个程序：三大平台安装命令、dotnet --version 验证、csproj 与隐式 Main 预告、VS Code 与 Visual Studio 选型、dotnet 不是内部或外部命令等真实报错实录。"
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'csharp/030-CSharpBasicSyntax'
   - 'csharp/040-CSharpOOP'

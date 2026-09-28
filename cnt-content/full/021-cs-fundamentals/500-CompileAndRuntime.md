@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 编译与运行时深度剖析：词法分析自动机构造、语法分析算法、语义分析、中间代码与SSA、优化技术、JIT编译、GC算法、链接与加载。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/510-ProgrammingLanguageTheory'
   - 'cs-fundamentals/290-NetworkProtocolDeep'
@@ -191,7 +191,7 @@ DFA最小化 (Hopcroft算法):
   4个状态 (原5个)
 ```
 
-> 跨模块引用：[编译原理](compiler)基础篇介绍了词法分析的基本概念。[数制与编码](encoding)的有限自动机理论是词法分析的数学基础。
+> 跨模块引用：[编译原理](/cs-fundamentals/420-CompilePrinciple)基础篇介绍了词法分析的基本概念。[数制与编码](/cs-fundamentals/060-NumberRepresentationEncoding)的有限自动机理论是词法分析的数学基础。
 
 ---
 
@@ -343,7 +343,7 @@ SLR(1)分析表 (部分):
    理论最优, 但计算复杂度高
 ```
 
-> 跨模块引用：[编译原理](compiler)基础篇介绍了语法分析的基本概念。[离散数学](discrete-math)的形式语言理论是语法分析的数学基础。
+> 跨模块引用：[编译原理](/cs-fundamentals/420-CompilePrinciple)基础篇介绍了语法分析的基本概念。[离散数学](/cs-fundamentals/540-DiscreteMathematics)的形式语言理论是语法分析的数学基础。
 
 ---
 
@@ -488,7 +488,7 @@ SLR(1)分析表 (部分):
      |- id(a) add_type(a, integer)
 ```
 
-> 跨模块引用：[编译原理](compiler)基础篇介绍了语义分析的基本概念。[软件工程](software-engineering)的类型安全设计依赖类型系统理论。
+> 跨模块引用：[编译原理](/cs-fundamentals/420-CompilePrinciple)基础篇介绍了语义分析的基本概念。[软件工程](/cs-fundamentals/560-SoftwareEngineering)的类型安全设计依赖类型系统理论。
 
 ---
 
@@ -700,7 +700,7 @@ LLVM IR示例:
     - phi函数在基本块入口
 ```
 
-> 跨模块引用：[编译原理](compiler)基础篇介绍了中间代码生成的基本概念。[操作系统](os)的虚拟内存管理影响代码布局优化。
+> 跨模块引用：[编译原理](/cs-fundamentals/420-CompilePrinciple)基础篇介绍了中间代码生成的基本概念。[操作系统](/cs-fundamentals/150-OperatingSystem)的虚拟内存管理影响代码布局优化。
 
 ---
 
@@ -873,7 +873,7 @@ LLVM IR示例:
          a[j][i] = ...;    // 行优先
 ```
 
-> 跨模块引用：[编译原理](compiler)基础篇介绍了基本优化技术。[计算机体系结构](architecture)的流水线和缓存特性影响优化策略的选择。
+> 跨模块引用：[编译原理](/cs-fundamentals/420-CompilePrinciple)基础篇介绍了基本优化技术。[计算机体系结构](/cs-fundamentals/090-ComputerArchitecture)的流水线和缓存特性影响优化策略的选择。
 
 ---
 
@@ -1024,7 +1024,7 @@ LLVM IR示例:
   若有独立指令可填充C2-C3, 则可减少总周期
 ```
 
-> 跨模块引用：[编译原理](compiler)基础篇介绍了代码生成的基本概念。[计算机体系结构](architecture)的指令集和流水线设计决定了指令选择和调度的策略。
+> 跨模块引用：[编译原理](/cs-fundamentals/420-CompilePrinciple)基础篇介绍了代码生成的基本概念。[计算机体系结构](/cs-fundamentals/090-ComputerArchitecture)的指令集和流水线设计决定了指令选择和调度的策略。
 
 ---
 
@@ -1163,7 +1163,7 @@ JIT特有优化:
    内联缓存命中 -> 直接调用
 ```
 
-> 跨模块引用：[编译原理](compiler)基础篇介绍了编译器的基本优化。[Java](/java/010-WhatIsJava)的HotSpot JVM是JIT编译的典型实现。
+> 跨模块引用：[编译原理](/cs-fundamentals/420-CompilePrinciple)基础篇介绍了编译器的基本优化。[Java](/java/010-WhatIsJava)的HotSpot JVM是JIT编译的典型实现。
 
 ---
 
@@ -1247,7 +1247,7 @@ flowchart TD
     无GC暂停, 但需手动处理循环引用
 ```
 
-> 跨模块引用：[操作系统](os)的内存管理是GC的基础。[编译原理](compiler)的逃逸分析影响GC压力。
+> 跨模块引用：[操作系统](/cs-fundamentals/150-OperatingSystem)的内存管理是GC的基础。[编译原理](/cs-fundamentals/420-CompilePrinciple)的逃逸分析影响GC压力。
 
 ---
 
@@ -1348,7 +1348,7 @@ flowchart TD
     B2 --> B3
 ```
 
-> 跨模块引用：[操作系统](os)的进程创建和虚拟内存是程序加载的基础。[编译原理](compiler)基础篇介绍了链接的基本概念。
+> 跨模块引用：[操作系统](/cs-fundamentals/150-OperatingSystem)的进程创建和虚拟内存是程序加载的基础。[编译原理](/cs-fundamentals/420-CompilePrinciple)基础篇介绍了链接的基本概念。
 
 ---
 

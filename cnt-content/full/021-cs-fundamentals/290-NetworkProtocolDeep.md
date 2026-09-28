@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 网络协议深度剖析：TCP拥塞控制机制、QUIC协议设计、HTTP演进、TLS 1.3握手、DNS解析、CDN原理、WebSocket与网络编程模型。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/630-HCI'
   - 'cs-fundamentals/510-ProgrammingLanguageTheory'
@@ -213,7 +213,7 @@ def bbr_update_model(acked, rtt):
     cwnd = btlbw * rtprop  # BDP (Bandwidth-Delay Product)
 ```
 
-> 跨模块引用：[计算机网络](network)基础篇介绍了TCP基本机制和拥塞控制概述。[操作系统](os)的内核网络栈实现了这些算法。
+> 跨模块引用：[计算机网络](/cs-fundamentals/270-ComputerNetwork)基础篇介绍了TCP基本机制和拥塞控制概述。[操作系统](/cs-fundamentals/150-OperatingSystem)的内核网络栈实现了这些算法。
 
 ---
 
@@ -285,7 +285,7 @@ QUIC面临的挑战:
   4. 调试工具链不如TCP成熟
 ```
 
-> 跨模块引用：[计算机网络](network)基础篇介绍了TCP/UDP基本概念。[操作系统](os)的内核网络栈是TCP实现的基础。
+> 跨模块引用：[计算机网络](/cs-fundamentals/270-ComputerNetwork)基础篇介绍了TCP/UDP基本概念。[操作系统](/cs-fundamentals/150-OperatingSystem)的内核网络栈是TCP实现的基础。
 
 ---
 
@@ -394,7 +394,7 @@ flowchart TD
     B5 --> B6
 ```
 
-> 跨模块引用：[计算机网络](network)基础篇介绍了HTTP基本概念和版本演进概述。[操作系统](os)的Socket接口是HTTP客户端/服务器的编程基础。
+> 跨模块引用：[计算机网络](/cs-fundamentals/270-ComputerNetwork)基础篇介绍了HTTP基本概念和版本演进概述。[操作系统](/cs-fundamentals/150-OperatingSystem)的Socket接口是HTTP客户端/服务器的编程基础。
 
 ---
 
@@ -524,7 +524,7 @@ TLS证书链验证流程:
     允许域名所有者监控未授权的证书签发
 ```
 
-> 跨模块引用：[计算机网络](network)基础篇介绍了TLS基本概念。[数制与编码](encoding)的加密算法是TLS的理论基础。
+> 跨模块引用：[计算机网络](/cs-fundamentals/270-ComputerNetwork)基础篇介绍了TLS基本概念。[数制与编码](/cs-fundamentals/060-NumberRepresentationEncoding)的加密算法是TLS的理论基础。
 
 ---
 
@@ -622,7 +622,7 @@ DNSSEC:
     NSEC/NSEC3: 不存在证明(防枚举)
 ```
 
-> 跨模块引用：[计算机网络](network)基础篇介绍了DNS基本概念和记录类型。[操作系统](os)的/etc/resolv.conf配置DNS服务器。
+> 跨模块引用：[计算机网络](/cs-fundamentals/270-ComputerNetwork)基础篇介绍了DNS基本概念和记录类型。[操作系统](/cs-fundamentals/150-OperatingSystem)的/etc/resolv.conf配置DNS服务器。
 
 ---
 
@@ -720,7 +720,7 @@ CDN动态加速 (DCN - Dynamic Content Network):
    用户请求到达时直接使用, 无需建连
 ```
 
-> 跨模块引用：[计算机网络](network)基础篇介绍了DNS和HTTP缓存。[操作系统](os)的页缓存机制与CDN缓存在原理上相似(局部性原理)。
+> 跨模块引用：[计算机网络](/cs-fundamentals/270-ComputerNetwork)基础篇介绍了DNS和HTTP缓存。[操作系统](/cs-fundamentals/150-OperatingSystem)的页缓存机制与CDN缓存在原理上相似(局部性原理)。
 
 ---
 
@@ -805,7 +805,7 @@ flowchart TD
   | 代理兼容 | 好     | 好     | 好     | 部分问题  |
 ```
 
-> 跨模块引用：[计算机网络](network)基础篇介绍了HTTP协议。[操作系统](os)的I/O多路复用是WebSocket服务器的基础。
+> 跨模块引用：[计算机网络](/cs-fundamentals/270-ComputerNetwork)基础篇介绍了HTTP协议。[操作系统](/cs-fundamentals/150-OperatingSystem)的I/O多路复用是WebSocket服务器的基础。
 
 ---
 
@@ -955,7 +955,7 @@ flowchart TD
     B2 --> B3
 ```
 
-> 跨模块引用：[操作系统](os)的I/O模型和中断机制是网络编程的基础。[软件工程](software-engineering)的Reactor模式是高并发服务器的核心设计模式。
+> 跨模块引用：[操作系统](/cs-fundamentals/150-OperatingSystem)的I/O模型和中断机制是网络编程的基础。[软件工程](/cs-fundamentals/560-SoftwareEngineering)的Reactor模式是高并发服务器的核心设计模式。
 
 ---
 

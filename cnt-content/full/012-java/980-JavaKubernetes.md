@@ -1,12 +1,12 @@
 ---
-order: 790
+order: 800
 title: Java 与 Kubernetes
 module: 'java'
 category: 后端技术
 difficulty: intermediate
 description: Java 应用在 Kubernetes 上的部署完整指南：资源限制、健康检查、优雅停机、自动伸缩与云原生实践。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/570-JavaVirtualThread'
   - 'java/1000-JavaGraalVM'

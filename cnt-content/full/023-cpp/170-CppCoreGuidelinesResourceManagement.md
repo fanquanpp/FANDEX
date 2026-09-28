@@ -270,18 +270,18 @@ flowchart TB
     accTitle: Stack Unwinding Mechanism Flow
     accDescr: Flowchart showing how C++ stack unwinding walks through call frames calling destructors when an exception is thrown until a matching catch is found.
 
-    start([异常抛出点]) --> check1{当前栈帧 F_k<br/>是否有匹配 catch?}
-    check1 -->|否| destruct1[按声明逆序<br/>调用 F_k 已构造对象的析构]
-    destruct1 --> pop1[弹出 F_k 栈帧]
-    pop1 --> move1[回溯至调用者 F_{k-1}]
-    move1 --> check2{F_{k-1} 是否有匹配 catch?}
-    check2 -->|否| destruct2[按声明逆序<br/>调用 F_{k-1} 已构造对象的析构]
-    destruct2 --> pop2[弹出 F_{k-1} 栈帧]
-    pop2 --> move2[回溯至调用者 F_{k-2}]
-    move2 --> checkN{F_0 是否有匹配 catch?}
-    checkN -->|是| handler[进入 catch 块<br/>执行异常处理]
-    checkN -->|否| terminate[调用 std::terminate<br/>程序终止]
-    handler --> continue([继续执行 catch 后续代码])
+    start(["异常抛出点"]) --> check1{"当前栈帧 F_k<br/>是否有匹配 catch?"}
+    check1 -->|否| destruct1["按声明逆序<br/>调用 F_k 已构造对象的析构"]
+    destruct1 --> pop1["弹出 F_k 栈帧"]
+    pop1 --> move1["回溯至调用者 F_{k-1}"]
+    move1 --> check2{"F_{k-1} 是否有匹配 catch?"}
+    check2 -->|否| destruct2["按声明逆序<br/>调用 F_{k-1} 已构造对象的析构"]
+    destruct2 --> pop2["弹出 F_{k-1} 栈帧"]
+    pop2 --> move2["回溯至调用者 F_{k-2}"]
+    move2 --> checkN{"F_0 是否有匹配 catch?"}
+    checkN -->|是| handler["进入 catch 块<br/>执行异常处理"]
+    checkN -->|否| terminate["调用 std::terminate<br/>程序终止"]
+    handler --> continue(["继续执行 catch 后续代码"])
 
     style start fill:#fee2e2,stroke:#dc2626,color:#7f1d1d
     style terminate fill:#fee2e2,stroke:#dc2626,color:#7f1d1d

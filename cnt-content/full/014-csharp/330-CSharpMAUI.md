@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: .NET MAUI 跨平台应用开发：架构原理、XAML、数据绑定、平台特定代码、原生 API 互操作、性能优化、部署发布全流程
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related: []
 prerequisites:
   - 'csharp/020-CSharpOverviewEnvSetup'
@@ -1146,7 +1146,7 @@ public partial class ResponsivePage : ContentPage
 | 模式 | 数据流向 | 适用场景 |
 |------|----------|----------|
 | OneWay | Source → Target | 只读显示 |
-| TwoWay | Source ↔ Target | 表单输入 |
+| TwoWay | Source <-> Target | 表单输入 |
 | OneWayToSource | Target → Source | 用户输入仅写回源 |
 | OneTime | 初始化时同步 | 静态数据展示 |
 

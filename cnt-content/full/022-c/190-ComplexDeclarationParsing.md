@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: C 语言复杂声明的形式语法、右左法则、函数指针与数组指针的解析方法,涵盖 cdecl 工具、ABI 规范与真实项目案例。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'c/450-SafeFunctionBoundsCheck'
   - 'c/300-InlineFunctionMacro'
@@ -1410,7 +1410,7 @@ struct redisCommand redisCommandTable[] = {
 - **Linux Kernel**: https://www.kernel.org/ — file_operations 是函数指针表的经典案例
 - **SQLite**: https://www.sqlite.org/ — 回调机制与 VDBE 虚拟机
 - **Redis**: https://redis.io/ — redisCommandTable 命令分发
-- **cdecl**: https://cdecl.org/ — C 声明 ↔ 英语互译工具
+- **cdecl**: https://cdecl.org/ — C 声明与英语互译工具
 - **FreeBSD libc**: https://github.com/freebsd/freebsd-src — signal 等复杂声明的实现
 
 ## 附录 A:声明符优先级速查表

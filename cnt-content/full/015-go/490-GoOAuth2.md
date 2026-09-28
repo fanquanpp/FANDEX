@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: OAuth2与JWT
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/470-GoHTTP'
   - 'go/460-GoHTTPClient'
@@ -2731,12 +2731,12 @@ func (v *CachedValidator) Validate(tokenString string) (*CustomClaims, error) {
 
 ```mermaid
 flowchart TD
-    C[Client] --> GW[Auth Gateway<br/>统一入口]
-    GW --> GH[/auth/github → GitHub OAuth2]
-    GW --> GO[/auth/google → Google OIDC]
-    GW --> GA[/auth/apple → Apple Sign In]
-    GW --> GS[/auth/saml → SAML IdP]
-    GH --> JWT[Local JWT<br/>统一签发本地 JWT]
+    C["Client"] --> GW["Auth Gateway<br/>统一入口"]
+    GW --> GH["/auth/github → GitHub OAuth2"]
+    GW --> GO["/auth/google → Google OIDC"]
+    GW --> GA["/auth/apple → Apple Sign In"]
+    GW --> GS["/auth/saml → SAML IdP"]
+    GH --> JWT["Local JWT<br/>统一签发本地 JWT"]
     GO --> JWT
     GA --> JWT
     GS --> JWT

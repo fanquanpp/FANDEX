@@ -4,9 +4,9 @@ title: Kotlin 2.x 新语言特性与 K2 编译器
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
-description: K2 编译器落地后的语言演进：guard 守卫条件、非局部 break/continue、多美元插值与上下文参数（Context Parameters）。
+description: 接手一个升级到 2.x 的项目需要知道的一切：K2 换引擎带来什么、guard 守卫、非局部 break/continue、多美元插值与上下文参数（2.3 已稳定）各自解决什么痛点。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'kotlin/020-KotlinOverviewEnvSetup'
   - 'kotlin/030-KotlinBasicSyntax'
@@ -17,181 +17,209 @@ prerequisites:
   - 'kotlin/150-SealedClassAlgebraicDataType'
 ---
 
-## 概述
+## 前置知识
 
-Kotlin 2.0（2024 年 5 月）的主角是 **K2 编译器**：语言语义几乎不变，编译速度最高提升约 2 倍。此后语言特性恢复快速迭代：
+- [Kotlin 基本语法](/kotlin/030-KotlinBasicSyntax)：会写 when 与字符串模板；
+- [密封类与代数数据类型](/kotlin/150-SealedClassAlgebraicDataType)：guard 一节要对 sealed 类型做穷尽 when，没读过也能跟上，读完会更顺。
 
-| 版本 | 发布时间 | 语言特性动态 |
-| ---- | -------- | ------------ |
-| 2.0 | 2024-05 | K2 稳定并成为默认编译器；`enum entries` 稳定 |
-| 2.1 | 2024-11 | `guard` 守卫条件、非局部 `break`/`continue`、多美元插值以实验性预览 |
-| 2.2 | 2025-06 | 上述三个特性全部转稳定；上下文参数（Context Parameters）实验性预览，取代 context receivers |
-| 2.3 | 2025-12 | 部分预览特性继续稳定；多平台 Swift 导出与构建速度改进 |
+## 学习目标
 
-本文逐一讲解这些特性的动机、语法与适用边界。所有稳定特性可直接在生产代码使用；实验性特性需要 `-Xcontext-parameters` 等编译器开关或 `@OptIn`，使用前确认项目设置。
+读完本文你将能够：
 
-## K2 编译器：换引擎，不换语言
+1. 向团队解释 K2 编译器"换了什么、没换什么"，评估一次 1.9 到 2.x 的升级成本；
+2. 用 `guard` 把"类型判断 + 条件判断"压进一个 when 分支，不再写嵌套 if；
+3. 在 `forEach` 这类内联 Lambda 里直接 `break`/`continue` 外层循环，告别标签绕行；
+4. 用多美元插值写出不再和 `$` 打架的模板、正则与 shell 字符串；
+5. 判断上下文参数适不适合你的项目，知道它与废弃的 context receivers 的关系。
 
-K2 是对编译器前端的彻底重写（新的 FIR 前端 + 统一 IR 后端），对使用者的直接价值：
+预计 45 到 60 分钟，含 3 组动手实验与 3 道练习。
 
-1. **更快**：官方基准下编译速度提升最高约 2 倍，增量编译（热路径）收益更明显。
-2. **更聪明**：智能转换（smart casts）在更多场景成立，泛型推断更准。
-3. **更友好**：错误信息更准确、更少"级联误导"。
-4. **统一**：JVM/JS/Native/Wasm 共用同一前端，跨平台行为一致。
+## 1. 问题引入：升级 2.x，你会得到什么
 
-对存量项目，迁移通常只需升级插件版本——2.0 起 K2 就是默认编译器，无需额外开关：
+假设你接手一个 2023 年启动的 Kotlin 1.9 项目（比如 FANDEX 这类多模块仓库的服务端部分），第一件事是把 Kotlin 插件升到 2.x。值得升吗？先看 2.x 这条时间线：
+
+| 版本 | 发布 | 关键动态 |
+| ---- | ---- | -------- |
+| 2.0 | 2024-05 | K2 编译器成为默认；`enum entries` 转稳定 |
+| 2.1 | 2024-11 | `guard`、非局部 `break`/`continue`、多美元插值以实验性预览 |
+| 2.2 | 2025-06 | 上述三项全部转稳定；上下文参数（context parameters）实验性预览，取代 context receivers |
+| 2.3 | 2025 年末 | 上下文参数转稳定；编辑器与构建体验持续改进 |
+
+读法：**2.0 是引擎换代，2.1-2.3 是特性恢复快跑**。JetBrains 在 K1 时代冻结了大部分新语法（编译器前端重写优先），2.x 起节奏稳定为"实验预览 -> 下一到两个版本转稳"。所以升级 2.x 的真实收益分两层：马上兑现的编译速度，以及持续兑现的新语法。
+
+## 2. K2 编译器：换引擎，不换语言
+
+K2 是编译器前端的彻底重写（新的 FIR 前端 + 统一 IR 后端），四个可感知的变化：
+
+1. **更快**：官方基准下全量编译最高约 2 倍提速，增量编译（日常热路径）收益更明显；
+2. **更聪明**：智能转换在更多场景成立（K1 时代一堆"明明能推断却不给你转"的报错消失），泛型推断更准；
+3. **更友好**：报错定位更准，少了"一个错带出一串级联误导"；
+4. **更统一**：JVM/JS/Native/Wasm 共用同一前端，多平台项目行为一致。
+
+对存量项目，迁移通常只是换版本号：
 
 ```kotlin
-// build.gradle.kts
 plugins {
-    kotlin("jvm") version "2.2.0"
+    kotlin("jvm") version "2.2.20"   // 2.0 起 K2 即默认，无开关
 }
 ```
 
-需要注意的主要是工具链配套：KSP、Compose 编译器插件等在 K2 时代有对应版本要求；个别旧编译器参数（如部分 `-X` 实验开关）被替换，升级时按编译器提示处理即可。若要临时回退语言语义，用 `kotlin { compilerOptions { languageVersion.set(KotlinVersion.KOTLIN_1_9) } }` 渐进过渡。
+真正的迁移成本在**工具链配套**：KSP、Compose 编译器插件、序列化插件都要升到与 2.x 匹配的版本；个别 `-X` 实验参数被移除或改名，按编译器提示逐个处理。多模块仓库统一升级、别让 1.9 与 2.x 模块混编。要给存量代码留过渡期，可以把 languageVersion 钉在 1.9，先吃编译器红利、后开新语法。
 
-## guard 守卫条件（2.2 稳定）
+实验一：给一个小项目分别用 1.9.x 与 2.2.x 各跑一次 `./gradlew clean build --profile`，对比编译耗时。工程越大差距越明显，这是你说服团队升级的最短路径。
 
-在 `when` 分支上附加布尔条件，让"类型判断 + 条件判断"一行完成，避免嵌套 `if`：
+## 3. guard 守卫条件（2.2 稳定）
+
+处理通知分发时最常见的形状：先按类型分派，再按内容细分。1.x 的写法要嵌套：
 
 ```kotlin
-enum class Severity { INFO, WARNING, RED }
+// 1.x：when 里套 if，缩进指数增长
+when (notification) {
+    is Alert -> if (notification.severity == Severity.RED) {
+        notifyOnCall(notification.message)
+    } else {
+        showBanner(notification.message)
+    }
+    is Reminder -> showBanner(notification.text)
+}
+```
+
+2.x 的 `guard` 把条件挂进分支本身：
+
+```kotlin
 sealed interface Notification
 data class Alert(val message: String, val severity: Severity) : Notification
 data class Reminder(val text: String) : Notification
 
-fun handle(notification: Notification) {
-    when (notification) {
-        // 守卫条件：类型匹配 Alert 且严重级别为 RED 才进入该分支
-        is Alert guard notification.severity == Severity.RED ->
-            println("紧急告警: ${notification.message}")
-        is Alert ->
-            println("普通告警: ${notification.message}")
-        is Reminder ->
-            println("提醒: ${notification.text}")
-    }
-}
-
-fun main() {
-    handle(Alert("服务不可用", Severity.RED))    // 紧急告警: 服务不可用
-    handle(Alert("磁盘使用率高", Severity.INFO)) // 普通告警: 磁盘使用率高
-    handle(Reminder("站立会议"))                 // 提醒: 站立会议
+fun handle(notification: Notification) = when (notification) {
+    is Alert guard notification.severity == Severity.RED ->
+        notifyOnCall(notification.message)
+    is Alert ->
+        showBanner(notification.message)
+    is Reminder ->
+        showBanner(notification.text)
 }
 ```
 
-语义要点：guard 条件失败时**不会报错也不落入 else，而是继续尝试下一个分支**——这与"先 `is` 再嵌套 `if` else"完全等价，同时保持 when 表达式的穷尽性检查。
+语义要点只有一个：**guard 不满足时不是报错也不是落进 else，而是继续尝试下一个分支**——与"先 `is` 再嵌套 if"完全等价，但扁平、可读，并且 when 表达式的穷尽性检查原封不动（对 sealed 类型，编译器仍然逼你覆盖所有子类）。
 
-## 非局部 break / continue（2.2 稳定）
+坑点：别把 guard 当"过滤器"用。想"不满足条件就整体跳过这段处理"，应该在 when 之前先判断，guard 只负责"这条分支的特殊准入条件"。
 
-此前在传给内联函数（如 `forEach`）的 lambda 里无法直接操作外层循环，只能用标签或 `return@label` 绕行。2.1 起可以直接 `break`/`continue` 外层循环：
+## 4. 非局部 break / continue（2.2 稳定）
+
+在网格（二维列表）里找第一个空格，1.x 的写法隔着 Lambda 边界就不能用 `break`，只能标签绕行或改用 `run`/`firstNotNullOfOrNull`。2.x 直接支持：
 
 ```kotlin
-fun main() {
-    val rows = listOf(
-        listOf(1, 2, 0),
-        listOf(4, 5, 6),
-    )
-
+fun findBlank(rows: List<List<Int>>): Boolean {
     for (row in rows) {
         row.forEach { cell ->
-            if (cell == 0) return@forEach  // 局部：只跳过当前元素
-        }
-    }
-
-    for (row in rows) {
-        row.forEach { cell ->
-            if (cell == 0) continue   // 非局部：跳过外层 for 的本次迭代
-            if (cell > 5) break       // 非局部：直接退出外层 for
+            if (cell == 0) return true   // return 一直可以穿透内联 lambda
+            if (cell < 0) continue       // 2.x：continue 外层 for 的下一圈
             print("$cell ")
+            if (cell > 9) break          // 2.x：直接退出外层 for
         }
-        println()
     }
+    return false
 }
-// 输出：
-// 1 2
-// 4 5
 ```
 
-要点：`break`/`continue` 的目标永远是**外围最近的循环**（即使隔着 lambda 边界）；仅当 lambda 被内联时可用（`forEach`、`map` 等内联函数），普通（非内联）lambda 中不允许。
+三条规则：
 
-## 多美元符号字符串插值（2.2 稳定）
+1. `break`/`continue` 的目标是**外围最近的循环**，即使中间隔着 Lambda；
+2. 只在**内联** Lambda（`forEach`、`map`、`let` 等）里可用——编译器把内联 Lambda 展开进外层函数，所以跳转合法；自定义高阶函数想享受同等待遇，记得标 `inline`；
+3. 老的标签语法 `return@forEach` 仍然有效，语义是"只跳过当前元素"，与新语义不同，改代码时别混淆。
 
-写模板、JSON、正则或 shell 字符串时，字面量 `$` 与插值 `$var` 的冲突一直靠反斜杠转义解决。多美元插值提供了更清晰的选择：**用更多美元符号表示"这次我要插值"**，单个 `$` 则保持字面：
+## 5. 多美元插值（2.2 稳定）
+
+写正则、shell 脚本、Makefile 或 JSON 模板时，字符串里的 `$` 和插值 `$var` 打架，1.x 只能转义：
+
+```kotlin
+// 1.x：一串 \$，读起来像密码
+val cmd = "grep \"\\$\\{version\\}\" build.gradle.kts"
+```
+
+2.x 的多美元插值换个思路：**用几个 `$` 开头，就声明"连续几个 `$` 才是插值"**：
 
 ```kotlin
 fun main() {
     val name = "Kotlin"
 
-    // $$ 前缀：单个 $ 保持字面量
-    println($$"price: $99")          // price: $99
-    println($$"not interpolated: $name")  // not interpolated: $name
+    println($$"price: $99")               // $$ 开头：单个 $ 是字面量 -> price: $99
+    println($$"hi $$name")                // 连续两个 $ 才插值 -> hi Kotlin
+    println("plain $name")                // 普通串行为不变 -> plain Kotlin
 
-    // $$name 才执行插值
-    println($$"interpolated: $$name")     // interpolated: Kotlin
-
-    // 与三引号原始字符串组合，JSON 模板不再需要 \$
-    val json = $$"""{"user": "$name", "tag": "$team"}"""
-    println(json.replace("$team", "FANDEX"))
-    // {"user": "Kotlin", "tag": "FANDEX"}
+    // 与三引号组合，JSON 模板里的 $ 不再需要转义
+    val team = "FANDEX"
+    val json = $$"""{"project": "$$team", "flag": "-Dver=$1"}"""
+    println(json)                         // {"project": "FANDEX", "flag": "-Dver=$1"}
 }
 ```
 
-规则速记：字符串以 `N` 个 `$` 开头声明插值前缀时（N >= 2），只有连续 `N` 个 `$` 后跟表达式才触发插值，少于 N 个都是字面量。
+规则速记：前缀 `$$` 之后，`$$xx` 是插值、`$xx` 是字面量；前缀 `$$$` 则只有 `$$$xx` 插值，以此类推。只在"字符串里真的有很多 `$`"的场合用它——普通字符串用单 `$`，别为了新而新。
 
-## 上下文参数 Context Parameters（2.2 预览）
+## 6. 上下文参数（2.3 稳定）
 
-把"函数依赖的环境对象"（日志器、配置、事务句柄、Arrow 的 `Raise` 等）显式声明为上下文参数，调用方通过作用域内的隐式接收者提供，函数体内直接使用——像"隐式参数"，但声明点清晰可见。
+横切依赖（日志器、配置、事务句柄）的传递是个老问题：显式传参啰嗦，全局单例难测试。2.2 引入的上下文参数给出第三条路——**声明"我需要什么环境"，调用方在作用域里提供**：
 
 ```kotlin
-// 需要编译器参数：-Xcontext-parameters
-interface Logger {
-    fun info(msg: String)
-}
+interface Logger { fun info(msg: String) }
 
-class ConsoleLogger : Logger {
-    override fun info(msg: String) = println("INFO: $msg")
-}
-
-// 声明上下文参数：函数隐式依赖一个 Logger
+// 声明：这个函数隐式依赖一个 Logger
 context(logger: Logger)
-fun businessLogic(id: String) {
-    logger.info("处理业务: $id")   // 直接使用上下文中的 logger
+fun audit(userId: String) {
+    logger.info("用户 $userId 触发审计")     // 直接使用，不用传参
 }
 
 fun main() {
-    with(ConsoleLogger()) {
-        businessLogic("U-001")      // 在隐式接收者作用域内调用
+    val logger = object : Logger {
+        override fun info(msg: String) = println("INFO: $msg")
+    }
+    with(logger) {
+        audit("U-001")                        // 作用域内的 logger 自动供给
     }
 }
-// 预期输出：INFO: 处理业务: U-001
+// INFO: 用户 U-001 触发审计
 ```
 
-与旧设计的关系：更早的实验特性 **context receivers（`context(Logger)` 无名声明）已被 context parameters 取代并废弃**；新设计要求参数命名、解析规则更简单。Arrow 2.x 的 `Raise<E>` 错误处理即建立在这类上下文机制上。
+时间线与注意事项：
 
-适用边界：
+- 2.2 为实验性预览（需 `-Xcontext-parameters`），**2.3 转稳定**，不再需要编译器开关；
+- 它取代了更早的实验特性 **context receivers**（`context(Logger)` 无名形式，已废弃）；两者语法相近但解析规则不同，网上老文章的写法要甄别；
+- Arrow 2.x 的 `Raise<E>` 错误处理、Ktor 的部分新 API 都建立在这类上下文机制上，生态在向它靠拢。
 
-1. **适合**：横切依赖（日志、追踪、配置）、不变的环境对象、库 API 中的能力约束（如 `Raise`）。
-2. **不适合**：普通业务参数——上下文是隐式的，滥用会削弱可读性；能显式传参就显式传参。
-3. **状态**：2.2 起为实验性预览，API 细节可能调整；生产使用需评估并锁定编译器版本。
+适用判断：**横切、只读、相对稳定**的环境对象（日志、追踪、配置、能力约束）适合；普通业务参数老老实实显式传——上下文的隐式性是把双刃剑，滥用会让"这个值从哪来"变成猜谜。
 
-## 其他值得知道的 2.x 变化
+## 7. 其他值得顺手带走的 2.x 变化
 
-- **`enum entries`（2.0 稳定）**：`EnumClass.entries` 替代 `values()`，返回不可变 `EnumEntries` 列表（不每次分配新数组）。
-- **Kotlin/Native 与 Wasm**：2.x 线 Native 内存模型与 GC 持续改进；`kotlin("multiplatform")` 项目受益于 K2 的统一前端。
-- **标准库原子类型**：`kotlin.concurrent.atomics`（2.1.20 起实验性）提供跨平台 `AtomicInt` 等，详见 [Kotlin 与原子操作](/kotlin/280-KotlinAtomicOperation)。
-- **编译器选项新 DSL**：Gradle 中 `kotlinOptions` 逐步让位于类型安全的 `compilerOptions { }`，详见 [Kotlin 与 Gradle](/kotlin/410-KotlinGradle)。
+- `enum entries`（2.0 稳定）：`Severity.entries` 替代 `values()`，返回复用的不可变列表，不再每次分配新数组；
+- 标准库跨平台原子类型 `kotlin.concurrent.atomics`（`AtomicInt` 等）：多平台项目不再各写一套，详见 [Kotlin 与原子操作](/kotlin/280-KotlinAtomicOperation)；
+- Gradle DSL：`kotlinOptions` 逐步让位于类型安全的 `compilerOptions { }`，详见 [Kotlin 与 Gradle](/kotlin/410-KotlinGradle)。
 
-## 常见陷阱
+## 易错点与最佳实践
 
-1. **把 2.1 的新语法直接用在旧语言级别**：`guard`、非局部 `break`、`$$` 插值要求 language version >= 2.1/2.2，混用多模块时统一配置，否则报"特性处于预览/语言版本不足"。
-2. **guard 误当过滤用**：guard 失败会**继续匹配后续分支**，不是提前返回；想"不满足就跳过整个 when"应先在 when 之前过滤。
-3. **非局部 break 在非内联 lambda 中编译失败**：`flatMap` 等部分函数仍是内联，但自定义高阶函数若未标 `inline` 则不能用。
-4. **`$$` 插值与 shell/Make 变量冲突**：在需要输出真实 `$` 的模板中，确认每个 `$` 的字面/插值语义，必要时统一用 `$$` 前缀字符串。
-5. **依赖实验性上下文参数的库要锁版本**：API 在预览期可能不兼容变更，跨编译器版本升级前先在 CI 验证。
+**错误一：新语法配旧语言级别。** `guard`、非局部 `break`、`$$` 各自有最低语言版本，多模块项目要统一 language/toolchain 版本，否则报"特性需要更高语言版本"。
+**错误二：把 guard 当过滤器。** guard 失败会继续匹配后续分支，不是提前返回。
+**错误三：在非内联 Lambda 里用非局部 break。** 自定义高阶函数标 `inline` 才行；编译器报错信息会直接指出。
+**错误四：`$$` 与 shell 变量混着数 `$`。** 写模板前先决定前缀级数，逐个 `$` 标注字面/插值，避免发布脚本里少打一个美元。
+**错误五：跨版本踩上下文参数。** 2.2 的 `-Xcontext-parameters` 写法与 2.3 稳定版有差异，教程配图先看版本；依赖它的库要锁编译器版本并在 CI 验证。
 
-## 小结
+## 本篇小结
 
-- Kotlin 2.0 换了引擎（K2 默认），没换语言；2.1-2.3 恢复特性迭代，节奏是"实验预览 -> 下一到两个版本转稳"。
-- `guard` 让 when 分支支持条件守卫，失败则继续匹配下一分支；非局部 `break`/`continue` 终结了内联 lambda 里的标签绕行；`$$` 插值解决 `$` 字面量冲突。
-- 上下文参数是 2.2 的方向性特性：横切依赖的显式声明 + 隐式传递，取代 context receivers；生产采用需谨慎评估。
-- 升级 K2 的成本主要在工具链配套（KSP/Compose 插件/编译参数），语言本身保持兼容。
+- K2（2.0 默认）换的是编译器引擎：更快、更聪明、报错更准、多平台统一；语言保持兼容，升级成本主要在工具链配套；
+- `guard` 给 when 分支加条件守卫，失败继续匹配下一分支，穷尽性检查不受影响；
+- 非局部 `break`/`continue` 穿透内联 Lambda 操作外层循环，标签绕行成为历史；
+- 多美元插值用"前缀级数"声明插值边界，模板与正则里的 `$` 不再转义；
+- 上下文参数 2.3 已稳定，取代 context receivers，适合横切只读依赖；
+- 2.x 的特性节奏回归"预览 -> 下一两个版本转稳"，跟进成本可预期。
+
+## 动手实践
+
+1. **K2 提速实测**：任选一个多文件项目，分别用 Kotlin 1.9.24 与 2.2.20 执行 `./gradlew clean build --profile` 三次取平均，把提速比写进团队文档。
+2. **重构 when**：找一个项目里"when + 嵌套 if"的分支（没有就写一个订单状态分发：`is Order guard order.amount > 1000` 走大额通道），用 guard 重写并保持穷尽性检查通过——故意删掉一个分支看编译器报错。
+3. **插值翻译**：把一条带 `$` 转义的正则或 shell 命令字符串改写成 `$$` 版本，打印对比两种写法的输出是否一致。
+
+## 下一步
+
+- [Kotlin 与 Gradle](/kotlin/410-KotlinGradle)：升级 2.x 时 toolchain、compilerOptions 与 KSP 的配套配置；
+- [密封类与代数数据类型](/kotlin/150-SealedClassAlgebraicDataType)：guard 的最佳搭档，when 穷尽性的完整语法；
+- [Kotlin 与原子操作](/kotlin/280-KotlinAtomicOperation)：2.x 新增的跨平台原子类型全景。

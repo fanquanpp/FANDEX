@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 多媒体技术：音频编码、图像压缩、视频编码、流媒体与多媒体网络
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/280-ComputerNetworkAdvanced'
   - 'cs-fundamentals/400-NetworkSecurity'
@@ -114,7 +114,16 @@ $$F(u,v) = \frac{1}{4}C(u)C(v)\sum_{x=0}^{7}\sum_{y=0}^{7}f(x,y)\cos\frac{(2x+1)
 
 ```mermaid
 flowchart LR
-    I[I] B1[B] B2[B] P1[P] B3[B] B4[B] P2[P] B5[B] B6[B] I2[I]
+    I[I]
+    B1[B]
+    B2[B]
+    P1[P]
+    B3[B]
+    B4[B]
+    P2[P]
+    B5[B]
+    B6[B]
+    I2[I]
     I --- B1 --- B2 --- P1 --- B3 --- B4 --- P2 --- B5 --- B6 --- I2
 ```
 

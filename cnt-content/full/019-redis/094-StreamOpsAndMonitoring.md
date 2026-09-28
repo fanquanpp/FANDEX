@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 100
 title: Redis Stream 运维与监控：修剪、观测与故障排查
 module: 'redis'
 category: 数据库

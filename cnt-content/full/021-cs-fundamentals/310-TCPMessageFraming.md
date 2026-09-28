@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: TCP 粘包与拆包问题：Nagle 算法、CORK 选项与解决方案。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/330-HTTPSHandshake'
   - 'cs-fundamentals/300-TCPControl'
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- TCP 是面向字节流的可靠传输协议，UDP 是面向数据报的（见 [TCP 连接管理](cs-fundamentals/300-TCPControl)）；
+- TCP 是面向字节流的可靠传输协议，UDP 是面向数据报的（见 [TCP 连接管理](/cs-fundamentals/300-TCPControl)）；
 - 发送缓冲区与接收缓冲区的概念：socket 写入的数据先进内核缓冲区；
 - MSS（最大报文段长度，以太网典型 1460 字节）与 MTU 的关系。
 

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 23种GoF设计模式分类、原理与应用场景。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'software-testing/330-RequirementAnalysisMethod'
   - 'software-testing/340-UMLGraphDetailed'
@@ -240,9 +240,9 @@ in = new GZIPInputStream(in);         // 装饰：解压
 
 ```mermaid
 flowchart TD
-    S[Subject<br/>attach(observer)<br/>detach(observer)<br/>notify()]
-    S -->|Observer.update()| O1[ConcreteObserver1]
-    S -->|Observer.update()| O2[ConcreteObserver2]
+    S["Subject<br/>attach(observer)<br/>detach(observer)<br/>notify()"]
+    S -->|"Observer.update()"| O1["ConcreteObserver1"]
+    S -->|"Observer.update()"| O2["ConcreteObserver2"]
 ```
 
 **场景**：消息通知、事件监听、发布订阅系统（这就是事件驱动架构的雏形，见本模块「事件驱动架构」一文）。

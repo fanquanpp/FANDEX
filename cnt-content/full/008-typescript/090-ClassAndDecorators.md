@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 类定义、访问修饰符、装饰器模式与元数据。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/220-FunctionGeneric'
   - 'typescript/110-LiteralUnionTypes'
@@ -27,7 +27,7 @@ prerequisites: []
 - 掌握「4. 静态成员」的核心机制、典型用法与常见陷阱
 - 掌握「5. 类的存取器 (Getters & Setters)」的核心机制、典型用法与常见陷阱
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 ## 1. 类成员修饰符 (Access Modifiers)

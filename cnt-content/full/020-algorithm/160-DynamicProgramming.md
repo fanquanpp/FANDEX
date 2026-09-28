@@ -446,7 +446,7 @@ DP 的核心价值在于：**用空间换时间，将指数级的搜索空间压
 
 $$\text{DP 时间} = O(S \cdot T_{\text{transition}}), \quad \text{递归时间} = \Theta(R), \quad \text{当 } R \gg S \text{ 时收益巨大}$$
 
-> 跨模块引用：DP 与贪心、分治的本质区别参见 [算法分析基础](algorithm/算法分析基础与学习路线) 中的范式对比。
+> 跨模块引用：DP 与贪心、分治的本质区别参见 [算法分析基础](/algorithm/010-AlgorithmAnalysisBasics) 中的范式对比。
 
 ---
 
@@ -1211,7 +1211,7 @@ $$-\frac{\partial V}{\partial t} = \max_a \big\{ r(s, a) + \nabla V \cdot f(s, a
 | 算法   | 值迭代、策略迭代 | Q-learning、SARSA、DQN |
 | 收敛性 | 严格保证         | 依赖探索与样本         |
 
-> 跨模块引用：DP 在图算法中的应用（如 Floyd-Warshall）参见 [Floyd-Warshall 算法](algorithm/Floyd-Warshall算法)。DP 与贪心的边界讨论参见 [贪心算法](algorithm/贪心算法)。
+> 跨模块引用：DP 在图算法中的应用（如 Floyd-Warshall）参见 [Floyd-Warshall 算法](/algorithm/250-FloydWarshall)。DP 与贪心的边界讨论参见 [贪心算法](/algorithm/130-GreedyAlgorithm)。
 
 ---
 

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 信息收集技术：被动侦察、主动扫描、OSINT、子域名枚举与指纹识别详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/090-HTTPSPrinciple'
   - 'cybersecurity/360-PenetrationTestingMethodology'
@@ -286,4 +286,4 @@ nuclei -l live.txt -severity low,medium,high,critical -exclude-tags intrusive -o
   工具链主线 subfinder → httpx → nuclei 覆盖八成自动化需求。
 - **进阶注意**：范围与强度是法律红线，泛域名资产要确认归属；CT 日志历史证书要过滤；
   侦察结果要沉淀为可重跑的攻击面监控；渗透全流程的方法论衔接见
-  022-PenetrationTestingMethodology。
+  360-PenetrationTestingMethodology。

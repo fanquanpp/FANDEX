@@ -1,12 +1,12 @@
 ---
-order: 200
+order: 210
 title: 类型兼容性（结构化类型系统）
 module: 'typescript'
 category: 前端技术
 difficulty: beginner
 description: TypeScript 结构化类型系统的赋值兼容规则：对象、函数、联合、交叉与特殊类型的兼容判断。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/110-LiteralUnionTypes'
   - 'typescript/120-IntersectionTypeMerge'

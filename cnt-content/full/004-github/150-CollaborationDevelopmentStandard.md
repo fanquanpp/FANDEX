@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 协作开发规范：Commit Message 约定、分支命名、PR 模板、代码审查清单与 CLA/DCO 合规。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'github/030-RepositoryCreateCloneArchiveDelete'
   - 'github/040-SSHHTTPS'
@@ -215,7 +215,7 @@ jobs:
 
 ### 5.4 文档规范与团队落地清单
 
-规范要落地，配套文档不可少。在仓库中维护以下"健康文件"（详见 026 篇《社区健康文件》）：
+规范要落地，配套文档不可少。在仓库中维护以下"健康文件"（详见 [社区健康文件](/github/250-CommunityHealthFile)）：
 
 | 文件 | 作用 |
 | :--- | :--- |
@@ -223,13 +223,13 @@ jobs:
 | `CONTRIBUTING.md` | 贡献指南：如何提 Issue、如何开发、如何提交 PR |
 | `CODE_OF_CONDUCT.md` | 社区行为准则 |
 | `SECURITY.md` | 安全漏洞上报流程 |
-| `CODEOWNERS` | 按模块指定代码审查负责人（详见 025 篇） |
+| `CODEOWNERS` | 按模块指定代码审查负责人（详见 [CODEOWNERS 代码所有者](/github/190-CODEOWNERS)） |
 
 **团队落地五步**：
 
 1. 先定 Commit 规范与分支命名规范，写入 README 或 CONTRIBUTING。
 2. 配置 PR 模板与 Issue 模板，用工具（commitlint/DCO Action）强制校验。
-3. 主分支开启保护规则，要求 PR 合并 + 审查 + CI 通过（详见 007 篇）。
+3. 主分支开启保护规则，要求 PR 合并 + 审查 + CI 通过（详见 [分支模型与分支保护规则](/github/170-BranchModelBranchRule)）。
 4. 用 CODEOWNERS 把关键模块的审查责任落到具体人。
 5. 每季度回顾一次流程，根据痛点迭代规范。
 
@@ -250,7 +250,7 @@ jobs:
 
 ### 延伸阅读
 
-- 分支模型与保护规则落地，见 007 篇《分支模型与分支保护规则》。
-- 团队健康文件（CONTRIBUTING/CODE_OF_CONDUCT），见 026 篇《社区健康文件》。
-- 代码所有者（CODEOWNERS）自动分配审查者，见 025 篇。
-- PR 全流程实操，见 027 篇《Pull Request 完整协作流程》。
+- 分支模型与保护规则落地，见 [分支模型与分支保护规则](/github/170-BranchModelBranchRule)。
+- 团队健康文件（CONTRIBUTING/CODE_OF_CONDUCT），见 [社区健康文件](/github/250-CommunityHealthFile)。
+- 代码所有者（CODEOWNERS）自动分配审查者，见 [CODEOWNERS 代码所有者](/github/190-CODEOWNERS)。
+- PR 全流程实操，见 [Pull Request 完整协作流程](/github/180-PullRequestCompleteCollaborationFlow)。

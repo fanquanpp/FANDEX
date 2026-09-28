@@ -1,12 +1,12 @@
 ---
-order: 680
+order: 720
 title: Python 与 Jupyter：交互式计算、数据分析与可复现研究
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 系统阐述 Jupyter Notebook/Lab 的架构、内核协议、魔法命令、可视化、Widgets、性能优化与企业级部署实践。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/610-PythonDesignPattern'
   - 'python/730-PythonPackagingEvolution'

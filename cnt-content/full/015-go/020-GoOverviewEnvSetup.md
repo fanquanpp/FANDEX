@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 装好 Go 并用 go version 验证；用 go mod init 建立现代模块并与 GOPATH 时代一句对照；跑通 go run、go build、go fmt、go test 四命令并核对预期输出；配好 VS Code 与 gopls，读懂两类新手必踩报错。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/010-WhatIsGo'
   - 'go/030-GoBasicSyntax'

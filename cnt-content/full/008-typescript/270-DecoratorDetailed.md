@@ -1,12 +1,12 @@
 ---
-order: 270
+order: 280
 title: 装饰器详解
 module: 'typescript'
 category: 前端技术
 difficulty: advanced
 description: TypeScript装饰器与元编程
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/470-MappedTypeAdvanced'
   - 'typescript/230-GenericConstraintDefault'
@@ -15,7 +15,7 @@ related:
 prerequisites: []
 ---
 
-> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `001-HowToReadThisCourse`）。
+> 阅读提示：正文以代码和白话为主，不出现类型论公式。进阶文档中若出现 `Γ ⊢ e : τ` 这类记号，第一遍可完全跳过（完整规则见 `typescript/020-HowToReadThisCourse`）。
 
 
 

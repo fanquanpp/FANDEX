@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 函数定义与参数传递、模块化编程、文件操作、异常处理与调试基础（入门学习笔记）。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/020-ProgrammingBasics'
   - 'cs-fundamentals/040-ProgrammingParadigmBasics'
@@ -151,16 +151,16 @@ int main() {
 
 ```mermaid
 flowchart LR
-    subgraph Before[调用前]
-        BA[a → [10]]
+    subgraph Before["调用前"]
+        BA["a → [10]"]
     end
-    subgraph Call[调用时 值传递]
-        CA[a → [10]]
-        X[x → [10] 复制了一份]
+    subgraph Call["调用时 值传递"]
+        CA["a → [10]"]
+        X["x → [10] 复制了一份"]
     end
-    subgraph After[修改后]
-        AA[a → [10] 不变]
-        AX[x → [100] 变了]
+    subgraph After["修改后"]
+        AA["a → [10] 不变"]
+        AX["x → [100] 变了"]
     end
 ```
 
@@ -187,13 +187,13 @@ int main() {
 
 ```mermaid
 flowchart LR
-    subgraph Before[调用前]
-        BA[a → [3]]
-        BB[b → [5]]
+    subgraph Before["调用前"]
+        BA["a → [3]"]
+        BB["b → [5]"]
     end
-    subgraph After[修改后 指针传递]
-        AA[pa → a → [5]]
-        AB[pb → b → [3]]
+    subgraph After["修改后 指针传递"]
+        AA["pa → a → [5]"]
+        AB["pb → b → [3]"]
     end
 ```
 

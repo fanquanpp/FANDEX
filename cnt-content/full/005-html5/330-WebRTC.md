@@ -1,12 +1,12 @@
 ---
-order: 330
+order: 350
 title: WebRTC
 module: 'html5'
 category: 前端技术
 difficulty: advanced
 description: WebRTC（getUserMedia）
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'html5/350-MicrodataJSONLD'
   - 'html5/340-CustomDataAttribute'

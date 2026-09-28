@@ -1,12 +1,12 @@
 ---
-order: 500
+order: 520
 title: Node.js 安装：把 JS 跑在浏览器之外
 module: 'javascript'
 category: 前端技术
 difficulty: beginner
 description: 从"为什么需要它"到"安装到底装了什么"：Node.js 的心智模型、版本发布节奏、三大系统安装要点与验证背后的原理。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/530-NvmVersionManage'
   - 'javascript/540-NpmManager'

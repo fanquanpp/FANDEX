@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'go/010-WhatIsGo'
   - 'roadmap/090-DevOpsCloudRoute'
@@ -26,7 +26,7 @@ Go 后端工程师写高并发服务与基础设施：API 网关、微服务、�
 ```mermaid
 flowchart TD
     A[Go 语法与类型系统] --> B[接口/错误处理/泛型]
-    B --> C[ggoroutine 与 channel 并发]
+    B --> C[goroutine 与 channel 并发]
     C --> D[标准库: net/http 测试]
     A --> E[SQL 基础]
     E --> F[Gin/数据库/GORM]

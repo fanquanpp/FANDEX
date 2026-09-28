@@ -1,12 +1,12 @@
 ---
-order: 470
+order: 480
 title: React 渲染优先级与调度
 module: 'react'
 category: 前端技术
 difficulty: advanced
 description: React 如何决定"先渲染谁、能不能中断、中断后怎么办"：Lane 优先级、Scheduler 时间片与 startTransition/useDeferredValue 的分工。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/120-FiberArchitecture'
   - 'react/130-ConcurrentRendering'

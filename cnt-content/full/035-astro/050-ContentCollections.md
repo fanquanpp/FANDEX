@@ -4,117 +4,116 @@ title: Astro 内容集合与 Schema
 module: 'astro'
 category: 前端技术
 difficulty: intermediate
-description: 以知识管理者的困惑为引，讲解内容集合：content.config.ts、glob loader、zod schema 校验、getCollection 查询、render 渲染与 Live Content Collections
+description: 以 FANDEX 文档站的真实 content.config.ts 为主线，动手配一套内容集合：glob loader 指向仓库外部目录、generateId 自定义条目 id、zod schema 校验 frontmatter、getCollection 查询排序、render 渲染，以及 Live Content Collections 与常见构建报错对策。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'astro/030-PagesRouting'
   - 'astro/060-IslandsClientComponents'
+  - 'astro/110-AstroIntegrationsMdx'
 prerequisites:
   - 'astro/020-QuickStartProject'
 ---
 
+## 学习目标
+
+- [ ] 能从零写出一个 `content.config.ts`：loader 选型、schema 定义、注册导出
+- [ ] 能读懂 FANDEX 配置里的三个细节：`base` 指向仓库外部、`generateId` 自定义 id、`deferRender`
+- [ ] 能用 `getCollection` / `getEntry` 查询并用 `render` 渲染一篇文档
+- [ ] 能说出「schema 未声明字段被静默剥离」这类隐形问题的对策
+- [ ] 能看懂集合相关的六类构建报错并对症处理
+
+## 一句话理解
+
+> 内容集合 = 内容世界的数据库：loader 决定「数据从哪来」，schema 决定「数据长什么样」（不合格直接构建失败），`getCollection` 是查询 API，`render` 把 Markdown 编译成组件。错误被拦在构建期，而不是在用户的浏览器里爆炸。
 
 ## 0. 一个知识管理者的困惑
 
-小林是一家公司的知识管理员，负责维护公司内部的文档库。文档库刚建立时只有十几篇 Word 文档，他手动整理还忙得过来。随着团队扩张，文档涨到了 500 篇，问题开始爆发：
+小林是公司的知识管理员，负责内部文档库。文档从十几篇涨到五百篇后，问题爆发：
 
-- 有的文档标题写错了，有的忘了写作者，有的日期格式是"2026/08/01"，有的是"2026年8月1日"；
-- 每次想"找出所有 Python 相关的教程"，他都要打开每个文件翻一遍；
-- 新同事入职时误改了旧文档的格式，目录索引完全乱了；
-- 更糟的是，很多错误要等读者点开文档才发现，没人提前把关。
+- 有的忘了写作者，有的日期一会儿是 `2026/08/01` 一会儿是 `2026年8月1日`；
+- 想「找出所有 Astro 相关的教程」只能挨个文件翻；
+- 新同事误改了旧文档的格式，目录索引全乱了；
+- 更糟的是，错误要等读者点开页面才发现，没人提前把关。
 
-小林的困惑，本质上是**内容管理失控**的典型症状。而 Astro 的内容集合（Content Collections）就是为这个问题而生的解决方案——它像一个**图书馆编目系统**：
+这四条痛点对应内容集合的四个能力：**schema 校验**挡住格式混乱、**统一查询**代替翻文件、**构建期报错**代替线上暴雷、**loader 抽象**让内容可以来自任何地方。FANDEX 这个两千多页的文档站，整条内容链路就建立在这套机制上。
 
-- 每本书（Markdown 文档）必须有**标准借书卡**（frontmatter 元数据）；
-- 图书馆制定**分类规则**（schema 校验），书名、作者、日期、标签的格式全部统一，不符合规则的书**根本不让上架**（构建失败）；
-- 读者通过**检索目录**（getCollection 查询 API）按分类、标签、日期快速找到书；
-- 馆员（开发者）还可以随时把外部数据库、CMS 的内容"并入馆藏"（loader）。
+## 1. 配置集合：照着 FANDEX 抄一遍
 
-从这篇开始，你将掌握让 500 篇、甚至 2000+ 篇文档（FANDEX 文档站的规模）保持秩序的核心工具。
+### 1.1 最小可用配置
 
-## 1. 内容集合是什么
-
-### 1.1 先直观理解
-
-内容集合（Content Collections）就是把一批结构相似的 Markdown / MDX / JSON 文件**组织起来，统一做类型校验与查询**的机制。它是文档站、博客的"馆藏数据库"。
-
-### 1.2 再讲原理：它解决内容站的三大痛点
-
-第一，**元数据失控**：frontmatter 字段缺失、类型写错，只有渲染时才暴露，甚至悄悄埋雷；
-
-第二，**查询零散**：每个页面各自读文件、解析，代码重复且易错；
-
-第三，**无类型安全**：编辑器和编译器不知道文档里有什么字段，改字段名全靠记忆。
-
-内容集合的解法：用 schema（基于 Zod 的类型校验库）为文档定义"数据结构"，加载时校验，查询时返回带类型的对象。**错误在构建期就被拦住，而不是在用户浏览器里爆炸。**
-
-### 1.3 什么情况下该用集合
-
-适合用内容集合：博客文章、课程文档、产品说明、新闻稿——**同一模板、大量相似文档**。
-
-不适合用内容集合：首页、关于页等**单独页面**（这些直接放 `src/pages/` 即可，见 003 篇）。
-
-## 2. 配置内容集合：建立馆藏目录
-
-### 2.1 创建配置文件
-
-Astro 5 开始，在项目根目录（或 `src/` 下）创建 `content.config.ts`（或 `.mjs` / `.js`）：
+在项目根目录（或 `src/` 下）创建 `content.config.ts`：
 
 ```ts
 // content.config.ts
-import { defineCollection } from 'astro:content'
-import { z } from 'astro/zod'   // Astro 6 起 z 改从 astro/zod 导入（5.x 从 astro:content 导入的写法已弃用）
-import { glob } from 'astro/loaders'
+import { defineCollection } from 'astro:content';
+import { z } from 'astro/zod';
+import { glob } from 'astro/loaders';
 
-// 定义 blog 集合：用 glob loader 加载 src/content/blog/ 下的 Markdown 文件
 const blog = defineCollection({
-  // loader：声明"内容从哪里来、如何加载"
   loader: glob({ pattern: '**/*.md', base: './src/content/blog' }),
-  // schema：声明每篇文档的 frontmatter 必须长什么样
   schema: z.object({
-    title: z.string(),                       // 必填：字符串
-    description: z.string().optional(),      // 可选：字符串
-    pubDate: z.coerce.date(),                // 必填：日期（字符串自动转 Date）
-    tags: z.array(z.string()).default([]),   // 可选：字符串数组，默认空数组
-    draft: z.boolean().default(false),       // 可选：布尔值，默认 false
-    author: z.enum(['小林', '阿禾', 'FANDEX']), // 可选：枚举，只能取列出的值
+    title: z.string(),                        // 必填：字符串
+    description: z.string().optional(),       // 可选：字符串
+    pubDate: z.coerce.date(),                 // 字符串自动转 Date
+    tags: z.array(z.string()).default([]),    // 缺省给空数组
+    draft: z.boolean().default(false),
+    author: z.enum(['小林', '阿禾', 'FANDEX']), // 只能取列出的值
   }),
-})
+});
 
-// 导出 collections，把集合注册给 Astro
-export const collections = { blog }
+export const collections = { blog }; // 注册给 Astro
 ```
 
-讲解：
+逐个拆解：
 
-- `defineCollection` 接收两个关键配置：`loader`（内容来源）与 `schema`（数据结构）；
-- `z` 是内置的 Zod 库：Astro 5 从 `astro:content` 重新导出，**Astro 6 起改从 `astro/zod` 导入**（同时升级到 Zod 4，个别 API 有差异，如顶层 `z.email()` 取代 `z.string().email()`）；
-- `z.coerce.date()` 会把 `"2026-08-01"` 这样的字符串自动转换为 `Date` 对象；
-- `default()` 为缺失字段提供默认值——**新增字段时一定要给默认值**，否则存量文档会全部校验失败；
-- `z.enum([...])` 限定取值范围，比如 author 只能填列出的几个名字，杜绝"阿和""阿禾"混用。
+- **`z` 从 `astro/zod` 导入**。Astro 内置了 zod，早期版本从 `astro:content` 重导出，该写法已弃用；现在的统一写法就是 `astro/zod`。注意 Astro 搭载的 zod 已是 4.x 个别 API 有变化（如顶层 `z.email()` 取代 `z.string().email()`）；
+- **`z.coerce.date()`** 把 `"2026-08-01"` 这类字符串转成 `Date`，小林的日期格式问题在这里一次解决（解析不了的格式构建期直接报错）；
+- **`default()` 是存量文档的救命稻草**：新增必填字段而没有默认值，所有旧文档立刻全部构建失败；
+- **`z.enum()`** 杜绝「阿和/阿禾」这类拼写漂移，编辑器补全也随之精确。
 
-### 2.2 loader 的类型对比
+### 1.2 FANDEX 的真实配置：三个值得学的细节
+
+```ts
+// FANDEX/app-web/src/content.config.ts（真实代码，节选）
+const docs = defineCollection({
+  loader: glob({
+    pattern: '**/*.{md,mdx}',
+    base: '../cnt-content/full',        // 细节一
+    deferRender: true,                  // 细节二
+    generateId: ({ entry }) => entry.replace(/[#\\]/g, '-'), // 细节三
+  }),
+  schema: z.object({
+    title: z.string(),
+    module: z.string(),
+    category: z.string(),
+    difficulty: z.enum(['beginner', 'intermediate', 'advanced']),
+    order: z.number().default(0),
+    updated: z.coerce.date(),
+    author: z.string(),
+    description: z.string().optional(),
+    related: z.array(z.string()).default([]),
+    prerequisites: z.array(z.string()).default([]),
+  }),
+});
+```
+
+**细节一：`base` 指向仓库外部。** 内容不在 app-web 项目里，而在 monorepo 根的 `cnt-content/full`——内容层与应用层彻底分离（文档站之外，桌面端复用同一批内容）。glob 的 `base` 接受相对路径，从项目根算起 `../` 就跳出去了。这是 monorepo 内容站的常见形态：内容仓库化，构建时才汇合。
+
+**细节二：`deferRender`。** 告诉 Astro「构建时先只做加载和校验，正文渲染推迟到每个页面真正请求 `render()` 时」。对两千多篇的大集合，这能把构建初期的内存峰值摊到整个构建过程，也避免了「只为校验 frontmatter 却编译了全部正文」的浪费。小集合可以不开，大集合建议开。
+
+**细节三：`generateId`。** 条目 id 默认从相对路径生成，FANDEX 把路径里的 `#` 与 `\` 统一替换成 `-`，保证 id 是干净的 URL 片段。**id 一旦发布就是外链的一部分，改生成规则等于批量改 URL**——动它之前先想清楚重定向。
+
+### 1.3 loader 怎么选
 
 | Loader | 适用场景 | 说明 |
 | --- | --- | --- |
-| `glob()` | 本地多个 Markdown/MDX/JSON 文件 | 按 glob 模式匹配文件，最常用 |
-| `file()` | 单个 JSON/YAML 文件 | 从一个文件加载整组数据（如"国家列表"） |
-| 自定义 loader | CMS、数据库、REST API | 实现 loader 函数，从任意数据源拉取并转换 |
-| live loader | 需要实时更新的远程内容（Astro 6+） | 请求时实时拉取，无需重新构建（见第 8 节） |
+| `glob()` | 本地多个 Markdown/MDX/JSON 文件 | 按 pattern 匹配文件，最常用 |
+| `file()` | 单个 JSON/YAML 文件 | 一个文件装整组数据（如「国家列表」） |
+| 自定义 loader | CMS、数据库、REST API | 实现 loader 函数，从任意数据源拉取 |
+| live loader | 请求期实时内容（见第 5 节） | 不重建站点、请求时拉取 |
 
-`glob()` 的两个关键参数：
-
-```ts
-glob({
-  pattern: '**/*.md',        // 匹配的文件模式（** 表示任意子目录）
-  base: './src/content/blog', // 起始目录（相对于项目根）
-})
-```
-
-FANDEX 文档站即用 `glob()` 加载 `cnt-content/full` 目录下的 2000+ 篇 Markdown 文档。
-
-## 3. 文档的 frontmatter 规范：标准借书卡
+## 2. frontmatter：标准借书卡
 
 集合内每篇文档的 frontmatter 必须通过 schema 校验：
 
@@ -130,31 +129,28 @@ draft: false
 author: FANDEX
 ---
 
-这里是文档正文。frontmatter 与正文之间用空行分隔。
-
-- frontmatter 以 `---` 包裹，字段必须符合 schema 声明；
-- 缺少必填字段、类型错误，都会导致**构建失败**并给出精确报错（哪个文件、哪个字段、期望什么类型）；
-- schema 未声明的字段不会报错，而是被 Zod **静默剥离**（不会出现在 `data` 里）——想让"多写未知字段"也报错，可用 `z.object({...}).strict()`；
-- 编辑器装上 Astro 扩展后，写文档时就有字段补全提示。
+这里是正文，与 frontmatter 用空行分隔。
 ```
 
-一个常见的新手困惑：**"schema 里没声明的字段写了会怎样？"** 默认会被静默剥离——数据不丢文件，但 `post.data.某字段` 取不到值，往往表现为"页面悄悄少了一块内容"。要么把字段补进 schema，要么用 `.strict()` 让它在构建期暴露，别让它隐身。
+一条新手必踩的隐形坑：**schema 里没声明的字段不会报错，而是被 zod 静默剥离**——文件里写了，`entry.data.某字段` 却取不到，页面表现为「悄悄少了一块内容」。两个对策：把字段补进 schema；或用 `z.object({...}).strict()` 让未知字段在构建期直接报错。装上 Astro 官方编辑器扩展后，写 frontmatter 有字段补全，能在源头减少这类错。
 
-## 4. 查询内容：getCollection 与 getEntry
+## 3. 查询与渲染：从数据到页面
 
-### 4.1 查询全部并排序
+### 3.1 查询：getCollection 与 getEntry
 
 ```astro
 ---
 // src/pages/blog/index.astro
-import { getCollection } from 'astro:content'
+import { getCollection } from 'astro:content';
 
-// 查询 blog 集合的全部条目
 const posts = (await getCollection('blog'))
-  // 过滤草稿：只显示已发布的文章
-  .filter((post) => !post.data.draft)
-  // 按发布日期倒序（最新在前）
-  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .filter((post) => !post.data.draft)                       // 过滤草稿
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf()); // 倒序
+
+// 第二个参数是过滤函数，能直接收窄到你要的子集
+const astroPosts = await getCollection('blog', ({ data }) =>
+  data.tags.includes('Astro'),
+);
 ---
 
 <ul>
@@ -169,83 +165,46 @@ const posts = (await getCollection('blog'))
 </ul>
 ```
 
-讲解：`getCollection('blog')` 返回条目数组，每条包含：
+每个条目上有三个常用字段：
 
-- `id`：由文件路径生成（如 `guide/first-post`）；
-- `data`：校验后的 frontmatter，类型与 schema 完全一致；
-- `body`：文档正文原始内容（字符串）。
+- `id`：由 `generateId` 生成（默认是相对路径）；
+- `data`：校验后的 frontmatter，**类型与 schema 完全一致**——`post.data.pubDate` 就是 `Date`，编辑器直接补全方法；
+- `body`：正文原始字符串（渲染前）。
 
-### 4.2 带过滤条件的查询
-
-```ts
-import { getCollection } from 'astro:content'
-
-// 第二个参数是过滤函数：只返回 tags 包含 'Astro' 的条目
-const astroPosts = await getCollection('blog', ({ data }) =>
-  data.tags.includes('Astro')
-)
-
-// 组合过滤：Astro 标签且未发布为草稿
-const publishedAstroPosts = await getCollection('blog', ({ data }) =>
-  data.tags.includes('Astro') && !data.draft
-)
-```
-
-讲解：过滤函数的返回值会收窄类型——`astroPosts` 的 `data.tags` 一定是 `string[]`，编辑器会给出精确补全，无需手动断言。
-
-### 4.3 查询单条：getEntry
+已知 id 取单条用 `getEntry`，返回 `null` 表示不存在：
 
 ```ts
-import { getEntry } from 'astro:content'
-
-// 按集合名 + id 查询单条
-const post = await getEntry('blog', 'guide/first-post')
-// 返回 null 表示不存在
-if (!post) {
-  // 处理不存在的情况
-}
+import { getEntry } from 'astro:content';
+const post = await getEntry('blog', 'guide/first-post');
+if (!post) return Astro.redirect('/404');
 ```
 
-讲解：`getEntry` 适合"已知 id 取单条"的场景，例如动态路由页面 `blog/[slug].astro` 内部（见 003 篇第 8 节）。
+### 3.2 渲染：render 与 <Content />
 
-## 5. 渲染内容：render 与 <Content />
-
-### 5.1 渲染单篇文章
+动态路由页里把条目渲染成 HTML：
 
 ```astro
 ---
 // src/pages/blog/[slug].astro
-// 动态路由 + 内容集合：一篇文档一个页面
-import { getCollection, render } from 'astro:content'
-import BaseLayout from '../../layouts/BaseLayout.astro'
+import { getCollection, render } from 'astro:content';
+import BaseLayout from '../../layouts/BaseLayout.astro';
 
-// 构建期：为每篇文档生成一个页面
 export async function getStaticPaths() {
-  const posts = await getCollection('blog', ({ data }) => !data.draft)
+  const posts = await getCollection('blog', ({ data }) => !data.draft);
   return posts.map((post) => ({
     params: { slug: post.id },
     props: { post },
-  }))
+  }));
 }
 
-const { post } = Astro.props
-// render：把 Markdown 正文编译为可渲染的组件
-const { Content, headings } = await render(post)
+const { post } = Astro.props;
+const { Content, headings } = await render(post);
 ---
 
-<BaseLayout title={post.data.title} description={post.data.description}>
+<BaseLayout title={post.data.title}>
   <article>
     <h1>{post.data.title}</h1>
-
-    <p>
-      发布于 {post.data.pubDate.toLocaleDateString('zh-CN')}
-      · 标签：{post.data.tags.join(' / ')}
-    </p>
-
-    <!-- 正文输出点 -->
     <Content />
-
-    <!-- headings：标题目录树，适合做文章目录导航 -->
     <nav>
       {headings.map((h) => (
         <a href={`#${h.slug}`}>{h.text}</a>
@@ -255,104 +214,78 @@ const { Content, headings } = await render(post)
 </BaseLayout>
 ```
 
-讲解：
+`render(post)` 把 Markdown 正文编译为 `<Content />` 组件，同时返回：
 
-- `render(post)` 把 Markdown 正文编译为渲染组件 `<Content />`；
-- `render` 还返回 `headings`（标题目录树，供目录组件使用）与 `remarkPluginFrontmatter`（插件附加数据）；
-- 与 003 篇的动态路由配合，实现"一篇文档一个页面"的完整闭环。
+- `headings`：`{ depth, slug, text }[]`，文章目录组件的数据源；
+- `remarkPluginFrontmatter`：remark 插件回填的数据（阅读时长、字数统计等常走这里）。
 
-### 5.2 render 的其他用途
+FANDEX 的文档页就是这套结构，再叠加目录高亮、代码块主题与双主题样式。
+
+### 3.3 类型安全：schema 即契约
+
+schema 写一次，全项目所有 `getCollection` / `getEntry` 的返回值自动带上精确类型。改 schema 后跑 `npx astro check`（FANDEX 的 `pnpm typecheck` 就是它），所有字段用法不一致的位置立刻浮出：
 
 ```ts
-const { Content, headings, remarkPluginFrontmatter } = await render(post)
+post.data.pubDate;  // Date —— 可调用 toISOString()
+post.data.tags;     // string[]
+post.data.author;   // '小林' | '阿禾' | 'FANDEX'
+post.data.order;    // number（有 default，类型不是 number | undefined）
 ```
 
-- `headings`：`{ depth, slug, text }` 数组，是"文章目录"组件的数据源；
-- `remarkPluginFrontmatter`：remark 插件产生的附加数据，可传递阅读时间、字数统计等。
+## 4. 坑点与自检
 
-## 6. 类型安全：schema 即契约
+| 常见错误 | 报错/现象 | 原因 | 对策 |
+| --- | --- | --- | --- |
+| 忘记导出 collections | `Collection "blog" does not exist` | 没建配置文件或没导出 | 创建 `content.config.ts` 并 `export const collections` |
+| 缺必填字段 | `Invalid value for "title"` 类报错 | schema 必填字段文档没写 | 补字段，或改 `.optional()` / 加 `.default()` |
+| 日期格式解析失败 | 构建报日期错误 | `z.coerce.date()` 不认识该格式 | 统一 `YYYY-MM-DD`；或先存 `z.string()` |
+| 新增字段后全量报错 | 存量文档集体失败 | 新必填字段无默认值 | 新字段一律带 `.default()` 或 `.optional()` |
+| 集合名拼写错误 | 查询返回空或报不存在 | `getCollection('xxx')` 与注册键名不一致 | 对照 `collections` 对象的键名 |
+| 内容文件误放 pages | 内容页与列表页冲突/重复生成 | 同一文件既在集合目录又在 `src/pages/` | 集合数据不要放 `pages/`，由 `[slug].astro` 统一出页面 |
+| 隐形字段丢失 | 页面少了一块内容且无报错 | 字段未声明被 zod 静默剥离 | 补 schema 或开 `.strict()` |
 
-`schema` 的类型会自动推断到查询结果：定义集合时写一次 Zod schema，全项目所有 `getCollection` / `getEntry` 的返回值都带上精确类型。修改 schema 后，运行 `npx astro check` 能立刻找出所有字段用法不一致的代码位置。
+自检清单：
 
-```ts
-// schema 变更后的类型即时生效
-post.data.pubDate        // 类型为 Date，可调用 toISOString() / toLocaleDateString()
-post.data.tags           // 类型为 string[]
-post.data.author         // 类型为 '小林' | '阿禾' | 'FANDEX'
-post.data.draft          // 类型为 boolean
-```
+- [ ] 新增 schema 字段时给了 `default` 吗？
+- [ ] 改过 `generateId` 吗？旧 id 的 URL 有重定向吗？
+- [ ] 大集合开了 `deferRender` 吗？
+- [ ] 外部数据（CMS/接口）进集合时，有没有对应的运行时校验，而不是只靠 schema？
 
-## 7. 实践建议：让内容秩序长期有效
+## 5. 进阶：Live Content Collections（实时内容集合）
 
-第一，**schema 是契约，字段只增不删**：新增字段必须带 `default`，否则存量文档全部构建失败；删除字段会导致查询代码报错，先排查引用点再删；
+构建期集合的内容更新后要重新构建才生效。对库存、榜单、突发公告这类高频变化的内容，Astro 5 实验引入、后续版本转正的 **Live Content Collections** 让内容在**请求时**实时拉取。
 
-第二，**索引字段齐全**：`order`、`title`、`description` 等导航所需字段必须在 schema 中声明——FANDEX 的目录与面包屑完全由这些字段驱动；
-
-第三，**正文与元数据分离**：正文负责内容，frontmatter 负责结构化信息，职责清晰，不要互相混杂；
-
-第四，**善用枚举与默认值**：能用 `z.enum` 限制的不用 `z.string`，能给默认值的都给出，把"写错"变成"不可能"；
-
-第五，**大站点考虑 build 缓存**：Astro 对内容集合有内置缓存与增量构建，内容越多收益越大。
-
-## 8. 进阶：Live Content Collections（实时内容集合）
-
-### 8.1 为什么需要"活"的集合
-
-传统内容集合在**构建时**获取数据：内容更新了，必须重新构建部署才能生效。但对于电商库存、实时榜单、突发新闻这类**频繁变化**的内容，重建整个站点不现实。Astro 6 把 **Live Content Collections（实时内容集合）** 转正，让内容在**请求时**实时拉取，全程无需重新构建。
-
-实时集合的配置写在独立的 `src/live.config.ts` 中（与 `content.config.ts` 并存）。关键区别在于 loader：它必须是实现了 `loadCollection`（拉取整集）与 `loadEntry`（拉取单条）两个方法的 **live loader**，而不能用 `glob()` 这类构建期 loader：
+配置写在独立的 `src/live.config.ts`，与 `content.config.ts` 并存；关键差异是必须用实现 `loadCollection` / `loadEntry` 的 **live loader**：
 
 ```ts
-// src/live.config.ts（Astro 6+，与 content.config.ts 并存）
-import { defineLiveCollection } from 'astro:content'
-import { z } from 'astro/zod'
-import { liveGithubReleasesLoader } from 'astro-loader-github-releases' // 社区 live loader 示例
+// src/live.config.ts
+import { defineLiveCollection } from 'astro:content';
+import { z } from 'astro/zod';
+import { liveGithubReleasesLoader } from 'astro-loader-github-releases'; // 社区 live loader 示例
 
 const releases = defineLiveCollection({
   loader: liveGithubReleasesLoader({ repo: 'withastro/astro' }),
-  // schema 可选：不写时由 loader 的泛型提供类型；写了则请求期同样校验
   schema: z.object({
     tag: z.string(),
     publishedAt: z.coerce.date(),
   }),
-})
+});
 
-export const collections = { releases }
+export const collections = { releases };
 ```
 
-如果数据源没有现成 loader，可以按 `astro/loaders` 的 `LiveLoader` 接口自己实现一个对象：`loadCollection({ filter })` 返回 `{ entries: [{ id, data }] }`，`loadEntry({ filter })` 返回 `{ id, data }`，失败时返回 `{ error }`——每次请求都会真实调用它们。
+查询走 `getLiveCollection` / `getLiveEntry`（注意不是 getCollection），只能在按需渲染的页面里用。选型口诀：**变化慢、要 SEO、要快——构建期集合；变化快、等不起重建——live 集合**。FANDEX 的全部内容都是构建期集合：文档站要的就是快与稳。
 
-### 8.2 查询实时数据
+## 6. 练习
 
-```astro
----
-import { getLiveCollection, getLiveEntry } from 'astro:content'
+1. 给 1.1 节的 blog 集合新增一个可选字段 `cover: z.string().optional()`，然后验证：不写该字段的旧文档是否照常通过？再把它改成必填（无 default），观察报错形态。
+2. 写一个「相关文章」组件：输入当前文章的 tags，用 `getCollection` 找出标签重合数最多的 3 篇（排除自身）。
+3. 在 FANDEX 仓库里读 `app-web/src/content.config.ts`，回答：为什么 `order` 要 `default(0)` 而 `updated` 用 `z.coerce.date()` 不给默认值？（提示：排序语义 vs 必填语义）
+4. 把第 4 节对策表抄进项目 README 的排错章节，并给「隐形字段丢失」补一个你能想到的检测办法（提示：`.strict()` 或自定义 zod superRefine）。
 
-// 请求时实时获取，无需重新构建（注意是 getLive 系列函数，不是 getCollection）
-const releases = await getLiveCollection('releases')
-const latest = await getLiveEntry('releases', 'v7.0.0')
----
+## 7. 下一步
 
-<ul>
-  {releases.map((r) => (
-    <li>{r.data.tag} —— 发布于 {r.data.publishedAt.toLocaleDateString('zh-CN')}</li>
-  ))}
-</ul>
-```
-
-讲解：Live Collections 只能在**按需渲染**的页面里使用（请求期才有意义，纯静态站点没有"请求"这个时机）；查询函数是 `getLiveCollection` / `getLiveEntry`。适合"内容变化频繁、无法等重建"的场景；稳定的文章、文档仍应使用构建期集合（更快、更省）。**两者按需混用**是大型站点的常见形态。
-
-## 9. 常见错误与对策表
-
-| 常见错误 | 报错/现象 | 原因 | 解决办法 |
-| --- | --- | --- | --- |
-| 忘记创建配置文件 | 报 `Collection "blog" does not exist` | 未创建 `content.config.ts` 或未导出 `collections` | 创建配置文件，导出 `export const collections = { blog }` |
-| frontmatter 缺必填字段 | 构建报 `Invalid value for "title"` 等 | schema 声明了必填字段但文档没写 | 补全必填字段，或把字段改为 `.optional()` / 加 `default()` |
-| 日期格式混乱 | 构建报日期解析错误 | `z.coerce.date()` 无法解析某些格式 | 统一使用 `YYYY-MM-DD` 格式；或用 `z.string()` 存原始字符串 |
-| schema 新增字段导致存量文档失败 | 构建全量报错 | 新增必填字段没有默认值 | 新字段加 `.default(...)` 或 `.optional()` |
-| 查询了不存在的集合名 | 运行时报集合不存在 | `getCollection('xxx')` 名称拼写错误 | 检查集合名与 `collections` 对象键名一致 |
-| 误把 pages 目录当集合数据源 | 查询结果与预期不符 | 内容文件同时放在 `src/pages/`（会生成页面）和集合目录 | 内容集合的数据文件放集合目录（如 `src/content/blog/`），不要放 `pages/` |
-
-## 10. 一句话记忆
-
-**内容集合是图书馆编目系统：loader 决定书从哪来，schema 决定借书卡的格式（不合格不上架），getCollection 是检索目录，render 把书的内容翻开给读者看。**
+- [030：页面与路由](/astro/030-PagesRouting)：`[slug].astro` 动态路由与 `getStaticPaths` 的完整机制；
+- [060：岛屿与客户端组件](/astro/060-IslandsClientComponents)：渲染出的页面如何按需注入交互；
+- [110：集成与 MDX](/astro/110-AstroIntegrationsMdx)：集合里的 `.mdx` 条目与 remark/rehype 插件链路；
+- 本仓库 `app-web/scripts/` 下的 `content-sync.mjs` 与 `content-audit.mjs`：FANDEX 在集合之上做的同步与审计脚本，是「schema 即契约」的工程化延伸。

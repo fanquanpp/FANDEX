@@ -1,12 +1,12 @@
 ---
-order: 280
+order: 300
 title: 事件循环深水区：清空时机、Node 六阶段与调度选型
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: 事件循环深水区专题：微任务每个宏任务后清空的实证、Node 事件循环六阶段（timers/pending/poll/check/close）、setImmediate 与 process.nextTick 的排班、rAF 与 rIC 调度时机对比、两道完整推演逐行给出预期输出与推导依据。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/290-EventLoop'
   - 'javascript/570-NodeJsPerformanceOptimization'

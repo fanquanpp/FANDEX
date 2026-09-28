@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 以对比驱动方式讲解 git merge 与 git rebase 两种分支整合路线的原理、适用场景与选择原则，覆盖快进合并、三方合并与交互式变基，适合零基础学习者。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---
@@ -263,7 +263,7 @@ git rebase --show-current-patch
 | --- | --- | --- | --- |
 | merge 想快进却被拒绝 | `fatal: Not possible to fast-forward, aborting.` | 用了 `--ff-only` 但两分支已分叉 | 去掉 `--ff-only`，接受普通三方合并 |
 | rebase 后 push 被拒 | `! [rejected] feature -> feature (non-fast-forward)` | 改写历史后与远程分叉 | 个人分支可用 `--force-with-lease`；共享分支禁止 |
-| merge 出现冲突 | `Automatic merge failed; fix conflicts...` | 双方改同一处 | 按 041 篇解决：编辑 → `git add` → `git merge --continue` |
+| merge 出现冲突 | `Automatic merge failed; fix conflicts...` | 双方改同一处 | 按 [GitHub 冲突解决](/github/100-GitConflictResolve) 解决：编辑 → `git add` → `git merge --continue` |
 | rebase 到一半想反悔 | 变基进行中 | 不知道可以中止 | `git rebase --abort` 一键回到起点 |
 | 删分支被拒 | `error: The branch 'feature' is not fully merged` | `git branch -d` 只删已合并分支 | 确认内容不要后改用 `git branch -D` 强删 |
 | 交互式变基里填错命令 | 编辑器里看到 `pick` 等命令不知道干嘛 | 不熟悉 rebase -i 指令 | 查阅 4.3 节命令表；`drop` 删提交、`squash` 合并、`reword` 改信息 |

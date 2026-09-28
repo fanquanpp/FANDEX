@@ -1,12 +1,12 @@
 ---
-order: 500
+order: 510
 title: 分代 ZGC 详解
 module: 'java'
 category: 后端技术
 difficulty: advanced
 description: JDK 21分代ZGC详解：原理、配置与调优。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/430-ReflectionDynamicProxy'
   - 'java/440-AnnotationProcessor'

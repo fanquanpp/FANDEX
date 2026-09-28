@@ -1,12 +1,12 @@
 ---
-order: 300
+order: 330
 title: 装饰器：给函数穿外套
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 从十个接口函数复制十遍耗时统计讲起：函数是对象、@ 语法糖三步演进、functools.wraps 保住元信息、带参数装饰器初见，附计时/重试/权限三个最小件与 wrapper 名字污染调试实录。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/510-DecoratorAdvanced'
   - 'python/110-ArgsKwargsUnpacking'

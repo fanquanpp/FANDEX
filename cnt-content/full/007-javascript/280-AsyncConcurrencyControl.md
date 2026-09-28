@@ -1,12 +1,12 @@
 ---
-order: 260
+order: 280
 title: 异步并发控制
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: JavaScript异步并发控制：p-limit模式、队列实现与并发限制策略。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/300-EventLoopDetailed'
   - 'javascript/270-PromiseStaticMethod'

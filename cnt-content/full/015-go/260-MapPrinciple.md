@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go map底层实现：hmap结构、bucket、hash函数、扩容机制、并发安全与Go 1.24 Swiss Table
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/590-GoWebDevelopmentMicroservice'
   - 'go/250-SlicePrinciple'
@@ -186,12 +186,12 @@ type bmap struct {
 
 ```mermaid
 flowchart TD
-    B[bmap 内存布局]
-    B --> T[tophash[8] 8 字节]
-    B --> K[key[0] - key[7]]
-    B --> V[value[0] - value[7]]
-    B --> PD[padding 可选，确保 overflow 指针 8 字节对齐]
-    B --> O[overflow *bmap 8 字节]
+    B["bmap 内存布局"]
+    B --> T["tophash[8] 8 字节"]
+    B --> K["key[0] - key[7]"]
+    B --> V["value[0] - value[7]"]
+    B --> PD["padding 可选，确保 overflow 指针 8 字节对齐"]
+    B --> O["overflow *bmap 8 字节"]
 ```
 
 **为何 key/value 分开排列（而非交替排列）**？
@@ -258,12 +258,12 @@ type slot struct {
 
 ```mermaid
 flowchart TD
-    G0[group[0]]
-    G0 --> C0[ctrl 8 字节]
-    G0 --> S0[slot[0].key / slot[0].value]
-    G0 --> S1[slot[1].key / slot[1].value]
-    G0 --> S7[slot[7].key / slot[7].value]
-    G1[group[1]]
+    G0["group[0]"]
+    G0 --> C0["ctrl 8 字节"]
+    G0 --> S0["slot[0].key / slot[0].value"]
+    G0 --> S1["slot[1].key / slot[1].value"]
+    G0 --> S7["slot[7].key / slot[7].value"]
+    G1["group[1]"]
     G0 --> G1
 ```
 

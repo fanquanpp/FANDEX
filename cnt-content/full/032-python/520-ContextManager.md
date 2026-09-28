@@ -1,12 +1,12 @@
 ---
-order: 320
+order: 350
 title: 上下文管理器
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: Python上下文管理器深度剖析：with语句语义、__enter__/__exit__协议、contextlib工具集、异步上下文管理器、ExitStack动态管理、资源管理 RAII 模式与生产级工程实践。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/510-DecoratorAdvanced'
   - 'python/180-GeneratorCoroutine'

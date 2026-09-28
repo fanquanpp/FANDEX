@@ -1,736 +1,274 @@
 ---
 order: 180
-title: 无障碍访问
+title: 无障碍访问：拔掉鼠标，你的页面还能用吗
 module: 'html5'
 category: 前端技术
 difficulty: intermediate
-description: Web无障碍访问（A11y）核心概念、ARIA属性、键盘导航、屏幕阅读器适配与WCAG标准。
+description: 以"只用 Tab 键走完一个页面"的真实测试切入：亲手体验焦点流转、用读屏视角理解可访问名，掌握 label/alt/aria-label/aria-expanded 最小 ARIA 集，会修 div 当按钮、模态焦点丢失、placeholder 冒充 label 三类高频翻车。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
-  - 'html5/100-HTML5BasicContentTags'
   - 'html5/170-SemanticTag'
   - 'html5/190-HTML5FormValidation'
-  - 'html5/230-HTML5MultimediaCanvasDrawing'
-prerequisites: []
+  - 'html5/430-HTML5DialogPopoverGuide'
+  - 'css/500-AccessibleStyling'
+prerequisites:
+  - 'html5/170-SemanticTag'
 ---
+
+## 前置知识
+
+- 已读 [语义化标签](/html5/170-SemanticTag)：会用 header/nav/main 地标搭骨架，知道怎么在 DevTools 里看无障碍树；
+- 会基本的 HTML 表单标签（`input`、`button`），不需要 JavaScript 基础——本篇仅两个小示例用到几行 JS，照抄即可。
 
 ## 学习目标
 
-本文是「HTML5」模块的第 18 篇，难度定位为进阶。重点内容：Web无障碍访问（A11y）核心概念、ARIA属性、键盘导航、屏幕阅读器适配与WCAG标准。
+读完本文你将能够：
 
-主要章节：
+1. 拔掉鼠标、只用 Tab 和 Enter 走完一个页面，并判断"焦点去哪了"是否合理；
+2. 说出"可访问名"是什么，并给图片、按钮、表单控件补齐它；
+3. 使用最小 ARIA 集（`aria-label`、`aria-expanded`、`aria-live`），并遵守"能用原生标签就别用 ARIA"的第一规则；
+4. 修掉三类高频翻车：div 当按钮、模态关闭后焦点失踪、placeholder 冒充 label。
 
-- 0. 盲人如何“看”网页？——理解无障碍的意义
-- 1. 无障碍访问概述
-- 2. 语义化HTML与无障碍
-- 3. ARIA 属性
-- 4. 键盘导航
-- 5. 颜色与对比度
-- ……共 12 个章节
+## 1. 问题引入：不用鼠标的用户长什么样
 
-> 前置依赖：先读 008 语义化标签。入门必读：第 1-2 章与 4.4 键盘体验；ARIA 组件实现（3.3/6.2）为进阶选读。
+先纠正一个直觉：无障碍不是"给少数盲人用户的慈善项目"。下面这些人都在用你写的页面：
 
-## 0. 盲人如何“看”网页？——理解无障碍的意义
+- **键盘党**：程序员、电竞玩家、重度效率用户，手不离键盘，鼠标嫌慢；
+- **暂时性障碍**：手腕腱鞘炎打不了字、坐地铁单手拿手机、阳光太强看不清低对比度文字；
+- **读屏用户**：全盲或低视力用户，靠软件把页面"读"出来，操作全靠键盘；
+- **爬虫**：搜索引擎就是一个"最大号的读屏用户"。
 
-你可能从未想过：一个盲人是怎么浏览网页的？
+一个朴素的测试标准：**把鼠标拔掉，只用 Tab、Shift+Tab、Enter、Esc，你的页面还能完成核心任务吗？** 做不到，读屏用户基本也做不到——因为读屏软件就是靠键盘焦点来"读"的。
 
-他们用的是屏幕阅读器——一种把网页内容“读”出来的软件。光标移到哪里，就读到哪里。
+## 2. 动手实验一：纯键盘走一遍"假按钮"页面
 
-问题来了：如果网页结构混乱，屏幕阅读器就会读出“链接、链接、按钮、链接”……用户完全不知道这些是干嘛的。
-
-无障碍（A11y）的目标就是：让每个人——无论是否使用屏幕阅读器、是否用键盘操作、是否有色觉障碍——都能正常使用网页。
-
-> 这节课的目标：学会最基本的无障碍写法。你会发现，做好无障碍，就是在帮所有人，包括未来的你自己（比如手受伤只能用键盘时）。
-
-## 1. 无障碍访问概述
-
-### 1.1 什么是 Web 无障碍
-
-Web无障碍（Web Accessibility，简称 A11y）确保网站和Web应用对所有用户可用，包括有视觉、听觉、运动或认知障碍的人群。
-
-### 1.2 WCAG 四原则：从用户视角理解
-
-Web 内容无障碍指南（WCAG）围绕四个原则，从用户视角看就是：
-
-| 原则 | 如果没做到…… | 谁会被影响 |
-| --- | --- | --- |
-| **可感知（Perceivable）** | 图片没有 `alt`，盲人不知道图里是什么 | 视障用户 |
-| **可操作（Operable）** | 按钮只能用鼠标点击，键盘用户没法操作 | 运动障碍、临时受伤的用户 |
-| **可理解（Understandable）** | 页面用语晦涩、导航混乱 | 认知障碍、非母语用户 |
-| **健壮性（Robust）** | 大量 `div` 模拟按钮，读屏软件认不出来 | 使用辅助技术的所有用户 |
-
-> 一句话记住：无障碍不是“给少数人用的功能”，而是“让所有用户都能平等访问”的设计原则。
-
-### 1.3 无障碍的商业价值
-
-- 全球约15%的人口有某种形式的残疾
-- 无障碍改善所有用户体验（如移动端、慢速网络）
-- 法律合规要求（如ADA、EN 301 549）
-- SEO提升（语义化HTML同时利于搜索引擎）
-
-## 2. 语义化HTML与无障碍
-
-### 2.1 正确使用HTML元素
+新建 `a11y.html`，复制下面这份页面。它有一组真按钮和一组"用 div 假装"的按钮：
 
 ```html
-<!-- 错误：用div模拟按钮 -->
-<div class="btn" onclick="submit()">提交</div>
-<!-- 问题：不可键盘聚焦、屏幕阅读器不识别 -->
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <title>键盘可达性实验</title>
+  <style>
+    .tag {
+      display: inline-block;
+      padding: 6px 14px;
+      margin: 4px;
+      border: 1px solid #888;
+      border-radius: 999px;
+      cursor: pointer;
+      user-select: none;
+    }
+  </style>
+</head>
+<body>
+  <h1>选择你的兴趣标签</h1>
 
-<!-- 正确：使用原生button -->
-<button type="submit">提交</button>
-<!-- 优势：可键盘聚焦、可回车触发、屏幕阅读器识别 -->
+  <p>真按钮版：</p>
+  <button type="button">CSS</button>
+  <button type="button">Canvas</button>
+  <button type="button">WebGL</button>
 
-<!-- 错误：用div模拟链接 -->
-<div class="link" onclick="navigate()">点击这里</div>
-
-<!-- 正确：使用原生a标签 -->
-<a href="/page">点击这里</a>
-
-<!-- 错误：用span模拟标题 -->
-<span class="title" style="font-size:24px;font-weight:bold">标题</span>
-
-<!-- 正确：使用h1-h6 -->
-<h2>标题</h2>
+  <p>div 假按钮版（看起来一模一样）：</p>
+  <div class="tag" onclick="alert('选中 div 版')">CSS</div>
+  <div class="tag" onclick="alert('选中 div 版')">Canvas</div>
+  <div class="tag" onclick="alert('选中 div 版')">WebGL</div>
+</body>
+</html>
 ```
 
-**讲解：**
+双击打开，然后**把手从鼠标上拿开**，只按 Tab 键从头走一遍。你会观察到：
 
-- 原生 `button`/`a`/`h1`-`h6` 自带焦点、键盘事件与语义，`div` 模拟需要手工补齐全部行为；
-- `onclick` 只能响应鼠标，键盘用户无法触发 `div` 的“点击”；
-- 规则可概括为“能原生就别模拟”，这是无障碍的第一优先级。
+1. 三个真按钮依次出现焦点框，按 Enter 或空格都能"点"；
+2. 三个 div 版按钮**直接被跳过了**——Tab 根本不停留，因为 `div` 不是可聚焦元素；
+3. 鼠标点击 div 版能弹窗，键盘用户却永远选不中它。
 
-### 2.2 图片无障碍
+这就是"看起来能用"和"真的能用"的差距。修法简单到离谱：把 `div` 换回 `button`，样式用 CSS 调（`button` 默认样式可以完全覆盖），键盘行为浏览器免费送你。
 
 ```html
-<!-- 有意义的图片：提供alt描述 -->
-<img src="chart.png" alt="2026年Q1销售额增长15%的柱状图" />
-
-<!-- 装饰性图片：alt留空 -->
-<img src="decorative-line.png" alt="" role="presentation" />
-
-<!-- 图标字体 -->
-<span class="icon-search" aria-hidden="true"></span>
-<span class="sr-only">搜索</span>
-
-<!-- 复杂图片：使用长描述 -->
-<figure>
-  <img src="infographic.png" alt="公司发展历程信息图" />
-  <figcaption>详细描述：公司从2010年成立至今的发展里程碑...</figcaption>
-</figure>
+<button type="button" class="tag">CSS</button>
 ```
 
-**讲解：**
+## 3. 核心概念：读屏软件到底"读"什么
 
-- 有意义的图片用 `alt` 描述内容；装饰图片 `alt=""` 即可让读屏跳过（`role="presentation"` 属于锦上添花的重复声明，写了不扣分，但别以为不写就出错）；
-- 图标字体本身无语义，用 `aria-hidden="true"` 屏蔽，再补 `sr-only` 可见文本；
-- 复杂图表在 `figcaption` 中提供长描述，`alt` 保持一句话概括。
+读屏软件不读你的 CSS，也不读你的视觉布局。它读的是**无障碍树**——浏览器从 DOM 提炼出来的一棵"语义摘要树"，每个节点有三样关键信息：
 
-### 2.3 表单无障碍
-
-```html
-<form>
-  <!-- 方式1：label包裹 -->
-  <label>
-    用户名：
-    <input type="text" name="username" required />
-  </label>
-
-  <!-- 方式2：label的for属性 -->
-  <label for="email">邮箱：</label>
-  <input type="email" id="email" name="email" required aria-describedby="email-hint" />
-  <span id="email-hint" class="hint">请输入有效的邮箱地址</span>
-
-  <!-- 必填字段提示 -->
-  <!-- 星号仅供视觉识别；读屏的"必填"信息由 required 属性原生播报，星号对辅助技术隐藏 -->
-  <label for="phone"> 电话：<span aria-hidden="true">*</span> </label>
-  <input type="tel" id="phone" name="phone" required />
-
-  <!-- 错误提示 -->
-  <label for="password">密码：</label>
-  <input
-    type="password"
-    id="password"
-    name="password"
-    aria-describedby="password-error"
-    aria-invalid="true"
-  />
-  <span id="password-error" role="alert" class="error"> 密码至少需要8个字符 </span>
-
-  <!-- 分组表单 -->
-  <fieldset>
-    <legend>联系方式偏好</legend>
-    <label><input type="radio" name="contact" value="email" /> 邮件</label>
-    <label><input type="radio" name="contact" value="phone" /> 电话</label>
-  </fieldset>
-</form>
+```mermaid
+flowchart LR
+    A["DOM 节点"] --> B["角色 Role：这是什么（按钮/链接/标题）"]
+    A --> C["可访问名 Name：它叫什么（文字/alt/aria-label）"]
+    A --> D["状态 State：它现在怎样（展开/选中/禁用）"]
 ```
 
-**讲解：**
+- **角色（Role）**：`button`、`link`、`heading`……来自标签本身。这是 [语义化标签](/html5/170-SemanticTag) 那篇的价值；
+- **可访问名（Name）**：这个元素"叫什么"。按钮靠文字内容，图片靠 `alt`，输入框靠 `label`。**没有可访问名的按钮，读屏只会播报「按钮」两个字**——用户不知道按下去会发生什么；
+- **状态（State）**：展开了没有、选中了没有。原生控件自动维护；自造的组件要靠 ARIA 属性手动播报。
 
-- `label` 的两种关联方式（包裹式与 `for`/`id` 式）都能让点击文字聚焦输入框；
-- `aria-describedby` 把提示文本与输入框关联，读屏用户输入时能听到提示；
-- 必填提示用 `required` 原生表达（读屏会播报"必填"），视觉星号用 `aria-hidden="true"` 屏蔽即可——给 `<span>` 这类泛型元素写 `aria-label` 是无效的，它们不支持命名；
-- `aria-invalid="true"` 配合 `role="alert"` 的错误提示，让校验结果即时可感知；
-- `fieldset` + `legend` 为单选组提供分组标题，避免读屏用户迷失选项含义。
+记住这条推理链：`div` 没有角色 → 读屏不知道它是什么 → 键盘也聚焦不到它 → 对辅助技术来说它**不存在**。
 
-## 3. ARIA 属性
+## 4. 最小 ARIA 集：三个属性救急
 
-### 3.1 ARIA 角色与属性
+ARIA（Accessible Rich Internet Applications）是一组 `aria-*` 属性，用来给"浏览器猜不出来"的信息打补丁。零基础阶段掌握三个就够：
 
-ARIA（Accessible Rich Internet Applications）为复杂组件提供语义信息。
+**1. `aria-label`：给"没有文字"的东西起名。** 图标按钮最典型——屏幕上只有一个小齿轮，读屏用户听到的是空。
 
 ```html
-<!-- 角色role：nav 元素自带 navigation 地标角色，role 属性可省略；aria-label 用于区分多个导航区 -->
-<nav aria-label="主导航">
-  <ul>
-    <!-- 站点导航就是普通链接：不要加 role="menuitem"，
-         menu/menuitem 是给"应用式菜单组件"（带方向键交互）用的，用在站点导航反而会误导读屏用户 -->
-    <li><a href="/">首页</a></li>
-    <li><a href="/about">关于</a></li>
-  </ul>
-</nav>
+<!-- 坏：读屏播报「按钮」，不知道是干嘛的 -->
+<button type="button">&#8801;</button>
 
-<!-- 常用ARIA角色 -->
-<div role="alert">操作成功！</div>
-<!-- 警告/通知 -->
-<div role="dialog" aria-modal="true">...</div>
-<!-- 对话框 -->
-<div role="tablist">...</div>
-<!-- 标签列表 -->
-<div role="tab">...</div>
-<!-- 标签 -->
-<div role="tabpanel">...</div>
-<!-- 标签面板 -->
-<div role="progressbar">...</div>
-<!-- 进度条 -->
-<div role="tooltip">...</div>
-<!-- 工具提示 -->
+<!-- 好：视觉不变，播报「打开设置 按钮」 -->
+<button type="button" aria-label="打开设置">&#8801;</button>
 ```
 
-**讲解：**
-
-- `role` 声明组件的“语义身份”，例如 `alert`、`dialog`、`tab`、`progressbar`；
-- `aria-label` 为没有可见文字的组件补充名称，读屏播报时使用；
-- ARIA 角色只影响辅助技术，不改变视觉与交互行为，必须配合实现相应行为。
-
-### 3.2 常用 ARIA 属性
-
-ARIA 属性不需要全部背下来。先记住最常用的 3 个，其余遇到再查：
-
-| 属性 | 用途 | 什么时候用 |
-| --- | --- | --- |
-| `aria-label` | 给元素起一个读屏能听到的名字 | 图标按钮没有文字时 |
-| `aria-hidden="true"` | 告诉读屏忽略这个元素 | 纯装饰图标、重复性内容 |
-| `aria-expanded` | 告诉读屏展开/折叠状态 | 菜单、手风琴、下拉框 |
-
-了解即可：`aria-labelledby`（引用已有文本作名称）、`aria-describedby`（关联描述文本）、`aria-current`（标记当前项）、`aria-live`（动态更新播报）、`aria-disabled`（语义禁用）。
+**2. `aria-expanded`：播报"展开/收起"状态。** 下拉菜单、折叠面板都需要。
 
 ```html
-<!-- aria-label：提供不可见的标签 -->
-<button aria-label="关闭菜单" class="close-btn"></button>
-
-<!-- aria-labelledby：用其他元素的ID作为标签 -->
-<div id="dialog-title">确认删除</div>
-<div role="dialog" aria-labelledby="dialog-title">
-  <p>确定要删除这条记录吗？</p>
-</div>
-
-<!-- aria-describedby：描述信息 -->
-<input type="text" aria-describedby="help-text" />
-<span id="help-text">请输入6-12位字母数字组合</span>
-
-<!-- aria-hidden：对辅助技术隐藏 -->
-<span class="icon" aria-hidden="true"></span>
-<span class="sr-only">收藏</span>
-
-<!-- aria-expanded：展开/折叠状态 -->
-<button aria-expanded="false" aria-controls="menu">菜单</button>
-<ul id="menu" role="menu" hidden>
-  <li role="menuitem">选项1</li>
-  <li role="menuitem">选项2</li>
+<button type="button" aria-expanded="false" aria-controls="menu">菜单</button>
+<ul id="menu" hidden>
+  <li><a href="/css/">CSS 模块</a></li>
+  <li><a href="/html5/">HTML 模块</a></li>
 </ul>
-
-<!-- aria-current：当前项 -->
-<nav aria-label="面包屑">
-  <a href="/">首页</a>
-  <a href="/products" aria-current="page">产品</a>
-</nav>
-
-<!-- aria-live：动态内容更新 -->
-<div aria-live="polite">搜索结果已更新</div>
-<div aria-live="assertive">发生错误！</div>
-
-<!-- aria-disabled：视觉禁用但仍可聚焦 -->
-<button aria-disabled="true">暂不可用</button>
+<script>
+  const btn = document.querySelector("button");
+  const menu = document.getElementById("menu");
+  btn.addEventListener("click", () => {
+    const open = btn.getAttribute("aria-expanded") === "true";
+    btn.setAttribute("aria-expanded", String(!open));
+    menu.hidden = open;
+  });
+</script>
 ```
 
-**讲解：**
+状态一变就同步改属性，读屏用户立刻知道「菜单展开了」，视觉用户看到菜单出现——两边拿到的是同一个事实。
 
-- `aria-labelledby` 引用页面中已有文本的 `id`，避免重复维护名称；
-- `aria-expanded` 与 `aria-controls` 描述“控制者-被控制者”关系及展开状态；
-- `aria-live="polite"` 用于普通更新、`assertive` 用于紧急错误，可让动态内容被自动播报；
-- `aria-disabled` 与 `disabled` 的区别：前者仍可聚焦，语义上“当前不可用”。
-
-### 3.3 标签页组件示例
-
-> 进阶内容：以下代码涉及完整键盘事件处理，入门阶段先理解“为什么需要这些属性”，不要求能独立写出完整实现。
+**3. `aria-live`：播报"这里的内容变了"。** Toast 通知、表单提交结果都靠它，因为读屏用户看不见"凭空冒出来"的提示。
 
 ```html
-<div class="tabs">
-  <div role="tablist" aria-label="账户设置">
-    <button role="tab" id="tab-profile" aria-selected="true" aria-controls="panel-profile">
-      个人资料
-    </button>
-    <button
-      role="tab"
-      id="tab-security"
-      aria-selected="false"
-      aria-controls="panel-security"
-      tabindex="-1"
-    >
-      安全设置
-    </button>
-    <button
-      role="tab"
-      id="tab-notify"
-      aria-selected="false"
-      aria-controls="panel-notify"
-      tabindex="-1"
-    >
-      通知偏好
-    </button>
-  </div>
-
-  <div role="tabpanel" id="panel-profile" aria-labelledby="tab-profile">
-    <h3>个人资料</h3>
-    <p>编辑你的个人信息...</p>
-  </div>
-
-  <div role="tabpanel" id="panel-security" aria-labelledby="tab-security" hidden>
-    <h3>安全设置</h3>
-    <p>修改密码和安全选项...</p>
-  </div>
-
-  <div role="tabpanel" id="panel-notify" aria-labelledby="tab-notify" hidden>
-    <h3>通知偏好</h3>
-    <p>管理通知设置...</p>
-  </div>
-</div>
+<div aria-live="polite" id="toast"></div>
+<script>
+  // 内容一变，读屏自动播报新文字
+  document.getElementById("toast").textContent = "草稿已保存";
+</script>
 ```
 
-**讲解：**
+然后是最重要的**第一规则**：ARIA 是补丁，不是替代品。能用 `button` 就别写 `<div role="button" tabindex="0">` 再手动补一堆键盘事件——原生标签自带角色、焦点、键盘行为，ARIA 版你要自己把这三样全部手搓一遍，还容易漏。社区把这条总结成一句话：**No ARIA is better than bad ARIA（乱用 ARIA 不如不用）**。
 
-- 标签页由 `tablist`/`tab`/`tabpanel` 三种角色组成，`aria-controls` 与 `aria-labelledby` 互相指认；
-- 当前标签用 `aria-selected="true"` 标记，未选中标签用 `tabindex="-1"` 移出 Tab 序列；
-- 键盘规范要求方向键在标签间切换，实际项目中还需补充左右键事件。
+## 5. 动手实验二：把一张"读不全"的卡片修好
 
-## 4. 键盘导航
-
-### 4.1 焦点管理
+下面这张卡片在读屏软件里问题百出，先照抄，再修复：
 
 ```html
-<!-- tabindex 属性 -->
-<!-- tabindex="0": 可聚焦，按文档顺序 -->
-<!-- tabindex="-1": 可编程聚焦，不在Tab序列中 -->
-<!-- tabindex="1+": 在Tab序列中，但不推荐（破坏自然顺序） -->
-
-<div class="custom-widget" tabindex="0" role="button">自定义按钮</div>
-
-<!-- 跳过导航链接 -->
-<a href="#main-content" class="skip-link">跳到主要内容</a>
-
-<style>
-  .skip-link {
-    position: absolute;
-    top: -40px;
-    left: 0;
-    background: #000;
-    color: #fff;
-    padding: 8px 16px;
-    z-index: 100;
-    transition: top 0.2s;
-  }
-  .skip-link:focus {
-    top: 0;
-  }
-</style>
+<article class="card">
+  <img src="poster.png" />
+  <h3></h3>
+  <a href="/doc/anchor/"><img src="go.png" /></a>
+  <form>
+    <input type="email" placeholder="输入邮箱订阅更新" />
+    <button type="submit">提交</button>
+  </form>
+</article>
 ```
 
-**讲解：**
+问题清单（修复版如下）：
 
-- `tabindex="0"` 让元素按文档顺序可聚焦，`-1` 允许脚本聚焦但不进 Tab 序列，正数会破坏自然顺序；
-- 跳过导航链接平时移出视口（`top: -40px`），获得焦点时回到可视位置，是经典的键盘友好模式；
-- 键盘用户每次进入新页面，都要按无数次 `Tab` 才能穿过导航栏到达正文；“跳过导航链接”让用户按一下 `Tab` 就能看到“跳到主要内容”的链接，按 `Enter` 直接跳到正文；
-- 这是 WCAG 2.4.1 的经典实现，也是成本最低、收益最高的无障碍优化之一；
-- 自定义组件若需要可聚焦，通常给 `tabindex="0"` 并补充键盘事件。
+1. 封面图没有 `alt`，读屏会念出整串文件名或直接跳过；
+2. `<h3></h3>` 是空的，标题信息丢失；
+3. 箭头链接只有图片没有名，播报是「链接」；
+4. 邮箱输入框只有 `placeholder`——placeholder 一输入就消失，而且很多读屏不把它当名字，应该用 `label`。
 
-### 4.2 模态对话框焦点陷阱
+```html
+<article class="card">
+  <img src="poster.png" alt="CSS 锚点定位文档封面：一枚图钉钉住一个气泡弹窗" />
+  <h3>CSS 锚点定位上手</h3>
+  <a href="/doc/anchor/" aria-label="阅读全文：CSS 锚点定位上手">
+    <img src="go.png" alt="" />
+  </a>
+  <form>
+    <label for="sub-email">订阅更新</label>
+    <input id="sub-email" type="email" placeholder="例如 you@example.com" />
+    <button type="submit">订阅</button>
+  </form>
+</article>
+```
+
+注意第 3 处的细节：装饰性图片的 `alt` 写**空字符串**而不是删掉属性——空 alt 表示"我是装饰，跳过我"；不写 `alt` 属性则读屏可能念文件名。另外按钮文案从「提交」改成「订阅」：可访问名要有信息量，一页有五个「提交」时用户分不清谁是谁。
+
+## 6. 常见错误与调试实录
+
+**翻车一：div 当按钮。** 症状与修法见实验一。检查方法：DevTools 选中元素，Accessibility 面板里 Role 若是 `generic`，而它明明承担点击行为，就是翻车了。
+
+**翻车二：模态关闭后焦点失踪。** 症状：弹窗（用自定义 div 实现的那种）关闭后，按 Tab 焦点从页面第一个元素重新开始，用户丢失位置。修法分两步：打开时把焦点移进弹窗，关闭时把焦点还给触发按钮。
 
 ```javascript
-function trapFocus(element) {
-  const focusableSelectors = [
-    'a[href]',
-    'button:not([disabled])',
-    'input:not([disabled])',
-    'select:not([disabled])',
-    'textarea:not([disabled])',
-    '[tabindex]:not([tabindex="-1"])',
-  ];
-
-  const focusableElements = element.querySelectorAll(focusableSelectors.join(','));
-  const firstFocusable = focusableElements[0];
-  const lastFocusable = focusableElements[focusableElements.length - 1];
-
-  element.addEventListener('keydown', (e) => {
-    if (e.key !== 'Tab') return;
-
-    if (e.shiftKey) {
-      if (document.activeElement === firstFocusable) {
-        lastFocusable.focus();
-        e.preventDefault();
-      }
-    } else {
-      if (document.activeElement === lastFocusable) {
-        firstFocusable.focus();
-        e.preventDefault();
-      }
-    }
-  });
-
-  // 打开对话框时聚焦第一个元素
-  firstFocusable.focus();
-}
+closeButton.addEventListener("click", () => {
+  dialog.hidden = true;
+  openTrigger.focus(); // 把焦点还回去
+});
 ```
 
-**讲解：**
+更省心的路线是直接用原生 `dialog` 元素加 `showModal()`，焦点圈定和 Esc 关闭都是浏览器自带（完整用法见 [dialog 与 popover 深度指南](/html5/430-HTML5DialogPopoverGuide)）。
 
-- 焦点陷阱保证 Tab 循环只在对话框内移动：焦点在末尾时按 Tab 回到开头，Shift+Tab 反向；
-- 选择器统一收集可聚焦元素（链接、按钮、表单控件、非负 `tabindex`）；
-- 打开对话框时把焦点移到第一个可聚焦元素，关闭后应恢复到触发按钮。
+**翻车三：placeholder 冒充 label。** 症状：用户开始输入后提示消失，回头检查时不知道这格填的是什么；读屏也常读不到。修法：永远配 `label`（可用 `for`/`id` 关联或直接包裹），placeholder 只做格式示例。
 
-### 4.3 键盘快捷键
+**翻车四：焦点框被抹掉。** 症状：CSS 里一行 `outline: none` "美化"了页面，键盘用户从此不知道自己在哪。修法：删掉它，或换成更精致的 `:focus-visible` 样式（CSS 侧的完整做法在 [可访问性样式](/css/500-AccessibleStyling)）。
+
+## 7. 实际场景
+
+- **前端实验室类产品**：FANDEX 网页端的"前端实验室"允许在浏览器里直接写代码并运行，重度用户全程键盘操作——编辑器快捷键、按钮焦点顺序、结果播报，每一处都是本篇知识的真实用武之地；
+- **WCAG 四原则**一句话版：可感知（有替代文本）、可操作（键盘可达）、可理解（提示清晰）、健壮（语义规范）。国际标准 WCAG 2.2 就是这四条的展开，面试和验收常引用；
+- **原生组件优先**：`dialog`、`details`、popover 这些新原生元素之所以值得学，就是因为它们的可访问性是浏览器白送的；
+- **`inert` 属性**（2023 年起全浏览器支持）：给"暂时不该交互"的区域整体上锁，比如侧边抽屉打开时锁住主内容，比手动管理 tabindex 可靠得多。
+
+## 8. 小练习
+
+预测题（3 分钟）：下面两种写法，读屏用户分别听到什么？
 
 ```html
-<!-- accesskey 属性（谨慎使用） -->
-<button accesskey="s">保存</button>
-
-<!-- 自定义键盘交互 -->
-<div class="dropdown" role="combobox" aria-expanded="false">
-  <input type="text" role="searchbox" aria-autocomplete="list" aria-controls="dropdown-list" />
-  <ul id="dropdown-list" role="listbox">
-    <li role="option">选项1</li>
-    <li role="option">选项2</li>
-  </ul>
-</div>
-
-<script>
-  // 键盘交互：上下箭头选择，Enter确认，Esc关闭
-  document.querySelector('[role="combobox"]').addEventListener('keydown', (e) => {
-    switch (e.key) {
-      case 'ArrowDown':
-        // 选择下一个选项
-        break;
-      case 'ArrowUp':
-        // 选择上一个选项
-        break;
-      case 'Enter':
-        // 确认选择
-        break;
-      case 'Escape':
-        // 关闭下拉
-        break;
-    }
-  });
-</script>
+<img src="divider.png" alt="" />
+<img src="divider.png" />
 ```
 
-**讲解：**
+答案：第一种播报空（跳过装饰图）；第二种可能念出文件名「divider.png」，或行为不确定——取决于读屏实现。装饰图请写空 alt。
 
-- `accesskey` 在不同浏览器中的触发组合不一致，可能与其他快捷键冲突，需谨慎使用；
-- `combobox`/`listbox`/`option` 角色描述了“输入框 + 下拉列表”的完整语义；
-- 键盘事件按 `ArrowDown`/`ArrowUp`/`Enter`/`Escape` 分发，是下拉组件的基本键盘协议。
+修复题（15 分钟）：把实验二的卡片再升级——给订阅表单加一行 `aria-live` 提示，提交后（哪怕先造假）把「订阅成功」写进去。验收：不做任何视觉改动，用 Tab 走完整个卡片，每个可交互元素都有焦点、有名字。
 
-### 4.4 动手试试：用键盘“走一遍”你的页面
-
-在开始写代码之前，先建立“键盘用户”的体验：
-
-1. 打开任何一个你经常访问的网站；
-2. 放下鼠标，只用键盘上的 `Tab` 键在页面中移动焦点；
-3. 观察焦点移动的顺序是否符合你的预期；
-4. 按 `Enter` 键是否能激活按钮或链接；
-5. 按 `Esc` 键是否能关闭弹窗。
-
-你能感受到的：如果页面焦点顺序混乱，或者某些按钮按了 `Enter` 没反应——这就是键盘用户的日常困境。我们接下来学的所有无障碍技术，核心目的之一就是避免这种困境。
-
-## 5. 颜色与对比度
-
-### 5.1 对比度要求
-
-| 文本类型                  | WCAG AA | WCAG AAA |
-| :------------------------ | :------ | :------- |
-| 正文文本（<18px）         | 4.5:1   | 7:1      |
-| 大文本（≥18px或14px粗体） | 3:1     | 4.5:1    |
-| UI组件和图形对象          | 3:1     | -        |
-
-```css
-/* 对比度检查 */
-/* AA通过：深灰文字 #333 在白色 #fff 背景 */
-.text-aa {
-  color: #333333; /* 对比度 12.6:1  */
-}
-
-/* AA未通过：浅灰文字 #999 在白色背景 */
-.text-fail {
-  color: #999999; /* 对比度 2.8:1  */
-}
-
-/* 修正：使用更深的灰色 */
-.text-fixed {
-  color: #767676; /* 对比度 4.5:1  */
-}
-```
-
-**讲解：**
-
-- 对比度是“前景与背景的亮度差”：`#333` 在 `#fff` 上约 12.6:1，满足 AAA；`#999` 仅 2.8:1，连 AA 都不够；
-- WCAG AA 要求正文 4.5:1、大文本 3:1、图形 3:1；
-- 调色时先用计算器验证，再以“至少满足 AA”作为设计门槛。
-
-### 5.2 不仅依赖颜色传达信息
+排错题（10 分钟）：同事写的折叠面板，鼠标点击正常，读屏用户却不知道面板是否展开。代码如下，指出缺了什么并补上：
 
 ```html
-<!-- 错误：仅用颜色区分 -->
-<p>请填写 <span style="color:red">红色</span> 标记的字段</p>
-
-<!-- 正确：颜色 + 图标/文字 -->
-<p>
-  请填写带 <span class="required"><span aria-hidden="true">*</span>星号</span> 的字段
-</p>
-
-<!-- 错误：仅用颜色表示状态 -->
-<div class="status" style="color: green">成功</div>
-
-<!-- 正确：颜色 + 图标 -->
-<div class="status success">
-  <span aria-hidden="true"></span>
-  <span>成功</span>
-</div>
+<button type="button" id="toggle">详细信息</button>
+<div id="panel" hidden>……</div>
 ```
 
-**讲解：**
+答案：缺少状态播报。给按钮加 `aria-expanded`，点击时在 `"true"`/`"false"` 间切换；可再加 `aria-controls="panel"` 声明控制关系。
 
-- 色觉障碍用户无法仅凭红绿判断状态，信息必须同时以文字、图标或形状呈现；
-- 必填标记用“星号 + 文字”双通道表达，`aria-hidden` 屏蔽装饰符号本身；
-- 状态组件保留可见文字（如“成功”），颜色只做增强而非唯一信号。
+挑战题（30 分钟，可选）：如果你用 Windows，按 Ctrl+Win+Enter 启动系统自带的讲述人（Narrator），用它浏览 FANDEX 站点任意一篇文档，记录三条"听着别扭"的地方。这是零成本体验读屏用户世界的最快方式。
 
-## 6. 常见问题与解决方案
+## 9. 与之前和之后的知识的关系
 
-### 6.1 动态内容更新
+- 之前：[语义化标签](/html5/170-SemanticTag) 提供了角色基础——本篇的 ARIA 只补语义标签盖不住的那部分；
+- 之后：[表单与验证](/html5/190-HTML5FormValidation) 里 label、错误提示与 `aria-describedby` 会反复出现；CSS 模块的 [可访问性样式](/css/500-AccessibleStyling) 负责对比度、焦点样式与动效偏好；[dialog 与 popover](/html5/430-HTML5DialogPopoverGuide) 展示"原生组件自带无障碍"的现代路线。
 
-**问题**：AJAX更新内容后屏幕阅读器不通知
+## 10. 官方文档
 
-```html
-<!-- 解决方案：使用aria-live区域 -->
-<div aria-live="polite" aria-atomic="true" id="status">
-  <!-- 动态更新的内容 -->
-</div>
+- MDN「无障碍」学习区：https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Accessibility
+- MDN ARIA 基础：https://developer.mozilla.org/zh-CN/docs/Learn_web_development/Core/Accessibility/WAI-ARIA_basics
+- web.dev「Learn Accessibility」：https://web.dev/learn/accessibility
+- W3C WCAG 2.2 速查（中文）：https://www.w3.org/Translations/WCAG22-zh/
 
-<!-- 紧急通知用assertive -->
-<div aria-live="assertive" role="alert" id="errors">
-  <!-- 错误消息 -->
-</div>
-```
+## 11. 自我检查
 
-**讲解：**
+- 能不看笔记说出无障碍树三要素：角色、可访问名、状态；
+- 能解释为什么 `div onclick` 对键盘用户等于不存在，并说出修法；
+- 会用 `aria-label`、`aria-expanded`、`aria-live` 三件补丁，并知道它们各自的使用时机；
+- 记得装饰图的 `alt` 要写空字符串；
+- 能独立完成"拔掉鼠标走完一个页面"的键盘测试并记录问题。
 
-- `aria-live="polite"` 表示更新不打断当前播报，`assertive` 表示立即打断播报；
-- `aria-atomic="true"` 让整个区域整体播报，而不是只播报变化片段；
-- 动态插入到 live 区域的内容会被读屏自动感知，无需用户重新浏览。
+## 本章总结
 
-### 6.2 自定义组件无障碍
+无障碍的本质是"让机器转述你的页面"：读屏软件读的是无障碍树上的角色、可访问名与状态。原生标签自带这三样，所以第一规则是"能用原生就别用 ARIA"；补丁只用三个高频属性——`aria-label` 起名、`aria-expanded` 播报展开、`aria-live` 播报变化。高频翻车有四类：div 当按钮、模态焦点失踪、placeholder 冒充 label、焦点框被抹掉。验收手段只有一个：拔掉鼠标，用键盘走一遍。
 
-> 进阶内容：自定义组件需要同时补齐语义角色、状态属性与键盘事件，入门阶段先理解“为什么需要这些属性”。
+## 下一步
 
-**问题**：自定义组件缺少键盘支持和ARIA
-
-```html
-<!-- 自定义开关组件 -->
-<div class="switch" role="switch" aria-checked="false" aria-label="深色模式" tabindex="0">
-  <span class="switch-thumb"></span>
-</div>
-
-<script>
-  const switchEl = document.querySelector('.switch');
-  switchEl.addEventListener('keydown', (e) => {
-    if (e.key === ' ' || e.key === 'Enter') {
-      e.preventDefault();
-      toggleSwitch();
-    }
-  });
-
-  function toggleSwitch() {
-    const isChecked = switchEl.getAttribute('aria-checked') === 'true';
-    switchEl.setAttribute('aria-checked', !isChecked);
-  }
-</script>
-```
-
-**讲解：**
-
-- `role="switch"` 声明开关语义，`aria-checked` 保存当前状态，`aria-label` 提供名称；
-- 空格与回车键都要触发切换，且切换后同步更新 `aria-checked`；
-- 组件视觉状态（滑块位置）与语义状态（`aria-checked`）必须保持一致。
-
-### 6.3 图标按钮缺少标签
-
-```html
-<!-- 错误：图标按钮无文本 -->
-<button><i class="fa fa-search"></i></button>
-
-<!-- 正确方案1：aria-label -->
-<button aria-label="搜索"><i class="fa fa-search" aria-hidden="true"></i></button>
-
-<!-- 正确方案2：视觉隐藏文本 -->
-<button>
-  <i class="fa fa-search" aria-hidden="true"></i>
-  <span class="sr-only">搜索</span>
-</button>
-
-<style>
-  .sr-only {
-    position: absolute;
-    width: 1px;
-    height: 1px;
-    padding: 0;
-    margin: -1px;
-    overflow: hidden;
-    clip: rect(0, 0, 0, 0);
-    white-space: nowrap;
-    border: 0;
-  }
-</style>
-```
-
-**讲解：**
-
-- 图标按钮必须有可访问名称：`aria-label` 直接命名，或 `sr-only` 提供视觉隐藏文本；
-- 装饰图标用 `aria-hidden="true"` 屏蔽，避免读屏重复播报图标字符；
-- `sr-only` 用绝对定位 + 1px 裁剪实现“视觉隐藏但读屏可见”，是通用工具类。
-
-## 7. 总结与最佳实践
-
-### 7.1 无障碍检查清单
-
-- [ ] 所有图片有alt文本
-- [ ] 表单控件有label关联
-- [ ] 页面有且仅有一个main地标
-- [ ] 键盘可以访问所有交互元素
-- [ ] 文本对比度满足WCAG AA标准
-- [ ] 不仅依赖颜色传达信息
-- [ ] 动态内容使用aria-live通知
-- [ ] 自定义组件有正确的ARIA角色和属性
-- [ ] 提供跳过导航链接
-- [ ] 模态对话框有焦点陷阱
-
-### 7.2 测试工具
-
-- **Lighthouse**：Chrome内置的无障碍审计
-- **axe DevTools**：浏览器扩展，自动检测无障碍问题
-- **NVDA/VoiceOver**：屏幕阅读器实际测试
-- **键盘测试**：不使用鼠标，仅用键盘操作页面
-- **色盲模拟**：Chrome DevTools 的渲染面板
-
-### 7.3 核心原则
-
-1. **原生HTML优先**：使用语义化标签，减少ARIA需求
-2. **键盘可操作**：所有功能可通过键盘完成
-3. **渐进增强**：基础功能不依赖JavaScript
-4. **持续测试**：开发过程中定期进行无障碍测试
-
-## 8. 进阶知识点
-
-### 8.1 视觉隐藏文本（sr-only）
-
-```css
-.sr-only {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  padding: 0;
-  margin: -1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  border: 0;
-}
-```
-
-**讲解：**
-
-- 该工具类让文本对视觉用户隐藏，但保留在可访问性树中供读屏播报；
-- 不要用 `display: none` 或 `visibility: hidden` 隐藏这类文本，那会连读屏一起隐藏；
-- `clip: rect(0, 0, 0, 0)` 是经典裁剪写法，配合 `position: absolute` 避免撑开布局。
-
-### 8.2 自定义开关组件
-
-```html
-<button
-  class="switch"
-  role="switch"
-  aria-checked="false"
-  aria-label="深色模式"
-  id="theme-switch"
-></button>
-```
-
-**讲解：**
-
-- 使用原生 `button` 承载开关，可免费获得焦点与回车/空格触发能力；
-- `role="switch"` 告知读屏这是开关，`aria-checked` 表达开/关状态；
-- 状态变化时必须同步更新 `aria-checked`，否则读屏播报与实际状态不一致。
-
-### 8.3 自动更新通知：aria-live 用法
-
-```html
-<div aria-live="polite" aria-atomic="true" id="notification">
-  暂无新消息
-</div>
-```
-
-**讲解：**
-
-- 聊天消息、搜索结果等非紧急更新用 `polite`，错误提示等紧急信息用 `assertive`；
-- `aria-atomic="true"` 让区域整体播报，避免只读出变化的碎片；
-- live 区域应在页面初始时就存在于 DOM，动态创建的区域无法保证被感知。
-
-## 9. 核心知识点
-
-- WCAG 四原则：可感知、可操作、可理解、健壮性；
-- 原生语义优先：`button`/`a`/`label`/`h1`-`h6` 自带键盘与语义，`div` 模拟需要额外补齐；
-- 图片必须处理 `alt`：内容图描述、装饰图留空、复杂图补充长描述；
-- ARIA 是补充工具：`role`、`aria-label`、`aria-expanded`、`aria-live` 等需与行为实现配套；
-- 键盘导航要求：跳过链接、`tabindex` 规范、模态焦点陷阱、自定义组件方向键协议；
-- 对比度门槛：正文 4.5:1、大文本 3:1（AA），且不能只靠颜色传达信息。
-
-## 10. 注意事项与改进建议
-
-| 问题点 | 说明 | 改进方案 |
-| --- | --- | --- |
-| 用 `div` 模拟交互组件 | 不可聚焦、无语义、键盘失效 | 换成原生 `button`/`a`，或补齐 `tabindex` + ARIA + 键盘事件 |
-| 图片缺 `alt` | 读屏无法理解图片内容 | 内容图写描述，装饰图 `alt=""` |
-| 表单控件无 `label` | 点击文字不聚焦，读屏不播报名称 | 用 `label for`/包裹式关联 |
-| 动态更新无通知 | AJAX 更新后读屏用户无感知 | 使用 `aria-live` 区域包裹更新内容 |
-| `tabindex` 正数滥用 | 破坏自然 Tab 顺序 | 只使用 `0` 与 `-1` |
-| 对比度不足 | 低视力用户看不清文字 | 按 WCAG AA 用工具验证并调色 |
-| 仅靠颜色表达状态 | 色觉障碍用户无法区分 | 颜色 + 文字/图标双通道 |
-| 模态框无焦点陷阱 | Tab 可跳出对话框，读屏迷失 | 实现焦点循环并在关闭后恢复焦点 |
-
-## 11. 扩展学习
-
-- 规范原文：阅读 W3C WCAG 2.2 与 WAI-ARIA 1.2 官方文档；
-- 组件模式：`html5/310-WebComponentsPWADevelopment` 中自定义元素如何内置无障碍；
-- 表单无障碍：`html5/190-HTML5FormValidation` 的验证提示与 `aria-describedby` 结合；
-- 语义基础：先掌握 `html5/170-SemanticTag`，再理解 ARIA 的补充角色；
-- 实测工具：Lighthouse、axe DevTools、NVDA/VoiceOver 与键盘走查流程。
+进入 [HTML5 表单与验证](/html5/190-HTML5FormValidation)：表单是键盘交互最密集的场景，也是无障碍重灾区——label、错误提示、焦点管理全部要实战一遍，顺便学浏览器白送的数据校验。

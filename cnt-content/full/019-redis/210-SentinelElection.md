@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 220
 title: 哨兵选举
 module: 'redis'
 category: 数据库

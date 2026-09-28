@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 虚拟内存的分段与分页机制：地址翻译、多级页表、TLB 加速与缺页处理全流程。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/150-OperatingSystem'
   - 'cs-fundamentals/190-InterruptAndSystemCall'
@@ -18,9 +18,9 @@ prerequisites:
 
 ## 前置知识
 
-- 二进制与十六进制地址表示（见 [数的表示与编码](cs-fundamentals/060-NumberRepresentationEncoding)）；
+- 二进制与十六进制地址表示（见 [数的表示与编码](/cs-fundamentals/060-NumberRepresentationEncoding)）；
 - 程序的内存布局（代码段、数据段、堆、栈）；
-- 中断与异常的基本概念（缺页是一种 fault，见 [中断与系统调用](cs-fundamentals/190-InterruptAndSystemCall)）。
+- 中断与异常的基本概念（缺页是一种 fault，见 [中断与系统调用](/cs-fundamentals/190-InterruptAndSystemCall)）。
 
 ## 学习目标
 
@@ -216,7 +216,7 @@ pmap -x <pid>            # 查看每段映射的常驻物理内存 RSS
 - **内存超售与 OOM**：容器的 `--memory` 限制作用于 RSS；理解按需调页才能解释"申请 10GB 只用 100MB 的进程为何能共存"，以及为何会突然大量 minor fault。
 - **写时复制（COW）**：`fork()` 不复制整个地址空间，只复制页表并把父子双方的私有页标记为只读；任何一方写入时缺页，内核才复制那一页——进程创建因此是毫秒级操作。
 - **共享内存与共享库**：多个进程的页表项可以指向同一物理页框（libc 的代码段全系统共享一份）；`shm_open` + `mmap` 是进程间共享大数据的最快通道。
-- **置换算法衔接**：内存吃紧时内核按 [页面置换算法](cs-fundamentals/220-PageReplacementAlgorithm)（基于 PTE 的 A/D 位与访问历史）挑选牺牲页换出。
+- **置换算法衔接**：内存吃紧时内核按 [页面置换算法](/cs-fundamentals/220-PageReplacementAlgorithm)（基于 PTE 的 A/D 位与访问历史）挑选牺牲页换出。
 
 ## 小结
 

@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 400
 title: "描述符深水区：__set_name__、__delete__ 与完整查找顺序"
 module: 'python'
 category: 后端技术

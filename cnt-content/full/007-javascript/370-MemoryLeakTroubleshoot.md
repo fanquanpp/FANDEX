@@ -1,12 +1,12 @@
 ---
-order: 350
+order: 370
 title: 内存泄漏排查
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: JavaScript内存泄漏排查详解：Chrome DevTools Memory面板、堆快照、分配时间线。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/110-Regex'
   - 'javascript/480-ErrorBoundaryGlobalErrorCatch'

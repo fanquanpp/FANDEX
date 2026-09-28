@@ -1,786 +1,252 @@
 ---
 order: 150
-title: 操作系统
+title: "操作系统：双击图标之后发生了什么"
 module: 'cs-fundamentals'
 category: 计算机科学
 difficulty: intermediate
-description: 操作系统核心原理：进程管理、内存管理、文件系统、I/O系统、并发与同步。
+description: "以「双击一个程序到窗口出现」引入：亲手制造一场多线程竞态并修好它，理解操作系统三大抽象（进程、虚拟内存、文件）与系统调用入口，调度算法平均等待时间实测，死锁四条件自查，以及本模块深水篇的阅读地图。"
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
-  - 'cs-fundamentals/010-ComputerOverview'
   - 'cs-fundamentals/090-ComputerArchitecture'
-  - 'cs-fundamentals/270-ComputerNetwork'
-  - 'cs-fundamentals/050-DigitalLogic'
-prerequisites: []
+  - 'cs-fundamentals/160-OperatingSystemAdvanced'
+  - 'cs-fundamentals/170-PCBThreadTCB'
+  - 'cs-fundamentals/190-InterruptAndSystemCall'
+  - 'cs-fundamentals/210-MemorySegmentationAndPaging'
+  - 'cs-fundamentals/230-FileSystemInode'
+prerequisites:
+  - 'cs-fundamentals/010-ComputerOverview'
 ---
+
+## 前置知识
+
+- 已完成 [计算机概述](/cs-fundamentals/010-ComputerOverview)，知道 CPU、内存、磁盘各管什么；
+- 会写基本的 Python 循环与函数（本文实验用 Python，三端通用）。
 
 ## 学习目标
 
-本文是「计算机基础」模块的第 15 篇，难度定位为进阶。重点内容：操作系统核心原理：进程管理、内存管理、文件系统、I/O系统、并发与同步。
+读完本文你将能够：
 
-主要章节：
+1. 讲清「双击图标到窗口出现」之间操作系统做了哪些事；
+2. 亲手制造一场多线程竞态（counter 丢失更新），并用锁修复，理解「为什么并发 bug 平时测不出来」；
+3. 说清操作系统的三大抽象——进程、虚拟内存、文件——各自把什么硬件藏在了什么接口后面；
+4. 用模拟实验对比 FCFS 与 SJF 调度的平均等待时间，理解 Linux CFS 的公平思路；
+5. 背出死锁的四个必要条件，并用它做一次代码自查；
+6. 知道本模块每篇深水篇（调度、线程、中断、分页、文件、IPC）分别在什么时候读。
 
-- 1. 操作系统概述
-- 2. 进程与线程
-- 3. 进程调度
-- 4. 同步与互斥
-- 5. 内存管理
-- 6. 文件系统
-- ……共 8 个章节
+预计 60 到 90 分钟。
 
-## 1. 操作系统概述
+## 1. 你现在要解决什么问题
 
-### 1.1 操作系统的定义与角色
+你每天双击图标几十次，但从没想过中间这几百毫秒发生了什么：磁盘上的可执行文件被读进内存，一个「进程」被创建出来，CPU 开始按指令执行，窗口画到屏幕上。这背后站着一位总管家——**操作系统**。它同时做两件事：
 
-操作系统是硬件与应用之间的**中间层**，提供三个核心抽象：
+- **面向上，给应用发「道具」**：让每个程序以为自己独占一台计算机。你写的代码从不直接碰硬件，而是在三个抽象上工作：进程（假装独占 CPU）、虚拟内存（假装独占内存）、文件（假装磁盘是一棵目录树）；
+- **面向下，管住所有硬件**：几十个进程抢几颗 CPU 核、内存不够时谁该让路、磁盘请求先服务谁——全是它的日常调度。
 
-| 抽象     | 对应硬件资源    | 接口                  |
-| -------- | --------------- | --------------------- |
-| 进程     | CPU + 寄存器    | fork/exec/wait        |
-| 虚拟内存 | 物理内存 + 磁盘 | mmap/brk/malloc       |
-| 文件     | 磁盘/设备       | open/read/write/close |
+理解这位管家，你才能回答工程里最常见的一批问题：程序为什么卡、CPU 为什么 100%、内存为什么爆、两个线程为什么算错账。本文是操作系统八篇（150 到 260）的主线入口，每讲一个概念都会告诉你深水篇在哪。
 
-```
-操作系统在抽象层级中的位置 (参见 [概述](overview) 3.1节):
+## 2. 最小可运行实验：亲手制造一场竞态
 
-Layer 6: Application
-         |  API
-Layer 5: Language Runtime
-         |  ABI / System Call
-Layer 4: Operating System  <-- 本章节
-         |  ISA / Driver Interface
-Layer 3: Hardware
-
-操作系统的双重角色:
-  1. 面向上层: 提供简洁的抽象接口 (What)
-  2. 面向下层: 管理复杂的硬件资源 (How)
-```
-
-### 1.2 内核架构
-
-```mermaid
-flowchart TD
-    B0["User Space"]
-    B1["Syscall Interface"]
-    B0 --> B1
-    B2["VFS | TCP/IP | Scheduler | ... | <-- 全部在内核态"]
-    B1 --> B2
-    B3["Hardware"]
-    B2 --> B3
-    B4["FS Server | Net Server | ... | <-- 用户态服务进程"]
-    B3 --> B4
-    B5["IPC Interface"]
-    B4 --> B5
-    B6["Schedule | VM | IPC | <-- 最小内核"]
-    B5 --> B6
-    B7["Hardware"]
-    B6 --> B7
-```
-
-### 1.3 系统调用机制
-
-```mermaid
-flowchart TD
-    C0_0["系统调用流程 (用户态 -> 内核态 -> 用户态):"]
-    C0_1["User Space                          Kernel Space"]
-    C0_2["系统调用开销:"]
-    C0_3["x86-64 (syscall): ~200-1000 cycles"]
-    C0_4["ARM (SVC):        ~100-500 cycles"]
-    C0_5["主要开销: 上下文保存/恢复 + TLB冲刷 + 分支预测失效"]
-    C1_0["Application"]
-    C1_1["call"]
-    C1_2["syscall"]
-    C1_3["instruction"]
-    C1_4["继续执行"]
-    C2_0["1. 保存用户上下文"]
-    C2_1[">"]
-    C2_2["4. 恢复用户上下文"]
-    C2_3["<"]
-    C2_4["3. 切换回用户栈"]
-    C3_0["2. 切换到内核栈"]
-    C3_1["syscall"]
-    C3_2["handler"]
-    C3_3["(检查参数)"]
-    C3_4["(执行操作)"]
-    C3_5["返回结果"]
-    C0_0 --> C0_1
-    C0_1 --> C0_2
-    C0_2 --> C0_3
-    C0_3 --> C0_4
-    C0_4 --> C0_5
-    C1_0 --> C1_1
-    C1_1 --> C1_2
-    C1_2 --> C1_3
-    C1_3 --> C1_4
-    C2_0 --> C2_1
-    C2_1 --> C2_2
-    C2_2 --> C2_3
-    C2_3 --> C2_4
-    C3_0 --> C3_1
-    C3_1 --> C3_2
-    C3_2 --> C3_3
-    C3_3 --> C3_4
-    C3_4 --> C3_5
-    C0_0 --> C1_0
-    C1_0 --> C2_0
-    C2_0 --> C3_0
-```
-
-> 跨模块引用：[体系结构](architecture)的特权级（Ring 0/3, EL0/EL1）是系统调用机制的基础。[C语言](/c/010-CZeroBasisStart)的标准库(glibc)封装了系统调用接口。
-
----
-
-## 2. 进程与线程
-
-### 2.1 进程的状态机模型
-
-进程是操作系统对运行程序的抽象，其生命周期可用状态机描述：
-
-```mermaid
-flowchart TD
-    B0["fork/exec / v / scheduler / Ready | > | Running"]
-    B1["^ / preempt/ / yield"]
-    B0 --> B1
-    B2["Blocked | <--IO/wait"]
-    B1 --> B2
-    B3["IO完成/wakeup / v"]
-    B2 --> B3
-    B4["Terminated"]
-    B3 --> B4
-```
-
-### 2.2 进程控制块 (PCB)
-
-```
-进程控制块 (task_struct in Linux) 关键字段:
-
-struct task_struct {
-    pid_t               pid;          // 进程ID
-    volatile long        state;        // 进程状态
-    int                  prio;         // 优先级
-    struct mm_struct    *mm;           // 内存管理信息
-    struct files_struct *files;        // 打开文件表
-    struct signal_struct*signal;       // 信号处理
-    struct thread_info   thread_info;  // 底层线程信息
-    struct sched_entity  se;           // 调度实体
-    struct list_head     tasks;        // 进程链表
-    void                *stack;        // 内核栈
-    // ... 数百个字段
-};
-```
-
-### 2.3 进程创建: fork()
-
-```mermaid
-flowchart TD
-    B0["pid = 100 | pid = 101 / ppid = 1 | ppid = 100"]
-    B1["fork() / 分配PCB / 复制页表(COW) / 复制fd表 / 设置ppid / 加入调度队列 / return 101 (child_pid) | return 0"]
-    B0 --> B1
-```
-
-**fork伪代码**：
-
-```c
-pid_t fork(void) {
-    struct task_struct *child = alloc_task_struct();
-    copy_process(current, child);       // 复制PCB
-    dup_mm(child, current->mm);         // 复制页表(COW)
-    dup_fd(child, current->files);      // 复制文件描述符表
-    wake_up_process(child);             // 加入调度队列
-    if (current == child) return 0;     // 子进程返回0
-    else return child->pid;             // 父进程返回子PID
-}
-```
-
-### 2.4 线程模型
-
-```mermaid
-flowchart TD
-    B0["Process"]
-    B1["Thread | Thread | Thread / 栈 | 栈 | 栈"]
-    B0 --> B1
-    B2["共享: 代码段 | 数据段 | 堆 | fd表"]
-    B1 --> B2
-```
-
-> 跨模块引用：[Java](/java/010-WhatIsJava)的Thread类在Linux上使用1:1模型(pthread)。[C++](/cpp/010-WhatIsCpp)的std::thread同样映射到OS线程。Go的goroutine使用M:N模型。
-
----
-
-## 3. 进程调度
-
-### 3.1 调度算法
-
-```
-调度算法对比:
-
-1. FCFS (先来先服务):
-   队列: P1(24) -> P2(3) -> P3(3)
-   等待时间: P1=0, P2=24, P3=27
-   平均等待: (0+24+27)/3 = 17
-   缺点: 护航效应 (短作业等长作业)
-
-2. SJF (最短作业优先):
-   队列: P2(3) -> P3(3) -> P1(24)
-   等待时间: P2=0, P3=3, P1=6
-   平均等待: (0+3+6)/3 = 3
-   缺点: 长作业饥饿，需预知执行时间
-
-3. RR (时间片轮转):
-   时间片 q=4
-   P1(24): run 4 -> run 4 -> run 4 -> ... -> run 4
-   P2(3):  run 3 -> done
-   P3(3):  run 3 -> done
-   优点: 公平，响应快
-   缺点: 时间片大小影响性能
-
-4. 优先级调度:
-   每个进程有优先级，高优先级先执行
-   可配合: 老化(aging)防止饥饿
-```
-
-### 3.2 Linux CFS调度器
-
-```
-CFS (Completely Fair Scheduler) 核心思想:
-
-  目标: 公平分配CPU时间给所有可运行进程
-
-  虚拟运行时间 (vruntime):
-    vruntime += 实际运行时间 * (NICE_0_LOAD / 进程权重)
-
-    权重越高(优先级越高) -> vruntime增长越慢
-    -> 被调度的机会越多
-
-  红黑树:
-    所有可运行进程按vruntime排序
-    左下角 = vruntime最小 = 下一个被调度
-
-  调度决策:
-    1. 选择红黑树最左节点
-    2. 运行直到vruntime不再是最小
-    3. 重新插入红黑树
-
-  时间片计算:
-    time_slice = (调度周期 * 进程权重) / 总权重
-```
-
-**CFS伪代码**：
+操作系统给了你「线程」这个抽象：同一进程内的多条执行流，共享全部内存。共享是效率，也是事故源头。看一场经典的算错账：
 
 ```python
-def cfs_schedule(rq):
-    leftmost = rq.rbtree.leftmost()
-    next_task = leftmost.task
-    current_task = rq.current
+import threading
 
-    if current_task.state == RUNNING:
-        update_vruntime(current_task)
-        rbtree_insert(rq.rbtree, current_task)
+counter = 0
 
-    rq.current = next_task
-    rbtree_remove(rq.rbtree, next_task)
-    context_switch(current_task, next_task)
+def work():
+    global counter
+    for _ in range(100000):
+        counter += 1        # 三步：读出来、加一、写回去
+
+threads = [threading.Thread(target=work) for _ in range(4)]
+for t in threads:
+    t.start()
+for t in threads:
+    t.join()
+
+print(f"期望 400000，实际 {counter}")
 ```
 
-### 3.3 上下文切换
+预期输出（每次运行都不同，且几乎总小于 400000）：
 
-```mermaid
-flowchart TD
-    B0["用户态上下文 | 用户态上下文 / 寄存器 | 寄存器 / 栈指针 | 栈指针 / PC | PC"]
-    B1["^ / 1. 保存A的上下文到A的内核栈 / 2. 切换内核栈(A -> B) / 3. 从B的内核栈恢复B的上下文"]
-    B0 --> B1
+```text
+期望 400000，实际 213547
 ```
 
----
+`counter += 1` 在机器层面是**三步**：从内存读到寄存器、加一、写回。线程 A 刚读完还没写回，线程 B 也读走了旧值——两人各加了一次，结果只加了一次，一次更新凭空蒸发。这就是**竞态条件**（race condition）：结果取决于线程交织的时序，所以「平时好好的、压测就出错」。
 
-## 4. 同步与互斥
-
-### 4.1 临界区问题
-
-```
-临界区问题的三个条件:
-
-1. 互斥 (Mutual Exclusion):  同一时刻只有一个进程进入临界区
-2. 前进 (Progress):          临界区空闲时，等待进程应能进入
-3. 有限等待 (Bounded Wait):  进程等待进入临界区的时间有限
-
-Peterson算法 (两进程互斥的软件方案):
-
-  // 进程 Pi (i=0, j=1-i)
-  flag[i] = true;
-  turn = j;
-  while (flag[j] && turn == j) { /* wait */ }
-  // --- 临界区 ---
-  flag[i] = false;
-  // --- 剩余区 ---
-```
-
-### 4.2 硬件同步原语
-
-```
-Test-And-Set (TAS):
-
-  boolean TestAndSet(boolean *target) {
-    boolean rv = *target;
-    *target = true;
-    return rv;
-  }
-
-  // 使用TAS实现互斥锁
-  while (TestAndSet(&lock)) { /* spin */ }
-  // --- 临界区 ---
-  lock = false;
-
-Compare-And-Swap (CAS):
-
-  boolean CAS(int *addr, int expected, int new_val) {
-    if (*addr == expected) {
-      *addr = new_val;
-      return true;
-    }
-    return false;
-  }
-
-  // 使用CAS实现无锁计数器
-  do {
-    old = counter;
-    new = old + 1;
-  } while (!CAS(&counter, old, new));
-```
-
-### 4.3 信号量
-
-```
-信号量定义 (Dijkstra, 1965):
-
-  semaphore S = integer value;
-
-  P(S) / wait(S) / down(S):     // Proberen (尝试)
-    while (S <= 0) { block(); }
-    S--;
-
-  V(S) / signal(S) / up(S):     // Verhogen (增加)
-    S++;
-    wakeup_one_waiter();
-
-信号量的两种用途:
-  1. 互斥: 初值 = 1 (二元信号量 = 互斥锁)
-  2. 同步: 初值 = 0 (事件通知)
-
-生产者-消费者问题:
-
-  semaphore mutex = 1;    // 互斥访问缓冲区
-  semaphore empty = N;    // 空槽位数
-  semaphore full  = 0;    // 已占槽位数
-
-  Producer:                      Consumer:
-    produce(item);                 P(full);
-    P(empty);                      P(mutex);
-    P(mutex);                      item = remove();
-    insert(item);                  V(mutex);
-    V(mutex);                      V(empty);
-    V(full);                       consume(item);
-```
-
-### 4.4 经典同步问题
-
-**读者-写者问题**：
-
-```
-读者优先:
-
-  semaphore rw_mutex = 1;   // 读写互斥
-  semaphore mutex = 1;      // 保护read_count
-  int read_count = 0;
-
-  Reader:                        Writer:
-    P(mutex);                      P(rw_mutex);
-    read_count++;                  // 写操作
-    if (read_count == 1)           V(rw_mutex);
-      P(rw_mutex);
-    V(mutex);
-    // 读操作
-    P(mutex);
-    read_count--;
-    if (read_count == 0)
-      V(rw_mutex);
-    V(mutex);
-
-问题: 写者可能饥饿
-解决: 写者优先变体 (增加写者等待计数)
-```
-
-**哲学家就餐问题**：
-
-```
-5个哲学家，5根筷子，左右各一根
-
-死锁方案 (每人先拿左筷子):
-  Philosopher i:
-    P(chopstick[i]);         // 拿左筷子
-    P(chopstick[(i+1)%5]);   // 拿右筷子
-    eat();
-    V(chopstick[i]);
-    V(chopstick[(i+1)%5]);
-
-防死锁方案:
-  1. 最多4人同时拿筷子
-  2. 奇数先拿左、偶数先拿右 (破坏循环等待)
-  3. 仅当两根筷子都可用时才拿 (AND信号量)
-```
-
-### 4.5 死锁
-
-```
-死锁四个必要条件:
-
-1. 互斥: 资源不能共享
-2. 占有并等待: 持有资源同时等待其他资源
-3. 不可抢占: 已获得的资源不能被强制剥夺
-4. 循环等待: 存在进程的循环等待链
-
-破坏条件 -> 预防:
-  破坏2: 一次性申请所有资源
-  破坏3: 允许抢占
-  破坏4: 资源有序分配
-
-死锁检测 (资源分配图):
-
-  进程 P1 --请求--> 资源 R1 <--占有-- 进程 P2
-  进程 P2 --请求--> 资源 R2 <--占有-- 进程 P1
-
-  图中存在环 -> 死锁
-
-银行家算法 (避免死锁):
-
-  Available[1..m]:  每类资源可用数
-  Max[1..n][1..m]:  每个进程最大需求
-  Allocation[1..n][1..m]: 每个进程已分配
-  Need[i][j] = Max[i][j] - Allocation[i][j]
-
-  安全性检查:
-    1. 找到 Need[i] <= Work 的进程
-    2. 假设它完成，释放资源: Work += Allocation[i]
-    3. 重复直到所有进程完成(安全) 或无法继续(不安全)
-```
-
-> 跨模块引用：[Java](/java/010-WhatIsJava)的synchronized和ReentrantLock是信号量/互斥锁的语言级封装。[C++](/cpp/010-WhatIsCpp)的std::mutex和std::condition_variable对应OS的互斥锁和条件变量。[设计模式](design-patterns)中的Singleton模式需要考虑多线程同步。
-
----
-
-## 5. 内存管理
-
-### 5.1 内存管理演进
-
-```
-内存管理方案演进:
-
-1. 单一连续分配: 一次只运行一个程序
-2. 固定分区:      内存划分为固定大小分区
-3. 动态分区:      按需分配，产生外部碎片
-4. 分页:          固定大小页帧，消除外部碎片
-5. 分段:          按逻辑单位划分，消除内部碎片
-6. 段页式:        结合分段和分页的优点
-7. 虚拟内存:      按需调页，突破物理内存限制
-```
-
-### 5.2 分页机制
-
-```
-分页地址翻译 (参见 [体系结构](architecture) 4.5节):
-
-  虚拟地址 = [页号 VPN | 偏移 Offset]
-  物理地址 = [帧号 PPN | 偏移 Offset]
-
-  页表项 (PTE):
-  |--- Frame Number ---| V | R | W | X | D | A |
-                        |   |   |   |   |   |
-                        |   |   |   |   |   +-- Accessed
-                        |   |   |   |   +------ Dirty
-                        |   |   |   +---------- Execute
-                        |   |   +-------------- Write
-                        |   +------------------ Read
-                        +---------------------- Valid
-
-页大小选择:
-  小页(4KB):  内部碎片少，页表大
-  大页(2MB):  页表小，TLB覆盖更多内存
-  巨页(1GB):  数据库/虚拟化场景
-```
-
-### 5.3 页面置换算法
-
-```mermaid
-flowchart TD
-    B0["1 | 0 | 1 | 0 | 1 | 引用位"]
-    B1["时钟指针"]
-    B0 --> B1
-```
-
-**Clock算法伪代码**：
+修复只需要一把锁——进入这三步前先占住，做完再放：
 
 ```python
-def clock_replace(frames, clock_hand):
-    while True:
-        frame = frames[clock_hand]
-        if frame.reference_bit == 0:
-            victim = clock_hand
-            clock_hand = (clock_hand + 1) % len(frames)
-            return victim
-        else:
-            frame.reference_bit = 0
-            clock_hand = (clock_hand + 1) % len(frames)
+import threading
+
+counter = 0
+lock = threading.Lock()
+
+def work():
+    global counter
+    for _ in range(100000):
+        with lock:          # 同一时刻只有一个线程能进来
+            counter += 1
+
+threads = [threading.Thread(target=work) for _ in range(4)]
+for t in threads:
+    t.start()
+for t in threads:
+    t.join()
+
+print(counter)              # 400000，稳定复现
 ```
 
-### 5.4 虚拟内存与按需调页
+记住这个实验的手感：**竞态的修复不难，难的是意识到「这行代码有竞态」**。凡是「检查然后使用」「读改写」的代码，多线程下都可能是坑。
 
-```
-按需调页流程:
+## 3. 发生了什么：三个核心抽象与一个入口
 
-  1. 进程访问虚拟地址
-  2. MMU查找页表
-  3. PTE Valid = 0 -> Page Fault
-  4. 陷入内核态
-  5. 检查地址合法性 (是否在进程地址空间内)
-  6. 若合法:
-     a. 选择一个空闲帧 (或置换一个已占帧)
-     b. 从磁盘读取页面到该帧
-     c. 更新页表 (PTE Valid = 1, Frame Number)
-     d. 刷新TLB
-     e. 重新执行触发缺页的指令
-  7. 若非法:
-     发送SIGSEGV (段错误)
+### 3.1 进程：独占 CPU 的幻觉
 
-写时复制 (COW):
-  fork()后父子共享页面(标记只读)
-  任一方写入 -> Page Fault
-  内核检测到COW标志 -> 复制该页
-  修改页表为可写
-  重新执行写入指令
-```
+双击图标后，操作系统为程序建一个**进程**：分配一份独立的虚拟内存、一套记账信息（Linux 里叫 task_struct，进程控制块），挂进调度队列。进程是资源分配的基本单位。
 
-### 5.5 进程地址空间布局
+进程怎么造进程？Unix 的答案是 `fork`：把自己复制一份，父子各得一个返回值（父进程拿到孩子的编号，子进程拿到 0），之后两者走不同的路。亲手验证「进程的内存互相隔离」——用跨平台的 multiprocessing：
 
-```mermaid
-flowchart TD
-    B0["Kernel Space | (所有进程共享) / Stack (向下增长) / v"]
-    B1["Memory Mapping Region | mmap区域 (共享库等)"]
-    B0 --> B1
-    B2["^ / Heap (向上增长)"]
-    B1 --> B2
-    B3["BSS (未初始化全局变量)"]
-    B2 --> B3
-    B4["Data (已初始化全局变量)"]
-    B3 --> B4
-    B5["Text (代码段)"]
-    B4 --> B5
+```python
+import multiprocessing as mp
+
+shared = []                     # 父进程的全局变量
+
+def child():
+    shared.append(1)            # 改的是子进程自己的那份拷贝
+    print("子进程:", shared, "pid =", mp.current_process().pid)
+
+if __name__ == "__main__":
+    p = mp.Process(target=child)
+    p.start()
+    p.join()
+    print("父进程:", shared, "pid =", mp.current_process().pid)
 ```
 
-> 跨模块引用：[体系结构](architecture)的TLB和页表是虚拟内存的硬件基础。[C语言](/c/010-CZeroBasisStart)的malloc/free操作堆区，栈区由编译器自动管理。[编译原理](compiler)的代码生成决定了Text/Data/BSS段的布局。
+预期输出（pid 每次不同）：
 
----
-
-## 6. 文件系统
-
-### 6.1 文件系统层次
-
-```mermaid
-flowchart TD
-    B0["Application"]
-    B1["VFS (Virtual File System) | <-- 统一接口层"]
-    B0 --> B1
-    B2["Ext4 | XFS | Btrfs | FAT32 | ... | <-- 具体文件系统"]
-    B1 --> B2
-    B3["Block Device Layer | <-- 块设备抽象"]
-    B2 --> B3
-    B4["Device Driver | <-- 硬件驱动"]
-    B3 --> B4
-    B5["HDD / SSD"]
-    B4 --> B5
+```text
+子进程: [1] pid = 18264
+父进程: [] pid = 18260
 ```
 
-### 6.2 Ext4文件系统
+子进程改了 `shared`，父进程纹丝不动——**进程之间内存隔离**，想通信必须走管道、共享内存等专门通道（[进程间通信 IPC](/cs-fundamentals/260-IPC)）。这与第 2 节「线程共享一切」形成精确的对照：**进程隔离、线程共享，前者安全后者快，所有并发选型都在这根轴上找位置**（进程、线程、协程的三级对比见 [协程与并发模型](/cs-fundamentals/180-CoroutinesAndConcurrencyModels)，PCB 内部结构见 [PCB 与 TCB](/cs-fundamentals/170-PCBThreadTCB)）。
 
-```mermaid
-flowchart TD
-    B0["Boot | Block | Block | Block | ... | Block / Block | Group0 | Group1 | Group2 | GroupN"]
-    B1["Superblock (备份) / Group Descriptor Table / Block Bitmap / Inode Bitmap / Inode Table / Data Blocks"]
-    B0 --> B1
-    B2["Mode | UID | Size | Timestamps | Blocks | Links / Direct Blocks [0-11] | 直接指针 / Indirect Block | 一级间接 / Double Indirect Block | 二级间接 / Triple Indirect Block | 三级间接"]
-    B1 --> B2
+### 3.2 系统调用：通往内核的唯一正门
+
+应用想「叫管家办事」（读文件、开进程、发网络包），只能通过**系统调用**（syscall）：把参数放好，执行一条特殊指令（x86-64 的 `syscall`、ARM 的 `svc`），CPU 切到内核态、换到内核栈执行内核代码，办完再切回来。一次系统调用的开销约几百个 CPU 周期——比普通函数调用贵百倍，所以才有「批量读写缓冲」「用户态网络栈」这类优化。特权级与切换细节在[中断与系统调用](/cs-fundamentals/190-InterruptAndSystemCall)与[用户态内核态切换](/cs-fundamentals/200-UserModeKernelModeSwitch)深挖。
+
+### 3.3 虚拟内存：独占内存的幻觉
+
+每个进程都以为自己从地址 0 开始拥有一整条内存，真相是**虚拟地址**经页表翻译后才落到物理内存。这一层带来了三个直接好处：进程间天然隔离（第 3.1 节实验的原因）、内存可以比物理的大（暂时不用的页挪到磁盘）、同一份代码库可以被多个进程共享。分页与地址翻译的完整机制见[分段与分页](/cs-fundamentals/210-MemorySegmentationAndPaging)，页放不下时的置换算法见[页面置换算法](/cs-fundamentals/220-PageReplacementAlgorithm)。
+
+### 3.4 文件：磁盘的幻觉
+
+`open("/home/me/a.txt")` 这一行背后：内核逐级解析路径找到文件的 inode（[文件系统与 inode](/cs-fundamentals/230-FileSystemInode)），分配一个整数文件描述符给你；之后的 `read` 先查**页缓存**（内存里留一份最近读过的磁盘数据），命中就不用碰磁盘。这就是「第二次读同一个文件快得多」的原因——磁盘很慢，内存替它挡了绝大多数请求。
+
+## 4. 核心概念一：调度——几个进程怎么分一颗 CPU
+
+可运行的进程永远比 CPU 核多，调度器决定谁上。算法没有绝对优劣，用一道可计算的标准量一量——**平均等待时间**：
+
+```python
+def average_wait(burst_order):
+    """按给定顺序运行任务，返回平均等待时间"""
+    t, total = 0, 0
+    for burst in burst_order:
+        total += t              # 开跑前攒下的等待
+        t += burst
+    return total / len(burst_order)
+
+print(average_wait([24, 3, 3]))   # 先来先服务：17.0
+print(average_wait([3, 3, 24]))   # 最短优先：3.0
 ```
 
-### 6.3 文件操作流程
+同样的三个任务，只换顺序，平均等待从 17 掉到 3——先来先服务（FCFS）会让短任务排在长任务后面干等（**护航效应**），最短作业优先（SJF）数学上最优但需要预知运行时长，且长任务可能永远排不上（饥饿）。时间片轮转（RR）用「每人跑一小段就换人」换取公平与响应，是交互系统的底座。
 
-```
-读取文件的完整路径:
+Linux 的 CFS 调度器是这套思想的现代合体：给每个进程记一笔**虚拟运行时间 vruntime**（权重高的进程它的涨得慢），谁欠得最少谁先跑——数据结构上就是一颗按 vruntime 排序的红黑树，永远取最左节点（[树](/algorithm/080-Tree)里那个「取最左」的用法）。调度算法全景与死锁在[操作系统进阶](/cs-fundamentals/160-OperatingSystemAdvanced)展开。
 
-  open("/home/user/file.txt", O_RDONLY)
+进程切换本身有成本：保存一方寄存器、换内核栈、恢复另一方，外加缓存与 TLB 变冷。所以线程不是越多越快——核数就是并行度的天花板，超出的线程只是在排队和切换。
 
-  1. VFS解析路径:
-     root dentry -> "home" -> dentry -> "user" -> dentry -> "file.txt" -> inode
-     每级需要读取目录项 (可能触发磁盘IO)
+## 5. 核心概念二：同步、互斥与死锁
 
-  2. 创建file对象:
-     file->inode = 目标inode
-     file->pos = 0
-     file->mode = O_RDONLY
+第 2 节的锁是「互斥」最朴素的形式。工程上还有一个绕不开的组合场景——**生产者与消费者**：一边产数据、一边吃数据，中间一个有界缓冲区。经典配方是三个信号量：`mutex` 保护缓冲区本体，`empty` 数空位（生产者等它），`full` 数存货（消费者等它）。把配方背下来的意义不在背，而在于它示范了一个通用方法：**把「等某个条件」显式建模成一个可以等待的计数器**，线程就不会空转或踩踏。
 
-  3. 分配文件描述符:
-     fd = 3 (0=stdin, 1=stdout, 2=stderr)
+锁本身又是怎么实现的？靠 CPU 提供**原子的读改写指令**。硬件级的 Test-And-Set（读出旧值并写入 true，一步完成不可分割）就能搭出自旋锁：拿到 false 才进临界区；更现代的 Compare-And-Swap（CAS，内存值等于期望值才更新）是无锁计数器、无锁队列的基石。Python 与 Java 里的锁、`threading.Lock`、`synchronized`，追到底都是这一两条指令——硬件原子性是所有同步工具的地基。
 
-  read(fd, buf, count)
+而锁用多了会撞出更糟的局面——**死锁**。四个必要条件同时成立才会发生，缺一不可：
 
-  1. 通过fd找到file对象
-  2. 检查权限 (file->mode允许读?)
-  3. 计算逻辑块号: block = file->pos / block_size
-  4. 通过inode的块映射找到物理块号
-  5. 若页缓存命中 -> 直接返回
-  6. 若未命中 -> 提交块IO请求
-  7. 更新file->pos
-```
+1. **互斥**：资源一次只能一人用；
+2. **占有并等待**：攥着手里的，还想要别人的；
+3. **不可抢占**：不能从别人手里硬抢；
+4. **循环等待**：A 等 B、B 等 A（或更长成环）。
 
-### 6.4 页缓存
+经典演绎是哲学家就餐：五人围桌、五根筷子，人人「先拿左、再拿右」，可能五人各攥一根左筷集体饿死。防法就是破坏四个条件之一——例如给筷子编号、人人先拿小编号（破坏循环等待），或「两根都拿得到才动手」（一次性申请，破坏占有并等待）。写多锁代码时，把四条件当自查清单过一遍：**锁的获取顺序全工程统一**，就能消灭绝大多数死锁。
 
-```
-页缓存 (Page Cache):
+## 6. 核心概念三：内存与文件——另外两个幻觉的深水区
 
-  原理: 利用内存缓存磁盘数据，利用时间局部性
+第 3 节给了直觉，这里只补两个必须进直觉的事实，细节留给深水篇：
 
-  读流程:
-    read() -> 检查页缓存 -> 命中 -> 返回
-                            未命中 -> 磁盘IO -> 加入缓存 -> 返回
+- **缺页不全是坏事**：进程访问一个「页表上标记为不在内存」的地址时触发缺页中断，内核把页从磁盘搬进内存再恢复执行。`fork` 之所以快，正是因为父子先共享页面并标只读（**写时复制**），谁写谁才真正复制一份——第 3.1 节的实验能瞬间启动子进程，靠的就是它；
+- **页缓存无处不在**：`read` 读的其实是内存里的一份拷贝，写也先写进内存（脏页）再择机落盘。这解释了两个日常现象：拷贝文件后立刻断电可能丢数据（脏页没落盘）；`fsync` 存在的意义（强制落盘）。零拷贝这类「少搬家」技术的完整账本见[零拷贝](/cs-fundamentals/250-ZeroCopy)；
+- **块层还有一个 IO 调度器**：请求进磁盘前，内核先把相邻扇区的请求合并、按方向排序（电梯思想，机械盘时代有 NOOP、Deadline、CFQ 等算法），让磁头少走冤枉路；SSD 随机访问均匀，调度器退化成简单 FIFO。它与 CPU 调度是同一个问题的两个战场：谁先被服务。磁盘臂寻道的完整推演见[磁盘调度](/cs-fundamentals/240-DiskScheduling)。
 
-  写流程:
-    write() -> 写入页缓存 -> 标记为脏页 -> 返回
-    脏页回写:
-      - 定期 (kupdate内核线程, 30s)
-      - 内存压力时 (pdflush)
-      - sync/fsync强制回写
+## 7. 调试实录：三个高频事故与 OS 视角的诊断
 
-  页缓存查找:
-    address_space -> radix_tree/xarray -> 按页索引查找
-```
+事故 1：**压测才复现的计算错误**。九成是竞态。诊断思路：找出被多线程共享、又被「读改写」的变量（计数器、字典、集合），检查是否每一处都握着同一把锁。第 2 节的实验是它的最小模型。
 
----
+事故 2：**程序卡死不动**。先分清是死循环还是死锁：死锁的标志是「多个线程互相等、CPU 占用反而低」。诊断清单按第 5 节四条件走：谁攥着谁的锁、顺序是否统一。
 
-## 7. I/O系统
+事故 3：**内存一路涨不回落**。先问三个问题：是不是缓存设计如此（页缓存、连接池，属正常）？是不是某个集合只进不出（应用层泄漏）？是不是进程数失控（每个进程一份独立内存，第 3.1 节的隔离性反噬）？OS 工具（任务管理器、top、ps）看到的「内存」包含共享页，数字需要解读而不是照单全收。
 
-### 7.1 I/O层次
+## 8. 修改实验
 
-```mermaid
-flowchart TD
-    B0["User Application"]
-    B1["System Call Interface | read/write/ioctl"]
-    B0 --> B1
-    B2["VFS / Block Layer | 通用块层"]
-    B1 --> B2
-    B3["I/O Scheduler | 请求合并与排序"]
-    B2 --> B3
-    B4["Device Driver | 硬件操作"]
-    B3 --> B4
-    B5["Device Controller | 寄存器/DMA"]
-    B4 --> B5
-    B6["Physical Device"]
-    B5 --> B6
-```
+1. 把第 2 节竞态实验改成 `counter = counter + 1`（而不是 `+=`）与 `counter -= 1` 混合跑四个线程，验证丢失更新同样发生；再把循环次数降到 100，观察「竞态几乎测不出来」——体会为什么并发 bug 在测试环境难以复现；
+2. 用 `timeit` 测量「空函数调用」与「读一个字节文件并关闭」的耗时，估算系统调用的相对代价（提示：后者至少一次 open/close 系统调用，量级差距会非常明显）；
+3. 给调度模拟加一个 RR 版本：时间片 q = 4，对 `[24, 3, 3]` 手算再代码验证平均等待时间（提示：每轮先跑 4，跑不完的回队尾），比较它与 SJF 的差距；
+4. 用 multiprocessing 开 4 个子进程同时给各自的全局计数器加 100000 次，确认总和互不干扰；再用 4 个线程跑同样的代码，对比两者的最终结果与耗时。
 
-### 7.2 I/O调度算法
+## 9. 小练习
 
-```
-I/O调度算法:
+预测题（先写答案再运行）：四个线程各执行 25000 次 `counter += 1`、无锁，结果可能等于 100000 吗？加上锁之后呢？把线程数改成 1 再去掉锁呢？
 
-1. NOOP (No Operation):
-   简单FIFO队列，仅合并相邻请求
-   适用: SSD (随机访问延迟均匀)
+修改题：把生产者消费者配方落到 Python：用 `queue.Queue`（它内部就是锁 + 条件变量）实现 2 个生产者、3 个消费者、容量 5 的缓冲，生产 20 件后让全部消费者正常退出（提示：约定一个「毒丸」哨兵值）。
 
-2. Deadline:
-   每个请求有截止时间
-   维护: 排序队列(按扇区) + FIFO队列(按时间)
-   读请求优先(500ms超时)，写请求次之(5s超时)
+修 Bug 题：同事的转账代码「先查余额是否足够，足够就扣款」两个线程同时执行时偶发超扣。指出竞态点（检查与扣款之间可被打断），用一把锁把「检查 + 扣款」包成原子操作，并写一个高并发用例验证修复前后差异。
 
-3. CFQ (Completely Fair Queue):
-   每个进程一个队列，轮转服务
-   分配时间片给每个队列
-   适合桌面系统
+挑战题（不看提示）：用两个线程互相 `lock_a.acquire()` 后 `lock_b.acquire()`、另一个线程反序 `lock_b` 后 `lock_a`，制造一次稳定死锁；然后只调整其中一个线程的加锁顺序修复它，并用第 5 节的四条件清单解释为什么这样修有效。
 
-4. BFQ (Budget Fair Queue):
-   CFQ的改进版，基于预算
-   更好的吞吐量和延迟平衡
-```
+## 10. 什么时候你会需要这些知识
 
-### 7.3 DMA与零拷贝
+排查性能问题时：CPU 100% 看调度与上下文切换（第 4 节）；内存暴涨看进程隔离与泄漏三分法（第 7 节）；磁盘 IO 慢想页缓存与置换（第 6 节）。写并发代码时：先问共享了什么（第 2 节），再问锁的顺序（第 5 节）。选技术方案时：进程隔离还是线程共享（第 3.1 节），是消息队列、多进程爬虫、线程池等一切并发架构的第一道选择题。
 
-```
-传统数据传输 (4次拷贝):
+学概念不必贪深，操作系统的每一块都值得在「出了问题再回来查」的模式下反复加深——深水篇就是为此准备的。
 
-  磁盘 -> 内核缓冲区 -> 用户缓冲区 -> Socket缓冲区 -> 网卡
-  [DMA拷贝]  [CPU拷贝]    [CPU拷贝]     [DMA拷贝]
+## 11. 与之前和之后的知识的关系
 
-零拷贝技术:
+- 往前：[计算机概述](/cs-fundamentals/010-ComputerOverview)介绍了硬件演员，本文讲导演怎么排戏；特权级与中断是系统调用的硬件基础（[体系结构](/cs-fundamentals/090-ComputerArchitecture)）；
+- 往后：深水八篇按需取用——[OS 进阶](/cs-fundamentals/160-OperatingSystemAdvanced)（调度与死锁全景）、[PCB 与 TCB](/cs-fundamentals/170-PCBThreadTCB)、[协程与并发模型](/cs-fundamentals/180-CoroutinesAndConcurrencyModels)、[中断与系统调用](/cs-fundamentals/190-InterruptAndSystemCall)、[用户态内核态切换](/cs-fundamentals/200-UserModeKernelModeSwitch)、[分段与分页](/cs-fundamentals/210-MemorySegmentationAndPaging)、[页面置换](/cs-fundamentals/220-PageReplacementAlgorithm)、[文件系统与 inode](/cs-fundamentals/230-FileSystemInode)、[磁盘调度](/cs-fundamentals/240-DiskScheduling)、[零拷贝](/cs-fundamentals/250-ZeroCopy)、[IPC](/cs-fundamentals/260-IPC)；
+- 更远：算法模块的红黑树是 CFS 的数据结构（[树](/algorithm/080-Tree)）；计算机网络篇的 socket 系统调用是本文「正门」在网络世界的入口。
 
-1. sendfile():
-   磁盘 -> 内核缓冲区 -> Socket缓冲区 -> 网卡
-   [DMA拷贝]             [CPU拷贝]      [DMA拷贝]
-   省去: 内核->用户的一次CPU拷贝
+## 12. 官方文档
 
-2. sendfile() + DMA Scatter-Gather:
-   磁盘 -> 内核缓冲区 -> 网卡
-   [DMA拷贝]             [DMA拷贝]
-   省去: 所有CPU拷贝
+- Python threading（线程与锁）：https://docs.python.org/zh-cn/3/library/threading.html
+- Python multiprocessing（多进程）：https://docs.python.org/zh-cn/3/library/multiprocessing.html
+- Linux man pages 第 2 节（系统调用全集）：https://man7.org/linux/man-pages/dir_section_2.html
 
-3. mmap():
-   文件映射到进程地址空间
-   直接操作内核缓冲区，无需read/write
-   注意: 信号处理、页面错误等复杂情况
-```
+## 13. 自我检查
 
-> 跨模块引用：[计算机网络](network)的高性能网络框架(Netty/DPDK)大量使用零拷贝技术。[Java](/java/010-WhatIsJava)的NIO使用DirectByteBuffer减少拷贝。[C语言](/c/010-CZeroBasisStart)的mmap系统调用直接映射文件到内存。
+- 能完整讲述「双击图标」的六步故事：读文件、建进程、建地址空间、调度、执行、画界面；
+- 能制造并修复一次丢失更新，说出竞态为什么测试难复现；
+- 能用一句话分别讲清进程、线程、协程的隔离与共享程度；
+- 能推导 FCFS 与 SJF 的平均等待时间差，并解释 CFS 用什么结构实现公平；
+- 能默写死锁四条件并用它检查一段多锁代码。
 
----
+## 本章总结
 
-## 8. 速查表
+操作系统同时是道具师与管家：对上用进程、虚拟内存、文件三个抽象把硬件藏起来，对下用调度、页表、页缓存把有限资源分给所有人。系统调用是两个世界唯一的门，竞态与死锁是共享资源的两份账单。本文建立了全模块的地图——每个概念都能在深水篇里找到自己的一章。
 
-### 8.1 进程状态速查
+## 下一步
 
-| 状态       | 含义     | 转移条件                         |
-| ---------- | -------- | -------------------------------- |
-| Created    | 刚创建   | fork()                           |
-| Ready      | 可运行   | 被调度器选中 -> Running          |
-| Running    | 正在执行 | 时间片完 -> Ready; IO -> Blocked |
-| Blocked    | 等待事件 | 事件完成 -> Ready                |
-| Terminated | 已终止   | exit()                           |
-
-### 8.2 同步原语速查
-
-| 原语     | 作用         | 开销             |
-| -------- | ------------ | ---------------- |
-| 自旋锁   | 忙等待互斥   | 低(无上下文切换) |
-| 互斥锁   | 睡眠等待互斥 | 中(上下文切换)   |
-| 信号量   | 计数同步     | 中               |
-| 条件变量 | 等待条件     | 中               |
-| 读写锁   | 读共享写互斥 | 中               |
-| RCU      | 读无锁写延迟 | 低(读)高(写)     |
-
-### 8.3 页面置换速查
-
-| 算法  | 策略             | 优缺点               |
-| ----- | ---------------- | -------------------- |
-| OPT   | 置换最远将来使用 | 理论最优，不可实现   |
-| FIFO  | 置换最早进入     | 简单，有Belady异常   |
-| LRU   | 置换最久未用     | 近似最优，实现代价高 |
-| Clock | LRU近似          | 实用，性能接近LRU    |
-| LFU   | 置换最少使用     | 适合热点数据，需老化 |
-
-### 8.4 系统调用速查
-
-| 类别 | 系统调用                          | 功能                |
-| ---- | --------------------------------- | ------------------- |
-| 进程 | fork/exec/wait/exit               | 创建/替换/等待/退出 |
-| 文件 | open/read/write/close/mmap        | 文件操作            |
-| 目录 | mkdir/rmdir/chdir/getcwd          | 目录操作            |
-| 内存 | brk/mmap/munmap/mprotect          | 内存管理            |
-| 信号 | kill/signal/sigaction             | 信号处理            |
-| 网络 | socket/bind/listen/accept/connect | 网络通信            |
-| 管道 | pipe/dup2                         | 进程间通信          |
+按主线继续：[操作系统进阶](/cs-fundamentals/160-OperatingSystemAdvanced)把调度算法与死锁展开成完整体系；或者先跳去与你当下问题最相关的深水篇（卡顿看调度，内存看分页，IO 看页缓存）。想看这套抽象在数据世界的对应物，随时可切到[计算机网络](/cs-fundamentals/270-ComputerNetwork)。

@@ -1,12 +1,12 @@
 ---
-order: 420
+order: 440
 title: 专项：图像热区 map 与 area
 module: 'html5'
 category: 前端技术
 difficulty: beginner
 description: 在图片上划分可点击区域：map 与 area 的 shape/coords 坐标系统（rect/circle/poly），含坐标计算与可视化示例。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'html5/140-ImagesAndResponsiveImages'
 prerequisites:

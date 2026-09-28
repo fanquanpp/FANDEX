@@ -48,11 +48,11 @@ $$T(n) = aT(n/b) + f(n)$$
 
 ```mermaid
 flowchart TD
-    D[分治算法]
-    D --> S[排序分治<br/>归并排序 von Neumann 1945/快排 Hoare 1961]
-    D --> A[代数分治<br/>Karatsuba 1963 O(n^1.585)/Strassen 1969 O(n^2.807)]
-    D --> G[几何分治<br/>最近点对 1976/最大子数组 1976 O(n log n)]
-    D --> F[信号分治<br/>FFT 1965 O(n log n)/数论变换 NTT]
+    D["分治算法"]
+    D --> S["排序分治<br/>归并排序 von Neumann 1945/快排 Hoare 1961"]
+    D --> A["代数分治<br/>Karatsuba 1963 O(n^1.585)/Strassen 1969 O(n^2.807)"]
+    D --> G["几何分治<br/>最近点对 1976/最大子数组 1976 O(n log n)"]
+    D --> F["信号分治<br/>FFT 1965 O(n log n)/数论变换 NTT"]
 ```
 
 **分治与其他算法策略的本质区别**：
@@ -1459,11 +1459,11 @@ else:
 
 ```mermaid
 flowchart TD
-    P[分治三步范式 Divide-Conquer-Combine]
-    P --> M[主定理分析 Bentley 1980<br/>情况1/2/3 T=Θ(n^logba)<br/>递归树归约]
-    P --> A[代数恒等式优化<br/>Karatsuba O(n^1.585)/Strassen O(n^2.807)]
-    P --> G[几何分治 Bentley-Shamos<br/>最近点对/最大子数组 O(n log n) 势能摊还]
-    P --> F[信号分治 Cooley-Tukey<br/>FFT/IFFT O(n log n) 蝶形运算]
+    P["分治三步范式 Divide-Conquer-Combine"]
+    P --> M["主定理分析 Bentley 1980<br/>情况1/2/3 T=Θ(n^logba)<br/>递归树归约"]
+    P --> A["代数恒等式优化<br/>Karatsuba O(n^1.585)/Strassen O(n^2.807)"]
+    P --> G["几何分治 Bentley-Shamos<br/>最近点对/最大子数组 O(n log n) 势能摊还"]
+    P --> F["信号分治 Cooley-Tukey<br/>FFT/IFFT O(n log n) 蝶形运算"]
 ```
 
 ### 16.2 三大核心论证方法回顾

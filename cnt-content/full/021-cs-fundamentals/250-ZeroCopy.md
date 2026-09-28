@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 零拷贝技术：sendfile、mmap、splice 的原理与性能对比。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/230-FileSystemInode'
   - 'cs-fundamentals/240-DiskScheduling'
@@ -18,8 +18,8 @@ prerequisites:
 
 ## 前置知识
 
-- 用户态与内核态、系统调用的开销（见 [中断与系统调用](cs-fundamentals/190-InterruptAndSystemCall)）；
-- 文件读写经由页缓存（page cache）的事实（见 [文件系统 inode](cs-fundamentals/230-FileSystemInode)）；
+- 用户态与内核态、系统调用的开销（见 [中断与系统调用](/cs-fundamentals/190-InterruptAndSystemCall)）；
+- 文件读写经由页缓存（page cache）的事实（见 [文件系统 inode](/cs-fundamentals/230-FileSystemInode)）；
 - DMA 的概念：设备与内存之间不经 CPU 搬运数据的机制。
 
 ## 学习目标
@@ -78,7 +78,7 @@ munmap(addr, len);
 
 拷贝从 4 次降到 3 次（DMA、CPU、DMA），省去"页缓存 -> 用户 buf"的搬运；上下文切换仍是 4 次。代价与风险：
 
-- 映射大文件会增加页表与 TLB 压力（见 [内存分段与分页](cs-fundamentals/210-MemorySegmentationAndPaging)）；
+- 映射大文件会增加页表与 TLB 压力（见 [内存分段与分页](/cs-fundamentals/210-MemorySegmentationAndPaging)）；
 - 若发送过程中文件被截断，映射区访问触发 SIGBUS，需要信号处理或保持文件句柄稳定。
 
 适合**需要对数据做部分加工**再发出的场景——mmap 保留了用户态直接读数据的能力，这是纯 sendfile 做不到的。

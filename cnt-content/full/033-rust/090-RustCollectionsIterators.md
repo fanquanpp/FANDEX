@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Vec、HashMap、HashSet、String 与迭代器链式操作
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'rust/050-RustOwnershipBorrowing'
   - 'rust/100-RustGenericTrait'
@@ -14,6 +14,21 @@ prerequisites:
   - 'rust/050-RustOwnershipBorrowing'
 ---
 
+## 前置知识
+
+- [所有权与借用](/rust/050-RustOwnershipBorrowing)：move 与借用规则——集合的方法签名大量依赖它们。
+
+## 学习目标
+
+读完本文你将能够：
+
+1. 会用 Vec / HashMap / HashSet 完成增删改查、`entry().or_insert()` 统计与集合运算；
+2. 分清 String 与 `&str`，记住 `len()` 返回字节数这个中文环境必踩的坑；
+3. 会用 `filter` / `map` / `collect` 等迭代器链做声明式数据处理，理解其零成本本质；
+4. 理解闭包的变量捕获（默认借用、`move` 转移所有权），为并发与异步学习打底；
+5. 能独立写出「按行分析日志」这类小型数据处理程序。
+
+预计 60 分钟。
 
 ## 1. 从"工具箱"说起：集合总览
 

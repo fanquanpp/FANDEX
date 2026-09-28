@@ -1,12 +1,12 @@
 ---
-order: 50
+order: 60
 title: 程序结构基本语法：写下你的第一个程序
 module: 'python'
 category: 后端技术
 difficulty: beginner
 description: 以记账小票程序为线索一次备齐语句与行、缩进即语法、注释、print 与 input 五个零件，用真实的 SyntaxError/IndentationError/TypeError 报错学会读报错三步，附修改实验与四类练习。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/060-ControlFlow'
   - 'python/070-BasicDataType'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 多文档事务、会话与因果一致性——在文档数据库里获得确定性。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'mongodb/050-MongoDBSchemaDesign'
 prerequisites:
@@ -17,7 +17,7 @@ prerequisites:
 
 > 学习目标：说清单文档原子性与多文档事务的边界；会用会话开启、提交、回滚一个多文档事务；理解 writeConcern / readConcern 与 majority 的含义；知道事务的限制清单，并在转账场景写出带重试的完整代码。
 
-很多教程说 MongoDB "为了性能放弃了事务"，这句话只对了一半：**单文档操作天然原子**，一次 `$inc`、一次 `$set` 在服务器端一次性生效，不存在"写了一半"的中间态。所以大量看似需要事务的场景，可以通过建模（内嵌进同一文档，见 005 建模篇）直接消掉，这正是 MongoDB 高性能的来源之一。
+很多教程说 MongoDB "为了性能放弃了事务"，这句话只对了一半：**单文档操作天然原子**，一次 `$inc`、一次 `$set` 在服务器端一次性生效，不存在"写了一半"的中间态。所以大量看似需要事务的场景，可以通过建模（内嵌进同一文档，见 050 建模篇）直接消掉，这正是 MongoDB 高性能的来源之一。
 
 业务总有绕不开的跨文档时刻：转账要"扣 A 加 B"同时生效；下单要"建订单、扣库存、加积分"要么全成、要么全不成。于是 MongoDB 4.0 在副本集上引入了多文档 ACID 事务，4.2 起扩展到分片集群。本篇依次回答四个问题：会话是什么、事务怎么写、限制在哪里、一致性怎么读。
 
@@ -37,7 +37,7 @@ db.getSiblingDB("shop").flashSales.updateOne(
 **讲解：**
 
 1. `updateOne` 的"条件 + 修改"在服务器端原子执行：即使一百个请求并发扣减，`stock` 最终一定等于初始值减成功次数；条件里有 `stock > 0`，永远不会扣成负数。
-2. 这就是"用建模消灭事务"：数据能放进一个文档，就不需要跨文档协调；005 建模篇"内嵌优先"的原则正是为这一节铺路。
+2. 这就是"用建模消灭事务"：数据能放进一个文档，就不需要跨文档协调；050 建模篇"内嵌优先"的原则正是为这一节铺路。
 3. 边界也很清楚：一旦数据必须跨集合、跨文档（转账的 A 和 B、订单与库存分表存放），单文档原子性就无能为力了，本篇主角登场。
 
 ## 2. 会话（Client Session）：事务与因果一致性的载体
@@ -62,7 +62,7 @@ session.endSession()       // 用完必须释放，否则占用会话资源
 
 ## 3. 第一个多文档事务（mongosh 实操）
 
-事务需要副本集或分片集群，单机 mongod 不支持多文档事务；环境搭建见第 7 节与 007 的动手部分。
+事务需要副本集或分片集群，单机 mongod 不支持多文档事务；环境搭建见第 7 节与 070 的动手部分。
 
 ```javascript
 use bank
@@ -286,4 +286,4 @@ rs.initiate({ _id: "rs0", members: [ { _id: 0, host: "127.0.0.1:27017" } ] })
 4. 硬限制记三条：默认 60 秒、oplog 记录 16MB、必须副本集环境。
 5. 读写的确定性来自 readConcern / writeConcern 的组合，账务类场景用 majority + majority。
 
-延伸阅读：CRUD 前置见 `002-CRUDOperations`；"内嵌优先"建模决策见 `005-SchemaDesignEnterprise`；事务运行环境（副本集与分片）见 007。官方文档关键词：Transactions、Causal Consistency、Read Concern、Write Concern，参数与默认值以官方文档为准。
+延伸阅读：CRUD 前置见 020-CRUDOperations；"内嵌优先"建模决策见 050-SchemaDesign；事务运行环境（副本集与分片）见 070。官方文档关键词：Transactions、Causal Consistency、Read Concern、Write Concern，参数与默认值以官方文档为准。

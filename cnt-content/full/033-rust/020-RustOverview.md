@@ -6,14 +6,30 @@ category: 后端技术
 difficulty: beginner
 description: Rust 编程语言概述：设计目标、所有权与借用、Cargo 生态、学习路线与工程实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'c/110-EnumTypedef'
   - 'cpp/330-CppTemplate'
   - 'go/120-GoConcurrentProgramming'
-prerequisites: []
+prerequisites:
+  - 'rust/010-WhatIsRust'
 ---
 
+## 前置知识
+
+- [Rust 是什么](/rust/010-WhatIsRust)：了解 Rust 的定位与所有权直觉版即可，本文在其上展开全景。
+
+## 学习目标
+
+读完本文你将能够：
+
+1. 画出「系统级 / 托管 / 系统级加安全」三种语言流派的定位表，说出 Rust 的坐标；
+2. 给所有权、借用、生命周期、模式匹配四个核心概念各写一句定义；
+3. 分清 6 周一发的小版本与数年一发的 Edition 两条版本线，新项目会选 2024 edition；
+4. 认识 Cargo 的常用命令，形成 check/clippy/test 的开发循环意识；
+5. 对照 C、C++、Go 的差异，为自己的场景给出初步选型判断。
+
+预计 40 分钟。
 
 ## 1. 从"给汽车装安全气囊"说起
 

@@ -4,693 +4,355 @@ title: Lambda 与函数式编程
 module: 'java'
 category: 后端技术
 difficulty: intermediate
-description: Java 8 Lambda表达式、函数式接口、方法引用与函数式编程范式详解。
+description: 从一次"给歌单排序"的样板代码之痛入手学会 Lambda：语法演变、四大函数式接口、四种方法引用、effectively final 捕获规则、受检异常与 this 两大坑，附比较器溢出陷阱。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
-  - 'java/480-MultithreadingBasics'
-  - 'java/610-JVMMemoryModel'
-  - 'java/860-SpringBootNotes'
+  - 'java/300-StreamAPI'
+  - 'java/330-JavaFunctionalProgramming'
+  - 'java/450-JavaRecordClass'
+  - 'java/520-CompletableFutureAsync'
 prerequisites:
-  - 'java/020-JavaOverviewDevEnv'
+  - 'java/150-OOP'
+  - 'java/100-MethodDetailed'
 ---
 
 ## 前置知识
 
-- [I/O 流与文件操作](/java/280-IOStreamFileOperation)：建议先完成前一篇的学习
+- [面向对象编程](/java/150-OOP)：熟悉接口与匿名内部类，Lambda 的前身就是匿名内部类；
+- [方法详解](/java/100-MethodDetailed)：知道方法签名怎么读，方法引用一节要用。
 
 ## 学习目标
 
-- 掌握「0. 本节阅读指引（先读这一节）」的核心机制、典型用法与常见陷阱
-- 掌握「1. Lambda 表达式基础」的核心机制、典型用法与常见陷阱
-- 掌握「2. 函数式接口」的核心机制、典型用法与常见陷阱
-- 掌握「3. 方法引用」的核心机制、典型用法与常见陷阱
-- 掌握「4. 函数式编程实践」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 把一段匿名内部类代码改写成 Lambda 和方法引用，说出三种写法的可读性差异；
+2. 认出 `Function`、`Consumer`、`Supplier`、`Predicate` 四大标准函数式接口，并能自己定义一个；
+3. 说出 Lambda 捕获局部变量为什么要求 effectively final；
+4. 处理 Lambda 里的受检异常，解释 Lambda 与匿名内部类中 `this` 的不同指向；
+5. 用 `andThen`/`compose` 组合函数，避开 `(a, b) -> a - b` 比较器溢出坑。
 
-## 0. 本节阅读指引（先读这一节）
+预计 60 到 80 分钟，含 3 组动手实验与 4 道练习。本文只讲 Lambda 本身；流水线操作在 [Stream API](/java/300-StreamAPI)。
 
-本篇是「Lambda 与函数式编程」，目标：会写 Lambda、认得出函数式接口、会用方法引用。
+## 1. 问题引入：排序一首歌要写几行
 
-零基础第一遍只读：
-
-1. 第 1 节 Lambda 表达式基础、2. 函数式接口、3. 方法引用；
-2. 4-5 节（函数式编程实践、Optional）第二遍再看。
-
-可跳过：6-7 节（常见问题与最佳实践）第一遍浏览即可。
-
-> 记住：Lambda 是匿名内部类的简化写法，适合「只有一个抽象方法」的接口。
-
-
-## 1. Lambda 表达式基础
-
-### 1.1 Lambda 语法
-
-Lambda表达式是Java 8引入的匿名函数写法，使代码更简洁。
+你在给 quaver 风格的音乐工具写歌单功能：把歌曲按播放量排序。用 JDK 7 时代的写法：
 
 ```java
-// Lambda语法：(参数列表) -> { 方法体 }
+List<Song> songs = new ArrayList<>(List.of(
+        new Song("千本樱", 52_000_000),
+        new Song("Melt", 31_000_000),
+        new Song("Rolling Girl", 28_000_000)));
 
-// 无参数
-Runnable r = () -> System.out.println("Hello Lambda");
+songs.sort(new Comparator<Song>() {
+    @Override
+    public int compare(Song a, Song b) {
+        return Long.compare(a.plays(), b.plays());
+    }
+});
+```
 
-// 单参数（可省略括号）
-java.util.function.Consumer<String> print = s -> System.out.println(s);
+五行的匿名内部类，其中有信息量的只有一行：`Long.compare(a.plays(), b.plays())`。剩下四行是编译器早就能推断的仪式。这种"接口只有一个抽象方法、我们只为传一段行为"的场合在 Java 里遍地都是：排序、线程、回调、过滤。Lambda（Java 8 引入）就是为这些场合准备的——**把"一段行为"当成值来传**。
 
-// 多参数
-java.util.function.BinaryOperator<Integer> add = (a, b) -> a + b;
+改写上面的排序，一行到位：
 
-// 多行方法体
-java.util.function.Function<String, String> processor = s -> {
-    String trimmed = s.trim();
+```java
+songs.sort((a, b) -> Long.compare(a.plays(), b.plays()));
+```
+
+实验一：把 `Long.compare` 换成 `a.plays() - b.plays()` 会编译通过甚至测试通过，但它是本篇埋的最后一个坑（第 8 节揭晓），先记下别改。
+
+## 2. 语法速成：从匿名类到方法引用
+
+同一个排序，五种写法排成一条演化链：
+
+```java
+// 1. 匿名内部类（JDK 7 及以前）
+songs.sort(new Comparator<Song>() {
+    public int compare(Song a, Song b) { return Long.compare(a.plays(), b.plays()); }
+});
+// 2. Lambda
+songs.sort((a, b) -> Long.compare(a.plays(), b.plays()));
+// 3. 方法引用：参数只是被"转发"给一个已有方法时，可以整体省略
+songs.sort(Comparator.comparingLong(Song::plays));
+```
+
+Lambda 的完整形状是 `(参数) -> 主体`，每个部位都可以按规则省略：
+
+```java
+Runnable r         = () -> System.out.println("播放");      // 无参数：括号不能省
+Consumer<String> p = s -> System.out.println(s);            // 单参数：括号可省
+BinaryOperator<Long> add = (a, b) -> a + b;                 // 多参数：括号必须有
+Function<String, String> clean = s -> {
+    String trimmed = s.strip();                              // 多语句：花括号 + return
     return trimmed.toUpperCase();
 };
-
-// 参数类型声明（通常可省略，编译器推断）
-java.util.function.BinaryOperator<Integer> multiply = (Integer a, Integer b) -> a * b;
 ```
 
-### 1.2 从匿名类到 Lambda
+参数类型通常不写（编译器从目标类型 `Comparator<Song>` 推断），写了也不算错，但团队惯例是能省则省。
+
+**方法引用**是 Lambda 的进一步缩写，四种形态各记一个例子：
 
 ```java
-import java.util.*;
+// 1. 静态方法：类名::静态方法
+Function<String, Integer> parser = Integer::parseInt;       // s -> Integer.parseInt(s)
 
-public class LambdaEvolution {
-    public static void main(String[] args) {
-        List<String> names = Arrays.asList("Charlie", "Alice", "Bob");
+// 2. 特定对象的实例方法：对象::方法
+Song melt = new Song("Melt", 1);
+Supplier<String> name = melt::title;                        // () -> melt.title()
 
-        // 方式1：匿名内部类
-        Collections.sort(names, new Comparator<String>() {
-            @Override
-            public int compare(String a, String b) {
-                return a.compareTo(b);
-            }
-        });
+// 3. 类的实例方法：第一个参数当调用者
+Function<Song, String> toTitle = Song::title;               // song -> song.title()
+BiPredicate<String, String> same = String::equals;          // (a, b) -> a.equals(b)
 
-        // 方式2：Lambda表达式
-        Collections.sort(names, (a, b) -> a.compareTo(b));
-
-        // 方式3：方法引用
-        Collections.sort(names, String::compareTo);
-
-        // 方式4：List.sort + Lambda
-        names.sort((a, b) -> a.compareTo(b));
-
-        // 方式5：Comparator工具方法
-        names.sort(Comparator.naturalOrder());
-    }
-}
+// 4. 构造器：类名::new
+Supplier<List<Song>> listMaker = ArrayList::new;            // () -> new ArrayList<>()
 ```
 
-### 1.3 变量捕获
+判断"能不能写成方法引用"的口诀：**Lambda 的参数是不是原封不动地喂给了某一个方法**？是，就用 `::`；只要做了任何加工（拼接、取反、拆箱），就保留 Lambda。
+
+实验二：把下面三个 Lambda 里能改成方法引用的改掉，不能改的说出原因。
 
 ```java
-import java.util.function.*;
-
-public class VariableCapture {
-    public static void main(String[] args) {
-        // 捕获局部变量（必须是effectively final）
-        String prefix = "Hello, ";
-        Function<String, String> greeter = name -> prefix + name;
-        System.out.println(greeter.apply("World"));  // Hello, World
-
-        // prefix = "Hi, ";  // 编译错误：修改后不再是effectively final
-
-        // 捕获实例变量（可修改）
-        class Counter {
-            int count = 0;
-            Runnable incrementer = () -> count++;  // 允许修改实例变量
-        }
-
-        // 捕获this引用
-        class ThisCapture {
-            private String name = "Java";
-            void demonstrate() {
-                Runnable r = () -> System.out.println(this.name);  // 捕获this
-                r.run();  // "Java"
-            }
-        }
-    }
-}
+Function<String, Integer> len    = s -> s.length();
+Function<String, String> shout   = s -> s.toUpperCase() + "!";
+Predicate<String> notBlank      = s -> !s.isBlank();
 ```
 
-## 2. 函数式接口
+（答案：第一个可改 `String::length`；第二个有拼接不能改；第三个有取反不能改。）
 
-### 2.1 函数式接口定义
+## 3. 函数式接口：Lambda 的"落点"
 
-函数式接口是**只包含一个抽象方法**的接口，可用 `@FunctionalInterface` 注解标记。
+Lambda 不能凭空存在，它必须赋给一个类型。这个类型是**只含一个抽象方法的接口**，叫函数式接口——Lambda 的形状（几个参数、有无返回值）必须和那个抽象方法对上。
+
+### 3.1 四大金刚
+
+`java.util.function` 包里有四十多个现成接口，日常 90% 的场合被这四个覆盖：
+
+| 接口 | 抽象方法 | 读法 | 典型用途 |
+| ---- | -------- | ---- | -------- |
+| `Function<T, R>` | `R apply(T)` | 进 T 出 R | 转换：`Song::title` |
+| `Consumer<T>` | `void accept(T)` | 吃掉不出 | 打印、入库：`System.out::println` |
+| `Supplier<T>` | `T get()` | 不进只出 | 工厂、惰性求值：`ArrayList::new` |
+| `Predicate<T>` | `boolean test(T)` | 进 T 出真假 | 过滤：`s -> s.length() > 3` |
+
+派生关系也好记：两个参数加 `Bi`（`BiFunction<T,U,R>`）；出入同型用 `Operator`（`UnaryOperator`/`BinaryOperator`）；对基本类型有专用版（`IntPredicate`、`ToLongFunction`）避免装箱。
+
+### 3.2 自定义函数式接口
+
+只有四个不够用时自己定义，加 `@FunctionalInterface` 让编译器帮你守住"只能有一个抽象方法"：
 
 ```java
-// 自定义函数式接口
 @FunctionalInterface
-interface StringProcessor {
-    String process(String input);
+public interface SongFilter {
+    boolean accept(Song song);              // 唯一抽象方法
 
-    // 可以有默认方法和静态方法
-    default String processAndLog(String input) {
-        String result = process(input);
-        System.out.println("Processed: " + result);
-        return result;
-    }
-
-    static StringProcessor toUpperCase() {
-        return s -> s.toUpperCase();
+    default SongFilter and(SongFilter other) {   // default 方法不算抽象方法
+        return song -> accept(song) && other.accept(song);
     }
 }
 
 // 使用
-StringProcessor trimmer = s -> s.trim();
-String result = trimmer.process("  hello  ");  // "hello"
-StringProcessor upper = StringProcessor.toUpperCase();
-upper.process("hello");  // "HELLO"
+SongFilter popular    = song -> song.plays() > 10_000_000;
+SongFilter notBanned  = song -> !song.banned();
+SongFilter playable   = popular.and(notBanned);
 ```
 
-### 2.2 Java 标准函数式接口
+实践中多数场景标准接口已经够用——自定义的合理理由通常是要抛受检异常、要多个参数，或者名字本身有业务含义。
 
-| 接口                | 参数 | 返回    | 用途       | 示例                     |
-| :------------------ | :--- | :------ | :--------- | :----------------------- |
-| `Supplier<T>`       | 无   | T       | 提供值     | `() -> new Object()`     |
-| `Consumer<T>`       | T    | void    | 消费值     | `s -> print(s)`          |
-| `BiConsumer<T,U>`   | T, U | void    | 消费两个值 | `(k, v) -> map.put(k,v)` |
-| `Function<T,R>`     | T    | R       | 转换       | `s -> s.length()`        |
-| `BiFunction<T,U,R>` | T, U | R       | 双参数转换 | `(a, b) -> a + b`        |
-| `Predicate<T>`      | T    | boolean | 判断       | `s -> s.isEmpty()`       |
-| `BiPredicate<T,U>`  | T, U | boolean | 双参数判断 | `(a, b) -> a.equals(b)`  |
-| `UnaryOperator<T>`  | T    | T       | 一元操作   | `x -> -x`                |
-| `BinaryOperator<T>` | T, T | T       | 二元操作   | `(a, b) -> a + b`        |
+## 4. 为什么这么设计：捕获变量的规则
+
+Lambda 可以使用外部的局部变量，这叫捕获。规则只有一条，但值得讲透：
 
 ```java
-import java.util.function.*;
-
-public class StandardFunctionalInterfaces {
-    public static void main(String[] args) {
-        // Supplier: 提供值
-        Supplier<Double> randomSupplier = Math::random;
-        System.out.println(randomSupplier.get());
-
-        // Consumer: 消费值
-        Consumer<String> printer = System.out::println;
-        printer.accept("Hello");
-
-        // Function: 转换
-        Function<String, Integer> lengthFunc = String::length;
-        System.out.println(lengthFunc.apply("Hello"));  // 5
-
-        // Predicate: 判断
-        Predicate<String> isEmpty = String::isEmpty;
-        System.out.println(isEmpty.test(""));  // true
-
-        // 组合Predicate
-        Predicate<String> isLong = s -> s.length() > 5;
-        Predicate<String> isLongAndNotEmpty = isLong.and(isEmpty.negate());
-        System.out.println(isLongAndNotEmpty.test("Hello World"));  // true
-
-        // Function组合
-        Function<String, String> trim = String::trim;
-        Function<String, String> upper = String::toUpperCase;
-        Function<String, String> trimThenUpper = trim.andThen(upper);
-        System.out.println(trimThenUpper.apply("  hello  "));  // "HELLO"
-    }
-}
+long threshold = 10_000_000;
+Predicate<Song> popular = song -> song.plays() > threshold;
+// threshold = 20_000_000;   // 取消注释则上面一行编译报错
 ```
 
-## 3. 方法引用
+**局部变量必须 effectively final（只赋值一次，从不重新赋值）**。原因在实现：Lambda 捕获的是变量的值副本（编译器把它装进 Lambda 对象的字段），不是变量的引用。如果允许改，就会出现"Lambda 里看到的和外头的值对不上"的错觉——Java 的选择是直接禁止，而不是制造这种坑。
 
-### 3.1 四种方法引用
+对比着记三行：
 
-```java
-import java.util.*;
-import java.util.function.*;
-
-public class MethodReferences {
-    public static void main(String[] args) {
-        // 1. 静态方法引用: ClassName::staticMethod
-        Function<String, Integer> parser = Integer::parseInt;
-        System.out.println(parser.apply("42"));  // 42
-
-        // 2. 实例方法引用（对象）: instance::instanceMethod
-        String prefix = "Hello, ";
-        Function<String, String> greeter = prefix::concat;
-        System.out.println(greeter.apply("World"));  // Hello, World
-
-        // 3. 实例方法引用（类）: ClassName::instanceMethod
-        // 第一个参数作为方法的调用者
-        Function<String, Integer> lengthFunc = String::length;
-        System.out.println(lengthFunc.apply("Hello"));  // 5
-
-        BiPredicate<String, String> equals = String::equals;
-        System.out.println(equals.test("abc", "abc"));  // true
-
-        // 4. 构造方法引用: ClassName::new
-        Supplier<List<String>> listSupplier = ArrayList::new;
-        List<String> list = listSupplier.get();
-
-        Function<Integer, int[]> arrayCreator = int[]::new;
-        int[] arr = arrayCreator.apply(10);
-    }
-}
-```
-
-### 3.2 方法引用与Lambda的选择
+- 局部变量：捕获值副本，必须 effectively final；
+- 实例字段 / 静态字段：捕获的是"this 的引用"或类引用，随便改，改的是对象本身；
+- `this`：Lambda 里没有自己的 this，直接指外层实例（匿名内部类的 this 指匿名类自己）。这是两者的行为差异之一：
 
 ```java
-// Lambda更清晰的场景：需要参数变换
-list.stream()
-    .map(item -> item.toString().toUpperCase())
-    .collect(Collectors.toList());
+public class Player {
+    private String name = "player";
 
-// 方法引用更清晰的场景：直接调用
-list.stream()
-    .map(String::toUpperCase)
-    .collect(Collectors.toList());
-
-// 构造方法引用
-list.stream()
-    .map(Person::new)  // 比用 s -> new Person(s) 更简洁
-    .collect(Collectors.toList());
-```
-
-## 4. 函数式编程实践
-
-### 4.1 不可变数据处理
-
-```java
-import java.util.*;
-import java.util.stream.*;
-
-public class FunctionalDataProcessing {
-    public static void main(String[] args) {
-        List<Integer> numbers = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 9, 10);
-
-        // 命令式编程
-        List<Integer> evenSquaresImperative = new ArrayList<>();
-        for (Integer n : numbers) {
-            if (n % 2 == 0) {
-                evenSquaresImperative.add(n * n);
-            }
+    Runnable lambda    = () -> System.out.println(this.name);   // this = Player 实例
+    Runnable anonymous = new Runnable() {
+        @Override public void run() {
+            System.out.println(this.hashCode() != Player.this.hashCode()); // this 是匿名对象
         }
-
-        // 函数式编程
-        List<Integer> evenSquaresFunctional = numbers.stream()
-            .filter(n -> n % 2 == 0)
-            .map(n -> n * n)
-            .collect(Collectors.toList());
-
-        System.out.println(evenSquaresFunctional);  // [4, 16, 36, 64, 100]
-    }
+    };
 }
 ```
 
-### 4.2 高阶函数
+需要"可变的计数器"时，正统解法不是绕过 final，而是把状态放进 `AtomicInteger` 或改用 Stream 的 `collect`/`reduce`——在并发语境下（虚拟线程、并行流）这一点直接决定线程安全。
+
+## 5. 动手做：一个过滤 + 转换的小管道
+
+不引入 Stream，先只用 Lambda 完成一轮"筛选热门歌并取出歌名"，体会函数从数据旁边流过的感觉：
 
 ```java
-import java.util.function.*;
-
-public class HigherOrderFunctions {
-    // 返回函数的函数
-    public static Function<Integer, Integer> multiplier(int factor) {
-        return x -> x * factor;
+public static List<String> hotTitles(List<Song> songs, Predicate<Song> criteria) {
+    List<String> result = new ArrayList<>();
+    for (Song song : songs) {
+        if (criteria.test(song)) {
+            result.add(song.title());
+        }
     }
-
-    // 接收函数的函数
-    public static <T, R> R applyFunction(T value, Function<T, R> func) {
-        return func.apply(value);
-    }
-
-    // 函数组合
-    public static void main(String[] args) {
-        Function<Integer, Integer> doubleIt = multiplier(2);
-        Function<Integer, Integer> tripleIt = multiplier(3);
-
-        System.out.println(doubleIt.apply(5));  // 10
-        System.out.println(tripleIt.apply(5));  // 15
-
-        // 组合函数
-        Function<Integer, Integer> doubleThenTriple = doubleIt.andThen(tripleIt);
-        System.out.println(doubleThenTriple.apply(5));  // 30 (5*2=10, 10*3=30)
-
-        // compose: 先执行参数函数，再执行当前函数
-        Function<Integer, Integer> tripleThenDouble = doubleIt.compose(tripleIt);
-        System.out.println(tripleThenDouble.apply(5));  // 30 (5*3=15, 15*2=30)
-    }
+    return result;
 }
+
+// 调用侧：条件是参数，逻辑由调用方注入
+List<String> hot = hotTitles(songs, song -> song.plays() > 10_000_000);
+List<String> newSongs = hotTitles(songs, song -> song.releasedThisYear());
 ```
 
-### 4.3 柯里化
+`hotTitles` 是一个**高阶函数**：接收函数作为参数。它的价值在于"骨架写一次，策略随便换"——同一套循环，传不同的 `Predicate` 就是不同的业务。这条思路的工业化版本就是 Stream API（`songs.stream().filter(...).map(...).toList()`），那里连循环骨架都不用你写。
+
+再进一步，把"取出歌名"也做成参数，就得到函数组合的雏形：
 
 ```java
-import java.util.function.*;
-
-public class Currying {
-    public static void main(String[] args) {
-        // 普通双参数函数
-        BiFunction<Integer, Integer, Integer> add = (a, b) -> a + b;
-
-        // 柯里化：将双参数函数转换为返回单参数函数的函数
-        Function<Integer, Function<Integer, Integer>> curriedAdd =
-            a -> b -> a + b;
-
-        // 部分应用
-        Function<Integer, Integer> add5 = curriedAdd.apply(5);
-        System.out.println(add5.apply(3));  // 8
-        System.out.println(add5.apply(10)); // 15
-
-        // 通用柯里化工具
-        Function<Integer, Function<Integer, Function<Integer, Integer>>> curried3 =
-            a -> b -> c -> a + b + c;
-
-        System.out.println(curried3.apply(1).apply(2).apply(3));  // 6
-    }
+public static <T, R> List<R> extract(List<T> items, Predicate<T> keep, Function<T, R> to) {
+    List<R> result = new ArrayList<>();
+    for (T item : items) if (keep.test(item)) result.add(to.apply(item));
+    return result;
 }
+
+List<String> titles = extract(songs, s -> s.plays() > 10_000_000, Song::title);
 ```
 
-## 5. Optional 与函数式错误处理
+`Function` 自带两个组合方法，方向别背反：
 
 ```java
-import java.util.*;
+Function<String, String> trim = String::strip;
+Function<String, String> upper = String::toUpperCase;
 
-public class OptionalFunctional {
-    public static void main(String[] args) {
-        // 创建Optional
-        Optional<String> present = Optional.of("Hello");
-        Optional<String> empty = Optional.empty();
-        Optional<String> nullable = Optional.ofNullable(null);
-
-        // 函数式操作
-        present.map(String::toUpperCase)
-               .filter(s -> s.length() > 3)
-               .ifPresent(System.out::println);  // HELLO
-
-        // 提供默认值
-        String result = empty.orElse("Default");
-        String computed = empty.orElseGet(() -> "Computed Default");
-
-        // 链式操作
-        Optional<String> name = Optional.of("  John  ");
-        String processed = name
-            .map(String::trim)
-            .filter(s -> !s.isEmpty())
-            .map(String::toUpperCase)
-            .orElse("UNKNOWN");
-        System.out.println(processed);  // JOHN
-
-        // flatMap避免嵌套Optional
-        Optional<String> email = Optional.of("user@example.com");
-        Optional<String> domain = email.flatMap(e -> {
-            int idx = e.indexOf('@');
-            return idx >= 0 ? Optional.of(e.substring(idx + 1)) : Optional.empty();
-        });
-        System.out.println(domain.orElse("No domain"));  // example.com
-    }
-}
+trim.andThen(upper).apply("  Melt ");  // 先 trim 后 upper -> "MELT"
+trim.compose(upper).apply("  Melt ");  // 先 upper 后 trim -> " MELT "（空格没去掉！）
 ```
 
-## 6. 常见问题与解决方案
+`a.andThen(b)` 读作"a 然后 b"；`a.compose(b)` 读作"a 之前先 b"。测试用例里两个都跑一遍，方向错了立刻现形。
 
-### 6.1 Lambda中的异常处理
+## 6. 坑点一：Lambda 里的受检异常
+
+函数式接口的抽象方法没有声明受检异常，所以 Lambda 里不能直接抛 `IOException`：
 
 ```java
-// 问题：Lambda中不能直接抛出受检异常
-// list.forEach(s -> throw new IOException());  // 编译错误
+files.forEach(f -> {
+    // Files.readAllLines(f) 抛 IOException，直接写编译不过
+});
+```
 
-// 解决方案1：包装为RuntimeException
-list.forEach(s -> {
-    try {
-        process(s);
-    } catch (IOException e) {
-        throw new RuntimeException(e);
-    }
+三种处理，按推荐顺序：
+
+```java
+// 1. 在 Lambda 内 try-catch，包成非受检异常（最快，但异常类型变味）
+files.forEach(f -> {
+    try { lines.addAll(Files.readAllLines(f)); }
+    catch (IOException e) { throw new UncheckedIOException(e); }
 });
 
-// 解决方案2：工具方法
+// 2. 把"会抛异常的逻辑"提取成普通方法，让 try-catch 离开 Lambda 体（最推荐）
+files.forEach(this::loadSafely);
+private void loadSafely(Path f) {
+    try { lines.addAll(Files.readAllLines(f)); }
+    catch (IOException e) { log.warn("跳过坏文件: {}", f, e); }
+}
+
+// 3. 自定义"允许抛异常"的函数式接口 + 适配器（工具库常见写法）
 @FunctionalInterface
 interface ThrowingConsumer<T> {
     void accept(T t) throws Exception;
-
-    static <T> Consumer<T> wrap(ThrowingConsumer<T> consumer) {
+    static <T> Consumer<T> unchecked(ThrowingConsumer<T> c) {
         return t -> {
-            try {
-                consumer.accept(t);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
+            try { c.accept(t); }
+            catch (Exception e) { throw new RuntimeException(e); }
         };
     }
 }
-
-list.forEach(ThrowingConsumer.wrap(s -> process(s)));
+files.forEach(ThrowingConsumer.unchecked(f -> lines.addAll(Files.readAllLines(f))));
 ```
 
-### 6.2 Lambda与this引用
+原则：Lambda 体超过三五行就该提取成具名方法——异常处理往往就顺势离开了 Lambda，可读性一并解决。
+
+## 7. 坑点二：Optional 别当参数与字段用
+
+Lambda 生态里 `Optional` 常和空值打交道，规则记三条：
 
 ```java
-// Lambda中的this指向外部类的this
-// 匿名内部类中的this指向匿名类实例
-class ThisDemo {
-    private String name = "Outer";
+Optional<String> found = findSong(query);   // 返回值：Optional 的正统用途
 
-    void test() {
-        // Lambda: this指向ThisDemo
-        Runnable lambda = () -> System.out.println(this.name);  // "Outer"
+found.map(String::toUpperCase)              // 链式处理，空值自动跳过
+     .filter(t -> t.length() > 3)
+     .orElse("未找到");
 
-        // 匿名类: this指向匿名类
-        Runnable anonymous = new Runnable() {
-            private String name = "Inner";
-            @Override
-            public void run() {
-                System.out.println(this.name);  // "Inner"
-            }
-        };
+found.orElseGet(() -> expensiveFallback()); // orElse 的参数永远会执行；惰性版用 orElseGet
+found.flatMap(this::lookupArtist);          // 返回值本身是 Optional 时用 flatMap 防套娃
+```
 
-        lambda.run();
-        anonymous.run();
-    }
+1. 用作**返回值**：正确，逼着调用方面对"可能没有"；
+2. 用作**字段或方法参数**：反模式，Optional 本身也可能为 null，套了两层空；
+3. `orElse` vs `orElseGet`：`orElse(fallback())` 里 `fallback()` 无条件执行，有副作用或计算贵时必须 `orElseGet(() -> ...)`。
+
+## 8. 坑点三：`(a, b) -> a - b` 比较器
+
+第 1 节埋的坑揭晓。整型相减当比较器，在数值跨度过大时溢出：
+
+```java
+Comparator<Long> bad = (a, b) -> (int) (a - b);   // a=Long.MIN_VALUE, b=1 时溢出，符号翻转
+Comparator<Long> good = Long::compare;             // 或 (a, b) -> Long.compare(a, b)
+```
+
+大播放量、时间戳、文件大小这类字段正是"大数常客"。纪律：**写比较器永远用 `Integer.compare` / `Long.compare` / `Double.compare`，或者 `Comparator.comparingLong(Song::plays)`**——后者连 Lambda 都不用写，还能链式加次级排序：
+
+```java
+songs.sort(Comparator.comparingLong(Song::plays)
+                     .thenComparing(Song::title, Comparator.reverseOrder()));
+```
+
+## 易错点与最佳实践
+
+**错误一：在 Lambda 里改捕获的局部变量。** 编译报错；要可变状态用 `AtomicInteger` 或改写为 collect。
+**错误二：比较器用减法。** 第 8 节；一律 `compare` 家族。
+**错误三：Lambda 体塞十行业务逻辑。** 提取具名方法，顺便解决受检异常问题（第 6 节方案 2）。
+**错误四：`orElse` 里放昂贵调用。** 换 `orElseGet`。
+**错误五：给能写方法引用的地方保留手写转发 Lambda。** `s -> s.toUpperCase()` 改 `String::toUpperCase`，评审时少一眼噪音。
+**最佳实践**：保持 Lambda 只做"一段短行为"；策略当参数传（高阶函数）；组合优于分支（`Predicate.and`/`or` 拼条件）。
+
+## 本篇小结
+
+- Lambda 是函数式接口实例的简写，目标类型决定它的形状；方法引用是"参数原样转发"时的进一步缩写；
+- 四大标准接口：Function（转换）、Consumer（消费）、Supplier（生产）、Predicate（判断），不够再自定义并加 `@FunctionalInterface`；
+- 捕获局部变量要求 effectively final，因为捕获的是值副本；字段与 this 是引用捕获；
+- 受检异常出不了 Lambda：try-catch 后提取具名方法是最优解；
+- 比较器禁用减法，用 `compare` 家族或 `Comparator.comparingXxx`。
+
+## 动手实践
+
+1. **改造历史代码**：找一个项目里 `new Thread(new Runnable() {...})` 或匿名 `Comparator` 的代码（没有就照第 1 节默写一段），逐级改写为 Lambda、再改为方法引用，每步跑一次确认行为不变。
+2. **条件生成器**：给第 5 节的 `hotTitles` 增加一个重载，接收 `int minPlays` 与 `boolean includeBanned`，内部用 `Predicate.and` 拼出过滤条件再委托主方法。思路：条件拼接本身也可以写成返回 `Predicate<Song>` 的方法。
+3. **方向测试**：写三个断言验证 `andThen` 与 `compose` 的执行顺序（用带打印的 Function），把结论写进注释。
+4. **排错练习**：下面代码想统计"播放量超过阈值的歌数"，找出两处问题。
+
+```java
+long threshold = 10_000_000;
+long count = 0;
+for (Song s : songs) {
+    new Thread(() -> { if (s.plays() > threshold) count++; }).start();
 }
 ```
 
-## 7. 总结与最佳实践
+思路：`count++` 修改了 effectively final 的局部变量（编译不过）；就算换成 `AtomicInteger`，主线程不等子线程就退出照样读不到结果——用 `ExecutorService` + `submit` 汇总，或干脆一条 Stream 数完。
 
-### 7.1 Lambda使用原则
+## 下一步
 
-1. **保持简短**：Lambda体不超过3-5行，过长应提取方法
-2. **优先方法引用**：比Lambda更简洁
-3. **类型推断**：省略参数类型，让编译器推断
-4. **避免副作用**：Lambda不应修改外部状态
-
-### 7.2 函数式编程原则
-
-1. **使用不可变数据**：避免修改集合，创建新集合
-2. **组合优于继承**：用函数组合实现功能复用
-3. **惰性求值**：Stream的中间操作是惰性的
-4. **声明式编程**：描述"做什么"而非"怎么做"
-## Lambda 基础语法
-
-**基本写法：无参数**
-`() -> <表达式>`
-```java
-// 无参数 Lambda
-Runnable r = () -> System.out.println("Hello");
-```
-
----
-
-**基本写法：单参数**
-`<参数> -> <表达式>`
-```java
-// 单参数 Lambda
-Consumer<String> c = s -> System.out.println(s);
-```
-
----
-
-**基本写法：多参数**
-`(<参数1>, <参数2>) -> <表达式>`
-```java
-// 多参数 Lambda
-Comparator<Integer> cmp = (a, b) -> a - b;
-```
-
----
-
-**基本写法：带类型参数**
-`(<类型1> <参数1>, <类型2> <参数2>) -> <表达式>`
-```java
-// 显式声明参数类型
-Comparator<Integer> cmp = (Integer a, Integer b) -> a - b;
-```
-
----
-
-**基本写法：代码块**
-`(<参数>) -> { <语句1>; <语句2>; return <返回值>; }`
-```java
-// 多语句代码块
-Comparator<Integer> cmp = (a, b) -> {
-    System.out.println("comparing");
-    return a.compareTo(b);
-};
-```
-
----
-
-## 方法引用
-
-**基本写法：静态方法引用**
-`<类名>::<静态方法>`
-```java
-// 引用静态方法
-Function<String, Integer> parser = Integer::parseInt;
-```
-
----
-
-**基本写法：实例方法引用（对象）**
-`<实例>::<方法>`
-```java
-// 引用特定对象的实例方法
-String str = "Hello";
-Supplier<Integer> len = str::length;
-```
-
----
-
-**基本写法：实例方法引用（类）**
-`<类名>::<实例方法>`
-```java
-// 引用任意对象的实例方法
-Function<String, String> upper = String::toUpperCase;
-```
-
----
-
-**基本写法：构造方法引用**
-`<类名>::new`
-```java
-// 引用构造方法
-Supplier<ArrayList<String>> factory = ArrayList::new;
-```
-
----
-
-**基本写法：数组构造引用**
-`<类型>[]::new`
-```java
-// 创建数组
-Function<Integer, String[]> arrayFactory = String[]::new;
-```
-
----
-
-## 函数式接口
-
-**基本写法：Predicate 断言**
-`Predicate<<类型>> <变量> = <lambda>;`
-```java
-// 判断字符串是否为空
-Predicate<String> isEmpty = String::isEmpty;
-boolean result = isEmpty.test("");
-```
-
----
-
-**基本写法：Consumer 消费者**
-`Consumer<<类型>> <变量> = <lambda>;`
-```java
-// 消费元素
-Consumer<String> printer = System.out::println;
-printer.accept("Hello");
-```
-
----
-
-**基本写法：Function 函数**
-`Function<<输入类型>, <输出类型>> <变量> = <lambda>;`
-```java
-// 字符串转整数
-Function<String, Integer> parser = Integer::parseInt;
-Integer num = parser.apply("42");
-```
-
----
-
-**基本写法：Supplier 供应商**
-`Supplier<<类型>> <变量> = <lambda>;`
-```java
-// 生成随机数
-Supplier<Double> random = Math::random;
-Double value = random.get();
-```
-
----
-
-**基本写法：BiFunction 二元函数**
-`BiFunction<<类型1>, <类型2>, <结果类型>> <变量> = <lambda>;`
-```java
-// 两数相加
-BiFunction<Integer, Integer, Integer> adder = (a, b) -> a + b;
-Integer sum = adder.apply(1, 2);
-```
-
----
-
-**基本写法：BinaryOperator 二元运算符**
-`BinaryOperator<<类型>> <变量> = <lambda>;`
-```java
-// 求最大值
-BinaryOperator<Integer> max = Integer::max;
-Integer result = max.apply(3, 5);
-```
-
----
-
-## 默认方法组合
-
-**基本写法：Predicate.and**
-`<predicate1>.and(<predicate2>);`
-```java
-// 组合两个条件
-Predicate<String> nonEmpty = s -> !s.isEmpty();
-Predicate<String> longEnough = s -> s.length() > 3;
-Predicate<String> combined = nonEmpty.and(longEnough);
-```
-
----
-
-**基本写法：Predicate.or**
-`<predicate1>.or(<predicate2>);`
-```java
-// 或条件
-Predicate<String> startsA = s -> s.startsWith("A");
-Predicate<String> startsB = s -> s.startsWith("B");
-Predicate<String> combined = startsA.or(startsB);
-```
-
----
-
-**基本写法：Predicate.negate**
-`<predicate>.negate();`
-```java
-// 取反
-Predicate<String> isEmpty = String::isEmpty;
-Predicate<String> isNotEmpty = isEmpty.negate();
-```
-
----
-
-**基本写法：Function.andThen**
-`<function1>.andThen(<function2>);`
-```java
-// 先解析再乘以 2
-Function<String, Integer> parser = Integer::parseInt;
-Function<Integer, Integer> doubler = n -> n * 2;
-Function<String, Integer> combined = parser.andThen(doubler);
-```
-
----
-
-**基本写法：Function.compose**
-`<function2>.compose(<function1>);`
-```java
-// 先执行 function1 再执行 function2
-Function<String, Integer> combined = doubler.compose(parser);
-```
+- [Stream API](/java/300-StreamAPI)：把第 5 节的手写管道升级为声明式流水线；
+- [Stream Collectors 与 groupingBy](/java/320-StreamCollectorsGroupingBy)：分组、统计、拼接的收集器全家桶；
+- [CompletableFuture 异步编排](/java/520-CompletableFutureAsync)：Supplier/Function 当异步任务传的全场景；
+- [Java 记录类](/java/450-JavaRecordClass)：Lambda 的最佳搭档——不可变数据载体。

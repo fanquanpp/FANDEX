@@ -1,12 +1,12 @@
 ---
-order: 590
+order: 610
 title: 显式资源管理：using 与 await using
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: Stage 4 定稿的 using/await using 与 Symbol.dispose：确定性资源释放的语法、协议与工程落地。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/250-AsyncProgramming'
   - 'javascript/570-NodeJsPerformanceOptimization'

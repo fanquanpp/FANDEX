@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: insert/find/update/delete 四类操作的完整语法、常用查询运算符与实战示例拆解。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'mongodb/010-MongoDBOverviewQuickStart'
   - 'mongodb/030-MongoDBAggregationPipeline'
@@ -99,7 +99,7 @@ db.students.find({ name: /^小/ })
 **讲解：**
 
 1. 数组字段直接写值，表示"包含该元素"，这是文档模型非常实用的特性。
-2. 正则 `/^小/` 匹配以"小"开头的字符串；正则查询无法利用普通索引前缀，数据量大时慎用。
+2. 正则 `/^小/` 匹配以"小"开头的字符串。带 `^` 锚定且大小写敏感的正则可以利用字段索引前缀；一旦写成 `/小/`（不锚定）或忽略大小写（`i` 选项），就只能全集合扫描，数据量大时慎用。
 
 ## 3. 更新：updateOne / updateMany / replaceOne
 

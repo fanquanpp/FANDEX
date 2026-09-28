@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Rust 基础语法：变量与不可变性、标量类型、复合类型、函数与控制流
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'rust/030-RustEnvSetup'
   - 'rust/050-RustOwnershipBorrowing'
@@ -14,6 +14,21 @@ prerequisites:
   - 'rust/030-RustEnvSetup'
 ---
 
+## 前置知识
+
+- [Rust 环境搭建与工具链](/rust/030-RustEnvSetup)：能用 cargo run 跑通程序。
+
+## 学习目标
+
+读完本文你将能够：
+
+1. 习惯「默认不可变、要改显式 mut」的规则，会用变量遮蔽做值的逐步变换；
+2. 认识标量类型与元组、数组，知道整数溢出在 debug 与 release 下表现不同；
+3. 会写带类型标注的函数，理解「表达式有值」与分号的取舍；
+4. 会用 if / loop / while / for 组织控制流，遍历优先用 for；
+5. 遇到 cannot assign to immutable variable 等第一批编译错误能自行定位修复。
+
+预计 60 分钟。
 
 ## 1. 从"写便签"说起：变量与不可变性
 

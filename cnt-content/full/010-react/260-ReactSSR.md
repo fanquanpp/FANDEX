@@ -1,12 +1,12 @@
 ---
-order: 260
+order: 270
 title: React 服务端渲染
 module: 'react'
 category: 前端技术
 difficulty: intermediate
 description: React SSR 原理与工程实践：renderToString 与流式渲染、水合与选择性水合、SSR/SSG/ISR/RSC 的区别。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/140-ServerComponents'
   - 'react/130-ConcurrentRendering'

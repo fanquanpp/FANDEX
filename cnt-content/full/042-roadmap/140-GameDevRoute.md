@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'roadmap/010-RoadmapOverview'
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'roadmap/130-TwelveMonthPlanTemplate'
 ---
@@ -43,8 +43,8 @@ flowchart TD
 
 **第 1 到 2 个月：Godot 与 GDScript 入门**
 
-- [Godot 模块](/godot/010-WhatIsGodot) 前三个学习阶段：引擎安装与界面、场景与节点、信号机制；
-- [GDScript 模块](/gdscript/010-WhatIsGDScript) 前两个阶段：语法基础与面向过程部分（有 Python 经验的话一周可过）；
+- [Godot 模块](/godot/010-GodotOverviewAndSetup) 前三个学习阶段：引擎安装与界面、场景与节点、信号机制；
+- [GDScript 模块](/gdscript/010-GDScriptLanguageOverview) 前两个阶段：语法基础与面向过程部分（有 Python 经验的话一周可过）；
 - 并行：git 模块阶段 1，游戏项目从第一天就进 GitHub；
 - 检验项目一：**复刻一个经典小游戏**（贪吃蛇或打砖块）。要求：不用教程工程模板、从空项目开始、玩家死亡与重开一局完整可用。参考实现可对照作者的开源项目 [geometric-construct](https://github.com/fanquanpp/geometric-construct)（Godot 4.7 速度肉鸽）的项目组织方式。
 
@@ -64,8 +64,8 @@ flowchart TD
 
 **叙事向：视觉小说**
 
-- [Ren'Py 模块](/renpy/010-WhatIsRenPy) 全程：剧本语言、角色与立绘、分支与变量、存档回滚；
-- [Konado 模块](/konado/010-KonadoOverview) 选学：基于 Godot 的对话框架，适合想把视觉小说做进自己游戏的人；
+- [Ren'Py 模块](/renpy/010-RenPyOverviewAndSetup) 全程：剧本语言、角色与立绘、分支与变量、存档回滚；
+- [Konado 模块](/konado/010-KonadoOverviewAndInstall) 选学：基于 Godot 的对话框架，适合想把视觉小说做进自己游戏的人；
 - 检验项目四：**一部 30 到 60 分钟的完整短篇视觉小说**并发布。多结局、存档可回滚、至少一处需要玩家选择影响走向。汉化与本地化的工程视角可参考作者的开源项目 [ZATO-CN-Patch](https://github.com/fanquanpp/ZATO-CN-Patch)（全文本双语对照补丁）。
 
 **技术向：引擎深水区与 TypeScript**

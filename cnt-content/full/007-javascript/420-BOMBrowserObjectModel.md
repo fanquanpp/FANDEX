@@ -1,12 +1,12 @@
 ---
-order: 400
+order: 420
 title: BOM 浏览器对象模型
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: 浏览器对象模型（BOM）原理、API 体系、工程实践与规范演进
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/080-FunctionScopeClosure'
   - 'javascript/140-CustomErrorTypes'

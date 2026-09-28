@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: C++编译为WebAssembly
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'cpp/710-CppRustComparison'
   - 'cpp/700-CppCodeStyle'
@@ -287,7 +287,7 @@ Emscripten 是把 C/C++ 编译为 Wasm 的主流工具链，其核心组件：
 
 - **emcc / em++**：编译器驱动，封装 clang + LLVM + wasm-ld + Binaryen；
 - **Emscripten-Linker**：处理 C++ 标准库、系统调用模拟；
-- **embind**：C++ ↔ JavaScript 绑定生成器；
+- **embind**：C++ 与 JavaScript 互操作的绑定生成器；
 - **WebIDL Binder**：另一种绑定方式（旧式）；
 - **file packager**：将本地文件打包为虚拟文件系统；
 - **system libraries**：`libc++`、`libc` 兼容层、`SDL2`、`GL`、`AL` 等。

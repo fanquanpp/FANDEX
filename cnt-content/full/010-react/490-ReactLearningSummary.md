@@ -1,12 +1,12 @@
 ---
-order: 490
+order: 500
 title: React 学习总结：核心知识体系回顾
 module: 'react'
 category: 前端技术
 difficulty: intermediate
 description: 串联 React 模块全部文档，回顾 Hooks 体系、Fiber 并发、服务端组件、状态管理与性能优化的核心脉络。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/010-OverviewEnvSetup'
   - 'react/040-HooksDeep'

@@ -1,12 +1,12 @@
 ---
-order: 570
+order: 580
 title: Java 构建工具
 module: 'java'
 category: 后端技术
 difficulty: intermediate
 description: Maven与Gradle
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/900-JavaLogSystem'
   - 'java/890-JavaUnitTest'
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- [Java JDBC 数据库连接](/java/730-JDBCDatabaseConnection)：建议先完成前一篇的学习
+- [Java 与数据库连接](/java/720-JavaDatabaseConnection)：建议先完成前一篇的学习
 
 ## 学习目标
 

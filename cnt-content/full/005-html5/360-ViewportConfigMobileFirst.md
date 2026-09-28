@@ -1,12 +1,12 @@
 ---
-order: 360
+order: 380
 title: 视口配置与移动优先
 module: 'html5'
 category: 前端技术
 difficulty: beginner
 description: viewport、移动优先设计
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'html5/340-CustomDataAttribute'
   - 'html5/280-CrossDocumentCommunication'
