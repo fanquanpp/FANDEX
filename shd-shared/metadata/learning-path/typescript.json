@@ -343,6 +343,11 @@
           "doc": "550-TypeTestingAndAssertions"
         },
         {
+          "id": "typescript-595",
+          "title": "TypeScript 毕业项目：类型安全的 API 客户端库",
+          "doc": "595-TypeScriptCapstoneProject"
+        },
+        {
           "id": "ts-045",
           "title": "Node.js 与 TypeScript 工程化",
           "desc": "一份开箱即用的 Node.js + TypeScript 工程骨架：目录结构、tsconfig 双配置、开发与构建脚本、常见坑位。",

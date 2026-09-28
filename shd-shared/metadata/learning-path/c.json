@@ -361,6 +361,11 @@
           "doc": "580-CProjectExampleStudentGradeSystem"
         },
         {
+          "id": "c-595",
+          "title": "C 毕业项目：零依赖动态数组与哈希表库",
+          "doc": "595-CCapstoneProject"
+        },
+        {
           "id": "c-334",
           "title": "C 标准库函数速查",
           "desc": "C 标准库函数速查 的完整教学讲解。",

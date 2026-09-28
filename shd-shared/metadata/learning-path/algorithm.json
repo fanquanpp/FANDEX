@@ -41,6 +41,11 @@
           "doc": "030-SortAlgorithm"
         },
         {
+          "id": "algorithm-035",
+          "title": "进阶与线性排序",
+          "doc": "035-AdvancedSortAndLinearSort"
+        },
+        {
           "id": "algorithm-050",
           "title": "搜索算法",
           "doc": "050-SearchAlgorithm"
@@ -129,6 +134,11 @@
           "doc": "110-GraphAlgorithms"
         },
         {
+          "id": "algorithm-115",
+          "title": "最短路与最小生成树",
+          "doc": "115-ShortestPathAndMST"
+        },
+        {
           "id": "algorithm-260",
           "title": "Kruskal 算法",
           "doc": "260-KruskalAlgorithm"
@@ -169,6 +179,11 @@
           "id": "algorithm-160",
           "title": "动态规划",
           "doc": "160-DynamicProgramming"
+        },
+        {
+          "id": "algorithm-165",
+          "title": "DP 经典模型进阶",
+          "doc": "165-DPAdvancedPatterns"
         },
         {
           "id": "algorithm-240",
@@ -213,6 +228,11 @@
           "id": "algorithm-300",
           "title": "LeetCode 刷题指南",
           "doc": "300-LeetCodeInterviewGuide"
+        },
+        {
+          "id": "algorithm-305",
+          "title": "分类题型手册",
+          "doc": "305-LeetCodeTopicPlaybook"
         }
       ]
     }
