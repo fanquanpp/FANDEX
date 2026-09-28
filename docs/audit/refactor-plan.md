@@ -108,5 +108,5 @@
 - Phase 3（文档迁移映射）：完成——docs/audit/document-migration-map.md（DELETE 82 / MERGE 30 组 / SPLIT 29 / REWRITE 主线清单 / CREATE 清单）；
 - Phase 5（内容标准）：完成——docs/standards/ 六份 v1.0；
 - Phase 6（批量重构）：完成——MERGE 30/30 消化、SPLIT 落地（6 案 13 篇拆分 + 3 篇清理 + 22 篇参考层标注）、毕业项目 8 模块、新文体约 110 篇；剩余为日常维护性渐进改写；
-- Phase 7（验收）：假学生走查完成并全修复；全门禁长期绿（HIGH 0/孤儿 0/typecheck 0/smoke 20/20）；企业模拟与脱离教程测试由 8 个模块毕业项目承接；
+- Phase 7（验收）：完成并转入维护——假学生走查修复、五关门禁长期绿、43 模块入门链全部达标（批次七验证）、8 模块毕业项目承接企业模拟与脱离教程测试；参考层季度复审下次时点 2026-12-27；
 - 变更报告：docs/audit/change-report-2026-09-27.md（含批次二）。

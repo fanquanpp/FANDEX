@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: "以「同时下载三个文件，串行 3 秒并行 1 秒」引入，讲透 Thread 与 Runnable、start 与 run 区别实验、sleep 与 join、竞态条件丢失更新与 synchronized 最小修复，附 IllegalThreadStateException 与 InterruptedException 调试实录。"
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/490-ConcurrencyBasics'
   - 'java/500-JUCConcurrency'

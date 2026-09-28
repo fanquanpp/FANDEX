@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: TypeScript 类型安全数据库访问的形式语义、Row 类型推导原理与 Kysely/Drizzle/Prisma 三大 ORM 的工程对比
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/610-TypeSafeI18n'
   - 'typescript/630-TypeSafeConfigSystem'

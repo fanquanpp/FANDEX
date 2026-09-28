@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Redis 8 全景：AGPLv3 三许可、内置 JSON/时间序列/概率结构与查询引擎、Vector Set、I/O 线程重写与复制优化、HGETDEL 等新命令、升级注意事项。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'redis/100-VectorSet'
   - 'redis/010-OverviewCoreDataStructure'

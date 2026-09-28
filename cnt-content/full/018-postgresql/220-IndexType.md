@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL索引类型：B-tree、Hash、GiST、GIN、SP-GiST、BRIN的原理与适用场景
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'postgresql/210-VACUUMMechanism'
   - 'postgresql/180-TransactionIDWraparoundPrevention'

@@ -1,443 +1,143 @@
 ---
 order: 20
-title: 组件与 Props
+title: 组件与 Props：把页面拆成一堆函数
 module: 'react'
 category: 前端技术
 difficulty: beginner
-description: 函数组件、Props 传递、children、组件组合模式、条件渲染、列表与 key、Fragment。
+description: 从「战绩榜五个玩家手写五遍」讲起：函数组件的定义与组合、props 只读契约、children 插槽、列表渲染与 key、渲染时组件函数被调用并返回界面描述，附 Each child in a list should have a unique key 与小写组件名两则调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'react/010-OverviewEnvSetup'
   - 'react/030-StateEvent'
   - 'react/040-HooksDeep'
-prerequisites: []
+  - 'javascript/090-ArrayHigherOrderMethod'
+prerequisites:
+  - 'react/010-OverviewEnvSetup'
 ---
 
 ## 前置知识
 
-- [概述与环境配置](/react/010-OverviewEnvSetup)：建议先完成前一篇的学习
+- 已完成 [界面 = f(state)](/react/010-OverviewEnvSetup)：装好 Vite react 模板项目，写过并修改过 App 组件；
+- 本文大量使用 [数组高阶方法](/javascript/090-ArrayHigherOrderMethod) 的 map——没学过也能跟，先记住「map 把数组逐项变成新数组」。
 
 ## 学习目标
 
-- 掌握「1. 函数组件」的核心机制、典型用法与常见陷阱
-- 掌握「2. Props 传递」的核心机制、典型用法与常见陷阱
-- 掌握「3. children」的核心机制、典型用法与常见陷阱
-- 掌握「4. 组件组合模式」的核心机制、典型用法与常见陷阱
-- 掌握「5. 条件渲染」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 把一整页 JSX 拆成多个函数组件并组合使用，说出拆分的判断标准；
+2. 写出接收 props 的组件，解释 props 为什么是「父到子的只读契约」；
+3. 用 children 把一段内容当参数传进组件，做出可复用的容器；
+4. 逐步描述一次渲染：组件函数被调用、返回界面描述、React 负责更新 DOM；
+5. 读懂 `Each child in a list should have a unique "key" prop` 警告并修复列表渲染。
 
-## 1. 函数组件
+预计 50 到 70 分钟。
 
-React 中组件是构建 UI 的基本单元。函数组件是现代 React 的主流写法，它是一个接收 Props 并返回 React 元素的纯函数。
+## 1. 你现在要解决什么问题
 
-### 1.1 基本定义
+010 篇的练习里，你在 App 里手写过两遍玩家标签。现在把要求提到真实规模：战绩榜显示五个玩家，详情页还要再显示前三名。复制粘贴的结局你背得出来了——080 篇三处一样改一处漏两处，这次是五段一样的 JSX 改一处漏五处。复制出来的代码还有个新毛病：**数据和长相焊死在一起**，名字和分数是写死的文字，想换成小满就得整段重写。
 
-```tsx
-// 最简函数组件
-function Greeting() {
-  return <h1>Hello, World!</h1>;
-}
+解法和 080 篇一样，只是这次封装的不是计算逻辑，而是「一小块界面」：
 
-// 使用箭头函数
-const Greeting = () => <h1>Hello, World!</h1>;
-
-// 带类型注解的组件
-import type { FC } from 'react';
-
-const Greeting: FC = () => {
-  return <h1>Hello, World!</h1>;
-};
+```text
+080 篇：结算逻辑复制三遍 → 封装成函数 checkout(price)
+本  篇：玩家标签复制五遍   → 封装成组件 PlayerCard(props)
 ```
 
-### 1.2 组件命名规范
+组件就是「界面上的一小块」对应的函数：数据从 props 进来，界面描述从 return 出去。页面由此变成一堆函数的组合——组件树。
 
-- 组件名必须以**大写字母**开头（React 以此区分自定义组件和原生 HTML 标签）
-- 文件名与组件名保持一致，使用 PascalCase
-- 每个文件只导出一个主组件
+## 2. 最小可运行示例：一个组件用五次
 
-```tsx
-//  正确：大写开头
-function UserProfile() {
-  return <div>...</div>;
-}
+替换 src/App.jsx：
 
-//  错误：小写开头，React 会将其视为 HTML 标签
-function userProfile() {
-  return <div>...</div>;
-}
-```
-
-## 2. Props 传递
-
-Props（Properties）是父组件向子组件传递数据的方式，具有**只读**特性。
-
-### 2.1 基本 Props
-
-```tsx
-interface UserCardProps {
-  name: string;
-  age: number;
-  email?: string; // 可选属性
-}
-
-function UserCard({ name, age, email }: UserCardProps) {
+```jsx
+function PlayerCard({ name, score }) {
   return (
-    <div className="user-card">
-      <h2>{name}</h2>
-      <p>年龄：{age}</p>
-      {email && <p>邮箱：{email}</p>}
+    <div className="player">
+      <span>{name}</span>
+      <strong>{score}</strong>
     </div>
   );
 }
 
-// 使用
-<UserCard name="张三" age={25} email="zhangsan@example.com" />
-<UserCard name="李四" age={30} /> // email 为 undefined，不会渲染
-```
-
-### 2.2 默认值
-
-```tsx
-// 方式一：解构默认值（推荐）
-function Button({ text = '点击', color = 'blue' }: { text?: string; color?: string }) {
-  return <button style={{ color }}>{text}</button>;
-}
-
-// 方式二：默认值属性
-function Button({ text, color }: { text?: string; color?: string }) {
-  return <button style={{ color: color ?? 'blue' }}>{text ?? '点击'}</button>;
-}
-```
-
-### 2.3 展开传递 Props
-
-```tsx
-interface BaseInputProps {
-  value: string;
-  onChange: (value: string) => void;
-  placeholder?: string;
-  disabled?: boolean;
-  className?: string;
-}
-
-function Input({ value, onChange, ...rest }: BaseInputProps) {
-  return <input value={value} onChange={(e) => onChange(e.target.value)} {...rest} />;
-}
-```
-
-### 2.4 传递回调函数
-
-```tsx
-interface ChildProps {
-  onAction: (data: string) => void;
-}
-
-function Child({ onAction }: ChildProps) {
-  return <button onClick={() => onAction('来自子组件的数据')}>触发回调</button>;
-}
-
-function Parent() {
-  const handleAction = (data: string) => {
-    console.log('收到：', data);
-  };
-
-  return <Child onAction={handleAction} />;
-}
-```
-
-## 3. children
-
-`children` 是 React 内置的特殊 Prop，用于在组件标签之间传递内容。
-
-### 3.1 基本 children
-
-```tsx
-import type { ReactNode } from 'react';
-
-interface CardProps {
-  children: ReactNode;
-}
-
-function Card({ children }: CardProps) {
+function App() {
   return (
-    <div className="card" style={{ padding: '16px', border: '1px solid #ddd' }}>
+    <div>
+      <h1>战绩榜</h1>
+      <PlayerCard name="阿天" score={980} />
+      <PlayerCard name="小满" score={870} />
+      <PlayerCard name="老K" score={810} />
+      <PlayerCard name="船长" score={760} />
+      <PlayerCard name="阿呆" score={700} />
+    </div>
+  );
+}
+
+export default App;
+```
+
+预期行为：标题下方五行玩家卡，左边名字右边分数；改一处 `className`，五行同时变——界面逻辑终于只有一份。
+
+`PlayerCard({ name, score })` 是解构参数：`name="阿天"` 传进字符串，`score={980}` 的花括号里是 JS 表达式，所以能传数字。这些从父组件传进来的数据，统称 **props**（properties 的缩写）。
+
+## 3. props：父到子的只读契约
+
+props 有两条铁律。**第一，数据只能从父组件流向子组件**：App 拥有数据，PlayerCard 只管展示；单向纪律让「数据从哪来」永远有唯一答案，页面复杂十倍也查得动。
+
+**第二，组件不许修改自己收到的 props。** 下面这行写在 PlayerCard 里注定没用：
+
+```jsx
+function PlayerCard({ name, score }) {
+  score = score + 20;   // 想给每个玩家加 20 分？改的只是本次调用的局部参数
+  return <strong>{score}</strong>;
+}
+```
+
+它不报错，但也毫无意义：props 的本质是函数参数——080 篇说过「函数里改参数不影响外面」，而且下次渲染父组件还是把原值传进来。**props 是契约：父组件定什么就是什么。** 分数怎么变？数据的主人动手，途径在 030 篇。
+
+## 4. children：标签之间的内容也是 props
+
+组件标签之间夹的内容，React 自动作为名为 children 的 prop 传进来。用它做一个到处能用的容器：
+
+```jsx
+function Panel({ title, children }) {
+  return (
+    <section className="panel">
+      <h2>{title}</h2>
       {children}
-    </div>
+    </section>
   );
 }
 
-// 使用
-<Card>
-  <h2>标题</h2>
-  <p>内容</p>
-</Card>;
-```
-
-### 3.2 多个插槽（具名插槽）
-
-React 没有具名插槽的概念，但可以通过多个 Props 实现类似效果：
-
-```tsx
-interface LayoutProps {
-  header: ReactNode;
-  sidebar: ReactNode;
-  children: ReactNode;
-}
-
-function Layout({ header, sidebar, children }: LayoutProps) {
+function App() {
   return (
-    <div className="layout">
-      <header>{header}</header>
-      <div className="main">
-        <aside>{sidebar}</aside>
-        <main>{children}</main>
-      </div>
-    </div>
+    <Panel title="本周战况">
+      <p>阿天连赢七局。</p>
+      <PlayerCard name="阿天" score={980} />
+    </Panel>
   );
 }
-
-// 使用
-<Layout header={<nav>导航栏</nav>} sidebar={<div>侧边栏</div>}>
-  <p>主内容区</p>
-</Layout>;
 ```
 
-### 3.3 children 的类型
+预期行为：标题下面，段落和玩家卡被同一个 Panel 包住。Panel 不关心里面是什么——传什么渲染什么。这就是 children 的价值：**内容当参数，容器管结构。** 布局组件几乎都这么写；夹的也可以是另一个组件（如上例），组件树就是这样套出来的。
 
-```tsx
-import type { ReactNode, ReactElement } from 'react';
+## 5. 列表渲染：map 加 key
 
-// ReactNode — 最宽泛，接受任何可渲染内容
-// 包括：string | number | boolean | null | undefined | ReactElement | ReactFragment | ReactPortal
-interface Props1 {
-  children: ReactNode;
-}
+五行 PlayerCard 手写了五遍，又是复制粘贴。用 map（090 篇）把「数据数组」变成「组件数组」，加一个玩家只需添一条数据，界面自动多一行——等式兑现：
 
-// ReactElement — 仅接受 React 元素（排除原始类型）
-interface Props2 {
-  children: ReactElement;
-}
+```jsx
+const players = [
+  { id: 'p1', name: '阿天', score: 980 },
+  { id: 'p2', name: '小满', score: 870 },
+  { id: 'p3', name: '老K', score: 810 },
+];
 
-// 函数作为 children（Render Props 模式）
-interface Props3 {
-  children: (data: string) => ReactNode;
-}
-```
-
-## 4. 组件组合模式
-
-### 4.1 容器与展示组件
-
-```tsx
-// 展示组件 — 只负责 UI
-interface UserListProps {
-  users: Array<{ id: number; name: string }>;
-  onSelect: (id: number) => void;
-}
-
-function UserList({ users, onSelect }: UserListProps) {
+function Leaderboard() {
   return (
     <ul>
-      {users.map((user) => (
-        <li key={user.id} onClick={() => onSelect(user.id)}>
-          {user.name}
-        </li>
-      ))}
-    </ul>
-  );
-}
-
-// 容器组件 — 负责数据和逻辑
-function UserListContainer() {
-  const [users, setUsers] = useState<Array<{ id: number; name: string }>>([]);
-
-  useEffect(() => {
-    fetchUsers().then(setUsers);
-  }, []);
-
-  const handleSelect = (id: number) => {
-    console.log('选中用户：', id);
-  };
-
-  return <UserList users={users} onSelect={handleSelect} />;
-}
-```
-
-### 4.2 组合组件（Compound Components）
-
-```tsx
-import { createContext, useContext, type ReactNode } from 'react';
-
-// 通过 Context 共享状态
-interface TabsContextValue {
-  activeTab: string;
-  setActiveTab: (id: string) => void;
-}
-
-const TabsContext = createContext<TabsContextValue | null>(null);
-
-function useTabsContext() {
-  const ctx = useContext(TabsContext);
-  if (!ctx) throw new Error('Tabs 组件必须在 TabsProvider 内使用');
-  return ctx;
-}
-
-// 根组件
-function Tabs({ defaultTab, children }: { defaultTab: string; children: ReactNode }) {
-  const [activeTab, setActiveTab] = useState(defaultTab);
-  return (
-    <TabsContext.Provider value={{ activeTab, setActiveTab }}>
-      <div className="tabs">{children}</div>
-    </TabsContext.Provider>
-  );
-}
-
-// 子组件
-function TabList({ children }: { children: ReactNode }) {
-  return <div className="tab-list">{children}</div>;
-}
-
-function Tab({ id, label }: { id: string; label: string }) {
-  const { activeTab, setActiveTab } = useTabsContext();
-  return (
-    <button className={activeTab === id ? 'active' : ''} onClick={() => setActiveTab(id)}>
-      {label}
-    </button>
-  );
-}
-
-function TabPanel({ id, children }: { id: string; children: ReactNode }) {
-  const { activeTab } = useTabsContext();
-  if (activeTab !== id) return null;
-  return <div className="tab-panel">{children}</div>;
-}
-
-// 使用
-<Tabs defaultTab="tab1">
-  <TabList>
-    <Tab id="tab1" label="标签一" />
-    <Tab id="tab2" label="标签二" />
-  </TabList>
-  <TabPanel id="tab1">内容一</TabPanel>
-  <TabPanel id="tab2">内容二</TabPanel>
-</Tabs>;
-```
-
-### 4.3 Render Props 模式
-
-```tsx
-interface DataFetcherProps<T> {
-  url: string;
-  render: (data: T | null, loading: boolean, error: Error | null) => ReactNode;
-}
-
-function DataFetcher<T>({ url, render }: DataFetcherProps<T>) {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-
-  useEffect(() => {
-    fetch(url)
-      .then((res) => res.json())
-      .then((json) => {
-        setData(json);
-        setLoading(false);
-      })
-      .catch((err) => {
-        setError(err);
-        setLoading(false);
-      });
-  }, [url]);
-
-  return <>{render(data, loading, error)}</>;
-}
-
-// 使用
-<DataFetcher<Array<User>>
-  url="/api/users"
-  render={(data, loading, error) => {
-    if (loading) return <Spinner />;
-    if (error) return <Error message={error.message} />;
-    return <UserList users={data!} />;
-  }}
-/>;
-```
-
-## 5. 条件渲染
-
-### 5.1 常见模式
-
-```tsx
-// if/else
-function Content({ isLoggedIn }: { isLoggedIn: boolean }) {
-  if (isLoggedIn) {
-    return <Dashboard />;
-  }
-  return <LoginPage />;
-}
-
-// 三元表达式 — 适合简单的二选一
-const element = isLoading ? <Spinner /> : <Content />;
-
-// 逻辑与 (&&) — 适合显示/隐藏
-const element = (
-  <div>
-    {hasError && <ErrorMessage />}
-    {data && <DataView data={data} />}
-  </div>
-);
-
-// 立即执行函数（IIFE）— 适合复杂逻辑
-const element = (
-  <div>
-    {(() => {
-      switch (status) {
-        case 'loading':
-          return <Spinner />;
-        case 'error':
-          return <Error />;
-        case 'success':
-          return <DataView />;
-        default:
-          return null;
-      }
-    })()}
-  </div>
-);
-```
-
-### 5.2 提取为子组件
-
-```tsx
-// 推荐做法：将条件渲染逻辑封装为独立组件
-function Show({ when, children }: { when: boolean; children: ReactNode }) {
-  return when ? <>{children}</> : null;
-}
-
-// 使用
-<Show when={isLoggedIn}>
-  <Dashboard />
-</Show>;
-```
-
-## 6. 列表与 key
-
-### 6.1 基本列表渲染
-
-```tsx
-interface Todo {
-  id: string;
-  text: string;
-  completed: boolean;
-}
-
-function TodoList({ todos }: { todos: Todo[] }) {
-  return (
-    <ul>
-      {todos.map((todo) => (
-        <li key={todo.id} className={todo.completed ? 'done' : ''}>
-          {todo.text}
+      {players.map((player) => (
+        <li key={player.id}>
+          {player.name}：{player.score}
         </li>
       ))}
     </ul>
@@ -445,237 +145,136 @@ function TodoList({ todos }: { todos: Todo[] }) {
 }
 ```
 
-### 6.2 key 的规则
+`key` 是每个列表项的唯一标识，React 靠它认人。规则两条：**同级之间唯一，且稳定不随渲染变化。** 用数据里的 id，不要用数组下标——中间插入或删除时下标集体平移，React 认错人，界面内容串位。
 
-| 规则               | 说明                                 |
-| :----------------- | :----------------------------------- |
-| **必须唯一**       | 同级兄弟节点之间 key 不能重复        |
-| **必须稳定**       | key 不应随渲染变化（如随机数、索引） |
-| **不使用索引**     | 列表增删时索引会变化，导致状态错乱   |
-| **不需要全局唯一** | 只需在同级兄弟间唯一                 |
+## 6. 渲染发生了什么：函数被调用，描述被兑现
 
-```tsx
-//  错误：使用索引作为 key
-{
-  items.map((item, index) => <Item key={index} {...item} />);
-}
+把 010 篇的等式拆开看。首次显示或数据变化后，React 做三件事：
 
-//  正确：使用稳定唯一 ID
-{
-  items.map((item) => <Item key={item.id} {...item} />);
-}
+1. **调用组件函数**：React 调用 `App()`。return 里的 `<PlayerCard ... />` 不是 HTML，是「调用 PlayerCard 函数」的描述；
+2. **递归展开成描述树**：顺着描述继续调用 PlayerCard，直到整棵树只剩 div、span、文本这类底层描述；
+3. **React 兑现描述**：首次渲染把描述变成真实 DOM；再次渲染时新旧描述对比，只更新变了的部分。
+
+两条由此而来的纪律：**组件函数会被反复调用**，每次渲染都从头执行，「只该做一次」的重活不能写在组件体里（040 篇的 useEffect 管这个）；**同样的 props 进就该有同样的描述出**，组件要写成 080 篇说的纯函数——这份「纯」是 React 敢于只更新差异的前提。
+
+「内部怎么对比更新」的深水不在本篇展开；更近的问题是「函数反复执行，数据凭什么记得住」——答案在 [Hooks 深入](/react/040-HooksDeep)。
+
+## 7. 修改实验
+
+实验一：给 PlayerCard 加第三个数据位 `rank`（名次），五处调用全部补上，验证名次显示正常。
+
+实验二：把 2 节手写的五行调用改成 5 节的 map 写法，数据补到五条。验收：页面显示不变；map 那版加第六个玩家只改数据数组。
+
+实验三：用 Panel 包住 Leaderboard，再写一个 `Sidebar({ children })` 放到页面旁边，体会容器组件的复用方式。
+
+## 8. 常见错误与调试实录
+
+**错误一：列表漏了 key。** 把 key 那行删掉保存，浏览器控制台：
+
+```text
+Warning: Each child in a list should have a unique "key" prop. Check the render method of `Leaderboard`. See https://react.dev/link/warning-keys for more information.
 ```
 
-## 7. Fragment
+三步定位：读报错——Warning 级别（页面还能显示），「每个列表孩子都要有唯一 key」，直接点名 Leaderboard；验真身——map 返回值最外层标签上没有 key；修正——补上 `key={player.id}`。这警告平时看似无害，等列表开始增删，缺 key 的错位渲染会让你怀疑人生，看到就修。
 
-Fragment 允许组件返回多个元素而不需要额外的 DOM 节点。
+**错误二：组件名小写。** 手滑写成 `<playerCard name="阿天" score={980} />`，页面出现一个空白的方块，控制台：
 
-### 7.1 使用方式
+```text
+Warning: The tag <playercard> is unrecognized in this browser. If you meant to render a React component, start its name with an uppercase letter.
+```
 
-```tsx
-import { Fragment } from 'react';
+三步定位：警告说得直白——浏览器不认识 playercard，本意若是 React 组件请大写开头，改成 `<PlayerCard ... />` 即可。根源在 010 篇埋过：JSX 靠大小写区分组件和 HTML 标签，小写按 HTML 处理，不认识的标签渲染成空元素。
 
-// 方式一：显式 Fragment（可带 key）
-function TableRows({ items }: { items: Item[] }) {
-  return items.map((item) => (
-    <Fragment key={item.id}>
-      <td>{item.name}</td>
-      <td>{item.value}</td>
-    </Fragment>
-  ));
+## 9. 实际项目中的使用场景
+
+- 布局与容器组件（Panel、Modal、侧栏）几乎都靠 children 实现，「内容当参数」是 React 组件库的通用设计语言；
+- 列表渲染无处不在：商品列表、消息流、表格行，全是「数据数组 + map + key」这一套；
+- 拆分判断标准：同一段 JSX 出现第二遍就拆；一个逻辑块独立变化也拆。只出现一次的小碎片不必强拆——拆分是为了改起来便宜，不是为了好看；
+- props 还能传函数（子组件把「发生了什么」报告给父组件），030 篇随事件一起讲。
+
+## 10. 小练习
+
+预测题（5 分钟，先写答案再运行）：
+
+```jsx
+function Badge({ text }) {
+  return <em>[{text}]</em>;
 }
 
-// 方式二：短语法 <>...</>（不能带 key）
-function MultipleElements() {
+function App() {
   return (
-    <>
-      <h1>标题</h1>
-      <p>段落</p>
-    </>
+    <p>
+      状态：{Badge({ text: '在线' })}
+      与 <Badge text="离线" />
+    </p>
   );
 }
 ```
 
-### 7.2 何时使用 Fragment
+两种用法页面各显示什么？第一种是把组件当普通函数调用——本例恰好能显示，但绕过了组件机制，一旦用上 Hook（040 篇）就出错。规矩：组件永远用 JSX 标签调用。
 
-- 组件需要返回多个同级元素
-- 在 `<table>` 中返回多个 `<td>`
-- 避免无意义的 `<div>` 包裹（减少 DOM 层级）
+修改题（10 分钟）：给 PlayerCard 增加 `title`（段位称号），缺省时显示「无段位」；App 改用 map 渲染，第四个玩家不传 title。验收：前三个显示各自称号，第四个显示「无段位」（解构默认值一行搞定）。
 
-> **注意**：短语法 `<>...</>` 不支持 `key` 属性，在列表渲染中需要带 `key` 时必须使用 `<Fragment key={...}>`。
-## 函数组件定义
+修 Bug 题（15 分钟）：下面的代码想渲染排行榜，控制台真实警告如下。按三步定位并修复：
 
-**基本函数组件**
-`function <Component>(<props>): <JSX.Element>`
-```tsx
-function Greeting({ name }: { name: string }) {
-  return <h1>Hello, {name}</h1>;
+```jsx
+const players = [
+  { id: 'p1', name: '阿天', score: 980 },
+  { id: 'p2', name: '小满', score: 870 },
+];
+
+function Leaderboard() {
+  return (
+    <ul>
+      {players.map((player) => (
+        <li>
+          {player.name}：{player.score}
+        </li>
+      ))}
+    </ul>
+  );
 }
 ```
 
-**箭头函数组件**
-`const <Component> = (<props>) => <JSX.Element>;`
-```tsx
-const Button = ({ label }: { label: string }) => (
-  <button>{label}</button>
-);
+真实警告（同 8 节）：
+
+```text
+Warning: Each child in a list should have a unique "key" prop. Check the render method of `Leaderboard`.
 ```
 
-**FC 类型组件**
-`const <Component>: React.FC<<Props>> = (<props>) => <JSX.Element>;`
-```tsx
-type ButtonProps = { label: string; onClick: () => void };
+挑战题（半小时，不给代码）：写一个 `ScoreTable({ players, columns })`——players 是对象数组（含 name、score、games 场次），columns 是字符串数组如 `['name', 'score']`，表格只渲染 columns 列出的字段。验收：
 
-const Button: React.FC<ButtonProps> = ({ label, onClick }) => (
-  <button onClick={onClick}>{label}</button>
-);
+```text
+columns 为 ['name', 'score'] 时，每行两格：名字、分数
+columns 为 ['name'] 时，每行一格：名字
 ```
 
----
+提示分两级：「提示」两层 map——外层玩家、内层字段名，字段值用 `player[field]` 取；「展开」内层 map 产生的每个 `<td>` 同样需要 key。
 
-## Props 类型定义
+## 11. 与之前和之后的知识的关系
 
-**基础 Props 类型**
-`type <Props> = { <key>: <type> };`
-```tsx
-type UserCardProps = {
-  name: string;
-  age: number;
-  isActive?: boolean;
-};
-```
+- 往前：010 篇的等式里你只会写一个 f，本篇把 f 拆成一族函数；090 篇的 map 升级为「数据变界面」的标准姿势；080 篇「函数里改参数不影响外面」在 props 只读契约里变成规矩；
+- 往后：本模块 A→B→C→040——[状态与事件](/react/030-StateEvent) 让子组件也能「报告变化」；[Hooks 深入](/react/040-HooksDeep) 接手「状态凭什么记得住」；渲染底层在 [Fiber 架构](/react/120-FiberArchitecture) 等你。
 
-**PropsWithChildren 含子节点**
-`type <Props> = React.PropsWithChildren<{ <key>: <type> }>;`
-```tsx
-type CardProps = React.PropsWithChildren<{ title: string }>;
+## 12. 官方文档
 
-function Card({ title, children }: CardProps) {
-  return <section><h2>{title}</h2>{children}</section>;
-}
-```
+- 传递 Props：https://zh-hans.react.dev/learn/passing-props
+- 渲染列表：https://zh-hans.react.dev/learn/rendering-lists
+- 组件保持纯粹：https://zh-hans.react.dev/learn/keeping-components-pure
+- 条件渲染：https://zh-hans.react.dev/learn/conditional-rendering
 
-**ComponentProps 提取元素属性**
-`type <Props> = React.ComponentProps<<Element>>;`
-```tsx
-type DivProps = React.ComponentProps<'div'>;
-type ButtonElProps = React.ComponentProps<'button'>;
-type WrappedBtnProps = React.ComponentProps<typeof Button>;
-```
+## 13. 自我检查
 
-**ComponentPropsWithRef 含 ref**
-`type <Props> = React.ComponentPropsWithRef<<ElementType>>;`
-```tsx
-type InputProps = React.ComponentPropsWithRef<'input'>;
-```
+- 能说出拆组件的两个判断标准，并现场把一段重复 JSX 拆成带 props 的组件；
+- 能解释「props 是只读契约」的两层含义，并指出想改数据该由谁动手；
+- 能用 children 写出 Panel，并说出它的设计价值；
+- 能复述一次渲染的三个阶段，并说出「组件函数被反复调用」带来的两条纪律；
+- 拿到 key 警告能十秒定位，并说清下标当 key 为什么在增删时出乱子。
 
----
+## 本章总结
 
-## 可选与默认 Props
+组件是返回界面描述的函数，页面由组件树组合而成。props 是父到子的只读契约：数据单向流，子组件只展示不修改；标签之间的内容自动成为 children，容器组件靠它把「内容当参数」。列表渲染 = 数据数组 map 成组件数组，每个列表项带唯一稳定的 key。组件函数被反复调用、展开成描述树，React 负责兑现与差异更新——组件要纯，重活别放组件体。最常见的两个现场：key 警告照着点名修，小写组件名被当成 HTML 标签。
 
-**可选 Props**
-`<key>?: <type>`
-```tsx
-type ModalProps = { title: string; onClose?: () => void };
-```
+## 下一步
 
-**默认值解构**
-`function <C>({ <key> = <default> }: <Props>)`
-```tsx
-function Avatar({ size = 48 }: { size?: number }) {
-  return <img width={size} height={size} />;
-}
-```
-
----
-
-## 泛型组件
-
-**泛型函数组件**
-`function <Component><<T>>(<props>): <JSX.Element>`
-```tsx
-function List<T>({ items, render }: {
-  items: T[];
-  render: (item: T, index: number) => React.ReactNode;
-}) {
-  return <ul>{items.map((item, i) => <li key={i}>{render(item, i)}</li>)}</ul>;
-}
-```
-
-**泛型箭头组件**
-`const <Component> = <T,>(<props>) => <JSX.Element>;`
-```tsx
-const Select = <T extends string | number>({
-  options,
-  value,
-  onChange,
-}: {
-  options: T[];
-  value: T;
-  onChange: (v: T) => void;
-}) => (
-  <select value={value} onChange={e => onChange(e.target.value as T)}>
-    {options.map(o => <option key={String(o)} value={o}>{o}</option>)}
-  </select>
-);
-```
-
----
-
-## 事件 Props
-
-**事件处理器 Props**
-`<onChange>: React.ChangeEventHandler<<Element>>`
-```tsx
-type InputProps = {
-  value: string;
-  onChange: React.ChangeEventHandler<HTMLInputElement>;
-  onClick?: React.MouseEventHandler<HTMLButtonElement>;
-};
-```
-
----
-
-## Children 类型
-
-**ReactNode 任意节点**
-`children: React.ReactNode`
-```tsx
-type Props = { children: React.ReactNode };
-```
-
-**ReactElement 单元素**
-`children: React.ReactElement`
-```tsx
-type Props = { children: React.ReactElement };
-```
-
-**JSX.Element 类型**
-`const <el>: JSX.Element = <node>;`
-```tsx
-const heading: JSX.Element = <h1>Title</h1>;
-```
-
----
-
-## Props 拆分与合并
-
-**Omit 排除属性**
-`type <Props> = Omit<<Base>, <keys>>;`
-```tsx
-type IconButtonProps = Omit<React.ComponentProps<'button'>, 'type'> & {
-  variant?: 'primary' | 'ghost';
-};
-```
-
-**Pick 选取属性**
-`type <Props> = Pick<<Base>, <keys>>;`
-```tsx
-type CoreInputProps = Pick<React.ComponentProps<'input'>, 'value' | 'onChange' | 'placeholder'>;
-```
-
-**交叉类型合并**
-`type <Props> = <A> & <B>;`
-```tsx
-type Props = React.ComponentProps<'button'> & { loading?: boolean };
-```
+进入 [状态与事件](/react/030-StateEvent)：按钮点一下，数字要变——useState 登场，props 的静态世界开始流动。

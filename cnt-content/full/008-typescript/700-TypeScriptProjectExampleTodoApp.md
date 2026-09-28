@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 TypeScript 从零搭建前后端 TODO 应用：共享类型层、Node 后端、原生前端，串联类型守卫、收窄、工具类型与工程配置。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'typescript/690-TypeScriptProjectExampleTypeSafeAPIClient'
   - 'typescript/570-TypeSafeAPIClient'

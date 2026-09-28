@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: "以「while 循环停不下来、程序却没有任何报错」引入，讲 happens-before 直觉、volatile 最小实验、死锁四条件与 jstack 抓捕实录、AQS 的 state 加队列模型、ReentrantLock 选型表与读写锁适用场景。"
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/480-MultithreadingBasics'
   - 'java/490-ConcurrencyBasics'

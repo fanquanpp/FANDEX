@@ -1,10 +1,10 @@
 ---
 order: 30
-title: 状态与事件
+title: 状态与事件：按钮点一下，数字要变
 module: 'react'
 category: 前端技术
 difficulty: beginner
-description: useState、useReducer、事件处理、表单处理、受控与非受控组件、状态提升、状态管理模式。
+description: 从「按钮点了数字纹丝不动」讲起：useState 三件套（当前值、setter、重渲染）、事件处理与合成事件直觉、函数式更新、不可变更新与引用比较、受控输入最小表单，附 Too many re-renders 无限循环调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
@@ -12,662 +12,250 @@ related:
   - 'react/020-ComponentProps'
   - 'react/040-HooksDeep'
   - 'react/050-ContextGlobalState'
-prerequisites: []
+  - 'javascript/200-DeepShallowCopy'
+prerequisites:
+  - 'react/020-ComponentProps'
 ---
 
 ## 前置知识
 
-- [组件与 Props](/react/020-ComponentProps)：建议先完成前一篇的学习
+- 已完成 [组件与 Props](/react/020-ComponentProps)：会传 props、map 加 key 渲染列表，知道组件函数会被反复调用；
+- [深浅拷贝](/javascript/200-DeepShallowCopy) 学过最好——本文回收它埋的伏笔「什么时候真需要新数组」；没学过也不影响，现场只用展开语法 `...`。
 
 ## 学习目标
 
-- 掌握「1. useState」的核心机制、典型用法与常见陷阱
-- 掌握「2. useReducer」的核心机制、典型用法与常见陷阱
-- 掌握「3. 事件处理」的核心机制、典型用法与常见陷阱
-- 掌握「4. 表单处理」的核心机制、典型用法与常见陷阱
-- 掌握「5. 状态提升」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用 useState 让按钮点击后数字真的变化，说清「当前值、setter、重渲染」三件套各干什么；
+2. 绑定事件处理器时不踩「传函数还是传调用」的坑，并会给处理器传参；
+3. 用函数式更新 `setX(prev => ...)` 修复连续更新丢失的问题；
+4. 解释状态为什么必须「不可变更新」，并用展开语法正确增删改数组与对象；
+5. 写出受控输入的最小表单，并读懂 `Too many re-renders` 报错、定位渲染途中调 setter 的根因。
 
-## 1. useState
+预计 60 到 75 分钟。
 
-`useState` 是最基础的 Hook，用于在函数组件中声明状态变量。
+## 1. 你现在要解决什么问题
 
-### 1.1 基本用法
+020 篇的战绩榜已经像模像样：组件树、props、列表一应俱全。现在想加一个「点赞」按钮——点一下，阿天的分数加一。你写下 `const score = 980;` 和一个 `<button>点赞（{score}）</button>`，然后卡住了：想在按钮里改 score，却改不动。`score = score + 1`？080 篇警告过，改局部变量不影响任何东西。更根本的问题：**score 是每次渲染都重建的局部变量**——函数执行完它就随这次调用消失，界面上没有任何东西能「记住」上一次的值。
 
-```tsx
+你要的是一个能活在函数之外、变了还能让界面重新算的东西——React 管它叫**状态（state）**，声明它的那行代码就是你在 React 里写的第一个 Hook。
+
+## 2. useState：三件套让数字动起来
+
+```jsx
 import { useState } from 'react';
 
-function Counter() {
+function LikeButton() {
   const [count, setCount] = useState(0);
 
+  function handleClick() {
+    setCount(count + 1);
+  }
+
   return (
     <div>
-      <p>当前计数：{count}</p>
-      <button onClick={() => setCount(count + 1)}>+1</button>
-      <button onClick={() => setCount(count - 1)}>-1</button>
+      <p>当前点赞：{count}</p>
+      <button onClick={handleClick}>点赞</button>
     </div>
+  );
+}
+
+export default LikeButton;
+```
+
+预期行为：初始显示 0；点一下变 1，再点变 2——数字真的变了。
+
+等号左边是数组解构：useState 返回两项数组，按位置取名，第二项以 set 开头。这一行就是三件套：
+
+1. **当前值 count**：本次渲染的状态值，普通的 const——每次渲染都是崭新的一个；
+2. **setter（setCount）**：React 的「改变申请器」。`setCount(1)` 不是赋值，是预约：「下次渲染请把 count 变成 1」；
+3. **重渲染**：React 收到申请，重新调用 LikeButton()，这次 useState 返回新值，界面重新算一遍。
+
+接上 010 篇的等式：state 是自变量，setCount 是改自变量的唯一入口，重渲染就是重新算 f。**永远不要直接改 count，只走 setCount**——原因第 4 节揭晓。
+
+解开 1 节的谜：React 把状态存在组件函数外的「格子」里，按 useState 调用顺序对号入座，函数执行完状态还在。顺序为什么不能变，[Hooks 深入](/react/040-HooksDeep) 讲透。
+
+## 3. 事件处理：把函数交出去，不是把结果交出去
+
+`onClick={handleClick}` 传的是**函数本身**——React 存着它，等点击发生再调用。最常见的坑是把调用结果传了出去：
+
+```jsx
+<button onClick={handleClick()}>点赞</button>   // 错：渲染时就执行了
+<button onClick={handleClick}>点赞</button>      // 对：点击时才执行
+```
+
+要传参怎么办？包一层箭头函数（080 篇的函数表达式派上用场）：`<button onClick={() => removePlayer(player.id)}>移出榜单</button>`。
+
+参数 e 是 React 的**合成事件**——直觉版理解：长得和 [DOM 操作与事件](/javascript/410-DOMOperationEvent) 里的原生事件几乎一样，`e.target`、`e.preventDefault()` 直接照搬；React 统一包一层抹平浏览器差异，内部实现不在入门篇展开。
+
+表单提交是最常用的场景——`onSubmit` 里先 `e.preventDefault()` 挡住浏览器「提交就刷新页面」的默认行为：
+
+```jsx
+function AddPlayerForm({ onAdd }) {
+  const [name, setName] = useState('');
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    onAdd(name.trim());
+    setName('');
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input value={name} onChange={(e) => setName(e.target.value)} />
+      <button type="submit">上榜</button>
+    </form>
   );
 }
 ```
 
-### 1.2 函数式更新
+两个新概念就藏在这段代码里，接下来两节讲。
 
-当新状态依赖前一个状态时，应使用函数式更新，避免闭包陷阱：
+## 4. 不可变更新：为什么必须造新值
 
-```tsx
-//  错误：快速连续点击可能丢失更新
-const increment = () => setCount(count + 1);
+先看一个必然翻车的写法：
 
-//  正确：使用函数式更新
-const increment = () => setCount((prev) => prev + 1);
+```jsx
+const [players, setPlayers] = useState([{ id: 'p1', name: '阿天', score: 980 }]);
 
-// 批量更新
-const resetAndAdd = () => {
-  setCount(0); // 重置为 0
-  setCount((prev) => prev + 1); // 在 0 的基础上 +1，结果为 1
-};
-```
-
-### 1.3 惰性初始化
-
-当初始状态需要昂贵计算时，传入函数避免重复计算：
-
-```tsx
-//  每次渲染都会执行 createInitialState
-const [state, setState] = useState(createInitialState());
-
-//  只在首次渲染时执行
-const [state, setState] = useState(() => createInitialState());
-
-// 示例：从 localStorage 读取
-const [theme, setTheme] = useState(() => {
-  const saved = localStorage.getItem('theme');
-  return saved ?? 'light';
-});
-```
-
-### 1.4 对象状态更新
-
-```tsx
-interface UserState {
-  name: string;
-  age: number;
-  email: string;
-}
-
-function UserProfile() {
-  const [user, setUser] = useState<UserState>({
-    name: '',
-    age: 0,
-    email: '',
-  });
-
-  // 必须展开旧状态，否则会丢失其他字段
-  const updateName = (name: string) => {
-    setUser((prev) => ({ ...prev, name }));
-  };
-
-  // 使用 Immer 简化不可变更新
-  // npm install immer
-  import { produce } from 'immer';
-  const updateAge = (age: number) => {
-    setUser(
-      produce((draft) => {
-        draft.age = age;
-      })
-    );
-  };
-
-  return <div>...</div>;
+function addPlayerWrong(name) {
+  players.push({ id: 'p2', name, score: 0 });   // 直接改原数组
+  setPlayers(players);                          // 交回去的还是同一个数组
 }
 ```
 
-## 2. useReducer
+预期行为（翻车现场）：点击后界面纹丝不动——数据其实已经 push 进去了，但界面不认账。
 
-`useReducer` 是 `useState` 的替代方案，适合管理复杂状态逻辑。
+原因一句话：**React 判断「状态变没变」用的是引用比较。** setPlayers 收到新值后，React 用 `Object.is` 与旧值比——push 后还是原来那个数组，引用没变，React 判定「没变化」，跳过重渲染。[深浅拷贝](/javascript/200-DeepShallowCopy) 埋的问题「什么时候真需要新数组」，答案就在这：**要 React 看见变化，就给它一个新引用。**
 
-### 2.1 基本用法
+正确姿势——用展开语法和 filter、map 这些「返回新数组」的方法：
 
-```tsx
-import { useReducer } from 'react';
-
-interface State {
-  count: number;
+```jsx
+function addPlayer(name) {
+  setPlayers([...players, { id: crypto.randomUUID(), name, score: 0 }]);
 }
 
-type Action = { type: 'increment' } | { type: 'decrement' } | { type: 'reset'; payload: number };
-
-function reducer(state: State, action: Action): State {
-  switch (action.type) {
-    case 'increment':
-      return { count: state.count + 1 };
-    case 'decrement':
-      return { count: state.count - 1 };
-    case 'reset':
-      return { count: action.payload };
-    default:
-      return state;
-  }
+function likePlayer(id) {
+  setPlayers(
+    players.map((p) =>
+      p.id === id ? { ...p, score: p.score + 1 } : p   // 只造一个新对象，其余原样
+    )
+  );
 }
+```
 
+删除用 filter——`setPlayers(players.filter((p) => p.id !== id))`，它天然返回新数组。预期行为：添加多一行、点赞那行分数加一。口诀：**数组造新数组，对象造新对象，没动的项原样复用。** 这就是「不可变更新」：不改旧值，永远基于旧值算新值。
+
+## 5. 受控输入：界面是 state 的投影
+
+上一节表单里的 input 值得单独一节。`value={name}` 加 `onChange` 把输入框和状态锁死：每敲一个字，onChange 触发 setName，重渲染后 value 是新 state——**输入框显示什么完全由 state 决定**，这就是受控输入。
+
+好处立刻兑现：想清空就 `setName('')`（提交后那行就是），想校验、想联动，全是操作状态的普通代码。React 表单的默认姿势就是受控输入；非受控写法等 [Hooks 深入](/react/040-HooksDeep) 讲 useRef 时再补。对比 010 篇：那时等式还是口号，现在连输入框也被收编——整个页面真的成了 state 的函数。
+
+## 6. 修改实验
+
+实验一：给 LikeButton 加「点踩」（`setCount(count - 1)`）和「重置」（`setCount(0)`），验收三按钮互不干扰。
+
+实验二：快速双击「点赞」，观察是否偶尔只加了一次；改成 `setCount((prev) => prev + 1)` 再试——函数式更新基于上一次的值计算，连续申请不丢拍。
+
+实验三：把 4 节的 players 组装成完整战绩榜，每行一个点赞按钮，点谁加谁的分。验收：只有被点那行变。
+
+## 7. 常见错误与调试实录
+
+**错误一：渲染途中直接调 setter。** 新手经典手滑——把调用写进了组件体：
+
+```jsx
 function Counter() {
-  const [state, dispatch] = useReducer(reducer, { count: 0 });
-
-  return (
-    <div>
-      <p>计数：{state.count}</p>
-      <button onClick={() => dispatch({ type: 'increment' })}>+1</button>
-      <button onClick={() => dispatch({ type: 'decrement' })}>-1</button>
-      <button onClick={() => dispatch({ type: 'reset', payload: 0 })}>重置</button>
-    </div>
-  );
+  const [count, setCount] = useState(0);
+  setCount(count + 1);          // 组件体里直接调 setter
+  return <p>{count}</p>;
 }
 ```
 
-### 2.2 复杂状态管理示例
+真实报错（页面崩溃，控制台）：
 
-```tsx
-interface Todo {
-  id: string;
-  text: string;
-  completed: boolean;
-}
+```text
+Too many re-renders. React limits the number of renders to prevent an infinite loop.
+```
 
-type TodoAction =
-  | { type: 'add'; text: string }
-  | { type: 'toggle'; id: string }
-  | { type: 'delete'; id: string }
-  | { type: 'edit'; id: string; text: string };
+三步定位：读报错——重渲染超限，React 熔断防死循环，说明「渲染」在不停触发「再渲染」；验真身——逐行检查组件体和 JSX 属性值里有没有**不在任何函数里**的 setX 调用；修正——挪进事件处理器，或补成箭头函数 `onClick={() => setCount(count + 1)}`。口诀：**setX 只在回调里调，不在渲染里调。**
 
-function todoReducer(state: Todo[], action: TodoAction): Todo[] {
-  switch (action.type) {
-    case 'add':
-      return [...state, { id: crypto.randomUUID(), text: action.text, completed: false }];
-    case 'toggle':
-      return state.map((todo) =>
-        todo.id === action.id ? { ...todo, completed: !todo.completed } : todo
-      );
-    case 'delete':
-      return state.filter((todo) => todo.id !== action.id);
-    case 'edit':
-      return state.map((todo) => (todo.id === action.id ? { ...todo, text: action.text } : todo));
-    default:
-      return state;
+**错误二：状态改了界面不变。** push 现场没有报错，只有沉默的界面——比崩溃更熬人。定位三步：确认调了 setX（前一行打 `console.log`）；确认传的是**新引用**（`提交值 === players` 为 true 即实锤）；把原地改写换成展开语法或 filter。「数据变了界面不动」，第一嫌疑永远是原地突变。
+
+## 8. 实际项目中的使用场景
+
+- useState 管「界面自己的状态」：开关、输入草稿、选中项、点赞数这类活数据；
+- 状态放哪有讲究：多个组件要共享时，先提升到最近共同父组件（props 向下流 + 回调向上报），更大范围用 Context——[Context 与全局状态](/react/050-ContextGlobalState) 展开；来自服务器的数据不塞 useState 手动同步，070 篇讲正规姿势；
+- 受控输入是表单的地基，复杂表单方案建立在这套心智模型上，[React 表单](/react/200-ReactForm) 再深入。
+
+## 9. 小练习
+
+预测题（5 分钟，先写答案再运行）：
+
+```jsx
+function Demo() {
+  const [count, setCount] = useState(0);
+
+  function handleClick() {
+    setCount(count + 1);
+    setCount(count + 1);
+    setCount(count + 1);
   }
-}
 
-function TodoApp() {
-  const [todos, dispatch] = useReducer(todoReducer, []);
-  const [input, setInput] = useState('');
-
-  const handleAdd = () => {
-    if (input.trim()) {
-      dispatch({ type: 'add', text: input.trim() });
-      setInput('');
-    }
-  };
-
-  return (
-    <div>
-      <input value={input} onChange={(e) => setInput(e.target.value)} />
-      <button onClick={handleAdd}>添加</button>
-      <ul>
-        {todos.map((todo) => (
-          <li key={todo.id}>
-            <span
-              style={{ textDecoration: todo.completed ? 'line-through' : 'none' }}
-              onClick={() => dispatch({ type: 'toggle', id: todo.id })}
-            >
-              {todo.text}
-            </span>
-            <button onClick={() => dispatch({ type: 'delete', id: todo.id })}>删除</button>
-          </li>
-        ))}
-      </ul>
-    </div>
-  );
+  return <button onClick={handleClick}>{count}</button>;
 }
 ```
 
-### 2.3 useState vs useReducer
+点一次按钮显示几？三次 setCount 为什么只生效一次（每次拿到的都是本次渲染的同一个旧值）？怎么改成点一次加三？
 
-| 场景                 | 推荐         | 原因                    |
-| :------------------- | :----------- | :---------------------- |
-| 简单独立状态         | `useState`   | 代码更简洁              |
-| 多个关联状态         | `useReducer` | 逻辑集中，易于维护      |
-| 下一个状态依赖前一个 | `useReducer` | 避免状态更新链          |
-| 需要可预测的状态转换 | `useReducer` | 纯函数 reducer 易于测试 |
+修改题（10 分钟）：给 LikeButton 加上限，count 到 10 后再点不再增加。验收：连点到 10 封顶，不报错不回退。
 
-## 3. 事件处理
+修 Bug 题（15 分钟）：下面的组件一挂载就白屏崩溃。按三步定位并修复：
 
-### 3.1 基本事件
-
-```tsx
-function EventDemo() {
-  // 点击事件
-  const handleClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    console.log('点击', e.currentTarget);
-  };
-
-  // 输入事件
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log('输入值：', e.target.value);
-  };
-
-  // 键盘事件
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === 'Enter') {
-      console.log('回车键');
-    }
-  };
-
-  // 表单提交
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    console.log('表单提交');
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input onChange={handleChange} onKeyDown={handleKeyDown} />
-      <button type="submit" onClick={handleClick}>
-        提交
-      </button>
-    </form>
-  );
+```jsx
+function Counter() {
+  const [count, setCount] = useState(0);
+  return <button onClick={setCount(count + 1)}>点赞{count}</button>;
 }
 ```
 
-### 3.2 传递参数
+真实报错（同 7 节原文）：
 
-```tsx
-function ItemList({ items }: { items: { id: string; name: string }[] }) {
-  // 方式一：箭头函数包装
-  const handleDelete = (id: string) => {
-    console.log('删除：', id);
-  };
-
-  return (
-    <ul>
-      {items.map((item) => (
-        <li key={item.id}>
-          {item.name}
-          <button onClick={() => handleDelete(item.id)}>删除</button>
-        </li>
-      ))}
-    </ul>
-  );
-}
+```text
+Too many re-renders. React limits the number of renders to prevent an infinite loop.
 ```
 
-### 3.3 事件委托
+挑战题（半小时，不给代码）：写 `Backpack()` 组件管理背包数组 `items`（元素形如 `{ id, name }`）：受控输入名字，「拾取」添加一条（id 用 `Date.now()`），每条带「丢弃」按钮，另有「清空」。验收（操作后打印 items 核对）：
 
-React 17+ 事件委托到根节点而非 document，避免了与第三方库的冲突。
-
-## 4. 表单处理
-
-### 4.1 受控组件
-
-表单元素的值由 React 状态控制：
-
-```tsx
-function LoginForm() {
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    remember: false,
-  });
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value, type, checked } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: type === 'checkbox' ? checked : value,
-    }));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('提交数据：', formData);
-  };
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        name="username"
-        value={formData.username}
-        onChange={handleChange}
-        placeholder="用户名"
-      />
-      <input
-        name="password"
-        type="password"
-        value={formData.password}
-        onChange={handleChange}
-        placeholder="密码"
-      />
-      <label>
-        <input
-          name="remember"
-          type="checkbox"
-          checked={formData.remember}
-          onChange={handleChange}
-        />
-        记住我
-      </label>
-      <button type="submit">登录</button>
-    </form>
-  );
-}
+```text
+添加两条后 items 长度 2、界面两行；丢弃第一条后长度 1、内容正确；清空后长度 0
 ```
 
-### 4.2 非受控组件
+提示分两级：「提示」三个操作对应展开语法、filter、空数组，全走 setItems 换新引用；「展开」添加前用 `name.trim() === ''` 拦空输入。
 
-使用 `ref` 直接访问 DOM 值：
+## 10. 与之前和之后的知识的关系
 
-```tsx
-import { useRef } from 'react';
+- 往前：010 篇的 state 本篇登场，界面第一次「动」了；props 向下流加回调向上报，数据环流闭合；080 篇的闭包解释了「count 为什么总是旧值」，函数式更新是绕开它的标准解；javascript/200 的伏笔在不可变更新兑现；
+- 往后：本模块 A→B→C→040——[Hooks 深入](/react/040-HooksDeep) 讲 useEffect、useRef 与 Hooks 规则（为什么不能写在 if 里）；共享状态升级在 [Context 与全局状态](/react/050-ContextGlobalState)。
 
-function UncontrolledForm() {
-  const inputRef = useRef<HTMLInputElement>(null);
+## 11. 官方文档
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    console.log('输入值：', inputRef.current?.value);
-  };
+- 组件的内存：状态：https://zh-hans.react.dev/learn/state-a-components-memory
+- useState API 参考：https://zh-hans.react.dev/reference/react/useState
+- 更新数组中的状态：https://zh-hans.react.dev/learn/updating-arrays-in-state
 
-  return (
-    <form onSubmit={handleSubmit}>
-      <input ref={inputRef} defaultValue="默认值" />
-      <button type="submit">提交</button>
-    </form>
-  );
-}
-```
+## 12. 自我检查
 
-### 4.3 受控 vs 非受控
+- 能不查资料写出 LikeButton，并说清三件套里谁存值、谁申请变化、谁触发重算；
+- 能解释「传函数还是传调用」的区别，并现场给事件处理器带上参数；
+- 能说出「为什么 push 之后界面不动」，并用展开语法写出正确的增删改；
+- 看到数字比预期少加了一次，能想到函数式更新；
+- 拿到 `Too many re-renders`，第一步就是搜「不在回调里的 setX」。
 
-| 特性         | 受控组件     | 非受控组件         |
-| :----------- | :----------- | :----------------- |
-| 数据源       | React state  | DOM                |
-| 实时验证     | 支持         | 不便               |
-| 条件禁用提交 | 支持         | 不便               |
-| 代码量       | 较多         | 较少               |
-| 适用场景     | 需要即时反馈 | 简单表单、文件上传 |
+## 本章总结
 
-## 5. 状态提升
+useState 给组件装上记忆：当前值、setter、重渲染三件套，让「界面 = f(state)」在每次点击里兑现。事件处理把函数交给 React 等点击，合成事件像原生事件一样用。状态必须不可变更新——React 靠引用比较判断变化，push 原数组等于白改。受控输入把输入框也收编进 state。渲染途中调 setter 触发 `Too many re-renders` 熔断：setX 只在回调里调。
 
-当多个组件需要共享状态时，将状态提升到最近的共同父组件。
+## 下一步
 
-```tsx
-function TemperatureInput({
-  temperature,
-  onTemperatureChange,
-}: {
-  temperature: string;
-  onTemperatureChange: (value: string) => void;
-}) {
-  return <input value={temperature} onChange={(e) => onTemperatureChange(e.target.value)} />;
-}
-
-function Calculator() {
-  const [celsius, setCelsius] = useState('');
-  const [fahrenheit, setFahrenheit] = useState('');
-
-  const handleCelsiusChange = (value: string) => {
-    setCelsius(value);
-    setFahrenheit(value ? ((parseFloat(value) * 9) / 5 + 32).toString() : '');
-  };
-
-  const handleFahrenheitChange = (value: string) => {
-    setFahrenheit(value);
-    setCelsius(value ? (((parseFloat(value) - 32) * 5) / 9).toString() : '');
-  };
-
-  return (
-    <div>
-      <label>摄氏度：</label>
-      <TemperatureInput temperature={celsius} onTemperatureChange={handleCelsiusChange} />
-      <label>华氏度：</label>
-      <TemperatureInput temperature={fahrenheit} onTemperatureChange={handleFahrenheitChange} />
-    </div>
-  );
-}
-```
-
-## 6. 状态管理模式
-
-### 6.1 状态分类
-
-| 类型           | 说明                 | 示例               |
-| :------------- | :------------------- | :----------------- |
-| **UI 状态**    | 组件内部展示状态     | 模态框开关、选中项 |
-| **应用状态**   | 全局共享的业务数据   | 用户信息、购物车   |
-| **服务端状态** | 来自后端的数据       | API 响应、缓存     |
-| **URL 状态**   | 路由参数和查询字符串 | 页码、筛选条件     |
-
-### 6.2 状态放置原则
-
-1. **能放局部就不提升** — 仅组件内部使用的状态不要提升
-2. **能放 URL 就不放状态** — 分页、筛选等适合放在 URL 中
-3. **服务端状态用专门库管理** — React Query / SWR
-4. **全局状态用状态管理库** — Zustand / Jotai / Redux Toolkit
-
-### 6.3 React 19 中的 Actions
-
-React 19 引入了 Actions 概念，简化了异步状态管理：
-
-```tsx
-import { useActionState } from 'react';
-
-async function submitForm(prevState: string, formData: FormData) {
-  const name = formData.get('name') as string;
-  // 模拟异步操作
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-  if (!name.trim()) {
-    return '请输入姓名';
-  }
-  return '提交成功！';
-}
-
-function Form() {
-  const [message, submitAction, isPending] = useActionState(submitForm, '');
-
-  return (
-    <form action={submitAction}>
-      <input name="name" />
-      <button type="submit" disabled={isPending}>
-        {isPending ? '提交中...' : '提交'}
-      </button>
-      {message && <p>{message}</p>}
-    </form>
-  );
-}
-```
-## useState 状态钩子
-
-**useState 基础用法**
-`const [<state>, <setState>] = useState(<initialValue>);`
-```tsx
-const [count, setCount] = useState(0);
-setCount(count + 1);
-setCount(prev => prev + 1);
-```
-
-**useState 类型推断**
-`const [<state>, <setState>] = useState<<T>>(<initialValue>);`
-```tsx
-const [user, setUser] = useState<User | null>(null);
-const [tags, setTags] = useState<string[]>([]);
-```
-
-**useState 函数式初始化**
-`useState(() => <initialValue>);`
-```tsx
-const [data] = useState(() => loadFromLocalStorage());
-```
-
----
-
-## 事件类型
-
-**ChangeEvent 表单变更事件**
-`(e: React.ChangeEvent<<Element>>) => void`
-```tsx
-function Input() {
-  const [value, setValue] = useState('');
-  const onChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setValue(e.target.value);
-  };
-  return <input value={value} onChange={onChange} />;
-}
-```
-
-**ChangeEvent<HTMLTextAreaElement>**
-```tsx
-const onTextChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-  setText(e.target.value);
-};
-```
-
-**ChangeEvent<HTMLSelectElement>**
-```tsx
-const onSelectChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-  setSelect(e.target.value);
-};
-```
-
-**MouseEvent 鼠标事件**
-`(e: React.MouseEvent<<Element>>) => void`
-```tsx
-function Btn() {
-  const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    console.log(e.currentTarget);
-  };
-  return <button onClick={onClick}>Click</button>;
-}
-```
-
-**MouseEvent 元素类型**
-```tsx
-const onDivClick: React.MouseEventHandler<HTMLDivElement> = (e) => {};
-const onSpanClick: React.MouseEventHandler<HTMLSpanElement> = (e) => {};
-```
-
-**KeyboardEvent 键盘事件**
-`(e: React.KeyboardEvent<<Element>>) => void`
-```tsx
-const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  if (e.key === 'Enter') submit();
-};
-```
-
-**FocusEvent 焦点事件**
-`(e: React.FocusEvent<<Element>>) => void`
-```tsx
-const onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
-  console.log(e.target);
-};
-```
-
-**SubmitEvent 表单提交(原生)**
-`(e: React.FormEvent<<FormElement>>) => void`
-```tsx
-function Form() {
-  const onSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    console.log(Object.fromEntries(formData));
-  };
-  return <form onSubmit={onSubmit}>...</form>;
-}
-```
-
----
-
-## 事件处理器类型
-
-**EventHandler 类型别名**
-`type <Handler> = React.ChangeEventHandler<<Element>>;`
-```tsx
-type InputChange = React.ChangeEventHandler<HTMLInputElement>;
-const handle: InputChange = (e) => setValue(e.target.value);
-```
-
-**事件泛型**
-`React.SyntheticEvent<<Element>>`
-```tsx
-function handle(e: React.SyntheticEvent<HTMLFormElement>) {
-  e.preventDefault();
-}
-```
-
-**ClipboardEvent 剪贴板事件**
-```tsx
-const onPaste = (e: React.ClipboardEvent<HTMLInputElement>) => {
-  const text = e.clipboardData.getData('text');
-};
-```
-
-**DragEvent 拖拽事件**
-```tsx
-const onDrop = (e: React.DragEvent<HTMLDivElement>) => {
-  const files = e.dataTransfer.files;
-};
-```
-
-**WheelEvent 滚轮事件**
-```tsx
-const onWheel = (e: React.WheelEvent<HTMLDivElement>) => {
-  if (e.deltaY > 0) scrollDown();
-};
-```
-
----
-
-## 事件对象属性
-
-**target vs currentTarget**
-`e.target` / `e.currentTarget`
-```tsx
-const onClick = (e: React.MouseEvent<HTMLButtonElement>) => {
-  e.target;        // 触发事件的元素(可能是子元素)
-  e.currentTarget; // 绑定事件的元素
-};
-```
-
-**鼠标坐标**
-`e.clientX` / `e.clientY` / `e.pageX` / `e.pageY`
-```tsx
-const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
-  const { clientX, clientY } = e;
-};
-```
-
-**按键信息**
-`e.key` / `e.code` / `e.altKey` / `e.ctrlKey`
-```tsx
-const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-  if (e.key === 'Escape') close();
-  if (e.ctrlKey && e.key === 's') save();
-};
-```
-
----
-
-## 内联事件处理器
-
-**内联箭头函数**
-`<button onClick={() => <fn>(<arg>)}>`
-```tsx
-<button onClick={() => deleteItem(id)}>删除</button>
-```
-
-**useCallback 包装**
-`const <handler> = useCallback((<e>) => <fn>, [<deps>]);`
-```tsx
-const handleClick = useCallback((e: React.MouseEvent<HTMLButtonElement>) => {
-  onClick(id);
-}, [id, onClick]);
-```
+进入 [Hooks 深入](/react/040-HooksDeep)：useState 只是 Hook 家族的第一个成员——useEffect 管副作用，useRef 摸 DOM，还有「为什么 Hook 不能写在 if 里」的规则底细。

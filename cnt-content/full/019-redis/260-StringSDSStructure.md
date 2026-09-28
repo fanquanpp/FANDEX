@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Redis SDS（Simple Dynamic String）数据结构详解：预分配策略、惰性删除、与 C 字符串的差异及二进制安全。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'redis/190-DisklessReplication'
   - 'redis/280-ModuleSystem'

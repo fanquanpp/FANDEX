@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: "承接 350 进入萃取工程：读 iterator_traits 与 allocator_traits、void_t 探测装配成 detect 框架、tag dispatch / SFINAE / if constexpr 三版并排、conjunction/disjunction 组合与短路实例化。"
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'cpp/350-TypeTraitsSFINAE'
   - 'cpp/410-Cpp20Concept'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 深水区专题：同一张版本链上 RC 与 RR 的两条时间线推演、快照读下幻读为何不存在而当前读为何仍需间隙锁、当前读语句清单与双会话复现实验。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'mysql/430-MVCCPrinciple'
   - 'mysql/420-TransactionIsolationImplementation'

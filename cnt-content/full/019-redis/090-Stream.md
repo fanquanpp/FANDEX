@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: Redis Stream 消息日志模型：Entry ID 生成规则、Radix Tree 与 listpack 存储结构、XADD/XREAD/XRANGE 基础命令、写入端实践与消息队列选型对比。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'redis/092-StreamConsumerGroups'
   - 'redis/094-StreamOpsAndMonitoring'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: FDW 体系与 postgres_fdw 实战：外部服务器、用户映射、外部表三层结构、条件下推与 fetch_size 调优、file_fdw 读文件、典型场景与性能边界。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'postgresql/330-ExtensionModule'
   - 'postgresql/340-ExtensionModuleDetailed'

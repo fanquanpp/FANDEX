@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 承接多线程入门的深水区篇：condition_variable 生产者消费者完整实现与谓词防虚假唤醒、两把锁的死锁最小实验与锁排序纪律（ASan 与 TSan 都抓不到死锁，用线程序评审）、future/promise/async 取舍实验（默认策略可能根本不开线程）、shared_mutex 读写场景一句话，附忘发通知与线程 join 自己的真实报错。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'cpp/430-MultithreadingConcurrency'
   - 'cpp/450-CppMemoryModel'
