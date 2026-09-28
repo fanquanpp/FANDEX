@@ -16,13 +16,13 @@ prerequisites:
   - 'javascript/110-Regex'
 ---
 
-> 前置：需先有正则基础（043）。
+> 前置：需先有正则基础，见[正则表达式](/javascript/110-Regex)。
 
 # 断言
 
 ## 前置知识
 
-- [Records 与 Tuples](/javascript/630-ImmutableDataStructures)：建议先完成前一篇的学习
+- [正则表达式](/javascript/110-Regex)：断言建立在字符类、量词与分组之上，先把前置正则篇读顺
 
 ## 学习目标
 

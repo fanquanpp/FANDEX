@@ -31,7 +31,7 @@ Vue 3 生态由核心（vue）、路由（vue-router）、状态管理（pinia�
 | `pinia` | 4.x | 状态管理 | peer `vue ^3.5.11`、TypeScript `>=5.6` |
 | `vite` | 8.x | 构建工具 | Node `^20.19.0 || >=22.12.0` |
 | `@vitejs/plugin-vue` | 6.x | Vue 单文件组件编译 | peer `vite ^5 ~ ^8`、`vue ^3.2.25` |
-| `vitest` | 4.x | 单元测试 | Node `^20 || ^22 || >=24`，peer `vite ^6 ~ ^8` |
+| `vitest` | 5.x | 单元测试 | Node `^20 || ^22 || >=24`，peer `vite ^6 ~ ^8` |
 | `@vue/test-utils` | 2.4.x | 组件测试工具 | peer `vue 3.x` |
 | `vue-tsc` | 3.x | SFC 类型检查 | peer `typescript >=5.0`（兼容 7.x） |
 | `typescript` | 7.x | 类型系统与编译器 | Node `>=16.20` |

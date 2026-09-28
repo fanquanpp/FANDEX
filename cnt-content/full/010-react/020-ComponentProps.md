@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从「战绩榜五个玩家手写五遍」讲起：函数组件的定义与组合、props 只读契约、children 插槽、列表渲染与 key、渲染时组件函数被调用并返回界面描述，附 Each child in a list should have a unique key 与小写组件名两则调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/010-OverviewEnvSetup'
   - 'react/030-StateEvent'

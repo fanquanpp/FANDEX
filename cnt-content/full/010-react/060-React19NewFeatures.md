@@ -1,140 +1,54 @@
 ---
 order: 60
-title: React19 新特性
+title: React 19 新特性
 module: 'react'
 category: 前端技术
 difficulty: advanced
-description: React Server Components、use() Hook、Actions、useFormStatus、useOptimistic、useActionState、Suspense 进阶与流式 SSR。
+description: 用 FANDEX 岛屿与一个评论表单的真实场景学会 React 19 核心新特性：use()、Actions、useActionState、useFormStatus、useOptimistic，以及 RSC、流式 SSR 与文档元数据。
 author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'react/040-HooksDeep'
   - 'react/050-ContextGlobalState'
   - 'react/070-RouteDataFetch'
-  - 'react/080-PerformanceOptimization'
-prerequisites: []
+  - 'react/420-React19NewAPI'
+prerequisites:
+  - 'react/040-HooksDeep'
 ---
 
 ## 前置知识
 
-- [Context 与全局状态](/react/050-ContextGlobalState)：建议先完成前一篇的学习
+- [Hooks 深入](/react/040-HooksDeep)：熟练使用 useState、useEffect、useContext
+- [Context 与全局状态](/react/050-ContextGlobalState)：知道 Context 怎么创建与消费
 
 ## 学习目标
 
-- 掌握「1. React Server Components (RSC)」的核心机制、典型用法与常见陷阱
-- 掌握「2. use() Hook」的核心机制、典型用法与常见陷阱
-- 掌握「3. Actions」的核心机制、典型用法与常见陷阱
-- 掌握「4. useFormStatus」的核心机制、典型用法与常见陷阱
-- 掌握「5. useOptimistic」的核心机制、典型用法与常见陷阱
+- 用 `use()` 同时读取 Promise 和 Context，说清它与 useContext 的差别
+- 用 `<form action>` + `useActionState` + `useFormStatus` 写一个带 pending 状态与错误提示的表单，一行手动 setPending 都不写
+- 用 `useOptimistic` 做「先显示、后确认」的乐观更新，理解失败回滚的时机
+- 知道 RSC（服务端组件）与流式 SSR 解决什么问题、什么框架里才能用
+- 了解 React 19 顺带改进的文档元数据、样式表、ref 清理
 
+## 场景：给 FANDEX 加一个「读者留言」功能
 
-## 1. React Server Components (RSC)
+FANDEX 网页端是 Astro 站点，页面主体在构建期就渲染成静态 HTML，交互部分是嵌进去的 React 19 岛屿——比如右上角的主题切换按钮、前端实验室里那个能跑代码的编辑器。现在要加一个留言功能：输入昵称和内容，提交后消息立刻出现在列表里（哪怕请求还没返回），失败要提示，提交中按钮要禁用。
 
-React Server Components 是 React 19 最重要的特性，允许组件在服务端渲染，减少客户端 JavaScript 体积。
+用 React 18 的写法，你需要 useState 管 pending、useState 管错误、提交函数里手动 set 两次状态、还要处理乐观更新的一致性。React 19 把这条流水线压缩成了三个专用 API。本文就从零做出这个功能，顺带讲清同属 React 19 的 RSC 与流式 SSR 各自解决什么问题。
 
-### 1.1 Server Components vs Client Components
+## 一、use()：一个能读 Promise 的「非典型 Hook」
 
-| 特性        | Server Component        | Client Component           |
-| :---------- | :---------------------- | :------------------------- |
-| 运行环境    | 服务端                  | 客户端（浏览器）           |
-| 获取数据    | 直接访问数据库/文件系统 | 通过 API/fetch             |
-| 交互性      | 无（无状态、无事件）    | 有（useState、onClick 等） |
-| Bundle 体积 | 零（不发送到客户端）    | 包含在客户端 Bundle 中     |
-| 文件后缀    | `.tsx`（默认）          | `.tsx` + `'use client'`    |
-
-### 1.2 Server Components 示例
-
-```tsx
-// app/posts/page.tsx — 默认是 Server Component
-import { db } from '@/lib/db';
-
-// 直接访问数据库，无需 API
-async function PostsPage() {
-  const posts = await db.post.findMany({
-    orderBy: { createdAt: 'desc' },
-    take: 10,
-  });
-
-  return (
-    <div>
-      <h1>最新文章</h1>
-      {posts.map((post) => (
-        <article key={post.id}>
-          <h2>{post.title}</h2>
-          <p>{post.excerpt}</p>
-        </article>
-      ))}
-    </div>
-  );
-}
-
-export default PostsPage;
-```
-
-### 1.3 Client Components
-
-```tsx
-'use client'; // 声明为客户端组件
-
-import { useState } from 'react';
-
-export function LikeButton({ postId }: { postId: string }) {
-  const [liked, setLiked] = useState(false);
-  const [count, setCount] = useState(0);
-
-  const handleLike = async () => {
-    setLiked(!liked);
-    setCount((c) => (liked ? c - 1 : c + 1));
-    await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
-  };
-
-  return (
-    <button onClick={handleLike}>
-      {liked ? '已赞' : '点赞'} · {count}
-    </button>
-  );
-}
-```
-
-### 1.4 组合模式
-
-```tsx
-// Server Component 可以导入和渲染 Client Component
-import { LikeButton } from './LikeButton'; // Client Component
-import { getPost } from '@/lib/db';
-
-async function PostPage({ id }: { id: string }) {
-  const post = await getPost(id); // 服务端数据获取
-
-  return (
-    <article>
-      <h1>{post.title}</h1>
-      <div>{post.content}</div>
-      {/* Client Component 嵌入 Server Component */}
-      <LikeButton postId={id} />
-    </article>
-  );
-}
-```
-
-> **注意**：Client Component 不能导入 Server Component，但可以通过 `children` prop 传入。
-
-## 2. use() Hook
-
-`use()` 是 React 19 新增的 Hook，用于读取 Promise 或 Context 的值。
-
-### 2.1 读取 Promise
+### 动手：挂起一个组件直到数据就绪
 
 ```tsx
 import { use, Suspense } from 'react';
 
-// 在组件外部创建 Promise
-const userPromise = fetch('/api/user').then((res) => res.json());
+interface User {
+  name: string;
+  email: string;
+}
 
-function UserProfile() {
-  // use() 会挂起组件直到 Promise resolve
-  const user = use(userPromise) as { name: string; email: string };
-
+function UserProfile({ userPromise }: { userPromise: Promise<User> }) {
+  const user = use(userPromise); // Promise 未完成时组件在此挂起
   return (
     <div>
       <h2>{user.name}</h2>
@@ -143,189 +57,96 @@ function UserProfile() {
   );
 }
 
-// 必须配合 Suspense 使用
-function App() {
+export default function Page() {
   return (
     <Suspense fallback={<p>加载用户信息...</p>}>
-      <UserProfile />
+      <UserProfile userPromise={fetchUser()} />
     </Suspense>
   );
 }
 ```
 
-### 2.2 读取 Context
+`use(promise)` 的行为：Promise 还在 pending，组件挂起，最近一层 Suspense 显示 fallback；resolve 后继续渲染；reject 则交给最近的错误边界。
+
+### 它也能读 Context，而且可以在条件语句里调用
 
 ```tsx
-import { use, createContext } from 'react';
+import { use } from 'react';
 
 const ThemeContext = createContext<'light' | 'dark'>('light');
 
-// use() 可以在条件语句中调用（与 useContext 不同）
-function ThemedComponent({ showTheme }: { showTheme: boolean }) {
+function ThemedBanner({ showTheme }: { showTheme: boolean }) {
   if (showTheme) {
-    const theme = use(ThemeContext); //  use() 可以在条件中调用
+    const theme = use(ThemeContext); // 合法
     return <p>当前主题：{theme}</p>;
   }
   return <p>未显示主题</p>;
 }
 ```
 
-### 2.3 use() 与 useContext 的区别
+`use` 与 useContext 的本质区别：
 
-| 特性          | useContext | use()               |
-| :------------ | :--------- | :------------------ |
-| 条件中调用    | 不可以     | 可以                |
-| 读取 Promise  | 不可以     | 可以                |
-| 读取 Context  | 可以       | 可以                |
-| 需要 Suspense | 不需要     | 读取 Promise 时需要 |
+| 特性 | useContext | use |
+| :--- | :--- | :--- |
+| 条件 / 循环中调用 | 不可以 | 可以 |
+| 读取 Promise | 不可以 | 可以 |
+| 读取 Context | 可以 | 可以 |
+| 需要 Suspense | 不需要 | 读 Promise 时需要 |
 
-## 3. Actions
+为什么不受 Hooks 规则约束？因为 Hooks 规则的本质是「调用顺序必须稳定」，而 `use` 不在 Hook 链表上注册状态，它只是渲染期间读取外部资源的通道。这也是它名字全小写、长得不像 Hook 的原因。
 
-Actions 是 React 19 引入的异步状态管理模式，简化表单提交和异步操作。
-
-### 3.1 表单 Action
+### 坑点：Promise 别在模块顶层创建
 
 ```tsx
-async function createUser(formData: FormData) {
-  'use server'; // Next.js Server Action
+// 错误示范：模块加载时创建，之后永远是同一个 Promise
+const userPromise = fetch('/api/user').then((r) => r.json());
 
-  const name = formData.get('name') as string;
-  const email = formData.get('email') as string;
-
-  await db.user.create({ data: { name, email } });
-  redirect('/users');
-}
-
-function CreateUserForm() {
-  return (
-    <form action={createUser}>
-      <input name="name" placeholder="姓名" required />
-      <input name="email" type="email" placeholder="邮箱" required />
-      <button type="submit">创建用户</button>
-    </form>
-  );
+function Bad() {
+  const user = use(userPromise); // 第二次挂载拿到的还是旧数据
+  return <div>{user.name}</div>;
 }
 ```
 
-### 3.2 客户端 Action
+Promise 必须在渲染过程中创建，或由父组件 / 服务端组件传下来，保证参数变化时拿到新的 Promise。理解这一点比记住语法重要。
+
+## 二、Actions：把「提交」交给 React 管理
+
+### 动手：最简 Action
+
+React 19 里，任何包在异步函数里的过渡更新都叫 Action。`<form>` 的 action 属性可以直接接收它：
 
 ```tsx
-function SearchForm() {
-  const [results, setResults] = useState([]);
-
-  async function handleSearch(formData: FormData) {
-    const query = formData.get('query') as string;
-    const res = await fetch(`/api/search?q=${query}`);
-    const data = await res.json();
-    setResults(data);
-  }
-
-  return (
-    <form action={handleSearch}>
-      <input name="query" />
-      <button type="submit">搜索</button>
-      <ul>
-        {results.map((r) => (
-          <li key={r.id}>{r.title}</li>
-        ))}
-      </ul>
-    </form>
-  );
-}
-```
-
-## 4. useFormStatus
-
-`useFormStatus` 获取父级 `<form>` 的提交状态，无需传递 Props。
-
-```tsx
-import { useFormStatus } from 'react-dom';
-
-function SubmitButton() {
-  const { pending, data, method, action } = useFormStatus();
-
-  return (
-    <button type="submit" disabled={pending}>
-      {pending ? '提交中...' : '提交'}
-    </button>
-  );
+async function handleSubmit(formData: FormData) {
+  const nickname = formData.get('nickname') as string;
+  const content = formData.get('content') as string;
+  await fetch('/api/comments', {
+    method: 'POST',
+    body: JSON.stringify({ nickname, content }),
+  });
 }
 
-function ContactForm() {
-  async function handleSubmit(formData: FormData) {
-    await sendEmail(formData);
-  }
-
+function CommentForm() {
   return (
     <form action={handleSubmit}>
-      <input name="email" type="email" required />
-      <textarea name="message" required />
-      <SubmitButton /> {/* 自动获取表单状态 */}
+      <input name="nickname" placeholder="昵称" required />
+      <textarea name="content" required />
+      <button type="submit">留言</button>
     </form>
   );
 }
 ```
 
-> **注意**：`useFormStatus` 必须在 `<form>` 内部的组件中调用，且该组件必须是 `<form>` 的子组件，不能是 `<form>` 本身。
+注意三件事：
 
-## 5. useOptimistic
+1. **不用写 onSubmit、不用 preventDefault**，React 会拦截提交事件。
+2. **入参是 FormData**，与原生表单语义一致，所以字段名写在 input 的 name 上。
+3. **提交成功后表单自动清空**（非受控输入时），省掉 reset 逻辑。
 
-`useOptimistic` 实现乐观更新，在异步操作完成前先展示预期结果。
+Action 内部走的是 transition 通道，提交期间 React 知道「正在进行」，这就是后面三个状态 API 的基础。
 
-```tsx
-import { useOptimistic, useState } from 'react';
+### useActionState：拿到结果和 pending
 
-interface Message {
-  id: string;
-  text: string;
-  sending?: boolean;
-}
-
-function Chat({
-  messages,
-  onSend,
-}: {
-  messages: Message[];
-  onSend: (text: string) => Promise<void>;
-}) {
-  const [optimisticMessages, addOptimisticMessage] = useOptimistic(
-    messages,
-    (currentMessages, newText: string) => [
-      ...currentMessages,
-      { id: crypto.randomUUID(), text: newText, sending: true },
-    ]
-  );
-
-  const [input, setInput] = useState('');
-
-  async function handleSubmit(formData: FormData) {
-    const text = formData.get('message') as string;
-    setInput('');
-    addOptimisticMessage(text); // 立即显示乐观消息
-    await onSend(text); // 实际发送
-  }
-
-  return (
-    <div>
-      <ul>
-        {optimisticMessages.map((msg) => (
-          <li key={msg.id} style={{ opacity: msg.sending ? 0.5 : 1 }}>
-            {msg.text} {msg.sending && '（发送中...）'}
-          </li>
-        ))}
-      </ul>
-      <form action={handleSubmit}>
-        <input name="message" value={input} onChange={(e) => setInput(e.target.value)} />
-        <button type="submit">发送</button>
-      </form>
-    </div>
-  );
-}
-```
-
-## 6. useActionState
-
-`useActionState` 管理表单 Action 的状态（返回值、加载状态）。
+上面版本还缺两样：提交中的 loading、失败后的错误提示。`useActionState` 一次给齐：
 
 ```tsx
 import { useActionState } from 'react';
@@ -335,123 +156,236 @@ interface FormState {
   success: boolean;
 }
 
-async function submitOrder(prevState: FormState, formData: FormData): Promise<FormState> {
+async function submitComment(
+  prevState: FormState,
+  formData: FormData
+): Promise<FormState> {
+  const nickname = formData.get('nickname') as string;
+  const content = formData.get('content') as string;
+
+  if (!nickname.trim()) {
+    return { message: '昵称不能为空', success: false };
+  }
+
   try {
-    const item = formData.get('item') as string;
-    const quantity = parseInt(formData.get('quantity') as string);
-
-    await createOrder({ item, quantity });
-
-    return { message: '订单创建成功！', success: true };
+    await fetch('/api/comments', {
+      method: 'POST',
+      body: JSON.stringify({ nickname, content }),
+    });
+    return { message: '留言成功', success: true };
   } catch (error) {
-    return { message: `创建失败：${(error as Error).message}`, success: false };
+    return { message: `提交失败：${(error as Error).message}`, success: false };
   }
 }
 
-function OrderForm() {
-  const [state, submitAction, isPending] = useActionState(submitOrder, {
+function CommentForm() {
+  const [state, submitAction, isPending] = useActionState(submitComment, {
     message: '',
     success: false,
   });
 
   return (
     <form action={submitAction}>
-      <input name="item" placeholder="商品名称" required />
-      <input name="quantity" type="number" min="1" required />
+      <input name="nickname" placeholder="昵称" />
+      <textarea name="content" required />
       <button type="submit" disabled={isPending}>
-        {isPending ? '提交中...' : '下单'}
+        {isPending ? '提交中...' : '留言'}
       </button>
-      {state.message && <p style={{ color: state.success ? 'green' : 'red' }}>{state.message}</p>}
+      {state.message && (
+        <p style={{ color: state.success ? 'green' : 'red' }}>{state.message}</p>
+      )}
     </form>
   );
 }
 ```
 
-## 7. Suspense 进阶
+签名规则要记牢：action 函数是 `(prevState, formData) => newState`——第一个参数是上一次的返回值，第二个才是表单数据。校验也放进来做（哪怕服务端校验），把错误信息作为返回值传回，这比抛异常更可控。
 
-### 7.1 嵌套 Suspense
+### useFormStatus：按钮自己感知提交中
+
+SubmitButton 里的 pending 逻辑其实和表单无关，它只需要知道「我所在的表单正在提交吗」。React 19 用 `useFormStatus` 把这件事变成就近读取：
 
 ```tsx
-import { Suspense } from 'react';
+import { useFormStatus } from 'react-dom';
 
-function Dashboard() {
+function SubmitButton() {
+  const { pending, data } = useFormStatus();
+  return (
+    <button type="submit" disabled={pending}>
+      {pending ? `提交中（${data?.get('nickname')}）` : '留言'}
+    </button>
+  );
+}
+```
+
+不用从父组件传 pending prop，任何深度的子组件都能读。硬性约束：**必须在 `<form>` 的子组件里调用**，写在 form 元素自身的组件里拿到的是空状态。
+
+### 同一个表单多个提交按钮
+
+`formAction` 可以在按钮级别覆盖 action，常见于「保存草稿」与「直接发布」：
+
+```tsx
+<form action={publish}>
+  <input name="title" />
+  <button type="submit">发布</button>
+  <button type="submit" formAction={saveDraft}>存草稿</button>
+</form>
+```
+
+### 旧名对照与遗留写法
+
+- `useFormState`（react-dom）是 React 19 canary 时期的旧名，正式版改名 `useActionState`（react），读存量代码时认识即可，新代码统一用新名。
+- React 18 时代的手动写法（`useState(false)` 管 pending、try/catch 管 error）在新代码里没有必要，但维护老项目仍会大量遇到，读者要能一眼认出对应关系。
+
+## 三、useOptimistic：让消息「秒回」
+
+### 动手
+
+```tsx
+import { useActionState } from 'react';
+import { useOptimistic } from 'react';
+
+interface Message {
+  id: string;
+  text: string;
+  sending?: boolean;
+}
+
+async function sendToServer(formData: FormData): Promise<void> {
+  await fetch('/api/comments', {
+    method: 'POST',
+    body: JSON.stringify({
+      nickname: formData.get('nickname'),
+      content: formData.get('content'),
+    }),
+  });
+}
+
+function CommentList({
+  messages,
+}: {
+  messages: Message[];
+}) {
+  const [optimisticMessages, addOptimistic] = useOptimistic(
+    messages,
+    (current, newText: string) => [
+      ...current,
+      { id: `temp-${Date.now()}`, text: newText, sending: true },
+    ]
+  );
+
+  async function formAction(prevState: null, formData: FormData) {
+    addOptimistic(formData.get('content') as string); // 立即显示
+    await sendToServer(formData); // 失败抛错，乐观值自动回滚
+    return null;
+  }
+
+  const [, submitAction] = useActionState(formAction, null);
+
+  return (
+    <ul>
+      {optimisticMessages.map((msg) => (
+        <li key={msg.id} style={{ opacity: msg.sending ? 0.5 : 1 }}>
+          {msg.text}
+          {msg.sending && '（发送中）'}
+        </li>
+      ))}
+      <CommentForm action={submitAction} />
+    </ul>
+  );
+}
+```
+
+### 为什么与回滚机制
+
+`useOptimistic(baseState, reducer)` 返回的 `optimisticMessages` 是一个「叠加视图」：基础是父组件传入的真实数据，上面盖着你在 Action 里 add 的临时值。关键规则是 **addOptimistic 只能在 Action（或 transition）内部调用**——因为乐观值的存在周期由 transition 管理：
+
+- Action 执行期间，叠加视图生效，用户立刻看到灰色「发送中」消息；
+- Action 成功结束，transition 提交，真实数据更新（或父组件重新拉取），叠加层自然消失；
+- Action 抛错，transition 失败，叠加层被**自动回滚**——你不用写任何撤销代码。
+
+这就是把乐观更新塞进 Action 体系的原因：状态一致性问题（先显示什么、何时替换、失败怎么办）被框架接管了。
+
+### 坑点
+
+- 乐观值回滚后，真实列表里**没有**这条消息。失败提示要靠 `useActionState` 的返回值或错误边界，二者不是一回事。
+- 临时 id 要保证唯一且与真实数据 id 不冲突，否则 React 的 key 复用可能出现渲染错乱。
+- 如果 Action 成功但父组件的数据是「提交前快照」，要靠重新获取（refetch / router refresh）把真实结果带回来。
+
+### 自检
+
+合上文档回答：乐观消息什么时候变透明度？什么时候从列表里消失？如果 fetch 抛错了呢？三个问题都答得上来，本节才算过关。
+
+## 四、RSC：把「取数 + 渲染」搬回服务端
+
+FANDEX 的文章列表页在构建期由 Astro 渲染成静态 HTML——这其实就是「组件跑在服务端」的思路。React 19 的 RSC（React Server Components）把这套模型带进了 React 生态：组件分两类，Server Component 在服务端执行、零 JS 下发；Client Component（文件顶部标 `'use client'`）才能用 state 和事件，也就是 FANDEX 岛屿那种角色。
+
+| 特性 | Server Component | Client Component |
+| :--- | :--- | :--- |
+| 运行环境 | 服务端 | 浏览器 |
+| 取数 | 直接访问数据库 / 文件系统 | 通过 API / fetch |
+| 交互性 | 无（无 useState、无事件） | 有 |
+| 下发体积 | 零 JS | 计入客户端 bundle |
+| 声明方式 | 默认 | 顶部 `'use client'` |
+
+```tsx
+// app/posts/page.tsx — 默认就是 Server Component（Next.js App Router）
+import { db } from '@/lib/db';
+import { LikeButton } from './LikeButton';
+
+export default async function PostsPage() {
+  const posts = await db.post.findMany({ take: 10 });
+
   return (
     <div>
-      <h1>仪表盘</h1>
-      {/* 每个区域独立加载 */}
-      <Suspense fallback={<ChartSkeleton />}>
-        <SalesChart />
-      </Suspense>
-
-      <Suspense fallback={<TableSkeleton />}>
-        <RecentOrders />
-      </Suspense>
-
-      <Suspense fallback={<ListSkeleton />}>
-        <Notifications />
-      </Suspense>
+      <h1>最新文章</h1>
+      {posts.map((post) => (
+        <article key={post.id}>
+          <h2>{post.title}</h2>
+          {/* 交互下沉给岛屿式的客户端组件 */}
+          <LikeButton postId={post.id} />
+        </article>
+      ))}
     </div>
   );
 }
 ```
 
-### 7.2 Suspense 与数据获取
-
-React 19 推荐用 `use()` 直接读取 Promise，由 Suspense 处理挂起：
-
 ```tsx
-import { use, Suspense } from 'react';
+// LikeButton.tsx
+'use client';
 
-// 注意：Promise 应在渲染过程中创建（或由 Server Component 传入），
-// 保证每次 userId 变化拿到新的 Promise
-function UserProfile({ id }: { id: string }) {
-  const user = use(fetchUser(id)); // 挂起直到数据就绪
-  return <div>{user.name}</div>;
-}
-```
+import { useState, useTransition } from 'react';
 
-在 React 19 之前（16.6~18），没有 `use()` 时社区采用"抛出 Promise"的兼容模式，理解它有助于读懂存量代码：
+export function LikeButton({ postId }: { postId: string }) {
+  const [liked, setLiked] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-```tsx
-// 旧式兼容封装（React 19 之前的主流方案）
-function fetchUserLegacy(id: string) {
-  let status = 'pending';
-  let result: User;
-  let error: Error;
-
-  const promise = fetch(`/api/users/${id}`)
-    .then((res) => res.json())
-    .then((data) => {
-      status = 'success';
-      result = data;
-    })
-    .catch((err) => {
-      status = 'error';
-      error = err;
+  const handleLike = () => {
+    setLiked(!liked);
+    startTransition(async () => {
+      await fetch(`/api/posts/${postId}/like`, { method: 'POST' });
     });
-
-  return {
-    read() {
-      if (status === 'pending') throw promise; // 挂起组件
-      if (status === 'error') throw error;
-      return result;
-    },
   };
-}
 
-function UserProfileLegacy({ id }: { id: string }) {
-  const user = fetchUserLegacy(id).read();
-  return <div>{user.name}</div>;
+  return (
+    <button onClick={handleLike} disabled={isPending}>
+      {liked ? '已赞' : '点赞'}
+    </button>
+  );
 }
 ```
 
-> 新代码请统一使用 `use()` + Suspense，旧封装仅用于维护历史项目。
+组合规则只有两条，但都反直觉，务必记住：
 
-## 8. 流式 SSR
+- Server Component **可以** import Client Component 并传 props（可序列化的）；
+- Client Component **不能** import Server Component，但可以把 Server Component 作为 `children` prop 传进去——因为渲染发生在服务端，客户端只是拿到了渲染结果。
 
-流式 SSR 自 React 18 起由 `renderToPipeableStream` / `renderToReadableStream` 提供，React 19 在此基础上持续改进（配合 Suspense 的流式注入、对 Web Streams 的支持），允许逐步发送 HTML 到客户端，而不必等整个组件树渲染完成。
+> RSC 需要框架支持（Next.js App Router、React Router v7 框架模式、RedwoodJS 等）。纯 Vite + React 的 SPA 里不存在 RSC，`'use client'` 写了也没意义。FANDEX 的岛屿由 Astro 接管，走的是另一条同目标的路线。
 
-### 8.1 Node.js 流式渲染
+## 五、流式 SSR：先给壳，再补洞
+
+RSC 之外，React 18 就引入了流式 SSR（`renderToPipeableStream` / `renderToReadableStream`），React 19 在此基础上继续完善。思想：不必等整棵树渲染完，外壳先发，慢的部分由 Suspense 标记，数据到了再流式补进 HTML。
 
 ```tsx
 import { renderToPipeableStream } from 'react-dom/server';
@@ -471,423 +405,85 @@ app.get('/', (req, res) => {
 });
 ```
 
-### 8.2 Next.js 中的流式渲染
-
-Next.js App Router 默认使用流式 SSR：
+Next.js App Router 把这套机制包成了默认行为——包一层 Suspense 就自动流式：
 
 ```tsx
 // app/page.tsx
 import { Suspense } from 'react';
 
-async function SlowData() {
-  const data = await fetch('https://api.example.com/slow', {
+async function SlowStats() {
+  const res = await fetch('https://api.example.com/stats', {
     next: { revalidate: 60 },
   });
-  const json = await data.json();
-  return <div>{json.content}</div>;
+  const data = await res.json();
+  return <div>{data.summary}</div>;
 }
 
 export default function Page() {
   return (
     <div>
-      <h1>快速内容</h1>
-      {/* 快速内容立即显示，SlowData 流式加载 */}
-      <Suspense fallback={<p>加载中...</p>}>
-        <SlowData />
+      <h1>FANDEX 今日速览</h1>
+      <Suspense fallback={<p>统计加载中...</p>}>
+        <SlowStats />
       </Suspense>
     </div>
   );
 }
 ```
 
-## 9. 其他 React 19 改进
+多个独立 Suspense 边界各自流式注入，互不阻塞——这是性能优化的关键手法：慢接口不应拖住整个页面首字节。
 
-### 9.1 文档元数据
+## 六、React 19 的其他顺带改进
+
+这些改动小，但每一个都消灭了一个第三方库：
+
+- **文档元数据**：组件里直接写 `<title>` / `<meta>` / `<link>`，React 自动提升到 head，SEO 依赖 react-helmet 的理由没了。
 
 ```tsx
-// React 19 支持在组件中声明 <title>、<meta> 等标签
-function BlogPost({ post }: { post: Post }) {
+function ArticlePage({ post }: { post: Post }) {
   return (
     <article>
       <title>{post.title}</title>
       <meta name="description" content={post.excerpt} />
-      <link rel="canonical" href={`https://example.com/posts/${post.id}`} />
+      <link rel="canonical" href={`https://fandex.example.com/posts/${post.id}`} />
       <h1>{post.title}</h1>
-      <div>{post.content}</div>
     </article>
   );
 }
 ```
 
-### 9.2 样式表支持
+- **样式表与异步脚本**：`<link rel="stylesheet" precedence="...">` 控制加载顺序；`<script async>` 放在组件树里 React 负责去重与放置。
+- **ref 回调可以返回清理函数**：卸载时执行，对齐 useEffect 的心智。
 
 ```tsx
-function Component() {
-  return (
-    <>
-      {/* 通过 precedence 控制样式表加载顺序 */}
-      <link rel="stylesheet" href="reset.css" precedence="default" />
-      <link rel="stylesheet" href="styles.css" precedence="high" />
-      <div className="styled">内容</div>
-    </>
-  );
-}
-```
-
-### 9.3 异步脚本支持
-
-```tsx
-function MapComponent() {
-  return (
-    <>
-      <script async src="https://maps.googleapis.com/maps/api/js" />
-      <div id="map">地图容器</div>
-    </>
-  );
-}
-```
-
-### 9.4 ref 回调清理
-
-```tsx
-function Input() {
+function AutoFocusInput() {
   const ref = useCallback((node: HTMLInputElement | null) => {
-    if (node) {
-      // 挂载时
-      node.focus();
-    }
-    return () => {
-      // 卸载时清理（React 19 新增）
-    };
+    if (!node) return;
+    node.focus();
+    return () => node.blur(); // 卸载清理（React 19 新增）
   }, []);
-
   return <input ref={ref} />;
 }
 ```
-## Actions 概念
 
-**基本写法：startTransition 内的异步函数即 Action**
-`startTransition(async () => <异步>)`
-```tsx
-// 自动管理 pending 错误乐观更新
-const [isPending, startTransition] = useTransition();
-startTransition(async () => await submit(data));
-```
+- **ref 作为普通 prop**：函数组件不再需要 forwardRef 包一层（旧 API 仍在但已不必要，详见 [React 19 新增 API](/react/420-React19NewAPI)）。
 
----
+## 坑点清单（合卷自检）
 
-## useActionState
+1. `use()` 读的 Promise 必须在渲染期创建或由外部传入，不能放模块顶层——为什么？
+2. `useFormStatus` 必须在 form 的子组件中调用——按钮直接写在 form 里却读不到状态，最常见原因是什么？
+3. `useActionState` 的 action 签名第一个参数是什么？
+4. 乐观更新失败后列表里那条消息去哪了？谁来提示用户？
+5. Client Component 想渲染一段服务端内容，正确的传递方式是哪种 prop？
 
-**基本写法：用 Action 管理 form 状态**
-`const [<state>, <dispatch>, <isPending>] = useActionState(<action>, <初值>, [<permalink>])`
-```tsx
-// 表单提交状态一体化
-const [error, submitAction, isPending] = useActionState(
-  async (prev, formData) => await save(formData.get('name')),
-  null
-);
-```
+## 练习
 
----
+1. 把本文的留言功能补全成一个可运行的组件：`CommentForm`（useActionState + useFormStatus）与 `CommentList`（useOptimistic），提交失败时用 `useActionState` 的返回值渲染错误。
+2. 写一个「多按钮表单」：保存与发布共用一个 form，`formAction` 各自处理，提交后展示不同的提示文案。
+3. 在一个页面里放三个独立的 Suspense 边界，让其中一个故意延迟 2 秒返回，观察其余两块是否先渲染出来。
 
-**基本写法：action 函数签名**
-`async (<previousState>, <payload>) => <newState>`
-```tsx
-// 接收上次状态与提交数据
-async function reducer(prev, formData) {
-  const err = await save(formData.get('name'));
-  return err;
-}
-```
+## 下一步
 
----
-
-**基本写法：permalink 支持渐进增强**
-`useActionState(<action>, <初值>, <永久链接>)`
-```tsx
-// JS 未加载时跳转到该 URL
-useActionState(action, null, '/profile');
-```
-
----
-
-## 表单 action 属性
-
-**基本写法：form 直接接收 Action 函数**
-`<form action={<action函数>}>`
-```tsx
-// 提交自动调用 action 并重置表单
-<form action={submitAction}>
-  <input name="email" />
-  <button type="submit">提交</button>
-</form>
-```
-
----
-
-**基本写法：button formAction 覆盖**
-`<button formAction={<另一个action>}>`
-```tsx
-// 同表单多个提交按钮
-<form action={save}>
-  <button formAction={publish}>发布</button>
-</form>
-```
-
----
-
-## useFormStatus
-
-**基本写法：子组件读取父表单状态**
-`const { pending, data, method, action } = useFormStatus()`
-```tsx
-// 按钮感知提交中状态
-import { useFormStatus } from 'react-dom';
-function Submit() {
-  const { pending } = useFormStatus();
-  return <button disabled={pending}>{pending ? '提交中' : '提交'}</button>;
-}
-```
-
----
-
-**基本写法：读取提交的 FormData**
-`const { data } = useFormStatus()`
-```tsx
-// 显示正在提交的字段
-const { data } = useFormStatus();
-return <span>{data.get('name')}</span>;
-```
-
----
-
-## useOptimistic 乐观更新
-
-**基本写法：提交期间展示乐观值**
-`const [<optimistic>, <add>] = useOptimistic(<state>, <updateFn>)`
-```tsx
-// 立即显示新消息请求成功后保留
-const [messages, addOptimistic] = useOptimistic(messages, (state, newMsg) => [
-  ...state, { ...newMsg, pending: true }
-]);
-```
-
----
-
-**基本写法：在 Action 内调用 add**
-`await <add>(<乐观值>); await <真实请求>`
-```tsx
-// 先乐观展示再确认
-async function sendAction(formData) {
-  addOptimistic({ id: 'temp', text: formData.get('text') });
-  await api.send(formData);
-}
-```
-
----
-
-## 表单组件组合
-
-**基本写法：useActionState 配合 form action**
-`<form action={<dispatch>}>`
-```tsx
-// useActionState 返回的 dispatch 作为 form action
-const [state, dispatch, pending] = useActionState(action, null);
-<form action={dispatch}><input name="q" /></form>
-```
-
----
-
-**基本写法：useFormStatus 用于按钮**
-`function <Button>() { const { pending } = useFormStatus(); }`
-```tsx
-// 子组件无需传递 pending prop
-function SubmitButton() {
-  const { pending } = useFormStatus();
-  return <button disabled={pending}>保存</button>;
-}
-```
-
----
-
-## 传统表单处理对比
-
-**基本写法：手动管理 pending 与错误**
-`const [<pending>, <setPending>] = useState(false)`
-```tsx
-// 旧写法繁琐
-const [pending, setPending] = useState(false);
-const [error, setError] = useState(null);
-const onSubmit = async () => {
-  setPending(true);
-  const err = await save();
-  setPending(false);
-  if (err) setError(err);
-};
-```
-
----
-
-## Action 错误处理
-
-**基本写法：Action 内抛错由错误边界捕获**
-`throw new Error(<消息>)`
-```tsx
-// 失败自动回滚乐观更新
-async function action() {
-  if (failed) throw new Error('提交失败');
-}
-```
-
----
-
-## 多个 Action 类型
-
-**基本写法：根据 payload 分支处理**
-`async (<state>, <payload>) => { switch (<payload>.type) { } }`
-```tsx
-// 类似 reducer 风格
-async function reducer(state, payload) {
-  switch (payload.type) {
-    case 'SAVE': return await save(payload.data);
-    case 'DELETE': return await del(payload.id);
-  }
-}
-```
-
----
-
-## 取消排队 Action
-
-**基本写法：通过返回值控制队列**
-`return <newState>`
-```tsx
-// 后续排队 action 会接收最新 state
-return { ok: true };
-```
-
----
-
-## 表单重置
-
-**基本写法：form action 成功后自动重置**
-`<form action={<action>}>`
-```tsx
-// 提交完成后清空输入
-<form action={submit}>
-  <input name="text" />
-</form>
-```
-
----
-
-## useFormState 兼容旧名
-
-**基本写法：React 19 重命名为 useActionState**
-`const [<state>, <action>] = useFormState(<fn>, <初值>)`
-```tsx
-// 兼容旧 API 不推荐使用
-import { useFormState } from 'react-dom';
-```
-
----
-
-## 配合 Server Action
-
-**基本写法：Server Action 作为 form action**
-`'use server' async function <action>(<formData>) {}`
-```tsx
-// 服务端执行 Action
-async function submitAction(formData) {
-  'use server';
-  await db.insert(formData.get('name'));
-}
-```
-
----
-
-## 表单校验
-
-**基本写法：Action 内做服务端校验**
-`if (!<合法>) return { <错误字段>: <消息> }`
-```tsx
-// 返回错误信息给 useActionState
-async function action(prev, formData) {
-  if (!formData.get('email')) return { error: '邮箱必填' };
-  await save(formData);
-  return { ok: true };
-}
-```
-
----
-
-## 配合 useOptimistic 与错误边界
-
-**基本写法：失败自动回滚乐观值**
-`useOptimistic(<state>, <updateFn>)`
-```tsx
-// Action 抛错时 useOptimistic 自动回滚
-const [items, addOptimistic] = useOptimistic(items, (s, n) => [...s, n]);
-```
-
----
-
-## 渐进增强
-
-**基本写法：JS 未加载时表单仍可提交**
-`<form action={<serverAction>} >`
-```tsx
-// 服务端 Action 支持无 JS 提交
-<form action={serverAction}>
-  <input name="q" />
-</form>
-```
-
----
-
-## 表单状态展示
-
-**基本写法：根据 useActionState 返回值渲染**
-`{<state>?.<error> && <错误提示>}`
-```tsx
-// 显示错误或成功状态
-const [state] = useActionState(action, null);
-{state?.error && <p className="error">{state.error}</p>}
-```
-
----
-
-## 复用 Action 逻辑
-
-**基本写法：自定义 Hook 封装 Action**
-`function use<名称>() { const [...] = useActionState(<action>, <初值>); return { ... }; }`
-```tsx
-// 提取通用提交逻辑
-function useSaveForm() {
-  const [state, dispatch, pending] = useActionState(saveAction, null);
-  return { state, dispatch, pending };
-}
-```
-
----
-
-## Action 与 transition 关系
-
-**基本写法：Action 内部走 transition**
-`startTransition(async () => <异步>)`
-```tsx
-// 因此 isPending 与 useTransition 一致
-const [isPending] = useTransition();
-```
-
----
-
-## 表单提交禁用按钮
-
-**基本写法：useFormStatus 控制 disabled**
-`<button disabled={<pending>}>`
-```tsx
-// 防止重复提交
-const { pending } = useFormStatus();
-<button disabled={pending}>提交</button>
-```
+- [React 19 新增 API](/react/420-React19NewAPI)：use、useEffectEvent、Activity、ref 作为 prop 的完整清单
+- [Server 与 Client Components](/react/400-ServerClientComponents)：RSC 边界的深入玩法
+- [性能优化](/react/080-PerformanceOptimization)：React Compiler 时代还需要手动 memo 吗

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 顺着 main.js 的 createApp 追问「组件怎么变成页面」：script setup 顶层绑定直达模板、ref 初见（带 .value 的盒子）、事件绑定做出最小计数器、子组件的导入与注册，附变量忘了 .value、组件解析失败、变量名拼错三类真实报错调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'vue3/010-OverviewEnv'
   - 'vue3/030-Vue3TemplateSyntax'

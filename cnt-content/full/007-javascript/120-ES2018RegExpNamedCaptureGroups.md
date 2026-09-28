@@ -16,7 +16,7 @@ prerequisites:
   - 'javascript/110-Regex'
 ---
 
-> 前置：需先有正则基础（043）。
+> 前置：需先有正则基础，见[正则表达式](/javascript/110-Regex)。
 
 # 具名捕获组
 

@@ -4,859 +4,235 @@ title: 响应式系统
 module: 'vue3'
 category: 前端技术
 difficulty: intermediate
-description: Vue3响应式原理与API详解
+description: 从给前端实验室播放器做状态的真实场景理解 Vue 3 响应式：Proxy 原理、ref 与 reactive 的选择、浅层响应与 markRaw、effectScope 作用域管理，以及解构丢失响应性等经典坑。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'vue3/310-Vue3WebComponents'
-  - 'vue3/320-Vue3PerformancePractice'
-  - 'vue3/090-CustomHook'
-  - 'vue3/110-ComponentSystem'
-prerequisites: []
+  - 'vue3/060-ComputedCacheWatchTiming'
+  - 'vue3/080-CompositionAPIAdvantageScene'
+  - 'vue3/100-CustomComposableWrapper'
+  - 'vue3/370-VaporMode'
+prerequisites:
+  - 'vue3/020-Vue3QuickStartGuide'
 ---
 
 ## 前置知识
 
-- [Vue3 性能优化实践](/vue3/320-Vue3PerformancePractice)：建议先完成前一篇的学习
+- [第一个组件](/vue3/020-Vue3QuickStartGuide)：会用 `ref` 写计数器，知道「改了数据视图就变」这件事不用你操心
 
 ## 学习目标
 
-- 掌握「1. 响应式系统概述 | Reactive System Overview」的核心机制、典型用法与常见陷阱
-- 掌握「2. 响应式 API | Reactive APIs」的核心机制、典型用法与常见陷阱
-- 掌握「3. 响应式工具 | Reactive Utilities」的核心机制、典型用法与常见陷阱
-- 掌握「4. 响应式系统的陷阱 | Reactive System Pitfalls」的核心机制、典型用法与常见陷阱
-- 掌握「5. 响应式系统的最佳实践 | Reactive System Best Practices」的核心机制、典型用法与常见陷阱
+- 说清 Vue 3 靠什么做到「改数据自动更新视图」：Proxy 拦截读写、渲染时收集依赖、赋值时触发更新
+- 在 ref 与 reactive 之间快速做出正确选择，并说清各自不能做什么
+- 用 `shallowRef` / `markRaw` 管住「不该响应式的东西」：第三方类实例、大列表、图表库对象
+- 用 `effectScope` / `onScopeDispose` 写出可整体销毁的组合式函数
+- 避开三大经典坑：解构丢响应性、引用替换丢代理、误把大对象做深度响应
 
+## 场景：给「前端实验室」的代码播放器建状态
 
-## 1. 响应式系统概述 | Reactive System Overview
+FANDEX 网页端的前端实验室页面是一个交互密集的 React/编辑器岛屿。设想用 Vue 3 重写它的核心：左边代码输入框，右边实时预览，外加运行日志、执行耗时统计。它需要这样的状态：
 
-Vue3 的响应式系统是其核心特性之一，它使得数据变化能够自动触发视图更新。与 Vue2 相比，Vue3 的响应式系统进行了重构，使用 ES6 Proxy 替代了 Object.defineProperty，提供了更强大的响应式能力。
+```ts
+// studio.ts —— 实验室播放器的状态模块
+import { ref, reactive, computed } from 'vue';
 
-### 1.1 响应式系统的工作原理
+export const code = ref('<h1>hello</h1>');
 
-Vue3 的响应式系统主要包括以下几个部分：
+export const runLog = reactive<{ time: string; text: string }[]>([]);
 
-- **响应式数据**：使用 `ref` 或 `reactive` 创建的可观察数据
-- **依赖追踪**：自动追踪组件渲染过程中使用的响应式数据
-- **依赖收集**：收集组件对响应式数据的依赖
-- **触发更新**：当响应式数据变化时，自动触发依赖该数据的组件更新
-
-### 1.2 Vue3 响应式系统的优势
-
-- **更强大的响应式能力**：支持更多数据类型，包括 Map、Set 等
-- **更好的性能**：使用 Proxy 减少了不必要的依赖追踪
-- **更简洁的 API**：提供了 `ref`、`reactive`、`computed` 等简洁的 API
-- **更好的 TypeScript 支持**：类型推断更加准确
-
-## 2. 响应式 API | Reactive APIs
-
-### 2.1 ref
-
-`ref` 用于创建响应式的基本类型数据：
-
-```javascript
-import { ref } from 'vue';
-const count = ref(0);
-console.log(count.value); // 0
-count.value++;
-console.log(count.value); // 1
-```
-
-`ref` 也可以用于创建响应式的对象：
-
-```javascript
-import { ref } from 'vue';
-const user = ref({
-  name: 'John',
-  age: 30
+export const stats = reactive({
+  runCount: 0,
+  lastCostMs: 0,
 });
-console.log(user.value.name) // John
-user.value.age = 31
-console.log(user.value.age) // 31
-```
 
-`ref` 可以包装任意类型的值：基本类型在 `.value` 上直接读写，对象类型则由 `.value` 内部再套一层 `reactive` 代理，因此深层属性同样具备响应性。
+export const summary = computed(
+  () => `已运行 ${stats.runCount} 次，上次耗时 ${stats.lastCostMs}ms`
+);
 
-### 2.2 reactive
-
-`reactive` 用于创建响应式的对象：
-
-```javascript
-import { reactive } from 'vue'
-const state = reactive({
-  count: 0,
-  message: 'Hello'
-});
-console.log(state.count) // 0
-state.count++
-console.log(state.count) // 1
-```
-
-> `reactive` 只接受对象类型（对象、数组、Map、Set），基本类型请使用 `ref`。
-
-### 2.3 computed
-
-`computed` 用于创建计算属性，它会根据依赖的响应式数据自动重新计算：
-
-```javascript
-import { ref, computed } from 'vue';
-const count = ref(0);
-const doubleCount = computed(() => count.value * 2);
-console.log(doubleCount.value); // 0
-count.value++;
-console.log(doubleCount.value); // 2
-```
-
-### 2.4 watch
-
-`watch` 用于监听数据变化：
-
-```javascript
-import { ref, watch } from 'vue';
-const count = ref(0);
-watch(count, (newValue, oldValue) => {
-  console.log(`Count changed from ${oldValue} to ${newValue}`);
-});
-count.value++; // 输出: Count changed from 0 to 1
-```
-
-`watch` 也可以监听多个数据源：
-
-```javascript
-import { ref, watch } from 'vue';
-const count = ref(0);
-const message = ref('Hello');
-watch([count, message], ([newCount, newMessage], [oldCount, oldMessage]) => {
-  console.log(`Count changed from ${oldCount} to ${newCount}`);
-  console.log(`Message changed from ${oldMessage} to ${newMessage}`);
-});
-count.value++; // 输出: Count changed from 0 to 1
-message.value = 'Hi'; // 输出: Message changed from Hello to Hi
-```
-
-### 2.5 watchEffect
-
-`watchEffect` 用于自动追踪响应式依赖，当依赖变化时重新执行：
-
-```javascript
-import { ref, watchEffect } from 'vue';
-const count = ref(0);
-const stop = watchEffect(() => {
-  console.log(`Count is ${count.value}`);
-});
-count.value++; // 输出: Count is 1
-// 停止监听
-stop();
-count.value++; // 不会输出
-```
-
-## 3. 响应式工具 | Reactive Utilities
-
-### 3.1 toRefs
-
-`toRefs` 用于将响应式对象转换为普通对象，其中每个属性都是一个 ref：
-
-```javascript
-import { reactive, toRefs } from 'vue'
-const state = reactive({
-  count: 0,
-  message: 'Hello'
-});
-const refs = toRefs(state)
-console.log(refs.count.value) // 0
-console.log(refs.message.value) // Hello
-// refs.count 是一个 ref，修改它会影响原对象
-refs.count.value++
-console.log(state.count) // 1
-```
-
-### 3.2 toRef
-
-`toRef` 用于为响应式对象的单个属性创建 ref：
-
-```javascript
-import { reactive, toRef } from 'vue'
-const state = reactive({
-  count: 0,
-  message: 'Hello'
-});
-const countRef = toRef(state, 'count')
-console.log(countRef.value) // 0
-// 修改 ref 会影响原对象
-countRef.value++
-console.log(state.count) // 1
-```
-
-### 3.3 unref
-
-`unref` 用于获取 ref 的值，如果参数不是 ref，则直接返回参数：
-
-```javascript
-import { ref, unref } from 'vue';
-const count = ref(0);
-const message = 'Hello';
-console.log(unref(count)); // 0
-console.log(unref(message)); // Hello
-```
-
-### 3.4 isRef
-
-`isRef` 用于检查一个值是否是 ref：
-
-```javascript
-import { ref, isRef } from 'vue';
-const count = ref(0);
-const message = 'Hello';
-console.log(isRef(count)); // true
-console.log(isRef(message)); // false
-```
-
-### 3.5 shallowRef
-
-`shallowRef` 用于创建浅响应式的 ref，只响应 `.value` 的变化，不响应内部属性的变化：
-
-```javascript
-import { shallowRef } from 'vue'
-const user = shallowRef({
-  name: 'John',
-  age: 30
-});
-// 修改内部属性不会触发更新
-user.value.age = 31
-// 修改 .value 会触发更新
-user.value = {
-  name: 'John',
-  age: 31
+export function run() {
+  const start = performance.now();
+  runLog.push({ time: new Date().toLocaleTimeString(), text: code.value });
+  stats.lastCostMs = Math.round(performance.now() - start);
+  stats.runCount++;
 }
 ```
 
-### 3.6 shallowReactive
+`code` 一变，输入框和预览同时更新；`stats.runCount` 一变，`summary` 重新计算、组件自动重渲染。没有任何一处「通知视图」的代码——这就是响应式系统在干活。本文的目标是让你不仅会用，还知道它为什么可靠、什么时候会失效。
 
-`shallowReactive` 用于创建浅响应式的对象，只响应顶层属性的变化，不响应嵌套属性的变化：
+## 一、原理：三个词就够了
 
-```javascript
-import { shallowReactive } from 'vue'
-const state = shallowReactive({
-  user: {
-    name: 'John',
-    age: 30
-  }
-});
-// 修改嵌套属性不会触发更新
-state.user.age = 31
-// 修改顶层属性会触发更新
-state.user = {
-  name: 'John',
-  age: 31
-}
-```
+Vue 3 的响应式可以用一句话概括：**用 Proxy 拦截读写，读的时候记住谁在读（依赖收集），写的时候通知他们更新（触发更新）**。
 
-### 3.7 triggerRef
+1. `ref()` / `reactive()` 返回的是被 Proxy 包住的代理对象。你对 `state.count` 的每次读取都会触发 Proxy 的 get 拦截器，每次赋值触发 set 拦截器。
+2. 组件渲染函数执行时，模板里用到的每个响应式属性都被「正在渲染的组件」读取——get 拦截器把这个组件记为该属性的依赖。
+3. 之后 `state.count++` 走 set 拦截器，Vue 查依赖表，把依赖这个属性的组件排进更新队列（异步、去重、按组件批量执行）。
 
-`triggerRef` 用于手动触发 `shallowRef` 的更新：
+对比 Vue 2：`Object.defineProperty` 只能拦截「已存在属性的读写」，所以新增属性要 `Vue.set`、数组下标赋值要hack。Proxy 拦截的是整个对象层面的操作，新增、删除、`list[0] = 99`、Map / Set 的方法调用全部原生支持：
 
-```javascript
-import { shallowRef, triggerRef } from 'vue'
-const user = shallowRef({
-  name: 'John',
-  age: 30
-});
-// 修改内部属性
-user.value.age = 31
-// 手动触发更新
-triggerRef(user)
-```
-
-### 3.8 customRef
-
-`customRef` 用于创建自定义的 ref：
-
-```javascript
-import { customRef } from 'vue';
-function useDebouncedRef(value, delay = 300) {
-  let timeout;
-  return customRef((track, trigger) => {
-    return {
-      get() {
-        track();
-        return value;
-      },
-      set(newValue) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => {
-          value = newValue;
-          trigger();
-        }, delay);
-      },
-    };
-  });
-}
-// 使用自定义 ref
-const searchQuery = useDebouncedRef('');
-```
-
-## 4. 响应式系统的陷阱 | Reactive System Pitfalls
-
-### 4.1 响应式数据的解构
-
-当你解构响应式对象时，解构出来的值会失去响应性：
-
-```javascript
- import { reactive } from 'vue'
- const state = reactive({
-  count: 0,
-  message: 'Hello'
- })
- // 解构会失去响应性
- const { count, message } = state
- console.log(count) // 0
- // 修改原对象
- state.count++
- console.log(count) // 0 (不会更新)
-```
-
-解决方法是使用 `toRefs`：
-
-```javascript
- import { reactive, toRefs } from 'vue'
- const state = reactive({
-  count: 0,
-  message: 'Hello'
- })
- // 使用 toRefs 解构
- const { count, message } = toRefs(state)
- console.log(count.value) // 0
- // 修改原对象
- state.count++
- console.log(count.value) // 1 (会更新)
-```
-
-### 4.2 响应式对象的引用替换
-
-`reactive` 返回的是原对象的代理，把变量重新指向一个新对象后，变量持有的只是普通对象，视图绑定的仍然是旧代理，更新因此"丢失"：
-
-```javascript
-import { reactive } from 'vue'
-let state = reactive({
-  count: 0,
-  message: 'Hello'
-})
-// 错误：重新赋值后 state 不再是响应式代理
-state = {
-  count: 1,
-  message: 'Hi'
-}
-```
-
-解决方法是修改原对象的属性，而不是整体替换变量引用：
-
-```javascript
-import { reactive } from 'vue'
-let state = reactive({
-  count: 0,
-  message: 'Hello'
-});
-// 修改对象的属性，代理不变，响应式保持
-state.count = 1
-state.message = 'Hi'
-```
-
-> 如果确实需要"整体换数据"，把数据包在 `ref` 里替换 `.value`，或逐字段赋值。数组同理：用 `list.splice(0, list.length, ...newItems)` 而不是 `list = [...]`。
-
-### 4.3 响应式数据的添加
-
-向响应式对象添加新属性时，新属性会**自动**成为响应式的，这与 Vue 2 中必须使用 `Vue.set` 的行为不同：
-
-```javascript
- import { reactive } from 'vue'
- const state = reactive({
-  count: 0
- })
- // 添加新属性
- state.message = 'Hello' // 新属性是响应式的
-```
-
-在 Vue3 中，使用 `reactive` 创建的对象，添加新属性时会自动成为响应式的，这是因为 Vue3 使用了 Proxy。
-
-### 4.4 响应式数据的删除
-
-在 Vue 3 中，从响应式对象删除属性**会**触发更新：Proxy 的 `deleteProperty` 陷阱会拦截 `delete state.message` 并通知依赖。`Vue.delete` 是 Vue 2 时代的 API，在 Vue 3 中已被移除；`Reflect.deleteProperty` 是 JavaScript 的反射 API，Proxy 内部同样会经过它，业务代码直接使用 `delete` 操作符即可，不需要手动调用。
-
-```javascript
-import { reactive, watchEffect } from 'vue'
-const state = reactive({
-  count: 0,
-  message: 'Hello',
-})
-
-// 依赖 message 的 effect
-watchEffect(() => console.log(state.message))
-
-delete state.message // 触发依赖更新，effect 重新执行
-```
-
-需要留意的边界：`shallowReactive` 与 `markRaw` 创建的对象不会深度代理，内部嵌套属性的修改或删除不会触发更新；此时应整体替换引用，或使用 `triggerRef` 等手动触发手段。
-
-## 5. 响应式系统的最佳实践 | Reactive System Best Practices
-
-### 5.1 选择合适的响应式 API
-
-- **基本类型**：使用 `ref`
-- **对象**：使用 `reactive`
-- **需要解构的对象**：使用 `reactive` + `toRefs`
-- **性能敏感的场景**：使用 `shallowRef` 或 `shallowReactive`
-
-### 5.2 避免过度响应
-
-- **不需要响应式的数据**：不要使用响应式 API
-- **频繁变化的数据**：考虑使用 `shallowRef` 或 `customRef`
-- **大型对象**：考虑使用 `shallowReactive`
-
-### 5.3 合理使用计算属性
-
-- **复杂的计算逻辑**：使用 `computed`
-- **依赖多个响应式数据**：使用 `computed`
-- **需要缓存计算结果**：使用 `computed`
-
-### 5.4 合理使用监听器
-
-- **需要执行副作用**：使用 `watch` 或 `watchEffect`
-- **需要监听特定数据**：使用 `watch`
-- **需要自动追踪依赖**：使用 `watchEffect`
-- **需要清理副作用**：使用 `watch` 或 `watchEffect` 的清理函数
-
-## 6. 示例 | Examples
-
-### 6.1 响应式数据示例
-
-```vue
-<template>
-  <div class="reactive-example">
-    <h2>Reactive Data Example</h2>
-    <div>
-      <p>Count: {{ count }}</p>
-      <p>Double Count: {{ doubleCount }}</p>
-      <p>Message: {{ message }}</p>
-      <button @click="increment">Increment</button>
-      <button @click="changeMessage">Change Message</button>
-    </div>
-  </div>
-</template>
-<script setup>
-import { ref, computed } from 'vue';
-const count = ref(0);
-const message = ref('Hello');
-const doubleCount = computed(() => count.value * 2);
-const increment = () => count.value++;
-const changeMessage = () => (message.value = 'Hi');
-</script>
-<style scoped>
-.reactive-example {
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  max-width: 400px;
-  margin: 0 auto;
-}
-button {
-  margin: 0 5px;
-  padding: 5px 10px;
-  font-size: 16px;
-}
-</style>
-```
-
-### 6.2 监听器示例
-
-```vue
-<template>
-  <div class="watch-example">
-    <h2>Watch Example</h2>
-    <div>
-      <p>Count: {{ count }}</p>
-      <p>Message: {{ message }}</p>
-      <button @click="increment">Increment</button>
-      <button @click="changeMessage">Change Message</button>
-      <div>
-        <h3>Watch Log:</h3>
-        <ul>
-          <li v-for="(log, index) in logs" :key="index">{{ log }}</li>
-        </ul>
-      </div>
-    </div>
-  </div>
-</template>
-<script setup>
-import { ref, watch, watchEffect } from 'vue';
-const count = ref(0);
-const message = ref('Hello');
-const logs = ref([]);
-// 使用 watch 监听单个数据
-watch(count, (newValue, oldValue) => {
-  logs.value.push(`Count changed from ${oldValue} to ${newValue}`);
-});
-// 使用 watch 监听多个数据
-watch([count, message], ([newCount, newMessage], [oldCount, oldMessage]) => {
-  if (newCount !== oldCount) {
-    logs.value.push(`Count changed from ${oldCount} to ${newCount}`);
-  }
-  if (newMessage !== oldMessage) {
-    logs.value.push(`Message changed from ${oldMessage} to ${newMessage}`);
-  }
-});
-// 使用 watchEffect 自动追踪依赖
-watchEffect(() => {
-  logs.value.push(`Current count: ${count.value}, current message: ${message.value}`);
-});
-const increment = () => count.value++;
-const changeMessage = () => (message.value = `Hi ${Math.random()}`);
-</script>
-<style scoped>
-.watch-example {
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  max-width: 400px;
-  margin: 0 auto;
-}
-button {
-  margin: 0 5px;
-  padding: 5px 10px;
-  font-size: 16px;
-}
-ul {
-  list-style-type: none;
-  padding: 0;
-}
-li {
-  padding: 5px 0;
-  border-bottom: 1px solid #eee;
-}
-</style>
-```
-
-### 6.3 计算属性示例
-
-```vue
-<template>
-  <div class="computed-example">
-    <h2>Computed Example</h2>
-    <div>
-      <p>First Name: <input v-model="firstName" /></p>
-      <p>Last Name: <input v-model="lastName" /></p>
-      <p>Full Name: {{ fullName }}</p>
-      <p>Full Name Length: {{ fullNameLength }}</p>
-    </div>
-  </div>
-</template>
-<script setup>
-import { ref, computed } from 'vue';
-const firstName = ref('John');
-const lastName = ref('Doe');
-// 计算全名
-const fullName = computed(() => `${firstName.value} ${lastName.value}`);
-// 计算全名长度
-const fullNameLength = computed(() => fullName.value.length);
-</script>
-<style scoped>
-.computed-example {
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  max-width: 400px;
-  margin: 0 auto;
-}
-input {
-  width: 200px;
-  padding: 5px;
-}
-</style>
-```
-
-## 7. 小结 | Summary
-
-Vue3 的响应式系统是其核心特性之一，它使用 ES6 Proxy 提供了更强大的响应式能力。通过本章节的学习，你已经了解了 Vue3 响应式系统的基本概念和使用方法，包括响应式 API、响应式工具、响应式系统的陷阱和最佳实践。
-响应式系统的核心优势在于它使得数据变化能够自动触发视图更新，减少了手动操作 DOM 的需要，提高了开发效率。在实际开发中，要根据具体场景选择合适的响应式 API，避免过度响应，合理使用计算属性和监听器，以提高应用的性能和可维护性。
-
-## 基础响应式
-
-**ref 响应式引用**
-`const <state> = ref(<initialValue>);`
-```typescript
-import { ref } from 'vue';
-const count = ref(0);
-const user = ref({ name: 'Tom' });
-
-count.value++;
-user.value.name = 'Jerry';
-```
-
-**reactive 对象响应式**
-`const <state> = reactive(<object>);`
-```typescript
+```ts
 import { reactive } from 'vue';
-const state = reactive({
-  count: 0,
-  list: [],
-  user: { name: 'Tom' }
-});
-state.count++;
-state.list.push('item');
+
+const state = reactive({ list: [1, 2, 3], map: new Map<string, number>() });
+
+state.list[0] = 99;    // 触发更新（Vue 2 里不行）
+state.newField = 'x';  // 新属性自动响应式（Vue 2 里要 Vue.set）
+delete state.newField; // 删除也触发更新
+state.map.set('a', 1); // Map 方法同样被拦截
 ```
 
----
+2026 年的现状补充：3.5 重构了响应式 internals（大数组深度操作提速、内存下降），API 完全不变；即将到来的 3.6 Vapor 模式也**不改变这套响应式 API**——变的只是编译产物如何更新 DOM。你现在学的心智模型在两个模式里通用。
 
-## 浅层响应式
+## 二、ref 还是 reactive：一个决策表
 
-**shallowRef 浅响应式引用**
-`const <state> = shallowRef(<initialValue>);`
-```typescript
+| 场景 | 选择 | 原因 |
+| :--- | :--- | :--- |
+| 基本类型（数字、字符串、布尔） | `ref` | reactive 根本不接受基本类型 |
+| 需要整体替换的对象（换一页数据） | `ref` | `state.value = newObj` 一行搞定 |
+| 局部表单对象、不会整体替换 | `reactive` | 写法少一层 `.value` |
+| 要被解构展开返回的模块 | `ref` 或 `reactive + toRefs` | 见坑点一 |
+
+日常速记：**默认用 ref；只有当你确定这个对象永远不会被整体替换、且想省掉 .value 时，才用 reactive。** 官方风格指南同样倾向 ref，理由是 ref 的能力是 reactive 的超集。
+
+`ref` 包对象时，`.value` 内部自动再套一层 reactive 代理，所以深层属性照样响应式——`user.value.address.city = 'x'` 能触发更新。
+
+## 三、动手：浅层响应与「不响应的值」
+
+实验室播放器继续演进：要嵌入一个第三方图表库，并把运行日志做成大列表。两处都需要管住响应式的范围。
+
+### 3.1 markRaw：第三方实例不要代理
+
+图表库实例（ECharts、CodeMirror Editor）自带复杂内部状态，被 Proxy 代理后轻则性能劣化，重则内部逻辑错乱（库用 Map/WeakMap 做实例索引，代理后 `get` 拿到的是代理对象，匹配不上）：
+
+```ts
+import { shallowRef, markRaw } from 'vue';
+
+export const editor = shallowRef<Editor | null>(null);
+
+export function mountEditor(el: HTMLElement) {
+  const ed = new CodeMirror(el, { value: code.value });
+  editor.value = markRaw(ed); // 永久标记：这个对象不要代理
+}
+```
+
+`markRaw` 是「永久豁免」：标记过的对象即使被塞进 reactive / ref 里也保持原样。误用响应式包装第三方实例是 Vue 3 新手最贵的错误之一，症状通常是「库莫名失灵且控制台查不出原因」。
+
+### 3.2 shallowRef：大列表只要「换的时候」通知我
+
+运行日志可能有几千条。深度响应式会为每条日志建代理，成本高而收益低——我们只在「整批替换日志」时才需要触发更新：
+
+```ts
 import { shallowRef } from 'vue';
-const obj = shallowRef({ count: 0 });
-obj.value.count++;        // 不触发
-obj.value = { count: 1 }; // 触发:整体替换
+
+const logs = shallowRef<LogEntry[]>([]);
+
+// 触发更新的唯一方式：替换 .value
+logs.value = fetchNewLogs();
+
+// 想原地改又手动通知？用 triggerRef
+logs.value.push(newLog);
+triggerRef(logs); // 手动触发依赖更新
 ```
 
-**shallowReactive 浅响应式对象**
-`const <state> = shallowReactive(<object>);`
-```typescript
-import { shallowReactive } from 'vue';
-const state = shallowReactive({
-  nested: { count: 0 }
-});
-state.nested.count = 1;  // 不触发,只追踪顶层属性
-```
+`shallowRef` 只追踪 `.value` 本身的赋值，内部一概不管。配合「不可变更新」（总是造新数组替换）是最省心的组合，也是大多数状态库（Pinia 之外）推荐的模式。
 
-**shallowReadonly 浅只读**
-`const <state> = shallowReadonly(<object>);`
-```typescript
-import { shallowReadonly } from 'vue';
-const state = shallowReadonly({
-  nested: { count: 0 }
-});
-state.nested.count = 1;  // 允许(只读不递归)
-state.foo = 'bar';       // 警告
-```
+### 3.3 customRef：把防抖做进 ref
 
----
+搜索框防抖是 `customRef` 的经典应用——拦截 set，延迟后再真正更新并触发依赖：
 
-## 只读与转换
-
-**readonly 深只读**
-`const <readonly> = readonly(<source>);`
-```typescript
-import { reactive, readonly } from 'vue';
-const original = reactive({ count: 0, nested: { value: 1 } });
-const frozen = readonly(original);
-frozen.count = 1;          // 警告
-frozen.nested.value = 2;   // 警告(深只读)
-```
-
-**markRaw 永久标记非响应**
-`const <obj> = markRaw(<object>);`
-```typescript
-import { reactive, markRaw } from 'vue';
-const state = reactive({});
-state.classInstance = markRaw(new MyClass());
-state.thirdPartyObj = markRaw(largeObject);
-```
-
-**toRaw 获取原始对象**
-`const <raw> = toRaw(<proxy>);`
-```typescript
-import { reactive, toRaw } from 'vue';
-const proxy = reactive({ count: 0 });
-const raw = toRaw(proxy);
-console.log(raw === proxy);  // false
-```
-
----
-
-## Ref 转换
-
-**toRef 转换 reactive 属性为 ref**
-`const <ref> = toRef(<source>, <key>);`
-```typescript
-import { reactive, toRef } from 'vue';
-const state = reactive({ count: 0 });
-const countRef = toRef(state, 'count');
-countRef.value++;  // state.count 同步变化
-```
-
-**toRef 从 getter 创建**
-`const <ref> = toRef(() => <expression>);`
-```typescript
-import { toRef } from 'vue';
-const state = reactive({ user: { name: 'Tom' } });
-const nameRef = toRef(() => state.user.name);
-```
-
-**toRefs 解构响应式对象**
-`const { <key>, ... } = toRefs(<reactive>);`
-```typescript
-import { reactive, toRefs } from 'vue';
-const state = reactive({ count: 0, name: 'Tom' });
-const { count, name } = toRefs(state);
-count.value++;
-```
-
-**unref 取值**
-`const <value> = unref(<maybeRef>);`
-```typescript
-import { ref, unref } from 'vue';
-const count = ref(0);
-unref(count);  // 0
-unref(123);    // 123
-unref(undefined);  // undefined
-```
-
----
-
-## 类型守卫
-
-**isRef 判断 ref**
-```typescript
-import { ref, isRef } from 'vue';
-isRef(ref(0));       // true
-isRef(0);            // false
-isRef(reactive({})); // false
-```
-
-**isReactive 判断 reactive**
-```typescript
-import { reactive, isReactive } from 'vue';
-isReactive(reactive({}));  // true
-isReactive(ref({}));       // false
-isReactive({});            // false
-```
-
-**isReadonly 判断只读**
-```typescript
-import { readonly, isReadonly } from 'vue';
-isReadonly(readonly({}));  // true
-```
-
-**isProxy 判断代理**
-```typescript
-import { reactive, readonly, isProxy } from 'vue';
-isProxy(reactive({}));   // true
-isProxy(readonly({}));   // true
-isProxy({});             // false
-```
-
----
-
-## 高级响应式
-
-**customRef 自定义 ref**
-`const <state> = customRef(<track>, <trigger>);`
-```typescript
+```ts
 import { customRef } from 'vue';
 
-function debouncedRef(value, delay = 200) {
-  let timer;
+export function debouncedRef<T>(value: T, delay = 300) {
+  let timer: ReturnType<typeof setTimeout>;
   return customRef((track, trigger) => ({
     get() {
-      track();
+      track();   // 照常收集依赖
       return value;
     },
     set(newValue) {
       clearTimeout(timer);
       timer = setTimeout(() => {
         value = newValue;
-        trigger();
+        trigger(); // 延迟后才通知视图
       }, delay);
-    }
+    },
   }));
 }
 
-const text = debouncedRef('hello', 500);
+// 用法：视图绑定它，输入停 300ms 后才触发过滤
+const searchQuery = debouncedRef('', 300);
 ```
 
-**triggerRef 手动触发 shallowRef**
-`triggerRef(<shallowRef>);`
-```typescript
-import { shallowRef, triggerRef } from 'vue';
-const obj = shallowRef({ count: 0 });
-obj.value.count = 1;
-triggerRef(obj);  // 强制触发依赖
-```
+日常业务里 VueUse 的 `refDebounced` 更省事，但亲手写一遍 `customRef`，你才算真正理解 track / trigger 这对开关就是响应式的全部。
 
-**effectScope 副作用作用域**
-`const <scope> = effectScope();`
-```typescript
-import { effectScope, watchEffect } from 'vue';
+## 四、effectScope：组合式函数的「总开关」
 
-const scope = effectScope();
-scope.run(() => {
-  watchEffect(() => console.log('effect 1'));
-  watchEffect(() => console.log('effect 2'));
-});
-scope.stop();  // 停止内部所有 effect
-```
+`watch` / `watchEffect` / `computed` 都会创建需要停止的副作用。组件里使用时它们自动随组件销毁；但**在组件外**（独立状态模块、测试、跨组件共享的逻辑）创建的副作用没人管，会永久泄漏。`effectScope` 就是它们的容器：
 
-**getCurrentScope 获取当前作用域**
-```typescript
-import { getCurrentScope } from 'vue';
-const scope = getCurrentScope();
-if (scope) {
-  scope.run(() => { /* ... */ });
+```ts
+import { effectScope, watchEffect, onScopeDispose } from 'vue';
+
+// 一个可整体销毁的轮询模块
+export function usePolling(fetcher: () => Promise<void>, interval = 5000) {
+  const scope = effectScope();
+
+  scope.run(() => {
+    watchEffect(async () => {
+      await fetcher();
+    });
+    const timer = setInterval(fetcher, interval);
+    onScopeDispose(() => clearInterval(timer)); // scope 停止时顺带清理
+  });
+
+  return {
+    stop: () => scope.stop(), // 一次停掉内部所有 watch 与 onScopeDispose 回调
+  };
 }
 ```
 
-**onScopeDispose 作用域销毁时回调**
-```typescript
-import { onScopeDispose } from 'vue';
-onScopeDispose(() => {
-  console.log('scope disposed');
-  cleanup();
-});
+配套的两个小工具：`getCurrentScope()` 判断「我现在在某个 scope 里吗」（避免在组件 setup 之外裸调 watch）；`onScopeDispose(fn)` 注册清理回调，写在组合式函数里等效于组件里的 `onUnmounted`，但组件内外都能用。设计[自定义组合式函数](/vue3/100-CustomComposableWrapper)时这是标配。
+
+## 五、坑点与自检
+
+### 坑一：解构 reactive 丢响应性
+
+```ts
+const state = reactive({ count: 0 });
+const { count } = state; // count 是普通数字 0，和 state 从此无关
+state.count++;
+console.log(count); // 依然是 0
 ```
 
----
+原因：解构发生在读取瞬间，拿走的是当时的值。修复：`const { count } = toRefs(state)`，每个属性变成与源对象同步的 ref。函数参数、props 传值同理——传出去的是值不是引用。
 
-## 响应式工具组合
+### 坑二：替换 reactive 变量的引用
 
-**响应式工具综合示例**
-```typescript
-import { ref, reactive, computed, toRefs, watch } from 'vue';
-
-function useCounter(initial = 0) {
-  const state = reactive({
-    count: initial,
-    double: computed(() => state.count * 2)
-  });
-
-  function increment() {
-    state.count++;
-  }
-
-  watch(() => state.count, (newVal) => {
-    console.log('count changed:', newVal);
-  });
-
-  return { ...toRefs(state), increment };
-}
+```ts
+let state = reactive({ count: 0 });
+state = { count: 1 }; // 变量现在指向普通对象，视图还绑着旧代理
 ```
 
-**响应式数组操作**
-```typescript
-import { reactive } from 'vue';
-const list = reactive<number[]>([]);
-list.push(1, 2, 3);   // 触发更新
-list.splice(0, 1);    // 触发更新
-list[0] = 99;         // Vue 3 中可触发
-list.length = 0;      // 触发更新
-```
+视图模板绑定的是 `reactive()` 返回的那个代理。重新赋值后组件读的还是旧代理，更新「消失」。修复：整体替换的需求用 `ref`（`state.value = {...}`）；或逐字段赋值；数组的批量替换用 `list.splice(0, list.length, ...newItems)`。
 
-**响应式 Map/Set**
-```typescript
-import { reactive } from 'vue';
-const map = reactive(new Map<string, number>());
-map.set('a', 1);      // 触发更新
-map.delete('a');      // 触发更新
+### 坑三：对大对象 / 第三方实例做深度响应
 
-const set = reactive(new Set<number>());
-set.add(1);           // 触发更新
-set.has(1);           // true
-```
+症状：大数组操作卡、图表库行为异常。处方：大列表用 `shallowRef` + 不可变更新，第三方实例一律 `markRaw`。
+
+### 自检（回答不出的回对应小节）
+
+1. Vue 3 靠什么让「新增属性」自动响应式，而 Vue 2 需要 Vue.set？
+2. `logs.value.push(x)` 在 shallowRef 下触发更新吗？怎么让它触发？
+3. 为什么第三方类实例要 markRaw？不标记的典型症状是什么？
+4. 组件外创建的 watchEffect 谁负责停？effectScope 解决什么问题？
+
+## 练习
+
+1. 实现实验室播放器的状态模块：`code`（ref）、`runLog`（shallowRef 大列表 + 清空 / 追加）、`stats`（reactive）、`summary`（computed），并写一个「重置全部」函数，验证每种 API 的更新方式。
+2. 用 `customRef` 写一个 `throttledRef`（节流：设定时间内最多更新一次），与本文的 debouncedRef 对比测试。
+3. 把 `usePolling` 改造为可暂停 / 恢复（结合 [watch 暂停恢复](/vue3/360-Vue3NewFeatures3435)），确认 stop 后定时器与 watch 全部清理。
+
+## 下一步
+
+- [Computed 缓存与 watch 时机](/vue3/060-ComputedCacheWatchTiming)：响应式之上最常用的两个派生 API 的细节
+- [Composition API 的优势与场景](/vue3/080-CompositionAPIAdvantageScene)：为什么这套 API 配合响应式能重构逻辑组织
+- [自定义 Composable 封装](/vue3/100-CustomComposableWrapper)：effectScope 与 onScopeDispose 的工程化用法

@@ -444,7 +444,8 @@ npm install babel-plugin-react-compiler
 // babel.config.js
 module.exports = {
   presets: ['@babel/preset-react'],
-  plugins: ['react-compiler'],
+  // 注意包名是 babel-plugin-react-compiler，不是 react-compiler
+  plugins: ['babel-plugin-react-compiler'],
 };
 ```
 
@@ -474,7 +475,7 @@ function SearchPage() {
 
 | 优化项       | 方法                             | 优先级 |
 | :----------- | :------------------------------- | :----- |
-| 减少重渲染   | React.memo + useMemo/useCallback | 高     |
+| 减少重渲染   | React Compiler（1.0 已稳定）；未启用时用 React.memo + useMemo/useCallback | 高     |
 | 代码分割     | React.lazy + Suspense            | 高     |
 | 虚拟化长列表 | @tanstack/react-virtual          | 高     |
 | 图片优化     | next/image 或懒加载              | 中     |

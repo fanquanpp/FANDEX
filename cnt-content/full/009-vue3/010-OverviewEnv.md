@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从「改个数据要手动找 DOM」的旧日常引出 Vue 的核心主张：用 create-vue 一行命令搭起项目、预览单文件组件的三段结构、跑通并亲手修改第一个组件；附 Node 版本与模板未闭合两类真实报错的调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'vue3/020-Vue3QuickStartGuide'
   - 'vue3/030-Vue3TemplateSyntax'

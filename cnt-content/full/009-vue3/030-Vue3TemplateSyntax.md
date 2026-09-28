@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从一个编译报错出发划定模板的边界：插值只收表达式、v-if 与 v-show 的分工、v-for 加 :key 的为什么、v-bind 与 v-on 缩写、计算属性初见、v-html 的 XSS 红线，附三类真实编译报错的调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'vue3/020-Vue3QuickStartGuide'
   - 'vue3/040-Vue3DirectiveSystem'

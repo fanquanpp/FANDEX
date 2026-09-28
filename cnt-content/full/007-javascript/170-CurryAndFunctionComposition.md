@@ -1,1908 +1,313 @@
 ---
 order: 170
-title: 柯里化与偏函数
+title: 柯里化与偏函数：参数先收一半，剩下慢慢给
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
-description: 函数柯里化与偏函数应用的数学基础、形式语义、工程实现与生产级应用
+description: 以「同一个前缀在几十处调用里复制粘贴」为问题主线，讲透偏函数固定参数、柯里化分批收参、pipe/compose 组合管道，亲手实现 curry 与 pipe，附漏调一层括号、bind 首参误传对象等调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'javascript/150-HigherOrderFunction'
   - 'javascript/160-RecursionTailCallOptimization'
-  - 'javascript/320-GeneratorFunctions'
-  - 'javascript/330-ProxyAndReflect'
-  - 'javascript/360-ClosureMemoryLeakOptimization'
+  - 'javascript/080-FunctionScopeClosure'
+  - 'javascript/490-DebounceThrottle'
 prerequisites:
-  - 'javascript/360-ClosureMemoryLeakOptimization'
+  - 'javascript/150-HigherOrderFunction'
 ---
-
-> 阅读建议：先掌握柯里化“是什么、怎么用”；性能分析章节为【进阶原理】。
-
-# 柯里化与偏函数
 
 ## 前置知识
 
-- [递归与尾调用优化](/javascript/160-RecursionTailCallOptimization)：建议先完成前一篇的学习
+- 已完成 [高阶函数](/javascript/150-HigherOrderFunction)：会写"返回函数的函数"，理解 `once` 靠闭包记住状态；
+- 熟悉 [闭包](/javascript/080-FunctionScopeClosure) 与箭头函数的写法。
+
+本文不引入任何新概念体系，只把 150 篇"返回函数"那一招用到底：**参数分批收，凑齐再执行。**
 
 ## 学习目标
 
-- 掌握「0. 学习导言」的核心机制、典型用法与常见陷阱
-- 掌握「1. 历史动机」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 柯里化的实现」的核心机制、典型用法与常见陷阱
-- 掌握「4. 偏函数的实现」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 区分偏函数（partial application，固定一部分参数）与柯里化（currying，一次只收一个参数），并说清两者都是闭包的应用；
+2. 用箭头函数和 `bind` 两种方式实现偏函数，避开 `bind` 第一个参数的坑；
+3. 亲手实现通用 `curry`，把 `log(level, module, message)` 变成 `logWarn('search')('...')` 的链式调用；
+4. 亲手实现 `pipe` 与 `compose`，把一串"加工步骤"组装成数据流水线；
+5. 判断什么场景该用、什么场景纯属炫技，并排查"漏调一层括号"与"bind 首参误传对象"两类事故。
 
-## 0. 学习导言
+预计 45 到 60 分钟，含 3 个动手实验与 4 道练习。
 
-> 「柯里化是函数式编程的入门仪式：它将函数从「一次性执行的工具」转化为「可配置、可组合、可复用的积木」。掌握柯里化后，你会发现自己写出的代码更短、更通用、更易测试——这是从命令式思维迈向函数式思维的关键一步。」
->
-> —— Eric Elliott, JavaScript Scene, 2017
+## 1. 你现在要解决什么问题
 
-本篇文档面向已掌握 JavaScript 函数基础（一等公民、高阶函数、闭包、箭头函数）的开发者，深入讲解**柯里化（Currying）**与**偏函数（Partial Application）**这两个函数式编程核心概念。两者均基于闭包机制实现，通过延迟执行与参数收集，将「配置」与「执行」解耦，从而提升代码的复用性、可读性与可组合性。
-
-完成本篇学习后，你将能够：
-
-1. 准确描述柯里化与偏函数的形式语义、数学基础与历史渊源；
-2. 编写生产级柯里化函数、偏函数工具、占位符机制与函数组合管道；
-3. 对比柯里化与偏函数在参数传递、返回形式、性能上的差异；
-4. 评估柯里化在 JavaScript 中的性能开销与可读性影响，识别适用场景；
-5. 设计基于柯里化的领域特定库（SQL 查询构建器、HTTP 客户端 DSL）；
-6. 理解柯里化在 LISP、ML、Haskell、Scala 等语言中的原生支持与 JavaScript 的差异。
-
----
-
-## 1. 历史动机
-
-### 1.1 函数式编程的演进时间线
-
-柯里化与偏函数的概念源于 20 世纪初的数理逻辑研究，经历从理论到工程实践的长期演进：
-
-| 年份 | 事件 | 关键人物/组织 |
-| ---- | ---- | -------------- |
-| 1924 | Moses Schönfinkel 提出组合逻辑，首次描述参数消解机制 | Moses Schönfinkel |
-| 1930 | Haskell Curry 系统化组合逻辑，进一步发展该理论 | Haskell Curry |
-| 1932 | Alonzo Church 发明 λ 演算，奠定函数式编程数学基础 | Alonzo Church |
-| 1958 | John McCarthy 创建 LISP，首个函数式编程语言 | John McCarthy, MIT |
-| 1964 | Peter Landin 提出 ISWIM，引入「闭包」概念 | Peter Landin |
-| 1973 | Robin Milner 创建 ML 语言，类型推断+柯里化原生支持 | Robin Milner, Edinburgh |
-| 1987 | LISP 2.4 引入 `partial` 函数，工程化偏函数应用 | MIT AI Lab |
-| 1990 | Haskell 1.0 发布，函数默认柯里化 | Haskell Committee |
-| 1995 | Simon Peyton Jones 等发布 Haskell 1.3 标准 | Haskell Committee |
-| 2004 | JavaScript 1.5 引入 `Function.prototype.apply` 与 `call` | Brendan Eich, Mozilla |
-| 2009 | ECMAScript 5 标准化 `Function.prototype.bind`，原生偏函数支持 | TC39 |
-| 2015 | ECMAScript 6 引入箭头函数、扩展运算符，简化柯里化实现 | TC39 |
-| 2017 | Lodash 4.17 提供 `_.curry`、`_.partial` 工具函数 | Lodash Team |
-| 2018 | Ramda.js 0.26 推广函数优先、数据最后的柯里化约定 | Ramda Team |
-| 2026 | ECMAScript 2026 引入管道操作符 `|>` 提案进入 Stage 3 | TC39 |
-
-### 1.2 多参数函数的痛点
-
-在传统的命令式编程中，函数通常接受多个参数一次性执行。这种方式虽直观，但在配置复用、函数组合、延迟执行等场景下存在明显痛点：
+文档站要加日志，你写了个通用的日志函数：
 
 ```javascript
-// 痛点 1：配置参数重复传递
-function log(level, timestamp, source, message) {
-  console.log(`[${level}] ${timestamp} [${source}]: ${message}`);
+function log(level, module, message) {
+  console.log(`[${new Date().toISOString()}] [${level}] [${module}] ${message}`);
 }
-// 每次调用都需重复传递 level 与 source
-log('INFO', Date.now(), 'AuthService', 'User login');
-log('INFO', Date.now(), 'AuthService', 'Token refresh');
-log('INFO', Date.now(), 'AuthService', 'Logout');
 
-// 痛点 2：函数组合困难
-// 想要 map(filter(arr, isEven), square)，必须嵌套调用
-const result = map(filter([1, 2, 3, 4, 5, 6], isEven), square);
-// 可读性差，执行顺序从右到左，违反直觉
-
-// 痛点 3：配置与执行耦合
-function fetchUser(baseUrl, apiKey, timeout, userId) {
-  return fetch(`${baseUrl}/users/${userId}`, {
-    headers: { Authorization: `Bearer ${apiKey}` },
-    timeout,
-  });
-}
-// 每次调用都需重复 baseUrl、apiKey、timeout
-fetchUser('https://api.example.com', 'secret-key', 5000, 'u1');
-fetchUser('https://api.example.com', 'secret-key', 5000, 'u2');
-
-// 痛点 4：参数顺序固定，难以复用中间配置
-function createQuery(table, columns, where, orderBy, limit) {
-  // SQL 构建逻辑
-}
-// 想固定 table、columns 但变化 where、orderBy 时，需重复传前两个参数
+log('error', 'search', '索引加载失败');
+log('error', 'search', '查询超时');
+log('warn', 'search', '结果为空，尝试降级');
+log('error', 'comment', '提交失败');
+log('warn', 'comment', '敏感词命中');
+log('error', 'search', '重试 3 次仍失败');
 ```
 
-柯里化与偏函数正是为了解决上述痛点——**通过参数收集与延迟执行，将配置与解耦，让函数成为可组合的积木**。
+六次调用里，`'error'` 和 `'search'` 反复出现。这不是巧合——**"错误级别"和"哪个模块"在运行前就定了，真正每次变的只有消息**。调用方被迫每次都把不变的部分再抄一遍，抄错一个词，日志分组就乱了。
 
-### 1.3 关键人物与原始论文
-
-柯里化理论的奠基者包括：
-
-- **Moses Schönfinkel**（1889-1942）：俄罗斯数学家，1924 年发表《Über die Bausteine der mathematischen Logik》（论数学逻辑的构建块），首次提出参数消解机制，故柯里化亦称 **Schönfinkelisation**。论文 DOI: `10.1007/BF01448013`。
-
-- **Haskell Brooks Curry**（1900-1982）：美国数学家、逻辑学家，在 1958 年与 Robert Feys 合著的《Combinatory Logic, Volume I》中系统化了该技术。其姓氏 Curry 成为该技术的命名来源。同时，Haskell 编程语言亦以其名字命名。
-
-- **Alonzo Church**（1903-1995）：美国数学家，1932 年发明 λ 演算，奠定函数式编程的数学基础。λ 演算中函数天然是一元的，多元函数通过「Church 编码」实现，这正是柯里化的数学本质。
-
-- **Peter Landin**（1930-2009）：英国计算机科学家，1964 年提出 ISWIM 语言与「闭包」概念，将 λ 演算引入程序语言设计，直接影响 LISP、ML、Haskell 的设计。
-
-- **John C. Reynolds**（1935-2013）：美国计算机科学家，1972 年发表《Definitional Interpreters for Higher-Order Programming Languages》，深入探讨高阶函数的语义，论文 DOI: `10.1145/800194.805852`。
-
-### 1.4 多语言实现对比
-
-不同函数式编程语言对柯里化的支持程度不同：
-
-| 语言 | 柯里化支持 | 语法形式 | 默认行为 |
-| ---- | ---------- | -------- | -------- |
-| Haskell | 原生、默认 | `f a b c` 等价于 `((f a) b) c` | 所有函数默认柯里化 |
-| ML/Caml | 原生、默认 | `let f a b c = ...` 自动柯里化 | 函数默认一元 |
-| Scala | 显式标注 | `def f(a)(b)(c)` 或 `def f(a, b, c)` | 显式选择 |
-| F# | 原生、默认 | `let f a b c = ...` 自动柯里化 | 函数默认一元 |
-| Scheme/LISP | 库函数 | `(curry f)` 或 `(partial f a)` | 函数多元 |
-| Python | 库函数 | `functools.partial(f, a)` | 函数多元 |
-| JavaScript | 库函数/手动 | `curry(fn)` 或 `fn.bind(null, a)` | 函数多元 |
-| Rust | 库函数 | `f.partial(a)` 或闭包手动实现 | 函数多元 |
-| Go | 不支持 | 需手动闭包实现 | 函数多元 |
-
-JavaScript 由于历史原因（Brendan Eich 借鉴 Scheme 的函数一等公民特性，但保留 Java 的多元函数语法），未原生支持柯里化。开发者需通过闭包手动实现，或借助 Lodash、Ramda 等库。
-
----
-
-## 2. 形式化定义
-
-### 2.1 柯里化的数学定义
-
-设 $f: A \times B \times C \to D$ 是一个三元函数，其柯里化形式 $\text{curry}(f)$ 满足：
-
-$$
-\text{curry}(f): A \to (B \to (C \to D))
-$$
-
-即柯里化将一个三元函数转换为一连串三个一元函数。对任意 $a \in A, b \in B, c \in C$：
-
-$$
-\text{curry}(f)(a)(b)(c) = f(a, b, c)
-$$
-
-### 2.2 一般形式
-
-对于 $n$ 元函数 $f: A_1 \times A_2 \times \cdots \times A_n \to B$，其柯里化形式为：
-
-$$
-\text{curry}(f): A_1 \to (A_2 \to \cdots \to (A_n \to B) \cdots)
-$$
-
-满足：
-
-$$
-\text{curry}(f)(a_1)(a_2)\cdots(a_n) = f(a_1, a_2, \ldots, a_n)
-$$
-
-### 2.3 偏函数应用的数学定义
-
-偏函数应用（Partial Application）指固定函数的前 $k$ 个参数，生成一个 $n-k$ 元新函数。设 $f: A_1 \times A_2 \times \cdots \times A_n \to B$，对 $a_1 \in A_1, \ldots, a_k \in A_k$：
-
-$$
-\text{partial}(f, a_1, \ldots, a_k): A_{k+1} \times \cdots \times A_n \to B
-$$
-
-满足：
-
-$$
-\text{partial}(f, a_1, \ldots, a_k)(a_{k+1}, \ldots, a_n) = f(a_1, \ldots, a_k, a_{k+1}, \ldots, a_n)
-$$
-
-### 2.4 柯里化与偏函数的形式差异
-
-柯里化是**严格的逐参数分解**，而偏函数是**任意的部分固定**。形式上：
-
-$$
-\text{curry}(f) \neq \text{partial}(f, a_1)
-$$
-
-但二者存在关系：柯里化函数应用一次相当于偏函数应用一次：
-
-$$
-\text{curry}(f)(a_1) \equiv \text{partial}(f, a_1)
-$$
-
-### 2.5 与 λ 演算的对应
-
-在 λ 演算中，多元函数通过嵌套 λ 抽象表示：
-
-$$
-f = \lambda a. \lambda b. \lambda c. \text{body}
-$$
-
-这正是柯里化的数学本质。JavaScript 中的箭头函数可直接表达该形式：
+你想要的是这样的调用体验：
 
 ```javascript
-// 多元函数
-const f = (a, b, c) => a + b + c;
+const searchError = logFor('error', 'search');
+const commentWarn = logFor('warn', 'comment');
 
-// 柯里化形式
-const curriedF = a => b => c => a + b + c;
-
-// 二者在调用上等价
-console.log(f(1, 2, 3));        // 6
-console.log(curriedF(1)(2)(3)); // 6
+searchError('索引加载失败');      // 前缀自动带上
+searchError('查询超时');
+commentWarn('敏感词命中');
 ```
 
-### 2.6 闭包的角色
+"先把知道的参数给函数，剩下的以后再给"——这件事有两套成熟叫法：**偏函数**和**柯里化**。本文把两套都亲手造出来，再顺手解决另一个高频需求：把一串小函数串成流水线。
 
-闭包是实现柯里化的关键机制。当外层函数返回内层函数时，内层函数捕获外层函数的参数，形成闭包：
+## 2. 先不要看解释，先试试看
+
+最朴素的实现你已经会了——就是 150 篇的"返回函数的函数"：
 
 ```javascript
-function curryAdd(a) {
-  // 内层函数捕获 a，形成闭包
-  return function (b) {
-    return function (c) {
-      return a + b + c;  // a 与 b 来自闭包捕获
-    };
-  };
+function logFor(level, module) {
+  return (message) => log(level, module, message);
 }
 
-const step1 = curryAdd(1);  // 闭包：捕获 a=1
-const step2 = step1(2);     // 闭包：捕获 b=2
-console.log(step2(3));       // 6
+const searchError = logFor('error', 'search');
+searchError('索引加载失败');
+// [2026-09-28T03:12:45.101Z] [error] [search] 索引加载失败
 ```
 
-闭包的核心机制：
+`logFor` 收两个参数，**还回一个"记住"了这两个参数的新函数**。剩下的参数什么时候来，它什么时候执行。这就是**偏函数（partial application）**：固定一部分参数，产出 specialization（专用版）。
 
-1. **变量捕获**：内层函数引用外层函数的参数，外层函数执行完毕后，参数仍存在于堆内存中
-2. **延迟执行**：原函数的执行被推迟到所有参数收集完毕
-3. **状态保存**：每次部分应用都生成新的闭包实例，互不干扰
-
----
-
-## 3. 柯里化的实现
-
-### 3.1 基础柯里化函数
-
-以下是生产级柯里化函数的实现，支持任意元数函数：
+另一个更冷门的内置工具也能干这事——`bind`：
 
 ```javascript
-/**
- * 将多元函数柯里化为一元函数链
- * @param {Function} fn 待柯里化的函数
- * @returns {Function} 柯里化后的函数
- */
+function greet(greeting, name) {
+  return `${greeting}，${name}`;
+}
+
+const hello = greet.bind(null, '你好');
+console.log(hello('阿七'));    // 你好，阿七
+console.log(hello('小满'));    // 你好，小满
+```
+
+`bind(null, '你好')` 的意思是：造一个新函数，调用时自动把 `'你好'` 填在第一个参数的位置。**第一个参数（这里传了 null）是给 this 用的**——普通函数不关心 this 就传 null，这个位置的真正用途见 [this 关键字详解](/javascript/100-ThisKeywordDeepDive)。日常写业务更推荐箭头函数版本，语义一目了然：
+
+```javascript
+const hello = (name) => greet('你好', name);
+```
+
+## 3. 心智模型：一次一个参数，就是柯里化
+
+偏函数是"一次固定任意个"，还有一种更极端的分法：**一次只收一个，收满为止**。把三参函数拆成三层：
+
+```javascript
+const curryLog = (level) => (module) => (message) =>
+  log(level, module, message);
+
+curryLog('error')('search')('索引加载失败');
+// [2026-09-28T03:12:45.101Z] [error] [search] 索引加载失败
+```
+
+这个形状就叫**柯里化（currying）**：`f(a, b, c)` 变成 `f(a)(b)(c)`。名字来自逻辑学家 Haskell Curry，别被"数学"吓住——它的实现和 `logFor` 一模一样，只是每层固定一个。
+
+柯里化的实用形态是"**柯里化到底，但允许一次喂多个**"：
+
+```javascript
 function curry(fn) {
   return function curried(...args) {
-    // 已收集参数数量达到原函数元数，立即执行
     if (args.length >= fn.length) {
-      return fn.apply(this, args);
+      return fn(...args);                       // 参数收满，执行
     }
-    // 否则返回新函数继续收集参数
-    return function (...moreArgs) {
-      return curried.apply(this, args.concat(moreArgs));
-    };
+    return (...rest) => curried(...args, ...rest);   // 没收满，继续收
   };
 }
 
-// 使用示例
-const sum = (a, b, c) => a + b + c;
-const curriedSum = curry(sum);
-
-console.log(curriedSum(1)(2)(3));    // 6
-console.log(curriedSum(1, 2)(3));    // 6
-console.log(curriedSum(1)(2, 3));    // 6
-console.log(curriedSum(1, 2, 3));    // 6
+const cLog = curry(log);
+cLog('error', 'search')('索引加载失败');   // 两种喂法都行
+cLog('error')('search', '查询超时');
+cLog('error', 'search', '重试 3 次仍失败');
 ```
 
-### 3.2 支持占位符的柯里化
+三个语法点：`fn.length` 是函数声明的形参个数（不含剩余参数）；`...args` 收集已到的参数；不够就还回一个"带着已有参数继续收"的新函数——闭包在攒参数。
 
-Lodash 的 `_.curry` 支持占位符，允许跳过某些参数：
+对比表收拢一下：
+
+| | 偏函数 | 柯里化 |
+| --- | --- | --- |
+| 一次固定几个 | 任意个（通常前几个） | 严格一个（宽松实现除外） |
+| 调用形态 | `f(a)(b, c)` 或专用名 | `f(a)(b)(c)` |
+| 典型用途 | 给函数预填配置 | 为组合管道准备"单参函数" |
+
+**为什么要费劲变回单参函数？** 因为流水线（下一节）要求每个环节"恰好吃一个值、吐一个值"。三参函数进不了流水线，柯里化就是把多参函数"降维"成流水线零件的标准手法。
+
+## 4. 组合：把小函数串成流水线
+
+命令面板搜索的最后一公里是一串加工：标题转小写、过滤命中、按相关度排、截前 8 条。每个都是单参函数：
 
 ```javascript
-const _ = Symbol('placeholder');
-
-/**
- * 支持占位符的柯里化函数
- * @param {Function} fn 待柯里化的函数
- * @returns {Function} 柯里化后的函数
- */
-function curryPlaceholder(fn) {
-  return function curried(...args) {
-    // 判断是否已收集足够实参（占位符不计入）
-    const realCount = args.filter(a => a !== _).length;
-    if (realCount >= fn.length && !args.includes(_)) {
-      return fn.apply(this, args);
-    }
-    return function (...moreArgs) {
-      // 合并参数：占位符位置用 moreArgs 填充
-      const merged = [];
-      let j = 0;
-      for (let i = 0; i < args.length; i++) {
-        if (args[i] === _ && j < moreArgs.length) {
-          merged.push(moreArgs[j++]);
-        } else {
-          merged.push(args[i]);
-        }
-      }
-      while (j < moreArgs.length) {
-        merged.push(moreArgs[j++]);
-      }
-      return curried.apply(this, merged);
-    };
-  };
-}
-
-const f = (a, b, c) => `${a}-${b}-${c}`;
-const curriedF = curryPlaceholder(f);
-
-console.log(curriedF(_, 2)(1)(3));      // '1-2-3'
-console.log(curriedF(1, _, 3)(2));      // '1-2-3'
-console.log(curriedF(_, _, 3)(1)(2));   // '1-2-3'
+const lower = (s) => s.toLowerCase();
+const trim = (s) => s.trim();
 ```
 
-### 3.3 箭头函数柯里化
-
-使用箭头函数可更简洁地表达柯里化：
+嵌套调用能把人套晕：
 
 ```javascript
-// 三元函数柯里化
-const curry3 = f => a => b => c => f(a, b, c);
-
-// 二元函数柯里化
-const curry2 = f => a => b => f(a, b);
-
-// 使用示例
-const add = curry3((a, b, c) => a + b + c);
-const multiply = curry2((a, b) => a * b);
-
-console.log(add(1)(2)(3));       // 6
-console.log(multiply(2)(5));     // 10
+const result = top8(byScore(docs, filterHits(keyword, lower(trim(rawInput)))));
+// 里外三层，读的时候要从最里面往外剥
 ```
 
-### 3.4 可变元数柯里化
-
-某些场景下函数元数不固定（如 `Math.max`），需使用可变元数柯里化：
+写一个 `pipe`（从左到右依次执行），让代码顺着数据流向读：
 
 ```javascript
-/**
- * 可变元数柯里化：传入空参数时触发执行
- * @param {Function} fn 待柯里化的函数
- * @returns {Function} 柯里化后的函数
- */
-function curryVariadic(fn) {
-  return function curried(...args) {
-    if (args.length === 0) {
-      return fn.call(this);
-    }
-    return function (...moreArgs) {
-      if (moreArgs.length === 0) {
-        return fn.apply(this, args);
-      }
-      return curried.apply(this, args.concat(moreArgs));
-    };
-  };
-}
-
-const sumAll = curryVariadic((...nums) => nums.reduce((a, b) => a + b, 0));
-
-console.log(sumAll(1, 2)(3, 4)(5)());  // 15
-console.log(sumAll(1)(2)(3)(4)(5)());  // 15
-```
-
-### 3.5 递归式柯里化
-
-更通用的递归实现：
-
-```javascript
-/**
- * 递归式柯里化
- * @param {Function} fn 原函数
- * @param {number} arity 目标元数（默认为 fn.length）
- * @param {Array} collected 已收集的参数
- * @returns {Function} 柯里化后的函数
- */
-function curryRecursive(fn, arity = fn.length, collected = []) {
-  return function (...args) {
-    const newCollected = [...collected, ...args];
-    if (newCollected.length >= arity) {
-      return fn.apply(this, newCollected);
-    }
-    return curryRecursive(fn, arity, newCollected);
-  };
-}
-
-const log = curryRecursive((level, source, message) => {
-  console.log(`[${level}] [${source}] ${message}`);
-});
-
-log('INFO')('AuthService')('User login');
-// 输出：[INFO] [AuthService] User login
-```
-
----
-
-## 4. 偏函数的实现
-
-### 4.1 基础偏函数
-
-偏函数应用更简单，固定前几个参数即可：
-
-```javascript
-/**
- * 偏函数应用：固定函数的前若干参数
- * @param {Function} fn 原函数
- * @param  {...any} presetArgs 预设参数
- * @returns {Function} 固定参数后的新函数
- */
-function partial(fn, ...presetArgs) {
-  return function (...laterArgs) {
-    return fn.apply(this, [...presetArgs, ...laterArgs]);
-  };
-}
-
-// 使用示例
-const greet = (greeting, name, punctuation) =>
-  `${greeting}, ${name}${punctuation}`;
-
-const hello = partial(greet, 'Hello');
-console.log(hello('World', '!'));  // 'Hello, World!'
-
-const helloJohn = partial(greet, 'Hello', 'John');
-console.log(helloJohn('.'));  // 'Hello, John.'
-```
-
-### 4.2 使用 Function.prototype.bind
-
-JavaScript 原生的 `bind` 方法本质上就是偏函数应用：
-
-```javascript
-const greet = (greeting, name) => `${greeting}, ${name}`;
-
-// bind 第一个参数为 this，后续参数为预设参数
-const hello = greet.bind(null, 'Hello');
-console.log(hello('World'));  // 'Hello, World'
-
-// 等价于
-const hello2 = partial(greet, 'Hello');
-console.log(hello2('World'));  // 'Hello, World'
-```
-
-### 4.3 支持占位符的偏函数
-
-更强大的偏函数支持占位符，允许固定任意位置的参数：
-
-```javascript
-const _ = Symbol('placeholder');
-
-/**
- * 支持占位符的偏函数
- * @param {Function} fn 原函数
- * @param  {...any} presetArgs 预设参数（可含占位符 _）
- * @returns {Function} 固定部分参数后的新函数
- */
-function partialWithPlaceholder(fn, ...presetArgs) {
-  return function (...laterArgs) {
-    let i = 0;
-    const finalArgs = presetArgs.map(arg =>
-      (arg === _ ? laterArgs[i++] : arg)
-    );
-    // 若 laterArgs 还有剩余，追加到末尾
-    while (i < laterArgs.length) {
-      finalArgs.push(laterArgs[i++]);
-    }
-    return fn.apply(this, finalArgs);
-  };
-}
-
-const f = (a, b, c, d) => `${a}-${b}-${c}-${d}`;
-const partialF = partialWithPlaceholder(f, _, 2, _, 4);
-
-console.log(partialF(1, 3));  // '1-2-3-4'
-```
-
-### 4.4 右偏函数
-
-JavaScript 默认从左到右固定参数，有时需从右到右固定（右偏函数）：
-
-```javascript
-/**
- * 右偏函数：从右侧固定参数
- * @param {Function} fn 原函数
- * @param  {...any} presetArgs 预设参数（从右到左）
- * @returns {Function} 固定右侧参数后的新函数
- */
-function partialRight(fn, ...presetArgs) {
-  return function (...laterArgs) {
-    const totalArgs = [...laterArgs, ...presetArgs];
-    return fn.apply(this, totalArgs);
-  };
-}
-
-const format = (prefix, value, suffix) => `${prefix}${value}${suffix}`;
-const wrap = partialRight(format, ']', '[');
-
-console.log(wrap('hello'));  // 'hello][' —— 注意参数顺序
-// 更准确的右偏实现需考虑原函数元数
-```
-
-### 4.5 更精确的右偏函数
-
-```javascript
-/**
- * 精确的右偏函数：保留原函数元数，从右侧固定
- * @param {Function} fn 原函数
- * @param  {...any} presetArgs 预设参数（从右到左）
- * @returns {Function} 固定右侧参数后的新函数
- */
-function partialRightExact(fn, ...presetArgs) {
-  return function (...laterArgs) {
-    const totalArity = fn.length;
-    const laterNeeded = totalArity - presetArgs.length;
-    const actualLater = laterArgs.slice(0, laterNeeded);
-    const finalArgs = [...actualLater, ...presetArgs];
-    return fn.apply(this, finalArgs);
-  };
-}
-
-const f = (a, b, c, d) => `${a}-${b}-${c}-${d}`;
-const rightPartial = partialRightExact(f, 'c', 'd');
-
-console.log(rightPartial('a', 'b'));  // 'a-b-c-d'
-```
-
----
-
-## 5. 柯里化与偏函数对比
-
-### 5.1 形式对比
-
-| 维度 | 柯里化 | 偏函数 |
-| ---- | ------ | ------ |
-| 参数传递 | 每次严格一个 | 一次可多个 |
-| 返回形式 | 链式一元函数 | 固定部分参数的新函数 |
-| 参数顺序 | 严格从左到右 | 可用占位符跳过 |
-| 实现复杂度 | 较高（递归收集） | 较低（一次固定） |
-| 元数感知 | 是（fn.length） | 否 |
-| 与 bind 的关系 | 不等价 | 等价于 bind |
-| 典型用法 | 函数组合、配置复用 | 固定部分参数 |
-
-### 5.2 调用形式对比
-
-```javascript
-// 原函数
-const f = (a, b, c) => a + b + c;
-
-// 柯里化调用
-const curriedF = curry(f);
-curriedF(1)(2)(3);      // 严格一元链
-curriedF(1, 2)(3);      // 某些实现允许此形式
-curriedF(1)(2, 3);      // 某些实现允许此形式
-
-// 偏函数调用
-const partialF = partial(f, 1);
-partialF(2, 3);         // 一次可传多个参数
-```
-
-### 5.3 性能对比
-
-柯里化由于涉及多次函数调用与闭包创建，性能开销略高于偏函数：
-
-```javascript
-// 性能测试
-function perfTest() {
-  const f = (a, b, c, d, e) => a + b + c + d + e;
-  const curriedF = curry(f);
-  const partialF = partial(f, 1, 2);
-
-  const ITERATIONS = 1_000_000;
-
-  // 直接调用
-  console.time('direct');
-  for (let i = 0; i < ITERATIONS; i++) {
-    f(1, 2, 3, 4, 5);
-  }
-  console.timeEnd('direct');
-
-  // 柯里化调用
-  console.time('curried');
-  for (let i = 0; i < ITERATIONS; i++) {
-    curriedF(1)(2)(3)(4)(5);
-  }
-  console.timeEnd('curried');
-
-  // 偏函数调用
-  console.time('partial');
-  for (let i = 0; i < ITERATIONS; i++) {
-    partialF(3, 4, 5);
-  }
-  console.timeEnd('partial');
-}
-
-perfTest();
-// 典型结果（V8 引擎）：
-// direct:   ~5ms
-// curried:  ~80ms（16倍）
-// partial:  ~30ms（6倍）
-```
-
-### 5.4 适用场景对比
-
-| 场景 | 推荐技术 | 原因 |
-| ---- | -------- | ---- |
-| 配置复用（多步） | 柯里化 | 链式调用清晰表达配置层次 |
-| 固定少量参数 | 偏函数 | 简单直接，无需递归 |
-| 函数组合 | 柯里化 | 一元函数易于组合 |
-| 事件处理 | 偏函数 | 一次固定 context，保留多个参数 |
-| HTTP 请求构建 | 柯里化 | 多层配置（baseURL、headers、method、path） |
-| 日志器配置 | 偏函数 | 固定 level 与 source，保留 message |
-
----
-
-## 6. 实战应用
-
-### 6.1 配置化日志器
-
-```javascript
-// 柯里化实现分层日志器
-const createLogger = curry((level, source, message, meta = {}) => {
-  const timestamp = new Date().toISOString();
-  const logEntry = {
-    timestamp,
-    level,
-    source,
-    message,
-    ...meta,
-  };
-  console.log(JSON.stringify(logEntry));
-  return logEntry;
-});
-
-// 预配置不同级别的日志器
-const infoLog = createLogger('INFO');
-const warnLog = createLogger('WARN');
-const errorLog = createLogger('ERROR');
-
-// 预配置不同来源的日志器
-const authInfo = infoLog('AuthService');
-const dbWarn = warnLog('Database');
-const apiError = errorLog('APIService');
-
-// 使用
-authInfo('User login succeeded', { userId: 'u1' });
-dbWarn('Connection pool nearly full', { poolSize: 90 });
-apiError('Request timeout', { endpoint: '/users', timeout: 5000 });
-```
-
-### 6.2 函数组合管道
-
-```javascript
-/**
- * 函数组合：从右到左执行
- * @param  {...Function} fns 函数序列
- * @returns {Function} 组合后的函数
- */
-function compose(...fns) {
-  return x => fns.reduceRight((acc, fn) => fn(acc), x);
-}
-
-/**
- * 管道：从左到右执行
- * @param  {...Function} fns 函数序列
- * @returns {Function} 管道函数
- */
 function pipe(...fns) {
-  return x => fns.reduce((acc, fn) => fn(acc), x);
+  return (input) => fns.reduce((acc, fn) => fn(acc), input);
 }
 
-// 柯里化的数组操作
-const map = curry((fn, arr) => arr.map(fn));
-const filter = curry((predicate, arr) => arr.filter(predicate));
-const reduce = curry((fn, initial, arr) => arr.reduce(fn, initial));
-const sort = curry((comparator, arr) => [...arr].sort(comparator));
+const prepare = pipe(trim, lower);
+const makeQuery = (raw) => prepare(raw);
 
-// 数据处理管道
-const processNumbers = pipe(
-  filter(n => n % 2 === 0),           // 过滤偶数
-  map(n => n * n),                    // 平方
-  sort((a, b) => a - b),              // 排序
-  reduce((sum, n) => sum + n, 0)      // 求和
+console.log(makeQuery('  EventLoop  '));   // 'eventloop'
+```
+
+`pipe` 本身也是高阶函数：收一串函数，还一个"串好"的函数。`reduce` 在这里是"流水线装配机"——上一步的输出是下一步的输入。如果把 `pipe` 里的 `fn(acc)` 改成从右往左执行，就得到数学味的 `compose`（`compose(f, g)(x)` 等于 `f(g(x))`）；**业务代码统一用 `pipe`，阅读顺序和数据流向一致，出错率低**。
+
+把搜索管道重写一遍：
+
+```javascript
+const searchDocs = pipe(
+  (raw) => raw.trim().toLowerCase(),
+  (kw) => docs.filter((d) => d.title.toLowerCase().includes(kw)),
+  (hits) => hits.sort((a, b) => b.score - a.score),
+  (hits) => hits.slice(0, 8)
 );
 
-console.log(processNumbers([1, 2, 3, 4, 5, 6, 7, 8]));
-// 处理过程：[2, 4, 6, 8] -> [4, 16, 36, 64] -> [4, 16, 36, 64] -> 120
-// 输出：120
+searchDocs('  EVENT  ');   // 标题含 event 的前 8 条，按相关度排好
 ```
 
-### 6.3 HTTP 客户端 DSL
+每个环节独立可测：坏了一个环节，单独调用那个环节就能复现，不用跑整条链。
+
+## 5. 修改实验
+
+以下都在前文代码基础上改，每个先预测再运行。
+
+实验一：写 `partial(fn, ...fixed)`——通用偏函数工具，固定前若干参数：`const logWarn = partial(log, 'warn')`。提示：`(...args) => fn(...fixed, ...args)`，注意柯里化版本 `curry` 与它的区别在"收几个"。
+
+实验二：给 `curry` 的产物加"一次喂超量"的兼容：`cLog('error', 'search', 'msg', '多余参数')` 会怎样？运行验证后想想：`fn(...args)` 收到多余参数会发生什么。
+
+实验三：把 `pipe` 改成支持"任一环节抛错就整体抛错"，并用一个会 throw 的环节验证。（提示：什么都不用改，先验证默认行为就是如此——想清楚为什么。）
+
+## 6. 常见错误与调试实录
+
+**错误一：漏调一层括号，拿到的是函数不是结果。**
 
 ```javascript
-// 三层柯里化 HTTP 客户端
-const createHttpClient = curry((baseConfig, methodConfig, requestConfig) => {
-  const finalConfig = {
-    ...baseConfig,
-    ...methodConfig,
-    ...requestConfig,
-  };
-  return fetch(finalConfig.url, {
-    method: finalConfig.method,
-    headers: finalConfig.headers,
-    body: finalConfig.body,
-    timeout: finalConfig.timeout,
-  });
+const searchError = logFor('error', 'search');
+console.log(typeof searchError);            // 'function'
+console.log(searchError('索引加载失败'));    // 正常日志
+console.log(searchError);                    // [Function (anonymous)]
+```
+
+症状：日志没打出来，或者把"函数"当消息打印了出来。定位三步：读现象——输出是 `[Function ...]` 或行为"没反应"，先怀疑少调了一层；验证——`typeof` 一下，返回 `function` 就说明还差一层括号；结论——柯里化链上每一层括号都是一次调用，`f(a)(b)` 之后还有一个单参函数在等最后一名参数。
+
+**错误二：`bind` 第一个参数传成了业务对象。**
+
+```javascript
+const url = '/api/search';
+const doGet = fetch.bind(url, url);   // 错：把 url 当成了 this
+```
+
+症状：不报错，但多年后有人给 `fetch` 加了依赖 this 的逻辑就会莫名炸。正确心智：`bind` 的签名是 `bind(thisArg, ...固定参数)`，第一个位置**永远属于 this**，只想固定参数就老老实实传 `null` 或改用箭头函数版。类方法上做偏函数时更要注意：`thisArg` 必须是那个实例。
+
+**错误三：把柯里化当成了默认风格，可读性反向劣化。**
+
+```javascript
+// 不推荐：两参函数硬柯里化，同事读起来每层都在猜
+const add = (a) => (b) => a + b;
+
+// 简单两参运算，直接写就好
+const add = (a, b) => a + b;
+```
+
+判断标准就一条：**这个函数的参数是否天然分两批到来**。日志（配置一批、消息一批）、请求（域名密钥一批、路径参数一批）是；`add(a, b)` 不是。柯里化是工具不是信仰，全项目柯里化的代码库，review 成本会显著上升。
+
+## 7. 实际项目中的使用场景
+
+- fetch 封装：文档站所有 API 调用共享同一个域名与鉴权头，`const apiGet = makeGet(baseUrl, headers)` 造出的专用函数散布各处，改配置只动一处；
+- React 生态：`useMemo(() => pipe(...)(data), [data])` 把重加工缓存在管道函数上；状态选择器库（Reselect 风格）的核心就是"偏函数 + 组合"；
+- 中间件工厂：Express/Koa 的中间件常常是"配置一层、请求一层"的两段式——本质就是偏函数；
+- 测试夹具：`const asAdmin = requestAs(baseUrl, { role: 'admin' })`，同一套请求逻辑派生出不同身份的版本。
+
+顺带一提：社区曾长期推动"管道运算符 `|>`"进规范，提案多年停留在 Stage 2，2026 年仍未落地——所以 `pipe` 函数至今仍是事实标准，自己写 10 行或从工具库拿一个都行。
+
+## 8. 小练习
+
+预测题（5 分钟，先写答案再运行验证）：
+
+```javascript
+const join = curry((sep, a, b) => `${a}${sep}${b}`);
+const withDash = join('-');
+console.log(withDash('a', 'b'));
+console.log(join('+')('x', 'y'));
+```
+
+答案：`a-b` 与 `x+y`。两种喂法靠 `curry` 的宽松收参都成立。
+
+修改题（10 分钟）：实现 `composeRight`（即 compose）：`composeRight(f, g)(x)` 等于 `f(g(x))`。验收：`composeRight((n) => n * 2, (n) => n + 1)(3)` 为 8。
+
+修 Bug 题（15 分钟）：下面的代码想给三个按钮分别绑定"告警日志"，真实症状是：点哪个按钮，消息都一样。定位并修复：
+
+```javascript
+const buttons = document.querySelectorAll('button');
+buttons.forEach((btn, i) => {
+  const warnFor = (msg) => log('warn', `button-${i}`, msg);
+  btn.addEventListener('click', () => warnFor('被点击了'));
 });
-
-// 第一层：固定基础配置
-const apiClient = createHttpClient({
-  baseURL: 'https://api.example.com',
-  headers: { 'Content-Type': 'application/json' },
-  timeout: 5000,
-});
-
-// 第二层：固定 HTTP 方法
-const apiGet = apiClient({ method: 'GET' });
-const apiPost = apiClient({ method: 'POST' });
-const apiPut = apiClient({ method: 'PUT' });
-const apiDelete = apiClient({ method: 'DELETE' });
-
-// 第三层：实际调用
-async function fetchUser(userId) {
-  const response = await apiGet({ url: `/users/${userId}` });
-  return response.json();
-}
-
-async function createUser(userData) {
-  const response = await apiPost({
-    url: '/users',
-    body: JSON.stringify(userData),
-  });
-  return response.json();
-}
-
-// 使用
-await fetchUser('u1');
-await createUser({ name: 'Alice', email: 'alice@example.com' });
 ```
 
-### 6.4 SQL 查询构建器
+提示：这段代码本身是对的——先运行确认。真实需求升级为"点第几个按钮就打 button-几"，把 `warnFor` 的调用改成接收点击序号：`btn.addEventListener('click', () => warnFor(`第 ${i} 个被点击了`))`，体会"偏函数固定的是环境，消息仍是每次的动态部分"。
+
+挑战题（30 分钟，脱离示例）：实现 `memoizeBy(fn, keyOf)`：带 key 函数的缓存工厂。`keyOf` 把参数映射成缓存键，命中就不重复计算。验收：
 
 ```javascript
-// SQL 查询构建器：基于柯里化
-const select = curry((columns, table, where, orderBy, limit) => {
-  let sql = `SELECT ${columns} FROM ${table}`;
-  if (where) sql += ` WHERE ${where}`;
-  if (orderBy) sql += ` ORDER BY ${orderBy}`;
-  if (limit) sql += ` LIMIT ${limit}`;
-  return sql;
-});
-
-// 预配置常见查询
-const selectAll = select('*');
-const selectIdName = select('id, name');
-
-const usersAll = selectAll('users');
-const usersById = usersAll(null, null, null);
-const usersRecent = selectAll('users')('created_at > NOW()', 'created_at DESC', 10);
-
-console.log(usersAll);      // SELECT * FROM users
-console.log(usersRecent);   // SELECT * FROM users WHERE created_at > NOW() ORDER BY created_at DESC LIMIT 10
-```
-
-### 6.5 事件处理偏函数
-
-```javascript
-// React 风格的事件处理：偏函数固定 context
-class EventManager {
-  constructor() {
-    this.handlers = new Map();
-  }
-
-  on(event, handler) {
-    if (!this.handlers.has(event)) {
-      this.handlers.set(event, []);
-    }
-    this.handlers.get(event).push(handler);
-  }
-
-  emit(event, ...args) {
-    const handlers = this.handlers.get(event) || [];
-    handlers.forEach(h => h(...args));
-  }
-}
-
-const manager = new EventManager();
-
-// 偏函数预绑定事件类型
-const onClick = partial(manager.on.bind(manager), 'click');
-const onHover = partial(manager.on.bind(manager), 'hover');
-const onSubmit = partial(manager.on.bind(manager), 'submit');
-
-// 注册处理函数
-onClick(e => console.log('Clicked', e));
-onHover(e => console.log('Hovered', e));
-onSubmit(e => console.log('Submitted', e));
-```
-
-### 6.6 类型转换管道
-
-```javascript
-// 数据转换管道
-const parse = curry((type, value) => {
-  switch (type) {
-    case 'int': return parseInt(value, 10);
-    case 'float': return parseFloat(value);
-    case 'boolean': return value === 'true';
-    case 'json': return JSON.parse(value);
-    default: return value;
-  }
-});
-
-const format = curry((type, value) => {
-  switch (type) {
-    case 'currency': return `$${value.toFixed(2)}`;
-    case 'percent': return `${(value * 100).toFixed(1)}%`;
-    case 'date': return new Date(value).toLocaleDateString();
-    default: return String(value);
-  }
-});
-
-const validate = curry((rule, value) => {
-  switch (rule) {
-    case 'required': return value !== null && value !== undefined && value !== '';
-    case 'positive': return value > 0;
-    case 'email': return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-    default: return true;
-  }
-});
-
-// 构建数据处理管道
-const processPrice = pipe(
-  parse('float'),
-  validate('positive'),
-  format('currency')
-);
-
-console.log(processPrice('19.99'));  // '$19.99'
-```
-
----
-
-## 7. 性能分析与优化
-
-### 7.1 性能开销分析
-
-柯里化的性能开销主要来自：
-
-1. **闭包创建**：每次部分应用都创建新的闭包对象
-2. **参数收集**：使用 `...args` 与 `concat` 涉及数组创建
-3. **函数调用**：链式调用增加调用栈深度
-4. **`apply` 调用**：相比直接调用，`apply` 略慢
-
-### 7.2 V8 引擎优化
-
-V8 引擎对柯里化有特定优化：
-
-1. **内联缓存**：对频繁调用的柯里化函数进行内联
-2. **隐藏类**：闭包结构稳定时使用隐藏类优化属性访问
-3. **逃逸分析**：若闭包未逃逸，可栈上分配
-
-```javascript
-// 友好的柯里化形式（V8 易优化）
-function curryOptimized(fn) {
-  const arity = fn.length;
-  return function curried(...args) {
-    if (args.length >= arity) {
-      return fn.apply(this, args);
-    }
-    return function (...moreArgs) {
-      const combined = args.length + moreArgs.length;
-      if (combined >= arity) {
-        // 直接展开调用，避免递归
-        return fn.call(this, ...args, ...moreArgs);
-      }
-      return curried.call(this, ...args, ...moreArgs);
-    };
-  };
-}
-```
-
-### 7.3 性能测试
-
-```javascript
-function benchmark() {
-  const f = (a, b, c, d, e) => a + b + c + d + e;
-  const curriedF = curry(f);
-  const optimizedF = curryOptimized(f);
-  const ITERATIONS = 1_000_000;
-
-  console.time('direct');
-  for (let i = 0; i < ITERATIONS; i++) {
-    f(1, 2, 3, 4, 5);
-  }
-  console.timeEnd('direct');
-
-  console.time('curried');
-  for (let i = 0; i < ITERATIONS; i++) {
-    curriedF(1)(2)(3)(4)(5);
-  }
-  console.timeEnd('curried');
-
-  console.time('optimized');
-  for (let i = 0; i < ITERATIONS; i++) {
-    optimizedF(1)(2)(3)(4)(5);
-  }
-  console.timeEnd('optimized');
-}
-
-benchmark();
-// 典型结果（V8 引擎，Node.js 20）：
-// direct:   ~5ms
-// curried:  ~85ms
-// optimized: ~65ms
-```
-
-### 7.4 何时使用柯里化
-
-| 场景 | 推荐度 | 原因 |
-| ---- | ------ | ---- |
-| 配置复用 | 高 | 减少重复参数传递 |
-| 函数组合 | 高 | 一元函数天然可组合 |
-| 性能敏感循环 | 低 | 开销大，建议直接调用 |
-| 一次性脚本 | 低 | 过度抽象无收益 |
-| 库 API 设计 | 高 | 提供灵活的调用方式 |
-| 事件处理 | 中 | 偏函数可能更直接 |
-
----
-
-## 8. 常见陷阱
-
-### 8.1 丢失 this 上下文
-
-```javascript
-const obj = {
-  value: 42,
-  getValue(prefix, suffix) {
-    return `${prefix}${this.value}${suffix}`;
-  },
+let calls = 0;
+const slowSquare = (n) => {
+  calls += 1;
+  return n * n;
 };
-
-// 错误：柯里化后 this 丢失
-const curriedGetValue = curry(obj.getValue);
-console.log(curriedGetValue('[')(']')(''));  // undefined —— this 指向全局
-
-// 修复：使用 bind 绑定 this
-const boundCurried = curry(obj.getValue.bind(obj));
-console.log(boundCurried('[')(']'));  // '[42]'
+const fastSquare = memoizeBy(slowSquare, (n) => n);
+console.log(fastSquare(4), fastSquare(4), fastSquare(5));   // 16 16 25
+console.log(calls);                                          // 2
 ```
 
-### 8.2 默认参数导致 fn.length 失效
+提示（思路方向）：这是"返回函数 + 闭包存 Map"的组合，和 `once` 同族，只是缓存键可配置——而"把 keyOf 当参数传进去"正是偏函数思想。展开（关键 API）：`Map`、闭包、默认参数。
 
-```javascript
-// fn.length 不计默认参数
-const f = (a, b, c = 0) => a + b + c;
-console.log(f.length);  // 2，而非 3
+## 9. 与之前和之后的知识的关系
 
-// 柯里化会在收到 2 个参数时立即执行
-const curriedF = curry(f);
-console.log(curriedF(1)(2));  // 3 —— 提前执行
+- 往前：150 篇的 `once` 是"返回函数"的第一次实战，本文的 `curry`、`pipe` 是同族工具；160 篇的累加器思想在 `pipe` 的 `reduce` 里再次出现（上一步结果喂下一步）；
+- 往后：[防抖与节流](/javascript/490-DebounceThrottle) 是"配置一层、触发一层"的两段式工厂，读完本文再看它的实现会非常顺；[Proxy 与 Reflect](/javascript/330-ProxyAndReflect) 会从另一个角度（拦截调用）实现"包一层"的效果。
 
-// 修复：显式指定 arity
-const curriedFAgain = curryWithArity(f, 3);
-function curryWithArity(fn, arity) {
-  return function curried(...args) {
-    if (args.length >= arity) {
-      return fn.apply(this, args);
-    }
-    return function (...moreArgs) {
-      return curried.apply(this, args.concat(moreArgs));
-    };
-  };
-}
-```
+## 10. 官方文档
 
-### 8.3 rest 参数导致 fn.length 为 0
+- MDN Function.prototype.bind（留意第一个参数是 thisArg）：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/bind
+- MDN Function.length：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Function/length
+- MDN Array.prototype.reduce：https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/reduce
 
-```javascript
-const f = (...args) => args.reduce((a, b) => a + b, 0);
-console.log(f.length);  // 0
+## 自我检查
 
-// 柯里化立即执行，返回 0
-const curriedF = curry(f);
-console.log(curriedF());  // 0
+- 能向同事分别用一句话说清偏函数与柯里化，并举出"参数天然分批"的真实例子；
+- 能徒手写出 `curry` 与 `pipe`，并解释 `fn.length` 在 curry 里的作用；
+- 看到 `[Function (anonymous)]` 出现在本该是结果的变量上，能立刻怀疑"漏调一层括号"；
+- 能说出 `bind(null, '你好')` 里 null 的真实身份，以及什么场景不该柯里化。
 
-// 修复：使用可变元数柯里化
-const variadicF = curryVariadic(f);
-console.log(variadicF(1)(2)(3)());  // 6
-```
+## 本章总结
 
-### 8.4 嵌套柯里化导致栈溢出
+偏函数固定一部分参数产出专用函数，柯里化一次收一个参数收满执行，两者都是"返回函数 + 闭包攒状态"，区别只在收参节奏。多参函数靠柯里化降维成单参零件，单参零件靠 pipe 串成从左到右的流水线，每个环节独立可测。`bind` 的第一个参数永远属于 this，只想固定参数请用箭头函数。柯里化是给"参数天然分批"的场景准备的工具，两参相加这种场景硬上就是炫技。
 
-```javascript
-// 深度柯里化可能导致栈溢出
-function deepCurry(fn) {
-  return function curried(...args) {
-    if (args.length >= fn.length) {
-      return fn.apply(this, args);
-    }
-    return function (...moreArgs) {
-      return curried.apply(this, args.concat(moreArgs));
-    };
-  };
-}
+## 下一步
 
-// 极端场景：100 元函数
-const bigFn = (...args) => args.reduce((a, b) => a + b, 0);
-const curriedBig = deepCurry(bigFn);
-// const result = curriedBig(1)(2)(3)...(100);  // 可能栈溢出
-```
-
-### 8.5 占位符冲突
-
-```javascript
-const _ = Symbol('placeholder');
-
-// 不同库的占位符不兼容
-const lodash = _.curry;  // Lodash 的占位符
-const ramda = R.__;       // Ramda 的占位符
-
-// 混用导致问题
-const f = (a, b, c) => `${a}-${b}-${c}`;
-// curry(f)(_, 2)(1, 3) —— Lodash 风格
-// R.curry(f)(R.__, 2)(1, 3) —— Ramda 风格
-// 二者占位符不同，不能混用
-```
-
-### 8.6 内存泄漏
-
-```javascript
-// 闭包持有大对象引用，可能造成内存泄漏
-function riskyCurry() {
-  const hugeData = new Array(1_000_000).fill('data');
-  return function () {
-    return hugeData.length;  // hugeData 被闭包持有
-  };
-}
-
-const fn = riskyCurry();
-// hugeData 不会被回收，直到 fn 被释放
-```
-
-### 8.7 可读性下降
-
-```javascript
-// 过度柯里化导致可读性下降
-const f = a => b => c => d => e => a + b + c + d + e;
-
-// 阅读时需数层数才能理解
-console.log(f(1)(2)(3)(4)(5));  // 15
-
-// 更清晰的写法
-function f2(a, b, c, d, e) {
-  return a + b + c + d + e;
-}
-console.log(f2(1, 2, 3, 4, 5));  // 15
-```
-
----
-
-## 9. 工程实践
-
-### 9.1 命名规范
-
-```javascript
-// 柯里化函数命名建议加 curried 前缀
-const curriedMap = curry(map);
-const curriedFilter = curry(filter);
-
-// 偏函数命名建议加 partial 前缀或配置描述
-const partialAdd = partial(add, 1);
-const infoLogger = partial(log, 'INFO');  // 直接描述配置
-```
-
-### 9.2 TypeScript 类型支持
-
-```typescript
-// 柯里化函数的 TypeScript 类型
-type Curried<T extends (...args: any[]) => any> = T extends (
-  first: infer First,
-  ...rest: infer Rest
-) => infer Return
-  ? Rest extends []
-    ? (arg: First) => Return
-    : (arg: First) => Curried<(...args: Rest) => Return>
-  : never;
-
-function curry<T extends (...args: any[]) => any>(fn: T): Curried<T> {
-  return function curried(...args: any[]) {
-    if (args.length >= fn.length) {
-      return fn.apply(this, args);
-    }
-    return function (...moreArgs: any[]) {
-      return curried.apply(this, args.concat(moreArgs));
-    };
-  } as Curried<T>;
-}
-
-// 使用
-const sum = (a: number, b: number, c: number) => a + b + c;
-const curriedSum = curry(sum);
-const result = curriedSum(1)(2)(3);  // 类型推导为 number
-```
-
-### 9.3 与 Ramda.js 集成
-
-```javascript
-const R = require('ramda');
-
-// Ramda 的柯里化函数默认柯里化所有函数
-const sum = R.curry((a, b, c) => a + b + c);
-console.log(sum(1)(2)(3));    // 6
-console.log(sum(1, 2)(3));    // 6
-console.log(sum(1)(2, 3));    // 6
-
-// Ramda 的偏函数
-const greet = R.partial((greeting, name, punctuation) =>
-  `${greeting}, ${name}${punctuation}`, ['Hello']);
-console.log(greet('World', '!'));  // 'Hello, World!'
-
-// Ramda 的占位符
-const f = R.curry((a, b, c) => `${a}-${b}-${c}`);
-console.log(f(R.__, 2, 3)(1));  // '1-2-3'
-```
-
-### 9.4 与 Lodash 集成
-
-```javascript
-const _ = require('lodash');
-
-// Lodash 的柯里化
-const sum = _.curry((a, b, c) => a + b + c);
-console.log(sum(1)(2)(3));  // 6
-
-// Lodash 的偏函数
-const greet = _.partial((greeting, name, punctuation) =>
-  `${greeting}, ${name}${punctuation}`, 'Hello');
-console.log(greet('World', '!'));  // 'Hello, World!'
-
-// Lodash 的占位符
-const f = _.partial((a, b, c) => `${a}-${b}-${c}`, _, 2, _);
-console.log(f(1, 3));  // '1-2-3'
-```
-
-### 9.5 单元测试
-
-```javascript
-// 使用 Jest 测试柯里化函数
-describe('curry', () => {
-  test('完整参数调用', () => {
-    const sum = (a, b, c) => a + b + c;
-    const curriedSum = curry(sum);
-    expect(curriedSum(1, 2, 3)).toBe(6);
-  });
-
-  test('链式调用', () => {
-    const sum = (a, b, c) => a + b + c;
-    const curriedSum = curry(sum);
-    expect(curriedSum(1)(2)(3)).toBe(6);
-  });
-
-  test('混合调用', () => {
-    const sum = (a, b, c) => a + b + c;
-    const curriedSum = curry(sum);
-    expect(curriedSum(1, 2)(3)).toBe(6);
-    expect(curriedSum(1)(2, 3)).toBe(6);
-  });
-
-  test('保留 this 上下文', () => {
-    const obj = {
-      multiplier: 10,
-      multiply(a, b) {
-        return (a + b) * this.multiplier;
-      },
-    };
-    const curriedMultiply = curry(obj.multiply.bind(obj));
-    expect(curriedMultiply(1)(2)).toBe(30);
-  });
-});
-```
-
-### 9.6 ESLint 规则
-
-```json
-{
-  "rules": {
-    "prefer-arrow-callback": "error",
-    "no-loop-func": "error",
-    "consistent-return": "error"
-  }
-}
-```
-
----
-
-## 10. 案例研究
-
-### 10.1 Lodash 的 curry 实现
-
-Lodash 的 `_.curry` 是工业级实现，支持：
-
-- 占位符（`_.placeholder`）
-- 元数指定（`_.curry(fn, arity)`）
-- 与 `bind` 兼容
-
-```javascript
-// Lodash curry 简化版源码分析
-function curry(func, arity = func.length) {
-  const curried = function (...args) {
-    const placeholder = curry.placeholder;
-    if (args.length >= arity && !args.includes(placeholder)) {
-      return func.apply(this, args);
-    }
-    return function (...restArgs) {
-      const newArgs = args.map(arg =>
-        arg === placeholder ? restArgs.shift() : arg
-      );
-      return curried.apply(this, [...newArgs, ...restArgs]);
-    };
-  };
-  curried.placeholder = Symbol('placeholder');
-  return curried;
-}
-```
-
-### 10.2 Ramda.js 的设计哲学
-
-Ramda.js 的核心设计原则：
-
-1. **函数优先，数据最后**：所有核心函数都柯里化，数据参数放最后
-2. **纯函数**：所有函数无副作用
-3. **不可变数据**：所有操作返回新数据
-
-```javascript
-// Ramda 风格：函数优先，数据最后
-const R = require('ramda');
-
-const isEven = n => n % 2 === 0;
-const square = n => n * n;
-const sum = (a, b) => a + b;
-
-// 数据在最后，便于组合
-const processNumbers = R.pipe(
-  R.filter(isEven),
-  R.map(square),
-  R.reduce(sum, 0)
-);
-
-console.log(processNumbers([1, 2, 3, 4, 5, 6]));  // 4 + 16 + 36 = 56
-```
-
-### 10.3 React Hooks 中的偏函数
-
-React Hooks 中 `useCallback` 本质上是偏函数应用：
-
-```jsx
-function useDebouncedCallback(callback, delay) {
-  const timerRef = useRef(null);
-
-  const debounced = useCallback(
-    (...args) => {
-      clearTimeout(timerRef.current);
-      timerRef.current = setTimeout(() => callback(...args), delay);
-    },
-    [callback, delay]
-  );
-
-  return debounced;
-}
-
-// 使用：偏函数固定 delay
-const debouncedSearch = useDebouncedCallback(query => {
-  searchAPI(query);
-}, 300);
-```
-
-### 10.4 Express.js 中间件
-
-Express 中间件本质上是偏函数：
-
-```javascript
-// 认证中间件工厂（偏函数）
-function authMiddleware(requiredRole) {
-  return function (req, res, next) {
-    if (req.user.role !== requiredRole) {
-      return res.status(403).send('Forbidden');
-    }
-    next();
-  };
-}
-
-// 使用：偏函数固定 requiredRole
-app.get('/admin', authMiddleware('admin'), adminHandler);
-app.get('/user', authMiddleware('user'), userHandler);
-```
-
-### 10.5 Redux 的 connect 函数
-
-Redux 的 `connect` 是典型的柯里化设计：
-
-```javascript
-// connect 是柯里化函数：connect(mapStateToProps, mapDispatchToProps)(Component)
-const mapStateToProps = state => ({
-  user: state.user,
-});
-
-const mapDispatchToProps = dispatch => ({
-  login: credentials => dispatch(loginAction(credentials)),
-});
-
-const ConnectedComponent = connect(
-  mapStateToProps,
-  mapDispatchToProps
-)(MyComponent);
-```
-
----
-
-### 13.1 函数式编程经典著作
-
-- **《Structure and Interpretation of Computer Programs》**（Abelson & Sussman, 1985）：MIT 经典教材，深入讲解函数式编程与闭包
-- **《Learn You a Haskell for Great Good!》**（Miran Lipovača, 2011）：Haskell 入门最佳读物，原生柯里化语言
-- **《Real-World Functional Programming》**（Tomas Petricek, 2009）：F# 与函数式编程实践
-- **《Functional JavaScript》**（Michael Fogus, 2013）：JavaScript 函数式编程专题
-
-### 13.3 相关主题
-
-- **高阶函数**：函数作为参数或返回值
-- **闭包**：柯里化的实现基础
-- **函数组合**：将多个函数组合为新函数
-- **范畴论**：函数式编程的数学基础
-- **Monad**：函数式编程的核心抽象
-- **不可变数据**：函数式编程的核心理念
-
-### 13.4 学术论文
-
-- **Hughes, J. 1989. Why Functional Programming Matters**. Computer Journal 32, 2, 98-107. —— 函数式编程的优势论述
-- **Wadler, P. 1990. Comprehending Monads**. Mathematical Structures in Computer Science 2, 4, 461-493. —— Monad 的经典论文
-- **Appel, A. W. 1992. Compiling with Continuations**. Cambridge University Press. —— 续延传递风格
-
----
-
-## 14. 附录
-
-### 14.1 语法速查表
-
-```javascript
-// 柯里化基础实现
-function curry(fn) {
-  return function curried(...args) {
-    if (args.length >= fn.length) {
-      return fn.apply(this, args);
-    }
-    return function (...moreArgs) {
-      return curried.apply(this, args.concat(moreArgs));
-    };
-  };
-}
-
-// 偏函数基础实现
-function partial(fn, ...presetArgs) {
-  return function (...laterArgs) {
-    return fn.apply(this, [...presetArgs, ...laterArgs]);
-  };
-}
-
-// 使用 bind 实现偏函数
-const partialFn = fn.bind(null, arg1, arg2);
-
-// 函数组合
-const compose = (...fns) => x => fns.reduceRight((acc, fn) => fn(acc), x);
-
-// 管道
-const pipe = (...fns) => x => fns.reduce((acc, fn) => fn(acc), x);
-```
-
-### 14.2 兼容性表
-
-| 特性 | Chrome | Firefox | Safari | Edge | Node.js |
-| ---- | ------ | ------- | ------ | ---- | ------- |
-| 箭头函数 | 45+ | 22+ | 10+ | 12+ | 4+ |
-| 扩展运算符 | 46+ | 16+ | 8+ | 12+ | 5+ |
-| Function.prototype.bind | 7+ | 4+ | 5.1+ | 12+ | 0.10+ |
-| rest 参数 | 47+ | 15+ | 10+ | 12+ | 6+ |
-
-### 14.3 Lodash 与 Ramda 对比
-
-| 特性 | Lodash | Ramda |
-| ---- | ------ | ----- |
-| 设计哲学 | 实用工具库 | 函数式编程库 |
-| 函数顺序 | 数据优先 | 函数优先，数据最后 |
-| 默认柯里化 | 否（需显式调用 `_.curry`） | 是（所有函数默认柯里化） |
-| 不可变性 | 可选（`_.cloneDeep`） | 默认 |
-| 占位符 | `_.placeholder` | `R.__` |
-| 包大小 | ~25KB（按需引入） | ~30KB |
-
-### 14.4 类型定义
-
-```typescript
-// 柯里化函数类型
-type Curried<T extends (...args: any[]) => any> = T extends (
-  first: infer First,
-  ...rest: infer Rest
-) => infer Return
-  ? Rest extends []
-    ? (arg: First) => Return
-    : (arg: First) => Curried<(...args: Rest) => Return>
-  : never;
-
-// 偏函数类型
-type Partial<T extends (...args: any[]) => any> = T extends (
-  ...args: infer Args
-) => infer Return
-  ? <P extends Partial<Args>>(
-      ...presetArgs: P
-    ) => (...rest: Exclude<Args, P>) => Return
-  : never;
-```
-
-### 14.5 性能优化速查
-
-```javascript
-// 1. 避免深度柯里化（>5 层）
-// 2. 性能敏感场景使用直接调用
-// 3. 频繁调用的柯里化函数可考虑缓存中间结果
-// 4. 使用 V8 友好的柯里化形式（避免递归）
-// 5. 大数据量处理避免柯里化导致的多次数组创建
-```
-
-### 14.6 函数式编程术语表
-
-| 术语 | 英文 | 定义 |
-| ---- | ---- | ---- |
-| 柯里化 | Currying | 将多元函数转换为一元函数链 |
-| 偏函数应用 | Partial Application | 固定函数部分参数生成新函数 |
-| 函数组合 | Function Composition | 将多个函数组合为新函数 |
-| 高阶函数 | Higher-Order Function | 接受或返回函数的函数 |
-| 闭包 | Closure | 函数及其引用环境的复合体 |
-| 纯函数 | Pure Function | 无副作用、输出仅依赖输入的函数 |
-| 不可变性 | Immutability | 数据创建后不可修改 |
-| Monad | Monad | 函数式编程的核心抽象 |
-| 范畴论 | Category Theory | 函数式编程的数学基础 |
-| λ 演算 | Lambda Calculus | 函数式编程的数学模型 |
-
-### 14.7 修订记录
-
-| 日期 | 版本 | 修订内容 | 修订人 |
-| ---- | ---- | -------- | ------ |
-| 2026-07-20 | 1.0 | 初始金标准版本 | FANDEX Content Engineering Team |
-
-### 14.8 致谢
-
-本篇文档参考了以下开源项目与文档：
-
-- Lodash 项目：提供工业级柯里化实现参考
-- Ramda.js 项目：函数式编程设计哲学启发
-- MDN Web Docs：闭包与函数 API 的权威文档
-- TC39 ECMAScript 规范：语言标准的权威来源
-
-### 14.9 学习路径
-
-| 阶段 | 主题 | 推荐资源 |
-| ---- | ---- | -------- |
-| 入门 | 函数基础 | MDN 函数教程 |
-| 进阶 | 闭包与高阶函数 | 《JavaScript 高级程序设计》第 10 章 |
-| 高级 | 柯里化与偏函数 | 本篇文档 |
-| 实战 | 函数式编程库 | Ramda.js 文档 |
-| 深入 | 范畴论与 Monad | 《Category Theory for Programmers》 |
-
-### 14.10 教学建议
-
-**面向不同学习者的教学策略：**
-
-1. **初学者**：从箭头函数与简单柯里化入手，强调「配置复用」的直觉
-2. **中级开发者**：结合 Lodash/Ramda 实战，讲解库 API 设计哲学
-3. **高级开发者**：深入形式语义、λ 演算、范畴论，探讨函数式编程本质
-
-**常见教学误区：**
-
-1. 过早引入复杂的形式化定义，让初学者望而生畏
-2. 忽略性能开销，让学习者误以为柯里化适合所有场景
-3. 不区分柯里化与偏函数，导致概念混淆
-
-### 14.11 FAQ
-
-**Q1: 柯里化与偏函数哪个更好？**
-
-A: 二者无绝对优劣，需根据场景选择。柯里化适合多层配置复用与函数组合，偏函数适合简单固定少量参数。性能敏感场景建议直接调用。
-
-**Q2: 柯里化会影响性能吗？**
-
-A: 是的，柯里化涉及多次函数调用与闭包创建，相比直接调用有 10-20 倍的性能开销。但在大多数业务场景下，可读性收益远大于性能损失。
-
-**Q3: JavaScript 何时原生支持柯里化？**
-
-A: 目前 TC39 暂无原生柯里化提案。管道操作符 `|>` 提案（Stage 3）与部分应用提案 `?.`（Stage 1）正在推进中，未来可能简化函数式编程语法。
-
-**Q4: 如何在 TypeScript 中正确类型化柯里化函数？**
-
-A: 使用递归条件类型 `Curried<T>`，参考本篇附录 15.4 的类型定义。对于复杂场景，可借助 `ramda` 的类型定义库 `@types/ramda`。
-
-**Q5: 柯里化与 React Hooks 有关系吗？**
-
-A: 有间接关系。`useCallback` 本质上是偏函数应用，`useMemo` 类似于惰性求值。React 函数式编程风格与柯里化思想相通。
-
-### 14.12 总结
-
-柯里化与偏函数是函数式编程的核心技术，通过参数收集与延迟执行，将「配置」与「执行」解耦，提升代码的复用性、可读性与可组合性。
-
-**核心要点回顾：**
-
-1. 柯里化将 $n$ 元函数转换为 $n$ 个一元函数链：$f(a, b, c) \to f(a)(b)(c)$
-2. 偏函数固定部分参数生成新函数：$\text{partial}(f, a)(b, c) = f(a, b, c)$
-3. 二者均基于闭包机制实现，本质是 λ 演算的工程化
-4. 性能开销约为直接调用的 10-20 倍，但可读性收益显著
-5. 推荐在库 API 设计、配置复用、函数组合场景使用
-6. 性能敏感场景应避免深度柯里化
-
-**未来发展方向：**
-
-1. 管道操作符 `|>` 提案将简化函数组合语法
-2. 部分应用提案 `?.` 可能提供原生偏函数语法
-3. 类型系统对柯里化的支持将更加完善
-4. 函数式编程范式在 React 等主流框架中的渗透将持续深化
-
----
-
-## 15. 实战项目：构建函数式数据处理库
-
-### 15.1 项目目标
-
-构建一个基于柯里化与偏函数的数据处理库，支持：
-
-1. 链式数据转换（map、filter、reduce）
-2. 配置化日志与监控
-3. 错误处理与重试
-4. 类型安全的管道组合
-
-### 15.2 完整实现
-
-```javascript
-/**
- * 函数式数据处理库 FpUtils
- * 基于柯里化与偏函数实现
- */
-const FpUtils = (function () {
-  // ============================================================
-  // 核心工具函数
-  // ============================================================
-
-  /**
-   * 柯里化函数
-   */
-  function curry(fn) {
-    return function curried(...args) {
-      if (args.length >= fn.length) {
-        return fn.apply(this, args);
-      }
-      return function (...moreArgs) {
-        return curried.apply(this, args.concat(moreArgs));
-      };
-    };
-  }
-
-  /**
-   * 偏函数应用
-   */
-  function partial(fn, ...presetArgs) {
-    return function (...laterArgs) {
-      return fn.apply(this, [...presetArgs, ...laterArgs]);
-    };
-  }
-
-  /**
-   * 函数组合（从右到左）
-   */
-  function compose(...fns) {
-    return x => fns.reduceRight((acc, fn) => fn(acc), x);
-  }
-
-  /**
-   * 管道（从左到右）
-   */
-  function pipe(...fns) {
-    return x => fns.reduce((acc, fn) => fn(acc), x);
-  }
-
-  // ============================================================
-  // 柯里化的数组操作
-  // ============================================================
-
-  const map = curry((fn, arr) => arr.map(fn));
-  const filter = curry((predicate, arr) => arr.filter(predicate));
-  const reduce = curry((fn, initial, arr) => arr.reduce(fn, initial));
-  const sort = curry((comparator, arr) => [...arr].sort(comparator));
-  const find = curry((predicate, arr) => arr.find(predicate));
-  const some = curry((predicate, arr) => arr.some(predicate));
-  const every = curry((predicate, arr) => arr.every(predicate));
-  const flatMap = curry((fn, arr) => arr.flatMap(fn));
-  const slice = curry((start, end, arr) => arr.slice(start, end));
-  const chunk = curry((size, arr) => {
-    const result = [];
-    for (let i = 0; i < arr.length; i += size) {
-      result.push(arr.slice(i, i + size));
-    }
-    return result;
-  });
-
-  // ============================================================
-  // 柯里化的对象操作
-  // ============================================================
-
-  const prop = curry((key, obj) => obj?.[key]);
-  const pick = curry((keys, obj) =>
-    keys.reduce((acc, key) => {
-      if (key in obj) acc[key] = obj[key];
-      return acc;
-    }, {})
-  );
-  const omit = curry((keys, obj) =>
-    Object.keys(obj).reduce((acc, key) => {
-      if (!keys.includes(key)) acc[key] = obj[key];
-      return acc;
-    }, {})
-  );
-  const merge = curry((source, target) => ({ ...target, ...source }));
-  const path = curry((keys, obj) =>
-    keys.reduce((acc, key) => (acc ? acc[key] : undefined), obj)
-  );
-
-  // ============================================================
-  // 配置化日志器
-  // ============================================================
-
-  const createLogger = curry((level, source, message, meta = {}) => {
-    const timestamp = new Date().toISOString();
-    const logEntry = { timestamp, level, source, message, ...meta };
-    console.log(JSON.stringify(logEntry));
-    return logEntry;
-  });
-
-  const logger = {
-    info: createLogger('INFO'),
-    warn: createLogger('WARN'),
-    error: createLogger('ERROR'),
-    debug: createLogger('DEBUG'),
-  };
-
-  // ============================================================
-  // 错误处理与重试
-  // ============================================================
-
-  /**
-   * 带重试的函数调用
-   */
-  const withRetry = curry((options, fn) => async (...args) => {
-    const { retries = 3, delay = 1000, backoff = 2 } = options;
-    let lastError;
-    for (let attempt = 0; attempt <= retries; attempt++) {
-      try {
-        return await fn(...args);
-      } catch (error) {
-        lastError = error;
-        if (attempt < retries) {
-          logger.warn('RetryService')(
-            `Attempt ${attempt + 1} failed, retrying...`,
-            { error: error.message, nextAttempt: attempt + 2 }
-          );
-          await new Promise(resolve =>
-            setTimeout(resolve, delay * Math.pow(backoff, attempt))
-          );
-        }
-      }
-    }
-    throw lastError;
-  });
-
-  /**
-   * 异步管道
-   */
-  const pipeAsync = (...fns) => async x => {
-    let result = x;
-    for (const fn of fns) {
-      result = await fn(result);
-    }
-    return result;
-  };
-
-  // ============================================================
-  // 数据处理管道示例
-  // ============================================================
-
-  /**
-   * 用户数据处理管道
-   */
-  const processUsers = pipe(
-    filter(u => u.active),                        // 过滤活跃用户
-    map(pick(['id', 'name', 'email'])),           // 提取关键字段
-    sort((a, b) => a.name.localeCompare(b.name)), // 按名排序
-    chunk(10)                                      // 分页，每页 10 条
-  );
-
-  /**
-   * 订单统计管道
-   */
-  const analyzeOrders = pipe(
-    filter(o => o.status === 'completed'),
-    map(o => ({ ...o, total: o.price * o.quantity })),
-    reduce(
-      (acc, o) => {
-        acc.totalRevenue += o.total;
-        acc.orderCount += 1;
-        acc.avgOrder = acc.totalRevenue / acc.orderCount;
-        return acc;
-      },
-      { totalRevenue: 0, orderCount: 0, avgOrder: 0 }
-    )
-  );
-
-  // ============================================================
-  // 导出 API
-  // ============================================================
-
-  return {
-    // 核心工具
-    curry,
-    partial,
-    compose,
-    pipe,
-    pipeAsync,
-    // 数组操作
-    map,
-    filter,
-    reduce,
-    sort,
-    find,
-    some,
-    every,
-    flatMap,
-    slice,
-    chunk,
-    // 对象操作
-    prop,
-    pick,
-    omit,
-    merge,
-    path,
-    // 日志
-    logger,
-    createLogger,
-    // 错误处理
-    withRetry,
-    // 业务管道
-    processUsers,
-    analyzeOrders,
-  };
-})();
-
-// ============================================================
-// 使用示例
-// ============================================================
-
-// 示例 1：用户数据处理
-const users = [
-  { id: 1, name: 'Alice', email: 'alice@example.com', active: true, age: 30 },
-  { id: 2, name: 'Bob', email: 'bob@example.com', active: false, age: 25 },
-  { id: 3, name: 'Charlie', email: 'charlie@example.com', active: true, age: 35 },
-];
-
-const processedPages = FpUtils.processUsers(users);
-console.log(processedPages);
-// [[{ id: 1, name: 'Alice', email: 'alice@example.com' },
-//   { id: 3, name: 'Charlie', email: 'charlie@example.com' }]]
-
-// 示例 2：订单统计
-const orders = [
-  { id: 1, status: 'completed', price: 100, quantity: 2 },
-  { id: 2, status: 'pending', price: 50, quantity: 1 },
-  { id: 3, status: 'completed', price: 200, quantity: 3 },
-];
-
-const stats = FpUtils.analyzeOrders(orders);
-console.log(stats);
-// { totalRevenue: 800, orderCount: 2, avgOrder: 400 }
-
-// 示例 3：带重试的 API 调用
-const fetchWithRetry = FpUtils.withRetry({
-  retries: 3,
-  delay: 1000,
-  backoff: 2,
-});
-
-const fetchUser = fetchWithRetry(async (userId) => {
-  const response = await fetch(`/api/users/${userId}`);
-  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-  return response.json();
-});
-
-// 调用：fetchUser('u1').then(user => console.log(user));
-```
-
-### 15.3 项目总结
-
-本项目展示了柯里化与偏函数在生产环境下的完整应用：
-
-1. **核心工具**：`curry`、`partial`、`compose`、`pipe` 提供基础函数式编程能力
-2. **数组操作**：所有数组方法柯里化，数据参数放最后，便于组合
-3. **对象操作**：`prop`、`pick`、`omit`、`path` 等常用操作柯里化
-4. **日志系统**：三层柯里化（level、source、message）支持灵活配置
-5. **错误处理**：`withRetry` 实现指数退避重试，`pipeAsync` 支持异步管道
-6. **业务管道**：`processUsers`、`analyzeOrders` 展示实际业务场景应用
-
----
-
-## 16. 与未来 ECMAScript 提案的关联
-
-### 16.1 管道操作符 `|>` 提案
-
-TC39 管道操作符提案（Stage 3）将极大简化函数组合：
-
-```javascript
-// 当前写法
-const result = pipe(
-  filter(isEven),
-  map(square),
-  reduce(sum, 0)
-)([1, 2, 3, 4, 5, 6]);
-
-// 管道操作符写法（未来）
-const result = [1, 2, 3, 4, 5, 6]
-  |> (% |> filter(isEven, %))
-  |> (% |> map(square, %))
-  |> (% |> reduce(sum, 0, %));
-```
-
-### 16.2 部分应用提案
-
-TC39 部分应用提案（Stage 1）将提供原生偏函数语法：
-
-```javascript
-// 当前写法
-const hello = greet.bind(null, 'Hello');
-
-// 部分应用写法（未来）
-const hello = greet('Hello', ?, ?);
-```
-
-### 16.3 模式匹配提案
-
-模式匹配提案（Stage 1）与柯里化结合可实现强大的数据解构：
-
-```javascript
-// 未来模式匹配
-const result = match(data) {
-  when { type: 'user', name: String } => formatUser(data),
-  when { type: 'order', id: Number } => formatOrder(data),
-  when _ => 'Unknown'
-};
-```
-
-### 16.4 Records & Tuples 提案
-
-不可变数据结构提案（Stage 2）与函数式编程天然契合：
-
-```javascript
-// 不可变记录
-const user = #{ name: 'Alice', age: 30 };
-const updated = #{ ...user, age: 31 };  // 新记录
-
-// 不可变元组
-const numbers = #[1, 2, 3];
-const doubled = numbers.map(x => x * 2);  // 新元组
-```
-
-### 16.5 对函数式编程的影响
-
-上述提案若全部通过，将显著改善 JavaScript 函数式编程体验：
-
-1. 管道操作符替代 `pipe` 函数，语法更直观
-2. 部分应用替代 `bind` 与 `partial`，原生支持
-3. 模式匹配简化条件分支，减少 `if-else` 嵌套
-4. 不可变数据结构消除手动 `cloneDeep`，提升性能与安全性
-
-**未来展望：** JavaScript 函数式编程正在向 Haskell、Scala 等语言靠拢。柯里化与偏函数作为基础技术，其理念将贯穿未来 ECMAScript 的演进。掌握这些核心概念，将有助于开发者在语言演进中保持竞争力。
+函数式工具箱到此齐了：map/filter/reduce 会用（090）、高阶函数会造（150）、递归会写（160）、参数会分批（本文）。接下来 [深拷贝与浅拷贝](/javascript/200-DeepShallowCopy) 换赛道解决一个每个项目都躲不开的问题——对象赋值只是复制了"门牌号"，怎么拿到一份真正独立的副本。
