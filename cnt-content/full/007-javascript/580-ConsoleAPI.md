@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 580
 title: JavaScript console API 语法速查手册
 module: 'javascript'
 category: 前端技术

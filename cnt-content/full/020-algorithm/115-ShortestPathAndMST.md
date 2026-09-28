@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: '图最短路径三算法（Dijkstra、Bellman-Ford、Floyd-Warshall）与最小生成树双算法（Kruskal、Prim）的横向对照篇：松弛操作、堆优化 Dijkstra 的 Python/C++/Java 完整实现与贪心选择性质证明、负权失效反例、Bellman-Ford 与 SPFA 的负环检测、Floyd-Warshall DP 状态设计与正确性概要、A* 启发式搜索、Cut 性质下的 Kruskal 与 Prim 对照实现，附稠密图、稀疏图、负权、多源场景的选型决策表；单算法纵向深水见 250-FloydWarshall 与 260-KruskalAlgorithm。'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'algorithm/110-GraphAlgorithms'
   - 'algorithm/250-FloydWarshall'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: GitLab CI/CD 作业配置速查：stages、rules、cache、artifacts、services 与 retry。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related: []
 prerequisites: []
 ---

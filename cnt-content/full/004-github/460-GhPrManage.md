@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 以「给仓库修一个 bug 并合并」这个真实任务为线索，把 gh pr 的 create、view、checkout、checks、review、merge 六组命令串成完整闭环，覆盖 Conventional Commits 提交、自动合并、审查三态与合并策略选择。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'github/450-GhCliAuth'
   - 'github/180-PullRequestCompleteCollaborationFlow'

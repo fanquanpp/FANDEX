@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用 \p{...} 让正则认识中文、全角数字与 Emoji：属性三大类、u 标志、Emoji 陷阱与国际化校验实战。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'javascript/110-Regex'
   - 'javascript/120-ES2018RegExpNamedCaptureGroups'

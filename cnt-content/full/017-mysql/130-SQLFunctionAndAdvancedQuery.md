@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 聚合函数、窗口函数、子查询与公用表表达式。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'mysql/270-IndexHintForceIndex'
   - 'mysql/300-IndexStatsHistogram'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: .gitignore配置详解：忽略规则清单、语法、优先级、全局配置与官方模板库使用。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'github/160-READMEFile'
   - 'github/170-BranchModelBranchRule'

@@ -1,12 +1,12 @@
 ---
-order: 390
+order: 510
 title: 性能优化：先测量，再动手
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: 以「一个 40 秒的巡检脚本」为现场，走完性能优化的标准流程：perf_counter 计时、cProfile 找热点、读懂 tottime 与 cumtime，再按 CPU 密集、IO 密集、内存三类瓶颈对症下药；附 lru_cache 使用边界与十个高频反模式。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/630-MultiprocessingMultithreading'
   - 'python/650-GILAndFreeThreading'

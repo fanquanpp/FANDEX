@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 从「20 人团队的 PR 全堆给管理员一个人审」这个真实问题切入，动手写一份 CODEOWNERS 并用分支保护让审查意见有强制力，讲清路径匹配规则、优先级语义与常见的「负责人没被指派」排查路径。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'github/170-BranchModelBranchRule'
   - 'github/180-PullRequestCompleteCollaborationFlow'

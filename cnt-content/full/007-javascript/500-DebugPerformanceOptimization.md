@@ -1,12 +1,12 @@
 ---
-order: 500
+order: 510
 title: 调试与性能优化
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: 页面卡 200ms 怎么查：Performance 面板定位长任务、火焰图读法、内存快照对比找泄漏，以及一组性能坑。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'javascript/370-MemoryLeakTroubleshoot'
   - 'javascript/360-ClosureMemoryLeakOptimization'

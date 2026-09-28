@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以"修过的 bug 一个月后复发"为主线学 go test：表驱动测试、子测试与并行、基准测试 b.Loop、httptest 与接口 mock、覆盖率、Go 1.24 测试工具箱（t.Chdir/synctest），附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'go/360-UnitTestBenchmark'
   - 'go/370-GoFuzzing'

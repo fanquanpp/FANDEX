@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "从「手机打开自己的页面缩成一团」出发，用 viewport meta 加移动优先断点让一套代码适配全设备，掌握 @media 语法解剖与区间新写法，收下深色模式、减少动画、hover 指针探测三个用户偏好查询，并划清媒体查询与容器查询的分工边界。"
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-29'
 related:
   - 'css/370-ResponsiveDesign'
   - 'css/390-ContainerQuery'

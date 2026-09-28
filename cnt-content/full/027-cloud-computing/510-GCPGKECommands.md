@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'GKE 学习笔记：Autopilot 与标准模式怎么选、从创建到部署的全流程命令，以及节点池、升级、Workload Identity 的实操要点。'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'cloud-computing/500-AzureAKSCommands'
   - 'cloud-computing/110-KubernetesCore'

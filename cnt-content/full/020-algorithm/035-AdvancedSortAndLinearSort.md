@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 排序算法进阶篇：堆排序（Williams 1964，最坏 $O(n \log n)$ 且原地）、希尔排序（Shell 1959，首个突破 $O(n^2)$）、计数/基数/桶三种线性时间非比较排序的适用条件与实验，内省排序（Musser 1997）、Timsort（Peters 2002）与 pdqsort 的工业级混合方案及 Python/Java/C++ 标准库排序源码分析，数据库外部归并排序与 MapReduce TeraSort 工程实践。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'algorithm/030-SortAlgorithm'
   - 'algorithm/090-HeapAndPriorityQueue'

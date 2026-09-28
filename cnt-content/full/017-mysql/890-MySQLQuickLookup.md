@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 常用 SQL 语句、函数与配置参数速查。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-29'
 related:
   - 'mysql/460-TransactionLockMechanism'
   - 'mysql/850-MySQLConfigOps'

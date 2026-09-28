@@ -1,12 +1,12 @@
 ---
 order: 380
-title: Actions 触发器：on: 字段决定你的流水线什么时候跑
+title: 'Actions 触发器：on 字段决定你的流水线什么时候跑'
 module: 'github'
 category: 工具链
 difficulty: intermediate
 description: 从「为什么改一行文档也触发了一次完整部署」这个真实浪费切入，动手为一个仓库写出 push / pull_request / schedule / workflow_dispatch 的完整触发配置，讲清过滤条件、pull_request_target 的安全边界与 GITHUB_TOKEN 不递归触发的机制。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'github/370-GitHubActionsCICD'
   - 'github/420-ActionsEnvironmentDeploy'

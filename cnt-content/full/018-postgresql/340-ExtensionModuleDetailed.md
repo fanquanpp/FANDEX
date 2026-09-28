@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 290
 title: 扩展模块详解
 module: 'postgresql'
 category: 数据库

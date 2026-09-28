@@ -1,12 +1,12 @@
 ---
-order: 350
+order: 360
 title: Vue3 服务端渲染：先出 HTML，再接上电
 module: 'vue3'
 category: 前端技术
 difficulty: advanced
 description: 从文档阅读页「白屏 2 秒、搜索引擎抓不到正文」讲起：手搭最小 SSR（createSSRApp 每请求新实例 + renderToString），拆解水合与 mismatch、单例污染、数据预取与状态注水、流式渲染，附 window 未定义、水合不匹配、跨请求串数据三则实录，Nuxt 集成另见 355 篇。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'vue3/280-Vue3CompileOptimization'
   - 'vue3/355-NuxtQuickStart'

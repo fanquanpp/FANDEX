@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 180
 title: 覆盖索引与部分索引
 module: 'postgresql'
 category: 数据库

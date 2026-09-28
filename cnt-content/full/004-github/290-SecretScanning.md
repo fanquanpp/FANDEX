@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 从「调试时把 API Key 硬编码进代码，push 完才想起来」这个真实事故切入，动手开启 Secret Scanning 与 Push Protection，讲清 GitHub 怎么认出密钥、被拦截后怎么处理、真泄露了按什么顺序补救，最后给出用 gh secret 管理密钥的正确姿势。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'github/300-CodeQLCodeScanning'
   - 'github/280-Dependabot'

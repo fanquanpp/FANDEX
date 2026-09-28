@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: intermediate
 description: 从「aria-* 属性与标签计数表」讲索引签名：键集合开放的类型怎么写、Record 的取舍、动态访问的 undefined 风险与 noUncheckedIndexedAccess，以及与映射类型的分工。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/120-IntersectionTypeMerge'
   - 'typescript/470-MappedTypeAdvanced'

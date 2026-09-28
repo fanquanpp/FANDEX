@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 600
 title: 新特性深水区：把 ES2023-2026 安全用进生产
 module: 'javascript'
 category: 前端技术

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 在 TS 与 GDScript 之间双向调用，理解动态 call 的松耦合本质并用信号做跨语言边界
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'gode/020-FirstTypeScriptScript'
   - 'godot/040-SignalsObserving'

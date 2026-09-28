@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 590
 title: ES2023 到 ES2026：每年都有人替你解决的小别扭
 module: 'javascript'
 category: 前端技术

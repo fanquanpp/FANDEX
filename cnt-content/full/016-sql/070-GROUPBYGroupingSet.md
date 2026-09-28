@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 用播客平台的收听周报掌握分组：GROUP BY 基础、ROLLUP 小计总计、GROUPING 区分汇总行、GROUPING SETS 精确控制与 CUBE 的成本。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-29'
 related:
   - 'sql/050-FilterCondition'
   - 'sql/060-AggregateFunction'

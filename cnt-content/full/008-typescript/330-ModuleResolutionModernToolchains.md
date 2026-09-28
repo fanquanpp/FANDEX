@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: intermediate
 description: 从三个「Cannot find module」真实报错入手，讲 TS 模块解析：bundler/node16/nodenext 的选择、package.json 的 types 与 exports、paths 别名，以及「编译器找到了、打包器没找到」的错位排查。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/290-NamespaceModule'
   - 'typescript/320-ImportTypeVerbatimModuleSyntax'

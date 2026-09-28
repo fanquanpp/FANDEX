@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 动态规划方法论与线性 DP 进阶参考书（参考层）：Bellman 最优性原理与最优子结构、重叠子问题、无后效性的形式化定义，状态、转移、初始化三要素方法论，状态数乘转移数的复杂度公式、滚动数组优化、循环不变式正确性论证与伪多项式复杂度，从暴力递归到记忆化搜索到自底向上递推的完整推演，覆盖爬楼梯、打家劫舍、股票买卖系列、最大子数组和、零钱兑换、最长公共子序列、最长递增子序列、编辑距离等线性 DP 经典问题，附 Python/C++/Java 多语言实现与预期输出；背包、区间、树形、状压、数位 DP 见姊妹篇 DP 经典模型进阶。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'algorithm/165-DPAdvancedPatterns'
   - 'algorithm/140-RecursionAndBacktracking'

@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 300
 title: Python 与日志
 module: 'python'
 category: 后端技术

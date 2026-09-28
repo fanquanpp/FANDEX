@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: intermediate
 description: 从「按任意字段排序」的真实需求切入，讲透 extends 约束、keyof 约束、多重约束与默认类型参数，以及约束过宽、过严、顺序错误三类高频坑。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/220-FunctionGeneric'
   - 'typescript/210-KeyofTypeofIndexedAccessTypes'

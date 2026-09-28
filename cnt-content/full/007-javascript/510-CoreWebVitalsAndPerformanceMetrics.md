@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 520
 title: 前端性能指标与 Core Web Vitals
 module: 'javascript'
 category: 前端技术

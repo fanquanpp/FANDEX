@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: TypeScript 零基础学习路线：环境先行、跳过规则、分层阅读路径与验收标准。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'typescript/030-TypeScriptOverviewEnvSetup'
   - 'typescript/080-BasicTypeSystem'

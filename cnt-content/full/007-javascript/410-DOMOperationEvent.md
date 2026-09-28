@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 420
 title: DOM 操作与事件：按钮点了没反应的时候
 module: 'javascript'
 category: 前端技术

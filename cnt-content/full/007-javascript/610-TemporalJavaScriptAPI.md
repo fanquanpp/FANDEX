@@ -1,12 +1,12 @@
 ---
-order: 600
+order: 610
 title: Temporal 日期时间 API
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: 开售时间在纽约用户眼里错了两小时：用 Temporal 的类型分离解决时区、夏令时与 Date 的老毛病。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'javascript/600-JavaScriptLatestFeature'
   - 'javascript/650-IntlApi'

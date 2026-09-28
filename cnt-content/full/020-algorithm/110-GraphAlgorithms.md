@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 图的形式化定义与四种表示方法（邻接矩阵、邻接表、边集数组、隐式图）对照，BFS 与 DFS 的完整实现、Loop Invariant 正确性证明与预期输出，连通分量、环检测、二分图判定、拓扑排序概念、强连通分量与双连通性，附遍历应用场景速查表、工程实践与五个工业级案例研究；最短路径与最小生成树的三算法双算法横向对照见姊妹篇 115。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'algorithm/115-ShortestPathAndMST'
   - 'algorithm/250-FloydWarshall'

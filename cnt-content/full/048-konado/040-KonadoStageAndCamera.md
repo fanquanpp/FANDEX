@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 actor 指令族调度立绘，用 background 九种效果切场景，用 cam 与 asyncam 控制镜头
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/030-KonadoScriptDialogue'
   - 'konado/060-KonadoAdvancedInstructions'

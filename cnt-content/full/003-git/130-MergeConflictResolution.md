@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 以「两个人同时改了同一个组件」这个必经场景切入，动手走一遍冲突标记的阅读、三种解决路径与放弃合并的出口，讲清三方比较的判定原理，并补上 rebase 时 ours/theirs 语义反转和 pnpm-lock 冲突这两个实战大坑。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'git/110-HEADPointerBranchEssence'
   - 'git/270-GitRebase'

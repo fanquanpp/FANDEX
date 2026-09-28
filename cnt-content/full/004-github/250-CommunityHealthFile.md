@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: 'GitHub社区健康文件深度解析：以"社区公约"清单为主线，逐一讲解 CONTRIBUTING、CODE_OF_CONDUCT、SUPPORT、SECURITY、CODEOWNERS 等文件与默认文件机制。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'github/180-PullRequestCompleteCollaborationFlow'
   - 'github/360-GitHubPagesMultiSolution'

@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 90
 title: 体系架构
 module: 'postgresql'
 category: 数据库

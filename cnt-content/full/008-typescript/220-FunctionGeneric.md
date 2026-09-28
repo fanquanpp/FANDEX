@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: intermediate
 description: 从「一个搜索函数要兼容两种输入」切入，讲函数重载的正确姿势与泛型函数设计：多类型参数、约束、泛型类与常见错误修正。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/070-TSBasicsGenerics'
   - 'typescript/210-KeyofTypeofIndexedAccessTypes'

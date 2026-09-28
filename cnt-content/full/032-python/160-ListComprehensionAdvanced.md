@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 170
 title: 列表推导式进阶：把三行循环压成一行
 module: 'python'
 category: 后端技术

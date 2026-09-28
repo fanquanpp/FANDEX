@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 260
 title: 地理空间对象：PostGIS 入门与空间查询
 module: 'postgresql'
 category: 数据库

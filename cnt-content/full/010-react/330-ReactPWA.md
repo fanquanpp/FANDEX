@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 350
 title: React 与 PWA
 module: 'react'
 category: 前端技术

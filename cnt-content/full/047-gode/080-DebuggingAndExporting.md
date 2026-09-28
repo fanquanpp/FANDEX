@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 打开 Node inspector 做断点调试，配置导出策略把 TS 项目发布到五大原生平台
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'gode/070-NpmWorkflow'
   - 'godot/130-ExportingProjects'

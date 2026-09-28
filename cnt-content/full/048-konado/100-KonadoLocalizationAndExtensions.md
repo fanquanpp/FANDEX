@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 做多语言剧情与界面切换，用好内置 KS 编辑器，接入设置成就与 C 井 Web 工具扩展
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/090-KonadoSceneAssetsAndCustomization'
   - 'konado/010-KonadoOverviewAndInstall'

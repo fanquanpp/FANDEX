@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: advanced
 description: 从「草稿全可选、归档全只读」两个真实需求讲映射类型的进阶语法：修饰符加减（+?/-?）、同态映射为什么能保留原类型的 optional 与 readonly、never 键过滤，以及递归映射入门。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/480-MappedTypeKeyRemap'
   - 'typescript/490-UtilityTypePrinciple'

@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 150
 title: Autovacuum 实战
 module: 'postgresql'
 category: 数据库

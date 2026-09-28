@@ -1,12 +1,12 @@
 ---
-order: 90
+order: 100
 title: 事务与并发控制
 module: 'postgresql'
 category: 数据库
 difficulty: intermediate
 description: MVCC多版本并发控制、快照隔离、事务隔离级别、锁机制、死锁检测、VACUUM机制与冻结。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-29'
 related:
   - 'postgresql/010-OverviewInstallConfig'
   - 'postgresql/240-IndexQueryOptimization'

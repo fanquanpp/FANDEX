@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: img、srcset、sizes、picture元素
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-29'
 related:
   - 'html5/120-List'
   - 'html5/130-LinksAndAnchors'

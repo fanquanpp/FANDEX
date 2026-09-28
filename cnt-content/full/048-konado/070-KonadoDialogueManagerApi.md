@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 系统梳理 KonadoDialogueManager 的导出属性信号与生命周期方法，打通剧本与游戏逻辑
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/020-KonadoArchitecture'
   - 'konado/050-KonadoVariablesAndBranching'

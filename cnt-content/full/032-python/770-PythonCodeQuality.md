@@ -1,12 +1,12 @@
 ---
-order: 570
+order: 580
 title: 代码质量：给仓库装上三道闸门
 module: 'python'
 category: 后端技术
 difficulty: intermediate
-description: 以「接手一个没有任何门禁的仓库」为场景，动手接入 2026 年的 Python 质量三件套：ruff 格式化与静态检查、mypy 类型检查、pre-commit 本地闸门；讲清覆盖率是下限不是目标，附 type: ignore 滥用、bare except、格式化大爆炸等高频坑点。
+description: '以「接手一个没有任何门禁的仓库」为场景，动手接入 2026 年的 Python 质量三件套：ruff 格式化与静态检查、mypy 类型检查、pre-commit 本地闸门；讲清覆盖率是下限不是目标，附 type ignore 滥用、bare except、格式化大爆炸等高频坑点。'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/530-TypeAnnotationMypy'
   - 'python/730-PythonPackagingEvolution'

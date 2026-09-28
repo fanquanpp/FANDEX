@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 490
 title: React 渲染优先级与调度
 module: 'react'
 category: 前端技术

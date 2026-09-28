@@ -1,12 +1,12 @@
 ---
-order: 790
+order: 800
 title: 自动化手册：把杂活变成可靠脚本
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 以「每周手动的固件备份整理」为场景，把一件杂活做成可长期运行的可靠脚本：pathlib 批量整理、subprocess 安全调用外部工具、APScheduler 定时，再补上幂等、重试、日志与失败通知四件生产装备；给出从脚本升级到工作流引擎（Airflow/Prefect）与 Celery 的时机判断。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/300-FileIOContextManager'
   - 'python/380-Subprocess'

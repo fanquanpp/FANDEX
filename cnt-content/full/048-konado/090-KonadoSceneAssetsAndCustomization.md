@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用场景而非图片配置角色背景，实现状态别名与转场帧，自定义对话框与打字机效果
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/070-KonadoDialogueManagerApi'
   - 'konado/100-KonadoLocalizationAndExtensions'

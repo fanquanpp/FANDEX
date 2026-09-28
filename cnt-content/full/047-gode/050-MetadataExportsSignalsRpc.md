@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: "以「让设计同学在 Inspector 里调下落音符参数」引入：用 static exports 暴露属性、static signals 声明信号、static rpc_config 配置多人调用，理解 Gode 用类静态元数据替代 GDScript 注解的设计，以及四条自查要点。"
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'gode/040-GDScriptInteropAndAutoload'
   - 'gode/020-FirstTypeScriptScript'

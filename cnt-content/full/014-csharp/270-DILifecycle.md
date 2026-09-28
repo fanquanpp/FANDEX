@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: ASP.NET Core依赖注入生命周期详解：Scoped、Transient、Singleton。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'csharp/290-EFCoreMigrationOptimization'
   - 'csharp/310-AspNetCoreMiddlewarePipeline'

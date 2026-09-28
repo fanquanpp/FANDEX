@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 200
 title: 生成器深水区：send、yield from 与惰性流水线
 module: 'python'
 category: 后端技术

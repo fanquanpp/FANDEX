@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从阅读页改一个功能要在 data、methods、mounted 间跳四趟讲起：同一组件两种写法对照，把阅读进度抽成 useReadingProgress 组合函数，对比 mixins 的来源不明与命名冲突，附 setup 漏 return、组合函数丢上下文、props 解构三则调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'vue3/050-ReactiveSystem'
   - 'vue3/060-ComputedCacheWatchTiming'

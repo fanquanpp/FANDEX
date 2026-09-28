@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'VPC 学习笔记：从零搭一个"公有子网 + 私有子网"的生产形网络，理解路由、网关、安全组每一层在干什么。'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'cloud-computing/220-CloudNetworkService'
   - 'cloud-computing/450-AWSRDSCommands'

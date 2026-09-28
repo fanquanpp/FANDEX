@@ -1,12 +1,12 @@
 ---
-order: 320
+order: 330
 title: 生成器函数
 module: 'javascript'
 category: 前端技术
 difficulty: intermediate
 description: 从"加载 2GB 日志会爆内存"讲起：惰性序列、yield 的暂停与恢复、双向通信、yield* 与异步生成器。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'javascript/310-IteratorHelper'
   - 'javascript/260-PromiseConstructorDeepDive'

@@ -1,6 +1,14 @@
 ---
+order: 170
 title: 自定义 Hook 进阶配方：交互订阅、外部 Store 与 Hook 测试
+module: 'react'
+category: 前端技术
+difficulty: beginner
 description: 与 160 篇配套的配方库：useClickAway 与 useIntersectionObserver 处理点击外部与视口曝光，useEvent 模式与 usePrevious 稳定引用，createStore 加 useSyncExternalStore 写最小外部状态，renderHook 与 act 组成的 Hook 测试模板，以及 Hook 库的目录、导出与 ESLint 配置。
+author: fanquanpp
+updated: '2026-09-29'
+related: []
+prerequisites: []
 ---
 
 ## 前置知识

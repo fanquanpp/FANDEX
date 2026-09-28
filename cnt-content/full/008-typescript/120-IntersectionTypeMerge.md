@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: intermediate
 description: 从「给组件 Props 追加字段」讲交叉类型：AND 语义、同名属性冲突变 never、接口声明合并，以及与联合类型、Partial 组合的实用模式。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/110-LiteralUnionTypes'
   - 'typescript/100-InterfaceTypeAlias'

@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 250
 title: 函数式模式实战：管道调试、HOC 与中间件
 module: 'javascript'
 category: 前端技术

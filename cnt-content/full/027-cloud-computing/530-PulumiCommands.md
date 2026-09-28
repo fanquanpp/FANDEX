@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Pulumi 学习笔记：用熟悉的编程语言写基础设施——项目与栈、预览部署、密钥、导入存量资源与 CI 集成的完整路径。'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'cloud-computing/420-TerraformBasic'
   - 'cloud-computing/430-TerraformStateModule'

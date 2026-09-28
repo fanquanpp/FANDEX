@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: 从「生产数据库密码躺在仓库级 Secrets 里，任何 job 都能读」这个真实隐患切入，动手创建 environment、配保护规则和审批流，讲清环境级密钥覆盖规则、多环境渐进部署工作流与并发防踩踏。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'github/380-ActionsTrigger'
   - 'github/410-ActionsArtifact'

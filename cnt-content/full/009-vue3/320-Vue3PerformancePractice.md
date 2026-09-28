@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从内容库浏览页「筛选卡、滚动掉帧、首屏 2MB」三宗罪讲起：Performance 面板定位后按层动刀——响应式层 shallowRef/markRaw、渲染层 key 与组件边界、体积层异步组件与路由懒加载、验证层复测与 web-vitals，附深层 watch 卡顿、v-if 拿不到 v-for 变量、事件泄漏三则实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'vue3/280-Vue3CompileOptimization'
   - 'vue3/325-Vue3PerformanceToolkit'

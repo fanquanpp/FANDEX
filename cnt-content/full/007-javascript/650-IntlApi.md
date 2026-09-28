@@ -1,5 +1,5 @@
 ---
-order: 640
+order: 650
 title: Intl 国际化 API（ECMA-402）
 module: 'javascript'
 category: 前端技术

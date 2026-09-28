@@ -1,12 +1,12 @@
 ---
-order: 390
+order: 420
 title: 元类：class 语句背后发生的事
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: 以「设备命令处理器自动注册」为场景，先用 __init_subclass__ 解决八成需求，再用 type() 三参数与自定义元类拆开 class 语句的黑盒：__new__ 与 __init__ 的分工、字段收集轻量 ORM、元类冲突与隐式传播，最后给出「什么时候才真的需要元类」的决策清单。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/580-PythonDescriptorProtocol'
   - 'python/600-MetaclassSingleton'

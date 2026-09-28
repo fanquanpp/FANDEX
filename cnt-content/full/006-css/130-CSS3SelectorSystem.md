@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: "从「第三方组件不许改 HTML，样式还得准」出发，掌握基础五件套与属性选择器、组合器四兄弟（空格、>、+、~）的命中规则，理解为什么类选择器是工程首选而 ID 是优先级炸弹，为伪类与伪元素进阶打好地基。"
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-29'
 related:
   - 'css/140-PseudoClassPseudoElement'
   - 'css/170-PriorityCalculation'

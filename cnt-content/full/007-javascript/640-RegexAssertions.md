@@ -1,12 +1,12 @@
 ---
-order: 630
+order: 640
 title: 正则断言
 module: 'javascript'
 category: 前端技术
 difficulty: advanced
 description: 先行与后行断言：匹配"位置"而非"字符"，从千分位格式化到 CSV 拆分的实战与陷阱。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'javascript/110-Regex'
   - 'javascript/120-ES2018RegExpNamedCaptureGroups'

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 认识 Konado 的定位版本与三许可证模式，完成插件安装并按官方推荐配置好视觉小说项目
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/020-KonadoArchitecture'
   - 'godot/160-KonadoVisualNovelFramework'

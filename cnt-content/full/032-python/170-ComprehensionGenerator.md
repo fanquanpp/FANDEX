@@ -1,12 +1,12 @@
 ---
-order: 180
+order: 190
 title: 迭代器协议与 itertools：for 循环脚下踩着的东西
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 从「sum 一个生成器表达式」的真实场景切入，亲手实现迭代器类看穿 for 循环的脱糖过程，理清可迭代对象与迭代器的分界，再按场景过一遍 itertools 高频函数，最后以 close 与 GeneratorExit 收尾衔接生成器协程篇。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/160-ListComprehensionAdvanced'
   - 'python/180-GeneratorCoroutine'

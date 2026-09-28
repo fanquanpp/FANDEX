@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 420
 title: 组件库工程化
 module: 'vue3'
 category: 前端技术

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 掌握 screentext 全屏叙事 signal waitsignal 与 Godot 侧联动以及成就指令与 end 的回退语义
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/050-KonadoVariablesAndBranching'
   - 'konado/080-KonadoSaveAndRollback'

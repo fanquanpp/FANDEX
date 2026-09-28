@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: "从「按钮 hover 变色瞬间完成，显得廉价生硬」出发，用 transition 补间状态变化，用 @keyframes 排演多帧动画，吃透时序函数、fill-mode 与简写的双时间陷阱，并按「过渡还是动画、动 transform 还是动 width」的决策表写出 60fps 的动效。"
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-29'
 related:
   - 'css/340-CSSViewTransitions'
   - 'css/350-CSSScrollDrivenAnimations'

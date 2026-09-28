@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 使用槽位存档 API 保存恢复完整运行状态，理解上一句回滚的事务机制与 Backlog 点击回退
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/060-KonadoAdvancedInstructions'
   - 'konado/070-KonadoDialogueManagerApi'

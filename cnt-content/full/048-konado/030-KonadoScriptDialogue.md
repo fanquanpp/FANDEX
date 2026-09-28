@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 学习剧本文件规则与对话行语法，掌握三种说话者形式与打字速度语音标签
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-09-29'
 related:
   - 'konado/020-KonadoArchitecture'
   - 'konado/040-KonadoStageAndCamera'

@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 230
 title: 分区裁剪与分区连接
 module: 'postgresql'
 category: 数据库

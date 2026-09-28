@@ -6,7 +6,7 @@ category: 工具链
 difficulty: advanced
 description: Git交互式rebase详解：reword、squash、fixup、drop等操作改写提交历史。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'git/220-GitFlowGitHubFlowComparison'
   - 'git/320-GitRevertResetComparison'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 从播客后台的筛选需求出发掌握 SQL 过滤：比较与逻辑运算、IN/BETWEEN/LIKE、NULL 三值逻辑、SARGable 条件与索引的关系。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-29'
 related:
   - 'sql/060-AggregateFunction'
   - 'sql/080-SelectExecutionOrder'

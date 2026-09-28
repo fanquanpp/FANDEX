@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 320
 title: 存储过程与函数
 module: 'postgresql'
 category: 数据库

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 中断分类（硬件中断与异常）、IDT 中断描述符表、中断处理流程与系统调用完整机制。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'cs-fundamentals/150-OperatingSystem'
   - 'cs-fundamentals/170-PCBThreadTCB'

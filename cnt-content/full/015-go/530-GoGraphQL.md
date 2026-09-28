@@ -6,11 +6,10 @@ category: 后端技术
 difficulty: intermediate
 description: 以"移动端为三个字段打一个新端点"为主线学 gqlgen：Schema 先行与代码生成、Resolver 树、N+1 与 DataLoader、订阅与认证、错误结构与非空语义、适用边界判断，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'go/520-GoGRPC'
   - 'go/470-GoHTTP'
-  - 'go/280-MemoryAlignment'
   - 'go/600-GoDocker'
 prerequisites:
   - 'go/020-GoOverviewEnvSetup'

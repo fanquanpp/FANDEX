@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 120
 title: 锁机制
 module: 'postgresql'
 category: 数据库

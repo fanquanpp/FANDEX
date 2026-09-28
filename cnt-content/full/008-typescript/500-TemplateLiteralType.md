@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: advanced
 description: 从「URL 拼错一级路径」切入，讲模板字面量类型：联合笛卡尔积、内置四个字符串工具类型、模式匹配提取路由参数，以及组合爆炸与模糊匹配两个坑。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/480-MappedTypeKeyRemap'
   - 'typescript/440-ConditionalTypeInfer'

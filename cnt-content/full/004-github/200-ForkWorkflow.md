@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 以「给一个开源项目修复文档错误」这个真实任务切入，走完 fork、双远程配置、分支修改、PR、同步上游、冲突解决的完整链路，讲清 Fork 与 Branch 的本质区别和 force-with-lease 这条安全红线。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'github/180-PullRequestCompleteCollaborationFlow'
   - 'github/100-GitConflictResolve'

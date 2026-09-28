@@ -6,7 +6,7 @@ category: '前端技术'
 difficulty: advanced
 description: 从「给一个无类型的 npm 包补声明」动手：.d.ts 的 declare 语法、declare module 模块声明、types 字段与发布、三斜线引用，以及「只写类型不写实现」的心智模型。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'typescript/340-ModuleDeclarationGlobalAugmentation'
   - 'typescript/330-ModuleResolutionModernToolchains'
