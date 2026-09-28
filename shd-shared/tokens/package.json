@@ -12,7 +12,8 @@
   "scripts": {
     "build:css": "tsx scripts/generate-tokens-css.ts",
     "build": "pnpm run build:css",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate:kt": "tsx scripts/generate-tokens-kt.ts"
   },
   "devDependencies": {
     "@types/node": "catalog:",
