@@ -203,7 +203,7 @@ GitHub 提供一键模板：仓库 → **Add file → Create new file** → 文�
 
 ### 6.1 CODEOWNERS：指定代码审查负责人
 
-在 `.github/190-CODEOWNERS` 中声明"谁负责哪些路径"，PR 改动这些路径时自动指定审查人：
+在 `.github/CODEOWNERS` 中声明"谁负责哪些路径"，PR 改动这些路径时自动指定审查人（详见 [CODEOWNERS](/github/190-CODEOWNERS)）：
 
 ```text
 # 全局默认

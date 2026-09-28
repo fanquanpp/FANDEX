@@ -28,7 +28,7 @@ prerequisites:
 
 ## 前置知识
 
-- [类型体操](/typescript/540-TypeGymnastics)：建议先完成前一篇的学习
+- [声明文件编写](/typescript/300-DeclarationFileWriting)：declare module 与 .d.ts 的基础写法
 
 ## 学习目标
 

@@ -131,7 +131,7 @@ prerequisites:
 
 - 数据表格用 `<table>`，页面布局不要用表格（布局交给 CSS Flex/Grid）；
 - 表头用 `<th>` 并加 `scope`，不要用 `<td>` 加粗冒充；
-- 没有数据的格子写 `—` 或留空都可以，不要把 `&nbsp;` 当万能填充（实体字符见 001-HTML5CommentsAndEntities）；
+- 没有数据的格子写 `—` 或留空都可以，不要把 `&nbsp;` 当万能填充（实体字符见 050-HTML5CommentsAndEntities）；
 - 表格列多时用 `<colgroup>` 统一给列加样式，避免逐格重复写；
 - 超长表格配合 `overflow-x: auto` 容器做横向滚动（样式部分见 CSS 模块）。
 
@@ -143,7 +143,7 @@ prerequisites:
 
 ## 3. 全局属性
 
-全局属性是几乎所有 HTML 元素都支持的属性，用于提供额外的信息或功能。其中 `id`/`class`/`style` 三个最常用的已在 006-HTML5CoreGlobalAttributes 速通，这里保留完整参考表。
+全局属性是几乎所有 HTML 元素都支持的属性，用于提供额外的信息或功能。其中 `id`/`class`/`style` 三个最常用的已在 090-HTML5CoreGlobalAttributes 速通，这里保留完整参考表。
 
 ### 3.1 基本全局属性
 
@@ -163,7 +163,7 @@ prerequisites:
 
 ```html
  <!-- 使用 id 和 class -->
- <!-- div 是"无语义容器"，见 005-HTML5DivSpanContainers -->
+ <!-- div 是"无语义容器"，见 080-HTML5DivSpanContainers -->
  <div id="header" class="container">
   <h1>网站标题</h1>
  </div>
@@ -244,7 +244,7 @@ prerequisites:
 
 ## 4. 语义化标签浅读
 
-> 本节第一遍"了解即可"：先用好 005-HTML5DivSpanContainers 的 div/span，做出页面后再回来看本节与 010-SemanticTag 的完整讲解。
+> 本节第一遍"了解即可"：先用好 080-HTML5DivSpanContainers 的 div/span，做出页面后再回来看本节与 170-SemanticTag 的完整讲解。
 
 HTML5 引入了一系列语义化标签，用于更清晰地描述网页结构。
 | 标签 | 描述 |

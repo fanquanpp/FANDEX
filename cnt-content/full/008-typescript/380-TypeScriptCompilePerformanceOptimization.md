@@ -27,7 +27,7 @@ prerequisites:
 
 ## 前置知识
 
-- [条件类型与 infer](/typescript/440-ConditionalTypeInfer)：建议先完成前一篇的学习
+- [tsc 编译器命令](/typescript/370-TscCompilerCommands)：tsc 的两种工作模式与诊断参数
 
 ## 学习目标
 

@@ -66,7 +66,7 @@ frameset 把浏览器窗口切成多个独立框架，问题有三：
 2. 地址栏 URL 不随框架内容变化，无法分享具体页面；
 3. 可访问性差，读屏软件无法理解"窗口碎片"。
 
-所以 HTML5 直接移除了 frameset/frame，现代嵌入需求用 `<iframe>`（见 023-EmbeddedContent）。
+所以 HTML5 直接移除了 frameset/frame，现代嵌入需求用 `<iframe>`（见 220-EmbeddedContent）。
 
 ## 4. 浏览器还认这些标签吗
 

@@ -44,12 +44,12 @@ prerequisites:
 | `<ul>`/`<ol>`/`<li>` | 必背 | 导航、列表必用 |
 | `<a>` | 必背 | 链接必用 |
 | `<img>` | 必背 | 图片必用 |
-| `<span>` | 常用 | 行内包裹，配合样式或脚本（速通见 005-HTML5DivSpanContainers） |
+| `<span>` | 常用 | 行内包裹，配合样式或脚本（速通见 080-HTML5DivSpanContainers） |
 | `<strong>`/`<em>` | 了解 | 强调语义，CSS 可辅助表现 |
 | `<mark>`/`<small>`/`<del>`/`<ins>` | 用到再查 | 低频语义标签，不用死记 |
 | `<sub>`/`<sup>` | 知道即可 | 几乎不用，遇到时查文档 |
 
-讲解：标为"必背"的标签需要你闭着眼睛都能写对，它们是每页网页的基础零件；标为"常用"的标签出现频率也很高，记不住可以靠编辑器提示；"用到再查"和"知道即可"的标签了解存在即可，真到使用时再查文档，不需要浪费记忆空间。表格（`table`）与定义列表（`dl`）在下一篇 009-HTML5TableAndStructuredContent 单独讲。
+讲解：标为"必背"的标签需要你闭着眼睛都能写对，它们是每页网页的基础零件；标为"常用"的标签出现频率也很高，记不住可以靠编辑器提示；"用到再查"和"知道即可"的标签了解存在即可，真到使用时再查文档，不需要浪费记忆空间。表格（`table`）与定义列表（`dl`）在 150-HTML5TableAndStructuredContent 单独讲。
 
 ## 1. 基础文本标签
 
@@ -102,7 +102,7 @@ prerequisites:
 
 ### 1.3 行内文本容器
 
-`<span>` 是行内容器，用于对文本的一部分进行样式设置或标记。它的完整讲解（什么时候用、怎么和 div 配合）在 005-HTML5DivSpanContainers，这里只需要知道：`span` 不换行、宽高由内容撑开。
+`<span>` 是行内容器，用于对文本的一部分进行样式设置或标记。它的完整讲解（什么时候用、怎么和 div 配合）在 080-HTML5DivSpanContainers，这里只需要知道：`span` 不换行、宽高由内容撑开。
 
 ```html
 <p>这是一段文本，其中 <span style="color: red;">红色部分</span> 是使用 span 标签标记的。</p>
@@ -138,7 +138,7 @@ prerequisites:
 | `<br>` | 换行标签，用于在文本中插入换行         |
 | `<hr>` | 分割线标签，用于在页面中插入水平分割线 |
 
-`<br>` 和 `<hr>` 都是空元素（没有闭合标签，见 004-HTML5BlockVsInline）。
+`<br>` 和 `<hr>` 都是空元素（没有闭合标签，见 070-HTML5BlockVsInline）。
 **示例**：
 
 ```html
@@ -207,7 +207,7 @@ prerequisites:
 
 ### 2.3 定义列表
 
-定义列表 `<dl>`（术语 + 描述）用于术语表、问答对等"键值对"场景，与表格同属结构化内容，已移到 009-HTML5TableAndStructuredContent 与表格一起讲解。
+定义列表 `<dl>`（术语 + 描述）用于术语表、问答对等"键值对"场景，与表格同属结构化内容，已移到 150-HTML5TableAndStructuredContent 与表格一起讲解。
 
 ### 2.4 嵌套列表
 
@@ -289,7 +289,7 @@ prerequisites:
 
 - `href` 决定链接目标：网页、锚点、`mailto:` 邮件或 `tel:` 电话；
 - `target="_blank"` 在新标签页打开，应同时搭配 `rel="noopener"` 防止反向标签页劫持；
-- 锚点链接 `#section1` 跳转到页面内 `id="section1"` 的元素，无需重新加载页面（id 属性见 006-HTML5CoreGlobalAttributes）。
+- 锚点链接 `#section1` 跳转到页面内 `id="section1"` 的元素，无需重新加载页面（id 属性见 090-HTML5CoreGlobalAttributes）。
 
 ### 3.2 图像
 
@@ -357,7 +357,7 @@ prerequisites:
 - `controls` 属性显示浏览器原生控制条，移除后需自行实现播放控制；
 - `<iframe>` 用于嵌入第三方页面，应设置 `width`/`height` 并谨慎使用 `allowfullscreen`。
 
-这三个标签的完整 API 分别在 021-AudioVideo 与 023-EmbeddedContent 展开，第一遍知道存在即可。
+这三个标签的完整 API 分别在 200-AudioVideo 与 220-EmbeddedContent 展开，第一遍知道存在即可。
 
 ## 4. 综合示例：基本网页结构（纯 HTML 骨架）
 
@@ -421,7 +421,7 @@ prerequisites:
 **讲解：**
 
 - 这个页面在浏览器中会显示为"白底黑字"的朴素风格——这正是 HTML 的本职工作：只负责内容和结构，不负责美化；
-- `header` 包住标题与导航，`main` 包住三个 `section`，`footer` 放版权信息，三段结构一目了然；这些语义容器的完整讲解在 010-SemanticTag；
+- `header` 包住标题与导航，`main` 包住三个 `section`，`footer` 放版权信息，三段结构一目了然；这些语义容器的完整讲解在 170-SemanticTag；
 - 导航里的 `<ul>` 和"服务列表"里的 `<ul>` 表达的都是"一组并列项目"，语义正确；
 - `mailto:` 与 `tel:` 链接让用户点击后直接唤起邮件与拨号应用。
 
@@ -439,7 +439,7 @@ prerequisites:
 - **缩进**：使用一致的缩进（通常是 2 或 4 个空格）来提高代码的可读性；
 - **大小写**：HTML 标签和属性通常使用小写；
 - **引号**：属性值应该使用双引号包围；
-- **注释**：为复杂的代码添加注释，提高代码的可维护性。注释的完整写法（`<!-- ... -->`）、用途与注意事项见 001-HTML5CommentsAndEntities。
+- **注释**：为复杂的代码添加注释，提高代码的可维护性。注释的完整写法（`<!-- ... -->`）、用途与注意事项见 050-HTML5CommentsAndEntities。
 
 ## 6. 动手试试：写一个"我的个人简介"页面
 

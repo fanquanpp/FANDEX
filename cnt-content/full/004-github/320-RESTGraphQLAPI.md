@@ -352,6 +352,6 @@ gh api graphql -f query='{ rateLimit { limit cost remaining resetAt } }'
 - GraphQL 文档与 Schema 浏览器：https://docs.github.com/zh/graphql
 
 ### 延伸阅读
-- Webhooks（事件驱动的另一种数据获取方式），见 004-github 模块 022 文档。
-- GitHub CLI（gh api 的完整语法），见 004-github 模块 020 与 054 文档。
-- 密钥扫描（Token 的安全管理），见 004-github 模块 018 文档。
+- [Webhooks](/github/330-Webhooks)（事件驱动的另一种数据获取方式）
+- [GitHub CLI](/github/440-GitHubCLI) 与 [gh api](/github/530-GhApi)（gh api 的完整语法）
+- [密钥扫描](/github/290-SecretScanning)（Token 的安全管理）

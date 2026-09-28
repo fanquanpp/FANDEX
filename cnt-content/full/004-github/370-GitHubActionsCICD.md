@@ -22,11 +22,9 @@ prerequisites:
 
 - [GitHub 概述](/github/010-GitHubOverview)
 
-## 0. 开始之前：一座"智能工厂流水线"的故事
+## 0. 从一个真实仓库看 CI/CD 长什么样
 
-想象一座现代化工厂：原材料进厂（代码提交），传送带把零件送到各个工位——质检工位自动检查（lint）、测试工位自动试运行（test）、组装工位打包成品（build）、发货工位把货送到客户（deploy）。整条流水线由一套**中央控制系统**自动调度：原料一到，各工位按顺序自动开工；质量不合格，立刻亮红灯拦截；货品信息全部记录在案。
-
-GitHub Actions 就是 GitHub 内置的这套"智能工厂流水线"——一套 **CI/CD（持续集成 / 持续交付）** 自动化平台。你只需要用 YAML 描述"工位清单"（workflow 工作流），GitHub 就会在云端"传送带"（runner 运行器）上自动完成：**构建、测试、打包、部署**，还能对仓库里的其他事件（开 Issue、发 Release）自动响应。
+打开 FANDEX 这类真实仓库的 `.github/workflows/deploy.yml`，你会看到：向 main 推送内容改动后，云端自动执行「安装依赖 → lint → 测试 → 构建 → 发布 GitHub Pages」，全程无人值守；PR 阶段同一套流程只跑构建与检查、不发布。这背后就是 **GitHub Actions**——GitHub 内置的 **CI/CD（持续集成 / 持续交付）** 自动化平台：你用 YAML 描述「要做的事」（workflow 工作流），GitHub 在云端 runner 上按事件自动执行，还能响应开 Issue、发 Release 等仓库活动。
 
 本文是 Actions 系列的**总纲**：先把 CI/CD 概念讲明白，再拆解 workflow 文件结构，最后给出 Actions 市场使用指南与最佳实践。后续各篇（触发器、矩阵、缓存、制品、环境）都是本篇某个环节的深入。
 

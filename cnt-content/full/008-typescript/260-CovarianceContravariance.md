@@ -23,7 +23,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [类型体操实用模式](/typescript/530-TypeGymnasticsPracticalPatterns)：建议先完成前一篇的学习
+- [类型兼容性（结构化类型系统）](/typescript/200-TypeCompatibility)：赋值兼容的「看形状」规则是型变讨论的基础
 
 ## 学习目标
 

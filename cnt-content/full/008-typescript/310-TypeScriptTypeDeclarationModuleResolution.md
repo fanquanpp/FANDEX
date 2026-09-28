@@ -17,7 +17,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [条件类型与映射类型](/typescript/460-ConditionalMappedType)：建议先完成前一篇的学习
+- [命名空间与模块](/typescript/290-NamespaceModule)：import 语句与模块系统的基本规则
 
 ## 学习目标
 

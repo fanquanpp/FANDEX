@@ -1,256 +1,175 @@
 ---
 order: 460
-title: GitHub CLI PR 管理
+title: gh pr 实战：一条 PR 从创建到合并的全命令行操作
 module: 'github'
 category: 工具链
-difficulty: beginner
-description: '用 gh 命令行完成 Pull Request 全生命周期管理：创建、审查、CI 检查、合并与收尾，含草稿、自动合并与多 PR 并行场景。'
+difficulty: intermediate
+description: 以「给仓库修一个 bug 并合并」这个真实任务为线索，把 gh pr 的 create、view、checkout、checks、review、merge 六组命令串成完整闭环，覆盖 Conventional Commits 提交、自动合并、审查三态与合并策略选择。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'github/180-PullRequestCompleteCollaborationFlow'
   - 'github/450-GhCliAuth'
+  - 'github/180-PullRequestCompleteCollaborationFlow'
   - 'github/470-GhIssueManage'
 prerequisites:
-  - 'github/450-GhCliAuth'
+  - 'github/440-GitHubCLI'
+  - 'github/180-PullRequestCompleteCollaborationFlow'
 ---
 
-## 0. 开始之前：把 PR 流程装进终端
+## 前置知识
 
-网页上提交一个 PR 需要：切页面、选分支、填标题、点按钮；审查一个 PR 又要：看 diff、点 Approve、盯 CI 绿灯。这些动作的共同点是——**都不需要鼠标**。`gh pr` 系列命令把 PR 的整个生命周期搬进终端，让你在写代码的同一个窗口里完成创建、审查、合并，就像把"请假单的递交流程"从跑各个办公室签字简化成在公司群里发一条消息。
+- `gh` 已安装并登录（`gh auth status` 有输出，见 [gh 认证配置](/github/450-GhCliAuth)）；
+- 经历过一次完整的 PR 流程，哪怕是在网页上点的（见 [Pull Request 完整协作流程](/github/180-PullRequestCompleteCollaborationFlow)）。
 
-前置知识：需要先完成 gh 认证（见 github/450-GhCliAuth）；PR 的协作机制（review 类型、合并方式）见 github/180-PullRequestCompleteCollaborationFlow。本篇聚焦"怎么用命令做"。
+## 学习目标
 
-PR 的生命周期与各阶段对应的 gh 命令：
+读完全文你将能够：
 
-```mermaid
-flowchart LR
-  A[git push 分支] --> B[gh pr create 创建]
-  B --> C[草稿 draft]
-  C -->|gh pr ready| D[等待审查 open]
-  B --> D
-  D --> E[gh pr checks 看 CI]
-  D --> F[gh pr review 审查]
-  F -->|approve| G[gh pr merge 合并]
-  G --> H[删除分支 关闭 PR]
-  F -->|request-changes| D
+1. 不开浏览器，完成「建分支、提交、开 PR、等 CI、回应审查、合并」整个闭环；
+2. 记住一条能覆盖九成日常的最短命令链；
+3. 分清三种审查结论的阻塞语义，选对三种合并策略；
+4. 用 `--auto` 把「人肉盯 CI」这件事交给 GitHub。
+
+## 1. 任务：修一个 bug，全程不碰浏览器
+
+以 FANDEX 这类仓库为例：你在 `main` 上发现阅读器有个空指针问题，修完要提交。目标动作链：
+
+```
+切分支 → 提交 → push → gh pr create → CI 绿灯 → 审查通过 → squash 合并 → 删分支
 ```
 
-## 1. 创建 PR：gh pr create
-
-### 1.1 交互式创建（首次推荐）
+先把分支和提交做出来（提交信息遵守 Conventional Commits，这是 PR 标题的来源）：
 
 ```bash
-# 1. 从 main 拉出功能分支并提交代码
-git checkout -b feature/oauth-login
-git add .
-git commit -m "feat: 实现 OAuth 登录流程"
-git push -u origin feature/oauth-login
+git checkout -b fix/reader-null-guard
+# ……修改代码……
+git add -A
+git commit -m "fix(reader): 空数据时阅读器崩溃，补空值兜底"
+git push -u origin fix/reader-null-guard
+```
 
-# 2. 交互式创建 PR：依次询问目标仓库、base 分支、标题、正文
+push 完终端通常会打印一条创建 PR 的链接，但直接用命令更快。
+
+## 2. 创建 PR：gh pr create
+
+```bash
+# 交互式（首次推荐）：依次问目标仓库、base 分支、标题、正文
 gh pr create
-```
 
-gh 会根据你当前推送的分支自动推断 `head`，你只需确认 `base`（通常是 main）并填写标题描述。若分支还没有远程对应，gh 会在创建 PR 时顺带推送。
-
-### 1.2 一步到位的完整参数版
-
-```bash
-# 指定标题、正文、目标分支与来源分支，一次创建
-gh pr create \
-  --title "feat: 添加用户认证" \
-  --body "实现 OAuth 登录流程，关联 #42" \
-  --base main \
-  --head feature/oauth-login
-
-# 常用附加参数：审查人、经办人、标签、里程碑
-gh pr create \
-  --title "feat: 添加用户认证" \
-  --body "实现 OAuth 登录流程" \
-  --reviewer alice,bob \
-  --assignee @me \
-  --label enhancement \
-  --milestone "v2.0"
-```
-
-`@me` 是 gh 内置的"当前登录用户"占位符，在所有 gh 命令中通用。`--body` 里写 `#42` 会自动把 Issue 42 关联到这个 PR。
-
-### 1.3 快捷方式
-
-```bash
-# 用提交信息自动填充标题与正文
+# 一步到位：用提交信息自动填充标题与正文
 gh pr create --fill
 
-# 创建草稿 PR：代码还没写完，先挂出来收集意见
-gh pr create --draft --title "WIP: 重构认证模块"
+# 完整参数版：指定目标分支、审查人、标签
+gh pr create --base main --title "fix(reader): 空数据时阅读器崩溃，补空值兜底" \
+  --body "修复 #102 报告的崩溃，附复现步骤" \
+  --reviewer carol --label "type:bug"
 
-# 打开浏览器进入 compare 页面（想用网页 UI 时）
-gh pr create --web
+# 草稿 PR：代码没写完先挂出来收意见
+gh pr create --draft --fill
 ```
 
-`--fill` 的取材规则：标题取提交主题行，正文取提交正文并附上提交清单。团队约定"一个分支一个干净的提交"时非常好用。
+`--fill` 的逻辑：标题取第一条提交信息，正文取后续提交列表。所以只要你的 commit 写得规范，PR 几乎零输入——这就是「Conventional Commits + gh」组合的红利。
 
-## 2. 查看 PR：list、view、status
+创建后先别走，PR 页面上会自动带上 CI 检查。
+
+## 3. 看 PR、本地验证：list / view / checkout / diff
 
 ```bash
-# 列出当前仓库的开放 PR（默认按创建时间倒序）
-gh pr list
+# 总览「与我相关」的三类 PR：等我审的、我开的、提到我的
+gh pr status
 
-# 按状态/作者/标签过滤
-gh pr list --state open --author @me
-gh pr list --state merged --limit 10
-gh pr list --label "needs-review"
+# 列出开放的 PR，可按作者/标签过滤；@me 代指当前用户
+gh pr list --author @me
+gh pr list --label "type:bug"
 
-# 结构化输出：JSON + jq 过滤（脚本友好）
-gh pr list --json number,title,author --jq '.[] | "\(.number) \(.title)"'
-
-# 查看单个 PR 详情（含审查状态、CI 概览、描述）
+# 单个 PR 详情：描述、审查状态、CI 概览；--web 进浏览器
 gh pr view 42
-
-# 带评论区一起看
 gh pr view 42 --comments
 
-# 在浏览器打开（补充网页操作时）
-gh pr view 42 --web
-
-# 一条命令总览"与我相关"的三类 PR：等待我审查 / 我创建的 / 提到我的
-gh pr status
-```
-
-日常节奏建议：早上 `gh pr status` 扫一眼需要自己处理的 PR，工作中 `gh pr checks` 盯 CI，下班前 `gh pr list --author @me` 收尾。
-
-## 3. 审查前功课：checkout 与 diff
-
-审查别人的 PR 时，先在本地把代码拉下来跑一跑，比只看网页 diff 靠谱得多：
-
-```bash
-# 把 PR #42 的代码检出到本地同名分支（并自动关联远程分支）
+# 审查别人的 PR 前，先拉到本地跑一遍
 gh pr checkout 42
-
-# 本地跑测试验证
-npm test
-
-# 只看改动的文件清单
-gh pr diff 42 --name-only
-
-# 查看完整 diff（相当于 git diff base...head）
-gh pr diff 42
+pnpm test
+gh pr diff 42          # 相当于 git diff base...head
 ```
 
-`gh pr checkout` 是审查工作流的关键一步：检出的分支在审查过程中若被作者更新，`git pull` 一下即可同步。
+`gh pr checkout` 是审「真代码」的关键：网页上看 diff 只能读，本地才能跑测试、打断点。
 
-## 4. CI 检查：gh pr checks
+## 4. 等 CI：gh pr checks
 
 ```bash
-# 查看 PR 的所有 CI 检查状态
-gh pr checks 42
+# 看一次当前状态
+gh pr checks
 
-# 持续等待直到所有检查结束（失败时命令以非零码退出）
-gh pr checks 42 --watch
+# 阻塞等待直到所有检查结束（失败以非零码退出，可接脚本）
+gh pr checks --watch
 ```
 
-典型输出：
+CI 绿灯之前不要催人审查，这是基本礼仪；`--watch` 让你提交完挂一个终端就够。
 
-```text
-test    CI / test (ubuntu-latest)    pass   2m40s   https://...
-lint    CI / lint                    pass   45s     https://...
-build   CI / build                   fail   1m12s   https://...
-```
-
-所有检查通过后才能走合并（若仓库配置了分支保护/规则集，这是硬性要求）。`--watch` 适合"提交完就等结果"的场景，失败会立即以非零退出码返回，方便接到脚本里。
-
-## 5. 提交审查结论：gh pr review
+## 5. 审查结论：三种表态，一种会阻塞
 
 ```bash
-# 批准并附一句评语
 gh pr review 42 --approve --body "逻辑清晰，测试覆盖到位"
-
-# 请求修改（阻塞合并，直到作者重新提交）
 gh pr review 42 --request-changes --body "第 3 处未处理空指针"
-
-# 只留评论（不表态）
-gh pr review 42 --comment --body "有个小问题先讨论一下"
+gh pr review 42 --comment --body "先讨论一下方案"
 ```
 
-三种结论对应网页端的 Approve / Request changes / Comment。**request-changes 是阻塞式审查**：作者修改并推送后，原审查人需要重新提交 review（或撤销 request-changes）才能解除阻塞。
+对应网页端 Approve / Request changes / Comment。关键语义：**request-changes 是阻塞式审查**，作者推送新提交后，原审查人要重新提交 review（或撤销 request-changes）才能解除阻塞。仓库若在分支保护里要求代码所有者批准，这条语义就是硬约束。
 
-## 6. 合并：gh pr merge
+## 6. 合并：策略三选一，收尾带删分支
 
 ```bash
-# 三种合并策略：保留全部提交 / 压成一个提交 / 变基追加
-gh pr merge 42 --merge            # 创建一个 merge commit
-gh pr merge 42 --squash           # 压缩为一个提交（保持主线整洁）
-gh pr merge 42 --rebase           # 将提交变基后直接追加到 base
+gh pr merge 42 --merge     # merge commit：保留全部提交
+gh pr merge 42 --squash    # 压成一个提交：主线干净
+gh pr merge 42 --rebase    # 变基后线性追加
 
-# 合并并删除远程与本地功能分支（最常用的收尾组合）
+# 最常用收尾组合：压平 + 删远程与本地功能分支
 gh pr merge 42 --squash --delete-branch
 
-# 自动合并：条件满足（审查通过 + CI 绿灯）后由 GitHub 代为执行
+# 自动合并：挂上之后，审查 + CI 满足即由 GitHub 代合
 gh pr merge 42 --auto --squash
 ```
 
-三种策略的选择经验：开源项目偏好 `--squash`（一个 PR 一个提交，历史干净）；强调过程可追溯的团队用 `--merge`；`--rebase` 适合线性历史且提交本身质量高的场景。**`--auto` 的价值**在于"先挂上，条件满足自动合"，避免人肉盯 CI。
+策略怎么选：开源和内容型项目几乎都偏好 `--squash`（一个 PR 对主线一个提交，revert 也干净）；强调过程可追溯的团队用 `--merge`；`--rebase` 只适合提交本身打磨到位的场景。FANDEX 的实践是 squash：`feat(web): xxx` 一条进 main，Pages 部署由 push main 触发，历史一目了然。
 
-> 注意：合并按钮是否可用由仓库的分支保护/规则集决定（见 github/170-BranchModelBranchRule）。若仓库启用了 merge queue（合并队列），`--auto` 会把 PR 排入队列由队列统一调度。
+`--auto` 有个前提：仓库设置里允许 auto-merge；若仓库启用了 merge queue，`--auto` 会把 PR 排进队列统一调度。合并按钮能不能按，最终由[分支保护规则](/github/170-BranchModelBranchRule)说了算。
 
-## 7. 生命周期收尾：ready、edit、close、reopen
+## 7. 生命周期收尾：ready / edit / close / reopen
 
 ```bash
-# 草稿转正（ready 后才能被合并）
-gh pr ready 42
-
-# 修改标题/描述、追加审查人、补标签
-gh pr edit 42 --title "feat: 添加用户认证（含单测）"
+gh pr ready 42                       # 草稿转正，否则不能合并
+gh pr edit 42 --title "feat(web): 导出 PDF（含单测）"
 gh pr edit 42 --add-reviewer carol --add-label "priority:high"
-
-# 关闭与重开（附一条说明）
 gh pr close 42 --comment "方案调整，由 #57 代替"
 gh pr reopen 42
 ```
 
-## 8. 常见错误与对策
+## 8. 坑点与自检
 
-| 常见错误 | 报错/现象 | 原因 | 解决办法 |
-| --- | --- | --- | --- |
-| base 分支选错 | PR 显示要合到 develop | 分支推断或手误 | `gh pr edit 42 --base main` 改目标分支 |
-| 创建/操作失败 | `GraphQL: Could not resolve to a PullRequest` | 编号/仓库不对，或不在仓库目录内 | `cd` 到仓库目录；`gh pr list` 确认编号 |
-| 无法合并 | merge blocked 提示 | 分支保护要求审查/CI 未满足 | `gh pr checks` 与 review 状态逐一核对 |
-| 草稿无法合并 | 提示 draft 不可 merge | 草稿状态 PR 禁止合并 | `gh pr ready` 转正后再合 |
-| --auto 无效 | 提示 auto-merge not allowed | 仓库未开启 auto-merge 功能 | 仓库设置中允许 auto-merge，或改手动合并 |
-| 权限不足 | `resource not accessible` | token 缺 `repo` scope 或非仓库成员 | 补授权（`gh auth refresh -s repo`）或联系管理员 |
-| PR 太旧无法合并 | base 已大幅变动 | 落后太多需要更新 | `gh pr checkout` 后 `git fetch && git rebase` 再 push |
+| 现象 | 原因 | 处理 |
+| :--- | :--- | :--- |
+| PR 要合到 develop | 分支推断或手误 | `gh pr edit 42 --base main` |
+| `Could not resolve to a PullRequest` | 编号错，或不在仓库目录里 | `cd` 回仓库；`gh pr list` 核对编号 |
+| merge blocked | 保护规则要的审查/CI 没满足 | `gh pr checks` + review 状态逐一核对 |
+| 草稿合不了 | draft 状态禁止合并 | `gh pr ready` 转正 |
+| `auto-merge not allowed` | 仓库没开 auto-merge 功能 | 仓库设置开启，或手动合并 |
+| `resource not accessible` | token 缺 scope 或非成员 | `gh auth refresh -s repo` 或找管理员 |
+| PR 太老合不了 | base 大幅前进 | `gh pr checkout` 后 rebase main 再 push |
 
-## 9. 实战场景：一天的高频命令串
+自检三问：
 
-```bash
-# 早晨：看看有哪些 PR 在等我
-gh pr status
+1. 你能不看文档默写出「push 之后」的四条命令吗（create、checks、review、merge）？
+2. request-changes 之后，阻塞靠什么解除？
+3. 你的团队约定用哪种合并策略？为什么？
 
-# 审查同事的 PR：本地跑一遍
-gh pr checkout 42 && npm test
-gh pr review 42 --approve -b "LGTM"
+## 9. 练习
 
-# 自己的 PR：挂自动合并然后继续写代码
-gh pr merge 55 --auto --squash --delete-branch
-gh pr checks 55 --watch   # 想立刻确认结果时
-```
+1. 在自己仓库完整走一遍「修 bug → squash 合并 → 删分支」闭环，全程不打开浏览器。
+2. 开一个草稿 PR，用 `gh pr ready` 转正，观察状态变化。
+3. 用 `gh pr list --json number,title,headRefName --jq '.[] | "\(.number) \(.title)"'` 把仓库开放 PR 列成一行一个，体会结构化输出的用法。
 
-## 10. 小结
+## 下一步
 
-**初学者要点**
-
-- 标准四步：`git push` → `gh pr create --fill`（或交互式）→ `gh pr checks` → `gh pr merge --squash --delete-branch`。
-- `gh pr status` 与 `gh pr list` 是入口；`@me` 代指当前登录用户。
-- 审查三态：`--approve`（通过）、`--request-changes`（阻塞）、`--comment`（仅评论）。
-
-**进阶注意**
-
-- `--auto` 依赖仓库开启 auto-merge；启用 merge queue 的仓库由队列调度合并时机。
-- 合并策略影响主历史形态，团队应统一约定（squash 最常见）。
-- 脚本中用 `--json ... --jq` 做结构化过滤，避免解析人类可读输出。
-
-### 延伸阅读
-
-- PR 协作机制、review 语义与合并策略详解，见 github/180-PullRequestCompleteCollaborationFlow。
-- gh 认证与环境变量，见 github/450-GhCliAuth。
-- Issue 的命令行管理，见 github/470-GhIssueManage。
+- 网页视角的 PR 全流程与 review 语义：[Pull Request 完整协作流程](/github/180-PullRequestCompleteCollaborationFlow)
+- 把 Issue 也搬进终端：[gh issue 管理](/github/470-GhIssueManage)
+- `--auto` 被什么规则约束：[分支模型与分支保护规则](/github/170-BranchModelBranchRule)

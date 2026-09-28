@@ -130,16 +130,16 @@ HTML 4.0 同时引入 `<object>` 元素，目标是统一替代 `<img>`、`<ifra
 <iframe src="untrusted.html" sandbox="allow-scripts"></iframe>
 ```
 
-### 1.5 现代化演进（2015—2024）
+### 1.5 现代化演进（2013—2024）
 
 | 年份 | 特性 | 浏览器 | 意义 |
 | ---- | ---- | ------ | ---- |
-| 2015 | `<iframe srcdoc>` | Chrome 53 | 内联内容，零 HTTP 请求 |
-| 2016 | `sandbox="allow-downloads"` | Chrome 56 | 显式下载授权 |
+| 2013 | `<iframe srcdoc>` | Chrome 30 | 内联内容，零 HTTP 请求 |
 | 2017 | `allow` 属性（Permissions Policy 前身） | Chrome 60 | 精细能力控制 |
-| 2018 | `loading="lazy"` | Chrome 76 | 视口外延迟加载 |
-| 2020 | `credentialless` 属性（实验） | Chrome 96 | COEP 友好的凭据隔离 |
-| 2021 | `<portal>` 元素（实验） | Chrome 85 | 跨文档预渲染与无缝过渡 |
+| 2019 | `loading="lazy"` | Chrome 76 | 视口外延迟加载 |
+| 2020 | `<portal>` 元素（实验，后被 Speculation Rules 取代） | Chrome 85 | 跨文档预渲染与无缝过渡 |
+| 2020 | `sandbox="allow-downloads"` | Chrome 83 | 显式下载授权 |
+| 2021 | `credentialless` 属性（实验） | Chrome 96 | COEP 友好的凭据隔离 |
 | 2022 | `sandbox="allow-storage-access-by-user-activation"` | Safari 15.4 | 用户激活下的存储访问 |
 | 2023 | `importance` 属性 | Chrome 110 | 优先级提示 |
 | 2024 | `csp` 属性（实验） | Chrome 122 | 嵌入文档 CSP 注入 |
@@ -156,11 +156,11 @@ timeline
     2000: Flash 崛起，<embed> 用于视频/音频
     2010: WHATWG 引入 sandbox 属性
     2014: HTML5 W3C 推荐标准，<iframe> / <embed> / <object> 定稿
-    2015: srcdoc 属性普及
+    2013: srcdoc 属性可用
     2017: allow 属性（Feature Policy）
-    2018: loading="lazy" for iframe
-    2020: credentialless 属性实验
-    2021: <portal> 元素实验
+    2019: loading="lazy" for iframe
+    2020: allow-downloads 令牌与 <portal> 实验
+    2021: credentialless 属性实验
     2022: Permissions Policy 取代 Feature Policy
     2024: csp 属性、importance 属性进入 Living Standard
 ```

@@ -60,29 +60,29 @@ function canPublish(course: Course): boolean {
 
 ## 0. 这份资料怎么用
 
-本模块有 67 篇文档，编号就是学习顺序：从 001 本指南开始，经 002 环境配置依次递进，到 067 的 FAQ 速查。**不要跳着读，也不要一次读完**。文档分三类：
+本模块有 75 篇文档，文件名前缀（010、020……730）大致就是学习顺序。**不要跳着读，也不要一次读完**。文档分三类：
 
-**必读（零基础主线，约 2-3 周）**
+**必读（零基础主线，约 3-4 周）**
 
-1. `001-TypeScriptOverviewEnvSetup`：先装环境、跑通第一个 TypeScript 程序；
-2. `002-TSBasicsVariablesAndTypes` 到 `005-TSBasicsGenerics`：变量、函数、类、泛型四篇前篇；
-3. `006-BasicTypeSystem` 到 `010-LocalTypeInference`：类型系统核心；
-4. `TypeCompatibility`、`TypeInferenceDeepDive`、`ConstAssertion`、`NeverTypeSemantics`：理解"为什么能赋值、为什么报错"；
-5. `016-TypeGuardCustomGuard` 到 `023-ModuleResolutionInModernJavaScriptToolchains`：守卫、索引签名、声明文件与模块解析；
-6. `048-TypeScriptEngineeringConfig`、`059-TypeScriptProjectExampleTypeSafeAPIClient`、`TypeScriptProjectExampleTodoApp`：工程化与实战收尾。
+1. [TypeScript 概述与环境配置](/typescript/030-TypeScriptOverviewEnvSetup)：先装环境、跑通第一个 TypeScript 程序；
+2. [变量与基础类型](/typescript/040-TSBasicsVariablesAndTypes)到[泛型基础](/typescript/070-TSBasicsGenerics)：变量、函数、类、泛型四篇前篇；
+3. [基础类型系统](/typescript/080-BasicTypeSystem)到[索引签名与动态属性](/typescript/140-IndexSignatureDynamicProperty)：类型系统核心（接口、字面量与联合、交叉、枚举、守卫）；
+4. [类型兼容性](/typescript/200-TypeCompatibility)、[类型推断深入](/typescript/160-TypeInferenceDeepDive)、[as const](/typescript/170-ConstAssertion)、[never 语义](/typescript/190-NeverTypeSemantics)：理解"为什么能赋值、为什么报错"；
+5. [命名空间与模块](/typescript/290-NamespaceModule)到[模块声明与全局类型增强](/typescript/340-ModuleDeclarationGlobalAugmentation)：声明文件与模块解析；
+6. [工程化配置](/typescript/350-TypeScriptEngineeringConfig)、[项目示例：API 客户端](/typescript/690-TypeScriptProjectExampleTypeSafeAPIClient)、[项目实战：TODO 应用](/typescript/700-TypeScriptProjectExampleTodoApp)：工程化与实战收尾。
 
 **按需查阅（遇到问题再回来看）**
 
-- `TypeScriptFAQ`：高频疑问合集，先查这里再搜；
-- `062-TscCompilerCommands`：tsc 命令速查；
-- `063-TypeTestingAndAssertions`：类型测试与断言；
-- `001-TypeScriptOverviewEnvSetup` 末尾的核心术语表与进阶新特性速览。
+- [高频疑问 FAQ](/typescript/720-TypeScriptFAQ)：高频疑问合集，先查这里再搜；
+- [tsc 编译命令速查](/typescript/370-TscCompilerCommands)：tsc 命令速查；
+- [类型测试与断言](/typescript/550-TypeTestingAndAssertions)：类型测试与断言；
+- [环境配置](/typescript/030-TypeScriptOverviewEnvSetup)末尾的核心术语表与进阶新特性速览。
 
 **进阶原理（有项目经验后再读）**
 
-- 类型论与理论：`028-OnTheRoleOfSymbolicExecutionInTypeSystems` 到 `032-ConditionalTypeDistribute`、`061-ATheoryOfTypePolymorphismInProgramming`；
-- 类型体操：`055-TypeGymnastics`、`051-ConditionalTypeInfer`、`054-TemplateLiteralType`；
-- 编译器与性能：`052-TypeScriptCompilePerformanceOptimization`、`065-TypeScript7CompilerGuide`。
+- 类型论与理论：[TypeScript 理论知识点](/typescript/710-TypeScriptTheory)、[satisfies 的形式语义](/typescript/185-SatisfiesTypeTheory)、[协变与逆变](/typescript/260-CovarianceContravariance)、[this 类型与多态](/typescript/240-ThisTypePolymorphism)；
+- 类型体操：[实用模式](/typescript/530-TypeGymnasticsPracticalPatterns)、[深水区](/typescript/540-TypeGymnastics)、[条件类型三部曲](/typescript/430-ConditionalTypeDistribute)、[模板字面量类型](/typescript/500-TemplateLiteralType)；
+- 编译器与性能：[编译与性能优化](/typescript/380-TypeScriptCompilePerformanceOptimization)、[TS 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)。
 
 ## 1. 为什么环境配置排在最前面
 
@@ -90,27 +90,27 @@ function canPublish(course: Course): boolean {
 
 ```mermaid
 flowchart LR
-    A["00 本指南"] --> B["01 环境配置<br/>跑通 tsc"]
-    B --> C["02-05 前篇<br/>变量/函数/类/泛型"]
-    C --> D["06-09 类型系统核心"]
-    D --> E["10-13 兼容性/推断/const/never"]
-    E --> F["14-24 类装饰器/声明文件/模块"]
-    F --> G["49-61 工程化与项目实战"]
-    G --> H["62-67 理论/命令/FAQ 按需查阅"]
+    A["020 本指南"] --> B["030 环境配置<br/>跑通 tsc"]
+    B --> C["040-070 前篇<br/>变量/函数/类/泛型"]
+    C --> D["080-150 类型系统核心"]
+    D --> E["160-200 兼容性/推断/const/never"]
+    E --> F["290-350 声明文件/模块/工程配置"]
+    F --> G["690-700 项目实战"]
+    G --> H["370/550/720 命令/类型测试/FAQ 按需查阅"]
 ```
 
 ## 2. 三条阅读规则
 
-**规则一：环境先行。** 先读 `001-TypeScriptOverviewEnvSetup` 并完成安装；前四篇前篇里的每一段代码都建议放进自己的工程里跑一遍，而不是只读。
+**规则一：环境先行。** 先读[环境配置](/typescript/030-TypeScriptOverviewEnvSetup)并完成安装；前四篇前篇里的每一段代码都建议放进自己的工程里跑一遍，而不是只读。
 
-**规则二：看到公式直接跳过。** 少数进阶文档会使用类型论记号（如 `Γ ⊢ e : τ`）。零基础第一遍只读代码示例、表格和"动手试试"，公式一律跳过。正文不再出现这类记号，需要了解时再看各篇文末的"进阶附录"（如 `006-BasicTypeSystem` 附录 A）。
+**规则二：看到公式直接跳过。** 少数进阶文档会使用类型论记号（如 `Γ ⊢ e : τ`）。零基础第一遍只读代码示例、表格和"动手试试"，公式一律跳过。正文不再出现这类记号，需要了解时再看各篇文末的"进阶附录"（如[基础类型系统](/typescript/080-BasicTypeSystem)附录 A）。
 
-**规则三：新特性速览可跳过。** `001-TypeScriptOverviewEnvSetup` 末尾的 TS 5.x 新特性速览（const 类型参数、satisfies、using、NoInfer 等）是给有基础的人看的，第一遍读到正文"9. 总结"即可。`satisfies` 与 `as const` 都有独立成篇的系统讲解（`049-SatisfiesOperator`、`ConstAssertion`）。
+**规则三：新特性速览可跳过。** [环境配置](/typescript/030-TypeScriptOverviewEnvSetup)末尾的 TS 5.x 新特性速览（const 类型参数、satisfies、using、NoInfer 等）是给有基础的人看的，第一遍读到正文"9. 总结"即可。`satisfies` 与 `as const` 都有独立成篇的系统讲解（[satisfies 操作符](/typescript/180-SatisfiesOperator)、[as const 完整讲解](/typescript/170-ConstAssertion)）。
 
 ## 3. 术语不认识怎么办
 
-1. 先查 `001-TypeScriptOverviewEnvSetup` 末尾的"核心术语表"（零基础速查版）；
-2. 再查 `TypeScriptFAQ` 的"概念对比"小节；
+1. 先查[环境配置](/typescript/030-TypeScriptOverviewEnvSetup)末尾的"核心术语表"（零基础速查版）；
+2. 再查[高频疑问 FAQ](/typescript/720-TypeScriptFAQ)的"概念对比"小节；
 3. 进阶术语在各篇末尾的"术语表/附录"中查找。
 
 ## 4. 常见误区
@@ -127,10 +127,10 @@ flowchart LR
 
 | 阶段 | 预期时间 | 验收标准 |
 | --- | --- | --- |
-| 第 1 周（01-09） | 6-8 小时 | 能独立初始化 tsconfig，写出带类型的变量、函数、类、泛型代码 |
-| 第 2 周（10-18） | 6-8 小时 | 能解释"为什么这个赋值合法"，会用类型守卫和索引签名 |
-| 第 3 周（19-24） | 5-7 小时 | 能读懂 .d.ts，正确使用 import type 与模块解析配置 |
-| 第 4 周（49-61） | 8-10 小时 | 能独立完成 TODO 项目实战，并解释关键类型设计 |
+| 第 1 周（030-070 前篇） | 6-8 小时 | 能独立初始化 tsconfig，写出带类型的变量、函数、类、泛型代码 |
+| 第 2 周（080-200 类型系统） | 6-8 小时 | 能解释"为什么这个赋值合法"，会用类型守卫和索引签名 |
+| 第 3 周（290-350 模块与工程） | 5-7 小时 | 能读懂 .d.ts，正确使用 import type 与模块解析配置 |
+| 第 4 周（690-700 项目实战） | 8-10 小时 | 能独立完成 TODO 项目实战，并解释关键类型设计 |
 
 ## 6. 一句话记住
 

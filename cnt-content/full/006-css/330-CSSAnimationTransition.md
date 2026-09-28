@@ -4,1399 +4,221 @@ title: CSS 动画与过渡
 module: 'css'
 category: 前端技术
 difficulty: intermediate
-description: CSS transition过渡、animation动画、关键帧、变换transform与性能优化详解。
+description: "从「按钮 hover 变色瞬间完成，显得廉价生硬」出发，用 transition 补间状态变化，用 @keyframes 排演多帧动画，吃透时序函数、fill-mode 与简写的双时间陷阱，并按「过渡还是动画、动 transform 还是动 width」的决策表写出 60fps 的动效。"
 author: fanquanpp
 updated: '2026-09-13'
 related:
-  - 'css/290-BackgroundEnhancement'
-  - 'css/250-CSS3GridGridLayout'
-  - 'css/280-BorderRadius'
+  - 'css/340-CSSViewTransitions'
+  - 'css/350-CSSScrollDrivenAnimations'
+  - 'css/700-Transform3D'
   - 'css/360-MediaQuery'
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
+  - 'css/050-CSS3BoxModelDetailed'
 ---
 
 ## 前置知识
 
-建议先阅读以下内容再进入本文：
+- 已完成 [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)；
+- 例子会用到 `transform: translate/scale/rotate` 的基础写法，深水版见 [transform 与 3D 变换](/css/700-Transform3D)，看不懂变换不影响理解「怎么让变化变平滑」。
 
-- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+## 学习目标
 
-## 1. CSS 过渡（Transition）
+读完本文你将能够：
 
-### 1.1 过渡基础
+1. 用 `transition` 四件套让状态变化平滑起来，并说出哪些属性能补间、哪些不能；
+2. 用 `@keyframes` 加 `animation` 排出多帧循环动画，解释 `fill-mode: forwards` 解决了什么问题；
+3. 选对时序函数：命名曲线、`cubic-bezier`、`steps()` 各管什么感觉；
+4. 按决策表回答「这个效果用过渡还是动画」「动 transform 还是动 width」，写出不掉帧的动效；
+5. 用 `prefers-reduced-motion` 尊重晕动症用户，用 `@starting-style` 处理元素首次出现的入场动画。
 
-CSS过渡允许属性值变化时平滑地从一个状态过渡到另一个状态。
+预计 40 到 60 分钟，含 1 组动手实验与 4 道练习。
+
+## 1. 问题引入：会动和「动得对」是两回事
+
+你给按钮加了 hover 变色，功能没问题，但鼠标扫过去的瞬间颜色「啪」地一下就变了——不是 bug，是没有中间过程，观感生硬廉价。再加一个「提交中」的旋转圈、一个弹窗淡入，问题开始分化：hover 变化是**状态 A 到状态 B**，转圈是**循环多帧**，弹窗是**一次性入场**。
+
+CSS 对应两套工具：**transition 补间**（浏览器自动在两个状态之间生成中间帧）与 **animation 关键帧**（你自己排演每一帧）。选错工具不是不能做，而是代码量和坑点翻倍——本文的主线就是「先选对工具，再调对手感」。
+
+## 2. 最小示例：从「啪」到「缓」
+
+`styles.css`：
 
 ```css
-/* 过渡的四个属性 */
-.element {
-  /* 指定参与过渡的属性 */
-  transition-property: background-color, transform;
-  /* 过渡持续时间 */
-  transition-duration: 0.3s;
-  /* 过渡时序函数（缓动曲线） */
-  transition-timing-function: ease-in-out;
-  /* 过渡延迟时间 */
-  transition-delay: 0.1s;
-
-  /* 简写形式 */
-  transition:
-    background-color 0.3s ease-in-out 0.1s,
-    transform 0.3s ease-in-out 0.1s;
-
-  /* 所有属性过渡 */
-  transition: all 0.3s ease;
+.button {
+  background: #2563eb;
+  color: #fff;
+  padding: 10px 20px;
+  border-radius: 6px;
+  /* 过渡三要素：属性、时长、曲线 */
+  transition: background-color 0.2s ease, transform 0.2s ease;
 }
-
-.element:hover {
-  background-color: #3498db;
-  transform: scale(1.05);
+.button:hover {
+  background: #1d4ed8;
+  transform: translateY(-1px);
+}
+.button:active {
+  transform: translateY(0) scale(0.98);
 }
 ```
 
-### 1.2 时序函数详解
+预期效果：hover 时背景色 0.2 秒渐变、按钮轻微上浮；按下时回落并轻微缩小。同一个属性被写成两条过渡目标（hover 与 active），浏览器会自动按当前状态插值——transition 只声明「属性要平滑」，不声明「从哪到哪」。
+
+## 3. 核心概念
+
+### 3.1 过渡四件套与能补间的属性
 
 ```css
-/* 预定义时序函数 */
-.box1 {
-  transition-timing-function: ease;
-} /* 默认：慢-快-慢 */
-.box2 {
-  transition-timing-function: linear;
-} /* 匀速 */
-.box3 {
-  transition-timing-function: ease-in;
-} /* 慢-快 */
-.box4 {
-  transition-timing-function: ease-out;
-} /* 快-慢 */
-.box5 {
-  transition-timing-function: ease-in-out;
-} /* 慢-快-慢 */
-
-/* 贝塞尔曲线 */
-.box6 {
-  transition-timing-function: cubic-bezier(0.68, -0.55, 0.265, 1.55);
-} /* 弹性效果 */
-
-/* 步进函数 */
-.box7 {
-  transition-timing-function: steps(4, end);
-} /* 4步跳跃 */
-.box8 {
-  transition-timing-function: steps(10, start);
-} /* 10步，立即跳到下一步 */
-```
-
-### 1.3 可过渡的属性
-
-并非所有CSS属性都支持过渡，只有具有**中间值**的属性才能过渡。
-
-```css
-/* 支持过渡的常见属性 */
-.supported {
-  /* 颜色 */
-  transition:
-    color 0.3s,
-    background-color 0.3s,
-    border-color 0.3s;
-  /* 尺寸 */
-  transition:
-    width 0.3s,
-    height 0.3s,
-    margin 0.3s,
-    padding 0.3s;
-  /* 变换 */
-  transition:
-    transform 0.3s,
-    opacity 0.3s;
-  /* 阴影 */
-  transition:
-    box-shadow 0.3s,
-    text-shadow 0.3s;
-}
-
-/* 不支持过渡的属性 */
-.not-supported {
-  /* display: none → block 无法过渡 */
-  /* 建议用 opacity + visibility 替代 */
-  transition:
-    opacity 0.3s,
-    visibility 0.3s;
-}
-```
-
-### 1.4 实用过渡效果
-
-```css
-/* 按钮悬停效果 */
-.btn {
-  padding: 12px 24px;
-  background-color: #3498db;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-}
-
-.btn:hover {
-  background-color: #2980b9;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.4);
-}
-
-.btn:active {
-  transform: translateY(0);
-  box-shadow: 0 2px 4px rgba(52, 152, 219, 0.4);
-}
-
-/* 卡片悬浮效果 */
 .card {
-  background: white;
-  border-radius: 8px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-  transition:
-    transform 0.3s ease,
-    box-shadow 0.3s ease;
-}
-
-.card:hover {
-  transform: translateY(-8px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.15);
-}
-
-/* 淡入淡出 */
-.fade-element {
-  opacity: 0;
-  visibility: hidden;
-  transition:
-    opacity 0.3s ease,
-    visibility 0.3s ease;
-}
-
-.fade-element.visible {
-  opacity: 1;
-  visibility: visible;
+  transition-property: transform;   /* 哪些属性参与 */
+  transition-duration: 0.3s;        /* 时长 */
+  transition-timing-function: ease; /* 曲线 */
+  transition-delay: 0s;             /* 延迟 */
+  /* 简写：属性 时长 曲线 延迟，多组逗号分隔 */
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 ```
 
-## 2. CSS 动画（Animation）
+能补间的属性必须「有中间值」：颜色、长度、透明度、transform 都行；`display`、`font-family` 这类离散属性没有中间值，写了也不动（2024 年起可用 `transition-behavior: allow-discrete` 让 display 在动画末尾才切换，见 3.5）。**`transition: all` 是反模式**：新属性一加就意外参与动画，性能与可预测性双输，明确列出属性名。
 
-### 2.1 关键帧动画
+### 3.2 时序函数：动效的「手感」
+
+| 函数 | 感觉 | 典型用途 |
+| --- | --- | --- |
+| `ease`（默认） | 快进缓出 | 通用微交互 |
+| `linear` | 匀速 | 旋转、进度、循环动画 |
+| `ease-out` | 快起缓停 | 入场元素（先响应后安顿） |
+| `ease-in` | 缓起快走 | 离场元素 |
+| `cubic-bezier(0.34, 1.56, 0.64, 1)` | 带过冲的弹性 | 通知弹入 |
+| `steps(4)` | 跳格离散 | 逐帧雪碧图、数字翻牌 |
+
+手感经验：界面动效偏爱 ease-out（尽快给反馈、缓缓停稳）；循环动画用 linear 避免每圈「喘气」；想要 Q 弹就在 cubic-bezier 里让控制点超过 1。曲线不必背，浏览器 DevTools 的动效面板可以直接拖贝塞尔曲线试听。
+
+### 3.3 关键帧动画：自己排演每一帧
 
 ```css
-/* 定义关键帧 */
-@keyframes slideIn {
+@keyframes slide-in {
   from {
-    transform: translateX(-100%);
     opacity: 0;
+    transform: translateX(-16px);
   }
   to {
-    transform: translateX(0);
     opacity: 1;
+    transform: translateX(0);
   }
 }
 
-/* 多关键帧动画 */
-@keyframes bounce {
-  0% {
-    transform: translateY(0);
-  }
-  25% {
-    transform: translateY(-20px);
-  }
-  50% {
-    transform: translateY(0);
-  }
-  75% {
-    transform: translateY(-10px);
-  }
-  100% {
-    transform: translateY(0);
-  }
+.toast {
+  animation: slide-in 0.3s ease-out forwards;
 }
 
-/* 应用动画 */
-.slide-in {
-  animation: slideIn 0.5s ease-out forwards;
-}
-
-.bounce {
-  animation: bounce 1s ease infinite;
-}
-```
-
-### 2.2 animation 属性详解
-
-```css
-.animation-demo {
-  /* 动画名称 */
-  animation-name: slideIn;
-  /* 动画持续时间 */
-  animation-duration: 0.5s;
-  /* 时序函数 */
-  animation-timing-function: ease-out;
-  /* 延迟时间 */
-  animation-delay: 0.2s;
-  /* 播放次数: 数字 | infinite */
-  animation-iteration-count: 1;
-  /* 播放方向: normal | reverse | alternate | alternate-reverse */
-  animation-direction: normal;
-  /* 填充模式: none | forwards | backwards | both */
-  animation-fill-mode: forwards;
-  /* 播放状态: running | paused */
-  animation-play-state: running;
-
-  /* 简写 */
-  /* animation: name duration timing-function delay iteration-count direction fill-mode */
-  animation: slideIn 0.5s ease-out 0.2s 1 normal forwards;
-}
-```
-
-### 2.3 animation-fill-mode 详解
-
-```css
-/* none: 动画前后都应用原始样式 */
-.fill-none {
-  animation-fill-mode: none;
-}
-
-/* forwards: 动画结束后保持最后一帧 */
-.fill-forwards {
-  animation-fill-mode: forwards;
-}
-
-/* backwards: 动画延迟期间应用第一帧 */
-.fill-backwards {
-  animation-fill-mode: backwards;
-}
-
-/* both: 同时应用forwards和backwards */
-.fill-both {
-  animation-fill-mode: both;
-}
-```
-
-### 2.4 实用动画效果
-
-```css
-/* 加载旋转动画 */
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+  to { transform: rotate(360deg); }   /* from 可省略，默认取当前样式 */
 }
-
 .spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #e0e0e0;
-  border-top-color: #3498db;
-  border-radius: 50%;
   animation: spin 0.8s linear infinite;
 }
-
-/* 脉冲动画 */
-@keyframes pulse {
-  0%,
-  100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.8;
-  }
-}
-
-.pulse {
-  animation: pulse 2s ease-in-out infinite;
-}
-
-/* 打字机效果 */
-@keyframes typing {
-  from {
-    width: 0;
-  }
-  to {
-    width: 100%;
-  }
-}
-
-@keyframes blink {
-  50% {
-    border-color: transparent;
-  }
-}
-
-.typewriter {
-  overflow: hidden;
-  white-space: nowrap;
-  border-right: 2px solid #333;
-  width: 0;
-  animation:
-    typing 3s steps(20) forwards,
-    blink 0.7s step-end infinite;
-}
-
-/* 摇晃动画 */
-@keyframes shake {
-  0%,
-  100% {
-    transform: translateX(0);
-  }
-  10%,
-  30%,
-  50%,
-  70%,
-  90% {
-    transform: translateX(-5px);
-  }
-  20%,
-  40%,
-  60%,
-  80% {
-    transform: translateX(5px);
-  }
-}
-
-.shake {
-  animation: shake 0.5s ease-in-out;
-}
-```
-
-## 3. CSS 变换（Transform）
-
-### 3.1 2D 变换
-
-```css
-.transform-demo {
-  /* 平移 */
-  transform: translate(50px, 100px); /* 水平50px，垂直100px */
-  transform: translateX(50px); /* 仅水平 */
-  transform: translateY(100px); /* 仅垂直 */
-  transform: translate(-50%, -50%); /* 百分比相对自身 */
-
-  /* 旋转 */
-  transform: rotate(45deg); /* 顺时针45度 */
-  transform: rotate(-0.25turn); /* 逆时针1/4圈 */
-
-  /* 缩放 */
-  transform: scale(1.5); /* 整体放大1.5倍 */
-  transform: scale(1.5, 2); /* 水平1.5倍，垂直2倍 */
-  transform: scaleX(2); /* 仅水平缩放 */
-
-  /* 倾斜 */
-  transform: skew(10deg, 20deg); /* 水平10度，垂直20度 */
-  transform: skewX(10deg); /* 仅水平倾斜 */
-
-  /* 组合变换（从右到左应用） */
-  transform: translate(50px, 0) rotate(45deg) scale(1.2);
-}
-```
-
-### 3.2 3D 变换
-
-```css
-.transform-3d {
-  /* 开启3D上下文 */
-  transform-style: preserve-3d;
-  /* 透视距离 */
-  perspective: 1000px;
-
-  /* 3D旋转 */
-  transform: rotateX(45deg); /* 绕X轴旋转 */
-  transform: rotateY(45deg); /* 绕Y轴旋转 */
-  transform: rotate3d(1, 1, 0, 45deg); /* 绕自定义轴旋转 */
-
-  /* 3D平移 */
-  transform: translateZ(100px); /* 沿Z轴平移 */
-
-  /* 3D缩放 */
-  transform: scaleZ(2); /* 沿Z轴缩放 */
-}
-
-/* 翻转卡片效果 */
-.flip-card {
-  width: 300px;
-  height: 200px;
-  perspective: 1000px;
-}
-
-.flip-card-inner {
-  position: relative;
-  width: 100%;
-  height: 100%;
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
-}
-
-.flip-card:hover .flip-card-inner {
-  transform: rotateY(180deg);
-}
-
-.flip-card-front,
-.flip-card-back {
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  backface-visibility: hidden;
-}
-
-.flip-card-back {
-  transform: rotateY(180deg);
-}
-```
-
-### 3.3 transform-origin
-
-```css
-/* 变换原点 */
-.origin-center {
-  transform-origin: center center;
-} /* 默认 */
-.origin-top-left {
-  transform-origin: top left;
-}
-.origin-custom {
-  transform-origin: 30% 70%;
-}
-.origin-pixel {
-  transform-origin: 50px 100px;
-}
-
-/* 不同原点下的旋转效果差异 */
-.rotate-center {
-  transform-origin: center;
-  transform: rotate(45deg); /* 绕中心旋转 */
-}
-
-.rotate-corner {
-  transform-origin: bottom right;
-  transform: rotate(45deg); /* 绕右下角旋转 */
-}
-```
-
-## 4. 性能优化
-
-### 4.1 高性能动画属性
-
-```css
-/* 推荐：仅触发Composite的属性（GPU加速） */
-.good-animation {
-  transition:
-    transform 0.3s ease,
-    opacity 0.3s ease;
-}
-
-/* 避免：触发Layout的属性（性能差） */
-.bad-animation {
-  transition:
-    width 0.3s,
-    height 0.3s,
-    top 0.3s,
-    left 0.3s;
-}
-
-/* 触发层级 */
-/* Layout（重排）> Paint（重绘）> Composite（合成） */
-/* Layout触发属性: width, height, margin, padding, top, left... */
-/* Paint触发属性: color, background, box-shadow, border-radius... */
-/* Composite触发属性: transform, opacity */
-```
-
-### 4.2 will-change 提示
-
-```css
-/* 提示浏览器提前优化 */
-.will-animate {
-  will-change: transform, opacity;
-}
-
-/* 注意：不要滥用will-change，它会消耗额外内存 */
-/* 只在即将发生动画时添加，动画结束后移除 */
-
-/* 使用JS动态控制 */
-/*
-element.addEventListener('mouseenter', () => {
-    element.style.willChange = 'transform';
-});
-element.addEventListener('animationend', () => {
-    element.style.willChange = 'auto';
-});
-*/
-```
-
-### 4.3 prefers-reduced-motion
-
-```css
-/* 尊重用户的减少动画偏好 */
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-  }
-}
-```
-
-## 5. 常见问题与解决方案
-
-### 5.1 动画闪烁
-
-**问题**：动画开始或结束时出现闪烁
-
-```css
-/* 解决方案：使用transform代替top/left */
-/* 错误 */
-.flash-bad {
-  transition:
-    top 0.3s,
-    left 0.3s;
-}
-
-/* 正确 */
-.flash-good {
-  transition: transform 0.3s;
-  will-change: transform;
-}
-```
-
-### 5.2 动画卡顿
-
-**问题**：动画帧率低，不流畅
-
-```css
-/* 解决方案 */
-.smooth-animation {
-  /* 1. 使用GPU加速属性 */
-  transform: translateZ(0);
-
-  /* 2. 提升到独立图层 */
-  will-change: transform;
-
-  /* 3. 避免同时动画过多元素 */
-}
-
-/* JS中检查帧率 */
-/*
-let lastTime = performance.now();
-function checkFPS() {
-    const now = performance.now();
-    const fps = 1000 / (now - lastTime);
-    lastTime = now;
-    console.log(`FPS: ${fps}`);
-    requestAnimationFrame(checkFPS);
-}
-*/
-```
-
-### 5.3 动画结束状态回弹
-
-**问题**：动画结束后回到初始状态
-
-```css
-/* 解决方案：使用animation-fill-mode: forwards */
-@keyframes slideIn {
-  from {
-    transform: translateX(-100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-.stay-at-end {
-  animation: slideIn 0.5s ease forwards; /* forwards保持结束状态 */
-}
-```
-
-## 6. 总结与最佳实践
-
-### 6.1 过渡 vs 动画选择
-
-| 场景                     | 选择       | 原因           |
-| :----------------------- | :--------- | :------------- |
-| 状态变化（hover、click） | transition | 简单、声明式   |
-| 循环播放                 | animation  | 支持infinite   |
-| 多步骤动画               | animation  | 支持多关键帧   |
-| 无触发自动播放           | animation  | 不需要状态变化 |
-
-### 6.2 最佳实践
-
-1. **优先使用 transform 和 opacity**：GPU加速，性能最佳
-2. **避免动画布局属性**：width、height、top、left等触发重排
-3. **使用 will-change 谨慎**：只在需要时添加，用完移除
-4. **尊重用户偏好**：使用 prefers-reduced-motion 媒体查询
-5. **控制动画时长**：交互反馈 0.1-0.3s，装饰动画 0.3-0.5s
-6. **使用 cubic-bezier**：自定义缓动曲线比预设更自然
-## transition 过渡
-
-**基本写法：transition-property 单属性**
-`transition-property: <属性>;`
-```css
-/* 指定过渡属性 */
-.box {
-  transition-property: opacity;
-}
-```
-
----
-
-**基本写法：transition-duration 时长**
-`transition-duration: <时间>;`
-```css
-/* 设置过渡时长 */
-.box {
-  transition-duration: 0.3s;
-}
-```
-
----
-
-**基本写法：transition-timing-function 缓动**
-`transition-timing-function: <缓动函数>;`
-```css
-/* 设置缓动函数 */
-.box {
-  transition-timing-function: ease-in-out;
-}
-```
-
----
-
-**基本写法：transition-delay 延迟**
-`transition-delay: <时间>;`
-```css
-/* 设置过渡延迟 */
-.box {
-  transition-delay: 0.1s;
-}
-```
-
----
-
-**基本写法：transition 简写**
-`transition: <属性> <时长> <缓动> <延迟>;`
-```css
-/* 同时设置过渡属性 */
-.box {
-  transition: opacity 0.3s ease-in-out 0.1s;
-}
-```
-
----
-
-**单行写法：多属性过渡**
-`transition: <属性1> <时长1>, <属性2> <时长2>;`
-```css
-/* 单行设置多个属性过渡 */
-.box {
-  transition: opacity 0.3s, transform 0.5s;
-}
-```
-
----
-
-**换行写法：多属性过渡**
-`transition: <属性1> <时长1>, <属性2> <时长2>, <属性3> <时长3>;`
-```css
-/* 换行设置多个属性过渡 */
-.box {
-  transition:
-    opacity 0.3s,
-    transform 0.5s,
-    background-color 0.2s;
-}
-```
-
----
-
-**基本写法：transition all**
-`transition: all <时长>;`
-```css
-/* 所有可过渡属性都应用过渡 */
-.box {
-  transition: all 0.3s;
-}
-```
-
----
-
-## @keyframes 关键帧
-
-**基本写法：from-to 关键帧**
-`@keyframes <名称> { from { <样式> } to { <样式> } }`
-```css
-/* 定义从起点到终点的动画 */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-```
-
----
-
-**基本写法：百分比关键帧**
-`@keyframes <名称> { 0% { <样式> } 50% { <样式> } 100% { <样式> } }`
-```css
-/* 定义多关键帧动画 */
-@keyframes pulse {
-  0% { transform: scale(1); }
-  50% { transform: scale(1.1); }
-  100% { transform: scale(1); }
-}
-```
-
----
-
-**单行写法：多属性关键帧**
-`@keyframes <名称> { 0% { <属性1>: <值>; <属性2>: <值>; } }`
-```css
-/* 单行定义多属性关键帧 */
-@keyframes slide {
-  0% { transform: translateX(0); opacity: 1; }
-  100% { transform: translateX(100px); opacity: 0; }
-}
-```
-
----
-
-**换行写法：多属性关键帧**
-`@keyframes <名称> { 0% { <属性1>: <值>; <属性2>: <值>; } }`
-```css
-/* 换行定义多属性关键帧 */
-@keyframes slide {
-  0% {
-    transform: translateX(0);
-    opacity: 1;
-  }
-  100% {
-    transform: translateX(100px);
-    opacity: 0;
-  }
-}
-```
-
----
-
-## animation 动画
-
-**基本写法：animation-name 名称**
-`animation-name: <动画名>;`
-```css
-/* 指定动画名称 */
-.box {
-  animation-name: fadeIn;
-}
-```
-
----
-
-**基本写法：animation-duration 时长**
-`animation-duration: <时间>;`
-```css
-/* 设置动画时长 */
-.box {
-  animation-duration: 2s;
-}
-```
-
----
-
-**基本写法：animation-timing-function 缓动**
-`animation-timing-function: <缓动函数>;`
-```css
-/* 设置动画缓动函数 */
-.box {
-  animation-timing-function: ease-in-out;
-}
-```
-
----
-
-**基本写法：animation-delay 延迟**
-`animation-delay: <时间>;`
-```css
-/* 设置动画延迟 */
-.box {
-  animation-delay: 0.5s;
-}
-```
-
----
-
-**基本写法：animation-iteration-count 次数**
-`animation-iteration-count: <次数>;`
-```css
-/* 设置动画播放次数 */
-.box {
-  animation-iteration-count: 3;
-}
-```
-
----
-
-**基本写法：animation-iteration-count 无限**
-`animation-iteration-count: infinite;`
-```css
-/* 无限循环播放 */
-.box {
-  animation-iteration-count: infinite;
-}
-```
-
----
-
-**基本写法：animation-direction 方向**
-`animation-direction: alternate;`
-```css
-/* 交替反向播放 */
-.box {
-  animation-direction: alternate;
-}
-```
-
----
-
-**基本写法：animation-direction 反向**
-`animation-direction: reverse;`
-```css
-/* 反向播放 */
-.box {
-  animation-direction: reverse;
-}
-```
-
----
-
-**基本写法：animation-fill-mode 填充**
-`animation-fill-mode: forwards;`
-```css
-/* 保持结束状态 */
-.box {
-  animation-fill-mode: forwards;
-}
-```
-
----
-
-**基本写法：animation-fill-mode 双向**
-`animation-fill-mode: both;`
-```css
-/* 同时应用开始和结束状态 */
-.box {
-  animation-fill-mode: both;
-}
-```
-
----
-
-**基本写法：animation-play-state 播放**
-`animation-play-state: running;`
-```css
-/* 动画运行中 */
-.box {
-  animation-play-state: running;
-}
-```
-
----
-
-**基本写法：animation-play-state 暂停**
-`animation-play-state: paused;`
-```css
-/* 暂停动画 */
-.box:hover {
-  animation-play-state: paused;
-}
-```
-
----
-
-**基本写法：animation 简写**
-`animation: <名称> <时长> <缓动> <延迟> <次数> <方向> <填充> <状态>;`
-```css
-/* 同时设置所有动画属性 */
-.box {
-  animation: fadeIn 2s ease-in-out 0.5s infinite alternate forwards;
-}
-```
-
----
-
-**单行写法：多动画**
-`animation: <动画1>, <动画2>;`
-```css
-/* 单行设置多个动画 */
-.box {
-  animation: fadeIn 2s, slideIn 1s;
-}
-```
-
----
-
-**换行写法：多动画**
-`animation: <动画1>, <动画2>, <动画3>;`
-```css
-/* 换行设置多个动画 */
-.box {
-  animation:
-    fadeIn 2s,
-    slideIn 1s,
-    pulse 0.5s infinite;
-}
-```
-
----
-
-## 缓动函数
-
-**基本写法：ease 默认**
-`transition-timing-function: ease;`
-```css
-/* 默认缓动 */
-.box {
-  transition-timing-function: ease;
-}
-```
-
----
-
-**基本写法：linear 线性**
-`transition-timing-function: linear;`
-```css
-/* 线性匀速 */
-.box {
-  transition-timing-function: linear;
-}
-```
-
----
-
-**基本写法：ease-in 加速**
-`transition-timing-function: ease-in;`
-```css
-/* 开始慢，结束快 */
-.box {
-  transition-timing-function: ease-in;
-}
-```
-
----
-
-**基本写法：ease-out 减速**
-`transition-timing-function: ease-out;`
-```css
-/* 开始快，结束慢 */
-.box {
-  transition-timing-function: ease-out;
-}
-```
-
----
-
-**基本写法：cubic-bezier 自定义**
-`transition-timing-function: cubic-bezier(<x1>, <y1>, <x2>, <y2>);`
-```css
-/* 自定义贝塞尔曲线 */
-.box {
-  transition-timing-function: cubic-bezier(0.25, 0.1, 0.25, 1);
-}
-```
-
----
-
-**基本写法：steps 步进**
-`transition-timing-function: steps(<步数>);`
-```css
-/* 分步过渡 */
-.box {
-  transition-timing-function: steps(4);
-}
-```
-
----
-
-**基本写法：steps 跳跃**
-`transition-timing-function: steps(<步数>, jump-none);`
-```css
-/* 步进不跳跃 */
-.box {
-  transition-timing-function: steps(4, jump-none);
-}
-```
-
----
-
-## transform 变换动画
-
-**基本写法：translate 平移动画**
-`transform: translate(<x>, <y>);`
-```css
-/* 平移动画 */
-.box {
-  transition: transform 0.3s;
-}
-.box:hover {
-  transform: translate(10px, 10px);
-}
-```
-
----
-
-**基本写法：scale 缩放动画**
-`transform: scale(<比例>);`
-```css
-/* 缩放动画 */
-.box {
-  transition: transform 0.3s;
-}
-.box:hover {
-  transform: scale(1.1);
-}
-```
-
----
-
-**基本写法：rotate 旋转动画**
-`transform: rotate(<角度>);`
-```css
-/* 旋转动画 */
-.box {
-  transition: transform 0.5s;
-}
-.box:hover {
-  transform: rotate(180deg);
-}
-```
-
----
-
-**基本写法：3D 旋转动画**
-`transform: rotateY(<角度>);`
-```css
-/* Y 轴 3D 旋转 */
-.card {
-  transition: transform 0.6s;
-  transform-style: preserve-3d;
-}
-.card:hover {
-  transform: rotateY(180deg);
-}
-```
-
----
-
-## 常见动画效果
-
-**基本写法：淡入动画**
-`@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }`
-```css
-/* 淡入效果 */
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.fade-in {
-  animation: fadeIn 0.5s ease-out;
-}
-```
-
----
-
-**基本写法：淡出动画**
-`@keyframes fadeOut { from { opacity: 1; } to { opacity: 0; } }`
-```css
-/* 淡出效果 */
-@keyframes fadeOut {
-  from { opacity: 1; }
-  to { opacity: 0; }
-}
-.fade-out {
-  animation: fadeOut 0.5s ease-in;
-}
-```
-
----
-
-**基本写法：滑入动画**
-`@keyframes slideIn { from { transform: translateX(-100%); } to { transform: translateX(0); } }`
-```css
-/* 从左侧滑入 */
-@keyframes slideIn {
-  from { transform: translateX(-100%); }
-  to { transform: translateX(0); }
-}
-.slide-in {
-  animation: slideIn 0.5s ease-out;
-}
-```
-
----
-
-**基本写法：弹跳动画**
-`@keyframes bounce { 0%, 20%, 50%, 80%, 100% { transform: translateY(0); } 40% { transform: translateY(-30px); } 60% { transform: translateY(-15px); } }`
-```css
-/* 弹跳效果 */
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-30px); }
-  60% { transform: translateY(-15px); }
-}
-.bounce {
-  animation: bounce 1s;
-}
-```
-
----
-
-**基本写法：旋转加载**
-`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`
-```css
-/* 旋转加载动画 */
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-.spinner {
-  animation: spin 1s linear infinite;
-}
-```
-
----
-
-**基本写法：脉冲动画**
-`@keyframes pulse { 0%, 100% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.05); opacity: 0.8; } }`
-```css
-/* 脉冲效果 */
-@keyframes pulse {
-  0%, 100% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.05); opacity: 0.8; }
-}
-.pulse {
-  animation: pulse 2s ease-in-out infinite;
-}
-```
-
----
-
-## 滚动驱动动画
-
-**基本写法：animation-timeline 滚动**
-`animation-timeline: scroll();`
-```css
-/* 滚动驱动动画 */
-.box {
-  animation: fadeIn linear;
-  animation-timeline: scroll();
-}
-```
-
----
-
-**基本写法：animation-timeline 视口**
-`animation-timeline: view();`
-```css
-/* 元素进入视口时触发 */
-.box {
-  animation: fadeIn linear;
-  animation-timeline: view();
-}
-```
-
----
-
-**基本写法：view 轴向**
-`animation-timeline: view(<轴>);`
-```css
-/* 指定视口轴向 */
-.box {
-  animation: fadeIn linear;
-  animation-timeline: view(block);
-}
-```
-
----
-
-## 性能优化
-
-**基本写法：will-change 提示**
-`will-change: <属性>;`
-```css
-/* 提示浏览器优化 */
-.animated {
-  will-change: transform, opacity;
-}
 ```
-
----
-
-**基本写法：transform 替代 position**
-`transform: translate3d(<x>, <y>, 0);`
-```css
-/* 使用 transform 触发 GPU 加速 */
-.box {
-  transform: translate3d(0, 0, 0);
-}
-```
-
----
-
-**基本写法：backface-visibility 隐藏背面**
-`backface-visibility: hidden;`
-```css
-/* 翻转卡片隐藏背面 */
-.card {
-  backface-visibility: hidden;
-}
-```
-
----
-
-**基本写法：contain 包含**
-`contain: layout;`
-```css
-/* 限制重绘范围 */
-.widget {
-  contain: layout;
-}
-```
-
----
-
-**基本写法：content-visibility 内容可见性**
-`content-visibility: auto;`
-```css
-/* 自动跳过屏幕外内容渲染 */
-.long-list {
-  content-visibility: auto;
-}
-```
-
----
-
-## 现代动画新特性
-
-**基本写法：@starting-style 进入动画**
-`@starting-style { <选择器> { <样式> } }`
-```css
-/* 元素首次显示时的起始样式,实现进入动画 */
-.dialog {
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.3s, transform 0.3s;
-}
-@starting-style {
-  .dialog {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-}
-```
-
----
-
-**基本写法：transition-behavior: allow-discrete**
-`transition-behavior: allow-discrete;`
-```css
-/* 允许离散属性(如 display)参与过渡 */
-.modal {
-  transition: display 0.3s, opacity 0.3s;
-  transition-behavior: allow-discrete;
-}
-.modal.hidden {
-  display: none;
-  opacity: 0;
-}
-```
-
----
-
-**基本写法：scroll-driven animations animation-timeline**
-`animation-timeline: scroll(<参数>);`
-```css
-/* 滚动驱动动画:页面滚动时持续触发 */
-@keyframes progress {
-  from { transform: scaleX(0); }
-  to { transform: scaleX(1); }
-}
-.progress-bar {
-  animation: progress linear;
-  animation-timeline: scroll(root);
-  transform-origin: left;
-}
-```
-
----
-
-**基本写法：view-timeline 视图时间线**
-`view-timeline: <名称> <轴>;`
-```css
-/* 元素进入视口时触发的视图时间线 */
-@keyframes fade-in {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
-.section {
-  view-timeline: --section-timeline block;
-  animation: fade-in linear;
-  animation-timeline: --section-timeline;
-}
-```
-
----
-
-**基本写法：interpolate-size: allow-keywords 高度 auto 过渡**
-`interpolate-size: allow-keywords;`
-```css
-/* 允许对 height: auto 等关键字进行过渡 */
-.accordion {
-  interpolate-size: allow-keywords;
-  height: auto;
-  transition: height 0.3s ease;
-}
-.accordion.collapsed {
-  height: 0;
-}
-```
-
-## 动手试试
-
-1. 给按钮写 `transition: background-color 0.3s`，hover 变色观察过渡；
-2. 用 `@keyframes` 做一个“淡入 + 上移”的入场动画；
-3. 用 `animation-iteration-count: infinite` 做呼吸灯效果；
-4. 进阶挑战：配合 `prefers-reduced-motion` 在用户减少动效时关闭动画。
-
-## 核心知识点
-
-> 一句话记住动画：`transition` 是“状态变化时的过渡”，`animation` 是“按关键帧自动播放”；动画属性、时长、缓动函数（ease）与循环次数四要素。
 
-- `transition`：属性、时长、缓动、延迟，hover 等状态变化时触发；
-- `@keyframes`：`from`/`to` 或百分比关键帧定义动画过程；
-- `animation` 简写：name duration timing-function delay iteration-count direction fill-mode；
-- 只对可动画属性做过渡（transform/opacity 性能最佳）；
-- 动效遵守 `prefers-reduced-motion`，为减少动效用户关闭动画；
-- `transform` 与 `opacity` 走合成层，避免 layout/paint 抖动。
+`animation` 简写有两个高频坑：**第一个时间值是时长、第二个才是延迟**（只写一个时永远是时长）；`forwards` 让动画结束后停最后一帧——不加它，淡入的弹窗播完会「弹」回透明，这是「动画结束状态回弹」事故的头号来源。fill-mode 四值：`none` 不保留、`forwards` 保终态、`backwards` 延迟期间应用首帧、`both` 两头都保。
 
-## 注意事项与改进建议
+### 3.4 决策表：过渡还是动画，动 transform 还是动 width
 
-| 问题点 | 说明 | 改进方案 |
+| 问题 | 答案 | 理由 |
 | --- | --- | --- |
-| 动画属性过多 | 性能差 | 只用 transform/opacity |
-| 忘记缓动函数 | 动画生硬 | 用 ease/cubic-bezier |
-| 无限动画扰民 | 影响阅读 | 尊重 reduced-motion，限制循环 |
-| transition 写错属性 | 不触发 | 确认属性可动画 |
-| 动画结束后跳变 | 状态复位 | 用 `animation-fill-mode: forwards` |
+| 只有明确的两态切换（hover、展开/收起） | transition | 声明少，浏览器自动插值 |
+| 三帧以上、循环、延迟序列 | @keyframes | 过渡表达不了多帧 |
+| 动画属性选谁 | transform、opacity | 只触发合成，不重排不重绘，最省 |
+| width/left/top/margin 参与动画 | 换成 transform | 它们触发重排，每帧重算布局，掉帧元凶 |
+| 需要中途暂停（`animation-play-state`）或逐帧控制 | animation | 过渡没有播放控制 |
 
-## 扩展学习
+「动 transform 代替动 left」是性能篇的核心原则之一，原理（合成层与渲染管线）见 [CSS 性能优化](/css/540-CSSPerformanceOptimizationDetailed)。
 
-- 关键帧与缓动：`css/650-CSSNewFeatures`；
-- 3D 变换：`css/700-Transform3D`；
-- 可访问性：`css/500-AccessibleStyling`（减少动效）；
-- 性能：`css/540-CSSPerformanceOptimizationDetailed`。
+### 3.5 2026 年的两个新零件
+
+- **`@starting-style`**（Baseline 2024）：`display: none` 到显示的元素过去无法过渡（显示瞬间没有「前状态」），现在用它声明首帧样式，弹窗、popover 的纯 CSS 淡入成为可能；
+- **`transition-behavior: allow-discrete`**：让 `display`、`overlay` 这类离散属性参与过渡——关闭弹窗时淡出完成后再真正隐藏。
+
+页面级转场（两个页面间的 morph 过渡）由 View Transitions API 负责，见 [视图过渡](/css/340-CSSViewTransitions)；滚动进度驱动的动画见 [滚动驱动动画](/css/350-CSSScrollDrivenAnimations)。
+
+## 4. 修改实验
+
+对第 2 节动手，每步先预测再刷新：
+
+1. 把 `transition` 的 `background-color` 改成 `all`，再给 hover 加 `border-radius: 12px`：新属性也跟着动画——体会 all 的不可控；
+2. 时长从 0.2s 改成 0.6s 再改成 0.08s：太慢显得拖沓，太快等于没动——界面微交互的甜点区在 150 到 300ms；
+3. 换 `cubic-bezier(0.34, 1.56, 0.64, 1)`：按钮 hover 带一点过冲回弹；
+4. 把 `.toast` 的 `forwards` 删掉：弹窗淡入后瞬间消失回弹——亲手复现 fill-mode 事故；
+5. 系统开启「减少动态效果」前先写上第 5 节的降级样式，对比开启前后的表现。
+
+## 5. 常见错误与调试实录
+
+错误一：动画结束回弹。淡入淡出类动画播完跳回原状，因为默认 `fill-mode: none` 不保留终态。修复：`animation-fill-mode: forwards`（或简写里带 `forwards`）。
+
+错误二：display 切换让 transition 失效。`.panel { display: none; }` 切到 `block` 时所有过渡静默跳变——元素从「不渲染」到「渲染」没有前状态可插值。修复：用 `visibility` 加 `opacity` 组合，或上 `@starting-style` 加 `allow-discrete`。
+
+错误三：简写里两个时间值写反。`transition: color 0.3s` 正确，`animation: spin 0.5s 1s infinite` 里 0.5s 是时长、1s 是延迟——顺序固定，先时长后延迟，位置不换。
+
+错误四：动画 width/top 卡成 PPT。布局属性每帧触发重排，元素一多立刻掉帧。把位移交给 `transform: translate()`、缩放交给 `scale()`，width 动画实在要去掉时考虑高度塌缩的其他方案。
+
+错误五：无限动画常驻耗电。挂着的 `infinite` 动画即使元素在视口外也可能阻止休眠。用 IntersectionObserver 挪出视口时暂停，或换滚动驱动动画（播放进度由滚动位置决定，见 [滚动驱动动画](/css/350-CSSScrollDrivenAnimations)）。
+
+## 6. 实际场景
+
+- 微交互：按钮、输入框聚焦、开关——transition 三行搞定，时长 150 到 300ms；
+- 加载与反馈：spinner（rotate 加 linear 加 infinite）、骨架屏微光（translateX 循环）、toast 入场（keyframes 加 forwards）;
+- 引导与叙事：多帧序列用 `animation-delay` 排错峰入场；
+- 可访问性降级：所有动效都包一层 `@media (prefers-reduced-motion: reduce)` 关闭动画、保留终态（`animation: none` 配 `forwards` 语义的落点样式），参考 [媒体查询](/css/360-MediaQuery) 的偏好查询一节——晕动症用户不是少数；
+- FANDEX 网页端前端实验室的缓动曲线对比器可以并排试不同 cubic-bezier 的手感，调参前先去拖一圈。
+
+## 7. 小练习
+
+预测题（3 分钟）：`animation: fade 2s linear 1s 2 alternate forwards;` 逐段说出每个值的含义，动画总耗时多久？（时长 2s、延迟 1s、播放 2 次、往返方向、保留终态；总时长 1 + 2 × 2 = 5s。）
+
+修改题（8 分钟）：把第 2 节按钮改造成「提交中」状态：文字消失、出现 16px spinner。验收：spinner 用 `border` 加 `rotate` 实现、linear 匀速、状态切换由 `.is-loading` 类驱动。
+
+修 Bug 题（10 分钟）：下面的抽屉面板想实现「打开淡入、关闭淡出」，症状是打开有淡入、关闭瞬间消失。定位根因并用 3.5 节的现代方案修复：
+
+```css
+.panel {
+  opacity: 0;
+  display: none;
+  transition: opacity 0.3s;
+}
+.panel.open {
+  display: block;
+  opacity: 1;
+}
+```
+
+（答案方向：关闭时 `display` 立刻变 none，opacity 过渡没有机会播放。修复：`.panel { transition: opacity 0.3s, display 0.3s allow-discrete, overlay 0.3s allow-discrete; }` 配合 `@starting-style { opacity: 0 }`，让 display 在过渡结束后才切换。）
+
+挑战题（半小时，不看正文独立完成）：做一个「卡片飞入网格」入场：6 张卡片错峰滑入（transform 加 opacity），每张延迟 60ms，带轻微过冲曲线，尊重 prefers-reduced-motion（降级为直接显示）。验收：全程 60fps（动效只碰 transform/opacity）、刷新后可重复触发、CSS 至少一条注释解释 fill-mode 的选择。
+
+## 8. 与之前和之后的知识的关系
+
+- 之前：[transform 与 3D 变换](/css/700-Transform3D) 提供位移、缩放、旋转这三件「高性能动画素材」；[媒体查询](/css/360-MediaQuery) 的偏好查询负责无障碍降级；
+- 并行：[视图过渡](/css/340-CSSViewTransitions) 把动画的粒度升到页面级；[滚动驱动动画](/css/350-CSSScrollDrivenAnimations) 把时间轴换成滚动进度；
+- 之后：[CSS 性能优化](/css/540-CSSPerformanceOptimizationDetailed) 解释「为什么动 transform 不卡」的渲染管线原理；will-change 的正确用法也在那边展开。
+
+## 9. 官方文档
+
+- MDN「使用 CSS 过渡」：https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_transitions/Using_CSS_transitions
+- MDN「使用 CSS 动画」：https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_animations/Using_CSS_animations
+- MDN @starting-style 参考：https://developer.mozilla.org/zh-CN/docs/Web/CSS/@starting-style
+
+## 10. 自我检查
+
+- 能说出 transition 与 @keyframes 的选择依据，以及各自解决不了的问题；
+- 看到一条 animation 简写能拆出全部八个成分并指出时长与延迟；
+- 「关闭动画瞬间消失」能定位到 display 与 fill-mode 两类根因；
+- 拿到掉帧的动效能检查是否在动布局属性，并给出 transform 替代方案；
+- 知道 prefers-reduced-motion 是必做项而不是加分项。
+
+## 本章总结
+
+动效两件套：transition 管「两态之间的补间」，四件套是属性、时长、曲线、延迟，只声明属性名不声明起止；@keyframes 管「多帧与循环」，animation 简写先时长后延迟，fill-mode 决定播完留不留终态。手感靠时序函数：界面偏爱 ease-out，循环用 linear，弹性靠贝塞尔过冲。性能铁律：只动 transform 与 opacity，布局属性动画是掉帧元凶。2024 年后的拼图是 @starting-style 与 allow-discrete——display 参与过渡后，「关闭时淡出」不再需要 JS 打补丁。
+
+## 下一步
+
+进入 [视图过渡](/css/340-CSSViewTransitions)：元素级动效已经就位，下一篇把镜头拉到页面级——让两个视图之间产生 morph 转场，SPA 的丝滑感用原生 API 实现。

@@ -104,9 +104,10 @@ timeline
     2012: W3C 响应式图片提案（srcset / picture）
     2014: HTML5 标准化（不含响应式图片）
     2016: HTML5.1 纳入 srcset / sizes / <picture>
-    2017: Chrome 56 支持 <img loading="lazy">（实验性）
+    2017: Chrome 65 支持 decoding 属性
+    2019: Chrome 76 转正 <img loading="lazy">（75 起实验）
     2019: AVIF 1.0 发布
-    2020: Chrome 85 <img loading="lazy"> 正式可用
+    2020: Firefox 75 跟进 loading 属性
     2022: JPEG XL 1.0 发布
     2023: fetchpriority 属性进入 HTML Living Standard
     2024: AVIF 全球支持率 >92%；JPEG XL 仍在 Chrome flag 阶段
@@ -118,7 +119,7 @@ timeline
 - **HTML 4.01**（W3C, 1999）：增加 `longdesc`、`usemap`、`ismap`。
 - **HTML5**（W3C, 2014）：增加 `crossorigin`、`srcset`（草案）。
 - **HTML 5.1**（W3C, 2016）：正式纳入 `srcset`/`sizes`/`<picture>`。
-- **HTML 5.2 / 5.3**（W3C, 2017—2018）：增加 `loading`、`decoding`、`referrerpolicy`。
+- **HTML 5.2 / 5.3**（W3C, 2017—2018）：增加 `decoding`、`referrerpolicy` 等属性；`loading` 由 WHATWG 于 2019 年纳入 Living Standard。
 - **WHATWG HTML Living Standard**（持续更新）：§4.8.3 "The img element"、§4.8.4.2 "The picture element" 为权威参考。
 
 ---

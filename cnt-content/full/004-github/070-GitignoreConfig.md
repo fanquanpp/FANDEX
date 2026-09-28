@@ -399,7 +399,7 @@ desktop.ini
 - gitignore.io 组合模板生成器：https://www.toptal.com/developers/gitignore
 
 ### 延伸阅读
-- 分支模型与分支保护规则，见 004-github 模块 007 文档。
-- 开源许可证选择（LICENSE 文件的管理思路与 .gitignore 类似），见 004-github 模块 009 文档。
-- 依赖安全选项（锁定文件与 Dependabot 的配合使用），见 004-github 模块 010 文档。
-- Git 协作基础（git add / commit / push 流程），见 003-git 模块。
+- [分支模型与分支保护规则](/github/170-BranchModelBranchRule)
+- [开源许可证选择](/github/260-OpenSourceLicense)（LICENSE 文件的管理思路与 .gitignore 类似）
+- [依赖安全选项](/github/270-DependencySecurityOptions)（锁定文件与 Dependabot 的配合使用）
+- [Git 基础操作](/git/050-GitBasicOperation)（git add / commit / push 流程）

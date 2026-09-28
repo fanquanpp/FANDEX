@@ -4,758 +4,251 @@ title: 定位详解
 module: 'css'
 category: 前端技术
 difficulty: intermediate
-description: static、relative、absolute、fixed、sticky
+description: "从「头像右上角的红点角标」「滚到哪都吸住的表头」「贴着屏幕右下角的回到顶部按钮」三个真实需求出发，一次讲透 static/relative/absolute/fixed/sticky 五种参照系、inset 简写与居中套路，并给出 absolute 不听话、sticky 失效、fixed 被 transform 劫持这三类经典事故的排查路径。"
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'css/040-StyleSheetImportMethod'
-  - 'css/060-MarginCollapse'
-  - 'css/200-FloatClear'
   - 'css/230-StackingContext'
+  - 'css/240-CSS3FlexboxFlexLayout'
+  - 'css/470-CSSAnchorPositioning'
+  - 'css/700-Transform3D'
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
+  - 'css/050-CSS3BoxModelDetailed'
 ---
 
-## 1. position 属性
+## 前置知识
 
-| 值         | 定位类型 | 脱离文档流 | 参照物       |
-| ---------- | -------- | ---------- | ------------ |
-| `static`   | 默认     |            | —            |
-| `relative` | 相对定位 |            | 自身原位置   |
-| `absolute` | 绝对定位 |            | 最近定位祖先 |
-| `fixed`    | 固定定位 |            | 视口         |
-| `sticky`   | 粘性定位 | →          | 滚动容器     |
+- 已完成 [CSS3 盒模型详解](/css/050-CSS3BoxModelDetailed)：知道盒子有内容、内边距、边框即可；
+- 悬浮菜单这类「该谁出场」的选择题，第 7 节有决策表，不要求先学 Flex。
 
-## 2. relative
+## 学习目标
+
+读完本文你将能够：
+
+1. 用「参照系」一句话区分五种 position 值，拿到悬浮需求立刻选对值；
+2. 做出角标、全屏遮罩、吸顶表头、回到顶部按钮四个高频组件；
+3. 解释为什么「absolute 不听话」十有八九是父元素忘了 `relative`；
+4. 说出 sticky 失效的两个原因（没给阈值、父容器 overflow）与 fixed 被 transform 祖先劫持的原理；
+5. 用变量管理 z-index，知道 z-index 只在同一层叠上下文内比大小。
+
+预计 40 到 60 分钟，含 1 组动手实验与 4 道练习。
+
+## 1. 问题引入：三个悬浮需求，一套参照系
+
+三个真实需求：消息图标右上角要一个未读数角标；长表格滚动时表头要一直吸在顶部；页面右下角要一个「回到顶部」按钮，滚多远都在。
+
+用 margin 硬怼当然能凑合，但角标会跟着文档流挪、表头滚走就没了、按钮滚上去就看不见。这类「元素不该被文档流推着走」的需求，CSS 的答案是 **position**：五种取值，本质是五套「以谁为准」的参照系。选对了值，剩下只是填坐标。
+
+## 2. 最小示例：头像角标
+
+新建文件夹 `position-experiment`，`index.html` 的 body：
+
+```html
+<div class="avatar">
+  <img src="avatar.png" alt="头像" />
+  <span class="badge">3</span>
+</div>
+```
+
+`styles.css`：
 
 ```css
-.element {
-  position: relative;
-  top: 10px;
-  left: 20px;
+.avatar {
+  position: relative; /* 声明自己当参照物 */
+  width: 64px;
+  height: 64px;
+}
+
+.avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  display: block;
+}
+
+.badge {
+  position: absolute; /* 找最近的定位祖先入座 */
+  top: -4px;
+  right: -4px;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 12px;
+  line-height: 20px;
+  text-align: center;
 }
 ```
 
-不脱离文档流，原位置保留。常作 absolute 的参照容器。
+预期效果：红色角标悬在头像右上角，略微出血。关键动作是两步配对——**父元素 `relative` 当锚，子元素 `absolute` 找锚**。把 `.avatar` 的 `position: relative` 删掉再刷新，角标会飞到整个页面的右上角：它找不到定位祖先，退而求其次认了初始包含块。这就是「absolute 不听话」的全部真相。
 
-## 3. absolute
+## 3. 核心概念
+
+### 3.1 五种值，五张参照表
+
+| 值 | 脱离文档流 | 参照物 | 典型用途 |
+| --- | --- | --- | --- |
+| `static` | 否 | 无（默认，top/left 无效） | 普通排版 |
+| `relative` | 否（原位保留） | 自身原本的位置 | 微调 + 给 absolute 当锚 |
+| `absolute` | 是 | 最近的**非 static** 祖先 | 角标、遮罩、装饰 |
+| `fixed` | 是 | 视口（例外见 3.4） | 回到顶部、悬浮客服 |
+| `sticky` | 否（阈值前） | 最近的滚动容器 | 吸顶表头、侧栏跟随 |
+
+偏移属性 `top / right / bottom / left`（或简写 `inset`）只在非 static 时生效。`inset: 0` 等于四个方向全 0，配合 `margin: auto` 还能做有宽高的居中。
+
+### 3.2 relative 与 absolute：锚与钉
+
+relative 是唯一「不脱流」还能偏移的值：`top: 10px` 让元素从原位置往下挪 10px，**原来的坑还留着**，邻居不受影响。所以它最常见的用途不是偏移，而是「声明自己可以被子孙当锚」。
+
+absolute 脱流后不再占据空间，邻居会补上来；宽高默认收缩为内容大小。四个方向同时约束时（如 `inset: 0`）元素被「拉伸」填满参照区，全屏遮罩就是这一招：
 
 ```css
-.parent {
-  position: relative;
+.overlay {
+  position: absolute;
+  inset: 0;              /* 拉满整个参照祖先 */
+  background: rgb(0 0 0 / 0.4);
 }
-.child {
+```
+
+### 3.3 居中的两代写法
+
+```css
+/* 传统：50% 平移，宽度未知也能居中 */
+.center {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
-```
 
-脱离文档流，参照最近定位祖先。
-
-## 4. fixed
-
-```css
-.header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-  z-index: 100;
-}
-```
-
-参照视口，滚动时固定。注意 transform 会改变包含块。
-
-## 5. sticky
-
-```css
-.sidebar {
-  position: sticky;
-  top: 20px;
-}
-th {
-  position: sticky;
-  top: 0;
-  background: white;
-  z-index: 1;
-}
-```
-
-阈值前 relative，达到后 fixed。必须指定 top/bottom。
-
-## 6. z-index
-
-```css
-:root {
-  --z-dropdown: 100;
-  --z-modal: 300;
-  --z-toast: 400;
-}
-```
-
-z-index 仅对定位元素生效；同一层叠上下文内比较；子元素无法超越父上下文。
-## position 定位类型
-
-**基本写法：static 静态定位**
-`position: static;`
-```css
-/* 默认定位，遵循文档流 */
-.box {
-  position: static;
-}
-```
-
----
-
-**基本写法：relative 相对定位**
-`position: relative;`
-```css
-/* 相对自身原位置偏移 */
-.box {
-  position: relative;
-  top: 10px;
-  left: 20px;
-}
-```
-
----
-
-**基本写法：absolute 绝对定位**
-`position: absolute;`
-```css
-/* 相对最近的非 static 祖先定位 */
-.box {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-```
-
----
-
-**基本写法：fixed 固定定位**
-`position: fixed;`
-```css
-/* 相对视口定位，不随滚动 */
-.header {
-  position: fixed;
-  top: 0;
-  width: 100%;
-}
-```
-
----
-
-**基本写法：sticky 粘性定位**
-`position: sticky;`
-```css
-/* 滚动到阈值时变为固定 */
-.nav {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-}
-```
-
----
-
-## 偏移属性
-
-**基本写法：top 顶部偏移**
-`top: <值>;`
-```css
-/* 设置元素顶部偏移 */
-.box {
-  position: relative;
-  top: 20px;
-}
-```
-
----
-
-**基本写法：right 右侧偏移**
-`right: <值>;`
-```css
-/* 设置元素右侧偏移 */
-.box {
-  position: absolute;
-  right: 0;
-}
-```
-
----
-
-**基本写法：bottom 底部偏移**
-`bottom: <值>;`
-```css
-/* 设置元素底部偏移 */
-.footer {
-  position: fixed;
-  bottom: 0;
-}
-```
-
----
-
-**基本写法：left 左侧偏移**
-`left: <值>;`
-```css
-/* 设置元素左侧偏移 */
-.box {
-  position: absolute;
-  left: 50%;
-}
-```
-
----
-
-**单行写法：多方向偏移**
-`top: <值>; right: <值>; bottom: <值>; left: <值>;`
-```css
-/* 单行设置多方向偏移 */
-.overlay {
-  position: absolute;
-  top: 0; right: 0; bottom: 0; left: 0;
-}
-```
-
----
-
-**换行写法：多方向偏移**
-`top: <值>; right: <值>; bottom: <值>; left: <值>;`
-```css
-/* 换行设置多方向偏移 */
-.overlay {
-  position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
-}
-```
-
----
-
-## z-index 层叠顺序
-
-**基本写法：z-index 层级**
-`z-index: <数值>;`
-```css
-/* 设置元素层叠顺序 */
-.modal {
-  position: fixed;
-  z-index: 1000;
-}
-```
-
----
-
-**基本写法：z-index 负值**
-`z-index: <-值>;`
-```css
-/* 将元素置于背景之后 */
-.background {
-  position: absolute;
-  z-index: -1;
-}
-```
-
----
-
-**基本写法：z-index auto**
-`z-index: auto;`
-```css
-/* 默认层叠顺序 */
-.box {
-  position: relative;
-  z-index: auto;
-}
-```
-
----
-
-## 居中定位
-
-**基本写法：绝对定位水平居中**
-`left: 50%; transform: translateX(-50%);`
-```css
-/* 绝对定位元素水平居中 */
-.center-x {
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
-}
-```
-
----
-
-**基本写法：绝对定位垂直居中**
-`top: 50%; transform: translateY(-50%);`
-```css
-/* 绝对定位元素垂直居中 */
-.center-y {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-}
-```
-
----
-
-**基本写法：绝对定位双居中**
-`top: 50%; left: 50%; transform: translate(-50%, -50%);`
-```css
-/* 绝对定位元素水平垂直居中 */
-.center-xy {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-}
-```
-
----
-
-**基本写法：inset 居中**
-`inset: 0; margin: auto;`
-```css
-/* 使用 inset 实现居中 */
+/* 现代：四边拉伸 + auto margin，需要显式宽高 */
 .center-inset {
   position: absolute;
   inset: 0;
   margin: auto;
   width: 200px;
-  height: 200px;
+  height: 120px;
 }
 ```
 
----
+定位居中解决「悬浮元素居中」；如果是常规排版内的居中，Flex 一行 `align-items: center` 更省心（见 [Flexbox](/css/240-CSS3FlexboxFlexLayout)），两者是互补不是替代。
 
-## inset 简写
+### 3.4 fixed：视口的宠儿与例外
 
-**基本写法：inset 统一值**
-`inset: <值>;`
+fixed 参照视口，滚动时不动，适合回到顶部按钮：
+
 ```css
-/* 四个方向偏移相同 */
-.box {
-  position: absolute;
-  inset: 10px;
+.to-top {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
 }
 ```
 
----
+但有一个大例外：**任何祖先带了 `transform`、`filter`、`will-change: transform` 等属性，fixed 就改认这个祖先为包含块**，「贴视口」变成「贴那个祖先」，滚动时按钮跟着祖先一起跑。这不是 bug 而是规范行为——这些属性会创建包含块。中招后的修复是调整 DOM 层级，把 fixed 元素挪出带 transform 的祖先。
 
-**基本写法：inset 双值**
-`inset: <上下> <左右>;`
+### 3.5 sticky：阈值前是文档流，触发后贴住
+
 ```css
-/* 上下 10px，左右 20px */
-.box {
-  position: absolute;
-  inset: 10px 20px;
+thead th {
+  position: sticky;
+  top: 0;            /* 必须给阈值，不写等于没设 */
+  background: #fff;  /* 不给底色会透出滚过的行 */
+  z-index: 1;
 }
 ```
 
----
+sticky 平时完全按文档流排版，滚动到达 `top` 阈值后「吸附」住，超出父容器边界就跟着父容器走。两个失效高发点：忘了写阈值；任一祖先 `overflow: hidden/auto/scroll` 让它吸在错误的滚动容器上（父容器只是想裁剪时，用 `overflow: clip` 替代，它不创建滚动容器、不影响 sticky）。
 
-**单行写法：inset 四值**
-`inset: <上> <右> <下> <左>;`
+### 3.6 z-index：只在同一张牌桌上比大小
+
 ```css
-/* 单行设置四个方向偏移 */
-.box {
-  position: absolute;
-  inset: 10px 20px 30px 40px;
+:root {
+  --z-dropdown: 100;
+  --z-modal: 300;
+  --z-toast: 400;   /* 体系化的层级，拒绝 99999 魔法数字 */
 }
 ```
 
----
+三条铁律：z-index 只对定位元素（或 flex/grid 子项）生效；比较只在**同一个层叠上下文**内进行，子元素赢不了外面的世界；`opacity` 小于 1、`transform`、`filter`、`isolation: isolate` 都会创建新的层叠上下文——「写了 z-index 却被压住」，先查它是不是被某个新上下文关在了里面。完整规则见 [层叠上下文](/css/230-StackingContext)。
 
-**换行写法：inset 四值**
-`inset: <上> <右> <下> <左>;`
+## 4. 修改实验
+
+对第 2 节的角标动手，每步先预测再刷新：
+
+1. 删掉 `.avatar` 的 `position: relative`：角标飞到页面右上角——验证参照系回退；
+2. 角标改用 `bottom: -4px; left: -4px`：挪到左下角——absolute 的四角任你挑；
+3. 新建一个空 `div` 用 `inset: 0` 铺满 `.avatar` 并给半透明背景：得到「头像点亮遮罩」；
+4. 给 `.avatar` 加 `transform: translateZ(0)`，再把角标改成 `position: fixed; top: 0; right: 0`：角标不再贴视口而是贴头像——亲手复现 transform 劫持 fixed。
+
+## 5. 常见错误与调试实录
+
+错误一：absolute 元素飘到页面角落。参照祖先缺位，退回初始包含块。排查：F12 选中该元素，逐层向上找有没有 `position` 非 static 的祖先；修复永远是给最近的合理父元素补 `relative`。
+
+错误二：sticky 死活不吸。先查有没有写 `top`/`bottom` 阈值，再查祖先链上的 `overflow`（含 `overflow-x: hidden` 这种容易漏看的），最后确认滚动发生在哪个容器——sticky 认的是「最近的滚动祖先」，整页滚动和局部滚动行为不同。
+
+错误三：fixed 元素跟着滚。八成是祖先里有 `transform`/`filter`/`will-change`（动画库或性能优化代码最爱顺手加）。DevTools 的 Computed 面板逐层检查祖先的 transform，找到后调整层级或改方案。
+
+错误四：脱流元素不撑开父容器。absolute 子元素不计入父高度，父容器塌成 0，角标之外的「悬浮层」布局容易整块消失。修复：父容器显式给尺寸，或改用 grid/flex 参与布置。
+
+错误五：z-index 军备竞赛。 modal 999、toast 9999，最后谁也压不住谁。根因多半是新层叠上下文被随手创建，根源治理用变量分层（3.6 的写法），疑难杂症翻 [层叠上下文](/css/230-StackingContext)。
+
+## 6. 实际场景
+
+- 组件级：角标（2 节）、输入框内嵌图标、卡片悬浮按钮——relative 加 absolute 的锚钉组合是组件里的日常；
+- 页面级：全屏遮罩 `inset: 0`、回到顶部 `fixed`、移动端底部安全区悬浮条；
+- 数据表格：sticky 表头加 sticky 首列（首列再加 `left: 0`），长表格的标配；
+- 下一代的悬浮定位：弹出菜单「锚定到按钮」这类需求正在被 Anchor Positioning 接管，自动找空位、免手算坐标，见 [CSS 锚点定位](/css/470-CSSAnchorPositioning)——fixed 加手写坐标的方案会逐步让位。
+
+## 7. 小练习
+
+预测题（3 分钟）：`.parent { position: relative; }` 内有 `.child { position: absolute; bottom: 0; }`。child 贴的是谁的底？若把 parent 改回 static、页面 body 高 2000px，child 又贴谁的底？（前者贴 parent 的底；后者沿祖先链找不到定位元素，贴初始包含块即页面底。）
+
+修改题（8 分钟）：把角标改成「数字大于 99 显示 99+」需要一点逻辑，纯 CSS 先跳过；改做「无未读时不渲染角标」——在 HTML 层面处理即可，思考为什么不该用 `display: none` 写死在 CSS 里。
+
+修 Bug 题（10 分钟）：下面代码想做「表格滚动时表头吸顶」，症状是表头完全不吸。找出两处问题并修复：
+
 ```css
-/* 换行设置四个方向偏移 */
-.box {
-  position: absolute;
-  inset:
-    10px
-    20px
-    30px
-    40px;
+.table-wrap {
+  overflow-x: hidden;
+  max-height: 400px;
+}
+thead th {
+  position: sticky;
+  background: #fff;
 }
 ```
 
----
+（答案方向：th 没写 `top: 0` 阈值；`.table-wrap` 的 `overflow-x: hidden` 创建了滚动上下文且会连带 y 轴裁剪行为，sticky 判定的滚动容器错乱——裁剪需求改用 `overflow-x: clip`，或显式 `overflow-y: auto` 让 wrap 成为明确的滚动容器。）
 
-## float 浮动
+挑战题（半小时，不看正文独立完成）：做一个「悬浮操作面板」：右下角 fixed 圆形按钮，点击后向上展开三个操作项（可用 `:checked` 或 `:has()` 配合，纯 CSS），面板带半透明遮罩。验收：滚动全程按钮钉在右下角、遮罩 `inset: 0` 铺满、按钮在遮罩之上（z-index 分层合理）、CSS 里至少一条注释解释层级设计。
 
-**基本写法：float 左浮动**
-`float: left;`
-```css
-/* 元素向左浮动 */
-.image {
-  float: left;
-  margin-right: 10px;
-}
-```
+## 8. 与之前和之后的知识的关系
 
----
+- 之前：[盒模型详解](/css/050-CSS3BoxModelDetailed) 决定盒子的尺寸，absolute 元素的宽高收缩与拉伸也都按盒模型算；
+- 并行：[层叠上下文](/css/230-StackingContext) 是 z-index 的完整规则书；[transform 与 3D 变换](/css/700-Transform3D) 解释 transform 为什么会改包含块；传统布局时代的图文环绕见 [浮动与清除](/css/200-FloatClear)；
+- 之后：[CSS 锚点定位](/css/470-CSSAnchorPositioning) 把「悬浮层锚定触发元素」做成声明式能力；文字裁剪的兄弟话题 `clip-path` 属于视觉裁剪，见 [CSS Mask](/css/300-CSSMask)。
 
-**基本写法：float 右浮动**
-`float: right;`
-```css
-/* 元素向右浮动 */
-.sidebar {
-  float: right;
-  width: 300px;
-}
-```
+## 9. 官方文档
 
----
+- MDN position 属性参考：https://developer.mozilla.org/zh-CN/docs/Web/CSS/position
+- MDN「理解 CSS z-index」：https://developer.mozilla.org/zh-CN/docs/Web/CSS/CSS_positioned_layout/Understanding_z_index
+- web.dev「Positioning」课程：https://web.dev/learn/css/position
 
-**基本写法：float none 不浮动**
-`float: none;`
-```css
-/* 取消浮动 */
-.no-float {
-  float: none;
-}
-```
+## 10. 自我检查
 
----
+- 能用一句「参照系」话术分别说清五种 position 值，并给角标、遮罩、回到顶部、吸顶表头各指定一个；
+- 「absolute 不听话」的排查第一步是找定位祖先，「sticky 不吸」的排查前两步是阈值与祖先 overflow；
+- 能复现并解释 transform 祖先劫持 fixed 的现象与修复；
+- 知道 z-index 只在同层叠上下文内比较，能列出至少四个会创建新上下文的属性。
 
-**基本写法：clear 清除浮动**
-`clear: both;`
-```css
-/* 清除两侧浮动 */
-.clearfix {
-  clear: both;
-}
-```
+## 本章总结
 
----
+position 的五种值就是五张参照表：static 无参照，relative 认自己的原位（兼职当锚），absolute 找最近定位祖先（父元素记得 relative），fixed 认视口（被 transform/filter 祖先劫持是唯一大例外），sticky 认滚动容器且必须给阈值。坐标用 top/right/bottom/left 或 `inset` 简写；居中两法（50% 平移、inset 加 auto margin）；z-index 用变量分层、只在同一上下文内比大小。悬浮定位的下一代方案是 Anchor Positioning，先知道有它，手写坐标前想想能不能交给浏览器。
 
-**基本写法：clear 左侧清除**
-`clear: left;`
-```css
-/* 清除左侧浮动 */
-.box {
-  clear: left;
-}
-```
+## 下一步
 
----
-
-**基本写法：clearfix 伪元素**
-`.clearfix::after { content: ""; display: table; clear: both; }`
-```css
-/* 使用伪元素清除浮动 */
-.clearfix::after {
-  content: "";
-  display: table;
-  clear: both;
-}
-```
-
----
-
-## clip 裁剪
-
-**基本写法：clip-path 矩形裁剪**
-`clip-path: inset(<值>);`
-```css
-/* 矩形裁剪 */
-.box {
-  clip-path: inset(10px);
-}
-```
-
----
-
-**基本写法：clip-path 圆形裁剪**
-`clip-path: circle(<半径> at <位置>);`
-```css
-/* 圆形裁剪 */
-.avatar {
-  clip-path: circle(50% at 50% 50%);
-}
-```
-
----
-
-**基本写法：clip-path 椭圆裁剪**
-`clip-path: ellipse(<水平> <垂直> at <位置>);`
-```css
-/* 椭圆裁剪 */
-.box {
-  clip-path: ellipse(50% 30% at 50% 50%);
-}
-```
-
----
-
-**基本写法：clip-path 多边形裁剪**
-`clip-path: polygon(<点1>, <点2>, ...);`
-```css
-/* 三角形裁剪 */
-.triangle {
-  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
-}
-```
-
----
-
-## transform 变换
-
-**基本写法：translate 平移**
-`transform: translate(<x>, <y>);`
-```css
-/* 平移元素 */
-.box {
-  transform: translate(50px, 100px);
-}
-```
-
----
-
-**基本写法：translateX 水平平移**
-`transform: translateX(<值>);`
-```css
-/* 水平平移 */
-.box {
-  transform: translateX(100px);
-}
-```
-
----
-
-**基本写法：translateY 垂直平移**
-`transform: translateY(<值>);`
-```css
-/* 垂直平移 */
-.box {
-  transform: translateY(50px);
-}
-```
-
----
-
-**基本写法：scale 缩放**
-`transform: scale(<比例>);`
-```css
-/* 等比缩放 */
-.box {
-  transform: scale(1.5);
-}
-```
-
----
-
-**基本写法：scale 双向缩放**
-`transform: scale(<x>, <y>);`
-```css
-/* 分别设置 x 和 y 缩放 */
-.box {
-  transform: scale(2, 0.5);
-}
-```
-
----
-
-**基本写法：rotate 旋转**
-`transform: rotate(<角度>);`
-```css
-/* 旋转元素 */
-.box {
-  transform: rotate(45deg);
-}
-```
-
----
-
-**基本写法：skew 倾斜**
-`transform: skew(<x>, <y>);`
-```css
-/* 倾斜元素 */
-.box {
-  transform: skew(10deg, 5deg);
-}
-```
-
----
-
-**单行写法：多重变换**
-`transform: <变换1> <变换2> <变换3>;`
-```css
-/* 单行组合多个变换 */
-.box {
-  transform: translate(50px, 50px) rotate(45deg) scale(1.5);
-}
-```
-
----
-
-**换行写法：多重变换**
-`transform: <变换1> <变换2> <变换3>;`
-```css
-/* 换行组合多个变换 */
-.box {
-  transform:
-    translate(50px, 50px)
-    rotate(45deg)
-    scale(1.5);
-}
-```
-
----
-
-**基本写法：transform-origin 变换原点**
-`transform-origin: <x> <y>;`
-```css
-/* 设置变换原点 */
-.box {
-  transform-origin: top left;
-  transform: rotate(45deg);
-}
-```
-
----
-
-**基本写法：transform 3D 平移**
-`transform: translate3d(<x>, <y>, <z>);`
-```css
-/* 3D 平移 */
-.box {
-  transform: translate3d(10px, 20px, 30px);
-}
-```
-
----
-
-**基本写法：perspective 透视**
-`perspective: <值>;`
-```css
-/* 设置 3D 透视距离 */
-.container {
-  perspective: 1000px;
-}
-```
-
----
-
-**基本写法：transform-style 3D 空间**
-`transform-style: preserve-3d;`
-```css
-/* 子元素保持 3D 位置 */
-.container {
-  transform-style: preserve-3d;
-}
-```
-
----
-
-## 定位上下文
-
-**基本写法：建立定位上下文**
-`position: relative;`
-```css
-/* 父元素建立定位上下文 */
-.parent {
-  position: relative;
-}
-.child {
-  position: absolute;
-}
-```
-
----
-
-**基本写法：transform 建立上下文**
-`transform: translateZ(0);`
-```css
-/* 使用 transform 创建定位上下文 */
-.parent {
-  transform: translateZ(0);
-}
-```
-
----
-
-**基本写法：will-change 优化**
-`will-change: <属性>;`
-```css
-/* 提示浏览器优化变换 */
-.animated {
-  will-change: transform;
-}
-```
-
----
-
-## 层叠上下文
-
-**基本写法：opacity 创建层叠上下文**
-`opacity: <值>;`
-```css
-/* opacity 小于 1 创建层叠上下文 */
-.overlay {
-  opacity: 0.9;
-}
-```
-
----
-
-**基本写法：filter 创建层叠上下文**
-`filter: <滤镜>;`
-```css
-/* filter 创建层叠上下文 */
-.blur {
-  filter: blur(5px);
-}
-```
-
----
-
-**基本写法：isolation 隔离**
-`isolation: isolate;`
-```css
-/* 创建独立的层叠上下文 */
-.modal {
-  isolation: isolate;
-}
-```
-
-## 本章综合挑战（选做）
-
-1. 用 `absolute + inset: 0` 做一个全屏遮罩层；
-2. 用 `sticky` 做表格吸顶表头；
-3. 用 `fixed` + CSS 变量做悬浮“回到顶部”按钮；
-4. 验证 `transform` 祖先会改变 `fixed` 的参照系。
-
-## 核心知识点
-
-> 一句话记住定位：`relative` 留原位，`absolute` 找祖先，`fixed` 看视口，`sticky` 会吸顶；`z-index` 只在同一层叠上下文内比大小。
-
-- 五种定位值对应五种参照系：static/relative/absolute/fixed/sticky；
-- `absolute`/`fixed` 脱离文档流，`relative`/`sticky` 保留原位；
-- `absolute` 参照最近定位祖先，父元素记得加 `relative`；
-- `fixed` 默认参照视口，`transform` 祖先会改变包含块；
-- `sticky` 必须给阈值，父容器 `overflow: hidden` 会失效；
-- `z-index` 建议用 CSS 变量管理，注意层叠上下文边界；
-- `inset` 简写与 `clip-path` 是常用的现代补充。
-
-## 注意事项与改进建议
-
-| 问题点 | 说明 | 改进方案 |
-| --- | --- | --- |
-| `absolute` 找不到参照 | 相对页面跳动 | 父元素加 `position: relative` |
-| 祖先有 transform | `fixed` 不再相对视口 | 调整结构或改用 `position: fixed` 的替代方案 |
-| 父容器 `overflow: hidden` | sticky 失效 | 改用 `overflow: clip` |
-| 大量魔法 z-index | 层级失控 | 用变量定义层级体系 |
-| 用 margin 做悬浮 | 与滚动冲突 | 用 fixed/sticky + inset |
-
-## 扩展学习
-
-- 定位基础：`css/210-TraditionalLayoutTech`；
-- 层叠上下文：`css/230-StackingContext`；
-- 变换：`css/700-Transform3D`（transform 与包含块）；
-- 布局实战：`css/680-CSSProjectExampleResponsiveHomepage`。
+进入 [层叠上下文](/css/230-StackingContext)：本文反复提到「同一张牌桌」，下一篇把这张牌桌的完整规则讲透——层叠顺序七层塔、上下文的创建条件与合成层的关系。

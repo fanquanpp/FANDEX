@@ -1,248 +1,158 @@
 ---
 order: 190
-title: CODEOWNERS 代码所有者
+title: CODEOWNERS：让每个 PR 自动找到最懂这块代码的人
 module: 'github'
 category: 工具链
 difficulty: intermediate
-description: CODEOWNERS文件详解：以大型团队代码审查场景讲代码所有权、自动指派审查、语法规则与分支保护集成。
+description: 从「20 人团队的 PR 全堆给管理员一个人审」这个真实问题切入，动手写一份 CODEOWNERS 并用分支保护让审查意见有强制力，讲清路径匹配规则、优先级语义与常见的「负责人没被指派」排查路径。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'github/250-CommunityHealthFile'
+  - 'github/170-BranchModelBranchRule'
   - 'github/180-PullRequestCompleteCollaborationFlow'
+  - 'github/250-CommunityHealthFile'
 prerequisites:
   - 'github/010-GitHubOverview'
 ---
 
+## 前置知识
 
-## 0. 先来一个生活场景：小区的楼栋长
+- 知道 PR 的审查流程（见 [Pull Request 完整协作流程](/github/180-PullRequestCompleteCollaborationFlow)）；
+- 团队仓库最好有组织，能用 `@org/team` 形式指派（个人仓库只能指派单个用户）。
 
-你住的小区有 10 栋楼、30 个单元、上百户人家。物业公司收到报修单后，怎么处理最高效？
+## 学习目标
 
-- 如果所有报修都堆给物业经理一个人，他既不懂 A 栋的水管问题，也不了解 C 栋的电路老化，处理又慢又容易出错。
-- 于是小区选了**楼栋长**：每栋楼选一位熟悉本楼情况的负责人。水管问题找 A 栋长，电路问题找 C 栋长，门禁问题找物业工程部——**谁的问题找谁，专业的人管专业的事**。
+读完全文你将能够：
 
-大型软件仓库和小区一样：一个仓库可能包含前端、后端、数据库、DevOps、文档等多个模块。如果没有分工，所有 PR 都堆给仓库管理员一个人审查，就会：
+1. 写一份 CODEOWNERS，让 PR 按改动路径自动指派审查人；
+2. 理解「最后匹配的规则优先」这条语义，安排兜底规则与具体规则的顺序；
+3. 用分支保护的 Require review from Code Owners 让审查从「礼貌」变成「门禁」；
+4. 排查「负责人没被自动加进审查者」的三类常见原因。
 
-- 前端改一行 CSS，也要等管理员有空才能合并。
-- 后端的安全相关改动，管理员可能看不出问题。
+## 1. 问题：所有 PR 都在等同一个人
 
-**CODEOWNERS** 就是 GitHub 的"楼栋长制度"。它在仓库里定义一份"责任分工表"：**哪些文件由哪些人或团队负责**。当 PR 修改了这些文件时，GitHub 自动把对应负责人加为审查者（Reviewer），关键文件甚至要求**必须获得负责人批准**才能合并。
+一个 20 人仓库没有 CODEOWNERS 时的真实景象：仓库管理员是唯一的默认审查人。前端改一行 CSS 等他审，`src/auth/` 的认证逻辑也等他审——而他可能根本不是后端或安全的人。结果是双输：简单改动排队两天，关键改动审不出问题。
 
-GitHub 官方定义：CODEOWNERS 文件用于定义仓库中代码的**负责人（Code Owners）**——当有人打开修改这些代码的 PR 时，会自动请求负责人审查。
+CODEOWNERS 解决的就是「派单」这一层：它是仓库里的一份**文件级责任表**，声明哪些路径由哪些人负责。PR 一旦改到这些路径，GitHub 自动把负责人加为审查者；配合分支保护，还能强制要求负责人批准才能合并。
 
-本文采用**场景驱动**的结构：从"大型团队代码审查"的真实场景出发，一步步搭建自己的"楼栋长制度"——先写职责表（语法），再分工（路径匹配），然后加保险（分支保护集成），最后给出全套示例。
+它一鸡三吃：
 
-## 1. 场景：一个 20 人团队仓库的审查困境
+| 能力 | 效果 |
+| :--- | :--- |
+| 自动指派 | 按文件路径找审查者，不靠人记 |
+| 关键把关 | 安全、支付等核心目录固定由指定团队审 |
+| 责任边界 | 每个文件都有归属，出问题可追溯 |
 
-### 1.1 没有 CODEOWNERS 时
+## 2. 动手：十分钟写一份 CODEOWNERS
 
-```
-张三（仓库管理员）收到 PR #123：修改了 /src/auth/ 的登录逻辑
-      ↓
-张三自己审查？—— 他是前端组长，看不懂 Go 的认证实现
-      ↓
-改到第 3 轮才合并 —— 浪费 2 天
+### 第一步：放对位置
 
-同时，PR #124（前端按钮样式）也在等张三
-张三忙不过来 —— 前端同学排队等待
-```
-
-### 1.2 有了 CODEOWNERS 之后
-
-```
-PR #123：修改 /src/auth/ → GitHub 自动指派安全团队 + 后端团队审查
-PR #124：修改 /src/components/ → GitHub 自动指派前端团队审查
-PR #125：修改 .github/workflows/ → GitHub 自动指派 DevOps 团队审查
-```
-
-每个 PR 一打开，**最懂这块代码的人**立刻出现在审查者列表里，不再依赖人工派单。
-
-### 1.3 CODEOWNERS 解决的三个问题
-
-| 问题 | 没有 CODEOWNERS | 有 CODEOWNERS |
-| :--- | :--- | :--- |
-| 审查者指派 | 管理员手动找，靠记忆 | 按文件自动匹配，不会漏 |
-| 关键代码把关 | 谁来审不确定 | 安全/核心代码固定由指定团队把关 |
-| 责任边界 | 模糊 | 文件级归属清晰，可审计 |
-
-## 2. 搭建制度：CODEOWNERS 文件基础
-
-### 2.1 文件放在哪里（按优先级）
-
-GitHub 官方规定，`CODEOWNERS` 文件可放在三个位置之一，若多处存在则按以下顺序**只使用第一个找到的**：
+文件名叫 `CODEOWNERS`（没有扩展名），只能放在三个位置之一，多处存在时**只认找到的第一个**：
 
 1. 仓库根目录 `CODEOWNERS`
 2. `docs/CODEOWNERS`
-3. `.github/190-CODEOWNERS`（**推荐**）
+3. `.github/CODEOWNERS`（推荐，和 CI、Issue 模板住一起）
 
-官方推荐放在 `.github/` 目录，与 CI 配置、模板文件放在一起。注意：**文件在哪个分支，就对该分支的 PR 生效**——可以为不同分支配置不同的负责人（如 main 分支与 gh-pages 分支）。
+注意：文件在哪个分支，就对那个分支的 PR 生效。
 
-### 2.2 基本语法：一行一条"职责"
+### 第二步：写规则
+
+一行一条：`路径模式 所有者`。以一个 monorepo 为例：
+
+```text
+# .github/CODEOWNERS
+# 规则从上到下，后面的规则优先级更高
+
+# 兜底：其余所有文件归核心团队
+*                                       @myorg/core-team
+
+# 前端
+/app-web/src/**                         @myorg/web-team
+*.css                                   @myorg/web-team
+
+# 内容层
+/cnt-content/**                         @myorg/content-team
+
+# 安全关键路径：最高优先级，单独指派
+/shd-shared/auth/**                     @myorg/security-team
+.github/workflows/**                    @myorg/devops-team
+
+# 文档
+README.md                               @myorg/docs-team
+```
+
+所有者三种写法：`@username`（个人，需仓库写权限）、`@org/team-name`（组织团队，推荐）、`user@example.com`（绑定了 GitHub 账号的邮箱）。一行可以写多个所有者，任一人批准即可（除非保护规则要求所有人）。
+
+### 第三步：在 PR 里验证
+
+打开一个改动多个目录的 PR，Files Changed 视图里每个文件能看到归谁审；审查者列表会自动出现对应团队。在仓库里浏览文件时，悬停文件图标也能看到负责人。
+
+## 3. 讲原理：路径匹配与优先级
+
+路径语法和 `.gitignore` 同源，支持 `*`、`**`、`?`、`[a-z]`。两个最容易写错的点：
+
+**目录要带 `**` 才能覆盖子内容：**
+
+```text
+/src/             @org/backend-team    # 只匹配 src 目录本身，子目录不归它——容易漏
+/src/**           @org/backend-team    # src 下所有内容，推荐写法
+```
+
+**优先级是「后面的规则加上/覆盖」，不是「只有一个赢」**。GitHub 的语义：一个文件会命中多条规则时，这些规则的所有者**都会被加进审查者**，而最后（最具体）的规则决定谁是「必须批准」的代码所有者。所以排版惯例是通用规则在前、具体规则在后：
+
+```text
+*                                @org/core-team       # 兜底
+/src/auth/*.js                   @org/security-team   # 更具体，加人
+/src/auth/AdminAuth.js           @org/security-lead   # 最具体，最终把关人
+```
+
+改 `AdminAuth.js` 的 PR 会同时拉上 core-team 和 security-team，且必须拿到 security-lead 批准。
+
+三个官方强调的边界：所有者必须有写权限（团队还要可见）；Draft PR 不自动请求负责人审查，转正后才通知；文件超过 3 MB 会失效，别把几千行规则堆进去。
+
+## 4. 让制度有牙齿：分支保护集成
+
+只有自动指派的话，制度是「礼貌」——有权限的人不看审查也能点合并。去[分支保护规则](/github/170-BranchModelBranchRule)里加一条，它才变成「门禁」：
 
 ```
-# 格式：<路径模式> <一个或多个所有者>
-
-# 模式（前面） + 所有者（后面，用 @ 提及）
-*                       @octocat
-/src/auth/              @org/security-team
-*.js                    @org/frontend-team
+Settings → Branches → main 保护规则
+  [x] Require a pull request before merging
+      [x] Require review from Code Owners
 ```
 
-三个要素：
+勾上之后：改 `src/auth/` 的 PR，没有安全团队批准就无法合并，其他审查者批了也不算数。再叠加 required status checks（CI 必须绿，见 [CodeQL 扫描](/github/300-CodeQLCodeScanning)），合并门槛就是完整的三层：**CI 通过 + 代码所有者批准 + 审查通过**。
 
-| 要素 | 语法 | 说明 |
+## 5. 坑点与自检
+
+| 现象 | 原因 | 处理 |
 | :--- | :--- | :--- |
-| **路径模式** | 与 `.gitignore` 语法一致 | 支持 `*`、`**`、`?`、`[a-z]` 通配符 |
-| **所有者** | `@username` | 单个用户（需有仓库写权限） |
-| **所有者** | `@org/team-name` | 组织团队（需可见且有写权限） |
-| **所有者** | `user@example.com` | 邮箱（绑定了 GitHub 账号） |
+| 负责人没被自动指派 | 所有者无写权限，或团队不可见 | 授 write 权限；检查团队可见性 |
+| 完全不生效 | 文件不在三个规定位置，或文件名拼错 | 挪到 `.github/CODEOWNERS` |
+| 部分文件没人负责 | 目录规则没加 `/**` | 改成 `dir/**` |
+| 没有所有者批准也能合并 | 保护规则没勾 Require review from Code Owners | 补勾选 |
+| 草案 PR 没通知 | 官方行为：Draft 不请求负责人 | `Ready for review` 后自动通知 |
+| 该加的人没加上 | 具体规则写在了兜底规则前面 | 通用在前、具体在后 |
+| 负责人离职后 PR 卡死 | 单个用户当所有者，单点故障 | 用 `@org/team` 替代个人 |
 
-### 2.3 三个注意事项（官方强调）
+自检三问：
 
-- **所有者必须有仓库写权限**：即使是团队，也必须是"可见且有写权限"的团队——即使所有成员已经通过其他途径拥有权限。
-- **草案 PR 不自动通知**：把 PR 标记为草案（Draft）时不会自动请求负责人审查；转为正式后才会通知。
-- **文件大小限制**：CODEOWNERS 文件过大（超过 3 MB）会失效，保持精简。
+1. 随便指一个仓库文件，你能说出它归谁审吗（去 PR 页验证）？
+2. 兜底规则 `*` 和最具体规则，谁在上面？
+3. 「必须由代码所有者批准」这个开关，你的 main 保护规则里勾了吗？
 
-## 3. 分工细则：路径匹配规则
+## 6. 练习
 
-### 3.1 匹配规则（与 .gitignore 同源）
+1. 给自己的仓库写一份 `.github/CODEOWNERS`：先只写一条 `* @你的用户名`，开个 PR 看自动指派是否生效。
+2. 加一条具体规则（比如 `.github/workflows/**` 指派给另一个人），验证优先级语义。
+3. 在分支保护里勾选 Require review from Code Owners，然后用一个没有负责人批准的 PR 试试合并，确认被拦。
 
-| 模式 | 匹配对象 | 示例 |
-| :--- | :--- | :--- |
-| `*` | 所有文件（默认兜底） | `* @org/core-team` |
-| `*.js` | 任意层级的 .js 文件 | `*.js @org/frontend-team` |
-| `/src/` | 仅根目录的 src 目录 | `/src/ @org/backend-team` |
-| `src/` | 任意层级的 src 目录 | `src/ @org/backend-team` |
-| `**/auth/**` | 任意层级的 auth 目录 | `**/auth/** @org/security-team` |
-| `docs/README.md` | 精确文件 | `docs/README.md @org/docs-team` |
+## 下一步
 
-### 3.2 优先级：具体规则覆盖通用规则
-
-与 .gitignore 不同，CODEOWNERS 的规则是**所有匹配的规则都会生效**（每个匹配的规则都添加审查者），但**后面的规则优先级更高**（更具体的匹配会额外添加所有者）。GitHub 官方明确：**最后一个匹配文件的规则（以及任何更具体的规则）决定了文件的代码所有者**。
-
-```gitignore
-# 兜底：所有文件默认由核心团队负责
-*                              @org/core-team
-
-# 更具体：auth 目录的 JS 文件额外由安全团队负责
-/src/auth/*.js                 @org/security-team
-
-# 最具体：特定的关键文件由安全负责人直接负责
-/src/auth/AdminAuth.js         @security-lead
-```
-
-修改 `AdminAuth.js` 时，审查者包括：core-team（兜底）+ security-team（目录规则）+ security-lead（文件规则）。规则越具体、越靠后，越能"加人"。
-
-### 3.3 只匹配目录时
-
-`/src/` 只匹配目录本身，不含子目录内容。要匹配整个目录树：
-
-```gitignore
-# 只匹配 src 目录本身（不含子目录）——容易漏
-/src/             @org/backend-team
-
-# 推荐：匹配 src 下所有内容（目录 + 子目录 + 文件）
-/src/**           @org/backend-team
-```
-
-## 4. 加保险：与分支保护规则集成
-
-仅自动指派审查还不够——如果有权合并的人强行跳过审查，制度就形同虚设。**分支保护规则**给 CODEOWNERS 加上"法律强制力"。
-
-### 4.1 配置步骤
-
-```
-仓库 → Settings → Branches → Branch protection rules → 编辑 main 分支规则
-    [x] Require a pull request before merging
-        [x] Require review from Code Owners
-```
-
-### 4.2 效果对比
-
-| 配置 | 效果 |
-| :--- | :--- |
-| 仅 CODEOWNERS | 自动添加审查者，但任何人可以批准合并 |
-| CODEOWNERS + Require review from Code Owners | **必须获得代码所有者批准**才能合并，即使其他审查者已批准 |
-
-这意味着：修改 `src/auth/` 的 PR，如果没有安全团队的批准，**任何方式都无法合并**（包括仓库管理员直接合并，除非有管理员豁免权限）。
-
-### 4.3 与 CI 检查的配合
-
-在同一个分支保护规则中，还可以要求：
-
-- 必须通过 CI 状态检查（如 CodeQL、Dependency Review，见 019、010 文档）。
-- 必须通过 Dependabot 自动合并前的检查。
-
-三层叠加后，PR 合并的完整门槛为：**CI 通过 + 代码所有者批准 + 常规审查通过**。
-
-## 5. 完整示例：一个全栈仓库的 CODEOWNERS
-
-```gitignore
-# .github/190-CODEOWNERS
-# 规则说明：后面的规则优先级更高；匹配的规则都会添加审查者
-
-# ========== 兜底规则 ==========
-# 未匹配到任何其他规则的文件，由核心团队负责
-*                                                @myorg/core-team
-
-# ========== 前端 ==========
-/src/components/                                 @myorg/frontend-team
-/src/styles/                                     @myorg/frontend-team
-*.vue                                            @myorg/frontend-team
-*.css                                            @myorg/frontend-team
-*.tsx                                            @myorg/frontend-team
-
-# ========== 后端 ==========
-/src/api/                                        @myorg/backend-team
-/src/services/                                   @myorg/backend-team
-*.py                                             @myorg/backend-team
-
-# ========== 安全（关键代码，最高优先级） ==========
-/src/auth/**                                     @myorg/security-team
-/src/payment/**                                  @myorg/security-team
-.env.example                                     @myorg/security-team
-security/**                                      @myorg/security-team
-
-# ========== DevOps ==========
-Dockerfile                                       @myorg/devops-team
-docker-compose*.yml                              @myorg/devops-team
-.github/workflows/**                             @myorg/devops-team
-
-# ========== 文档 ==========
-/docs/**                                         @myorg/docs-team
-README.md                                        @myorg/docs-team
-
-# ========== 数据库迁移 ==========
-/db/migrations/**                                @myorg/backend-team
-```
-
-**验证技巧**：在 PR 的 "Files Changed" 选项卡中，可以预览每个文件归属哪些负责人；在仓库中浏览文件时，悬停文件图标也可看到负责人提示。
-
-## 6. 常见错误与对策
-
-| 错误现象 | 报错/表现 | 原因 | 解决办法 |
-| :--- | :--- | :--- | :--- |
-| 负责人没被自动添加 | PR 审查者为空 | 所有者没有仓库写权限；或团队不可见 | 给用户/团队授予 write 权限；确认团队可见性 |
-| 文件位置写错导致不生效 | 完全没有任何效果 | CODEOWNERS 不在三个规定位置 | 移到根目录、docs/ 或 .github/（推荐后者） |
-| 规则漏匹配 | 部分文件没人负责 | 目录规则未加 `/**`，只匹配了目录本身 | 目录用 `dir/**` 覆盖子内容 |
-| 必须所有者批准不生效 | 无所有者批准也能合并 | 分支保护未勾选 "Require review from Code Owners" | 在分支保护规则中勾选该选项 |
-| 草案 PR 无通知 | 转正式前没通知 | 官方行为：草案 PR 不自动请求负责人 | 转正式（Ready for review）后即自动通知 |
-| 规则顺序混乱 | 该加的人没加上 | 具体规则写在兜底规则之前被覆盖 | 把通用规则放前面、具体规则放后面 |
-| 单个用户作为负责人 | 请假/离职后无人审查 | 单点故障 | 用团队（@org/team-name）代替单用户 |
-
-## 8. 一句话记忆
-
-> **CODEOWNERS 是仓库的"楼栋长制度"——一行规则把文件划给最懂它的人，PR 一开自动指派审查，再配合分支保护的"必须经代码所有者批准"，让专业的人把关专业的代码。**
+- 保护规则本身的完整配置：[分支模型与分支保护规则](/github/170-BranchModelBranchRule)
+- 审查通过的 PR 怎么合、怎么自动化：[Pull Request 完整协作流程](/github/180-PullRequestCompleteCollaborationFlow)
+- CONTRIBUTING、SECURITY 等配套社区文件：[社区健康文件](/github/250-CommunityHealthFile)
 
 ### 官方文档
 
-- 关于代码所有者（GitHub 官方中文文档）：https://docs.github.com/zh/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
-- 分支保护与强制审查（About protected branches）：https://docs.github.com/zh/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches
-- Gitignore 语法（CODEOWNERS 的路径模式同源）：https://git-scm.com/docs/gitignore
-
-### 延伸阅读
-- 分支模型与分支保护规则（保护规则完整配置），见 004-github 模块 007 文档。
-- Pull Request 完整协作流程，见 004-github 模块 027 文档。
-- 社区健康文件（CONTRIBUTING、SECURITY 等配套文件），见 004-github 模块 026 文档。
-- GitHub Actions CI/CD（与代码所有者审查配合的合并门槛），见 004-github 模块 029 文档。
+- 关于代码所有者：https://docs.github.com/zh/repositories/managing-your-repositorys-settings-and-features/customizing-your-repository/about-code-owners
+- 保护分支：https://docs.github.com/zh/repositories/configuring-branches-and-merges-in-your-repository/managing-protected-branches/about-protected-branches

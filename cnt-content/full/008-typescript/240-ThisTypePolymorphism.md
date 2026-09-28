@@ -24,7 +24,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [协变与逆变](/typescript/260-CovarianceContravariance)：建议先完成前一篇的学习
+- [TS 前篇 02：函数基础](/typescript/050-TSBasicsFunctions)：this 绑定与箭头函数的 this 陷阱入门
 
 ## 学习目标
 

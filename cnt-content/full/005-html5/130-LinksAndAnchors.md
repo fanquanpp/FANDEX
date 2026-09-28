@@ -26,7 +26,7 @@ prerequisites:
 
 超链接是万维网诞生的核心概念。1989 年 Tim Berners-Lee 提出“信息管理提议”，把“链接”作为 Web 的根本机制；1991 年 HTML Tags 中 `<A>` 元素即已存在，`HREF` 属性从一开始就承担“超文本引用”职责。HTML 2.0（1995）正式标准化 `<a>`；HTML 4.01（1999）引入 `target`、`rel`、`type` 等属性并支持 `name` 锚点；HTML5（2014）移除了 `name` 锚点（统一用全局 `id`），为 `<a>` 增加 `download` 属性，并明确了 `target="_blank"` 的 `rel="noopener"` 安全要求。
 
-浏览器安全模型也在演进：2019 年起 Chrome 88 等浏览器默认对 `target="_blank"` 的链接隐式启用 `noopener` 行为（HTML spec 更新），但为了兼容旧浏览器与明确语义，现代代码仍显式书写 `rel="noopener"`。
+浏览器安全模型也在演进：Safari 12.1（2019）、Firefox 79（2020）、Chrome 88（2021）起对 `target="_blank"` 的链接默认隐式启用 `noopener` 行为（HTML 规范同步更新），但为了兼容旧浏览器与明确语义，现代代码仍显式书写 `rel="noopener"`。
 
 ```mermaid
 timeline

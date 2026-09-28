@@ -24,7 +24,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [TypeScript5 新特性](/typescript/670-TypeScript5xNewFeatures)：建议先完成前一篇的学习
+- [TypeScript 概述与环境配置](/typescript/030-TypeScriptOverviewEnvSetup)：tsconfig 的角色与环境基础
 
 ## 学习目标
 

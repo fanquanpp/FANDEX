@@ -254,7 +254,50 @@ concat("hel", 5)                       # error: No overload variant matches
 
 两个 `@overload` 只是给检查器的「说明书」，函数体全是 `...`；最后的实现才是运行时执行的那份。适用场景不多但不可替代：`open()` 就是靠 overload 声明「文本模式返回 TextIO、二进制模式返回 BufferedIO」的。
 
-## 9. 两大误区与工具对比
+## 8.5 进阶工具速览：Callable、ParamSpec、TypeIs
+
+三个查表时常见、按需取用的进阶件，收在这里避免翻文档：
+
+**Callable：给「函数本身」标注**。参数列表用下标写、返回类型放末位：
+
+```python
+from collections.abc import Callable   # 3.9 起 Callable 归 collections.abc
+
+def apply(op: Callable[[int, int], int], a: int, b: int) -> int:
+    return op(a, b)
+```
+
+无参数的函数写 `Callable[[], str]`。回调与策略函数的标配。
+
+**ParamSpec 与 TypeVarTuple**。装饰器要「原样转发参数」时，普通 TypeVar 描述不了参数形状，ParamSpec 专管这个：
+
+```python
+from collections.abc import Callable
+from typing import ParamSpec, TypeVar
+
+P = ParamSpec("P")
+R = TypeVar("R")
+
+def logged(func: Callable[P, R]) -> Callable[P, R]:
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        print(f"调用 {func.__name__}")
+        return func(*args, **kwargs)
+    return wrapper
+```
+
+TypeVarTuple（`*Ts`）对应「可变数量的类型参数」，服务于形状计算类的库（NumPy 封装等），业务代码极少直接用。
+
+**TypeIs：比 TypeGuard 更强的类型守卫**（3.13）。两者都让 `if` 分支收窄类型，区别在 TypeGuard 只承诺「是」，进入分支收窄、else 分支不收窄；TypeIs 承诺「是且仅是」，双向收窄：
+
+```python
+from typing import TypeIs
+
+def is_str_list(val: list[object]) -> TypeIs[list[str]]:
+    return all(isinstance(x, str) for x in val)
+```
+
+写类型谓词函数时默认选 TypeIs，仅在「检查通过不能推出检查失败」的场景退回 TypeGuard。
+
 
 误区一：**把 Any 当万能解**。任何值都能赋给 `Any`，`Any` 也能赋给任何类型——等于关掉检查。json、数据库驱动返回 `Any` 是现实，正确姿势是**尽快收窄**：包一层返回 TypedDict 或 dataclass 的解析函数，让 `Any` 活不过三行。
 

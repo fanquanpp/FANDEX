@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: MySQL 四周零基础时间线与全模块主题地图：每周学什么、读哪些文档、如何验收，以及入门之后按方向选路的完整索引。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'mysql/010-HowToUseThisCourse'
   - 'mysql/030-Glossary'

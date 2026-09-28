@@ -173,6 +173,7 @@ flowchart TD
 1. `ts-node` 在内存里把 TypeScript 编译后直接执行，省去"先编译再看 js"的步骤。
 2. `npx ts-node src/index.ts` 与 `node dist/index.js` 效果相同，但能更快进入调试。
 3. 注意：ts-node 只适合开发；生产环境一般用 `tsc` 编译出 JS 后再运行。
+4. 2026 年的新项目更推荐 `tsx`（基于 esbuild，更快、零配置）：`npm install --save-dev tsx` 后用 `npx tsx src/index.ts`。ts-node 已进入维护模式，遇到新项目优先选 tsx。另外 Node.js 22.6+ 的原生「类型剥离」也能直接跑部分 TS 文件，详见 `typescript/680-TypeScript6And7CompilerEvolution`。
 
 #### 2.3.3 使用构建工具
 

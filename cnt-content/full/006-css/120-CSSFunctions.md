@@ -1,16 +1,16 @@
 ---
 order: 120
-title: 函数
+title: CSS 函数
 module: 'css'
 category: 前端技术
-difficulty: intermediate
-description: CSS 数值函数完整原理：calc/min/max/clamp 的语法、单位混合规则、嵌套与响应式应用。
+difficulty: beginner
+description: "从「容器要限宽 1200px 还要减掉两侧内边距，媒体查询写了三遍」出发，用 min/max/clamp 三兄弟一行搞定响应式尺寸，吃透 calc 的空格语法与流体排版公式，再用 color-mix 从一个主色派生出整套交互色，让 CSS 自己会算术。"
 author: fanquanpp
 updated: '2026-09-13'
 related:
-  - 'css/390-ContainerQuery'
-  - 'css/380-MobileAdaptation'
   - 'css/410-CSSVariableCustomAttribute'
+  - 'css/400-ModernColorSpace'
+  - 'css/260-Gradient'
   - 'css/460-FeatureQuery'
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
@@ -18,1057 +18,199 @@ prerequisites:
 
 ## 前置知识
 
-建议先阅读以下内容再进入本文：
+- 已完成 [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)；
+- 知道 CSS 变量长什么样即可（`--x` 声明、`var(--x)` 使用），细节在下一篇展开。
 
-- [CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax)
+## 学习目标
 
-## 1. 历史动机与发展脉络
+读完本文你将能够：
 
-CSS 早期没有计算能力，布局中“容器宽度减去固定侧栏”只能依赖百分比近似或 JS 计算。CSS Values and Units Level 3 于 2011 年前后开始定义 `calc()`，2013 年后主流浏览器陆续支持。`min()`/`max()`/`clamp()` 属于 CSS Values and Units Level 4，2020 年前后获得主流支持，补齐了“取极值”与“钳制”能力。
+1. 用 `calc()` 做混合单位算术，并记住「加减号两侧必须空格」这条静默失效规则；
+2. 用 `min()`、`max()`、`clamp()` 表达尺寸边界，把「限宽容器」写成一行；
+3. 推导流体排版公式 `clamp(1.5rem, 1rem + 2vw, 3rem)`，能从设计稿两端字号反推参数；
+4. 用 `color-mix()` 从主色派生 hover、禁用、边框色，主色一改全套跟随；
+5. 认识三角、取整这批新数学函数的适用场景，知道什么时候才需要它们。
 
-颜色函数的发展同样显著：`rgba()`/`hsla()` 在 CSS3 Color 中标准化（2011）；CSS Color 4（2023 年成为候选推荐）引入 `color-mix()`、`oklch()`、`lab()` 等现代色彩空间函数，使颜色混合与感知均匀性成为可能。渐变函数从 CSS3 的 `linear-gradient` 演进到支持角度、位置、重复渐变与锥形渐变。
+预计 30 到 50 分钟，含 1 组动手实验与 4 道练习。
 
-CSS 变量（自定义属性）在 CSS Custom Properties for Cascading Variables Level 1（2012 年草案，2015 年后广泛支持）中定义，`var()` 成为主题系统的基石，并与数学函数形成组合：`calc(var(--gap) * 2)`。
+## 1. 问题引入：三遍媒体查询才管住一个宽度
 
-```mermaid
-timeline
-    title CSS 函数演进
-    2011 : calc() 进入 CSS Values 3
-    2013 : 主流浏览器支持 calc()
-    2015 : CSS 变量 var() 广泛支持
-    2020 : min/max/clamp 主流支持
-    2023 : CSS Color 4 color-mix 可用
-    2025 : oklch 成为现代色彩工作流标配
-```
-
-## 2. 形式化定义
-
-### 2.1 数学函数
-
-`calc(表达式)`：对长度、百分比、角度、时间等数值类型执行加减乘除。语法约束：`+` 与 `-` 两侧必须有空格（避免与正负号歧义），`*` 与 `/` 不需要空格但两侧操作数类型受限（乘法至少一侧为数字，除法右侧必须为数字且不能为零）。
-
-`min(值1, 值2, ...)`：返回参数中的最小值，参数可以混合单位，但最终结果类型必须一致。
-
-`max(值1, 值2, ...)`：返回最大值。
-
-`clamp(最小值, 首选值, 最大值)`：等价于 `max(最小值, min(首选值, 最大值))`。首选值被钳制在区间内。
-
-现代 CSS 还提供了完整的数值函数族（2024-2026 逐步进入基线）：
-
-`sin(角度)`、`cos(角度)`、`tan(角度)`：三角函数，角度用 `deg`/`rad`/`turn` 表示，常用于周期性动画与圆形轨迹计算。
-
-`asin(x)`、`acos(x)`、`atan(x)`、`atan2(y, x)`：反三角函数，`atan2` 接收两个参数，用于从坐标反推角度（如指针旋转）。
-
-`exp(x)`、`log(x)`、`sqrt(x)`、`pow(x, y)`、`hypot(a, b)`：指数与根式函数，适合缩放曲线与物理模拟。
-
-`abs(x)`、`sign(x)`：绝对值与符号函数。
-
-`round(x)`、`mod(a, b)`、`rem(a, b)`：取整与余数函数，`round()` 可指定策略（`nearest`/`up`/`down`）。
+你要做内容主区：宽屏时限宽 1200px 居中，窄屏时占满全宽但两侧留 16px。老写法是基础样式加一条媒体查询：
 
 ```css
-/* 示例：用三角函数做圆形轨道上的装饰点 */
+.container { width: 100%; padding: 0 16px; }
+@media (min-width: 1232px) { .container { width: 1200px; } }
+```
+
+数值 1232 是手算的（1200 + 32），设计稿一改就得重算。而且「字号随屏幕平滑变大」这类需求，断点写法会做成一档一档跳变——体验粗糙。
+
+CSS 函数就是给样式装上计算器：**min/max/clamp 管边界，calc 管算术，color-mix 管调色**。上面的需求一行就够：`width: min(1200px, 100% - 32px)`——取两者较小值，语义与代码完全一致。
+
+## 2. 最小示例：会算术的容器与标题
+
+`styles.css`：
+
+```css
+/* 限宽容器：宽屏 1200 封顶，窄屏留边自适应 */
+.container {
+  width: min(1200px, 100% - 32px);
+  margin-inline: auto;
+}
+
+/* 流体标题：小屏 1.5rem、大屏 3rem，中间连续缩放 */
+.hero-title {
+  font-size: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+}
+```
+
+预期效果：容器在 1232px 视口处自动从「全宽留边」过渡到「1200 封顶」，不需要任何媒体查询；标题从窄屏拉宽到宽屏，字号连续平滑变大、到 3rem 停住。把窗口缓慢拖一遍，感受「连续」和「跳变」的差别——这就是函数式写法的体验升级。
+
+## 3. 核心概念
+
+### 3.1 calc()：混合单位算术与空格规则
+
+```css
+.sidebar-layout { width: calc(100% - 240px); }        /* 百分比减像素 */
+.delayed { transition-delay: calc(0.1s * 3); }        /* 时间也能乘 */
+.tilted { transform: rotate(calc(45deg + 10deg)); }   /* 角度也能加 */
+```
+
+语法红线：**`+` 和 `-` 两侧必须有空格**。`calc(100%-240px)` 会被解析成「100 减号后缀 -240px 的 px」这种非法式子，整条声明静默失效——不报错、不生效、最烦人。乘除两侧不强制空格，但除数必须是数字（`calc(100% / 3)` 合法，`calc(100% / 3px)` 非法）。
+
+### 3.2 min、max、clamp：边界思维
+
+```css
+width: min(1200px, 100% - 32px);  /* 上界：再宽也不超过 1200 */
+width: max(160px, 100%);          /* 下界：再窄也不小于 160 */
+width: clamp(200px, 50%, 400px);  /* 区间：等价 max(200px, min(50%, 400px)) */
+```
+
+`clamp(最小, 首选, 最大)` 是 min 与 max 的合体，参数顺序口诀「**最小、理想、最大**」。流体排版的标准公式与推导：
+
+```css
+font-size: clamp(1.5rem, 1rem + 2.5vw, 3rem);
+```
+
+- 两个端点是设计稿给的：小屏 1.5rem（24px）、大屏 3rem（48px）；
+- 中间项的职责是「斜率」：`1rem + 2.5vw` 表示随视口每 100px 增长 2.5px；
+- 斜率公式：`(大端 - 小端) ÷ (大视口 - 小视口)`。如 24px 到 48px 跨 1000px 视口，斜率 = 24 ÷ 1000 = 0.024 = 2.4vw，再减去小端随视口的部分得到截距。日常记「1rem + 2vw 起步，看着调」就够用。
+
+间距同理：`padding-block: clamp(2rem, 1rem + 4vw, 6rem)`。clamp 管连续缩放，媒体查询管结构性跳变（单列换多列），分工见 [媒体查询](/css/360-MediaQuery)。
+
+### 3.3 color-mix()：从一个主色派生整套色
+
+```css
+:root {
+  --color-primary: #2563eb;
+}
+.button { background: var(--color-primary); }
+.button:hover {
+  /* 主色 90% + 黑 10% = 深一档的悬停色 */
+  background: color-mix(in srgb, var(--color-primary) 90%, black);
+}
+.button:disabled {
+  /* 主色 40% 掺透明 = 禁用态 */
+  background: color-mix(in srgb, var(--color-primary) 40%, transparent);
+}
+.card {
+  /* 主色 30% 掺透明 = 淡淡的强调边框 */
+  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
+}
+```
+
+写完这四条，把 `--color-primary` 换成任意颜色刷新：悬停、禁用、边框全部自动跟随。以前要在设计软件里配一套色板再抄进 CSS，现在浏览器自己调。`in srgb` 指定混合空间，追求更自然的中途色可换 `in oklab`（色彩空间详见 [现代色彩空间](/css/400-ModernColorSpace)）。
+
+### 3.4 数学函数族：认识即可，别硬用
+
+2023 年起 CSS 补齐了完整数学函数：`sin/cos/tan`（周期动画、圆形轨迹）、`atan2`（从坐标反推角度）、`round/mod/rem`（取整与余数，做阶梯值）、`abs/sign`、`pow/sqrt/hypot`。典型用法：
+
+```css
+/* 装饰点排布在圆轨道上 */
 .orbit {
   left: calc(50% + 120px * cos(45deg));
   top: calc(50% + 120px * sin(45deg));
 }
 ```
 
-**讲解：** 多数项目日常只用 `calc()`/`clamp()`；三角函数与指数函数适合图形、图表、动画类场景，使用前用 `@supports` 做能力检测。
+日常业务 95% 的场景只用到 calc/min/max/clamp 加 color-mix；图形与动效类需求再回来查这批函数。
 
-### 2.2 变量函数
+### 3.5 求值时机：一句话版
 
-`var(--name, 回退值)`：读取自定义属性 `--name` 的值；若未定义或无效，使用回退值。回退值本身可以使用其他函数（如 `var(--x, calc(...))`）。
+calc 等数学函数在「计算值」阶段求值，此时单位已统一，所以混合百分比与像素不会递归；var() 在更早的替换阶段生效，替换结果无效时整条声明失效而不是落到回退值——这条规则的完整展开在 [CSS 变量](/css/410-CSSVariableCustomAttribute) 的陷阱一节。渐变函数（linear/radial/conic）也是本家族成员，专篇见 [渐变](/css/260-Gradient)。
 
-自定义属性的特性：值在声明处不校验类型，只有在被使用处的属性上下文中才校验；继承性使变量可以从 `:root` 传播到所有元素；`@property` 可以注册带类型与初始值的自定义属性，支持动画。
+## 4. 修改实验
 
-### 2.3 颜色函数
+对第 2 节动手，每步先预测再刷新：
 
-`rgb(r g b / a)` 与 `rgba(r g b / a)`：红绿蓝三通道加透明度；现代语法允许空格分隔与斜杠透明度，也支持逗号旧语法。
+1. 把容器改成 `min(1200px, 100% - 10vw)`：窄屏时两侧留白随视口变宽——min 的参数可以都很「活」；
+2. 标题斜率从 2.5vw 改成 0.5vw：字号几乎不动，再改成 6vw：早早顶到 3rem——亲手感受斜率参数；
+3. 把 color-mix 的 `black` 换成 `white`：hover 变亮档——一个参数翻转整套明暗策略；
+4. 写一条 `calc(100%-32px)`（故意无空格）：宽度失效，DevTools 里显示 Invalid property value——把这条红线记进肌肉记忆。
 
-`hsl(h s l / a)`：色相（角度或数字）、饱和度、亮度；`oklch(l c h / a)` 是感知均匀的色彩空间。
+## 5. 常见错误与调试实录
 
-`color-mix(in srgb, 颜色1 40%, 颜色2)`：按比例混合两种颜色，`in` 指定混合色彩空间。
+错误一：加减号缺空格。静默失效，样式被划掉。排查：DevTools 的 Styles 面板看该声明是否标 Invalid；写 calc 时先把空格敲上。
 
-### 2.4 渐变函数
+错误二：类型不匹配。`min(1, 100px)` 把无单位数字和长度混比，整条无效。min/max/clamp 的参数必须能化成同一类型。
 
-`linear-gradient(方向, 色标...)`、`radial-gradient(形状 尺寸 at 位置, 色标...)`、`conic-gradient(from 角度 at 位置, 色标...)`；`repeating-` 前缀生成重复渐变。
+错误三：clamp 最小值大于最大值。`clamp(3rem, 2vw, 1.5rem)` 结果不可预期。先写死两端点检查大小，再补中间斜率。
 
-```mermaid
-flowchart TD
-    A["CSS 函数"] --> B["数学：calc/min/max/clamp"]
-    A --> C["变量：var()"]
-    A --> D["颜色：rgb/hsl/oklch/color-mix"]
-    A --> E["渐变：linear/radial/conic"]
-    B --> F["布局尺寸计算"]
-    C --> G["主题与设计令牌"]
-    D --> H["主题色派生"]
-    E --> I["装饰与视觉层次"]
-```
-
-## 3. 理论推导与原理解析
-
-### 3.1 计算值求值时机
-
-CSS 属性值经历指定值、计算值、使用值、实际值四个阶段。数学函数在“计算值”阶段完成求值，此时单位类型已经统一（长度转换为像素或视口单位），因此 `calc(100% - 40px)` 最终得到确定长度。理解求值时机可以解释：`min()`/`max()` 中混合百分比与固定值不会产生无限递归，因为百分比在布局阶段解析。
-
-### 3.2 var() 的替换规则
-
-`var()` 在自定义属性解析阶段替换，替换后整个声明重新参与计算。若替换结果对当前属性无效，该声明变为“无效 at 计算值时间”（invalid at computed-value time），此时使用属性的初始值或继承值，而不是回退值——这是 var() 与普通属性最大的行为差异。因此回退值只在变量本身未定义时生效。
-
-### 3.3 clamp 的流体推导
-
-流体排版的数学表达：字号 = clamp(最小字号, 视口相关值, 最大字号)。视口相关值常用 `vw` 单位，例如 `clamp(1rem, 1rem + 1vw, 1.5rem)`。推导：视口宽度为 0 时取 1rem，视口为 100vw 时约 2rem，但被钳制在 1.5rem。该公式让字号在区间内线性变化，避免媒体查询逐断点跳变。
-
-### 3.4 color-mix 的混合模型
-
-`color-mix(in srgb, red 40%, blue)` 在指定色彩空间插值。比例表示第一种颜色的权重，未指定权重时按 50/50 混合。混合空间的感知均匀性影响结果：`oklab` 混合比 `srgb` 混合更接近人眼感知的中途色。
-
-## 4. 代码示例（带详尽注释）
-
-### 4.1 calc() 基础
-
-```css
-/* 侧栏固定 240px，主区域占满剩余空间 */
-.main {
-  width: calc(100% - 240px);
-  margin-left: 240px;
-}
-
-/* 运算符两侧必须有空格 */
-.header {
-  padding: calc(1rem + 2px) calc(2rem - 4px);
-}
-```
-
-讲解：`calc(100% - 240px)` 是经典布局公式。注意 `+`/`-` 两侧空格是语法要求，缺少空格整个声明无效。
-
-### 4.2 min() 与 max()
-
-```css
-/* 内容宽度最大 1200px，小屏时占满可用空间（减去两侧内边距） */
-.container {
-  width: min(1200px, 100% - 32px);
-  margin-inline: auto;
-}
-
-/* 按钮最小宽度 160px，但不超过容器 100% */
-.button {
-  width: max(160px, 100%);
-}
-```
-
-讲解：`min()` 表达“上界”，`max()` 表达“下界”。`width: min(1200px, 100% - 32px)` 取代了 `max-width + width` 的旧写法，语义更直接。
-
-### 4.3 clamp() 流体排版
-
-```css
-/* 标题字号：最小 1.5rem，视口相关增长，最大 3rem */
-.hero-title {
-  font-size: clamp(1.5rem, 1rem + 2.5vw, 3rem);
-}
-
-/* 间距也流体化 */
-.section {
-  padding-block: clamp(2rem, 1rem + 4vw, 6rem);
-}
-```
-
-讲解：`clamp()` 让字号随视口连续变化，兼顾小屏可读性与大屏视觉冲击。`vw` 系数决定增长斜率，可通过设计稿两端值反推。
-
-### 4.4 var() 与主题系统
-
-```css
-:root {
-  --color-primary: #1677ff;
-  --space-md: 16px;
-  --radius: 8px;
-}
-
-.card {
-  /* 变量参与计算 */
-  padding: var(--space-md);
-  border: 1px solid color-mix(in srgb, var(--color-primary) 30%, transparent);
-  border-radius: var(--radius);
-}
-
-/* 深色主题只需覆盖变量 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-primary: #4096ff;
-  }
-}
-```
-
-讲解：`var()` 与 `color-mix()` 组合：边框颜色自动从主题色派生。主题切换只改变量定义，组件样式零改动。
-
-### 4.5 color-mix() 派生色
-
-```css
-.button {
-  background: var(--color-primary);
-}
-
-/* 悬停色：主色与黑色混合 10% */
-.button:hover {
-  background: color-mix(in srgb, var(--color-primary) 90%, black);
-}
-
-/* 禁用态：主色 40% 透明 */
-.button:disabled {
-  background: color-mix(in srgb, var(--color-primary) 40%, transparent);
-}
-```
-
-讲解：`color-mix` 取代了手写调色板。主色改变时，悬停、禁用、边框等派生色自动跟随，是设计系统维护的利器。
-
-### 4.6 渐变函数
-
-```css
-/* 线性渐变：135 度方向，三段色标 */
-.hero {
-  background: linear-gradient(135deg, #1677ff 0%, #69b1ff 50%, #d3e7ff 100%);
-}
-
-/* 径向渐变：从左上角扩散 */
-.sun {
-  background: radial-gradient(circle at 30% 30%, #fff7d6, #ffc53d);
-}
-
-/* 锥形渐变：从 0 度开始，用于环形图 */
-.pie {
-  background: conic-gradient(from 0deg, #1677ff 0% 40%, #52c41a 40% 70%, #faad14 70% 100%);
-}
-```
-
-讲解：三种渐变覆盖主流场景：线性用于横幅与按钮，径向用于光晕，锥形用于环形图。渐变函数之间可以叠加（多层 background），创造丰富层次。
-
-### 4.7 渐变与 mask 组合
-
-```css
-/* 淡出遮罩：内容底部渐隐 */
-.fade-bottom {
-  -webkit-mask-image: linear-gradient(to bottom, black 60%, transparent);
-  mask-image: linear-gradient(to bottom, black 60%, transparent);
-}
-```
-
-讲解：`mask-image` 用亮度控制透明度，黑色区域显示、透明区域隐藏。该技巧常用于长文本折叠预览。
-
-### 4.8 @supports 回退
-
-```css
-/* 支持 clamp 的浏览器使用流体字号 */
-.title {
-  font-size: 1.5rem;
-}
-
-@supports (font-size: clamp(1rem, 2vw, 3rem)) {
-  .title {
-    font-size: clamp(1.5rem, 1rem + 2vw, 3rem);
-  }
-}
-```
-
-讲解：`@supports` 做特性检测，旧浏览器获得回退值。现代项目只需对极少数新函数（如 `color-mix` 早期版本）做此类保护。
-
-## 5. 对比分析
-
-### 5.1 原生函数与 Sass 函数
-
-| 维度 | 原生 CSS 函数 | Sass 函数 |
-| --- | --- | --- |
-| 求值时机 | 浏览器运行时 | 构建时 |
-| 动态性 | 随视口/变量变化 | 静态结果 |
-| 变量 | var() 运行时替换 | 编译期替换 |
-| 依赖 | 无 | 构建工具链 |
-
-### 5.2 min/max/clamp 与媒体查询
-
-`clamp()` 的流体方案在断点之间连续过渡，媒体查询是分段跳变。两者可结合：流体负责区间内，媒体查询负责结构性布局变化（单列到多列）。
-
-### 5.3 calc 与容器查询
-
-`calc()` 解决尺寸计算，容器查询解决组件级响应。例如卡片内部间距用 `calc()`，卡片网格列数用容器查询，各司其职。
-
-## 6. 常见陷阱与最佳实践
-
-陷阱一：`calc()` 的 `+`/`-` 忘记空格。声明静默无效。
-
-陷阱二：`var()` 回退值只在变量未定义时生效；变量存在但值无效时回退值不会兜底。
-
-陷阱三：在 `min()`/`max()` 中混入无单位数字与长度。`min(1, 100px)` 类型不匹配，整个声明无效。
-
-陷阱四：`clamp()` 中最小值大于最大值。结果是不可预测的，浏览器按规范处理仍可能异常。
-
-陷阱五：`color-mix` 早期浏览器前缀与语法差异。现代浏览器无前缀支持，使用前可用 `@supports` 检测。
-
-陷阱六：渐变中色标位置不递增导致硬边。按顺序递增色标位置，或用 `hsl` 表达连续色相变化。
-
-最佳实践：数学函数优先于魔法数字；主题色统一走 `var()` + `color-mix()`；流体排版用 `clamp()` 并保留回退；渐变用于装饰而非关键信息。
-
-## 7. 工程实践
-
-### 7.1 间距与排版令牌
-
-```css
-:root {
-  --space-1: 4px;
-  --space-2: 8px;
-  --space-3: 16px;
-  --space-4: 24px;
-  --space-5: 32px;
-  --text-base: clamp(1rem, 0.95rem + 0.2vw, 1.125rem);
-}
-```
-
-讲解：间距按 4px 基准递增，排版用 clamp 流体化。令牌化让设计与代码共享同一套词汇。
-
-### 7.2 布局网格中的函数
-
-```css
-/* auto-fill 自动列数 + min() 控制列宽下界 */
-.grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(min(240px, 100%), 1fr));
-  gap: clamp(12px, 2vw, 24px);
-}
-```
-
-讲解：`minmax(min(240px, 100%), 1fr)` 防止窄容器中 `240px` 溢出，`auto-fill` 自动计算列数。这是 CSS 网格与函数组合的经典响应式配方。
-
-## 8. 案例研究：无 JS 的主题化卡片系统
-
-需求：一套卡片组件，支持浅深色主题、派生悬停色、流体间距与圆角，全部由 CSS 函数与变量实现。
-
-```css
-:root {
-  /* 主题令牌 */
-  --color-primary: #1677ff;
-  --color-surface: #ffffff;
-  --color-text: #1f1f1f;
-  --radius-card: 12px;
-  --space-card: clamp(12px, 2vw, 24px);
-}
-
-/* 深色主题仅覆盖表面色与文字色 */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --color-surface: #1f1f1f;
-    --color-text: #e8e8e8;
-  }
-}
-
-.card {
-  background: var(--color-surface);
-  color: var(--color-text);
-  border: 1px solid color-mix(in srgb, var(--color-text) 15%, transparent);
-  border-radius: var(--radius-card);
-  padding: var(--space-card);
-  transition: transform 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-2px);
-  border-color: color-mix(in srgb, var(--color-primary) 40%, transparent);
-}
-
-/* 标题字号流体 */
-.card h3 {
-  font-size: clamp(1.1rem, 1rem + 0.5vw, 1.4rem);
-}
-```
-
-讲解：整个系统不依赖任何 JS：主题切换由媒体查询驱动，派生色由 `color-mix` 计算，间距与字号由 `clamp` 流体化。新增组件只需引用令牌，天然获得主题一致性。
-
-## 9. 知识要点总结与深入讲解
-
-CSS 函数让样式表具备计算能力：`calc()` 做差值，`min/max` 做边界，`clamp` 做区间钳制。三者都以“计算值”阶段的类型安全为前提，因此混合单位是它们的核心价值。
-
-`var()` 是主题系统的支柱，其行为特殊性（无效值不回退）要求开发者理解“变量存在但值无效”与“变量未定义”的区别。`@property` 进一步把变量升级为带类型的注册属性，支持动画与校验。
-
-颜色函数的演进方向是感知均匀与可计算：`oklch` 让色相旋转更自然，`color-mix` 让派生色自动化。设计系统的维护成本因此大幅下降。
-
-### 1. calc() 函数
-
-```css
-.element {
-  width: calc(100% - 60px);
-}
-.element {
-  height: calc(50vh - 2rem);
-}
-.element {
-  font-size: calc(16px + 0.5vw);
-}
-```
-
-规则：可以混合不同单位；运算符前后必须有空格；可以嵌套。
-
-### 1. min() 函数
-
-```css
-.element {
-  width: min(50vw, 400px);
-} /* 取较小值 */
-```
-
-### 2. max() 函数
-
-```css
-.element {
-  width: max(50vw, 300px);
-} /* 取较大值 */
-```
-
-### 3. clamp() 函数
-
-```css
-h1 {
-  font-size: clamp(1.5rem, 5vw, 3rem);
-}
-```
-
-等价于：
-
-```css
-h1 {
-  font-size: 1.5rem;
-  font-size: max(1.5rem, min(5vw, 3rem));
-}
-```
-
-### 4. 其他 CSS 函数
-
-```css
-.element {
-  width: var(--width, 100%); /* 自定义属性 */
-  transform: translateX(50px); /* 变换 */
-  filter: blur(5px); /* 滤镜 */
-  color: color-mix(in srgb, red 50%, blue); /* 颜色混合 */
-}
-```
-### calc() 计算
-
-**基本写法：calc 基本运算**
-`calc(<值1> <运算符> <值2>);`
-```css
-/* 加减乘除运算 */
-.box {
-  width: calc(100% - 200px);
-  height: calc(50vh + 50px);
-  padding: calc(20px * 2);
-}
-```
-
----
-
-**基本写法：calc 混合单位**
-`calc(<单位1> <运算符> <单位2>);`
-```css
-/* 混合不同单位计算 */
-.box {
-  font-size: calc(1rem + 0.5vw);
-  margin: calc(20px - 1em);
-}
-```
-
----
-
-**基本写法：calc 嵌套**
-`calc(<值> * calc(<值>));`
-```css
-/* calc 嵌套使用 */
-.box {
-  width: calc(100% - calc(200px + 2rem));
-}
-```
-
----
-
-**基本写法：calc 配合变量**
-`calc(var(--<变量>) <运算符> <值>);`
-```css
-/* 变量参与计算 */
-.box {
-  --base: 20px;
-  padding: calc(var(--base) * 2);
-}
-```
-
----
-
-**基本写法：calc 运算优先级**
-`calc((<值1> + <值2>) * <值3>);`
-```css
-/* 括号控制运算优先级 */
-.box {
-  width: calc((100% - 40px) / 3);
-}
-```
-
----
-
-### min() 取最小值
-
-**基本写法：min 取最小**
-`min(<值1>, <值2>[, ...]);`
-```css
-/* 取多个值中最小者 */
-.box {
-  width: min(50%, 300px);
-}
-```
-
----
-
-**基本写法：min 混合单位**
-`min(<单位1>, <单位2>);`
-```css
-/* 混合单位取最小 */
-.text {
-  font-size: min(5vw, 1.5rem);
-}
-```
-
----
-
-**基本写法：min 多值**
-`min(<值1>, <值2>, <值3>);`
-```css
-/* 多个值取最小 */
-.box {
-  width: min(100%, 800px, 90vw);
-}
-```
-
----
-
-### max() 取最大值
-
-**基本写法：max 取最大**
-`max(<值1>, <值2>[, ...]);`
-```css
-/* 取多个值中最大者 */
-.box {
-  width: max(50%, 300px);
-}
-```
+错误四：旧浏览器没兜底。color-mix、三角函数属于较新特性，面向旧内核的项目用 `@supports` 给回退值（写法见 [特性检测](/css/460-FeatureQuery)）；clamp 与 calc 本身已广泛可用，不需要保护。
 
----
+错误五：把能算的都写死。设计稿标注 376px，你抄 376px，不如问一句它是不是 `50% - 24px` 或 `min(376px, 100%)`——函数的意义就是让尺寸跟随环境，而不是复刻快照。
 
-**基本写法：max 混合单位**
-`max(<单位1>, <单位2>);`
-```css
-/* 字体不小于 16px */
-.text {
-  font-size: max(1rem, 16px);
-}
-```
-
----
-
-**基本写法：max 多值**
-`max(<值1>, <值2>, <值3>);`
-```css
-/* 多个值取最大 */
-.box {
-  min-height: max(100px, 10vh, 5rem);
-}
-```
-
----
-
-### clamp() 钳制
-
-**基本写法：clamp 钳制范围**
-`clamp(<最小>, <理想>, <最大>);`
-```css
-/* 值在 1rem 到 3rem 之间理想 2vw+1rem */
-h1 {
-  font-size: clamp(1rem, 2vw + 1rem, 3rem);
-}
-```
-
----
-
-**基本写法：clamp 响应式字体**
-`clamp(<最小rem>, <理想vw>, <最大rem>);`
-```css
-/* 流式响应字体 */
-p {
-  font-size: clamp(1rem, 2.5vw, 1.5rem);
-}
-```
-
----
-
-**基本写法：clamp 响应式间距**
-`clamp(<最小>, <理想>, <最大>);`
-```css
-/* 流式响应间距 */
-.section {
-  padding: clamp(1rem, 4vw, 3rem);
-}
-```
-
----
-
-**基本写法：clamp 响应式宽度**
-`clamp(<最小>, <理想>, <最大>);`
-```css
-/* 容器最大宽度限制 */
-.container {
-  width: clamp(320px, 90vw, 1200px);
-  margin: 0 auto;
-}
-```
-
----
-
-**基本写法：clamp 等价 max min**
-`max(<最小>, min(<理想>, <最大>));`
-```css
-/* clamp 等价写法 */
-h1 {
-  font-size: max(1rem, min(2vw + 1rem, 3rem));
-}
-```
-
----
-
-### var() 变量引用
-
-**基本写法：var 引用变量**
-`var(--<属性名>);`
-```css
-/* 引用自定义属性 */
-.box {
-  color: var(--primary-color);
-}
-```
-
----
-
-**基本写法：var 带默认值**
-`var(--<属性名>, <默认值>);`
-```css
-/* 变量未定义时使用默认值 */
-.box {
-  color: var(--text-color, #333);
-}
-```
-
----
-
-### 颜色函数
-
-**基本写法：rgb rgba 颜色**
-`rgba(<r>, <g>, <b>, <alpha>);`
-```css
-/* RGBA 颜色带透明度 */
-.box {
-  background: rgba(52, 152, 219, 0.5);
-}
-```
-
----
-
-**基本写法：hsl hsla 颜色**
-`hsla(<色相>, <饱和度>, <亮度>, <alpha>);`
-```css
-/* HSLA 颜色 */
-.box {
-  background: hsla(210, 70%, 50%, 0.5);
-}
-```
-
----
-
-**基本写法：现代 rgb 空格语法**
-`rgb(<r> <g> <b> / <alpha>);`
-```css
-/* 现代空格分隔语法 */
-.box {
-  background: rgb(52 152 219 / 50%);
-}
-```
-
----
-
-**基本写法：十六进制带透明度**
-`#RRGGBBAA;`
-```css
-/* 8 位十六进制带透明度 */
-.box {
-  background: #3498db80;
-}
-```
-
----
-
-**基本写法：color-mix 混合颜色**
-`color-mix(in <色彩空间>, <颜色1> <比例>, <颜色2>);`
-```css
-/* 混合两种颜色 */
-.box {
-  background: color-mix(in srgb, #3498db 50%, white);
-}
-```
-
----
-
-**基本写法：color-mix 基于 oklch**
-`color-mix(in oklch, <颜色1> <比例>, <颜色2>);`
-```css
-/* OKLCH 色彩空间混合更准确 */
-.box {
-  background: color-mix(in oklch, var(--primary) 70%, black);
-}
-```
-
----
-
-**基本写法：light-dark 明暗切换**
-`light-dark(<浅色>, <深色>);`
-```css
-/* 自动明暗模式颜色 */
-.text {
-  color: light-dark(#333, #fff);
-}
-```
-
----
-
-**基本写法：oklch 感知亮度颜色**
-`oklch(<亮度> <色度> <色相>);`
-```css
-/* OKLCH 色彩空间 */
-.box {
-  background: oklch(60% 0.2 240);
-}
-```
-
----
-
-**基本写法：相对颜色**
-`oklch(from <基础色> <亮度> <色度> <色相>);`
-```css
-/* 基于现有颜色派生新颜色 */
-.darker {
-  background: oklch(from var(--primary) calc(l - 0.1) c h);
-}
-```
-
----
-
-### 渐变函数
-
-**基本写法：linear-gradient 线性渐变**
-`linear-gradient(<角度>, <颜色1>, <颜色2>);`
-```css
-/* 线性渐变背景 */
-.box {
-  background: linear-gradient(45deg, #3498db, #2ecc71);
-}
-```
-
----
-
-**基本写法：radial-gradient 径向渐变**
-`radial-gradient(<形状>, <颜色1>, <颜色2>);`
-```css
-/* 径向渐变 */
-.box {
-  background: radial-gradient(circle, #3498db, #2c3e50);
-}
-```
-
----
-
-**基本写法：conic-gradient 锥形渐变**
-`conic-gradient(from <角度>, <颜色1>, <颜色2>);`
-```css
-/* 锥形渐变 */
-.box {
-  background: conic-gradient(from 0deg, red, yellow, green, red);
-}
-```
-
----
-
-**基本写法：渐变停顿点**
-`linear-gradient(<角度>, <颜色> <位置>, <颜色> <位置>);`
-```css
-/* 控制渐变停顿位置 */
-.box {
-  background: linear-gradient(to right, #3498db 0%, #2ecc71 50%, #f1c40f 100%);
-}
-```
-
----
-
-### 形状与路径函数
-
-**基本写法：path 路径**
-`path("<SVG路径>");`
-```css
-/* 沿 SVG 路径运动 */
-.element {
-  offset-path: path("M 0 0 L 100 100");
-  animation: move 3s;
-}
-```
-
----
-
-**基本写法：clip-path 裁剪**
-`clip-path: <形状函数>;`
-```css
-/* 圆形裁剪 */
-.avatar {
-  clip-path: circle(50%);
-}
-```
-
----
-
-**基本写法：clip-path 多边形**
-`clip-path: polygon(<点1>, <点2>, ...);`
-```css
-/* 三角形裁剪 */
-.triangle {
-  clip-path: polygon(50% 0, 0 100%, 100% 100%);
-}
-```
-
----
-
-**基本写法：clip-path inset**
-`clip-path: inset(<上> <右> <下> <左> round <圆角>);`
-```css
-/* 矩形裁剪带圆角 */
-.box {
-  clip-path: inset(10% 10% 10% 10% round 20px);
-}
-```
-
----
-
-### 滤镜函数
-
-**基本写法：blur 模糊**
-`filter: blur(<半径>);`
-```css
-/* 高斯模糊 */
-.glass {
-  filter: blur(5px);
-}
-```
-
----
-
-**基本写法：brightness 亮度**
-`filter: brightness(<比例>);`
-```css
-/* 提亮 1.5 倍 */
-.image {
-  filter: brightness(1.5);
-}
-```
-
----
-
-**基本写法：contrast 对比度**
-`filter: contrast(<比例>);`
-```css
-/* 提高对比度 */
-.image {
-  filter: contrast(1.2);
-}
-```
-
----
-
-**基本写法：grayscale 灰度**
-`filter: grayscale(<比例>);`
-```css
-/* 完全灰度 */
-.image {
-  filter: grayscale(1);
-}
-```
-
----
-
-**基本写法：组合滤镜**
-`filter: <滤镜1> <滤镜2>;`
-```css
-/* 多个滤镜组合 */
-.image {
-  filter: brightness(1.1) contrast(1.2) saturate(1.5);
-}
-```
-
----
-
-### 数学函数组合
-
-**基本写法：clamp 配合 calc**
-`clamp(<最小>, calc(<表达式>), <最大>);`
-```css
-/* clamp 内嵌 calc */
-.box {
-  width: clamp(200px, calc(50vw - 100px), 800px);
-}
-```
-
----
-
-**基本写法：min 配合 max**
-`min(<值>, max(<值>, <值>));`
-```css
-/* min max 嵌套 */
-.box {
-  width: min(90vw, max(300px, 50vw));
-}
-```
-
----
-
-**基本写法：calc 配合 min/max**
-`calc(min(<值1>, <值2>) + <值>);`
-```css
-/* 复杂函数组合 */
-.box {
-  padding: calc(min(5vw, 30px) + 10px);
-}
-```
-
----
-
-### 实用模式
+## 6. 实际场景
 
-**基本写法：响应式排版比例**
-`clamp(<最小rem>, calc(<系数>vw + <基础rem>), <最大rem>);`
-```css
-/* 标准流式字体公式 */
-h1 { font-size: clamp(2rem, calc(2.5vw + 1rem), 3.5rem); }
-h2 { font-size: clamp(1.5rem, calc(2vw + 0.5rem), 2.5rem); }
-p { font-size: clamp(1rem, calc(0.5vw + 0.9rem), 1.25rem); }
-```
-
----
-
-**基本写法：响应式容器**
-`width: min(<值1>, <值2>); margin: 0 auto;`
-```css
-/* 自适应容器最大宽度 */
-.container {
-  width: min(90vw, 1200px);
-  margin-inline: auto;
-}
-```
-
----
-
-**基本写法：动态间距**
-`gap: clamp(<最小>, <理想>, <最大>);`
-```css
-/* 流式响应间距 */
-.grid {
-  display: grid;
-  gap: clamp(0.5rem, 2vw, 2rem);
-}
-```
+- 限宽容器与栅格间距：`min(1200px, 100% - 32px)` 是 2026 年的「标准开头三板斧」之一；
+- 流体字号与留白：clamp 公式一套用到黑，配合变量做成 `--step-0` 到 `--step-5` 的字号令牌阶梯；
+- 主题派生色：color-mix 从主色生成 hover/active/disabled/border 全家族，与 [CSS 变量](/css/410-CSSVariableCustomAttribute) 的令牌体系组合是现代设计系统的标配——FANDEX 网页端双主题的整套派生色就是「一个主色变量加一串 color-mix」驱动的；
+- 布局残余计算：侧栏定宽后 `calc(100% - var(--sidebar-w))`；有 Grid/Flex 之后这类算术大多能省，优先用布局系统；
+- 阶梯化取值：`round(up, var(--n), 8px)` 对齐 8px 网格，设计走查神器。
 
----
+## 7. 小练习
 
-**基本写法：基于视口的高度**
-`height: calc(100vh - <偏移>);`
-```css
-/* 全屏减去导航高度 */
-.main {
-  height: calc(100vh - 60px);
-}
-```
+预测题（3 分钟）：视口 900px 时，`width: min(1200px, 100% - 32px)` 结果是多少？视口 1600px 时呢？（868px；1200px。）
 
----
+修改题（8 分钟）：把标题改成从 2rem 到 4rem、跨越 800 到 1600px 视口的流体字号，写出完整 clamp 值（斜率 = 32 ÷ 800 = 4vw，中间项约 `2rem + 4vw` 减去小端截距，验证手感后微调）。
 
-### 其他函数
+修 Bug 题（10 分钟）：下面代码在部分浏览器里宽度无效。指出两处问题并修复：
 
-**基本写法：env 环境变量**
-`env(<变量名>, <默认值>);`
 ```css
-/* 安全区适配刘海屏 */
-.app {
-  padding-top: env(safe-area-inset-top, 0);
-  padding-bottom: env(safe-area-inset-bottom, 0);
+.sidebar {
+  width: calc(100% -240px);
 }
-```
-
----
-
-**基本写法：attr 属性值（增强版）**
-`attr(<属性名> <类型>, <默认值>);`
-```css
-/* 从 HTML 属性读取值（2024+ 类型化 attr） */
-.tooltip {
-  --pos: attr(data-position);
-  /* 实验性：attr(data-size px, 16px); */
+.badge {
+  min-width: min(20, 5vw);
 }
 ```
 
----
+（答案方向：`-240px` 前缺空格；`min(20, 5vw)` 类型不匹配，无单位数字应为 `20px`。）
 
-**基本写法：counter 计数器**
-`counter(<名称>);`
-```css
-/* 自动编号 */
-h2::before {
-  content: counter(chapter) ". ";
-}
-```
+挑战题（半小时，不看正文独立完成）：用纯函数（不用媒体查询）做一节「自适应文章页」：容器限宽 65ch 等效宽度、标题与正文用两档 clamp 字号、按钮三态颜色全部 color-mix 派生。验收：窗口 360 到 1920px 全程无跳变、主色变量改一处全页跟随、CSS 至少一条注释推导某个 clamp 的斜率。
 
----
-
-**基本写法：counter 嵌套**
-`counters(<名称>, "<分隔符>");`
-```css
-/* 多级编号 */
-li::before {
-  content: counters(section, ".") " ";
-}
-```
+## 8. 与之前和之后的知识的关系
 
-## 动手试试
+- 之前：[CSS3 概述与基本语法](/css/020-CSS3OverviewBasicSyntax) 里的「值与单位」是函数的运算对象；
+- 并行：[CSS 变量](/css/410-CSSVariableCustomAttribute) 是函数最好的搭档（令牌进、计算值出）；[媒体查询](/css/360-MediaQuery) 与 clamp 的分工（连续缩放 vs 结构跳变）；[渐变](/css/260-Gradient)、[现代色彩空间](/css/400-ModernColorSpace) 是函数家族的颜色分支；
+- 之后：[响应式设计](/css/370-ResponsiveDesign) 把流体单位与断点组织成完整方法论；[CSS 变量](/css/410-CSSVariableCustomAttribute) 下一篇马上展开 var 的全部行为。
 
-1. 用 `calc()` 计算“100% 减去固定间距”的宽度；
-2. 用 `clamp()` 让标题字号随视口平滑变化；
-3. 用 `min()`/`max()` 实现自适应尺寸；
-4. 进阶挑战：用 `var()` 组合多个设计令牌。
+## 9. 官方文档
 
-## 核心知识点
+- MDN calc() 参考：https://developer.mozilla.org/zh-CN/docs/Web/CSS/calc
+- MDN min/max/clamp 参考：https://developer.mozilla.org/zh-CN/docs/Web/CSS/clamp
+- MDN color-mix() 参考：https://developer.mozilla.org/zh-CN/docs/Web/CSS/color_value/color-mix
 
-> 一句话记住函数：`calc()` 算数值，`clamp()` 定范围，`min()/max()` 取极值，`var()` 读变量，`attr()` 取属性。
+## 10. 自我检查
 
-- `calc()`：混合单位运算，如 `calc(100% - 2rem)`；
-- `clamp(min, 首选, max)`：响应式字号首选；
-- `min()`/`max()`：多值取最小/最大；
-- `var()`：读取 CSS 变量，支持回退值 `var(--x, 默认)`；
-- `attr()`：读取 HTML 属性生成内容；
-- 颜色函数：`rgb()`/`hsl()`/`color-mix()`。
+- 能默写 min/max/clamp 的语义与 clamp 三参数口诀，并推导流体字号斜率；
+- calc 的空格规则与类型匹配限制能各举一个反例；
+- 能用 color-mix 写出主色的 hover、禁用、边框三个派生色；
+- 拿到「限宽加留边」需求时第一反应是 min() 而不是媒体查询。
 
-## 注意事项与改进建议
+## 本章总结
 
-| 问题点 | 说明 | 改进方案 |
-| --- | --- | --- |
-| calc 空格错误 | 表达式失效 | `+`/`-` 两侧必须有空格 |
-| 嵌套过深 | 可读性差 | 拆成变量 |
-| 滥用 min/max | 行为难预测 | 明确语义场景 |
-| var 拼错名 | 回退到默认 | 定义处与使用处保持一致 |
+CSS 函数让样式从「抄数值」变成「写公式」：calc 管混合单位算术（加减号两侧必须空格），min/max/clamp 管边界与区间，clamp 三参数是最小、理想、最大，配合 vw 斜率就是流体排版；color-mix 从主色派生整套交互色，主色一改全套跟随；三角与取整函数属于图形场景的储备。求值时机一句话：数学函数在计算值阶段算，var 在替换阶段换。函数加变量，是 2026 年 CSS 写法的默认起手式。
 
-## 扩展学习
+## 下一步
 
-- 变量：`css/410-CSSVariableCustomAttribute`；
-- 颜色：`css/400-ModernColorSpace`；
-- 响应式：`css/370-ResponsiveDesign`。
+进入 [CSS 变量与自定义属性](/css/410-CSSVariableCustomAttribute)：函数负责算，变量负责存与传——把值抽成语义令牌、搭出双主题系统，让本文的计算结果可以被全局复用。

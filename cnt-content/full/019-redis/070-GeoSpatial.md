@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: Redis地理空间GEO：基于Sorted Set的地理位置存储、距离计算与范围查询
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'redis/060-BitMapRedis'
   - 'redis/050-NumberStats'
