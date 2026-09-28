@@ -6,7 +6,7 @@ module: 'cs-fundamentals'
 category: 计算机科学
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/170-PCBThreadTCB'
   - 'cs-fundamentals/140-ParallelComputing'

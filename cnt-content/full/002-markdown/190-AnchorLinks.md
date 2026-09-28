@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: '锚点机制：GitHub 标题 slug 规则、自定义锚点、页内与跨文档跳转的写法与排错。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'markdown/200-AutoTOC'
   - 'markdown/020-HeadingSyntax'

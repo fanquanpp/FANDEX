@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'SQS/SNS 命令实战：队列与主题管理、消息收发、死信队列、订阅过滤与 Kinesis 对照。'
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

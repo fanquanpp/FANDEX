@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 性能分析与优化技巧
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/910-PythonWebSocket'
   - 'python/780-PythonCICD'

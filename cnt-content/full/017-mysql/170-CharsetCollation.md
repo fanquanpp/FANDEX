@@ -155,4 +155,4 @@ EXPLAIN SELECT * FROM t1 JOIN t2 USING (name);
 
 ## 下一步
 
-字符集是"数据长什么样"的地基，索引是"数据怎么找"的地基：带着本篇的字节/字符意识，进入 [索引管理](/mysql/210-IndexManagement) 与 [联合索引设计](/mysql/230-CompositeIndexLeftmostPrefixPrinciple)。
+字符集是"数据长什么样"的地基，索引是"数据怎么找"的地基：带着本篇的字节/字符意识，进入 [索引管理](/mysql/090-SQLDataDefinitionAdvanced) 与 [联合索引设计](/mysql/230-CompositeIndexLeftmostPrefixPrinciple)。

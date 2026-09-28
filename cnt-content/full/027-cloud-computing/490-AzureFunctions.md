@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'Azure Functions 实战：Core Tools 工作流、项目与函数创建、本地调试与部署、触发器配置。'
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

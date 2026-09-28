@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从「给页面加一个加载圈」出发：SMIL/animate/animateMotion、CSS 动画的 transform-box 坑、WAAPI 三条路线选型与性能铁律。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'svg/090-SVGTransform'
   - 'svg/050-SVGPathDetailed'

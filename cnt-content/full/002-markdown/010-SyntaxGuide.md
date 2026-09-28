@@ -6,7 +6,7 @@ category: 工具链
 difficulty: beginner
 description: Markdown 入口篇：从给项目写 README 的真实任务出发，五分钟建立正反馈，理解空白即语法的设计哲学，并给出全模块三层学习路径。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'markdown/020-HeadingSyntax'
   - 'markdown/030-ParagraphLineBreak'

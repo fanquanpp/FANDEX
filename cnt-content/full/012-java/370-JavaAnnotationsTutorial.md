@@ -248,7 +248,7 @@ public enum Color { RED, GREEN, BLUE }
 
 编译后 `Color.class` 的核心结构（通过 `javap -v` 查看）：
 
-```
+```java
 public final class Color extends java.lang.Enum<Color> {
   public static final Color RED;
   public static final Color GREEN;

@@ -1,12 +1,12 @@
 ---
-order: 40
+order: 50
 title: 基数统计
 module: 'redis'
 category: 数据库
 difficulty: intermediate
 description: Redis 计数统计：INCR 精确计数器与 HyperLogLog 基数估算的选择、去重计数、UV 统计、误差控制与内存优化
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'redis/060-BitMapRedis'
   - 'redis/070-GeoSpatial'

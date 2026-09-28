@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 90
 title: Redis Stream 消费者组：负载均衡、消息确认与可靠性
 module: 'redis'
 category: 数据库

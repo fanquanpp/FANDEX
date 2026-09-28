@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 从"线程池打满、QPS 上不去"的真实事故入手学会虚拟线程：三种创建方式、每任务一线程执行器、Pinning 与 ThreadLocal 两大坑、Spring Boot 一键启用，附与响应式编程的选型判断。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/550-JavaVirtualThreadInternals'
   - 'java/780-JavaNewFeatures'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: HTTP 协议学习笔记：从一次真实页面加载出发动手观察请求方法与状态码，理解 HTTP/1.1 到 2 到 3 的演进动因、报文头、Cookie、缓存与 HTTPS/TLS 1.3 现状。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'networking/130-CurlHTTPRequest'
   - 'networking/370-ProxyConfig'

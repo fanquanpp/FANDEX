@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'CloudWatch 命令实战：指标查询、日志组与 Logs Insights、告警、仪表盘与异常检测。'
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

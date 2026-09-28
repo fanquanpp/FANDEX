@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'BigQuery 命令实战：bq 工具、数据集与表管理、查询作业、数据加载导出与流式插入。'
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 拆解装饰器的机制与工程模式：带参数装饰器三层结构逐层追踪、叠加顺序推演、类装饰器 __call__、functools.wraps 缺失的真实代价，以及 lru_cache、singledispatch、contextmanager 三个标准库实战。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/520-ContextManager'
   - 'python/570-Descriptor'

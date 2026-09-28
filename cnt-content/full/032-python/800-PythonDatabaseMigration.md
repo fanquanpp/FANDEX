@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Alembic与数据库迁移
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/770-PythonCodeQuality'
   - 'python/640-ConcurrentProgramming'

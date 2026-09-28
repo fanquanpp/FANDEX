@@ -478,4 +478,4 @@ auto make_task() {
 2. 攻克 [模板元编程](/cpp/390-TemplateMetaprogramming) 与 [C++20 概念](/cpp/410-Cpp20Concept)，理解零开销抽象的实现机制。
 3. 进入 [内存序与无锁编程](/cpp/460-MemoryOrderLockFree)，在 [多线程与并发](/cpp/430-MultithreadingConcurrency) 之上追求可伸缩性能。
 4. 按 [C++ 性能优化](/cpp/610-CppPerformance) 的方法论，用剖析器驱动地优化一次真实热点。
-5. 以 [C++ 项目实践](/cpp/770-CppProjectPractice) 收官，用 [CMake 构建](/cpp/650-CMakeBuild) 搭一个虚拟歌手音乐平台的命令行播放器。
+5. 以 [C++ 项目实践](/cpp/770-CppProjectPractice) 收官，用 [CMake 构建](/cpp/640-CppToolchain) 搭一个虚拟歌手音乐平台的命令行播放器。

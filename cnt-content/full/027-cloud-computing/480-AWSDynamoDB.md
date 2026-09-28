@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'DynamoDB 命令实战：建表与键设计、增删改查、索引与事务、流/TTL 与备份恢复。'
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

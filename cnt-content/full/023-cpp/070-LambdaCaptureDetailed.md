@@ -154,7 +154,7 @@ public:
 ## 9. 与之前和之后的知识的关系
 
 - 往前：060 的五段语法与 sort 配合是本文的全部前提；120 篇的悬垂指针纪律在「按引用捕获」上原样生效；
-- 往后：[RAII](/cpp/160-RAIIResourceManagement) 与智能指针决定「生命周期保证」的工程解；[异步编程](/cpp/280-CppAsyncProgramming)（若走该路线）中回调捕获是每日战场；
+- 往后：[RAII](/cpp/160-RAIIResourceManagement) 与智能指针决定「生命周期保证」的工程解；[异步编程](/cpp/420-Cpp20Coroutine)（若走该路线）中回调捕获是每日战场；
 - 更远：模板与泛型 Lambda（370 篇起）让闭包成为算法库的胶水。
 
 ## 10. 官方文档

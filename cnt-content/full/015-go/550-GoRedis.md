@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以"给变慢的详情页接口加缓存"为主线学 go-redis/v9：连接与 redis.Nil、Cache-Aside、按问题选数据结构、管道、分布式锁与限流、Scan 与生产习惯，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/610-GoKubernetes'
   - 'go/340-GoDatabase'

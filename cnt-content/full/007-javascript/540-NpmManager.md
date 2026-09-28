@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 以"项目从哪来"讲透 npm：package.json 身份证、node_modules 仓库、lockfile 锁定的铁三角关系，语义化版本解读，与脚本运行日常。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/520-NodeJsInstall'
   - 'javascript/530-NvmVersionManage'

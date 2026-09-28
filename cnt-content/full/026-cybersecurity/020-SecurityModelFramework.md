@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 安全模型与框架：CIA 三元组与扩展属性、Bell-LaPadula/Biba 形式化模型、NIST CSF、ISO 27001、等保 2.0 与 ATT&CK 的用途与关系。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/010-SecurityBasicsDefense'
   - 'cybersecurity/550-SOC'

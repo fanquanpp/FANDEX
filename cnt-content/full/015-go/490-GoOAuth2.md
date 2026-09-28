@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: OAuth2与JWT
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/470-GoHTTP'
   - 'go/460-GoHTTPClient'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 免 JavaScript 弹窗双雄：dialog 的 showModal/returnValue/::backdrop、popover 的触发与分层机制，含 Invoker Commands（command/commandfor）声明式控制、popover="hint" 与 interest invokers 前瞻，附选型对比与可访问性要点。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'html5/150-HTML5TableAndStructuredContent'
   - 'html5/190-HTML5FormValidation'

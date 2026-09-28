@@ -1,7 +1,12 @@
 ---
+order: 40
 title: List 与 Set 实战命令
 description: 列表当队列/栈用（LPUSH/RPOP/BLPOP/LTRIM）与集合的成员判断/交并差运算，附典型场景与阻塞读陷阱
+module: 'redis'
+category: 数据库
 difficulty: beginner
+author: fanquanpp
+updated: '2026-09-28'
 related:
   - 'redis/030-HashCommand'
   - 'redis/050-NumberStats'

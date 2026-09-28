@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从 next build 到上线：Turbopack 构建、standalone 与 Docker 部署、环境变量分级、next/image 与 next/font 的 16 时代默认值，以及核心性能指标排查。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'nextjs/030-DataFetchingCaching'
   - 'nextjs/070-CacheComponentsDeepDive'

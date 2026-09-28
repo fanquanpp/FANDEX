@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React 集成 WebAssembly 实战：WASM 适用边界、instantiateStreaming 加载与 React 生命周期、懒加载与模块缓存、线性内存与 JS 数据传递、Rust 工具链与常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/260-ReactSSR'
   - 'react/270-ReactDesignPattern'

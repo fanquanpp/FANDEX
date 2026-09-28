@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: "以「双击一个程序到窗口出现」引入：亲手制造一场多线程竞态并修好它，理解操作系统三大抽象（进程、虚拟内存、文件）与系统调用入口，调度算法平均等待时间实测，死锁四条件自查，以及本模块深水篇的阅读地图。"
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/090-ComputerArchitecture'
   - 'cs-fundamentals/160-OperatingSystemAdvanced'

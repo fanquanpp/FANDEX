@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 编译器中间代码：三地址码、静态单赋值（SSA）与中间表示。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/440-GrammarAnalysis'
   - 'cs-fundamentals/450-SemanticAnalysis'

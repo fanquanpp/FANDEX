@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: XSS 防御学习笔记：从本地复现一个存储型 XSS 出发，逐层加防御（输出编码、框架自动转义、DOMPurify、Cookie 加固、CSP），并用 FANDEX 网页端真实 CSP 做案例解读。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/190-XSSAttack'
   - 'cybersecurity/160-OWASPTop10Detailed'

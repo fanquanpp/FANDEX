@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 虚拟内存的分段与分页机制：地址翻译、多级页表、TLB 加速与缺页处理全流程。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/150-OperatingSystem'
   - 'cs-fundamentals/190-InterruptAndSystemCall'

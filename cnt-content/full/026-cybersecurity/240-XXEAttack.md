@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: XXE（XML 外部实体注入）：实体机制原理、文件读取与 SSRF 利用链、盲注带外技巧与逐语言防御。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/230-SSRFAttack'
   - 'cybersecurity/160-OWASPTop10Detailed'

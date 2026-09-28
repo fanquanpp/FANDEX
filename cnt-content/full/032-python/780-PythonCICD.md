@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Python项目CI/CD全流程详解：流水线设计、自动化测试、构建产物管理、镜像化交付、GitOps与渐进式发布
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/940-PythonGrpc'
   - 'python/910-PythonWebSocket'

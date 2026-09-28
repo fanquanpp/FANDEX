@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 以播客平台「回声FM」的运营周报为主线，动手掌握 COUNT/SUM/AVG/MAX/MIN 与 GROUP BY/HAVING，吃透 NULL、空结果集、浮点精度三大陷阱，并把条件计数、中位数、字符串聚合、JSON 聚合等高频招式一次练全。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'sql/040-DataQueryBasics'
   - 'sql/070-GROUPBYGroupingSet'

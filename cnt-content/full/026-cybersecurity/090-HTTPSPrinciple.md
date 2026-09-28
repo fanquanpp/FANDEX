@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: HTTPS 学习笔记：动手观察一次真实 TLS 握手，理解 TLS 1.2/1.3 握手差异、ECDHE 前向保密、证书链验证与套件命名，掌握 Nginx 安全配置与 2026 年证书短寿命、后量子混合密钥交换动态。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/540-ComplianceAudit'
   - 'cybersecurity/080-DigitalCertificate'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 从手跑一个容器到让集群托管应用：用 Docker 与 kind 实操理解编排为什么存在，掌握 Deployment、Service、HPA 最小组合。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cloud-computing/070-DockerDeepAnalysis'
   - 'cloud-computing/110-KubernetesCore'

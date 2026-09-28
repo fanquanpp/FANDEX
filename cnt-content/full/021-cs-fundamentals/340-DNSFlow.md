@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: DNS 解析流程：递归查询、迭代查询、DNS 缓存与记录类型。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/300-TCPControl'
   - 'cs-fundamentals/310-TCPMessageFraming'

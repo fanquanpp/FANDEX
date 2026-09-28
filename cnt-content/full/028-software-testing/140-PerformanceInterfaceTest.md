@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 从一次大促事故学性能测试：用 k6 完成第一次负载测试，读懂 P95 与吞吐量，理清负载、压力、稳定性测试的目标与工具选择。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'software-testing/150-JMeter'
   - 'software-testing/160-StressAndStabilityTest'

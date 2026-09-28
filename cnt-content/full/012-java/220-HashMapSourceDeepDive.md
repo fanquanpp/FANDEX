@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 数组+链表+红黑树：扩容、扰动与树化的源码级解析。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/210-CollectionFrameworkDetailed'
   - 'java/200-EqualsHashCodeContract'

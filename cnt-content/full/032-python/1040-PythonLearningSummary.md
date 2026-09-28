@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 串联 Python 模块全部文档，按语法基础、对象模型、类型系统、并发与工程生态五条主线回顾核心知识，并用虚拟歌手平台案例沉淀示例代码。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/460-OOP'
   - 'python/590-Metaclass'
@@ -390,7 +390,7 @@ if __name__ == "__main__":
 
 ### 9. 工程化：虚拟环境、测试与打包
 
-Python 工程化的三件套是环境隔离、测试与打包分发：`python -m venv` 建立独立依赖空间（见[虚拟环境](/python/040-PythonVirtualEnv)）；pytest 的参数化测试一张表覆盖多组用例（见[unittest 与 pytest](/python/760-UnittestPytest)）；`pyproject.toml` 统一元信息与构建配置（见[打包演进](/python/730-PythonPackagingEvolution)）。三者就位，项目才具备可复现与可协作的基本盘。
+Python 工程化的三件套是环境隔离、测试与打包分发：`python -m venv` 建立独立依赖空间（见[虚拟环境](/python/040-PythonVirtualEnv)）；pytest 的参数化测试一张表覆盖多组用例（见[unittest 与 pytest](/python/750-PythonTest)）；`pyproject.toml` 统一元信息与构建配置（见[打包演进](/python/730-PythonPackagingEvolution)）。三者就位，项目才具备可复现与可协作的基本盘。
 
 ```python
 # 1. 环境隔离是工程第一步：python -m venv .venv，激活后再安装依赖
@@ -564,6 +564,6 @@ backup = copy.deepcopy(singer)
 1. [DataClass 与 Pydantic](/python/550-DataClassPydantic)：把类型注解升级为运行时校验的数据模型。
 2. [Python FastAPI](/python/880-PythonFastAPI)：用类型驱动的方式构建高性能 Web 服务。
 3. [Python CI/CD](/python/780-PythonCICD)：把测试、类型检查与发布接入持续集成流水线。
-4. [性能剖析与优化](/python/680-ProfilingOptimization)：用 cProfile、line_profiler 定位热点并优化。
+4. [性能剖析与优化](/python/690-PythonPerformance)：用 cProfile、line_profiler 定位热点并优化。
 5. [GIL 与自由线程](/python/650-GILAndFreeThreading)：跟进 PEP 703 自由线程构建与并发选型的未来。
 6. [Python 机器学习](/python/990-PythonMachineLearning)：进入 Python 最具统治力的数据科学领域。

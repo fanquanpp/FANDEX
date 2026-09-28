@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Spring Cloud微服务架构
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/740-JavaBuildTool'
   - 'java/090-ControlFlow'

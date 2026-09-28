@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Java 8 至 26 现代语言特性、API 演进与 JVM 改进全景式深度解析
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/680-JavaSerialization'
   - 'java/650-JavaIONIO'
@@ -292,7 +292,7 @@ public record Point(int x, int y) {}
 
 使用 `javap -p -c Point` 查看字节码：
 
-```
+```java
 public final class Point extends java.lang.Record {
     private final int x;
     private final int y;

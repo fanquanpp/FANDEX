@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 网络设计与规划：层次化设计、数据中心网络、SD-WAN与网络虚拟化
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'networking/380-NetworkStorageTechnology'
   - 'networking/190-NetworkDiagnosis'

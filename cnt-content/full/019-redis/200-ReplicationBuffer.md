@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 210
 title: 主从复制缓冲区
 module: 'redis'
 category: 数据库

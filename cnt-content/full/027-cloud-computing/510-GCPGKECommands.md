@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'GKE 命令实战：项目与凭证、集群创建与升级、节点池、自动伸缩与网络/安全配置。'
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

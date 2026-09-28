@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 接入 WebSocket 实战：Effect 生命周期与 StrictMode 双跑、自动重连与心跳、useSyncExternalStore 共享连接、消息状态化与常见陷阱（SSE 对比）。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/270-ReactDesignPattern'
   - 'react/280-ReactWebAssembly'

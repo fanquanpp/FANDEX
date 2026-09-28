@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 密码哈希学习笔记：从一次用户表泄露场景理解为什么必须用慢哈希，动手用 Argon2id/bcrypt/PBKDF2 生成与验证，掌握各语言与框架的落地命令、参数基线与迁移策略。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/060-HashAlgorithm'
   - 'cybersecurity/040-SymmetricEncryption'

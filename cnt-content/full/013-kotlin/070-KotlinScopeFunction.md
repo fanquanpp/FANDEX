@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 用一张"两轴选型表"学会 let/run/with/apply/also：先动手配置一个真实的数据库连接池，再讲内联零开销的原理与 this 遮蔽、嵌套地狱等坑点。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'kotlin/080-ScopeFunctionDifference'
   - 'kotlin/130-NullSafetyDetailed'

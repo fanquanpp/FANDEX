@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 23种GoF设计模式分类、原理与应用场景。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'software-testing/330-RequirementAnalysisMethod'
   - 'software-testing/340-UMLGraphDetailed'

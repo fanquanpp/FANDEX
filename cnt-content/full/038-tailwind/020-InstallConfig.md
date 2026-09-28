@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Tailwind CSS 安装与配置：Vite/React/Astro 项目接入教程、@import 与 @source 详解、Tailwind 3 与 4 配置差异对照，附 FANDEX 仓库的真实接线参考
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'tailwind/030-UtilityCore'
   - 'tailwind/050-ThemeCustomization'

@@ -336,7 +336,7 @@ git config --global rerere.enabled true
 
 **永远不要对已推送到远程的公共分支执行 rebase。**
 
-```
+```bash
 # 危险！
 git rebase -i main  # 如果 main 是共享分支
 

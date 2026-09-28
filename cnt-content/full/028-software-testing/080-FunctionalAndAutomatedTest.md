@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 从手工功能测试走到自动化：用一次真实回归理解用例与缺陷报告，再看真实仓库的冒烟测试长什么样，会选自动化边界。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'software-testing/010-TestBasicsMethod'
   - 'software-testing/090-Selenium'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用户态与内核态的特权级模型、三种切换场景、模式切换与进程切换的区别及切换开销优化。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/170-PCBThreadTCB'
   - 'cs-fundamentals/190-InterruptAndSystemCall'

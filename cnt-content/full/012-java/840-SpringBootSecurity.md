@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Spring Security与认证授权
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
   - 'java/830-SpringBootAdvanced'

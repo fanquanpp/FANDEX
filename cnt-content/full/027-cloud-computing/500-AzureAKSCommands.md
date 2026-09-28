@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'AKS 命令实战：集群创建、凭证访问、节点池、升级维护、自动伸缩与网络/安全配置。'
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

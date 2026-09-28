@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 带索引遍历与并行遍历：两个最常用内置组合函数。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/140-BuiltinDataStructure'
 prerequisites:
@@ -21,7 +21,7 @@ prerequisites:
 
 - [内置数据结构](/python/140-BuiltinDataStructure)：熟悉 list 与 dict 的遍历行为，理解 items() 的键值成对语义。
 - [推导式与生成器](/python/170-ComprehensionGenerator)：enumerate/zip 都是迭代器，与生成器的惰性求值一脉相承。
-- [itertools 模块](/python/260-Itertools)：本篇第 4 节会衔接 zip_longest 与 count 等补充工具。
+- [itertools 模块](/python/170-ComprehensionGenerator)：本篇第 4 节会衔接 zip_longest 与 count 等补充工具。
 
 ## 学习目标
 
@@ -219,7 +219,7 @@ print(len(pairs), pairs[0])
 1. 惰性组合的收益来自"按需产出"：`zip(生成器A, 生成器B)` 每次推进只取一对值，两个 1GB 的日志文件配对处理也只占一份内存。
 2. 物化是显式决策：需要 `len()`、需要重复迭代、需要下标访问时才 `list()`；为图省事随手物化，惰性就白搭了。先问"要不要重复消费"，答案决定写不写 list()。
 3. 与 [推导式与生成器](/python/170-ComprehensionGenerator) 的生成器表达式组合是常规套路：`zip(map(int, a), map(int, b))` 在配对的同时完成转换，仍然零物化。
-4. 性能基准先行（见 [性能剖析与优化](/python/680-ProfilingOptimization)）：zip 的配对开销极低，绝大多数场景它比手写下标循环更快也更省内存，优化重点应放在"避免不必要的物化"上。
+4. 性能基准先行（见 [性能剖析与优化](/python/690-PythonPerformance)）：zip 的配对开销极低，绝大多数场景它比手写下标循环更快也更省内存，优化重点应放在"避免不必要的物化"上。
 5. 物化与否可以量化：用内存剖析对比"生成器直通"与"list 物化"两条路径的峰值占用，数字会让取舍一目了然，胜过凭感觉争论。
 6. 生成器调试技巧：用 next() 单步推进各迭代器，观察每一步产出的配对——比在大循环里加 print 更快定位错位。
 

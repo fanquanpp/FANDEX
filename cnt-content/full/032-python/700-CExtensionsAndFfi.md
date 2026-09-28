@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: ctypes、cffi 与 CPython 扩展：让 Python 调用原生代码。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/630-MultiprocessingMultithreading'
   - 'python/690-PythonPerformance'
@@ -21,7 +21,7 @@ prerequisites:
 ## 前置知识
 
 - [多进程与多线程](/python/630-MultiprocessingMultithreading)：理解 GIL 的作用范围，C 扩展的线程行为与本篇直接相关。
-- [性能剖析与优化](/python/680-ProfilingOptimization)：先有剖析结果再谈扩展，本篇第 1 节直接复用其方法论。
+- [性能剖析与优化](/python/690-PythonPerformance)：先有剖析结果再谈扩展，本篇第 1 节直接复用其方法论。
 - [Python 性能优化](/python/690-PythonPerformance)：向量化与算法优化是 C 扩展之前的两道关卡。
 
 ## 学习目标

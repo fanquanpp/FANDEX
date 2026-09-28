@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Next.js App Router详解：文件夹约定、布局、加载态、错误态。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/390-ReactCompilerAutoMemoization'
   - 'react/400-ServerClientComponents'

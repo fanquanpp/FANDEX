@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: OWASP Top 10（2021 正式版）逐项拆解：每类风险的原理、真实攻击示例、检测方法与修复清单。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/170-InputValidation'
   - 'cybersecurity/290-AuthenticationAuthorization'

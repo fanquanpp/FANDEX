@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以"接入需要鉴权、偶发 429 的第三方 API"为主线学 net/http 客户端：请求构建、分层超时设计、重试退避、连接池调优、流式与文件上传、httptest 测试，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'go/400-GoTime'
   - 'go/330-GoJSON'

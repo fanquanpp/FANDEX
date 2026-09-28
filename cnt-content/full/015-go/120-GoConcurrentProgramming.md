@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: goroutine 原理、channel、select、sync 包、context 包、并发模式与竞态检测。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/050-GoDataStructure'
   - 'go/060-GoInterfaceComposition'

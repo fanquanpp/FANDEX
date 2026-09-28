@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 290
 title: 模块系统
 module: 'redis'
 category: 数据库

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: 云安全：共享责任模型、IAM 与凭证治理、云元数据与 SSRF 风险、CSPM/CWPP 与 CNAPP、云原生安全左移与合规自动化。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/230-SSRFAttack'
   - 'cybersecurity/320-ZeroTrustArchitecture'

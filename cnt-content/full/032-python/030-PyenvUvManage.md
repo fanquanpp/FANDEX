@@ -26,6 +26,7 @@ prerequisites:
 ```bash
 # 通过 PowerShell 脚本安装 pyenv-win
 irm https://github.com/pyenv-win/pyenv-win/raw/master/pyenv-win/install-pyenv-win.ps1 | iex
+```
 
 ---
 
@@ -33,6 +34,7 @@ irm https://github.com/pyenv-win/pyenv-win/raw/master/pyenv-win/install-pyenv-wi
 ```bash
 # 列出所有可安装的 Python 版本
 pyenv install --list
+```
 
 ---
 
@@ -40,6 +42,7 @@ pyenv install --list
 ```bash
 # 安装指定版本的 Python
 pyenv install 3.13.0
+```
 
 ---
 
@@ -47,6 +50,7 @@ pyenv install 3.13.0
 ```bash
 # 列出所有已安装的 Python 版本
 pyenv versions
+```
 
 ---
 
@@ -56,6 +60,7 @@ pyenv versions
 ```bash
 # 设置全局默认 Python 版本
 pyenv global 3.13.0
+```
 
 ---
 
@@ -63,6 +68,7 @@ pyenv global 3.13.0
 ```bash
 # 在当前项目目录生成 .python-version 文件
 pyenv local 3.11.9
+```
 
 ---
 
@@ -70,6 +76,7 @@ pyenv local 3.11.9
 ```bash
 # 仅在当前终端会话切换版本
 pyenv shell 3.12.8
+```
 
 ---
 
@@ -77,6 +84,7 @@ pyenv shell 3.12.8
 ```bash
 # 删除指定版本的 Python
 pyenv uninstall 3.9.5
+```
 
 ---
 
@@ -86,6 +94,7 @@ pyenv uninstall 3.9.5
 ```bash
 # 通过官方脚本安装 uv（Windows）
 powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | iex"
+```
 
 ---
 
@@ -93,6 +102,7 @@ powershell -ExecutionPolicy ByPass -c "irm https://astral.sh/uv/install.ps1 | ie
 ```bash
 # 通过官方脚本安装 uv（Linux/macOS）
 curl -LsSf https://astral.sh/uv/install.sh | sh
+```
 
 ---
 
@@ -100,6 +110,7 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 ```bash
 # 通过 pip 安装 uv
 pip install uv
+```
 
 ---
 
@@ -107,6 +118,7 @@ pip install uv
 ```bash
 # macOS 通过 Homebrew 安装
 brew install uv
+```
 
 ---
 
@@ -116,6 +128,7 @@ brew install uv
 ```bash
 # 安装指定版本的 Python
 uv python install 3.13
+```
 
 ---
 
@@ -123,6 +136,7 @@ uv python install 3.13
 ```bash
 # 一次安装多个版本
 uv python install 3.13 3.12 3.11
+```
 
 ---
 
@@ -130,6 +144,7 @@ uv python install 3.13 3.12 3.11
 ```bash
 # 列出所有可用和已安装的版本
 uv python list
+```
 
 ---
 
@@ -137,6 +152,7 @@ uv python list
 ```bash
 # 写入 .python-version 文件锁定项目版本
 uv python pin 3.13
+```
 
 ---
 
@@ -146,6 +162,7 @@ uv python pin 3.13
 ```bash
 # 创建标准 Python 项目结构
 uv init myproject
+```
 
 ---
 
@@ -153,6 +170,7 @@ uv init myproject
 ```bash
 # 添加包并自动更新 uv.lock
 uv add requests
+```
 
 ---
 
@@ -160,6 +178,7 @@ uv add requests
 ```bash
 # 添加开发依赖包
 uv add --dev pytest
+```
 
 ---
 
@@ -167,6 +186,7 @@ uv add --dev pytest
 ```bash
 # 自动激活虚拟环境并运行
 uv run main.py
+```
 
 ---
 
@@ -174,6 +194,7 @@ uv run main.py
 ```bash
 # 在当前目录创建 .venv 虚拟环境
 uv venv
+```
 
 ---
 
@@ -181,6 +202,7 @@ uv venv
 ```bash
 # 使用指定 Python 版本创建虚拟环境
 uv venv --python 3.11
+```
 
 ---
 
@@ -188,6 +210,7 @@ uv venv --python 3.11
 ```bash
 # 根据 uv.lock 同步安装所有依赖
 uv sync
+```
 
 ---
 
@@ -195,6 +218,7 @@ uv sync
 ```bash
 # uv 自更新（独立安装版支持）
 uv self update
+```
 
 ---
 
@@ -204,6 +228,7 @@ uv self update
 ```bash
 # 把 ruff 安装为独立工具（隔离环境，不污染项目）
 uv tool install ruff
+```
 
 ---
 
@@ -212,6 +237,7 @@ uv tool install ruff
 # uvx = uv tool run：不安装、拉起即用，用完即弃
 uvx ruff check .
 uvx pycowsay hello
+```
 
 ---
 
@@ -224,6 +250,7 @@ uv python install 3.14t
 
 # 验证 GIL 状态
 uv run --python 3.14t python -c "import sys; print(sys._is_gil_enabled())"  # False
+```
 
 ---
 

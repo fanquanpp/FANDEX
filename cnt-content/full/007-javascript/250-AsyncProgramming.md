@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从「网络请求要等一秒，页面不能卡死一秒」讲起：单线程与事件循环直觉模型、回调与厄运金字塔、Promise 三态与链式、async/await、fetch 最小示例、try/catch 与 .catch 分工，附 Unhandled promise rejection 与 Failed to fetch 调试实录。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'javascript/260-PromiseConstructorDeepDive'
   - 'javascript/270-PromiseStaticMethod'

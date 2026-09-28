@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Kafka与NATS
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/340-GoDatabase'
   - 'go/550-GoRedis'

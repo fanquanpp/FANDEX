@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 从一次慢查询排查出发：explain 三种模式与 COLLSCAN/IXSCAN 判读、ESR 复合索引法则、覆盖查询、partial/TTL 索引与索引代价实测。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'mongodb/020-MongoDBCRUDOperations'
   - 'mongodb/030-MongoDBAggregationPipeline'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Java与Wasm交互
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/940-JavaAI'
   - 'java/950-JavaSecurity'

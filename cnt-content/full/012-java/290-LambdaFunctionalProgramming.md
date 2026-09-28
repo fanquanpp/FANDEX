@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 从一次"给歌单排序"的样板代码之痛入手学会 Lambda：语法演变、四大函数式接口、四种方法引用、effectively final 捕获规则、受检异常与 this 两大坑，附比较器溢出陷阱。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'java/300-StreamAPI'
   - 'java/330-JavaFunctionalProgramming'

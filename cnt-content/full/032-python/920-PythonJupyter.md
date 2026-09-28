@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 系统阐述 Jupyter Notebook/Lab 的架构、内核协议、魔法命令、可视化、Widgets、性能优化与企业级部署实践。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/610-PythonDesignPattern'
   - 'python/730-PythonPackagingEvolution'

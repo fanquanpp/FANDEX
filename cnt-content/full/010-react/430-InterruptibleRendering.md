@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React 并发渲染原理：可中断的 Render 阶段、优先级插队、中断重做语义与 startTransition/useDeferredValue 的底层关系。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/120-FiberArchitecture'
   - 'react/130-ConcurrentRendering'

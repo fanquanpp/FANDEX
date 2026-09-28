@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'RDS 命令实战：实例创建与配置、快照恢复、参数组、Aurora 集群与只读副本。'
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Go map底层实现：hmap结构、bucket、hash函数、扩容机制、并发安全与Go 1.24 Swiss Table
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'go/590-GoWebDevelopmentMicroservice'
   - 'go/250-SlicePrinciple'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: advanced
 description: K8s 架构、核心资源、存储、网络策略、Helm 与 Operator 模式。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'devops/040-NetworkSecurity'
   - 'devops/050-ContainerDocker'

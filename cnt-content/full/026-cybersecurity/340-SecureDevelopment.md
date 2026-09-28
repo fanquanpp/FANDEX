@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 安全开发生命周期：SDL 阶段与安全左移、STRIDE 威胁建模实操、安全编码核心实践、SAST/DAST/SCA 工具链与代码审计。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/330-SecureCodingPrinciples'
   - 'cybersecurity/170-InputValidation'

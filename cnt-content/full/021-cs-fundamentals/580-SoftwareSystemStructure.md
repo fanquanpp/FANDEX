@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 软件体系结构：架构风格、质量属性、架构评估与文档化
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/620-ComputerGraphics'
   - 'cs-fundamentals/570-DesignPattern'

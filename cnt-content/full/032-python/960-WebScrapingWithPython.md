@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: HTTP 客户端、HTML 解析、Scrapy 框架、动态渲染、反爬对抗、分布式爬虫与合规伦理的工程实践，覆盖 requests、httpx、BeautifulSoup、lxml、parsel、Scrapy、Playwright、Selenium、aiohttp 等核心工具链。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/1010-PythonAndNLP'
   - 'python/1020-PythonComputerVision'

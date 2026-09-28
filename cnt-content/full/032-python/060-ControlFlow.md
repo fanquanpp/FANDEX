@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以猜数字游戏为主线讲透 if/elif/else、while 与 for、range 与 break/continue：条件怎么写、两种循环怎么选，附 IndentationError 与死循环的真实调试实录、预测题与修 Bug 练习。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-28'
 related:
   - 'python/050-ProgramStructureBasicSyntax'
   - 'python/070-BasicDataType'

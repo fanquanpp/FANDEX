@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 渐进式 Web 应用实战：manifest 与安装条件、Service Worker 生命周期、缓存策略（cache-first/network-first/stale-while-revalidate）、vite-plugin-pwa 接入与版本更新提示。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'react/310-ReactMicroFrontend'
   - 'react/320-ReactAccessibility'

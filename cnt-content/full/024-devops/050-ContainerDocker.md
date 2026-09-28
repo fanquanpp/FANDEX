@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 容器原理、Docker 架构、镜像构建、多阶段构建、Docker Compose 与镜像优化。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'devops/010-OverviewLinuxBasics'
   - 'devops/040-NetworkSecurity'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 把一个三层应用安全放上云：动手划 VPC 与子网、收口安全组、理解 NAT 与路由，选对块存储与对象存储并配自动快照。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cloud-computing/010-CloudComputingBasics'
   - 'cloud-computing/230-CloudSecurityService'

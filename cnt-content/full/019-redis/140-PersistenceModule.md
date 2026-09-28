@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 150
 title: 持久化与模块
 module: 'redis'
 category: 数据库

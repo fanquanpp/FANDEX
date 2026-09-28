@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 哈希算法原理：SHA-1/SHA-2/SHA-3/MD5/Bcrypt 等算法详解与应用场景。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/560-IncidentResponse'
   - 'cybersecurity/050-AsymmetricEncryption'

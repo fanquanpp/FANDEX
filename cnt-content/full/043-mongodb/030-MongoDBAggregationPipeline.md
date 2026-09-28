@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 用 $match/$group/$sort/$project 等管道阶段完成分组、统计、拆数组等复杂查询，替代 SQL 的 GROUP BY。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-09-28'
 related:
   - 'mongodb/020-MongoDBCRUDOperations'
   - 'mongodb/040-MongoDBIndexPerformance'

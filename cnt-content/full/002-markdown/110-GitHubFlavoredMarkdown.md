@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: GFM 扩展全览：表格、任务列表、删除线、自动链接、脚注、警报块与 GitHub 平台特有行为。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'markdown/240-CommonMarkSpec'
   - 'markdown/100-Table'

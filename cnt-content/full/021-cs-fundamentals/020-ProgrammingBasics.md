@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 算法流程图、控制结构、编译与解释、数据类型、运算符与表达式求值（入门学习笔记）。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/070-DataRepresentationOperation'
   - 'cs-fundamentals/030-FunctionModular'

@@ -45,7 +45,7 @@ timeline
 目标：从"用别人的表"到"设计自己的表"。
 
 1. [数据类型与约束](/mysql/070-MySQLDataTypeConstraint)：第一遍只学 INT/VARCHAR/DATE 三种类型与主键/非空/默认值三种约束；
-2. [DDL 数据定义](/mysql/080-DDL)：CREATE TABLE 与 ALTER TABLE；
+2. [DDL 数据定义](/mysql/090-SQLDataDefinitionAdvanced)：CREATE TABLE 与 ALTER TABLE；
 3. [DML 数据操作](/mysql/100-DML)：INSERT/UPDATE/DELETE，**血泪重点：UPDATE 与 DELETE 必须带 WHERE，执行前先用 SELECT 验证条件**。
 
 **验收**：从零创建一张 `students` 表（含主键与默认值），完成一次完整的增删改查，并解释"为什么删除前要先 SELECT"。

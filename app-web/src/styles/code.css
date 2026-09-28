@@ -254,6 +254,7 @@ html[data-theme='dark'] .mermaid-svg.is-dark {
   background: var(--color-bg-page);
   width: 100vw;
   height: 100vh;
+  height: 100dvh;
 }
 
 .mermaid-figure.is-fullscreen .mermaid-canvas,

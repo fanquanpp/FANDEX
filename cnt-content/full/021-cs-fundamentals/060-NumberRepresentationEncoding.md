@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 进制转换、原码反码补码、IEEE 754浮点数、ASCII与Unicode编码（入门学习笔记）。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'cs-fundamentals/090-ComputerArchitecture'
   - 'cs-fundamentals/070-DataRepresentationOperation'

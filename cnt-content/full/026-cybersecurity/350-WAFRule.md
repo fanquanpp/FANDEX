@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: Web 应用防火墙：部署形态、ModSecurity 与 OWASP CRS 规则引擎、常见绕过手法与自写规则的工程实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'cybersecurity/170-InputValidation'
   - 'cybersecurity/520-SecurityBaseline'

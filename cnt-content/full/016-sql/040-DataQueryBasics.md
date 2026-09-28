@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 以播客平台「回声FM」为练习场，从零学会 SELECT 的基本形状：选列、过滤、排序、分页、去重、别名与 CASE WHEN，并理解 NULL 与逻辑执行顺序这两个贯穿全模块的心智模型。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-28'
 related:
   - 'sql/030-SQLFirstSteps'
   - 'sql/050-FilterCondition'

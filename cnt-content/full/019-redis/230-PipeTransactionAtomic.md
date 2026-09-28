@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 240
 title: 管道与事务原子性
 module: 'redis'
 category: 数据库
