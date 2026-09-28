@@ -72,3 +72,45 @@ if (problems.length > 0) {
 
 const total = [...source.values()].reduce((n, m) => n + m.size, 0);
 console.log(`[check-tokens-drift] OK：副本与真源一致（${total} 个令牌，作用域 ${scopeNames.join('/')}）`);
+
+// Android 端信息性核查：Color.kt 是从 DTCG JSON 手工镜像的 Compose 色板，
+// 这里报告它与令牌真源不一致的色值（不阻断构建——Android 色板含 Material
+// 适配扩展，统一需要专门的映射层，见 README「共享层」说明）。
+function collectTokenHexes(node, acc) {
+  for (const value of Object.values(node ?? {})) {
+    if (value && typeof value === 'object') {
+      const hex = typeof value.$value === 'string' ? value.$value.toUpperCase() : null;
+      if (hex && /^#[0-9A-F]{6}$/.test(hex)) acc.add(hex);
+      collectTokenHexes(value, acc);
+    }
+  }
+}
+
+try {
+  const tokenRoots = [
+    join(scriptDir, '..', '..', 'shd-shared', 'tokens', 'primitive', 'color.json'),
+    join(scriptDir, '..', '..', 'shd-shared', 'tokens', 'semantic', 'color.light.json'),
+    join(scriptDir, '..', '..', 'shd-shared', 'tokens', 'semantic', 'color.dark.json'),
+  ];
+  const tokenHexes = new Set();
+  for (const path of tokenRoots) collectTokenHexes(JSON.parse(readFileSync(path, 'utf8')), tokenHexes);
+
+  const colorKt = readFileSync(
+    join(scriptDir, '..', '..', 'app-Android-new', 'app', 'src', 'main', 'java', 'com', 'fandex', 'app', 'ui', 'theme', 'Color.kt'),
+    'utf8',
+  );
+  const ktHexes = new Set(
+    [...colorKt.matchAll(/Color\(\s*0x FF([0-9A-Fa-f]{6})\s*\)/g)].map((m) => `#${m[1].toUpperCase()}`),
+  );
+  const diverged = [...ktHexes].filter((hex) => !tokenHexes.has(hex));
+  if (diverged.length > 0) {
+    console.log(
+      `[check-tokens-drift] NOTE：Android Color.kt 有 ${diverged.length} 个色值与令牌真源不一致` +
+        `（信息性提示，不阻断）：${diverged.slice(0, 12).join(', ')}${diverged.length > 12 ? ' ...' : ''}`,
+    );
+  } else {
+    console.log('[check-tokens-drift] NOTE：Android Color.kt 与令牌真源色值一致。');
+  }
+} catch (err) {
+  console.log(`[check-tokens-drift] NOTE：Android 色值核查跳过（${err.message}）`);
+}
