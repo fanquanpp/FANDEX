@@ -320,15 +320,15 @@ flowchart LR
 ```sql
  SELECT u.username, o.order_no, o.total_amount
  from users u
- inNER JOIN orders o ON u.id = o.user_id;
+ INNER JOIN orders o ON u.id = o.user_id;
  SELECT u.username, o.order_no, p.product_name, oi.quantity
  from users u
- inNER JOIN orders o ON u.id = o.user_id
- inNER JOIN order_items oi ON o.id = oi.order_id
- inNER JOIN products p ON oi.product_id = p.id;
+ INNER JOIN orders o ON u.id = o.user_id
+ INNER JOIN order_items oi ON o.id = oi.order_id
+ INNER JOIN products p ON oi.product_id = p.id;
  SELECT u.username, o.order_no
  from users u
- inNER JOIN orders o USING (user_id);
+ INNER JOIN orders o USING (user_id);
 ```
 
 ### 3.3 外连接 (LEFT/RIGHT JOIN)
@@ -364,7 +364,7 @@ flowchart LR
  WHERE e1.name = '张三';
  SELECT s1.Supplier_name, s1.Address, s2.Supplier_name AS 同城市供应商
  from supplier_info s1
- inNER JOIN supplier_info s2 ON s1.Address = s2.Address
+ INNER JOIN supplier_info s2 ON s1.Address = s2.Address
  WHERE s1.Supplier_name = '翔云公司' AND s1.Supplier_id <> s2.Supplier_id;
  SELECT e.name AS employee, m.name AS manager
  from employees e
@@ -401,28 +401,28 @@ MySQL 不直接支持 FULL OUTER JOIN，可使用 UNION 实现：
 ```sql
  SELECT e.Employees_name, s.Sales_id, c.Customer_name
  from employees_info e
- inNER JOIN sales_info s ON e.Employees_id = s.Employees_id
- inNER JOIN customer_info c ON s.Customer_id = c.Customer_id;
+ INNER JOIN sales_info s ON e.Employees_id = s.Employees_id
+ INNER JOIN customer_info c ON s.Customer_id = c.Customer_id;
  SELECT e.Employees_id, e.Employees_name,
   SUM(sl.Sales_price * sl.Sales_Number) AS 销售总业绩
  from employees_info e
- inNER JOIN sales_info s ON e.Employees_id = s.Employees_id
- inNER JOIN sales_list sl ON s.Sales_id = sl.Sales_id
+ INNER JOIN sales_info s ON e.Employees_id = s.Employees_id
+ INNER JOIN sales_list sl ON s.Sales_id = sl.Sales_id
  GROUP BY e.Employees_id, e.Employees_name
  ORDER BY 销售总业绩 DESC;
  SELECT c.Customer_name, m.Commodity_name, SUM(sl.Sales_Number) AS 购买数量
  from customer_info c
- inNER JOIN sales_info s ON c.Customer_id = s.Customer_id
- inNER JOIN sales_list sl ON s.Sales_id = sl.Sales_id
- inNER JOIN commodity_info m ON sl.Commodity_id = m.Commodity_id
+ INNER JOIN sales_info s ON c.Customer_id = s.Customer_id
+ INNER JOIN sales_list sl ON s.Sales_id = sl.Sales_id
+ INNER JOIN commodity_info m ON sl.Commodity_id = m.Commodity_id
  GROUP BY c.Customer_name, m.Commodity_name;
  SELECT e.Employees_name, s.Sales_id, c.Customer_name,
   m.Commodity_name, s.Sales_time, sl.Sales_Number
  from employees_info e
- inNER JOIN sales_info s ON e.Employees_id = s.Employees_id
- inNER JOIN customer_info c ON s.Customer_id = c.Customer_id
- inNER JOIN sales_list sl ON s.Sales_id = sl.Sales_id
- inNER JOIN commodity_info m ON sl.Commodity_id = m.Commodity_id;
+ INNER JOIN sales_info s ON e.Employees_id = s.Employees_id
+ INNER JOIN customer_info c ON s.Customer_id = c.Customer_id
+ INNER JOIN sales_list sl ON s.Sales_id = sl.Sales_id
+ INNER JOIN commodity_info m ON sl.Commodity_id = m.Commodity_id;
 ```
 
 ## 4. 最佳实践

@@ -4,571 +4,228 @@ title: GROUP BY 与分组集
 module: 'sql'
 category: 数据库
 difficulty: advanced
-description: SQL分组与分组集：GROUP BY子句、ROLLUP、CUBE、GROUPING SETS多维分析、GROUPING函数与报表生成
+description: 用播客平台的收听周报掌握分组：GROUP BY 基础、ROLLUP 小计总计、GROUPING 区分汇总行、GROUPING SETS 精确控制与 CUBE 的成本。
 author: fanquanpp
 updated: '2026-09-13'
 related:
   - 'sql/050-FilterCondition'
   - 'sql/060-AggregateFunction'
   - 'sql/150-JoinQuery'
-  - 'sql/160-NaturalJoinUsing'
 prerequisites:
   - 'sql/020-OverviewStandard'
 ---
 
-## 前置知识
+## 场景：一张带小计的周报
 
-建议先阅读以下内容再进入本文：
-
-- [概述与标准](/sql/020-OverviewStandard)
-
-## 1. GROUP BY 基础
-
-### 1.1 分组原理
-
-GROUP BY 将结果集按指定列的值分组，每组生成一行汇总结果。
+运营周会要一张收听报表：**每个节目在每个客户端的收听次数**，外加每档节目的小计和全平台总计。数据长这样：
 
 ```sql
--- 单列分组
-SELECT dept_id, COUNT(*) AS emp_count, AVG(salary) AS avg_salary
-FROM employees
-GROUP BY dept_id;
-
--- 多列分组
-SELECT dept_id, job_title, COUNT(*) AS emp_count
-FROM employees
-GROUP BY dept_id, job_title;
-```
-
-### 1.2 分组规则
-
-- SELECT 中的非聚合列必须出现在 GROUP BY 中
-- GROUP BY 列的 NULL 值被归为同一组
-- GROUP BY 可以使用表达式
-
-```sql
--- 按表达式分组
-SELECT
-    EXTRACT(YEAR FROM created_at) AS year,
-    EXTRACT(MONTH FROM created_at) AS month,
-    COUNT(*) AS order_count
-FROM orders
-GROUP BY EXTRACT(YEAR FROM created_at), EXTRACT(MONTH FROM created_at);
-```
-
-## 2. GROUPING SETS
-
-### 2.1 概念
-
-GROUPING SETS 允许在一次查询中指定多个分组集，相当于多个 GROUP BY 查询的 UNION ALL。
-
-```sql
--- 等价于两个 GROUP BY 的 UNION ALL
-SELECT dept_id, job_title, COUNT(*) AS emp_count
-FROM employees
-GROUP BY GROUPING SETS (
-    (dept_id),           -- 按部门分组
-    (job_title)          -- 按职位分组
+CREATE TABLE plays (
+    id         BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,  -- MySQL: BIGINT AUTO_INCREMENT
+    show_name  VARCHAR(100) NOT NULL,
+    platform   VARCHAR(20)  NOT NULL,   -- ios / android / web
+    played_at  TIMESTAMP    NOT NULL
 );
--- 等价于：
-SELECT dept_id, NULL AS job_title, COUNT(*) AS emp_count
-FROM employees GROUP BY dept_id
+
+INSERT INTO plays (show_name, platform, played_at) VALUES
+('代码夜话', 'ios',     '2026-09-01 08:10:00'),
+('代码夜话', 'ios',     '2026-09-01 21:40:00'),
+('代码夜话', 'android', '2026-09-02 07:05:00'),
+('早班机',   'android', '2026-09-02 07:30:00'),
+('早班机',   'web',     '2026-09-03 09:15:00'),
+('早班机',   'web',     '2026-09-03 09:20:00');
+```
+
+普通 GROUP BY 能给出最细粒度，但小计和总计要怎么办？把三个结果各查一遍再用程序拼？可以，但三次扫描、三段代码，还容易在程序里拼错。SQL 标准早就为这件事准备了分组集。
+
+## 动手：从 GROUP BY 到 ROLLUP
+
+### 先把最细粒度做对
+
+```sql
+SELECT show_name, platform, COUNT(*) AS play_count
+FROM plays
+GROUP BY show_name, platform;
+```
+
+结果只有明细行：
+
+| show_name | platform | play_count |
+| --- | --- | --- |
+| 代码夜话 | ios | 2 |
+| 代码夜话 | android | 1 |
+| 早班机 | android | 1 |
+| 早班机 | web | 2 |
+
+三条基础规则，先自查一遍：
+
+- SELECT 里的非聚合列必须出现在 GROUP BY 中（否则数据库不知道这行该归哪组）；
+- 分组列的 NULL 值会聚成同一组；
+- GROUP BY 后面可以写表达式，比如 `GROUP BY DATE(played_at)` 按天分。
+
+**只在分组后能用的过滤是 HAVING，不是 WHERE**：WHERE 在分组前过滤行，HAVING 在分组后过滤组。
+
+```sql
+-- 只看播放量达到 2 次的"节目 x 客户端"组合
+SELECT show_name, platform, COUNT(*) AS play_count
+FROM plays
+WHERE played_at >= '2026-09-01' AND played_at < '2026-09-08'  -- 先过滤行
+GROUP BY show_name, platform
+HAVING COUNT(*) >= 2;                                          -- 再过滤组
+```
+
+### ROLLUP：一层层向上卷
+
+把明细、小计、总计一次查出来的写法：
+
+```sql
+SELECT show_name, platform, COUNT(*) AS play_count
+FROM plays
+GROUP BY ROLLUP (show_name, platform);
+```
+
+结果多了 4 行（MySQL 的方言写法见下方说明）：
+
+| show_name | platform | play_count | 这行是什么 |
+| --- | --- | --- | --- |
+| 代码夜话 | ios | 2 | 明细 |
+| 代码夜话 | android | 1 | 明细 |
+| 代码夜话 | NULL | 3 | 节目小计（不看客户端） |
+| 早班机 | android | 1 | 明细 |
+| 早班机 | web | 2 | 明细 |
+| 早班机 | NULL | 3 | 节目小计 |
+| NULL | NULL | 6 | 总计 |
+
+ROLLUP(show_name, platform) 等价于三个分组集依次执行：`(show_name, platform)`、`(show_name)`、`()`。维度多一层就多一层汇总：ROLLUP(年, 月, 日) 会给出月小计、年小计和总计——这正是报表系统"按层级卷起"的含义。
+
+MySQL 的方言写法（8.0 支持 ROLLUP，但不支持 CUBE 和 GROUPING SETS）：
+
+```sql
+SELECT show_name, platform, COUNT(*) AS play_count
+FROM plays
+GROUP BY show_name, platform WITH ROLLUP;
+```
+
+## 为什么：汇总行的 NULL 和数据里的 NULL 怎么区分
+
+ROLLUP 的结果里，小计行和总计行的分组列是 NULL。麻烦在于：如果 `platform` 这一列本身允许 NULL，数据里也可能有 NULL。两种 NULL 混在一张报表里，前端没法区分"没有客户端数据"和"这是小计行"。
+
+`GROUPING()` 函数就是为此存在的：分组列参与分组时返回 0，因分组集被卷起时返回 1。
+
+```sql
+SELECT
+    COALESCE(show_name, 'ALL')                       AS show_label,
+    CASE WHEN GROUPING(platform) = 1 THEN 'ALL'
+         ELSE platform END                           AS platform_label,
+    COUNT(*)                                         AS play_count,
+    GROUPING(show_name) + GROUPING(platform)         AS summary_level
+FROM plays
+GROUP BY ROLLUP (show_name, platform);
+```
+
+`summary_level` 一列直接告诉前端：0 是明细，1 是节目小计，2 是总计。比用 NULL 当标记可靠得多。
+
+PostgreSQL 的 `GROUPING(a, b)` 支持多参数，返回按位组合的整数（a 是高位）；SQL Server 把这个能力单独做成了 `GROUPING_ID(a, b)` 函数，语义相同。
+
+## 动手：GROUPING SETS 与 CUBE
+
+### GROUPING SETS：精确指定要哪几层
+
+ROLLUP 是固定的"逐层卷起"。如果周报只要"按节目汇总"和"按客户端汇总"两栏，不要交叉明细，也不要总计，就用 GROUPING SETS 明确列出来：
+
+```sql
+SELECT show_name, platform, COUNT(*) AS play_count
+FROM plays
+GROUP BY GROUPING SETS (
+    (show_name),      -- 按节目
+    (platform)        -- 按客户端
+);
+```
+
+它就是两条 GROUP BY 的 UNION ALL，但只扫一遍表：
+
+```sql
+-- 等价写法（扫两遍表，结果顺序可能不同）
+SELECT show_name, NULL AS platform, COUNT(*) FROM plays GROUP BY show_name
 UNION ALL
-SELECT NULL AS dept_id, job_title, COUNT(*) AS emp_count
-FROM employees GROUP BY job_title;
+SELECT NULL, platform, COUNT(*) FROM plays GROUP BY platform;
 ```
 
-### 2.2 多维分组集
+要总计就补一个空集：`GROUPING SETS ((show_name), (platform), ())`。
+
+### CUBE：所有维度组合全来一遍
+
+CUBE 生成全部 2 的 n 次方个分组集。两个维度就是 4 组：明细、按节目、按客户端、总计：
 
 ```sql
--- 多个分组集组合
-SELECT dept_id, job_title, COUNT(*) AS emp_count
-FROM employees
-GROUP BY GROUPING SETS (
-    (dept_id, job_title),   -- 部门×职位交叉分组
-    (dept_id),              -- 仅按部门
-    (job_title),            -- 仅按职位
-    ()                      -- 总计
-);
+SELECT show_name, platform, COUNT(*) AS play_count
+FROM plays
+GROUP BY CUBE (show_name, platform);
 ```
 
-## 3. ROLLUP
+三维（加 region）就是 8 组，四维 16 组。分组集数量是指数增长的，每个分组集都是一次完整的聚合运算——这是 CUBE 和随意 ROLLUP 之间最重要的区别。
 
-### 3.1 概念
+### 三者关系一句话
 
-ROLLUP 按层级递减生成分组集，用于生成小计和总计行。
+- GROUPING SETS：点菜，要哪几层写哪几层；
+- ROLLUP：套餐，按维度顺序逐层卷起；
+- CUBE：自助餐，全组合都上。
+
+任何 ROLLUP/CUBE 都能改写成 GROUPING SETS；拿不准时先写 GROUPING SETS 再看要不要简写。
+
+## 坑点与自检
+
+### 坑一：MySQL 的能力边界
+
+MySQL 只支持 `WITH ROLLUP`（等价于 ROLLUP）和 8.0 起的 `GROUPING()` 函数；**没有 CUBE、没有 GROUPING SETS**。需要多维分组集时，要么在 MySQL 里用多条查询 UNION ALL，要么把这类报表查询放到支持完整分组集的数据库（PostgreSQL、SQL Server、Oracle、ClickHouse 等）执行。选型前先确认报表引擎的分组集能力。
+
+### 坑二：WITH ROLLUP 的排序限制
+
+MySQL 的 `WITH ROLLUP` 不允许结果里再写 ORDER BY（会报错），汇总行的位置也不由你控制。需要"小计跟在每个分组后面并排序"的报表样式，PostgreSQL 的 ROLLUP 配合 `ORDER BY GROUPING(...)` 更合适：
 
 ```sql
--- ROLLUP(dept_id, job_title) 生成以下分组集：
--- 1. (dept_id, job_title)  -- 最细粒度
--- 2. (dept_id)             -- 部门小计
--- 3. ()                    -- 总计
-
-SELECT
-    dept_id,
-    job_title,
-    COUNT(*) AS emp_count,
-    SUM(salary) AS total_salary
-FROM employees
-GROUP BY ROLLUP (dept_id, job_title);
+-- PostgreSQL：明细在前、小计在后、总计最后
+SELECT show_name, platform, COUNT(*) AS play_count
+FROM plays
+GROUP BY ROLLUP (show_name, platform)
+ORDER BY GROUPING(show_name), show_name, GROUPING(platform);
 ```
 
-**输出示例**：
+### 坑三：列数多时 CUBE 失控
 
-| dept_id | job_title | emp_count | total_salary |
-| ------- | --------- | --------- | ------------ | ---------- |
-| 1 | Engineer | 10 | 1000000 |
-| 1 | Manager | 3 | 450000 |
-| 1 | NULL | 13 | 1450000 | ← 部门小计 |
-| 2 | Engineer | 8 | 800000 |
-| 2 | NULL | 8 | 800000 | ← 部门小计 |
-| NULL | NULL | 21 | 2250000 | ← 总计 |
-
-### 3.2 三级 ROLLUP
+`CUBE(a, b, c, d, e)` 是 32 个分组集，大表上就是 32 次聚合。自检方法：**先数维度，再问自己报表真的每一层都要吗**。绝大多数报表只要其中三五层，直接写 GROUPING SETS：
 
 ```sql
--- ROLLUP(year, quarter, month)
-SELECT
-    EXTRACT(YEAR FROM created_at) AS yr,
-    EXTRACT(QUARTER FROM created_at) AS qtr,
-    EXTRACT(MONTH FROM created_at) AS mon,
-    SUM(amount) AS total
-FROM orders
-GROUP BY ROLLUP (
-    EXTRACT(YEAR FROM created_at),
-    EXTRACT(QUARTER FROM created_at),
-    EXTRACT(MONTH FROM created_at)
-);
--- 生成分组集：(yr,qtr,mon), (yr,qtr), (yr), ()
+-- 代替 CUBE(a,b,c,d,e)：只要关键几层
+GROUP BY GROUPING SETS ((a, b, c), (a, b), (a), ());
 ```
 
-## 4. CUBE
+### 坑四：大数据量的正解是预聚合
 
-### 4.1 概念
-
-CUBE 生成所有可能的分组集组合，用于多维数据分析。
+实时扫明细表算 ROLLUP，量一大就顶不住。常规架构是定时把聚合结果写进汇总表或物化视图，报表查汇总表：
 
 ```sql
--- CUBE(dept_id, job_title) 生成以下分组集：
--- 1. (dept_id, job_title)  -- 交叉分组
--- 2. (dept_id)             -- 按部门
--- 3. (job_title)           -- 按职位
--- 4. ()                    -- 总计
+-- PostgreSQL 物化视图（刷新命令支持 CONCURRENTLY 不锁读）
+CREATE MATERIALIZED VIEW play_summary AS
+SELECT show_name, platform, DATE_TRUNC('day', played_at) AS day, COUNT(*) AS cnt
+FROM plays
+GROUP BY show_name, platform, DATE_TRUNC('day', played_at);
 
-SELECT
-    dept_id,
-    job_title,
-    COUNT(*) AS emp_count
-FROM employees
-GROUP BY CUBE (dept_id, job_title);
+REFRESH MATERIALIZED VIEW CONCURRENTLY play_summary;
 ```
 
-### 4.2 CUBE 的分组集数量
+分组集负责"一次算对"，预聚合负责"天天算得起"，两者是配合关系。
 
-$n$ 列的 CUBE 生成 $2^n$ 个分组集：
+## 练习
 
-| 列数 | 分组集数量 | 说明                                            |
-| ---- | ---------- | ----------------------------------------------- |
-| 2    | 4          | (a,b), (a), (b), ()                             |
-| 3    | 8          | (a,b,c), (a,b), (a,c), (b,c), (a), (b), (c), () |
-| 4    | 16         | 注意性能影响                                    |
+1. 用 plays 表查出"每个节目每天的播放次数 + 每节目小计 + 总计"，一次查询完成（提示：ROLLUP 配合表达式分组）。
+2. 把第 1 题的结果加上 `summary_level` 列，区分明细、小计、总计。
+3. 用 GROUPING SETS 查"按节目汇总"和"按客户端汇总"两栏加总计行，并与 UNION ALL 写法对比结果行数是否一致。
+4. 在 MySQL 里验证：GROUPING SETS 会报什么错？`WITH ROLLUP` 后面加 ORDER BY 会报什么错？
+5. 思考题：报表要求"分客户端小计里 ios/android/web 各一行，但不要按节目的小计"。应该用三个关键词中的哪一个？写出 SQL。
 
-```sql
--- 三维 CUBE
-SELECT region, dept_id, job_title, SUM(salary) AS total
-FROM employees
-GROUP BY CUBE (region, dept_id, job_title);
--- 生成 2^3 = 8 个分组集
-```
+## 下一步
 
-## 5. GROUPING 函数
-
-### 5.1 识别小计与总计行
-
-GROUPING 函数返回 0 或 1，指示某列是否因分组集而被聚合为 NULL：
-
-- `GROUPING(col) = 0`：该列有实际值
-- `GROUPING(col) = 1`：该列因分组集而被聚合为 NULL
-
-```sql
-SELECT
-    dept_id,
-    job_title,
-    COUNT(*) AS emp_count,
-    GROUPING(dept_id) AS is_dept_subtotal,
-    GROUPING(job_title) AS is_job_subtotal
-FROM employees
-GROUP BY ROLLUP (dept_id, job_title);
-```
-
-| dept_id | job_title | emp_count | is_dept_subtotal | is_job_subtotal |
-| ------- | --------- | --------- | ---------------- | --------------- | ---------- |
-| 1 | Engineer | 10 | 0 | 0 |
-| 1 | NULL | 13 | 0 | 1 | ← 部门小计 |
-| NULL | NULL | 21 | 1 | 1 | ← 总计 |
-
-### 5.2 使用 GROUPING ID
-
-```sql
--- GROUPING_ID：将所有 GROUPING 位组合为整数
--- GROUPING_ID(dept_id, job_title)
--- = GROUPING(dept_id) * 2 + GROUPING(job_title) * 1
-
-SELECT
-    dept_id,
-    job_title,
-    COUNT(*) AS emp_count,
-    GROUPING_ID(dept_id, job_title) AS grouping_id
-FROM employees
-GROUP BY ROLLUP (dept_id, job_title);
-
--- grouping_id 含义：
--- 0 = (dept_id, job_title)  最细粒度
--- 1 = (dept_id)             部门小计
--- 3 = ()                    总计
-```
-
-### 5.3 格式化报表输出
-
-```sql
-SELECT
-    CASE WHEN GROUPING(dept_id) = 1 THEN '【总计】'
-         ELSE dept_id::TEXT END AS dept,
-    CASE WHEN GROUPING(job_title) = 1 THEN '【小计】'
-         ELSE job_title END AS job,
-    COUNT(*) AS emp_count,
-    SUM(salary) AS total_salary
-FROM employees
-GROUP BY ROLLUP (dept_id, job_title)
-ORDER BY GROUPING(dept_id), dept_id, GROUPING(job_title), job_title;
-```
-
-## 6. 组合使用
-
-### 6.1 混合 ROLLUP 和 CUBE
-
-```sql
-SELECT
-    region,
-    dept_id,
-    job_title,
-    SUM(salary) AS total
-FROM employees
-GROUP BY
-    region,
-    ROLLUP (dept_id, job_title);
--- 等价于 GROUPING SETS (
---     (region, dept_id, job_title),
---     (region, dept_id),
---     (region)
--- )
-```
-
-### 6.2 多个 ROLLUP/CUBE
-
-```sql
-SELECT
-    region,
-    dept_id,
-    job_title,
-    SUM(salary) AS total
-FROM employees
-GROUP BY
-    ROLLUP (region),
-    ROLLUP (dept_id, job_title);
--- 等价于两个 ROLLUP 的交叉积
-```
-
-## 7. 性能考量
-
-### 7.1 分组集数量控制
-
-```sql
--- CUBE(5列) = 32个分组集，数据量大时性能堪忧
--- 优化：拆分为多个查询或使用 GROUPING SETS 精确指定
-
--- 替代 CUBE(a, b, c, d, e)
-GROUP BY GROUPING SETS (
-    (a, b, c),     -- 只需这三个关键分组
-    (a, b),
-    (a, c),
-    (b, c),
-    ()
-)
-```
-
-### 7.2 物化视图与预聚合
-
-```sql
--- PostgreSQL 物化视图
-CREATE MATERIALIZED VIEW sales_summary AS
-SELECT
-    region, dept_id,
-    DATE_TRUNC('month', created_at) AS month,
-    SUM(amount) AS total,
-    COUNT(*) AS cnt
-FROM sales
-GROUP BY region, dept_id, DATE_TRUNC('month', created_at);
-
--- 刷新物化视图
-REFRESH MATERIALIZED VIEW CONCURRENTLY sales_summary;
-```
-## 基本分组
-
-**基本写法：单列分组**
-`GROUP BY <列>`
-```sql
--- 按部门分组统计人数
-SELECT dept, COUNT(*) AS emp_count
-FROM employees
-GROUP BY dept;
-```
-
----
-
-**基本写法：多列分组**
-`GROUP BY <列1>, <列2>`
-```sql
--- 按部门和职位分组
-SELECT dept, job_title, COUNT(*) AS cnt, AVG(salary) AS avg_sal
-FROM employees
-GROUP BY dept, job_title;
-```
-
----
-
-**基本写法：HAVING 过滤分组**
-`GROUP BY <列> HAVING <聚合条件>`
-```sql
--- 只显示人数大于 5 的部门
-SELECT dept, COUNT(*) AS cnt
-FROM employees
-GROUP BY dept
-HAVING COUNT(*) > 5;
-```
-
----
-
-## ROLLUP 上卷汇总
-
-**基本写法：ROLLUP 多级汇总**
-`GROUP BY ROLLUP(<列1>, <列2>)`
-```sql
--- 按部门、职位汇总，并生成各级小计与总计
-SELECT dept, job_title, COUNT(*) AS cnt, SUM(salary) AS total
-FROM employees
-GROUP BY ROLLUP(dept, job_title);
--- 结果包含：
---   每个 (dept, job_title) 组合的统计
---   每个 dept 的小计（job_title 为 NULL）
---   总计（dept 和 job_title 均为 NULL）
-```
-
----
-
-**基本写法：单列 ROLLUP**
-`GROUP BY ROLLUP(<列>)`
-```sql
--- 单列 ROLLUP 等价于分组 + 总计行
-SELECT dept, SUM(salary) AS total
-FROM employees
-GROUP BY ROLLUP(dept);
-```
-
----
-
-## CUBE 立方体汇总
-
-**基本写法：CUBE 全组合汇总**
-`GROUP BY CUBE(<列1>, <列2>)`
-```sql
--- 生成所有维度的交叉汇总
-SELECT dept, job_title, COUNT(*) AS cnt
-FROM employees
-GROUP BY CUBE(dept, job_title);
--- 结果包含：
---   (dept, job_title) 组合统计
---   每个 dept 的小计
---   每个 job_title 的小计
---   总计
-```
-
----
-
-**基本写法：三列 CUBE**
-`GROUP BY CUBE(<列1>, <列2>, <列3>)`
-```sql
--- 三维交叉汇总
-SELECT year, quarter, region, SUM(sales) AS total
-FROM sales_data
-GROUP BY CUBE(year, quarter, region);
-```
-
----
-
-## GROUPING SETS 分组集合
-
-**基本写法：指定分组集合**
-`GROUP BY GROUPING SETS((<列组合1>), (<列组合2>))`
-```sql
--- 分别按部门和按职位分组统计
-SELECT dept, job_title, COUNT(*) AS cnt
-FROM employees
-GROUP BY GROUPING SETS(
-  (dept),
-  (job_title)
-);
--- 等价于 UNION ALL 两条查询
-```
-
----
-
-**基本写法：包含空集（总计行）**
-`GROUP BY GROUPING SETS((<列>), ())`
-```sql
--- 分组统计 + 总计行
-SELECT dept, COUNT(*) AS cnt
-FROM employees
-GROUP BY GROUPING SETS((dept), ());
-```
-
----
-
-**基本写法：多组合分组**
-`GROUP BY GROUPING SETS((<列1>, <列2>), (<列1>), (<列2>), ())`
-```sql
--- 灵活指定多级分组
-SELECT dept, job_title, COUNT(*) AS cnt
-FROM employees
-GROUP BY GROUPING SETS(
-  (dept, job_title),
-  (dept),
-  (job_title),
-  ()
-);
-```
-
----
-
-## GROUPING 函数
-
-**基本写法：区分 NULL 与汇总行**
-`GROUPING(<列>)`
-```sql
--- GROUPING 返回 1 表示该 NULL 是汇总行，0 表示实际 NULL
-SELECT
-  dept,
-  CASE WHEN GROUPING(dept) = 1 THEN '总计' ELSE dept END AS dept_name,
-  COUNT(*) AS cnt
-FROM employees
-GROUP BY ROLLUP(dept);
-```
-
----
-
-**基本写法：多列 GROUPING**
-`GROUPING(<列1>), GROUPING(<列2>)`
-```sql
--- 区分各级汇总
-SELECT
-  CASE WHEN GROUPING(dept) = 1 THEN '全部部门' ELSE dept END AS dept,
-  CASE WHEN GROUPING(job_title) = 1 THEN '全部职位' ELSE job_title END AS job,
-  COUNT(*) AS cnt
-FROM employees
-GROUP BY ROLLUP(dept, job_title);
-```
-
----
-
-## 聚合函数组合
-
-**基本写法：多聚合函数**
-`SELECT <列>, COUNT(*), SUM(<列>), AVG(<列>), MIN(<列>), MAX(<列>)`
-```sql
--- 常用聚合函数组合
-SELECT dept,
-  COUNT(*) AS emp_count,
-  SUM(salary) AS total_salary,
-  AVG(salary) AS avg_salary,
-  MIN(salary) AS min_salary,
-  MAX(salary) AS max_salary
-FROM employees
-GROUP BY dept;
-```
-
----
-
-**基本写法：COUNT 不同值**
-`COUNT(DISTINCT <列>)`
-```sql
--- 统计每个部门的不同职位数
-SELECT dept, COUNT(DISTINCT job_title) AS job_count
-FROM employees
-GROUP BY dept;
-```
-
----
-
-**基本写法：字符串聚合**
-`GROUP_CONCAT(<列> [SEPARATOR '<分隔>'])`
-```sql
--- MySQL：将分组中的字符串拼接
-SELECT dept, GROUP_CONCAT(name SEPARATOR ', ') AS all_names
-FROM employees
-GROUP BY dept;
-```
-
----
-
-**基本写法：PostgreSQL 字符串聚合**
-`STRING_AGG(<列>, '<分隔>')`
-```sql
--- PostgreSQL：字符串拼接
-SELECT dept, STRING_AGG(name, ', ' ORDER BY name) AS all_names
-FROM employees
-GROUP BY dept;
-```
-
----
-
-## 条件聚合
-
-**基本写法：CASE WHEN 与聚合**
-`SUM(CASE WHEN <条件> THEN 1 ELSE 0 END)`
-```sql
--- 按条件统计不同类别
-SELECT dept,
-  SUM(CASE WHEN gender = 'M' THEN 1 ELSE 0 END) AS male_count,
-  SUM(CASE WHEN gender = 'F' THEN 1 ELSE 0 END) AS female_count
-FROM employees
-GROUP BY dept;
-```
-
----
-
-**基本写法：条件平均值**
-`AVG(CASE WHEN <条件> THEN <列> END)`
-```sql
--- 计算不同条件的平均值
-SELECT dept,
-  AVG(CASE WHEN job_title = 'Engineer' THEN salary END) AS eng_avg,
-  AVG(CASE WHEN job_title = 'Manager' THEN salary END) AS mgr_avg
-FROM employees
-GROUP BY dept;
-```
-
----
-
-## FILTER 子句（PostgreSQL）
-
-**基本写法：FILTER 条件聚合**
-`<聚合函数>(<列>) FILTER (WHERE <条件>)`
-```sql
--- PostgreSQL/SQL Standard 条件聚合
-SELECT dept,
-  COUNT(*) AS total,
-  COUNT(*) FILTER (WHERE salary > 50000) AS high_paid,
-  AVG(salary) FILTER (WHERE status = 'active') AS active_avg
-FROM employees
-GROUP BY dept;
-```
+- GROUP BY 常与 JOIN 后的多表数据配合，先过[连接查询](/sql/150-JoinQuery)；
+- 子句执行顺序（WHERE 与 HAVING 为什么不能互换）在[SELECT 执行顺序](/sql/080-SelectExecutionOrder)有完整推演；
+- 报表中的排名、占比、环比要靠窗口函数，见[窗口函数](/sql/260-WindowFunction)。

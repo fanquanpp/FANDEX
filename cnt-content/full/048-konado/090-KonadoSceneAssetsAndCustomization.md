@@ -14,20 +14,9 @@ prerequisites:
   - 'konado/070-KonadoDialogueManagerApi'
 ---
 
-默认模板里的角色是一张张立绘图片、背景是一张张静图，这对快速起步足够了。但如果你想让角色是 Live2D 模型、让背景是一段带动画的视频，或者想换掉对话框样式、做出与众不同的打字机效果——Konado 的回答不是"等官方支持"，而是一个更彻底的设计：角色与背景本质上都是场景（Scene），图片只是场景的一种最简单形态。
+几何构成（speed-rouge）的美术给主角做了一套 Live2D 模型， UI 同学想换掉默认对话框的配色——两件事都指向同一个问题：Konado 的资源能不能不是"一张图"？答案是：角色与背景本质上都是场景（Scene），图片只是场景的一种最简单形态。默认模板里的角色是一张张立绘图片、背景是一张张静图，这对快速起步足够了；但你想让角色是 Live2D 模型、背景是带动画的视频、对话框换自己的样式时，Konado 的回答不是"等官方支持"，而是本篇要讲的场景化协议。
 
 本篇分两条线：前半部分讲"场景化资源"的协议——角色场景与背景场景如何被系统驱动，如何实现状态别名与像素交融转场；后半部分讲"界面定制"——替换对话框与打字机的方法与注意事项。
-
-## 学习目标
-
-- 理解"资源以 PackedScene 配置、剧本只表达意图"的场景化理念；
-- 掌握角色场景协议：继承 KonadoCharacterSceneBase、必须覆写 _apply_status、可选覆写 _has_status；
-- 了解状态转场帧协议与"淡出-应用-淡入"的降级路径，以及舞台控制器的转场配置项；
-- 会配置状态别名 status_aliases，让剧本语义名与美术资源名解耦；
-- 理解角色内部动作 _play_action/finish_action 与舞台动作 KonadoActorMotionLayer 的分工；
-- 掌握背景场景协议：KonadoBackgroundSceneBase 与 enter/exit 动画命名规则；
-- 会安全地自定义对话框：复制模板、修改副本、重新赋值 dialogue_box，并区分 hide 与 dismiss 两族显隐方法；
-- 会定制打字机效果与打字机音效，并记住 audio_volumn 的官方拼写与图层占用红线。
 
 ## 场景化资源理念
 
@@ -148,16 +137,23 @@ typewriter.start()
 
 自定义界面时最后一条红线是 CanvasLayer 图层占用。默认模板的约定是：1 为舞台与演出层，10 为对话框、选项与工具栏，50 为存档界面，100 为设置与成就等模态面板，110 为成就解锁等短时通知，120 为运行时错误提示。你的自定义界面可以选用空闲层级，但不要占用 120 及以上的层——那里是运行时错误提示的专属区，被遮挡会让你看不见故障信息。
 
-## 小结
+## 坑点与自检
 
-- 角色与背景以 PackedScene 配置，资源表保存场景引用，剧本只写语义意图，图片、视频、Spine、Live2D、shader 均可充当表现载体；
-- 角色场景继承 KonadoCharacterSceneBase：必需覆写 _apply_status，可选覆写 _has_status（无副作用幂等）；实现转场帧协议（返回新建的 KonadoCharacterTransitionFrame）可获真正像素交融，否则自动淡出-应用-淡入，转场由 KonadoStageController 的 actor_state_transition_enabled 与 actor_state_transition_duration（默认 0.3 秒）控制；
-- status_aliases 把剧本语义名映射为资源实际名（如 angry 映射 face_anger_01），实现剧本与美术命名解耦；
-- 角色内部动作走 _play_action/finish_action，舞台动作走 KonadoActorMotionLayer 播 AnimationPlayer 同名动画；
-- 背景场景继承 KonadoBackgroundSceneBase，动画命名 enter/exit 兜底、enter_fade/exit_fade 与 enter_custom/exit_custom 按效果名优先；图片背景推荐 Full Rect + Ignore Size + Keep Aspect Covered；转场默认 SubViewport 捕获，静态图可走 DIRECT_TEXTURE 或覆写 get_transition_texture；
-- 自定义对话框先复制模板到项目目录再改副本，把副本 KonadoDialogueBox 赋给 dialogue_box；hide 系列保留内容、dismiss 系列清除内容；
-- 打字机支持 GPU 逐字符淡入、BBCode、任意角度淡入与 CJK；音效配置里 audio_volumn 是官方实际拼写；自定义音效放插件目录外；
-- 自定义界面不占用 CanvasLayer 120 及以上。
+- 直接改 addons/konado/ 里的对话框模板，插件升级后改动全丢——复制到项目目录改副本，再赋回 dialogue_box；
+- _has_status 里做了状态切换或播放动画——它是查询接口，必须无副作用、幂等，真正的切换在 _apply_status；
+- 视频角色想实现像素交融转场，怎么都配不出来——动态媒体自动降级为安全转场，这是设计行为；
+- 美术把 angry 重命名成 face_anger_01，剧本里批量改动——正确做法是改 status_aliases 别名表，剧本一行不动；
+- 调打字机音量写 audio_volume 报属性不存在——官方拼写就是 audio_volumn，照抄；
+- 自定义面板占了 CanvasLayer 120，运行时错误提示被盖住看不见——120 及以上是错误提示专属层，选空闲层级；
+- 自检问题一：_apply_status 的两个参数分别是什么？（别名解析后的最终状态名；剧本里的原始状态名）
+- 自检问题二：background night_street fade 的动画查找顺序？（先找 enter_fade/exit_fade，找不到且效果非 none 时退回淡入淡出兜底）
+- 自检问题三：静态图片背景想降低转场开销怎么办？（DIRECT_TEXTURE 性能路径，或覆写 get_transition_texture 自己指定纹理）
+
+## 练习
+
+1. 写一个最小自定义角色场景：继承 KonadoCharacterSceneBase，覆写 _apply_status 用颜色块代替立绘切换状态，注册进 character_list 后用 actor change 验证；
+2. 给你的角色配 status_aliases（语义名 angry 映射到任意资源名），然后故意改别名表而不改剧本，验证剧本行为不变；
+3. 复制默认对话框改配色与布局，赋回 dialogue_box；再分别调用 hide_dialogue_box 与 dismiss_dialogue_box，观察"保留内容"与"清除内容"的差别。
 
 ## 参考链接
 

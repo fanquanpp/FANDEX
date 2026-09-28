@@ -435,7 +435,8 @@ func main() {
 ### 5.3 客户端调用
 
 ```go
-conn, _ := grpc.Dial("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
+// grpc.Dial 自 gRPC-Go 1.63 起废弃，新代码用 grpc.NewClient（懒连接，见 gRPC 一篇）
+conn, _ := grpc.NewClient("localhost:50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 defer conn.Close()
 
 client := pb.NewUserServiceClient(conn)

@@ -1,74 +1,39 @@
 ---
 order: 170
-title: GMP 调度模型
+title: GMP 调度模型：goroutine 是怎么被跑起来的
 module: 'go'
 category: 后端技术
 difficulty: advanced
-description: Go GMP调度模型详解：G、M、P结构。
+description: 以"服务搬进 2 核容器后延迟反升"为主线学 GMP：G/M/P 各自管什么、调度时机与 work stealing、系统调用 hand-off、GOMAXPROCS 在容器里的正确姿势、trace 与 schedtrace 观测，附坑点、自检与练习。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'go/500-GoRateLimiting'
   - 'go/160-GoroutineChannelPrinciple'
+  - 'go/180-GoroutineSchedule'
   - 'go/200-ConcurrencyPattern'
-  - 'go/230-ReflectionGenericFunction'
+  - 'go/580-GoPerformanceAnalysis'
 prerequisites:
   - 'go/020-GoOverviewEnvSetup'
 ---
 
 
-## 概述
+## 真实场景：同一份代码，搬进容器后吞吐掉了一半
 
-Go 语言的并发能力核心在于其调度器。GMP 模型是 Go 运行时调度器的设计基础，它决定了 goroutine 如何被高效地分配到操作系统线程上执行。理解 GMP 模型有助于编写高性能并发程序，并在排查性能瓶颈时提供理论依据。
+你在开发机上写了一个并发抓取服务，`go build` 之后压测轻松跑满 16 核。上线到 Kubernetes，容器 CPU limit 写的是 2 核，结果延迟反而比开发机还高，CPU 显示 2000% 被限流（throttled）打满。
 
-传统线程模型中，每个线程由操作系统直接调度，线程创建和切换开销大。Go 通过引入 goroutine 这一用户态轻量级线程，将调度工作从操作系统内核搬到用户态运行时，大幅降低了并发开销。GMP 模型正是实现这一目标的关键架构。
+原因很可能与 Go 无关、与操作系统有关：老版本 Go 的运行时在启动时按"机器核心数"设置 GOMAXPROCS，而容器里的 Go 进程看到的是宿主机的 64 核，不是 limit 里的 2 核。于是调度器开出 64 个逻辑处理器 P，64 个线程抢 2 核的配额，CPU 配额每个周期都被提前用光，剩下时间全在等下一周期——吞吐自然掉。
 
-## 基础概念
+这就是为什么后端 Go 工程师需要理解 GMP 调度模型：它解释了 goroutine 是怎么被放上线程的、为什么容器环境要关心 GOMAXPROCS、以及为什么一个死循环能（或不能）拖垮整个进程。
 
-### G (Goroutine)
+## 动手第一步：把 G、M、P 变成能看到的数字
 
-G 是 goroutine 的缩写，代表用户态轻量级线程。每个 `go func()` 调用都会创建一个 G。G 包含以下信息：
+GMP 三个字母各代表一个实体：
 
-- 栈指针（初始栈大小仅 2KB，可动态增长）
-- 调度信息（状态、优先级等）
-- 所属的函数和参数
+- **G（goroutine）**：一次 `go func()` 产生一个 G，自带 2KB 初始栈，持有栈指针与调度状态；
+- **M（machine）**：操作系统线程，真正执行代码的角色；
+- **P（processor）**：逻辑处理器，G 与 M 之间的"工位"——G 必须被某个 P 安排，M 必须绑定一个 P 才能干活。P 的数量就是 GOMAXPROCS。
 
-```go
-// 每次调用 go 关键字都会创建一个 G
-go func() {
-    fmt.Println("这是一个 goroutine")
-}()
-```
-
-### M (Machine)
-
-M 代表操作系统线程，由操作系统调度。M 的职责是执行 G 中的代码。M 本身不持有 G 的状态，它需要绑定 P 才能获取可运行的 G。
-
-关键特性：
-
-- M 的数量可以远大于 GOMAXPROCS
-- 当 M 执行系统调用阻塞时，会与 P 解绑，P 可以绑定其他空闲 M 继续执行 G
-- 空闲的 M 会休眠，需要时再唤醒
-
-### P (Processor)
-
-P 是逻辑处理器，是 G 和 M 之间的中间层。P 持有本地运行队列，其中存放待执行的 G。P 的数量由 GOMAXPROCS 决定，默认等于 CPU 核心数。
-
-P 的核心作用：
-
-- 将 G 分配给 M 执行
-- 管理本地运行队列（最多 256 个 G）
-- 缓存 mcache，加速内存分配
-
-| 概念          | 说明                            |
-| ------------- | ------------------------------- |
-| G (Goroutine) | 协程，用户态轻量级线程          |
-| M (Machine)   | 操作系统线程                    |
-| P (Processor) | 逻辑处理器，GOMAXPROCS 控制数量 |
-
-## 快速上手
-
-### 观察调度行为
+先跑一段代码，把数量打印出来：
 
 ```go
 package main
@@ -76,28 +41,58 @@ package main
 import (
     "fmt"
     "runtime"
-    "time"
 )
 
 func main() {
-    // 设置 P 的数量为 4
-    runtime.GOMAXPROCS(4)
+    fmt.Println("P 数量 (GOMAXPROCS):", runtime.GOMAXPROCS(0))
+    fmt.Println("CPU 核心数:", runtime.NumCPU())
+    fmt.Println("当前 G 数量:", runtime.NumGoroutine()) // main 本身也是一个 G
 
-    // 启动多个 goroutine 观察调度
-    for i := 0; i < 10; i++ {
+    for i := 0; i < 100; i++ {
         go func(id int) {
-            fmt.Printf("Goroutine %d 运行中\n", id)
+            // 睡一下，别让 G 太快退出，方便观察
+            select {}
         }(i)
     }
-
-    // 查看当前 goroutine 数量
-    fmt.Printf("当前 goroutine 数量: %d\n", runtime.NumGoroutine())
-
-    time.Sleep(time.Second)
+    fmt.Println("启动后 G 数量:", runtime.NumGoroutine()) // 101
 }
 ```
 
-### 使用 trace 工具分析调度
+预期输出（核数因机器而异）：
+
+```text
+P 数量 (GOMAXPROCS): 8
+CPU 核心数: 8
+当前 G 数量: 1
+启动后 G 数量: 101
+```
+
+关键观察：P 的数量远小于 G 的数量。100 个 goroutine 只需要 8 个 P 来"发工作牌"，因为大部分 G 并不在执行——它们在队列里等。goroutine 便宜就便宜在这：创建一个 G 只是往队列里放一个几十字节级开销的结构体加 2KB 栈，而不是找操作系统要一个线程。
+
+## 动手第二步：用 schedtrace 看调度器实时状态
+
+不写任何代码，只加一个环境变量，就能让运行时每秒打印一次调度状态：
+
+```bash
+GODEBUG=schedtrace=1000 go run main.go
+```
+
+输出类似：
+
+```text
+SCHED 0ms: gomaxprocs=8 idleprocs=7 threads=5 spinningthreads=0 idlethreads=0 runqueue=0 [0 0 0 0 0 0 0 0]
+SCHED 1002ms: gomaxprocs=8 idleprocs=6 threads=9 spinningthreads=1 idlethreads=2 runqueue=3 [12 4 0 1 0 2 0 0]
+```
+
+逐项读：
+
+- `gomaxprocs=8`：8 个 P；
+- `idleprocs`：闲置的 P——这个数字长期很大，说明并发度不足，加 goroutine 或检查是否被锁串行化；
+- `threads`：M 的数量，可以超过 gomaxprocs（阻塞在系统调用里的 M 不占 P）；
+- `runqueue=3`：全局队列里有 3 个待运行 G；
+- 方括号 `[12 4 0 1 ...]`：每个 P 本地队列的长度，8 个 P 各自的待运行 G 数。
+
+再进一步，用 trace 工具看每个 G 在哪个 P 上、何时被抢占：
 
 ```go
 package main
@@ -108,322 +103,121 @@ import (
 )
 
 func main() {
-    // 创建 trace 输出文件
     f, _ := os.Create("trace.out")
-    defer f.Close()
-
-    // 启动 trace
     trace.Start(f)
     defer trace.Stop()
 
-    // 你的业务代码
-    for i := 0; i < 100; i++ {
-        go func() {
-            sum := 0
-            for j := 0; j < 1000; j++ {
-                sum += j
-            }
-        }()
-    }
-}
-```
-
-通过 `go tool trace trace.out` 可以在浏览器中查看调度详情。
-
-## 详细用法
-
-### 调度流程
-
-GMP 调度的核心流程如下：
-
-1. P 持有本地运行队列（local run queue，最多 256 个 G）
-2. M 绑定 P 后从本地队列取 G 执行
-3. 本地队列为空时，从全局队列获取（每次获取一批，均匀分配）
-4. 全局队列也为空时，从 netpoller 获取就绪的 G
-5. 以上都为空时，从其他 P 的本地队列偷取（work stealing）
-
-```
-全局队列 (Global Run Queue)
-    |
-    v
-P0 [本地队列: G1, G2, G3] <---> M0 (执行 G1)
-P1 [本地队列: G4, G5]     <---> M1 (执行 G4)
-P2 [本地队列: 空]         <---> M2 (偷取 P0 的 G)
-P3 [本地队列: G6]         <---> M3 (执行 G6)
-```
-
-### 调度时机
-
-调度器在以下时机会重新调度：
-
-- `go func()` 创建新 G 时，尝试放入本地队列
-- 系统调用（M 阻塞时释放 P，即 hand-off 机制）
-- channel 操作阻塞
-- time.Sleep
-- runtime.Gosched() 主动让出
-- 函数调用时栈检查点（stack check point）
-- GC 暂停所有 goroutine 后重新调度
-
-### GOMAXPROCS
-
-```go
-// 设置 P 的数量（默认等于 CPU 核数）
-runtime.GOMAXPROCS(4)
-
-// 获取当前 P 的数量
-n := runtime.GOMAXPROCS(0)
-fmt.Printf("当前 P 数量: %d\n", n)
-```
-
-GOMAXPROCS 的选择建议：
-
-- CPU 密集型任务：设置为 CPU 核心数
-- IO 密集型任务：可以适当增大，但通常默认值即可
-- 容器环境：Go 1.19 引入的是内存侧的 `GOMEMLIMIT`；CPU 侧的 cgroup 配额感知直到 Go 1.25 才落地，此前需手动设置 GOMAXPROCS 或使用 automaxprocs 等第三方库
-
-### Work Stealing 机制
-
-当 P 的本地队列为空时，按以下顺序查找可运行的 G：
-
-1. 从全局队列获取（每 61 次调度检查一次全局队列，保证公平性）
-2. 从 netpoller 获取网络就绪的 G
-3. 从其他 P 的本地队列偷取一半
-
-```go
-// 模拟 work stealing 场景
-package main
-
-import (
-    "fmt"
-    "sync"
-)
-
-func main() {
-    var wg sync.WaitGroup
-    wg.Add(1000)
-
-    // 大量 goroutine，P 会自动偷取
-    for i := 0; i < 1000; i++ {
+    done := make(chan struct{})
+    for i := 0; i < 20; i++ {
         go func(id int) {
-            defer wg.Done()
-            // 模拟工作
             sum := 0
-            for j := 0; j < 100; j++ {
+            for j := 0; j < 1_000_000; j++ {
                 sum += j
             }
+            _ = sum
+            done <- struct{}{}
         }(i)
     }
-
-    wg.Wait()
-    fmt.Println("所有 goroutine 完成")
-}
-```
-
-### Hand-off 机制
-
-当 M 因系统调用阻塞时，P 会与该 M 解绑，寻找或创建新的 M 继续执行本地队列中的 G。当阻塞的 M 从系统调用返回时，它会尝试获取一个空闲的 P，如果没有空闲 P，则将 G 放入全局队列，M 自身进入休眠。
-
-```go
-// 系统调用场景下的 hand-off
-package main
-
-import (
-    "fmt"
-    "syscall"
-    "time"
-)
-
-func main() {
-    // 一个 goroutine 执行阻塞的系统调用
-    go func() {
-        // 模拟文件读取（系统调用）
-        var buf [1024]byte
-        syscall.Read(0, buf[:])  // M 阻塞，P 会 hand-off 给其他 M
-        fmt.Println("系统调用返回")
-    }()
-
-    // 其他 goroutine 不会因此阻塞
-    go func() {
-        for i := 0; i < 5; i++ {
-            fmt.Printf("其他 goroutine 正常运行: %d\n", i)
-            time.Sleep(100 * time.Millisecond)
-        }
-    }()
-
-    time.Sleep(2 * time.Second)
-}
-```
-
-## 常见场景
-
-### 场景一：大量短任务
-
-```go
-// 处理大量短任务时，goroutine 调度开销很小
-func processBatch(items []Item) {
-    var wg sync.WaitGroup
-    // 限制并发数，避免 goroutine 过多
-    sem := make(chan struct{}, runtime.GOMAXPROCS(0)*2)
-
-    for _, item := range items {
-        wg.Add(1)
-        sem <- struct{}{} // 获取信号量
-        go func(it Item) {
-            defer wg.Done()
-            defer func() { <-sem }() // 释放信号量
-            process(it)
-        }(item)
+    for i := 0; i < 20; i++ {
+        <-done
     }
-
-    wg.Wait()
 }
 ```
 
-### 场景二：CPU 密集型与 IO 密集型混合
-
-```go
-func hybridWork() {
-    // CPU 密集型任务
-    go func() {
-        result := heavyComputation()
-        fmt.Println("计算完成:", result)
-    }()
-
-    // IO 密集型任务
-    go func() {
-        data, _ := http.Get("https://api.example.com/data")
-        fmt.Println("请求完成")
-    }()
-}
+```bash
+go run main.go
+go tool trace trace.out
 ```
 
-### 场景三：排查调度问题
+浏览器里打开 "Goroutine analysis"，随便点一个 G，能看到它的运行片段被拆散在多个 P 上——这就是调度器在并发 G 之间复用 P 的直接证据。
 
-```go
-// 使用 runtime 查看调度状态
-func debugScheduler() {
-    var m runtime.MemStats
-    runtime.ReadMemStats(&m)
+## 讲为什么：调度器为什么长成 G-M-P 三层
 
-    fmt.Printf("Goroutine 数量: %d\n", runtime.NumGoroutine())
-    fmt.Printf("CPU 核心数: %d\n", runtime.NumCPU())
-    fmt.Printf("GOMAXPROCS: %d\n", runtime.GOMAXPROCS(0))
-    fmt.Printf("CGO 调用次数: %d\n", runtime.NumCgoCall())
-}
+### 为什么不直接 G 绑 M
+
+最早的 goroutine 调度就是"G 排队、M 领取"，全局队列用一把大锁保护。多核之下所有 M 都挤在锁上，扩展性极差。P 的引入把队列拆散了：每个 P 有一个本地队列（容量 256），M 从绑定的 P 的本地队列取 G，绝大多数取放操作无锁完成。**P 本质上是"调度资源的分片"**：本地队列、mcache（内存分配缓存）都挂在 P 上，G 在同一个 P 上连续运行时缓存友好、无锁竞争。
+
+### 一个 G 从创建到执行
+
+1. `go func()` 创建 G，优先放进当前 P 的本地队列；本地队列满了，就把一半（连同新 G）挪进全局队列；
+2. 某个 M 绑定 P 后从本地队列取 G 执行；取空了按顺序找：每 61 次调度先查一次全局队列（防饿死，1 和 61 都是刻意选的质数）、再查 netpoller 里就绪的网络 G、最后从别的 P 偷一半（work stealing）；
+3. G 运行中遇到 channel 阻塞、锁等待、time.Sleep、系统调用、或被抢占，就让出 P，回到队列或等待队列。
+
+```
+             全局队列 (有锁，但访问频率被 61 次调度一次摊薄)
+                  |
+   P0 [G1 G2 G3] --- M0 正在执行 G1
+   P1 [G4 G5]    --- M1 正在执行 G4
+   P2 []         --- M2 从 P0 偷走了 G2 G3   <- work stealing
+   P3 [G6]       --- M3 正在执行 G6
 ```
 
-## 注意事项
+### 系统调用与 hand-off：为什么 M 可以比 P 多
 
-- goroutine 虽然轻量，但不是没有开销。每个 G 至少占用 2KB 栈空间，百万级 goroutine 会消耗数 GB 内存
-- 避免在循环中无限制地创建 goroutine，应使用 worker pool 或信号量控制并发数
-- GOMAXPROCS 设置过大会增加上下文切换开销，通常保持默认即可
-- 在容器环境中，Go 1.25 之前的版本不会自动感知 cgroup CPU 限制，需要手动设置 GOMAXPROCS 或借助 automaxprocs 等第三方库；Go 1.25 起运行时按 cgroup 配额自动调整
-- work stealing 有一定开销，如果所有 P 的负载均匀，stealing 几乎不会发生
-- 使用 `runtime.LockOSThread()` 可以将 G 绑定到特定 M，适用于 CGO 或 GUI 场景
+G 陷入阻塞系统调用（如文件读写、cgo 调用）时，M 会跟着阻塞——但 Go 不允许 M 一直占着 P 干等。运行时把 P 从这个 M 身上摘下来，交给（或新创建）另一个 M 继续跑本地队列里的 G。阻塞的 M 返回后若拿不到空闲 P，就把手里的 G 扔进全局队列，自己休眠。这就是 hand-off 机制，也是 `threads` 能大于 `gomaxprocs` 的原因。
 
-## 进阶用法
+网络 IO 则完全不同：Go 的网络操作走 netpoller（epoll/kqueue/IOCP 封装），G 阻塞在 channel 语义上等待，但 M 不阻塞——这正是 Go 服务能开十万并发连接而不开十万线程的原因。
 
-### Spinning M 优化
+### 抢占：一个死循环不再能拖垮进程
 
-Go 调度器引入了自旋线程（Spinning M）的概念：当 M 没有可运行的 G 时，不会立即休眠，而是自旋一段时间寻找工作。这减少了 M 唤醒的延迟，但最多只允许一个自旋 M（空闲 P 的数量个），避免浪费 CPU。
+Go 1.14 之前是协作式调度：G 只在函数调用时检查"该不该让出"。一个没有函数调用的紧密循环永远不会让出，同一个 P 上的其他 G 全部饿死，GC 也无法进行（STW 需要所有 G 停下）。
 
-### 抢占式调度
-
-Go 1.14 之前基于协作式抢占（函数调用时检查栈），无法处理无函数调用的死循环。Go 1.14+ 引入了基于信号的异步抢占，即使 goroutine 在紧密循环中也能被抢占。
+Go 1.14 起引入基于信号（SIGURG）的异步抢占：运行时隔一段时间向执行过久的 G 所在 M 发信号，强制它让出。现在下面这种代码也是安全的：
 
 ```go
-// Go 1.14+ 即使这样的死循环也能被抢占
 go func() {
     for {
-        // 紧密循环，Go 1.14+ 可以抢占
+        // 没有任何函数调用的死循环
+        // Go 1.14+ 也能被抢占，不会再卡死调度与 GC
     }
 }()
 ```
 
-### 调度器调优实践
+注意"能被抢占"不等于"无害"：它仍会白白烧一个核。死循环应该被 review 出来，而不是靠调度器兜底。
+
+## 坑点与自检
+
+**坑 1：容器里 GOMAXPROCS 等于宿主机核数。** Go 1.25 之前的运行时只看 `NumCPU()`，不读 cgroup CPU 配额。在 limit=2 的容器里会开出几十个 P。解决办法按优先级：
+
+1. 直接升级 Go 1.25+：运行时自动感知 cgroup 配额并周期性调整 GOMAXPROCS，这是 2026 年新项目的默认答案；
+2. 老版本手动设置：`runtime.GOMAXPROCS(2)` 或用 automaxprocs 这类库在启动时按配额设置。
+
+CI 里跑 Go 压测同理：CI 容器通常有 CPU 配额，"开发机跑得好好的，CI 上波动巨大"多半是同一件事。FANDEX 仓库的 CI 在容器里跑 pnpm 脚本链，如果哪天加 Go 环节，压测类脚本也需要处理这个问题。
+
+**坑 2：goroutine 不是免费的。** 每个 G 至少 2KB 栈，可增长到默认 1GB 上限（64 位平台）。一百万个 G 光栈就 2GB 起步，还不算调度结构。无上限地 `go func()` 是内存事故的头号来源，用带缓冲 channel 信号量或 worker pool 控制并发：
 
 ```go
-package main
-
-import (
-    "fmt"
-    "runtime"
-    "sync"
-    "time"
-)
-
-func main() {
-    // 根据工作负载调整 GOMAXPROCS
-    cpuBound := true
-    if cpuBound {
-        // CPU 密集型：使用全部核心
-        runtime.GOMAXPROCS(runtime.NumCPU())
-    } else {
-        // IO 密集型：可以适当增加
-        runtime.GOMAXPROCS(runtime.NumCPU() + 2)
-    }
-
-    // 使用 worker pool 模式
-    jobs := make(chan int, 100)
-    results := make(chan int, 100)
-
-    // 启动固定数量的 worker
-    for w := 1; w <= runtime.GOMAXPROCS(0); w++ {
-        go worker(w, jobs, results)
-    }
-
-    // 发送任务
-    for j := 1; j <= 50; j++ {
-        jobs <- j
-    }
-    close(jobs)
-
-    // 收集结果
-    for r := 1; r <= 50; r++ {
-        <-results
-    }
-}
-
-func worker(id int, jobs <-chan int, results chan<- int) {
-    for j := range jobs {
-        fmt.Printf("Worker %d 处理任务 %d\n", id, j)
-        time.Sleep(time.Millisecond) // 模拟工作
-        results <- j * 2
-    }
+sem := make(chan struct{}, runtime.GOMAXPROCS(0)*4)
+for _, item := range items {
+    sem <- struct{}{}
+    go func(it Item) {
+        defer func() { <-sem }()
+        process(it)
+    }(item)
 }
 ```
 
-### 与 Channel 配合的调度模式
+**坑 3：GOMAXPROCS 调大不等于更快。** CPU 密集负载下 P 数超过核数只会增加上下文切换；IO 密集负载下阻塞点在 netpoller，也不需要更多 P。保持默认，先测量再调整。
 
-```go
-// 扇出扇入模式：利用 GMP 的 work stealing 实现负载均衡
-func fanOutFanIn(input <-chan Data, workerCount int) <-chan Result {
-    channels := make([]<-chan Result, workerCount)
+**坑 4：`GOMAXPROCS(1)` 不能消除数据竞争。** 它只是把 P 减到一个，G 之间仍会交错执行（在调度点切换），依赖"单 P 就串行"的代码是在赌调度时机。
 
-    // 扇出：启动多个 worker
-    for i := 0; i < workerCount; i++ {
-        channels[i] = worker(input)
-    }
+自检——能不看文档回答这些吗：
 
-    // 扇入：合并结果
-    merged := make(chan Result)
-    var wg sync.WaitGroup
-    wg.Add(workerCount)
+1. G、M、P 各自代表什么？为什么必须引入 P 这一层？
+2. P 的本地队列取空后，调度器按什么顺序找下一个 G？为什么每 61 次调度要看一次全局队列？
+3. 一个 G 陷入阻塞系统调用，P 和 M 会发生什么？一个 G 阻塞在 channel 上呢？
+4. Go 1.14 的异步抢占解决了什么问题？
+5. 你的服务要部署进 CPU limit 为 4 的容器，Go 1.24 与 Go 1.25 分别要做什么？
 
-    for _, ch := range channels {
-        go func(c <-chan Result) {
-            defer wg.Done()
-            for r := range c {
-                merged <- r
-            }
-        }(ch)
-    }
+## 练习
 
-    go func() {
-        wg.Wait()
-        close(merged)
-    }()
+1. 把第一步的程序改成"先打印 NumCPU，再 `runtime.GOMAXPROCS(2)`，再打印"，用 `GODEBUG=schedtrace=500` 观察 `gomaxprocs` 的变化，并解释 `idleprocs` 为什么变大。
+2. 写一个含 50 万个只 sleep 的 goroutine 的程序，用 `runtime.ReadMemStats` 打印 `HeapAlloc` 与 `Sys`，估算单个 goroutine 的真实内存成本；再改成用 100 个 worker 的 pool 处理同样的任务，对比内存。
+3. 写一个"100 个 goroutine 中只有 1 个干重活"的负载不均程序，用 `go tool trace` 找到那个忙的 G，观察其他 P 的 work stealing 行为；然后改成 fan-out 均分负载，对比总耗时。
 
-    return merged
-}
-```
+## 下一步
+
+- 抢占与栈管理的更多细节：[Goroutine 调度细节](/go/180-GoroutineSchedule)；
+- G 让出与唤醒的通道机制：[Goroutine 与 Channel 原理](/go/160-GoroutineChannelPrinciple)；
+- 调度问题如何变成线上指标：[Go 性能分析](/go/580-GoPerformanceAnalysis)；
+- 复用 goroutine 的标准结构：[并发模式](/go/200-ConcurrencyPattern)。

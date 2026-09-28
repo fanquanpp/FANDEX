@@ -14,18 +14,9 @@ prerequisites:
   - 'konado/020-KonadoArchitecture'
 ---
 
-前几篇里我们一直在"用"KonadoDialogueManager 这个名字：绑定它、调用它、连它的信号。这一篇把它的 API 面板彻底摊开：所有导出属性、全部信号、完整的生命周期方法，以及围绕它的资源表与子控制器。读完本篇，你就能不查文档地回答"这个功能该找哪个属性、哪个方法、哪个信号"。
+给几何构成（speed-rouge）的剧情加一个 QTE 小游戏时，你会接连问出这些问题：怎么让剧本暂停等 QTE 结束？（emit_wait_signal）怎么在 QTE 成功的台词出现时弹特写？（dialogue_line_start）怎么往剧情里注入"武器耐久"这类外部数值？（variable_store）所有答案都指向同一个节点：KonadoDialogueManager。前几篇里我们一直在"用"这个名字：绑定它、调用它、连它的信号。这一篇把它的 API 面板彻底摊开：所有导出属性、全部信号、完整的生命周期方法，以及围绕它的资源表与子控制器。读完本篇，你就能不查文档地回答"这个功能该找哪个属性、哪个方法、哪个信号"。
 
 KonadoDialogueManager（对话管理器）继承自 Control，是默认对话模板场景 dialogue_runtime.tscn 的根节点，也是 Konado 所有运行时能力的统一入口。播放、暂停、存档、回退、信号、变量——一切都从它出发。普通游戏逻辑应该通过它来驱动对话，而不是直接操作底层的虚拟机与指令对象。
-
-## 学习目标
-
-- 理解 KonadoDialogueManager 在模板场景中的定位与标准集成方式；
-- 逐组掌握全部导出属性：Playback Settings、Global Variable、UI Settings、Dialogue Resources、Log Tool；
-- 掌握全部信号：shot_start/shot_end、dialogue_line_start/dialogue_line_end、custom_signal、runtime_failed 系列信号；
-- 掌握生命周期方法 init_dialogue、set_shot、start_dialogue、stop_dialogue、start_autoplay、emit_wait_signal、reload_localized_script；
-- 理解五张资源表"剧本标识符到实际资源"的映射意义；
-- 会用打字机与音频子 API，并能独立完成从绑定到播放的最小集成。
 
 ## 定位：模板场景的根节点
 
@@ -239,15 +230,22 @@ func _on_konado_dialogue_manager_play_sfx(content: String) -> void:
 
 配合检查器里设置 start_dialogue_shot（或上面给出的编译三行代码），从绑定、注入变量、信号联动到播放的链路就完整了。之后无论你要接存档（save_game/load_game）、回退（rollback）还是本地化（reload_localized_script），入口都还是同一个 dialogue_manager。
 
-## 小结
+## 坑点与自检
 
-- KonadoDialogueManager extends Control，是模板场景根节点与全部运行时能力的统一入口，标准做法是 @export 导出后在检查器绑定；
-- 导出属性分五组：Playback Settings 控制播放行为与时机，variable_store 承载全局变量，UI Settings 挂接对话框与各控制器，Dialogue Resources 装载镜头与五张资源表，Log Tool 控制日志与故障上报；
-- 信号八枚：镜头级的 shot_start/shot_end，句级的 dialogue_line_start/end（带稳定指令 ID），剧本文本级的 custom_signal，以及运行时故障三部曲；
-- 生命周期七件套：set_shot 装镜头、init_dialogue 初始化、start/stop_dialogue 启停、start_autoplay 自动播放、emit_wait_signal 解除等待、reload_localized_script 切换本地化剧本；
-- 五张资源表把剧本语义标识符映射到实际资源，实现内容与资源解耦；
-- 打字机与音频控制器各有一套子 API，audio_volumn 为官方实际拼写；
-- 最小集成 = 实例化模板 + 绑定引用 + 连信号 + 注入变量 + 指定起始镜头。
+- 运行报空引用，dialogue_manager 是 null——@export 之后忘了在检查器里把模板实例拖进属性；集成脚本第一步永远是判空；
+- 想完全由代码掌控播放时机，模板却一进场就自动开播——关掉 initialize_on_ready 与 start_on_ready，改走 set_shot/init_dialogue/start_dialogue 三步；
+- 用台词内容字符串做绑定，剧本改几个字就失效——改用 dialogue_line_start/end 的稳定指令 ID，它跨重编译保持稳定；
+- "听完语音再继续"的判断在语音被打断时也触发了——voice_finished 只在自然播完时发出，被打断不触发；协程式等待用 play_voice_and_wait；
+- 打字机音效调音量改了 audio_volume 不生效——官方属性拼写就是 audio_volumn，引用时照抄；
+- 自检问题一：外部代码向剧本注入状态的正规通道是哪一个属性？（variable_store，全局与持久变量的家）
+- 自检问题二：五张资源表解决什么问题？（剧本只写语义标识符，运行时映射到实际资源——换美术不改剧本，美术与程序并行）
+- 自检问题三：运行时故障能拿到哪些定位信息？（runtime_failed 给消息、指令 ID 与源码行号；runtime_failure_reported 的 failure 字典含稳定错误码与严重级别）
+
+## 练习
+
+1. 独立完成最小集成：实例化模板、绑定 dialogue_manager、连接 custom_signal 播一个音效、注入一个持久变量并让剧本插值显示它；
+2. 用 dialogue_line_start(instruction_id) 实现"特定台词出现时镜头推近"：先打印所有 instruction_id 找到目标句，再接你的运镜逻辑；
+3. 给 start_dialogue_shot 零代码路线与编译三行代码路线各跑一遍，比较两者在"按语言切换剧本"（reload_localized_script）时分别要怎么改。
 
 ## 参考链接
 

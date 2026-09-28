@@ -1,51 +1,30 @@
 ---
 order: 340
-title: Go 与数据库
+title: Go 与数据库：连接池是怎么被榨干的
 module: 'go'
 category: 后端技术
 difficulty: intermediate
-description: database/sql 与 ORM 实战：连接池、事务、NULL 处理、context 系列查询、GORM 关联与 sqlx/sqlc 选型。
+description: 以"上线半小时数据库连接耗尽"为主线学 database/sql：驱动选型与零依赖起步、Query/Exec 全家桶、事务模板、Context 超时传导、连接池四参数、NULL 处理与 GORM 选型，附坑点、自检与练习。
 author: fanquanpp
 updated: '2026-09-13'
 related:
+  - 'go/140-ContextDetailed'
   - 'go/550-GoRedis'
-  - 'go/540-GoMessageQueue'
   - 'go/330-GoJSON'
   - 'go/390-GoConfigManagement'
 prerequisites:
   - 'go/020-GoOverviewEnvSetup'
 ---
 
-## 前置知识
+## 真实场景：上线半小时，数据库连接耗尽
 
-建议先阅读以下内容再进入本文：
+服务上线后监控报警：PostgreSQL 报 "too many clients"。翻日志发现两类错误交替出现——大量请求卡在 `db.Query` 上直到超时。排查半天，元凶是一段没关 `rows` 的代码，外加连接池参数完全没配（默认无上限）。每个卡住的查询都占着一个连接，连接只出不进，半小时后池子见底，全站 503。
 
-- [Go 概述与环境配置](/go/020-GoOverviewEnvSetup)
+`database/sql` 的连接是自动管理的，但"自动管理"不等于"不用管"：`rows.Close()` 忘一行、一个慢查询不设超时，都足以拖垮池子。这一篇围绕这个事故把 database/sql 的完整用法过一遍，最后给出 ORM 选型的分层建议。
 
-## 概述
+## 动手第一步：零依赖起步，先建表再增删查
 
-数据库是应用程序持久化数据的核心组件。Go 标准库的 `database/sql` 包提供了统一的数据库操作接口，配合不同的驱动可以连接 MySQL、PostgreSQL、SQLite 等数据库。对于更复杂的需求，社区提供了 GORM 等 ORM 框架，简化数据库操作。
-
-## 基础概念
-
-在开始编码之前，需要理解数据库操作的几个核心概念：
-
-- **database/sql**：Go 标准库的数据库接口，定义了通用的数据库操作方法。
-- **驱动（Driver）**：实现 `database/sql` 接口的具体数据库连接库，如 `github.com/lib/pq`（PostgreSQL）。
-- **连接池**：`database/sql` 自动管理连接池，无需手动创建和释放连接。
-- **预处理语句（Prepared Statement）**：预编译 SQL 语句，防止 SQL 注入，提高重复查询性能。
-- **事务（Transaction）**：将多个操作包装成原子单元，要么全部成功，要么全部回滚。
-- **ORM**：对象关系映射，将数据库表映射为 Go 结构体，用 Go 代码操作数据库。
-
-## 快速上手
-
-使用 `database/sql` 连接 PostgreSQL：
-
-```bash
-go get github.com/lib/pq
-```
-
-> **驱动选型提示**：`lib/pq` 已进入维护模式，官方建议新项目使用 `github.com/jackc/pgx/v5`（性能更好、支持 LISTEN/NOTIFY 与 CopyFrom）。用 pgx 最简单的方式是保留 `database/sql` 接口：`sql.Open("pgx", dsn)`（驱动来自 `github.com/jackc/pgx/v5/stdlib`）。本篇示例以 `$1` 占位符书写，两种驱动通用。
+本地跑通一套完整流程最快的方式是纯 Go 的 SQLite 驱动（无 CGO，`go get modernc.org/sqlite`）。驱动通过 init 函数注册，所以用空导入：
 
 ```go
 package main
@@ -55,38 +34,7 @@ import (
     "fmt"
     "log"
 
-    _ "github.com/lib/pq" // 导入驱动（init 函数注册驱动）
-)
-
-func main() {
-    // 连接数据库
-    db, err := sql.Open("postgres", "user=postgres dbname=mydb sslmode=disable")
-    if err != nil {
-        log.Fatal(err)
-    }
-    defer db.Close()
-
-    // 测试连接
-    err = db.Ping()
-    if err != nil {
-        log.Fatal(err)
-    }
-
-    fmt.Println("数据库连接成功")
-}
-```
-
-想在本地零依赖跑通一套完整流程，可以用纯 Go 实现的 SQLite 驱动（无需 CGO）。先 `go get modernc.org/sqlite`，然后运行下面的完整程序：
-
-```go
-package main
-
-import (
-    "database/sql"
-    "fmt"
-    "log"
-
-    _ "modernc.org/sqlite" // 纯 Go SQLite 驱动，注册名为 "sqlite"
+    _ "modernc.org/sqlite" // 注册名为 "sqlite"
 )
 
 func main() {
@@ -123,12 +71,16 @@ func main() {
 插入成功 id=1，查询到 小明，25 岁
 ```
 
-## 详细用法
+两个必须形成的条件反射：`sql.Open` **只验证参数格式，不建立连接**，真正的连通性检查是 `db.Ping()`（服务启动时应做一次）；驱动靠 `_ "空导入"` 的 init 注册。
 
-### 1. 查询数据
+PostgreSQL 生产选型提示：`lib/pq` 已进维护模式，新项目用 `github.com/jackc/pgx/v5`（性能更好，支持 LISTEN/NOTIFY 与 CopyFrom），最省事的用法是保留 database/sql 接口：`sql.Open("pgx", dsn)`（驱动来自 `github.com/jackc/pgx/v5/stdlib`）。占位符差异注意：PostgreSQL 用 `$1, $2`，MySQL/SQLite 用 `?`。
+
+## 动手第二步：读与写的完整姿势
+
+读单行用 QueryRow，读多行用 Query。单行的 `sql.ErrNoRows` 是正常业务态不是故障；多行的 `rows.Close()` 与循环后的 `rows.Err()` 一个都不能省：
 
 ```go
-// 查询单行
+// 单行：ErrNoRows 单独处理
 var name string
 var age int
 err := db.QueryRow("SELECT name, age FROM users WHERE id = $1", 1).Scan(&name, &age)
@@ -137,9 +89,8 @@ if err == sql.ErrNoRows {
 } else if err != nil {
     log.Fatal(err)
 }
-fmt.Printf("姓名: %s, 年龄: %d\n", name, age)
 
-// 查询多行
+// 多行：defer Close + 循环后检查 Err
 rows, err := db.Query("SELECT id, name, age FROM users WHERE age > $1", 18)
 if err != nil {
     log.Fatal(err)
@@ -153,42 +104,16 @@ for rows.Next() {
     if err := rows.Scan(&id, &name, &age); err != nil {
         log.Fatal(err)
     }
-    fmt.Printf("ID: %d, 姓名: %s, 年龄: %d\n", id, name, age)
+    fmt.Printf("ID: %d, %s, %d\n", id, name, age)
 }
-
-// 检查遍历过程中是否有错误
 if err = rows.Err(); err != nil {
-    log.Fatal(err)
+    log.Fatal(err) // 迭代中途的网络断连等错误在这里浮出
 }
 ```
 
-### 2. 插入数据
+写操作用 Exec 并看 RowsAffected；PostgreSQL 要拿自增主键用 RETURNING：
 
 ```go
-// 插入数据并获取自增 ID
-var newID int
-err := db.QueryRow(
-    "INSERT INTO users (name, age, email) VALUES ($1, $2, $3) RETURNING id",
-    "小明", 25, "ming@example.com",
-).Scan(&newID)
-if err != nil {
-    log.Fatal(err)
-}
-fmt.Println("新用户 ID:", newID)
-
-// MySQL 写法
-result, err := db.Exec("INSERT INTO users (name, age) VALUES (?, ?)", "小红", 22)
-if err != nil {
-    log.Fatal(err)
-}
-id, _ := result.LastInsertId()
-affected, _ := result.RowsAffected()
-```
-
-### 3. 更新和删除
-
-```go
-// 更新
 result, err := db.Exec("UPDATE users SET age = $1 WHERE id = $2", 26, 1)
 if err != nil {
     log.Fatal(err)
@@ -196,51 +121,33 @@ if err != nil {
 affected, _ := result.RowsAffected()
 fmt.Printf("更新了 %d 行\n", affected)
 
-// 删除
-result, err = db.Exec("DELETE FROM users WHERE id = $1", 1)
-affected, _ = result.RowsAffected()
-fmt.Printf("删除了 %d 行\n", affected)
+var newID int
+err = db.QueryRow(
+    "INSERT INTO users (name, age) VALUES ($1, $2) RETURNING id",
+    "小红", 22,
+).Scan(&newID)
 ```
 
-### 4. 预处理语句
+高频增删查的全家桶就这些：QueryRow（单行）、Query（多行）、Exec（写）、Prepare（同一语句反复执行时预编译，`stmt.QueryRow(id)` 循环调用）。
 
-```go
-// 创建预处理语句（防止 SQL 注入）
-stmt, err := db.Prepare("SELECT name, age FROM users WHERE id = $1")
-if err != nil {
-    log.Fatal(err)
-}
-defer stmt.Close()
+## 动手第三步：事务模板与连接池四参数
 
-// 多次执行
-for _, id := range []int{1, 2, 3} {
-    var name string
-    var age int
-    err := stmt.QueryRow(id).Scan(&name, &age)
-    if err != nil {
-        log.Println(err)
-        continue
-    }
-    fmt.Printf("ID %d: %s, %d岁\n", id, name, age)
-}
-```
-
-### 5. 事务
+转账是事务的教科书场景。背下这个模板——无条件 `defer Rollback`，成功路径最后 Commit：
 
 ```go
 func TransferMoney(db *sql.DB, fromID, toID int, amount float64) error {
-    // 开始事务
     tx, err := db.Begin()
     if err != nil {
         return err
     }
     // 无论哪条路径退出都尝试回滚；已 Commit 的事务 Rollback 返回
-    // ErrTxDone，无副作用，因此"无条件 defer Rollback + 成功后 Commit"
+    // ErrTxDone，无副作用，因此"无条件 defer + 成功后 Commit"
     // 是比按条件判断更简洁也更不容易漏的写法
     defer tx.Rollback()
 
-    // 从转出账户扣款
-    result, err := tx.Exec("UPDATE accounts SET balance = balance - $1 WHERE id = $2 AND balance >= $1", amount, fromID)
+    result, err := tx.Exec(
+        "UPDATE accounts SET balance = balance - $1 WHERE id = $2 AND balance >= $1",
+        amount, fromID)
     if err != nil {
         return err
     }
@@ -248,266 +155,95 @@ func TransferMoney(db *sql.DB, fromID, toID int, amount float64) error {
         return fmt.Errorf("余额不足或账户不存在")
     }
 
-    // 向转入账户加款
-    _, err = tx.Exec("UPDATE accounts SET balance = balance + $1 WHERE id = $2", amount, toID)
-    if err != nil {
+    if _, err := tx.Exec(
+        "UPDATE accounts SET balance = balance + $1 WHERE id = $2", amount, toID); err != nil {
         return err
     }
-
-    // 提交事务（Commit 之后 defer 的 Rollback 变成无害的 ErrTxDone）
     return tx.Commit()
 }
 ```
 
-### 6. context 系列查询与连接池配置
+连接池参数就是开头事故的第二主角：
 
-`database/sql` 的每个阻塞方法都有 `Context` 变体，生产代码应优先使用它们——请求取消或超时能一路传导到驱动，避免一条慢 SQL 长期占住 goroutine 与连接：
+```go
+db.SetMaxOpenConns(25)                 // 最大打开连接数
+db.SetMaxIdleConns(10)                 // 最大空闲连接数
+db.SetConnMaxLifetime(5 * time.Minute) // 连接最大存活时间
+db.SetConnMaxIdleTime(1 * time.Minute) // 空闲连接最大存活时间
+```
+
+取值思路：`MaxOpenConns` 上限 = 数据库总连接预算 / 服务实例数，不是越大越好——超过数据库承受能力的并发只会变成排队与报错；`ConnMaxLifetime` 应小于数据库或中间代理（如 PgBouncer）侧的连接回收时间，避免拿到已被服务端关掉的死连接。
+
+## 讲为什么：Context 超时与 NULL 的两种解法
+
+### 为什么生产代码全用 Context 系列
+
+database/sql 的每个阻塞方法都有 Context 变体：`QueryRowContext / QueryContext / ExecContext / BeginTx`。差别在取消传导：带 context 的查询超时或被取消时，信号一路传到驱动，数据库侧的执行被终止、连接被归还——而不是让一条慢 SQL 长期占住 goroutine 和池子里的连接：
 
 ```go
 ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 defer cancel()
 
-// QueryRowContext / QueryContext / ExecContext / BeginTx 一一对应
 var name string
 err := db.QueryRowContext(ctx, "SELECT name FROM users WHERE id = $1", 1).Scan(&name)
 
-// 事务同样接受 context，超时自动回滚
-tx, err := db.BeginTx(ctx, nil)
+tx, err := db.BeginTx(ctx, nil) // 事务同样接受 context，超时自动回滚
 ```
+
+开头事故里"查询卡到天荒地老"，配一个 3 秒超时的 context 就能把爆炸半径从"整个池子"缩到"单个请求"。Context 机制的原理展开见 [Context 详解](/go/140-ContextDetailed)。
+
+### NULL 的两种解法
+
+列可空时，Scan 目标有两种选择：
 
 ```go
-db, _ := sql.Open("postgres", dsn)
-
-db.SetMaxOpenConns(25)         // 最大打开连接数
-db.SetMaxIdleConns(10)         // 最大空闲连接数
-db.SetConnMaxLifetime(5 * time.Minute) // 连接最大存活时间
-db.SetConnMaxIdleTime(1 * time.Minute) // 空闲连接最大存活时间
-```
-
-连接池参数的取值思路：`MaxOpenConns` 上限取"数据库总连接预算 / 服务实例数"，而不是越大越好——超过数据库承受能力的并发只会变成排队与报错；`ConnMaxLifetime` 应小于数据库或中间代理（如 PgBouncer）侧的连接空闲回收时间，避免拿到已被服务端关掉的死连接。
-
-### 7. 使用 GORM
-
-```bash
-go get gorm.io/gorm
-go get gorm.io/driver/postgres
-```
-
-```go
-import "gorm.io/gorm"
-
-// 定义模型
-type User struct {
-    ID    uint   `gorm:"primaryKey"`
-    Name  string `gorm:"size:100;not null"`
-    Email string `gorm:"size:200;uniqueIndex"`
-    Age   int
-}
-
-// 连接数据库
-db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
-
-// 自动迁移（创建表）
-db.AutoMigrate(&User{})
-
-// 创建
-db.Create(&User{Name: "小明", Email: "ming@example.com", Age: 25})
-
-// 查询
-var user User
-db.First(&user, 1)                    // 按 ID 查询
-db.First(&user, "name = ?", "小明")    // 按条件查询
-
-var users []User
-db.Where("age > ?", 18).Find(&users)  // 条件查询
-
-// 更新
-db.Model(&user).Update("Age", 26)
-db.Model(&user).Updates(User{Age: 26, Name: "小明2"})
-
-// 删除
-db.Delete(&user)
-```
-
-### 8. GORM 关联
-
-```go
-type Order struct {
-    ID      uint
-    UserID  uint
-    User    User     // 属于 User
-    Items   []Item   // 有多个 Item
-}
-
-type Item struct {
-    ID      uint
-    OrderID uint
-    Name    string
-    Price   float64
-}
-
-// 预加载关联
-var orders []Order
-db.Preload("User").Preload("Items").Find(&orders)
-
-// Joins 预加载
-db.Joins("User").Find(&orders)
-```
-
-## 常见场景
-
-### 场景一：分页查询
-
-```go
-func ListUsers(db *sql.DB, page, pageSize int) ([]User, int, error) {
-    offset := (page - 1) * pageSize
-
-    // 查询总数
-    var total int
-    db.QueryRow("SELECT COUNT(*) FROM users").Scan(&total)
-
-    // 查询分页数据
-    rows, err := db.Query("SELECT id, name, age FROM users ORDER BY id LIMIT $1 OFFSET $2", pageSize, offset)
-    if err != nil {
-        return nil, 0, err
-    }
-    defer rows.Close()
-
-    var users []User
-    for rows.Next() {
-        var u User
-        rows.Scan(&u.ID, &u.Name, &u.Age)
-        users = append(users, u)
-    }
-
-    return users, total, nil
-}
-```
-
-### 场景二：数据库迁移
-
-```go
-func Migrate(db *sql.DB) error {
-    queries := []string{
-        `CREATE TABLE IF NOT EXISTS users (
-            id SERIAL PRIMARY KEY,
-            name VARCHAR(100) NOT NULL,
-            email VARCHAR(200) UNIQUE,
-            age INTEGER,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        )`,
-        `CREATE INDEX IF NOT EXISTS idx_users_email ON users(email)`,
-    }
-
-    for _, q := range queries {
-        if _, err := db.Exec(q); err != nil {
-            return err
-        }
-    }
-    return nil
-}
-```
-
-### 场景三：NULL 值处理
-
-```go
-// 使用 sql.NullString 等类型处理 NULL
+// 解法一：sql.NullXxx 类型
 var name sql.NullString
-var age sql.NullInt64
-err := db.QueryRow("SELECT name, age FROM users WHERE id = $1", 1).Scan(&name, &age)
-
+db.QueryRow("SELECT name FROM users WHERE id = $1", 1).Scan(&name)
 if name.Valid {
-    fmt.Println("姓名:", name.String)
-}
-if age.Valid {
-    fmt.Println("年龄:", age.Int64)
+    fmt.Println(name.String)
 }
 
-// 或使用 COALESCE 提供默认值
-db.QueryRow("SELECT COALESCE(name, ''), COALESCE(age, 0) FROM users WHERE id = $1", 1)
-```
-
-更多时候更干净的做法是让列可空类型直接映射为 Go 指针：把 Scan 目标写成 `*string`、`*int`，NULL 落地为 `nil`，业务代码无需关心 `Valid` 标志。另一个高频陷阱是"列多扫了"——`Scan` 的目标个数必须与 `SELECT` 列数严格一致，用 `SELECT *` 后加列就会在运行期报扫描错误，因此生产代码总是显式列出列名。
-
-## 注意事项与常见错误
-
-1. **必须关闭 rows**：`db.Query` 返回的 `rows` 必须调用 `rows.Close()`，否则会泄漏连接。使用 `defer rows.Close()`。
-
-2. **sql.ErrNoRows 不是错误**：`QueryRow` 没有找到记录时返回 `sql.ErrNoRows`，这通常不是真正的错误，需要单独处理。
-
-3. **不要拼接 SQL**：永远使用参数化查询（`$1`、`?` 等），不要用字符串拼接 SQL，防止注入攻击。
-
-4. **连接字符串格式**：不同驱动的连接字符串格式不同。PostgreSQL 用 `user=xxx dbname=xxx`，MySQL 用 `user:password@tcp(host:port)/dbname`。
-
-5. **sql.Open 不建立连接**：`sql.Open` 只是验证参数格式，不实际连接。用 `db.Ping()` 测试连接。
-
-6. **事务中的错误处理**：事务中的操作失败后，必须 Rollback。使用 defer + err 模式确保不遗漏。
-
-7. **GORM 的软删除**：GORM 默认使用软删除（`deleted_at` 字段）。如果需要硬删除，使用 `db.Unscoped().Delete()`。
-
-## 进阶用法
-
-### sqlx
-
-sqlx 是 database/sql 的扩展，简化了扫描操作：
-
-```bash
-go get github.com/jmoiron/sqlx
-```
-
-```go
-import "github.com/jmoiron/sqlx"
-
-db, _ := sqlx.Connect("postgres", dsn)
-
-// 直接扫描到结构体
-var users []User
-db.Select(&users, "SELECT * FROM users WHERE age > $1", 18)
-
-// Named 查询
-db.NamedExec("INSERT INTO users (name, age) VALUES (:name, :age)", &User{Name: "小明", Age: 25})
-```
-
-### sqlc
-
-sqlc 从 SQL 生成类型安全的 Go 代码，无需 ORM：
-
-```bash
-go install github.com/sqlc-dev/sqlc/cmd/sqlc@latest
-sqlc generate
-```
-
-### 数据库连接封装
-
-```go
-func NewDatabase(cfg *Config) (*sql.DB, error) {
-    db, err := sql.Open("postgres", cfg.DSN)
-    if err != nil {
-        return nil, err
-    }
-
-    db.SetMaxOpenConns(cfg.MaxOpenConns)
-    db.SetMaxIdleConns(cfg.MaxIdleConns)
-    db.SetConnMaxLifetime(cfg.ConnMaxLifetime)
-
-    if err = db.Ping(); err != nil {
-        return nil, err
-    }
-
-    return db, nil
+// 解法二：指针（通常更干净）
+var nickname *string
+db.QueryRow("SELECT nickname FROM users WHERE id = $1", 1).Scan(&nickname)
+if nickname != nil {
+    fmt.Println(*nickname)
 }
 ```
 
-## 本篇小结
+SQL 侧还可以 `COALESCE(nickname, '')` 直接给默认值，把空值语义留在查询里。另一条纪律：`Scan` 的目标个数必须与 SELECT 列数严格一致，`SELECT *` 之后表加一列，代码就会在运行期报扫描错误——生产代码总是显式列出列名。
 
-1. `database/sql` 是统一接口层，驱动通过 init 注册、以 `_` 空导入引入；`sql.Open` 只做参数校验不建连接，`Ping`（或 `PingContext`）才是真正的连通性验证。PostgreSQL 新项目优先 pgx，本地实验可用纯 Go 的 SQLite 驱动。
-2. 读走 `QueryRow`（单行，`sql.ErrNoRows` 单独处理）与 `Query`（多行，`defer rows.Close()`，循环后检查 `rows.Err()`）；写走 `Exec` 并检查 `RowsAffected`；生产代码全部使用 `Context` 系列方法，让超时与取消传导到驱动。
-3. 事务模板：`BeginTx` 之后无条件 `defer tx.Rollback()`，所有路径错误即返回，成功最后 `Commit`——Commit 后的 Rollback 返回 `ErrTxDone`，无害。
-4. 连接池四个参数（MaxOpen/MaxIdle/ConnMaxLifetime/ConnMaxIdleTime）决定服务在数据库面前的并发形态，按"数据库预算 ÷ 实例数"设置上限，Lifetime 留小于服务端回收阈值。
-5. NULL 用可空类型或指针映射；SQL 一律参数化、显式列名。ORM 选型分层：GORM 换开发效率，sqlx 换扫描便利，sqlc 换类型安全，理解 SQL 的人越少的项目越不该上 ORM。
+## 坑点与自检
 
-## 动手实践
+**坑 1：忘关 rows。** 连接在 `rows.Close()` 之前不归还池子，开头事故的直接元凶。`defer rows.Close()` 是肌肉记忆。
 
-1. 用 modernc.org/sqlite 把快速上手的完整程序跑通，随后把所有 `QueryRow`/`Exec` 换成 `QueryRowContext`/`ExecContext`，并用一个 2 秒超时的 context 故意触发超时错误，观察错误文本。
-2. 在转账示例中把 `defer tx.Rollback()` 删掉并模拟加款步骤失败（把表名改错），对比两次运行后账户表的数据，解释回滚缺失时"钱消失"的过程。
-3. 同一张 users 表分别用 database/sql、sqlx 与 GORM 实现"分页 + 按年龄过滤"，统计三者的代码行数与生成 SQL（GORM 开 Debug 模式），写一段不超过 200 字的选型结论。
+**坑 2：拼接 SQL。** `fmt.Sprintf("SELECT ... WHERE name = '%s'", input)` 是注入漏洞。永远参数化（`$1`/`?`）。
+
+**坑 3：池参数缺省。** 默认 MaxOpenConns 为 0（无上限）、MaxIdleConns 为 2——高并发下疯狂建连、低负载下连接全部被杀。四个参数都要显式设置。
+
+**坑 4：GORM 默认软删除。** `db.Delete(&user)` 写的是 `deleted_at`，查询自动过滤软删行；要真删用 `db.Unscoped().Delete(&user)`。不知道这条规则的人会在表里"删不掉"数据。
+
+**坑 5：ORM 选型拍脑袋。** 分层建议：GORM 换开发效率（AutoMigrate、关联、Preload 一条龙，`db.Preload("User").Preload("Items").Find(&orders)` 一次带出关联）；sqlx 换扫描便利（`db.Select(&users, "SELECT id, name ...")` 直接进结构体）；sqlc 换类型安全（从 SQL 生成代码，无 ORM 魔法）。理解 SQL 的人越少的项目，越不该上 ORM。
+
+自检——能不看文档回答这些吗：
+
+1. `sql.Open` 与 `db.Ping()` 各做什么？驱动是怎么注册进来的？
+2. `rows.Err()` 为什么要放在循环之后？漏掉会掩盖什么错误？
+3. 事务模板里"无条件 defer Rollback"为什么是无害且更安全的？
+4. `MaxOpenConns` 的合理上限怎么算？`ConnMaxLifetime` 为什么要小于服务端回收时间？
+5. Context 系列方法与普通方法的差别在取消时具体体现在哪里？
+6. NULL 列的两种映射方式各适合什么场合？为什么不用 SELECT *？
+
+## 练习
+
+1. 把第一步的程序跑通后，把所有 Query/Exec 换成 Context 系列，并故意用 2 秒超时的 context 去跑一个 `SELECT` 递归 CTE 的慢查询，观察错误文本与连接是否归还（池参数设为 1，连续打两次请求验证第二个请求不再被卡死）。
+2. 在转账示例中删掉 `defer tx.Rollback()`，并把加款语句的表名改错，对比两次运行后 accounts 表的数据，用一段话解释"钱消失"的过程。
+3. 同一张 users 表分别用 database/sql、sqlx 与 GORM 实现"分页 + 按年龄过滤"，GORM 开 Debug 模式对比生成的 SQL，统计三者代码行数，写一段不超过 200 字的选型结论。
+
+## 下一步
+
+- Context 取消传导的完整机制：[Context 详解](/go/140-ContextDetailed)；
+- 连接串与池参数从配置来：[Go 与配置管理](/go/390-GoConfigManagement)；
+- 数据库测试与基准：[Go 与测试](/go/350-GoTest)；
+- 缓存层与队列的选型对照：[Go 与 Redis](/go/550-GoRedis)。

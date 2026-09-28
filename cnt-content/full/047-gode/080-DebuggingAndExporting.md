@@ -14,17 +14,7 @@ prerequisites:
   - 'gode/070-NpmWorkflow'
 ---
 
-项目能跑起来只是开始，本篇解决两件"上线前"的事：一是断点调试——通过 Node/V8 Inspector 协议用 VS Code 或 Chrome DevTools 附加到游戏进程；二是项目导出——把 TypeScript 项目按标准流程发布到五大原生平台，并理清 npm 依赖在导出包里的打包规则。
-
-## 学习目标
-
-- 分清 GD.print/printerr 与 console.log 的输出通道，学会从终端查看 Node/V8 警告。
-- 理解断点调试默认关闭时的行为，会用 res://gode.json 开启 inspector。
-- 逐项理解 debug.inspector 配置的每个字段。
-- 会配置 VS Code attach 调试，理解 sourceMapPathOverrides 与 skipFiles 的作用。
-- 理解内联 source map 机制与 release 导出的安全限制。
-- 掌握导出流程、导出产物构成与 export.npm 配置语义。
-- 建立项目结构与版本控制约定。
+theory.ts 的乐理计算在某个和弦上返回了错误结果，你盯着输出面板的日志看不出哪一步错了——这时候你需要断点，单步看变量的值。项目修完要发给朋友试玩，你需要导出一个 Windows 包。本篇解决这两件"上线前"的事：断点调试——通过 Node/V8 Inspector 协议用 VS Code 或 Chrome DevTools 附加到游戏进程；项目导出——把 TypeScript 项目发布到五大原生平台，并理清 npm 依赖的打包规则。
 
 ## 输出函数怎么选
 
@@ -151,16 +141,22 @@ flowchart TD
 
 约定清单：提交 TypeScript 源码、团队需要的 addons/gode 发布文件、`tsconfig.json`、需要的 `gode.json`、`package.json` 与 lockfile（锁文件，建议提交以保证依赖版本一致）；忽略 `.godot/`、`.gode/`、包管理器缓存、构建输出与导出产物；`node_modules/` 导出前必须存在，但通常不入库。`native_extensions/paths` 只应包含 `res://addons/gode/binary/gode.gdextension`。
 
-## 小结
+## 坑点与自检
 
-- `GD.print`/`GD.printerr` 保证进 Godot 输出面板；`console.log` 是 Node 终端诊断不保证镜像；排查 Node/V8 warning 请从终端启动 Godot。
-- 断点调试基于 Node/V8 Inspector 协议，默认完全关闭；在 `res://gode.json` 的 debug.inspector 中开启，字段覆盖 host、port、waitForDebugger、breakOnStart、sourceMaps、logUrl、autoIncrementPort 等。
-- inspector 地址以启动时打印的真实 URL 为准，不可手写；可查 `http://127.0.0.1:9229/json/list`。
-- VS Code attach 靠 sourceMapPathOverrides 把 `res://` 映射到工作区，skipFiles 跳过无关代码。
-- 内联 source map 让调试器无需读取虚拟文件系统；release 移除 source map、默认禁用 inspector（需 allowInRelease 显式开启）；调试器可执行任意 JS 属高权限操作，host 保持 127.0.0.1。
-- 导出走 Godot 标准流程：编译 TS、注入 `.gode/build`、按平台挑选运行时二进制、打包 node_modules 快照；无依赖项目无需 Node.js/npm，有依赖项目要求 node/npm 在 PATH。
-- export.npm 六个配置项语义务必记牢，误关闭会导致"编辑器正常、导出失败"。
-- 版本控制：提交源码与 lockfile，忽略 `.godot/` 与 `.gode/`。
+- 断点永远打不上——inspector 默认关闭，先确认 `res://gode.json` 里 `enabled: true`，再以启动打印的真实 URL 附加（不可手写地址）；
+- VS Code 断点落在编译产物上、变量名全是压缩后的——`sourceMapPathOverrides` 没配或写错，`res://*` 必须映射到工作区目录；
+- 编辑器里运行正常，一导出就失败——按官方提醒先检查 `export.npm` 六项配置，误关闭 `exportDependencies` 或 `includeNodeModules` 是最常见原因；
+- 局域网另一台机器连你的 inspector 调试——这是高危事故：调试器可执行任意 JS，host 保持 `127.0.0.1`，release 保持 inspector 关闭；
+- await 后抛的异常在日志里无声无息——异步边界 try/catch 记录加重抛（见上文模式），并学会从终端启动 Godot 看 Node/V8 warning；
+- 自检问题一：console.log 与 GD.print 的区别是什么？（Node console API 属终端诊断，不保证镜像到 Godot 输出面板；给引擎看的日志走 GD.print/printerr）
+- 自检问题二：为什么 release 包里没有 source map？（发布安全约束：移除内联映射、默认禁用 inspector，需 allowInRelease 显式开启）
+- 自检问题三：无 npm 依赖的项目导出需要装 Node.js 吗？（不需要；有依赖才要求 node/npm 在 PATH 且 node_modules 存在）
+
+## 练习
+
+1. 给 theory.ts 的一个纯函数临时加 `debugger;`，配置 gode.json 开启 inspector，用 VS Code attach 断到它，单步看入参与返回值；
+2. 故意把 `sourceMapPathOverrides` 删掉再附加一次，对比断点位置的差别，体会这个字段为什么关键；
+3. 把项目导出成 Windows 包并给没装 Node.js 的机器运行（无依赖项目应可直接跑）；有依赖的项目再验证一次导出，观察 `res://.gode/build/npm/manifest.json` 的生成。
 
 ## 参考链接
 

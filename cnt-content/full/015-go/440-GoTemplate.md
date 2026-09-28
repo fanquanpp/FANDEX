@@ -1,41 +1,30 @@
 ---
 order: 440
-title: Go 与模板
+title: Go 与模板：把用户输入安全地渲染成页面
 module: 'go'
 category: 后端技术
 difficulty: intermediate
-description: text/template 与 html/template 实战：动作语法、管道与自定义函数、模板继承、HTTP 服务端渲染与 XSS 防御。
+description: 以"歌单页面被 XSS 注入"为主线学 text/template 与 html/template：动作语法与管道、自定义函数、range 上下文与 $、布局复用、HTTP 服务端渲染与上下文感知转义，附坑点、自检与练习。
 author: fanquanpp
 updated: '2026-09-12'
 related:
+  - 'go/470-GoHTTP'
+  - 'go/480-GoMiddleware'
+  - 'go/570-GoCodeGeneration'
   - 'go/390-GoConfigManagement'
-  - 'go/380-GoLog'
-  - 'go/450-GoEncryption'
-  - 'go/430-GoSignalHandling'
 prerequisites:
   - 'go/020-GoOverviewEnvSetup'
 ---
 
+## 真实场景：歌单页面挂了 alert 弹窗
 
-## 概述
+你用 Go 写了个小站，歌单页直接拼字符串渲染：`fmt.Sprintf("<li>%s</li>", song.Title)`。某天用户把歌名起名叫 `<script>alert('xss')</script>`，每个打开页面的人都被执行了这段脚本——教科书级的 XSS。
 
-模板引擎是一种将数据与模板文本结合生成最终输出的工具。简单来说，你写一个包含占位符的模板文件，程序运行时用实际数据替换占位符，生成最终文本。这在生成 HTML 页面、配置文件、邮件内容、代码文件等场景中非常常见。
+拼字符串生成 HTML 的本质问题：你分不清"结构"和"数据"，数据里的任何字符都被当成结构执行。Go 标准库的模板引擎正是解决这件事的：模板文件里写结构（带占位符），数据只从占位符进入，并且 `html/template` 会按输出位置自动转义。两个包语法完全一致：`text/template` 生成任意文本（邮件、配置、代码），`html/template` 额外做安全转义。
 
-Go 标准库提供了两个模板包：`text/template` 用于通用文本生成，`html/template` 在此基础上增加了 HTML 转义功能，防止 XSS 攻击。两者语法完全一致，区别仅在于安全处理。
+## 动手第一步：五分钟渲染第一份邮件文本
 
-## 基础概念
-
-在开始写代码之前，理解模板的几个核心概念：
-
-- **模板（Template）**：包含占位符和指令的文本文件或字符串，定义了输出的结构。
-- **数据（Data）**：传入模板的实际数据，可以是结构体、map 或任意 Go 值。
-- **动作（Action）**：模板中的 `{{...}}` 语法，用于插入数据、控制流程等。
-- **管道（Pipeline）**：类似 Unix 管道，将一个操作的输出作为下一个操作的输入，用 `|` 连接。
-- **函数（Function）**：可以在模板中调用的函数，包括内置函数和自定义函数。
-
-## 快速上手
-
-最简单的模板示例，将数据填充到模板中：
+从最简单的 text/template 开始——运营要一封验证码邮件：
 
 ```go
 package main
@@ -46,86 +35,48 @@ import (
 )
 
 func main() {
-    // 定义模板字符串，{{.Name}} 是占位符
-    tmplStr := "你好，{{.Name}}！欢迎来到 {{.City}}。"
+    const emailTmpl = `亲爱的 {{.UserName}}：
 
-    // 解析模板
-    tmpl, err := template.New("greeting").Parse(tmplStr)
-    if err != nil {
-        panic(err)
-    }
+您的验证码是 {{.Code}}，{{.ExpireMinutes}} 分钟内有效。
+{{if .HasBonus}}
+恭喜您获得新用户专属礼包！
+{{end}}`
 
-    // 准备数据
+    // 解析模板（编译占位符），失败立即暴露
+    tmpl := template.Must(template.New("email").Parse(emailTmpl))
+
     data := struct {
-        Name string
-        City string
-    }{
-        Name: "小明",
-        City: "北京",
-    }
+        UserName      string
+        Code          string
+        ExpireMinutes int
+        HasBonus      bool
+    }{"小明", "882134", 10, true}
 
-    // 执行模板，将结果输出到标准输出
-    err = tmpl.Execute(os.Stdout, data)
-    if err != nil {
+    if err := tmpl.Execute(os.Stdout, data); err != nil {
         panic(err)
     }
-    // 输出：你好，小明！欢迎来到 北京。
 }
 ```
 
-## 详细用法
-
-### 1. 访问数据
-
-模板通过 `.` 来引用当前数据对象，用 `.FieldName` 访问字段：
-
-```go
-type User struct {
-    Name  string
-    Email string
-    Age   int
-}
-
-// 访问结构体字段
-tmplStr := "姓名: {{.Name}}, 邮箱: {{.Email}}, 年龄: {{.Age}}"
-
-// 访问 map 的键
-data := map[string]interface{}{
-    "Name":  "小红",
-    "Score": 95,
-}
-tmplStr := "姓名: {{.Name}}, 分数: {{.Score}}"
+```bash
+go run main.go
 ```
 
-### 2. 条件判断
+预期输出：
 
-使用 `if`、`else`、`end` 根据条件显示不同内容：
+```text
+亲爱的 小明：
 
-```go
-tmplStr := `{{if .IsVIP}}欢迎尊贵的VIP用户{{else}}欢迎普通用户{{end}}`
+您的验证码是 882134，10 分钟内有效。
 
-// 更复杂的条件
-tmplStr := `
-{{if gt .Age 18}}成年人{{else}}未成年人{{end}}
-{{if and .IsActive .IsVIP}}活跃VIP用户{{end}}
-`
+恭喜您获得新用户专属礼包！
 ```
 
-Go 模板中的条件判断不支持 `==`、`>` 等运算符，需要使用内置函数：
+三个动作已经出现：`{{.Field}}` 引用数据字段、`{{if}}...{{end}}` 控制结构、`template.Must` 让语法错误在启动时 panic 而不是运行时报错。模板里的 `.` 代表"当前数据对象"。
 
-- `eq` 等于
-- `ne` 不等于
-- `lt` 小于
-- `le` 小于等于
-- `gt` 大于
-- `ge` 大于等于
-- `and` 逻辑与
-- `or` 逻辑或
-- `not` 逻辑非
+## 动手第二步：循环、条件与上下文切换
 
-### 3. 循环遍历
-
-使用 `range` 遍历切片或 map：
+列表渲染是最高频的场景。注意 `range` 块内 `.` 会变成当前元素，需要外层数据时用 `$`（顶层上下文）：
 
 ```go
 type Item struct {
@@ -133,272 +84,75 @@ type Item struct {
     Price float64
 }
 
-tmplStr := `
-商品列表：
+const pageTmpl = `店铺：{{$shop}} 的商品：
 {{range .Items}}
-- {{.Name}}：￥{{.Price}}
+- {{.Name}}：￥{{printf "%.2f" .Price}}
 {{else}}
 暂无商品
 {{end}}
 `
 
-data := struct {
+tmpl := template.Must(template.New("page").Parse(pageTmpl))
+tmpl.Execute(os.Stdout, struct {
+    Shop  string
     Items []Item
-}{
-    Items: []Item{
-        {Name: "苹果", Price: 5.5},
-        {Name: "香蕉", Price: 3.2},
-        {Name: "橙子", Price: 4.8},
-    },
-}
+}{"山海小铺", []Item{{"苹果", 5.5}, {"香蕉", 3.2}}})
 ```
 
-注意 `range` 块内的 `.` 会变成当前遍历的元素。如果需要访问外层数据，使用 `$`：
+条件判断不能用运算符，要用内置函数（参数前置）：
 
 ```go
-tmplStr := `
-{{range .Items}}
-店铺：{{$.ShopName}} - 商品：{{.Name}}
-{{end}}
-`
+{{if gt .Age 18}}成年人{{else}}未成年人{{end}}
+{{if and .IsActive .IsVIP}}活跃 VIP{{end}}
+{{if eq .Status "paid"}}已支付{{end}}
 ```
 
-### 4. 管道操作
+可用函数：`eq ne lt le gt ge and or not`。想写 `strings` 包里的任何函数（ToUpper、Join……），必须自己注册，见下一步。
 
-管道将一个操作的输出传递给下一个操作：
-
-```go
-tmplStr := `{{.Name | printf "你好，%s"}}`
-```
-
-执行顺序：先取 `.Name`，作为最后一个参数传给 `printf`，得到"你好，golang"。管道右侧只能是不带参数的函数调用——Go 模板没有内置的 `ToUpper`，这类函数必须先用 `Funcs` 注册（见下一节）再使用。
-
-### 5. 自定义函数
-
-可以注册自定义函数供模板使用：
-
-```go
-package main
-
-import (
-    "os"
-    "strings"
-    "text/template"
-)
-
-func main() {
-    // 创建模板并注册自定义函数
-    tmpl := template.New("custom").Funcs(template.FuncMap{
-        "upper": strings.ToUpper,  // 转大写
-        "lower": strings.ToLower,  // 转小写
-        "join":  strings.Join,     // 拼接切片
-        "now":   time.Now,         // 模板里取当前时间
-    })
-
-    // 解析模板（必须在 Funcs 之后）
-    tmpl, err := tmpl.Parse(`姓名: {{.Name | upper}}
-重复: {{.Name | join (slice .Name .Name .Name) ""}}
-`)
-    if err != nil {
-        panic(err)
-    }
-
-    data := map[string]string{"Name": "golang"}
-    tmpl.Execute(os.Stdout, data)
-    // 输出：
-    // 姓名: GOLANG
-    // 重复: golanggolanggolang
-}
-```
-
-### 6. 模板嵌套
-
-使用 `template` 动作引用子模板，实现模板复用：
-
-```go
-// 定义主模板和子模板
-const tmplStr = `
-{{define "header"}}<header>网站标题</header>{{end}}
-{{define "footer"}}<footer>版权信息</footer>{{end}}
-{{define "content"}}<main>页面内容</main>{{end}}
-
-{{template "header"}}
-{{template "content"}}
-{{template "footer"}}
-`
-
-tmpl, _ := template.New("layout").Parse(tmplStr)
-tmpl.Execute(os.Stdout, nil)
-```
-
-也可以从多个文件加载模板：
-
-```go
-// 从多个文件解析模板
-tmpl, err := template.ParseGlob("templates/*.html")
-if err != nil {
-    panic(err)
-}
-
-// 执行指定名称的模板
-tmpl.ExecuteTemplate(os.Stdout, "index", data)
-```
-
-### 7. 变量赋值
-
-在模板中可以使用 `:=` 赋值变量：
-
-```go
-tmplStr := `
-{{with .User}}
-{{$name := .Name}}
-用户名：{{$name}}
-{{end}}
-`
-```
-
-### 8. with 语句
-
-`with` 语句改变当前上下文对象 `.`：
-
-```go
-tmplStr := `
-{{with .Address}}
-城市：{{.City}}
-街道：{{.Street}}
-{{end}}
-`
-```
-
-### 9. html/template
-
-`html/template` 的用法与 `text/template` 完全一致，但会自动转义 HTML 特殊字符，防止 XSS 攻击：
+## 动手第三步：注册自定义函数 + 布局复用
 
 ```go
 package main
 
 import (
     "html/template"
-    "os"
+    "net/http"
+    "strings"
+    "time"
 )
 
 func main() {
-    // 使用 html/template 替代 text/template
-    tmpl, _ := template.New("safe").Parse(`<div>{{.Content}}</div>`)
+    // Funcs 必须在 Parse 之前调用，否则模板解析时找不到函数名
+    tmpl := template.New("layout").Funcs(template.FuncMap{
+        "upper": strings.ToUpper,
+        "join":  strings.Join,
+        "now":   time.Now,
+    })
 
-    data := map[string]string{
-        "Content": "<script>alert('xss')</script>",
-    }
-
-    tmpl.Execute(os.Stdout, data)
-    // 输出：<div>&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt;</div>
-    // 特殊字符被转义，不会执行脚本
-}
-```
-
-如果某些内容确实需要原样输出（比如信任的 HTML 片段），可以使用 `template.HTML` 类型：
-
-```go
-data := map[string]interface{}{
-    "Content": template.HTML("<b>加粗文本</b>"), // 不会被转义
-}
-```
-
-## 常见场景
-
-### 场景一：生成 HTML 页面
-
-```go
-// page.html 模板文件
-const pageTmpl = `
+    // define 定义子模板，template 引用，block 引用并可给默认内容
+    const layout = `
+{{define "header"}}<header>{{$.SiteName}}</header>{{end}}
+{{define "content"}}默认内容{{end}}
 <!DOCTYPE html>
-<html>
-<head><title>{{.Title}}</title></head>
-<body>
-  <h1>{{.Title}}</h1>
-  <ul>
-  {{range .Items}}
-    <li>{{.Name}} - ￥{{printf "%.2f" .Price}}</li>
-  {{end}}
-  </ul>
-  {{if .HasDiscount}}
-  <p>当前有优惠活动！</p>
-  {{end}}
-</body>
-</html>
+<html><body>
+{{template "header"}}
+{{block "content" .}}(无内容){{end}}
+<hr>渲染时间：{{now.Format "2006-01-02 15:04"}}
+</body></html>
 `
-
-type PageItem struct {
-    Name  string
-    Price float64
-}
-
-type PageData struct {
-    Title       string
-    Items       []PageItem
-    HasDiscount bool
+    t := template.Must(tmpl.Parse(layout))
+    t.ExecuteTemplate(os.Stdout, "layout", map[string]string{"SiteName": "山海小铺"})
+    _ = http.StatusOK // 占位，下一步展开 HTTP 用法
 }
 ```
 
-### 场景二：生成配置文件
+`block "content" .` 等价于 `define` + `template` 的组合，但允许子模板覆盖默认内容——这是 Go 模板实现"布局继承"的标准姿势：先 Parse 布局，再链式 Parse 页面文件，最后 `ExecuteTemplate(w, "layout", data)`。从文件加载整目录用 `template.ParseGlob("templates/*.html")`。
 
-```go
-// 用模板生成 Nginx 配置
-const nginxTmpl = `
-server {
-    listen {{.Port}};
-    server_name {{.Domain}};
+管道语法 `{{.Name | upper}}` 把左侧结果作为右侧函数的最后一个参数，可以串多节，等价于 `{{upper .Name}}`。
 
-    location / {
-        proxy_pass http://{{.Upstream}};
-        proxy_set_header Host $host;
-    }
-}
-`
+## 动手第四步：html/template 上线——XSS 在这里被拦截
 
-type NginxConfig struct {
-    Port     int
-    Domain   string
-    Upstream string
-}
-```
-
-### 场景三：生成邮件内容
-
-```go
-const emailTmpl = `
-亲爱的 {{.UserName}}：
-
-感谢您注册 {{.AppName}}！
-
-您的验证码是：{{.Code}}，请在 {{.ExpireMinutes}} 分钟内使用。
-
-{{if .HasBonus}}
-恭喜您获得新用户专属礼包！
-{{end}}
-
-此致
-{{.AppName}} 团队
-`
-```
-
-### 场景四：生成代码文件
-
-```go
-// 用模板生成 Go 结构体代码
-const codeTmpl = `
-// Code generated by templgen; DO NOT EDIT.
-package {{.Package}}
-
-type {{.StructName}} struct {
-{{range .Fields}}    {{.Name}} {{.Type}} ` + "`" + `json:"{{.JSONName}}"` + "`" + `
-{{end}}}
-`
-```
-
-### 场景五：HTTP 服务端渲染
-
-`html/template` 配合 `net/http` 是不引前端框架时服务端渲染的标准组合。模板在启动时解析一次（并发安全），每个请求只做执行：
+现在把第一步的场景换到 Web 服务端，这次用 `html/template`，并故意塞进恶意数据：
 
 ```go
 package main
@@ -414,33 +168,29 @@ type Song struct {
     Artist string
 }
 
-const listHTML = `
-<!DOCTYPE html>
+const listHTML = `<!DOCTYPE html>
 <html><body>
-  <h1>歌单</h1>
-  <ul>
-  {{- range .Songs}}
-    <li>{{.Title}} - {{.Artist}}</li>
-  {{- end}}
-  </ul>
-  <p>共 {{len .Songs}} 首</p>
+<h1>歌单</h1>
+<ul>
+{{- range .Songs}}
+  <li>{{.Title}} - {{.Artist}}</li>
+{{- end}}
+</ul>
+<p>共 {{len .Songs}} 首</p>
 </body></html>
 `
 
 func main() {
-    // 启动时解析并校验一次；解析失败直接 panic，把问题暴露在部署阶段
+    // 启动时解析一次；模板对象只读，之后并发执行安全
     tmpl := template.Must(template.New("list").Parse(listHTML))
 
     http.HandleFunc("/songs", func(w http.ResponseWriter, r *http.Request) {
-        data := struct {
-            Songs []Song
-        }{
+        data := struct{ Songs []Song }{
             Songs: []Song{
-                {Title: "<em>星航</em>", Artist: "AI-01"}, // 恶意或含 HTML 的数据
+                {Title: `<script>alert('xss')</script>`, Artist: "匿名用户"},
                 {Title: "光年之外", Artist: "AI-02"},
             },
         }
-        // 执行模板写入响应；标题中的 <em> 会被转义为文本展示，而不是被浏览器执行
         if err := tmpl.Execute(w, data); err != nil {
             http.Error(w, "render error", http.StatusInternalServerError)
         }
@@ -450,127 +200,67 @@ func main() {
 }
 ```
 
-运行后访问 `http://localhost:8080/songs`，页面源码中标题显示为 `&lt;em&gt;星航&lt;/em&gt;`——用户数据里的 HTML 标签被当成普通文字展示，XSS 注入被自动拦截。
-
-## 注意事项与常见错误
-
-1. **Must 函数**：如果模板语法有误，`Parse` 会返回错误。使用 `template.Must` 可以在解析失败时直接 panic，适合初始化阶段使用：
-
-```go
-tmpl := template.Must(template.New("test").Parse(tmplStr))
+```bash
+go run main.go
+curl http://localhost:8080/songs
 ```
 
-2. **range 内的上下文变化**：在 `range` 块内，`.` 变成了当前元素。如果需要访问外层数据，使用 `$`（绑定到 range 外的 `.`）。
+预期输出（节选）：
 
-3. **模板中的空格**：`{{-` 和 `-}}` 可以去除动作前后的空白字符：
-
-```go
-// 默认会有多余空行
-{{range .Items}}
-  {{.Name}}
-{{end}}
-
-// 使用 - 去除空白
-{{- range .Items -}}
-  {{.Name}}
-{{- end -}}
+```html
+<ul>
+  <li>&lt;script&gt;alert(&#39;xss&#39;)&lt;/script&gt; - 匿名用户</li>
+  <li>光年之外 - AI-02</li>
+</ul>
 ```
 
-4. **html/template 的自动转义**：使用 `html/template` 时，所有变量默认会被 HTML 转义。如果需要输出原始 HTML，必须使用 `template.HTML`、`template.CSS`、`template.JS` 等类型包装。但这样做要确保内容是安全的。
+`<script>` 变成了 `&lt;script&gt;`——用户数据被当成文字展示，浏览器不会执行它。对比开头的 `fmt.Sprintf` 版本：同样的一行数据，一边是漏洞，一边是安全。
 
-5. **模板解析顺序**：`Funcs` 必须在 `Parse` 之前调用，否则模板中使用的自定义函数会报错。
+## 讲为什么：转义为什么必须"上下文感知"
 
-6. **map 的键必须是简单类型**：模板中访问 map 的键时，键必须是字符串、整数等简单类型，不能是结构体。
+把 `<` 换成 `&lt;` 谁都会做，难点在于同一个值在不同位置需要不同的转义规则：
 
-7. **内置函数清单有限**：模板只有 `printf`、`len`、`index`、`slice`、`eq/ne/lt/le/gt/ge`、`and/or/not`、`urlquery` 等内置函数，写 `strings` 包里的任何函数都必须先 `Funcs` 注册。另外 `strings.Title` 自 Go 1.18 起已废弃（对 Unicode 词边界的处理不正确），需要标题式大写请改用 `golang.org/x/text/cases`。
+- 出现在标签正文：转义 HTML 实体（`&lt;`）；
+- 出现在属性里：还要防引号逃逸（`&#39;`）；
+- 出现在 `<script>` 标签内：按 JS 字符串转义；
+- 出现在 URL/href：按 URL 编码转义。
 
-## 进阶用法
+`html/template` 在解析时就记住了每个占位符所处的语法位置，执行时按位置选择转义器——这就是"上下文感知转义"，也是 `text/template` 与 `html/template` 唯一但关键的差别。结论是纪律性的：**渲染 HTML 一律用 html/template，text/template 只用于邮件正文、Nginx 配置、代码生成这类非 HTML 输出**（后两者正是模板的经典副业：生成 Nginx server 块、生成带 build tag 的 Go 代码文件）。
 
-### 模板继承
+需要输出可信 HTML 片段（比如富文本编辑器产出的内容）时，用 `template.HTML("<b>加粗</b>")` 类型显式跳过转义——这是"我担保内容安全"的声明，对任何经过用户输入的内容都不要用。
 
-Go 标准库的模板不支持传统意义上的"继承"，但可以通过 `define` 和 `template` 组合实现类似效果：
+## 坑点与自检
 
-```go
-// base.html - 基础布局
-const baseTmpl = `
-{{define "base"}}
-<!DOCTYPE html>
-<html>
-<head><title>{{.Title}}</title></head>
-<body>
-  {{block "content" .}}默认内容{{end}}
-  {{block "sidebar" .}}默认侧边栏{{end}}
-</body>
-</html>
-{{end}}
-`
+**坑 1：Funcs 注册在 Parse 之后。** 报错 "function xxx not defined"。顺序固定：New、Funcs、Parse、Execute。
 
-// page.html - 具体页面
-const pageTmpl = `
-{{template "base" .}}
+**坑 2：range 里拿不到外层数据。** `.` 已变成当前元素。用 `$` 引用顶层；或在外层先用 `{{$site := .Shop}}` 存变量。
 
-{{define "content"}}
-<main>这是页面内容</main>
-{{end}}
+**坑 3：模板里的空白失控。** `{{range}}` 独占一行会产生多余换行，用 `{{-` 与 `-}}` 吃掉动作两侧的空白（注意减号与花括号之间不能有空格）。
 
-{{define "sidebar"}}
-<aside>这是侧边栏</aside>
-{{end}}
-`
+**坑 4：以为 Go 模板内置了字符串函数。** 内置清单只有 `printf len index slice eq ne lt le gt ge and or not urlquery` 等。`strings.Title` 曾被教程广泛演示，但它对 Unicode 词边界处理不正确，Go 1.18 起已废弃；需要标题式大写用 `golang.org/x/text/cases`。
 
-// 先解析 base，再解析 page
-tmpl := template.Must(template.New("base").Parse(baseTmpl))
-tmpl = template.Must(tmpl.Parse(pageTmpl))
-tmpl.ExecuteTemplate(os.Stdout, "base", data)
-```
+**坑 5：每次请求重新 Parse。** Parse 是编译动作，代价不小；模板对象解析后只读、并发执行安全，正确姿势是启动时 Parse 一次、包级变量持有、每个请求只 Execute。反过来，解析后的模板对象绝不能再 Parse/修改，否则并发读写。
 
-### 使用 block 定义默认内容
+**坑 6：字段未导出渲染为空。** 模板只能访问导出字段（大写开头），包内小写字段在模板里拿到的是零值 `<no value>` 或空串，且不报错——排查"页面上数据没了"时先查大小写。
 
-`block` 是 Go 1.6 引入的语法，等价于 `define` + `template`：
+自检——能不看文档回答这些吗：
 
-```go
-// 定义带默认内容的块
-{{block "title" .}}默认标题{{end}}
+1. text/template 与 html/template 的语法与行为差异分别是什么？
+2. `{{.Name | printf "你好 %s"}}` 的求值顺序？管道右侧函数的参数怎么接？
+3. range 块内如何引用外层数据？`$` 绑定的是谁？
+4. block 与 define + template 的关系？布局继承的 Parse 顺序？
+5. template.HTML 什么时候能用？为什么对用户输入绝对不能用？
+6. 为什么模板要启动时解析一次而不是每请求解析？
 
-// 子模板可以覆盖
-{{define "title"}}自定义标题{{end}}
-```
+## 练习
 
-### 模板中使用方法
+1. 把第四步的程序扩展成"歌单 + 添加歌曲"小站：GET 显示列表，POST 接收表单写入内存切片（处理 `r.ParseForm`），故意提交 `<img src=x onerror=alert(1)>` 作为歌名，验证页面源码中的转义结果。
+2. 写一个 text/template 生成 Nginx 配置的命令行小工具：输入端口、域名、上游地址，输出完整 server 块；把模板放进独立文件，用 ParseGlob 加载。
+3. 给第四步的站点做布局抽取：把 `<html><body>` 公共部分抽成 `layout.html` 的 block，列表页与"关于"页各自只写 content 块，确认两个页面共享头部与页脚。
 
-如果数据对象有方法，模板可以直接调用：
+## 下一步
 
-```go
-type User struct {
-    FirstName string
-    LastName  string
-}
-
-// 定义方法
-func (u User) FullName() string {
-    return u.FirstName + " " + u.LastName
-}
-
-// 模板中直接调用方法
-tmplStr := "全名：{{.FullName}}"
-```
-
-### 并发安全
-
-`template.Template` 对象在解析完成后是只读的，可以安全地在多个 goroutine 中并发执行：
-
-```go
-var tmpl *template.Template // 初始化一次
-
-// 多个 goroutine 可以安全地并发调用
-go func() { tmpl.Execute(w1, data1) }()
-go func() { tmpl.Execute(w2, data2) }()
-```
-
-## 本篇小结
-
-1. `text/template` 负责通用文本生成，`html/template` 同语法但按输出位置（HTML 正文、属性、JS、URL）做上下文感知转义；凡涉及用户数据渲染 HTML 一律用后者。
-2. 模板三要素：`.` 引用当前数据，`{{if}}/{{range}}/{{with}}` 控制结构，`|` 管道串联函数调用；range 块内用 `$` 回到顶层上下文。
-3. 内置函数很少，业务函数用 `Funcs` 在 `Parse` 之前注册；初始化期用 `template.Must` 让语法错误尽早 panic。
-4. 复用靠 `define` + `template`/`block` 组合布局，`ParseGlob`/`ParseFiles` 从文件加载后用 `ExecuteTemplate` 指定入口模板。
-5. 模板解析一次、并发执行安全，是 HTTP 服务端渲染的正确姿势；`{{-` 与 `-}}` 控制空白，`template.HTML` 等类型仅在内容可信时用于跳过转义。
+- 模板渲染所在的服务端全貌：[Go 与 HTTP 服务](/go/470-GoHTTP)与[Go 中间件](/go/480-GoMiddleware)；
+- 代码生成场景的模板进阶：[Go 代码生成](/go/570-GoCodeGeneration)；
+- 邮件、配置等文本生成的数据来源：[Go 与配置管理](/go/390-GoConfigManagement)；
+- 防 XSS 只是安全一角：[Go 与加密](/go/450-GoEncryption)。

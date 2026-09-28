@@ -14,16 +14,7 @@ prerequisites:
   - 'gode/060-TypeScriptConfigAndCompilation'
 ---
 
-Gode 的口号里有一句"使用强大的 npm 生态"。本篇讲清这条能力线的边界与规则：npm 解析何时启用、如何初始化依赖、ESM 与 CommonJS 包如何加载、pnpm 需要哪些额外配置、原生 `.node` 模块如何工作，以及官方给出的使用限制。原则先行：npm 是可选能力，不是必需品——它解决的是"确实需要现成库"的问题，而不是项目现代化的必经步骤。
-
-## 学习目标
-
-- 记住 npm 解析的启用条件：根目录存在 package.json 或 node_modules。
-- 会用 npm 或 pnpm 初始化并安装依赖。
-- 理解 ESM 包与 CommonJS 包的加载方式差异。
-- 配置 pnpm 的 hoisted（提升）布局并批准构建脚本。
-- 理解原生 `.node` 模块运行时物化到 user:// 的机制与意义。
-- 知道官方的使用建议与限制，避免为小功能引入大包。
+假设 Quaver 的乐理模块需要一个现成的和弦识别库，npm 上有，自己手写要几百行——这时候才轮到本篇。Gode 的口号里有一句"使用强大的 npm 生态"，本篇讲清这条能力线的边界与规则：npm 解析何时启用、如何初始化依赖、ESM 与 CommonJS 包如何加载、pnpm 需要哪些额外配置、原生 `.node` 模块如何工作，以及官方的使用限制。原则先行：npm 是可选能力，不是必需品——它解决"确实需要现成库"的问题，而不是项目现代化的必经步骤。
 
 ## 启用条件与零工具链承诺
 
@@ -94,14 +85,22 @@ node-linker=hoisted
 - 使用原生包时，在目标机器上实测首次加载（物化发生的时间点），确认可接受。
 - 安全边界要清楚：Gode 不审计包内部内容，npm 包会在你的进程里运行任意代码，平台适配与依赖安全由项目自负。选包时的谨慎程度应当与它获得的权限相称。
 
-## 小结
+## 坑点与自检
 
-- 仅当根目录存在 package.json 或 node_modules 时才启用 npm 解析；无依赖项目保持零工具链。
-- 初始化与安装由你自己执行（npm 或 pnpm）；Gode 不代劳，建议沿用项目标准化的包管理器。
-- ESM 包按 ESM 加载，CommonJS 包桥接为 default 与 named import；项目脚本只允许 TypeScript。
-- pnpm 必须 `.npmrc` 配置 `node-linker=hoisted`（res:// 无法模拟 symlink resolver），pnpm 10+ 需批准构建脚本。
-- 原生 `.node` 模块运行时物化到 `user://.gode/npm/node_modules`，使 fork、import.meta.url 推导与原生加载获得真实路径；捆绑的 gode_node helper 让桌面包探测不依赖用户安装的 Node。
-- 依赖要克制：不为小功能引大包、审查体积、逐平台测试、实测原生包首次加载；Gode 不审计包内容。
+- 没建 package.json 就想 `import` npm 包，模块找不到——npm 解析只在根目录存在 package.json 或 node_modules 时启用；
+- pnpm 装完依赖运行时报模块解析错误——缺 `node-linker=hoisted`：res:// 文件系统模拟不了 pnpm 默认的 symlink 布局；
+- pnpm 10+ 安装成功但原生依赖功能残缺——构建脚本默认不执行，用 `pnpm approve-builds` 或在 pnpm-workspace.yaml 的 onlyBuiltDependencies 里列出；
+- 导出包在目标机器上首次加载原生模块很慢——那是物化（复制快照到 user://）正在发生，属于设计行为，提前在目标平台实测确认可接受；
+- 为一个十行能写完的功能引入了大依赖——先过一遍官方判断标准：小功能手写更划算；
+- 自检问题一：Gode 会替你执行 npm install 吗？（不会，初始化与安装都是你的事；Gode 只负责在运行时解析与加载）
+- 自检问题二：为什么项目脚本只允许 TypeScript？（`.cjs` 仅作 CommonJS sidecar 用于互操作，业务代码一律 `.ts` 由内置编译器转译）
+- 自检问题三：原生 `.node` 模块为什么不能直接从 res:// 加载？（物化机制要在 user:// 拿到真实文件系统路径，满足 fork、import.meta.url 与原生加载的需求）
+
+## 练习
+
+1. 在测试项目里 `npm init -y && npm install lodash`，用官方示例验证 `lodash.camelCase("hello gode")` 输出 `helloGode`；
+2. 把包管理器换成 pnpm，先不配 `.npmrc` 复现解析问题，再配 `node-linker=hoisted` 修复，体会这条配置为什么必须；
+3. 写一份你自己项目的"是否引入依赖"判断清单（体积、平台、维护、安全四项），下一个想引包的念头出现时过一遍。
 
 ## 参考链接
 

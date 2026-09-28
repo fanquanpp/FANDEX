@@ -1,654 +1,263 @@
 ---
 order: 130
-title: Concurrent 模式
+title: Concurrent 模式：让慢更新别拖住快交互
 module: 'react'
 category: 前端技术
 difficulty: advanced
-description: 并发渲染与Suspense集成
+description: 从全站搜索页「敲字卡 + 切页闪」讲起：useTransition 拆分紧急与非紧急更新、useDeferredValue 与选型规则、Suspense 挂起与防 fallback 闪烁、tearing 与 useSyncExternalStore、自动批处理与 flushSync，附受控输入延迟与 transition 副作用两则调试实录。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'react/110-JSXDeepAnalysis'
   - 'react/120-FiberArchitecture'
-  - 'react/150-HooksPrinciple'
+  - 'react/060-React19NewFeatures'
+  - 'react/180-ReactPerformance'
+  - 'react/260-ReactSSR'
 prerequisites:
-  - 'react/010-OverviewEnvSetup'
+  - 'react/120-FiberArchitecture'
 ---
 
 ## 前置知识
 
-- [Fiber 架构](/react/120-FiberArchitecture)：建议先完成前一篇的学习
+- [Fiber 架构](/react/120-FiberArchitecture)：知道渲染可切片、Lanes 分优先级、TransitionLane 低优先级可被打断——本篇是把这套机制用起来的 API 面；
+- [状态与事件](/react/030-StateEvent)：useState 的基本用法。
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用 useTransition 把一次「又急又重」的更新拆成两层，输入框不再丢字；
+2. 在「自己持有输入」和「接收父组件值」两种场景里正确选择 useTransition 或 useDeferredValue；
+3. 用 Suspense 划出独立加载区，并用 transition 消灭切换时的 fallback 闪烁；
+4. 解释 tearing 是什么，知道外部 store 订阅为什么必须用 useSyncExternalStore；
+5. 说出自动批处理覆盖哪些场合，什么时候需要 flushSync 强制同步。
 
-## 概述
+预计 60 到 80 分钟。
 
-Concurrent 模式是 React 18 引入的核心特性，允许 React 在渲染过程中中断、暂停和恢复工作。传统模式下 React 的渲染是同步不可中断的，一旦开始就会执行到底，这可能导致长时间的任务阻塞用户交互。并发渲染通过可中断的渲染机制，使 React 能够优先处理高优先级更新（如用户输入），将低优先级更新（如数据获取）推迟到空闲时执行。
+## 1. 你现在要解决什么问题
 
-并发模式不是一个新的 API 或模式，而是一组功能的统称，包括 useTransition、useDeferredValue、Suspense 和流式 SSR 等。
+给 FANDEX 做全站搜索页：顶部搜索框，下方结果列表（数据源是几万条文档索引），列表上方「文档 / 代码 / 题解」三个标签页，切标签要异步拉数据。上线前自测出两个卡点：
 
-## 基础概念
+- **敲字卡**：每敲一键，几千条结果重新过滤重渲染，输入框跟不上手速，快打时丢字；
+- **切页闪**：点「题解」标签，旧列表瞬间消失，白晃晃的骨架屏闪一下，再弹出新列表——来回切就像页面在眨眼。
 
-### 同步渲染 vs 并发渲染
+两个卡点的根因相同：React 把「输入」和「重结果」当成**同等紧急**的一件事一口气做。而事实是它们根本不同级——输入必须立刻反馈，结果晚半秒没人计较。并发渲染（Concurrent Rendering）就是给更新分级的 API 面：**你告诉 React 哪些更新可以慢，它就用 120 篇讲的调度机制让它们真的能被插队、被打断。**
 
-| 特性     | 同步渲染           | 并发渲染             |
-| -------- | ------------------ | -------------------- |
-| 渲染方式 | 不可中断，一气呵成 | 可中断、可恢复       |
-| 优先级   | 所有更新同等优先   | 区分紧急和非紧急更新 |
-| 用户感知 | 长任务可能导致卡顿 | 高优先级更新立即响应 |
-| 兼容性   | React 17 及之前    | React 18+            |
+## 2. 最小可运行示例：一次更新拆成两层
 
-### 优先级模型
-
-React 将更新分为不同优先级，高优先级更新可以中断低优先级渲染：
-
-- **紧急更新**（UserBlocking）：用户交互，如输入、点击
-- **普通更新**（Normal）：数据请求结果
-- **过渡更新**（Transition）：UI 切换，如标签页切换
-- **空闲更新**（Idle）：预加载、分析上报
-
-## 快速上手
-
-### useTransition 标记非紧急更新
+先解决敲字卡。核心一行：把过滤结果的更新包进 `startTransition`。
 
 ```jsx
-import { useTransition, useState } from 'react';
+import { useState, useTransition, useMemo } from 'react';
 
-function SearchPage() {
+function SearchPage({ docs }) {
   const [isPending, startTransition] = useTransition();
-  const [inputValue, setInputValue] = useState('');
-  const [searchQuery, setSearchQuery] = useState('');
+  const [input, setInput] = useState('');       // 紧急层：输入框自己的值
+  const [query, setQuery] = useState('');       // 非紧急层：驱动过滤的值
 
   function handleChange(e) {
-    // 紧急更新：输入框立即响应
-    setInputValue(e.target.value);
-
-    // 非紧急更新：搜索结果可以延迟显示
+    setInput(e.target.value);                   // 不包装：立即上屏，绝不丢字
     startTransition(() => {
-      setSearchQuery(e.target.value);
+      setQuery(e.target.value);                 // 包装：低优先级，可被打断
     });
   }
 
-  return (
-    <div>
-      <input value={inputValue} onChange={handleChange} />
-      {isPending && <span>搜索中...</span>}
-      <SearchResults query={searchQuery} />
-    </div>
+  const results = useMemo(
+    () => docs.filter((d) => d.title.includes(query)),
+    [docs, query]
   );
-}
-```
-
-### useDeferredValue 延迟更新
-
-```jsx
-import { useDeferredValue, useMemo } from 'react';
-
-function SearchPage({ query }) {
-  // 延迟版本的查询值，让紧急更新优先
-  const deferredQuery = useDeferredValue(query);
-
-  // 使用延迟值计算结果，避免阻塞输入
-  const results = useMemo(() => search(deferredQuery), [deferredQuery]);
 
   return (
     <div>
-      <input value={query} onChange={handleChange} />
-      <ResultList results={results} />
-    </div>
-  );
-}
-```
-
-## 详细用法
-
-### Suspense 与并发渲染
-
-```jsx
-import { Suspense } from 'react';
-
-// 数据获取组件，使用 Suspense 等待
-function UserProfile({ userId }) {
-  const user = useFetchUser(userId); // 抛出 Promise 触发 Suspense
-  return <div>{user.name}</div>;
-}
-
-// 使用 Suspense 包裹
-function App() {
-  return (
-    <div>
-      <h1>用户中心</h1>
-      <Suspense fallback={<Loading />}>
-        <UserProfile userId={1} />
-      </Suspense>
-    </div>
-  );
-}
-```
-
-### Suspense 与多数据源
-
-```jsx
-import { Suspense } from 'react';
-
-function Dashboard() {
-  return (
-    <div className="dashboard">
-      {/* 每个区域独立加载，互不影响 */}
-      <section>
-        <Suspense fallback={<Skeleton />}>
-          <UserProfile />
-        </Suspense>
-      </section>
-
-      <section>
-        <Suspense fallback={<ChartSkeleton />}>
-          <AnalyticsChart />
-        </Suspense>
-      </section>
-
-      <section>
-        <Suspense fallback={<ListSkeleton />}>
-          <RecentActivities />
-        </Suspense>
-      </section>
-    </div>
-  );
-}
-```
-
-### useTransition 与列表过滤
-
-```jsx
-import { useTransition, useState } from 'react';
-
-function FilterableList({ items }) {
-  const [isPending, startTransition] = useTransition();
-  const [filter, setFilter] = useState('');
-
-  const filteredItems = useMemo(() => {
-    return items.filter((item) => item.name.toLowerCase().includes(filter.toLowerCase()));
-  }, [items, filter]);
-
-  function handleFilterChange(e) {
-    // 输入框立即响应
-    const value = e.target.value;
-
-    // 过滤操作标记为过渡更新
-    startTransition(() => {
-      setFilter(value);
-    });
-  }
-
-  return (
-    <div>
-      <input onChange={handleFilterChange} placeholder="搜索..." />
-      <ul style={{ opacity: isPending ? 0.7 : 1 }}>
-        {filteredItems.map((item) => (
-          <li key={item.id}>{item.name}</li>
-        ))}
+      <input value={input} onChange={handleChange} />
+      <ul style={{ opacity: isPending ? 0.6 : 1 }}>
+        {results.map((d) => <li key={d.id}>{d.title}</li>)}
       </ul>
     </div>
   );
 }
 ```
 
-## 常见场景
+预期行为：狂敲键盘每个字立刻上屏；结果列表短暂变淡（isPending），随后更新为过滤结果。两个 state 是这套模式的关键——**input 管输入框（急），query 管列表（缓）**，一个事件里一次 setState 直写、一次包 transition，就完成了分级。
 
-### 标签页切换
+发生了什么：`setQuery` 的更新被标进 TransitionLane（120 篇的车道表），渲染切片间隙你继续敲键，React 丢掉半成品列表渲染、先处理输入，敲完了再从头算列表。旧列表在过渡期间**留在屏幕上**，只是淡一点——不是骨架屏，是上一帧的真实内容。
+
+`isPending` 的约定用法是视觉提示（透明度、角标），**不要拿它卸载或替换旧内容**——那就退化回骨架屏闪烁了。
+
+## 3. useDeferredValue：收不到事件时的等价物
+
+2 节的写法有个前提：过滤参数在**本组件**的 onChange 里。如果搜索框是父组件传下来的 prop，你根本碰不到事件，怎么拆？
 
 ```jsx
-import { useTransition, useState } from 'react';
+import { useState, useDeferredValue, useMemo } from 'react';
 
-function TabContainer() {
+function ResultList({ query, docs }) {
+  const deferredQuery = useDeferredValue(query); // 延迟副本
+  const results = useMemo(
+    () => docs.filter((d) => d.title.includes(deferredQuery)),
+    [docs, deferredQuery]
+  );
+  const isStale = query !== deferredQuery;       // 滞后检测
+
+  return (
+    <ul style={{ opacity: isStale ? 0.6 : 1 }}>
+      {results.map((d) => <li key={d.id}>{d.title}</li>)}
+    </ul>
+  );
+}
+```
+
+`useDeferredValue(query)` 返回一个「慢半拍」的值：query 一变，React 先用**旧 deferred 值渲染一帧**（列表瞬间返回旧结果，输入框不等它），再在低优先级里用新值重渲染。`isStale` 就是这套内置延迟暴露出来的状态，淡显旧内容和 2 节的 isPending 效果一致。
+
+选型规则一句话：**值在自己手里就 useTransition，值是 prop 就 useDeferredValue。** 两者底层是同一条 TransitionLane，效果几乎等价；deferred 版少一个 state，transition 版还能顺手拿到 isPending。
+
+## 4. Suspense：数据没到，让这一块先「挂起」
+
+再解决切页闪。标签内容是异步数据，React 19 时代的读法是：组件直接读数据源，数据没就绪就往**最近的 Suspense 边界**抛一个 Promise，边界显示 fallback；Promise 结算后 React 恢复渲染，展示真身。
+
+```jsx
+import { Suspense, useState, useTransition } from 'react';
+
+function SolutionList({ tab }) {
+  const data = use(fetchSolutions(tab));   // use() 读 Promise；未就绪则挂起
+  return <ul>{data.map((s) => <li key={s.id}>{s.title}</li>)}</ul>;
+}
+
+function SearchPage() {
+  const [tab, setTab] = useState('docs');
   const [isPending, startTransition] = useTransition();
-  const [activeTab, setActiveTab] = useState('overview');
-
-  function switchTab(tab) {
-    // 标签切换标记为过渡更新
-    startTransition(() => {
-      setActiveTab(tab);
-    });
-  }
 
   return (
     <div>
       <nav>
-        <button onClick={() => switchTab('overview')}>概览</button>
-        <button onClick={() => switchTab('details')}>详情</button>
-        <button onClick={() => switchTab('settings')}>设置</button>
+        {['docs', 'code', 'solutions'].map((t) => (
+          <button key={t} onClick={() => startTransition(() => setTab(t))}>
+            {t}
+          </button>
+        ))}
       </nav>
-      <div style={{ opacity: isPending ? 0.7 : 1 }}>
-        {activeTab === 'overview' && <OverviewTab />}
-        {activeTab === 'details' && <DetailsTab />}
-        {activeTab === 'settings' && <SettingsTab />}
-      </div>
+      <Suspense fallback={<ListSkeleton />}>
+        <SolutionList tab={tab} />
+      </Suspense>
     </div>
   );
 }
 ```
 
-### 流式 SSR
+预期行为：点「题解」，旧列表**停留原地**（不闪骨架），数据就绪后一次性换新。关键正是 `startTransition` 包住 setTab：transition 里发生的挂起，React 选择**继续显示旧内容**而不是跳 fallback——fallback 只在「首次挂载且非 transition」时出现。这一行就是「切页闪」的解药。
+
+边界划分按内容块来，各块独立挂起互不拖累：
 
 ```jsx
-// 服务端：使用 renderToPipeableStream 实现流式渲染
-import { renderToPipeableStream } from 'react-dom/server';
-
-app.get('/', (req, res) => {
-  const stream = renderToPipeableStream(<App />, {
-    onShellReady() {
-      // HTML 骨架就绪，开始流式传输
-      res.setHeader('content-type', 'text/html');
-      stream.pipe(res);
-    },
-    onShellError(error) {
-      // 骨架渲染失败
-      res.status(500).send('服务端渲染失败');
-    },
-    onError(error) {
-      console.error(error);
-    },
-  });
-});
+<section>
+  <Suspense fallback={<ProfileSkeleton />}><UserProfile /></Suspense>
+</section>
+<section>
+  <Suspense fallback={<ChartSkeleton />}><AnalyticsChart /></Suspense>
+</section>
 ```
 
-## 注意事项
+fallback 本身要轻：它是加载路径上的额外渲染成本，放个几十行动画就违背了初衷。挂起抛 Promise、边界接 Promise 的完整机制在 120 篇 Suspense 一节埋过线，数据层用法（use、缓存、竞态）在 070 篇。
 
-- useTransition 和 useDeferredValue 不能用于受控输入的值，输入框的值必须同步更新
-- isPending 为 true 时不要隐藏或卸载旧内容，应使用透明度等视觉提示
-- Suspense 的 fallback 不应过于复杂，否则会增加首屏渲染时间
-- 并发特性不会改变代码的执行结果，只改变渲染的时机和优先级
-- React 18 默认启用了并发特性，不再需要 ConcurrentMode 包裹
-- startTransition 中的状态更新不能用于紧急的副作用（如路由跳转）
+## 5. 修改实验
 
-## 进阶用法
+实验一：把 2 节的 `useMemo` 过滤换成 5000 条数据和重计算（循环里再套循环），对比包装前后的敲字体验，用 DevTools Performance 面板看 transition 更新如何被输入切片打断。
 
-### Suspense 与错误边界结合
+实验二：把 4 节里 setTab 的 `startTransition` 壳去掉再切标签，观察骨架屏闪烁回归；再加回来验证消失。体会「防闪」这一行代码的分量。
+
+实验三：给 3 节的列表加「新数据就绪」角标：isStale 为 true 时右上角显示小圆点，false 时隐藏——不卸载内容，只做提示。
+
+## 6. 常见错误与调试实录
+
+**错误一：把受控输入的值交给 deferred。** 有人嫌输入卡，直接 `const v = useDeferredValue(value)` 然后把 v 绑回 input：
 
 ```jsx
-import { Suspense } from 'react';
-import { ErrorBoundary } from 'react-error-boundary';
-
-function SafeDataComponent({ userId }) {
-  return (
-    <ErrorBoundary
-      fallback={<div>数据加载失败，请重试</div>}
-      onReset={() => {
-        /* 重置逻辑 */
-      }}
-    >
-      <Suspense fallback={<Loading />}>
-        <UserProfile userId={userId} />
-      </Suspense>
-    </ErrorBoundary>
-  );
-}
+<input value={deferredInput} onChange={(e) => setInput(e.target.value)} />
 ```
 
-### Selective Hydration
+现象：快打时输入框内容明显滞后、删字迟钝——deferred 的使命是让**重结果**慢，不是让输入慢；输入框必须绑紧急值。修正：回到 2 节的双 state 模式，deferred 只喂给过滤计算。同理，路由跳转这类用户一眼确认的操作也别包 transition——它不觉得那是「可以等」的事。
+
+**错误二：transition 回调里做副作用。** `startTransition(() => { setTab(t); log('切到' + t); })`——回调可能被打断**重跑多次**（120 篇 Render 纪律的镜像），日志重复上报，严格模式下更明显。修正：transition 回调里只放状态更新；副作用放事件处理器本体或 effect 里。另外 transition 更新只是「可打断」，**不改变最终结果**——数据该是多少还是多少，变的只是时机。
+
+**错误三：fallback 里的循环请求。** Suspense 边界里放了一个每次渲染都重新发起请求的组件，fallback 和内容来回横跳。定位：Network 面板同请求连发；修正：请求要有缓存/幂等（070 篇的数据获取层），Suspense 只负责「等待」不负责「去拿」。
+
+## 7. 实际项目中的使用场景
+
+**外部 store 订阅与 tearing。** 并发渲染把一次更新切成多片，中途可能插入高优先级更新——如果你用 `window.addEventListener` 手写订阅外部数据源，切片前后读到的快照可能不一致，页面上半部分显示状态 A、下半部分显示状态 B，这就是 **tearing（撕裂）**。React 的对策是专用 Hook：
 
 ```jsx
-// React 18 的选择性水合：Suspense 边界内的组件不会阻塞其他组件的水合
-function Page() {
-  return (
-    <Layout>
-      {/* 这部分立即水合 */}
-      <NavBar />
+import { useSyncExternalStore } from 'react';
 
-      {/* 这部分可以延迟水合 */}
-      <Suspense fallback={<CommentsSkeleton />}>
-        <Comments />
-      </Suspense>
-
-      {/* 这部分也立即水合 */}
-      <Footer />
-    </Layout>
-  );
-}
-```
-
-### useTransition 与乐观更新
-
-```jsx
-import { useTransition, useState } from 'react';
-
-function LikeButton({ postId, initialLiked }) {
-  const [isPending, startTransition] = useTransition();
-  const [liked, setLiked] = useState(initialLiked);
-
-  function handleLike() {
-    // 乐观更新：立即反映用户操作
-    startTransition(async () => {
-      setLiked(!liked);
-      try {
-        await toggleLike(postId);
-      } catch {
-        // 失败时回滚
-        setLiked(liked);
-      }
-    });
-  }
-
-  return (
-    <button onClick={handleLike} disabled={isPending}>
-      {liked ? '已点赞' : '点赞'}
-    </button>
-  );
-}
-```
-## useTransition 过渡更新
-
-**基本写法：将状态更新标记为低优先级**
-`const [<isPending>, <startTransition>] = useTransition()`
-```tsx
-// 切换标签页保持输入框响应
-const [isPending, startTransition] = useTransition();
-function changeTab(next) {
-  startTransition(() => setTab(next));
-}
-```
-
----
-
-**基本写法：展示过渡中状态**
-`{<isPending> && <占位>}`
-```tsx
-// 显示加载指示
-{isPending ? <Spinner /> : <Content />}
-```
-
----
-
-**基本写法：异步 Action**
-`startTransition(async () => { <异步逻辑> })`
-```tsx
-// React 19 支持异步过渡
-startTransition(async () => {
-  const data = await fetchData();
-  setResult(data);
-});
-```
-
----
-
-## startTransition 全局函数
-
-**基本写法：在组件外标记过渡更新**
-`startTransition(() => <更新>)`
-```tsx
-// 从非组件代码触发过渡
-import { startTransition } from 'react';
-startTransition(() => store.setFilter('active'));
-```
-
----
-
-## useDeferredValue 延迟值
-
-**基本写法：延迟非紧急值的更新**
-`const <延迟值> = useDeferredValue(<值>)`
-```tsx
-// 搜索框输入即时响应结果延迟
-const deferredQuery = useDeferredValue(query);
-const results = useMemo(() => search(deferredQuery), [deferredQuery]);
-```
-
----
-
-**基本写法：检测是否处于滞后状态**
-`const <是否滞后> = <值> !== <延迟值>`
-```tsx
-// 显示旧数据淡化效果
-const isStale = query !== deferredQuery;
-<div style={{ opacity: isStale ? 0.7 : 1 }}>{results}</div>
-```
-
----
-
-## Suspense 数据等待
-
-**基本写法：包裹异步组件显示降级**
-`<Suspense fallback={<占位>}> <异步组件 /> </Suspense>`
-```tsx
-// 数据未就绪时显示骨架
-<Suspense fallback={<Skeleton />}>
-  <Profile userId={id} />
-</Suspense>
-```
-
----
-
-**基本写法：嵌套 Suspense 边界**
-`<Suspense fallback={<外层>}> <Suspense fallback={<内层>}> <组件/> </Suspense> </Suspense>`
-```tsx
-// 不同区域独立 loading
-<Suspense fallback={<PageFallback />}>
-  <Header />
-  <Suspense fallback={<ListFallback />}>
-    <List />
-  </Suspense>
-</Suspense>
-```
-
----
-
-## Suspense 配合 lazy
-
-**基本写法：路由级代码分割**
-`const <组件> = lazy(() => import(<路径>))`
-```tsx
-// 按需加载并显示 fallback
-const Settings = lazy(() => import('./Settings'));
-<Suspense fallback={<Spinner />}><Settings /></Suspense>
-```
-
----
-
-## 并发更新优先级
-
-**基本写法：紧急更新直接 setState**
-`<设置>(<值>)`
-```tsx
-// 输入框立即响应属于高优先级
-setInput(e.target.value);
-```
-
----
-
-**基本写法：非紧急更新放入 transition**
-`startTransition(() => <设置>(<值>))`
-```tsx
-// 搜索结果可延迟
-startTransition(() => setResults(filtered));
-```
-
----
-
-## 避免不必要的 loading
-
-**基本写法：使用 useTransition 避免跳到 fallback**
-`startTransition(() => <切换>)`
-```tsx
-// 切换 tab 时保留当前内容直到新内容就绪
-startTransition(() => setTab(next));
-```
-
----
-
-## 并发渲染可中断
-
-**基本写法：渲染过程可被打断让位高优先级**
-`startTransition(() => <更新>)`
-```tsx
-// 用户输入打断后台渲染
-function onType(v) {
-  setInput(v); // 紧急
-  startTransition(() => setMatches(filter(v))); // 可中断
-}
-```
-
----
-
-## useSyncExternalStore 订阅外部
-
-**基本写法：安全订阅外部 store 避免 tearing**
-`const <快照> = useSyncExternalStore(<订阅>, <取值>, [<服务端取值>])`
-```tsx
-// 订阅 window 尺寸
 const width = useSyncExternalStore(
-  cb => window.addEventListener('resize', cb),
-  () => window.innerWidth
+  (cb) => {
+    window.addEventListener('resize', cb);
+    return () => window.removeEventListener('resize', cb);
+  },
+  () => window.innerWidth,   // getSnapshot
+  () => 1024                 // getServerSnapshot（SSR 用，返回确定值）
 );
 ```
 
----
+React 通过它保证整个渲染期间读到同一份快照。凡是 Redux/Zustand 这类库的 React 绑定，底层都是它；自己写订阅也必须走它，不能用 useEffect + setState 凑合。
 
-**基本写法：提供 getServerSnapshot 支持 SSR**
-`useSyncExternalStore(<订阅>, <取值>, <服务端取值>)`
-```tsx
-// 服务端返回默认值
-const theme = useSyncExternalStore(subscribe, getSnapshot, () => 'light');
-```
+**自动批处理与 flushSync。** React 18 起批处理全自动：事件处理器、Promise 回调、setTimeout 里的多次 setState 都合并成一次渲染，不用再想「会不会多次 render」。极少数场合需要绕过——比如在 setState 后立刻读取已更新的 DOM 布局：
 
----
-
-## 自动批处理
-
-**基本写法：同一事件多次更新合并**
-`<设置1>(<值1>); <设置2>(<值2>);`
-```tsx
-// React 18+ 自动合并为一次渲染
-function handleClick() {
-  setCount(c => c + 1);
-  setFlag(f => !f);
-}
-```
-
----
-
-**基本写法：异步代码也自动批处理**
-`await <异步>; <设置>(<值>);`
-```tsx
-// Promise 内的更新也会合并
-async function load() {
-  const data = await fetch();
-  setList(data);
-  setLoading(false);
-}
-```
-
----
-
-## flushSync 强制同步
-
-**基本写法：跳过批处理立即刷新**
-`flushSync(() => <更新>)`
-```tsx
-// 需要立即读取 DOM 时使用
+```jsx
 import { flushSync } from 'react-dom';
-flushSync(() => setScroll(0));
-window.scrollTo(0, 0);
+
+flushSync(() => setSubmitted(true));  // 立即同步完成一次渲染 + 提交
+formRef.current.querySelector('input').focus(); // 能拿到刚更新的 DOM
 ```
 
----
+flushSync 是同步冲刺，等于把一整段 Commit（120 篇）当场做完，高频调用反而制造卡顿，只用在「必须先落 DOM 再继续」的缝隙里。
 
-## selectNode 调度提示
+**Activity 与双状态标签页。** React 19.2 的 `<Activity mode="hidden">` 把组件藏起来但不销毁：state 保留、effect 卸载。适合「切走再切回、状态和滚动位置都在」的重内容标签页，比手动 KeepAlive 干净。
 
-**基本写法：useDeferredValue 实现非阻塞渲染**
-`const <延迟> = useDeferredValue(<值>)`
-```tsx
-// 大列表过滤不阻塞输入
-const deferred = useDeferredValue(text);
-const items = useMemo(() => heavyFilter(deferred), [deferred]);
+**乐观更新与 Actions。** 点赞先变红、请求失败再回滚，这类模式 React 19 用 useOptimistic 一等公民化（060 篇有完整实战）；`startTransition(async () => ...)` 的异步形态就是 Actions 的入口，自动管理 pending 与错误，420 篇细讲。多个 Suspense 的揭示顺序控制（SuspenseList）仍属实验性 API，生产代码先别依赖。
+
+## 8. 小练习
+
+预测题（3 分钟）：2 节里如果把 `setInput` 也包进 startTransition，快打时会发生什么？（输入更新降为可打断，敲键期间渲染反复被下一次敲键打断重启，输入框明显滞后丢字——「紧急」判断错了。）
+
+修改题（10 分钟）：给 2 节加一个「共 N 条结果」计数器，要求计数在过渡期间保持旧值、过渡结束更新。验收：敲字时角标数字不闪烁跳变。
+
+修 Bug 题（15 分钟）：下面的代码切标签时依然闪骨架屏，且快切三个标签时上报日志出现两条。找两处问题并修复：
+
+```jsx
+function switchTab(next) {
+  setTab(next);
+  reportAnalytics('switch', next);
+  startTransition(() => setTab(next)); // 第二次设置，试图「补救」闪烁
+}
 ```
 
----
+（第一处：副作用 reportAnalytics 在渲染路径外没问题，但包在 transition 里重跑会重复——移出；第二处：第一次裸 setTab 不受 transition 保护，直接引发 fallback 闪烁——删掉裸调用，只留 startTransition 一层。）
 
-## Activity 隐藏组件
+挑战题（30 分钟）：把 2 节搜索页改成 useDeferredValue 版本（搜索框上移到父组件），保持淡显与体验完全一致；再写 100 字说明两种写法各自的适用边界。
 
-**基本写法：保留组件状态但隐藏显示**
-`<Activity mode="hidden"> <组件 /> </Activity>`
-```tsx
-// React 19.2 正式 API（由实验性 Offscreen 更名而来）
-// 隐藏时卸载 Effect、保留 state，适合标签页切换与预渲染
-<Activity mode={visible ? 'visible' : 'hidden'}>
-  <ExpensiveList />
-</Activity>
-```
+## 9. 与之前和之后的知识的关系
 
----
+- 往前：120 篇给了机制（切片、车道、丢树重来），本篇是它的 API 消费面；070 篇的数据获取层是 Suspense 挂起的前提；
+- 往后：[React 性能优化](/react/180-ReactPerformance) 把 transition 放进完整优化工具箱；[React 服务端渲染](/react/260-ReactSSR) 讲流式 SSR 与选择性水合——Suspense 边界在服务端同样决定「哪块先到」；[Server Components](/react/140-ServerComponents) 是另一种「等待」的归宿。
 
-## useOptimistic 乐观更新
+## 10. 官方文档
 
-**基本写法：在请求期间乐观展示结果**
-`const [<乐观值>, <添加>] = useOptimistic(<状态>, <更新函数>)`
-```tsx
-// 立即显示新消息
-const [messages, addOptimistic] = useOptimistic(messages, (state, newMsg) => [...state, newMsg]);
-```
+- useTransition：https://zh-hans.react.dev/reference/react/useTransition
+- useDeferredValue：https://zh-hans.react.dev/reference/react/useDeferredValue
+- Suspense：https://zh-hans.react.dev/reference/react/Suspense
+- useSyncExternalStore：https://zh-hans.react.dev/reference/react/useSyncExternalStore
 
----
+## 11. 自我检查
 
-## Suspense List 协调多个 Suspense
+- 能复述「双 state 拆层」模式并说出 input 与 query 各自的职责；
+- 能说出 useTransition 与 useDeferredValue 的选型规则，并各写一个最小例子；
+- 能解释 transition 为什么能防 fallback 闪烁（挂起时保留旧内容）；
+- 能向同事解释 tearing 的一句话版本，并说出 useSyncExternalStore 三个参数各是什么；
+- 能说出 flushSync 的唯一适用场景与滥用代价。
 
-**基本写法：控制多个 Suspense 揭示顺序**
-`<SuspenseList revealOrder="forwards"> <Suspense>...</Suspense> </SuspenseList>`
-```tsx
-// 按顺序揭示内容（实验性 API）
-<SuspenseList revealOrder="forwards">
-  <Suspense fallback={<S1 />}><A /></Suspense>
-  <Suspense fallback={<S2 />}><B /></Suspense>
-</SuspenseList>
-```
+## 本章总结
 
----
+并发渲染的 API 面只有几件武器，共同点是「给更新分级」：useTransition 把自己持有的重更新标成可打断（isPending 淡显旧内容），useDeferredValue 是 prop 场景的等价物（isStale 检测滞后），Suspense 用抛 Promise 划出独立等待区且 transition 内挂起不闪 fallback。配套纪律：受控输入永远绑紧急值，transition 回调只放 setState。外部数据订阅必须 useSyncExternalStore 防 tearing；批处理全自动，flushSync 只在「先落 DOM 再继续」的缝隙用；Activity 保留隐藏组件的状态；乐观更新交给 useOptimistic 与 Actions。
 
-## React 19 Actions
+## 下一步
 
-**基本写法：在 startTransition 中执行异步函数即 Action**
-`startTransition(async () => <异步>)`
-```tsx
-// Actions 自动管理 pending 与错误
-const [isPending, startTransition] = useTransition();
-startTransition(async () => await submitForm(data));
-```
-
----
-
-## 并发模式注意事项
-
-**基本写法：transition 内不可包含读取状态副作用**
-`startTransition(() => { <设置>; })`
-```tsx
-// 仅做状态更新不读取
-startTransition(() => setTab(next));
-```
-
----
-
-## transition 与 Suspense 配合
-
-**基本写法：transition 内挂起会显示当前 UI 而非 fallback**
-`startTransition(() => <切换挂起组件>)`
-```tsx
-// 切换路由不闪烁 loading
-startTransition(() => setRoute('/detail'));
-```
-
----
-
-## 性能权衡
-
-**基本写法：仅对昂贵非紧急更新使用 transition**
-`startTransition(() => <昂贵更新>)`
-```tsx
-// 简单更新无需 transition 开销
-setCount(c => c + 1);
-```
+进入 [Hooks 原理](/react/150-HooksPrinciple)：这些 API 全是函数调用，没有实例——状态到底存在哪？拆开 Fiber 节点上的 memoizedState 链表，看看 useState 的真身。

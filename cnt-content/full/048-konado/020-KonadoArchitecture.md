@@ -14,16 +14,7 @@ prerequisites:
   - 'konado/010-KonadoOverviewAndInstall'
 ---
 
-一篇 Konado 剧本从你写下第一行对话，到玩家看到打字机逐字吐出文本，中间要经过一条完整的流水线：剧本被编译成指令程序，程序被装进剧情镜头，再由虚拟机按程序计数器逐条执行。理解这条流水线，你就能明白为什么保存 .ks 文件后运行数据会自动刷新、为什么报错信息里带有源码行号、以及运行时故障应该到哪里定位。本篇先讲编译模型，再讲两种把对话接入自己场景的方式，然后完整拆解默认模板场景结构与 CanvasLayer（画布层）层级约定，最后给出 2.8 版本核心节点与类名的功能地图。
-
-## 学习目标
-
-- 描述 KonadoScript 的编译模型：从源文件到 KonadoVirtualMachine 的完整执行流程。
-- 说清 KonadoShot、KonadoProgram、KonadoInstruction 三个核心类的职责。
-- 掌握两种接入方式：实例化模板场景绑定 dialogue_manager，以及纯代码编译并播放。
-- 读懂默认模板 dialogue_runtime.tscn 的完整结构，记住 CanvasLayer 层级约定。
-- 按功能分组认识 2.8 版本的核心节点与类名。
-- 掌握自定义对话界面的正确姿势：复制模板改副本，不动 addons。
+几何构成（speed-rouge）的工程里有个 story_layer 场景承载剧情演出——它是 KonadoDialogue 的实例。要改它的对话框外观、要在剧本保存后搞清"运行数据是什么"、报错要定位到哪一层，就得先看懂 Konado 的内部流水线：一篇 Konado 剧本从你写下第一行对话，到玩家看到打字机逐字吐出文本，中间经过"剧本编译成指令程序、程序装进剧情镜头、虚拟机逐条执行"的完整链路。本篇先讲编译模型，再讲两种把对话接入自己场景的方式，然后完整拆解默认模板场景结构与 CanvasLayer（画布层）层级约定，最后给出 2.8 版本核心节点与类名的功能地图。
 
 ## 编译模型：剧本不在运行时逐行解释
 
@@ -216,9 +207,29 @@ UI：
 2. 不要直接修改 res://addons/konado/ 内的任何文件——插件升级时会覆盖你的改动。
 3. 把副本中的 KonadoDialogueBox 赋给 KonadoDialogueManager 的 dialogue_box 属性，让管理器使用你的界面。
 
-## 小结
+## 坑点与自检
 
-Konado 的 .ks 剧本在导入或保存时被编译，而不是运行时逐行解释：词法语法分析、语义检查与资源索引之后生成 KonadoProgram（只读指令程序），装进 KonadoShot（剧情镜头），最终交给 KonadoVirtualMachine 执行；编译器管线在 addons/konado/language/compiler/，跨剧本依赖上限 4096 个文件（错误码 CP-003），指令契约唯一来自 konado_script_command_registry.gd。接入项目最常用的方式是实例化 dialogue_runtime.tscn 并把节点绑定到 @export 的 dialogue_manager 上；也可以用 KonadoScriptCompiler.compile_file 纯代码编译播放。默认模板按 CanvasLayer 分层：舞台 1、对话框 10、存档 50、模态面板 100、短时通知 110、错误提示 120；自定义界面要复制模板改副本，并把副本 KonadoDialogueBox 赋回 dialogue_box。
+- 直接改 addons/konado/ 里的模板文件，插件一升级全没了——永远复制到自己项目目录再改副本，并把副本赋给 dialogue_manager 的 dialogue_box 属性；
+- 保存了有语法错误的 .ks，游戏里跑的还是旧剧情——保存无效内容允许保存但不刷新运行时 KonadoShot，修复保存后自动重新编译，别在旧产物上排查新 bug；
+- 自定义 UI 占了 120 层，运行时报错提示被盖住——120 及以上留给运行时错误提示，按官方层级表选位；
+- 游戏逻辑直接操作 KonadoInstruction 数组——指令对象是虚拟机的内部协议，普通逻辑通过 KonadoDialogueManager 驱动对话；
+- 剧本拆出上千个文件互相 jump——跨剧本依赖有 4096 文件上限（错误码 CP-003），别用 jump 拼巨网；
+- 自检问题一：.ks 是运行时逐行解释的吗？（不是，导入或保存时编译成 KonadoProgram，运行时按程序计数器执行指令数组）
+- 自检问题二：稳定指令键（StableKey）为什么重要？（存档、回退与本地化靠它精确定位"同一条指令"）
+- 自检问题三：编辑器补全的指令为什么运行时一定认识？（编译器、补全与虚拟机共享 konado_script_command_registry.gd 这一份指令契约）
+
+## 练习
+
+1. 按接入方式一把 dialogue_runtime.tscn 拖进自己的场景并绑定 dialogue_manager，播放一段示例剧本；
+2. 把模板对话框复制到 res://ui/dialogue/ 改个背景色，替换 dialogue_box，然后升级一次插件（或重装 addons/konado），验证你的改动安然无恙；
+3. 用 KonadoScriptCompiler.compile_file 纯代码加载一个 .ks 并播放，体会两种接入方式的差别与适用场景。
+
+## 下一步
+
+- 开始写剧本：对话与语音（030 篇）；
+- 舞台演出三件套：立绘背景与运镜（040 篇）；
+- 剧本里发射自定义信号给代码：signal 指令见进阶指令（060 篇）；
+- 动作与剧情共存的实例：https://github.com/fanquanpp/geometric-construct
 
 ## 参考链接
 

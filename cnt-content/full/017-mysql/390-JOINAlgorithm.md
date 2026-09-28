@@ -4,331 +4,174 @@ title: JOIN 算法
 module: 'mysql'
 category: 数据库
 difficulty: advanced
-description: MySQL JOIN算法：Nested Loop Join、Block Nested Loop、Hash Join的原理、适用场景与优化
+description: 从一次联查从 30ms 恶化到 12s 的排查出发，讲透 MySQL 的 Nested Loop 与 Hash Join：执行计划怎么读、驱动表怎么选、join_buffer_size 起什么作用。
 author: fanquanpp
 updated: '2026-09-27'
 related:
-  - 'mysql/370-DerivedTableOptimization'
-  - 'mysql/380-GroupByOrderByOptimization'
-  - 'mysql/420-TransactionIsolationImplementation'
-  - 'mysql/430-MVCCPrinciple'
+  - 'mysql/320-EXPLAINDetailed'
+  - 'mysql/360-SubqueryOptimization'
+  - 'mysql/140-MultiTableJoinDetailed'
 prerequisites:
-  - 'mysql/160-View'
+  - 'mysql/140-MultiTableJoinDetailed'
 ---
 
-## 1. JOIN 算法概述
+## 场景：一条联查从 30ms 恶化到 12 秒
 
-MySQL 支持多种 JOIN 算法，优化器根据表大小、索引和条件选择最优算法。
-
-## 2. Nested Loop Join（NLJ）
-
-### 2.1 原理
-
-```
-for each row in outer_table:
-    for each row in inner_table:
-        if match_condition:
-            output combined row
-```
+充电平台的订单分析接口周五突然超时。这条查询逻辑没改过：
 
 ```sql
--- 驱动表：departments，被驱动表：employees
-SELECT * FROM departments d JOIN employees e ON d.id = e.dept_id;
-
--- 执行过程：
--- 1. 扫描 departments 表的每一行
--- 2. 对每行，使用 idx_employees_dept_id 索引查找 employees
--- 3. 如果有索引：Index Nested Loop Join
--- 4. 如果无索引：Block Nested Loop Join
+SELECT cs.session_id, c.power_kw
+FROM charge_sessions cs              -- 数百万行
+JOIN chargers c ON cs.charger_tag = c.charger_tag;   -- charger_tag 两边都没索引
 ```
 
-### 2.2 Index Nested Loop Join
+查询语法正确、结果也对，坏在 `charger_tag` 是新加的标签列：两边都没有索引。同一个 JOIN 关键字，底层执行的算法已经完全不同——这正是本篇要讲清楚的事。
+
+动手复现用小表就行，关键在执行计划：
 
 ```sql
--- 被驱动表有索引时使用
--- 时间复杂度：O(M * log N)
--- M = 驱动表行数，N = 被驱动表行数
-
--- 确保 JOIN 列有索引
-CREATE INDEX idx_employees_dept_id ON employees(dept_id);
-```
-
-## 3. Block Nested Loop Join（BNL，8.0.20 起已移除）
-
-### 3.1 原理（历史机制）
-
-```
-1. 将驱动表的数据块读入 join_buffer
-2. 扫描被驱动表，与 join_buffer 中的数据匹配
-3. 减少被驱动表的扫描次数
-```
-
-> 注意：BNL 已在 MySQL 8.0.20 中彻底移除，无索引的等值连接由 Hash Join 接管，
-> 非等值连接由带 join_buffer 的 Hash Join / 简单嵌套循环接管。以下内容仅用于
-> 理解 8.0.20 之前版本的行为与 `join_buffer_size` 的作用。
-
-```sql
--- 8.0.20 之前：被驱动表无索引时使用 BNL
--- join_buffer_size 控制缓冲区大小
-SET join_buffer_size = 262144;  -- 256KB
-
--- EXPLAIN 中 Extra: Using join buffer (Block Nested Loop)
-```
-
-### 3.2 优化（同样适用于 Hash Join）
-
-```sql
--- 8.0.20+：join_buffer_size 仍影响 Hash Join 与 BKA 的批处理大小
-SET join_buffer_size = 8388608;  -- 8MB
-
--- 为 JOIN 列创建索引（转为 Index NLJ，仍是最优解）
-CREATE INDEX idx_join_col ON table_name(join_col);
-
--- 小表做驱动表
--- 驱动表越小，join_buffer 效果越好
-```
-
-## 4. Hash Join
-
-### 4.1 原理
-
-MySQL 8.0.18 引入 Hash Join，替代无索引场景下的 BNL：
-
-```
-1. Build 阶段：扫描小表，构建哈希表
-2. Probe 阶段：扫描大表，在哈希表中查找匹配
-```
-
-```sql
--- 等值连接无索引时自动使用
-SELECT * FROM t1 JOIN t2 ON t1.col = t2.col;
+-- 复现环境：两张表各有一列 charger_tag，故意都不建索引
+EXPLAIN
+SELECT cs.session_id, c.power_kw
+FROM charge_sessions cs
+JOIN chargers c ON cs.charger_tag = c.charger_tag;
+-- type: ALL (chargers 全表扫描)
 -- Extra: Using join buffer (hash join)
-
--- Hash Join 优势：
--- 时间复杂度：O(M + N)，比 BNL 的 O(M * N) 好
--- 不需要索引
 ```
 
-### 4.2 Hash Join 能力与限制
+看到 `ALL + Using join buffer (hash join)`，就能断定：MySQL 走了哈希连接，而且是对一张表做了全量扫描。修复往往只需一列索引：
 
 ```sql
--- 8.0.18：仅支持等值连接（=, <=>）
--- 8.0.20 起：外连接、半连接、非等值连接也统一由 Hash Join 执行，
---            BNL 不再存在；非等值 Hash Join 退化为笛卡尔积式的分块比较
-SELECT * FROM t1 JOIN t2 ON t1.col > t2.col;
--- Extra: Using join buffer (hash join)
+ALTER TABLE charge_sessions ADD INDEX idx_cs_charger_tag (charger_tag);
 
--- 不支持索引的笛卡尔积（无 ON 条件）同样走 hash join 路径
+EXPLAIN SELECT ... ;
+-- type: ref (charge_sessions 走新索引逐行匹配；行数极少的 chargers 被选为驱动表)
+-- Extra: NULL 或 Using index
 ```
 
-## 5. JOIN 优化策略
+`Using join buffer (hash join)` 消失，耗时回到毫秒级。下面解释这两种算法各自的原理，以及什么时候该用哪个。
+
+## 为什么：MySQL 只有两类 JOIN 算法
+
+MySQL 不做排序合并连接（Merge Join），算法世界里只有两大家族：嵌套循环（Nested Loop）和哈希连接（Hash Join）。8.0.20 起 Block Nested Loop 已移除，非索引路径全部归哈希连接接管。
+
+### Nested Loop：一层循环套一层循环
+
+```text
+for 外层表每一行:
+    用连接列的值去内层表找匹配行
+```
+
+"找匹配行"的效率决定了它是快是慢：
+
+- **Index NLJ**：内层连接列有索引，每次查找是 O(logN)。外层 10 万行 x log 级查找 = 毫秒到秒级。这是绝大多数 OLTP 联查的形态，也是"连接列要有索引"这条铁律的由来。
+- **Simple NLJ（无索引）**：每次查找都全扫内层，O(M x N)。10 万 x 10 万 = 百亿次比较，12 秒都是客气的。
+
+因此读执行计划时先看被驱动表的 type：`eq_ref/ref` 说明是 Index NLJ，`ALL` 说明这个 JOIN 大概率有问题。
+
+### Hash Join：先建哈希表，再一遍探测
+
+MySQL 8.0.18 引入，专门接管"无索引的等值连接"：
+
+```text
+Build 阶段：扫描较小的表，把连接列建进哈希表（存进 join buffer）
+Probe 阶段：扫描较大的表，每行算哈希去哈希表里找
+```
+
+复杂度 O(M + N)，与两表乘积无关——这就是无索引时它远好于朴素嵌套循环的原因。8.0.20 起它的职责继续扩大：外连接、半连接/反连接（IN/EXISTS 的改写）、非等值连接，以及无 ON 条件的笛卡尔积，全部走哈希连接路径。
+
+两个必须知道的限制：
 
 ```sql
--- 1. 确保 JOIN 列有索引
--- 2. 小表做驱动表
--- 3. 避免过多表连接（建议不超过5个）
--- 4. 使用 STRAIGHT_JOIN 控制连接顺序
-SELECT /*+ STRAIGHT_JOIN */ *
-FROM small_table s
-JOIN large_table l ON s.id = l.small_id;
+-- 1. 非等值连接的 hash join 实质是"分块笛卡尔"：
+--    没有等值条件就没法建哈希 key，只能全量比较
+SELECT * FROM t1 JOIN t2 ON t1.a > t2.b;
+-- Extra: Using join buffer (hash join)  -- 出现不代表高效
 
--- 5. 使用 BKA（Batched Key Access）
-SET optimizer_switch = 'batched_key_access=on';
--- 将驱动表的行批量传递给被驱动表
+-- 2. build 侧放不进 join_buffer_size 时按块分批处理，
+--    缓冲区太小意味着 build 侧被扫描多遍
+SET SESSION join_buffer_size = 8388608;   -- 默认 256KB，常按需调到 MB 级
 ```
-## INNER JOIN 内连接
 
-**换行写法：内连接查询**
-`SELECT <列> FROM <表1> INNER JOIN <表2> ON <连接条件>;`
+### 历史注脚：Block Nested Loop 去哪了
+
+8.0.20 之前的版本没有哈希连接，无索引连接靠 BNL 硬撑：把外层的行批量装进 join buffer，内层每扫一遍能和一批行匹配，减少内层扫描次数（从 N 次降到 N/批次大小 次），但复杂度仍是 O(M x N) 量级。8.0.20 起 BNL 删除，`Extra` 里的 `Block Nested Loop` 字样不会再出现，看到的 `hash join` 就是当年 BNL 的替代者。读老资料或老版本的执行计划时别混淆。
+
+## 动手：把驱动表和缓冲区调到可观测
+
+### 驱动表怎么选
+
+嵌套循环下，外层循环次数 = 驱动表行数，所以原则是**小表驱动大表**。但"小"的定义是**过滤之后的行数**，不是物理行数：
+
 ```sql
--- 查询用户及其订单
-SELECT u.username, o.order_no, o.total_amount
-FROM users u
-INNER JOIN orders o ON u.id = o.user_id;
+-- charge_sessions 两千万行，但 WHERE 时间条件过滤后只剩 500 行：
+-- 它才是"小表"，优化器通常也能自己选对
+SELECT ... FROM charge_sessions cs
+JOIN chargers c ON cs.charger_id = c.charger_id
+WHERE cs.started_at >= '2026-09-01';
 ```
 
-**换行写法：多表内连接**
-`SELECT <列> FROM <表1> JOIN <表2> ON <条件> JOIN <表3> ON <条件>;`
+EXPLAIN 里第一行的表就是驱动表。优化器基于统计信息选择，绝大多数时候是对的；发现它选反了（第一行是全表扫描的大表、第二行却是范围扫描的小表），先用 `ANALYZE TABLE` 更新统计信息，仍不对再用提示干预。
+
+### 干预连接顺序的两种姿势
+
 ```sql
--- 三表关联查询
-SELECT u.username, o.order_no, p.product_name
-FROM users u
-JOIN orders o ON u.id = o.user_id
-JOIN order_items oi ON o.id = oi.order_id
-JOIN products p ON oi.product_id = p.id;
+-- 姿势 1：STRAIGHT_JOIN，按书写顺序连接（谨慎，写死就失去了优化器的适应性）
+SELECT STRAIGHT_JOIN cs.session_id, c.power_kw
+FROM charge_sessions cs
+JOIN chargers c ON cs.charger_id = c.charger_id;
+
+-- 姿势 2：JOIN_ORDER 优化器 hint，效果相同但只作用于这一条
+SELECT /*+ JOIN_ORDER(cs, c) */ cs.session_id, c.power_kw FROM ...;
 ```
 
-**换行写法：使用 USING 简化连接**
-`SELECT <列> FROM <表1> JOIN <表2> USING (<同名列>);`
+### BKA：批量回表，减少随机读
+
+被驱动表有二级索引、但需要回表取其他列时，Batched Key Access 把驱动表的一批 key 排序后批量提交给存储引擎，把随机 I/O 变得局部性更好：
+
 ```sql
--- 两表同名列时使用 USING
-SELECT * FROM users JOIN user_profiles USING (user_id);
+SET optimizer_switch = 'batched_key_access=on';  -- 默认 off，且依赖 MRR
+SELECT /*+ BKA(c) */ ... ;
+-- Extra: Using join buffer (Batched Key Access)
 ```
 
----
+BKA 是锦上添花：先确认 Index NLJ 本身没问题，再考虑开它。
 
-## LEFT JOIN 左连接
+## 坑点与自检
 
-**换行写法：左连接查询**
-`SELECT <列> FROM <表1> LEFT JOIN <表2> ON <连接条件>;`
-```sql
--- 查询所有用户及其订单（含无订单用户）
-SELECT u.username, o.order_no
-FROM users u
-LEFT JOIN orders o ON u.id = o.user_id;
-```
+### 坑一：看到 hash join 就以为"没用索引也没事"
 
-**换行写法：左连接筛选无匹配记录**
-`SELECT <列> FROM <表1> LEFT JOIN <表2> ON <条件> WHERE <表2.列> IS NULL;`
-```sql
--- 查询没有订单的用户
-SELECT u.username
-FROM users u
-LEFT JOIN orders o ON u.id = o.user_id
-WHERE o.id IS NULL;
-```
+哈希连接救的是"无索引时的下限"（O(M+N)），不是上限。它没有增量能力：每次执行都要重新扫描 build 侧建表，大表 x 高频调用的接口仍然扛不住。OLTP 接口的联查目标永远是 Index NLJ（`eq_ref/ref`），hash join 是分析型低频查询和兜底方案。
 
----
+### 坑二：8.0.18 的 HASH_JOIN hint 已是废纸
 
-## RIGHT JOIN 右连接
+网上老文章里的 `/*+ HASH_JOIN(t1, t2) */` 与 `NO_HASH_JOIN` 是 8.0.18 的实验性提示，8.0.20 起已不生效（写了不报错，也没有任何作用）。8.4 时代想控制连接行为，用 `JOIN_ORDER`/`BKA` hint 或 `SET optimizer_switch`，并且总是配合 EXPLAIN 验证。
 
-**换行写法：右连接查询**
-`SELECT <列> FROM <表1> RIGHT JOIN <表2> ON <连接条件>;`
-```sql
--- 查询所有订单及其用户（含无用户订单）
-SELECT u.username, o.order_no
-FROM users u
-RIGHT JOIN orders o ON u.id = o.user_id;
-```
+### 坑三：join_buffer_size 是会话级放大器
 
----
+它是**每个连接、每个 JOIN** 各自分配的缓冲，全局调大 100 个并发连接就是 100 份内存。正确用法：先在会话级针对单条慢查询试验，确认有收益后只对特定账号或查询设置，不要一上来就改全局。
 
-## CROSS JOIN 交叉连接
+### 坑四：连接数过多的另一种解释
 
-**单行写法：笛卡尔积**
-`SELECT * FROM <表1> CROSS JOIN <表2>;`
-```sql
--- 生成两表的笛卡尔积
-SELECT * FROM colors CROSS JOIN sizes;
-```
+执行计划显示某表 type=ALL 但不是驱动表时，先看它是不是被驱动表缺索引——和"这张表本身慢"是两个问题。自检顺序：先看 type（ALL/ref/eq_ref），再看 rows 估算与实际行数的差距（统计信息陈旧就 ANALYZE TABLE），最后才动 hint。
 
-**单行写法：逗号连接等价写法**
-`SELECT * FROM <表1>, <表2>;`
-```sql
--- 逗号分隔等价于 CROSS JOIN
-SELECT * FROM colors, sizes;
-```
+### 自检清单
 
----
+- 每条联查都能说出预期算法（Index NLJ 还是 hash join）与依据（Extra 信息）？
+- 被驱动表的连接列都有索引吗（外键被删过的历史库重点查）？
+- 干预执行计划的 hint 都经过 EXPLAIN 前后对比了吗？
+- join_buffer_size 的调整是会话级验证后落地的，还是直接改了全局？
 
-## 自连接
+## 练习
 
-**换行写法：员工与上级自连接**
-`SELECT <别名1.列>, <别名2.列> FROM <表> <别名1> JOIN <表> <别名2> ON <条件>;`
-```sql
--- 查询员工姓名及其直接上级
-SELECT e.name AS employee, m.name AS manager
-FROM employees e
-LEFT JOIN employees m ON e.manager_id = m.id;
-```
+1. 构造一个无索引连接列的两表查询，分别记录加索引前后 EXPLAIN 的 type、rows、Extra 与真实耗时。
+2. 故意把 join_buffer_size 设为默认 256KB，用一张超过缓冲的表做 build 侧，观察 EXPLAIN ANALYZE（8.0.18+）里的执行时间变化。
+3. 写一条非等值连接（`>` 条件），确认它走 hash join，并解释为什么"等值条件是哈希连接高效的前提"。
+4. 用 STRAIGHT_JOIN 强制大表驱动小表，量化它与优化器默认选择的耗时差，体会"优化器基于统计信息"意味着什么。
+5. 在老版本资料里找一段 `Block Nested Loop` 的执行计划解读，改写成 8.0.20+ 的等价描述。
 
-**换行写法：同级分类自连接**
-`SELECT <别名1.列>, <别名2.列> FROM <表> <别名1> JOIN <表> <别名2> ON <条件>;`
-```sql
--- 查询分类及其父分类名称
-SELECT c.name AS category, p.name AS parent
-FROM categories c
-LEFT JOIN categories p ON c.parent_id = p.id;
-```
+## 下一步
 
----
-
-## 自然连接与 USING
-
-**换行写法：NATURAL JOIN 自然连接**
-`SELECT * FROM <表1> NATURAL JOIN <表2>;`
-```sql
--- 自动按同名列连接
-SELECT * FROM users NATURAL JOIN user_profiles;
-```
-
----
-
-## 复合条件连接
-
-**换行写法：多条件连接**
-`SELECT <列> FROM <表1> JOIN <表2> ON <条件1> AND <条件2>;`
-```sql
--- 多条件关联
-SELECT u.username, o.order_no
-FROM users u
-JOIN orders o ON u.id = o.user_id AND o.status = 1;
-```
-
-**换行写法：连接加过滤条件**
-`SELECT <列> FROM <表1> JOIN <表2> ON <条件> WHERE <过滤条件>;`
-```sql
--- 连接后再过滤
-SELECT u.username, o.order_no
-FROM users u
-JOIN orders o ON u.id = o.user_id
-WHERE u.status = 1 AND o.created_at > '2024-01-01';
-```
-
----
-
-## 聚合与连接
-
-**换行写法：连接加分组聚合**
-`SELECT <列>, <聚合函数> FROM <表1> JOIN <表2> ON <条件> GROUP BY <列>;`
-```sql
--- 查询每个用户的订单总数和总金额
-SELECT u.username, COUNT(o.id) AS order_count, IFNULL(SUM(o.total_amount), 0) AS total
-FROM users u
-LEFT JOIN orders o ON u.id = o.user_id
-GROUP BY u.id, u.username;
-```
-
-**换行写法：连接加 HAVING 过滤**
-`SELECT <列>, <聚合> FROM <表1> JOIN <表2> ON <条件> GROUP BY <列> HAVING <条件>;`
-```sql
--- 查询订单金额超过 1000 的用户
-SELECT u.username, SUM(o.total_amount) AS total
-FROM users u
-JOIN orders o ON u.id = o.user_id
-GROUP BY u.id, u.username
-HAVING total > 1000;
-```
-
----
-
-## 8.0+ 高级连接特性
-
-**换行写法：NOWAIT 不等待锁**
-`SELECT * FROM <表1> JOIN <表2> ON <条件> FOR UPDATE NOWAIT;`
-```sql
--- 行被锁时立即报错不等待
-SELECT * FROM users u JOIN orders o ON u.id = o.user_id FOR UPDATE NOWAIT;
-```
-
-**换行写法：SKIP LOCKED 跳过锁定行**
-`SELECT * FROM <表1> JOIN <表2> ON <条件> FOR UPDATE SKIP LOCKED;`
-```sql
--- 跳过被其他事务锁定的行
-SELECT * FROM users u JOIN orders o ON u.id = o.user_id FOR UPDATE SKIP LOCKED;
-```
-
-**换行写法：LATERAL 派生表（8.0.14+）**
-`SELECT * FROM <表1>, LATERAL (SELECT * FROM <表2> WHERE <条件> LIMIT <数量>) <别名>;`
-```sql
--- 关联派生表查询每个用户最近 3 笔订单
-SELECT u.username, o.order_no
-FROM users u,
-LATERAL (
-  SELECT order_no, total_amount
-  FROM orders
-  WHERE user_id = u.id
-  ORDER BY created_at DESC
-  LIMIT 3
-) o;
-```
+- EXPLAIN 每一列的完整解读见 [EXPLAIN 详解](/mysql/320-EXPLAINDetailed)；
+- 子查询被优化器改写成半连接/物化的机制见[子查询优化](/mysql/360-SubqueryOptimization)；
+- 016 模块的通用视角见[执行计划](/sql/430-ExecutionPlan)。
