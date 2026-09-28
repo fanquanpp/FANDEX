@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 390
 title: 增量备份
 module: 'postgresql'
 category: 数据库

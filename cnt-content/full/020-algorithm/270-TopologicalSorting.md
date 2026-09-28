@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 300
 title: 拓扑排序
 module: 'algorithm'
 category: 计算机科学

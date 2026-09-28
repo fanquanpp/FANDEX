@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 240
 title: 跳跃表
 module: 'algorithm'
 category: 计算机科学

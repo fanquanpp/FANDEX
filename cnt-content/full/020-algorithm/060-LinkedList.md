@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: 链表
 module: 'algorithm'
 category: 计算机科学

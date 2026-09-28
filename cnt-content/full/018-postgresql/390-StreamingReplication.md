@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 330
 title: 流复制：物理复制的原理与搭建
 module: 'postgresql'
 category: 数据库

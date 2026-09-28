@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 200
 title: 查找算法
 module: 'algorithm'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 150
 title: RDB 快照持久化
 module: 'redis'
 category: 数据库

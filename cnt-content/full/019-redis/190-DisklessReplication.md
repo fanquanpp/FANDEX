@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 190
 title: 无盘复制
 module: 'redis'
 category: 数据库

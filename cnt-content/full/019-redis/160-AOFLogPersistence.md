@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 160
 title: AOF 日志持久化
 module: 'redis'
 category: 数据库

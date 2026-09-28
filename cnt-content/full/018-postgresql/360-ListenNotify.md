@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 300
 title: LISTEN/NOTIFY：数据库内置的消息总线
 module: 'postgresql'
 category: 数据库

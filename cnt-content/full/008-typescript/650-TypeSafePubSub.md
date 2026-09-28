@@ -1,5 +1,5 @@
 ---
-order: 650
+order: 660
 title: 类型安全的发布订阅
 module: 'typescript'
 category: 前端技术

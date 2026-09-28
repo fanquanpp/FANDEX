@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 80
 title: 哈希表
 module: 'algorithm'
 category: 计算机科学

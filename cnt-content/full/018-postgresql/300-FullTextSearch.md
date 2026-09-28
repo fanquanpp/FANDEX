@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 240
 title: 全文检索
 module: 'postgresql'
 category: 数据库

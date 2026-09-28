@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 90
 title: 树
 module: 'algorithm'
 category: 计算机科学

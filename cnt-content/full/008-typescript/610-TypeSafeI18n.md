@@ -1,5 +1,5 @@
 ---
-order: 610
+order: 620
 title: 类型安全的国际化
 module: 'typescript'
 category: 前端技术

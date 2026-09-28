@@ -1,613 +1,280 @@
 ---
 order: 210
-title: 内存管理
+title: 内存深水区：五段布局与堆事故现场
 module: 'c'
 category: 计算机科学
 difficulty: advanced
-description: C语言动态内存分配、内存布局、常见内存错误与调试技术详解。
+description: 拆开 200 建立的黑盒：打印地址画出进程五段内存布局，逐行解读 use-after-free 与 double free 的 ASan 报告，讲透 realloc 的搬移语义与丢指针经典坑，柔性数组一句话。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-27'
 related:
-  - 'c/520-C23C2y'
+  - 'c/200-DynamicMemoryManagement'
+  - 'c/250-FunctionCallStackFrame'
+  - 'c/510-CValgrind'
+  - 'c/490-StaticAnalysisDebug'
   - 'c/140-PointerDeep'
-  - 'c/220-MemoryAlignmentDeepDive'
-  - 'c/130-StructAndUnion'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/010-CZeroBasisStart'
+  - 'c/200-DynamicMemoryManagement'
 ---
 
 ## 前置知识
 
-- [指针深度解析](/c/140-PointerDeep)：建议先完成前一篇的学习
+- 已完成 [动态内存](/c/200-DynamicMemoryManagement)：亲手用过 malloc/calloc/realloc/free，有「分配即判 NULL、free 后置 NULL」的习惯；
+- 知道 `&` 取地址、`%p` 打印指针，会用 `gcc -fsanitize=address` 编译。
+
+> 分工说明：200 与 210 合讲动态内存。200 是主教学，解决「怎么用」；本篇是深水区，拆开机制——变量住在进程内存的哪五段、free 之后那块内存怎么了、两类堆事故的报告怎么逐行读、realloc 为什么可能整体搬家。泄漏检测的基本操作在 200。
 
 ## 学习目标
 
-- 掌握「1. C语言内存布局」的核心机制、典型用法与常见陷阱
-- 掌握「2. 动态内存分配」的核心机制、典型用法与常见陷阱
-- 掌握「3. 动态数据结构」的核心机制、典型用法与常见陷阱
-- 掌握「4. 常见内存错误」的核心机制、典型用法与常见陷阱
-- 掌握「5. 内存调试技术」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 画出进程的五段内存布局，并用打印地址的实验验证各段相对位置；
+2. 解释「未定义行为」为什么表现为「有时正常、有时崩溃」；
+3. 逐行读懂 ASan 的 heap-use-after-free 与 double-free 报告，指出分配行、释放行、出错行；
+4. 说清 realloc 的三种结果与搬移语义，识别并修复 `p = realloc(p, ...)` 丢指针坑；
+5. 一句话说出柔性数组成员解决什么问题。
 
+预计 50 到 70 分钟，含 3 组实验、1 道预测题与 1 道挑战题。
 
-## 1. C语言内存布局
-
-### 1.1 进程内存模型
-
-C程序的内存空间由以下几个区域组成：
-
-```mermaid
-flowchart TD
-    S[栈区 Stack 局部变量 函数调用信息 向下增长 高地址]
-    F[空闲区域]
-    H[堆区 Heap 动态分配内存 向上增长]
-    B[BSS 段 未初始化全局/静态变量 自动清零]
-    D[数据段 Data 已初始化全局/静态变量]
-    T[代码段 Text 可执行指令 只读 低地址]
-    S --> F --> H --> B --> D --> T
-```
+## 1. 问题引入：为什么事故「有时」才发生
 
 ```c
-#include <stdio.h>
-#include <stdlib.h>
-
-int global_init = 42;        // 数据段
-int global_uninit;            // BSS段
-const int global_const = 100; // 只读数据段
-static int static_var = 10;   // 数据段
-
-void memory_layout_demo(void) {
-    int local_var = 5;                    // 栈区
-    static int local_static = 20;         // 数据段
-    int *heap_var = malloc(sizeof(int));  // 堆区
-    *heap_var = 30;
-
-    printf("代码段: %p\n", (void *)memory_layout_demo);
-    printf("数据段(全局初始化): %p\n", (void *)&global_init);
-    printf("BSS段(全局未初始化): %p\n", (void *)&global_uninit);
-    printf("栈区(局部变量): %p\n", (void *)&local_var);
-    printf("堆区(动态分配): %p\n", (void *)heap_var);
-
-    free(heap_var);
-}
-```
-
-### 1.2 栈与堆的对比
-
-| 特性     | 栈 (Stack)         | 堆 (Heap)          |
-| :------- | :----------------- | :----------------- |
-| 分配方式 | 自动（编译器管理） | 手动（程序员控制） |
-| 分配速度 | 非常快（移动指针） | 较慢（搜索空闲块） |
-| 空间大小 | 较小（通常1-8MB）  | 较大（受系统限制） |
-| 生命周期 | 函数返回自动释放   | 需手动释放         |
-| 碎片问题 | 无                 | 可能产生碎片       |
-| 访问方式 | LIFO               | 任意顺序           |
-
-## 2. 动态内存分配
-
-### 2.1 malloc、calloc、realloc、free
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-void allocation_demo(void) {
-    // malloc: 分配指定字节数，内容未初始化
-    int *arr1 = (int *)malloc(5 * sizeof(int));
-    if (arr1 == NULL) {
-        fprintf(stderr, "malloc failed\n");
-        exit(EXIT_FAILURE);
-    }
-    for (int i = 0; i < 5; i++) {
-        arr1[i] = i * 10;
-    }
-
-    // calloc: 分配并初始化为零
-    int *arr2 = (int *)calloc(5, sizeof(int));
-    if (arr2 == NULL) {
-        fprintf(stderr, "calloc failed\n");
-        free(arr1);
-        exit(EXIT_FAILURE);
-    }
-    // arr2 的所有元素已初始化为0
-
-    // realloc: 调整已分配内存的大小
-    int *arr3 = (int *)realloc(arr1, 10 * sizeof(int));
-    if (arr3 == NULL) {
-        fprintf(stderr, "realloc failed\n");
-        free(arr1);
-        free(arr2);
-        exit(EXIT_FAILURE);
-    }
-    arr1 = arr3;  // realloc可能返回新地址
-    // 新增的5个元素内容未初始化
-
-    // free: 释放动态分配的内存
-    free(arr1);
-    free(arr2);
-
-    // 释放后将指针置NULL，防止悬空指针
-    arr1 = NULL;
-    arr2 = NULL;
-}
-```
-
-### 2.2 三种分配函数的对比
-
-| 函数    | 原型                                    | 初始化     | 用途         |
-| :------ | :-------------------------------------- | :--------- | :----------- |
-| malloc  | `void *malloc(size_t size)`             | 不初始化   | 通用内存分配 |
-| calloc  | `void *calloc(size_t n, size_t size)`   | 清零       | 数组分配     |
-| realloc | `void *realloc(void *ptr, size_t size)` | 保留原数据 | 调整内存大小 |
-
-### 2.3 realloc 的行为细节
-
-```c
-void realloc_details(void) {
-    int *ptr = (int *)malloc(5 * sizeof(int));
-    for (int i = 0; i < 5; i++) ptr[i] = i;
-
-    // 情况1：原地扩展（后方有足够空间）
-    // 返回原指针，数据不变
-
-    // 情况2：重新分配（后方空间不足）
-    // 分配新块，复制旧数据，释放旧块，返回新指针
-
-    // 情况3：缩小大小
-    // 可能原地缩小，返回原指针
-
-    int *new_ptr = (int *)realloc(ptr, 10 * sizeof(int));
-    if (new_ptr == NULL) {
-        // realloc失败时，原内存ptr仍然有效！
-        free(ptr);
-        return;
-    }
-    ptr = new_ptr;  // 始终使用返回值更新指针
-    // 注意：此刻 ptr 与 new_ptr 指向同一块内存，
-    // 绝不能再 free(new_ptr)，否则就是重复释放
-
-    // 特殊用法：realloc(NULL, size) 等价于 malloc(size)
-    int *p = (int *)realloc(NULL, 5 * sizeof(int));
-    if (!p) { free(ptr); return; }
-
-    // 关于 realloc(ptr, 0)：C99 曾允许其表示"释放并返回 NULL"，
-    // C11 起行为变为实现定义，C23 已移除该用法——不要这样写，
-    // 释放内存请老老实实调用 free
-
-    free(ptr);   // 释放扩容后的内存（即 new_ptr 指向的同一块）
-    free(p);     // 释放 realloc(NULL, ...) 分配的内存
-}
-```
-
-## 3. 动态数据结构
-
-### 3.1 动态数组
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-typedef struct {
-    int *data;
-    size_t size;
-    size_t capacity;
-} DynamicArray;
-
-DynamicArray *da_create(size_t initial_capacity) {
-    DynamicArray *da = malloc(sizeof(DynamicArray));
-    if (!da) return NULL;
-
-    da->data = malloc(initial_capacity * sizeof(int));
-    if (!da->data) {
-        free(da);
-        return NULL;
-    }
-
-    da->size = 0;
-    da->capacity = initial_capacity;
-    return da;
-}
-
-void da_push(DynamicArray *da, int value) {
-    if (da->size >= da->capacity) {
-        // 扩容策略：2倍增长
-        size_t new_capacity = da->capacity * 2;
-        int *new_data = realloc(da->data, new_capacity * sizeof(int));
-        if (!new_data) return;
-        da->data = new_data;
-        da->capacity = new_capacity;
-    }
-    da->data[da->size++] = value;
-}
-
-int da_get(DynamicArray *da, size_t index) {
-    if (index >= da->size) {
-        fprintf(stderr, "Index out of bounds\n");
-        return -1;
-    }
-    return da->data[index];
-}
-
-void da_free(DynamicArray *da) {
-    if (da) {
-        free(da->data);
-        free(da);
-    }
+int *make_scores(void) {
+    int *scores = malloc(3 * sizeof(int));   /* 判 NULL 从简，专注事故本身 */
+    scores[0] = 90; scores[1] = 75; scores[2] = 60;
+    return scores;
 }
 
 int main(void) {
-    DynamicArray *arr = da_create(4);
-    for (int i = 0; i < 20; i++) {
-        da_push(arr, i * 3);
-    }
-    for (size_t i = 0; i < arr->size; i++) {
-        printf("%d ", da_get(arr, i));
-    }
-    printf("\nSize: %zu, Capacity: %zu\n", arr->size, arr->capacity);
-    da_free(arr);
+    int *a = make_scores();
+    free(a);
+    printf("%d\n", a[0]);    /* 有时打印 90，有时崩溃：为什么是「有时」？ */
     return 0;
 }
 ```
 
-### 3.2 链表
+「free 之后还去读」，答案却时对时错：标准把结果**留白**了——这叫未定义行为（undefined behavior，UB）。要弄懂「不属于你」的含义，先看地图：你的程序住在内存的哪些区域。
+
+## 2. 五段布局：打印地址画出进程地图
+
+一个正在运行的 C 程序，内存分五个区域，各司其职：
+
+| 区域 | 装什么 | 谁管理 |
+| --- | --- | --- |
+| text 代码段 | 机器指令、字符串字面量 | 只读，加载时定死 |
+| data 数据段 | 初始化过的全局/static 变量 | 程序启动时载入 |
+| bss 段 | 未初始化的全局/static 变量 | 加载时统一清零 |
+| heap 堆 | malloc/calloc/realloc 的地盘 | 你，手动 malloc/free |
+| stack 栈 | 局部变量、函数调用信息 | 编译器自动进出 |
+
+空口无凭，把地址打出来：
 
 ```c
+/* map.c：把五段的真实地址打出来 */
 #include <stdio.h>
 #include <stdlib.h>
 
-typedef struct Node {
-    int data;
-    struct Node *next;
-} Node;
+int g_init = 42;          /* data：初始化过的全局变量 */
+int g_zero;               /* bss：没初始化的全局变量，加载时清零 */
 
-Node *node_create(int data) {
-    Node *node = malloc(sizeof(Node));
-    if (!node) return NULL;
-    node->data = data;
-    node->next = NULL;
-    return node;
-}
-
-void list_append(Node **head, int data) {
-    Node *new_node = node_create(data);
-    if (!new_node) return;
-
-    if (*head == NULL) {
-        *head = new_node;
-        return;
-    }
-
-    Node *current = *head;
-    while (current->next) {
-        current = current->next;
-    }
-    current->next = new_node;
-}
-
-void list_free(Node *head) {
-    Node *current = head;
-    while (current) {
-        Node *next = current->next;
-        free(current);
-        current = next;
-    }
-}
-
-void list_print(Node *head) {
-    Node *current = head;
-    while (current) {
-        printf("%d -> ", current->data);
-        current = current->next;
-    }
-    printf("NULL\n");
+int main(void) {
+    static int s_init = 7;                /* 也在 data */
+    int local = 1;                        /* 栈 */
+    int *heap = malloc(sizeof(int));      /* 堆 */
+    printf("text  %p\n", (void *)main);
+    printf("data  %p\n", (void *)&g_init);
+    printf("bss   %p\n", (void *)&g_zero);
+    printf("heap  %p\n", (void *)heap);
+    printf("stack %p\n", (void *)&local);
+    free(heap);
+    return 0;
 }
 ```
-
-## 4. 常见内存错误
-
-### 4.1 内存泄漏
-
-```c
-// 错误：忘记释放内存
-void memory_leak_example(void) {
-    int *ptr = malloc(100 * sizeof(int));
-    // 使用ptr...
-    // 函数结束但未free(ptr) → 内存泄漏！
-}
-
-// 正确：确保每个malloc都有对应的free
-void no_leak_example(void) {
-    int *ptr = malloc(100 * sizeof(int));
-    if (!ptr) return;
-    // 使用ptr...
-    free(ptr);
-    ptr = NULL;
-}
-```
-
-### 4.2 悬空指针（Dangling Pointer）
-
-```c
-// 错误：使用已释放的内存
-void dangling_pointer_example(void) {
-    int *ptr = malloc(sizeof(int));
-    *ptr = 42;
-    free(ptr);
-    // ptr现在是悬空指针
-    printf("%d\n", *ptr);  // 未定义行为！
-}
-
-// 正确：释放后置NULL
-void safe_pointer_example(void) {
-    int *ptr = malloc(sizeof(int));
-    if (!ptr) return;
-    *ptr = 42;
-    free(ptr);
-    ptr = NULL;
-    // 后续使用ptr前检查
-    if (ptr) {
-        printf("%d\n", *ptr);
-    }
-}
-```
-
-### 4.3 重复释放（Double Free）
-
-```c
-// 错误：对同一块内存释放两次
-void double_free_example(void) {
-    int *ptr = malloc(sizeof(int));
-    free(ptr);
-    free(ptr);  // 未定义行为！可能导致程序崩溃
-}
-
-// 正确：释放后置NULL，free(NULL)是安全的
-void safe_free_example(void) {
-    int *ptr = malloc(sizeof(int));
-    free(ptr);
-    ptr = NULL;
-    free(ptr);  // free(NULL)是安全的，什么都不做
-}
-```
-
-### 4.4 缓冲区溢出
-
-```c
-// 错误：写入超出分配范围
-void buffer_overflow_example(void) {
-    int *arr = malloc(5 * sizeof(int));
-    for (int i = 0; i <= 5; i++) {  // i=5时越界！
-        arr[i] = i;
-    }
-    free(arr);
-}
-
-// 正确：严格检查边界
-void safe_buffer_example(void) {
-    size_t size = 5;
-    int *arr = malloc(size * sizeof(int));
-    if (!arr) return;
-    for (size_t i = 0; i < size; i++) {  // i < size
-        arr[i] = (int)i;
-    }
-    free(arr);
-}
-```
-
-### 4.5 使用未初始化的内存
-
-```c
-// 错误：使用malloc后未初始化
-void uninit_memory_example(void) {
-    int *arr = malloc(5 * sizeof(int));
-    printf("%d\n", arr[0]);  // 值不确定！
-    free(arr);
-}
-
-// 正确：使用calloc或手动初始化
-void init_memory_example(void) {
-    // 方式1：使用calloc（自动清零）
-    int *arr1 = calloc(5, sizeof(int));
-
-    // 方式2：使用memset
-    int *arr2 = malloc(5 * sizeof(int));
-    memset(arr2, 0, 5 * sizeof(int));
-
-    free(arr1);
-    free(arr2);
-}
-```
-
-## 5. 内存调试技术
-
-### 5.1 Valgrind 内存检测
 
 ```bash
-# 编译时加 -g 保留调试信息
-gcc -g -o program program.c
-
-# 使用Valgrind检测内存错误
-valgrind --leak-check=full --show-leak-kinds=all ./program
-
-# 常见Valgrind输出
-# ==12345== HEAP SUMMARY:
-# ==12345==     in use at exit: 40 bytes in 1 blocks
-# ==12345==   total heap usage: 2 allocs, 1 frees, 80 bytes allocated
-# ==12345==
-# ==12345== 40 bytes in 1 blocks are definitely lost in loss record 1 of 1
-# ==12345==    at 0x4C29F73: malloc (vg_replace_malloc.c:309)
-# ==12345==    by 0x4005A6: memory_leak_example (program.c:10)
+gcc -Wall -Wextra -g map.c -o map
+./map
 ```
 
-### 5.2 AddressSanitizer
+一次典型输出（地址每次运行都不同，相对位置永远如此）：
 
-```bash
-# GCC/Clang编译时启用ASan
-gcc -fsanitize=address -g -o program program.c
-./program
-
-# ASan会检测：
-# - 堆缓冲区溢出
-# - 栈缓冲区溢出
-# - 使用已释放内存
-# - 内存泄漏
-# - 重复释放
+```text
+text  0x5f2a91c2b169
+data  0x5f2a91e2d010
+bss   0x5f2a91e2d018
+heap  0x5f8d2a0002a0
+stack 0x7ffec93f4744
 ```
 
-### 5.3 自定义内存分配器（调试用）
+从地址读出三条事实：
+
+1. text、data、bss 挨在一起——来自同一个可执行文件，加载时一次铺好；
+2. heap 远高于 bss：堆从 bss 上方开始，随 malloc 一步步向上长；
+3. stack 在最高处、向下长（函数每调用一层下移一块，见 [函数调用栈帧](/c/250-FunctionCallStackFrame)）。
+
+地址每次不同是地址随机化（ASLR）在防攻击，但**相对位置是铁律**。表也回答了栈与堆的分工：栈自动进出、快而小（默认约 1 到 8 MB），堆手动 malloc/free、慢而大——小而固定的数据住栈，大的上堆，`int big[10000000]` 这种局部数组会把栈撑爆。
+
+修改实验一：删掉 `g_init` 的 `= 42` 再跑。留着 42 时 `&g_init` 紧挨 `s_init`（同在 data），删掉后紧挨 `g_zero`（同在 bss）——编译器按「初始化了没有」分两段；bss 不占可执行文件体积、加载时统一清零，这就是「全局变量不写初值也是 0」的实现。
+
+## 3. 常见错误与调试实录一：use-after-free
 
 ```c
+/* uaf.c */
 #include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
-// 调试用内存追踪
-typedef struct MemRecord {
-    void *ptr;
-    size_t size;
-    const char *file;
-    int line;
-    struct MemRecord *next;
-} MemRecord;
-
-static MemRecord *mem_list = NULL;
-static size_t total_allocated = 0;
-
-// 包装malloc
-void *debug_malloc(size_t size, const char *file, int line) {
-    void *ptr = malloc(size);
-    if (ptr) {
-        MemRecord *record = malloc(sizeof(MemRecord));
-        record->ptr = ptr;
-        record->size = size;
-        record->file = file;
-        record->line = line;
-        record->next = mem_list;
-        mem_list = record;
-        total_allocated += size;
-    }
-    return ptr;
+int main(void) {
+    int *p = malloc(sizeof(int));
+    if (p == NULL) return 1;
+    *p = 5;
+    free(p);
+    printf("%d\n", *p);    /* 已交还的内存又去读 */
+    return 0;
 }
-
-// 包装free
-void debug_free(void *ptr, const char *file, int line) {
-    if (!ptr) return;
-
-    MemRecord **pp = &mem_list;
-    while (*pp) {
-        if ((*pp)->ptr == ptr) {
-            MemRecord *found = *pp;
-            total_allocated -= found->size;
-            *pp = found->next;
-            free(found);
-            break;
-        }
-        pp = &(*pp)->next;
-    }
-    free(ptr);
-}
-
-// 报告未释放的内存
-void debug_report(void) {
-    if (mem_list) {
-        fprintf(stderr, "\n=== Memory Leak Report ===\n");
-        MemRecord *current = mem_list;
-        while (current) {
-            fprintf(stderr, "Leak: %zu bytes at %p, allocated at %s:%d\n",
-                    current->size, current->ptr, current->file, current->line);
-            current = current->next;
-        }
-    }
-    fprintf(stderr, "Total allocated: %zu bytes\n", total_allocated);
-}
-
-// 宏定义简化调用
-#define MALLOC(size) debug_malloc(size, __FILE__, __LINE__)
-#define FREE(ptr) debug_free(ptr, __FILE__, __LINE__)
 ```
 
-## 6. 常见问题与解决方案
+先不加工具直接跑：大概率打印 `5`——内存刚还回去，还没被别人领走。这就是 UB 的阴险之处：**没出事不等于没错，只是运气好**。开 ASan 重跑：
 
-### 6.1 malloc 返回值未检查
+```bash
+gcc -Wall -Wextra -g -fsanitize=address uaf.c -o uaf
+./uaf
+```
 
-**问题**：内存分配可能失败，不检查返回值导致空指针解引用
+预期输出（地址每次不同，关键行如下）：
+
+```text
+==23054==ERROR: AddressSanitizer: heap-use-after-free on address 0x602000000010
+READ of size 4 at 0x602000000010 thread T0
+    #0 0x5b3a91c2b1d4 in main uaf.c:9
+freed by thread T0 here:
+    #0 0x7f2c4a8627a7 in free
+    #1 0x5b3a91c2b1b0 in main uaf.c:8
+previously allocated by thread T0 here:
+    #0 0x7f2c4a862588 in malloc
+    #1 0x5b3a91c2b1a2 in main uaf.c:5
+```
+
+逐行读：首行点名事故 heap-use-after-free 与出错地址；`READ of size 4` 与第 9 行说明谁在出错；`freed by`、`previously allocated by` 指出在哪一行 free、在哪一行 malloc。第 5 行分的、第 8 行还的、第 9 行又用——故事不需要猜。ASan 能抓住是因为它把 free 后的内存标成隔离区，真实分配器没这么讲究。
+
+修改实验二：在 `free(p);` 后插两行 `int *q = malloc(sizeof(int)); *q = 99;`，不开 ASan 再跑。大概率打印 `99`——内存被 `q` 领走，`p` 成了指向**别人内存**的悬空指针，真实程序里「数据莫名被改」常有这类源头。
+
+修改实验三：按 200 篇的纪律补一行 `p = NULL;`，保留后面误用的 `printf`。现在必崩，崩在这一行——把「静默的错误」变成「响亮的崩溃」，正是置 NULL 的全部意义。
+
+## 4. 常见错误与调试实录二：double free
 
 ```c
-// 错误
-int *ptr = malloc(1000 * sizeof(int));
-ptr[0] = 42;  // 如果malloc失败，解引用NULL
+/* dfree.c */
+#include <stdlib.h>
 
-// 正确
-int *ptr = malloc(1000 * sizeof(int));
-if (ptr == NULL) {
-    fprintf(stderr, "Memory allocation failed\n");
-    exit(EXIT_FAILURE);
+int main(void) {
+    int *p = malloc(sizeof(int));
+    if (p == NULL) return 1;
+    free(p);
+    free(p);          /* 第二次：事故现场 */
+    return 0;
 }
-ptr[0] = 42;
 ```
 
-### 6.2 栈溢出
+```bash
+gcc -Wall -Wextra -g -fsanitize=address dfree.c -o dfree
+./dfree
+```
 
-**问题**：在栈上分配过大数组
+预期输出（关键行如下）：
+
+```text
+==23188==ERROR: AddressSanitizer: attempting double-free on 0x602000000010 in thread T0
+    #0 0x7f2c4a8627a7 in free
+    #1 0x5b3a91c2b1f2 in main dfree.c:7
+freed by thread T0 here:
+    #1 0x5b3a91c2b1f2 in main dfree.c:6
+```
+
+报告同时给出两次 free 的行号，对照即破案。不开 ASan 也没多安全：现代 glibc 常直接中止进程，留下 `free(): double free detected in tcache 2` 一行。更深的危险：分配器用链表管理空闲块，两次释放会写坏空闲链表，此后 malloc 可能返回互相重叠的内存——历史上多起漏洞正从 double free 打进去。置 NULL 在此兑现：`free(NULL)` 无害，事故链第一环就断。
+
+## 5. realloc 的搬移语义与经典坑
+
+200 篇把 realloc 当扩容按钮，现在拆开。`realloc(p, new_size)` 有三种结果：
+
+1. **原地扩展**：后面恰好有空地，返回原指针 `p`，什么都没发生；
+2. **整体搬家**：找一块新地，把旧数据拷过去，**释放旧块**，返回新地址；
+3. **失败**：返回 NULL，**旧块完好无损**。
+
+结果 2 是搬移语义的全部后果：搬家后旧地址已还回分配器，**一切指向旧块的指针同时悬空**，包括你早先存下的别名。结果 3 则催生 C 语言最著名的坑之一：
 
 ```c
-// 错误：栈空间有限，大数组应使用堆
-void stack_overflow(void) {
-    int huge_array[10000000];  // 可能导致栈溢出
-}
-
-// 正确：使用动态分配
-void heap_allocation(void) {
-    int *huge_array = malloc(10000000 * sizeof(int));
-    if (!huge_array) return;
-    // 使用...
-    free(huge_array);
-}
+/* 错误写法：realloc 的返回值直接写回原指针 */
+int *p = malloc(10 * sizeof(int));
+/* ... */
+p = realloc(p, HUGE_SIZE);   /* 若失败返回 NULL：p 被覆盖，
+    原内存从此无人知道地址——泄漏，而且连 free 都做不到 */
 ```
 
-### 6.3 realloc 后原指针失效
-
-**问题**：realloc可能返回新地址，旧指针可能无效
+失败时旧块还好好的，但你唯一知道它地址的变量已被 NULL 覆盖。修复就是 200 篇的安全姿势，现在能说出**为什么**：
 
 ```c
-// 错误：直接用原指针接收realloc返回值
-int *ptr = malloc(100 * sizeof(int));
-ptr = realloc(ptr, 200 * sizeof(int));  // 如果失败，ptr变为NULL，原内存泄漏
-
-// 正确：用临时变量接收
-int *temp = realloc(ptr, 200 * sizeof(int));
-if (temp) {
-    ptr = temp;
-} else {
-    // realloc失败，ptr仍然有效
-    free(ptr);
-    exit(EXIT_FAILURE);
+int *bigger = realloc(p, HUGE_SIZE);
+if (bigger == NULL) {
+    /* p 仍然有效：可继续用旧数据，或 free(p) 后退出 */
+    free(p);
+    return 1;
 }
+p = bigger;
 ```
 
-## 7. 总结与最佳实践
+一句话收尾：结构体末尾不写大小的**柔性数组**成员（`struct Header { size_t len; char data[]; };`）配一次 `malloc(sizeof(struct Header) + len)`，把「头 + 变长数据」放进同一块，free 一次全还。
 
-### 7.1 内存管理原则
+## 6. 实际项目中的使用场景
 
-1. **谁分配，谁释放**：明确内存所有权
-2. **配对使用**：每个 malloc 必须有对应的 free
-3. **及时释放**：不再使用时立即释放
-4. **释放后置 NULL**：防止悬空指针和重复释放
-5. **检查返回值**：malloc/calloc/realloc 可能失败
+- 长跑进程（游戏服、网关）上线前必须用 ASan 或 Valgrind 把泄漏清零：泄漏对长跑进程是死刑，工具对比见 [C Valgrind 内存检测](/c/510-CValgrind)；「偶现」崩溃的第一嫌疑人也是 use-after-free 与越界——静默错误才会偶现，用 ASan 把偶现变必现，见 [静态分析与调试](/c/490-StaticAnalysisDebug)；
+- 团队守则两条：free 后置 NULL；谁分配谁释放，注释写清返回的内存归谁 free，跨文件约定在 [多文件编译](/c/310-MultiFileCompilation) 后成为日常。
 
-### 7.2 内存分配策略
+## 7. 小练习
 
-- 小对象、确定大小：使用栈分配
-- 大对象、运行时确定大小：使用堆分配
-- 需要清零：使用 calloc
-- 需要调整大小：使用 realloc（2倍扩容策略）
-- 高频分配：考虑内存池
+预测题（5 分钟）：下面是无 ASan 编译的代码。先写答案再运行，跑三次：
 
-### 7.3 调试建议
+```c
+int *p = malloc(sizeof(int));
+if (p == NULL) return 1;
+*p = 5;
+free(p);
+printf("%d\n", *p);
+```
 
-- 开发阶段始终使用 Valgrind 或 ASan 检测内存问题
-- 使用自定义内存分配器追踪分配/释放
-- 代码审查重点关注内存管理逻辑
-- 编写单元测试覆盖边界条件
+参考答案（先写再看）：大概率三次都打印 `5`，但标准不保证任何结果——只是内存还没被复用。按修改实验二的做法，free 后立刻再 malloc 一个新块，输出就会变成新值。「没崩」从来不是「没错」的证据。
+
+挑战题（半小时，不看答案先动手）：把本文的 map.c 扩成「内存地图自检器」：打印五段地址后，用断言验证相对顺序。提示两级如下。
+
+提示（思路方向）：`<stdint.h>` 的 `uintptr_t` 能把指针转成整数比大小；断言顺序参考第 2 节三条事实。
+
+展开（关键 API）：`assert((uintptr_t)heap > (uintptr_t)&g_zero);`、`assert((uintptr_t)&local > (uintptr_t)heap);`，text 侧用 `(uintptr_t)main` 验证最小；记得 `#include <assert.h>`，断言失败会带行号中止。
+
+验收清单：五个地址打印成行；三条断言全部通过；删掉 `= 42` 后 `&g_init` 落回 bss。本练习验证 Linux/macOS 上 gcc/clang 的常规布局，MSVC 布局不同，断言只看相对顺序。
+
+## 8. 与之前和之后的知识的关系
+
+- 往前：[动态内存](/c/200-DynamicMemoryManagement) 的四件套与纪律是本篇所有实验的原料，「free 后置 NULL」在第 3、4 节的事故现场完成闭环；
+- 旁支：栈一侧的进出细节在 [函数调用栈帧](/c/250-FunctionCallStackFrame)；本篇看「程序住在哪」，[内存对齐](/c/220-MemoryAlignmentDeepDive) 看「一块结构体内部怎么排」；
+- 往后：并发场景里这些事故会更隐蔽（两个线程同时 free），基础仍是本篇的事故分类，见 [线程与并发](/c/360-ThreadConcurrency)。
+
+## 9. 官方文档
+
+- realloc 的完整语义（cppreference C）：https://zh.cppreference.com/w/c/memory/realloc
+- free 手册页（含未定义行为清单）：https://man7.org/linux/man-pages/man3/free.3.html
+- AddressSanitizer 官方 wiki（原理与更多用法）：https://github.com/google/sanitizers/wiki/AddressSanitizer
+
+## 10. 自我检查
+
+- 能默画五段布局并说出每段的管理者，能用 map.c 式的打印验证；
+- 拿到一份 heap-use-after-free 报告，能在三行内指出分配、释放、出错的位置；
+- 能向同事讲清 `p = realloc(p, ...)` 错在哪，以及为什么临时指针能救；
+- 能解释「未定义行为」为什么表现为偶现，ASan 为什么能把偶现变必现。
+
+## 本章总结
+
+进程内存五段各司其职：text/data/bss 由加载器铺好，stack 自动进出，heap 归你管。free 之后内存归还分配器，原指针全部悬空——use-after-free 的「有时正常」是复用时机碰巧，double free 破坏的是分配器自己的账本。realloc 可能整体搬家，别名随之作废；失败时旧块还在，所以必须临时指针接返回值。把偶现变必现的工具是 ASan，把事故链掐断的习惯是 200 篇的纪律。
+
+## 下一步
+
+进入 [内存对齐](/c/220-MemoryAlignmentDeepDive)：内存在哪搞清楚了，接下来看一块结构体内部——为什么三个成员的结构体不是 6 字节。

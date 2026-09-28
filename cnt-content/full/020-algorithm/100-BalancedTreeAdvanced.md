@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 110
 title: 平衡树与高级树
 module: 'algorithm'
 category: 计算机科学

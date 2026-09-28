@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 60
 title: 搜索算法
 module: 'algorithm'
 category: 计算机科学

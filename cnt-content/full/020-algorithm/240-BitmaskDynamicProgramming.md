@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 270
 title: 动态规划状态压缩
 module: 'algorithm'
 category: 计算机科学

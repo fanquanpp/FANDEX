@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 210
 title: 分区表
 module: 'postgresql'
 category: 数据库
