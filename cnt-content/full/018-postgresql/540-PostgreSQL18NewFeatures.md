@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 470
 title: PostgreSQL 18 新特性
 description: PostgreSQL 18（2025-09）核心特性详解：异步I/O、uuidv7、虚拟生成列、B-tree跳跃扫描、时态约束、OAuth认证与升级改进。
 module: 'postgresql'

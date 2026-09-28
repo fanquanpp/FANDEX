@@ -1,5 +1,5 @@
 ---
-order: 40
+order: 50
 title: 栈与队列
 module: 'algorithm'
 category: 计算机科学

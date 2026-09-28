@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 310
 title: 算法理论知识点
 module: 'algorithm'
 category: 计算机科学

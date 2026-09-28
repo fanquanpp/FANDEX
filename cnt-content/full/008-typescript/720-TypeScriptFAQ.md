@@ -1,5 +1,5 @@
 ---
-order: 720
+order: 730
 title: TypeScript 高频疑问 FAQ 合集
 module: 'typescript'
 category: 前端技术

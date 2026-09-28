@@ -1,13 +1,17 @@
 ---
-order: 110
-title: 图算法
+order: 120
+title: '图算法：表示与遍历'
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
-description: 图的形式化定义、表示方法、遍历算法、最短路径、最小生成树、强连通分量与拓扑排序，附正确性证明、复杂度分析与多语言实现，覆盖 CLRS 4th 风格教学大纲。
+description: 图的形式化定义与四种表示方法（邻接矩阵、邻接表、边集数组、隐式图）对照，BFS 与 DFS 的完整实现、Loop Invariant 正确性证明与预期输出，连通分量、环检测、二分图判定、拓扑排序概念、强连通分量与双连通性，附遍历应用场景速查表、工程实践与五个工业级案例研究；最短路径与最小生成树的三算法双算法横向对照见姊妹篇 115。
 author: fanquanpp
 updated: '2026-09-28'
 related:
+  - 'algorithm/115-ShortestPathAndMST'
+  - 'algorithm/250-FloydWarshall'
+  - 'algorithm/260-KruskalAlgorithm'
+  - 'algorithm/270-TopologicalSorting'
   - 'algorithm/070-HashTable'
   - 'algorithm/080-Tree'
   - 'algorithm/120-DivideAndConquer'
@@ -35,9 +39,11 @@ prerequisites:
 
 ## 第 1 章 学习目标与导论
 
-### 1.1 本章在算法知识体系中的位置
+### 1.1 本篇在算法知识体系中的位置
 
 图（graph，源自希腊语 "graphos"，意为"书写、绘制"，由 James Joseph Sylvester 于 1878 年首次引入英语数学词汇，意为"由顶点与边绘制的关系结构"）是计算机科学中最重要、最具表达力的数据结构之一。它位于算法知识体系的"关系层"，向上承接搜索算法与动态规划，向下衔接网络流、字符串自动机与离散数学中的图论。
+
+本篇是图算法两册中的第一册（表示与遍历篇），覆盖：图的形式化定义、四种表示方法（邻接矩阵、邻接表、边集数组、隐式图）对照、BFS 与 DFS 的完整实现与正确性证明，以及以遍历为核心的应用——连通分量、环检测、二分图判定、拓扑排序（概念级）、强连通分量与双连通性。最短路径（Dijkstra、Bellman-Ford、Floyd-Warshall、A*）与最小生成树（Kruskal、Prim、Boruvka）收录于姊妹篇[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)。分工原则：本篇与姊妹篇横向对照互补；[Floyd-Warshall](/algorithm/250-FloydWarshall)、[Kruskal](/algorithm/260-KruskalAlgorithm)、[拓扑排序](/algorithm/270-TopologicalSorting)另有单算法深水篇负责纵向深挖，本篇与之互为表里、不重复展开。
 
 学习本章前，读者应当已经掌握：
 
@@ -45,24 +51,25 @@ prerequisites:
 - `algorithm/搜索算法`：BFS/DFS 在树与状态空间上的基本框架
 - `math/离散数学`：集合、关系、二元关系、等价关系与偏序关系
 
-掌握本章后，读者将为后续学习 `algorithm/网络流`、`algorithm/字符串算法`（后缀自动机、AC 自动机的图结构）、`algorithm/动态规划`（DAG 上的 DP）等高级主题奠定坚实基础。
+掌握本章后，读者将为后续学习姊妹篇的最短路与 MST、`algorithm/网络流`、`algorithm/字符串算法`（后缀自动机、AC 自动机的图结构）、`algorithm/动态规划`（DAG 上的 DP）等高级主题奠定坚实基础。
 
 ### 1.2 学习目标
 
 本章遵循 Bloom 分类法，按认知层级递进组织学习目标：
 
-1. **记忆（Remember）**：复述图的形式化定义 $G = (V, E)$ 与有向图、无向图、加权图、二分图的形式化区别。
-2. **理解（Understand）**：解释邻接矩阵与邻接表的代数表示，说明其在稠密图与稀疏图场景下的性能权衡。
+1. **记忆（Remember）**：复述图的形式化定义 $G = (V, E, \varphi)$ 与有向图、无向图、加权图、二分图的形式化区别。
+2. **理解（Understand）**：解释邻接矩阵、邻接表、边集数组与隐式图的空间与时间权衡，说明稠密图与稀疏图场景下的选型依据。
 3. **应用（Apply）**：使用 BFS 与 DFS 实现连通分量、环检测、二分图判定与拓扑排序。
-4. **分析（Analyze）**：对比 Dijkstra、Bellman-Ford、Floyd-Warshall 算法的正确性证明（Loop Invariant 与最优子结构），识别其适用前提。
-5. **评估（Evaluate）**：评估 Kruskal 与 Prim 算法的 Cut 性质并选择适合稀疏图与稠密图的 MST 实现；评估 Tarjan 与 Kosaraju 的工程取舍。
-6. **创造（Create）**：设计基于图模型的工程方案，如社交网络分析、路由算法、依赖解析与推荐系统。
+4. **分析（Analyze）**：基于 Loop Invariant 分析 BFS 正确性，基于边分类与括号化定理分析 DFS 行为与 SCC 识别机制。
+5. **评估（Evaluate）**：评估 Tarjan 与 Kosaraju 的工程取舍；为给定规模与查询模式选择表示方法与遍历策略。
+6. **创造（Create）**：设计基于图模型的工程方案，如社交网络分析、依赖解析与推荐系统。
 
 ### 1.3 阅读建议
 
 - **零基础读者**：先通读第 3、4、5 章，建立形式化定义与遍历直觉后回看第 2 章历史动机；
-- **有数据结构基础读者**：重点关注第 6、7、9 章的正确性证明与复杂度分析；
-- **进阶读者**：直接研读第 10、14 章的进阶算法与案例研究。
+- **有数据结构基础读者**：重点关注第 5、7 章的正确性证明与复杂度分析；
+- **需要最短路径或最小生成树的读者**：直接阅读姊妹篇[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)；
+- **进阶读者**：研读第 8 章进阶遍历算法与第 12 章案例研究。
 
 ## 第 2 章 历史动机与演进
 
@@ -107,6 +114,8 @@ Euler 证明了：存在"每条边恰好经过一次的回路"（后称欧拉回
 1998 年斯坦福大学博士生 Larry Page 与 Sergey Brin 提出 PageRank 算法（Page et al. 1999），将网页超链接结构建模为有向图，通过随机游走的平稳分布度量网页"重要性"。PageRank 成为 Google 搜索引擎的奠基技术，标志着图算法在大规模工业场景中的成功应用。
 
 此后图算法在社交网络（朋友推荐、社区发现）、生物信息学（蛋白质相互作用网络）、推荐系统（知识图谱）、区块链（DAG 共识）等领域持续扩展。2000s 后图神经网络（GNN）的兴起进一步深化了图算法与机器学习的融合。
+
+> 拆分说明：本篇原为图算法单册合集，现已按参考层标准拆为两篇：本篇覆盖表示与遍历；Dijkstra、Bellman-Ford、Floyd-Warshall、A*、Kruskal、Prim 的完整实现、证明与选型收录于[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)；Floyd-Warshall、Kruskal、拓扑排序另有单算法深水篇（[250](/algorithm/250-FloydWarshall)、[260](/algorithm/260-KruskalAlgorithm)、[270](/algorithm/270-TopologicalSorting)）。
 
 ## 第 3 章 形式化定义与图论基础
 
@@ -163,6 +172,8 @@ $$T^* = \arg\min_{T \text{ 是 } G \text{ 的生成树}} \sum_{e \in T} w(e)$$
 
 **定理 3.2（MST 唯一性）**：若 $G$ 中所有边权互不相同，则 MST 唯一。
 
+> 注：MST 的构造算法（Kruskal、Prim、Boruvka）、Cut 性质与正确性证明收录于[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)第 7 章，Kruskal 深水篇见 [Kruskal 算法](/algorithm/260-KruskalAlgorithm)。
+
 ### 3.4 邻接矩阵与邻接表的代数表示
 
 **定义 3.10（邻接矩阵）**：图 $G = (V, E)$（$|V| = n$）的邻接矩阵 $\mathbf{A} \in \{0, 1\}^{n \times n}$（或 $\mathbb{R}^{n \times n}$ 用于加权图）定义为：
@@ -188,6 +199,7 @@ $$\mathbf{A}_{ij} = \begin{cases} 1, & (v_i, v_j) \in E \\ 0, & \text{otherwise}
 | 邻接矩阵   | $\Theta(V^2)$   | $O(1)$              | $O(V)$       | 稠密图、频繁查询边 |
 | 邻接表     | $\Theta(V + E)$ | $O(\deg(u))$        | $O(\deg(u))$ | 稀疏图、遍历为主   |
 | 链式前向星 | $\Theta(V + E)$ | $O(\deg(u))$        | $O(\deg(u))$ | 竞赛场景、内存紧凑 |
+| 边集数组   | $\Theta(V + E)$ | $O(E)$              | $O(E)$       | Bellman-Ford、Kruskal 的边列表输入 |
 
 ## 第 4 章 图的表示方法与存储
 
@@ -368,19 +380,53 @@ void traverse(int u) {
 }
 ```
 
-### 4.4 表示方法选择
+### 4.4 边集数组与隐式图表示
 
-| 场景                     | 邻接矩阵   | 邻接表    | 链式前向星 |
-| :----------------------- | :--------- | :-------- | :--------- |
-| 稠密图 $E = \Theta(V^2)$ | 推荐       | 浪费指针  | 不适用     |
-| 稀疏图 $E = O(V)$        | 浪费空间   | 推荐      | 推荐       |
-| 频繁查询边存在           | $O(1)$     | $O(\deg)$ | $O(\deg)$  |
-| Floyd-Warshall           | 必须用矩阵 | 需转换    | 需转换     |
-| Dijkstra/BFS/DFS         | 可用       | 推荐      | 推荐       |
-| 内存受限（竞赛）         | 不推荐     | 可用      | 最优       |
-| 需要快速删除边           | $O(1)$     | $O(\deg)$ | $O(\deg)$  |
+**边集数组**（edge list）直接用数组保存全部边 $(u, v, w)$，不做任何顶点级索引。它是最"裸"的表示：Bellman-Ford 的 $V - 1$ 轮全边松弛、Kruskal 的按权排序加边，都以边集数组为天然输入。
 
-### 4.5 图的输入与构建示例
+```python
+# 边集数组（Python）：Bellman-Ford 与 Kruskal 的天然输入格式
+edges = [
+    (0, 1, 4),
+    (0, 2, 1),
+    (1, 3, 2),
+    (2, 3, 5),
+]
+# 空间 Theta(E)；查询 (u, v) 是否有边需 O(E) 扫描
+# 构建：读入 m 条边直接 append，无需任何索引结构
+```
+
+**隐式图**（implicit graph）：网格迷宫、滑块谜题、状态空间搜索等问题的顶点数可达天文数字，显式建图反而浪费。此时不存储邻接表，而是给出"由状态算邻居"的生成函数，遍历时按需展开：
+
+```python
+# 隐式图（Python）：4 连通网格的邻居生成函数，无需显式建图
+def grid_neighbors(state, rows, cols, grid):
+    """状态 (r, c) 的邻居按需生成；BFS/DFS 框架完全不变"""
+    r, c = state
+    for dr, dc in ((-1, 0), (1, 0), (0, -1), (0, 1)):
+        nr, nc = r + dr, c + dc
+        if 0 <= nr < rows and 0 <= nc < cols and grid[nr][nc] == 0:
+            yield (nr, nc)
+```
+
+隐式图的关键纪律与显式图一致：用 `visited`（通常是哈希集合）防止状态重复入队或入栈；状态空间无上界时必须配合目标判定提前终止（BFS 逐层扩展保证无权最短路；加权场景的 A* 等启发式搜索见[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)第 6 章）。
+
+### 4.5 表示方法选择
+
+| 场景                     | 邻接矩阵   | 邻接表    | 链式前向星 | 边集数组 |
+| :----------------------- | :--------- | :-------- | :--------- | :------- |
+| 稠密图 $E = \Theta(V^2)$ | 推荐       | 浪费指针  | 不适用     | 可用     |
+| 稀疏图 $E = O(V)$        | 浪费空间   | 推荐      | 推荐       | 可用     |
+| 频繁查询边存在           | $O(1)$     | $O(\deg)$ | $O(\deg)$  | $O(E)$   |
+| Floyd-Warshall           | 必须用矩阵 | 需转换    | 需转换     | 需转换   |
+| Dijkstra/BFS/DFS         | 可用       | 推荐      | 推荐       | 需转换   |
+| Bellman-Ford/Kruskal     | 需转换     | 需转换    | 需转换     | 天然输入 |
+| 内存受限（竞赛）         | 不推荐     | 可用      | 最优       | 最优     |
+| 需要快速删除边           | $O(1)$     | $O(\deg)$ | $O(\deg)$  | $O(E)$   |
+
+网格迷宫、状态空间搜索等邻居动态生成的场景使用 4.4 节的隐式图表示，配合 `visited` 集合即可完全复用第 5 章的遍历框架。
+
+### 4.6 图的输入与构建示例
 
 ```python
 # 标准输入构建无向加权图
@@ -453,6 +499,22 @@ std::vector<int> bfs(int n, std::vector<std::vector<std::pair<int,int>>>& graph,
     }
     return dist;
 }
+```
+
+以 5.7 节的示例图为例（顶点编号 A=0、B=1、C=2、D=3、E=4；无向边 A-B、A-C、B-D、C-D、C-E、D-E）：
+
+```python
+graph = [
+    [(1, 1), (2, 1)],          # A 的邻居
+    [(0, 1), (3, 1)],          # B
+    [(0, 1), (3, 1), (4, 1)],  # C
+    [(1, 1), (2, 1), (4, 1)],  # D
+    [(2, 1), (3, 1)],          # E
+]
+dist, prev = bfs(5, graph, 0)
+# 预期输出：
+# dist = [0, 1, 1, 2, 2]    A 到 B、C 距离 1，到 D、E 距离 2
+# prev = [-1, 0, 0, 1, 2]   最短路树：B<-A、C<-A、D<-B、E<-C
 ```
 
 ### 5.2 BFS 正确性证明（Loop Invariant）
@@ -562,6 +624,17 @@ std::vector<int> dfsIterative(int n, std::vector<std::vector<std::pair<int,int>>
     }
     return order;
 }
+```
+
+在同一示例图上按邻接表顺序执行递归 DFS：
+
+```python
+disc, finish = dfs_recursive(5, graph, 0)   # graph 与 5.1 节示例相同
+# 预期输出（发现时间 disc）：
+# disc = [1, 2, 4, 3, 5]
+# 访问顺序：A(1) -> B(2) -> D(3) -> C(4) -> E(5)，深入到底再回溯
+# 完成时间 finish = [10, 9, 7, 8, 6]，满足括号化定理：
+# 区间 [1, 10] 包含其余所有区间
 ```
 
 ### 5.4 DFS 边的分类
@@ -687,736 +760,34 @@ graph TB
     style A3 fill:#69f,color:#fff
 ```
 
-## 第 6 章 最短路径算法
+### 5.8 遍历应用场景速查表
 
-### 6.1 问题定义
+| 任务                    | 推荐算法             | 关键机制              | 本篇章节 | 深水篇 |
+| :---------------------- | :------------------- | :-------------------- | :------- | :----- |
+| 无权最短路              | BFS                  | 逐层扩展              | 5.1      | —      |
+| 连通分量                | DFS 或 BFS           | 多源启动覆盖全图      | 5.6      | —      |
+| 无向图环检测            | DFS                  | 回边 + 父顶点判定     | 5.6      | —      |
+| 二分图判定              | BFS 染色             | 奇环等价判定          | 5.6      | —      |
+| 拓扑排序                | Kahn 或 DFS 后序逆序 | 入度归零 / 完成序逆序 | 第 6 章  | [拓扑排序](/algorithm/270-TopologicalSorting) |
+| 强连通分量              | Tarjan / Kosaraju    | dfn/low 与栈          | 第 7 章  | —      |
+| 割点与桥                | Tarjan low 机制      | low[v] 与 dfn[u] 比较 | 7.6      | —      |
+| 2-SAT                   | SCC 缩点             | 蕴含图强连通性        | 8.1      | —      |
+| 欧拉回路                | Hierholzer           | 度数判定 + 边回收     | 8.2      | —      |
+| 加权最短路 / 最小生成树 | 见姊妹篇             | 松弛 / Cut 性质       | —        | [最短路与最小生成树](/algorithm/115-ShortestPathAndMST) |
 
-**单源最短路径（SSSP）问题**：给定加权有向图 $G = (V, E, w)$ 与源点 $s \in V$，求 $s$ 到所有 $v \in V$ 的最短路径长度 $\delta(s, v) = \min_{p: s \to v} \sum_{e \in p} w(e)$。
+## 第 6 章 拓扑排序与 DAG
 
-**全源最短路径（APSP）问题**：对所有顶点对 $(u, v)$ 求 $\delta(u, v)$。
+本章保持概念级篇幅：DAG 定义、Kahn 与 DFS 两种线性实现（二者都是第 5 章遍历框架的直接应用）与 AOV/AOE 概念。深水内容——正确性证明、与 SCC 及关键路径法（CPM/PERT）的关系、编译器与构建系统案例——收录于专篇[拓扑排序](/algorithm/270-TopologicalSorting)。
 
-**最优子结构**：若 $s \to v$ 的最短路径为 $s \to u \to v$，则 $s \to u$ 也是最短路径。这是 Dijkstra 与 Bellman-Ford 共同的基础。
+### 6.1 DAG 与拓扑序
 
-### 6.2 松弛操作
+**定义 6.1（DAG）**：有向无环图（Directed Acyclic Graph, DAG）是不含环的有向图。
 
-所有最短路径算法的核心都是**松弛**（relaxation）操作：
+**定义 6.2（拓扑排序）**：DAG $G = (V, E)$ 的拓扑排序（topological sort）是 $V$ 的线性序 $v_1, v_2, \dots, v_n$，使得对任意 $(v_i, v_j) \in E$，$i < j$。
 
-$$\text{Relax}(u, v, w): \quad \text{if } \text{dist}[u] + w(u, v) < \text{dist}[v] \text{ then } \text{dist}[v] \leftarrow \text{dist}[u] + w(u, v)$$
+**定理 6.1**：DAG 存在拓扑排序当且仅当它是无环的。
 
-```python
-def relax(dist, prev, u, v, w):
-    """松弛边 (u, v, w)，返回是否成功松弛"""
-    if dist[u] + w < dist[v]:
-        dist[v] = dist[u] + w
-        prev[v] = u
-        return True
-    return False
-```
-
-**收敛性质**：若 $u$ 的最短路已确定（`dist[u] = δ(s, u)`），且 $(u, v) \in E$，则松弛 $(u, v)$ 后 `dist[v] = δ(s, v)`（或更早达到）。
-
-### 6.3 Dijkstra 算法
-
-Dijkstra 算法基于贪心策略，要求所有边权非负。
-
-**算法 6.1（Dijkstra 朴素实现）**：
-
-```python
-def dijkstra_naive(n, graph, start):
-    """Dijkstra 朴素实现（邻接矩阵）
-
-    时间复杂度：O(V^2)
-    适用：稠密图、V 较小
-    """
-    INF = float('inf')
-    dist = [INF] * n
-    prev = [-1] * n
-    visited = [False] * n
-    dist[start] = 0
-    for _ in range(n):
-        # 选 dist 最小的未访问顶点
-        u = -1
-        for i in range(n):
-            if not visited[i] and (u == -1 or dist[i] < dist[u]):
-                u = i
-        if u == -1 or dist[u] == INF:
-            break
-        visited[u] = True
-        for v, w in graph[u]:
-            if not visited[v] and dist[u] + w < dist[v]:
-                dist[v] = dist[u] + w
-                prev[v] = u
-    return dist, prev
-```
-
-**算法 6.2（Dijkstra 堆优化）**：
-
-```python
-import heapq
-
-def dijkstra_heap(n, graph, start):
-    """Dijkstra 堆优化实现（邻接表 + 二叉堆）
-
-    时间复杂度：O((V + E) log V)
-    适用：稀疏图、大规模图
-    关键：lazy deletion 模式跳过过期堆条目
-    """
-    INF = float('inf')
-    dist = [INF] * n
-    prev = [-1] * n
-    dist[start] = 0
-    pq = [(0, start)]              # (距离, 顶点)
-    while pq:
-        d, u = heapq.heappop(pq)
-        if d > dist[u]:            # lazy deletion：跳过过期条目
-            continue
-        for v, w in graph[u]:
-            nd = d + w
-            if nd < dist[v]:
-                dist[v] = nd
-                prev[v] = u
-                heapq.heappush(pq, (nd, v))
-    return dist, prev
-```
-
-```cpp
-#include <vector>
-#include <queue>
-#include <climits>
-// Dijkstra 堆优化实现（C++）
-std::vector<long long> dijkstra(int n, std::vector<std::vector<std::pair<int,int>>>& graph, int start) {
-    const long long INF = LLONG_MAX / 4;
-    std::vector<long long> dist(n, INF);
-    std::vector<int> prev(n, -1);
-    dist[start] = 0;
-    // 优先队列：(距离, 顶点)，小根堆
-    std::priority_queue<std::pair<long long,int>,
-                        std::vector<std::pair<long long,int>>,
-                        std::greater<>> pq;
-    pq.push({0, start});
-    while (!pq.empty()) {
-        auto [d, u] = pq.top(); pq.pop();
-        if (d > dist[u]) continue;          // lazy deletion
-        for (auto& [v, w] : graph[u]) {
-            long long nd = d + w;
-            if (nd < dist[v]) {
-                dist[v] = nd;
-                prev[v] = u;
-                pq.push({nd, v});
-            }
-        }
-    }
-    return dist;
-}
-```
-
-```java
-// Dijkstra 堆优化实现（Java）
-import java.util.*;
-
-public class Dijkstra {
-    public static long[] dijkstra(int n, List<List<int[]>> graph, int start) {
-        final long INF = Long.MAX_VALUE / 4;
-        long[] dist = new long[n];
-        int[] prev = new int[n];
-        Arrays.fill(dist, INF);
-        Arrays.fill(prev, -1);
-        dist[start] = 0;
-        // 小根堆：(距离, 顶点)
-        PriorityQueue<long[]> pq = new PriorityQueue<>((a, b) -> Long.compare(a[0], b[0]));
-        pq.offer(new long[]{0, start});
-        while (!pq.isEmpty()) {
-            long[] top = pq.poll();
-            long d = top[0];
-            int u = (int) top[1];
-            if (d > dist[u]) continue;       // lazy deletion
-            for (int[] e : graph.get(u)) {
-                int v = e[0], w = e[1];
-                long nd = d + w;
-                if (nd < dist[v]) {
-                    dist[v] = nd;
-                    prev[v] = u;
-                    pq.offer(new long[]{nd, v});
-                }
-            }
-        }
-        return dist;
-    }
-}
-```
-
-### 6.4 Dijkstra 正确性证明（贪心选择性质）
-
-**定理 6.1（Dijkstra 贪心选择性质）**：设所有边权非负，当顶点 $u$ 被从优先队列中取出时，`dist[u] = δ(s, u)`。
-
-**证明**（反证法）：设 $u$ 是第一个被取出但 `dist[u] > δ(s, u)` 的顶点。设 $s \to u$ 的真实最短路径为 $s = v_0 \to v_1 \to \dots \to v_k = u$。沿该路径存在第一个"未访问"顶点 $v_i$（$v_0 = s$ 已访问），则 $v_{i-1}$ 已访问，`dist[v_{i-1}] = δ(s, v_{i-1})`（因 $u$ 是第一个违反性质的顶点）。
-
-松弛 $(v_{i-1}, v_i)$ 后 `dist[v_i] = δ(s, v_{i-1}) + w(v_{i-1}, v_i) = δ(s, v_i)`。又因边权非负，$\delta(s, v_i) \leq \delta(s, u) < \text{dist}[u]$（最后一步用 $u$ 违反性质）。但 $v_i$ 在 $u$ 之前应被取出（`dist[v_i] < dist[u]`），与 $u$ 被先取出矛盾。
-
-**推论 6.1**：Dijkstra 算法终止时，对所有 $v \in V$，`dist[v] = δ(s, v)`。
-
-### 6.5 为何 Dijkstra 不能处理负权边
-
-```python
-# Dijkstra 负权失效反例
-# 顶点：A=0, B=1, C=2
-# 边：A->B(1), A->C(4), B->C(-3)
-# 正确答案：dist[A]=0, dist[B]=1, dist[C]=-2
-# Dijkstra 输出：dist[A]=0, dist[B]=1, dist[C]=4（错误）
-
-graph = [[(1, 1), (2, 4)], [(2, -3)], []]
-dist, _ = dijkstra_heap(3, graph, 0)
-# dist = [0, 1, 4]，但正确答案是 [0, 1, -2]
-```
-
-**失效机制**：Dijkstra 取出 $C$ 时（`dist[C] = 4`）将其标记"已访问"，但 $B$ 到 $C$ 的负权边本可使 `dist[C] = 1 + (-3) = -2 < 4`。负权边破坏了"已访问顶点不会被后续松弛"的贪心选择性质。
-
-### 6.6 Bellman-Ford 算法
-
-Bellman-Ford 通过对所有边执行 $V - 1$ 轮松弛，支持负权边与负环检测。
-
-**算法 6.3（Bellman-Ford）**：
-
-```python
-def bellman_ford(n, edges, start):
-    """Bellman-Ford 算法
-
-    输入：顶点数 n、边列表 [(u, v, w)]、源点 start
-    输出：(dist 数组, 是否存在负环)
-    时间复杂度：O(V * E)
-    空间复杂度：O(V)
-    """
-    INF = float('inf')
-    dist = [INF] * n
-    prev = [-1] * n
-    dist[start] = 0
-    # 第 k 轮松弛后，dist[v] = 至多经过 k 条边的最短路径长度
-    for _ in range(n - 1):
-        updated = False
-        for u, v, w in edges:
-            if dist[u] != INF and dist[u] + w < dist[v]:
-                dist[v] = dist[u] + w
-                prev[v] = u
-                updated = True
-        if not updated:             # 提前终止优化
-            break
-    # 第 V 轮：若仍能松弛，则存在负环
-    has_neg_cycle = False
-    for u, v, w in edges:
-        if dist[u] != INF and dist[u] + w < dist[v]:
-            has_neg_cycle = True
-            break
-    return dist, has_neg_cycle
-```
-
-```cpp
-#include <vector>
-#include <tuple>
-// Bellman-Ford（C++）
-std::pair<std::vector<long long>, bool> bellmanFord(
-    int n, std::vector<std::tuple<int,int,int>>& edges, int start) {
-    const long long INF = LLONG_MAX / 4;
-    std::vector<long long> dist(n, INF);
-    std::vector<int> prev(n, -1);
-    dist[start] = 0;
-    for (int i = 0; i < n - 1; i++) {
-        bool updated = false;
-        for (auto& [u, v, w] : edges) {
-            if (dist[u] != INF && dist[u] + w < dist[v]) {
-                dist[v] = dist[u] + w;
-                prev[v] = u;
-                updated = true;
-            }
-        }
-        if (!updated) break;
-    }
-    bool hasNegCycle = false;
-    for (auto& [u, v, w] : edges) {
-        if (dist[u] != INF && dist[u] + w < dist[v]) {
-            hasNegCycle = true;
-            break;
-        }
-    }
-    return {dist, hasNegCycle};
-}
-```
-
-### 6.7 Bellman-Ford 正确性证明
-
-**定理 6.2（Bellman-Ford 正确性）**：若图中无负环，则 $V - 1$ 轮松弛后 `dist[v] = δ(s, v)` 对所有从 $s$ 可达的 $v$ 成立。
-
-**证明**（基于路径长度归纳）：
-
-**不变式**：第 $k$ 轮松弛后，`dist[v]` 等于从 $s$ 到 $v$ 最多经过 $k$ 条边的最短路径长度。
-
-**归纳基础**：$k = 0$ 时 `dist[s] = 0`、其余为 $\infty$，对应"0 条边路径"。
-
-**归纳步骤**：设第 $k - 1$ 轮已得到所有"最多 $k - 1$ 条边"的最短路。对每条边 $(u, v)$ 松弛时，若 $u$ 的最短路已确定（至多 $k - 1$ 条边），则 `dist[v] = min(dist[v], dist[u] + w(u, v))` 即为"至多 $k$ 条边"的最短路（最后一条边是 $(u, v)$）。
-
-**上界**：无负环时，最短路径是简单路径（无重复顶点），最多 $V - 1$ 条边，故 $V - 1$ 轮足够。
-
-**负环检测**：若第 $V$ 轮仍能松弛，则存在长度 $\geq V$ 的更短路径，必含重复顶点，即负环。
-
-### 6.8 SPFA（队列优化 Bellman-Ford）
-
-SPFA（Shortest Path Faster Algorithm）只对发生松弛的顶点的出边进行松弛，平均性能优于 Bellman-Ford。
-
-```python
-from collections import deque
-
-def spfa(n, graph, start):
-    """SPFA 算法（队列优化 Bellman-Ford）
-
-    时间复杂度：平均 O(E)，最坏 O(V * E)
-    负环检测：维护 cnt[v] = s 到 v 的最短路边数，cnt[v] >= V 时存在负环
-    """
-    INF = float('inf')
-    dist = [INF] * n
-    in_queue = [False] * n
-    cnt = [0] * n              # 记录最短路边数
-    dist[start] = 0
-    in_queue[start] = True
-    q = deque([start])
-    has_neg_cycle = False
-    while q and not has_neg_cycle:
-        u = q.popleft()
-        in_queue[u] = False
-        for v, w in graph[u]:
-            if dist[u] + w < dist[v]:
-                dist[v] = dist[u] + w
-                cnt[v] = cnt[u] + 1
-                if cnt[v] >= n:                 # 边数 >= V，存在负环
-                    has_neg_cycle = True
-                    break
-                if not in_queue[v]:
-                    q.append(v)
-                    in_queue[v] = True
-    return dist, has_neg_cycle
-```
-
-### 6.9 Floyd-Warshall 全源最短路径
-
-**算法 6.4（Floyd-Warshall）**：
-
-**DP 状态**：$d^{(k)}[i][j]$ = 从 $i$ 到 $j$ 仅经过中间顶点 $\{0, 1, \dots, k-1\}$ 的最短路径长度。
-
-**转移方程**：
-
-$$d^{(k)}[i][j] = \min\left( d^{(k-1)}[i][j],\ d^{(k-1)}[i][k] + d^{(k-1)}[k][j] \right)$$
-
-**空间优化**：因 $d^{(k)}$ 仅依赖 $d^{(k-1)}$，可用二维数组滚动，甚至原地更新（注意 $k$ 必须是最外层循环）。
-
-```python
-def floyd_warshall(n, graph):
-    """Floyd-Warshall 全源最短路径
-
-    时间复杂度：O(V^3)
-    空间复杂度：O(V^2)
-    支持负权边，可检测负环（对角线 < 0）
-    """
-    INF = float('inf')
-    dist = [[INF] * n for _ in range(n)]
-    for i in range(n):
-        dist[i][i] = 0
-    for u in range(n):
-        for v, w in graph[u]:
-            dist[u][v] = min(dist[u][v], w)
-    for k in range(n):
-        for i in range(n):
-            for j in range(n):
-                if dist[i][k] + dist[k][j] < dist[i][j]:
-                    dist[i][j] = dist[i][k] + dist[k][j]
-    # 负环检测：若 dist[i][i] < 0 则存在经过 i 的负环
-    has_neg_cycle = any(dist[i][i] < 0 for i in range(n))
-    return dist, has_neg_cycle
-```
-
-```cpp
-#include <vector>
-// Floyd-Warshall（C++）
-std::pair<std::vector<std::vector<long long>>, bool> floydWarshall(
-    int n, std::vector<std::vector<std::pair<int,int>>>& graph) {
-    const long long INF = LLONG_MAX / 4;
-    std::vector<std::vector<long long>> dist(n, std::vector<long long>(n, INF));
-    for (int i = 0; i < n; i++) dist[i][i] = 0;
-    for (int u = 0; u < n; u++) {
-        for (auto& [v, w] : graph[u]) {
-            dist[u][v] = std::min(dist[u][v], (long long)w);
-        }
-    }
-    for (int k = 0; k < n; k++) {
-        for (int i = 0; i < n; i++) {
-            for (int j = 0; j < n; j++) {
-                if (dist[i][k] + dist[k][j] < dist[i][j]) {
-                    dist[i][j] = dist[i][k] + dist[k][j];
-                }
-            }
-        }
-    }
-    bool hasNegCycle = false;
-    for (int i = 0; i < n; i++) {
-        if (dist[i][i] < 0) { hasNegCycle = true; break; }
-    }
-    return {dist, hasNegCycle};
-}
-```
-
-### 6.10 Floyd-Warshall 正确性证明
-
-**定理 6.3（Floyd-Warshall 正确性）**：算法终止时 `dist[i][j] = δ(i, j)`（若无负环）。
-
-**证明**（基于 $d^{(k)}$ 的归纳定义）：
-
-**归纳基础**：$d^{(0)}[i][j] = w(i, j)$（直接边权，无边时为 $\infty$）。
-
-**归纳步骤**：设 $d^{(k-1)}[i][j]$ 已正确表示"仅经过 $\{0, \dots, k-2\}$"的最短路。考虑 $d^{(k)}[i][j]$：
-
-- 若 $i \to j$ 的最短路（限定中间顶点 $\subseteq \{0, \dots, k-1\}$）不经过 $k$，则 $d^{(k)}[i][j] = d^{(k-1)}[i][j]$。
-- 若经过 $k$，则路径可分解为 $i \to k \to j$，两段均仅经过 $\{0, \dots, k-2\}$（因 $k$ 在两段之间只出现一次，否则可去除环路），故 $d^{(k)}[i][j] = d^{(k-1)}[i][k] + d^{(k-1)}[k][j]$。
-- 取两者较小值，即转移方程。
-
-**终止**：$k = V$ 时 $d^{(V)}[i][j]$ = 任意中间顶点的最短路 = 真实最短路。
-
-### 6.11 最短路径算法对比
-
-| 算法                     | 时间复杂度                 | 空间     | 负权边 | 负环检测 | 适用场景       |
-| :----------------------- | :------------------------- | :------- | :----- | :------- | :------------- |
-| Dijkstra（朴素）         | $O(V^2)$                   | $O(V)$   | 否     | 否       | 稠密图         |
-| Dijkstra（堆）           | $O((V+E) \log V)$          | $O(V+E)$ | 否     | 否       | 稀疏图、非负权 |
-| Dijkstra（Fibonacci 堆） | $O(V \log V + E)$          | $O(V+E)$ | 否     | 否       | 理论最优       |
-| Bellman-Ford             | $O(V E)$                   | $O(V)$   | 是     | 是       | 含负权         |
-| SPFA                     | 平均 $O(E)$，最坏 $O(V E)$ | $O(V)$   | 是     | 是       | 随机数据       |
-| Floyd-Warshall           | $O(V^3)$                   | $O(V^2)$ | 是     | 是       | 全源、$V$ 较小 |
-
-### 6.12 A* 算法
-
-A* 是带启发式的最短路径算法，在路径搜索（地图导航、游戏 AI）中广泛应用。
-
-**评估函数**：$f(n) = g(n) + h(n)$，其中 $g(n)$ 是从源点到 $n$ 的实际代价，$h(n)$ 是从 $n$ 到目标的启发式估计。
-
-**可采纳性**：当 $h(n) \leq h^*(n)$（$h^*$ 是真实最短代价）时，A* 保证最优性。
-
-```python
-import heapq
-
-def astar(n, graph, start, goal, heuristic):
-    """A* 算法
-
-    输入：顶点数 n、邻接表 graph、起点 start、终点 goal、启发式函数 heuristic
-    输出：(最短距离, 路径)
-    要求：heuristic 必须可采纳（不高估真实代价）才能保证最优性
-    """
-    INF = float('inf')
-    g = [INF] * n              # g[v] = start 到 v 的实际最短代价
-    prev = [-1] * n
-    g[start] = 0
-    pq = [(heuristic(start), 0, start)]   # (f, g, 顶点)
-    while pq:
-        f, gu, u = heapq.heappop(pq)
-        if u == goal:                       # 到达目标
-            # 重建路径
-            path = []
-            v = goal
-            while v != -1:
-                path.append(v)
-                v = prev[v]
-            return gu, path[::-1]
-        if gu > g[u]:                        # lazy deletion
-            continue
-        for v, w in graph[u]:
-            gv = gu + w
-            if gv < g[v]:
-                g[v] = gv
-                prev[v] = u
-                heapq.heappush(pq, (gv + heuristic(v), gv, v))
-    return INF, []
-```
-
-### 6.13 最短路径树可视化
-
-下图展示从源点 $s$ 出发的最短路径树（SPT）结构：
-
-```mermaid
-graph TB
-    subgraph "原图"
-        S0["s"] -->|10| A0["a"]
-        S0 -->|5| B0["b"]
-        A0 -->|1| C0["c"]
-        B0 -->|3| A0
-        B0 -->|9| C0
-        B0 -->|2| D0["d"]
-        D0 -->|6| C0
-        D0 -->|7| E0["e"]
-        C0 -->|4| E0
-    end
-    subgraph "最短路径树（s 出发）"
-        S1["s<br/>d=0"] -->|5| B1["b<br/>d=5"]
-        B1 -->|3| A1["a<br/>d=8"]
-        B1 -->|2| D1["d<br/>d=7"]
-        A1 -->|1| C1["c<br/>d=9"]
-        D1 -->|7| E1["e<br/>d=14"]
-    end
-    style S0 fill:#6c6,color:#fff
-    style S1 fill:#6c6,color:#fff
-```
-
-## 第 7 章 最小生成树
-
-### 7.1 Cut 性质
-
-**定义 7.1（割）**：图 $G = (V, E)$ 的**割**（cut）是顶点集的一个划分 $(S, V \setminus S)$，其中 $S \subseteq V$、$S \neq \emptyset$、$S \neq V$。横切该割的边集为 $\delta(S) = \{ (u, v) \in E \mid u \in S, v \notin S \}$。
-
-**定理 7.1（Cut 性质）**：对任意割 $(S, V \setminus S)$，若横切边 $e$ 是 $\delta(S)$ 中权值最小的边，且所有横切边权值互不相同，则 $e$ 必属于 $G$ 的任意一棵 MST。
-
-**证明**：设 $T$ 是一棵不含 $e$ 的 MST。则 $T \cup \{e\}$ 含环 $C$，$C$ 必含另一横切边 $e'$（环穿过割的次数为偶数）。因 $w(e) < w(e')$，用 $e$ 替换 $e'$ 得到 $T' = T - \{e'\} + \{e\}$，$w(T') < w(T)$，与 $T$ 是 MST 矛盾。
-
-Cut 性质是 Kruskal 与 Prim 算法的共同基础。
-
-### 7.2 Kruskal 算法
-
-Kruskal 算法按边权递增顺序逐步加入不形成环的边，依赖并查集高效判环。
-
-**算法 7.1（Kruskal）**：
-
-```python
-class UnionFind:
-    """并查集（Union-Find）实现
-
-    支持 path compression 与 union by rank 优化
-    单次操作均摊复杂度 O(alpha(V))，其中 alpha 是反 Ackermann 函数
-    """
-    def __init__(self, n):
-        self.parent = list(range(n))
-        self.rank = [0] * n
-
-    def find(self, x):
-        # 路径压缩
-        if self.parent[x] != x:
-            self.parent[x] = self.find(self.parent[x])
-        return self.parent[x]
-
-    def union(self, x, y):
-        """合并 x、y 所在集合，返回是否成功（成功=True，已在同集合=False）"""
-        px, py = self.find(x), self.find(y)
-        if px == py:
-            return False
-        # union by rank
-        if self.rank[px] < self.rank[py]:
-            px, py = py, px
-        self.parent[py] = px
-        if self.rank[px] == self.rank[py]:
-            self.rank[px] += 1
-        return True
-
-def kruskal(n, edges):
-    """Kruskal 最小生成树算法
-
-    输入：顶点数 n、边列表 [(u, v, w)]
-    输出：(MST 总权值, MST 边列表)
-    时间复杂度：O(E log E)，主导项为排序
-    """
-    edges_sorted = sorted(edges, key=lambda e: e[2])
-    uf = UnionFind(n)
-    mst_weight = 0
-    mst_edges = []
-    for u, v, w in edges_sorted:
-        if uf.union(u, v):
-            mst_weight += w
-            mst_edges.append((u, v, w))
-            if len(mst_edges) == n - 1:
-                break
-    return mst_weight, mst_edges
-```
-
-```cpp
-#include <vector>
-#include <algorithm>
-// Kruskal（C++）
-struct DSU {
-    std::vector<int> parent, rank_;
-    DSU(int n) : parent(n), rank_(n, 0) {
-        for (int i = 0; i < n; i++) parent[i] = i;
-    }
-    int find(int x) {
-        return parent[x] == x ? x : parent[x] = find(parent[x]);
-    }
-    bool unite(int x, int y) {
-        int px = find(x), py = find(y);
-        if (px == py) return false;
-        if (rank_[px] < rank_[py]) std::swap(px, py);
-        parent[py] = px;
-        if (rank_[px] == rank_[py]) rank_[px]++;
-        return true;
-    }
-};
-
-long long kruskal(int n, std::vector<std::tuple<int,int,int>>& edges) {
-    std::sort(edges.begin(), edges.end(),
-              [](const auto& a, const auto& b) { return std::get<2>(a) < std::get<2>(b); });
-    DSU dsu(n);
-    long long total = 0;
-    int cnt = 0;
-    for (auto& [u, v, w] : edges) {
-        if (dsu.unite(u, v)) {
-            total += w;
-            if (++cnt == n - 1) break;
-        }
-    }
-    return total;
-}
-```
-
-### 7.3 Kruskal 正确性证明
-
-**定理 7.2（Kruskal 正确性）**：Kruskal 算法终止时输出的边集构成一棵 MST。
-
-**证明**（基于 Cut 性质归纳）：
-
-设 Kruskal 依次加入边 $e_1, e_2, \dots, e_{n-1}$。维护不变式：第 $k$ 步后，已加入边集 $T_k = \{e_1, \dots, e_k\}$ 是某棵 MST 的子集。
-
-**基础**：$T_0 = \emptyset$ 是任意 MST 的子集。
-
-**归纳**：设 $T_{k-1}$ 是某 MST $T^*$ 的子集。考虑 $e_k = (u, v)$，加入时 $u, v$ 在 $T_{k-1}$ 中不连通。设 $S$ 为 $u$ 在 $T_{k-1}$ 中的连通分量，则 $e_k$ 横切割 $(S, V \setminus S)$。Kruskal 按 weight 递增选择，故 $e_k$ 是 $\delta(S)$ 中尚未被考虑的边里权值最小的。
-
-需证 $e_k \in T^*$：若 $e_k \notin T^*$，由 Cut 性质（边权互异假设下），$T^*$ 中应含 $\delta(S)$ 的最小横切边 $e'$，且 $w(e') \leq w(e_k)$。但 $e'$ 必然在 $e_k$ 之前被 Kruskal 考虑过，且 $e'$ 加入时其两端不连通（否则 $T_{k-1}$ 中已有 $S$ 外的连通分量，矛盾），故 Kruskal 应已加入 $e'$ 而非 $e_k$，矛盾。
-
-### 7.4 Prim 算法
-
-Prim 算法从一个顶点出发逐步扩展 MST，依赖优先队列维护跨切边。
-
-**算法 7.2（Prim 堆优化）**：
-
-```python
-import heapq
-
-def prim(n, graph, start=0):
-    """Prim 最小生成树算法（堆优化）
-
-    输入：顶点数 n、邻接表 graph、起始顶点 start
-    输出：(MST 总权值, MST 边列表)
-    时间复杂度：O(E log V)
-    """
-    INF = float('inf')
-    in_mst = [False] * n
-    min_edge = [INF] * n          # min_edge[v] = 跨切集中到 v 的最小权
-    min_edge[start] = 0
-    prev = [-1] * n
-    pq = [(0, start)]              # (权值, 顶点)
-    mst_weight = 0
-    mst_edges = []
-    while pq:
-        w, u = heapq.heappop(pq)
-        if in_mst[u]:
-            continue
-        in_mst[u] = True
-        mst_weight += w
-        if prev[u] != -1:
-            mst_edges.append((prev[u], u, w))
-        for v, wuv in graph[u]:
-            if not in_mst[v] and wuv < min_edge[v]:
-                min_edge[v] = wuv
-                prev[v] = u
-                heapq.heappush(pq, (wuv, v))
-    return mst_weight, mst_edges
-```
-
-```cpp
-#include <vector>
-#include <queue>
-// Prim 算法（C++）
-long long prim(int n, std::vector<std::vector<std::pair<int,int>>>& graph, int start = 0) {
-    std::vector<bool> inMst(n, false);
-    std::vector<long long> minEdge(n, LLONG_MAX / 4);
-    minEdge[start] = 0;
-    std::priority_queue<std::pair<long long,int>,
-                        std::vector<std::pair<long long,int>>,
-                        std::greater<>> pq;
-    pq.push({0, start});
-    long long total = 0;
-    while (!pq.empty()) {
-        auto [w, u] = pq.top(); pq.pop();
-        if (inMst[u]) continue;
-        inMst[u] = true;
-        total += w;
-        for (auto& [v, wuv] : graph[u]) {
-            if (!inMst[v] && (long long)wuv < minEdge[v]) {
-                minEdge[v] = wuv;
-                pq.push({wuv, v});
-            }
-        }
-    }
-    return total;
-}
-```
-
-### 7.5 Prim 正确性证明
-
-**定理 7.3（Prim 正确性）**：Prim 算法终止时输出的边集构成一棵 MST。
-
-**证明**（基于 Cut 性质）：
-
-维护不变式：第 $k$ 步后，已加入边集 $T_k$ 是一棵树，且是某棵 MST 的子集。
-
-设当前 $T_k$ 覆盖的顶点集为 $S$。Prim 选择横切割 $(S, V \setminus S)$ 的最小权边 $e$。由 Cut 性质，$e$ 属于任意 MST。故 $T_{k+1} = T_k \cup \{e\}$ 仍是某 MST 的子集，且仍为树（加入横切边不形成环）。
-
-终止时 $T_{n-1}$ 含 $n - 1$ 条边且为树，必为 MST。
-
-### 7.6 Boruvka 算法（简介）
-
-Boruvka (1926) 是最早的 MST 算法，比 Kruskal 早 30 年。每轮每个连通分量同时选择其最小跨切边，加入并合并。时间 $O(E \log V)$，适合分布式计算。
-
-### 7.7 MST 算法对比
-
-| 算法                 | 时间复杂度                  | 数据结构      | 适用场景     |
-| :------------------- | :-------------------------- | :------------ | :----------- |
-| Kruskal              | $O(E \log E) = O(E \log V)$ | 排序 + 并查集 | 稀疏图       |
-| Prim（朴素）         | $O(V^2)$                    | 数组          | 稠密图       |
-| Prim（堆）           | $O(E \log V)$               | 优先队列      | 稀疏图、通用 |
-| Prim（Fibonacci 堆） | $O(E + V \log V)$           | Fibonacci 堆  | 理论最优     |
-| Boruvka              | $O(E \log V)$               | 并查集        | 分布式       |
-
-### 7.8 MST 可视化
-
-```mermaid
-graph TB
-    subgraph "原图（加权无向图）"
-        A0["A"] ---|4| B0["B"]
-        A0 ---|1| C0["C"]
-        B0 ---|5| C0
-        B0 ---|8| D0["D"]
-        C0 ---|3| D0
-        C0 ---|2| E0["E"]
-        D0 ---|6| E0
-    end
-    subgraph "Kruskal 选边顺序"
-        K1["1. A-C (w=1)"]
-        K2["2. C-E (w=2)"]
-        K3["3. C-D (w=3)"]
-        K4["4. A-B (w=4)"]
-        K5["5. B-C 跳过（成环）"]
-        K6["6. D-E 跳过（成环）"]
-    end
-    subgraph "最终 MST（总权 10）"
-        A1["A"] ---|1| C1["C"]
-        C1 ---|2| E1["E"]
-        C1 ---|3| D1["D"]
-        A1 ---|4| B1["B"]
-    end
-    style A0 fill:#69f,color:#fff
-    style A1 fill:#69f,color:#fff
-```
-
-## 第 8 章 拓扑排序与 DAG
-
-### 8.1 DAG 与拓扑序
-
-**定义 8.1（DAG）**：有向无环图（Directed Acyclic Graph, DAG）是不含环的有向图。
-
-**定义 8.2（拓扑排序）**：DAG $G = (V, E)$ 的拓扑排序（topological sort）是 $V$ 的线性序 $v_1, v_2, \dots, v_n$，使得对任意 $(v_i, v_j) \in E$，$i < j$。
-
-**定理 8.1**：DAG 存在拓扑排序当且仅当它是无环的。
-
-### 8.2 Kahn 算法（BFS 入度法）
+### 6.2 Kahn 算法（BFS 入度法）
 
 ```python
 from collections import deque
@@ -1473,7 +844,7 @@ std::vector<int> topologicalSortKahn(int n, std::vector<std::vector<std::pair<in
 }
 ```
 
-### 8.3 DFS 后序逆序法
+### 6.3 DFS 后序逆序法
 
 ```python
 def topological_sort_dfs(n, graph):
@@ -1506,7 +877,7 @@ def topological_sort_dfs(n, graph):
     return order[::-1]                  # 后序逆序
 ```
 
-### 8.4 DAG 上的最长/最短路径
+### 6.4 DAG 上的最长/最短路径
 
 DAG 上的最短/最长路径可在 $O(V + E)$ 内求解，无需 Dijkstra 或 Bellman-Ford。
 
@@ -1543,7 +914,9 @@ def dag_longest_path(n, graph, start):
     return [-d if d != float('inf') else float('inf') for d in dist]
 ```
 
-### 8.5 AOV 网与 AOE 网
+> 注：DAG 最短路径按拓扑序一趟松弛即可完成，是最短路问题在无环图上的特例；一般图的单源/全源最短路径（Dijkstra、Bellman-Ford、Floyd-Warshall）见[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)。
+
+### 6.5 AOV 网与 AOE 网
 
 **AOV 网（Activity On Vertex）**：顶点表示活动，边表示先后关系。拓扑排序确定执行顺序。
 
@@ -1585,9 +958,11 @@ def critical_path(n, graph, source, sink):
     return critical
 ```
 
-## 第 9 章 强连通分量与双连通性
+## 第 7 章 强连通分量与双连通性
 
-### 9.1 Tarjan SCC 算法
+强连通分量、割点与桥是第 5 章 DFS 时间戳（5.5 节）与边分类（5.4 节）的直接应用：一次 DFS 内维护 dfn 与 low 两个数组，即可线性识别全部结构。
+
+### 7.1 Tarjan SCC 算法
 
 Tarjan 算法基于 DFS，利用 `dfn`（发现时间）与 `low`（能回溯到的最早祖先）识别强连通分量。
 
@@ -1693,7 +1068,7 @@ public:
 };
 ```
 
-### 9.2 Tarjan SCC 正确性证明
+### 7.2 Tarjan SCC 正确性证明
 
 **定理 9.1（Tarjan SCC 正确性）**：Tarjan 算法终止时输出的每个分量恰是一个 SCC。
 
@@ -1707,7 +1082,7 @@ public:
 
 **复杂度**：每个顶点被访问一次，每条边被遍历常数次，总计 $O(V + E)$。
 
-### 9.3 Kosaraju 算法
+### 7.3 Kosaraju 算法
 
 Kosaraju 算法通过两次 DFS 完成 SCC 识别：第一次在原图求后序逆序，第二次在反图按后序逆序遍历。
 
@@ -1752,7 +1127,7 @@ def kosaraju_scc(n, graph):
     return sccs
 ```
 
-### 9.4 Tarjan vs Kosaraju 对比
+### 7.4 Tarjan vs Kosaraju 对比
 
 | 维度       | Tarjan     | Kosaraju             |
 | :--------- | :--------- | :------------------- |
@@ -1762,7 +1137,7 @@ def kosaraju_scc(n, graph):
 | 实现复杂度 | 中等       | 较低                 |
 | 工程常用   | 推荐       | 教学/简洁场景        |
 
-### 9.5 SCC 缩点与 DAG
+### 7.5 SCC 缩点与 DAG
 
 将每个 SCC 缩为单个"超级顶点"，得到的新图必为 DAG。这是求解"加边使图强连通"等问题的标准预处理。
 
@@ -1787,9 +1162,9 @@ def shrink_scc(n, graph, sccs):
     return scc_id, dag
 ```
 
-### 9.6 割点与桥
+### 7.6 割点与桥
 
-**定义 8.3**：
+**定义 7.3**：
 
 - **割点（Articulation Point）**：无向图中删除该点（及关联边）后图不再连通；
 - **桥（Bridge）**：无向图中删除该边后图不再连通。
@@ -1828,7 +1203,7 @@ def find_bridges(n, graph):
     return bridges
 ```
 
-### 9.7 SCC 结构可视化
+### 7.7 SCC 结构可视化
 
 ```mermaid
 graph TB
@@ -1856,9 +1231,11 @@ graph TB
     style D1 fill:#69f,color:#fff
 ```
 
-## 第 10 章 进阶图算法
+## 第 8 章 进阶遍历算法
 
-### 10.1 2-SAT 问题
+本章收录以第 5 章遍历或其衍生结构（SCC）为核心机制的四个经典专题。2-SAT 与二分图最大匹配的网络流解法见[网络流](/algorithm/290-NetworkFlow)。
+
+### 8.1 2-SAT 问题（SCC 应用）
 
 2-SAT（2-可满足性）是布尔可满足性的特例：每个子句恰含 2 个文字。可归约为有向图的 SCC 问题。
 
@@ -1893,15 +1270,15 @@ def two_sat(n, implications):
     return assignment
 ```
 
-### 10.2 欧拉路经与回路
+### 8.2 欧拉路径与回路
 
-**定理 10.1（Euler 1736）**：
+**定理 8.1（Euler 1736）**：
 
 - 无向图有欧拉回路当且仅当连通且所有顶点度数为偶数；
 - 无向图有欧拉路径（非回路）当且仅当连通且恰有 0 或 2 个奇度顶点；
 - 有向图有欧拉回路当且仅当弱连通且所有顶点入度等于出度。
 
-**算法 10.1（Hierholzer 算法）**：
+**算法 8.1（Hierholzer 算法）**：
 
 ```python
 def hierholzer(n, graph):
@@ -1925,7 +1302,7 @@ def hierholzer(n, graph):
     return path[::-1]
 ```
 
-### 10.3 Hamilton 路径与回路
+### 8.3 Hamilton 路径与回路
 
 Hamilton 路径/回路是经过每个顶点恰好一次的路径/回路。判定 Hamilton 回路存在性是 NP 完全问题（Karp 1972）。
 
@@ -1952,7 +1329,7 @@ def hamilton_path(n, graph):
     return any(dp[(1 << n) - 1][v] for v in range(n))
 ```
 
-### 10.4 二分图最大匹配
+### 8.4 二分图最大匹配
 
 **匈牙利算法**求二分图最大匹配，时间 $O(V E)$：
 
@@ -1983,25 +1360,11 @@ def hungarian(n_left, n_right, graph):
     return match_count
 ```
 
-### 10.5 A* 搜索过程可视化
+## 第 9 章 对比分析
 
-```mermaid
-graph TB
-    subgraph "A* 搜索（网格地图）"
-        S["起点 S<br/>g=0<br/>h=4<br/>f=4"] --> A["A<br/>g=1<br/>h=3<br/>f=4"]
-        S --> B["B<br/>g=1<br/>h=3<br/>f=4"]
-        A --> C["C<br/>g=2<br/>h=2<br/>f=4"]
-        B --> D["D<br/>g=2<br/>h=4<br/>f=6"]
-        C --> E["E<br/>g=3<br/>h=1<br/>f=4"]
-        E --> G["终点 G<br/>g=4<br/>h=0<br/>f=4"]
-    end
-    style S fill:#6c6,color:#fff
-    style G fill:#f96,color:#000
-```
+本章对比遍历类算法的工程取舍；最短路三算法与 MST 双算法的横向对比与场景选型决策表见[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)第 8 章。
 
-## 第 11 章 对比分析
-
-### 11.1 BFS vs DFS
+### 9.1 BFS vs DFS
 
 | 维度           | BFS                    | DFS                    |
 | :------------- | :--------------------- | :--------------------- |
@@ -2017,32 +1380,7 @@ graph TB
 | 内存友好性     | 队列可能宽             | 栈可能深（递归溢出）   |
 | 工程实现       | 迭代天然               | 需手动转迭代避免栈溢出 |
 
-### 11.2 Dijkstra vs Bellman-Ford vs SPFA
-
-| 维度       | Dijkstra          | Bellman-Ford | SPFA                       |
-| :--------- | :---------------- | :----------- | :------------------------- |
-| 时间复杂度 | $O((V+E) \log V)$ | $O(V E)$     | 平均 $O(E)$，最坏 $O(V E)$ |
-| 负权边     | 不支持            | 支持         | 支持                       |
-| 负环检测   | 不支持            | 支持         | 支持                       |
-| 数据结构   | 优先队列          | 边列表       | 队列                       |
-| 实现复杂度 | 中等              | 简单         | 较简单                     |
-| 稳定性     | 稳定              | 稳定         | 易被构造数据卡             |
-| 工程首选   | 是（非负权）      | 是（含负权） | 谨慎使用                   |
-
-### 11.3 Kruskal vs Prim
-
-| 维度       | Kruskal            | Prim           |
-| :--------- | :----------------- | :------------- |
-| 策略       | 全局按边权排序     | 局部扩展跨切边 |
-| 数据结构   | 排序 + 并查集      | 优先队列       |
-| 时间复杂度 | $O(E \log V)$      | $O(E \log V)$  |
-| 空间复杂度 | $O(E)$             | $O(V + E)$     |
-| 稀疏图优势 | 是                 | 否             |
-| 稠密图优势 | 否                 | 是             |
-| 适合分布式 | 是（Boruvka 更优） | 否             |
-| 实现难度   | 中等               | 中等           |
-
-### 11.4 Tarjan vs Kosaraju
+### 9.2 Tarjan vs Kosaraju
 
 | 维度       | Tarjan     | Kosaraju         |
 | :--------- | :--------- | :--------------- |
@@ -2053,7 +1391,7 @@ graph TB
 | 难度       | 较高       | 较低             |
 | 工程首选   | 是         | 教学/简单场景    |
 
-### 11.5 拓扑排序：Kahn vs DFS
+### 9.3 拓扑排序：Kahn vs DFS
 
 | 维度       | Kahn                     | DFS        |
 | :--------- | :----------------------- | :--------- |
@@ -2063,67 +1401,11 @@ graph TB
 | 输出顺序   | 字典序可调（用优先队列） | 深度优先   |
 | 工程首选   | 是                       | 是         |
 
-### 11.6 单源 vs 全源最短路径
+## 第 10 章 常见陷阱
 
-| 维度                 | 单源（Dijkstra）    | 全源（Floyd-Warshall） |
-| :------------------- | :------------------ | :--------------------- |
-| 时间复杂度           | $O((V + E) \log V)$ | $O(V^3)$               |
-| 调用 $V$ 次单源      | $O(V E \log V)$     | —                      |
-| $V$ 小（$\leq 500$） | 不一定优            | 推荐                   |
-| $V$ 大、$E$ 小       | 推荐                | 不可行                 |
-| 实现复杂度           | 中等                | 极简                   |
-| 支持负权             | 否（Dijkstra）      | 是                     |
+本章收录表示与遍历相关的典型错误；负权边、堆中过期条目、优先队列比较器等最短路与 MST 陷阱见姊妹篇第 9 章。
 
-## 第 12 章 常见陷阱
-
-### 12.1 负权边处理
-
-:::danger 错误示例
-
-```python
-# 在含负权边的图上使用 Dijkstra
-graph = [[(1, 1), (2, 4)], [(2, -3)], []]
-dist, _ = dijkstra_heap(3, graph, 0)
-# 期望：[0, 1, -2]
-# 实际：[0, 1, 4]（错误）
-```
-
-**原因**：Dijkstra 的贪心选择性质要求"已访问顶点不会被后续松弛"，负权边破坏该前提。
-:::
-
-**修正方案**：含负权边时改用 Bellman-Ford 或 SPFA。
-
-### 12.2 重边与自环
-
-:::danger 错误示例
-
-```python
-# 未处理重边：邻接表中保留所有重边，导致 Dijkstra 多次松弛浪费
-graph[0].append((1, 5))
-graph[0].append((1, 3))      # 重边，应取最小权
-```
-
-**原因**：邻接表不自动去重，重边会延长遍历时间。
-:::
-
-**修正方案**：
-
-```python
-# 方案 1：构建图时取最小权（邻接矩阵天然处理）
-def add_edge_unique(graph, u, v, w):
-    for i, (vv, ww) in enumerate(graph[u]):
-        if vv == v:
-            graph[u][i] = (v, min(ww, w))
-            return
-    graph[u].append((v, w))
-
-# 方案 2：保留重边但 Dijkstra 中 lazy deletion 自动处理
-# （会浪费常数时间，但结果正确）
-
-# 自环处理：MST 算法自动忽略（不成环）；最短路径需特殊处理（自环权为正可忽略）
-```
-
-### 12.3 不连通图
+### 10.1 不连通图
 
 :::danger 错误示例
 
@@ -2148,7 +1430,7 @@ def correct_traverse_all(graph, n):
             bfs_from(graph, s, visited)   # 每个连通分量各启动一次
 ```
 
-### 12.4 内存超限
+### 10.2 内存超限
 
 :::danger 错误示例
 
@@ -2163,7 +1445,7 @@ adj = [[0] * n for _ in range(n)]   # 10^10 项，超 100GB
 
 **修正方案**：稀疏图必须用邻接表或链式前向星，空间 $O(V + E)$。
 
-### 12.5 递归栈溢出
+### 10.3 递归栈溢出
 
 :::danger 错误示例
 
@@ -2198,91 +1480,7 @@ def dfs_iterative(graph, start, n):
                 stack.append(v)
 ```
 
-### 12.6 堆中过期条目
-
-:::danger 错误示例
-
-```python
-def dijkstra_bad(n, graph, start):
-    dist = [float('inf')] * n
-    dist[start] = 0
-    pq = [(0, start)]
-    while pq:
-        d, u = heapq.heappop(pq)
-        # 未跳过过期条目，会基于陈旧距离松弛
-        for v, w in graph[u]:
-            if dist[u] + w < dist[v]:       # dist[u] 可能已被更新
-                dist[v] = dist[u] + w
-                heapq.heappush(pq, (dist[v], v))
-```
-
-**原因**：Python `heapq` 不支持 decrease-key，堆中可能有同一顶点的多个条目。
-:::
-
-**修正方案**：见习题 `ex-graph-cf-01` 的修正版本。
-
-### 12.7 Bellman-Ford 负环检测遗漏
-
-:::danger 错误示例
-
-```python
-# 从单源点松弛，若负环不与源点连通则检测不到
-def bad_neg_cycle(n, edges, start=0):
-    dist = [float('inf')] * n
-    dist[start] = 0
-    # ... V-1 轮松弛 ...
-    # 第 V 轮检测：仅能检测源点可达的负环
-```
-
-**原因**：Bellman-Ford 仅松弛源点可达的边。
-:::
-
-**修正方案**：将所有顶点距离初始化为 0（虚拟源点技巧），见习题 `ex-graph-cf-02`。
-
-### 12.8 优先队列比较器错误
-
-:::danger 错误示例
-
-```cpp
-// C++ 中使用大根堆而非小根堆
-std::priority_queue<std::pair<int,int>> pq;   // 默认大根堆，Dijkstra 应使用小根堆
-```
-
-**原因**：C++ `priority_queue` 默认是 `std::less` 即大根堆。
-:::
-
-**修正方案**：
-
-```cpp
-#include <queue>
-#include <vector>
-// 小根堆：greater 比较
-std::priority_queue<std::pair<long long,int>,
-                    std::vector<std::pair<long long,int>>,
-                    std::greater<>> pq;
-```
-
-### 12.9 并查集未路径压缩
-
-:::danger 错误示例
-
-```python
-class BadUF:
-    def __init__(self, n):
-        self.parent = list(range(n))
-    def find(self, x):
-        # 未路径压缩，find 最坏 O(n)
-        while self.parent[x] != x:
-            x = self.parent[x]
-        return x
-```
-
-**原因**：未做路径压缩与 union by rank，复杂度退化为 $O(n)$。
-:::
-
-**修正方案**：使用路径压缩 + union by rank（见 7.2 节）。
-
-### 12.10 拓扑排序遗漏环检测
+### 10.4 拓扑排序遗漏环检测
 
 :::danger 错误示例
 
@@ -2309,9 +1507,11 @@ def topo_bad(n, graph):
 
 **修正方案**：返回前必须检查 `len(order) == n`，否则返回 `None` 表示存在环。
 
-## 第 13 章 工程实践
+## 第 11 章 工程实践
 
-### 13.1 社交网络分析
+本章选取以图结构与遍历为核心的工程场景；路由协议与地图导航（Dijkstra、Bellman-Ford、A* 的工程化）见姊妹篇第 10 章。
+
+### 11.1 社交网络分析
 
 社交网络天然是图结构：顶点为用户，边为好友/关注关系。常见任务：
 
@@ -2346,52 +1546,7 @@ def adamic_adar(graph, u, v):
     return sum(1.0 / math.log(len(graph[w])) for w in common if len(graph[w]) > 1)
 ```
 
-### 13.2 路由算法与网络协议
-
-互联网路由协议本质上是最短路径算法的工程化实现：
-
-- **OSPF（Open Shortest Path First）**：基于 Dijkstra 算法，每台路由器维护完整的链路状态数据库（LSDB），独立计算以自身为源的最短路径树；
-- **RIP（Routing Information Protocol）**：基于 Bellman-Ford 思想，距离向量算法，最大跳数 15 防止计数到无穷；
-- **BGP（Border Gateway Protocol）**：基于路径向量（Path Vector）算法，避免 Bellman-Ford 的计数到无穷问题，通过 AS_PATH 属性检测环路。
-
-```python
-import heapq
-def ospf_routing(routers, links, source):
-    """OSPF 协议核心：Dijkstra 计算最短路径树
-
-    参数:
-        routers: 路由器 ID 列表
-        links: 链路字典 {(u, v): cost}
-        source: 源路由器 ID
-
-    返回:
-        dict: 每个目的路由器的 (距离, 下一跳)
-    """
-    # 构建邻接表
-    adj = {r: [] for r in routers}
-    for (u, v), cost in links.items():
-        adj[u].append((v, cost))
-        adj[v].append((u, cost))
-
-    dist = {r: float('inf') for r in routers}
-    next_hop = {r: None for r in routers}
-    dist[source] = 0
-    pq = [(0, source, None)]
-    while pq:
-        d, u, nh = heapq.heappop(pq)
-        if d > dist[u]:
-            continue
-        for v, w in adj[u]:
-            # 下一跳判定：源直连则下一跳为 v，否则继承父节点下一跳
-            new_nh = v if u == source else nh
-            if dist[u] + w < dist[v]:
-                dist[v] = dist[u] + w
-                next_hop[v] = new_nh
-                heapq.heappush(pq, (dist[v], v, new_nh))
-    return {r: (dist[r], next_hop[r]) for r in routers if r != source}
-```
-
-### 13.3 推荐系统与图嵌入
+### 11.2 推荐系统与图嵌入
 
 现代推荐系统将用户、物品、标签建模为二分图或多部图，通过图神经网络（GNN）学习顶点嵌入：
 
@@ -2438,7 +1593,7 @@ def deepwalk_embedding(graph, walks_per_node=10, walk_length=40, dim=128):
     return walks
 ```
 
-### 13.4 依赖解析与构建系统
+### 11.3 依赖解析与构建系统
 
 软件构建系统（Make、Bazel、CMake）与包管理器（npm、pip、cargo）使用 DAG 表示任务依赖，拓扑排序确定构建顺序：
 
@@ -2491,73 +1646,19 @@ def detect_circular_dependency(packages):
     return None
 ```
 
-### 13.5 地图导航与物流路径规划
-
-Google Maps、高德地图等导航应用的核心是 A* 算法 + 分层道路网：
-
-- **道路网分层**：高速公路层、主干道层、支路层分别建图，跨层时使用骨架图（Contracted Graph）加速；
-- _*A* 启发函数_*：欧氏距离 / 曼哈顿距离 / 球面大圆距离作为下界，保证 admissible；
-- **Contraction Hierarchies（CH）**：预处理阶段对顶点按重要性排序并添加 shortcut 边，查询阶段双向 Dijkstra 在 CH 上加速至毫秒级；
-- **车辆路径问题（VRP）**：结合 MST + 局部搜索（2-opt、Or-opt）求解带容量约束的多车配送。
-
-```python
-import heapq
-import math
-def astar_grid(grid, start, goal):
-    """A* 算法在二维网格地图上的实现（4 连通）
-
-    参数:
-        grid: 二维数组，0 表示可通行，1 表示障碍
-        start, goal: (row, col) 元组
-
-    返回:
-        list or None: 路径坐标列表，无可达路径返回 None
-    """
-    rows, cols = len(grid), len(grid[0])
-
-    def heuristic(a, b):
-        return abs(a[0] - b[0]) + abs(a[1] - b[1])
-
-    g_score = {start: 0}
-    f_score = {start: heuristic(start, goal)}
-    pq = [(f_score[start], start)]
-    came_from = {}
-
-    while pq:
-        _, current = heapq.heappop(pq)
-        if current == goal:
-            path = [current]
-            while current in came_from:
-                current = came_from[current]
-                path.append(current)
-            return list(reversed(path))
-        for dr, dc in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nr, nc = current[0] + dr, current[1] + dc
-            neighbor = (nr, nc)
-            if not (0 <= nr < rows and 0 <= nc < cols):
-                continue
-            if grid[nr][nc] == 1:
-                continue
-            tentative = g_score[current] + 1
-            if tentative < g_score.get(neighbor, float('inf')):
-                came_from[neighbor] = current
-                g_score[neighbor] = tentative
-                f_score[neighbor] = tentative + heuristic(neighbor, goal)
-                heapq.heappush(pq, (f_score[neighbor], neighbor))
-    return None
-```
-
-### 13.6 数据库查询优化
+### 11.4 数据库查询优化
 
 关系数据库的查询优化器将 SQL 查询计划建模为图：
 
 - **连接顺序优化**：多表 JOIN 等价于在查询图上寻找最小成本连接树（NP-hard，常用动态规划或贪心）；
 - **传递闭包**：递归 CTE 利用 SCC 或 Floyd-Warshall 计算传递闭包，支持组织架构、好友关系查询；
-- **图数据库**：Neo4j、JanusGraph 等原生图数据库使用邻接表存储 + 索引自由邻接遍历，O(1) 边扩展避免关系数据库的 JOIN 雪崩。
+- **图数据库**：Neo4j、JanusGraph 等原生图数据库使用邻接表存储 + 索引自由邻接遍历，O(1) 边扩展避免关系数据库的 JOIN 雪崩。其中传递闭包所需的 Floyd-Warshall 实现见[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)第 5 章。
 
-## 第 14 章 案例研究
+## 第 12 章 案例研究
 
-### 14.1 Google PageRank 算法
+本章通过五个工业级案例展示图模型的实际形态；涉及的遍历机制见第 5-7 章，最短路相关工程场景见姊妹篇第 10 章。
+
+### 12.1 Google PageRank 算法
 
 PageRank 是 Google 创始人 Larry Page 与 Sergey Brin 于 1998 年提出的网页排名算法，将互联网建模为有向图（顶点为网页，边为超链接），通过随机游走平稳分布衡量页面重要性。
 
@@ -2613,7 +1714,7 @@ def pagerank(graph, num_vertices, damping=0.85, max_iter=100, tol=1e-6):
 - 实际工程中 Google 使用 MapReduce 并行化迭代，每次迭代处理数十亿顶点；
 - Personalized PageRank 将重启分布从均匀分布替换为用户偏好向量，应用于推荐系统。
 
-### 14.2 Git 的 DAG 模型
+### 12.2 Git 的 DAG 模型
 
 Git 内容寻址存储基于有向无环图（DAG）：
 
@@ -2649,7 +1750,7 @@ graph TB
 - `git rebase`：将一系列 commit 在新基点上重放，需保持拓扑序；
 - `git blame`：对每行代码反向追溯历史，使用路径分割算法（path splitting）定位引入 commit。
 
-### 14.3 Docker 镜像分层与依赖
+### 12.3 Docker 镜像分层与依赖
 
 Docker 镜像由多个只读层（layer）组成，每层对应 Dockerfile 中的一条指令，层之间形成有向无环图：
 
@@ -2678,7 +1779,7 @@ def docker_layer_reuse(layers_new, layers_cached):
     return reuse_count
 ```
 
-### 14.4 社交网络好友推荐
+### 12.4 社交网络好友推荐
 
 微信、LinkedIn 等平台基于图算法推荐"你可能认识的人"：
 
@@ -2706,7 +1807,7 @@ def friend_recommendation(graph, user, top_k=10):
     return ranked[:top_k]
 ```
 
-### 14.5 编译器 SSA 与支配树
+### 12.5 编译器 SSA 与支配树
 
 编译器静态单赋值（SSA）形式构建依赖支配树（Dominator Tree），支配树本质上是控制流图的特殊生成树：
 
@@ -2715,7 +1816,11 @@ def friend_recommendation(graph, user, top_k=10):
 - **Lengauer-Tarjan 算法**：$O(|V| + |E| \alpha(|V|, |E|))$ 近似线性时间构建支配树；
 - **支配前沿**：SSA 构造中插入 $\phi$ 函数的位置依据支配前沿计算。
 
-### 填空题知识点讲解
+## 第 13 章 习题与自测
+
+本章习题聚焦表示与遍历；Dijkstra 复杂度填空与 Dijkstra、Kruskal 代码修正题见[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)第 11 章。
+
+### 13.1 填空题知识点讲解
 
 **习题 1（ex-graph-fb-01，记忆）**：在含 $V$ 个顶点、$E$ 条边的无向图邻接表表示中，存储空间复杂度为 ____。
 
@@ -2725,117 +1830,13 @@ def friend_recommendation(graph, user, top_k=10):
 
 ---
 
-**习题 2（ex-graph-fb-02，理解）**：Dijkstra 算法在含 $V$ 个顶点、$E$ 条边的稀疏图上使用二叉堆实现时，时间复杂度为 ____。
-
-**解析讲解**：$O((V + E) \log V)$
-
-**解析讲解**：每个顶点至多入堆一次，每次出堆 $O(\log V)$，共 $V$ 次；每条边 $(u, v)$ 触发松弛时若成功则入堆，每次入堆 $O(\log V)$，共至多 $E$ 次松弛。总时间 $O(V \log V + E \log V) = O((V + E) \log V)$。若使用 Fibonacci 堆可降至 $O(V \log V + E)$。
-
----
-
 **习题 3（ex-graph-fb-03，理解）**：Tarjan 强连通分量算法中，顶点 $u$ 成为 SCC 根的判定条件是 ____。
 
 **解析讲解**：`dfn[u] == low[u]`
 
 **解析讲解**：`dfn[u]` 是 $u$ 在 DFS 中的发现时间，`low[u]` 是 $u$ 通过至多一条回边或树边能回溯到的最早祖先的 `dfn`。当 `dfn[u] == low[u]` 时，$u$ 无法回溯到更早的顶点，故 $u$ 是其所在 SCC 的根，此时弹栈至 $u$ 即得一个 SCC。
 
-### 15.3 代码修正题
-
-**习题 7（ex-graph-cf-01，应用）**：以下 Dijkstra 实现存在 Bug，请指出并修正。
-
-```python
-import heapq
-def dijkstra(n, graph, start):
-    dist = [float('inf')] * n
-    dist[start] = 0
-    pq = [(0, start)]
-    while pq:
-        d, u = heapq.heappop(pq)
-        for v, w in graph[u]:
-            if dist[u] + w < dist[v]:
-                dist[v] = dist[u] + w
-                heapq.heappush(pq, (dist[v], v))
-    return dist
-```
-
-**Bug**：弹出顶点时未判断 `d > dist[u]`，导致同一顶点的过期堆条目被重复处理，时间复杂度退化为 $O(E \log E)$（堆中可能堆积大量过期条目）。
-
-**修正**：
-
-```python
-import heapq
-def dijkstra_fixed(n, graph, start):
-    dist = [float('inf')] * n
-    dist[start] = 0
-    pq = [(0, start)]
-    while pq:
-        d, u = heapq.heappop(pq)
-        if d > dist[u]:          # 关键修复：跳过过期条目
-            continue
-        for v, w in graph[u]:
-            if dist[u] + w < dist[v]:
-                dist[v] = dist[u] + w
-                heapq.heappush(pq, (dist[v], v))
-    return dist
-```
-
----
-
-**习题 8（ex-graph-cf-02，分析）**：以下 Kruskal 实现存在 Bug，请指出并修正。
-
-```python
-def kruskal(n, edges):
-    edges.sort(key=lambda e: e[2])
-    parent = list(range(n))
-    mst = []
-    def find(x):
-        while parent[x] != x:
-            x = parent[x]
-        return x
-    for u, v, w in edges:
-        if find(u) != find(v):
-            mst.append((u, v, w))
-            parent[v] = u          # Bug 在此
-    return mst
-```
-
-**Bug**：`parent[v] = u` 直接修改了 `v` 的父指针，但 `v` 可能是某连通分量的根，导致其子树与 `v` 脱离。应使用 `union` 操作合并两个根，且应按秩或按大小合并以保证 $O(\alpha(V))$ 均摊复杂度。
-
-**修正**：
-
-```python
-def kruskal_fixed(n, edges):
-    edges.sort(key=lambda e: e[2])
-    parent = list(range(n))
-    rank = [0] * n
-    mst = []
-
-    def find(x):
-        # 路径压缩
-        while parent[x] != x:
-            parent[x] = parent[parent[x]]
-            x = parent[x]
-        return x
-
-    def union(x, y):
-        rx, ry = find(x), find(y)
-        if rx == ry:
-            return False
-        # 按秩合并
-        if rank[rx] < rank[ry]:
-            rx, ry = ry, rx
-        parent[ry] = rx
-        if rank[rx] == rank[ry]:
-            rank[rx] += 1
-        return True
-
-    for u, v, w in edges:
-        if union(u, v):
-            mst.append((u, v, w))
-    return mst
-```
-
-### 16.1 教材与综合参考
+## 第 14 章 参考文献
 
 1. **Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C.** (2022). _Introduction to Algorithms_ (4th ed.). MIT Press.  
    — 简称 CLRS 4th，本领域权威教材，覆盖图算法全部核心内容，第 20-26 章详述 BFS/DFS/MST/单源/全源最短路/最大流。
@@ -2849,59 +1850,37 @@ def kruskal_fixed(n, edges):
 4. **West, D. B.** (2001). _Introduction to Graph Theory_ (2nd ed.). Prentice Hall.  
    — 本科高年级/研究生教材，证明风格严谨，习题丰富。
 
-### 16.2 经典原始论文
-
 5. **Euler, L.** (1741). Solutio problematis ad geometriam situs pertinentis. _Commentarii Academiae Scientiarum Petropolitanae_, 8, 128-140.  
    — 图论开山之作，解决柯尼斯堡七桥问题，奠定图论学科基础。
 
-6. **Dijkstra, E. W.** (1959). A note on two problems in connexion with graphs. _Numerische Mathematik_, 1(1), 269-271. https://doi.org/10.1007/BF01386390  
-   — Dijkstra 算法原始文献，20 世纪最具影响力算法之一。
-
-7. **Kruskal, J. B.** (1956). On the shortest spanning subtree of a graph and the traveling salesman problem. _Proceedings of the American Mathematical Society_, 7(1), 48-50.  
-   — Kruskal 算法原始文献，贪心策略求 MST。
-
-8. **Prim, R. C.** (1957). Shortest connection networks and some generalizations. _Bell System Technical Journal_, 36(6), 1389-1401.  
-   — Prim 算法原始文献，源自电话网络优化工程。
-
-9. **Bellman, R.** (1958). On a routing problem. _Quarterly of Applied Mathematics_, 16(1), 87-90.  
-   — Bellman-Ford 算法原始文献，动态规划思想在最短路径中的应用。
-
-10. **Floyd, R. W.** (1962). Algorithm 97: Shortest path. _Communications of the ACM_, 5(6), 345. https://doi.org/10.1145/367766.368168  
-    — Floyd-Warshall 算法原始文献，全源最短路径 DP。
-
-11. **Warshall, S.** (1962). A theorem on boolean matrices. _Journal of the ACM_, 9(1), 11-12.  
-    — 传递闭包算法，与 Floyd 算法形式相同。
-
-12. **Tarjan, R. E.** (1972). Depth-first search and linear graph algorithms. _SIAM Journal on Computing_, 1(2), 146-160. https://doi.org/10.1137/0201010  
+6. **Tarjan, R. E.** (1972). Depth-first search and linear graph algorithms. _SIAM Journal on Computing_, 1(2), 146-160. https://doi.org/10.1137/0201010  
     — DFS 线性时间算法奠基之作，涵盖 SCC、拓扑排序、双连通分量。
 
-13. **Kosaraju, S. R.** (1978). Traversing directed graphs in lexicographic order. In _Conference Record of the Ninth Annual ACM Symposium on Theory of Computing_ (pp. 178-182).  
+7. **Kosaraju, S. R.** (1978). Traversing directed graphs in lexicographic order. In _Conference Record of the Ninth Annual ACM Symposium on Theory of Computing_ (pp. 178-182).  
     — Kosaraju SCC 算法，两次 DFS 识别强连通分量。
 
-### 16.3 应用与现代扩展
-
-14. **Page, L., Brin, S., Motwani, R., & Winograd, T.** (1999). _The PageRank citation ranking: Bringing order to the web_ (Technical Report 1999-66). Stanford InfoLab.  
+8. **Page, L., Brin, S., Motwani, R., & Winograd, T.** (1999). _The PageRank citation ranking: Bringing order to the web_ (Technical Report 1999-66). Stanford InfoLab.  
     — Google 搜索引擎核心算法，PageRank 在图上的随机游走。
 
-15. **CP-Algorithms Contributors.** (2024). _Graph Algorithms — CP-Algorithms_. Retrieved December 1, 2024, from https://cp-algorithms.com/graph/  
+9. **CP-Algorithms Contributors.** (2024). _Graph Algorithms — CP-Algorithms_. Retrieved December 1, 2024, from https://cp-algorithms.com/graph/  
     — 竞赛算法社区维护的图算法参考，包含工程实现细节与边界条件处理。
 
-### 16.4 补充阅读
-
-16. **Sedgewick, R., & Wayne, K.** (2011). _Algorithms_ (4th ed.). Addison-Wesley Professional.  
+10. **Sedgewick, R., & Wayne, K.** (2011). _Algorithms_ (4th ed.). Addison-Wesley Professional.  
     — Java 实现丰富，图算法可视化直观。
 
-17. **Kleinberg, J., & Tardos, É.** (2006). _Algorithm Design_. Pearson.  
+11. **Kleinberg, J., & Tardos, É.** (2006). _Algorithm Design_. Pearson.  
     — 算法设计技巧与图论建模案例丰富，第 3-7 章覆盖图算法核心。
 
-18. **Dasgupta, S., Papadimitriou, C. H., & Vazirani, U. V.** (2006). _Algorithms_. McGraw-Hill.  
+12. **Dasgupta, S., Papadimitriou, C. H., & Vazirani, U. V.** (2006). _Algorithms_. McGraw-Hill.  
     — Berkeley 教材，证明简洁，适合本科入门。
 
-## 第 17 章 延伸阅读
+注：Dijkstra (1959)、Kruskal (1956)、Prim (1957)、Bellman (1958)、Floyd (1962)、Warshall (1962) 的原始文献见[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)第 12 章。
 
-本章提供图算法的进阶学习路径，按主题分类推荐相关模块与外部资源。
+## 第 15 章 延伸阅读
 
-### 17.1 关联模块
+本章提供图算法的进阶学习路径，按主题分类推荐相关模块与外部资源。拆分后的姊妹篇[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)与深水篇（250、260、270）的资源索引见各篇文末。
+
+### 15.1 关联模块
 
 以下 FANDEX 模块与本图算法文档存在强关联，建议结合学习：
 
@@ -2913,7 +1892,7 @@ def kruskal_fixed(n, edges):
 6. **algorithm/分治算法**：分治在图算法中应用较少，但最近点对、平面图判定等问题使用分治策略。
 7. **math/离散数学**：图论的形式化基础（集合、关系、二元关系、等价关系、偏序关系）来自离散数学。
 
-### 17.2 进阶主题
+### 15.2 进阶主题
 
 掌握本档核心内容后，建议继续研读以下进阶主题：
 
@@ -2923,7 +1902,7 @@ def kruskal_fixed(n, edges):
 - **随机化图算法**：Karger 最小割随机算法、随机化 MST、Monte Carlo 连通性判定；
 - **图神经网络（GNN）**：GCN、GraphSAGE、GAT、GIN 等深度学习模型，将图算法与神经网络结合，应用于推荐、药物发现、社交分析。
 
-### 17.3 算法竞赛资源
+### 15.3 算法竞赛资源
 
 - **Codeforces**：图论专题（Graphs、Shortest Paths、Trees、Flows），按难度分级训练；
 - **AtCoder**：Regular Contest 中图论题难度梯度合理，适合系统训练；
@@ -2931,7 +1910,7 @@ def kruskal_fixed(n, edges):
 - **洛谷**：中文社区图论题单，含详细题解与标签筛选；
 - **CP-Algorithms**（https://cp-algorithms.com/）：算法竞赛百科，图算法章节覆盖面广且实现规范。
 
-### 17.4 学术会议与期刊
+### 15.4 学术会议与期刊
 
 - **SODA**（ACM-SIAM Symposium on Discrete Algorithms）：图算法顶级会议；
 - **STOC / FOCS**：理论计算机科学顶会，含图论复杂度与图算法；
@@ -2939,23 +1918,23 @@ def kruskal_fixed(n, edges):
 - **SIAM Journal on Computing**（SICOMP）：Tarjan 1972 DFS 算法发表于此；
 - **Algorithmica**：算法工程与实验研究期刊。
 
-### 17.5 推荐学习路径
+### 15.5 推荐学习路径
 
-针对不同背景的读者，推荐以下学习路径：
+针对不同背景的读者，推荐以下学习路径（"本篇"指本篇《图算法：表示与遍历》，"姊妹篇"指[最短路与最小生成树](/algorithm/115-ShortestPathAndMST)）：
 
 **初学者路径（无图论基础）**：
 
 1. 阅读 West《Introduction to Graph Theory》第 1-4 章建立图论直觉
-2. 学习本档第 3-5 章（形式化定义、表示、BFS/DFS）
-3. 学习本档第 6 章（最短路径）Dijkstra 与 Bellman-Ford
-4. 完成本档第 15 章习题 1-6（填空与选择）
+2. 学习本篇第 3-5 章（形式化定义、表示、BFS/DFS）
+3. 学习姊妹篇第 2-4 章（松弛、Dijkstra、Bellman-Ford）
+4. 完成本篇第 13 章与姊妹篇第 11 章的习题
 5. 在 CP-Algorithms 上对应章节阅读工程实现
 
 **进阶路径（有图论基础）**：
 
-1. 学习本档第 7-9 章（MST、拓扑排序、SCC）
+1. 学习本篇第 6-7 章（拓扑排序、SCC）与姊妹篇第 7 章（MST）
 2. 阅读 CLRS 4th 第 20-26 章对照证明
-3. 完成本档第 15 章习题 7-10（代码修正与开放性）
+3. 学习深水篇：[/algorithm/250-FloydWarshall](/algorithm/250-FloydWarshall)、[/algorithm/260-KruskalAlgorithm](/algorithm/260-KruskalAlgorithm)、[/algorithm/270-TopologicalSorting](/algorithm/270-TopologicalSorting)
 4. 学习 algorithm/网络流（Ford-Fulkerson、Dinic）
 5. 在 Codeforces 上训练 Graphs 专题 1800+ 难度题
 
@@ -2967,14 +1946,14 @@ def kruskal_fixed(n, edges):
 4. 阅读近期 SODA/STOC 图算法论文
 5. 尝试实现 GraphSAGE / GAT 等图神经网络模型
 
-### 17.6 社区与讨论
+### 15.6 社区与讨论
 
 - **Stack Overflow [graph-algorithm] 标签**：工程实现问题；
 - **Mathematics Stack Exchange [graph-theory] 标签**：理论证明问题；
 - **Reddit r/compsci / r/algorithms**：算法学习讨论；
 - **GitHub 算法仓库**：`keon/algorithms`（Python）、`TheAlgorithms/C-Plus-Plus`、`TheAlgorithms/Java` 提供多语言参考实现。
 
-### 17.7 致谢
+### 15.7 致谢
 
 本文档由 FANDEX Content Engineering 团队编写，参考了 CLRS 4th、Bondy & Murty、CP-Algorithms 等权威资料。感谢 Leonhard Euler（图论奠基）、Edsger Dijkstra（最短路径）、Robert Tarjan（DFS 与 SCC）等先贤的奠基性工作。文档中如有疏漏或错误，欢迎在项目仓库提交 Issue 或 Pull Request。
 

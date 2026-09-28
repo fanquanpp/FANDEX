@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 120
 title: 缓存穿透击穿雪崩
 module: 'redis'
 category: 数据库

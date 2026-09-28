@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 210
 title: 并查集
 module: 'algorithm'
 category: 计算机科学

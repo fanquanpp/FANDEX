@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 340
 title: 物理复制槽
 module: 'postgresql'
 category: 数据库

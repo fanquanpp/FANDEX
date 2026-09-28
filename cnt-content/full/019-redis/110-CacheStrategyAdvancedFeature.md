@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 110
 title: 缓存策略与高级特性
 module: 'redis'
 category: 数据库

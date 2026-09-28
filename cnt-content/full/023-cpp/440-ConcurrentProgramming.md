@@ -1,712 +1,277 @@
 ---
 order: 420
-title: 并发编程
+title: 并发工程：条件变量、死锁与 future 的取舍
 module: 'cpp'
 category: 计算机科学
 difficulty: advanced
-description: C++11/14/17/20多线程编程、互斥量、条件变量、原子操作、异步编程与并发设计模式。
+description: 承接多线程入门的深水区篇：condition_variable 生产者消费者完整实现与谓词防虚假唤醒、两把锁的死锁最小实验与锁排序纪律（ASan 与 TSan 都抓不到死锁，用线程序评审）、future/promise/async 取舍实验（默认策略可能根本不开线程）、shared_mutex 读写场景一句话，附忘发通知与线程 join 自己的真实报错。
 author: fanquanpp
 updated: '2026-09-27'
 related:
-  - 'cpp/750-CppModernStandardEvolution'
-  - 'cpp/240-CppSTLContainersIterators'
-  - 'cpp/170-CppCoreGuidelinesResourceManagement'
-  - 'cpp/280-CppSTLAlgorithmAndFunctionObject'
+  - 'cpp/430-MultithreadingConcurrency'
+  - 'cpp/450-CppMemoryModel'
+  - 'cpp/460-MemoryOrderLockFree'
+  - 'cpp/610-CppPerformance'
 prerequisites:
-  - 'cpp/020-CppOverviewAndModernStandard'
+  - 'cpp/430-MultithreadingConcurrency'
 ---
 
 ## 前置知识
 
-- [C++ STL 容器与迭代器](/cpp/240-CppSTLContainersIterators)：建议先完成前一篇的学习
+- 已完成 [多线程入门](/cpp/430-MultithreadingConcurrency)：会创建与 join 线程，理解数据竞争与「共享可变数据必须同步」纪律，用过 mutex、lock_guard、atomic。
+
+> 分工说明：430 建立了线程、锁、原子的最小闭环，本篇解决「多个线程要协作与排队」的工程问题：生产者消费者（条件变量）、死锁（成因与纪律）、异步结果（future/promise/async）。atomic 的内存序细节属于 450/460 两篇，本文不展开。
 
 ## 学习目标
 
-- 掌握「1. C++ 并发编程概述」的核心机制、典型用法与常见陷阱
-- 掌握「2. 线程管理」的核心机制、典型用法与常见陷阱
-- 掌握「3. 互斥量与锁」的核心机制、典型用法与常见陷阱
-- 掌握「4. 条件变量」的核心机制、典型用法与常见陷阱
-- 掌握「5. 原子操作」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用 mutex 加 condition_variable 写出完整的生产者消费者，并解释谓词版 wait 为什么不可省；
+2. 亲手制造一次死锁，记住「锁排序」与 `std::scoped_lock` 两条避免纪律；
+3. 为「要并发结果」的任务在 thread/promise、async 之间做取舍，并说出默认启动策略的坑；
+4. 判断一个卡死的程序是死锁还是忘发通知，并知道为什么 ASan 与 TSan 都帮不上忙。
 
+预计 60 到 90 分钟。
 
-## 1. C++ 并发编程概述
+## 1. 你现在要解决什么问题
 
-### 1.1 并发与并行
-
-- **并发（Concurrency）**：多个任务在逻辑上同时推进，可能在单核上交替执行
-- **并行（Parallelism）**：多个任务在物理上同时执行，需要多核处理器
-
-### 1.2 C++ 线程支持演进
-
-| 标准  | 新增特性                                                  |
-| :---- | :-------------------------------------------------------- |
-| C++11 | 线程库、mutex、condition_variable、atomic、future/promise |
-| C++14 | shared_mutex（读写锁）、shared_timed_mutex                |
-| C++17 | 并行STL算法                                               |
-| C++20 | jthread（自动join）、协程、信号量、latch、barrier         |
-
-## 2. 线程管理
-
-### 2.1 创建与启动线程
+430 篇的缩放任务是「各干各的」，线程间不需要沟通。现在换个形状：一个线程往任务队列里塞任务（生产者），一个线程取任务处理（消费者）。难点在节奏——队列空的时候消费者干什么？
 
 ```cpp
+while (tasks.empty()) { }   // 忙等：烧着一个核心什么都不干
+```
+
+忙等能跑，但空转的核心是纯浪费。你想要的是「没活就睡，来活就被叫醒」——这正是条件变量的职责。
+
+## 2. 核心概念一：condition_variable 生产者消费者
+
+```cpp
+// producer_consumer.cpp
+#include <condition_variable>
 #include <iostream>
-#include <thread>
-#include <string>
-#include <vector>
-
-// 方式1：函数指针
-void print_message(const std::string& msg) {
-    std::cout << "Thread message: " << msg << std::endl;
-}
-
-// 方式2：Lambda表达式
-void lambda_thread() {
-    std::thread t([](int id) {
-        std::cout << "Lambda thread id: " << id << std::endl;
-    }, 42);
-    t.join();
-}
-
-// 方式3：函数对象（仿函数）
-class Worker {
-public:
-    void operator()(int iterations) {
-        for (int i = 0; i < iterations; i++) {
-            std::cout << "Worker iteration: " << i << std::endl;
-        }
-    }
-};
-
-// 方式4：成员函数
-class Task {
-public:
-    void run() {
-        std::cout << "Task running in thread" << std::endl;
-    }
-};
-
-void thread_creation() {
-    // 函数指针
-    std::thread t1(print_message, "Hello from thread");
-
-    // Lambda
-    std::thread t2([]() {
-        std::cout << "Lambda thread" << std::endl;
-    });
-
-    // 仿函数
-    std::thread t3(Worker(), 5);
-
-    // 成员函数
-    Task task;
-    std::thread t4(&Task::run, &task);
-
-    // 等待所有线程完成
-    t1.join();
-    t2.join();
-    t3.join();
-    t4.join();
-}
-```
-
-### 2.2 线程的生命周期管理
-
-```cpp
-void thread_lifecycle() {
-    std::thread t([]() {
-        std::cout << "Working..." << std::endl;
-    });
-
-    // join: 等待线程完成
-    t.join();
-
-    // detach: 分离线程，使其在后台运行
-    std::thread t2([]() {
-        std::cout << "Detached thread" << std::endl;
-    });
-    t2.detach();
-
-    // joinable: 检查线程是否可join
-    std::thread t3;
-    std::cout << "Empty thread joinable: " << t3.joinable() << std::endl;  // 0
-
-    // RAII线程守卫
-    class ThreadGuard {
-    public:
-        explicit ThreadGuard(std::thread& t) : thread_(t) {}
-        ~ThreadGuard() {
-            if (thread_.joinable()) {
-                thread_.join();
-            }
-        }
-        ThreadGuard(const ThreadGuard&) = delete;
-        ThreadGuard& operator=(const ThreadGuard&) = delete;
-    private:
-        std::thread& thread_;
-    };
-
-    {
-        std::thread worker([]() { /* work */ });
-        ThreadGuard guard(worker);
-        // 即使异常发生，guard析构也会join线程
-    }
-}
-```
-
-### 2.3 C++20 jthread
-
-```cpp
-#include <thread>
-
-void jthread_demo() {
-    // jthread 自动在析构时 join
-    std::jthread t([]() {
-        std::cout << "jthread working" << std::endl;
-    });
-    // 无需手动join，析构时自动join
-
-    // jthread 支持协作式取消
-    std::jthread long_task([](std::stop_token st) {
-        while (!st.stop_requested()) {
-            std::cout << "Working..." << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-        std::cout << "Task stopped" << std::endl;
-    });
-
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    long_task.request_stop();  // 请求停止
-}
-```
-
-## 3. 互斥量与锁
-
-### 3.1 mutex 基本用法
-
-```cpp
-#include <iostream>
-#include <thread>
 #include <mutex>
-#include <vector>
+#include <queue>
+#include <thread>
 
-class ThreadSafeCounter {
-public:
-    void increment() {
-        std::lock_guard<std::mutex> lock(mutex_);
-        count_++;
+std::queue<int> tasks;
+std::mutex mtx;
+std::condition_variable cv;
+bool finished = false;
+
+void producer() {
+    for (int i = 1; i <= 5; ++i) {
+        {
+            std::lock_guard<std::mutex> lock(mtx);   // 改队列前先锁
+            tasks.push(i);
+        }                                            // 出作用域解锁，再通知
+        cv.notify_one();
     }
-
-    int get() const {
-        std::lock_guard<std::mutex> lock(mutex_);
-        return count_;
-    }
-
-private:
-    mutable std::mutex mutex_;
-    int count_ = 0;
-};
-
-void mutex_demo() {
-    ThreadSafeCounter counter;
-    std::vector<std::thread> threads;
-
-    for (int i = 0; i < 10; i++) {
-        threads.emplace_back([&counter]() {
-            for (int j = 0; j < 1000; j++) {
-                counter.increment();
-            }
-        });
-    }
-
-    for (auto& t : threads) {
-        t.join();
-    }
-
-    std::cout << "Final count: " << counter.get() << std::endl;  // 10000
-}
-```
-
-### 3.2 各种锁类型
-
-```cpp
-#include <mutex>
-#include <shared_mutex>
-
-void lock_types_demo() {
-    std::mutex mtx;
-
-    // 1. lock_guard: 最简单的RAII锁
     {
         std::lock_guard<std::mutex> lock(mtx);
-        // 临界区
-    }  // 自动解锁
+        finished = true;
+    }
+    cv.notify_all();                                 // 叫醒所有人收工
+}
 
-    // 2. unique_lock: 更灵活的锁
-    {
+void consumer() {
+    while (true) {
         std::unique_lock<std::mutex> lock(mtx);
-        // 可以手动解锁和重新加锁
-        lock.unlock();
-        // 做一些不需要锁的操作
-        lock.lock();
-        // 也可以延迟加锁
-        std::unique_lock<std::mutex> defer_lock(mtx, std::defer_lock);
-        defer_lock.lock();  // 手动加锁
+        cv.wait(lock, [] { return !tasks.empty() || finished; });  // 谓词版
+        while (!tasks.empty()) {
+            std::cout << "consume " << tasks.front() << '\n';
+            tasks.pop();
+        }
+        if (finished) return;
     }
+}
 
-    // 3. shared_mutex (C++17): 读写锁
-    std::shared_mutex rw_mtx;
-    {
-        // 多个读者可以同时持有读锁
-        std::shared_lock<std::shared_mutex> read_lock(rw_mtx);
-        // 读取数据
-    }
-    {
-        // 写锁独占
-        std::unique_lock<std::shared_mutex> write_lock(rw_mtx);
-        // 修改数据
-    }
+int main() {
+    std::thread p(producer), c(consumer);
+    p.join();
+    c.join();
+    std::cout << "all done\n";
 }
 ```
 
-### 3.3 避免死锁
+预期输出：
+
+```text
+consume 1
+consume 2
+consume 3
+consume 4
+consume 5
+all done
+```
+
+数值顺序恒为 1 到 5；打印与生产可能交错（生产快时会一次性入队多条），这是正常现象。三个关键点：
+
+- `cv.wait(lock, pred)` 自动做三件事：检查谓词、不满足则解锁睡眠、被唤醒后**重新检查**。裸 `wait(lock)` 醒来不查条件就继续跑——条件变量存在虚假唤醒（操作系统层面允许无故醒来），谓词版是唯一正确写法；
+- 谓词要覆盖两种「该干活」：有活或已收工（`finished`）——漏了后者消费者永远等不到下一次通知；
+- 等待用 `unique_lock` 而非 `lock_guard`：wait 内部要反复解锁加锁，`lock_guard` 不支持。
+
+## 3. 核心概念二：死锁最小实验
+
+两个线程、两把锁、获取顺序相反：
 
 ```cpp
+// deadlock.cpp
+#include <chrono>
+#include <iostream>
 #include <mutex>
 #include <thread>
 
-class BankAccount {
-public:
-    explicit BankAccount(int balance) : balance_(balance) {}
-    void deposit(int amount) {
-        std::lock_guard<std::mutex> lock(mutex_);
-        balance_ += amount;
-    }
-    void withdraw(int amount) {
-        std::lock_guard<std::mutex> lock(mutex_);
-        balance_ -= amount;
-    }
-    int balance() const {
-        std::lock_guard<std::mutex> lock(mutex_);
-        return balance_;
-    }
-    std::mutex& get_mutex() { return mutex_; }
-private:
-    mutable std::mutex mutex_;
-    int balance_;
-};
+std::mutex lockA, lockB;
 
-// 死锁场景：两个线程分别持有对方需要的锁
-void deadlock_example() {
-    BankAccount a(1000), b(1000);
+void worker1() {
+    std::lock_guard<std::mutex> la(lockA);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));  // 制造交错窗口
+    std::lock_guard<std::mutex> lb(lockB);   // 在这里等 worker2 手里的 lockB
+    std::cout << "worker1 got both\n";
+}
 
-    // 线程1: a → b
-    std::thread t1([&]() {
-        std::lock_guard<std::mutex> lock_a(a.get_mutex());
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        std::lock_guard<std::mutex> lock_b(b.get_mutex());  // 可能死锁！
-        a.withdraw(100);
-        b.deposit(100);
-    });
+void worker2() {
+    std::lock_guard<std::mutex> lb(lockB);
+    std::this_thread::sleep_for(std::chrono::milliseconds(10));
+    std::lock_guard<std::mutex> la(lockA);   // 在这里等 worker1 手里的 lockA
+    std::cout << "worker2 got both\n";
+}
 
-    // 线程2: b → a
-    std::thread t2([&]() {
-        std::lock_guard<std::mutex> lock_b(b.get_mutex());
-        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        std::lock_guard<std::mutex> lock_a(a.get_mutex());  // 死锁！
-        b.withdraw(100);
-        a.deposit(100);
-    });
-
+int main() {
+    std::thread t1(worker1), t2(worker2);
     t1.join();
     t2.join();
-}
-
-// 解决方案1：std::lock 同时锁定多个互斥量
-void safe_transfer1() {
-    BankAccount a(1000), b(1000);
-
-    auto transfer = [&]() {
-        std::unique_lock<std::mutex> lock_a(a.get_mutex(), std::defer_lock);
-        std::unique_lock<std::mutex> lock_b(b.get_mutex(), std::defer_lock);
-        std::lock(lock_a, lock_b);  // 原子化锁定，避免死锁
-
-        a.withdraw(100);
-        b.deposit(100);
-    };
-
-    std::thread t1(transfer);
-    std::thread t2(transfer);
-    t1.join();
-    t2.join();
-}
-
-// 解决方案2：C++17 scoped_lock
-void safe_transfer2() {
-    BankAccount a(1000), b(1000);
-
-    auto transfer = [&]() {
-        std::scoped_lock lock(a.get_mutex(), b.get_mutex());  // C++17
-        a.withdraw(100);
-        b.deposit(100);
-    };
-
-    std::thread t1(transfer);
-    std::thread t2(transfer);
-    t1.join();
-    t2.join();
+    std::cout << "main exits\n";
 }
 ```
 
-## 4. 条件变量
+运行现象：
 
-### 4.1 生产者-消费者模型
-
-```cpp
-#include <iostream>
-#include <thread>
-#include <mutex>
-#include <condition_variable>
-#include <queue>
-
-template<typename T>
-class ThreadSafeQueue {
-public:
-    void push(T value) {
-        {
-            std::lock_guard<std::mutex> lock(mutex_);
-            queue_.push(std::move(value));
-        }
-        cv_.notify_one();
-    }
-
-    T pop() {
-        std::unique_lock<std::mutex> lock(mutex_);
-        cv_.wait(lock, [this]() { return !queue_.empty(); });
-        T value = std::move(queue_.front());
-        queue_.pop();
-        return value;
-    }
-
-    bool try_pop(T& value, std::chrono::milliseconds timeout) {
-        std::unique_lock<std::mutex> lock(mutex_);
-        if (cv_.wait_for(lock, timeout, [this]() { return !queue_.empty(); })) {
-            value = std::move(queue_.front());
-            queue_.pop();
-            return true;
-        }
-        return false;
-    }
-
-    bool empty() const {
-        std::lock_guard<std::mutex> lock(mutex_);
-        return queue_.empty();
-    }
-
-private:
-    mutable std::mutex mutex_;
-    std::condition_variable cv_;
-    std::queue<T> queue_;
-};
-
-void producer_consumer_demo() {
-    ThreadSafeQueue<int> queue;
-    bool done = false;
-
-    // 生产者
-    std::thread producer([&]() {
-        for (int i = 0; i < 10; i++) {
-            queue.push(i);
-            std::cout << "Produced: " << i << std::endl;
-            std::this_thread::sleep_for(std::chrono::milliseconds(50));
-        }
-        done = true;
-        queue.push(-1);  // 哨兵值
-    });
-
-    // 消费者
-    std::thread consumer([&]() {
-        while (true) {
-            int value = queue.pop();
-            if (value == -1) break;
-            std::cout << "Consumed: " << value << std::endl;
-        }
-    });
-
-    producer.join();
-    consumer.join();
-}
+```text
+（程序永久卡住，一行都不输出，CPU 占用极低，只能 Ctrl+C）
 ```
 
-## 5. 原子操作
+worker1 持 A 等 B，worker2 持 B 等 A，形成循环等待——谁也不放手，谁也拿不到第二把锁。这不是崩溃，是「合法地」永远等下去，所以**没有任何报错输出**。
 
-### 5.1 atomic 基本用法
+避免纪律（按优先级）：
 
-```cpp
-#include <iostream>
-#include <thread>
-#include <atomic>
-#include <vector>
+1. **锁排序**：全程序约定「永远先 A 后 B」，任何人都不得逆序获取——循环等待在结构上不可能形成；
+2. **一次拿全**：C++17 的 `std::scoped_lock lock(lockA, lockB);` 内部用避免死锁的算法一次性获取两把锁，替你守住顺序；
+3. 缩小临界区、持锁期间不调用看不见源码的回调（它可能反过来要别的锁）。
 
-void atomic_demo() {
-    // 基本原子类型
-    std::atomic<int> counter(0);
-    std::atomic<bool> flag(false);
+为什么工具救不了你：AddressSanitizer 抓内存越界，ThreadSanitizer 抓数据竞争——死锁两者都不报，因为它不涉及未定义行为，只是逻辑把线程困住了。**唯一可靠的手段是线程序评审**：列出每一处「持有 X 时请求 Y」，画出等待方向箭头，检查图里有没有环。有环就是死锁，与跑多少次测试无关。
 
-    std::vector<std::thread> threads;
-    for (int i = 0; i < 10; i++) {
-        threads.emplace_back([&counter]() {
-            for (int j = 0; j < 1000; j++) {
-                counter.fetch_add(1, std::memory_order_relaxed);
-            }
-        });
-    }
+## 4. 核心概念三：future/promise/async 的取舍
 
-    for (auto& t : threads) {
-        t.join();
-    }
-
-    std::cout << "Counter: " << counter.load() << std::endl;  // 10000
-}
-```
-
-### 5.2 CAS（Compare-And-Swap）操作
+`std::thread` 有个尴尬：拿不到返回值。`std::future` 是「结果收据」——任务还没算完就把收据发给你，算完凭收据取值。先做取舍实验，重点观察默认策略到底开没开线程：
 
 ```cpp
-#include <atomic>
-
-// 无锁栈的入栈操作
-template<typename T>
-class LockFreeStack {
-    struct Node {
-        T data;
-        Node* next;
-        explicit Node(T val) : data(std::move(val)), next(nullptr) {}
-    };
-
-    std::atomic<Node*> head_{nullptr};
-
-public:
-    void push(T value) {
-        Node* new_node = new Node(std::move(value));
-        new_node->next = head_.load(std::memory_order_relaxed);
-
-        // CAS: 如果head_仍等于new_node->next，则更新为new_node
-        while (!head_.compare_exchange_weak(
-            new_node->next,        // expected: 期望的当前值
-            new_node,              // desired: 想要设置的新值
-            std::memory_order_release,
-            std::memory_order_relaxed)) {
-            // CAS失败，new_node->next已被自动更新为当前head_
-            // 重试即可
-        }
-    }
-};
-```
-
-### 5.3 内存序
-
-```cpp
-void memory_order_demo() {
-    // memory_order_relaxed: 无同步，只保证原子性
-    std::atomic<int> relaxed_counter{0};
-    relaxed_counter.fetch_add(1, std::memory_order_relaxed);
-
-    // memory_order_acquire: 读操作，确保之后的读写不会被重排到此之前
-    // memory_order_release: 写操作，确保之前的读写不会被重排到此之后
-    std::atomic<bool> ready{false};
-    int data = 0;
-
-    // 写入线程
-    std::thread writer([&]() {
-        data = 42;                                    // 写入数据
-        ready.store(true, std::memory_order_release);  // 发布信号
-    });
-
-    // 读取线程
-    std::thread reader([&]() {
-        while (!ready.load(std::memory_order_acquire)) {  // 获取信号
-            std::this_thread::yield();
-        }
-        std::cout << "data = " << data << std::endl;  // 保证看到42
-    });
-
-    writer.join();
-    reader.join();
-
-    // memory_order_seq_cst (默认): 顺序一致性，最严格的内存序
-    // memory_order_acq_rel: 同时具有acquire和release语义
-}
-```
-
-## 6. 异步编程
-
-### 6.1 future 与 promise
-
-```cpp
-#include <iostream>
+// async_test.cpp
+#include <chrono>
 #include <future>
-#include <thread>
-
-int compute_value(int x) {
-    std::this_thread::sleep_for(std::chrono::milliseconds(500));
-    return x * x;
-}
-
-void async_demo() {
-    // std::async: 异步执行任务
-    // launch::async: 强制在新线程执行
-    // launch::deferred: 延迟到get()时在当前线程执行
-    std::future<int> fut = std::async(std::launch::async, compute_value, 10);
-
-    // 做其他工作...
-    std::cout << "Doing other work..." << std::endl;
-
-    // 获取结果（阻塞直到完成）
-    int result = fut.get();
-    std::cout << "Result: " << result << std::endl;  // 100
-
-    // std::promise: 显式设置值
-    std::promise<int> prom;
-    std::future<int> fut2 = prom.get_future();
-
-    std::thread t([&prom]() {
-        std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        prom.set_value(42);
-    });
-
-    std::cout << "Promise value: " << fut2.get() << std::endl;
-    t.join();
-}
-```
-
-### 6.2 packaged_task
-
-```cpp
 #include <iostream>
-#include <future>
 #include <thread>
-#include <queue>
-#include <functional>
 
-// 线程池简化版
-class SimpleThreadPool {
-public:
-    SimpleThreadPool(size_t count) {
-        for (size_t i = 0; i < count; i++) {
-            workers_.emplace_back([this]() { worker_loop(); });
-        }
-    }
-
-    ~SimpleThreadPool() {
-        {
-            std::lock_guard<std::mutex> lock(mutex_);
-            stop_ = true;
-        }
-        cv_.notify_all();
-        for (auto& w : workers_) w.join();
-    }
-
-    template<typename F>
-    auto submit(F&& f) -> std::future<decltype(f())> {
-        using ReturnType = decltype(f());
-        auto task = std::make_shared<std::packaged_task<ReturnType()>>(
-            std::forward<F>(f)
-        );
-        auto future = task->get_future();
-        {
-            std::lock_guard<std::mutex> lock(mutex_);
-            tasks_.push([task]() { (*task)(); });
-        }
-        cv_.notify_one();
-        return future;
-    }
-
-private:
-    void worker_loop() {
-        while (true) {
-            std::function<void()> task;
-            {
-                std::unique_lock<std::mutex> lock(mutex_);
-                cv_.wait(lock, [this]() { return stop_ || !tasks_.empty(); });
-                if (stop_ && tasks_.empty()) return;
-                task = std::move(tasks_.front());
-                tasks_.pop();
-            }
-            task();
-        }
-    }
-
-    std::vector<std::thread> workers_;
-    std::queue<std::function<void()>> tasks_;
-    std::mutex mutex_;
-    std::condition_variable cv_;
-    bool stop_ = false;
-};
-```
-
-## 7. 常见问题与解决方案
-
-### 7.1 数据竞争
-
-**问题**：多线程同时读写非原子变量
-
-```cpp
-// 错误：无保护的数据竞争
-int counter = 0;
-// 多线程执行 counter++ → 数据竞争
-
-// 解决方案1：使用mutex
-std::mutex mtx;
-int counter = 0;
-{
-    std::lock_guard<std::mutex> lock(mtx);
-    counter++;
+int work(int n) {
+    std::cout << "  worker id: " << std::this_thread::get_id() << '\n';
+    std::this_thread::sleep_for(std::chrono::milliseconds(200));
+    return n * n;
 }
 
-// 解决方案2：使用atomic
-std::atomic<int> counter{0};
-counter.fetch_add(1, std::memory_order_relaxed);
+int main() {
+    std::cout << "main id:    " << std::this_thread::get_id() << '\n';
+
+    auto f1 = std::async(std::launch::async, work, 12);   // 强制开新线程
+    auto f2 = std::async(work, 12);                       // 默认策略：实现自选
+
+    std::cout << f1.get() << '\n';
+    std::cout << f2.get() << '\n';
+}
 ```
 
-### 7.2 死锁
+一次实测输出（GCC/Linux，**换平台可能不同——这正是问题**）：
 
-**问题**：两个线程互相等待对方持有的锁
+```text
+main id:    140514248328128
+  worker id: 140514239932160
+144
+  worker id: 140514248328128
+144
+```
 
-**解决方案**：
+第二个任务的 id 与 main 相同：默认策略允许实现把任务**推迟到 get() 时在调用方线程同步执行**，压根没开新线程。想要并发，写明 `std::launch::async`；并且注意它的隐藏条款——`std::launch::async` 返回的 future 析构时会阻塞等待任务完成。
 
-1. 使用 `std::lock` 或 `std::scoped_lock` 同时获取多个锁
-2. 固定加锁顺序
-3. 使用 `try_lock` 加超时机制
-4. 尽量减少锁的粒度和持有时间
+三层工具的取舍：
 
-### 7.3 虚假唤醒
+- **std::async（async 策略）**：要返回值、要并发、任务数不多，一行搞定；
+- **promise/future**：底层机制——工作线程算完 `p.set_value(v)`，任意线程 `f.get()` 收货，async 内部就是它；需要自己管理线程生命周期时才用；
+- **std::thread**：完全控制但零回报传递，配合 promise 样板最重。
 
-**问题**：条件变量的 `wait` 可能无故返回
+任务短且量大时三者都别直接用，攒进线程池。
+
+## 5. 实际场景与边界
+
+读多写少的场景（如配置缓存）用 `std::shared_mutex`：读拿 `std::shared_lock`（多个读者并行），写拿 `std::unique_lock`（独占）；读写都频繁时不如普通 mutex，先测量再换。更大的分界线：线程之间要「等某个状态」就用条件变量（任务队列、连接池、线程池的工作循环）；只共享一个计数就留在 430 的 atomic；少量独立、要返回值的任务交给 async；任务量大到线程被频繁创建销毁，就该上线程池了。
+
+## 6. 常见错误与调试实录
+
+实录一：忘发通知。把 producer 里两处 `notify_*` 注释掉，程序表现与死锁一模一样——永久卡住、无输出。区分方法：死锁的两个线程都在等锁（评审等待图有环），忘通知的那个线程在 `wait` 里睡觉（评审发现「改了共享状态但没 notify」）。
+
+实录二：线程 join 自己。在工作线程函数里误调自己的 `join()`，libstdc++ 真实输出：
+
+```text
+terminate called after throwing an instance of 'std::system_error'
+  what():  resource deadlock avoided
+Aborted (core dumped)
+```
+
+`what()` 里的文案来自操作系统的 EDEADLK 错误码——「避免资源死锁」，库检测到线程等待自身后抛出 `std::system_error`，未捕获进而 terminate。看到它就回调用栈找「谁在等谁」。
+
+## 7. 修改实验
+
+1. 把单消费者改成两个消费者，验证每条任务仍恰好被消费一次（锁保证取任务的原子性）；再给队列加上限，满了生产者等待——有界队列的雏形；
+2. 给死锁实验套上 `std::scoped_lock lock(lockA, lockB)` 修复两个 worker，验证程序能正常退出；再把两处锁改成同一顺序，验证同样有效；
+3. 把实验里的 f2 显式改成 `std::launch::deferred`，对比两次 worker id 与 get() 前后的耗时——deferred 意味着 200 毫秒的 sleep 记在主线程账上。
+
+## 8. 小练习
+
+预测题（预计 5 分钟，先写答案再运行）：
 
 ```cpp
-// 错误：不检查条件
-cv.wait(lock);
-
-// 正确：始终使用谓词
-cv.wait(lock, []{ return condition; });
+auto f = std::async(std::launch::deferred,
+                    [] { std::cout << "run\n"; return 7; });
+std::cout << "main\n";
+std::cout << f.get() << '\n';
 ```
 
-## 8. 总结与最佳实践
+三行输出的顺序是什么？哪一行执行时才真正运行了 lambda？
 
-### 8.1 并发编程原则
+挑战题（预计半小时，脱离示例实现）：用 mutex、condition_variable 和一个整数计数实现 `Semaphore` 类，接口 `acquire()` 与 `release()`，初始许可数为 3。验证：10 个线程各自进入临界区后打印 `enter`、睡 200 毫秒、打印 `exit`，运行全程任意时刻输出中 enter 与 exit 之差不超过 3，结束后计数归位。提示（一级）：谓词是 `count > 0`，acquire 后减、release 后加并 notify_one。展开（二级）：`cv.wait(lock, [&] { return count > 0; });`。
 
-1. **最小化共享数据**：减少线程间交互
-2. **使用RAII管理锁**：`lock_guard`、`unique_lock`
-3. **避免嵌套锁**：减少死锁风险
-4. **优先使用高级抽象**：`future`、`packaged_task`、线程池
-5. **原子操作优先于锁**：简单计数器用 `atomic`
+## 9. 与之前和之后的知识的关系
 
-### 8.2 性能优化
+- 往前：430 的 mutex 是本文所有同步的地基；变参模板（370）解释了 `std::thread t(f, args...)` 的签名从哪来；
+- 往后：450 篇的内存模型从标准层面回答「为什么数据竞争是 UB」；460 篇的内存序是 atomic 的进阶档位；
+- 更远：性能分析（610）里，锁竞争与线程池是热点常客。
 
-- 减小锁粒度：只锁必要的临界区
-- 读写分离：`shared_mutex` 允许多读者并行
-- 无锁编程：CAS操作适合简单数据结构
-- 线程池：避免频繁创建销毁线程
-- 避免伪共享：对齐频繁修改的原子变量
+## 10. 官方文档
+
+- cppreference condition_variable：https://en.cppreference.com/w/cpp/thread/condition_variable
+- cppreference scoped_lock：https://en.cppreference.com/w/cpp/thread/scoped_lock
+- cppreference async：https://en.cppreference.com/w/cpp/thread/async
+- cppreference shared_mutex：https://en.cppreference.com/w/cpp/thread/shared_mutex
+
+## 11. 自我检查
+
+- 能默写生产者消费者的骨架，并说出谓词版 wait 防的是什么（虚假唤醒与唤醒丢失）；
+- 能画出死锁实验的等待图（两个节点、两支箭头成环），并给出锁排序与 scoped_lock 两种修法；
+- 能说出 async 默认策略的风险与 `std::launch::async` future 析构阻塞的隐藏条款；
+- 能区分「卡死的三种病因」：死锁、忘通知、忙等，并说出各自的排查手段。
+
+## 本章总结
+
+线程会跑之后，工程问题集中在协作：条件变量让消费者「没活就睡、来活就叫醒」，谓词版 wait 是虚假唤醒的唯一解药；死锁源于循环等待，锁排序与 scoped_lock 从结构上消灭环，而 ASan、TSan 对它无能为力，线程序评审是最后的防线；future 是结果收据，async 默认策略可能根本不开线程，`std::launch::async` 才是明确的并发声明。并发代码的表象极其相似——卡住的不一定是死锁，报错的未必是真凶，测量与审读永远优先于猜测。
+
+## 下一步
+
+进入 [C++ 内存模型](/cpp/450-CppMemoryModel)：从标准层面看清数据竞争为什么被定义为未定义行为，happens-before 是怎么给多线程建立秩序的。

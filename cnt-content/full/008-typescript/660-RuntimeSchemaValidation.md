@@ -1,5 +1,5 @@
 ---
-order: 660
+order: 670
 title: 运行时 Schema 校验
 module: 'typescript'
 category: 前端技术

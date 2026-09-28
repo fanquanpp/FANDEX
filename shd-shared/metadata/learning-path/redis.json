@@ -91,6 +91,21 @@
           "id": "redis-205",
           "title": "Redis Key 管理与过期命令速查手册",
           "doc": "020-KeyManagement"
+        },
+        {
+          "id": "redis-090",
+          "title": "Stream 核心篇",
+          "doc": "090-Stream"
+        },
+        {
+          "id": "redis-092",
+          "title": "Stream 消费者组",
+          "doc": "092-StreamConsumerGroups"
+        },
+        {
+          "id": "redis-094",
+          "title": "Stream 运维与监控",
+          "doc": "094-StreamOpsAndMonitoring"
         }
       ]
     }

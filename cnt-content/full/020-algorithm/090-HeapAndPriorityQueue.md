@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 100
 title: 堆与优先队列
 module: 'algorithm'
 category: 计算机科学

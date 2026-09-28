@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 290
 title: Redis 8 新特性
 module: 'redis'
 category: 数据库

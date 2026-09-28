@@ -1,5 +1,5 @@
 ---
-order: 670
+order: 680
 title: TypeScript 5.x 新特性演进（5.0-5.9）
 module: 'typescript'
 category: 前端技术

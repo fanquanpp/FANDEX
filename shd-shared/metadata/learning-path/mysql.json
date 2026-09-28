@@ -225,6 +225,11 @@
           "id": "mysql-400",
           "title": "索引原理与性能优化",
           "doc": "400-IndexPrinciplePerformanceOptimization"
+        },
+        {
+          "id": "mysql-930",
+          "title": "MySQL 毕业项目：论坛数据库从设计到优化",
+          "doc": "930-MySQLCapstoneProject"
         }
       ]
     },

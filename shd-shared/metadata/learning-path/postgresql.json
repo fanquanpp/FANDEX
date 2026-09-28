@@ -96,6 +96,21 @@
           "id": "postgresql-203",
           "title": "JSONB与JSON差异",
           "doc": "110-JSONBJSONDifference"
+        },
+        {
+          "id": "postgresql-210",
+          "title": "VACUUM 机制",
+          "doc": "210-VACUUMMechanism"
+        },
+        {
+          "id": "postgresql-212",
+          "title": "Autovacuum 实战",
+          "doc": "212-VACUUMAutovacuum"
+        },
+        {
+          "id": "postgresql-214",
+          "title": "VACUUM 调优与排障",
+          "doc": "214-VACUUMTuningAndTroubleshoot"
         }
       ]
     }
