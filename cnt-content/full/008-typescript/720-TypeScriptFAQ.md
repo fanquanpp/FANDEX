@@ -194,5 +194,5 @@ const id2 = <T extends unknown>(x: T): T => x;
 ## 扩展阅读
 
 - 各问题对应正文章节已在文中给出；
-- 学习路线与阅读规则见 `001-HowToReadThisCourse`；
+- 学习路线与阅读规则见 `typescript/020-HowToReadThisCourse`；
 - 术语速查见 `001-TypeScriptOverviewEnvSetup` 末尾的核心术语表。

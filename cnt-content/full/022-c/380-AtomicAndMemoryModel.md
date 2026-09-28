@@ -861,7 +861,7 @@ atomic_signal_fence(memory_order_acquire);
 ## 同步关系
 
 **基本写法：发布订阅模式**
-`store(release)` ↔ `load(acquire)`
+`store(release)` 与配对的 `load(acquire)`
 ```c
 // 线程间建立先行关系
 // 线程 A

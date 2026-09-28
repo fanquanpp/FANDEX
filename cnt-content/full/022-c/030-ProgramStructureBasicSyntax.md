@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: "把 hello.c 的骨架摊开：main 的完整结构、printf 格式化占位符逐个实测、变量与类型初见、三类编译错误原文定位，附修改实验与四型练习。"
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'c/020-CLanguageOverview'
   - 'c/040-DataTypeDetailed'

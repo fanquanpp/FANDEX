@@ -14,6 +14,22 @@ prerequisites:
   - 'shell/010-DevEnvSetup'
 ---
 
+## 前置知识
+
+- 会打开终端执行命令（[开发环境搭建](/shell/010-DevEnvSetup)）；不需要任何 Rust 经验。
+
+## 学习目标
+
+读完本文你将能够：
+
+1. 用 rustup 装好 stable 工具链，并说清 stable/beta/nightly 三条通道的区别；
+2. 配好 VS Code + rust-analyzer，获得补全、类型提示与即时报错；
+3. 用 cargo 创建、构建、运行第一个项目，认识 Cargo.toml 与目录结构；
+4. 形成写代码到 cargo check、clippy、test 的日常开发循环；
+5. 独立排查 PATH 未生效、Windows 链接器缺失、依赖下载慢三类高频安装问题。
+
+预计 30 到 45 分钟。
+
 ## 1. 环境搭建前须知
 
 学习 Rust 前，先理解它的工具链构成：Rust 由三部分组成——编译器（rustc）、构建与包管理工具（Cargo）、以及官方安装器与工具链管理器（rustup）。

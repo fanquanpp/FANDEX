@@ -1605,7 +1605,7 @@ int b = a + 1;
 ---
 
 **基本写法：同步建立先行**
-`store(release) ↔ load(acquire)`
+`store(release)` 与配对的 `load(acquire)`
 ```cpp
 // release 操作 happens-before 配对的 acquire
 ready.store(true, std::memory_order_release);

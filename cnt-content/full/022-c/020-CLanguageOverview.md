@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: "以「50 岁仍是 TIOBE 前三」引入，讲清 C 的设计哲学（信任程序员、小标准库、无运行时）、标准演进 C89 到 C23、编译四阶段，并给出 C 与其他语言的能力对照。"
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-28'
 related:
   - 'c/010-CZeroBasisStart'
   - 'c/030-ProgramStructureBasicSyntax'

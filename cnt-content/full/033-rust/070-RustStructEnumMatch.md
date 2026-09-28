@@ -14,6 +14,21 @@ prerequisites:
   - 'rust/050-RustOwnershipBorrowing'
 ---
 
+## 前置知识
+
+- [所有权与借用](/rust/050-RustOwnershipBorrowing)：理解 move 与借用规则，本文的字段与方法签名会大量用到。
+
+## 学习目标
+
+读完本文你将能够：
+
+1. 会定义结构体与 impl 方法，分清 `&self`、`&mut self`、`self` 三种形态与关联函数；
+2. 会定义携带数据的枚举，并用 match 穷尽处理所有变体；
+3. 会用 `if let` 简化单分支匹配；
+4. 会用 `Option<T>` 表达可空值，掌握 `unwrap_or`、`map` 等常用方法，理解 Rust 为什么没有 null；
+5. 能用「枚举 + match」实现一个小状态机。
+
+预计 60 分钟。
 
 ## 1. 从"登记表"说起：结构体（Struct）
 
