@@ -14,7 +14,7 @@
  * 环境变量 FANDEX_MERMAID_CLIENT=1 时直接退出（客户端渲染模式，不需要缓存）。
  */
 import { createHash } from 'node:crypto';
-import { existsSync, mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
