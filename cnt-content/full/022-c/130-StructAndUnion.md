@@ -1,1174 +1,518 @@
 ---
-order: 130
-title: 结构体与联合体
+order: 140
+title: 结构体与联合：自定义类型打包
 module: 'c'
 category: 计算机科学
-difficulty: intermediate
-description: 结构体定义、内存对齐、联合体应用及枚举类型。
+difficulty: beginner
+description: 从「把学生的姓名/学号/成绩打包」出发掌握结构体与联合：tag 声明与 . -> 成员访问、顺序/指定/嵌套三种初始化、逐成员拷贝的赋值语义（数组成员一起搬走）、== 比较的编译错误与 memcmp 的 padding 陷阱、调换成员顺序 sizeof 变化的实验，以及 union 共享存储、写 A 读 B 的边界与 tag+union 变体记录、匿名 union（C11）。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/210-MemoryManagement'
+  - 'c/140-PointerDeep'
   - 'c/220-MemoryAlignmentDeepDive'
-  - 'c/250-FunctionCallStackFrame'
-  - 'c/150-PointerArrayDifference'
+  - 'c/230-AlignmentMemoryLayout'
+  - 'c/240-BitField'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/110-EnumTypedef'
+  - 'c/120-ArrayDetailed'
 ---
 
 ## 前置知识
 
-- [内存对齐](/c/220-MemoryAlignmentDeepDive)：建议先完成前一篇的学习
+- 已完成 [枚举与 typedef](/c/110-EnumTypedef)：会写枚举（变体记录的「标签」要用它）与 typedef 的基本用法；
+- 已完成 [数组详解](/c/120-ArrayDetailed)：会初始化数组、知道「数组不能整体赋值」——本文第 4 节有一个漂亮的反转。
+
+struct 的成员就是普通变量，没见过的类型写法用到时会当场解释。
+
+> 分工说明：结构体的内存布局由三篇接力。本篇是主线：怎么用，加上 padding 初见（成员顺序为什么改变 sizeof）；[内存对齐](/c/220-MemoryAlignmentDeepDive) 拆机制——对齐规则、alignof/offsetof、#pragma pack 与 _Alignas；[布局深水区](/c/230-AlignmentMemoryLayout) 讲工程后果——成员排序的收益、跨平台布局差异、序列化为什么不能直接 memcpy 结构体；把一个整数拆到「位」是 [位域](/c/240-BitField) 的事。本篇与它们唯一的重叠是第 6 节的 sizeof 实验，作为通往 220 的入口。
 
 ## 学习目标
 
-- 掌握「1. 结构体 (Structures)」的核心机制、典型用法与常见陷阱
-- 掌握「2. 联合体 (Unions)」的核心机制、典型用法与常见陷阱
-- 掌握「3. 枚举 (Enums)」的核心机制、典型用法与常见陷阱
-- 掌握「4. typedef 类型别名」的核心机制、典型用法与常见陷阱
-- 掌握「5. 综合应用示例」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 声明 struct、用 `.` 与 `->` 访问成员，用顺序、指定初始化器、嵌套三种写法初始化，并写出结构体数组；
+2. 解释结构体赋值是逐成员拷贝（数组成员一起搬）、传参与返回值都是整包拷贝，据此说出什么时候该改传 `const` 指针；
+3. 说出结构体为什么不能用 `==` 比较，读懂编译器的报错，用逐成员比较替代，并解释 memcmp 为什么不可靠；
+4. 完成「调换成员顺序看 sizeof 变化」的实验，用 padding 解释结果，并说出深入对齐在哪两篇；
+5. 从零写出 tag+union 变体记录，解释 union 大小为什么等于最大成员按对齐补齐，说清写 A 读 B 的边界与匿名 union（C11）。
 
-## 1. 结构体 (Structures)
+预计 60 到 80 分钟，包含 5 组动手实验、2 道预测题与 1 道挑战题。
 
-### 1.1 结构体的概念
-
-- **结构体**是一种用户定义的数据类型，用于将不同类型的数据打包在一起，形成一个逻辑整体。
-- **作用**：
-- 组织相关数据，提高代码的可读性和可维护性
-- 实现复杂的数据结构（如链表、树等）
-- 作为函数参数传递多个相关数据
-
-### 1.2 结构体的定义与声明
-
-#### 1.2.1 基本定义
+## 1. 问题引入：三个散变量的管理成本
 
 ```c
- // 结构体定义
- struct Person {
-  char name[50]; // 姓名
-  int age; // 年龄
-  float height; // 身高
- }
+/* no_struct.c：一个学生三个变量，两个学生六个变量 */
+#include <stdio.h>
+
+int main(void) {
+    char name1[20] = "Alice";  long id1 = 1001;  double score1 = 92.5;
+    char name2[20] = "Bob";    long id2 = 1002;  double score2 = 78.0;
+
+    printf("%s %ld %.1f\n", name1, id1, score1);
+    printf("%s %ld %.1f\n", name2, id2, score2);
+    return 0;
+}
 ```
 
-#### 1.2.2 同时定义结构体变量
+一个学生要三个变量，全班 40 人要 120 个；把一个学生传给函数要三个参数；交换两个学生要六次赋值。这些数据在逻辑上属于同一个「学生」，语言却看不出这层关系——[数组详解](/c/120-ArrayDetailed) 解决「多个同类型」，这里的问题是「一组不同类型」。
+
+struct（结构体）让你自己定义一个「学生类型」，把不同类型的成员打包成一个整体：
 
 ```c
- // 定义结构体的同时声明变量
- struct Person {
-  char name[50];
-  int age;
- }
-```
-
-#### 1.2.3 匿名结构体
-
-```c
- // 匿名结构体（只能在定义时声明变量）
- struct {
-  int x;
-  int y;
- }
-```
-
-### 1.3 结构体的初始化
-
-#### 1.3.1 静态初始化
-
-```c
- // 按顺序初始化
- struct Person p1 = {"Alice", 25, 1.65};
- // 部分初始化（未初始化的成员为 0 或空）
- struct Person p2 = {"Bob"}; // age 和 height 为 0
- // C99 及以上：指定成员初始化
- struct Person p3 = {
-  .name = "Charlie",
-  .age = 30
- }
-```
-
-#### 1.3.2 动态初始化
-
-```c
- struct Person p4;
- strcpy(p4.name, "David");
- p4.age = 35;
- p4.height = 1.75;
-```
-
-### 1.4 结构体成员的访问
-
-#### 1.4.1 直接访问（使用点运算符）
-
-```c
- printf("Name: %s\n", p1.name);
- printf("Age: %d\n", p1.age);
- printf("Height: %.2f\n", p1.height);
-```
-
-#### 1.4.2 通过指针访问（使用箭头运算符）
-
-```c
- struct Person *ptr = &p1;
- printf("Name: %s\n", ptr->name);
- printf("Age: %d\n", ptr->age);
- printf("Height: %.2f\n", ptr->height);
- // 也可以使用解引用后再使用点运算符
- printf("Name: %s\n", (*ptr).name);
-```
-
-### 1.5 结构体作为函数参数
-
-#### 1.5.1 传值调用
-
-```c
- void print_person(struct Person p) {
-  printf("Name: %s\n", p.name);
-  printf("Age: %d\n", p.age);
-  printf("Height: %.2f\n", p.height);
- }
- // 调用
- print_person(p1);
-```
-
-#### 1.5.2 传址调用（推荐，避免复制开销）
-
-```c
- void update_person(struct Person *p, int new_age) {
-  p->age = new_age;
- }
- // 调用
- update_person(&p1, 26);
-```
-
-### 1.6 结构体数组
-
-```c
- // 定义结构体数组
- struct Person people[3] = {
-  {"Alice", 25, 1.65},
-  {"Bob", 30, 1.75},
-  {"Charlie", 35, 1.80}
- }
- // 访问数组元素
- for (int i = 0; i < 3; i++) {
-  printf("Person %d: %s, %d, %.2f\n",
-  i+1, people[i].name, people[i].age, people[i].height);
- }
-```
-
-### 1.7 嵌套结构体
-
-```c
- // 定义日期结构体
- struct Date {
-  int day;
-  int month;
-  int year;
- }
- // 定义包含日期的结构体
- struct Person {
-  char name[50];
-  int age;
-  struct Date birthday; // 嵌套结构体
- }
- // 初始化
- struct Person p = {
-  "Alice",
-  25,
-  {15, 5, 1999} // 初始化嵌套的 Date 结构体
- }
- // 访问嵌套结构体成员
- printf("Birthday: %d/%d/%d\n",
-  p.birthday.day, p.birthday.month, p.birthday.year);
-```
-
-### 1.8 结构体的内存对齐
-
-#### 1.8.1 内存对齐的概念
-
-- **内存对齐**是编译器为了提高内存访问效率，按照一定规则对结构体成员进行内存布局的过程。
-- **原因**：大多数 CPU 访问内存时，以字长为单位（如 4 字节或 8 字节），对齐的内存访问会更高效。
-
-#### 1.8.2 对齐规则
-
-1. 结构体的起始地址必须是其最大成员大小的整数倍
-2. 每个成员的起始地址必须是其自身大小的整数倍
-3. 结构体的总大小必须是其最大成员大小的整数倍
-
-#### 1.8.3 示例
-
-```c
- struct Example {
-  char c; // 1 字节
-  // 3 字节填充
-  int i; // 4 字节
-  double d; // 8 字节
-  // 4 字节填充（使总大小为 8 的整数倍）
- }
- // sizeof(struct Example) 通常为 24 字节
- // 解释：1 + 3 + 4 + 8 + 4 = 20？不，实际是 24
- // 正确计算：
- // c: 偏移 0 (1字节)
- // 填充 3字节 (偏移 1-3)
- // i: 偏移 4 (4字节)
- // d: 偏移 8 (8字节)
- // 总大小 16，是 8 的整数倍，所以不需要额外填充
- // 实际大小为 16 字节
-```
-
-#### 1.8.4 内存对齐的影响
-
-- **优点**：提高内存访问速度
-- **缺点**：可能浪费一些内存空间
-
-#### 1.8.5 控制内存对齐
-
-- **`#pragma pack(n)`**：设置对齐字节数为 n
-- **`__attribute__((packed))`**：取消对齐，按实际大小排列
-
-```c
- // 设置对齐字节数为 1
- #pragma pack(1)
- struct PackedExample {
-  char c;
-  int i;
-  double d;
- }
- #pragma pack() // 恢复默认对齐
- // 使用 packed 属性
- struct __attribute__((packed)) PackedStruct {
-  char c;
-  int i;
-  double d;
- }
-```
-
-### 1.9 结构体的应用示例
-
-#### 1.9.1 链表节点
-
-```c
- typedef struct Node {
-  int data;
-  struct Node *next;
- }
- // 创建新节点
- Node *create_node(int data) {
-  Node *new_node = (Node *)malloc(sizeof(Node));
-  if (new_node == NULL) {
-  return NULL;
-  }
-  new_node->data = data;
-  new_node->next = NULL;
-  return new_node;
- }
- // 添加节点
- void append(Node **head, int data) {
-  Node *new_node = create_node(data);
-  if (*head == NULL) {
-  *head = new_node;
-  return;
-  }
-  Node *temp = *head;
-  while (temp->next != NULL) {
-  temp = temp->next;
-  }
-  temp->next = new_node;
- }
-```
-
-#### 1.9.2 学生信息管理
-
-```c
- typedef struct Student {
-  char name[50];
-  int id;
-  float grades[3]; // 三门课的成绩
-  float average;
- }
- // 计算平均成绩
- void calculate_average(Student *s) {
-  s->average = (s->grades[0] + s->grades[1] + s->grades[2]) / 3.0;
- }
- // 打印学生信息
- void print_student(Student s) {
-  printf("Name: %s\n", s.name);
-  printf("ID: %d\n", s.id);
-  printf("Grades: %.2f, %.2f, %.2f\n", s.grades[0], s.grades[1], s.grades[2]);
-  printf("Average: %.2f\n", s.average);
- }
-```
-
-## 2. 联合体 (Unions)
-
-### 2.1 联合体的概念
-
-- **联合体**是一种特殊的数据类型，所有成员共享同一块内存空间。
-- **特点**：
-- 联合体的大小等于最大成员的大小
-- 同一时间只能使用一个成员
-- 修改一个成员会影响其他成员
-
-### 2.2 联合体的定义与使用
-
-```c
- // 联合体定义
- union Data {
-  int i; // 4 字节
-  float f; // 4 字节
-  char c; // 1 字节
-  char str[20]; // 20 字节
- }
- // 使用
- union Data data;
- data.i = 100;
- printf("data.i = %d\n", data.i); // 输出 100
- data.f = 3.14;
- printf("data.f = %f\n", data.f); // 输出 3.14
- printf("data.i = %d\n", data.i); // 输出会改变，因为共享内存
-```
-
-### 2.3 联合体的应用场景
-
-#### 2.3.1 节省内存
-
-- 当不同类型的数据不会同时使用时，可以使用联合体节省内存。
-
-#### 2.3.2 类型转换
-
-- 可以通过联合体实现不同类型之间的转换。
-
-```c
- union FloatInt {
-  float f;
-  int i;
- }
- // 查看浮点数的二进制表示
- void print_float_bits(float f) {
-  union FloatInt fi;
-  fi.f = f;
-  printf("Float: %f, Int: %d, Hex: 0x%X\n", f, fi.i, fi.i);
- }
-```
-
-#### 2.3.3 判别式联合（Tagged Union）
-
-- 结合结构体和联合体，实现带类型标签的联合。
-
-```c
- enum DataType {
-  INT, FLOAT, STRING
- }
- struct TaggedUnion {
-  enum DataType type; // 类型标签
-  union {
-  int i;
-  float f;
-  char str[50];
-  } data; // 数据
- }
- void print_data(struct TaggedUnion tu) {
-  switch (tu.type) {
-  case INT:
-  printf("Integer: %d\n", tu.data.i);
-  break;
-  case FLOAT:
-  printf("Float: %f\n", tu.data.f);
-  break;
-  case STRING:
-  printf("String: %s\n", tu.data.str);
-  break;
-  default:
-  printf("Unknown type\n");
-  }
- }
- // 使用
- struct TaggedUnion tu1;
- tu1.type = INT;
- tu1.data.i = 42;
- print_data(tu1);
- struct TaggedUnion tu2;
- tu2.type = FLOAT;
- tu2.data.f = 3.14;
- print_data(tu2);
-```
-
-#### 2.3.4 位域操作
-
-- 可以使用联合体和位域来操作数据的特定位。
-
-```c
- // 位域结构体
- struct Flags {
-  unsigned int is_active : 1; // 1位
-  unsigned int is_admin : 1; // 1位
-  unsigned int level : 3; // 3位
- }
- // 联合体
- union FlagUnion {
-  struct Flags flags;
-  unsigned char value; // 1字节
- }
- // 使用
- union FlagUnion fu;
- fu.value = 0; // 初始化
- fu.flags.is_active = 1;
- fu.flags.level = 3;
- printf("Value: 0x%X\n", fu.value); // 输出 0x0B (1011)
-```
-
-## 3. 枚举 (Enums)
-
-### 3.1 枚举的概念
-
-- **枚举**是一种用户定义的数据类型，用于为整数常量分配有意义的名称。
-- **作用**：
-- 提高代码可读性
-- 减少魔法数字
-- 提供类型安全
-
-### 3.2 枚举的定义与使用
-
-#### 3.2.1 基本定义
-
-```c
- enum Color {
-  RED, // 默认值 0
-  GREEN, // 默认值 1
-  BLUE // 默认值 2
- }
- // 使用
- enum Color my_color = GREEN;
- printf("Color value: %d\n", my_color); // 输出 1
-```
-
-#### 3.2.2 显式指定值
-
-```c
- enum Day {
-  MONDAY = 1, // 1
-  TUESDAY, // 2
-  WEDNESDAY, // 3
-  THURSDAY, // 4
-  FRIDAY, // 5
-  SATURDAY = 10, // 10
-  SUNDAY // 11
- }
- // 使用
- enum Day today = WEDNESDAY;
- printf("Today is day %d\n", today); // 输出 3
-```
-
-#### 3.2.3 枚举的大小
-
-- 枚举的大小通常与 int 相同，但在某些编译器中可能会根据枚举值的范围进行优化。
-
-### 3.3 枚举的应用场景
-
-#### 3.3.1 状态码
-
-```c
- enum ErrorCode {
-  SUCCESS = 0,
-  ERROR_INVALID_INPUT = 1,
-  ERROR_MEMORY = 2,
-  ERROR_NETWORK = 3
- }
- int process_data(int input) {
-  if (input < 0) {
-  return ERROR_INVALID_INPUT;
-  }
-  // 处理数据
-  return SUCCESS;
- }
-```
-
-#### 3.3.2 选项标志
-
-```c
- enum FileOpenMode {
-  MODE_READ = 1 << 0, // 0b0001
-  MODE_WRITE = 1 << 1, // 0b0010
-  MODE_APPEND = 1 << 2, // 0b0100
-  MODE_BINARY = 1 << 3 // 0b1000
- }
- void open_file(const char *filename, int mode) {
-  if (mode & MODE_READ) {
-  printf("Opening file for reading\n");
-  }
-  if (mode & MODE_WRITE) {
-  printf("Opening file for writing\n");
-  }
-  // 打开文件
- }
- // 使用
- open_file("data.txt", MODE_READ | MODE_WRITE);
-```
-
-## 4. `typedef` 类型别名
-
-### 4.1 `typedef` 的概念
-
-- **`typedef`** 是 C 语言中的一个关键字，用于为现有类型创建一个新的名称（别名）。
-- **作用**：
-- 简化复杂类型的声明
-- 提高代码的可读性和可维护性
-- 便于类型的统一管理和修改
-
-### 4.2 `typedef` 的使用
-
-#### 4.2.1 为基本类型创建别名
-
-```c
- // 为基本类型创建别名
- typedef unsigned int uint;
- typedef long long int64;
- typedef double real;
- // 使用
- uint count = 100;
- int64 large_number = 9999999999;
- real pi = 3.14159;
-```
-
-#### 4.2.2 为结构体创建别名
-
-```c
- // 方式 1：先定义结构体，再创建别名
- struct Person {
-  char name[50];
-  int age;
- }
- typedef struct Person Person;
- // 方式 2：定义结构体的同时创建别名
- typedef struct {
-  char name[50];
-  int age;
- }
- // 方式 3：带标签的结构体
- typedef struct Person {
-  char name[50];
-  int age;
- }
- // 使用
- Person p = {"Alice", 25};
-```
-
-#### 4.2.3 为指针类型创建别名
-
-```c
- // 为指针类型创建别名
- typedef int *IntPtr;
- typedef char *StrPtr;
- // 使用
- intPtr p1, p2; // 相当于 int *p1, *p2;
- StrPtr s1, s2; // 相当于 char *s1, *s2;
-```
-
-#### 4.2.4 为函数指针创建别名
-
-```c
- // 为函数指针创建别名
- typedef int (*CompareFunc)(int, int);
- // 使用
- int ascending(int a, int b) {
-  return a - b;
- }
- CompareFunc cmp = ascending;
- int result = cmp(5, 3);
-```
-
-## 5. 综合应用示例
-
-### 5.1 学生信息管理系统
-
-```c
- #include <stdio.h>
- #include <string.h>
- // 定义日期结构体
- typedef struct {
-  int day;
-  int month;
-  int year;
- }
- // 定义学生结构体
- typedef struct {
-  char name[50];
-  int id;
-  Date birthday;
-  float grades[3];
-  float average;
- }
- // 计算平均成绩
- void calculate_average(Student *s) {
-  s->average = (s->grades[0] + s->grades[1] + s->grades[2]) / 3.0;
- }
- // 打印学生信息
- void print_student(Student s) {
-  printf("Name: %s\n", s.name);
-  printf("ID: %d\n", s.id);
-  printf("Birthday: %d/%d/%d\n",
-  s.birthday.day, s.birthday.month, s.birthday.year);
-  printf("Grades: %.2f, %.2f, %.2f\n",
-  s.grades[0], s.grades[1], s.grades[2]);
-  printf("Average: %.2f\n\n", s.average);
- }
- int main() {
-  // 初始化学生数组
-  Student students[3] = {
-  {
-  "Alice",
-  1001,
-  {15, 5, 1999},
-  {85.5, 90.0, 92.5},
-  0.0
-  },
-  {
-  "Bob",
-  1002,
-  {20, 8, 1998},
-  {78.0, 82.5, 85.0},
-  0.0
-  },
-  {
-  "Charlie",
-  1003,
-  {5, 12, 1999},
-  {92.0, 95.5, 90.0},
-  0.0
-  }
-  };
-  // 计算平均成绩并打印信息
-  for (int i = 0; i < 3; i++) {
-  calculate_average(&students[i]);
-  print_student(students[i]);
-  }
-  return 0;
- }
-```
-
-### 5.2 图形库中的形状表示
-
-```c
- #include <stdio.h>
- // 形状类型枚举
- enum ShapeType {
-  CIRCLE,
-  RECTANGLE,
-  TRIANGLE
- }
- // 点结构体
- typedef struct {
-  int x;
-  int y;
- }
- // 圆形结构体
- typedef struct {
-  Point center;
-  int radius;
- }
- // 矩形结构体
- typedef struct {
-  Point top_left;
-  int width;
-  int height;
- }
- // 三角形结构体
- typedef struct {
-  Point p1;
-  Point p2;
-  Point p3;
- }
- // 形状联合体
- typedef union {
-  Circle circle;
-  Rectangle rectangle;
-  Triangle triangle;
- }
- // 形状结构体
- typedef struct {
-  enum ShapeType type;
-  ShapeData data;
- }
- // 计算面积
- float calculate_area(Shape shape) {
-  switch (shape.type) {
-  case CIRCLE:
-  return 3.14159 * shape.data.circle.radius * shape.data.circle.radius;
-  case RECTANGLE:
-  return shape.data.rectangle.width * shape.data.rectangle.height;
-  case TRIANGLE:
-  // 使用海伦公式计算三角形面积
-  int x1 = shape.data.triangle.p1.x;
-  int y1 = shape.data.triangle.p1.y;
-  int x2 = shape.data.triangle.p2.x;
-  int y2 = shape.data.triangle.p2.y;
-  int x3 = shape.data.triangle.p3.x;
-  int y3 = shape.data.triangle.p3.y;
-  float a = sqrt((x2-x1)*(x2-x1) + (y2-y1)*(y2-y1));
-  float b = sqrt((x3-x2)*(x3-x2) + (y3-y2)*(y3-y2));
-  float c = sqrt((x1-x3)*(x1-x3) + (y1-y3)*(y1-y3));
-  float s = (a + b + c) / 2;
-  return sqrt(s * (s-a) * (s-b) * (s-c));
-  default:
-  return 0.0;
-  }
- }
- // 打印形状信息
- void print_shape(Shape shape) {
-  switch (shape.type) {
-  case CIRCLE:
-  printf("Circle: center=(%d,%d), radius=%d\n",
-  shape.data.circle.center.x,
-  shape.data.circle.center.y,
-  shape.data.circle.radius);
-  break;
-  case RECTANGLE:
-  printf("Rectangle: top_left=(%d,%d), width=%d, height=%d\n",
-  shape.data.rectangle.top_left.x,
-  shape.data.rectangle.top_left.y,
-  shape.data.rectangle.width,
-  shape.data.rectangle.height);
-  break;
-  case TRIANGLE:
-  printf("Triangle: p1=(%d,%d), p2=(%d,%d), p3=(%d,%d)\n",
-  shape.data.triangle.p1.x, shape.data.triangle.p1.y,
-  shape.data.triangle.p2.x, shape.data.triangle.p2.y,
-  shape.data.triangle.p3.x, shape.data.triangle.p3.y);
-  break;
-  default:
-  printf("Unknown shape\n");
-  }
- }
- int main() {
-  // 创建圆形
-  Shape circle_shape;
-  circle_shape.type = CIRCLE;
-  circle_shape.data.circle.center.x = 10;
-  circle_shape.data.circle.center.y = 10;
-  circle_shape.data.circle.radius = 5;
-  // 创建矩形
-  Shape rect_shape;
-  rect_shape.type = RECTANGLE;
-  rect_shape.data.rectangle.top_left.x = 0;
-  rect_shape.data.rectangle.top_left.y = 0;
-  rect_shape.data.rectangle.width = 10;
-  rect_shape.data.rectangle.height = 8;
-  // 打印信息并计算面积
-  print_shape(circle_shape);
-  printf("Area: %.2f\n\n", calculate_area(circle_shape));
-  print_shape(rect_shape);
-  printf("Area: %.2f\n\n", calculate_area(rect_shape));
-  return 0;
- }
-```
-
-## 6. 最佳实践
-
-### 6.1 结构体的最佳实践
-
-- **命名规范**：结构体名使用 PascalCase，成员名使用 snake_case
-- **初始化**：使用指定成员初始化（C99+）提高可读性
-- **内存管理**：结构体较大时，使用指针传递以避免复制开销
-- **内存对齐**：了解内存对齐规则，合理安排成员顺序以减少内存浪费
-- **封装**：将相关数据和操作封装在结构体中
-
-### 6.2 联合体的最佳实践
-
-- **使用场景**：只在确实需要共享内存时使用联合体
-- **判别式**：使用判别式联合（Tagged Union）来安全地使用联合体
-- **类型安全**：确保在访问联合体成员前，了解当前存储的类型
-- **内存布局**：注意不同成员的内存布局，避免未定义行为
-
-### 6.3 枚举的最佳实践
-
-- **命名规范**：枚举名使用 PascalCase，枚举值使用全大写加下划线
-- **值管理**：为枚举值赋予有意义的名称，避免魔法数字
-- **类型安全**：使用枚举类型而不是整数类型，提高代码可读性和类型安全
-- **范围管理**：确保枚举值在合理范围内，避免溢出
-
-### 6.4 typedef 的最佳实践
-
-- **命名规范**：类型别名使用 PascalCase 或 snake_case，根据项目约定
-- **适度使用**：不要过度使用 typedef，以免降低代码可读性
-- **一致性**：在整个项目中保持 typedef 的一致性
-- **文档**：为复杂的 typedef 提供注释，说明其用途
-
-## 7. 常见错误与调试
-
-### 7.1 结构体相关错误
-
-- **忘记初始化**：结构体成员未初始化，导致未定义行为
-- **内存泄漏**：动态分配的结构体未释放
-- **指针错误**：结构体指针未初始化或指向无效内存
-- **内存对齐误解**：不了解内存对齐规则，导致 sizeof 计算错误
-
-### 7.2 联合体相关错误
-
-- **类型混淆**：在不知道当前存储类型的情况下访问联合体成员
-- **内存覆盖**：修改一个成员后，错误地假设其他成员的值仍然有效
-- **大小计算错误**：错误计算联合体的大小
-
-### 7.3 枚举相关错误
-
-- **隐式转换**：将枚举值隐式转换为整数，可能导致类型错误
-- **值冲突**：不同枚举类型的值冲突
-- **范围溢出**：枚举值超出底层类型的范围
-
-### 7.4 调试技巧
-
-- **打印调试**：使用 printf 打印结构体成员的值
-- **内存检查**：使用工具如 Valgrind 检查内存泄漏和访问错误
-- **断言**：使用 assert 验证结构体和联合体的状态
-- **调试器**：使用 GDB 等调试器查看结构体和联合体的内存布局
-
----
-
-## 结构体定义
-
-**基本写法：结构体定义**
-`struct <Name> { <type> <member>; ... };`
-```c
-// 定义 Point 结构体
-struct Point {
-    int x;
-    int y;
+struct Student {
+    char   name[20];
+    long   id;
+    double score;
 };
 ```
 
----
+从此 `struct Student s1 = {"Alice", 1001, 92.5};` 一句话就是一个学生，传参、赋值、放进数组都按「一个整体」处理。本文沿两个问题走：**怎么用**（第 2 到 5 节）与**它在内存里长什么样**（第 6 到 8 节）。
 
-**typedef 写法：结构体别名**
-`typedef struct { <members> } <Name>;`
+## 2. 声明与成员访问：tag、. 与 ->
+
+### 2.1 声明与 tag
+
+`struct Student { ... };` 里的 `Student` 是 tag（标签）。声明变量必须写全 `struct Student s;`——C 里 struct 关键字不能省。嫌啰嗦就用 typedef 起别名（typedef 的完整机制在[枚举与 typedef](/c/110-EnumTypedef)）：
+
 ```c
-// 定义 Employee 结构体类型
-typedef struct {
-    int id;
-    char name[50];
-    float salary;
-} Employee;
+typedef struct Student Student;   /* 此后写 Student s; 即可 */
 ```
 
----
+注意定义末尾的分号——丢了它，报错会指向下一行代码，非常难查。
 
-**typedef 写法：为已定义结构体创建别名**
-`typedef struct <Name> <Alias>;`
+### 2.2 点号访问成员
+
 ```c
-// 为结构体创建别名
-struct Point { int x; int y; };
-typedef struct Point Point;
+struct Student s = {"Alice", 1001, 92.5};
+printf("%s\n", s.name);    /* 读 */
+s.score = 95.0;            /* 写：成员就是普通变量 */
 ```
 
----
+### 2.3 箭头：先混个眼熟
 
-## 结构体变量
-
-**基本写法：声明结构体变量**
-`struct <Name> <var_name>;`
 ```c
-// 声明结构体变量
-struct Point p1;
+struct Student *p = &s;
+printf("%ld %ld\n", p->id, (*p).id);   /* 两者完全等价 */
 ```
 
----
+`p->x` 完全等价于 `(*p).x`——「顺着指针找到结构体，再取成员」。指针的解引用机制本文按下不表，[指针深度解析](/c/140-PointerDeep) 讲透；现在只需认识这个符号，第 8 节的函数参数会再用到它。
 
-**typedef 写法：使用别名声明**
-`<TypeName> <var_name>;`
+## 3. 初始化：顺序、指定与嵌套
+
 ```c
-// 使用类型别名声明
-Employee emp;
-```
+/* init_styles.c：三种初始化写法 */
+#include <stdio.h>
 
----
-
-**初始化写法：声明并初始化**
-`struct <Name> <var> = {<values>};`
-```c
-// 初始化结构体变量
-struct Point p = {10, 20};
-```
-
----
-
-**指定初始化写法：按成员名初始化**
-`struct <Name> <var> = {.<member> = <value>, ...};`
-```c
-// 按成员名初始化
-struct Point p = {.x = 10, .y = 20};
-```
-
----
-
-**赋值写法：结构体变量赋值**
-`<var1> = <var2>;`
-```c
-// 结构体变量直接赋值
-struct Point p1 = {10, 20};
-struct Point p2;
-p2 = p1;
-```
-
----
-
-## 结构体成员访问
-
-**基本写法：访问成员**
-`<var>.<member>`
-```c
-// 使用点运算符访问成员
-struct Point p = {10, 20};
-printf("x: %d\n", p.x);
-```
-
----
-
-**修改写法：修改成员值**
-`<var>.<member> = <value>;`
-```c
-// 修改结构体成员的值
-struct Point p = {10, 20};
-p.x = 30;
-```
-
----
-
-**指针写法：通过指针访问成员**
-`<ptr>-><member>`
-```c
-// 使用箭头运算符访问成员
-struct Point p = {10, 20};
-struct Point *ptr = &p;
-printf("x: %d\n", ptr->x);
-```
-
----
-
-## 嵌套结构体
-
-**基本写法：结构体嵌套**
-`struct <Outer> { struct <Inner> <member>; ... };`
-```c
-// 嵌套结构体定义
 struct Date { int year; int month; int day; };
-struct Person {
-    char name[50];
-    struct Date birthday;
+
+struct Student {
+    char        name[20];
+    long        id;
+    long        group;
+    double      score;
+    struct Date birthday;      /* 嵌套结构体 */
 };
-```
 
----
+int main(void) {
+    struct Student a = {"Alice", 1001, 3, 92.5, {2005, 5, 15}};        /* 顺序初始化 */
+    struct Student b = { .id = 1002, .score = 78.0, .name = "Bob" };   /* 指定初始化器（C99）*/
+    struct Student c = { .name = "Carol", .birthday = {2004, 12, 1} }; /* 嵌套初始化 */
 
-**访问写法：访问嵌套成员**
-`<var>.<inner>.<member>`
-```c
-// 访问嵌套结构体成员
-struct Person person;
-person.birthday.year = 1990;
-```
-
----
-
-## 结构体数组
-
-**基本写法：结构体数组声明**
-`struct <Name> <array_name>[<size>];`
-```c
-// 声明结构体数组
-struct Point points[10];
-```
-
----
-
-**初始化写法：结构体数组初始化**
-`struct <Name> <array_name>[<size>] = { {<values>}, ... };`
-```c
-// 初始化结构体数组
-struct Point pts[3] = {{1, 2}, {3, 4}, {5, 6}};
-```
-
----
-
-**遍历写法：遍历结构体数组**
-`for (int i = 0; i < <size>; i++) { ... <array>[i].<member> ... }`
-```c
-// 遍历结构体数组
-struct Point pts[3] = {{1, 2}, {3, 4}, {5, 6}};
-for (int i = 0; i < 3; i++) {
-    printf("(%d, %d)\n", pts[i].x, pts[i].y);
+    printf("%s %ld %ld %.1f %d\n", a.name, a.id, a.group, a.score, a.birthday.year);
+    printf("%s %ld %.1f\n",        b.name, b.id, b.score);
+    printf("%s %d-%d-%d\n",        c.name, c.birthday.year, c.birthday.month, c.birthday.day);
+    return 0;
 }
 ```
 
----
+预期输出：
 
-## 结构体与函数
+```text
+Alice 1001 3 92.5 2005
+Bob 1002 78.0
+Carol 2004-12-1
+```
 
-**传值写法：结构体作为函数参数**
-`<return_type> <func>(struct <Name> <param>) { ... }`
+三条规则：
+
+1. 与数组一样：初始化列表只要出现，**没写到的成员保证清零**——b 没写 birthday 与 group，全是 0；
+2. 指定初始化器 `.成员 = 值` 比顺序写法**抗修改**：以后往结构体中间插入新成员，顺序写法全体错位，指定写法不受影响。实际项目首选；
+3. 嵌套结构体用 `{...}` 对应，或一路 `.birthday.year = ...` 点下去。
+
+结构体数组（每个格子是一个完整结构体，写法与普通数组一致）：
+
 ```c
-// 传递结构体副本
-void print_point(struct Point p) {
-    printf("(%d, %d)\n", p.x, p.y);
+struct Student roster[3] = {
+    {"Alice", 1001, 3, 92.5, {2005, 5, 15}},
+    {"Bob",   1002, 5, 78.0, {2004, 8, 20}},
+    {.name = "Carol", .id = 1003, .score = 88.0}
+};
+for (int i = 0; i < 3; i++) printf("%s\n", roster[i].name);
+```
+
+修改实验一：把声明里的 `long id; long group;` 调换成 `long group; long id;` 再运行——顺序初始化的 a 里 1001 与 3 **静默对调**（编译器不报错），而指定初始化器的 b 毫发无伤。这就是「指定初始化器抗修改」的现场，也是 120 篇「数组三个不能」之外的新教训：顺序初始化的正确性挂在成员顺序上。
+
+## 4. 赋值语义：逐成员拷贝，数组成员也不例外
+
+120 篇的结论：数组不能整体赋值。结构体反转了这条：
+
+```c
+/* assign.c：结构体赋值是逐成员拷贝 */
+#include <stdio.h>
+
+struct Student {
+    char name[20];
+    long id;
+};
+
+int main(void) {
+    struct Student a = {"Alice", 1001};
+    struct Student b;
+    b = a;                                  /* 整体赋值：合法 */
+    a.name[0] = 'X';                        /* 改 a 的名字 */
+    printf("a = %s %ld\n", a.name, a.id);
+    printf("b = %s %ld\n", b.name, b.id);   /* b 的 name 数组完好 */
+    return 0;
 }
 ```
 
----
+预期输出：
 
-**传址写法：结构体指针作为函数参数**
-`<return_type> <func>(struct <Name> *<param>) { ... }`
-```c
-// 传递结构体指针
-void move_point(struct Point *p, int dx, int dy) {
-    p->x += dx;
-    p->y += dy;
-}
+```text
+a = Xlice 1001
+b = Alice 1001
 ```
 
----
+赋值把右操作数的值**逐成员拷贝**进左操作数，`char name[20]` 这个数组成员也被整个搬走——这正是「数组包进结构体就能整体赋值」的原因：赋值发生在结构体层面，数组只是跟着一起搬家的成员。标准对结构体赋值的要求是两侧类型相容。
 
-**返回写法：函数返回结构体**
-`struct <Name> <func>(<params>) { ... return <struct_var>; }`
+同一个拷贝语义还出现在两个地方：
+
+- **传参即拷贝**：`void print(struct Student s)` 收到的是整包副本，函数内改它不影响调用者的原件；
+- **返回即拷贝**：`struct Point make(int x, int y)` 返回时整体拷出。小型结构体（两三个标量）这么写清晰又常见。
+
+成本直觉：拷贝成本与 `sizeof` 成正比。几十字节无所谓；一个带 `char title[512]` 的结构体在热循环里按值传来传去，就是每次 512 字节的搬运。工程惯例：**只读访问传 `const struct Student *`，需要修改才传指针**，小型结构体随意。指针怎么用是 [指针深度解析](/c/140-PointerDeep) 的主题，这里先记住选择标准。
+
+修改实验二：给 assign.c 的 struct 加一个 `char title[512];` 成员，打印 `sizeof(struct Student)`，直观看到「包有多大，拷多大」。
+
+## 5. 结构体不能用 == 比较
+
 ```c
-// 返回结构体
-struct Point create_point(int x, int y) {
-    struct Point p = {x, y};
-    return p;
-}
-```
-
----
-
-## 位域
-
-**基本写法：位域定义**
-`struct <Name> { <type> <member> : <bits>; ... };`
-```c
-// 定义位域结构体
-struct Flags {
-    unsigned int a : 1;
-    unsigned int b : 3;
-    unsigned int c : 4;
-};
-```
-
----
-
-**访问写法：访问位域成员**
-`<var>.<member>`
-```c
-// 访问位域成员
-struct Flags f;
-f.a = 1;
-f.b = 5;
-```
-
----
-
-## 联合体
-
-**基本写法：联合体定义**
-`union <Name> { <type> <member>; ... };`
-```c
-// 定义联合体
-union Data {
-    int i;
-    float f;
-    char str[20];
-};
-```
-
----
-
-**基本写法：联合体变量声明与初始化**
-`union <Name> <var>;`
-```c
-// 声明联合体变量
-union Data data;
-```
-
----
-
-**访问写法：访问联合体成员**
-`<var>.<member>`
-```c
-// 访问联合体成员
-union Data data;
-data.i = 10;
-printf("%d\n", data.i);
-```
-
----
-
-**指针写法：通过指针访问联合体成员**
-`<ptr>-><member>`
-```c
-// 通过指针访问联合体成员
-union Data data;
-union Data *ptr = &data;
-ptr->f = 3.14f;
-```
-
----
-
-## 结构体与联合体混合
-
-**基本写法：结构体包含联合体**
-`struct <Name> { <type> <tag>; union <UnionName> <member>; };`
-```c
-// 结构体包含联合体
-struct Value {
-    int type;
-    union {
-        int i;
-        float f;
-    } data;
-};
-```
-
----
-
-**访问写法：访问结构体中的联合体成员**
-`<var>.<union_member>.<member>`
-```c
-// 访问结构体中的联合体成员
-struct Value v;
-v.type = 0;
-v.data.i = 100;
-```
-
----
-
-## 结构体内存对齐
-
-**基本写法：查看结构体大小**
-`sizeof(struct <Name>)`
-```c
-// 查看结构体大小
+/* cmp_err.c */
 struct Point { int x; int y; };
-printf("Size: %zu\n", sizeof(struct Point));
+
+int main(void) {
+    struct Point p1 = {1, 2}, p2 = {1, 2};
+    if (p1 == p2) { }        /* 编译不过 */
+    return 0;
+}
 ```
 
----
+```text
+cmp_err.c:8:9: error: invalid operands to binary == (have 'struct Point' and 'struct Point')
+```
 
-**对齐控制写法：指定对齐方式**
-`#pragma pack(<n>)`
+`==` 只为算术类型与指针定义，结构体不在名单上——这是**编译错误**，不是警告。C 不替结构体生成逐字段比较，因为「相等」的含义该由你定：比全部成员，还是只比主键？
+
+替代一，逐成员比较（默认选择）：
+
 ```c
-// 设置 1 字节对齐
-#pragma pack(1)
-struct Packed {
-    char c;
-    int i;
-};
-#pragma pack()
+if (p1.x == p2.x && p1.y == p2.y) { /* 逻辑相等 */ }
 ```
 
----
+替代二，`memcmp(&p1, &p2, sizeof p1)`——整块字节比较。但它有个著名的坑：**padding 字节不参与逻辑，却参与 memcmp**。两个「成员完全相等」的结构体，中间的填充字节可能不同（下一节讲 padding 是什么），memcmp 就会判「不等」。规则：初学者一律逐成员比较；memcmp 只在你保证两个结构体以完全相同的方式构造（比如都先整体清零）时才可靠。第 9 节有可运行的翻车实录。
 
-**对齐属性写法：使用 __attribute__**
-`struct __attribute__((aligned(<n>))) <Name> { ... };`
+含字符串成员时同理：`strcmp(a.name, b.name) == 0`；`a.name == b.name` 比的是地址（120 篇的「不能比较」）。
+
+## 6. 内存布局：padding 初见
+
+先做实验，再解释。
+
 ```c
-// 指定结构体对齐为 16 字节
-struct __attribute__((aligned(16))) AlignedStruct {
-    int x;
-};
+/* layout.c：sizeof 与成员顺序 */
+#include <stdio.h>
+
+struct A { char c; double d; int i; };
+struct B { double d; int i;  char c; };
+
+int main(void) {
+    printf("sizeof A = %zu\n", sizeof(struct A));
+    printf("sizeof B = %zu\n", sizeof(struct B));
+    return 0;
+}
 ```
+
+64 位平台一次典型输出：
+
+```text
+sizeof A = 24
+sizeof B = 16
+```
+
+两个结构体的成员**完全相同**，只是顺序不同，大小却差了 8 字节。原因是 padding（填充字节）：CPU 访问对齐的地址更快也更安全，编译器在每个成员前面垫字节，把每个成员放到「自身对齐要求的整数倍」偏移上，最后再把总大小补齐到最大成员对齐的整数倍。手算对照：
+
+```text
+struct A: c(1) + 垫7 + d(8) + i(4) + 垫4 = 24
+struct B: d(8) + i(4) + c(1) + 垫3 = 16
+```
+
+对初学者的实用推论只有两条：`sizeof` 不要心算成员相加，直接量；成员按「从大到小」排通常更省内存——记住这是习惯，规则细节见下。
+
+本文到此为止：CPU 为什么要对齐、`alignof`/`offsetof` 怎么量出每条规则、`#pragma pack` 与 `_Alignas` 怎么改规则，见 [内存对齐](/c/220-MemoryAlignmentDeepDive)；成员排序的工程收益、跨平台布局差异、「存档能不能直接 memcpy 结构体」，见 [布局深水区](/c/230-AlignmentMemoryLayout)。
+
+## 7. 嵌套与自引用
+
+嵌套已在第 3 节见过：成员可以是另一个结构体类型，访问时一层层点下去（`c.birthday.year`）。
+
+更有趣的是**自引用**：结构体的成员是自己类型的指针。
+
+```c
+/* node.c：链表节点，先混个眼熟 */
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+    int          data;
+    struct Node *next;      /* 指向下一个同类节点 */
+};
+
+int main(void) {
+    struct Node *n = malloc(sizeof(struct Node));   /* 节点从堆上要 */
+    if (n == NULL) return 1;
+    n->data = 42;
+    n->next = NULL;                                  /* NULL 表示链到此为止 */
+    printf("%d\n", n->data);
+    free(n);
+    return 0;
+}
+```
+
+为什么成员不能是 `struct Node` 本身？那会让「结构体大小」无穷循环；而指针的大小是固定的，没问题。`malloc`/`free` 的完整纪律在 [动态内存](/c/200-DynamicMemoryManagement)，链表的完整搭建也在那里展开——本文只需要建立「结构体 + 自引用指针 = 节点可以串起来」的直觉。
+
+## 8. union：同一块存储，多个名字
+
+### 8.1 语义与大小
+
+union（联合体）的所有成员**共享同一块存储**：同一时刻只有一个成员的值是有效的，写入新成员会覆盖旧成员的字节。
+
+```c
+/* union_size.c：union 的大小 = 最大成员，再按对齐补齐 */
+#include <stdio.h>
+
+union Data {
+    char  c[5];
+    float f;
+    int   i;
+};
+
+int main(void) {
+    printf("sizeof(union Data) = %zu\n", sizeof(union Data));
+    return 0;
+}
+```
+
+```text
+sizeof(union Data) = 8
+```
+
+不是最大成员的 5 字节，而是 8：union 要装得下最大成员 `char c[5]`，再补齐到最苛刻成员（`float`，对齐 4）的整数倍。成员从同一起点开始摆放。写入 `d.f = 1.0f;` 之后读 `d.i`，读到的不是「数值转换」，而是**同一批字节的重新解释**。
+
+### 8.2 写 A 读 B：边界在哪里
+
+```c
+/* pun.c：写 float，读 int */
+#include <stdio.h>
+
+union Bits {
+    float f;
+    int   i;
+};
+
+int main(void) {
+    union Bits b;
+    b.f = 1.0f;
+    printf("i = %d (0x%X)\n", b.i, b.i);
+    return 0;
+}
+```
+
+一次典型输出（x86-64 小端机）：
+
+```text
+i = 1065353216 (0x3F800000)
+```
+
+`1.0f` 的 IEEE 754 编码恰好是 `0x3F800000`——你看到的不是「1 转成的整数」，是 float 的四个字节被当作 int 重读。这种「写 A 读 B」叫类型双关（type punning），它的规矩：
+
+- 通过 union 成员读**上次用另一个成员写入**的内容：自 C99 修订起按**未指定（unspecified）**处理——此前是未定义行为，常见实现都按「重读字节」来做，但标准不承诺结果是什么。能用、常见，但结果不写进合同；
+- 读出的字节顺序通常依赖**字节序**（大端机与小端机按字节读出的顺序相反），跨平台代码不要依赖具体字节；想做确定性的按位重解释，用 `memcpy` 拷进无符号整型再读，比 union 更可移植。
+
+### 8.3 用途一：寄存器与数据帧的多视图
+
+嵌入式与协议代码常见这种写法：同一个 32 位值，既能整体赋值，又能按字段拆开看——视图不同，存储只有一份（写法示意）：
+
+```c
+union Status {
+    unsigned int raw;      /* 整体读写 */
+    struct {               /* C11 匿名结构体：成员直接提升到外层 */
+        unsigned int ready : 1;
+        unsigned int mode  : 3;
+    };
+};
+/* s.raw = 0xFF; 之后 s.ready、s.mode 都能直接读写 */
+```
+
+（`unsigned int ready : 1` 是位域写法——把成员精确到「位」，完整语义与可移植性在 [位域](/c/240-BitField)。）
+
+### 8.4 用途二：变体记录（tag + union）
+
+union 回答「同一时刻只需要其中一种」，但没人记得当前存的是哪种——加一个标签成员，把 union 装回 struct：
+
+```c
+/* tagged.c：变体记录 */
+#include <stdio.h>
+
+enum Kind { KIND_INT, KIND_FLOAT, KIND_TEXT };
+
+struct Value {
+    enum Kind kind;            /* 标签：当前 union 里存的是什么 */
+    union {                    /* C11 匿名联合：成员直接提升，v.i 而非 v.data.i */
+        int   i;
+        float f;
+        char  text[12];
+    };
+};
+
+void print_value(const struct Value *v) {
+    switch (v->kind) {
+    case KIND_INT:   printf("int: %d\n", v->i); break;
+    case KIND_FLOAT: printf("float: %f\n", v->f); break;
+    case KIND_TEXT:  printf("text: %s\n", v->text); break;
+    default:         printf("unknown\n"); break;
+    }
+}
+
+int main(void) {
+    struct Value a = { .kind = KIND_INT,  .i = 42 };
+    struct Value b = { .kind = KIND_TEXT, .text = "hello" };
+    print_value(&a);
+    print_value(&b);
+    return 0;
+}
+```
+
+预期输出：
+
+```text
+int: 42
+text: hello
+```
+
+这里的 union 连名字都没有——C11 的**匿名联合（anonymous union）**：不写成员名，union 的成员直接提升为外层结构体的成员，访问 `v.i` 而不必 `v.data.i`。匿名 struct/union 都是 C11 起进入标准（GCC/Clang 更早以扩展形式支持）。纪律：写 union 前先设 `kind`，读之前先查 `kind`——按错标签读到的就是 8.2 节说的未指定值。
+
+选型一句话：**每个成员都要同时存在，用 struct；同一时刻只要一个，用 union；运行时才知道用哪个，就 tag + union。**
+
+## 9. 常见错误与调试实录：memcmp 的 padding 陷阱
+
+```c
+/* memcmp_trap.c */
+#include <stdio.h>
+#include <string.h>
+
+struct Packet {
+    char tag;      /* 偏移 0，后面垫 3 字节 */
+    int  len;      /* 偏移 4 */
+    int  value;    /* 偏移 8 */
+};
+
+int main(void) {
+    struct Packet a = {.tag = 'A', .len = 4, .value = 42};   /* 列表初始化：padding 也是 0 */
+    struct Packet b;                                         /* 逐成员赋值：padding 没人管 */
+    b.tag = 'A'; b.len = 4; b.value = 42;
+
+    printf("members equal: %d\n", a.tag == b.tag && a.len == b.len && a.value == b.value);
+    printf("memcmp equal:  %d\n", memcmp(&a, &b, sizeof a) == 0);
+    return 0;
+}
+```
+
+一次典型输出（b 的 padding 里是栈上的垃圾，每次运行可能不同）：
+
+```text
+members equal: 1
+memcmp equal:  0
+```
+
+三个成员逐个比对全部相等，memcmp 却说不等——那 3 个填充字节里，a 是 0（初始化列表清零保证），b 是没初始化的垃圾。第 5 节的警告在此兑现：**memcmp 比的是字节，包括你不知道也不关心的填充字节**。修法就是逐成员比较；或者保证两边都以同样的方式清零后构造。常见错误清单：
+
+- struct 定义末尾忘分号：报错指向下一行，往上一行找；
+- 按值传大结构体进热循环：改 `const` 指针（第 4 节）；
+- 读 union 前忘了设标签：未指定值（8.4 节）；
+- 结构体里的 `char name[N]` 在 `strcpy` 时越界：溢出会写进相邻成员甚至越出结构体，边界习惯见[安全函数与边界检查](/c/450-SafeFunctionBoundsCheck)。
+
+## 10. 实际项目中的使用场景
+
+- 配置结构体 + 指定初始化器：默认值清晰，加字段不破坏既有调用点；
+- 协议帧与硬件寄存器：union 多视图加位域拆字段（8.3 节），嵌入式日常，见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)；
+- 变体记录：消息类型、解释器的值、图形形状（本文挑战题）都是 tag + union；
+- 链表、树、图：自引用结构体加 malloc 的节点，见 [动态内存](/c/200-DynamicMemoryManagement)；
+- 记录表：结构体数组（第 3 节的 roster）加 qsort 按成员排序，比较器用函数指针，见 [函数指针与回调](/c/170-FunctionPointerCallback)；完整的学生成绩管理系统实战在 [C 项目实战：学生成绩系统](/c/580-CProjectExampleStudentGradeSystem)。
+
+## 11. 小练习
+
+预测题一（5 分钟）：
+
+```c
+struct X { char a; int b; char c; };
+struct Y { int b; char a; char c; };
+```
+
+`sizeof(struct X)` 与 `sizeof(struct Y)` 各是多少（常见 64 位平台）？
+
+参考答案（先写再看）：12 与 8。X：a(1) + 垫3 + b(4) + c(1) + 垫3 = 12；Y：b(4) + a(1) + c(1) + 垫2 = 8——「从大到小」排省 4 字节，与第 6 节实验同一原理。
+
+预测题二（5 分钟）：
+
+```c
+union Half { short s; unsigned char c[2]; } h;
+h.s = 0x0102;
+```
+
+在常见的小端 x86 机器上，`h.c[0]` 与 `h.c[1]` 各是多少？
+
+参考答案（先写再看）：`c[0]` 是 2（低字节在低地址），`c[1]` 是 1。这正是 8.2 节说的「读出什么取决于字节序」——大端机会反过来，所以不要写依赖具体顺序的代码。
+
+挑战题（40 分钟）：形状面积计算器。用 tag + union 支持圆（半径）与矩形（宽、高）：定义 `enum ShapeKind` 与 `struct Shape`（含匿名 union），写 `double shape_area(const struct Shape *s)` 与打印函数，在 main 里构造半径 2 的圆与 3 × 4 的矩形各一个并打印面积。提示两级如下。
+
+提示（思路方向）：面积函数先 switch `kind`；圆周率 `#define PI 3.14159265358979`。
+
+展开（关键点）：参数是 `const struct Shape *s`，用 `->` 访问；匿名 union 的成员直接 `s->radius`、`s->width`、`s->height`；switch 记得 default 返回 0。
+
+验收清单：编译无警告；面积输出在 12.57 与 12.00 附近；给 enum 加一个暂未实现的形状种类，确认走 default 不崩。
+
+## 12. 与之前和之后的知识的关系
+
+- 往前：[枚举与 typedef](/c/110-EnumTypedef) 的枚举在本文当了标签，typedef 简化了声明；[数组详解](/c/120-ArrayDetailed) 的初始化规则（剩余清零、指定初始化器）原样适用于结构体，「数组不能整体赋值」在第 4 节被结构体反转；
+- 旁支：`->` 的原理在 [指针深度解析](/c/140-PointerDeep)；padding 的完整规则与工具在 [内存对齐](/c/220-MemoryAlignmentDeepDive)，工程后果在 [布局深水区](/c/230-AlignmentMemoryLayout)；拆到「位」的成员是 [位域](/c/240-BitField)；
+- 往后：结构体指针与 malloc 组合出链表与树（[动态内存](/c/200-DynamicMemoryManagement)）；大结构体在函数调用中怎么进栈出栈，[函数调用栈帧](/c/250-FunctionCallStackFrame) 给出全景。
+
+## 13. 官方文档
+
+- struct（cppreference C）：https://en.cppreference.com/w/c/language/struct.html
+- union（含大小、类型双关与匿名联合，cppreference C）：https://en.cppreference.com/w/c/language/union.html
+- 赋值运算符（含「结构体里的数组可以赋值」注记）：https://en.cppreference.com/w/c/language/operator_assignment
+- 相等运算符（含「结构体不可 ==、memcmp 不可靠」注记）：https://en.cppreference.com/w/c/language/operator_comparison
+
+## 14. 自我检查
+
+- 能写出 tag 声明、typedef 简化、指定初始化器、结构体数组的完整小例子；
+- 能向同事解释结构体赋值拷贝了什么、传参拷贝了什么、什么时候该改传 const 指针；
+- 能说出 `==` 比较结构体为什么是编译错误、memcmp 为什么不可靠，替代方案怎么选；
+- 能从零写出 tag + union 变体记录，说出匿名 union 是哪个标准引入、使用纪律是什么，并用成员顺序解释 sizeof 的差异。
+
+## 本章总结
+
+struct 把不同类型的成员打包成一个整体：可以整体命名、整体赋值（逐成员拷贝，数组成员一起搬）、整体传递（按 sizeof 付拷贝成本，大包改传 const 指针）；初始化沿用数组的规则，指定初始化器让写法抗修改。结构体不能 `==` 比较（编译错误），逐成员比较是默认，memcmp 因 padding 字节不可靠。内存布局里编译器为对齐垫入 padding，成员顺序直接影响 sizeof。union 让成员共享同一块存储，大小等于最大成员按对齐补齐，写 A 读 B 是未指定的类型双关；配上枚举标签就是变体记录，匿名 union（C11）省掉一层名字。选型口诀：都要用 struct，只用一个用 union，运行时二选一用 tag + union。
+
+## 下一步
+
+进入 [指针深度解析](/c/140-PointerDeep)：本文两处「先混个眼熟」的 `->` 与自引用指针都是预告——`p->x` 为什么等价 `(*p).x`、`struct Node *next` 里到底存了什么，指针篇一次讲透。

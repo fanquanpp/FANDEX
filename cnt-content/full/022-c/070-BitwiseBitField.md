@@ -1,1272 +1,549 @@
 ---
-order: 70
-title: 位运算与位域
+order: 80
+title: 位运算：掩码、移位与位级思维
 module: 'c'
 category: 计算机科学
 difficulty: intermediate
-description: 位操作与位域结构
+description: 用「8 个开关塞进 1 个字节」掌握六个位运算符与掩码四件套：权限标志实战贯穿全文，-8 >> 1 的算术/逻辑右移实验、UBSan 当场抓越界移位、Brian Kernighan 置位计数、异或交换的同地址陷阱、大小端探针小实验，最后看 C23 的 0b 字面量、数字分隔符与 stdbit.h 函数族。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/040-DataTypeDetailed'
-  - 'c/050-VariableConstant'
-  - 'c/060-OperatorExpression'
-  - 'c/110-EnumTypedef'
+  - 'c/240-BitField'
+  - 'c/260-CVolatileAndConstDeepDive'
+  - 'c/230-AlignmentMemoryLayout'
+  - 'c/520-C23C2y'
+  - 'c/530-C23NewFeatures'
+  - 'c/550-EmbeddedCProgramming'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/060-OperatorExpression'
+  - 'c/040-DataTypeDetailed'
 ---
 
 ## 前置知识
 
-- [变量与常量](/c/050-VariableConstant)：建议先完成前一篇的学习
+- 已完成 [运算符与表达式](/c/060-OperatorExpression)：知道运算符优先级、会写 `if` 与 `while` 表达式；
+- 已完成 [数据类型详解](/c/040-DataTypeDetailed)：知道 `int` 与 `unsigned int` 的区别、听说过补码。
+
+没读过 040 也能往下读，本文用到补码的地方会当场用 8 位小例子讲明白。
+
+> 分工说明：070 与 240 合讲「位」。本篇讲**按位运算**——六个运算符、掩码、移位与位级技巧，建立「把整数摊开成比特看」的思维；[位域](/c/240-BitField) 收拢全部位域内容——`struct` 里的 `: 宽度` 语法、存储分配的实现定义性、可移植性边界。本篇只在一句话里引出位域，语法与布局都在那一篇。
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 在二进制、十进制、十六进制之间换算，并用一个打印函数把任意 `unsigned int` 按位摊开；
+2. 说出六个位运算符的逐位规则，徒手写出第 n 位置位、清零、翻转、检测的四个公式；
+3. 用一组权限标志完成「授予、撤销、翻转、查询」的组合操作；
+4. 说出移位的三个边界：左移进符号位、负数右移是实现定义、移位计数超宽是未定义行为，并用 UBSan 抓出越界移位；
+5. 实现 Brian Kernighan 置位计数与「2 的幂」判断，说出异或交换法在同地址时的自杀陷阱。
 
-## 概述
+预计 45 到 60 分钟，含 3 组动手实验、1 道预测题与 1 道挑战题。
 
-位运算是直接对整数的二进制位进行操作的运算方式，是C语言接近硬件底层的核心能力之一。通过位运算，程序员可以用最少的指令完成标志管理、数据压缩、硬件寄存器操控等任务。位域则是C语言结构体的特殊成员，允许以位为单位指定成员的存储宽度，在内存受限的嵌入式场景中尤为实用。两者结合使用，是编写高效底层代码的基本功。
+## 1. 问题引入：8 个开关塞进 1 个字节
 
-## 基础概念
-
-### 二进制基础
-
-计算机中所有数据以二进制存储，理解位运算需要先熟悉二进制表示：
+你在写一块开发板的控制程序：板上有 8 路继电器，每路要么开要么关。第一反应是开 8 个变量 `int relay0, relay1, ... relay7;`——8 个 `int` 占 32 个字节，换 `unsigned char` 也要 8 个字节。但每路开关只有两种状态，一个比特就够了——而一个字节有 8 个比特。理想写法是**一个字节装下全部 8 路开关**：
 
 ```c
-/*
- * 十进制 5 的二进制表示（8位）: 0000 0101
- * 十进制 3 的二进制表示（8位）: 0000 0011
- * 十进制 12 的二进制表示（8位）: 0000 1100
- *
- * 最高位为符号位（有符号数）: 0 表示正数，1 表示负数
- * 无符号数所有位均为数值位
- */
-unsigned char a = 5;   /* 0000 0101 */
-unsigned char b = 3;   /* 0000 0011 */
-```
-
-### 六种位运算符
-
-| 运算符 | 名称     | 说明                      | 示例          |
-| ------ | -------- | ------------------------- | ------------- |
-| `&`    | 按位与   | 两位均为1时结果为1        | `5 & 3` = 1   |
-| `\|`   | 按位或   | 任一位为1时结果为1        | `5 \| 3` = 7  |
-| `^`    | 按位异或 | 两位不同时结果为1         | `5 ^ 3` = 6   |
-| `~`    | 按位取反 | 0变1，1变0                | `~5` = -6     |
-| `<<`   | 左移     | 各位左移，低位补0         | `5 << 1` = 10 |
-| `>>`   | 右移     | 各位右移，高位补符号位或0 | `5 >> 1` = 2  |
-
-### 按位与（&）
-
-按位与的规则：两位均为1时结果才为1。常用于清除（掩码）和检测特定位：
-
-```c
-unsigned char flags = 0b11010110;  /* 0xD6 */
-
-/* 掩码：只保留低4位 */
-unsigned char low4 = flags & 0x0F;  /* 0b00000110 = 0x06 */
-
-/* 检测第5位是否为1 */
-if (flags & (1 << 5)) {
-    /* 第5位已设置 */
-}
-
-/* 清除第1位 */
-flags = flags & ~(1 << 1);  /* 将第1位清零，其余不变 */
-```
-
-### 按位或（|）
-
-按位或的规则：任一位为1时结果为1。常用于设置特定位：
-
-```c
-unsigned char flags = 0b11010110;
-
-/* 设置第0位 */
-flags = flags | (1 << 0);  /* 0b11010111 */
-
-/* 同时设置多个位 */
-flags = flags | 0x0F;  /* 低4位全部置1 */
-```
-
-### 按位异或（^）
-
-按位异或的规则：两位不同时结果为1，相同时为0。常用于翻转位和无临时变量交换：
-
-```c
-unsigned char a = 0b11010110;
-
-/* 翻转第3位 */
-a = a ^ (1 << 3);  /* 第3位取反，其余不变 */
-
-/* 异或的重要性质: x ^ x = 0, x ^ 0 = x */
-/* 利用异或交换两个变量（不推荐，可读性差） */
-int x = 10, y = 20;
-x = x ^ y;
-y = x ^ y;  /* y = (x^y)^y = x */
-x = x ^ y;  /* x = (x^y)^x = y */
-```
-
-### 按位取反（~）
-
-按位取反将0变1、1变0。注意结果依赖于数据类型的位数：
-
-```c
-unsigned char a = 0b00001111;  /* 0x0F */
-unsigned char b = ~a;           /* 0b11110000 = 0xF0 */
-
-/* 对于有符号数，取反结果与补码表示有关 */
-signed char c = 5;     /* 0000 0101 */
-signed char d = ~c;    /* 1111 1010 = -6（补码） */
-```
-
-### 左移（<<）与右移（>>）
-
-左移相当于乘以2的幂次，右移相当于除以2的幂次（对于无符号数）：
-
-```c
-unsigned int a = 5;
-
-/* 左移1位相当于乘2 */
-a << 1;  /* 10 */
-a << 2;  /* 20 */
-a << 3;  /* 40 */
-
-/* 右移1位相当于除2（无符号数） */
-unsigned int b = 40;
-b >> 1;  /* 20 */
-b >> 2;  /* 10 */
-b >> 3;  /* 5  */
-
-/* 有符号数的右移：算术右移 vs 逻辑右移（实现定义） */
-signed char c = -8;   /* 1111 1000（补码） */
-c >> 1;               /* 可能是 1111 1100（算术右移，-4） */
-                      /* 也可能是 0111 1100（逻辑右移，124） */
-                      /* 大多数现代编译器使用算术右移 */
-```
-
-### 位域的概念
-
-位域是结构体中指定存储位数的成员，语法为 `类型 成员名 : 位数`：
-
-```c
-struct Flags {
-    unsigned int is_active : 1;   /* 1位，0或1 */
-    unsigned int priority  : 3;   /* 3位，0-7 */
-    unsigned int mode      : 4;   /* 4位，0-15 */
-    unsigned int reserved  : 24;  /* 24位保留 */
-};
-
-sizeof(struct Flags);  /* 4字节，共32位 */
-```
-
-位域的存储类型通常为 `unsigned int` 或 `int`，也可以使用 `_Bool`、`signed int` 等。C99 之后还允许其他标准整数类型。
-
-## 快速上手
-
-### 位操作基本模板
-
-设置、清除、翻转、检测位是位运算的四个基本操作：
-
-```c
+/* switches.c：8 个开关塞进 1 个字节 */
 #include <stdio.h>
 
 int main(void) {
-    unsigned char flags = 0;  /* 初始全0 */
-
-    /* 设置第3位 */
-    flags |= (1 << 3);    /* flags = 0b00001000 = 0x08 */
-    printf("设置第3位: 0x%02X\n", flags);
-
-    /* 设置第0位和第5位 */
-    flags |= (1 << 0) | (1 << 5);  /* flags = 0b00101001 = 0x29 */
-    printf("设置第0、5位: 0x%02X\n", flags);
-
-    /* 清除第3位 */
-    flags &= ~(1 << 3);   /* flags = 0b00100001 = 0x21 */
-    printf("清除第3位: 0x%02X\n", flags);
-
-    /* 翻转第5位 */
-    flags ^= (1 << 5);    /* flags = 0b00000001 = 0x01 */
-    printf("翻转第5位: 0x%02X\n", flags);
-
-    /* 检测第0位 */
-    if (flags & (1 << 0)) {
-        printf("第0位已设置\n");
+    unsigned char switches = 0;        /* 0000 0000：全部关闭 */
+    switches |= 0x04;                  /* 打开 2 号开关（0x04 = 0000 0100） */
+    printf("switches = 0x%02X\n", switches);
+    if (switches & 0x04) {
+        printf("No.2 is on\n");
     }
-
+    switches &= ~0x04;                 /* 关闭 2 号开关 */
+    printf("switches = 0x%02X\n", switches);
     return 0;
 }
 ```
 
-### 第一个位域程序
+```bash
+gcc -Wall -Wextra -g switches.c -o switches
+./switches
+```
+
+预期输出：
+
+```text
+switches = 0x04
+No.2 is on
+switches = 0x00
+```
+
+`|=`、`&`、`&= ~` 这三个符号就是「打开、查询、关闭」某一路开关的全部语法。这就是**位运算**：直接对整数的二进制位做操作。它省的往往不是那点内存，而是表达力——「第 3 路开、第 5 路关、其余不动」一句话就是一行代码。硬件寄存器、权限标志、协议字段，底层 C 代码里到处是这种按位思维。顺带留个悬念：C 圈流传一个「不加临时变量交换两个数」的把戏 `x ^= y; y ^= x; x ^= y;`，它有一个能自杀的陷阱，第 6 节当场拆穿。
+
+## 2. 二进制思维：先把 int 摊开看
+
+谈位运算之前得先会**看**一个整数。同一个值有三种常用写法：
+
+| 十进制 | 二进制 | 十六进制 |
+| --- | --- | --- |
+| 5 | 0101 | 0x5 |
+| 214 | 1101 0110 | 0xD6 |
+| 255 | 1111 1111 | 0xFF |
+
+关键换算规律：**每 4 个二进制位恰好对应 1 个十六进制位**（4 位能表示 0 到 15，正好一个十六进制位）。C 里二进制字面量写 `0b` 前缀、十六进制写 `0x` 前缀（`0b` 是 C23 正式标准化的，GCC/Clang 更早就支持，第 7 节细说）。
+
+坏消息是 `printf` 没有二进制格式符，补一个打印函数，它将贯穿全文：
 
 ```c
+/* bits.c：把一个整数摊开看 */
 #include <stdio.h>
 
-/* 设备配置寄存器 */
-struct DeviceConfig {
-    unsigned int enabled    : 1;   /* 使能位 */
-    unsigned int interrupt  : 1;   /* 中断使能 */
-    unsigned int mode       : 2;   /* 工作模式: 0-3 */
-    unsigned int speed      : 3;   /* 速度等级: 0-7 */
-    unsigned int channel    : 4;   /* 通道号: 0-15 */
-    unsigned int reserved   : 21;  /* 保留 */
-};
+void print_bits(unsigned int v, int width) {
+    for (int i = width - 1; i >= 0; i--) {
+        putchar('0' + (int)((v >> i) & 1u));   /* 取出第 i 位打印 */
+    }
+}
 
 int main(void) {
-    struct DeviceConfig cfg = { 0 };
-
-    /* 设置各字段 */
-    cfg.enabled   = 1;   /* 使能 */
-    cfg.interrupt = 1;   /* 开中断 */
-    cfg.mode      = 2;   /* 模式2 */
-    cfg.speed     = 5;   /* 速度5 */
-    cfg.channel   = 8;   /* 通道8 */
-
-    printf("使能: %u\n", cfg.enabled);    /* 1 */
-    printf("中断: %u\n", cfg.interrupt);  /* 1 */
-    printf("模式: %u\n", cfg.mode);       /* 2 */
-    printf("速度: %u\n", cfg.speed);      /* 5 */
-    printf("通道: %u\n", cfg.channel);    /* 8 */
-    printf("结构体大小: %zu 字节\n", sizeof(cfg));  /* 4 */
-
+    unsigned int v = 0xD6;
+    printf("十进制 %u = 0x%X = 0b", v, v);
+    print_bits(v, 8);
+    putchar('\n');
     return 0;
 }
 ```
 
-## 详细用法
+预期输出：
 
-### 位掩码与标志管理
+```text
+十进制 214 = 0xD6 = 0b11010110
+```
 
-使用宏定义位掩码是管理标志位的常见做法：
+`print_bits` 的原理现在看不懂没关系，它只用了第 3、5 节要讲的 `>>` 与 `&`：从最高位开始，每次把第 i 位挪到最低位再取出。本文之后所有实验都用它当「显微镜」。修改实验：把宽度 8 改成 16 再跑，看输出变成什么样。
+
+## 3. 六个运算符逐个上手
+
+C 有六个位运算符：`&`、`|`、`^`、`~`、`<<`、`>>`。前三个是「逐位运算」——两个数的对应位独立运算，互不进位，真值表一张看完：
+
+| a | b | a & b | a \| b | a ^ b |
+| --- | --- | --- | --- | --- |
+| 0 | 0 | 0 | 0 | 0 |
+| 0 | 1 | 0 | 1 | 1 |
+| 1 | 0 | 0 | 1 | 1 |
+| 1 | 1 | 1 | 1 | 0 |
+
+### 3.1 按位与 `&`：两边都是 1 才是 1
+
+```text
+    0000 0101   (5)
+  & 0000 0011   (3)
+  = 0000 0001   (1)
+```
+
+`&` 的常用角色是**筛选**：`x & mask` 只保留 mask 中为 1 的那些位。
+
+### 3.2 按位或 `|`：有 1 就是 1
+
+`|` 的常用角色是**合并**与**置位**：`x | mask` 把 mask 中为 1 的位强行点亮，其余位不动。
+
+### 3.3 按位异或 `^`：不同才是 1
+
+异或有三条黄金性质：`x ^ x == 0`（自己翻自己全灭）、`x ^ 0 == x`（翻零次等于没翻）、交换律与结合律（谁跟谁配对无所谓）。第 6 节的交换把戏与差集运算都建立在这三条上。
+
+### 3.4 按位取反 `~`：0 变 1，1 变 0
+
+`~` 是唯一的一元位运算符，把每一位翻转。它的结果**依赖类型宽度**：
 
 ```c
+unsigned char c = 0x0F;
+unsigned char d = (unsigned char)~c;   /* 8 位翻转：1111 0000 = 0xF0 */
+```
+
+而对 `int` 取反，`~5` 是 32 位全宽翻转，得到 `0xFFFFFFFA`，按补码解读就是 -6——补码下 `~x == -x - 1` 恒成立。这就是第 4 节清位公式里 `~(1u << n)` 能得到「只有第 n 位是 0、其余全 1」掩码的原因。
+
+### 3.5 左移 `<<` 与右移 `>>`：整串挪动
+
+`x << n` 把所有位向左挪 n 格，右边空出的补 0，左边挤出去的丢弃；`x >> n` 反向挪动。机械规则先记这一句，**挪出去的数去哪了、负数怎么挪**，是第 5 节的全部内容。
+
+### 3.6 一次跑一遍
+
+```c
+/* ops.c：四个逐位运算符各来一发（print_bits 定义见第 2 节，拷进来即可编译） */
 #include <stdio.h>
 
-/* 文件权限掩码 */
-#define PERM_READ    (1 << 0)  /* 0x01: 可读 */
-#define PERM_WRITE   (1 << 1)  /* 0x02: 可写 */
-#define PERM_EXEC    (1 << 2)  /* 0x04: 可执行 */
-#define PERM_HIDDEN  (1 << 3)  /* 0x08: 隐藏 */
-#define PERM_SYSTEM  (1 << 4)  /* 0x10: 系统文件 */
+void print_bits(unsigned int v, int width);
 
-/* 设置权限 */
-unsigned int setPermission(unsigned int perm, unsigned int flags) {
-    return perm | flags;
+int main(void) {
+    unsigned int samples[] = { 5 & 3, 5 | 3, 5 ^ 3, ~5 & 0xFFu };
+    const char *names[] = { "5 & 3", "5 | 3", "5 ^ 3", "~5 & 0xFF" };
+    for (int i = 0; i < 4; i++) {
+        printf("%-10s = 0x%02X = 0b", names[i], samples[i]);
+        print_bits(samples[i], 8);
+        putchar('\n');
+    }
+    return 0;
 }
+```
 
-/* 清除权限 */
-unsigned int clearPermission(unsigned int perm, unsigned int flags) {
-    return perm & ~flags;
-}
+预期输出：
 
-/* 检查权限 */
-int hasPermission(unsigned int perm, unsigned int flag) {
-    return (perm & flag) != 0;
-}
+```text
+5 & 3      = 0x01 = 0b00000001
+5 | 3      = 0x07 = 0b00000111
+5 ^ 3      = 0x06 = 0b00000110
+~5 & 0xFF  = 0xFA = 0b11111010
+```
+
+修改实验：把 `samples` 里的 `5` 全换成 `12`（`1100`），先在纸上按真值表逐位算出四个结果，再运行对照。遮住这段代码，你能凭 3.1 到 3.4 的规则自己重写 `samples` 的四个表达式吗？
+
+## 4. 掩码四件套：第 n 位的置、清、翻、测
+
+**掩码（mask）**是一张「选中哪些位」的图案：mask 里为 1 的位是本次操作的对象，为 0 的位保持原样。构造「第 n 位」掩码用移位：`1u << n`。配合第 3 节四个运算符，得到位操作的四件套：
+
+| 操作 | 公式 | 原理 |
+| --- | --- | --- |
+| 置位（置 1） | `flags \|= 1u << n;` | 或上选中位：选中位强变 1 |
+| 清零（置 0） | `flags &= ~(1u << n);` | 与上反选位：选中位清 0，其余全 1 保留 |
+| 翻转 | `flags ^= 1u << n;` | 异或选中位：同 0 异 1，正好翻转 |
+| 检测 | `(flags & (1u << n)) != 0` | 与上选中位：为 0 就是没开 |
+
+四件套的正面战场是**权限标志**。一套文件权限有读、写、执行、隐藏、系统五个开关，用五个宏各占一位：
+
+```c
+/* perm.c：权限标志四件套 */
+#include <stdio.h>
+
+#define PERM_READ    (1u << 0)   /* 0x01 可读 */
+#define PERM_WRITE   (1u << 1)   /* 0x02 可写 */
+#define PERM_EXEC    (1u << 2)   /* 0x04 可执行 */
+#define PERM_HIDDEN  (1u << 3)   /* 0x08 隐藏 */
+#define PERM_SYSTEM  (1u << 4)   /* 0x10 系统文件 */
+
+unsigned int perm_grant(unsigned int perm, unsigned int flags) { return perm | flags; }
+
+unsigned int perm_revoke(unsigned int perm, unsigned int flags) { return perm & ~flags; }
+
+int perm_has(unsigned int perm, unsigned int flag) { return (perm & flag) != 0; }
 
 int main(void) {
     unsigned int perm = 0;
+    perm = perm_grant(perm, PERM_READ | PERM_WRITE);
+    printf("perm = 0x%02X\n", perm);                       /* 0x03 */
+    printf("read? %s  exec? %s\n",
+           perm_has(perm, PERM_READ) ? "yes" : "no",
+           perm_has(perm, PERM_EXEC) ? "yes" : "no");      /* yes  no */
 
-    /* 授予读写权限 */
-    perm = setPermission(perm, PERM_READ | PERM_WRITE);
-    printf("读写权限: 0x%02X\n", perm);  /* 0x03 */
+    perm = perm_revoke(perm, PERM_WRITE) | PERM_EXEC;
+    printf("perm = 0x%02X\n", perm);                       /* 0x05 */
 
-    /* 检查权限 */
-    printf("可读: %s\n", hasPermission(perm, PERM_READ) ? "是" : "否");
-    printf("可执行: %s\n", hasPermission(perm, PERM_EXEC) ? "是" : "否");
-
-    /* 撤销写权限，添加执行权限 */
-    perm = clearPermission(perm, PERM_WRITE);
-    perm = setPermission(perm, PERM_EXEC);
-    printf("调整后: 0x%02X\n", perm);  /* 0x05 */
-
+    for (int i = 0; i < 2; i++) {
+        perm ^= PERM_HIDDEN;           /* 翻转两次：加上隐藏再取消 */
+        printf("perm = 0x%02X\n", perm);                   /* 0x0D, 0x05 */
+    }
     return 0;
 }
 ```
 
-### 多位字段的提取与插入
+预期输出：
 
-从整数中提取或插入连续多位是协议解析和寄存器操作的常见需求：
+```text
+perm = 0x03
+read? yes  exec? no
+perm = 0x05
+perm = 0x0D
+perm = 0x05
+```
+
+这套玩法就是 Unix 文件权限的底层：`rwxr-xr-x` 是 9 个标志位，按 3 位一组读成八进制 `0755`（`chmod 755 file` 的 755 就是它）；`0644` 是 `110 100 100`。掩码四件套也适用于**连续多位**字段——提取与插入：
 
 ```c
+/* 从第 start 位起取 n 位 */
+unsigned int extract_bits(unsigned int v, int start, int n) {
+    return (v >> start) & ((1u << n) - 1u);       /* 挪到最低位，再截 n 个 1 */
+}
+
+/* 把 bits 写进第 start 位起的 n 位，其余位不动 */
+unsigned int insert_bits(unsigned int v, int start, int n, unsigned int bits) {
+    unsigned int mask = ((1u << n) - 1u) << start;
+    return (v & ~mask) | ((bits << start) & mask);
+}
+```
+
+`(1u << n) - 1u` 是「n 个 1」的通用构造式：`1u << 4` 是 `1 0000`，减 1 得 `1111`。验证：`extract_bits(0xABCD1234u, 8, 8)` 取第 8 到 15 位，得 `0x12`；`insert_bits` 先清掉目标区再填入新值，是寄存器驱动的标准写法。修改实验：把 `perm_revoke` 的实现换成 `perm ^ flags` 会发生什么？没被授予过的权限也会被「翻转」成已授予——这就是置位用 `|`、只有真正的开关语义才用 `^` 的原因。
+
+## 5. 移位：等价乘除 2 的边界与三个大坑
+
+### 5.1 左移等于乘 2，直到它不等于
+
+对**无符号**类型，`x << n` 就是 `x` 乘 2 的 n 次方后丢弃高位溢出（模 2 的 32 次方回绕），标准明文保证；右移 `x >> n` 就是除以 2 的 n 次方再取整。这也是很多代码用 `1u << 10` 写 1024、用 `x >> 4` 代替除以 16 的原因：
+
+```c
+/* shift.c：左移右移的基本面 */
 #include <stdio.h>
-
-/* 提取从第 start 位开始的 n 位 */
-unsigned int extractBits(unsigned int value, int start, int n) {
-    unsigned int mask = (1U << n) - 1;  /* n个1的掩码 */
-    return (value >> start) & mask;
-}
-
-/* 将 bits 写入 value 的第 start 位开始的 n 位 */
-unsigned int insertBits(unsigned int value, int start, int n, unsigned int bits) {
-    unsigned int mask = (1U << n) - 1;
-    /* 先清除目标位，再写入新值 */
-    return (value & ~(mask << start)) | ((bits & mask) << start);
-}
 
 int main(void) {
-    unsigned int data = 0xABCD1234;
-
-    /* 提取第4-7位（4位） */
-    unsigned int field = extractBits(data, 4, 4);
-    printf("第4-7位: 0x%X\n", field);  /* 3 */
-
-    /* 提取第8-15位（8位） */
-    field = extractBits(data, 8, 8);
-    printf("第8-15位: 0x%X\n", field);  /* 0x12 */
-
-    /* 将 0xB 写入第4-7位 */
-    data = insertBits(data, 4, 4, 0xB);
-    printf("修改后: 0x%08X\n", data);
-
+    printf("5u << 1 = %u, 5u << 3 = %u, 40u >> 3 = %u\n",
+           5u << 1, 5u << 3, 40u >> 3);            /* 10, 40, 5 */
+    printf("1u << 31 = %u\n", 1u << 31);           /* 2147483648：无符号下完全合法 */
     return 0;
 }
 ```
 
-### 位域的内存布局
+边界在**有符号**一侧。`int` 的最高位是符号位，`1 << 31` 本意是 2147483648，可它装不进 32 位 `int`（上限 2147483647）——按标准，有符号左移只在「左操作数非负且结果可表示」时有定义，其余一律未定义行为。对比写法：`1 << 31` 是 UB（结果不可表示），`1u << 31` 恒定 2147483648u（无符号回绕规则兜底）。写移位常量时带上 `u` 后缀，是最便宜的保险；左操作数为负的左移同样落进「否则未定义」的口袋——不要左移负数。
 
-位域在结构体中的布局受编译器影响，需要了解其规则：
+### 5.2 负数右移：算术还是逻辑，标准说「看实现」
+
+右移的坑更深：对**负数**右移，高位该补符号位（算术右移，保持负号）还是补 0（逻辑右移，变成大正数）？标准把选择权交给实现（C17 6.5.7：结果是实现定义的）。GCC、Clang、MSVC 在有符号类型上都选算术右移，但**可移植代码不能赌**。用 8 位小例子看两种走向（`-8` 的补码）：
+
+```text
+-8 的 8 位补码：  1111 1000
+算术右移 1 位：   1111 1100   → 仍是负数，值为 -4（高位补符号位 1）
+逻辑右移 1 位：   0111 1100   → 变成正数，值为 124（高位补 0）
+```
 
 ```c
+/* shift_neg.c：负数右移实验 */
 #include <stdio.h>
-
-/* 位域布局示例 */
-struct LayoutA {
-    unsigned int a : 1;    /* 第0位 */
-    unsigned int b : 3;    /* 第1-3位 */
-    unsigned int c : 4;    /* 第4-7位 */
-};
-
-/* 跨存储单元的位域 */
-struct LayoutB {
-    unsigned int a : 12;
-    unsigned int b : 12;
-    unsigned int c : 12;  /* 可能跨到下一个 unsigned int */
-};
-
-/* 无名位域用于对齐 */
-struct LayoutC {
-    unsigned int a : 4;
-    unsigned int   : 0;   /* 强制对齐到下一个存储单元边界 */
-    unsigned int b : 4;
-};
 
 int main(void) {
-    printf("LayoutA: %zu 字节\n", sizeof(struct LayoutA));  /* 4 */
-    printf("LayoutB: %zu 字节\n", sizeof(struct LayoutB));  /* 8 */
-    printf("LayoutC: %zu 字节\n", sizeof(struct LayoutC));  /* 8 */
+    int a = -8;
+    printf("a >> 1 = %d\n", a >> 1);         /* 主流平台：-4；标准只保证「实现定义」 */
 
+    unsigned int u = (unsigned int)a >> 1;   /* 转无符号后右移：必然逻辑右移 */
+    printf("(unsigned)a >> 1 = %u\n", u);    /* 恒为 2147483644 = 0x7FFFFFFC */
     return 0;
 }
 ```
 
-### 位域与联合体配合
+预期输出：
 
-联合体可以让同一段内存以位域和整体两种方式访问：
+```text
+a >> 1 = -4
+(unsigned)a >> 1 = 2147483644
+```
+
+要「除以 2 的幂」且值可能为负时，算术右移恰好给出向下取整的除法（-8 >> 1 = -4，-7 >> 1 = -4 而不是 -3）；但要**跨平台一致的位级行为**，就先转成无符号再移。修改实验：把 `-8` 改成 `-1` 再跑，算术右移下 `-1 >> 1` 仍是 -1——全 1 的串怎么挪都还是全 1。
+
+### 5.3 移位计数越宽：UB，UBSan 当场抓
+
+第三条边界最容易被忽视：**移位计数是负数，或大于等于提升后类型的位宽，就是未定义行为**。32 位 `int` 移 32 位？不行：
 
 ```c
+/* badshift.c */
 #include <stdio.h>
-
-/* 状态寄存器：位域视图 + 整体视图 */
-typedef union {
-    struct {
-        unsigned int busy      : 1;   /* 忙碌标志 */
-        unsigned int error     : 1;   /* 错误标志 */
-        unsigned int ready     : 1;   /* 就绪标志 */
-        unsigned int mode      : 2;   /* 工作模式 */
-        unsigned int           : 3;   /* 保留 */
-        unsigned int count     : 8;   /* 计数器 */
-        unsigned int           : 16;  /* 保留 */
-    } bits;
-    unsigned int value;  /* 整体访问 */
-} StatusReg;
 
 int main(void) {
-    StatusReg reg = { 0 };
-
-    /* 通过位域设置各字段 */
-    reg.bits.busy  = 1;
-    reg.bits.ready = 1;
-    reg.bits.mode  = 2;
-    reg.bits.count = 100;
-
-    /* 以整体方式读取 */
-    printf("寄存器值: 0x%08X\n", reg.value);
-
-    /* 以整体方式写入 */
-    reg.value = 0x00000005;  /* busy=1, ready=1 */
-    printf("忙碌: %u\n", reg.bits.busy);   /* 1 */
-    printf("错误: %u\n", reg.bits.error);  /* 0 */
-    printf("就绪: %u\n", reg.bits.ready);  /* 1 */
-
+    unsigned int x = 1u;
+    int n = 32;
+    printf("x << n = %u\n", x << n);   /* 计数 32 >= 宽度 32：UB */
     return 0;
 }
 ```
 
-### 位运算实现集合
+```bash
+gcc -Wall -Wextra -g -fsanitize=undefined badshift.c -o badshift
+./badshift
+```
 
-用整数的每一位表示一个元素是否在集合中，可以高效实现小规模集合操作：
+典型输出（GCC 与 Clang 的 libubsan 措辞一致，行列号可能有差）：
+
+```text
+badshift.c:6:26: runtime error: shift exponent 32 is too large for 32-bit type 'unsigned int'
+x << n = 1
+```
+
+逐行读：第一行点名事故——移位指数 32 对 32 位类型太大；第二行的 `1` 不是标准给的答案，而是 x86 硬件移位器只取计数低 5 位（32 mod 32 = 0，等于没移）的侥幸产物。各硬件对越界计数的行为五花八门，编译器还可能借 UB 做优化，所以标准干脆留白——这与「有符号溢出是 UB」同源：**标准只在所有硬件能廉价达成一致的地方给承诺**（参见 [内存深水区](/c/210-MemoryManagement) 对 UB 的展开）。修法只有一种：移位前保证 `0 <= n < 位宽`。
+
+## 6. 经典技巧与两个著名陷阱
+
+### 6.1 统计置位数：Brian Kernighan 法
+
+朴素做法逐位扫 32 次。Kernighan 法每轮用 `n & (n - 1)` 直接**清掉最低位的那个 1**，循环次数等于 1 的个数：
+
+```text
+n      = 1101 0100
+n - 1  = 1101 0011   （最低位的 1 借位变 0，它右边的 0 全变 1）
+n&(n-1)= 1101 0000   （最低位的 1 被精确清除）
+```
 
 ```c
+/* tricks.c */
 #include <stdio.h>
 
-#define SET_SIZE 32
-
-typedef unsigned int BitSet;
-
-/* 添加元素 */
-BitSet setAdd(BitSet s, int elem) {
-    return s | (1U << elem);
-}
-
-/* 移除元素 */
-BitSet setRemove(BitSet s, int elem) {
-    return s & ~(1U << elem);
-}
-
-/* 判断元素是否在集合中 */
-int setContains(BitSet s, int elem) {
-    return (s & (1U << elem)) != 0;
-}
-
-/* 并集 */
-BitSet setUnion(BitSet a, BitSet b) {
-    return a | b;
-}
-
-/* 交集 */
-BitSet setIntersect(BitSet a, BitSet b) {
-    return a & b;
-}
-
-/* 差集（在a中但不在b中） */
-BitSet setDifference(BitSet a, BitSet b) {
-    return a & ~b;
-}
-
-/* 集合大小 */
-int setSize(BitSet s) {
+int popcount(unsigned int n) {       /* Brian Kernighan */
     int count = 0;
-    while (s) {
-        count += s & 1;
-        s >>= 1;
-    }
-    return count;
-}
-
-/* 打印集合 */
-void setPrint(BitSet s) {
-    printf("{ ");
-    for (int i = 0; i < SET_SIZE; i++) {
-        if (setContains(s, i)) {
-            printf("%d ", i);
-        }
-    }
-    printf("}\n");
-}
-
-int main(void) {
-    BitSet a = 0, b = 0;
-
-    a = setAdd(a, 1);
-    a = setAdd(a, 3);
-    a = setAdd(a, 5);
-    a = setAdd(a, 7);
-
-    b = setAdd(b, 2);
-    b = setAdd(b, 3);
-    b = setAdd(b, 5);
-    b = setAdd(b, 8);
-
-    printf("集合A: "); setPrint(a);  /* { 1 3 5 7 } */
-    printf("集合B: "); setPrint(b);  /* { 2 3 5 8 } */
-    printf("并集: ");  setPrint(setUnion(a, b));      /* { 1 2 3 5 7 8 } */
-    printf("交集: ");  setPrint(setIntersect(a, b));  /* { 3 5 } */
-    printf("差集: ");  setPrint(setDifference(a, b)); /* { 1 7 } */
-
-    return 0;
-}
-```
-
-## 常见场景
-
-### 硬件寄存器操作
-
-嵌入式开发中，位运算是操作硬件寄存器的基本手段：
-
-```c
-#include <stdio.h>
-
-/* 模拟硬件寄存器 */
-volatile unsigned int GPIO_CTRL = 0;
-
-/* 寄存器位定义 */
-#define GPIO_PIN0      (1U << 0)
-#define GPIO_PIN1      (1U << 1)
-#define GPIO_PIN2      (1U << 2)
-#define GPIO_PIN3      (1U << 3)
-#define GPIO_ALL_PINS  (0xF)
-
-/* 设置引脚为输出 */
-void gpioSetOutput(unsigned int pins) {
-    GPIO_CTRL |= pins;
-}
-
-/* 设置引脚为输入 */
-void gpioSetInput(unsigned int pins) {
-    GPIO_CTRL &= ~pins;
-}
-
-/* 翻转引脚状态 */
-void gpioToggle(unsigned int pins) {
-    GPIO_CTRL ^= pins;
-}
-
-/* 读取引脚状态 */
-unsigned int gpioRead(unsigned int pins) {
-    return GPIO_CTRL & pins;
-}
-
-int main(void) {
-    /* 设置 PIN0 和 PIN1 为输出 */
-    gpioSetOutput(GPIO_PIN0 | GPIO_PIN1);
-    printf("CTRL: 0x%08X\n", GPIO_CTRL);  /* 0x00000003 */
-
-    /* 翻转 PIN0 */
-    gpioToggle(GPIO_PIN0);
-    printf("CTRL: 0x%08X\n", GPIO_CTRL);  /* 0x00000002 */
-
-    /* 设置 PIN2 和 PIN3 为输出 */
-    gpioSetOutput(GPIO_PIN2 | GPIO_PIN3);
-    printf("CTRL: 0x%08X\n", GPIO_CTRL);  /* 0x0000000E */
-
-    return 0;
-}
-```
-
-### 数据压缩与打包
-
-将多个小范围数值打包到一个整数中，节省存储空间：
-
-```c
-#include <stdio.h>
-
-/* 将 RGBA 四个通道打包为 32 位颜色值 */
-unsigned int packColor(unsigned char r, unsigned char g,
-                       unsigned char b, unsigned char a) {
-    return ((unsigned int)a << 24) |
-           ((unsigned int)r << 16) |
-           ((unsigned int)g << 8)  |
-           ((unsigned int)b);
-}
-
-/* 从 32 位颜色值中解包各通道 */
-void unpackColor(unsigned int color,
-                 unsigned char *r, unsigned char *g,
-                 unsigned char *b, unsigned char *a) {
-    *a = (color >> 24) & 0xFF;
-    *r = (color >> 16) & 0xFF;
-    *g = (color >> 8)  & 0xFF;
-    *b =  color        & 0xFF;
-}
-
-int main(void) {
-    unsigned int color = packColor(255, 128, 64, 200);
-    printf("打包颜色: 0x%08X\n", color);  /* 0xC8FF8040 */
-
-    unsigned char r, g, b, a;
-    unpackColor(color, &r, &g, &b, &a);
-    printf("R=%d, G=%d, B=%d, A=%d\n", r, g, b, a);  /* 255, 128, 64, 200 */
-
-    return 0;
-}
-```
-
-### 权限与标志系统
-
-Unix 文件权限是位运算的经典应用：
-
-```c
-#include <stdio.h>
-
-/* 权限位定义 */
-#define USR_R (1 << 8)  /* 用户读 */
-#define USR_W (1 << 7)  /* 用户写 */
-#define USR_X (1 << 6)  /* 用户执行 */
-#define GRP_R (1 << 5)  /* 组读 */
-#define GRP_W (1 << 4)  /* 组写 */
-#define GRP_X (1 << 3)  /* 组执行 */
-#define OTH_R (1 << 2)  /* 其他读 */
-#define OTH_W (1 << 1)  /* 其他写 */
-#define OTH_X (1 << 0)  /* 其他执行 */
-
-/* 将权限位转换为 rwx 字符串 */
-void permToStr(unsigned int perm, char *out) {
-    const char *labels[] = { "r", "w", "x" };
-    unsigned int bits[]  = { USR_R, USR_W, USR_X, GRP_R, GRP_W, GRP_X, OTH_R, OTH_W, OTH_X };
-    int idx = 0;
-    for (int i = 0; i < 9; i++) {
-        if (perm & bits[i]) {
-            out[idx++] = labels[i % 3][0];
-        } else {
-            out[idx++] = '-';
-        }
-    }
-    out[idx] = '\0';
-}
-
-int main(void) {
-    /* rwxr-xr-x = 0755 */
-    unsigned int perm = USR_R | USR_W | USR_X | GRP_R | GRP_X | OTH_R | OTH_X;
-
-    char str[10];
-    permToStr(perm, str);
-    printf("权限: %s (0o%o)\n", str, perm);  /* rwxr-xr-x (0o755) */
-
-    /* 去掉其他用户的写权限 */
-    perm &= ~OTH_W;
-    permToStr(perm, str);
-    printf("修改后: %s\n", str);  /* rwxr-xr-x */
-
-    return 0;
-}
-```
-
-### 哈希与校验
-
-位运算在哈希函数和校验算法中大量使用：
-
-```c
-#include <stdio.h>
-#include <string.h>
-
-/* 简单的 FNV-1a 哈希 */
-unsigned int fnv1aHash(const char *str) {
-    unsigned int hash = 2166136261U;  /* FNV 偏移基数 */
-    while (*str) {
-        hash ^= (unsigned char)*str++;  /* 异或当前字节 */
-        hash *= 16777619U;              /* 乘以 FNV 质数 */
-    }
-    return hash;
-}
-
-/* 简单的奇偶校验 */
-int parityCheck(unsigned int value) {
-    int parity = 0;
-    while (value) {
-        parity ^= 1;       /* 每遇到一个1就翻转 */
-        value &= value - 1; /* 清除最低位的1 */
-    }
-    return parity;  /* 0: 偶数个1, 1: 奇数个1 */
-}
-
-int main(void) {
-    const char *msg = "Hello, World!";
-    printf("FNV-1a 哈希: 0x%08X\n", fnv1aHash(msg));
-
-    unsigned int data = 0b11010110;
-    printf("0x%X 的奇偶校验: %s\n", data,
-           parityCheck(data) ? "奇" : "偶");
-
-    return 0;
-}
-```
-
-## 注意事项
-
-### 移位溢出
-
-移位位数不能超过数据类型的位宽，否则是未定义行为：
-
-```c
-unsigned int x = 1;
-
-/* 未定义行为：移位位数 >= int 的位数 */
-x << 32;   /* 未定义！int 通常为 32 位 */
-x << -1;   /* 未定义！移位位数为负 */
-
-/* 安全做法：确保移位位数在合法范围内 */
-int shift = 32;
-if (shift >= 0 && shift < (int)sizeof(unsigned int) * 8) {
-    x = x << shift;
-}
-```
-
-### 有符号数的右移
-
-有符号数右移时，高位填充符号位（算术右移）还是0（逻辑右移）由实现定义。需要可移植的代码应使用无符号类型：
-
-```c
-/* 不可移植：有符号数右移 */
-int a = -8;
-int b = a >> 1;  /* 结果依赖编译器实现 */
-
-/* 可移植：使用无符号数 */
-unsigned int c = (unsigned int)-8;
-unsigned int d = c >> 1;  /* 保证逻辑右移 */
-```
-
-### 位域的可移植性
-
-位域的内存布局由编译器决定，不同编译器可能不同：
-
-```c
-/*
- * 位域的以下方面是实现定义的：
- * 1. 位域在存储单元中的分配方向（从高位到低位，或反之）
- * 2. 相邻位域是否可以跨越存储单元边界
- * 3. int 位域是否有符号（实现定义）
- * 4. 位域的最大宽度限制
- *
- * 因此，位域结构不应直接用于跨平台的数据交换或文件存储。
- * 需要跨平台时，应使用显式的位运算代替位域。
- */
-```
-
-### 位域不能取地址
-
-位域成员可能不按字节对齐，因此不能对其取地址：
-
-```c
-struct Flags {
-    unsigned int a : 1;
-    unsigned int b : 3;
-};
-
-struct Flags f;
-/* int *p = &f.a; */  /* 编译错误！位域不能取地址 */
-
-/* 替代方案：通过整体访问 */
-unsigned int *pval = (unsigned int *)&f;  /* 取整个结构体的地址 */
-```
-
-### 整数提升陷阱
-
-位运算前，小于 int 的类型会被提升为 int，可能导致意外结果：
-
-```c
-unsigned char flags = 0x80;  /* 1000 0000 */
-
-/* 意图：清除最高位 */
-unsigned char result = flags & ~(0x80);
-/* ~(0x80) 在 int 上是 0xFFFFFF7F，但 & 运算后截断为 unsigned char，结果正确 */
-
-/* 但如果写成这样就有问题 */
-unsigned char mask = 0x80;
-/* ~mask 被提升为 int: 0xFFFFFF7F */
-/* flags & ~mask 结果为 int: 0xFFFFFF00 */
-/* 赋值给 unsigned char 时截断为 0x00，可能不是预期结果 */
-```
-
-### 位域的符号问题
-
-`int` 类型的位域是否有符号由实现定义，建议显式使用 `signed` 或 `unsigned`：
-
-```c
-struct Example {
-    int a : 3;            /* 实现定义：可能是 signed 或 unsigned */
-    signed int b : 3;     /* 明确有符号：-4 到 3 */
-    unsigned int c : 3;   /* 明确无符号：0 到 7 */
-};
-```
-
-## 进阶用法
-
-### 位运算技巧集锦
-
-```c
-#include <stdio.h>
-
-/* 判断是否为2的幂 */
-int isPowerOf2(int n) {
-    return n > 0 && (n & (n - 1)) == 0;
-}
-
-/* 统计二进制中1的个数（Brian Kernighan 算法） */
-int popcount(unsigned int n) {
-    int count = 0;
-    while (n) {
-        n &= n - 1;  /* 清除最低位的1 */
+    while (n != 0) {
+        n &= n - 1u;
         count++;
     }
     return count;
 }
 
-/* 获取最低位的1（lowbit） */
-unsigned int lowbit(unsigned int n) {
-    return n & (-n);  /* 等价于 n & (~n + 1) */
-}
-
-/* 判断两个整数符号是否相反 */
-int oppositeSigns(int a, int b) {
-    return (a ^ b) < 0;
-}
-
-/* 不用分支求绝对值 */
-int absNoBranch(int n) {
-    int mask = n >> (sizeof(int) * 8 - 1);  /* 全0或全1 */
-    return (n + mask) ^ mask;
-}
-
-/* 交换两个整数的最高字节 */
-unsigned int swapHighByte(unsigned int a, unsigned int b) {
-    unsigned int mask = 0xFF000000;
-    return ((a & ~mask) | (b & mask));
-}
-
-/* 反转二进制位 */
-unsigned int reverseBits(unsigned int n) {
-    unsigned int result = 0;
-    int bits = sizeof(n) * 8;
-    for (int i = 0; i < bits; i++) {
-        result <<= 1;
-        result |= n & 1;
-        n >>= 1;
-    }
-    return result;
+int is_power_of_2(unsigned int n) {
+    return n != 0u && (n & (n - 1u)) == 0u;
 }
 
 int main(void) {
-    printf("16 是2的幂: %s\n", isPowerOf2(16) ? "是" : "否");
-    printf("0xAB 的1的个数: %d\n", popcount(0xAB));  /* 6 */
-    printf("12 的 lowbit: %u\n", lowbit(12));  /* 4 */
-    printf("-5 和 3 符号相反: %s\n", oppositeSigns(-5, 3) ? "是" : "否");
-    printf("|-42| = %d\n", absNoBranch(-42));
-
+    printf("0b11010110 有 %d 个 1\n", popcount(0b11010110u));   /* 5 */
+    printf("16 是 2 的幂? %d\n", is_power_of_2(16u));           /* 1 */
     return 0;
 }
 ```
 
-### 位图（Bitmap）
+「2 的幂」判断是同一条公式的直接推论：2 的幂恰好只有一个 1，清掉它就该归零，别忘排除 0。串行通信里的**奇偶校验**也是这套手法——数 1 的个数是奇是偶，循环体换成 `parity ^= 1` 即可。顺带一条同门公式：`n & (0u - n)` 单独捞出最低位的 1（补码的负数是取反加一，与原值相与恰好只剩它），树状数组的灵魂 lowbit，先混个眼熟。
 
-位图是用位数组实现的高效索引结构，常用于内存管理和布隆过滤器：
+### 6.2 陷阱一：异或交换的同地址自杀
 
 ```c
+/* swaptrap.c */
 #include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
-#define BITMAP_SIZE(bits) (((bits) + 7) / 8)
-
-typedef struct {
-    unsigned char *data;
-    int size;  /* 位数 */
-} Bitmap;
-
-/* 创建位图 */
-Bitmap *bitmapCreate(int size) {
-    Bitmap *bm = (Bitmap *)malloc(sizeof(Bitmap));
-    bm->size = size;
-    bm->data = (unsigned char *)calloc(BITMAP_SIZE(size), 1);
-    return bm;
+void swap_bad(int *a, int *b) {
+    *a ^= *b; *b ^= *a; *a ^= *b;   /* 若 a 与 b 指向同一变量：自己翻自己，归零 */
 }
 
-/* 销毁位图 */
-void bitmapDestroy(Bitmap *bm) {
-    free(bm->data);
-    free(bm);
-}
-
-/* 设置位 */
-void bitmapSet(Bitmap *bm, int index) {
-    if (index >= 0 && index < bm->size) {
-        bm->data[index / 8] |= (1U << (index % 8));
-    }
-}
-
-/* 清除位 */
-void bitmapClear(Bitmap *bm, int index) {
-    if (index >= 0 && index < bm->size) {
-        bm->data[index / 8] &= ~(1U << (index % 8));
-    }
-}
-
-/* 检测位 */
-int bitmapTest(const Bitmap *bm, int index) {
-    if (index >= 0 && index < bm->size) {
-        return (bm->data[index / 8] >> (index % 8)) & 1;
-    }
-    return 0;
+void swap_safe(int *a, int *b) {
+    if (a == b) return;             /* 保险丝：同一地址直接返回 */
+    *a ^= *b; *b ^= *a; *a ^= *b;
 }
 
 int main(void) {
-    Bitmap *bm = bitmapCreate(100);
-
-    /* 标记一些位 */
-    bitmapSet(bm, 5);
-    bitmapSet(bm, 10);
-    bitmapSet(bm, 63);
-    bitmapSet(bm, 99);
-
-    /* 检测 */
-    printf("位5: %d\n", bitmapTest(bm, 5));   /* 1 */
-    printf("位6: %d\n", bitmapTest(bm, 6));   /* 0 */
-    printf("位63: %d\n", bitmapTest(bm, 63)); /* 1 */
-
-    /* 清除 */
-    bitmapClear(bm, 5);
-    printf("位5清除后: %d\n", bitmapTest(bm, 5));  /* 0 */
-
-    bitmapDestroy(bm);
+    int x = 10;
+    swap_bad(&x, &x);
+    printf("swap_bad 后 x = %d\n", x);      /* 0，而不是 10 */
+    int a = 1, b = 2;
+    swap_safe(&a, &b);
+    printf("a = %d, b = %d\n", a, b);       /* 2 1 */
     return 0;
 }
 ```
 
-### 位域实现协议头
+推演一遍 `swap_bad(&x, &x)`：第一步 `x ^= x` 利用 `x ^ x == 0` 直接归零，后两步在同值上空转——数据丢了。真实事故现场是 `swap(arr, i, j)` 在 `i == j` 时把数组元素清零。结论：日常代码老老实实用临时变量；异或交换只值得当「性质演示题」记住，记的时候必须连陷阱一起记。
 
-网络协议和文件格式的头部字段通常用位域来描述：
+### 6.3 陷阱二：字节顺序，用位运算做个探针
 
-```c
-#include <stdio.h>
-#include <string.h>
-
-/* TCP 头部前16位的简化模型 */
-typedef union {
-    struct {
-        unsigned int src_port  : 16;  /* 源端口 */
-        unsigned int dst_port  : 16;  /* 目标端口 */
-    } fields;
-    unsigned int raw;
-} TcpPortHeader;
-
-/* IP 头部前字段的简化模型 */
-typedef union {
-    struct {
-#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-        unsigned int hdr_len   : 4;   /* 头部长度 */
-        unsigned int version   : 4;   /* 版本 */
-#else
-        unsigned int version   : 4;
-        unsigned int hdr_len   : 4;
-#endif
-        unsigned int tos       : 8;   /* 服务类型 */
-        unsigned int total_len : 16;  /* 总长度 */
-    } fields;
-    unsigned int raw;
-} IpHeaderStart;
-
-int main(void) {
-    /* 构造 TCP 端口头部 */
-    TcpPortHeader tcp = { 0 };
-    tcp.fields.src_port = 8080;
-    tcp.fields.dst_port = 80;
-    printf("TCP 端口: 源=%u, 目标=%u\n",
-           tcp.fields.src_port, tcp.fields.dst_port);
-
-    /* 构造 IP 头部 */
-    IpHeaderStart ip = { 0 };
-    ip.fields.version = 4;
-    ip.fields.hdr_len = 5;
-    ip.fields.tos = 0;
-    ip.fields.total_len = 1500;
-    printf("IP 版本: %u, 头部长度: %u x 4 = %u 字节\n",
-           ip.fields.version, ip.fields.hdr_len, ip.fields.hdr_len * 4);
-
-    return 0;
-}
-```
-
-### 编译器内置位操作函数
-
-GCC 和 Clang 提供了高效的内置位操作函数：
+多字节整数在内存里怎么摆，取决于平台是**小端**（低字节放低地址）还是**大端**（高字节放低地址）。一个联合体探针当场验出来：
 
 ```c
+/* endian.c */
 #include <stdio.h>
 
 int main(void) {
-    unsigned int x = 0b10110000;
+    union { unsigned int value; unsigned char bytes[4]; } probe = { .value = 0x01020304u };
 
-    /* 统计1的个数 */
-    printf("1的个数: %d\n", __builtin_popcount(x));  /* 3 */
-
-    /* 前导零的个数（从最高位开始连续0的个数） */
-    printf("前导零: %d\n", __builtin_clz(x));  /* 依赖位数 */
-
-    /* 尾随零的个数（从最低位开始连续0的个数） */
-    printf("尾随零: %d\n", __builtin_ctz(x));  /* 4 */
-
-    /* 奇偶校验（1的个数的奇偶性） */
-    printf("奇偶: %d\n", __builtin_parity(x));  /* 1（奇数个1） */
-
-    /* long long 版本 */
-    unsigned long long y = 0xFF00ULL;
-    printf("ll popcount: %d\n", __builtin_popcountll(y));  /* 8 */
-
+    printf("bytes[0] = 0x%02X -> %s 端\n", probe.bytes[0],
+           probe.bytes[0] == 0x04 ? "小" : "大");
     return 0;
 }
 ```
 
-### C23 中的位操作新特性
+x86 与 ARM 的主流 Linux/Windows 环境输出 `bytes[0] = 0x04 -> 小端`。字节序影响的是「字节在内存里的排法」，而位运算操作的是「值本身的位」——所以本篇的掩码公式在任何端上都成立；一旦涉及把内存按字节倒出来看（序列化、协议、文件格式），端序就成了主角，展开见 [内存布局](/c/230-AlignmentMemoryLayout)。
 
-C23 标准引入了 `<stdbit.h>` 头文件，提供标准化的位操作函数：
+## 7. C23 新料：0b 字面量、数字分隔符与 stdbit.h
+
+C23 把两件编译器界的既成事实收编进标准，又带来一整套标准位函数：
+
+- **二进制字面量**：`0b10101010`，与 `0x`、八进制 `0` 前缀并列（本文示例一直在用）；
+- **数字分隔符**：用单引号分组，`1'000'000`、`0b1010'1010`，纯可读性糖，不改变值；
+- **`<stdbit.h>` 函数族**：C23 新头文件，把过去散落在 `__builtin_popcount` 这类编译器内置函数（GCC/Clang 提供）里的位操作标准化。命名规律是 `stdc_ + 功能 + 后缀`，后缀 `_uc/_us/_ui/_ul/_ull` 对应五种无符号类型，另有不加后缀的类型泛型宏自动按实参类型分发。
+
+| 函数（以 `_ui` 版为例） | 含义 | `x = 0b10100u`（20）时 |
+| --- | --- | --- |
+| `stdc_count_ones` | 1 的个数 | 2 |
+| `stdc_count_zeros` | 0 的个数 | 30 |
+| `stdc_leading_zeros` | 前导 0 个数 | 27 |
+| `stdc_trailing_zeros` | 尾随 0 个数 | 2 |
+| `stdc_bit_width` | 表示所需位数 | 5 |
+| `stdc_bit_floor` | 不超过 x 的最大 2 的幂（返回值本身） | 16 |
+| `stdc_bit_ceil` | 不小于 x 的最小 2 的幂 | 32 |
+| `stdc_has_single_bit` | 是否恰有一个 1（即 2 的幂） | 0 |
 
 ```c
-/*
- * C23 <stdbit.h> 提供的函数（以 unsigned int 为例）：
- *
- * stdc_leading_zeros_ui(x)    - 前导零个数
- * stdc_trailing_zeros_ui(x)   - 尾随零个数
- * stdc_leading_ones_ui(x)     - 前导1个数
- * stdc_trailing_ones_ui(x)    - 尾随1个数
- * stdc_first_leading_zero_ui(x) - 第一个前导零的位置
- * stdc_first_leading_one_ui(x)  - 第一个前导1的位置
- * stdc_first_trailing_zero_ui(x)- 第一个尾随零的位置
- * stdc_first_trailing_one_ui(x) - 第一个尾随1的位置
- * stdc_count_zeros_ui(x)      - 零的个数
- * stdc_count_ones_ui(x)       - 1的个数
- * stdc_has_single_bit_ui(x)   - 是否恰好只有一个1（2的幂）
- * stdc_bit_width_ui(x)        - 表示x所需的最少位数
- * stdc_bit_floor_ui(x)        - 不超过x的最大2的幂
- * stdc_bit_ceil_ui(x)         - 不小于x的最小2的幂
- *
- * 每个函数有 _uc, _us, _ui, _ul, _ull 后缀版本
- * 对应 unsigned char, unsigned short, unsigned int, unsigned long, unsigned long long
- */
-
-/* 使用示例（需要支持 C23 的编译器） */
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+/* stdbit_demo.c：需要 GCC 14+（glibc 2.39+ 提供该头文件）等较新工具链 */
+#include <stdio.h>
 #include <stdbit.h>
 
-void c23BitDemo(void) {
-    unsigned int x = 0b00010100;  /* 20 */
-
-    int zeros = stdc_count_zeros_ui(x);    /* 29 */
-    int ones  = stdc_count_ones_ui(x);     /* 2 */
-    int single = stdc_has_single_bit_ui(x); /* 0（不是2的幂） */
-    int width = stdc_bit_width_ui(x);       /* 5 */
+int main(void) {
+    unsigned int x = 0b1'0100u;                            /* 数字分隔符写法 */
+    printf("count_ones = %u\n", stdc_count_ones(x));       /* 2 */
+    printf("bit_width  = %u\n", stdc_bit_width(x));        /* 5 */
+    printf("bit_floor  = %u\n", stdc_bit_floor(x));        /* 16 */
+    printf("has_single_bit = %d\n", stdc_has_single_bit(x) ? 1 : 0);  /* 0 */
+    return 0;
 }
-#endif
 ```
-## 基本位运算
 
-**基本写法：按位与**
-`<a> & <b>`
+本文手写的 `popcount`、`is_power_of_2` 在标准库里各有一个对应函数——手写版的价值在于你懂了原理，标准版的价值在于编译器能把它翻成单条硬件指令。C23 其余新特性（`_BitInt(N)` 位精确整数、`bool` 关键字化等）见 [C23 与 C2y](/c/520-C23C2y) 与 [C23 新特性](/c/530-C23NewFeatures)。
+
+至于**位域**——把一个 `struct` 的成员精确到「占 3 个比特」的语法，本文到这里只留一句话：它让「8 个开关塞 1 个字节」写起来更像普通结构体，但布局由实现说了算。全部内容在 [位域](/c/240-BitField)。
+
+## 8. 常见错误与调试实录
+
+### 8.1 整数提升：unsigned char 一进表达式就变 int
+
 ```c
-// 按位与常用于掩码
-int r = 0xF0 & 0x0F;   // 结果 0
+unsigned char x = 0x80;             /* 1000 0000 */
+unsigned int shifted = x << 24;     /* 本意：把 0x80 挪到最高字节 —— UB！ */
 ```
 
----
+报错没有——但这是未定义行为。按整数提升规则，`unsigned char` 参与表达式先升格为 `int`：`0x80` 变成 `0x00000080`，`128 << 24` 等于 2 的 31 次方，超出 `INT_MAX`，正好踩中 5.1 节的有符号左移 UB。修法是把左操作数先变成无符号：`unsigned int shifted = (unsigned int)x << 24;`（无符号回绕规则接管，合法）。记住口诀：**小类型没有位运算，只有先提升再运算**。同理 `flags &= ~0x80` 之所以安全，是因为 `~` 在 `int` 上算完后赋回 `unsigned char` 时恰好截回正确结果——靠的是运气与 8 位的巧合，而不是类型推理。同类保险还有一条：**构造掩码一律写 `1u`**，`1 << 31` 与 `(1 << n) - 1` 在 n 取 31 时都会炸（5.1、5.3 节）。
 
-**基本写法：按位或**
-`<a> | <b>`
+### 8.2 优先级：`&` 比 `==` 低
+
 ```c
-// 按位或常用于置位
-int r = 0xF0 | 0x0F;   // 结果 0xFF
+if (flags & PERM_READ == 0) {   /* 实际解析成 flags & (PERM_READ == 0) */
 ```
 
----
+`==` 的优先级高于 `&`，这行代码判断的是「常量 1 是否为 0」，永远为假。`gcc -Wall` 会给出 `suggest parentheses around comparison in operand of '&'` 的警告。位运算与相等比较混用时，两边都加括号：`if ((flags & PERM_READ) == 0)`。
 
-**基本写法：按位异或**
-`<a> ^ <b>`
+## 9. 实际项目中的使用场景
+
+- **硬件寄存器**：嵌入式驱动里外设寄存器的每一位都有名字（使能、模式、中断标志），驱动代码就是掩码四件套的连招；真硬件上寄存器还要加 `volatile` 修饰，见 [volatile 与 const 深水区](/c/260-CVolatileAndConstDeepDive)、[嵌入式 C 编程](/c/550-EmbeddedCProgramming)；
+- **数据打包**：把 RGBA 四个 8 位通道压进一个 32 位颜色值——`(a << 24) | (r << 16) | (g << 8) | b`，解包用 `extract_bits` 反向取出；图标、协议头、传感器数据的「多字段合一」同型；
+- **集合与位图**：32 个元素以内的集合用一个 `unsigned int` 存——添加 `s \|= 1u << e`、删除 `s &= ~(1u << e)`、并集 `a | b`、交集 `a & b`、差集 `a & ~b`；更大的开关阵列开一个字节数组，第 i 位落在 `data[i / 8]` 的第 `i % 8` 位——`data[i / 8] \|= (unsigned char)(1u << (i % 8))`；动态分配版本遵守 [动态内存](/c/200-DynamicMemoryManagement) 的判 NULL 与释放纪律；
+- **哈希与校验**：FNV-1a 之类哈希以 `^` 与乘法搅位；串口协议用奇偶校验位查传输出错，都是本篇手法的直接应用。
+
+## 10. 小练习
+
+预测题（5 分钟）：先写下答案再运行验证：
+
 ```c
-// 异或可用于翻转位
-int r = 0xFF ^ 0x0F;   // 结果 0xF0
+unsigned int x = 0x00000001u;
+x |= 1u << 3;
+x ^= 0x0000000Fu;
+x &= ~(1u << 1);
+printf("0x%08X\n", x);
 ```
 
----
+参考答案（先写再看）：`0x01 | 0x08 = 0x09`；`0x09 ^ 0x0F = 0x06`；`0x06 & ~0x02 = 0x04`。输出 `0x00000004`。三步分别是置位、低 4 位翻转、清位——掩码四件套连招。
 
-**基本写法：按位取反**
-`~<a>`
-```c
-// 取反所有位
-int r = ~0;   // -1
-```
+挑战题（30 分钟，不看答案先动手）：写 `unsigned int reverse_bits(unsigned int n)`，把 32 个位左右镜像：`reverse_bits(0x00000001u)` 应返回 `0x80000000u`。
 
----
+提示（思路方向）：参考 `print_bits` 的视角——从一端逐位取出，按相反顺序塞进另一个变量；循环 32 次。
 
-## 移位运算
+展开（关键 API）：循环体三行——`result = (result << 1) | (n & 1u);` 先腾出空位，`n >>= 1;` 丢掉已处理的位；最后返回 `result`。
 
-**基本写法：左移**
-`<a> << <位数>`
-```c
-// 左移一位相当于乘 2
-int r = 1 << 4;   // 16
-```
+验收清单：`reverse_bits(0x00000001u) == 0x80000000u`；`reverse_bits(0xF0F0F0F0u) == 0x0F0F0F0Fu`（对称样例）；用 `print_bits(reverse_bits(v), 32)` 肉眼核对一个不对称值。
 
----
+## 11. 与之前和之后的知识的关系
 
-**基本写法：右移**
-`<a> >> <位数>`
-```c
-// 右移一位相当于除 2
-int r = 256 >> 2;   // 64
-```
+- 往前：[运算符与表达式](/c/060-OperatorExpression) 的优先级与求值规则是 8.2 节事故的裁判；[数据类型详解](/c/040-DataTypeDetailed) 的补码表示解释了 `~5 == -6` 与算术右移；
+- 旁支：把「位级成员」写进结构体的语法是位域，见 [位域](/c/240-BitField)；字节序与结构体排布见 [内存布局](/c/230-AlignmentMemoryLayout)；`volatile` 寄存器操作见 [volatile 与 const 深水区](/c/260-CVolatileAndConstDeepDive)；
+- 往后：C23 的 `stdbit.h` 只是 C23 冰山一角，全景见 [C23 与 C2y](/c/520-C23C2y)、[C23 新特性](/c/530-C23NewFeatures)。
 
----
+## 12. 官方文档
 
-## 位掩码操作
+- 移位与位运算符的标准语义（含负数右移、计数越界规则）：https://en.cppreference.com/w/c/language/operator_arithmetic
+- C23 `<stdbit.h>` 头文件总览（函数族与 `__STDC_VERSION_STDBIT_H__` 宏）：https://en.cppreference.com/w/c/header/stdbit
+- Beej's Guide to C Programming（位运算章节的入门讲法可对照）：https://beej.us/guide/bgc/
 
-**基本写法：置位**
-`<变量> |= (1 << <位号>);`
-```c
-// 将第 3 位置 1
-flags |= (1 << 3);
-```
+## 13. 自我检查
 
----
+- 能把任意 unsigned 值在二进制与十六进制间换算，并默写 `print_bits` 的循环体；
+- 能徒手写出第 n 位置位、清零、翻转、检测四个公式，并说出各自用哪个运算符、为什么；
+- 能向同事讲清三件事：负数右移为什么不能赌、`1 << 31` 与 `1u << 31` 差在哪、UBSan 怎么抓越界移位；
+- 能实现 Kernighan 置位计数与 2 的幂判断，并说出异或交换在 `a == b` 时为什么自杀。
 
-**基本写法：清位**
-`<变量> &= ~(1 << <位号>);`
-```c
-// 将第 3 位清 0
-flags &= ~(1 << 3);
-```
+## 本章总结
 
----
+位运算是把整数摊开成比特后的算术：`&` 筛选、`|` 合并、`^` 翻转、`~` 取反、`<<` `>>` 挪动。掩码四件套（`|=` 置位、`&= ~` 清零、`^=` 翻转、`&` 检测）是所有位级代码的基本功，权限标志是它的正面战场。移位的三条边界：左移有符号进符号位是 UB（写 `1u << 31`）、负数右移实现定义（可移植就先转无符号）、计数越宽是 UB（UBSan 当场抓）。经典技巧里，`n & (n - 1)` 一条公式撑起置位计数与 2 的幂判断；异或交换记住同地址陷阱；字节序用联合体探针验。C23 把 `0b` 字面量、数字分隔符与 `stdbit.h` 函数族收进标准，手写技巧从此有了标准名字。
 
-**基本写法：翻转位**
-`<变量> ^= (1 << <位号>);`
-```c
-// 翻转第 3 位
-flags ^= (1 << 3);
-```
+## 下一步
 
----
-
-**基本写法：检测位**
-`if (<变量> & (1 << <位号>))`
-```c
-// 判断第 3 位是否为 1
-if (flags & (1 << 3)) { /* 已置位 */ }
-```
-
----
-
-## 常用技巧
-
-**基本写法：判断奇偶**
-`<n> & 1`
-```c
-// 最低位为 1 即奇数
-if ((n & 1) == 0) { /* 偶数 */ }
-```
-
----
-
-**基本写法：交换两数**
-`<a> ^= <b>; <b> ^= <a>; <a> ^= <b>;`
-```c
-// 异或交换无需临时变量
-a ^= b; b ^= a; a ^= b;
-```
-
----
-
-**基本写法：求绝对值**
-`(<n> ^ (<n> >> 31)) - (<n> >> 31)`
-```c
-// 32 位整数求绝对值
-int abs_n = (n ^ (n >> 31)) - (n >> 31);
-```
-
----
-
-**基本写法：判断 2 的幂**
-`<n> > 0 && !(<n> & (<n> - 1))`
-```c
-// 2 的幂只有一个 1 位
-if (n > 0 && !(n & (n - 1))) { /* 是 2 的幂 */ }
-```
-
----
-
-**基本写法：最低位的 1**
-`<n> & -<n>`
-```c
-// 取最低有效位
-int low = n & -n;
-```
-
----
-
-## 位域
-
-**基本写法：定义位域**
-`struct <名称> { <类型> <成员> : <位数>; };`
-```c
-// 紧凑存储多个标志
-struct Flags {
-    unsigned int a : 1;
-    unsigned int b : 3;
-    unsigned int c : 4;
-};
-```
-
----
-
-**基本写法：访问位域成员**
-`<变量>.<成员>`
-```c
-// 直接访问位域
-struct Flags f;
-f.a = 1;
-f.b = 5;
-```
-
----
-
-## stdbit.h C23
-
-**基本写法：统计 1 的个数**
-`stdc_count_ones(<值>)`
-```c
-// C23 标准位计数
-unsigned n = stdc_count_ones(0xFF);   // 8
-```
-
----
-
-**基本写法：统计前导零**
-`stdc_leading_zeros(<值>)`
-```c
-// C23 前导零数量
-unsigned z = stdc_leading_zeros(1u);
-```
-
----
-
-**基本写法：统计末尾零**
-`stdc_trailing_zeros(<值>)`
-```c
-// C23 末尾零数量
-unsigned z = stdc_trailing_zeros(8u);   // 3
-```
-
----
-
-**基本写法：查找最高位**
-`stdc_bit_width(<值>)`
-```c
-// C23 计算所需位数
-unsigned w = stdc_bit_width(255);   // 8
-```
-
----
-
-## 二进制字面量 C23
-
-**基本写法：二进制常量**
-`0b<二进制>` 或 `0B<二进制>`
-```c
-// C23 支持二进制字面量
-int mask = 0b10101010;
-```
-
----
-
-**基本写法：数字分隔符**
-`<数字>'<数字>`
-```c
-// C23 数字分隔符提高可读性
-int big = 0b1010'1010;
-```
+进入 [控制流程](/c/080-ControlFlow)：位级积木备齐了，接下来给程序装上骨架——分支与循环，让「检测到位再动作」真正跑起来。

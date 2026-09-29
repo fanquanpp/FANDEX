@@ -1,700 +1,500 @@
 ---
-order: 430
-title: 文件 I/O 操作
+order: 440
+title: 文件 I/O：fopen 到 fclose 的完整闭环
 module: 'c'
 category: 计算机科学
 difficulty: intermediate
-description: 标准文件流操作、二进制文件及错误处理。
+description: 从「程序退出后数据去哪了」出发建立流的心智模型：七种 fopen 模式与判 NULL、字符/行/格式化/块四大读写家族、feof 多读一次的调试实录、缓冲与 fclose 的落盘实验，以仿 wc 的统计器把全篇串成一条线。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/270-VolatileKeyword'
-  - 'c/240-BitField'
-  - 'c/590-CLanguageTheory'
-  - 'c/570-CAdvancedSystemProgramming'
+  - 'c/060-OperatorExpression'
+  - 'c/400-FileSystemOperation'
+  - 'c/420-CPosixSystemCall'
+  - 'c/440-CStandardLibrary'
+  - 'c/450-SafeFunctionBoundsCheck'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/090-FunctionDetailed'
+  - 'c/120-ArrayDetailed'
 ---
 
 ## 前置知识
 
-- [volatile 关键字](/c/270-VolatileKeyword)：建议先完成前一篇的学习
+- 已完成 [函数详解](/c/090-FunctionDetailed)：会定义函数、传参数、看懂返回值——本篇每个库函数都靠返回值汇报成败，不查返回值等于不听汇报；
+- 已完成 [数组详解](/c/120-ArrayDetailed)：会开 `char` 缓冲区、知道数组与指针的关系——`fgets` 与 `fread` 都往数组里放东西，放多少由你说了算。
+
+> 分工说明：C 模块的文件主题分三层。本篇讲标准库 stdio 的高层流——`FILE*`、缓冲、fopen 到 fclose 的闭环，日常首选；[POSIX 系统调用](/c/420-CPosixSystemCall) 讲 open/read/write 的底层文件描述符一套；目录遍历、权限、文件属性等更大的文件系统主题在 [文件系统操作](/c/400-FileSystemOperation)。
 
 ## 学习目标
 
-- 掌握「1. 文件 I/O 的概念与重要性」的核心机制、典型用法与常见陷阱
-- 掌握「2. 文件指针与标准流」的核心机制、典型用法与常见陷阱
-- 掌握「3. 文件的打开与关闭」的核心机制、典型用法与常见陷阱
-- 掌握「4. 文件读写操作」的核心机制、典型用法与常见陷阱
-- 掌握「5. 文件位置指针」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 建立「流」的心智模型：说出 `FILE*` 是什么、三个标准流各自去向、文本流与二进制流的差别；
+2. 查表选对七种 fopen 模式（含 C11 的 x 独占创建），失败判 NULL 并用 perror 或 strerror 报出原因；
+3. 按数据形态选对读写家族（字符/行/格式化/块），并对每一次读写的返回值负责；
+4. 解释 `while (!feof(fp))` 为什么多读一次，写出两种正确的读循环；
+5. 说清缓冲与落盘的关系，完成一个把统计结果写进文件的完整小项目。
 
+预计 60 到 80 分钟，含 3 组动手实验与 1 个贯穿小项目。
 
-## 1. 文件 I/O 的概念与重要性
-
-### 1.1 什么是文件 I/O
-
-- **文件 I/O**（Input/Output）是指程序与外部文件之间的数据交换操作。
-- **作用**：
-- 持久化存储数据
-- 读取配置文件
-- 处理大型数据集
-- 日志记录
-- 与其他程序交换数据
-
-### 1.2 文件的类型
-
-- **文本文件**：以字符形式存储，每行以换行符结束
-- **二进制文件**：以二进制形式存储，直接保存数据的内存表示
-
-## 2. 文件指针与标准流
-
-### 2.1 文件指针
-
-- **FILE 结构体**：C 语言使用 `FILE` 结构体来管理文件操作
-- **文件指针**：`FILE *` 类型的指针，指向 FILE 结构体的实例
-
-### 2.2 标准流
-
-- **stdin**：标准输入流，通常对应键盘
-- **stdout**：标准输出流，通常对应屏幕
-- **stderr**：标准错误流，通常对应屏幕（用于错误信息）
+## 1. 问题引入：程序退出后，数据去哪了
 
 ```c
- // 标准流的使用
- printf("Hello, World!\n"); // 等价于 fprintf(stdout, "Hello, World!\n");
- fprintf(stderr, "Error: Something went wrong!\n");
+/* gone.c */
+#include <stdio.h>
+
+int main(void) {
+    long lines = 1024;          /* 假设刚统计完一本书的行数 */
+    printf("lines = %ld\n", lines);
+    return 0;                   /* 进程一退，lines 连同整块内存一起蒸发 */
+}
 ```
 
-## 3. 文件的打开与关闭
+变量住在内存里，进程退出时内存整体回收——`lines` 的 1024 从此无处可寻。打印到屏幕也没用：那串字符随终端会话一起消失。想让数据活得比程序久，只有一个办法：在退出前写进**文件**。本篇就做这一件事——把数据从程序安全送到磁盘，再安全取回来。
 
-### 3.1 文件打开模式
+## 2. 流的心智模型：FILE 与三个常驻流
 
-| 模式 | 描述                                           |
-| ---- | ---------------------------------------------- |
-| r    | 只读模式，文件必须存在                         |
-| w    | 只写模式，文件不存在则创建，存在则清空         |
-| a    | 追加模式，文件不存在则创建，从文件末尾开始写入 |
-| r+   | 读写模式，文件必须存在                         |
-| w+   | 读写模式，文件不存在则创建，存在则清空         |
-| a+   | 读写模式，文件不存在则创建，从文件末尾开始写入 |
-| rb   | 二进制只读模式                                 |
-| wb   | 二进制只写模式                                 |
-| ab   | 二进制追加模式                                 |
-| rb+  | 二进制读写模式                                 |
-| wb+  | 二进制读写模式                                 |
-| ab+  | 二进制读写模式                                 |
+### 2.1 FILE*：不透明指针，拿去用就好
 
-### 3.2 文件打开函数 `fopen`
+C 标准库把「一个打开的文件」抽象成**流**（stream），流由 `FILE` 类型的结构体描述，里面装着缓冲区、当前读写位置（文件位置指示器）、出错标志与文件结束标志——具体长什么样由各家实现自己定。你的代码从头到尾只持有 `FILE *` 这种指针，把它转交给库函数，永远不需要解引用它。这个设计换来一件事：同一份读写代码，Windows 与 Linux 都能跑。
+
+### 2.2 stdin、stdout、stderr：程序一启动就有
+
+每个程序启动时自动挂好三条流：
+
+| 流 | 去向 | 用途 |
+| --- | --- | --- |
+| stdin | 键盘 | 标准输入 |
+| stdout | 屏幕 | 正常输出 |
+| stderr | 屏幕 | 错误信息 |
+
+`printf("hi\n")` 就是 `fprintf(stdout, "hi\n")` 的简写。错误单独走 stderr 有两个理由：重定向 stdout 到文件时错误仍留在屏幕上；stderr 通常不缓冲，出错信息即刻可见。第 3 节的 `perror` 就打印到 stderr。
+
+### 2.3 文本流与二进制流：换行差异实验
+
+fopen 的模式串里带 `b` 就是二进制流，不带就是文本流。差别只有一处但很要命：**文本流做换行翻译**——Windows 上写出时 `\n` 变成 `\r\n` 两个字节，读入时再变回来；Unix 上两者完全一样。
 
 ```c
- FILE *fopen(const char *filename, const char *mode);
+/* newline.c：同一个字符串，两种模式 */
+#include <stdio.h>
+
+int main(void) {
+    FILE *t = fopen("t.txt", "w");
+    FILE *b = fopen("b.bin", "wb");
+    if (t == NULL || b == NULL) { perror("fopen"); return 1; }
+    fputs("a\nb\n", t);
+    fputs("a\nb\n", b);
+    fclose(t);
+    fclose(b);
+    return 0;
+}
 ```
 
-- **参数**：
-- `filename`：文件名或路径
-- `mode`：打开模式
-- **返回值**：成功返回文件指针，失败返回 NULL
+实验结论（Windows 上 `ls -l` 或资源管理器看大小）：`t.txt` 是 6 字节（两个 `\n` 各变 `\r\n`），`b.bin` 是 4 字节；Unix 上两者都是 4。规则一句话：**读写二进制数据（图片、结构体、序列化记录）必须带 b**，否则遇到 `0x0A` 之类的字节会被换行翻译毁掉。
 
-### 3.3 文件关闭函数 `fclose`
+## 3. fopen：选对模式，判住失败
+
+### 3.1 七种基本模式
+
+| 模式 | 文件须已存在 | 原内容 | 初始位置 | 典型用途 |
+| --- | --- | --- | --- | --- |
+| `"r"` | 是 | 保留 | 开头读 | 读现有文件 |
+| `"w"` | 否，自动创建 | 清空 | 开头写 | 生成报告、覆盖输出 |
+| `"a"` | 否，自动创建 | 保留 | 每次写都到末尾 | 日志追加 |
+| `"r+"` | 是 | 保留 | 开头（读） | 原地修改记录 |
+| `"w+"` | 否，自动创建 | 清空 | 开头 | 可读可写的草稿 |
+| `"a+"` | 否，自动创建 | 保留 | 读从头，写永远到末尾 | 边读边追加 |
+
+三条来自标准文档的细则：
+
+- `b` 可以叠加在任意一个后面（`"rb"`、`"wb+"` 等），只影响换行翻译，不改变上表语义；
+- 追加模式（`a` 与 `a+`）的写操作**永远落到文件末尾**，与当前位置无关；`a+` 的读仍从开头开始；
+- 更新模式（带 `+`）读写切换有纪律：写之后想读、读之后想写，中间必须隔一次 `fflush`、`fseek`、`fsetpos` 或 `rewind`（读到文件尾除外），否则行为未定义。
+
+C11 还给 `w` 与 `w+` 加了独占标志 `x`（如 `"wx"`）：文件已存在则 fopen 直接失败，而不是清空覆盖——防止并发或误操作吃掉别人的文件。
+
+### 3.2 失败判 NULL：perror 与 strerror
+
+fopen 失败时返回**空指针**（POSIX 环境还会设置 errno 说明原因）。判住它，并把原因说出来：
 
 ```c
- int fclose(FILE *stream);
+/* tryopen.c */
+#include <errno.h>
+#include <stdio.h>
+#include <string.h>
+
+int main(void) {
+    FILE *fp = fopen("no_such_dir/data.txt", "r");
+    if (fp == NULL) {
+        perror("fopen");          /* fopen: No such file or directory */
+        fprintf(stderr, "strerror: %s\n", strerror(errno));
+        return 1;
+    }
+    fclose(fp);
+    return 0;
+}
 ```
 
-- **参数**：
-- `stream`：文件指针
-- **返回值**：成功返回 0，失败返回 EOF
+预期输出：
 
-### 3.4 示例：打开和关闭文件
+```text
+fopen: No such file or directory
+strerror: No such file or directory
+```
+
+`perror(s)` 打印「你给的前缀 + 冒号 + 当前 errno 对应的系统描述」到 stderr；`strerror(errno)` 返回同一句描述的字符串，方便拼进自己的日志。习惯与动态内存同款：**fopen 的下一行就是判 NULL**（[运算符与表达式](/c/060-OperatorExpression) 里「分配即判 NULL」的纪律在文件世界的翻版）。
+
+## 4. 读写家族：按数据形态选函数
+
+### 4.1 字符：fgetc 与 fputc
 
 ```c
- #include <stdio.h>
- int main() {
-  FILE *fp = fopen("test.txt", "w");
-  if (fp == NULL) {
-  perror("Error opening file");
-  return 1;
-  }
-  // 文件操作...
-  if (fclose(fp) != 0) {
-  perror("Error closing file");
-  return 1;
-  }
-  return 0;
- }
+/* charcopy.c：逐字符复制 */
+#include <stdio.h>
+
+int main(void) {
+    FILE *src = fopen("t.txt", "r");
+    FILE *dst = fopen("copy.txt", "w");
+    if (src == NULL || dst == NULL) { perror("fopen"); return 1; }
+    int ch;                       /* 必须是 int，原因见下 */
+    long count = 0;
+    while ((ch = fgetc(src)) != EOF) {
+        fputc(ch, dst);
+        count++;
+    }
+    printf("copied %ld chars\n", count);
+    fclose(src);
+    fclose(dst);
+    return 0;
+}
 ```
 
-## 4. 文件读写操作
+预期输出（t.txt 来自 2.3 节，Unix 上）：
 
-### 4.1 格式化读写
+```text
+copied 4 chars
+```
 
-#### 4.1.1 格式化写入：`fprintf`
+接收变量必须是 `int`：`fgetc` 要用同一个返回值表达「读到一个字符」和「读完了」两种结局，EOF 是负数常量。若用 `char` 接，在 char 为无符号的平台上 EOF 永远配不上对，死循环当场发生——这正是 [运算符与表达式](/c/060-OperatorExpression) 第 2 节整型提升规则的实战版。
+
+### 4.2 行：fgets 与 fputs（换行保留与截断）
+
+`fgets(buf, size, fp)` 一次读一行：最多读 `size - 1` 个字符、必补 `'\0'`；行内的换行符**读到了就保留在串里**；一行太长只读前段，余下的留给下一次。成功返回 buf，失败或到文件尾返回 NULL。`fputs(s, fp)` 写字符串但不自动补换行。
 
 ```c
- int fprintf(FILE *stream, const char *format, ...);
+/* lines.c：故意用小缓冲区观察截断 */
+#include <stdio.h>
+
+int main(void) {
+    FILE *fp = fopen("lines.txt", "w");
+    if (fp == NULL) { perror("fopen"); return 1; }
+    fputs("first\nsecond\nthird\n", fp);
+    fclose(fp);
+
+    fp = fopen("lines.txt", "r");
+    if (fp == NULL) { perror("fopen"); return 1; }
+    char buf[6];                  /* 只装得下 5 个字符 + '\0' */
+    while (fgets(buf, sizeof buf, fp) != NULL) {
+        printf("[%s]", buf);
+    }
+    fclose(fp);
+    return 0;
+}
 ```
 
-- **参数**：
-- `stream`：文件指针
-- `format`：格式化字符串
-- `...`：可变参数列表
-- **返回值**：成功返回写入的字符数，失败返回负值
+预期输出：
 
-#### 4.1.2 格式化读取：`fscanf`
+```text
+[first][secon][d
+][thir][d
+]
+```
+
+`second` 被切成 `secon` 与 `d\n` 两次读到。判断「这行被截断了」的写法：本次读满（`strlen(buf) == sizeof buf - 1`）且末尾不是 `'\n'`。生产代码里要么把缓冲区开够，要么老老实实处理截断续读；已被 C11 删除的 `gets` 永远不要用，它连截断保护都没有（边界安全见 [安全函数与边界检查](/c/450-SafeFunctionBoundsCheck)）。
+
+### 4.3 格式化：fprintf 与 fscanf（返回值必须检查）
+
+`fprintf` 与 printf 同参，返回**成功写入的字符数**，负数即失败；`fscanf` 返回**成功赋值的项数**，一个都没配上返回 0，读到文件尾返回 EOF。不检查返回值的下场：磁盘上的数据缺了一项，程序拿上一次的旧值继续算，错得悄无声息。
 
 ```c
- int fscanf(FILE *stream, const char *format, ...);
+/* fmt.c：写入三项，读回时检查返回值 */
+#include <stdio.h>
+
+int main(void) {
+    FILE *fp = fopen("stats.txt", "w");
+    if (fp == NULL) { perror("fopen"); return 1; }
+    if (fprintf(fp, "lines %d\nwords %d\nbytes %ld\n", 3, 12, 48L) < 0) perror("fprintf");
+    fclose(fp);
+
+    fp = fopen("stats.txt", "r");
+    if (fp == NULL) { perror("fopen"); return 1; }
+    int lines, words;
+    long bytes;
+    int got = fscanf(fp, "lines %d words %d bytes %ld", &lines, &words, &bytes);
+    if (got != 3) fprintf(stderr, "stats.txt damaged: got %d of 3\n", got);
+    else printf("lines=%d words=%d bytes=%ld\n", lines, words, bytes);
+    fclose(fp);
+    return 0;
+}
 ```
 
-- **参数**：
-- `stream`：文件指针
-- `format`：格式化字符串
-- `...`：变量地址列表
-- **返回值**：成功返回读取的项目数，失败或到达文件末尾返回 EOF
+预期输出：
 
-#### 4.1.3 示例：格式化读写
+```text
+lines=3 words=12 bytes=48
+```
+
+fscanf 格式串里的空格能吃掉任意空白，所以写和读不必逐字节对齐；判 `got != 3` 就是给文件格式上了保险。
+
+### 4.4 块：fread 与 fwrite（结构体序列化的可移植性）
+
+`fwrite(ptr, size, count, fp)` 把 count 个 size 字节的块倒进文件，返回成功写入的**项数**；`fread` 同理返回读到的项数，返回值少于 count 就是出错或到尾——fread 不区分这两种情况，事后用 feof 与 ferror 分辨。
 
 ```c
- // 写入数据
- FILE *fp = fopen("data.txt", "w");
- if (fp != NULL) {
-  fprintf(fp, "Name: %s\n", "Alice");
-  fprintf(fp, "Age: %d\n", 25);
-  fprintf(fp, "Score: %.2f\n", 95.5);
-  fclose(fp);
- }
- // 读取数据
- char name[50];
- int age;
- float score;
- fp = fopen("data.txt", "r");
- if (fp != NULL) {
-  fscanf(fp, "Name: %s", name);
-  fscanf(fp, "Age: %d", &age);
-  fscanf(fp, "Score: %f", &score);
-  printf("Name: %s, Age: %d, Score: %.2f\n", name, age, score);
-  fclose(fp);
- }
+/* block.c：结构体整体落盘再读回 */
+#include <stdint.h>
+#include <stdio.h>
+
+typedef struct {
+    int32_t id;
+    int32_t score;
+} Record;
+
+int main(void) {
+    Record out = {7, 95};
+    FILE *fp = fopen("rec.bin", "wb");
+    if (fp == NULL) { perror("fopen"); return 1; }
+    fwrite(&out, sizeof out, 1, fp);       /* 返回值应核对为 1 */
+    fclose(fp);
+
+    Record in;
+    fp = fopen("rec.bin", "rb");
+    if (fp == NULL) { perror("fopen"); return 1; }
+    if (fread(&in, sizeof in, 1, fp) != 1) {
+        fprintf(stderr, "fread incomplete\n");
+    } else {
+        printf("id=%d score=%d\n", in.id, in.score);
+    }
+    fclose(fp);
+    return 0;
+}
 ```
 
-### 4.2 字符读写
+预期输出：
 
-#### 4.2.1 字符写入：`fputc`
+```text
+id=7 score=95
+```
+
+把结构体原样倒进文件方便，但有三个可移植性雷区：填充字节（结构体内部的对齐空隙，见 [内存对齐](/c/220-MemoryAlignmentDeepDive)）、字节序（大端与小端机器读同一文件结果不同）、类型宽度（`long` 在 Windows 与 Linux 上宽度不同）。工程做法：用 `<stdint.h>` 的定宽类型定义记录格式，跨机器交换时逐字段显式序列化，不要整块 fwrite。
+
+### 4.5 定位与量大小：ftell、fseek、rewind
+
+每个流有一根文件位置指示器，三件工具搬动它：`fseek(fp, offset, origin)` 定位（origin 取 `SEEK_SET` 开头、`SEEK_CUR` 当前、`SEEK_END` 末尾，成功返回 0）；`ftell(fp)` 报告当前字节位置；`rewind(fp)` 回开头并顺手清掉错误标志。常用组合是量文件大小：
 
 ```c
- int fputc(int c, FILE *stream);
+    fseek(fp, 0, SEEK_END);       /* 移到末尾 */
+    long size = ftell(fp);        /* 末尾的位置就是总字节数 */
+    rewind(fp);                   /* 回开头，接着从头读 */
 ```
 
-- **参数**：
-- `c`：要写入的字符（int 类型）
-- `stream`：文件指针
-- **返回值**：成功返回写入的字符，失败返回 EOF
+对 4.4 节的 rec.bin，这段打出的 size 是 8（两个 int32_t）。
 
-#### 4.2.2 字符读取：`fgetc`
+## 5. 常见错误与调试实录：feof 多读一次
+
+教科书级 bug：把 `feof` 当循环条件。
 
 ```c
- int fgetc(FILE *stream);
+/* feofbug.c */
+#include <stdio.h>
+
+int main(void) {
+    FILE *fp = fopen("lines.txt", "r");
+    if (fp == NULL) { perror("fopen"); return 1; }
+    char buf[64];
+    int n = 0;
+    while (!feof(fp)) {                    /* 错误写法 */
+        if (fgets(buf, sizeof buf, fp) != NULL) n++;
+        printf("line %d: %s", n, buf);
+    }
+    fclose(fp);
+    return 0;
+}
 ```
 
-- **参数**：
-- `stream`：文件指针
-- **返回值**：成功返回读取的字符，失败或到达文件末尾返回 EOF
+预期输出（lines.txt 内容为 first、second、third 三行，注意第三行出现两次）：
 
-#### 4.2.3 示例：字符读写
+```text
+line 1: first
+line 2: second
+line 3: third
+line 3: third
+```
+
+破案依据是 cppreference feof 页的关键说明：**feof 只报告最近一次 I/O 操作之后的流状态，不检查数据源本身**，它只在某次读取**试图越过文件尾**之后才为真。于是时间线是：第三次 fgets 读到 `third`，feof 仍为假；第四次循环照常进入，fgets 越过尾部返回 NULL，buf 里躺着的还是上次的 `third`，printf 原样再打一遍；这次读取才让 feof 变真，循环退出。
+
+正确写法是把判断权交给读函数的返回值，feof 退居循环之后做「死因鉴定」：
 
 ```c
- // 写入字符
- FILE *fp = fopen("chars.txt", "w");
- if (fp != NULL) {
-  char str[] = "Hello, File I/O!";
-  for (int i = 0; str[i] != '\0'; i++) {
-  fputc(str[i], fp);
-  }
-  fclose(fp);
- }
- // 读取字符
- fp = fopen("chars.txt", "r");
- if (fp != NULL) {
-  int c;
-  while ((c = fgetc(fp)) != EOF) {
-  putchar(c);
-  }
-  fclose(fp);
- }
+    /* 行版 */
+    while (fgets(buf, sizeof buf, fp) != NULL) {
+        printf("%s", buf);
+    }
+    /* 字符版 */
+    int ch;
+    while ((ch = fgetc(fp)) != EOF) {
+        putchar(ch);
+    }
+    if (ferror(fp)) perror("read");   /* 循环后：出错与读完就此分清 */
 ```
 
-### 4.3 字符串读写
+## 6. fclose 与缓冲：数据什么时候真正落盘
 
-#### 4.3.1 字符串写入：`fputs`
+`fprintf` 写的字节并不直接进磁盘，先住进 stdio 的用户态缓冲区——攒一批再交给内核，这是 stdio 快的原因。那缓冲区什么时候真正落盘？做实验：
 
 ```c
- int fputs(const char *s, FILE *stream);
+/* flushbug.c */
+#include <stdio.h>
+#include <stdlib.h>
+
+int main(int argc, char **argv) {
+    FILE *fp = fopen("will.txt", "w");
+    if (fp == NULL) { perror("fopen"); return 1; }
+    fprintf(fp, "saved checkpoint\n");
+    if (argc > 1) {
+        abort();                 /* 模拟崩溃：缓冲区不冲刷 */
+    }
+    fclose(fp);                  /* 正常路径：把缓冲交给内核 */
+    return 0;
+}
 ```
 
-- **参数**：
-- `s`：要写入的字符串
-- `stream`：文件指针
-- **返回值**：成功返回非负值，失败返回 EOF
+```bash
+gcc -Wall -Wextra -g flushbug.c -o flushbug
+./flushbug && ls -l will.txt
+./flushbug crash; ls -l will.txt
+```
 
-#### 4.3.2 字符串读取：`fgets`
+实验结论：正常路径 will.txt 有 18 字节；带参数崩溃的那次 will.txt 是 **0 字节**——数据在缓冲区里随进程一起没了。三条规则：
+
+1. `fclose(fp)` 不只是礼貌动作，它冲刷缓冲区并释放流；正常退出（main 返回或 exit）也会自动冲刷所有打开的流，但**崩溃与 abort 不会**；
+2. 要「立刻见到」就手动 `fflush(fp)`：重要节点落盘、更新模式里写转读的切换（3.1 节）；
+3. `setvbuf(fp, buf, mode, size)` 可自选缓冲模式（`_IOFBF` 全缓冲、`_IOLBF` 行缓冲、`_IONBF` 不缓冲），日志与进度输出想要实时时有用——知道即可，默认已经很好。
+
+忘 fclose 的两个后果正由此而来：缓冲未冲刷（崩溃丢数据）、流未释放（长跑进程反复 fopen 会撞上打开文件数上限）。
+
+## 7. 贯穿小项目：wcstat 行数统计器
+
+现在把全篇串成一条线：fopen 读文件，fgetc 逐字符统计行数、单词数、字节数，fprintf 把结果写进 stats.txt。单词边界用 0 和 1 两个状态标记（用到的正是 [运算符与表达式](/c/060-OperatorExpression) 第 3 节的关系与逻辑运算符）：
 
 ```c
- char *fgets(char *s, int size, FILE *stream);
+/* wcstat.c */
+#include <stdio.h>
+
+int main(int argc, char **argv) {
+    if (argc < 2) { fprintf(stderr, "usage: %s FILE\n", argv[0]); return 1; }
+    FILE *in = fopen(argv[1], "r");
+    if (in == NULL) { perror(argv[1]); return 1; }
+
+    long lines = 0, words = 0, bytes = 0;
+    int in_word = 0;              /* 0 = 在词外，1 = 在词内 */
+    int ch;
+    while ((ch = fgetc(in)) != EOF) {
+        bytes++;
+        if (ch == '\n') lines++;
+        if (ch == ' ' || ch == '\t' || ch == '\n') {
+            in_word = 0;          /* 空白：一个词结束 */
+        } else if (in_word == 0) {
+            in_word = 1;          /* 从词外进入词内：新词 */
+            words++;
+        }
+    }
+    if (ferror(in)) {             /* 循环结束后分清读完还是出错 */
+        perror("fgetc");
+        fclose(in);
+        return 1;
+    }
+    fclose(in);
+
+    FILE *out = fopen("stats.txt", "w");
+    if (out == NULL) { perror("stats.txt"); return 1; }
+    fprintf(out, "lines %ld\nwords %ld\nbytes %ld\n", lines, words, bytes);
+    fclose(out);
+    printf("%ld %ld %ld stats.txt\n", lines, words, bytes);
+    return 0;
+}
 ```
 
-- **参数**：
-- `s`：存储读取字符串的缓冲区
-- `size`：缓冲区大小
-- `stream`：文件指针
-- **返回值**：成功返回缓冲区地址，失败或到达文件末尾返回 NULL
-
-#### 4.3.3 示例：字符串读写
-
-```c
- // 写入字符串
- FILE *fp = fopen("lines.txt", "w");
- if (fp != NULL) {
-  fputs("First line\n", fp);
-  fputs("Second line\n", fp);
-  fputs("Third line\n", fp);
-  fclose(fp);
- }
- // 读取字符串
- fp = fopen("lines.txt", "r");
- if (fp != NULL) {
-  char buffer[100];
-  while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-  printf("%s", buffer);
-  }
-  fclose(fp);
- }
+```bash
+gcc -Wall -Wextra -g wcstat.c -o wcstat
+./wcstat wcstat.c
+cat stats.txt
 ```
 
-### 4.4 二进制读写
+预期输出（数字随文件内容而定）：
 
-#### 4.4.1 二进制写入：`fwrite`
-
-```c
- size_t fwrite(const void *ptr, size_t size, size_t count, FILE *stream);
+```text
+85 261 1966 stats.txt
+lines 85
+words 261
+bytes 1966
 ```
 
-- **参数**：
-- `ptr`：数据缓冲区指针
-- `size`：每个数据项的大小
-- `count`：数据项的数量
-- `stream`：文件指针
-- **返回值**：成功返回写入的数据项数量
-
-#### 4.4.2 二进制读取：`fread`
-
-```c
- size_t fread(void *ptr, size_t size, size_t count, FILE *stream);
-```
-
-- **参数**：
-- `ptr`：数据缓冲区指针
-- `size`：每个数据项的大小
-- `count`：数据项的数量
-- `stream`：文件指针
-- **返回值**：成功返回读取的数据项数量
-
-#### 4.4.3 示例：二进制读写
-
-```c
- // 定义结构体
- typedef struct {
-  char name[50];
-  int age;
-  float salary;
- } Employee;   /* 类型名与分号缺一不可 */
- // 写入结构体
- Employee emp = {"Alice", 25, 5000.0};
- FILE *fp = fopen("employee.dat", "wb");
- if (fp != NULL) {
-  fwrite(&emp, sizeof(Employee), 1, fp);
-  fclose(fp);
- }
- // 读取结构体
- Employee read_emp;
- fp = fopen("employee.dat", "rb");
- if (fp != NULL) {
-  fread(&read_emp, sizeof(Employee), 1, fp);
-  printf("Name: %s, Age: %d, Salary: %.2f\n",
-  read_emp.name, read_emp.age, read_emp.salary);
-  fclose(fp);
- }
-```
-
-## 5. 文件位置指针
-
-### 5.1 获取当前位置：`ftell`
-
-```c
- long ftell(FILE *stream);
-```
-
-- **参数**：
-- `stream`：文件指针
-- **返回值**：成功返回当前文件位置，失败返回 -1L
-
-### 5.2 设置文件位置：`fseek`
-
-```c
- int fseek(FILE *stream, long offset, int origin);
-```
-
-- **参数**：
-- `stream`：文件指针
-- `offset`：偏移量（字节）
-- `origin`：起始位置
-- `SEEK_SET`：文件开头
-- `SEEK_CUR`：当前位置
-- `SEEK_END`：文件末尾
-- **返回值**：成功返回 0，失败返回非 0
-
-### 5.3 重置到文件开头：`rewind`
-
-```c
- void rewind(FILE *stream);
-```
-
-- **参数**：
-- `stream`：文件指针
-- **功能**：将文件位置指针重置到文件开头
-
-### 5.4 示例：文件位置操作
-
-```c
- FILE *fp = fopen("test.txt", "r");
- if (fp != NULL) {
-  // 获取初始位置
-  long pos = ftell(fp);
-  printf("Initial position: %ld\n", pos);
-  // 读取一些数据
-  char buffer[100];
-  fgets(buffer, sizeof(buffer), fp);
-  // 获取新位置
-  pos = ftell(fp);
-  printf("Position after reading: %ld\n", pos);
-  // 移动到文件开头
-  rewind(fp);
-  pos = ftell(fp);
-  printf("Position after rewind: %ld\n", pos);
-  // 移动到文件末尾
-  fseek(fp, 0, SEEK_END);
-  pos = ftell(fp);
-  printf("Position at end: %ld\n", pos);
-  fclose(fp);
- }
-```
+四十行走完闭环：fopen 判 NULL、fgetc 循环、ferror 鉴定、fclose、fprintf 写结果、再 fclose。对照 `wc wcstat.c` 检查数字（文件末尾无换行符时行数差 1，正是「行以 \n 结尾」定义的体现）。修改实验：加 `-a` 参数用 `"a"` 模式把本次结果追加进 history.txt，运行两次验证旧内容完好。
 
-## 6. 错误处理
+## 8. 周边函数速查
 
-### 6.1 检测文件结束：`feof`
-
-```c
- int feof(FILE *stream);
-```
-
-- **参数**：
-- `stream`：文件指针
-- **返回值**：如果到达文件末尾返回非 0，否则返回 0
-
-### 6.2 检测错误：`ferror`
-
-```c
- int ferror(FILE *stream);
-```
-
-- **参数**：
-- `stream`：文件指针
-- **返回值**：如果发生错误返回非 0，否则返回 0
-
-### 6.3 清除错误标志：`clearerr`
-
-```c
- void clearerr(FILE *stream);
-```
-
-- **参数**：
-- `stream`：文件指针
-- **功能**：清除文件流的错误标志和文件结束标志
-
-### 6.4 打印错误信息：`perror`
-
-```c
- void perror(const char *s);
-```
-
-- **参数**：
-- `s`：自定义错误消息
-- **功能**：打印自定义消息和系统错误信息
-
-### 6.5 示例：错误处理
-
-```c
- FILE *fp = fopen("nonexistent.txt", "r");
- if (fp == NULL) {
-  perror("Error opening file");
-  return 1;
- }
- char buffer[100];
- while (fgets(buffer, sizeof(buffer), fp) != NULL) {
-  // 处理数据
- }
- if (ferror(fp)) {
-  perror("Error reading file");
- }
- printf("End of file reached\n");
- fclose(fp);
-```
-
-## 7. 高级文件操作
-
-### 7.1 临时文件
-
-- **`tmpfile`**：创建临时文件，关闭时自动删除
-
-```c
- FILE *tmpfile(void);
-```
-
-### 7.2 文件重命名与删除
-
-- **`rename`**：重命名文件
-- **`remove`**：删除文件
-
-```c
- int rename(const char *oldname, const char *newname);
- int remove(const char *filename);
-```
-
-### 7.3 文件缓冲区控制
-
-- **`setbuf`**：设置缓冲区
-- **`setvbuf`**：设置缓冲区和缓冲模式
-- **`fflush`**：刷新缓冲区
-
-```c
- void setbuf(FILE *stream, char *buf);
- int setvbuf(FILE *stream, char *buf, int mode, size_t size);
- int fflush(FILE *stream);
-```
-
-## 8. 完整应用示例
-
-### 8.1 文本文件复制
-
-```c
- #include <stdio.h>
- int main() {
-  FILE *source, *dest;
-  // 打开源文件
-  source = fopen("source.txt", "r");
-  if (source == NULL) {
-  perror("Error opening source file");
-  return 1;
-  }
-  // 打开目标文件
-  dest = fopen("destination.txt", "w");
-  if (dest == NULL) {
-  perror("Error opening destination file");
-  fclose(source);
-  return 1;
-  }
-  // 复制内容（注意：接收 fgetc 返回值的变量必须是 int，
-  // 否则在 char 为无符号的平台上永远无法与 EOF 比较）
-  int ch;
-  while ((ch = fgetc(source)) != EOF) {
-  fputc(ch, dest);
-  }
-  // 检查错误
-  if (ferror(source)) {
-  perror("Error reading source file");
-  } else if (ferror(dest)) {
-  perror("Error writing destination file");
-  } else {
-  printf("File copied successfully!\n");
-  }
-  // 关闭文件
-  fclose(source);
-  fclose(dest);
-  return 0;
- }
-```
-
-### 8.2 学生信息管理系统
-
-```c
- #include <stdio.h>
- #include <string.h>
- #define MAX_STUDENTS 100
- // 学生结构体
- typedef struct {
-  int id;
-  char name[50];
-  float score;
- } Student;   /* 类型名与分号缺一不可 */
- // 保存学生信息到文件
- void save_students(Student students[], int count, const char *filename) {
-  FILE *fp = fopen(filename, "wb");
-  if (fp != NULL) {
-  fwrite(&count, sizeof(int), 1, fp);
-  fwrite(students, sizeof(Student), count, fp);
-  fclose(fp);
-  printf("Students saved successfully!\n");
-  } else {
-  perror("Error saving students");
-  }
- }
- // 从文件加载学生信息
- int load_students(Student students[], const char *filename) {
-  FILE *fp = fopen(filename, "rb");
-  int count = 0;
-  if (fp != NULL) {
-  fread(&count, sizeof(int), 1, fp);
-  if (count > MAX_STUDENTS) {
-  count = MAX_STUDENTS;
-  }
-  fread(students, sizeof(Student), count, fp);
-  fclose(fp);
-  printf("Loaded %d students\n", count);
-  } else {
-  perror("Error loading students");
-  }
-  return count;
- }
- // 添加学生
- int add_student(Student students[], int count) {
-  if (count >= MAX_STUDENTS) {
-  printf("Maximum number of students reached!\n");
-  return count;
-  }
-  Student s;
-  printf("Enter student ID: ");
-  scanf("%d", &s.id);
-  printf("Enter student name: ");
-  scanf(" %49[^\n]", s.name); // 读取带空格的字符串（限制宽度 49 防止溢出）
-  printf("Enter student score: ");
-  scanf("%f", &s.score);
-  students[count] = s;
-  return count + 1;
- }
- // 显示学生信息
- void display_students(Student students[], int count) {
-  printf("\nStudent List:\n");
-  printf("ID\tName\t\tScore\n");
-  printf("--------------------------------\n");
-  for (int i = 0; i < count; i++) {
-  printf("%d\t%s\t\t%.2f\n",
-  students[i].id, students[i].name, students[i].score);
-  }
-  printf("\n");
- }
- int main() {
-  Student students[MAX_STUDENTS];
-  int count = 0;
-  int choice;
-  // 加载现有学生信息
-  count = load_students(students, "students.dat");
-  do {
-  printf("\nStudent Management System\n");
-  printf("1. Add Student\n");
-  printf("2. Display Students\n");
-  printf("3. Save and Exit\n");
-  printf("Enter your choice: ");
-  scanf("%d", &choice);
-  switch (choice) {
-  case 1:
-  count = add_student(students, count);
-  break;
-  case 2:
-  display_students(students, count);
-  break;
-  case 3:
-  save_students(students, count, "students.dat");
-  printf("Exiting...\n");
-  break;
-  default:
-  printf("Invalid choice!\n");
-  }
-  } while (choice != 3);
-  return 0;
- }
-```
-
-## 9. 最佳实践
-
-### 9.1 文件操作最佳实践
-
-- **始终检查文件操作的返回值**：确保文件成功打开、读写和关闭
-- **使用适当的打开模式**：根据需要选择正确的文件打开模式
-- **及时关闭文件**：避免资源泄漏
-- **处理错误情况**：使用 `perror` 和 `ferror` 等函数处理错误
-- **使用二进制模式处理二进制文件**：避免文本模式的自动转换
-- **合理使用缓冲区**：对于大文件操作，考虑使用缓冲区提高效率
-- **用 `fgetc`/`fgets` 的返回值控制读循环**：`feof` 只在上一次读取"越界之后"才为真，把它当循环前置条件会多处理一次"不存在的记录"；正确做法是 `while (fgets(...) != NULL)`，循环结束后再用 `feof`/`ferror` 区分正常结束与出错
-- **避免使用 `gets`**：使用 `fgets` 替代，更安全（`gets` 已在 C11 中被标准删除）
-
-### 9.2 性能优化
-
-- **批量读写**：对于大量数据，使用 `fread` 和 `fwrite` 进行批量操作
-- **适当的缓冲区大小**：根据文件大小和内存情况设置合适的缓冲区
-- **减少文件操作次数**：合并多次小的读写操作
-- **使用 `fseek` 定位**：避免不必要的顺序读写
-- **关闭不需要的文件**：及时释放文件资源
-
-## 10. 常见错误与调试
-
-### 10.1 常见错误
-
-- **文件路径错误**：使用相对路径时，当前工作目录可能不是预期的
-- **权限问题**：没有读写文件的权限
-- **文件不存在**：以只读模式打开不存在的文件
-- **内存不足**：文件过大，内存无法容纳
-- **缓冲区溢出**：使用 `fgets` 时缓冲区大小不够
-- **忘记关闭文件**：导致资源泄漏
-- **混用文本和二进制模式**：导致数据损坏
-- **文件位置指针错误**：不正确的 `fseek` 操作
-
-### 10.2 调试技巧
-
-- **使用 `perror`**：打印详细的错误信息
-- **检查文件权限**：确保有正确的文件访问权限
-- **检查文件路径**：使用绝对路径或确认相对路径的正确性
-- **使用 `printf`**：打印中间结果和文件位置
-- **使用调试器**：如 GDB 单步执行文件操作
-- **检查返回值**：验证所有文件操作函数的返回值
-- **使用临时文件**：测试文件操作逻辑
-
-## 11. 与其他语言的对比
-
-### 11.1 C++ 的文件 I/O
-
-- C++ 提供了 `fstream` 类，使用更面向对象的方式处理文件
-- 支持运算符重载，如 `<<` 和 `>>` 进行读写
-- 提供了更多的文件操作功能
-
-### 11.2 Python 的文件 I/O
-
-- Python 的文件操作更简洁，使用 `with` 语句自动处理文件关闭
-- 支持上下文管理器，更安全
-- 提供了更多高级文件操作功能
-
-### 11.3 Java 的文件 I/O
-
-- Java 提供了丰富的文件操作类，如 `File`, `FileReader`, `FileWriter` 等
-- 支持字节流和字符流
-- 异常处理更完善
-
-## 12. 总结
-
-文件 I/O 是 C 语言中非常重要的一部分，它允许程序与外部文件进行数据交换，实现数据的持久化存储。通过本文的学习，你应该掌握：
-
-- 文件的打开、关闭和基本操作
-- 不同类型的文件读写方法（文本和二进制）
-- 文件位置指针的控制
-- 错误处理和异常情况的处理
-- 文件操作的最佳实践和性能优化
-  合理使用文件 I/O 功能，可以使你的程序更加灵活和实用，能够处理各种复杂的数据存储和交换需求。
+| 函数 | 一句话 |
+| --- | --- |
+| `rename("old", "new")` | 重命名（可跨目录移动），成功返回 0 |
+| `remove("file")` | 删除文件，成功返回 0 |
+| `tmpfile()` | 打开匿名临时文件，fclose 时自动删除 |
+| `ferror(fp)` | 最近一次读写是否出错 |
+| `clearerr(fp)` | 清除出错与文件结束标志（处理后想继续用流时） |
+
+这五个函数与 4.5 节的定位三件套覆盖了 stdio 文件族的全部周边；rename 与 remove 失败时同样用 3.2 节的 perror 查 errno。
+
+## 9. 实际项目中的使用场景
+
+- 日志：fopen 用 `"a"` 追加，重要节点后 fflush；崩溃安全要求高就周期性 fclose 重开；
+- 配置读取：fgets 逐行 + sscanf 解析，逐行检查返回值，坏行跳过并记日志；
+- 数据导入导出：fread/fwrite 批量搬运，跨机器交换时按 4.4 节的三条可移植性纪律；
+- 资源纪律：任何 fopen 都有配对的 fclose，出错路径提前 return 之前先收尾（第 7 节 wcstat 的 ferror 分支是模板）。
+
+## 10. 小练习
+
+预测题（5 分钟）：先写答案再运行——以 `"a+"` 模式打开一个已有内容 `AB` 的文件后立刻 `fputs("C", fp)`，再 `fgetc(fp)` 读到的是什么？为什么？
+
+参考答案（先写再看）：fputs 写到末尾（追加语义与位置无关），得 `ABC`；随后 fgetc 从**开头**读（`a+` 的读位置初始在头部），读到 `A`。
+
+修改题（15 分钟）：让 wcstat 支持无参数时从 stdin 读：`argc < 2` 时令 `in = stdin`、跳过 fopen 与 fclose，其余不变。验收：`cat wcstat.c | ./wcstat` 与 `./wcstat wcstat.c` 结果一致。
+
+挑战题（半小时，不看答案先动手）：把 4.4 节的 Record 扩成含 `char name[16]` 的版本，写三条记录再用 fread 全部读回。验收：读回与写入一致；能说出换到 32 位 int 或大端机器上这个文件会怎样；能给出定宽类型 + 逐字段序列化的稳定方案。
+
+## 11. 与之前和之后的知识的关系
+
+- 往前：[函数详解](/c/090-FunctionDetailed) 的返回值纪律是本篇每一次库函数调用的检查依据；[数组详解](/c/120-ArrayDetailed) 的数组是 fgets/fread 的容器；[运算符与表达式](/c/060-OperatorExpression) 的整型提升解释了 `int ch` 接 fgetc、短路求值支撑判 NULL 惯用法；
+- 分工：本篇的 stdio 流带缓冲、可移植、按字符/行/块组织，是应用代码的日常选择；POSIX 的 `open/read/write/close` 是无缓冲的文件描述符接口，配合元数据与目录权限操作，见 [POSIX 系统调用](/c/420-CPosixSystemCall)；目录遍历与文件属性等更大的文件系统主题见 [文件系统操作](/c/400-FileSystemOperation)；
+- 往后：标准库还有字符串、时间、排序一整套通用工具在 [C 标准库](/c/440-CStandardLibrary)；缓冲区边界与更安全的替代函数在 [安全函数与边界检查](/c/450-SafeFunctionBoundsCheck)。
+
+## 12. 官方文档
+
+- fopen（七种模式、x 独占创建、更新模式切换纪律）：https://en.cppreference.com/w/c/io/fopen.html
+- feof（为什么不能当循环条件，正确读循环示例）：https://en.cppreference.com/w/c/io/feof.html
+- fread（返回项数语义与 feof/ferror 分工）：https://en.cppreference.com/w/c/io/fread.html
+- perror 与 strerror（错误信息打印）：https://en.cppreference.com/w/c/io/perror.html
+
+## 13. 自我检查
+
+- 能背出七种 fopen 模式中 r/w/a 的三条行为差异，说出 `a+` 的读与写各从哪里开始；
+- 能解释 `int ch = fgetc(fp)` 里的 int 为什么不能换成 char，并说出这与整型提升的关系；
+- 能复述 feof 误用多读一次的完整机理，默写两种正确读循环；
+- 能说出 abort 与正常退出对缓冲区的不同待遇，以及忘掉 fclose 的两个后果。
+
+## 本章总结
+
+文件 I/O 的全部内容可以压成一条闭环：fopen 选模式（r/w/a 与 + 的组合决定存在性、清空与位置，x 防覆盖，b 管换行翻译）并判 NULL；按数据形态选读写家族——字符用 fgetc/fputc 且必须 int 接 EOF，行用 fgets/fputs 并处理换行保留与截断，格式化用 fprintf/fscanf 且返回值上保险，块用 fread/fwrite 但记住结构体序列化的填充、字节序与宽度三雷区；feof 只在读取越过尾部之后为真，永远不能当循环条件；缓冲让数据迟到，fclose 与 fflush 才是落盘动作，崩溃不冲刷。wcstat 用四十行把这五步串成线，此后读任何 I/O 代码都按这张地图走。
+
+## 下一步
+
+进入 [C 标准库](/c/440-CStandardLibrary)：文件读写只是标准库的一角，下一篇把字符串处理、时间日期、排序查找这些天天要用的工具箱一次点清。

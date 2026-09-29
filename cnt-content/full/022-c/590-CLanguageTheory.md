@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 580
 title: C 语言理论知识点
 module: 'c'
 category: 计算机科学

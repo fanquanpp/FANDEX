@@ -1,960 +1,462 @@
 ---
-order: 120
-title: 数组详解
+order: 130
+title: 数组：连续内存与越界边界
 module: 'c'
 category: 计算机科学
-difficulty: intermediate
-description: 一维、多维数组、字符数组、数组与指针的关系及内存布局。
+difficulty: beginner
+description: 用「存全班 40 个成绩」的问题掌握数组：五种初始化写法与剩余元素清零实验、下标从 0 开始的偏移量心智模型、越界访问的 stack-buffer-overflow 现场、sizeof 求元素个数与函数内失效的原因、VLA 的 C11 抉择与栈风险，以及数组不能整体赋值、比较、传值的三个「不能」与替代。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/550-EmbeddedCProgramming'
-  - 'c/560-CAssemblyInteraction'
-  - 'c/290-PreprocessorMacro'
-  - 'c/520-C23C2y'
+  - 'c/150-PointerArrayDifference'
+  - 'c/200-DynamicMemoryManagement'
+  - 'c/130-StructAndUnion'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/050-VariableConstant'
+  - 'c/060-OperatorExpression'
 ---
 
 ## 前置知识
 
-- [C 与汇编交互](/c/560-CAssemblyInteraction)：建议先完成前一篇的学习
+- 已完成 [变量与常量](/c/050-VariableConstant)：会声明变量，理解「初始化」与「赋值」的区别；
+- 已完成 [运算符与表达式](/c/060-OperatorExpression)：会基本的整型运算，知道整型提升这回事。
+
+for 循环的语法细节在[控制流程](/c/080-ControlFlow)，本文只用最基础的 `for (int i = 0; i < n; i++)` 形式，没读过也能跟上。
+
+> 分工说明：数组相关内容在本模块分三篇。本篇是主线教学，解决「数组怎么用、哪里会出事」；[指针与数组的区别](/c/150-PointerArrayDifference) 专门拆数组名与指针的身份差异——`sizeof` 为什么在函数里失效、`&arr` 是什么类型、传参退化到底发生了什么；[动态内存](/c/200-DynamicMemoryManagement) 接手「大小要等程序跑起来才知道」的场景。本文凡是写「先混个眼熟」的地方，都会注明由哪篇讲透。
 
 ## 学习目标
 
-- 掌握「1. 数组的概念与特性」的核心机制、典型用法与常见陷阱
-- 掌握「2. 一维数组」的核心机制、典型用法与常见陷阱
-- 掌握「3. 多维数组」的核心机制、典型用法与常见陷阱
-- 掌握「4. 字符数组与字符串」的核心机制、典型用法与常见陷阱
-- 掌握「5. 数组与指针的关系」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用完全初始化、部分初始化、全零、省略长度、指定初始化器五种写法声明并初始化数组，说出每种写法里「没写到」的元素是什么值；
+2. 用「偏移量」心智模型解释下标为什么从 0 开始，并预测 `a[i]` 距数组首地址多少字节；
+3. 读懂 AddressSanitizer 的 stack-buffer-overflow 报告，指出越界写在哪一行、落在哪个变量上；
+4. 用 `sizeof` 写出「数组元素个数」公式，解释它在函数内部失效的原因，并说清「传参即退化」；
+5. 说出数组不能整体赋值、不能 `==` 比较、不能整体传值的三个「不能」，以及各自的替代写法。
 
-## 1. 数组的概念与特性
+预计 50 到 70 分钟，包含 5 组动手实验、2 道预测题与 1 道挑战题。
 
-### 1.1 什么是数组
+## 1. 问题引入：全班 40 个成绩
 
-- **数组**是一组相同类型的元素的集合，存储在连续的内存地址中。
-- **特点**：
-- 所有元素类型相同
-- 元素在内存中连续存储
-- 通过下标访问元素（下标从 0 开始）
-- 数组大小在声明时确定（除变长数组外）
-
-## 2. 一维数组
-
-### 2.1 定义与声明
-
-- **格式**：`type array_name[size];`
-- **示例**：
+老师要存全班 40 个人的期末成绩。不用数组的话：
 
 ```c
- int numbers[5]; // 整型数组，大小为 5
- float prices[10]; // 浮点型数组，大小为 10
- char letters[26]; // 字符型数组，大小为 26
-```
-
-### 2.2 初始化
-
-#### 2.2.1 完全初始化
-
-```c
- int arr[5] = {1, 2, 3, 4, 5}; // 初始化所有元素
-```
-
-#### 2.2.2 部分初始化
-
-```c
- int arr[5] = {1, 2, 3}; // 前 3 个元素初始化，其余为 0
-```
-
-#### 2.2.3 自动推断大小
-
-```c
- int arr[] = {10, 20, 30, 40, 50}; // 数组大小自动推断为 5
-```
-
-#### 2.2.4 全部初始化为 0
-
-```c
- int arr[10] = {0}; // 所有元素初始化为 0
-```
-
-### 2.3 访问元素
-
-- **格式**：`array_name[index]`
-- **示例**：
-
-```c
- int arr[5] = {10, 20, 30, 40, 50};
- printf("arr[0] = %d\n", arr[0]); // 输出 10
- printf("arr[2] = %d\n", arr[2]); // 输出 30
-```
-
-### 2.4 遍历数组
-
-```c
- int arr[5] = {1, 2, 3, 4, 5};
- // 使用 for 循环遍历
- for (int i = 0; i < 5; i++) {
-  printf("arr[%d] = %d\n", i, arr[i]);
- }
-```
-
-### 2.5 数组大小计算
-
-- 使用 `sizeof` 运算符计算数组大小：
-
-```c
- int arr[] = {1, 2, 3, 4, 5};
- int size = sizeof(arr) / sizeof(arr[0]);
- printf("数组大小: %d\n", size); // 输出 5
-```
-
-### 2.6 数组越界
-
-- **注意**：C 语言不检查数组下标越界，越界访问可能导致：
-- 访问到无效内存，导致程序崩溃
-- 修改其他变量的值，导致数据损坏
-- 安全漏洞（如缓冲区溢出）
-
-```c
- int arr[5] = {1, 2, 3, 4, 5};
- arr[10] = 100; // 越界访问，危险！
-```
-
-## 3. 多维数组
-
-### 3.1 二维数组
-
-- **概念**：可以看作是由多个一维数组组成的数组。
-- **定义**：`type array_name[rows][columns];`
-- **内存布局**：行优先存储（按行顺序存储元素）
-
-#### 3.1.1 初始化
-
-```c
- // 完整初始化
- int matrix[2][3] = {
-  {1, 2, 3},
-  {4, 5, 6}
- }
- // 部分初始化
- int matrix[2][3] = {{1, 2}, {4}}; // 其余元素为 0
- // 自动推断行数
- int matrix[][3] = {{1, 2, 3}, {4, 5, 6}}; // 行数自动推断为 2
-```
-
-#### 3.1.2 访问元素
-
-```c
- int matrix[2][3] = {{1, 2, 3}, {4, 5, 6}};
- printf("matrix[0][0] = %d\n", matrix[0][0]); // 输出 1
- printf("matrix[1][2] = %d\n", matrix[1][2]); // 输出 6
-```
-
-#### 3.1.3 遍历二维数组
-
-```c
- int matrix[2][3] = {{1, 2, 3}, {4, 5, 6}};
- for (int i = 0; i < 2; i++) { // 遍历行
-  for (int j = 0; j < 3; j++) { // 遍历列
-  printf("%d ", matrix[i][j]);
-  }
-  printf("\n");
- }
-```
-
-### 3.2 三维及以上数组
-
-- **定义**：`type array_name[depth][rows][columns];`
-- **示例**：
-
-```c
- int cube[2][2][2] = {
- {{1, 2}, {3, 4}},
- {{5, 6}, {7, 8}}
- };
-```
-
-### 3.3 多维数组作为函数参数
-
-- **传递方式**：需要指定除第一维外的所有维度大小。
-- **示例**：
-
-```c
- void print_matrix(int matrix[][3], int rows) {
- for (int i = 0; i < rows; i++) {
- for (int j = 0; j < 3; j++) {
- printf("%d ", matrix[i][j]);
- }
- printf("\n");
- }
- }
-```
-
-## 4. 字符数组与字符串
-
-### 4.1 字符数组
-
-- **定义**：`char array_name[size];`
-- **初始化**：
-
-```c
- char chars[5] = {'H', 'e', 'l', 'l', 'o'}; // 普通字符数组
- char str[6] = {'H', 'e', 'l', 'l', 'o', '\0'}; // 字符串（以 '\0' 结尾）
-```
-
-### 4.2 字符串
-
-- **概念**：以空字符 `'\0'` 结尾的字符数组。
-- **初始化**：
-
-```c
- char str[] = "Hello"; // 自动包含 '\0'，大小为 6
- char str[10] = "Hello"; // 剩余空间填充 '\0'
-```
-
-### 4.3 字符串操作函数
-
-- **包含头文件**：`#include <string.h>`
-  | 函数        | 功能                          | 示例                                   |
-  | ----------- | ----------------------------- | -------------------------------------- |
-  | `strlen()`  | 计算字符串长度（不包括 '\0'） | `int len = strlen(str);`               |
-  | `strcpy()`  | 复制字符串                    | `strcpy(dest, src);`                   |
-  | `strcat()`  | 连接字符串                    | `strcat(dest, src);`                   |
-  | `strcmp()`  | 比较字符串                    | `int result = strcmp(str1, str2);`     |
-  | `strncpy()` | 复制指定长度的字符串          | `strncpy(dest, src, n);`               |
-  | `strncat()` | 连接指定长度的字符串          | `strncat(dest, src, n);`               |
-  | `strncmp()` | 比较指定长度的字符串          | `int result = strncmp(str1, str2, n);` |
-
-### 4.4 字符串输入输出
-
-```c
- char str[100];
- // 输入字符串（遇到空格停止）
- scanf("%s", str);
- // 输入一行字符串（包括空格）
- fgets(str, sizeof(str), stdin);
- // 输出字符串
- printf("%s\n", str);
-```
-
-### 4.5 常见问题与注意事项
-
-- **缓冲区溢出**：使用 `fgets()` 替代 `gets()` 以避免缓冲区溢出
-- **字符串长度**：使用 `strlen()` 时要注意字符串必须以 `'\0'` 结尾
-- **内存分配**：确保目标字符串有足够的空间存储源字符串
-
-## 5. 数组与指针的关系
-
-### 5.1 数组名的特性
-
-- **数组名**是数组首元素的地址，是一个常量指针（不能修改）。
-- **等价关系**：`arr` 等同于 `&arr[0]`
-
-```c
- int arr[5] = {1, 2, 3, 4, 5};
- printf("arr = %p\n", arr); // 数组首元素地址
- printf("&arr[0] = %p\n", &arr[0]); // 数组首元素地址
- printf("arr[0] = %d\n", *arr); // 数组首元素值
-```
-
-### 5.2 指针算术与数组访问
-
-- **指针算术**：指针可以进行加减运算，单位是所指向类型的大小。
-- **数组访问**：`arr[i]` 等同于 `*(arr + i)`
-
-```c
- int arr[5] = {1, 2, 3, 4, 5};
- int *p = arr; // 指向数组首元素
- printf("*p = %d\n", *p); // 输出 1
- printf("*(p + 1) = %d\n", *(p + 1)); // 输出 2
- printf("p[2] = %d\n", p[2]); // 输出 3
-```
-
-### 5.3 数组作为函数参数
-
-- **数组退化**：数组作为函数参数时，会退化为指向首元素的指针。
-- **注意**：函数内部无法通过 `sizeof` 获取数组的总大小。
-
-```c
- // 函数声明
- void print_array(int *arr, int size);
- // 函数定义
- void print_array(int *arr, int size) {
-  for (int i = 0; i < size; i++) {
-  printf("%d ", arr[i]);
-  }
-  printf("\n");
- }
- // 调用
- int main() {
-  int numbers[] = {1, 2, 3, 4, 5};
-  int size = sizeof(numbers) / sizeof(numbers[0]);
-  print_array(numbers, size);
-  return 0;
- }
-```
-
-### 5.4 指针数组
-
-- **定义**：存储指针的数组。
-- **示例**：
-
-```c
- int *ptr_array[5]; // 存储 5 个 int 指针的数组
- // 字符串数组（实际上是字符指针数组）
- char *str_array[] = {
- "Hello",
- "World",
- "C Language"
- };
-```
-
-### 5.5 数组指针
-
-- **定义**：指向数组的指针。
-- **格式**：`type (*pointer_name)[size];`
-- **示例**：
-
-```c
- int arr[5] = {1, 2, 3, 4, 5};
- int (*p)[5] = &arr; // 指向整个数组的指针
- printf("*(*p) = %d\n", *(*p)); // 输出 1
- printf("*(*p + 1) = %d\n", *(*p + 1)); // 输出 2
-```
-
-## 6. 变长数组 (VLA - Variable Length Arrays)
-
-### 6.1 概念
-
-- **变长数组**：C99 引入，允许在运行时确定数组大小。
-- **限制**：
-- 只能在函数内部声明（局部变量）
-- 不能初始化
-- 不支持全局变长数组
-
-### 6.2 示例
-
-```c
- void func(int n) {
-  int arr[n]; // 数组大小由参数 n 决定
-  // 初始化数组
-  for (int i = 0; i < n; i++) {
-  arr[i] = i + 1;
-  }
-  // 遍历数组
-  for (int i = 0; i < n; i++) {
-  printf("%d ", arr[i]);
-  }
-  printf("\n");
- }
- int main() {
-  func(5); // 传递数组大小
-  return 0;
- }
-```
-
-## 7. 动态数组
-
-### 7.1 概念
-
-- **动态数组**：使用动态内存分配函数（如 `malloc`、`calloc`）创建的数组。
-- **优点**：可以在运行时动态调整大小。
-
-### 7.2 示例
-
-```c
- #include <stdio.h>
- #include <stdlib.h>
- int main() {
-  int size;
-  printf("Enter array size: ");
-  scanf("%d", &size);
-  // 分配内存
-  int *arr = (int *)malloc(size * sizeof(int));
-  if (arr == NULL) {
-  printf("Memory allocation failed!\n");
-  return 1;
-  }
-  // 初始化数组
-  for (int i = 0; i < size; i++) {
-  arr[i] = i + 1;
-  }
-  // 遍历数组
-  printf("Array elements: ");
-  for (int i = 0; i < size; i++) {
-  printf("%d ", arr[i]);
-  }
-  printf("\n");
-  // 释放内存
-  free(arr);
-  return 0;
- }
-```
-
-### 7.3 动态调整数组大小
-
-```c
- // 重新分配内存
- int *new_arr = (int *)realloc(arr, new_size * sizeof(int));
- if (new_arr == NULL) {
-  printf("Memory reallocation failed!\n");
-  free(arr);
-  return 1;
- }
- arr = new_arr;
-```
-
-## 8. 数组的高级应用
-
-### 8.1 数组排序
-
-```c
- // 冒泡排序
- void bubble_sort(int arr[], int size) {
-  for (int i = 0; i < size - 1; i++) {
-  for (int j = 0; j < size - i - 1; j++) {
-  if (arr[j] > arr[j + 1]) {
-  // 交换元素
-  int temp = arr[j];
-  arr[j] = arr[j + 1];
-  arr[j + 1] = temp;
-  }
-  }
-  }
- }
- // 选择排序
- void selection_sort(int arr[], int size) {
-  for (int i = 0; i < size - 1; i++) {
-  int min_idx = i;
-  for (int j = i + 1; j < size; j++) {
-  if (arr[j] < arr[min_idx]) {
-  min_idx = j;
-  }
-  }
-  // 交换元素
-  int temp = arr[i];
-  arr[i] = arr[min_idx];
-  arr[min_idx] = temp;
-  }
- }
-```
-
-### 8.2 数组查找
-
-```c
- // 线性查找
- int linear_search(int arr[], int size, int target) {
-  for (int i = 0; i < size; i++) {
-  if (arr[i] == target) {
-  return i; // 返回索引
-  }
-  }
-  return -1; // 未找到
- }
- // 二分查找（要求数组已排序）
- int binary_search(int arr[], int low, int high, int target) {
-  if (low > high) {
-  return -1; // 未找到
-  }
-  int mid = low + (high - low) / 2;
-  if (arr[mid] == target) {
-  return mid; // 找到
-  } else if (arr[mid] > target) {
-  return binary_search(arr, low, mid - 1, target);
-  } else {
-  return binary_search(arr, mid + 1, high, target);
-  }
- }
-```
-
-### 8.3 二维数组的应用
-
-```c
- // 矩阵加法
- void matrix_add(int a[][3], int b[][3], int result[][3], int rows) {
-  for (int i = 0; i < rows; i++) {
-  for (int j = 0; j < 3; j++) {
-  result[i][j] = a[i][j] + b[i][j];
-  }
-  }
- }
- // 矩阵转置
- void matrix_transpose(int matrix[][3], int transposed[][2], int rows, int cols) {
-  for (int i = 0; i < rows; i++) {
-  for (int j = 0; j < cols; j++) {
-  transposed[j][i] = matrix[i][j];
-  }
-  }
- }
-```
-
-## 9. 数组的最佳实践
-
-### 9.1 命名规范
-
-- 数组名应清晰描述其内容，使用 `snake_case` 命名风格
-- 示例：`student_scores`, `monthly_sales`
-
-### 9.2 内存管理
-
-- 对于大型数组，考虑使用动态内存分配
-- 动态分配的内存使用完毕后必须释放，避免内存泄漏
-- 避免使用过大的局部数组，可能导致栈溢出
-
-### 9.3 性能优化
-
-- **缓存友好**：按内存顺序访问数组（行优先）
-- **减少计算**：预先计算数组大小，避免重复计算
-- **避免越界**：使用断言或边界检查确保数组访问安全
-
-### 9.4 代码风格
-
-- **缩进**：使用一致的缩进风格
-- **注释**：为复杂的数组操作添加注释
-- **格式**：保持代码格式的一致性
-
-## 10. 数组示例：完整应用
-
-```c
- #include <stdio.h>
- #include <stdlib.h>
- #include <string.h>
- // 函数声明
- void print_array(int arr[], int size);
- void sort_array(int arr[], int size);
- int find_max(int arr[], int size);
- int find_min(int arr[], int size);
- double calculate_average(int arr[], int size);
- int main() {
-  int size;
-  printf("Enter array size: ");
-  scanf("%d", &size);
-  // 动态分配内存
-  int *arr = (int *)malloc(size * sizeof(int));
-  if (arr == NULL) {
-  printf("Memory allocation failed!\n");
-  return 1;
-  }
-  // 输入数组元素
-  printf("Enter %d elements: ", size);
-  for (int i = 0; i < size; i++) {
-  scanf("%d", &arr[i]);
-  }
-  // 打印原始数组
-  printf("Original array: ");
-  print_array(arr, size);
-  // 排序数组
-  sort_array(arr, size);
-  printf("Sorted array: ");
-  print_array(arr, size);
-  // 计算统计信息
-  int max = find_max(arr, size);
-  int min = find_min(arr, size);
-  double average = calculate_average(arr, size);
-  printf("Max: %d\n", max);
-  printf("Min: %d\n", min);
-  printf("Average: %.2f\n", average);
-  // 释放内存
-  free(arr);
-  return 0;
- }
- // 打印数组
- void print_array(int arr[], int size) {
-  for (int i = 0; i < size; i++) {
-  printf("%d ", arr[i]);
-  }
-  printf("\n");
- }
- // 冒泡排序
- void sort_array(int arr[], int size) {
-  for (int i = 0; i < size - 1; i++) {
-  for (int j = 0; j < size - i - 1; j++) {
-  if (arr[j] > arr[j + 1]) {
-  int temp = arr[j];
-  arr[j] = arr[j + 1];
-  arr[j + 1] = temp;
-  }
-  }
-  }
- }
- // 查找最大值
- int find_max(int arr[], int size) {
-  int max = arr[0];
-  for (int i = 1; i < size; i++) {
-  if (arr[i] > max) {
-  max = arr[i];
-  }
-  }
-  return max;
- }
- // 查找最小值
- int find_min(int arr[], int size) {
-  int min = arr[0];
-  for (int i = 1; i < size; i++) {
-  if (arr[i] < min) {
-  min = arr[i];
-  }
-  }
-  return min;
- }
- // 计算平均值
- double calculate_average(int arr[], int size) {
-  int sum = 0;
-  for (int i = 0; i < size; i++) {
-  sum += arr[i];
-  }
-  return (double)sum / size;
- }
-```
-
-## 11. 常见错误与调试
-
-### 11.1 常见错误
-
-- **数组越界**：访问超出数组范围的元素
-- **内存泄漏**：动态分配的内存未释放
-- **空指针**：使用未初始化的指针访问数组
-- **字符串没有结束符**：导致 `strlen()` 等函数出错
-
-### 11.2 调试技巧
-
-- **打印数组内容**：检查数组元素是否正确
-- **使用调试器**：如 GDB 单步执行，查看数组值
-- **边界检查**：在循环中添加边界检查
-- **内存检查**：使用工具如 Valgrind 检查内存泄漏
-
----
-
-## 一维数组
-
-**基本写法：数组声明**
-`<type> <array_name>[<size>];`
-```c
-// 声明大小为 5 的整型数组
-int numbers[5];
-```
-
----
-
-**完全初始化写法：数组初始化**
-`<type> <array_name>[<size>] = {<values>};`
-```c
-// 完全初始化数组
-int arr[5] = {1, 2, 3, 4, 5};
-```
-
----
-
-**部分初始化写法：部分初始化**
-`<type> <array_name>[<size>] = {<values>};`
-```c
-// 部分初始化，其余元素为 0
-int arr[5] = {1, 2, 3};
-```
-
----
-
-**自动推断写法：省略大小**
-`<type> <array_name>[] = {<values>};`
-```c
-// 自动推断数组大小为 3
-int arr[] = {10, 20, 30};
-```
-
----
-
-**清零写法：全部初始化为 0**
-`<type> <array_name>[<size>] = {0};`
-```c
-// 所有元素初始化为 0
-int arr[10] = {0};
-```
-
----
-
-**访问写法：访问数组元素**
-`<array_name>[<index>]`
-```c
-// 访问数组第一个元素
-int arr[5] = {10, 20, 30, 40, 50};
-printf("%d\n", arr[0]);
-```
-
----
-
-**遍历写法：遍历数组**
-`for (int i = 0; i < <size>; i++) { ... }`
-```c
-// 遍历打印数组元素
-int arr[5] = {1, 2, 3, 4, 5};
-for (int i = 0; i < 5; i++) {
-    printf("arr[%d] = %d\n", i, arr[i]);
+/* scores_nightmare.c：不用数组存成绩 */
+#include <stdio.h>
+
+int main(void) {
+    int s0 = 90;
+    int s1 = 75;
+    int s2 = 60;
+    /* ...还有 37 个变量等着声明... */
+    printf("%d %d %d\n", s0, s1, s2);
+    return 0;
 }
 ```
 
----
+写到第三个变量就该停手了：求平均分要连加 40 个变量；找最高分要写 39 次比较；人数从 40 变成 45，所有代码重写一遍。问题出在「每个成绩一个独立变量」——40 个变量之间没有任何联系，编译器也不知道它们是一伙的。
 
-**计算大小写法：计算数组元素个数**
-`sizeof(<array>) / sizeof(<array>[0])`
+你需要的是：**40 个同类型的格子连成一排，起一个共同的名字，用编号访问每一个**。这就是数组（array）：类型相同、内存连续、个数固定的一组元素。上面的三个需求（求平均、找最大、批量处理）在数组面前都只是同一个循环。
+
+## 2. 声明与初始化
+
+### 2.1 声明：类型、名字、个数
+
 ```c
-// 计算数组元素个数
-int arr[] = {1, 2, 3, 4, 5};
-int size = sizeof(arr) / sizeof(arr[0]);
+int scores[40];      /* 40 个 int */
+double prices[10];   /* 10 个 double */
+char name[20];       /* 20 个 char */
 ```
 
----
+个数必须是**编译期常量**：字面量、由常量构成的表达式都行，普通变量不行（变量做长度是 VLA，第 6 节单讲）。
 
-## 多维数组
+### 2.2 初始化：五种写法
 
-**基本写法：二维数组声明与初始化**
-`<type> <array_name>[<rows>][<cols>] = { {<values>}, ... };`
 ```c
-// 完整初始化二维数组
+int a[5] = {1, 2, 3, 4, 5};       /* 完全初始化 */
+int b[5] = {1, 2, 3};             /* 部分初始化 */
+int c[10] = {0};                  /* 全部清零的最惯用写法 */
+int d[] = {10, 20, 30, 40};       /* 省略长度，编译器数出 4 个 */
+int e[8] = { [2] = 5, [7] = 1 };  /* 指定初始化器（C99）：下标 2 放 5，下标 7 放 1 */
+```
+
+关键问题：没写到初值的元素是什么？做实验：
+
+```c
+/* init_probe.c：验证「没写到的元素」的值 */
+#include <stdio.h>
+
+int main(void) {
+    int b[5] = {1, 2, 3};
+    int e[8] = { [2] = 5, [7] = 1 };
+    int raw[5];                       /* 故意不初始化，做对照 */
+    for (int i = 0; i < 5; i++) printf("b[%d]=%d ", i, b[i]);
+    printf("\n");
+    for (int i = 0; i < 8; i++) printf("e[%d]=%d ", i, e[i]);
+    printf("\n");
+    for (int i = 0; i < 5; i++) printf("raw[%d]=%d ", i, raw[i]);
+    printf("\n");
+    return 0;
+}
+```
+
+```bash
+gcc -Wall -Wextra -g init_probe.c -o init_probe
+./init_probe
+```
+
+一次典型输出（raw 那一行每次运行都可能不同）：
+
+```text
+b[0]=1 b[1]=2 b[2]=3 b[3]=0 b[4]=0
+e[0]=0 e[1]=0 e[2]=5 e[3]=0 e[4]=0 e[5]=0 e[6]=0 e[7]=1
+raw[0]=4200896 raw[1]=6422336 raw[2]=49 raw[3]=0 raw[4]=98
+```
+
+三条规则一次看清：
+
+1. 只要写了初始化列表（哪怕只写一部分），**没覆盖到的元素一律为 0**——这是标准保证，不是运气。所以 `int c[10] = {0};` 是「全部清零」的惯用写法；
+2. 指定初始化器（designated initializer，C99 引入）用 `[下标] = 值` 跳着放，其余补 0，适合「绝大多数是默认值、个别项特殊」的配置表；
+3. 完全不初始化就是垃圾值——[变量与常量](/c/050-VariableConstant) 讲过的规则对数组同样成立。
+
+修改实验一：把 `e` 的初始化改成 `{ [7] = 1, [2] = 5, 9 }`——指定项可以乱序，而它后面不带 `[下标] =` 的 `9` 从**上一个指定下标的下一个位置**继续放，即落在 `e[3]`。先预测再运行验证。
+
+### 2.3 字符数组与字符串
+
+```c
+char chars[5] = {'H', 'e', 'l', 'l', 'o'};      /* 只是 5 个字符，不是字符串 */
+char str[6]  = {'H', 'e', 'l', 'l', 'o', '\0'}; /* 补上结尾的 '\0'，这才是字符串 */
+char s1[] = "Hello";   /* 惯用写法：自动补 '\0'，长度是 6 不是 5 */
+```
+
+C 语言的字符串（string）不是一种独立类型，而是**以 `'\0'` 结尾的字符数组**。所有字符串函数（`strlen`、`printf` 的 `%s`）都靠找这个结尾符工作——少了它，函数会一路读到越界为止，下场就是第 3 节的 ASan 事故现场。
+
+还有一个新手必撞的差异：
+
+```c
+char a[] = "hi";   /* 数组：把 'h' 'i' '\0' 三个字符拷进自己的 3 字节 */
+char *p  = "hi";   /* 指针：指向只读的字符串字面量，p 里存的是字面量的地址 */
+```
+
+两者 `sizeof` 一个是 3、一个是 8（64 位平台），且 `p[0] = 'H'` 是修改字符串字面量的未定义行为（[变量与常量](/c/050-VariableConstant) 讲过字面量为什么改不得）。这一对差异是「数组与指针」问题的预告片，完整拆解见 [指针与数组的区别](/c/150-PointerArrayDifference)。
+
+修改实验二：打印 `sizeof a` 与 `sizeof p`（用 `%zu`），验证 3 与 8。
+
+## 3. 下标从 0 开始：偏移量心智模型
+
+`a[i]` 的真实含义是「**距数组开头第 i 个元素**」。第 0 个元素偏移为 0，正好在开头——这就是下标从 0 开始的原因：下标不是「第几个」，是「偏移量」。
+
+地址可以直接算出来：
+
+```text
+&a[i] 的字节地址 = 数组首地址 + i × sizeof(元素类型)
+```
+
+`int a[5]` 若首地址为 1000，则 `a[3]` 在 1000 + 3 × 4 = 1012。`a[i]` 在语言层面还有个恒等式：`a[i]` 完全等价于 `*(a + i)`——这句先混个眼熟即可，它为什么成立、`a` 在这里变成了什么，[指针与数组的区别](/c/150-PointerArrayDifference) 讲透。
+
+偏移量模型立刻解释了越界为什么危险：`a[5]` 的意思是「开头往后第 5 个元素的位置」——那块内存**不属于这个数组**，可能是别的变量，可能是函数自己的账本（返回地址），也可能是没人管的地带。C 编译器不做下标检查，越界访问是未定义行为（undefined behavior，UB）：可能崩溃，可能悄悄改坏别的数据，也可能碰巧没事——标准对结果不做任何承诺（UB 的常见条目见 [运算符与表达式](/c/060-OperatorExpression)；越界引发的缓冲区溢出作为一类安全漏洞，在[安全函数与边界检查](/c/450-SafeFunctionBoundsCheck) 展开）。
+
+### 3.1 越界事故现场：ASan 实录
+
+```c
+/* overflow.c：经典 off-by-one，<= 应为 < */
+#include <stdio.h>
+
+int main(void) {
+    int scores[5] = {0};
+    for (int i = 0; i <= 5; i++) {   /* i=5 时越界 */
+        scores[i] = i * 10;
+    }
+    printf("scores[4] = %d\n", scores[4]);
+    return 0;
+}
+```
+
+先直接编译运行：大概率正常打印 `scores[4] = 40`，一切看起来没事——这正是 UB 的阴险之处，**没出事不等于没错，只是这次运气好**。换 ASan（AddressSanitizer，内存错误检查器，编译开关与 210 篇相同）再跑：
+
+```bash
+gcc -Wall -Wextra -g -fsanitize=address overflow.c -o overflow
+./overflow
+```
+
+预期输出（地址每次不同，关键行如下）：
+
+```text
+==24510==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffe4a2c1a58
+WRITE of size 4 at 0x7ffe4a2c1a58 thread T0
+    #0 0x5a3c21b0d1f2 in main overflow.c:7
+...
+Address 0x7ffe4a2c1a58 is located in stack of thread T0 at offset 52 in frame
+    #0 0x5a3c21b0d148 in main
+  This frame has 1 object(s):
+    [32, 52) 'scores' <== Memory access at offset 52 overflows this variable
+```
+
+逐行读：第一行点名事故类型 stack-buffer-overflow——栈上的缓冲区越界；`WRITE of size 4` 说明这是一次 4 字节写入（一个 int）；`overflow.c:7` 指出出错行；最后的对象清单更直白：`scores` 占据 `[32, 52)` 这 20 个字节（5 个 int），而这次访问落在偏移 52——**刚好越过一格**。把 `i <= 5` 改成 `i < 5`，报告消失。
+
+修改实验三：把写入改成 `scores[100000]` 这样的大偏移再跑 ASan，观察报告里 offset 数字的变化；再想想为什么「恰好越过一格」的小越界在真实程序里最难被发现。
+
+## 4. sizeof 与元素个数
+
+数组自己知道总字节数，`sizeof` 问得到；除以单个元素的大小，就是元素个数：
+
+```c
+/* count.c：元素个数公式 */
+#include <stdio.h>
+
+int main(void) {
+    int a[] = {1, 2, 3, 4, 5, 6};
+    size_t n = sizeof a / sizeof a[0];
+    printf("n = %zu\n", n);
+    printf("bytes = %zu\n", sizeof a);
+    return 0;
+}
+```
+
+```text
+n = 6
+bytes = 24
+```
+
+`sizeof` 的结果类型是 `size_t`，`printf` 要用 `%zu`（见 [数据类型详解](/c/040-DataTypeDetailed)）。
+
+但这个公式**只在数组还是数组的地方有效**。把它搬进函数就翻车：
+
+```c
+/* decay.c：函数内的 sizeof */
+#include <stdio.h>
+
+void broken(int a[]) {           /* 写 int a[] 只是习惯，实际参数是 int *a */
+    printf("in func:  %zu\n", sizeof a);   /* 指针的大小，不是数组的大小 */
+}
+
+int main(void) {
+    int a[10];
+    printf("in main:  %zu\n", sizeof a);   /* 40：还是完整的数组 */
+    broken(a);
+    return 0;
+}
+```
+
+64 位平台一次典型输出：
+
+```text
+in main:  40
+in func:  8
+```
+
+原因一句话：数组作为参数传递时会**退化为指向首元素的指针**（decay），长度信息被丢掉，函数里的 `sizeof a` 量的是指针自己（8 字节）。所以 C 的惯例是**长度总是作为额外参数跟着数组一起传**。退化的完整机制、`&a` 与 `a` 的类型差异，见 [指针与数组的区别](/c/150-PointerArrayDifference)。
+
+修改实验四：把 `broken` 的参数写成 `int a[10]` 再跑一次，输出不变——参数方括号里的数字没有任何约束力，这正是 150 篇要拆的假象。
+
+## 5. 多维数组：连续内存与按行遍历
+
+### 5.1 二维数组：数组的数组
+
+```c
 int matrix[2][3] = {
     {1, 2, 3},
     {4, 5, 6}
 };
 ```
 
----
+`matrix[2][3]` 是「2 行，每行 3 个 int」。可以理解为：matrix 是一个长度为 2 的数组，每个元素又是一行 `int[3]`。访问用 `matrix[行][列]`，如 `matrix[1][2]` 是 6。
 
-**访问写法：访问二维数组元素**
-`<array_name>[<row>][<col>]`
+初始化规则与一维一致：没写到的补 0；行数可以省略让编译器数，**列数不行**（列数决定每行多宽，编译器要靠它定位任何一行）：
+
 ```c
-// 访问第二行第三列元素
-int matrix[2][3] = {{1, 2, 3}, {4, 5, 6}};
-printf("%d\n", matrix[1][2]);
+int m1[2][3] = {{1, 2}, {4}};          /* 部分初始化：m1 是 {{1,2,0},{4,0,0}} */
+int m2[][3]  = {{1, 2, 3}, {4, 5, 6}}; /* 行数自动推断为 2 */
 ```
 
----
+三维及以上同理：`int cube[2][2][2]` 就是「数组的数组的数组」。
 
-**遍历写法：遍历二维数组**
-`for (int i = 0; i < <rows>; i++) { for (int j = 0; j < <cols>; j++) { ... } }`
+### 5.2 内存里没有「行」：只有连续的 6 个 int
+
+二维数组在内存中**仍然是连续一排**，行优先（row-major）铺开：
+
+```text
+matrix 的 24 字节（首地址记为 1000）：
+地址    1000 1004 1008 | 1012 1016 1020
+内容       1    2    3 |    4    5    6
+           [---- 第 0 行 ----][---- 第 1 行 ----]
+```
+
+`matrix[i][j]` 的地址同样能算：`首地址 + (i × 列数 + j) × sizeof(int)`——这也是为什么函数参数必须写明列数（5.4 节）。
+
+### 5.3 按行遍历：缓存友好的直觉
+
+既然内存按行铺开，「先走完一行再走下一行」的遍历顺序就与内存顺序一致：
+
 ```c
-// 遍历二维数组
-int matrix[2][3] = {{1, 2, 3}, {4, 5, 6}};
-for (int i = 0; i < 2; i++) {
-    for (int j = 0; j < 3; j++) {
-        printf("%d ", matrix[i][j]);
-    }
+/* row_major.c：两种遍历顺序，只差循环嵌套的先后 */
+#include <stdio.h>
+#include <time.h>
+
+enum { N = 3000 };
+int big[N][N];
+
+int main(void) {
+    clock_t t0 = clock();
+    for (int i = 0; i < N; i++)            /* 外层走行：与内存顺序一致 */
+        for (int j = 0; j < N; j++)
+            big[i][j] = 1;
+    printf("row order: %f s\n", (double)(clock() - t0) / CLOCKS_PER_SEC);
+
+    t0 = clock();
+    for (int j = 0; j < N; j++)            /* 外层走列：每一步都跳一整行 */
+        for (int i = 0; i < N; i++)
+            big[i][j] = 1;
+    printf("col order: %f s\n", (double)(clock() - t0) / CLOCKS_PER_SEC);
+    return 0;
 }
 ```
 
----
+一次典型输出（数值与机器有关，相对差距稳定）：
 
-**三维写法：三维数组**
-`<type> <array_name>[<depth>][<rows>][<cols>];`
-```c
-// 声明三维数组
-int cube[2][2][2] = {
-    {{1, 2}, {3, 4}},
-    {{5, 6}, {7, 8}}
-};
+```text
+row order: 0.011000 s
+col order: 0.031000 s
 ```
 
----
+同样的读写总量，按列遍历慢了好几倍：CPU 取内存不是一个字节一个字节取，而是把附近一整块（缓存行）一起搬进来。按内存顺序访问，每次搬运都被充分利用；跳着访问，每次搬运大多被浪费。「缓存友好」说的就是这件事，本实验先建立直觉即可，原理在体系结构课程深入。
 
-**函数参数写法：多维数组作为函数参数**
-`<return_type> <func>(<type> <arr>[][<cols>], int <rows>) { ... }`
+### 5.4 多维数组作为参数
+
+传二维数组时，除第一维外的所有维度必须写明：
+
 ```c
-// 需要指定除第一维外的所有维度大小
-void print_matrix(int matrix[][3], int rows) {
+void print_matrix(int m[][3], int rows) {
     for (int i = 0; i < rows; i++) {
-        for (int j = 0; j < 3; j++) {
-            printf("%d ", matrix[i][j]);
-        }
+        for (int j = 0; j < 3; j++) printf("%d ", m[i][j]);
+        printf("\n");
     }
 }
 ```
 
----
+原因用 5.2 节的公式就能想通：函数要算第 `i` 行的地址，必须知道每行多宽；第一维（几行）则无所谓——所以行数习惯上单独作为参数传。三维及以上照此办理：`int cube[2][2][2]` 传参写成 `int cube[][2][2]`。
 
-## 字符数组与字符串
+## 6. 变长数组：大小运行时才知道
 
-**字符数组写法：字符数组定义**
-`char <array_name>[<size>] = {<chars>};`
+数组长度必须编译期确定，可有些场景长度要等程序跑起来才知道（读入人数、文件行数）。C99 给了变长数组（VLA，variable length array）：
+
 ```c
-// 普通字符数组
-char chars[5] = {'H', 'e', 'l', 'l', 'o'};
-```
+/* vla.c：长度由参数决定 */
+#include <stdio.h>
 
----
+void fill(int n) {
+    int arr[n];                 /* VLA：长度是运行时的 n */
+    for (int i = 0; i < n; i++) arr[i] = i + 1;
+    for (int i = 0; i < n; i++) printf("%d ", arr[i]);
+    printf("\n");
+}
 
-**字符串写法：字符串初始化**
-`char <str>[] = "<string>";`
-```c
-// 自动包含 '\0'，大小为 6
-char str[] = "Hello";
-```
-
----
-
-**strlen 写法：计算字符串长度**
-`strlen(<str>)`
-```c
-#include <string.h>
-// 计算字符串长度
-char src[] = "Hello";
-int len = strlen(src);
-```
-
----
-
-**strcpy 写法：复制字符串**
-`strcpy(<dest>, <src>)`
-```c
-#include <string.h>
-// 复制字符串
-char dest[50];
-char src[] = "Hello";
-strcpy(dest, src);
-```
-
----
-
-**strcat 写法：连接字符串**
-`strcat(<dest>, <src>)`
-```c
-#include <string.h>
-// 连接字符串
-char dest[50] = "Hello";
-strcat(dest, " World");
-```
-
----
-
-**strcmp 写法：比较字符串**
-`strcmp(<str1>, <str2>)`
-```c
-#include <string.h>
-// 比较字符串，0 相等，<0 小于，>0 大于
-int result = strcmp("abc", "abd");
-```
-
----
-
-**fgets 写法：读取一行字符串**
-`fgets(<str>, <size>, stdin)`
-```c
-// 读取一行（包括空格）
-char str[100];
-fgets(str, sizeof(str), stdin);
-```
-
----
-
-## 数组与指针
-
-**基本写法：数组名与指针的关系**
-`<array_name>` 等同于 `&<array_name>[0]`
-```c
-// 数组名即首元素地址
-int arr[5] = {1, 2, 3, 4, 5};
-int *p = arr;
-```
-
----
-
-**指针算术写法：指针访问数组**
-`*(<ptr> + <n>)`
-```c
-// 使用指针算术访问数组元素
-int arr[5] = {1, 2, 3, 4, 5};
-int *p = arr;
-printf("%d\n", *(p + 1));
-```
-
----
-
-**指针数组写法：存储指针的数组**
-`<type> *<array_name>[<size>];`
-```c
-// 指针数组
-int *ptr_array[3];
-int a = 10, b = 20, c = 30;
-ptr_array[0] = &a;
-```
-
----
-
-**数组指针写法：指向数组的指针**
-`<type> (*<ptr_name>)[<size>];`
-```c
-// 指向整个数组的指针
-int arr[5] = {1, 2, 3, 4, 5};
-int (*p)[5] = &arr;
-```
-
----
-
-## 变长数组（VLA，C99+）
-
-**基本写法：运行时确定数组大小**
-`<type> <array_name>[<variable>];`
-```c
-// 数组大小由参数决定
-void func(int n) {
-    int arr[n];
+int main(void) {
+    fill(5);
+    return 0;
 }
 ```
 
----
+三个必须知道的边界：
 
-## 动态数组
+1. **VLA 不能用初始化列表**（`int arr[n] = {0}` 编译错误），要清零就自己循环；
+2. **栈溢出风险**。VLA 在栈上分配，而普通栈通常只有 1 到 8 MB（[内存深水区](/c/210-MemoryManagement) 的五段布局）。`int big[10 * 1000 * 1000]` 已经是 40 MB；VLA 更糟——它没有失败返回值，栈要不到不是返回 NULL，而是当场崩溃或悄悄踩坏别的内存；
+3. **C11 起它是可选特性**。C99 曾强制要求支持 VLA，但嵌入式编译器普遍拒绝实现，C11 干脆把它降为可选：编译器若不支持，会定义宏 `__STDC_NO_VLA__`（MSVC 就不支持 VLA）。可移植代码应当探测：
 
-**malloc 写法：创建动态数组**
-`<type> *<ptr> = (<type> *)malloc(<size> * sizeof(<type>));`
 ```c
-#include <stdlib.h>
-// 动态分配数组
-int size = 10;
-int *arr = (int *)malloc(size * sizeof(int));
+#ifdef __STDC_NO_VLA__
+/* 这个编译器不支持 VLA，改走固定大小或 malloc 的路线 */
+#endif
 ```
 
----
+（C23 起口径又动了：可变修改类型与堆上 VLA 重新成为必选，栈上自动存储期的 VLA 仍允许编译器缺席，细节见文末官方文档。）
 
-**realloc 写法：动态调整数组大小**
-`<type> *<new_ptr> = (<type> *)realloc(<ptr>, <new_size> * sizeof(<type>));`
+那什么时候用 VLA、什么时候用 malloc？经验法则：**小、临时、随函数进出**的数据用 VLA 省事；**大、要活着跨出函数、要扩容**的数据交给 malloc——它有判 NULL 的机会，能 realloc 扩容，能 free 归还。malloc 四件套的完整教学在 [动态内存](/c/200-DynamicMemoryManagement)。
+
+## 7. 数组的三个「不能」与替代
+
+数组有一组整齐的限制，根源是同一个：数组在表达式中代表的是「一排连续内存的首地址」，它自己不是一个可以整体操作的值。
+
+**不能整体赋值。** `b = a` 直接编译错误（数组不是可修改的值）。替代：循环逐个赋，或 `memcpy(b, a, sizeof a);`（`#include <string.h>`，按字节数整块拷贝）。
+
+**不能 `==` 比较。** `a == b` 居然能编译——但比较的是两个数组退化的**首地址**，结果永远是「不等」，纯属误导。替代：循环逐个比；字符串用 `strncmp`。
+
+**不能整体传值。** 传给函数就退化成指针，长度丢掉（第 4 节）。替代：额外传一个长度参数。
+
+字符数组（字符串）的替代品有现成函数（都来自 `<string.h>`）：
+
+| 需求 | 数组直接写 | 字符串用 |
+| --- | --- | --- |
+| 赋值/拷贝 | `b = a` 编译错误 | `strcpy(dest, src)`，带界的 `strncpy` |
+| 比较 | `a == b` 比的是地址 | `strcmp(s1, s2)` / `strncmp(s1, s2, n)`，返回 0 表示相等 |
+| 求长度 | `sizeof` 是含 `'\0'` 的总字节数 | `strlen(s)`，数到 `'\0'` 为止，不含结尾符 |
+
+注意 `strcpy`/`strcat` 不检查目标缓冲区大小——这正是历史上一大类安全漏洞的来源，安全替代与边界习惯见[安全函数与边界检查](/c/450-SafeFunctionBoundsCheck)；键盘输入一律用 `fgets`（自动留 `'\0'`、带长度上限），`gets` 因无法防溢出已被 C11 标准废除，行输入的细节见 [标准库文件 IO](/c/430-StdioFileIO)。
+
+预告一个反转：三个「不能」里的前两个，在**结构体**那里恰好反过来——结构体可以整体赋值，而且数组元素会被一起拷走。下一课的主角就是它。
+
+## 8. 实际项目中的使用场景
+
+- 配置与查找表：指定初始化器把「默认值加个别覆盖」写成一张可读的表，下标即含义；
+- 各类缓冲区：串口、网络、文件的接收缓冲区都是定长字符数组，使用纪律是「写多少、判多少」，见 [标准库文件 IO](/c/430-StdioFileIO)；
+- 网格与矩阵：棋盘、地图、灰度图都是二维数组，遍历方向直接决定性能（5.3 节）；
+- 嵌入式固件：很多小型 MCU 没有堆或禁用 malloc，定长数组是唯一选择，容量按最坏情况预留，见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)；
+- 数量上界未知：换 [动态内存](/c/200-DynamicMemoryManagement) 的 malloc 与 realloc。
+
+## 9. 小练习
+
+预测题一（5 分钟）：先写下答案再运行：
+
 ```c
-#include <stdlib.h>
-// 重新调整数组大小
-int *new_arr = (int *)realloc(arr, 20 * sizeof(int));
+int a[6] = { [2] = 7, 8, 9 };
 ```
 
----
+`a[0]` 到 `a[5]` 各是多少？
 
-## 数组排序
+参考答案（先写再看）：`0 0 7 8 9 0`。指定项落在下标 2；它后面不带 `[下标] =` 的值从下一个位置继续，所以 8 到下标 3、9 到下标 4；其余补 0。
 
-**冒泡排序写法：冒泡排序实现**
-`void <sort>(<type> <arr>[], int <size>) { ... }`
+预测题二（5 分钟）：下面的片段在 64 位平台输出哪两行？
+
 ```c
-// 冒泡排序算法
-void bubble_sort(int arr[], int size) {
-    for (int i = 0; i < size - 1; i++) {
-        for (int j = 0; j < size - i - 1; j++) {
-            if (arr[j] > arr[j + 1]) {
-                int temp = arr[j];
-                arr[j] = arr[j + 1];
-                arr[j + 1] = temp;
-            }
-        }
-    }
-}
+void count(int arr[]) { printf("A %zu\n", sizeof arr); }
+int a[10];
+count(a);
+printf("B %zu\n", sizeof a);
 ```
 
----
+参考答案（先写再看）：`A 8`、`B 40`。参数位置的 `arr` 已退化为指针；`main` 里的 `a` 还是数组。
 
-**二分查找写法：二分查找实现**
-`int <search>(<type> <arr>[], int <low>, int <high>, <type> <target>) { ... }`
-```c
-// 二分查找算法
-int binary_search(int arr[], int low, int high, int target) {
-    if (low > high) return -1;
-    int mid = low + (high - low) / 2;
-    if (arr[mid] == target) return mid;
-    else if (arr[mid] > target) return binary_search(arr, low, mid - 1, target);
-    else return binary_search(arr, mid + 1, high, target);
-}
-```
+挑战题（30 分钟，不看答案先动手）：成绩单统计器。用数组存 8 个成绩（初始化器给出），一遍循环同时求出最高分、最低分、平均分、及格（不低于 60）人数，最后逆序打印成绩。提示两级如下。
+
+提示（思路方向）：最高分、最低分、总和、及格数共四个变量与循环同步维护；平均分记得 `(double)sum / n`，否则整数除法截断（[运算符与表达式](/c/060-OperatorExpression)）。
+
+展开（关键点）：元素个数用 `sizeof scores / sizeof scores[0]` 求，不要手写 8；逆序打印从 `n - 1` 走到 0；`%zu` 配 `size_t`。
+
+验收清单：编译无警告；改一个成绩重新运行，四个统计量全部正确变化；平均分带小数。
+
+## 10. 与之前和之后的知识的关系
+
+- 往前：[变量与常量](/c/050-VariableConstant) 的「未初始化即垃圾值」在 2.2 节的 raw 数组上重演，而「写了初始化列表则剩余清零」是数组特有的强保证；[运算符与表达式](/c/060-OperatorExpression) 的整数除法规则解释了挑战题里为什么要 `(double)sum / n`；
+- 旁支：数组名与指针的身份差异是 [指针与数组的区别](/c/150-PointerArrayDifference) 的全部主题；`memcpy`/`strncmp` 的安全用法在[安全函数与边界检查](/c/450-SafeFunctionBoundsCheck)；
+- 往后：数组把「多个同类型」连成一行；当每个数据项的类型各不相同（姓名是字符数组、学号是整数、成绩是浮点数），就需要把不同成员打包成一个整体——[结构体与联合](/c/130-StructAndUnion) 接棒，并兑现本文埋下的反转：数组包进结构体就能整体赋值。
+
+## 11. 官方文档
+
+- 数组声明（含 VLA 与 `__STDC_NO_VLA__`，cppreference C）：https://en.cppreference.com/w/c/language/array
+- 初始化（含指定初始化器语义，cppreference C）：https://en.cppreference.com/w/c/language/init
+
+## 12. 自我检查
+
+- 能默写五种初始化写法，并说清每种写法里「没写到」的元素是什么值；
+- 能用偏移量模型解释下标为什么从 0 开始，并算出 `a[i]` 的字节地址；
+- 拿到一份 stack-buffer-overflow 报告，能在三行内指出出错行、写入大小与被越界的变量；
+- 能向同事讲清 `sizeof a / sizeof a[0]` 为什么进了函数就失效，以及三个「不能」各自的替代写法。
+
+## 本章总结
+
+数组是类型相同、内存连续、个数固定的一排元素：下标从 0 开始，因为它是偏移量，`a[i]` 就是首地址往后第 i 个元素的位置。初始化列表只要出现，没覆盖的元素保证清零；指定初始化器允许跳位；字符串是 `'\0'` 结尾的字符数组。越界是未定义行为，ASan 能把「碰巧没事」变成当场点名；`sizeof a / sizeof a[0]` 只在数组还是数组的地方有效——传参即退化，长度必须额外传。VLA 把长度推迟到运行时，C11 起可选且有栈风险，大而长寿的数据交给 malloc。数组不能整体赋值、不能 `==` 比较、不能整体传值，替代是循环、逐个比较与长度参数；字符串有 `strcpy`/`strncmp`/`strlen` 一族。
+
+## 下一步
+
+进入 [结构体与联合](/c/130-StructAndUnion)：数组解决「多个同类型」，结构体解决「一组不同类型」——把姓名、学号、成绩打包成一个整体，并解答本文留下的悬念：为什么结构体可以整体赋值，而数组不行。

@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 540
 title: 嵌入式 C 编程
 module: 'c'
 category: 计算机科学

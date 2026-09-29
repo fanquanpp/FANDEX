@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 500
 title: C Valgrind 内存检测
 module: 'c'
 category: 计算机科学

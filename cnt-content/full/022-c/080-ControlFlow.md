@@ -1,1191 +1,500 @@
 ---
-order: 80
-title: 控制流
+order: 90
+title: 控制流：分支、循环与跳转
 module: 'c'
 category: 计算机科学
-difficulty: intermediate
-description: 条件判断、循环结构及其控制语句。
+difficulty: beginner
+description: 以成绩分档的三种写法（if 链、switch 分桶、表驱动）开题：悬空 else 配对规则、= 误作 == 的 -Wparentheses 实录、switch 穿透语义与 C23 [[fallthrough]]、case 整型常量限制与 1023 条下限、GNU 区间 case 扩展、for/while/do-while 心智模型与互化、goto 的两个可辩护用途（多层跳出与错误清理）、分号空语句与浮点累积误差调试实录，switch 状态机收尾。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/360-ThreadConcurrency'
-  - 'c/230-AlignmentMemoryLayout'
+  - 'c/090-FunctionDetailed'
+  - 'c/055-ScopeStorageLinkage'
+  - 'c/110-EnumTypedef'
   - 'c/540-AttributeCompilerExtension'
-  - 'c/450-SafeFunctionBoundsCheck'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/050-VariableConstant'
+  - 'c/060-OperatorExpression'
 ---
 
 ## 前置知识
 
-- [对齐与内存布局](/c/230-AlignmentMemoryLayout)：建议先完成前一篇的学习
+- 已完成 [变量与常量](/c/050-VariableConstant)：会声明变量、赋初值、用 printf 打印；
+- 已完成 [运算符与表达式](/c/060-OperatorExpression)：认识 `>`、`>=`、`&&`、`||`——分支条件全由它们拼出来。
+
+没读过 060 也能往下读，用到的运算符都会当场解释。
+
+> 分工说明：本篇讲「程序怎么拐弯」。变量在哪个范围可见、能活多久，[作用域、存储期与链接性](/c/055-ScopeStorageLinkage) 负责；把控制流打包成函数、以及递归这种自己调用自己的控制流，见 [函数](/c/090-FunctionDetailed)。
 
 ## 学习目标
 
-- 掌握「1. 条件判断 (Selection)」的核心机制、典型用法与常见陷阱
-- 掌握「2. 循环结构 (Iteration)」的核心机制、典型用法与常见陷阱
-- 掌握「3. 循环控制语句 (Control Statements)」的核心机制、典型用法与常见陷阱
-- 掌握「4. 控制流的最佳实践」的核心机制、典型用法与常见陷阱
-- 掌握「5. 常见问题与解决方案」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用 if 链、switch、表驱动实现同一个分档逻辑，说出三者各自适用的场景；
+2. 解释悬空 else 的配对规则与 switch 的穿透（fallthrough）语义，会用 C23 的 `[[fallthrough]]` 标注故意穿透；
+3. 在 for、while、do-while 之间互相改写，按「次数已知、条件驱动、至少一次」选型；
+4. 用 break、continue、goto、return 控制跳转，写出 goto 错误清理模式；
+5. 当场识别并修复分号空语句、差一错误、浮点累积误差三类经典事故。
 
-## 1. 条件判断 (Selection)
+预计 60 到 80 分钟，含 6 组动手实验、2 道预测题与 1 道挑战题。
 
-### 1.1 `if-else` 结构
+## 1. 问题引入：同一件事的三种写法
 
-#### 1.1.1 基本用法
-
-`if-else` 结构是最基本的条件控制语句，用于根据条件执行不同的代码块。
-
-```c
- #include <stdio.h>
- int main() {
-  int score = 85;
-  if (score >= 90) {
-  printf("Excellent\n");
-  } else if (score >= 80) {
-  printf("Very Good\n");
-  } else if (score >= 60) {
-  printf("Pass\n");
-  } else {
-  printf("Fail\n");
-  }
-  return 0;
- }
-```
-
-#### 1.1.2 嵌套 `if-else`
+任务：百分制成绩分五档——90 及以上 Excellent，80 到 89 Very Good，60 到 79 Pass，其余 Fail。三种都能跑、输出一致的写法：
 
 ```c
- #include <stdio.h>
- int main() {
-  int age = 18;
-  int has_license = 1;
-  if (age >= 18) {
-  if (has_license) {
-  printf("You can drive\n");
-  } else {
-  printf("You need a license to drive\n");
-  }
-  } else {
-  printf("You are too young to drive\n");
-  }
-  return 0;
- }
-```
-
-#### 1.1.3 条件表达式的简写
-
-```c
- #include <stdio.h>
- int main() {
-  int a = 10, b = 20;
-  // 简单的条件判断可以使用三目运算符
-  int max = (a > b) ? a : b;
-  printf("Max: %d\n", max);
-  // 条件表达式作为函数参数
-  printf("Result: %s\n", (a > b) ? "a is larger" : "b is larger");
-  return 0;
- }
-```
-
-### 1.2 `switch-case` 结构
-
-#### 1.2.1 基本用法
-
-`switch-case` 结构用于多分支选择，比嵌套的 `if-else` 更清晰。
-
-```c
- #include <stdio.h>
- int main() {
-  char grade = 'B';
-  switch (grade) {
-  case 'A':
-  printf("Great!\n");
-  break;
-  case 'B':
-  printf("Good!\n");
-  break;
-  case 'C':
-  printf("Average\n");
-  break;
-  case 'D':
-  printf("Below Average\n");
-  break;
-  case 'F':
-  printf("Fail\n");
-  break;
-  default:
-  printf("Unknown grade\n");
-  }
-  return 0;
- }
-```
-
-#### 1.2.2 整数类型的 `switch`
-
-```c
- #include <stdio.h>
- int main() {
-  int day = 3;
-  switch (day) {
-  case 1:
-  printf("Monday\n");
-  break;
-  case 2:
-  printf("Tuesday\n");
-  break;
-  case 3:
-  printf("Wednesday\n");
-  break;
-  case 4:
-  printf("Thursday\n");
-  break;
-  case 5:
-  printf("Friday\n");
-  break;
-  case 6:
-  case 7:
-  printf("Weekend\n");
-  break;
-  default:
-  printf("Invalid day\n");
-  }
-  return 0;
- }
-```
-
-#### 1.2.3 `switch` 中的穿透现象
-
-当 `case` 语句后没有 `break` 时，会发生穿透现象，继续执行下一个 `case`。
-
-```c
- #include <stdio.h>
- int main() {
-  int month = 2;
-  int days;
-  switch (month) {
-  case 1:
-  case 3:
-  case 5:
-  case 7:
-  case 8:
-  case 10:
-  case 12:
-  days = 31;
-  break;
-  case 4:
-  case 6:
-  case 9:
-  case 11:
-  days = 30;
-  break;
-  case 2:
-  days = 28; // 简化处理，未考虑闰年
-  break;
-  default:
-  days = 0;
-  printf("Invalid month\n");
-  }
-  if (days > 0) {
-  printf("Month %d has %d days\n", month, days);
-  }
-  return 0;
- }
-```
-
-## 2. 循环结构 (Iteration)
-
-### 2.1 `for` 循环
-
-#### 2.1.1 基本用法
-
-`for` 循环常用于已知循环次数的场景，结构清晰。
-
-```c
- #include <stdio.h>
- int main() {
-  // 基本 for 循环
-  for (int i = 0; i < 10; i++) {
-  printf("%d ", i);
-  }
-  printf("\n");
-  // 循环变量初始化、条件、增量都可以省略
-  int j = 0;
-  for (; j < 10;) {
-  printf("%d ", j);
-  j++;
-  }
-  printf("\n");
-  return 0;
- }
-```
-
-#### 2.1.2 嵌套 `for` 循环
-
-```c
- #include <stdio.h>
- int main() {
-  // 打印乘法表
-  for (int i = 1; i <= 9; i++) {
-  for (int j = 1; j <= i; j++) {
-  printf("%d*%d=%d\t", j, i, i*j);
-  }
-  printf("\n");
-  }
-  return 0;
- }
-```
-
-#### 2.1.3 特殊的 `for` 循环用法
-
-```c
- #include <stdio.h>
- int main() {
-  // 使用多个循环变量
-  for (int i = 0, j = 10; i < j; i++, j--) {
-  printf("i=%d, j=%d\n", i, j);
-  }
-  // 无限循环
-  // for (;;) {
-  // // 循环体
-  // }
-  return 0;
- }
-```
-
-### 2.2 `while` 循环
-
-#### 2.2.1 基本用法
-
-`while` 循环适用于循环次数不确定的场景，只要条件为真就继续执行。
-
-```c
- #include <stdio.h>
- int main() {
-  int i = 0;
-  while (i < 10) {
-  printf("%d ", i);
-  i++;
-  }
-  printf("\n");
-  return 0;
- }
-```
-
-#### 2.2.2 输入验证
-
-```c
- #include <stdio.h>
- int main() {
-  int age;
-  printf("Enter your age: ");
-  // 验证输入是否为有效年龄
-  while (1) {
-  scanf("%d", &age);
-  if (age >= 0 && age <= 120) {
-  break;
-  }
-  printf("Invalid age. Please enter again: ");
-  }
-  printf("Your age is %d\n", age);
-  return 0;
- }
-```
-
-#### 2.2.3 无限循环
-
-```c
- #include <stdio.h>
- int main() {
-  int count = 0;
-  // 无限循环，直到满足条件跳出
-  while (1) {
-  printf("Count: %d\n", count);
-  count++;
-  if (count >= 5) {
-  break;
-  }
-  }
-  return 0;
- }
-```
-
-### 2.3 `do-while` 循环
-
-#### 2.3.1 基本用法
-
-`do-while` 循环保证循环体至少执行一次，适用于需要先执行后判断的场景。
-
-```c
- #include <stdio.h>
- int main() {
-  int i = 10;
-  do {
-  printf("Execute once\n");
-  i--;
-  } while (i < 5);
-  return 0;
- }
-```
-
-#### 2.3.2 菜单驱动程序
-
-```c
- #include <stdio.h>
- int main() {
-  int choice;
-  do {
-  printf("\nMenu:\n");
-  printf("1. Option 1\n");
-  printf("2. Option 2\n");
-  printf("3. Exit\n");
-  printf("Enter your choice: ");
-  scanf("%d", &choice);
-  switch (choice) {
-  case 1:
-  printf("You selected Option 1\n");
-  break;
-  case 2:
-  printf("You selected Option 2\n");
-  break;
-  case 3:
-  printf("Exiting...\n");
-  break;
-  default:
-  printf("Invalid choice\n");
-  }
-  } while (choice != 3);
-  return 0;
- }
-```
-
-## 3. 循环控制语句 (Control Statements)
-
-### 3.1 `break` 语句
-
-#### 3.1.1 基本用法
-
-`break` 语句用于立即退出当前循环，不再执行循环体中剩余的语句。
-
-```c
- #include <stdio.h>
- int main() {
-  for (int i = 0; i < 10; i++) {
-  if (i == 5) {
-  break; // 当 i 等于 5 时退出循环
-  }
-  printf("%d ", i);
-  }
-  printf("\nLoop exited\n");
-  return 0;
- }
-```
-
-#### 3.1.2 跳出嵌套循环
-
-```c
- #include <stdio.h>
- int main() {
-  for (int i = 0; i < 5; i++) {
-  for (int j = 0; j < 5; j++) {
-  printf("i=%d, j=%d\n", i, j);
-  if (i == 2 && j == 2) {
-  goto exit_loop; // 使用 goto 跳出多层循环
-  }
-  }
-  }
-  exit_loop:
-  printf("Exited nested loops\n");
-  return 0;
- }
-```
-
-### 3.2 `continue` 语句
-
-#### 3.2.1 基本用法
-
-`continue` 语句用于跳过本次循环的剩余部分，直接进入下一次迭代。
-
-```c
- #include <stdio.h>
- int main() {
-  for (int i = 0; i < 10; i++) {
-  if (i % 2 == 0) {
-  continue; // 跳过偶数
-  }
-  printf("%d ", i);
-  }
-  printf("\n");
-  return 0;
- }
-```
-
-#### 3.2.2 跳过特定条件
-
-```c
- #include <stdio.h>
- int main() {
-  int numbers[] = {1, 2, 3, 0, 4, 5, 0, 6};
-  int size = sizeof(numbers) / sizeof(numbers[0]);
-  for (int i = 0; i < size; i++) {
-  if (numbers[i] == 0) {
-  printf("Skipping zero\n");
-  continue;
-  }
-  printf("Number: %d\n", numbers[i]);
-  }
-  return 0;
- }
-```
-
-### 3.3 `goto` 语句
-
-#### 3.3.1 基本用法
-
-`goto` 语句用于无条件跳转到指定的标签位置，一般不推荐使用，但在某些场景下可以简化代码。
-
-```c
- #include <stdio.h>
- int main() {
-  int i = 0;
-  start:
-  printf("i = %d\n", i);
-  i++;
-  if (i < 5) {
-  goto start;
-  }
-  printf("Loop completed\n");
-  return 0;
- }
-```
-
-#### 3.3.2 跳过多层循环
-
-```c
- #include <stdio.h>
- int main() {
-  for (int i = 0; i < 3; i++) {
-  for (int j = 0; j < 3; j++) {
-  for (int k = 0; k < 3; k++) {
-  printf("i=%d, j=%d, k=%d\n", i, j, k);
-  if (i == 1 && j == 1 && k == 1) {
-  goto end_of_loops;
-  }
-  }
-  }
-  }
-  end_of_loops:
-  printf("Exited all loops\n");
-  return 0;
- }
-```
-
-#### 3.3.3 错误处理
-
-```c
- #include <stdio.h>
- #include <stdlib.h>
- int main() {
-  FILE *file;
-  file = fopen("nonexistent.txt", "r");
-  if (file == NULL) {
-  perror("Error opening file");
-  goto cleanup;
-  }
-  // 处理文件...
-  fclose(file);
-  cleanup:
-  printf("Program completed\n");
-  return 0;
- }
-```
-
-## 4. 控制流的最佳实践
-
-### 4.1 代码风格建议
-
-- **缩进一致**: 使用 4 空格或 1 制表符的缩进
-- **大括号使用**: 始终使用大括号包围循环体和条件块
-- **命名规范**: 使用有意义的变量名
-- **注释**: 为复杂的条件和循环添加注释
-- **换行**: 在适当的地方换行，保持代码可读性
-
-### 4.2 性能优化建议
-
-- **循环不变量外提**: 将循环中不变的计算移到循环外
-- **减少循环内操作**: 尽量减少循环体内的计算量
-- **选择合适的循环类型**: 根据具体场景选择 `for`、`while` 或 `do-while`
-- **避免死循环**: 确保循环条件最终能为假
-- **使用 `break` 和 `continue`**: 合理使用这些语句提高循环效率
-
-### 4.3 常见错误避免
-
-- **无限循环**: 确保循环条件有终止的可能
-- **嵌套过深**: 避免超过 3 层的嵌套，考虑重构为函数
-- **条件判断错误**: 注意运算符优先级和逻辑关系
-- **边界条件**: 处理好循环的边界情况
-- **变量作用域**: 合理控制变量的作用域
-
-### 4.4 最佳实践示例
-
-```c
- #include <stdio.h>
- // 计算斐波那契数列
- void fibonacci(int n) {
-  if (n <= 0) {
-  printf("Invalid input\n");
-  return;
-  }
-  int a = 0, b = 1;
-  printf("Fibonacci sequence: ");
-  for (int i = 0; i < n; i++) {
-  printf("%d ", a);
-  int next = a + b;
-  a = b;
-  b = next;
-  }
-  printf("\n");
- }
- // 查找数组中的元素
- int find_element(int arr[], int size, int target) {
-  for (int i = 0; i < size; i++) {
-  if (arr[i] == target) {
-  return i; // 找到元素，返回索引
-  }
-  }
-  return -1; // 未找到元素
- }
- int main() {
-  // 调用斐波那契函数
-  fibonacci(10);
-  // 测试查找函数
-  int numbers[] = {10, 20, 30, 40, 50};
-  int size = sizeof(numbers) / sizeof(numbers[0]);
-  int target = 30;
-  int index = find_element(numbers, size, target);
-  if (index != -1) {
-  printf("Element %d found at index %d\n", target, index);
-  } else {
-  printf("Element %d not found\n", target);
-  }
-  return 0;
- }
-```
-
-## 5. 常见问题与解决方案
-
-### 5.1 无限循环
-
-**问题**: 循环条件永远为真，导致程序陷入无限循环
-**解决方案**: 确保循环条件最终能为假，或使用 `break` 语句退出循环
-
-```c
- // 错误示例
- while (1) {
-  printf("This will run forever\n");
- }
- // 正确示例
- int count = 0;
- while (1) {
-  printf("Count: %d\n", count);
-  count++;
-  if (count >= 10) {
-  break;
-  }
- }
-```
-
-### 5.2 循环条件错误
-
-**问题**: 循环条件设置错误，导致循环执行次数不符合预期
-**解决方案**: 仔细检查循环条件，确保逻辑正确
-
-```c
- // 错误示例：应该是 i < 10，而不是 i <= 10
- for (int i = 0; i <= 10; i++) {
-  printf("%d ", i); // 会打印 0-10，共 11 个数
- }
- // 正确示例
- for (int i = 0; i < 10; i++) {
-  printf("%d ", i); // 打印 0-9，共 10 个数
- }
-```
-
-### 5.3 边界条件处理
-
-**问题**: 循环的边界条件处理不当，导致数组越界或其他错误
-**解决方案**: 确保循环变量在有效范围内
-
-```c
- // 错误示例：可能导致数组越界
- int arr[5] = {1, 2, 3, 4, 5};
- for (int i = 0; i <= 5; i++) {
-  printf("%d ", arr[i]); // 访问 arr[5] 越界
- }
- // 正确示例
- int arr[5] = {1, 2, 3, 4, 5};
- for (int i = 0; i < 5; i++) {
-  printf("%d ", arr[i]);
- }
-```
-
-### 5.4 `switch` 语句缺少 `break`
-
-**问题**: `case` 语句后缺少 `break`，导致穿透现象
-**解决方案**: 为每个 `case` 语句添加 `break`，除非需要穿透
-
-```c
- // 错误示例：缺少 break
- switch (grade) {
-  case 'A':
-  printf("Great!\n");
-  case 'B':
-  printf("Good!\n"); // 当 grade 为 'A' 时也会执行
-  break;
- }
- // 正确示例
- switch (grade) {
-  case 'A':
-  printf("Great!\n");
-  break;
-  case 'B':
-  printf("Good!\n");
-  break;
- }
-```
-
-### 5.5 嵌套过深
-
-**问题**: 循环和条件嵌套过深，代码可读性差
-**解决方案**: 将嵌套的代码重构为函数
-
-```c
- // 嵌套过深的示例
- for (int i = 0; i < 10; i++) {
-  if (i % 2 == 0) {
-  for (int j = 0; j < 5; j++) {
-  if (j > 2) {
-  // 处理逻辑
-  }
-  }
-  }
- }
- // 重构为函数
- void process_even(int i) {
-  for (int j = 0; j < 5; j++) {
-  if (j > 2) {
-  // 处理逻辑
-  }
-  }
- }
- // 主函数
- for (int i = 0; i < 10; i++) {
-  if (i % 2 == 0) {
-  process_even(i);
-  }
- }
-```
-
-## 6. 控制流的高级应用
-
-### 6.1 循环的替代方案
-
-#### 6.1.1 使用 `goto` 实现循环
-
-```c
- #include <stdio.h>
- int main() {
-  int i = 0;
-  loop:
-  if (i < 10) {
-  printf("%d ", i);
-  i++;
-  goto loop;
-  }
-  printf("\n");
-  return 0;
- }
-```
-
-#### 6.1.2 使用递归代替循环
-
-```c
- #include <stdio.h>
- void print_numbers(int n) {
-  if (n < 0) {
-  return;
-  }
-  print_numbers(n - 1);
-  printf("%d ", n);
- }
- int main() {
-  print_numbers(9);
-  printf("\n");
-  return 0;
- }
-```
-
-### 6.2 复杂条件的处理
-
-#### 6.2.1 使用逻辑运算符组合条件
-
-```c
- #include <stdio.h>
- int main() {
-  int age = 25;
-  int has_license = 1;
-  int has_car = 1;
-  // 复杂条件
-  if (age >= 18 && has_license && has_car) {
-  printf("You can drive\n");
-  } else if (age >= 18 && has_license) {
-  printf("You can drive if you have a car\n");
-  } else if (age >= 18) {
-  printf("You need a license to drive\n");
-  } else {
-  printf("You are too young to drive\n");
-  }
-  return 0;
- }
-```
-
-#### 6.2.2 使用布尔函数简化条件
-
-```c
- #include <stdio.h>
- int is_even(int n) {
-  return n % 2 == 0;
- }
- int is_positive(int n) {
-  return n > 0;
- }
- int main() {
-  int number = 4;
-  if (is_even(number) && is_positive(number)) {
-  printf("%d is a positive even number\n", number);
-  }
-  return 0;
- }
-```
-
-### 6.3 状态机的实现
-
-```c
- #include <stdio.h>
- int main() {
-  enum State {
-  STATE_START,
-  STATE_READING,
-  STATE_PROCESSING,
-  STATE_FINISHED
-  };
-  enum State current_state = STATE_START;
-  int data_processed = 0;
-  int max_data = 5;
-  while (current_state != STATE_FINISHED) {
-  switch (current_state) {
-  case STATE_START:
-  printf("Starting process\n");
-  current_state = STATE_READING;
-  break;
-  case STATE_READING:
-  printf("Reading data\n");
-  current_state = STATE_PROCESSING;
-  break;
-  case STATE_PROCESSING:
-  printf("Processing data %d\n", data_processed);
-  data_processed++;
-  if (data_processed >= max_data) {
-  current_state = STATE_FINISHED;
-  } else {
-  current_state = STATE_READING;
-  }
-  break;
-  case STATE_FINISHED:
-  printf("Process finished\n");
-  break;
-  }
-  }
-  return 0;
- }
-```
-
-## 7. 代码优化技巧
-
-### 7.1 循环优化
-
-#### 7.1.1 减少循环内计算
-
-```c
- // 优化前
- for (int i = 0; i < strlen(s); i++) {
-  // 每次循环都计算 strlen(s)
- }
- // 优化后
- int len = strlen(s);
- for (int i = 0; i < len; i++) {
-  // 只计算一次 strlen(s)
- }
-```
-
-#### 7.1.2 使用递增而非递减
-
-```c
- // 优化前
- for (int i = n; i >= 0; i--) {
-  // 循环体
- }
- // 优化后（某些架构上更高效）
- for (int i = 0; i <= n; i++) {
-  // 循环体
- }
-```
-
-#### 7.1.3 展开循环
-
-```c
- // 优化前
- for (int i = 0; i < 4; i++) {
-  process(i);
- }
- // 优化后（展开循环）
- process(0);
- process(1);
- process(2);
- process(3);
-```
-
-### 7.2 条件优化
-
-#### 7.2.1 利用短路求值
-
-```c
- // 优化前
- if (ptr != NULL) {
-  if (ptr->value == 5) {
-  // 处理逻辑
-  }
- }
- // 优化后
- if (ptr != NULL && ptr->value == 5) {
-  // 处理逻辑
- }
-```
-
-#### 7.2.2 条件顺序优化
-
-```c
- // 优化前（假设 ptr == NULL 的概率较高）
- if (ptr->value == 5 && ptr != NULL) {
-  // 可能会崩溃
- }
- // 优化后
- if (ptr != NULL && ptr->value == 5) {
-  // 更安全，利用短路求值
- }
-```
-
-### 7.3 控制流优化示例
-
-```c
- #include <stdio.h>
- // 优化前：多个 if-else 嵌套
- int get_grade_point(char grade) {
-  if (grade == 'A') {
-  return 4;
-  } else if (grade == 'B') {
-  return 3;
-  } else if (grade == 'C') {
-  return 2;
-  } else if (grade == 'D') {
-  return 1;
-  } else {
-  return 0;
-  }
- }
- // 优化后：使用 switch 语句
- int get_grade_point_optimized(char grade) {
-  switch (grade) {
-  case 'A': return 4;
-  case 'B': return 3;
-  case 'C': return 2;
-  case 'D': return 1;
-  default: return 0;
-  }
- }
- int main() {
-  char grade = 'B';
-  printf("Grade point: %d\n", get_grade_point(grade));
-  printf("Grade point (optimized): %d\n", get_grade_point_optimized(grade));
-  return 0;
- }
-```
-
----
-
-## if-else 条件判断
-
-**基本写法：if 语句**
-`if (<condition>) { ... }`
-```c
-// 单条件判断
-int score = 85;
-if (score >= 60) {
-    printf("Pass\n");
-}
-```
-
----
-
-**多分支写法：if-else if-else**
-`if (<condition>) { ... } else if (<condition>) { ... } else { ... }`
-```c
-// 多条件分支判断
-int score = 85;
-if (score >= 90) {
-    printf("Excellent\n");
-} else if (score >= 80) {
-    printf("Very Good\n");
-} else {
-    printf("Fail\n");
-}
-```
-
----
-
-**嵌套写法：嵌套 if-else**
-`if (<condition>) { if (<condition>) { ... } else { ... } } else { ... }`
-```c
-// 嵌套条件判断
-int age = 18;
-int has_license = 1;
-if (age >= 18) {
-    if (has_license) {
-        printf("You can drive\n");
+/* grade.c：成绩分档——三种写法 */
+#include <stdio.h>
+
+int main(void) {
+    int score = 85;
+    /* 写法一：if 链，从高到低逐档排除 */
+    if (score >= 90) {
+        printf("Excellent\n");
+    } else if (score >= 80) {
+        printf("Very Good\n");
+    } else if (score >= 60) {
+        printf("Pass\n");
     } else {
-        printf("Need a license\n");
+        printf("Fail\n");
     }
-} else {
-    printf("Too young\n");
+    /* 写法二：switch。先算 score / 10，把区间变成离散值 */
+    switch (score / 10) {
+    case 10: case 9: printf("Excellent\n"); break;
+    case 8:          printf("Very Good\n"); break;
+    case 7: case 6:  printf("Pass\n");      break;
+    default:         printf("Fail\n");
+    }
+    /* 写法三：表驱动。答案排进数组，用下标直接查 */
+    static const char *rank[] = {
+        "Fail", "Fail", "Fail", "Fail", "Fail", "Fail",
+        "Pass", "Pass", "Very Good", "Excellent", "Excellent"
+    };
+    printf("%s\n", rank[score / 10]);
+    return 0;
 }
 ```
 
----
+编译运行（`gcc -Wall -Wextra -g grade.c -o grade`），三个写法各打印一行 `Very Good`。三段代码引出三个问题：switch 为什么必须先算 `score / 10`（case 有硬性限制，3.4 节拆）；写法三一行分支都没有，分类逻辑藏到了哪（下标即判断）；以及一个地雷——score 不在 0 到 100 之间会怎样。修改实验一：把 score 改成 105 再跑，三个写法一致地打印 `Excellent`——不崩，但荒唐；再改成 150，if 链与 switch 照旧，表驱动版却去查 `rank[15]`——数组越界，是 [运算符与表达式](/c/060-OperatorExpression) 里见过的那类「标准不管」的未定义行为。分支写对只是第一步，边界查清才算完，这一课第 6 节还会再上。
 
-## switch-case 多分支选择
+## 2. 分支之一：if / else
 
-**基本写法：switch-case**
-`switch (<expr>) { case <val>: ... break; [default: ...] }`
+### 2.1 心智模型：非零即真
+
+if 括号里的判定规则只有一条：**0 为假，非 0 为真**（C23 起 `bool`/`true`/`false` 成为关键字，这条规则没变）。if 链的顺序本身就是语义——从高到低逐档排除后，`else if (score >= 80)` 不必再写 `&& score < 90`，能走到这里的都不到 90。嵌套同理：if 里再套 if，就是「先过外层条件，再查内层」。
+
+### 2.2 悬空 else：配对看语法，不看缩进
+
 ```c
-// 根据成绩等级输出
-char grade = 'B';
-switch (grade) {
+int a = -1, b = 5;
+if (a > 0)
+    if (b > 0)
+        printf("both positive\n");
+else
+    printf("??? \n");        /* 缩进说它属于外层 if——缩进在撒谎 */
+```
+
+规则：**else 永远跟最近的、还没有伙伴的 if 配对**。这个 else 属于内层 `if (b > 0)`，于是 `a <= 0` 时什么都不打印，`a > 0 且 b <= 0` 时反而打印 `???`。修改实验二：给外层 if 加大括号，else 立刻换主。由此得出本文最重要的风格纪律：**哪怕分支只有一句也写大括号**——悬空 else 与 6.1 节的分号事故，根治都靠这一条。
+
+### 2.3 = 误作 ==：一个等号的代价
+
+```c
+/* typo.c：想比较，写成了赋值 */
+#include <stdio.h>
+int main(void) {
+    int has_key = 0;
+    if (has_key = 1) {               /* 赋值表达式非 0：恒真 */
+        printf("door opened\n");
+    }
+    printf("has_key = %d\n", has_key);   /* 已被顺手改成 1 */
+    return 0;
+}
+```
+
+运行打印两行 `door opened` 与 `has_key = 1`：条件恒真（赋值表达式的值就是被赋的值），且变量被顺手改写——双重大祸。编译实录，`-Wall` 里的 `-Wparentheses` 正是为此而生：
+
+```text
+$ gcc -Wall -Wextra -g typo.c -o typo
+typo.c:5:9: warning: suggest parentheses around assignment used as truth value [-Wparentheses]
+    5 |     if (has_key = 1) {
+      |         ^~~~~~~
+```
+
+看到它先怀疑自己写错，别急着加括号糊弄过去。反过来，**故意**用赋值当条件时（如 `while ((c = getchar()) != EOF)`），把表达式括起来，等于告诉编译器和读者「我是故意的」。二选一**取值**另有极简形态 `int max = (a > b) ? a : b;`——三目运算符只能放一个表达式，分支里要多做事就老实用 if。还有一条安全铁律来自短路求值：`if (p != NULL && p->value == 5)` 顺序不能倒，左边为假时右边不算，倒了就是先解引用空指针；机理 060 已详述，此处只用不重讲。
+
+## 3. 分支之二：switch
+
+### 3.1 心智模型：跳到写着这个数的标签
+
+switch 的语义：算出控制表达式的值，直接跳到写着这个值的 case 标签处接着执行——不是从上往下逐条比。谁都不匹配时进 `default:`（最多一个，习惯放末尾）；没有 default 就什么都不执行。它与 if 链的关键差异在**值的来源**：switch 只看一个表达式的离散取值，if 链可组合任意条件。
+
+### 3.2 穿透（fallthrough）：忘了 break，就滑进下一档
+
+case 只是标签，break 才是「离开 switch」的动作。漏写 break，本档执行完会**滑进下一档**：
+
+```c
+    char grade = 'A';
+    switch (grade) {
     case 'A':
-        printf("Great!\n");
-        break;
+        printf("Great!\n");      /* 没有 break：滑进 case 'B' */
     case 'B':
         printf("Good!\n");
         break;
     default:
         printf("Unknown\n");
-}
-```
-
----
-
-**穿透写法：多 case 共享代码块**
-`case <val1>: case <val2>: ... break;`
-```c
-// 多个 case 执行相同代码
-int month = 2;
-int days;
-switch (month) {
-    case 1: case 3: case 5: case 7:
-        days = 31;
-        break;
-    case 4: case 6: case 9:
-        days = 30;
-        break;
-    default:
-        days = 28;
-}
-```
-
----
-
-## for 循环
-
-**基本写法：for 循环**
-`for (<init>; <condition>; <update>) { ... }`
-```c
-// 打印 0 到 9
-for (int i = 0; i < 10; i++) {
-    printf("%d ", i);
-}
-```
-
----
-
-**嵌套写法：嵌套 for 循环**
-`for (...) { for (...) { ... } }`
-```c
-// 打印乘法表
-for (int i = 1; i <= 9; i++) {
-    for (int j = 1; j <= i; j++) {
-        printf("%d*%d=%d\t", j, i, i*j);
     }
-    printf("\n");
-}
 ```
 
----
+grade 为 'A' 时打印 `Great!` 加 `Good!` 两行。修改实验三：把 grade 改成 'B' 再跑，只打 `Good!`——从中间进来的不会再往上滑。穿透也确有正当用途：**多个值共享同一档逻辑**，第 1 节的 `case 10: case 9:` 与月份天数都是：
 
-**多变量写法：多变量 for 循环**
-`for (<init1>, <init2>; <cond>; <update1>, <update2>) { ... }`
 ```c
-// 使用多个循环变量
-for (int i = 0, j = 10; i < j; i++, j--) {
-    printf("i=%d, j=%d\n", i, j);
-}
+    switch (month) {
+    case 1: case 3: case 5: case 7: case 8: case 10: case 12: days = 31; break;
+    case 4: case 6: case 9: case 11:                          days = 30; break;
+    case 2:                                                   days = 28; break;
+    default:                                                  days = 0;
+    }
 ```
 
----
+### 3.3 C23 的 [[fallthrough]]：给故意穿透办通行证
 
-**无限写法：无限 for 循环**
-`for (;;) { ... }`
+编译器对「可疑的穿透」会发警告，故意的和手滑的混在一起难分真假。C23 给了标准答案：在滑落的位置放一条 `[[fallthrough]];`，宣告「我就是想滑下去」，警告即哑：
+
 ```c
-// 无限循环
-for (;;) {
-    printf("Loop\n");
-}
-```
-
----
-
-## while 循环
-
-**基本写法：while 循环**
-`while (<condition>) { ... }`
-```c
-// 当条件为真时循环
-int i = 0;
-while (i < 10) {
-    printf("%d ", i);
-    i++;
-}
-```
-
----
-
-**无限写法：无限 while 循环**
-`while (1) { ... if (<condition>) break; }`
-```c
-// 无限循环带退出条件
-int count = 0;
-while (1) {
-    count++;
-    if (count >= 5) {
+    switch (level) {
+    case 3:
+        prepare_hard();
+        [[fallthrough]];         /* C23：宣告故意穿透 */
+    case 2:
+        prepare_normal();
         break;
     }
-}
 ```
 
----
+两条规则：它是空声明，且下一项必须是本 switch 的 case 或 default 标签，否则程序本身不合法；它只表示意图，什么都不做。用上它需要 C23：GCC 15 起默认 `-std=gnu23` 直接可用，Clang 加 `-std=c23`，时间线见 [C23 与 C2y](/c/520-C23C2y)；老标准下的编译器扩展写法（如 `__attribute__((fallthrough))`）在 [编译器属性与扩展](/c/540-AttributeCompilerExtension) 承接。
 
-## do-while 循环
+### 3.4 case 的三条硬规矩
 
-**基本写法：do-while 循环**
-`do { ... } while (<condition>);`
+1. **整型常量**。控制表达式必须是整数类型（含 char 与枚举），case 必须是编译期算得出的**整型常量表达式**——`case score / 10:` 不合法，第 1 节那种「switch 里算好分桶值，case 写常量」才是标准姿势。浮点、字符串都不行，`switch` 一个 double 直接编译错。
+2. **数量下限 1023**。C 标准的翻译限制一节（5.2.4.1）要求每个实现至少支持 1023 个 case 标签。日常到不了千级分支——真写出来大概率说明该查表了。
+3. **区间写法是 GNU 扩展**。`case 1 ... 5:` 能圈一段值，但它是 GNU 扩展不是标准 C：GCC 认、Clang 兼容，MSVC 不认。要用的话省略号两边必须留空格——`case 1...5` 里的 `1...` 会被当成浮点字面量解析。跨编译器代码老实写 `case 1: case 2: ... case 5:`（GCC 手册：https://gcc.gnu.org/onlinedocs/gcc/Case-Ranges.html）。
+
+### 3.5 switch 还是用 if 链：选型三条
+
+- 值多、离散、来自同一个表达式（状态码、菜单项、枚举）：switch——分档清晰，还能被编译成跳转表，分支一多比逐条比较的 if 链整齐也往往更快；
+- 条件是区间、多变量组合、浮点比较：if 链（switch 表达不了）；
+- 分支就两三个：if/else 最省事。
+
+## 4. 循环：for、while、do-while
+
+### 4.1 三种循环，三种心智模型
+
+三种循环能力等价（可互化），差别在**把什么写在显眼处**：
+
+| 写法 | 抬头装什么 | 何时判断条件 | 最少执行几次 |
+| --- | --- | --- | --- |
+| for | 初始化、条件、步进三件套 | 每轮开头 | 0 |
+| while | 只有条件 | 每轮开头 | 0 |
+| do-while | 条件在尾部 | 每轮结尾 | 1 |
+
+**for：数着次数做。** 次数已知时三件事收进抬头，循环体只剩正事：`for (int i = 0; i < 10; i++) { printf("%d ", i); }`。
+
+**while：次数说不清就先问条件。** 典型如输入校验——不知道用户要错几次：
+
 ```c
-// 至少执行一次的循环
-int i = 10;
-do {
-    printf("Execute once\n");
-    i--;
-} while (i < 5);
-```
-
----
-
-## 循环控制语句
-
-**break 写法：跳出循环**
-`break;`
-```c
-// 当 i 等于 5 时退出循环
-for (int i = 0; i < 10; i++) {
-    if (i == 5) {
-        break;
+    int age = -1;
+    printf("请输入年龄 (0 到 120): ");
+    if (scanf("%d", &age) != 1) return 1;    /* 读到的不是数字 */
+    while (age < 0 || age > 120) {           /* 数字但越界：重问 */
+        printf("超出范围，重输: ");
+        if (scanf("%d", &age) != 1) return 1;
     }
-    printf("%d ", i);
-}
+    printf("age = %d\n", age);
 ```
 
----
+**do-while：先干一次再说。** 菜单必须至少显示一次才谈得上选什么，尾部判断正好匹配（4.4 节）。
 
-**continue 写法：跳过本次循环**
-`continue;`
+### 4.2 互化：同一件事的三种排版
+
+`for (int i = 0; i < 10; i++) { work(i); }` 与「`int i = 0;` 在前、`while (i < 10) { work(i); i++; }`」完全等价——for 抬头就是 while 版的三段排版。for 的三段都可以空：`for (;;)` 就是死循环。选型口诀：**次数已知 for，条件驱动 while，至少一次 do-while**。嵌套是循环的常规组合：九九表只要两层 for（外层行 i 从 1 到 9，内层列 j 从 1 到 i，一行 printf 拼完再换行），动手写一个跑通再继续。
+
+### 4.3 循环变量的作用域
+
+`for (int i = 0; ...)` 的 i **只活在循环内**（C99 起允许在抬头声明），出循环就没了；结束后还要用 i，就提到外面声明。两个相邻循环各写一个 `int i` 互不干扰——这正是把名字圈在最小范围里的好处。完整规则在 [作用域、存储期与链接性](/c/055-ScopeStorageLinkage)。
+
+### 4.4 死循环与 do-while 的主场
+
+`while (1)` 与 `for (;;)` 语义相同：`for (;;)` 直说「没有条件可判断」，`while (1)` 更直白，团队二选一保持一致。死循环不是错误——嵌入式固件的主循环就是程序的一生（见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)）——错的是**没有出口**：先想好 break、return 或外部信号在哪。
+
 ```c
-// 跳过偶数
-for (int i = 0; i < 10; i++) {
-    if (i % 2 == 0) {
-        continue;
+    int choice;
+    do {
+        printf("\n1. 存款  2. 取款  3. 查询  0. 退出\n请选择: ");
+        if (scanf("%d", &choice) != 1) return 1;    /* 坏输入简化处理 */
+        switch (choice) {
+        case 1: printf("deposit\n");  break;
+        case 2: printf("withdraw\n"); break;
+        case 3: printf("balance\n");  break;
+        case 0: printf("bye\n");      break;
+        default: printf("invalid choice\n");
+        }
+    } while (choice != 0);
+```
+
+输入 5 会打印 `invalid choice` 后重新显示菜单，输入 0 打印 `bye` 后退出。修改实验四：把 do-while 换成 while——菜单第一次就不显示了，除非在循环前复制一份显示代码。「先执行后判断」正是 do-while 存在的理由。这个例子还演示了 switch 套在循环里：case 里的 break 只离开 switch，循环由 `while (choice != 0)` 收放。还有一个隐形开销：`for (int i = 0; i < strlen(s); i++)` 每轮调一次 strlen——先把长度存进变量再比较，编译器未必能替你外提；至于循环展开这类微优化，交给 `-O2` 下的编译器，手写只会损害可读性。
+
+## 5. 跳转：break、continue、goto、return
+
+### 5.1 break 与 continue：只影响最近一层
+
+break 立刻结束**最近的**一层循环或 switch——switch 里它的含义是「离开 switch」，循环里是「离开循环」，嵌套时各司其职（4.4 节的菜单正是如此）。continue 跳过本轮剩余语句直接进下一轮（for 还会先执行步进，6.4 节的主角）：
+
+```c
+    for (int i = 0; i < 10; i++) {
+        if (i == 5) break;           /* 打到 4 为止 */
+        if (i % 2 == 0) continue;    /* 偶数跳过 */
+        printf("%d ", i);
     }
-    printf("%d ", i);
-}
 ```
 
----
+预期输出 `1 3 `。想一次过滤更多数据（比如跳过数组里的 0），把条件换成 `numbers[i] == 0` 即可，骨架不变。
 
-**goto 写法：无条件跳转**
-`goto <label>; ... <label>:`
+### 5.2 goto 的两个可辩护用途
+
+先说丑话：用 goto 当循环用、在函数里随便乱跳，是任何团队都会打回的坏味道，本文不教。C 社区至今保留 goto，因为有两个场景它确实最干净。
+
+**用途一：从多层循环里一步跳出。** 逐层 break 要给每层加判断，标志变量又啰嗦：
+
 ```c
-// 跳转到标签处
-int i = 0;
-start:
-printf("i = %d\n", i);
-i++;
-if (i < 5) {
-    goto start;
-}
-```
-
----
-
-**goto 写法：跳出多层循环**
-`goto <label>;`
-```c
-// 跳出多层嵌套循环
-for (int i = 0; i < 3; i++) {
-    for (int j = 0; j < 3; j++) {
-        if (i == 1 && j == 1) {
-            goto end_of_loops;
+    for (int i = 0; i < 3; i++) {
+        for (int j = 0; j < 3; j++) {
+            if (matrix[i][j] == 5) {
+                printf("found at row %d, col %d\n", i, j);
+                goto done;      /* 一次跳出两层 */
+            }
         }
     }
-}
-end_of_loops:
-printf("Exited\n");
+    printf("not found\n");
+done:
 ```
 
----
+顺带一提：把查找拆成独立函数后，return 就能替掉 goto——这招在下一篇兑现。
 
-## 状态机实现
+**用途二：错误路径共享同一段清理代码。** C 没有 try/finally；函数里先后拿到文件、内存，中途任何一步失败都要把已拿到的一步步还回去，每个失败点手抄一遍 free 加 fclose 很快失控。goto 向前跳到统一清理标签，是内核与库代码的标准姿势：
 
-**switch 写法：使用 switch 实现状态机**
-`while (<state> != FINAL) { switch (<state>) { ... } }`
 ```c
-// 状态机循环
-enum State { STATE_START, STATE_READING, STATE_FINISHED };
-enum State current_state = STATE_START;
-while (current_state != STATE_FINISHED) {
-    switch (current_state) {
-        case STATE_START:
-            current_state = STATE_READING;
-            break;
-        case STATE_READING:
-            current_state = STATE_FINISHED;
-            break;
+/* cleanup.c：错误路径汇入同一段清理；0 成功，非 0 是失败码 */
+#include <stdio.h>
+#include <stdlib.h>
+
+int read_four(const char *path, int **out) {
+    int ret = 1;
+    FILE *fp = fopen(path, "r");
+    if (fp == NULL) return 1;   /* 还没拿到什么，直接走 */
+    int *data = malloc(4 * sizeof *data);
+    if (data == NULL) { ret = 2; goto close_file; }   /* 已开文件：至少要关 */
+    for (int i = 0; i < 4; i++) {
+        if (fscanf(fp, "%d", &data[i]) != 1) { ret = 3; goto free_data; }
     }
+    *out = data;                /* 成功：所有权移交调用方 */
+    ret = 0;
+    goto close_file;
+free_data:
+    free(data);
+close_file:
+    fclose(fp);
+    return ret;
+}
+int main(void) {
+    int *values = NULL;
+    int err = read_four("config.txt", &values);
+    if (err == 0) {
+        for (int i = 0; i < 4; i++) printf("%d ", values[i]);
+        printf("\n");
+        free(values);           /* 谁接手谁释放 */
+    }
+    return err;
 }
 ```
+
+清理顺序与获取顺序相反（后拿的先还），goto 只向前跳、标签只服务清理。malloc 判 NULL 与 free 的纪律来自 [动态内存](/c/200-DynamicMemoryManagement)。
+
+### 5.3 return：跳转里的最常用款
+
+return 立刻结束当前函数并带回返回值，「早返回」让主逻辑不必包进 else：
+
+```c
+int find_element(int arr[], int size, int target) {
+    for (int i = 0; i < size; i++) {
+        if (arr[i] == target) return i;   /* 找到：立刻离开 */
+    }
+    return -1;                            /* 找不到的约定值 */
+}
+```
+
+main 里的 return 还有特殊身份——程序的退出码，实验在下一篇第 8 节。
+
+## 6. 常见错误与调试实录
+
+### 6.1 分号空语句吞掉循环体
+
+```c
+    int i;
+    int sum = 0;
+    for (i = 1; i <= 10; i++);      /* 循环体是这条空语句 */
+    sum += i;                       /* 缩进在撒谎：这行不在循环里 */
+    printf("sum = %d\n", sum);      /* 打印 11，不是 55 */
+```
+
+for 抬头自带分号，紧跟的 `;` 就成了整个循环体——空转十次；`sum += i;` 是循环外的下一条语句，执行一次时 i 已是 11。if 后多打分号同款：`if (score >= 60); printf("Pass\n");` 无论及不及格都打印。编译器能帮一半：`-Wextra` 里的 `-Wempty-body` 抓 if/else/do-while 后的空语句，for/while 抬头后的分号它管不到。根治靠 2.2 节的纪律：哪怕一句也写大括号。
+
+### 6.2 差一错误：`<`、`<=` 与数组越界
+
+```c
+/* bounds.c：差一错误 */
+#include <stdio.h>
+
+int main(void) {
+    int arr[5] = {1, 2, 3, 4, 5};
+    for (int i = 0; i <= 5; i++) printf("%d ", arr[i]);   /* i == 5 时越界 */
+    printf("\n");
+    return 0;
+}
+```
+
+一次典型输出（越界是未定义行为，每次可能不同）：`1 2 3 4 5 32765`——`arr[5]` 读出了垃圾。写成赋值还会悄悄改坏隔壁变量，也可能看起来一切「正常」。ASan 重跑当场点名（用 `-fsanitize=address` 编译）：
+
+```text
+==23105==ERROR: AddressSanitizer: stack-buffer-overflow on address 0x7ffd8a2b3f34 READ of size 4
+    #0 0x5b2c... in main bounds.c:6
+```
+
+纪律：遍历一律 `i < n`，元素个数用 `sizeof arr / sizeof arr[0]` 现算。ASan 完整用法见 [动态内存](/c/200-DynamicMemoryManagement)。
+
+### 6.3 浮点做循环条件：累积误差实验
+
+```c
+/* float_loop.c：0.1 加十次，到 1 了吗？ */
+#include <stdio.h>
+
+int main(void) {
+    double x = 0.0;
+    for (int i = 0; i <= 11; i++) {
+        printf("i=%2d  x=%.17f  x != 1.0 ? %s\n", i, x, x != 1.0 ? "yes" : "no");
+        x += 0.1;
+    }
+    return 0;
+}
+```
+
+关键两行（每次运行一致）：`i=10  x=0.99999999999999989  x != 1.0 ? yes`，`i=11  x=1.09999999999999987  x != 1.0 ? yes`。x 永远精确踩不到 1.0：十进制 0.1 在二进制里是无限循环小数，每次累加都带进误差。于是 `while (x != 1.0) { x += 0.1; }` 是死循环。修法：浮点条件只用 `<` 或 `>`，等值判断永远回避；要精确计数就用整数计数器。0.1 为什么存不下，[数据类型详解](/c/040-DataTypeDetailed) 有完整交代。
+
+### 6.4 continue 在 for 与 while 里不等价
+
+for 里的 continue 跳到**步进**，while 里的 continue 直接跳到**条件判断**。这条差异能造死循环：
+
+```c
+    int i = 0;
+    while (i < 10) {
+        if (i % 2 == 0) continue;   /* i 停在 0：i++ 永远轮不到 */
+        printf("%d ", i);
+        i++;
+    }
+```
+
+第一轮 i 为 0 就命中 continue，`i++` 被跳过，条件永远成立——程序不再输出。同样的过滤用 for 写就安全（continue 落点是 `i++`，过滤偶数打印 `1 3 5 7 9 `）。在 while 里用 continue，先确认步进语句不在它的「跳过区」里。嵌套过深也是事故温床：读到第四层就记不住自己在哪，嵌套超过三层就把内层逻辑拆成独立函数（`is_even(n)`、`process_row(i)`），每层各回一层缩进——拆法正是下一篇的主题。
+
+## 7. 应用：while + switch 写状态机
+
+状态机把「程序现在处于什么阶段」存成变量，每轮按状态分发处理、决定去向。菜单的下一步取决于用户输入，状态机的下一步取决于**当前状态与数据**——协议解析、词法分析、游戏 AI 全是它的形状：
+
+```c
+/* state.c：while + switch = 状态机 */
+#include <stdio.h>
+int main(void) {
+    enum state { START, READING, DONE };    /* enum 先混个眼熟，110 篇讲透 */
+    enum state s = START;
+    int processed = 0;
+    while (s != DONE) {
+        switch (s) {
+        case START:  printf("start\n"); s = READING; break;
+        case READING:
+            printf("reading %d\n", processed);
+            if (++processed >= 3) s = DONE;   /* 处理满 3 条收工 */
+            break;
+        default:
+            break;
+        }
+    }
+    printf("done\n");
+    return 0;
+}
+```
+
+依次打印 `start`、`reading 0` 到 `reading 2`、`done`。一处特别提醒：状态机对忘写 break 零容忍——case 忘 break 时状态会「串联转移」，且循环每轮都进 switch，症状比普通 switch 更隐蔽。给每个 case 配齐 break（或 `[[fallthrough]]`）是硬纪律。
+
+## 8. 实际项目中的使用场景
+
+- **输入校验与哨兵循环**：配置解析、CLI 交互，while 接住任意次错误输入，`-1` 之类哨兵值结束读取；
+- **嵌入式主循环**：`for (;;)` 包住固件的一生，见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)；
+- **错误清理 goto 链**：内核驱动、库函数里成对资源的标准收尾（5.2 节），「谁分配谁释放」的跨文件约定见 [多文件编译](/c/310-MultiFileCompilation)；
+- **协议与文本解析状态机**：逐字节喂给 switch 状态机，比层层嵌套 if 可读一个量级；**表驱动配置**（按键映射、菜单项排进数组）加一项只改数据不改分支——第 1 节写法三的工程价值。
+
+## 9. 小练习
+
+预测题一（5 分钟，先写答案再运行）：
+
+```c
+int i, total = 0;
+for (i = 0; i < 5; i++);
+    total += 10;
+printf("%d\n", total);
+```
+
+参考答案（先写再看）：打印 `10`——循环体是那条空语句，`total += 10;` 在循环结束后只执行一次。
+
+预测题二（5 分钟）：
+
+```c
+int x = 2;
+switch (x) {
+case 1: printf("one ");
+case 2: printf("two ");
+case 3: printf("three "); break;
+case 4: printf("four ");
+}
+```
+
+参考答案（先写再看）：打印 `two three `——从 case 2 进，无 break 滑到 case 3，被 break 收住；case 1 与 case 4 根本不进。
+
+挑战题（30 分钟，不看提示先动手）：把第 1 节的表驱动版升级成可反复输入：输入成绩打印档位，越界（小于 0 或大于 100）提示重输，输入 -1 退出。
+
+提示（思路方向）：「至少问一次、之后按输入决定是否继续」——do-while 或 while 加 continue 都行；下标计算前先做 0 到 100 范围检查。展开（关键点）：`scanf` 返回成功读取的项数，读到字母要处理（简化起见直接退出也算过关，否则坏输入留在输入流里会死循环）；-1 是哨兵值，判断顺序要在范围检查之前；进表前已保证 `score / 10` 落在 0 到 10，rank 表 11 个元素刚好。验收清单：输入 85 打印 `Very Good`；输入 105 提示重输；输入 -1 退出且不打印档位；输入字母不死循环。
+
+## 10. 与之前和之后的知识的关系
+
+- 往前：[变量与常量](/c/050-VariableConstant) 提供条件里的变量；[运算符与表达式](/c/060-OperatorExpression) 的比较、逻辑运算符与短路求值是条件的原料；
+- 旁支：循环变量为什么出循环就消失，[作用域、存储期与链接性](/c/055-ScopeStorageLinkage) 讲透；状态机的 `enum state` 在 [枚举与 typedef](/c/110-EnumTypedef) 展开；`[[fallthrough]]` 之外的编译器属性在 [编译器属性与扩展](/c/540-AttributeCompilerExtension)；
+- 往后：把循环体拆成函数、用 return 替掉多层 goto，在 [函数](/c/090-FunctionDetailed)；递归是「自己调用自己」的另一种循环形态，同篇开讲。
+
+## 11. 官方文档
+
+- switch 语句（cppreference C）：https://en.cppreference.com/w/c/language/switch
+- [[fallthrough]] 属性（cppreference C）：https://en.cppreference.com/w/c/language/attributes/fallthrough
+- GCC Case Ranges（区间 case 的 GNU 扩展说明）：https://gcc.gnu.org/onlinedocs/gcc/Case-Ranges.html
+- GCC 警告选项（-Wparentheses、-Wempty-body 等）：https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+
+## 12. 自我检查
+
+- 能默写三种分档写法，并讲清 switch 与 if 链的选型依据；
+- 能解释悬空 else 配对规则、switch 穿透语义，知道 `[[fallthrough]]` 放在哪一行；
+- 能把一段嵌套循环在 for/while/do-while 之间互化，说出 continue 在两者里的不同落点；
+- 看到 `if (x = 5)`、`for (...);`、`while (x != 1.0) x += 0.1;` 能立刻指出病灶与修法。
+
+## 本章总结
+
+分支两条路：if/else 管任意条件（非零即真、else 跟最近的 if、常写大括号），switch 管单个表达式的离散取值（case 必须整型常量、忘 break 会穿透、故意穿透用 C23 的 `[[fallthrough]]`、千级分支该查表）。循环三个形：次数已知用 for，条件驱动用 while，至少一次用 do-while，三者可互化，死循环先想好出口。跳转四件套：break 只出最近一层；continue 在 for 落到步进、在 while 落到条件；goto 只有多层跳出与错误清理两个可辩护用途；return 是最常用的出口。事故三巨头——分号空语句、差一错误、浮点累积误差——靠「一律写大括号、遍历用 `<`、浮点不做等值判断」三条纪律预防。
+
+## 下一步
+
+进入 [函数](/c/090-FunctionDetailed)：本章反复说的「把这段循环拆出去」马上兑现——main 为什么不该长到 300 行、传值为什么让 swap 失败、main 的 return 到底交给了谁。

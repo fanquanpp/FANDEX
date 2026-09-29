@@ -1,1559 +1,477 @@
 ---
-order: 100
-title: 可变参数函数
+order: 110
+title: 可变参数函数：printf 是怎么炼成的
 module: 'c'
 category: 计算机科学
 difficulty: intermediate
-description: stdarg.h 机制、ABI 调用约定、类型安全与工程实践
+description: 从「printf 为什么能吃任意个参数」出发，用 stdarg.h 四件套手写 sum_ints 与迷你 my_printf（支持 %d %c %s %f），讲透默认参数提升、va_copy、显式个数/格式串/哨兵三种传递约定，以及 v 前缀转发封装与参数不匹配的调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/200-DynamicMemoryManagement'
   - 'c/170-FunctionPointerCallback'
-  - 'c/340-SignalHandling'
-  - 'c/380-AtomicAndMemoryModel'
+  - 'c/430-StdioFileIO'
+  - 'c/280-GenericSelection'
+  - 'c/250-FunctionCallStackFrame'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/090-FunctionDetailed'
+  - 'c/040-DataTypeDetailed'
 ---
 
 ## 前置知识
 
-- [函数指针与回调](/c/170-FunctionPointerCallback)：建议先完成前一篇的学习
+- 已完成 [函数详解](/c/090-FunctionDetailed)：会声明、定义、调用普通参数固定的函数；
+- 已完成 [数据类型详解](/c/040-DataTypeDetailed)：知道 char、short、int、float、double 的大小与家谱——本文的提升规则全靠它们。
+
+零基础起步见 [C 语言零基础起步](/c/010-CZeroBasisStart)；`char *` 指针参数在本文会先混个眼熟，[指针深度解析](/c/140-PointerDeep) 讲透。
+
+> 分工说明：090 篇讲完参数个数写死的普通函数；本篇专攻 `...`——参数个数与类型到运行时才定的可变参数函数。「编译期就检查类型」的替代方案 `_Generic` 在 [泛型选择](/c/280-GenericSelection)，本篇末尾会告诉你什么时候该叛逃过去。
 
 ## 学习目标
 
-- 掌握「1. 历史动机与演化」的核心机制、典型用法与常见陷阱
-- 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 理论推导与证明」的核心机制、典型用法与常见陷阱
-- 掌握「4. 代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「5. 对比分析」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用 stdarg.h 的 va_list / va_start / va_arg / va_end 写出自己的可变参数函数；
+2. 亲手迭代出一个支持 %d %c %s %f 的迷你 my_printf，并说清 va_copy 在什么场合不可省；
+3. 解释默认参数提升规则，指出 `va_arg(ap, float)` 错在哪、正确写法是什么；
+4. 对比显式个数、格式串、哨兵值三种参数传递约定及各自的经典事故；
+5. 用「v 前缀函数 + vsnprintf + format 属性」写出可转发、可被编译器检查的日志封装。
 
-## 1. 历史动机与演化
+预计 60 到 80 分钟，含 4 组动手实验、3 道练习。
 
-### 1.1 早期 C 语言的"参数不检查"传统
-
-C 语言的早期版本（K&R C，1978）允许函数在声明时不指定参数列表，仅写 `()` 表示"接受任意参数"，且不会进行参数类型与数量检查。这一设计源自 Unix 系统编程的灵活性需求：`printf`、`open`、`exec` 等系统调用必须接受可变数量的参数。
-
-K&R C 时期，编译器不检查函数调用与定义之间的参数匹配。`printf("%d %d", 1)` 这种错误只能等到运行时才暴露（甚至不暴露，直接读取栈上的垃圾数据）。
-
-### 1.2 C89 标准化：`<stdarg.h>` 与 `<varargs.h>`
-
-C89（ISO/IEC 9899:1990）正式引入 `<stdarg.h>` 头文件，提供标准化的可变参数访问机制：
-
-- `va_list`：保存可变参数迭代状态的类型
-- `va_start(ap, last_named)`：初始化 `va_list`，从最后一个命名参数之后开始
-- `va_arg(ap, type)`：获取下一个参数并推进 `va_list`
-- `va_end(ap)`：清理 `va_list`
-
-C89 同时废弃了 K&R 时代的 `<varargs.h>`（无命名参数，无法跳过最后一个命名参数）。`<varargs.h>` 在 System V 早期 Unix 中存在，但已被 GCC 标记为过时。
-
-### 1.3 C99：`va_copy`
-
-C99 引入 `va_copy(dest, src)` 宏，用于复制 `va_list`。这是因为在某些 ABI（如 IA-64）上，`va_list` 是数组类型，直接赋值 `dest = src` 实际是把数组首地址赋给指针，导致 `dest` 与 `src` 共享状态，遍历其中一个会破坏另一个。`va_copy` 提供了语义正确的深拷贝。
-
-### 1.4 C11 与原子化
-
-C11 引入 `_Generic` 泛型选择宏，使得"类型安全的可变参数"成为可能。例如，可以编写一个宏，根据参数类型分发到不同的强类型函数，避免 `va_arg` 的类型不安全。
-
-C11 的 Annex K（边界检查库）提供了 `printf_s`、`scanf_s` 等带额外大小参数的可变参数函数，但被广泛批评为"安全假象"，Microsoft 与 GNU/Clang 之间未能达成一致，导致 Annex K 在 C17 中被标记为可选。
-
-### 1.5 C23 与未来
-
-C23 引入 `_BitInt(N)` 类型，扩展了整型家族，但默认参数提升规则不变（小于 `int` 的整型提升为 `int`，`float` 提升为 `double`）。C23 也强化了 `[[deprecated]]`、`[[nodiscard]]` 等属性，可用于增强可变参数 API 的可诊断性。
-
-C2y 草案中讨论的"反射"与"契约"特性，若通过，将允许在编译期检查可变参数的类型签名，从根本上消除 `printf` 类函数的安全隐患。
-
-### 1.6 调用约定演进
-
-| 时代       | 平台          | 调用约定             | 可变参数实现要点                              |
-| ---------- | ------------- | -------------------- | --------------------------------------------- |
-| 1970s      | PDP-11 Unix   | 栈式调用             | 参数从右到左压栈，`va_arg` 直接递增指针        |
-| 1980s      | x86 DOS/Win16 | CDECL（C 调用）      | 调用方清栈，支持可变参数；STDCALL 不支持       |
-| 1990s      | Win32         | STDCALL（API 调用）  | Windows API 用 STDCALL，但 `wsprintf` 用 CDECL |
-| 2000s      | x86-64 Linux  | System V AMD64 ABI   | 前 6 个整型参数通过寄存器（RDI/RSI/RDX/RCX/R8/R9），剩余通过栈；可变参数需保存寄存器到栈上的"寄存器保存区" |
-| 2000s      | x86-64 Windows | Microsoft x64 ABI    | 前 4 个参数通过 RCX/RDX/R8/R9，统一通过寄存器；可变参数无特殊处理，但需在栈上预留 32 字节"shadow space" |
-| 2010s      | ARM           | AAPCS（ARM 调用标准）| 前 4 个参数通过 R0-R3，剩余通过栈              |
-| 2020s      | RISC-V        | RISC-V calling ABI   | 前 8 个整型参数通过 a0-a7，浮点通过 fa0-fa7    |
-
-## 2. 形式化定义
-
-### 2.1 可变参数函数的签名
-
-设函数 $f$ 的签名为：
-
-$$
-f : (T_1, T_2, \ldots, T_n, \ldots) \to R
-$$
-
-其中 $T_1, \ldots, T_n$ 为命名参数（必须至少 1 个），" $\ldots$" 表示可变参数部分（variadic arguments），其类型与数量在编译期不固定。
-
-### 2.2 默认参数提升
-
-可变参数部分会发生"默认参数提升"（default argument promotions）：
-
-$$
-\text{Promote}(T) = \begin{cases}
-\text{int} & \text{if } T \in \{\text{char}, \text{signed char}, \text{unsigned char}, \text{short}, \text{unsigned short}, \text{\_Bool}\} \\
-\text{double} & \text{if } T = \text{float} \\
-T & \text{otherwise}
-\end{cases}
-$$
-
-因此 `va_arg(ap, char)` 是未定义行为（UB），正确写法是 `va_arg(ap, int)`，然后显式转换为 `char`。
-
-### 2.3 `va_list` 的形式化语义
-
-`va_list` 是一个不透明类型，封装了遍历可变参数的状态。其操作语义为：
-
-- $\text{va\_start}(ap, P_n)$：将 $ap$ 初始化为指向 $P_n$ 之后的第一个可变参数。
-- $\text{va\_arg}(ap, T)$：返回 $ap$ 当前指向的参数（类型 $T$），将 $ap$ 推进到下一个参数。
-- $\text{va\_copy}(ap_2, ap_1)$：将 $ap_1$ 的当前状态深拷贝到 $ap_2$。
-- $\text{va\_end}(ap)$：使 $ap$ 处于"已完成"状态，后续使用是 UB。
-
-### 2.4 调用约定的栈布局（x86-64 System V）
-
-设可变参数函数 `void f(int count, ...)` 被调用为 `f(3, 10, 20, 30)`。System V AMD64 ABI 下栈布局：
-
-```mermaid
-flowchart TD
-    B0["返回地址 (8 字节)"]
-    B1["调用方栈帧"]
-    B0 --> B1
-    B2["30 (栈上参数 3) / 20 (栈上参数 2) / 10 (栈上参数 1)"]
-    B1 --> B2
-    B3["寄存器保存区 (由 va_start 填充) / rdi_args[0..5] (48 字节) / xmm_args[0..7] (128 字节)"]
-    B2 --> B3
-    B4["栈上参数区 / overflow[0..n]"]
-    B3 --> B4
-```
-
-`va_start` 通过 `%al` 寄存器（调用方需告知使用了多少个 SSE 寄存器参数）决定是否保存 XMM 寄存器。`va_arg` 根据类型从寄存器保存区或栈上参数区读取。
-
-## 3. 理论推导与证明
-
-### 3.1 可变参数函数的不可类型安全定理
-
-**命题**：C 语言的可变参数机制无法在编译期保证类型安全。
-
-**证明**：可变参数部分由 `...` 表示，编译器不记录参数类型。`va_arg(ap, T)` 中的 $T$ 由调用方程序员填写，编译器无法验证 $T$ 与实际传入类型是否一致。若调用方传入 `int`，调用方用 `va_arg(ap, double)` 读取，则读取 8 字节但只写了 4 字节，行为未定义。
-
-**推论**：所有可变参数函数都必须依赖某种"运行期类型识别"机制（如 `printf` 的格式字符串、`open` 的标志位）来推断参数类型，否则必然存在 UB 风险。
-
-### 3.2 默认参数提升的等价性
-
-**命题**：对于任何整型 $T$ 满足 $\text{sizeof}(T) \leq \text{sizeof}(\text{int})$，可变参数传递时 $T$ 被提升为 `int`，且 `va_arg(ap, int)` 读取的值与原值在数值上相等。
-
-**证明**：调用约定规定可变参数按提升后的类型传递。设 $v \in T$，提升后 $v' = \text{int}(v)$。由于 `int` 至少与 $T$ 同宽，且 $v$ 在 $T$ 的值域内，$v'$ 的低 $\text{sizeof}(T) \times 8$ 位与 $v$ 一致。`va_arg(ap, int)` 读取 $v'$，再强制转换回 $T$ 即可恢复 $v$。$\square$
-
-**反例**：若 $T = \text{long long}$（64 位），而 `va_arg(ap, int)` 读取（32 位），则只读取了 $v'$ 的低 32 位，高 32 位丢失，行为未定义。
-
-### 3.3 调用约定与可变参数的兼容性
-
-**命题**：在 System V AMD64 ABI 下，可变参数函数与固定参数函数使用不同的调用序列。
-
-**证明思路**：固定参数函数的参数完全通过寄存器传递，无需在栈上保存寄存器副本。可变参数函数无法预先知道哪些寄存器用于参数，因此 `va_start` 必须把所有可能用于参数的寄存器（6 个整型 + 8 个 SSE）保存到栈上的"寄存器保存区"。这一保存操作仅在函数声明为可变参数时由编译器插入。$\square$
-
-**推论**：将可变参数函数的地址赋给固定参数函数指针，调用时行为未定义（虽然 GCC 在某些情况下能工作）。
-
-## 4. 代码示例
-
-### 4.1 基础示例：求和函数
+## 1. 问题引入：printf 为什么能吃任意个参数
 
 ```c
+/* three_calls.c：同一个函数，三种调法 */
 #include <stdio.h>
-#include <stdarg.h>
 
-/* 求任意多个整数的和，count 为参数个数 */
-int sum(int count, ...)
-{
-    va_list ap;
-    va_start(ap, count);
-
-    int total = 0;
-    for (int i = 0; i < count; i++) {
-        total += va_arg(ap, int);
-    }
-
-    va_end(ap);
-    return total;
-}
-
-int main(void)
-{
-    printf("sum(3, 1,2,3) = %d\n", sum(3, 1, 2, 3));
-    printf("sum(5, 10,20,30,40,50) = %d\n", sum(5, 10, 20, 30, 40, 50));
+int main(void) {
+    printf("%d %d %d\n", 1, 2, 3);
+    printf("hello\n");
+    printf("%s has %d points\n", "Ada", 36);
     return 0;
 }
 ```
 
-**编译与运行**：
-
-```bash
-gcc -Wall -Wextra -std=c11 sum.c -o sum
-./sum
-# 输出：sum(3, 1,2,3) = 6
-#       sum(5, 10,20,30,40,50) = 150
-```
-
-### 4.2 哨兵终止的可变参数
+三次调用，参数个数一个比一个多。普通函数做不到这件事——090 篇讲过，参数列表在声明时就写死了。printf 的签名里藏着一个 `...`：
 
 ```c
+int printf(const char *fmt, ...);
+```
+
+`...` 读作「省略号参数」：后面还可以跟任意个、任意类型的实参。本文的目标是自己写一个 `sum_ints(int n, ...)`，把 printf 的秘密从内部拆开。
+
+## 2. stdarg 四件套：先写一个最小版本
+
+```c
+/* sum_ints.c：第一个可变参数函数 */
 #include <stdio.h>
 #include <stdarg.h>
-#include <string.h>
 
-/* 字符串拼接，以 NULL 作为终止哨兵 */
-char *concat_strings(char *dst, size_t cap, const char *first, ...)
-{
-    if (!dst || cap == 0 || !first) return NULL;
-
-    size_t total = 0;
-    const char *s = first;
-
-    va_list ap;
-    va_start(ap, first);
-
-    while (s != NULL) {
-        size_t len = strlen(s);
-        if (total + len + 1 > cap) {
-            va_end(ap);
-            return NULL;
-        }
-        memcpy(dst + total, s, len);
-        total += len;
-        s = va_arg(ap, const char *);
-    }
-
-    dst[total] = '\0';
-    va_end(ap);
-    return dst;
+int sum_ints(int n, ...) {         /* ... 之前必须至少有一个具名参数 */
+    va_list ap;                    /* 1 声明游标 */
+    va_start(ap, n);               /* 2 定位：从 n 之后开始摸参数 */
+    int total = 0;
+    for (int i = 0; i < n; i++) { total += va_arg(ap, int); }   /* 3 取一个：按 int 读，游标前移 */
+    va_end(ap);                     /* 4 收尾 */
+    return total;
 }
 
-int main(void)
-{
-    char buf[256];
-    concat_strings(buf, sizeof(buf), "Hello, ", "World", "! ", "你好", NULL);
+int main(void) {
+    printf("%d\n", sum_ints(3, 10, 20, 30));
+    printf("%d\n", sum_ints(5, 1, 2, 3, 4, 5));
+    return 0;
+}
+```
+
+```bash
+gcc -Wall -Wextra -g sum_ints.c -o sum_ints
+./sum_ints
+```
+
+```text
+60
+15
+```
+
+心智模型：va_list 是一枚书签，记录「下一个可变参数在哪」。四个成员各司其职：
+
+- `va_list ap`——声明书签；
+- `va_start(ap, n)`——把书签插到**最后一个具名参数 n 之后**。为什么必须靠具名参数定位？因为 `...` 本身不携带任何位置信息，函数只能从最后一个确定的东西往后摸。C23 起标准放开了「至少一个具名参数」的要求，但主流平台仍依赖具名参数定位，工程上照旧这么写；
+- `va_arg(ap, int)`——按你亲口保证的类型读出当前参数，书签前移。类型写错没人拦你，后果见第 4、8 节；
+- `va_end(ap)`——宣布遍历结束。va_start 与 va_end 必须成对。
+
+机制一瞥（好奇 va_list 到底是什么再读）：stdarg.h 里没有魔法，四个「函数」全是宏。x86-64 Linux 上前几个参数经寄存器传递，而函数要按顺序逐个访问，所以 va_start 会把可能装过参数的寄存器先拍一份到栈上的「寄存器保存区」，va_arg 再按类型去保存区或栈上取数。由此得出三条实用结论：其一，va_list 在 GCC 的 x86-64 上是「装着一个结构体的数组」，在 MSVC 的 x64 上干脆是一个 `char *`——不同平台长得完全不同；其二，对 va_list 只能做宏允许的那几件事，直接赋值 `ap2 = ap1` 在不同平台行为不同，复制一律用 C99 引入的 va_copy；其三，va_start 有真实开销（保存一排寄存器），性能敏感路径少用变参。调用约定与栈帧的细节在[函数调用栈帧](/c/250-FunctionCallStackFrame)。
+
+修改实验：把 `sum_ints(3, 10, 20, 30)` 改成 `sum_ints(4, 10, 20, 30)`——n 说有 4 个，实参只给了 3 个。编译零警告，运行多半打印一个莫名其妙的数。第 8 节把这个实验做成正式实录。
+
+## 3. 迷你项目 my_printf：从 %d 开始
+
+可变参数函数怎么知道参数的个数与类型？看 printf 的答案：**类型信息藏在调用方写下的格式串里**。格式串里有几个占位符就 va_arg 几次，读什么类型由占位符决定。我们亲手做一个：第一版支持 %d %c %s 与 %%，下一节再补 %f——那里埋着本文最大的一个坑。
+
+```c
+/* my_printf.c：迷你 printf，支持 %d %c %s %% */
+#include <stdarg.h>
+#include <stdio.h>
+
+/* 把整数按十进制一个字符一个字符吐出来 */
+static void put_int(int v) {
+    unsigned int u = (unsigned int)v;   /* 按无符号处理补码，INT_MIN 也安全 */
+    char buf[12];                       /* 32 位 int 最长 10 位数字，留余量 */
+    int i = 0;
+    if (v < 0) { putchar('-'); u = 0u - u; }
+    do { buf[i++] = (char)('0' + u % 10); u /= 10; } while (u != 0);
+    while (i > 0) { putchar(buf[--i]); }
+}
+
+void my_printf(const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    for (const char *p = fmt; *p != '\0'; p++) {
+        if (*p != '%') { putchar(*p); continue; }   /* 普通字符照抄 */
+        p++;                            /* 越过 '%' */
+        switch (*p) {
+        case 'd': put_int(va_arg(ap, int)); break;
+        case 'c': putchar(va_arg(ap, int)); break;  /* 为什么不是 char？第 4 节揭晓 */
+        case 's': {
+            const char *s = va_arg(ap, const char *);
+            fputs(s != NULL ? s : "(null)", stdout);
+            break;
+        }
+        case '%': putchar('%'); break;
+        default:  putchar('%'); putchar(*p); break; /* 不认识的占位符原样吐回，方便发现笔误 */
+        }
+    }
+    va_end(ap);
+}
+
+int main(void) {
+    my_printf("%s got %d points, rank %c\n", "Ada", 36, 'A');
+    my_printf("100%% pure variadic\n");
+    return 0;
+}
+```
+
+```bash
+gcc -Wall -Wextra -g my_printf.c -o my_printf
+./my_printf
+```
+
+```text
+Ada got 36 points, rank A
+100% pure variadic
+```
+
+三个细节值得停下来看：%c 处读的是 int 而不是 char（第 4 节的伏笔）；%s 处 `const char *s` 先混个眼熟，[指针深度解析](/c/140-PointerDeep) 讲透；`%%` 只是普通字符分支，与可变参数无关——它考验的是格式串扫描器自己。
+
+修改实验：加 `#include <limits.h>`，输出 `my_printf("%d\n", INT_MIN);`。INT_MIN 是 int 能表示的最小负数，`-v` 对它本会溢出，put_int 却能正确打印 `-2147483648`——这正是它先转 unsigned 再取负的原因。
+
+## 4. 默认参数提升：float 为什么必须写成 double
+
+给 my_printf 加 %f 时，最顺手的写法是个深坑：
+
+```c
+        case 'f':
+            printf("%f", va_arg(ap, float));   /* 错：编译不报错，运行才出错 */
+            break;
+```
+
+调用 `my_printf("pi = %f\n", 3.14f);`，一次典型输出：
+
+```text
+pi = 0.000000
+```
+
+不是 3.140000，也未必每次都是 0.000000——就是错的。根子在**默认参数提升（default argument promotions）**：标准规定，可变参数列表里的每个实参在传递时都要经历一次隐式转换——
+
+| 你写的实参类型 | 实际进入可变参数区的类型 |
+| --- | --- |
+| char / signed char / unsigned char / short / unsigned short / _Bool | int（int 装不下其取值范围时是 unsigned int） |
+| float | double |
+| 其余（int、long、指针、double 等） | 原样 |
+
+cppreference 的原话：「可变参数列表中的每个整型实参经历整型提升，每个 float 实参被隐式转换为 double。」于是 `3.14f` 在进入函数之前就已经变成了 double；函数里却用 `va_arg(ap, float)` 按 float 去读——读的字节数、对齐方式全对不上。cppreference va_arg 页写明：「若 ap 中下一个实参（提升后）的类型与 T 不兼容，行为未定义。」未定义行为（undefined behavior，UB）意味着错值、崩溃、或碰巧看起来正常，全凭运气。
+
+修复只有一个词：
+
+```c
+        case 'f':
+            printf("%f", va_arg(ap, double));  /* 对：读提升后的类型 */
+            break;
+```
+
+同理可推三条军规：`va_arg(ap, char)`、`va_arg(ap, short)`、`va_arg(ap, float)` 全是错的——char/short 传进来时已是 int，必须先 `va_arg(ap, int)` 再转回小类型；`%c` 分支读 int 也是这个原因；极少的例外（有符号/无符号对应类型且值双方都能表示等）不值得依赖，记住「读提升后的类型」就够了。
+
+调用侧的对称错误同样致命：`my_printf("%d\n", 3.14)` 是 %d 声明读 int、实传 double——同一个 UB，只是方向反了。修改实验：跑 `my_printf("%d %c\n", 'A', 65);`。'A' 提升为 int 被 %d 读出 65；65 本就是 int 被 %c 读出字母 A。两端全是 int，提升规则在此闭环。
+
+## 5. va_copy：同一组参数要吃两遍
+
+有时一组参数要遍历两次：先扫一遍找最大值，再扫一遍输出谁等于最大值。直接复用书签行不通——第一遍走完，va_arg 已把 ap 推到「再无参数」的荒地，再读是 UB（cppreference：「在已无实参可取时调用 va_arg，行为未定义」）。赋值 `ap2 = ap1` 也不行：第 2 节说过 va_list 在一些平台是数组类型，赋值会退化成指针共享，动一个动两个。标准给的唯一可移植复制方式是 C99 的 va_copy：
+
+```c
+/* report_max.c：两遍遍历 */
+#include <stdarg.h>
+#include <stdio.h>
+
+void report_max(int n, ...) {
+    va_list ap, ap2;
+    va_start(ap, n);
+    va_copy(ap2, ap);                /* 第二枚书签从当前位置复制出来 */
+
+    int max = va_arg(ap, int);       /* 第一遍：找最大值 */
+    for (int i = 1; i < n; i++) {
+        int v = va_arg(ap, int);
+        if (v > max) { max = v; }
+    }
+    va_end(ap);
+
+    printf("max = %d at", max);
+    for (int i = 0; i < n; i++) {    /* 第二遍：用复制的书签重新出发 */
+        int v = va_arg(ap2, int);
+        if (v == max) { printf(" %d", i); }
+    }
+    printf("\n");
+    va_end(ap2);                     /* 每个 va_copy 配对一次 va_end */
+}
+
+int main(void) {
+    report_max(6, 1, 5, 3, 5, 2, 5);
+    return 0;
+}
+```
+
+```text
+max = 5 at 1 3 5
+```
+
+修改实验：删掉 `va_copy(ap2, ap);` 这一行，让第二遍循环也用 ap。观察输出——第二遍读到的全是垃圾或直接把程序带崩，因为书签早已越过最后一枚参数。
+
+## 6. 参数怎么交接：三种约定与各自的事故
+
+函数从 `...` 里拿参数全凭约定，工程上只有三种成熟的约定：
+
+| 约定 | 代表 | 个数/类型信息在哪 | 典型事故 |
+| --- | --- | --- | --- |
+| 显式个数 | sum_ints(n, ...) | 具名参数 n | n 与实参个数不符，读到垃圾 |
+| 格式串 | printf(fmt, ...) | 逐字符扫描 fmt | 占位符与实参类型不匹配，UB |
+| 哨兵值 | execl(..., NULL) | 遇哨兵停止 | 忘写哨兵，一路读进野内存 |
+
+显式个数：最简单也最脆。`sum_ints(4, 10, 20, 30)` 这种笔误（第 2 节修改实验）编译器无能为力，因为对它而言 n 只是一个普通的 int 实参。
+
+格式串：表达力最强。POSIX 的 open 是它的一个精巧变体——`int open(const char *path, int flags, ...);` 只在 flags 带 O_CREAT 时才需要第三个参数 mode；忘传 mode，函数内部 va_arg 读到的就是垃圾。printf 自身的占位符不匹配则是第 4 节实录的主角。
+
+哨兵值：用「最后一项是 NULL」宣布结束。一个纯 C 的可运行示例：
+
+```c
+/* sentinel.c：NULL 哨兵版的字符串拼接 */
+#include <stdarg.h>
+#include <stdio.h>
+#include <string.h>
+
+static int concat(char *dst, size_t cap, const char *first, ...) {
+    size_t used = 0;
+    va_list ap;
+    va_start(ap, first);
+    for (const char *s = first; s != NULL; s = va_arg(ap, const char *)) {
+        size_t len = strlen(s);
+        if (used + len + 1 > cap) { va_end(ap); return 0; }   /* 放不下：判失败而不是硬写 */
+        memcpy(dst + used, s, len);
+        used += len;
+    }
+    va_end(ap);
+    dst[used] = '\0';
+    return 1;
+}
+
+int main(void) {
+    char buf[32];
+    if (concat(buf, sizeof buf, "Hello, ", "variadic", " world", (char *)NULL)) { printf("%s\n", buf); }
+    return 0;
+}
+```
+
+```text
+Hello, variadic world
+```
+
+注意末尾的 `(char *)NULL` 强转不是仪式感：NULL 在某些实现里就是整数 0，而可变参数处没有原型信息告诉编译器「这是指针」，64 位平台上 4 字节的整型 0 与 8 字节的空指针宽度不同，哨兵比较会失手，循环继续往野内存读。至于忘了写哨兵的后果——execl 系列函数的经典安全漏洞正是这么来的。
+
+真实世界的样品间：
+
+| 真实 API | 约定 | 备注 |
+| --- | --- | --- |
+| printf / scanf | 格式串 | 编译器的 -Wformat 警告专为其定制 |
+| POSIX open | 条件参数（格式串思想的变体） | flags 带 O_CREAT 才要 mode |
+| execl / execlp | 哨兵 (char *)NULL | 忘哨兵是教科书级漏洞 |
+| syslog / vsyslog | 格式串 + v 前缀对 | v 版本收 va_list，专供转发 |
+| Linux 内核 printk | 格式串 | 声明上的 __printf(1,2) 即 format 属性 |
+
+## 7. 何时别用可变参数，用时怎么体面地用
+
+先把丑话说完：`...` 的类型安全是零。类型全靠程序员口头约定，编译器对自家函数一概不查。所以默认立场应当是**不**用：
+
+- 参数同型且个数运行时才定——数组加长度：`int sum(const int *v, int n);`，类型安全，还能 sizeof 检查；
+- 参数异型但编译期已知——C11 `_Generic` 在编译期按实参类型分发到强类型函数，零运行时开销，见 [泛型选择](/c/280-GenericSelection)；
+- 参数结构复杂——结构体数组加类型标签，数据驱动。
+
+日志、格式化这类「参数天然不定个不定型」的场景才轮到变参出场，此时守两条纪律。
+
+纪律一：提供 v 前缀版本，转发全走 vsnprintf。可变参数的壳只负责 va_start/va_end，真正的逻辑收进收 va_list 的 v 版本：
+
+```c
+/* my_log.c：可变参数入口 + va_list 实现 */
+#include <stdarg.h>
+#include <stdio.h>
+
+static void my_vlog(char *buf, size_t cap, const char *fmt, va_list ap) {
+    vsnprintf(buf, cap, fmt, ap);   /* 截断安全：最多写 cap 字节，含结尾 '\0' */
+}
+
+void my_log(char *buf, size_t cap, const char *fmt, ...) {
+    va_list ap;
+    va_start(ap, fmt);
+    my_vlog(buf, cap, fmt, ap);     /* 整个 ap 交给 v 版本 */
+    va_end(ap);
+}
+
+int main(void) {
+    char buf[64];
+    my_log(buf, sizeof buf, "user %s scored %d", "Ada", 99);
     printf("%s\n", buf);
     return 0;
 }
 ```
 
-### 4.3 自定义 printf 实现
-
-```c
-#include <stdio.h>
-#include <stdarg.h>
-#include <string.h>
-#include <stdbool.h>
-
-/* 简易 printf：支持 %d、%s、%c、%x、%% */
-void my_printf(const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-
-    for (const char *p = fmt; *p != '\0'; p++) {
-        if (*p != '%') {
-            putchar(*p);
-            continue;
-        }
-        p++;  /* 跳过 % */
-        switch (*p) {
-        case 'd': {
-            int v = va_arg(ap, int);
-            printf("%d", v);  /* 简化实现，复用标准 printf */
-            break;
-        }
-        case 's': {
-            const char *s = va_arg(ap, const char *);
-            if (!s) s = "(null)";
-            fputs(s, stdout);
-            break;
-        }
-        case 'c': {
-            /* 注意：char 提升为 int */
-            int c = va_arg(ap, int);
-            putchar(c);
-            break;
-        }
-        case 'x': {
-            unsigned int v = va_arg(ap, unsigned int);
-            printf("%x", v);
-            break;
-        }
-        case '%': {
-            putchar('%');
-            break;
-        }
-        case '\0':
-            /* 格式字符串以 % 结尾，UB */
-            goto done;
-        default:
-            /* 未知格式说明符 */
-            putchar('%');
-            putchar(*p);
-            break;
-        }
-    }
-done:
-    va_end(ap);
-}
-
-int main(void)
-{
-    my_printf("int=%d, str=%s, char=%c, hex=%x, pct=%%\n",
-              42, "hello", 'A', 0xDEAD);
-    return 0;
-}
+```text
+user Ada scored 99
 ```
 
-### 4.4 `va_copy` 多次遍历
+标准库自己就是这个形状：printf 对 vprintf，fprintf 对 vfprintf，snprintf 对 vsnprintf。vsnprintf 的返回值是「本应需要的长度」，想先量后写（先 va_copy 扫一遍再分配缓冲区）也以它为地基，边界检查的完整姿势见 [安全函数与边界检查](/c/450-SafeFunctionBoundsCheck)。
+
+把 va_list 交给别的函数有一句要紧话：被调函数里 va_arg 推进的到底是不是调用方那份 va_list，取决于平台实现（GCC 的 x86-64 上 va_list 是数组、传参时退化为指针，推进的就是原件；别的平台可能推进副本）。标准干脆规定这种情形下调用方手中 ap 的值未指定，继续用之前必须先 va_end。可移植的约定只有一条：转发就交整个 va_list 给 v 函数，交出去之后自己不再碰 ap。
+
+纪律二：给自己的函数挂上 printf 检查。GCC 与 Clang 提供 format 属性：
 
 ```c
-#include <stdio.h>
-#include <stdarg.h>
-
-/* 第一次遍历：计算最大值；第二次遍历：找出哪些等于最大值 */
-void analyze(int count, ...)
-{
-    va_list ap1, ap2;
-    va_start(ap1, count);
-    va_copy(ap2, ap1);
-
-    /* 第一次遍历：找最大值 */
-    int max = va_arg(ap1, int);
-    for (int i = 1; i < count; i++) {
-        int v = va_arg(ap1, int);
-        if (v > max) max = v;
-    }
-    va_end(ap1);
-
-    /* 第二次遍历：输出等于最大值的索引 */
-    printf("Indices of max (%d):", max);
-    for (int i = 0; i < count; i++) {
-        int v = va_arg(ap2, int);
-        if (v == max) printf(" %d", i);
-    }
-    printf("\n");
-    va_end(ap2);
-}
-
-int main(void)
-{
-    analyze(6, 1, 5, 3, 5, 2, 5);
-    /* 输出：Indices of max (5): 1 3 5 */
-    return 0;
-}
+__attribute__((format(printf, 2, 3)))   /* 第 2 个参数是格式串，可变参数从第 3 个起 */
+void my_log(const char *tag, const char *fmt, ...);
 ```
 
-### 4.5 跨平台调用约定验证
+挂上之后，`my_log("INFO", "%d", "oops")` 这类笔误直接吃编译警告，与 printf 同等待遇。
 
-以下代码通过汇编分析，展示不同 ABI 下可变参数的栈布局：
+还有一条 va_end 纪律：多出口的函数用 goto 汇合到统一的 cleanup 标签——`cleanup: va_end(ap); return status;`——保证每条提前 return 的路径也执行了 va_end。这是 goto 在 C 里的正经工作之一。
+
+## 8. 常见错误与调试实录
+
+实录一：参数个数不匹配，会发生什么。
 
 ```c
-/* variadic_abi.c */
+/* mismatch.c：n 说 4 个，实参只给 3 个 */
 #include <stdarg.h>
 #include <stdio.h>
 
-int variadic_sum(int n, ...)
-{
+int sum_ints(int n, ...) {
     va_list ap;
     va_start(ap, n);
-    int s = 0;
-    for (int i = 0; i < n; i++) s += va_arg(ap, int);
+    int total = 0;
+    for (int i = 0; i < n; i++) { total += va_arg(ap, int); }
     va_end(ap);
-    return s;
-}
-
-int main(void)
-{
-    int r = variadic_sum(5, 1, 2, 3, 4, 5);
-    printf("result=%d\n", r);
-    return 0;
-}
-```
-
-**x86-64 System V 下反汇编**：
-
-```bash
-gcc -O0 -S variadic_abi.c -o variadic_abi.s
-cat variadic_abi.s | grep -A 30 variadic_sum:
-```
-
-可以看到 `variadic_sum` 函数序言包含以下操作：
-
-```asm
-variadic_sum:
-    pushq   %rbp
-    movq    %rsp, %rbp
-    subq    $240, %rsp             # 预留 240 字节寄存器保存区
-    movl    %edi, -116(%rbp)       # 保存 n
-    movl    $8, %eax               # 8 个 SSE 寄存器使用（va_list 的 gp_offset/fp_offset）
-    movl    %eax, %eax
-    movq    %rsi, -224(%rbp)       # 保存 RSI
-    movq    %rdx, -216(%rbp)       # 保存 RDX
-    movq    %rcx, -208(%rbp)       # 保存 RCX
-    movq    %r8, -200(%rbp)        # 保存 R8
-    movq    %r9, -192(%rbp)        # 保存 R9
-    movsd   %xmm0, -176(%rbp)     # 保存 XMM0
-    ...
-    leaq    -224(%rbp), %rax       # va_list 指向寄存器保存区
-```
-
-`va_arg(ap, int)` 在 System V ABI 下的展开（伪代码）：
-
-```c
-/* System V AMD64 va_arg 实现（简化） */
-#define va_arg(ap, type) \
-    (*(type*)((ap).gp_offset < 48 \
-        ? ((ap).reg_save_area + (ap).gp_offset) \
-        : ((ap).overflow_arg_area + ((ap).gp_offset - 48)), \
-      (ap).gp_offset += 8, ...))
-```
-
-### 4.6 类型属性 `__attribute__((format))`
-
-GCC/Clang 提供 `format` 属性，让编译器检查可变参数与格式字符串的类型匹配：
-
-```c
-#include <stdio.h>
-#include <stdarg.h>
-
-/* 自定义日志函数，使用 printf 风格格式字符串 */
-__attribute__((format(printf, 2, 3)))
-void log_msg(int level, const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    vfprintf(stderr, fmt, ap);
-    va_end(ap);
-    fputc('\n', stderr);
-}
-
-int main(void)
-{
-    log_msg(0, "value = %d\n", 42);       /* OK */
-    log_msg(0, "value = %d\n", "hello");  /* 警告：format %d expects int, but arg is char* */
-    return 0;
-}
-```
-
-`format(printf, 2, 3)` 的含义：
-
-- `printf`：使用 `printf` 风格的格式说明符
-- `2`：格式字符串是第 2 个参数（`fmt`）
-- `3`：可变参数从第 3 个参数开始
-
-### 4.7 可变参数与 `va_list` 的转发
-
-当需要把可变参数转发给另一个可变参数函数时，必须使用 `vprintf` / `vfprintf` / `vsprintf` 系列"v"前缀函数：
-
-```c
-#include <stdio.h>
-#include <stdarg.h>
-
-/* 自定义 fprintf 包装器，加上时间戳前缀 */
-void logf(FILE *fp, const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-
-    /* 输出时间戳 */
-    fprintf(fp, "[timestamp] ");
-
-    /* 转发可变参数给 vfprintf */
-    vfprintf(fp, fmt, ap);
-
-    fputc('\n', fp);
-    va_end(ap);
-}
-
-int main(void)
-{
-    logf(stdout, "user %s logged in from %s", "alice", "192.168.1.1");
-    return 0;
-}
-```
-
-### 4.8 C11 `_Generic` 实现类型安全"伪可变参数"
-
-```c
-#include <stdio.h>
-
-/* 类型安全的 print_value 宏，根据参数类型分发 */
-#define print_value(x) _Generic((x), \
-    int:    print_int, \
-    double: print_double, \
-    char *: print_string, \
-    default: print_unknown \
-)(x)
-
-void print_int(int v)         { printf("int: %d\n", v); }
-void print_double(double v)   { printf("double: %f\n", v); }
-void print_string(char *s)    { printf("string: %s\n", s); }
-void print_unknown(...)       { printf("unknown type\n"); }
-
-int main(void)
-{
-    print_value(42);          // int: 42
-    print_value(3.14);        // double: 3.140000
-    print_value("hello");     // string: hello
-    return 0;
-}
-```
-
-`_Generic` 在编译期完成类型分发，无 UB 风险，但只能处理固定数量参数。可配合宏递归实现"N 个参数"的类型安全调度。
-
-## 5. 对比分析
-
-### 5.1 可变参数方案的四种模式
-
-| 方案                    | 代表                  | 优点                     | 缺点                                |
-| ----------------------- | --------------------- | ------------------------ | ----------------------------------- |
-| 显式计数器              | `sum(n, ...)`         | 简单直接                 | 调用方容易记错 count                |
-| 哨兵终止                | `execl(path, arg0, ..., NULL)` | 无需计数         | 忘记 NULL 导致越界；哨兵值可能与数据冲突 |
-| 格式字符串              | `printf(fmt, ...)`    | 类型信息丰富             | 格式字符串与参数不匹配是经典 UB     |
-| 计数器 + 类型标签数组  | `syscall(SYS_xxx, ...)` | 类型安全           | API 啰嗦                            |
-
-### 5.2 与其他语言的对比
-
-#### 5.2.1 C++ 的可变参数模板
-
-C++11 引入可变参数模板（variadic templates），在编译期展开参数包：
-
-```cpp
-template<typename... Args>
-void print(Args... args) {
-    (std::cout << ... << args) << '\n';  // C++17 折叠表达式
-}
-```
-
-优势：类型安全（编译期检查每个参数类型）、零开销（编译期展开）、无栈遍历。劣势：编译时间长、错误信息晦涩、不能跨翻译单元隐藏实现。
-
-#### 5.2.2 Rust 的可变参数
-
-Rust 标准库不直接支持 C 风格可变参数，但通过 `extern "C"` 函数可与 C 可变参数交互：
-
-```rust
-extern "C" {
-    fn printf(fmt: *const u8, ...) -> i32;
-}
-
-fn main() {
-    unsafe {
-        printf(b"Hello %s!\n\0".as_ptr(), b"World\0".as_ptr());
-    }
-}
-```
-
-Rust 推荐使用宏（`println!`、`format!`）实现类型安全的"伪可变参数"，宏在编译期展开为强类型代码。
-
-#### 5.2.3 Go 的可变参数
-
-Go 内置支持可变参数，语法为 `func f(args ...int)`，参数被收集为切片：
-
-```go
-func sum(nums ...int) int {
-    total := 0
-    for _, n := range nums {
-        total += n
-    }
-    return total
-}
-
-sum(1, 2, 3)         // 直接传
-nums := []int{1,2,3}
-sum(nums...)         // 切片展开
-```
-
-优势：类型安全、无 UB；劣势：必须同类型，跨类型需 `interface{}` 与类型断言。
-
-#### 5.2.4 Java 的可变参数
-
-Java 5 引入可变参数，语法为 `void f(Object... args)`，参数被收集为数组：
-
-```java
-void log(String fmt, Object... args) {
-    System.out.printf(fmt, args);
-}
-```
-
-优势：类型安全（编译期检查数组元素类型）；劣势：基本类型需装箱（autoboxing）有性能开销。
-
-### 5.3 选型决策
-
-- **必须同类型 + 类型安全**：优先用 C11 `_Generic` 宏或自定义结构体数组。
-- **必须异类型 + 编译期已知类型列表**：用宏递归 + `_Generic`。
-- **必须异类型 + 运行期类型**：用 C 可变参数 + 格式字符串（务必启用 `format` 属性检查）。
-- **跨语言接口（FFI）**：C 可变参数是事实标准，几乎所有 FFI 都支持。
-
-## 6. 常见陷阱与反模式
-
-### 6.1 类型不匹配
-
-```c
-/* 反模式 */
-void bad_print(const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    while (*fmt) {
-        if (*fmt == 'd') {
-            /* 调用方传入了 double，但用 int 读取：UB */
-            int v = va_arg(ap, int);
-            printf("%d", v);
-        }
-        fmt++;
-    }
-    va_end(ap);
-}
-```
-
-**正确做法**：格式字符串与参数类型必须严格对应，或使用 `__attribute__((format))` 启用编译期检查。
-
-### 6.2 忘记 `va_end`
-
-```c
-/* 反模式：提前 return 而未 va_end */
-int buggy_sum(int n, ...)
-{
-    va_list ap;
-    va_start(ap, n);
-    int s = 0;
-    for (int i = 0; i < n; i++) {
-        s += va_arg(ap, int);
-        if (s < 0) return s;  /* BUG: 未 va_end */
-    }
-    va_end(ap);
-    return s;
-}
-```
-
-**正确做法**：使用 `goto cleanup` 或 RAII 风格确保所有路径都调用 `va_end`：
-
-```c
-int safe_sum(int n, ...)
-{
-    va_list ap;
-    va_start(ap, n);
-    int s = 0;
-    for (int i = 0; i < n; i++) {
-        s += va_arg(ap, int);
-        if (s < 0) goto cleanup;
-    }
-cleanup:
-    va_end(ap);
-    return s;
-}
-```
-
-### 6.3 `va_arg` 读取错误类型
-
-```c
-/* 反模式：调用方传入 short，用 short 读取 */
-short v = 42;
-my_func("%hd", v);  /* 调用方 */
-
-void my_func(const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    short s = va_arg(ap, short);  /* UB: short 提升为 int */
-    va_end(ap);
-}
-```
-
-**正确做法**：用 `int` 读取，再转换：
-
-```c
-int i = va_arg(ap, int);
-short s = (short)i;
-```
-
-### 6.4 传递 `va_list` 时未用 `va_copy`
-
-```c
-/* 反模式：直接传 va_list（在某些 ABI 上是数组，按值传递会退化为指针） */
-void helper(va_list ap)  /* 错误签名 */
-{
-    int v = va_arg(ap, int);
-}
-
-void caller(int n, ...)
-{
-    va_list ap;
-    va_start(ap, n);
-    helper(ap);  /* BUG */
-    va_end(ap);
-}
-```
-
-**正确做法**：使用 `va_list *` 或 `va_copy`：
-
-```c
-void helper(va_list *ap)
-{
-    int v = va_arg(*ap, int);
-}
-
-void caller(int n, ...)
-{
-    va_list ap;
-    va_start(ap, n);
-    helper(&ap);
-    va_end(ap);
-}
-```
-
-或用 `v` 前缀函数直接接收 `va_list`：
-
-```c
-void vhelper(va_list ap)
-{
-    int v = va_arg(ap, int);
-}
-
-void caller(int n, ...)
-{
-    va_list ap;
-    va_start(ap, n);
-    vhelper(ap);
-    va_end(ap);
-}
-```
-
-### 6.5 哨兵值遗漏
-
-```c
-/* 反模式：忘记 NULL 终止 */
-execl("/bin/ls", "ls", "-l");  /* UB：缺少 NULL */
-```
-
-**正确做法**：
-
-```c
-execl("/bin/ls", "ls", "-l", (char *)NULL);
-/* 注意：必须强制转换 NULL 为 char*，避免在 64 位系统上 0 被解释为 int */
-```
-
-### 6.6 在可变参数中使用 `_Bool` / `enum`
-
-```c
-/* 反模式：传递 _Bool */
-my_func("%d", true);  /* _Bool 提升为 int（通常 1） */
-
-/* 反模式：传递 enum */
-enum color { RED, GREEN, BLUE };
-my_func("%d", RED);  /* enum 提升为 int */
-```
-
-读取时必须用 `int`：
-
-```c
-int v = va_arg(ap, int);
-```
-
-### 6.7 跨调用约定混用
-
-```c
-/* 反模式：将可变参数函数地址赋给固定参数函数指针 */
-typedef int (*sum_fn)(int, int);
-sum_fn fn = (sum_fn)sum;  /* sum 是 int sum(int n, ...) */
-fn(3, 4);  /* UB：调用约定可能不同 */
-```
-
-## 7. 工程实践与最佳实践
-
-### 7.1 提供 `v` 前缀版本
-
-每个可变参数函数都应提供一个 `v` 前缀版本，接收 `va_list`，便于其他函数转发：
-
-```c
-void my_log(int level, const char *fmt, ...)
-{
-    va_list ap;
-    va_start(ap, fmt);
-    my_vlog(level, fmt, ap);
-    va_end(ap);
-}
-
-void my_vlog(int level, const char *fmt, va_list ap)
-{
-    vfprintf(stderr, fmt, ap);
-    fputc('\n', stderr);
-}
-```
-
-### 7.2 启用 `format` 属性
-
-所有接收 `printf`/`scanf`/`strftime` 风格格式字符串的函数都应启用 `format` 属性：
-
-```c
-__attribute__((format(printf, 1, 2)))
-void my_log(const char *fmt, ...);
-
-__attribute__((format(scanf, 2, 3)))
-int my_scanf(FILE *fp, const char *fmt, ...);
-```
-
-### 7.3 优先使用哨兵或计数器，避免纯格式字符串
-
-若 API 不需要类型推断，优先使用哨兵或计数器：
-
-```c
-/* 优于 */
-void append(char *buf, ...) /* 难以类型检查 */
-
-/* 推荐做法 1：哨兵 */
-void append_sentinel(char *buf, ..., NULL);
-
-/* 推荐做法 2：计数器 */
-void append_counted(char *buf, size_t n, ...);
-
-/* 推荐做法 3：结构体数组 */
-typedef struct { int type; union { int i; double d; } val; } arg_t;
-void append_typed(char *buf, const arg_t *args, size_t n);
-```
-
-### 7.4 错误处理：可变参数函数的失败模式
-
-可变参数函数失败时（如参数数量不足、类型不匹配），由于无法在函数内检测，应采用以下策略：
-
-1. **格式字符串严格校验**：解析 `fmt`，若发现 `%` 后是非法说明符，立即报错并停止。
-2. **计数器模式**：若使用计数器，校验计数器与实际遍历是否一致。
-3. **哨兵模式**：限制哨兵值的总数量，防止无限循环。
-4. **返回值**：明确返回成功/失败，调用方需检查。
-
-### 7.5 与宏结合：编译期类型检查
-
-```c
-/* 类型安全的"add"宏，编译期检查参数数量 */
-#define ADD_2(a, b)          ((a) + (b))
-#define ADD_3(a, b, c)       ((a) + (b) + (c))
-#define ADD_4(a, b, c, d)    ((a) + (b) + (c) + (d))
-
-#define GET_MACRO(_1, _2, _3, _4, NAME, ...) NAME
-#define ADD(...) GET_MACRO(__VA_ARGS__, ADD_4, ADD_3, ADD_2)(__VA_ARGS__)
-
-int main(void)
-{
-    ADD(1, 2);        /* 调用 ADD_2 */
-    ADD(1, 2, 3);     /* 调用 ADD_3 */
-    ADD(1, 2, 3, 4);  /* 调用 ADD_4 */
-    return 0;
-}
-```
-
-### 7.6 性能考量
-
-可变参数函数的性能开销：
-
-1. **寄存器保存**：`va_start` 在 x86-64 System V 下需保存最多 6+8=14 个寄存器到栈，约 176 字节写入。
-2. **分支判断**：每次 `va_arg` 需判断从寄存器保存区还是栈上参数区读取。
-3. **无法内联**：可变参数函数通常不会被内联（即使加 `static inline`）。
-4. **指令缓存**：复杂的 `va_arg` 展开会增加代码体积，影响 icache。
-
-对性能敏感场景，可考虑：
-
-- 用宏替代简单可变参数函数。
-- 用结构体数组 + 循环替代。
-- 用 SIMD 一次处理多个同类型参数。
-
-### 7.7 与 C++ 异常的交互
-
-C 函数中抛出 C++ 异常是未定义行为。可变参数函数中如果调用方传入 C++ 对象，析构顺序无法保证。最佳实践：
-
-- 在 C 接口边界处捕获所有异常（`try/catch(...)`）。
-- 不要在 C 接口中传递 C++ 对象指针。
-- 使用 `noexcept` 确保 C++ 实现不抛异常。
-
-## 8. 案例研究
-
-### 8.1 `printf` 的实现：glibc `vfprintf`
-
-glibc 的 `vfprintf` 是工业级可变参数函数的标杆，处理以下复杂场景：
-
-- **格式说明符完整支持**：`%d`、`%s`、`%f`、`%e`、`%g`、`%x`、`%o`、`%c`、`%p`、`%n`、`%%`、`%ls`、`%lf` 等。
-- **标志位组合**：`-`、`+`、空格、`#`、`0`。
-- **宽度与精度**：`%10.3f`、`%*d`（运行期宽度）。
-- **位置参数**：`%1$d %1$d`（同一参数多次引用，需先扫描一遍 fmt 确定所有参数位置）。
-- **多语言本地化**：根据 `LC_NUMERIC` 决定小数点。
-- **错误处理**：输出失败时返回负值。
-
-源码位置：`glibc/stdio-common/vfprintf-internal.c`，约 2000 行 C 代码。
-
-### 8.2 `open` 系统调用的可变参数
-
-POSIX `open` 函数签名：
-
-```c
-int open(const char *pathname, int flags, ...);
-```
-
-仅当 `flags` 包含 `O_CREAT` 时才需要第三个参数 `mode_t mode`。实现：
-
-```c
-int open(const char *pathname, int flags, ...)
-{
-    mode_t mode = 0;
-    if (flags & O_CREAT) {
-        va_list ap;
-        va_start(ap, flags);
-        mode = va_arg(ap, mode_t);  /* mode_t 通常提升为 int */
-        va_end(ap);
-    }
-    return syscall(SYS_open, pathname, flags, mode);
-}
-```
-
-注意：若调用方在 `O_CREAT` 时忘记传 `mode`，则 `va_arg` 读取栈上垃圾，UB。这是 POSIX 设计的妥协——若使用固定参数，则非 `O_CREAT` 调用必须传 `0`，冗余且易错。
-
-### 8.3 `execl` / `execv` 系列的可变参数
-
-```c
-int execl(const char *path, const char *arg0, ... /*, (char *)NULL */);
-int execlp(const char *file, const char *arg0, ... /*, (char *)NULL */);
-int execle(const char *path, const char *arg0, ... /*, (char *)NULL, char *const envp[] */);
-int execv(const char *path, char *const argv[]);
-int execvp(const char *file, char *const argv[]);
-int execvpe(const char *file, char *const argv[], char *const envp[]);
-```
-
-`execl` 内部把可变参数转换为 `argv` 数组，然后调用 `execv`：
-
-```c
-int execl(const char *path, const char *arg0, ...)
-{
-    va_list ap;
-    va_start(ap, arg0);
-
-    /* 第一遍：计数 */
-    size_t argc = 1;
-    const char *s = arg0;
-    va_list ap_count;
-    va_copy(ap_count, ap);
-    while ((s = va_arg(ap_count, const char *)) != NULL) argc++;
-    va_end(ap_count);
-
-    /* 第二遍：构建 argv */
-    char **argv = malloc((argc + 1) * sizeof(char *));
-    argv[0] = (char *)arg0;
-    for (size_t i = 1; i < argc; i++) {
-        argv[i] = (char *)va_arg(ap, const char *);
-    }
-    argv[argc] = NULL;
-    va_end(ap);
-
-    int r = execv(path, argv);
-    free(argv);
-    return r;
-}
-```
-
-### 8.4 `syslog` 的可变参数
-
-```c
-void syslog(int priority, const char *format, ...);
-void vsyslog(int priority, const char *format, va_list ap);
-```
-
-`syslog` 是工业级日志 API，支持：
-
-- 优先级（`LOG_EMERG` 到 `LOG_DEBUG`）
-- `printf` 风格格式字符串
-- `%m` 展开为 `strerror(errno)`（GNU 扩展）
-
-实现要点：通过 `vsyslog` 提供 `va_list` 版本，避免代码重复。
-
-### 8.5 Linux 内核的 `printk`
-
-Linux 内核的 `printk` 是可变参数函数的内核实现：
-
-```c
-asmlinkage __printf(1, 2) __cold
-int printk(const char *fmt, ...);
-```
-
-特点：
-
-- 使用 `asmlinkage` 修饰，明确使用栈式调用约定（x86 上）。
-- `__printf(1, 2)` 启用 GCC `format` 检查。
-- 支持内核特定格式说明符：`%pK`（受 `kptr_restrict` 限制）、`%pOF`（设备树节点）、`%pV`（递归 `va_format`）。
-- 在中断上下文也可安全调用（使用 lock-free ring buffer）。
-
-### 8.6 Windows API 的 `wsprintf`
-
-Windows 的 `wsprintf` 是可变参数函数，但不支持浮点（早期 Windows 节省浮点库）：
-
-```c
-int WINAPIV wsprintfA(LPSTR buf, LPCSTR fmt, ...);
-int WINAPIV wsprintfW(LPWSTR buf, LPCWSTR fmt, ...);
-```
-
-`WINAPIV` 表示使用 CDECL 调用约定（`__cdecl`），而非 Windows API 默认的 STDCALL。这是为了支持可变参数。
-
-### 8.7 PostgreSQL 的 `elog` / `ereport`
-
-PostgreSQL 数据库的错误报告 API `elog` 是可变参数函数：
-
-```c
-elog(ERROR, "column \"%s\" does not exist", column_name);
-```
-
-实现要点：
-
-- 使用 `pg_attribute_printf(2, 3)` 启用编译期格式检查。
-- 错误级别（`DEBUG5` 到 `PANIC`）决定是否终止事务。
-- 通过 `longjmp` 实现错误传播（避免栈展开开销）。
-
-## 附录 A：`<stdarg.h>` 宏的展开示例
-
-### A.1 x86-64 System V 下 `va_list` 的内部结构
-
-```c
-typedef struct {
-    unsigned int gp_offset;       /* 下一个 GP 寄存器参数的偏移（0-48） */
-    unsigned int fp_offset;       /* 下一个 FP 寄存器参数的偏移（48-176） */
-    void *overflow_arg_area;      /* 栈上参数区指针 */
-    void *reg_save_area;          /* 寄存器保存区指针 */
-} va_list[1];  /* 数组类型，sizeof = 24 */
-```
-
-### A.2 `va_start` 展开
-
-```c
-void f(int n, ...)
-{
-    va_list ap;
-    va_start(ap, n);
-    /* ... */
-    va_end(ap);
-}
-```
-
-在 GCC x86-64 上展开为：
-
-```asm
-f:
-    pushq %rbp
-    movq %rsp, %rbp
-    subq $240, %rsp           ; 预留寄存器保存区
-
-    ; 保存 GP 寄存器（按 System V ABI 顺序）
-    movq %rdi, -216(%rbp)     ; n（命名参数，不在 va_list 中）
-    movq %rsi, -208(%rbp)
-    movq %rdx, -200(%rbp)
-    movq %rcx, -192(%rbp)
-    movq %r8,  -184(%rbp)
-    movq %r9,  -176(%rbp)
-
-    ; 保存 FP 寄存器
-    movsd %xmm0, -160(%rbp)
-    movsd %xmm1, -152(%rbp)
-    ... ; 共 8 个 XMM
-
-    ; 构造 va_list
-    movl $8,  -120(%rbp)      ; gp_offset = 8（n 之后从 rsi 开始，偏移 8）
-    movl $48, -116(%rbp)      ; fp_offset = 48
-    leaq -176(%rbp), %rax     ; overflow_arg_area
-    movq %rax, -112(%rbp)
-    leaq -216(%rbp), %rax     ; reg_save_area（包含 n）
-    movq %rax, -104(%rbp)
-```
-
-### A.3 `va_arg(ap, int)` 展开
-
-```c
-int v = va_arg(ap, int);
-```
-
-GCC 内联展开（简化版）：
-
-```asm
-    ; 读取 gp_offset
-    movl -120(%rbp), %eax
-    cmpl $48, %eax            ; gp_offset < 48 ?
-    jae  .L_from_stack
-
-    ; 从寄存器保存区读取
-    movq -104(%rbp), %rdx     ; reg_save_area
-    addq %rdx, %rax
-    movl (%rax), %eax         ; 读取 int
-    addl $8, -120(%rbp)       ; gp_offset += 8
-    jmp .L_done
-
-.L_from_stack:
-    ; 从栈上参数区读取
-    movq -112(%rbp), %rax     ; overflow_arg_area
-    movl (%rax), %eax
-    addq $8, -112(%rbp)       ; overflow_arg_area += 8
-
-.L_done:
-    ; %eax 中为读取到的值
-```
-
-## 附录 B：跨平台可变参数宏实现
-
-某些库（如 Google Test、Boost.Preprocessor）需要在跨平台下使用可变参数宏。C99 引入了 `__VA_ARGS__`：
-
-```c
-#define LOG(fmt, ...) printf(fmt, __VA_ARGS__)
-```
-
-C23 进一步引入 `__VA_OPT__`，处理"无参数"情况：
-
-```c
-#define LOG(fmt, ...) printf(fmt __VA_OPT__(,) __VA_ARGS__)
-
-LOG("hello");        /* 展开为 printf("hello") */
-LOG("hello %d", 42); /* 展开为 printf("hello %d", 42) */
-```
-
-### 附录 C：性能基准测试
-
-不同可变参数实现方案的性能差异（gcc 13.2 -O2，x86-64，10 亿次调用）：
-
-| 实现方案                       | 平均耗时 (ns) | 相对开销 | 备注                           |
-| ------------------------------ | ------------- | -------- | ------------------------------ |
-| 内联展开（固定 3 参数）        | 0.9           | 1.0x     | 编译期完全展开，无运行时开销   |
-| `va_list` 3 参数               | 2.4           | 2.7x     | 寄存器保存区读取 + 推进        |
-| `va_list` 10 参数              | 7.8           | 8.7x     | 6 寄存器 + 4 栈上参数          |
-| `va_list` 50 参数              | 38.5          | 42.8x    | 主要从栈上读取，cache miss 多  |
-| `void*` 数组 + 计数器          | 3.1           | 3.4x     | 一次间接寻址，但无类型提升开销 |
-| `_Generic` 分发（3 类型）      | 1.8           | 2.0x     | 编译期分发，运行期仅一次跳转   |
-
-性能基准测试代码：
-
-```c
-#include <stdio.h>
-#include <stdarg.h>
-#include <time.h>
-#include <stdint.h>
-
-#define ITERS 1000000000ULL
-
-static int sum_va(int count, ...) {
-    va_list ap;
-    va_start(ap, count);
-    int s = 0;
-    for (int i = 0; i < count; i++) s += va_arg(ap, int);
-    va_end(ap);
-    return s;
-}
-
-static int sum_array(int count, int *arr) {
-    int s = 0;
-    for (int i = 0; i < count; i++) s += arr[i];
-    return s;
+    return total;
 }
 
 int main(void) {
-    struct timespec t0, t1;
-    volatile int sink = 0;
-
-    /* va_list 测试 */
-    clock_gettime(CLOCK_MONOTONIC, &t0);
-    for (uint64_t i = 0; i < ITERS; i++) {
-        sink += sum_va(3, 1, 2, 3);
-    }
-    clock_gettime(CLOCK_MONOTONIC, &t1);
-    double va_ns = (t1.tv_sec - t0.tv_sec) * 1e9 + (t1.tv_nsec - t0.tv_nsec);
-    printf("va_list:    %.2f ns/op\n", va_ns / ITERS);
-
-    /* 数组测试 */
-    int arr[3] = {1, 2, 3};
-    clock_gettime(CLOCK_MONOTONIC, &t0);
-    for (uint64_t i = 0; i < ITERS; i++) {
-        sink += sum_array(3, arr);
-    }
-    clock_gettime(CLOCK_MONOTONIC, &t1);
-    double arr_ns = (t1.tv_sec - t0.tv_sec) * 1e9 + (t1.tv_nsec - t0.tv_nsec);
-    printf("array:      %.2f ns/op\n", arr_ns / ITERS);
-
-    (void)sink;
+    printf("sum = %d\n", sum_ints(4, 10, 20, 30));
     return 0;
 }
 ```
 
-性能优化的关键建议：
-
-1. **热路径避免可变参数**：在每秒调用百万次以上的热路径中，用 `_Generic` 分发或固定参数函数替代 `va_list`。
-2. **减少参数数量**：可变参数少于 6 个时全部走寄存器，超过 6 个会溢出到栈上。
-3. **避免 `va_copy` 在热循环中**：`va_copy` 在某些 ABI 上涉及内存拷贝。
-4. **格式字符串解析缓存**：`printf` 类函数的格式字符串解析是主要开销，可以预解析并缓存。
-
-### 附录 D：不同编译器 `va_arg` 实现差异
-
-#### D.1 GCC 实现
-
-GCC 在 x86-64 System V 上将 `va_list` 定义为：
-
-```c
-typedef struct {
-    unsigned int gp_offset;       /* 下一个整型参数在 reg_save_area 的偏移 */
-    unsigned int fp_offset;       /* 下一个浮点参数在 reg_save_area 的偏移 */
-    void *overflow_arg_area;      /* 指向栈上溢出参数区 */
-    void *reg_save_area;          /* 指向寄存器保存区 */
-} __va_list_tag;
-typedef __va_list_tag va_list[1];
+```bash
+gcc -Wall -Wextra -g mismatch.c -o mismatch
+./mismatch
 ```
 
-`va_arg` 内联展开为：
+一次典型输出（再跑一次可能就不同）：
 
-```c
-#define va_arg(ap, type)                                    \
-    *(type *)((ap->gp_offset <= 48                          \
-               ? (ap->gp_offset += 8, ap->reg_save_area    \
-                  + ap->gp_offset - 8)                      \
-               : (ap->overflow_arg_area += 8,               \
-                  ap->overflow_arg_area - 8)))
+```text
+sum = -790557526
 ```
 
-#### D.2 Clang/LLVM 实现
+没有崩溃、没有警告，只有一个错数。解读：第 4 次 va_arg 从寄存器保存区或栈上读到了上一次调用残留的字节。ASan 与 UBSan 都不追踪变参协议，抓不到这类 UB——C 把「参数协议正确性」完全交给程序员，第 6 节的三种约定、第 7 节的 format 属性、以及「能用固定参数就不用变参」的默认立场，全是在为这个代价上保险。
 
-Clang 在前端将 `va_arg` 转换为 LLVM IR 的 `llvm.va_arg` 指令，后端再降低为目标平台代码。在 x86-64 上结果与 GCC 等价，但在 ARM64 上使用更紧凑的 `__builtin_va_list` 表示（一个指针 + 一个边界指针）。
-
-#### D.3 MSVC 实现
-
-MSVC 在 x64 上使用简化的 `va_list`（仅一个 `char*` 指针），因为 Microsoft x64 ABI 对可变参数无特殊处理：所有参数（包括前 4 个寄存器参数）都在栈上有一份"shadow space"副本。`va_arg` 直接递增指针：
+实录二：类型不匹配时，标准库函数为什么能被救。
 
 ```c
-typedef char *va_list;
-#define va_start(ap, v) ((ap) = (va_list)_ADDRESSOF(v) + _INTSIZEOF(v))
-#define va_arg(ap, t)   (*(t *)((ap += _INTSIZEOF(t)) - _INTSIZEOF(t)))
-```
-
-`_INTSIZEOF` 宏实现"按 4 字节向上对齐"（x86）或"按 8 字节向上对齐"（x64）：
-
-```c
-#define _INTSIZEOF(n) (((sizeof(n) + sizeof(int) - 1) & ~(sizeof(int) - 1)))
-```
-
-#### D.4 跨平台注意事项
-
-| 平台            | `va_list` 类型  | 寄存器保存 | 浮点参数处理           |
-| --------------- | --------------- | ---------- | ---------------------- |
-| x86-64 Linux    | 结构体数组      | 是         | 通过 `%al` 计数        |
-| x86-64 Windows  | `char*`         | 否         | 与整型共用栈空间       |
-| x86 Linux       | `char*`         | 否         | 与整型共用栈空间       |
-| ARM64           | 结构体          | 是         | 独立的浮点指针         |
-| ARM32           | `char*`         | 否         | 通过栈传递             |
-| RISC-V          | 结构体          | 是         | 独立的浮点指针         |
-| IA-64           | 128 字节数组    | 是         | 复杂的寄存器栈机制     |
-
-跨平台代码应：
-
-1. 永远不假设 `va_list` 的具体布局。
-2. 不直接赋值 `va_list`（用 `va_copy`）。
-3. 不在函数返回后使用 `va_list`（必须先 `va_copy` 并传递给另一个函数）。
-4. 跨平台库推荐使用 `void*` 数组 + 计数器方案，避免 `va_list` 的 ABI 差异。
-
-### 附录 E：可变参数与系统调用 wrapper
-
-Linux 内核的系统调用 wrapper（如 `open`、`ioctl`）使用可变参数简化用户接口，但实际系统调用号是固定的：
-
-```c
-/* glibc 的 open 实现（简化版） */
-int open(const char *pathname, int flags, ...) {
-    mode_t mode = 0;
-    if (flags & O_CREAT) {
-        va_list ap;
-        va_start(ap, flags);
-        mode = va_arg(ap, mode_t);  /* mode_t 在 Linux 上是 unsigned int */
-        va_end(ap);
-    }
-    return syscall(SYS_open, pathname, flags, mode);
-}
-```
-
-这种设计的优点是用户接口简洁（不需要 `creat` 时不必传 mode），缺点是 `O_CREAT` 漏传 mode 时会读取栈上垃圾数据，是常见的潜在安全漏洞。现代 GCC 通过 `__attribute__((warn_unused_result))` 和静态分析器缓解这一问题。
-
-## 可变参数函数定义
-
-**基本写法：可变参数函数声明**
-`<return_type> <func_name>(<fixed_params>, ...);`
-```c
-// 声明可变参数函数
-int sum(int count, ...);
-```
-
----
-
-**基本写法：可变参数函数定义**
-`<return_type> <func_name>(<fixed_params>, ...) { ... }`
-```c
-#include <stdarg.h>
-// 定义可变参数函数
-int sum(int count, ...) {
-    va_list valist;
-    va_start(valist, count);
-    int total = 0;
-    for (int i = 0; i < count; i++) {
-        total += va_arg(valist, int);
-    }
-    va_end(valist);
-    return total;
-}
-```
-
----
-
-## va_list 相关宏
-
-**基本写法：声明 va_list 变量**
-`va_list <valist>;`
-```c
-#include <stdarg.h>
-// 声明参数列表变量
-va_list valist;
-```
-
----
-
-**基本写法：初始化 va_list**
-`va_start(<valist>, <last_named_param>);`
-```c
-#include <stdarg.h>
-// 初始化参数列表，count 为最后一个命名参数
-va_start(valist, count);
-```
-
----
-
-**基本写法：获取下一个参数**
-`<type> <val> = va_arg(<valist>, <type>);`
-```c
-#include <stdarg.h>
-// 获取下一个 int 类型的参数
-int num = va_arg(valist, int);
-```
-
----
-
-**基本写法：清理 va_list**
-`va_end(<valist>);`
-```c
-#include <stdarg.h>
-// 清理参数列表
-va_end(valist);
-```
-
----
-
-**拷贝写法：复制 va_list**
-`va_copy(<dest>, <src>);`
-```c
-#include <stdarg.h>
-// 复制参数列表
-va_list dest;
-va_copy(dest, src);
-```
-
----
-
-## 可变参数函数示例
-
-**求和写法：计算多个整数的和**
-`int <func>(int <count>, ...) { ... }`
-```c
-#include <stdarg.h>
-// 计算多个整数的和
-int sum(int count, ...) {
-    va_list valist;
-    va_start(valist, count);
-    int total = 0;
-    for (int i = 0; i < count; i++) {
-        total += va_arg(valist, int);
-    }
-    va_end(valist);
-    return total;
-}
-```
-
----
-
-**最大值写法：找出多个整数的最大值**
-`int <func>(int <count>, ...) { ... }`
-```c
-#include <stdarg.h>
-// 找出多个整数的最大值
-int max(int count, ...) {
-    va_list valist;
-    va_start(valist, count);
-    int max_val = va_arg(valist, int);
-    for (int i = 1; i < count; i++) {
-        int num = va_arg(valist, int);
-        if (num > max_val) {
-            max_val = num;
-        }
-    }
-    va_end(valist);
-    return max_val;
-}
-```
-
----
-
-**打印写法：自定义打印函数**
-`void <func>(const char *<format>, ...) { ... }`
-```c
-#include <stdarg.h>
+/* wrongtype.c */
 #include <stdio.h>
-// 自定义打印函数
-void log_message(const char *format, ...) {
-    va_list valist;
-    va_start(valist, format);
-    vprintf(format, valist);
-    va_end(valist);
+
+int main(void) {
+    printf("%d\n", 3.14);   /* %d 要 int，实给 double */
+    return 0;
 }
 ```
 
----
-
-## vprintf 系列函数
-
-**vprintf 写法：使用 vprintf 输出**
-`vprintf(<format>, <valist>);`
-```c
-#include <stdarg.h>
-#include <stdio.h>
-// 使用 vprintf 输出可变参数
-void log_message(const char *format, ...) {
-    va_list valist;
-    va_start(valist, format);
-    vprintf(format, valist);
-    va_end(valist);
-}
+```bash
+gcc -Wall -Wextra -g wrongtype.c -o wrongtype
 ```
 
----
-
-**vfprintf 写法：使用 vfprintf 输出到文件**
-`vfprintf(<fp>, <format>, <valist>);`
-```c
-#include <stdarg.h>
-#include <stdio.h>
-// 使用 vfprintf 输出到文件
-void log_to_file(FILE *fp, const char *format, ...) {
-    va_list valist;
-    va_start(valist, format);
-    vfprintf(fp, format, valist);
-    va_end(valist);
-}
+```text
+wrongtype.c: In function 'main':
+wrongtype.c:4:20: warning: format '%d' expects argument of type 'int',
+    but argument 2 has type 'double' [-Wformat=]
 ```
 
----
+同一处笔误搬到 my_printf 上则无声通过——编译器认识 printf 的格式串语义，不认识你的。第 7 节的 format 属性就是把这份照顾租给自己的函数。顺带一句与之同源的 UB：把「参数个数可变」的函数地址硬转成固定参数的函数指针类型再调用（`int (*)(int, ...)` 冒充 `int (*)(int)`），调用约定可能对不上，同样是未定义行为——函数指针的匹配规则见 [函数指针与回调](/c/170-FunctionPointerCallback)。
 
-**vsprintf 写法：使用 vsprintf 写入字符串**
-`vsprintf(<buffer>, <format>, <valist>);`
+## 9. 实际项目中的使用场景
+
+- 日志系统：像样的 C 日志设施（glibc 的 syslog、内核 printk、PostgreSQL 的 elog）都是同一副骨架——可变参数壳、v 前缀实现、format 属性，本文三节正好拼齐；
+- stdio 家族：printf/fprintf/snprintf 及其 v 系列是日常用量最大的变参函数，格式符全表见 [标准输入输出与文件](/c/430-StdioFileIO)；
+- 跨语言边界：printf 风格变参是各语言调用 C 库的事实接口，格式串约定让跨语言侧也能做检查；
+- 反例提醒：配置解析、数据聚合这类「参数其实同型」的需求，请用数组加长度——它们是误用变参的重灾区。
+
+## 10. 小练习
+
+预测题（5 分钟）：先写答案再运行。
+
 ```c
-#include <stdarg.h>
-#include <stdio.h>
-// 使用 vsprintf 写入字符串
-void format_string(char *buffer, const char *format, ...) {
-    va_list valist;
-    va_start(valist, format);
-    vsprintf(buffer, format, valist);
-    va_end(valist);
-}
+my_printf("%d %c\n", 'A', 65);
 ```
 
----
+参考答案（先写再看）：打印 `65 A`。'A' 提升为 int 由 %d 读出 65；65 本就是 int，被 %c 读出字母 A。
 
-**vsnprintf 写法：使用 vsnprintf 安全写入字符串**
-`vsnprintf(<buffer>, <size>, <format>, <valist>);`
-```c
-#include <stdarg.h>
-#include <stdio.h>
-// 使用 vsnprintf 安全写入字符串（限制长度）
-void format_string_safe(char *buffer, size_t size, const char *format, ...) {
-    va_list valist;
-    va_start(valist, format);
-    vsnprintf(buffer, size, format, valist);
-    va_end(valist);
-}
-```
+修改题（10 分钟）：给 my_printf 增加 `%x`：按十六进制输出 unsigned int。提示：仿照 put_int 把 `% 10` 换成 `% 16`，余数 10 到 15 映射为字母 a 到 f。验收：`my_printf("%x\n", 48879u);` 输出 `beef`。
 
----
+挑战题（30 分钟）：让 my_printf 像 printf 一样返回「输出的字符数」，并挂上 format 属性。提示两级：
 
-## 可变参数函数调用
+思路方向：把 putchar 包一层带计数的辅助函数；返回值类型 int，失败返回负值与 printf 一致。
 
-**基本写法：调用可变参数函数**
-`<func_name>(<fixed_args>, <var1>, <var2>, ...);`
-```c
-// 调用可变参数函数
-int result = sum(5, 10, 20, 30, 40, 50);
-```
+关键 API：`__attribute__((format(printf, 1, 2)))` 挂在声明上；用 -Wall -Wextra 验证。
 
----
+验收清单：对同一格式串，my_printf 与 printf 返回值一致；`my_printf("%d", "x")` 能触发 -Wformat 警告；全程零编译警告。
 
-**混合类型写法：调用混合类型可变参数函数**
-`<func_name>(<format>, <arg1>, <arg2>, ...);`
-```c
-// 调用 printf 函数
-printf("Name: %s, Age: %d\n", "John", 30);
-```
+## 11. 与之前和之后的知识的关系
 
----
+- 往前：[函数详解](/c/090-FunctionDetailed) 的参数传递是本篇的地基；[数据类型详解](/c/040-DataTypeDetailed) 的类型家谱解释了提升表里每一行；
+- 旁支：[泛型选择](/c/280-GenericSelection) 提供编译期的类型安全替代；[预处理与宏](/c/290-PreprocessorMacro) 的 `__VA_ARGS__` 是编译期拼接参数的「宏版变参」，与本篇运行期遍历互补；[函数调用栈帧](/c/250-FunctionCallStackFrame) 拆开 va_start 背后的寄存器保存；
+- 往后：变参之外，参数的「含义」需要命名清楚的常量来表达——日志级别、错误码怎么设计，见下一篇 [枚举与 typedef](/c/110-EnumTypedef)。
 
-## 可变参数宏
+## 12. 官方文档
 
-**基本写法：可变参数宏定义**
-`#define <NAME>(<fixed>, ...) <expr>(__VA_ARGS__)`
-```c
-// 可变参数宏
-#define LOG(fmt, ...) printf(fmt, __VA_ARGS__)
-```
+- 可变参数与 C23 的放宽（cppreference C）：https://en.cppreference.com/w/c/language/variadic
+- 默认参数提升的精确表述：https://en.cppreference.com/w/c/language/conversion
+- va_arg 的未定义行为条款：https://en.cppreference.com/w/c/variadic/va_arg
+- stdarg(3) 手册页：https://man7.org/linux/man-pages/man3/stdarg.3.html
 
----
+## 自我检查
 
-**使用写法：调用可变参数宏**
-`<NAME>(<fixed_args>, <var_args>);`
-```c
-// 调用可变参数宏
-LOG("Value: %d\n", 100);
-```
+- 能默写四件套的使用顺序，并解释 va_start 的第二个参数为什么是最后一个具名参数；
+- 能复述默认参数提升表，指出 `va_arg(ap, float)` 错在哪、正确写法是什么；
+- 能给显式个数、格式串、哨兵三种约定各举一个标准库实例与其经典事故；
+- 能用 v 前缀加 vsnprintf 写一个可转发的日志函数，并用 format 属性让它接受编译器检查。
 
----
+## 本章总结
 
-## 可变参数函数注意事项
+可变参数的全部秘密是一枚书签：va_start 定位、va_arg 逐个取、va_end 收尾、va_copy 复制。参数的个数与类型不经过编译器，全靠三种约定交接——显式个数、格式串、哨兵值——每种约定对应一种经典事故。默认参数提升让 char/short 变 int、float 变 double，所以 va_arg 只能读提升后的类型，写 float 就是未定义行为。工程上默认不用变参；必须用时，v 前缀加 vsnprintf 负责体面转发，format 属性负责把编译器的检查借回来。
 
-**哨兵值写法：使用哨兵值标记结束**
-`<func>(<value1>, <value2>, ..., <sentinel>);`
-```c
-// 使用哨兵值标记参数结束
-int sum_sentinel(int first, ...) {
-    va_list valist;
-    va_start(valist, first);
-    int total = first;
-    int num;
-    while ((num = va_arg(valist, int)) != -1) {
-        total += num;
-    }
-    va_end(valist);
-    return total;
-}
-```
+## 下一步
 
----
-
-**类型安全写法：使用格式字符串指定类型**
-`<func>(const char *<format>, ...)`
-```c
-// 通过格式字符串指定参数类型
-void print_values(const char *format, ...) {
-    va_list valist;
-    va_start(valist, format);
-    const char *p = format;
-    while (*p) {
-        if (*p == 'd') {
-            printf("%d ", va_arg(valist, int));
-        } else if (*p == 'f') {
-            printf("%f ", va_arg(valist, double));
-        }
-        p++;
-    }
-    va_end(valist);
-}
-```
+进入 [枚举与 typedef](/c/110-EnumTypedef)：参数的个数与类型怎么交接解决了，接下来解决参数的「含义」怎么命名——用 0/1/2 当状态码的事故现场，正等着枚举来收拾。

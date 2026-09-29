@@ -1,893 +1,405 @@
 ---
-order: 90
-title: 函数详解
+order: 100
+title: 函数：声明、传值与递归
 module: 'c'
 category: 计算机科学
-difficulty: intermediate
-description: 函数定义、参数传递、作用域、递归及函数指针。
+difficulty: beginner
+description: 以「平均分循环抄两遍」的 main 开题：原型如何让编译器替你查调用、C99 起隐式声明按错误处理、C23 起 foo() 即 foo(void)、swap 失败实验引出传值语义与指针版预告、返回局部地址的 -Wreturn-local-addr 实录、fib(30) 的 269 万次调用重复计算实验、调用栈直觉、main 的 argc/argv 与 echo $? 退出码实验；作用域交 055、函数指针交 170、可变参数交 100、inline 交 300。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/350-SharedMemorySemaphore'
-  - 'c/400-FileSystemOperation'
-  - 'c/460-I18nAndL10n'
-  - 'c/470-BuildSystem'
+  - 'c/055-ScopeStorageLinkage'
+  - 'c/100-VarargsFunction'
+  - 'c/170-FunctionPointerCallback'
+  - 'c/250-FunctionCallStackFrame'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/050-VariableConstant'
+  - 'c/080-ControlFlow'
 ---
 
 ## 前置知识
 
-- [文件系统操作](/c/400-FileSystemOperation)：建议先完成前一篇的学习
+- 已完成 [控制流](/c/080-ControlFlow)：会写 if/for/while，知道 return 能提前离开；
+- 已完成 [变量与常量](/c/050-VariableConstant)：会声明变量，知道局部变量与初始化。
+
+指针还不熟没关系——本文只在两处用到 `&` 和 `*`，都当场解释，详解在指针篇。
+
+> 分工说明：本篇是函数主教学：声明与定义、传值、返回值、递归、main。作用域与存储类（static/extern 的完整语义）整篇在 [作用域、存储期与链接性](/c/055-ScopeStorageLinkage)；函数指针与回调在 [函数指针与回调](/c/170-FunctionPointerCallback)；可变参数在 [可变参数函数](/c/100-VarargsFunction)；调用瞬间栈上发生了什么在 [函数调用栈帧](/c/250-FunctionCallStackFrame)。
 
 ## 学习目标
 
-- 掌握「1. 函数的概念与重要性」的核心机制、典型用法与常见陷阱
-- 掌握「2. 函数的声明与定义」的核心机制、典型用法与常见陷阱
-- 掌握「3. 参数传递」的核心机制、典型用法与常见陷阱
-- 掌握「4. 函数的返回值」的核心机制、典型用法与常见陷阱
-- 掌握「5. 递归」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 把一段堆在 main 里的逻辑拆成职责单一的函数，并用原型让编译器替你检查调用；
+2. 解释传值语义：预测 swap 失败的原因，说出什么场景必须传地址；
+3. 识别「返回局部变量地址」的错误，并认识 `-Wreturn-local-addr` 警告；
+4. 写递归函数：找准基准情况，用计数实验看清算量，说清递归深度与栈的关系；
+5. 用 argc/argv 写命令行程序，用退出码向脚本报告成败。
 
-## 1. 函数的概念与重要性
+预计 55 到 75 分钟，含 4 组动手实验、2 道预测题与 1 道挑战题。
 
-### 1.1 函数的定义
+## 1. 问题引入：平均分的循环抄了两遍
 
-- **函数**是一段完成特定任务的代码块，具有名称、参数和返回值。
-- **作用**：
-- 代码复用：避免重复代码
-- 模块化：将复杂问题分解为小问题
-- 可读性：提高代码的可读性和可维护性
-- 可测试性：便于单元测试
-
-## 2. 函数的声明与定义
-
-### 2.1 函数声明 (Function Prototype)
-
-- **目的**：告诉编译器函数的名称、返回类型和参数列表。
-- **位置**：通常放在头文件中或源文件的开头。
-- **格式**：`return_type function_name(parameter_list);`
+老师给两个班各给了一份成绩，要算平均分和最高分。全堆在 main 里写，是这样：
 
 ```c
- // 函数声明
- int add(int, int); // 省略参数名
- int subtract(int a, int b); // 包含参数名
- void print_message(void); // 无参数
-```
-
-### 2.2 函数定义 (Function Definition)
-
-- **目的**：实现函数的具体逻辑。
-- **格式**：
-
-```c
- return_type function_name(parameter_list) {
- // 函数体
- return expression; // 对于非 void 返回类型
- }
-```
-
-```c
- // 函数定义
- int add(int a, int b) {
-  return a + b;
- }
- void print_message(void) {
-  printf("Hello, Function!\n");
-  // 无 return 语句
- }
-```
-
-### 2.3 函数声明与定义的关系
-
-- **声明**是函数的"签名"，告诉编译器函数的接口。
-- **定义**是函数的"实现"，包含具体的代码。
-- 函数必须先声明后使用，或在使用前定义。
-
-## 3. 参数传递
-
-### 3.1 传值调用 (Pass by Value)
-
-- **原理**：复制实参的值到形参，形参是实参的副本。
-- **特点**：修改形参不会影响实参。
-- **适用场景**：参数为基本数据类型（如 int、float 等）。
-
-```c
- void increment(int x) {
-  x++; // 只修改形参
-  printf("Inside function: %d\n", x); // 输出 11
- }
- int main() {
-  int a = 10;
-  increment(a);
-  printf("Outside function: %d\n", a); // 输出 10，实参未被修改
-  return 0;
- }
-```
-
-### 3.2 传址调用 (Pass by Address)
-
-- **原理**：传递实参的地址，形参是指向实参的指针。
-- **特点**：通过指针可以修改实参的值。
-- **适用场景**：需要修改实参、传递大型数据结构（避免复制开销）。
-
-```c
- void increment_by_address(int *x) {
-  (*x)++; // 通过指针修改实参
-  printf("Inside function: %d\n", *x); // 输出 11
- }
- int main() {
-  int a = 10;
-  increment_by_address(&a);
-  printf("Outside function: %d\n", a); // 输出 11，实参被修改
-  return 0;
- }
-```
-
-### 3.3 数组作为参数
-
-- **特点**：数组作为参数时，实际上传递的是数组的首地址（指针）。
-- **注意**：函数内部无法通过 `sizeof` 获取数组的总大小。
-
-```c
- void print_array(int arr[], int size) {
-  for (int i = 0; i < size; i++) {
-  printf("%d ", arr[i]);
-  }
-  printf("\n");
- }
- int main() {
-  int numbers[] = {1, 2, 3, 4, 5};
-  int size = sizeof(numbers) / sizeof(numbers[0]);
-  print_array(numbers, size); // 传递数组首地址和大小
-  return 0;
- }
-```
-
-## 4. 函数的返回值
-
-### 4.1 返回基本类型
-
-- **格式**：`return expression;`
-- **注意**：返回值的类型必须与函数声明的返回类型一致。
-
-```c
- int max(int a, int b) {
-  if (a > b) {
-  return a;
-  } else {
-  return b;
-  }
- }
-```
-
-### 4.2 返回指针
-
-- **注意**：不要返回局部变量的指针，因为局部变量在函数返回后会被销毁。
-
-```c
- // 错误：返回局部变量的指针
- int *create_array() {
-  int arr[5]; // 局部变量
-  return arr; // 危险：返回局部变量的地址
- }
- // 正确：返回动态分配的内存
- int *create_dynamic_array(int size) {
-  int *arr = (int *)malloc(size * sizeof(int));
-  return arr; // 安全：返回动态分配的内存
- }
-```
-
-### 4.3 无返回值 (void)
-
-- **格式**：`void function_name(...)`
-- **特点**：函数可以没有 return 语句，或使用 `return;` 提前返回。
-
-```c
- void print_hello() {
-  printf("Hello!\n");
-  // 无 return 语句
- }
- void check_number(int n) {
-  if (n < 0) {
-  printf("Negative number!\n");
-  return; // 提前返回
-  }
-  printf("Non-negative number: %d\n", n);
- }
-```
-
-## 5. 递归
-
-### 5.1 递归的概念
-
-- **递归**：函数直接或间接地调用自身。
-- **必要条件**：
-- **基准情况 (Base Case)**：停止递归的条件。
-- **递归步 (Recursive Step)**：将问题分解为更小的子问题，趋向基准情况。
-
-### 5.2 递归示例
-
-#### 5.2.1 阶乘计算
-
-```c
- long factorial(int n) {
-  if (n <= 1) return 1; // 基准情况
-  return n * factorial(n - 1); // 递归调用
- }
-```
-
-#### 5.2.2 斐波那契数列
-
-```c
- int fibonacci(int n) {
-  if (n <= 1) return n; // 基准情况
-  return fibonacci(n - 1) + fibonacci(n - 2); // 递归调用
- }
-```
-
-#### 5.2.3 二分查找
-
-```c
- int binary_search(int arr[], int low, int high, int target) {
-  if (low > high) return -1; // 基准情况：未找到
-  int mid = low + (high - low) / 2;
-  if (arr[mid] == target) return mid; // 基准情况：找到
-  else if (arr[mid] > target) return binary_search(arr, low, mid - 1, target);
-  else return binary_search(arr, mid + 1, high, target);
- }
-```
-
-### 5.3 递归的优缺点
-
-- **优点**：代码简洁，逻辑清晰。
-- **缺点**：可能导致栈溢出（递归深度过大），效率可能低于迭代。
-- **优化**：尾递归优化（某些编译器支持）、记忆化（避免重复计算）。
-
-## 6. 作用域与存储类
-
-### 6.1 变量的作用域
-
-- **局部变量**：在函数内部定义，只在函数内部有效。
-- **全局变量**：在函数外部定义，在整个程序中有效。
-
-```c
- int global_var = 100; // 全局变量
- void function() {
-  int local_var = 50; // 局部变量
-  printf("Global: %d, Local: %d\n", global_var, local_var);
- }
- int main() {
-  function();
-  printf("Global: %d\n", global_var);
-  // printf("Local: %d\n", local_var); // 错误：local_var 未定义
-  return 0;
- }
-```
-
-### 6.2 存储类说明符
-
-#### 6.2.1 `auto`
-
-- **默认存储类**：局部变量的默认存储类。
-- **特点**：自动存储期，函数结束时销毁。
-
-#### 6.2.2 `static`
-
-- **静态局部变量**：
-- 存储期：程序整个运行期间
-- 作用域：函数内部
-- 初始化：仅在首次调用时初始化
-
-```c
- void counter() {
-  static int count = 0; // 静态局部变量
-  count++;
-  printf("Count: %d\n", count);
- }
- int main() {
-  counter(); // 输出 1
-  counter(); // 输出 2
-  counter(); // 输出 3
-  return 0;
- }
-```
-
-- **静态全局变量**：
-- 存储期：程序整个运行期间
-- 作用域：仅限于定义它的文件
-- 优点：避免命名冲突，提高代码安全性
-
-#### 6.2.3 `extern`
-
-- **外部变量**：声明在其他文件中定义的全局变量。
-- **作用**：实现跨文件访问全局变量。
-
-```c
- // file1.c
- extern int global_var; // 声明外部变量
- void function() {
-  printf("Global var: %d\n", global_var);
- }
- // file2.c
- int global_var = 100; // 定义全局变量
-```
-
-#### 6.2.4 `register`
-
-- **寄存器变量**：建议编译器将变量存储在寄存器中以提高访问速度。
-- **注意**：现代编译器通常会自动优化，这个关键字的作用已经不大。
-
-## 7. 函数指针
-
-### 7.1 函数指针的定义
-
-- **格式**：`return_type (*pointer_name)(parameter_list);`
-
-```c
- // 定义函数指针
- int (*add_ptr)(int, int);
- // 赋值
- add_ptr = add;
- // 或直接初始化
- int (*add_ptr)(int, int) = add;
-```
-
-### 7.2 通过函数指针调用函数
-
-```c
- int result = add_ptr(10, 20);
- // 或
- int result = (*add_ptr)(10, 20); // 更明确的写法
-```
-
-### 7.3 函数指针的应用
-
-#### 7.3.1 回调函数
-
-```c
- // 回调函数类型
- typedef void (*Callback)(int);
- // 执行回调的函数
- void process_array(int arr[], int size, Callback callback) {
-  for (int i = 0; i < size; i++) {
-  callback(arr[i]);
-  }
- }
- // 具体的回调函数
- void print_number(int num) {
-  printf("%d ", num);
- }
- void square_number(int num) {
-  printf("%d ", num * num);
- }
- int main() {
-  int numbers[] = {1, 2, 3, 4, 5};
-  int size = sizeof(numbers) / sizeof(numbers[0]);
-  printf("Original numbers: ");
-  process_array(numbers, size, print_number);
-  printf("\n");
-  printf("Squared numbers: ");
-  process_array(numbers, size, square_number);
-  printf("\n");
-  return 0;
- }
-```
-
-#### 7.3.2 函数指针数组
-
-```c
- int add(int a, int b) { return a + b; }
- int subtract(int a, int b) { return a - b; }
- int multiply(int a, int b) { return a * b; }
- int divide(int a, int b) { return b != 0 ? a / b : 0; }
- int main() {
-  // 函数指针数组
-  int (*operations[])(int, int) = {add, subtract, multiply, divide};
-  int a = 10, b = 5;
-  for (int i = 0; i < 4; i++) {
-  printf("Result: %d\n", operations[i](a, b));
-  }
-  return 0;
- }
-```
-
-## 8. 可变参数函数
-
-### 8.1 基本概念
-
-- **可变参数函数**：参数个数可变的函数，如 `printf`、`scanf`。
-- **实现**：使用 `<stdarg.h>` 头文件中的宏。
-
-### 8.2 实现步骤
-
-1. 包含头文件 `<stdarg.h>`
-2. 定义函数，最后一个参数为 `...`
-3. 使用 `va_list` 类型声明参数列表
-4. 使用 `va_start` 初始化参数列表
-5. 使用 `va_arg` 获取各个参数
-6. 使用 `va_end` 结束参数处理
-
-### 8.3 示例
-
-```c
- #include <stdarg.h>
- #include <stdio.h>
- // 计算多个整数的和
- double sum(int count, ...) {
-  va_list valist;
-  double sum = 0.0;
-  // 初始化参数列表
-  va_start(valist, count);
-  // 遍历参数
-  for (int i = 0; i < count; i++) {
-  sum += va_arg(valist, int);
-  }
-  // 结束参数处理
-  va_end(valist);
-  return sum;
- }
- // 格式化输出
- typedef enum {
-  INT, // 整数
-  DOUBLE, // 双精度浮点数
-  STRING // 字符串
- }
- void print_values(int count, ...) {
-  va_list valist;
-  va_start(valist, count);
-  for (int i = 0; i < count; i++) {
-  Type type = va_arg(valist, Type);
-  switch (type) {
-  case INT:
-  printf("%d ", va_arg(valist, int));
-  break;
-  case DOUBLE:
-  printf("%f ", va_arg(valist, double));
-  break;
-  case STRING:
-  printf("%s ", va_arg(valist, char*));
-  break;
-  default:
-  printf("Unknown type ");
-  break;
-  }
-  }
-  va_end(valist);
-  printf("\n");
- }
- int main() {
-  printf("Sum: %.2f\n", sum(5, 1, 2, 3, 4, 5));
-  print_values(4,
-  INT, 10,
-  DOUBLE, 3.14,
-  STRING, "Hello",
-  INT, 20);
-  return 0;
- }
-```
-
-### 8.4 注意事项
-
-- 必须有至少一个固定参数
-- 必须知道参数的类型和个数（通常通过固定参数或格式字符串指定）
-- `va_arg` 必须使用正确的类型，否则会导致未定义行为
-
-## 9. 内联函数
-
-### 9.1 概念
-
-- **内联函数**：建议编译器将函数体直接嵌入调用处，减少函数调用的开销。
-- **关键字**：`inline`
-
-### 9.2 适用场景
-
-- 函数体短小（通常少于 10 行）
-- 被频繁调用
-- 不包含复杂的控制结构（如循环、switch）
-
-### 9.3 示例
-
-```c
- inline int max(int a, int b) {
-  return a > b ? a : b;
- }
- int main() {
-  int x = 10, y = 20;
-  int result = max(x, y); // 可能被内联为：int result = x > y ? x : y;
-  printf("Max: %d\n", result);
-  return 0;
- }
-```
-
-### 9.4 注意事项
-
-- `inline` 只是建议，编译器可能会忽略
-- 内联函数通常放在头文件中
-- 过度使用内联可能会增加代码大小
-
-## 10. 函数的最佳实践
-
-### 10.1 命名规范
-
-- 函数名应清晰描述其功能
-- 使用 `snake_case` 命名风格
-- 避免使用过长或过于简短的名称
-
-### 10.2 函数设计
-
-- **单一职责**：每个函数只做一件事
-- **参数个数**：尽量控制在 3-5 个以内
-- **返回值**：明确函数的返回值含义
-- **错误处理**：考虑错误情况的处理
-
-### 10.3 代码风格
-
-- **缩进**：使用一致的缩进风格（通常 4 个空格）
-- **注释**：为复杂函数添加注释，说明功能、参数和返回值
-- **格式**：保持代码格式的一致性
-
-### 10.4 性能优化
-
-- **减少参数传递**：对于大型结构，使用指针传递
-- **避免递归过深**：考虑使用迭代替代递归
-- **合理使用内联**：只对频繁调用的小函数使用内联
-- **避免重复计算**：缓存计算结果
-
-## 11. 函数的测试与调试
-
-### 11.1 单元测试
-
-- 为每个函数编写测试用例
-- 测试正常情况和边界情况
-- 使用断言验证函数行为
-
-### 11.2 调试技巧
-
-- 使用 `printf` 输出中间结果
-- 使用调试器（如 GDB）单步执行
-- 检查参数和返回值
-- 验证指针的有效性
-
-## 12. 函数示例：完整应用
-
-```c
- #include <stdio.h>
- #include <stdlib.h>
- // 函数声明
- int *create_array(int size);
- void initialize_array(int *arr, int size);
- void print_array(int *arr, int size);
- int find_max(int *arr, int size);
- void free_array(int *arr);
- int main() {
-  int size;
-  printf("Enter array size: ");
-  scanf("%d", &size);
-  // 创建数组
-  int *arr = create_array(size);
-  if (arr == NULL) {
-  printf("Memory allocation failed!\n");
-  return 1;
-  }
-  // 初始化数组
-  initialize_array(arr, size);
-  // 打印数组
-  printf("Array elements: ");
-  print_array(arr, size);
-  // 查找最大值
-  int max_val = find_max(arr, size);
-  printf("Maximum value: %d\n", max_val);
-  // 释放内存
-  free_array(arr);
-  return 0;
- }
- // 创建动态数组
- int *create_array(int size) {
-  return (int *)malloc(size * sizeof(int));
- }
- // 初始化数组为随机值
- void initialize_array(int *arr, int size) {
-  for (int i = 0; i < size; i++) {
-  arr[i] = rand() % 100; // 0-99 的随机数
-  }
- }
- // 打印数组
- void print_array(int *arr, int size) {
-  for (int i = 0; i < size; i++) {
-  printf("%d ", arr[i]);
-  }
-  printf("\n");
- }
- // 查找数组最大值
- int find_max(int *arr, int size) {
-  int max = arr[0];
-  for (int i = 1; i < size; i++) {
-  if (arr[i] > max) {
-  max = arr[i];
-  }
-  }
-  return max;
- }
- // 释放数组内存
- void free_array(int *arr) {
-  free(arr);
- }
-```
-
----
-
-## 函数声明与定义
-
-**基本写法：函数声明（原型）**
-`<return_type> <func_name>(<parameter_list>);`
-```c
-// 声明函数原型
-int add(int a, int b);
-```
-
----
-
-**无参写法：无参数函数声明**
-`<return_type> <func_name>(void);`
-```c
-// 声明无参数函数
-void print_message(void);
-```
-
----
-
-**基本写法：函数定义**
-`<return_type> <func_name>(<parameter_list>) { ... return <expr>; }`
-```c
-// 定义加法函数
-int add(int a, int b) {
-    return a + b;
-}
-```
-
----
-
-**无返回写法：void 函数定义**
-`void <func_name>(<params>) { ... }`
-```c
-// 无返回值的函数
-void print_message(void) {
-    printf("Hello, Function!\n");
-}
-```
-
----
-
-## 参数传递
-
-**传值写法：传值调用**
-`<return_type> <func>(<type> <param>) { ... }`
-```c
-// 修改形参不影响实参
-void increment(int x) {
-    x++;
-}
-```
-
----
-
-**传址写法：传址调用**
-`<return_type> <func>(<type> *<param>) { ... }`
-```c
-// 通过指针修改实参
-void increment_by_address(int *x) {
-    (*x)++;
-}
-```
-
----
-
-**数组参数写法：数组作为参数**
-`<return_type> <func>(<type> <arr>[], int <size>) { ... }`
-```c
-// 传递数组首地址和大小
-void print_array(int arr[], int size) {
-    for (int i = 0; i < size; i++) {
-        printf("%d ", arr[i]);
+/* monolith.c 的 main 节选：同样的逻辑抄两遍 */
+    int total_a = 0;
+    for (int i = 0; i < 5; i++) total_a += class_a[i];
+    printf("A 班平均 %.1f\n", total_a / 5.0);
+    int max_a = class_a[0];
+    for (int i = 1; i < 5; i++) {
+        if (class_a[i] > max_a) max_a = class_a[i];
     }
-}
-```
+    printf("A 班最高 %d\n", max_a);
 
----
-
-## 返回值
-
-**基本写法：返回基本类型**
-`return <expression>;`
-```c
-// 返回最大值
-int max(int a, int b) {
-    return (a > b) ? a : b;
-}
-```
-
----
-
-**指针返回写法：返回指针**
-`<type> *<func>(<params>) { ... return <ptr>; }`
-```c
-// 返回动态分配的内存
-int *create_dynamic_array(int size) {
-    return (int *)malloc(size * sizeof(int));
-}
-```
-
----
-
-**提前返回写法：void 函数提前返回**
-`return;`
-```c
-// 满足条件时提前返回
-void check_number(int n) {
-    if (n < 0) {
-        printf("Negative!\n");
-        return;
+    int total_b = 0;                    /* B 班：复制、改名、改大小 */
+    for (int i = 0; i < 4; i++) total_b += class_b[i];
+    printf("B 班平均 %.1f\n", total_b / 4.0);
+    int max_b = class_b[0];
+    for (int i = 1; i < 4; i++) {
+        if (class_b[i] > max_b) max_b = class_b[i];
     }
-    printf("Non-negative\n");
+    printf("B 班最高 %d\n", max_b);
+```
+
+第三个班一来就是第三遍复制——改算法改一处忘一处。函数把「算平均」这件事写成一份：
+
+```c
+/* split.c：同一件事，函数版 */
+#include <stdio.h>
+
+double average(const int a[], int n) {
+    int total = 0;
+    for (int i = 0; i < n; i++) total += a[i];
+    return total / (double)n;
+}
+
+int max_of(const int a[], int n) {
+    int m = a[0];
+    for (int i = 1; i < n; i++) {
+        if (a[i] > m) m = a[i];
+    }
+    return m;
+}
+
+int main(void) {
+    int class_a[5] = {90, 75, 60, 82, 93};
+    int class_b[4] = {70, 55, 88, 91};
+    printf("A 班平均 %.1f，最高 %d\n", average(class_a, 5), max_of(class_a, 5));
+    printf("B 班平均 %.1f，最高 %d\n", average(class_b, 4), max_of(class_b, 4));
+    return 0;
 }
 ```
 
----
+预期输出：
 
-## 递归
+```text
+A 班平均 80.0，最高 93
+B 班平均 76.0，最高 91
+```
 
-**阶乘写法：递归计算阶乘**
-`<return_type> <func>(<type> <param>) { if (<base>) return ...; return <recursive_call>; }`
+三个新面孔藏着本文全部主线：average 的参数 a 收到的是原数组还是复印件（第 3 节）；函数定义写在 main 上面，反过来行不行——main 在前、实现在后时靠什么让编译器认得（第 2 节）；以及一个预告，max_of 若顺手返回了某个局部变量的地址会怎样（第 4 节）。
+
+## 2. 声明与定义：编译器靠原型替你查调用
+
+**定义**（definition）是带函数体的本体；**声明**（declaration，惯称原型 prototype）只有签名加一个分号，告诉编译器「这个名字存在，参数长这样，返回那个类型」。编译器从上往下读文件，见到调用时必须已经知道这份合同，否则连「参数传少了」都查不出来：
+
 ```c
-// 递归计算阶乘
+double average(const int a[], int n);   /* 原型：签名 + 分号，可带参数名 */
+int max_of(const int a[], int n);       /* 参数名是给读者看的文档 */
+
+int main(void) { ... }                  /* 先用，没问题 */
+
+double average(const int a[], int n) { ... }   /* 实现放后面也行 */
+```
+
+修改实验一：把 split.c 里的调用改成 `average(class_a)` 少传一个参数，编译器当场拒绝：
+
+```text
+error: too few arguments to function 'average'; expected 2, have 1
+```
+
+这就是原型的价值：类型不对、个数不对，编译器替你盯住。反过来，如果连原型和定义都没有，老编译器会**猜**一个 `int average()` 敷衍过去——C 标准在 C99 就废除了这种隐式函数声明，如今的编译器在 C99 及以后的方言下直接按**错误**处理，先声明后使用是硬规矩。多文件时原型进头文件，机制见 [多文件编译](/c/310-MultiFileCompilation)。
+
+C23 又收紧了一步：空括号声明 `int foo();` 从「参数未指定」变成等价 `int foo(void)`，K&R 旧式定义（参数表外置那种）被移除。新代码请一律写 `(void)` 表示无参，口径与 [C23 与 C2y](/c/520-C23C2y) 一致。
+
+## 3. 传值：形参是实参的复印件
+
+```c
+/* swap_fail.c：想交换，失败了 */
+#include <stdio.h>
+
+void swap(int a, int b) {
+    int t = a;
+    a = b;
+    b = t;
+}
+
+int main(void) {
+    int x = 1, y = 2;
+    swap(x, y);
+    printf("x = %d, y = %d\n", x, y);
+    return 0;
+}
+```
+
+预期输出：
+
+```text
+x = 1, y = 2
+```
+
+没换成功。C 只有**传值调用**（call by value）：实参的值被复印进形参，swap 里换的是两张复印件，函数返回时复印件销毁，原件分毫未动。修改实验二：在 swap 里加 `printf("inside: %d %d\n", a, b);`——打印 `2 1`，换是换了，换的是副本。
+
+要改原件，就得把**地址**交出去，让函数顺着地址找上门：
+
+```c
+void swap(int *a, int *b) {
+    int t = *a;
+    *a = *b;
+    *b = t;
+}
+/* 调用：swap(&x, &y);   & 交出地址，*a 顺着地址改原件 */
+```
+
+预期输出 `x = 2, y = 1`。`&` 与 `*` 的完整机理在 [指针深度解析](/c/140-PointerDeep) 展开，此处记住结论即可：**想让函数改你的变量，传地址；只读它，传值即可**。数组另有一条特殊规则：数组名作实参时退化为首元素地址，所以 `average(const int a[], int n)` 必须把长度 n 单独传进来——函数里对 a 做 sizeof 得到的是指针大小，不是数组大小，机理见 [指针与数组的区别](/c/150-PointerArrayDifference)。
+
+## 4. 返回值：把结果带出去
+
+`return 表达式;` 把值拷贝回调用方，类型要匹配声明的返回类型；return 也立刻结束本函数，「早返回」让主逻辑不必包进 else（080 篇 5.3 节的 find_element）。不带回值的函数声明为 `void`，需要中途离场时写光杆 `return;`。
+
+有一个经典深坑专门值得实录——**返回局部变量的地址**：
+
+```c
+/* dangler.c：返回局部变量的地址 */
+#include <stdio.h>
+
+int *bad(void) {
+    int x = 42;
+    return &x;          /* x 的寿命到 } 为止 */
+}
+
+int main(void) {
+    int *p = bad();
+    printf("%d\n", *p);
+    return 0;
+}
+```
+
+编译时 GCC 默认就点破（这条 `-Wreturn-local-addr` 不在 `-Wall` 清单里，而是天生开启）：
+
+```text
+dangler.c:6:12: warning: function returns address of local variable [-Wreturn-local-addr]
+    6 |     return &x;
+      |            ^~
+```
+
+运行多半仍打印 `42`——那格栈内存还没被别人覆盖。**没出事不等于没错**：局部变量随函数返回销毁（直觉版），p 从此指向「不属于你」的内存，之后读到什么全是未定义行为，「有时正常」正是它的老面孔。正确做法三条路：返回值本身（拷贝是安全的）；让调用方传地址进来写入；要大块数据就 malloc 返回堆指针，所有权约定见 [动态内存](/c/200-DynamicMemoryManagement)。
+
+顺带厘清一对词：return 只离开**当前函数**；exit 在任何函数里都直接结束**整个进程**。两者的交点在 main——第 8 节实验见。
+
+## 5. 递归：自己调用自己
+
+阶乘是标准入门：n! = n × (n-1)!，而 1! = 1。
+
+```c
 long factorial(int n) {
-    if (n <= 1) return 1;
-    return n * factorial(n - 1);
+    if (n <= 1) return 1;          /* 基准情况：递归到此为止 */
+    return n * factorial(n - 1);   /* 递归步：问题变小一圈 */
 }
 ```
 
----
+两个必要件缺一不可：**基准情况**（base case，停止条件）与**向基准靠拢的递归步**。缺了基准就是无穷递归。每次调用都会在栈上压一层帧（局部变量、返回地址），factorial(4) 压 4 层再逐层弹回——递归深度因此受栈大小限制（通常 1 到 8 MB），factorial(100000) 大概率栈溢出。栈上到底发生了什么，[函数调用栈帧](/c/250-FunctionCallStackFrame) 逐帧拆给你看。
 
-**斐波那契写法：递归计算斐波那契**
-`<return_type> <func>(<type> <param>) { if (<base>) return ...; return <recursive1> + <recursive2>; }`
+朴素直觉是「递归 = 慢」，真正的问题是**重复计算**。斐波那契是著名反例：
+
 ```c
-// 递归计算斐波那契数列
-int fibonacci(int n) {
+/* fib_calls.c：朴素递归到底浪费在哪 */
+#include <stdio.h>
+
+long long calls = 0;
+
+long fib(int n) {
+    calls++;
     if (n <= 1) return n;
-    return fibonacci(n - 1) + fibonacci(n - 2);
+    return fib(n - 1) + fib(n - 2);
+}
+
+int main(void) {
+    printf("fib(30) = %ld\n", fib(30));
+    printf("calls = %lld\n", calls);
+    return 0;
 }
 ```
 
----
+预期输出：
 
-**二分查找写法：递归二分查找**
-`int <search>(<type> <arr>[], int <low>, int <high>, <type> <target>) { ... }`
-```c
-// 递归实现二分查找
-int binary_search(int arr[], int low, int high, int target) {
-    if (low > high) return -1;
-    int mid = low + (high - low) / 2;
-    if (arr[mid] == target) return mid;
-    else if (arr[mid] > target) return binary_search(arr, low, mid - 1, target);
-    else return binary_search(arr, mid + 1, high, target);
-}
+```text
+fib(30) = 832040
+calls = 2692537
 ```
 
----
+269 万次函数调用，只为算一个数：fib(29) 把 fib(28) 重算一遍，fib(28) 又把 fib(27) 重算一遍……子问题指数级重复。对照循环版（080 篇写过的迭代 fib）：
 
-## 存储类与作用域
-
-**静态局部写法：静态局部变量**
-`static <type> <var> = <value>;`
 ```c
-// 仅首次调用时初始化
-void counter() {
-    static int count = 0;
-    count++;
-    printf("Count: %d\n", count);
-}
-```
-
----
-
-**外部变量写法：extern 外部变量**
-`extern <type> <var>;`
-```c
-// 声明外部变量
-extern int global_var;
-```
-
----
-
-## 函数指针
-
-**基本写法：函数指针定义**
-`<return_type> (*<ptr_name>)(<parameter_list>);`
-```c
-// 定义函数指针
-int (*add_ptr)(int, int);
-```
-
----
-
-**赋值写法：函数指针赋值**
-`<func_ptr> = <func_name>;`
-```c
-// 将函数地址赋给指针
-add_ptr = add;
-```
-
----
-
-**调用写法：通过函数指针调用**
-`<result> = <func_ptr>(<args>);`
-```c
-// 通过函数指针调用函数
-int result = add_ptr(10, 20);
-```
-
----
-
-**typedef 写法：定义回调函数类型**
-`typedef <return_type> (*<CallbackName>)(<params>);`
-```c
-// 定义回调函数类型
-typedef void (*Callback)(int);
-```
-
----
-
-**回调写法：使用回调函数**
-`void <func>(<type> <arr>[], int <size>, <CallbackType> <callback>) { ... }`
-```c
-// 执行回调的函数
-void process_array(int arr[], int size, Callback callback) {
-    for (int i = 0; i < size; i++) {
-        callback(arr[i]);
+long fib_loop(int n) {
+    long a = 0, b = 1;
+    for (int i = 0; i < n; i++) {
+        long next = a + b;
+        a = b;
+        b = next;
     }
+    return a;
 }
 ```
 
----
+同样的结果，n 轮加法。修改实验三：把 30 改成 40 再跑，calls 涨到 3 亿级、肉眼可感地卡——重复子问题是递归性能的头号杀手，「算过就记下来」的解法叫记忆化，此处点到为止。选型经验：「一条线」的问题（阶乘、求和）直接循环；「分叉」的问题（树、二分）递归写法更贴题，二分查找的递归实现留给挑战题。任何递归理论上都能改成循环（必要时显式用一个栈），选择标准是哪个更像问题本身。
 
-**数组写法：函数指针数组**
-`<return_type> (*<array_name>[])(<params>) = { <func1>, <func2>, ... };`
+## 6. 作用域与存储类：一句话交接
+
+本篇只留一句话：函数内声明的是局部变量，函数外的是全局变量；static 加在局部变量上能让它活过函数返回（写个调用计数器就能亲眼看到），static/extern 用在全局上决定其他文件能否看见它。这套「户口系统」的完整语义——四种作用域、四种存储期、链接性、register 的真实现状——整篇在 [作用域、存储期与链接性](/c/055-ScopeStorageLinkage)，本文不再重复。
+
+## 7. 三个概览：函数指针、可变参数、inline
+
+**函数指针**。函数也有地址，可以存进指针、当参数传递：
+
 ```c
-// 函数指针数组
-int (*operations[])(int, int) = {add, subtract, multiply};
+    int (*p)(int, int) = add;   /* p 指向「两个 int 进、一个 int 出」的函数 */
+    int r = p(10, 20);          /* 通过指针调用；等价写法 (*p)(10, 20) */
 ```
 
----
+用途两大类：回调（把「怎么处理每个元素」作为参数交出去，标准库 qsort 的比较函数是最出名的实例）与跳转表（080 篇 switch 状态机的表驱动亲戚）。`typedef void (*Callback)(int);` 这类声明的读法与实战，[函数指针与回调](/c/170-FunctionPointerCallback) 承接，跳转表进阶见同族姊妹篇。
 
-## 可变参数函数
+**可变参数**。printf 的参数表天生可长可短——它就是可变参数函数。自己写一个靠 stdarg.h 四件套：
 
-**基本写法：可变参数函数定义**
-`<return_type> <func>(<fixed_params>, ...) { ... }`
 ```c
 #include <stdarg.h>
-// 计算多个整数的和
-int sum(int count, ...) {
-    va_list valist;
-    va_start(valist, count);
+
+int sum(int count, ...) {       /* 至少一个具名参数，约定后面跟 count 个 int */
+    va_list ap;
+    va_start(ap, count);
     int total = 0;
-    for (int i = 0; i < count; i++) {
-        total += va_arg(valist, int);
-    }
-    va_end(valist);
+    for (int i = 0; i < count; i++) total += va_arg(ap, int);
+    va_end(ap);
     return total;
 }
 ```
 
----
+硬约束记两条：必须有至少一个具名参数；参数的个数与类型全靠约定（printf 靠格式串），`va_arg` 用错类型是未定义行为。float 变参还会自动提升为 double。机制、ABI 与工程实践在 [可变参数函数](/c/100-VarargsFunction) 详解。
 
-## 内联函数
+**inline**。给编译器的「建议把函数体抄到调用处省掉调用开销」——是建议不是命令，现代编译器按成本模型自己决定，极短高频函数才值得考虑。它和宏的恩怨（为什么 C 的 inline 没有想象中好用）在 [内联函数与宏](/c/300-InlineFunctionMacro) 细讲。
 
-**基本写法：内联函数定义**
-`inline <type> <func>(<params>) { ... }`
+## 8. main：程序的第一个函数与它的出口
+
+每个 C 程序都从 main 开始。标准认两种签名（其余交给实现定义）：
+
 ```c
-// 内联函数可能被编译器内联展开
-inline int max(int a, int b) {
-    return a > b ? a : b;
+int main(void)                      /* 不吃命令行参数 */
+int main(int argc, char *argv[])    /* 吃命令行参数 */
+```
+
+argc 是参数个数，argv 是字符串数组：argv[0] 是程序名，argv[argc] 保证是空指针。第一个动手实验，五行的 echo：
+
+```c
+/* echo.c：把命令行参数原样回显 */
+#include <stdio.h>
+
+int main(int argc, char *argv[]) {
+    for (int i = 1; i < argc; i++) {
+        printf("%s%s", argv[i], i < argc - 1 ? " " : "");
+    }
+    printf("\n");
+    return 0;
 }
 ```
+
+```bash
+gcc -Wall -Wextra -g echo.c -o echo
+./echo hello control flow
+```
+
+预期输出：
+
+```text
+hello control flow
+```
+
+修改实验四：加一行 `printf("argv[0] = %s\n", argv[0]);` 看看程序名长什么样。这是你第一次在自己的程序里拥有「大小运行时才定」的数组——来多少参数，argc 就是多少。
+
+main 的 return 是**程序的退出码**，交给操作系统：
+
+```bash
+$ ./echo hi
+hi
+$ echo $?
+0
+```
+
+惯例 0 表示成功，非 0 表示各种失败——把 `return 0;` 改成 `return 3;` 重新编译，`echo $?` 就打出 3。Shell 脚本、Make、CI 全靠这个码判断你的程序死没死透。标准依据：从初始 main 返回**等价于**以该值为参数调用 exit——先执行 atexit 注册的函数、刷新并关闭所有流，再把控制权交还环境；C99 起 main 不写 return 等价 `return 0`。所以第 4 节那句话现在闭合了：return 只出当前函数，exit 在任何函数里直接结束进程，而 main 的 return 就是 exit。
+
+## 9. 实际项目中的使用场景
+
+- **拆函数是重构的第一动作**：一个函数只做一件事，参数控制在三五个以内，函数名说清做什么（snake_case）；
+- **const 是接口合同**：只读的数组参数写成 `const int a[]`，把「我不会改你的数据」写进签名，调用方放心，编译器把关；
+- **可测试性**：每个函数能独立编译调用，为它写小测试（正常值加边界值），用 assert.h 的断言验证行为；
+- **命令行工具的接口**：argc/argv 收输入、退出码报结果，是程序与脚本世界的标准握手方式。
+
+## 10. 小练习
+
+预测题一（5 分钟，先写答案再运行）：
+
+```c
+void bump(int n) {
+    n = n + 1;
+}
+
+int main(void) {
+    int a = 9;
+    bump(a);
+    printf("%d\n", a);
+}
+```
+
+参考答案（先写再看）：打印 `9`。bump 拿到的是复印件，原件没动；要它变 10，得传 `&a` 用指针版。
+
+预测题二（5 分钟，先手算再运行验证）：fib 的调用次数满足 calls(n) = calls(n-1) + calls(n-2) + 1，其中 calls(0) = calls(1) = 1。手算 calls(6)，再给 fib_calls.c 加打印验证。
+
+参考答案（先写再看）：calls(6) = 25。规律 calls(n) = 2 × fib(n+1) - 1，fib(7) = 13。
+
+挑战题（30 分钟，不看提示先动手）：补全递归二分查找——有序数组里找 target，返回下标，不存在返回 -1：
+
+```c
+/* 前提：a[low..high] 升序。返回 target 所在下标；不存在返回 -1 */
+int binary_search(const int a[], int low, int high, int target);
+```
+
+提示（思路方向）：区间空（low > high）是基准情况；取中点比较，比 target 大就递归左半，小就递归右半——每步问题减半，递归深度只有对数级。展开（关键 API）：中点写 `int mid = low + (high - low) / 2;`（比 `(low + high) / 2` 抗溢出）；三分支各自 return。验收清单：{2, 4, 7, 10, 15} 查 10 得 3；查 8 得 -1；low > high 的空区间调用不崩、返回 -1。
+
+## 11. 与之前和之后的知识的关系
+
+- 往前：[控制流](/c/080-ControlFlow) 的骨架活在函数体内，return 那个「最常用的出口」在本文兑现成函数的返回机制；[变量与常量](/c/050-VariableConstant) 的局部变量是每层栈帧的住户；
+- 旁支：作用域与 static/extern 的完整语义在 [作用域、存储期与链接性](/c/055-ScopeStorageLinkage)；传地址的钥匙在 [指针深度解析](/c/140-PointerDeep)；数组传参为何退化为指针在 [指针与数组的区别](/c/150-PointerArrayDifference)；调用瞬间栈上发生了什么在 [函数调用栈帧](/c/250-FunctionCallStackFrame)；
+- 往后：可变参数在 [可变参数函数](/c/100-VarargsFunction) 详解；函数指针与回调在 [函数指针与回调](/c/170-FunctionPointerCallback)；原型进头文件、多文件组织在 [多文件编译](/c/310-MultiFileCompilation)；C23 对函数声明的收紧在 [C23 与 C2y](/c/520-C23C2y)。
+
+## 12. 官方文档
+
+- main 函数（cppreference C，含两种标准签名与退出码语义）：https://en.cppreference.com/w/c/language/main_function
+- 函数声明（C23 起空括号等价 (void)）：https://en.cppreference.com/w/c/language/function_declaration
+- GCC 警告选项（-Wreturn-local-addr、隐式声明按错误处理）：https://gcc.gnu.org/onlinedocs/gcc/Warning-Options.html
+
+## 13. 自我检查
+
+- 能把一段重复两次以上的 main 逻辑拆成函数，写出原型并让编译器抓出调用处的类型错误；
+- 能向同事解释 swap 为什么失败、什么场景必须传地址、数组传参为什么必须带长度；
+- 看到「函数返回了局部变量的地址」能指出病灶，并说出 `-Wreturn-local-addr` 警告；
+- 能手写带基准情况的递归函数，用计数实验说清 fib(30) 的 269 万次调用浪费在哪；
+- 会用 argc/argv 写命令行程序，会用退出码向脚本报告成败。
+
+## 本章总结
+
+函数是复用与测试的单元：原型是给编译器的合同（C99 起不许没有，C23 起 foo() 即 foo(void)），定义是实现。C 只有传值调用——形参是复印件，换复印件动不了原件，改原件必须传地址，数组传参退化为首元素地址所以必须另传长度。返回值把结果拷贝出去，返回局部变量的地址是深坑，警告会点名但「没崩」不是清白。递归要基准情况加递归步，深度受栈限制，真正的敌人是重复子问题——fib(30) 的 269 万次调用对照循环版 30 次加法。main 是程序的第一个函数：argc/argv 收命令行，return 交退出码，它的 return 等价 exit。
+
+## 下一步
+
+进入 [可变参数函数](/c/100-VarargsFunction)：本文第 7 节只给了 sum 一个最小样例，下一篇把 stdarg 的机制、调用约定与「参数个数类型靠约定」的工程风险一次讲透。
