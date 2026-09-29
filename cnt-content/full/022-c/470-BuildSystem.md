@@ -1,1948 +1,435 @@
 ---
 order: 480
-title: 构建系统
+title: 构建系统：从 Makefile 到 CMake
 module: 'c'
 category: 计算机科学
 difficulty: intermediate
-description: CMake/Make/Ninja 构建系统原理、工程实践与跨平台管理
+description: 8 个文件的项目手敲 gcc 到崩溃：从时间戳增量构建的原理学会 Make（四要素、tab 惨案、$@ $< $^、模式规则、.PHONY 失灵实录、-MMD 头文件依赖），再上 CMake（cmake_minimum_required 钉策略、target-based 现代写法、out-of-source 构建），链接顺序为何被 CMake 自动接管的机制回扣。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/090-FunctionDetailed'
-  - 'c/460-I18nAndL10n'
+  - 'c/320-DynamicStaticLibrary'
   - 'c/490-StaticAnalysisDebug'
   - 'c/410-CrossPlatformProgramming'
-  - 'c/540-AttributeCompilerExtension'
 prerequisites:
-  - 'c/020-CLanguageOverview'
-  - 'c/290-PreprocessorMacro'
+  - 'c/310-MultiFileCompilation'
+  - 'c/320-DynamicStaticLibrary'
 ---
 
 ## 前置知识
 
-- [国际化与本地化](/c/460-I18nAndL10n)：建议先完成前一篇的学习
+- 已完成 [多文件编译](/c/310-MultiFileCompilation)：会把 main.c 与 utils.c 分开 -c 再链接，理解 .o 是链接的原材料；
+- 已完成 [动态库与静态库](/c/320-DynamicStaticLibrary)：会用 ar、gcc -L -l，见过链接顺序问题。本篇会把这些命令交给工具编排。
+
+头文件守卫等细节记不全也能往下读，用到就带一句（详见 [预处理器与宏](/c/290-PreprocessorMacro)）。
+
+> 分工说明：310 讲手工多文件编译与链接机制，320 讲库本身；本篇回答「文件多到手敲命令不现实了怎么办」——构建的编排交给 Make 与 CMake。两篇旧命令在这里全部变成可维护的脚本，且只讲编排机制本身：交叉编译工具链、依赖下载等展开在 [跨平台编程](/c/410-CrossPlatformProgramming)，与静态分析工具的集成在 [静态分析与调试](/c/490-StaticAnalysisDebug)。
 
 ## 学习目标
 
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「对比分析」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 说出构建系统要解决的五个问题，并解释增量构建「目标不存在或依赖比目标新就重建」的判定规则；
+2. 手写含变量、自动变量、模式规则的 Makefile，解释 tab 缩进为什么是语法的一部分，并用 .PHONY 救活失灵的 clean；
+3. 用 -MMD -MP 让 Make 自动追踪头文件依赖，复现「改了头文件却没重编」的惨案并修复；
+4. 写出最低可用的 CMakeLists.txt，用 target_include_directories / target_link_libraries 的 PUBLIC/PRIVATE/INTERFACE 组织多目标工程，并说出 CMake 为什么替你处理了 320 篇的链接顺序问题；
+5. 用 cmake -S . -B build 与 cmake --build 完成 out-of-source 构建，说出它为什么优于在源码树里直接 cmake。
 
-## 历史动机与背景
+预计 60 到 80 分钟，含 4 组动手实验与 2 道练习。
 
-### 构建系统诞生的历史背景
+## 1. 问题引入：八条命令的黄昏
 
-C 语言在 1972 年诞生于贝尔实验室，最初在 PDP-11 小型机上实现。早期 C 程序规模较小，单文件直接 `cc main.c` 即可生成可执行文件。但随着软件规模增长，构建系统的需求逐步显现：
-
-1. **1976 年 Make 诞生**：Stuart Feldman 在贝尔实验室发明 Make 工具，最初用于 Unix 系统的自动化构建。Make 解决了"手动敲击编译命令"的痛点，引入文件时间戳和依赖图模型，仅重新编译发生变化的源文件，大幅缩短构建时间。Feldman 因此获得 2003 年 ACM Software System Award。
-2. **1985 年 GNU Make**：Richard Stallman 在 GNU 项目中实现 GNU Make，扩展了原版 Make 的功能，引入自动变量、模式规则、条件判断等特性，成为事实标准。
-3. **1990 年代 Autotools 兴起**：GNU Autotools（Autoconf、Automake、Libtool）解决了 Unix 系统间的可移植性问题，通过 `./configure && make && make install` 三段式构建成为开源项目标配。但 Autotools 学习曲线陡峭，配置文件复杂。
-4. **2000 年 CMake 诞生**：Kitware 公司为解决 VTK、ITK 等大型科学计算项目的跨平台构建问题开发了 CMake。CMake 是"元构建系统"（meta-build system），不直接构建，而是生成 Makefile、Visual Studio 工程文件、Ninja 文件等。CMake 迅速成为 C/C++ 生态的主流构建系统。
-5. **2010 年 Ninja 诞生**：Evan Martin 在 Google 开发 Ninja，专为速度优化。Ninja 的设计哲学是"把复杂的依赖分析留给上层工具（CMake/Meson），自己只做最快的执行"。Ninja 比 Make 快 5-10 倍，尤其在大项目增量构建上优势明显。
-6. **2013 年 Meson 诞生**：Jussi Pakkanen 开发 Meson，采用 Python 风格的领域特定语言（DSL），强调易用性和速度，搭配 Ninja 作为后端，受到 GNOME、Xorg、Systemd 等项目青睐。
-7. **2015 年 Bazel 诞生**：Google 开源内部构建工具 Blaze，命名为 Bazel。Bazel 强调可重现构建（hermetic build）、远程缓存、多语言支持，适合超大规模代码仓库。
-
-### 构建系统的核心问题
-
-构建系统本质上解决以下五个核心问题：
-
-1. **依赖管理**：识别源文件之间的依赖关系（A 包含 B 的头文件，则修改 B 需重新编译 A），构建有向无环图（DAG）。
-2. **增量构建**：基于文件时间戳或内容哈希，仅重新构建受影响的目标，避免全量重编。
-3. **并行构建**：利用多核 CPU 并行执行独立任务，缩短构建时间。
-4. **跨平台支持**：抽象平台差异（编译器、链接器、库文件命名、安装路径），生成对应平台的构建文件。
-5. **配置管理**：管理构建类型（Debug/Release）、编译选项（C 标准、优化级别）、特性开关（feature toggle）、第三方依赖查找。
-
-### C 语言构建的特殊挑战
-
-C 语言相比其他语言有独特的构建挑战：
-
-1. **头文件依赖追踪**：C 语言的 `#include` 是文本插入，编译器需扫描预处理输出才能确定依赖。Make 无法自动发现依赖，需借助 `gcc -MMD -MP` 生成 `.d` 文件并 `-include` 进 Makefile。
-2. **静态库与动态库**：链接顺序敏感（Unix 链接器从左到右解析符号），Windows 与 Unix 的库命名约定不同（`libfoo.a` vs `foo.lib`），动态库符号导出方式不同（`__declspec(dllexport)` vs `__attribute__((visibility("default")))`）。
-3. **ABI 兼容性**：不同编译器、不同标准库实现（glibc、musl、MSVC CRT）的 ABI 不兼容，构建系统需明确指定目标平台。
-4. **交叉编译**：嵌入式开发需在 x86 主机上构建 ARM 目标二进制，构建系统需区分"主机（host）"与"目标（target）"三元组（triple）。
-
-### 真实工程动机案例
-
-**案例一：Linux 内核的构建**。Linux 内核源码超过 3000 万行，构建系统基于 Kconfig + Kbuild（Make 的扩展）。配置阶段用 Kconfig 生成 `.config` 文件，构建阶段用 Kbuild 的 Makefile 规则递归构建各子系统。完整构建需 20-40 分钟，增量构建仅几秒。
-
-**案例二：LLVM/Clang 项目**。LLVM 是 C++ 编写的编译器基础设施，包含上百个子项目。早期使用 Autoconf，2015 年迁移至 CMake。迁移后构建时间缩短 40%，跨平台支持显著改善，Windows 平台从"几乎不可构建"变为"原生支持"。
-
-**案例三：Redis 6.0 的构建演化**。Redis 早期使用简单的 Makefile，6.0 引入模块系统后，第三方模块需要可靠的头文件与库依赖管理。Redis 7.0 部分支持 CMake 构建选项，同时保留 Makefile 作为默认入口，体现构建系统迁移的渐进性。
-
-## 形式化定义
-
-### 构建系统的数学模型
-
-构建系统可形式化为一个三元组 $\mathcal{B} = (T, D, R)$，其中：
-
-- $T = \{t_1, t_2, \ldots, t_n\}$ 为任务（task）集合，每个任务 $t_i$ 对应一次编译、链接或其他构建动作。
-- $D \subseteq T \times T$ 为依赖关系，$(t_i, t_j) \in D$ 表示 $t_i$ 依赖 $t_j$（即 $t_j$ 必须先完成）。$D$ 构成有向无环图（DAG）。
-- $R: T \to \text{Action}$ 为规则函数，将每个任务映射到具体的执行动作（如 `gcc -c main.c -o main.o`）。
-
-### 依赖图的拓扑排序
-
-构建系统按拓扑顺序执行任务。设 $D$ 的拓扑排序为 $\sigma = (t_{\sigma_1}, t_{\sigma_2}, \ldots, t_{\sigma_n})$，满足：
-
-$$
-\forall (t_i, t_j) \in D, \quad \sigma^{-1}(t_j) < \sigma^{-1}(t_i)
-$$
-
-即被依赖的任务先执行。拓扑排序的时间复杂度为 $O(|T| + |D|)$（Kahn 算法或 DFS）。
-
-### 增量构建的形式化
-
-设任务 $t$ 的输入文件集合为 $\text{In}(t)$，输出文件集合为 $\text{Out}(t)$。任务 $t$ 需要重新执行当且仅当：
-
-$$
-\exists f \in \text{In}(t), \quad \text{mtime}(f) > \text{mtime}(\text{Out}(t)) \quad \lor \quad \text{Out}(t) \text{ 不存在}
-$$
-
-其中 $\text{mtime}(f)$ 为文件 $f$ 的修改时间戳。增量构建算法可形式化为：
-
-$$
-\text{Rebuild}(t) = \text{Rebuild}(t) \lor \bigvee_{(t, t') \in D} \text{Rebuild}(t')
-$$
-
-即任务 $t$ 需要重新构建，当且仅当其自身输入变化或其依赖任务需要重新构建。这是一个不动点计算，时间复杂度 $O(|T| + |D|)$。
-
-### 并行构建的调度
-
-并行构建将无依赖关系的任务并行执行。设处理器核数为 $P$，任务 $t$ 的执行时间为 $w(t)$，则最优并行调度的关键路径长度为：
-
-$$
-T_{\text{cp}} = \max_{\text{path } p \text{ in DAG}} \sum_{t \in p} w(t)
-$$
-
-并行构建的总时间下界为：
-
-$$
-T_{\text{parallel}} \geq \max\left( T_{\text{cp}}, \frac{\sum_{t \in T} w(t)}{P} \right)
-$$
-
-Ninja 通过分析 DAG 的关键路径，优先调度关键路径上的任务，逼近最优并行度。
-
-### CMake 的目标-属性模型
-
-CMake 的核心抽象是"目标"（target）和"属性"（property）。设项目中有目标集合 $\mathcal{T}$，每个目标 $t$ 有属性集合 $\text{Props}(t)$，关键属性包括：
-
-- $\text{SOURCES}(t)$：源文件列表
-- $\text{INCLUDE_DIRS}(t, \text{scope})$：头文件搜索路径，scope $\in \{\text{PUBLIC}, \text{PRIVATE}, \text{INTERFACE}\}$
-- $\text{LINK_LIBS}(t, \text{scope})$：链接库列表
-- $\text{COMPILE_OPTS}(t, \text{scope})$：编译选项
-
-依赖传播规则形式化为：
-
-$$
-\forall t_{\text{consumer}} \text{ links } t_{\text{lib}}, \quad \text{Props}(t_{\text{consumer}}) \mathrel{+}= \text{INTERFACE\_Props}(t_{\text{lib}})
-$$
-
-即消费者目标继承被链接库的 `INTERFACE` 属性，但不继承 `PRIVATE` 属性。
-
-## 理论推导
-
-### Make 的依赖图与执行算法
-
-Make 的核心数据结构是"规则"（rule）：
-
-```makefile
-target : prerequisites
-	recipe
-```
-
-Make 的执行算法可形式化为：
-
-1. **解析阶段**：读取 Makefile，构建目标-依赖映射 $\text{Rules}: \text{Target} \to (\text{Prereqs}, \text{Recipe})$。
-2. **目标确定**：默认构建第一个目标，或命令行指定的目标。
-3. **递归检查**：对目标的每个依赖，递归调用构建过程。
-4. **时间戳比较**：若目标文件不存在，或任意依赖的时间戳晚于目标，则执行 recipe。
-5. **执行 recipe**：每行 recipe 在独立 shell 中执行（除非用 `.ONESHELL`）。
-
-算法伪代码：
-
-```
-function build(target):
-    if target in Rules:
-        prereqs, recipe = Rules[target]
-        for prereq in prereqs:
-            build(prereq)
-        if not exists(target) or any(mtime(p) > mtime(target) for p in prereqs):
-            execute(recipe)
-```
-
-时间复杂度为 $O(|T| + |D|)$，但递归 Make（subdir 调用）会导致依赖信息丢失，影响增量构建正确性，称为"递归 Make 有害"（Recursive Make Considered Harmless，Miller 1998）。
-
-### CMake 的两阶段执行模型
-
-CMake 采用"配置-生成"两阶段模型：
-
-1. **配置阶段（Configure）**：执行 `CMakeLists.txt`，构建内存中的目标-属性图。此阶段可执行 `try_compile`、`check_function_exists` 等探测命令，将结果缓存到 `CMakeCache.txt`。
-2. **生成阶段（Generate）**：根据目标-属性图和所选生成器（Makefile、Ninja、Visual Studio），生成具体的构建文件。
-
-配置阶段的形式化为：
-
-$$
-\text{Configure}(\text{CMakeLists.txt}) \to \text{TargetGraph}
-$$
-
-生成阶段的形式化为：
-
-$$
-\text{Generate}(\text{TargetGraph}, \text{Generator}) \to \text{BuildFiles}
-$$
-
-两阶段分离的优势在于：配置结果可缓存，多次构建无需重新探测；同一份 CMakeLists 可生成不同生成器的构建文件。
-
-### Ninja 的依赖图与并行调度
-
-Ninja 的核心是 `.ninja` 文件，包含构建规则和依赖边。Ninja 的关键优化：
-
-1. **预编译的依赖图**：Ninja 在加载时将整个依赖图读入内存，构建时无需重新解析。
-2. **关键路径调度**：Ninja 计算每个任务到根的"深度"（最长路径长度），优先调度深度大的任务，缩短总构建时间。
-3. **依赖图数据库**：Ninja 维护 `.ninja_deps` 文件，记录每个目标文件实际依赖的头文件，支持精确增量构建。
-4. **命令去重**：相同命令执行一次，结果复用。
-
-Ninja 的并行调度算法：
-
-```
-function schedule(tasks, P):
-    ready = {t in tasks | prereqs(t) == {}}
-    workers = P parallel queues
-    while ready or running:
-        for each idle worker:
-            if ready:
-                t = ready.pop_highest_depth()
-                schedule(t on worker)
-        wait for any worker to finish
-        for each finished task t:
-            for each consumer c of t:
-                if all prereqs(c) finished:
-                    ready.add(c)
-```
-
-### 增量构建的正确性证明
-
-**命题**：基于文件时间戳的增量构建算法是正确的，即不会遗漏需要重新编译的目标。
-
-**证明**：设任务 $t$ 的输入集合 $\text{In}(t) = \{f_1, \ldots, f_k\}$，输出为 $\text{Out}(t)$。算法在以下条件下重新执行 $t$：
-
-$$
-\neg \text{exists}(\text{Out}(t)) \lor \exists f \in \text{In}(t), \text{mtime}(f) > \text{mtime}(\text{Out}(t))
-$$
-
-若条件不满足，则 $\forall f \in \text{In}(t), \text{mtime}(f) \leq \text{mtime}(\text{Out}(t))$，即所有输入在输出生成后未变化，重新执行 $t$ 必然得到相同结果（假设编译器确定性），故可跳过。$\square$
-
-**注意**：此证明假设编译器确定性、文件时间戳单调、依赖图完整。实际中存在三类违反假设的情况：
-
-1. **时钟回拨**：系统时间被调整可能导致时间戳非单调。
-2. **依赖图不完整**：未追踪的头文件修改无法触发重新编译。
-3. **非确定性编译器**：某些编译器在调试信息中嵌入时间戳或随机值。
-
-Ninja 通过内容哈希（content hash）缓解时钟问题，CMake 提供 `CMAKE_CONFIGURE_DEPENDS` 显式声明配置依赖。
-
-### 构建系统的复杂度对比
-
-| 维度 | Make | CMake + Make | CMake + Ninja | Bazel |
-|------|------|--------------|---------------|-------|
-| 配置时间 | $O(1)$（无配置） | $O(n)$ | $O(n)$ | $O(n \log n)$ |
-| 增量构建 | $O(n)$ | $O(n)$ | $O(n)$（更优常数） | $O(\log n)$（哈希索引） |
-| 依赖图加载 | $O(n)$（每次） | $O(n)$ | $O(n)$（内存缓存） | $O(1)$（守护进程） |
-| 并行调度 | 贪心 | 贪心 | 关键路径优先 | 关键路径 + 远程缓存 |
-| 远程缓存 | 无 | 无 | 无（ccache 补充） | 内置 |
-
-## 代码示例
-
-### 示例 1：最小化 CMake 项目
-
-```cmake
-# 最小化 CMake 项目示例
-# 演示项目声明、C 标准设置、可执行目标添加
-
-# 声明最低 CMake 版本（影响策略兼容性）
-cmake_minimum_required(VERSION 3.20)
-
-# 声明项目名称与所用语言
-# CMake 会自动创建变量：PROJECT_NAME, PROJECT_SOURCE_DIR, PROJECT_BINARY_DIR
-project(MyApp C)
-
-# 设置 C 语言标准（C11/C17/C23）
-# CMAKE_C_STANDARD：标准版本号
-# CMAKE_C_STANDARD_REQUIRED：若 ON，标准不满足则报错而非降级
-# CMAKE_C_EXTENSIONS：若 OFF，禁用编译器扩展（如 GNU 扩展）
-set(CMAKE_C_STANDARD 17)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
-
-# 添加可执行目标
-# 语法：add_executable(<target> <source1> <source2> ...)
-add_executable(myapp src/main.c)
-
-# 设置目标属性：输出名、调试后缀等
-set_target_properties(myapp PROPERTIES
-    OUTPUT_NAME "myapp"              # 输出文件名（不含扩展名）
-    DEBUG_POSTFIX "d"                # Debug 构建加 d 后缀
-    C_STANDARD 17                    # 目标级 C 标准覆盖
-)
-```
-
-### 示例 2：多目录项目结构
-
-```cmake
-# 顶层 CMakeLists.txt
-cmake_minimum_required(VERSION 3.20)
-project(MyProject C)
-
-set(CMAKE_C_STANDARD 17)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-
-# 选项：是否构建测试、是否启用 LTO
-option(BUILD_TESTS "构建单元测试" ON)
-option(ENABLE_LTO  "启用链接时优化" OFF)
-
-# 添加子目录，每个子目录有自己的 CMakeLists.txt
-add_subdirectory(lib)        # 库子目录
-add_subdirectory(app)        # 应用子目录
-
-if(BUILD_TESTS)
-    enable_testing()         # 启用 CTest
-    add_subdirectory(tests)
-endif()
-
-# LTO 启用（CMake 3.20+ 内置支持）
-if(ENABLE_LTO)
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELEASE ON)
-    set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_RELWITHDEBINFO ON)
-endif()
-```
-
-```cmake
-# lib/CMakeLists.txt - 构建静态库
-
-# 收集源文件（推荐用 CONFIGURE_DEPENDS 自动追踪新增文件）
-file(GLOB LIB_SOURCES CONFIGURE_DEPENDS
-    "${CMAKE_CURRENT_SOURCE_DIR}/src/*.c"
-)
-
-# 构建静态库
-add_library(mylib STATIC ${LIB_SOURCES})
-
-# 设置头文件搜索路径（PUBLIC 表示对消费者也可见）
-target_include_directories(mylib PUBLIC
-    ${CMAKE_CURRENT_SOURCE_DIR}/include
-)
-
-# 设置私有编译选项（仅本目标使用，不传递）
-target_compile_options(mylib PRIVATE
-    -Wall -Wextra -Wpedantic -Werror
-)
-
-# 设置库版本属性（仅对 SHARED 库有意义，STATIC 也可设置但无实际影响）
-set_target_properties(mylib PROPERTIES
-    VERSION 1.2.0
-    SOVERSION 1
-)
-```
-
-```cmake
-# app/CMakeLists.txt - 构建可执行文件
-
-add_executable(myapp main.c)
-
-# 链接库（PRIVATE 表示仅本目标使用）
-target_link_libraries(myapp PRIVATE mylib)
-
-# 根据平台条件编译
-if(WIN32)
-    target_compile_definitions(myapp PRIVATE PLATFORM_WINDOWS=1)
-elseif(UNIX)
-    target_compile_definitions(myapp PRIVATE PLATFORM_UNIX=1)
-endif()
-```
-
-```cmake
-# tests/CMakeLists.txt - 测试目标
-
-# 简单测试可执行文件
-add_executable(test_string test_string.c)
-target_link_libraries(test_string PRIVATE mylib)
-
-# 注册到 CTest
-add_test(NAME test_string COMMAND test_string)
-
-# 参数化测试：多个用例共享同一可执行文件
-add_test(NAME test_string_empty COMMAND test_string --case empty)
-add_test(NAME test_string_long  COMMAND test_string --case long)
-```
-
-### 示例 3：构建类型与编译选项
-
-```cmake
-# 构建类型管理
-# CMake 内置四种构建类型：Debug, Release, RelWithDebInfo, MinSizeRel
-
-# 设置默认构建类型（若命令行未指定）
-if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
-    set(CMAKE_BUILD_TYPE Release CACHE STRING "构建类型" FORCE)
-    # 提供可选值（用于 ccmake 界面）
-    set_property(CACHE CMAKE_BUILD_TYPE PROPERTY STRINGS
-        Debug Release RelWithDebInfo MinSizeRel)
-endif()
-
-# 各构建类型的默认编译选项（CMake 内置，可覆盖）
-# Debug:          -g -O0
-# Release:        -O3 -DNDEBUG
-# RelWithDebInfo: -O2 -g -DNDEBUG
-# MinSizeRel:     -Os -DNDEBUG
-
-# 自定义编译选项（基于生成器表达式）
-target_compile_options(myapp PRIVATE
-    $<$<CONFIG:Debug>:-g3 -O0 -Wall -Wextra>            # Debug：完整调试信息
-    $<$<CONFIG:Release>:-O3 -DNDEBUG -march=native>     # Release：最大优化
-    $<$<CONFIG:RelWithDebInfo>:-O2 -g -DNDEBUG>          # RelWithDebInfo：优化+调试
-    $<$<CONFIG:MinSizeRel>:-Os -DNDEBUG>                 # MinSizeRel：最小体积
-)
-
-# 全局编译选项（所有目标）
-add_compile_options(
-    $<$<C_COMPILER_ID:GNU>:-Wall>
-    $<$<C_COMPILER_ID:Clang>:-Wall -Wextra>
-    $<$<C_COMPILER_ID:MSVC>:/W4>
-)
-```
-
-### 示例 4：查找与使用外部库
-
-```cmake
-# 查找外部库的三种方式
-
-# 方式一：find_package（推荐，使用 Config 模式或 Module 模式）
-find_package(Threads REQUIRED)             # CMake 内置模块
-target_link_libraries(myapp PRIVATE Threads::Threads)
-
-find_package(ZLIB REQUIRED)                # zlib 压缩库
-target_link_libraries(myapp PRIVATE ZLIB::ZLIB)
-
-find_package(OpenSSL REQUIRED)             # OpenSSL
-target_link_libraries(myapp PRIVATE OpenSSL::SSL OpenSSL::Crypto)
-
-# 方式二：find_library + find_path（手动查找，适用于无 CMake Config 的库）
-find_library(MATH_LIB m)                   # 数学库
-if(MATH_LIB)
-    target_link_libraries(myapp PRIVATE ${MATH_LIB})
-endif()
-
-# 方式三：pkg-config（适用于 Unix 系统）
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(LIBCURL REQUIRED IMPORTED_TARGET libcurl)
-target_link_libraries(myapp PRIVATE PkgConfig::LIBCURL)
-
-# 检查库是否找到并处理失败情况
-find_package(CURL QUIET)                   # QUIET：不打印查找过程
-if(NOT CURL_FOUND)
-    message(WARNING "libcurl 未找到，HTTP 功能将禁用")
-    target_compile_definitions(myapp PRIVATE DISABLE_HTTP=1)
-endif()
-```
-
-### 示例 5：FetchContent 管理第三方依赖
-
-```cmake
-# FetchContent 示例：自动下载、配置、构建第三方库
-# 适用于无系统包管理器的环境，或将依赖固化到源码树
-
-include(FetchContent)
-
-# 声明 cJSON 依赖
-FetchContent_Declare(
-    cjson
-    GIT_REPOSITORY https://github.com/DaveGamble/cJSON.git
-    GIT_TAG        v1.7.17                 # 锁定版本，避免上游破坏
-    GIT_SHALLOW    TRUE                    # 浅克隆，加速下载
-)
-
-# 声明 GoogleTest 依赖
-FetchContent_Declare(
-    googletest
-    GIT_REPOSITORY https://github.com/google/googletest.git
-    GIT_TAG        v1.14.0
-)
-
-# 批量下载与配置（CMake 3.24+ 推荐用法）
-FetchContent_MakeAvailable(cjson googletest)
-
-# 使用 FetchContent 引入的库
-add_executable(myapp src/main.c)
-target_link_libraries(myapp PRIVATE cjson)
-
-# 测试目标
-enable_testing()
-add_executable(mytest tests/test_main.c)
-target_link_libraries(mytest PRIVATE GTest::gtest_main cjson)
-include(GoogleTest)
-gtest_discover_tests(mytest)
-```
-
-### 示例 6：交叉编译工具链文件
-
-```cmake
-# toolchain-arm-linux.cmake - ARM Linux 交叉编译工具链
-# 使用方法：cmake -DCMAKE_TOOLCHAIN_FILE=toolchain-arm-linux.cmake ..
-
-# 目标平台三元组（triple）：arch-vendor-os-abi
-set(CMAKE_SYSTEM_NAME      Linux)
-set(CMAKE_SYSTEM_PROCESSOR arm)
-
-# 指定交叉编译器
-set(CMAKE_C_COMPILER   arm-linux-gnueabihf-gcc)
-set(CMAKE_CXX_COMPILER arm-linux-gnueabihf-g++)
-
-# 设置 sysroot（目标系统根目录，包含库与头文件）
-set(CMAKE_SYSROOT /usr/arm-linux-gnueabihf)
-
-# 程序查找策略：
-# NEVER：不在目标平台查找宿主机程序
-# ONLY：只在目标平台查找
-# BOTH：两平台都查找
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)
-set(CMAKE_FIND_ROOT_PATH_MODE_PACKAGE ONLY)
-
-# 传递给编译器的额外选项
-set(CMAKE_C_FLAGS_INIT "-mthumb -mcpu=cortex-m4 -mfpu=fpv4-sp-d16 -mfloat-abi=hard")
-```
-
-```cmake
-# toolchain-wasm.cmake - WebAssembly 工具链
-set(CMAKE_SYSTEM_NAME      Emscripten)
-set(CMAKE_SYSTEM_PROCESSOR wasm)
-
-set(CMAKE_C_COMPILER   emcc)
-set(CMAKE_CXX_COMPILER em++)
-
-# Emscripten 输出为单文件，链接器选项特殊
-set(CMAKE_EXE_LINKER_FLAGS_INIT "-s WASM=1 -s EXPORTED_RUNTIME_METHODS=['ccall','cwrap']")
-```
-
-### 示例 7：Makefile 进阶用法
-
-```makefile
-# Makefile 进阶示例：自动依赖追踪、模式规则、并行构建
-
-# 变量定义
-CC      := gcc
-CFLAGS  := -Wall -Wextra -std=c17 -O2 -MMD -MP
-LDFLAGS := -lm -lpthread
-
-# 目标与源文件
-TARGET  := myapp
-SRCS    := $(wildcard src/*.c)
-OBJS    := $(patsubst src/%.c,build/%.o,$(SRCS))
-DEPS    := $(OBJS:.o=.d)
-
-# 默认目标（make 不带参数时执行）
-.PHONY: all clean test install
-all: $(TARGET)
-
-# 链接规则
-$(TARGET): $(OBJS)
-	$(CC) $(LDFLAGS) -o $@ $^
-
-# 模式规则：编译 src/*.c 为 build/*.o
-build/%.o: src/%.c | build
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-# 顺序规则（order-only prerequisite）：仅创建目录，不触发重新编译
-build:
-	mkdir -p build
-
-# 包含自动生成的依赖文件
--include $(DEPS)
-
-# 测试目标
-test: $(TARGET)
-	./$(TARGET) --test
-
-# 安装目标
-PREFIX ?= /usr/local
-install: $(TARGET)
-	install -d $(PREFIX)/bin
-	install -m 755 $(TARGET) $(PREFIX)/bin/
-
-# 清理
-clean:
-	rm -rf build $(TARGET)
-```
-
-### 示例 8：CMake Presets（预设配置）
-
-```json
-{
-  "version": 5,
-  "cmakeMinimumRequired": { "major": 3, "minor": 23, "patch": 0 },
-  "configurePresets": [
-    {
-      "name": "base",
-      "hidden": true,
-      "binaryDir": "${sourceDir}/build/${presetName}",
-      "cacheVariables": {
-        "CMAKE_C_STANDARD": "17",
-        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
-      }
-    },
-    {
-      "name": "debug",
-      "inherits": "base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_C_FLAGS": "-g3 -O0 -Wall -Wextra -fsanitize=address,undefined"
-      }
-    },
-    {
-      "name": "release",
-      "inherits": "base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Release",
-        "CMAKE_C_FLAGS": "-O3 -DNDEBUG -march=native"
-      }
-    },
-    {
-      "name": "asan",
-      "inherits": "debug",
-      "cacheVariables": {
-        "CMAKE_C_FLAGS": "-g3 -O1 -fsanitize=address -fno-omit-frame-pointer"
-      }
-    },
-    {
-      "name": "coverage",
-      "inherits": "base",
-      "cacheVariables": {
-        "CMAKE_BUILD_TYPE": "Debug",
-        "CMAKE_C_FLAGS": "-g -O0 --coverage",
-        "CMAKE_EXE_LINKER_FLAGS": "--coverage"
-      }
-    }
-  ],
-  "buildPresets": [
-    { "name": "debug",    "configurePreset": "debug" },
-    { "name": "release",  "configurePreset": "release" },
-    { "name": "asan",     "configurePreset": "asan" },
-    { "name": "coverage", "configurePreset": "coverage" }
-  ],
-  "testPresets": [
-    {
-      "name": "debug",
-      "configurePreset": "debug",
-      "output": { "outputOnFailure": true },
-      "execution": { "noTestsAction": "error", "stopOnFailure": false }
-    }
-  ]
-}
-```
-
-使用方法：
+项目长到 8 个源文件，编译它要这样：
 
 ```bash
-cmake --preset debug           # 配置
-cmake --build --preset debug   # 构建
-ctest --preset debug           # 测试
+gcc -Wall -Wextra -g -Iinclude -c src/main.c   -o build/main.o
+gcc -Wall -Wextra -g -Iinclude -c src/utils.c  -o build/utils.o
+gcc -Wall -Wextra -g -Iinclude -c src/parser.c -o build/parser.o
+gcc -Wall -Wextra -g -Iinclude -c src/log.c    -o build/log.o
+gcc -Wall -Wextra -g -Iinclude -c src/str.c    -o build/str.o
+gcc -Wall -Wextra -g -Iinclude -c src/config.c -o build/config.o
+gcc -Wall -Wextra -g -Iinclude -c src/net.c    -o build/net.o
+gcc -Wall -Wextra -g -Iinclude -c src/db.c     -o build/db.o
+gcc build/*.o -o app
 ```
 
-### 示例 9：自定义命令与生成代码
+痛感分三层。第一层：命令模板重复九遍，改个警告选项要改九处。第二层，也是真正不可容忍的一层：改了 parser.h 的一行注释，你其实只需要重编 parser.c 和 include 它的 main.c，其余六个 .o 原封不动——但你没有工具替你算这笔账，最省心的动作是把 8 条全部重敲，全量重编。第三层：8 个 .c 互不依赖，本可以 8 核同时编，手敲只能一个一个来。
 
-```cmake
-# 在构建时生成版本信息头文件
-# 演示 add_custom_command 与 add_custom_target 的配合使用
+于是需求清单自动浮出：把命令**模板化**（一份描述，处处复用）、把「哪些要重编」的账**自动化**（增量构建）、把无依赖的任务**并行**执行。这套需求在 1976 年催生了 Make；项目再长、平台再多，又在 2000 年催生了给构建系统写配置的 CMake。构建系统的全部工作就是：解析「目标—依赖—命令」的图，按时间戳决定谁要重建，把无依赖的活并行发出去。
 
-# 获取 Git 提交哈希
-execute_process(
-    COMMAND git rev-parse --short HEAD
-    WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
-    OUTPUT_VARIABLE GIT_COMMIT
-    OUTPUT_STRIP_TRAILING_WHITESPACE
-    ERROR_QUIET
-)
-if(NOT GIT_COMMIT)
-    set(GIT_COMMIT "unknown")
-endif()
+## 2. Make：让时间戳替你记账
 
-# 定义生成的头文件路径
-set(VERSION_HEADER ${CMAKE_BINARY_DIR}/generated/version.h)
+### 2.1 Makefile 四要素：目标、依赖、命令、tab
 
-# 自定义命令：生成头文件
-add_custom_command(
-    OUTPUT ${VERSION_HEADER}
-    COMMAND ${CMAKE_COMMAND}
-        -DOUTPUT_FILE=${VERSION_HEADER}
-        -DPROJECT_VERSION=${PROJECT_VERSION}
-        -DGIT_COMMIT=${GIT_COMMIT}
-        -DBUILD_TIMESTAMP=${TIMESTAMP}
-        -P ${CMAKE_SOURCE_DIR}/cmake/GenerateVersion.cmake
-    DEPENDS ${CMAKE_SOURCE_DIR}/cmake/GenerateVersion.cmake
-    COMMENT "生成版本信息头文件"
-    VERBATIM
-)
+回到 310 篇的三文件小项目。main.c 用了 utils.h，utils.c 也用 utils.h，依赖图是：
 
-# 自定义目标：确保版本头文件在主目标前生成
-add_custom_target(generate_version DEPENDS ${VERSION_HEADER})
-
-# 主目标依赖版本头文件
-add_executable(myapp src/main.c ${VERSION_HEADER})
-target_include_directories(myapp PRIVATE ${CMAKE_BINARY_DIR}/generated)
-add_dependencies(myapp generate_version)
+```text
+app ← main.o + utils.o
+main.o ← main.c + utils.h
+utils.o ← utils.c + utils.h
 ```
 
-`cmake/GenerateVersion.cmake` 脚本：
-
-```cmake
-# cmake/GenerateVersion.cmake - 生成 version.h
-# 接收参数：OUTPUT_FILE, PROJECT_VERSION, GIT_COMMIT, BUILD_TIMESTAMP
-
-set(HEADER_CONTENT "// 自动生成，请勿手动修改
-#ifndef VERSION_H
-#define VERSION_H
-
-#define PROJECT_VERSION \"${PROJECT_VERSION}\"
-#define GIT_COMMIT     \"${GIT_COMMIT}\"
-#define BUILD_TIMESTAMP \"${BUILD_TIMESTAMP}\"
-
-#endif // VERSION_H
-")
-
-file(WRITE ${OUTPUT_FILE} ${HEADER_CONTENT})
-message(STATUS "已生成版本头文件: ${OUTPUT_FILE}")
-```
-
-### 示例 10：CTest 集成测试
-
-```cmake
-# CTest 配置示例
-# 支持超时、标签过滤、并行执行、内存检查
-
-# 启用测试
-enable_testing()
-
-# 测试目标
-add_executable(test_vector  tests/test_vector.c)
-add_executable(test_string  tests/test_string.c)
-add_executable(test_hashmap tests/test_hashmap.c)
-
-target_link_libraries(test_vector  PRIVATE mylib)
-target_link_libraries(test_string  PRIVATE mylib)
-target_link_libraries(test_hashmap PRIVATE mylib)
-
-# 注册测试（基础形式）
-add_test(NAME test_vector  COMMAND test_vector)
-add_test(NAME test_string  COMMAND test_string)
-add_test(NAME test_hashmap COMMAND test_hashmap)
-
-# 高级形式：设置超时、标签、依赖
-add_test(NAME test_string_utf8  COMMAND test_string --case utf8)
-set_tests_properties(test_string_utf8 PROPERTIES
-    TIMEOUT 30                          # 30 秒超时
-    LABELS "string;unicode"             # 标签用于过滤
-    DEPENDS test_string_basic           # 依赖另一测试先通过
-    PASS_REGULAR_EXPRESSION "All tests passed"  # 通过条件
-    FAIL_REGULAR_EXPRESSION "FAILED|Segmentation" # 失败条件
-)
-
-# 设置全局测试属性
-set_tests_properties(test_vector test_string test_hashmap PROPERTIES
-    TIMEOUT 60
-    ENVIRONMENT "LANG=C;LC_ALL=C"
-)
-
-# 内存检查（Valgrind）
-find_program(VALGRIND_EXECUTABLE valgrind)
-if(VALGRIND_EXECUTABLE)
-    # 内存检查测试：在 Valgrind 下运行所有测试
-    add_test(NAME memcheck_vector
-        COMMAND ${VALGRIND_EXECUTABLE}
-            --leak-check=full --error-exitcode=99
-            $<TARGET_FILE:test_vector>
-    )
-    set_tests_properties(memcheck_vector PROPERTIES
-        LABELS "memcheck"
-        TIMEOUT 120
-    )
-endif()
-
-# 覆盖率测试目标
-add_custom_target(coverage
-    COMMAND lcov --directory ${CMAKE_BINARY_DIR} --capture --output-file coverage.info
-    COMMAND lcov --remove coverage.info '/usr/*' 'tests/*' --output-file coverage.info
-    COMMAND genhtml coverage.info --output-directory coverage_report
-    DEPENDS test_vector test_string test_hashmap
-    WORKING_DIRECTORY ${CMAKE_BINARY_DIR}
-    COMMENT "生成代码覆盖率报告"
-)
-```
-
-### 示例 11：Ninja 构建优化
-
-```bash
-# 使用 Ninja 替代 Make
-# Ninja 比 Make 快 5-10 倍，尤其在大项目增量构建上
-
-# 安装 Ninja
-# Ubuntu/Debian: sudo apt install ninja-build
-# macOS:         brew install ninja
-# Windows:       choco install ninja
-
-# 使用 Ninja 生成器
-cmake -G Ninja -B build-ninja
-cmake --build build-ninja        # 默认并行
-
-# 显式指定并行度
-cmake --build build-ninja -- -j16
-
-# 查看依赖图（生成 .dot 文件）
-cmake --build build-ninja -- -t deps myapp.o
-
-# 查看所有目标
-cmake --build build-ninja -- -t targets
-
-# 解释为什么需要重新构建某目标
-cmake --build build-ninja -- -t explain myapp
-
-# 在 CMake Presets 中指定 Ninja
-# configurePresets 中添加：
-# "generator": "Ninja"
-```
-
-### 示例 12：安装与打包
-
-```cmake
-# 安装规则
-# GNUInstallDirs 提供标准安装路径（自动适应平台）
-include(GNUInstallDirs)
-
-# 安装可执行文件
-install(TARGETS myapp
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}     # bin
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}     # lib 或 lib64
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}     # lib 或 lib64
-)
-
-# 安装库与头文件
-install(TARGETS mylib
-    EXPORT MyLibTargets                             # 导出目标供下游使用
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-
-install(DIRECTORY include/
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/mylib
-    FILES_MATCHING PATTERN "*.h"
-)
-
-# 生成 CMake 配置文件（供 find_package 使用）
-install(EXPORT MyLibTargets
-    FILE MyLibTargets.cmake
-    NAMESPACE MyLib::
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MyLib
-)
-
-# 生成配置文件模板
-include(CMakePackageConfigHelpers)
-write_basic_package_version_file(
-    "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfigVersion.cmake"
-    VERSION ${PROJECT_VERSION}
-    COMPATIBILITY SameMajorVersion
-)
-
-configure_package_config_file(
-    "${CMAKE_SOURCE_DIR}/cmake/MyLibConfig.cmake.in"
-    "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfig.cmake"
-    INSTALL_DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MyLib
-)
-
-install(FILES
-    "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfig.cmake"
-    "${CMAKE_CURRENT_BINARY_DIR}/MyLibConfigVersion.cmake"
-    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/MyLib
-)
-
-# 使用 CPack 打包
-set(CPACK_PACKAGE_NAME "mylib")
-set(CPACK_PACKAGE_VERSION ${PROJECT_VERSION})
-set(CPACK_PACKAGE_DESCRIPTION_SUMMARY "My C Library")
-set(CPACK_RESOURCE_FILE_LICENSE "${CMAKE_SOURCE_DIR}/LICENSE")
-
-# 生成器：DEB（Debian/Ubuntu）、RPM（Fedora/RHEL）、TGZ（通用）
-set(CPACK_GENERATOR "DEB;RPM;TGZ")
-
-# DEB 特定选项
-set(CPACK_DEBIAN_PACKAGE_MAINTAINER "fanquanpp <fanquanpp@example.com>")
-set(CPACK_DEBIAN_PACKAGE_DEPENDS "libc6 (>= 2.31)")
-
-# RPM 特定选项
-set(CPACK_RPM_PACKAGE_LICENSE "MIT")
-
-include(CPack)
-```
-
-## 对比分析
-
-### 构建系统横向对比
-
-| 构建系统 | 诞生年份 | 配置语言 | 跨平台 | 生态成熟度 | 学习曲线 | 适用场景 |
-|---------|---------|---------|--------|-----------|---------|---------|
-| Make | 1976 | Makefile DSL | 部分（Cygwin/MinGW） | 极高 | 中 | 小型项目、Unix 传统项目 |
-| Autotools | 1991 | M4 + shell | Unix 为主 | 高 | 极陡 | GNU 项目、传统开源 |
-| CMake | 2000 | CMake DSL | 优秀 | 极高 | 中 | 中大型 C/C++ 项目、跨平台 |
-| Ninja | 2010 | 自有格式（少见） | 优秀 | 中（依赖上层） | 低（仅执行） | 大型项目快速构建 |
-| Meson | 2013 | Python 风格 DSL | 优秀 | 中高 | 低 | GNOME、Xorg、新项目 |
-| Bazel | 2015 | Starlark（Python 子集） | 优秀 | 中（Google 系） | 高 | 超大规模仓库、多语言 |
-| SCons | 2001 | Python | 优秀 | 中 | 低（Python 用户） | Python 友好项目 |
-| Premake | 2002 | Lua | 优秀 | 中 | 低 | 游戏开发、Visual Studio |
-
-### CMake vs Make 的关键差异
-
-| 维度 | Make | CMake |
-|------|------|-------|
-| 抽象层级 | 构建系统（直接执行） | 元构建系统（生成构建文件） |
-| 跨平台 | 需手写平台分支 | 自动适配（生成器机制） |
-| 依赖管理 | 手写或借助 gcc -MMD | 内置 find_package、FetchContent |
-| 多目录支持 | 递归 make（有害） | add_subdirectory 原生支持 |
-| IDE 集成 | 无 | 生成 VS/XCode 项目文件 |
-| 增量构建 | 基于时间戳 | 基于时间戳（生成器决定） |
-| 学习曲线 | 简单语法，复杂实践 | 中等语法，清晰实践 |
-| 社区生态 | 大量遗留项目 | 新项目事实标准 |
-
-### CMake 作用域语义对比
-
-`target_link_libraries` 的三个关键字决定了依赖如何传播：
-
-假设 `mylib` 是一个库目标，`myapp` 链接 `mylib`：
-
-```cmake
-target_link_libraries(mylib
-    PUBLIC  core_lib      # core_lib 对 mylib 自身和 mylib 的使用者都可见
-    PRIVATE utils_lib     # utils_lib 仅 mylib 内部使用，不传递给 myapp
-    INTERFACE api_lib     # api_lib 仅传递给 myapp，mylib 自身不使用
-)
-```
-
-传播结果：
-
-- `mylib` 编译时：使用 core_lib, utils_lib 的头文件
-- `mylib` 链接时：链接 core_lib, utils_lib
-- `myapp` 编译时：使用 core_lib, api_lib 的头文件（不含 utils_lib）
-- `myapp` 链接时：链接 mylib, core_lib, api_lib（不含 utils_lib）
-
-形式化表示：
-
-$$
-\text{UsedBy}(t) = \text{PRIVATE}(t) \cup \text{PUBLIC}(t)
-$$
-$$
-\text{PropagatedBy}(t) = \text{PUBLIC}(t) \cup \text{INTERFACE}(t)
-$$
-$$
-\text{ConsumedBy}(c) = \text{UsedBy}(c) \cup \bigcup_{l \in \text{LinkedBy}(c)} \text{PropagatedBy}(l)
-$$
-
-### 构建速度实测对比
-
-基于 LLVM 项目的实测数据（16 核 CPU，NVMe SSD）：
-
-| 构建系统 | 首次构建 | 增量构建（修改 1 文件） | 并行度利用 |
-|---------|---------|----------------------|-----------|
-| Make | 42 分钟 | 35 秒 | 85% |
-| CMake + Make | 42 分钟 | 35 秒 | 85% |
-| CMake + Ninja | 28 分钟 | 8 秒 | 95% |
-| Ninja + ccache | 28 分钟（冷缓存） / 6 分钟（热缓存） | 3 秒 | 95% |
-| Bazel（本地） | 30 分钟 | 12 秒 | 90% |
-| Bazel + 远程缓存 | 8 分钟（热缓存） | 2 秒 | 95% |
-
-数据表明：Ninja 在增量构建上具有显著优势；ccache 的内容哈希缓存可大幅缩短冷构建时间；Bazel 的远程缓存适合 CI/CD 场景。
-
-## 常见陷阱
-
-### 陷阱 1：递归 Make 的依赖丢失
-
-**问题**：使用 `subdir := make -C subdir` 递归调用 Make 时，子目录的依赖信息无法上达父 Makefile，导致修改子目录头文件后父目录的目标不重新编译。
-
-**错误示例**：
+把它誊写成 Makefile：
 
 ```makefile
-# 父 Makefile（有害写法）
-all: app/lib.o
-	app/lib.o:
-		$(MAKE) -C lib
+app: main.o utils.o
+	gcc main.o utils.o -o app
 
-app: app/lib.o
-	gcc -o app app.c app/lib.o
+main.o: main.c utils.h
+	gcc -Wall -Wextra -g -c main.c
+
+utils.o: utils.c utils.h
+	gcc -Wall -Wextra -g -c utils.c
 ```
 
-**正确做法**：使用 CMake 的 `add_subdirectory` 或非递归 Make（单一 Makefile），让构建系统统一管理依赖图。
-
-### 陷阱 2：CMake 中 GLOB 不追踪新增文件
-
-**问题**：`file(GLOB SRC *.c)` 在配置时扫描一次，后续新增 `.c` 文件不会自动触发重新配置，导致新文件不被编译。
-
-**错误示例**：
-
-```cmake
-file(GLOB SRC src/*.c)              # 新增文件不会被识别
-add_executable(myapp ${SRC})
-```
-
-**正确做法**：
-
-```cmake
-file(GLOB SRC CONFIGURE_DEPENDS src/*.c)   # CMake 3.12+，自动追踪
-```
-
-或显式列出源文件（最稳妥）：
-
-```cmake
-add_executable(myapp
-    src/main.c
-    src/utils.c
-    src/parser.c
-)
-```
-
-### 陷阱 3：target_link_libraries 作用域误用
-
-**问题**：使用旧式 `target_link_libraries(myapp foo)` 不指定作用域，默认为 `PUBLIC`，可能导致依赖泄漏。
-
-**错误示例**：
-
-```cmake
-# 库内部使用的工具库不应是 PUBLIC
-add_library(mylib SHARED mylib.c)
-target_link_libraries(mylib pthread)   # 默认 PUBLIC，会传递给消费者
-```
-
-**正确做法**：
-
-```cmake
-target_link_libraries(mylib PRIVATE pthread)   # 仅 mylib 内部使用
-```
-
-### 陷阱 4：链接顺序错误
-
-**问题**：Unix 链接器（ld）从左到右解析符号，若 A 依赖 B 的符号，A 必须在 B 之前。
-
-**错误示例**：
-
-```cmake
-# 错误：myapp 依赖 mylib，但 mylib 在前
-target_link_libraries(mylib myapp)   # 顺序错误
-```
-
-**正确做法**：
-
-```cmake
-target_link_libraries(myapp PRIVATE mylib)   # myapp 在前，mylib 在后
-```
-
-CMake 自动处理静态库的循环依赖，通过 `--start-group` / `--end-group` 或多次列出库。但动态库仍有顺序约束。
-
-### 陷阱 5：构建目录污染源码树
-
-**问题**：在源码目录内直接 `cmake .` 会生成 `CMakeCache.txt`、`CMakeFiles/` 等文件污染源码树，难以清理。
-
-**正确做法**：始终使用外部构建（out-of-source build）：
+一条规则四个要素：**目标**（冒号左边）、**依赖**（冒号右边）、**命令**（下一行起，必须以 tab 开头）、以及 tab 本身——它不是缩进美化，是语法的一部分。执行：
 
 ```bash
-mkdir build && cd build
-cmake ..
-```
-
-CMake 3.13+ 支持 `-B` 选项简化：
-
-```bash
-cmake -B build           # 配置
-cmake --build build      # 构建
-```
-
-### 陷阱 6：编译器扩展导致可移植性问题
-
-**问题**：默认情况下 GCC/Clang 启用 GNU 扩展（如 `__attribute__`、`typeof`、可变长数组），代码在 MSVC 下无法编译。
-
-**错误示例**：
-
-```cmake
-set(CMAKE_C_STANDARD 11)   # 默认启用扩展（-std=gnu11）
-```
-
-**正确做法**：
-
-```cmake
-set(CMAKE_C_STANDARD 11)
-set(CMAKE_C_EXTENSIONS OFF)   # 强制 -std=c11，禁用扩展
-```
-
-### 陷阱 7：install 路径硬编码
-
-**问题**：直接写 `install(TARGETS myapp DESTINATION bin)` 在 64 位系统可能安装到 `/usr/bin` 而非 `/usr/lib64`，破坏包管理器约定。
-
-**正确做法**：
-
-```cmake
-include(GNUInstallDirs)
-install(TARGETS myapp
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-)
-```
-
-`GNUInstallDirs` 自动适配平台：Debian 用 `lib`，RHEL 用 `lib64`，Homebrew 用 `lib`。
-
-### 陷阱 8：交叉编译 sysroot 配置错误
-
-**问题**：交叉编译时未设置 `CMAKE_SYSROOT` 或 `CMAKE_FIND_ROOT_PATH_MODE`，导致 CMake 找到宿主机头文件而非目标系统头文件。
-
-**正确做法**：在工具链文件中明确：
-
-```cmake
-set(CMAKE_SYSROOT /path/to/target/sysroot)
-set(CMAKE_FIND_ROOT_PATH /path/to/target/sysroot)
-set(CMAKE_FIND_ROOT_PATH_MODE_PROGRAM NEVER)   # 程序用宿主机的
-set(CMAKE_FIND_ROOT_PATH_MODE_LIBRARY ONLY)    # 库用目标系统的
-set(CMAKE_FIND_ROOT_PATH_MODE_INCLUDE ONLY)    # 头文件用目标系统的
-```
-
-## 工程实践
-
-### 实践 1：项目目录结构规范
-
-```mermaid
-flowchart TD
-    T0["myproject/"]
-    T1["CMakeLists.txt              # 顶层 CMake"]
-    T2["CMakePresets.json            # CMake 预设"]
-    T3["cmake/                       # CMake 模块与脚本"]
-    T4["MyLibConfig.cmake.in"]
-    T5["GenerateVersion.cmake"]
-    T6["CompilerWarnings.cmake"]
-    T7["include/                     # 公共头文件"]
-    T8["mylib/"]
-    T9["mylib.h"]
-    T10["version.h"]
-    T11["src/                         # 库源文件"]
-    T12["mylib.c"]
-    T13["internal.h"]
-    T14["app/                         # 可执行文件"]
-    T15["CMakeLists.txt"]
-    T16["main.c"]
-    T17["tests/                       # 测试"]
-    T18["CMakeLists.txt"]
-    T19["test_vector.c"]
-    T20["test_string.c"]
-    T21["docs/                        # 文档"]
-    T22["scripts/                     # 辅助脚本"]
-    T23["third_party/                 # 第三方依赖"]
-    T24[".github/workflows/           # CI/CD"]
-    T0 --> T1
-    T0 --> T2
-    T0 --> T3
-    T6 --> T7
-    T10 --> T11
-    T13 --> T14
-    T16 --> T17
-    T20 --> T21
-    T20 --> T22
-    T20 --> T23
-    T20 --> T24
-```
-
-### 实践 2：模块化 CMake 配置
-
-```cmake
-# cmake/CompilerWarnings.cmake - 可复用的警告配置
-# 被多个项目复用，保证团队一致性
-
-function(enable_project_warnings target_name)
-    set(CLANG_WARNINGS
-        -Wall -Wextra -Wpedantic
-        -Wconversion -Wshadow -Wnon-virtual-dtor
-        -Wold-style-cast -Wcast-align
-        -Wundef -Wzero-as-null-pointer-constant
-    )
-    set(GCC_WARNINGS ${CLANG_WARNINGS})
-    set(MSVC_WARNINGS
-        /W4 /permissive-
-        /W14640 /W14242 /W14254
-    )
-
-    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-        target_compile_options(${target_name} PRIVATE ${CLANG_WARNINGS})
-    elseif(CMAKE_C_COMPILER_ID STREQUAL "GNU")
-        target_compile_options(${target_name} PRIVATE ${GCC_WARNINGS})
-    elseif(CMAKE_C_COMPILER_ID STREQUAL "MSVC")
-        target_compile_options(${target_name} PRIVATE ${MSVC_WARNINGS})
-    endif()
-endfunction()
-
-# 使用方式
-add_library(mylib src/mylib.c)
-enable_project_warnings(mylib)
-```
-
-### 实践 3：编译时特性检测
-
-```cmake
-# 检测编译器特性，自动选择可用功能
-
-include(CheckCCompilerFlag)
-include(CheckIncludeFile)
-include(CheckFunctionExists)
-
-# 检测编译器选项
-check_c_compiler_flag("-fstack-protector-strong" HAVE_STACK_PROTECTOR)
-if(HAVE_STACK_PROTECTOR)
-    target_compile_options(myapp PRIVATE -fstack-protector-strong)
-endif()
-
-# 检测头文件
-check_include_file("stdatomic.h" HAVE_STDATOMIC_H)
-if(NOT HAVE_STDATOMIC_H)
-    message(FATAL_ERROR "需要 C11 <stdatomic.h> 支持")
-endif()
-
-# 检测库函数
-check_function_exists("clock_gettime" HAVE_CLOCK_GETTIME)
-if(NOT HAVE_CLOCK_GETTIME)
-    # 某些旧系统需要 -lrt
-    find_library(RT_LIB rt)
-    if(RT_LIB)
-        target_link_libraries(myapp PRIVATE ${RT_LIB})
-    endif()
-endif()
-
-# 将检测结果传递给源码
-configure_file(
-    ${CMAKE_SOURCE_DIR}/config.h.in
-    ${CMAKE_BINARY_DIR}/config.h
-)
-target_include_directories(myapp PRIVATE ${CMAKE_BINARY_DIR})
-```
-
-`config.h.in` 模板：
-
-```c
-// config.h.in - 由 CMake 生成 config.h
-#ifndef CONFIG_H
-#define CONFIG_H
-
-#cmakedefine HAVE_STDATOMIC_H
-#cmakedefine HAVE_CLOCK_GETTIME
-#cmakedefine HAVE_STACK_PROTECTOR
-
-#endif
-```
-
-### 实践 4：Sanitizer 集成
-
-```cmake
-# Sanitizer 选项：ASan、UBSan、TSan、MSan
-# 仅在 Debug 构建中启用，Release 必须禁用
-
-option(ENABLE_ASAN "启用 AddressSanitizer" OFF)
-option(ENABLE_UBSAN "启用 UndefinedBehaviorSanitizer" OFF)
-option(ENABLE_TSAN "启用 ThreadSanitizer" OFF)
-
-# Sanitizer 互斥检查
-set(SANITIZER_COUNT 0)
-if(ENABLE_ASAN)  math(EXPR SANITIZER_COUNT "${SANITIZER_COUNT}+1") endif()
-if(ENABLE_UBSAN) math(EXPR SANITIZER_COUNT "${SANITIZER_COUNT}+1") endif()
-if(ENABLE_TSAN)  math(EXPR SANITIZER_COUNT "${SANITIZER_COUNT}+1") endif()
-if(SANITIZER_COUNT GREATER 1)
-    message(FATAL_ERROR "ASan/UBSan/TSan 互斥，只能启用一个")
-endif()
-
-# ASan 配置
-if(ENABLE_ASAN)
-    if(NOT CMAKE_C_COMPILER_ID MATCHES "Clang|GNU")
-        message(FATAL_ERROR "ASan 需要 Clang 或 GCC")
-    endif()
-    target_compile_options(myapp PRIVATE
-        -fsanitize=address
-        -fno-omit-frame-pointer
-        -fsanitize-address-use-after-scope
-    )
-    target_link_options(myapp PRIVATE -fsanitize=address)
-    message(STATUS "AddressSanitizer 已启用")
-endif()
-
-# UBSan 配置
-if(ENABLE_UBSAN)
-    target_compile_options(myapp PRIVATE
-        -fsanitize=undefined
-        -fno-omit-frame-pointer
-    )
-    target_link_options(myapp PRIVATE -fsanitize=undefined)
-    message(STATUS "UndefinedBehaviorSanitizer 已启用")
-endif()
-```
-
-### 实践 5：CI/CD 集成
-
-```yaml
-# .github/workflows/build.yml
-name: Build and Test
-
-on:
-  push:
-    branches: [main, develop]
-  pull_request:
-    branches: [main]
-
-jobs:
-  build:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        compiler: [gcc, clang]
-        build_type: [Debug, Release]
-        exclude:
-          - os: windows-latest
-            compiler: clang
-
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          submodules: true
-
-      - name: Set up compiler
-        if: matrix.compiler == 'clang'
-        run: |
-          echo "CC=clang" >> $GITHUB_ENV
-          echo "CXX=clang++" >> $GITHUB_ENV
-
-      - name: Configure CMake
-        run: cmake -B build
-            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-            -DBUILD_TESTS=ON
-            -DCMAKE_C_COMPILER=${{ matrix.compiler }}
-
-      - name: Build
-        run: cmake --build build --parallel
-
-      - name: Test
-        working-directory: build
-        run: ctest --output-on-failure --parallel
-
-      - name: Upload coverage
-        if: matrix.build_type == 'Debug' && matrix.os == 'ubuntu-latest'
-        run: |
-          sudo apt install lcov
-          lcov --directory build --capture --output-file coverage.info
-          bash <(curl -s https://codecov.io/bash) -f coverage.info
-```
-
-### 实践 6：编译命令数据库
-
-```cmake
-# 生成 compile_commands.json 供 IDE、clang-tidy、cppcheck 使用
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
-
-# 该文件位于 build/compile_commands.json，包含每个源文件的完整编译命令
-# 可用于：
-# - VSCode C/C++ 扩展的 IntelliSense
-# - clang-tidy 静态分析
-# - cppcheck 静态分析
-# - include-what-you-use 头文件清理
-```
-
-```bash
-# 使用 compile_commands.json 运行 clang-tidy
-run-clang-tidy -p build src/*.c
-
-# 使用 cppcheck
-cppcheck --project=build/compile_commands.json --enable=all
-
-# 使用 include-what-you-use
-iwyu_tool -p build src/*.c
-```
-
-## 案例研究
-
-### 案例一：Linux 内核的 Kbuild 系统
-
-Linux 内核使用 Kconfig + Kbuild 构建，是 C 项目构建系统的经典案例。
-
-**特点**：
-
-1. **Kconfig**：声明式配置语言，定义可配置选项及其依赖。
-2. **Kbuild**：Makefile 扩展，递归构建各子系统。
-3. **目标三元组**：`make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf-`
-4. **模块化**：内核镜像与可加载模块（`.ko`）分离构建。
-
-**典型构建命令**：
-
-```bash
-make defconfig                    # 默认配置
-make menuconfig                   # 交互式配置
-make -j$(nproc)                   # 并行构建
-make modules_install              # 安装模块
-make headers_install              # 安装头文件
-```
-
-**关键 Makefile 片段**（简化）：
-
-```makefile
-# 顶层 Makefile
-ARCH ?= $(SUBARCH)
-CROSS_COMPILE ?=
-
-CC      := $(CROSS_COMPILE)gcc
-HOSTCC  := gcc
-
-# 递归构建各子系统
-core-y          := init/ kernel/ mm/ fs/ ipc/ security/
-drivers-y       := drivers/ sound/
-libs-y          := lib/
-
-vmlinux: scripts/link-vmlinux.sh autoksyms_recursive $(vmlinux-deps)
-    $(call if_changed,link-vmlinux)
-```
-
-### 案例二：Redis 的 Makefile 演化
-
-Redis 长期使用单文件 Makefile，2019 年的 6.0 版本开始引入模块化构建。
-
-**早期 Makefile 特点**：
-
-- 单文件，约 1000 行，包含所有规则
-- 使用 `make MALLOC=libc` 形式参数化
-- 通过 `deps/` 目录管理第三方依赖（hiredis、jemalloc、lua）
-
-**简化结构**：
-
-```makefile
-# Redis Makefile 简化版
-REDIS_SERVER_NAME=redis-server
-REDIS_CLI_NAME=redis-cli
-
-# 标准库依赖
-FINAL_LIBS=-lm -pthread
-FINAL_CFLAGS=-std=c11 -Wall -W -pedantic
-
-# 内存分配器选择（可在命令行覆盖）
-MALLOC=libc
-ifeq ($(MALLOC),jemalloc)
-    DEPENDENCY_TARGETS+=jemalloc
-    FINAL_CFLAGS+=-DUSE_JEMALLOC
-endif
-
-# 主目标
-$(REDIS_SERVER_NAME): $(REDIS_SERVER_OBJ)
-    $(REDIS_LD) -o $@ $^ $(FINAL_LIBS)
-```
-
-**迁移挑战**：Redis 维护者考虑过迁移到 CMake，但担心破坏现有用户习惯，采取"Makefile 为主，CMake 为辅"的策略，体现了构建系统迁移的工程权衡。
-
-### 案例三：SQLite 的 amalgamation 构建
-
-SQLite 采用独特的"合并构建"（amalgamation build）策略，将所有源文件合并为单个 `sqlite3.c`（约 15 万行）。
-
-**优势**：
-
-1. **简化构建**：用户只需 `gcc sqlite3.c -o sqlite3`，无需复杂构建系统。
-2. **优化机会**：编译器可见整个代码，进行跨函数优化。
-3. **可移植性**：单文件易于嵌入其他项目。
-
-**劣势**：
-
-1. **构建时间长**：单文件无法并行编译。
-2. **调试困难**：15 万行的单文件难以导航。
-
-**构建脚本**（简化）：
-
-```tcl
-# SQLite 的合并脚本（Tcl 编写）
-# 从多个源文件生成 sqlite3.c
-proc amalgamate {sources output} {
-    set out [open $output w]
-    foreach src $sources {
-        set in [open $src r]
-        puts $out [read $in]
-        close $in
-    }
-    close $out
-}
-```
-
-### 案例四：PostgreSQL 的多种构建支持
-
-PostgreSQL 同时支持 Autoconf 和 Meson 两套构建系统，是渐进迁移的典型案例。
-
-**Autoconf（传统）**：
-
-```bash
-./configure --prefix=/usr/local/pgsql --with-openssl
-make
-make install
-```
-
-**Meson（现代）**：
-
-```bash
-meson setup build --prefix=/usr/local/pgsql -Dssl=openssl
-ninja -C build
-ninja -C build install
-```
-
-**迁移原因**：
-
-1. Meson 配置更快（无需 `./configure` 的长时间探测）
-2. 原生 Windows 支持（无需 MinGW）
-3. 更好的 IDE 集成
-
-**共存策略**：维护两套构建系统增加工作量，但保证用户平滑过渡。
-
-### 案例五：Boost 的 B2 构建
-
-Boost 是 C++ 库集合，使用自研的 B2（Boost.Build）系统。
-
-**特点**：
-
-1. **Jamfile**：声明式配置，描述目标与依赖
-2. **项目级别配置**：`project-root.jam` 定义全局设置
-3. **特性矩阵**：自动构建多版本（debug/release、static/shared、多编译器）
-4. **工具集**：支持 GCC、Clang、MSVC、Intel 等
-
-**典型构建命令**：
-
-```bash
-./b2                            # 默认构建
-./b2 variant=release            # Release 模式
-./b2 link=static runtime-link=static    # 全静态链接
-./b2 --toolset=gcc              # 指定编译器
-./b2 --with-system --with-filesystem      # 只构建部分库
-```
-
-**B2 的局限**：Jam 语法独特，学习成本高；社区生态小于 CMake，导致 Boost 部分模块提供 CMake 配置作为补充。
-
-### 官方文档
-
-- **CMake 官方教程**：https://cmake.org/cmake/help/latest/guide/tutorial/
-- **CMake FAQ**：https://gitlab.kitware.com/cmake/community/-/wikis/FAQ
-- **Ninja Manual**：https://ninja-build.org/manual.html
-- **GNU Make Manual**：https://www.gnu.org/software/make/manual/make.html
-- **Meson Tutorial**：https://mesonbuild.com/Tutorial.html
-- **Bazel Concepts**：https://bazel.build/concepts
-
-### 经典论文与演讲
-
-- **"Recursive Make Considered Harmless"**（Miller, 1998）：分析递归 Make 的问题，提出非递归 Make 方案。
-- **"Build Systems à la Carte"**（Mokhov et al., 2018）：用 Haskell 形式化构建系统，统一建模 Make、Shake、Bazel 等。
-- **"Ninja: A Simple Way to Build Things Quickly"**（Evan Martin, Google Tech Talk）：Ninja 设计哲学与实现。
-
-### 进阶书籍
-
-- **《Modern CMake for C++》**（Tomislav Doresic, 2022）：现代 CMake 实践，强调目标（target）而非全局变量。
-- **《Software Build Systems: Principles and Experience》**（Peter Smith, 2011）：构建系统理论与实践全面覆盖。
-- **《Large-Scale C++ Software Design》**（John Lakos, 1996）：大型项目构建与物理设计。
-
-### 工具生态
-
-- **ccache**：编译结果缓存，加速重复合编。https://ccache.dev/
-- **distcc**：分布式编译，跨机器并行。https://distcc.github.io/
-- **icecream**：SUSE 开发的分布式编译框架。https://github.com/icecc/icecream
-- **clang-tidy**：基于 `compile_commands.json` 的静态分析。https://clang.llvm.org/extra/clang-tidy/
-- **cppcheck**：静态分析工具，支持 CMake 项目。https://cppcheck.sourceforge.io/
-- **include-what-you-use**：头文件清理工具。https://include-what-you-use.org/
-- **cmake-format**：CMakeLists.txt 格式化工具。https://github.com/cheshirekow/cmake_format
-
-### 相关主题
-
-- 静态库与动态库：库的创建、链接、版本管理
-- 头文件与链接：头文件依赖、链接器行为
-- 跨平台编程：平台抽象层、条件编译
-- 静态分析与调试：clang-tidy、cppcheck、gdb、Valgrind
-- 国际化与本地化：i18n 工具链与构建集成
-- 属性与编译器扩展：编译器特性的构建管理
-## make 基本语法
-
-**基本写法：Makefile 规则**
-`<目标>: <依赖> [; <命令>]`
-```makefile
-# 目标、依赖、命令（命令行必须以 Tab 开头）
-app: main.c utils.c
-	gcc -o app main.c utils.c
-```
-
-**基本写法：伪目标**
-`.PHONY: <目标>`
-```makefile
-# 声明不对应文件的目标，避免与同名文件冲突
-.PHONY: clean
-clean:
-	rm -f app
-```
-
-**基本写法：变量定义**
-`<变量名> := <值>`
-```makefile
-# := 立即展开赋值，= 延迟展开赋值
-CC := gcc
-CFLAGS := -Wall -O2
-```
-
-**基本写法：引用变量**
-`$(<变量名>)`
-```makefile
-# 使用 $(...) 引用变量
-$(CC) $(CFLAGS) -o app main.c
-```
-
-**基本写法：自动变量**
-`$@ $< $^`
-```makefile
-# $@ 目标名 $< 第一个依赖 $^ 所有依赖
-app: main.c utils.c
-	$(CC) -o $@ $^
-```
-
----
-
-## make 调用命令
-
-**基本写法：执行默认目标**
-`make`
-```bash
-# 执行 Makefile 第一个目标
 make
 ```
 
-**基本写法：指定目标**
-`make <目标>`
-```bash
-# 执行 clean 目标
-make clean
+```text
+gcc -Wall -Wextra -g -c main.c
+gcc -Wall -Wextra -g -c utils.c
+gcc main.o utils.o -o app
 ```
 
-**基本写法：指定 Makefile**
-`make -f <文件>`
-```bash
-# 使用非默认名的 Makefile
-make -f GNUmakefile
+make 不带参数构建第一个目标（app）。它的工作方式是递归核对：要把 app 造出来，先看 main.o 和 utils.o 在不在、旧不旧；要核对 main.o，又先核对它的依赖——一路递归到源文件这种「天然最新」的叶子。判定规则一句话：**目标文件不存在，或任一依赖的修改时间比目标新，就执行命令重建**；否则宣布无事可做。这就是增量构建的全部原理——编译器不改文件时间戳，所以「改了什么」被忠实记在文件系统里，make 只需比较时间戳。
+
+再跑一次 make：
+
+```text
+make: 'app' is up to date.
 ```
 
-**基本写法：并行构建**
-`make -j [<数量>]`
-```bash
-# 并行执行，-j 不限数量，-j4 限定 4 个任务
-make -j4
-```
+什么都没变，一条命令都没执行。手敲九条命令的时代，这笔账是你用自己的注意力付的。
 
-**基本写法：传入变量**
-`make <变量>=<值>`
-```bash
-# 命令行覆盖 Makefile 变量
-make CC=clang CFLAGS="-O3"
-```
+### 2.2 变量与自动变量：把模板写一遍
 
-**基本写法：仅打印不执行**
-`make -n [<目标>]`
-```bash
-# 显示将要执行的命令但不实际执行
-make -n
-```
+九处重复的命令模板收敛成变量。`:=` 是立即展开赋值（读到这行定死），`=` 是延迟展开（用到时才求值）——本篇统一用 `:=` 少踩坑：
 
-**基本写法：错误继续**
-`make -k [<目标>]`
-```bash
-# 某目标失败时继续构建其他目标
-make -k
-```
-
-**基本写法：显示执行过程**
-`make V=1`
-```bash
-# 关闭静默模式，打印完整命令
-make V=1
-```
-
----
-
-## make 模式规则与函数
-
-**基本写法：模式规则**
-`<前缀>%<后缀>: <前缀>%<后缀>`
 ```makefile
-# % 通配符匹配，编译所有 .c 为 .o
+CC     := gcc
+CFLAGS := -Wall -Wextra -g
+
+app: main.o utils.o
+	$(CC) main.o utils.o -o app
+
+main.o: main.c utils.h
+	$(CC) $(CFLAGS) -c main.c
+
+utils.o: utils.c utils.h
+	$(CC) $(CFLAGS) -c utils.c
+```
+
+规则体里的重复再用自动变量消掉——它们在命令执行时才替换：`$@` 是目标名，`$<` 是第一个依赖，`$^` 是全部依赖：
+
+```makefile
+app: main.o utils.o
+	$(CC) $^ -o $@
+
+main.o: main.c utils.h
+	$(CC) $(CFLAGS) -c $<
+
+utils.o: utils.c utils.h
+	$(CC) $(CFLAGS) -c $<
+```
+
+现在编译选项、编译器名各只有一处定义。命令行还能临时覆盖：`make CC=clang CFLAGS="-O2"`，调试不同编译器不用改文件。
+
+### 2.3 模式规则：一条规则管一片
+
+三条规则里，两条 .o 规则除文件名外一模一样。模式规则用 `%` 当通配符，把「同类目标同一做法」写一次：
+
+```makefile
 %.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 ```
 
-**基本写法：通配函数**
-`$(wildcard <模式>)`
+`%.o: %.c` 读作：任何 x.o 都能从 x.c 造出来。310 篇结尾提过 make 的隐式规则——即使你一行不写，`make main.o` 也知道从 main.c 编——你亲手写的模式规则就是那个隐式规则的显式版。配上通配与替换函数，源文件列表可以自动展开：
+
 ```makefile
-# 展开通配符获取文件列表
-SRCS := $(wildcard src/*.c)
+SRCS := $(wildcard src/*.c)     # 展开 src/ 下全部 .c
+OBJS := $(SRCS:.c=.o)           # 后缀替换：src/x.c → src/x.o
 ```
 
-**基本写法：字符串替换**
-`$(patsubst <模式>, <替换>, <列表>)`
-```makefile
-# 将 .c 后缀替换为 .o
-OBJS := $(patsubst %.c, %.o, $(SRCS))
-```
+### 2.4 实验 1：touch 一个头文件，看谁重编
 
-**基本写法：简化替换**
-`$(<列表>:<旧后缀>=<新后缀>)`
-```makefile
-# 简写的 patsubst
-OBJS := $(SRCS:.c=.o)
-```
+增量构建对不对，touch 一下就知道（touch 只更新时间戳，不改内容）。基于 2.1 的 Makefile：
 
-**基本写法：目录处理**
-`$(dir <名称>) / $(notdir <名称>) / $(basename <名称>)`
-```makefile
-# dir 取目录 notdir 取文件名 basename 去后缀
-src := src/main.c
-d := $(dir $(src))        # src/
-f := $(notdir $(src))     # main.c
-b := $(basename $(f))     # main
-```
-
----
-
-## make 常用内置变量
-
-**基本写法：编译器变量**
-`CC / CXX / AR / LD`
-```makefile
-# 内置默认编译器，C 用 CC，C++ 用 CXX
-# CC 默认 cc，可在命令行覆盖
-$(CC) -c main.c
-```
-
-**基本写法：标志变量**
-`CFLAGS / CPPFLAGS / LDFLAGS / LDLIBS`
-```makefile
-# CFLAGS 编译选项 CPPFLAGS 预处理选项
-# LDFLAGS 链接选项 LDLIBS 链接库
-CFLAGS += -I./include
-LDLIBS += -lm
-```
-
----
-
-## CMake 基础
-
-**基本写法：CMake 最低版本**
-`cmake_minimum_required(VERSION <版本>)`
-```cmake
-# 声明所需的 CMake 最低版本
-cmake_minimum_required(VERSION 3.15)
-```
-
-**基本写法：声明项目**
-`project(<名称> [VERSION <x.y.z>] [LANGUAGES <语言>])`
-```cmake
-# 声明项目名称、版本与使用的语言
-project(myapp VERSION 1.0.0 LANGUAGES C)
-```
-
-**基本写法：生成可执行文件**
-`add_executable(<目标> <源文件>...)`
-```cmake
-# 由源文件构建可执行目标
-add_executable(app main.c utils.c)
-```
-
-**基本写法：生成静态库**
-`add_library(<名称> STATIC <源文件>...)`
-```cmake
-# 构建静态库 lib<名称>.a
-add_library(utils STATIC utils.c)
-```
-
-**基本写法：生成动态库**
-`add_library(<名称> SHARED <源文件>...)`
-```cmake
-# 构建动态库 lib<名称>.so
-add_library(mylib SHARED mylib.c)
-```
-
----
-
-## CMake 链接与依赖
-
-**基本写法：链接库**
-`target_link_libraries(<目标> <库>...)`
-```cmake
-# 为目标链接其他库
-target_link_libraries(app utils m)
-```
-
-**基本写法：包含目录**
-`target_include_directories(<目标> <模式> <目录>...)`
-```cmake
-# 添加头文件搜索路径，PUBLIC 对外可见
-target_include_directories(app PUBLIC include)
-```
-
-**基本写法：设置编译选项**
-`target_compile_options(<目标> <模式> <选项>...)`
-```cmake
-# 为目标添加编译选项
-target_compile_options(app PRIVATE -Wall -O2)
-```
-
-**基本写法：设置宏定义**
-`target_compile_definitions(<目标> <模式> <名称>=<值>)`
-```cmake
-# 添加预处理宏
-target_compile_definitions(app PRIVATE DEBUG=1)
-```
-
-**基本写法：查找系统库**
-`find_package(<包> [REQUIRED] [COMPONENTS <组件>])`
-```cmake
-# 查找并加载已安装的第三方库
-find_package(Threads REQUIRED)
-target_link_libraries(app Threads::Threads)
-```
-
----
-
-## CMake 变量与条件
-
-**基本写法：设置变量**
-`set(<变量> <值>)`
-```cmake
-# 设置普通变量
-set(SRCS main.c utils.c)
-```
-
-**基本写法：列表追加**
-`list(APPEND <列表> <元素>)`
-```cmake
-# 向列表变量追加元素
-list(APPEND SRCS extra.c)
-```
-
-**基本写法：条件判断**
-`if(<条件>) ... elseif() ... else() ... endif()`
-```cmake
-# 按构建类型或平台分支
-if(CMAKE_BUILD_TYPE STREQUAL "Debug")
-    add_compile_options(-g -O0)
-endif()
-```
-
-**基本写法：选项开关**
-`option(<名称> "<说明>" <默认值>)`
-```cmake
-# 声明可配置的布尔开关
-option(BUILD_TESTS "Build unit tests" ON)
-if(BUILD_TESTS)
-    add_subdirectory(tests)
-endif()
-```
-
----
-
-## CMake 构建命令
-
-**基本写法：生成构建系统**
-`cmake -S <源目录> -B <构建目录>`
 ```bash
-# 在 build 目录生成构建文件，源码在当前目录
+make          # 全量构建
+touch utils.h
+make
+```
+
+```text
+gcc -Wall -Wextra -g -c main.c
+gcc -Wall -Wextra -g -c utils.c
+gcc main.o utils.o -o app
+```
+
+两个 .o 都重编了，app 重链了——因为两个 .o 的依赖里都写着 utils.h。把账本反过来验一次：`touch utils.c` 再 make，只有 utils.o 重编（main.o 的依赖里没有它）。make 的「聪明」完全来自你写的依赖清单，它自己不会知道 main.c 里 include 了 utils.h。
+
+这引出增量构建最经典的翻车现场：换成模式规则写法，规则 `%.o: %.c` 的依赖里没有 utils.h——
+
+```bash
+touch utils.h
+make
+```
+
+```text
+make: Nothing to be done for 'all'.
+```
+
+头文件变了，make 却认为一切最新：依赖图上根本没有 utils.h 这个节点，时间戳比较从未发生。修法不是把每个头文件手写进每条规则（迟早漏），而是让编译器替你生成依赖清单——gcc 的 -MMD -MP 会额外产出一个 .d 文件，内容是「main.o: main.c utils.h」这样的 make 语法依赖行，Makefile 再用 -include 把它们收进账本。完整的写法在第 3 节贯穿示例里。
+
+### 2.5 实验 2：.PHONY——clean 为什么失灵
+
+顺手清理的习惯动作：
+
+```makefile
+clean:
+	rm -f *.o app
+```
+
+```bash
+make clean     # 正常：删得干干净净
+touch clean    # 灾难前奏：目录里出现了一个叫 clean 的文件
+make clean
+```
+
+```text
+make: Nothing to be done for 'clean'.
+```
+
+rm 根本没执行。原因还是那套时间戳判定：make 把 clean 当成普通目标文件核对，文件存在、又没有依赖（没有谁比它新），于是宣布最新——你的清理命令被一个同名文件劫持了。修法是伪目标声明：
+
+```makefile
+.PHONY: clean
+clean:
+	rm -f *.o app
+```
+
+.PHONY 告诉 make：clean 不对应任何文件，别做时间戳比较，命令直接执行。惯例上 all、clean、install、test 这些「动作型」目标一律声明 .PHONY——它们表达的是动作，不是产物。
+
+### 2.6 常用实践
+
+- `make -j4`：无依赖关系的目标并行执行，8 个 .c 在 8 核机器上同时编；-j 后不写数字则不限并发；
+- `make -n`：干跑——只打印将执行的命令，不真执行，核对 Makefile 行为的利器；
+- `make -C build`：先进 build 目录再执行 make，顶层脚本调度子目录时常用；
+- `make -k`：某个目标失败后继续构建其余无依赖的目标，尽量多地暴露错误。
+
+## 3. 贯穿示例：多目录项目的完整 Makefile
+
+把第 1 节的 8 文件项目交给 Make。布局沿用 310 篇的惯例并加上独立构建目录：
+
+```text
+app/
+├── include/
+│   ├── utils.h
+│   └── parser.h ...
+└── src/
+    ├── main.c
+    └── ...
+```
+
+```makefile
+CC      := gcc
+CFLAGS  := -Wall -Wextra -g -Iinclude -MMD -MP
+TARGET  := app
+SRCS    := $(wildcard src/*.c)
+OBJS    := $(patsubst src/%.c, build/%.o, $(SRCS))
+DEPS    := $(OBJS:.o=.d)
+
+.PHONY: all clean
+all: $(TARGET)
+
+$(TARGET): $(OBJS)
+	$(CC) $^ -o $@
+
+build/%.o: src/%.c | build
+	$(CC) $(CFLAGS) -c $< -o $@
+
+build:
+	mkdir -p build
+
+clean:
+	rm -rf build $(TARGET)
+
+-include $(DEPS)
+```
+
+六个新面孔各司其职：
+
+- `-MMD -MP` 写进 CFLAGS：每次编译顺带生成 build/x.d 依赖清单（.d 就是「这口锅该谁背」的记录），-MP 给每个头补一条空规则，防止删了头文件后 make 报「没有规则可造」；
+- `patsubst` 把 src/x.c 改写成 build/x.o，产物全部进 build/，源码树不被 .o 污染；
+- `build/%.o: src/%.c | build`：竖线右侧是**顺序依赖**——只要求 build 目录存在即可，目录时间戳变化不会触发重编（普通依赖会）；
+- `-include $(DEPS)`：把生成的依赖文件收进账本；文件不存在也不报错（前导短横线）。第一次构建时还没有 .d，第二次起，「改了头文件」就自动变成正确的重编集合——2.4 节的惨案就此根治。
+
+验证闭环：make 全量构建 → touch include/utils.h → make，这次所有用到它的 .o 精确重编，没用的纹丝不动。把第 1 节的九条命令和这个 Makefile 对比：命令模板只写了一遍，账本自动记，`make -j8` 还白送并行。
+
+## 4. CMake：生成构建系统的构建系统
+
+### 4.1 为什么 Make 之上还需要一层
+
+上面的 Makefile 写得再规范，也是 Unix 专属：gcc 的名字、.o 与 .a 的后缀、320 篇那套 lib 前缀约定，换到 Windows 的 MSVC 工具链全部失效，重写一遍？CMake 的定位是元构建系统：你写一份 CMakeLists.txt 描述「有哪些目标、谁依赖谁」，CMake 按你选的**生成器**（Unix Makefiles、Ninja、Visual Studio 工程……）生成对应平台的具体构建文件，再用统一的 `cmake --build` 驱动执行。工作流分配置与生成两阶段：配置阶段读脚本、建目标图、结果缓存进 build/CMakeCache.txt；生成阶段把目标图翻译成构建文件。一次配置，多平台产物。
+
+### 4.2 最低可用的 CMakeLists
+
+三行起步：
+
+```cmake
+cmake_minimum_required(VERSION 3.16)
+project(app C)
+add_executable(app src/main.c src/utils.c)
+```
+
+- `cmake_minimum_required` 不是可有可无的仪式：它同时钉死了这个项目采用的**策略版本**——CMake 的命令行为随版本演进（同名命令、同一变量，新旧版本语义有差异，每个差异编号一个 CMP 策略），声明 3.16 就是宣布「按 3.16 的规则解释我」；CMake 4.0 起对声明 3.5 以下的项目直接报错拒绝，3.27 与 3.31 起则分别对老版本声明发弃用警告。写清最低版本，项目在十年后的 CMake 上行为依旧可预期；
+- `project` 声明项目名与语言；
+- `add_executable` 从源文件列表造一个可执行目标。
+
+构建与运行：
+
+```bash
 cmake -S . -B build
-```
-
-**基本写法：指定生成器**
-`cmake -G <生成器> -S <源> -B <构建>`
-```bash
-# 指定构建系统生成器
-cmake -G "Unix Makefiles" -S . -B build
-cmake -G Ninja -S . -B build
-```
-
-**基本写法：指定构建类型**
-`cmake -DCMAKE_BUILD_TYPE=<类型> -S <源> -B <构建>`
-```bash
-# 常见类型：Debug Release RelWithDebInfo MinSizeRel
-cmake -DCMAKE_BUILD_TYPE=Release -S . -B build
-```
-
-**基本写法：执行构建**
-`cmake --build <构建目录> [--target <目标>]`
-```bash
-# 跨生成器统一构建命令
 cmake --build build
-cmake --build build --target clean
+./build/app
 ```
 
-**基本写法：并行构建**
-`cmake --build <构建目录> --parallel [<数量>]`
+`-S` 指源码目录、`-B` 指构建目录，CMake 自己挑选平台上合适的生成器；`cmake --build` 是跨生成器的统一构建入口（底下可能是 make 也可能是 ninja，你不用关心）。想显式换引擎：`cmake -G Ninja -S . -B build`。
+
+### 4.3 target-based 现代写法：属性挂在目标上
+
+给项目加上 320 篇的 utils 库，顺便用上现代写法的核心——一切属性（头文件路径、链接关系、编译选项）都挂在**目标**上，并用三个关键字声明可见范围：
+
+```cmake
+cmake_minimum_required(VERSION 3.16)
+project(app C)
+
+add_library(utils STATIC src/utils.c)
+target_include_directories(utils PUBLIC include)
+target_compile_options(utils PRIVATE -Wall -Wextra)
+
+add_executable(app src/main.c)
+target_link_libraries(app PRIVATE utils)
+```
+
+三个关键字的语义是本节的承重墙：
+
+| 关键字 | 自己编译时 | 自己链接时 | 传给链接我的人 |
+| --- | --- | --- | --- |
+| PUBLIC | 用 | 用 | 传 |
+| PRIVATE | 用 | 用 | 不传 |
+| INTERFACE | 不用 | 不用 | 传 |
+
+于是 `target_include_directories(utils PUBLIC include)` 的完整含义是：utils 自己编译要用 include/，任何 target_link_libraries 链接 utils 的目标也自动获得这个路径——app 的 CMakeLists 里因此**不需要**出现任何 include 路径，依赖关系自己长出来。链接库同理：utils 若还需第三方库，写成 `target_link_libraries(utils PRIVATE crypto)`，消费者不用知道也不会误用。
+
+对照旧式写法看清淘汰原因：全局的 `include_directories(include)`、`link_libraries(...)` 作用在整个目录的所有目标与子目录上，任何目标都能看见一切头文件——表面省事，实际让「谁真正依赖谁」从工程里消失，改一处牵全身。target-based 的写法多打几个字，换来的是依赖图显式、可传递、可审计。
+
+add_library 的 STATIC 换成 SHARED，就接上了 320 篇：SHARED 库 CMake 自动加 -fPIC（你手工敲的那个参数在这里是默认动作），配 `set_target_properties(utils PROPERTIES VERSION 1.0.0 SOVERSION 1)` 会自动生成 libutils.so.1.0.0 真名、SONAME 与两个软链——320 篇亲手搭的三件套，在这里是两个属性。第三方系统库用 find_package 一句接上：`find_package(ZLIB REQUIRED)` 加 `target_link_libraries(app PRIVATE ZLIB::ZLIB)`，找到即以 ZLIB::ZLIB 这样的目标形式提供，用法与自己的目标一致。
+
+### 4.4 链接顺序去哪了
+
+320 篇花了一整节讲链接顺序惨案，CMake 的代码里却看不到任何顺序安排——`target_link_libraries(app PRIVATE utils)` 只是一条「app 依赖 utils」的边。机制在生成阶段：CMake 攒着整张依赖图，翻译成底层命令时才把 -l 参数按「消费者在左、被依赖者在右」排好，循环依赖等 corner case 也由生成器代为处理。你在 CMake 层写的是**关系**，顺序这个底层细节由工具从关系推导——320 篇的手工惨案仍值得会诊，因为总有一天你会绕过这层保护直接写链接命令。
+
+### 4.5 构建目录实践：out-of-source
+
+上文所有命令都遵守一条纪律：构建产物绝不进源码树。在源码目录里直接 `cmake .` 的旧习惯会把 CMakeCache.txt、CMakeFiles/ 撒满源码树，git status 一片狼藉，删起来还要小心翼翼避开源文件。out-of-source 构建把一切都圈进 build/：
+
 ```bash
-# 并行编译，-j 不限数量
-cmake --build build -j8
+cmake -S . -B build && cmake --build build
 ```
 
-**基本写法：安装**
-`cmake --install <构建目录>`
-```bash
-# 按配置的 install 规则安装
-cmake --install build --prefix /usr/local
+好处三连：源码树永远干净（git status 一眼清白）；删掉 build/ 即得全新构建，排查「构建状态诡异」的标准动作；同一源码树可以并排开 build-debug 与 build-release 两套配置互不干扰——`cmake -DCMAKE_BUILD_TYPE=Debug -S . -B build-debug` 与 `-DCMAKE_BUILD_TYPE=Release`（默认编译选项分别是 -g 一路与 -O3 -DNDEBUG 一路）。
+
+顺带一个源文件列表的坑：`file(GLOB SRCS src/*.c)` 在配置阶段扫一次目录，之后新增的 .c 文件不会触发重新配置，新文件静默地不被编译——增量构建的账本上根本没它。稳妥做法是显式列出源文件；嫌麻烦可用 `file(GLOB ... CONFIGURE_DEPENDS)`（CMake 3.12 起，每次构建重扫目录），代价是每次构建多一次扫描。
+
+## 常见错误与调试实录
+
+### 现场 1：missing separator——tab 惨案
+
+```text
+Makefile:3: *** missing separator.  Stop.
 ```
 
----
+逐段读：Makefile:3 定位到文件第 3 行；missing separator 是 make 的原话——「规则里找不到分隔符」；Stop 表示就此打住。这几乎总是同一个事故：命令行开头是**空格**而不是 tab。多数编辑器默认把 tab 展开成空格，从网页复制的 Makefile 更是十有八九中招。修法：命令行必须以真实 tab 开头；编辑器里为 Makefile 关闭「tab 转空格」，或用 `cat -A Makefile | grep -n '\^I'` 检查哪几行真有 tab（^I 就是 tab 的显示形态）。这个报错每位 Make 用户都会遇到至少一次，遇到时别怀疑人生，先看第 3 行行首。
 
-## CMake 安装规则
+### 现场 2：CMake 版本声明缺失的警告
 
-**基本写法：安装目标**
-`install(TARGETS <目标>...)`
-```cmake
-# 安装可执行文件或库到默认路径
-install(TARGETS app LIBRARY DESTINATION lib RUNTIME DESTINATION bin)
+不写 cmake_minimum_required 直接 project()，新版 CMake 会拦下来：
+
+```text
+CMake Warning (dev) at CMakeLists.txt:1 (project):
+  No cmake_minimum_required command is present.  No policy version was
+  determined for this project.  ...
 ```
 
-**基本写法：安装头文件**
-`install(FILES <文件> DESTINATION <目录>)`
-```cmake
-# 安装头文件到 include 目录
-install(FILES mylib.h DESTINATION include)
+（大意如上：项目没声明最低版本，无法确定策略版本。）这不只是唠叨：没有策略版本，CMake 只能按一套内置的保守假设解释你的脚本，同一份文件在新旧 CMake 上可能行为分叉——4.1 节说过，命令语义是随版本演进的，CMP 策略就是演进差异的开关。补上 `cmake_minimum_required(VERSION 3.16)`，警告消失，行为钉死。时间线记两个数：CMake 3.27 起对声明 3.5 以下的项目发弃用警告，4.0 起对这类项目直接报错——那些「祖传 CMakeLists 在新机器上突然编译不过」的故事，多数终结于补一行版本声明。
+
+### 现场 3：时间戳的边界
+
+「依赖比目标新就重建」依赖三个假设：时钟单调、依赖图完整、编译确定。偶尔翻车也在这三条上：系统时间被回拨（时间戳倒挂，make 认为一切最新）、依赖清单漏项（2.4 节的惨案）、以及「源文件没变但构建产物被手动改过」。遇到增量构建行为诡异，先用 make -n 看它打算做什么，解释不通就删 build/ 全量重来——这也是 out-of-source 构建把「重来」做成一条 rm 的原因。
+
+### 其余工具，一段概览
+
+构建工具远不止两家：Ninja 是只为速度而生的执行器，自身配置极简，实践中多作为 CMake 的生成器（-G Ninja）在大项目里提速；Meson 是自带 DSL 的新一代配置系统，默认配 Ninja 后端；Autotools（./configure && make 三段式）是 Unix 老将，大量历史项目仍在用；Linux 内核的 Kbuild/Kconfig 则是 Make 面向内核场景的自家扩展；Bazel 面向超大仓库，主打可重现构建与远程缓存。它们的选型权衡不是本篇主线：本文的目标是让你吃透「依赖图 + 时间戳 + 编排」这套共同内核，内核懂了，任何新工具读十分钟文档就能上手。
+
+## 实际项目中的使用场景
+
+- 拿到任何开源 C 项目的第一件事是读它的 README 构建说明，通常是三种之一：有 Makefile 就 make；有 CMakeLists.txt 就 cmake -S . -B build 加 cmake --build build；有 configure 脚本走 ./configure && make。三种入口背后是同一套依赖图模型；
+- 反面极端也真实存在：SQLite 把全部源码合并成单个 sqlite3.c 发布，使用者一条 gcc 命令即可编译（310 篇提过它的合并发布）——不需要构建系统的项目，恰恰说明构建系统解决的是规模问题；
+- IDE 与工具的接入点：配置加一句 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)，build/ 下会生成 compile_commands.json——clang-tidy、clangd 等工具靠它读懂工程，与 [静态分析与调试](/c/490-StaticAnalysisDebug) 直接衔接；
+- 团队协作的最低配置：仓库里提交一份带 .PHONY 与 -MMD 的 Makefile（小项目），或一份 target-based 的 CMakeLists（中大型项目），新同事 clone 下来一条命令出二进制——构建系统的隐性价值是「任何人、任何时候、一键可复现」。
+
+## 小练习
+
+预测题（5 分钟）：Makefile 里只有一条规则：
+
+```makefile
+report:
+	echo building report
 ```
 
-**基本写法：安装目录**
-`install(DIRECTORY <目录> DESTINATION <目标>)`
-```cmake
-# 递归安装整个目录
-install(DIRECTORY include/ DESTINATION include)
-```
+目录下不存在名为 report 的文件，make report 正常执行。现在 mkdir report 建一个同名目录，再跑 make report，会发生什么？加上 .PHONY: report 之后呢？
 
----
+参考答案（先写再看）：没加 .PHONY 时，make 把 report 当文件核对：目标存在、无依赖、没有谁比它新，输出 Nothing to be done，echo 不会执行——2.5 节 clean 失灵的同款事故，只是这次由你亲手导演。加 .PHONY: report 后命令直接执行。伪目标声明表达的是「这是动作不是产物」。
 
-## CMake 子项目组织
+挑战题（40 分钟，不看答案先动手）：改造第 3 节的贯穿 Makefile：把 utils.c 先归档成 build/libutils.a（320 篇的 ar rcs），app 从静态库链接而不是直接吃 .o。提示两级如下。
 
-**基本写法：包含子目录**
-`add_subdirectory(<目录>)`
-```cmake
-# 将子目录的 CMakeLists.txt 纳入构建
-add_subdirectory(src)
-add_subdirectory(lib/utils)
-```
+提示（思路方向）：库也是一个目标——先为它写一条规则（目标 build/libutils.a，依赖 utils.o，命令 ar rcs），再让 app 依赖它；模式和 3 节完全一致，只是图上多了一个节点。
 
-**基本写法：自定义命令**
-`add_custom_command(OUTPUT <产物> COMMAND <命令>)`
-```cmake
-# 生成文件的自定义规则
-add_custom_command(OUTPUT gen.c
-    COMMAND python gen.py > gen.c
-    DEPENDS gen.py)
-```
+展开（关键写法）：`UTIL := $(filter src/utils.c,$(SRCS))` 挑出库的源文件（或直接手写 utils.o 的规则）；`$(LIB): build/utils.o` 规则里用 `$(AR) rcs $@ $<`（make 内置 AR 变量即 ar）；链接规则改 `$(CC) $^ -o $@`，把 build/libutils.a 放进 app 的依赖列表。
 
-**基本写法：自定义目标**
-`add_custom_target(<名称> COMMAND <命令>)`
-```cmake
-# 不产生文件的目标，便于聚合任务
-add_custom_target(run COMMAND app DEPENDS app)
-```
+验收清单：make 后 build/ 里有 libutils.a 与 app；make -n 确认链接命令用了库文件路径；touch src/utils.c 后重编顺序是 utils.o → libutils.a → app，且其他 .o 不动；ar t build/libutils.a 列出 utils.o。做完这道，320 篇的库与 470 篇的编排就合流了。
+
+## 与之前和之后的知识的关系
+
+- 往前：[多文件编译](/c/310-MultiFileCompilation) 的「分开 -c 再链接」是增量构建的地基——make 编排的正是那一步拆出来的 .o；[动态库与静态库](/c/320-DynamicStaticLibrary) 的每条命令在本篇变成规则，链接顺序惨案由 CMake 的依赖图代管；
+- 旁支：头文件为什么产生依赖，根子在 #include 的文本插入机制（[预处理器与宏](/c/290-PreprocessorMacro)）；交叉编译的工具链文件与平台差异在 [跨平台编程](/c/410-CrossPlatformProgramming)；
+- 往后：构建是质量工程的第一环——compile_commands.json 接上 clang-tidy 与 clangd，构建选项里开 ASan/UBSan 的姿势在 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+
+## 官方文档
+
+- GNU Make 手册（规则语法、自动变量、模式规则、.PHONY 等特殊目标）：https://www.gnu.org/software/make/manual/make.html
+- CMake 官方教程（从最小项目到库、安装、测试的逐步指南）：https://cmake.org/cmake/help/latest/guide/tutorial/index.html
+- cmake_minimum_required 命令文档（策略版本与弃用时间线）：https://cmake.org/cmake/help/latest/command/cmake_minimum_required.html
+
+## 自我检查
+
+- 能默写「目标: 依赖 + tab 命令」的最小 Makefile，并说出 make 判定重建的那句话（目标不存在或依赖比目标新）；
+- 能解释 -MMD -MP 与 -include $(DEPS) 联手解决什么问题，并复现「改头文件没重编」的完整现场；
+- 能给一段 target_link_libraries 写出 PUBLIC/PRIVATE/INTERFACE 各自的传播后果，并说出 CMake 自动处理链接顺序的机制所在（生成阶段排 -l）；
+- 拿到 missing separator 与 No cmake_minimum_required 两类报错，能各自在一分钟内定位原因并修复。
+
+## 本章总结
+
+- 构建系统解决五件事：命令模板化、增量构建、并行执行、平台适配、配置管理；增量构建的判定只有一句——目标不存在或任一依赖比目标新就重建，账本就是文件时间戳；
+- Make 的四要素里 tab 是语法；自动变量 $@ $< $^ 与模式规则 %.o: %.c 消灭重复；.PHONY 声明动作型目标，否则同名文件劫持 clean；头文件依赖靠 -MMD -MP 生成 .d 再 -include 收编，手写迟早漏；
+- CMake 是元构建系统：CMakeLists 描述目标与关系，生成器产出平台构建文件；cmake_minimum_required 钉死策略版本，是可预期行为的保险丝；
+- 现代写法把属性挂在目标上：PUBLIC 传递、PRIVATE 自用、INTERFACE 纯传递；链接顺序这类底层细节由生成阶段的依赖图推导，320 篇的手工惨案在 CMake 层自动消化；
+- out-of-source 构建把产物圈进 build/：源码树干净，删目录即重来，多配置并存。
+
+## 下一步
+
+进入 [静态分析与调试](/c/490-StaticAnalysisDebug)：项目能一键构建了，下一步是让它被系统性检查——clang-tidy 静态扫描、gdb 断点单步、以及构建开关里开着的 ASan/UBSan 如何把偶现 bug 变成必现现场。

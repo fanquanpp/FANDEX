@@ -1,1154 +1,395 @@
 ---
 order: 540
-title: 嵌入式 C 编程
+title: 嵌入式 C 编程：在 64KB 里跑稳
 module: 'c'
 category: 计算机科学
 difficulty: advanced
-description: 嵌入式系统C编程要点
+description: 从闪烁 LED 的裸机 main 出发串起嵌入式 C 主线：寄存器就是固定地址的内存、上电到 main 之间启动代码搬 .data 清 .bss、ISR 纪律与关中断临界区、看门狗与栈核算、交叉编译与 QEMU 仿真 mps2-an385，附 printf 重定向串口与三起调试实录。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
-  - 'c/490-StaticAnalysisDebug'
-  - 'c/410-CrossPlatformProgramming'
-  - 'c/560-CAssemblyInteraction'
-  - 'c/120-ArrayDetailed'
+  - 'c/240-BitField'
+  - 'c/070-BitwiseBitField'
+  - 'c/340-SignalHandling'
+  - 'c/250-FunctionCallStackFrame'
+  - 'c/540-AttributeCompilerExtension'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/270-VolatileKeyword'
+  - 'c/210-MemoryManagement'
 ---
 
 ## 前置知识
 
-- [跨平台编程](/c/410-CrossPlatformProgramming)：建议先完成前一篇的学习
+- 已完成 [volatile 关键字](/c/270-VolatileKeyword)：知道 volatile 的三经典场景，以及它「不原子、不排序、不当锁」的能力边界；
+- 已完成 [内存深水区](/c/210-MemoryManagement)：能画出进程五段内存布局，知道「全局变量不写初值也是 0」靠的是 bss 段加载时统一清零。
+
+> 分工说明：volatile 的完整语义（给什么保证、不给什么保证）在 [const 与 volatile 正交语义](/c/260-CVolatileAndConstDeepDive) 与 270，本篇只讲它在寄存器与中断里的用法；位域为什么不宜直接映射 MMIO 在 [位域](/c/240-BitField)；掩码四件套在 [位运算](/c/070-BitwiseBitField)；栈帧与 -fstack-usage 在 [函数调用栈帧](/c/250-FunctionCallStackFrame)；GCC 属性与自定义段在 [属性与编译器扩展](/c/540-AttributeCompilerExtension)，本篇让 section 属性在向量表上落地。本篇把这些工具带进「没有操作系统」的世界，串成一条裸机主线：寄存器、启动、中断、可靠性、工具链与仿真。RTOS 内核实现、WCET 与实时调度理论、厂商 SDK 全家桶（STM32 HAL、Arduino）超出本篇主线，只在风格对照里露一面。
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「代码示例」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 说清裸机世界与桌面世界的差异，建立「每一字节、每一毫秒都有预算」的资源思维，用 -Os、size 与段裁剪把固件体积量出来、裁下来；
+2. 用 volatile 与掩码四件套安全访问外设寄存器，说清读-改-写与原子置位/复位寄存器的差别；
+3. 讲出从上电到 main 之间的完整链条：向量表装载栈顶与复位向量、启动代码搬 .data、清 .bss，并读懂最小链接脚本的 MEMORY 与 SECTIONS；
+4. 写出守纪律的 ISR：短、volatile 标志、临界区保护共享数据，并说清为什么 malloc 与 printf 不能进 ISR；
+5. 用看门狗兜住失控的固件，用 -fstack-usage 给栈定预算，在 QEMU 里跑起自己的第一个 Cortex-M 固件。
 
+预计 60 到 80 分钟，包含 4 组动手实验与 3 道练习。
 
+## 1. 问题引入：闪烁一盏 LED，为什么值得讲一整篇
 
-## 概述
-
-嵌入式 C 编程是面向资源受限硬件(微控制器 MCU、数字信号处理器 DSP、片上系统 SoC)的 C 语言开发实践。与桌面/服务器 C 编程相比,嵌入式 C 必须在 ROM、RAM、CPU 频率、功耗、实时性等多重约束下进行设计。1970 年代 Intel 8048、Motorola 6800 等早期微控制器诞生后,C 语言逐步取代汇编成为嵌入式开发主力,1988 年 ANSI C 标准化后,GCC、IAR、Keil 等嵌入式编译器相继出现。2008 年 ISO/IEC 发布 TR 18037《Embedded C》,为定点运算、硬件 IO、命名地址空间等提供标准化扩展。2018 年 MISRA C:2012 第三版发布,成为汽车、医疗、航空等安全关键领域事实标准。
-
-本文从硬件架构、编译器扩展、内存布局、实时性、低功耗、安全关键代码等维度系统化阐述嵌入式 C 开发的关键工程实践。
-
-## 历史动机与背景
-
-### 1. 嵌入式系统的诞生
-
-1971 年 Intel 推出 4004 微处理器,标志着嵌入式计算的起点。最初嵌入式软件以汇编编写,直接操作硬件寄存器。1980 年代 8051 系列单片机普及,C 编译器逐步成熟,嵌入式 C 开始取代汇编。1990 年代 ARM 架构出现,32 位 RISC 处理器以其低功耗、高性能、统一架构的特点主导嵌入式市场。2000 年后,Cortex-M 系列进一步降低门槛,STM32、NXP LPC、TI Tiva 等芯片将 32 位 MCU 推向大众。
-
-### 1. 资源约束驱动的工程实践
-
-嵌入式系统的核心约束:
-
-1. **ROM/Flash 限制**:8 位 MCU 通常只有几 KB 到几十 KB Flash,32 位 MCU 通常为 64KB-2MB。代码体积优化至关重要。
-2. **RAM 限制**:从几百字节到几 MB 不等,栈与堆管理需要精确规划。
-3. **CPU 频率**:从 MHz 到 GHz 不等,部分场景需要逐指令优化。
-4. **功耗**:电池供电设备对静态与动态功耗极其敏感。
-5. **实时性**:工业控制、汽车电子要求确定性响应,微秒级延迟。
-6. **可靠性**:医疗、汽车、航空领域要求高 MTBF,代码需符合功能安全标准。
-
-### 2. 嵌入式 C 标准化进程
-
-- **ANSI C89/C90**:基础标准,嵌入式编译器普遍支持。
-- **ISO/IEC TR 18037:2008**:Embedded C 扩展,引入 `_Fract`、`_Accum` 定点类型与 `__IO`、`__I`、`__O` 命名地址空间。
-- **MISRA C:1998/2004/2012**:汽车工业软件可靠性行业标准,规则从 141 条扩展到 143 条。
-- **CERT C**:CERT 安全编码标准,涵盖缓冲区溢出、整数溢出等安全漏洞。
-- **Power of Ten**:NASA JPL 编码规范,要求函数不超过 60 行、所有指针强类型等。
-
-### 3. 现代嵌入式趋势
-
-- **RISC-V 兴起**:开源指令集,在物联网与定制加速器领域逐步替代 ARM。
-- **IoT 与边缘 AI**:MCU 上运行 TinyML、TensorFlow Lite Micro,实现本地语音、视觉识别。
-- **混合架构**:多核 Cortex-A+Cortex-M 异构芯片,如 i.MX 8、Xilinx Zynq。
-- **安全启动**:Secure Boot、TPM、TrustZone 等技术保障固件完整性。
-- **Zephyr 与 FreeRTOS**:开源 RTOS 生态成熟,占据中端市场。
-
-## 形式化定义
-
-### 1. 嵌入式系统形式化模型
-
-嵌入式系统 $S$ 可形式化为六元组:
-
-$$
-S = \langle M, P, IO, T, R, L \rangle
-$$
-
-其中:
-
-- $M = (M_R, M_F, M_S)$ 是存储层次:RAM $M_R$、Flash $M_F$、栈 $M_S$。
-- $P = (f, C, V)$ 是处理器参数:主频 $f$、缓存 $C$、电压 $V$。
-- $IO = \{io_1, io_2, \dots, io_k\}$ 是外设集合,每个 $io_i = (addr_i, reg_i, irq_i)$。
-- $T = \{t_1, t_2, \dots, t_n\}$ 是任务集合,每个 $t_i = (P_i, D_i, C_i, T_i)$ 表示优先级、截止期、执行时间、周期。
-- $R = (R_{min}, R_{max})$ 是可靠性指标。
-- $L = (P_{static}, P_{dynamic})$ 是功耗约束。
-
-### 1. 实时任务调度模型
-
-任务 $t_i$ 可调度条件(RMS):
-
-$$
-\sum_{i=1}^{n} \frac{C_i}{T_i} \le n(2^{1/n} - 1)
-$$
-
-当 $n \to \infty$ 时,利用率上界为 $\ln 2 \approx 0.693$。最早截止期优先(EDF)的可调度条件更宽松:
-
-$$
-\sum_{i=1}^{n} \frac{C_i}{T_i} \le 1
-$$
-
-### 2. 中断延迟模型
-
-设中断源触发时刻 $t_0$,中断响应开始执行时刻 $t_1$,则中断延迟:
-
-$$
-L_{int} = t_1 - t_0 = L_{hw} + L_{isr\_entry} + L_{pipeline} + L_{critical\_section}
-$$
-
-- $L_{hw}$:硬件响应时间,通常 12-16 周期(Cortex-M)。
-- $L_{isr\_entry}$:ISR 入口压栈时间。
-- $L_{pipeline}$:流水线刷新时间。
-- $L_{critical\_section}$:被屏蔽中断期间最坏情况下的等待时间。
-
-最坏情况下中断延迟是嵌入式实时性分析的核心指标。
-
-### 3. 内存布局形式化
-
-链接器将程序分为多个段,链接脚本控制段在地址空间的分布:
-
-$$
-\text{Image} = \text{.text} \oplus \text{.rodata} \oplus \text{.data} \oplus \text{.bss} \oplus \text{.heap} \oplus \text{.stack}
-$$
-
-- `.text`:代码段,位于 Flash。
-- `.rodata`:只读数据,位于 Flash。
-- `.data`:已初始化全局变量,加载时从 Flash 复制到 RAM。
-- `.bss`:未初始化全局变量,启动时清零。
-- `.heap`:堆区,可选。
-- `.stack`:栈区,通常位于 RAM 高地址向下生长。
-
-启动代码需完成 `.data` 复制与 `.bss` 清零,这是 C 运行时初始化(CRT)的核心工作。
-
-### 4. 功耗模型
-
-CMOS 电路动态功耗:
-
-$$
-P_{dynamic} = \alpha \cdot C \cdot V^2 \cdot f
-$$
-
-其中 $\alpha$ 是翻转活动因子,$C$ 是负载电容,$V$ 是供电电压,$f$ 是时钟频率。静态功耗:
-
-$$
-P_{static} = I_{leak} \cdot V
-$$
-
-DVFS(Dynamic Voltage and Frequency Scaling)通过同时降低 $V$ 与 $f$ 实现立方级功耗下降,是嵌入式低功耗核心手段。
-
-## 理论推导
-
-### 1. WCET 分析方法
-
-最坏情况执行时间(WCET)是嵌入式实时性分析的硬性指标。两种主要方法:
-
-1. **静态分析**:构建控制流图(CFG),对每条路径计算最大执行周期。
-2. **测量法**:在目标硬件上运行所有可能输入,记录最大执行时间。
-
-静态分析上界 $WCET_{static}$,测量法下界 $WCET_{measured}$:
-
-$$
-WCET_{measured} \le WCET_{real} \le WCET_{static}
-$$
-
-安全关键系统必须使用静态分析保证上界。
-
-### 1. 栈空间需求分析
-
-函数调用栈需求 $S(f)$:
-
-$$
-S(f) = S_{local}(f) + \max_{c \in \text{callees}(f)} S(c)
-$$
-
-递归调用导致栈需求不可静态确定,因此 MISRA C 禁止递归。考虑中断嵌套,总栈需求:
-
-$$
-S_{total} = S(main) + \sum_{i \in ISR_{nested}} S(isr_i)
-$$
-
-实际栈大小应预留 1.5-2 倍余量,避免栈溢出。
-
-### 2. 固定点运算精度
-
-定点类型 $Q_{m.n}$(m 位整数,n 位小数)的表示范围与精度:
-
-$$
-\text{range} = [-2^{m-1}, 2^{m-1} - 2^{-n}], \quad \text{resolution} = 2^{-n}
-$$
-
-乘法运算 $a \times b$(均为 $Q_{m.n}$)结果为 $Q_{2m.2n}$,需要右移 $n$ 位回到 $Q_{m.n}$ 格式:
-
-$$
-c = (a \times b) \gg n
-$$
-
-定点运算的舍入误差累计分析是 DSP 算法实现的关键。
-
-### 3. 缓存对实时性的影响
-
-带缓存的 CPU(如 Cortex-M7)引入了执行时间不确定性。设缓存命中率 $h$,缺失代价 $M$,平均访问时间:
-
-$$
-T_{avg} = h \cdot T_{hit} + (1-h) \cdot M
-$$
-
-但 WCET 应假设最坏情况:全部缺失。因此安全关键系统常禁用缓存或使用锁定机制(lockdown),将关键代码固定在缓存中。
-
-### 4. 任务响应时间分析
-
-固定优先级抢占调度下,任务 $t_i$ 的最坏响应时间 $R_i$ 满足:
-
-$$
-R_i = C_i + \sum_{j \in hp(i)} \left\lceil \frac{R_i}{T_j} \right\rceil C_j
-$$
-
-其中 $hp(i)$ 是优先级高于 $t_i$ 的任务集合。等式两边 $R_i$ 出现在两边,需迭代求解。若 $R_i \le D_i$ 则可调度。
-
-## 代码示例
-
-### 示例 1:寄存器访问的标准化封装
+在 PC 上，「让灯闪起来」是几行 printf 加一条系统调用的事——操作系统替你管着一切。而在单片机上，最小编程单元是这样的：
 
 ```c
-/* 文件: reg_access.h
- * 嵌入式寄存器访问的标准封装
- * 兼容 ARM Cortex-M 与 RISC-V
- */
-#ifndef REG_ACCESS_H
-#define REG_ACCESS_H
-
+/* blink.c：在一块虚构单片机上让 LED 闪起来 */
 #include <stdint.h>
 
-/* 寄存器基址类型:volatile 防止编译器优化 */
-typedef volatile uint32_t reg32_t;
-typedef volatile uint16_t reg16_t;
-typedef volatile uint8_t  reg8_t;
+#define GPIO_OUT  (*(volatile uint32_t *)0x50000000)  /* 输出数据寄存器：固定地址 */
+#define LED_BIT   (1u << 5)
 
-/* 寄存器读:确保编译器生成真实 load 指令 */
-static inline uint32_t reg_read(reg32_t *reg) {
-    return *reg;
-}
-
-/* 寄存器写:确保编译器生成真实 store 指令 */
-static inline void reg_write(reg32_t *reg, uint32_t val) {
-    *reg = val;
-}
-
-/* 位设置:原子操作,避免读-改-写竞态 */
-static inline void reg_set_bits(reg32_t *reg, uint32_t mask) {
-    *reg |= mask;
-}
-
-/* 位清除:原子操作 */
-static inline void reg_clear_bits(reg32_t *reg, uint32_t mask) {
-    *reg &= ~mask;
-}
-
-/* 位翻转 */
-static inline void reg_toggle_bits(reg32_t *reg, uint32_t mask) {
-    *reg ^= mask;
-}
-
-/* 等待某位为 1,带超时(单位:循环数)
- * 返回 0 表示成功,非 0 表示超时
- */
-static inline int reg_wait_set(reg32_t *reg, uint32_t mask, uint32_t timeout) {
-    while (timeout-- > 0) {
-        if (*reg & mask) return 0;
-    }
-    return -1;
-}
-
-#endif /* REG_ACCESS_H */
-```
-
-### 示例 2:Cortex-M 启动文件(startup.c)
-
-```c
-/* 文件: startup.c
- * Cortex-M3/M4 启动代码
- * 完成向量表、堆栈、C 运行时初始化
- */
-#include <stdint.h>
-
-/* 链接脚本提供的符号 */
-extern uint32_t _estack;        /* 栈顶地址,由链接脚本定义 */
-extern uint32_t _sidata;        /* .data 在 Flash 中的加载地址 */
-extern uint32_t _sdata;         /* .data 在 RAM 中的运行地址 */
-extern uint32_t _edata;         /* .data 结束地址 */
-extern uint32_t _sbss;          /* .bss 起始地址 */
-extern uint32_t _ebss;          /* .bss 结束地址 */
-
-/* 外部声明 */
-extern int main(void);
-extern void SystemInit(void);
-
-/* 默认中断处理函数 */
-void Default_Handler(void) {
-    while (1) {
-        /* 死循环,实际产品应记录错误并复位 */
-    }
-}
-
-/* 弱别名:允许应用层覆盖 */
-void NMI_Handler(void) __attribute__((weak, alias("Default_Handler")));
-void HardFault_Handler(void) __attribute__((weak, alias("Default_Handler")));
-void SVC_Handler(void) __attribute__((weak, alias("Default_Handler")));
-void PendSV_Handler(void) __attribute__((weak, alias("Default_Handler")));
-void SysTick_Handler(void) __attribute__((weak, alias("Default_Handler")));
-
-/* 向量表:必须放在 .isr_vector 段,链接脚本将段起始设为 0x0 */
-__attribute__((section(".isr_vector"), used))
-void (* const g_pfnVectors[])(void) = {
-    (void (*)(void))(&_estack),  /* 初始栈指针 */
-    Reset_Handler,                /* 复位向量 */
-    NMI_Handler,
-    HardFault_Handler,
-    /* ... 其他中断向量 */
-    SysTick_Handler,
-};
-
-/* 复位处理函数:这是 CPU 上电后第一个执行的 C 函数 */
-void Reset_Handler(void) {
-    /* 1. 系统初始化:配置时钟、Flash 等待周期等 */
-    SystemInit();
-
-    /* 2. 将 .data 段从 Flash 复制到 RAM */
-    uint32_t *src = &_sidata;
-    uint32_t *dst = &_sdata;
-    while (dst < &_edata) {
-        *dst++ = *src++;
-    }
-
-    /* 3. 清零 .bss 段 */
-    dst = &_sbss;
-    while (dst < &_ebss) {
-        *dst++ = 0;
-    }
-
-    /* 4. 调用 main 函数 */
-    (void)main();
-
-    /* 5. main 返回不应发生,进入死循环 */
-    while (1) {
-    }
-}
-```
-
-### 示例 3:GPIO 操作点亮 LED
-
-```c
-/* 文件: led_blink.c
- * STM32F4 点亮 LED 示例(基于 CMSIS)
- */
-#include "stm32f4xx.h"
-
-/* LED 引脚定义:PA5(STM32F4 Discovery 板载绿色 LED) */
-#define LED_PIN     5U
-#define LED_PORT    GPIOA
-
-/* 简单延时:不精确,仅用于演示
- * 实际产品应使用 SysTick 或硬件定时器
- */
-static void delay_ms(uint32_t ms) {
-    /* 假设 CPU 主频 168MHz,每条循环约 4 个周期 */
-    uint32_t cycles = ms * (168000000U / 4000U);
-    while (cycles--) {
-        __asm volatile("nop");
+static void delay(int n) {
+    while (n-- > 0) {
+        for (volatile int i = 0; i < 1000; i++) {  /* 忙等延时：粗略，但能跑 */
+        }
     }
 }
 
 int main(void) {
-    /* 1. 使能 GPIOA 时钟:RCC AHB1ENR bit 0 */
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
-
-    /* 2. 配置 PA5 为输出模式:MODER = 01 */
-    LED_PORT->MODER &= ~(3U << (LED_PIN * 2));
-    LED_PORT->MODER |= (1U << (LED_PIN * 2));
-
-    /* 3. 配置输出类型:推挽 */
-    LED_PORT->OTYPER &= ~(1U << LED_PIN);
-
-    /* 4. 配置速度:中速 */
-    LED_PORT->OSPEEDR &= ~(3U << (LED_PIN * 2));
-    LED_PORT->OSPEEDR |= (2U << (LED_PIN * 2));
-
-    /* 5. 配置上下拉:无 */
-    LED_PORT->PUPDR &= ~(3U << (LED_PIN * 2));
-
-    /* 主循环:LED 闪烁 */
     while (1) {
-        /* 输出高:BSRR 是原子置位/复位寄存器 */
-        LED_PORT->BSRR = (1U << LED_PIN);
-        delay_ms(500);
-
-        /* 输出低:BSRR 高 16 位对应复位 */
-        LED_PORT->BSRR = (1U << (LED_PIN + 16));
-        delay_ms(500);
-    }
-
-    return 0;
-}
-```
-
-### 示例 4:UART 驱动
-
-```c
-/* 文件: uart.c
- * STM32F4 UART2 驱动,支持中断接收与轮询发送
- */
-#include "stm32f4xx.h"
-#include <string.h>
-
-#define UART_RX_BUF_SIZE 64
-
-/* 环形缓冲区:解决生产者-消费者竞态 */
-static volatile uint8_t  g_rx_buf[UART_RX_BUF_SIZE];
-static volatile uint16_t g_rx_head;
-static volatile uint16_t g_rx_tail;
-
-void UART2_Init(uint32_t baudrate) {
-    /* 1. 使能 GPIOA 与 USART2 时钟 */
-    RCC->AHB1ENR |= RCC_AHB1ENR_GPIOAEN;
-    RCC->APB1ENR |= RCC_APB1ENR_USART2EN;
-
-    /* 2. 配置 PA2(TX)、PA3(RX) 为复用功能 */
-    GPIOA->MODER &= ~((3U << (2 * 2)) | (3U << (3 * 2)));
-    GPIOA->MODER |=  ((2U << (2 * 2)) | (2U << (3 * 2)));
-
-    /* 3. 配置复用功能号 AF7(USART1/2/3) */
-    GPIOA->AFR[0] &= ~((0xFU << (2 * 4)) | (0xFU << (3 * 4)));
-    GPIOA->AFR[0] |=  ((7U   << (2 * 4)) | (7U   << (3 * 4)));
-
-    /* 4. 配置波特率:假设 APB1 时钟 42MHz */
-    USART2->BRR = (42000000U + baudrate / 2U) / baudrate;
-
-    /* 5. 使能接收中断、接收器、发送器、UART */
-    USART2->CR1 = USART_CR1_RXNEIE | USART_CR1_RE | USART_CR1_TE | USART_CR1_UE;
-
-    /* 6. NVIC 配置 USART2 中断优先级 */
-    NVIC_SetPriority(USART2_IRQn, 5);
-    NVIC_EnableIRQ(USART2_IRQn);
-}
-
-/* 轮询发送一个字节 */
-void UART2_SendByte(uint8_t b) {
-    while (!(USART2->SR & USART_SR_TXE)) {
-        /* 等待发送数据寄存器空 */
-    }
-    USART2->DR = b;
-}
-
-/* 轮询发送字符串 */
-void UART2_SendString(const char *s) {
-    while (*s) {
-        UART2_SendByte((uint8_t)*s++);
-    }
-}
-
-/* 从环形缓冲区读取一个字节,返回 -1 表示无数据 */
-int16_t UART2_ReadByte(void) {
-    if (g_rx_head == g_rx_tail) {
-        return -1;
-    }
-    uint8_t b = g_rx_buf[g_rx_tail];
-    g_rx_tail = (g_rx_tail + 1U) % UART_RX_BUF_SIZE;
-    return b;
-}
-
-/* USART2 中断服务函数 */
-void USART2_IRQHandler(void) {
-    if (USART2->SR & USART_SR_RXNE) {
-        /* 读取 DR 同时清除 RXNE 标志 */
-        uint8_t b = (uint8_t)USART2->DR;
-        uint16_t next = (g_rx_head + 1U) % UART_RX_BUF_SIZE;
-        if (next != g_rx_tail) {
-            /* 缓冲区未满,写入 */
-            g_rx_buf[g_rx_head] = b;
-            g_rx_head = next;
-        }
-        /* 满则丢弃,实际产品应记录错误 */
+        GPIO_OUT |= LED_BIT;     /* 拉高：LED 亮 */
+        delay(500);
+        GPIO_OUT &= ~LED_BIT;    /* 拉低：LED 灭 */
+        delay(500);
     }
 }
 ```
 
-### 示例 5:协作式任务调度器
+与桌面 C 相比，这个 main 有三处「不对劲」：没有操作系统，代码直接读写物理地址；没有 printf，出错了连一句报错都没有；main 永不返回——返回了也不知道该去哪。很多初学者的第一反应是恐慌：「连输出都没有，我怎么调试？」
+
+本篇的回答贯穿全文：输出重定向到串口（第 8 节）、寄存器状态当证据（第 3 节）、看门狗兜底（第 7 节）、仿真器单步（第 8 节 QEMU）。恐慌来自「黑盒」，下面每一节都在把盒子拆开一条缝。
+
+## 2. 裸机心智模型：每一字节都有预算
+
+先把两个世界的账本并排放：
+
+| 维度 | 桌面程序 | 裸机固件 |
+| --- | --- | --- |
+| 运行环境 | 操作系统加载、调度 | 上电直接跑 main，没有老板 |
+| 内存量级 | GB 级，堆近乎无限 | 几 KB 到几百 KB RAM |
+| 程序存储 | 文件系统里的可执行文件 | Flash 芯片，代码与数据同住 |
+| 标准库 | stdio、malloc、文件全家桶 | 往往只有 string.h 级别的子集 |
+| 出错后果 | 崩溃、core dump、重启进程 | 死机、变砖，可能炸了真实设备 |
+
+资源预算是裸机的第一现实：64KB Flash、16KB RAM 是常见的入门配置。所以裸机 C 工程师的第一个习惯不是写代码，而是**量体积**。交叉工具链的 size 命令把固件按段拆给你看（交叉编译概念见第 8 节）：
+
+```bash
+arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -Os blink.c -o blink.elf
+arm-none-eabi-size blink.elf
+```
+
+一次典型输出：
+
+```text
+   text    data     bss     dec     hex filename
+   1424       8      16    1448     5a8 blink.elf
+```
+
+三列对应 [内存深水区](/c/210-MemoryManagement) 的老朋友：text 是代码与常量，占 Flash；data 是初始化过的全局变量，初值存 Flash、运行在 RAM，**两边都占**；bss 是未初始化变量，只占 RAM。dec 列是 text + data + bss 总和——Flash 预算按 text + data 算，RAM 预算按 data + bss 加上堆栈算。`-Os` 告诉编译器「以体积为先」：牺牲一部分速度，换更短的指令序列。
+
+修改实验一：给 blink.c 加两个「看起来会用到」的函数，再裁掉它们：
 
 ```c
-/* 文件: scheduler.c
- * 简单协作式任务调度器,基于 SysTick
- * 适用于无 RTOS 的轻量级任务调度
- */
+static void debug_menu(void)  { /* 200 行的调试菜单，写了没用上 */ }
+static long crc_table(void)   { /* 算一张 CRC 表，同样没人调用 */ }
+```
+
+不裁剪时 text 涨到约 1900 字节；加上段回收再编：
+
+```bash
+arm-none-eabi-gcc -mcpu=cortex-m3 -mthumb -Os \
+    -ffunction-sections -fdata-sections -Wl,--gc-sections \
+    blink.c -o blink_gc.elf
+arm-none-eabi-size blink_gc.elf
+```
+
+```text
+   text    data     bss     dec     hex filename
+   1428       8      16    1452     5ac blink_gc.elf
+```
+
+体积回到基线。原理分两半：`-ffunction-sections -fdata-sections` 让**每个函数、每个变量各占一个段**（GCC 手册原文：「Place each function or data item into its own section in the output file」）；`--gc-sections` 让链接器从入口出发做**垃圾回收**，未引用的段整段丢弃（GNU ld 手册原文：「Enable garbage collection of unused input sections」）。默认情况下所有函数挤在一个 text 段里，只要有一处引用就整段保留，死代码想扔也扔不掉。注意两个例外：函数指针表、中断向量这类「链接器看不见的引用」可能被误裁，用 [属性与编译器扩展](/c/540-AttributeCompilerExtension) 的 `used` 属性或链接脚本的 `KEEP` 保住它们。
+
+堆策略一句：裸机的堆要么不存在（全部静态分配），要么启动时一次性分配、运行期不再 malloc/free——碎片在 16KB RAM 里没有第二次机会，malloc 的四件套纪律见 [动态内存](/c/200-DynamicMemoryManagement)。资源再往上一个档位是 RTOS（几 KB 到几十 KB 的内核开销，抢占式多任务），再往上就是嵌入式 Linux（完整内核与文件系统）——世界越接近桌面，桌面篇的纪律就越适用。
+
+## 3. 寄存器访问：外设寄存器就是固定地址的内存
+
+第 1 节的 `GPIO_OUT` 揭示了裸机的核心事实：**外设寄存器就是被映射到固定地址的内存单元**，往那个地址写一个字，引脚电平就变；读一个字，拿到的就是外设当前状态。声明它通常写成三层限定（[const 与 volatile 正交语义](/c/260-CVolatileAndConstDeepDive) 的 2x2 表在这里全部落地）：
+
+```c
+/* 寄存器映射声明：三层限定各司其职 */
+#define REG_STATUS  (*(const volatile uint32_t *)0x40011000)  /* 只读寄存器 */
+#define REG_CTRL    (*(volatile uint32_t *)0x40011004)        /* 读写寄存器 */
+```
+
+- `volatile` 是主角：没有它，`while (!(REG_STATUS & READY))` 这类轮询在 -O2 下会被优化成读一次然后死循环——这个实验 270 篇已经完整跑过一遍（-O0 退出、-O2 死循环），在真机上它表现为「单步能过、全速跑挂」，因为调试器介入会强迫真实访存，恰好掩盖了被优化的读。语义细节（它给什么、不给什么）在 260 与 270，这里直接用结论：**凡是内容会绕过 CPU 改变的地址，都要 volatile**。
+- `const` 只加在「硬件只写」或「硬件只读」的寄存器上：它对编译器是契约（260 篇），对硬件是防呆——固件误写只读寄存器，多数总线当场报错。
+
+寄存器的位操作就是 [位运算](/c/070-BitwiseBitField) 掩码四件套的主场：`REG_CTRL |= TE;` 置位、`REG_CTRL &= ~TE;` 清零、`(REG_STATUS & FLAG) != 0` 测试、`REG_CTRL ^= LED;` 翻转。两条纪律：
+
+1. **字面量带 U 后缀**：`24u * 1000u * 1000u / 1000u` 才是安全的频率换算，写成 `24 * 1000 * 1000` 可能在 16 位 int 平台上算到一半溢出——表达式溢出不看你赋值给什么类型，看参与运算的类型本身；
+2. **知道 `|=` 不是原子的**：它是「读、改、写」三步，两拍之间中断或硬件可能改掉了同寄存器的其他位，你的写回会把别人的修改覆盖掉。因此厂商常提供「写 1 置位、写 1 复位」的**原子置位/复位寄存器**（CMSIS 风格的 BSRR：写一个字，置位与清零一条指令完成），需要原子位操作时用它，系统级的原子性与内存序全图见 [原子与内存模型](/c/380-AtomicAndMemoryModel)。
+
+最后一个经典问题：「能不能定义一个位域结构体，直接铺在寄存器地址上？」[位域](/c/240-BitField) 已经给出答案：位的排列顺序与存储分配是实现定义的，换个编译器可能全盘错位，volatile 位域还叠着访问合并的争议。嵌入式界的主流做法是**驱动层用寄存器级掩码**（本节的写法），位域只在同一编译器、静态断言验证过布局的前提下作为可读性视图使用。
+
+## 4. 启动流程：main 之前发生了什么
+
+桌面程序在 main 之前有操作系统与 C 运行时兜底（210 篇：加载器铺好五段）。裸机固件上电的那一刻，RAM 里是随机垃圾，没有人替你做任何事——一切要自己来。以 ARM Cortex-M 为例，上电序列短得出奇：
+
+1. 硬件从地址 0 处的**向量表**取出头两个字：第 0 个字装入主栈指针 MSP（栈顶地址），第 1 个字装入 PC——它就是**复位处理程序**的地址；
+2. 从复位处理程序开始执行，此处已可以用栈。
+
+Cortex-M 复位后运行在特权 Thread 模式、用 MSP；另有第二根栈指针 PSP，供 RTOS 把任务栈与内核栈分开（第 5 节的一句伏笔）。接下来复位处理程序（俗称**启动代码**）要替 C 运行时铺好地基，压缩版如下：
+
+```c
+/* reset.c：上电后最先执行的代码（简化示意，非完整产品版） */
 #include <stdint.h>
-#include <stdbool.h>
 
-#define MAX_TASKS 8
+extern uint32_t _estack;                  /* 栈顶：链接脚本给出 */
+extern uint32_t _sidata, _sdata, _edata;  /* .data 在 Flash 的源与在 RAM 的起终点 */
+extern uint32_t _sbss, _ebss;             /* .bss 在 RAM 的起终点 */
 
-typedef void (*task_fn)(void);
+int main(void);
 
-typedef struct {
-    task_fn   fn;        /* 任务函数 */
-    uint32_t  period;    /* 执行周期(ms) */
-    uint32_t  counter;   /* 计数器 */
-    bool      enabled;   /* 是否启用 */
-} task_t;
-
-static task_t g_tasks[MAX_TASKS];
-static volatile uint32_t g_tick;
-
-/* 注册任务:返回任务 ID,-1 表示失败 */
-int scheduler_add(task_fn fn, uint32_t period) {
-    for (int i = 0; i < MAX_TASKS; i++) {
-        if (!g_tasks[i].fn) {
-            g_tasks[i].fn      = fn;
-            g_tasks[i].period   = period;
-            g_tasks[i].counter  = 0;
-            g_tasks[i].enabled  = true;
-            return i;
-        }
+void reset_handler(void) {
+    uint32_t *src = &_sidata;
+    uint32_t *dst = &_sdata;
+    while (dst < &_edata) {               /* 搬 .data：初值从 Flash 拷进 RAM */
+        *dst++ = *src++;
     }
-    return -1;
-}
-
-/* 调度器主循环:在 main 中调用 */
-void scheduler_run(void) {
-    while (1) {
-        uint32_t tick = g_tick;
-        for (int i = 0; i < MAX_TASKS; i++) {
-            if (!g_tasks[i].fn || !g_tasks[i].enabled) continue;
-            /* 周期到达,执行任务 */
-            if (tick - g_tasks[i].counter >= g_tasks[i].period) {
-                g_tasks[i].counter = tick;
-                g_tasks[i].fn();
-            }
-        }
-        /* 进入低功耗模式,等待下一个中断唤醒 */
-        __asm volatile("wfi");
+    for (dst = &_sbss; dst < &_ebss; ) {  /* 清 .bss：不写初值也是 0 */
+        *dst++ = 0;
+    }
+    (void)main();
+    while (1) {                           /* main 不许返回：真机没有 exit 可去 */
     }
 }
 
-/* SysTick 中断:1ms 触发一次 */
-void SysTick_Handler(void) {
-    g_tick++;
-}
-```
-
-### 示例 6:DMA 双缓冲接收
-
-```c
-/* 文件: dma_double_buffer.c
- * STM32 DMA 双缓冲接收 ADC 数据
- * 适用于实时数据采集场景
- */
-#include "stm32f4xx.h"
-#include <string.h>
-
-#define ADC_BUF_SIZE 256
-#define ADC_BUF_COUNT 2
-
-/* 双缓冲:DMA 与 CPU 交替访问不同缓冲区 */
-static volatile uint16_t g_adc_buf[ADC_BUF_COUNT][ADC_BUF_SIZE];
-static volatile uint8_t  g_active_buf;     /* DMA 当前写入的缓冲区 */
-static volatile bool     g_data_ready;     /* 数据就绪标志 */
-
-void ADC_DMA_Init(void) {
-    /* 1. 使能 ADC1 与 DMA2 时钟 */
-    RCC->APB2ENR |= RCC_APB2ENR_ADC1EN;
-    RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;
-
-    /* 2. 配置 ADC1 通道 0,连续转换模式 */
-    ADC1->CR2 = ADC_CR2_ADON | ADC_CR2_CONT | ADC_CR2_DMA | ADC_CR2_DDS;
-    ADC1->SQR3 = 0;  /* 通道 0 */
-    ADC1->CR1 = ADC_CR1_SCAN;
-
-    /* 3. 配置 DMA2 Stream0 Channel 0(ADC1) */
-    DMA2_Stream0->CR = 0;
-    DMA2_Stream0->PAR = (uint32_t)&ADC1->DR;
-    DMA2_Stream0->M0AR = (uint32_t)g_adc_buf[0];
-    DMA2_Stream0->M1AR = (uint32_t)g_adc_buf[1];
-    DMA2_Stream0->NDTR = ADC_BUF_SIZE;
-    /* 双缓冲模式、循环模式、16 位、内存递增 */
-    DMA2_Stream0->CR = DMA_SxCR_DBM | DMA_SxCR_CIRC |
-                       DMA_SxCR_MINC | DMA_SxCR_PSIZE_0 |
-                       DMA_SxCR_MSIZE_0 | DMA_SxCR_TCIE |
-                       DMA_SxCR_EN;
-    /* DMA 中断优先级 */
-    NVIC_SetPriority(DMA2_Stream0_IRQn, 5);
-    NVIC_EnableIRQ(DMA2_Stream0_IRQn);
-
-    /* 4. 启动 ADC 转换 */
-    ADC1->CR2 |= ADC_CR2_SWSTART;
-
-    g_active_buf = 0;
-    g_data_ready = false;
-}
-
-/* DMA2 Stream0 中断:缓冲区切换时触发 */
-void DMA2_Stream0_IRQHandler(void) {
-    if (DMA2->LISR & DMA_LISR_TCIF0) {
-        /* 清除传输完成标志 */
-        DMA2->LIFCR = DMA_LIFCR_CTCIF0;
-        /* 当前活动缓冲区已满,标记数据就绪 */
-        g_data_ready = true;
-        /* 切换活动缓冲区索引 */
-        g_active_buf = (DMA2_Stream0->CR & DMA_SxCR_CT) ? 1 : 0;
-    }
-}
-
-/* 主循环中处理就绪数据 */
-void process_adc_data(void) {
-    if (g_data_ready) {
-        /* 处理非活动缓冲区的数据(此时 DMA 在写另一个缓冲区) */
-        uint8_t proc_buf = 1 - g_active_buf;
-        for (int i = 0; i < ADC_BUF_SIZE; i++) {
-            /* 处理 g_adc_buf[proc_buf][i] */
-        }
-        g_data_ready = false;
-    }
-}
-```
-
-## 对比分析
-
-### 1. 裸机 vs RTOS vs Linux 对比
-
-| 维度 | 裸机 | RTOS | Embedded Linux |
-|---|---|---|---|
-| RAM 占用 | < 1KB | 4KB-32KB | > 16MB |
-| Flash 占用 | < 16KB | 32KB-256KB | > 16MB |
-| 启动时间 | < 100ms | < 500ms | 1-10s |
-| 实时性 | 微秒级 | 微秒级 | 毫秒级 |
-| 多任务 | 协作式 | 抢占式 | 完全抢占 |
-| 网络栈 | 无 | 可选 lwIP | 完整 |
-| 文件系统 | 无 | LittleFS/FatFS | ext4/yaffs |
-| 开发复杂度 | 低 | 中 | 高 |
-| 典型芯片 | 8051/AVR | STM32/ESP32 | i.MX 8/Raspberry Pi |
-
-### 1. 中断处理方案对比
-
-| 方案 | 优点 | 缺点 | 适用场景 |
-|---|---|---|---|
-| ISR 中完成全部工作 | 响应快 | 阻塞其他中断 | 极短任务 |
-| ISR + 主循环 | 简单 | 响应延迟大 | 简单应用 |
-| ISR + RTOS 信号量 | 实时性好 | 需 RTOS | 中端应用 |
-| ISR + Linux tasklet | 灵活 | 延迟大 | 高端应用 |
-| 中断线程化(kernel thread) | 可重入、可调试 | 调度延迟 | Linux 实时扩展 |
-
-### 2. 常见 RTOS 横向对比
-
-| RTOS | 开源协议 | 内核大小 | 实时性 | 生态 | 典型场景 |
-|---|---|---|---|---|---|
-| FreeRTOS | MIT | 4-10KB | 硬实时 | 丰富 | 通用 MCU |
-| Zephyr | Apache 2.0 | 50KB+ | 硬实时 | 快速发展 | IoT |
-| RT-Thread | Apache 2.0 | 3KB+ | 硬实时 | 中国生态 | 国内 IoT |
-| ThreadX | MIT | 2-10KB | 硬实时 | 微软支持 | 高端 MCU |
-| VxWorks | 商业 | N/A | 硬实时 | 工业级 | 航空、军工 |
-| QNX | 商业 | N/A | 硬实时 | 汽车 | 安全关键 |
-
-### 3. 静态分析工具对比
-
-| 工具 | 厂商 | 标准支持 | 价格 | 优点 | 缺点 |
-|---|---|---|---|---|---|
-| PC-lint Plus | Gimpel | MISRA C 2012 | 商业 | 历史悠久,规则丰富 | 误报较多 |
-| Coverity | Synopsys | MISRA, CERT | 商业 | 准确率高 | 价格高 |
-| Polyspace | MathWorks | MISRA, ISO 26262 | 商业 | 抽象解释,零误报 | 慢 |
-| cppcheck | 开源 | 部分 MISRA | 免费 | 集成方便 | 漏报较多 |
-| Clang-Tidy | LLVM | 部分 MISRA | 免费 | 现代、可扩展 | 配置复杂 |
-
-## 常见陷阱与反模式
-
-### 1. 未使用 volatile 修饰硬件寄存器
-
-**事故案例**:2010 年某汽车 ECU 在 O2 优化级别下读取 ADC 寄存器时被编译器缓存,导致控制延迟。
-
-**反模式**:
-
-```c
-uint32_t *adc_reg = (uint32_t *)0x40012000;
-while (!(*adc_reg & 0x80));  /* 编译器可能优化为单次读取 */
-```
-
-**正确做法**:
-
-```c
-volatile uint32_t *adc_reg = (volatile uint32_t *)0x40012000;
-while (!(*adc_reg & 0x80));
-```
-
-### 1. 整数溢出导致定时器配置错误
-
-**事故案例**:某定时器配置 `24MHz / 1000 = 24000`,但表达式 `24 * 1000 * 1000 / 1000` 在 16 位 int 下溢出。
-
-**正确做法**:使用 `U`/`UL` 后缀,确保字面量在足够宽的类型中计算。
-
-```c
-uint32_t period = 24U * 1000U * 1000U / 1000U;  /* 正确 */
-```
-
-### 2. 中断服务函数中调用非可重入函数
-
-**事故案例**:ISR 中调用 `printf`,后者使用全局缓冲,与主循环 `printf` 竞争,导致输出乱码。
-
-**反模式**:
-
-```c
-void USART2_IRQHandler(void) {
-    printf("got byte: %c\n", USART2->DR);  /* printf 非可重入 */
-}
-```
-
-**正确做法**:ISR 中仅写入环形缓冲区,主循环统一处理。必须使用 `printf` 时,改用支持可重入的自实现版本。
-
-### 3. 共享变量未保护
-
-**事故案例**:主循环读取 32 位计数器时,被 32 位 MCU 上 16 位访问的中断打断,导致读到半旧半新值。
-
-**反模式**(在 8/16 位 MCU 上):
-
-```c
-volatile uint32_t g_counter;
-
-void ISR(void) { g_counter++; }
-
-uint32_t read_counter(void) {
-    return g_counter;  /* 16 位 MCU 上非原子 */
-}
-```
-
-**正确做法**:读取时临时关闭中断。
-
-```c
-uint32_t read_counter(void) {
-    uint32_t val;
-    __disable_irq();
-    val = g_counter;
-    __enable_irq();
-    return val;
-}
-```
-
-### 4. 栈溢出
-
-**事故案例**:某嵌入式项目使用递归解析 JSON,在 4KB 栈空间下深层嵌套数据时栈溢出,触发 HardFault。
-
-**正确做法**:
-
-- 禁用递归(MISRA C 规则 17.2)。
-- 链接脚本中预留充足栈空间(通常 1-8KB)。
-- 启用 MPU 进行栈溢出检测。
-- 使用 `--print-stack-usage` 编译选项分析各函数栈需求。
-
-### 5. 浮点运算误用
-
-**事故案例**:Cortex-M0(无 FPU)上使用 float 进行 PID 计算,触发软中断异常,响应延迟剧增。
-
-**正确做法**:
-
-- 在无 FPU 的 MCU 上使用定点运算。
-- 必须使用浮点时,确保 FPU 已启用(Cortex-M4F/M7)。
-- 浮点上下文切换开销大,ISR 中慎用。
-
-### 6. 误用 malloc
-
-**事故案例**:嵌入式系统启动后多次调用 `malloc`/`free`,堆碎片导致后续分配失败。
-
-**正确做法**:
-
-- 禁用动态内存(MISRA C 规则 21.3)。
-- 使用固定块内存池。
-- 必须动态分配时,启动时一次性分配,运行时不再 free。
-
-### 7. 位字段的可移植性问题
-
-**反模式**:
-
-```c
-struct flags {
-    uint8_t a : 3;
-    uint8_t b : 5;
+/* 向量表：第 0 字初始栈顶，第 1 字复位向量。
+ * section 属性（540 篇）把它放进专用段，供链接脚本摆到地址 0 */
+__attribute__((section(".isr_vector"), used))
+void (* const vectors[])(void) = {
+    (void (*)(void))(&_estack),
+    reset_handler,
 };
 ```
 
-位字段在内存中的排列顺序由实现定义,跨平台代码不应依赖。
+这三件事解释了两个桌面时代的老问题在嵌入式的新答案：为什么「全局变量不写初值也是 0」（bss 清零，210 篇的加载器职责现在归启动代码）；为什么「初始化过的全局变量」两边占地方（初值必须烧进 Flash 才能断电保存，运行时又必须在 RAM 里可写）。真实产品的启动代码还会先配时钟与 Flash 等待周期，中断处理函数名则用 540 篇的 `weak` 属性挂成默认死循环，应用层同名覆盖即可。
 
-**正确做法**:使用显式掩码操作。
-
-```c
-#define FLAG_A_MASK 0x07
-#define FLAG_B_MASK 0xF8
-#define FLAG_A_SHIFT 0
-#define FLAG_B_SHIFT 3
-
-uint8_t flags = 0;
-flags |= (a_val & FLAG_A_MASK) << FLAG_A_SHIFT;
-flags |= (b_val & 0x1F) << FLAG_B_SHIFT;
-```
-
-## 工程实践
-
-### 1. 链接脚本设计
+铺地基的图纸是**链接脚本**，最小骨架一瞥：
 
 ```ld
-/* 文件: link.ld
- * STM32F407 链接脚本
- * RAM: 192KB(0x20000000-0x2002FFFF)
- * Flash: 1MB(0x08000000-0x080FFFFF)
- */
-ENTRY(Reset_Handler)
-
+/* 最小链接脚本骨架（示意，非完整可用版本） */
 MEMORY
 {
     FLASH (rx)  : ORIGIN = 0x08000000, LENGTH = 1024K
-    RAM   (rwx) : ORIGIN = 0x20000000, LENGTH = 192K
+    RAM   (rwx) : ORIGIN = 0x20000000, LENGTH = 128K
 }
-
-_estack = ORIGIN(RAM) + LENGTH(RAM);
 
 SECTIONS
 {
-    .isr_vector : {
-        KEEP(*(.isr_vector))
-    } > FLASH
+    .isr_vector : { KEEP(*(.isr_vector)) } > FLASH  /* KEEP：不许被 --gc-sections 收走 */
+    .text       : { *(.text*) *(.rodata*) } > FLASH /* 代码与只读数据留在 Flash */
+    .data       : { *(.data*) } > RAM AT > FLASH    /* 运行在 RAM，初值存 Flash */
+    .bss        : { *(.bss*) *(COMMON) } > RAM
+}
+```
 
-    .text : {
-        *(.text)
-        *(.text*)
-        *(.rodata)
-        *(.rodata*)
-        KEEP(*(.init))
-        KEEP(*(.fini))
-        . = ALIGN(4);
-        _etext = .;
-    } > FLASH
+`> RAM AT > FLASH` 一行同时定义了两套地址：装载地址（Flash 里存的那份初值，启动代码的 `_sidata` 指向它）与运行地址（RAM 里的工作副本，`_sdata` 指向它）——启动代码的搬运用装载地址，日常读写用运行地址。540 篇的 `section(".mydata")` 自定义段、第 2 节的段裁剪，都在这张图纸上各就各位。链接脚本完整语法（符号、断言、调试段）超出本篇主线，以工具链手册为准。
 
-    .data : {
-        . = ALIGN(4);
-        _sdata = .;
-        *(.data)
-        *(.data*)
-        . = ALIGN(4);
-        _edata = .;
-    } > RAM AT > FLASH
+## 5. HAL 与寄存器直写：两种风格
 
-    _sidata = LOADADDR(.data);
+同一件事「开定时器」，两种写法：
 
-    .bss : {
-        . = ALIGN(4);
-        _sbss = .;
-        *(.bss)
-        *(.bss*)
-        *(COMMON)
-        . = ALIGN(4);
-        _ebss = .;
-    } > RAM
+```c
+/* 风格一：寄存器直写（伪芯片，寄存器名即文档） */
+REG_TIMER_CTRL |= TIMER_ENABLE;      /* 我在动 CTRL 的使能位 */
+REG_TIMER_LOAD = 1000;               /* 重装值：数字出自数据手册 */
 
-    .heap : {
-        . = ALIGN(8);
-        _sheap = .;
-        . = . + 8K;
-        _eheap = .;
-    } > RAM
+/* 风格二：HAL 封装（通用伪 API，不绑具体厂商） */
+hal_timer_enable(HAL_TIMER_2, 1000); /* HAL 替我查表、配引脚、写寄存器 */
+```
 
-    .stack : {
-        . = ALIGN(8);
-        _sstack = .;
-        . = ORIGIN(RAM) + LENGTH(RAM);
-        _estack = .;
-    } > RAM
+| 维度 | 寄存器直写 | HAL 库 |
+| --- | --- | --- |
+| 可读性 | 逐位对数据手册，行行见血 | 语义化 API，意图先行 |
+| 可移植性 | 换芯片近乎重写 | 同家族芯片间移植成本低 |
+| 体积 | 最小，用到哪写到哪 | 抽象层厚，常拖进整片初始化 |
+| 适合 | 学习原理、极致裁剪、驱动作者 | 快速出活、跨型号产品线 |
 
-    /DISCARD/ : {
-        *(.ARM.exidx*)
-        *(.ARM.extab*)
+本篇教直写，不是排斥 HAL：直写逼你读懂数据手册，读懂了再看 HAL 是「查表替你写寄存器的宏」，反而一眼看穿它在做什么。Arduino 一类框架是 HAL 的再上一层——把「闪个灯」压缩成三行，代价是你永远不知道第 4 节的启动流程曾经存在。初学用直写打地基，生产按团队规范选边。
+
+顺带两句伏笔。其一，前面提到 Cortex-M 有 MSP 与 PSP 两根栈指针：复位后一切跑在 MSP 上；RTOS 启动后让任务跑 PSP、内核与中断留在 MSP，上下文切换正是靠「换 PSP 指针」完成的——这是裸机与 RTOS 在硬件上的分水岭。其二，高频数据流（摄像头、音频、高速采样）不靠 CPU 逐字节搬运，而是配好 DMA（直接内存访问）控制器一次搬一串，CPU 只在完成中断里收货。
+
+## 6. 中断服务程序：在别人的打断下工作
+
+外设不会等你轮询，它会主动「举手」：硬件事件触发**中断**，CPU 存好现场、跳进你注册的**中断服务程序**（ISR），执行完从断点继续。[信号处理](/c/340-SignalHandling) 开头那句「信号是发给进程的软件中断」在这里兑现成硬件版——同样异步到达，同样时机不由你，340 篇的两条处理器纪律原封不动搬过来。
+
+**纪律一：ISR 要短，只立标志，逻辑回主循环。** 做法是共享一个标志位或缓冲区，主循环轮询处理：
+
+```c
+/* isr.c：UART 收包的中断侧与主循环侧 */
+#include <stdint.h>
+
+#define BUF_SIZE 64
+
+static volatile uint8_t  rx_buf[BUF_SIZE];
+static volatile uint16_t rx_head;    /* 只有 ISR 写 */
+static volatile uint16_t rx_tail;    /* 只有主循环写 */
+
+void uart_isr(void) {                /* UART 收到一字节时被硬件调用 */
+    uint8_t b = uart_read_byte();    /* 读数据同时清标志（假设的驱动函数） */
+    uint16_t next = (uint16_t)((rx_head + 1u) % BUF_SIZE);
+    if (next != rx_tail) {           /* 缓冲区没满才写，满则丢弃 */
+        rx_buf[rx_head] = b;         /* 宁可丢字节，也不让 ISR 变长 */
+    }
+    rx_head = next;
+}
+
+int uart_read_byte(void) {           /* 主循环调用 */
+    if (rx_head == rx_tail) {
+        return -1;                   /* 无数据 */
+    }
+    uint8_t b = rx_buf[rx_tail];
+    rx_tail = (uint16_t)((rx_tail + 1u) % BUF_SIZE);
+    return b;
+}
+```
+
+单生产者（ISR）单消费者（主循环）各写各的下标，天然无锁——volatile 保证两边都从内存读最新值。这套「处理器只立标志」与 340 篇的结论逐字同构。
+
+**纪律二：多字节或多步共享，必须临界区。** 标志无害，但「读-改-写」三步的共享变量会被中断插队：
+
+```c
+volatile uint32_t g_ticks;           /* SysTick 中断里 ++ 的全局计数 */
+
+uint32_t ticks_get(void) {           /* 在 16 位 MCU 上：32 位读是两条指令 */
+    uint32_t snapshot;
+    __disable_irq();                 /* 进临界区：CMSIS 内置，其他工具链有等价物 */
+    snapshot = g_ticks;              /* 32 位机上对齐的 32 位读本身原子，可省 */
+    __enable_irq();
+    return snapshot;
+}
+```
+
+关中断临界区是裸机版的「锁」：代价是关中断期间任何中断都进不来，所以**临界区必须短到几条指令**（实时性优化清单里「临界区最小化」一条的意思）。它只解决单核场景；多核与跨核共享是硬件原子指令的领地（[原子与内存模型](/c/380-AtomicAndMemoryModel) 与 560 篇）。
+
+**纪律三：ISR 里禁止调用不可重入的库函数。** malloc/free 操作的全局堆链表可能正被主循环改到一半；printf 依赖全局缓冲与锁。ISR 插进来再用它们，堆或缓冲区立刻进入「改了一半」的状态——这类事故的排查见第 9 节实录二。ISR 里能做的只有：读写寄存器、操作自己的缓冲区、置 volatile 标志。
+
+## 7. 可靠性工程：看门狗、栈核算与 MISRA C
+
+**看门狗**是一个独立递减的计数器：减到零就复位整个系统；程序必须周期性地「喂狗」把它重置回初值。它防的是第 1 节那个恐慌问题的极端形态——**固件死了，但没人知道**：主循环卡在等一个永远不会置位的标志，指示灯停在半亮，设备看起来还在运转。看门狗把「无声死机」变成「自动重启」，这是很多远程设备唯一能自己采取的急救措施。
+
+喂狗点的选择比喂狗本身重要：把喂狗塞进定时器中断里无脑喂，主循环死机了看门狗照样被喂——看门狗被架空。正确姿势是在主循环里**确证自己活着的地方**喂：比如「收到了传感器新数据且校验通过」之后。进阶形态是窗口看门狗：喂得太晚复位，喂得太早也复位——程序跑飞的一种形态不是卡死，而是「跑太快」（循环条件被破坏提前通过），窗口把这条路也堵上。具体计数周期由独立低速时钟驱动，与主时钟独立，主时钟挂了它照样工作。
+
+**栈核算**是第二道保险。桌面程序栈溢出会得到保护页与清晰的崩溃报告；裸机栈只有几 KB，溢出后写坏的是相邻的全局变量——这是比崩溃更危险的结果（实录三）。工具是 250 篇的 `-fstack-usage`：编译时给每个函数的栈帧量尺寸，配合 `-Wstack-usage=N` 把超支函数变成编译告警。预算公式的心智版：最深调用链各帧之和，加上最深处被打断时 ISR 的压栈开销，再乘 1.5 到 2 的余量。裸机界还有一条硬规矩：**不用递归**——递归深度不可静态预算（递归的桌面级分析在 250 篇），解析嵌套数据改用显式栈或循环。
+
+**MISRA C** 一句概览：它是汽车、医疗、航空等安全关键行业广泛采用的 C 编码规范，规则如「禁止递归」「限制动态内存」「不依赖未定义行为」——精神是把语言的自由裁剪成「可静态分析、可审查」的子集。知道它存在、理解它的动机，就足够本篇了；完整规则集与合规流程超出主线，静态分析工具怎么落地这些规则见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+
+## 8. 工具链与仿真：交叉编译与 QEMU
+
+**交叉编译**：在 x86 电脑（host）上编译出 ARM 单片机（target）的代码。前缀就是说明书——`arm-none-eabi-gcc` 的三段：`arm` 目标架构、`none` 裸机（没有操作系统，因此没有依赖操作系统的 C 库）、`eabi` 嵌入式二进制接口约定。第 2 节的 size 命令同属这套交叉工具链（binutils）。
+
+没有开发板也能起步——**QEMU 仿真**。QEMU 内置了若干「机器」模型，其中 `mps2-an385` 复刻了 Arm 应用笔记 AN385 里的 FPGA 图像，CPU 是 Cortex-M3（QEMU 文档还提供 an386 的 M4、an500 的 M7 等）。把第 8 节之前编好的固件喂给它：
+
+```bash
+qemu-system-arm -machine mps2-an385 -kernel blink.elf -nographic -serial stdio
+```
+
+板上的 UART 被接到宿主终端，固件的串口输出直接打印在你的命令行里。最小可观测实验：给 blink.c 加上第 8 节末尾的串口输出，每 500 毫秒打一行 `led on` / `led off`——灯在仿真里看不见，日志看得见。具体的外设地址、UART 实例与命令行参数以所用 QEMU 版本的文档为准，官方在线示例见 FreeRTOS 的 MPS2 AN385 演示（可下载后用一条 qemu 命令直接跑通）。
+
+**printf 重定向（retarget）**：裸机没有屏幕，标准库的 printf 终点的实现留空，C 库留出「写一个字符」的出口让你自己接。以 newlib 为例，重写 `fputc` 接到串口驱动：
+
+```c
+/* retarget.c：把标准库的字符输出接到串口 */
+#include <stdio.h>
+
+extern void uart_putc(char c);       /* 第 6 节式轮询发送，由你的驱动实现 */
+
+int fputc(int ch, FILE *f) {
+    (void)f;
+    if (ch == '\n') {
+        uart_putc('\r');             /* 终端习惯 CRLF，顺手补上 */
+    }
+    uart_putc((char)ch);
+    return (unsigned char)ch;
+}
+```
+
+此后库内所有打印都汇聚到这一个函数。注意挂点因 C 库而异（newlib 是 `fputc`，其他库可能是 `_write` 或厂商宏），以所用库的手册为准；生产固件对 printf 要克制——它体积大、慢，还不可进 ISR（第 6 节纪律三）。
+
+## 9. 常见错误与调试实录
+
+**实录一：忘写 volatile，固件「单步能过、全速跑挂」。** 症状：轮询一个由 DMA 或外设置位的标志，全速运行永不退出；挂上调试器单步，又能跑过去。原因在 270 篇拆过：优化器看见循环体没人改这个变量，把「每次都读内存」优化成「读一次」，单步时调试器强迫真实访存，恰好掩盖了病灶。修复：给寄存器地址与 ISR/DMA 共享变量补 volatile。这是嵌入式代码评审的第一条检查项。
+
+**实录二：ISR 里调 printf，故障「每天一次，毫无规律」。** 症状：设备数小时后输出乱码随后死机，崩溃点每次不同。排查思路：崩溃点不可复现，说明真凶在别处——把注意力移到「所有异步执行流」上，发现串口接收 ISR 里有一行调试残留的 `printf("rx: %c\n", ...)`。主循环的 printf 正在格式化到一半，ISR 插进来又 printf，两个执行流交错踩同一个全局缓冲。修复即第 6 节纪律三：ISR 里只写环形缓冲区。这个案例也是「偶现故障先怀疑共享状态」的标本：静默的交错才会偶现，把它变必现靠评审而不是靠运气。
+
+**实录三：栈溢出踩坏毫不相干的全局变量。** 症状：某个从不被写入的统计变量偶尔变成随机值；无崩溃报告，一切看似正常。排查：4KB 栈预算，新加的 JSON 解析用了递归，深层嵌套数据一来，栈越过界线向下生长，写进了紧邻栈底的 bss 区。修复三件套：`-fstack-usage` 量出解析器帧深，递归改迭代，预算内预留余量。教训：裸机的栈溢出不是崩溃，是**数据被悄悄改写**——比崩溃更难查，因为受害者与凶手相隔十万八千里。
+
+## 10. 实际项目中的使用场景
+
+- 家电、传感节点、电机控制：本篇主线的标准战场——裸机加中断，主循环一个状态机，看门狗兜底；
+- 中端设备上 RTOS：FreeRTOS、Zephyr 用任务与队列代替手写状态机，但 ISR 纪律、栈核算、volatile 规则一条不少——本篇是它们的地基而非替代品；
+- 单人也能维护的真实固件：开源项目 FoloToy-calendar 在 ESP32-C3（8MB Flash、无 PSRAM、单核 RISC-V）上实现日历玩法固件。它把本章知识点全用上了：月历网格用像素位图而非图片资源、数据按字节精打细算，是第 2 节的资源预算思维；固件、字体点阵与配置区在 8MB Flash 里的分区规划，是第 4 节段布局思想的放大版；配网与校时是典型的事件驱动状态机。嵌入式 C 的门槛不在芯片多贵——一块几十元的开发板即可完整复现这条学习路径。
+
+## 11. 小练习
+
+预测题（5 分钟）：把第 1 节 delay 函数内层循环的 `volatile int i` 改成普通 `int i`，先写答案再编译（用 -O2）：
+
+```c
+static void delay(int n) {
+    while (n-- > 0) {
+        for (int i = 0; i < 1000; i++) {  /* 改动在这里 */
+        }
     }
 }
 ```
 
-### 1. 实时性优化要点
+参考答案（先写再看）：内层循环体是空的，优化器认出「循环一千米什么都没做」，整段删掉；外层的 while 若也被认定无事可做则一起蒸发，delay 退化成两次直通调用——LED 以肉眼跟不上的频率狂闪，或干脆看起来常亮。把变量标成 volatile 是「我就是要这段循环存在」的声明。
 
-1. **关键路径放快速 RAM**:Cortex-M7 的 ITCM/DTCM 可提供单周期访问。
-2. **DMA 替代 CPU 搬运**:UART、SPI、ADC 等高频外设必须使用 DMA。
-3. **双缓冲(DMA Buffer)避免数据丢失**:`DMA_SxCR_DBM` 让 DMA 与 CPU 交替访问不同缓冲区。
-4. **中断优先级分组**:NVIC 优先级分组将抢占优先级与子优先级分开,合理配置避免中断嵌套过深。
-5. **临界区最小化**:关闭中断的代码段应尽量短,避免影响实时性。
-6. **使用 bitband**(Cortex-M3/M4):位带区可实现单条指令的原子位操作。
+修改题（15 分钟）：给 blink.c 装上看门狗（通用伪 API：`wdg_init(ms)` 启动，`wdg_feed()` 喂狗）。要求：主循环每圈喂狗；然后故意加一段「等一个永远不会置位的标志」的死循环，观察现象。验收：设备周期性复位（加一个开机计数打印就能看到）。这个实验就是「忘记喂狗的现场」的受控复现。
 
-### 2. 低功耗设计
+挑战题（半小时，不看答案先动手）：把第 6 节的环形缓冲区补完并加固。提示两级如下。
 
-```c
-/* 文件: low_power.c
- * STM32 低功耗模式示例
- */
-#include "stm32f4xx.h"
+提示（思路方向）：`uart_read_byte` 返回 -1 已处理空缓冲；想象再补一个「主循环清空缓冲区」的场景，tail 与 head 的修改就会出现在两个执行流里。
 
-/* 进入 Sleep 模式:CPU 暂停,外设运行,任意中断唤醒 */
-void enter_sleep(void) {
-    /* SLEEPDEEP = 0, SLEEPONEXIT = 0 */
-    SCB->SCR &= ~SCB_SCR_SLEEPDEEP_Msk;
-    __asm volatile("wfi");
-}
+展开（关键 API 与检查）：凡主循环可能读改 head 或 ISR 之外写 tail 的路径，包一层 `__disable_irq()` / `__enable_irq()`；完成后 `grep -n` 自查 uart_isr 内除寄存器访问与缓冲区操作外没有任何函数调用。验收：ISR 体内无库函数调用；共享下标的每次写都有明确的唯一属主或临界区保护。
 
-/* 进入 Stop 模式:所有时钟停止,SRAM 保持,功耗约 100uA */
-void enter_stop(void) {
-    /* 进入 Stop 前关闭外设,降低功耗 */
-    RCC->APB1ENR &= ~(RCC_APB1ENR_USART2EN | RCC_APB1ENR_TIM2EN);
+## 12. 与之前和之后的知识的关系
 
-    /* SLEEPDEEP = 1, PDDS = 0(Stop 模式) */
-    SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
-    PWR->CR &= ~PWR_CR_PDDS;
-    PWR->CR |= PWR_CR_LPDS;  /* 调压器低功耗 */
+- 往前：volatile 的三场景（[const 与 volatile 正交语义](/c/260-CVolatileAndConstDeepDive)、[volatile 关键字](/c/270-VolatileKeyword)）在寄存器与中断共享变量上全部落地；掩码四件套（[位运算](/c/070-BitwiseBitField)）与位域争议（[位域](/c/240-BitField)）在驱动层合流；五段布局（[内存深水区](/c/210-MemoryManagement)）的嵌入式对应物是第 4 节的启动代码；栈核算（[函数调用栈帧](/c/250-FunctionCallStackFrame)）在这里从「性能问题」升级为「生存问题」；
+- 旁支：[信号处理](/c/340-SignalHandling) 是中断的桌面镜像——两条处理器纪律完全同构；malloc 纪律（[动态内存](/c/200-DynamicMemoryManagement)）在裸机的答案是「尽量不 malloc」；
+- 往后：当 C 不够用时——内联汇编、操作数约束、内存屏障与原子指令——见 [C 与汇编交互](/c/560-CAssemblyInteraction)；MISRA 式检查的工程化落地见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
 
-    __asm volatile("wfi");
+## 13. 官方文档
 
-    /* 唤醒后恢复时钟 */
-    SystemClock_Config();
-    RCC->APB1ENR |= RCC_APB1ENR_USART2EN | RCC_APB1ENR_TIM2EN;
-}
+- QEMU Arm MPS2 与 MPS3 机型文档（mps2-an385 即 Arm AN385 的 Cortex-M3，另有 an386 的 M4、an500 的 M7）：https://www.qemu.org/docs/master/system/arm/mps2.html
+- FreeRTOS 官方 QEMU MPS2 AN385 演示（Cortex-M3 固件 + qemu 命令直接运行）：https://freertos.org/freertos-on-qemu-mps2-an385-model.html
+- GNU ld 手册（--gc-sections 垃圾回收未用输入段的权威定义）：https://sourceware.org/binutils/docs/ld/Options.html
+- gcc(1) 手册页（-ffunction-sections/-fdata-sections 与 -Os 的官方文本）：https://man7.org/linux/man-pages/man1/gcc.1.html
 
-/* 进入 Standby 模式:SRAM 内容丢失,功耗约 2uA */
-void enter_standby(void) {
-    /* PDDS = 1,深度睡眠 */
-    PWR->CR |= PWR_CR_PDDS;
-    SCB->SCR |= SCB_SCR_SLEEPDEEP_Msk;
+## 14. 自我检查
 
-    /* 使能 WKUP 引脚唤醒 */
-    PWR->CSR |= PWR_CSR_EWUP1;
+- 能向同事讲清「64KB Flash、16KB RAM」的账怎么算：text/data/bss 各占哪边，-Os 与段回收各省哪一部分；
+- 能写出三重限定的寄存器声明并逐层解释，说清 `|=` 为什么不原子、原子置位/复位寄存器好在哪；
+- 能不看资料复述上电到 main 的链条：向量表头两字、搬 .data、清 .bss，并解释 `> RAM AT > FLASH` 的两套地址；
+- 能说出 ISR 三条纪律，以及 printf 与 malloc 进 ISR 分别会踩坏什么；
+- 能解释看门狗为什么不能在定时器中断里无脑喂，以及裸机栈溢出为什么表现为「不相干的变量被改」。
 
-    __asm volatile("wfi");
+## 本章总结
 
-    /* 唤醒后等同于复位,从头执行 */
-}
-```
+裸机的第一现实是预算：size 量出 text/data/bss，-Os 与段回收把体积裁到只含活代码。外设寄存器是固定地址的内存，volatile 禁缓存、const 立契约、掩码四件套做位操作，读-改-写非原子所以有置位/复位寄存器。上电到 main 之间没有魔法：向量表头两字给出栈顶与复位向量，启动代码搬 .data、清 .bss，链接脚本是这一切的图纸。ISR 的世界规则三条：短、volatile 标志、临界区保护；malloc 与 printf 是禁区。看门狗把无声死机变成自动重启，栈预算把溢出从「悄悄改数据」提前到「编译告警」。printf 重定向到串口、QEMU 仿真免板起步——黑盒从第 1 节的恐慌，到本节已经拆到了可以随手检修的程度。
 
-### 3. 看门狗设计
+## 下一步
 
-```c
-/* 文件: watchdog.c
- * 独立看门狗(IWDG)使用
- */
-#include "stm32f4xx.h"
-
-void IWDG_Init(uint32_t timeout_ms) {
-    /* LSI 时钟约 32kHz,分频器 256,1 计数 = 8ms */
-    uint32_t prescaler = IWDG_PR_PR_3;  /* /256 */
-    uint32_t reload = (timeout_ms * 32U / 256U);
-
-    /* 启用 IWDG,启用 LSI */
-    IWDG->KR = 0xCCCC;
-    /* 启用寄存器访问 */
-    IWDG->KR = 0x5555;
-    IWDG->PR = prescaler;
-    IWDG->RLR = reload & 0xFFF;
-    /* 等待 PVU 与 RVU 标志清零 */
-    while (IWDG->SR & (IWDG_SR_PVU | IWDG_SR_RVU));
-    /* 喂狗 */
-    IWDG->KR = 0xAAAA;
-}
-
-void IWDG_Refresh(void) {
-    IWDG->KR = 0xAAAA;
-}
-```
-
-### 4. MISRA C 合规检查清单
-
-| 规则类别 | 关键规则 | 实施要点 |
-|---|---|---|
-| 强制类 | 规则 8.4:外部符号必须有 compatible declaration | 头文件统一声明 |
-| 强制类 | 规则 17.3:函数不得递归调用 | 静态分析工具检查 |
-| 强制类 | 规则 21.13:ctype.h 函数参数必须为 EOF 或 unsigned char 范围 | 类型显式转换 |
-| 必需类 | 规则 8.7:文件作用域对象声明应 static | 减少外部符号 |
-| 必需类 | 规则 10.1:操作数类型应明确 | 使用 `<stdint.h>` 类型 |
-| 必需类 | 规则 11.5:指针到不同类型指针的转换应显式 | 谨慎使用强制转换 |
-| 建议类 | 规则 8.7:函数应具有静态链接 | 内部函数加 static |
-| 建议类 | 规则 15.5:函数应单出口 | 使用 goto 集中清理 |
-
-## 案例研究
-
-### 案例 1:特斯拉 Autopilot MCU 架构
-
-特斯拉 HW3.0 自动驾驶域控制器采用双 FSD 芯片冗余架构:
-
-- 每颗 FSD 内置 12 个 ARM Cortex-A72 与 Cortex-R5 协处理器。
-- Cortex-R5 运行 RTOS 处理实时任务(刹车、转向)。
-- Cortex-A72 运行 Linux 处理神经网络推理。
-- 双 SoC 互为热备,实时校验输出。
-- 符合 ISO 26262 ASIL-B 等级。
-
-该架构展示了嵌入式系统在功能安全与算力间的平衡设计。
-
-### 案例 2:大疆无人机飞控
-
-大疆飞控系统采用三层架构:
-
-1. **底层**:Cortex-M4 处理 IMU 读取、电机 PWM 输出,1kHz 控制循环。
-2. **中层**:Cortex-M7 处理姿态解算、GPS 融合、避障算法。
-3. **高层**:Linux SoC 处理图像识别、路径规划。
-
-层间通过共享内存与中断通信,实时性由底层保证,功能由高层实现。
-
-### 案例 3:汽车 OBD-II 诊断
-
-OBD-II 协议要求 ECU 在 50ms 内响应诊断请求:
-
-- ISO 15765-4(CAN)规定物理层、数据链路层。
-- ISO 14229(UDS)规定应用层服务。
-- 实现:CAN 中断接收 → 任务队列 → UDS 服务处理 → CAN 发送。
-- 关键:整个链路 WCET 必须小于 50ms,需静态分析与测量结合。
-
-### 案例 4:医疗设备 IEC 62304 合规
-
-某胰岛素泵遵循 IEC 62304 Class C(致命伤害可能):
-
-- 单元测试覆盖率 ≥ 100%(语句),≥ 80%(分支)。
-- 静态分析零误报(MISRA C 强制类规则全部通过)。
-- 风险分析:FMEA、FTA、HAZOP。
-- 软件单元要求:每个函数不超过 60 行(Power of Ten)。
-- 异常处理:每条故障路径都有明确恢复策略。
-
-### 案例 5:FoloToy-calendar——一个人也能完成的真实固件
-
-前四个案例都是大厂重兵器,这里看一个反方向:单人维护的 ESP32-C3 小固件也能把本章概念全部用上。开源项目 [FoloToy-calendar](https://github.com/fanquanpp/FoloToy-calendar) 在 FoloToy AI Passport(ESP32-C3 / 8MB Flash / 无 PSRAM)硬件上实现日历玩法固件:像素风月历网格、倒计时、纪念日高亮。
-
-它踩中的正是本章的每个知识点:
-
-- **资源约束**:无 PSRAM、单核 RISC-V,月历网格用像素位图而非图片资源,数据结构按字节精打细算——对应内存布局与对齐一节;
-- **配网与校时**:SoftAP/BLE 配网、SNTP 自动校时,是典型的「事件驱动 + 状态机」C 代码组织;
-- **低功耗与静音优先**:不活跃时段降低刷新频率,展示嵌入式里「性能即省电」的独特取向;
-- **工程化**:8MB Flash 内要同时放下固件、字体点阵与配置区,分区表设计对应链接脚本与 Flash 布局一节。
-
-给学习者的启示:嵌入式 C 的门槛不在芯片多贵,而在「每一字节、每一毫秒都有理由」的思维方式——买一块几十元的 ESP32-C3 开发板即可完整复现这条学习路径。
-
-### 基础题
-
-**题 1**:`volatile` 关键字在嵌入式 C 中有哪些典型用途?
-
-**参考答案**:
-
-1. 修饰硬件寄存器指针,防止编译器缓存。
-2. 修饰中断与主循环共享的全局变量,确保每次读取从内存加载。
-3. 修饰信号处理函数中修改的变量。
-4. 修饰 `setjmp`/`longjmp` 跨函数的局部变量。
-
-**题 2**:为什么嵌入式代码通常禁止递归?
-
-**参考答案**:
-
-1. 栈空间有限(几 KB 到几十 KB),递归深度不可预测,易溢出。
-2. 递归执行时间不可静态分析,违反实时性要求。
-3. MISRA C 规则 17.2、17.3、17.4 强制禁止递归。
-4. 递归调试困难,栈跟踪不清晰。
-
-**题 3**:嵌入式系统中,`.data` 段为什么需要从 Flash 复制到 RAM?
-
-**参考答案**:已初始化的全局变量在 RAM 中运行(可读可写),但 RAM 在断电后内容丢失,因此初始化值必须存储在非易失的 Flash 中。启动代码将这些值从 Flash 复制到 RAM 的 `.data` 段,使程序运行时能正确访问已初始化的全局变量。
-
-### 进阶题
-
-**题 4**:实现一个支持任务调度与消息队列的极简 RTOS 内核,要求:
-
-- 最多 8 个任务,优先级抢占调度。
-- 支持信号量与消息队列。
-- 上下文切换通过 PendSV 实现。
-
-**参考答案要点**:
-
-- 使用 Cortex-M 的 PendSV 异常作为上下文切换点,优先级最低。
-- 任务栈预分配,首次切换时初始化栈帧为任务入口函数。
-- 信号量通过原子操作与阻塞队列实现。
-- 消息队列使用环形缓冲区与等待队列。
-
-**题 5**:分析以下代码在 ARM Cortex-M3 上的中断安全性:
-
-```c
-volatile uint32_t g_count;
-
-void ISR(void) { g_count++; }
-
-uint32_t get_count(void) { return g_count; }
-```
-
-**参考答案**:在 32 位 Cortex-M3 上,32 位对齐的 `uint32_t` 读写是原子的,因此代码本身是安全的。但在 16 位 MCU(如 MSP430)上,32 位读写分为两次 16 位操作,可能被中断打断,需要 `__disable_irq()`/`__enable_irq()` 保护。
-
-### 挑战题
-
-**题 6**:设计一个符合 ISO 26262 ASIL-D 的电机控制软件架构,要求:
-
-- 双核 Lockstep 架构,主从核执行相同代码,实时对比输出。
-- 看门狗监测 CPU 健康状态。
-- 关键变量使用 ECC RAM。
-- 故障检测覆盖率 ≥ 99%。
-
-**参考答案要点**:
-
-- 双核 Lockstep:Cortex-R5 等支持硬件 Lockstep,延迟检测 ≤ 1 周期。
-- 软件冗余:关键算法独立实现两遍,结果比较。
-- 看门狗窗口:必须在窗口期喂狗,过早或过晚都触发复位。
-- ECC RAM:硬件纠错,单 bit 错误自动纠正,双 bit 错误触发 NMI。
-- 端到端安全:E2E 保护库(CRC、序号、alive counter)。
-
-**题 7**:分析 RISC-V 在嵌入式领域相对 ARM 的优劣势,并预测未来 5 年趋势。
-
-**参考答案要点**:
-
-- **优势**:开源指令集免授权费,可定制扩展指令,模块化设计。
-- **劣势**:生态成熟度不及 ARM,工具链支持参差,浮点与 DSP 扩展标准不统一。
-- **趋势**:IoT 与定制 AI 加速器领域 RISC-V 渐成主流;汽车领域逐步渗透;高性能计算领域仍在追赶 ARM。
-
-### 官方文档
-
-- ARM Cortex-M 技术参考手册: https://developer.arm.com/products/architecture/cpu/docs
-- RISC-V 规范: https://riscv.org/technical/specifications/
-- STMicroelectronics STM32 参考手册: https://www.st.com/resource/en/reference_manual/dm00031020-stm32f405-415-stm32f407-417-stm32f427-437-stm32f429-439-advanced-arm-based-32-bit-mcus-stmicroelectronics.pdf
-- CMSIS 标准: https://developer.arm.com/tools-and-software/embedded/cmsis
-
-### 经典教材
-
-- Jack Ganssle. The Art of Designing Embedded Systems, 2nd ed., Newnes, 2008.
-- Jean J. Labrosse. MicroC/OS-II: The Real-Time Kernel, CRC Press, 2002.
-- David E. Simon. An Embedded Software Primer, Addison-Wesley, 1999.
-- Peter C. Dibble. Real-Time Java Platform Programming, Prentice Hall, 2008.
-
-### 前沿论文与资料
-
-- Burns, A. and Wellings, A. 2009. Real-Time Systems and Programming Languages, 4th edition. Addison-Wesley. ISBN 978-0-321-41745-3.
-- Buttazzo, G. C. 2011. Hard Real-Time Computing Systems, 3rd edition. Springer. DOI: https://doi.org/10.1007/978-1-4614-0676-1
-- Apache NuttX RTOS 文档: https://nuttx.apache.org/
-- Zephyr Project 文档: https://docs.zephyrproject.org/
-- FreeRTOS 官方手册: https://www.freertos.org/Documentation/RTOS_book.html
-
-### 开源项目源码
-
-- FreeRTOS: https://github.com/FreeRTOS/FreeRTOS
-- Zephyr: https://github.com/zephyrproject-rtos/zephyr
-- RT-Thread: https://github.com/RT-Thread/rt-thread
-- NuttX: https://github.com/apache/nuttx
-- libopencm3: https://github.com/libopencm3/libopencm3
-
-## 总结
-
-嵌入式 C 编程是 C 语言在资源受限硬件上的工程实践,其核心在于对内存、时序、功耗、可靠性的精确控制。本文从硬件架构与历史背景出发,推导了实时调度、WCET、栈分析等核心理论,提供了从寄存器访问、启动文件、外设驱动到 DMA、低功耗、看门狗的多个生产级代码示例,分析了 8 类常见陷阱与生产事故案例,并通过特斯拉、大疆、汽车 OBD、医疗设备四个真实案例展示嵌入式系统在功能安全与可靠性上的工程实践。
-
-掌握本文内容后,读者应能:
-
-1. 理解 ARM Cortex-M、RISC-V 等主流嵌入式架构的内存布局、启动流程、中断机制。
-2. 要点：符合 MISRA C 与 ISO 26262 的安全关键代码。
-3. 设计基于裸机、RTOS 或 Embedded Linux 的嵌入式软件架构。
-4. 优化嵌入式系统的实时性、功耗、代码体积。
-5. 使用静态分析与运行时检测工具保障代码质量。
-
-嵌入式开发是一门需要兼顾硬件、软件、工程标准的综合性工程学科。随着 IoT、AI 边缘计算、汽车电子的快速发展,嵌入式 C 编程在未来相当长时间内仍将是基础且关键的技术能力。
+进入 [C 与汇编交互](/c/560-CAssemblyInteraction)：当编译器生成的代码不够快、或你需要裸机世界的最后一层控制——内联汇编与操作数约束、内存屏障与原子指令，看 C 与汇编如何在同一段固件里握手。

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 回顾 C 语言模块的核心知识体系：编译模型、类型与内存布局、指针、动态内存、多文件构建、并发与调试工具，并用虚拟歌手音乐平台的示例串联全部要点。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'c/010-CZeroBasisStart'
   - 'c/200-DynamicMemoryManagement'

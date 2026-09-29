@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 把 220 的对齐规则用于工程：成员排序前后 sizeof 对照实验、64 位指针与 32 位平台的布局差异、位域为什么不可移植、存档与网络传输为什么必须显式编码而不是 memcpy 结构体。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'c/220-MemoryAlignmentDeepDive'
   - 'c/240-BitField'

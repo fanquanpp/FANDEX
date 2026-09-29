@@ -1,893 +1,447 @@
 ---
 order: 390
-title: 原子操作与内存模型
+title: 原子操作与内存模型：不加班的同步
 module: 'c'
 category: 计算机科学
 difficulty: advanced
-description: C11原子操作与内存序
+description: 从两个线程各加十万次、总和却对不上的丢失更新实验出发：_Atomic 类型与 stdatomic.h 操作族、五种 memory_order 的行为表与发布-订阅实验、compare_exchange_weak 的伪失败、原子与互斥锁的分工表，附 ATOMIC_VAR_INIT 弃用等版本口径与三起事故实录。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
-  - 'c/100-VarargsFunction'
+  - 'c/370-POSIXThread'
+  - 'c/260-CVolatileAndConstDeepDive'
   - 'c/340-SignalHandling'
-  - 'c/280-GenericSelection'
-  - 'c/360-ThreadConcurrency'
+  - 'c/520-C23C2y'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/360-ThreadConcurrency'
+  - 'c/270-VolatileKeyword'
 ---
 
 ## 前置知识
 
-- [信号处理](/c/340-SignalHandling)：建议先完成前一篇的学习
+- 已完成 [线程与并发](/c/360-ThreadConcurrency)：知道数据竞争（data race）与临界区的定义，见过两个线程写同一变量的混乱现场；
+- 已完成 [volatile 深水区](/c/270-VolatileKeyword)：记得「volatile 不提供原子性、不提供内存序」的结论，以及优化器的 as-if 规则——本篇要反复用到它。
+
+> 分工说明：并发这一片共四篇。[线程与并发](/c/360-ThreadConcurrency) 讲概念（竞态是什么、临界区为什么危险）；[POSIX 线程](/c/370-POSIXThread) 讲互斥锁这套「加班的同步」——排队、等待、唤醒；本篇讲「不加班的同步」：`_Atomic` 原子类型、原子操作族与内存序，让某些场景根本不需要排队。volatile 的职责边界在 [const 与 volatile](/c/260-CVolatileAndConstDeepDive) 与 270 两篇已划清，本篇负责给出正解。
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 解释 `counter++` 为什么会丢更新，并用 `_Atomic` 与互斥锁两种方式修复，说出各自的适用场景；
+2. 用 `<stdatomic.h>` 的 load/store/fetch_add/compare_exchange 写出线程安全的单变量操作；
+3. 画出五种 memory_order 的行为差异，用「发布-订阅」实验演示 release/acquire 建立的同步关系；
+4. 说出 compare_exchange_weak 与 strong 的伪失败差异，以及各自的使用场合；
+5. 判断一个需求该用原子还是该用锁，识别「检查-行动」两步不原子的经典错误。
 
-## 概述
+预计 60 到 80 分钟，含 4 组实验、2 道预测题与 1 道挑战题。
 
-在多线程编程中，多个线程同时访问共享数据会导致数据竞争（data race），产生未定义行为。C11 标准引入了 `<stdatomic.h>` 头文件，提供了原子类型和原子操作，确保对共享变量的读写是不可分割的。同时，C11 定义了内存序（memory order）模型，允许开发者在性能和一致性之间做出权衡。
+本文代码在 Linux/macOS（或 WSL）运行，编译需加 `-pthread`。示例统一用 pthread 创建线程，与 [POSIX 线程](/c/370-POSIXThread) 对接；C11 标准库的 `<threads.h>`（thrd_create/thrd_join）与之一一对应，换写法不影响结论。
 
-## 基础概念
-
-### 数据竞争问题
-
-```c
-// 没有原子操作时，多线程自增会导致结果不正确
-int counter = 0;
-
-// 线程1和线程2同时执行
-counter++; // 读取、加1、写回，三步操作可能被交错
-```
-
-上面的 `counter++` 实际上包含三个操作：读取当前值、加1、写回。如果两个线程同时读取到相同的值，各自加1后写回，最终只增加了1而不是2。
-
-### 原子操作的定义
-
-原子操作是不可分割的操作，要么完全执行，要么完全不执行，不会被其他线程观察到中间状态。C11 通过 `_Atomic` 类型修饰符和一系列库函数提供原子操作支持。
-
-### 内存序
-
-内存序定义了编译器和处理器对内存操作重排序的约束。不同的内存序在性能和一致性之间提供不同级别的保证：
-
-| 内存序                 | 说明                             | 适用场景         |
-| ---------------------- | -------------------------------- | ---------------- |
-| `memory_order_relaxed` | 无顺序保证，只保证原子性         | 计数器、统计信息 |
-| `memory_order_acquire` | 读操作，后续读写不能重排到此之前 | 读取同步标志     |
-| `memory_order_release` | 写操作，之前读写不能重排到此之后 | 写入同步标志     |
-| `memory_order_acq_rel` | 同时具有 acquire 和 release 语义 | 读-改-写操作     |
-| `memory_order_seq_cst` | 顺序一致，所有线程看到相同顺序   | 默认，最安全     |
-
-## 快速上手
-
-### 最简单的原子计数器
+## 1. 问题引入：两个线程各加十万次，结果对不上
 
 ```c
+/* counter_naive.c：丢了多少次更新？ */
 #include <stdio.h>
-#include <stdatomic.h>
-#include <threads.h>
+#include <pthread.h>
 
-// 声明原子整型变量
-atomic_int counter = 0;
+#define N 100000
 
-// 线程函数：每个线程自增100000次
-int thread_func(void *arg) {
-    for (int i = 0; i < 100000; i++) {
-        atomic_fetch_add(&counter, 1); // 原子自增
+static int counter = 0;                 /* 普通变量，两个线程直接改 */
+
+static void *worker(void *arg) {
+    (void)arg;
+    for (int i = 0; i < N; i++) {
+        counter++;                      /* 悬念在这一行 */
     }
-    return 0;
+    return NULL;
 }
 
 int main(void) {
-    thrd_t t1, t2;
-
-    // 创建两个线程
-    thrd_create(&t1, thread_func, NULL);
-    thrd_create(&t2, thread_func, NULL);
-
-    // 等待线程完成
-    thrd_join(t1, NULL);
-    thrd_join(t2, NULL);
-
-    // 结果一定是200000
-    printf("counter = %d\n", atomic_load(&counter));
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, worker, NULL);
+    pthread_create(&t2, NULL, worker, NULL);
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
+    printf("counter = %d（期望 200000）\n", counter);
     return 0;
 }
 ```
 
-## 详细用法
+```bash
+gcc -Wall -Wextra -g -pthread counter_naive.c -o counter_naive
+./counter_naive
+./counter_naive
+```
 
-### 原子类型的声明
+一次典型输出（每次运行都不同，几乎从不等于 200000）：
+
+```text
+counter = 121738（期望 200000）
+counter = 138452（期望 200000）
+```
+
+原因 [线程与并发](/c/360-ThreadConcurrency) 已经预告：`counter++` 不是一步，而是「读出旧值、加 1、写回」三步。两个线程可以同时读到 5，各自加成 6 写回——两次自增，总量只涨了 1。丢多少取决于交错时机，所以每次都不同。
+
+修复有两条路。第一条是本篇主角：把类型换成 `atomic_int`，只改一处声明与一处自增：
 
 ```c
 #include <stdatomic.h>
 
-// 方式一：使用 _Atomic 类型修饰符
-_Atomic int a;
-_Atomic double b;
-_Atomic struct Point { int x; int y; } c;
-
-// 方式二：使用 atomic_* 便捷类型
-atomic_int ai;           // 等价于 _Atomic int
-atomic_long al;          // 等价于 _Atomic long
-atomic_uintptr_t ap;     // 等价于 _Atomic uintptr_t
-atomic_flag af;          // 布尔原子类型，最简单的原子类型
-
-// 初始化：直接用常量初始化即可（本文示例均如此）
-// 注意：宏 ATOMIC_VAR_INIT 在 C17 中已弃用、C23 中已移除，不要再使用；
-// 静态/线程存储期的原子对象不做初始化也会被零初始化为有效值
-atomic_int x = 0;                    // 编译时初始化
-atomic_init(&x, 42);                 // 运行时初始化（非原子操作，仅限无线程竞争时）
+static atomic_int counter = 0;          /* 原子类型：操作不可分割 */
+/* 循环体里改为 */
+atomic_fetch_add(&counter, 1);          /* 原子自增，不再丢更新 */
 ```
 
-### 原子读写操作
+改完再跑，多少次都是 200000。第二条路是互斥锁（[POSIX 线程](/c/370-POSIXThread)）：类型不动，把三步包进锁里：
 
 ```c
-#include <stdio.h>
+static int counter = 0;
+static pthread_mutex_t mu = PTHREAD_MUTEX_INITIALIZER;
+/* 循环体里改为 */
+pthread_mutex_lock(&mu);
+counter++;
+pthread_mutex_unlock(&mu);
+```
+
+同样恒为 200000。两种写法都对，语义却不同：原子版只保证「这一个变量自增不可分割」，一行搞定；锁版保证「锁住的任意一段代码独占执行」，代价是每次都要进出锁。修改实验：用 `time ./counter_atomic` 与 `time ./counter_mutex` 各跑一次对比耗时——单变量计数场景原子版通常明显更快，这正是「不加班」的含义；但别急着下结论说原子总是更好，第 5 节给分工表。
+
+## 2. 原子类型：_Atomic 与 stdatomic.h
+
+**原子操作**（atomic operation）是不可分割的操作：其他线程要么看不到它发生，要么看到它已完成，永远观察不到中间状态。C11 引入 `_Atomic` 限定符与 `<stdatomic.h>` 头文件提供这套能力。
+
+```c
 #include <stdatomic.h>
 
-int main(void) {
-    atomic_int x = 0;
+_Atomic int a;              /* 限定符写法一 */
+_Atomic(int) b;             /* 限定符写法二，与上面等价 */
+atomic_int ai;              /* stdatomic.h 提供的别名，等价于 _Atomic int */
+atomic_long al;
+atomic_uintptr_t ap;        /* 指针类型也有对应别名 */
+atomic_flag flag;           /* 最简单的原子类型：只有置位/清除两种状态 */
 
-    // 原子写入
-    atomic_store(&x, 10);
-
-    // 原子读取
-    int val = atomic_load(&x);
-    printf("x = %d\n", val); // 输出: x = 10
-
-    // 也可以直接使用 = 和读取，编译器会自动原子化
-    x = 20;          // 等价于 atomic_store(&x, 20)
-    int v = x;       // 等价于 atomic_load(&x)
-    printf("x = %d\n", v); // 输出: x = 20
-
-    return 0;
-}
+atomic_int x = 0;           /* 静态/编译期直接初始化，C17 起的标准写法 */
+atomic_init(&x, 42);        /* 运行时初始化：不是原子操作，只能在多线程开始前用 */
 ```
 
-### 原子算术操作
+三条版本口径，都是新代码要遵守的：
+
+- **ATOMIC_VAR_INIT 已弃用**：C11 曾要求 `atomic_int x = ATOMIC_VAR_INIT(0);`，C17 起弃用、C23 已移除——直接写 `atomic_int x = 0;` 即可，本篇所有示例都这么写；
+- **atomic_flag 的初始化**：C11/C17 要求 `atomic_flag f = ATOMIC_FLAG_INIT;`；C23 起静态存储的 atomic_flag 零初始化即为清除态，自动存储期可写 `atomic_flag f = {};`，宏不再必需（后文的 spin lock 保留旧写法以兼容 C17）；
+- **C23 之后仍在演进**：原子相关的标准化持续推进（如 ATOMIC_VAR_INIT 移除、atomic_flag 初始化放宽），版本全景见 [C23 与 C2y 新特性](/c/520-C23C2y)。
+
+**哪些操作是原子的？** 三类：读（`atomic_load` 或直接 `int v = x;`）、写（`atomic_store` 或 `x = 10;`——对原子对象的 `=` 与读会被编译成对应的原子操作）、读-改-写（`fetch_*` 家族与比较交换，见第 3 节；对原子对象 `x++` 同样是原子的读-改-写）。注意与 270 篇的对照：普通 `int` 上这些保证一项都没有。
+
+还有一个常见误会要先拆掉：**原子不等于无锁**。`atomic_is_lock_free(&x)` 返回真才是无锁实现；大对象（如几十字节的结构体）的原子操作可能由内部锁或库调用实现，此时「原子」保证正确性，不保证速度。这句话在第 6 节实录二兑现。
+
+## 3. 原子操作族：load、store、fetch_* 与 CAS
 
 ```c
-#include <stdio.h>
-#include <stdatomic.h>
-
-int main(void) {
-    atomic_int x = 10;
-
-    // 原子加法，返回修改前的值
-    int old = atomic_fetch_add(&x, 5);
-    printf("旧值: %d, 新值: %d\n", old, atomic_load(&x)); // 旧值: 10, 新值: 15
-
-    // 原子减法
-    old = atomic_fetch_sub(&x, 3);
-    printf("旧值: %d, 新值: %d\n", old, atomic_load(&x)); // 旧值: 15, 新值: 12
-
-    // 原子按位或
-    atomic_fetch_or(&x, 0x01);
-
-    // 原子按位异或
-    atomic_fetch_xor(&x, 0xFF);
-
-    // 原子按位与
-    atomic_fetch_and(&x, 0x0F);
-
-    return 0;
-}
-```
-
-### 原子比较交换（CAS）
-
-比较交换（Compare-And-Swap）是原子操作中最核心的操作，也是无锁编程的基础：
-
-```c
+/* ops.c：操作族速览 */
 #include <stdio.h>
 #include <stdatomic.h>
 
 int main(void) {
     atomic_int x = 10;
 
-    // atomic_compare_exchange_strong(&x, &expected, desired)
-    // 如果 x == expected，则将 x 设为 desired，返回 true
-    // 如果 x != expected，则将 expected 设为 x 的当前值，返回 false
+    atomic_store(&x, 10);               /* 写 */
+    int v = atomic_load(&x);            /* 读 */
+
+    int old = atomic_fetch_add(&x, 5);  /* 加 5，返回旧值：v=10, x=15 */
+    printf("old=%d x=%d\n", old, atomic_load(&x));
+
+    old = atomic_fetch_sub(&x, 3);      /* 减 3，返回旧值：old=15, x=12 */
+    printf("old=%d x=%d\n", old, atomic_load(&x));
+
+    atomic_fetch_or(&x, 0x01);          /* 还有 and / xor / exchange 一族，此时 x=13 */
+    old = atomic_exchange(&x, 0);       /* 无条件换新值，返回旧值 */
+    printf("old=%d x=%d\n", old, atomic_load(&x));
+    return 0;
+}
+```
+
+预期输出：
+
+```text
+old=10 x=15
+old=15 x=12
+old=13 x=0
+```
+
+fetch 家族的返回值「修改前的旧值」是刻意设计：引用计数正是靠它判断「我是不是最后一个使用者」（第 7 节）。
+
+真正的核心是比较交换（compare-and-swap，CAS）：**「如果它还是我以为的值，就换成新值；否则告诉我现在是什么」**。整个判断加交换一步完成，是无锁编程的基石：
+
+```c
+/* cas.c：成功与失败两种走向 */
+#include <stdio.h>
+#include <stdbool.h>
+#include <stdatomic.h>
+
+int main(void) {
+    atomic_int x = 10;
 
     int expected = 10;
-    int desired = 20;
-    bool success = atomic_compare_exchange_strong(&x, &expected, desired);
+    bool ok = atomic_compare_exchange_strong(&x, &expected, 20);
+    printf("ok=%d x=%d expected=%d\n", ok, atomic_load(&x), expected);
 
-    if (success) {
-        printf("交换成功: x = %d\n", atomic_load(&x)); // x = 20
-    }
-
-    // 再次尝试，此时 x = 20，expected 仍为 10
-    expected = 10;
-    success = atomic_compare_exchange_strong(&x, &expected, desired);
-    if (!success) {
-        printf("交换失败: x = %d, expected 被更新为 %d\n",
-               atomic_load(&x), expected); // expected = 20
-    }
-
+    expected = 10;                       /* x 已是 20，这次必然失败 */
+    ok = atomic_compare_exchange_strong(&x, &expected, 99);
+    printf("ok=%d x=%d expected=%d\n", ok, atomic_load(&x), expected);
     return 0;
 }
 ```
 
-### atomic_flag 布尔原子类型
+预期输出：
 
-`atomic_flag` 是最简单的原子类型，只有"设置"和"清除"两个操作，常用于实现自旋锁：
+```text
+ok=1 x=20 expected=10
+ok=0 x=20 expected=20
+```
+
+第二行的细节值得背下来：失败时函数把 `x` 的**当前值写回 expected**——这不是副作用，是给你下一次重试准备的。CAS 循环因此长成一个固定形状：
 
 ```c
+int expected;
+do {
+    expected = atomic_load(&x);              /* 1. 看一眼当前值 */
+} while (!atomic_compare_exchange_weak(&x, &expected, expected + 1));
+                                             /* 2. 还是它才换，否则重来 */
+```
+
+weak 与 strong 的差别只有一个：weak **允许伪失败**（spurious failure）——值明明相等也可能返回 false（此时它同样把当前值写回 expected）。听起来像缺点，为什么循环里反而推荐 weak？因为在某些硬件（如 ARM 的 LL/SC 指令对）上，循环反正要重试，伪失败只是提前触发一次重试，weak 换来更快的指令序列；而 strong 必须在库内部把伪失败消化掉，单次调用更可靠。规则一句话：**CAS 循环里用 weak，单发判断用 strong**。
+
+修改实验（cas_race.c）：开两个线程各自用上面的 CAS 循环把 `x` 抢加 10000 次，每次重试计数器加一。先预测每个线程的重试数下限，再运行。你会发现它至少是 10000，多出来的部分绝大多数是「对方先改了值」的真失败；在 x86 上 weak 的伪失败几乎观察不到（编译成同一条 cmpxchg），换 ARM 机器或树莓派再跑，差距才显形。这个实验教的是：**伪失败是标准允许的行为，不是可依赖的巧合，循环必须能承受任意次失败**。
+
+## 4. 内存序：编译器和 CPU 都会重排
+
+### 4.1 为什么要有内存序
+
+[volatile 深水区](/c/270-VolatileKeyword) 讲过 as-if 规则：只要单线程的可观察行为不变，编译器有权重排、合并甚至删除你的语句。CPU 更进一步：每核有 store buffer 与私有缓存，指令乱序执行。单线程里这一切天衣无缝；两个线程观察**同一组**内存写入时，各自看到的顺序却可以不同——A 线程「先写 data 再写 flag」，B 线程可能先看到 flag 变了、data 还是旧值。
+
+内存序（memory order）就是你在每个原子操作上声明的「重排约束」：允许编译器与 CPU 把别的访存挪过这条线到什么程度。
+
+### 4.2 五种 memory_order 行为表
+
+| 内存序 | 承诺 | 典型用途 |
+| --- | --- | --- |
+| memory_order_relaxed | 只保证这一个操作自身不可分割，不约束它与其他访存的先后 | 纯计数、统计 |
+| memory_order_acquire | 用于读：它之后的读写不得重排到它之前 | 读同步标志 |
+| memory_order_release | 用于写：它之前的读写不得重排到它之后 | 写同步标志 |
+| memory_order_acq_rel | 用于读-改-写：同时具备 acquire 与 release | CAS、fetch_* |
+| memory_order_seq_cst | 顺序一致：所有线程看到同一个全局总顺序 | 默认值，最保险 |
+
+注意 API 规则：`atomic_load/store/fetch_*` 的基础版本不收内存序参数，一律按 seq_cst 执行；要指定内存序必须改用 `*_explicit` 版本（如 `atomic_store_explicit(&v, 1, memory_order_release)`）。两套参数列表不同，混用会编译报错——这是好事。
+
+### 4.3 贯穿实验一：发布-订阅
+
+经典模式：生产者写好数据后置标志，消费者见到标志才读数据。标志本身就是发布（publish）与订阅（subscribe）。
+
+```c
+/* publish.c */
 #include <stdio.h>
 #include <stdatomic.h>
+#include <pthread.h>
 
-// atomic_flag 必须用 ATOMIC_FLAG_INIT 初始化
-atomic_flag lock = ATOMIC_FLAG_INIT;
+#define N 10
 
-// 自旋锁的加锁操作
-void spin_lock(atomic_flag *f) {
-    // test_and_set: 如果之前未被设置，则设置并返回 false
-    // 如果之前已被设置，则返回 true（表示锁已被占用）
-    while (atomic_flag_test_and_set(f)) {
-        // 自旋等待
+static int buffer[N];                 /* 普通数据：靠标志的内存序受保护 */
+static atomic_int ready = 0;
+
+static void *producer(void *arg) {
+    (void)arg;
+    for (int i = 0; i < N; i++) {
+        buffer[i] = i * i;
     }
+    /* release 写：保证上面全部写入先于 ready=1 对其他线程可见 */
+    atomic_store_explicit(&ready, 1, memory_order_release);
+    return NULL;
 }
 
-// 自旋锁的解锁操作
-void spin_unlock(atomic_flag *f) {
-    atomic_flag_clear(f); // 清除标志，释放锁
+static void *consumer(void *arg) {
+    (void)arg;
+    /* acquire 读：见到 ready==1 后，下面读到的 buffer 一定是新值 */
+    while (atomic_load_explicit(&ready, memory_order_acquire) == 0) {
+        /* 忙等 */
+    }
+    for (int i = 0; i < N; i++) {
+        printf("buffer[%d] = %d\n", i, buffer[i]);
+    }
+    return NULL;
 }
 
 int main(void) {
-    spin_lock(&lock);
-    printf("临界区: 正在操作共享数据\n");
-    spin_unlock(&lock);
-
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, producer, NULL);
+    pthread_create(&t2, NULL, consumer, NULL);
+    pthread_join(t1, NULL);
+    pthread_join(t2, NULL);
     return 0;
 }
 ```
 
-## 常见场景
+```text
+buffer[0] = 0
+buffer[1] = 1
+...
+buffer[9] = 81
+```
 
-### 场景一：线程安全的引用计数
+运行总是对的。release 写与读到它的 acquire 读建立起**同步关系**：release 之前的全部写入，对读到了这个值的 acquire 之后的代码可见——数据与标志因此「绑在一起」到达。
+
+修改实验：把两个 `_explicit` 的内存序都改成 `memory_order_relaxed` 再跑。大概率仍然全对——别被骗。relaxed 不建立任何同步关系，消费者读 `buffer` 与生产者写 `buffer` 之间没有先后约束，这在标准里是数据竞争（未定义行为）：可能读到未初始化的 0，也可能读到写了一半的数组。x86 硬件内存模型较强、编译器恰好没重排，所以「碰巧对」；在 ARM 上或换激进优化选项，翻车概率肉眼可见。怎么把「碰巧」变成「实锤」，第 6 节实录三用工具现场抓。
+
+### 4.4 贯穿实验二：seq_cst 是默认的保险
+
+把 publish.c 里两个 `_explicit` 调用换回基础版（`atomic_store(&ready, 1);` 与 `while (atomic_load(&ready) == 0)`），程序回到 seq_cst：每个原子操作都参与一个全体线程一致的 总顺序，发布-订阅自然包含其中。这就是「默认保险」的含义——**记不住五种序的时候，用基础版；确认了性能需求，再降级到 acquire/release；只有确认顺序完全无关（如纯计数），才用 relaxed**。降级的收益是真实存在的：relaxed 计数器在弱内存序机器上省掉同步指令，也允许编译器更大胆地重排。
+
+relaxed 的适用边界一句话：**各次操作之间顺序无关紧要、最后只看汇总值**的场景——请求计数、错误统计：
 
 ```c
-#include <stdio.h>
-#include <stdatomic.h>
-#include <stdlib.h>
+atomic_fetch_add_explicit(&total_requests, 1, memory_order_relaxed);
+atomic_fetch_add_explicit(&total_errors, 1, memory_order_relaxed);
+```
 
+反过来，任何「见标志、读数据」的同步都严禁 relaxed，理由见 4.3 的修改实验。
+
+### 4.5 栅栏：不带变量的内存序
+
+内存序也可以脱离某个原子变量单独下达——`atomic_thread_fence(memory_order_release)` 是一条「线」：之前的读写不得下沉、之后的不得上浮。日常代码很少直接用它（给操作带序更直观、更不易错），知道它存在即可。孪生的 `atomic_signal_fence` 约束的是同一线程内编译器与信号处理器之间的重排，与 [信号处理](/c/340-SignalHandling) 的 sig_atomic_t 纪律衔接。
+
+## 5. 原子与互斥锁的分工
+
+两种工具各有领地，先给对照表：
+
+| 需求 | 用什么 | 例子 |
+| --- | --- | --- |
+| 单个变量的计数、标志、发布 | atomic | 请求计数、done 标志、配置指针发布 |
+| 多个变量共同组成不变式 | 互斥锁 | 账户转账：两个余额必须此消彼长 |
+| 「检查再行动」的复合判断 | 互斥锁或 CAS 循环 | 查空再入队 |
+| 读多写少的共享结构 | pthread_rwlock_t | 配置表（用现成的，别手搓） |
+
+「单变量」三个字是关键。两个变量哪怕各自都原子，**它们之间也没有任何一起成立的保证**——锁住的临界区保护的是「这组值合起来始终合法」这条不变式，原子给不了。所以工程上第一告诫是：**别用原子去实现复杂的锁逻辑**。两个高频翻车现场：
+
+**手搓读写锁。** 用「读者计数 + 写者标志」两个原子变量拼读写锁，读者要「查写者、加计数、复查写者」三步，写者要「抢占标志、等读者清零」两步，步与步之间的每个交错都要逐一论证——论证对了也只是开始，还要处理写者饿死读者的问题。这套代码四十行，每一行都对，合起来需要形式化验证的耐心。生产代码请直接用 pthread_rwlock_t（见 [POSIX 线程](/c/370-POSIXThread)）。
+
+**双重检查锁定（double-checked locking）没锁全。** 看似聪明：先无锁查标志，标志未立才去初始化：
+
+```c
+static Config *instance = NULL;      /* 普通指针 */
+static atomic_int ready = 0;
+
+Config *get_config(void) {
+    if (atomic_load_explicit(&ready, memory_order_acquire) == 0) {
+        /* 两个线程可能同时走到这里：检查与行动不是一步！ */
+        instance = malloc(sizeof *instance);
+        /* ... 初始化 ... */
+        atomic_store_explicit(&ready, 1, memory_order_release);
+    }
+    return instance;
+}
+```
+
+内存序本身用对了（release 发布、acquire 订阅），坏在「检查 ready」与「写 instance」是两步：两个线程可以同时看到 ready==0，各自 malloc 一份、各发各的标志——双重初始化加内存泄漏。修复不必与 CAS 缠斗：一次性初始化用 C11 `call_once`（或 pthread_once），多变量不变式回到互斥锁。原子负责「快路径上的单变量读」，这个边界感要留住。
+
+**无锁数据结构是专家领域。** 用 CAS 循环写个栈，压栈只要五行：
+
+```c
+void stack_push(LockFreeStack *s, int value) {
+    Node *n = malloc(sizeof *n);
+    if (n == NULL) { perror("malloc"); exit(1); }
+    n->value = value;
+    do {
+        n->next = atomic_load(&s->head);
+    } while (!atomic_compare_exchange_weak(&s->head, &n->next, n));
+}
+```
+
+真正的深渊在后面：经典 Treiber 栈有 ABA 问题（对方弹出又压回同一地址，CAS 看到的值相同、语义已变），内存回收时机更是要引入 tagged pointer、hazard pointer 或 RCU 级别的技术。除非你在维护一个无锁库，否则这个领域正确姿势是「用现成的」。原子操作族是给你造轮子的工具，不是让你到处造轮子的邀请。
+
+顺带一提自旋锁——atomic_flag 的正当用途，也是「原子到锁」的中间形态：`while (atomic_flag_test_and_set(&lock)) {}` 加锁、`atomic_flag_clear(&lock)` 解锁。它忙等耗 CPU，只适合临界区极短的场景；理解它有助于看懂锁的成本，日常仍然用 pthread_mutex_t。
+
+## 6. 常见错误与调试实录
+
+### 实录一：用普通 int 当原子标志
+
+现象与第 1 节同源：标志用 `int` 而非 `atomic_int`，检查时似乎总能工作，偶现失灵。270 篇的 `-O2` 忙等死循环正是它的编译器变体（优化器把循环里的重复读合并成一次）；本篇第 1 节的丢失更新是它的硬件变体（读-改-写被交错）。两个变体指向同一结论：**无同步地跨线程读写普通变量是数据竞争，标准定义为未定义行为**，`volatile` 救不了它（它不提供原子性与内存序，见 [volatile 与 const](/c/260-CVolatileAndConstDeepDive)）。修复：`atomic_int`，或锁。ThreadSanitizer 对这类竞争能直接报出两个冲突访问的行号，用法与报告解读见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+
+### 实录二：误以为原子结构体「整体原子、轻松无锁」
+
+```c
+struct Packet { char data[256]; int len; };
+_Atomic struct Packet pkt;               /* 能编译，代价藏在运行时 */
+```
+
+只有平凡可复制（trivially copyable）的类型才能作原子类型；256 字节的结构体即便受支持，`atomic_is_lock_free(&pkt)` 大概率返回假——每次赋值都在内部加锁或调用库例程，原本「省掉锁」的算盘全数吐回。此外整体原子掩盖了真正的问题：256 字节的包多半不是被当作一个值使用的，读写它恰恰需要多字段不变式。惯用解法是**指针交换**：不可变结构体在堆上构造好，用 `atomic_uintptr_t` 或原子指针只发布「指向最新版本的那个指针」，读方拿到指针后随意读——发布成本一次指针写，读全是无锁。顺带回应一个心病：嵌套结构体（结构体里含原子成员）的原子性只到成员为止，外层整体没有原子性可言，别指望 `_Atomic` 能传递。
+
+### 实录三：内存序配错，偶现读到旧值
+
+4.3 的修改实验把两个序换成 relaxed 后「大概率还对」，这正是它阴险的地方：线上跑几周、换台 ARM 设备才偶现读到未初始化数据，肉眼看代码「逻辑没错」。此时不要靠加 printf 复现——加打印改动的时序本身就可能让问题消失。正确姿势是让工具说话：保持发布-订阅两侧 relaxed 不变，数据仍是普通变量，这个数据竞争 ThreadSanitizer 能稳定报告（冲突的两次访问、各自所在线程与行号），把「偶现旧值」钉死为「缺 acquire/release」；再加压手段是多核高负载、弱内存序设备上重跑。工具链细节见 [静态分析与调试](/c/490-StaticAnalysisDebug)。修法即 4.3 正身：标志用 release 写、acquire 读。
+
+## 7. 实际项目中的使用场景
+
+**引用计数**是 fetch 家族返回值设计的标准应用，也是智能指针、内核对象管理的底座：
+
+```c
 typedef struct {
     void *data;
     atomic_int ref_count;
 } SharedObject;
 
-// 创建共享对象
-SharedObject *shared_create(void *data) {
-    SharedObject *obj = malloc(sizeof(SharedObject));
-    if (!obj) return NULL;
-    obj->data = data;
-    atomic_init(&obj->ref_count, 1);
-    return obj;
-}
-
-// 增加引用计数
-void shared_retain(SharedObject *obj) {
-    if (obj) {
-        atomic_fetch_add(&obj->ref_count, 1);
-    }
-}
-
-// 减少引用计数，为0时释放
 void shared_release(SharedObject *obj) {
-    if (obj) {
-        // 先减1，获取修改前的值
-        int old_count = atomic_fetch_sub(&obj->ref_count, 1);
-        if (old_count == 1) {
-            // 引用计数降为0，释放资源
-            printf("引用计数为0，释放对象\n");
-            free(obj->data);
-            free(obj);
-        }
+    if (obj == NULL) return;
+    int prev = atomic_fetch_sub(&obj->ref_count, 1);
+    if (prev == 1) {                     /* 减完正好归零者负责释放 */
+        free(obj->data);
+        free(obj);
     }
 }
-
-int main(void) {
-    int *value = malloc(sizeof(int));
-    *value = 42;
-
-    SharedObject *obj = shared_create(value);
-    shared_retain(obj); // 引用计数变为2
-    shared_release(obj); // 引用计数变为1
-    shared_release(obj); // 引用计数变为0，对象被释放
-
-    return 0;
-}
 ```
 
-### 场景二：使用 release/acquire 实现生产者-消费者同步
+返回的 prev 恰好是「减一之前」的值：等于 1 说明这次减一后归零，且**只有最后一个减一者能看到它**——判断与归零由一条原子指令保证，不会两个线程同时认为自己该释放。
 
-```c
-#include <stdio.h>
-#include <stdatomic.h>
-#include <threads.h>
+其他高频场景：统计计数器（4.5 的 relaxed 边界）；「停止」标志（消费者轮询 `atomic_load(&stop)`，主线程 release 置位）；无锁单生产者单消费者队列的游标（CAS 循环，谨慎上手）。
 
-#define BUFFER_SIZE 10
+## 8. 小练习
 
-int buffer[BUFFER_SIZE];
-atomic_int ready = 0; // 同步标志
+预测题一（5 分钟）：`atomic_int x = 20; int expected = 10;` 执行 `atomic_compare_exchange_strong(&x, &expected, 99)` 后，x 与 expected 各是多少？返回值是几？（先写答案再运行 cas.c 验证。）
 
-// 生产者线程
-int producer(void *arg) {
-    // 写入数据
-    for (int i = 0; i < BUFFER_SIZE; i++) {
-        buffer[i] = i * i;
-    }
+参考答案（先写再看）：x 保持 20；expected 被函数改写为 20；返回 false。失败时写回当前值是重试协议的一部分，不是 bug。
 
-    // release 写入：确保上面的写入在设置 ready 之前完成
-    atomic_store_explicit(&ready, 1, memory_order_release);
-    return 0;
-}
+预测题二（5 分钟）：生产者 `data = 42; atomic_store_explicit(&flag, 1, memory_order_relaxed);`，消费者 `if (atomic_load_explicit(&flag, memory_order_relaxed)) printf("%d\n", data);`——消费者可能打印几？为什么？
 
-// 消费者线程
-int consumer(void *arg) {
-    // acquire 读取：确保在 ready 为1之后才读取 buffer
-    while (atomic_load_explicit(&ready, memory_order_acquire) == 0) {
-        // 等待生产者完成
-    }
+参考答案（先写再看）：42 或 0 都可能。relaxed 不建立同步关系，`data` 的读写是数据竞争，读到未初始化的 0 合法；把 relaxed 换成 release/acquire 后只剩 42。
 
-    // 此时 buffer 的数据一定可见
-    for (int i = 0; i < BUFFER_SIZE; i++) {
-        printf("buffer[%d] = %d\n", i, buffer[i]);
-    }
-    return 0;
-}
+挑战题（40 分钟，不看答案先动手）：把 4.3 的发布-订阅改造成「能在你的机器上稳定暴露 relaxed 错误」的实验装置，并用 ThreadSanitizer 出具报告。提示两级如下。
 
-int main(void) {
-    thrd_t t1, t2;
+提示（思路方向）：x86 上纯靠交错很难翻车，改从「次数」下手——生产者循环发布 10 万次不同数据，消费者持续校验读到的数据与标志序号一致，把不一致次数统计出来。
 
-    thrd_create(&t1, producer, NULL);
-    thrd_create(&t2, consumer, NULL);
+展开（关键 API）：校验循环放 `atomic_load_explicit(&ready, memory_order_relaxed)`；编译 `gcc -fsanitize=thread -g publish.c -o publish`；TSan 报告的「race on buffer」即是实锤。
 
-    thrd_join(t1, NULL);
-    thrd_join(t2, NULL);
+验收清单：不开 TSan 时错误计数可能为 0（记录下来）；开 TSan 报告稳定出现 buffer 上的数据竞争；两侧改回 acquire/release 后 TSan 静默。本练习同时验证「偶现问题交给工具」与「x86 的强序会掩护 bug」两件事。
 
-    return 0;
-}
-```
+## 9. 与之前和之后的知识的关系
 
-### 场景三：无锁栈的简单实现
+- 往前：[volatile 深水区](/c/270-VolatileKeyword) 的职责对照表在本篇补上了 `_Atomic` 一列的细节，丢失更新实验与 270 的忙等实验互为编译器/CPU 两个侧面；[线程与并发](/c/360-ThreadConcurrency) 的竞态与临界区概念在这里获得第一个不需要锁的解法；
+- 旁支：互斥锁的完整用法与锁的代价在 [POSIX 线程](/c/370-POSIXThread)；信号处理器里改标志为什么用 sig_atomic_t 而不是 `_Atomic`，见 [信号处理](/c/340-SignalHandling)（线程与信号是两套世界）；数据竞争报告怎么读在 [静态分析与调试](/c/490-StaticAnalysisDebug)；
+- 往后：[Socket 网络编程](/c/390-SocketNetworkProgramming) 把并发从单进程内的共享内存搬到跨机器的字节流，多线程服务器正是本篇与 370 的合练场。
 
-```c
-#include <stdio.h>
-#include <stdatomic.h>
-#include <stdlib.h>
+## 10. 官方文档
 
-typedef struct Node {
-    int value;
-    struct Node *next;
-} Node;
+- C 原子操作库总览（stdatomic.h 全家族）：https://en.cppreference.com/w/c/atomic
+- Modern C（Jens Gustedt，C23 版，线程与原子章节）：https://gustedt.gitlabpages.inria.fr/modern-c/
 
-typedef struct {
-    _Atomic(Node *) head;
-} LockFreeStack;
+## 11. 自我检查
 
-// 初始化栈
-void stack_init(LockFreeStack *s) {
-    atomic_init(&s->head, NULL);
-}
+- 能向同事讲清 `counter++` 丢更新的三步交错，并分别用 `_Atomic` 与互斥锁修复；
+- 能默写发布-订阅模板：数据先写、release 置标志；acquire 读标志、再读数据；
+- 能说出 weak 与 strong CAS 的唯一差别，以及为什么循环里用 weak；
+- 拿到一个新需求，能按第 5 节分工表判断该用原子还是锁，并说出「两个原子变量之间没有联合保证」这句话的含义。
 
-// 压栈（原子操作）
-void stack_push(LockFreeStack *s, int value) {
-    Node *new_node = malloc(sizeof(Node));
-    new_node->value = value;
+## 本章总结
 
-    // CAS 循环：将新节点插入链表头部
-    do {
-        new_node->next = atomic_load(&s->head);
-    } while (!atomic_compare_exchange_weak(&s->head, &new_node->next, new_node));
-}
+原子操作保证「单变量操作不可分割」，互斥锁保证「一段代码独占执行」——前者快而窄，后者慢而通用。`<stdatomic.h>` 的操作族里，load/store 覆盖读写，fetch_* 家族覆盖读-改-写并返回旧值，CAS 以「相等才换、失败写回当前值」的协议成为无锁编程的支点。内存序回答「重排允许到哪一步」：seq_cst 是默认保险，acquire/release 支撑发布-订阅，relaxed 只配纯计数。ATOMIC_VAR_INIT 已随 C17 弃用、C23 移除，直接初始化即可；原子不等于无锁，`atomic_is_lock_free` 一问便知。单变量想原子，多变量想锁，「检查-行动」两步永远值得多看一眼。
 
-// 弹栈（原子操作）
-int stack_pop(LockFreeStack *s, int *out_value) {
-    Node *old_head = atomic_load(&s->head);
+## 下一步
 
-    // CAS 循环：移除链表头部节点
-    do {
-        if (old_head == NULL) {
-            return -1; // 栈为空
-        }
-    } while (!atomic_compare_exchange_weak(&s->head, &old_head, old_head->next));
-
-    *out_value = old_head->value;
-    free(old_head);
-    return 0;
-}
-
-int main(void) {
-    LockFreeStack stack;
-    stack_init(&stack);
-
-    // 压入数据
-    stack_push(&stack, 10);
-    stack_push(&stack, 20);
-    stack_push(&stack, 30);
-
-    // 弹出数据
-    int val;
-    while (stack_pop(&stack, &val) == 0) {
-        printf("弹出: %d\n", val);
-    }
-
-    return 0;
-}
-```
-
-上面的无锁栈是教学用最简实现（Treiber 栈）：生产环境中它存在经典的 **ABA 问题**（一个线程读到的头指针，在另一线程"弹出又压回同一地址"后值相同但语义已变，CAS 无法察觉），以及内存回收时机的难题，需要配合标记指针（tagged pointer）、hazard pointer 或 RCU 等技术解决。
-
-## 注意事项
-
-### atomic_init 不是原子操作
-
-`atomic_init` 仅用于初始化，不是原子操作。不要在多线程已经开始运行后使用它：
-
-```c
-atomic_int x;
-
-// 正确：在创建线程之前初始化
-atomic_init(&x, 0);
-
-// 错误：在多线程运行中初始化
-// atomic_init(&x, 0); // 数据竞争！
-```
-
-### 不是所有类型都支持原子操作
-
-只有"平凡可复制"（trivially copyable）的类型才能用作原子类型。包含指针、数组或复杂结构的类型可能不支持：
-
-```c
-// 支持的类型
-_Atomic int a;
-_Atomic float b;
-_Atomic void *c;
-
-// 不一定支持的类型
-struct Complex { char data[256]; };
-_Atomic struct Complex d; // 取决于实现，可能不支持
-```
-
-### relaxed 内存序的局限
-
-`memory_order_relaxed` 只保证原子性，不保证操作顺序。在需要同步的场景中不能使用：
-
-```c
-atomic_int flag = 0;
-int data = 0;
-
-// 线程1
-data = 42;
-atomic_store_explicit(&flag, 1, memory_order_relaxed); // 不保证 data 的写入在 flag 之前可见
-
-// 线程2
-if (atomic_load_explicit(&flag, memory_order_relaxed)) {
-    printf("%d\n", data); // 可能输出0而非42！
-}
-```
-
-### compare_exchange_weak vs strong
-
-- `atomic_compare_exchange_weak`：可能产生虚假失败（spurious failure），即使在值相等时也可能返回 false。在循环中使用时性能更好
-- `atomic_compare_exchange_strong`：不会产生虚假失败，适合不在循环中使用的场景
-
-```c
-// 循环中使用 weak 版本（性能更好）
-do {
-    expected = atomic_load(&x);
-} while (!atomic_compare_exchange_weak(&x, &expected, desired));
-
-// 非循环中使用 strong 版本（避免虚假失败）
-int expected = 10;
-if (atomic_compare_exchange_strong(&x, &expected, 20)) {
-    printf("交换成功\n");
-}
-```
-
-## 进阶用法
-
-### 使用内存序优化性能
-
-```c
-#include <stdio.h>
-#include <stdatomic.h>
-#include <threads.h>
-
-// 统计计数器：只需要原子性，不需要顺序保证
-atomic_int total_requests = 0;
-atomic_int total_errors = 0;
-
-int worker(void *arg) {
-    for (int i = 0; i < 1000000; i++) {
-        // 使用 relaxed 内存序，性能更好
-        atomic_fetch_add_explicit(&total_requests, 1, memory_order_relaxed);
-
-        if (i % 1000 == 0) {
-            atomic_fetch_add_explicit(&total_errors, 1, memory_order_relaxed);
-        }
-    }
-    return 0;
-}
-
-int main(void) {
-    thrd_t t1, t2;
-    thrd_create(&t1, worker, NULL);
-    thrd_create(&t2, worker, NULL);
-    thrd_join(t1, NULL);
-    thrd_join(t2, NULL);
-
-    printf("总请求: %d\n", atomic_load_explicit(&total_requests, memory_order_relaxed));
-    printf("总错误: %d\n", atomic_load_explicit(&total_errors, memory_order_relaxed));
-    return 0;
-}
-```
-
-### Double-Checked Locking 模式
-
-```c
-#include <stdio.h>
-#include <stdatomic.h>
-#include <threads.h>
-
-typedef struct {
-    int initialized;
-    char data[256];
-} Config;
-
-Config *config_instance = NULL;
-atomic_int config_ready = 0;
-
-// 线程安全的延迟初始化
-Config *get_config(void) {
-    // 第一次检查：无锁快速路径
-    if (atomic_load_explicit(&config_ready, memory_order_acquire) == 0) {
-        // 这里可以加互斥锁，简化示例省略
-
-        if (config_instance == NULL) {
-            config_instance = malloc(sizeof(Config));
-            // 初始化配置...
-            snprintf(config_instance->data, sizeof(config_instance->data), "配置数据");
-
-            // release 写入：确保初始化在设置标志之前完成
-            atomic_store_explicit(&config_ready, 1, memory_order_release);
-        }
-    }
-
-    return config_instance;
-}
-
-int main(void) {
-    Config *cfg = get_config();
-    printf("配置: %s\n", cfg->data);
-    return 0;
-}
-```
-
-### 原子操作实现读写锁
-
-```c
-#include <stdio.h>
-#include <stdatomic.h>
-#include <threads.h>
-
-typedef struct {
-    atomic_int readers;   // 当前读者数量
-    atomic_int writer;    // 写者标志（0或1）
-} RWLock;
-
-void rwlock_init(RWLock *lock) {
-    atomic_init(&lock->readers, 0);
-    atomic_init(&lock->writer, 0);
-}
-
-// 获取读锁
-void rwlock_read_lock(RWLock *lock) {
-    while (1) {
-        // 等待写者释放
-        while (atomic_load_explicit(&lock->writer, memory_order_acquire)) {
-            // 自旋等待
-        }
-
-        // 增加读者计数
-        atomic_fetch_add_explicit(&lock->readers, 1, memory_order_acquire);
-
-        // 再次确认没有写者
-        if (atomic_load_explicit(&lock->writer, memory_order_acquire) == 0) {
-            break; // 成功获取读锁
-        }
-
-        // 有写者介入，回退读者计数
-        atomic_fetch_sub_explicit(&lock->readers, 1, memory_order_release);
-    }
-}
-
-// 释放读锁
-void rwlock_read_unlock(RWLock *lock) {
-    atomic_fetch_sub_explicit(&lock->readers, 1, memory_order_release);
-}
-
-// 获取写锁
-void rwlock_write_lock(RWLock *lock) {
-    int expected = 0;
-    while (!atomic_compare_exchange_strong_explicit(&lock->writer, &expected, 1,
-            memory_order_acq_rel, memory_order_acquire)) {
-        expected = 0; // 重置 expected
-    }
-
-    // 等待所有读者完成
-    while (atomic_load_explicit(&lock->readers, memory_order_acquire) > 0) {
-        // 自旋等待
-    }
-}
-
-// 释放写锁
-void rwlock_write_unlock(RWLock *lock) {
-    atomic_store_explicit(&lock->writer, 0, memory_order_release);
-}
-
-int main(void) {
-    RWLock lock;
-    rwlock_init(&lock);
-
-    rwlock_read_lock(&lock);
-    printf("读取数据\n");
-    rwlock_read_unlock(&lock);
-
-    rwlock_write_lock(&lock);
-    printf("写入数据\n");
-    rwlock_write_unlock(&lock);
-
-    return 0;
-}
-```
-## 原子类型
-
-**基本写法：声明原子变量**
-`_Atomic(<类型>) <变量>;`
-```c
-// 声明原子整型
-_Atomic(int) counter = 0;
-```
-
----
-
-**基本写法：原子类型简写**
-`_Atomic <类型> <变量>;`
-```c
-// 简写形式
-_Atomic int counter = 0;
-```
-
----
-
-**基本写法：原子标志**
-`atomic_flag <变量> = ATOMIC_FLAG_INIT;`
-```c
-// 最轻量的原子类型
-atomic_flag lock = ATOMIC_FLAG_INIT;
-```
-
----
-
-## 原子操作
-
-**基本写法：原子加载**
-`atomic_load(&<变量>);`
-```c
-// 原子读取值
-int v = atomic_load(&counter);
-```
-
----
-
-**基本写法：原子存储**
-`atomic_store(&<变量>, <值>);`
-```c
-// 原子写入值
-atomic_store(&counter, 10);
-```
-
----
-
-**基本写法：原子交换**
-`atomic_exchange(&<变量>, <值>);`
-```c
-// 替换并返回旧值
-int old = atomic_exchange(&counter, 5);
-```
-
----
-
-**基本写法：原子比较交换**
-`atomic_compare_exchange_strong(&<变量>, &<期望>, <新值>);`
-```c
-// CAS 操作成功返回 true
-int expected = 0;
-bool ok = atomic_compare_exchange_strong(&counter, &expected, 1);
-```
-
----
-
-**基本写法：弱版本 CAS**
-`atomic_compare_exchange_weak(&<变量>, &<期望>, <新值>);`
-```c
-// 可能伪失败适合循环中
-while (!atomic_compare_exchange_weak(&counter, &expected, expected + 1));
-```
-
----
-
-**基本写法：原子加法**
-`atomic_fetch_add(&<变量>, <值>);`
-```c
-// 原子加并返回旧值
-int prev = atomic_fetch_add(&counter, 1);
-```
-
----
-
-**基本写法：原子减法**
-`atomic_fetch_sub(&<变量>, <值>);`
-```c
-// 原子减并返回旧值
-int prev = atomic_fetch_sub(&counter, 1);
-```
-
----
-
-**基本写法：原子按位与**
-`atomic_fetch_and(&<变量>, <值>);`
-```c
-// 原子按位与
-int prev = atomic_fetch_and(&flags, 0xFF);
-```
-
----
-
-**基本写法：原子按位或**
-`atomic_fetch_or(&<变量>, <值>);`
-```c
-// 原子按位或
-int prev = atomic_fetch_or(&flags, 0x10);
-```
-
----
-
-## 自旋锁示例
-
-**基本写法：自旋锁加锁**
-`while (atomic_flag_test_and_set(&<锁>)) {}`
-```c
-// 使用 atomic_flag 实现自旋锁
-while (atomic_flag_test_and_set(&lock)) {
-    // 等待
-}
-```
-
----
-
-**基本写法：自旋锁解锁**
-`atomic_flag_clear(&<锁>);`
-```c
-// 释放自旋锁
-atomic_flag_clear(&lock);
-```
-
----
-
-## 内存顺序
-
-注意：`atomic_load`/`atomic_store`/`atomic_fetch_*` 等基础版本只接收操作数（默认 seq_cst）；
-要指定内存序必须使用对应的 `*_explicit` 版本，二者参数列表不同。
-
-**基本写法：顺序一致**
-`memory_order_seq_cst`
-```c
-// 最严格的全局顺序（也是默认内存序，无需写出）
-atomic_store(&v, 1);
-// 显式写法用 *_explicit 系列
-atomic_store_explicit(&v, 1, memory_order_seq_cst);
-```
-
----
-
-**基本写法：获取语义**
-`memory_order_acquire`
-```c
-// 加载时防止后续读写重排到此之前
-int v = atomic_load_explicit(&flag, memory_order_acquire);
-```
-
----
-
-**基本写法：释放语义**
-`memory_order_release`
-```c
-// 存储时防止之前的写重排到此之后
-atomic_store_explicit(&flag, 1, memory_order_release);
-```
-
----
-
-**基本写法：宽松语义**
-`memory_order_relaxed`
-```c
-// 仅原子无顺序约束
-atomic_fetch_add_explicit(&counter, 1, memory_order_relaxed);
-```
-
----
-
-**基本写法：带内存顺序的 CAS**
-`atomic_compare_exchange_strong_explicit(&<变量>, &<期望>, <新值>, <成功序>, <失败序>);`
-```c
-// 显式指定内存顺序
-atomic_compare_exchange_strong_explicit(
-    &v, &expected, newval,
-    memory_order_acq_rel, memory_order_acquire);
-```
-
----
-
-## 栅栏
-
-**基本写法：线程栅栏**
-`atomic_thread_fence(<内存序>);`
-```c
-// 显式内存屏障
-atomic_thread_fence(memory_order_release);
-```
-
----
-
-**基本写法：信号栅栏**
-`atomic_signal_fence(<内存序>);`
-```c
-// 信号处理函数内屏障
-atomic_signal_fence(memory_order_acquire);
-```
-
----
-
-## 同步关系
-
-**基本写法：发布订阅模式**
-`store(release)` 与配对的 `load(acquire)`
-```c
-// 线程间建立先行关系
-// 线程 A
-data = 42;
-atomic_store(&flag, 1, memory_order_release);
-// 线程 B
-while (!atomic_load(&flag, memory_order_acquire));
-// 此处能看到 data == 42
-```
-
----
-
-## 常用查询
-
-**基本写法：是否锁自由**
-`atomic_is_lock_free(&<变量>);`
-```c
-// 查询是否无锁实现
-bool free = atomic_is_lock_free(&counter);
-```
-
----
-
-**基本写法：原子大小**
-`_Atomic(<类型>)` 大小通常与原类型相同
-```c
-// 原子类型大小
-size_t sz = sizeof(_Atomic(int));
-```
+进入 [Socket 网络编程](/c/390-SocketNetworkProgramming)：同步的问题解决了，接下来把字节流从同一进程搬上网络——用 30 行代码写出你的第一个 echo 服务器。

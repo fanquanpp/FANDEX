@@ -1,866 +1,320 @@
 ---
 order: 370
-title: 线程与并发
+title: 线程与并发：竞态、临界区与同步思想
 module: 'c'
 category: 计算机科学
-difficulty: advanced
-description: C11线程与并发原语
+difficulty: intermediate
+description: 全局计数器被两个执行流同时自增，100000 次 x 2 却少于 200000：从 count++ 的读-加-写三步拆出竞态条件，用 C11 5.1.2.4 说清数据竞争是未定义行为，建立临界区、互斥、条件变量与生产者消费者的思想地基，死锁四条件与锁排序对策，ThreadSanitizer 实地抓出数据竞争。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/380-AtomicAndMemoryModel'
   - 'c/370-POSIXThread'
-  - 'c/340-SignalHandling'
-  - 'c/170-FunctionPointerCallback'
+  - 'c/380-AtomicAndMemoryModel'
+  - 'c/270-VolatileKeyword'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/330-ProcessAndPipe'
+  - 'c/050-VariableConstant'
 ---
 
 ## 前置知识
 
-- [复杂声明解析](/c/190-ComplexDeclarationParsing)：建议先完成前一篇的学习
+- 已完成 [进程与管道](/c/330-ProcessAndPipe)：用过 fork，知道每个进程有独立的地址空间——本文反复对照的「另一条路」就是它；
+- 已完成 [变量与常量](/c/050-VariableConstant)：知道全局变量与局部变量分别住在哪，生命周期怎么算。
+
+没读过 330 也没关系，两个执行流的对比从零讲起。
+
+> 分工说明：线程这个主题拆成三篇。本篇是**概念课**：线程是什么、竞态怎么发生、数据竞争在 C11 标准里是什么性质、锁与同步解决什么问题——每一处都不深陷 API；[POSIX 线程](/c/370-POSIXThread) 是实操课：pthread_create/join/detach、互斥锁、条件变量与完整的生产者消费者程序；[共享内存与信号量](/c/350-SharedMemorySemaphore) 处理更早一层的问题——几个**互不相干的进程**之间怎么共享数据。原子操作与内存序的严格正解归 [原子操作与内存模型](/c/380-AtomicAndMemoryModel)。
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「基础概念」的核心机制、典型用法与常见陷阱
-- 掌握「快速上手」的核心机制、典型用法与常见陷阱
-- 掌握「详细用法」的核心机制、典型用法与常见陷阱
-- 掌握「常见场景」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 说清线程与进程的心智模型差异：共享什么、私有什么、各自适合什么；
+2. 把 `count++` 拆成三步，用一张时序表解释「两次自增为何只生效一次」；
+3. 引用 C11 标准说明数据竞争（data race）是未定义行为，并说清「冲突动作」的四个条件；
+4. 用临界区与互斥的思想修复计数器实验，说清锁的纪律；
+5. 认识死锁的四个必要条件，写出「全局锁排序」这条最常用的预防对策，并用 ThreadSanitizer 抓出自己程序里的数据竞争。
 
-### 条件变量
+预计 45 到 60 分钟，含 4 组动手实验、1 道预测题与 1 道挑战题。
 
-```c
-#include <stdio.h>
-#include <threads.h>
+## 1. 问题引入：两个执行流，一个计数器
 
-int data_ready = 0;
-int data = 0;
-mtx_t mutex;
-cnd_t cond;
-
-// 消费者线程
-int consumer(void *arg) {
-    mtx_lock(&mutex);
-    while (!data_ready) {
-        cnd_wait(&cond, &mutex); // 等待条件满足
-    }
-    printf("消费数据: %d\n", data);
-    mtx_unlock(&mutex);
-    return 0;
-}
-
-// 生产者线程
-int producer(void *arg) {
-    mtx_lock(&mutex);
-    data = 42;
-    data_ready = 1;
-    printf("生产数据: %d\n", data);
-    cnd_signal(&cond); // 通知一个等待的线程
-    mtx_unlock(&mutex);
-    return 0;
-}
-
-int main(void) {
-    mtx_init(&mutex, mtx_plain);
-    cnd_init(&cond);
-
-    thrd_t t1, t2;
-    thrd_create(&t1, consumer, NULL);
-    thrd_sleep(&(struct timespec){.tv_sec=1}, NULL); // 等待1秒
-    thrd_create(&t2, producer, NULL);
-
-    thrd_join(t1, NULL);
-    thrd_join(t2, NULL);
-
-    mtx_destroy(&mutex);
-    cnd_destroy(&cond);
-    return 0;
-}
-```
-
-### 线程局部存储
+同一个函数，同一份代码，只是**同时跑两份**：
 
 ```c
+/* race.c：两个线程同时给同一个全局计数器自增 */
 #include <stdio.h>
-#include <threads.h>
+#include <pthread.h>
 
-// 方式一：使用 _Thread_local 关键字
-static _Thread_local int tls_value = 0;
+int counter = 0;    /* 全局变量：两个执行流都看得见、都能改 */
 
-// 方式二：使用 tss_t
-static tss_t tss_key;
-
-void tss_destructor(void *val) {
-    free(val);
-}
-
-int thread_func(void *arg) {
-    long id = (long)arg;
-
-    // 使用 _Thread_local
-    tls_value = id * 10;
-    printf("线程 %ld: tls_value = %d\n", id, tls_value);
-
-    // 使用 tss_t
-    int *data = malloc(sizeof(int));
-    *data = id * 100;
-    tss_set(tss_key, data);
-
-    int *retrieved = tss_get(tss_key);
-    printf("线程 %ld: tss_data = %d\n", id, *retrieved);
-
-    return 0;
-}
-
-int main(void) {
-    tss_create(&tss_key, tss_destructor);
-
-    thrd_t t1, t2;
-    thrd_create(&t1, thread_func, (void *)1);
-    thrd_create(&t2, thread_func, (void *)2);
-    thrd_join(t1, NULL);
-    thrd_join(t2, NULL);
-
-    tss_delete(tss_key);
-    return 0;
-}
-```
-
-### 一次性初始化
-
-```c
-#include <stdio.h>
-#include <threads.h>
-
-static once_flag init_flag = ONCE_FLAG_INIT;
-static int initialized_data;
-
-void init_function(void) {
-    printf("执行一次性初始化\n");
-    initialized_data = 42;
-}
-
-int thread_func(void *arg) {
-    call_once(&init_flag, init_function);
-    printf("线程 %ld: 数据 = %d\n", (long)arg, initialized_data);
-    return 0;
-}
-
-int main(void) {
-    thrd_t t1, t2, t3;
-    thrd_create(&t1, thread_func, (void *)1);
-    thrd_create(&t2, thread_func, (void *)2);
-    thrd_create(&t3, thread_func, (void *)3);
-    thrd_join(t1, NULL);
-    thrd_join(t2, NULL);
-    thrd_join(t3, NULL);
-    return 0;
-}
-```
-
-## 概述
-
-C11 标准引入了 `<threads.h>` 头文件，提供了标准化的线程和并发支持，包括线程创建与管理、互斥锁、条件变量和线程局部存储。与 POSIX 线程（pthread）不同，C11 线程是语言标准的一部分，理论上可以在任何符合 C11 标准的编译器上使用，无需依赖特定操作系统的 API。
-
-## 基础概念
-
-### C11 线程 vs POSIX 线程
-
-| 特性     | C11 线程       | POSIX 线程      |
-| -------- | -------------- | --------------- |
-| 标准     | ISO C11        | POSIX.1         |
-| 可移植性 | 理论上更好     | Unix/Linux 专属 |
-| 功能     | 基本线程操作   | 更丰富          |
-| 支持情况 | 部分编译器支持 | 广泛支持        |
-| 头文件   | `<threads.h>`  | `<pthread.h>`   |
-
-### C11 并发组件
-
-| 组件        | 说明             |
-| ----------- | ---------------- |
-| `thrd_t`    | 线程标识符       |
-| `mtx_t`     | 互斥锁           |
-| `cnd_t`     | 条件变量         |
-| `tss_t`     | 线程特定存储     |
-| `once_flag` | 一次性初始化标志 |
-
-## 快速上手
-
-### 创建线程
-
-```c
-#include <stdio.h>
-#include <threads.h>
-
-// 线程函数：返回 int，参数为 void*
-int thread_func(void *arg) {
-    long id = (long)arg;
-    printf("线程 %ld 运行中\n", id);
-    return 0; // 返回线程结果
-}
-
-int main(void) {
-    thrd_t thread;
-
-    // 创建线程
-    int ret = thrd_create(&thread, thread_func, (void *)1);
-    if (ret != thrd_success) {
-        printf("线程创建失败\n");
-        return 1;
-    }
-
-    // 等待线程结束
-    int result;
-    thrd_join(thread, &result);
-    printf("线程返回: %d\n", result);
-
-    return 0;
-}
-```
-
-### 使用互斥锁
-
-```c
-#include <stdio.h>
-#include <threads.h>
-
-int counter = 0;
-mtx_t mutex;
-
-int increment(void *arg) {
+void *worker(void *arg) {
+    (void)arg;
     for (int i = 0; i < 100000; i++) {
-        mtx_lock(&mutex);     // 加锁
-        counter++;
-        mtx_unlock(&mutex);   // 解锁
+        counter++;    /* 这一行不是一步，第 3 节拆开 */
     }
-    return 0;
+    return NULL;
 }
 
 int main(void) {
-    // 初始化互斥锁
-    mtx_init(&mutex, mtx_plain);
-
-    thrd_t t1, t2;
-    thrd_create(&t1, increment, NULL);
-    thrd_create(&t2, increment, NULL);
-
-    thrd_join(t1, NULL);
-    thrd_join(t2, NULL);
-
-    printf("counter = %d\n", counter); // 一定是200000
-
-    mtx_destroy(&mutex);
+    pthread_t t1, t2;
+    pthread_create(&t1, NULL, worker, NULL);
+    pthread_create(&t2, NULL, worker, NULL);
+    pthread_join(t1, NULL);   /* 等两个执行流都跑完 */
+    pthread_join(t2, NULL);
+    printf("counter = %d\n", counter);
     return 0;
 }
 ```
 
-## 详细用法
-
-### 互斥锁类型
-
-```c
-// 普通互斥锁
-mtx_t mtx1;
-mtx_init(&mtx1, mtx_plain);
-
-// 支持递归的互斥锁（同一线程可多次加锁）
-mtx_t mtx2;
-mtx_init(&mtx2, mtx_recursive);
-
-// 带超时的互斥锁
-mtx_t mtx3;
-mtx_init(&mtx3, mtx_timed);
-
-// 尝试加锁（非阻塞）
-if (mtx_trylock(&mtx1) == thrd_success) {
-    // 成功获取锁
-    mtx_unlock(&mtx1);
-} else {
-    // 锁被占用
-}
+```bash
+gcc -Wall -Wextra -g -pthread race.c -o race
+./race
+./race
+./race
 ```
 
-## 常见场景
+一次典型输出（每次运行都不同）：
 
-### 场景一：线程安全的队列
+```text
+counter = 137589
+counter = 118204
+counter = 200000
+```
+
+每个执行流老老实实加了 100000 次，两次合计 200000，账面却少了三万多——偶尔又恰好对上。pthread_create、pthread_join 这些调用的语法先混个眼熟，[POSIX 线程](/c/370-POSIXThread) 会逐行讲透（编译命令里的 -pthread 同理）。眼下的问题是**为什么**：答案要从「线程到底共享了什么」说起。
+
+## 2. 线程是什么：fork 出新宇宙，pthread 多开一个工位
+
+330 篇里，fork 给正在运行的进程拍了个快照，复制出一个**新宇宙**：独立的地址空间，孩子改全局变量，父亲看不见。pthread_create 走的是另一条路：**不复制任何东西**，只是在同一个进程里多起一条执行流。两组执行流共享与私有的清单如下：
+
+| | fork 出的子进程 | pthread_create 出的线程 |
+| --- | --- | --- |
+| 地址空间 | 写时复制的独立副本 | 同一套，直接共享 |
+| 全局变量、堆 | 各一份，改动互相看不见 | 一份，改动立刻可见 |
+| 栈 | 独立 | 每线程一份**私有**栈 |
+| 通信 | 要管道、共享内存等 IPC | 直接读写同一个变量（所以会打架） |
+| 出事影响 | 进程间相互隔离 | 一个线程越界，整个进程一起崩 |
+
+（表中的 fork 语义见 [进程与管道](/c/330-ProcessAndPipe)；「地址空间分五段」的地图见 [内存深水区](/c/210-MemoryManagement)。）对照那张五段图：线程们**共享** text、data、堆，**各有一条自己的栈**。这条「私有栈」的事实很实用：局部变量天然线程安全——每个线程调用 `worker` 时，`i` 都在自己那条栈上，谁也碰不到谁；会出事的只有**大家共有的那部分**：全局变量、静态变量、堆上 malloc 出来的块。
+
+操作系统里的分工因此清晰起来：**进程是资源分配的单位**（内存、打开的文件都记在进程账上），**线程是内核调度的单位**（CPU 在线程之间切换，随时可能把任何一个执行流按暂停键）。多个执行流到底怎么「同时」跑取决于机器：多核是真并行，单核是快速轮换——但对程序正确性来说两者没有区别，你都必须假设「我的每一行随时可能被打断」。
+
+顺带认一个关键字：如果某个全局变量你**不想**共享，C11 提供线程局部存储 `_Thread_local`——每个线程各得一份独立副本。深水区的 pthread_key_t 机制与使用时机归 [POSIX 线程](/c/370-POSIXThread) 一带提及，本文主线用不上。
+
+修改实验一：把 worker 里的 `counter++` 改成 `int local = 0; local++;`，把打印移进 worker 末尾各自输出 local。结果永远是两个 100000——私有变量没有战场，也就没有事故。
+
+## 3. count++ 三步走：竞态条件与数据竞争
+
+`counter++` 在 C 里是一行，在机器上是三步：
+
+```text
+1. load    把 counter 的值从内存读进寄存器
+2. add     寄存器里的值加 1
+3. store   把结果写回 counter
+```
+
+两个执行流穿插执行时，写回可能踩掉对方刚写的值。看一张时序表（初始 counter = 100）：
+
+| 时刻 | 线程 A | 线程 B | counter |
+| --- | --- | --- | --- |
+| t1 | 读到 100 | | 100 |
+| t2 | | 读到 100 | 100 |
+| t3 | 写回 101 | | 101 |
+| t4 | | 写回 101 | 101 |
+
+两次自增，净效果一次——这就是**丢失的更新**（lost update）。哪个时刻穿插全由调度决定，所以输出每次不同、偶尔又碰巧正确：事故是概率性的，这正是并发 bug 最阴险的性格。
+
+两个术语从此分开用。**竞态条件**（race condition）：程序的正确性取决于各执行流的相对时序——上表的「账对不上」就是它。**数据竞争**（data race）：两个执行流**无同步地**访问同一内存位置，且至少一个是写。本例是数据竞争导致的竞态条件；反过来竞态条件不一定非有数据竞争不可（两个线程抢着创建同一个临时文件也算竞态），但只要你在 C 里无同步地共写变量，数据竞争与竞态条件就会一起到场。
+
+## 4. 数据竞争在 C11 下是未定义行为
+
+丢更新听起来只是「少数几次白干了」，但标准的态度严厉得多。C11 的多线程语义（5.1.2.4）写道：程序的执行若包含两个不同线程里的**冲突动作**（conflicting actions），其中至少一个不是原子操作，且二者之间没有先后关系（happens-before），程序就含有数据竞争——**任何数据竞争都会导致未定义行为**。
+
+「冲突动作」的四个条件值得逐条记住：不同线程、访问同一内存位置、至少一个是写、没有 happens-before 关系。前三条决定「战场」在哪，最后一条是关键——只要用了正确的同步（比如第 5 节的锁），两个动作之间就有了先后关系，数据竞争不成立，程序的行为才是定义良好的。
+
+未定义行为的完整含义（标准把结果留白，编译器可以按「这事不可能发生」来优化）在 [内存深水区](/c/210-MemoryManagement) 的堆事故里领教过一次。数据竞争的留白更宽：不只是丢更新，优化器有权假设你的程序没有数据竞争，于是缓存到寄存器（第 8 节的真实现场）、重排读写顺序、甚至把两次读合并成一次都可能发生。「大多数时候只是丢更新」是观测结果，不是承诺——修数据竞争从来不是因为「这次算错了账」，而是因为**整个程序的行为都不再受标准保护**。
+
+修改实验二：把循环次数加大到 1000000、线程加到 4 个再跑。丢失的更新更多，但偶尔也能全对——「没出错」依旧不是「没竞争」的证据。
+
+## 5. 临界区与互斥：给危险段加门
+
+修复的思路不是「消灭穿插」（做不到，穿插是并发的本性），而是让**碰共享数据的那一小段代码同一时刻只有一个执行流在跑**。这一小段有个名字：临界区（critical section）。把守它的工具是互斥锁（mutex，mutual exclusion 的缩写）：进门先 `lock`（锁被占就睡在门口），出门必须 `unlock`。写法先混个眼熟，逐行拆解在 [POSIX 线程](/c/370-POSIXThread)：
 
 ```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <threads.h>
+/* race_lock.c 的核心改动：三行锁住一个计数器 */
+pthread_mutex_t lock = PTHREAD_MUTEX_INITIALIZER;
 
-#define QUEUE_SIZE 10
-
-typedef struct {
-    int data[QUEUE_SIZE];
-    int head, tail, count;
-    mtx_t mutex;
-    cnd_t not_full;
-    cnd_t not_empty;
-} ThreadQueue;
-
-void queue_init(ThreadQueue *q) {
-    q->head = q->tail = q->count = 0;
-    mtx_init(&q->mutex, mtx_plain);
-    cnd_init(&q->not_full);
-    cnd_init(&q->not_empty);
-}
-
-void queue_push(ThreadQueue *q, int value) {
-    mtx_lock(&q->mutex);
-    while (q->count == QUEUE_SIZE) {
-        cnd_wait(&q->not_full, &q->mutex);
+    /* worker 内 */
+    for (int i = 0; i < 100000; i++) {
+        pthread_mutex_lock(&lock);
+        counter++;                 /* 临界区：同一时刻只有一个线程在里头 */
+        pthread_mutex_unlock(&lock);
     }
-    q->data[q->head] = value;
-    q->head = (q->head + 1) % QUEUE_SIZE;
-    q->count++;
-    cnd_signal(&q->not_empty);
-    mtx_unlock(&q->mutex);
+```
+
+加上这三行，前面 race.c 的输出就稳定回到 200000，跑多少次都不变。注意锁的**纪律**，它们不是风格建议而是正确性条件：
+
+- **成对出现**：lock 之后每一条退出路径（提前 return、出错分支）都要 unlock，否则其他人永久睡死；
+- **粒度最小**：临界区里只放碰共享数据的那几行，printf 这类慢活挪出去——锁住的代码越多，其他线程排队越久；
+- **同一把锁**：保护同一个数据的所有访问点都要过同一把锁，漏一个访问点等于没锁。
+
+锁解决的是「谁先进」；「条件没到就先睡、条件好了叫醒我」是另一类问题，下一节把它请出来。
+
+## 6. 同步原语概览与生产者消费者思想
+
+互斥锁只是同步原语（synchronization primitive）家族的一员。整个家族按「解决什么问题」分四类，认脸即可，API 全部留给 370/380：
+
+| 原语 | 解决什么问题 | 一句话心智模型 |
+| --- | --- | --- |
+| 互斥锁 | 谁能进临界区 | 一扇一次只过一个人的门 |
+| 条件变量 | 「条件没满足先睡」 | 等叫醒的床位，**必须配一把锁** |
+| 信号量 | 计数式准入、事件通知 | 内核里的计数器，P 申请 V 归还（[共享内存与信号量](/c/350-SharedMemorySemaphore) 见过进程版） |
+| 原子操作 | 单个变量的免锁读写 | 硬件保证不可分割，严格正解在 [原子操作与内存模型](/c/380-AtomicAndMemoryModel) |
+
+家族里还有两位配角：读写锁（读多写少时让多个读者并行，写者独占）与屏障（所有线程到齐再一起往下走），以及「这段初始化代码整个进程只跑一次」的一次性初始化。它们都能用锁加条件变量搭出来，本文不展开。
+
+家族最经典的组合拳是**生产者-消费者**（producer-consumer）：生产速度与消费速度不同步，中间放一条**有界队列**缓冲——队列是共享数据要加锁；「满了放不进」与「空了取不到」用条件变量睡觉等待：
+
+```mermaid
+flowchart LR
+    P["生产者线程"] -->|"锁住 → 没满就放入 → 叫醒等待的消费者 → 解锁"| Q["有界队列（共享数据）"]
+    Q -->|"锁住 → 不空就取出 → 叫醒等待的生产者 → 解锁"| C["消费者线程"]
+    P -.->|"满了：睡在 not_full 上"| Q
+    C -.->|"空了：睡在 not_empty 上"| Q
+```
+
+这个模式的要点全是思想层面的：忙等（循环检查标志）换成睡觉等叫醒；等待的一方**必须循环重查条件**（醒来的原因不一定是条件成立，这在 370 是逐行验证的必修课）；队列满/空的判断发生在锁的保护之内。它的线程版完整程序（互斥锁加两个条件变量）是 [POSIX 线程](/c/370-POSIXThread) 的压轴示例；进程间版本只是把锁换成信号量，思想一模一样。
+
+关于 API 本身还有一张对照表要交底。C11 起标准自带了线程库 `<threads.h>`（thrd_create/mtx_t/cnd_t，另有 tss_t 线程特定存储与 once_flag 一次性初始化），它与 pthread 是同一套思想的两种拼写：
+
+| | C11 `<threads.h>` | POSIX pthread |
+| --- | --- | --- |
+| 出身 | ISO C11 语言标准 | POSIX 系统接口 |
+| 头文件 | `<threads.h>` | `<pthread.h>` |
+| 支持面 | glibc 2.28（2018）起提供；MSVC 不支持 | Unix 系广泛可用 |
+| 功能 | 基本子集 | 更丰富（detach、读写锁、屏障等） |
+
+产业主流是 pthread，C11 线程当作「标准里也有这一套」的常识记住即可；本模块的实操篇选 pthread。两套 API 背后，本文讲的概念一个字不用改。
+
+## 7. 死锁：四个条件与工程对策
+
+锁用多了会撞上并发的第二场事故：**死锁**（deadlock）——两个执行流各拿一把锁，都在等对方手里的那把，永远等下去：
+
+```c
+/* 两个线程同时各转一笔账，锁的顺序相反 */
+void *transfer_a_to_b(void *arg) {
+    (void)arg;
+    pthread_mutex_lock(&acct_A);
+    pthread_mutex_lock(&acct_B);   /* 此刻可能正被线程 2 拿着，它在等 acct_A */
+    /* ...转账... */
 }
 
-int queue_pop(ThreadQueue *q) {
-    mtx_lock(&q->mutex);
-    while (q->count == 0) {
-        cnd_wait(&q->not_empty, &q->mutex);
+void *transfer_b_to_a(void *arg) {
+    (void)arg;
+    pthread_mutex_lock(&acct_B);
+    pthread_mutex_lock(&acct_A);   /* 此刻可能正被线程 1 拿着，它在等 acct_B */
+    /* ...转账... */
+}
+```
+
+线程 1 拿着 A 等 B，线程 2 拿着 B 等 A，谁也不撒手。教科书总结死锁同时发生需要四个**必要条件**：
+
+1. **互斥**：资源一次只能被一个执行流占有（锁的本性）；
+2. **占有并等待**：抱着已有的锁去等下一把；
+3. **不可剥夺**：锁只能由持有者主动释放，别人抢不走；
+4. **循环等待**：等待关系连成一个圈。
+
+前两条是锁存在的意义，第三条是锁的语义——工程上真正能下手的是第四条：**让全项目按同一个全局顺序获取锁**（比如按账户编号从小到大加锁），圈就永远画不成。转账例的修法：两边都先锁编号小的账户，再锁编号大的。辅助手段还有两条：用 `trylock`（拿不到就放弃、退回重来，而不是睡死）做无阻塞尝试；以及老生常谈的缩小临界区——锁少拿快还，纠缠的机会自然少。这些纪律在 370 的实操里还会反复露面。
+
+## 8. 可见性与伪共享：两眼深水
+
+还有两个「知道存在」级别的话题，本文只开门不带路。第一眼是**可见性**：第 1 节的实验若把 `counter` 换成「一个线程写标志位、另一个线程忙等读标志位」的形式，开 -O2 后循环可能被优化成「读一次进寄存器，以后再也不看内存」——写线程改了，读线程永远看不见。这是优化器在「程序没有数据竞争」假设下的合法行为，volatile 与它的边界讨论在 [volatile 深水区](/c/270-VolatileKeyword) 有完整实录，但**正确的修法不是 volatile**——volatile 不提供原子性也不提供内存序，正解是同步原语或 [原子操作与内存模型](/c/380-AtomicAndMemoryModel) 的 `_Atomic`。
+
+第二眼是**伪共享**（false sharing）：两个线程各写各的计数器，本来井水不犯河水，但如果两个变量恰好落在同一条缓存行上，缓存一致性协议会让它们互相拖慢——没抢数据，却抢了缓存行。这是性能深水区的话题，认定与修法（缓存行对齐）归 [原子操作与内存模型](/c/380-AtomicAndMemoryModel)。此处唯一的任务是建立直觉：**并发里「正确」与「快」是两道题**，本文全程只负责第一道。
+
+## 常见错误与调试实录：ThreadSanitizer 抓数据竞争
+
+数据竞争的报应延迟且随机，肉眼审查几十万行代码不现实。ThreadSanitizer（TSan，数据竞争检测器）把每次内存访问都插桩记录，当场抓出两个执行流对同一位置的冲突访问：
+
+```bash
+gcc -Wall -Wextra -g -pthread -fsanitize=thread race.c -o race_tsan
+./race_tsan
+```
+
+一次典型报告（地址、线程号、pid 每次不同，关键行如下）：
+
+```text
+==================
+WARNING: ThreadSanitizer: data race (pid=24601)
+  Read of size 4 at 0x561d3c2a1014 by thread T2:
+    #0 worker race.c:7 (race_tsan+0x11a3)
+  Previous write of size 4 at 0x561d3c2a1014 by thread T1:
+    #0 worker race.c:7 (race_tsan+0x117c)
+  ...
+SUMMARY: ThreadSanitizer: data race race.c:7 in worker
+==================
+```
+
+逐行读：首行点名事故类型 data race；`Read of size 4 ... by thread T2` 与 `Previous write ... by thread T1` 把两个打架的执行流、各自的动作与**同一行代码**都端了出来——第 7 行正是 `counter++`；SUMMARY 给出修的位置。报告一次不漏地复述了第 3、4 节的全部推理，这正是工具的价值：把「偶现的乱象」变成「指名道姓的案发现场」。两点使用须知：插桩让程序明显变慢，只用于测试构建；它与内存错误检测器 ASan 互斥，抓数据竞争用 TSan、抓越界与泄漏用 ASan，分两次编译运行。改用第 5 节的加锁版本再跑，报告消失——修复完成的标准就是「TSan 安静」。
+
+## 实际项目中的使用场景
+
+- 服务器程序（Web 后端、游戏服）：每个连接一个执行流并发处理，共享的在线人数表、缓存就是本文的 counter 放大版——先想清共享与私有，再谈代码；
+- 并行计算：把大数组切块、每线程算一段再汇总（分块求和是最小样例），前提是各块只写自己的结果槽，否则又是竞态；
+- 生产者-消费者的现实形态：日志线程收集各工作线程的日志、IO 线程收发网络包，界队列加等待唤醒是这些系统的标准骨架；
+- 与 350 的分界：同一个进程内的执行流共享变量即可；一旦跨越进程边界，就要换用 [共享内存与信号量](/c/350-SharedMemorySemaphore) 的那套钥匙与裁判。
+
+## 小练习
+
+预测题（5 分钟）：把 race_lock.c 的 lock/unlock 移出循环——循环前 lock 一次、循环后 unlock 一次。结果是什么？这样做有什么代价？
+
+参考答案（先写再看）：结果稳定为 200000，且比每圈加解锁**更快**——锁开销只付一次。但两个线程从此串行：一个跑完十万次另一个才轮到，并发收益归零。正确性与并发度是两笔账，把临界区开到整个循环是用性能买正确，反过来才是本题的正常答案：临界区越小越好，只要还罩得住共享数据。
+
+修改题（10 分钟）：race.c 改成 4 个线程各加 50000 次。先预测结果的取值范围，再运行验证，最后用第 9 节的 TSan 命令重新编译跑一遍，读报告确认四个线程都在第 7 行被点名。
+
+挑战题（半小时，不看答案先动手）：下面的「懒初始化」写法在多线程下有一个数据竞争，先找到它：
+
+```c
+Config *cfg = NULL;          /* 全局 */
+
+Config *get_config(void) {
+    if (cfg == NULL) {       /* 先检查 */
+        cfg = load_config(); /* 再加载 */
     }
-    int value = q->data[q->tail];
-    q->tail = (q->tail + 1) % QUEUE_SIZE;
-    q->count--;
-    cnd_signal(&q->not_full);
-    mtx_unlock(&q->mutex);
-    return value;
-}
-
-void queue_destroy(ThreadQueue *q) {
-    mtx_destroy(&q->mutex);
-    cnd_destroy(&q->not_full);
-    cnd_destroy(&q->not_empty);
-}
-
-ThreadQueue queue;
-
-int producer(void *arg) {
-    for (int i = 1; i <= 20; i++) {
-        queue_push(&queue, i);
-        printf("生产: %d\n", i);
-    }
-    return 0;
-}
-
-int consumer(void *arg) {
-    for (int i = 1; i <= 20; i++) {
-        int val = queue_pop(&queue);
-        printf("消费: %d\n", val);
-    }
-    return 0;
-}
-
-int main(void) {
-    queue_init(&queue);
-
-    thrd_t t1, t2;
-    thrd_create(&t1, producer, NULL);
-    thrd_create(&t2, consumer, NULL);
-    thrd_join(t1, NULL);
-    thrd_join(t2, NULL);
-
-    queue_destroy(&queue);
-    return 0;
+    return cfg;
 }
 ```
 
-### 场景二：并行计算
+提示（思路方向）：两个线程可能同时通过检查、都执行加载——一个动作是写。冲突动作四条件逐条对照。
 
-```c
-#include <stdio.h>
-#include <threads.h>
+展开（关键 API）：给检查与赋值套上互斥锁是最直接的修法；标准库里还备了「整个进程只执行一次」的一次性初始化原语（pthread_once / C11 call_once），370 篇一句话带过。
 
-typedef struct {
-    const double *data;
-    int start, end;
-    double result;
-} SumTask;
+验收清单：能指出「检查」与「赋值」之间没有同步；能用 TSan 在并发调用下抓到这个竞争；加锁后 TSan 转为安静。
 
-int sum_worker(void *arg) {
-    SumTask *task = (SumTask *)arg;
-    double sum = 0.0;
-    for (int i = task->start; i < task->end; i++) {
-        sum += task->data[i];
-    }
-    task->result = sum;
-    return 0;
-}
+## 与之前和之后的知识的关系
 
-double parallel_sum(const double *data, int n, int num_threads) {
-    SumTask tasks[16]; // 最多16个线程
-    thrd_t threads[16];
+- 往前：全局变量与生命周期（[变量与常量](/c/050-VariableConstant)）决定了「谁和谁共享」；fork 的写时复制（[进程与管道](/c/330-ProcessAndPipe)）是线程共享模型的对照组；跨进程的共享是 [共享内存与信号量](/c/350-SharedMemorySemaphore) 的主题；
+- 旁支：未定义行为的家族成员（有符号溢出、use-after-free）见 [内存深水区](/c/210-MemoryManagement)，数据竞争是它最年轻的兄弟；优化器为什么敢吃掉你的读操作，[volatile 深水区](/c/270-VolatileKeyword) 用 -O0 与 -O2 的对照给出完整答案；多线程程序里信号投递给哪个线程的纠葛在 [信号处理](/c/340-SignalHandling)；
+- 往后：本文每个「先混个眼熟」的调用，都在 [POSIX 线程](/c/370-POSIXThread) 落地成可编译、可跑、可调试的完整程序；免锁的计数器与更严格的内存序在 [原子操作与内存模型](/c/380-AtomicAndMemoryModel)。
 
-    if (num_threads > 16) num_threads = 16;
-    int chunk = n / num_threads;
+## 官方文档
 
-    for (int i = 0; i < num_threads; i++) {
-        tasks[i].data = data;
-        tasks[i].start = i * chunk;
-        tasks[i].end = (i == num_threads - 1) ? n : (i + 1) * chunk;
-        thrd_create(&threads[i], sum_worker, &tasks[i]);
-    }
+- C11 多线程语义与数据竞争条款的标准草案（WG14 N1284，5.1.2.4 一节）：https://www.open-std.org/jtc1/sc22/wg14/www/docs/n1284.htm
+- ThreadSanitizer 总览（GCC 文档 -fsanitize=thread 条目所引）：https://github.com/google/sanitizers/wiki#threadsanitizer
+- pthreads 总览手册页（线程共享模型与线程 ID 的权威口径）：https://man7.org/linux/man-pages/man7/pthreads.7.html
 
-    double total = 0.0;
-    for (int i = 0; i < num_threads; i++) {
-        thrd_join(threads[i], NULL);
-        total += tasks[i].result;
-    }
+## 自我检查
 
-    return total;
-}
+- 能用一句话向同事讲清线程与 fork 子进程的区别，并指出局部变量为什么天然安全；
+- 能在纸上画时序表解释丢失的更新，说出竞态条件与数据竞争两个术语的区别；
+- 能背出数据竞争导致未定义行为的四个「冲突动作」条件，以及加锁为什么能消除它；
+- 拿到一个偶现错值的程序，会用 TSan 编译、读懂报告里两个执行流的冲突现场。
 
-int main(void) {
-    double data[1000];
-    for (int i = 0; i < 1000; i++) data[i] = i + 1;
+## 本章总结
 
-    double sum = parallel_sum(data, 1000, 4);
-    printf("总和: %.0f\n", sum); // 500500
-    return 0;
-}
-```
+线程是同一进程内的第二条执行流：共享全局与堆，各有一条私有栈；fork 复制宇宙，pthread 只加工位。counter++ 的读-加-写三步在穿插调度下丢更新，这是竞态条件；无同步访问同一内存且至少一个写，是数据竞争——C11 对后者判未定义行为，丢账只是表象，失去的是整个程序的标准保障。修法是临界区加互斥锁：成对、最小粒度、所有访问点同一把锁。条件变量、信号量、原子操作各有分工，生产者-消费者是它们的经典合奏。死锁需四个条件齐备，工程上用全局锁排序掐断循环等待。工具箱里永远备着 TSan：数据竞争抓出来一行是一行，修好的标准是它安静。
 
-### 场景三：读写锁模式
+## 下一步
 
-```c
-#include <stdio.h>
-#include <threads.h>
-
-// 使用互斥锁和条件变量实现读写锁
-typedef struct {
-    mtx_t mutex;
-    cnd_t readers_ok;
-    cnd_t writers_ok;
-    int readers;
-    int writers;
-    int waiting_writers;
-} RWLock;
-
-void rwlock_init(RWLock *rw) {
-    mtx_init(&rw->mutex, mtx_plain);
-    cnd_init(&rw->readers_ok);
-    cnd_init(&rw->writers_ok);
-    rw->readers = 0;
-    rw->writers = 0;
-    rw->waiting_writers = 0;
-}
-
-void rwlock_read_lock(RWLock *rw) {
-    mtx_lock(&rw->mutex);
-    while (rw->writers > 0 || rw->waiting_writers > 0) {
-        cnd_wait(&rw->readers_ok, &rw->mutex);
-    }
-    rw->readers++;
-    mtx_unlock(&rw->mutex);
-}
-
-void rwlock_read_unlock(RWLock *rw) {
-    mtx_lock(&rw->mutex);
-    rw->readers--;
-    if (rw->readers == 0) {
-        cnd_signal(&rw->writers_ok);
-    }
-    mtx_unlock(&rw->mutex);
-}
-
-void rwlock_write_lock(RWLock *rw) {
-    mtx_lock(&rw->mutex);
-    rw->waiting_writers++;
-    while (rw->readers > 0 || rw->writers > 0) {
-        cnd_wait(&rw->writers_ok, &rw->mutex);
-    }
-    rw->waiting_writers--;
-    rw->writers++;
-    mtx_unlock(&rw->mutex);
-}
-
-void rwlock_write_unlock(RWLock *rw) {
-    mtx_lock(&rw->mutex);
-    rw->writers--;
-    cnd_broadcast(&rw->readers_ok);
-    cnd_signal(&rw->writers_ok);
-    mtx_unlock(&rw->mutex);
-}
-
-void rwlock_destroy(RWLock *rw) {
-    mtx_destroy(&rw->mutex);
-    cnd_destroy(&rw->readers_ok);
-    cnd_destroy(&rw->writers_ok);
-}
-```
-
-## 注意事项
-
-### C11 线程的支持情况
-
-截至 2026 年，C11 线程的支持情况：
-
-- glibc 2.28（2018）起在 Linux 上提供 `<threads.h>`（编译需 `-pthread`，标准选择建议 `-std=c11` 或更新）
-- musl libc: 完整支持
-- Clang/glibc 组合可用；macOS 与 Windows 原生 libc 不提供
-- MSVC: 不支持 `<threads.h>`
-
-在不支持 C11 线程的平台上，可以使用 pthread 或 Windows 线程 API 作为替代（见下文兼容性封装层）。
-
-### thrd_sleep 的使用
-
-```c
-// 休眠1秒
-struct timespec ts = {.tv_sec = 1, .tv_nsec = 0};
-thrd_sleep(&ts, NULL);
-
-// 休眠500毫秒
-struct timespec ts2 = {.tv_sec = 0, .tv_nsec = 500000000};
-thrd_sleep(&ts2, NULL);
-```
-
-### 条件变量的虚假唤醒
-
-与 pthread 一样，C11 条件变量也可能产生虚假唤醒，必须使用 `while` 循环检查条件：
-
-```c
-mtx_lock(&mutex);
-while (!condition) {
-    cnd_wait(&cond, &mutex);
-}
-mtx_unlock(&mutex);
-```
-
-## 进阶用法
-
-### 线程池
-
-```c
-#include <stdio.h>
-#include <stdlib.h>
-#include <threads.h>
-
-#define THREAD_COUNT 4
-#define TASK_COUNT 20
-
-typedef struct {
-    void (*func)(int);
-    int arg;
-} Task;
-
-typedef struct {
-    Task tasks[TASK_COUNT];
-    int head, tail, count;
-    mtx_t mutex;
-    cnd_t cond;
-    int shutdown;
-} TaskQueue;
-
-TaskQueue queue;
-
-void queue_init(TaskQueue *q) {
-    q->head = q->tail = q->count = q->shutdown = 0;
-    mtx_init(&q->mutex, mtx_plain);
-    cnd_init(&q->cond);
-}
-
-void queue_push(TaskQueue *q, Task task) {
-    mtx_lock(&q->mutex);
-    q->tasks[q->tail] = task;
-    q->tail = (q->tail + 1) % TASK_COUNT;
-    q->count++;
-    cnd_signal(&q->cond);
-    mtx_unlock(&q->mutex);
-}
-
-Task queue_pop(TaskQueue *q) {
-    mtx_lock(&q->mutex);
-    while (q->count == 0 && !q->shutdown) {
-        cnd_wait(&q->cond, &q->mutex);
-    }
-    Task task = {0};
-    if (q->count > 0) {
-        task = q->tasks[q->head];
-        q->head = (q->head + 1) % TASK_COUNT;
-        q->count--;
-    }
-    mtx_unlock(&q->mutex);
-    return task;
-}
-
-void worker_task(int id) {
-    printf("执行任务 %d\n", id);
-}
-
-int worker(void *arg) {
-    while (1) {
-        Task task = queue_pop(&queue);
-        if (queue.shutdown && queue.count == 0) break;
-        if (task.func) task.func(task.arg);
-    }
-    return 0;
-}
-
-int main(void) {
-    queue_init(&queue);
-
-    thrd_t threads[THREAD_COUNT];
-    for (int i = 0; i < THREAD_COUNT; i++) {
-        thrd_create(&threads[i], worker, NULL);
-    }
-
-    for (int i = 0; i < TASK_COUNT; i++) {
-        queue_push(&queue, (Task){worker_task, i});
-    }
-
-    queue.shutdown = 1;
-    cnd_broadcast(&queue.cond);
-
-    for (int i = 0; i < THREAD_COUNT; i++) {
-        thrd_join(threads[i], NULL);
-    }
-
-    mtx_destroy(&queue.mutex);
-    cnd_destroy(&queue.cond);
-    return 0;
-}
-```
-
-### 使用 C11 原子操作与线程配合
-
-```c
-#include <stdio.h>
-#include <threads.h>
-#include <stdatomic.h>
-
-// 原子标志用于线程间简单同步
-atomic_int done = 0;   // 直接常量初始化即可（ATOMIC_VAR_INIT 已在 C23 移除）
-
-int background_work(void *arg) {
-    printf("后台工作开始\n");
-    struct timespec ts = {.tv_sec = 2};
-    thrd_sleep(&ts, NULL);
-    printf("后台工作完成\n");
-    atomic_store(&done, 1);
-    return 0;
-}
-
-int main(void) {
-    thrd_t thread;
-    thrd_create(&thread, background_work, NULL);
-
-    // 主线程轮询等待
-    while (!atomic_load(&done)) {
-        printf("等待中...\n");
-        struct timespec ts = {.tv_sec = 0, .tv_nsec = 500000000};
-        thrd_sleep(&ts, NULL);
-    }
-
-    thrd_join(thread, NULL);
-    printf("全部完成\n");
-    return 0;
-}
-```
-
-### 兼容性封装层
-
-```c
-// c11_threads_compat.h - 在不支持C11线程的平台上使用pthread替代
-#ifndef C11_THREADS_COMPAT_H
-#define C11_THREADS_COMPAT_H
-
-#ifdef __STDC_NO_THREADS__
-    // 平台不支持 <threads.h>，使用 pthread 替代
-    #include <pthread.h>
-
-    typedef pthread_t thrd_t;
-    typedef int (*thrd_start_t)(void *);
-
-    typedef struct {
-        thrd_start_t func;
-        void *arg;
-    } thrd_wrapper_ctx;
-
-    static void *thrd_wrapper(void *arg) {
-        thrd_wrapper_ctx *ctx = (thrd_wrapper_ctx *)arg;
-        int result = ctx->func(ctx->arg);
-        free(ctx);
-        return (void *)(long)result;
-    }
-
-    static inline int thrd_create(thrd_t *thr, thrd_start_t func, void *arg) {
-        thrd_wrapper_ctx *ctx = malloc(sizeof(thrd_wrapper_ctx));
-        ctx->func = func;
-        ctx->arg = arg;
-        return pthread_create(thr, NULL, thrd_wrapper, ctx) == 0 ? 0 : -1;
-    }
-
-    static inline int thrd_join(thrd_t thr, int *res) {
-        void *retval;
-        int ret = pthread_join(thr, &retval);
-        if (res) *res = (int)(long)retval;
-        return ret == 0 ? 0 : -1;
-    }
-#else
-    #include <threads.h>
-#endif
-
-#endif
-```
-## 线程创建
-
-**基本写法：创建线程**
-`thrd_create(&<线程>, <函数>, <参数>);`
-```c
-// 启动新线程执行函数
-thrd_t t;
-thrd_create(&t, worker, arg);
-```
-
----
-
-**基本写法：线程函数签名**
-`int <函数名>(void* <参数>);`
-```c
-// 线程入口函数返回 int
-int worker(void* arg) {
-    return 0;
-}
-```
-
----
-
-**基本写法：等待线程结束**
-`thrd_join(<线程>, [&<结果>]);`
-```c
-// 阻塞等待线程完成
-int result;
-thrd_join(t, &result);
-```
-
----
-
-**基本写法：分离线程**
-`thrd_detach(<线程>);`
-```c
-// 线程独立运行
-thrd_detach(t);
-```
-
----
-
-**基本写法：当前线程让出**
-`thrd_yield();`
-```c
-// 主动让出 CPU
-thrd_yield();
-```
-
----
-
-**基本写法：线程休眠**
-`thrd_sleep(&<时长>, NULL);`
-```c
-// 休眠指定时长
-struct timespec ts = {2, 0};
-thrd_sleep(&ts, NULL);
-```
-
----
-
-**基本写法：获取当前线程**
-`thrd_current();`
-```c
-// 获取当前线程标识
-thrd_t self = thrd_current();
-```
-
----
-
-## 互斥锁
-
-**基本写法：创建互斥锁**
-`mtx_t <变量>; mtx_init(&<变量>, mtx_plain);`
-```c
-// 初始化普通互斥锁
-mtx_t m;
-mtx_init(&m, mtx_plain);
-```
-
----
-
-**基本写法：加锁解锁**
-`mtx_lock(&<锁>);` `mtx_unlock(&<锁>);`
-```c
-// 临界区保护
-mtx_lock(&m);
-// 临界区
-mtx_unlock(&m);
-```
-
----
-
-**基本写法：尝试加锁**
-`mtx_trylock(&<锁>);`
-```c
-// 非阻塞加锁
-if (mtx_trylock(&m) == thrd_success) { }
-```
-
----
-
-**基本写法：定时加锁**
-`mtx_timedlock(&<锁>, &<超时>);`
-```c
-// 限时等待加锁；注意参数是"绝对时间点"（TIME_UTC 基准），
-// 不是相对时长——需先取当前时间再加上超时量
-struct timespec ts;
-timespec_get(&ts, TIME_UTC);   // 取当前绝对时间
-ts.tv_sec += 2;                // 2 秒后到期
-mtx_timedlock(&m, &ts);
-```
-
----
-
-**基本写法：销毁互斥锁**
-`mtx_destroy(&<锁>);`
-```c
-// 释放互斥锁资源
-mtx_destroy(&m);
-```
-
----
-
-**基本写法：递归互斥锁**
-`mtx_init(&<锁>, mtx_recursive);`
-```c
-// 同一线程可多次加锁
-mtx_init(&m, mtx_recursive);
-```
-
----
-
-## 信号量（POSIX 扩展，非 C 标准库）
-
-注意：`sem_t`/`sem_init`/`sem_wait`/`sem_post` 来自 POSIX 的 `<semaphore.h>`，
-不属于 C 标准的 `<threads.h>`（C 标准至今未提供信号量）。Linux 下编译需链接 `-pthread`。
-
-**基本写法：创建信号量**
-`#include <semaphore.h>` `sem_t <变量>; sem_init(&<变量>, 0, <初始>);`
-```c
-// 计数信号量（第二个参数 0 表示线程间共享）
-sem_t sem;
-sem_init(&sem, 0, 3);
-```
-
----
-
-**基本写法：等待与释放**
-`sem_wait(&<sem>);` `sem_post(&<sem>);`
-```c
-// P 操作与 V 操作
-sem_wait(&sem);
-// 临界区
-sem_post(&sem);
-```
+进入 [POSIX 线程](/c/370-POSIXThread)：把本文所有「先混个眼熟」落成肌肉记忆——-pthread 编译纪律、pthread_create/join/detach 的取舍、互斥锁与条件变量的逐行拆解，最后写出完整的生产者消费者程序。

@@ -1,2738 +1,680 @@
 ---
 order: 320
-title: 多文件编译
+title: 多文件编译：翻译单元、头文件与链接器
 module: 'c'
 category: 计算机科学
 difficulty: intermediate
-description: C 语言多文件编译的完整知识体系，涵盖翻译单元、链接性、ODR、头文件、预处理器、Makefile/CMake/Ninja、静态/动态库、ABI、链接器原理与工业级工程实践。
+description: 把 200 行单文件拆成 main.c + utils.c + utils.h 后撞上 undefined reference：从链接器报错进入多文件世界。翻译单元互不可见、声明给人看定义给链接器、一条命令与分开 -c 编译的等价实验、nm 读符号表、undefined reference 与 multiple definition 两大报错逐个复现修复、extern 共享变量与 include/src 工程布局，全程裸 gcc 看得见每一步。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/060-OperatorExpression'
-  - 'c/110-EnumTypedef'
-  - 'c/200-DynamicMemoryManagement'
-  - 'c/170-FunctionPointerCallback'
+  - 'c/320-DynamicStaticLibrary'
+  - 'c/470-BuildSystem'
   - 'c/290-PreprocessorMacro'
-  - 'c/540-AttributeCompilerExtension'
+  - 'c/300-InlineFunctionMacro'
 prerequisites:
-  - 'c/020-CLanguageOverview'
-  - 'c/140-PointerDeep'
+  - 'c/090-FunctionDetailed'
+  - 'c/055-ScopeStorageLinkage'
 ---
-
-
-
-# 多文件编译
 
 ## 前置知识
 
-- [枚举与 typedef](/c/110-EnumTypedef)：建议先完成前一篇的学习
+- 已完成 [函数：声明、传值与递归](/c/090-FunctionDetailed)：会写函数原型，分得清声明与定义；
+- 已完成 [作用域、存储期与链接性](/c/055-ScopeStorageLinkage)：知道 static 与 extern 的用法，听过外部链接（external linkage）、内部链接（internal linkage）这些词。没读过也能往下读，用到链接性时本文会带一句。
+
+> 分工说明：055 与本篇是一对。[作用域、存储期与链接性](/c/055-ScopeStorageLinkage) 讲语言语义：名字谁看得见、对象活多久；本篇承接机制：一个 .c 怎么变成 .o、头文件在给谁递声明、链接器怎么把多个 .o 拼成一个程序。库的创建与使用整篇在 [动态库与静态库](/c/320-DynamicStaticLibrary)；Makefile 与 CMake 的构建机制在 [构建系统](/c/470-BuildSystem)。本篇全程只用裸 gcc 命令，让每个环节都亲眼可见。
 
 ## 学习目标
 
-- 掌握「1. 历史动机与演进」的核心机制、典型用法与常见陷阱
-- 掌握「2. 翻译单元与翻译阶段」的核心机制、典型用法与常见陷阱
-- 掌握「3. 链接性（Linkage）」的核心机制、典型用法与常见陷阱
-- 掌握「4. 存储期（Storage Duration）」的核心机制、典型用法与常见陷阱
-- 掌握「5. 头文件组织」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 解释翻译单元为什么互不可见，说出「声明给人看、定义给链接器」分别服务的对象；
+2. 用 gcc 一条命令与「分开 -c 再链接」两种方式构建同一个多文件程序，并用 ls 亲眼看到中间产物 .o；
+3. 写出规范的模块头文件：守卫齐全、只放声明/类型/宏，说出往头文件里写定义会撞上什么报错；
+4. 用 nm 查看自己 .o 的符号表，据此诊断 undefined reference 与 multiple definition 两大报错；
+5. 用 extern 配 globals.c/globals.h 惯例跨文件共享变量，用 include/src 目录布局与 -I 组织一个小工程。
 
-## 1. 历史动机与演进
+预计 60 到 80 分钟，含 7 组动手实验与 2 道练习。
 
-### 1.1 早期 Unix 的多文件编译（1969-1973）
+## 1. 问题引入：undefined reference 从哪来
 
-Dennis Ritchie 在 1972 年设计 C 语言时，PDP-11 的内存仅有 64KB，无法一次装入完整编译器。这一硬件约束直接催生了 C 语言的"分离编译"设计哲学：
-
-- **编译器分阶段**：编译器本身被拆分为 c0、c1、c2 三个 pass，各自从中间文件读写
-- **程序分模块**：用户程序也被拆分为多个 `.c` 文件，独立编译为 `.o` 目标文件
-- **链接器组装**：Unix `ld` 链接器将多个 `.o` 文件合并为可执行文件 `a.out`（assembler output 的缩写）
-
-1979 年贝尔实验室发布的第 7 版 Unix 引入了 `make` 工具，自动追踪文件依赖关系，只重新编译发生变化的目标文件。这是构建系统的开山之作，至今 Make 仍是 Unix 世界的标配。
-
-### 1.2 C89 标准化（1989）
-
-ANSI X3.159-1989（即 C89）首次将"翻译单元"（translation unit）作为标准术语引入：
-
-> A translation unit is the basic unit of compilation in C. It consists of a source file together with any header files and source files included via the `#include` directive, less any source lines skipped by conditional inclusion preprocessor directives.
-
-C89 同时定义了三类链接性（linkage）：external、internal、no linkage，以及两阶段翻译模型（翻译 → 链接）。
-
-### 1.3 C99/C11 的演进
-
-- **C99** 引入 `inline` 函数（§6.7.4），扩展了 ODR 规则，允许 inline 函数在多个翻译单元中定义
-- **C11** 引入 `_Thread_local`（线程局部存储）与 `_Generic`，对链接性模型做出扩展
-- **C11** 同时引入了原子操作（`<stdatomic.h>`）与线程支持（`<threads.h>`），影响符号可见性
-
-### 1.4 C17/C23/C2y 的现代化
-
-- **C17**（ISO/IEC 9899:2018）：缺陷修复版本，未引入新特性
-- **C23**（ISO/IEC 9899:2024）：引入 `constexpr`、`nullptr`、`#embed`、`__attribute__` 标准化、`thread_local` 关键字（替代 `_Thread_local`）、`auto` 类型推断等
-- **C2y**（草案）：计划引入模块化机制（借鉴 C++20 modules），可能彻底改变 C 的翻译单元模型
-
-### 1.5 现代构建系统演进
-
-| 年份 | 工具 | 主要创新 |
-|------|------|----------|
-| 1977 | Make | 依赖追踪与增量构建 |
-| 2000 | SCons | Python 脚本构建 |
-| 2003 | CMake | 跨平台生成器，元构建系统 |
-| 2010 | Ninja | 高速底层构建工具 |
-| 2013 | Meson | 极简声明式 DSL |
-| 2015 | Bazel | 谷歌开源，支持大规模分布式构建 |
-| 2018 | Meson + WrapDB | 原生依赖管理 |
-
-## 2. 翻译单元与翻译阶段
-
-### 2.1 C 标准定义的 8 个翻译阶段
-
-ISO/IEC 9899:2024 §5.1.1.2 定义了 C 程序从源文件到可执行文件的 8 个翻译阶段（translation phases）。理解这 8 个阶段是掌握多文件编译的理论基础。
-
-#### 阶段 1：物理字符映射
-
-将源文件中的物理字符（可能为多字节编码如 UTF-8）映射为源字符集（source character set），同时处理行尾符（CRLF/CR/LF 统一为 LF）。三联符（trigraph，如 `??=` 替换为 `#`）在此阶段处理，但 C23 已移除三联符支持。
+第一个程序 200 行，全挤在 main.c 里。功能一多你决定拆分：把工具函数挪出去，变成三个文件：
 
 ```c
-// 阶段 1 输入：UTF-8 编码的源文件
-// 阶段 1 输出：源字符集（通常为 ASCII + 扩展字符）
-```
-
-#### 阶段 2：行拼接
-
-将以反斜杠 `\` 结尾的行与下一行合并为单个逻辑行。同时处理"空源文件"边界条件。
-
-```c
-// 源代码
-int x = 1 + \
-        2 + \
-        3;
-
-// 阶段 2 输出
-int x = 1 + 2 + 3;
-```
-
-#### 阶段 3：词法分析
-
-将源代码切分为预处理记号（preprocessing token）与空白符（包括注释替换为空格）。注释 `/* ... */` 与 `// ...` 在此阶段被替换为单个空格。
-
-```c
-// 源代码
-int /* comment */ x; // inline comment
-
-// 阶段 3 输出（记号流）
-int x;
-```
-
-#### 阶段 4：预处理
-
-执行预处理指令：`#include`、`#define`、`#if`、`#ifdef`、`#pragma` 等。宏展开发生在此阶段。`#include` 指令将指定头文件内容**递归地**插入到当前位置，形成完整的翻译单元。
-
-```c
-// 源代码 file.c
+/* main.c */
 #include <stdio.h>
 #include "utils.h"
-int main(void) { return add(1, 2); }
 
-// 阶段 4 输出（翻译单元）
-// <stdio.h 的全部内容>
-// <utils.h 的全部内容>
-int main(void) { return add(1, 2); }
-```
-
-#### 阶段 5：字符常量转换
-
-将字符常量与字符串字面量中的字符转换为执行字符集（execution character set）。例如源文件中的 UTF-8 字符可能转换为 UTF-8、GBK 等执行字符集编码。转义序列（`\n`、`\t`、`\x41` 等）在此阶段求值。
-
-#### 阶段 6：字符串字面量拼接
-
-相邻的字符串字面量被拼接为单个字符串。
-
-```c
-// 源代码
-printf("Hello, " "world!\n");
-
-// 阶段 6 输出
-printf("Hello, world!\n");
-```
-
-#### 阶段 7：编译
-
-真正的"编译"发生在此阶段。将预处理后的翻译单元转换为汇编代码，再汇编为目标文件（`.o` / `.obj`）。语法分析、语义分析、优化、代码生成均在此阶段完成。
-
-```
-翻译单元 → [词法/语法/语义分析] → [优化] → [代码生成] → 目标文件
-```
-
-#### 阶段 8：链接
-
-将多个目标文件（包括库文件）合并为单个可执行文件或库。符号解析（symbol resolution）与重定位（relocation）在此阶段完成。链接分为静态链接（static linking）与动态链接（dynamic linking）。
-
-```
-目标文件1.o + 目标文件2.o + 库.a/.so → 可执行文件
-```
-
-### 2.2 翻译单元的形式化定义
-
-一个翻译单元由以下部分组成：
-
-```
-<translation-unit> ::= <external-declaration>*
-<external-declaration> ::= <function-definition>
-                        | <declaration>
-```
-
-翻译单元是 C 编译器的最小独立处理单位。一个 `.c` 文件加上它直接或间接包含的所有头文件，构成一个完整的翻译单元。
-
-### 2.3 单一定义规则（ODR）
-
-C 标准 §6.9p5 规定：
-
-> If an identifier declared with external linkage is used in an expression (other than as part of the operand of a sizeof operator whose result is an integer constant), somewhere in the entire program there shall be exactly one external definition for the identifier.
-
-即：**具有外部链接的标识符，在整个程序中必须且只能有一个定义**。这是 ODR 的核心内容。
-
-#### 2.3.1 声明 vs 定义
-
-理解 ODR 的关键是区分声明（declaration）与定义（definition）：
-
-```c
-// 声明（declaration）：告诉编译器标识符的类型与存在
-extern int counter;          // 变量声明
-int add(int, int);           // 函数声明（原型）
-struct Node;                 // 结构体不完整声明
-
-// 定义（definition）：分配存储空间或实现函数体
-int counter = 0;             // 变量定义（分配存储）
-int add(int a, int b) {      // 函数定义（实现）
-    return a + b;
-}
-struct Node {                // 结构体完整定义
-    int data;
-    struct Node *next;
-};
-```
-
-| 特征 | 声明 | 定义 |
-|------|------|------|
-| 是否分配存储 | 否 | 是 |
-| 是否实现函数体 | 否 | 是 |
-| 可出现次数 | 多次 | 仅一次（外部链接） |
-| 语法形式 | `extern T name;` / `T name(params);` | `T name = value;` / `T name(params) { ... }` |
-
-#### 2.3.2 ODR 合规示例
-
-```c
-// counter.h（头文件，只放声明）
-#ifndef COUNTER_H
-#define COUNTER_H
-extern int counter;          // 声明：可被多个 .c 包含
-void counter_inc(void);      // 声明
-int counter_get(void);       // 声明
-#endif
-
-// counter.c（实现文件，放定义）
-#include "counter.h"
-int counter = 0;             // 定义：全程序唯一
-void counter_inc(void) { counter++; }
-int counter_get(void) { return counter; }
-
-// main.c
-#include "counter.h"
 int main(void) {
-    counter_inc();
-    return counter_get();
+    printf("sum 1..10 = %d\n", sum_to(10));
+    return 0;
 }
 ```
 
-#### 2.3.3 ODR 违规示例
-
 ```c
-// 错误示例 1：头文件中定义变量
-// header.h
-int counter = 0;             // 错误：这是定义！
-// 被 file1.c 和 file2.c 同时包含后，链接器报错：
-// multiple definition of `counter'
+/* utils.h */
+#ifndef UTILS_H
+#define UTILS_H
 
-// 错误示例 2：多个 .c 文件定义同名外部函数
-// file1.c
-int helper(void) { return 1; }
-// file2.c
-int helper(void) { return 2; }  // 错误：multiple definition
+int sum_to(int n);   /* 声明。守卫先照抄，第 3 节拆解 */
 
-// 错误示例 3：缺少定义
-// file.c
-extern int magic;            // 声明
-void use(void) { return magic; }  // 链接时：undefined reference to `magic'
-```
-
-### 2.4 内联函数的 ODR 例外
-
-C99 引入的 `inline` 函数对 ODR 有特殊规则。C 语言（与 C++ 不同）的 inline 语义复杂，存在三种形式：
-
-```c
-// 形式 1：inline（无 extern，需要外部定义）
-// header.h
-inline int square(int x) { return x * x; }   // 内联定义，可多处
-// 必须在某 .c 中提供外部定义：
-int square(int x);
-
-// 形式 2：extern inline（强制外部链接）
-// header.h
-inline int square(int x);   // 声明
-// file.c
-extern inline int square(int x) { return x * x; }  // 提供外部定义
-
-// 形式 3：static inline（推荐用法，无 ODR 顾虑）
-// header.h
-static inline int square(int x) { return x * x; }  // 每个翻译单元独立副本
-```
-
-**工程实践**：在 C 项目中，优先使用 `static inline`，它既有内联的性能优势，又避免了 ODR 复杂性，是头文件中定义小函数的标准模式。
-
-## 3. 链接性（Linkage）
-
-链接性（linkage）描述一个标识符在不同翻译单元间是否可见。C 标准定义了三种链接性。
-
-### 3.2 内部链接（Internal Linkage）
-
-具有内部链接的标识符仅在当前翻译单元内可见。使用 `static` 关键字（用于变量或函数）或匿名命名空间（C++ 特性，C 不支持）实现。
-
-```c
-// file1.c
-static int internal_var = 0;       // 内部链接
-static int helper(void) {          // 内部链接
-    return internal_var++;
-}
-
-// file2.c
-extern int internal_var;           // 链接器报错：undefined reference
-// 即使 file2.c 中也定义 internal_var，两个变量互不影响
-```
-
-#### 3.2.1 static 关键字的多重含义
-
-`static` 在 C 中有三种不同含义，取决于上下文：
-
-| 上下文 | 含义 | 示例 |
-|--------|------|------|
-| 文件作用域变量 | 内部链接 | `static int x;` |
-| 文件作用域函数 | 内部链接 | `static void f(void);` |
-| 块作用域变量 | 静态存储期 | `void f() { static int x = 0; }` |
-
-C23 引入 `constexpr` 与 `thread_local` 后，社区开始反思 `static` 的多重语义问题。部分代码规范（如 Google C++ Style Guide）建议在文件作用域使用匿名命名空间（C++）或显式 `static`（C）。
-
-#### 3.2.2 内部链接的工程价值
-
-```c
-// file.c
-// 内部辅助函数：不污染全局符号表，便于链接器优化
-static int validate_input(int x) {
-    return x >= 0 && x <= 100;
-}
-
-// 公开 API：通过头文件暴露
-int process(int input) {
-    if (!validate_input(input)) return -1;
-    return input * 2;
-}
-```
-
-内部链接的工程价值：
-
-1. **封装**：隐藏实现细节，仅暴露 API
-2. **优化**：编译器可见整个定义，可内联或删除未使用代码
-3. **避免冲突**：不同翻译单元可定义同名内部函数
-4. **减少符号表**：链接器符号表更小，链接更快
-
-### 3.3 无链接（No Linkage）
-
-具有无链接的标识符仅在定义它的块作用域或函数原型内可见。包括：
-
-- 局部变量（块作用域变量）
-- 函数形参
-- 结构体/联合体/枚举标签（在块作用域内）
-- `typedef` 名称（在块作用域内）
-
-```c
-void f(int param) {            // param 无链接
-    int local = 0;             // local 无链接
-    struct Local { int x; };   // Local 标签无链接
-    typedef int Int;           // Int 无链接
-}
-```
-
-### 3.4 链接性决策表
-
-| 声明位置 | 是否 static | 链接性 | 存储期 |
-|----------|-------------|--------|--------|
-| 文件作用域变量 | 否 | external | static |
-| 文件作用域变量 | 是 | internal | static |
-| 文件作用域函数 | 否 | external | - |
-| 文件作用域函数 | 是 | internal | - |
-| 块作用域变量 | 否 | no | automatic |
-| 块作用域变量 | 是 | no | static |
-| 块作用域变量 | `_Thread_local` | no | thread |
-
-### 3.5 C23 的链接性新特性
-
-C23 引入以下与链接性相关的特性：
-
-- `thread_local` 关键字（替代 `_Thread_local`）
-- `constexpr` 变量（隐式 internal linkage，类似 C++ 的 `constexpr`
-- 标准化的 `__attribute__` 语法（如 `[[gnu::visibility("hidden")]]`）
-
-## 4. 存储期（Storage Duration）
-
-存储期与链接性相关但不同，描述对象的生命周期。
-
-### 4.1 四种存储期
-
-C 标准定义四种存储期：
-
-| 存储期 | 关键字 | 生命周期 | 默认初值 |
-|--------|--------|----------|----------|
-| 静态存储期 | (文件作用域或 static) | 整个程序运行期 | 0 |
-| 自动存储期 | (块作用域，无 static) | 函数调用期间 | 不确定 |
-| 线程存储期 | `_Thread_local` / `thread_local` | 线程运行期 | 0 |
-| 动态存储期 | malloc/calloc/realloc | 直到 free | calloc 为 0，其他不确定 |
-
-### 4.2 多文件中的静态存储期变量
-
-```c
-// config.c
-static int debug_level = 0;       // 内部链接 + 静态存储期
-int g_threshold = 100;            // 外部链接 + 静态存储期
-
-// config.h
-extern int g_threshold;           // 声明：外部链接
-void set_debug(int level);        // 声明：外部链接
-int get_debug(void);              // 声明：外部链接
-
-// config.c (continued)
-void set_debug(int level) {
-    debug_level = level;          // 修改内部变量
-}
-int get_debug(void) {
-    return debug_level;
-}
-```
-
-### 4.3 线程局部存储（C11）
-
-```c
-// thread_pool.h
-#include <threads.h>
-extern thread_local int worker_id;    // 每个线程独立副本
-
-// thread_pool.c
-thread_local int worker_id = -1;
-
-// worker.c
-void worker_main(int id) {
-    worker_id = id;                    // 仅当前线程可见
-    printf("Worker %d started\n", worker_id);
-}
-```
-
-## 5. 头文件组织
-
-头文件（header file）是 C 多文件编译的核心机制，用于在多个翻译单元间共享声明。
-
-### 5.1 头文件的标准结构
-
-一个规范的 C 头文件应包含以下结构：
-
-```c
-// module.h
-#ifndef MODULE_H          // 1. include guard 开始
-#define MODULE_H
-
-/* 2. 文件头注释：版权、作者、用途 */
-
-/**
- * @file module.h
- * @brief 模块功能描述
- * @author fanquanpp
- * @date 2026-07-20
- * @copyright FANDEX
- */
-
-/* 3. 系统头文件包含（保证先包含） */
-#include <stdio.h>
-#include <stdint.h>
-
-/* 4. 其他模块头文件 */
-#include "config.h"
-
-/* 5. 宏定义 */
-#define MODULE_VERSION_MAJOR 1
-#define MODULE_VERSION_MINOR 0
-#define MODULE_MAX_SIZE 1024
-
-/* 6. 类型定义 */
-typedef enum {
-    MODULE_OK = 0,
-    MODULE_ERROR_INVALID = -1,
-    MODULE_ERROR_NOMEM = -2,
-} ModuleStatus;
-
-typedef struct Module Module;   /* 不完整类型，隐藏实现 */
-
-/* 7. 函数声明（API） */
-Module *module_create(size_t size);
-void module_destroy(Module *m);
-ModuleStatus module_process(Module *m, const void *input, size_t len);
-
-/* 8. 内联函数（static inline） */
-static inline int module_version(void) {
-    return (MODULE_VERSION_MAJOR << 8) | MODULE_VERSION_MINOR;
-}
-
-#endif /* MODULE_H */      /* 9. include guard 结束 */
-```
-
-### 5.2 Include Guard（包含保护）
-
-Include guard 防止头文件被同一翻译单元多次包含导致重复定义。
-
-```c
-#ifndef MODULE_H
-#define MODULE_H
-// ... 头文件内容 ...
-#endif /* MODULE_H */
-```
-
-工作原理：第一次包含时 `MODULE_H` 未定义，进入 `#ifndef` 块并定义 `MODULE_H`；后续包含时 `MODULE_H` 已定义，跳过整个块。
-
-#### 5.2.1 Include Guard 命名规范
-
-- 使用 `大写_项目_模块_H` 格式，如 `FANDEX_UTILS_HASHMAP_H`
-- 避免与系统头文件冲突（不要使用 `_MODULE_H`，下划线开头被保留）
-- 全项目唯一，建议加入项目前缀
-
-#### 5.2.2 #pragma once
-
-大多数现代编译器（GCC、Clang、MSVC）支持非标准但事实标准的 `#pragma once`：
-
-```c
-#pragma once
-// ... 头文件内容 ...
-```
-
-优点：
-
-- 更简洁，无需命名宏
-- 不会因宏名冲突而出错
-- 编译速度更快（编译器记录文件 inode，无需预处理）
-
-缺点：
-
-- 非标准（但被主流编译器广泛支持）
-- 在某些边缘场景（如符号链接、网络文件系统）可能出错
-
-工程实践：可同时使用两种机制获取双重保护：
-
-```c
-#pragma once
-#ifndef MODULE_H
-#define MODULE_H
-// ...
 #endif
 ```
 
-### 5.3 头文件包含顺序
-
-Google C++ Style Guide 推荐的包含顺序：
-
-1. 对应的 `.h` 文件（如 `foo.c` 先包含 `foo.h`）
-2. C 标准库 `<...>`
-3. C 系统库 `<...>`
-4. 其他库 `...`
-5. 本项目头文件 `"...""`
-
 ```c
-// foo.c
-#include "foo.h"          // 1. 对应头文件
+/* utils.c */
+#include "utils.h"
 
-#include <stdio.h>         // 2. C 标准库
-#include <stdint.h>
-
-#include <openssl/ssl.h>   // 3. 第三方库
-
-#include "utils/hashmap.h" // 4. 项目内其他模块
-#include "config.h"
+int sum_to(int n) {          /* 定义。真正的实现在这里 */
+    int total = 0;
+    for (int i = 1; i <= n; i++) {
+        total += i;
+    }
+    return total;
+}
 ```
 
-这种顺序的好处：`foo.h` 先包含可以及早暴露 `foo.h` 缺失的 include 依赖（如 `foo.h` 使用了 `size_t` 但未包含 `<stddef.h>`，那么 `foo.c` 编译时会因 `foo.h` 在前而失败，提示修复 `foo.h` 而非依赖 `foo.c` 间接包含）。
+编译——报错了：
 
-### 5.4 前向声明（Forward Declaration）
-
-前向声明用于减少头文件依赖，加快编译速度。
-
-```c
-// renderer.h
-#ifndef RENDERER_H
-#define RENDERER_H
-
-// 前向声明，无需包含 scene.h
-struct Scene;
-struct Camera;
-
-typedef struct Renderer Renderer;
-Renderer *renderer_create(struct Scene *scene, struct Camera *cam);
-void renderer_render(Renderer *r);
-
-#endif
-
-// renderer.c
-#include "renderer.h"
-#include "scene.h"      // 实现时才包含完整定义
-#include "camera.h"
+```bash
+gcc -Wall -Wextra main.c -o app
 ```
 
-前向声明的限制：
+```text
+/usr/bin/ld: /tmp/ccGw1nA2b.o: in function `main':
+main.c:(.text+0x1f): undefined reference to `sum_to'
+collect2: error: ld returned 1 exit status
+```
 
-- 只能使用指针或引用，不能直接使用对象（因为编译器不知道大小）
-- 不能访问成员
-- 不能调用方法
+（/tmp 的随机名是 gcc 的临时文件，每次不同；报错措辞各平台略有差异。）
 
-### 5.5 不完整类型（Opaque Type）
+疑点：代码语法零错误，utils.c 甚至没参与这次编译。把两个 .c 都给上，就好了：
 
-不完整类型是实现信息隐藏的关键技术：
+```bash
+gcc -Wall -Wextra main.c utils.c -o app
+./app
+```
+
+```text
+sum 1..10 = 55
+```
+
+这条 undefined reference 来自链接器（linker，命令行上的 ld），不是编译器。它是 C 工程出现频率最高的报错，背后是一整套「多个 .c 如何变成一个程序」的机器。本篇把它拆开。
+
+## 2. 翻译单元：每个 .c 都是一座孤岛
+
+### 2.1 编译器一次只看一个文件
+
+翻译单元（translation unit）：一个 .c 源文件经过预处理后的完整结果——原文件全部内容，加上它直接或间接 `#include` 进来的所有头文件内容。C 标准（C23 第 5.1.1.2 节）把从源文件到程序的过程划成 8 个翻译阶段，逐阶段细节在 [预处理器与宏](/c/290-PreprocessorMacro)；对本文重要的只有三步：
+
+```text
+阶段 4（预处理）：把 #include 的头文件内容原样贴进来，删掉注释与指令
+                  → 到此形成翻译单元
+阶段 7（编译）  ：每个翻译单元独立翻译成一个目标文件（object file，.o）
+阶段 8（链接）  ：链接器把所有 .o 连同库拼装成可执行文件
+```
+
+关键在「独立」二字：编译 utils.c 时，编译器根本不知道 main.c 存在；反之亦然。每个 .c 是一座孤岛，岛与岛之间只有两条通信渠道：头文件（给编译器看）和符号（给链接器找）。本篇就是围绕这两条渠道展开。
+
+顺带一提，这个模型也有反着用的极端：SQLite 官方把全部源码合并成单个 sqlite3.c 发布，一次编译得到整个库——孤岛并入大陆，编译器一次看完全局。
+
+### 2.2 声明给人看，定义给链接器
+
+| | 声明（declaration） | 定义（definition） |
+| --- | --- | --- |
+| 干什么 | 报名字、报类型 | 分配存储 / 落函数体 |
+| 给谁看 | 编译器（做类型检查、生成调用） | 链接器（符号的真正住址） |
+| 能出现几次 | 随便多次，跨多个 .c 都行 | 外部链接的名字全程序恰一次 |
 
 ```c
-// hashmap.h
-typedef struct HashMap HashMap;   // 不完整类型声明
-HashMap *hashmap_create(size_t initial_size);
-void hashmap_destroy(HashMap *m);
-int hashmap_put(HashMap *m, const char *key, void *value);
-void *hashmap_get(HashMap *m, const char *key);
+int sum_to(int n);              /* 声明：编译器知道有这么个函数 */
+extern int g_verbose;           /* 声明：变量定义在别处，这里报个到 */
 
-// hashmap.c
-#include "hashmap.h"
+int sum_to(int n) { return n; } /* 定义：机器码在这里 */
+int g_verbose = 0;              /* 定义：存储在这里 */
+```
+
+C 标准规定：具有外部链接的名字，在整个程序中必须恰有一个定义（C23 第 6.9 节）。C++ 生态把这条叫单一定义规则（One Definition Rule，ODR），C 的措辞朴素得多：一个名字，一份定义。
+
+回头看第 1 节的结构：utils.h 放声明，给 main.c 的编译器看；utils.c 放定义，给链接器找。「声明给人看，定义给链接器」是贯穿全篇的主线。
+
+### 2.3 实验 1：一条命令与分开编译是等价的
+
+一条命令传多个 .c 时，gcc 内部其实是先逐个编译成 .o，再把 .o 链接成可执行文件。亲手拆开验证：
+
+```bash
+gcc -Wall -Wextra -g -c main.c    # -c：只编译不链接，产出 main.o
+gcc -Wall -Wextra -g -c utils.c   # 产出 utils.o
+ls *.o
+```
+
+```text
+main.o  utils.o
+```
+
+中间产物就躺在目录里。再一步把它们链接起来：
+
+```bash
+gcc main.o utils.o -o app
+./app
+```
+
+```text
+sum 1..10 = 55
+```
+
+GCC 文档对 -c 的定义就是「Compile or assemble the source files, but do not link」，每个源文件各自产出一个 .o（后缀替换）。两种构建方式产物完全一致——一条命令只是省了手敲中间步。工程里坚持分开编译不是多此一举：文件一多，它是增量构建的地基（utils.c 没改就只重编 main.c），记账的活归 [构建系统](/c/470-BuildSystem)。
+
+修改实验：只把半个程序交给链接器：
+
+```bash
+gcc main.o -o half
+```
+
+```text
+/usr/bin/ld: main.o: in function `main':
+main.c:(.text+0x1f): undefined reference to `sum_to'
+collect2: error: ld returned 1 exit status
+```
+
+与第 1 节一模一样的报错，但这次没有悬念：main.o 里有个符号叫 sum_to，链接命令里却没有谁能提供它。第 1 节那条报错同理——gcc 其实已经把 main.c 编译完了（临时 .o 都生成了），是链接阶段没人接得住 sum_to。
+
+## 3. 头文件：写给别的翻译单元看的说明书
+
+### 3.1 放什么、不放什么
+
+头文件（header）是岛的对外说明书。放：
+
+- 函数声明——模块的公开 API；
+- 类型——struct、union、enum、typedef；
+- 宏定义。
+
+不放：
+
+- 函数实现。实现是定义，进了头文件，每个包含它的翻译单元都会复制一份，链接时撞车（第 8 节完整复现现场）。唯一的例外是小函数用 inline 写进头文件，C 的 inline 规则微妙（非 static 的 inline 不构成外部定义，须在恰一个 .c 里补外部定义），整篇在 [内联函数与宏](/c/300-InlineFunctionMacro)；
+- 变量定义。同因同果，正确姿势是 extern 声明，第 6 节讲。
+
+顺带认识一个常见技巧：`typedef struct HashMap HashMap;` 这种「只给名字不给内容」的声明叫不完整类型（incomplete type），配合 .c 里的完整定义，能把结构体内部彻底藏起来——SQLite、libuv 等项目的公开头文件正是这么封装的。
+
+### 3.2 尖括号与引号：include 的两条搜索路线
+
+```c
+#include <stdio.h>     /* 尖括号：找系统目录 */
+#include "utils.h"     /* 引号：先找当前目录，再找系统目录 */
+```
+
+GCC 的实际搜索顺序：
+
+| 写法 | 搜索顺序 |
+| --- | --- |
+| `#include "utils.h"` | 当前文件所在目录 → -I 指定目录（按命令行顺序）→ 系统目录 |
+| `#include <stdio.h>` | -I 指定目录（按命令行顺序）→ 系统目录 |
+
+尖括号跳过当前目录，直接表态「这是别人的头」；引号先找自己家，再按 -I 与系统目录找。-I 怎么用在第 7 节登场。
+
+### 3.3 头文件守卫与 #pragma once
+
+第 1 节照抄的守卫（include guard）拆解如下：
+
+```c
+#ifndef UTILS_H
+#define UTILS_H
+/* ...声明... */
+#endif /* UTILS_H */
+```
+
+原理是宏开关：第一次包含时 UTILS_H 未定义，进入块内并定义它；同一翻译单元第二次包含（无论直接还是经由别的头）时宏已定义，整块被预处理器跳过。
+
+命名惯例：大写加下划线，带项目前缀（如 FANDEX_UTILS_H）；别用「下划线开头 + 全大写」（如 _UTILS_H），这类拼写被语言实现保留。
+
+另一种写法是在文件第一行放 `#pragma once`，让编译器自己记住「这个文件只处理一次」。GCC、Clang、MSVC 都支持它，但它不是标准——GCC 文档干脆把它归入「过时的只含一次头」一节，并提醒并非所有预处理器都识别、可移植程序不能指望。守卫是唯一的跨平台保险；#pragma once 胜在省心；两者同写的大项目也不少见。
+
+修改实验：守卫到底防什么？做一个没有守卫的头文件，塞进一个 typedef，然后在 main.c 里包含它两次：
+
+```c
+/* utils_noguard.h */
+typedef struct Point { int x; int y; } Point;
+```
+
+```c
+/* main.c */
+#include "utils_noguard.h"
+#include "utils_noguard.h"
+
+int main(void) { return 0; }
+```
+
+```bash
+gcc -Wall -Wextra main.c -o app
+```
+
+```text
+In file included from main.c:2:
+utils_noguard.h:1:8: error: redefinition of 'typedef struct Point Point'
+utils_noguard.h:1:8: note: originally defined here
+```
+
+对照着再试一步：把 typedef 换成一个函数声明 `int twice(int x);`，删掉守卫重复包含却相安无事——声明可以重复，守卫真正防的是「同一翻译单元里出现第二份定义」（类型定义、宏）。纯声明头不写守卫也能编过，但没人赌这一点：守卫一律加上。
+
+### 3.4 包含顺序惯例：自己的头放第一位
+
+源文件的 include 区，通行惯例是分三层，且自己的头永远放第一：
+
+```c
+/* utils.c */
+#include "utils.h"        /* 1. 自己对应的头，放最前 */
+
+#include <stdio.h>        /* 2. 标准库 */
 #include <stdlib.h>
-#include <string.h>
 
-struct HashMap {                // 完整定义，仅 .c 可见
-    size_t capacity;
-    size_t size;
-    struct Entry *buckets;
-};
-// ...
+#include "log.h"          /* 3. 本项目其他头 */
 ```
 
-外部代码无法直接访问 `HashMap` 的成员，必须通过 API 操作。这是 C 实现"封装"的标准模式，被 SQLite、libuv、Redis 等项目广泛使用。
+自己的头放第一位有个妙处：utils.h 若自身缺依赖（比如用了 size_t 却忘了 `#include <stddef.h>`），编译 utils.c 时立刻在 utils.h 里报错；若它排在系统头后面，缺的依赖可能被前面的头顺手补上，编译侥幸通过——换个编译器、换个包含顺序就炸。第一位的头是每个翻译单元的依赖自检器。
 
-### 5.6 头文件循环依赖
+## 4. 链接器：符号表的拼装工
 
-头文件循环依赖是 C 项目的常见问题：
+### 4.1 目标文件里有什么
+
+.o 不是最终机器码，而是「半成品 + 一张清单」：代码与数据按段（section）存放——.text 代码段、.data 已初始化数据、.bss 清零数据、.rodata 只读数据；另有一张符号表（symbol table），记录「我定义了哪些名字、我用了哪些还没着落的名字」。链接器的全部工作围绕这张表展开：
+
+1. 符号解析（symbol resolution）：对每个 .o 报上来的未定义符号，去其他 .o 或库里找唯一定义；
+2. 重定位（relocation）：把各 .o 的段合并成整体，把代码里「给 sum_to 留的空位」填成最终地址。
+
+```text
+链接前：main.o 的 .text 里 call sum_to 留着空位；utils.o 的 sum_to 在自己的段里
+链接后：两个 .text 拼成一段，sum_to 有了最终地址，空位被填上
+```
+
+（目标文件在 Windows 的 MSVC 工具链下是 .obj，报错措辞也不同；本篇以 Linux/macOS 的 gcc 为准。）
+
+### 4.2 实验 2：nm 看自己的符号
+
+```bash
+gcc -c main.c utils.c
+nm main.o
+```
+
+```text
+0000000000000000 T main
+                 U printf
+                 U sum_to
+```
+
+```bash
+nm utils.o
+```
+
+```text
+0000000000000000 T sum_to
+```
+
+读法：nm 按字母序列出符号，前面的字母是符号类型，小写表示本文件私有，大写表示全局可见。常用的几个：
+
+| 字母 | 含义 |
+| --- | --- |
+| T / t | 定义在代码段 .text；大写外部链接，小写内部链接 |
+| D / d | 已初始化数据段 |
+| B / b | bss 段（清零数据） |
+| U | 未定义——等链接器解决 |
+| R / r | 只读数据段 |
+
+main.o：T main 是我定义的；U sum_to、U printf 是我用了但没定义的。utils.o：T sum_to。链接器的活，就是把 main.o 的 U sum_to 接到 utils.o 的 T sum_to 上——第 1 节的报错不过是这张表对不上账。
+
+现在给 utils.c 加一个私有函数，再看符号表：
 
 ```c
-// a.h
+/* utils.c */
+#include "utils.h"
+
+static int clamp_down(int n) {   /* static：内部链接，语义详见 055 篇 */
+    return n < 0 ? 0 : n;
+}
+
+int sum_to(int n) {
+    int total = 0;
+    for (int i = 1; i <= clamp_down(n); i++) {
+        total += i;
+    }
+    return total;
+}
+```
+
+```bash
+gcc -c utils.c && nm utils.o
+```
+
+```text
+0000000000000010 t clamp_down
+0000000000000000 T sum_to
+```
+
+小写 t：clamp_down 没进全局符号表。这正是文件内 static 的封装价值——模块的辅助函数一律 static：不占全局名字（别的 .c 也定义 helper 也撞不到它），编译器与链接器看得见全部调用、优化空间更大，没人调用的还能被裁掉。链接性语义的完整规则在 [作用域、存储期与链接性](/c/055-ScopeStorageLinkage)，本篇给的是它在符号表上的长相：大写对外，小写对内。
+
+### 4.3 一条铁律，两大报错
+
+第 2.2 节的铁律「一个名字，一份定义」在链接器这里兑现成两条底线：每个 U 必须恰好被一个定义接住（否则 undefined reference）；每个外部名字必须只定义一次（否则 multiple definition）。两大报错的逐个复现在第 8 节。
+
+## 5. 头文件循环依赖：编译错误现场与前向声明
+
+两个类型互相持有对方的指针，写出这样的头文件：
+
+```c
+/* a.h */
 #ifndef A_H
 #define A_H
-#include "b.h"          // A 依赖 B
+#include "b.h"
+
 typedef struct A {
     B *b;
 } A;
 #endif
+```
 
-// b.h
+```c
+/* b.h */
 #ifndef B_H
 #define B_H
-#include "a.h"          // B 依赖 A —— 循环！
+#include "a.h"
+
 typedef struct B {
     A *a;
 } B;
 #endif
 ```
 
-解决方案：使用前向声明打破循环
+```bash
+gcc -c main.c     # main.c 第一行 include 了 a.h
+```
+
+```text
+In file included from a.h:4,
+                 from main.c:1:
+b.h:7:5: error: unknown type name 'A'
+```
+
+（报错里嵌套的文件行号恰好就是包含链。）
+
+逐行还原事故：预处理 main.c → 展开第 1 行的 a.h → 定义守卫 A_H → 展开第 4 行的 b.h → 定义守卫 B_H → b.h 又 include a.h，但 A_H 已定义，整个文件被守卫跳过 → 于是 b.h 用到 A 时，A 还没来得及定义。守卫没失职：它防的是同一翻译单元重复包含；而循环引用里，总有一方会被守卫堵在门外。
+
+修复靠前向声明（forward declaration）：先声明「世上有个 struct A」，完整定义晚点再说。
 
 ```c
-// a.h
+/* a.h */
 #ifndef A_H
 #define A_H
-struct B;               // 前向声明 B
+
+struct B;               /* 前向声明：有个 struct B，长什么样不告诉你 */
+
 typedef struct A {
-    struct B *b;        // 使用 struct B * 而非 B *
+    struct B *b;        /* 指针成员不需要完整类型 */
 } A;
 #endif
+```
 
-// b.h
+```c
+/* b.h */
 #ifndef B_H
 #define B_H
-struct A;               // 前向声明 A
+
+struct A;
+
 typedef struct B {
     struct A *a;
 } B;
 #endif
 ```
 
-## 6. 预处理器深度
+能过是因为指针的大小与目标类型无关——存一个 struct B * 只需要知道「是个地址」。代价是前向声明的类型只能当指针用：不能拿它定义对象（编译器不知道大小），不能访问成员。附带的红利：能前向声明就别 include，头文件依赖越少，改动后的重编译越少——依赖的账归 [构建系统](/c/470-BuildSystem) 管。
 
-### 6.1 #include 的两种形式
+## 6. extern 变量：跨文件共享一个「全局」
 
-```c
-#include <stdio.h>      // 系统头文件：在系统目录搜索
-#include "myfile.h"     // 用户头文件：先在当前目录搜索，找不到再搜索系统目录
-#include "../include/myfile.h"  // 相对路径（不推荐）
-#include "/usr/local/include/special.h"  // 绝对路径（强烈不推荐）
-```
-
-搜索路径顺序（GCC 默认）：
-
-1. `#include "..."` 时：当前源文件所在目录
-2. `-I` 选项指定的目录（按命令行顺序）
-3. 系统标准目录（如 `/usr/include`、`/usr/local/include`）
-
-### 6.2 条件编译
+跨文件共享变量的惯例是 globals 三件套：
 
 ```c
-#ifdef DEBUG
-    printf("Debug: x=%d\n", x);
-#endif
+/* globals.h */
+#ifndef GLOBALS_H
+#define GLOBALS_H
 
-#if defined(__linux__) && defined(__x86_64__)
-    // Linux x86-64 特定代码
-#elif defined(_WIN32)
-    // Windows 特定代码
-#else
-    #error "Unsupported platform"
-#endif
+extern int g_verbose;    /* 声明：告诉所有包含者「有这么个 int，定义在别处」 */
 
-#if __STDC_VERSION__ >= 201112L
-    // C11 及以上
-    #include <threads.h>
-#elif __STDC_VERSION__ >= 199901L
-    // C99
-#else
-    // C89
 #endif
 ```
 
-### 6.3 平台与编译器检测
-
-常用预定义宏：
-
 ```c
-// 编译器
-#if defined(__GNUC__)
-    // GCC 或 Clang（Clang 也定义 __GNUC__）
-    #define COMPILER_GCC 1
-#elif defined(_MSC_VER)
-    // MSVC
-    #define COMPILER_MSVC 1
-#elif defined(__clang__)
-    // Clang
-    #define COMPILER_CLANG 1
-#endif
+/* globals.c */
+#include "globals.h"
 
-// 平台
-#if defined(_WIN32) || defined(_WIN64)
-    #define PLATFORM_WINDOWS 1
-#elif defined(__linux__)
-    #define PLATFORM_LINUX 1
-#elif defined(__APPLE__) && defined(__MACH__)
-    #define PLATFORM_MACOS 1
-#elif defined(__FreeBSD__)
-    #define PLATFORM_FREEBSD 1
-#endif
-
-// 架构
-#if defined(__x86_64__) || defined(_M_X64)
-    #define ARCH_X86_64 1
-#elif defined(__aarch64__)
-    #define ARCH_ARM64 1
-#elif defined(__arm__) || defined(_M_ARM)
-    #define ARCH_ARM32 1
-#endif
-
-// C 标准版本
-#if defined(__STDC_VERSION__)
-    #if __STDC_VERSION__ >= 202311L
-        #define C_VERSION 23
-    #elif __STDC_VERSION__ >= 201710L
-        #define C_VERSION 17
-    #elif __STDC_VERSION__ >= 201112L
-        #define C_VERSION 11
-    #elif __STDC_VERSION__ >= 199901L
-        #define C_VERSION 99
-    #else
-        #define C_VERSION 89
-    #endif
-#endif
+int g_verbose = 0;       /* 定义：存储与初始化都在这里，全程序仅此一份 */
 ```
 
-### 6.4 编译器特性检测
-
 ```c
-// C23 特性检测
-#if defined(__has_attribute)
-    #if __has_attribute(fallthrough)
-        #define FALLTHROUGH __attribute__((fallthrough))
-    #else
-        #define FALLTHROUGH ((void)0)
-    #endif
-#else
-    #define FALLTHROUGH ((void)0)
-#endif
+/* main.c */
+#include <stdio.h>
+#include "globals.h"
 
-// 内联关键字
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 199901L
-    #define INLINE inline
-#elif defined(__GNUC__)
-    #define INLINE __inline__
-#elif defined(_MSC_VER)
-    #define INLINE __inline
-#else
-    #define INLINE
-#endif
+int main(void) {
+    g_verbose = 1;
+    printf("verbose = %d\n", g_verbose);
+    return 0;
+}
 ```
-
-## 7. 符号与链接器
-
-### 7.1 目标文件结构
-
-编译器生成的目标文件（`.o` / `.obj`）遵循特定的二进制格式：
-
-- **Linux/ELF**：Executable and Linkable Format
-- **Windows/PE**：Portable Executable
-- **macOS/Mach-O**：Mach Object
-
-ELF 目标文件包含以下关键段（section）：
-
-| 段名 | 内容 |
-|------|------|
-| `.text` | 代码（机器指令） |
-| `.data` | 已初始化的全局变量 |
-| `.bss` | 未初始化的全局变量（仅记录大小） |
-| `.rodata` | 只读数据（字符串字面量、const 变量） |
-| `.symtab` | 符号表 |
-| `.strtab` | 字符串表（符号名） |
-| `.rela.text` | 代码段重定位信息 |
-| `.rela.data` | 数据段重定位信息 |
-
-### 7.2 符号表
-
-使用 `nm` 命令查看目标文件的符号表：
 
 ```bash
-$ nm main.o
-0000000000000000 T main
-                 U printf
-0000000000000010 T add
+gcc -Wall -Wextra main.c globals.c -o app && ./app
 ```
-
-符号类型：
-
-- `T` / `t`：代码段符号（大写为外部链接，小写为内部链接）
-- `D` / `d`：数据段符号
-- `B` / `b`：BSS 段符号
-- `U`：未定义符号（需要链接器解析）
-- `W`：弱符号
-- `R` / `r`：只读数据段
-
-### 7.3 符号解析
-
-链接器的核心任务之一是符号解析（symbol resolution）：对于每个翻译单元中引用但未定义的符号（`U` 类型），在其他目标文件或库中查找定义。
-
-```
-main.o:                utils.o:
-  T main                 T add
-  U add                  T helper (static)
-  U printf               U malloc
-                         U free
-
-链接器扫描所有 .o，建立全局符号表：
-  main    -> main.o:0x0
-  add     -> utils.o:0x0
-  printf  -> libc.a:printf.o:0x0
-  malloc  -> libc.a:malloc.o:0x0
-  ...
-
-未解析符号：无（全部找到定义）
-```
-
-### 7.4 重定位
-
-链接器的第二项任务是重定位（relocation）：合并各目标文件的段，调整符号地址。
 
 ```text
-链接前：
-  main.o:  .text 起始地址 0x0，main 在 0x0，调用 add 在 0x10（占位）
-  utils.o: .text 起始地址 0x0，add 在 0x0
-
-链接后（假设 main 在前）：
-  可执行文件 .text：
-    0x0000: main (来自 main.o)
-    0x0010: call <placeholder for add>     ← 需要重定位
-    0x0020: ret
-    0x0030: add  (来自 utils.o)
-    0x0050: ret
-
-重定位：将 0x0010 处的调用地址改为 0x0030
-最终：  call 0x0030
+verbose = 1
 ```
 
-### 7.5 静态链接 vs 动态链接
+main.c 与 globals.c 是两座孤岛，却读写着同一个变量——链接器把两边的 g_verbose 对到了同一份存储上。三条纪律：
 
-| 特性 | 静态链接 | 动态链接 |
-|------|----------|----------|
-| 链接时机 | 编译时 | 运行时（或加载时） |
-| 输出 | 自包含可执行文件 | 依赖 .so/.dll 的可执行文件 |
-| 体积 | 大 | 小 |
-| 启动速度 | 快 | 略慢（需加载共享库） |
-| 升级 | 需重新链接 | 替换 .so/.dll 即可 |
-| 安全 | 依赖固定 | 可能被替换（LD_PRELOAD 攻击） |
-| 内存 | 每进程一份 | 多进程共享 |
-| ABI | 不需要 ABI 稳定 | 需要 ABI 稳定 |
+1. 初始化只写在定义文件里。extern 声明不带初值；`extern int g_verbose = 0;` 一带初值就不是声明而是定义，后果见第 8 节；
+2. 类型必须处处一致。链接器按名字找人，不核对类型：定义处写 int、别处 `extern long g_verbose;`，编译链接都通过，读写行为却是未定义。「声明给人看」的意义正在于此——给人看的说明书都写错，程序自然没人救得了；
+3. 能不用就不用。裸全局变量是跨文件耦合的直通车：谁都能改、难测试、并发下危险。更稳的设计是把变量藏成 static，只暴露访问函数（如 `int verbose_enabled(void);` / `void verbose_set(int on);`）——static 的语义在 [作用域、存储期与链接性](/c/055-ScopeStorageLinkage)。
 
-#### 7.5.1 静态库创建
+函数天然就是「对外」的：头文件里的原型不用写 extern。extern 这个关键字对变量声明才是必需的标记。
+
+## 7. 工程结构：include/ 与 src/
+
+文件一多，头文件别再和 .c 混放。通行布局是头文件独立成目录：
+
+```text
+app/
+├── include/
+│   └── utils.h          # 对外公开的头
+└── src/
+    ├── main.c
+    └── utils.c
+```
+
+头文件不再挨着使用者的目录，引号包含的「当前目录优先」帮不上忙了，轮到 -I：
 
 ```bash
-# 创建静态库 libutils.a
-gcc -c utils.c -o utils.o
-gcc -c logger.c -o logger.o
-ar rcs libutils.a utils.o logger.o
-
-# 使用静态库
-gcc main.c -L. -lutils -o program
+gcc -Wall -Wextra -g -Iinclude src/main.c src/utils.c -o app
+./app
 ```
 
-`ar` 命令选项：
-
-- `r`：插入/替换成员
-- `c`：创建归档
-- `s`：写入索引（相当于 ranlib）
-
-#### 7.5.2 动态库创建
-
-```bash
-# Linux 创建动态库 libutils.so
-gcc -fPIC -shared utils.c logger.c -o libutils.so
-
-# 使用动态库
-gcc main.c -L. -lutils -o program
-./program  # 需要 libutils.so 在搜索路径中
-
-# 设置运行时搜索路径
-export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH
-./program
-
-# 或在链接时指定 RPATH
-gcc main.c -L. -lutils -Wl,-rpath,. -o program
+```text
+sum 1..10 = 55
 ```
+
+-Iinclude 把 include/ 加进搜索路径，位置见 3.2 节的表：引号形式按「当前目录 → -I → 系统目录」找，尖括号形式按「-I → 系统目录」找。此后任何 .c 里写 `#include "utils.h"` 都能命中。src/ 里若还有内部专用的头（比如 src/internal.h），再加一个 -Isrc 即可；也有小项目干脆把头和 .c 全放 src/ 用 -Isrc 一把梭。布局是手段，「公开的头进独立目录、内部头留在实现侧」才是惯例的内核。
+
+顺带一提：到了 make 的世界，即使 Makefile 一行规则不写，`make main.o` 也能从 main.c 造出 main.o——make 内置了「%.o 由同名 %.c 编译而来」的隐式规则（implicit rule）。机制全貌在 [构建系统](/c/470-BuildSystem)；你只需要知道，本篇手敲的每条 gcc -c 命令，make 都存着模板。
+
+## 常见错误与调试实录：undefined reference 五连与 multiple definition
+
+诊断总纲：链接器报错都指向一个符号名。先别急着改代码，用 nm 把相关 .o 看一遍——谁在要（U）、谁在给（T/D）——再对症下药。以下均在 Linux gcc 上复现，其他平台措辞有差异。
+
+### 现场 1：忘了把定义所在的 .o 交给链接器
+
+第 1 节与 2.3 节已完整复现。nm 证据：main.o 里 U sum_to，而链接命令里没有 utils.o——没人接得住。修法：把 utils.o（或 utils.c）补进命令。这是五种成因里最常见的一种。
+
+### 现场 2：名字拼错
 
 ```c
-// Windows 创建 DLL（需 __declspec(dllexport) 标记导出）
-// utils.h
-#ifdef _WIN32
-    #ifdef UTILS_EXPORTS
-        #define UTILS_API __declspec(dllexport)
-    #else
-        #define UTILS_API __declspec(dllimport)
-    #endif
-#else
-    #define UTILS_API __attribute__((visibility("default")))
-#endif
-
-UTILS_API int add(int, int);
+/* main.c 里 */
+printf("%d\n", sumTo(10));     /* 定义的是 sum_to */
 ```
 
-#### 7.5.3 符号可见性控制
-
-Linux 下使用 `__attribute__((visibility("default")))` 与 `-fvisibility=hidden` 控制符号导出：
-
-```bash
-# 默认隐藏所有符号，仅显式标记的导出
-gcc -fvisibility=hidden -shared utils.c -o libutils.so
+```text
+/usr/bin/ld: main.o: in function `main':
+main.c:(.text+0x1f): undefined reference to `sumTo'
+collect2: error: ld returned 1 exit status
 ```
+
+报错里的 sumTo 就是答案：nm utils.o 一眼看到 T sum_to。大小写、下划线逐字符对。
+
+### 现场 3：原型与定义不一致（C 链接器不核对参数）
 
 ```c
-// utils.c
-__attribute__((visibility("default")))
-int add(int a, int b) { return a + b; }
-
-static int helper(void) { ... }   // 即使无 static 也不会导出
-```
-
-这种"默认隐藏 + 显式导出"的模式是工业级 C 项目（如 libvpx、FFmpeg）的标准做法，相比默认导出所有符号有显著优势：
-
-1. 链接速度更快
-2. 不会意外暴露内部 API
-3. ABI 更稳定
-4. 二进制更小
-
-## 8. ABI（应用二进制接口）
-
-ABI 定义了编译后的代码在二进制层面的接口约定，包括：
-
-- 数据类型的大小与对齐
-- 函数调用约定（参数传递、返回值、栈帧布局）
-- 名称修饰（name mangling）
-- 异常处理机制
-- 虚函数表布局（C++）
-
-### 8.1 ABI 与 API 的区别
-
-- **API**（Application Programming Interface）：源代码层面的接口
-- **ABI**（Application Binary Interface）：二进制层面的接口
-
-API 兼容不等于 ABI 兼容。例如：
-
-```c
-// v1.0
-struct Point {
-    int x;
-    int y;
-};
-
-// v1.1：API 兼容（仍可访问 x、y），但 ABI 不兼容（结构体大小变了）
-struct Point {
-    int x;
-    int y;
-    int z;   // 新增字段
-};
-```
-
-重新编译调用方代码可以适配新 ABI，但已编译的二进制无法适配。
-
-### 8.2 C 的名称修饰
-
-C 语言本身不做名称修饰，函数 `int add(int, int)` 在符号表中就是 `add`。这是 C ABI 稳定的基础。
-
-```bash
-$ nm utils.o | grep add
-0000000000000000 T add
-```
-
-对比 C++：
-
-```bash
-$ nm utils.o | grep add   # C++ 编译
-0000000000000000 T _Z3addii
-```
-
-`_Z3addii` 是 C++ 修饰后的名称：`_Z` + 函数名长度 `3` + 函数名 `add` + 参数类型 `ii`（int, int）。
-
-### 8.3 extern "C"
-
-C++ 中使用 `extern "C"` 告诉编译器按 C 规则处理符号（不修饰），实现 C/C++ 互操作：
-
-```cpp
-// C++ 代码调用 C 函数
-extern "C" {
-#include "c_utils.h"
-}
-
-// C++ 代码导出 C 接口
-extern "C" int add(int a, int b);   // 符号表中为 add，而非 _Z3addii
-```
-
-头文件通常使用以下模式实现 C/C++ 双兼容：
-
-```c
-// utils.h
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-int add(int a, int b);
-void log_msg(const char *msg);
-
-#ifdef __cplusplus
-}
-#endif
-```
-
-### 8.4 ABI 稳定性的工程实践
-
-1. **不透明指针**：暴露 `typedef struct Foo Foo;`，隐藏 `struct Foo` 的成员
-2. **版本号字段**：结构体首字段为 `size_t size`，调用方填充 `sizeof(struct)`，被调方根据 size 判断版本
-3. **新增字段放末尾**：扩展结构体时只追加，不修改已有字段顺序
-4. **避免内联**：内联函数的修改会破坏 ABI
-5. **不改变函数签名**：参数类型、返回类型、调用约定的变化都破坏 ABI
-
-```c
-// 稳定 ABI 的结构体设计
-typedef struct {
-    size_t size;             // 版本检测字段
-    int version;
-    // ... 其他字段，新增的追加到末尾
-} ConfigV1;
-
-// 工厂函数
-ConfigV1 *config_create_v1(void) {
-    ConfigV1 *c = malloc(sizeof(ConfigV1));
-    c->size = sizeof(ConfigV1);
-    c->version = 1;
-    return c;
-}
-```
-
-## 9. Makefile 详解
-
-### 9.1 Makefile 基本语法
-
-```makefile
-# Makefile
-target: prerequisites
-	command
-
-# 示例
-program: main.o utils.o
-	gcc -o program main.o utils.o
-
-main.o: main.c utils.h
-	gcc -c main.c
-
-utils.o: utils.c utils.h
-	gcc -c utils.c
-
-clean:
-	rm -f *.o program
-```
-
-规则：
-
-- 目标（target）: 依赖（prerequisites）
-- 命令必须以 Tab 开头（不是空格！）
-- Make 比较目标与依赖的修改时间，仅当依赖比目标新时才执行命令
-
-### 9.2 变量
-
-```makefile
-CC = gcc
-CFLAGS = -Wall -Wextra -std=c17 -O2
-LDFLAGS = -lm
-
-# 使用变量
-program: main.o utils.o
-	$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-
-# 自动变量
-# $@  目标名
-# $<  第一个依赖
-# $^  所有依赖
-# $?  比目标新的依赖
-# $*  匹配 % 的部分
-```
-
-### 9.3 隐式规则与模式规则
-
-```makefile
-# Make 内置隐式规则：%.o: %.c
-# 等价于：gcc -c main.c -o main.o
-
-# 自定义模式规则
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-# 调用规则
-main.o: main.c    # 自动应用模式规则
-utils.o: utils.c
-```
-
-### 9.4 完整的中型项目 Makefile
-
-```makefile
-# 项目结构
-# project/
-# ├── include/      (公共头文件)
-# ├── src/          (源文件)
-# ├── tests/        (测试)
-# └── Makefile
-
-# === 变量定义 ===
-CC := gcc
-AR := ar
-CFLAGS := -Wall -Wextra -Werror -std=c17 -O2 -Iinclude
-LDFLAGS :=
-LDLIBS :=
-
-# 目录
-SRC_DIR := src
-OBJ_DIR := build
-INC_DIR := include
-TEST_DIR := tests
-
-# 文件列表
-SRCS := $(wildcard $(SRC_DIR)/*.c)
-OBJS := $(patsubst $(SRC_DIR)/%.c,$(OBJ_DIR)/%.o,$(SRCS))
-TEST_SRCS := $(wildcard $(TEST_DIR)/*.c)
-TEST_BINS := $(patsubst $(TEST_DIR)/%.c,$(OBJ_DIR)/test_%,$(TEST_SRCS))
-
-# 目标
-TARGET := libproject.a
-TEST_TARGET := run_tests
-
-# === 默认目标 ===
-.PHONY: all clean test install
-
-all: $(TARGET)
-
-# === 静态库 ===
-$(TARGET): $(OBJS)
-	$(AR) rcs $@ $^
-
-# === 编译规则 ===
-$(OBJ_DIR)/%.o: $(SRC_DIR)/%.c | $(OBJ_DIR)
-	$(CC) $(CFLAGS) -c -o $@ $<
-
-$(OBJ_DIR):
-	mkdir -p $@
-
-# === 测试 ===
-test: $(TEST_TARGET)
-
-$(TEST_TARGET): $(TEST_BINS) | $(OBJ_DIR)
-	@for t in $^; do \
-		echo "Running $$t..."; \
-		./$$t || exit 1; \
-	done
-
-$(OBJ_DIR)/test_%: $(TEST_DIR)/%.c $(TARGET) | $(OBJ_DIR)
-	$(CC) $(CFLAGS) -o $@ $< -L. -lproject
-
-# === 安装 ===
-install: $(TARGET)
-	install -d $(DESTDIR)/usr/lib
-	install -m 644 $< $(DESTDIR)/usr/lib/
-	install -d $(DESTDIR)/usr/include
-	install -m 644 $(INC_DIR)/*.h $(DESTDIR)/usr/include/
-
-# === 清理 ===
-clean:
-	rm -rf $(OBJ_DIR) $(TARGET)
-```
-
-### 9.5 依赖自动生成
-
-头文件修改后，依赖它的 `.c` 文件应重新编译。手工维护依赖关系繁琐且易错，GCC 提供 `-MMD` 选项自动生成依赖：
-
-```makefile
-DEPS := $(OBJS:.o=.d)
-
-CFLAGS += -MMD -MP
-
-%.o: %.c
-	$(CC) $(CFLAGS) -c -o $@ $<
-
--include $(DEPS)
-```
-
-`-MMD` 生成 `.d` 文件，内容形如：
-
-```
-build/main.o: src/main.c include/utils.h include/config.h
-```
-
-`-include` 将其包含进 Makefile，让 Make 知道 `main.o` 还依赖 `utils.h` 等头文件。
-
-### 9.6 增量构建原理
-
-Make 通过比较文件的修改时间（mtime）决定是否重新构建：
-
-1. 读取所有规则，构建依赖图
-2. 对每个目标，递归检查依赖
-3. 若依赖比目标新，或目标不存在，执行命令
-4. 否则跳过
-
-```
-main.o: main.c utils.h config.h
-
-若 utils.h 修改：
-  utils.h 比 main.o 新 → 重新编译 main.o
-  main.o 比 program 新 → 重新链接 program
-```
-
-### 9.7 常见 Makefile 陷阱
-
-#### 9.7.1 Tab vs 空格
-
-```makefile
-# 错误：命令行用空格缩进
-target:
-    command
-
-# 正确：命令行用 Tab 缩进
-target:
-	command
-```
-
-#### 9.7.2 PHONY 目标
-
-```makefile
-# 若目录中存在名为 clean 的文件，下面的规则不会执行
-clean:
-	rm -f *.o
-
-# 正确：声明为 phony
-.PHONY: clean
-clean:
-	rm -f *.o
-```
-
-#### 9.7.3 变量展开时机
-
-```makefile
-# = 递归展开（延迟求值）
-A = $(B)
-B = later
-# $(A) → later
-
-# := 简单展开（立即求值）
-A := $(B)
-B = later
-# $(A) → （空，因为 B 在 := 时尚未定义）
-
-# ?= 仅在未定义时赋值
-CC ?= gcc
-
-# += 追加
-CFLAGS += -O2
-```
-
-## 10. CMake 详解
-
-CMake 是"元构建系统"（meta-build-system）：它不直接构建项目，而是根据 `CMakeLists.txt` 生成 Makefile、Ninja、Visual Studio 工程等。
-
-### 10.1 最简 CMakeLists.txt
-
-```cmake
-cmake_minimum_required(VERSION 3.20)
-project(MyProject VERSION 1.0 LANGUAGES C)
-
-set(CMAKE_C_STANDARD 17)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
-
-add_executable(program main.c utils.c)
-```
-
-### 10.2 中型项目 CMakeLists.txt
-
-```cmake
-cmake_minimum_required(VERSION 3.20)
-project(FandexUtils
-    VERSION 1.2.0
-    DESCRIPTION "FANDEX C utility library"
-    LANGUAGES C)
-
-# === C 标准 ===
-set(CMAKE_C_STANDARD 17)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
-
-# === 编译选项 ===
-option(BUILD_SHARED_LIBS "Build shared library" OFF)
-option(BUILD_TESTS "Build unit tests" ON)
-option(ENABLE_LTO "Enable link-time optimization" OFF)
-
-# === 编译器警告 ===
-if(MSVC)
-    add_compile_options(/W4 /WX /permissive-)
-else()
-    add_compile_options(
-        -Wall -Wextra -Wpedantic -Werror
-        -Wconversion -Wshadow -Wdouble-promotion
-    )
-endif()
-
-# === 库目标 ===
-add_library(fandex_utils
-    src/hashmap.c
-    src/logger.c
-    src/string_utils.c
-)
-
-target_include_directories(fandex_utils
-    PUBLIC
-        $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
-        $<INSTALL_INTERFACE:include>
-    PRIVATE
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-)
-
-target_compile_features(fandex_utils PUBLIC c_std_17)
-
-# === 可执行文件 ===
-add_executable(demo examples/demo.c)
-target_link_libraries(demo PRIVATE fandex_utils)
-
-# === 测试 ===
-if(BUILD_TESTS)
-    enable_testing()
-    add_subdirectory(tests)
-endif()
-
-# === 安装 ===
-include(GNUInstallDirs)
-install(TARGETS fandex_utils
-    EXPORT FandexUtilsTargets
-    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-    INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
-)
-install(DIRECTORY include/ DESTINATION ${CMAKE_INSTALL_INCLUDEDIR})
-
-# === LTO ===
-if(ENABLE_LTO)
-    include(CheckIPOSupported)
-    check_ipo_supported(RESULT lto_supported OUTPUT lto_error)
-    if(lto_supported)
-        set_target_properties(fandex_utils PROPERTIES INTERPROCEDURAL_OPTIMIZATION TRUE)
-    else()
-        message(WARNING "LTO not supported: ${lto_error}")
-    endif()
-endif()
-```
-
-### 10.3 target_link_libraries 的三种作用域
-
-```cmake
-add_library(A ...)
-target_link_libraries(A
-    PUBLIC B       # A 和依赖 A 的目标都会链接 B
-    PRIVATE C      # 仅 A 链接 C
-    INTERFACE D    # 仅依赖 A 的目标链接 D（A 本身不链接）
-)
-```
-
-- **PUBLIC**：依赖传播到使用者和实现
-- **PRIVATE**：仅在实现中使用
-- **INTERFACE**：仅在传播给使用者
-
-### 10.4 现代化 CMake 特性
-
-```cmake
-# Generator expressions（生成器表达式）
-target_compile_options(fandex_utils PRIVATE
-    $<$<C_COMPILER_ID:GNU>:-Werror>
-    $<$<C_COMPILER_ID:MSVC>:/W4>
-    $<$<CONFIG:Debug>:-O0 -g>
-    $<$<CONFIG:Release>:-O3>
-)
-
-# IMPORTED 目标（导入第三方库）
-find_package(OpenSSL REQUIRED)
-target_link_libraries(my_app PRIVATE OpenSSL::SSL OpenSSL::Crypto)
-
-# FetchContent（CMake 3.11+，依赖管理）
-include(FetchContent)
-FetchContent_Declare(
-    cJSON
-    GIT_REPOSITORY https://github.com/DaveGamble/cJSON.git
-    GIT_TAG v1.7.18
-)
-FetchContent_MakeAvailable(cJSON)
-target_link_libraries(my_app PRIVATE cJSON::cJSON)
-```
-
-### 10.5 构建命令
-
-```bash
-# 配置（生成构建文件）
-cmake -B build -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=ON
-
-# 构建
-cmake --build build -j
-
-# 安装
-cmake --install build --prefix /usr/local
-
-# 测试
-ctest --test-dir build --output-on-failure
-```
-
-## 11. Ninja 与其他构建系统
-
-### 11.1 Ninja
-
-Ninja 是为速度而生的底层构建工具，专注于"尽可能快地执行构建"。其语法极简：
-
-```ninja
-# build.ninja
-cc = gcc
-cflags = -Wall -O2
-
-rule cc
-  command = $cc $cflags -c $in -o $out
-  description = CC $out
-
-rule link
-  command = $cc $in -o $out
-
-build main.o: cc main.c
-build utils.o: cc utils.c
-build program: link main.o utils.o
-
-default program
-```
-
-CMake 可生成 Ninja 构建文件：
-
-```bash
-cmake -G Ninja -B build
-cmake --build build
-```
-
-Ninja 的优势：
-
-- 增量构建极快（启动开销低）
-- 并行执行默认开启
-- 依赖图紧凑，加载快
-
-### 11.2 Meson
-
-Meson 是极简的构建系统，使用 Python-like DSL：
-
-```meson
-# meson.build
-project('myproject', 'c',
-    version: '1.0.0',
-    default_options: ['c_std=c17', 'warning_level=3', 'werror=true'])
-
-srcs = ['src/main.c', 'src/utils.c']
-deps = dependency('openssl')
-
-executable('myproject', srcs,
-    dependencies: deps,
-    include_directories: 'include')
-```
-
-### 11.3 构建系统对比
-
-| 系统 | 优势 | 劣势 | 适用场景 |
-|------|------|------|----------|
-| Make | 通用、轻量、Unix 标配 | 语法古老、跨平台弱 | 中小型 C 项目 |
-| CMake | 跨平台、生态丰富、IDE 支持 | 语法复杂、调试困难 | 中大型跨平台项目 |
-| Ninja | 极速 | 不能手写，需生成器 | CMake/Meson 后端 |
-| Meson | 简洁、速度快 | 生态较小 | 现代 C 项目 |
-| Bazel | 大规模、可重现 | 学习曲线陡 | 超大型项目 |
-| SCons | Python 灵活 | 慢 | 嵌入式项目 |
-
-## 12. 工业级工程实践
-
-### 12.1 项目目录结构
-
-推荐的中型 C 项目结构：
-
-```mermaid
-flowchart TD
-    T0["myproject/"]
-    T1["CMakeLists.txt"]
-    T2["README.md"]
-    T3["LICENSE"]
-    T4["include/                  # 公共头文件（外部可见）"]
-    T5["myproject/"]
-    T6["hashmap.h"]
-    T7["logger.h"]
-    T8["version.h"]
-    T9["src/                      # 源文件（内部）"]
-    T10["internal/             # 内部头文件"]
-    T11["hashmap_internal.h"]
-    T12["hashmap.c"]
-    T13["logger.c"]
-    T14["examples/                 # 示例"]
-    T15["demo.c"]
-    T16["tests/                    # 测试"]
-    T17["test_hashmap.c"]
-    T18["test_logger.c"]
-    T19["benchmarks/               # 性能基准"]
-    T20["bench_hashmap.c"]
-    T21["docs/                     # 文档"]
-    T22["scripts/                  # 辅助脚本"]
-    T23["build.sh"]
-    T24["release.sh"]
-    T25["cmake/                    # CMake 模块"]
-    T26["FindMyProject.cmake"]
-    T27["third_party/              # 第三方依赖"]
-    T28["..."]
-    T0 --> T1
-    T0 --> T2
-    T0 --> T3
-    T0 --> T4
-    T8 --> T9
-    T13 --> T14
-    T15 --> T16
-    T18 --> T19
-    T20 --> T21
-    T20 --> T22
-    T24 --> T25
-    T26 --> T27
-    T27 --> T28
-```
-
-### 12.2 版本号管理
-
-```c
-// include/myproject/version.h
-#pragma once
-
-#define MYPROJECT_VERSION_MAJOR 1
-#define MYPROJECT_VERSION_MINOR 2
-#define MYPROJECT_VERSION_PATCH 3
-#define MYPROJECT_VERSION_STRING "1.2.3"
-#define MYPROJECT_VERSION_NUM ((1 << 16) | (2 << 8) | 3)
-
-// 运行时 API
-const char *myproject_version(void);
-int myproject_version_check(int major, int minor, int patch);
-```
-
-```cmake
-# CMakeLists.txt
-project(MyProject VERSION 1.2.3)
-
-configure_file(
-    ${CMAKE_CURRENT_SOURCE_DIR}/include/myproject/version.h.in
-    ${CMAKE_CURRENT_BINARY_DIR}/include/myproject/version.h
-    @ONLY
-)
-```
-
-```c
-// version.h.in
-#pragma once
-#define MYPROJECT_VERSION_MAJOR @MyProject_VERSION_MAJOR@
-#define MYPROJECT_VERSION_MINOR @MyProject_VERSION_MINOR@
-#define MYPROJECT_VERSION_PATCH @MyProject_VERSION_PATCH@
-#define MYPROJECT_VERSION_STRING "@MyProject_VERSION@"
-```
-
-### 12.3 配置头文件
-
-```cmake
-# CMakeLists.txt
-option(ENABLE_SSL "Enable SSL support" ON)
-option(ENABLE_THREADING "Enable threading" ON)
-
-configure_file(config.h.in config.h)
-```
-
-```c
-// config.h.in
-#pragma once
-
-#cmakedefine ENABLE_SSL
-#cmakedefine ENABLE_THREADING
-
-#ifdef ENABLE_SSL
-#include <openssl/ssl.h>
-#endif
-```
-
-```c
-// main.c
-#include "config.h"
-
-#ifdef ENABLE_SSL
-void init_ssl(void) { /* ... */ }
-#endif
-```
-
-### 12.4 编译器警告
-
-工业级项目的警告配置：
-
-```cmake
-# CMakeLists.txt
-if(MSVC)
-    add_compile_options(/W4 /WX /permissive- /utf-8)
-    add_compile_options(
-        /w14242  # int->char 转换
-        /w14254  # 运算符转换
-        /w14263  # 虚函数覆盖
-        /w14265  # 类有虚函数但析构非虚
-        /w14287  # 无符号 int 比较
-        /w14296  # 表达式始终为 false
-        /w14311  # 指针到 bool 转换
-        /w14545  # 表达式无法计算
-        /w14546  # 函数调用前缺少括号
-        /w14547  # 在 operator 后
-        /w14549  # 在 operator 后
-        /w14555  # 表达式无效
-        /w14619  # pragma warning
-        /w14640  # 线程不安全 API
-        /w14826  # 转换有符号/无符号
-        /w14905  # 字符串字面量到 wchar_t
-        /w14906  # 字符串字面量转换
-        /w14928  # 异常规范
-    )
-else()
-    add_compile_options(
-        -Wall -Wextra -Wpedantic -Werror
-        -Wconversion -Wshadow -Wdouble-promotion
-        -Wformat=2 -Wformat-overflow -Wformat-truncation
-        -Wnull-dereference -Wimplicit-fallthrough
-        -Wstack-usage=8192 -Walloc-size-larger-than=1073741824
-        -Wno-unused-parameter
-    )
-endif()
-```
-
-### 12.5 静态分析集成
-
-```cmake
-# 启用 Clang 静态分析
-option(ENABLE_STATIC_ANALYSIS "Enable Clang static analyzer" OFF)
-if(ENABLE_STATIC_ANALYSIS AND CMAKE_C_COMPILER_ID MATCHES "Clang")
-    set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} --analyze")
-endif()
-
-# 启用 ASan/UBSan/TSan
-option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
-if(ENABLE_ASAN)
-    add_compile_options(-fsanitize=address -fno-omit-frame-pointer -g)
-    add_link_options(-fsanitize=address)
-endif()
-
-option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)
-if(ENABLE_UBSAN)
-    add_compile_options(-fsanitize=undefined -fno-omit-frame-pointer -g)
-    add_link_options(-fsanitize=undefined)
-endif()
-
-option(ENABLE_TSAN "Enable ThreadSanitizer" OFF)
-if(ENABLE_TSAN)
-    add_compile_options(-fsanitize=thread -fno-omit-frame-pointer -g)
-    add_link_options(-fsanitize=thread)
-endif()
-```
-
-### 12.6 跨平台抽象
-
-```c
-// compat.h
-#pragma once
-
-// 平台检测
-#if defined(_WIN32)
-    #define FANDEX_PLATFORM_WINDOWS 1
-    #if defined(_WIN64)
-        #define FANDEX_PLATFORM_WINDOWS64 1
-    #else
-        #define FANDEX_PLATFORM_WINDOWS32 1
-    #endif
-#elif defined(__linux__)
-    #define FANDEX_PLATFORM_LINUX 1
-#elif defined(__APPLE__)
-    #define FANDEX_PLATFORM_MACOS 1
-#endif
-
-// 调用约定
-#if defined(FANDEX_PLATFORM_WINDOWS)
-    #define FANDEX_CALL __stdcall
-#else
-    #define FANDEX_CALL
-#endif
-
-// 符号导出
-#if defined(FANDEX_PLATFORM_WINDOWS)
-    #if defined(FANDEX_EXPORTS)
-        #define FANDEX_API __declspec(dllexport)
-    #else
-        #define FANDEX_API __declspec(dllimport)
-    #endif
-#else
-    #if defined(FANDEX_EXPORTS)
-        #define FANDEX_API __attribute__((visibility("default")))
-    #else
-        #define FANDEX_API
-    #endif
-#endif
-
-// 内联
-#if defined(FANDEX_PLATFORM_WINDOWS)
-    #define FANDEX_INLINE __forceinline
-#else
-    #define FANDEX_INLINE static inline __attribute__((always_inline))
-#endif
-
-// 线程局部
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-    #define FANDEX_THREAD_LOCAL thread_local
-#elif defined(FANDEX_PLATFORM_WINDOWS)
-    #define FANDEX_THREAD_LOCAL __declspec(thread)
-#elif defined(__GNUC__)
-    #define FANDEX_THREAD_LOCAL __thread
-#endif
-
-// 不支持 C11 的对齐
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-    #define FANDEX_ALIGNAS(x) _Alignas(x)
-#elif defined(FANDEX_PLATFORM_WINDOWS)
-    #define FANDEX_ALIGNAS(x) __declspec(align(x))
-#elif defined(__GNUC__)
-    #define FANDEX_ALIGNAS(x) __attribute__((aligned(x)))
-#endif
-```
-
-## 13. 真实项目案例研究
-
-### 13.1 Linux 内核的多文件组织
-
-Linux 内核约 3000 万行 C 代码，是多文件编译的极致案例。
-
-#### 13.1.1 目录结构
-
-```mermaid
-flowchart TD
-    T0["linux/"]
-    T1["arch/         # 架构相关代码（每个架构一个子目录）"]
-    T2["x86/"]
-    T3["arm64/"]
-    T4["..."]
-    T5["kernel/       # 内核核心"]
-    T6["mm/           # 内存管理"]
-    T7["fs/           # 文件系统"]
-    T8["net/          # 网络栈"]
-    T9["drivers/      # 设备驱动"]
-    T10["include/      # 头文件"]
-    T11["linux/    # 内核公共头"]
-    T12["uapi/     # 用户态接口头"]
-    T13["asm-$(ARCH)/  # 架构相关头"]
-    T14["Makefile      # 顶层 Makefile"]
-    T0 --> T1
-    T4 --> T5
-    T4 --> T6
-    T4 --> T7
-    T4 --> T8
-    T4 --> T9
-    T4 --> T10
-    T13 --> T14
-```
-
-#### 13.1.2 Kbuild 系统
-
-Linux 内核使用自研的 Kbuild（基于 Make）：
-
-```makefile
-# 单个目录的 Makefile（如 mm/Makefile）
-obj-y := memory.o fault.o page_alloc.o slab.o
-obj-$(CONFIG_NUMA) += numa.o
-obj-$(CONFIG_TRANSPARENT_HUGEPAGE) += huge_memory.o
-```
-
-`obj-y` 表示始终编译，`obj-$(CONFIG_XXX)` 根据 Kconfig 配置决定。
-
-#### 13.1.3 内核的 EXPORT_SYMBOL
-
-内核模块（可加载模块）需要引用内核主程序的符号，使用 `EXPORT_SYMBOL` 显式导出：
-
-```c
-// kernel/sched/core.c
-int sched_setscheduler(struct task_struct *p, int policy,
-                       struct sched_param *param) {
-    // ...
-}
-EXPORT_SYMBOL_GPL(sched_setscheduler);
-```
-
-### 13.2 SQLite 的单文件分发
-
-SQLite 采用截然不同的策略：将所有源文件合并为单个 `sqlite3.c`（amalgamation），便于分发和嵌入。
-
-#### 13.2.1 合并构建
-
-```bash
-# SQLite 的合并构建过程
-# 1. 各 .c 文件单独开发
-# 2. 脚本将所有 .c 合并为 sqlite3.c（约 25 万行）
-# 3. 用户只需编译 sqlite3.c 即可
-gcc -O2 sqlite3.c -c -o sqlite3.o
-gcc app.c sqlite3.o -o app -lpthread -ldl
-```
-
-#### 13.2.2 合并的优劣
-
-优点：
-
-- 极致编译速度优化（编译器可见全部代码，可跨函数优化）
-- 单文件分发，用户集成简单
-- 内部函数自动成为内部链接
-
-缺点：
-
-- 完整编译时间长（约 30 秒）
-- 调试困难（无法单独修改某模块）
-- 增量开发不友好
-
-### 13.3 Redis 的模块化
-
-Redis 是中等规模 C 项目（约 15 万行）的代表。
-
-#### 13.3.1 目录结构
-
-```mermaid
-flowchart TD
-    T0["redis/"]
-    T1["src/"]
-    T2["server.c           # 主程序"]
-    T3["networking.c       # 网络层"]
-    T4["db.c               # 数据库层"]
-    T5["object.c           # 对象系统"]
-    T6["t_string.c         # 字符串类型实现"]
-    T7["t_list.c           # 列表类型实现"]
-    T8["t_hash.c           # 哈希类型实现"]
-    T9["t_set.c            # 集合类型实现"]
-    T10["t_zset.c           # 有序集合类型实现"]
-    T11["modules/           # 模块系统"]
-    T12["deps/                  # 第三方依赖"]
-    T13["hiredis/"]
-    T14["jemalloc/"]
-    T15["linenoise/"]
-    T16["tests/                 # 测试"]
-    T17["Makefile               # 构建文件"]
-    T0 --> T1
-    T11 --> T12
-    T15 --> T16
-    T15 --> T17
-```
-
-#### 13.3.2 Makefile 简化版
-
-```makefile
-# Redis Makefile（简化）
-make_version=$(shell git rev-parse --short HEAD 2>/dev/null)
-STD=-std=c11 -pedantic -DREDIS_STATIC=''
-WARN=-Wall -Wextra -Wno-missing-field-initializers
-OPT=-O2
-
-REDIS_CC=$(CC) $(STD) $(WARN) $(OPT) $(DEBUG) $(CFLAGS)
-REDIS_LD=$(CC) $(DEBUG) $(LDFLAGS)
-
-REDIS_SERVER_NAME=redis-server
-REDIS_CLI_NAME=redis-cli
-
-# 源文件列表
-REDIS_SERVER_OBJ=adlist.o quicklist.o ae.o anet.o dict.o server.o sds.o \
-    zmalloc.o lzf_c.o lzf_d.o pqsort.o zipmap.o sha1.o ziplist.o release.o \
-    networking.o util.o object.o db.o replication.o rdb.o t_string.o \
-    t_list.o t_set.o t_zset.o t_hash.o config.o aof.o pubsub.o multi.o \
-    debug.o sort.o intset.o syncio.o cluster.o crc16.o endianconv.o \
-    slowlog.o scripting.o bio.o rio.o rand.o memtest.o crc64.o bitops.o \
-    sentinel.o notify.o bipbuffer.o version.o
-
-all: $(REDIS_SERVER_NAME) $(REDIS_CLI_NAME)
-
-$(REDIS_SERVER_NAME): $(REDIS_SERVER_OBJ)
-    $(REDIS_LD) -o $@ $^ ../deps/hiredis/libhiredis.a \
-        ../deps/jemalloc/lib/libjemalloc.a -ldl -lm -lpthread
-
-%.o: %.c
-    $(REDIS_CC) -c $<
-```
-
-### 13.4 glibc 的复杂构建
-
-glibc 是 C 标准库实现，构建系统极其复杂，支持 30+ 架构。
-
-```bash
-# glibc 构建流程
-mkdir build && cd build
-../configure \
-    --prefix=/usr \
-    --enable-kernel=3.2 \
-    --enable-stack-protector=strong \
-    --with-headers=/usr/include \
-    --enable-bind-now \
-    --disable-werror
-make -j$(nproc)
-make install
-```
-
-glibc 使用 autoconf/automake，配合大量自研脚本处理跨架构差异。
-
-## 14. 跨语言对比
-
-### 14.1 C++ 的多文件编译
-
-C++ 与 C 共享相同的翻译单元与链接模型，但有显著扩展：
-
-```cpp
-// C++ 模板必须在头文件中定义（实例化要求）
-// template.h
-template <typename T>
-T add(T a, T b) { return a + b; }   // 必须在头文件
-
-// C++ inline 变量（C++17）
-inline int counter = 0;   // 可在头文件，多 TU 包含不违反 ODR
-
-// C++ 模块（C++20）
-export module math;
-export int add(int, int);
-```
-
-C++ 与 C 多文件编译的关键差异：
-
-| 特性 | C | C++ |
-|------|---|-----|
-| 名称修饰 | 无 | 有（mangling） |
-| 模板 | 不支持 | 头文件定义或 extern template |
-| ODR | 严格 | 严格，但有 inline 例外 |
-| 模块 | 无 | C++20 引入 |
-| 异常 | 不支持 | try/catch 影响 ABI |
-
-### 14.2 Rust 的模块系统
-
-Rust 摒弃了 C 的头文件机制，使用 `mod` 与 `use`：
-
-```rust
-// src/lib.rs
-pub mod math;
-pub mod io;
-
-// src/math.rs
-pub fn add(a: i32, b: i32) -> i32 { a + b }
-
-// main.rs
-use mycrate::math::add;
-fn main() { println!("{}", add(1, 2)); }
-```
-
-Rust 的优势：
-
-- 无需头文件，无 ODR 顾虑
-- 编译器自动管理依赖
-- 宏在编译期展开，无预处理器
-- cargo 提供完整构建与依赖管理
-
-劣势：
-
-- 编译速度较慢（类型推导、借用检查）
-- 与 C 互操作需 FFI（Foreign Function Interface）
-- 增量编译在大型项目仍有限
-
-### 14.3 Go 的包系统
-
-Go 使用 `package` 与 `import`：
-
-```go
-// math/add.go
-package math
-
-func Add(a, b int) int { return a + b }
-
-// main.go
-package main
-import "myproject/math"
-func main() { println(math.Add(1, 2)) }
-```
-
-Go 的特点：
-
-- 包级封装，首字母大写为公开
-- 编译极快（无复杂类型系统、无宏）
-- 静态链接默认（单文件可执行）
-- 不支持动态库（1.8 之前）
-
-### 14.4 Zig 的现代化设计
-
-Zig 直接替代 C，无预处理器，无头文件包含：
-
-```zig
-// math.zig
-pub fn add(a: i32, b: i32) i32 { return a + b; }
-
-// main.zig
-const math = @import("math.zig");
-pub fn main() void {
-    _ = math.add(1, 2);
-}
-```
-
-Zig 还可作 C 编译器：`zig cc` 替代 gcc/clang，自动管理 C 依赖。
-
-## 15. 常见陷阱与反模式
-
-### 15.1 头文件中定义变量
-
-```c
-// 错误：header.h
-int counter = 0;        // 这是定义，不是声明！
-// 多个 .c 包含后链接器报错：multiple definition
-
-// 正确：header.h
-extern int counter;     // 声明
-// 在某个 .c 中：
-int counter = 0;        // 定义
-```
-
-### 15.2 头文件循环
-
-```c
-// 错误：a.h <-> b.h 循环
-// a.h
-#include "b.h"
-
-// b.h
-#include "a.h"
-// 即使有 include guard，仍可能因前向声明缺失导致编译错误
-
-// 正确：使用前向声明
-// a.h
-struct B;               // 前向声明
-typedef struct A { struct B *b; } A;
-
-// b.h
-struct A;               // 前向声明
-typedef struct B { struct A *a; } B;
-```
-
-### 15.3 extern 声明与定义不匹配
-
-```c
-// file1.c
-int counter = 42;       // int 类型
-
-// file2.c
-extern long counter;    // 错误：类型不匹配！
-// 行为未定义，可能正常工作也可能崩溃
-```
-
-### 15.4 static 函数在头文件中
-
-```c
-// 错误：header.h
-static void helper(void) { ... }   // 每个包含的 .c 都有副本，代码膨胀
-
-// 正确：仅在 .c 中定义 static 函数
-// file.c
-static void helper(void) { ... }
-```
-
-例外：`static inline` 函数可放头文件（编译器会优化）。
-
-### 15.5 缺少头文件包含
-
-```c
-// file.c
-size_t get_size(void) { return 0; }   // 错误：size_t 未定义
-// 需包含 <stddef.h> 或 <stdint.h>
-
-// 隐式声明陷阱
-int main(void) {
-    return strlen("hello");   // 错误：未包含 <string.h>
-    // C89 允许隐式声明，C99 起为错误
-}
-```
-
-### 15.6 重定义宏
-
-```c
-// header1.h
-#define MAX_SIZE 100
-
-// header2.h
-#define MAX_SIZE 200
-
-// file.c
-#include "header1.h"
-#include "header2.h"   // 警告：MAX_SIZE 重定义
-// 最终值为 200
-```
-
-### 15.7 未使用的全局函数
-
-```c
-// file.c
-int unused_func(void) { return 0; }   // 链接到二进制，但从未被调用
-// 浪费空间，应改用 static 让编译器删除
-static int unused_func(void) { return 0; }   // 编译器可优化掉
-```
-
-### 15.8 不同翻译单元中宏定义不一致
-
-```c
-// file1.c
-#define DEBUG 1
-#include "shared.h"   // shared.h 内部使用 #ifdef DEBUG
-
-// file2.c
-// 未定义 DEBUG
-#include "shared.h"   // 编译结果不同！
-// 翻译单元间 ABI 可能不一致
-```
-
-### 15.9 名称冲突
-
-```c
-// file1.c
-int helper(void) { return 1; }   // 外部链接
-
-// file2.c
-int helper(void) { return 2; }   // 错误：multiple definition
-// 修复：至少一个改为 static
-```
-
-### 15.10 滥用全局变量
-
-```c
-// 反模式：用全局变量传递函数间数据
-int g_state;
-
-void set_state(int s) { g_state = s; }
-int get_state(void) { return g_state; }
-// 问题：线程不安全、难以测试、耦合度高
-
-// 改进：使用上下文结构体
-typedef struct {
-    int state;
-    // ... 其他状态
-} Context;
-
-void set_state(Context *ctx, int s) { ctx->state = s; }
-int get_state(const Context *ctx) { return ctx->state; }
-```
-
-## 16. 综合实战示例
-
-### 16.1 完整的小型项目
-
-以下是一个完整的小型 C 项目，演示多文件编译的最佳实践。
-
-#### 16.1.1 项目结构
-
-```mermaid
-flowchart TD
-    T0["calculator/"]
-    T1["CMakeLists.txt"]
-    T2["include/"]
-    T3["calc/"]
-    T4["calc.h"]
-    T5["operations.h"]
-    T6["parser.h"]
-    T7["src/"]
-    T8["operations.c"]
-    T9["parser.c"]
-    T10["internal/"]
-    T11["tokenizer.h"]
-    T12["tests/"]
-    T13["test_operations.c"]
-    T14["test_parser.c"]
-    T15["examples/"]
-    T16["demo.c"]
-    T0 --> T1
-    T0 --> T2
-    T6 --> T7
-    T11 --> T12
-    T14 --> T15
-    T15 --> T16
-```
-
-#### 16.1.2 头文件
-
-```c
-// include/calc/calc.h
-#pragma once
-#ifndef CALC_CALC_H
-#define CALC_CALC_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-typedef enum {
-    CALC_OK = 0,
-    CALC_ERROR_SYNTAX = -1,
-    CALC_ERROR_DIV_ZERO = -2,
-    CALC_ERROR_OVERFLOW = -3,
-} CalcStatus;
-
-typedef struct Calc Calc;   // 不完整类型
-
-Calc *calc_create(void);
-void calc_destroy(Calc *c);
-CalcStatus calc_eval(Calc *c, const char *expr, double *result);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* CALC_CALC_H */
-```
-
-```c
-// include/calc/operations.h
-#pragma once
-#ifndef CALC_OPERATIONS_H
-#define CALC_OPERATIONS_H
-
-#include <stdint.h>
-
-typedef enum {
-    OP_ADD,
-    OP_SUB,
-    OP_MUL,
-    OP_DIV,
-    OP_POW,
-} OpType;
-
-double op_apply(OpType op, double a, double b);
-const char *op_symbol(OpType op);
-
-#endif
-```
-
-```c
-// include/calc/parser.h
-#pragma once
-#ifndef CALC_PARSER_H
-#define CALC_PARSER_H
-
-#include "calc/operations.h"
-#include "calc/calc.h"
-
-typedef struct {
-    OpType op;
-    double left;
-    double right;
-} BinaryExpr;
-
-CalcStatus parser_parse(const char *expr, BinaryExpr *out);
-
-#endif
-```
-
-#### 16.1.3 源文件
-
-```c
-// src/operations.c
-#include "calc/operations.h"
-
-double op_apply(OpType op, double a, double b) {
-    switch (op) {
-        case OP_ADD: return a + b;
-        case OP_SUB: return a - b;
-        case OP_MUL: return a * b;
-        case OP_DIV: return b == 0 ? 0 : a / b;
-        case OP_POW: {
-            double result = 1;
-            for (int i = 0; i < (int)b; i++) result *= a;
-            return result;
-        }
-        default: return 0;
-    }
-}
-
-const char *op_symbol(OpType op) {
-    static const char *symbols[] = {"+", "-", "*", "/", "^"};
-    if (op >= OP_ADD && op <= OP_POW) return symbols[op];
-    return "?";
-}
-```
-
-```c
-// src/parser.c
-#include "calc/parser.h"
-#include "internal/tokenizer.h"
-#include <string.h>
-#include <stdlib.h>
-#include <ctype.h>
-
-CalcStatus parser_parse(const char *expr, BinaryExpr *out) {
-    if (!expr || !out) return CALC_ERROR_SYNTAX;
-
-    // 简化的解析逻辑（实际项目应使用递归下降或 Pratt parser）
-    char *copy = strdup(expr);
-    if (!copy) return CALC_ERROR_SYNTAX;
-
-    char *p = copy;
-    while (*p && isspace((unsigned char)*p)) p++;
-
-    char *endp;
-    double left = strtod(p, &endp);
-    if (endp == p) {
-        free(copy);
-        return CALC_ERROR_SYNTAX;
-    }
-    p = endp;
-    while (*p && isspace((unsigned char)*p)) p++;
-
-    OpType op;
-    switch (*p) {
-        case '+': op = OP_ADD; break;
-        case '-': op = OP_SUB; break;
-        case '*': op = OP_MUL; break;
-        case '/': op = OP_DIV; break;
-        case '^': op = OP_POW; break;
-        default: free(copy); return CALC_ERROR_SYNTAX;
-    }
-    p++;
-    while (*p && isspace((unsigned char)*p)) p++;
-
-    double right = strtod(p, &endp);
-    if (endp == p) {
-        free(copy);
-        return CALC_ERROR_SYNTAX;
-    }
-
-    if (op == OP_DIV && right == 0) {
-        free(copy);
-        return CALC_ERROR_DIV_ZERO;
-    }
-
-    out->op = op;
-    out->left = left;
-    out->right = right;
-    free(copy);
-    return CALC_OK;
-}
-```
-
-```c
-// src/internal/tokenizer.h
-#pragma once
-#ifndef CALC_INTERNAL_TOKENIZER_H
-#define CALC_INTERNAL_TOKENIZER_H
-
-// 内部头文件，不对外暴露
-typedef enum {
-    TOK_NUMBER,
-    TOK_OPERATOR,
-    TOK_LPAREN,
-    TOK_RPAREN,
-    TOK_EOF,
-} TokenType;
-
-typedef struct {
-    TokenType type;
-    double value;
-    char op;
-} Token;
-
-#endif
-```
-
-```c
-// src/calc.c
-#include "calc/calc.h"
-#include "calc/parser.h"
-#include "calc/operations.h"
-#include <stdlib.h>
-
-struct Calc {
-    int error_count;
-};
-
-Calc *calc_create(void) {
-    Calc *c = malloc(sizeof(Calc));
-    if (c) c->error_count = 0;
-    return c;
-}
-
-void calc_destroy(Calc *c) {
-    free(c);
-}
-
-CalcStatus calc_eval(Calc *c, const char *expr, double *result) {
-    if (!c || !expr || !result) return CALC_ERROR_SYNTAX;
-
-    BinaryExpr expr_bin;
-    CalcStatus status = parser_parse(expr, &expr_bin);
-    if (status != CALC_OK) {
-        c->error_count++;
-        return status;
-    }
-
-    *result = op_apply(expr_bin.op, expr_bin.left, expr_bin.right);
-    return CALC_OK;
-}
-```
-
-#### 16.1.4 测试
-
-```c
-// tests/test_operations.c
-#include "calc/operations.h"
-#include <assert.h>
+/* main.c —— 嫌 include 麻烦，手抄了原型，还抄错了参数表 */
 #include <stdio.h>
 
-int main(void) {
-    assert(op_apply(OP_ADD, 2, 3) == 5);
-    assert(op_apply(OP_SUB, 10, 4) == 6);
-    assert(op_apply(OP_MUL, 3, 4) == 12);
-    assert(op_apply(OP_DIV, 10, 2) == 5);
-    assert(op_apply(OP_POW, 2, 10) == 1024);
+int sum_to(void);            /* utils.c 的真实定义是 int sum_to(int) */
 
-    printf("test_operations: all tests passed\n");
+int main(void) {
+    printf("sum 1..10 = %d\n", sum_to());
     return 0;
 }
 ```
 
+```bash
+gcc -Wall -Wextra main.c utils.c -o app   # 编译链接双双通过
+./app
+```
+
+```text
+sum 1..10 = -1049437168
+```
+
+（数值每次不同：sum_to 按自己的定义去读第一个参数，读到的是寄存器里谁留下的垃圾。）
+
+原因：C 编译出的符号就是 sum_to 本名，链接器只按名字配对，不核对参数类型——两个翻译单元各自「自洽」，冤案无人过问。修复：原型只从头文件来。删掉手抄声明，`#include "utils.h"`。顺带验证头文件的自检力：若把这条错误原型写进 utils.h，utils.c 一编译就报 conflicting types for 'sum_to'，当场拦下；手抄原型正是绕开了这道安检。
+
+两句背景：C++ 编译器会把参数类型编进符号名（name mangling，nm 下长成 _Z6sum_toi 这类修饰名），所以同类错误在 C++ 里通常当场表现为 undefined reference；C 库要被 C++ 调用时，头文件里 `#ifdef __cplusplus extern "C" {` 的包裹就是让 C++ 侧放弃修饰、按 C 本名找符号。细节属于 C++ 侧，此处备一句即可。
+
+### 现场 4：漏写 static 导致撞名
+
+两个 .c 各有一个本想私有的同名函数，都没写 static：
+
 ```c
-// tests/test_parser.c
-#include "calc/parser.h"
-#include <assert.h>
-#include <stdio.h>
+/* logger.c */
+void log_reset(void) { /* ... */ }   /* 想私有，忘写 static */
 
-int main(void) {
-    BinaryExpr expr;
-    assert(parser_parse("2 + 3", &expr) == CALC_OK);
-    assert(expr.op == OP_ADD);
-    assert(expr.left == 2);
-    assert(expr.right == 3);
-
-    assert(parser_parse("10 / 0", &expr) == CALC_ERROR_DIV_ZERO);
-    assert(parser_parse("invalid", &expr) == CALC_ERROR_SYNTAX);
-
-    printf("test_parser: all tests passed\n");
-    return 0;
-}
+/* net.c */
+void log_reset(void) { /* ... */ }   /* 另一个模块也想私有，同样忘写 */
 ```
 
-#### 16.1.5 CMakeLists.txt
-
-```cmake
-cmake_minimum_required(VERSION 3.20)
-project(Calculator VERSION 1.0.0 LANGUAGES C)
-
-set(CMAKE_C_STANDARD 17)
-set(CMAKE_C_STANDARD_REQUIRED ON)
-set(CMAKE_C_EXTENSIONS OFF)
-
-if(MSVC)
-    add_compile_options(/W4 /WX)
-else()
-    add_compile_options(-Wall -Wextra -Wpedantic -Werror)
-endif()
-
-# 库
-add_library(calc STATIC
-    src/operations.c
-    src/parser.c
-    src/calc.c
-)
-
-target_include_directories(calc PUBLIC include)
-target_include_directories(calc PRIVATE src)
-
-# 示例
-add_executable(demo examples/demo.c)
-target_link_libraries(demo PRIVATE calc)
-
-# 测试
-enable_testing()
-add_executable(test_operations tests/test_operations.c)
-target_link_libraries(test_operations PRIVATE calc)
-add_test(NAME test_operations COMMAND test_operations)
-
-add_executable(test_parser tests/test_parser.c)
-target_link_libraries(test_parser PRIVATE calc)
-add_test(NAME test_parser COMMAND test_parser)
+```text
+/usr/bin/ld: net.o: in function `log_reset':
+net.c:(.text+0x0): multiple definition of `log_reset'; logger.o:logger.c:(.text+0x0): first defined here
+collect2: error: ld returned 1 exit status
 ```
 
-#### 16.1.6 构建与运行
+修法：两处都加 static。内部链接让符号退出全局符号表（nm 里变大写为小写 t，4.2 节刚见过），两座岛各用各的同名函数，互不干扰。语义在 [作用域、存储期与链接性](/c/055-ScopeStorageLinkage)。
+
+### 现场 5：库的顺序问题（一句带过）
+
+链接静态库时，ld 从左到右扫描、只补「扫描到此处时已经欠下」的符号，所以库要放在用到它的目标文件右边：gcc main.o -lutils 行，gcc -lutils main.o 就会莫名 undefined reference。静态库动态库的完整机制在 [动态库与静态库](/c/320-DynamicStaticLibrary)。
+
+### multiple definition 现场：头文件里写定义的教训
+
+把第 6 节的 globals 惯例写错一步——初始化顺手写进了头文件：
+
+```c
+/* globals.h */
+#ifndef GLOBALS_H
+#define GLOBALS_H
+
+int g_verbose = 0;       /* 教训现场：这是定义，不是声明！ */
+
+#endif
+```
 
 ```bash
-$ mkdir build && cd build
-$ cmake ..
-$ cmake --build .
-$ ctest
-Test project build
-    Start 1: test_operations
-1/2 Test #1: test_operations ...   Passed   0.00 sec
-    Start 2: test_parser
-2/2 Test #2: test_parser ...       Passed   0.00 sec
-
-100% tests passed, 2 tests passed
+gcc -Wall -Wextra main.c globals.c -o app
 ```
 
-### 19.1 标准与规范
-
-- ISO/IEC 9899:2024（C23 标准）§5.1.1.2 翻译阶段、§6.2.2 链接性、§6.9 外部定义
-- ISO/IEC 9899:2018（C17 标准）
-- System V Application Binary Interface（AMD64 架构 ABI 标准）
-- Itanium C++ ABI（C++ ABI 标准，包含名称修饰规则）
-
-### 19.2 经典书籍
-
-- *Linkers and Loaders* by John R. Levine（链接器经典）
-- *Computer Systems: A Programmer's Perspective* by Bryant & O'Hallaron（包含链接章节）
-- *Advanced C and C++ Compiling* by Milan Stevanovic（多文件编译与链接深入）
-
-### 19.4 经典论文
-
-- Feldman, S. I. "Make—A Program for Maintaining Computer Programs." *Software: Practice and Experience*, 9(4):255-265, 1979.
-- Cox, B. J. *Object Oriented Programming: An Evolutionary Approach*. Addison-Wesley, 1986.（讨论分离编译与封装）
-- Stroustrup, B. "The Design and Evolution of C++." Addison-Wesley, 1994.（C++ 名称修饰的起源）
-
-### 19.5 开源项目源码
-
-- Linux 内核：https://github.com/torvalds/linux（Kbuild 系统）
-- SQLite：https://www.sqlite.org/amalgamation.html（amalgamation 模式）
-- Redis：https://github.com/redis/redis（中型项目 Makefile）
-- glibc：https://www.gnu.org/software/libc/（autoconf 复杂构建）
-- libuv：https://github.com/libuv/libuv（跨平台 CMake）
-- curl：https://github.com/curl/curl（CMake + autotools 双构建系统）
-
-## 附录 A：翻译阶段速查表
-
-| 阶段 | 任务 | 输入 | 输出 |
-|------|------|------|------|
-| 1 | 物理字符映射 | 源文件字节 | 源字符集 |
-| 2 | 行拼接 | 多行源代码 | 逻辑行序列 |
-| 3 | 词法分析与注释移除 | 源代码 | 预处理记号流 |
-| 4 | 预处理 | 记号流 + 头文件 | 翻译单元 |
-| 5 | 字符常量转换 | 翻译单元 | 字符串已编码的翻译单元 |
-| 6 | 字符串拼接 | 相邻字符串 | 拼接后的字符串 |
-| 7 | 编译 | 翻译单元 | 目标文件 |
-| 8 | 链接 | 多个目标文件 | 可执行文件/库 |
-
-## 附录 B：链接性决策表
-
-```
-声明位置        static  链接性        存储期        示例
-─────────────────────────────────────────────────────────────
-文件作用域       否     external      static        int g;
-文件作用域       是     internal      static        static int g;
-文件作用域函数   否     external      -             void f(void);
-文件作用域函数   是     internal      -             static void f(void);
-块作用域         否     no            automatic     int x;
-块作用域         是     no            static        static int x;
-块作用域 thread  -      no            thread        thread_local int x;
+```text
+/usr/bin/ld: main.o:(.data+0x0): multiple definition of `g_verbose'; globals.o:(.data+0x0): first defined here
+collect2: error: ld returned 1 exit status
 ```
 
-## 附录 C：常见链接器错误
+分析：#include 是复制粘贴（[预处理器与宏](/c/290-PreprocessorMacro) 的机制）。头文件进了几个翻译单元，这段定义就存在几份，直接违反「一个名字，一份定义」。修复回到第 6 节：头文件留 extern 声明，定义与初始化搬进唯一一个 .c。
 
-| 错误信息 | 原因 | 解决方案 |
-|---------|------|---------|
-| `undefined reference to 'X'` | X 被引用但未定义 | 提供定义，或链接包含定义的库 |
-| `multiple definition of 'X'` | X 被定义多次 | 改用 `extern` 声明 + 单一定义 |
-| `cannot find -lfoo` | 找不到 libfoo | 检查库路径 `-L` 或安装库 |
-| `relocation R_X86_64_32 against '.rodata' can not be used when making a PIE object` | 静态数据相对寻址错误 | 加 `-fPIC` 重编译 |
-| `ld: symbol _main already defined` | main 函数被定义多次 | 检查是否多次包含 main |
-| `undefined symbol: _Z3addii` | C++ 修饰名未匹配 | 使用 `extern "C"` 或检查库 |
+再补一刀：如果两处写的是未初始化的 `int g_verbose;` 呢？现行 GCC 默认 -fno-common（文档原话：未初始化全局变量放进 .bss），两份照样报 multiple definition；而在老版本 GCC 默认 -fcommon 的年代，这类「试探性定义」会被静默合并成一个——「以前能编译」的印象多来源于此。别赌历史行为：定义永远只写一份。
 
-## 附录 D：Makefile 自动变量速查
+### 报错速查
 
-| 变量 | 含义 | 示例 |
-|------|------|------|
-| `$@` | 目标名 | `program: ...` 中 `$@` 为 `program` |
-| `$<` | 第一个依赖 | `program: main.o utils.o` 中 `$<` 为 `main.o` |
-| `$^` | 所有依赖 | `program: main.o utils.o` 中 `$^` 为 `main.o utils.o` |
-| `$?` | 比目标新的依赖 | 上次构建后修改的依赖 |
-| `$*` | 匹配 `%` 的部分 | `%.o: %.c` 中 `$*` 为文件名（无扩展名） |
-| `$+` | 所有依赖（含重复） | 与 `$^` 类似但保留重复 |
-| `$|` | order-only 依赖 | 仅作为顺序约束的依赖 |
+| 报错 | 一线原因 | 首选动作 |
+| --- | --- | --- |
+| undefined reference to `x` | 有 U 没人接 | nm 查相关 .o：补 .o、查拼写、查原型一致性 |
+| multiple definition of `x` | 一个名字几份定义 | 头文件里找定义；定义搬进 .c；辅助函数加 static |
+| unknown type name 'X' | 类型没定义就被使用（循环依赖典型） | 前向声明 + 指针（第 5 节） |
+| cannot find -lfoo | 找不到库文件 | 查 -L 路径与库名，见 [动态库与静态库](/c/320-DynamicStaticLibrary) |
 
-## 附录 E：CMake 常用命令速查
+## 实际项目中的使用场景
 
-```cmake
-# 项目配置
-project(Name VERSION 1.0 LANGUAGES C CXX)
-set(CMAKE_C_STANDARD 17)
+- 拆模块的默认动作：每个功能一对 .h/.c，.h 里只留 API 与类型，文件内辅助函数 static——第 2 到 4 节就是这套动作的分解教学；
+- 头文件即合同：库作者维护 .h，使用者只看着 .h 编译、拿库文件链接。合同如何变成 .a 与 .so，在 [动态库与静态库](/c/320-DynamicStaticLibrary)；
+- 反向操作也真实存在：SQLite 把全部源码合并成单个 sqlite3.c 发布（4.1 节提过），省去使用者管理多文件的麻烦——两种极端都站在「翻译单元」这个模型上；
+- 跨语言边界的头：`#ifdef __cplusplus` 加 extern "C" 的包裹是 C 库头文件给 C++ 使用者留的门（第 8 节现场 3）。
 
-# 目标
-add_library(name STATIC|SHARED|MODULE src1.c src2.c)
-add_executable(name src1.c)
+## 小练习
 
-# 包含目录
-target_include_directories(name PUBLIC|PRIVATE|INTERFACE dir)
+预测题（5 分钟）：一个头文件里直接写下了函数定义：
 
-# 链接库
-target_link_libraries(name PUBLIC|PRIVATE|INTERFACE lib)
-
-# 编译选项
-target_compile_options(name PRIVATE -Wall -Wextra)
-
-# 编译特性
-target_compile_features(name PUBLIC c_std_17)
-
-# 安装
-install(TARGETS name DESTINATION lib)
-install(FILES header.h DESTINATION include)
-
-# 子目录
-add_subdirectory(subdir)
-
-# 配置文件生成
-configure_file(config.h.in config.h @ONLY)
-
-# 选项
-option(NAME "Description" ON|OFF)
-
-# 条件
-if(CONDITION)
-    ...
-elseif(CONDITION2)
-    ...
-else()
-    ...
-endif()
-
-# 循环
-foreach(item IN LISTS list)
-    ...
-endforeach()
-
-# 查找包
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(OPENSSL REQUIRED openssl)
+```c
+/* helper.h */
+int twice(int x) { return 2 * x; }
 ```
 
-## 附录 F：构建系统选择决策树
+目前全工程只有 main.c 包含它，编译、链接、运行全部正常。这段代码要不要修？为什么？
 
-```mermaid
-flowchart TD
-    T0["项目规模？"]
-    T1["小型（< 1 万行）"]
-    T2["Make（简单、直接）"]
-    T3["中型（1-50 万行）"]
-    T4["跨平台需求？"]
-    T5["是 → CMake"]
-    T6["否 → Make"]
-    T7["需要 IDE 支持？"]
-    T8["CMake（VSCode/CLion/VS 原生支持）"]
-    T9["大型（50-500 万行）"]
-    T10["CMake + Ninja（速度优势）"]
-    T11["超大型（> 500 万行，多团队）"]
-    T12["Bazel（Google 内部实践）"]
-    T13["Buck（Facebook）"]
-    T14["CMake + distcc/ccache"]
-    T0 --> T1
-    T2 --> T3
-    T8 --> T9
-    T10 --> T11
-    T11 --> T12
-    T11 --> T13
-    T11 --> T14
-```
+参考答案（先写再看）：要修。此刻能过只是因为包含者只有一个——第二个人 include 它的瞬间就是 multiple definition。「现在能编译」从来不等于「写对了」：头文件会被复制进未知的未来翻译单元。修法：头文件留 `int twice(int x);`，定义搬进某个 .c；或按 [内联函数与宏](/c/300-InlineFunctionMacro) 的 static inline 规则处理。
 
-## 附录 G：术语对照表
+挑战题（30 分钟，不看答案先动手）：给 utils 模块加「调用统计」：sum_to 每被调用一次计数加一，提供 `int utils_calls(void);` 给 main.c 查询。约束：计数器绝不能被 main.c 直接改写。
 
-| 中文 | 英文 | 缩写 |
-|------|------|------|
-| 翻译单元 | translation unit | TU |
-| 单一定义规则 | One Definition Rule | ODR |
-| 应用二进制接口 | Application Binary Interface | ABI |
-| 应用程序接口 | Application Programming Interface | API |
-| 应用程序二进制接口 | Application Binary Interface | ABI |
-| 静态链接库 | static library | - |
-| 动态链接库 | dynamic-link library | DLL（Windows） |
-| 共享对象 | shared object | SO（Unix） |
-| 目标文件 | object file | - |
-| 符号表 | symbol table | - |
-| 重定位 | relocation | - |
-| 内联 | inline | - |
-| 不完整类型 | incomplete type | - |
-| 前向声明 | forward declaration | - |
-| 包含保护 | include guard | - |
-| 名称修饰 | name mangling | - |
-| 链接性 | linkage | - |
-| 存储期 | storage duration | - |
-| 自动存储期 | automatic storage duration | - |
-| 静态存储期 | static storage duration | - |
-| 线程存储期 | thread storage duration | - |
-| 动态存储期 | dynamic storage duration | - |
-| 外部链接 | external linkage | - |
-| 内部链接 | internal linkage | - |
-| 无链接 | no linkage | - |
-| 预处理器 | preprocessor | - |
-| 条件编译 | conditional compilation | - |
-| 元构建系统 | meta-build-system | - |
-| 增量构建 | incremental build | - |
-| 编译缓存 | compiler cache | ccache |
-| 统一构建 | unity build | - |
+提示（思路方向）：计数器是 utils.c 的私产——用内部链接藏起来；对外只暴露一个只读函数。
+
+展开（关键写法）：utils.c 顶部 `static int s_calls;`（static：出不了本文件）；sum_to 里 `s_calls++;`；utils.c 里 `int utils_calls(void) { return s_calls; }`；utils.h 里加 `int utils_calls(void);`。main.c 只 include utils.h。
+
+验收清单：gcc -Wall -Wextra 全程零警告；nm utils.o 里 s_calls 以小写 b 出现（bss 段、文件私有），绝无大写同名字符；app 打印的调用次数与实际一致；在 main.c 里写 `s_calls = 0;` 编译报错（变量压根不可见）。
+
+## 与之前和之后的知识的关系
+
+- 往前：[作用域、存储期与链接性](/c/055-ScopeStorageLinkage) 的三种链接性在本篇符号表上现出原形（大写对外、小写对内、U 等人接）；[函数：声明、传值与递归](/c/090-FunctionDetailed) 的声明与定义，在多文件里落实为「头文件 / .c」的分工；
+- 旁支：预处理与宏展开机制在 [预处理器与宏](/c/290-PreprocessorMacro)；头文件里写 inline 的正确姿势在 [内联函数与宏](/c/300-InlineFunctionMacro)；.text/.data/.bss 运行时的模样在 [内存深水区](/c/210-MemoryManagement)；
+- 往后：链接器的下一个主角是库——静态库动态库的创建与使用在 [动态库与静态库](/c/320-DynamicStaticLibrary)；本篇手敲的每条命令在 [构建系统](/c/470-BuildSystem) 被自动化。
+
+## 官方文档
+
+- 翻译阶段与翻译单元（cppreference C）：https://zh.cppreference.com/w/c/language/translation_phases
+- C 的 inline 函数说明符（cppreference C）：https://zh.cppreference.com/w/c/language/inline
+- GCC 头文件搜索路径：https://gcc.gnu.org/onlinedocs/cpp/Search-Path.html
+- GCC 总体选项（-c 的定义）：https://gcc.gnu.org/onlinedocs/gcc/Overall-Options.html
+- GCC 对 #pragma once 的口径（过时的只含一次头）：https://gcc.gnu.org/onlinedocs/cpp/Obsolete-once-only-headers.html
+- nm 与符号类型字母（GNU Binutils）：https://sourceware.org/binutils/docs/binutils/nm.html
+- -fcommon / -fno-common 的现行默认（GCC）：https://gcc.gnu.org/onlinedocs/gcc/Code-Gen-Options.html
+
+## 自我检查
+
+- 能说出翻译单元的组成，并解释为什么两个 .c 各自定义同名的 static 函数互不冲突；
+- 能不看资料写出「.h 只放声明/类型/宏、.c 放定义、守卫齐全」的模块三件套；
+- 拿到一条 undefined reference，会先 nm 相关 .o 再动手改代码，并能说出至少三种成因；
+- 能解释头文件里写定义为什么会 multiple definition，以及 extern 变量的初始化为什么只写在定义文件。
+
+## 本章总结
+
+- 编译按翻译单元进行：一个 .c 加上递归包含的头，独立翻译成 .o，编译器不知道其他 .c 的存在；
+- 声明给人看（编译器做类型检查），定义给链接器（符号的唯一住址）；一条命令与分开 -c 再链接等价，分开是增量构建的地基；
+- 头文件是模块说明书：声明、类型、宏；守卫防的是同一翻译单元重复包含，防不了循环引用——前向声明加指针才是解药；
+- 链接器按符号表配对：U 找 T/D；static 让符号留在文件内，是 C 的封装旋钮；
+- 两大报错都是符号表对不上账：undefined reference 是有 U 没人接，multiple definition 是一个名字几份定义。先 nm，再改代码。
+
+## 下一步
+
+进入 [动态库与静态库](/c/320-DynamicStaticLibrary)：本篇的符号配对发生在一条链接命令里；下一篇把被链接的对象换成库——.a 和 .so 怎么造、链接器怎么找它们、静态与动态各自的代价。
