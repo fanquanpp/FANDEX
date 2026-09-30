@@ -1,1440 +1,531 @@
 ---
-order: 60
-title: 运算符与表达式
+order: 70
+title: 运算符与表达式：从优先级到未定义行为
 module: 'c'
 category: 计算机科学
-difficulty: intermediate
-description: 算术、关系、逻辑、位运算及运算符优先级详解。
+difficulty: beginner
+description: 以 i = i++ 的事故现场开场：整数除法向零截断与 % 的符号、整型提升与寻常算术转换的完整阶梯、短路求值实验、a < b < c 陷阱、函数参数求值顺序实验、优先级速查表与三条记忆法，-Wall 与 UBSan 抓表达式错误的调试实录。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/050-VariableConstant'
   - 'c/070-BitwiseBitField'
-  - 'c/110-EnumTypedef'
-  - 'c/310-MultiFileCompilation'
+  - 'c/430-StdioFileIO'
+  - 'c/140-PointerDeep'
+  - 'c/080-ControlFlow'
+  - 'c/490-StaticAnalysisDebug'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/050-VariableConstant'
+  - 'c/040-DataTypeDetailed'
 ---
 
 ## 前置知识
 
-- [const 与 volatile 详解](/c/260-CVolatileAndConstDeepDive)：建议先完成前一篇的学习
+- 已完成 [变量与常量](/c/050-VariableConstant)：会声明变量、给变量赋值，认识基本类型；
+- 已完成 [数据类型详解](/c/040-DataTypeDetailed)：见过各整数与浮点类型及其取值范围。本篇要回答那里按下不表的问题：两个类型不同的操作数相遇时，听谁的。
+
+> 分工说明：类型转换在 [数据类型详解](/c/040-DataTypeDetailed) 只做概览——那里给出「转换存在、可能丢精度」的一句话，并把读者引到本篇；完整的整型提升、寻常算术转换阶梯表与配套实验都安家在本篇第 2 节。位运算同理：本篇第 4 节只留一段概览，完整讲解在 [位运算与位域](/c/070-BitwiseBitField)。
 
 ## 学习目标
 
-- 掌握「1. 运算符分类 (Operator Categories)」的核心机制、典型用法与常见陷阱
-- 掌握「2. 运算符优先级 (Precedence)」的核心机制、典型用法与常见陷阱
-- 掌握「3. 表达式 (Expressions)」的核心机制、典型用法与常见陷阱
-- 掌握「4. 运算符与表达式的最佳实践」的核心机制、典型用法与常见陷阱
-- 掌握「5. 常见问题与解决方案」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 说清整数除法自 C99 起向零截断、% 的结果符号跟随左操作数，知道浮点取余要用 fmod；
+2. 默写整型提升与寻常算术转换的阶梯表，预测 char + char 与 int + unsigned 的结果类型；
+3. 用短路求值写出判空惯用法，识别 a < b < c 比较链的陷阱；
+4. 解释 i = i++ 为什么是未定义行为，为什么函数参数的求值顺序不可依赖；
+5. 用 -Wall、-Wparentheses 与 UBSan 当场抓出 = 误写 ==、有符号溢出、移位越界类表达式错误。
 
-## 1. 运算符分类 (Operator Categories)
+预计 60 到 80 分钟，含 4 组动手实验与 3 道练习。
 
-### 1.1 算术运算符 (Arithmetic)
-
-#### 1.1.1 基本算术运算符
-
-| 运算符 | 描述 | 示例 (a=10, b=3)               |
-| ------ | ---- | ------------------------------ |
-| `+`    | 加法 | `a + b = 13`                   |
-| `-`    | 减法 | `a - b = 7`                    |
-| `*`    | 乘法 | `a * b = 30`                   |
-| `/`    | 除法 | `a / b = 3` (整数除法舍去小数) |
-| `%`    | 取模 | `a % b = 1`                    |
-
-#### 1.1.2 自增自减运算符
-
-| 运算符 | 描述     | 示例 (a=10) | 结果 | 最终 a 值 |
-| ------ | -------- | ----------- | ---- | --------- |
-| `a++`  | 后置自增 | `a++`       | 10   | 11        |
-| `++a`  | 前置自增 | `++a`       | 11   | 11        |
-| `a--`  | 后置自减 | `a--`       | 10   | 9         |
-| `--a`  | 前置自减 | `--a`       | 9    | 9         |
-
-#### 1.1.3 算术运算符示例
+## 1. 问题引入：能跑的代码不等于对的代码
 
 ```c
- #include <stdio.h>
- int main() {
-  int a = 10, b = 3;
-  printf("a + b = %d\n", a + b); // 13
-  printf("a - b = %d\n", a - b); // 7
-  printf("a * b = %d\n", a * b); // 30
-  printf("a / b = %d\n", a / b); // 3（整数除法）
-  printf("a %% b = %d\n", a % b); // 1
-  // 自增自减
-  int c = 5;
-  printf("c++ = %d\n", c++); // 5
-  printf("c = %d\n", c); // 6
-  printf("++c = %d\n", ++c); // 7
-  printf("c = %d\n", c); // 7
-  return 0;
- }
+/* accident.c */
+#include <stdio.h>
+
+int main(void) {
+    int i = 10;
+    i = i++;              /* 想法：先取原值，自增，再赋回去。结果该是多少？ */
+    printf("i = %d\n", i);
+    return 0;
+}
 ```
 
-### 1.2 关系运算符 (Relational)
+这段代码在多数编译器上编译无错、运行不崩，答案却花样百出：有人打印 `10`，有人打印 `11`，同一个编译器加不加 `-O2` 结果还可能不同。这不是编译器的 bug，是标准把结果**留白**了——这样的表达式叫未定义行为（undefined behavior，UB）：标准不规定结果，编译器想怎么生成代码都合法。第 5 节会拿标准原文给这句代码「判刑」，现在先把每一类运算符「有定义」的部分练扎实。
 
-#### 1.2.1 关系运算符列表
+## 2. 算术运算符：除法、取余与类型阶梯
 
-| 运算符 | 描述     | 示例 (a=10, b=3)  |
-| ------ | -------- | ----------------- |
-| `==`   | 等于     | `a == b` → 0 (假) |
-| `!=`   | 不等于   | `a != b` → 1 (真) |
-| `>`    | 大于     | `a > b` → 1 (真)  |
-| `<`    | 小于     | `a < b` → 0 (假)  |
-| `>=`   | 大于等于 | `a >= b` → 1 (真) |
-| `<=`   | 小于等于 | `a <= b` → 0 (假) |
+### 2.1 五个基本运算符
 
-#### 1.2.2 关系运算符示例
+以 `int a = 10, b = 3;` 为例：
+
+| 运算符 | 含义 | 表达式 | 结果 |
+| --- | --- | --- | --- |
+| `+` | 加法 | `a + b` | 13 |
+| `-` | 减法 | `a - b` | 7 |
+| `*` | 乘法 | `a * b` | 30 |
+| `/` | 除法 | `a / b` | 3（小数部分丢弃） |
+| `%` | 取余 | `a % b` | 1 |
+
+### 2.2 整数除法与取余：向零截断，符号跟左
 
 ```c
- #include <stdio.h>
- int main() {
-  int a = 10, b = 3;
-  printf("a == b: %d\n", a == b); // 0
-  printf("a != b: %d\n", a != b); // 1
-  printf("a > b: %d\n", a > b); // 1
-  printf("a < b: %d\n", a < b); // 0
-  printf("a >= b: %d\n", a >= b); // 1
-  printf("a <= b: %d\n", a <= b); // 0
-  return 0;
- }
+/* divmod.c：除法与取余的符号行为 */
+#include <stdio.h>
+
+int main(void) {
+    printf("10 / 3  = %d\n", 10 / 3);     /* 3：小数部分直接丢弃 */
+    printf("-10 / 3 = %d\n", -10 / 3);    /* -3：向零截断，不是 -4 */
+    printf("10 / -3 = %d\n", 10 / -3);    /* -3 */
+    printf("-7 %% 3  = %d\n", -7 % 3);    /* -1：余数符号跟随左操作数 */
+    printf("7 %% -3  = %d\n", 7 % -3);    /* 1 */
+    printf("10.0 / 3 = %f\n", 10.0 / 3);  /* 3.333333：有浮点数参与才是浮点除法 */
+    return 0;
+}
 ```
 
-### 1.3 逻辑运算符 (Logical)
+三条规则（依据 cppreference 算术运算符页）：
 
-#### 1.3.1 逻辑运算符列表
+1. 两个整数相除，结果是丢掉小数部分的代数商。C99 起明确规定**向零截断**，所以 `-10 / 3` 是 `-3` 而不是 `-4`（C99 之前截断方向由实现定义，这是老代码跨平台翻车的著名来源）；
+2. `%` 只能用于整数，结果满足恒等式 `(a / b) * b + a % b == a`。由它推出：**余数的符号跟随左操作数（被除数）**。判奇偶时写 `n % 2 != 0` 而不是 `n % 2 == 1`，后者对负奇数判断错误；
+3. 除数为 0 是未定义行为；商在结果类型里放不下同样是 UB，最著名的是 `INT_MIN / -1` 与 `INT_MIN % -1`。
 
-| 运算符 | 描述 | 短路特性 | 示例 |
-| ------ | ------ | ------------------ | -------------------- | ------------------ | -------- | --- | -------- |
-| `&&` | 逻辑与 | 左为假时，右不执行 | `(a > 0) && (b > 0)` |
-| `     |        |` | 逻辑或 | 左为真时，右不执行 | `(a > 0) |     | (b > 0)` |
-| `!` | 逻辑非 | 无 | `!(a > 0)` |
+浮点没有 `%`：`fmod(x, y)` 计算浮点余数，公式 `x - n*y`（n 为 x/y 向零截断），结果符号同样跟随 x。`fmod(-5.1, 3.0)` 是 `-2.1`。
 
-#### 1.3.2 逻辑运算符示例
+### 2.3 整型提升与寻常算术转换：类型相撞的裁决阶梯
+
+`char + char`、`int + unsigned` 这类「类型不同」的表达式，C 按两步裁决：
+
+**第一步：整型提升**。`char`、`short` 以及位段等小于 `int` 的操作数先提升为 `int`（`int` 装不下时提升为 `unsigned int`）——CPU 运算单元天然按 `int` 宽度干活，窄类型进寄存器前必须补齐。
+
+**第二步：寻常算术转换**。提升后类型仍不同，按下面的阶梯从高到低找第一个「在场」的类型作为公共类型：
+
+| 层级 | 类型 |
+| --- | --- |
+| 1 | long double |
+| 2 | double |
+| 3 | float |
+| 4 | unsigned long long |
+| 5 | long long |
+| 6 | unsigned long |
+| 7 | long |
+| 8 | unsigned int |
+| 9 | int |
+
+细则：同符号就取层级高的；有符号与无符号相遇，只要无符号一方的层级**不低于**有符号一方，就把有符号的一方转成无符号——这条细则是下一组实验的主角。
+
+### 2.4 实验一：char + char 的 sizeof
 
 ```c
- #include <stdio.h>
- int main() {
-  int a = 10, b = 0;
-  // 逻辑与
-  printf("(a > 0) && (b > 0): %d\n", (a > 0) && (b > 0)); // 0
-  // 逻辑或
-  printf("(a > 0) || (b > 0): %d\n", (a > 0) || (b > 0)); // 1
-  // 逻辑非
-  printf("!(a > 0): %d\n", !(a > 0)); // 0
-  printf("!(b > 0): %d\n", !(b > 0)); // 1
-  // 短路特性示例
-  int x = 5, y = 5;
-  printf("(x == 0) && (++y): %d\n", (x == 0) && (++y)); // 0，y 不变
-  printf("y = %d\n", y); // 5
-  printf("(x != 0) || (++y): %d\n", (x != 0) || (++y)); // 1，y 不变
-  printf("y = %d\n", y); // 5
-  return 0;
- }
+/* promote.c：用 sizeof 观察提升 */
+#include <stdio.h>
+
+int main(void) {
+    char a = 'A', b = 'B';
+    printf("sizeof(a)      = %zu\n", sizeof(a));       /* 1 */
+    printf("sizeof(a + b)  = %zu\n", sizeof(a + b));   /* 4：先提升成 int 再相加 */
+    printf("sizeof('A')    = %zu\n", sizeof('A'));     /* 4：字符字面量的类型本来就是 int */
+    printf("sizeof(1 + 2L) = %zu\n", sizeof(1 + 2L));  /* 8：long 在场，int 升 long */
+    return 0;
+}
 ```
 
-### 1.4 位运算符 (Bitwise)
+一次典型输出（按 int 为 4 字节、long 为 8 字节的常见平台，如 Linux/macOS；Windows 上 long 是 4 字节，最后一行打 4）：
 
-#### 1.4.1 位运算符列表
+```text
+sizeof(a)      = 1
+sizeof(a + b)  = 4
+sizeof('A')    = 4
+sizeof(1 + 2L) = 8
+```
 
-| 运算符 | 描述 | 示例 (a=6 (0110), b=3 (0011)) |
-| ------ | -------- | ----------------------------- | --- | ------------- |
-| `&` | 按位与 | `a & b = 2 (0010)` |
-| `     |` | 按位或 | `a  | b = 7 (0111)` |
-| `^` | 按位异或 | `a ^ b = 5 (0101)` |
-| `~` | 按位取反 | `~a = -7 (1001...1001)` |
-| `<<` | 左移 | `a << 1 = 12 (1100)` |
-| `>>` | 右移 | `a >> 1 = 3 (0011)` |
+`a` 和 `b` 各占 1 字节，但 `a + b` 占 4 字节——加法发生的舞台不是 char 而是 int。这条规则有个深远后果：读文件要用 `int ch` 接 `fgetc` 的返回值（[文件 I/O](/c/430-StdioFileIO) 第 4 节会再遇到它）。
 
-#### 1.4.2 位运算符示例
+### 2.5 实验二：-1 < 1u 为什么是假
 
 ```c
- #include <stdio.h>
- void print_bits(int n, int bits) {
-  for (int i = bits - 1; i >= 0; i--) {
-  printf("%d", (n >> i) & 1);
-  }
-  printf("\n");
- }
- int main() {
-  int a = 6; // 0110
-  int b = 3; // 0011
-  printf("a = %d: ", a);
-  print_bits(a, 4);
-  printf("b = %d: ", b);
-  print_bits(b, 4);
-  printf("a & b = %d: ", a & b);
-  print_bits(a & b, 4);
-  printf("a | b = %d: ", a | b);
-  print_bits(a | b, 4);
-  printf("a ^ b = %d: ", a ^ b);
-  print_bits(a ^ b, 4);
-  printf("~a = %d: ", ~a);
-  print_bits(~a, 4);
-  printf("a << 1 = %d: ", a << 1);
-  print_bits(a << 1, 4);
-  printf("a >> 1 = %d: ", a >> 1);
-  print_bits(a >> 1, 4);
-  return 0;
- }
+/* unsigned_trap.c：有符号与无符号混算的经典坑 */
+#include <stdio.h>
+
+int main(void) {
+    int i = -1;
+    unsigned u = 1u;
+    printf("-1 < 1u 的结果：%d\n", i < u);
+    printf("(unsigned)i = %u\n", (unsigned)i);
+    return 0;
+}
 ```
 
-#### 1.4.3 位运算符的应用
+预期输出：
+
+```text
+-1 < 1u 的结果：0
+(unsigned)i = 4294967295
+```
+
+`int` 与 `unsigned int` 同层级，按细则转成 `unsigned int` 比较。`-1` 转成无符号不是 1，而是绕回最大值 4294967295（32 位 int 时），于是「-1 小于 1」为假。规避法：让比较双方的符号一致，`size_t` 与 `int` 混用是此坑的现代高频版本（练习题里亲手修一次）。
+
+## 3. 关系与逻辑：答案只有 0 和 1
+
+### 3.1 六个关系运算符与两个逻辑运算符
+
+| 运算符 | 含义 | `a=10, b=3` 时的结果 |
+| --- | --- | --- |
+| `==` `!=` | 等于、不等于 | `a == b` 为 0，`a != b` 为 1 |
+| `>` `<` | 大于、小于 | `a > b` 为 1，`a < b` 为 0 |
+| `>=` `<=` | 不小于、不大于 | `a >= b` 为 1，`a <= b` 为 0 |
+
+两个要点：
+
+- 比较的结果是 `int` 的 0 或 1，C 语言里条件真就是 1、假就是 0；
+- 区分 `!`（逻辑非，一元）与 `!=`（不等于，二元）：`!x` 等价于 `x == 0`，优先级还比算术高（第 7 节记忆法一）。`!(a > 0)` 与 `a <= 0` 等价。
+
+### 3.2 短路求值：右边可能根本不执行
+
+`&&` 左边为假时右边不算，`||` 左边为真时右边不算。这是标准保证的行为，不是优化技巧——cppreference 求值顺序页明确：`&&` 与 `||` 的第一个操作数求值之后有顺序点，然后才轮到第二个。
 
 ```c
- // 检查某一位是否为 1
- #define CHECK_BIT(x, pos) ((x) & (1 << (pos)))
- // 设置某一位为 1
- #define SET_BIT(x, pos) ((x) |= (1 << (pos)))
- // 清除某一位为 0
- #define CLEAR_BIT(x, pos) ((x) &= ~(1 << (pos)))
- // 切换某一位的值
- #define TOGGLE_BIT(x, pos) ((x) ^= (1 << (pos)))
- // 示例
- int main() {
-  int x = 0; // 0000
-  SET_BIT(x, 2); // 0100
-  printf("x after setting bit 2: %d\n", x); // 4
-  TOGGLE_BIT(x, 1); // 0110
-  printf("x after toggling bit 1: %d\n", x); // 6
-  if (CHECK_BIT(x, 2)) {
-  printf("Bit 2 is set\n");
-  }
-  CLEAR_BIT(x, 2); // 0010
-  printf("x after clearing bit 2: %d\n", x); // 2
-  return 0;
- }
+/* shortcircuit.c：用副作用验证短路 */
+#include <stdio.h>
+
+int main(void) {
+    int x = 5, y = 5;
+    printf("%d\n", (x == 0) && ++y);   /* 0：左边已定胜负，++y 没执行 */
+    printf("y = %d\n", y);             /* 5，不是 6 */
+    printf("%d\n", (x != 0) || ++y);   /* 1：++y 又没执行 */
+    printf("y = %d\n", y);             /* 仍然是 5 */
+    return 0;
+}
 ```
 
-### 1.5 赋值运算符 (Assignment)
+预期输出：
 
-#### 1.5.1 赋值运算符列表
+```text
+0
+y = 5
+1
+y = 5
+```
 
-| 运算符 | 描述 | 示例 | 等价于 |
-| ------ | -------------- | ------------ | ------------ | ---- | ------ | --- |
-| `=` | 简单赋值 | `a = b` | `a = b` |
-| `+=` | 加后赋值 | `a += b` | `a = a + b` |
-| `-=` | 减后赋值 | `a -= b` | `a = a - b` |
-| `*=` | 乘后赋值 | `a *= b` | `a = a * b` |
-| `/=` | 除后赋值 | `a /= b` | `a = a / b` |
-| `%=` | 取模后赋值 | `a %= b` | `a = a % b` |
-| `<<=` | 左移后赋值 | `a <<= b` | `a = a << b` |
-| `>>=` | 右移后赋值 | `a >>= b` | `a = a >> b` |
-| `&=` | 按位与后赋值 | `a &= b` | `a = a & b` |
-| `^=` | 按位异或后赋值 | `a ^= b` | `a = a ^ b` |
-| `      | =` | 按位或后赋值 | `a           | = b` | `a = a | b` |
+最重要的正面惯用法是**先判空再解引用**：`if (p != NULL && p->len > 0)`，指针为空时后半句绝不执行（`->` 的细节见 [指针深度解析](/c/140-PointerDeep)）。反面的写法是把有副作用的调用（打日志、计数、释放资源）塞在 `&&` 右边「顺便」执行——条件一旦短路它就悄悄不跑，这种 bug 最难查。需要必执行的语句，就老老实实分开写。
 
-#### 1.5.2 赋值运算符示例
+### 3.3 比较链陷阱：a < b < c 不是数学
 
 ```c
- #include <stdio.h>
- int main() {
-  int a = 10, b = 3;
-  printf("初始值: a = %d, b = %d\n", a, b);
-  a += b; // a = a + b
-  printf("a += b: %d\n", a); // 13
-  a -= b; // a = a - b
-  printf("a -= b: %d\n", a); // 10
-  a *= b; // a = a * b
-  printf("a *= b: %d\n", a); // 30
-  a /= b; // a = a / b
-  printf("a /= b: %d\n", a); // 10
-  a %= b; // a = a % b
-  printf("a %%= b: %d\n", a); // 1
-  return 0;
- }
+/* chain.c */
+#include <stdio.h>
+
+int main(void) {
+    int a = 5, b = 3, c = 1;
+    printf("%d\n", a > b > c);   /* 0：(a > b) 得 1，1 > 1 为假；数学上 5>3>1 应为真 */
+    printf("%d\n", 3 < 2 < 1);   /* 1：(3 < 2) 得 0，0 < 1 为真；数学上应为假 */
+    return 0;
+}
 ```
 
-### 1.6 其他运算符
+预期输出：
 
-#### 1.6.1 sizeof 运算符
+```text
+0
+1
+```
+
+`<` 从左到右结合，`a > b > c` 实际是 `(a > b) > c`：左边先算成 0 或 1，再拿这个 0/1 与 c 比较。数学区间写法在 C 里几乎全错，正确写法是 `a > b && b > c`。
+
+## 4. 位运算概览：六个运算符速写
+
+以 `unsigned a = 6`（二进制 0110）、`b = 3`（0011）为例：
+
+| 运算符 | 含义 | 表达式 | 结果 |
+| --- | --- | --- | --- |
+| `&` | 按位与 | `a & b` | 2（0010） |
+| `\|` | 按位或 | `a \| b` | 7（0111） |
+| `^` | 按位异或 | `a ^ b` | 5（0101） |
+| `~` | 按位取反 | `~a` | 9（32 位下即 0xFFFFFFF9） |
+| `<<` | 左移 | `a << 1` | 12（1100） |
+| `>>` | 右移 | `a >> 1` | 3（0011） |
+
+典型用途一句话：`&` 配掩码「取字段」、`|` 配标志「开开关」、`^` 做「翻转与校验」、移位做「倍乘与打包」。检查、设置、清除、翻转某一位的四个惯用宏，以及移位的符号位陷阱与位段，全部在 [位运算与位域](/c/070-BitwiseBitField) 展开——本篇只提醒一件事：`<<` 与 `>>` 的优先级（第 7 节第 5 档）夹在算术与关系之间，且对有符号负数右移结果由实现定义，位运算前先想清楚操作数该不该是无符号。
+
+## 5. 赋值、自增自减与求值顺序
+
+### 5.1 赋值与复合赋值
+
+`=` 把右操作数的值存进左操作数，整个赋值表达式的值就是存进去的值，于是有右结合的连续赋值：`a = b = c` 即 `a = (b = c)`。十个复合赋值 `+= -= *= /= %= <<= >>= &= ^= |=` 都是 `a op= b` 与 `a = a op b` 的简写，差别只有一处：前者左操作数只求值一次——左值本身带副作用时这个差别有意义。
+
+### 5.2 i++ 与 ++i：一个用旧值，一个用新值
 
 ```c
- #include <stdio.h>
- int main() {
-  printf("Size of int: %zu bytes\n", sizeof(int));
-  printf("Size of char: %zu bytes\n", sizeof(char));
-  printf("Size of double: %zu bytes\n", sizeof(double));
-  printf("Size of int*: %zu bytes\n", sizeof(int*));
-  int arr[10];
-  printf("Size of arr: %zu bytes\n", sizeof(arr));
-  printf("Number of elements: %zu\n", sizeof(arr) / sizeof(arr[0]));
-  return 0;
- }
+    int c = 5;
+    printf("%d\n", c++);   /* 5：先取旧值，再自增 */
+    printf("%d\n", c);     /* 6 */
+    printf("%d\n", ++c);   /* 7：先自增，再用新值 */
+    printf("%d\n", c);     /* 7 */
 ```
 
-#### 1.6.2 取地址和解引用运算符
+单独成句时 `i++` 与 `++i` 等价，团队惯例是循环里统一用 `i++`。要警惕的是它们出现在**别的表达式里**的时候——下一节解释为什么。
+
+### 5.3 序列点：一条语句至多修改一个对象一次
+
+把第 1 节的 `i = i++` 送审。cppreference 求值顺序页转述的标准规则：
+
+> 若对一个标量对象的副作用与同一标量对象的另一个副作用之间没有先后关系，行为未定义；若对一个标量对象的副作用与使用其值的值计算之间没有先后关系，行为同样未定义。
+
+`i = i++` 里 `=` 和 `++` 是同一对象的两个副作用，谁先谁后标准不排，于是整个表达式是 UB；同罪的还有 `i = ++i + i++`、`f(++i, ++i)`、`f(i, i++)`、`a[i] = i++`。而 `&&`、`||`、`?:`、逗号是少数给操作数排了顺序的运算符（3.2 节的短路实验正是靠这个才可复现）。
+
+写法纪律一句话：**一条语句里，一个变量至多被修改一次**；想把「用值」和「改值」都表达清楚，就拆成两行——拆开永远不会错。
+
+### 5.4 实验三：函数参数的求值顺序不可依赖
+
+优先级决定表达式「怎么分组」，不决定「谁先算」。函数实参的求值顺序标准没规定：
 
 ```c
- #include <stdio.h>
- int main() {
-  int a = 10;
-  int *p = &a; // 取地址
-  printf("a = %d\n", a);
-  printf("&a = %p\n", &a);
-  printf("p = %p\n", p);
-  printf("*p = %d\n", *p); // 解引用
-  *p = 20; // 通过指针修改值
-  printf("After modification: a = %d\n", a);
-  return 0;
- }
+/* argorder.c */
+#include <stdio.h>
+
+int trace(int v, const char *who) {
+    printf("%s 收到 %d\n", who, v);
+    return v;
+}
+
+int add(int a, int b) {
+    return a + b;
+}
+
+int main(void) {
+    int i = 1;
+    printf("sum = %d\n", add(trace(i + 1, "左"), trace(i + 2, "右")));
+    return 0;
+}
 ```
 
-#### 1.6.3 条件运算符（三目运算符）
+一次典型输出（gcc 常先算右参数；clang 常先算左）：
+
+```text
+右 收到 3
+左 收到 2
+sum = 5
+```
+
+两种顺序都符合标准——实参求值顺序是「未指定」：编译器可自选、可再选、参数的求值还可以交错。标准只保证一点：所有实参求值完成后才进入函数体。所以依赖参数求值顺序的代码（比如 `add(trace1(), trace2())` 之间有共享状态）本身就是错的；而 `f(++i, ++i)` 连「顺序未指定」都轮不到——直接 UB。看到这里，再回看第 1 节的 accident.c：`i = i++` 的「不同编译器不同结果」不再神秘。
+
+## 6. 三目、逗号与 sizeof
+
+### 6.1 条件运算符 ?:
 
 ```c
- #include <stdio.h>
- int main() {
-  int a = 10, b = 3;
-  // 找出最大值
-  int max = (a > b) ? a : b;
-  printf("Max: %d\n", max); // 10
-  // 找出最小值
-  int min = (a < b) ? a : b;
-  printf("Min: %d\n", min); // 3
-  // 条件赋值
-  int result = (a % 2 == 0) ? 1 : 0;
-  printf("Is a even? %d\n", result); // 1
-  return 0;
- }
+    int a = 10, b = 3;
+    int max = (a > b) ? a : b;      /* 10 */
+    int parity = (a % 2 == 0) ? 1 : 0;   /* 偶数为 1 */
 ```
 
-#### 1.6.4 逗号运算符
+先算条件，真取第二操作数，假取第三操作数，只算其中之一。它是唯一的三元运算符，右结合，嵌套时必须加括号。与短路一样，`?:` 在条件与被选分支之间也有顺序点，所以 `max = (a > b) ? ++a : ++b;` 是安全的——但为了可读性，超过一行的分支请用 if 语句（[控制流](/c/080-ControlFlow)）。
+
+### 6.2 逗号运算符：只在两处出现
+
+逗号从左到右依次求值，整个表达式的值是最后一个：
 
 ```c
- #include <stdio.h>
- int main() {
-  int a, b, c;
-  // 逗号运算符从左到右执行，返回最后一个表达式的值
-  c = (a = 5, b = 10, a + b);
-  printf("a = %d, b = %d, c = %d\n", a, b, c); // 5, 10, 15
-  // 在 for 循环中使用
-  for (int i = 0, j = 10; i < j; i++, j--) {
-  printf("i = %d, j = %d\n", i, j);
-  }
-  return 0;
- }
+    int a, b, c;
+    c = (a = 5, b = 10, a + b);          /* 15：前两个是副作用，值被丢弃 */
+    for (int i = 0, j = 10; i < j; i++, j--) {
+        printf("i=%d j=%d\n", i, j);
+    }
 ```
 
-## 2. 运算符优先级 (Precedence)
+注意 `int a, b, c` 声明里的逗号不是逗号运算符；给变量逐个赋初值时更要小心（那是声明语法）。日常代码里逗号运算符只在 `for` 的两段与宏里常见，其余场合出现就该警惕。
 
-### 2.1 优先级表（从高到低）
+### 6.3 sizeof：编译期的一行问卷
 
-| 优先级 | 运算符 | 结合性 |
-| ------ | ---------------------------------------------------- | -------- |
-| 1 | `()` `[]` `->` `.` | 从左到右 |
-| 2 | `!` `~` `++` `--` `*` `&` `(type)` `sizeof` | 从右到左 |
+```c
+/* sizeofexp.c：sizeof 的操作数不求值 */
+#include <stdio.h>
+
+int main(void) {
+    int n = 3;
+    printf("sizeof(n++) = %zu\n", sizeof(n++));   /* 4 */
+    printf("n = %d\n", n);                        /* 3：n++ 根本没执行 */
+    int arr[10];
+    printf("元素个数 = %zu\n", sizeof arr / sizeof arr[0]);   /* 10 */
+    return 0;
+}
+```
+
+预期输出：
+
+```text
+sizeof(n++) = 4
+n = 3
+元素个数 = 10
+```
+
+三条规则：除变长数组（VLA）外，`sizeof` 的操作数**不求值**，大小在编译期算出；结果是 `size_t` 类型，用 `%zu` 打印；`sizeof(char)` 恒为 1，其他类型以此为单位。`sizeof arr / sizeof arr[0]` 只对「真数组」有效——数组一旦退化成指针，得到的就不是元素个数了（详见 [数组详解](/c/120-ArrayDetailed)）。
+
+## 7. 优先级与结合性：速查表与三条记忆法
+
+从高到低（同级同行，结合性决定同级的运算方向）：
+
+| 档 | 运算符 | 结合性 |
+| --- | --- | --- |
+| 1 | `()` `[]` `->` `.` 后置 `++` `--` | 从左到右 |
+| 2 | 前置 `++` `--` `!` `~` 一元 `+` `-` `*` `&` `(type)` `sizeof` | 从右到左 |
 | 3 | `*` `/` `%` | 从左到右 |
 | 4 | `+` `-` | 从左到右 |
 | 5 | `<<` `>>` | 从左到右 |
 | 6 | `<` `<=` `>` `>=` | 从左到右 |
 | 7 | `==` `!=` | 从左到右 |
 | 8 | `&`（按位与） | 从左到右 |
-| 9 | `^`（按位异或） | 从左到右 |
+| 9 | `^` | 从左到右 |
 | 10 | `\|`（按位或） | 从左到右 |
 | 11 | `&&` | 从左到右 |
 | 12 | `\|\|` | 从左到右 |
 | 13 | `? :` | 从右到左 |
-| 14 | `=` `+=` `-=` `*=` `/=` `%=` `<<=` `>>=` `&=` `^=` `\|=` | 从右到左 |
+| 14 | `=` 及全部复合赋值 | 从右到左 |
 | 15 | `,` | 从左到右 |
 
-### 2.2 优先级示例
+整表背下来不现实，三条记忆法覆盖日常九成场景：
+
+1. **单目最凶**：`!` `~` `++` `--` 高于全部算术运算符。所以 `-a * b` 是 `(-a) * b`，`!x + 1` 是 `(!x) + 1`；
+2. **算术高于关系高于逻辑**：乘除 → 加减 → 移位 → 比大小 → 判等 → `&` `^` `|` → `&&` → `||`，与数学直觉同向；唯一反直觉的是「判等居然高于按位与」，见下面的真实事故；
+3. **赋值几乎垫底**：只比逗号高、右结合。`x = a == b` 是 `x = (a == b)`，`a = b = c` 是 `a = (b = c)`。
+
+第四条不是记忆法，是纪律：**记不清就加括号**。一个真实事故样本（源自老代码里的奇偶判断宏）：
 
 ```c
- #include <stdio.h>
- int main() {
-  int a = 10, b = 3, c = 5, d = 2;
-  // 优先级示例
-  int result1 = a + b * c; // 先乘后加: 10 + 15 = 25
-  printf("a + b * c = %d\n", result1);
-  int result2 = (a + b) * c; // 先加后乘: 13 * 5 = 65
-  printf("(a + b) * c = %d\n", result2);
-  int result3 = a || b && c; // 先与后或: 10 || 1 = 1
-  printf("a || b && c = %d\n", result3);
-  int result4 = a > b ? c : d; // 条件运算符: 10 > 3 为真，结果 5
-  printf("a > b ? c : d = %d\n", result4);
-  return 0;
- }
+#define IS_EVEN(x)   ((x) & 1 == 0)      /* 错：== 高于 &，实际是 (x) & (1 == 0)，恒为 0 */
+#define IS_EVEN_OK(x) (((x) & 1) == 0)   /* 对 */
 ```
 
-### 2.3 结合性示例
+`IS_EVEN` 对任何输入都返回 0——它悄悄宣称所有数都是奇数。gcc 的 `-Wparentheses` 能抓到它（第 8 节当场演示）。
+
+## 8. 常见错误与调试实录
+
+### 8.1 -Wall 抓 = 误写 ==
 
 ```c
- #include <stdio.h>
- int main() {
-  // 从左到右结合
-  int a = 10 - 3 + 5; // (10 - 3) + 5 = 12
-  printf("10 - 3 + 5 = %d\n", a);
-  // 从右到左结合（赋值运算符）
-  int b, c;
-  b = c = 5; // b = (c = 5)
-  printf("b = %d, c = %d\n", b, c);
-  // 从右到左结合（单目运算符）
-  int d = 5;
-  int e = -++d; // -(++d) = -6
-  printf("-++d = %d\n", e);
-  return 0;
- }
-```
-
-## 3. 表达式 (Expressions)
-
-### 3.1 表达式类型
-
-- **算术表达式**: 由算术运算符组成，结果为数值
-- **关系表达式**: 由关系运算符组成，结果为 0 或 1
-- **逻辑表达式**: 由逻辑运算符组成，结果为 0 或 1
-- **位表达式**: 由位运算符组成，结果为数值
-- **赋值表达式**: 由赋值运算符组成，结果为赋值后的值
-- **条件表达式**: 由三目运算符组成，结果为两个表达式之一的值
-- **逗号表达式**: 由逗号运算符组成，结果为最后一个表达式的值
-
-### 3.2 表达式示例
-
-```c
- #include <stdio.h>
- int main() {
-  int a = 10, b = 3;
-  // 算术表达式
-  int arith_expr = a + b * 2;
-  printf("Arithmetic expression: %d\n", arith_expr);
-  // 关系表达式
-  int rel_expr = a > b;
-  printf("Relational expression: %d\n", rel_expr);
-  // 逻辑表达式
-  int log_expr = (a > 0) && (b < 5);
-  printf("Logical expression: %d\n", log_expr);
-  // 位表达式
-  int bit_expr = a & b;
-  printf("Bitwise expression: %d\n", bit_expr);
-  // 赋值表达式
-  int assign_expr = a = b + 5;
-  printf("Assignment expression: %d, a = %d\n", assign_expr, a);
-  // 条件表达式
-  int cond_expr = (a > b) ? a : b;
-  printf("Conditional expression: %d\n", cond_expr);
-  // 逗号表达式
-  int comma_expr = (a = 10, b = 20, a + b);
-  printf("Comma expression: %d\n", comma_expr);
-  return 0;
- }
-```
-
-### 3.3 表达式中的类型转换
-
-#### 3.3.1 隐式类型转换
-
-```c
- #include <stdio.h>
- int main() {
-  int a = 10;
-  float b = 3.14;
-  // int 转换为 float
-  float result1 = a + b;
-  printf("a + b = %f\n", result1); // 13.140000
-  // float 转换为 int（截断小数）
-  int result2 = a + (int)b;
-  printf("a + (int)b = %d\n", result2); // 13
-  return 0;
- }
-```
-
-#### 3.3.2 显式类型转换
-
-```c
- #include <stdio.h>
- int main() {
-  double pi = 3.14159;
-  int radius = 5;
-  // 显式类型转换
-  int area = (int)(pi * radius * radius);
-  printf("Area: %d\n", area); // 78
-  // 指针类型转换
-  int x = 100;
-  void *ptr = &x;
-  int *int_ptr = (int *)ptr;
-  printf("*int_ptr = %d\n", *int_ptr); // 100
-  return 0;
- }
-```
-
-### 3.4 表达式中的副作用
-
-#### 3.4.1 副作用示例
-
-```c
- #include <stdio.h>
- int main() {
-  int a = 5;
-  // 未定义行为：多次修改同一个变量
-  // int result = a++ + ++a; // 不要这样写！
-  // 正确的写法
-  int b = a++;
-  int c = ++a;
-  int result = b + c;
-  printf("b = %d, c = %d, result = %d\n", b, c, result); // 5, 7, 12
-  return 0;
- }
-```
-
-## 4. 运算符与表达式的最佳实践
-
-### 4.1 代码风格建议
-
-- **括号使用**: 对于复杂表达式，使用括号明确优先级
-- **命名规范**: 使用有意义的变量名
-- **表达式简洁性**: 避免过于复杂的表达式
-- **注释**: 对于复杂的位运算或逻辑表达式，添加注释
-
-### 4.2 性能优化建议
-
-- **位运算**: 对于位移操作，使用位运算符代替乘法和除法
-- **短路求值**: 利用逻辑运算符的短路特性优化条件判断
-- **常量表达式**: 尽可能使用常量表达式，便于编译器优化
-
-### 4.3 常见错误避免
-
-- **优先级错误**: 始终使用括号明确优先级
-- **类型转换错误**: 注意隐式类型转换可能导致的精度丢失
-- **副作用错误**: 避免在表达式中多次修改同一个变量
-- **逻辑错误**: 注意逻辑运算符的短路特性
-
-### 4.4 最佳实践示例
-
-```c
- #include <stdio.h>
- // 位运算优化：判断奇偶
- #define IS_EVEN(x) ((x) & 1 == 0)
- // 位运算优化：乘以 2 的幂
- #define MULTIPLY_BY_POWER_OF_TWO(x, n) ((x) << (n))
- // 逻辑运算符短路优化
- int is_valid(int *ptr, int size) {
-  return ptr != NULL && size > 0; // 如果 ptr 为 NULL，size > 0 不会执行
- }
- int main() {
-  // 使用括号明确优先级
-  int a = 10, b = 3, c = 5;
-  int result = (a + b) * c; // 明确先加后乘
-  // 位运算优化
-  int x = 5;
-  printf("x is even? %d\n", IS_EVEN(x)); // 0
-  printf("x * 8 = %d\n", MULTIPLY_BY_POWER_OF_TWO(x, 3)); // 40
-  // 逻辑短路优化
-  int *ptr = NULL;
-  int size = 10;
-  if (is_valid(ptr, size)) {
-  printf("Valid pointer and size\n");
-  } else {
-  printf("Invalid pointer or size\n"); // 执行这里
-  }
-  return 0;
- }
-```
-
-## 5. 常见问题与解决方案
-
-### 5.1 整数除法问题
-
-**问题**: 整数除法会截断小数部分
-**解决方案**: 使用浮点数类型或显式类型转换
-
-```c
- // 错误示例
- int a = 10, b = 3;
- float result = a / b; // 结果为 3.0，不是 3.333...
- // 正确示例
- float result = (float)a / b; // 结果为 3.333...
-```
-
-### 5.2 优先级混淆
-
-**问题**: 运算符优先级不明确导致错误
-**解决方案**: 使用括号明确优先级
-
-```c
- // 错误示例
- int a = 10, b = 3, c = 5;
- int result = a + b * c; // 可能不是预期的 (a + b) * c
- // 正确示例
- int result = (a + b) * c; // 明确先加后乘
-```
-
-### 5.3 逻辑运算符短路
-
-**问题**: 依赖逻辑运算符的短路特性可能导致意外行为
-**解决方案**: 确保短路部分的代码不包含重要的副作用
-
-```c
- // 问题：如果 ptr 为 NULL，func() 不会执行
- if (ptr != NULL && func()) {
-  // ...
- }
- // 解决方案：如果 func() 需要执行，分开写
- if (ptr != NULL) {
-  if (func()) {
-  // ...
-  }
- }
-```
-
-### 5.4 位运算符号扩展
-
-**问题**: 有符号数右移时会进行符号扩展
-**解决方案**: 使用无符号类型或掩码
-
-```c
- // 符号扩展示例
- int a = -1; // 二进制全 1
- int b = a >> 1; // 结果仍为 -1，因为符号扩展
- // 无符号类型示例
- unsigned int c = -1; // 二进制全 1
- unsigned int d = c >> 1; // 结果为 0x7FFFFFFF
-```
-
-### 5.5 自增自减运算符的副作用
-
-**问题**: 在表达式中使用自增自减运算符可能导致未定义行为
-**解决方案**: 避免在复杂表达式中使用自增自减运算符
-
-```c
- // 未定义行为
- int a = 5;
- int result = a++ + ++a; // 不要这样写！
- // 正确写法
- int a = 5;
- int b = a++;
- int c = ++a;
- int result = b + c;
-```
-
-## 6. 代码优化技巧
-
-### 6.1 算术运算优化
-
-- **使用位运算**: 位移操作比乘法除法更快
-- **常量折叠**: 编译器会优化常量表达式
-- **避免冗余计算**: 缓存计算结果
-
-### 6.2 逻辑运算优化
-
-- **短路求值**: 利用逻辑运算符的短路特性
-- **条件判断顺序**: 将最可能为真的条件放在前面
-- **位掩码**: 使用位掩码替代多个条件判断
-
-### 6.3 表达式优化示例
-
-```c
- // 优化前
- for (int i = 0; i < 1000; i++) {
-  int result = a * 8 + b * 4;
-  // ...
- }
- // 优化后
- for (int i = 0; i < 1000; i++) {
-  int result = (a << 3) + (b << 2); // 位运算更快
-  // ...
- }
- // 优化前
- if (x > 0 && y > 0 && z > 0) {
-  // ...
- }
- // 优化后（假设 x > 0 的概率最高）
- if (x > 0 && y > 0 && z > 0) {
-  // 保持不变，因为短路特性会自动优化
- }
- // 优化前
- if (flag == 1) {
-  // case 1
- }
-  // case 2
- }
-  // case 4
- }
- // 优化后（使用位掩码）
- #define FLAG_1 1
- #define FLAG_2 2
- #define FLAG_4 4
- if (flag & FLAG_1) {
-  // case 1
- }
- if (flag & FLAG_2) {
-  // case 2
- }
- if (flag & FLAG_4) {
-  // case 4
- }
-```
-
----
-
-## 算术运算符
-
-**加法写法：加法运算**
-`<expr> + <expr>`
-```c
-// 计算两数之和
-int a = 10, b = 3;
-int sum = a + b;
-```
-
----
-
-**减法写法：减法运算**
-`<expr> - <expr>`
-```c
-// 计算两数之差
-int a = 10, b = 3;
-int diff = a - b;
-```
-
----
-
-**乘法写法：乘法运算**
-`<expr> * <expr>`
-```c
-// 计算两数之积
-int a = 10, b = 3;
-int product = a * b;
-```
-
----
-
-**除法写法：除法运算**
-`<expr> / <expr>`
-```c
-// 整数除法（舍去小数）
-int a = 10, b = 3;
-int quotient = a / b;
-```
-
----
-
-**取模写法：取模运算**
-`<expr> % <expr>`
-```c
-// 计算余数
-int a = 10, b = 3;
-int remainder = a % b;
-```
-
----
-
-**后置写法：后置自增**
-`<var>++`
-```c
-// 返回原值后自增
-int c = 5;
-int result = c++;
-```
-
----
-
-**前置写法：前置自增**
-`++<var>`
-```c
-// 先自增后返回新值
-int c = 5;
-int result = ++c;
-```
-
----
-
-**后置写法：后置自减**
-`<var>--`
-```c
-// 返回原值后自减
-int c = 5;
-int result = c--;
-```
-
----
-
-**前置写法：前置自减**
-`--<var>`
-```c
-// 先自减后返回新值
-int c = 5;
-int result = --c;
-```
-
----
-
-## 关系运算符
-
-**等于写法：等于比较**
-`<expr> == <expr>`
-```c
-// 判断两数是否相等
-int a = 10, b = 3;
-int result = (a == b);
-```
-
----
-
-**不等于写法：不等于比较**
-`<expr> != <expr>`
-```c
-// 判断两数是否不等
-int a = 10, b = 3;
-int result = (a != b);
-```
-
----
-
-**大于写法：大于比较**
-`<expr> > <expr>`
-```c
-// 判断 a 是否大于 b
-int a = 10, b = 3;
-int result = (a > b);
-```
-
----
-
-**小于写法：小于比较**
-`<expr> < <expr>`
-```c
-// 判断 a 是否小于 b
-int a = 10, b = 3;
-int result = (a < b);
-```
-
----
-
-## 逻辑运算符
-
-**逻辑与写法：逻辑与运算**
-`<expr> && <expr>`
-```c
-// 短路逻辑与，左为假时右不执行
-int a = 10, b = 0;
-int result = (a > 0) && (b > 0);
-```
-
----
-
-**逻辑或写法：逻辑或运算**
-`<expr> || <expr>`
-```c
-// 短路逻辑或，左为真时右不执行
-int a = 10, b = 0;
-int result = (a > 0) || (b > 0);
-```
-
----
-
-**逻辑非写法：逻辑非运算**
-`!<expr>`
-```c
-// 逻辑取反
-int a = 10;
-int result = !(a > 0);
-```
-
----
-
-## 位运算符
-
-**按位与写法：按位与运算**
-`<expr> & <expr>`
-```c
-// 按位与
-int a = 6, b = 3;
-int result = a & b;
-```
-
----
-
-**按位或写法：按位或运算**
-`<expr> | <expr>`
-```c
-// 按位或
-int a = 6, b = 3;
-int result = a | b;
-```
-
----
-
-**按位异或写法：按位异或运算**
-`<expr> ^ <expr>`
-```c
-// 按位异或
-int a = 6, b = 3;
-int result = a ^ b;
-```
-
----
-
-**按位取反写法：按位取反运算**
-`~<expr>`
-```c
-// 按位取反
-int a = 6;
-int result = ~a;
-```
-
----
-
-**左移写法：左移运算**
-`<expr> << <n>`
-```c
-// 左移 1 位
-int a = 6;
-int result = a << 1;
-```
-
----
-
-**右移写法：右移运算**
-`<expr> >> <n>`
-```c
-// 右移 1 位
-int a = 6;
-int result = a >> 1;
-```
-
----
-
-**位操作宏写法：检查某一位**
-`#define <NAME>(x, pos) ((x) & (1U << (pos)))`
-```c
-// 检查指定位是否为 1
-#define CHECK_BIT(x, pos) ((x) & (1U << (pos)))
-```
-
----
-
-**位操作宏写法：设置某一位**
-`#define <NAME>(x, pos) ((x) |= (1U << (pos)))`
-```c
-// 设置指定位为 1
-#define SET_BIT(x, pos) ((x) |= (1U << (pos)))
-```
-
----
-
-**位操作宏写法：清除某一位**
-`#define <NAME>(x, pos) ((x) &= ~(1U << (pos)))`
-```c
-// 清除指定位为 0
-#define CLEAR_BIT(x, pos) ((x) &= ~(1U << (pos)))
-```
-
----
-
-## 赋值运算符
-
-**基本写法：简单赋值**
-`<var> = <expr>;`
-```c
-// 简单赋值
-int a = 10;
-```
-
----
-
-**复合写法：加赋值**
-`<var> += <expr>;`
-```c
-// 等价于 a = a + b
-int a = 10, b = 3;
-a += b;
-```
-
----
-
-**复合写法：减赋值**
-`<var> -= <expr>;`
-```c
-// 等价于 a = a - b
-int a = 10, b = 3;
-a -= b;
-```
-
----
-
-**复合写法：乘赋值**
-`<var> *= <expr>;`
-```c
-// 等价于 a = a * b
-int a = 10, b = 3;
-a *= b;
-```
-
----
-
-**复合写法：除赋值**
-`<var> /= <expr>;`
-```c
-// 等价于 a = a / b
-int a = 10, b = 3;
-a /= b;
-```
-
----
-
-## 其他运算符
-
-**sizeof 写法：获取大小**
-`sizeof(<type|var>)`
-```c
-// 获取 int 类型字节数
-size_t size = sizeof(int);
-```
-
----
-
-**取地址写法：获取变量地址**
-`&<var>`
-```c
-// 获取变量地址
-int a = 10;
-int *p = &a;
-```
-
----
-
-**解引用写法：通过指针访问值**
-`*<ptr>`
-```c
-// 解引用指针获取值
-int a = 10;
-int *p = &a;
-int val = *p;
-```
-
----
-
-**三目写法：条件运算符**
-`<condition> ? <expr1> : <expr2>`
-```c
-// 找出最大值
-int a = 10, b = 3;
-int max = (a > b) ? a : b;
-```
-
----
-
-**逗号写法：逗号运算符**
-`<expr1>, <expr2>, ..., <exprN>`
-```c
-// 从左到右执行，返回最后一个表达式的值
-int c = (a = 5, b = 10, a + b);
-```
-
----
-
-## 表达式类型转换
-
-**隐式写法：自动类型转换**
-`<type> <var> = <other_type_var>;`
-```c
-// int 转换为 float
-int a = 10;
-float result = a + 3.14f;
-```
-
----
-
-**显式写法：强制类型转换**
-`(<target_type>)<expression>`
-```c
-// 显式转换 double 为 int
-double pi = 3.14159;
-int area = (int)(pi * 5 * 5);
-```
-## 文件打开与关闭
-
-**基本写法：打开文件**
-`FILE *<fp> = fopen("<filename>", "<mode>");`
-```c
+/* eqbug.c */
 #include <stdio.h>
-// 以只读方式打开文件
-FILE *fp = fopen("data.txt", "r");
-```
 
----
-
-**基本写法：关闭文件**
-`fclose(<fp>);`
-```c
-// 关闭文件
-fclose(fp);
-```
-
----
-
-**错误检查写法：检查文件是否打开成功**
-`if (<fp> == NULL) { ... }`
-```c
-// 检查文件是否成功打开
-FILE *fp = fopen("data.txt", "r");
-if (fp == NULL) {
-    perror("Failed to open file");
-    return 1;
+int main(void) {
+    int limit = 0;
+    if (limit = 10) {            /* 手滑：赋值当比较 */
+        printf("reached\n");
+    }
+    printf("limit = %d\n", limit);
+    return 0;
 }
 ```
 
----
-
-## 文件打开模式
-
-**只读写法：以只读方式打开**
-`fopen("<filename>", "r")`
-```c
-// 只读模式打开文本文件
-FILE *fp = fopen("data.txt", "r");
+```bash
+gcc -Wall -Wextra eqbug.c -o eqbug
 ```
 
----
+预期输出（关键行）：
 
-**只写写法：以只写方式打开**
-`fopen("<filename>", "w")`
-```c
-// 只写模式打开文件（覆盖）
-FILE *fp = fopen("output.txt", "w");
+```text
+eqbug.c: In function 'main':
+eqbug.c:6:9: warning: suggest parentheses around assignment used as truth value [-Wparentheses]
 ```
 
----
+`if (limit = 10)` 永远为真，还顺手改写了 `limit`。修复就是写成 `==`；确有「赋值兼判断」需求时用双层括号 `if ((p = malloc(n)) != NULL)` 明示意图。提醒：`-Wall` 不是银弹，`y = x` 这类恰好合法的表达式它不响——工具降低概率，纪律（第 5.3 节的一条一句）兜底。
 
-**追加写法：以追加方式打开**
-`fopen("<filename>", "a")`
+### 8.2 UBSan 抓溢出与移位
+
 ```c
-// 追加模式打开文件
-FILE *fp = fopen("log.txt", "a");
-```
+/* ubsanexp.c */
+#include <stdio.h>
+#include <limits.h>
 
----
-
-**读写写法：以读写方式打开**
-`fopen("<filename>", "r+")`
-```c
-// 读写模式打开文件
-FILE *fp = fopen("data.txt", "r+");
-```
-
----
-
-**二进制写法：以二进制方式打开**
-`fopen("<filename>", "rb")`
-```c
-// 二进制只读模式打开
-FILE *fp = fopen("data.bin", "rb");
-```
-
----
-
-## 字符读写
-
-**基本写法：读取单个字符**
-`int <ch> = fgetc(<fp>);`
-```c
-// 从文件读取单个字符
-int ch = fgetc(fp);
-```
-
----
-
-**基本写法：写入单个字符**
-`fputc(<ch>, <fp>);`
-```c
-// 向文件写入单个字符
-fputc('A', fp);
-```
-
----
-
-**EOF 写法：检测文件结束**
-`while ((<ch> = fgetc(<fp>)) != EOF) { ... }`
-```c
-// 循环读取直到文件结束
-int ch;
-while ((ch = fgetc(fp)) != EOF) {
-    putchar(ch);
+int main(void) {
+    int big = INT_MAX;
+    int overflow = big + 1;    /* 有符号溢出：UB */
+    printf("overflow = %d\n", overflow);
+    int shift = 1 << 40;       /* 移位数超过 int 的 32 位宽度：UB */
+    printf("shift = %d\n", shift);
+    return 0;
 }
 ```
 
----
-
-## 字符串读写
-
-**基本写法：读取字符串**
-`char *<result> = fgets(<buffer>, <size>, <fp>);`
-```c
-// 从文件读取一行字符串
-char buffer[100];
-fgets(buffer, sizeof(buffer), fp);
+```bash
+gcc -Wall -Wextra -g -fsanitize=undefined ubsanexp.c -o ubsanexp
+./ubsanexp
 ```
 
----
+预期输出（关键行，行号以实际文件为准）：
 
-**基本写法：写入字符串**
-`fputs("<string>", <fp>);`
-```c
-// 向文件写入字符串
-fputs("Hello World", fp);
+```text
+ubsanexp.c:6:20: runtime error: signed integer overflow: 2147483647 + 1 cannot be represented in type 'int'
+ubsanexp.c:8:18: runtime error: shift exponent 40 is too large for 32-bit type 'int'
 ```
 
----
+未定义行为检测器（UBSan）在事故点当场打印。注意有符号溢出是 UB 而不是「绕回负数」——绕回只是常见实现的巧合；无符号运算才有标准保证的模 2 的 n 次方环绕。表达式类的 UB 远不止这两种，工具全家桶见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
 
-## 格式化读写
+### 8.3 -Wparentheses 提示位运算与比较混写
 
-**基本写法：格式化读取**
-`fscanf(<fp>, "<format>", &<var>);`
-```c
-// 从文件按格式读取
-int age;
-fscanf(fp, "%d", &age);
+把第 7 节的事故宏放进源文件编译，gcc 追加一条：
+
+```text
+warning: suggest parentheses around comparison in operand of '&' [-Wparentheses]
 ```
 
----
+这条警告正是记忆法二「判等高于按位与」的自动化：编译器发现你写了 `x & 1 == 0`，怀疑你以为它是 `(x & 1) == 0`。遇到就照它说的补括号，顺便检查语义。
 
-**基本写法：格式化写入**
-`fprintf(<fp>, "<format>", <values>);`
+## 9. 实际项目中的使用场景
+
+- 判空与边界惯用法：`p != NULL && p->len > 0`、`i >= 0 && i < n`，短路保证安全；
+- 计数与取模：环形缓冲下标 `i % capacity`、奇偶与分组 `n % 2`、时间换算 `s / 60, s % 60`；
+- 无符号与 size_t：数组下标、循环变量尽量与长度类型符号一致，避免实验二的绕回；
+- 位标志见 [位运算与位域](/c/070-BitwiseBitField)；三目选默认值、逗号推进双游标的 for 循环见本文第 6 节。
+
+## 10. 小练习
+
+预测题（5 分钟）：先写答案再运行验证：`-7 % 3`、`7 % -3`、`-7 / 3` 各是多少？依据是哪两条规则？
+
+参考答案（先写再看）：`-1`、`1`、`-3`。余数符号跟随左操作数，商向零截断，且 `(a/b)*b + a%b == a` 恒成立：`-7/3` 得 `-2`，`-2*3 + (-1)` 恰好回到 `-7`。
+
+修改题（15 分钟）：下面的倒序循环想打印 4 到 0，实际会无限循环。用第 2.5 节的知识解释原因并修复：
+
 ```c
-// 向文件按格式写入
-fprintf(fp, "Name: %s, Age: %d\n", "John", 30);
-```
-
----
-
-## 块读写
-
-**基本写法：读取数据块**
-`size_t <count> = fread(<buffer>, <size>, <count>, <fp>);`
-```c
-// 从文件读取数据块
-int data[10];
-fread(data, sizeof(int), 10, fp);
-```
-
----
-
-**基本写法：写入数据块**
-`size_t <count> = fwrite(<buffer>, <size>, <count>, <fp>);`
-```c
-// 向文件写入数据块
-int data[5] = {1, 2, 3, 4, 5};
-fwrite(data, sizeof(int), 5, fp);
-```
-
----
-
-## 文件定位
-
-**基本写法：获取当前位置**
-`long <pos> = ftell(<fp>);`
-```c
-// 获取当前文件位置
-long pos = ftell(fp);
-```
-
----
-
-**基本写法：设置文件位置**
-`fseek(<fp>, <offset>, <origin>);`
-```c
-// 从文件开头偏移 10 字节
-fseek(fp, 10, SEEK_SET);
-```
-
----
-
-**基本写法：回到文件开头**
-`rewind(<fp>);`
-```c
-// 将文件指针重置到开头
-rewind(fp);
-```
-
----
-
-**末尾写法：定位到文件末尾**
-`fseek(<fp>, 0, SEEK_END);`
-```c
-// 定位到文件末尾
-fseek(fp, 0, SEEK_END);
-```
-
----
-
-**fgetpos 写法：获取文件位置**
-`fgetpos(<fp>, &<pos>);`
-```c
-// 获取文件位置
-fpos_t pos;
-fgetpos(fp, &pos);
-```
-
----
-
-**fsetpos 写法：设置文件位置**
-`fsetpos(<fp>, &<pos>);`
-```c
-// 设置文件位置
-fpos_t pos;
-fsetpos(fp, &pos);
-```
-
----
-
-## 文件状态检查
-
-**基本写法：检查文件结束**
-`feof(<fp>)`
-```c
-// 检查是否到达文件末尾
-if (feof(fp)) {
-    printf("End of file\n");
+size_t n = 5;
+for (size_t i = n - 1; i >= 0; i--) {   /* size_t 永远 >= 0 */
+    printf("%zu\n", i);
 }
 ```
 
----
+参考要点：`i >= 0` 对无符号恒真，`i--` 减到 0 后绕回最大值。修法至少两种：改用有符号 `for (int i = (int)n - 1; i >= 0; i--)`；或用 `for (size_t i = n; i-- > 0;)` 让判断先行、自减藏在条件里。验收：打印 4 3 2 1 0。
 
-**基本写法：检查文件错误**
-`ferror(<fp>)`
-```c
-// 检查文件读写错误
-if (ferror(fp)) {
-    printf("File error\n");
-}
-```
+挑战题（半小时，不看答案先动手）：把第 1 节的 accident.c 分别用 `gcc -O0`、`gcc -O2` 编译运行，再换 clang 试试，记录所有不同输出；最后用 `-fsanitize=undefined` 编译一遍，看 UBSan 怎么报警。
 
----
+提示（思路方向）：重点不是统计谁打 10 谁打 11，而是想清楚第 5.3 节的标准规则为什么让一切结果都合法。
 
-**基本写法：清除文件错误标志**
-`clearerr(<fp>);`
-```c
-// 清除文件错误标志
-clearerr(fp);
-```
+展开（关键 API）：UBSan 对这类 UB 不一定每次都报（它检测的是可静态识别的模式）；结合 `-Wall` 看有没有警告。验收清单：至少观察到两种不同结果或一条警告；能用「两个副作用没有先后关系」完整复述判刑理由。
 
----
+## 11. 与之前和之后的知识的关系
 
-## 标准流
+- 往前：[变量与常量](/c/050-VariableConstant) 的变量与字面量是本篇所有表达式的操作数；[数据类型详解](/c/040-DataTypeDetailed) 的类型表在第 2 节完成「相遇听谁的」的闭环；
+- 旁支：位运算的完整展开在 [位运算与位域](/c/070-BitwiseBitField)；这些表达式最主要的消费场景是 if 与循环，见 [控制流](/c/080-ControlFlow)；`*` 与 `&` 在表达式里还是解引用与取地址，见 [指针深度解析](/c/140-PointerDeep)；
+- 往后：读文件时 `int ch = fgetc(fp)` 与 EOF 的比较用到第 2 节的整型提升，见 [文件 I/O](/c/430-StdioFileIO)；UBSan 与编译警告的系统用法见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
 
-**基本写法：使用标准输入**
-`stdin`
-```c
-// 从标准输入读取
-char buffer[100];
-fgets(buffer, sizeof(buffer), stdin);
-```
+## 12. 官方文档
 
----
+- 算术运算符（除法截断、% 符号规则、除零与 INT_MIN/-1 的 UB）：https://en.cppreference.com/w/c/language/operator_arithmetic.html
+- 类型转换与寻常算术转换阶梯：https://en.cppreference.com/w/c/language/conversion.html
+- 求值顺序（未定义行为清单与顺序点）：https://en.cppreference.com/c/language/eval_order
+- 运算符优先级总表：https://en.cppreference.com/w/c/language/operator_precedence.html
+- sizeof（操作数不求值与 size_t）：https://en.cppreference.com/w/c/language/sizeof.html
+- fmod（浮点取余）：https://en.cppreference.com/w/c/numeric/math/fmod.html
 
-**基本写法：使用标准输出**
-`stdout`
-```c
-// 向标准输出写入
-fputs("Hello\n", stdout);
-```
+## 13. 自我检查
 
----
+- 能说出 `10 / 3`、`-10 / 3`、`-7 % 3` 的值与依据的两条规则；
+- 能默写转换阶梯的前后各三层，并解释 `sizeof('A')` 为什么是 4；
+- 能向同事讲清 `a < b < c` 错在哪、`i = i++` 为什么编译器想怎么算都合法、怎么改一定对；
+- 能用 `-Wall` 与 `-fsanitize=undefined` 抓出本文演示的两类事故，并说出 `-Wparentheses` 提示的是哪条优先级规则。
 
-**基本写法：使用标准错误**
-`stderr`
-```c
-// 向标准错误输出
-fprintf(stderr, "Error message\n");
-```
+## 本章总结
 
----
+表达式三章合一：算术章里整数除法自 C99 起向零截断、余数符号跟随左操作数，浮点取余交给 fmod；类型相撞先整型提升再查寻常算术转换阶梯，有符号与无符号相遇时向无符号看齐，`-1 < 1u` 为假由此而来。逻辑章里比较只产 0 和 1，短路是标准保证的顺序，比较链 `(a>b)>c` 是数学写法的陷阱。求值章里一条语句至多修改一个对象一次，`i = i++` 与实参求值顺序同属「标准不排顺序」的地界，拆开写是唯一的万能解。最后收进工具箱：`-Wall` 抓 = 当 ==，UBSan 抓溢出与移位，`-Wparentheses` 抓优先级误信——而比它们都可靠的是那句纪律：记不清就加括号。
 
-## 文件删除与重命名
+## 下一步
 
-**基本写法：删除文件**
-`remove("<filename>");`
-```c
-// 删除文件
-remove("temp.txt");
-```
-
----
-
-**基本写法：重命名文件**
-`rename("<old_name>", "<new_name>");`
-```c
-// 重命名文件
-rename("old.txt", "new.txt");
-```
-
----
-
-## 临时文件
-
-**基本写法：创建临时文件**
-`FILE *<fp> = tmpfile();`
-```c
-// 创建临时文件（关闭后自动删除）
-FILE *tmp = tmpfile();
-```
-
----
-
-**基本写法：生成临时文件名**
-`char *<name> = tmpnam(<buffer>);`
-```c
-// 生成临时文件名
-char name[L_tmpnam];
-tmpnam(name);
-```
-
----
-
-## 文件缓冲
-
-**基本写法：设置缓冲区**
-`setvbuf(<fp>, <buffer>, <mode>, <size>);`
-```c
-// 设置全缓冲
-char buffer[1024];
-setvbuf(fp, buffer, _IOFBF, sizeof(buffer));
-```
-
----
-
-**基本写法：刷新缓冲区**
-`fflush(<fp>);`
-```c
-// 刷新文件缓冲区
-fflush(fp);
-```
-
----
-
-## 获取文件大小
-
-**基本写法：通过 fseek 和 ftell 获取文件大小**
-`fseek(<fp>, 0, SEEK_END); long <size> = ftell(<fp>);`
-```c
-// 获取文件大小
-fseek(fp, 0, SEEK_END);
-long file_size = ftell(fp);
-rewind(fp);
-```
-
----
-
-## 二进制文件读写
-
-**结构体写法：写入结构体到二进制文件**
-`fwrite(&<struct_var>, sizeof(<StructType>), 1, <fp>);`
-```c
-// 将结构体写入二进制文件
-typedef struct { int id; char name[50]; } Record;
-Record r = {1, "John"};
-fwrite(&r, sizeof(Record), 1, fp);
-```
-
----
-
-**结构体读取写法：从二进制文件读取结构体**
-`fread(&<struct_var>, sizeof(<StructType>), 1, <fp>);`
-```c
-// 从二进制文件读取结构体
-Record r;
-fread(&r, sizeof(Record), 1, fp);
-```
+进入 [位运算与位域](/c/070-BitwiseBitField)：第 4 节只给了六个位运算符的一张速写表，下一篇把它们展开成完整阶梯——掩码、四个位操作宏、移位的符号位陷阱与直接按位分配成员的位段。

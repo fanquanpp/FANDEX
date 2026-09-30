@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 330
 title: 动态库与静态库
 module: 'c'
 category: 计算机科学

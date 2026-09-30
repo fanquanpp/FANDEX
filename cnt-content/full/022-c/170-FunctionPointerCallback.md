@@ -1,1916 +1,517 @@
 ---
-order: 170
-title: 函数指针与回调
+order: 180
+title: 函数指针与回调：把行为当参数传
 module: 'c'
 category: 计算机科学
 difficulty: intermediate
-description: 函数指针与回调函数模式
+description: 从 qsort「一行排任意类型」的读心术之谜出发：读懂函数指针声明、函数名退化与两种调用写法、typedef 三步法；qsort 比较器完整实战（含减法溢出陷阱实录）、带上下文的泛型 apply、事件处理器表，讲清 C 函数指针为什么不是闭包，以及对象指针与函数指针互转的标准边界。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/310-MultiFileCompilation'
-  - 'c/200-DynamicMemoryManagement'
+  - 'c/180-FunctionPointerCallbackJumpTable'
+  - 'c/190-ComplexDeclarationParsing'
   - 'c/100-VarargsFunction'
   - 'c/340-SignalHandling'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/090-FunctionDetailed'
+  - 'c/140-PointerDeep'
 ---
 
 ## 前置知识
 
-- [动态内存管理](/c/200-DynamicMemoryManagement)：建议先完成前一篇的学习
+- 已完成 [函数详解](/c/090-FunctionDetailed)：会声明函数、传参数、写返回值——本文要把「函数」本身变成可以传来传去的东西；
+- 已完成 [指针深度解析](/c/140-PointerDeep)：会解引用、会 `const void *` 这类写法。函数指针不过是「指向的东西从数据换成了代码」。
+
+> 分工说明：170 与 180 合讲函数指针。本篇是主教学，回答「函数指针是什么、回调怎么写」：声明读法、typedef、qsort 比较器、带上下文的泛型遍历；[跳转表](/c/180-FunctionPointerCallbackJumpTable) 专讲这一招的头号应用——用函数指针数组替换长 switch，做表驱动的命令分发。两篇示例不重复，本篇是 180 的地基。
 
 ## 学习目标
 
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「代码示例」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 读懂 `int (*fp)(int, int)` 这类函数指针声明，并说清它与 `int *f(int)` 的区别；
+2. 用 typedef 三步法给函数指针类型起名，写出以函数指针为参数的函数；
+3. 为 qsort 写出类型安全的比较器，指出「返回 `a - b`」的溢出陷阱并给出安全写法；
+4. 用 `void *` 上下文实现泛型 apply 与事件处理器表，解释 C 函数指针为什么不是闭包；
+5. 说出函数指针类型不匹配与调用空指针的下场，以及对象指针与函数指针互转在 ISO C 与 POSIX 里各自的边界。
 
-## 概述
+预计 50 到 70 分钟，含 4 组修改实验、1 道预测题与 1 道挑战题。
 
-函数指针(function pointer)是 C 语言中存储函数入口地址的指针变量,是实现运行时多态、回调函数(callback)、策略模式(strategy pattern)、事件驱动编程(event-driven programming)、跳转表(jump table)与插件架构(plugin architecture)的核心机制。回调函数是一种通过函数指针实现的设计模式,允许调用者将自定义行为注入被调用者,使被调用者在特定时机"回调"调用者的代码。
-
-函数指针的概念可追溯至 1960 年代 Lisp 的 `apply` 与 `funcall`、ALGOL 60 的过程参数。1972 年 C 语言诞生时,Dennis Ritchie 将函数指针作为一等公民引入,使 C 具备了高阶函数(higher-order function)的雏形。1978 年 K&R C 出版后,C 标准库的 `qsort`、`bsearch` 函数正式采用函数指针参数,确立了回调模式的工程地位。此后,从 Unix VFS 的 `file_operations`、X Window System 的事件循环,到 libuv、Nginx、Redis、Node.js 的异步 I/O 框架,函数指针与回调始终是系统级 C 编程的基石。
-
-本文系统化阐述函数指针的声明、初始化、调用语义、调用约定(calling convention)、函数指针数组、返回函数指针的函数、带上下文的回调、闭包模拟、事件系统、策略模式、跳转表、插件架构,并分析 `qsort`、libuv、Nginx、Linux VFS 等真实案例。
-
-## 历史动机与背景
-
-### 1. 函数指针的起源:ALGOL 60 与 Lisp
-
-函数指针的概念最早可追溯至 1960 年 ALGOL 60 的过程参数(procedure parameter),允许将一个过程作为参数传递给另一个过程。1960 年代 Lisp 引入 `apply` 与 `funcall`,使函数成为一等公民(first-class citizen)。这些早期语言确立了"函数作为参数"的高阶函数思想,直接影响了后续 C 语言的设计。
-
-### 1. C 语言函数指针的诞生(1972)
-
-Dennis Ritchie 在 1972 年设计 C 语言时,将函数指针作为指针类型的一种纳入语言。C 函数指针保留了 ALGOL 60 的过程参数语义,但增加了显式的指针操作能力(取地址、解引用、指针算术)。C 函数指针的设计目标是为 Unix 内核提供运行时多态机制:例如 VFS 层通过函数指针表(`file_operations`)统一不同文件系统的接口,设备驱动通过函数指针注册到内核。
-
-### 2. qsort 与回调模式的标准化(1978-1989)
-
-1978 年 K&R C 出版时,标准库已包含 `qsort` 函数,采用函数指针作为比较器参数:
+## 1. 问题引入：qsort 怎么知道怎么比
 
 ```c
-void qsort(void *base, size_t nmemb, size_t size,
-           int (*compar)(const void *, const void *));
-```
-
-这一设计确立了"库函数 + 用户回调"的工程模式,被后续 `bsearch`、`scandir`、`atexit`、`signal` 等标准函数沿用。1989 年 ANSI C(C89)正式标准化函数指针语法与语义,包括函数名到函数指针的隐式转换、函数指针比较、函数指针数组等。
-
-### 3. 异步 I/O 与事件驱动(1980s-2000s)
-
-1984 年 X Window System 采用事件循环 + 回调的模式处理 GUI 事件,成为现代事件驱动编程的雏形。1990 年代 libevent、libev 等 C 异步 I/O 库将回调模式推广到网络编程。2009 年 Ryan Dahl 发布 Node.js,底层 libuv 大量使用函数指针实现异步回调,使 JavaScript 的回调模式成为主流。Redis、Nginx、memcached 等高性能 C 服务也通过函数指针实现命令分发、模块扩展、事件处理。
-
-### 4. C++ 虚函数与函数指针的对比
-
-C++ 在 1985 年引入虚函数(virtual function),通过虚函数表(vtable)实现运行时多态。虚函数本质上编译器自动生成的函数指针表,语法上更安全、更易用,但运行时开销与 C 函数指针相当(一次间接跳转 + 寄存器加载)。C 函数指针的优势在于显式控制、无隐藏状态、可跨语言绑定(Foreign Function Interface),劣势在于缺乏类型安全与生命周期管理。
-
-## 形式化定义
-
-### 1. 函数指针类型
-
-设函数类型 $F = \text{Ret}(\text{Arg}_1, \text{Arg}_2, \dots, \text{Arg}_n)$,其指针类型为 $F^* = \text{Ret}(*)(\text{Arg}_1, \text{Arg}_2, \dots, \text{Arg}_n)$。函数名 $f$ 在大多数上下文中隐式转换为 $f^*$(函数到指针的 decay)。
-
-$$
-\text{decay}: F \to F^*, \quad f \mapsto \&f
-$$
-
-调用函数指针 $p$ 的语义:$p(a_1, a_2, \dots, a_n)$ 等价于 $(*p)(a_1, a_2, \dots, a_n)$,二者在 C 标准中完全等价。
-
-### 1. 调用约定
-
-调用约定(calling convention)定义函数参数传递、返回值传递、寄存器使用、栈清理的规则。不同平台与编译器有不同默认约定:
-
-| 调用约定 | 参数传递 | 栈清理 | 典型平台 |
-|---------|---------|--------|---------|
-| `cdecl` | 右到左压栈 | 调用者 | C 默认(x86) |
-| `stdcall` | 右到左压栈 | 被调用者 | Win32 API |
-| `fastcall` | 部分寄存器 + 栈 | 被调用者 | MSVC 优化 |
-| `thiscall` | this 在 ECX,其余栈 | 被调用者 | MSVC C++ |
-| `vectorcall` | 寄存器 + 向量寄存器 | 被调用者 | MSVC SIMD |
-| System V AMD64 | 整数参数 RDI/RSI/RDX/RCX/R8/R9 | 调用者 | Linux x86-64 |
-| ARM AAPCS | R0-R3 + 栈 | 调用者 | ARM |
-
-函数指针类型必须包含调用约定信息(在 x86 Windows 上),不匹配的调用约定导致未定义行为。
-
-### 2. 函数指针数组
-
-函数指针数组 $A = [f_1^*, f_2^*, \dots, f_n^*]$,索引调用 $A[i](args)$ 等价于间接跳转:
-
-$$
-\text{call}(A, i, \text{args}) = \text{indirect\_jump}(A[i], \text{args})
-$$
-
-跳转表(jump table)利用函数指针数组替代 `switch-case`,在某些场景下性能更优(因间接跳转可被分支预测器预测,而大型 switch 的比较链无法)。
-
-### 3. 回调契约
-
-回调函数 $g$ 通过函数指针 $p$ 注册到调用者 $f$,调用形式:
-
-$$
-f(p, \text{context}) \to f \text{ 在适当时机调用 } p(\text{args}, \text{context})
-$$
-
-`context` 通常是 `void *` 指针,允许调用者传递任意状态,模拟闭包的捕获变量。形式化地,带上下文的回调等价于:
-
-$$
-\text{closure}(g, \text{captured\_vars}) \approx \lambda \text{args}. g(\text{args}, \text{captured\_vars})
-$$
-
-### 4. 函数指针的类型安全
-
-C 函数指针类型严格区分返回类型与参数类型,但允许通过强制转换绕过:
-
-```c
-int add(int a, int b) { return a + b; }
-void (*p)(void) = (void (*)(void))add;  /* 强制转换 */
-p();  /* UB:实际调用 add,但参数与返回值不匹配 */
-```
-
-形式化:设函数 $f$ 真实类型 $F_1 = \text{Ret}_1(\text{Args}_1)$,函数指针 $p$ 声明类型 $F_2^* = \text{Ret}_2^*(\text{Args}_2)$。若 $F_1 \neq F_2$,通过 $p$ 调用 $f$ 是未定义行为(C 标准 6.5.2.2)。
-
-## 理论推导
-
-### 1. 间接调用的性能开销
-
-直接调用 `call func` 指令编码短(5 字节相对调用),目标地址在指令中固定,分支预测器(BTU)可 100% 预测。间接调用 `call [rax]` 指令编码短(2 字节),但目标地址在寄存器中,分支预测器需要查询 BTB(Branch Target Buffer)间接跳转历史。
-
-现代 CPU 的间接跳转预测器(如 Intel ITTAGE、AMD Indirect Branch Predictor)在预测命中时开销接近直接调用(1-2 周期),但预测失败需冲刷流水线,代价 15-20 周期。函数指针数组的间接调用因目标随索引变化,预测难度高于单一函数指针。
-
-### 1. 跳转表 vs switch-case 的性能
-
-`switch-case` 在 case 数量少时编译为比较链,case 多且密集时编译为跳转表。手动跳转表(函数指针数组)的优势:
-
-- 显式控制布局,可放至缓存友好的内存区域。
-- 函数体可独立优化(每个函数单独编译,寄存器分配独立)。
-- 支持运行时动态修改(替换函数指针)。
-
-劣势:
-
-- 间接调用预测失败代价高。
-- 函数体分离可能破坏指令缓存局部性。
-- 无法内联(switch-case 在 case 体小时可被编译器内联到调用者)。
-
-### 2. 闭包模拟的内存模型
-
-C 不支持闭包(lexical closure),但可通过"函数指针 + 上下文指针"模拟:
-
-```c
-typedef struct {
-    int threshold;
-    int count;
-} FilterState;
-
-void filter_callback(int value, void *ctx) {
-    FilterState *s = (FilterState *)ctx;
-    if (value > s->threshold) s->count++;
-}
-```
-
-上下文指针 `ctx` 等价于闭包捕获的变量,函数指针 + 上下文 = 闭包。这种模拟的局限:
-
-- 上下文是显式参数,污染函数签名。
-- 上下文生命周期需手动管理(类似手动 GC)。
-- 无法嵌套定义(闭包可定义在函数内部)。
-
-GCC 扩展支持嵌套函数与词法捕获,但非标准且不可移植:
-
-```c
-void outer(int threshold) {
-    int count = 0;
-    void inner(int value) {  /* GCC 嵌套函数 */
-        if (value > threshold) count++;
-    }
-    /* inner 持有对 threshold、count 的词法引用 */
-}
-```
-
-### 3. 类型安全的形式化
-
-设函数 $f$ 真实类型 $F_1 = \text{Ret}_1(\text{Arg}_1, \dots, \text{Arg}_m)$,函数指针声明类型 $F_2^* = \text{Ret}_2^*(\text{Arg}'_1, \dots, \text{Arg}'_n)$。安全调用要求:
-
-$$
-\text{safe}(p, f) \iff \text{Ret}_1 = \text{Ret}_2 \land m = n \land \forall i: \text{Arg}_i = \text{Arg}'_i
-$$
-
-C 标准允许某些兼容类型的隐式转换(如 `int` 与 `signed int`),但忽略限定符(如 `const`)的行为未定义。强制转换 `(void (*)(void))f` 后调用是 UB,但 POSIX 信号处理函数 `void (*)(int)` 与 `void (*)(void)` 的转换在多数平台实际工作(因 ABI 兼容)。
-
-### 4. 函数指针与数据指针的大小
-
-C 标准 6.2.5 规定函数指针与数据指针是不同类型,大小可能不同(尽管在主流平台上都是 `sizeof(void *)`)。某些嵌入式平台(如 Harvard 架构)函数地址空间与数据地址空间分离,函数指针可能比数据指针大或小。
-
-POSIX 标准 `dlsym` 返回 `void *`,但严格来说应返回 `void (*)(void)`,因函数指针不能安全转换为 `void *`。POSIX 强制要求 `void *` 与函数指针大小一致以支持 `dlsym`,这是 POSIX 对 C 标准的扩展。
-
-## 代码示例
-
-### 示例 1:基础函数指针声明与调用
-
-```c
-/* 文件: basic_func_ptr.c
- * 演示函数指针的基本声明、初始化与调用
- */
-#include <stdio.h>
-
-/* 简单算术函数 */
-int add(int a, int b) { return a + b; }
-int subtract(int a, int b) { return a - b; }
-int multiply(int a, int b) { return a * b; }
-int divide(int a, int b) { return b != 0 ? a / b : 0; }
-
-int main(void) {
-    /* 声明函数指针:int (*)(int, int) */
-    int (*op)(int, int);
-
-    /* 赋值:函数名隐式转换为函数指针 */
-    op = add;  /* 等价于 op = &add; */
-    printf("10 + 3 = %d\n", op(10, 3));  /* 等价于 (*op)(10, 3) */
-
-    op = subtract;
-    printf("10 - 3 = %d\n", op(10, 3));
-
-    op = multiply;
-    printf("10 * 3 = %d\n", op(10, 3));
-
-    op = divide;
-    printf("10 / 3 = %d\n", op(10, 3));
-
-    /* 函数指针比较 */
-    int (*op2)(int, int) = add;
-    if (op2 == add) {
-        printf("op2 指向 add\n");
-    }
-
-    return 0;
-}
-```
-
-### 示例 2:typedef 简化函数指针
-
-```c
-/* 文件: typedef_func_ptr.c
- * 演示使用 typedef 简化复杂的函数指针声明
- */
-#include <stdio.h>
-
-/* 不使用 typedef:声明复杂 */
-/* int (*ops[4])(int, int); */  /* 函数指针数组 */
-
-/* 使用 typedef:声明清晰 */
-typedef int (*BinaryOp)(int, int);  /* 二元运算函数指针类型 */
-typedef void (*Callback)(int);       /* 简单回调类型 */
-typedef void (*CallbackCtx)(int, void *);  /* 带上下文回调 */
-
-int add(int a, int b) { return a + b; }
-int max(int a, int b) { return a > b ? a : b; }
-
-void print_value(int x) {
-    printf("value: %d\n", x);
-}
-
-void accumulate(int x, void *ctx) {
-    int *sum = (int *)ctx;
-    *sum += x;
-}
-
-int main(void) {
-    /* 使用 typedef 后,声明更清晰 */
-    BinaryOp op1 = add;
-    BinaryOp op2 = max;
-
-    printf("add(3, 5) = %d\n", op1(3, 5));
-    printf("max(3, 5) = %d\n", op2(3, 5));
-
-    /* 函数指针数组 */
-    BinaryOp ops[] = {add, max};
-    printf("ops[0](10, 20) = %d\n", ops[0](10, 20));
-    printf("ops[1](10, 20) = %d\n", ops[1](10, 20));
-
-    /* 回调示例 */
-    Callback cb = print_value;
-    cb(42);
-
-    /* 带上下文回调 */
-    int sum = 0;
-    CallbackCtx cbctx = accumulate;
-    int arr[] = {1, 2, 3, 4, 5};
-    for (size_t i = 0; i < sizeof(arr)/sizeof(arr[0]); i++) {
-        cbctx(arr[i], &sum);
-    }
-    printf("sum = %d\n", sum);  /* 15 */
-
-    return 0;
-}
-```
-
-### 示例 3:qsort 回调与自定义比较
-
-```c
-/* 文件: qsort_callback.c
- * 演示 qsort 与多种比较回调
- */
+/* qsort_demo.c：同一个 qsort，排三种类型 */
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
-/* 升序比较 */
-int cmp_asc(const void *a, const void *b) {
-    int va = *(const int *)a;
-    int vb = *(const int *)b;
-    return (va > vb) - (va < vb);  /* 避免溢出 */
+int cmp_int(const void *pa, const void *pb) {
+    int a = *(const int *)pa, b = *(const int *)pb;
+    return (a > b) - (a < b);
 }
 
-/* 降序比较 */
-int cmp_desc(const void *a, const void *b) {
-    return cmp_asc(b, a);
+int cmp_double(const void *pa, const void *pb) {
+    double a = *(const double *)pa, b = *(const double *)pb;
+    return (a > b) - (a < b);
 }
 
-/* 按绝对值比较 */
-int cmp_abs(const void *a, const void *b) {
-    int va = abs(*(const int *)a);
-    int vb = abs(*(const int *)b);
-    return (va > vb) - (va < vb);
+int cmp_str(const void *pa, const void *pb) {
+    const char *a = *(const char *const *)pa;
+    const char *b = *(const char *const *)pb;
+    return strcmp(a, b);
 }
 
-/* 按模 k 比较(需要全局变量,不推荐) */
-static int g_mod;
-int cmp_mod(const void *a, const void *b) {
-    int va = *(const int *)a % g_mod;
-    int vb = *(const int *)b % g_mod;
-    return (va > vb) - (va < vb);
-}
+int main(void) {
+    int    nums[]  = { 42, 7, 19, 3 };
+    double temps[] = { 36.6, 0.5, -12.8, 99.9 };
+    char  *words[] = { "pear", "apple", "fig", "banana" };
 
-void print_array(const int *arr, size_t n, const char *label) {
-    printf("%s: ", label);
+    qsort(nums,  4, sizeof nums[0],  cmp_int);
+    qsort(temps, 4, sizeof temps[0], cmp_double);
+    qsort(words, 4, sizeof words[0], cmp_str);
+
+    for (int i = 0; i < 4; i++) printf("%d ", nums[i]);
+    printf("\n");
+    for (int i = 0; i < 4; i++) printf("%.1f ", temps[i]);
+    printf("\n");
+    for (int i = 0; i < 4; i++) printf("%s ", words[i]);
+    printf("\n");
+    return 0;
+}
+```
+
+```bash
+gcc -Wall -Wextra -g qsort_demo.c -o qsort_demo
+./qsort_demo
+```
+
+预期输出：
+
+```text
+3 7 19 42
+-12.8 0.5 36.6 99.9
+apple banana fig pear
+```
+
+疑点：qsort 在标准库里，1978 年写 K&R C 的人不可能见过你的 `double`，它凭什么排得对？答案在每个调用的第四个实参里：`cmp_int`、`cmp_double`、`cmp_str`——这些是你写的**函数的名字**，却被当成值传进了库函数内部。把行为当参数传，这就是函数指针（function pointer）。三个比较器的门道，第 4 节逐一拆开。
+
+## 2. 函数指针语法：声明、赋值与调用
+
+函数是内存里的一段指令，有入口地址。函数指针就是一个存这个地址的变量——类型是「返回类型 + 参数列表」合起来的签名，一个都不能差。
+
+```c
+/* fp_basics.c */
+#include <stdio.h>
+
+int add(int a, int b) { return a + b; }
+
+int main(void) {
+    int (*fp)(int, int) = add;     /* 声明并初始化 */
+
+    printf("%d\n", fp(2, 3));      /* 5：直接通过指针调用 */
+    printf("%d\n", (*fp)(2, 3));   /* 5：解引用后调用，两种写法完全等价 */
+
+    int (*gp)(int, int) = &add;    /* 与 add 等价：& 可写可不写；另可验证 fp == gp 成立 */
+    printf("%d\n", gp(10, 20));    /* 30 */
+    return 0;
+}
+```
+
+预期输出：
+
+```text
+5
+5
+30
+```
+
+三个语法点，每个背后有机制：
+
+1. **声明怎么读**：`int (*fp)(int, int)` 从里往外读——`(*fp)` 的括号先把 fp 和 `*` 锁在一起，说明 fp 是指针；跟着的 `(int, int)` 说明它指向的函数吃两个 int；最左的 `int` 说明返回 int。括号不是装饰：`()` 的优先级高于 `*`，不写括号含义就变（见第 3 点）。
+2. **函数名即地址**（函数到指针的转换，function-to-pointer conversion）：赋值和传参时，函数名自动退化成函数指针，所以 `fp = add` 与 `fp = &add` 等价。这也是识别回调的标志：参数位置出现「不带括号的函数名」。
+3. **与「返回指针的函数」区分**：`int *f(int)` 里 `f` 先和 `(int)` 结合——f 是函数，返回 `int *`；`int (*f)(int)` 里括号先锁住 `(*f)`——f 是指针。一句话：**看标识符先跟 `()` 还是先跟 `*` 结合**。这个读法延伸下去就是复杂声明的整套规则，[复杂声明解析](/c/190-ComplexDeclarationParsing) 专门讲。
+
+调用写法上 `fp(x)` 与 `(*fp)(x)` 等价：解引用函数指针得到「函数指代符」，它随即又退化回指针——绕一圈回到原地，标准因此规定两种写法同义。工程上常用短的 `fp(x)`；`(*fp)(x)` 的好处是「我在间接调用」写在脸上。
+
+修改实验一：把声明改成 `double (*fp)(int, int) = add;` 再编译。返回类型变了，类型就不匹配——新编译器（GCC 14 起）直接报错 `incompatible pointer type`，老编译器给警告。记牢这条报错，第 7 节解释为什么标准对这种代码判死刑。
+
+## 3. typedef 三步法与函数指针做参数
+
+裸写函数指针类型，声明一长就难读。typedef 三步法给它起名：
+
+1. 先写出你想要的变量声明：`int (*fp)(int, int);`
+2. 把变量名换成新类型名，前面加 typedef：`typedef int (*BinaryOp)(int, int);`
+3. 之后 `BinaryOp` 就是一个正常类型：`BinaryOp fp = add;`
+
+还有一种读内核源码会遇到的写法——typedef 的是**函数类型**而不是指针类型：
+
+```c
+typedef int BinOpFn(int, int);   /* 给「int(int,int) 这个函数类型」起名 */
+BinOpFn *fp = add;               /* 加个 * 仍是函数指针 */
+```
+
+typedef 只是同义词，不发明新类型，所以 `BinOpFn *fp` 与 `int (*fp)(int, int)` 完全相同。两种都对，指针版更常见。typedef 最大的收益在函数签名里——函数指针做参数：
+
+```c
+/* transform.c：行为由调用者注入 */
+#include <stdio.h>
+
+typedef int (*IntFn)(int);
+
+int square(int x) { return x * x; }
+int negate(int x) { return -x; }
+
+void transform(int *arr, size_t n, IntFn f) {
     for (size_t i = 0; i < n; i++) {
-        printf("%d ", arr[i]);
+        arr[i] = f(arr[i]);
     }
+}
+
+int main(void) {
+    int a[] = { 1, 2, 3, 4 };
+    transform(a, 4, square);
+    for (int i = 0; i < 4; i++) printf("%d ", a[i]);
     printf("\n");
-}
 
-int main(void) {
-    int arr[] = {5, -3, 8, -1, 2, -7, 4};
-    size_t n = sizeof(arr) / sizeof(arr[0]);
-
-    print_array(arr, n, "original");
-
-    /* 升序 */
-    qsort(arr, n, sizeof(int), cmp_asc);
-    print_array(arr, n, "ascending");
-
-    /* 降序 */
-    qsort(arr, n, sizeof(int), cmp_desc);
-    print_array(arr, n, "descending");
-
-    /* 按绝对值 */
-    qsort(arr, n, sizeof(int), cmp_abs);
-    print_array(arr, n, "by absolute");
-
-    /* 按模 3(使用全局变量,不推荐,推荐 qsort_r) */
-    g_mod = 3;
-    qsort(arr, n, sizeof(int), cmp_mod);
-    print_array(arr, n, "by mod 3");
-
-    return 0;
-}
-```
-
-### 示例 4:带上下文回调(qsort_r 风格)
-
-```c
-/* 文件: callback_with_context.c
- * 演示带上下文的回调,避免全局变量
- */
-#include <stdio.h>
-#include <stdlib.h>
-
-/* 比较上下文 */
-typedef struct {
-    int modulus;     /* 取模基数 */
-    int ascending;   /* 1 升序,0 降序 */
-} CompareContext;
-
-/* 带上下文的比较函数 */
-int cmp_with_ctx(const void *a, const void *b, void *ctx) {
-    const CompareContext *c = (const CompareContext *)ctx;
-    int va = *(const int *)a % c->modulus;
-    int vb = *(const int *)b % c->modulus;
-    int result = (va > vb) - (va < vb);
-    return c->ascending ? result : -result;
-}
-
-/* 通用排序包装:接受带上下文回调 */
-void sort_with_context(int *arr, size_t n,
-                       int (*cmp)(const void *, const void *, void *),
-                       void *ctx) {
-    /* 简化的冒泡排序(演示用,实际应使用 qsort_r) */
-    for (size_t i = 0; i < n; i++) {
-        for (size_t j = i + 1; j < n; j++) {
-            if (cmp(&arr[i], &arr[j], ctx) > 0) {
-                int tmp = arr[i];
-                arr[i] = arr[j];
-                arr[j] = tmp;
-            }
-        }
-    }
-}
-
-void print_array(const int *arr, size_t n) {
-    for (size_t i = 0; i < n; i++) printf("%d ", arr[i]);
+    transform(a, 4, negate);
+    for (int i = 0; i < 4; i++) printf("%d ", a[i]);
     printf("\n");
-}
-
-int main(void) {
-    int arr[] = {5, -3, 8, -1, 2, -7, 4, 10, 6, 9};
-    size_t n = sizeof(arr) / sizeof(arr[0]);
-
-    CompareContext ctx1 = {.modulus = 3, .ascending = 1};
-    sort_with_context(arr, n, cmp_with_ctx, &ctx1);
-    printf("mod 3 ascending: ");
-    print_array(arr, n);
-
-    CompareContext ctx2 = {.modulus = 5, .ascending = 0};
-    sort_with_context(arr, n, cmp_with_ctx, &ctx2);
-    printf("mod 5 descending: ");
-    print_array(arr, n);
-
     return 0;
 }
 ```
 
-### 示例 5:事件系统实现
+预期输出：
 
-```c
-/* 文件: event_system.c
- * 演示基于函数指针的事件系统:订阅、发布、多处理器
- */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define MAX_HANDLERS 16
-
-/* 事件类型 */
-typedef enum {
-    EVENT_CLICK,
-    EVENT_KEY_PRESS,
-    EVENT_MOUSE_MOVE,
-    EVENT_TIMER,
-    EVENT_CUSTOM
-} EventType;
-
-/* 事件结构 */
-typedef struct {
-    EventType type;
-    int x, y;          /* 鼠标坐标 */
-    int key_code;      /* 按键码 */
-    const char *data;  /* 自定义数据 */
-} Event;
-
-/* 事件处理器类型 */
-typedef void (*EventHandler)(const Event *);
-
-/* 事件系统 */
-typedef struct {
-    EventHandler handlers[MAX_HANDLERS];
-    EventType handler_types[MAX_HANDLERS];
-    int count;
-} EventSystem;
-
-/* 初始化事件系统 */
-void event_system_init(EventSystem *es) {
-    memset(es, 0, sizeof(*es));
-}
-
-/* 订阅事件 */
-int event_system_subscribe(EventSystem *es, EventType type, EventHandler handler) {
-    if (es->count >= MAX_HANDLERS) return -1;
-    if (handler == NULL) return -1;
-    es->handlers[es->count] = handler;
-    es->handler_types[es->count] = type;
-    es->count++;
-    return 0;
-}
-
-/* 发布事件 */
-void event_system_emit(EventSystem *es, const Event *event) {
-    for (int i = 0; i < es->count; i++) {
-        if (es->handler_types[i] == event->type || es->handler_types[i] == EVENT_CUSTOM) {
-            es->handlers[i](event);
-        }
-    }
-}
-
-/* 具体处理器 */
-void on_click(const Event *e) {
-    printf("[click] at (%d, %d)\n", e->x, e->y);
-}
-
-void on_key(const Event *e) {
-    printf("[key] code=%d\n", e->key_code);
-}
-
-void logger(const Event *e) {
-    const char *type_str[] = {"CLICK", "KEY", "MOUSE", "TIMER", "CUSTOM"};
-    printf("[log] type=%s", type_str[e->type]);
-    if (e->type == EVENT_CLICK) printf(" x=%d y=%d", e->x, e->y);
-    if (e->type == EVENT_KEY_PRESS) printf(" key=%d", e->key_code);
-    printf("\n");
-}
-
-void custom_handler(const Event *e) {
-    if (e->data) {
-        printf("[custom] data=%s\n", e->data);
-    }
-}
-
-int main(void) {
-    EventSystem es;
-    event_system_init(&es);
-
-    /* 订阅 */
-    event_system_subscribe(&es, EVENT_CLICK, on_click);
-    event_system_subscribe(&es, EVENT_KEY_PRESS, on_key);
-    event_system_subscribe(&es, EVENT_CUSTOM, custom_handler);
-    /* logger 监听所有事件(订阅 EVENT_CUSTOM 作为通配) */
-    /* 实际可扩展为 EVENT_ANY */
-
-    /* 发布事件 */
-    Event click = {.type = EVENT_CLICK, .x = 100, .y = 200};
-    event_system_emit(&es, &click);
-
-    Event key = {.type = EVENT_KEY_PRESS, .key_code = 65};
-    event_system_emit(&es, &key);
-
-    Event custom = {.type = EVENT_CUSTOM, .data = "hello world"};
-    event_system_emit(&es, &custom);
-
-    return 0;
-}
+```text
+1 4 9 16
+-1 -4 -9 -16
 ```
 
-### 示例 6:策略模式
+`transform` 对数组元素「做什么」完全由调用者决定——它自己只管「逐个应用」。这就是回调（callback）模式：被调用者在合适时机回头调用你塞给它的函数。
+
+顺带一个常用小件——返回函数指针的函数。有了 typedef，返回类型一行写完；没有 typedef 就得写 `int (*pick_op(char c))(int, int)`，典型的复杂声明（[复杂声明解析](/c/190-ComplexDeclarationParsing) 练这类读法）：
 
 ```c
-/* 文件: strategy_pattern.c
- * 演示使用函数指针实现策略模式
- */
-#include <stdio.h>
-#include <stdlib.h>
-
-/* 折扣策略类型 */
-typedef double (*DiscountStrategy)(double price, void *ctx);
-
-/* 具体策略:无折扣 */
-double no_discount(double price, void *ctx) {
-    (void)ctx;
-    return price;
-}
-
-/* 具体策略:百分比折扣 */
-double percentage_discount(double price, void *ctx) {
-    double *percent = (double *)ctx;
-    return price * (1.0 - *percent / 100.0);
-}
-
-/* 具体策略:固定金额减免 */
-double fixed_discount(double price, void *ctx) {
-    double *amount = (double *)ctx;
-    return price > *amount ? price - *amount : 0;
-}
-
-/* 具体策略:满减 */
-double threshold_discount(double price, void *ctx) {
-    /* ctx 包含 [threshold, reduction] */
-    double *params = (double *)ctx;
-    double threshold = params[0];
-    double reduction = params[1];
-    return price >= threshold ? price - reduction : price;
-}
-
-/* 应用折扣 */
-double apply_discount(double price, DiscountStrategy strategy, void *ctx) {
-    return strategy(price, ctx);
-}
-
-int main(void) {
-    double price = 200.0;
-    double percent = 20.0;  /* 20% off */
-    double amount = 50.0;   /* 减 50 */
-    double params[] = {150.0, 30.0};  /* 满 150 减 30 */
-
-    printf("原价: %.2f\n", price);
-    printf("无折扣: %.2f\n", apply_discount(price, no_discount, NULL));
-    printf("8 折: %.2f\n", apply_discount(price, percentage_discount, &percent));
-    printf("减 50: %.2f\n", apply_discount(price, fixed_discount, &amount));
-    printf("满 150 减 30: %.2f\n",
-           apply_discount(price, threshold_discount, params));
-
-    return 0;
-}
-```
-
-### 示例 7:跳转表(替代 switch-case)
-
-```c
-/* 文件: jump_table.c
- * 演示使用函数指针数组实现跳转表,替代 switch-case
- */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-/* 计算器操作函数 */
-double calc_add(double a, double b) { return a + b; }
-double calc_sub(double a, double b) { return a - b; }
-double calc_mul(double a, double b) { return a * b; }
-double calc_div(double a, double b) { return b != 0 ? a / b : 0; }
-double calc_mod(double a, double b) { return b != 0 ? (double)((int)a % (int)b) : 0; }
-double calc_pow(double a, double b) {
-    double result = 1;
-    int exp = (int)b;
-    while (exp-- > 0) result *= a;
-    return result;
-}
-
-/* 操作类型枚举 */
-typedef enum {
-    OP_ADD, OP_SUB, OP_MUL, OP_DIV, OP_MOD, OP_POW, OP_COUNT
-} Operation;
-
-/* 跳转表:函数指针数组 */
-typedef double (*CalcOp)(double, double);
-static const CalcOp calc_ops[OP_COUNT] = {
-    [OP_ADD] = calc_add,
-    [OP_SUB] = calc_sub,
-    [OP_MUL] = calc_mul,
-    [OP_DIV] = calc_div,
-    [OP_MOD] = calc_mod,
-    [OP_POW] = calc_pow
-};
-
-/* 操作名称表(与跳转表对应) */
-static const char *op_names[OP_COUNT] = {
-    [OP_ADD] = "+",
-    [OP_SUB] = "-",
-    [OP_MUL] = "*",
-    [OP_DIV] = "/",
-    [OP_MOD] = "%",
-    [OP_POW] = "^"
-};
-
-/* 通过跳转表执行 */
-double calculate(Operation op, double a, double b) {
-    if (op >= 0 && op < OP_COUNT) {
-        return calc_ops[op](a, b);
-    }
-    fprintf(stderr, "invalid operation: %d\n", op);
-    return 0;
-}
-
-int main(void) {
-    double a = 10.0, b = 3.0;
-
-    for (Operation op = OP_ADD; op < OP_COUNT; op++) {
-        printf("%.2f %s %.2f = %.2f\n", a, op_names[op], b,
-               calculate(op, a, b));
-    }
-
-    return 0;
-}
-```
-
-### 示例 8:返回函数指针的工厂
-
-```c
-/* 文件: func_ptr_factory.c
- * 演示返回函数指针的工厂函数
- */
-#include <stdio.h>
-#include <string.h>
-
-/* 运算函数类型 */
-typedef int (*IntOp)(int, int);
+typedef int (*BinOp)(int, int);
 
 int add(int a, int b) { return a + b; }
 int sub(int a, int b) { return a - b; }
-int mul(int a, int b) { return a * b; }
-int divide(int a, int b) { return b != 0 ? a / b : 0; }
 
-/* 工厂函数:根据字符返回对应运算函数 */
-IntOp get_operation(char op) {
-    switch (op) {
+BinOp pick_op(char c) {
+    switch (c) {
         case '+': return add;
         case '-': return sub;
-        case '*': return mul;
-        case '/': return divide;
-        default:  return NULL;
+        default:  return NULL;   /* 未知运算符用 NULL 表达 */
     }
 }
+```
 
-/* 工厂函数:根据字符串返回运算函数 */
-IntOp get_operation_by_name(const char *name) {
-    if (strcmp(name, "add") == 0) return add;
-    if (strcmp(name, "sub") == 0) return sub;
-    if (strcmp(name, "mul") == 0) return mul;
-    if (strcmp(name, "div") == 0) return divide;
-    return NULL;
+调用方必须先判 NULL 再调用（第 7 节讲为什么）。
+
+修改实验二：给 `pick_op` 增加乘法分支，并在 main 里调用 `pick_op('?')` 验证返回 NULL——「未知运算符」该报错还是给默认值？这就是 API 设计。
+
+## 4. 回调实战一：qsort 与比较器契约
+
+现在回到开头。qsort 的完整签名：
+
+```c
+void qsort(void *ptr, size_t count, size_t size,
+           int (*compar)(const void *, const void *));
+```
+
+它排的是「一块内存里若干个等长元素」，元素类型一无所知，所以前三个参数只够它找到每个元素的**地址**；至于两个元素谁大谁小，只能反过来问调用者——第四个参数就是这个问题本身。参数类型是 `const void *`（通用对象指针）：qsort 递给你两张「不知道内容的字条」，你清楚自己的类型，转回正确类型再解引用。
+
+比较器契约（硬规定，不是约定俗成）：返回负数表示第一参数排在第二参数之前，返回零表示两元素等价、顺序不分先后，返回正数表示第一参数排在第二参数之后。手册页原文：比较函数必须在第一参数「小于、等于或大于」第二参数时，相应地返回「小于、等于或大于零」的整数。同时它**只读不写**两个元素，且对同一对元素必须给出一致的结果。
+
+### 4.1 减法溢出陷阱实录
+
+网上教程最常见的写法是直接 `return a - b;`（即下面 cmp_bad 第 7 行）。日常小数字下它工作正常，危险恰恰在此——测试全过，线上爆炸。制造一次事故：
+
+```c
+/* cmp_sub.c：减法比较器在极端值上翻车 */
+#include <stdio.h>
+#include <stdlib.h>
+#include <limits.h>
+
+int cmp_bad(const void *pa, const void *pb) {
+    return *(const int *)pa - *(const int *)pb;   /* 第 7 行 */
 }
 
 int main(void) {
-    /* 通过字符获取 */
-    IntOp op = get_operation('+');
-    if (op) {
-        printf("5 + 3 = %d\n", op(5, 3));
-    }
-
-    /* 通过字符串获取 */
-    op = get_operation_by_name("mul");
-    if (op) {
-        printf("5 * 3 = %d\n", op(5, 3));
-    }
-
-    /* 错误处理 */
-    op = get_operation('?');
-    if (!op) {
-        printf("unsupported operation\n");
-    }
-
+    int arr[] = { 0, INT_MAX, INT_MIN };
+    qsort(arr, 3, sizeof arr[0], cmp_bad);
+    for (int i = 0; i < 3; i++) printf("%d ", arr[i]);
+    printf("\n");
     return 0;
 }
 ```
 
-### 示例 9:闭包模拟(带状态的回调)
+```bash
+gcc -Wall -Wextra -g cmp_sub.c -o cmp_sub && ./cmp_sub
+gcc -Wall -Wextra -g -fsanitize=undefined cmp_sub.c -o cmp_sub_ubsan && ./cmp_sub_ubsan
+```
+
+第一次运行的典型输出（实现与库版本不同、结果可能不同——重点是不升序）：
+
+```text
+0 2147483647 -2147483648
+```
+
+排完序 INT_MAX 竟然排在 INT_MIN 前面。原因：这些差值超出 int 范围，有符号溢出是未定义行为（UB）；实践中回绕成负数，比较器给出颠倒的结论。第二次运行带上 UBSan，标准替你盖章（列号随版本略有差异）：
+
+```text
+cmp_sub.c:7:12: runtime error: signed integer overflow: 0 - -2147483648 cannot be represented in type 'int'
+0 2147483647 -2147483648
+```
+
+正确写法（推荐第一种）：
 
 ```c
-/* 文件: closure_sim.c
- * 演示通过"函数指针 + 上下文结构"模拟闭包
- */
-#include <stdio.h>
-#include <stdlib.h>
+return (a > b) - (a < b);   /* 两个 0/1 相减，结果只有 -1、0、+1 */
+/* 等价：if (a < b) return -1; if (a > b) return 1; return 0; */
+```
 
-/* 过滤器上下文(模拟闭包捕获的变量) */
+`(a > b) - (a < b)` 的两个括号各是 0 或 1，相减永远落在 -1、0、+1，不存在溢出；qsort 只看符号，-1 和 -2147483648 对它等价。编译器认得这个惯用法，生成的代码与减法版一样是几条无分支指令。降序调转：`(a < b) - (a > b)`。double 同理用比较运算符写，绝不要写 `a - b`——除了精度问题还有 NaN：NaN 与任何数比较都为假，两个括号同时取 0，NaN 的位置于是未指定。
+
+### 4.2 字符串比较器：指针的指针
+
+回看第 1 节的 `cmp_str`。要排的是 `char *words[]`——数组元素是 `char *`（一个地址），qsort 递来的 `pa` 指向**这个数组元素**，所以是「指向 char 的指针」的指针，先解一层再交给 strcmp（strcmp 本身就返回负/零/正）：
+
+```c
+const char *a = *(const char *const *)pa;   /* 解一层：拿到元素里的那个 char * */
+const char *b = *(const char *const *)pb;
+return strcmp(a, b);
+```
+
+漏解一层是常见错误：`strcmp((const char *)pa, (const char *)pb)` 比较的是数组元素的位置（地址），排出来与字典序毫无关系——本文末预测题就是它。二级指针的完整讨论在 [二级指针与指针数组](/c/160-DoublePointerPointerArray)，此处先照抄模式。
+
+### 4.3 等价不等于相等：qsort 不稳定
+
+还有一条易踩的规定：两元素被判等价时，它们在结果里的相对顺序**未指定**。按分数排结构体时，同分学生的先后可能与插入顺序不同。需要稳定，就在比较器里补第二关键字（如同分再比学号）。标准库自己提供了带上下文参数的 `qsort_s`（C11 附件 K）与 POSIX 的 `qsort_r`——第 6 节的上下文模式，标准库也在用。二分查找 `bsearch` 用与 qsort 完全相同的比较器签名，一套比较器两处复用；同族还有 `atexit`、`signal`，都是「库函数 + 用户回调」。
+
+修改实验三：把第 1 节程序里 `cmp_int` 的返回语句换成减法版，用数组 `{ 0, INT_MAX, INT_MIN }` 重跑第 4.1 节的事故——亲手复现一次「测试通过、极端值翻车」。
+
+## 5. 回调实战二：泛型 apply 与事件处理器表
+
+qsort 证明回调能进标准库，现在自己造两个：一个泛型遍历，一个事件订阅表。
+
+### 5.1 泛型 apply：遍历与累积
+
+```c
+/* apply.c：行为是参数，状态走 ctx */
+#include <stdio.h>
+
+typedef void (*VisitFn)(int value, void *ctx);
+
+void apply(const int *arr, size_t n, VisitFn visit, void *ctx) {
+    for (size_t i = 0; i < n; i++) {
+        visit(arr[i], ctx);          /* 每个元素交给调用者的行为 */
+    }
+}
+
+void print_visit(int value, void *ctx) { (void)ctx; printf("%d ", value); }
+void sum_visit(int value, void *ctx)   { *(int *)ctx += value; }   /* ctx 是调用者的变量 */
+
+int main(void) {
+    int arr[] = { 1, 2, 3, 4, 5 };
+    int sum = 0;
+
+    apply(arr, 5, print_visit, NULL);
+    printf("\n");
+    apply(arr, 5, sum_visit, &sum);
+    printf("sum = %d\n", sum);
+    return 0;
+}
+```
+
+预期输出：
+
+```text
+1 2 3 4 5
+sum = 15
+```
+
+`apply` 一次编写，遍历策略永不重写；换行为只需换函数。注意 `sum_visit` 没有返回累加值——回调需要「记住」跨多次调用的状态时，状态不能放回调自己的局部变量里（每次调用都重建），要放调用者传进来的 `ctx` 里。这个 `void *ctx` 就是 C 世界里回调的标配，下一节专门谈它。
+
+### 5.2 事件处理器表：订阅与发布
+
+```c
+/* events.c：订阅表 + 发布 */
+#include <stdio.h>
+
+#define MAX_HANDLERS 8
+
+typedef enum { EV_CLICK, EV_KEY, EV_QUIT, EV_COUNT } EventType;
+typedef void (*EventHandler)(int x, int y);
+
 typedef struct {
-    int threshold;
+    EventType    type;      /* 订阅哪类事件 */
+    EventHandler handler;   /* 到时调用谁 */
+} Subscription;
+
+static Subscription subs[MAX_HANDLERS];
+static int sub_count = 0;
+
+int subscribe(EventType type, EventHandler h) {
+    if (h == NULL || sub_count == MAX_HANDLERS) return -1;
+    subs[sub_count++] = (Subscription){ type, h };   /* C99 复合字面量 */
+    return 0;
+}
+
+void emit(EventType type, int x, int y) {
+    for (int i = 0; i < sub_count; i++) {
+        if (subs[i].type == type && subs[i].handler != NULL) subs[i].handler(x, y);
+    }
+}
+
+void on_click(int x, int y) { printf("click: (%d, %d)\n", x, y); }
+void on_key(int x, int y)   { printf("key at (%d, %d)\n", x, y); }
+
+int main(void) {
+    subscribe(EV_CLICK, on_click);
+    subscribe(EV_KEY, on_key);
+    emit(EV_CLICK, 100, 200);
+    emit(EV_KEY, 0, 65);
+    return 0;
+}
+```
+
+预期输出：
+
+```text
+click: (100, 200)
+key at (0, 65)
+```
+
+这是图形界面、网络库共用的「订阅-发布」骨架：事件源不关心谁在听，只按表广播。注意 `Subscription`——把函数指针和数据字段装进同一个结构体，就是「带注册信息的处理器」，Linux 内核的 `file_operations`、Nginx 的模块结构走的是同一条路（第 8 节）。此例逐个匹配事件类型；若一类事件只允许一个处理器、用枚举值直接做数组下标，就演化成跳转表——那是 [跳转表](/c/180-FunctionPointerCallbackJumpTable) 的主场。
+
+两个约定值得从第一天养成：调用回调前判 NULL（`subscribe` 拒绝空指针，`emit` 再防一道）；回调不该修改它正在被遍历的那份数据（比如处理器里反手注销自己）——这类事故需要先标记、遍历完统一处理。
+
+修改实验四：给 events.c 增加 `EV_TIMER` 与一个 `on_timer`，订阅后 emit——验证加一种事件不需要改 `emit` 一行。
+
+## 6. C 函数指针不是闭包：void *ctx 补位
+
+换一种语言写 `sum_visit`，你多半会把 `sum` 直接写进函数体里捕获。C 的函数指针做不到：函数没有「随身行李」，**不存在闭包（closure）**——不能捕获定义处的变量，签名里没有的位置就无法访问。换来的好处是函数指针就是一个普通地址，零隐藏开销、可跨语言传递；代价是状态必须显式交接。`void *ctx` 模式就是 C 的补位方案：
+
+```c
+/* filter_ctx.c：回调不带状态，状态放结构体里递进去 */
+#include <stdio.h>
+
+typedef struct {
+    int threshold;   /* 想捕获的「环境变量」们 */
     int count;
     int sum;
-} FilterContext;
+} FilterCtx;
 
-/* 过滤回调:超过阈值时计数并累加 */
-void filter_and_accumulate(int value, void *ctx) {
-    FilterContext *c = (FilterContext *)ctx;
-    if (value > c->threshold) {
-        c->count++;
-        c->sum += value;
-        printf("  matched: %d (count=%d, sum=%d)\n",
-               value, c->count, c->sum);
-    }
+void apply(const int *arr, size_t n, void (*visit)(int, void *), void *ctx) {
+    for (size_t i = 0; i < n; i++) visit(arr[i], ctx);
 }
 
-/* 通用遍历函数:对每个元素调用回调 */
-void for_each(int *arr, size_t n, void (*callback)(int, void *), void *ctx) {
-    for (size_t i = 0; i < n; i++) {
-        callback(arr[i], ctx);
-    }
-}
-
-/* 更复杂的闭包:带谓词的过滤 */
-typedef int (*Predicate)(int, void *);
-
-typedef struct {
-    Predicate pred;
-    void *pred_ctx;
-    int *results;
-    size_t count;
-    size_t capacity;
-} Collector;
-
-void collect_if(int *arr, size_t n, Collector *c) {
-    for (size_t i = 0; i < n; i++) {
-        if (c->pred(arr[i], c->pred_ctx)) {
-            if (c->count < c->capacity) {
-                c->results[c->count++] = arr[i];
-            }
-        }
-    }
-}
-
-/* 谓词:大于阈值 */
-int greater_than(int x, void *ctx) {
-    int *threshold = (int *)ctx;
-    return x > *threshold;
-}
-
-/* 谓词:偶数 */
-int is_even(int x, void *ctx) {
-    (void)ctx;
-    return x % 2 == 0;
+void count_above(int value, void *ctx) {
+    FilterCtx *c = ctx;                        /* 拆行李：等价于闭包捕获的变量 */
+    if (value > c->threshold) { c->count++; c->sum += value; }
 }
 
 int main(void) {
-    int arr[] = {10, 25, 5, 30, 15, 40, 8, 50, 3, 35};
-    size_t n = sizeof(arr) / sizeof(arr[0]);
-
-    /* 简单闭包:FilterContext 捕获 threshold、count、sum */
-    FilterContext ctx = {.threshold = 20, .count = 0, .sum = 0};
-    printf("filtering > %d:\n", ctx.threshold);
-    for_each(arr, n, filter_and_accumulate, &ctx);
-    printf("total: count=%d, sum=%d\n", ctx.count, ctx.sum);
-
-    /* 复杂闭包:Collector + Predicate */
-    int results[10];
-    Collector collector = {
-        .pred = greater_than,
-        .pred_ctx = &(int){25},
-        .results = results,
-        .count = 0,
-        .capacity = 10
-    };
-    collect_if(arr, n, &collector);
-    printf("\ncollected > 25: ");
-    for (size_t i = 0; i < collector.count; i++) {
-        printf("%d ", results[i]);
-    }
-    printf("\n");
-
-    /* 切换谓词:收集偶数 */
-    collector.pred = is_even;
-    collector.pred_ctx = NULL;
-    collector.count = 0;
-    collect_if(arr, n, &collector);
-    printf("collected evens: ");
-    for (size_t i = 0; i < collector.count; i++) {
-        printf("%d ", results[i]);
-    }
-    printf("\n");
-
+    int arr[] = { 10, 25, 5, 30, 15 };
+    FilterCtx ctx = { .threshold = 20 };
+    apply(arr, 5, count_above, &ctx);
+    printf("count=%d sum=%d\n", ctx.count, ctx.sum);
     return 0;
 }
 ```
 
-### 示例 10:插件架构
+预期输出：
 
-```c
-/* 文件: plugin_arch.c
- * 演示基于函数指针的插件架构
- */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#define MAX_PLUGINS 16
-#define MAX_NAME_LEN 32
-
-/* 插件接口(通过函数指针表定义) */
-typedef struct {
-    char name[MAX_NAME_LEN];
-    int version;
-    void (*init)(void);
-    void (*process)(const char *input, char *output, size_t size);
-    void (*cleanup)(void);
-} Plugin;
-
-/* 插件注册表 */
-static Plugin plugins[MAX_PLUGINS];
-static int plugin_count = 0;
-
-/* 注册插件 */
-int register_plugin(const Plugin *p) {
-    if (plugin_count >= MAX_PLUGINS) return -1;
-    if (!p || !p->init || !p->process) return -1;
-    plugins[plugin_count] = *p;
-    plugin_count++;
-    return 0;
-}
-
-/* 初始化所有插件 */
-void init_all_plugins(void) {
-    for (int i = 0; i < plugin_count; i++) {
-        if (plugins[i].init) {
-            printf("initializing plugin: %s v%d\n",
-                   plugins[i].name, plugins[i].version);
-            plugins[i].init();
-        }
-    }
-}
-
-/* 通过插件链处理数据 */
-void process_through_plugins(const char *input, char *final_output, size_t size) {
-    char buf1[256], buf2[256];
-    strncpy(buf1, input, sizeof(buf1) - 1);
-    buf1[sizeof(buf1) - 1] = '\0';
-
-    for (int i = 0; i < plugin_count; i++) {
-        if (plugins[i].process) {
-            plugins[i].process(buf1, buf2, sizeof(buf2));
-            strncpy(buf1, buf2, sizeof(buf1) - 1);
-            buf1[sizeof(buf1) - 1] = '\0';
-        }
-    }
-
-    strncpy(final_output, buf1, size - 1);
-    final_output[size - 1] = '\0';
-}
-
-/* 清理所有插件 */
-void cleanup_all_plugins(void) {
-    for (int i = 0; i < plugin_count; i++) {
-        if (plugins[i].cleanup) {
-            printf("cleaning up plugin: %s\n", plugins[i].name);
-            plugins[i].cleanup();
-        }
-    }
-}
-
-/* 具体插件实现 */
-
-/* 大写转换插件 */
-void upper_init(void) { /* 可初始化资源 */ }
-void upper_process(const char *input, char *output, size_t size) {
-    size_t i;
-    for (i = 0; input[i] && i < size - 1; i++) {
-        output[i] = (input[i] >= 'a' && input[i] <= 'z')
-                    ? input[i] - 32 : input[i];
-    }
-    output[i] = '\0';
-}
-void upper_cleanup(void) { /* 释放资源 */ }
-
-/* 前缀添加插件 */
-void prefix_init(void) {}
-void prefix_process(const char *input, char *output, size_t size) {
-    snprintf(output, size, "[PREFIX] %s", input);
-}
-void prefix_cleanup(void) {}
-
-/* 后缀添加插件 */
-void suffix_init(void) {}
-void suffix_process(const char *input, char *output, size_t size) {
-    snprintf(output, size, "%s [SUFFIX]", input);
-}
-void suffix_cleanup(void) {}
-
-int main(void) {
-    /* 注册插件 */
-    Plugin upper_plugin = {
-        .name = "UpperConverter",
-        .version = 1,
-        .init = upper_init,
-        .process = upper_process,
-        .cleanup = upper_cleanup
-    };
-    Plugin prefix_plugin = {
-        .name = "PrefixAdder",
-        .version = 1,
-        .init = prefix_init,
-        .process = prefix_process,
-        .cleanup = prefix_cleanup
-    };
-    Plugin suffix_plugin = {
-        .name = "SuffixAdder",
-        .version = 1,
-        .init = suffix_init,
-        .process = suffix_process,
-        .cleanup = suffix_cleanup
-    };
-
-    register_plugin(&upper_plugin);
-    register_plugin(&prefix_plugin);
-    register_plugin(&suffix_plugin);
-
-    /* 初始化 */
-    init_all_plugins();
-
-    /* 处理数据 */
-    char output[512];
-    process_through_plugins("hello world", output, sizeof(output));
-    printf("\nfinal output: %s\n", output);
-
-    /* 清理 */
-    cleanup_all_plugins();
-
-    return 0;
-}
+```text
+count=2 sum=55
 ```
 
-### 示例 11:观察者模式(发布-订阅)
+心智模型一句话：**函数指针 + 上下文 = 闭包的 C 等价物**。闭包把捕获的变量藏在对象里、生命周期自动管理、可定义在函数体内；C 把捕获物摆进结构体由你亲手递入、生命周期手动管理、回调必须是文件级函数。替代方案各有代价：全局变量装状态最省事，可两处代码同时用这个回调就互相踩脚——这叫可重入性（reentrancy）问题，多线程与信号场景更危险，所以库 API 宁可在签名里多一个 `ctx` 参数（qsort_r/qsort_s 正是这么做的）。GCC 的嵌套函数扩展能捕获外层变量，但那是编译器私有语法，不可移植，认得即可。ctx 的生命周期是硬责任：把指向栈变量的 ctx 注册给「活得更久」的系统（事件循环、信号处理器），函数返回后回调拿到的就是悬空指针——注册类 API 必须想清楚谁分配、谁释放、何时注销。
 
-```c
-/* 文件: observer_pattern.c
- * 演示观察者模式:主题(Subject)与观察者(Observer)
- */
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+## 7. 函数指针与安全
 
-#define MAX_OBSERVERS 32
+### 7.1 类型不匹配是未定义行为
 
-/* 观察者回调类型 */
-typedef void (*ObserverCallback)(const char *event, void *data, void *ctx);
-
-/* 观察者结构 */
-typedef struct {
-    ObserverCallback callback;
-    void *ctx;  /* 观察者私有上下文 */
-} Observer;
-
-/* 主题(被观察对象) */
-typedef struct {
-    Observer observers[MAX_OBSERVERS];
-    int count;
-    char name[32];
-} Subject;
-
-/* 初始化主题 */
-void subject_init(Subject *s, const char *name) {
-    memset(s, 0, sizeof(*s));
-    strncpy(s->name, name, sizeof(s->name) - 1);
-}
-
-/* 订阅(注册观察者) */
-int subject_subscribe(Subject *s, ObserverCallback cb, void *ctx) {
-    if (s->count >= MAX_OBSERVERS) return -1;
-    if (!cb) return -1;
-    s->observers[s->count].callback = cb;
-    s->observers[s->count].ctx = ctx;
-    s->count++;
-    return 0;
-}
-
-/* 通知所有观察者 */
-void subject_notify(Subject *s, const char *event, void *data) {
-    printf("[%s] notifying %d observers about '%s'\n",
-           s->name, s->count, event);
-    for (int i = 0; i < s->count; i++) {
-        s->observers[i].callback(event, data, s->observers[i].ctx);
-    }
-}
-
-/* 具体观察者:日志记录器 */
-void logger_observer(const char *event, void *data, void *ctx) {
-    (void)ctx;
-    printf("  [logger] event=%s", event);
-    if (data) printf(" data=%s", (const char *)data);
-    printf("\n");
-}
-
-/* 具体观察者:邮件通知 */
-typedef struct {
-    char email[64];
-} EmailConfig;
-
-void email_observer(const char *event, void *data, void *ctx) {
-    EmailConfig *config = (EmailConfig *)ctx;
-    printf("  [email:%s] event=%s", config->email, event);
-    if (data) printf(" data=%s", (const char *)data);
-    printf("\n");
-}
-
-/* 具体观察者:计数器 */
-typedef struct {
-    int count;
-} Counter;
-
-void counter_observer(const char *event, void *data, void *ctx) {
-    (void)event; (void)data;
-    Counter *c = (Counter *)ctx;
-    c->count++;
-    printf("  [counter] total events received: %d\n", c->count);
-}
-
-int main(void) {
-    Subject news;
-    subject_init(&news, "News");
-
-    /* 订阅 */
-    subject_subscribe(&news, logger_observer, NULL);
-
-    EmailConfig admin_email = {.email = "admin@example.com"};
-    subject_subscribe(&news, email_observer, &admin_email);
-
-    EmailConfig user_email = {.email = "user@example.com"};
-    subject_subscribe(&news, email_observer, &user_email);
-
-    Counter counter = {.count = 0};
-    subject_subscribe(&news, counter_observer, &counter);
-
-    /* 发布事件 */
-    subject_notify(&news, "article_published", "New C tutorial released");
-    printf("\n");
-    subject_notify(&news, "comment_added", "Great article!");
-    printf("\n");
-    subject_notify(&news, "article_published", "Advanced C pointers");
-
-    printf("\ntotal events: %d\n", counter.count);
-
-    return 0;
-}
-```
-
-### 示例 12:协程式状态机
-
-```c
-/* 文件: state_machine.c
- * 演示使用函数指针实现状态机
- */
-#include <stdio.h>
-#include <stdlib.h>
-
-/* 状态枚举 */
-typedef enum {
-    STATE_IDLE,
-    STATE_RUNNING,
-    STATE_PAUSED,
-    STATE_STOPPED,
-    STATE_ERROR,
-    STATE_COUNT
-} State;
-
-/* 事件枚举 */
-typedef enum {
-    EVENT_START,
-    EVENT_PAUSE,
-    EVENT_RESUME,
-    EVENT_STOP,
-    EVENT_ERROR,
-    EVENT_RESET,
-    EVENT_COUNT
-} Event;
-
-/* 状态机上下文 */
-typedef struct {
-    State current_state;
-    int error_count;
-    int transition_count;
-} StateMachine;
-
-/* 状态处理函数类型 */
-typedef State (*StateHandler)(StateMachine *sm, Event event);
-
-/* 状态处理函数:IDLE */
-State handle_idle(StateMachine *sm, Event event) {
-    (void)sm;
-    switch (event) {
-        case EVENT_START:  return STATE_RUNNING;
-        case EVENT_ERROR:  return STATE_ERROR;
-        default:           return STATE_IDLE;
-    }
-}
-
-/* 状态处理函数:RUNNING */
-State handle_running(StateMachine *sm, Event event) {
-    switch (event) {
-        case EVENT_PAUSE: return STATE_PAUSED;
-        case EVENT_STOP:  return STATE_STOPPED;
-        case EVENT_ERROR:
-            sm->error_count++;
-            return STATE_ERROR;
-        default:          return STATE_RUNNING;
-    }
-}
-
-/* 状态处理函数:PAUSED */
-State handle_paused(StateMachine *sm, Event event) {
-    (void)sm;
-    switch (event) {
-        case EVENT_RESUME: return STATE_RUNNING;
-        case EVENT_STOP:   return STATE_STOPPED;
-        default:           return STATE_PAUSED;
-    }
-}
-
-/* 状态处理函数:STOPPED */
-State handle_stopped(StateMachine *sm, Event event) {
-    (void)sm;
-    switch (event) {
-        case EVENT_RESET: return STATE_IDLE;
-        default:          return STATE_STOPPED;
-    }
-}
-
-/* 状态处理函数:ERROR */
-State handle_error(StateMachine *sm, Event event) {
-    switch (event) {
-        case EVENT_RESET:
-            sm->error_count = 0;
-            return STATE_IDLE;
-        default:
-            return STATE_ERROR;
-    }
-}
-
-/* 状态处理函数表(跳转表) */
-static const StateHandler state_handlers[STATE_COUNT] = {
-    [STATE_IDLE]    = handle_idle,
-    [STATE_RUNNING] = handle_running,
-    [STATE_PAUSED]  = handle_paused,
-    [STATE_STOPPED] = handle_stopped,
-    [STATE_ERROR]   = handle_error
-};
-
-/* 状态名称表 */
-static const char *state_names[STATE_COUNT] = {
-    [STATE_IDLE]    = "IDLE",
-    [STATE_RUNNING] = "RUNNING",
-    [STATE_PAUSED]  = "PAUSED",
-    [STATE_STOPPED] = "STOPPED",
-    [STATE_ERROR]   = "ERROR"
-};
-
-/* 事件名称表 */
-static const char *event_names[EVENT_COUNT] = {
-    [EVENT_START]  = "START",
-    [EVENT_PAUSE]  = "PAUSE",
-    [EVENT_RESUME] = "RESUME",
-    [EVENT_STOP]   = "STOP",
-    [EVENT_ERROR]  = "ERROR",
-    [EVENT_RESET]  = "RESET"
-};
-
-/* 处理事件 */
-void state_machine_handle(StateMachine *sm, Event event) {
-    printf("[%s] event=%s -> ", state_names[sm->current_state], event_names[event]);
-
-    StateHandler handler = state_handlers[sm->current_state];
-    State new_state = handler(sm, event);
-
-    if (new_state != sm->current_state) {
-        sm->current_state = new_state;
-        sm->transition_count++;
-        printf("[%s] (transition #%d)\n",
-               state_names[sm->current_state], sm->transition_count);
-    } else {
-        printf("[%s] (no change)\n", state_names[sm->current_state]);
-    }
-}
-
-int main(void) {
-    StateMachine sm = {.current_state = STATE_IDLE, .error_count = 0, .transition_count = 0};
-
-    Event events[] = {
-        EVENT_START, EVENT_PAUSE, EVENT_RESUME,
-        EVENT_ERROR, EVENT_RESET, EVENT_START, EVENT_STOP
-    };
-
-    for (size_t i = 0; i < sizeof(events)/sizeof(events[0]); i++) {
-        state_machine_handle(&sm, events[i]);
-    }
-
-    printf("\nfinal state: %s, transitions: %d, errors: %d\n",
-           state_names[sm.current_state], sm.transition_count, sm.error_count);
-
-    return 0;
-}
-```
-
-## 对比分析
-
-### 1. C 函数指针 vs C++ 虚函数
-
-| 维度 | C 函数指针 | C++ 虚函数 |
-|------|----------|----------|
-| 语法 | 显式声明 `int (*p)(int)` | 隐式 `virtual` 关键字 |
-| 类型安全 | 弱(可强制转换绕过) | 强(编译器严格检查) |
-| 运行时开销 | 1 次间接跳转 | 1 次间接跳转 + vtable 查找 |
-| 多继承 | 不支持 | 支持(vtable 链) |
-| 生命周期 | 手动管理 | 析构函数自动 |
-| 可见性 | 任意可访问 | 受 `public`/`protected`/`private` 控制 |
-| 跨语言 | 易(ABI 简单) | 难(name mangling) |
-| 内联 | 不可 | 通常不可(可 `final` 内联) |
-| 调试 | 难(无符号) | 易(有符号) |
-
-### 1. C 回调 vs 闭包(Lambda)
-
-| 维度 | C 回调(函数指针 + ctx) | 闭包(Lambda) |
-|------|----------------------|--------------|
-| 捕获变量 | 显式 `void *ctx` | 隐式词法捕获 |
-| 类型安全 | 弱(需强制转换) | 强(编译器推导) |
-| 生命周期 | 手动管理 | 自动(GC/RAII) |
-| 嵌套定义 | 不可(需顶层) | 可(函数内定义) |
-| 性能 | 直接调用,零开销 | 通常零开销(可内联) |
-| 可读性 | 低(分离的 ctx) | 高(就近定义) |
-| 语言支持 | C89+ | C++11+、Java 8+、Python、JS |
-
-### 2. 直接调用 vs 间接调用性能
-
-| 维度 | 直接调用 | 间接调用(函数指针) |
-|------|---------|-----------------|
-| 指令 | `call rel32`(5 字节) | `call [rax]`(2 字节) |
-| 分支预测 | 100% 命中(BTU) | 70-95% 命中(ITTAGE) |
-| 内联 | 可内联 | 不可内联 |
-| 寄存器分配 | 跨函数优化 | 独立函数优化 |
-| 指令缓存 | 局部性好 | 可能跨页 |
-| 典型开销 | 1-2 周期 | 2-5 周期(预测命中) |
-
-### 3. 函数指针 vs 函数对象(C++)
-
-| 维度 | C 函数指针 | C++ 函数对象(functor) |
-|------|----------|--------------------|
-| 状态 | 无(需外部 ctx) | 有(成员变量) |
-| 内联 | 不可 | 可(模板特化) |
-| 类型安全 | 弱 | 强 |
-| 模板特化 | 不支持 | 支持 |
-| `std::function` | 不适用 | 类型擦除,可持有任意可调用对象 |
-| 性能 | 间接调用 | 直接调用(模板)或间接(`std::function`) |
-
-## 常见陷阱与反模式
-
-### 1. 函数指针类型不匹配
+函数指针类型必须与目标函数**精确匹配**：返回类型与每个参数类型都算在内，任何一处不同就是两个不同类型。强行转换后调用是未定义行为：
 
 ```c
 int add(int a, int b) { return a + b; }
-
-/* 错误:类型不匹配 */
-double (*p)(int, int) = (double (*)(int, int))add;
-double r = p(3, 5);  /* UB:返回值解释错误 */
+double (*p)(int, int) = (double (*)(int, int))add;   /* 强转骗过编译器 */
+double r = p(3, 5);   /* UB：调用方按 double 取返回值，add 按 int 放返回值 */
 ```
 
-正确做法:确保函数指针类型与函数签名完全一致。
+调用方与被调方对「返回值放在哪、参数怎么传」的理解不一致，轻则垃圾值，重则栈被写坏。编译器能拦住不带强转的版本（修改实验一见过报错），强转是亲手拆掉这道防线。第 2 节说过 `int` 与 `signed int` 这类同义类型没问题；除此之外，签名对不上就是雷。C23 起无原型声明的收紧（`int foo()` 等价 `int foo(void)`）让函数类型更严格了，详见 [C23 新特性](/c/530-C23NewFeatures)。
 
-### 1. 调用空函数指针
+### 7.2 空指针与未初始化指针
 
 ```c
-int (*func_ptr)(int) = NULL;
-func_ptr(42);  /* UB:解引用空指针,通常段错误 */
+int (*fp)(int) = NULL;
+fp(42);          /* UB：跳到地址 0，通常段错误 */
 ```
 
-正确做法:调用前检查非空。
+未初始化的函数指针更糟，值不确定，跳到哪全凭运气。纪律与数据指针一致：声明即初始化为 NULL，调用前判空——`if (fp != NULL) fp(42);`。判空在表驱动代码里是生命线，[跳转表](/c/180-FunctionPointerCallbackJumpTable) 的调试实录专门演示一次漏判的段错误现场。
+
+### 7.3 调用约定：Windows 32 位的历史坑
+
+调用约定（calling convention）规定参数怎么传、栈由谁清。x86 32 位时代存在 cdecl（调用者清栈，C 默认）与 stdcall（被调用者清栈，Win32 API）等多套约定，指针类型里若不带上约定信息、或约定不匹配，调用会破坏栈。今天的 64 位平台（System V AMD64、Windows x64）各自只有一套主流约定，这个坑主要留在 32 位 Windows 与跨语言绑定的代码里——遇到 `__stdcall` 修饰的回调类型，照抄声明即可。
+
+### 7.4 对象指针与函数指针互转的边界
+
+C 标准把数据指针与函数指针当作不同类别：既不保证可以互转，也不保证大小相同（哈佛架构的嵌入式平台代码与数据各有地址空间，两者宽度可能不同；主流平台上恰好一致）。这条边界有一个著名的应用场景——POSIX 的 `dlsym` 从动态库里按名字取函数地址，返回类型却是 `void *`。POSIX 规范原文明确承认了这一点：把 `void *` 转成函数指针「不由 ISO C 标准定义」，但 POSIX **要求**一致实现上这个转换正确工作；`dlsym` 的返回值则被定义为「从函数指针转换成 `void *` 的函数地址」。换句话说：
 
 ```c
-if (func_ptr) {
-    func_ptr(42);
-}
+/* POSIX 环境（Linux/macOS）：转换由 POSIX 背书 */
+int (*fn)(int) = (int (*)(int))dlsym(handle, "answer");   /* handle 来自 dlopen */
 ```
 
-### 2. 调用约定不匹配(x86 Windows)
+严格 ISO C 不保证这两步转换有意义；纯 ISO C 环境里的可移植写法不受标准保护。结论：POSIX 平台上放心用（有的编译器会对这行 cast 给警告，POSIX 的存在就是让它闭嘴的理由），跨到无 POSIX 保障的平台前查目标平台的 ABI 文档。动态加载插件的完整流程在 [动态库与静态库](/c/320-DynamicStaticLibrary)。
 
-```c
-/* MSVC 上 cdecl 与 stdcall 不匹配 */
-void __stdcall callback_stdcall(int x) { ... }
-void (*p)(int) = callback_stdcall;  /* 声明为 cdecl */
-p(42);  /* UB:栈清理不一致,可能导致栈损坏 */
-```
+## 8. 实际项目中的使用场景
 
-正确做法:函数指针类型显式声明调用约定。
+- **异步 I/O 与事件循环**：libuv（Node.js 的底层）用回调贯穿所有 I/O——`uv_read_start(stream, alloc_cb, read_cb)` 注册两个回调，I/O 就绪时由事件循环回头调用；本文第 5 节的订阅表就是这类 API 的骨架；
+- **内核与服务器接口表**：Linux VFS 的 `file_operations` 结构体里装满 `read`/`write`/`open` 等函数指针，每个文件系统各填一份，VFS 层统一调用；Nginx 的模块结构同理。C++ 虚函数本质上就是编译器自动维护的这种函数指针表——同一招，语言帮你管；
+- **标准库本身就是回调陈列馆**：qsort/bsearch 的比较器、`atexit` 注册退出函数、`signal` 注册信号处理器。signal 的原型 `void (*signal(int sig, void (*func)(int)))(int);` 是标准库里最难读的签名之一，但按第 2 节的读法拆：signal 是函数，吃一个 int 和一个函数指针，返回同型函数指针——旧处理器。信号回调的写法与异步信号安全注意事项见 [信号处理](/c/340-SignalHandling)；参数个数与类型运行时可变的 [可变参数函数](/c/100-VarargsFunction) 则是它的互补机制：一个把「参数形状」交给运行时，一个把「函数本体」交给运行时；
+- **插件系统**：dlopen 加载动态库、dlsym 取出函数指针、转成约定的接口类型调用，第 7.4 节的边界规则在那里天天用到。
 
-```c
-void (__stdcall *p)(int) = callback_stdcall;
-```
+## 9. 小练习
 
-### 3. 重入问题(可重入性)
+预测题（5 分钟）：先写答案再运行。把 4.2 节的字符串比较器漏掉解引用、写成 `return strcmp((const char *)pa, (const char *)pb);`，第 1 节程序的 words 排序输出会变成什么样？
 
-```c
-/* 不可重入的回调:使用全局状态 */
-static int counter = 0;
-void callback(int x) {
-    counter++;  /* 重入时计数错误 */
-    /* ... */
-}
+参考答案（先写再看）：输出大概率「看似随机」且每次进程可能不同。strcmp 拿到的是数组元素的地址而不是字符串本身，比较的是地址数值大小，与字典序无关；地址分布由加载器决定，所以顺序不可预测。修复：先解一层 `*(const char *const *)pa`。
 
-/* 若 callback 在信号处理或多线程中被重入,counter 可能不一致 */
-```
+修改题（15 分钟）：把第 1 节的 qsort_demo 扩展为结构体排序：定义 `struct Student { char name[16]; int score; };`，写比较器按分数降序排，同分按姓名字典序排。验收：先按 4.3 节处理稳定性，再用两组同分数据验证。
 
-正确做法:使用局部上下文,或加锁保护。
+挑战题（30 分钟，不看答案先动手）：给 apply 加「提前终止」——实现 `int find_first(const int *arr, size_t n, int (*pred)(int, void *), void *ctx, int *out);`，返回第一个满足谓词的元素下标，找不到返回 -1。
 
-### 4. 异常安全(C++ 回调到 C)
+提示（两级）：方向——回调要能向 apply 通报「找到了」，可在 ctx 里放 found 标志，循环检查；关键写法——`typedef struct { int target; int found; int index; } FindCtx;`，循环里 `if (c->found) break;`，这正是各种带返回值回调的设计动机。
 
-```cpp
-/* C++ 回调抛异常到 C 代码 */
-extern "C" void cpp_callback(int x) {
-    throw std::runtime_error("oops");  /* UB:跨 C 边界抛异常 */
-}
+验收清单：找到时返回正确下标且 out 被写入；找不到返回 -1；空数组不崩溃；谓词收到 ctx（比如比较「与目标差值小于 3」）。
 
-/* C 代码 */
-void (*cb)(int) = cpp_callback;
-cb(42);  /* 异常传播到 C,行为未定义 */
-```
+## 10. 与之前和之后的知识的关系
 
-正确做法:C++ 回调函数捕获所有异常,转换为错误码。
+- 往前：[函数详解](/c/090-FunctionDetailed) 的声明与传参是原料，本文把「函数」从被调者提升为可传递的值；[指针深度解析](/c/140-PointerDeep) 的解引用与 const 修饰规则原样适用于函数指针；
+- 旁支：字符串排序那步用到的二级指针在 [二级指针与指针数组](/c/160-DoublePointerPointerArray)；回调签名里也能写 `...`（如分发器转发变参），机制在 [可变参数函数](/c/100-VarargsFunction)；信号处理器是「系统替你调用回调」的特殊场景，见 [信号处理](/c/340-SignalHandling)；
+- 往后：[跳转表](/c/180-FunctionPointerCallbackJumpTable) 把本文的单个函数指针排成数组，专治长 switch；[复杂声明解析](/c/190-ComplexDeclarationParsing) 把第 2 节的读法升级成拆解任意声明（如 `int (*(*f)(int))[5]`）的系统方法。
 
-### 5. 生命周期管理
+## 11. 官方文档
 
-```c
-/* 错误:回调引用已释放的资源 */
-void *ctx = malloc(sizeof(int));
-*(int *)ctx = 42;
-register_callback(cb, ctx);
-free(ctx);  /* ctx 已释放 */
-/* 回调触发时访问已释放内存 */
-```
+- qsort 与比较器契约（cppreference C）：https://en.cppreference.com/w/c/algorithm/qsort
+- qsort 手册页（返回值语义、字符串比较示例、不稳定性说明）：https://man7.org/linux/man-pages/man3/qsort.3.html
+- 函数到指针转换与两种调用写法（cppreference C）：https://en.cppreference.com/w/c/language/pointer
+- 函数指针章节（Beej's Guide to C Programming）：https://beej.us/guide/bgc/html/split/pointers-iii-pointers-to-pointers-and-more.html
+- dlsym 与 void 转换边界的 POSIX 原文（APPLICATION USAGE 节）：https://pubs.opengroup.org/onlinepubs/9799919799/functions/dlsym.html
 
-正确做法:确保上下文生命周期覆盖回调使用期。
+## 12. 自我检查
 
-### 6. 函数指针与数据指针混用
+- 能遮住代码写出 `int (*fp)(int, int)` 的声明并解释括号的作用，能区分它与 `int *f(int)`；
+- 能为 int、double、字符串各写一个 qsort 比较器，并说出减法版错在哪、`(a > b) - (a < b)` 为什么安全；
+- 能解释 void *ctx 模式解决什么问题，以及「函数指针 + 上下文」与闭包的对应关系；
+- 能说出类型不匹配、调用空指针的后果，以及对象指针与函数指针互转在 ISO C 与 POSIX 下各自的边界。
 
-```c
-int x = 42;
-int (*func_ptr)(int) = (int (*)(int))&x;  /* 强制转换数据指针 */
-func_ptr(10);  /* UB:数据指针转函数指针并调用 */
-```
+## 本章总结
 
-注意:POSIX `dlsym` 返回 `void *`,但严格 C 标准不允许数据指针转函数指针调用。
+函数指针把「一段代码的入口地址」变成可传递的值：声明时括号锁住标识符与星号，赋值时函数名自动退化，调用时带不带星号皆可。typedef 三步法让签名能读，函数指针做参数就成了回调——qsort 用第四个参数问「怎么比」，你用比较器作答，契约是返回负、零、正，只用符号；减法捷径在有符号溢出处翻车，`(a > b) - (a < b)` 是安全解。回调需要记忆时，void *ctx 补上闭包缺席的位置；类型必须精确匹配、调用前判空、ctx 必须活得够久；数据指针与函数指针在标准里是两个世界，POSIX 的 dlsym 是唯一的官方桥梁。
 
-### 7. 函数指针数组越界
+## 下一步
 
-```c
-typedef int (*Op)(int, int);
-Op ops[] = {add, sub, mul};
-int r = ops[5](3, 4);  /* 越界:UB */
-```
-
-正确做法:检查索引边界。
-
-### 8. 回调中修改被遍历的数据结构
-
-```c
-/* 错误:回调中删除当前节点,导致迭代器失效 */
-void for_each(Node *head, void (*cb)(Node *)) {
-    for (Node *n = head; n; n = n->next) {
-        cb(n);  /* cb 可能 free(n),n->next 失效 */
-    }
-}
-```
-
-正确做法:回调仅标记删除,遍历后统一清理;或使用安全迭代器。
-
-### 9. 未初始化的函数指针
-
-```c
-int (*func_ptr)(int);  /* 未初始化,值不确定 */
-func_ptr(42);  /* UB:跳转到随机地址 */
-```
-
-正确做法:声明时初始化为 NULL,或确保使用前赋值。
-
-## 工程实践
-
-### 1. API 设计原则
-
-```c
-/* 良好的回调 API 设计 */
-
-/* 1. 使用 typedef 简化签名 */
-typedef int (*CompareFunc)(const void *, const void *, void *ctx);
-
-/* 2. 提供上下文参数 */
-void sort_with_ctx(void *base, size_t n, size_t size,
-                   CompareFunc cmp, void *ctx);
-
-/* 3. 返回错误码或状态 */
-typedef enum {
-    CALLBACK_OK = 0,
-    CALLBACK_STOP = 1,    /* 停止迭代 */
-    CALLBACK_ERROR = -1
-} CallbackResult;
-
-/* 4. 支持提前退出 */
-typedef CallbackResult (*IterCallback)(void *item, void *ctx);
-int iterate(void *arr, size_t n, size_t size, IterCallback cb, void *ctx);
-
-/* 5. 明确线程安全约定 */
-/* 文档说明:回调是否可重入、是否可并发调用 */
-```
-
-### 1. 错误处理
-
-```c
-/* 回调错误传播 */
-
-typedef enum {
-    HANDLER_CONTINUE = 0,
-    HANDLER_STOP = 1,
-    HANDLER_ERROR = -1
-} HandlerResult;
-
-typedef HandlerResult (*EventHandler)(const Event *e, void *ctx);
-
-/* 事件分发:支持错误传播与提前退出 */
-int dispatch_event(EventSystem *es, const Event *e) {
-    for (int i = 0; i < es->count; i++) {
-        HandlerResult r = es->handlers[i](e, es->contexts[i]);
-        if (r == HANDLER_ERROR) {
-            fprintf(stderr, "handler %d failed\n", i);
-            return -1;
-        }
-        if (r == HANDLER_STOP) {
-            break;  /* 停止后续处理 */
-        }
-    }
-    return 0;
-}
-```
-
-### 2. 线程安全
-
-```c
-/* 线程安全的事件系统 */
-
-#include <pthread.h>
-
-typedef struct {
-    EventHandler handlers[MAX_HANDLERS];
-    void *contexts[MAX_HANDLERS];
-    int count;
-    pthread_mutex_t lock;
-} ThreadSafeEventSystem;
-
-int ts_subscribe(ThreadSafeEventSystem *es, EventHandler h, void *ctx) {
-    pthread_mutex_lock(&es->lock);
-    int result = -1;
-    if (es->count < MAX_HANDLERS && h) {
-        es->handlers[es->count] = h;
-        es->contexts[es->count] = ctx;
-        es->count++;
-        result = 0;
-    }
-    pthread_mutex_unlock(&es->lock);
-    return result;
-}
-
-void ts_emit(ThreadSafeEventSystem *es, const Event *e) {
-    pthread_mutex_lock(&es->lock);
-    int count = es->count;
-    /* 复制一份,避免回调中修改 handlers */
-    EventHandler handlers_copy[MAX_HANDLERS];
-    void *contexts_copy[MAX_HANDLERS];
-    memcpy(handlers_copy, es->handlers, sizeof(EventHandler) * count);
-    memcpy(contexts_copy, es->contexts, sizeof(void *) * count);
-    pthread_mutex_unlock(&es->lock);
-
-    /* 无锁调用回调(假设回调自身线程安全) */
-    for (int i = 0; i < count; i++) {
-        handlers_copy[i](e, contexts_copy[i]);
-    }
-}
-```
-
-### 3. 可重入性
-
-```c
-/* 可重入回调设计 */
-
-/* 不可重入:使用全局变量 */
-static int g_count = 0;
-void bad_callback(int x) {
-    g_count++;  /* 信号/多线程重入时数据竞争 */
-}
-
-/* 可重入:使用局部上下文 */
-typedef struct {
-    int count;
-} CounterCtx;
-
-void good_callback(int x, void *ctx) {
-    CounterCtx *c = (CounterCtx *)ctx;
-    c->count++;  /* 每个调用者有自己的 ctx */
-}
-
-/* 信号安全回调:仅调用异步信号安全函数 */
-void signal_handler(int signo) {
-    /* 仅调用 write()、_exit() 等异步信号安全函数 */
-    /* 不可调用 malloc、printf、mutex 等 */
-    char msg[] = "signal received\n";
-    write(STDERR_FILENO, msg, sizeof(msg) - 1);
-}
-```
-
-### 4. 性能优化
-
-```c
-/* 性能优化技巧 */
-
-/* 1. 热点路径使用直接调用 */
-/* 若回调函数固定,直接调用避免间接跳转 */
-if (cmp == default_compare) {
-    /* 直接调用,可内联 */
-    for (size_t i = 0; i < n; i++) {
-        if (default_compare(&arr[i], &key) == 0) { ... }
-    }
-} else {
-    /* 间接调用 */
-    for (size_t i = 0; i < n; i++) {
-        if (cmp(&arr[i], &key) == 0) { ... }
-    }
-}
-
-/* 2. 批量回调:减少间接调用次数 */
-typedef void (*BatchCallback)(const int *items, size_t n, void *ctx);
-void for_each_batch(const int *arr, size_t n, BatchCallback cb, void *ctx, size_t batch_size) {
-    for (size_t i = 0; i < n; i += batch_size) {
-        size_t end = i + batch_size < n ? i + batch_size : n;
-        cb(&arr[i], end - i, ctx);
-    }
-}
-
-/* 3. 内联小回调:使用宏 + _Generic */
-#define APPLY(arr, n, op) do {        \
-    for (size_t i = 0; i < (n); i++) { \
-        op((arr)[i]);                  \
-    }                                  \
-} while (0)
-```
-
-## 案例研究
-
-### 1. C 标准库 qsort 实现
-
-glibc 的 `qsort` 通过函数指针接受比较器,内部使用优化排序算法( introsort 或归并排序):
-
-```c
-/* glibc/stdlib/msort.c (简化) */
-void qsort(void *base, size_t nmemb, size_t size,
-           int (*cmp)(const void *, const void *)) {
-    /* 根据元素大小选择策略 */
-    if (size < PAGESIZE) {
-        msort_with_tmp(base, nmemb, size, cmp, tmp);
-    } else {
-        /* 大元素:使用指针数组排序,减少数据移动 */
-        qsort_r_indirect(base, nmemb, size, cmp);
-    }
-}
-```
-
-分析:`qsort` 通过函数指针实现泛型排序,代价是每次比较的间接调用。`qsort_r`(POSIX)与 `qsort_s`(C11 Annex K)增加上下文参数,避免全局变量,提升线程安全。
-
-### 1. libuv 异步 I/O 回调
-
-libuv(Node.js 底层)通过函数指针实现异步 I/O 回调:
-
-```c
-/* libuv/include/uv.h (简化) */
-typedef void (*uv_alloc_cb)(uv_handle_t *handle, size_t suggested_size, uv_buf_t *buf);
-typedef void (*uv_read_cb)(uv_stream_t *stream, ssize_t nread, const uv_buf_t *buf);
-typedef void (*uv_write_cb)(uv_write_t *req, int status);
-
-int uv_read_start(uv_stream_t *stream, uv_alloc_cb alloc_cb, uv_read_cb read_cb);
-int uv_write(uv_write_t *req, uv_stream_t *handle, const uv_buf_t *bufs,
-             unsigned int nbufs, uv_write_cb cb);
-```
-
-分析:libuv 的回调设计遵循"注册-触发-回调"模式,I/O 完成后由事件循环调用用户注册的回调。`uv_handle_t`、`uv_req_t` 等结构体内嵌回调函数指针,实现 OOP 风格的对象方法。
-
-### 2. Nginx 模块系统
-
-Nginx 通过函数指针表实现模块化架构:
-
-```c
-/* nginx/src/core/ngx_module.h (简化) */
-typedef struct ngx_module_s ngx_module_t;
-
-struct ngx_module_s {
-    ngx_uint_t            ctx_index;
-    ngx_uint_t            index;
-    void                 *ctx;  /* 模块上下文(函数指针表) */
-    ngx_command_t        *commands;
-    ngx_uint_t            type;
-    ngx_int_t           (*init_master)(ngx_log_t *log);
-    ngx_int_t           (*init_module)(ngx_cycle_t *cycle);
-    ngx_int_t           (*init_process)(ngx_cycle_t *cycle);
-    void                (*exit_process)(ngx_cycle_t *cycle);
-    void                (*exit_master)(ngx_cycle_t *cycle);
-};
-```
-
-分析:Nginx 模块通过 `ctx` 字段指向模块特定的函数指针表(如 HTTP 模块的 `ngx_http_module_t`),实现模块注册、配置解析、请求处理等钩子。这种设计使 Nginx 可在不修改核心代码的情况下扩展功能。
-
-### 3. Linux VFS file_operations
-
-Linux VFS 通过 `file_operations` 结构体统一不同文件系统的接口:
-
-```c
-/* linux/include/linux/fs.h (简化) */
-struct file_operations {
-    struct module *owner;
-    loff_t (*llseek)(struct file *, loff_t, int);
-    ssize_t (*read)(struct file *, char __user *, size_t, loff_t *);
-    ssize_t (*write)(struct file *, const char __user *, size_t, loff_t *);
-    int (*open)(struct inode *, struct file *);
-    int (*release)(struct inode *, struct file *);
-    int (*flush)(struct file *, fl_owner_t id);
-    int (*fsync)(struct file *, loff_t, loff_t, int datasync);
-    /* ... */
-};
-```
-
-分析:每个文件系统(ext4、XFS、NFS、FUSE)实现自己的 `file_operations` 函数指针表,VFS 层通过 `file->f_op->read(...)` 调用具体实现。这是 C 语言面向对象编程的经典范例,通过函数指针表实现多态。
-
-### 4. Redis 命令分发
-
-Redis 通过函数指针表实现命令分发:
-
-```c
-/* redis/src/server.h (简化) */
-struct redisCommand {
-    char *name;
-    redisCommandProc *proc;
-    int arity;
-    char *sflags;
-    /* ... */
-};
-
-typedef void redisCommandProc(client *c);
-
-/* commands.def (自动生成) */
-struct redisCommand redisCommandTable[] = {
-    {"get", getCommand, 2, "rF", ...},
-    {"set", setCommand, -3, "wm", ...},
-    {"del", delCommand, -2, "w", ...},
-    /* ... */
-};
-```
-
-分析:Redis 通过 `redisCommandTable` 数组将命令名映射到处理函数,客户端请求时通过查找表调用对应 `proc`。这种设计使命令扩展只需添加表项,无需修改分发逻辑。
-
-## 函数指针基础
-
-**基本写法：声明函数指针**
-`<返回类型> (*<指针名>)(<参数>);`
-```c
-// 声明指向 int(int) 函数的指针
-int (*fp)(int);
-```
-
----
-
-**基本写法：赋值函数地址**
-`<指针名> = <函数名>;` 或 `<指针名> = &<函数名>;`
-```c
-// 函数名即地址
-int sq(int x) { return x * x; }
-fp = sq;
-```
-
----
-
-**基本写法：通过指针调用**
-`<指针名>(<参数>);` 或 `(*<指针名>)(<参数>);`
-```c
-// 两种调用方式等价
-int r = fp(5);
-```
-
----
-
-## 函数指针类型别名
-
-**基本写法：typedef 别名**
-`typedef <返回类型> (*<别名>)(<参数>);`
-```c
-// 定义函数指针类型
-typedef int (*BinOp)(int, int);
-BinOp op = add;
-```
-
----
-
-**基本写法：使用别名声明变量**
-`<别名> <变量> = <函数>;`
-```c
-// 用别名声明更清晰
-BinOp op = add;
-int r = op(2, 3);
-```
-
----
-
-## 回调函数
-
-**基本写法：回调参数**
-`void <函数>(<参数>, <返回类型> (*<回调>)(<回调参数>));`
-```c
-// 函数接收回调
-void process(int x, int (*cb)(int)) {
-    int r = cb(x);
-}
-```
-
----
-
-**基本写法：传递函数作为回调**
-`<函数>(<参数>, <回调函数>);`
-```c
-// 传入函数名作为回调
-process(5, sq);
-```
-
----
-
-**基本写法：回调上下文指针**
-`void <函数>(void* <ctx>, void (*<回调>)(void*, int));`
-```c
-// 携带上下文的回调
-void iterate(int* arr, int n, void* ctx, void (*cb)(void*, int)) {
-    for (int i = 0; i < n; i++) cb(ctx, arr[i]);
-}
-```
-
----
-
-## 函数指针数组
-
-**基本写法：函数指针数组**
-`<返回类型> (*<数组名>[<数量>])(<参数>);`
-```c
-// 存储多个函数指针
-int (*ops[4])(int, int) = {add, sub, mul, div};
-```
-
----
-
-**基本写法：通过索引调用**
-`<数组名>[<索引>](<参数>);`
-```c
-// 选择调用对应函数
-int r = ops[0](2, 3);
-```
-
----
-
-## 跳转表
-
-**基本写法：跳转表实现**
-`<别名> <表名>[] = { <函数1>, <函数2>, ... };`
-```c
-// 用枚举索引选择操作
-typedef int (*Op)(int, int);
-Op table[] = { add, sub, mul, div };
-int r = table[OP_ADD](a, b);
-```
-
----
-
-## qsort 回调
-
-**基本写法：qsort 比较函数**
-`int <比较>(const void* <a>, const void* <b>);`
-```c
-// 标准库排序比较函数
-int cmp(const void* a, const void* b) {
-    return *(const int*)a - *(const int*)b;
-}
-```
-
----
-
-**基本写法：调用 qsort**
-`qsort(<数组>, <数量>, <大小>, <比较函数>);`
-```c
-// 排序整型数组
-qsort(arr, n, sizeof(int), cmp);
-```
-
----
-
-## bsearch 回调
-
-**基本写法：二分查找**
-`bsearch(<关键字>, <数组>, <数量>, <大小>, <比较函数>);`
-```c
-// 在有序数组中查找
-int key = 42;
-int* found = bsearch(&key, arr, n, sizeof(int), cmp);
-```
-
----
-
-## 返回函数指针
-
-**基本写法：函数返回函数指针**
-`<别名> <函数名>(<参数>);`
-```c
-// 根据条件返回不同操作
-BinOp select_op(char c) {
-    if (c == '+') return add;
-    return sub;
-}
-```
-
----
-
-## 复杂声明
-
-**基本写法：指向返回函数指针的函数的指针**
-`<返回类型> (*(*<指针>)(<参数>))(<参数>);`
-```c
-// 指向返回 BinOp 的函数的指针
-BinOp (*selector)(char) = select_op;
-```
-
----
-
-## 注意事项
-
-**基本写法：函数指针可为 NULL**
-`if (<指针> != NULL) <指针>(<参数>);`
-```c
-// 调用前检查有效性
-if (cb != NULL) cb(data);
-```
-
----
-
-**基本写法：函数指针类型转换**
-`(void (*)(void))<函数>`
-```c
-// 转为通用函数指针类型
-void (*generic)(void) = (void (*)(void))cb;
-```
+进入 [跳转表](/c/180-FunctionPointerCallbackJumpTable)：手里有了函数指针，把它排成数组、用枚举做下标，让二十个 case 的 switch 分发器变成一张只改一处的表。

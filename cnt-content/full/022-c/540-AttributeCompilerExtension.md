@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 530
 title: 属性与编译器扩展
 module: 'c'
 category: 计算机科学
