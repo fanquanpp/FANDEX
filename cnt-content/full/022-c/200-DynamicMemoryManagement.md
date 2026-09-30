@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用「玩家人数运行时才知道」的积分榜场景掌握 malloc/calloc/realloc/free 四件套：分配即判 NULL、用 LeakSanitizer 当场抓泄漏、free 后置 NULL 纪律，附预测题与调试实录。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'c/210-MemoryManagement'
   - 'c/140-PointerDeep'

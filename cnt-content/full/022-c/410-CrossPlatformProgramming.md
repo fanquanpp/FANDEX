@@ -1,2152 +1,506 @@
 ---
 order: 420
-title: 跨平台编程
+title: 跨平台编程：Windows 与 POSIX 的沟壑与搭桥
 module: 'c'
 category: 计算机科学
-difficulty: intermediate
-description: C 语言跨平台编程原理、抽象层设计与工程实践
+difficulty: advanced
+description: 从「Linux 编译干净的程序到 MSVC 报一串错」画出差异地图：编译器方言与 MSVC 的 C 标准现状、路径分隔符与换行转换、文件/进程/线程/动态库/信号/套接字/时间七张对照表、条件编译的组织学与最小兼容层、LLP64 数据模型的 long 陷阱，逐一收口 320/330/340/370/390 各篇留下的 Windows 伏笔。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
+  - 'c/320-DynamicStaticLibrary'
+  - 'c/370-POSIXThread'
+  - 'c/390-SocketNetworkProgramming'
   - 'c/470-BuildSystem'
-  - 'c/490-StaticAnalysisDebug'
-  - 'c/550-EmbeddedCProgramming'
-  - 'c/560-CAssemblyInteraction'
-  - 'c/540-AttributeCompilerExtension'
   - 'c/040-DataTypeDetailed'
+  - 'c/230-AlignmentMemoryLayout'
   - 'c/290-PreprocessorMacro'
 prerequisites:
-  - 'c/020-CLanguageOverview'
-  - 'c/290-PreprocessorMacro'
-  - 'c/040-DataTypeDetailed'
+  - 'c/400-FileSystemOperation'
+  - 'c/330-ProcessAndPipe'
 ---
 
 ## 前置知识
 
-- [静态分析与调试](/c/490-StaticAnalysisDebug)：建议先完成前一篇的学习
+- 已完成 [文件系统操作](/c/400-FileSystemOperation)：亲手用过 open/read/write/stat 这套 POSIX 接口——本篇反复拿它们与 Windows 对照；
+- 已完成 [进程与管道](/c/330-ProcessAndPipe)：知道 fork/exec 是什么——330 篇末尾留下的 Windows 问题在本篇收口。
+
+对预处理器只要求用过 `#include` 与 `#ifdef`，条件编译的组织策略正文会从头讲。
+
+> 分工说明：本模块从 320 到 390 讲的都是 POSIX 侧的机制，涉及 Windows 时纷纷留下一句「差异见跨平台编程」。本篇就是那个约定的收口处：把同一份 C 代码在 Windows 与 POSIX 之间的所有沟壑汇总成一张地图，再给出搭桥的工程方法。深水区细节（.lib/.dll 的导入库机制、SEH 展开等）点到为止，方向各有指向。
 
 ## 学习目标
 
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
-- 掌握「代码示例」的核心机制、典型用法与常见陷阱
-- 掌握「对比分析」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 拿到一份 MSVC 报错清单，把错误归入「头文件、类型、函数、宏、链接」五类并给出对应的搭桥手段；
+2. 说出 GCC/Clang/MSVC 三家在标准开关与探测宏上的差异，以及 MSVC 对 C11/C23 的支持现状（2026 口径）；
+3. 解释 Windows 文本模式对换行与 Ctrl+Z 的暗改，写出永不踩坑的 fopen 模式串；
+4. 对照文件、进程、线程、动态库、信号、套接字、时间七个领域的 POSIX 与 Windows 接口，并为每个领域说出一句迁移策略；
+5. 用「每平台一个 .c」或最小兼容层组织条件编译，避开 LLP64 数据模型下 long 宽度、指针截断这类经典坑。
 
+预计 60 到 80 分钟，含 3 组动手实验、1 道预测题与 1 道挑战题。
 
+## 1. 问题引入：报错清单与差异地图
 
-## 历史动机与背景
+一份在 Linux 上编译运行毫无问题的程序——一个开线程的日志小工具——拿到 Windows 上用 MSVC 一编：
 
-### 跨平台 C 编程的历史根源
-
-C 语言自诞生起就与"可移植性"深度绑定。1972 年 Dennis Ritchie 在 PDP-11 上设计 C 的核心动机之一，就是用可移植的高级语言重写 Unix 内核，使其摆脱对特定硬件的依赖。1978 年 K&R《The C Programming Language》的出版，使 C 成为系统编程的事实标准。但"可移植"从来不是免费的，跨平台 C 编程的复杂性随平台多样化持续增长：
-
-1. **1970 年代**：Unix 在 PDP-11、VAX、IBM 360 等多种架构上实现，C 编译器需适配不同字长（16 位、32 位、36 位）、不同字节序、不同对齐要求。
-2. **1980 年代**：IBM PC 与 DOS 兴起，Microsoft C、Borland C 等编译器引入与 Unix 不同的 API 与 ABI。跨平台 C 编程首次面临"Unix vs Windows"分裂。
-3. **1990 年代**：Windows NT 引入 Win32 API，与 POSIX 形成两大阵营。POSIX.1（IEEE 1003.1）标准化 Unix API，但 Windows 选择独立的 Win32 路线。C89/C90 标准化 C 语言，但仍保留大量实现定义行为。
-4. **2000 年代**：Linux 在服务器领域崛起，64 位架构（x86-64、IA-64）普及，ILP32/LP64/LLP64 数据模型分裂显现。macOS 从 PowerPC 迁移到 Intel，再迁移到 ARM64（Apple Silicon），跨架构编译需求增长。
-5. **2010 年代**：移动平台（iOS、Android）兴起，ARM 架构成为主流。容器化（Docker）与跨架构部署（x86、ARM、RISC-V）使跨平台 C 编程进入新阶段。
-6. **2020 年代**：WebAssembly（Wasm）成为 C 代码的新目标平台，emcc（Emscripten）将 C 编译为浏览器可执行的 Wasm 模块。Apple Silicon（M1/M2/M3）使 mac 需同时支持 x86-64 与 ARM64 的通用二进制（universal binary）。
-
-### 跨平台编程的核心挑战
-
-跨平台 C 编程的核心挑战源于 C 标准的设计哲学：**将实现定义行为留给编译器**。ISO/IEC 9899 标准规定语言的核心语义，但对以下方面留有实现自由：
-
-1. **数据类型大小**：`int` 的位宽（16/32/64）、`long` 在 64 位系统上的大小（LP64 vs LLP64）、指针大小（32 vs 64 位）。
-2. **字节序**：多字节整数在内存中的字节排列顺序（大端 vs 小端）。
-3. **对齐要求**：结构体成员的对齐边界、最大对齐值（`max_align_t`）。
-4. **`char` 的符号性**：`char` 默认是 `signed char` 还是 `unsigned char`（ARM 默认 unsigned，x86 默认 signed）。
-5. **浮点格式**：IEEE 754 单精度/双精度 vs 扩展精度（x87 80 位）。
-6. **位域布局**：位序、跨存储单元、signed 位域处理（详见位域章节）。
-7. **结构体填充**：成员间的填充字节大小与位置。
-
-### 真实工程动机案例
-
-**案例一：SQLite 的跨平台设计**。SQLite 是世界上部署最广的数据库引擎，运行在 iOS、Android、Windows、Linux、macOS、嵌入式系统等多种平台。其跨平台策略包括：用 `#ifdef` 区分平台相关功能、自研 OS 抽象层（OS Interface）、避免依赖特定编译器扩展。SQLite 源码的 30% 是平台适配代码。
-
-**案例二：Redis 的可移植性**。Redis 6.0 支持 Linux、macOS、FreeBSD、OpenBSD、Windows（通过 WSL 或第三方分支）。核心网络 I/O 使用 `epoll`（Linux）、`kqueue`（BSD）、`select`（fallback）三种实现，通过函数指针表在运行时选择。
-
-**案例三：libuv 的统一抽象**。Node.js 的底层库 libuv 抽象了 Windows IOCP、Linux epoll、BSD kqueue、Solaris event ports 等异步 I/O 机制，提供统一的 `uv_loop_t` 接口。libuv 的成功证明"平台抽象层"是跨平台 C 项目的有效架构模式。
-
-**案例四：Google Protocol Buffers 的字节序处理**。Protobuf 序列化二进制数据时需处理字节序差异。其内部统一使用小端序编码，读写时通过 `htonl`/`ntohl` 或手写位运算处理，确保跨平台数据一致性。
-
-## 形式化定义
-
-### 跨平台可移植性的形式化定义
-
-设程序 $P$ 在平台集合 $\mathcal{S} = \{s_1, s_2, \ldots, s_n\}$ 上运行，每个平台 $s_i$ 由其 ABI、操作系统、编译器、库版本等特征定义。程序 $P$ 在平台 $s_i$ 上的行为记为 $\text{Behavior}(P, s_i)$。
-
-**可移植性定义**：程序 $P$ 在 $\mathcal{S}$ 上是可移植的，当且仅当：
-
-$$
-\forall s_i, s_j \in \mathcal{S}, \quad \text{Behavior}(P, s_i) \equiv \text{Behavior}(P, s_j)
-$$
-
-其中 $\equiv$ 表示语义等价（允许实现细节差异，但可观察行为一致）。
-
-**实现定义行为**（implementation-defined behavior）：C 标准 §3.4.1 定义为"未指定行为，每个实现记录其选择"。例如 `sizeof(int)` 在不同平台为 2、4 或 8 字节。可移植代码不能依赖具体值，但可使用 `<limits.h>` 的 `INT_MAX` 等宏获取。
-
-**未定义行为**（undefined behavior, UB）：C 标准 §3.4.3 定义为"使用不可移植或错误程序构造或错误数据时的行为，标准对此不施加任何要求"。例如有符号整数溢出、空指针解引用。可移植代码必须完全避免 UB。
-
-**条件编译**（conditional compilation）：通过预处理器指令 `#if`/`#elif`/`#else`/`#endif` 在编译时选择平台相关代码。形式化为：
-
-$$
-\text{Compile}(P, s_i) = \text{Filter}_{\text{macro}(s_i)}(P)
-$$
-
-其中 $\text{macro}(s_i)$ 是平台 $s_i$ 的预定义宏集合，$\text{Filter}$ 保留满足条件的代码片段。
-
-### 数据模型的形式化
-
-数据模型描述基本数据类型的位宽。设 $W(T)$ 为类型 $T$ 的位宽，常见数据模型：
-
-| 数据模型 | `short` | `int` | `long` | `long long` | `pointer` | 典型平台 |
-|---------|---------|-------|--------|-------------|-----------|---------|
-| ILP32 | 16 | 32 | 32 | 64 | 32 | 32 位 Linux/macOS/Windows |
-| LP64 | 16 | 32 | 64 | 64 | 64 | 64 位 Linux/macOS |
-| LLP64 | 16 | 32 | 32 | 64 | 64 | 64 位 Windows |
-| ILP64 | 16 | 64 | 64 | 64 | 64 | 早期 Unix（罕见） |
-
-形式化约束：
-
-$$
-W(\text{short}) \le W(\text{int}) \le W(\text{long}) \le W(\text{long long})
-$$
-$$
-W(\text{pointer}) = W(\text{long}) \quad \text{(LP64/ILP64)}
-$$
-$$
-W(\text{pointer}) = W(\text{long long}) \quad \text{(LLP64)}
-$$
-
-**可移植代码原则**：永远不要假设 `int` 能容纳指针（用 `intptr_t`），不要假设 `long` 是 64 位（用 `int64_t`），不要假设指针与 `int` 同宽。
-
-### 字节序的形式化
-
-字节序描述多字节整数在内存中的存储顺序。设整数 $V$ 占 $n$ 字节，其字节序列为 $b_0, b_1, \ldots, b_{n-1}$，地址从低到高。
-
-- **小端序**（little-endian）：$b_0 = V \& 0xFF$，最低有效字节存储在最低地址。
-- **大端序**（big-endian）：$b_0 = (V \gg (8(n-1))) \& 0xFF$，最高有效字节存储在最低地址。
-
-形式化：
-
-$$
-\text{store}_{\text{LE}}(V, n) = [V \& 0xFF, (V \gg 8) \& 0xFF, \ldots, (V \gg 8(n-1)) \& 0xFF]
-$$
-$$
-\text{store}_{\text{BE}}(V, n) = [(V \gg 8(n-1)) \& 0xFF, \ldots, (V \gg 8) \& 0xFF, V \& 0xFF]
-$$
-
-网络协议（TCP/IP）规定使用大端序（网络字节序），x86/ARM（小端模式）主机需转换。
-
-### ABI 的形式化
-
-ABI（Application Binary Interface）定义了编译后的二进制代码的接口规范，包括：
-
-1. **数据类型大小与对齐**：`sizeof(int)`、`alignof(double)` 等。
-2. **调用约定**（calling convention）：参数传递（寄存器 vs 栈）、返回值位置、栈帧布局。
-3. **名称修饰**（name mangling）：C 函数无修饰（`extern "C"`），C++ 函数有修饰。
-4. **系统调用接口**：系统调用号、参数传递方式。
-5. **动态库符号表**：符号可见性、版本控制。
-
-不同 ABI 不兼容：Windows x64 与 System V AMD64 的调用约定不同（前 4 参数 vs 前 6 参数通过寄存器传递），Linux glibc 与 musl libc 的符号版本不同，ARM AArch64 与 x86-64 的指令集完全不同。
-
-## 理论推导
-
-### 可移植性证明的形式化方法
-
-**命题**：若程序 $P$ 仅使用 C 标准定义的行为（不依赖实现定义行为、未定义行为或编译器扩展），则 $P$ 在所有符合标准的平台上行为一致。
-
-**证明**：C 标准 §5.1.2.3 规定了程序的"可观察行为"（observable behavior），包括 volatile 对象的访问、I/O 操作的顺序与内容。标准保证符合程序的可观察行为在所有实现上一致。若 $P$ 仅使用标准定义行为，则其可观察行为 $\text{Obs}(P, s_i)$ 满足：
-
-$$
-\forall s_i, s_j \in \mathcal{S}_{\text{conforming}}, \quad \text{Obs}(P, s_i) = \text{Obs}(P, s_j)
-$$
-
-其中 $\mathcal{S}_{\text{conforming}}$ 是所有符合 C 标准的平台集合。$\square$
-
-**注意**：此证明假设编译器无 bug、标准库实现正确。实际中存在三类违反：
-
-1. **编译器 bug**：如 GCC 早期版本的严格别名优化错误。
-2. **标准库 bug**：如 glibc 某些版本的 `printf` 浮点格式化错误。
-3. **标准歧义**：标准某些条款的解读存在分歧。
-
-### 字节序无关代码的设计原理
-
-字节序无关代码的核心原理是"按字节操作而非按整型操作"。设整数 $V$ 需写入字节缓冲区 $B$，比较两种方式：
-
-**字节序相关方式**（不可移植）：
-
-```c
-uint32_t V = 0x12345678;
-memcpy(B, &V, sizeof(V));   // B 的内容依赖主机字节序
+```text
+main.c(2): fatal error C1083: 无法打开包括文件: "unistd.h":
+    No such file or directory
+main.c(5): fatal error C1083: 无法打开包括文件: "pthread.h":
+    No such file or directory
+main.c(9): error C2065: "ssize_t": 未声明的标识符
+main.c(14): error C3861: "open": 找不到标识符
+main.c(21): error C2065: "O_CREAT": 未声明的标识符
+main.c(26): error C2065: "STDOUT_FILENO": 未声明的标识符
+log.c(40): error LNK2019: 无法解析的外部符号 __imp_pthread_create
 ```
 
-**字节序无关方式**（可移植）：
+二十来个错，看着吓人，其实只有五种成分：
+
+| 错误类别 | 例子 | 真实原因 |
+| --- | --- | --- |
+| 头文件缺失 | unistd.h、pthread.h | POSIX 头不是 C 标准，Windows 原生没有 |
+| 类型缺失 | ssize_t | 数据模型差异（第 6 节） |
+| 函数缺失 | open、fork | POSIX API 的 Windows 对应物名字不同（第 4 节） |
+| 宏缺失 | O_CREAT | 旗帜常量属于 POSIX 头（第 4 节） |
+| 链接缺失 | pthread_create | 没有可链接的线程库，机制不同（第 4 节） |
+
+换句话说：**代码没有错，是世界换了一套约定**。C 生来就是要可移植的——1970 年代它为了把 Unix 搬上不同机器而生；但「可移植」从来不免费：类型宽度、字节序、换行、线程、进程、动态库……每一处标准留白，各大平台都填了自己的答案。本篇的任务是把这些答案摆在一起对照，并给出组织它们的工程办法。先看最大的三处地形：编译器方言（第 2 节）、路径与换行（第 3 节）、基础库（第 4 节）。
+
+## 2. 编译器与方言：三家对照
+
+C 代码的主要编译器有三家，命令行习惯与扩展各不相同：
+
+| 维度 | GCC | Clang | MSVC |
+| --- | --- | --- | --- |
+| 编译命令 | gcc -c -o | clang -c -o | cl /c |
+| C 标准开关 | -std=c17、-std=c23 | -std=c17、-std=c23 | /std:c11、/std:c17、/std:c23 |
+| 默认标准（2026） | GCC 15 起 gnu23；GCC 14 为 gnu17 | 至 22.x 仍 gnu17，C23 需显式 -std=c23 | /std:c17 为常用基线，C23 推进中 |
+| 常用警告墙 | -Wall -Wextra -Wpedantic | 同 GCC | /W4（配 /permissive-） |
+| 探测宏 | \_\_GNUC\_\_ | \_\_clang\_\_ | \_MSC\_VER |
+| 典型平台 | 全平台，Linux 主力 | 全平台，macOS 默认 | Windows 生态 |
+
+注意两点。第一，探测宏的判断顺序有讲究：**Clang 为了兼容大量假设「GCC 才存在」的代码，也会定义 `__GNUC__`**，所以先判 `__clang__` 再判 `__GNUC__`：
 
 ```c
-B[0] = (V >> 24) & 0xFF;   // 显式写出每个字节
-B[1] = (V >> 16) & 0xFF;
-B[2] = (V >> 8)  & 0xFF;
-B[3] = V & 0xFF;
+/* 编译器探测：谁在编译我 */
+#if defined(_MSC_VER)
+    #define POT_COMPILER_MSVC 1
+#elif defined(__clang__)        /* 必须在 __GNUC__ 之前判断 */
+    #define POT_COMPILER_CLANG 1
+#elif defined(__GNUC__)
+    #define POT_COMPILER_GCC 1
+#else
+    #define POT_COMPILER_UNKNOWN 1
+#endif
 ```
 
-后者通过显式移位与掩码，保证在任何字节序主机上生成相同的字节序列（大端序）。
-
-**性能分析**：现代编译器（GCC、Clang）能识别上述模式，优化为单条 `bswap` 指令（x86）或 `rev` 指令（ARM），性能与 `memcpy + bswap` 相当。因此字节序无关代码不会带来性能损失。
-
-### 对齐要求与结构体填充
-
-C 标准 §6.7.2.1 规定结构体成员的对齐要求。设结构体 $S$ 有成员 $m_1, m_2, \ldots, m_n$，类型为 $T_1, T_2, \ldots, T_n$，对齐要求为 $A_i = \text{alignof}(T_i)$。
-
-**填充规则**：成员 $m_i$ 的偏移 $o_i$ 满足：
-
-$$
-o_i = \lceil (o_{i-1} + W(T_{i-1})) / A_i \rceil \cdot A_i
-$$
-
-结构体总大小 $W(S) = \lceil (o_n + W(T_n)) / A_{\max} \rceil \cdot A_{\max}$，其中 $A_{\max} = \max_i A_i$。
-
-**跨平台问题**：不同平台对同一类型的对齐要求不同。例如 `double` 在 x86 Linux 上为 4 字节对齐（GCC 默认），在 x86-64 上为 8 字节对齐，在 ARM AArch64 上为 8 字节对齐（强对齐，未对齐访问触发异常）。
-
-**可移植方案**：
-
-1. 使用 `stdatomic.h` 的原子类型保证对齐。
-2. 使用 `alignas`（C23）/ `_Alignas`（C11）显式指定对齐。
-3. 序列化时按字节读写，避免结构体直接 `memcpy`。
-
-### 编译器扩展的可移植性分析
-
-编译器扩展（如 GCC `__attribute__`、MSVC `__declspec`）提供标准未定义的功能。跨平台代码需：
-
-1. **检测扩展可用性**：通过 `__GNUC__`、`_MSC_VER` 等宏判断。
-2. **提供回退实现**：扩展不可用时使用标准等价物或 noop。
-3. **封装为统一宏**：上层代码使用统一接口，平台差异隐藏在宏定义中。
-
-形式化：
-
-$$
-\text{Attribute}(\text{name}) = \begin{cases}
-\text{GCC: } \texttt{\_\_attribute\_\_((name))} & \text{if } \texttt{\_\_GNUC\_\_} \\
-\text{MSVC: } \texttt{\_\_declspec(name)} & \text{if } \texttt{\_MSC\_VER} \\
-\text{C23: } \texttt{[[name]]} & \text{if } \texttt{\_\_STDC\_VERSION\_\_} \geq 202311L \\
-\text{empty} & \text{otherwise}
-\end{cases}
-$$
-
-## 代码示例
-
-### 示例 1：平台检测与编译器检测
+第二，标准开关的判断用 `__STDC_VERSION__`，它比「猜编译器版本」可靠得多：
 
 ```c
-/* 平台检测宏的统一封装
- * 提供统一的平台标识宏，隔离编译器与操作系统的判断逻辑
- * 上层代码使用 PLATFORM_WINDOWS 等抽象宏，不直接用 _WIN32
- */
+#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
+    /* C23 特性可用 */
+#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201710L
+    /* C17 基线 */
+#endif
+```
+
+MSVC 对 C 标准的支持现状（2026 口径，与 [C23 新特性](/c/530-C23NewFeatures) 的口径一致）：C11/C17 经 `/std:c11`、`/std:c17` 开关已稳定可用，C11 的原子操作 `<stdatomic.h>` 自 VS 2022 17.5 起落地、`<threads.h>` 自 17.8 起落地（此后不再定义 `__STDC_NO_THREADS__`）；C23 经 `/std:c23`（VS 2022 17.8 起）可用，关键字与新特性陆续补齐中，仍有缺口，生产代码以 C17 基线加特性探测为宜。另外别忘了 MinGW：把 GCC 搬到 Windows 上、面向 Win32 输出的发行版——同一份 POSIX 风格代码常常 MinGW 直接过、MSVC 不过，「报错清单」的很多成员它并没有。
+
+`#ifdef _WIN32` 这类平台判断的使用纪律先立在此：**平台差异必须隔离在兼容层或独立文件里，不许散落进业务代码**。散落的 `#ifdef` 会让每个函数都长出分支、每加一个平台组合爆炸。怎么隔离，第 5 节给两种成熟做法。
+
+## 3. 路径与换行：最日常的两处沟壑
+
+### 3.1 分隔符与盘符
+
+Windows 的路径长得像 `C:\Users\name\file.txt`：盘符开头、反斜杠分隔。但一个反直觉的事实是：**Windows 的 C 运行库与原生 API 同样接受正斜杠**。微软对 fopen 的文档原话是：路径里的目录分隔符既可以用反斜杠也可以用正斜杠。
+
+```c
+FILE *f = fopen("config/app.conf", "rb");   /* Windows 上同样有效 */
+```
+
+所以可移植代码的省心做法是：**代码里统一写正斜杠，只有展示给用户的界面字符串才换成反斜杠**。这样路径拼接逻辑只有一套。POSIX 侧则没有盘符概念，`C:\` 之类字符串到 Linux 上就是一个叫 C: 的怪文件名——判断平台时 `path[1] == ':'` 是老式但有效的土办法。
+
+另一处差异是路径长度上限：Windows 传统上限 MAX_PATH 为 260 字符，超长路径要走 `\\?\` 前缀（可到约 32767 字符）；POSIX 侧有 PATH_MAX（Linux 常见 4096）。写遍历程序时给缓冲留足余量、检查 snprintf 截断——400 篇 tree.c 的姿势两平台通用。
+
+### 3.2 文本模式与二进制模式：Windows 会暗改你的字节
+
+430 篇讲过「文本流与二进制流」，当时那只是标准里的措辞差异，Linux 上两者毫无区别。到 Windows 上，这个差别有了真实的物质后果：**以文本模式打开的流会改写字节**。fopen 的 mode 里加 `t`（或不加修饰、默认即文本）时：
+
+- 输出：每个 `\n` 写出为 `\r\n` 两个字节；
+- 输入：每个 `\r\n` 读回为 `\n`；
+- 输入时字节 0x1A（Ctrl+Z）被解释为文件结束。
+
+`b`（二进制模式）则关闭这一切翻译，字节进字节出。亲手抓一次现场：
+
+```c
+/* newline.c：文本模式在 Windows 上的暗改 */
+#include <stdio.h>
+
+int main(void) {
+    FILE *fp = fopen("nl.txt", "w");     /* 注意：没有 b */
+    if (fp == NULL) { perror("fopen"); return 1; }
+    fputs("a\nb\n", fp);
+    fclose(fp);
+    return 0;
+}
+```
+
+同样的程序、同样的源码，两边的磁盘产物不同：
+
+```text
+Windows 编译运行后 od -c nl.txt：
+a  \r  \n   b  \r  \n          （4 字节进去，6 字节出来）
+
+Linux 编译运行后 od -c nl.txt：
+a  \n   b  \n                  （原样）
+```
+
+这就是为什么 Windows 记事本时代的文件到 Linux 打开满屏 `^M`，也是为什么从 Windows 拷去的文本文件比「应该的」字节数多。修改实验：把模式串改成 `"wb"` 再跑——两边产物一致了。于是纪律只有一条：**处理文本且只处理文本时才允许省略 b；一切二进制数据（图片、压缩包、数据库文件）必须 rb/wb**，否则数据里恰好出现 0x1A 时 fread 会中途「假 EOF」，文件被无声截断——这是第 8 节调试实录的主角之一。
+
+## 4. 基础库差异地图：七张最小对照表
+
+这是本篇的主体：七个领域，每个领域一张最小对照表加一句迁移策略。模块里各篇留下的 Windows 伏笔在这里逐一收口。
+
+### 4.1 文件（400 篇伏笔收口）
+
+| 事项 | POSIX | Windows |
+| --- | --- | --- |
+| 打开 | open，返回 fd（小整数） | CreateFile，返回 HANDLE 句柄；CRT 另有 _open 返回 fd |
+| 读写 | read / write | ReadFile / WriteFile；CRT 的 _read / _write |
+| 属性 | stat / struct stat | GetFileAttributesEx；CRT 的 _stat |
+| 目录遍历 | opendir / readdir | FindFirstFile / FindNextFile |
+| 删除 / 重命名 | unlink / rename | DeleteFile / MoveFileEx |
+
+400 篇整篇的 open/read/write 心智模型在 Windows 并不作废：CRT 提供的 `_open/_read/_write` 保留 fd 语义，部分读写契约、循环封装原样适用。迁移策略一句话：**要么全走 CRT（对照表几乎一一对应），要么全走 Win32 原生（句柄是 HANDLE 不是 int）——最忌两边混用，fd 与 HANDLE 互不相认**，第 8 节有混用的事故现场。
+
+### 4.2 进程（330 篇伏笔收口）
+
+| 事项 | POSIX | Windows |
+| --- | --- | --- |
+| 创建进程 | fork + exec 两步 | CreateProcess 一步 |
+| 等待退出 | wait / waitpid | WaitForSingleObject + GetExitCodeProcess |
+| 管道 | pipe + dup2 重定向 | CreatePipe + STARTUPINFO 的句柄继承 |
+
+330 篇末尾留过一个问题：「Windows 原生没有 fork，进程创建走 CreateProcess 一步完成，对应关系见跨平台编程」——答案在这里展开：CreateProcess 没有「复制出一个我的副本」这个动作，因此没有 fork 的两次返回，也没有写时复制继承；它直接「创建新进程并加载指定程序」，参数、环境、标准输入输出都要显式传（想把管道接到子进程，靠 SECURITY_ATTRIBUTES 声明句柄可继承、STARTUPINFO 指定接哪里）。想在 Windows 上复刻「fork 后子进程继续跑我自己这段代码」的模型，要么 CreateProcess 启动自己（拿自身可执行路径加参数），要么干脆换成线程——后者往往才是对的。
+
+### 4.3 线程（370 篇伏笔收口）
+
+| 事项 | POSIX | Windows |
+| --- | --- | --- |
+| 创建 / 等待 | pthread_create / pthread_join | CreateThread / WaitForSingleObject |
+| 互斥锁 | pthread_mutex_t | CRITICAL_SECTION / SRWLOCK |
+| C11 标准线程 | threads.h | threads.h（MSVC 17.8 起支持） |
+
+370 篇讲透 pthread 时留的尾巴在这里收口：Windows 原生是 CreateThread 一族，但工程上若必须在 CRT 环境里跑（用 stdio、malloc 等），更稳妥的是 `_beginthreadex`——它先替新线程初始化 CRT 的每线程结构再进入你的函数。不过 2026 年更省心的答案其实是第三列：C11 的 threads.h 三家都已支持，标准接口跨平台免翻译，能用就用（这正是 370 篇末尾的建议在新平台上的延续）。
+
+### 4.4 动态库（320 篇伏笔收口）
+
+| 事项 | POSIX | Windows |
+| --- | --- | --- |
+| 运行时加载 | dlopen / dlsym / dlclose | LoadLibrary / GetProcAddress / FreeLibrary |
+| 查错 | dlerror | GetLastError + FormatMessage |
+| 库文件 | libfoo.so / libfoo.dylib | foo.dll；编译期配套 foo.lib 导入库 |
+
+320 篇把「Windows 的 .lib/.dll 与导入库」指到本篇，现在补全：Windows 上动态库有两种用法——编译期链接（链接器吃 foo.lib 导入库，运行时自动定位加载 foo.dll）与运行期手动加载（LoadLibrary + GetProcAddress，语义对应 dlopen/dlsym）。错误处理不对等：POSIX 的 dlerror 返回字符串，Windows 要拿 GetLastError 的错误码再用 FormatMessage 转成文字，封装进兼容层里各写各的。
+
+### 4.5 信号（340 篇伏笔收口）
+
+| 事项 | POSIX | Windows |
+| --- | --- | --- |
+| Ctrl+C 处理 | signal(SIGINT, f) / sigaction | SetConsoleCtrlHandler |
+| 段错误转可处理事件 | signal(SIGSEGV, f)（260 篇讲过的限制依旧） | SEH 结构化异常 / SetUnhandledExceptionFilter |
+| 向别的进程发信号 | kill(pid, sig) | GenerateConsoleCtrlEvent / TerminateProcess |
+
+340 篇的 signal 模型在 Windows 没有等价物，这句话现在兑现：Windows 不存在「向任意进程投递一个编号」的通用机制——340 篇的 sigaction、信号屏蔽字、volatile sig_atomic_t 那套心智模型只在 POSIX 侧成立。Ctrl+C 走控制台事件回调，崩溃处理走 SEH，两套机制互不相干。跨平台程序的正解是把「优雅退出」设计成自己的抽象接口，POSIX 侧用信号实现、Windows 侧用控制台事件实现。
+
+### 4.6 套接字（390 篇伏笔收口）
+
+| 事项 | POSIX | Windows（Winsock） |
+| --- | --- | --- |
+| 接口名 | socket / connect / send / recv | 同名（当年为 Unix 程序移植而设计） |
+| 初始化 | 无 | 必须 WSAStartup，结束配 WSACleanup |
+| 关闭 | close | closesocket（套接字是 SOCKET 不是 fd） |
+| 错误查询 | errno | WSAGetLastError（错误码 WSAECONNREFUSED 等） |
+| 链接 | 无 | ws2_32.lib（MSVC 用 #pragma comment，MinGW 用 -lws2_32） |
+
+390 篇注明的「Windows 差异去向 410」在此收口。好消息是接口同名、语义一致，390 篇的 TCP 时序与部分读写全部照搬；坏消息是四条本地规矩：用前必须 `WSAStartup`（它必须是第一个被调用的 Winsock 函数），用完 `WSACleanup`；套接字类型是 SOCKET、关闭用 closesocket；出错不查 errno 而查 WSAGetLastError；别忘了链接 ws2_32。标准开机仪式：
+
+```c
+/* winsock_boot.c：Winsock 的开机仪式（仅 Windows） */
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#include <stdio.h>
+#pragma comment(lib, "ws2_32.lib")
+
+int main(void) {
+    WSADATA wsa;
+    if (WSAStartup(MAKEWORD(2, 2), &wsa) != 0) {
+        fprintf(stderr, "WSAStartup failed\n");
+        return 1;
+    }
+
+    SOCKET s = socket(AF_INET, SOCK_STREAM, 0);
+    if (s == INVALID_SOCKET) {
+        fprintf(stderr, "socket failed: %d\n", WSAGetLastError());
+        WSACleanup();
+        return 1;
+    }
+    /* ... connect / send / recv 同 390 篇 ... */
+    closesocket(s);
+    WSACleanup();
+    return 0;
+}
+```
+
+### 4.7 时间与休眠
+
+| 事项 | POSIX | Windows |
+| --- | --- | --- |
+| 秒级 / 毫秒级休眠 | sleep / nanosleep | Sleep（毫秒，大写 S） |
+| 单调时钟测耗时 | clock_gettime(CLOCK_MONOTONIC) | QueryPerformanceCounter |
+| 本地时间（可重入） | localtime_r(&t, &tm) | localtime_s(&tm, &t)（参数顺序相反） |
+
+策略照旧：能走 C 标准就先走（time、strftime 两边通吃），差的最小就封装进兼容层。
+
+## 5. 条件编译的组织学与最小兼容层
+
+### 5.1 两种隔离法
+
+平台差异的代码组织只有两种成熟姿势，按项目规模选：
+
+- **每平台一个 .c（大项目首选）**：接口写在 platform.h，实现分成 io_posix.c 与 io_win.c，构建系统按平台挑选编译哪个文件。文件内没有一行 #ifdef，可读性、可测试性都好；
+- **#ifdef 内嵌法（小工具可用）**：差异就地写在一个函数里。超过三五个分支就该升级成前一种。
+
+真实项目两种都见得到：libuv 把平台实现隔离在 unix/ 与 win/ 两个目录，对外是同一套 uv_loop_t 接口；Redis 的事件循环拆成 ae_epoll.c、ae_kqueue.c、ae_select.c，编译时按平台选用其一。
+
+```mermaid
+flowchart TD
+    A["业务代码：只认识 pot_xxx 接口"] --> B["兼容层接口 platform.h"]
+    B --> C["io_posix.c：open/read/pthread/dlopen"]
+    B --> D["io_win.c：CreateFile/ReadFile/CreateThread/LoadLibrary"]
+    C --> E["Linux / macOS"]
+    D --> F["Windows"]
+```
+
+### 5.2 平台与标准的探测宏
+
+第 2 节见过编译器探测，平台探测同理——`_WIN32` 判 Windows，`__linux__` 判 Linux，`__APPLE__` 与 `__MACH__` 合判 macOS。把这些判断收敛成一组自己的宏，业务代码只认自己的宏：
+
+```c
+/* platform.h：全项目只在这里出现一次 _WIN32 */
 #ifndef PLATFORM_H
 #define PLATFORM_H
 
-/* 操作系统检测（按优先级） */
-#if defined(_WIN32) || defined(_WIN64)
-    #define PLATFORM_WINDOWS 1
-    #if defined(_WIN64)
-        #define PLATFORM_WINDOWS_64 1
-    #else
-        #define PLATFORM_WINDOWS_32 1
-    #endif
+#if defined(_WIN32)
+    #define POT_WINDOWS 1
 #elif defined(__linux__)
-    #define PLATFORM_LINUX 1
-    #if defined(__ANDROID__)
-        #define PLATFORM_ANDROID 1
-    #endif
+    #define POT_LINUX 1
 #elif defined(__APPLE__) && defined(__MACH__)
-    #include <TargetConditionals.h>
-    #define PLATFORM_MACOS 1
-    #if TARGET_OS_IPHONE
-        #define PLATFORM_IOS 1
-    #endif
-#elif defined(__FreeBSD__)
-    #define PLATFORM_FREEBSD 1
-#elif defined(__OpenBSD__)
-    #define PLATFORM_OPENBSD 1
-#elif defined(__NetBSD__)
-    #define PLATFORM_NETBSD 1
-#elif defined(__unix__) || defined(__unix)
-    #define PLATFORM_UNIX 1
+    #define POT_MACOS 1
 #else
-    #error "未支持的平台，请扩展平台检测宏"
-#endif
-
-/* 编译器检测 */
-#if defined(__clang__)
-    #define COMPILER_CLANG 1
-    #define COMPILER_VERSION (__clang_major__ * 10000 + __clang_minor__ * 100 + __clang_patchlevel__)
-#elif defined(__GNUC__)
-    #define COMPILER_GCC 1
-    #define COMPILER_VERSION (__GNUC__ * 10000 + __GNUC_MINOR__ * 100 + __GNUC_PATCHLEVEL__)
-#elif defined(_MSC_VER)
-    #define COMPILER_MSVC 1
-    #define COMPILER_VERSION _MSC_VER
-#elif defined(__INTEL_COMPILER)
-    #define COMPILER_INTEL 1
-    #define COMPILER_VERSION __INTEL_COMPILER
-#else
-    #define COMPILER_UNKNOWN 1
-#endif
-
-/* 架构检测 */
-#if defined(__x86_64__) || defined(_M_X64)
-    #define ARCH_X86_64 1
-#elif defined(__i386__) || defined(_M_IX86)
-    #define ARCH_X86 1
-#elif defined(__aarch64__)
-    #define ARCH_ARM64 1
-#elif defined(__arm__) || defined(_M_ARM)
-    #define ARCH_ARM32 1
-#elif defined(__riscv)
-    #define ARCH_RISCV 1
-#elif defined(__powerpc64__)
-    #define ARCH_PPC64 1
-#endif
-
-/* 字节序检测（编译时） */
-#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-    #define ENDIAN_LITTLE 1
-#elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-    #define ENDIAN_BIG 1
-#elif defined(_WIN32)
-    /* Windows 仅支持小端架构 */
-    #define ENDIAN_LITTLE 1
-#else
-    #error "无法确定字节序，请在配置脚本中显式检测"
-#endif
-
-/* 数据模型检测 */
-#if defined(_WIN64)
-    #define DATA_MODEL_LLP64 1
-#elif defined(__LP64__) || defined(__x86_64__) || defined(__aarch64__)
-    #define DATA_MODEL_LP64 1
-#elif defined(_ILP32) || defined(__ILP32__)
-    #define DATA_MODEL_ILP32 1
+    #error "unsupported platform: extend platform.h"
 #endif
 
 #endif /* PLATFORM_H */
 ```
 
-### 示例 2：可移植类型与精度保证
+`#error` 兜底是有意的：新平台进来宁可编译失败逼人扩展兼容层，也别静默走错分支。
+
+### 5.3 最小兼容层示例
+
+小项目用不起「每平台一个 .c」时，一个 portability.h 也能走很远——塞进缺失的类型别名与一层函数包装：
 
 ```c
-#include <stdint.h>
-#include <inttypes.h>
-#include <limits.h>
-#include <stdio.h>
+/* portability.h：把差异关进一个头文件 */
+#ifndef PORTABILITY_H
+#define PORTABILITY_H
 
-/* 跨平台类型选择原则：
- * - 整数大小需精确：用 int8_t/int16_t/int32_t/int64_t
- * - 整数大小至少 N 位：用 int_least8_t/int_least16_t/...
- * - 整数大小最快 N 位：用 int_fast8_t/int_fast16_t/...
- * - 持有指针：用 intptr_t/uintptr_t
- * - 64 位整数（跨平台）：用 int64_t（不要用 long，LP64/LLP64 不同）
- */
-
-/* 跨平台打印格式说明符：
- * C99 引入 <inttypes.h> 的 PRId8/PRId16/PRId32/PRId64
- * 避免 %lld（long long）vs %ld（long）的平台差异
- */
-void print_portable_integers(void) {
-    int32_t small = 42;
-    int64_t large = 9223372036854775807LL;  /* INT64_MAX */
-
-    /* PRIi32 在 LP64 上展开为 "i"，在 LLP64 上也展开为 "i"
-     * PRIi64 在 LP64 上展开为 "li"，在 LLP64 上展开为 "lli"
-     */
-    printf("int32_t: %" PRIi32 "\n", small);
-    printf("int64_t: %" PRIi64 "\n", large);
-}
-
-/* 持有指针的整数类型：跨平台安全
- * 错误：intptr_t p = (int)ptr;  // 64 位平台截断指针
- * 正确：intptr_t p = (intptr_t)ptr;
- */
-void ptr_arithmetic_safe(void *ptr) {
-    uintptr_t addr = (uintptr_t)ptr;
-
-    /* 指针对齐检查：低 3 位为 0 表示 8 字节对齐 */
-    int is_aligned = (addr & 7) == 0;
-    printf("ptr = 0x%016" PRIxPTR ", aligned=%d\n", addr, is_aligned);
-}
-
-/* 字符宽度保证：char 始终为 1 字节，但符号性实现定义
- * 跨平台代码应显式声明 signed char 或 unsigned char
- */
-void char_signedness(void) {
-    /* 平台：char 在 x86 默认 signed，ARM 默认 unsigned
-     * 此差异影响 0x80 是否为 -128 还是 128
-     */
-    unsigned char buf[4] = {0x80, 0xFF, 0x01, 0x7F};
-
-    /* 错误：char 的符号性不定
-     * char c = 0x80;
-     * if (c < 0) ...  // x86: true, ARM: false
-     */
-    for (int i = 0; i < 4; i++) {
-        printf("buf[%d] = %u (unsigned)\n", i, (unsigned)buf[i]);
-    }
-}
-
-/* SIZE_MAX 跨平台：表示 size_t 的最大值 */
-#include <stdint.h>
-size_t safe_mul(size_t a, size_t b) {
-    /* 乘法溢出检查（跨平台） */
-    if (a != 0 && b > SIZE_MAX / a) {
-        return 0;  /* 溢出，返回错误 */
-    }
-    return a * b;
-}
-```
-
-### 示例 3：跨平台路径处理
-
-```c
-#include <stdio.h>
-#include <string.h>
-#include <stdlib.h>
-#include <limits.h>
-
-/* 路径分隔符抽象 */
-#ifdef _WIN32
-    #define PATH_SEP '\\'
-    #define PATH_SEP_STR "\\"
-    #define PATH_LIST_SEP ';'   /* PATH 环境变量分隔符 */
-#else
-    #define PATH_SEP '/'
-    #define PATH_SEP_STR "/"
-    #define PATH_LIST_SEP ':'
-#endif
-
-/* 跨平台路径最大长度
- * Windows: MAX_PATH = 260（可扩展到 32767 用 \\?\ 前缀）
- * Linux:   PATH_MAX = 4096
- * macOS:   PATH_MAX = 1024
- */
 #ifdef _WIN32
     #include <windows.h>
-    #define PORTABLE_PATH_MAX MAX_PATH
-#else
-    #include <limits.h>
-    #ifdef PATH_MAX
-        #define PORTABLE_PATH_MAX PATH_MAX
-    #else
-        #define PORTABLE_PATH_MAX 4096
+    #include <direct.h>        /* _mkdir */
+    #include <io.h>            /* _open/_read/_write/_unlink */
+    #ifndef __MINGW32__
+    typedef long long ssize_t; /* MSVC 的 CRT 没有 ssize_t，MinGW 有 */
     #endif
-#endif
-
-/* 路径拼接（跨平台安全）
- * 自动处理分隔符，去除多余的斜杠
- * 返回 0 成功，-1 失败（缓冲区不足）
- */
-int path_join(char *buf, size_t buf_size, const char *dir, const char *name) {
-    size_t dir_len = strlen(dir);
-    size_t name_len = strlen(name);
-
-    /* 去除目录末尾的分隔符（支持 / 和 \） */
-    while (dir_len > 0 && (dir[dir_len - 1] == '/' || dir[dir_len - 1] == '\\')) {
-        dir_len--;
-    }
-
-    /* 检查缓冲区大小：dir + sep + name + '\0' */
-    if (dir_len + 1 + name_len + 1 > buf_size) {
-        return -1;
-    }
-
-    /* 复制目录部分 */
-    memcpy(buf, dir, dir_len);
-    buf[dir_len] = PATH_SEP;
-    memcpy(buf + dir_len + 1, name, name_len);
-    buf[dir_len + 1 + name_len] = '\0';
-
-    return 0;
-}
-
-/* 路径规范化（简化版，不处理 .. 与 . ）
- * 完整实现参考 realpath()（POSIX）或 _fullpath()（Windows）
- */
-char *path_normalize(const char *path) {
-#ifdef _WIN32
-    return _fullpath(NULL, path, PORTABLE_PATH_MAX);
+    #define pot_mkdir(path)  _mkdir(path)          /* Windows 无 mode 参数 */
+    #define pot_unlink(path) _unlink(path)
 #else
-    return realpath(path, NULL);  /* NULL 表示自动 malloc */
-#endif
-}
-
-/* 获取用户主目录（跨平台） */
-const char *get_home_dir(void) {
-#ifdef _WIN32
-    /* Windows: 优先 USERPROFILE，其次 HOMEDRIVE + HOMEPATH */
-    const char *home = getenv("USERPROFILE");
-    if (home) return home;
-
-    static char buf[PORTABLE_PATH_MAX];
-    const char *drive = getenv("HOMEDRIVE");
-    const char *path = getenv("HOMEPATH");
-    if (drive && path) {
-        snprintf(buf, sizeof(buf), "%s%s", drive, path);
-        return buf;
-    }
-    return NULL;
-#else
-    /* Unix: $HOME */
-    const char *home = getenv("HOME");
-    if (home) return home;
-    return NULL;  /* 严重错误，应查 passwd */
-#endif
-}
-
-int main(void) {
-    char path[PORTABLE_PATH_MAX];
-
-    /* 跨平台路径拼接 */
-    path_join(path, sizeof(path), "/home/user/", "documents/file.txt");
-    printf("Path: %s\n", path);
-
-    path_join(path, sizeof(path), "C:\\Users\\test", "file.txt");
-    printf("Path: %s\n", path);
-
-    /* 获取主目录 */
-    const char *home = get_home_dir();
-    if (home) {
-        printf("Home: %s\n", home);
-    }
-
-    return 0;
-}
-```
-
-### 示例 4：跨平台休眠与时间
-
-```c
-#include <stdio.h>
-#include <time.h>
-
-#ifdef _WIN32
-    #include <windows.h>
-#else
-    #include <unistd.h>
-    #include <sys/time.h>
-#endif
-
-/* 跨平台毫秒级休眠
- * Windows: Sleep()（毫秒）
- * Unix:    nanosleep()（纳秒精度）
- * 旧 Unix: usleep()（已废弃，不推荐）
- */
-void sleep_ms(unsigned int milliseconds) {
-#ifdef _WIN32
-    Sleep(milliseconds);
-#else
-    struct timespec ts;
-    ts.tv_sec = milliseconds / 1000;
-    ts.tv_nsec = (milliseconds % 1000) * 1000000L;
-    nanosleep(&ts, NULL);  /* 不处理 EINTR，简化处理 */
-#endif
-}
-
-/* 跨平台获取高精度时间戳（毫秒）
- * Windows: QueryPerformanceCounter（高精度）
- * Unix:    clock_gettime(CLOCK_MONOTONIC)（单调时钟）
- */
-uint64_t get_time_ms(void) {
-#ifdef _WIN32
-    static LARGE_INTEGER freq = {0};
-    if (freq.QuadPart == 0) {
-        QueryPerformanceFrequency(&freq);
-    }
-    LARGE_INTEGER now;
-    QueryPerformanceCounter(&now);
-    /* 转换为毫秒 */
-    return (uint64_t)(now.QuadPart * 1000 / freq.QuadPart);
-#else
-    struct timespec ts;
-    clock_gettime(CLOCK_MONOTONIC, &ts);
-    return (uint64_t)ts.tv_sec * 1000 + (uint64_t)ts.tv_nsec / 1000000;
-#endif
-}
-
-/* 跨平台获取墙上时间（wall clock）
- * 用于日志时间戳，不可用于性能测量（可能回拨）
- */
-void get_current_datetime(char *buf, size_t buf_size) {
-    time_t now = time(NULL);
-    struct tm *tm_info;
-
-#ifdef _WIN32
-    /* Windows: localtime_s 是安全版本（参数顺序与 Unix 相反） */
-    struct tm tm_local;
-    localtime_s(&tm_local, &now);
-    tm_info = &tm_local;
-#else
-    /* Unix: localtime_r 是可重入版本 */
-    struct tm tm_local;
-    localtime_r(&now, &tm_local);
-    tm_info = &tm_local;
-#endif
-
-    /* ISO 8601 格式：2026-07-21T15:30:00 */
-    strftime(buf, buf_size, "%Y-%m-%dT%H:%M:%S", tm_info);
-}
-
-/* 跨平台定时器示例：测量代码执行时间 */
-void benchmark_example(void) {
-    uint64_t start = get_time_ms();
-
-    /* 待测代码 */
-    volatile double sum = 0;
-    for (int i = 0; i < 1000000; i++) {
-        sum += i * 0.001;
-    }
-
-    uint64_t end = get_time_ms();
-    printf("耗时: %llu ms\n", (unsigned long long)(end - start));
-}
-```
-
-### 示例 5：跨平台文件操作
-
-```c
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-
-#ifdef _WIN32
-    /* Windows: 使用 _s 后缀的安全版本，并处理 UTF-8 路径 */
-    #include <windows.h>
-    #include <io.h>
-    #include <direct.h>
-    #define mkdir(path, mode) _mkdir(path)
-    #define access(path, mode) _access(path, mode)
-    #define F_OK 0
-    #define W_OK 2
-    #define R_OK 4
-    typedef struct _stat stat_t;
-    #define portable_stat(path, st) _stat(path, st)
-#else
-    #include <unistd.h>
-    #include <sys/stat.h>
+    #include <unistd.h>        /* unlink */
+    #include <sys/stat.h>      /* mkdir */
     #include <sys/types.h>
-    typedef struct stat stat_t;
-    #define portable_stat(path, st) stat(path, st)
+    #define pot_mkdir(path)  mkdir(path, 0755)
+    #define pot_unlink(path) unlink(path)
 #endif
 
-/* 跨平台文件存在性检查 */
-int file_exists(const char *path) {
-    return access(path, F_OK) == 0;
-}
-
-/* 跨平台文件大小获取（64 位安全） */
-long long file_size(const char *path) {
-    stat_t st;
-    if (portable_stat(path, &st) != 0) {
-        return -1;
-    }
-#ifdef _WIN32
-    return (long long)st.st_size;
-#else
-    return (long long)st.st_size;
-#endif
-}
-
-/* 跨平台目录创建（递归）
- * 类似 mkdir -p，自动创建中间目录
- */
-int mkdir_p(const char *path, int mode) {
-    char tmp[1024];
-    size_t len = strlen(path);
-    if (len >= sizeof(tmp)) return -1;
-    memcpy(tmp, path, len + 1);
-
-    /* 去除末尾分隔符 */
-    if (tmp[len - 1] == '/' || tmp[len - 1] == '\\') {
-        tmp[len - 1] = '\0';
-    }
-
-    /* 逐级创建 */
-    for (char *p = tmp + 1; *p; p++) {
-        if (*p == '/' || *p == '\\') {
-            *p = '\0';
-            if (mkdir(tmp, mode) != 0 && errno != EEXIST) {
-                return -1;
-            }
-            *p = '/';
-        }
-    }
-    if (mkdir(tmp, mode) != 0 && errno != EEXIST) {
-        return -1;
-    }
-    return 0;
-}
-
-/* 跨平台临时文件创建
- * Windows: GetTempFileName
- * Unix:    mkstemp（安全，避免竞态）
- */
-FILE *portable_tmpfile(char *path_buf, size_t path_size) {
-#ifdef _WIN32
-    char tmp_dir[MAX_PATH];
-    GetTempPath(MAX_PATH, tmp_dir);
-    UINT unique = GetTempFileName(tmp_dir, "tmp", 0, path_buf);
-    if (unique == 0) return NULL;
-    return fopen(path_buf, "w+b");
-#else
-    strcpy(path_buf, "/tmp/tmpXXXXXX");
-    int fd = mkstemp(path_buf);  /* mkstemp 自动创建文件，避免竞态 */
-    if (fd < 0) return NULL;
-    return fdopen(fd, "w+b");
-#endif
-}
-
-/* 跨平台内存映射文件（简化版）
- * Windows: CreateFileMapping + MapViewOfFile
- * Unix:    mmap + munmap
- */
-#ifdef _WIN32
-typedef struct {
-    HANDLE hFile;
-    HANDLE hMapping;
-    void *data;
-    size_t size;
-} PortableMMap;
-
-PortableMMap portable_mmap(const char *path, int readonly) {
-    PortableMMap m = {0};
-    DWORD access = readonly ? GENERIC_READ : GENERIC_READ | GENERIC_WRITE;
-    DWORD share = readonly ? FILE_SHARE_READ : 0;
-    DWORD prot = readonly ? PAGE_READONLY : PAGE_READWRITE;
-
-    m.hFile = CreateFileA(path, access, share, NULL, OPEN_EXISTING, 0, NULL);
-    if (m.hFile == INVALID_HANDLE_VALUE) return m;
-
-    LARGE_INTEGER fs;
-    GetFileSizeEx(m.hFile, &fs);
-    m.size = (size_t)fs.QuadPart;
-
-    m.hMapping = CreateFileMappingA(m.hFile, NULL, prot, 0, 0, NULL);
-    if (!m.hMapping) {
-        CloseHandle(m.hFile);
-        return m;
-    }
-
-    m.data = MapViewOfFile(m.hMapping, readonly ? FILE_MAP_READ : FILE_MAP_ALL_ACCESS, 0, 0, 0);
-    return m;
-}
-
-void portable_munmap(PortableMMap *m) {
-    if (m->data) UnmapViewOfFile(m->data);
-    if (m->hMapping) CloseHandle(m->hMapping);
-    if (m->hFile) CloseHandle(m->hFile);
-    memset(m, 0, sizeof(*m));
-}
-#else
-#include <sys/mman.h>
-#include <fcntl.h>
-
-typedef struct {
-    int fd;
-    void *data;
-    size_t size;
-} PortableMMap;
-
-PortableMMap portable_mmap(const char *path, int readonly) {
-    PortableMMap m = {0};
-    int flags = readonly ? O_RDONLY : O_RDWR;
-    int prot = readonly ? PROT_READ : PROT_READ | PROT_WRITE;
-
-    m.fd = open(path, flags);
-    if (m.fd < 0) return m;
-
-    struct stat st;
-    if (fstat(m.fd, &st) != 0) {
-        close(m.fd);
-        m.fd = -1;
-        return m;
-    }
-    m.size = st.st_size;
-
-    m.data = mmap(NULL, m.size, prot, MAP_SHARED, m.fd, 0);
-    if (m.data == MAP_FAILED) {
-        close(m.fd);
-        m.fd = -1;
-        m.data = NULL;
-    }
-    return m;
-}
-
-void portable_munmap(PortableMMap *m) {
-    if (m->data) munmap(m->data, m->size);
-    if (m->fd >= 0) close(m->fd);
-    memset(m, 0, sizeof(*m));
-}
-#endif
+#endif /* PORTABILITY_H */
 ```
 
-### 示例 6：跨平台动态库加载
+业务代码从此只写 `pot_mkdir("cache")`，一个平台细节都不见。兼容层的分量守则是：只包「两边都有、只是名字不同」的东西；语义不同的东西（fork、信号）包不住，老实分别实现。
+
+## 6. 数据模型、字节序与对齐：跨平台的数据纪律
+
+### 6.1 LLP64 与 LP64：long 宽度是头号陷阱
+
+[数据类型详解](/c/040-DataTypeDetailed) 讲过「C 只承诺最小宽度，其余实现定义」。64 位时代各平台把这句话填成了两套数据模型：
+
+| 数据模型 | int | long | 指针 | 代表平台 |
+| --- | --- | --- | --- | --- |
+| ILP32 | 32 位 | 32 位 | 32 位 | 32 位系统 |
+| LP64 | 32 位 | 64 位 | 64 位 | 64 位 Linux / macOS |
+| LLP64 | 32 位 | 32 位 | 64 位 | 64 位 Windows |
+
+关键行：**Windows 的 long 只有 32 位**——它与 Linux 上的 long 不是同一个东西。亲手跑一遍：
 
 ```c
+/* long_trap.c：分别放到 64 位 Linux 与 64 位 Windows 编译 */
 #include <stdio.h>
-
-#ifdef _WIN32
-    #include <windows.h>
-    typedef HMODULE lib_handle_t;
-    #define LIB_LOAD(path)       LoadLibraryA(path)
-    #define LIB_SYM(handle, name) GetProcAddress(handle, name)
-    #define LIB_CLOSE(handle)    FreeLibrary(handle)
-#else
-    #include <dlfcn.h>
-    typedef void *lib_handle_t;
-    #define LIB_LOAD(path)       dlopen(path, RTLD_LAZY | RTLD_LOCAL)
-    #define LIB_SYM(handle, name) dlsym(handle, name)
-    #define LIB_CLOSE(handle)    dlclose(handle)
-#endif
-
-/* 动态库加载器封装 */
-typedef struct {
-    lib_handle_t handle;
-    const char *last_error;
-} DynamicLib;
-
-/* 加载动态库
- * path: 库文件路径
- * 返回：成功 0，失败 -1
- */
-int dynlib_load(DynamicLib *lib, const char *path) {
-    lib->handle = LIB_LOAD(path);
-    if (!lib->handle) {
-#ifdef _WIN32
-        /* Windows 错误码通过 GetLastError 获取 */
-        static char err_buf[256];
-        FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL,
-            GetLastError(), 0, err_buf, sizeof(err_buf), NULL);
-        lib->last_error = err_buf;
-#else
-        lib->last_error = dlerror();
-#endif
-        return -1;
-    }
-    lib->last_error = NULL;
-    return 0;
-}
-
-/* 获取函数符号 */
-void *dynlib_get_func(DynamicLib *lib, const char *name) {
-    void *sym = (void *)LIB_SYM(lib->handle, name);
-    if (!sym) {
-#ifndef _WIN32
-        lib->last_error = dlerror();
-#endif
-    }
-    return sym;
-}
-
-/* 关闭动态库 */
-void dynlib_close(DynamicLib *lib) {
-    if (lib->handle) {
-        LIB_CLOSE(lib->handle);
-        lib->handle = NULL;
-    }
-}
-
-/* 使用示例：跨平台加载 libm 并调用 sqrt */
-typedef double (*sqrt_func_t)(double);
 
 int main(void) {
-    DynamicLib lib;
-    /* 库路径跨平台：Linux: libm.so.6, macOS: libm.dylib, Windows: 不存在（数学函数在 msvcrt.dll） */
-#ifdef _WIN32
-    const char *lib_path = "msvcrt.dll";
-#elif defined(__APPLE__)
-    const char *lib_path = "/usr/lib/libSystem.dylib";
-#else
-    const char *lib_path = "libm.so.6";
-#endif
-
-    if (dynlib_load(&lib, lib_path) != 0) {
-        fprintf(stderr, "加载库失败: %s\n", lib.last_error);
-        return 1;
-    }
-
-    sqrt_func_t my_sqrt = (sqrt_func_t)dynlib_get_func(&lib, "sqrt");
-    if (!my_sqrt) {
-        fprintf(stderr, "找不到 sqrt 符号\n");
-        dynlib_close(&lib);
-        return 1;
-    }
-
-    printf("sqrt(2.0) = %f\n", my_sqrt(2.0));
-    dynlib_close(&lib);
+    unsigned long v = 0x100000000UL;   /* 2 的 32 次方 */
+    printf("%lu\n", v);                /* LP64: 4294967296；LLP64: 0 */
+    printf("sizeof(long) = %zu\n", sizeof(long));
+                                       /* LP64: 8；LLP64: 4 */
     return 0;
 }
 ```
 
-### 示例 7：跨平台字节序处理
+同样的源码，Linux 打出 8、Windows 打出 4；那个 2 的 32 次方在 Windows 上被塞进 32 位回绕成了 0。纪律三条，全部来自 stdint.h：要精确宽度用 int32_t/int64_t；存指针用 intptr_t（把指针塞进 int 是 64 位平台的必炸题）；打印用 inttypes.h 的 PRIu64/PRIx64，别猜 `%ld` 还是 `%lld`。顺带记一句 time_t：主流 64 位平台已是 64 位宽，2038 年问题只困扰仍在维护的 32 位目标。还有 char 的符号性——x86 上默认有符号、ARM 上默认无符号——处理字节流时显式写 unsigned char，这条在 [数据类型详解](/c/040-DataTypeDetailed) 的实现定义清单里早有备案。
+
+### 6.2 字节序与对齐：一句回顾加一段纪律
+
+[内存对齐](/c/230-AlignmentMemoryLayout) 讲过结构体填充与对齐的平台差异，这里只补跨平台的那一刀：**不同平台编译出的同一结构体，填充字节的内容与位置都可能不同，直接 memcpy 整个结构体进文件或网络属于碰运气**。序列化的正解是按字节显式读写，顺带解决字节序——文件与网络协议通常规定大端，而 x86/ARM 主机是小端：
 
 ```c
+/* store_be32.c：不依赖主机字节序的写入方式 */
+#include <stdint.h>
+
+void store_be32(uint8_t *p, uint32_t v) {
+    p[0] = (uint8_t)(v >> 24);   /* 最高有效字节放最低地址 */
+    p[1] = (uint8_t)(v >> 16);
+    p[2] = (uint8_t)(v >> 8);
+    p[3] = (uint8_t)v;
+}
+
+uint32_t load_be32(const uint8_t *p) {
+    return ((uint32_t)p[0] << 24) | ((uint32_t)p[1] << 16) |
+           ((uint32_t)p[2] << 8)  |  (uint32_t)p[3];
+}
+```
+
+任何平台编译，这四个字节的排列都一样。需要 16/32 位网络序转换时，POSIX 的 htonl/ntohl 与 Winsock 的同名函数也能用，但它们管不了 64 位，自定义协议仍以上面的按字节写法最稳。
+
+## 7. 构建与工具链
+
+一句话地图：Windows 原生编译器是 cl（MSVC，通常经 Visual Studio 或 Build Tools 驱动）；MinGW 把 GCC 带上 Windows；CMake 是两边通吃的构建描述层——一份 CMakeLists.txt，Linux 上生成 Makefile、Windows 上生成 Visual Studio 工程，构建系统的展开见 [构建系统](/c/470-BuildSystem)。配套两句纪律：可移植不是「我心想可移植」，CI 里每个目标平台都编译一遍才算数；静态检查器（cppcheck 的多平台参数、clang-tidy 的 portability 检查组）能在本机就揪出 long 宽度、类型截断一类问题，工具对比见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+
+## 8. 常见错误与调试实录
+
+### 8.1 long 宽度导致的溢出事故
+
+```c
+/* bug_hash.c：在 Linux 上通过、在 Windows 上出错的真实形态 */
 #include <stdio.h>
 #include <stdint.h>
-#include <string.h>
-
-/* 字节序检测（运行时）
- * 编译时检测更优：见示例 1 的 ENDIAN_LITTLE/ENDIAN_BIG 宏
- */
-int is_little_endian_runtime(void) {
-    /* 联合体法：利用内存布局判断
-     * 注意：严格别名规则下，此代码在 C 中合法（联合体允许读取非活跃成员）
-     */
-    union {
-        uint16_t value;
-        uint8_t bytes[2];
-    } test;
-    test.value = 0x0001;
-    return test.bytes[0] == 1;
-}
-
-/* 字节序检测（编译时，更优）
- * 利用 C99 复合字面量（C99+）或静态数组初始化
- */
-#define IS_LITTLE_ENDIAN_CTM \
-    ((union { uint16_t v; uint8_t b[2]; }){ .v = 1 }.b[0] == 1)
-
-/* 16/32/64 位字节序翻转 */
-uint16_t swap16(uint16_t v) {
-    return (uint16_t)((v >> 8) | (v << 8));
-}
-
-uint32_t swap32(uint32_t v) {
-    return ((v & 0xFF000000) >> 24) |
-           ((v & 0x00FF0000) >> 8)  |
-           ((v & 0x000000FF) << 24) |
-           ((v & 0x0000FF00) << 8);
-}
-
-uint64_t swap64(uint64_t v) {
-    return ((v & 0xFF00000000000000ULL) >> 56) |
-           ((v & 0x00FF000000000000ULL) >> 40) |
-           ((v & 0x0000FF0000000000ULL) >> 24) |
-           ((v & 0x000000FF00000000ULL) >> 8)  |
-           ((v & 0x00000000FF000000ULL) << 8)  |
-           ((v & 0x0000000000FF0000ULL) << 24) |
-           ((v & 0x000000000000FF00ULL) << 40) |
-           ((v & 0x00000000000000FFULL) << 56);
-}
-
-/* 主机序 → 小端序（写入缓冲区）
- * 若主机为大端，需翻转；小端则直接复制
- */
-void host_to_le16(uint8_t *buf, uint16_t v) {
-#ifdef ENDIAN_LITTLE
-    memcpy(buf, &v, 2);
-#else
-    buf[0] = v & 0xFF;
-    buf[1] = (v >> 8) & 0xFF;
-#endif
-}
-
-void host_to_le32(uint8_t *buf, uint32_t v) {
-#ifdef ENDIAN_LITTLE
-    memcpy(buf, &v, 4);
-#else
-    buf[0] = v & 0xFF;
-    buf[1] = (v >> 8) & 0xFF;
-    buf[2] = (v >> 16) & 0xFF;
-    buf[3] = (v >> 24) & 0xFF;
-#endif
-}
-
-/* 小端序 → 主机序（从缓冲区读取） */
-uint16_t le16_to_host(const uint8_t *buf) {
-#ifdef ENDIAN_LITTLE
-    uint16_t v;
-    memcpy(&v, buf, 2);
-    return v;
-#else
-    return (uint16_t)buf[0] | ((uint16_t)buf[1] << 8);
-#endif
-}
-
-uint32_t le32_to_host(const uint8_t *buf) {
-#ifdef ENDIAN_LITTLE
-    uint32_t v;
-    memcpy(&v, buf, 4);
-    return v;
-#else
-    return (uint32_t)buf[0] |
-           ((uint32_t)buf[1] << 8)  |
-           ((uint32_t)buf[2] << 16) |
-           ((uint32_t)buf[3] << 24);
-#endif
-}
-
-/* 大端序（网络序）转换 */
-void host_to_be32(uint8_t *buf, uint32_t v) {
-    buf[0] = (v >> 24) & 0xFF;
-    buf[1] = (v >> 16) & 0xFF;
-    buf[2] = (v >> 8) & 0xFF;
-    buf[3] = v & 0xFF;
-}
-
-uint32_t be32_to_host(const uint8_t *buf) {
-    return ((uint32_t)buf[0] << 24) |
-           ((uint32_t)buf[1] << 16) |
-           ((uint32_t)buf[2] << 8)  |
-           (uint32_t)buf[3];
-}
-
-/* 使用 <arpa/inet.h>（POSIX）或 Winsock2（Windows）的内置函数
- * htonl/ntohl/htons/ntohs 处理 16/32 位网络序
- * 注意：标准库不提供 64 位转换，需自行实现
- */
-#ifdef _WIN32
-    #include <winsock2.h>
-    #pragma comment(lib, "ws2_32.lib")
-#else
-    #include <arpa/inet.h>
-#endif
-
-void network_byte_order_example(void) {
-    uint32_t host_val = 0x12345678;
-    uint32_t net_val = htonl(host_val);
-    /* net_val 在所有平台上都是 0x12345678（大端序存储） */
-    printf("host: 0x%08X, net: 0x%08X\n", host_val, net_val);
-}
 
 int main(void) {
-    printf("字节序: %s\n", is_little_endian_runtime() ? "小端" : "大端");
-
-    uint8_t buf[4];
-    host_to_le32(buf, 0x12345678);
-    printf("LE 编码: %02X %02X %02X %02X\n", buf[0], buf[1], buf[2], buf[3]);
-
-    host_to_be32(buf, 0x12345678);
-    printf("BE 编码: %02X %02X %02X %02X\n", buf[0], buf[1], buf[2], buf[3]);
-
-    network_byte_order_example();
+    long offset = 4L * 1024 * 1024 * 1024;   /* 想要 4 GiB 的偏移量 */
+    printf("offset = %ld\n", offset);
+    printf("as int64 = %lld\n", (long long)offset);
     return 0;
 }
 ```
 
-### 示例 8：跨平台线程与同步
+64 位 Linux 上两行都打 4294967296；64 位 Windows 上第一行打出负数或 0（long 只有 32 位，常量在初始化时已被截断），而第二行永远正确。这类事故的狡猾在于：测试环境 Linux 全绿，客户 Windows 机上数据错乱。排查口诀：搜出所有 long，问一句「这里要的是『平台字长』还是『64 位』？」——九成九的答案是后者，改 int64_t 收工。
+
+### 8.2 路径拼接忘分隔符
 
 ```c
-#include <stdio.h>
-#include <stdint.h>
-
-/* C11 线程（推荐，标准接口）
- * 需要支持 C11 的编译器与库：GCC 11+、Clang 12+、MSVC 19.29+
- * 若 C11 不可用，回退到 pthread（Unix）或 Windows 线程
- */
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
-    && !defined(__STDC_NO_THREADS__)
-    #include <threads.h>
-    #define USE_C11_THREADS 1
-#elif defined(_WIN32)
-    #include <windows.h>
-    #define USE_WIN_THREADS 1
-#else
-    #include <pthread.h>
-    #define USE_PTHREADS 1
-#endif
-
-/* 线程句柄抽象 */
-typedef
-#if defined(USE_C11_THREADS)
-    thrd_t
-#elif defined(USE_WIN_THREADS)
-    HANDLE
-#else
-    pthread_t
-#endif
-    thread_t;
-
-/* 互斥锁抽象 */
-typedef
-#if defined(USE_C11_THREADS)
-    mtx_t
-#elif defined(USE_WIN_THREADS)
-    CRITICAL_SECTION
-#else
-    pthread_mutex_t
-#endif
-    mutex_t;
-
-/* 互斥锁操作 */
-int mutex_init(mutex_t *m) {
-#if defined(USE_C11_THREADS)
-    return mtx_init(m, mtx_plain) == thrd_success ? 0 : -1;
-#elif defined(USE_WIN_THREADS)
-    InitializeCriticalSection(m);
-    return 0;
-#else
-    return pthread_mutex_init(m, NULL) == 0 ? 0 : -1;
-#endif
-}
-
-void mutex_lock(mutex_t *m) {
-#if defined(USE_C11_THREADS)
-    mtx_lock(m);
-#elif defined(USE_WIN_THREADS)
-    EnterCriticalSection(m);
-#else
-    pthread_mutex_lock(m);
-#endif
-}
-
-void mutex_unlock(mutex_t *m) {
-#if defined(USE_C11_THREADS)
-    mtx_unlock(m);
-#elif defined(USE_WIN_THREADS)
-    LeaveCriticalSection(m);
-#else
-    pthread_mutex_unlock(m);
-#endif
-}
-
-void mutex_destroy(mutex_t *m) {
-#if defined(USE_C11_THREADS)
-    mtx_destroy(m);
-#elif defined(USE_WIN_THREADS)
-    DeleteCriticalSection(m);
-#else
-    pthread_mutex_destroy(m);
-#endif
-}
-
-/* 线程函数签名（统一为返回 int，接收 void*） */
-typedef int (*thread_func_t)(void *arg);
-
-int thread_create(thread_t *t, thread_func_t func, void *arg) {
-#if defined(USE_C11_THREADS)
-    return thrd_create(t, func, arg) == thrd_success ? 0 : -1;
-#elif defined(USE_WIN_THREADS)
-    DWORD tid;
-    *t = CreateThread(NULL, 0, (LPTHREAD_START_ROUTINE)func, arg, 0, &tid);
-    return *t != NULL ? 0 : -1;
-#else
-    return pthread_create(t, NULL, (void *(*)(void *))func, arg) == 0 ? 0 : -1;
-#endif
-}
-
-int thread_join(thread_t t) {
-#if defined(USE_C11_THREADS)
-    int code;
-    return thrd_join(t, &code) == thrd_success ? 0 : -1;
-#elif defined(USE_WIN_THREADS)
-    WaitForSingleObject(t, INFINITE);
-    CloseHandle(t);
-    return 0;
-#else
-    return pthread_join(t, NULL) == 0 ? 0 : -1;
-#endif
-}
-
-/* 示例：跨平台线程安全的计数器 */
-typedef struct {
-    mutex_t mutex;
-    int64_t value;
-} SafeCounter;
-
-void counter_init(SafeCounter *c) {
-    mutex_init(&c->mutex);
-    c->value = 0;
-}
-
-void counter_inc(SafeCounter *c) {
-    mutex_lock(&c->mutex);
-    c->value++;
-    mutex_unlock(&c->mutex);
-}
-
-int64_t counter_get(SafeCounter *c) {
-    int64_t v;
-    mutex_lock(&c->mutex);
-    v = c->value;
-    mutex_unlock(&c->mutex);
-    return v;
-}
-
-/* 线程入口函数 */
-int worker_thread(void *arg) {
-    SafeCounter *c = (SafeCounter *)arg;
-    for (int i = 0; i < 100000; i++) {
-        counter_inc(c);
-    }
-    return 0;
-}
-
-int main(void) {
-    SafeCounter counter;
-    counter_init(&counter);
-
-    /* 启动 4 个线程 */
-    thread_t threads[4];
-    for (int i = 0; i < 4; i++) {
-        if (thread_create(&threads[i], worker_thread, &counter) != 0) {
-            fprintf(stderr, "线程创建失败\n");
-            return 1;
-        }
-    }
-
-    /* 等待所有线程完成 */
-    for (int i = 0; i < 4; i++) {
-        thread_join(threads[i]);
-    }
-
-    printf("最终计数: %lld (期望: 400000)\n",
-           (long long)counter_get(&counter));
-    return 0;
-}
+snprintf(path, sizeof path, "%s%s", config_dir, "app.conf");
 ```
 
-### 示例 9：跨平台原子操作
+config_dir 若是 `C:\app\config`，拼出 `C:\app\configapp.conf`；若是 `/etc/app`，拼出 `/etc/appapp.conf`。Linux 侧习惯「目录不带尾斜杠」，Windows 用户与图形界面却常给带尾斜杠的值。修法是收敛成一个 join 函数（第 3 节的姿势）：先剥掉两侧任意的尾分隔符，再补一个自己认的正斜杠。凡是「偶尔打不开文件、路径看着却没错」的报告，先查拼接。
+
+### 8.3 Winsock 忘了 WSAStartup
+
+```text
+socket() 返回 INVALID_SOCKET
+WSAGetLastError() = 10093 (WSANOTINITIALISED)
+```
+
+390 篇的代码原样搬到 Windows，socket 一调就废：错误码 10093 的意思是「Winsock 尚未初始化」。该报错本身很好认，难认的是变体——有人把 WSAStartup 写在了某个「不太会执行的分支」里，程序时好时坏。规矩：初始化放在 main 的第一步（或库的入口），WSACleanup 收尾，配对出现。
+
+### 8.4 fopen 文本模式读二进制被截断
 
 ```c
-#include <stdio.h>
-#include <stdint.h>
-
-/* C11 stdatomic（首选，标准接口） */
-#if defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L \
-    && !defined(__STDC_NO_ATOMICS__)
-    #include <stdatomic.h>
-    #define USE_C11_ATOMICS 1
-#elif defined(_WIN32)
-    #include <windows.h>
-    #define USE_WIN_ATOMICS 1
-#else
-    /* GCC/Clang 内建原子操作（__sync_* 与 __atomic_*） */
-    #define USE_GCC_ATOMICS 1
-#endif
-
-/* 原子计数器抽象 */
-typedef struct {
-#if defined(USE_C11_ATOMICS)
-    _Atomic int64_t value;
-#elif defined(USE_WIN_ATOMICS)
-    volatile LONG64 value;
-#else
-    volatile int64_t value;
-#endif
-} AtomicCounter;
-
-void atomic_counter_set(AtomicCounter *c, int64_t v) {
-#if defined(USE_C11_ATOMICS)
-    atomic_store(&c->value, v);
-#elif defined(USE_WIN_ATOMICS)
-    InterlockedExchange64(&c->value, v);
-#else
-    __atomic_store_n(&c->value, v, __ATOMIC_SEQ_CST);
-#endif
-}
-
-int64_t atomic_counter_inc(AtomicCounter *c) {
-#if defined(USE_C11_ATOMICS)
-    return atomic_fetch_add(&c->value, 1) + 1;
-#elif defined(USE_WIN_ATOMICS)
-    return InterlockedIncrement64(&c->value);
-#else
-    return __atomic_add_fetch(&c->value, 1, __ATOMIC_SEQ_CST);
-#endif
-}
-
-int64_t atomic_counter_get(AtomicCounter *c) {
-#if defined(USE_C11_ATOMICS)
-    return atomic_load(&c->value);
-#elif defined(USE_WIN_ATOMICS)
-    return InterlockedExchangeAdd64(&c->value, 0);
-#else
-    return __atomic_load_n(&c->value, __ATOMIC_SEQ_CST);
-#endif
-}
-
-/* 比较并交换（CAS） */
-int atomic_cas_ptr(void **target, void *expected, void *desired) {
-#if defined(USE_C11_ATOMICS)
-    return atomic_compare_exchange_strong(target, expected, desired);
-#elif defined(USE_WIN_ATOMICS)
-    return InterlockedCompareExchangePointer(target, desired, expected) == expected;
-#else
-    return __atomic_compare_exchange_n(target, expected, desired, 0,
-                                       __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST);
-#endif
-}
-
-/* 无锁栈示例（Treiber 栈）
- * 演示跨平台原子操作在无锁数据结构中的应用
- */
-typedef struct Node {
-    void *data;
-    struct Node *next;
-#if defined(USE_C11_ATOMICS)
-    _Atomic(struct Node *) next_atomic;
-#endif
-} Node;
-
-/* 注意：简化示例，完整无锁栈需考虑 ABA 问题、内存回收等
- * 生产环境推荐使用 hazard pointer 或 epoch-based reclamation
- */
-
-int main(void) {
-    AtomicCounter counter;
-    atomic_counter_set(&counter, 0);
-
-    /* 单线程测试，实际应用中应由多线程调用 */
-    for (int i = 0; i < 1000000; i++) {
-        atomic_counter_inc(&counter);
-    }
-
-    printf("计数: %lld (期望: 1000000)\n",
-           (long long)atomic_counter_get(&counter));
-    return 0;
-}
+FILE *f = fopen("logo.png", "r");    /* 少了 b */
+unsigned char buf[4096];
+size_t n = fread(buf, 1, sizeof buf, f);   /* 返回值远小于文件大小 */
 ```
 
-### 示例 10：跨平台进程与子进程
+Windows 上读几百 KB 的 PNG 只读出零点几 KB，且每次截断在同一个位置——找到截断点的字节，多半是 0x1A：文本模式把它当 Ctrl+Z 文件结束符，后面全部丢弃。Linux 上同样的代码完全正常，于是又是一例「我这好好的」。修法一字：加 b。凡是 fread 结果小于预期且 Linux 正常 Windows 异常，先查模式串。
+
+### 8.5 fd 与 HANDLE 混用
+
+```text
+error C2664: "BOOL ReadFile(HANDLE,DWORD...)": 无法将参数 1
+    从 "int" 转换为 "HANDLE"
+```
+
+410.4.1 说的「最忌混用」的现场：用 _open 拿了个 fd，却想交给 ReadFile。MSVC 用 C2664 直接拒绝；更糟的是 MinGW 下某些转换能编译过、运行时行为未定义。同一份代码里选定一条线（CRT 或 Win32），两边不越界。
+
+## 9. 实际项目中的使用场景
+
+- **libuv（Node.js 的底层库）**：把 Windows 的 IOCP 与 Linux 的 epoll、BSD 的 kqueue 抽象成统一的异步 I/O 接口，平台实现隔离在 win/ 与 unix/ 目录——第 5 节「每平台一个 .c」的教科书样本；
+- **SQLite**：以 VFS（虚拟文件系统）层抽象文件操作，同一套核心跑在常规文件系统、内存与自定义存储上；其代码里大量 #ifdef 正是「差异隔离在适配层」的实例；
+- **Redis**：网络事件循环按编译期宏选择 ae_epoll.c / ae_kqueue.c / ae_select.c，零运行时开销；
+- **生态 shortcuts**：glib、SDL、APR 这类可移植库把本文的兼容层做成了现成品；pthread-win32 则反过来，把 POSIX 线程 API 搬上 Windows，适合「代码全是 pthread、暂时不想动」的存量项目。选现成库还是自写兼容层，取决于差异面大小——本文七张表覆盖不到的（GUI、注册表等 OS 专属领地），优先交给专门的库或平台团队。
+
+## 10. 小练习
+
+预测题（5 分钟）：在 64 位 Windows（LLP64）上，下面程序输出什么？在 64 位 Linux 上呢？先写答案再分别验证（没有 Windows 机器可用编译器文档或 online 工具验证 sizeof）：
 
 ```c
-#include <stdio.h>
-#include <string.h>
-
-#ifdef _WIN32
-    #include <windows.h>
-    #include <process.h>
-#else
-    #include <unistd.h>
-    #include <sys/wait.h>
-    #include <fcntl.h>
-#endif
-
-/* 跨平台执行子进程并捕获输出（简化版）
- * Windows: CreateProcess + 匿名管道
- * Unix:    fork + exec + pipe
- */
-
-typedef struct {
-    int exit_code;
-    char stdout_buf[4096];
-    char stderr_buf[1024];
-} ProcessResult;
-
-#ifdef _WIN32
-int run_process(ProcessResult *result, const char *cmdline) {
-    HANDLE stdout_read, stdout_write;
-    HANDLE stderr_read, stderr_write;
-    SECURITY_ATTRIBUTES sa = { sizeof(sa), NULL, TRUE };
-
-    CreatePipe(&stdout_read, &stdout_write, &sa, 0);
-    CreatePipe(&stderr_read, &stderr_write, &sa, 0);
-    SetHandleInformation(stdout_read, HANDLE_FLAG_INHERIT, 0);
-    SetHandleInformation(stderr_read, HANDLE_FLAG_INHERIT, 0);
-
-    STARTUPINFOA si = {0};
-    si.cb = sizeof(si);
-    si.dwFlags = STARTF_USESTDHANDLES;
-    si.hStdOutput = stdout_write;
-    si.hStdError = stderr_write;
-
-    PROCESS_INFORMATION pi = {0};
-    if (!CreateProcessA(NULL, (LPSTR)cmdline, NULL, NULL, TRUE,
-                        0, NULL, NULL, &si, &pi)) {
-        return -1;
-    }
-
-    CloseHandle(stdout_write);
-    CloseHandle(stderr_write);
-
-    DWORD n;
-    ReadFile(stdout_read, result->stdout_buf, sizeof(result->stdout_buf) - 1, &n, NULL);
-    result->stdout_buf[n] = '\0';
-    ReadFile(stderr_read, result->stderr_buf, sizeof(result->stderr_buf) - 1, &n, NULL);
-    result->stderr_buf[n] = '\0';
-
-    WaitForSingleObject(pi.hProcess, INFINITE);
-    DWORD code;
-    GetExitCodeProcess(pi.hProcess, &code);
-    result->exit_code = (int)code;
-
-    CloseHandle(pi.hProcess);
-    CloseHandle(pi.hThread);
-    CloseHandle(stdout_read);
-    CloseHandle(stderr_read);
-    return 0;
-}
-#else
-int run_process(ProcessResult *result, const char *cmdline) {
-    int stdout_pipe[2], stderr_pipe[2];
-    pipe(stdout_pipe);
-    pipe(stderr_pipe);
-
-    pid_t pid = fork();
-    if (pid == 0) {
-        /* 子进程 */
-        close(stdout_pipe[0]);
-        close(stderr_pipe[0]);
-        dup2(stdout_pipe[1], STDOUT_FILENO);
-        dup2(stderr_pipe[1], STDERR_FILENO);
-        close(stdout_pipe[1]);
-        close(stderr_pipe[1]);
-
-        /* /bin/sh -c "cmdline" 支持管道与重定向 */
-        execl("/bin/sh", "sh", "-c", cmdline, NULL);
-        _exit(127);
-    }
-
-    /* 父进程 */
-    close(stdout_pipe[1]);
-    close(stderr_pipe[1]);
-
-    ssize_t n;
-    n = read(stdout_pipe[0], result->stdout_buf, sizeof(result->stdout_buf) - 1);
-    result->stdout_buf[n > 0 ? n : 0] = '\0';
-    n = read(stderr_pipe[0], result->stderr_buf, sizeof(result->stderr_buf) - 1);
-    result->stderr_buf[n > 0 ? n : 0] = '\0';
-
-    int status;
-    waitpid(pid, &status, 0);
-    result->exit_code = WIFEXITED(status) ? WEXITSTATUS(status) : -1;
-
-    close(stdout_pipe[0]);
-    close(stderr_pipe[0]);
-    return 0;
-}
-#endif
-
-int main(void) {
-    ProcessResult result = {0};
-#ifdef _WIN32
-    run_process(&result, "ver && echo hello");
-#else
-    run_process(&result, "uname -a && echo hello");
-#endif
-    printf("exit code: %d\n", result.exit_code);
-    printf("stdout: %s\n", result.stdout_buf);
-    return 0;
-}
+long a = 10;
+long *p = &a;
+printf("%zu %zu %zu\n", sizeof(long), sizeof(p), sizeof(*p));
 ```
 
-### 示例 11：跨平台抽象层架构
+参考答案（先写再看）：LLP64 上是 `4 8 4`——long 32 位而指针 64 位；LP64 上是 `8 8 8`。这正是「Windows 的 long 不能当平台字长用」的直测法，也是为什么存指针该用 intptr_t 而不是 long。
 
-```c
-/* 平台抽象层（PAL）设计示例
- * 演示如何通过函数指针表实现运行时平台抽象
- * 上层代码调用统一接口，下层根据平台选择实现
- */
+挑战题（60 分钟，不看答案先动手）：把 400 篇的 tree.c 移植成 MSVC 能编译的版本，保持「递归列目录树」的功能不变。
 
-/* 抽象接口定义（pal.h） */
-#ifndef PAL_H
-#define PAL_H
+提示（思路方向）：三条线索对应第 4 节哪张表？unistd.h 与 dirent.h 没了，用 FindFirstFile/FindNextFile/FindClose 重写目录遍历；lstat 换成 GetFileAttributesEx 的 WIN32_FILE_ATTRIBUTE_DATA（用 FILE_ATTRIBUTE_DIRECTORY 判断目录、nFileSizeHigh/Low 拼大小）；PATH_MAX 换 MAX_PATH。
 
-#include <stdint.h>
-#include <stddef.h>
+展开（关键 API）：`HANDLE h = FindFirstFile("dir\\*", &fd);` 之后循环 FindNextFile，跳过 `.` 与 `..` 两项（fd.cName 里），结束时 FindClose——对照 400 篇的 opendir/readdir/closedir 逐个找对应，会发现心智模型完全同构，只是名字全换了。
 
-/* 文件操作接口 */
-typedef struct PALFile PALFile;
-typedef struct {
-    PALFile *(*open)(const char *path, const char *mode);
-    int (*read)(PALFile *f, void *buf, size_t size);
-    int (*write)(PALFile *f, const void *buf, size_t size);
-    int (*close)(PALFile *f);
-} PALFileOps;
+验收清单：MSVC 与 GCC 双侧编译零警告；两个平台的输出都能列全本文源码目录；输出顺序允许不同（目录项顺序本就无保证，400 篇讲过）。
 
-/* 时间接口 */
-typedef struct {
-    uint64_t (*now_ms)(void);
-    void (*sleep_ms)(unsigned int ms);
-} PALTimeOps;
+## 11. 与之前和之后的知识的关系
 
-/* 线程接口 */
-typedef struct PALThread PALThread;
-typedef struct {
-    int (*create)(PALThread **t, void (*func)(void *), void *arg);
-    int (*join)(PALThread *t);
-    void (*yield)(void);
-} PALThreadOps;
+- 往前：[文件系统操作](/c/400-FileSystemOperation) 的 open/read/write/stat 在 4.1 节找到 Windows 对应物；模块里五处伏笔在本篇收口——[动态库与静态库](/c/320-DynamicStaticLibrary) 的 .lib/.dll（4.4）、[进程与管道](/c/330-ProcessAndPipe) 的 fork（4.2）、[信号处理](/c/340-SignalHandling) 的信号模型（4.5）、[POSIX 线程](/c/370-POSIXThread) 的 pthread（4.3）、[Socket 网络编程](/c/390-SocketNetworkProgramming) 的套接字（4.6）；
+- 旁支：LLP64/LP64 的根在 [数据类型详解](/c/040-DataTypeDetailed) 的实现定义清单；结构体填充与序列化的深挖在 [内存对齐](/c/230-AlignmentMemoryLayout)；条件编译的语法基础在 [预处理与宏](/c/290-PreprocessorMacro)；ABI 与调用约定的二进制层细节在 [C 与汇编交互](/c/560-CAssemblyInteraction)；编译器扩展的可移植封装在 [属性与编译器扩展](/c/540-AttributeCompilerExtension)；
+- 往后：POSIX 侧的接口细节查 [POSIX 速查](/c/420-CPosixSystemCall)；让「每平台一个 .c」真正跑起来的构建脚本在 [构建系统](/c/470-BuildSystem)。
 
-/* 网络 I/O 接口（简化） */
-typedef struct {
-    int (*socket_create)(int domain, int type, int protocol);
-    int (*connect)(int fd, const char *host, int port);
-    int (*send)(int fd, const void *buf, size_t size);
-    int (*recv)(int fd, void *buf, size_t size);
-    int (*close)(int fd);
-} PALNetOps;
+## 12. 官方文档
 
-/* 完整的 PAL 接口表 */
-typedef struct {
-    PALFileOps   file;
-    PALTimeOps   time;
-    PALThreadOps thread;
-    PALNetOps    net;
-} PALOps;
+- fopen 的 mode 与文本/二进制模式翻译规则（Microsoft Learn）：https://learn.microsoft.com/en-us/cpp/c-runtime-library/reference/fopen-wfopen
+- WSAStartup 的调用契约（必须是第一个 Winsock 函数）：https://learn.microsoft.com/en-us/windows/win32/api/winsock2/nf-winsock2-wsastartup
+- MSVC 对各 C/C++ 标准的支持动态（版本更新页）：https://learn.microsoft.com/en-us/cpp/overview/what-s-new-for-visual-cpp-in-visual-studio
 
-/* 获取 PAL 接口（平台相关实现） */
-const PALOps *pal_get_ops(void);
+## 13. 自我检查
 
-#endif /* PAL_H */
+- 能把一份 MSVC 报错清单按五类归因，并对每类给出第几节的搭桥手段；
+- 能默写七张对照表中任意三张，说出对应领域的迁移策略一句；
+- 能解释 Windows 文本模式的三个暗改动作，并说出哪些 fopen 模式串是安全的；
+- 能向同事讲清 LLP64 陷阱的本质（long 不是平台字长），以及兼容层与业务代码的边界划在哪。
 
-/* 上层代码使用 PAL（不感知平台） */
-#include "pal.h"
+## 本章总结
 
-void app_main(void) {
-    const PALOps *pal = pal_get_ops();
+跨平台 C 的沟壑有固定地形：编译器方言（GCC/Clang/MSVC 的开关与探测宏，MSVC 的 C17 已稳、C23 推进中）、路径与换行（正斜杠双平台通用，文本模式的 \r\n 与 Ctrl+Z 暗改必须用 b 挡住）、七个基础库领域（文件、进程、线程、动态库、信号、套接字、时间各有对照表与迁移策略）、数据模型（Windows 的 long 只有 32 位，精确宽度只认 int64_t/intptr_t）。工程方法两条：差异要么隔离成每平台一个 .c，要么收敛进一个 portability.h——业务代码一个 #ifdef 都不见。模块里五处「Windows 见 410」的伏笔至此全部兑现：接下来该把 POSIX 侧的家底重新盘一遍了。
 
-    /* 写文件 */
-    PALFile *f = pal->file.open("test.txt", "w");
-    pal->file.write(f, "hello", 5);
-    pal->file.close(f);
+## 下一步
 
-    /* 获取时间 */
-    uint64_t start = pal->time.now_ms();
-    pal->time.sleep_ms(100);
-    uint64_t end = pal->time.now_ms();
-    printf("耗时: %llu ms\n", (unsigned long long)(end - start));
-}
-```
-
-### 示例 12：跨平台错误处理
-
-```c
-#include <stdio.h>
-#include <string.h>
-#include <errno.h>
-
-#ifdef _WIN32
-    #include <windows.h>
-#endif
-
-/* 跨平台获取错误消息
- * Unix:    errno + strerror_r
- * Windows: GetLastError + FormatMessage
- */
-
-/* 统一错误码（应用自定义，不依赖平台） */
-typedef enum {
-    ERR_OK = 0,
-    ERR_NOT_FOUND = 1,
-    ERR_PERMISSION = 2,
-    ERR_IO = 3,
-    ERR_NETWORK = 4,
-    ERR_UNKNOWN = 99
-} ErrorCode;
-
-/* 获取错误消息字符串 */
-const char *error_message(ErrorCode code) {
-    switch (code) {
-        case ERR_OK:         return "成功";
-        case ERR_NOT_FOUND:  return "未找到";
-        case ERR_PERMISSION: return "权限不足";
-        case ERR_IO:         return "I/O 错误";
-        case ERR_NETWORK:    return "网络错误";
-        default:             return "未知错误";
-    }
-}
-
-/* 将平台错误码转换为应用错误码 */
-ErrorCode translate_errno(int err) {
-    switch (err) {
-        case 0:      return ERR_OK;
-        case ENOENT: return ERR_NOT_FOUND;
-        case EACCES: return ERR_PERMISSION;
-        case EIO:    return ERR_IO;
-        case ECONNREFUSED:
-        case ENETUNREACH:
-                     return ERR_NETWORK;
-        default:     return ERR_UNKNOWN;
-    }
-}
-
-#ifdef _WIN32
-ErrorCode translate_win32(DWORD err) {
-    switch (err) {
-        case ERROR_SUCCESS:        return ERR_OK;
-        case ERROR_FILE_NOT_FOUND:
-        case ERROR_PATH_NOT_FOUND: return ERR_NOT_FOUND;
-        case ERROR_ACCESS_DENIED:  return ERR_PERMISSION;
-        case WSAECONNREFUSED:
-        case WSAENETUNREACH:       return ERR_NETWORK;
-        default:                   return ERR_UNKNOWN;
-    }
-}
-#endif
-
-/* 跨平台获取系统错误消息 */
-void get_system_error(char *buf, size_t buf_size) {
-#ifdef _WIN32
-    DWORD err = GetLastError();
-    if (err == 0) {
-        strncpy(buf, "无错误", buf_size);
-        return;
-    }
-    FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                   NULL, err, 0, buf, (DWORD)buf_size, NULL);
-#else
-    int err = errno;
-    if (err == 0) {
-        strncpy(buf, "无错误", buf_size);
-        return;
-    }
-    /* strerror_r 是可重入版本 */
-    strerror_r(err, buf, buf_size);
-#endif
-}
-
-/* 错误处理宏：检查返回值并跳转到清理标签 */
-#define CHECK(cond, code, label) \
-    do { \
-        if (!(cond)) { \
-            fprintf(stderr, "[%s:%d] 错误: %s\n", \
-                    __FILE__, __LINE__, error_message(code)); \
-            result = (code); \
-            goto label; \
-        } \
-    } while (0)
-
-/* 使用示例 */
-int example_function(void) {
-    ErrorCode result = ERR_OK;
-    FILE *f = NULL;
-
-    f = fopen("nonexistent.txt", "r");
-    CHECK(f != NULL, translate_errno(errno), cleanup);
-
-    /* 文件操作... */
-
-cleanup:
-    if (f) fclose(f);
-    return (int)result;
-}
-```
-
-## 对比分析
-
-### 跨平台抽象方案对比
-
-| 方案 | 优势 | 劣势 | 适用场景 |
-|------|------|------|---------|
-| 条件编译（`#ifdef`） | 无运行时开销，简单直接 | 代码可读性差，维护困难，测试组合爆炸 | 简单适配，少量差异 |
-| 平台抽象层（PAL） | 接口统一，可测试性强，扩展性好 | 有间接调用开销，需设计接口 | 中大型项目，多平台支持 |
-| 第三方可移植库 | 成熟稳定，功能完整，社区支持 | 增加依赖，可能引入安全风险 | 通用功能（线程、网络、I/O） |
-| 函数指针表 | 运行时可选实现，灵活 | 有间接调用开销，调试稍复杂 | 需要运行时选择实现的场景 |
-| 虚函数表（OOP 风格） | 类型安全，支持多态 | C 实现 OOP 较繁琐 | 复杂的对象模型 |
-| 编译时多态（宏） | 零开销，编译期确定 | 调试困难，错误信息冗长 | 性能敏感场景 |
-
-### 主要平台 API 对比
-
-| 功能 | POSIX（Linux/macOS） | Windows（Win32） | 差异说明 |
-|------|---------------------|------------------|---------|
-| 线程 | pthread_create | CreateThread | 参数传递、返回值不同 |
-| 互斥锁 | pthread_mutex_t | CRITICAL_SECTION | Windows 走用户态，POSIX 可配 |
-| 文件操作 | open/read/write | CreateFile/ReadFile/WriteFile | 句柄语义不同 |
-| 目录操作 | opendir/readdir | FindFirstFile/FindNextFile | 迭代模型不同 |
-| 网络 I/O | socket/connect/send/recv | WSAStartup/socket/connect | 需初始化 Winsock |
-| 高效 I/O | epoll/kqueue | IOCP | 模型差异大 |
-| 信号 | signal/sigaction | SetConsoleCtrlHandler | Windows 信号模型简化 |
-| 共享内存 | shmget/mmap | CreateFileMapping | API 完全不同 |
-| 动态库 | dlopen/dlsym | LoadLibrary/GetProcAddress | 错误处理不同 |
-| 时间 | clock_gettime | QueryPerformanceCounter | 精度与实现不同 |
-| 环境 | getenv/setenv | getenv/SetEnvironmentVariable | 线程安全性不同 |
-
-### 跨平台库生态对比
-
-| 库 | 覆盖范围 | 许可证 | 体积 | 适用场景 |
-|----|---------|--------|------|---------|
-| glib | 通用工具、数据结构、线程 | LGPL | 大 | GNOME 生态，通用基础库 |
-| libuv | 异步 I/O、事件循环 | MIT | 中 | Node.js 底层，跨平台网络 |
-| SDL | 多媒体、图形、输入 | zlib | 中 | 游戏开发，跨平台多媒体 |
-| APR | Apache 可移植运行时 | Apache 2.0 | 中 | Apache HTTPD，通用网络 |
-| Boost（C++） | 通用框架，覆盖广泛 | Boost | 极大 | C++ 项目（C 项目不适用） |
-| pthread-win32 | POSIX 线程的 Windows 实现 | LGPL | 小 | 移植 POSIX 代码到 Windows |
-
-## 常见陷阱
-
-### 陷阱 1：假设 `int` 与指针同宽
-
-**问题**：64 位平台上 `int` 仍是 32 位，但指针是 64 位，将指针强转为 `int` 会截断。
-
-**错误示例**：
-
-```c
-int addr = (int)ptr;           /* 64 位平台：指针被截断 */
-void *p = (void *)addr;        /* 高 32 位丢失 */
-```
-
-**正确做法**：
-
-```c
-#include <stdint.h>
-intptr_t addr = (intptr_t)ptr; /* 保证与指针同宽 */
-void *p = (void *)addr;        /* 完整恢复 */
-```
-
-### 陷阱 2：`char` 符号性陷阱
-
-**问题**：`char` 默认是 `signed` 还是 `unsigned` 由实现定义。x86 默认 `signed`，ARM 默认 `unsigned`。
-
-**错误示例**：
-
-```c
-char c = 0x80;
-if (c < 0) {                   /* x86: true, ARM: false */
-    /* ... */
-}
-```
-
-**正确做法**：
-
-```c
-signed char c = 0x80;          /* 显式指定 */
-/* 或 */
-unsigned char c = 0x80;
-```
-
-### 陷阱 3：结构体直接 memcpy 的对齐问题
-
-**问题**：不同平台对结构体的对齐要求不同，直接 `memcpy` 结构体到字节缓冲区可能导致对齐错误或数据不一致。
-
-**错误示例**：
-
-```c
-struct Header {
-    uint16_t a;
-    uint32_t b;
-} h = {1, 2};
-
-uint8_t buf[sizeof(h)];
-memcpy(buf, &h, sizeof(h));   /* 平台相关：填充字节内容不定 */
-```
-
-**正确做法**：序列化时按字节读写，或使用 `#pragma pack(1)`（但牺牲性能）：
-
-```c
-/* 按字节序列化（推荐） */
-buf[0] = h.a & 0xFF;
-buf[1] = (h.a >> 8) & 0xFF;
-buf[2] = h.b & 0xFF;
-buf[3] = (h.b >> 8) & 0xFF;
-buf[4] = (h.b >> 16) & 0xFF;
-buf[5] = (h.b >> 24) & 0xFF;
-```
-
-### 陷阱 4：未定义行为依赖编译器优化
-
-**问题**：有符号整数溢出是 UB，GCC 与 Clang 在 `-O2` 下会假设不溢出，导致不同编译器行为不同。
-
-**错误示例**：
-
-```c
-int add(int a, int b) {
-    return a + b;              /* 若溢出，UB */
-}
-```
-
-**正确做法**：
-
-```c
-#include <stdbool.h>
-bool safe_add(int a, int b, int *result) {
-    if ((b > 0 && a > INT_MAX - b) || (b < 0 && a < INT_MIN - b)) {
-        return false;
-    }
-    *result = a + b;
-    return true;
-}
-```
-
-### 陷阱 5：假设字节序
-
-**问题**：直接将整型 `memcpy` 到字节数组，结果依赖主机字节序。
-
-**错误示例**：
-
-```c
-uint32_t v = 0x12345678;
-uint8_t buf[4];
-memcpy(buf, &v, 4);
-/* buf 在小端机: [0x78, 0x56, 0x34, 0x12]
- * buf 在大端机: [0x12, 0x34, 0x56, 0x78]
- */
-```
-
-**正确做法**：显式序列化（见示例 7）。
-
-### 陷阱 6：Windows 上 `read`/`write` 与 `open` 的差异
-
-**问题**：Windows 有 `_read`/`_write`/`_open`（低级 I/O）与 `ReadFile`/`WriteFile`（Win32 API），两者不互通。
-
-**错误示例**：混用 `_open` 与 `ReadFile`。
-
-**正确做法**：统一使用 POSIX 风格（`_open`/`_read`）或 Win32 API，不混用。
-
-### 陷阱 7：`long` 的位宽差异
-
-**问题**：`long` 在 LP64（Linux 64）是 64 位，在 LLP64（Windows 64）是 32 位。
-
-**错误示例**：
-
-```c
-long v = 0x100000000L;        /* LLP64: 截断为 0 */
-```
-
-**正确做法**：
-
-```c
-int64_t v = 0x100000000LL;    /* 跨平台 64 位 */
-```
-
-### 陷阱 8：`time_t` 2038 问题
-
-**问题**：32 位 `time_t` 在 2038-01-19 03:14:07 UTC 溢出。
-
-**错误示例**：
-
-```c
-time_t t = time(NULL);
-printf("%ld\n", (long)t);     /* 32 位平台：2038 溢出 */
-```
-
-**正确做法**：确保目标平台 `time_t` 为 64 位（Linux x86-64、macOS、Windows 64 均已 64 位），或使用 `struct timespec` 与 `clock_gettime`。
-
-## 工程实践
-
-### 实践 1：分层架构设计
-
-```mermaid
-flowchart TD
-    T0["应用层（业务逻辑，完全可移植）"]
-    T1["抽象层（PAL，接口定义）"]
-    T2["平台层（具体实现）"]
-    T3["Linux 实现（epoll, pthread, mmap）"]
-    T4["Windows 实现（IOCP, CreateThread, CreateFileMapping）"]
-    T5["macOS 实现（kqueue, pthread, mmap）"]
-    T0 --> T1
-    T1 --> T2
-    T2 --> T3
-    T2 --> T4
-    T2 --> T5
-```
-
-**原则**：
-
-1. 应用层不直接调用平台 API，只调用 PAL 接口。
-2. PAL 接口尽量小而精，避免"上帝接口"。
-3. 平台实现隔离在不同源文件中，编译时按平台选择。
-
-### 实践 2：CI/CD 多平台测试矩阵
-
-```yaml
-# .github/workflows/cross-platform.yml
-name: Cross-Platform CI
-
-on: [push, pull_request]
-
-jobs:
-  test:
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-latest, ubuntu-24.04-arm, macos-latest, windows-latest]
-        compiler: [gcc, clang, cl]
-        exclude:
-          - os: macos-latest
-            compiler: cl
-          - os: ubuntu-latest
-            compiler: cl
-          - os: windows-latest
-            compiler: gcc
-
-    runs-on: ${{ matrix.os }}
-    steps:
-      - uses: actions/checkout@v4
-      - name: Configure
-        run: cmake -B build -DCMAKE_C_COMPILER=${{ matrix.compiler }}
-      - name: Build
-        run: cmake --build build --parallel
-      - name: Test
-        run: ctest --test-dir build --output-on-failure
-```
-
-### 实践 3：可移植性静态检查
-
-```bash
-# 使用 cppcheck 检测可移植性问题
-cppcheck --enable=all --platform=unix32 --platform=unix64 \
-         --platform=win32a --platform=win64 \
-         --project=build/compile_commands.json
-
-# 使用 clang-tidy 的可移植性检查
-clang-tidy -checks='-*,portability-*,bugprone-*' \
-           -p build src/*.c
-
-# 使用 -Wpedantic -Werror 捕获非标准代码
-gcc -std=c17 -Wpedantic -Werror -Wall -Wextra
-```
-
-### 实践 4：跨平台编译选项管理
-
-```cmake
-# cmake/PortableFlags.cmake
-function(set_portable_flags target)
-    # 基本警告（所有编译器）
-    target_compile_options(${target} PRIVATE
-        $<$<C_COMPILER_ID:GNU,Clang>:-Wall -Wextra -Wpedantic>
-        $<$<C_COMPILER_ID:MSVC>:/W4 /permissive->
-    )
-
-    # C 标准版本（禁用扩展，确保可移植）
-    target_compile_features(${target} PRIVATE c_std_17)
-    set_target_properties(${target} PROPERTIES
-        C_EXTENSIONS OFF
-    )
-
-    # 平台特定定义
-    if(WIN32)
-        target_compile_definitions(${target} PRIVATE
-            _CRT_SECURE_NO_WARNINGS    # 禁用 _s 函数警告
-            _WINSOCK_DEPRECATED_NO_WARNINGS
-            WIN32_LEAN_AND_MEAN        # 精简 windows.h
-        )
-    endif()
-
-    # 64 位支持
-    if(CMAKE_SIZEOF_VOID_P EQUAL 8)
-        target_compile_definitions(${target} PRIVATE PLATFORM_64BIT=1)
-    else()
-        target_compile_definitions(${target} PRIVATE PLATFORM_32BIT=1)
-    endif()
-endfunction()
-```
-
-### 实践 5：跨平台日志系统
-
-```c
-/* 跨平台日志：颜色支持、线程安全、文件输出 */
-#include <stdio.h>
-#include <stdarg.h>
-#include <time.h>
-
-#ifdef _WIN32
-    #include <windows.h>
-    /* Windows 10+ 支持 ANSI 转义码 */
-    #ifndef ENABLE_VIRTUAL_TERMINAL_PROCESSING
-    #define ENABLE_VIRTUAL_TERMINAL_PROCESSING 0x0004
-    #endif
-#endif
-
-typedef enum {
-    LOG_DEBUG,
-    LOG_INFO,
-    LOG_WARN,
-    LOG_ERROR
-} LogLevel;
-
-static const char *level_str[] = {"DEBUG", "INFO", "WARN", "ERROR"};
-static const char *level_color[] = {"\033[37m", "\033[32m", "\033[33m", "\033[31m"};
-static const char *color_reset = "\033[0m";
-
-void log_init(void) {
-#ifdef _WIN32
-    /* Windows: 启用 ANSI 转义码支持 */
-    HANDLE h = GetStdHandle(STD_OUTPUT_HANDLE);
-    DWORD mode;
-    GetConsoleMode(h, &mode);
-    SetConsoleMode(h, mode | ENABLE_VIRTUAL_TERMINAL_PROCESSING);
-#endif
-}
-
-void log_write(LogLevel level, const char *file, int line, const char *fmt, ...) {
-    char time_buf[32];
-    time_t now = time(NULL);
-    struct tm tm_val;
-
-#ifdef _WIN32
-    localtime_s(&tm_val, &now);
-#else
-    localtime_r(&now, &tm_val);
-#endif
-    strftime(time_buf, sizeof(time_buf), "%Y-%m-%d %H:%M:%S", &tm_val);
-
-    fprintf(stderr, "%s[%s]%s [%s:%d] ",
-            level_color[level], level_str[level], color_reset, file, line);
-
-    va_list args;
-    va_start(args, fmt);
-    vfprintf(stderr, fmt, args);
-    va_end(args);
-
-    fprintf(stderr, "\n");
-    fflush(stderr);
-}
-
-#define LOG_INFO(...)  log_write(LOG_INFO,  __FILE__, __LINE__, __VA_ARGS__)
-#define LOG_ERROR(...) log_write(LOG_ERROR, __FILE__, __LINE__, __VA_ARGS__)
-```
-
-### 实践 6：跨平台字节对齐保证
-
-```c
-#include <stdalign.h>
-#include <stdint.h>
-
-/* C11 对齐说明符：跨平台保证对齐 */
-alignas(16) uint8_t buffer[256];   /* 16 字节对齐（SSE 指令要求） */
-
-/* 跨平台对齐内存分配 */
-void *aligned_alloc_portable(size_t alignment, size_t size) {
-#if defined(_WIN32)
-    return _aligned_malloc(size, alignment);
-#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-    return aligned_alloc(alignment, size);   /* C11 */
-#else
-    void *ptr = NULL;
-    posix_memalign(&ptr, alignment, size);   /* POSIX */
-    return ptr;
-#endif
-}
-
-void aligned_free_portable(void *ptr) {
-#if defined(_WIN32)
-    _aligned_free(ptr);
-#else
-    free(ptr);
-#endif
-}
-
-/* 缓存行对齐（64 字节，避免 false sharing） */
-#define CACHE_LINE_SIZE 64
-alignas(CACHE_LINE_SIZE) typedef struct {
-    int data[16];
-} CacheLineAligned;
-
-/* 使用示例：避免多核 CPU 的 false sharing */
-alignas(CACHE_LINE_SIZE) static int counters[64];  /* 每核一个计数器 */
-```
-
-## 案例研究
-
-### 案例一：libuv 的跨平台异步 I/O
-
-libuv 是 Node.js 的底层库，抽象了 Windows IOCP、Linux epoll、BSD kqueue、Solaris event ports 等异步 I/O 机制。
-
-**架构**：
-
-- 统一接口：`uv_loop_t`、`uv_tcp_t`、`uv_timer_t` 等
-- 平台实现：`unix/` 与 `win/` 目录隔离
-- 运行时选择：编译时根据平台选择实现
-
-**关键抽象**：
-
-```c
-/* 统一的循环结构 */
-struct uv_loop_s {
-    void *watchers;          /* 平台相关的 watcher 数组 */
-    unsigned int nwatchers;
-    uv_handle_t *pending;    /* 待处理的 handle */
-    /* ... 跨平台字段 */
-};
-
-/* 平台相关的内部结构（隐藏在实现文件中） */
-```
-
-### 案例二：SQLite 的 VFS 层
-
-SQLite 通过 VFS（Virtual File System）层抽象文件操作，支持多种平台。
-
-```c
-/* SQLite VFS 接口（简化） */
-typedef struct sqlite3_vfs {
-    int iVersion;
-    int szOsFile;
-    int mxPathName;
-    sqlite3_vfs *pNext;
-    const char *zName;
-    int (*xOpen)(sqlite3_vfs*, const char *zName, sqlite3_file*, int flags, int *pOutFlags);
-    int (*xDelete)(sqlite3_vfs*, const char *zName, int syncDir);
-    int (*xAccess)(sqlite3_vfs*, const char *zName, int flags, int *pResOut);
-    /* ... 更多方法 */
-} sqlite3_vfs;
-```
-
-**意义**：VFS 使 SQLite 能在常规文件系统、内存、自定义存储（如加密容器）上运行。
-
-### 案例三：Redis 的事件循环抽象
-
-Redis 的网络 I/O 通过 `ae.c` 抽象层实现，根据编译时宏选择 `epoll`、`kqueue`、`evport`、`select`。
-
-```c
-/* ae.h 抽象层 */
-typedef struct aeEventLoop {
-    int maxfd;
-    int setsize;
-    aeFileEvent *events;
-    aeFiredEvent *fired;
-    void *apidata;           /* 平台相关数据（epoll fd / kqueue fd） */
-    /* ... */
-} aeEventLoop;
-
-/* ae_epoll.c, ae_kqueue.c, ae_select.c 分别实现 */
-```
-
-**设计要点**：编译时通过 `#ifdef HAVE_EPOLL` 等宏选择实现，运行时零开销。
-
-### 案例四：PostgreSQL 的平台抽象
-
-PostgreSQL 使用 `pg_config` 在配置阶段探测平台特性，生成 `pg_config.h` 与 `pg_config_manual.h`。
-
-```c
-/* pg_config.h.in 片段（由 configure 生成） */
-#define HAVE_CLOCK_GETTIME 1
-#define HAVE_EPOLL 1
-#define HAVE_POSIX_FADVISE 1
-#define ALIGNOF_DOUBLE 8
-#define SIZEOF_LONG 8
-```
-
-**优势**：编译时已知平台能力，避免运行时探测开销。
-
-### 案例五：curl 的可移植性策略
-
-libcurl 是广泛使用的网络库，支持 40+ 平台。
-
-**关键策略**：
-
-1. **编译时配置**：`configure` 脚本探测可用功能
-2. **可选功能**：通过 `#ifdef USE_OPENSSL` 等启用/禁用
-3. **统一 API**：上层 API 完全一致，下层后端可选（OpenSSL/GnuTLS/mbedTLS）
-4. **CI 矩阵**：在 Linux、macOS、Windows、Android、iOS 等 10+ 平台测试
-
-### 官方文档
-
-- **C 标准草案（N2176）**：https://www.open-std.org/jtc1/sc22/wg14/www/docs/n2176.pdf
-- **POSIX 标准**：https://pubs.opengroup.org/onlinepubs/9699919799/
-- **Win32 API**：https://learn.microsoft.com/en-us/windows/win32/
-- **Linux man pages**：https://man7.org/linux/man-pages/
-- **Apple Developer**：https://developer.apple.com/
-
-### 经典书籍
-
-- **《Expert C Programming: Deep C Secrets》**（Peter van der Linden, 1994）：C 语言深层原理与可移植性。
-- **《C: A Reference Manual》**（Samuel Harbison & Guy Steele, 2002）：C 语言权威参考。
-- **《Portable C Compiler》**（Eugene Jarvis, 1989）：跨平台编译器实现。
-
-### 工具与生态
-
-- **cppcheck**：静态分析，可检测可移植性问题。https://cppcheck.sourceforge.io/
-- **clang-tidy**：静态分析，提供 portability-* 检查。https://clang.llvm.org/extra/clang-tidy/
-- **GCC `-Wpedantic`**：严格遵循标准，禁用扩展。
-- **Linux Test Project**：跨平台测试套件。https://linux-test-project.github.io/
-- **Autoconf**：配置脚本生成工具。https://www.gnu.org/software/autoconf/
-
-### 相关主题
-
-- 构建系统：CMake/Make/Ninja 跨平台构建
-- 静态分析与调试：可移植性静态检查
-- 嵌入式C编程：嵌入式平台特殊性
-- C与汇编交互：ABI 与调用约定
-- 属性与编译器扩展：编译器扩展的可移植封装
-- 数据类型详解：类型大小与对齐
+进入 [POSIX 速查](/c/420-CPosixSystemCall)：地图已经画完，把 Linux/macOS 这条主战场的系统调用家底——四件套、进程、管道、信号、目录——整理成随查随用的案头手册。

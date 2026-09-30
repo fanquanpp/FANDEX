@@ -1,2643 +1,799 @@
 ---
 order: 300
-title: 预处理器与宏
+title: 预处理器与宏：编译前的文本手术
 module: 'c'
 category: 计算机科学
 difficulty: intermediate
-description: C预处理器指令、宏定义与展开、条件编译、文件包含与常见陷阱详解。
+description: 用 gcc -E 把 main.c 的预处理产物摊开，一图看穿「宏只是文本替换」：编译四阶段心智模型、#include 搜索路径 gcc -v 实验、头文件守卫三写法；函数式宏的 SQUARE(i++) 事故实录与括号纪律、# 与 ## 两级宏与能跑的 X-Macro 全貌、__VA_ARGS__ 与 C23 __VA_OPT__；条件编译三大用途与 #error/#warning、C23 __has_include；do { } while(0) 惯用法与五条宏军规。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
-  - 'c/560-CAssemblyInteraction'
-  - 'c/120-ArrayDetailed'
+  - 'c/300-InlineFunctionMacro'
+  - 'c/310-MultiFileCompilation'
   - 'c/520-C23C2y'
-  - 'c/140-PointerDeep'
+  - 'c/530-C23NewFeatures'
+  - 'c/110-EnumTypedef'
+  - 'c/410-CrossPlatformProgramming'
 prerequisites:
-  - 'c/020-CLanguageOverview'
+  - 'c/060-OperatorExpression'
+  - 'c/090-FunctionDetailed'
 ---
 
 ## 前置知识
 
-- [数组详解](/c/120-ArrayDetailed)：建议先完成前一篇的学习
+- 已完成 [运算符与表达式](/c/060-OperatorExpression)：知道优先级怎么定胜负、什么叫未定义行为——本文 `SQUARE(i++)` 的事故判定直接引用它；
+- 已完成 [函数](/c/090-FunctionDetailed)：会写函数声明与调用——函数式宏长得像函数，本文反复拿它当反例对照。
+
+零基础起步见 [C 语言零基础起步](/c/010-CZeroBasisStart)。记不全的部分不影响往下读，用到就当场解释。
+
+> 分工说明：C 模块里与「宏」沾边的内容拆在四篇。本篇讲预处理器与宏本体：指令、展开规则、条件编译、军规与事故。「什么时候用宏、什么时候用 inline 函数」的工程决策在 [内联函数与宏](/c/300-InlineFunctionMacro)；`_Generic` 类型分派在 [泛型选择](/c/280-GenericSelection)；头文件怎么组织、翻译单元与链接在 [多文件编译](/c/310-MultiFileCompilation)；`#pragma pack` 与对齐在 [内存对齐](/c/220-MemoryAlignmentDeepDive)。本篇与它们互为地基，不重复对方的示例。
 
 ## 学习目标
 
-- 掌握「第 1 章 引言与学习路径」的核心机制、典型用法与常见陷阱
-- 掌握「第 2 章 历史演进与设计哲学」的核心机制、典型用法与常见陷阱
-- 掌握「第 3 章 核心概念与术语体系」的核心机制、典型用法与常见陷阱
-- 掌握「第 4 章 文件包含 (include)」的核心机制、典型用法与常见陷阱
-- 掌握「第 5 章 宏定义详解 (define)」的核心机制、典型用法与常见陷阱
+读完本文你将能够：
 
+1. 用 `gcc -E` 看任意程序的预处理产物，指出宏在哪一行消失、展开成了什么；
+2. 画出编译流水线中预处理器管的那一段，说清 `#include <...>` 与 `"...\"` 的搜索路径差异和头文件守卫的三种写法；
+3. 解释「宏参数不求值，只替换文本」，识别并修复 `SQUARE(i++)` 与缺括号两类经典事故；
+4. 用 `#` 与 `##` 写字符串化和 X-Macro 代码生成，用 `__VA_ARGS__`（或 C23 的 `__VA_OPT__`）写日志宏；
+5. 用条件编译实现平台探测与调试开关，并遵守 `do { } while (0)` 等五条宏军规。
 
-## 第 1 章 引言与学习路径
+预计 60 到 80 分钟，含 5 组动手实验、2 道预测题与 1 道挑战题。
 
-### 1.1 为什么预处理器是 C 工程师的"必修课"
+## 1. 问题引入：gcc -E 把 printf 前的世界摊开
 
-C 预处理器(Preprocessor)是 C 编译工具链中最古老、最强大,也是最容易滥用的部分。它诞生于 1970 年代,最初只是一个简单的"文本替换工具",但随着 C 语言在系统编程、嵌入式、跨平台开发中的广泛应用,预处理器逐渐演化为支持条件编译、宏元编程、代码生成的"小型图灵完备语言"。
-
-理解预处理器对 C 工程师的重要性体现在以下几个方面:
-
-- **跨平台开发的基石**:通过 `#ifdef`、`#if` 等条件编译指令,Linux 内核、glibc、OpenSSL 这些大型项目能用同一份代码支持数十种硬件架构与操作系统。
-- **编译时计算**:通过宏展开,可以在编译期完成常量计算、类型选择、代码生成,实现零运行时开销的抽象。
-- **头文件管理**:`#include` 与 Include Guard 是 C 模块化的基础,理解其机制是组织大型项目的必备能力。
-- **现代 C 的过渡桥梁**:C23 引入的 `#embed`、`constexpr`、模块化等特性,都直接或间接地与预处理器演进相关。
-- **调试与诊断**:`__FILE__`、`__LINE__`、`__func__` 等预定义宏是构建日志、断言、错误报告系统的核心工具。
-
-一个不理解预处理器的 C 工程师,会写出大量重复代码、无法跨平台编译、难以调试,也无法阅读 Linux 内核、SQLite 这类世界级 C 项目的源码。
-
-### 1.2 预处理器的核心挑战
-
-#### 1.2.1 宏不是函数:文本替换的陷阱
-
-宏本质是"文本替换",与函数有根本性区别。最经典的陷阱是参数副作用:
+先看一份普通得不能再普通的源码：
 
 ```c
+/* greet.c */
+#include <stdio.h>
+
+#define GREETING "Hello, preprocessor"
 #define SQUARE(x) ((x) * (x))
 
-int i = 3;
-int r = SQUARE(i++);  // 展开为 ((i++) * (i++))，行为未定义！
+int main(void) {
+    printf("%s\n", GREETING);
+    printf("5^2 = %d\n", SQUARE(5));
+    return 0;
+}
 ```
 
-这种"看起来像函数,行为却完全不同"的特性,是宏最危险的来源。
+问题：编译器看到这份文件了吗？答案出乎多数初学者意料——**没有**。`gcc` 在真正编译之前先跑了一道独立工序：预处理器（preprocessor）。想亲眼看到它的产物，加 `-E`：只做预处理，不做编译。
 
-#### 1.2.2 宏展开的不可预测性
+```bash
+gcc -E greet.c | grep -n printf
+```
 
-宏展开遵循复杂的规则(参数预扫描、递归展开、字符串化、Token 粘贴),即使是经验丰富的 C 程序员也常常被坑:
+输出（`-E` 的完整产物有几千行——stdio.h 的内容被整个抄了进来，用 grep 挑出我们关心的行）：
+
+```text
+1477:    printf("%s\n", "Hello, preprocessor");
+1478:    printf("5^2 = %d\n", ((5) * (5)));
+```
+
+两个宏都消失了：`GREETING` 变成了字符串字面量，`SQUARE(5)` 变成了 `((5) * (5))`。这一眼看出本文最重要的事实：**预处理就是文本替换**。它不理解 C 语法、不知道类型、不检查你写的是什么——它只管照着 `#define` 建的对照表改写文本，改完把一份「纯 C」交给编译器。这个特性既是宏全部能力的来源（条件编译、代码生成），也是全部事故的来源（参数不求值、括号陷阱）。接下来先建立流水线地图，再逐一拆招。
+
+## 2. 预处理心智模型：编译流水线的第一站
+
+C 标准把「源码到可执行文件」分成 8 个翻译阶段（translation phases），日常心智模型可以浓缩为四步，预处理器管前一步：
+
+```text
+.c 源文件
+  ↓ 字符与行：\ 加换行的续行对被拼掉，多行并成一行（三字符组在 C23 已从标准删除）
+  ↓ 记号化：注释整体替换为一个空格，文本切成预处理记号（token）
+  ↓ 执行指令：#include 复制粘贴、#define 登记对照表、#if 剪枝、宏展开
+  ↓ 产物：一份"纯 C"翻译单元（gcc -E 能看到的 .i 文件）
+  ↓ 之后才轮到：编译 → 汇编 → 链接（见 210/310 两篇）
+```
+
+三件事从这里立刻变清楚：
+
+- **注释死在预处理手里**。宏定义里写注释是安全的（替换成空格），但也意味着注释不进宏体参与展开；
+- **续行符 `\` 是预处理级的**。它让多行宏定义在处理器眼里仍是「一行」，这是第 8 节多语句宏的前提；
+- **宏替换发生在一切语法分析之前**。编译器从没见过你的宏名——所以第 4 节那些「展开后语义全变」的事故，编译器也未必能救你。
+
+### 2.1 #include：复制粘贴，以及两种括号的搜索路径
+
+`#include` 的行为朴素到粗暴：把目标文件的**全部内容原样粘贴**到这一行。所谓「包含头文件」，实为「抄进来」。粘贴去哪找文件？两种写法路径不同：
 
 ```c
-#define CAT(a, b) a##b
-#define XCAT(a, b) CAT(a, b)
-
-#define AB "ab"
-#define A B
-#define B "real"
-
-CAT(A, B)     // 展开为 AB，结果是 "ab"
-XCAT(A, B)    // 先展开 A、B，再粘贴，结果是 "real"
+#include <stdio.h>      /* 尖括号：只在系统目录里找 */
+#include "utils.h"      /* 双引号：先找当前文件所在目录，找不到再走尖括号的路径 */
 ```
 
-#### 1.2.3 调试困难
+空口无凭，让 gcc 自己招供。`-v` 会把搜索路径打到标准错误流：
 
-宏展开后,调试器看到的是展开后的代码,与源码行号可能不一致。`-g` 调试信息虽能映射回源码,但宏参数、宏内部逻辑在调试器中几乎不可观察。
+```bash
+gcc -v -E greet.c 2>&1 | tail -n 12
+```
 
-#### 1.2.4 命名空间污染
+一次典型输出（Linux + GCC 13，Windows/MinGW 的列表不同但结构一致）：
 
-宏是全局的,没有作用域概念。一个 `#define MAX 100` 会影响整个翻译单元中所有 `MAX` 的使用,包括第三方头文件中的代码。这是 C 程序"宏命名冲突"问题的根源。
+```text
+#include "..." search starts here:
+#include <...> search starts here:
+ /usr/lib/gcc/x86_64-linux-gnu/13/include
+ /usr/local/include
+ /usr/include/x86_64-linux-gnu
+ /usr/include
+End of search list.
+```
 
-### 1.3 本文档的目标读者
+读出三条规则：
 
-本文档面向以下读者:
+1. 尖括号**只**从这个列表找（系统目录 + `-I` 添加的目录）；
+2. 双引号**先**查「当前文件所在目录」——这一站是隐式的，不在列表里——然后才进同一个列表；
+3. 列表可以用 `-I./include` 往前插，`-iquote` 则只影响双引号形式。
 
-- **C 进阶学习者**:已掌握基本语法,希望理解宏与预处理器的深层机制
-- **跨平台开发者**:需要编写在 Linux/Windows/macOS/嵌入式等多平台运行的代码
-- **库作者**:设计公开 API 头文件,需要正确的 Include Guard、extern "C"、ABI 兼容
-- **代码审计工程师**:分析宏相关的安全漏洞(如 Linux 内核中常见的宏副作用 bug)
-- **面试准备者**:预处理器是 C 面试的高频考点,尤其是宏展开、条件编译、X-Macro
+修改实验一：新建 `inc/my.h`，把 `gcc -v -E greet.c` 换成 `gcc -v -E -Iinc greet.c 2>&1 | tail -n 12`，看 `inc` 出现在列表最前面。工程惯例随之而来：系统与第三方库头文件用尖括号，自己项目的头文件用双引号——技术上反过来写也能编译，但惯例让人一眼分清「谁的是谁的」。
 
-### 1.4 学习路径建议
+### 2.2 头文件守卫：三写法与可移植性
 
-本文档采用 12 章递进式结构:
-
-1. **第 1 章 引言**:建立对预处理器的整体认识
-2. **第 2 章 历史演进**:从 cpp 到 C23 预处理器改革
-3. **第 3 章 核心概念**:翻译阶段、Token 化、宏展开机制
-4. **第 4 章 文件包含**:`#include` 的两种形式与搜索路径
-5. **第 5 章 宏定义详解**:`#define`、对象式宏、函数式宏、可变参数宏
-6. **第 6 章 条件编译**:`#if`/`#ifdef`/`#ifndef`/`#elif`/`#endif` 与 `defined`
-7. **第 7 章 预定义宏与 `#line`/`#error`/`#pragma`**
-8. **第 8 章 实战模式**:X-Macro、编译时断言、泛型宏、调试日志宏
-9. **第 9 章 常见陷阱**:宏副作用、运算符优先级、分号问题、递归展开限制
-10. **第 10 章 高级主题**:C23 `#embed`/`#warning`、模块化与预处理器关系
-11. **第 11 章 跨平台与编译器差异**:GCC/Clang/MSVC 行为差异
-12. **第 12 章 总结与最佳实践**:工业级项目的宏使用策略
-
-### 1.5 阅读前的预备知识
-
-在开始阅读本文档前,你应该:
-
-- 掌握 C 基本语法(变量、函数、控制流)
-- 了解编译流程(预处理 → 编译 → 汇编 → 链接)
-- 熟悉 Linux 基本命令(`gcc`、`make`)
-- 理解 C 类型系统与指针基础
-- 能够在 Linux/Unix 或 Windows 环境下编译运行 C 程序
-
-## 第 2 章 历史演进与设计哲学
-
-### 2.1 早期预处理器的诞生(1970s)
-
-C 语言的创造者 Dennis Ritchie 在 1972 年设计 C 时,预处理器(Preprocessor)是作为一个独立的工具 `cpp`(C Preprocessor)实现的。早期的 `cpp` 非常简单,只支持:
-
-- `#include` 文件包含
-- `#define` 简单的文本替换
-- `#if`/`#ifdef` 基本条件编译
-
-设计初衷是为了解决三个问题:
-
-1. **头文件复用**:多个 `.c` 文件共享公共声明
-2. **平台差异**:不同 Unix 变体(BSD、System V、V7)的系统调用略有不同
-3. **编译时配置**:调试版与发布版的代码差异
-
-### 2.2 ANSI C 标准化(1989, C89)
-
-ANSI C(C89)对预处理器进行了首次标准化,引入了:
-
-- **函数式宏**:`#define MAX(a, b) ((a) > (b) ? (a) : (b))`
-- **字符串化运算符** `#`:将宏参数转为字符串
-- **Token 粘贴运算符** `##`:拼接两个 token
-- **预定义宏**:`__FILE__`、`__LINE__`、`__DATE__`、`__TIME__`、`__STDC__`
-- **`#error` 指令**:编译时产生错误
-- **`#pragma` 指令**:实现定义的编译器指令
-
-C89 还明确了"翻译阶段"(Translation Phases)的概念,将预处理器的行为规范化为 8 个阶段。
-
-### 2.3 C99 的增强
-
-C99(1999)对预处理器做了几项重要增强:
-
-- **可变参数宏**:`__VA_ARGS__` 代表可变参数部分
-  ```c
-  #define LOG(fmt, ...) printf(fmt, __VA_ARGS__)
-  ```
-- **`__func__` 标识符**:虽然不是宏,但与 `__FILE__`/`__LINE__` 一起用于诊断
-- **`_Pragma` 运算符**:`#pragma` 的运算符形式,可嵌入宏中
-  ```c
-  #define PACKED _Pragma("pack(push, 1)")
-  ```
-- **预定义标识符** `__STDC_VERSION__`:定义 C 标准版本(如 `199901L`)
-
-### 2.4 C11 与 C17 的微调
-
-C11(2011)与 C17(2018)对预处理器改动较小:
-
-- C11 新增 `__STDC_HOSTED__`(是否为宿主环境)、`_Generic`(虽然不是预处理器特性,但常与宏结合)
-- C17 主要是 bug 修复与澄清,无重大预处理器变更
-
-### 2.5 C23 的预处理器改革
-
-C23(2023)对预处理器进行了重大改革,引入多项新特性:
-
-#### 2.5.1 `#embed` 指令
-
-将二进制文件嵌入源码,替代传统的 `xxd -i` 工具:
+「复制粘贴」立刻引出一个问题：同一个头文件被包含两次，它的内容就被抄两遍——类型重复定义，编译失败。守卫（include guard）就是给粘贴加一道闸。第一种，传统宏守卫：
 
 ```c
-const unsigned char icon[] = {
-#embed "icon.png"
-};
+/* mylib.h */
+#ifndef MYLIB_H            /* 第一次：没定义过 → 往下执行 */
+#define MYLIB_H            /* 定义标记并抄入内容 */
+
+/* ... 头文件内容 ... */
+
+#endif /* MYLIB_H */       /* 第二次：标记已存在 → #ifndef 与 #endif 之间全部跳过 */
 ```
 
-这避免了将二进制文件转换为 C 数组源码的繁琐步骤,也减小了源码体积。
-
-#### 2.5.2 `#warning` 指令
-
-产生编译时警告(非错误):
+第二种，`#pragma once`：
 
 ```c
-#if defined(_WIN32) && !defined(_WIN32_WINNT)
-#warning "_WIN32_WINNT 未定义，使用默认值"
-#define _WIN32_WINNT 0x0601
-#endif
+/* mylib.h */
+#pragma once
+
+/* ... 头文件内容 ... */
 ```
 
-#### 2.5.3 `__has_include` 与 `__has_embed` 测试
+编译器保证同一物理文件只被抄一次。GCC、Clang、MSVC 三大主流都支持，写法简洁、不用起宏名；代价是它不在 C 标准里（极特殊的文件系统布局下个别实现判断有出入）。第三种是折中：两个都写，`#pragma once` 在前、宏守卫兜底——跨平台库图双保险。Linux 内核编码规范则强制只用传统宏守卫。
+
+宏守卫的命名要独一无二，惯例是 `项目_路径_文件名_H`（如 `FANDEX_NET_UTILS_H`）。太通用的 `UTILS_H` 迟早撞车，下划线开头的 `_XXX_H` 按标准保留给实现，别用。头文件里还该放什么、`extern "C"` 兼容层怎么写、自包含原则与前向声明怎么省编译时间，属于多文件工程的日常，在 [多文件编译](/c/310-MultiFileCompilation) 展开。
+
+## 3. 无参宏：常量、链式与预定义宏
+
+### 3.1 对象式宏与它的作用域
+
+不带参数的宏叫对象式宏（object-like macro），最常见用途是常量：
 
 ```c
-#if __has_include(<stdatomic.h>)
-#include <stdatomic.h>
-#else
-#error "需要 C11 或更高版本"
-#endif
+/* const_macro.c */
+#include <stdio.h>
+
+#define MAX_QUEUE 1024
+
+int queue[MAX_QUEUE];
+
+int main(void) {
+    printf("capacity = %d\n", MAX_QUEUE);
+    return 0;
+}
 ```
 
-#### 2.5.4 `__VA_OPT__`
+三条纪律来自「文本替换」这个本质：
 
-更优雅地处理可变参数宏的空参数情况,替代 GCC 扩展 `##__VA_ARGS__`:
+- **末尾不写分号**。分号会进入替换文本，`#define N 10;` 会让 `int a[N];` 展开成 `int a[10;];`；
+- **名字全大写**。宏是全局生效、无作用域概念的，大写是一眼识别「这是替换」的唯一视觉线索；
+- **作用域是文本意义上的**：从 `#define` 那一行起，到 `#undef` 或文件尾为止——注意是文件里位置靠后的文本，与函数、花括号无关。写在前面的代码用不到它。
+
+`MAX_QUEUE` 与 `const int`、枚举常量的取舍口诀：需要类型检查和调试器可见选 `const`，需要Case 标签和连续常量选 `enum`（见 [变量与常量](/c/050-VariableConstant) 与 [枚举与 typedef](/c/110-EnumTypedef)）；「宏 vs 内联函数」这类工程决策的完整对照在 [内联函数与宏](/c/300-InlineFunctionMacro)，本篇不展开。
+
+### 3.2 链式展开与递归禁止
+
+宏体里可以引用别的宏，展开会像多米诺一样传递：
 
 ```c
-#define LOG(fmt, ...) printf(fmt __VA_OPT__(,) __VA_ARGS__)
-
-LOG("hello");           // printf("hello")
-LOG("value=%d", x);     // printf("value=%d", x)
+#define ROWS    8
+#define COLS    8
+#define CELLS   (ROWS * COLS)     /* 用到时才展开成 (8 * 8) */
 ```
 
-#### 2.5.5 `elifdef` 与 `elifndef`
-
-```c
-#ifdef PLATFORM_LINUX
-// ...
-#elifdef PLATFORM_WINDOWS
-// ...
-#elifndef PLATFORM_MACOS
-// ...
-#endif
-```
-
-### 2.6 现代预处理器的哲学
-
-现代 C 预处理器体现了以下设计哲学:
-
-#### 2.6.1 编译时计算优先
-
-通过宏展开,尽可能多地将计算与决策移到编译期,实现零运行时开销:
-
-```c
-#define BIT(n) (1ULL << (n))
-#define FLAG_A BIT(0)
-#define FLAG_B BIT(1)
-#define FLAGS_ALL (FLAG_A | FLAG_B)
-```
-
-#### 2.6.2 渐进式抽象
-
-宏提供了从"简单文本替换"到"复杂元编程"的渐进抽象层次:
-
-- 简单常量:`#define PI 3.14`
-- 函数式宏:`#define MAX(a, b) ((a) > (b) ? (a) : (b))`
-- X-Macro:通过 `#include` 同一头文件多次,每次定义不同的宏
-- 元编程:用宏生成重复代码(如状态机、访问器)
-
-#### 2.6.3 显式优于隐式
-
-宏的"显式"特性使其在以下场景优于 C 语言本身的特性:
-
-- 跨平台代码用 `#ifdef` 显式区分,而非运行时 `if`
-- 调试代码用 `#ifdef DEBUG` 显式开关,而非运行时变量
-- 编译时断言用 `#error` 显式失败,而非运行时 `assert`
-
-## 第 3 章 核心概念与术语体系
-
-### 3.1 翻译阶段(Translation Phases)
-
-C 标准将源代码到可执行文件的整个过程分为 8 个翻译阶段,预处理器主要在前 4 个阶段工作:
-
-| 阶段 | 主要工作                                   |
-| ---- | ------------------------------------------ |
-| 1    | 物理源字符映射到源字符集(如 UTF-8 转换) |
-| 2    | 反斜杠-换行符(`\`+换行)拼接为逻辑行     |
-| 3    | 注释替换为单个空格,Token 化               |
-| 4    | 执行预处理指令(`#include`/`#define`/`#if`)|
-| 5    | 字符常量与字符串字面量转义序列处理         |
-| 6    | 相邻字符串字面量拼接                       |
-| 7    | 编译(语法分析、语义分析、生成汇编)       |
-| 8    | 链接(合并目标文件、解析符号引用)         |
-
-**关键理解**:预处理器在第 4 阶段运行,此时注释已被替换为空格,字符串字面量尚未处理转义序列。这意味着:
-
-```c
-#define MSG "Hello\n"
-printf(MSG);   // 在第 4 阶段，MSG 被替换为 "Hello\n"
-               // 在第 5 阶段，\n 才被解释为换行符
-```
-
-### 3.2 Token 与 Token 化
-
-预处理器将源代码分解为 Token(词法单元),Token 分为以下几类:
-
-- **标识符**(Identifier):变量名、函数名、宏名
-- **预处理数字**(Preprocessing Number):`123`、`3.14`、`0xFF`
-- **字符常量**(Character Constant):`'a'`、`'\n'`
-- **字符串字面量**(String Literal):`"hello"`
-- **运算符与标点**(Operator/Punctuator):`+`、`-`、`(`、`)`、`{`、`}`
-- **其他**:头文件名(`<stdio.h>`)、预处理指令(`#include`)
-
-Token 化的细节:
-
-```c
-int x = 1+2;   // Token: int, x, =, 1, +, 2, ;
-int y = 1 + 2; // Token: int, x, =, 1, +, 2, ;  (空格不影响 Token 化)
-```
-
-但以下情况有差异:
-
-```c
-#define A B
-#define B 1
-A        // 经过两轮展开，最终为 1
-```
-
-### 3.3 宏的展开机制
-
-宏展开是预处理器最复杂的部分,其规则如下:
-
-#### 3.3.1 对象式宏(Object-like Macro)
-
-```c
-#define PI 3.14159
-double area = PI * r * r;  // 展开为 3.14159 * r * r
-```
-
-#### 3.3.2 函数式宏(Function-like Macro)
-
-```c
-#define SQUARE(x) ((x) * (x))
-int y = SQUARE(3);  // 展开为 ((3) * (3))
-```
-
-#### 3.3.3 参数预扫描(Argument Prescan)
-
-函数式宏的参数在替换前会先完全展开:
-
-```c
-#define A B
-#define B 1
-#define X(a) a
-X(A)   // 先展开 A 为 B，B 为 1，再替换 a，结果为 1
-```
-
-#### 3.3.4 递归展开的限制
-
-宏展开时,若宏名在自身展开结果中出现,不会被再次展开:
+但传递有一条铁律：**宏不会展开自己**。经典的互相引用最终停在第 2 轮：
 
 ```c
 #define A B
 #define B A
-A    // 展开为 B，B 又展开为 A，A 不会再展开，最终结果为 A
+A        /* A → B → A：A 已在本轮出现过，不再展开，结果就是记号 A */
 ```
 
-这被称为"蓝色绘制"(Blue Paint)规则,防止无限递归。
+这个规则俗称「蓝漆」（blue paint）规则：展开过程中再次遇到的同名宏被刷蓝、视作普通标识符。它保证预处理器永不死循环，也解释了为什么「两个宏互相定义」得不到任何值，只会留下原样的记号——等编译器接手时报「A 未声明」。
 
-### 3.4 字符串化与 Token 粘贴
+### 3.3 预定义宏：让代码自报家门
 
-#### 3.4.1 字符串化 `#`
+编译器开箱就塞好了几个宏，最实用的是位置三件套：
+
+| 宏 | 内容 | 备注 |
+| --- | --- | --- |
+| `__FILE__` | 当前文件名字符串 | |
+| `__LINE__` | 当前行号（整数） | |
+| `__func__` | 当前函数名字符串 | C99 起的预定义**标识符**，严格说不是宏 |
+| `__DATE__` / `__TIME__` | 编译日期/时间字符串 | 每次编译都会变 |
+| `__STDC_VERSION__` | C 标准版本的 long 常量 | C99 是 199901L，C17 是 201710L，C23 是 202311L |
+| `__STDC_HOSTED__` | 1 宿主环境 / 0 独立环境 | 嵌入式裸机常为 0 |
+
+位置三件套组合起来就是一行现成的调试探针：
 
 ```c
-#define STR(x) #x
-STR(hello world)    // "hello world"
-STR(hello \n world) // "hello \\n world" (反斜杠被转义)
-```
-
-注意:字符串化会保留参数中的空白为一个空格,并对特殊字符转义。
-
-#### 3.4.2 Token 粘贴 `##`
-
-```c
-#define CAT(a, b) a##b
-CAT(foo, bar)    // foobar
-CAT(var, 1)      // var1
-```
-
-`##` 将两个 Token 粘接成一个新 Token,如果结果不是合法 Token,则是未定义行为。
-
-### 3.5 `#` 与 `##` 的求值顺序
-
-```c
-#define A B
-#define B 1
-
-#define STR(x) #x
-#define XSTR(x) STR(x)
-
-STR(A)    // "A"   (# 先于参数展开)
-XSTR(A)   // "1"   (通过 XSTR，参数先展开再字符串化)
-```
-
-这是宏元编程的关键技巧:通过中间宏控制求值顺序。
-
-### 3.6 条件编译的求值规则
-
-`#if` 表达式遵循特殊规则:
-
-- 标识符(包括宏名)被替换为 `0`(若未定义)或其展开后的值
-- `defined(MACRO)` 返回 0 或 1
-- 表达式求值使用 `intmax_t`/`uintmax_t`
-- 不允许赋值、函数调用、`sizeof`
-
-```c
-#define VERSION 3
-#if VERSION >= 3 && defined(DEBUG)
-// ...
-#endif
-```
-
-### 3.7 预处理器与 C 语言的关系
-
-预处理器不是 C 语言本身,它是一个独立的"语言":
-
-- 预处理器不理解 C 语法,只做 Token 级处理
-- 预处理器不知道类型、作用域、函数
-- 预处理器的输出(预处理后的源码)才是 C 编译器的输入
-
-可以用 `gcc -E` 查看预处理器的输出:
-
-```bash
-gcc -E hello.c -o hello.i
-```
-
-`hello.i` 是预处理后的源码,通常很大(因为包含了头文件展开),但能让你看到预处理器的实际工作结果。
-
-## 第 4 章 文件包含 (`#include`)
-
-### 4.1 `#include` 的两种形式
-
-```c
-#include <stdio.h>      // 尖括号：系统目录搜索
-#include "myheader.h"   // 双引号：当前目录优先
-#include "utils/math.h" // 相对路径
-```
-
-#### 4.1.1 搜索路径规则
-
-**尖括号 `<...>`**:
-
-1. 仅在系统/include 路径中搜索
-2. 路径由编译器选项 `-I` 指定,以及内置路径(如 `/usr/include`)
-
-**双引号 `"..."`**:
-
-1. 先在当前文件所在目录搜索
-2. 若找不到,再按尖括号规则搜索
-
-可以用 `-I` 显式添加搜索路径:
-
-```bash
-gcc -I./include -I./third_party/include hello.c -o hello
-```
-
-#### 4.1.2 系统头文件 vs 用户头文件
-
-约定俗成:
-
-- `<...>`:系统头文件、第三方库头文件
-- `"..."`:项目自身头文件
-
-但技术上,`#include <myheader.h>` 也是合法的,只要 `-I` 路径能找到它。
-
-### 4.2 头文件保护(Include Guard)
-
-头文件被多次包含会导致重复定义错误。解决方法是使用 Include Guard:
-
-#### 4.2.1 传统宏 Include Guard
-
-```c
-#ifndef MYHEADER_H
-#define MYHEADER_H
-
-/* 头文件内容 */
-
-#endif /* MYHEADER_H */
-```
-
-工作原理:第一次包含时,`MYHEADER_H` 未定义,执行 `#define` 并处理内容;再次包含时,`MYHEADER_H` 已定义,跳过内容。
-
-#### 4.2.2 `#pragma once`
-
-```c
-#pragma once
-
-/* 头文件内容 */
-```
-
-GCC、Clang、MSVC 等主流编译器都支持。优点:
-
-- 更简洁
-- 编译器自动管理,无需起宏名
-- 编译速度更快(无需读取整个文件就能跳过)
-
-缺点:
-
-- 非标准(C 标准未定义)
-- 在某些特殊场景(如通过符号链接包含同一文件)可能失败
-
-#### 4.2.3 选择建议
-
-- **新项目**:优先使用 `#pragma once`,简洁高效
-- **跨平台库**:同时使用两种(兼容性最好):
-  ```c
-  #pragma once
-  #ifndef MYHEADER_H
-  #define MYHEADER_H
-  /* ... */
-  #endif
-  ```
-- **Linux 内核风格**:必须用传统 Include Guard(内核编码规范要求)
-
-### 4.3 Include Guard 的命名规范
-
-宏名冲突会导致难以排查的问题。推荐命名规范:
-
-```c
-/* 项目名_模块名_文件名_H */
-#ifndef FOO_BAR_UTILS_H
-#define FOO_BAR_UTILS_H
-/* ... */
-#endif
-```
-
-避免以下命名:
-
-- `UTILS_H`(太通用,易冲突)
-- `_MYHEADER_H`(下划线开头保留给实现)
-- `MACRO_H`(过于通用)
-
-### 4.4 头文件的内容组织
-
-一个设计良好的头文件应包含:
-
-```c
-/* mymodule.h */
-
-#ifndef MYMODULE_H
-#define MYMODULE_H
-
-/* 1. 必要的前置包含 */
-#include <stddef.h>  /* size_t */
-
-/* 2. 宏定义 */
-#define MYMODULE_VERSION_MAJOR 1
-#define MYMODULE_VERSION_MINOR 0
-#define MYMODULE_VERSION_STR   "1.0"
-
-/* 3. 类型定义 */
-typedef enum {
-    MYMODULE_OK = 0,
-    MYMODULE_ERROR_INVALID_ARG,
-    MYMODULE_ERROR_NOMEM,
-    MYMODULE_ERROR_IO
-} MyModuleStatus;
-
-typedef struct MyModule MyModule;  /* 不透明指针模式 */
-
-/* 4. 函数声明 */
-MyModule *mymodule_create(void);
-void mymodule_destroy(MyModule *mod);
-MyModuleStatus mymodule_process(MyModule *mod, const char *input);
-
-/* 5. 内联函数(可选) */
-static inline size_t mymodule_version(void) {
-    return (MYMODULE_VERSION_MAJOR << 16) | MYMODULE_VERSION_MINOR;
-}
-
-#endif /* MYMODULE_H */
-```
-
-### 4.5 头文件的自包含原则
-
-每个头文件应能独立编译,即:只包含本头文件就能通过编译。错误示例:
-
-```c
-/* bad.h */
-#ifndef BAD_H
-#define BAD_H
-
-typedef struct {
-    size_t len;  /* 错误：未包含 <stddef.h>，使用 size_t 会失败 */
-} BadStruct;
-#endif
-```
-
-正确做法:
-
-```c
-/* good.h */
-#ifndef GOOD_H
-#define GOOD_H
-
-#include <stddef.h>  /* 显式包含，确保 size_t 可用 */
-
-typedef struct {
-    size_t len;
-} GoodStruct;
-#endif
-```
-
-### 4.6 前向声明 vs 包含
-
-有时不需要完整类型,只需前向声明即可,这能加快编译速度:
-
-```c
-/* point.h */
-#ifndef POINT_H
-#define POINT_H
-typedef struct Point Point;
-#endif
-
-/* circle.h */
-#ifndef CIRCLE_H
-#define CIRCLE_H
-
-#include "point.h"  /* 只需要 Point 的前向声明 */
-
-typedef struct {
-    Point *center;  /* 指针，不需要完整类型 */
-    double radius;
-} Circle;
-#endif
-```
-
-只有当需要完整类型(如访问成员、栈上分配)时才包含完整定义。
-
-### 4.7 C++ 兼容性:extern "C"
-
-若头文件可能被 C++ 代码包含,应使用 `extern "C"` 包裹:
-
-```c
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* 函数声明 */
-void my_function(int x);
-
-#ifdef __cplusplus
-}
-#endif
-```
-
-这告诉 C++ 编译器:这些函数使用 C 链接(不做 name mangling),以便 C 代码能调用。
-
-## 第 5 章 宏定义详解 (`#define`)
-
-### 5.1 无参宏(对象式宏)
-
-```c
+/* here.c */
 #include <stdio.h>
 
-/* 基本常量定义 */
-#define PI 3.14159265
-#define MAX_SIZE 100
-#define NEWLINE '\n'
-#define GREETING "Hello, World!"
+#define HERE() fprintf(stderr, "[here] %s:%d in %s\n", __FILE__, __LINE__, __func__)
 
-/* 使用宏 */
+void step_two(void) {
+    HERE();
+}
+
 int main(void) {
-    double area = PI * 5 * 5;
-    int arr[MAX_SIZE];
-    printf("Area = %f%c", area, NEWLINE);
-    printf("%s\n", GREETING);
+    HERE();
+    step_two();
     return 0;
 }
 ```
 
-注意事项:
-
-- 宏定义末尾**不要加分号**,分号会成为替换内容的一部分
-- 宏名通常全大写,以区分变量名
-- 宏定义不分配内存,只是文本替换
-
-### 5.2 多行宏:续行符 `\`
-
-```c
-#define LONG_MACRO(x, y) \
-    do { \
-        int tmp = (x); \
-        (x) = (y); \
-        (y) = tmp; \
-    } while (0)
+```bash
+gcc -Wall -Wextra -g here.c -o here
+./here
 ```
 
-注意:
+预期输出：
 
-- `\` 必须是行尾最后一个字符(不能有空格)
-- 续行后仍是同一逻辑行
+```text
+[here] here.c:13 in main
+[here] here.c:9 in step_two
+```
 
-### 5.3 带参宏(函数式宏)
+行号是**展开点**的行号——探针放在哪一行，就报哪一行。程序崩在哪个函数进来的、走到哪一步，加几个 `HERE()` 立刻现形。标准库的 `assert` 宏打印「断言失败于某文件某行」，用的正是同一套机关。修改实验二：把 `HERE()` 再抄进第三个函数，重跑，核对三处行号是否都正确——宏体只写了一遍，`__LINE__` 却每次都对，想通为什么，就理解了「展开」二字。
+
+## 4. 函数式宏：参数替换是纯文本
+
+### 4.1 机制：不求值，只替换
+
+带参数的宏形如函数，本质却是「先把参数文本抄进宏体，再整体替换」：
 
 ```c
-#include <stdio.h>
-
-/* 基本带参宏 */
 #define SQUARE(x) ((x) * (x))
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-#define MIN(a, b) ((a) < (b) ? (a) : (b))
-#define ABS(x) ((x) >= 0 ? (x) : -(x))
-
-/* 多语句宏 - 使用 do-while(0) */
-#define SWAP(a, b) do { \
-    typeof(a) _temp = (a); \
-    (a) = (b); \
-    (b) = _temp; \
-} while (0)
-
-/* 字符串化与拼接 */
-#define STR(x) #x
-#define CONCAT(a, b) a##b
-
-int main(void) {
-    int a = 5, b = 10;
-    printf("SQUARE(5) = %d\n", SQUARE(5));      /* 25 */
-    printf("MAX(3, 7) = %d\n", MAX(3, 7));      /* 7 */
-    printf("ABS(-3) = %d\n", ABS(-3));           /* 3 */
-
-    SWAP(a, b);
-    printf("After swap: a=%d, b=%d\n", a, b);   /* a=10, b=5 */
-
-    printf("%s\n", STR(hello world));            /* "hello world" */
-    int CONCAT(var, 1) = 42;                     /* 等价于 int var1 = 42; */
-    printf("var1 = %d\n", var1);                 /* 42 */
-
-    return 0;
-}
+SQUARE(5)        /* 展开为 ((5) * (5)) */
 ```
 
-### 5.4 宏的括号陷阱
+关键在于：`x` 不是一个被传入的值，而是一段**被抄写的文本**。预处理器不执行 `5`、不求它的值、甚至不知道它是 int——这与函数有本质区别（函数参数先求值再传拷贝）。抄写式的第一个后果就是著名的 `i++` 事故。
 
-宏定义中括号的使用至关重要:
-
-```c
-/* 错误示例：缺少括号 */
-#define SQUARE_BAD(x) x * x
-SQUARE_BAD(3 + 1)    /* 展开为 3 + 1 * 3 + 1 = 7，而非 16 */
-
-/* 正确写法 */
-#define SQUARE_GOOD(x) ((x) * (x))
-SQUARE_GOOD(3 + 1)   /* 展开为 ((3 + 1) * (3 + 1)) = 16 */
-
-/* 另一个陷阱：参数有副作用 */
-#define SQUARE_SIDE(x) ((x) * (x))
-int i = 3;
-SQUARE_SIDE(i++)     /* 展开为 ((i++) * (i++))，行为未定义！ */
-```
-
-宏定义括号规则:
-
-1. **整个宏体用括号包围**,防止与外部运算符结合错误
-2. **每个参数出现的地方都用括号包围**,防止参数本身是表达式时出错
-3. 避免在宏参数中使用自增/自减运算符
-
-### 5.5 可变参数宏(`__VA_ARGS__`)
-
-C99 引入了可变参数宏:
+### 4.2 事故实录一：SQUARE(i++) 为什么是未定义行为
 
 ```c
+/* crash_sq.c */
 #include <stdio.h>
 
-/* __VA_ARGS__ 代表可变参数部分 */
-#define DEBUG_LOG(fmt, ...) \
-    fprintf(stderr, "[DEBUG] %s:%d: " fmt "\n", __FILE__, __LINE__, __VA_ARGS__)
+#define SQUARE(x) ((x) * (x))
 
 int main(void) {
-    int value = 42;
-    DEBUG_LOG("value = %d", value);  /* [DEBUG] test.c:9: value = 42 */
+    int i = 3;
+    int r = SQUARE(i++);
+    printf("r = %d, i = %d\n", r, i);
     return 0;
 }
 ```
 
-#### 5.5.1 GCC 扩展:`##__VA_ARGS__`
-
-C99 要求 `__VA_ARGS__` 至少有一个参数,否则编译失败。GCC 引入了 `##__VA_ARGS__` 扩展,允许可变参数为空:
+宏展开后，第 7 行实际是：
 
 ```c
-#define LOG(fmt, ...) \
-    printf("[LOG] " fmt "\n", ##__VA_ARGS__)
-
-LOG("simple message");    /* [LOG] simple message（无额外参数） */
-LOG("value=%d", x);       /* [LOG] value=%d, x */
+    int r = ((i++) * (i++));
 ```
 
-#### 5.5.2 C23 的 `__VA_OPT__`
+同一个表达式里 `i` 被自增了两次，两次自增之间没有序列点隔开——按 [运算符与表达式](/c/060-OperatorExpression) 的判定，这是未定义行为：r 可能是 12（3 乘 4）、可能是 20（4 乘 5），编译器爱怎么算怎么算。别靠猜，让工具说话：
 
-C23 引入了 `__VA_OPT__`,更优雅地处理空参数情况:
+```bash
+gcc -Wall -Wextra -g crash_sq.c -o crash_sq
+```
+
+预期输出（-Wall 自带的 -Wsequence-point 直接点名）：
+
+```text
+crash_sq.c: In function 'main':
+crash_sq.c:7:21: warning: operation on 'i' may be undefined [-Wsequence-point]
+```
+
+修复不是「换种写法的宏」，而是承认这个需求不该用宏：换成函数（含 `static inline`，语义对比见 [内联函数与宏](/c/300-InlineFunctionMacro)），参数 `i++` 只求值一次：
 
 ```c
-#define LOG(fmt, ...) \
-    printf("[LOG] " fmt "\VA_OPT__(,) __VA_ARGS__")
-
-LOG("hello");           /* printf("[LOG] " "hello" "\n") */
-LOG("value=%d", x);     /* printf("[LOG] " "value=%d" "\n", x) */
+static inline int square(int x) { return x * x; }
+/* square(i++) 合法：i 只自增一次，r = 9，i = 4 */
 ```
 
-`__VA_OPT__(X)` 在可变参数非空时展开为 `X`,空时展开为空。
+军规由此而来：**绝不把带副作用的表达式（i++、f(x)、赋值）喂给函数式宏**。
 
-### 5.6 预定义运算符:`#`、`##`、`_Pragma`
+### 4.3 括号纪律：两处都必须有
 
-#### 5.6.1 `#` 字符串化
+抄写式的第二个后果是优先级陷阱。看一组反例的正面对照：
 
 ```c
-#define STR(x) #x
-#define XSTR(x) STR(x)
+#define SQUARE_BAD(x)  x * x
+SQUARE_BAD(3 + 1)      /* 展开为 3 + 1 * 3 + 1 = 7，不是 16！ */
 
-#define VERSION 42
-STR(VERSION)    /* "VERSION" */
-XSTR(VERSION)   /* "42" (先展开 VERSION，再字符串化) */
+#define DOUBLE_BAD(x)  x + x
+DOUBLE_BAD(5) * 3      /* 展开为 5 + 5 * 3 = 20，不是 30！ */
+
+#define SQUARE_OK(x)   ((x) * (x))
+SQUARE_OK(3 + 1)       /* 展开为 ((3 + 1) * (3 + 1)) = 16 */
+#define DOUBLE_OK(x)   ((x) + (x))
+DOUBLE_OK(5) * 3       /* 展开为 ((5) + (5)) * 3 = 30 */
 ```
 
-#### 5.6.2 `##` Token 粘贴
+规则两句：**宏体整体用一层括号包住**（防它和外部运算符结合），**每个参数出现处各包一层**（防参数本身是表达式）。这类错最阴险的地方是**静默**：语法完全合法、编译器零警告，只是结果悄悄不对——第 9 节的实录一给出完整的现场。
+
+### 4.4 # 与 ##：字符串化和记号拼接
+
+两个只属于预处理器的运算符，函数无论如何做不到。
+
+`#` 把参数**原文**变成字符串字面量：
 
 ```c
-#define CAT(a, b) a##b
-#define XCAT(a, b) CAT(a, b)
+#define STR(x)   #x
+#define XSTR(x)  STR(x)
 
-#define PREFIX foo
-CAT(PREFIX, _bar)   /* PREFIX_bar (PREFIX 未先展开) */
-XCAT(PREFIX, _bar)  /* foo_bar (PREFIX 先展开为 foo，再粘贴) */
+STR(hello)        /* "hello" */
+STR(3 + 1)        /* "3 + 1"：抄的是写法，不是算出来的值 */
 ```
 
-#### 5.6.3 `_Pragma` 运算符
-
-C99 引入,允许在宏中使用 `#pragma`:
+`##` 把两个记号（token）粘成一个新记号：
 
 ```c
-#define PACKED_STRUCT(name, body) \
-    _Pragma("pack(push, 1)") \
-    struct name body; \
-    _Pragma("pack(pop)")
-
-PACKED_STRUCT(MyStruct, {
-    char a;
-    int b;
-});
+#define CAT(a, b)   a##b
+CAT(var, 1)       /* var1：真的造出了一个新标识符 */
 ```
 
-### 5.7 宏的取消:`#undef`
+`##` 若粘出非法记号（比如把 `x` 和 `+` 粘成 `x+`），是约束违反，编译器报错——实录见第 9 节。参数名拼接让「按清单造名字」成为可能，第 4.6 节的 X-Macro 全靠它。
+
+两级宏技巧是 `#`/`##` 的必备搭档。`#` 和 `##` 优先于参数展开：参数还没来得及变成值，就被先抄成字符串、先粘起来了。想让参数**先展开再**操作，就垫一层间接宏：
 
 ```c
-#define DEBUG 1
-/* ... */
-#undef DEBUG
-/* 之后 DEBUG 不再定义 */
+#define VERSION_MAJOR 1
+#define VERSION_MINOR 9
+
+STR(VERSION_MAJOR)     /* "VERSION_MAJOR"：# 在展开前动手，抄到的是名字 */
+XSTR(VERSION_MAJOR)    /* "1"：垫一层，参数先展开成 1，再被字符串化 */
+
+#define APP_VERSION XSTR(VERSION_MAJOR) "." XSTR(VERSION_MINOR)
+/* APP_VERSION 展开后是 "1" "." "9"，相邻字符串字面量编译期自动拼成 "1.9" */
 ```
 
-`#undef` 用于:
+这个「直接一层取名字、垫上一层取值」的非对称，是阅读内核与库源码时最常见的暗号。
 
-- 临时修改宏定义
-- 防止宏污染后续代码
-- 配合 X-Macro 技巧
+### 4.5 顺手军规：ARRAY_SIZE 与指针退化
 
-### 5.8 宏的作用域
-
-宏从 `#define` 处生效,直到 `#undef` 或文件结束。宏没有作用域概念,会"穿透"函数、结构体等:
-
-```c
-#define MAX 100
-
-void f(void) {
-    int arr[MAX];  /* MAX 在此处展开 */
-}
-
-void g(void) {
-    /* 即使在另一个函数中，MAX 仍然有效 */
-    int x = MAX;
-}
-```
-
-这就是为什么宏命名要特别小心,避免与变量、函数名冲突。
-
-## 第 6 章 条件编译
-
-### 6.1 基本条件编译指令
-
-```c
-#define VERSION 3
-
-#if VERSION == 1
-    const char *server = "v1.example.com";
-#elif VERSION == 2
-    const char *server = "v2.example.com";
-#elif VERSION == 3
-    const char *server = "v3.example.com";
-#else
-    const char *server = "default.example.com";
-#endif
-
-/* #ifdef / #ifndef - 检查宏是否定义 */
-#ifdef DEBUG
-    #define LOG(msg) printf("[DEBUG] %s\n", msg)
-#else
-    #define LOG(msg) ((void)0)
-#endif
-
-#ifndef BUFFER_SIZE
-    #define BUFFER_SIZE 1024
-#endif
-```
-
-### 6.2 `defined` 运算符
-
-`defined` 用于在 `#if` 中检查宏是否定义:
-
-```c
-#if defined(DEBUG) && defined(VERBOSE)
-    /* 调试和详细模式都启用时的代码 */
-    #define DUMP_STATE(state) dump_full_state(state)
-#elif defined(DEBUG)
-    /* 仅调试模式 */
-    #define DUMP_STATE(state) dump_summary(state)
-#else
-    #define DUMP_STATE(state) ((void)0)
-#endif
-
-/* 多条件组合 */
-#if defined(__linux__)
-    #define PLATFORM "Linux"
-#elif defined(_WIN32)
-    #define PLATFORM "Windows"
-#elif defined(__APPLE__)
-    #define PLATFORM "macOS"
-#else
-    #define PLATFORM "Unknown"
-#endif
-```
-
-`defined(MACRO)` 等价于 `#ifdef MACRO`,但 `defined` 可以组合在复杂表达式中,而 `#ifdef` 只能单独使用。
-
-### 6.3 `#if` 表达式的求值规则
-
-`#if` 表达式遵循特殊规则:
-
-- 所有标识符(包括宏名)被替换为 `0`(若未定义)或其展开后的值
-- `defined(MACRO)` 在替换前求值,返回 0 或 1
-- 表达式求值使用 `intmax_t`/`uintmax_t`
-- 不允许赋值、函数调用、`sizeof`
-
-```c
-#define VERSION 3
-#if VERSION >= 3 && defined(DEBUG)
-/* ... */
-#endif
-
-#if !defined(NDEBUG) && (defined(__GNUC__) || defined(__clang__))
-/* ... */
-#endif
-```
-
-### 6.4 C23 的 `#elifdef` 与 `#elifndef`
-
-C23 引入了更简洁的语法:
-
-```c
-#ifdef PLATFORM_LINUX
-/* ... */
-#elifdef PLATFORM_WINDOWS   /* 等价于 #elif defined(PLATFORM_WINDOWS) */
-/* ... */
-#elifndef PLATFORM_MACOS    /* 等价于 #elif !defined(PLATFORM_MACOS) */
-/* ... */
-#endif
-```
-
-### 6.5 条件编译的实际应用
-
-#### 6.5.1 跨平台代码
-
-```c
-#ifdef _WIN32
-    #include <windows.h>
-    #define SLEEP(ms) Sleep(ms)
-    #define PATH_SEPARATOR '\\'
-    #define DLL_EXPORT __declspec(dllexport)
-#else
-    #include <unistd.h>
-    #define SLEEP(ms) usleep((ms) * 1000)
-    #define PATH_SEPARATOR '/'
-    #define DLL_EXPORT __attribute__((visibility("default")))
-#endif
-```
-
-#### 6.5.2 调试与发布版本
-
-```c
-#ifdef NDEBUG
-    /* 发布版本：assert 变为空操作 */
-    #define assert(condition) ((void)0)
-#else
-    /* 调试版本：assert 检查条件 */
-    #define assert(condition) \
-        do { \
-            if (!(condition)) { \
-                fprintf(stderr, "Assertion failed: %s, file %s, line %d\n", \
-                    #condition, __FILE__, __LINE__); \
-                abort(); \
-            } \
-        } while (0)
-#endif
-```
-
-#### 6.5.3 功能开关
-
-```c
-#define FEATURE_NETWORK 1
-#define FEATURE_CRYPTO  1
-
-#if FEATURE_NETWORK
-    void init_network(void);
-    void send_data(const char *data);
-#endif
-
-#if FEATURE_CRYPTO
-    void encrypt_data(char *data, const char *key);
-#endif
-```
-
-#### 6.5.4 C 标准版本检测
-
-```c
-#if defined(__STDC_VERSION__)
-    #if __STDC_VERSION__ >= 202311L
-        #define C_VERSION 23
-    #elif __STDC_VERSION__ >= 201710L
-        #define C_VERSION 17
-    #elif __STDC_VERSION__ >= 201112L
-        #define C_VERSION 11
-    #elif __STDC_VERSION__ >= 199901L
-        #define C_VERSION 99
-    #else
-        #define C_VERSION 90
-    #endif
-#else
-    #define C_VERSION 90  /* K&R 或 pre-C89 */
-#endif
-```
-
-#### 6.5.5 编译器检测
-
-```c
-#if defined(__clang__)
-    #define COMPILER "Clang"
-    #define COMPILER_VERSION __clang_version__
-#elif defined(__GNUC__)
-    #define COMPILER "GCC"
-    #define COMPILER_VERSION __VERSION__
-#elif defined(_MSC_VER)
-    #define COMPILER "MSVC"
-    #define COMPILER_VERSION _MSC_VER
-#else
-    #define COMPILER "Unknown"
-    #define COMPILER_VERSION "Unknown"
-#endif
-```
-
-#### 6.5.6 架构检测
-
-```c
-#if defined(__x86_64__) || defined(_M_X64)
-    #define ARCH "x86_64"
-#elif defined(__i386__) || defined(_M_IX86)
-    #define ARCH "x86"
-#elif defined(__aarch64__) || defined(_M_ARM64)
-    #define ARCH "arm64"
-#elif defined(__arm__) || defined(_M_ARM)
-    #define ARCH "arm"
-#elif defined(__riscv)
-    #define ARCH "riscv"
-#else
-    #define ARCH "unknown"
-#endif
-```
-
-### 6.6 条件编译的最佳实践
-
-#### 6.6.1 使用 `defined()` 而非 `#ifdef`
-
-```c
-/* 不推荐：无法组合多个条件 */
-#ifdef DEBUG
-#ifdef VERBOSE
-/* ... */
-#endif
-#endif
-
-/* 推荐：可以组合 */
-#if defined(DEBUG) && defined(VERBOSE)
-/* ... */
-#endif
-```
-
-#### 6.6.2 提供默认值
-
-```c
-#ifndef BUFFER_SIZE
-    #define BUFFER_SIZE 1024
-#endif
-```
-
-#### 6.6.3 注释 `#endif`
-
-```c
-#ifdef DEBUG
-    /* ... 长段代码 ... */
-#endif /* DEBUG */
-
-#if defined(_WIN32)
-    /* ... */
-#elif defined(__linux__)
-    /* ... */
-#endif /* 平台判断 */
-```
-
-#### 6.6.4 避免深层嵌套
-
-```c
-/* 不推荐：嵌套过深 */
-#ifdef A
-    #ifdef B
-        #ifdef C
-            /* ... */
-        #endif
-    #endif
-#endif
-
-/* 推荐：合并条件 */
-#if defined(A) && defined(B) && defined(C)
-    /* ... */
-#endif
-```
-
-## 第 7 章 预定义宏、`#line`、`#error`、`#pragma`
-
-### 7.1 标准预定义宏
-
-C 标准定义了以下必需的预定义宏:
-
-```c
-#include <stdio.h>
-
-int main(void) {
-    printf("源文件名: %s\n", __FILE__);
-    printf("当前行号: %d\n", __LINE__);
-    printf("编译日期: %s\n", __DATE__);       /* "Jun 13 2026" */
-    printf("编译时间: %s\n", __TIME__);       /* "14:30:00" */
-    printf("C标准版本: %ld\n", __STDC_VERSION__);  /* 201710L (C17) */
-    printf("是否宿主环境: %d\n", __STDC_HOSTED__); /* 1 = 宿主，0 = 独立 */
-
-    /* __func__ 是 C99 关键字（不是宏），返回当前函数名 */
-    printf("当前函数: %s\n", __func__);
-
-    return 0;
-}
-```
-
-### 7.2 编译器扩展预定义宏
-
-#### 7.2.1 GCC/Clang
-
-```c
-#ifdef __GNUC__
-    printf("GCC版本: %d.%d.%d\n",
-        __GNUC__, __GNUC_MINOR__, __GNUC_PATCHLEVEL__);
-#endif
-
-#ifdef __clang__
-    printf("Clang版本: %d.%d.%d\n",
-        __clang_major__, __clang_minor__, __clang_patchlevel__);
-#endif
-
-/* 平台检测 */
-#ifdef __linux__
-    printf("Linux\n");
-#endif
-
-#ifdef __APPLE__
-    printf("macOS\n");
-#endif
-
-#ifdef __FreeBSD__
-    printf("FreeBSD\n");
-#endif
-```
-
-#### 7.2.2 MSVC
-
-```c
-#ifdef _MSC_VER
-    /* _MSC_VER 编码版本号，如 1938 表示 VS 17.8 */
-    printf("MSVC版本: %d\n", _MSC_VER);
-
-    #if _MSC_VER >= 1938
-        /* VS 2022 17.8+ */
-    #endif
-#endif
-
-#ifdef _WIN32
-    printf("Windows (32/64位)\n");
-#endif
-
-#ifdef _WIN64
-    printf("Windows 64位\n");
-#endif
-```
-
-### 7.3 `__STDC_VERSION__` 的值
-
-| 标准 | `__STDC_VERSION__` |
-| ---- | ------------------ |
-| C89/C90 | 未定义(或 `199409L` for C94) |
-| C94 (C90 AMD1) | `199409L` |
-| C99 | `199901L` |
-| C11 | `201112L` |
-| C17/C18 | `201710L` |
-| C23 | `202311L` |
-
-### 7.4 `#line` 指令
-
-修改编译器内部记录的行号和文件名,常用于代码生成器:
-
-```c
-#line 100 "generated_code.c"
-/* 此处之后，__LINE__ 从 100 开始，__FILE__ 为 "generated_code.c" */
-int x = 0;  /* __LINE__ = 101 */
-```
-
-应用场景:
-
-- Lex/Yacc 生成的代码,通过 `#line` 让错误指向原始 `.l`/`.y` 文件
-- 模板代码生成器
-- 调试宏展开
-
-### 7.5 `#error` 指令
-
-编译时产生错误,终止编译:
-
-```c
-#if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 201112L
-#error "需要 C11 或更高版本支持"
-#endif
-
-#ifdef _WIN32
-    #ifdef __GNUC__
-        /* MinGW */
-    #elif defined(_MSC_VER)
-        /* MSVC */
-    #else
-        #error "不支持的 Windows 编译器"
-    #endif
-#endif
-```
-
-### 7.6 C23 的 `#warning` 指令
-
-产生警告但不终止编译:
-
-```c
-#if defined(_WIN32) && !defined(_WIN32_WINNT)
-#warning "_WIN32_WINNT 未定义，使用默认值 0x0601"
-#define _WIN32_WINNT 0x0601
-#endif
-```
-
-C23 之前,GCC/Clang 已通过扩展支持 `#warning`。
-
-### 7.7 `#pragma` 指令
-
-`#pragma` 是实现定义的编译器指令,不同编译器支持不同:
-
-#### 7.7.1 结构体对齐
-
-```c
-/* GCC/Clang/MSVC 通用 */
-#pragma pack(push, 1)    /* 保存当前对齐，设为 1 字节对齐 */
-struct PackedData {
-    char a;
-    int b;
-    short c;
-};
-#pragma pack(pop)        /* 恢复之前的对齐 */
-
-/* GCC/Clang 特有 */
-struct __attribute__((packed)) PackedData2 {
-    char a;
-    int b;
-    short c;
-};
-```
-
-#### 7.7.2 警告控制
-
-```c
-/* MSVC */
-#pragma warning(disable: 4996)  /* 禁用"不安全函数"警告 */
-#pragma warning(push)
-#pragma warning(error: 4267)    /* 将 4267 警告视为错误 */
-/* ... */
-#pragma warning(pop)
-
-/* GCC/Clang */
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wunused-parameter"
-void callback(int event, void *data) {
-    (void)data;
-}
-#pragma GCC diagnostic pop
-```
-
-#### 7.7.3 优化控制
-
-```c
-#pragma GCC optimize("O3")      /* GCC 优化级别 */
-#pragma GCC push_options
-#pragma GCC optimize("O0")
-/* 此处不优化 */
-void debug_function(void) {
-    /* ... */
-}
-#pragma GCC pop_options
-```
-
-#### 7.7.4 MSVC 特有
-
-```c
-#pragma comment(lib, "ws2_32")        /* 自动链接库 */
-#pragma once                           /* Include Guard */
-#pragma region /* 折叠区域 */          /* IDE 折叠 */
-/* ... */
-#pragma endregion
-```
-
-### 7.8 `_Pragma` 运算符
-
-C99 引入,允许在宏中使用 pragma:
-
-```c
-#define PACKED_STRUCT(name, body) \
-    _Pragma("pack(push, 1)") \
-    struct name body; \
-    _Pragma("pack(pop)")
-
-PACKED_STRUCT(MyStruct, {
-    char a;
-    int b;
-});
-
-/* 等价于：
-#pragma pack(push, 1)
-struct MyStruct { char a; int b; };
-#pragma pack(pop)
-*/
-```
-
-## 第 8 章 实战模式
-
-### 8.1 X-Macro 技巧
-
-X-Macro 是一种强大的代码生成模式,通过重复包含同一头文件,每次定义不同的宏:
-
-#### 8.1.1 基本模式
-
-```c
-/* colors.x - X-Macro 数据文件 */
-COLOR(RED,   "#FF0000")
-COLOR(GREEN, "#00FF00")
-COLOR(BLUE,  "#0000FF")
-COLOR(WHITE, "#FFFFFF")
-COLOR(BLACK, "#000000")
-```
-
-```c
-/* 使用 X-Macro 生成枚举 */
-#define COLOR(name, hex) name,
-enum Color {
-#include "colors.x"
-    COLOR_COUNT  /* 自动计算颜色数量 */
-};
-#undef COLOR
-
-/* 生成字符串数组 */
-#define COLOR(name, hex) hex,
-const char *color_hex[] = {
-#include "colors.x"
-};
-#undef COLOR
-
-/* 生成打印函数 */
-#define COLOR(name, hex) case name: return #name;
-const char *color_name(enum Color c) {
-    switch (c) {
-#include "colors.x"
-        default: return "UNKNOWN";
-    }
-}
-#undef COLOR
-```
-
-#### 8.1.2 X-Macro 的优势
-
-- **单一数据源**:新增颜色只需修改 `colors.x`,所有相关代码自动更新
-- **编译时生成**:零运行时开销
-- **类型安全**:枚举由编译器检查
-- **可维护性**:避免数据散落在多处
-
-#### 8.1.3 应用场景
-
-- 错误码定义
-- 事件类型枚举
-- SQL 表结构
-- 配置项定义
-- 状态机状态
-
-### 8.2 编译时断言
-
-C11 之前用宏实现编译时断言:
-
-```c
-/* C11 之前的编译时断言 */
-#define STATIC_ASSERT(cond, name) \
-    typedef char static_assert_##name[(cond) ? 1 : -1]
-
-STATIC_ASSERT(sizeof(int) == 4, int_size);
-STATIC_ASSERT(sizeof(void*) == 8, pointer_size);
-
-/* C11 引入 _Static_assert */
-_Static_assert(sizeof(int) == 4, "int must be 4 bytes");
-_Static_assert(sizeof(void*) == 8, "64-bit platform required");
-
-/* C23 进一步引入 static_assert 关键字（无需下划线） */
-static_assert(sizeof(int) == 4, "int must be 4 bytes");
-```
-
-### 8.3 泛型选择与宏
-
-C11 引入 `_Generic`,可结合宏实现类型泛型:
-
-```c
-#include <math.h>
-
-#define cbrt(X) _Generic((X), \
-    long double: cbrtl, \
-    default: cbrt, \
-    float: cbrtf \
-)(X)
-
-/* 使用 */
-double d = cbrt(8.0);       /* 调用 cbrt */
-float f = cbrt(8.0f);       /* 调用 cbrtf */
-long double ld = cbrt(8.0L);/* 调用 cbrtl */
-```
-
-### 8.4 调试日志宏
-
-```c
-#include <stdio.h>
-#include <stdarg.h>
-
-/* 日志级别 */
-#define LOG_LEVEL_DEBUG 0
-#define LOG_LEVEL_INFO  1
-#define LOG_LEVEL_WARN  2
-#define LOG_LEVEL_ERROR 3
-#define LOG_LEVEL_FATAL 4
-
-/* 当前日志级别（可通过 -DCURRENT_LOG_LEVEL=LOG_LEVEL_INFO 修改） */
-#ifndef CURRENT_LOG_LEVEL
-    #define CURRENT_LOG_LEVEL LOG_LEVEL_INFO
-#endif
-
-/* 通用日志宏 */
-#define LOG(level, tag, fmt, ...) \
-    do { \
-        if ((level) >= CURRENT_LOG_LEVEL) { \
-            fprintf(stderr, "[%s] %s:%d: " fmt "\n", \
-                    (tag), __FILE__, __LINE__, ##__VA_ARGS__); \
-        } \
-    } while (0)
-
-/* 具体级别宏 */
-#define LOG_DEBUG(fmt, ...) LOG(LOG_LEVEL_DEBUG, "DEBUG", fmt, ##__VA_ARGS__)
-#define LOG_INFO(fmt, ...)  LOG(LOG_LEVEL_INFO,  "INFO",  fmt, ##__VA_ARGS__)
-#define LOG_WARN(fmt, ...)  LOG(LOG_LEVEL_WARN,  "WARN",  fmt, ##__VA_ARGS__)
-#define LOG_ERROR(fmt, ...) LOG(LOG_LEVEL_ERROR, "ERROR", fmt, ##__VA_ARGS__)
-#define LOG_FATAL(fmt, ...) LOG(LOG_LEVEL_FATAL, "FATAL", fmt, ##__VA_ARGS__)
-
-int main(void) {
-    LOG_DEBUG("This is debug message");  /* 默认级别 INFO，不会输出 */
-    LOG_INFO("Hello, %s", "world");      /* 输出 */
-    LOG_ERROR("Error code: %d", 42);     /* 输出 */
-    return 0;
-}
-```
-
-### 8.5 容器of 宏(Linux 内核经典)
-
-`container_of` 是 Linux 内核中最著名的宏之一,从成员指针反推容器结构体指针:
-
-```c
-#include <stddef.h>
-
-#define container_of(ptr, type, member) \
-    ((type *)((char *)(ptr) - offsetof(type, member)))
-
-/* 使用示例 */
-struct list_node {
-    int value;
-    struct list_node *next;
-};
-
-struct person {
-    char name[32];
-    int age;
-    struct list_node node;  /* 嵌入的链表节点 */
-};
-
-void process_person(struct list_node *node) {
-    /* 从 node 指针反推 person 指针 */
-    struct person *p = container_of(node, struct person, node);
-    printf("Name: %s, Age: %d\n", p->name, p->age);
-}
-```
-
-这个宏是 Linux 内核链表、红黑树等通用数据结构的基础。
-
-### 8.6 数组长度宏
+工程里出镜率最高的函数式宏之一：
 
 ```c
 #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]))
 
-int arr[] = {1, 2, 3, 4, 5};
-for (size_t i = 0; i < ARRAY_SIZE(arr); i++) {
-    printf("%d ", arr[i]);
+int data[] = {10, 20, 30, 40};
+for (size_t i = 0; i < ARRAY_SIZE(data); i++)   /* 4，正确 */
+    printf("%d\n", data[i]);
+```
+
+修改实验三：把 `data` 传进函数再算一次——
+
+```c
+void probe(int arr[]) {          /* 数组形参在这里退化成 int* */
+    printf("in function: %zu\n", ARRAY_SIZE(arr));   /* 64 位上打印 2：8/4 */
 }
 ```
 
-注意:此宏对指针无效,会得到错误结果:
+指针 8 字节除以 int 4 字节得 2。`sizeof` 只对「真正的数组」有效，数组一旦作为参数进门就退化成指针（[数组详解](/c/120-ArrayDetailed) 的老结论在这里埋了雷）。这个宏只该对着**本作用域里看得见的数组定义**用；想被编译器当场抓住误用，需要 GCC 的类型兼容检查扩展，思路见内核源码 `include/linux/array_size.h`。
+
+### 4.6 X-Macro：一份清单生成全部代码
+
+现在把 `##` 与两级宏组合成 C 工程最著名的代码生成模式。需求：一组颜色，要枚举、名字表、十六进制值表、打印函数——数据一模一样，写四遍迟早改漏。X-Macro 的答案是只写一遍清单：
 
 ```c
-void f(int *arr) {
-    /* 错误：arr 是指针，不是数组 */
-    size_t n = ARRAY_SIZE(arr);  /* 在 64 位系统上，结果为 2 (8/4) */
-}
-```
-
-GCC 扩展可以检测这种误用:
-
-```c
-#define ARRAY_SIZE(arr) \
-    (sizeof(arr) / sizeof((arr)[0]) + \
-     __builtin_types_compatible_p(typeof(arr), typeof(&(arr)[0])) ? 0 : 0)
-```
-
-### 8.7 位运算宏
-
-```c
-/* 设置位 */
-#define BIT_SET(reg, bit)   ((reg) |= (1U << (bit)))
-/* 清除位 */
-#define BIT_CLR(reg, bit)   ((reg) &= ~(1U << (bit)))
-/* 翻转位 */
-#define BIT_TOGGLE(reg, bit) ((reg) ^= (1U << (bit)))
-/* 检查位 */
-#define BIT_GET(reg, bit)   (((reg) >> (bit)) & 1U)
-
-/* 位域掩码 */
-#define BIT_MASK(n) ((1U << (n)) - 1)
-#define BIT_RANGE(reg, start, end) (((reg) >> (start)) & BIT_MASK((end) - (start) + 1))
-
-/* 使用 */
-uint32_t reg = 0;
-BIT_SET(reg, 3);       /* 设置第 3 位 */
-BIT_CLR(reg, 3);       /* 清除第 3 位 */
-if (BIT_GET(reg, 5)) { /* 检查第 5 位 */
-    /* ... */
-}
-```
-
-### 8.8 字符串处理宏
-
-```c
-/* 字符串拼接(编译时) */
-#define CONCAT_(a, b) a##b
-#define CONCAT(a, b) CONCAT_(a, b)
-
-/* 生成唯一变量名 */
-#define UNIQUE_VAR(prefix) CONCAT(prefix, __LINE__)
-int UNIQUE_VAR(var_) = 42;  /* 如 var_42 */
-
-/* C23 的 __COUNTER__ */
-#define UNIQUE_VAR2(prefix) CONCAT(prefix, __COUNTER__)
-int UNIQUE_VAR2(var_) = 1;  /* var_0 */
-int UNIQUE_VAR2(var_) = 2;  /* var_1 */
-```
-
-### 8.9 版本号宏
-
-```c
-#define VERSION_MAJOR 1
-#define VERSION_MINOR 2
-#define VERSION_PATCH 3
-
-#define VERSION_NUMBER (VERSION_MAJOR * 10000 + VERSION_MINOR * 100 + VERSION_PATCH)
-#define VERSION_STRING STR(VERSION_MAJOR) "." STR(VERSION_MINOR) "." STR(VERSION_PATCH)
-
-#if VERSION_NUMBER >= 10203
-    /* 版本 >= 1.2.3 的代码 */
-#endif
-```
-
-## 第 9 章 常见陷阱
-
-### 9.1 宏副作用陷阱
-
-```c
-#define SQUARE(x) ((x) * (x))
-
-/* 错误：参数有副作用 */
-int i = 3;
-int r = SQUARE(i++);  /* ((i++) * (i++))，行为未定义！ */
-
-/* 解决方案：使用内联函数 */
-static inline int square(int x) {
-    return x * x;
-}
-int r2 = square(i++);  /* 安全，i 只自增一次 */
-```
-
-### 9.2 运算符优先级陷阱
-
-```c
-/* 错误：缺少括号 */
-#define DOUBLE_BAD(x) x + x
-int r = DOUBLE_BAD(5) * 3;  /* 5 + 5 * 3 = 20，而非 (5+5)*3 = 30 */
-
-/* 正确：用括号包围整个宏体 */
-#define DOUBLE_GOOD(x) ((x) + (x))
-int r2 = DOUBLE_GOOD(5) * 3;  /* ((5) + (5)) * 3 = 30 */
-```
-
-### 9.3 分号陷阱
-
-```c
-/* 错误：宏末尾分号导致语法错误 */
-#define BAD_END(x) do { f(x); } while (0);
-
-if (cond)
-    BAD_END(1);   /* 展开为 do {...} while (0);; */
-else
-    g();          /* else 没有匹配的 if！ */
-
-/* 正确：宏末尾不加分号，由调用者加 */
-#define GOOD_END(x) do { f(x); } while (0)
-
-if (cond)
-    GOOD_END(1);
-else
-    g();
-```
-
-### 9.4 if-else 陷阱
-
-```c
-/* 错误：多语句宏在 if-else 中出错 */
-#define BAD_SWAP(a, b) { \
-    int tmp = a; a = b; b = tmp; \
-}
-
-if (cond)
-    BAD_SWAP(x, y);   /* 展开后多了分号，else 匹配错误 */
-else
-    do_something();
-
-/* 正确：使用 do-while(0) */
-#define GOOD_SWAP(a, b) do { \
-    int tmp = a; a = b; b = tmp; \
-} while (0)
-
-if (cond)
-    GOOD_SWAP(x, y);  /* OK */
-else
-    do_something();
-```
-
-`do-while(0)` 的妙处:它是一个语句(像函数调用),需要分号结尾,且 `while (0)` 保证只执行一次。
-
-### 9.5 命名冲突陷阱
-
-```c
-/* 第三方头文件定义 */
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-
-/* 你的代码 */
-#include "third_party.h"
-
-int max_val = MAX(x, y);  /* 可能调用宏，而非你期望的函数 */
-
-/* 解决方案：使用 #undef */
-#include "third_party.h"
-#undef MAX
-int max_val = max_func(x, y);  /* 调用函数 */
-```
-
-### 9.6 递归展开限制
-
-```c
-#define A B
-#define B A
-
-A    /* 展开为 B，B 展开为 A，A 不再展开，最终为 A */
-```
-
-预处理器有"蓝色绘制"规则,防止无限递归,但这可能导致意外的结果。
-
-### 9.7 `#if` 陷阱
-
-```c
-#define VERSION abc
-
-#if VERSION >= 3
-    /* 错误：VERSION 展开为 abc，abc 是未定义标识符，被替换为 0 */
-    /* 0 >= 3 为假，此段被跳过 */
-#endif
-
-/* 解决方案：确保宏定义的是数字 */
-#define VERSION 3
-```
-
-### 9.8 宏与字符串字面量
-
-```c
-#define PATH "/usr/local"
-
-/* 错误：试图拼接字符串字面量 */
-#define BAD_PATH(file) PATH "/" file   /* 语法错误 */
-
-/* 正确：相邻字符串字面量会自动拼接 */
-#define GOOD_PATH(file) PATH "/" file  /* OK，编译期自动拼接 */
-```
-
-### 9.9 `sizeof` 在宏中的陷阱
-
-```c
-#define ARRAY_SIZE(arr) (sizeof(arr) / sizeof(arr[0]))
-
-void f(int arr[10]) {  /* arr 实际上是指针 */
-    size_t n = ARRAY_SIZE(arr);  /* 错误：sizeof(int*) / sizeof(int) = 2 */
-}
-```
-
-数组作为函数参数时退化为指针,`sizeof` 得到的是指针大小,而非数组大小。
-
-### 9.10 宏定义中的注释
-
-```c
-/* 错误：注释会进入宏体 */
-#define BAD_VERSION 1 /* version */ + 2
-int v = BAD_VERSION * 10;  /* 1 + 2 * 10 = 21 */
-
-/* 正确：注释在宏外 */
-/* version */
-#define GOOD_VERSION (1 + 2)
-int v2 = GOOD_VERSION * 10;  /* (1 + 2) * 10 = 30 */
-```
-
-实际上,预处理器在 Token 化时已将注释替换为空格,但 `1 + 2` 与 `1 /* c */ + 2` 在宏体中行为不同:前者需要括号,后者看似有"分割"实际没有。
-
-## 第 10 章 高级主题
-
-### 10.1 C23 的 `#embed` 指令
-
-`#embed` 将二进制文件嵌入源码,作为初始化列表:
-
-```c
-/* 传统方式：用 xxd -i icon.png > icon.h 生成 C 数组 */
-#include "icon.h"
-const unsigned char icon[] = {
-    0x89, 0x50, 0x4E, 0x47, ...
-};
-const size_t icon_size = sizeof(icon);
-
-/* C23 方式：直接嵌入 */
-const unsigned char icon[] = {
-#embed "icon.png"
-};
-const size_t icon_size = sizeof(icon);
-```
-
-#### 10.1.1 `#embed` 的高级用法
-
-```c
-/* 限制嵌入的字节数 */
-const unsigned char icon_preview[] = {
-#embed "icon.png" limit(16)
+/* xmacro.c：gcc -Wall -Wextra -g xmacro.c -o xmacro */
+#include <stdio.h>
+
+/* 唯一的数据源：新增颜色只改这里 */
+#define COLOR_LIST(X)  \
+        X(RED,   "0xFF0000")  \
+        X(GREEN, "0x00FF00")  \
+        X(BLUE,  "0x0000FF")  \
+        X(WHITE, "0xFFFFFF")
+
+/* 四种消费姿势：同一个清单，各取所需 */
+#define AS_ENUM(name, hex)  COLOR_##name,
+#define AS_NAME(name, hex)  #name,
+#define AS_CASE(name, hex)  case COLOR_##name: return hex;
+
+enum color {
+    COLOR_LIST(AS_ENUM)          /* 生成 RED, GREEN, BLUE, WHITE, */
+    COLOR_COUNT                  /* 哨兵：顺手得到颜色个数 */
 };
 
-/* 带参数 */
-const unsigned char data[] = {
-#embed "data.bin" if_empty(0)
+const char *color_names[] = {
+    COLOR_LIST(AS_NAME)          /* 生成 "RED", "GREEN", ... */
 };
 
-/* 用 __has_embed 检测支持 */
-#if __has_embed("icon.png")
-    const unsigned char icon[] = {
-#embed "icon.png"
-    };
+const char *color_hex(enum color c) {
+    switch (c) {
+        COLOR_LIST(AS_CASE)      /* 生成四个 case 分支 */
+        default: return "unknown";
+    }
+}
+
+#undef AS_ENUM
+#undef AS_NAME
+#undef AS_CASE
+
+int main(void) {
+    for (int i = 0; i < COLOR_COUNT; i++) {
+        printf("%-5s %s\n", color_names[i], color_hex((enum color)i));
+    }
+    printf("count = %d\n", COLOR_COUNT);
+    return 0;
+}
+```
+
+预期输出：
+
+```text
+RED   0xFF0000
+GREEN 0x00FF00
+BLUE  0x0000FF
+WHITE 0xFFFFFF
+count = 4
+```
+
+读法三步：`COLOR_LIST(X)` 是清单，`X` 是占位的姿势参数；四种 `AS_*` 宏是姿势；每次 `COLOR_LIST(姿势)` 就按姿势重放一遍清单。`COLOR_##name` 用 `##` 造出 `COLOR_RED` 等枚举名，`#name` 造出字符串。修改实验四：在 `COLOR_LIST` 里加一行 `X(YELLOW, "0xFFFF00")`，只改这一处，重新编译——枚举、名字表、打印函数、个数全部自动跟上，这就是「单一数据源」的威力。错误码表、状态机状态、配置项都是同一模式的经典主场，[枚举与 typedef](/c/110-EnumTypedef) 的错误码设计正是这套骨架的实战版；另一种变体是「同一份 .h 定义不同的 X 宏、#include 两三次」，X-Macro 的名字即来源于此，单文件版可维护性更好，推荐优先。
+
+进阶一瞥：宏没有函数重载，但可用「参数计数 + `##` 拼接」模拟——`#define print(...) CAT(print, NARG(__VA_ARGS__))(__VA_ARGS__)`，`NARG` 借助可变参数的粘合技巧数出参数个数，把 `print(1)` 与 `print(1, 2)` 分发给 `print1`、`print2`。能看懂它需要第 5 节的全部知识，工程中更建议直接用 `_Generic`（见 [泛型选择](/c/280-GenericSelection)）。
+
+## 5. 可变参数宏：LOG(fmt, ...) 怎么写
+
+调试日志是可变参数宏的天下。C99 起 `__VA_ARGS__` 代表省略号吃下的全部参数：
+
+```c
+/* vlog.c：gcc -Wall -Wextra -g vlog.c -o vlog */
+#include <stdio.h>
+
+#define LOG(fmt, ...) \
+    fprintf(stderr, "[LOG] %s:%d " fmt "\n", __FILE__, __LINE__, __VA_ARGS__)
+
+int main(void) {
+    int retries = 3;
+    LOG("connect failed, retries = %d", retries);
+    return 0;
+}
+```
+
+预期输出（stderr，故带文件行号前缀）：
+
+```text
+[LOG] vlog.c:10 connect failed, retries = 3
+```
+
+注意 `"%s:%d " fmt "\n"` 的写法：三个相邻字符串字面量在编译期自动拼接成一个，`fmt` 作为参数传入的格式串被无缝嵌进中间——这正是相邻字符串拼接规则最实用的应用场景。运行时一侧（`vprintf`、默认参数提升）见 [可变参数函数](/c/100-VarargsFunction)。
+
+### 5.1 空参数难题：尾逗号
+
+`LOG("started")` 一个可变参数都不传会怎样？展开成：
+
+```c
+fprintf(stderr, "[LOG] %s:%d " "started" "\n", __FILE__, __LINE__, );
+```
+
+尾逗号后空无一物，编译器报 `error: expected expression before ')' token`。三种解法按年代排列：
+
+1. **GNU 扩展 `##__VA_ARGS__`**：`..., ##__VA_ARGS__` 写法下，可变参数为空时 GCC/Clang 连同前面的逗号一起剔除。好用，但它是扩展——MSVC 传统预处理器不认；
+2. **要求至少一个参数**：把接口改成 `LOG(tag, fmt, ...)`，调用者被迫总传点什么。丑，但全平台合法；
+3. **C23 的 `__VA_OPT__`（标准答案）**：C++20 已将其转正，C23 跟进标准化。`__VA_OPT__(x)` 在可变参数**非空**时展开为 `x`，**为空**时展开为空：
+
+```c
+#define LOG(fmt, ...) \
+    fprintf(stderr, "[LOG] %s:%d " fmt "\n", __FILE__, __LINE__ __VA_OPT__(,) __VA_ARGS__)
+
+LOG("started");                 /* 尾部干净：...__LINE__) */
+LOG("value = %d", 42);          /* 逗号回来了：...__LINE__, 42) */
+```
+
+新代码直接用 `__VA_OPT__` 并以 `-std=c23` 编译；维护老代码时在 GCC/Clang 上可用 `##__VA_ARGS__` 过渡。C23 的其余新特性清单与编译器支持矩阵见 [C23 上手](/c/520-C23C2y) 与 [C23 深水区](/c/530-C23NewFeatures)。修改实验五：给 `LOG` 加上级别参数，再包一层 `LOG_ERROR(fmt, ...)` 固定级别，验证两条路（`__VA_OPT__` 与 GNU 扩展）在零参数调用下都编译通过。
+
+## 6. 条件编译：编译期的 if
+
+条件编译让「哪些代码进入最终产物」在**编译前**定死。基本骨架：
+
+```c
+#if defined(DEBUG) && defined(VERBOSE)   /* defined() 可组合 */
+    /* 只有 DEBUG 与 VERBOSE 同时定义时，这段才存在 */
+#elif defined(DEBUG)
+    /* 仅 DEBUG */
 #else
-    /* 备用方案 */
+    /* 都没有 */
+#endif
+
+#ifdef DEBUG            /* 只判断「定义过没有」，不能组合 */
+#define LOG_MSG(m) puts(m)
+#else
+#define LOG_MSG(m) ((void)0)
+#endif
+
+#ifndef BUFFER_SIZE     /* 惯用法：允许外部 -D 覆盖的默认值 */
+#define BUFFER_SIZE 1024
 #endif
 ```
 
-### 10.2 C23 的 `#warning`
+C23 又加了两个对称的简写：`#elifdef MACRO` 等价 `#elif defined(MACRO)`，`#elifndef` 等价 `#elif !defined(MACRO)`，平台分支链可以少敲很多字。
 
-C23 标准化了 `#warning` 指令:
+### 6.1 #if 的算术规则：只认整型常量表达式
+
+`#if` 后面必须是**整型常量表达式**，且有专属规则：
+
+- 表达式里的标识符若不是宏，一律按 `0` 处理；
+- 没有类型概念：不能用 `sizeof`，不能用强制转换，不能调函数；算术按能容纳的最大整型进行；
+- `defined(MACRO)` 在宏展开前先求值，得 0 或 1。
+
+「未定义标识符按 0」是静默错误的高发点：
 
 ```c
-#if defined(__GNUC__) && !defined(__OPTIMIZE__)
-#warning "建议使用 -O2 优化级别编译"
-#endif
+#define VERSION abc            /* 有人手滑写成了字符串或名字 */
 
-#ifdef LEGACY_API
-#warning "LEGACY_API 已弃用，将在下一版本移除"
+#if VERSION >= 3               /* abc 不是宏 → 按 0 → 0 >= 3 为假 */
+    /* 这段代码被无声跳过，没有任何诊断 */
 #endif
 ```
 
-### 10.3 `__has_include` 与 `__has_embed`
+`gcc -Wundef` 会对「`#if` 里出现未定义标识符」报警，把这类事故提前到编译期。还有一个 `#ifdef` 特有的坑：`#ifdef` 只看「定义过没有」，**不看值**——`#define USE_FAST 0` 之后 `#ifdef USE_FAST` 依然为真（实录二见第 9 节）。判断值请用 `#if`。
+
+### 6.2 三大用途
+
+平台探测是条件编译存在的第一理由——不同系统的头文件与函数根本不同，运行时 if 救不了编译期的不存在：
 
 ```c
-/* 检测头文件是否存在 */
-#if __has_include(<stdatomic.h>)
+#if defined(_WIN32)
+    #define PLATFORM_NAME "Windows"
+    #include <windows.h>
+    #define SLEEP_MS(ms) Sleep(ms)
+#elif defined(__linux__)
+    #define PLATFORM_NAME "Linux"
+    #include <unistd.h>
+    #define SLEEP_MS(ms) usleep((ms) * 1000)
+#elif defined(__APPLE__)
+    #define PLATFORM_NAME "macOS"
+    #include <unistd.h>
+    #define SLEEP_MS(ms) usleep((ms) * 1000)
+#else
+    #error "unsupported platform"        /* 探不出来的平台当场失败，别静默继续 */
+#endif
+```
+
+更长的架构检测（x86/ARM/RISC-V 等）、字节序判断与 DLL 导出宏属于跨平台工程的成套装备，见 [跨平台编程](/c/410-CrossPlatformProgramming)；编译器专属属性宏（`__GNUC__` 系、`_MSC_VER` 系）的详细对照在 [编译器扩展与属性](/c/540-AttributeCompilerExtension)。
+
+调试开关是第二用途——发布版把调试代码整段剪掉，零体积零开销：
+
+```c
+#ifdef NDEBUG                    /* 发布构建 gcc -DNDEBUG 时断言变空操作 */
+#define ASSERT(cond) ((void)0)
+#else
+#define ASSERT(cond) \
+    do { \
+        if (!(cond)) { \
+            fprintf(stderr, "assert %s failed at %s:%d\n", #cond, __FILE__, __LINE__); \
+            abort(); \
+        } \
+    } while (0)
+#endif
+```
+
+这几十行就是标准 `assert.h` 的精神内核：`#cond` 把表达式原样打进错误信息（第 4.4 节的 `#`），`__FILE__`/`__LINE__` 自报位置（第 3.3 节），`do { } while (0)` 保证当语句用不出事（第 8 节）。头文件守卫是第三用途，第 2.2 节已完整演示。
+
+### 6.3 #error、#warning 与 C23 的探测指令
+
+`#error` 让编译**当场失败**并把消息打出来，用于「配置不满足就该停」：
+
+```c
+#if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 201112L
+#error "this project requires C11 or later"
+#endif
+```
+
+C23 把 `#warning` 转正（此前 GCC/Clang/MSVC 早已作为扩展支持）：报警告但继续编译，适合「能用但不合规」的场景，如提示必填宏缺失、即将移除的旧接口。C23 还标准化了两个探测运算符，让条件编译从「猜」变成「问」：
+
+```c
+#if __has_include(<stdatomic.h>)     /* 头文件存在吗？ */
     #include <stdatomic.h>
     #define HAS_ATOMIC 1
 #else
     #define HAS_ATOMIC 0
 #endif
 
-/* 检测嵌入文件是否存在 */
-#if __has_embed("config.json")
-    const unsigned char config[] = {
-#embed "config.json"
-    };
+#if __has_c_attribute(nodiscard)     /* 支持这个属性吗？ */
+    #define WARN_UNUSED [[nodiscard]]
+#else
+    #define WARN_UNUSED
 #endif
 ```
 
-### 10.4 C 模块化(C23 草案)
+探测失败再降级到旧实现，是配置系统（Autoconf/CMake 之外）最轻量的替代品。`#embed`（把二进制文件直接嵌进数组）也是 C23 预处理指令，完整展开见 [C23 深水区](/c/530-C23NewFeatures)。与 `#error` 同属「编译期就拦住」思想的还有语言级的 `_Static_assert`（C11，C23 简写 `static_assert`）：表达式在编译期求值、为假即报错，能用在函数体内、能用 `sizeof`——`#if` 做不到的它都行，条件里没有预处理宏时优先用它。
 
-C23 草案中讨论了模块化(Module)特性,可能引入 `import`、`export` 等关键字。但截至 C23 正式发布,模块化尚未标准化,预处理器仍是 C 模块化的主要机制。
+## 7. 预处理控制：#undef、#line 与 #pragma
 
-未来 C 标准可能引入:
+**`#undef`** 注销一个宏，三个经典用途：挡住第三方头文件的宏污染（先 `#include` 再 `#undef MAX`，把名字还给函数版）；X-Macro 里用完即弃、保持卫生（第 4.6 节的 `#undef AS_*`）；同一名先注销再重定义（直接重定义是约束违反，编译器会报「宏重定义」）。
+
+**`#line`** 改写编译器记账的行号与文件名，一句带过：代码生成器用它把报错位置映射回用户的原始文件，日常编码用不到。
+
+**`#pragma`** 是留给各编译器自定义指令的逃生舱。C99 补了运算符形式 `_Pragma("指令")`，让 pragma 能写进宏体（`#` 开头的指令本身不能出现在宏展开结果里，`_Pragma` 没这个限制）：
 
 ```c
-/* 假想的 C 模块语法 */
-export module math;
-
-export int add(int a, int b) { return a + b; }
-
-/* 使用 */
-import math;
-int main(void) { return add(1, 2); }
+#define DO_PRAGMA(x) _Pragma(#x)
+DO_PRAGMA(GCC diagnostic push)            /* 等价 #pragma GCC diagnostic push */
 ```
 
-在此之前,`#include` + Include Guard 仍是 C 模块化的唯一方式。
+日常用得到的 pragma 一览（平台专属细节各归其位）：
 
-### 10.5 宏的"重载"
+| 指令 | 作用 | 归属 |
+| --- | --- | --- |
+| `#pragma once` | 头文件守卫 | 本文第 2.2 节 |
+| `#pragma pack(push, 1)` / `pack(pop)` | 结构体按 1 字节对齐 | [内存对齐](/c/220-MemoryAlignmentDeepDive) |
+| `#pragma GCC diagnostic push / ignored "-Wxxx" / pop` | 局部压制或升级警告 | 本文下方示例 |
+| `#pragma message("...")` | 编译期打印提示（常拼 `__FILE__`） | 本文下方示例 |
+| `#pragma warning(disable: N)` 等 | MSVC 警告控制 | [跨平台编程](/c/410-CrossPlatformProgramming) |
 
-C 没有函数重载,但可通过宏模拟:
+警告控制的招牌用法——明知某行会触发警告、且有正当理由时，把压制范围压到最小：
 
 ```c
-#include <stdio.h>
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+void legacy_callback(int event, void *unused) {
+    (void)event;
+    /* 老接口约定的签名，参数就是用不上 */
+}
+#pragma GCC diagnostic pop
+```
 
-/* 模拟重载：根据参数数量调用不同函数 */
-#define NARG_(...) NARG_I_(__VA_ARGS__, 6, 5, 4, 3, 2, 1, 0)
-#define NARG_I_(_1, _2, _3, _4, _5, _6, N, ...) N
+编译器专属属性（`__attribute__((packed))`、`deprecated`、`format` 等）与 pragma 是平行的两套机关，语义见 [编译器扩展与属性](/c/540-AttributeCompilerExtension)。
 
-#define CAT_(a, b) a##b
-#define CAT(a, b) CAT_(a, b)
+## 8. 宏的军规与调试
 
-#define print(...) CAT(print, NARG_(__VA_ARGS__))(__VA_ARGS__)
+### 8.1 do { } while (0)：多语句宏的唯一正确形状
 
-void print1(int a) { printf("%d\n", a); }
-void print2(int a, int b) { printf("%d, %d\n", a, b); }
-void print3(int a, int b, int c) { printf("%d, %d, %d\n", a, b, c); }
+多语句宏最直觉的写法是花括号块，而它在 if/else 里是必炸的：
 
-int main(void) {
-    print(1);          /* print1(1) */
-    print(1, 2);       /* print2(1, 2) */
-    print(1, 2, 3);    /* print3(1, 2, 3) */
-    return 0;
+```c
+/* bad_swap.c：gcc -Wall -Wextra -c bad_swap.c */
+#define BAD_SWAP(a, b) { int tmp = (a); (a) = (b); (b) = (tmp); }
+
+void check(int ok) {
+    int x = 1, y = 2;
+    if (ok)
+        BAD_SWAP(x, y);      /* 展开为 { ... }; —— 花括号块后跟分号 */
+    else                     /* 编译错误：这个 else 找不到自己的 if */
+        x = y;
 }
 ```
 
-### 10.6 状态机生成
-
-通过 X-Macro 自动生成状态机代码:
-
-```c
-/* states.x */
-STATE(INIT,     "initialization")
-STATE(LOADING, "loading data")
-STATE(RUNNING, "running")
-STATE(STOPPED, "stopped")
-STATE(ERROR,   "error")
-
-/* 生成枚举 */
-#define STATE(name, desc) name,
-enum State {
-#include "states.x"
-};
-#undef STATE
-
-/* 生成描述数组 */
-#define STATE(name, desc) desc,
-const char *state_desc[] = {
-#include "states.x"
-};
-#undef STATE
-
-/* 生成打印函数 */
-const char *state_to_string(enum State s) {
-    if (s >= 0 && s < sizeof(state_desc)/sizeof(state_desc[0]))
-        return state_desc[s];
-    return "UNKNOWN";
-}
+```text
+bad_swap.c: In function 'check':
+bad_swap.c:9:5: error: 'else' without a previous 'if'
 ```
 
-### 10.7 反射式宏
-
-通过宏生成结构体的元信息:
+展开后 `if (ok) { ... };` 的分号成了一条空语句，把 if 和 else 拆散了。把宏体换成 `do { ... } while (0)`，问题消失：
 
 ```c
-/* person.def */
-FIELD(name, char[32])
-FIELD(age, int)
-FIELD(email, char[64])
+#define SWAP(a, b) do { int tmp = (a); (a) = (b); (b) = (tmp); } while (0)
 
-/* 生成结构体 */
-#define FIELD(name, type) type name;
-struct Person {
-#include "person.def"
-};
-#undef FIELD
-
-/* 生成字段名数组 */
-#define FIELD(name, type) #name,
-const char *person_fields[] = {
-#include "person.def"
-};
-#undef FIELD
-
-/* 生成序列化函数 */
-void person_serialize(const struct Person *p, FILE *f) {
-#define FIELD(name, type) \
-    fprintf(f, "%s=", #name); \
-    /* 简化示例，实际需要根据类型处理 */
-#include "person.def"
-#undef FIELD
-}
+    if (ok)
+        SWAP(x, y);          /* do-while 是一条完整语句，分号恰好被它吃掉 */
+    else
+        x = y;               /* 配对正常 */
 ```
 
-## 第 11 章 跨平台与编译器差异
+为什么偏偏是 do-while 而不是别的：它**是一条语句**（能跟分号、能在无花括号的 if 分支里出现），又**只执行一次**（条件恒为 0），还能用 `break` 提前跳出——函数形状、单次执行，一个不少。Linux 内核编码风格明文要求多语句宏必须包成 do-while，理由正在此。顺带一条：宏定义末尾**别加多余分号**，`do {...} while (0);`（宏内自带分号）会让调用处变成双分号，同样拆散 if/else——分号永远由调用者提供。完整的事故家族与「宏 vs 函数」的取舍在 [内联函数与宏](/c/300-InlineFunctionMacro)。
 
-### 11.1 GCC/Clang/MSVC 的预处理器差异
+### 8.2 五条军规清单
 
-#### 11.1.1 扩展支持
+1. **宏名全大写**，参数与整体必加括号（第 4.3 节）；常量宏与函数式宏都适用——全大写是给读者「这是文本替换」的唯一警报；
+2. **多语句宏用 do { } while (0)**，末尾不带分号（第 8.1 节）；
+3. **别把副作用表达式喂给宏参数**（第 4.2 节）；这五条之外的另一半答案是「能用函数就别用宏」，见 [内联函数与宏](/c/300-InlineFunctionMacro)；
+4. **长宏体用 `\` 续行**：反斜杠必须是行尾最后一个字符（后面跟个看不见的空格，续行就失效，注意编辑器是否显示行尾空白）；
+5. **起名防撞车**：宏无作用域、全局生效，`MAX`、`DEBUG` 这类名字极易与第三方头文件冲突；项目宏统一加前缀，撞了用 `#undef` 自救。
 
-| 特性 | GCC | Clang | MSVC |
-| ---- | --- | ----- | ---- |
-| `#pragma once` | 是 | 是 | 是 |
-| `##__VA_ARGS__` | 是 | 是 | 否(已支持 `__VA_OPT__`) |
-| `#warning` | 是(C23 前) | 是(C23 前) | 是(C23 前) |
-| `#embed` | 否(等待 C23 实现) | 部分 | 否 |
-| `_Pragma` | 是 | 是 | 是 |
+设计一个新宏时过一遍：整体括号了吗、参数括号了吗、多语句用 do-while 了吗、宏体末尾多余分号了吗、参数会被求值几次、名字会撞车吗。五问全过再落笔。
 
-#### 11.1.2 预定义宏差异
+### 8.3 排查法：回到 gcc -E
+
+宏的 bug 有一把万能钥匙：**看展开**。第 1 节的 `-E` 同样是调试工具：
+
+```bash
+gcc -E suspect.c | grep -n "SUSPECT_NAME"   # 定位可疑宏展开成了什么
+gcc -E suspect.c > suspect.i                # 或存成 .i，在编辑器里逐行看
+```
+
+展开产物里注释已变空格、宏已消失，你看到的正是编译器看到的——「为什么这里类型不匹配」「为什么少了个逗号」，对着 .i 文件一眼见底。`-g` 调试信息虽能把断点映射回源码行，宏内部的参数与逻辑在调试器里几乎不可观察，所以宏世界里 `-E` 就是单步调试。
+
+## 9. 常见错误与调试实录
+
+**实录一：缺括号事故——静默算错，零警告。** `#define HALF(x) x / 2` 后调用 `HALF(2 + 2)`，展开为 `2 + 2 / 2`，结果是 3 而非 2。`gcc -Wall -Wextra` 一个字都不说：语法完全合法。程序跑出「差一点点」的结果时，把可疑表达式丢给 `-E` 展开看一眼，两分钟破案。防御就是第 4.3 节的两处括号纪律。
+
+**实录二：## 粘出非法记号。** `#define CAT(a, b) a##b` 后调用 `CAT(x, +)`——`x` 和 `+` 粘不成任何合法记号，GCC 当场报错：
+
+```text
+suspect.c:5:20: error: pasting "x" and "+" does not give a valid preprocessing token
+```
+
+这是 `##` 少数会被编译器当场抓住的用法（多数宏错误都静默）。反过来说，看到这条报错就说明你的两级宏里有一层垫错了：参数被提前粘合，先检查该用 `XCAT`（间接层）的地方是不是写成了 `CAT`。
+
+**实录三：#include 循环与守卫失效。** 两个头文件互相包含，都忘了写守卫：
 
 ```c
-/* GCC 特有 */
-__GNUC__
-__GNUC_MINOR__
-__GNUC_PATCHLEVEL__
-__linux__
-__unix__
-
-/* Clang 特有 */
-__clang__
-__clang_major__
-__clang_minor__
-
-/* MSVC 特有 */
-_MSC_VER
-_MSC_FULL_VER
-_WIN32
-_WIN64
+/* a.h */              /* b.h */
+#include "b.h"         #include "a.h"
 ```
 
-### 11.2 跨平台宏的最佳实践
+```text
+In file included from a.h:1,
+                 from main.c:1:
+a.h:1:10: error: #include nested depth 200 exceeds maximum of 200
+```
+
+`#include` 是无脑复制粘贴，没有守卫时 a 抄 b、b 抄 a、无限套娃，直到 GCC 的内嵌深度上限（200 层）才停。加上守卫后循环包含不再爆栈，但还有第二层坑：A 需要的类型定义在 B 里、B 又需要 A 的，守卫会让先到的那一方拿不到对方的类型，报 `unknown type name`——解法是提取公共类型到第三个头文件，或用前向声明，工程手法见 [多文件编译](/c/310-MultiFileCompilation)。
+
+**实录四：#ifdef 看不见值——配错分支的静默错误。** 有人想关掉功能，写了 `#define USE_FAST_PATH 0`，但代码用的是 `#ifdef USE_FAST_PATH`。`#ifdef` 只查「定义过没有」，0 也算定义过——快速路径照常编译进去，程序行为与作者预期相反，**没有任何警告**。反向同款事故是拼写：`#ifdef DEGUB`（想写 DEBUG）永远为假，调试日志悄无声息地消失。防御两条：判断值的开关一律 `#if` + `-Wundef`；项目级开关宏集中定义在一个头文件（或构建系统 `-D`），散落的 `#ifdef` 越少，这类事故越少（构建配置见 [构建系统](/c/470-BuildSystem)）。
+
+## 实际项目中的使用场景
+
+- **读世界级 C 项目绕不开**：Linux 内核、glibc、SQLite 的源码里 `#ifdef` 与宏俯拾皆是——内核用一套架构宏在数十种 CPU 上编译同一份代码，container_of 宏用 `offsetof` 从成员指针反推容器结构体指针（`((type *)((char *)(ptr) - offsetof(type, member)))`，机制地基是 [内存对齐](/c/220-MemoryAlignmentDeepDive) 的偏移量）；
+- **日志与断言系统**：`__FILE__`/`__LINE__`/`__func__` 拼出的日志宏（第 5 节）与 assert 骨架（第 6.2 节）是所有 C 项目调试设施的标配起点；格式化转发到 `vfprintf` 的进阶写法见 [可变参数函数](/c/100-VarargsFunction)；
+- **嵌入式位操作**：`BIT_SET(reg, n)` 一族寄存器位操作宏是裸机驱动的日常，公式推导见 [位运算与位域](/c/070-BitwiseBitField)；
+- **构建配置入口**：`-DLOG_LEVEL=2`、`-DNDEBUG` 这类编译命令行宏是 Makefile/CMake 与代码之间的标准接口，配套见 [构建系统](/c/470-BuildSystem)。
+
+## 小练习
+
+预测题（5 分钟）：先写下答案再运行验证。
 
 ```c
-/* 跨平台 DLL 导出 */
-#if defined(_WIN32) || defined(_WIN64)
-    #ifdef MYLIB_EXPORTS
-        #define MYLIB_API __declspec(dllexport)
-    #else
-        #define MYLIB_API __declspec(dllimport)
-    #endif
-#else
-    #define MYLIB_API __attribute__((visibility("default")))
-#endif
-
-/* 跨平台对齐 */
-#if defined(_MSC_VER)
-    #define ALIGNED(x) __declspec(align(x))
-#else
-    #define ALIGNED(x) __attribute__((aligned(x)))
-#endif
-
-/* 跨平台 noreturn */
-#if defined(_MSC_VER)
-    #define NORETURN __declspec(noreturn)
-#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 202311L
-    #define NORETURN [[noreturn]]
-#elif defined(__STDC_VERSION__) && __STDC_VERSION__ >= 201112L
-    #define NORETURN _Noreturn
-#else
-    #define NORETURN __attribute__((noreturn))
-#endif
+#define A 1
+#define B A
+#undef A
+#define A 2
+int x = B;      /* x 是几？ */
 ```
 
-### 11.3 平台检测的最佳实践
+参考答案（先写再看）：x 是 2。`B` 展开成记号 `A` 时才去查当前的宏表，查到的是重定义后的 `A`——宏展开发生在**使用点**，不在定义点。`#undef` 后重定义不是覆盖历史，而是换掉了后续所有使用点要查的表项。
 
-#### 11.3.1 操作系统检测
+修改题（15 分钟）：把第 8.1 节的 `BAD_SWAP` 依次改成「花括号块去掉尾部分号」「do-while(0)」两个版本，分别编译第 8.1 节的 check 函数，记录哪版报错、报什么——亲手把 if/else 配对事故复现一遍。
 
-```c
-#if defined(_WIN32) || defined(_WIN64)
-    /* Windows (32 或 64 位) */
-#elif defined(__linux__)
-    /* Linux */
-#elif defined(__APPLE__) && defined(__MACH__)
-    /* macOS 或 iOS */
-    #include <TargetConditionals.h>
-    #if TARGET_OS_MAC
-        /* macOS */
-    #elif TARGET_OS_IPHONE
-        /* iOS */
-    #endif
-#elif defined(__FreeBSD__)
-    /* FreeBSD */
-#elif defined(__OpenBSD__)
-    /* OpenBSD */
-#elif defined(__NetBSD__)
-    /* NetBSD */
-#elif defined(__ANDROID__)
-    /* Android (在 Linux 之上) */
-#else
-    #error "未知平台"
-#endif
-```
+挑战题（30 分钟，不看答案先动手）：C11 之前没有 `_Static_assert`，老项目用宏实现编译期断言。请写出 `STATIC_ASSERT(cond, name)`，让 `STATIC_ASSERT(sizeof(long) == 8, long_is_64)` 在 64 位平台编译通过、在 32 位平台编译失败。
 
-#### 11.3.2 架构检测
+提示（思路方向）：预处理之后是编译器的语义检查——有什么数组定义能让「长度为 0 或负数」直接变成编译错误？
 
-```c
-#if defined(__x86_64__) || defined(_M_X64)
-    /* x86_64 */
-#elif defined(__i386__) || defined(_M_IX86)
-    /* x86 */
-#elif defined(__aarch64__) || defined(_M_ARM64)
-    /* ARM64 */
-#elif defined(__arm__) || defined(_M_ARM)
-    /* ARM32 */
-#elif defined(__riscv) && __riscv_xlen == 64
-    /* RISC-V 64 */
-#elif defined(__riscv) && __riscv_xlen == 32
-    /* RISC-V 32 */
-#elif defined(__mips__) || defined(__mips64)
-    /* MIPS */
-#elif defined(__powerpc64__)
-    /* PowerPC 64 */
-#else
-    #error "未知架构"
-#endif
-```
+展开（关键 API）：`typedef char static_assert_##name[(cond) ? 1 : -1];`——条件为真时定义一个 1 字节数组类型，为假时数组长度 -1，非法，编译失败；`##` 把 name 拼进类型名避免重复定义冲突。验收：改成 `sizeof(int) == 8` 后编译失败且报错指向这一行；对比 `_Static_assert(sizeof(int) == 4, "msg")` 的报错可读性，体会为什么 C11 要把它标准化（C23 起另有简写 `static_assert`，见 [C23 深水区](/c/530-C23NewFeatures)）。
 
-#### 11.3.3 字节序检测
+## 与之前和之后的知识的关系
 
-```c
-#if defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-    #define IS_LITTLE_ENDIAN 1
-#elif defined(__BYTE_ORDER__) && __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
-    #define IS_LITTLE_ENDIAN 0
-#else
-    /* 运行时检测 */
-    #define IS_LITTLE_ENDIAN (htonl(1) != 1)
-#endif
-```
+- 往前：[运算符与表达式](/c/060-OperatorExpression) 的优先级与序列点规则是本文括号纪律与 `SQUARE(i++)` 判定的裁判；[函数](/c/090-FunctionDetailed) 的传值语义是「宏参数不求值」的反面教材；[变量与常量](/c/050-VariableConstant) 的四种常量之争在本文 3.1 节落定一半；
+- 旁支：[内联函数与宏](/c/300-InlineFunctionMacro) 回答「这个需求到底该用宏还是 inline」；[泛型选择](/c/280-GenericSelection) 接手类型分派；[多文件编译](/c/310-MultiFileCompilation) 把本文的头文件守卫扩展成完整的多文件工程；[内存对齐](/c/220-MemoryAlignmentDeepDive) 讲 `#pragma pack` 的对齐语义；[编译器扩展与属性](/c/540-AttributeCompilerExtension) 与本文的 pragma/宏互为表里；
+- 往后：[C23 上手](/c/520-C23C2y) 与 [C23 深水区](/c/530-C23NewFeatures) 收编 `__VA_OPT__`、`#embed`、`__has_include` 的新特性全景；[跨平台编程](/c/410-CrossPlatformProgramming) 把本文的平台探测发展成成套的跨平台抽象层。
 
-### 11.4 编译器特定的 pragma
+## 官方文档
 
-#### 11.4.1 GCC 特有
+- GCC 预处理器手册（搜索路径、宏语义、扩展，本文多节依据）：https://gcc.gnu.org/onlinedocs/cpp/
+- 头文件搜索路径细则：https://gcc.gnu.org/onlinedocs/cpp/Search-Path.html
+- 对象式宏的作用域与展开：https://gcc.gnu.org/onlinedocs/cpp/Object-like-Macros.html
+- cppreference C 预处理页面（# / ## / `__VA_OPT__` 的标准语义）：https://zh.cppreference.com/w/c/preprocessor/replace
+- 翻译阶段（8 阶段与 C23 删除三字符组）：https://en.wikibooks.org/wiki/C_programming/Alternative_tokens
+- Linux 内核编码风格第 12 章（do-while(0) 与宏命名）：https://www.kernel.org/doc/html/latest/process/coding-style.html
+- Modern C（Jens Gustedt，C23 版免费在线）：https://gustedt.gitlabpages.inria.fr/modern-c/
 
-```c
-/* 函数属性 */
-__attribute__((format(printf, 1, 2)))
-void my_log(const char *fmt, ...);
+## 自我检查
 
-__attribute__((nonnull(1)))
-void *must_not_null(void *ptr);
+- 能用 `gcc -E` 取出任意一段代码的预处理产物，并指着展开结果解释每个宏变成了什么；
+- 能不看资料说出 `#include` 两种写法的搜索路径顺序、头文件守卫三写法及各自的可移植性代价；
+- 拿到 `HALF(2 + 2) == 3` 式的静默算错，能在两分钟内用 `-E` 定位到缺括号的宏；
+- 能向同事讲清 do { } while (0) 解决什么问题、`__VA_OPT__` 与 `##__VA_ARGS__` 各自的来历。
 
-__attribute__((deprecated("use new_func instead")))
-void old_func(void);
+## 本章总结
 
-__attribute__((weak))
-void optional_func(void);
+预处理器是编译流水线的第一站：续行拼行、注释变空格、指令与宏展开都在编译器接手前完成，`gcc -E` 让这一切肉眼可见。`#include` 是复制粘贴（双引号先查当前目录），守卫挡住重复抄写；宏只是文本替换——参数不求值、无作用域、从定义行生效到 `#undef` 或文件尾，因此括号纪律与「别喂副作用」是保命符。`#` 字符串化与 `##` 记号拼接造就了 X-Macro 的单一数据源；`__VA_ARGS__` 配 C23 `__VA_OPT__` 让日志宏告别尾逗号。条件编译把平台、调试开关、头文件守卫三件事在编译前定死，`#error` 与 C23 探测指令让配错当场失败。宏的军规只有五条，核心一句：宏不是函数，别当函数用——该用函数的场景，下一篇给答案。
 
-/* 结构体属性 */
-struct __attribute__((packed)) PackedStruct { ... };
-struct __attribute__((aligned(16))) AlignedStruct { ... };
-```
+## 下一步
 
-#### 11.4.2 MSVC 特有
-
-```c
-__declspec(align(16)) struct AlignedStruct { ... };
-__declspec(deprecated) void old_func(void);
-__declspec(noinline) void never_inline(void);
-__declspec(selectany) extern const int x = 0;  /* 多次定义只保留一次 */
-```
-
-### 11.5 跨平台头文件设计
-
-一个跨平台库的头文件示例:
-
-```c
-/* mylib.h - 跨平台库头文件 */
-#ifndef MYLIB_H
-#define MYLIB_H
-
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-/* 1. 版本信息 */
-#define MYLIB_VERSION_MAJOR 1
-#define MYLIB_VERSION_MINOR 0
-#define MYLIB_VERSION_PATCH 0
-#define MYLIB_VERSION_STR "1.0.0"
-
-/* 2. 跨平台宏定义 */
-#if defined(_WIN32) || defined(_WIN64)
-    #ifdef MYLIB_EXPORTS
-        #define MYLIB_API __declspec(dllexport)
-    #else
-        #define MYLIB_API __declspec(dllimport)
-    #endif
-    #define MYLIB_CALL __cdecl
-#else
-    #define MYLIB_API __attribute__((visibility("default")))
-    #define MYLIB_CALL
-#endif
-
-/* 3. 跨平台类型 */
-#if defined(_MSC_VER)
-    typedef __int64 mylib_int64;
-#else
-    typedef long long mylib_int64;
-#endif
-
-/* 4. 函数声明 */
-MYLIB_API int MYLIB_CALL mylib_init(void);
-MYLIB_API void MYLIB_CALL mylib_cleanup(void);
-MYLIB_API int MYLIB_CALL mylib_process(const char *input, mylib_int64 *output);
-
-#ifdef __cplusplus
-}
-#endif
-
-#endif /* MYLIB_H */
-```
-
-## 第 12 章 总结与最佳实践
-
-### 12.1 宏使用决策表
-
-| 场景 | 推荐方案 | 理由 |
-| ---- | -------- | ---- |
-| 常量定义 | `enum` 或 `static const` | 类型安全,可调试 |
-| 简单计算 | `static inline` 函数 | 类型检查,无副作用 |
-| 跨平台开关 | `#if`/`#ifdef` | 编译时决策,零开销 |
-| 调试日志 | 宏 + `__FILE__`/`__LINE__` | 自动捕获位置信息 |
-| 代码生成 | X-Macro | 单一数据源,可维护 |
-| 类型泛型 | `_Generic`(C11) | 类型安全,编译器检查 |
-| 字符串化 | `#` 运算符 | 唯一方式 |
-| Token 粘贴 | `##` 运算符 | 唯一方式 |
-| 编译时断言 | `_Static_assert`(C11) | 标准化,可移植 |
-
-### 12.2 宏定义最佳实践
-
-1. **宏名全大写**,区分变量和函数
-2. **宏体加括号**,参数加括号
-3. **多语句宏用 `do-while(0)`**
-4. **避免参数副作用**,优先用内联函数
-5. **复杂逻辑用内联函数替代宏**
-6. **宏定义不加分号**,由调用者加
-7. **使用 `##__VA_ARGS__` 或 `__VA_OPT__`** 处理空可变参数
-
-### 12.3 头文件最佳实践
-
-1. **始终使用 Include Guard**(传统宏或 `#pragma once`)
-2. **头文件只放声明**,不放定义(除 `static inline`)
-3. **最小化包含**,能用前向声明就不用包含
-4. **自包含**:头文件自身能编译通过
-5. **C++ 兼容**:用 `extern "C"` 包裹
-6. **明确导出**:用 `__declspec(dllexport)`/`__attribute__((visibility("default")))` 控制符号可见性
-
-### 12.4 条件编译最佳实践
-
-1. **使用 `defined()` 检查宏**,而非直接 `#ifdef`
-2. **提供默认值**,#ifndef + #define 模式
-3. **保持条件逻辑清晰**,避免深层嵌套
-4. **注释 `#endif`**,标明对应的 `#if`
-5. **优先使用标准宏**(`__STDC_VERSION__`),而非编译器特定宏
-6. **检测失败用 `#error`**,而非默默跳过
-
-### 12.5 预处理器使用检查清单
-
-设计宏时,检查以下问题:
-
-- [ ] 宏体是否用括号包围?
-- [ ] 每个参数是否用括号包围?
-- [ ] 多语句宏是否用 `do-while(0)`?
-- [ ] 宏名是否全大写,避免与变量冲突?
-- [ ] 是否考虑了参数副作用?
-- [ ] 是否能用 `static inline` 函数替代?
-- [ ] 宏定义末尾是否多加了分号?
-- [ ] 是否有 `##__VA_ARGS__` 或 `__VA_OPT__` 处理空参数?
-
-设计头文件时,检查:
-
-- [ ] 是否有 Include Guard?
-- [ ] 头文件是否自包含?
-- [ ] 是否最小化了 `#include`?
-- [ ] 是否用 `extern "C"` 包裹(若需 C++ 兼容)?
-- [ ] 公开 API 是否有明确的导出标记?
-
-设计条件编译时,检查:
-
-- [ ] 是否用 `defined()` 而非 `#ifdef`?
-- [ ] 是否提供了 `#else` 默认分支?
-- [ ] 是否在 `#endif` 后注释了对应的条件?
-- [ ] 是否避免深层嵌套?
-
-### 12.6 现代宏使用的核心原则
-
-#### 12.6.1 能用 C 语言特性就不用宏
-
-```c
-/* 不推荐：用宏定义常量 */
-#define MAX_SIZE 100
-
-/* 推荐：用 static const 或 enum */
-static const int MAX_SIZE = 100;
-enum { MAX_SIZE = 100 };  /* 编译期常量 */
-
-/* 不推荐：用宏定义简单计算 */
-#define SQUARE(x) ((x) * (x))
-
-/* 推荐：用 inline 函数 */
-static inline int square(int x) { return x * x; }
-```
-
-#### 12.6.2 宏只在必要时使用
-
-宏在以下场景仍是不可替代的:
-
-- 字符串化(`#`)与 Token 粘贴(`##`)
-- 编译时位置信息(`__FILE__`/`__LINE__`)
-- 条件编译(`#if`/`#ifdef`)
-- 代码生成(X-Macro)
-- 跨平台抽象
-
-#### 12.6.3 渐进式现代化
-
-```c
-/* 旧风格 */
-#define DEBUG 1
-
-/* C11 风格 */
-_Static_assert(DEBUG == 0 || DEBUG == 1, "DEBUG must be 0 or 1");
-
-/* C23 风格 */
-constexpr int DEBUG = 1;  /* C23 constexpr (若支持) */
-```
-
-#### 12.7.1 标准文档
-
-- ISO/IEC 9899:2023(C23 标准)
-- ISO/IEC 9899:2018(C17 标准)
-- ISO/IEC 9899:2011(C11 标准)
-
-#### 12.7.2 经典书籍
-
-- 《C 程序设计语言》(K&R,第二版):预处理器基础
-- 《C: A Reference Manual》(Harbison & Steele):预处理器详细参考
-- 《Modern C》(Jens Gustedt):C11 与 C17 的预处理器
-- 《21st Century C》(Ben Klemens):现代 C 实践
-
-#### 12.7.4 实战项目学习
-
-- **Linux 内核**:`include/linux/` 下的头文件,展示大规模宏使用
-- **SQLite**:`src/sqliteInt.h`,展示跨平台宏设计
-- **Redis**:`src/` 下的代码,展示简洁的宏抽象
-- **musl libc**:`include/` 下的头文件,展示标准化宏使用
-
-### 12.8 总结
-
-C 预处理器是一个强大的工具,它诞生于 1970 年代,经过 C89、C99、C11、C23 的演进,至今仍是 C 程序员不可或缺的能力。
-
-**预处理器的核心价值**:
-
-1. **编译时决策**:通过条件编译,在编译期完成平台适配、功能开关,零运行时开销
-2. **代码生成**:通过 X-Macro 等技巧,从单一数据源生成多种代码,降低维护成本
-3. **诊断信息**:通过预定义宏,自动捕获源码位置,构建强大的日志与断言系统
-4. **跨平台抽象**:通过宏封装平台差异,实现一次编写,多处编译
-
-**预处理器的核心风险**:
-
-1. **文本替换陷阱**:宏不是函数,副作用、运算符优先级、分号等问题频发
-2. **调试困难**:宏展开后调试器难以观察
-3. **命名空间污染**:宏全局有效,易冲突
-4. **可读性下降**:过度使用宏的代码晦涩难懂
-
-**现代 C 程序员的策略**:
-
-- 优先使用 C 语言本身特性(`const`、`enum`、`inline`、`_Generic`、`_Static_assert`)
-- 只在必要时使用宏(条件编译、字符串化、Token 粘贴、代码生成)
-- 严格遵循宏定义的最佳实践(括号、do-while、避免副作用)
-- 关注 C23 新特性(`#embed`、`#warning`、`__VA_OPT__`),渐进式现代化代码
-
-掌握预处理器,是从"会写 C 代码"到"能写出工业级 C 代码"的关键一步。它能让你读懂 Linux 内核、glibc、SQLite 这些世界级项目的源码,也能让你写出真正跨平台、高可靠、易维护的 C 程序。
-## 文件包含
-
-**系统头文件写法：包含系统头文件**
-`#include <<header>>`
-```c
-// 包含标准输入输出头文件
-#include <stdio.h>
-```
-
----
-
-**用户头文件写法：包含自定义头文件**
-`#include "<header>"`
-```c
-// 包含当前目录下的头文件
-#include "myheader.h"
-```
-
----
-
-## 宏定义
-
-**基本写法：无参宏定义常量**
-`#define <NAME> <value>`
-```c
-// 定义缓冲区大小常量
-#define MAX_BUFFER 1024
-```
-
----
-
-**字符串写法：宏定义字符串**
-`#define <NAME> "<string>"`
-```c
-// 定义版本号字符串
-#define VERSION "1.0.0"
-```
-
----
-
-**带参写法：带参宏定义**
-`#define <NAME>(<params>) <expression>`
-```c
-// 定义求最大值的宏
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
-```
-
----
-
-**多行写法：多行宏定义**
-`#define <NAME>(<params>) do { ... } while(0)`
-```c
-// 多行宏定义
-#define LOG_ERROR(msg) do { \
-    fprintf(stderr, "Error: %s\n", msg); \
-    exit(1); \
-} while(0)
-```
-
----
-
-**字符串化写法：# 运算符**
-`#define <NAME>(x) #x`
-```c
-// 将参数转换为字符串
-#define STRINGIFY(x) #x
-```
-
----
-
-**标记拼接写法：## 运算符**
-`#define <NAME>(a, b) a##b`
-```c
-// 拼接两个标记
-#define CONCAT(a, b) a##b
-```
-
----
-
-**可变参数写法：可变参数宏**
-`#define <NAME>(<fixed>, ...) <expr>(__VA_ARGS__)`
-```c
-// 可变参数宏
-#define LOG(fmt, ...) printf(fmt, __VA_ARGS__)
-```
-
----
-
-## 宏取消定义
-
-**基本写法：取消宏定义**
-`#undef <NAME>`
-```c
-// 取消 MAX_BUFFER 的定义
-#undef MAX_BUFFER
-```
-
----
-
-## 条件编译
-
-**基本写法：ifdef 条件编译**
-`#ifdef <MACRO> ... #endif`
-```c
-// 如果定义了 DEBUG 宏则编译
-#ifdef DEBUG
-    printf("Debug mode\n");
-#endif
-```
-
----
-
-**基本写法：ifndef 条件编译**
-`#ifndef <MACRO> ... #endif`
-```c
-// 如果未定义 HEADER_H 则编译
-#ifndef HEADER_H
-#define HEADER_H
-void my_function();
-#endif
-```
-
----
-
-**基本写法：if 条件编译**
-`#if <condition> ... #endif`
-```c
-// 根据条件编译
-#if VERSION >= 2
-    printf("Version 2+\n");
-#endif
-```
-
----
-
-**多分支写法：if-elif-else 条件编译**
-`#if <cond1> ... #elif <cond2> ... #else ... #endif`
-```c
-// 多分支条件编译
-#if defined(WIN32)
-    #define OS "Windows"
-#elif defined(LINUX)
-    #define OS "Linux"
-#else
-    #define OS "Unknown"
-#endif
-```
-
----
-
-**defined 写法：检查宏是否定义**
-`#if defined(<MACRO>)`
-```c
-// 检查宏是否已定义
-#if defined(DEBUG) && defined(VERBOSE)
-    printf("Debug verbose mode\n");
-#endif
-```
-
----
-
-## 预定义宏
-
-**基本写法：使用预定义宏**
-`__FILE__` / `__LINE__` / `__DATE__` / `__TIME__`
-```c
-// 输出文件名和行号
-printf("File: %s, Line: %d\n", __FILE__, __LINE__);
-```
-
----
-
-**基本写法：使用 __func__**
-`__func__`
-```c
-// 输出当前函数名
-void my_function() {
-    printf("Function: %s\n", __func__);
-}
-```
-
----
-
-## pragma 指令
-
-**基本写法：使用 pragma**
-`#pragma <directive>`
-```c
-// 使用 once 防止重复包含
-#pragma once
-```
-
----
-
-**pack 写法：设置结构体对齐**
-`#pragma pack(<n>)`
-```c
-// 设置 1 字节对齐
-#pragma pack(1)
-struct Packed {
-    char c;
-    int i;
-};
-#pragma pack()
-```
-
----
-
-**message 写法：编译时输出消息**
-`#pragma message("<message>")`
-```c
-// 编译时输出提示信息
-#pragma message("Compiling " __FILE__)
-```
-
----
-
-## 行控制
-
-**基本写法：修改行号和文件名**
-`#line <line_number> "<filename>"`
-```c
-// 修改编译器报告的行号和文件名
-#line 100 "custom_file.c"
-```
-
----
-
-## 错误指令
-
-**基本写法：编译时错误**
-`#error <message>`
-```c
-// 编译时产生错误
-#ifndef VERSION
-#error "VERSION must be defined"
-#endif
-```
-
----
-
-## 宏与函数对比
-
-**宏写法：使用宏实现简单函数**
-`#define <NAME>(<params>) <expression>`
-```c
-// 使用宏实现平方运算
-#define SQUARE(x) ((x) * (x))
-```
-
----
-
-**内联写法：使用内联函数替代宏**
-`inline <type> <func>(<params>) { ... }`
-```c
-// 使用内联函数实现平方运算
-inline int square(int x) {
-    return x * x;
-}
-```
-
----
-
-## 头文件保护
-
-**基本写法：使用 ifndef 保护头文件**
-`#ifndef <HEADER_H> / #define <HEADER_H> / ... / #endif`
-```c
-// 头文件保护宏
-#ifndef MY_HEADER_H
-#define MY_HEADER_H
-void my_function();
-#endif /* MY_HEADER_H */
-```
-
----
-
-**once 写法：使用 pragma once**
-`#pragma once`
-```c
-// 使用 pragma once 防止重复包含
-#pragma once
-void my_function();
-```
-
----
-
-## 预处理运算符
-
-**字符串化写法：# 运算符**
-`#define <NAME>(x) #x`
-```c
-// 将宏参数转换为字符串
-#define PRINT_VAR(x) printf(#x " = %d\n", x)
-```
-
----
-
-**标记拼接写法：## 运算符**
-`#define <NAME>(a, b) a##b`
-```c
-// 拼接两个标记形成新标识符
-#define CREATE_VAR(name) int name##Var = 0
-```
+进入 [内联函数与宏](/c/300-InlineFunctionMacro)：宏的机制你已经吃透，接下来回答工程决策——同一个需求，什么时候该写 `static inline` 函数、什么时候宏仍是唯一解，以及 inline 关键字背后的链接语义。
