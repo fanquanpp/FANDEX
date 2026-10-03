@@ -1,0 +1,30 @@
+{
+  "title": "Spring Cloud",
+  "icon": "Sc",
+  "description": "微服务与分布式开发框架：注册配置中心、网关、容错限流、分布式事务与链路追踪",
+  "categories": [
+    "backend"
+  ],
+  "prerequisites": [
+    "spring-boot",
+    "mysql",
+    "redis"
+  ],
+  "officialDocs": [
+    {
+      "label": "Spring Cloud 官方文档",
+      "url": "https://docs.spring.io/spring-cloud/reference/",
+      "type": "docs"
+    },
+    {
+      "label": "Spring Cloud Alibaba Wiki（版本对应表）",
+      "url": "https://github.com/alibaba/spring-cloud-alibaba/wiki/%E7%89%88%E6%9C%AC%E8%AF%B4%E6%98%8E",
+      "type": "docs"
+    },
+    {
+      "label": "Nacos 官方文档",
+      "url": "https://nacos.io/docs/latest/overview/",
+      "type": "docs"
+    }
+  ]
+}

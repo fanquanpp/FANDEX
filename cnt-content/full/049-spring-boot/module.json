@@ -1,0 +1,29 @@
+{
+  "title": "Spring Boot",
+  "icon": "Sb",
+  "description": "企业级 Java 应用开发框架：自动配置、Web 开发、数据访问、安全缓存与部署观测",
+  "categories": [
+    "backend"
+  ],
+  "prerequisites": [
+    "java",
+    "mysql"
+  ],
+  "officialDocs": [
+    {
+      "label": "Spring Boot 官方文档",
+      "url": "https://docs.spring.io/spring-boot/index.html",
+      "type": "docs"
+    },
+    {
+      "label": "Spring Framework 参考手册",
+      "url": "https://docs.spring.io/spring-framework/reference/",
+      "type": "docs"
+    },
+    {
+      "label": "Spring 项目支持周期",
+      "url": "https://spring.io/projects/spring-boot#support",
+      "type": "docs"
+    }
+  ]
+}

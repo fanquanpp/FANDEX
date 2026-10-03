@@ -1061,6 +1061,87 @@
           "type": "docs"
         }
       ]
+    },
+    {
+      "id": "spring-boot",
+      "title": "Spring Boot",
+      "icon": "Sb",
+      "description": "企业级 Java 应用开发框架：自动配置、Web 开发、数据访问、安全缓存与部署观测",
+      "categories": [
+        "backend"
+      ],
+      "folder_order": 49,
+      "officialDocs": [
+        {
+          "label": "Spring Boot 官方文档",
+          "url": "https://docs.spring.io/spring-boot/index.html",
+          "type": "docs"
+        },
+        {
+          "label": "Spring Framework 参考手册",
+          "url": "https://docs.spring.io/spring-framework/reference/",
+          "type": "docs"
+        },
+        {
+          "label": "Spring 项目支持周期",
+          "url": "https://spring.io/projects/spring-boot#support",
+          "type": "docs"
+        }
+      ]
+    },
+    {
+      "id": "mybatis",
+      "title": "MyBatis",
+      "icon": "Mb",
+      "description": "持久层框架与 MyBatis-Plus：动态 SQL、结果映射、插件机制与工程实践",
+      "categories": [
+        "backend"
+      ],
+      "folder_order": 50,
+      "officialDocs": [
+        {
+          "label": "MyBatis 中文文档",
+          "url": "https://mybatis.org/mybatis-3/zh/index.html",
+          "type": "docs"
+        },
+        {
+          "label": "MyBatis-Plus 官方文档",
+          "url": "https://baomidou.com/",
+          "type": "docs"
+        },
+        {
+          "label": "MyBatis GitHub 仓库",
+          "url": "https://github.com/mybatis/mybatis-3",
+          "type": "repo"
+        }
+      ]
+    },
+    {
+      "id": "spring-cloud",
+      "title": "Spring Cloud",
+      "icon": "Sc",
+      "description": "微服务与分布式开发框架：注册配置中心、网关、容错限流、分布式事务与链路追踪",
+      "categories": [
+        "backend"
+      ],
+      "folder_order": 51,
+      "officialDocs": [
+        {
+          "label": "Spring Cloud 官方文档",
+          "url": "https://docs.spring.io/spring-cloud/reference/",
+          "type": "docs"
+        },
+        {
+          "label": "Spring Cloud Alibaba Wiki（版本对应表）",
+          "url": "https://github.com/alibaba/spring-cloud-alibaba/wiki/%E7%89%88%E6%9C%AC%E8%AF%B4%E6%98%8E",
+          "type": "docs"
+        },
+        {
+          "label": "Nacos 官方文档",
+          "url": "https://nacos.io/docs/latest/overview/",
+          "type": "docs"
+        }
+      ]
     }
   ],
   "modulePrerequisites": {
@@ -1193,6 +1274,19 @@
     ],
     "konado": [
       "godot"
+    ],
+    "spring-boot": [
+      "java",
+      "mysql"
+    ],
+    "mybatis": [
+      "java",
+      "mysql"
+    ],
+    "spring-cloud": [
+      "spring-boot",
+      "mysql",
+      "redis"
     ]
   }
 }

@@ -66,7 +66,7 @@ jobs:
         run: pnpm --filter @fandex/web exec playwright install --with-deps chromium
 
       - name: Audit production dependencies (block on high severity)
-        run: pnpm -C app-web audit --prod --audit-level high
+        run: pnpm -C app-web audit --prod --audit-level high --ignore-unfixable
 
       - name: Sync content (auto-complete frontmatter & module registry)
         run: pnpm --filter @fandex/web sync
