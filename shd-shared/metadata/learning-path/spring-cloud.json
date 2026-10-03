@@ -1,0 +1,56 @@
+{
+  "version": "1.0.0",
+  "module": "spring-cloud",
+  "summary": "从单体到微服务的演进动机出发，走通注册配置、服务调用、网关容错、追踪、分布式事务与统一认证，最终完成电商下单链路实战。",
+  "stages": [
+    {
+      "id": "evolution",
+      "title": "演进与基础设施",
+      "subtitle": "为什么拆、注册发现、配置中心",
+      "nodes": [
+        { "id": "spring-cloud-010", "title": "从单体到微服务", "doc": "010-FromMonolithToMicroservices" },
+        { "id": "spring-cloud-020", "title": "服务注册与发现：Nacos", "doc": "020-ServiceRegistrationDiscovery" },
+        { "id": "spring-cloud-030", "title": "配置中心：Nacos Config", "doc": "030-ConfigCenter" }
+      ]
+    },
+    {
+      "id": "communication",
+      "title": "服务间通信与入口",
+      "subtitle": "OpenFeign、负载均衡、API 网关",
+      "nodes": [
+        { "id": "spring-cloud-040", "title": "声明式服务调用：OpenFeign", "doc": "040-OpenfeignDeclarativeCalls" },
+        { "id": "spring-cloud-050", "title": "负载均衡与重试", "doc": "050-LoadBalancingRetry" },
+        { "id": "spring-cloud-060", "title": "API 网关：Spring Cloud Gateway", "doc": "060-ApiGateway" }
+      ]
+    },
+    {
+      "id": "resilience",
+      "title": "稳定性与一致性",
+      "subtitle": "容错限流、链路追踪、分布式事务",
+      "nodes": [
+        { "id": "spring-cloud-070", "title": "熔断、降级与限流：Sentinel", "doc": "070-ResilienceSentinel" },
+        { "id": "spring-cloud-080", "title": "分布式链路追踪", "doc": "080-DistributedTracing" },
+        { "id": "spring-cloud-090", "title": "分布式事务：Seata 与最终一致性", "doc": "090-DistributedTransactionSeata" }
+      ]
+    },
+    {
+      "id": "governance",
+      "title": "治理与安全",
+      "subtitle": "事件驱动、幂等、统一认证与监控告警",
+      "nodes": [
+        { "id": "spring-cloud-100", "title": "事件驱动与异步消息", "doc": "100-EventDrivenMessaging" },
+        { "id": "spring-cloud-110", "title": "分布式锁与接口幂等", "doc": "110-DistributedLockIdempotency" },
+        { "id": "spring-cloud-120", "title": "微服务统一认证授权", "doc": "120-MicroserviceAuth" },
+        { "id": "spring-cloud-130", "title": "监控告警体系", "doc": "130-MonitoringAlerting" }
+      ]
+    },
+    {
+      "id": "capstone",
+      "title": "综合实战",
+      "subtitle": "电商下单链路微服务化",
+      "nodes": [
+        { "id": "spring-cloud-140", "title": "实战：电商下单链路", "doc": "140-CapstoneEcommerceOrder" }
+      ]
+    }
+  ]
+}

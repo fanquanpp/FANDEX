@@ -1,0 +1,29 @@
+{
+  "title": "MyBatis",
+  "icon": "Mb",
+  "description": "持久层框架与 MyBatis-Plus：动态 SQL、结果映射、插件机制与工程实践",
+  "categories": [
+    "backend"
+  ],
+  "prerequisites": [
+    "java",
+    "mysql"
+  ],
+  "officialDocs": [
+    {
+      "label": "MyBatis 中文文档",
+      "url": "https://mybatis.org/mybatis-3/zh/index.html",
+      "type": "docs"
+    },
+    {
+      "label": "MyBatis-Plus 官方文档",
+      "url": "https://baomidou.com/",
+      "type": "docs"
+    },
+    {
+      "label": "MyBatis GitHub 仓库",
+      "url": "https://github.com/mybatis/mybatis-3",
+      "type": "repo"
+    }
+  ]
+}
