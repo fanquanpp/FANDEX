@@ -232,6 +232,89 @@ public class SongRepository<T> where T : notnull
 
 ## 动手实践
 
-1. 给"演唱会排片"建模：`Concert` 含 `string Title`、`VirtualSinger? Headliner`（头牌歌姬可暂缺）、`string ThemeColor`。在 enable 环境下编写售票入口方法，体会哪些成员必须 `?`、哪些必须强制初始化，并解释每个选择对应的业务事实。
-2. 实现 `bool TryGetCheapestTicket([NotNullWhen(true)] out Ticket? ticket)`，在返回 true 的分支里直接读取 `ticket.Price` 而不产生任何警告；随后故意移除特性注解，观察警告位置的变化并解释原因。
-3. 取一个自己维护的类库，按"annotations、warnings、enable"三档各执行一轮构建，记录每档的警告数量与修复策略，整理成一页迁移笔记。
+练习一：给"演唱会排片"建模。
+
+**任务**：`Concert` 含 `string Title`、`VirtualSinger? Headliner`（头牌歌姬可暂缺）、`string ThemeColor`。在 enable 环境下编写售票入口方法，体会哪些成员必须 `?`、哪些必须强制初始化，并解释每个选择对应的业务事实。
+
+**提示**：回忆第二节的判定顺序——构造方必给且无默认的用 `required`；有合理默认的给默认值；真正可选的才加 `?`。售票方法是"信任边界"上的入口，回想第五节末尾：边界上还该做什么？
+
+**参考实现**：
+
+```csharp
+public class Concert
+{
+    public required string Title { get; init; }        // 演出必有名字，缺了无法售票
+    public VirtualSinger? Headliner { get; set; }      // 头牌可暂缺，业务事实
+    public string ThemeColor { get; init; } = "未定";  // 有合理默认，不必可空
+}
+
+public static string SellTicket(Concert concert, int count)
+{
+    // 信任边界：参数可能来自外部调用方，先显式校验再信任注解
+    ArgumentNullException.ThrowIfNull(concert);
+    ArgumentOutOfRangeException.ThrowIfNegativeOrZero(count);
+
+    var headliner = concert.Headliner?.Name ?? "嘉宾待定";
+    return $"《{concert.Title}》x{count}，出演：{headliner}";
+}
+```
+
+三个成员对应三种业务事实：`Title` 用 `required`（无默认可言）、
+`Headliner` 用 `?`（真实可空状态）、`ThemeColor` 给默认值（"未定"本身
+就是合法值，比 `string?` 更省一层判空）。先想业务，再选注解。
+
+练习二：Try 模式与 NotNullWhen。
+
+**任务**：实现 `bool TryGetCheapestTicket([NotNullWhen(true)] out Ticket? ticket)`，在返回 true 的分支里直接读取 `ticket.Price` 而不产生任何警告；随后故意移除特性注解，观察警告位置的变化并解释原因。
+
+**提示**：`MinBy` 在空集合上返回什么？返回值表达式与注解里的 `true`
+是什么关系？移除注解后，编译器在**调用方**还能知道"返回 true 意味着
+非空"吗？
+
+**参考实现**：
+
+```csharp
+static bool TryGetCheapestTicket([NotNullWhen(true)] out Ticket? ticket)
+{
+    ticket = _tickets.Count == 0 ? null : _tickets.MinBy(t => t.Price);
+    return ticket is not null; // 与注解的 bool 语义严格一致
+}
+
+// 调用方：true 分支内零警告
+if (TryGetCheapestTicket(out var cheapest))
+{
+    Console.WriteLine($"最低价：{cheapest.Price}");
+}
+```
+
+移除 `[NotNullWhen(true)]` 后，警告出现在**调用方**的 `cheapest.Price`
+（CS8602，maybe-null 解引用）——流分析只见方法体，跨方法契约要靠特性
+补齐；特性一撤，"返回 true 即非空"这条知识对编译器就不存在了。
+
+练习三：三档迁移实测。
+
+**任务**：取一个自己维护的类库，按"annotations、warnings、enable"三档各执行一轮构建，记录每档的警告数量与修复策略，整理成一页迁移笔记。
+
+**参考做法**（步骤与验收标准）：
+
+1. 复制项目到临时目录做实验，不污染主干；csproj 依次改成
+   `annotations` / `warnings` / `enable`，各跑一次 `dotnet build -c Release`；
+2. 每档记录三列：警告总数、TOP 3 警告号（`CS8602`、`CS8618` 这类）、
+   选定的修复策略（`required` / 给默认值 / 改 `?` / 补特性注解）；
+3. 修复顺序按第五节的建议：先高频崩溃路径（CS8602/8604），再初始化
+   类（CS8618）；历史代码用 `#nullable disable` 圈住而不是撒 `!`；
+4. 验收：`enable` 档在 csproj 加 `<TreatWarningsAsErrors>true</TreatWarningsAsErrors>`
+   后构建仍绿，且能向别人解释每档"开启的是什么检查"。
+
+## 自我检查
+
+- 能说出 NRT 四档（disable/annotations/warnings/enable）各自开启的
+  检查，以及为什么 NRT 是纯编译期特性、不改变运行时行为；
+- 能解释 `?` 与 `null!` 的分工（声明事实 vs 提交断言），并举出一个
+  `null!` 的合理出现位置与一个滥用位置；
+- 能描述流分析的收窄与"污染"规则，并说出字段、属性、方法边界上
+  状态"失忆"的原因与 `[NotNullWhen]` 的补法；
+- 能解释 `T?` 在 struct / class / notnull 三种约束下的不同含义，以及
+  `default!` 惯用法替调用方省掉了什么；
+- 能为一个存量项目制定 annotations -> warnings -> enable 的迁移计划，
+  并说出信任边界（反序列化、外部接口）上为什么要保留显式校验。

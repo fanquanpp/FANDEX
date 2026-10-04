@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 460
 title: Go 与加密：别把明文密码写进数据库
 module: 'go'
 category: 后端技术

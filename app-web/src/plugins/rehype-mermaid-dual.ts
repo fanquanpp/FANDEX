@@ -1,6 +1,6 @@
 import { createHash } from 'node:crypto';
-import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { join } from 'node:path';
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname, join } from 'node:path';
 import type { MermaidConfig } from 'mermaid';
 import { createMermaidRenderer, type MermaidRenderer } from 'mermaid-isomorphic';
 import { chromium } from 'playwright';
@@ -27,7 +27,30 @@ import { visit } from 'unist-util-visit';
  */
 
 const CACHE_VERSION = 'v1';
-const CACHE_DIR = join(import.meta.dirname ?? '.', '..', '..', 'node_modules', '.cache', 'mermaid-dual');
+
+/**
+ * 缓存目录必须与预渲染脚本（scripts/render-mermaid.mjs）写入的目录完全一致：
+ * 仓库根的 node_modules/.cache/mermaid-dual。此前这里从 import.meta.dirname
+ * 上推两级，落到 app-web/node_modules/.cache/mermaid-dual，与脚本维护的
+ * 根级缓存互不重叠，导致全站图表静默退化为客户端渲染。
+ * astro build 的工作目录固定为 app-web，从这里向上找到 pnpm-workspace.yaml
+ * 即仓库根，不依赖 import.meta.dirname 在打包环境下的取值。
+ */
+function resolveCacheDir(): string {
+  let dir = process.cwd();
+  for (let depth = 0; depth < 6; depth += 1) {
+    if (existsSync(join(dir, 'pnpm-workspace.yaml'))) {
+      return join(dir, 'node_modules', '.cache', 'mermaid-dual');
+    }
+    const parent = dirname(dir);
+    if (parent === dir) break;
+    dir = parent;
+  }
+  // 兜底：找不到工作区标记时维持 app-web 级目录（与旧行为一致）
+  return join(import.meta.dirname ?? '.', '..', '..', 'node_modules', '.cache', 'mermaid-dual');
+}
+
+const CACHE_DIR = resolveCacheDir();
 
 const sharedConfig: MermaidConfig = {
   startOnLoad: false,

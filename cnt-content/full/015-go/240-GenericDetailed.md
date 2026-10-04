@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 250
 title: 泛型详解
 module: 'go'
 category: 后端技术

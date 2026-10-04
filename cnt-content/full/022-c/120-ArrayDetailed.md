@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 140
 title: 数组：连续内存与越界边界
 module: 'c'
 category: 计算机科学

@@ -1,12 +1,12 @@
 ---
-order: 270
+order: 290
 title: Python ssl 安全套接字
 module: 'python'
 category: 后端技术
 difficulty: beginner
 description: ssl 模块速查：SSL/TLS 上下文、证书加载与校验模式，含禁用校验的风险警告。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related: []
 prerequisites: []
 ---

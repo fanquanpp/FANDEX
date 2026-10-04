@@ -1,5 +1,5 @@
 ---
-order: 350
+order: 360
 title: CDN 原理
 module: 'cs-fundamentals'
 category: 计算机科学

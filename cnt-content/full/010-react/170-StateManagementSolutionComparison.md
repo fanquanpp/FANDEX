@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 'React 状态管理选型：useState/useReducer/Context 内置方案与 Zustand、Jotai、Redux Toolkit 的机制差异、渲染性能与 2025-2026 选型决策'
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-09-29'
 related:
   - 'react/150-HooksPrinciple'
   - 'react/160-CustomHooksDesignPattern'

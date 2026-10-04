@@ -197,6 +197,136 @@ dotnet-trace collect -p 12345 --profile cpu-sampling
 
 ## 动手实践
 
-1. 为"歌词关键词替换"写一组基准：`string.Replace` 链式调用对比 `StringBuilder.Replace`，分别用 100 字与 10 万字歌词各测一次，解释两次结果相反（或相同）的原因。
-2. 用 `ArrayPool<byte>.Shared` 改写一个每请求分配 8 KB 缓冲的模拟导出函数，基准对比 Allocated 与 Gen0 列的变化，并检查"借还配对"是否覆盖异常路径。
-3. 在本地运行一个会周期性分配大对象的控制台程序，用 dotnet-counters 观察 Gen2 与堆大小的关系，再用 dotnet-gcdump 找出占用最大的三个类型，把过程截图整理进学习笔记。
+练习一：歌词关键词替换的两版基准。
+
+**任务**：为"歌词关键词替换"写一组基准：`string.Replace` 链式调用对比 `StringBuilder.Replace`，分别用 100 字与 10 万字歌词各测一次，解释两次结果相反（或相同）的原因。
+
+**提示**：对比成立的前提是"变量只剩实现本身"——两版的输入必须在
+构造函数里备好且完全相同；替换词条数（比如 3 个词）是隐藏变量，
+短文本与长文本下每词替换的成本结构不同。展开（关键点）：
+`[MemoryDiagnoser]`、`[Benchmark(Baseline = true)]`、基准方法返回
+结果防死代码消除、`dotnet run -c Release --filter *Lyrics*`。
+
+**参考实现**：
+
+```csharp
+[MemoryDiagnoser]
+public class LyricsReplaceBenchmarks
+{
+    private readonly string _shortLyric = Make(100);
+    private readonly string _longLyric = Make(100_000);
+    private readonly (string from, string to)[] _words =
+    {
+        ("应援", "打 call".Replace(" ", "")), ("舞台", "Stage"), ("安可", "Encore"),
+    };
+
+    private static string Make(int chars) =>
+        string.Concat(Enumerable.Repeat("应援舞台安可的歌词", chars / 9));
+
+    [Benchmark(Baseline = true)]
+    public string ReplaceChainShort() => ReplaceChain(_shortLyric);
+
+    [Benchmark]
+    public string BuilderShort() => ReplaceBuilder(_shortLyric);
+
+    [Benchmark]
+    public string ReplaceChainLong() => ReplaceChain(_longLyric);
+
+    [Benchmark]
+    public string BuilderLong() => ReplaceBuilder(_longLyric);
+
+    private string ReplaceChain(string s)
+    {
+        foreach (var (from, to) in _words) s = s.Replace(from, to);
+        return s; // 返回结果，防死代码消除
+    }
+
+    private string ReplaceBuilder(string s)
+    {
+        var sb = new StringBuilder(s.Length);
+        sb.Append(s);
+        foreach (var (from, to) in _words) sb.Replace(from, to);
+        return sb.ToString();
+    }
+}
+```
+
+读表时带着问题：短文本下哪版快？长文本下呢？`Allocated` 差多少？
+解释时抓住两点：`string.Replace` 每词产生一个新中间串（分配数随词数
+线性涨），而 `StringBuilder` 在内部缓冲区上原地替换、最后才物化一次；
+但 `StringBuilder` 自身有构建与扩容开销，词数少、文本短时这份开销
+占比反而更高——"哪个更快"取决于文本长度与词数的组合，结论只对你
+测过的区间负责。
+
+练习二：ArrayPool 的借还配对。
+
+**任务**：用 `ArrayPool<byte>.Shared` 改写一个每请求分配 8 KB 缓冲的模拟导出函数，基准对比 Allocated 与 Gen0 列的变化，并检查"借还配对"是否覆盖异常路径。
+
+**提示**：池化的正确姿势是 `Rent` 与 `Return` 严格配对，且归还后
+不得再触碰数组——异常路径漏还，池就慢慢漏干。展开（关键 API）：
+`ArrayPool<byte>.Shared.Rent(8192)`（可能返回比请求更大的数组，长度
+看 `array.Length`）、`Return(array)`、`try/finally` 包住使用段。
+
+**参考实现**：
+
+```csharp
+[Benchmark(Baseline = true)]
+public byte[] ExportWithAlloc()
+{
+    var buffer = new byte[8192];      // 每次调用都分配
+    Fill(buffer);
+    return buffer;
+}
+
+private readonly ArrayPool<byte> _pool = ArrayPool<byte>.Shared;
+
+[Benchmark]
+public byte ExportPooled()
+{
+    var buffer = _pool.Rent(8192);    // 借，可能大于 8192
+    try
+    {
+        Fill(buffer.AsSpan(0, 8192)); // 用 slice 表达真实长度
+        return checksum(buffer.AsSpan(0, 8192));
+    }
+    finally
+    {
+        _pool.Return(buffer);          // 异常路径也会归还
+    }
+}
+```
+
+两个检查点：一是基准表里 `ExportPooled` 的 Allocated 应接近 0、
+Gen0 回归零，而基线版每次 8 KB；二是代码评审问句——`Rent` 与
+`Return` 之间如果抛异常，还得了吗？（`finally` 是唯一可靠答案。）
+再补一刀：如果调用方把借来的数组引用存进字段，会发生什么？
+（归还后被复用，数据被别的请求踩脏——池化的第二铁律"还了别再用"。）
+
+练习三：给自己找一个真实的分配热点。
+
+**任务**：在本地运行一个会周期性分配大对象的控制台程序，用 dotnet-counters 观察 Gen2 与堆大小的关系，再用 dotnet-gcdump 找出占用最大的三个类型，把过程截图整理进学习笔记。
+
+**参考做法**（步骤与观察点）：
+
+1. 写一个每秒创建 10 个 100 KB 数组并保存在 `List` 里的程序（制造
+   大对象堆压力），后台运行，记录 PID；
+2. `dotnet-counters monitor -p <pid> --counters System.Runtime`：
+   观察堆大小阶梯式上涨、Gen2 回收次数上升而 Gen1/Gen0 相对平稳——
+   记下这个"分代形状"；
+3. `dotnet-gcdump collect -p <pid>`，用 Visual Studio 打开 .gcdump，
+   按保留大小排序，前三个类型应出现 `byte[]` 与 `List<byte[]>`；
+4. 验收：笔记里能回答"分配大"与"回收频繁"在这里分别指什么（本例是
+   长命对象堆积 Gen2，而不是短命对象洪水），以及把 `List` 改成滑动
+   窗口后指标如何变化。
+
+## 自我检查
+
+- 能说出手写 `Stopwatch` 的三类系统性偏差，以及基准框架分别用什么
+  手段消除它们；
+- 能按"误差占比 -> Allocated/Gen -> Ratio"的顺序读一张基准表，并
+  判断该不该相信这组数据；
+- 能解释为什么基准必须 Release 运行、为什么构造要放构造函数而不是
+  基准方法里、为什么结果必须被消费；
+- 能为一笔优化提案算清"执行频率 x 单次收益"，并说出它何时该出局；
+- 用 dotnet-counters / dotnet-gcdump 至少完整走过一次"先监控、后
+  取证"的定位流程。

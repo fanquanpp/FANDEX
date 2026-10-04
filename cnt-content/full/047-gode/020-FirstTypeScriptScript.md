@@ -158,6 +158,59 @@ export default class MarkerSpawner extends Node3D {
 2. 给 theory.ts 加一个静态方法 `interval(a: number, b: number): number`（返回半音数差的绝对值），用 preload + has_static_method + call_static 的完整流程从 GDScript 调用它。
 3. 把 Hello 改成每帧打印帧率：在 `_process(delta)` 中用 `GD.print(Engine.get_frames_per_second())`（记得从 "godot" 导入 Engine），运行观察输出，再思考为什么生产代码不该这么做。
 
+先自己完成再看参考实现。判断自己写对了没有的三条标准：GDScript 侧调用没有报错；`noteName(60)` 输出 `C4`；第 3 题能看到输出面板被每帧日志刷屏。
+
+### 参考实现
+
+第 1 题与第 2 题共用一个 theory.ts：
+
+```typescript
+import { Node } from "godot";
+
+const NOTE_NAMES = ["C", "C#", "D", "D#", "E", "F", "F#", "G", "G#", "A", "A#", "B"];
+
+export default class TheoryHelper extends Node {
+  noteName(midi: number): string {
+    // MIDI 60 是中央 C（C4）：以 12 为模取音级，除以 12 减 1 得八度
+    return NOTE_NAMES[midi % 12] + (Math.floor(midi / 12) - 1);
+  }
+
+  static interval(a: number, b: number): number {
+    return Math.abs(a - b);
+  }
+}
+```
+
+挂到名为 `Theory` 的节点后，GDScript 侧两个方向各调一次：
+
+```gdscript
+extends Node
+
+func _ready() -> void:
+    # 实例方法：直接点出
+    var name: String = $Theory.noteName(60)
+    print(name) # C4
+
+    # 静态方法：走脚本资源 API
+    var script = preload("res://scripts/theory.ts")
+    if script.has_static_method("interval"):
+        print(script.call_static("interval", 60, 64)) # 4
+```
+
+第 3 题的改法（只演示结构，生产代码别这么写）：
+
+```typescript
+import { Engine, GD, Node } from "godot";
+
+export default class FpsProbe extends Node {
+  _process(_delta: number): void {
+    GD.print(Engine.get_frames_per_second());
+  }
+}
+```
+
+运行后输出面板每帧一行帧率。为什么生产代码不该这么做：一秒几十次日志本身就有开销，还会把真正重要的报错淹没在刷屏里；要展示帧率应写进 UI 控件（每 0.5 秒刷新一次足够），日志只留给异常路径。
+
 ## 下一步
 
 - Godot 类在 TS 侧的完整类型桥接规则：Godot API 互操作（030 篇）；

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 错误边界（ErrorBoundary）完整指南：getDerivedStateFromError 与 componentDidCatch 的捕获范围、React 19 错误处理变化、react-error-boundary 生产用法与常见陷阱。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'react/170-StateManagementSolutionComparison'
   - 'react/180-ReactPerformance'

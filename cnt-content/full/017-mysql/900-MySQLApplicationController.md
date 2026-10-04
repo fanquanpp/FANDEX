@@ -1,5 +1,5 @@
 ---
-order: 870
+order: 880
 title: MySQL 应用控制器设计与实践
 module: 'mysql'
 category: 数据库

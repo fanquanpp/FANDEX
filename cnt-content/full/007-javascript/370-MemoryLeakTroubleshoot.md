@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript内存泄漏排查详解：Chrome DevTools Memory面板、堆快照、分配时间线。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'javascript/110-Regex'
   - 'javascript/480-ErrorBoundaryGlobalErrorCatch'

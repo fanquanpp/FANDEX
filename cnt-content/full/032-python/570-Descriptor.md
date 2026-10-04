@@ -1,12 +1,12 @@
 ---
-order: 400
+order: 420
 title: "描述符：@property 背后是什么"
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: "以「温度类 celsius 不得低于 -273.15」的校验场景引入：先用 @property 解决，再亲手拆开它——描述符协议最小实现、数据与非数据描述符的查找优先级实验、把 property 写成描述符的对照，附 RecursionError 与 no setter 调试实录。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/460-OOP'
   - 'python/100-FunctionDetailed'

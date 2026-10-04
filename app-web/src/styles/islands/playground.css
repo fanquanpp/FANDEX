@@ -960,7 +960,9 @@
   /* 上手指南：比快捷键面板更宽的分节弹层 */
   .pg-guide {
     width: min(560px, calc(100vw - 40px));
+    /* vh 为旧浏览器回退；iOS Safari 动态视口下 dvh 覆写避免面板底部被工具栏遮挡 */
     max-height: min(680px, calc(100vh - 48px));
+    max-height: min(680px, calc(100dvh - 48px));
     overflow-y: auto;
     padding: var(--space-4);
     background: var(--color-bg-surface, var(--color-bg-sidebar));

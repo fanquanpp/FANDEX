@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 560
 title: 信息安全基础
 module: 'cs-fundamentals'
 category: 计算机科学

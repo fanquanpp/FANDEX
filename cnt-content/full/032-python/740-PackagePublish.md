@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 580
 title: 发布到 PyPI：从 dist 目录到 pip install
 module: 'python'
 category: 后端技术

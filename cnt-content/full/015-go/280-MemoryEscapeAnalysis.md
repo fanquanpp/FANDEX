@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 290
 title: 内存逃逸分析
 module: 'go'
 category: 后端技术

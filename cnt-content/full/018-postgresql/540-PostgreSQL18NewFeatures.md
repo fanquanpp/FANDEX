@@ -6,7 +6,7 @@ module: 'postgresql'
 category: 数据库
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'postgresql/010-OverviewInstallConfig'
   - 'postgresql/150-GeneratedColumn'

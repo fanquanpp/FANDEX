@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React 如何决定"先渲染谁、能不能中断、中断后怎么办"：Lane 优先级、Scheduler 时间片与 startTransition/useDeferredValue 的分工。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'react/120-FiberArchitecture'
   - 'react/130-ConcurrentRendering'
@@ -140,9 +140,151 @@ function handleDrop(e: React.DragEvent) {
 | 渲染中断了状态会丢 | 中断的是本次渲染；重做基于最新状态，结果不丢 |
 | transition 里能同步读到新状态 | 回调只应做状态更新；要读新值请用 Effect 或渲染期读取 |
 
-## 10. 小结
+## 10. 动手练习
+
+预测题（5 分钟）：连续输入时列表渲染几次。
+
+**任务**：以较快速度连续键入 `ab` 两个字符，每次键入都触发第 6 节示例
+的 `handleChange`（先 `setQuery` 紧急更新，再 `startTransition` 里
+`setFiltered`）。问题：`heavyFilter` 里的列表组件最多渲染几次？屏幕
+最终显示的过滤结果一定对应哪个输入值？
+
+**提示**：每次 `startTransition` 都申请一个 TransitionLane 渲染任务；
+上一次还没跑完时，下一次紧急输入会怎么处理它（见第 4 节）。
+
+**参考答案**：列表组件最多渲染 2 次（每次键入启动一次过渡渲染；若第
+二次输入打断了第一次的渲染，作废的那次不算完成，重做的那次基于
+`ab`）。最终屏幕显示的一定是 `ab` 的过滤结果——插队丢掉的是「渲染
+过程」，不是「结果正确性」。
+
+修改题（15 分钟）：改写成 useDeferredValue 版本。
+
+**任务**：把第 6 节的搜索页改成 `useDeferredValue` 写法，要求：不改
+`onChange` 里的任何逻辑，重型过滤的降级由组件内部消化；并回答两个
+写法的分工差异（对照第 5 节）。
+
+**提示**：`useDeferredValue` 接的是「值」——先给 `query` 一个延迟
+版本，再把延迟版本交给记忆化的过滤。
+
+**参考答案**：
+
+```tsx
+import { useDeferredValue, useMemo, useState } from 'react';
+
+function SearchPage({ items }: { items: string[] }) {
+  const [query, setQuery] = useState('');
+  const deferredQuery = useDeferredValue(query); // 过渡车道上的旧值
+  const filtered = useMemo(
+    () => heavyFilter(items, deferredQuery),
+    [items, deferredQuery],
+  );
+
+  return (
+    <div>
+      <input value={query} onChange={(e) => setQuery(e.target.value)} />
+      {query !== deferredQuery ? <p>更新中…</p> : null}
+      <ul>{filtered.map((i) => <li key={i}>{i}</li>)}</ul>
+    </div>
+  );
+}
+```
+
+分工：`useTransition` 是「调用方知道这次更新可以等」，把**更新动作**
+包起来；`useDeferredValue` 是「只想给某个值一个延迟版本」，把**值**
+降级，适合第三方组件或不便改回调的场景。`query !== deferredQuery`
+充当 `isPending` 的等价物。
+
+修 Bug 题（15 分钟）：拖拽锚点为什么量出旧坐标。
+
+**任务**：一个看板组件，拖拽结束时需要立刻读取目标卡片的
+`getBoundingClientRect` 做落点动画。症状：测量值偶尔是**上一次**布局
+的坐标，动画跳位。代码如下，定位并修复：
+
+```tsx
+function Board() {
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
+  const dropRef = useRef<HTMLDivElement>(null);
+
+  function handleDrop() {
+    setDropTarget(null); // 隐藏占位提示
+    const rect = dropRef.current?.getBoundingClientRect();
+    playLandingAnimation(rect);
+  }
+  // ...
+}
+```
+
+**提示**：`setDropTarget` 触发的更新默认走哪条车道？状态更新后
+`dropRef` 指向的 DOM 是立刻变，还是等 React 提交后才变？第 7 节有
+现成的逃生舱。
+
+**参考答案**：`setDropTarget` 的更新进入普通批处理，`handleDrop`
+同步执行的此刻 DOM 还没提交，量到的是旧布局。修复：
+
+```tsx
+import { flushSync } from 'react-dom';
+
+function handleDrop() {
+  flushSync(() => setDropTarget(null)); // 强制同步提交，DOM 立即可测
+  const rect = dropRef.current?.getBoundingClientRect();
+  playLandingAnimation(rect);
+}
+```
+
+要点：`flushSync` 是局部逃生舱——击穿批处理、放弃可中断性，只用在
+"读最新 DOM"这类无法延后的场景；同一次回调里出现两个以上 `flushSync`
+就是设计要改的信号（把测量挪进 `useLayoutEffect` 通常更干净）。
+
+挑战题（20 分钟）：给「谁在拖慢输入」做一次体检。
+
+**任务**：为第 6 节示例写一个最小性能验证：构造 2 万条数据，分别测量
+「不加 transition」与「加 transition」两版从按键到输入框上屏的延迟，
+各记录 10 次，报告最大值与中位数。
+
+**提示（步骤）**：`onChange` 首行 `performance.mark('key-' + i)`，
+`useLayoutEffect` 里 `performance.measure` 量到上屏；两版各跑 10 次取
+中位数。展开（观察点）：不加 transition 的版本，输入延迟会被上一轮
+`heavyFilter` 的长任务拉高；加 transition 后输入走 SyncLane 插队，
+延迟应显著下降，而列表完成的总时间略升——这正是用总耗时换交互
+跟手。
+
+**参考做法**（量测骨架，两版共用）：
+
+```tsx
+function handleChange(value: string) {
+  performance.mark(`key:${value}`);
+  setQuery(value);
+  startTransition(() => setFiltered(heavyFilter(items, value)));
+}
+
+useLayoutEffect(() => {
+  if (query) {
+    performance.measure('input-latency', `key:${query}`);
+  }
+}, [query]);
+```
+
+读取方式：DevTools Performance 面板的 User Timing 轨道，或
+`performance.getEntriesByName('input-latency')`。合格结论要包含一句
+归因：延迟下降的原因是紧急更新不再排队于过渡渲染之后，而不是
+`heavyFilter` 变快了——它的耗时一毫秒都没少。
+
+## 11. 小结
 
 - 优先级（Lane）决定谁先跑，调度器（Scheduler + MessageChannel 时间片）决定何时跑、跑多久
 - 离散输入 > 连续输入 > 普通更新 > transition > idle，是插队顺序的记忆口诀
 - `useTransition` 显式声明"这个更新可以等"，`useDeferredValue` 给"值"降级；两者都让渲染变得可中断
 - 紧急的保持紧急、可等的放进 transition——这条分工原则是并发时代性能优化的第一决策
+
+## 自我检查
+
+- 能默写五条 Lane 的插队顺序（离散输入 > 连续输入 > 普通更新 >
+  transition > idle），并说出每条对应的典型触发场景；
+- 能解释「同一时间片内多车道更新只按最高优先级渲染一次」与自动批处理
+  的关系；
+- 拿到一个卡输入的页面，能按「先分清紧急/可等 -> 再选 useTransition
+  或 useDeferredValue -> 最后才考虑 flushSync」的顺序给出改法；
+- 能说出 transition 与记忆化是两条正交轴，以及 React Compiler 接管
+  的是哪一条；
+- 能现场口算「连续快速输入时过渡渲染被打断重做」的最终结果，并解释
+  为什么中间结果不会泄漏到 UI。

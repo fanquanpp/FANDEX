@@ -1,12 +1,12 @@
 ---
-order: 670
+order: 690
 title: Python 与 OAuth2
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: OAuth2与JWT认证
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/640-ConcurrentProgramming'
   - 'python/800-PythonDatabaseMigration'

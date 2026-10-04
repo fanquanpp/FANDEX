@@ -1,5 +1,5 @@
 ---
-order: 800
+order: 820
 title: 自动化手册：把杂活变成可靠脚本
 module: 'python'
 category: 后端技术

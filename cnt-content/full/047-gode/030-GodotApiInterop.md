@@ -116,6 +116,90 @@ export default class TargetTracker extends Node {
 2. 给 theory.ts 的音高序列写一个 `toPositions(count: number): PackedVector3Array`，把 N 个音符映射成下落路径坐标，验证 Packed 数组可以直接从 JS 数组构造、也能被 GDScript 侧读取；
 3. 制造一次崩溃再修好它：脚本 A 里 `queue_free()` 一个节点，脚本 B 的成员变量持有它的引用并每帧调用，观察报错；随后加上两道关卡检查，验证不再崩。
 
+先自己写，写完对照参考实现。第 1 题的验收点是输出形如 `4 / 7 @ 60fps`；第 2 题的验收点是 GDScript 侧能取回数组并读出元素；第 3 题的验收点是修复前后一次报错、一次安静。
+
+### 参考实现
+
+第 1 题——版本信息返回的是一个 Dictionary，字段访问用 `major` / `minor`：
+
+```typescript
+import { Engine, GD, Node } from "godot";
+
+export default class EnvProbe extends Node {
+  _ready(): void {
+    const info = Engine.get_version_info();
+    GD.print(`${info.major} / ${info.minor} @ ${Engine.get_frames_per_second()}fps`);
+  }
+}
+```
+
+第 2 题——把下落轨道抽象成"4 条车道、从上方落向判定线"，坐标全部在 TS 侧算好，一次打包成 Packed 数组过边界：
+
+```typescript
+import { Node, PackedVector3Array, Vector3 } from "godot";
+
+const LANES = 4;
+const LANE_WIDTH = 1.5;
+const START_Y = 10.0;
+const STEP_Y = -1.0;
+
+export default class FallingNotes extends Node {
+  toPositions(count: number): PackedVector3Array {
+    const points: Vector3[] = [];
+    for (let i = 0; i < count; i++) {
+      points.push(new Vector3((i % LANES) * LANE_WIDTH, START_Y + i * STEP_Y, 0));
+    }
+    // Packed 数组构造函数直接吃 JS 数组
+    return new PackedVector3Array(points);
+  }
+}
+```
+
+GDScript 侧验证读取：
+
+```gdscript
+var positions: PackedVector3Array = $FallingNotes.to_positions(8)
+print(positions.size()) # 8
+print(positions[0])     # (0, 10, 0)
+```
+
+第 3 题——先复现。脚本 A 挂在一个按钮或计时器上：
+
+```typescript
+import { Node, Node3D } from "godot";
+
+export default class ReleaseDemo extends Node3D {
+  cube?: Node3D;
+
+  _ready(): void {
+    this.cube = this.get_node("Cube") as Node3D;
+  }
+
+  release(): void {
+    this.cube?.queue_free(); // 释放的是 Godot 侧对象
+  }
+}
+```
+
+脚本 B 每物理帧调用 `cube` 的方法。先不加检查，点一次释放后立刻得到运行时报错（对象已被释放）；然后补上两道关卡：
+
+```typescript
+import { GD, Node, Node3D } from "godot";
+
+export default class SafeConsumer extends Node {
+  target?: Node3D;
+
+  _physics_process(_delta: number): void {
+    // 关卡一：我到底存没存过引用；关卡二：对象还活着吗
+    if (this.target && GD.is_instance_valid(this.target)) {
+      this.target.call("refresh");
+    }
+  }
+}
+```
+
+修复的验收标准：释放后不再报错，且 `_physics_process` 安静地跳过无效目标。如果调试时想确认对象到底是"没存过"还是"已释放"，在这两道关卡之间用 `GD.print` 分别记录两种情况即可。
+
 ## 下一步
 
 - 让 TS 脚本被编辑器"看见"：导出属性、信号与 RPC 注解（050 篇）；

@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 600
 title: 逆向工程命令（radare2/ghidra CLI）
 module: 'cybersecurity'
 category: 云与基础设施

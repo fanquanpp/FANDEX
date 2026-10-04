@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 390
 title: Go 与日志
 module: 'go'
 category: 后端技术

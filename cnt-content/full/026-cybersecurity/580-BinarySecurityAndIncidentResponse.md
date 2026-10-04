@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 590
 title: 二进制安全与应急响应
 module: 'cybersecurity'
 category: 云与基础设施

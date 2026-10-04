@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 400
 title: Go 与配置管理：让测试环境连不上生产库
 module: 'go'
 category: 后端技术

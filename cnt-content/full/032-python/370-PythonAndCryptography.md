@@ -1,12 +1,12 @@
 ---
-order: 280
+order: 300
 title: Python 与加密
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: 对称加密、非对称加密、哈希函数、数字签名、密码哈希与密钥管理的工程实践，覆盖 cryptography、hashlib、bcrypt、argon2 等核心库。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/750-PythonTest'
   - 'python/430-PythonLog'

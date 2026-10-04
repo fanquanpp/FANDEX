@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 590
 title: Go 与性能分析
 module: 'go'
 category: 后端技术

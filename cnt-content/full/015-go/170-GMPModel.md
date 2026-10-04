@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 180
 title: GMP 调度模型：goroutine 是怎么被跑起来的
 module: 'go'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 440
 title: Go 与信号处理
 module: 'go'
 category: 后端技术

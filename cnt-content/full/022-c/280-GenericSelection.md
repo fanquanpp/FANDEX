@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 300
 title: 泛型选择：_Generic 与类型分派
 module: 'c'
 category: 计算机科学

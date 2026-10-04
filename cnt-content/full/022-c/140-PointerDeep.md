@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 160
 title: 指针：地址、解引用与指针算术
 module: 'c'
 category: 计算机科学

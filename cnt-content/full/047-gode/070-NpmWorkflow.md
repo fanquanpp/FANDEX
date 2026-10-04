@@ -102,6 +102,45 @@ node-linker=hoisted
 2. 把包管理器换成 pnpm，先不配 `.npmrc` 复现解析问题，再配 `node-linker=hoisted` 修复，体会这条配置为什么必须；
 3. 写一份你自己项目的"是否引入依赖"判断清单（体积、平台、维护、安全四项），下一个想引包的念头出现时过一遍。
 
+先自己做，再对照参考实现。第 1 题的验收点是输出面板出现 `helloGode`；第 2 题的验收点是同一份代码在配置前后一次报模块解析错误、一次正常运行。
+
+### 参考实现
+
+第 1 题——`package.json` 由 `npm init -y` 生成，代码就是官方示例：
+
+```typescript
+import { GD, Node } from "godot";
+import lodash from "lodash";
+
+export default class PackageDemo extends Node {
+  _ready(): void {
+    GD.print(lodash.camelCase("hello gode")); // helloGode
+  }
+}
+```
+
+第 2 题——完整复现步骤：
+
+```text
+1. 删除 node_modules 与 lockfile，改用 pnpm：pnpm install lodash（不要先建 .npmrc）
+2. 运行项目：import 解析报错——pnpm 默认的 symlink 布局无法被 res:// 文件系统等价模拟
+3. 项目根目录建 .npmrc，写入 node-linker=hoisted
+4. 删除 node_modules 与 lockfile 后重新 pnpm install，再次运行——正常输出 helloGode
+```
+
+做完这个实验你就有了第一手判断依据：Gode 的快照与物化机制围绕"真实目录树"设计，hoisted 让 pnpm 的产物与 npm 的产物形态一致。第 2 题还有一个延伸观察：装完后看一眼 `node_modules/lodash`，npm 与 hoisted 下的 pnpm 都是真实目录，而未配置前的 pnpm 是一个指向 `.pnpm` 虚拟存储的符号链接。
+
+第 3 题——一份可直接抄走的四项清单：
+
+```text
+体积：包本体加传递依赖多大？给导出包增加多少？移动平台可接受吗？
+平台：作者测过哪些平台？我们要发布的五大平台上有人验证过吗（含原生包物化）？
+维护：最近一次发布多久？issue 响应如何？能否接受随时自己 fork？
+安全：包会在我们的进程里运行任意代码，Gode 不审计包内容——这个权限配得上它解决的问题吗？
+```
+
+任何一项答不上来或答案不可接受，就回到官方建议的默认解：十行内能写完的功能手写。
+
 ## 参考链接
 
 - [npm 包使用指南](https://godothub.com/oss/gode/zh/guides/npm-packages/)

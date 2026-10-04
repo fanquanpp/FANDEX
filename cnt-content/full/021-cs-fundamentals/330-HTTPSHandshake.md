@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 340
 title: HTTPS 握手过程
 module: 'cs-fundamentals'
 category: 计算机科学

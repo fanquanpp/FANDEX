@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 从"为什么需要它"到"安装到底装了什么"：Node.js 的心智模型、版本发布节奏、三大系统安装要点与验证背后的原理。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'javascript/530-NvmVersionManage'
   - 'javascript/540-NpmManager'

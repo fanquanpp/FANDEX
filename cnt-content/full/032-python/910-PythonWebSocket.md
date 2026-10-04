@@ -1,12 +1,12 @@
 ---
-order: 720
+order: 740
 title: Python 与 WebSocket
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: WebSocket实时通信
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/850-PythonMessageQueue'
   - 'python/940-PythonGrpc'

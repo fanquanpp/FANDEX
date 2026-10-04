@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 440
 title: 元类：class 语句背后发生的事
 module: 'python'
 category: 后端技术

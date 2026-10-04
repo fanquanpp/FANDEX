@@ -1,12 +1,12 @@
 ---
-order: 610
+order: 630
 title: Python 与数据库迁移
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: Alembic与数据库迁移
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/770-PythonCodeQuality'
   - 'python/640-ConcurrentProgramming'

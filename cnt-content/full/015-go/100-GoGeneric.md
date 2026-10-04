@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 110
 title: Go 泛型
 module: 'go'
 category: 后端技术

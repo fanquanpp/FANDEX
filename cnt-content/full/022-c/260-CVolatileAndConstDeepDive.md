@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 280
 title: const 与 volatile：两个限定符的正交语义
 module: 'c'
 category: 计算机科学

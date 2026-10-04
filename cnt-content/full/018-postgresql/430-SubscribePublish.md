@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 逻辑发布订阅从原理到生产：PUBLICATION 与 SUBSCRIPTION 的语义、首次数据同步机制、复制冲突与故障排查、以及与流复制的选型对比。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'postgresql/420-LogicalDecodingOutputPlugin'
   - 'postgresql/440-LogicalPhysicalReplicationCompare'

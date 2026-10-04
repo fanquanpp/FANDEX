@@ -1,5 +1,5 @@
 ---
-order: 460
+order: 470
 title: 安全函数与边界检查：溢出从源头杜绝
 module: 'c'
 category: 计算机科学

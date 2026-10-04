@@ -1,12 +1,12 @@
 ---
-order: 660
+order: 680
 title: Python 与 Celery：分布式任务队列的设计、实现与工程实践
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 系统阐述 Celery 分布式任务队列的架构、Broker/Worker/Backend 协作模型、AMQP 协议、任务状态机、Canvas 工作流（chain/group/chord）、Beat 调度、重试与幂等机制，以及生产级部署、监控与性能优化实践。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/840-PythonRedis'
   - 'python/790-PythonDocker'

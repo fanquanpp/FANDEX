@@ -105,6 +105,92 @@ ICP 不是"优化掉慢查询"的终点，而是三件套中的一件：
 
 写查询时不必"想着 ICP 优化"——它是默认开启的自动机制。你需要做的是：**当 EXPLAIN 里既没有 `Using index` 也没有 `Using index condition`、只有 `Using where` 且 rows 很大时**，说明过滤完全发生在 Server 层且回表量大，此时才回头设计更好的索引。
 
+## 动手练习：三道关卡
+
+规则：先看任务与提示，写下你的预测（Extra 显示什么、rows 量级、为什么），再展开参考对照。预测错了比做对了收获更大——错的地方就是模型的漏洞。
+
+**关卡 1（必做）：给 ICP 造一个生效现场**
+
+建一张 10 万行的员工表，联合索引 `(last_name, age)`。写出能触发 ICP 的查询并证明它生效：EXPLAIN 的哪一列、什么值说明 ICP 在工作？再把 ICP 关掉重跑，前后两份执行计划 diff 出所有变化（不止 Extra 一列）。
+
+提示：条件要满足"定位 + 不能定位但在索引里"两段式；`LIKE '前缀%'` 与范围条件都可以当定位段。
+
+**关卡 2（必做）：造三个不生效的反例**
+
+针对同一张表，构造三条**故意让 ICP 不生效**的查询：覆盖索引场景、条件列不在索引里、主键查询。每条先预测 Extra，再验证。目标：把"ICP 何时缺位"从背诵变成条件反射。
+
+提示：覆盖索引给 Extra 的答案是 `Using index`；第三条想想聚簇索引叶子是什么。
+
+**关卡 3（选做）：量化 ICP 的收益**
+
+用 `EXPLAIN ANALYZE`（8.0.18+）对比开关 ICP 前后的 actual time 与回表行数；如果把回表次数从 10 万降到 1 万，理论上 IO 时间差多少倍？写一段不超过 5 行的结论，说明什么分布的数据 ICP 收益最大（命中率越低越好还是越高越好？）。
+
+提示：收益 = 省掉的回表次数 × 单次回表成本；命中率越低（过滤掉的越多），省得越多。
+
+<details>
+<summary>参考实现（先自己动手，再展开对照）</summary>
+
+**关卡 1 参考流程：**
+
+```sql
+CREATE TABLE emp_icp (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  last_name VARCHAR(32) NOT NULL,
+  age INT NOT NULL,
+  dept VARCHAR(32) NOT NULL
+);
+CREATE INDEX idx_name_age ON emp_icp (last_name, age);
+-- 造 10 万行：一半姓张、年龄 18-60 随机分布
+INSERT INTO emp_icp (last_name, age, dept)
+SELECT IF(RAND() < 0.5, CONCAT('张', FLOOR(RAND()*100)), CONCAT('李', FLOOR(RAND()*100))),
+       18 + FLOOR(RAND()*43), CONCAT('dept-', FLOOR(RAND()*10))
+FROM information_schema.COLUMNS a, information_schema.COLUMNS b LIMIT 100000;
+ANALYZE TABLE emp_icp;
+
+-- ICP 生效现场：LIKE 定位 + age 过滤在索引里但不能参与定位
+EXPLAIN SELECT * FROM emp_icp
+WHERE last_name LIKE '张%' AND age > 30;
+-- type=range, key=idx_name_age, Extra=Using index condition ← ICP 生效的证据
+
+-- 开关对照：diff 出的变化
+SET optimizer_switch='index_condition_pushdown=off';
+EXPLAIN SELECT * FROM emp_icp WHERE last_name LIKE '张%' AND age > 30;
+-- Extra=Using where（过滤退回 Server 层）
+SET optimizer_switch='index_condition_pushdown=on';
+```
+
+**关卡 2 参考反例：**
+
+```sql
+-- 反例一：覆盖索引——不回表，ICP 无从谈起
+EXPLAIN SELECT id, age FROM emp_icp WHERE last_name LIKE '张%' AND age > 30;
+-- Extra=Using where; Using index（注意这里 Using index 表示覆盖，与 ICP 互斥）
+
+-- 反例二：条件列不在索引里——dept 无法在引擎层判断
+EXPLAIN SELECT * FROM emp_icp WHERE last_name LIKE '张%' AND dept = 'dept-3';
+-- Extra=Using index condition; Using where
+-- ICP 只对索引内列生效，dept 的过滤仍在回表后的 Server 层
+
+-- 反例三：主键查询——聚簇索引叶子即整行，不存在"回表前"
+EXPLAIN SELECT * FROM emp_icp WHERE id BETWEEN 1 AND 1000 AND age > 30;
+-- type=range, Extra=Using where（无任何 index condition 字样）
+```
+
+**关卡 3 参考结论：**
+
+```sql
+SET optimizer_switch='index_condition_pushdown=on';
+EXPLAIN ANALYZE SELECT * FROM emp_icp WHERE last_name LIKE '张%' AND age > 30;
+-- 看 actual time 与 rows：引擎层过滤后实际回表的行数
+SET optimizer_switch='index_condition_pushdown=off';
+EXPLAIN ANALYZE SELECT * FROM emp_icp WHERE last_name LIKE '张%' AND age > 30;
+```
+
+结论模板：ICP 的收益 = 命中的索引条目数 × (1 - 过滤后留存率) × 单次回表成本。**留存率越低收益越大**：若 10 万条目里只有 1% 能通过 age 过滤，ICP 把 10 万次回表砍到 1 千次；若 99% 都能通过，收益微乎其微（此时真正该做的是调整索引列序或改查询）。
+
+</details>
+
+
 ## 常见困惑
 
 **"既然 ICP 这么好，为什么还要设计联合索引列序？"**——ICP 只能减少回表，不能减少索引扫描范围。`last_name LIKE '张%'` 命中的 1000 个条目仍要全部扫过。若查询模式固定，把 `age` 放进定位段（如 `(last_name, age)` 改需求为等值时 `(age, last_name)`）能把扫描范围本身缩小，收益远大于 ICP。ICP 是"列序没法完美时的保险"，不是"列序设计的替代品"。

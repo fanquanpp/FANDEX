@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 130
 title: Go 并发编程
 module: 'go'
 category: 后端技术

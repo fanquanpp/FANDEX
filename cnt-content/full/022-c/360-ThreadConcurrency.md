@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 380
 title: 线程与并发：竞态、临界区与同步思想
 module: 'c'
 category: 计算机科学

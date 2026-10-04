@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 580
 title: 设计模式
 module: 'cs-fundamentals'
 category: 计算机科学

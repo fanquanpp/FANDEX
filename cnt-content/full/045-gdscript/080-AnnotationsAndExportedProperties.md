@@ -199,6 +199,42 @@ extends Button
 - @abstract（4.5+）：声明抽象类与抽象方法，完整规则见"类、面向对象与内存管理"篇；
 - @warning_ignore("unused_variable")：局部忽略指定警告；警告名与项目设置 GDScript 区的警告项一一对应。还可以用 @warning_ignore_start("...") 与 @warning_ignore_restore() 圈定一段区域批量忽略。
 
+## 动手练习
+
+练习一（给策划一个能用的技能组件）。任务：写一个挂 Node2D 的 skill.gd，导出属性满足策划的全部要求——技能名（文本）、冷却时间（0 到 60 秒滑条、带秒后缀）、攻击范围（0 到 1000，可输入超过上限的精确值）、伤害类型（物理/魔法/真实 三选一下拉框，值分别为 10/20/30）、目标阵营（自身/友方/敌方 三个独立开关）、技能说明（多行文本）。要求用分组整理界面。提示：精确值想"可超上限"用 "or_greater"；三个独立开关是 @export_flags 不是 @export_enum。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+extends Node2D
+
+@export_group("基础")
+@export var skill_name := ""
+@export_range(0.0, 60.0, 0.1, "suffix:s") var cooldown := 5.0
+@export_range(0.0, 1000.0, 1.0, "or_greater") var attack_range := 200.0
+@export_multiline var description := ""
+
+@export_group("数值")
+@export_enum("物理:10", "魔法:20", "真实:30") var damage_type := 10
+@export_flags("自身", "友方", "敌方") var target_flags := 0
+```
+
+对照要点：cooldown 的 suffix:s 让滑条旁边显示秒数，策划不用猜单位；attack_range 用 "or_greater" 而不是把上限调到一万，滑条的可调手感仍然保留；damage_type 选 @export_enum 是"三选一"，target_flags 选 @export_flags 是"可叠加"，两个注解选错的组件策划一用就露馅。
+
+</details>
+
+练习二（预测题：显式值之后数什么）。先遮住下文写预测再验证：
+
+```gdscript
+@export_enum("Slow:30", "Average") var speed_a: int      # Average = ?
+@export_flags("Fire:8", "Water") var elements: int       # Water = ?
+```
+
+参考答案：speed_a 选 Average 得 31——@export_enum 显式值影响后续，从 30 继续递增；elements 勾 Water 得 2——@export_flags 永远按"第 n 个名字 = 1 << n"，Water 排第 1 位就是 2，与 Fire 显式的 8 无关。两个注解方向相反的取值规则，是本篇最容易在项目里埋雷的细节：拿不准时在 _ready 里 print 一把最稳妥。
+
+练习三（@onready 时机实验）。任务：同一个节点下有两个变量——`var a = get_node("Child")` 与 `@onready var b = get_node("Child")`，运行观察哪个报错哪个成功，并解释初始化时机差。参考观察：a 在实例化时初始化，此时子节点尚未进树，get_node 报"Node not found"；b 推迟到 _ready 时机，子节点已就绪，取到成功。追问自测：把脚本改成 @tool 后在编辑器里观察 a 是否也不再报错？（编辑器内实例化时机不同，现象会变化——这正是 @tool 代码与运行时代码行为差异的直观例证，别在生产脚本里靠它。）
+
 ## 小结
 
 - 注解以 @ 开头，作用于下一条非注解语句或整个脚本，参数为常量表达式，可逐行或同行书写。

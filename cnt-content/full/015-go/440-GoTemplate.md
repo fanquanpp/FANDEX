@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 450
 title: Go 与模板：把用户输入安全地渲染成页面
 module: 'go'
 category: 后端技术

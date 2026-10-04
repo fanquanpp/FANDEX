@@ -1,5 +1,5 @@
 ---
-order: 610
+order: 620
 title: 人工智能基础
 module: 'cs-fundamentals'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 620
+order: 630
 title: 计算机图形学
 module: 'cs-fundamentals'
 category: 计算机科学

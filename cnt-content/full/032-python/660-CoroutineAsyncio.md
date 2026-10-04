@@ -1,12 +1,12 @@
 ---
-order: 490
+order: 510
 title: "协程与 asyncio：三个网页从 3 秒到 1 秒"
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: "以「同时下载三个网页」的真实瓶颈引入：串行 3 秒、异步 1 秒的对照实测。讲透协程是可暂停的函数、async/await 最小示例、asyncio.gather 并发、事件循环的现场感，以及 IO 密集选异步、CPU 密集选多进程的判断，附 never awaited 与嵌套 run 调试实录。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/100-FunctionDetailed'
   - 'python/630-MultiprocessingMultithreading'

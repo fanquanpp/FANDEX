@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 120
 title: Go 标准库与工具链
 module: 'go'
 category: 后端技术

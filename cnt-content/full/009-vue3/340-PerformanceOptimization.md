@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: Vue3应用性能优化策略与实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'vue3/200-VueRouterNavigationGuard'
   - 'vue3/330-VuePerformanceDetailed'

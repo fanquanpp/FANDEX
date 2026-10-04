@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 400
 title: 原子操作与内存模型：不加班的同步
 module: 'c'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 90
 title: defer、panic 与 recover 详解
 module: 'go'
 category: 后端技术

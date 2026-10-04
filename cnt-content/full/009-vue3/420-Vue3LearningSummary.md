@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 串联 Vue3 模块全部文档，回顾响应式系统、组合式 API、组件体系、路由状态与工程化的核心脉络。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-09-29'
 related:
   - 'vue3/010-OverviewEnv'
   - 'vue3/050-ReactiveSystem'

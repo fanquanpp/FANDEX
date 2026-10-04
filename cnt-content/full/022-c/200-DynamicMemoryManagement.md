@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 220
 title: 动态内存：大小运行时才确定的数组
 module: 'c'
 category: 计算机科学

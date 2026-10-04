@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 530
 title: Go 与 gRPC：两个服务之间说同一种话
 module: 'go'
 category: 后端技术

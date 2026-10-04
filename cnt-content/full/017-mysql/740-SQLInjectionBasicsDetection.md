@@ -1,5 +1,5 @@
 ---
-order: 710
+order: 720
 title: SQL 注入基础与检测
 module: 'mysql'
 category: 数据库

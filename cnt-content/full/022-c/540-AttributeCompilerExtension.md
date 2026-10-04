@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 540
 title: 属性与编译器扩展：让编译器当 reviewer
 module: 'c'
 category: 计算机科学

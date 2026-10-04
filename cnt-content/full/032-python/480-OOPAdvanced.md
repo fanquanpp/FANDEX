@@ -1,12 +1,12 @@
 ---
-order: 320
+order: 340
 title: Python 面向对象进阶
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 面向对象进阶机制：抽象基类、dataclass、封装、组合、多态、slots 与元类/描述符入门。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/460-OOP'
   - 'python/570-Descriptor'

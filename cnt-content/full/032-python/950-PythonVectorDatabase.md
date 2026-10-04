@@ -1,12 +1,12 @@
 ---
-order: 760
+order: 780
 title: Python 与向量数据库
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: 向量搜索与RAG
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/870-PythonOAuth2'
   - 'python/910-PythonWebSocket'

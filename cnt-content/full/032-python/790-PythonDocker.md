@@ -1,12 +1,12 @@
 ---
-order: 600
+order: 620
 title: Python 与 Docker
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: Python容器化
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/060-ControlFlow'
   - 'python/860-PythonCeleryDistributedTaskQueue'

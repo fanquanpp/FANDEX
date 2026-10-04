@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 420
 title: 文件系统操作：从 open 到 inode
 module: 'c'
 category: 计算机科学

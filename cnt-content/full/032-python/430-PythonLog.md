@@ -1,12 +1,12 @@
 ---
-order: 300
+order: 320
 title: Python 与日志
 module: 'python'
 category: 后端技术
 difficulty: beginner
 description: logging模块与日志配置
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/100-FunctionDetailed'
   - 'python/750-PythonTest'

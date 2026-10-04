@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 逻辑解码的原理与应用：逻辑复制槽、test_decoding 与 wal2json/pgoutput 插件对比、pg_recvlogical 实操、以及消费端重连与槽膨胀的生产注意事项。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'postgresql/390-StreamingReplication'
   - 'postgresql/400-PhysicalReplicationSlot'

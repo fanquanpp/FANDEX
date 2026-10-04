@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 390
 title: 类型注解与 mypy：让错误在运行前现形
 module: 'python'
 category: 后端技术

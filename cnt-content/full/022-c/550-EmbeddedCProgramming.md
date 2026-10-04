@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 550
 title: 嵌入式 C 编程：在 64KB 里跑稳
 module: 'c'
 category: 计算机科学

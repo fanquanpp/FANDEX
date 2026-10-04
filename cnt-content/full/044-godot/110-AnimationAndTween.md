@@ -125,6 +125,70 @@ func animate():
 
 经验法则：美术向、多轨道、需要在编辑器里反复打磨的动作与演出（角色待机动画、过场剧情、多节点协同的复杂编排）交给 AnimationPlayer；代码向、运行时才确定参数的一次性过渡（UI 弹出、受击闪白、数值渐变、相机轻推）交给 Tween。两者并不互斥——很多项目里过场演出用 AnimationPlayer 编排，界面小动效用 Tween 兜底。
 
+## 与相邻知识的关系
+
+动画与信号（040 篇）是搭档：动画推进到某刻要"通知别人"，最干净的做法不是在 tween_callback 里层层调用，而是发一个自定义信号让关心者各自连接。动画与音频（120 篇）共用同一套"播放器 + 结束信号"模型——AnimationPlayer 的 animation_finished 与 AudioStreamPlayer 的 finished 一样，只在自然播完时发出，手动 stop 与节点退树都不触发，两个模块的坑是同一个坑。动画与状态机：角色"待机、跑、跳"的切换本质是"何时 play 哪段动画"，把切换条件集中到一个状态管理脚本里，比散落在各处 if 更好维护；补间则负责状态切换之间那一瞬的过渡。
+
+## 动手练习
+
+练习一（受击反馈，重播安全）。任务：给一个 Sprite2D 写 `flash_hurt()` 方法——0.1 秒内 modulate 变红，再 0.2 秒变回白色，同时 scale 从 1.0 弹到 1.1 再弹回；连续触发（一秒内被打三次）不能出现"颜色卡住不还原"。提示：变色与弹跳各用一条补间更清晰；连续触发意味着旧补间可能还活着，先想清楚 kill 写在哪、杀的是谁。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+extends Sprite2D
+
+var hurt_tween: Tween
+var bump_tween: Tween
+
+func flash_hurt() -> void:
+    # 旧补间没播完就再触发时，不 kill 会两条补间抢同一属性
+    if hurt_tween:
+        hurt_tween.kill()
+    if bump_tween:
+        bump_tween.kill()
+    hurt_tween = create_tween()
+    hurt_tween.tween_property(self, "modulate", Color(1.0, 0.3, 0.3), 0.1)
+    hurt_tween.tween_property(self, "modulate", Color.WHITE, 0.2)
+    bump_tween = create_tween()
+    bump_tween.tween_property(self, "scale", Vector2(1.1, 1.1), 0.1)
+    bump_tween.tween_property(self, "scale", Vector2.ONE, 0.2)
+```
+
+对照要点：kill 在创建之前，杀的是"自己上一次的补间"而不是别的节点的；Color.WHITE 是 modulate 的中性值，还原时用它而不是凭感觉写 (1,1,1) 再改错一位。想验证重播安全，在 _ready 里用循环计时器每 0.3 秒调一次 flash_hurt()，跑十秒后颜色必须停在白色。
+
+</details>
+
+练习二（数字滚动）。任务：HUD 上有一个 ScoreLabel，实现 `add_score(points: int)`——显示的数字从当前值平滑滚到新值，1 秒到位；连击加分时必须从"屏幕上正显示的值"出发，而不是从上一次的目标值出发。提示：tween_method 把插值中间值逐帧传给一个 Callable；当前显示值从 label.text 反读再 to_int。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+extends Node
+
+@onready var label: Label = $ScoreLabel
+var score_tween: Tween
+
+func add_score(points: int) -> void:
+    var current := label.text.to_int()
+    var target := current + points
+    if score_tween:
+        score_tween.kill()          # 上一段滚动没滚完就接续
+    score_tween = create_tween()
+    score_tween.tween_method(
+        func(v: int) -> void: label.text = str(v),
+        current, target, 1.0
+    )
+```
+
+对照要点：from 用的是反读出来的 current 而不是成员变量里记的旧目标——补间中途被打断后，成员变量不会自动跟上屏幕显示值；回调写成一行 lambda 即可，不必单开一个函数。想更有手感，加一行 `score_tween.set_trans(Tween.TRANS_CUBIC)` 让数字先快后慢。
+
+</details>
+
+练习三（编辑器任务：一段循环待机动画）。任务：给场景里的 Sprite2D 配一个 AnimationPlayer，新建名为 idle 的循环动画：position.y 在 0 与 -6 之间往返，0.6 秒一个来回，进入场景自动播放；另建 RESET 动画把 position 定格为默认值。验收：运行后起落循环，且控制台打印的是 animation_looped 而不是 animation_finished。参考操作序列（无代码）：动画面板新建动画 idle，先把默认 1 秒长度改成 0.6，点循环按钮；0 秒、0.3 秒、0.6 秒三处分别给 position 打关键帧 (0, 0)、(0, -6)、(0, 0)；新建 RESET 动画，把 position 关键帧定格为 (0, 0)；点 Autoplay on load。验证信号：脚本里 `anim.animation_looped.connect(func(): print("looped"))`，运行后观察打印持续增长且 finished 从不出现。
+
 ## 小结
 
 AnimationPlayer 把"属性 + 关键帧 + 插值"做成可在编辑器里打磨的数据，记住 RESET 动画、Capture 模式与"新动画默认 1 秒"这三件事；Tween 把同样的思想搬进代码，create_tween() 创建即播，tween_property、tween_interval、tween_callback 三件套覆盖大多数需求，并行、循环与缓动按需叠加。共通的纪律是：循环动画听 animation_looped 信号，重播补间先 kill。
