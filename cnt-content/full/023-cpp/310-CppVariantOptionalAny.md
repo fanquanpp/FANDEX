@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++ 三大词表类型完整教学：optional 表示可能没有值、variant 表示若干类型之一、any 表示运行期任意类型，含选型对比与常见陷阱。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'cpp/300-CppTuplePair'
   - 'cpp/730-Cpp23NewFeatures'
@@ -214,6 +214,149 @@ int main() {
 一句话决策：**「可能没有」用 optional，「有限选择」用 variant，「完全未知」用 any；
 语义重要就自定义结构体。**
 
+## 底层原理：三个类型各自的内存账本
+
+选型的依据最终落在「存储与分派怎么实现」。三者的布局差异可以画成一张账本：
+
+```text
+std::optional<T>          std::variant<A, B>         std::any
++-----------------+       +-----------------+        +-----------------+
+| T storage       |       | union { A a;    |        | SBO 内联存储     |
+| bool has_value  |       |         B b; }  |        |   或堆指针       |
++-----------------+       | index 判别式     |        | type_info 指针   |
+                          +-----------------+        +-----------------+
+```
+
+- **optional**：一块 `T` 大小的存储加一个「有没有」标记。注意即使无值，`sizeof(optional<T>)`
+  也 ≥ `sizeof(T) + 对齐余量`——它不为「空」省内存，省的是「表达空」的心智负担。
+- **variant**：候选类型的 union 加一个判别式（index）。`sizeof(variant<A,B,C>)`
+  约等于最大候选的大小加判别式——**把一个巨型类型放进候选列表，会让所有 variant 对象
+  都那么大**，这是「候选类型要体量相近」的工程理由。
+- **any**：类型擦除的通用容器，多数实现带小对象优化（SBO）：小对象直接内联，大对象
+  堆分配加指针；同时存一份运行期类型信息用于 `any_cast` 校验。这就是三者中它最慢、
+  最不可预测的原因。
+
+`std::visit` 的分派本质也能从布局推出：访问者要对每个候选类型都能调用，编译器生成的
+代码等价于「按 index 做 switch（或函数指针表），每个分支把 union 对应成员交给访问者」。
+候选一多、再叠加多个 variant 参数，分派组合数按笛卡尔积增长——编译变慢、代码膨胀、
+间接跳转难预测，都是同一根源。
+
+## 面试题思路：三个高频考法
+
+1. 「`optional` 比「返回 -1 表示找不到」好在哪？」——考点是**把状态装进类型**：
+   魔法值要求 T 的值域里恰好有个「不可能值」（对 string 就不存在），且调用方可能忘记
+   检查；optional 让编译器强制你面对「可能没有」这个分支，`value()` 与 `*` 的取值
+   代价差异（抛异常 vs UB）也是常问细节。
+2. 「variant 与传统 tagged union 的区别？」——答三层：tag 由编译器管理不会失配；
+   切换类型时旧对象被正确析构（手写 union 做不到）；`std::visit` 强制穷尽所有候选，
+   新增候选类型时所有访问点编译报错——把「维护时容易漏改」变成「编译不过」。
+3. 「什么时候必须用 `any` 而不是 variant？」——答「候选集合在编译期不可枚举」的场景：
+   插件从动态库加载、脚本引擎传值、序列化框架的属性袋。追问「any 的性能特征」时，
+   顺着 SBO 账本讲：小对象内联、大对象堆分配、取值有类型校验开销。
+
+## 动手实验
+
+1. **账本验证**：对 `optional<int>`、`variant<char, double, std::string>`、`any`
+   分别打印 `sizeof`，与上节账本对照（不同标准库实现数值不同，趋势一致：variant
+   ≈ 最大候选，any 常见为 16 或 32 字节上限）。
+2. **visit 穷尽性实验**：给三候选 variant 新增第四个候选类型，重编译，观察所有
+   `std::visit` 调用点的报错清单——这就是「编译期强制维护」的直观体验；再给访问者
+   补上泛型分支 `[](auto&&) {}` 观察报错消失，并思考泛型分支对穷尽性检查的影响
+   （它吞掉所有类型，安全性靠自己约定）。
+3. **monostate 实验**：定义一个无默认构造的类型 `NoDefault{ NoDefault(int); }`，
+   放进 `std::variant<NoDefault, int>` 看默认构造报错；换成
+   `std::variant<std::monostate, NoDefault, int>` 恢复，并用 `holds_alternative`
+   判断空态。
+4. **optional 双重否定实验**：写 `std::optional<bool>`，构造「有值但值为 false」的
+   对象，分别用 `if (o)` 与 `if (o.value_or(false))` 判断，输出两者结果并解释差异。
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：用 variant 重构形状系统**。给定传统写法：
+
+```cpp
+enum class ShapeKind { Circle, Rect };
+struct Shape { ShapeKind kind; double r; double w; double h; };
+double area(const Shape& s);   // 内部 switch 判断 kind
+```
+
+用 `std::variant` + `std::visit`（含 `overloaded` 惯用法）重写，要求：新增三角形时
+编译器能指出所有必须修改的分支。
+
+提示：每种形状一个小结构体；`area` 里一个 `std::visit`。
+
+参考实现：
+
+```cpp
+#include <cmath>
+#include <variant>
+
+struct Circle { double r; };
+struct Rect   { double w, h; };
+struct Tri    { double a, b, c; };
+
+using Shape = std::variant<Circle, Rect, Tri>;
+
+double area(const Shape& s) {
+    return std::visit([](auto&& sh) -> double {
+        using T = std::decay_t<decltype(sh)>;
+        if constexpr (std::is_same_v<T, Circle>) {
+            return 3.14159265358979 * sh.r * sh.r;
+        } else if constexpr (std::is_same_v<T, Rect>) {
+            return sh.w * sh.h;
+        } else {                       // Tri：海伦公式
+            double p = (sh.a + sh.b + sh.c) / 2;
+            return std::sqrt(p * (p - sh.a) * (p - sh.b) * (p - sh.c));
+        }
+    }, s);
+}
+// 给 Shape 增加新候选后：所有「非泛型」的 visit 访问者都会编译报错，
+// 逐一补分支即可——维护漏改被编译器接管。
+```
+
+自检问题：如果把访问者里最后的 `else` 改成 `else if constexpr` 且不覆盖全部类型，
+编译会发生什么？（答：某个分支对访问者不可调用，`std::visit` 直接编译失败——
+这正是穷尽性检查在工作。）
+
+**练习 2：查找缓存**。实现 `class Cache`：`get(key)` 返回 `optional<Value>`；
+再提供 `get_or_compute(key, func)`，无值时计算并写入。要求不使用出参引用，
+并用两条断言验证「命中不重复计算、未命中恰好计算一次」。
+
+参考实现：
+
+```cpp
+#include <functional>
+#include <optional>
+#include <unordered_map>
+
+template <class K, class V>
+class Cache {
+    std::unordered_map<K, V> data_;
+public:
+    std::optional<V> get(const K& key) const {
+        auto it = data_.find(key);
+        return it == data_.end() ? std::nullopt : std::optional<V>{it->second};
+    }
+    const V& get_or_compute(const K& key, std::function<V(const K&)> f) {
+        if (auto hit = get(key)) {
+            // 注意：不能返回 optional 内部成员的引用（悬垂），
+            // 命中路径需要在 map 里再查一次拿到稳定引用
+            return data_.find(key)->second;
+        }
+        return data_.emplace(key, f(key)).first->second;
+    }
+};
+```
+
+自检问题：上面注释里提到的坑是什么？（答：`*hit` 得到的是 optional 内部存储的拷贝，
+函数返回引用时它已随临时 optional 析构——这就是 080 篇悬空引用的成因二在容器场景的
+翻版，命中路径必须回到 map 里取稳定引用。）
+
+**挑战题（不给参考实现）**：设计一个「解析配置行」的小函数：输入 `"name=Alice"`
+或 `"timeout=30"`，输出一个能同时承载字符串与整数的类型（选 variant 还是 any？
+写两句话理由），并用 `std::visit` 打印所有行。写完自查：你的候选类型集合在编译期
+是封闭的吗？
+
 ## 小结
 
 **初学者记住这三点：**
@@ -224,8 +367,8 @@ int main() {
 
 **进阶者还需注意：**
 
-- C++23 的 monadic 接口让 `optional`/`expected` 的错误传播链式化，与 062 的
-  `std::expected` 对照学习效果最佳；
+- C++23 的 monadic 接口让 `optional`/`expected` 的错误传播链式化，与
+  [C++23 新特性](/cpp/730-Cpp23NewFeatures) 里的 `std::expected` 对照学习效果最佳；
 - `variant` 的大小是其最大候选类型的大小 + 判别式，把巨型类型放进候选会放大所有
   对象的内存占用；
 - `std::visit` 的多 variant 形式会做 N 维分派，候选组合爆炸时注意编译期与代码体积成本。

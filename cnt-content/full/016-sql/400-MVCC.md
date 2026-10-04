@@ -1,12 +1,12 @@
 ---
-order: 400
+order: 410
 title: MVCC 多版本并发控制
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: SQL多版本并发控制MVCC：版本链、快照读、Read View、可见性判断与垃圾回收机制
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/380-DirtyReadNonRepeatablePhantom'
   - 'sql/390-LockMechanism'

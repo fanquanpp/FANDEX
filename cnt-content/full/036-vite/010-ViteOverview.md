@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: Vite 构建工具概述：从 webpack 痛点出发，理解原生 ESM、依赖预构建、HMR 原理与 Vite 8 的 Rolldown 统一引擎
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'astro/010-AstroOverview'
   - 'vite/150-PnpmMonorepoOverview'
@@ -191,7 +191,29 @@ flowchart TD
   L --> M["输出 dist/ 优化产物"]
 ```
 
-## 9. 常见错误与对策表
+## 9. 动手实践：把三个原理看成眼见为实
+
+概述篇的实践不是写功能，而是「观察」——用浏览器开发者工具亲手验证前文三个原理，以后再遇到构建相关问题，你就有了一套自己的取证方法。合计约 40 分钟，需要一个任意 Vite 项目（用 `pnpm create vite` 现建一个也行）。
+
+**任务一：观察按需编译——Network 面板里的模块瀑布（约 15 分钟）**
+
+启动 dev server，打开浏览器 DevTools 的 Network 面板（勾选 JS 过滤），刷新页面，记录两件事：加载了多少个 JS 请求、它们的发起者（Initiator 列）是谁。然后在源码里给某个组件新增一个 `console.log` 并保存，观察 Network 里这次只新请求了哪几个文件。
+
+提示：你会看到几十上百个以源码路径为 URL 的小请求，Initiator 大多是父模块——这正是「浏览器逐个按需拉取模块」的依赖图形态。参考检查点：能指出「保存后只重新请求了被改的模块与直接引用它的模块」对应第 6 节 HMR 流程的第 2 到 4 步；再把项目里一个组件删除引用后保存，观察它不再出现在请求里。
+
+**任务二：观察依赖预构建——找到 .vite 缓存（约 10 分钟）**
+
+在文件管理器打开 `node_modules/.vite/deps/`，找出你项目某个依赖（如 react 或 vue）对应的预构建产物文件；然后在 dev server 运行状态下执行 `pnpm vite --force`（或删掉 .vite 目录重启），对比重启日志里「Pre-transforming / new dependencies optimized」一类的输出与 Network 里依赖 URL 后的版本哈希变化。
+
+提示：依赖的请求 URL 形如 `/node_modules/.vite/deps/react.js?v=哈希`，哈希变了说明缓存被重建。参考检查点：能回答「为什么自己写的 src/xxx.js 不会出现在 .vite 目录里」——预构建只处理 node_modules，源码走的是实时转换。
+
+**任务三：对比 dev 与 build 的请求形态（约 15 分钟）**
+
+执行 `pnpm build && pnpm preview`，用 preview 服务器打开构建产物，再次在 Network 面板数 JS 请求数量，与 dev 模式对比。把两组数字与文件总体积写进笔记。
+
+提示：dev 是几十上百个小请求、未压缩源码；build 后通常只有个位数请求、压缩过的产物。参考检查点：能用自己的话回答「为什么生产环境不能沿用 dev 的按需加载」——HTTP 往返成本与压缩率在真实网络下会被放大，这正是第 7 节「开发与生产两条管线」存在的理由。三组观察连起来，就是 Vite 架构的完整证据链。
+
+## 10. 常见错误与对策表
 
 新手在使用 Vite 时最容易遇到以下问题：
 
@@ -204,6 +226,6 @@ flowchart TD
 | 5 | 部署后资源 404 | `base` 配置与部署路径不匹配（部署在子路径却用了默认 `/`） | 设置 `base: '/子路径/'`，参见《Vite 静态资源处理》 |
 | 6 | 环境变量拿到 undefined | 变量未加 `VITE_` 前缀，或用了动态访问 `import.meta.env[key]` | 变量加 `VITE_` 前缀；使用完整字面量写法 `import.meta.env.VITE_X` |
 
-## 10. 一句话记忆
+## 11. 一句话记忆
 
 Vite 的"快"来自三个设计：**开发时用浏览器原生 ESM 按需加载，依赖交给预构建合并，生产时用 Rolldown 全量优化——把"开发体验"和"生产质量"两条管线彻底分开**。

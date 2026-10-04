@@ -4,7 +4,6 @@ import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import FeatureNav from '@/components/FeatureNav.astro'
 import LearningPathMap from '@/islands/learning-path/LearningPathMap'
-import { SITE } from '@/lib/constants'
 import {
   getLearningPathModules,
   getLearningPathTechVM,
@@ -43,7 +42,7 @@ const chipModules = getLearningPathModules()
     slot="head"
     title={`${techVM.title} 学习路线 · FANDEX`}
     description={techVM.summary}
-    canonical={`${SITE.url}${base}learning-path/${techVM.module}/`}
+    canonical={new URL(Astro.url.pathname, Astro.site).href}
     type="website"
   />
 

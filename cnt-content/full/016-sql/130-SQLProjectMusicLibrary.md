@@ -1,12 +1,12 @@
 ---
-order: 130
+order: 140
 title: SQL 综合实战：曲库数据库
 module: 'sql'
 category: 数据库
 difficulty: intermediate
 description: 用一个完整的"虚拟歌手曲库"项目串起 DDL、DML、DQL：从表设计到 12 道实战查询。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/030-SQLFirstSteps'
   - 'sql/140-MultiTableQuery'

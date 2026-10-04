@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Java 11+ 读写小文件一把梭：不用 FileReader/FileWriter 那套老写法。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'java/280-IOStreamFileOperation'
   - 'java/300-StreamAPI'
@@ -182,6 +182,77 @@ public class DirWalkDemo {
 ```
 
 `Files.walk` 返回的流持有目录句柄，务必 try-with-resources；只要文件名列表不需要递归，用 `Files.list`（仅当前目录）即可。这类"walk + 过滤 + 收集"的写法比手写 `File` 递归少一半代码，也少一半出错机会。
+
+## 动手练习（先遮住参考实现）
+
+预计 30 分钟，围绕一条主线：给你的命令行工具做一个「随手记」存储层。三道题层层递进，每道先写自测再写实现。
+
+**练习一（10 分钟）：追加与回读**
+
+写一个 `NotesStore` 类，提供两个方法：`append(Path file, String note)` 往文件末尾追加一行（文件不存在则创建），`readAll(Path file)` 返回 `List<String>`，空文件返回空列表。自测断言：追加三条后回读得到三条；对不存在的文件回读得到空列表而不是异常。
+
+（提示：`Files.writeString` 的第四个参数是 `StandardOpenOption`——追加用 `CREATE, APPEND`；回读先 `Files.exists` 判断，或直接 catch `NoSuchFileException`，两种都算对，想想哪种更符合「异常即流程」的口味。）
+
+**练习二（10 分钟）：配置 round-trip**
+
+把一个 `Map<String, String>`（如 `{theme=dark, fontSize=14}`）按 `key=value` 每行一项写进 `config.txt`，再写一个 `load(Path)` 读回来还原成 Map。自测断言：写入再读出，两个 Map 相等。做这题时你会撞上本篇第 4 节的坑——回读时用 `split("=", 2)` 还是 `split("=")`？值里带 `=` 时两者差别就显形了。
+
+**练习三（10 分钟）：统计一个目录的代码行数**
+
+写 `countLines(Path dir)`：用 `Files.walk` 找出目录下所有 `.java` 文件，用 `Files.lines` 流式统计总行数。自测：对本文示例项目跑一遍，行数与你肉眼估的同数量级即可。做错几乎一定是两处之一：忘了 try-with-resources（编译器或 IDE 会提醒第一处，第二处靠运行才知道）。
+
+### 参考实现（先别看）
+
+```java
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.*;
+import java.util.*;
+import java.util.stream.Stream;
+
+public class NotesStore {
+
+    static void append(Path file, String note) throws IOException {
+        Files.writeString(file, note + System.lineSeparator(),
+            StandardCharsets.UTF_8, StandardOpenOption.CREATE, StandardOpenOption.APPEND);
+    }
+
+    static List<String> readAll(Path file) throws IOException {
+        if (Files.notExists(file)) return List.of();
+        return Files.readAllLines(file, StandardCharsets.UTF_8);
+    }
+
+    static Map<String, String> load(Path file) throws IOException {
+        Map<String, String> result = new LinkedHashMap<>();
+        for (String line : readAll(file)) {
+            if (line.isBlank()) continue;
+            int eq = line.indexOf('=');
+            result.put(line.substring(0, eq), line.substring(eq + 1));  // indexOf 只切第一刀
+        }
+        return result;
+    }
+
+    static long countLines(Path dir) throws IOException {
+        try (Stream<Path> entries = Files.walk(dir)) {
+            return entries
+                .filter(p -> p.toString().endsWith(".java"))
+                .filter(Files::isRegularFile)
+                .mapToLong(NotesStore::lineCount)
+                .sum();
+        }
+    }
+
+    private static long lineCount(Path file) {
+        try (Stream<String> lines = Files.lines(file)) {
+            return lines.count();
+        } catch (IOException e) {
+            return 0;   // 生产代码应记录日志，练习从简
+        }
+    }
+}
+```
+
+预测题答案（先答再看）：`color=#fff` 用两种切法都对（`split("=")` 得 `["color", "#fff"]`）；差别出在值本身带等号时——`url=https://a=b` 用 `split("=")` 会切成三段，取 `parts[1]` 只剩 `https://a`，静默丢数据不报错；`indexOf('=')` 只切第一刀，剩下的整体都是值。I/O 题的坑常不在 I/O 本身，而在字符串处理。
 
 ## 记住
 

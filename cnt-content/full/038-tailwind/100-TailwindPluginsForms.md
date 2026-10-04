@@ -1,12 +1,12 @@
 ---
-order: 100
+order: 110
 title: 插件与表单
 module: 'tailwind'
 category: 前端技术
 difficulty: intermediate
 description: 'Tailwind CSS 插件与表单：@plugin 加载 forms/typography 官方插件、三种重置策略选择、prose 长文排版兜底、plugin() API 与 matchUtilities 按令牌批量生成工具类'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'tailwind/050-ThemeCustomization'
   - 'tailwind/080-V4Features'
@@ -225,6 +225,97 @@ export const glow = plugin(({ matchUtilities, theme }) => {
 
 ## 动手实践
 
-1. **表单统一化**：接入 forms 插件（strategy: base），把本篇第 2 节的购票表单、粉丝团报名表、P主投稿表三个表单的控件换成统一焦点环，主题里改一次 primary 的值验证全部联动。提示：radio 的选中色就是 text-primary。
-2. **专栏排版**：为歌姬访谈专栏启用 prose，加 prose-headings 竖条修饰与 dark:prose-invert，对比接 CMS 原始内容前后的可读性。提示：别忘了 max-w-none 与外层容器宽度的分工。
-3. **写一个票档插件**：实现 `ticket-tier` 插件，用 addComponents 注册 `.ticket-tier` 卡片类（主题令牌引用），再用 matchUtilities 按色板生成 `tier-glow-*` 工具类。提示：先在 @theme 里确认有哪几个色板令牌可消费。
+**任务一：表单统一化。** 接入 forms 插件（strategy: base），把本篇第 2 节的购票表单、粉丝团报名表、P主投稿表三个表单的控件换成统一焦点环，然后到 @theme 里把 primary 改成另一个颜色，验证三个表单焦点环全部联动。提示：radio 的选中色就是 text-primary；改令牌前先在浏览器确认当前颜色，改完硬刷新对比。
+
+**任务二：专栏排版。** 为歌姬访谈专栏启用 prose，加 prose-headings 竖条修饰与 dark:prose-invert，对比接 CMS 原始内容前后的可读性。提示：别忘了 max-w-none 与外层容器宽度的分工——先故意不加 max-w-none 塞进 280px 侧栏看看会发生什么。
+
+**任务三：写一个票档插件。** 实现 `ticket-tier` 插件：用 addComponents 注册 `.ticket-tier` 卡片类（引用主题令牌），再用 matchUtilities 按色板生成 `tier-glow-*` 工具类，最后在页面用两个不同应援色验证。提示：先在 @theme 里确认有哪几个色板令牌可消费，再决定 values 传什么。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现（forms 接入与联动验证）</summary>
+
+```css
+/* src/styles/global.css */
+@import "tailwindcss";
+@plugin "@tailwindcss/forms" {
+  strategy: base;
+}
+```
+
+```html
+<!-- 购票表单控件：外观全部工具类，焦点环跟主题走 -->
+<input
+  type="email"
+  class="w-full rounded-md border border-border bg-surface px-3 py-2
+         text-text-primary focus:border-primary focus:ring-primary"
+/>
+<label class="inline-flex items-center gap-2">
+  <input type="radio" name="tier" value="ss" class="text-primary focus:ring-primary" />
+  SS 档（含签名色纸）
+</label>
+```
+
+联动验证：@theme 里把 `--color-primary` 从初始值改成新色，保存后三个表单的边框焦点、radio 圆点、ring 光晕应同时变色——因为它们都只引用 primary 令牌，没有一个硬编码。这就是"改一次令牌、全站跟随"的表单版。
+</details>
+
+<details>
+<summary>任务二参考实现（prose 专栏排版）</summary>
+
+```astro
+---
+// 访谈专栏页（Astro 组件片段）：content 是 CMS 来的原始 HTML
+const content = await fetchInterviewHtml()
+---
+
+<article
+  class="prose prose-headings:border-l-4 prose-headings:border-primary prose-headings:pl-3
+         dark:prose-invert max-w-none mx-auto px-6"
+  set:html={content}
+/>
+```
+
+对照组实验：去掉 `max-w-none` 把这段塞进 280px 侧栏，prose 自带的 65ch 最大宽度会与容器冲突，内容区被压到只剩一小条或溢出——这一眼就看清"宽度职责归外层容器"这条纪律的由来。`set:html` 输出的内容没有类名可写，prose 的元素级选择器正是为这种"碰不到类名的 HTML"准备的。
+</details>
+
+<details>
+<summary>任务三参考实现（ticket-tier 插件）</summary>
+
+```css
+/* src/styles/global.css */
+@plugin "./ticket-tier-plugin.cjs";
+```
+
+```javascript
+// src/styles/ticket-tier-plugin.cjs
+const plugin = require('tailwindcss/plugin')
+
+module.exports = plugin(
+  ({ addComponents, matchUtilities, theme }) => {
+    // 组件类：引用令牌，不写死颜色
+    addComponents({
+      '.ticket-tier': {
+        borderRadius: theme('borderRadius.lg'),
+        padding: theme('spacing.4'),
+        borderWidth: '1px',
+        borderColor: theme('colors.border'),
+      },
+    })
+    // 按色板批量生成 tier-glow-*：色板有几个色就有几个类
+    matchUtilities(
+      { 'tier-glow': (value) => ({ boxShadow: `0 0 18px ${value}` }) },
+      { values: theme('colors') },
+    )
+  },
+)
+```
+
+```html
+<div class="ticket-tier tier-glow-primary">SS 档</div>
+<div class="ticket-tier tier-glow-danger">内场票</div>
+```
+
+验收两点：`.ticket-tier` 的圆角、内边距、边框色全部来自令牌（在 @theme 改一次验证联动）；`tier-glow-*` 的可用类数量与色板一致（没有注册过的色名写上去静默无效，这正是 matchUtilities 按 values 造类的边界）。写完把"消费令牌 + 注册前缀"两行契约注释加到文件头，本篇第 5 节的落地建议就从阅读变成了习惯。
+</details>
+

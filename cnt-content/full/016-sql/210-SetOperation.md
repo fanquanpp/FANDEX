@@ -1,12 +1,12 @@
 ---
-order: 210
+order: 220
 title: 集合操作
 module: 'sql'
 category: 数据库
 difficulty: intermediate
 description: SQL集合操作：UNION、INTERSECT、EXCEPT的语法、去重规则、排序限制与性能优化
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/240-RecursiveCTE'
   - 'sql/280-PivotUnpivot'

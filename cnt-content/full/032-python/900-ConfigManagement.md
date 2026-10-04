@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以「语音玩具后台从家里搬到云上」为线索实战配置管理：环境变量与 12 因素、.env 与 python-dotenv、.env.example 纪律、pydantic-settings 类型化配置与启动即校验、SecretStr 防泄漏，附「密钥进 Git」「字符串布尔」等高频事故与四类练习。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'python/550-DataClassPydantic'
   - 'python/790-PythonDocker'

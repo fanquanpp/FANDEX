@@ -1,12 +1,12 @@
 ---
-order: 100
+order: 120
 title: pytest
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: pytest单元测试框架：fixture、参数化、插件、配置与最佳实践详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/060-BoundaryValueAnalysis'
   - 'software-testing/120-APIAutomationTest'

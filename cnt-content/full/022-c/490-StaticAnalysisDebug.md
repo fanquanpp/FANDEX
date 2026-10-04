@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 代码静态分析与调试技巧
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/460-I18nAndL10n'
   - 'c/470-BuildSystem'

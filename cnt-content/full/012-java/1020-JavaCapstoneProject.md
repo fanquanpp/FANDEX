@@ -6,7 +6,7 @@ module: 'java'
 category: 后端技术
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/100-MethodDetailed'
   - 'java/150-OOP'
@@ -31,6 +31,24 @@ prerequisites:
 4. 用 Maven 或 Gradle 把程序打成可分发的 jar，并写一份能让陌生人跑起来的 README。
 
 预计 2 到 3 天。与 [ javascript 毕业项目](/javascript/715-JavaScriptCapstoneProject) 同一纪律：**正文不提供项目代码，只提供需求与验收**。
+
+## 动手前的环境自检（10 分钟，先跑一遍再开工）
+
+逐条执行并记录输出，任何一条不过，先回对应文档补课再开项目：
+
+1. `javac -version` 与 `java -version` 主版本一致（[环境搭建](/java/020-JavaOverviewDevEnv) 第 4 节的双命令纪律）；
+2. `mvn -v` 或 `gradle -v` 有输出，且其中的 JVM 版本与上面一致（[构建工具](/java/740-JavaBuildTool)）；
+3. `git status` 在你打算放项目的目录里报「不是仓库」——正好，`git init` 就是项目第一条命令；
+4. IDEA 里新建一个空项目，写一个 `main` 打印你的名字，跑通后删掉——确认工具链没问题时再开始真实项目，比写了一半再排查省一小时。
+
+JUnit 依赖坐标（JUnit 5）：Maven 用 `org.junit.jupiter:junit-jupiter:5.11+` 并配 surefire 插件；Gradle 用 `useJUnitPlatform()`。配完先写一个永远通过的空测试跑 `mvn test`，确认测试链路通，再进入里程碑 1。
+
+## 热身桥：你其实已经练过一半
+
+ATM 实训（方法划分 + 菜单循环）与本项目共享同一副骨架：`while (true)` 读命令，`switch` 分发到方法，每个方法只干一件事。区别在两点，也正是本项目的考点：
+
+- ATM 的六方法都围绕「一个余额变量」；todo-cli 的 J7 要求 `Task` 与 `Main` 两层职责分离——先在纸上列出哪些方法属于 `Task`、哪些属于 `Main`，再动手；
+- ATM 没有持久化，J6 的文件读写是新增能力：先在独立小程序里手动存取一个任务列表跑通，再搬进项目。
 
 ## 项目：控制台任务管理器 todo-cli
 
@@ -61,6 +79,13 @@ prerequisites:
 2. **模型与存储**：`Task` 类 + JSON 文件读写跑通 J1/J4/J6——关掉终端再开，数据还在；
 3. **排序与展示**：J2/J3/J5 完成，`list` 的三列对齐表是这个里程碑的照片；
 4. **测试与打包**：J8/J9 完成，测试全绿、jar 可分发、README 收尾。
+
+### 里程碑自检问题（做完一步，先回答再前进）
+
+- 里程碑 1 后：把解析器想象成黑盒，`add` 不带标题、`done` 带字母编号、`rm` 不带参数，各自发生什么？如果答不出其中任何一个的输出，解析器还没写完；
+- 里程碑 2 后：把 `~/.todo-cli/tasks.json` 用文本编辑器打开删一个字段，再启动程序——程序崩了、静默丢数据、还是给出友好提示？此刻的选择就是 Extra credit E2 要你写测试锁住的行为；
+- 里程碑 3 后：`Comparator` 链里三个条件调换顺序，`list` 的输出哪里变了？说不清楚就说明排序规则还没真正进入你的脑子；
+- 里程碑 4 后：让一个完全没见过项目的同学只看 README 跑起来，你在旁边**不许说话**——他卡住的每一步都是 README 的缺陷清单。
 
 ### 提示区
 

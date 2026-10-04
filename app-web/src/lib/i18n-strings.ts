@@ -38,6 +38,7 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
   'nav.featureLinksAria': { zh: '功能直达', en: 'Quick features' },
   'nav.featureSheetAria': { zh: '功能直达', en: 'Quick features' },
   'nav.featureSheetTitle': { zh: '功能直达', en: 'Quick features' },
+  'nav.mobileNavAria': { zh: '移动端导航', en: 'Mobile navigation' },
 
   'feature.home.name': { zh: '首页', en: 'Home' },
   'feature.home.tooltip': { zh: '返回首页', en: 'Back to home' },
@@ -68,12 +69,14 @@ export const UI_STRINGS: Record<string, I18nEntry> = {
 
   'toc.title': { zh: '本页目录', en: 'On this page' },
   'toc.asideAria': { zh: '本页目录', en: 'On this page' },
+  'toc.navAria': { zh: '目录导航', en: 'TOC navigation' },
   'toc.collapse': { zh: '折叠子目录', en: 'Collapse sub-sections' },
   'toc.expand': { zh: '展开子目录', en: 'Expand sub-sections' },
   'toc.other': { zh: '其他', en: 'Other' },
 
   'docNav.prev': { zh: '上一篇', en: 'Previous' },
   'docNav.next': { zh: '下一篇', en: 'Next' },
+  'docNav.navAria': { zh: '上一篇 / 下一篇', en: 'Previous / Next' },
 
   'breadcrumb.home': { zh: '首页', en: 'Home' },
   'breadcrumb.page': { zh: '第 {n} 页', en: 'Page {n}' },

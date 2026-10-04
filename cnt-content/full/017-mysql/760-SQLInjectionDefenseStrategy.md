@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 参数化查询、ORM 防御、WAF 与安全编码实践。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'mysql/740-SQLInjectionBasicsDetection'
   - 'mysql/750-SQLInjectionAttackTypePractice'

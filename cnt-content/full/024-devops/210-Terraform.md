@@ -1,12 +1,12 @@
 ---
-order: 210
+order: 230
 title: Terraform 资源编排
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: Terraform 基础设施即代码：Provider、Resource、State、Module 与工作流。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/200-IaC'
   - 'devops/090-KubernetesCoreDetailed'

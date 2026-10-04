@@ -1,12 +1,12 @@
 ---
-order: 450
+order: 460
 title: SQL 实战与面试
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: 经典面试题、业务场景 SQL、数据仓库 SQL 与编码规范
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'sql/440-PerformanceOptimization'
   - 'sql/330-PLSQLStoredProcedure'

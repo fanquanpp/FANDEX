@@ -1,12 +1,12 @@
 ---
-order: 150
+order: 160
 title: 连接查询：把两张表按业务逻辑拼回一张
 module: 'sql'
 category: 数据库
 difficulty: intermediate
 description: 以播客平台「回声FM」的内容对账为练习场，动手掌握 INNER/LEFT/RIGHT/FULL/CROSS 五种 JOIN：外连接的 ON 与 WHERE 之别、反连接找"空壳行"、一对多连接的行数膨胀，以及 MySQL 没有 FULL JOIN 怎么办。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'sql/060-AggregateFunction'
   - 'sql/160-NaturalJoinUsing'

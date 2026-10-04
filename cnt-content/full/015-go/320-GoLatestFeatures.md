@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 近年版本特性速览：泛型落地后的语言演进与升级实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'go/240-GenericDetailed'
   - 'go/310-PackageManagementDetailed'

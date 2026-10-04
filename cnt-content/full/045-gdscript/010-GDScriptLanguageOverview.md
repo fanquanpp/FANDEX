@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 认识 GDScript 的定位与版本演进，写出第一个脚本并掌握缩进注释与代码区域等基础规则
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-05'
 related:
   - 'godot/030-FirstScriptAndLifecycle'
   - 'gdscript/020-VariablesConstantsEnums'

@@ -1,12 +1,12 @@
 ---
-order: 290
+order: 310
 title: Flow 与响应式流
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: Kotlin Flow与Channel及响应式流规范深度剖析
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/210-DelegateProperty'
   - 'kotlin/230-CoroutineBasics'

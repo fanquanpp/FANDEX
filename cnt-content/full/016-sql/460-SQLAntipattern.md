@@ -1,12 +1,12 @@
 ---
-order: 460
+order: 470
 title: 常见 SQL 反模式
 module: 'sql'
 category: 数据库
 difficulty: intermediate
 description: SQL 开发中的常见反模式：存储 CSV 列、滥用枚举、预优化、隐式类型转换等，以及对应的正确实践。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'sql/250-RecursiveCTETreeTraversal'
   - 'sql/410-OptimisticPessimisticLock'

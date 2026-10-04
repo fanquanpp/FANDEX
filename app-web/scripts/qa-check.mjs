@@ -63,6 +63,34 @@ async function checkPageCount() {
   else warn(`Page count low: ${htmlFiles.length} (expected 200+)`);
 }
 
+async function checkMermaidRendered() {
+  let bareCount = 0;
+  let barePageCount = 0;
+  const shownPages = [];
+  await walkDir(DIST, '.html', async (full) => {
+    const content = await readFile(full, 'utf-8');
+    // 构建期渲染后的页面：figure 内带有隐藏的 <pre class="mermaid-source" data-language="mermaid">；
+    // 渲染失败的页面：Shiki 高亮的 <pre class="astro-code ..." data-language="mermaid"> 裸块，
+    // 访问时会触发客户端动态加载约 600KB mermaid 兜底，属构建产物缺陷
+    const tags = content.match(/<pre\b[^>]*data-language="mermaid"[^>]*>/g) ?? [];
+    const bare = tags.filter((tag) => !tag.includes('mermaid-source'));
+    if (bare.length > 0) {
+      bareCount += bare.length;
+      barePageCount += 1;
+      if (shownPages.length < 10) shownPages.push(`${full} (${bare.length})`);
+    }
+  });
+  if (bareCount === 0) pass('All mermaid blocks pre-rendered (no bare source blocks)');
+  else {
+    for (const p of shownPages) {
+      fail(`Unrendered mermaid block (client fallback would load ~600KB mermaid): ${p}`);
+    }
+    if (barePageCount > shownPages.length) {
+      warn(`... and ${barePageCount - shownPages.length} more pages with unrendered mermaid blocks (total bare: ${bareCount})`);
+    }
+  }
+}
+
 async function checkBaseHref() {
   const indexHtml = await readFile(join(DIST, 'index.html'), 'utf-8');
   const hasBase = indexHtml.includes(BASE) || indexHtml.includes('href="/FANDEX/"');
@@ -273,9 +301,14 @@ async function checkNoConsoleLog() {
 }
 
 async function checkPreconnect() {
+  // 字体为同源 + preload 预热；跨域 preconnect（jsdelivr）仅 playground 页按需注入，
+  // 这里只验证首页存在任意资源预热提示即可
   const indexHtml = await readFile(join(DIST, 'index.html'), 'utf-8');
-  if (indexHtml.includes('preconnect')) pass('Resource preconnect hints present');
-  else warn('No preconnect hints - font loading may be slow');
+  if (indexHtml.includes('preconnect') || indexHtml.includes('rel="preload"')) {
+    pass('Resource hints present (preload/preconnect)');
+  } else {
+    warn('No resource hints (preload/preconnect) - first paint may be slow');
+  }
 }
 
 async function checkLazyLoading() {
@@ -309,6 +342,7 @@ await checkLazyLoading();
 
 console.log('\n[Dimension 3: Content Processing]');
 await checkPageCount();
+await checkMermaidRendered();
 
 console.log('\n[Dimension 4: Reading Experience]');
 await checkShikiHighlighting();

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 讲清 React 脚手架的现在时：create-react-app 已退场，当前主流是 Vite（react 模板）与 Next.js 两条线；以 react-ts 模板拆解 @vitejs/plugin-react 与 Fast Refresh，覆盖 API 代理、VITE_ 前缀环境变量与三条命令的终端输出。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'react/090-TestEngineering'
   - 'nextjs/010-NextJS16Overview'

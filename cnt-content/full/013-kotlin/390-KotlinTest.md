@@ -1,12 +1,12 @@
 ---
-order: 390
+order: 410
 title: Kotlin 与测试
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: Kotlin测试框架
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/410-KotlinGradle'
   - 'kotlin/440-KotlinAndroid'

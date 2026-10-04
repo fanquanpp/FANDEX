@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: CSRF 的本体是「浏览器自动附带 Cookie」这个隐式凭证机制：从原理推出攻击形态与五类防御的成立条件，SameSite 三档语义、Token 绑定会话的原因、防御选型决策树，附动手练习与面试题思路。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'cybersecurity/220-CSRFDefense'
   - 'cybersecurity/190-XSSAttack'

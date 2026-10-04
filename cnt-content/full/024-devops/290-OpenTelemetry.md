@@ -1,12 +1,12 @@
 ---
-order: 290
+order: 310
 title: OpenTelemetry
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: OpenTelemetry 可观测性框架：Trace 链路追踪、Metric 指标、Log 日志统一采集与 Collector 部署。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/240-MonitorAndObservability'
   - 'devops/250-Prometheus'

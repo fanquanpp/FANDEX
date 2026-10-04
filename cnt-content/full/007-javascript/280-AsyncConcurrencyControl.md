@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: JavaScript异步并发控制：p-limit模式、队列实现与并发限制策略。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'javascript/300-EventLoopDetailed'
   - 'javascript/270-PromiseStaticMethod'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL扩展模块：PostGIS、pgvector、pg_stat_statements与常用扩展管理
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'postgresql/370-StoredProcedureAndFunction'
   - 'postgresql/380-TriggerEventTrigger'

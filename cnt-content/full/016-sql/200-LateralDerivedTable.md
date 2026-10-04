@@ -1,12 +1,12 @@
 ---
-order: 200
+order: 210
 title: LATERAL 派生表
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: SQL LATERAL派生表：横向连接的语法、关联子查询展开、逐行生成结果与性能优化
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'sql/170-SelfJoin'
   - 'sql/180-SemiAntiJoin'

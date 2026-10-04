@@ -1,12 +1,12 @@
 ---
-order: 450
+order: 470
 title: 设计文档规范
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: RFC、ADR、技术方案文档的编写规范与最佳实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/310-OnCallPractice'
 prerequisites: []

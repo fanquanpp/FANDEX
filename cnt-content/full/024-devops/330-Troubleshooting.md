@@ -1,12 +1,12 @@
 ---
-order: 330
+order: 350
 title: 故障排查
 module: 'devops'
 category: 云与基础设施
 difficulty: advanced
 description: 故障排查：系统诊断方法论、常用工具、典型故障模式与应急响应
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/350-HighAvailabilityArchitecture'
   - 'devops/170-AutomationTest'

@@ -1,12 +1,12 @@
 ---
-order: 60
+order: 70
 title: Tailwind CSS 响应式与暗色模式
 module: 'tailwind'
 category: 前端技术
 difficulty: intermediate
 description: 'Tailwind CSS 响应式与暗色模式原理篇：从移动优先断点与 prefers-color-scheme 媒体查询讲起，掌握 sm:/md:/lg: 前缀、dark: 变体与 @custom-variant 策略切换，附 data-theme 生产级换肤实战'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'tailwind/040-LayoutFlexGrid'
   - 'tailwind/050-ThemeCustomization'

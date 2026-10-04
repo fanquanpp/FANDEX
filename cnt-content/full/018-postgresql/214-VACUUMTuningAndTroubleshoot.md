@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL VACUUM 调优与排障篇：pgstattuple 膨胀诊断、pg_repack 在线重建、事务 ID 回卷与 FREEZE 风暴排障、监控 SQL 清单与告警阈值。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'postgresql/210-VACUUMMechanism'
   - 'postgresql/212-VACUUMAutovacuum'

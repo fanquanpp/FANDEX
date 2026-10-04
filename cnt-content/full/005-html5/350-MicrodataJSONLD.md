@@ -1,12 +1,12 @@
 ---
-order: 370
+order: 380
 title: 微数据与 JSON-LD
 module: 'html5'
 category: 前端技术
 difficulty: intermediate
 description: Microdata与JSON-LD
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'html5/340-CustomDataAttribute'
   - 'html5/280-CrossDocumentCommunication'

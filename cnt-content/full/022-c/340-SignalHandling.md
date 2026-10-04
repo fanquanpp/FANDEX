@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 从 Ctrl+C 拆开信号的完整体系：软件中断心智模型、signal 与 sigaction 的历史恩怨与 SA_RESTART、C17 7.14.1.1 的处理器纪律、printf 偶发死锁的现场分析、SIGCHLD 收割僵尸、sigaltstack 兜底烧穿的栈。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/250-FunctionCallStackFrame'
   - 'c/370-POSIXThread'

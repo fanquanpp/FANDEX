@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: "以「图标放大三倍不糊」引入，讲清 SVG 用文本描述矢量的本质、位图与矢量的放大对照实验、主战场与三种嵌入方式预告，零工具起步。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'svg/020-SVGBasicSyntaxDocStructure'
   - 'svg/030-SVGCoordinateSystemViewBox'

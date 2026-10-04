@@ -1,12 +1,12 @@
 ---
-order: 110
+order: 130
 title: JUnit5
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: JUnit 5测试框架：注解、断言、参数化测试、扩展模型与最佳实践详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/120-APIAutomationTest'
 prerequisites:

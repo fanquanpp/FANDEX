@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 以「count 改了之后，computed 为什么不立刻重算、watch 为什么不在赋值那行立刻执行」引入两个派生 API 的心智模型：computed 是带脏标记的惰性缓存，watch 是排队等待调度的副作用；用五次实验讲透惰性求值、缓存命中、flush 三档时机、deep 与旧值陷阱、onCleanup 竞态治理，附执行顺序预测题与搜索框竞态修复实战。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'vue3/050-ReactiveSystem'
   - 'vue3/080-CompositionAPIAdvantageScene'

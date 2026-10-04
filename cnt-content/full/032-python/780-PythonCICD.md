@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以「三人协作的仓库 main 反复被合坏」为场景，从零搭出第一条 GitHub Actions 流水线：触发条件、测试矩阵、依赖缓存、job 依赖，再按 PR 门禁快、夜间任务全的分层原则扩到完整流水线；附缓存键不完整、secrets 进日志、行尾差异等十个高频反模式。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'python/750-PythonTest'
   - 'python/770-PythonCodeQuality'

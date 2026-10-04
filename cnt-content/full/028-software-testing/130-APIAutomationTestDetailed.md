@@ -1,12 +1,12 @@
 ---
-order: 130
+order: 150
 title: API 自动化测试详解
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: 三大技术栈的 API 自动化实战：Postman/Newman 集合工程化、REST Assured Given-When-Then、Supertest 进程内测试，含 JSON Schema 校验与契约测试。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/120-APIAutomationTest'
   - 'software-testing/210-AutomationTestFrameworkComparison'

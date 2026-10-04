@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 服务器组件直接取数、Next.js 15+ 的 fetch 缓存默认语义、四层缓存地图、按需失效与 ISR 增量静态再生。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'nextjs/020-AppRouterRouting'
   - 'nextjs/090-DeploymentOptimization'
@@ -186,11 +186,114 @@ export default function ContactPage() {
 
 在 `next.config.ts` 打开 `cacheComponents: true` 后，缓存语义再次变化：**一切取数默认动态执行**，`fetch` 的 `cache`/`next.revalidate` 选项淡出，改用 `'use cache'` 指令显式声明"这个函数/组件的输出可以缓存"，用 `cacheLife('hours')` 这类 profile 声明缓存时长。传统选项与新模型并存于 16，但新项目建议直接学新模型——它把"什么被缓存"写在代码里而不是藏在默认值里。系统讲解见第 7 篇《缓存体系与 Cache Components 深入》。
 
-## 8. 动手试试
+## 8. 动手实践
 
-1. 把首页改成从 `jsonplaceholder` 拉取 10 条文章并展示，故意把 URL 改错，观察 `error.tsx` 如何接管。
-2. 同一页面并排放三种 fetch（默认、`no-store`、`revalidate: 30`），跑 `next build` 看该路由被标记为静态还是动态，并用 Network 面板对比响应头差异。
-3. 写一个 Server Action 收集"订阅邮箱"，提交后用 `revalidatePath` 刷新页面，观察构建日志与页面更新行为。
+**任务一：取数与错误边界。** 把首页改成从 `jsonplaceholder` 拉取 10 条文章并展示；然后故意把 URL 改错（404），观察 `error.tsx` 如何接管，并在 Network 面板确认浏览器收到的是渲染好的 HTML 而不是接口响应。提示：给页面配一个最简 `error.tsx` 才能看到接管效果，没有它 Next.js 用默认错误页。
+
+**任务二：三种缓存策略对照。** 同一页面并排放三种 fetch（默认、`no-store`、`revalidate: 30`），`npm run build` 看该路由被标记为静态还是动态；`npm run start` 后连刷三次页面，观察哪种写法的输出在变化。提示：默认写法的值在构建期就定死了——这是"构建时快照"最直观的证据。
+
+**任务三：订阅表单与缓存失效。** 写一个 Server Action 收集"订阅邮箱"，把邮箱追加到页面显示的订阅者列表（可以先存内存数组），提交后 `revalidatePath` 刷新页面。提示：Action 与展示列表写在同一个 `page.tsx` 里最省事，`revalidatePath("/subscribe")` 的路径要与页面路径一致（本篇 100 篇的误区 8）。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
+
+```tsx
+// app/error.tsx —— 全站错误边界（"use client" 必须有）
+"use client"
+
+export default function Error({ reset }: { error: Error; reset: () => void }) {
+  return (
+    <div>
+      <p>加载失败，请稍后重试</p>
+      <button onClick={reset}>重试</button>
+    </div>
+  )
+}
+```
+
+```tsx
+// app/page.tsx
+export default async function Home() {
+  const res = await fetch("https://jsonplaceholder.typicode.com/posts?_limit=10")
+  if (!res.ok) throw new Error("文章列表加载失败")   // 404 走到这里 -> error.tsx
+  const posts = await res.json()
+  return (
+    <ul>
+      {posts.map((p: { id: number; title: string }) => (
+        <li key={p.id}>{p.title}</li>
+      ))}
+    </ul>
+  )
+}
+```
+
+观察点：`view-source:` 页面源码里能看到完整的 `<li>` 列表——数据在服务器就变成了 HTML，浏览器与接口零交互。这就是"服务器组件直接取数"与客户端 SPA 取数的本质区别。
+</details>
+
+<details>
+<summary>任务二参考实现</summary>
+
+```tsx
+// app/cache-demo/page.tsx
+async function getData(label: string, init: RequestInit) {
+  const res = await fetch(`https://jsonplaceholder.typicode.com/users/1?t=${label}`, init)
+  const data = await res.json()
+  return data.name as string
+}
+
+export default async function CacheDemo() {
+  const snapshot = await getData("default", {})                        // 构建期定死
+  const alwaysFresh = await getData("nostore", { cache: "no-store" })  // 每请求执行
+  const isr = await getData("revalidate", { next: { revalidate: 30 } }) // 30 秒再生
+  return (
+    <ul>
+      <li>默认（构建快照）：{snapshot}</li>
+      <li>no-store（每请求）：{alwaysFresh}</li>
+      <li>revalidate 30s：{isr}</li>
+    </ul>
+  )
+}
+```
+
+`npm run build` 的日志里 `/cache-demo` 会被标记为 **Dynamic**——因为 `no-store` 是动态信号，它把整页拉进动态渲染（复习第 2 节的表：一个页面上"最动态"的那个请求说了算）。要验证默认快照，删掉 `no-store` 那行再 build，页面就回到静态标记。
+</details>
+
+<details>
+<summary>任务三参考实现</summary>
+
+```tsx
+// app/subscribe/page.tsx
+import { revalidatePath } from "next/cache"
+
+// 演示用内存存储；真实项目换成数据库写入
+const subscribers: string[] = []
+
+async function subscribe(formData: FormData) {
+  "use server"
+  const email = String(formData.get("email") ?? "")
+  if (!email.includes("@")) return
+  subscribers.push(email)
+  revalidatePath("/subscribe")   // 让本页的全路由缓存再生
+}
+
+export default function SubscribePage() {
+  return (
+    <main>
+      <form action={subscribe}>
+        <input name="email" type="email" placeholder="you@example.com" required />
+        <button type="submit">订阅</button>
+      </form>
+      <p>当前订阅者：{subscribers.length} 人</p>
+    </main>
+  )
+}
+```
+
+验证点：提交后人数立即变化，说明 `revalidatePath` 触发了页面再生；把 `revalidatePath` 注释掉再提交，多数情况下人数"看起来没变"——静态缓存还在返回旧 HTML。这个对比就是第 4 节"写操作后要立刻失效缓存"的动手版。
+</details>
+
 
 ## 9. 一句话记住
 

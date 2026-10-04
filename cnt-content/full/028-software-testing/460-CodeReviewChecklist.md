@@ -1,12 +1,12 @@
 ---
-order: 460
+order: 480
 title: Code Review 清单
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: 代码审查清单、审查维度与最佳实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/450-DesignDocumentStandard'
   - 'devops/310-OnCallPractice'

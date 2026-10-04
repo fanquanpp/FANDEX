@@ -1,12 +1,12 @@
 ---
-order: 260
+order: 270
 title: 窗口函数：不折叠行，也能跨行计算
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: 以播客平台「回声FM」的数据周报为主线，掌握 OVER/PARTITION BY/ORDER BY 三件套、排名与偏移函数、ROWS/RANGE/GROUPS 帧定义，以及 Top-N、环比同比、连续打卡、去重取最新四大实战模式。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'sql/060-AggregateFunction'
   - 'sql/070-GROUPBYGroupingSet'

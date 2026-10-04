@@ -1,12 +1,12 @@
 ---
-order: 200
+order: 220
 title: TDD 与 BDD
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: TDD 红-绿-重构循环与三定律实战、测试清单驱动设计、BDD 的 Given-When-Then 与 Gherkin、Cucumber 落地方式与常见误用。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/030-TestLevels'
   - 'software-testing/190-TestDouble'

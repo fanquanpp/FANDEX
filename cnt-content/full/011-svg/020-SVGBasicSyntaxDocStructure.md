@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: "以「同一个圆要画十次」引入，讲透 svg 根元素与 xmlns、defs/use 复用、g 分组与继承、title 可访问性，附白屏与失真两类问题的排查实录。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'svg/010-SVGOverviewEnvSetup'
   - 'svg/030-SVGCoordinateSystemViewBox'

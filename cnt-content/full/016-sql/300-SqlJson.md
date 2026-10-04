@@ -1,12 +1,12 @@
 ---
-order: 300
+order: 310
 title: SQL 中的 JSON
 module: 'sql'
 category: 数据库
 difficulty: intermediate
 description: 关系库中的半结构化数据：PostgreSQL jsonb、MySQL JSON、SQLite JSON 函数与 SQL Server 方案，提取、修改、索引、校验全流程与选型边界。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/090-DataType'
   - 'sql/290-TypeConversion'

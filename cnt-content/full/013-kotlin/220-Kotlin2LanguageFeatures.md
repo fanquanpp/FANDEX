@@ -1,12 +1,12 @@
 ---
-order: 220
+order: 240
 title: Kotlin 2.x 新语言特性与 K2 编译器
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: 接手一个升级到 2.x 的项目需要知道的一切：K2 换引擎带来什么、guard 守卫、非局部 break/continue、多美元插值与上下文参数（2.3 已稳定）各自解决什么痛点。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'kotlin/020-KotlinOverviewEnvSetup'
   - 'kotlin/030-KotlinBasicSyntax'

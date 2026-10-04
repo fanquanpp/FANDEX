@@ -1,12 +1,12 @@
 ---
-order: 140
+order: 150
 title: CI/CD 流水线
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: 以 FANDEX 真实流水线为例学 CI/CD：GitHub Actions 触发器、作业与密钥、缓存与矩阵构建、发布策略与排错命令。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'devops/050-ContainerDocker'
   - 'devops/160-GitLabCI'

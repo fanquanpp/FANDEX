@@ -90,7 +90,7 @@ const hasToc = Astro.slots.has('toc');
     </main>
     {hasToc && <slot name="toc" />}
   </div>
-  <nav class="mobile-nav">
+  <nav class="mobile-nav" aria-label="移动端导航" data-i18n-aria="nav.mobileNavAria">
     <a href={base} class="mobile-nav-link">
       <svg
         width="20"

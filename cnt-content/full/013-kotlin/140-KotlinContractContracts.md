@@ -1,12 +1,12 @@
 ---
-order: 140
+order: 150
 title: Kotlin 契约（Contracts）
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: Kotlin 契约机制的形式化语义、编译器交互、效果系统与工程实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/070-KotlinScopeFunction'
   - 'kotlin/290-FlowReactiveStream'

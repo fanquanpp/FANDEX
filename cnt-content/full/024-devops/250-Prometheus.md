@@ -1,12 +1,12 @@
 ---
-order: 250
+order: 270
 title: Prometheus 指标采集与告警
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: Prometheus 指标采集与 Alertmanager 告警：PromQL、规则配置与通知路由。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'devops/210-Terraform'
   - 'devops/220-AnsiblePlaybookConfigManagement'

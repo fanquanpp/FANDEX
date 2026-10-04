@@ -1,12 +1,12 @@
 ---
-order: 390
+order: 400
 title: HTML5 项目示例：交互式表单应用
 module: 'html5'
 category: 前端技术
 difficulty: intermediate
 description: 综合运用表单验证、Canvas 与本地存储的交互式应用。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'html5/280-CrossDocumentCommunication'
   - 'html5/360-ViewportConfigMobileFirst'

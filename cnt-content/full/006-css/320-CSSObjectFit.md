@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 用「相框与照片」的心智模型讲透 object-fit 五个取值与 object-position 的裁剪逻辑，覆盖头像网格、横幅与视频封面的标准写法，以及与 aspect-ratio 的配合。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'html5/140-ImagesAndResponsiveImages'
   - 'css/050-CSS3BoxModelDetailed'

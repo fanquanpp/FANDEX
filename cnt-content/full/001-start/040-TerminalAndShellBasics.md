@@ -8,7 +8,7 @@ difficulty: beginner
 prerequisites:
   - 'start/030-DevEnvironmentSetup'
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'start/060-FirstProgramJavaScript'
   - 'shell/010-DevEnvSetup'
@@ -157,6 +157,56 @@ cat C:\Users\你\Documents\my-code\week1\notes.txt   # 绝对路径（mac 用 / 
 ## 下一步预告
 
 本篇的命令都是"操作文件"，下一篇 [学习方法论](/start/050-LearnHowToLearnProgramming) 会教你把这套动手循环变成可持续的学习系统；之后 [第一门语言体验](/start/060-FirstProgramJavaScript) 里，你将第一次在终端运行自己写的程序。
+
+## 动手实践
+
+**任务一：闭卷重建目录。** 合上教程，从零重建第 6 节的目录结构（my-code 下 projects、week1、todo 三个子目录与三个文本文件），全程只用命令行，不许点资源管理器。完成后用 `tree` 命令（Windows）或 `ls -R`（macOS/Linux）打印结构自查。提示：`mkdir` 一次可以建多个目录（空格分隔）；文件用 `echo 内容 > 文件名` 顺手创建。
+
+**任务二：报错急救演练。** 故意制造两次报错：输入 `cd project`（少打一个 s）与 `cat no-such-file.txt`，对照本篇的报错对照表，先用 `pwd` 与 `ls` 自行诊断，再修正。提示：`No such file or directory` 的第一反应永远是「我现在在哪、脚下有什么」——`pwd` + `ls` 两连发能解决大半迷路问题。
+
+**任务三：效率肌肉记忆。** 练三个省力技巧直到形成肌肉记忆：输入 `cd my` 后按 Tab 补全；按上下方向键翻出历史命令；用 `clear`（或 `Ctrl+L`）清屏。提示：Tab 补全同样适用于文件名，长文件名只打前几个字母再补全，比打全名快且不会拼错。
+
+先自己练，再对照参考流程：
+
+<details>
+<summary>任务一参考流程</summary>
+
+```bash
+cd ~                     # 回用户目录（Windows 也是这个写法）
+mkdir my-code
+cd my-code
+mkdir projects week1 todo
+cd week1
+echo "第一周笔记" > notes.txt
+cd ../projects
+echo "项目一" > project-a.txt
+cd ../todo
+echo "待办事项" > backup.txt
+cd ..
+ls -R                    # macOS / Linux / Git Bash：递归打印结构
+# Windows CMD 可用：tree /F
+```
+
+自查要点：`echo 内容 > 文件` 的重定向符号是「把左边的内容写进右边的文件」，它顺带创建文件；`cd ../projects` 复习了上一级的用法。能用不到 15 行命令重建整个结构，本篇的十个命令就算真的学会了。
+</details>
+
+<details>
+<summary>任务二参考诊断记录</summary>
+
+```bash
+$ cd project
+# 报错：No such file or directory
+# 诊断：pwd 确认在 my-code；ls 看到目录叫 projects
+# 修正：cd projects      （以后只打 cd pro 再按 Tab，让补全替你拼对）
+
+$ cat no-such-file.txt
+# 报错：cat: no-such-file.txt: No such file or directory
+# 诊断：ls 确认当前目录没有这个文件；cd todo 后 ls 找到 backup.txt
+# 修正：cd todo && cat backup.txt
+```
+
+把两次急救的完整过程（报错原文、诊断动作、修正命令）记进你的学习笔记——报错对照表只有配上自己的真实案例，才会在下次遇到时自动弹出。
+</details>
 
 ## 检验清单
 

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 使用槽位存档 API 保存恢复完整运行状态，理解上一句回滚的事务机制与 Backlog 点击回退
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'konado/060-KonadoAdvancedInstructions'
   - 'konado/070-KonadoDialogueManagerApi'
@@ -164,9 +164,72 @@ dialogue_manager.entry_committed            # 新条目提交时发射的信号
 
 ## 练习
 
-1. 用存档 API 五件套自建一个迷你存档列表：get_all_save_info 渲染 20 个槽位状态，点格子 save_game/load_game，故意读空槽位验证失败分支；
-2. 制造一次回退跨越 signal：剧本里发射 signal 让代码弹提示，推进两句后回退，观察重放；再把处理改成幂等并验证不再重复；
-3. 在章节开头建带标签检查点，随意推进后恢复它，对比 create_checkpoint/restore_checkpoint 与按句 rollback 的粒度差别。
+**任务一：迷你存档列表。** 用存档 API 五件套自建一个迷你存档列表：`get_all_save_info` 渲染 20 个槽位状态，点格子执行 `save_game`/`load_game`，故意读空槽位验证失败分支。提示：每个槽位格子显示"槽号 + 存档时间或空"，`get_save_info` 拿到的字典里 `save_time` 与 `exists` 字段就够用；按钮回调里先判断返回值再刷新 UI。
+
+**任务二：signal 重放实验。** 剧本里发射 signal 让代码弹一条提示，推进两句后按"上一句"回退，观察重放；再把处理改成幂等并验证不再重复。提示：幂等的最简单做法是记录"已处理过的指令 ID"，历史条目的 `instruction_id` 字段就是稳定标识。
+
+**任务三：章节检查点。** 在章节开头建带标签检查点，随意推进几步后恢复它，对比 `create_checkpoint`/`restore_checkpoint` 与按句 `rollback` 的粒度差别。提示：检查点 ID 是字符串返回值，先存到成员变量再恢复。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现（迷你存档列表核心逻辑）</summary>
+
+```gdscript
+# MiniSaveList.gd —— 挂在 Control 下；场景里放一个 VBoxContainer
+@onready var list_box: VBoxContainer = $VBoxContainer
+@onready var dialogue_manager = %DialogueManager  # 按你的实际节点路径取
+
+func _ready() -> void:
+    _refresh()
+
+func _refresh() -> void:
+    for child in list_box.get_children():
+        child.queue_free()
+    for slot in 20:
+        var info := dialogue_manager.get_save_info(slot)
+        var btn := Button.new()
+        if info.get("exists", false):
+            btn.text = "槽位 %d：%s" % [slot, info.get("save_time", "未知时间")]
+        else:
+            btn.text = "槽位 %d：空" % slot
+        # 左键存档，右键读档； slot 用 bind 捕获
+        btn.pressed.connect(_on_save.bind(slot))
+        list_box.add_child(btn)
+
+func _on_save(slot: int) -> void:
+    if dialogue_manager.save_game(slot):
+        print("已保存到槽位 %d" % slot)
+    else:
+        print("保存失败")   # 演示环境几乎不失败，但分支必须写
+    _refresh()
+
+# 读空槽位：手动调用一次看返回值
+func _try_load_empty(slot: int) -> void:
+    if not dialogue_manager.load_game(slot):
+        print("读取失败：槽位 %d 没有存档" % slot)
+```
+
+两个实现要点：其一，每次存读后 `_refresh()` 重画列表，让 `exists` 状态与磁盘真实一致；其二，`save_game`/`load_game` 的 bool 返回值在这段代码里都不是装饰——正式项目里它们对应"保存成功"提示与"读档失败"弹窗两种玩家可见反馈。
+</details>
+
+<details>
+<summary>任务二参考实现（幂等 signal 处理）</summary>
+
+```gdscript
+var handled_instruction_ids := {}
+
+func _on_story_signal(payload) -> void:
+    var iid: String = payload.get("instruction_id", "")
+    if handled_instruction_ids.has(iid):
+        return          # 回退重放导致的重复触发，直接忽略
+    handled_instruction_ids[iid] = true
+    _show_toast("剧情通知：收到 %s" % str(payload))
+```
+
+验证路径：不加幂等时，"推进两句 -> 回退 -> 再推进"会弹两次同样的提示；加上按 `instruction_id` 去重后只剩一次。这个模式与 060 篇"signal 是可重放副作用"的结论互为印证——副作用交给外部系统前，先问一句"它被重放会怎样"。
+</details>
+
 
 ## 参考链接
 

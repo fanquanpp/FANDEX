@@ -1,12 +1,12 @@
 ---
-order: 690
+order: 710
 title: C++23 与 C++26 新特性
 module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
 description: 最新C++标准特性
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'cpp/710-CppRustComparison'
   - 'cpp/580-CppPythonInteraction'

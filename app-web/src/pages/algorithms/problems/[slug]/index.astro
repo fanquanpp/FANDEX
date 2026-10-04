@@ -4,7 +4,6 @@ import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import Footer from '@/components/Footer.astro'
-import { SITE } from '@/lib/constants'
 import { getDocsByModule, docSlug } from '@/services'
 import {
   ALGO_PROBLEMS,
@@ -64,7 +63,7 @@ const statementParas = problem.statement.split('\n\n').filter(Boolean)
     slot="head"
     title={`${problem.title}（${problem.lc ? `LeetCode ${problem.lc}` : '经典题'}）· 算法题图鉴 - FANDEX`}
     description={problem.brief}
-    canonical={`${SITE.url}${base}algorithms/problems/${problem.slug}/`}
+    canonical={new URL(Astro.url.pathname, Astro.site).href}
     type="article"
   />
 

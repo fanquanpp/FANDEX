@@ -1,12 +1,12 @@
 ---
-order: 190
+order: 210
 title: 测试替身
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: 测试替身（Test Double）五分类：Dummy、Stub、Spy、Mock、Fake 的精确定义、状态验证与行为验证的区别、过度 Mock 的代价与替代方案。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/030-TestLevels'
   - 'software-testing/200-TDDBDD'

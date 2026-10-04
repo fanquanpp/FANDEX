@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 按主题串联 Java 模块全部文档，回顾语法、面向对象、集合泛型、函数式、并发、JVM 与框架生态的核心概念、易混淆点与高频陷阱。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/010-WhatIsJava'
   - 'java/150-OOP'
@@ -452,7 +452,7 @@ safeVotes.merge("千本樱", 1, Integer::sum);
 
 如果自检中发现薄弱环节，建议按以下顺序回到模块文档回炉，再向进阶主题推进：
 
-1. **夯实并发**：[JUC 并发工具](/java/500-JUCConcurrency) 与 [Java 与虚拟线程](/java/570-JavaVirtualThread)，理解现代 Java 服务端高并发的两条路线。
+1. **夯实并发**：[JUC 并发工具](/java/500-ThreadPoolExecutorPractice) 与 [Java 与虚拟线程](/java/550-JavaVirtualThread)，理解现代 Java 服务端高并发的两条路线。
 2. **深入 JVM**：[JVM 垃圾回收](/java/600-JVMGC) 与 [JVM 内存模型](/java/610-JVMMemoryModel)，为线上问题排查与调优打底。
 3. **建立框架体系**：[Spring 基础：IoC 容器、AOP、Bean 生命周期与企业级开发核心](/java/820-SpringBasicsIoCAOPBeanLifecycle)，再进入 [Spring Boot 进阶](/java/830-SpringBootAdvanced)。
 4. **补齐数据与中间件**：[Java 与 Redis](/java/910-JavaRedis) 与 [Java 与消息队列](/java/920-JavaMessageQueue)，掌握分布式系统的常用组件。

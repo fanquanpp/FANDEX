@@ -1,12 +1,12 @@
 ---
-order: 330
+order: 350
 title: 需求分析方法
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: 用户故事、用例图、需求获取与需求管理。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/310-SoftwareEngineeringOverview'
   - 'software-testing/320-AgileDevelopment'

@@ -139,8 +139,16 @@ async function main() {
     ({ createMermaidRenderer } = await import('mermaid-isomorphic'));
     ({ chromium } = await import('playwright'));
   } catch (err) {
-    console.warn(`[render-mermaid] 渲染依赖不可用，跳过预渲染（构建将回退客户端渲染）: ${err.message}`);
-    process.exit(0);
+    // 快速失败：缺依赖还继续构建，会让生产页面带着未渲染的 mermaid 源码块上线
+    // （访问时客户端兜底拉起约 600KB mermaid）。确要走客户端渲染模式时，
+    // 显式设置 FANDEX_MERMAID_CLIENT=1（见文件头）。
+    console.error(
+      `[render-mermaid] 渲染依赖不可用，但仍有 light ${missingLight.length} / dark ${missingDark.length} 张图待渲染。` +
+        `继续构建会让这些图在生产页面退化为源码块，本次以非零码退出。` +
+        `修复：pnpm --filter @fandex/web exec playwright install chromium；` +
+        `或显式启用客户端渲染模式：FANDEX_MERMAID_CLIENT=1。原因: ${err.message}`,
+    );
+    process.exit(1);
   }
 
   const renderer = createMermaidRenderer({ browserType: chromium });

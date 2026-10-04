@@ -1,12 +1,12 @@
 ---
-order: 90
+order: 100
 title: 动画与过渡
 module: 'tailwind'
 category: 前端技术
 difficulty: intermediate
 description: 'Tailwind CSS 动画与过渡：transition 三件套与 animate-* 内置动画、@theme 动画令牌与关键帧摇树、data-* 条件动画、性能与 motion-safe 无障碍底线'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'tailwind/030-UtilityCore'
   - 'tailwind/050-ThemeCustomization'
@@ -225,6 +225,69 @@ document.querySelector('article')?.addEventListener('click', (e) => {
 
 ## 动手实践
 
-1. **购票按钮三态**：为购票按钮实现默认、悬停、按下三态过渡，分别用 150ms、200ms、100ms 与对应的 ease 曲线，对比"一律 300ms"的观感差异。提示：active 态把 translate 收回 0 即可形成"按压"手感。
-2. **注册舞台动画**：在 @theme 里注册 `--animate-float` 与 `--animate-glow` 两个令牌，给歌姬立绘加悬浮、给应援色标题加呼吸光晕，然后检查未使用页面的产物里是否被摇树。提示：grep 产物 CSS 里的 @keyframes 数量。
-3. **减弱动态演练**：在系统设置里开启"减弱动态效果"，检查立绘悬浮与骨架屏呼吸是否全部停止。提示：DevTools 的 Rendering 面板可以模拟 prefers-reduced-motion。
+**任务一：购票按钮三态。** 为购票按钮实现默认、悬停、按下三态过渡，分别用 150ms、200ms、100ms 与对应的 ease 曲线，对比"一律 300ms"的观感差异。提示：active 态把 translate 收回 0 即可形成"按压"手感。
+
+**任务二：注册舞台动画。** 在 @theme 里注册 `--animate-float` 与 `--animate-glow` 两个令牌，给歌姬立绘加悬浮、给应援色标题加呼吸光晕，然后检查未使用页面的产物里是否被摇树。提示：grep 产物 CSS 里的 @keyframes 数量。
+
+**任务三：减弱动态演练。** 在系统设置里开启"减弱动态效果"，检查立绘悬浮与骨架屏呼吸是否全部停止。提示：DevTools 的 Rendering 面板可以模拟 prefers-reduced-motion，不必真改系统设置。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
+
+```html
+<button
+  class="rounded-md bg-primary px-4 py-2 text-white
+         transition-transform duration-200 ease-out
+         hover:-translate-y-0.5
+         active:translate-y-0 active:duration-100 ease-in"
+>
+  购买门票
+</button>
+```
+
+三态的实现拆解：悬停上浮 2px 走 200ms ease-out（快起慢停，"迎上去"的手感）；按下时 translate 收回 0 且时长压到 100ms ease-in（快收，"按下去"的手感）。`transition-transform` 而不是裸 `transition`——只过渡位移这一个属性，背景色如果也要过渡就显式追加 `transition-colors`，避免 transition-all 的"意外联动"（本篇易错点 5）。做完把三个时长统一改成 300ms 对比一次：动作立刻显得"拖"，这就是入场 150-200ms 经验值的来源。
+</details>
+
+<details>
+<summary>任务二参考实现</summary>
+
+```css
+/* src/styles/global.css */
+@import "tailwindcss";
+
+@theme {
+  --animate-float: float 6s ease-in-out infinite;
+  --animate-glow: glow 2.4s ease-in-out infinite;
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-12px); }
+  }
+  @keyframes glow {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.55; }
+  }
+}
+```
+
+```html
+<img src="/singer.png" alt="歌姬立绘" class="animate-float" />
+<h2 class="text-primary animate-glow">魔法未来 2026</h2>
+```
+
+摇树验证：`pnpm build` 后在产物 CSS 里 `grep -c "@keyframes"`——只有页面真正用到 animate-float 或 animate-glow 时对应关键帧才出现。做一个对照：把两个工具类都从模板删掉再构建，产物里这两个 @keyframes 应消失。装饰动画顺手补上 `motion-safe:` 前缀，与任务三衔接。
+</details>
+
+<details>
+<summary>任务三参考演练步骤</summary>
+
+1. DevTools 打开命令面板（Ctrl+Shift+P），输入 "Rendering" 打开 Rendering 面板；
+2. 勾选 "Emulate CSS media feature prefers-reduced-motion" 并选 `reduce`；
+3. 检查带 `motion-safe:animate-float` 的立绘：动画应立即停止；没有 motion-safe 修饰的动画照跑——它就是你要补的洞；
+4. 全站排查一遍装饰性动画（骨架屏 pulse、光晕 glow、涟漪 ping），把缺 `motion-safe:` 的补齐，再用任务二里"grep 工具类出现次数"的方式核对。
+
+这一演练做完，"装饰性动画一律 motion-safe 修饰"就从团队规范变成了你肌肉记忆里的默认写法。
+</details>
+

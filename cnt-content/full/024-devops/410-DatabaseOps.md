@@ -1,12 +1,12 @@
 ---
-order: 410
+order: 430
 title: 数据库运维
 module: 'devops'
 category: 云与基础设施
 difficulty: advanced
 description: 数据库运维：备份恢复、主从复制、读写分离、分库分表与数据迁移
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/300-MonitorAndAlert'
   - 'devops/420-NetworkSecurityAdvanced'

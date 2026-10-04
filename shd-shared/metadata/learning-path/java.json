@@ -297,16 +297,16 @@
         },
         {
           "id": "java-043",
-          "title": "并发编程基础",
-          "doc": "490-ConcurrencyBasics",
-          "desc": "线程、锁与并发工具",
+          "title": "JUC 并发工具",
+          "doc": "490-JucConcurrencyTools",
+          "desc": "AtomicInteger 的 CAS 直觉、ConcurrentHashMap、CopyOnWriteArrayList 与 BlockingQueue",
           "difficulty": "intermediate"
         },
         {
           "id": "java-044",
-          "title": "JUC并发包",
-          "doc": "500-JUCConcurrency",
-          "desc": "java.util.concurrent并发工具",
+          "title": "线程池实战",
+          "doc": "500-ThreadPoolExecutorPractice",
+          "desc": "ThreadPoolExecutor 七参数、拒绝策略对照与优雅关闭",
           "difficulty": "advanced"
         },
         {
@@ -333,7 +333,7 @@
         {
           "id": "java-051",
           "title": "Java与虚拟线程",
-          "doc": "570-JavaVirtualThread",
+          "doc": "550-JavaVirtualThread",
           "desc": "Project Loom 虚拟线程、结构化并发、Continuation 机制与性能调优全景式深度解析",
           "difficulty": "intermediate"
         },
@@ -375,7 +375,7 @@
         {
           "id": "java-056",
           "title": "JVM调优",
-          "doc": "620-JVMtuning",
+          "doc": "620-JVMTuning",
           "desc": "JVM调优详解：堆参数、GC日志、MAT分析、G1/ZGC调优、生产级性能工程。",
           "difficulty": "advanced"
         },
@@ -388,8 +388,8 @@
         },
         {
           "id": "java-058",
-          "title": "Java 理论知识点：JVM 原理、类加载机制与内存管理",
-          "doc": "640-JavaTheoryJVMClassLoadingMemory",
+          "title": "Java 理论篇：JVM 原理与内存管理",
+          "doc": "640-JavaTheoryJVMPrinciples",
           "desc": "系统阐述 JVM 架构、类加载机制、内存模型、垃圾回收算法与性能调优核心知识。",
           "difficulty": "advanced"
         }
@@ -486,8 +486,8 @@
         },
         {
           "id": "java-076",
-          "title": "Spring Boot 学习笔记",
-          "doc": "860-SpringBootNotes",
+          "title": "Spring Boot 深度指南",
+          "doc": "860-SpringBootDeepDive",
           "desc": "Spring Boot 深度指南：自动配置原理、起步依赖、Actuator、Spring Data JPA、Spring Security、Spring Cloud 与生产级工程实践。",
           "difficulty": "intermediate"
         },

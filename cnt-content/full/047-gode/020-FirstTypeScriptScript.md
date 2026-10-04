@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 创建挂载并运行第一个 TS 节点脚本，理解默认导出继承 Godot 基类与显式导入的规则
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'gode/010-GodeOverviewAndInstallation'
   - 'gode/030-GodotApiInterop'

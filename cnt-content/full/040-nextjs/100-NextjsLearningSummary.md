@@ -1,12 +1,12 @@
 ---
-order: 100
+order: 110
 title: Next.js 学习总结：核心知识体系回顾
 module: 'nextjs'
 category: 前端技术
 difficulty: intermediate
 description: 串联 Next.js 模块全部文档，回顾 App Router 路由、数据获取缓存、API 层、渲染策略与部署安全的全链路。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'nextjs/010-NextJS16Overview'
   - 'nextjs/020-AppRouterRouting'

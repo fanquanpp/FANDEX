@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 把 310 篇的 utils.c 打包成能交付的库：ar 打包 .a 与链接顺序惨案、-fPIC 与 -shared 造 .so、soname 三件套命名与软链、ldd 与 readelf -d 看依赖、cannot open shared object file 经典现场的三种修复、dlopen 插件机制，静态与动态取舍一张表。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/470-BuildSystem'
   - 'c/310-MultiFileCompilation'

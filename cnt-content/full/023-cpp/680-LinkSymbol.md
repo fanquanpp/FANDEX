@@ -1,12 +1,12 @@
 ---
-order: 640
+order: 660
 title: C++ 链接与符号
 module: 'cpp'
 category: 计算机科学
 difficulty: beginner
 description: C++ 链接与符号完整教学：名字修饰、内/外部链接、ODR、undefined reference 与 multiple definition 排查、静态/动态库、符号可见性。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'cpp/050-NamespaceLinkage'
   - 'cpp/660-Cpp20Module'
@@ -235,6 +235,126 @@ g++ -T linker.ld main.o -o firmware.elf
 # 生成 map 文件：记录每个符号的最终地址与来源，查体积膨胀/符号冲突利器
 g++ main.cpp -Wl,-Map,app.map -o app
 ```
+
+## 面试题思路：三个高频考法
+
+1. 「`inline` 到底是关键字让函数内联，还是让头文件能放定义？」——正确答案是后者为主：
+   `inline` 的标准语义是「允许多个编译单元出现同一份定义，链接时合并」，内联展开只是
+   编译器的优化自由。面试追问「头文件里的函数不加 inline 会怎样」时，用 ODR 回答：
+   每个包含它的 `.cpp` 都生成一份强符号，链接报 multiple definition。
+2. 「为什么模板要定义在头文件里？」——答编译模型：每个 `.cpp` 独立编译，别的单元
+   实例化模板时需要看见完整定义才能生成符号；定义在 `.cpp` 里其他单元只看见声明，
+   实例化不出符号，链接期 undefined reference。出路是头文件定义、显式实例化，或
+   C++20 模块。
+3. 「静态库和动态库链接错误的区别？」——静态库的符号问题在**链接期**暴露
+   （undefined reference / multiple definition，`nm` 可查）；动态库的符号问题会
+   推迟到**运行期**（`ldd` 报 not found、加载器符号解析失败），因为链接期只记录
+   SONAME，真正的符号绑定发生在加载时。这一问能同时考出「编译期与运行期两个符号
+   世界」的完整心智模型。
+
+## 动手实验：亲手制造并修复两类错误
+
+准备三文件工程，全程只编译不运行，观察链接器的行为：
+
+```cpp
+// utils.h
+#pragma once
+int add(int a, int b);          // 声明放头文件
+// utils.cpp
+#include "utils.h"
+int add(int a, int b) { return a + b; }
+// main.cpp
+#include "utils.h"
+int main() { return add(1, 2); }
+```
+
+1. **制造 undefined reference**：把 `utils.cpp` 从编译命令里去掉
+   （`g++ main.cpp -o app`），读报错里「`add(int, int)`，referenced in main」
+   的措辞，再用 `nm -C main.o | grep add` 看到 `U add(int,int)`——需要的符号
+   没人提供。把 utils.cpp 加回来修复。
+2. **制造 multiple definition**：把 `add` 的定义挪进 `utils.h`，编译报错；给定义
+   加 `inline` 修复；再改回「声明在头文件、定义在源文件」的标准姿势。三种状态各
+   跑一遍 `nm -C utils.o`，观察 `T` 与 `W`（弱符号）标记的差别。
+3. **观察名字修饰**：把 `add` 包进 `namespace math`，用 `nm utils.o` 看
+   `_ZN4math3addEii` 这样的修饰名，再用 `c++filt` 还原；然后加
+   `extern "C" int c_add(int, int);` 定义一份，对比两张符号表（C 版无修饰）。
+4. **符号可见性实验（Linux）**：把工程编成共享库（`g++ -shared -fPIC
+   utils.cpp -o libutils.so`），`nm -D libutils.so` 确认 `add` 被导出；加
+   `-fvisibility=hidden` 重编，观察 `add` 从导出表消失，再给它加
+   `__attribute__((visibility("default")))` 恢复导出。
+
+每一步都只用「看符号表」这一种工具定位问题——养成「链接错误先查符号、不靠猜」的习惯。
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：修好这个工程**。下面的代码编译报 multiple definition，只允许改动头文件，
+给出至少两种修法并说明取舍：
+
+```cpp
+// counter.h
+int count() { static int n = 0; return ++n; }   // 每个 include 它的 .cpp 一份定义
+// a.cpp: #include "counter.h"  int a_val = count();
+// b.cpp: #include "counter.h"  int b_val = count();
+```
+
+提示：回想「inline 允许跨单元重复定义、链接器合并」与「static/匿名命名空间故意
+每单元一份」两条路线，注意两条路线下 `a_val` 与 `b_val` 的值**不同**。
+
+参考实现：
+
+```cpp
+// 修法 1（首选）：inline + 函数内 static——所有单元共享同一个 n
+inline int count() { static int n = 0; return ++n; }
+// 链接器把多份定义合并成一份，static 局部变量唯一：a_val 与 b_val 必然一个为 1、
+// 另一个为 2（谁先谁后取决于跨编译单元的初始化顺序，标准未规定）
+
+// 修法 2：声明放头文件、定义放新 .cpp —— 与修法 1 行为相同，工程更大时更规范
+// counter.h:  int count();
+// counter.cpp: int count() { static int n = 0; return ++n; }
+
+// （对比）修法 3：匿名命名空间包裹 —— 每个编译单元一份独立 n
+// namespace { int count() { static int n = 0; return ++n; } }
+// a_val 与 b_val 都是 1：两个计数器互不相干——「故意每单元一份」时才用
+```
+
+自检问题：为什么修法 1 里 `inline` 函数内的 `static` 局部变量也只有一份？
+（答：inline 合并定义后全程序只有这一个函数实体，其局部 static 随之唯一——
+这正是「头文件里的单例」惯用法的原理。）
+
+**练习 2：给模板搬家**。把下面「模板定义在 .cpp」的工程修到能链接，两种路线都试：
+（a）定义挪进头文件；（b）在 `math.cpp` 里显式实例化
+`template int triple<int>(int);`，并说出两种路线各自适合什么场景。
+
+```cpp
+// math.h
+template <class T> T triple(T x);
+// math.cpp
+#include "math.h"
+template <class T> T triple(T x) { return x * 3; }
+// main.cpp
+#include "math.h"
+int main() { return triple(5); }   // undefined reference to int triple<int>(int)
+```
+
+参考实现：
+
+```cpp
+// 路线 a：math.h 里直接给出定义（泛型库的默认姿势——调用方类型集合不可预知）
+// math.h
+template <class T> T triple(T x) { return x * 3; }
+
+// 路线 b：math.cpp 末尾显式实例化，符号由本单元生成（类型集合封闭、想隐藏实现时用）
+// math.cpp
+#include "math.h"
+template <class T> T triple(T x) { return x * 3; }
+template int triple<int>(int);          // 只为 int 生成符号
+// main.cpp 里 triple(5) 能链接；triple(1.5) 则依然 undefined reference
+```
+
+**挑战题（不给参考实现）**：构造一个「改了头文件忘了重编译」的运行期事故：两个
+`.cpp` 各自持有同一函数的新旧定义（一个带默认参数一个不带，或参数为 `int` 与
+`long`），链接能过但行为诡异；用 `nm -C` 找出两份签名不同的符号并解释为什么
+修饰名不同。写完自查：你的构建系统（CMake 依赖追踪或等价物）能否防住这类事故？
 
 ## 常见陷阱清单
 

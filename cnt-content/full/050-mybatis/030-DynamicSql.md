@@ -9,7 +9,7 @@ prerequisites:
   - 'mybatis/020-QuickStartCrud'
   - 'mysql/110-SQLDataOperationQuery'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-05'
 related:
   - 'mybatis/040-ResultMapping'
   - 'mybatis/090-PitfallsPerformance'
@@ -248,6 +248,85 @@ List<Product> list = productMapper.search(q);
 ```
 
 三组对照做完，本篇就通了。其一，清空所有字段再查：WHERE 与全部条件消失，只剩 `FROM products ORDER BY id DESC`——<where> 的空条件行为亲眼确认。其二，只传 status = 0：注意条件出现了、0 没有被吞——如果你顺手写过 `status != ''`，此刻它会消失，坑二当场复现。其三，把 orderBy 换成任意非法字符串：排序落进 otherwise 的默认值，白名单生效。做实验时盯住 Preparing 行，它是你写的「生长规则」最终长成的样子。
+
+## 动手实践
+
+**任务一：从零写商品筛选。** 不看第 4 到 9 节的成品，为「商品列表页」写一个动态查询 XML：条件有名称模糊（可选）、分类精确（可选）、价格区间（可选）、排序字段（必填但只允许 price 与 created_at 两个白名单值，默认按 id 倒序）。写完跑三组输入：全空、只有名称、排序传非法值。提示：条件组用 `<where>` + `<if>`，排序用 `<choose>` 白名单——这是本篇两个高频考点的组合拳。
+
+**任务二：空集合防御。** 给一个「按 id 列表查商品」的 foreach 方法做两层防御：Java 侧提前返回、XML 侧兜底。然后故意只删掉其中一层，观察各自出的事故形态（空 IN 报错，还是全表返回）。提示：两层防御保护的场景不同——Java 层防「本不该发这条 SQL」，XML 层防「别人绕过服务层直接调 mapper」。
+
+**任务三：批量插入。** 用 foreach 写「一次 insert 多 values」的批量插入，插入 500 条商品并测耗时；再查一次官方文档确认 `allowMultiQueries` 是给哪种写法用的，避免张冠李戴。提示：foreach 拼进 VALUES 的是「每组括号」，`separator=","` 是组间逗号。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
+
+```xml
+<select id="search" resultType="com.example.shop.entity.Product">
+    SELECT id, product_name, category, brand, price, status, stock
+    FROM products
+    <where>
+        <if test="name != null and name != ''">
+            AND product_name LIKE CONCAT('%', #{name}, '%')
+        </if>
+        <if test="category != null and category != ''">
+            AND category = #{category}
+        </if>
+        <if test="minPrice != null">
+            AND price &gt;= #{minPrice}
+        </if>
+        <if test="maxPrice != null">
+            AND price &lt;= #{maxPrice}
+        </if>
+    </where>
+    <choose>
+        <when test="orderBy == 'price'">ORDER BY price ASC</when>
+        <when test="orderBy == 'createdAt'">ORDER BY created_at DESC</when>
+        <otherwise>ORDER BY id DESC</otherwise>
+    </choose>
+</select>
+```
+
+验收三连：全空输入时 Preparing 行不含 WHERE，只有 `ORDER BY id DESC`；只传名称时出现一个 LIKE 条件且 `%` 在参数里而不是 SQL 文本里；orderBy 传 `"price; DROP TABLE products"` 落进 otherwise——白名单让非法输入无害化。
+</details>
+
+<details>
+<summary>任务二与任务三参考实现</summary>
+
+```xml
+<!-- 任务二：按 id 列表查询（XML 层兜底） -->
+<select id="selectByIds" resultType="com.example.shop.entity.Product">
+    SELECT id, product_name, price FROM products
+    WHERE id IN
+    <foreach collection="ids" item="id" open="(" separator="," close=")">
+        #{id}
+    </foreach>
+</select>
+```
+
+```java
+// Java 层防御：空集合根本不发 SQL
+public List<Product> findByIds(List<Long> ids) {
+    if (ids == null || ids.isEmpty()) {
+        return List.of();   // 不防御时 foreach 生成 WHERE id IN () 直接报 SQL 语法错
+    }
+    return productMapper.selectByIds(ids);
+}
+```
+
+```xml
+<!-- 任务三：多 values 批量插入（不需要 allowMultiQueries） -->
+<insert id="insertBatch">
+    INSERT INTO products (product_name, price, stock) VALUES
+    <foreach collection="list" item="p" separator=",">
+        (#{p.productName}, #{p.price}, #{p.stock})
+    </foreach>
+</insert>
+```
+
+对照记录：删掉 Java 层防御，空集合直接抛 `SQLSyntaxErrorException`——这是「好事」，错误当场暴露；删掉 XML 层意识不到的口子是「绕过服务层直接调 mapper」的调用方。`allowMultiQueries` 参数是给「一条 SQL 里写多个分号分隔的完整语句」这种拼接形态用的，多 values 单语句不需要它——两种批量写法别混为一谈。
+</details>
 
 ## 官方文档
 

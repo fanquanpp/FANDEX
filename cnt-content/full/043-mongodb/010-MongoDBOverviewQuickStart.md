@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: 零基础第一课：用 Docker 五分钟跑起 MongoDB，理解文档模型并写出第一句增删改查。
 author: fanquanpp
-updated: '2026-09-18'
+updated: '2026-10-05'
 related:
   - 'mongodb/020-MongoDBCRUDOperations'
   - 'mongodb/050-MongoDBSchemaDesign'
@@ -72,6 +72,19 @@ db.students.deleteOne({ name: "小明" })
 
 MongoDB 是一个开源的 **NoSQL 文档数据库**，由 MongoDB 公司开发，2009 年发布。它把数据存成 **BSON**（二进制 JSON），支持嵌套对象与数组，天然适合内容、用户、物联网等数据结构多变、读写频繁的场景。
 
+### 1.0 BSON 与 JSON：不是一回事
+
+入门材料常说"MongoDB 存 JSON"，这个说法省略了关键差异。BSON 是 JSON 的二进制超集：**JSON 只有字符串、数字、布尔、null 四种标量，BSON 多出了十几种真实类型**。这些差异不是理论细节，会直接改变你写代码的方式：
+
+| 数据 | JSON 里的尴尬 | BSON 的表达 |
+| --- | --- | --- |
+| 主键标识 | 只能存字符串，全局唯一要自己做 | `ObjectId`：12 字节，含时间戳，天生有序 |
+| 时间 | 字符串 `"2026-10-05"`，无法按时间范围索引计算 | `Date`：64 位毫秒时间戳，可直接比较与聚合 |
+| 金额 | 浮点数 `0.1 + 0.2 !== 0.3` | `Decimal128`：精确十进制，账务场景必用 |
+| 二进制（图片、文件） | Base64 膨胀 33% | `BinData`：原生二进制 |
+
+心智模型：**把 BSON 当"带类型系统的 JSON"**。在 mongosh 里你写的是 JavaScript 风格的字面量，但 `ISODate(...)`、`ObjectId(...)`、`NumberDecimal("99.00")` 这些构造器就是在显式声明 BSON 类型。最常见的入门坑是把日期存成字符串——当时查询没报错，等要做"最近 30 天"的范围查询时才发现字符串比较与日期比较是两套语义。金额同理，电商库存与价格一律用 `NumberDecimal`，浮点误差在账务上是事故。
+
 ### 1.1 与关系型数据库的对比
 
 | 维度 | MySQL / PostgreSQL | MongoDB |
@@ -127,12 +140,61 @@ MongoDB 是一个开源的 **NoSQL 文档数据库**，由 MongoDB 公司开发�
 - 强事务、多表复杂 JOIN 的财务账务系统；
 - 列结构极其稳定、报表高度依赖 SQL 聚合的场景（此时 PostgreSQL 更合适）。
 
-## 4. 动手试试
+## 4. 动手实践
 
-1. 启动容器后，在 `mongosh` 中新建一个 `books` 集合，插入 3 本你喜欢的书（字段：书名、作者、价格）。
-2. 用 `find({ 作者: "..." })` 查询其中一本。
-3. 用 `updateOne` 把价格加 10，再用 `deleteOne` 删掉一本。
-4. 试想：如果用 MySQL 表达"一本书有多个标签"，需要几张表？MongoDB 怎么表达？
+**任务一：建一个图书集合。** 在 `mongosh` 中新建 `books` 集合，插入 3 本你喜欢的书。要求：价格字段必须用 `NumberDecimal` 声明，出版日期用 `ISODate`，并给其中一本加一个嵌套的 `publisher` 对象与一个 `tags` 数组。提示：回顾 1.0 节的类型表，想一想为什么"价格"是本文最该用 Decimal128 的字段。
+
+**任务二：类型实验。** 插入两条文档，一条把日期存成字符串 `"2026-01-01"`，一条用 `ISODate("2026-01-01")`，然后执行 `find({ createdAt: { $gte: ISODate("2026-06-01") } })`，观察只有哪种文档能被正确筛出。提示：字符串比较与日期比较在同一个查询里不会互相转换。
+
+**任务三：表达一对多。** 不查资料，先自己回答：如果用 MySQL 表达"一本书有多个标签"，需要几张表？然后写一句 MongoDB 的插入语句表达同一件事，对比两者的语句数。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一与任务三参考实现</summary>
+
+```javascript
+use library
+
+// 价格用 Decimal128，出版日期用 Date，出版社内嵌对象，标签用数组
+db.books.insertMany([
+  {
+    title: "深入浅出 MongoDB",
+    author: "林晚",
+    price: NumberDecimal("89.00"),
+    publishedAt: ISODate("2025-03-15"),
+    publisher: { name: "码上出版社", city: "上海" },
+    tags: ["数据库", "NoSQL", "后端"]
+  },
+  {
+    title: "JSON 与 BSON",
+    author: "陈默",
+    price: NumberDecimal("45.50"),
+    publishedAt: ISODate("2024-11-02"),
+    tags: ["数据格式"]
+  },
+  {
+    title: "五分钟学会建模",
+    author: "林晚",
+    price: NumberDecimal("32.00"),
+    publishedAt: ISODate("2026-01-20"),
+    tags: ["建模", "数据库"]
+  }
+])
+
+// 按作者查询
+db.books.find({ author: "林晚" })
+
+// 价格 +10：$inc 对 Decimal128 同样适用且保持精度
+db.books.updateOne({ title: "JSON 与 BSON" }, { $inc: { price: NumberDecimal("10") } })
+
+// 删除一本
+db.books.deleteOne({ title: "五分钟学会建模" })
+```
+
+任务三的答案：MySQL 需要"书表 + 标签表 + 书标签中间表"三张表与两条 JOIN；MongoDB 一条文档里的 `tags` 数组就表达了全部关系——这是一对多关系在两种模型里表达成本差异的最直观样本。
+</details>
+
 
 ## 5. 一句话记住
 

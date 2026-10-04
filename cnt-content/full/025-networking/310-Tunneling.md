@@ -1,12 +1,12 @@
 ---
-order: 310
+order: 330
 title: 隧道技术
 module: 'networking'
 category: 云与基础设施
 difficulty: intermediate
 description: 隧道封装原理：GRE/IPIP/VXLAN/WireGuard/IPsec 隧道模式对比、TUN 设备、MTU 与防火墙陷阱、双私网互通完整实验。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/340-SDN'
@@ -153,7 +153,75 @@ WireGuard 后，同样的位置只能看到密文。抓包工具的使用见
 6. **TTL 与环路**：GRE 配置遗漏 `ttl` 时默认 64，进入路由环路时内层包无法靠 TTL 自杀，排查
    环路时注意外层 TTL。
 
-## 7. 小结
+## 7. 练习
+
+复刻题（15 分钟）：不看第 4 节配置，仅凭拓扑描述（两站点、公网地址、私网段）完成 GRE
+打通。验收：站点 A 内网主机 ping 通站点 B 内网主机；`tcpdump -i gre1 -nn icmp` 能看到
+内层原始地址。
+
+提示（思路方向）：配置骨架是「建隧道接口 → 配互联地址 → 路由牵引 → 开转发」四步，
+两端对称。先自己写，再对照（站点 B 侧由你镜像推导）：
+
+```bash
+sudo ip tunnel add gre1 mode gre local 203.0.113.1 remote 198.51.100.1 ttl 255
+sudo ip addr add 10.255.0.1/30 dev gre1
+sudo ip link set gre1 up
+sudo ip route add 192.168.20.0/24 dev gre1
+sudo sysctl -w net.ipv4.ip_forward=1
+```
+
+MTU 黑洞实验（15 分钟）：在打通的 GRE 隧道上，分别执行 `ping -c 2 -s 1400 192.168.20.11`
+与 `ping -c 2 -s 1473 192.168.20.11`（-s 是载荷字节数）。验收：解释为什么 1473 字节的
+包不通，并把隧道接口 MTU 调到可用的最大值（先计算再配置）。
+
+提示（思路方向）：载荷 1473 + ICMP/IP 头 28 字节 = 内层包 1501 字节，加上 GRE 头 24
+字节后超过出口物理 MTU 1500。参考推演与修复：
+
+```text
+GRE 开销 ≈ 4（外层 IP）...精确算：外层 IP 20 + GRE 头 4~16，工程上留 24
+可用内层 MTU = 1500 - 24 = 1476，即 ping -s 最大约 1476 - 28 = 1448
+sudo ip link set gre1 mtu 1400          # 留安全余量的常见工程值
+ping -c 2 -s 1372 192.168.20.11        # 恢复可达
+```
+
+注意现象细节：小包通大包不通且无任何报错返回，正是第 6 节坑 1 的「黑洞」——PMTUD 的
+ICMP 3/4 通知包也被丢弃时，发送方只会一直重发大包。
+
+抓包验证题（10 分钟）：在公网出口抓 GRE 外层（第 5 节的 tcpdump 过滤式），回答：内层
+私网地址是否可读？据此回答「GRE 隧道 = 加密通道」这句话错在哪。验收：能引用抓包输出
+的一行作为证据。
+
+提示：`sudo tcpdump -i eth0 -nn 'ip proto 47'` 输出里能直接看到内层
+`192.168.10.11 > 192.168.20.11: ICMP echo request`——私网地址明文可见，GRE 只做封装
+不做加密。修复表述：隧道提供的是「连通性穿越」，保密性需要 IPsec/WireGuard（与
+[VPN 与隧道配置](networking/320-VPNConfig) 衔接）。
+
+WireGuard 对比题（20 分钟）：把本文 GRE 实验换成 WireGuard 实现（两端各一个
+wg0 接口、互联地址 10.255.0.1/30 与 10.255.0.2/30、AllowedIPs 覆盖对端私网段）。验收：
+同网段互通测试通过；抓包里内层地址不可读；能说出 WireGuard 相对 GRE 多了什么、少了
+什么（协商、密钥分发机制）。
+
+提示（思路方向）：WireGuard 的配置核心是每端一对密钥与对端公钥、AllowedIPs 同时承担
+「路由」与「解密过滤」。先自己写，再对照单端最小配置（Ubuntu 22.04+，`apt install
+wireguard`）：
+
+```ini
+# /etc/wireguard/wg0.conf（站点 A）
+[Interface]
+PrivateKey = <A 的私钥>
+Address = 10.255.0.1/30
+
+[Peer]
+PublicKey = <B 的公钥>
+AllowedIPs = 10.255.0.0/30, 192.168.20.0/24   # 去往这些网段的包走隧道并加密
+Endpoint = 198.51.100.1:51820
+# 启动：wg-quick up wg0；验证：wg show 看握手，ping 对端私网
+```
+
+「少了什么」的答案要点：WireGuard 没有自动密钥协商与证书体系（密钥靠管理员预先交换），
+换来的是约 4 千行代码的极小攻击面与高转发性能。
+
+## 8. 小结
 
 **初学者要点**
 

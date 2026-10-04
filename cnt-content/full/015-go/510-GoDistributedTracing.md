@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 以"接口 P99 偶发 3 秒但日志看不出慢在哪"为主线学 OpenTelemetry：Span 与父子链、stdout 导出跑通第一段链路、otelhttp/otelgrpc 一行接入、采样策略、trace_id 串起 slog 日志，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'go/380-GoLog'
   - 'go/520-GoGRPC'

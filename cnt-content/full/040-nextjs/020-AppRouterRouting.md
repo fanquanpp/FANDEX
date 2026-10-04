@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 布局嵌套、动态路由、导航预取、加载与错误状态——App Router 文件约定的完整入门。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'nextjs/010-NextJS16Overview'
   - 'nextjs/030-DataFetchingCaching'
@@ -196,12 +196,112 @@ export const dynamic = "force-dynamic" // 强制每次请求动态渲染
 3. **在静态页面里裸用 `useSearchParams`**：静态渲染中它没有确定值，需要把使用它的客户端组件包进 `<Suspense>`，否则构建报错。
 4. **路由组路径冲突**：`(shop)/page.tsx` 与 `(web)/page.tsx` 都会解析成 `/`，同时存在构建失败。
 
-## 7. 动手试试
+## 7. 动手实践
 
-1. 给 `app/posts/[id]/page.tsx` 配合 `generateStaticParams` 生成两篇预渲染文章，再访问一个未列出的 id，观察"按需渲染"仍然成功。
-2. 在 `app/posts/` 下新建 `not-found.tsx`，访问一个非数字 id，确认 404 页面生效；再访问一个不存在的整站路径，确认走的是根级 `not-found.tsx`。
-3. 把导航改成动态生成的文章列表（先写死 5 个 id），并用 DevTools Network 面板观察生产模式下 Link 的预取请求。
-4. 用路由组给"营销页"（首页、关于）与"后台"（dashboard）分别配一套布局。
+**任务一：预渲染与按需渲染。** 给 `app/posts/[id]/page.tsx` 配 `generateStaticParams` 生成两篇预渲染文章；访问一个未列出的 id，观察"按需渲染"仍然成功；再把 `dynamicParams` 设为 `false`，访问同样的 id 看它变成 404。提示：构建日志里每个路由前的符号标记（圆点/实心）区分静态与动态，`npm run build` 的输出就是验证材料。
+
+**任务二：两级 404。** 在 `app/posts/` 下新建 `not-found.tsx`；访问非数字 id 确认走文章区的 404，再访问一个不存在的整站路径确认走根级 404。提示：`not-found.tsx` 就近生效，两级页面文案要能区分。
+
+**任务三：动态导航与预取观察。** 把导航改成写死 5 个 id 的文章列表（`<Link>` 循环渲染），`npm run build && npm run start` 后用 DevTools Network 面板观察滚动时触发的预取请求。提示：预取只发生在生产模式；Network 面板里筛 `RSC` 载荷类型看得最清楚。
+
+**任务四：路由组双布局。** 用路由组给"营销页"（首页、关于）与"后台"（`/dashboard`）分别配一套布局，营销页带页脚、后台带侧栏。提示：两套布局都嵌在根布局之内，根布局只保留 `html/body`。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
+
+```tsx
+// app/posts/[id]/page.tsx
+import { notFound } from "next/navigation"
+
+const posts: Record<string, string> = {
+  "1": "第一篇：环境搭建",
+  "2": "第二篇：第一个页面",
+}
+
+export function generateStaticParams() {
+  return Object.keys(posts).map((id) => ({ id }))
+}
+
+export default async function PostPage({
+  params,
+}: {
+  params: Promise<{ id: string }>
+}) {
+  const { id } = await params
+  const title = posts[id]
+  if (!title) notFound()
+  return <main>{title}</main>
+}
+```
+
+验证路径：构建日志中 `/posts/1`、`/posts/2` 标记为静态（预生成）；访问 `/posts/3` 首次请求时按需渲染成功——这是 `dynamicParams` 默认 `true`。追加 `export const dynamicParams = false` 后重新 build，再访问 `/posts/3` 直接 404。两种行为对应两种业务语义："文章库只有这三篇"与"未来还会新增"。
+</details>
+
+<details>
+<summary>任务二参考实现</summary>
+
+```tsx
+// app/posts/not-found.tsx —— posts 区间内的 404
+export default function PostsNotFound() {
+  return <main>文章不存在，可能已被删除。<Link href="/">回首页</Link></main>
+}
+```
+
+```tsx
+// app/not-found.tsx —— 全站兜底（脚手架已生成，改文案即可）
+export default function NotFound() {
+  return <main>页面不存在。<Link href="/">回首页</Link></main>
+}
+```
+
+`/posts/abc` 命中 `notFound()` 时，Next.js 沿路由树向上找最近的 `not-found.tsx`——`app/posts/not-found.tsx` 更近，所以文案是"文章不存在"；`/no-such-page` 整段路由不匹配，落到根级兜底。两处 404 文案不同不是冗余，是给用户的位置信息。
+</details>
+
+<details>
+<summary>任务四参考实现</summary>
+
+```text
+app/
+  layout.tsx                 # 根布局：只有 html/body
+  (marketing)/
+    layout.tsx               # 营销布局：导航 + 页脚
+    page.tsx                 # /
+    about/page.tsx           # /about
+  dashboard/
+    layout.tsx               # 后台布局：侧栏
+    page.tsx                 # /dashboard
+```
+
+```tsx
+// app/(marketing)/layout.tsx
+export default function MarketingLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div>
+      <header>站点导航</header>
+      {children}
+      <footer>页脚：备案号与联系方式</footer>
+    </div>
+  )
+}
+```
+
+```tsx
+// app/dashboard/layout.tsx
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <div style={{ display: "flex" }}>
+      <aside>侧栏菜单</aside>
+      <section>{children}</section>
+    </div>
+  )
+}
+```
+
+注意 `(marketing)/page.tsx` 与根级 `page.tsx` 不能同时存在（都解析为 `/`），创建路由组版首页前先删掉旧文件。
+</details>
+
 
 ## 8. 一句话记住
 

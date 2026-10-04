@@ -1,12 +1,12 @@
 ---
-order: 500
+order: 520
 title: Kotlin 与 ktor-client
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: Ktor HTTP客户端
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/520-KotlinExposed'
   - 'kotlin/530-KotlinKoin'

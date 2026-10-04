@@ -36,7 +36,8 @@
       "title": "路线导航",
       "subtitle": "全库地图与 12 个月规划",
       "nodes": [
-        { "id": "start-008", "title": "全库学习路线总览", "desc": "六类模块与三阶段地图", "doc": "080-LearningRouteOverview" }
+        { "id": "start-008", "title": "全库学习路线总览", "desc": "六类模块与三阶段地图", "doc": "080-LearningRouteOverview" },
+        { "id": "start-009", "title": "第一次把代码存进仓库：Git 起步", "desc": "init 到首次 commit 的闭环与 gitignore 初体验", "doc": "090-GitFirstTouch" }
       ]
     }
   ]

@@ -1,12 +1,12 @@
 ---
-order: 190
+order: 210
 title: 网络故障诊断
 module: 'networking'
 category: 云与基础设施
 difficulty: intermediate
 description: 网络故障诊断：故障方法论、分层排查、工具使用与典型案例
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'networking/350-NetworkProgrammability'
   - 'networking/380-NetworkStorageTechnology'

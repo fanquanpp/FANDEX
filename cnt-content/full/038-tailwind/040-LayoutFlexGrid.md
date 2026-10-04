@@ -1,12 +1,12 @@
 ---
-order: 40
+order: 50
 title: Tailwind CSS 布局系统
 module: 'tailwind'
 category: 前端技术
 difficulty: beginner
 description: Tailwind CSS 布局系统：Flex 与 Grid 布局原理（主轴/交叉轴、网格线/网格区域）、对应工具类映射、gap 间距、容器居中与定位，配大量布局示例
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'tailwind/030-UtilityCore'
   - 'tailwind/060-ResponsiveDark'

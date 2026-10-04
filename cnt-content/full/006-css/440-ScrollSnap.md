@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用「磁铁与对齐线」的心智模型讲透 scroll-snap：容器严格度、子项对齐线、scroll-padding/margin 避让，以及 mandatory 全屏翻页的可访问性风险，附轮播实战。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'css/240-CSS3FlexboxFlexLayout'
   - 'css/220-PositionDetailed'

@@ -29,7 +29,10 @@ const {
 const SITE_TITLE_SUFFIX = new RegExp(`(?:^|[\\s·|—-])${SITE.title}\\s*$`);
 const fullTitle =
   title === SITE.title || SITE_TITLE_SUFFIX.test(title) ? title : `${title} | ${SITE.title}`;
-const pageUrl = canonical || SITE.url;
+// trailingSlash:'always' 下所有站点地址以 / 结尾；SITE.url（无尾斜杠）作为
+// canonical/og:url 回退时补齐，避免与实际地址 .../FANDEX/ 不一致
+const siteUrl = SITE.url.endsWith('/') ? SITE.url : `${SITE.url}/`;
+const pageUrl = canonical || siteUrl;
 const pageDescription = description || SITE.subtitle;
 
 const ogImageUrl = new URL(`${import.meta.env.BASE_URL}og-image.png`, SITE.url).href;

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 以「弹窗 z-index 压不住页头」引入 Teleport 的双树心智模型——组件树管数据流、DOM 树管物理位置，Teleport 只改后者；再用 Suspense 讲清「渲染前等待」的协调机制与 defineAsyncComponent 的分工，覆盖 defer 延迟传送、事件冒泡路径、scoped 样式去向、嵌套 Suspense 等高频坑，附弹窗关闭逻辑与页面骨架两个动手任务。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'vue3/110-ComponentSystem'
   - 'vue3/150-AsyncComponentSuspense'

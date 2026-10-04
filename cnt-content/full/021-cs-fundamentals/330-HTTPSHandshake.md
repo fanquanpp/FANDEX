@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: HTTPS 握手过程详解：TLS 1.2 与 TLS 1.3 的握手差异、密钥交换与证书验证。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'cs-fundamentals/260-IPC'
   - 'cs-fundamentals/320-HTTPCacheStrategy'

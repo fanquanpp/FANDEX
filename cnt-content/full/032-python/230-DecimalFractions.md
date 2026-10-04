@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 精确数值两件套：Decimal 十进制定点运算、Context 精度与舍入、Fraction 有理数运算。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'python/070-BasicDataType'
   - 'python/080-OperatorExpression'

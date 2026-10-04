@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用「构建期重命名」的心智模型讲透 CSS Modules：类名哈希如何实现样式隔离、composes 组合、:global 逃逸舱，以及动态类名与测试选择器两大高频坑。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'css/600-BEMNamingMethodology'
   - 'css/610-CSSAtomic'

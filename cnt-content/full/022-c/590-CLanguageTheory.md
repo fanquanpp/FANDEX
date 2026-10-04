@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: -O0 正常 -O2 出错的现场开题：用 as-if 规则与可观察行为讲清编译器的授权边界，收束对象与有效类型、严格别名、未定义/未指定/实现定义三分法、翻译单元与链接、freestanding 与标准演进主线，把全模块用过的机制连成一条理论主线。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/270-VolatileKeyword'
   - 'c/310-MultiFileCompilation'

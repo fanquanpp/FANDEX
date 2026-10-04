@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: PostgreSQL基于角色的权限管理：角色继承、组角色、默认权限与权限审计
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'postgresql/430-SubscribePublish'
   - 'postgresql/480-SSLEncryptionConnection'

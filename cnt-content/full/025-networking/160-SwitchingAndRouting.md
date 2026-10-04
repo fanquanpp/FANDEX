@@ -1,12 +1,12 @@
 ---
-order: 160
+order: 170
 title: 交换与路由技术
 module: 'networking'
 category: 云与基础设施
 difficulty: intermediate
 description: 交换与路由技术：VLAN、STP、链路聚合、静态路由、动态路由与策略路由
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'networking/030-NetworkWiringAndConstruction'
   - 'networking/020-OSITCPIPModel'

@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 'MySQL 8.4 LTS 升级要点：版本线全景、8.0 到 8.4 移除清单（复制语法/变量/工具）、默认值变更与升级检查流程'
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'mysql/590-Replication'
   - 'mysql/600-GTID'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Turborepo 任务编排：turbo.json、tasks 配置、dependsOn 依赖与缓存机制
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'vite/170-WorkspaceSetup'
   - 'vite/220-MonorepoPractice'
@@ -133,6 +133,31 @@ turbo link             # 关联远程缓存
 
 **要点**：`inputs` 限定参与指纹计算的路径——例如 README 改动不影响 build 指纹。精确的 inputs 能提高缓存命中率，避免无效重跑。
 
+### 4.4 环境变量与缓存正确性：env 与 globalEnv
+
+指纹清单里提到了「环境变量」，值得单独展开——这是 Turborepo 实践中最隐蔽的一类事故。设想：build 脚本里 `VITE_API_URL` 决定产物里打包进哪个后端地址。你在 `.env.production` 里改了它，重新 `turbo run build`，却看到 FULL TURBO——turbo 认为「输入没变」，直接复用了旧产物，**旧 API 地址被原样发布上线**。源码与依赖都没变，指纹确实不该变；问题在于 turbo 默认**不知道这个变量参与了构建**。
+
+解法是把环境变量显式登记进指纹：
+
+```json
+{
+  "globalEnv": ["CI", "NODE_ENV"],
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": ["dist/**"],
+      "env": ["VITE_API_URL", "VITE_SENTRY_DSN"]
+    }
+  }
+}
+```
+
+两个声明的分工：`globalEnv` 里的变量影响**所有任务**的指纹（任何一个变化，全部缓存失效），适合 CI、NODE_ENV 这类全局开关；任务级 `env` 只影响该任务的指纹（变化只使 build 失效、不影响 lint 的缓存），适合只参与打包的业务变量。`.env` 文件本身也在监听范围内：turbo 会追踪任务工作目录的 `.env` 系列文件变化，因此「改 .env 未生效」多数时候是**变量没登记进 env 列表**，而不是文件没被读到。
+
+排查这类问题有一条固定路径：`turbo run build --dry=json` 输出里包含每个任务的完整哈希与其指纹构成（含 env 项），改一个环境变量再跑一次，对比哈希是否变化——变了说明登记成功，没变就是漏登记。在 CI 与本地行为不一致的事故里，这个对比几乎总能定位问题。
+
+**一条纪律**：给项目新增「影响构建产物」的环境变量时，把「登记进 turbo.json 的 env」与「写入 .env.example」并列为同一件事的两个步骤，用清单绑定，靠自觉记必然漏。
+
 ## 5. 常用命令
 
 ```bash
@@ -187,3 +212,4 @@ turbo run build --dry      # 预览执行计划，不真正执行
 1. **看到执行计划**：在一个多包仓库里运行 `turbo run build --dry=json`，对照 turbo.json 检查每个包的任务顺序，确认 ui 库的 build 排在应用之前。提示：`^build` 边遗漏时，顺序图会立刻暴露。
 2. **验证缓存命中**：连续两次运行 `turbo run build`，第二次应出现 FULL TURBO；随后只改一个包的一行代码再跑，观察只有该包及其上游受影响。提示：改动后缓存的包会减少，命中数是排查"指纹计算过宽"的线索。
 3. **用 inputs 收紧指纹**：给 build 任务加 `inputs: ["src/**", "tsconfig.json"]` 后改 README，验证 build 不再被无关改动触发。提示：`turbo run build --dry=json` 的哈希值可以前后对比。
+4. **复现一次环境变量缓存事故**：给 build 任务加一个 `.env` 变量但先不登记进 `env`，改值后跑 build 观察 FULL TURBO（事故现场）；再把变量登记进 `env` 列表重跑，对比 `--dry=json` 中哈希的变化（修复现场）。提示：整个过程十分钟，做完后「env 必须登记」就不再是需要背的规则，而是你亲手踩过并修好的坑。

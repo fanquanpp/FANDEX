@@ -1,26 +1,26 @@
 ---
-order: 440
+order: 450
 title: 虚拟线程内幕：载体线程、Continuation 与卸载机制
 module: 'java'
 category: 后端技术
 difficulty: advanced
 description: 虚拟线程的 JVM 层实现参考：ForkJoinPool 载体调度、Continuation 挂载/卸载、完整卸载触发点清单、内存与吞吐估算、结构化并发完成策略全表与 JEP 演进时间线。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
-  - 'java/570-JavaVirtualThread'
+  - 'java/550-JavaVirtualThread'
   - 'java/530-ThreadLocalMemoryLeak'
   - 'java/610-JVMMemoryModel'
   - 'java/650-JavaIONIO'
 prerequisites:
-  - 'java/570-JavaVirtualThread'
+  - 'java/550-JavaVirtualThread'
 ---
 
-> 定位说明：本篇为参考层文档，从 [Java 与虚拟线程](/java/570-JavaVirtualThread) 拆分而来，收录其调度机制、Continuation 原理、JEP 演进与对比分析等深水区内容。只关心"怎么用"的读者不需要读这篇。
+> 定位说明：本篇为参考层文档，从 [Java 与虚拟线程](/java/550-JavaVirtualThread) 拆分而来，收录其调度机制、Continuation 原理、JEP 演进与对比分析等深水区内容。只关心"怎么用"的读者不需要读这篇。
 
 ## 前置知识
 
-- [Java 与虚拟线程](/java/570-JavaVirtualThread)：会创建虚拟线程、知道 Pinning 与 Semaphore 限流，本文在其上展开"为什么"。
+- [Java 与虚拟线程](/java/550-JavaVirtualThread)：会创建虚拟线程、知道 Pinning 与 Semaphore 限流，本文在其上展开"为什么"。
 
 ## 学习目标
 
@@ -201,6 +201,6 @@ ScopedValue.where(USER, "u-1001")
 
 ## 下一步
 
-- [Java 与虚拟线程](/java/570-JavaVirtualThread)：用法主线与 Spring Boot 集成；
+- [Java 与虚拟线程](/java/550-JavaVirtualThread)：用法主线与 Spring Boot 集成；
 - [JVM 内存模型](/java/610-JVMMemoryModel)：理解 final 字段可见性与 Continuation 搬家的一致性保证；
 - [Java IO 与 NIO](/java/650-JavaIONIO)：阻塞/非阻塞 I/O 在虚拟线程时代的分工。

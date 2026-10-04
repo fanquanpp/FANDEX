@@ -1,12 +1,12 @@
 ---
-order: 340
+order: 350
 title: WebSocket
 module: 'html5'
 category: 前端技术
 difficulty: intermediate
 description: WebSocket
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'html5/300-ServiceWorkerPWA'
   - 'html5/350-MicrodataJSONLD'

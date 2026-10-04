@@ -1,12 +1,12 @@
 ---
-order: 160
+order: 170
 title: 自然连接与 USING
 module: 'sql'
 category: 数据库
 difficulty: intermediate
 description: NATURAL JOIN 与 USING 子句：同名列等值连接的简写语法、与 ON 的语义差异、方言支持与三大陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/140-MultiTableQuery'
   - 'sql/070-GROUPBYGroupingSet'
@@ -210,7 +210,52 @@ FROM employees e RIGHT JOIN departments d ON e.dept_id = d.dept_id;
 -- UNION 自带去重，恰好去掉两侧都匹配的重复行
 ```
 
-## 7. 实践建议与小结
+## 7. 练习
+
+陷阱复现题（10 分钟）：亲手复现第 3.3 节陷阱 1 的「加列改变语义」。步骤：先按第 2 节数据
+建表并跑通 `NATURAL JOIN`（2 行结果）→ 执行
+`ALTER TABLE departments ADD COLUMN name VARCHAR(100) DEFAULT '';` → 再跑同一条 NATURAL
+JOIN。验收：能解释结果为什么从 2 行变成 0 行，并写出语义稳定的等价 ON 写法。
+
+提示（思路方向）：加列后 NATURAL JOIN 的连接条件从 `(dept_id)` 变成 `(dept_id, name)`，
+而部门名与员工姓名必然不相等。参考实现：
+
+```sql
+SELECT e.emp_id, e.name, d.dept_name
+FROM employees e
+JOIN departments d ON e.dept_id = d.dept_id;   -- 显式条件：加列不影响
+```
+
+对照题（10 分钟）：第 4.2 节说 USING 的合并列不能加表别名限定。实验验证：分别执行
+`SELECT dept_id FROM employees JOIN departments USING (dept_id);` 与
+`SELECT e.dept_id FROM ... USING (dept_id);`，记录第二条的报错信息。验收：能说出在
+哪个数据库上验证的、报错原文是什么。
+
+提示：PostgreSQL 报 `column reference "dept_id" is ambiguous` 之外，对限定引用直接报
+`cannot qualify column ...`；MySQL 的报错是 `Non-unique table/alias` 或 `Unknown column`。
+以你本机的实际输出为准——这道题的重点是亲手见过一次。
+
+迁移题（15 分钟）：团队从 PostgreSQL 迁移到 SQL Server，代码里有 12 处 `JOIN ... USING
+(order_id)`。给出机械改写规则与一个示例，并回答：改写成 ON 后结果列会多出一列，下游
+`SELECT *` 的消费方会受什么影响？验收：改写规则覆盖「合并列变成两列」这个后果。
+
+提示（思路方向）：USING → `ON a.order_id = b.order_id`，列名冲突时靠别名消歧；下游
+SELECT * 会看到 order_id 出现两次，按列名取值的驱动可能取错或报重复列。参考实现：
+
+```sql
+-- 迁移前（PostgreSQL）
+SELECT * FROM orders o JOIN order_items oi USING (order_id);
+-- 迁移后（SQL Server）：显式列出需要的列，别留 SELECT *
+SELECT o.order_id, o.created_at, oi.item_id, oi.quantity
+FROM orders o
+JOIN order_items oi ON o.order_id = oi.order_id;
+```
+
+思考题（5 分钟）：「既然 NATURAL JOIN 有加列陷阱，为什么标准还要保留它？」提示从两个
+角度想：临时探索性查询的便利，以及「设计良好的同名外键约定」下它的表达力。对照第 7
+节（实践建议）检查你的答案是否覆盖了「生产代码避免、探索场景可用」的边界。
+
+## 8. 实践建议与小结
 
 **何时可以用 USING**：外键列与主键列同名（规范命名如 `dept_id`）、连接条件简单、
 表结构稳定。设计阶段统一外键命名能让 USING 发挥最大价值。

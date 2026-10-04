@@ -1,12 +1,12 @@
 ---
-order: 250
+order: 260
 title: 递归 CTE 遍历树结构
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: 递归 CTE 遍历树形与图结构：组织架构层级查询、评论回复树构建、路径枚举与环检测。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/270-WindowFunctionFramework'
   - 'sql/410-OptimisticPessimisticLock'

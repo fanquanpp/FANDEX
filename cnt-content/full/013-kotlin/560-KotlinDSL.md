@@ -1,12 +1,12 @@
 ---
-order: 560
+order: 580
 title: Kotlin 与 DSL
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: DSL构建
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/090-ExtensionFunction'
   - 'kotlin/070-KotlinScopeFunction'

@@ -1,12 +1,12 @@
 ---
-order: 190
+order: 200
 title: 子查询
 module: 'sql'
 category: 数据库
 difficulty: intermediate
 description: 用外卖调度平台的真实问题掌握子查询：标量与关联子查询、IN 的 NULL 陷阱、EXISTS 与半连接改写、关联子查询到窗口函数的性能迁移。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'sql/180-SemiAntiJoin'
   - 'sql/200-LateralDerivedTable'

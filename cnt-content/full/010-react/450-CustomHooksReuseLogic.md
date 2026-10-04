@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 高频自定义 Hook 实现与设计准则：useFetch、useDebounce、useLocalStorage、useEventListener 的可运行实现与常见陷阱。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'react/160-CustomHooksDesignPattern'
   - 'react/430-InterruptibleRendering'

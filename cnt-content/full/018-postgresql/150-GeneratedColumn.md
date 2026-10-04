@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: 以声浪播客平台的三个派生值需求为线，讲清生成列的心智模型：写时计算的 STORED 与读时计算的 VIRTUAL（PostgreSQL 18），表达式规则、索引与逻辑复制的边界，以及与触发器、视图的选型对比。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'postgresql/130-ViewMaterializedView'
   - 'postgresql/230-CoveringIndexPartialIndex'

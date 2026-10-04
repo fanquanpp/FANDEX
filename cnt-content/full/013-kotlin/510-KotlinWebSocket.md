@@ -1,12 +1,12 @@
 ---
-order: 510
+order: 530
 title: Kotlin 与 WebSocket
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: Ktor WebSocket
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/370-KotlinTime'
   - 'kotlin/270-KotlinConcurrencySafety'

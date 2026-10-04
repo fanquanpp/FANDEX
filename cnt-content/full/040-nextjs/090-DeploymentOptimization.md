@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 从 next build 到上线：Turbopack 构建、standalone 与 Docker 部署、环境变量分级、next/image 与 next/font 的 16 时代默认值，以及核心性能指标排查。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'nextjs/030-DataFetchingCaching'
   - 'nextjs/070-CacheComponentsDeepDive'
@@ -174,12 +174,51 @@ CMD ["node", "server.js"]
 4. 反向代理（Nginx/Caddy）典型职责：终止 HTTPS、gzip/brotli 压缩、把 `/_next/static/` 等不可变资源设置长缓存（带内容哈希的文件名可以放心 `max-age` 一年），其余路径转发给 Node 进程。
 5. 上线前最小检查清单：`next build` 无错误且路由标记符合预期；密钥未出现在客户端产物；安全响应头已配置（见第 8 篇第 5 节）；生产 `next start` 可访问且日志无异常。
 
-## 6. 动手试试
+## 6. 动手实践
 
-1. 把项目部署到 Vercel（`vercel` 命令或 GitHub 导入），对照第 1 节读懂构建日志中每个路由的静态/ISR/动态符号标记。
-2. 写出上文的多阶段 Dockerfile，本地 `docker build` 后 `docker run -p 3000:3000` 验证，再用 `docker image ls` 对比 standalone 与完整 `node_modules` 的镜像体积差。
-3. 用 Lighthouse 跑一次首页性能报告，按第 4 节的表挑一项优化（最常见：给首屏图片加 `priority`），复测对比 LCP 变化。
-4. 故意把一个密钥加 `NEXT_PUBLIC_` 前缀构建一次，在浏览器源代码里找到它，再改回来——亲眼看一次泄漏路径，比背十遍规则有效。
+**任务一：读懂构建日志。** 把项目部署到 Vercel（`vercel` 命令或 GitHub 导入），对照第 1 节读懂构建日志中每个路由的静态/ISR/动态符号标记，并回答：为什么 `/dashboard` 没有被静态化？（如果你按第 3 篇练过，答案就藏在它的代码里。）提示：动态信号（cookies/headers/no-store fetch）会把整页拉进动态渲染。
+
+**任务二：standalone 镜像对比。** 写出第 5 节的多阶段 Dockerfile，本地 `docker build` 后 `docker run -p 3000:3000` 验证；再用 `docker image ls` 记下镜像体积，与"不分阶段、直接 COPY 整个 node_modules"的土法镜像对比。提示：对比前确认 `next.config.ts` 里有 `output: "standalone"`，否则 `.next/standalone` 目录不存在，构建最后一步会报 COPY 找不到路径。
+
+**任务三：LCP 优化闭环。** 用 Lighthouse 跑一次首页性能报告，挑一项优化（最常见：给首屏图片加 `priority`），复测对比 LCP 数值。提示：Lighthouse 的"Opportunities"区会直接给出建议清单，每次只改一项再复测，否则说不清是哪一项起的作用。
+
+**任务四：亲眼看见密钥泄漏。** 故意把一个假密钥加 `NEXT_PUBLIC_` 前缀构建一次，在浏览器源代码里找到它，再改回来。提示：生产构建后用浏览器"查看源代码"或 DevTools 全局搜索密钥值；这个实验做完，"前缀即公开"就不再是需要记忆的规则。
+
+先自己操作，再对照参考流程：
+
+<details>
+<summary>任务二参考操作流程</summary>
+
+```bash
+# 1. 确认配置：next.config.ts 中有 output: "standalone"
+# 2. 构建镜像
+docker build -t my-next-app .
+# 3. 运行并验证
+docker run -p 3000:3000 my-next-app
+# 浏览器访问 http://localhost:3000
+
+# 4. 体积对比
+docker image ls my-next-app
+```
+
+对照组（反例，仅用于观察体积，不要用于生产）：去掉 `deps`/`build` 阶段，用单阶段 `COPY . .` + `npm install` 的 Dockerfile 构建同名不同 tag 的镜像。常见量级：standalone 三阶段镜像约 200-300MB，单阶段全量镜像可达 1.2GB 以上（本机数值以实测为准，与依赖数量强相关）。差值来自三处：多阶段只复制运行必需文件、Alpine 基础镜像小、standalone 的最小化 node_modules 剔除了 devDependencies。
+</details>
+
+<details>
+<summary>任务四参考操作流程</summary>
+
+```bash
+# 1. .env.local 写入假密钥
+echo 'NEXT_PUBLIC_FAKE_KEY="sk-test-do-not-use-12345"' >> .env.local
+npm run build && npm run start
+```
+
+1. 浏览器打开站点，`Ctrl+U` 查看源代码，`Ctrl+F` 搜索 `sk-test-do-not-use-12345`——能直接命中，任何访客可见。
+2. DevTools Sources 面板里同样能搜到：它被内联进了客户端 chunk，而不是藏在接口响应里。
+3. 修复：去掉 `NEXT_PUBLIC_` 前缀，重新 build，再搜一次——搜索无结果，变量只存在于服务器进程内存中。
+4. 复盘：`NEXT_PUBLIC_` 变量是**构建期内联**，这意味着即使你后来删掉它，历史构建产物里仍然带着旧值——真实事故里"改了配置"不等于"堵住了泄漏"，被泄漏的密钥必须轮换。
+</details>
+
 
 ## 7. 一句话记住
 

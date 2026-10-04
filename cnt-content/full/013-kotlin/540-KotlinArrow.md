@@ -1,12 +1,12 @@
 ---
-order: 540
+order: 560
 title: Kotlin 与 Arrow
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: 函数式编程库Arrow
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/450-KotlinCompose'
   - 'kotlin/410-KotlinGradle'

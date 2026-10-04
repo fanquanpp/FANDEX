@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: beginner
 description: 'IaaS/PaaS/SaaS 三种服务模式：责任共担、典型产品、选型决策与混合策略。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'cloud-computing/060-ContainerOrchestration'
   - 'cloud-computing/410-IaC'

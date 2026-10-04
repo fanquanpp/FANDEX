@@ -30,7 +30,8 @@
         { "id": "mongo-006", "title": "事务与会话", "doc": "060-MongoDBTransactionSession" },
         { "id": "mongo-007", "title": "副本集与分片", "doc": "070-MongoDBReplicaSetSharding" },
         { "id": "mongo-008", "title": "安全与用户管理", "doc": "080-MongoDBSecurityUserManagement" },
-        { "id": "mongo-009", "title": "Change Stream 实时流", "doc": "090-MongoDBChangeStreamRealtime" }
+        { "id": "mongo-009", "title": "Change Stream 实时流", "doc": "090-MongoDBChangeStreamRealtime" },
+        { "id": "mongo-010", "title": "Node.js 驱动集成", "doc": "100-MongoDbNodeDriver" }
       ]
     }
   ]

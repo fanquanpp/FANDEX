@@ -1,12 +1,12 @@
 ---
-order: 200
+order: 210
 title: 内联类
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: Kotlin内联类inline class避免装箱开销。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/330-ChannelBroadcastChannel'
   - 'kotlin/160-SealedClassSealedInterface'

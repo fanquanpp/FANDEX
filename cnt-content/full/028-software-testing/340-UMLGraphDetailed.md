@@ -1,12 +1,12 @@
 ---
-order: 340
+order: 360
 title: UML 图详解
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: UML类图、时序图、活动图、状态图等核心图类型详解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/320-AgileDevelopment'
   - 'software-testing/330-RequirementAnalysisMethod'

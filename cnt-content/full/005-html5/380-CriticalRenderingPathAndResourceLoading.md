@@ -1,12 +1,12 @@
 ---
-order: 400
+order: 410
 title: 关键渲染路径与资源加载
 module: 'html5'
 category: 前端技术
 difficulty: intermediate
 description: 从 HTML 解析到首屏像素，讲清关键渲染路径的每一步，以及 async、defer、preload、prefetch 的正确用法。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'css/550-CriticalRenderPathOptimization'
   - 'javascript/510-CoreWebVitalsAndPerformanceMetrics'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 集成 Canvas 绘图：命令式绘制的所有权边界、useRef + Effect 绘制流、rAF 动画循环与 React 渲染解耦、DPR 高清适配、ResizeObserver 响应式与指针交互画板示例。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'react/320-ReactAccessibility'
   - 'react/330-ReactPWA'

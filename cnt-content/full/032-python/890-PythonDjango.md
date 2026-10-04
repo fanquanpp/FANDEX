@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: Django 核心：MVT 架构、ORM、Admin、表单、认证与 DRF 集成。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'python/790-PythonDocker'
   - 'python/860-PythonCeleryDistributedTaskQueue'

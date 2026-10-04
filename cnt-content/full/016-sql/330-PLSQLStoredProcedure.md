@@ -1,12 +1,12 @@
 ---
-order: 330
+order: 340
 title: PL/SQL 与存储过程
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: 存储过程与函数、触发器、游标、异常处理、动态 SQL 与方言对比
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'sql/320-AdvancedQuery'
   - 'sql/440-PerformanceOptimization'

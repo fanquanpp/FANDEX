@@ -1,12 +1,12 @@
 ---
-order: 370
+order: 380
 title: 隔离级别
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: 四种事务隔离级别的定义、实现机制（MVCC/锁/SSI）、各数据库方言差异与选择策略。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/360-TransactionACIDProperty'
   - 'sql/380-DirtyReadNonRepeatablePhantom'
@@ -215,7 +215,117 @@ COMMIT;
 -- 比全局 SERIALIZABLE 便宜得多，同样消除该行上的竞态
 ```
 
-## 8. 小结
+## 8. 动手实验：两个终端亲眼看见隔离级别生效
+
+隔离级别的一切结论都可以在本地库上用两个终端复现。开两个窗口各连一个会话（下称 A 终端、
+B 终端），按下面的顺序交错执行——**关键是严格按步骤交错**，隔离实验出错多数是因为执行
+顺序乱了。
+
+准备数据（任一终端执行一次即可，PostgreSQL 语法）：
+
+```sql
+CREATE TABLE accounts (
+    id      INT PRIMARY KEY,
+    balance NUMERIC(10,2) NOT NULL
+);
+INSERT INTO accounts VALUES (1, 1000.00), (2, 1000.00);
+```
+
+### 实验 1：READ COMMITTED 下复现不可重复读
+
+| 步骤 | A 终端 | B 终端 |
+| --- | --- | --- |
+| 1 | `BEGIN;`（默认 READ COMMITTED） | |
+| 2 | `SELECT balance FROM accounts WHERE id = 1;` → 1000 | |
+| 3 | | `UPDATE accounts SET balance = 2000 WHERE id = 1;` |
+| 4 | | `COMMIT;` |
+| 5 | `SELECT balance FROM accounts WHERE id = 1;` → **2000** | |
+| 6 | `COMMIT;` | |
+
+观察点：同一个事务内两条相同 SELECT 结果不同——这就是不可重复读。此刻 A 终端还没提交，
+但已经基于两个不同的事实各推理了一次。
+
+### 实验 2：REPEATABLE READ 下同一序列被挡住
+
+| 步骤 | A 终端 | B 终端 |
+| --- | --- | --- |
+| 1 | `BEGIN ISOLATION LEVEL REPEATABLE READ;` | |
+| 2 | `SELECT ... WHERE id = 1;` → 1000（快照定格） | |
+| 3 | | `UPDATE ... SET balance = 2000 ...; COMMIT;` |
+| 4 | `SELECT ... WHERE id = 1;` → **仍 1000** | |
+| 5 | `UPDATE accounts SET balance = balance + 100 WHERE id = 1;` | |
+| 6 | `COMMIT;` → **报错：could not serialize access due to concurrent update** | |
+
+观察点有两个：步骤 4 证明快照隔离让重复读稳定；步骤 6 是 PostgreSQL 的写冲突检测——
+A 想改的行在快照之后被别人改过并提交，数据库宁可中止 A 也不允许丢失更新。**应用必须
+捕获这个错误并重试整个事务**，这是使用 REPEATABLE READ 的隐含成本（重试模板见练习 2）。
+
+### 实验 3：SERIALIZABLE 抓住「读写交叉」
+
+按第 6.1 节的两个账户交叉转账序列执行（A 读 1 写 2，B 读 2 写 1），后提交的一方报
+序列化失败。观察点：两个事务单看都合法，并发执行却产生「谁也没看见对方」的依赖环——
+SSI 的价值就是把这类只有串行化才防得住的异常交给数据库而非应用代码。
+
+### MySQL 方言调整
+
+同样的实验在 MySQL 里只需三处替换：`BEGIN;` 代替 `BEGIN ISOLATION LEVEL ...;`
+（级别用 `SET SESSION TRANSACTION ISOLATION LEVEL REPEATABLE READ;` 事先设定）、
+错误信息变为 `Deadlock found` 或静默的成功（InnoDB RR 的当前读语义不同，见第 5.1 节）、
+实验 2 的步骤 6 在 MySQL 下**不报错而是基于最新已提交版本叠加**——这正好验证
+「PostgreSQL 与 MySQL 的 RR 是两种实现」这一节的核心论断。
+
+## 9. 练习
+
+判断题（5 分钟）：「把隔离级别设成 SERIALIZABLE 之后，应用就不用写重试逻辑了。」对还是
+错？先用一句话作答，再对照第 6.2 节检查。
+
+实验题（15 分钟）：在实验 1 的基础上改造——不改隔离级别，只用 `SELECT ... FOR UPDATE`
+让 A 终端的两次读取结果一致。验收：A 终端第二条 SELECT 仍返回 1000，且 B 终端的 UPDATE
+在 A 提交前一直阻塞。
+
+提示（思路方向）：FOR UPDATE 在读取时就锁住行，锁持有到事务结束；B 的 UPDATE 会等锁。
+先自己试，再对照：
+
+```sql
+-- A 终端
+BEGIN;  -- READ COMMITTED 即可
+SELECT balance FROM accounts WHERE id = 1 FOR UPDATE;   -- 1000，并持锁
+-- B 终端：UPDATE ... 会阻塞在这里，直到 A 提交
+SELECT balance FROM accounts WHERE id = 1;              -- 仍 1000
+COMMIT;
+```
+
+重试题（20 分钟）：为实验 2 的写冲突写一段应用层重试伪代码（任意语言），要求：最多重试
+3 次、每次重试前事务完全重来（不是只重发最后一条语句）、第三次仍失败则上报。验收：能
+说清「为什么必须整个事务重跑」。
+
+提示（思路方向）：快照作废意味着事务里所有已读数据都可能过期，只重放最后一条 UPDATE
+会用旧前提做新决策。参考实现（Python 伪代码）：
+
+```python
+for attempt in range(3):
+    try:
+        with conn.transaction():          # 事务开始：快照重建
+            bal = query("SELECT balance FROM accounts WHERE id = %s", (1,))
+            if bal >= 100:
+                execute("UPDATE accounts SET balance = balance - 100 WHERE id = 1")
+        break                              # 提交成功，退出重试
+    except SerializationFailure:
+        if attempt == 2:
+            alert("转账连续 3 次序列化冲突，转人工")
+            raise
+        sleep(backoff(attempt))            # 指数退避：100ms, 200ms, 400ms
+```
+
+面试题（10 分钟）：面试官问「MySQL 的 REPEATABLE READ 下还有幻读吗？」给出包含三个
+要点的回答：普通 SELECT 走什么读、UPDATE 走什么读、Next-Key Lock 在其中扮演什么角色。
+验收：能把第 5.1、5.2 节的机制串成 30 秒的口头回答。
+
+提示：要点是快照读（普通 SELECT，MVCC）、当前读（UPDATE/DELETE/FOR UPDATE，读最新
+已提交）、间隙锁锁住范围阻止插入。参考答案骨架：**快照读下没有幻读；当前读会读到新插入
+的行；要彻底防住范围插入，用 FOR UPDATE 让间隙锁把空隙锁死**。
+
+## 10. 小结
 
 - 标准四级对应三类异常的递进消除：脏读 → 不可重复读 → 幻读。
 - 方言差异大：PG 无脏读（READ UNCOMMITTED 形同 READ COMMITTED）、

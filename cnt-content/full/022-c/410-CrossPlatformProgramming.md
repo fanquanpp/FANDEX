@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 从「Linux 编译干净的程序到 MSVC 报一串错」画出差异地图：编译器方言与 MSVC 的 C 标准现状、路径分隔符与换行转换、文件/进程/线程/动态库/信号/套接字/时间七张对照表、条件编译的组织学与最小兼容层、LLP64 数据模型的 long 陷阱，逐一收口 320/330/340/370/390 各篇留下的 Windows 伏笔。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/320-DynamicStaticLibrary'
   - 'c/370-POSIXThread'

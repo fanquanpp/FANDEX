@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 20 行学会打印当前时间、解析字符串、格式化输出，告别老 Date API。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'java/180-ExceptionHandlingMechanism'
 prerequisites:
@@ -120,6 +120,50 @@ public class TimeComplete {
 ```
 
 间隔计算二选一：**差值要"几年几月几天"用 `Period`，要"总天数"用 `ChronoUnit.DAYS.between`**；时间差的对应物是 `Duration`（精确到纳秒的时长，不掺日历概念）。
+
+## 动手练习（先遮住参考实现）
+
+预计 25 分钟。老一辈 Java 课用 `Calendar` 推算「3 月 1 日的前一天是 2 月几号」来判断闰年，要写四五步；下面三道题都请用 `java.time` 解，做完回头看看省掉了什么。
+
+**练习一（5 分钟）：今天的完整名片**
+
+打印今天的日期，格式为 `2026-10-05 是星期一，是一年中的第 278 天`。只用三个 API：`LocalDate.now()`、`getDayOfWeek()`、`getDayOfYear()`。自测：输出里星期与天数对得上今天的真实日期。
+
+**练习二（10 分钟）：生日倒计时（处理 2 月 29 日）**
+
+复用上文生日提醒思路，但要求处理闰日：输入 `MonthDay.of(2, 29)`，若目标年份不是闰年（如 2027），`atYear(2027)` 给出的日期是 2 月 28 日还是 3 月 1 日？先查 API 文档 `MonthDay.atYear` 对平年的行为形成预测，再运行验证，最后用一句话写下结论。
+
+**练习三（10 分钟）：一行解「去年今天」与「当月最后一天」**
+
+写两行：输出去年的今天；输出本月最后一天的日期。只允许用 `minusYears` 与 `TemporalAdjusters.lastDayOfMonth()`（在 `java.time.temporal` 包里）。自测：把系统时间概念带进来验证——2 月的结论每年都该重算，你的两行代码自动正确吗？
+
+### 参考实现（先别看）
+
+```java
+import java.time.LocalDate;
+import java.time.MonthDay;
+import java.time.temporal.TemporalAdjusters;
+
+public class DateDrill {
+    public static void main(String[] args) {
+        // 练习一
+        LocalDate today = LocalDate.now();
+        System.out.println(today + " 是星期" + today.getDayOfWeek().getValue()
+                + "，是一年中的第 " + today.getDayOfYear() + " 天");
+        // 严格按中文习惯映射「一~日」可用 switch，此处保留 DayOfWeek 序数
+
+        // 练习二：atYear 对平年把 2 月 29 日回落为 2 月 28 日（查证后再看答案）
+        LocalDate leapDay = MonthDay.of(2, 29).atYear(2027);  // 2027 不是闰年
+        System.out.println(leapDay);   // 预期输出：2027-02-28
+
+        // 练习三
+        System.out.println(today.minusYears(1));                            // 去年的今天
+        System.out.println(today.with(TemporalAdjusters.lastDayOfMonth())); // 本月最后一天
+    }
+}
+```
+
+预测题答案（先答再看）：练习二的答案是**回落到 2 月 28 日**——`MonthDay.atYear(平年)` 把 2 月 29 日调整为当年 2 月的最后一个有效日，不报错也不顺延到 3 月。这是 API 替你做的日历决策，需求评审时把它当成明确定义写进文档。练习三不需要每年重算：`minusYears` 与 `lastDayOfMonth` 都基于日历规则现算（2028 年 2 月算出 29 日、2027 年算出 28 日），这正是「不可变对象 + 工厂方法」设计把日历数学收进库里的意义。
 
 ## 如果报这个错，看这里
 

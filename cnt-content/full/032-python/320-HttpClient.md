@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: http.client 底层客户端：连接与请求、响应解析、头处理、异常层级与 keep-alive 复用。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related: []
 prerequisites: []
 ---

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 回顾 JavaScript 模块的核心知识体系：类型与作用域、闭包与原型、Promise 与事件循环、DOM 与模块化、内存管理，并用虚拟歌手音乐平台的示例串联全部要点。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'javascript/010-WhatIsJavaScript'
   - 'javascript/080-FunctionScopeClosure'

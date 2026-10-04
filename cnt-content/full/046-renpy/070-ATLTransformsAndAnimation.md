@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用变换语言给图像定位缩放淡入淡出，掌握插值缓动并行随机与事件驱动的动画写法
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-05'
 related:
   - 'renpy/030-ImagesSceneShowAndTransitions'
   - 'renpy/080-ScreensAndScreenLanguage'
@@ -228,6 +228,52 @@ transform pulse_button:
 - show 不带 at 子句时，图像会沿用它当前已在使用的 transform——已经滑到屏幕中间的立绘，不会因为一句 show eileen happy 就跳回默认位置；
 - 一个 ATL transform 替换另一个时，属性会被继承：新 transform 没写的属性沿用旧值；
 - 想完全重置，要么 hide 之后再 show（从零开始），要么显式 at reset。
+
+## 动手实践
+
+以下三个任务都基于同一个空项目即可完成，合计约 70 分钟。每个任务先自己写，写完再对照提示修正——ATL 的语法量不大，但「语句顺序」的细节只有写错一次才记得住。
+
+**任务一：角色入场动画（约 20 分钟）**
+
+写一个可复用的 transform `enter_from_right`：立绘从屏幕右侧外（`offscreenright`）滑到 `right` 位置，同时从全透明淡入到不透明，总时长 0.8 秒，用 easeout 缓动；然后在剧本里 `show` 一个角色使用它。接着再造一个 `exit_to_left`，让角色离场时滑出并淡出。
+
+提示：入场需要「位置变化」与「透明度变化」同时进行——这正是 parallel 的场景；也可以试试不用 parallel、直接把 xalign 与 alpha 写进同一个插值语句（两个属性一行），对比两种写法的效果差异。参考实现骨架：
+
+```renpy
+transform enter_from_right:
+    parallel:
+        offscreenright
+        easeout 0.8 right        # right 是内置位置，插值目标是它即可
+    parallel:
+        alpha 0.0
+        easeout 0.8 alpha 1.0
+```
+
+**任务二：待机呼吸与随机表情（约 30 分钟）**
+
+给立绘做一个「活着」的待机效果：缩放在 1.0 与 1.03 之间以 2 秒周期缓慢往返（呼吸感），同时每 3 秒从三张表情图中随机切换一张，其中一张出现概率更高。把呼吸效果封装成可复用 transform，与表情切换叠加使用。
+
+提示：呼吸用 block 加 repeat 包住两段 zoom 插值；表情随机用 choice 加权重（高概率那张写 `choice 2.0`）；两者叠加时，把呼吸 transform 定义成接收参数的形式（`transform breathing(char_img):`），内部用 contains 分出两层各自动画。参考骨架：
+
+```renpy
+transform breathing:
+    anchor (0.5, 1.0)
+    block:
+        zoom 1.0
+        ease 1.0 zoom 1.03
+        ease 1.0 zoom 1.0
+        repeat
+```
+
+验收时重点观察：换表情的瞬间呼吸有没有「跳帧」——如果有，想想第 animation 一节讲的 at 时间基如何解决它。
+
+**任务三：缓动对比实验（约 20 分钟）**
+
+写一个小实验场景：同一段 1.5 秒、从 `left` 到 `right` 的位移，分别用 linear、ease、easein、easeout、easeout_bounce 五种 warper 各跑一次（用五个菜单选项触发五种效果），自己玩一遍并写五行观感笔记：每种节奏适合什么情绪的演出（平淡叙述、强调登场、俏皮弹跳……）。
+
+提示：用 menu 让玩家选 warper，五个分支里各自 show 带不同 ATL 的同一个角色；对比要在同一场景里连续看才有分辨力。这道题没有标准答案，观感笔记本身就是产物——「给一段演出挑对缓动」正是视觉小说演出的日常判断，练的是审美与语言的对应关系。
+
+完成后回看三个任务的代码：你已经用上了三种承载方式、parallel、choice、block 加 repeat、内置位置与缓动家族——ATL 的主干语句全部过了一遍。
 
 ## 小结
 

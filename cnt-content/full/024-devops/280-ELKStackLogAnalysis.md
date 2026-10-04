@@ -1,12 +1,12 @@
 ---
-order: 280
+order: 300
 title: ELK Stack 日志分析
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: ELK Stack 日志分析：Elasticsearch 索引、Logstash 管道、Kibana 可视化。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'devops/250-Prometheus'
   - 'devops/260-GrafanaDashboards'

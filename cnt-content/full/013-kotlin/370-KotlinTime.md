@@ -1,12 +1,12 @@
 ---
-order: 370
+order: 390
 title: Kotlin 与时间
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: kotlinx-datetime
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/350-KotlinIO'
   - 'kotlin/360-KotlinRegex'

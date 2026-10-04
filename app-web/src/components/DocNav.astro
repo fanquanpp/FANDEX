@@ -5,7 +5,7 @@ import '@/styles/components/doc-nav.css';
 const { prev, next } = Astro.props as { prev: DocEntry | null; next: DocEntry | null };
 ---
 
-<nav class="doc-nav" class:list={{ 'single-btn': !prev || !next }}>
+<nav class="doc-nav" aria-label="上一篇 / 下一篇" data-i18n-aria="docNav.navAria" class:list={{ 'single-btn': !prev || !next }}>
   {
     prev ? (
       <a

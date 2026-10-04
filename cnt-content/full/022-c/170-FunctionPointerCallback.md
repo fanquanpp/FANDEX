@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从 qsort「一行排任意类型」的读心术之谜出发：读懂函数指针声明、函数名退化与两种调用写法、typedef 三步法；qsort 比较器完整实战（含减法溢出陷阱实录）、带上下文的泛型 apply、事件处理器表，讲清 C 函数指针为什么不是闭包，以及对象指针与函数指针互转的标准边界。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/180-FunctionPointerCallbackJumpTable'
   - 'c/190-ComplexDeclarationParsing'

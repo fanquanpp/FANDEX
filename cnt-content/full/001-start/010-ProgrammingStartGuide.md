@@ -7,7 +7,7 @@ category: 工具链
 difficulty: beginner
 prerequisites: []
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'start/020-ComputerBasicsForBeginners'
   - 'start/030-DevEnvironmentSetup'
@@ -141,6 +141,42 @@ flowchart LR
 **"先学哪门语言？"**——看目标方向，路线图里有逐方向的推荐。没有目标就先学 JavaScript（浏览器里就能跑，反馈最快）或 Python（语法最接近人类语言）。**语言只是工具，选一个开始比选"最好的"重要一百倍。**
 
 **"教程看懂了，自己写就不会，怎么办？"**——这是必经阶段，说明你在"理解"和"输出"之间还差练习量。解法不是重看教程，而是：照着示例敲一遍（不看原文）→ 改一个小功能 → 从零重写。[学习方法论](/start/050-LearnHowToLearnProgramming) 把这套梯度讲透了。
+
+## 动手实践
+
+**任务一：让计算机替你算数。** 回到刚才的浏览器控制台（F12 -> Console），不查资料，让计算机算出「12 个月里每天学习 1.5 小时，一共多少小时」与「365 天有多少小时」，并各打印一行带文字的结果。提示：`console.log` 括号里可以写字符串（引号包住），也可以直接写算式，还能用 `+` 把文字与算式连起来。
+
+**任务二：故意制造一次报错。** 在控制台输入 `consol.log("打错字的测试")` 回车，通读红色报错信息，找出它点名的那个词，改正后重跑。提示：报错第一行通常写着 `ReferenceError: consol is not defined`——`not defined` 意思是「这个名字不存在」，绝大多数拼写错误都是这个形态。这个练习的目的就是让你第一次完整经历「报错 -> 读报错 -> 修复」的循环。
+
+**任务三：写下你的第一周计划。** 用手机备忘录或纸笔，按「第一周行动清单」改写成你自己的五件事，每件标上预计完成的那一天。提示：计划的价值在「具体到某一天」，「本周内」式的计划通常撑不过三天。
+
+先自己动手，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
+
+```javascript
+console.log("一年学习总小时：" + 1.5 * 365)
+console.log("一年的小时数：" + 365 * 24)
+// 输出：一年学习总小时：547.5
+// 输出：一年的小时数：8760
+```
+
+这个练习暴露了编程与计算器的第一个差别：算式写进程序后是**可复用**的——把 1.5 改成 2，第一个数字自动重算。字符串 + 算式拼接是最原始的「输出格式化」，后面学到变量与模板字符串会有更优雅的写法。
+</details>
+
+<details>
+<summary>任务二参考观察记录</summary>
+
+输入 `consol.log("打错字的测试")` 后，控制台输出：
+
+```text
+Uncaught ReferenceError: consol is not defined
+    at <anonymous>:1:1
+```
+
+阅读顺序：最前面的 `ReferenceError` 是错误类别（引用了不存在的名字）；`consol is not defined` 是具体原因；下面的 `at <anonymous>:1:1` 是出错位置（第 1 行第 1 列）。修正为 `console.log` 后正常输出。以后你见到 `is not defined`、`is not a function`，第一反应都应该是「检查拼写」。
+</details>
 
 ## 检验清单
 

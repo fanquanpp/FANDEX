@@ -1,12 +1,12 @@
 ---
-order: 550
+order: 560
 title: gh label 命令速查手册
 module: 'github'
 category: 工具链
 difficulty: beginner
 description: '清单驱动讲解 gh label 系列命令：按"查看现状-创建标签-编辑维护-删除清理-模板复用"的管理流程展开，配以原理讲解、错误对策。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related: []
 prerequisites: []
 ---

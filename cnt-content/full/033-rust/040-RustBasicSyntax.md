@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Rust 基础语法：变量与不可变性、标量类型、复合类型、函数与控制流
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'rust/030-RustEnvSetup'
   - 'rust/050-RustOwnershipBorrowing'
@@ -238,7 +238,53 @@ fn main() {
 | expected `()` | 函数多写了分号 | 去掉最后表达式的分号 |
 | index out of bounds | 数组越界 | 用迭代器遍历，避免手动索引 |
 
-## 8. 小结
+## 8. 动手实践：语法落地的四个小任务
+
+语法规则的分辨力同样靠「先预测后验证」来练。以下任务合计约 45 分钟，延续全系列「虚拟歌手音乐平台」的设定。
+
+**任务一：不可变与 mut 的边界（约 10 分钟）**
+
+声明歌单长度 `let songs = 42;`，依次尝试三件事并记录编译结果：直接 `songs = 43;`；改成 `let mut songs = 42;` 再赋值；保持不可变，用遮蔽 `let songs = songs + 1;` 换新值。
+
+提示：三种做法只有第一种编译不过。参考检查点：能说出遮蔽与 mut 的区别——mut 是「同一块内存里的值可变」，遮蔽是「旧变量作废、新变量顶替原名」，因此遮蔽甚至可以改变类型（试试 `let songs = songs.to_string();`），而 mut 不能。
+
+**任务二：类型与转换（约 10 分钟）**
+
+写一个函数 `format_duration(total_seconds: u32) -> String`，把秒数格式化成「3 分 25 秒」中文样式（提示：`/` 与 `%` 做整除取余，`format!` 拼接）。再故意把 `u32` 参数传成 `i32` 变量，读一遍 mismatched types 报错，用 `as` 或改声明修复，并记录「用 as 转换负数会得到什么」（试 `(-1_i32) as u32`）。
+
+参考检查点：能说出 `as` 是不做范围检查的按位重解释——负数转 u32 会得到巨大的回绕值，这也是为什么生产代码更常用 `try_from` 这类返回 Result 的转换。
+
+**任务三：表达式化的成绩定级（约 10 分钟）**
+
+把下面「命令式版本」重写成表达式版本，一行完成：`let mut grade; if score >= 90 { grade = "A"; } else { grade = "B"; }`（提示：整个 if 直接赋给 grade，去掉 mut 与分号）。再挑战把第 6 节的 `sum_odd` 用 `for i in 1..=limit` 与 `if i % 2 == 1 { total += i; }` 合并成一行累加（提示：`if` 条件写进 for 的模式里：`for i in 1..=limit` 配合 `total += if i % 2 == 1 { i } else { 0 };`）。
+
+参考检查点：两处改写后代码都编译通过且行为不变；能说出「表达式有值」让 Rust 的分支逻辑可以直接参与赋值，省掉中间变量与 mut——这正是第 5.1 节「if 是表达式」的实际收益。
+
+**任务四：找茬自检（约 15 分钟）**
+
+不看第 7 节的表格，把下段代码的四处错误全找出来再上机验证：
+
+```rust
+fn main() {
+    let names = ["初雪", "星尘", "海伊"];
+    let mut i = 0;
+    while i <= names.len() {          // (1) 边界
+        println!("{}", names[i]);
+        i += 1;
+    }
+    let doubled = double(21);          // (2) 函数没定义
+    let msg = if doubled > 40 { "高" }; // (3) 缺 else
+    println!("{msg}")
+}
+
+fn double(x: u32) -> u32 {
+    x * 2;                             // (4) 末尾多了一个分号
+}
+```
+
+提示：四处分别是「`<=` 造成越界（最后一轮索引等于 len）」「double 未定义（Rust 不要求先声明再使用，但这里压根没有这个函数，报 cannot find function）」「if 表达式缺 else 分支导致各分支类型不完整」「`x * 2;` 的分号把表达式变成语句，函数返回类型对不上」。参考检查点：四个错误分别对应第 7 节表格的哪几行，能一一对上，说明对策表已经内化；顺手把 while 版本改成 for 遍历，体会第 5.3 节「for 无越界」的含金量。
+
+## 9. 小结
 
 本课覆盖变量、标量/复合类型、函数与控制流。核心记忆点：变量默认不可变（mut 显式可变）、表达式有值（if/loop 可返回）、for 优先于 while 做遍历。下一步学习 Rust 的灵魂——所有权与借用。
 

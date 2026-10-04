@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用 TileSet 与 TileMapLayer 绘制关卡，掌握图块放置坐标换算与地形自动衔接
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-05'
 related: []
 prerequisites:
   - 'godot/080-CharacterPhysicsAndCollision'

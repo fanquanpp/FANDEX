@@ -6,10 +6,10 @@ category: 后端技术
 difficulty: intermediate
 description: List、Set、Map 体系及迭代器与比较器。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'java/110-ArrayDetailed'
-  - 'java/620-JVMtuning'
+  - 'java/620-JVMTuning'
   - 'java/510-ConcurrencyDetailed'
   - 'java/520-CompletableFutureAsync'
 prerequisites:

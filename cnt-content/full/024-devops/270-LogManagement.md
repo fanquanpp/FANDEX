@@ -1,12 +1,12 @@
 ---
-order: 270
+order: 290
 title: 日志管理
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: 日志管理：日志采集、ELK Stack、Fluentd、日志格式与日志分析
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/030-PackageManagementRepository'
   - 'devops/130-ServiceMesh'

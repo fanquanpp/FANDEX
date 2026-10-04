@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 为什么重写 equals 必须重写 hashCode，以及 Objects.hash 极简写法。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'java/210-CollectionFrameworkDetailed'
   - 'java/450-JavaRecordClass'
@@ -175,6 +175,67 @@ flowchart LR
 2. equals 与 hashCode 成对、同字段重写；
 3. 判断"业务上怎样算同一个 key"——通常用业务主键（id）而不是全部字段；
 4. 能用 `record` 就用 record（组件即契约，编译器兜底）。
+
+## 动手练习（先遮住参考实现）
+
+预计 30 分钟，三道题共用一个场景：给商店收银台建模「金额」。建议每道题先写任务里的自测断言，再倒推实现。
+
+**练习一（10 分钟）：手写契约四步走**
+
+新建 `Money` 类，两个 `long cents`（分）与 `String currency` 字段。要求：不借助 IDE 生成，按本文的四步（引用判断、null 与类型判断、强转、逐字段比较）手写 `equals`，再写 `hashCode`（用 `Objects.hash`）。自测断言：
+
+```java
+Money a = new Money(1000, "CNY");
+Money b = new Money(1000, "CNY");
+System.out.println(a.equals(b));                    // 期望 true
+System.out.println(a.hashCode() == b.hashCode());   // 期望 true
+var set = new java.util.HashSet<Money>();
+set.add(a);
+System.out.println(set.contains(b));                // 期望 true——这才是契约生效
+```
+
+（提示：`currency` 是引用类型，字段比较用 `Objects.equals(this.currency, other.currency)`，别写成 `==`。）
+
+**练习二（10 分钟）：亲手丢一个 key**
+
+把 `Money` 改成可变：加一个 `setCents(long)` 方法。往 `HashSet` 放入一个对象后调用它改金额，再 `contains` 同一个引用。预测输出，运行验证，然后一句话写下结论：为什么集合把「改 key」当成了「删除」。这就是「放入集合后不许改字段」纪律的实验证据。
+
+**练习三（10 分钟）：record 重写**
+
+用一行 `record Money(long cents, String currency)` 替换练习一的整个类，重跑练习一的全部断言，输出应当完全一致。体会：编译器生成的契约覆盖全部组件——这正是「值语义数据载体优先 record」的落地理由。
+
+### 参考实现（练习一，先别看）
+
+```java
+import java.util.Objects;
+
+public class Money {
+    private final long cents;      // 练习一先写死不可变，练习二再开放 setter
+    private final String currency;
+
+    public Money(long cents, String currency) {
+        this.cents = cents;
+        this.currency = currency;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) return true;                       // 第一步：引用相同必相等
+        if (obj == null || getClass() != obj.getClass())    // 第二步：null 与类型
+            return false;
+        Money other = (Money) obj;                          // 第三步：强转
+        return this.cents == other.cents                    // 第四步：逐字段
+            && Objects.equals(this.currency, other.currency);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(cents, currency);               // 与 equals 同字段
+    }
+}
+```
+
+预测题答案（先答再看）：练习二的 `contains` 输出 `false`——对象引用没变、集合里也确实还有它，但字段改了导致 `hashCode` 变了，查找走错桶，第一步就失败。集合的行为没有错：契约要求「相等的对象哈希必须相同」，你亲手让同一个对象前后不相等了。
 
 ## 记住
 

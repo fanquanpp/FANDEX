@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以"上线半小时数据库连接耗尽"为主线学 database/sql：驱动选型与零依赖起步、Query/Exec 全家桶、事务模板、Context 超时传导、连接池四参数、NULL 处理与 GORM 选型，附坑点、自检与练习。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'go/140-ContextDetailed'
   - 'go/550-GoRedis'

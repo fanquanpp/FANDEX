@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: WebSocket实时通信
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'python/850-PythonMessageQueue'
   - 'python/940-PythonGrpc'

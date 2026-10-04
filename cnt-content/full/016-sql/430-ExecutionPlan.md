@@ -1,12 +1,12 @@
 ---
-order: 430
+order: 440
 title: 执行计划
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: EXPLAIN 与 EXPLAIN ANALYZE：PostgreSQL/MySQL 计划输出解读、扫描与连接节点、估算偏差诊断与慢查询定位工作流。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/440-PerformanceOptimization'
   - 'sql/420-Index'

@@ -1,12 +1,12 @@
 ---
-order: 240
+order: 250
 title: 递归 CTE
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: SQL递归公用表表达式：WITH RECURSIVE语法、层级遍历、图遍历、斐波那契数列与终止条件控制
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'sql/190-Subquery'
   - 'sql/280-PivotUnpivot'

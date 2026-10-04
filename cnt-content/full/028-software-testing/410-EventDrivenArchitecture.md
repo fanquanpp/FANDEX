@@ -1,12 +1,12 @@
 ---
-order: 410
+order: 430
 title: 事件驱动架构
 module: 'software-testing'
 category: 云与基础设施
 difficulty: advanced
 description: 事件驱动架构、事件溯源、CQRS模式与应用。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'software-testing/400-LayeredArchitecture'
   - 'software-testing/420-QualityAttribute'

@@ -1,12 +1,12 @@
 ---
-order: 230
+order: 250
 title: CI/CD 测试门禁
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: CI/CD 测试门禁：质量门的分层设计、SonarQube Quality Gate、JaCoCo 与 Vitest 覆盖率卡点、flaky 测试治理与变异测试进阶。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/070-WhiteBoxTestCoverage'
   - 'software-testing/190-TestDouble'

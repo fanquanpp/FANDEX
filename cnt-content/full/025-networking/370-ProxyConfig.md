@@ -1,12 +1,12 @@
 ---
-order: 370
+order: 390
 title: 代理配置
 module: 'networking'
 category: 云与基础设施
 difficulty: beginner
 description: '代理学习笔记：客户端环境变量让命令行走代理、自建 Squid 正向代理、Nginx/HAProxy 反向代理与负载均衡、SSH 隧道即 SOCKS 代理，附排错路径。'
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'networking/130-CurlHTTPRequest'
   - 'networking/120-HTTPProtocol'

@@ -6,7 +6,7 @@ category: 工具链
 difficulty: intermediate
 description: 从「20 人团队的 PR 全堆给管理员一个人审」这个真实问题切入，动手写一份 CODEOWNERS 并用分支保护让审查意见有强制力，讲清路径匹配规则、优先级语义与常见的「负责人没被指派」排查路径。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'github/170-BranchModelBranchRule'
   - 'github/180-PullRequestCompleteCollaborationFlow'
@@ -122,7 +122,33 @@ Settings → Branches → main 保护规则
 
 勾上之后：改 `src/auth/` 的 PR，没有安全团队批准就无法合并，其他审查者批了也不算数。再叠加 required status checks（CI 必须绿，见 [CodeQL 扫描](/github/300-CodeQLCodeScanning)），合并门槛就是完整的三层：**CI 通过 + 代码所有者批准 + 审查通过**。
 
-## 5. 坑点与自检
+## 5. 底层机制：负责人是怎么被算出来的
+
+理解计算过程，排查「该来的人没来」就不用猜：
+
+1. **触发时机**：PR 创建与每次推送新提交时，服务端计算 `base...head` 的**改动文件清单**（注意是差异文件，不是全部文件）；
+2. **逐文件匹配**：对每个改动文件跑一遍 CODEOWNERS 规则，按第 3 节的优先级语义得出它的所有者集合；
+3. **汇总请求审查**：全部文件的所有者去重后，生成一批 review requests；已批准过的人不会被重复打扰；
+4. **门禁判定**：分支保护勾了 Require review from Code Owners 后，合并检查逐文件核验「该文件的代码所有者是否在最新提交上批准过」。开启 Dismiss stale approvals 时，新提交会把旧批准作废，所有者必须再看一遍——防止「批准后偷偷塞提交」。
+
+两个推论：改 CODEOWNERS 文件本身也算改动文件，它会命中自己的规则（通常把 `.github/CODEOWNERS` 的所有者设为核心团队，形成「改规则的规则」）；负责人计算只认**默认分支上的 CODEOWNERS 版本**，在功能分支里改规则不会立即影响该分支自己 PR 的门禁判定。
+
+## 6. 与相邻知识的关系
+
+- [分支模型与分支保护规则](/github/170-BranchModelBranchRule)：CODEOWNERS 负责自动**派单**，保护规则负责让派单结果**有强制力**——两者是「名单」与「门禁」的关系；
+- [Pull Request 完整协作流程](/github/180-PullRequestCompleteCollaborationFlow)：负责人审批是 PR 状态机里 request-changes / approve 语义的前置输入；
+- [gh pr 实战](/github/460-GhPrManage)：命令行视角查看与催办负责人指派的 PR；
+- [社区健康文件](/github/250-CommunityHealthFile)：CONTRIBUTING 写「怎么贡献」，CODEOWNERS 写「谁来把关」，一软一硬配套。
+
+## 7. 面试题思路
+
+**「为什么推荐用团队而不是个人当代码所有者？」** 从两个失败模式答：个人所有者是单点故障（离职、休假时 PR 卡死，只能管理员强合）；团队把「人」抽象成「职责」，成员变更不用改 CODEOWNERS。延伸到大型组织的分层：目录级团队 + 最终把关人（最具体规则）的两级结构。
+
+**「CODEOWNERS 的优先级语义是什么，怎么安排规则顺序？」** 先说清「多规则叠加、最具体规则决定必须批准的人」，再给排版惯例（通用在前、具体在后），最后补「目录必须 `**` 才覆盖子内容」这个高频坑。能提到 Draft PR 不派单、3 MB 上限属经验加分。
+
+**「如何防止代码所有者机制形同虚设？」** 三个抓手：保护规则勾 Require review from Code Owners（否则只是礼貌）；开启 Dismiss stale approvals（否则批准后可塞提交）；定期审计所有者名单与团队权限（僵尸团队会让规则静默失效）。
+
+## 8. 坑点与自检
 
 | 现象 | 原因 | 处理 |
 | :--- | :--- | :--- |
@@ -140,11 +166,59 @@ Settings → Branches → main 保护规则
 2. 兜底规则 `*` 和最具体规则，谁在上面？
 3. 「必须由代码所有者批准」这个开关，你的 main 保护规则里勾了吗？
 
-## 6. 练习
+## 9. 练习
+
+先看任务与提示，自己写完再看参考实现。
 
 1. 给自己的仓库写一份 `.github/CODEOWNERS`：先只写一条 `* @你的用户名`，开个 PR 看自动指派是否生效。
+
+   提示：文件无扩展名；位置选 `.github/`；验证用 `gh pr view` 看 reviewRequests。
+
+   参考实现：
+
+   ```text
+   # .github/CODEOWNERS
+   *   @your-username
+   ```
+
+   ```bash
+   gh pr create --fill
+   gh pr view --json reviewRequests,number \
+     --jq '"PR #\(.number) 等待审查：\([.reviewRequests[].login] | join(", "))"'
+   ```
+
 2. 加一条具体规则（比如 `.github/workflows/**` 指派给另一个人），验证优先级语义。
+
+   提示：具体规则写在 `*` 之后；改一个 workflow 文件开 PR，观察审查者是否「两人都在、以具体规则的人为准」。
+
+   参考实现：
+
+   ```text
+   # .github/CODEOWNERS（顺序：通用在前，具体在后）
+   *                               @your-username
+   .github/workflows/**            @teammate-devops
+   ```
+
+   ```bash
+   # 改动一个 workflow 文件后开 PR，核对门禁归属
+   gh pr view --json reviewRequests,files \
+     --jq '{files: [.files[].path], reviewers: [.reviewRequests[].login]}'
+   ```
+
 3. 在分支保护里勾选 Require review from Code Owners，然后用一个没有负责人批准的 PR 试试合并，确认被拦。
+
+   提示：入口在 Settings → Branches；被拦时 `gh pr merge` 的报错信息与 `mergeStateStatus` 都能当证据。
+
+   参考实现：
+
+   ```bash
+   gh pr merge --squash
+   # 预期报错：Pull request is not mergeable: the base branch policy prohibits the merge
+   # 查看精确阻塞原因：
+   gh pr view --json mergeable,mergeStateStatus \
+     --jq '"mergeable=\(.mergeable) state=\(.mergeStateStatus)"'
+   # 典型输出：mergeable=BLOCKED state=BLOCKED（等负责人批准后再试）
+   ```
 
 ## 下一步
 

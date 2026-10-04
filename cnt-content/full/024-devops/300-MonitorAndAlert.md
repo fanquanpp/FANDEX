@@ -1,12 +1,12 @@
 ---
-order: 300
+order: 320
 title: 监控与告警
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: 监控与告警：Prometheus、Grafana、告警设计、SLI/SLO与On-Call实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/070-ContainerSecurity'
   - 'devops/180-GitOpsCD'

@@ -6,20 +6,20 @@ category: 后端技术
 difficulty: advanced
 description: "以「while 循环停不下来、程序却没有任何报错」引入，讲 happens-before 直觉、volatile 最小实验、死锁四条件与 jstack 抓捕实录、AQS 的 state 加队列模型、ReentrantLock 选型表与读写锁适用场景。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/480-MultithreadingBasics'
-  - 'java/490-ConcurrencyBasics'
-  - 'java/500-JUCConcurrency'
+  - 'java/490-JucConcurrencyTools'
+  - 'java/500-ThreadPoolExecutorPractice'
   - 'java/610-JVMMemoryModel'
 prerequisites:
-  - 'java/500-JUCConcurrency'
+  - 'java/500-ThreadPoolExecutorPractice'
 ---
 
 ## 前置知识
 
-- 已完成 [线程池实战](/java/500-JUCConcurrency)：会用线程池与拒绝策略，好奇这些工具「凭什么正确」；
-- [多线程入门](/java/480-MultithreadingBasics) 的 synchronized 修复与 [JUC 并发工具](/java/490-ConcurrencyBasics) 的 CAS 实验是本文反复引用的地基。还没读也没关系，关键结论都会就地重讲。
+- 已完成 [线程池实战](/java/500-ThreadPoolExecutorPractice)：会用线程池与拒绝策略，好奇这些工具「凭什么正确」；
+- [多线程入门](/java/480-MultithreadingBasics) 的 synchronized 修复与 [JUC 并发工具](/java/490-JucConcurrencyTools) 的 CAS 实验是本文反复引用的地基。还没读也没关系，关键结论都会就地重讲。
 
 ## 学习目标
 
@@ -90,7 +90,7 @@ worker 看到了停止信号
 worker 已退出
 ```
 
-volatile 的语义是「写穿透到主内存，读不再用旧副本」，顺便禁止相关重排序。但记住边界：**只保证可见，不保证原子**——`volatile int count` 上的 count++ 照样丢更新，修计数请回 [JUC 并发工具](/java/490-ConcurrencyBasics) 的 CAS。规范条文深挖见 [JVM 内存模型](/java/610-JVMMemoryModel)。
+volatile 的语义是「写穿透到主内存，读不再用旧副本」，顺便禁止相关重排序。但记住边界：**只保证可见，不保证原子**——`volatile int count` 上的 count++ 照样丢更新，修计数请回 [JUC 并发工具](/java/490-JucConcurrencyTools) 的 CAS。规范条文深挖见 [JVM 内存模型](/java/610-JVMMemoryModel)。
 
 ## 3. 核心概念二：死锁与现场抓捕
 
@@ -234,7 +234,7 @@ void reload(Map<String, String> fresh) {
 
 ## 9. 与之前和之后的知识的关系
 
-- 往前：[多线程入门](/java/480-MultithreadingBasics) 的竞态、[JUC 并发工具](/java/490-ConcurrencyBasics) 的 CAS、[线程池实战](/java/500-JUCConcurrency) 的池，本文把它们统一到两条主线：可见性靠 happens-before，互斥靠 state 加队列；
+- 往前：[多线程入门](/java/480-MultithreadingBasics) 的竞态、[JUC 并发工具](/java/490-JucConcurrencyTools) 的 CAS、[线程池实战](/java/500-ThreadPoolExecutorPractice) 的池，本文把它们统一到两条主线：可见性靠 happens-before，互斥靠 state 加队列；
 - 往后，并发四篇分工：**480 裸线程与 synchronized**、**490 不锁也能对**、**500 线程池**、**本文设计层**——知道工具为什么对，才能在工具失灵时自己诊断；
 - 更远：JMM 规范全文见 [JVM 内存模型](/java/610-JVMMemoryModel)；不共享状态、改走异步编排是 [CompletableFuture](/java/520-CompletableFutureAsync) 的事；[ThreadLocal 内存泄漏](/java/530-ThreadLocalMemoryLeak) 则是「不共享，各存各的」路线的代价清单。
 
@@ -257,4 +257,4 @@ void reload(Map<String, String> fresh) {
 
 ## 下一步
 
-进入 [CompletableFuture 异步编排](/java/520-CompletableFutureAsync)：换一条不共享可变状态的路线，让任务以「提交与组合」协作；再往后的 [虚拟线程](/java/570-JavaVirtualThread) 会掀翻「线程很贵」这个前提。
+进入 [CompletableFuture 异步编排](/java/520-CompletableFutureAsync)：换一条不共享可变状态的路线，让任务以「提交与组合」协作；再往后的 [虚拟线程](/java/550-JavaVirtualThread) 会掀翻「线程很贵」这个前提。

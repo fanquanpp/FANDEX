@@ -1,12 +1,12 @@
 ---
-order: 190
+order: 210
 title: GitOps 与 ArgoCD
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: GitOps 与 ArgoCD 持续交付：声明式基础设施、Git 单一事实来源与自动同步。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'devops/280-ELKStackLogAnalysis'
   - 'devops/290-OpenTelemetry'

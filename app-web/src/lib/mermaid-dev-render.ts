@@ -4,8 +4,10 @@ import { t } from './i18n';
  * Mermaid 客户端兜底渲染器：仅 dev 模式使用。
  *
  * 生产构建由 plugins/rehype-mermaid-dual.ts 在构建期输出最终 SVG，
- * 客户端不会加载本模块；dev 跳过构建期渲染以保证改图即时反馈，
- * 由 mermaid-interactions 检测到未渲染代码块后动态加载本文件。
+ * mermaid-interactions 仅在 import.meta.env.DEV 下动态加载本文件，
+ * 因此生产 bundle 不会包含本模块（连带 mermaid/elk 全部 chunk）；
+ * dev 跳过构建期渲染以保证改图即时反馈。
+ * 预渲染缺口由 scripts/qa-check.mjs 的 mermaid 裸块门禁在构建后拦截。
  */
 
 let mermaidPromise: Promise<MermaidAPI> | null = null;

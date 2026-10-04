@@ -71,7 +71,7 @@ const scrollConfig = JSON.stringify({ container: scrollContainer, offset: offset
       data-toc-scroll-config={scrollConfig}
       style={style}
     >
-      <nav class="fndx-toc__nav" id="fndx-toc-nav">
+      <nav class="fndx-toc__nav" id="fndx-toc-nav" aria-label="目录导航" data-i18n-aria="toc.navAria">
         <h2 class="fndx-toc__title" data-i18n="toc.title">本页目录</h2>
         <ul class="fndx-toc__list">
           {groups.map((group) => {

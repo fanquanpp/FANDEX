@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 输入验证的三个动作（验证/净化/编码）与白名单优于黑名单的原理，从「多套解码器对同一字节序列理解不同」解释一切绕过手法的共同根源，附动手练习与面试题思路。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'cybersecurity/330-SecureCodingPrinciples'
   - 'cybersecurity/160-OWASPTop10Detailed'

@@ -6,12 +6,12 @@ module: 'java'
 category: 后端技术
 difficulty: advanced
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/300-StreamAPI'
   - 'java/320-StreamCollectorsGroupingBy'
   - 'java/330-JavaFunctionalProgramming'
-  - 'java/570-JavaVirtualThread'
+  - 'java/550-JavaVirtualThread'
 prerequisites:
   - 'java/300-StreamAPI'
 ---
@@ -22,7 +22,7 @@ prerequisites:
 
 - [Stream API](/java/300-StreamAPI)：中间操作、终端操作与惰性求值的基本概念。
 - [Lambda 与函数式接口](/java/290-LambdaFunctionalProgramming)：`Function`、`BiFunction`、`Supplier` 的写法。
-- （可选）[虚拟线程](/java/570-JavaVirtualThread)：理解 `Gatherers.mapConcurrent` 的执行基础。
+- （可选）[虚拟线程](/java/550-JavaVirtualThread)：理解 `Gatherers.mapConcurrent` 的执行基础。
 
 ## 学习目标
 
@@ -264,7 +264,7 @@ public class MapConcurrentDemo {
 }
 ```
 
-`mapConcurrent(maxConcurrency, mapper)` 底层用**虚拟线程**（见 [虚拟线程](/java/570-JavaVirtualThread) 一篇）执行映射函数：同时至多 `maxConcurrency` 个任务在跑，先完成的结果会"等在原位"，最终按输入顺序输出。这是"并发发起 N 个 I/O 调用、又想保持流顺序"的最短写法——在它出现之前，需要手动拆分 `CompletableFuture` 列表再 join。
+`mapConcurrent(maxConcurrency, mapper)` 底层用**虚拟线程**（见 [虚拟线程](/java/550-JavaVirtualThread) 一篇）执行映射函数：同时至多 `maxConcurrency` 个任务在跑，先完成的结果会"等在原位"，最终按输入顺序输出。这是"并发发起 N 个 I/O 调用、又想保持流顺序"的最短写法——在它出现之前，需要手动拆分 `CompletableFuture` 列表再 join。
 
 ## 3. 自定义 Gatherer：两个完整示例
 

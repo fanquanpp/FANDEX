@@ -1,12 +1,12 @@
 ---
-order: 250
+order: 270
 title: Keepalived 双机热备
 module: 'networking'
 category: 云与基础设施
 difficulty: intermediate
 description: Keepalived 双机热备：VRRP 协议机制、主备配置与健康检查联动、脑裂成因与防护、与 LVS/Nginx 组合的高可用实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'networking/200-LoadBalanceTech'
   - 'networking/240-HighAvailabilityLVS'
@@ -176,7 +176,69 @@ VIP 出现两个 MAC，流量被随机分发，写操作可能重复执行。
 6. **云环境限制**：公有云 VPC 普遍不支持协议 112 组播/免费 ARP 行为，VRRP 方案在云上通常要换
    成云厂商的浮动 IP/高可用组产品，不要硬搬。
 
-## 6. 小结
+## 6. 练习
+
+复刻题（20 分钟）：在两台 Linux 虚机（或两台容器宿主）上按第 3 节配置搭起主备热备。
+验收：`ip -4 addr show dev eth0 | grep 192.168.8.100` 只在主节点有输出；主节点
+`systemctl stop keepalived` 后，备节点在约 3 秒内出现 VIP（`ip addr` 验证），恢复主
+节点后 VIP 回切（默认抢占模式）。
+
+提示（思路方向）：两边配置只差三处——`state`（MASTER/BACKUP）、`priority`（150/100）、
+`router_id`。先自己写，再对照自检顺序：
+
+```bash
+# 1. 起服务前先语法检查
+keepalived -t -f /etc/keepalived/keepalived.conf
+# 2. 起服务看角色日志
+journalctl -u keepalived -f | grep -i "entering\|state"
+# 3. 切换时长用时间戳验证：stop 主节点后 watch -n1 'ip addr | grep 8.100'
+```
+
+抓包观察题（10 分钟）：主备正常运行时在任一台抓包：`sudo tcpdump -i eth0 -nn proto 112`。
+验收：每秒一条 VRRP 通告、目的地址 224.0.0.18、源是 Master；停掉 Master 后，能从抓包
+里指出「Backup 发出的第一条通告」作为接管时刻的证据。
+
+提示：通告报文里带优先级字段，Wireshark 里解析为 `vrrp prio`；主备切换的直接证据是
+「通告的源 IP 从主变为备，且优先级从 150 变为 100」。这个抓包在第 5 节坑 1（防火墙拦
+VRRP）的排障里是终审证据——报文在流动，选举就正常。
+
+脑裂模拟题（15 分钟）：在两台节点上同时执行
+`sudo iptables -A INPUT -p vrrp -j DROP`（或 `-p 112`），观察双 Master 现象。验收：
+两台 `ip addr` 都出现 192.168.8.100；抓包看到两台各自发通告互不理睬；删除规则后集群
+在数秒内自行收敛为一主一备。
+
+提示（思路方向）：拦掉协议 112 等于切断双方的「我还活着」信号，各自认为对端已死——
+这正是第 4.2 节脑裂成因表的第二行。参考观察命令：
+
+```bash
+sudo iptables -A INPUT -p vrrp -j DROP
+ip addr | grep 192.168.8.100        # 两台都有 → 脑裂发生
+sudo tcpdump -i eth0 -nn proto 112  # 两个通告源并存
+sudo iptables -D INPUT -p vrrp -j DROP   # 收敛：优先级高者重新成为 Master
+```
+
+这题的训练价值在「安全地制造事故」：在实验环境亲手触发脑裂一次，生产环境看到双
+Master 时你才知道那是防火墙规则而不是协议 bug。
+
+健康检查联动题（15 分钟）：给主节点 nginx 配 `vrrp_script`（第 3 节配置已有），实验
+验证「服务的死传导为 VIP 的让」：`systemctl stop nginx`，观察 keepalived 日志中优先级
+扣减与角色切换。验收：nginx 停止后 VIP 漂到备节点；nginx 恢复且 `rise 2` 满足后 VIP
+回切；能解释 `fall/rise` 两个参数各防什么。
+
+提示：fall 防「抖动误判」（curl 偶发超时就切主），rise 防「闪恢复抢主」（服务刚起还
+不稳定就收回流量）。观察命令：`journalctl -u keepalived -f` 里的
+`Track script chk_nginx is being timed out` 或优先级变化日志。
+
+面试题（10 分钟）：面试官问「Keepalived 怎么防脑裂？」给出三件套的完整回答：链路层
+（双心跳/单播）、协议层（放行 112 + 抓包确认）、仲裁层（外部检测告警或 fence），并
+说明 Keepalived 自身不内建仲裁。验收：30 秒内说完三件套且不把「心跳线」说成 VRRP 通告
+之外的独立机制。
+
+提示：回答骨架——「VRRP 通告本身就是心跳；防脑裂是让心跳不可断（冗余链路、单播多路径）、
+断了能发现（外部 cron 抓包/检测脚本告警）、发现后能止损（fence 自隔离或人工切换）」。
+与第 4.2 节的表格逐行对应。
+
+## 7. 小结
 
 **初学者要点**
 

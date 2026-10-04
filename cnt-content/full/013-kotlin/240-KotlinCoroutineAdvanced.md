@@ -1,12 +1,12 @@
 ---
-order: 240
+order: 260
 title: Kotlin 协程进阶
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: 协程异常处理、取消、超时、Flow 高级操作、StateFlow/SharedFlow 与 Select。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/170-KotlinGenericTypeSystem'
   - 'kotlin/120-KotlinCollectionCoroutine'

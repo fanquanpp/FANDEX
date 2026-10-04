@@ -1,12 +1,12 @@
 ---
-order: 410
+order: 430
 title: Kotlin 与 Gradle
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: 用 Gradle Kotlin DSL 构建 Kotlin 项目：依赖管理、版本目录、多模块、K2 编译器配置与构建提速。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/420-KotlinCompilerPlugin'
   - 'kotlin/440-KotlinAndroid'
@@ -374,6 +374,147 @@ org.gradle.configuration-cache=true
 4. **Kotlin DSL 需要学习成本**：如果你之前用 Groovy，切换到 Kotlin DSL 需要适应"类型检查更严、脚本在配置阶段编译"的差异——好处是写错立刻在 IDE 与构建时报错。
 5. **不要在构建脚本中写复杂逻辑**：构建脚本应该简洁，复杂逻辑放在 buildSrc 或 Convention Plugin 中；但 buildSrc 的任何改动会使所有模块重新编译，纯版本常量优先迁去版本目录。
 6. **Gradle Wrapper**：始终使用 Gradle Wrapper（`./gradlew`），确保团队成员使用相同的 Gradle 版本；Kotlin 2.2 需要较新的 Gradle（8.10+ 为宜），升级 Kotlin 与升级 Gradle 常需要成对进行。
+
+## 底层原理：构建脚本的一次「编译加执行」
+
+理解 Gradle 行为的关键是把构建分成三个阶段：
+
+1. **初始化**：settings.gradle.kts 决定哪些模块参与构建；
+2. **配置**：每个 build.gradle.kts 被**当作 Kotlin 程序编译并执行**——你在脚本里
+   写的所有语句（包括 `dependencies {}` 块）此刻按顺序运行一遍，产出一张
+   「任务及其依赖关系」的图；
+3. **执行**：Gradle 从任务图中挑出本次命令需要的任务（含 up-to-date 判断）执行。
+
+三个推论能解释大部分「为什么」：
+
+- 为什么 Kotlin DSL 写错坐标会**编译报错**而 Groovy 只在运行时才炸——配置阶段
+  本来就是一次编译；
+- 为什么「脚本顶层随手写的 println」每次构建都会打印（哪怕只跑 `gradlew help`），
+  而 `doLast {}` 里的只在任务执行时打印——前者在配置阶段运行，后者在执行阶段运行；
+- 为什么 buildSrc 一改全量重编——buildSrc 是配置阶段的输入，它变了所有脚本的
+  编译产物失效；
+- 配置缓存为什么能提速——它把「配置阶段的任务图」序列化复用，跳过重复的脚本
+  编译执行（这也是它对插件兼容性挑剔的原因）。
+
+`implementation` 与 `api` 的区别同样能从编译模型推出：`api` 里的类型会出现在本模块
+**对外暴露的 ABI**（公开函数签名、公开父类）中，所以消费方编译时必须看见它——
+传递；`implementation` 只在本模块内部使用，消费方编译不需要，改版本时也不会
+触发下游重编——不传递。判断口诀：**这个依赖的类型会出现在我的公开签名里吗？
+会就 api，不会就 implementation。**
+
+## 面试题思路：三个高频考法
+
+1. 「implementation 和 api 怎么选？」——按上面的 ABI 口诀答，并补一条工程后果：
+   库项目里把本该 api 的写成 implementation 会让消费方编译失败；反过来全用 api
+   则依赖树膨胀、版本升级重编面扩大。追问「如何检查」：对库模块跑
+   `./gradlew build` 的 ABI 校验（Kotlin 显式 api 模式）或依赖分析报告
+   （`./gradlew buildHealth`，需 dependency analysis 插件）是加分项。
+2. 「Gradle 构建慢，你会从哪里入手？」——期望的框架：先测量
+   （`./gradlew --profile` 或 build scan 定位慢在配置还是执行）；配置慢上配置缓存，
+   执行慢上并行 + 构建缓存；再查 up-to-date 失效原因（`--info` 里的
+   「Task :x is not up-to-date because...」）。能说出「不要盲目调 Xmx、先看瓶颈
+   在哪个阶段」体现测量优先的纪律。
+3. 「版本目录解决了什么问题？」——三个：坐标与版本集中一处（升级只改 toml）；
+   类型安全的访问器（写错编译报错，IDE 可补全）；替代 buildSrc 常量对象带来的
+   全量重编。能补充「toml 支持 bundle（依赖捆绑）与 plugin 声明」是加分项。
+
+## 动手实验
+
+1. **三个阶段实验**：在 build.gradle.kts 顶层加一行 `println("配置阶段")`，在
+   `tasks.register("hello") { doLast { println("执行阶段") } }`，分别跑
+   `./gradlew help`、`./gradlew hello`、`./gradlew hello`（第二次），观察三者的
+   输出差异与 up-to-date 行为。
+2. **依赖传递实验**：建 shared（含 api 一个 data class）与 server（implementation
+   依赖 shared）两模块，在 server 里写一个「公开函数签名引用 shared 类型」的函数，
+   新建第三个模块消费它——亲眼看到编译失败；把 implementation 改成 api 修复。
+3. **版本目录迁移实验**：把一个散落字符串坐标的项目（或本文快速上手的骨架）迁移到
+   `libs.versions.toml`，故意把 `libs.coroutines.core` 写错一个字母，观察 IDE 与
+   构建期报错形态。
+4. **构建缓存验证**：跑两次 `./gradlew clean build`（第二次开
+   `org.gradle.caching=true`），对比 BUILD SUCCESSFUL 旁的 up-to-date/
+   FROM-CACHE 标记；再改一个源文件重跑，观察只有受影响的任务重新执行。
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：给骨架项目装上「发布可用的」构建配置**。要求：(a) 全部依赖走版本目录；
+(b) 生成可双击运行的 fat jar（提示：application 插件 + `jar` 任务加
+`duplicatesStrategy` 与 Manifest 主类，或用 shadow 插件）；(c) `./gradlew test`
+输出每个用例的通过/失败状态。先列改动清单，再动手。
+
+参考实现（fat jar 用原生 jar 任务版，不引第三方插件）：
+
+```toml
+# gradle/libs.versions.toml
+[versions]
+kotlin = "2.2.0"
+
+[libraries]
+kotlin-stdlib = { module = "org.jetbrains.kotlin:kotlin-stdlib", version.ref = "kotlin" }
+kotlin-test = { module = "org.jetbrains.kotlin:kotlin-test", version.ref = "kotlin" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+```
+
+```kotlin
+// build.gradle.kts
+plugins {
+    alias(libs.plugins.kotlin.jvm)
+    application
+}
+
+repositories { mavenCentral() }
+
+dependencies {
+    implementation(libs.kotlin.stdlib)
+    testImplementation(libs.kotlin.test)
+}
+
+application { mainClass.set("com.example.MainKt") }
+
+kotlin { jvmToolchain(21) }
+
+tasks.withType<Test> {
+    useJUnitPlatform()
+    testLogging { events("passed", "failed", "skipped") }
+}
+
+// fat jar：把运行时依赖解包进同一个 jar 并指定主类
+tasks.jar {
+    manifest { attributes["Main-Class"] = "com.example.MainKt" }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    from(configurations.runtimeClasspath.get().map { if (it.isDirectory) it else zipTree(it) })
+}
+```
+
+自检问题：为什么 fat jar 要设 `DuplicatesStrategy`？（答：多个依赖 jar 里都有
+`META-INF/LICENSE` 这类同名文件，解包合并时必须声明遇到重复条目的策略，否则
+构建报错。）
+
+**练习 2：修一个「构建脚本坏味道」项目**。给定如下脚本，指出三处问题并重构：
+
+```kotlin
+// build.gradle.kts（问题版）
+val coroutinesVersion = "1.10.2"
+val ktorVersion = "3.2.0"
+
+dependencies {
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
+    testImplementation("io.ktor:ktor-server-tests-jvm:$ktorVersion")   // ？
+    api("ch.qos.logback:logback-classic:1.5.18")                       // ？
+}
+```
+
+参考答案：三处问题——(a) 版本常量写在脚本内，作用域只在当前文件（陷阱 2），
+应迁往版本目录；(b) 测试专用依赖应放 `testImplementation` 没错，但 Ktor 的
+server-tests 坐标用在了依赖 ktor 的项目里却缺少主依赖声明（此处缺
+`ktor-server-core`），依赖来源不完整；(c) `logback` 是日志实现，只在运行时需要，
+`api` 会把它传递给所有消费方并放大重编面——正确配置是 `runtimeOnly`。
+
+**挑战题（不给参考实现）**：把一个 Groovy 构建脚本（网上随便找一个教程项目）
+翻译成 Kotlin DSL + 版本目录，并把遇到的每一处「翻译不了」记下来（通常集中在
+动态字符串与 `ext` 变量），写五句迁移心得。写完自查：迁移后
+`./gradlew build --warning-mode all` 还有没有警告？
 
 ## 小结
 

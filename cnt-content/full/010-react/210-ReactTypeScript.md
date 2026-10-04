@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React + TypeScript 实战：Props 与事件类型、Hooks 泛型、Context 类型安全模式、React 19 类型系统变化（ref 即 prop、useRef 必传初始值、JSX 命名空间迁移）与常用类型速查。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'react/190-ReactErrorBoundary'
   - 'react/200-ReactForm'
@@ -241,7 +241,7 @@ export function List<T>({ items, getKey, renderItem }: ListProps<T>) {
 
 ## 速查
 
-## ComponentProps 提取属性
+### ComponentProps 提取属性
 
 **ComponentProps**
 `type <Props> = React.ComponentProps<<ElementType>>;`
@@ -265,7 +265,7 @@ type PureProps = React.ComponentPropsWithoutRef<'div'>;
 
 ---
 
-## ReactNode 节点类型
+### ReactNode 节点类型
 
 **ReactNode 任意节点**
 `type <V> = React.ReactNode;`
@@ -291,7 +291,7 @@ const el: React.ReactElement<{ value: string }> = <Comp value="x" />;
 
 ---
 
-## FC 函数组件类型
+### FC 函数组件类型
 
 **FC 基础（18+ 不含隐式 children）**
 `const <Component>: React.FC<<Props>>`
@@ -311,7 +311,7 @@ const Card: React.FC<React.PropsWithChildren<{ title: string }>> = ({
 
 ---
 
-## ChangeEvent 事件类型
+### ChangeEvent 事件类型
 
 **ChangeEvent 表单**
 `React.ChangeEvent<<Element>>`
@@ -354,7 +354,7 @@ type KeyDown = React.KeyboardEventHandler<HTMLInputElement>;
 
 ---
 
-## CSSProperties 样式类型
+### CSSProperties 样式类型
 
 **CSSProperties 内联样式（驼峰属性名）**
 `React.CSSProperties`
@@ -387,7 +387,7 @@ const style: PropertiesHyphen = {
 
 ---
 
-## Ref 类型（React 19 形态）
+### Ref 类型（React 19 形态）
 
 **挂 DOM 的 ref（必须传初值 null）**
 `useRef<<Element>>(null)`
@@ -412,7 +412,7 @@ const callback: React.RefCallback<HTMLDivElement> = (el) => {
 
 ---
 
-## 常用类型别名
+### 常用类型别名
 
 **Dispatch 派发器**
 `React.Dispatch<<Action>>`
@@ -433,7 +433,7 @@ type User = Awaited<ReturnType<typeof fetchUser>>;
 
 ---
 
-## JSX 命名空间类型（19 起在 React.JSX 下）
+### JSX 命名空间类型（19 起在 React.JSX 下）
 
 **React.JSX.Element**
 ```tsx

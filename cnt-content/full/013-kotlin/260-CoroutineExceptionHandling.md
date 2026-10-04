@@ -1,12 +1,12 @@
 ---
-order: 260
+order: 280
 title: 协程异常处理
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: Kotlin 协程异常处理深度解析：CoroutineExceptionHandler、SupervisorJob、structured concurrency 异常传播机制的形式化定义、字节码实现与企业级工程实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/100-ExtensionFunctionCompilePrinciple'
   - 'kotlin/080-ScopeFunctionDifference'

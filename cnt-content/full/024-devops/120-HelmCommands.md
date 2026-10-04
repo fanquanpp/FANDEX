@@ -1,12 +1,12 @@
 ---
-order: 120
+order: 130
 title: Helm 包管理命令
 module: 'devops'
 category: 云与基础设施
 difficulty: beginner
 description: 'Helm 学习笔记：把一个开源 Chart 装进集群并管好它的一生——搜索、装、升、回滚、卸载，再到自己写 Chart 的调试循环。'
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'devops/110-HelmChartApplicationPackage'
   - 'devops/090-KubernetesCoreDetailed'

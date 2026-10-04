@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: Vite dev server：server 配置、host 端口、代理、HMR 原理（模块图/WebSocket/热替换边界）与 import.meta.hot API
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'vite/030-ConfigFile'
   - 'vite/020-QuickStart'
@@ -349,7 +349,29 @@ export default defineConfig({
 
 典型场景：移动端真机调试、iframe 内日志、SSR 场景——这些情况下 DevTools 不方便打开，日志直接看终端最省事；编码代理（AI 结对）场景下 Vite 会自动开启，让代理直接"看到"浏览器报错。觉得刷屏就显式设为 `false`。
 
-## 9. 常见错误与对策表
+## 10. 动手实践：亲手造一次 HMR 边界
+
+HMR 的九步链路看懂不难，难点是「accept 边界」「副作用清理」「状态接力」这三个概念的体感。以下任务在一个干净的 Vite 原生 TS 项目里完成（`pnpm create vite` 选 vanilla-ts），合计约 45 分钟。
+
+**任务一：先制造「整页刷新」的现场，再收拢边界（约 15 分钟）**
+
+写一个 `src/state.ts`，顶层声明 `export let appState = { clicks: 0 }`，在 `main.ts` 里渲染点击次数并给按钮绑定点击事件。启动 dev server，先连点按钮积累几次点击，然后修改 `state.ts`（比如给对象加一个字段）并保存，观察：页面是否整页刷新、点击数是否归零。
+
+提示：没有 accept 边界时，更新会沿 importers 一路冒泡到入口模块，入口的变更 Vite 无法热替换，只能触发 full reload——这就是对策表第 2 条的成因现场。参考检查点：在 `state.ts` 末尾加上 `if (import.meta.hot) { import.meta.hot.accept() }` 后重复实验，确认不再整页刷新；再打开 DevTools 的 Network/WS 面板找到 WebSocket 连接，亲眼看一条 `{"type":"update",...}` 消息飞过——九步链路的第 5、6 步从此有了实物。
+
+**任务二：用 hot.data 完成状态接力（约 15 分钟）**
+
+把任务一的 `appState` 改成「热更新后点击数不丢」：模块被替换前把 `clicks` 存进 `import.meta.hot.data`，新模块初始化时从那里恢复（对照 7.2 节计数器的写法先自己写，卡住再看）。
+
+提示：结构是「顶层读 data → dispose 写 data → accept 声明」。参考检查点：连续做三轮「改代码 - 保存 - 验证点击数保留」，中途把某轮的 dispose 故意注释掉，观察状态在第几轮丢失——丢失的机制是「新模块初始化时 data 里没有上一轮存的值」，这个反证能帮你把 dispose 与 accept 的先后关系想透。
+
+**任务三：定时器泄漏的观察与清理（约 15 分钟）**
+
+新建 `src/ticker.ts`，顶层 `setInterval` 每秒打印一次计数；在 main.ts 引入后，连续修改该文件三次保存，观察控制台：打印频率变成了每秒多次——三个旧定时器都还活着。然后按 7.3 节用 `hot.dispose` 清理，重复实验确认每轮只有一个定时器。
+
+提示：这个任务是「副作用未清理」最直观的显形——逻辑错误不明显（计时还在走），但资源在泄漏、输出在重复，正是真实项目里最难排查的一类 HMR 问题。参考检查点：能回答「为什么 dispose 而不是 prune」——模块还在被引用、只是内容被替换，触发的是 dispose；prune 是模块彻底不再被引用时的清理钩子，两者别混用。做完三个任务，把「边界、接力、清理」六个字写在笔记上，这就是手写 HMR 的全部骨架。
+
+## 11. 常见错误与对策表
 
 | 现象 / 报错信息 | 常见原因 | 解决办法 |
 | --- | --- | --- |
@@ -362,6 +384,6 @@ export default defineConfig({
 | 端口被占用且 `strictPort: true` | 端口冲突 | 换端口，或 `lsof -i:5173` 查占用进程后处理 |
 | 代理不生效、接口 404 | 请求没走代理前缀，或 `rewrite` 误删了路径 | 确认请求路径以 `/api` 开头，检查 `rewrite` 正则 |
 
-## 10. 一句话记忆
+## 12. 一句话记忆
 
 HMR 就是"后厨尝菜"：保存文件后，Vite 沿着模块图向上找到 accept 边界，只把改动的模块通过 WebSocket 换掉，页面状态原封不动——把整页刷新留给实在热不起来的模块。

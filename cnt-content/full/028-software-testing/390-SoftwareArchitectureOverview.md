@@ -1,12 +1,12 @@
 ---
-order: 390
+order: 410
 title: 软件架构概述
 module: 'software-testing'
 category: 云与基础设施
 difficulty: beginner
 description: 软件架构定义、架构师角色、架构决策与架构文档。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/400-LayeredArchitecture'
 prerequisites: []

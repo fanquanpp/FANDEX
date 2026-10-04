@@ -1,12 +1,12 @@
 ---
-order: 170
+order: 190
 title: 安全与移动测试
 module: 'software-testing'
 category: 云与基础设施
 difficulty: advanced
 description: '发布前的两类专项测试：安全测试从 OWASP Top 10 入手动手做，移动端从真机兼容到性能功耗，最后把专项挂进 CI 与质量内建流程。'
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'software-testing/080-FunctionalAndAutomatedTest'
   - 'software-testing/140-PerformanceInterfaceTest'
