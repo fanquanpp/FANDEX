@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 认证（你是谁）与授权（你能干什么）的边界与各自攻击面：密码策略的演进逻辑、OAuth2 的委托授权本质、JWT 无状态与撤销的两难、RBAC/ABAC 选型与越权漏洞的共同根源，附动手练习与面试题思路。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'cybersecurity/310-OAuth2OIDC'
   - 'cybersecurity/070-PasswordHash'

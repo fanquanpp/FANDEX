@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 用「把值变成词表」的心智模型讲透原子化 CSS：Tailwind v4 的 CSS-first 配置、变体与按需扫描原理、UnoCSS 的规则系统，以及动态类名为什么必然失效。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'css/590-PostCSS'
   - 'css/600-BEMNamingMethodology'

@@ -6,13 +6,13 @@ category: 后端技术
 difficulty: intermediate
 description: SLF4J、Logback、Log4j 2、JUL 与结构化日志的全景式深度解析
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/330-JavaFunctionalProgramming'
   - 'java/690-JavaNetworkProgramming'
   - 'java/890-JavaUnitTest'
   - 'java/740-JavaBuildTool'
-  - 'java/570-JavaVirtualThread'
+  - 'java/550-JavaVirtualThread'
   - 'java/420-JavaReflection'
 prerequisites:
   - 'java/020-JavaOverviewDevEnv'

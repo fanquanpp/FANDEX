@@ -1,12 +1,12 @@
 ---
-order: 520
+order: 540
 title: Kotlin 与 Exposed
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: Kotlin SQL框架Exposed
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/540-KotlinArrow'
   - 'kotlin/490-KotlinKtor'

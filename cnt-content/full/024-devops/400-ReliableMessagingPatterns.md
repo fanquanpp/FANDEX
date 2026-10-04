@@ -1,12 +1,12 @@
 ---
-order: 400
+order: 420
 title: 可靠消息模式与生产实践
 module: 'devops'
 category: 云与基础设施
 difficulty: advanced
 description: 投递语义、死信队列、消费幂等、顺序保证与背压控制，把消息系统从"能通"做到"可靠"。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/380-KafkaQuickStart'
   - 'devops/390-RabbitMQQuickStart'
@@ -151,15 +151,96 @@ while True:
 - 监控队列积压、消费 Lag、重试次数、DLQ 深度，全部配告警；
 - 消息体带唯一 ID、时间戳与 schema 版本，便于追踪与演进。
 
-## 8. 动手试试
+## 8. 实践：动手与自检
 
-1. 在 RabbitMQ 里搭"业务队列 + 死信队列"：让一条消息处理失败 3 次后进入 DLQ
-   （用 TTL + 死信交换机做延迟重试队列）。
-2. 用 Redis `SET NX` 实现一个消费去重器，连续投递同一 ID 两次，确认第二次被忽略。
-3. 给 Kafka 消费组配一个积压告警：Lag 超过阈值时输出日志
-   （`kafka-consumer-groups.sh --describe` 查看 Lag）。
-4. 用两张表（orders + outbox）模拟本地消息表：故意在中继环节 kill 进程，
-   验证重启后消息仍会被补发。
+幂等去重实验（15 分钟）：把第 2 节的 Redis 去重器写成可运行脚本，连续投递同一消息 ID
+两次，观察第二次被忽略；然后人为清掉 Redis 键再投一次，观察第三次「复活」。验收：能
+回答「去重键的 TTL 设多长、依据是什么」。
+
+提示（思路方向）：TTL 要覆盖「重复投递可能发生的最长时间窗」，通常取消息保留期或业务
+可容忍的重放窗口。先自己写，再对照完整实现：
+
+```python
+import redis
+
+r = redis.Redis()
+
+def consume_once(message_id: str, process) -> bool:
+    # NX：不存在才写入；EX：过期时间兜底，防止去重表无限膨胀
+    ok = r.set(f"dedup:{message_id}", "1", nx=True, ex=86400)
+    if not ok:
+        return False          # 24 小时内见过，直接跳过
+    process()                 # 真正的业务处理
+    return True
+
+# 第一次：True（处理）；第二次：False（忽略）
+print(consume_once("order-1001-paid", lambda: print("处理订单")))
+print(consume_once("order-1001-paid", lambda: print("处理订单")))
+```
+
+讨论点：这个实现有一个已知的「去重成功但业务处理崩溃」的空洞（键已写入、处理没做），
+生产做法是「业务完成后再标记」或用数据库唯一索引在事务里一并写——想清楚这个洞在哪，
+再看第 2 节第 3 条的天然幂等思路。
+
+延迟重试队列实验（20 分钟）：用 RabbitMQ 搭「业务队列 → 失败进 TTL 队列 → 到期转回
+业务队列」的重试环（重试队列挂死信交换机指向业务队列，TTL 设 10 秒），消费端对含
+`fail` 字样的消息抛异常。验收：一条失败消息在 10 秒后被重新投递，`redelivered` 标记
+为 True；连挂 3 次后进真正的 DLQ。
+
+提示（思路方向）：TTL + 死信交换机就是延迟队列的低配实现。先自己搭，再对照队列声明：
+
+```python
+# 重试队列：TTL 10 秒，到期死信回 orders
+channel.queue_declare(queue="orders-retry", arguments={
+    "x-message-ttl": 10000,
+    "x-dead-letter-exchange": "orders",        # 死信发回业务交换机
+})
+# 业务队列：失败死信进 orders-dlx（第 6 节），dlx 绑定 orders-retry
+channel.queue_bind(exchange="orders-dlx", queue="orders-retry")
+# 计数进 DLQ：消息头 x-death 里带 count，消费端读到 count >= 3 就不再 nack 回重试队列
+```
+
+Lag 告警脚本实验（15 分钟）：写一个轮询脚本，每 10 秒读一次 Kafka 消费组 Lag，超过
+阈值（如 100）打印告警日志。验收：停掉消费者让积压涨起来，脚本能在两个轮询周期内报
+警；恢复消费后告警消失。
+
+提示：Lag 数字来自第 2 节的 describe 输出。参考骨架（Shell 即可）：
+
+```bash
+#!/bin/bash
+while true; do
+  lag=$(docker exec kafka-kafka-1 /opt/kafka/bin/kafka-consumer-groups.sh \
+    --bootstrap-server localhost:9092 --describe --group demo-group \
+    | awk 'NR>1 {sum+=$6} END {print sum+0}')
+  if [ "$lag" -gt 100 ]; then
+    echo "$(date +%T) ALERT lag=$lag"
+  fi
+  sleep 10
+done
+```
+
+生产化提醒：脚本版适合体会原理，真实环境用 Prometheus kafka_exporter +
+[监控告警](/devops/300-MonitorAndAlert)的规则来做。
+
+本地消息表实验（30 分钟）：建 `orders` 与 `outbox` 两张表（同一 SQLite/MySQL 库），实现
+「下单事务同时写两表 + 轮询中继发消息」；中继循环里在 `producer.send` 之后人为抛异常
+一次，重启中继验证同一行被补发。验收：能指出补发导致的消息重复，以及它为什么无害
+（第 2 节的幂等兜底）。
+
+提示（思路方向）：关键点是「同一事务」四个字——outbox 行的存在本身就是「待发送」的
+证据，中继崩在哪个环节都能从断点续传。先自己写，再对照中继的核心逻辑：
+
+```python
+while True:
+    rows = db.query("SELECT * FROM outbox WHERE sent = false ORDER BY id LIMIT 100")
+    for row in rows:
+        producer.send(row.topic, row.payload).get()   # 等发送确认
+        db.execute("UPDATE outbox SET sent = true WHERE id = %s", (row.id,))
+        db.commit()
+    time.sleep(0.5)
+# 崩在 send 之后、UPDATE 之前：重启后该行 sent 仍为 false，消息被再发一次
+# ——消费端按 message_id 幂等，重复无害
+```
 
 ## 9. 一句话记住
 

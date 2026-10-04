@@ -1,12 +1,12 @@
 ---
-order: 420
+order: 440
 title: Kotlin 与编译器插件
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: kapt、KSP与编译器插件的原理、工程实践与性能优化
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/390-KotlinTest'
   - 'kotlin/320-KotlinCoroutineChannel'

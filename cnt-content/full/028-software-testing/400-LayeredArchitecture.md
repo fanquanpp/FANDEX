@@ -1,12 +1,12 @@
 ---
-order: 400
+order: 420
 title: 分层架构
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: 分层架构模式、表现层/业务层/持久层设计与实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/390-SoftwareArchitectureOverview'
   - 'software-testing/410-EventDrivenArchitecture'

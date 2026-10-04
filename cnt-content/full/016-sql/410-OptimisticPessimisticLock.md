@@ -1,12 +1,12 @@
 ---
-order: 410
+order: 420
 title: 乐观锁与悲观锁
 module: 'sql'
 category: 数据库
 difficulty: intermediate
 description: SQL 并发控制核心机制：乐观锁（版本号/CAS）与悲观锁（SELECT FOR UPDATE）的原理、适用场景与实现细节。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/270-WindowFunctionFramework'
   - 'sql/250-RecursiveCTETreeTraversal'

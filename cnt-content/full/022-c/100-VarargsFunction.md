@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从「printf 为什么能吃任意个参数」出发，用 stdarg.h 四件套手写 sum_ints 与迷你 my_printf（支持 %d %c %s %f），讲透默认参数提升、va_copy、显式个数/格式串/哨兵三种传递约定，以及 v 前缀转发封装与参数不匹配的调试实录。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/170-FunctionPointerCallback'
   - 'c/430-StdioFileIO'

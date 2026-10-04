@@ -405,7 +405,9 @@
     transform: translate3d(0, -100%, 0);
   }
   to {
-    transform: translate3d(0, 100vh, 0);
+    /* keyframe 内无法做 vh->dvh 双行回退（同名 keyframe 选择器后者覆盖前者），
+       直接用 dvh：移动端动态视口下扫描终点与可见高度一致，桌面端两者等值 */
+    transform: translate3d(0, 100dvh, 0);
   }
 }
 

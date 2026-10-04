@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 用 gcc -E 把 main.c 的预处理产物摊开，一图看穿「宏只是文本替换」：编译四阶段心智模型、#include 搜索路径 gcc -v 实验、头文件守卫三写法；函数式宏的 SQUARE(i++) 事故实录与括号纪律、# 与 ## 两级宏与能跑的 X-Macro 全貌、__VA_ARGS__ 与 C23 __VA_OPT__；条件编译三大用途与 #error/#warning、C23 __has_include；do { } while(0) 惯用法与五条宏军规。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/300-InlineFunctionMacro'
   - 'c/310-MultiFileCompilation'

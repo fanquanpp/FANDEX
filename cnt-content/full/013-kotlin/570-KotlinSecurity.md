@@ -1,12 +1,12 @@
 ---
-order: 570
+order: 590
 title: Kotlin 与安全
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: Kotlin安全编程
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/270-KotlinConcurrencySafety'
   - 'kotlin/510-KotlinWebSocket'

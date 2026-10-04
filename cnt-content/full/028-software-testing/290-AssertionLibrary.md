@@ -1,12 +1,12 @@
 ---
-order: 290
+order: 310
 title: 断言库
 module: 'software-testing'
 category: 云与基础设施
 difficulty: beginner
 description: 断言风格全景：Jest/Vitest 匹配器、Chai 三种风格、Python assert 与 Hamcrest/AssertJ，断言可读性与失败信息质量的写作要点。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/240-JestBasics'
   - 'software-testing/100-Pytest'

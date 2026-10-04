@@ -1,12 +1,12 @@
 ---
-order: 400
+order: 420
 title: Kotlin 与 Benchmark
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: 基于 JMH 与 kotlinx-benchmark 的 Kotlin 性能基准测试方法论、工程实践与陷阱分析
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/560-KotlinDSL'
   - 'kotlin/280-KotlinAtomicOperation'

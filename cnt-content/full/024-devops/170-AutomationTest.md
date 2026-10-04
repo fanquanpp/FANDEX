@@ -1,12 +1,12 @@
 ---
-order: 170
+order: 190
 title: 自动化测试
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: 自动化测试：单元测试、集成测试、E2E测试、性能测试与测试策略
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/340-PerformanceTuning'
   - 'devops/350-HighAvailabilityArchitecture'

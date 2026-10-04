@@ -1,12 +1,12 @@
 ---
-order: 350
+order: 370
 title: Kotlin 与 IO
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: kotlinx-io与文件操作
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/280-KotlinAtomicOperation'
   - 'kotlin/400-KotlinBenchmark'

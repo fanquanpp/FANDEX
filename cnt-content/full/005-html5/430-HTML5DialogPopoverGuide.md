@@ -1,12 +1,12 @@
 ---
-order: 450
+order: 460
 title: 专项： dialog 与 popover 深度指南
 module: 'html5'
 category: 前端技术
 difficulty: intermediate
 description: 免 JavaScript 弹窗双雄：dialog 的 showModal/returnValue/::backdrop、popover 的触发与分层机制，含 Invoker Commands（command/commandfor）声明式控制、popover="hint" 与 interest invokers 前瞻，附选型对比与可访问性要点。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'html5/150-HTML5TableAndStructuredContent'
   - 'html5/190-HTML5FormValidation'
@@ -319,4 +319,4 @@ popover 打开/关闭会触发 `beforetoggle`（可阻止）与 `toggle` 事件�
 
 ## 11. 下一步
 
-这两个组件是"结构层就能实现的交互"。下一篇专项 `410-HTML5InternationalizationTags` 转向国际化：ruby、bdi、bdo 与多语言排版；2023-2025 的其他新元素与新能力（`<search>`、可定制 select、`hidden="until-found"` 等）见 `440-HTMLNewElementsAndCapabilities`。
+这两个组件是"结构层就能实现的交互"。专项系列的下一篇（也是最后一篇）`440-HTMLNewElementsAndCapabilities` 速览 2023-2025 的新元素与新能力（`<search>`、可定制 select、`hidden="until-found"`、Speculation Rules 等）；此前的专项回顾：390 内容模型、400 废弃标签、410 国际化标签、420 图像热区。回到主线后，可以把 370 综合项目作为最终检验。

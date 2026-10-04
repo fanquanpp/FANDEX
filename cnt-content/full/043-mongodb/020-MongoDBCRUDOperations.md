@@ -6,7 +6,7 @@ category: 数据库
 difficulty: beginner
 description: insert/find/update/delete 四类操作的完整语法、常用查询运算符与实战示例拆解。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'mongodb/010-MongoDBOverviewQuickStart'
   - 'mongodb/030-MongoDBAggregationPipeline'
@@ -130,6 +130,80 @@ db.students.replaceOne(
 3. `replaceOne` 用新文档整体替换旧文档（`_id` 不变），适合"整份重写"场景；忘记写上的字段会被丢掉。
 4. 更新操作的第二个参数必须以 `$` 运算符开头（如 `$set`），直接写 `{ age: 19 }` 是语法错误。
 
+### 3.1 数组更新运算符：文档模型的主战场
+
+标量字段的更新就 `$set`/`$inc` 两个高频运算符，真正需要专门学习的是**数组**——因为文档模型把一对多关系放进数组，"往购物车加一件商品""从标签里去掉一个关键词"都是数组更新。核心运算符按用途分三组：
+
+```javascript
+// 第一组：增删元素
+db.carts.updateOne(
+  { userId: "u-1" },
+  { $push: { items: { sku: "m-001", qty: 1 } } }   // 尾部追加
+)
+db.carts.updateOne(
+  { userId: "u-1" },
+  { $pull: { items: { sku: "m-001" } } }           // 删除所有匹配元素
+)
+db.tags.updateOne(
+  { _id: "t-1" },
+  { $addToSet: { names: "sale" } }                 // 去重追加：已存在则不动
+)
+
+// 第二组：按位置改元素
+db.carts.updateOne(
+  { userId: "u-1", "items.sku": "m-001" },
+  { $set: { "items.$.qty": 3 } }                   // $ 指向"查询条件匹配到的那个元素"
+)
+
+// 第三组：修剪数组本身
+db.carts.updateOne(
+  { userId: "u-1" },
+  { $push: { logs: { $each: ["a", "b"], $slice: -10 } } } // 追加后只保留最后 10 条
+)
+```
+
+**讲解：**
+
+1. `$push` 与 `$addToSet` 的区别是**要不要去重**：日志、购物车允许重复用 `$push`；标签、收藏集合语义用 `$addToSet`。选错的表现是"列表里出现重复元素"且查不出原因。
+2. 位置运算符 `$` 必须与查询条件配合：查询条件 `"items.sku": "m-001"` 定位到数组里的某个元素后，`items.$.qty` 就指向那个元素的 `qty`。没有查询条件就写 `items.$` 是运行时错误。
+3. `$slice` 配合 `$each` 可以做**定长队列**（最近 N 条操作日志），比"读出来裁剪再写回去"安全得多——那条路径在并发下会丢更新，而 `$push + $slice` 是单文档原子操作。
+4. 底层视角：这些运算符之所以重要，是因为它们都是**单文档原子**的。两个请求同时 `$push` 同一数组不会互相覆盖；但"读出数组、在应用里改完、整份 `$set` 写回"的写法会丢失其中一个请求的修改——并发修改数组时永远优先用运算符，不要用"读-改-写"。
+
+### 3.2 upsert：查不到就插入
+
+```javascript
+// 更新或插入：没有 u-1 的购物车就先建一条
+db.carts.updateOne(
+  { userId: "u-1" },
+  { $push: { items: { sku: "m-001", qty: 1 } }, $setOnInsert: { createdAt: new Date() } },
+  { upsert: true }
+)
+```
+
+**讲解：**
+
+1. 第三个参数 `{ upsert: true }` 让更新操作在"零条匹配"时自动转为插入，查询条件成为新文档的字段来源。
+2. `$setOnInsert` 里的字段**只在插入时生效**，更新时不覆盖——`createdAt` 这类"创建时间"字段的标准写法。
+3. 典型场景：计数器（`$inc` + upsert，键不存在就从 0 开始加）、购物车、用户配置项。"先 find 判断再决定 insert 还是 update"的写法在并发下会插入重复文档，upsert 是服务端原子完成的，天然免竞态。
+
+### 3.3 findOneAndUpdate：改完顺手拿回来
+
+```javascript
+// 原子取号：把计数器加 1，并拿回新值
+const r = db.counters.findOneAndUpdate(
+  { _id: "order-no" },
+  { $inc: { seq: 1 } },
+  { returnDocument: "after", upsert: true }
+)
+print("订单号：NO-" + String(r.seq).padStart(6, "0"))
+```
+
+**讲解：**
+
+1. `updateOne` 的返回值只告诉你"改了几条"，不返回文档内容；`findOneAndUpdate` 执行更新并返回文档。
+2. `returnDocument: "after"` 返回更新后的值（默认是更新前）。取号、发号器、任务队列的"抢占一条任务"（`findOneAndUpdate` + 条件 `{ status: "pending" }` + `$set: { status: "claimed" }`）都靠它实现——**查询与修改在一次原子操作里完成**，这是它存在的全部理由。
+
+
 ## 4. 删除：deleteOne / deleteMany
 
 ```javascript
@@ -167,12 +241,92 @@ db.students.countDocuments({ age: { $gte: 18 } })
 2. `skip + limit` 是经典分页写法；数据量极大时深分页性能差，可改用"上一页最后一条的 _id"做游标分页。
 3. `countDocuments` 是推荐计数方法，`count()` 已废弃。
 
-## 6. 动手试试
+## 6. 动手实践
 
-1. 建一个 `products` 集合，批量插入 5 个商品（字段：名称、分类、价格、库存）。
-2. 查询价格在 50-200 之间的商品，按价格降序排列，只显示名称和价格。
-3. 把所有库存为 0 的商品价格打 8 折（`$mul` 运算符）。
-4. 删除"分类为配件"的所有商品，删除前先数一数有多少条。
+**任务一：商品集合 CRUD。** 建 `products` 集合，批量插入 5 个商品（名称、分类、价格、库存）；查询价格在 50-200 之间、按价格降序、只显示名称与价格；把所有库存为 0 的商品价格打 8 折；删除"分类为配件"的商品前先数一数有多少条。提示：折扣用 `$mul`，删除前的计数用 `countDocuments`——先数再删是生产习惯。
+
+**任务二：并发安全的购物车。** 为用户 `u-9` 实现三步操作：往购物车 `$push` 两件商品、用位置运算符把其中一件的 `qty` 改成 3、把数组裁剪成"最多保留 5 条日志"的定长 `logs` 字段。完成后插入第二条相同商品，观察 `$push` 与 `$addToSet` 的结果差异。提示：位置运算符 `$` 必须搭配查询条件里对数组元素的匹配。
+
+**任务三：取号器。** 用 `counters` 集合实现"订单号发号器"：每次调用号数加 1 并返回新值，格式化成 `NO-000001`。要求整个过程原子，两个并发请求拿到不同号。提示：`findOneAndUpdate` + `$inc` + `returnDocument: "after"` + upsert 四件套。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
+
+```javascript
+db.products.insertMany([
+  { name: "机械键盘", category: "外设", price: 199, stock: 20 },
+  { name: "无线鼠标", category: "外设", price: 99, stock: 0 },
+  { name: "显示器支架", category: "配件", price: 129, stock: 15 },
+  { name: "USB 集线器", category: "配件", price: 59, stock: 0 },
+  { name: "电竞耳机", category: "外设", price: 349, stock: 8 }
+])
+
+// 范围 + 排序 + 投影一次写全
+db.products.find(
+  { price: { $gte: 50, $lte: 200 } },
+  { name: 1, price: 1, _id: 0 }
+).sort({ price: -1 })
+
+// 打 8 折：$mul 是乘法运算符
+db.products.updateMany(
+  { stock: 0 },
+  { $mul: { price: 0.8 } }
+)
+
+// 先数再删
+db.products.countDocuments({ category: "配件" })   // 例如返回 2
+db.products.deleteMany({ category: "配件" })
+```
+
+注意 `$gte: 50, $lte: 200` 写在同一个条件对象里是"区间与"语义；拆成两个并列字段对象也一样，但不能拆成两个 `{ price: ... }` 键重复——JSON 对象同名键会互相覆盖。
+</details>
+
+<details>
+<summary>任务二与任务三参考实现</summary>
+
+```javascript
+// 任务二：购物车
+db.carts.updateOne(
+  { userId: "u-9" },
+  {
+    $push: {
+      items: { $each: [{ sku: "m-001", qty: 1 }, { sku: "k-002", qty: 1 }] },
+      logs: { $each: ["add m-001", "add k-002"], $slice: -5 }
+    }
+  },
+  { upsert: true }
+)
+
+// 位置运算符：查询条件定位元素，items.$ 指向它
+db.carts.updateOne(
+  { userId: "u-9", "items.sku": "m-001" },
+  { $set: { "items.$.qty": 3 } }
+)
+
+// 去重对比：再 push 一次会出现两条 m-001；addToSet 则只有一条
+db.carts.updateOne(
+  { userId: "u-9" },
+  { $addToSet: { items: { sku: "m-001", qty: 1 } } }
+)
+
+// 任务三：发号器（原子、并发安全）
+function nextOrderNo() {
+  const r = db.counters.findOneAndUpdate(
+    { _id: "order-no" },
+    { $inc: { seq: 1 } },
+    { returnDocument: "after", upsert: true }
+  )
+  return "NO-" + String(r.seq).padStart(6, "0")
+}
+nextOrderNo() // NO-000001
+nextOrderNo() // NO-000002
+```
+
+任务三的关键在"查询与修改同一瞬间完成"：两个并发调用各自触发一次 `$inc`，MongoDB 对同一文档的写操作串行执行，因此两个号必然不同——换成"先 find 再 update 再加一"的三步写法，并发下两个请求会读到同一个旧值。
+</details>
+
 
 ## 7. 一句话记住
 

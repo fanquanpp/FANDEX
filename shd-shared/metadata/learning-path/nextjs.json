@@ -77,6 +77,13 @@
           "desc": "构建产物、缓存与监控",
           "difficulty": "intermediate",
           "doc": "090-DeploymentOptimization"
+        },
+        {
+          "id": "next-204",
+          "title": "元数据与 SEO",
+          "desc": "metadata、分享图、sitemap 与 JSON-LD",
+          "difficulty": "intermediate",
+          "doc": "095-MetadataSeo"
         }
       ]
     }

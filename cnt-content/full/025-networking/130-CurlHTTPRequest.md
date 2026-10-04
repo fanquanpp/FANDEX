@@ -1,12 +1,12 @@
 ---
-order: 130
+order: 140
 title: curl HTTP 请求
 module: 'networking'
 category: 云与基础设施
 difficulty: beginner
 description: curl 实战学习笔记：从对接一个第三方 API 的真实场景出发，学会读 -v 详细输出、收发各类请求体、管理 Cookie 会话、设置超时重试与代理，并用 -w 时间分解定位延迟。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'networking/120-HTTPProtocol'
   - 'networking/370-ProxyConfig'

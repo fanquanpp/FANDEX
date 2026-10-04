@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 拆开 210 地图上 stack 那一段：无限递归数到几十万层才崩的现场实验，栈帧的建立与拆除、System V 与 Windows x64 传参差异、递归深度与尾调用优化、大局部数组与缓冲区溢出两类栈事故的逐行报告解读。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/200-DynamicMemoryManagement'
   - 'c/060-OperatorExpression'

@@ -1,12 +1,12 @@
 ---
-order: 270
+order: 290
 title: Kotlin 与并发安全
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: Kotlin 并发安全深度解析：共享可变状态、数据竞争、Mutex、原子操作、CAS、Actor 模型、Channel、线程限制、Volatile、StateFlow 的形式化定义、字节码实现与企业级工程实践。对标 MIT 6.005、Stanford CS110、CMU 15-440 教学水准。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/360-KotlinRegex'
   - 'kotlin/370-KotlinTime'

@@ -6,7 +6,7 @@ category: 云与基础设施
 difficulty: intermediate
 description: 六条安全编码原则各自在防什么：把「攻击者视角 + 失败模式思维」变成写代码时的默认反射，用数据流视角串起 OWASP Top 10，附时序攻击等底层原理与动手练习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'cybersecurity/170-InputValidation'
   - 'cybersecurity/340-SecureDevelopment'

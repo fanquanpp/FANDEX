@@ -1,12 +1,12 @@
 ---
-order: 460
+order: 480
 title: Kotlin 多平台
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: KMP 架构、expect/actual、共享代码策略、Compose Multiplatform 与 Gradle 配置。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/120-KotlinCollectionCoroutine'
   - 'kotlin/240-KotlinCoroutineAdvanced'

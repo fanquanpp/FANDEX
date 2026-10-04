@@ -1,12 +1,12 @@
 ---
-order: 620
+order: 640
 title: C++工具链
 module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
 description: CMake、vcpkg与包管理
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'cpp/220-CppOOPAdvanced'
   - 'cpp/450-CppMemoryModel'

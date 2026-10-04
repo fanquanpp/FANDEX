@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React SSR 原理与工程实践：renderToString 与流式渲染、水合与选择性水合、SSR/SSG/ISR/RSC 的区别。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'react/140-ServerComponents'
   - 'react/130-ConcurrentRendering'

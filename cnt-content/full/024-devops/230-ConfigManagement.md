@@ -1,12 +1,12 @@
 ---
-order: 230
+order: 250
 title: 配置管理
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: 配置管理：Ansible、配置中心、环境管理、密钥管理与GitOps
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/130-ServiceMesh'
   - 'devops/270-LogManagement'

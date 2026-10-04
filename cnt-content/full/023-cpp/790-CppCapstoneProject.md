@@ -1,12 +1,12 @@
 ---
-order: 740
+order: 760
 title: C++ 毕业项目：零依赖内存安全的数据缓冲库
 description: C++ 模块出口项目（Level 6）：手写一个 Buffer 类族，把移动语义、RAII、智能指针与模板基础组装成带测试的静态库，user stories 验收、提示从高到无。
 module: 'cpp'
 category: 计算机科学
 difficulty: advanced
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'cpp/090-RvalueReferenceMoveSemantics'
   - 'cpp/100-MoveSemanticsDetailed'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: Spring Cloud微服务架构
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/740-JavaBuildTool'
   - 'java/090-ControlFlow'
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- [Spring Boot 学习笔记](/java/860-SpringBootNotes)：建议先完成前一篇的学习
+- [Spring Boot 学习笔记](/java/860-SpringBootDeepDive)：建议先完成前一篇的学习
 
 ## 学习目标
 

@@ -1,12 +1,12 @@
 ---
-order: 220
+order: 230
 title: 差集与交集：EXCEPT 与 INTERSECT
 module: 'sql'
 category: 数据库
 difficulty: beginner
 description: 用 EXCEPT 求"有 A 没 B"、用 INTERSECT 求"两个都有"，掌握集合操作的重复行语义、NULL 处理、方言差异与替代写法。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/210-SetOperation'
   - 'sql/180-SemiAntiJoin'

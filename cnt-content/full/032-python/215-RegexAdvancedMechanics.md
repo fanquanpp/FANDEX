@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 承接正则实战篇，从「一条 pattern 卡死整个服务」的事故现场拆开引擎：回溯如何工作、嵌套量词为何指数爆炸、3.11 原子组与占有量词的防御写法；再学环视断言「只看不 吃」、反向引用配对匹配，附 re 与第三方 regex 库、各语言方言的对比与调试测试方法。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related: []
 prerequisites: []
 ---

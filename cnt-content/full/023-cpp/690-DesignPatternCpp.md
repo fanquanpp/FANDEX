@@ -1,12 +1,12 @@
 ---
-order: 650
+order: 670
 title: 设计模式与 C++
 module: 'cpp'
 category: 计算机科学
 difficulty: intermediate
 description: GoF设计模式的C++实现
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'cpp/340-ConstexprCompileTime'
   - 'cpp/050-NamespaceLinkage'

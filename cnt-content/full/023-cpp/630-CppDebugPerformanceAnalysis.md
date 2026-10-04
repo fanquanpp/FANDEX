@@ -1,12 +1,12 @@
 ---
-order: 610
+order: 620
 title: C++ 调试与性能分析
 module: 'cpp'
 category: 计算机科学
 difficulty: advanced
 description: GDB/LLDB 调试、性能剖析工具与内存泄漏检测。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'cpp/460-MemoryOrderLockFree'
   - 'cpp/620-CppExceptionAndPerformance'

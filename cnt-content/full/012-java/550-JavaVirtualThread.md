@@ -1,28 +1,28 @@
 ---
-order: 450
+order: 440
 title: Java 与虚拟线程
 module: 'java'
 category: 后端技术
 difficulty: intermediate
 description: 从"线程池打满、QPS 上不去"的真实事故入手学会虚拟线程：三种创建方式、每任务一线程执行器、Pinning 与 ThreadLocal 两大坑、Spring Boot 一键启用，附与响应式编程的选型判断。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
-  - 'java/550-JavaVirtualThreadInternals'
+  - 'java/570-JavaVirtualThreadInternals'
   - 'java/780-JavaNewFeatures'
   - 'java/580-JavaReactiveProgramming'
   - 'java/530-ThreadLocalMemoryLeak'
   - 'java/1000-JavaGraalVM'
 prerequisites:
   - 'java/480-MultithreadingBasics'
-  - 'java/490-ConcurrencyBasics'
+  - 'java/490-JucConcurrencyTools'
   - 'java/020-JavaOverviewDevEnv'
 ---
 
 ## 前置知识
 
 - [多线程基础](/java/480-MultithreadingBasics)：知道 Thread 怎么创建、join 和 sleep 是什么；
-- [并发基础](/java/490-ConcurrencyBasics)：用过线程池（ExecutorService），知道"任务提交给池子"这个模型。
+- [并发基础](/java/490-JucConcurrencyTools)：用过线程池（ExecutorService），知道"任务提交给池子"这个模型。
 
 ## 学习目标
 
@@ -34,7 +34,7 @@ prerequisites:
 4. 一行配置让 Spring Boot 3.2+ 的请求处理跑在虚拟线程上；
 5. 判断手头的服务该用虚拟线程还是响应式（Reactor）。
 
-预计 90 分钟，含 3 组动手实验与 4 道练习。想深挖载体线程调度与 Continuation 机制的读者，读完后转 [虚拟线程内幕](/java/550-JavaVirtualThreadInternals)。
+预计 90 分钟，含 3 组动手实验与 4 道练习。想深挖载体线程调度与 Continuation 机制的读者，读完后转 [虚拟线程内幕](/java/570-JavaVirtualThreadInternals)。
 
 ## 1. 问题引入：线程池打满的那天下午
 
@@ -126,7 +126,7 @@ public class FetchDemo {
 }
 ```
 
-关键点：`fetch` 里没有回调、没有 `flatMap`，就是最普通的同步代码——因为阻塞点被 JVM 接管了。网络 I/O（Socket、`HttpClient.send`、NIO 阻塞模式）、`Thread.sleep`、`BlockingQueue` 的 put/take、锁等待（`LockSupport.park`、`ReentrantLock.lock`）等绝大多数阻塞操作都会触发"卸载"。完整清单与内部机制见 [虚拟线程内幕](/java/550-JavaVirtualThreadInternals)。
+关键点：`fetch` 里没有回调、没有 `flatMap`，就是最普通的同步代码——因为阻塞点被 JVM 接管了。网络 I/O（Socket、`HttpClient.send`、NIO 阻塞模式）、`Thread.sleep`、`BlockingQueue` 的 put/take、锁等待（`LockSupport.park`、`ReentrantLock.lock`）等绝大多数阻塞操作都会触发"卸载"。完整清单与内部机制见 [虚拟线程内幕](/java/570-JavaVirtualThreadInternals)。
 
 ## 3. 为什么它能行：一个请求一条线程，但线程是假的
 
@@ -254,7 +254,7 @@ public OrderDetail fetchOrderDetail(long orderId) throws InterruptedException {
 }
 ```
 
-它的价值不止"并发"：子任务生命周期被绑定在 try 块内，父任务取消（比如上游超时）会级联取消所有子任务，不会留下"孤儿任务"泄漏。竞速取最快（多副本读同一数据）用 `StructuredTaskScope.open(Joiner.anySuccessfulOrThrow())`。各完成策略的完整对照与旧 API 迁移表在 [虚拟线程内幕](/java/550-JavaVirtualThreadInternals)。
+它的价值不止"并发"：子任务生命周期被绑定在 try 块内，父任务取消（比如上游超时）会级联取消所有子任务，不会留下"孤儿任务"泄漏。竞速取最快（多副本读同一数据）用 `StructuredTaskScope.open(Joiner.anySuccessfulOrThrow())`。各完成策略的完整对照与旧 API 迁移表在 [虚拟线程内幕](/java/570-JavaVirtualThreadInternals)。
 
 生产采用建议：特性还在预览期，API 已重设计过一次（JDK 25），新项目可以小范围试用，核心链路等转正再上。
 
@@ -346,6 +346,6 @@ public class AggregateController {
 
 ## 下一步
 
-- [虚拟线程内幕](/java/550-JavaVirtualThreadInternals)：载体线程调度、Continuation 挂载/卸载机制、完整卸载点清单、结构化并发各完成策略与 JEP 演进时间线；
+- [虚拟线程内幕](/java/570-JavaVirtualThreadInternals)：载体线程调度、Continuation 挂载/卸载机制、完整卸载点清单、结构化并发各完成策略与 JEP 演进时间线；
 - [ThreadLocal 内存泄漏](/java/530-ThreadLocalMemoryLeak)：ThreadLocal 弱引用设计与虚拟线程时代的完整防御方案；
 - [Java 响应式编程](/java/580-JavaReactiveProgramming)：如果团队仍有流式与背压需求，这里是 Reactor 的系统入口。

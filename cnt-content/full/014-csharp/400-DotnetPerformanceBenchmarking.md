@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 用 BenchmarkDotNet 建立可信基准：从测量到优化的完整方法。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'csharp/230-SpanMemory'
   - 'csharp/390-GCGeneration'

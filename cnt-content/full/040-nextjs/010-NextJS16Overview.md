@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: beginner
 description: 零基础第一课：理解元框架、App Router、服务器组件与客户端组件，用 create-next-app 五分钟跑起第一个项目，并建立 Next.js 16 的版本认知。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'nextjs/020-AppRouterRouting'
   - 'nextjs/030-DataFetchingCaching'
@@ -161,12 +161,84 @@ export default function CounterPage() {
 
 本模块共 10 篇，按由浅入深排列：本篇概述建立整体认知后，App Router 路由、数据获取与缓存是地基；Route Handlers 与 Server Actions 解决"数据怎么改"；渲染策略与缓存深挖（Cache Components）是进阶选型课；认证、代理与安全、部署与性能优化面向上线；学习总结用于二轮复习串线。
 
-## 8. 动手试试
+## 8. 动手实践
 
-1. 在 `app/about/page.tsx` 新建一个"关于"页面，访问 `/about` 看是否生效。
-2. 把计数器页面改出"减一"与"重置"按钮，体会客户端组件的状态管理。
-3. 在首页加一张图片：把图片放进 `public/`，用 `<img src="/xxx.png" alt="描述" />`（进阶后换成官方 `next/image`，见第 9 篇）。
-4. 新建 `app/contact/page.tsx`，用 `<Link href="/about">` 在页面之间跳转（下一章详解路由）。
+**任务一：关于页面。** 在 `app/about/page.tsx` 新建一个"关于"页面，访问 `/about` 看是否生效；然后**故意**在文件顶部写上 `useState` 但不写 `"use client"`，读一遍报错信息再修复。提示：报错信息会告诉你缺什么——读懂框架报错是这个模块的基本功。
+
+**任务二：计数器加按钮。** 给 `/counter` 加"减一"与"重置"按钮。提示：重置只是 `setCount(0)`，三个按钮共享同一个状态。
+
+**任务三：图片与跳转。** 在首页放一张 `public/` 下的图片；新建 `app/contact/page.tsx`，用 `<Link href="/about">` 实现两页互跳。提示：`Link` 从 `next/link` 导入，这是客户端导航（不刷新整页）的起点。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
+
+```tsx
+// app/about/page.tsx —— 不写 "use client"，保持服务器组件
+export default function AboutPage() {
+  return (
+    <main>
+      <h1>关于本站</h1>
+      <p>这是一个学习 Next.js 16 的练习项目。</p>
+    </main>
+  )
+}
+```
+
+故意制造报错的写法与修复：
+
+```tsx
+// 报错版本：服务器组件里用了 useState
+import { useState } from "react"
+
+export default function AboutPage() {
+  const [n] = useState(0)   // Error: useState only works in a Client Component...
+}
+```
+
+修复有两种：给文件加 `"use client"`（如果确实需要交互），或删掉状态代码（本页只是静态文案，正确答案是删除）。这个实验的目的是让你第一次"读懂"框架边界报错：Next.js 的报错会直接指出哪个 Hook 用错了位置、该加什么指令。
+</details>
+
+<details>
+<summary>任务二与任务三参考实现</summary>
+
+```tsx
+// app/counter/page.tsx
+"use client"
+
+import { useState } from "react"
+
+export default function CounterPage() {
+  const [count, setCount] = useState(0)
+  return (
+    <main>
+      <p>当前计数：{count}</p>
+      <button onClick={() => setCount(count + 1)}>加一</button>
+      <button onClick={() => setCount(count - 1)}>减一</button>
+      <button onClick={() => setCount(0)}>重置</button>
+    </main>
+  )
+}
+```
+
+```tsx
+// app/contact/page.tsx
+import Link from "next/link"
+
+export default function ContactPage() {
+  return (
+    <main>
+      <h1>联系我们</h1>
+      <Link href="/about">去关于页</Link>
+    </main>
+  )
+}
+```
+
+图片任务：把任意图片复制为 `public/hero.png`，在 `app/page.tsx` 里加 `<img src="/hero.png" alt="首页配图" />`。注意路径以 `/` 开头（`public` 目录映射为站点根路径），写 `src="public/hero.png"` 反而 404。用 `<Link>` 跳转时按住浏览器刷新键对比：普通 `<a>` 会整页重载，`<Link>` 只切换内容——这就是客户端导航的直观感受。
+</details>
+
 
 ## 9. 一句话记住
 

@@ -1,12 +1,12 @@
 ---
-order: 390
+order: 400
 title: 锁机制
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: SQL锁机制：共享锁、排他锁、意向锁、间隙锁、临键锁的原理、兼容性与死锁预防
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'sql/370-IsolationLevel'
   - 'sql/380-DirtyReadNonRepeatablePhantom'

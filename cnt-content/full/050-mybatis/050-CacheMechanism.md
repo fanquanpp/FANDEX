@@ -10,7 +10,7 @@ prerequisites:
   - 'mybatis/040-ResultMapping'
   - 'spring-boot/100-TransactionManagement'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-05'
 related:
   - 'mybatis/060-PluginInterceptor'
   - 'redis/110-CacheStrategyAdvancedFeature'
@@ -230,6 +230,88 @@ Redis 方案的形态给两句速写，完整体系归 [缓存策略与高级特
 ## 本章总结
 
 MyBatis 的缓存分两层：一级在口袋（SqlSession 级、默认开、关不掉），二级在书架（namespace 级、跨会话、提交才写入）。一级缓存的生命力绑在会话边界上——Spring 无事务每调用一个新会话，所以你感觉不到它；事务内它白送红利，也附赠一个无痕的旧值窗口。二级缓存的失效信号沿 namespace 传播，而数据关联沿表发生，坐标系对不上，跨 namespace 的 join 必然脏，集群下更雪上加霜。于是工程结论干脆：一级天然用，二级默认关，跨请求共享交给 Redis。口袋、书架、图书馆——下次对着日志数 SQL 时，你该知道每一行 Preparing 是从哪一层冒出来的。
+
+## 动手实践
+
+**任务一：一级缓存的三个现场。** 写一个测试类亲手数 SQL（对照第 2、3 节的结论）：同会话连查两次同一查询，数 Preparing 行数；换一个新会话再查，再数；最后在 `@Transactional` 方法里连查两次，数第三次。预期分别是 1、2、1——三组数字对上了，会话边界决定缓存生死这个结论就是你的了。提示：日志开 StdOutImpl，每次查询前打印一行分隔符方便数数。
+
+**任务二：复现旧值窗口。** 在同一个事务里：先查一次商品价格，用另一个连接（或另一个不带事务的方法）把价格改掉并提交，事务内再查一次同一查询——观察第二次拿到的是旧值且控制台没有新 SQL。然后给该语句加 `flushCache="true"` 再跑，对比。提示：这个实验必须在有事务的方法里做（第 4 节：风险窗口只在事务内存在）；加 flushCache 后第二次会真的打库。
+
+**任务三：二级缓存的「提交才上架」。** 开启某 namespace 的二级缓存，写一段代码：插入一条数据但**不提交事务**，另开会话查询，观察新数据不可见；提交后再查，新数据可见。提示：这正是第 5 节「查询结果要等事务提交才上书架」的设计防住的场景——未提交数据跨会话可见就是脏读。
+
+先自己设计实验，再对照参考实现：
+
+<details>
+<summary>任务一参考实现（数 SQL 骨架）</summary>
+
+```java
+@SpringBootTest
+class FirstLevelCacheTest {
+
+    @Autowired
+    ProductMapper productMapper;
+
+    @Test
+    void sameSessionHitsCache() {
+        // mybatis-spring 每次 mapper 调用默认新会话，需要显式开事务把会话固定住
+        // 这也是「事务外永远不命中」的原因：没有固定会话就没有口袋
+    }
+
+    @Test
+    @Transactional   // 事务内：同一个 SqlSession 贯穿始终
+    void twiceInTransaction() {
+        System.out.println("---- 第一次查询 ----");
+        productMapper.selectById(1L);
+        System.out.println("---- 第二次查询 ----");
+        productMapper.selectById(1L);
+        // 预期：只有一次 Preparing，第二次从口袋取
+    }
+}
+```
+
+三组数字背后各有一个机制：同会话命中是口袋直接给；新会话是口袋换人了；事务外两次调用在 Spring 里本来就是两个会话。做完全部对照，回头再看第 3 节那句「事务内外，两倍的差距」，每句话都有你自己数出来的 SQL 作证。
+</details>
+
+<details>
+<summary>任务二与任务三参考实现</summary>
+
+```java
+// 任务二：旧值窗口（事务内两次读夹一次外部修改）
+@Test
+@Transactional
+void staleReadWindow() {
+    System.out.println("---- 事务内第一次读 ----");
+    productMapper.selectById(1L);          // Preparing 1 次
+
+    // 模拟另一个连接的修改并提交（testRestTemplate/直接另起 mapper 不带事务）
+    Product p = new Product();
+    p.setId(1L);
+    p.setPrice(new BigDecimal("999.00"));
+    standaloneUpdate(p);                    // Preparing 1 次，独立连接，已提交
+
+    System.out.println("---- 事务内第二次读 ----");
+    productMapper.selectById(1L);           // 没有 Preparing！口袋给了旧价
+}
+```
+
+预期现象：第二次读控制台安静无声，拿到的是修改前的价格——旧值窗口亲手复现。MySQL 默认 RR 隔离级别下这不算「意外」（可重复读本来就是这个名字的由来），但业务把它当实时库存用就是事故，处方是第 9 节的 useCache/flushCache/localCacheScope 三件套。
+
+```java
+// 任务三：未提交不上架（两个会话视角）
+@Test
+void commitBeforeShelf() {
+    // 会话 A：插入但不提交
+    // 用 TransactionTemplate 手动控制提交时机
+    transactionTemplate.executeWithoutResult(status -> {
+        productMapper.insert(someProduct());
+        // 此时不 commit：另开线程查，看不到新数据（二级书架没有它）
+    });
+    // execute 返回即提交：现在再查，新数据可见
+}
+```
+
+两个实验并排读完，二级缓存「提交才上架」的动机就清楚了：书架是跨会话共享的，未提交数据一旦上架，其他会话就看到了可能被回滚的数据——那就是脏读。
+</details>
 
 ## 官方文档
 

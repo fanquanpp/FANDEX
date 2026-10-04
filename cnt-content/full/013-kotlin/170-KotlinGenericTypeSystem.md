@@ -1,12 +1,12 @@
 ---
-order: 170
+order: 180
 title: Kotlin 泛型与类型系统
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: 泛型、型变、空安全、智能转换与类型系统深度解析。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/040-KotlinFunctionAndLambda'
   - 'kotlin/050-KotlinClassObject'

@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: error 接口、errors.Is/As、自定义错误、panic/recover、错误包装、sentinel 错误与最佳实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'go/060-GoInterfaceComposition'
   - 'go/120-GoConcurrentProgramming'

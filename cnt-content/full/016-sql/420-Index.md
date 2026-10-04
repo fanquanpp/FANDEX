@@ -1,12 +1,12 @@
 ---
-order: 420
+order: 430
 title: 索引
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: SQL索引体系：B+树索引、哈希索引、全文索引、空间索引的原理、结构与适用场景
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'sql/430-ExecutionPlan'
   - 'sql/360-TransactionACIDProperty'

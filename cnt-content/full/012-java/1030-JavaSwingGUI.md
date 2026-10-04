@@ -6,12 +6,12 @@ category: 后端技术
 difficulty: intermediate
 description: Swing 组件体系、事件驱动与 GUI 应用开发。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'java/700-NetworkProgrammingDeepDive'
   - 'java/880-SpringCloudMicroserviceDevelopment'
   - 'java/1040-JavaProjectExampleLibrarySystem'
-  - 'java/640-JavaTheoryJVMClassLoadingMemory'
+  - 'java/640-JavaTheoryJVMPrinciples'
 prerequisites:
   - 'java/020-JavaOverviewDevEnv'
 ---

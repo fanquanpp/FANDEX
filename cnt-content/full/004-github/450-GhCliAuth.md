@@ -1,12 +1,12 @@
 ---
-order: 450
+order: 460
 title: GitHub CLI 认证配置
 module: 'github'
 category: 工具链
 difficulty: beginner
 description: 'GitHub CLI（gh）安装与认证的完整教学：交互式登录、Token 登录、多账户切换、SSH 密钥管理与 CI 环境配置。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'github/440-GitHubCLI'
   - 'github/480-GhRepoManage'

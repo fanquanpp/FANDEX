@@ -1,12 +1,12 @@
 ---
-order: 70
+order: 80
 title: 白盒测试覆盖度
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: 覆盖率指标的精确语义：语句、分支、条件、判定-条件、条件组合与 MC/DC 的定义、计算反例与工具实现（JaCoCo、Istanbul、V8 coverage、gcov）。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/010-TestBasicsMethod'
   - 'software-testing/230-CICDTest'

@@ -1,12 +1,12 @@
 ---
-order: 480
+order: 500
 title: 知识管理
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: 技术文档体系、Wiki建设、知识分享与组织学习。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/320-IncidentRetrospectiveMethodology'
   - 'software-testing/470-TechnicalReview'

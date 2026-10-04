@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 一份开箱即用的 Node.js + TypeScript 工程骨架：目录结构、tsconfig 双配置、开发与构建脚本、常见坑位。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'typescript/350-TypeScriptEngineeringConfig'
   - 'typescript/360-TsconfigStrictMode'
@@ -40,7 +40,7 @@ graph TD
 
 ## tsconfig：一个基础 + 两个场景
 
-```json
+```jsonc
 // tsconfig.base.json：共享编译选项
 {
   "compilerOptions": {
@@ -56,7 +56,9 @@ graph TD
   },
   "include": ["src"]
 }
-json
+```
+
+```jsonc
 // tsconfig.dev.json：开发期只做类型检查，不产出文件
 {
   "extends": "./tsconfig.base.json",
@@ -64,12 +66,16 @@ json
     "noEmit": true
   }
 }
-json
+```
+
+```jsonc
 // tsconfig.build.json：构建期产出 dist
 {
   "extends": "./tsconfig.base.json"
 }
 ```
+
+三个文件的分工读一遍就懂：base 管「这份代码按什么规则编译」，dev 在其上加「只检查、别产出」，build 原样继承——构建配置简单到只剩一行 extends，正是模板想要的效果。
 
 ## 三个脚本命令
 
@@ -82,7 +88,9 @@ json
     "typecheck": "tsc -p tsconfig.dev.json"
   }
 }
-typescript
+```
+
+```typescript
 // src/index.ts：最小示例
 import { createServer } from 'node:http';
 
@@ -99,6 +107,10 @@ createServer((req, res) => {
 开发用 `pnpm dev`（tsx 直接跑 TS），提交前 `pnpm typecheck`，
 发布时 `pnpm build && pnpm start`。
 
+## 源码映射：让断点与报错指回 .ts
+
+`sourceMap: true` 让构建产物旁边多出 `.map` 文件，运行报错的堆栈因此能映射回 `.ts` 源码行号。Node 侧开启方式是运行参数 `node --enable-source-maps dist/index.js`（可把它并进 `start` 脚本），编辑器调试则自动读取。验证方法：在 `index.ts` 故意抛一个错，对比开关前后堆栈的行号——开着时指向 `.ts`，关着时指向 `dist` 里的 `.js`。
+
 ## 常见误区
 
 | 误区 | 真相 |
@@ -114,3 +126,23 @@ createServer((req, res) => {
 `tsx` 负责开发体验，`tsc` 负责产物质量，双 tsconfig 让两件事互不干扰。
 继续深化可看 tsconfig 严格模式 与
 编译与性能优化。
+
+## 动手练习（先遮住参考实现）
+
+预计 30 分钟，从空目录把本文骨架搭出来。搭的过程比模板本身值钱——每个里程碑都有可观察的输出，错了当场暴露。
+
+**练习一（10 分钟）：骨架最小可运行**
+
+建目录 `my-service/`，`pnpm init` 后安装三个依赖：`tsx`（开发）、`typescript` 与 `@types/node`（检查）。把本文的目录结构、三个 tsconfig 与 `index.ts` 逐个文件敲出来（别复制粘贴，敲的时候每个字段的用途会过一遍脑子）。验收：`pnpm dev` 启动后浏览器访问 `http://localhost:3000` 看到 `hello`，改一行 `index.ts` 保存，终端看到 tsx 自动重启。
+
+**练习二（10 分钟）：让严格模式拦住你**
+
+在 `index.ts` 里故意写三处类型错误：`process.env.PORT + 1`（env 的值是 `string | undefined`，不许直接算术）；`res.end(42)`（end 只收 string 或二进制）；从 `./nonexistent` 导入一个不存在的模块。逐个运行 `pnpm typecheck`，把三段报错的关键词抄进笔记——以后再见到同样的报错，你能秒级定位。
+
+**练习三（10 分钟）：构建产物巡检**
+
+跑 `pnpm build`，进入 `dist/` 回答三个问题：`.js` 文件里还有没有类型标注？`.d.ts` 里有什么？`.map` 文件是给谁用的？然后把 `package.json` 的 `start` 脚本改成带 `--enable-source-maps`，在 `index.ts` 里 `throw new Error('巡检')` 后 `pnpm build && pnpm start`，对比堆栈指向的是 `.ts` 还是 `.js`。验收标准：三个问题都能一句话答出。
+
+### 参考答案（练习三，先别看）
+
+`.js` 里没有类型——`tsc` 编译时剥掉，类型只活在源码与 `.d.ts` 里；`.d.ts` 是给「用这个包的人」的类型说明书（`declaration: true` 的产物），包内代码运行时读不到它；`.map` 是给调试器与 `--enable-source-maps` 的坐标翻译表，把 `dist/*.js` 的行列号映射回 `src/*.ts`。三份产物三种受众：运行时读 `.js`，调用方读 `.d.ts`，调试者读 `.map`。

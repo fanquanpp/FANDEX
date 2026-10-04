@@ -6,9 +6,10 @@ category: 后端技术
 difficulty: beginner
 description: 用待办事项示例完整走一遍 Module/Controller/Service/DTO 的分层写法、依赖注入与模块边界。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'nestjs/150-NestJSOverview'
+  - 'nestjs/165-DiContainerAndProviders'
   - 'nestjs/170-ValidationPipes'
   - 'nestjs/180-DatabaseIntegration'
   - 'typescript/100-InterfaceTypeAlias'

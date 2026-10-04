@@ -1,12 +1,12 @@
 ---
-order: 240
+order: 260
 title: Jest 入门
 module: 'software-testing'
 category: 云与基础设施
 difficulty: beginner
 description: Jest 单元测试入门：describe/it/expect 三件套、常用匹配器、生命周期钩子、mock 函数最小集与 Vitest 的关系。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/250-JestMock'
   - 'software-testing/260-JestAsync'

@@ -1,12 +1,12 @@
 ---
-order: 410
+order: 420
 title: 专项： HTML 内容模型与嵌套规则
 module: 'html5'
 category: 前端技术
 difficulty: beginner
 description: 从"块级/行内"升级到正式分类：元数据、流、章节、标题、措辞、嵌入、交互七类内容，附"谁是谁的父级"速查矩阵。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'html5/070-HTML5BlockVsInline'
   - 'html5/080-HTML5DivSpanContainers'

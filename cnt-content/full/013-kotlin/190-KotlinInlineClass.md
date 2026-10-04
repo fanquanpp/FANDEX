@@ -1,12 +1,12 @@
 ---
-order: 190
+order: 200
 title: Kotlin 内联类
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: value class 与内联优化的编译原理与工程实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/480-KotlinSpring'
   - 'kotlin/440-KotlinAndroid'

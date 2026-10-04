@@ -1,12 +1,12 @@
 ---
-order: 190
+order: 200
 title: NestJS 单元测试与端到端测试
 module: 'nestjs'
 category: 后端技术
 difficulty: intermediate
 description: '@nestjs/testing 替身注入做单元测试，Supertest 走真实 HTTP 做端到端测试，配合分层策略与 CI 让重构有安全网。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'nestjs/180-DatabaseIntegration'
   - 'nestjs/200-GuardsAndLifecycle'

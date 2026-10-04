@@ -32,13 +32,6 @@ const csp = IS_DESKTOP_BUILD ? DESKTOP_CSP : MAIN_CSP;
     <meta http-equiv="Content-Security-Policy" content={csp} />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
 
-    {!IS_DESKTOP_BUILD && (
-      <>
-        <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
-        <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
-      </>
-    )}
-
     <link
       rel="stylesheet"
       href={`${base}fonts/fonts.css`}

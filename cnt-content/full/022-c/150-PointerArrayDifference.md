@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从「sizeof 在 main 里是 40、进函数变 8」拆解数组退化：三条例外、传数组即传指针、char *s 与 char a[] 的存储差异、int *p[10] 与 int (*p)[10] 读法拆解，附二维数组当 int** 传的段错误现场。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/160-DoublePointerPointerArray'
   - 'c/190-ComplexDeclarationParsing'

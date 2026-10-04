@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 从源码、构建到发布，讲清 Vue 3 组件库的工程骨架：目录设计、样式方案、类型导出、按需导入、测试与版本发布。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'vue3/110-ComponentSystem'
   - 'vue3/230-TypeScriptIntegration'

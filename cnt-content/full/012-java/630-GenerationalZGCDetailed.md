@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: JDK 21分代ZGC详解：原理、配置与调优。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/430-ReflectionDynamicProxy'
   - 'java/440-AnnotationProcessor'
@@ -18,7 +18,7 @@ prerequisites:
 
 ## 前置知识
 
-- [JVM 调优](/java/620-JVMtuning)：建议先完成前一篇的学习
+- [JVM 调优](/java/620-JVMTuning)：建议先完成前一篇的学习
 
 ## 学习目标
 

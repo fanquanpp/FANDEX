@@ -1,12 +1,12 @@
 ---
-order: 310
+order: 320
 title: MERGE 与 UPSERT
 module: 'sql'
 category: 数据库
 difficulty: intermediate
 description: 合并写入三件套：PostgreSQL/SQLite 的 ON CONFLICT、MySQL 的 ON DUPLICATE KEY UPDATE、标准 MERGE 语句，附方言对照与并发陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/120-DML'
   - 'sql/100-Constraint'

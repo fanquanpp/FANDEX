@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从舞台灯控固件出发掌握 const 与 volatile 的正交语义：const 的只读契约与真实优化边界（文件内可折叠、跨编译单元不行）、volatile 三经典场景（MMIO、信号标志、setjmp）、const volatile 组合，以及「不原子、不排序、不当锁」的能力边界。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/270-VolatileKeyword'
   - 'c/380-AtomicAndMemoryModel'

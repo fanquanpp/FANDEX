@@ -1,12 +1,12 @@
 ---
-order: 180
+order: 200
 title: GitOps 与持续交付
 module: 'devops'
 category: 云与基础设施
 difficulty: advanced
 description: GitOps与持续交付：ArgoCD、Flux、渐进式交付与发布策略
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/330-Troubleshooting'
   - 'devops/070-ContainerSecurity'

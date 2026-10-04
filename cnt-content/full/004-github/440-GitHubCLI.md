@@ -1,12 +1,12 @@
 ---
-order: 440
+order: 450
 title: GitHub CLI
 module: 'github'
 category: 工具链
 difficulty: intermediate
 description: GitHub CLI（gh）详解：安装认证、仓库/PR/Issue/Actions 常用命令与工作流提速技巧。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'github/290-SecretScanning'
   - 'github/300-CodeQLCodeScanning'

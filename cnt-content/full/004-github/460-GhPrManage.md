@@ -1,12 +1,12 @@
 ---
-order: 460
+order: 470
 title: gh pr 实战：一条 PR 从创建到合并的全命令行操作
 module: 'github'
 category: 工具链
 difficulty: intermediate
 description: 以「给仓库修一个 bug 并合并」这个真实任务为线索，把 gh pr 的 create、view、checkout、checks、review、merge 六组命令串成完整闭环，覆盖 Conventional Commits 提交、自动合并、审查三态与合并策略选择。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'github/450-GhCliAuth'
   - 'github/180-PullRequestCompleteCollaborationFlow'
@@ -144,7 +144,40 @@ gh pr close 42 --comment "方案调整，由 #57 代替"
 gh pr reopen 42
 ```
 
-## 8. 坑点与自检
+## 8. 底层机制：PR 的状态字段与 --auto 的工作方式
+
+`gh pr view --json` 暴露的字段比网页直观，几个关键字段构成「能不能合」的完整判断：
+
+```bash
+gh pr view 42 --json state,isDraft,mergeable,mergeStateStatus \
+  --jq '"state=\(.state) draft=\(.isDraft) mergeable=\(.mergeable) detail=\(.mergeStateStatus)"'
+```
+
+| 字段 | 取值 | 含义 |
+| :--- | :--- | :--- |
+| `state` | OPEN / MERGED / CLOSED | 生命周期三态；closed 且未合并即「废弃」 |
+| `isDraft` | true / false | 草稿态禁止合并，`gh pr ready` 转正 |
+| `mergeable` | MERGEABLE / CONFLICTING / UNKNOWN | 纯 Git 层面能不能无冲突合并；UNKNOWN 表示后台还在算 |
+| `mergeStateStatus` | BLOCKED / UNSTABLE / BEHIND / CLEAN / DIRTY 等 | 带保护规则的综合判定：BLOCKED 是审查/必需检查没过，UNSTABLE 是有失败的非必需检查，BEHIND 是落后于 base（仓库开了要求分支最新），DIRTY 是冲突 |
+
+`--auto` 的机制也就清楚了：它不是「盯着页面帮你点合并」，而是给 PR 挂一个**自动合并标记**，GitHub 服务端在每次事件（新检查完成、新审查提交）后重新评估 mergeStateStatus，一旦满足 CLEAN 就代为执行你指定的合并方式。所以开启它的前提是仓库设置允许 auto-merge；若仓库启用了 merge queue，`--auto` 的语义变为「加入合并队列」，由队列统一安排合入时机。
+
+## 9. 与相邻知识的关系
+
+- [Pull Request 完整协作流程](/github/180-PullRequestCompleteCollaborationFlow)：网页视角的同一条流程，本文是它的命令行投影；
+- [分支模型与分支保护规则](/github/170-BranchModelBranchRule)：`mergeStateStatus` 里每个非 CLEAN 值的背后都是一条保护规则；
+- [CODEOWNERS](/github/190-CODEOWNERS)：审查请求从哪来——`reviewRequests` 字段的源头；
+- [gh release](/github/490-GhRelease)：合并进 main 之后，发布环节的命令行搭档。
+
+## 10. 面试题思路
+
+**「request-changes 之后阻塞怎么解除？」** 首先答对语义：作者推送新提交后，原审查人需要重新提交 review（approve 或再次 request-changes），或主动撤销阻塞；然后补充工程含义——这保证「提修改意见的人确认修改到位」，是审查闭环而非一次性表态。若仓库要求代码所有者批准，还要补上所有者的批准才满足门禁。
+
+**「三种合并策略分别适合什么团队？」** 按历史价值答：`--squash` 把 PR 压成单提交，主线历史等于决策历史，revert 干净，适合开源与内容型项目；`--merge` 保留分支内全部过程提交，适合需要审计过程、且分支内提交本身规范的团队；`--rebase` 线性追加但每个提交都要经得起推敲。加分点：提到 squash 合并后原分支提交在 GitHub 页面仍可追溯。
+
+**「mergeStateStatus 是 BLOCKED，怎么定位？」** 展示排查链：`gh pr checks` 看必需检查是否绿 → `gh pr view --json reviewRequests` 看审查是否齐 → 看是否 BEHIND（需要 update branch）→ 结合仓库保护规则逐条对账。这题考的是「用结构化字段代替肉眼刷网页」。
+
+## 11. 坑点与自检
 
 | 现象 | 原因 | 处理 |
 | :--- | :--- | :--- |
@@ -162,11 +195,72 @@ gh pr reopen 42
 2. request-changes 之后，阻塞靠什么解除？
 3. 你的团队约定用哪种合并策略？为什么？
 
-## 9. 练习
+## 12. 练习
+
+先看任务与提示，自己走完再看参考实现。
 
 1. 在自己仓库完整走一遍「修 bug → squash 合并 → 删分支」闭环，全程不打开浏览器。
+
+   提示：命令链是 checkout -b → commit → push -u → pr create --fill → pr merge --squash --delete-branch。
+
+   参考实现：
+
+   ```bash
+   git checkout -b fix/demo-null-guard
+   echo "guard" >> src/demo.js && git add -A
+   git commit -m "fix(demo): 空数据兜底"
+   git push -u origin fix/demo-null-guard
+   gh pr create --fill
+   gh pr checks --watch || true            # 等检查结束（无 CI 时跳过）
+   gh pr merge --squash --delete-branch    # 删除远程与本地功能分支
+   git checkout main && git pull
+   ```
+
 2. 开一个草稿 PR，用 `gh pr ready` 转正，观察状态变化。
+
+   提示：`gh pr view --json isDraft,state` 前后各跑一次对照。
+
+   参考实现：
+
+   ```bash
+   gh pr create --draft --fill
+   gh pr view --json isDraft,state --jq '"draft=\(.isDraft) state=\(.state)"'
+   gh pr ready
+   gh pr view --json isDraft,state --jq '"draft=\(.isDraft) state=\(.state)"'
+   # 预期：第一次 draft=true，第二次 draft=false，state 始终 OPEN
+   ```
+
 3. 用 `gh pr list --json number,title,headRefName --jq '.[] | "\(.number) \(.title)"'` 把仓库开放 PR 列成一行一个，体会结构化输出的用法。
+
+4. 挑战题：写一个「CI 绿了自动 squash 合并」的收尾脚本，要求先核对 mergeStateStatus 再合并，失败时输出原因。
+
+   提示：`gh pr checks --watch` 失败以非零码退出；合并前查 `mergeable` 与 `mergeStateStatus`，把 BLOCKED/DIRTY 翻译成人话。
+
+   参考实现：
+
+   ```bash
+   #!/usr/bin/env bash
+   # usage: ./auto-merge.sh <pr 编号>
+   set -euo pipefail
+   PR="${1:?用法: auto-merge.sh <pr 编号>}"
+
+   echo "等待检查结束..."
+   if ! gh pr checks "$PR" --watch; then
+     echo "检查未全部通过，取消自动合并" >&2
+     exit 1
+   fi
+
+   status="$(gh pr view "$PR" --json mergeable,mergeStateStatus \
+     --jq '"\(.mergeable) \(.mergeStateStatus)"')"
+   case "$status" in
+     "MERGEABLE CLEAN") gh pr merge "$PR" --squash --delete-branch ;;
+     *DIRTY*)           echo "存在冲突，请先解决" >&2; exit 1 ;;
+     *BLOCKED*)         echo "审查或必需检查未满足，见 gh pr view $PR" >&2; exit 1 ;;
+     *)                 echo "状态：$status，暂不合并" >&2; exit 1 ;;
+   esac
+   ```
+
+   自检：仓库设置里开启 auto-merge 后，`gh pr merge --auto --squash` 一条命令就是服务端版的这个脚本——对比两者，体会「挂标记等事件」与「本机轮询」的差异。
 
 ## 下一步
 

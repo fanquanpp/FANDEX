@@ -6,11 +6,11 @@ category: 后端技术
 difficulty: intermediate
 description: 一维与多维数组、数组操作与 Arrays 工具类。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'java/720-JavaDatabaseConnection'
   - 'java/790-JavaNewFeaturesEcosystem'
-  - 'java/620-JVMtuning'
+  - 'java/620-JVMTuning'
   - 'java/210-CollectionFrameworkDetailed'
 prerequisites:
   - 'java/020-JavaOverviewDevEnv'

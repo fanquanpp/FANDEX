@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: JUnit 5 Jupiter API、Mockito 桩件框架、AssertJ 流式断言、Spring Boot Test 测试切片、Testcontainers 集成测试、JMH 微基准测试与 TDD/BDD 工程实践
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/690-JavaNetworkProgramming'
   - 'java/900-JavaLogSystem'
@@ -343,9 +343,10 @@ class UserServiceTest {
 
     @Test
     @Disabled("待修复：issue #123")
-    @DisplayName("TODO: 创建用户：重复邮箱应抛 UserExistsException")
+    @DisplayName("创建用户：重复邮箱应抛 UserExistsException（尚未实现）")
     void createUserWithDuplicateEmail() {
         // @Disabled 标记的测试不会执行，但会在报告中显示
+        // 断言先写好占位：等 UserExistsException 落地后移除 @Disabled 即可
     }
 
     @Test

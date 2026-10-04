@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C++ tuple 与 pair 完整教学：构造与访问、字典序比较、tie/apply/tuple_cat、多返回值实践、C++23 tuple-like 增强。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'cpp/320-StructuredBinding'
   - 'cpp/310-CppVariantOptionalAny'
@@ -217,6 +217,106 @@ for (auto const& [idx, name] : names | std::views::enumerate) {
     // idx 是元素下标，name 是元素本身——enumerate 产出 pair-like
 }
 ```
+
+## 面试题思路：三个高频考法
+
+1. 「`map::insert` 与 `operator[]` 都能写入，为什么库要设计成返回 pair？」——考点是
+   **一次调用带回两个结果**：`operator[]` 无法区分「新建」与「覆盖」，`insert` 返回
+   `pair<iterator, bool>` 把「位置」与「是否真的插入了」一起交还，配合结构化绑定
+   `auto [it, ok] = m.insert(...)` 一行分流。追问 C++17 的 `try_emplace` 与
+   `insert_or_assign` 如何进一步消除「先查再插」的重复查找，能体现对接口演化史的
+   了解。
+2. 「tuple 按索引取值为什么必须是编译期常量？」——答：tuple 的元素类型序列在编译期
+   固定，`std::get<i>` 是模板，实参 `i` 必须是编译期常量表达式才能实例化；运行期
+   下标需要的是「值不同的类型」，只能靠模板递归（按索引递归展开）或 `std::apply`
+   折叠表达式在编译期把所有分支展开后按 index 跳转。
+3. 「什么时候 tuple 是错的抽象？」——答「位置语义跨过接口边界」的场景：函数签名
+   `std::tuple<int, int, int> get_box()` 对调用方是谜语。判断准绳：**函数内部与泛型
+   库内部用 tuple 顺手，跨 API 边界用结构体**；结构体换来的是具名成员、指定初始化器
+   与不依赖注释的可读性。
+
+## 动手实验
+
+1. **字典序排序实验**：把 `{2,"b"}, {1,"a"}, {1,"c"}` 的 vector 分别按默认比较与
+   自定义比较器（second 优先）排序，打印两组结果，验证「默认字典序把 first 当主键」。
+2. **tie 与结构化绑定互换实验**：同一段「解析两个返回值」的代码分别用
+   `std::tie(a, b)` 与 `auto [x, y]` 实现，故意在 `tie` 版里用未初始化变量、在绑定版
+   里少写一个名字，比较两种编译期/运行期失败的形态（tie 版是 UB 风险，绑定版是
+   编译错误——后者更安全）。
+3. **apply 展开实验**：写一个接受 3 个参数的函数，把参数存进 tuple，分别用
+   `std::apply` 与 `std::get<0>` 手动展开调用，确认两者等价；再把函数改成 4 参，
+   数一数两种写法各要改几处（体会 apply 对「参数包整体传递」的价值）。
+4. **运行期下标受挫实验**：对 `tuple` 写 `for (std::size_t i = 0; i < n; ++i)
+   std::get<i>(t)`，亲眼看编译错误；然后用 `std::apply` + 折叠表达式
+   （`((std::cout << args << ' '), ...)`）实现同样的遍历，体会「运行期循环变
+   编译期展开」的思维转换。
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：minmax 一次遍历**。实现 `std::pair<int, int> minmax(const std::vector<int>& v)`
+（返回 `{min, max}`），要求单次遍历、空 vector 抛 `std::invalid_argument`；
+调用点用结构化绑定接收并打印。
+
+提示：初值取第一个元素，从第二个开始比较。
+
+参考实现：
+
+```cpp
+#include <stdexcept>
+#include <utility>
+#include <vector>
+
+std::pair<int, int> minmax(const std::vector<int>& v) {
+    if (v.empty()) throw std::invalid_argument("empty input");
+    int lo = v[0], hi = v[0];
+    for (std::size_t i = 1; i < v.size(); ++i) {
+        if (v[i] < lo) lo = v[i];
+        else if (v[i] > hi) hi = v[i];
+    }
+    return {lo, hi};
+}
+
+// 调用点
+auto [lo, hi] = minmax(data);
+std::cout << lo << " ~ " << hi << '\n';
+```
+
+自检问题：为什么不返回 `std::tuple<int, int>`？（答：两个值时 pair 与 tuple 等价，
+但 pair 有 `.first/.second` 具名访问且更轻；返回 3 个以上值再升级 tuple 或结构体。）
+
+**练习 2：把 pair 换成结构体的重构**。给定签名 `std::pair<bool, std::string>
+parse_config(const std::string& line)`，把返回类型改写为语义明确的结构体
+（`success` + `message` 字段），同步改造调用点，并对比两版调用点的可读性。
+要求结构体使用指定初始化器（C++20）。
+
+参考实现：
+
+```cpp
+#include <string>
+
+struct ParseResult {
+    bool success;
+    std::string message;
+};
+
+ParseResult parse_config(const std::string& line);
+
+// 调用点：指定初始化器 + 结构化绑定
+ParseResult r{.success = false, .message = "not parsed yet"};
+if (auto [ok, msg] = parse_config("timeout=30"); ok) {
+    apply(msg);
+} else {
+    log(msg);
+}
+```
+
+自检问题：结构体版多写了哪些字，换来了什么？（答：类型定义与初始化的样板；换来
+的是「这个 bool 是什么意思」不再需要注释，且后续加字段不必改所有调用点的位置语义。）
+
+**挑战题（不给参考实现）**：用 `std::apply` + 折叠表达式写 `print_all(const
+std::tuple<Ts...>&)`，把任意 tuple 的元素逐个打印；再给每个元素之间加序号（提示：
+需要编译期索引，可用 `std::index_sequence`）。写完自查：你的实现里有没有出现
+运行期 `for` 循环？为什么不应该有？
 
 ## 常见陷阱
 

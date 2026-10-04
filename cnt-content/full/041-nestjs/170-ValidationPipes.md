@@ -1,12 +1,12 @@
 ---
-order: 170
+order: 180
 title: NestJS 管道校验与异常处理
 module: 'nestjs'
 category: 后端技术
 difficulty: intermediate
 description: ValidationPipe + class-validator 做请求校验，NestJS 12 Standard Schema 新路径，异常过滤器统一错误响应。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'nestjs/160-ModuleControllerService'
   - 'nestjs/180-DatabaseIntegration'

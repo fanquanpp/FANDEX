@@ -6,7 +6,7 @@ module: 'python'
 category: 后端技术
 difficulty: advanced
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'python/720-ModulePackageEngineering'
   - 'python/100-FunctionDetailed'

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 区分三种音频播放节点，理解总线音量与音高，掌握播放结束信号的准确行为
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related: ['godot/110-AnimationAndTween']
 prerequisites:
   - 'godot/110-AnimationAndTween'

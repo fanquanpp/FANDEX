@@ -1,12 +1,12 @@
 ---
-order: 320
+order: 340
 title: 敏捷开发
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: Scrum框架、Kanban方法、Sprint规划、Backlog管理与敏捷实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/310-SoftwareEngineeringOverview'
   - 'software-testing/330-RequirementAnalysisMethod'

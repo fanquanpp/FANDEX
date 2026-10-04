@@ -6,16 +6,16 @@ category: 后端技术
 difficulty: intermediate
 description: Kafka与RabbitMQ集成
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/090-ControlFlow'
   - 'java/870-JavaMicroservice'
   - 'java/910-JavaRedis'
   - 'java/970-JavaDocker'
-  - 'java/490-ConcurrencyBasics'
+  - 'java/490-JucConcurrencyTools'
 prerequisites:
   - 'java/020-JavaOverviewDevEnv'
-  - 'java/490-ConcurrencyBasics'
+  - 'java/490-JucConcurrencyTools'
   - 'java/690-JavaNetworkProgramming'
 ---
 

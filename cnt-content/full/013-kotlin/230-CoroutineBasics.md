@@ -1,12 +1,12 @@
 ---
-order: 230
+order: 250
 title: 协程基础
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: Kotlin 协程基础深度解析：suspend 函数、CoroutineScope、Job、Deferred、launch/async/runBlocking、结构化并发、Continuation 状态机原理。对标 MIT 6.005、Stanford CS193P、CMU 15-440 教学水准。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/150-SealedClassAlgebraicDataType'
   - 'kotlin/210-DelegateProperty'

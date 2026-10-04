@@ -1,12 +1,12 @@
 ---
-order: 220
+order: 240
 title: Ansible Playbook 配置管理
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: Ansible Playbook 配置管理：Inventory、Module、Role 与最佳实践。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'devops/110-HelmChartApplicationPackage'
   - 'devops/210-Terraform'

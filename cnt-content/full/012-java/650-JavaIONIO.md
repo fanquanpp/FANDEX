@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: BIO、NIO、AIO、零拷贝、Reactor模式与字节码层面原理
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/420-JavaReflection'
   - 'java/680-JavaSerialization'
@@ -20,7 +20,7 @@ prerequisites:
 
 ## 前置知识
 
-- [Java 理论知识点： JVM 原理、类加载机制与内存管理](/java/640-JavaTheoryJVMClassLoadingMemory)：建议先完成前一篇的学习
+- [Java 理论知识点： JVM 原理、类加载机制与内存管理](/java/640-JavaTheoryJVMPrinciples)：建议先完成前一篇的学习
 
 ## 学习目标
 

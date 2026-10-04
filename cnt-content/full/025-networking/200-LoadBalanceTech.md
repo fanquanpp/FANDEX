@@ -1,12 +1,12 @@
 ---
-order: 200
+order: 220
 title: 负载均衡技术
 module: 'networking'
 category: 云与基础设施
 difficulty: intermediate
 description: 负载均衡架构总览：四层与七层负载的分工、部署形态（硬件/软件/云）、健康检查与会话保持、DNS 与 GSLB 全局调度。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'networking/180-NetworkDesignPlanning'
   - 'networking/210-LoadBalanceAlgorithm'

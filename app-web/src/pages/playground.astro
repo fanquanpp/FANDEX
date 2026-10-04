@@ -3,11 +3,10 @@ import HomeLayout from '@/components/HomeLayout.astro'
 import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import FrontendLab from '@/islands/playground/FrontendLab'
-import { SITE } from '@/lib/constants'
+import { IS_DESKTOP_BUILD } from '@/lib/constants'
 import { categoryColors } from '@/lib/modules'
 import '@/styles/islands/playground.css'
 
-const base = import.meta.env.BASE_URL
 ---
 
 <HomeLayout title="在线前端">
@@ -15,9 +14,19 @@ const base = import.meta.env.BASE_URL
     slot="head"
     title="在线前端工作台 · FANDEX"
     description="FANDEX 在线前端工作台：在浏览器中编写 HTML、CSS 与 JavaScript，实时预览效果，内置控制台、灵感图鉴与本地作品库，作品自动保存在本地，无需注册与上传。"
-    canonical={`${SITE.url}${base}playground/`}
+    canonical={new URL(Astro.url.pathname, Astro.site).href}
     type="website"
   />
+  {/*
+    jsdelivr 仅供本页实验室按需动态 import prettier（CSP script-src 也为此放行该域），
+    连接预热下沉到本页，其余 2000+ 页面不再做无效 preconnect/dns-prefetch
+  */}
+  {!IS_DESKTOP_BUILD && (
+    <Fragment slot="head">
+      <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
+      <link rel="dns-prefetch" href="https://cdn.jsdelivr.net" />
+    </Fragment>
+  )}
 
   <div class="pg-page" style={`--pg-color:${categoryColors.frontend}`}>
     <GeoBgDecor variant="playground" />

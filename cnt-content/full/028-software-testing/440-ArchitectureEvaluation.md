@@ -1,12 +1,12 @@
 ---
-order: 440
+order: 460
 title: 架构评估
 module: 'software-testing'
 category: 云与基础设施
 difficulty: advanced
 description: ATAM评估方法、CBAM成本收益分析与架构评审实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'cloud-computing/180-CAP'
   - 'software-testing/430-DDD'

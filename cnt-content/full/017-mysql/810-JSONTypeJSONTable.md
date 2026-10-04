@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL JSON 数据类型详解：JSON 存储、查询函数、JSON_TABLE 将 JSON 转为关系表、虚拟列与索引优化。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'mysql/650-ReplicationDelayCauseSolution'
   - 'mysql/670-ShardingStrategy'

@@ -1,12 +1,12 @@
 ---
-order: 160
+order: 180
 title: 压力测试与稳定性测试
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: 负载/压力/稳定性/尖峰测试的目标区分、性能指标的精确语义（分位值、吞吐量、开闭环负载模型）、JMeter/k6/Locust/Gatling 实战与结果分析方法。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/140-PerformanceInterfaceTest'
   - 'software-testing/150-JMeter'

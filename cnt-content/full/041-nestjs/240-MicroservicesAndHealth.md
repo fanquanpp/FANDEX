@@ -1,12 +1,12 @@
 ---
-order: 240
+order: 250
 title: 微服务与健康检查
 module: 'nestjs'
 category: 后端技术
 difficulty: advanced
 description: 微服务传输层选型与 @MessagePattern，@nestjs/terminus 健康检查，NestJS 12 版本要点。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'nestjs/180-DatabaseIntegration'
 prerequisites:

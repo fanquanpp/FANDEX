@@ -1,12 +1,12 @@
 ---
 order: 680
-title: Spring Boot 学习笔记
+title: Spring Boot 深度指南：自动配置原理与生产工程实践
 module: 'java'
 category: 后端技术
 difficulty: intermediate
 description: Spring Boot 深度指南：自动配置原理、起步依赖、Actuator、Spring Data JPA、Spring Security、Spring Cloud 与生产级工程实践。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/290-LambdaFunctionalProgramming'
   - 'java/700-NetworkProgrammingDeepDive'

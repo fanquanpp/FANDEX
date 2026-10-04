@@ -1,12 +1,12 @@
 ---
-order: 430
+order: 450
 title: Kotlin 与 Java 互操作
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: 双向调用规则：空安全映射、静态成员与 @Jvm 系列注解。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/030-KotlinBasicSyntax'
   - 'kotlin/130-NullSafetyDetailed'

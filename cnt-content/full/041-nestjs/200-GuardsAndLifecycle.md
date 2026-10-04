@@ -1,12 +1,12 @@
 ---
-order: 200
+order: 210
 title: 守卫与请求生命周期
 module: 'nestjs'
 category: 后端技术
 difficulty: intermediate
 description: 请求处理管线全景：七大组件的职责与顺序，CanActivate 守卫与声明式角色鉴权。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'nestjs/170-ValidationPipes'
   - 'nestjs/190-Testing'

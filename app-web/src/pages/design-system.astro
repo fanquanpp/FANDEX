@@ -3,10 +3,8 @@
 import HomeLayout from '@/components/HomeLayout.astro';
 import SEO from '@/components/SEO.astro';
 import DesignSystemDemo from '@/islands/DesignSystemDemo';
-import { SITE } from '@/lib/constants';
 import { getDocStats, getAllModules } from '@/services';
 
-const base = import.meta.env.BASE_URL;
 
 const docStats = await getDocStats();
 const allModules = getAllModules();
@@ -21,7 +19,7 @@ const stats = {
     slot="head"
     title="设计系统 · FANDEX"
     description="FANDEX 设计系统展示页：8 个基础 UI 组件（Button、Card、Badge、Tooltip、Dialog、Tabs、Accordion、ScrollArea）的全变体演示，基于 Tailwind CSS v4 + shadcn/ui + Radix UI 实现。"
-    canonical={`${SITE.url}${base}design-system/`}
+    canonical={new URL(Astro.url.pathname, Astro.site).href}
     type="website"
   />
   <meta slot="head" name="robots" content="noindex, nofollow" />

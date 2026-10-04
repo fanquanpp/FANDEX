@@ -1,12 +1,12 @@
 ---
-order: 140
+order: 150
 title: wget 文件下载
 module: 'networking'
 category: 云与基础设施
 difficulty: beginner
 description: wget 下载：递归抓取与镜像站点、断点续传、限速与重试等常用参数。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'networking/130-CurlHTTPRequest'
   - 'networking/120-HTTPProtocol'

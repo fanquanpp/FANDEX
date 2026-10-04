@@ -1,12 +1,12 @@
 ---
-order: 380
+order: 390
 title: 脏读、不可重复读与幻读
 module: 'sql'
 category: 数据库
 difficulty: intermediate
 description: SQL并发异常：脏读、不可重复读、幻读的定义、示例、区别与防护策略
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/360-TransactionACIDProperty'
   - 'sql/370-IsolationLevel'
@@ -262,3 +262,127 @@ SELECT * FROM accounts WHERE id = 1 FOR UPDATE;
 UPDATE accounts SET balance = balance - 100 WHERE id = 1;
 COMMIT;
 ```
+
+## 7. 动手实验：三种异常各复现一次
+
+双终端交错执行是验证并发异常的唯一可信方法（双终端操作规范见
+[隔离级别](/sql/370-IsolationLevel) 第 8 节）。本节三个实验分别锁定一种异常，
+做之前先自查表：每个实验你预期看到什么？看到的东西和预期不符时，先怀疑执行顺序。
+
+### 实验 1：脏读（需要 MySQL 或 SQL Server，PostgreSQL 复现不了）
+
+| 步骤 | A 终端 | B 终端 |
+| --- | --- | --- |
+| 0 | （两终端均）`SET SESSION TRANSACTION ISOLATION LEVEL READ UNCOMMITTED;` | 同左 |
+| 1 | `BEGIN; UPDATE accounts SET balance = 5000 WHERE id = 1;`（不提交） | |
+| 2 | | `BEGIN; SELECT balance ... WHERE id = 1;` → **5000（脏读）** |
+| 3 | `ROLLBACK;` | |
+| 4 | | 再 SELECT → 1000。刚才的 5000 从未存在过 |
+
+观察点：步骤 2 与步骤 4 之间，B 若基于 5000 做了任何动作（哪怕只是打印），它消费的就是
+「宇宙中从未发生过的数据」。PostgreSQL 上做同样实验，步骤 2 直接返回 1000——用它反向
+验证「PG 无脏读」的方言事实。
+
+### 实验 2：不可重复读（PostgreSQL 默认级别即可）
+
+| 步骤 | A 终端 | B 终端 |
+| --- | --- | --- |
+| 1 | `BEGIN; SELECT balance ... WHERE id = 1;` → 1000 | |
+| 2 | | `BEGIN; UPDATE ... = 2000; COMMIT;` |
+| 3 | `SELECT balance ... WHERE id = 1;` → **2000** | |
+| 4 | `COMMIT;` | |
+
+观察点：与脏读的区别——步骤 3 读到的 2000 是**已提交**的真实数据，问题不在数据真假，
+而在「同一事务两次读取口径不一致」。审计类逻辑（第 3.3 节的对账场景）最怕的就是这个。
+
+### 实验 3：幻读的「快照读看不见、当前读看见」（MySQL InnoDB）
+
+| 步骤 | A 终端 | B 终端 |
+| --- | --- | --- |
+| 1 | `BEGIN;`（RR 级别）`SELECT COUNT(*) FROM employees WHERE dept_id = 5;` → 3 | |
+| 2 | | `INSERT INTO employees (name, dept_id) VALUES ('new', 5); COMMIT;` |
+| 3 | `SELECT COUNT(*) ...` → **仍 3（快照读）** | |
+| 4 | `UPDATE employees SET salary = salary + 100 WHERE dept_id = 5;` → **影响 4 行** | |
+| 5 | `SELECT COUNT(*) ...` → **4（幻读显现）** | |
+
+观察点：步骤 4 是整个实验的题眼——UPDATE 走当前读，把 B 插入的行也更新了；随后步骤 5
+的快照读因为本事务自己写过该行（MVCC 规则：自己的修改对自己可见），幻影行现形。想亲手
+阻止这一切，把步骤 4 之前加一步 `SELECT ... FOR UPDATE WHERE dept_id = 5`，B 的 INSERT
+会阻塞在间隙锁上（Next-Key Lock，机制见 [锁机制](/sql/390-LockMechanism)）。
+
+### 异常识别口诀
+
+复现之后要能反着认：给你一段交错时间线，判断它是什么异常。
+
+```text
+读到的事务后来 ROLLBACK 了        → 脏读（数据是假的）
+两次读同一行，值变了              → 不可重复读（行被 UPDATE）
+两次读同一范围，行数变了          → 幻读（有 INSERT/DELETE）
+```
+
+三者共享同一个根因：**事务的读操作没有和其他事务的写操作做串行化排序**。差别只在读写
+冲突发生在「行」还是「范围」、对方是否提交。这也是为什么防护手段是一族而不是三种：
+快照隔离一次性消除前两类，范围谓词锁（间隙锁/SSI）补上第三类。
+
+## 8. 练习
+
+识别题（5 分钟，面试高频）：判断下列时间线各是什么异常，并给出能防住它的最低标准隔离
+级别。（初始 balance=100）
+
+```text
+时间线 a：T1 读 balance=100 → T2 UPDATE 成 200 并 COMMIT → T1 读到 200
+时间线 b：T1 读 balance=100 → T2 UPDATE 成 200 未提交 → T1 读到 200 → T2 ROLLBACK
+时间线 c：T1 统计行数=10 → T2 INSERT 并 COMMIT → T1 再统计=11
+```
+
+提示：先问「第二次读到的数据若对方回滚还成立吗」，再问「变的是行值还是行集合」。参考
+答案：a 是不可重复读，READ COMMITTED 已消除脏读，防它需要 REPEATABLE READ；b 是脏读，
+防它需要 READ COMMITTED；c 是幻读，标准里防它需要 SERIALIZABLE（MySQL RR 除外）。
+
+改造题（15 分钟）：第 3.3 节的审计对账场景（两次 SUM 结果不同），要求不改隔离级别、
+只用 FOR UPDATE 修复。先说清为什么这里 FOR UPDATE 不太合适（两张表几十万行全锁的代价），
+再给出更务实的两种替代：升级为 REPEATABLE READ 事务，或改用「单条聚合 SQL」让对账一次
+完成。验收：写出替代方案的可执行 SQL。
+
+提示（思路方向）：锁的粒度要匹配冲突概率——对账是全表读，逐行锁不划算；把两次读合并
+成一次读（事务内单条 SQL）则天然一致。参考实现：
+
+```sql
+-- 方案一：快照固定，两次 SUM 口径一致（PostgreSQL）
+BEGIN ISOLATION LEVEL REPEATABLE READ;
+SELECT SUM(balance) FROM accounts;   -- 10000
+-- 无论别人怎么改提交，再查还是 10000
+SELECT SUM(balance) FROM accounts;   -- 10000
+COMMIT;
+
+-- 方案二：如果「两次读」本来就是应用循环拼的，合并成一条 SQL 最便宜
+SELECT region, SUM(balance) FROM accounts GROUP BY region;
+```
+
+追问题（10 分钟）：实验 3 步骤 4 的 UPDATE 影响了 4 行。如果不希望本事务「越权」更新
+别的事务刚插入的行，在 MySQL 的 RR 级别下有哪两种做法？一种从锁的角度（先 FOR UPDATE
+圈住范围），一种从 SQL 语义的角度（UPDATE 加条件排除「本事务没见过的行」）。验收：两种
+写法都能让影响行数回到 3。
+
+提示：锁角度即间隙锁方案；语义角度可以用 `WHERE` 带上主键集合或时间戳条件（例如只更新
+本事务开始前已存在的行——需要表上有可靠的 created_at）。参考实现：
+
+```sql
+-- 做法 1：先锁范围（Next-Key Lock 挡住插入），再更新
+BEGIN;
+SELECT id FROM employees WHERE dept_id = 5 FOR UPDATE;
+UPDATE employees SET salary = salary + 100 WHERE dept_id = 5;
+COMMIT;
+
+-- 做法 2：条件收窄——只更新确认过的行（id 集合来自本事务快照读）
+UPDATE employees SET salary = salary + 100
+WHERE id IN (101, 102, 103);            -- 第一次快照读拿到的 3 个 id
+```
+
+## 9. 小结速记
+
+- 三种异常是「读写冲突」的三个侧面：脏读（未提交）、不可重复读（行值变）、幻读（行集合变）。
+- 复现手段只有双终端交错执行；识别手段是「回滚测试、行值测试、行数测试」三问。
+- 防护优先级：能用单条 SQL 合并的读不要拆事务 → 需要跨语句一致用 REPEATABLE READ →
+  范围写入防插入用 FOR UPDATE（间隙锁）→ 全部兜不住再上 SERIALIZABLE。
+

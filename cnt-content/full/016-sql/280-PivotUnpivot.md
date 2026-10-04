@@ -1,12 +1,12 @@
 ---
-order: 280
+order: 290
 title: PIVOT 与 UNPIVOT
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: SQL PIVOT与UNPIVOT：行列转换的语法、条件聚合实现、跨数据库兼容方案与性能优化
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'sql/240-RecursiveCTE'
   - 'sql/210-SetOperation'

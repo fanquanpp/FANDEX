@@ -1,12 +1,12 @@
 ---
-order: 480
+order: 500
 title: Kotlin 与 Spring
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: Kotlin Spring Boot开发
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/490-KotlinKtor'
   - 'kotlin/530-KotlinKoin'

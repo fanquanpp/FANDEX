@@ -1,12 +1,12 @@
 ---
-order: 80
+order: 90
 title: Tailwind CSS v4 新特性
 module: 'tailwind'
 category: 前端技术
 difficulty: intermediate
 description: Tailwind CSS v4 新特性时间线：Oxide 引擎、CSS-first 配置、自动内容检测、@tailwindcss/vite 插件、原生 @layer 级联与 @source/@utility/@custom-variant 新语法
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'tailwind/020-InstallConfig'
   - 'tailwind/050-ThemeCustomization'

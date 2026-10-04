@@ -1,12 +1,12 @@
 ---
-order: 290
+order: 300
 title: 类型转换
 module: 'sql'
 category: 数据库
 difficulty: beginner
 description: CAST/CONVERT 显式转换、各数据库隐式转换规则差异、安全转换与索引失效陷阱，附方言对照表。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'sql/090-DataType'
   - 'sql/050-FilterCondition'
@@ -190,7 +190,115 @@ SELECT CAST(JSON_EXTRACT(config, '$.name') AS CHAR)   AS name;
 
 更多 JSON 细节见 [SQL 中的 JSON](/sql/300-SqlJson)。
 
-## 8. 小结
+## 8. 动手实验：亲眼看隐式转换杀死索引
+
+「隐式转换导致索引失效」是面试与线上事故的双重高频点，值得亲手做一遍。准备数据
+（MySQL 8.0）：
+
+```sql
+CREATE TABLE users (
+    id    BIGINT PRIMARY KEY AUTO_INCREMENT,
+    phone VARCHAR(20) NOT NULL,
+    KEY idx_phone (phone)
+);
+-- 批量造 10 万行（数字转字符串当电话号）
+INSERT INTO users (phone)
+SELECT LPAD(CAST(n AS CHAR), 11, '1') FROM
+(SELECT ROW_NUMBER() OVER () AS n FROM information_schema.columns a,
+ information_schema.columns b LIMIT 100000) t;
+```
+
+对照实验——两条只差一对引号的查询：
+
+```sql
+EXPLAIN SELECT * FROM users WHERE phone = 13800000000;
+-- type: ALL，rows ≈ 全表 —— 隐式转换，索引被放弃
+
+EXPLAIN SELECT * FROM users WHERE phone = '13800000000';
+-- type: ref，rows = 1 —— 类型一致，走 idx_phone
+```
+
+观察点：第 5.2 节讲过机制（MySQL 对「字符串列 vs 数字」把**列**转成数字，对整列逐行
+转换意味着索引顺序失效），这里要补的是判断直觉——**线上排查时先看 EXPLAIN 的 type 列**：
+明明有索引却显示 ALL，第一怀疑对象就是条件两侧类型不一致。顺带验证方向性：
+
+```sql
+-- id 是 BIGINT 主键，传字符串：字面量按列类型解析，索引照常
+EXPLAIN SELECT * FROM users WHERE id = '12345';
+-- type: const —— 字符串 → 数字方向的安全转换
+```
+
+结论固化成规则：**数字列允许被字符串字面量匹配，字符串列绝不允许被数字字面量匹配**。
+PostgreSQL 把危险方向直接变成报错，把安全方向照常执行——同一规则，两种执行策略。
+
+第二个实验验证「转换失败时各库的行为差异」（第 6 节的现场版）：
+
+```sql
+SELECT CAST('abc' AS SIGNED);   -- MySQL：0 + warning（SELECT 表达式不报错）
+SELECT CAST('abc' AS INTEGER);  -- PostgreSQL：直接报错 invalid input syntax
+SELECT CAST('abc' AS INTEGER);  -- SQLite：0，静默
+```
+
+同样的脏数据（混入 'abc' 的 score_text 列），三个库给出三种行为：静默 0、当场报错、
+静默 0。**数据清洗脚本在测试库跑通、在生产库跑挂或跑歪**，多数栽在这里。
+
+## 9. 练习
+
+排障题（10 分钟）：同事反馈「users 表查询突然变慢，EXPLAIN 显示全表扫描」，SQL 是
+`SELECT * FROM users WHERE phone = 13800000000;`。给出三步排查动作和最终修复。验收：
+能说出「为什么这个查询在开发库（SQLite）上没人发现」。
+
+提示：SQLite 的亲和性规则会静默转换、小表全扫也快——类型问题往往在数据量大的生产库
+才暴露。修复参考：
+
+```sql
+-- 第 1 步：EXPLAIN 确认 type=ALL
+-- 第 2 步：检查列类型与条件字面量类型（SHOW CREATE TABLE users;）
+-- 第 3 步：两侧统一为字符串
+SELECT * FROM users WHERE phone = '13800000000';
+-- 应用代码里同样修：占位符参数必须是 str，不要传 int
+```
+
+清洗题（20 分钟）：表 `import_rows(raw TEXT)` 里有 10 万行 mixed 数据，其中一部分是合法
+整数、一部分是垃圾字符串。要求：把合法行转成数字写入 `clean(n INT)`，垃圾行单独导出。
+验收：一条 SQL 完成合法行迁移（不用存储过程、不用循环）。
+
+提示（思路方向）：PG 16+ 用 `pg_input_is_valid` 预检；PG 旧版与 MySQL 用正则预检
+（第 6 节的两个模板）。先自己写，再对照：
+
+```sql
+-- PostgreSQL
+INSERT INTO clean (n)
+SELECT CAST(raw AS INT) FROM import_rows
+WHERE pg_input_is_valid(raw, 'int');
+-- 16 以下版本用正则：WHERE raw ~ '^\s*-?\d+\s*$'
+
+-- 导出垃圾行（与上面条件取反）
+SELECT raw FROM import_rows WHERE NOT pg_input_is_valid(raw, 'int');
+```
+
+方言题（10 分钟）：同一条 `SELECT CONVERT('2024-03-15', DATE);` 在 MySQL 正常、搬到
+SQL Server 报错。解释原因并写出 SQL Server 的等价写法。验收：能不查资料说出两个 CONVERT
+的参数顺序差异。
+
+提示：第 3 节的表格。参考实现：
+
+```sql
+-- SQL Server：目标类型在前，表达式在后（与 MySQL 相反）
+SELECT CONVERT(DATE, '2024-03-15', 23);    -- 23 即 yyyy-mm-dd 风格
+-- 更稳的是标准语法，不依赖 CONVERT：
+SELECT CAST('2024-03-15' AS DATE);
+```
+
+面试题（5 分钟）：面试官问「WHERE 条件里对索引列做 CAST 还能走索引吗？」回答要点：
+函数作用于**列**则索引失效、作用于**常量/另一侧**则无碍；隐式转换是数据库替你套的 CAST，
+方向错了同样失效。验收：能举出本文 phone 的正反两个例子。
+
+提示：`WHERE CAST(phone AS UNSIGNED) = 138...` 与 `WHERE phone = 138...` 是同一件事
+（都是把列转数字）；`WHERE created_at > CAST('2026-01-01' AS DATE)` 则 CAST 在常量侧，
+索引不受影响。
+
+## 10. 小结
 
 - 优先 `CAST`（全库通用）；PostgreSQL 加用 `::`；注意 SQL Server 与 MySQL 的
   `CONVERT` 参数顺序相反。

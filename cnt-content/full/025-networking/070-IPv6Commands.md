@@ -1,12 +1,12 @@
 ---
-order: 70
+order: 80
 title: IPv6 网络命令
 module: 'networking'
 category: 云与基础设施
 difficulty: beginner
 description: IPv6 实操：地址与邻居发现命令、SLAAC 配置检查、双栈环境排障常用命令。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'networking/100-DNSDHCP'
   - 'networking/050-IPCommands'

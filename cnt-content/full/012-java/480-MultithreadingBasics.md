@@ -6,10 +6,10 @@ category: 后端技术
 difficulty: intermediate
 description: "以「同时下载三个文件，串行 3 秒并行 1 秒」引入，讲透 Thread 与 Runnable、start 与 run 区别实验、sleep 与 join、竞态条件丢失更新与 synchronized 最小修复，附 IllegalThreadStateException 与 InterruptedException 调试实录。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
-  - 'java/490-ConcurrencyBasics'
-  - 'java/500-JUCConcurrency'
+  - 'java/490-JucConcurrencyTools'
+  - 'java/500-ThreadPoolExecutorPractice'
   - 'java/510-ConcurrencyDetailed'
   - 'java/290-LambdaFunctionalProgramming'
 prerequisites:
@@ -131,7 +131,7 @@ Runnable task = () -> download("a.zip");
 new Thread(task).start();
 ```
 
-推荐 Runnable，两个理由：Java 是单继承，继承 Thread 就占掉了唯一的继承名额；任务与执行分离后，同一个任务可以交给线程池复用（[线程池实战](/java/500-JUCConcurrency) 的主角）。
+推荐 Runnable，两个理由：Java 是单继承，继承 Thread 就占掉了唯一的继承名额；任务与执行分离后，同一个任务可以交给线程池复用（[线程池实战](/java/500-ThreadPoolExecutorPractice) 的主角）。
 
 ## 4. 实验：start 与 run 的区别
 
@@ -212,7 +212,7 @@ static synchronized void inc() {
 期望 200000, 实际 200000
 ```
 
-代价是线程要排队，吞吐会降。排队排狠了怎么办？[JUC 并发工具](/java/490-ConcurrencyBasics) 给出「不排队也对」的答案。
+代价是线程要排队，吞吐会降。排队排狠了怎么办？[JUC 并发工具](/java/490-JucConcurrencyTools) 给出「不排队也对」的答案。
 
 ## 7. 修改实验
 
@@ -250,7 +250,7 @@ Exception in thread "main" java.lang.IllegalThreadStateException
 ## 9. 什么时候该用 / 不该用裸线程
 
 该用：一次性的后台任务（如桌面程序的「导出报表」，主界面不等它）；本地小工具并行处理几个文件。
-不该用：服务端代码里「每个请求 new 一个线程」——请求一多线程数失控，正确姿势是线程池（[线程池实战](/java/500-JUCConcurrency)）；任务之间共享数据且竞争激烈——先看看不锁的写法（[JUC 并发工具](/java/490-ConcurrencyBasics)）。
+不该用：服务端代码里「每个请求 new 一个线程」——请求一多线程数失控，正确姿势是线程池（[线程池实战](/java/500-ThreadPoolExecutorPractice)）；任务之间共享数据且竞争激烈——先看看不锁的写法（[JUC 并发工具](/java/490-JucConcurrencyTools)）。
 
 ## 10. 小练习
 
@@ -279,8 +279,8 @@ t.start();
 ## 11. 与之前和之后的知识的关系
 
 - 往前：[方法详解](/java/100-MethodDetailed) 的方法封装是本文示例的骨架；「丢失更新」本质是多个线程对同一份「副本」各自为政；
-- 往后，本模块的并发四篇这样分工：**本文（480）讲裸线程与 synchronized**——怎么开线程、怎么等待、共享变量为什么会错；**[JUC 并发工具](/java/490-ConcurrencyBasics) 讲「不锁也能对」**——原子类与线程安全集合；**[线程池实战](/java/500-JUCConcurrency) 讲生产环境怎么管理线程**；**[并发设计与 AQS](/java/510-ConcurrencyDetailed) 讲设计层**——可见性、死锁与同步器的原理直觉；
-- 更远：[虚拟线程](/java/570-JavaVirtualThread) 会改写「线程很贵」这个前提。
+- 往后，本模块的并发四篇这样分工：**本文（480）讲裸线程与 synchronized**——怎么开线程、怎么等待、共享变量为什么会错；**[JUC 并发工具](/java/490-JucConcurrencyTools) 讲「不锁也能对」**——原子类与线程安全集合；**[线程池实战](/java/500-ThreadPoolExecutorPractice) 讲生产环境怎么管理线程**；**[并发设计与 AQS](/java/510-ConcurrencyDetailed) 讲设计层**——可见性、死锁与同步器的原理直觉；
+- 更远：[虚拟线程](/java/550-JavaVirtualThread) 会改写「线程很贵」这个前提。
 
 ## 12. 官方文档
 
@@ -301,4 +301,4 @@ t.start();
 
 ## 下一步
 
-进入 [JUC 并发工具](/java/490-ConcurrencyBasics)：AtomicInteger 与 ConcurrentHashMap 让你常常一行代码就不用锁；随后 [线程池实战](/java/500-JUCConcurrency) 解决「线程该由谁来管」。
+进入 [JUC 并发工具](/java/490-JucConcurrencyTools)：AtomicInteger 与 ConcurrentHashMap 让你常常一行代码就不用锁；随后 [线程池实战](/java/500-ThreadPoolExecutorPractice) 解决「线程该由谁来管」。

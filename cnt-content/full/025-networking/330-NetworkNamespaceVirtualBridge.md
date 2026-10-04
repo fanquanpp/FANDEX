@@ -1,12 +1,12 @@
 ---
-order: 330
+order: 350
 title: 网络命名空间与虚拟网桥
 module: 'networking'
 category: 云与基础设施
 difficulty: intermediate
 description: Linux 网络命名空间（netns）与虚拟网桥（bridge）：容器网络基础。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/250-KeepalivedDualHotStandby'

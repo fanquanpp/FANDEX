@@ -6,7 +6,7 @@ category: 数据库
 difficulty: intermediate
 description: MySQL 传输加密完整落地：自动生成证书机制、ssl-mode 六档语义、账号级 REQUIRE 强制、性能验证方法，与 PostgreSQL 同类方案的对照。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'mysql/690-AccountPermissionManagement'
   - 'mysql/720-DataEncryption'

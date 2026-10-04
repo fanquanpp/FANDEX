@@ -1,12 +1,12 @@
 ---
-order: 220
+order: 230
 title: 配置与环境变量校验
 module: 'nestjs'
 category: 后端技术
 difficulty: intermediate
 description: '@nestjs/config 加分项：类型安全、启动即校验的配置体系。'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'nestjs/170-ValidationPipes'
   - 'typescript/030-TypeScriptOverviewEnvSetup'

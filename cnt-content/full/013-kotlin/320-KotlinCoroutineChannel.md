@@ -1,12 +1,12 @@
 ---
-order: 320
+order: 340
 title: Kotlin 与协程 Channel
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: 协程间通信原语 Channel 的容量语义、多生产者多消费者、管道模式、select 多路与常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/230-CoroutineBasics'
   - 'kotlin/300-FlowColdSharedState'
@@ -325,6 +325,137 @@ fun main() = runBlocking {
 | 典型场景 | 任务队列、worker 池、协程间消息 | 数据流变换、UI 状态、响应式管线 |
 
 经验法则：**"传工作任务"用 Channel，"传播状态与事件流"用 Flow/SharedFlow**。
+
+## 底层原理：一张「谁在挂起」矩阵读懂全部容量语义
+
+Channel 的所有行为都能从一张矩阵推出：给定容量与两侧的就绪状态，唯一的问题是
+**哪一侧挂起**。Rendezvous 的「会合」语义是理解一切的锚点——容量为 0 意味着
+缓冲区不存在，`send` 必须等一个接收者把手伸出来才完成投递，数据从不落地：
+
+| 容量 | 有数据且缓冲未满时 send | 缓冲已满时 send | 无数据时 receive |
+| --- | --- | --- | --- |
+| Rendezvous（0） | 等待接收者到来（挂起） | 同左（没有缓冲可满） | 挂起，等 send |
+| `Buffered(n)` | 立即入缓冲，不挂起 | 挂起，等缓冲腾出位置 | 缓冲有货立即取，无货挂起 |
+| `CONFLATED` | 覆盖旧值，不挂起 | 不存在（容量恒 1） | 取走保留的最新值 |
+| `UNLIMITED` | 立即入缓冲，不挂起 | 不存在（不会满） | 同 Buffered |
+
+把这张矩阵与第 4 条陷阱连读：**生产者协程异常取消时，通道以异常关闭**——receive
+端抛出同一个异常，`for` 循环随之结束。这是「通道把发送端的生命周期状态同步给
+接收端」的设计：`close()` 是干净的结束信号，异常关闭是故障的传播信号，两者在
+接收端的表现不同（`ClosedSendChannelException` vs 原始异常）。
+
+实现层面只需知道一点：kotlinx.coroutines 1.7 起通道内部换成新的无锁缓冲算法
+（`BufferedChannel`），替代了旧的链表实现；对使用者的语义（容量矩阵、单投递、
+关闭协议）完全不变——这也是「背压语义与实现解耦」的好例子。
+
+## 面试题思路：三个高频考法
+
+1. 「Channel 和 BlockingQueue 的区别？」——表面答「挂起代替阻塞」（不占线程，
+   挂起的协程可以恢复）；加分点是补上结构化并发：通道的生命周期与协程作用域绑定，
+   生产者取消时接收端能感知（异常关闭），而 BlockingQueue 的两端要自己约定毒丸
+   对象或超时。
+2. 「容量参数怎么选？给一个任务分发系统设计通道。」——用「谁在挂起」矩阵答：
+   任务提交方不能被拖慢、任务可丢弃选 CONFLATED；任务必须全处理、worker 数固定，
+   选有界缓冲（容量决定峰值排队量与内存上限）；绝不选 UNLIMITED（内存不可控）。
+   追问「如何优雅停机」：先 join 全部生产者，再 `close()`，worker 的 `for` 循环
+   自然结束——与陷阱 1、2 呼应。
+3. 「select 相比逐个 tryReceive 好在哪？」——tryReceive 是忙轮询（空转浪费 CPU、
+   有延迟），select 是挂起等待（零开销等到任一通道就绪，与事件循环统一调度）。
+   能补充 `onTimeout`/`onSend` 子句组合出「等消息或等超时」的复合等待是加分项。
+
+## 动手实验
+
+1. **挂起矩阵验证**：创建 Rendezvous 通道，先 `send` 后启动接收协程，用时间戳打印
+   send 的返回时刻——验证「无接收者时 send 挂起」；换成 `Channel<Int>(4)` 重复，
+   观察 send 立即返回；把缓冲改成 4 并连发 5 个，观察第 5 个才挂起。
+2. **异常关闭实验**：在生产者协程里 `throw` 一个异常，观察接收方 `for` 循环的
+   行为（异常传播、程序退出）；再改用 `runCatching` 包住 send，验证通道如何改为
+   正常 close。
+3. **fan-out 负载均衡观察**：一个生产者快速发 20 个任务，3 个消费者各带
+   `delay(300)` 处理，打印「消费者 id 与任务序号」，验证每个任务只被处理一次且
+   分摊大致均匀。
+4. **CONFLATED 覆盖实验**：CONFLATED 通道连发 3 个值后再 receive 一次，确认只
+   拿到最后一个；再 send 一次并 receive，验证通道仍可用（区别于关闭）。
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：带优雅停机的 worker 池**。实现 `fun CoroutineScope.workers(n: Int,
+tasks: ReceiveChannel<String>)`：启动 n 个消费者分摊任务，并在所有任务消费完后
+自动结束。再在 main 里造 3 个生产者、每个发 5 条任务，验证全部处理完后 main 正常
+退出（不挂起、不漏任务）。
+
+提示：生产者先 `join` 再 `close`；消费者用 `for (t in tasks)`。
+
+参考实现：
+
+```kotlin
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
+
+fun CoroutineScope.workers(n: Int, tasks: ReceiveChannel<String>) = List(n) { id ->
+    launch {
+        for (t in tasks) {          // close 后自然结束，无需异常处理
+            println("worker$id 处理 $t")
+            delay(100)              // 模拟耗时
+        }
+    }
+}
+
+fun main() = runBlocking {
+    val tasks = Channel<String>()
+
+    val producers = List(3) { p ->
+        launch {
+            repeat(5) { i -> tasks.send("p$p-t$i") }
+        }
+    }
+    producers.joinAll()             // 先等全部生产者发完
+    tasks.close()                   // 再由「聚合者」关闭——陷阱 1、2 的标准解法
+
+    val w = workers(2, tasks)
+    w.joinAll()
+    println("全部任务处理完成")
+}
+```
+
+自检问题：如果把 `tasks.close()` 挪到 `joinAll()` 之前会发生什么？（答：先完成的
+生产者关闭通道后，仍在发送的其他生产者抛 `ClosedSendChannelException`——
+「聚合者最后关闭」是多生产者场景的铁律。）
+
+**练习 2：用 select 实现「取任务或停机」**。给 worker 加一个 `stopChannel`：
+平时从 `tasks` 取任务；`stopChannel` 一有信号（或关闭）就退出。用 `select` 实现，
+不允许忙轮询。
+
+参考实现：
+
+```kotlin
+import kotlinx.coroutines.*
+import kotlinx.coroutines.channels.*
+import kotlinx.coroutines.selects.*
+
+fun CoroutineScope.worker(tasks: ReceiveChannel<String>, stop: ReceiveChannel<Unit>) =
+    launch {
+        while (true) {
+            val job = select<String?> {
+                tasks.onReceive { it }
+                // onReceiveCatching 同时覆盖两种停机形态：
+                // 收到信号（result 成功）或 stop 通道被关闭（result 失败），都返回 null
+                stop.onReceiveCatching { null }
+            } ?: break
+            println("处理 $job")
+        }
+        println("worker 退出")
+    }
+// 语义注意：stop 关闭后该子句永远就绪，select 在多个就绪子句间的选择不保证公平，
+// 已停止的 worker 可能比缓冲中的任务先退出——对「停机即放弃剩余任务」的语义
+// 这通常正是想要的；若要「处理完积压再停」，需要额外的排水阶段。
+```
+
+**挑战题（不给参考实现）**：把「管道模式」扩成带并发度的版本：中间阶段不再是
+单个协程，而是 m 个协程并发消费上一级通道、向下一级发送结果。要求：main 能在
+有限时间内正常退出、每个输入恰好产生一个输出。写完自查：你关闭中间通道的位置
+在哪里？m 个协程谁负责关闭？（提示：上一级通道关闭后，m 个中间协程各自结束，
+需要用 `Job` 聚合它们再关闭下一级。）
 
 ## 小结
 

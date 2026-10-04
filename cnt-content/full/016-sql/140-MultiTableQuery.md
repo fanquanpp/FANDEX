@@ -1,12 +1,12 @@
 ---
-order: 140
+order: 150
 title: 多表查询
 module: 'sql'
 category: 数据库
 difficulty: intermediate
 description: JOIN 类型、自连接、子查询、EXISTS/IN、CTE 与递归 CTE
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'sql/020-OverviewStandard'
   - 'sql/040-DataQueryBasics'

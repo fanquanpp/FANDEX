@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: client-go 与 Kubernetes 开发：Informer 机制、Controller 模式、CRD、Operator、Workqueue 与生产级最佳实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'go/530-GoGraphQL'
   - 'go/600-GoDocker'

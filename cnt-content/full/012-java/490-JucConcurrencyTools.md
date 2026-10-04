@@ -6,10 +6,10 @@ category: 后端技术
 difficulty: intermediate
 description: "以「一百个线程抢一把锁，计数慢了三倍」引入，讲透 AtomicInteger 的 CAS 直觉、ConcurrentHashMap 对照实验、CopyOnWriteArrayList 适用场景与 BlockingQueue 生产者消费者实现，附 ConcurrentHashMap 拒绝 null 的 NPE 调试实录。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/480-MultithreadingBasics'
-  - 'java/500-JUCConcurrency'
+  - 'java/500-ThreadPoolExecutorPractice'
   - 'java/510-ConcurrencyDetailed'
   - 'java/210-CollectionFrameworkDetailed'
 prerequisites:
@@ -239,12 +239,12 @@ score.put("alice", null);
 
 ## 9. 什么时候用 / 不用 JUC 工具
 
-该用：任何被多线程触碰的计数、共享集合、任务交接——默认姿势，成本几乎为零。不用：变量只有一个线程看得到（方法内局部变量），普通类型就好；跨多步保持一致的复杂状态原子类管不了，回到锁或把状态收进并发容器（[线程池实战](/java/500-JUCConcurrency) 会大量用到 BlockingQueue）。
+该用：任何被多线程触碰的计数、共享集合、任务交接——默认姿势，成本几乎为零。不用：变量只有一个线程看得到（方法内局部变量），普通类型就好；跨多步保持一致的复杂状态原子类管不了，回到锁或把状态收进并发容器（[线程池实战](/java/500-ThreadPoolExecutorPractice) 会大量用到 BlockingQueue）。
 
 ## 10. 与之前和之后的知识的关系
 
 - 往前：[多线程入门](/java/480-MultithreadingBasics) 立了「共享可变数据要保护」的规矩，本文把锁这把钝刀换成四把趁手工具；
-- 往后，并发四篇的分工：**480 裸线程与 synchronized**，**本文不锁也能对**，**[线程池实战](/java/500-JUCConcurrency) 解决线程由谁管**——阻塞队列在那里成为任务排队的核心部件，**[并发设计与 AQS](/java/510-ConcurrencyDetailed) 回答这些工具共同的底层套路**；
+- 往后，并发四篇的分工：**480 裸线程与 synchronized**，**本文不锁也能对**，**[线程池实战](/java/500-ThreadPoolExecutorPractice) 解决线程由谁管**——阻塞队列在那里成为任务排队的核心部件，**[并发设计与 AQS](/java/510-ConcurrencyDetailed) 回答这些工具共同的底层套路**；
 - 更远：[CompletableFuture](/java/520-CompletableFutureAsync) 把「任务交接」升级成链式编排。
 
 ## 11. 官方文档
@@ -266,4 +266,4 @@ JUC 的思路是「让对的操作变得便宜」：原子类用 CAS 把「判�
 
 ## 下一步
 
-进入 [线程池实战](/java/500-JUCConcurrency)：线程本身成了要管理的稀缺资源，看 ThreadPoolExecutor 的七个参数如何分工，以及 execute 与 submit 吞异常的那场真实事故。
+进入 [线程池实战](/java/500-ThreadPoolExecutorPractice)：线程本身成了要管理的稀缺资源，看 ThreadPoolExecutor 的七个参数如何分工，以及 execute 与 submit 吞异常的那场真实事故。

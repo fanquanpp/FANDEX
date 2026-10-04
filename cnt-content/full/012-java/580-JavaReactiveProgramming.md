@@ -6,23 +6,23 @@ category: 后端技术
 difficulty: advanced
 description: Reactive Streams 规范、Project Reactor、Spring WebFlux 与响应式系统设计的系统性深度剖析
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/950-JavaSecurity'
   - 'java/990-JavaWebAssembly'
   - 'java/100-MethodDetailed'
-  - 'java/570-JavaVirtualThread'
+  - 'java/550-JavaVirtualThread'
   - 'java/330-JavaFunctionalProgramming'
   - 'java/850-SpringBootDataAccess'
 prerequisites:
   - 'java/020-JavaOverviewDevEnv'
   - 'java/330-JavaFunctionalProgramming'
-  - 'java/490-ConcurrencyBasics'
+  - 'java/490-JucConcurrencyTools'
 ---
 
 ## 前置知识
 
-- [Java 与虚拟线程](/java/570-JavaVirtualThread)：建议先完成前一篇的学习
+- [Java 与虚拟线程](/java/550-JavaVirtualThread)：建议先完成这一篇的学习（深水区参考见 [虚拟线程内幕](/java/570-JavaVirtualThreadInternals)，非必读）
 
 ## 学习目标
 

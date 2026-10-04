@@ -1,12 +1,12 @@
 ---
-order: 150
+order: 170
 title: Jenkins Pipeline
 module: 'devops'
 category: 云与基础设施
 difficulty: beginner
 description: Jenkins 声明式 Pipeline 速查：agent、stages、environment、credentials 与 post。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related: []
 prerequisites: []
 ---

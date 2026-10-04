@@ -9,7 +9,7 @@ prerequisites:
   - 'mybatis/070-MybatisPlusCrud'
   - 'spring-boot/100-TransactionManagement'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-05'
 related:
   - 'mysql/430-MVCCPrinciple'
   - 'mybatis/090-PitfallsPerformance'
@@ -236,6 +236,98 @@ public class CodeGen {
 - 乐观锁：第 4 节冲突测试跑绿；故意删掉 @Version 注解重跑，second 的 updateById 变成 1 行——两个用户都「成功」，更新丢失当场复现；
 - 逻辑删：deleteById 后控制台应是 UPDATE；selectById 返回 null；再用一条手写 XML 的 DELETE 对比，体会坑三的口子；
 - 自动填充：insert 一行查库，created_at 与 updated_at 非空；update 一行，updated_at 刷新而 created_at 不动。
+
+## 动手实践
+
+**任务一：为 orders 表配齐四件套。** 假设新表 `orders`（id、order_no、amount、status、version、deleted、created_at、updated_at），从零写四样东西：MybatisPlusInterceptor 配置 Bean（含分页与乐观锁，顺序按官方建议）、带 @Version 与 @TableLogic 的实体、MetaObjectHandler 审计填充、一条自定义 XML 分页方法（按状态查订单，方法签名带 IPage）。提示：这个任务是把第 2 到 6 节的零件组装到一张新表上，验收标准是第 8 节实验的四条全部跑绿。
+
+**任务二：乐观锁失败重试。** 给「扣减库存」写一个带有限重试的乐观锁更新：冲突（updateById 返回 0）时重读最新 version 再试，最多 3 次，全失败抛业务异常。提示：重读要在重试循环体内，重试外读到的永远是旧 version；返回 0 的分支别忘了先打日志再重试，方便观察冲突次数。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现（骨架自检版）</summary>
+
+```java
+@Configuration
+public class MybatisPlusConfig {
+    @Bean
+    public MybatisPlusInterceptor mybatisPlusInterceptor() {
+        MybatisPlusInterceptor interceptor = new MybatisPlusInterceptor();
+        interceptor.addInnerInterceptor(new PaginationInnerInterceptor(DbType.MYSQL));
+        interceptor.addInnerInterceptor(new OptimisticLockerInnerInterceptor());
+        return interceptor;
+    }
+}
+```
+
+```java
+@Data
+@TableName("orders")
+public class Order {
+    @TableId(type = IdType.AUTO)
+    private Long id;
+    private String orderNo;
+    private BigDecimal amount;
+    private Integer status;
+    @Version
+    private Integer version;
+    @TableLogic
+    private Integer deleted;
+    @TableField(fill = FieldFill.INSERT)
+    private LocalDateTime createdAt;
+    @TableField(fill = FieldFill.INSERT_UPDATE)
+    private LocalDateTime updatedAt;
+}
+```
+
+```java
+@Component
+public class AuditMetaObjectHandler implements MetaObjectHandler {
+    @Override
+    public void insertFill(MetaObject metaObject) {
+        this.strictInsertFill(metaObject, "createdAt", LocalDateTime.class, LocalDateTime.now());
+        this.strictInsertFill(metaObject, "updatedAt", LocalDateTime.class, LocalDateTime.now());
+    }
+    @Override
+    public void updateFill(MetaObject metaObject) {
+        this.strictUpdateFill(metaObject, "updatedAt", LocalDateTime.class, LocalDateTime.now());
+    }
+}
+```
+
+```java
+// 自定义 XML 分页：签名带 IPage，XML 里不写 LIMIT
+IPage<Order> selectByStatus(IPage<Order> page, @Param("status") Integer status);
+```
+
+对照自检清单：分页在前乐观锁在后（顺序硬约束）；version 字段类型 Integer 且实体有 @Version；逻辑删字段 deleted 默认值要与全局配置 logic-not-delete-value 一致；XML 分页方法的第一个参数是 IPage——四条各错一处，对应的实验现象分别是「分页不生效」「更新丢失复现」「查询带出已删数据」「COUNT 不出现」。
+</details>
+
+<details>
+<summary>任务二参考实现（乐观锁重试）</summary>
+
+```java
+public boolean deductStock(Long productId, int qty) {
+    for (int attempt = 1; attempt <= 3; attempt++) {
+        // 关键：每次重试都在循环体内重读，拿到最新 version
+        Product current = productMapper.selectById(productId);
+        if (current.getStock() < qty) {
+            return false;   // 库存不足不是冲突，直接失败
+        }
+        current.setStock(current.getStock() - qty);
+        int rows = productMapper.updateById(current);   // WHERE ... AND version = n
+        if (rows == 1) {
+            return true;
+        }
+        log.warn("乐观锁冲突，productId={}，第 {} 次重试", productId, attempt);
+    }
+    throw new BusinessException("扣减库存失败：并发冲突超过重试上限");
+}
+```
+
+两个易漏点：其一，「重读在循环体内」是这段代码的正确性来源，提到循环外重试的就是拿旧 version 再撞一次墙；其二，区分「冲突重试」与「库存不足失败」——前者值得重试（别人刚改过，再看看），后者重试没有意义（数据本身不满足条件）。这也是面试里「乐观锁失败怎么办」的标准答案骨架：有限重试 + 冲突与业务失败分流。
+</details>
 
 ## 自检
 

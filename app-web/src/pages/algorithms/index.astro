@@ -4,7 +4,6 @@ import SEO from '@/components/SEO.astro'
 import GeoBgDecor from '@/components/GeoBgDecor.astro'
 import FeatureNav from '@/components/FeatureNav.astro'
 import Footer from '@/components/Footer.astro'
-import { SITE } from '@/lib/constants'
 import { t } from '@/lib/i18n'
 import { categoryColors } from '@/lib/modules'
 import { getDocsByModule, docSlug } from '@/services'
@@ -358,7 +357,7 @@ const EXTERNAL_GROUPS = [
     slot="head"
     title="算法教学 · FANDEX"
     description="FANDEX 算法教学：按单元章节组织的算法与数据结构完整教程，页内直切算法题图鉴刷题，并分组收录刷题平台、可视化工具与公开课等外部学习资源推荐。"
-    canonical={`${SITE.url}${base}algorithms/`}
+    canonical={new URL(Astro.url.pathname, Astro.site).href}
     type="website"
   />
 

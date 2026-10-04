@@ -1,12 +1,12 @@
 ---
-order: 380
+order: 400
 title: Kotlin 测试与最佳实践
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: 测试框架集成、协程测试、代码规范、性能优化与 Effective Kotlin 要点。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/460-KotlinMultiplatform'
   - 'kotlin/550-KotlinDSLDomainSpecificLanguage'

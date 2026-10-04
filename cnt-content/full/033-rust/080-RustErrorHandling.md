@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: panic 与 Result、? 运算符、unwrap/expect、自定义错误与错误转换
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'rust/070-RustStructEnumMatch'
   - 'rust/100-RustGenericTrait'
@@ -282,7 +282,59 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
 
 讲解：核心业务函数返回 `Result<_, io::Error>` 保持精确；main 用 `Box<dyn Error>` 兜底；外层循环逐文件容错——错误"能精确时精确、能继续时继续"。
 
-## 10. 小结
+## 10. 动手实践：给错误处理装上肌肉记忆
+
+错误处理的语法一天就能看完，分寸感要靠练。以下三个任务合计约 60 分钟，围绕第 9 节的文件统计工具迭代三次，每次换一种工程姿势。
+
+**任务一：亲手走一遍 unwrap 的事故现场（约 15 分钟）**
+
+先把第 9 节的 `count_lines` 改成 `fs::read_to_string(path).unwrap()`，删掉工作目录下的 a.txt 再运行，观察 panic 输出：读一遍「线程恐慌」信息里的位置与原因，然后在 PowerShell 里执行 `$LASTEXITCODE` 看退出码是不是 101。最后恢复为 Result 版本。
+
+提示：这道题的产物不是代码而是记录——panic 的输出格式、退出码数字、以及「panic 发生在库内部还是你的调用行」这个信息在栈回溯里的位置。参考检查点：能说出为什么这个版本比第 9 节版本差——不只是「不优雅」，而是任何一个文件缺失都会杀死整批统计任务，容错能力归零。
+
+**任务二：用 thiserror 给工具装上精确错误类型（约 25 分钟）**
+
+给统计工具定义自己的错误枚举替代裸 `io::Error`：
+
+```rust
+use std::fmt;
+
+#[derive(Debug)]
+enum ToolError {
+    Read { path: String, source: std::io::Error },
+    EmptyFile { path: String },
+}
+
+impl fmt::Display for ToolError {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            ToolError::Read { path, source } => write!(f, "读取 {path} 失败：{source}"),
+            ToolError::EmptyFile { path } => write!(f, "{path} 是空文件"),
+        }
+    }
+}
+
+impl std::error::Error for ToolError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        match self {
+            ToolError::Read { source, .. } => Some(source),
+            _ => None,
+        }
+    }
+}
+```
+
+要求：`count_lines` 签名改为返回 `Result<usize, ToolError>`，文件为空时用 `ToolError::EmptyFile` 返回错误（提示：构造结构体变体时用路径拼接），main 里 match 两种变体分别打印。先自己写完整段，再对照上面骨架检查。
+
+参考检查点：能说出 `source()` 的作用——它把底层 io::Error 挂在错误链上，调用方既能按 ToolError 类型分支，又能顺着链条找到操作系统层面的原始原因；这正是第 4 节手写版与 thiserror 生成版共享的核心结构。
+
+**任务三：同一需求的 anyhow 版与取舍笔记（约 20 分钟）**
+
+再复制一份工具代码，错误类型全部换成 `anyhow::Result`，`read_to_string` 后接 `.with_context(|| format!("读取 {path} 失败"))?`，空文件用 `bail!`。跑通后对比两个版本，写一篇 200 字取舍笔记：哪个版本报错信息更可读、哪个版本的调用方能做编程化处理、如果你要把这个工具发布成库该选哪个。
+
+参考检查点：笔记里至少出现这组结论——anyhow 的 context 让报错自带「当时在做什么」，读日志的人最舒服；thiserror 的枚举让调用方 `match` 错误变体做不同处理，写程序的人最舒服；对外的库必须用 thiserror（调用方拿不到枚举就没法精确处理），二进制应用的顶层用 anyhow 最省事。这与第 6 节的表互相印证，但这次是你自己跑出来的结论。
+
+## 11. 小结
 
 错误处理三板斧：`Result` 表达失败、`?` 简化传播、自定义错误类型提升可读性；`panic` 只留给不可恢复场景。牢记：**panic 是异常，Result 是常态**；写库用 thiserror 定义精确错误、写应用用 anyhow 快速兜底。下一步学习集合与迭代器，掌握 Rust 的日常数据处理武器库。
 

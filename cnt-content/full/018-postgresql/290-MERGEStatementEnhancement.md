@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL MERGE语句：条件分支UPSERT、WHEN NOT MATCHED BY SOURCE、RETURNING与merge_action（PG17增强）
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'postgresql/280-PartitionPruningPartitionJoin'
   - 'postgresql/080-AdvancedSQL'

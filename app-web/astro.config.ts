@@ -10,6 +10,7 @@ import { remarkInternalLinks } from './src/plugins/remark-internal-links';
 import { rehypeLazyImages } from './src/plugins/rehype-lazy-images';
 import { rehypeWrapTables } from './src/plugins/rehype-wrap-tables';
 import { rehypeMermaidDual } from './src/plugins/rehype-mermaid-dual';
+import { integrationSitemapLastmod } from './src/plugins/integration-sitemap-lastmod';
 import remarkMath from 'remark-math';
 import rehypeKatex from 'rehype-katex';
 import remarkEmoji from 'remark-emoji';
@@ -68,12 +69,17 @@ export default defineConfig({
     },
   },
   prefetch: {
-    prefetchAll: false, // 不预取所有页面（视口策略已足够，避免带宽浪费）
-    defaultStrategy: 'viewport', // 视口内链接自动预取，点击时命中缓存
+    // prefetchAll=false 时只有显式 data-astro-prefetch 的链接才被预取（全站为零处），
+    // 等于完全没有预取。文档站侧边栏/目录链接动辄数十个，viewport 策略会在弱网下
+    // 批量拉取整页 HTML（大页超 1MB），故用 hover 策略：悬停/聚焦/触摸才预取，
+    // 单次跳转近乎瞬时，且几乎不产生多余流量（与 Starlight 默认一致）
+    prefetchAll: true,
+    defaultStrategy: 'hover',
   },
   integrations: [
     mdx(),
     sitemap({ filter: (page) => !page.includes('/design-system/') }),
+    integrationSitemapLastmod(), // 排在 sitemap 之后：为每页注入 frontmatter updated 派生的 lastmod
     react(),
   ],
   markdown: {

@@ -1,12 +1,12 @@
 ---
-order: 490
+order: 510
 title: Kotlin 与 Ktor
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: Ktor服务端框架
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/410-KotlinGradle'
   - 'kotlin/540-KotlinArrow'

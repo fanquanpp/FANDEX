@@ -1,12 +1,12 @@
 ---
-order: 240
+order: 260
 title: 高可用 LVS
 module: 'networking'
 category: 云与基础设施
 difficulty: intermediate
 description: LVS/IPVS 四层负载均衡：NAT、DR、TUN 三种转发模式原理与配置、调度算法落地、与 Keepalived 组合实现高可用。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'networking/200-LoadBalanceTech'
   - 'networking/210-LoadBalanceAlgorithm'

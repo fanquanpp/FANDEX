@@ -1,12 +1,12 @@
 ---
-order: 310
+order: 330
 title: On-Call 最佳实践
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: 值班制度、告警管理、轮值策略与On-Call素养。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/450-DesignDocumentStandard'
   - 'devops/320-IncidentRetrospectiveMethodology'

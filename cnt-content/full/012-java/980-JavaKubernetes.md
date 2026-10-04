@@ -6,9 +6,9 @@ category: 后端技术
 difficulty: intermediate
 description: Java 应用在 Kubernetes 上的部署完整指南：资源限制、健康检查、优雅停机、自动伸缩与云原生实践。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
-  - 'java/570-JavaVirtualThread'
+  - 'java/550-JavaVirtualThread'
   - 'java/1000-JavaGraalVM'
   - 'java/450-JavaRecordClass'
   - 'java/460-JavaTextBlock'

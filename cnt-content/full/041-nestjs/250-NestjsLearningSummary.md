@@ -1,12 +1,12 @@
 ---
-order: 250
+order: 260
 title: NestJS 学习总结：核心知识体系回顾
 module: 'nestjs'
 category: 后端技术
 difficulty: intermediate
 description: 串联模块十篇文档：从三层结构与依赖注入到守卫、拦截器、配置校验、缓存队列与微服务的完整知识体系回顾。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'nestjs/160-ModuleControllerService'
   - 'nestjs/200-GuardsAndLifecycle'

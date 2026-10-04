@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: Rust 环境搭建：rustup 工具链管理、cargo、rust-analyzer 与第一个程序，附常见问题排查。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'rust/040-RustBasicSyntax'
   - 'rust/020-RustOverview'
@@ -193,7 +193,29 @@ registry = "sparse+https://rsproxy.cn/index/"
 
 问题四：编辑器无智能提示。确认已安装 rust-analyzer 并重新加载窗口；检查项目根目录是否有 Cargo.toml（rust-analyzer 以它为项目入口）。
 
-## 9. 小结
+## 9. 动手实践：把环境真正跑热
+
+环境搭建的完成标准不是「命令没有报错」，而是下面三个任务全部产出可检查的结果。合计约 30 分钟，做完它们，后续每一篇的练习环境才算真正就绪。
+
+**任务一：完整跑一遍日常开发循环（约 10 分钟）**
+
+新建项目 `env_drill`，把 `main.rs` 改成输出你的名字与今天的日期，然后严格按这个顺序执行并记录每步输出：`cargo check` → `cargo fmt` → `cargo clippy` → `cargo run`。
+
+提示：clippy 对刚写的代码几乎总能挑出点什么（比如未使用的变量、可简化的写法），把它的建议逐条按提示修改再跑。参考检查点：能说出 check 与 run 的耗时差——首次之外，check 应明显快于 run，因为它们跳过了链接与产物生成；这正是「写代码时高频 check、想看结果才 run」的依据。
+
+**任务二：故意编译失败一次，读懂报错三件套（约 10 分钟）**
+
+在 `env_drill` 里做两处破坏：删掉某条语句末尾的分号；给变量先声明后赋值却在使用前没有初始化（`let x: i32; println!("{x}");`）。分别 `cargo check`，把报错信息完整抄进笔记：错误代码（E0xxx）、出错位置、解释文字、修复建议各是什么。
+
+参考检查点：分号问题会报 E0301 一类的语句级错误并直接指出位置；未初始化问题会报 E0381 并解释「used binding `x` isn't initialized」。抄报错不是仪式——下一篇起你会在所有权问题上反复与 E0382 打交道，现在把「读全报错再动手改」练成反射，后面能省下大量时间。
+
+**任务三：把帮助系统摸一遍（约 10 分钟）**
+
+依次执行并记录：`rustup doc`（打开本地文档首页）、`cargo doc --open`（生成并打开本项目的文档）、`rustc --explain E0381`（看编译器对某个错误代码的官方长解释）。
+
+参考检查点：知道 `rustup doc` 打开的是 The Book 等官方教程的离线副本（断网也能学）；知道 `--explain` 是读报错的进阶动作——错误代码加 explain 拿到的是这个错误的设计原因与典型场景，比报错摘要深一层。这三样东西是整个学习过程中最可靠的参考，值得现在就熟门熟路。
+
+## 10. 小结
 
 环境搭建的核心是"rustup 管工具链、cargo 管项目、rust-analyzer 管编辑体验"。完成本课后，你已经能用 rustup 维护 stable 工具链、用 cargo 创建/编译/运行/测试 Rust 项目。下一步进入基础语法，学习变量、类型与函数。
 

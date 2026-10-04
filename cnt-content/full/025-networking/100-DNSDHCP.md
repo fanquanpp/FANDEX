@@ -1,12 +1,12 @@
 ---
-order: 100
+order: 110
 title: DNS 与 DHCP
 module: 'networking'
 category: 云与基础设施
 difficulty: intermediate
 description: DNS 解析体系与加密演进（DoT/DoH/DoQ）、DNSSEC 信任链、DHCP 租约机制与 DHCPv6/SLAAC。
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'networking/190-NetworkDiagnosis'
   - 'networking/180-NetworkDesignPlanning'

@@ -1,12 +1,12 @@
 ---
-order: 360
+order: 370
 title: 自定义数据属性
 module: 'html5'
 category: 前端技术
 difficulty: beginner
 description: data-*
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'html5/350-MicrodataJSONLD'
   - 'html5/280-CrossDocumentCommunication'

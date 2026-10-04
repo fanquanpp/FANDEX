@@ -6,19 +6,19 @@ category: 后端技术
 difficulty: advanced
 description: "以「每个请求 new 一个线程，高峰期直接 OOM」引入，逐个讲透 ThreadPoolExecutor 七参数、四种拒绝策略对照实验、execute 与 submit 吞异常差异的真实事故，并预告虚拟线程，附无界队列堆积实测与 RejectedExecutionException 调试实录。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/480-MultithreadingBasics'
-  - 'java/490-ConcurrencyBasics'
+  - 'java/490-JucConcurrencyTools'
   - 'java/510-ConcurrencyDetailed'
-  - 'java/570-JavaVirtualThread'
+  - 'java/550-JavaVirtualThread'
 prerequisites:
-  - 'java/490-ConcurrencyBasics'
+  - 'java/490-JucConcurrencyTools'
 ---
 
 ## 前置知识
 
-- 已完成 [JUC 并发工具](/java/490-ConcurrencyBasics)：用过 AtomicInteger 与 BlockingQueue——线程池内部的工作队列就是它；
+- 已完成 [JUC 并发工具](/java/490-JucConcurrencyTools)：用过 AtomicInteger 与 BlockingQueue——线程池内部的工作队列就是它；
 - 了解 [多线程入门](/java/480-MultithreadingBasics) 的 start/join 即可，直接 new Thread 的写法本文会给出替代品。还没读过前两篇也能跟，涉及的概念都会回链。
 
 ## 学习目标
@@ -203,7 +203,7 @@ Exception in thread "main" java.util.concurrent.ExecutionException: java.lang.Il
 - IO 密集（调下游、查库）：线程可以远多于核数，因为大部分时间在等，起点核数乘 4，压测定稿；
 - 队列必须有界、线程必须有名字、拒绝策略不许选 Discard 系——除非你真的丢得起。
 
-一句话预告：线程「又贵又少」这个前提正在被改写。Java 21 的虚拟线程让「一个任务一个线程」重新可行（见 [Java 与虚拟线程](/java/570-JavaVirtualThread)），但理解了本文的池化与背压，你才知道虚拟线程替你省掉了什么。
+一句话预告：线程「又贵又少」这个前提正在被改写。Java 21 的虚拟线程让「一个任务一个线程」重新可行（见 [Java 与虚拟线程](/java/550-JavaVirtualThread)），但理解了本文的池化与背压，你才知道虚拟线程替你省掉了什么。
 
 ## 8. 常见错误与调试实录
 
@@ -236,9 +236,9 @@ Exception in thread "main" java.util.concurrent.ExecutionException: java.lang.Il
 
 ## 11. 与之前和之后的知识的关系
 
-- 往前：[多线程入门](/java/480-MultithreadingBasics) 的裸线程是本文要替掉的反面教材；[JUC 并发工具](/java/490-ConcurrencyBasics) 的 BlockingQueue 在池内就是 workQueue 的真身；
+- 往前：[多线程入门](/java/480-MultithreadingBasics) 的裸线程是本文要替掉的反面教材；[JUC 并发工具](/java/490-JucConcurrencyTools) 的 BlockingQueue 在池内就是 workQueue 的真身；
 - 往后，并发四篇的分工：**480 裸线程与 synchronized**、**490 不锁也能对**、**本文线程池**，**[并发设计与 AQS](/java/510-ConcurrencyDetailed) 揭开这些工具共同的底层骨架**；
-- 更远：[CompletableFuture](/java/520-CompletableFutureAsync) 在线程池之上做任务编排；[虚拟线程](/java/570-JavaVirtualThread) 换一种方式回答「线程太贵」。
+- 更远：[CompletableFuture](/java/520-CompletableFutureAsync) 在线程池之上做任务编排；[虚拟线程](/java/550-JavaVirtualThread) 换一种方式回答「线程太贵」。
 
 ## 12. 官方文档
 

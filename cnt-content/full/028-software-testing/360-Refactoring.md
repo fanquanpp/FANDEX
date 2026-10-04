@@ -1,12 +1,12 @@
 ---
-order: 360
+order: 380
 title: 代码重构
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: 代码重构原则、常用重构手法与代码坏味道识别。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/340-UMLGraphDetailed'
   - 'software-testing/350-DesignPatternDetailed'

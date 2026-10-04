@@ -6,7 +6,7 @@ module: 'c'
 category: 计算机科学
 difficulty: advanced
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/200-DynamicMemoryManagement'
   - 'c/210-MemoryManagement'

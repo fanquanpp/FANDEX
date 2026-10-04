@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL锁机制：表级锁八种模式、行级锁四种强度、advisory锁、锁排队与死锁处理
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'postgresql/160-SystemArchitecture'
   - 'postgresql/200-DeadlockDetectionHandling'

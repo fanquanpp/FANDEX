@@ -1,12 +1,12 @@
 ---
-order: 110
+order: 120
 title: 容器查询
 module: 'tailwind'
 category: 前端技术
 difficulty: intermediate
 description: 'Tailwind CSS 容器查询：@container 声明参考系、@sm:/@md: 容器变体与媒体查询断点对照、命名容器消除嵌套歧义，组件级响应式实践'
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'tailwind/040-LayoutFlexGrid'
   - 'tailwind/060-ResponsiveDark'
@@ -171,6 +171,94 @@ prerequisites:
 
 ## 动手实践
 
-1. **卡片三处通吃**：按第 5 节实现 SongCard，分别放进 288px 侧栏、主列表与全宽聚光灯位，拖动窗口宽度验证三个位置各自按容器宽度切换，互不影响。提示：DevTools 里给宿主元素改宽度比改窗口更直观。
-2. **侧栏双列**：给"正在热播"列表实现"容器 280px 单列、320px 以上双列"，对比用媒体查询实现的版本在窄窗口桌面上的错误表现。提示：体会参考系差异带来的行为差别。
-3. **命名容器的歧义实验**：搭建三层嵌套容器，在最内层同时用裸 `@md:` 与 `@md/inner:`，逐层注释掉中间容器观察两者行为差异。提示：这一实验做完，"就近原则"就再也不会坑你。
+**任务一：卡片三处通吃。** 按第 5 节实现 SongCard，分别放进 288px 侧栏、主列表与全宽聚光灯位，拖动窗口宽度验证三个位置各自按容器宽度切换，互不影响。提示：DevTools 里给宿主元素改宽度比改窗口更直观。
+
+**任务二：侧栏双列。** 给"正在热播"列表实现"容器 280px 单列、320px 以上双列"，对比用媒体查询实现的版本在窄窗口桌面上的错误表现。提示：体会参考系差异带来的行为差别。
+
+**任务三：命名容器的歧义实验。** 搭建三层嵌套容器，在最内层同时用裸 `@md:` 与 `@md/inner:`，逐层注释掉中间容器观察两者行为差异。提示：这一实验做完，"就近原则"就再也不会坑你。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
+
+```html
+<!-- 三个宿主：只有宽度不同，卡片组件完全同一份 -->
+<aside class="@container w-72 shrink-0">
+  <!-- SongCard：侧栏里竖排紧凑 -->
+</aside>
+
+<main class="@container flex-1">
+  <!-- SongCard：主列表里横排舒展 -->
+</main>
+
+<section class="@container w-full">
+  <!-- SongCard：聚光灯位大容器下切回竖排大图 -->
+</section>
+```
+
+```html
+<!-- SongCard.astro 模板（与第 5 节一致） -->
+<div class="@container">
+  <article class="flex flex-col gap-3 @md:flex-row @md:items-center @4xl:flex-col @4xl:items-center">
+    <img src={cover} alt={`《${title}》封面`} class="w-full rounded-md @md:w-40 @4xl:w-72" />
+    <div class="min-w-0">
+      <h3 class="text-base @lg:text-xl @4xl:text-2xl">{title}</h3>
+      <p class="hidden text-sm @md:block">应援色：{themeColor}</p>
+    </div>
+  </article>
+</div>
+```
+
+验证手法：DevTools 选中宿主 aside/main，在 Computed 面板直接改宽度（比拖窗口快且精确），观察卡片切三态互不干扰。任何一处切换不生效，按第 3 节末尾的三层检查顺序排：容器类在不在、名字对不对、数值够不够。
+</details>
+
+<details>
+<summary>任务二参考实现（两种参考系对照）</summary>
+
+```html
+<!-- 容器查询版：断点参考侧栏宽度 -->
+<aside class="@container w-80">
+  <div class="grid gap-2 @min-[320px]:grid-cols-2">
+    <!-- 热播小卡 x N -->
+  </div>
+</aside>
+
+<!-- 媒体查询版（对照组）：断点参考视口宽度 -->
+<aside class="w-80">
+  <div class="grid gap-2 sm:grid-cols-2">
+    <!-- 热播小卡 x N -->
+  </div>
+</aside>
+```
+
+对照实验：把窗口缩到手机宽度（例如 375px）再放桌面端，容器查询版始终"280 单列、320 双列"；媒体查询版在窄窗口桌面（视口 400px、侧栏仍 320px）会错误地保持单列，而宽窗口下则始终双列——同一份组件代码在媒体查询版里必须依赖"侧栏永远和视口同宽"的假设。这个差别就是第 1 节"参考系错了"的实物演示。
+</details>
+
+<details>
+<summary>任务三参考实现（三层嵌套歧义实验）</summary>
+
+```html
+<div class="@container/outer w-full">
+  <div class="@container/middle w-1/2 mx-auto">
+    <div class="@container/inner w-1/2 mx-auto">
+      <!-- 裸变体：参考最近的祖先（inner） -->
+      <p class="@md:text-xl">裸 @md 看 inner</p>
+      <!-- 命名变体：参考 outer，无视就近原则 -->
+      <p class="@md/outer:text-xl">命名 @md/outer 看 outer</p>
+    </div>
+  </div>
+</div>
+```
+
+实验记录表（做的时候填）：
+
+| 操作 | 裸 `@md:` | `@md/outer:` |
+| --- | --- | --- |
+| 三层都在（页面宽到 inner 已过 28rem） | 生效（参考 inner） | 不生效（outer 未到） |
+| 注释掉 inner 的 @container | 生效（上溯到 middle） | 不生效 |
+| 再注释掉 middle 的 @container | 生效（上溯到 outer） | 生效 |
+
+裸变体随"最近祖先"逐层上移，命名变体始终钉死在 outer——两个行为在表里一对照，就近原则与命名参考系的差别就是看得见的了。
+</details>
+

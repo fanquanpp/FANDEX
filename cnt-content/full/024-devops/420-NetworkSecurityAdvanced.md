@@ -1,12 +1,12 @@
 ---
-order: 420
+order: 440
 title: 网络与安全进阶
 module: 'devops'
 category: 云与基础设施
 difficulty: advanced
 description: 网络与安全进阶：零信任网络、服务网格安全、证书管理与安全自动化
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/180-GitOpsCD'
   - 'devops/300-MonitorAndAlert'

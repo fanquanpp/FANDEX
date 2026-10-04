@@ -1,12 +1,12 @@
 ---
-order: 380
+order: 400
 title: Kafka 快速上手
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
 description: 主题、分区、消费组的核心模型，Docker Compose 起集群，命令行收发消息与分区键。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/370-MessageQueueOverview'
   - 'devops/400-ReliableMessagingPatterns'
@@ -165,13 +165,69 @@ while True:
 | 消息体塞大文件 | 页缓存失效、副本同步超时 | 消息传引用（对象存储 URL），别传内容 |
 | 只监控 Broker 不管 Lag | 用户先于监控发现"数据没处理" | Lag 告警是 Kafka 监控的第一优先级 |
 
-## 8. 动手试试
+## 8. 实践：动手与自检
 
-1. 创建 `user-events` 主题（3 分区），用同一个 key 发 5 条消息，观察它们是否总进同一分区。
-2. 起两个同组消费者，发 6 条消息，观察消息如何被两个消费者平分。
-3. 停止消费者再启动（不删 group），发新消息，确认不会重复消费旧消息。
-4. 用 `kafka-consumer-groups.sh --describe` 读取 Lag，故意停掉消费者让它涨起来，
-   再启动看它归零。
+分区键实验（10 分钟）：创建 `user-events` 主题（3 分区），用命令行生产者带同一个 key
+发 5 条消息，观察它们的分区归属。验收：5 条消息全部落在同一分区，且能解释为什么。
+
+提示（思路方向）：key 相同则哈希相同则分区相同；命令行生产者默认按行读入，key 需要用
+`--property parse.key=true --property key.separator=:` 开启。先自己跑，再对照：
+
+```bash
+# 创建主题
+kafka-topics.sh --bootstrap-server localhost:9092 \
+  --create --topic user-events --partitions 3
+
+# 带 key 生产（key:user-1 与消息体用冒号分隔）
+kafka-console-producer.sh --bootstrap-server localhost:9092 \
+  --topic user-events \
+  --property parse.key=true --property key.separator=:
+# 逐行输入：user-1:{"seq":1} …… 共 5 条
+
+# 验证归属（打印每条消息的分区与偏移）
+kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+  --topic user-events --from-beginning \
+  --property print.partition=true
+# 预期输出形如：Partition:0	Offset:0	user-1:{"seq":1}
+```
+
+消费组分摊实验（15 分钟）：两个终端各起一个同组消费者（组名 `demo-group`），连发 6 条
+消息，观察消息在两个消费者之间的分布；再追加第 3 个消费者，观察是否有消费者分不到消息。
+验收：能回答「6 条消息、4 个消费者，会发生什么」。
+
+提示：分区的分配单位是分区不是消息——组内消费者按分区瓜分，4 个消费者只有 3 个分区
+时必然有一个空转。参考命令（两个终端分别执行）：
+
+```bash
+kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+  --topic orders --group demo-group
+# 观察：消费者 A 收到分区 0 的消息，B 收到分区 1、2 的
+```
+
+位移实验（10 分钟）：用上面的 `demo-group` 正常消费几条后 `Ctrl+C` 停掉，再发 3 条新
+消息，重启消费者（同样的组名）。验收：新消费者只收到停机期间的 3 条新消息，不重放旧
+消息；然后换一个新组名再启动一次，对比 `--from-beginning` 的差异。
+
+提示：消费组的位移记录在 `__consumer_offsets` 内部主题里，组名就是位移的键——换组名
+等于换了一本新账。验证命令：
+
+```bash
+kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+  --topic orders --group demo-group            # 只收到新消息
+kafka-console-consumer.sh --bootstrap-server localhost:9092 \
+  --topic orders --group fresh-group --from-beginning   # 全量重放
+```
+
+Lag 观察实验（10 分钟）：停掉所有消费者，连发 20 条消息，用 consumer-groups 命令查看
+Lag；恢复消费后再看 Lag 归零。验收：能说出 Lag 的计算含义（最新位移减已提交位移）。
+
+提示：Lag 就是「还没处理完的消息数」，Kafka 运维第一指标（第 5 节）。参考命令：
+
+```bash
+kafka-consumer-groups.sh --bootstrap-server localhost:9092 \
+  --describe --group demo-group
+# CURRENT-OFFSET 已提交位移、LOG-END-OFFSET 最新位移、LAG 两者之差
+```
 
 ## 9. 一句话记住
 

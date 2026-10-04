@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以「AA 收款程序的两个诡异 bug」为线索下潜数据类型底层：一切皆对象与 is/==、小整数缓存与字符串驻留实验、IEEE 754 浮点误差与 Decimal/Fraction 记账方案、可变性与引用语义（含可变默认参数事故）、str 与 bytes、bool 是 int 子类等边角行为，附对象别名排查法与四类练习。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'python/070-BasicDataType'
   - 'python/090-VariableConstant'

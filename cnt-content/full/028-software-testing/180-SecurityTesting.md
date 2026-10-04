@@ -1,12 +1,12 @@
 ---
-order: 180
+order: 200
 title: 安全测试
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: 安全测试方法与工具链：DAST/SAST 定位、OWASP ZAP、SQLMap、模糊测试（Go fuzzing、libFuzzer、OSS-Fuzz）现状与漏测防范。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/170-SecurityAndMobileTest'
   - 'software-testing/130-APIAutomationTestDetailed'

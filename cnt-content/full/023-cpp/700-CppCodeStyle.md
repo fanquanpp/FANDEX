@@ -1,12 +1,12 @@
 ---
-order: 660
+order: 680
 title: C++代码规范
 module: 'cpp'
 category: 计算机科学
 difficulty: beginner
 description: C++编码规范与最佳实践
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-05'
 related:
   - 'cpp/180-CppMemoryManagement'
   - 'cpp/710-CppRustComparison'

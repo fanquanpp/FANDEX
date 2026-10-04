@@ -1,12 +1,12 @@
 ---
-order: 300
+order: 320
 title: 调试思想
 module: 'software-testing'
 category: 云与基础设施
 difficulty: beginner
 description: 系统化调试方法论：断点调试、日志策略、二分排查与常见调试工具。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'shell/090-BuildTool'
   - 'cs-fundamentals/040-ProgrammingParadigmBasics'

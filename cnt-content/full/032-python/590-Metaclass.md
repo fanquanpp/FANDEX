@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: advanced
 description: 以「设备命令处理器自动注册」为场景，先用 __init_subclass__ 解决八成需求，再用 type() 三参数与自定义元类拆开 class 语句的黑盒：__new__ 与 __init__ 的分工、字段收集轻量 ORM、元类冲突与隐式传播，最后给出「什么时候才真的需要元类」的决策清单。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'python/580-PythonDescriptorProtocol'
   - 'python/600-MetaclassSingleton'

@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: C 标准库常用头文件与函数速查：stdio、string、stdlib、math、ctype、time 的签名、返回值语义与典型陷阱，含完整示例。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/430-StdioFileIO'
   - 'c/420-CPosixSystemCall'

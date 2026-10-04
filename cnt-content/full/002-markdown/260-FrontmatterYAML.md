@@ -4,11 +4,12 @@ title: Markdown Frontmatter YAML
 module: 'markdown'
 category: 工具链
 difficulty: intermediate
-description: Markdown 文件头部的 YAML frontmatter：标量/数组/对象字段、多行文本、类型陷阱与各平台约定。
+description: Markdown 文件头部的 YAML frontmatter：两套读者的心智模型、标量/数组/对象字段、类型陷阱、托管字段与工具链协作、遮代码自检实践。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'markdown/270-SpecDocumentWriting'
+  - 'markdown/300-LintFormatTooling'
   - 'markdown/310-AdvancedSyntaxDocumentAutomation'
 prerequisites:
   - 'markdown/010-SyntaxGuide'
@@ -30,11 +31,24 @@ date: 2025-07-31
 正文内容
 ```
 
-类比：正文是快递箱里的货物，frontmatter 是贴在箱外的面单——收件方（构建工具）先读面单再决定货物怎么摆。
+### 1.1 心智模型：一份文档，两套读者
+
+理解 frontmatter 的关键是意识到 Markdown 文件其实有**两套读者**：
+
+| 读者 | 读的部分 | 用来做什么 |
+| --- | --- | --- |
+| 人 | 正文 | 阅读、学习 |
+| 机器（站点生成器、构建脚本、搜索引擎） | frontmatter | 排序、分类、生成目录、做 SEO |
+
+frontmatter 就是**文档的配置文件**：正文是货物，frontmatter 是贴在箱外的面单——收件方（构建工具）先读面单再决定货物怎么摆。想通这一点，很多实践问题就有了答案：
+
+- 为什么 `title` 要写进 frontmatter，明明正文第一行也是标题？——正文标题给人看，frontmatter 的 title 给浏览器标签页、RSS、搜索结果用，两者可以措辞不同；
+- 为什么字段要克制？——面单上每多一个字段，构建工具和协作者就多一个要理解的东西。**先确认"哪个工具会读它"，再决定加不加**；
+- 为什么写错字段名不报错也没效果？——YAML 解析器只负责"读出键值对"，至于键是什么意思由下游工具决定。`titel: 拼错的` 解析成功、静默无效，是最隐蔽的一类 bug。
 
 支持 frontmatter 的常见平台：Jekyll（发明者）、Hugo、Hexo、Astro、Docusaurus、MkDocs、Obsidian（属性面板）、Zola 等。注意 Hugo 默认用 `+++` 包裹的 TOML，也支持 YAML。
 
-### 1.1 位置要求
+### 1.2 位置要求
 
 frontmatter 必须是文件第一行：前面不能有空行、注释或 BOM 字符，否则不会被识别。
 
@@ -152,9 +166,11 @@ post1:
 - **`no` / `yes` / `on` / `off` 会被解析为布尔值**（YAML 1.1）：
 
   ```yaml
-  country: no     # 解析为 false，不是字符串 "no"
+  country: no     # YAML 1.1 解析器读成 false，不是字符串 "no"
   country: "no"   # 正确：想存字符串就加引号
   ```
+
+  陷阱深浅取决于解析器：YAML 1.2 的解析器（较新的 JS 实现）会把 `no` 当字符串，同一个文件换工具解析结果就变了。**对策是恒定的：可疑字符串一律加引号**，别赌解析器版本。
 
 - **版本号、纯数字字符串**：`v1.0` 是字符串没问题，但 `version: 1.10` 是浮点数（1.1），语义被破坏，应写 `version: "1.10"`。
 - **缩进必须用空格**：YAML 禁止用制表符缩进，一个 Tab 就能让整个文件解析失败。
@@ -163,7 +179,7 @@ post1:
 
 `---` 在 YAML 中也是多文档分隔符。frontmatter 场景下，工具只读取**第一个** `---` 包裹的块，其后再次出现的 `---` 就是正文中的水平分隔线，不会再被当作元数据。
 
-## 6. 常用约定字段参考
+## 6. 托管字段：与工具链协作的边界
 
 不同生态有各自的约定字段，举两类典型：
 
@@ -192,19 +208,86 @@ slug: /api
 ---
 ```
 
-工具会自动补全或校验字段时（如本仓库的内容管线），只写内容字段即可，托管字段交给工具维护。
+当一个仓库有构建管线（content pipeline）时，frontmatter 字段会分成两类：
+
+- **内容字段**：人类作者负责写的（title、description），决定这篇文档"是什么"；
+- **托管字段**：管线自动生成与维护的（order、module、category、author、updated 这类派生数据），手写会在下次同步时被覆盖。
+
+以本仓库为例：每篇文档的 `order` 来自"文件名的编号"（`NNN-Name.md`），`module` 来自所在文件夹，`updated` 由同步脚本维护——所以协作规范是**只手写 title 与 description，改顺序就改文件名编号，别直接编辑托管字段**。判断眼前字段属于哪类的方法只有一个：读仓库的内容协作指南（本仓库见根目录 CONTENT-GUIDE.md），别靠猜。
 
 ## 7. 常见陷阱汇总
 
 1. **frontmatter 前有空行或内容**：识别失败，整段被当正文渲染出两条水平线。
 2. **值含 `: ` 未加引号**：YAML 解析报错，构建中断。
 3. **制表符缩进**：必须全部替换为空格。
-4. **`no`/`on`/`off` 被吃成布尔**：可疑字符串一律加引号。
+4. **`no`/`on`/`off` 被吃成布尔**：可疑字符串一律加引号；不同 YAML 版本解析器行为不同，别赌。
 5. **块标记与内容同行**：`desc: |- 文本` 是无效写法，标记必须独占一行。
 6. **日期与字符串混淆**：确认目标工具期望的类型，必要时加引号显式声明。
 7. **`---` 在正文中紧跟 frontmatter 闭合行**：部分工具会把第二个 `---` 也解析进元数据区，闭合行与正文之间留一个空行更稳。
+8. **手写托管字段**：被管线静默覆盖或引发不一致，改内容字段之外的任何字段前先确认它的归属（见第 6 节）。
+
+## 8. 动手实践：遮代码自检
+
+先只读任务与提示，自己写完再对照参考实现。
+
+**任务一**：为你的笔记写一段 frontmatter，要求同时满足——标题里含冒号；三个标签用行内数组；draft 用布尔；发布日期是字符串而不是日期对象（工具链只认字符串）；summary 用折叠多行（换行折叠成空格）。写完先口头说出每个值解析后的类型，再验证。
+
+**提示**：五个要求对应本文五个小节——引号规则（2.2）、行内数组（2.3）、布尔（2.1）、字符串化日期（第 4 节）、`>` 标记独占一行（第 3 节）。
+
+**参考实现**（先自己写完再看）：
+
+```yaml
+---
+title: "部署手册: 从零到上线"
+tags: [devops, deploy, linux]
+draft: false
+date: "2026-10-05"
+summary: >
+  覆盖环境准备、构建、发布与回滚，
+  全程可复制粘贴。
+---
+```
+
+验证方式（任选其一）：本仓库内跑 `pnpm sync`，frontmatter 解析失败会直接报错；或用仓库工具链的解析器读回来看类型——
+
+```bash
+# 在带 node_modules 的工程目录下（本仓库 app-web/ 已带 gray-matter）
+node -e "console.log(require('gray-matter')('---\ntitle: \"a: b\"\nno: no\n---').data)"
+# 输出 {"title":"a: b","no":"no"}——注意此解析器（YAML 1.2 系）把 no 当字符串，
+# 换 Python 的 PyYAML（1.1 系）会得到 False：再次印证「可疑字符串一律加引号」
+```
+
+**任务二**：下面这段 frontmatter 有三处错误，先找出来再改正：
+
+```yaml
+---
+	titel: 我的笔记
+date: 2026-10-05
+description: 札记: 关于 YAML 的坑
+---
+```
+
+**提示**：逐行检查——第一行的缩进字符、键的拼写、description 的值里有什么危险字符。
+
+**参考实现**（先自己写完再看）：
+
+```yaml
+---
+title: 我的笔记
+date: 2026-10-05
+description: "札记: 关于 YAML 的坑"
+---
+```
+
+三处错误：第一行用了制表符缩进（陷阱 3，且 frontmatter 键必须顶格）；`titel` 拼错（陷阱的隐蔽形态——解析成功但下游读不到 title，见 1.1）；description 含 `: ` 未加引号（陷阱 2）。
+
+## 9. 与之前和之后的知识的关系
+
+- 往前：[代码块语法](/markdown/090-CodeBlockSyntaxHighlight) 解释了本文 YAML 示例为什么用 ```yaml 围栏；[表格](/markdown/100-Table) 的"两套读者"思想同源——分隔行也是给机器的信号；
+- 横向：[代码块中的转义与嵌套围栏](/markdown/090-CodeBlockSyntaxHighlight) 是展示"frontmatter 源码"而不触发解析的标准手段；
+- 往后：[规范文档写作](/markdown/270-SpecDocumentWriting) 与 [文档自动化](/markdown/310-AdvancedSyntaxDocumentAutomation) 把 frontmatter 当作自动化管线的输入；[Lint 与格式化工具](/markdown/300-LintFormatTooling) 能在提交前拦住本文第 7 节的大部分陷阱。
 
 ## 小结
 
 - 初学者要点：frontmatter 是文件最顶部 `---` 包裹的 YAML 元数据块，不渲染为正文；字段形式就四种——标量、数组、对象、多行文本；值含冒号加空格或 `#` 时加引号。
-- 进阶注意：YAML 类型系统比看上去激进（`no` 是 false、日期自动解析），可疑值都加引号；缩进只能用空格；`|` 保留换行、`>` 折叠换行、`|-` 去末尾换行且标记必须独占一行；`<<` 合并键在部分解析器不可用；Hugo 用户注意它默认是 TOML（`+++`）。
+- 进阶注意：心智模型是"一份文档两套读者"——正文给人看，frontmatter 给机器看，字段先问"哪个工具读它"再加；YAML 类型系统比看上去激进（`no` 是 false、日期自动解析，且 1.1/1.2 解析器行为不同），可疑值都加引号；缩进只能用空格；`|` 保留换行、`>` 折叠换行、`|-` 去末尾换行且标记必须独占一行；`<<` 合并键在部分解析器不可用；有构建管线的仓库区分"内容字段"与"托管字段"，托管字段交给工具维护（本仓库只手写 title 与 description）；Hugo 用户注意它默认是 TOML（`+++`）。

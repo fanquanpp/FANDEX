@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL VACUUM 机制篇：MVCC 死元组原理、元组可见性判断、标准 VACUUM 三步清理流程、可见性映射与空闲空间映射。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'postgresql/212-VACUUMAutovacuum'
   - 'postgresql/214-VACUUMTuningAndTroubleshoot'

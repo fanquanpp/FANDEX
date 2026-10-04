@@ -6,12 +6,12 @@ category: 后端技术
 difficulty: advanced
 description: Java 21-26 新特性、模块系统、Spring Boot 3.x/4.0、构建工具与 GraalVM 原生镜像。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-10-05'
 related:
   - 'java/470-JavaModuleSystem'
   - 'java/720-JavaDatabaseConnection'
   - 'java/110-ArrayDetailed'
-  - 'java/620-JVMtuning'
+  - 'java/620-JVMTuning'
 prerequisites:
   - 'java/020-JavaOverviewDevEnv'
 ---

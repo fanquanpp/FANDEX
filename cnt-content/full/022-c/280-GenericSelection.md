@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 用「取个绝对值要记四个名字」引出 C11 _Generic：编译期按类型查表、控制表达式不求值的副作用实验、重复类型的报错实录、数组和 const 进开关前的三步整形；宏 + _Generic + 函数族拼出类型安全的伪重载 API，tgmath.h 实现原理与 C23 typeof 协同收尾。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/300-InlineFunctionMacro'
   - 'c/290-PreprocessorMacro'

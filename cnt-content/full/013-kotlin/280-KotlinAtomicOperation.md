@@ -1,12 +1,12 @@
 ---
-order: 280
+order: 300
 title: Kotlin 与原子操作
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: 从竞态条件出发掌握原子变量：kotlinx.atomicfu 与标准库 kotlin.concurrent.atomics 两套 API、CAS 原理、无锁结构与常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/270-KotlinConcurrencySafety'
   - 'kotlin/250-CoroutineDispatcherContext'
@@ -339,6 +339,138 @@ fun main() = runBlocking {
 3. **atomicfu 的插件优化**：不添加编译器插件时 atomicfu 退化为普通包装实现（有额外开销），生产工程应按官方文档配置插件；标准库 `kotlin.concurrent.atomics` 则无此要求。
 4. **ABA 问题**：值从 A 变 B 又变回 A 时 CAS 无法察觉。多数业务场景（计数、状态标志）无影响；无锁数据结构中可用版本号（如 `AtomicStampedReference` 思路）规避。
 5. **`@Volatile` 只保证可见性**：`@Volatile var` 让读看到最新值，但不保证复合操作原子性——它不是原子变量的替代品。
+
+## 底层原理：CAS 为什么「不阻塞」却安全
+
+把 CAS 拆成一条 CPU 指令（x86 的 `lock cmpxchg`、ARM 的 `ldxr/stxr` 对）就懂了：
+「比较 + 交换」在硬件层是一条不可分割的指令，中间不存在被其他线程插入的缝隙。
+它的安全性完全建立在「先读、后试、失败重来」的自旋循环上：
+
+```text
+读 current → 算 new → CAS(current, new)
+   失败？说明 current 之后被人改过 → 重读再试
+   成功？说明「读到的时刻」与「生效的时刻」之间值没变过 → 更新成立
+```
+
+两个推论值得写进直觉：
+
+1. **CAS 保证的是「从读到写没人动过」，不保证「值没被改过又改回来」**——这就是
+   陷阱 4 的 ABA 问题：CAS 只比较值，不比较历史。计数器场景无感，栈/队列这类
+   「结构」场景就会出事（节点被弹出又被压回，top 指针看着没变，next 已经换了）。
+2. **「不阻塞」不等于「无代价」**：高竞争下自旋线程反复失败重试，消耗的是 CPU
+   周期与缓存一致性流量（CAS 失败会让缓存行在核间来回失效）；锁的等待线程则让出
+   CPU。所以临界区小、冲突少选 CAS，临界区大或竞争激烈选锁——两条路没有绝对
+   优劣，只有场景适配。
+
+与协程的关系一句话：协程的挂起发生在「可挂起的等待」上（Mutex、Channel），而
+CAS 自旋是**不可挂起**的忙等——在 Dispatchers.Default 上长时间自旋会占住共享
+线程池的线程，这正是陷阱 2 在协程语境下的具体形态。
+
+## 面试题思路：三个高频考法
+
+1. 「@Volatile 和 AtomicInteger 的区别？」——答两层：`@Volatile` 只保证可见性
+   与禁止指令重排（读一定看到最新写入），不保证复合操作原子性；
+   `AtomicInteger` 在可见性之上用 CAS 保证「读-改-写」不可分割。追问「什么场景
+   @Volatile 就够」：一个线程写、其他线程读的**单次写入**标志位（如 shutdown
+   开关）。
+2. 「CAS 有什么问题？」——标准三连：ABA、自旋开销、只能保证单个变量的原子性
+   （多个变量联动需要 AtomicReference 包一个不可变对象，或上锁）。能顺着 ABA
+   说出「版本号思路」（atomicfu 里可以用 `AtomicLong` 序号 + 引用一起放进不可变
+   数据类）是加分线。
+3. 「无锁一定比锁快吗？」——不一定：无竞争时 CAS 快（没有加锁开销），高竞争时
+   自旋空转可能比锁的线程挂起更浪费；且无锁代码难以保证公平性（可能有线程长期
+   抢不到）。结论是「按竞争度与临界区大小选型」，并强调基准测量（见
+   [Kotlin 基准测试](/kotlin/400-KotlinBenchmark)）。
+
+## 动手实验
+
+1. **丢更新可视化**：跑「快速上手」的 `BrokenCounter`，把线程数从 10 调到 2、
+   次数从 1000 调到 100000，记录丢失率变化；再用 `-XX:+PrintAssembly` 或
+   JITWatch 级别的工具太重，退而求其次：在 `increment()` 里加一行
+   `Thread.yield()` 放大交错概率，观察丢失率飙升——亲手验证「竞态是概率性事件」。
+2. **CAS 循环显微镜**：给限流器的内层 CAS 循环加失败计数器，多线程压测时打印
+   「CAS 尝试次数 / 成功次数」，直观看到竞争激烈时自旋的浪费。
+3. **ABA 复现**：用 `AtomicReference<String>` 与两个线程编排：线程 1 读到 "A"
+   后暂停；线程 2 把值改成 "B" 再改回 "A"；线程 1 恢复执行
+   `compareAndSet("A", "C")`——CAS 成功，但它「以为没变过」的假设已经破产。
+   思考：换成不可变版本号对象（`data class Versioned(val v: String, val rev: Int)`）
+   后如何让这个 CAS 失败。
+4. **两套 API 对照**：把 `CoroutineCounter` 分别用 atomicfu 与
+   `kotlin.concurrent.atomics` 各写一遍，跑同样的并发测试，对比 API 命名与
+   opt-in 要求，写三句选型备注。
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：原子对象池**。实现 `class IdPool(max: Int)`：`acquire(): Int?` 分发
+0 到 max-1 的未占用 id，`release(id)` 归还。要求：多线程并发 acquire 不重复、
+release 后 id 可再被分发；内部只用一个 `AtomicReference<Set<Int>>` 或一个
+`AtomicLong` 位图（二选一，说明理由）。
+
+提示：位图版用 `fetchOr`/`fetchAnd` 风格的自旋；引用版用 `update {}`。
+
+参考实现（引用版）。先说一个常见错误动机：想用 `update {}` 一次搞定，然后「从
+update 的返回值反推自己分到了哪个 id」——这条路在并发下不可靠：update 返回的是
+**最终集合**，可能已经包含其他线程后来的分配，反推结果可能不是你成功占住的那个。
+正确姿势是显式 CAS 自旋，让「选中的 id」与「写成功的那个集合」原子地绑定：
+
+```kotlin
+import kotlinx.atomicfu.atomic
+import kotlinx.atomicfu.update
+
+class IdPool(private val max: Int) {
+    private val taken = atomic(emptySet<Int>())   // 原子引用持有不可变集合
+
+    fun acquire(): Int? {
+        while (true) {                             // CAS 自旋
+            val busy = taken.value
+            val free = (0 until max).firstOrNull { it !in busy } ?: return null
+            if (taken.compareAndSet(busy, busy + free)) return free
+        }
+    }
+
+    fun release(id: Int) {
+        taken.update { it - id }
+    }
+}
+```
+
+自检问题：为什么 `update { it - id }` 的 release 不需要自旋循环？
+（答：`update` 内部就是 CAS 自旋——「从集合里减一个元素」不需要先决定写什么，
+重试自然收敛；acquire 则必须「决定写什么」与「写成功」原子地绑在一起，所以
+要显式循环。）
+
+**练习 2：竞态复现测试**。写一个 JUnit 测试 `test("concurrent increments are
+not lost")`：100 线程 x 1000 次 `incrementAndGet`，断言结果恰好 100000；再写一个
+「故意保留竞态」的对照测试（用普通 var），断言它**大概率失败**。思考：第二个
+测试为什么不能作为回归测试稳定运行？
+
+参考实现：
+
+```kotlin
+import java.util.concurrent.atomic.AtomicInteger
+import kotlin.concurrent.thread
+import kotlin.test.Test
+import kotlin.test.assertEquals
+
+class AtomicTest {
+    @Test
+    fun `concurrent increments are not lost`() {
+        val counter = AtomicInteger(0)
+        val threads = List(100) { thread { repeat(1000) { counter.incrementAndGet() } } }
+        threads.forEach { it.join() }
+        assertEquals(100_000, counter.get())
+    }
+}
+```
+
+对照测试的答案：竞态测试是**概率性失败**——CI 上可能偶发通过，不能作为「预期
+失败」的回归用例；正确的用法是把它当作演示素材（本文快速上手一节的角色），
+而不是断言工具。
+
+**挑战题（不给参考实现）**：把 Treiber 栈扩成「带大小上限的有界栈」：
+`push` 在满时返回 false、`pop` 在空时返回 null，全部用 CAS 自旋实现。写完自查：
+你的「满」判断读的是哪个值？它和 CAS 用的值是否是同一轮读到的？（如果不是，
+就引入了新的竞态窗口。）
 
 ## 小结
 

@@ -1,12 +1,12 @@
 ---
-order: 150
+order: 160
 title: 密封类与代数数据类型
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: 密封类、密封接口与代数数据类型（ADT）的原理、形式化与实践
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/130-NullSafetyDetailed'
   - 'kotlin/090-ExtensionFunction'

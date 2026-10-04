@@ -1,12 +1,12 @@
 ---
-order: 310
+order: 330
 title: Flow 进阶：操作符组合、冷热流转换与背压实战
 module: 'kotlin'
 category: 后端技术
 difficulty: intermediate
 description: 系统梳理 Flow 的中间与末端操作符、冷热流转换（stateIn/sharedIn）、背压策略与组合模式，附完整可运行示例与常见陷阱。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/290-FlowReactiveStream'
   - 'kotlin/300-FlowColdSharedState'
@@ -291,6 +291,126 @@ fun priceFlow() = tickerFlow(1000).map { fetchPrice() }  // 每秒拉一次价�
 
 suspend fun fetchPrice(): Double = 100.0 + (0..100).random() / 10.0
 ```
+
+## 底层原理：flowOn、buffer、conflate 是同一个机制的三种配置
+
+背压三件套与 `flowOn` 看似不相关，实现上却是同一个构件——**在发射方与收集方之间
+插入一个带缓冲的 Channel**：
+
+- `buffer(n)`：插入容量 n 的 Channel，发射协程往里放、收集协程从里取，两边从此
+  并发——「总耗时约等于较慢一方」的数学来源就在这里；
+- `conflate()`：等价于容量 1 且放满丢弃最旧值的 Channel——所以它的语义恰好是
+  「永远留最新」；
+- `flowOn(dispatcher)`：插入同样的 Channel，并规定**Channel 上游一侧**运行在指定
+  调度器上，下游一侧保持收集者的上下文——这就是「flowOn 只影响上游」与
+  「emit 的上下文保护能放行」的原理：`flow { emit }` 的上下文检查比较的是发射点与
+  flowOn 指定点，不再与收集方绑定。
+
+理解这一点后，三条经验法则不证自明：
+
+1. `flowOn` 可以叠加，只有**最靠近源头**的那个生效（上游链每段按最近的一个执行）；
+2. `buffer` 换不来「不丢数据」之外的东西，容量是权衡内存与并发的旋钮；
+3. 背压策略调错了想改，只需要在管线里挪一个操作符的位置，不必重写源头。
+
+collectLatest 是例外：它不用 Channel 缓冲，而是给每个新值**取消上一个还没跑完的
+处理块**——「只关心最新结果」的语义来自协程取消，不是丢弃。
+
+## 面试题思路：三个高频考法
+
+1. 「StateFlow 和 SharedFlow 怎么选？」——按「要不要当前值」答：UI 状态选
+   StateFlow（有 `value`、新订阅者必得当前值、相同值去重）；一次性事件（点击、
+   导航）选 SharedFlow（可配 replay/extraBufferCapacity，不合并相同值）。追问
+   「配置事件会不会被 replay 重放造成重复消费」时，能给出 replay=0 + 事件带 id
+   去重的方案是加分线。
+2. 「flowOn 为什么不能换成在 flow 里 withContext？」——考上下文保护机制：`emit`
+  校验调用上下文与收集上下文一致，`withContext` 恰好破坏这一致性所以编译不过；
+   `flowOn` 是官方给出的「改变上游上下文」的正规通道，实现上是插入 Channel 隔离
+   两侧。
+3. 「搜索框管线里 debounce、distinctUntilChanged、mapLatest 各解决什么问题？
+   顺序能换吗？」——debounce 防抖（用户停手才查）、distinct 防重复查询、
+   mapLatest 取消慢查询。三者两两正交，但 debounce 放在 distinct 之后能省一次
+   计时器重置；mapLatest 若换成 flatMapLatest + collectLatest 也等价——能讲出
+   「算子顺序影响的是时机与浪费，不是正确性」即可。
+
+## 动手实验
+
+1. **Channel 机制验证**：给 `events()` 分别接 `.buffer(0)`、`.buffer(3)`，用时间戳
+   打印发射与收集时刻，观察「容量 0 退化为串行、容量 3 让发射提前跑完」——亲手
+   验证背压三件套的 Channel 原理。
+2. **flowOn 叠加实验**：在管线里放两个 `flowOn`（一个 `Dispatchers.IO`，一个
+   `Dispatchers.Default`），在源头与各中间操作符里打印线程名，确认只有靠近源头的
+   生效；再把顺序对调，观察结果翻转。
+3. **combine 触发次数实验**：让 `f1` 每 100ms 发一个、`f2` 每 250ms 发一个，各发
+   10 个，数一数 `combine` 收集到的次数与 `zip` 的次数（预期：zip 恰好 10；
+   combine 取决于时机，明显更多）。
+4. **catch 边界实验**：在 `collect {}` 的 lambda 里手动 `throw`，验证第 1 条陷阱
+   （异常不会被管线的 `catch` 捕获），再用 `try/catch` 包住 `collect` 修复。
+
+## 小练习（先自己做，再展开参考实现）
+
+**练习 1：给搜索管线补齐健壮性**。基于「常见场景」一节的 `search()`，新增两个
+需求：(a) 查询变化时立即清空结果展示 loading（提示：`mapLatest` 前后分别处理）；
+(b) 每个查询结果附带耗时统计。先写任务清单再动手。
+
+提示：loading 可以用 `onStart { emit(Loading) }` 的密封类结果流承载。
+
+参考实现：
+
+```kotlin
+sealed interface SearchResult {
+    data object Loading : SearchResult
+    data class Done(val items: List<String>, val costMs: Long) : SearchResult
+    data class Failed(val msg: String) : SearchResult
+}
+
+fun searchRobust(queryFlow: Flow<String>): Flow<SearchResult> =
+    queryFlow
+        .debounce(300)
+        .distinctUntilChanged()
+        .mapLatest { q ->
+            val t0 = System.currentTimeMillis()
+            val items = fakeRemoteSearch(q)
+            SearchResult.Done(items, System.currentTimeMillis() - t0)
+        }
+        .onStart { emit(SearchResult.Loading) }
+        .retryWhen { cause, attempt ->
+            if (cause is java.io.IOException && attempt < 3) {
+                delay(1000 * (attempt + 1)); true
+            } else false
+        }
+        .catch { emit(SearchResult.Failed(it.message ?: "unknown")) }
+```
+
+自检问题：`onStart { emit(Loading) }` 为什么放在 `mapLatest` 之后而不是之前？
+（答：放在前面会在**每次订阅**时发一次 loading，放后面则在每次上游开始发射前发
+loading——本需求要的是「每次新查询开始」的时机，顺序就是语义。）
+
+**练习 2：节流仪表盘**。实现 `fun <T> Flow<T>.sampleUntil(timeoutMs: Long):
+Flow<T>`——高频值流中，每 timeoutMs 至多放行一个值（不足周期时保留最新）。
+不允许直接用 `sample`，用 `conflate` + `delay` 组合实现，并写一条断言验证
+10ms 间隔发 100 个值、timeout 50ms 时输出约 10 到 11 个。
+
+提示：`conflate` 只留最新值，`collect { delay(timeout); emit(it) }` 天然节流。
+
+参考实现：
+
+```kotlin
+fun <T> Flow<T>.sampleUntil(timeoutMs: Long): Flow<T> = flow {
+    collect { value ->
+        emit(value)               // 放行一个值
+        delay(timeoutMs)          // 周期内本协程在 delay，收不下手
+    }
+}.conflate()
+// conflate 的语义补完剩下的一半：delay 期间涌来的新值只会保留最新一个，
+// delay 结束后 collect 恢复，拿到的正是「窗口内最新值」。
+// 这就是标准库 sample() 的手工孪生版本——理解了它，sample 的语义不再神秘。
+```
+
+**挑战题（不给参考实现）**：把「定时刷新轮询」场景改造成「手动 + 自动双模式」：
+用户下拉立即刷新（手动信号），同时后台每 30 秒自动刷新；两次刷新间隔不足 2 秒时
+合并为一次。提示：手动信号是 `MutableSharedFlow`，自动信号是 ticker 流，
+`merge` + `debounce`（或 `sample`）组合。写完自查：合并窗口里丢的是哪个信号，
+用户会感知吗？
 
 ## 常见陷阱
 

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 从 Control 基类到容器家族，掌握 Godot 界面布局规则与主题换肤的基本方法
 author: fanquanpp
-updated: '2026-09-22'
+updated: '2026-10-05'
 related:
   - 'godot/110-AnimationAndTween'
 prerequisites:

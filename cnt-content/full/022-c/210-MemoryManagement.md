@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: advanced
 description: 拆开 200 建立的黑盒：打印地址画出进程五段内存布局，逐行解读 use-after-free 与 double free 的 ASan 报告，讲透 realloc 的搬移语义与丢指针经典坑，柔性数组一句话。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/200-DynamicMemoryManagement'
   - 'c/250-FunctionCallStackFrame'

@@ -1,12 +1,12 @@
 ---
-order: 350
+order: 370
 title: 高可用架构
 module: 'devops'
 category: 云与基础设施
 difficulty: advanced
 description: 高可用架构：冗余设计、故障转移、负载均衡、灾备与混沌工程
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'devops/230-ConfigManagement'
   - 'devops/340-PerformanceTuning'

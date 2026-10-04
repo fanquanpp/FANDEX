@@ -78,6 +78,11 @@
           "id": "konado-009",
           "title": "本地化、编辑器与扩展组件",
           "doc": "100-KonadoLocalizationAndExtensions"
+        },
+        {
+          "id": "konado-010",
+          "title": "综合实战：两章迷你视觉小说",
+          "doc": "110-KonadoCapstoneMiniNovel"
         }
       ]
     }

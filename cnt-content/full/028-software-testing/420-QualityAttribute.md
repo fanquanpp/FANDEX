@@ -1,12 +1,12 @@
 ---
-order: 420
+order: 440
 title: 质量属性
 module: 'software-testing'
 category: 云与基础设施
 difficulty: intermediate
 description: 性能、可用性、安全性、可修改性等架构质量属性与策略。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'software-testing/410-EventDrivenArchitecture'
   - 'cloud-computing/180-CAP'

@@ -1,12 +1,12 @@
 ---
-order: 470
+order: 490
 title: Kotlin 跨平台
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
 description: Kotlin跨平台详解：Kotlin/JS与Kotlin/Native。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'kotlin/080-ScopeFunctionDifference'
   - 'kotlin/260-CoroutineExceptionHandling'

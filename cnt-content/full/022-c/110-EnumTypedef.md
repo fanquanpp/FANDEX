@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: beginner
 description: 从 0/1/2 魔数事故引入 enum：默认递增与显式赋值、-Wswitch 穷举检查、枚举常量与 int 的关系；typedef 三步读法、typedef vs #define 对比、tag 命名空间；收束到错误码设计与 C23 固定底层类型，附两组调试实录。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/130-StructAndUnion'
   - 'c/190-ComplexDeclarationParsing'

@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 用场景而非图片配置角色背景，实现状态别名与转场帧，自定义对话框与打字机效果
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'konado/070-KonadoDialogueManagerApi'
   - 'konado/100-KonadoLocalizationAndExtensions'
@@ -151,9 +151,40 @@ typewriter.start()
 
 ## 练习
 
-1. 写一个最小自定义角色场景：继承 KonadoCharacterSceneBase，覆写 _apply_status 用颜色块代替立绘切换状态，注册进 character_list 后用 actor change 验证；
-2. 给你的角色配 status_aliases（语义名 angry 映射到任意资源名），然后故意改别名表而不改剧本，验证剧本行为不变；
-3. 复制默认对话框改配色与布局，赋回 dialogue_box；再分别调用 hide_dialogue_box 与 dismiss_dialogue_box，观察"保留内容"与"清除内容"的差别。
+**任务一：色块立绘。** 写一个最小自定义角色场景：继承 KonadoCharacterSceneBase，覆写 `_apply_status` 用颜色块代替立绘切换状态（normal 绿、angry 红、smile 黄），注册进 character_list 后用 `actor change` 验证。提示：颜色块用 ColorRect 就够，验证的是协议而不是美术；两种状态名参数打印出来看一眼，别名解析的关系立刻清楚。
+
+**任务二：别名表实验。** 给你的角色配 status_aliases（语义名 angry 映射到任意资源名），然后故意改别名表而不改剧本，验证剧本行为不变。提示：映射的目标名无所谓真假——你的 `_apply_status` 收到的只是字符串，打印 resolved 与 original 两个参数就是最直接的观察点。
+
+**任务三：hide 与 dismiss 对照。** 复制默认对话框改配色与布局，赋回 dialogue_box；再分别调用 hide_dialogue_box 与 dismiss_dialogue_box，观察"保留内容"与"清除内容"的差别。提示：两个方法各触发一次后重新显示（showtextbox），对比面板上是否残留上一句台词。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现（色块角色场景）</summary>
+
+```gdscript
+# color_block_character.gd —— 继承基类，绑在一个以 ColorRect 为根的场景上
+extends KonadoCharacterSceneBase
+
+@onready var color_rect: ColorRect = $ColorRect
+
+const STATUS_COLORS := {
+    "normal": Color(0.2, 0.7, 0.3),
+    "angry": Color(0.8, 0.2, 0.2),
+    "smile": Color(0.9, 0.8, 0.2),
+}
+
+func _apply_status(resolved_status_name, original_status_name):
+    print("resolved=%s original=%s" % [resolved_status_name, original_status_name])
+    if STATUS_COLORS.has(resolved_status_name):
+        color_rect.color = STATUS_COLORS[resolved_status_name]
+    else:
+        color_rect.color = Color(0.5, 0.5, 0.5)   # 未知状态兜底
+```
+
+验证步骤：把这个脚本绑到"根节点 ColorRect"的最小场景上，在 character_list 里把该场景注册为角色（如 id 为 dummy），剧本写 `actor show dummy normal at 1` 与 `actor change dummy angry`，运行后色块变色、控制台打印两个状态名。这个练习的意义在于把协议跑通：真实项目里 ColorRect 换成 AnimatedSprite2D、Live2D 节点，`_apply_status` 里的逻辑换成切动画、传参数，骨架不变。
+</details>
+
 
 ## 参考链接
 

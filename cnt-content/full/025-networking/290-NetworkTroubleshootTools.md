@@ -1,12 +1,12 @@
 ---
-order: 290
+order: 310
 title: 网络故障排查工具
 module: 'networking'
 category: 云与基础设施
 difficulty: intermediate
 description: 网络排障方法论：分层定位与二分思路、ping/traceroute/ss/tcpdump 关键用法、「网站打不开」完整案例与抓包分析流程。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'networking/190-NetworkDiagnosis'
   - 'networking/080-PingTraceroute'

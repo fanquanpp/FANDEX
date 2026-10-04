@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: intermediate
 description: 以「接手一个 setup.py 老仓库」为场景，讲清 Python 打包从 setup.py 到 PEP 517/518/621 标准化的演进，动手把老仓库改造成 pyproject.toml + src 布局，理清 sdist 与 wheel、构建后端选型、PEP 440 版本号与 PEP 508 依赖声明的最小规则集。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'python/740-PackagePublish'
   - 'python/045-PythonEnvToolsLandscape'

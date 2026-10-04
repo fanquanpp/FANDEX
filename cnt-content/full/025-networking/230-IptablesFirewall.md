@@ -1,12 +1,12 @@
 ---
-order: 230
+order: 250
 title: iptables 防火墙
 module: 'networking'
 category: 云与基础设施
 difficulty: beginner
 description: iptables 防火墙：四表五链与报文流向、常见放行与 NAT 规则、规则持久化。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/240-HighAvailabilityLVS'

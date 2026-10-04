@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 以「拿到一份陌生设备日志要快速看分布」为场景，从安装到跑通第一个 Notebook：内省问号、魔法命令、DataFrame 速览与一张图；讲清内核常驻进程的心智模型与乱序执行的坑，给出 Restart & Run All、nbstripout、jupytext 等可复现纪律与 papermill/Voila 进阶出口。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'python/970-PythonProjectExampleWebCrawlerDataAnalysis'
   - 'python/980-PythonAutomationCookbook'

@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: React 接入 GraphQL：查询语言最小集、fetch 裸调与 Apollo Client 完整接入、useQuery/useMutation 与缓存更新、分页策略、与 REST+TanStack Query 的选型对比。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'react/280-ReactWebAssembly'
   - 'react/290-ReactWebSocket'

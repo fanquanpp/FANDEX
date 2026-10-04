@@ -1,12 +1,12 @@
 ---
-order: 320
+order: 330
 title: 高级查询
 module: 'sql'
 category: 数据库
 difficulty: advanced
 description: 递归 CTE、PIVOT/UNPIVOT、GROUPING SETS、LATERAL JOIN、全文搜索与 JSON 查询
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
   - 'sql/110-DDL'
   - 'sql/260-WindowFunction'

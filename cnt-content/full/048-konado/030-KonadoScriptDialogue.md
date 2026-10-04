@@ -6,7 +6,7 @@ category: 游戏开发
 difficulty: beginner
 description: 学习剧本文件规则与对话行语法，掌握三种说话者形式与打字速度语音标签
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'konado/020-KonadoArchitecture'
   - 'konado/040-KonadoStageAndCamera'
@@ -162,11 +162,18 @@ showtextbox 与 hidetextbox 分别显示和隐藏对话框，后面的 duration 
 - 语音换了一个音频文件，剧本需要改吗？（不需要，剧本只写标识符，voice_list 负责解析——这正是内容与资源解耦的意义）
 - hidetextbox 之后重新显示，上一句台词还在吗？（不在，它完成了清除；要保留内容请用代码侧的 hide_dialogue_box 系列方法）
 
-## 小练习
+## 动手实践
 
-试着不看答案，写一段三句对话，并让中间一句加速播放。
+**任务一：三句对话与变速。** 写一段三句对话，让中间一句加速播放，保存为 UTF-8 的 .ks 文件并在模板场景中播放验证。提示：想清楚"加速"用 speed 还是 interval——两者只能选一。
 
-参考答案：
+**任务二：旁白转场。** 写一段"对话框消失 -> 纯旁白 -> 对话框回来 -> 角色说话"的四行剧本，旁白期间画面完全交给背景。提示：显隐指令带 duration 时会等动画播完再走下一行，利用这一点安排节奏。
+
+**任务三：变量说话者。** 用一个 $ 临时变量在两句话之间切换说话者（比如 alice 换成 bob），并把访客编号插值进带引号署名里。提示：先 set 变量再把它放在说话者位置；署名插值参考官方示例的第 8、9 行。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
 
 ```konado
 alice "第一句，正常速度。"
@@ -174,7 +181,37 @@ alice "第二句，加速播放。" [speed=2.0]
 alice "第三句，恢复正常。"
 ```
 
-把内容保存为 UTF-8 编码的 .ks 文件。启用插件后双击它即可在 Godot 内置的 KonadoScript 编辑器中打开（保存时会自动重新编译运行时数据），再通过模板场景播放验证，观察中间一句的打字速度差异。
+启用插件后双击 .ks 文件即可在 Godot 内置的 KonadoScript 编辑器中打开（保存时自动重新编译运行时数据），再通过模板场景播放验证，观察中间一句的打字速度差异。
+</details>
+
+<details>
+<summary>任务二参考实现</summary>
+
+```konado
+hidetextbox 0.5
+"narrator" "对话框退场，整个画面只剩雨夜的街灯。"
+showtextbox 0.5
+alice "我回来了。"
+```
+
+两个 0.5 让淡出与淡入各占半秒，播放器会等动画完成再继续——不写 duration 则瞬时切换，节奏会显得突兀。注意 hidetextbox 完成后内容已被清除，所以 `alice "我回来了。"` 出现时面板是干净的，不会残留旁白文字。
+</details>
+
+<details>
+<summary>任务三参考实现</summary>
+
+```konado
+set $who "alice"
+$who "这句由 alice 说。"
+set $who "bob"
+$who "同一行写法，说话者换成了 bob。"
+set $guest_index 7
+"访客 $guest_index" "而这一句由插值出来的署名发言。"
+```
+
+三个知识点在一个剧本里闭环：变量决定说话者（运行时替换）、同一行语法适配不同说话者、带引号署名支持插值。故意把 `$who` 的值设成未注册的演员 ID（如 `"nobody"`）跑一次，观察运行时报什么错——这能帮你建立"剧本标识符 -> 资源列表"的排错直觉。
+</details>
+
 
 ## 下一步
 

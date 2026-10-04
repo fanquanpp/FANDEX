@@ -10,7 +10,7 @@ prerequisites:
   - 'java/720-JavaDatabaseConnection'
   - 'mysql/110-SQLDataOperationQuery'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-05'
 related:
   - 'mybatis/030-DynamicSql'
   - 'mybatis/060-PluginInterceptor'
@@ -238,6 +238,74 @@ flowchart LR
 **坑二：字段批量变 null。**第 2 节讲过的精确症状——同名列有值、蛇形列全 null，八成是 map-underscore-to-camel-case 忘了开。顺带一个变体：resultType 写错成 Map 或别的类，拿到的是「列名为键」的散装数据而非对象，症状相似，病根不同。
 
 **坑三：启动就报找不到 Bean。**`Field productMapper in XxxService required a bean of type 'ProductMapper' that could not be found.`——接口既没标 @Mapper，启动类也没配 @MapperScan，代理根本没被创建。两个都配也不要紧，但配漏一个必炸。
+
+## 动手实践
+
+**任务一：五连迁移。** 参照第 3 节，为一张新表 `members`（字段：id、nickname、level、created_at）用注解写出完整五连：selectById、selectAll、insert（带主键回填）、updateById、deleteById，并保证查询结果的字段全部装上实体。提示：写完先自查 `map-underscore-to-camel-case` 是否开着，再跑一次看控制台 SQL 与实体各字段。
+
+**任务二：注入对照实验。** 把 selectById 抄一份改成 `${id}` 版本（参数类型临时改成 String），传入 `1 OR 1 = 1` 调用，观察控制台 SQL 与返回结果；再用 `#{}` 版本传同样的值对比。提示：对比点是「SQL 文本被改写」与「整串成了一个参数值」；实验完删掉 `${}` 版本，这个写法不进工程。
+
+**任务三：主键回填验证。** 调用 insert 后打印对象的 id 属性与方法的 int 返回值，确认「返回值是行数、回填在对象上」。提示：@Options 的两个属性缺一个都会让 id 保持 null。
+
+先自己写，再对照参考实现：
+
+<details>
+<summary>任务一参考实现</summary>
+
+```java
+@Mapper
+public interface MemberMapper {
+
+    @Select("SELECT id, nickname, level, created_at FROM members WHERE id = #{id}")
+    Member selectById(Long id);
+
+    @Select("SELECT id, nickname, level, created_at FROM members ORDER BY id")
+    List<Member> selectAll();
+
+    @Insert("INSERT INTO members (nickname, level) VALUES (#{nickname}, #{level})")
+    @Options(useGeneratedKeys = true, keyProperty = "id")
+    int insert(Member member);
+
+    @Update("UPDATE members SET nickname = #{nickname}, level = #{level} WHERE id = #{id}")
+    int updateById(Member member);
+
+    @Delete("DELETE FROM members WHERE id = #{id}")
+    int deleteById(Long id);
+}
+```
+
+```java
+public class Member {
+    private Long id;
+    private String nickname;           // nickname 列：同名直接配对
+    private Integer level;
+    private LocalDateTime createdAt;   // created_at 列：靠驼峰开关装上
+    // getter/setter 略
+}
+```
+
+验证点：查回的 Member 打印出来，nickname 与 createdAt 都有值；把 `map-underscore-to-camel-case` 临时关掉再跑，createdAt 变 null——亲手复现一次「忘开的症状」，这个坑就长在身上了。
+</details>
+
+<details>
+<summary>任务二参考实现（实验现象记录）</summary>
+
+```java
+// 危险版本，仅实验用
+@Select("SELECT id, product_name, price FROM products WHERE id = ${id}")
+Product selectByIdUnsafe(String id);
+
+// 调用：selectByIdUnsafe("1 OR 1 = 1")
+// 控制台 SQL：SELECT ... WHERE id = 1 OR 1 = 1      ← 拼接后语义被改写
+// 返回：id 最小的那行（条件恒真，全表通过）
+
+// 安全版本：selectByIdSafe("1 OR 1 = 1")
+// 控制台 SQL：SELECT ... WHERE id = ?    参数：1 OR 1 = 1(String)
+// 返回：null —— 整串被当成一个字符串值去比对 id，匹配不到任何行
+```
+
+对照结论：`${}` 是文本替换（拼进 SQL 文本），`#{}` 是预编译占位（值进参数位）。注入的本质是「值被当成了 SQL 语法」，所以防注入的答案永远是 `#{}`；只能用 `${}` 的位置（表名、列名、ORDER BY 字段）靠白名单纪律兜底，见 030 篇的 choose 用法。
+</details>
 
 ## 官方文档
 

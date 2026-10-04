@@ -160,11 +160,15 @@ function detachInteractions(root: ParentNode): void {
 function enhanceAll(): void {
   document.querySelectorAll<HTMLElement>('[data-mermaid-figure]').forEach(attachInteractions);
 
-  // dev 兜底：构建期渲染被跳过时，页面里仍是原始代码块，动态加载客户端渲染器
+  // dev 兜底：构建期渲染被跳过时，页面里仍是原始代码块，动态加载客户端渲染器。
+  // 仅 dev 打包这段 import：生产构建（含桌面端内嵌产物）由 rehype-mermaid-dual
+  // 构建期输出最终 SVG，缺失预渲染属于构建环境问题，应当让 qa 门禁拦下而不是
+  // 在访问时静默拉起约 600KB 的 mermaid（此前曾因此把整条 mermaid/elk chunk
+  // 链路带进生产 dist，纯增部署体积）。
   const unrendered = Array.from(
     document.querySelectorAll<HTMLElement>('pre[data-language="mermaid"]'),
   ).filter((pre) => !pre.closest('[data-mermaid-figure]'));
-  if (unrendered.length > 0) {
+  if (unrendered.length > 0 && import.meta.env.DEV) {
     void import('./mermaid-dev-render').then((mod) => mod.renderDevMermaid());
   }
 }

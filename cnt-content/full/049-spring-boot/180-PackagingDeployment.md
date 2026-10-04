@@ -8,17 +8,17 @@ difficulty: intermediate
 prerequisites:
   - 'spring-boot/050-ConfigurationManagement'
 author: fanquanpp
-updated: '2026-10-04'
+updated: '2026-10-05'
 related:
   - 'spring-boot/160-ActuatorObservability'
-  - 'java/620-JVMtuning'
+  - 'java/620-JVMTuning'
   - 'java/900-JavaLogSystem'
 ---
 
 ## 前置知识
 
 - 已完成 [配置管理](/spring-boot/050-ConfigurationManagement)：知道配置的优先级分层——没读过也能跟，本篇只需要「外面的配置盖过里面的」这一句；
-- [JVM 调优](/java/620-JVMtuning) 与 [日志系统](/java/900-JavaLogSystem) 是两处深挖互链，没读过也能跟，本篇只在 5、7 节各留一个接口。
+- [JVM 调优](/java/620-JVMTuning) 与 [日志系统](/java/900-JavaLogSystem) 是两处深挖互链，没读过也能跟，本篇只在 5、7 节各留一个接口。
 
 ## 学习目标
 
@@ -113,7 +113,7 @@ ENTRYPOINT ["java", "org.springframework.boot.loader.launch.JarLauncher"]
 ENTRYPOINT ["java", "-XX:MaxRAMPercentage=75.0", "-jar", "/app/app.jar"]
 ```
 
-为什么是 75 不是 100：JVM 进程不只有堆——元空间、每线程约 1MB 量级的线程栈、直接内存、GC 自身开销都吃容器限额。堆顶满，这些零头把进程挤爆，内核直接 OOMKilled，快得连堆栈都来不及打。留 25% 是给它们的安全垫。上限定多少（1G 还是 2G）看指标说话——160 篇的 JVM 内存指标就是依据；GC 选型与堆外排查是深水区，[JVM 调优](/java/620-JVMtuning) 专篇展开。
+为什么是 75 不是 100：JVM 进程不只有堆——元空间、每线程约 1MB 量级的线程栈、直接内存、GC 自身开销都吃容器限额。堆顶满，这些零头把进程挤爆，内核直接 OOMKilled，快得连堆栈都来不及打。留 25% 是给它们的安全垫。上限定多少（1G 还是 2G）看指标说话——160 篇的 JVM 内存指标就是依据；GC 选型与堆外排查是深水区，[JVM 调优](/java/620-JVMTuning) 专篇展开。
 
 ## 6. 优雅停机：SIGTERM 之后发生了什么
 

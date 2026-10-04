@@ -6,7 +6,7 @@ category: 计算机科学
 difficulty: intermediate
 description: 从 strcpy 溢出现场出发，给全危险函数地图与 snprintf 正解，讲透 strncpy 无终止符、sizeof(指针)、整数转 size_t 三大经典坑，核实 Annex K（_s 函数）的真实生态位，收口于编译期检查清单。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-05'
 related:
   - 'c/430-StdioFileIO'
   - 'c/210-MemoryManagement'

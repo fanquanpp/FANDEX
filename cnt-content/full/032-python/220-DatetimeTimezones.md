@@ -150,7 +150,7 @@ print(absolute.astimezone(UTC))
 later = start.astimezone(UTC) + timedelta(hours=1)
 ```
 
-相减也有对称的坑：两个 **同一个 tzinfo 对象** 的 aware 时间直接相减，Python 做的是日历减法（忽略时区偏移），上面 fold 一节那两个「1:30」相减会得 0；先各自转 UTC 再减，才得到真实的 1 小时。一句话：**加减都转成 UTC 再动手**。
+相减也有对称的坑：两个 **同一个 tzinfo 对象** 的 aware 时间直接相减，Python 做的是日历减法（忽略时区偏移），下文 fold 一节那两个「1:30」相减会得 0；先各自转 UTC 再减，才得到真实的 1 小时。一句话：**加减都转成 UTC 再动手**。
 
 ## 解析与格式化：isoformat 优先，strptime 兜底
 

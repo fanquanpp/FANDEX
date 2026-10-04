@@ -1,12 +1,12 @@
 ---
-order: 180
+order: 190
 title: NestJS 接入数据库（Prisma + PostgreSQL）
 module: 'nestjs'
 category: 后端技术
 difficulty: intermediate
 description: Prisma 定义模型并完成建表、CRUD、事务与模块注入；环境变量由 @nestjs/config 统一管理。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-05'
 related:
   - 'nestjs/170-ValidationPipes'
   - 'nestjs/220-ConfigEnvValidation'
