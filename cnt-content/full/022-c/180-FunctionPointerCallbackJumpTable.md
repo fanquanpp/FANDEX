@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 200
 title: 跳转表：用表驱动替换长 switch
 module: 'c'
 category: 计算机科学

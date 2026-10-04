@@ -1,12 +1,12 @@
 ---
-order: 750
+order: 770
 title: Python 与 gRPC
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: gRPC与Protocol Buffers
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/850-PythonMessageQueue'
   - 'python/910-PythonWebSocket'

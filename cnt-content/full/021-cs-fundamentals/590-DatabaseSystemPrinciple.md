@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 600
 title: 数据库系统原理
 module: 'cs-fundamentals'
 category: 计算机科学

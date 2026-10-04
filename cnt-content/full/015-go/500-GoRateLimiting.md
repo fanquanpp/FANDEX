@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 510
 title: Go 与限流
 module: 'go'
 category: 后端技术

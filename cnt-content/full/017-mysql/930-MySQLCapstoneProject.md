@@ -1,12 +1,12 @@
 ---
-order: 900
+order: 910
 title: MySQL 毕业项目：论坛数据库从设计到优化
 description: MySQL 模块出口项目：完成论坛数据库全流程——四实体 ER 设计与 utf8mb4 DDL、10 万行长尾分布种子数据、热帖榜/个人主页/评论树三条核心查询、索引设计与 EXPLAIN 前后对比，交付慢查询优化报告；只给需求与验收断言，不给完整方案。
 module: 'mysql'
 category: 数据库
 difficulty: intermediate
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'mysql/050-MySQLOverviewDatabaseDesign'
   - 'mysql/070-MySQLDataTypeConstraint'

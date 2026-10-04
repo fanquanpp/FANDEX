@@ -1,5 +1,5 @@
 ---
-order: 630
+order: 650
 title: SQLAlchemy 2.0：从手拼 SQL 到 ORM
 module: 'python'
 category: 后端技术

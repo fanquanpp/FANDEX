@@ -5,6 +5,8 @@ export interface I18nEntry {
 }
 
 export const UI_STRINGS: Record<string, I18nEntry> = {
+  'a11y.skipToContent': { zh: '跳转到主要内容', en: 'Skip to main content' },
+
   'theme.tooltipLight': { zh: '亮色模式', en: 'Light mode' },
   'theme.tooltipDark': { zh: '暗色模式', en: 'Dark mode' },
   'theme.switchLight': { zh: '切换到亮色模式', en: 'Switch to light mode' },

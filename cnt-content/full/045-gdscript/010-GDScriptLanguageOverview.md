@@ -188,6 +188,71 @@ var path := ^"Player/Sprite"    # NodePath 字面量
 
 整数支持二进制 `0b` 与十六进制 `0x` 前缀，以及下划线分位；浮点支持科学计数法；字符串可以用单引号、双引号与三引号书写，`r` 前缀表示原始字符串；`&` 前缀创建 StringName，`^` 前缀创建 NodePath。它们的行为差异将在数据类型篇展开。
 
+## 专题：从 Python 迁移来的四个错觉
+
+学过 Python 再写 GDScript，有几个"想当然"最容易出事，先钉在这里：
+
+1. **布尔与空值是小写**：GDScript 写 `true`、`false`、`null`，Python 的 `True`/`None` 直接报解析错误。这是迁移者第一个撞上的墙，也是最容易自查的；
+2. **没有列表推导式**：`[x * 2 for x in items]` 在 GDScript 里是语法错误，等价写法是普通 for 循环往数组里 append，或用 `items.map(func(x): return x * 2)`。函数式方法接受 Callable，配 050 篇的 lambda 一起用；
+3. **缩进官方推荐 Tab 且禁混用**：Python 社区流行 4 空格，GDScript 官方风格指南推荐 Tab（编辑器默认），同一文件混用直接报错。从别的编辑器复制粘贴代码后，先检查缩进字符；
+4. **match 不是 switch 的简单换皮**：GDScript 的 match 支持模式绑定与数组/字典模式（如 `match point: var x: ...`），比 C 的 switch 强得多；而 Python 3.10 的 match 语义又与 GDScript 不完全一致，两边不能凭印象互推。
+
+把这四条记熟，迁移成本基本清零；其余差异（信号没有 Python 对应物、@export 注解不是装饰器语义）在后续各篇讲到时再展开。
+
+## 动手练习
+
+练习一（第一个脚本的全套仪式）。任务：新建一个挂 Node 的脚本，要求一次做齐五件事——文档注释（## 写在变量正上方）、@export 导出一个 `player_name: String`、#region 包住一段逻辑、在 _ready 里用 push_warning 打一条带堆栈的警告、运行后在输出面板看到结果。提示：文档注释悬停变量名可以验证；#region 与 #endregion 之间不能有空格。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+extends Node
+
+## 玩家昵称，显示在排行榜上。
+## 留空时使用默认名"无名歌者"。
+@export var player_name: String = "无名歌者"
+
+#region 自我介绍
+func introduce() -> void:
+    print("我是 %s" % player_name)
+#endregion
+
+func _ready() -> void:
+    introduce()
+    push_warning("示例警告：这条消息自带调用堆栈")
+```
+
+对照要点：悬停 player_name 应弹出文档注释内容——这是验证 ## 写对位置（成员正上方）的直接方法；#region 区域在编辑器行号左侧出现折叠箭头。push_warning 的输出自带脚本路径与行号，这是它比 print 好用的原因。
+
+</details>
+
+练习二（验证静态类型的报错时机）。任务：写两个变量 `var dynamic_value = 10` 与 `var typed_value: int = 10`，分别给它们赋值一个字符串，观察两处的报错形态：哪一处编辑器立刻画红线（解析期）、哪一处要等运行？把 dynamic_value 赋成字符串后再赋回整数，验证 Variant 风格可以来回换。参考观察：typed_value 的赋值行立刻出现类型错误提示，脚本根本跑不起来——错误在解析期被拦下；dynamic_value 全程安静，运行也不报错，因为 Variant 什么都能装。结论：静态类型的收益不只是性能，还有"错误前移到写代码的那一刻"。
+
+练习三（字面量预测题）。先遮住下文写下你的预测，再运行验证：
+
+```gdscript
+var bits := 0b1001
+var mask := 0xF5
+var raw := r"C:\new\test"
+var key := &"player"
+var path := ^"Player/Sprite"
+print(bits + mask)      # 预测输出？
+print(raw)              # 预测输出？
+print(key, " / ", path) # 预测输出？
+```
+
+<details>
+<summary>参考答案（先自己算，再展开对照）</summary>
+
+- `bits + mask` 输出 `254`：0b1001 是十进制 9，0xF5 是十进制 245，相加得 254。二进制与十六进制字面量进入运算后就是普通 int；
+- `raw` 输出 `C:\new\test`：r 前缀下反斜杠不转义，`\n` 保持字面的反斜杠加 n，不会被解释成换行。Windows 路径、正则表达式里最省心；
+- `key` 打印为 `player`（StringName 打印时与字符串外观一致，但它是不带堆分配开销的"内部化字符串"，API 签名要求 StringName 时必须用它）；`path` 打印为 `Player/Sprite`（NodePath 是为节点寻址优化的专用类型）。
+
+预测全中则本节过关；错任何一个，回到字面量速览那一段重读对应行。
+
+</details>
+
 ## 小结
 
 - GDScript 是 Godot 内置的高级、面向对象、命令式、渐进类型语言；语法像 Python，但官方明确声明它并不基于 Python。

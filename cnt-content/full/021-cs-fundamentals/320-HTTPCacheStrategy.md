@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 330
 title: HTTP 缓存策略
 module: 'cs-fundamentals'
 category: 计算机科学

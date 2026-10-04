@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 420
 title: 分布式系统
 module: 'cs-fundamentals'
 category: 计算机科学

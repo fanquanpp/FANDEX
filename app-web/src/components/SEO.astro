@@ -44,8 +44,11 @@ const toIso = (d: string | Date | undefined): string | undefined => {
     return undefined;
   }
 };
-const datePublished = toIso(publishedDate) || new Date().toISOString();
-const dateModified = toIso(modifiedDate) || toIso(publishedDate) || new Date().toISOString();
+// 内容 frontmatter 只有 updated（最后更新时间），没有真实发布日期：
+// 不再把 updated 冒充 datePublished，也不再回退到构建日期（new Date()）——
+// 缺数据就省略对应字段，只输出可验证的 dateModified。
+const datePublished = toIso(publishedDate);
+const dateModified = toIso(modifiedDate) || toIso(publishedDate);
 
 const ldJson =
   type === 'article'
@@ -60,8 +63,8 @@ const ldJson =
           '@id': pageUrl,
         },
         image: ogImageUrl,
-        datePublished,
-        dateModified,
+        ...(datePublished ? { datePublished } : {}),
+        ...(dateModified ? { dateModified } : {}),
         author: {
           '@type': 'Person',
           name: SITE.author,

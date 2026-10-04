@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: 内置国际化全家桶：Intl.NumberFormat、DateTimeFormat、Collator、Segmenter 等的正确用法与性能要点。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'javascript/610-TemporalJavaScriptAPI'
   - 'javascript/430-WebAPIBrowserInterface'

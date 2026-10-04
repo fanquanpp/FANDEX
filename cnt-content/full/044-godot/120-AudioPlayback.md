@@ -100,6 +100,81 @@ AudioStreamPlayer 的核心属性：
 2. 用 pitch_scale 随机化替代 AudioStreamRandomizer 的部分功能：给 Footstep 换回普通 WAV 流，在 `_on_player_stepped` 里每次设置 `footstep.pitch_scale = randf_range(0.9, 1.1)` 后再 play()。对比两种方案的听感与配置成本。
 3. 实现一个简单的播放列表：三条曲子依次播放，播完自动换下一首，全部播完从头再来。要求正确处理"中途切歌"——切歌用的 stop() 不能破坏 finished 链。
 
+每题先自己动手，写完再展开参考实现对照：
+
+<details>
+<summary>练习 1 参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+var sfx_restore_db := 0.0
+
+func mute_sfx(muted: bool) -> void:
+    var idx := AudioServer.get_bus_index("SFX")
+    if idx == -1:
+        push_warning("SFX 总线不存在，检查拼写")
+        return
+    if muted:
+        sfx_restore_db = AudioServer.get_bus_volume_db(idx)
+        AudioServer.set_bus_volume_db(idx, -80.0)   # 压到几乎无声
+    else:
+        AudioServer.set_bus_volume_db(idx, sfx_restore_db)
+```
+
+对照要点：get_bus_index 找不到总线时返回 -1 而不是报错——这正是正文"总线名拼错静默回退"坑的代码层版本，先判 -1 再操作；用 volume_db 做静音必须先记住原音量，否则取消静音时回不到原值。实战里更推荐 `AudioServer.set_bus_mute(idx, muted)`，它不碰音量、天然可逆，这里按题目要求用 volume_db 实现一遍，正是为了体会两者的差别。
+
+</details>
+
+<details>
+<summary>练习 2 参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+func _on_player_stepped() -> void:
+    footstep.pitch_scale = randf_range(0.9, 1.1)
+    footstep.play()
+```
+
+对照要点与方案对比：一行代码就有效果，配置成本远低于 Randomizer，适合"同一份切片快速去重"；但 pitch_scale 改变音高的同时会改变时长（音调高脚步更急促），且所有随机只来自一条曲线。AudioStreamRandomizer 的优势是每条切片可以配独立的音高与音量范围、还能给切片加权，素材多、要求细腻时再升级到它。听感结论留给你自己跑：切片少于三条时两者差距很小。
+
+</details>
+
+<details>
+<summary>练习 3 参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+extends Node
+
+@onready var player: AudioStreamPlayer = $MusicPlayer
+
+var playlist: Array[AudioStream] = []
+var current := 0
+
+func _ready() -> void:
+    playlist = [
+        preload("res://audio/track_a.ogg"),
+        preload("res://audio/track_b.ogg"),
+        preload("res://audio/track_c.ogg"),
+    ]
+    player.finished.connect(_on_finished)
+    _play_current()
+
+func _play_current() -> void:
+    player.stream = playlist[current]   # 注意：换 stream 会立刻停止当前播放
+    player.play()
+
+func _on_finished() -> void:
+    current = (current + 1) % playlist.size()   # 走完最后一首自动回到 0
+    _play_current()
+
+func next_song() -> void:
+    player.stop()   # stop 不触发 finished，切歌不会误入 _on_finished
+    current = (current + 1) % playlist.size()
+    _play_current()
+```
+
+对照要点：循环播放列表不需要任何额外标志，一个取模就完成"播完最后一首从头再来"；切歌时也不需要防御性布尔——stop() 压根不发 finished，这是正文反复强调的信号语义，读懂它这段代码就没有分支。反过来验证一遍：如果把切歌改成先 stop 再等什么回调，你会发现永远等不到。
+
+</details>
+
 ## 下一步
 
 - 想知道 Quaver 的音色是怎么"合成"出来的、总线树如何组织混音与发送效果，可以直接读它的仓库：https://github.com/fanquanpp/quaver（scripts/synth_engine.gd 与混音面板代码）。

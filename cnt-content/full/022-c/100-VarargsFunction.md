@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 120
 title: 可变参数函数：printf 是怎么炼成的
 module: 'c'
 category: 计算机科学

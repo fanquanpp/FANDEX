@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 390
 title: POSIX 线程：pthread 从创建到同步
 module: 'c'
 category: 计算机科学

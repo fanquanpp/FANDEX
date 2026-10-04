@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 130
 title: 枚举与 typedef：给类型起好名字
 module: 'c'
 category: 计算机科学

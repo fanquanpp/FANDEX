@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: 新特性采用策略与深水机制专题：V8/JSC/SpiderMonkey 的节奏差、caniuse 与 MDN 兼容表的查法、转译与 polyfill 的取舍、Stage 0-4 从提案到能用的年数感，深机制选讲 Array.fromAsync 的串行语义与 Set 方法的数学对应。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'javascript/590-ES2023To2026NewFeatures'
   - 'javascript/400-ModuleBundlingAndTreeShaking'

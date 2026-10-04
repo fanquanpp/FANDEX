@@ -133,6 +133,72 @@ export default class EnemySpawner extends Node3D {
 2. 给判定系统补一个 `note_missed` 无参信号，GDScript 侧写一个监听节点连接它并打印"Miss"，验证跨语言信号；
 3. 把 `rpc_config` 里 `hit` 的 `rpc_mode` 改成 `"any_peer"`，思考一句话：这给联机对局引入了什么风险？（提示：任意客户端都能扣别人血。）
 
+先自己动手，再对照参考实现。验收标准：第 1 题在 Inspector 里看到 circle/square/diamond 三选一的下拉框；第 2 题触发 miss 时 GDScript 打印出 Miss；第 3 题能写出一句话风险结论。
+
+### 参考实现
+
+第 1 题——注意三处一致性：`static exports` 的键、真实字段名、初始默认值：
+
+```typescript
+import { GD, Node3D, Vector3 } from "godot";
+
+export default class NoteSpawner extends Node3D {
+  static exports = {
+    spawn_count: { type: "int", default: 3 },
+    note_speed: { type: "float", hint: "range", hint_string: "1,20" },
+    lane_offset: { type: "Vector3" },
+    note_style: { type: "String", hint: "enum", hint_string: "circle,square,diamond" },
+  };
+
+  spawn_count = 3;
+  note_speed = 8;
+  lane_offset = new Vector3(0, 1, 0);
+  note_style = "circle";
+
+  _ready(): void {
+    GD.print(`style=${this.note_style} count=${this.spawn_count}`);
+  }
+}
+```
+
+第 2 题——TS 侧声明无参信号并发射：
+
+```typescript
+import { Node } from "godot";
+
+export default class NoteJudge extends Node {
+  static signals = {
+    note_hit: [{ name: "accuracy", type: "float" }],
+    note_missed: [],
+    song_finished: [],
+  };
+
+  judge(hit: boolean, accuracy: number): void {
+    if (hit) {
+      this.emit_signal("note_hit", accuracy);
+    } else {
+      this.emit_signal("note_missed");
+    }
+  }
+}
+```
+
+GDScript 侧监听（把判定节点挂为监听节点的子节点 `Judge`）：
+
+```gdscript
+extends Node
+
+func _ready() -> void:
+    $Judge.note_missed.connect(_on_missed)
+
+func _on_missed() -> void:
+    print("Miss")
+```
+
+运行时随便调一次 `$Judge.judge(false, 0.0)`，输出面板应出现 Miss——这就是"信号已注册进 Godot 脚本系统"的实证：连接、发射、接收三方完全是普通 Godot 信号协议，语言无关。
+
+第 3 题——一句话结论参考：`hit` 改成 `"any_peer"` 后，任何客户端都能以别人的身份触发扣血与特效，等于把作弊接口开放给所有对等端；正确的最小权限做法是保持 `"authority"`（仅权威端可调），客户端通过受限的上报接口表达操作意图。
+
 ## 下一步
 
 - GDScript 侧怎么加载 TS 脚本、autoload 怎么写：040 篇；

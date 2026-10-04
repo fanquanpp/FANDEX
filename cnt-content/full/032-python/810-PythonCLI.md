@@ -1,12 +1,12 @@
 ---
-order: 620
+order: 640
 title: Python 与 CLI
 module: 'python'
 category: 后端技术
 difficulty: beginner
 description: 命令行工具开发
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/430-PythonLog'
   - 'python/750-PythonTest'

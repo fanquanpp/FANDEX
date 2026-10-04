@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: 以播客平台的六类真实查询为练习场，理解 B-tree/Hash/GiST/GIN/SP-GiST/BRIN 各自解决的查询形状：等值、范围、空间、包含、前缀、时序，配齐索引管理动作（CONCURRENTLY、REINDEX、用量统计）与选型速查。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'postgresql/110-JSONBJSONDifference'
   - 'postgresql/230-CoveringIndexPartialIndex'

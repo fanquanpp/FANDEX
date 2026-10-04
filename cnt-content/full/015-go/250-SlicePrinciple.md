@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 260
 title: 切片原理
 module: 'go'
 category: 后端技术

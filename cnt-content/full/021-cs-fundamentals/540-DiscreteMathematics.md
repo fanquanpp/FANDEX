@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 550
 title: 离散数学
 module: 'cs-fundamentals'
 category: 计算机科学

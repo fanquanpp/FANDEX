@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 610
 title: 多媒体技术
 module: 'cs-fundamentals'
 category: 计算机科学

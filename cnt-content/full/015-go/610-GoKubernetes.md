@@ -1,5 +1,5 @@
 ---
-order: 610
+order: 620
 title: Go 与 Kubernetes
 module: 'go'
 category: 后端技术

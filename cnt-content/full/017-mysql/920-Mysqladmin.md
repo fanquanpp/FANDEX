@@ -1,12 +1,12 @@
 ---
-order: 890
+order: 900
 title: mysqladmin：一条命令的运维工具箱
 module: 'mysql'
 category: 数据库
 difficulty: beginner
 description: mysqladmin 命令行工具实战：存活探测与状态速览、进程与连接治理、安全关机与密码修改，以及它在现代监控体系里的位置。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-29'
 related:
   - 'mysql/850-MySQLConfigOps'
   - 'mysql/860-PerformanceTuningSecurity'

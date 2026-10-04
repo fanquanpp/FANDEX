@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 610
 title: CI/CD：让机器替你守 main 分支
 module: 'python'
 category: 后端技术

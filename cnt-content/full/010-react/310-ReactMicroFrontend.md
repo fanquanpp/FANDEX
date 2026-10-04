@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: advanced
 description: React 微前端架构：适用场景与三大流派（Module Federation、single-spa/qiankun、iframe）、Webpack Module Federation 完整配置、共享 React 单例、样式与状态隔离、落地陷阱。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'react/290-ReactWebSocket'
   - 'react/300-ReactGraphQL'

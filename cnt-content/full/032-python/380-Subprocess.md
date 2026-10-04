@@ -1,12 +1,12 @@
 ---
-order: 290
+order: 310
 title: Python subprocess 子进程
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: subprocess 全解：run/Popen、管道串联、超时与重定向、shell 注入风险与跨平台注意。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/810-PythonCLI'
 prerequisites: []

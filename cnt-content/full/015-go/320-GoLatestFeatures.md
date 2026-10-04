@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 330
 title: Go 新特性演进
 module: 'go'
 category: 后端技术

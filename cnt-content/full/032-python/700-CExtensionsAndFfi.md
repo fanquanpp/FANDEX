@@ -1,12 +1,12 @@
 ---
-order: 520
+order: 540
 title: C 扩展与 FFI
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: ctypes、cffi 与 CPython 扩展：让 Python 调用原生代码。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/630-MultiprocessingMultithreading'
   - 'python/690-PythonPerformance'

@@ -1,5 +1,5 @@
 ---
-order: 770
+order: 780
 title: JSON 模式验证与聚合函数
 module: 'mysql'
 category: 数据库

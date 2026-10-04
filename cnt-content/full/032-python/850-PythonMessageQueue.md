@@ -1,12 +1,12 @@
 ---
-order: 650
+order: 670
 title: Python 与消息队列
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: RabbitMQ与Kafka
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/900-ConfigManagement'
   - 'python/500-Decorator'

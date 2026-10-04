@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 370
 title: 共享内存与信号量：System V IPC
 module: 'c'
 category: 计算机科学

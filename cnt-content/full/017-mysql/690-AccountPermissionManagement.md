@@ -1,5 +1,5 @@
 ---
-order: 670
+order: 680
 title: 账户与权限管理
 module: 'mysql'
 category: 数据库

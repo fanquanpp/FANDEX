@@ -126,6 +126,65 @@ flowchart TD
 
 整棵树里没有一个坐标是手填的：MarginContainer 负责留边，HBox 负责横排，Center 负责居中，VBox 负责纵排。窗口缩放时整份 HUD 自动重排，这就是容器体系的回报。
 
+## 动手练习
+
+练习一（徒手搭 HUD，编辑器任务）。任务：按上图的结构搭出这份 HUD——顶栏带边距、头像与两行数值横排、暂停菜单整体居中且默认隐藏；然后把窗口拉到任意大小，验收标准是所有元素始终对齐、无重叠、无溢出。参考操作序列（无代码）：根节点用 Control 并把 Layout 的 Anchor Preset 设为 Full Rect；顶栏 MarginContainer 同样 Full Rect 后在主题常量里改 margin；状态栏 HBoxContainer 里给 TextureRect 设 custom_minimum_size 固定头像框，两个 Label 默认 Fill；暂停菜单先 CenterContainer Full Rect，再往里放 VBoxContainer 与两个 Button，脚本里用 `visible` 控制显隐。做的时候故意把某个按钮拖出容器试试——观察它"不听话"地停在原处，正是容器接管布局的反证。
+
+练习二（平滑掉血条）。任务：状态栏里加一个 ProgressBar 当血条，写 `set_health(current: int, max_health: int)`——血条在 0.4 秒内从当前显示值平滑过渡到新百分比；连续掉血时从屏幕正显示的值出发，且 oldValue 不能超过新值时出现"回升"闪烁。提示：ProgressBar 的 value 是 0 到 max_value 的浮点；过渡用 Tween，重播纪律是先 kill。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+extends Node
+
+@onready var hp_bar: ProgressBar = $TopMargin/StatusBar/HPBar
+var hp_tween: Tween
+
+func set_health(current: int, max_health: int) -> void:
+    var target := float(current) / float(max_health) * hp_bar.max_value
+    if hp_tween:
+        hp_tween.kill()
+    hp_tween = create_tween()
+    hp_tween.tween_property(hp_bar, "value", target, 0.4)
+```
+
+对照要点：比例换算先转 float 再除，整数除法会把 3/10 直接截成 0；tween_property 的起点是属性当前值，所以"从屏幕正显示的值出发"不需要你读反旧值，Tween 自动从现状插值——这是 Tween 比手写插值省心的核心原因。
+
+</details>
+
+练习三（给自定义容器加间距）。任务：扩展文中的 VerticalStackContainer——加一个 `separation` 导出属性控制子控件间距，并在 Inspector 里修改它时布局立刻重排；同时让容器把"所有子项高度加间距"上报为自身的 custom_minimum_size，使外层容器知道它至少需要多高。提示：导出属性的 setter 里调 queue_sort()；求和后记得减掉多算的一次尾部间距。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+class_name VerticalStackContainer
+extends Container
+
+@export var separation: int = 4:
+    set(value):
+        separation = value
+        queue_sort()   # 间距变了立刻重排，否则要等下一次布局时机
+
+func _notification(what: int) -> void:
+    if what == NOTIFICATION_SORT_CHILDREN:
+        var y := 0.0
+        for child in get_children():
+            var control := child as Control
+            if control == null:
+                continue
+            var height: float = control.custom_minimum_size.y
+            fit_child_in_rect(control, Rect2(0.0, y, size.x, height))
+            y += height + separation
+        # n 个子项只有 n-1 个间距，求和后减掉多算的尾部
+        custom_minimum_size.y = maxf(0.0, y - separation)
+```
+
+对照要点：setter 里 queue_sort() 是"属性驱动布局"的标配写法，漏了它改间距不动、拖动窗口才刷新，是自定义容器最常见的半成品症状；上报 custom_minimum_size 后把它放进 VBoxContainer 试试，外层会为它留出正确高度——这一步做不做，决定了你的容器能不能嵌进别的布局。
+
+</details>
+
 ## 小结
 
 Control 定规则，容器管摆放：子控件一旦进了容器，位置尺寸都听容器的，个性化诉求用尺寸标志、stretch_ratio 与 custom_minimum_size 表达。内置容器从 Box 到 Flow 覆盖了几乎所有常规布局，实在不够就继承 Container 处理 NOTIFICATION_SORT_CHILDREN、用 fit_child_in_rect 摆放、用 queue_sort 触发重排。换肤则是主题项六类型的游戏：默认主题不可改但处处可覆盖，按"本地覆盖 -> Control 链 -> 项目主题 -> 默认主题"的顺序生效。记住 MarginContainer 的边距在主题里、focus 是覆盖层这两条，能省掉大半排查时间。

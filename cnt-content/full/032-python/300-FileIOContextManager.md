@@ -1,12 +1,12 @@
 ---
-order: 250
+order: 260
 title: 文件 I/O 与上下文管理器
 module: 'python'
 category: 后端技术
 difficulty: intermediate
 description: 文件读写、路径操作、with 语句与上下文管理。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/460-OOP'
   - 'python/130-ExceptionHandling'

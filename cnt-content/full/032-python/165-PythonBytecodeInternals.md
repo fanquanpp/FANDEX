@@ -6,7 +6,7 @@ category: 后端技术
 difficulty: beginner
 description: 承接推导式篇留下的两个「为什么」——为什么推导式比 for+append 略快、为什么循环变量不外泄——用标准库 dis 反汇编亲手验证：3.12 前推导式是隐藏函数、PEP 709 内联优化、生成器表达式为何始终独立，附「字节码是实现细节不可依赖」的边界说明。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related: []
 prerequisites: []
 ---

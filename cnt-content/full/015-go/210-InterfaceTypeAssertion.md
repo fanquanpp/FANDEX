@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 220
 title: 接口与类型断言
 module: 'go'
 category: 后端技术

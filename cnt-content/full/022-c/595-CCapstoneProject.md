@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 600
 title: C 毕业项目：零依赖动态数组与哈希表库
 description: C 模块出口项目（Level 7）：纯 C99 手写自动扩容 vector 与开放寻址字符串键哈希表，接口头 + 实现 + 自写断言测试 + Makefile + ASan/Valgrind 双零报告 + README，user stories 验收、提示从高到无。
 module: 'c'

@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 320
 title: 内联函数与宏：展开的艺术与代价
 module: 'c'
 category: 计算机科学

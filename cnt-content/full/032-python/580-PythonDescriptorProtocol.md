@@ -1,12 +1,12 @@
 ---
-order: 410
+order: 430
 title: "描述符深水区：__set_name__、__delete__ 与完整查找顺序"
 module: 'python'
 category: 后端技术
 difficulty: advanced
 description: "拆开 570 立起的黑盒：__set_name__ 的类创建时机、__delete__ 与删除拦截、四层查找顺序（数据描述符 > 实例字典 > 非数据描述符 > 类属性）逐级实验、方法绑定的真相、cached_property 复刻与微型 ORM 字段施工，附 NoneType 与实例串扰调试实录。"
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'python/570-Descriptor'
   - 'python/500-Decorator'

@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 430
 title: 编译原理
 module: 'cs-fundamentals'
 category: 计算机科学

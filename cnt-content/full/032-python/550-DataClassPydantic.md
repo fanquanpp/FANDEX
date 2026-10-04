@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 400
 title: 数据类与 Pydantic：字段声明之后，谁来校验
 module: 'python'
 category: 后端技术

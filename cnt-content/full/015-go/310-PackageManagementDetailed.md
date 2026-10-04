@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 320
 title: 包管理详解
 module: 'go'
 category: 后端技术

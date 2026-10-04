@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: Go 接口与组合
 module: 'go'
 category: 后端技术

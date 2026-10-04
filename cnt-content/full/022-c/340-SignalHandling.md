@@ -1,5 +1,5 @@
 ---
-order: 350
+order: 360
 title: 信号处理：异步事件的捕获与纪律
 module: 'c'
 category: 计算机科学

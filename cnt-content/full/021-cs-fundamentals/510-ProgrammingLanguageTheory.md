@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 520
 title: 编程语言理论
 module: 'cs-fundamentals'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 260
 title: 位域：把结构体压到比特级及其代价
 module: 'c'
 category: 计算机科学

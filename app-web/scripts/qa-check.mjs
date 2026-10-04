@@ -74,9 +74,13 @@ async function checkNoAbsoluteRootLinks() {
   let brokenCount = 0;
   await walkDir(DIST, '.html', async (full) => {
     const content = await readFile(full, 'utf-8');
-    const withoutCodeBlocks = content.replace(/<pre[\s\S]*?<\/pre>/g, '');
-    const broken = withoutCodeBlocks.match(/href="\/(?!FANDEX)[^"]+"/g);
-    if (broken) brokenCount += broken.length;
+    // 只检查真实 <a> 标签的 href：<pre> 剥离兜不住 <code>/shiki 转义文本里的
+    // 教学示例（如 nextjs 文档中的 <Link href="/about">），曾造成大量误报
+    const anchors = content.match(/<a\s[^>]*>/g) ?? [];
+    const broken = anchors
+      .map((tag) => tag.match(/href="([^"]*)"/)?.[1] ?? '')
+      .filter((href) => href.startsWith('/') && !href.startsWith('//') && !href.startsWith(BASE));
+    if (broken.length > 0) brokenCount += broken.length;
   });
   if (brokenCount === 0) pass('No absolute root links found');
   else warn(`Found ${brokenCount} potential absolute root links (may 404 on GitHub Pages)`);

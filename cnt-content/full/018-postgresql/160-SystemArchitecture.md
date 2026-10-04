@@ -6,7 +6,7 @@ category: 数据库
 difficulty: advanced
 description: PostgreSQL体系架构：进程模型、后台进程、共享内存、本地内存、查询处理流程与数据目录结构
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-09-29'
 related:
   - 'postgresql/470-ReplicationHA'
   - 'postgresql/190-LockMechanism'

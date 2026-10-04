@@ -6,7 +6,7 @@ category: 前端技术
 difficulty: intermediate
 description: package.json 全字段详解：exports 出口、engines、peerDependencies、包管理器脚本与 lint/format 工具链。
 author: fanquanpp
-updated: '2026-09-28'
+updated: '2026-09-29'
 related:
   - 'javascript/540-NpmManager'
   - 'vite/150-PnpmMonorepoOverview'

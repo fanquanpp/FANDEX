@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 590
 title: C 语言理论收束：抽象机、别名与未定义行为
 module: 'c'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 250
 title: 布局深水区：成员排序、跨平台与序列化陷阱
 module: 'c'
 category: 计算机科学

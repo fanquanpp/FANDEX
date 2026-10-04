@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 520
 title: Go 与分布式追踪：一次请求到底慢在哪一跳
 module: 'go'
 category: 后端技术

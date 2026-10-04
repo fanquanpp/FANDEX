@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 350
 title: DNS 解析流程
 module: 'cs-fundamentals'
 category: 计算机科学

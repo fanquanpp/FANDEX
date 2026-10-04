@@ -82,6 +82,36 @@ prerequisites:
 
 挑战题（不看提示）：制作一个含三枚图标（播放、暂停、停止，各用基本形状拼出）的图标库文件，要求：定义各一次、使用处横排三个 40x40 格、每个图标带中文 title。验收：浏览器 300% 缩放锐利、悬停出现提示。
 
+先自己动手或写下预测，再展开参考答案对照：
+
+<details>
+<summary>参考答案（先自己写，再展开对照）</summary>
+
+预测题：第一个方块是 **blue**，第二个是 **red**。第一个矩形显式声明了 fill="blue"，组属性对它无效——显式声明优先于继承；第二个没写 fill，继承组的 red。这正是第 2 节「定义一次、样式继承」的边界：继承只填空位，不搞推翻。
+
+修改题：把 defs 里的 circle 改为不带 fill（`<circle id="dot" cx="10" cy="10" r="8" />`），前四个 use 写 `fill="#999999"`、后两个写 `fill="#22AA55"`。原理与预测题同源：defs 里不声明 fill，颜色这一格是空的，使用处才有机会填；只要 defs 里写了显式 fill，use 上怎么覆盖都无效。
+
+修 Bug 题：两个检查点，按命中概率排序——其一，id 与 href 的大小写或拼写不一致（icon-search 与 iconSearch 是两个 id，use 引用失效时不报错、静默空白）；其二，目标是否真的在 `<defs>` 内部且 id 全文档唯一（重复 id 时 use 只认第一个，若第一个被藏在别处或被裁剪就渲染异常）。验证手段：浏览器 Elements 面板展开 use 的影子树，看它实际引用到了什么。
+
+挑战题参考骨架（形状细节可自由发挥，验收看三条硬标准）：
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" width="120" height="40" viewBox="0 0 120 40">
+  <defs>
+    <g id="icon-play"><polygon points="14,10 30,20 14,30" /></g>
+    <g id="icon-pause"><rect x="12" y="10" width="6" height="20" /><rect x="22" y="10" width="6" height="20" /></g>
+    <g id="icon-stop"><rect x="12" y="12" width="16" height="16" /></g>
+  </defs>
+  <use href="#icon-play" x="0" fill="#39C5BB"><title>播放</title></use>
+  <use href="#icon-pause" x="40" fill="#39C5BB"><title>暂停</title></use>
+  <use href="#icon-stop" x="80" fill="#39C5BB"><title>停止</title></use>
+</svg>
+```
+
+要点核对：三个图标各定义一次，使用处只给 x 偏移（0/40/80 正好三个 40x40 格）；title 作为 use 的子元素提供悬停文案；填充色在使用处统一给，未来换主题色只改三行。300% 缩放锐利无需任何操作——矢量放大不损失清晰度，这是 SVG 对位图图标的根本优势。
+
+</details>
+
 ## 7. 什么时候应该 / 不应该这样组织
 
 应该：同一形状复用两次以上立刻上 defs/use；成组的装饰元素用 g 管理；独立 .svg 保留 xmlns；给信息性图形配 title。

@@ -179,6 +179,84 @@ func is_onesec_passed() -> bool:
 2. 写一个"倒计时三连"：连续三次 await `get_tree().create_timer(1.0).timeout`，每次打印剩余秒数，最后返回 true。再把三次循环改成一个 while 循环版本。
 3. 模拟"谁在说话要到运行时才知道"：两个节点各声明 speaker_changed(name: String) 信号，第三个节点用 Callable.bind() 把"来源标记"绑定进同一个回调，打印是谁发出的。
 
+每题先自己动手，写完再展开参考实现对照：
+
+<details>
+<summary>练习 1 参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+signal export_progress(percent: int)
+
+func _ready() -> void:
+    export_progress.connect(_on_progress, CONNECT_DEFERRED)
+    _fake_export()
+
+func _fake_export() -> void:
+    for percent in [10, 20, 30, 40, 50, 60, 70, 80, 90, 100]:
+        export_progress.emit(percent)
+
+func _on_progress(percent: int) -> void:
+    print("progress %d%%, frame=%d" % [percent, Engine.get_process_frames()])
+```
+
+对照要点：DEFERRED 连接下，同一帧里 emit 十次，回调全部排在帧末才依次执行——打印的帧号全部相同且晚于发射帧，这就是"延迟到帧末"的可观测证据；若去掉 CONNECT_DEFERRED 再跑一遍，帧号会随发射逐次递增。这个对照实验是理解两种触发时机的最快路径。
+
+</details>
+
+<details>
+<summary>练习 2 参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+func countdown_three() -> bool:
+    for remain in [3, 2, 1]:
+        await get_tree().create_timer(1.0).timeout
+        print("%d..." % remain)
+    print("GO")
+    return true
+
+func countdown_while(seconds: int) -> bool:
+    while seconds > 0:
+        await get_tree().create_timer(1.0).timeout
+        print("%d..." % seconds)
+        seconds -= 1
+    print("GO")
+    return true
+```
+
+对照要点：两个版本行为一致，说明 for 写死次数与 while 由参数控制次数只是同一协程的两种组织方式；真正的新知识是"一个函数里可以多次 await"——每次 await 都是一次暂停与恢复，函数状态（局部变量 remain、seconds）在暂停期间完整保留，这就是协程的直观感受。
+
+</details>
+
+<details>
+<summary>练习 3 参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+# speaker_a.gd / speaker_b.gd（两个节点各一份，脚本可以相同）
+signal speaker_changed(name: String)
+
+func say() -> void:
+    speaker_changed.emit(name)
+```
+
+```gdscript
+# hub.gd：第三个节点
+extends Node
+
+@onready var speaker_a: Node = $SpeakerA
+@onready var speaker_b: Node = $SpeakerB
+
+func _ready() -> void:
+    speaker_a.speaker_changed.connect(_on_speaker.bind("A"))
+    speaker_b.speaker_changed.connect(_on_speaker.bind("B"))
+
+func _on_speaker(speaker_name: String, source: String) -> void:
+    print("%s says: %s" % [source, speaker_name])
+```
+
+对照要点：回调参数顺序是"信号自身的参数在前，bind 追加的在后"——speaker_name 是信号给的，source 是绑定的；两个来源连同一个回调，运行时才区分出是谁。如果哪天要在运行时动态增删发言者，这个模式不用改回调一行代码，新增者自己 connect 加 bind 即可，解耦的好处立刻可见。
+
+</details>
+
 ## 下一步
 
 - 信号的引擎侧视角（编辑器连线、观察者模式）：godot 模块 040 篇；

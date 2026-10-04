@@ -128,6 +128,57 @@ flowchart TD
     H --> I[运行并用 CharacterBody2D 验证碰撞]
 ```
 
+## 动手练习
+
+练习一（点击建造模式）。任务：把文中"鼠标点击放置图块"的示例扩展成建造模式——左键放置图块，右键擦除该格，鼠标移动时实时打印当前悬停的格子坐标（格式如 `(3, 7)`）。提示：右键是 `MOUSE_BUTTON_RIGHT`；悬停格子不需要事件，_process 里直接换算即可。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+extends TileMapLayer
+
+func _unhandled_input(event: InputEvent) -> void:
+    if event is InputEventMouseButton and event.pressed:
+        var cell := _mouse_cell()
+        if event.button_index == MOUSE_BUTTON_LEFT:
+            set_cell(cell, 0, Vector2i(1, 3))   # 放置
+        elif event.button_index == MOUSE_BUTTON_RIGHT:
+            erase_cell(cell)                     # 擦除
+
+func _process(_delta: float) -> void:
+    var cell := _mouse_cell()
+    print("(%d, %d)" % [cell.x, cell.y])
+
+func _mouse_cell() -> Vector2i:
+    return local_to_map(to_local(get_global_mouse_position()))
+```
+
+对照要点：把"全局鼠标坐标换格子"收进 _mouse_cell() 一个函数，放置、擦除、悬停三处共用，改动换算逻辑只改一处；擦除用 erase_cell 而不是 set_cell(cell, -1, ...)，语义更清楚。注意 _process 里每帧 print 只是练习用，真项目里请删掉或改成绘制高亮。
+
+</details>
+
+练习二（图块统计）。任务：写 `func count_tiles(source_id: int, atlas_coords: Vector2i) -> int`，返回某枚图块在整层被使用的次数——背包材料统计、成就"铺设 1000 块路"都靠它。提示：get_used_cells 拿到全部非空格子，再逐格读出该格的图集坐标与来源比对。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```gdscript
+func count_tiles(source_id: int, atlas_coords: Vector2i) -> int:
+    var count := 0
+    for cell in get_used_cells():
+        if get_cell_source_id(cell) == source_id \
+                and get_cell_atlas_coords(cell) == atlas_coords:
+            count += 1
+    return count
+```
+
+对照要点：判断两枚 Vector2i 相等可以直接用 ==，不必逐字段比；只用 get_used_cells 做外层遍历，空格子天然被排除。想验证正确性，先用矩形工具铺 5 行 4 列共 20 枚同款图块，打印 count_tiles 应得 20。
+
+</details>
+
+练习三（实验：验证 map_to_local 返回的是格心）。任务：铺一条水平连续图块带，运行时依次打印 (0, 0)、(1, 0)、(2, 0) 三格的 map_to_local 结果，从输出推断两个结论：返回值是格心还是左上角？相邻两格返回值的差与图块尺寸是什么关系？参考结论：设图块 16x16，三格输出约为 (8, 8)、(24, 8)、(40, 8)——第一格"左上角在原点"的中心是 (8, 8)，证明返回格心；相邻差值 16 恰等于图块宽度，说明换算以格心为锚点。跑出结果前先写下你的预测，预测与实测一致才算过关。
+
 ## 小结
 
 TileSet 管"有什么图块、带什么碰撞"，TileMapLayer 管"哪层地图、每格放什么"。编辑器里靠画笔、桶填充和 Terrains 快速铺图；代码里靠 local_to_map 与 map_to_local 在像素与格子之间换算，靠 set_cell 与 set_cells_terrain_connect 精确写入。记住三个数字与一个习惯：坐标范围 -32768 到 32767、physics_quadrant_size 默认 16、瓦片更新在帧末批量完成，以及 changed 信号用 call_deferred 兜住。搭好关卡后，把上一篇的 CharacterBody2D 扔进去跑一圈，碰撞合不合手一试便知。

@@ -62,7 +62,6 @@ const moduleColorStyle = moduleColor ? `--module-color:${moduleColor}` : undefin
     title={doc.data.title}
     description={doc.data.description}
     canonical={new URL(Astro.url.pathname, Astro.site).href}
-    publishedDate={doc.data.updated || undefined}
     modifiedDate={doc.data.updated || undefined}
     breadcrumb={breadcrumb}
   />

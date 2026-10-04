@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 280
 title: 内存对齐
 module: 'go'
 category: 后端技术
