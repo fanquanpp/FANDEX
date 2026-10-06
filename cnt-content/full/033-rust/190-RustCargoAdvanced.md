@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 220
 title: Cargo 进阶
 module: 'rust'
 category: 后端技术

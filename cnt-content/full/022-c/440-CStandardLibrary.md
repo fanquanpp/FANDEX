@@ -1,5 +1,5 @@
 ---
-order: 460
+order: 480
 title: C 标准库速查手册
 module: 'c'
 category: 计算机科学

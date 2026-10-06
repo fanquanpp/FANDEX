@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 570
 title: 分布式事务：XA 两阶段提交与它的替代品
 module: 'mysql'
 category: 数据库

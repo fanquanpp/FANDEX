@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 240
 title: C++ 面向对象基础
 module: 'cpp'
 category: 计算机科学

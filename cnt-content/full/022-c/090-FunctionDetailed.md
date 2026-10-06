@@ -122,7 +122,7 @@ error: too few arguments to function 'average'; expected 2, have 1
 
 这就是原型的价值：类型不对、个数不对，编译器替你盯住。反过来，如果连原型和定义都没有，老编译器会**猜**一个 `int average()` 敷衍过去——C 标准在 C99 就废除了这种隐式函数声明，如今的编译器在 C99 及以后的方言下直接按**错误**处理，先声明后使用是硬规矩。多文件时原型进头文件，机制见 [多文件编译](/c/310-MultiFileCompilation)。
 
-C23 又收紧了一步：空括号声明 `int foo();` 从「参数未指定」变成等价 `int foo(void)`，K&R 旧式定义（参数表外置那种）被移除。新代码请一律写 `(void)` 表示无参，口径与 [C23 与 C2y](/c/520-C23C2y) 一致。
+C23 又收紧了一步：空括号声明 `int foo();` 从「参数未指定」变成等价 `int foo(void)`，K&R 旧式定义（参数表外置那种）被移除。新代码请一律写 `(void)` 表示无参，口径与 [C23 与 C2y](/c/520-C23CoreFeatures) 一致。
 
 ## 3. 传值：形参是实参的复印件
 
@@ -380,7 +380,7 @@ int binary_search(const int a[], int low, int high, int target);
 
 - 往前：[控制流](/c/080-ControlFlow) 的骨架活在函数体内，return 那个「最常用的出口」在本文兑现成函数的返回机制；[变量与常量](/c/050-VariableConstant) 的局部变量是每层栈帧的住户；
 - 旁支：作用域与 static/extern 的完整语义在 [作用域、存储期与链接性](/c/055-ScopeStorageLinkage)；传地址的钥匙在 [指针深度解析](/c/140-PointerDeep)；数组传参为何退化为指针在 [指针与数组的区别](/c/150-PointerArrayDifference)；调用瞬间栈上发生了什么在 [函数调用栈帧](/c/250-FunctionCallStackFrame)；
-- 往后：可变参数在 [可变参数函数](/c/100-VarargsFunction) 详解；函数指针与回调在 [函数指针与回调](/c/170-FunctionPointerCallback)；原型进头文件、多文件组织在 [多文件编译](/c/310-MultiFileCompilation)；C23 对函数声明的收紧在 [C23 与 C2y](/c/520-C23C2y)。
+- 往后：可变参数在 [可变参数函数](/c/100-VarargsFunction) 详解；函数指针与回调在 [函数指针与回调](/c/170-FunctionPointerCallback)；原型进头文件、多文件组织在 [多文件编译](/c/310-MultiFileCompilation)；C23 对函数声明的收紧在 [C23 与 C2y](/c/520-C23CoreFeatures)。
 
 ## 12. 官方文档
 

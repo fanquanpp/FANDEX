@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 400
 title: 网络自动化
 module: 'networking'
 category: 云与基础设施
@@ -12,8 +12,7 @@ related:
   - 'networking/100-DNSDHCP'
   - 'networking/210-LoadBalanceAlgorithm'
   - 'networking/250-KeepalivedDualHotStandby'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 前置知识：设备配置的标准化接口与 Ansible/Nornir 用法见

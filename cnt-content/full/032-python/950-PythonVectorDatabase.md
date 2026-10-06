@@ -1,5 +1,5 @@
 ---
-order: 780
+order: 890
 title: Python 与向量数据库
 module: 'python'
 category: 后端技术
@@ -10,8 +10,7 @@ updated: '2026-10-05'
 related:
   - 'python/870-PythonOAuth2'
   - 'python/910-PythonWebSocket'
-  - 'python/710-PythonAdvancedLatestFeature'
-  - 'python/170-ComprehensionGenerator'
+  - 'python/715-PythonVersionNewFeatures'
 prerequisites: []
 ---
 

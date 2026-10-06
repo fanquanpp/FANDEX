@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 310
 title: volatile 深水区：优化器、寄存器与信号
 module: 'c'
 category: 计算机科学
@@ -13,18 +13,18 @@ related:
   - 'c/550-EmbeddedCProgramming'
   - 'c/560-CAssemblyInteraction'
 prerequisites:
-  - 'c/260-CVolatileAndConstDeepDive'
+  - 'c/260-ConstAndVolatileQualifiers'
   - 'c/340-SignalHandling'
 ---
 
 ## 前置知识
 
-- 已完成 [const 与 volatile](/c/260-CVolatileAndConstDeepDive)：知道 volatile 的定义（每次访问都是可观察副作用）、三大经典场景与「不原子、不排序、不当锁」的结论；
+- 已完成 [const 与 volatile](/c/260-ConstAndVolatileQualifiers)：知道 volatile 的定义（每次访问都是可观察副作用）、三大经典场景与「不原子、不排序、不当锁」的结论；
 - 已完成 [信号处理](/c/340-SignalHandling)：用过 signal/sigaction 注册处理器，见过 SIGINT、SIGTERM。
 
 本文会现场重演 volatile 缺席时的每一次事故，结论记不全也能往下读。
 
-> 分工说明：volatile 的**定义与三大场景的标准模式**在 [const 与 volatile](/c/260-CVolatileAndConstDeepDive) 建立完毕。本篇是深水区：从编译器优化视角回答「为什么非 volatile 会被吃掉」，用 `-O0`/`-O2` 汇编对照与三起误用事故验证边界，最后给出 volatile、`_Atomic`、互斥锁的职责对照表。const 指针三组合的语法归 [指针深度解析](/c/140-PointerDeep)，并发原语的系统讲解归 [C 原子操作与内存模型](/c/380-AtomicAndMemoryModel)。
+> 分工说明：volatile 的**定义与三大场景的标准模式**在 [const 与 volatile](/c/260-ConstAndVolatileQualifiers) 建立完毕。本篇是深水区：从编译器优化视角回答「为什么非 volatile 会被吃掉」，用 `-O0`/`-O2` 汇编对照与三起误用事故验证边界，最后给出 volatile、`_Atomic`、互斥锁的职责对照表。const 指针三组合的语法归 [指针深度解析](/c/140-PointerDeep)，并发原语的系统讲解归 [C 原子操作与内存模型](/c/380-AtomicAndMemoryModel)。
 
 ## 学习目标
 
@@ -224,7 +224,7 @@ gcc -Wall -Wextra -O2 -Dvolatile= fake_mmio.c -o fake_broken -pthread
 ./fake_broken
 ```
 
-预期输出：程序挂死，Ctrl+C 退出——第 1 节的死循环换了一身衣服。轮询位检测（`& 0x1u`）是 MMIO 读侧的状态机骨架：volatile 保证每一圈都真实读寄存器，位运算负责解析语义（[位运算与位域](/c/070-BitwiseBitField)）。
+预期输出：程序挂死，Ctrl+C 退出——第 1 节的死循环换了一身衣服。轮询位检测（`& 0x1u`）是 MMIO 读侧的状态机骨架：volatile 保证每一圈都真实读寄存器，位运算负责解析语义（[位运算与位域](/c/070-BitwiseOperationAndMask)）。
 
 ### 3.2 写触发的死存储实验
 
@@ -508,8 +508,8 @@ unsigned int *q = (unsigned int *)fifo;    /* 强转：拦不住，此后 *q 不
 
 ## 10. 与之前和之后的知识的关系
 
-- 往前：[const 与 volatile](/c/260-CVolatileAndConstDeepDive) 给出定义与场景，本篇补上「为什么」与「错会怎样」；
-- 旁支：[信号处理](/c/340-SignalHandling) 讲信号 API 全集，本篇只取共享变量的角度；[C 汇编交互](/c/560-CAssemblyInteraction) 接住 2.3 节的编译器屏障；[静态分析与调试](/c/490-StaticAnalysisDebug) 的 TSan 能把 6.1、6.2 的数据竞争当场揪出；
+- 往前：[const 与 volatile](/c/260-ConstAndVolatileQualifiers) 给出定义与场景，本篇补上「为什么」与「错会怎样」；
+- 旁支：[信号处理](/c/340-SignalHandling) 讲信号 API 全集，本篇只取共享变量的角度；[C 汇编交互](/c/560-CAssemblyInteraction) 接住 2.3 节的编译器屏障；[静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers) 的 TSan 能把 6.1、6.2 的数据竞争当场揪出；
 - 往后：[C 原子操作与内存模型](/c/380-AtomicAndMemoryModel) 与 [线程与并发](/c/360-ThreadConcurrency) 是「算得对、排得对」的正解所在。
 
 ## 11. 官方文档

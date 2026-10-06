@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 450
 title: 网络与安全进阶
 module: 'devops'
 category: 云与基础设施
@@ -8,8 +8,7 @@ description: 网络与安全进阶：零信任网络、服务网格安全、证�
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'devops/180-GitOpsCD'
-  - 'devops/300-MonitorAndAlert'
+  - 'devops/240-MonitorAndObservability'
   - 'devops/410-DatabaseOps'
   - 'devops/060-DockerfileMultiBuild'
 prerequisites:

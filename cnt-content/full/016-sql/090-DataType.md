@@ -1,690 +1,218 @@
 ---
-order: 90
-title: 数据类型
+order: 100
+title: 数据类型选型
 module: 'sql'
 category: 数据库
 difficulty: intermediate
-description: SQL数据类型体系：数值类型、字符串类型、日期时间类型、JSON类型、空间类型的语法、存储与最佳实践
+description: 从逻辑设计到物理实现：金额用 DECIMAL、中文用 utf8mb4 与 CHAR_LENGTH、CHAR vs VARCHAR、日期四类型——每个字段的类型决策课
 author: fanquanpp
-updated: '2026-09-13'
+updated: '2026-10-05'
 related:
-  - 'sql/330-PLSQLStoredProcedure'
-  - 'sql/450-SQLPracticeInterview'
   - 'sql/100-Constraint'
-  - 'sql/080-SelectExecutionOrder'
+  - 'sql/110-DDL'
+  - 'sql/065-BuiltInFunctions'
 prerequisites:
   - 'sql/020-OverviewStandard'
 ---
 
-## 前置知识
+## 知识点地图
 
-建议先阅读以下内容再进入本文：
+- **知识类别**：SQL DDL / 数据类型选型（类型清单可查任何手册，本篇教"怎么选"）。
+- **解决什么问题**：建表时每个字段都要回答"什么类型、多长"。选错的账单是延迟到三个月后收的：金额对不上（FLOAT）、手机号丢了前导零（INT）、中文长度校验全错（LENGTH）。
+- **什么时候用到**：新表设计（从逻辑设计到物理实现的落地环节）、老表体检、跨库迁移的类型映射。
+- **练习素材**：商品管理系统"任务单 1"的十张表结构（部门/岗位/员工/商品/客户/供应商/销售）——课堂任务就是给字段填类型，本篇把这套判断标准讲全。
 
-- [概述与标准](/sql/020-OverviewStandard)
+## 心智模型：选型四问
 
-## 1. 数据类型概述
+给每个字段过一遍：
 
-SQL 数据类型定义了列、参数和表达式可以存储的数据种类及其操作。合理选择数据类型直接影响存储效率、查询性能和数据完整性。
+```text
+1. 它参与算术吗？      参与 → 数值族；金额/费率必须 DECIMAL
+2. 它有固定长度吗？    定长（国家码、性别）→ CHAR；变长 → VARCHAR
+3. 它参与比较排序吗？  日期时间别存字符串，用原生类型
+4. 最小够用是什么？    值域确定就用小类型（SMALLINT/TINYINT）
+```
 
-### 1.1 数据类型分类
+原则一句话：**精确优先、够用最小、原生优先于字符串**。
 
-| 类别       | 典型类型                             | 用途           |
-| ---------- | ------------------------------------ | -------------- |
-| 数值类型   | INTEGER, DECIMAL, FLOAT, DOUBLE      | 数值计算与存储 |
-| 字符串类型 | CHAR, VARCHAR, TEXT, CLOB            | 文本数据       |
-| 日期时间   | DATE, TIME, TIMESTAMP, INTERVAL      | 时间相关数据   |
-| 布尔类型   | BOOLEAN                              | 逻辑真/假      |
-| JSON 类型  | JSON, JSONB                          | 半结构化数据   |
-| 空间类型   | GEOMETRY, POINT, LINESTRING, POLYGON | 地理空间数据   |
-| 二进制类型 | BLOB, BINARY, VARBINARY              | 二进制大对象   |
-
-### 1.2 类型选择原则
-
-- **最小化原则**：选择能满足需求的最小数据类型，减少存储和 I/O 开销
-- **精确性原则**：货币等精确数值使用 `DECIMAL`，避免浮点精度丢失
-- **兼容性原则**：考虑跨数据库的 SQL 标准兼容性
-
-## 2. 数值类型
-
-### 2.1 精确数值类型
-
-| 类型          | 字节 | 范围                    | 说明         |
-| ------------- | ---- | ----------------------- | ------------ |
-| SMALLINT      | 2    | $-32768 \sim 32767$     | 小整数       |
-| INTEGER / INT | 4    | $-2^{31} \sim 2^{31}-1$ | 标准整数     |
-| BIGINT        | 8    | $-2^{63} \sim 2^{63}-1$ | 大整数       |
-| DECIMAL(p, s) | 变长 | 取决于精度              | 精确小数     |
-| NUMERIC(p, s) | 变长 | 同 DECIMAL              | SQL 标准别名 |
-
-**DECIMAL 精度说明**：
-
-- `p`（precision）：总位数，不含小数点，范围 1~38（标准）或更大（实现相关）
-- `s`（scale）：小数位数，$0 \le s \le p$
+## 决策一：金额与精度——DECIMAL vs FLOAT
 
 ```sql
--- 货币存储：精确到分
-CREATE TABLE products (
-    price DECIMAL(10, 2)  -- 最大 99999999.99
-);
+-- 错误示范：FLOAT 存金额
+CREATE TABLE bad_pay (amount FLOAT);
+INSERT INTO bad_pay VALUES (0.1);
+SELECT SUM(amount) FROM bad_pay;   -- 多加几行 0.1 后：0.3000000094（二进制表示误差）
 
--- 科学测量：精确到微米
-CREATE TABLE measurements (
-    length DECIMAL(12, 6)  -- 最大 999999.999999
+-- 正确：DECIMAL 定点数
+CREATE TABLE sales_info (
+    sale_id    INT AUTO_INCREMENT PRIMARY KEY,
+    unit_price DECIMAL(10,2) NOT NULL,     -- 总位数 10，小数 2 位：最大 99999999.99
+    quantity   INT NOT NULL,
+    total      DECIMAL(12,2) GENERATED ALWAYS AS (unit_price * quantity) STORED
 );
 ```
 
-### 2.2 近似数值类型
+为什么 FLOAT 会出错：FLOAT/DOUBLE 是二进制浮点，0.1 在二进制里是无限循环小数，存进去的就是近似值；DECIMAL 是十进制定点数，`DECIMAL(10,2)` 精确到分。判型口诀：**钱的字段一律 DECIMAL**；科学计算、传感器采样（允许误差）才用 DOUBLE；百分比/权重这类中间量也建议 DECIMAL，免得汇总会漂。
 
-| 类型             | 字节 | 精度      | 范围                                            |
-| ---------------- | ---- | --------- | ----------------------------------------------- |
-| REAL / FLOAT     | 4    | 6 位有效  | $-3.4 \times 10^{38} \sim 3.4 \times 10^{38}$   |
-| DOUBLE PRECISION | 8    | 15 位有效 | $-1.7 \times 10^{308} \sim 1.7 \times 10^{308}$ |
+位数设计：`DECIMAL(总位, 小数位)`。金额按"最大值会到多少"倒推——单价 8 位整数 + 2 位小数够绝大多数商品；汇总金额给 12-14 位留余量。
 
-> **注意**：浮点类型遵循 IEEE 754 标准，存在精度丢失问题。比较浮点数时需使用容差：
+## 决策二：中文与长度——utf8mb4 与两个 LENGTH
 
 ```sql
--- 错误：浮点等值比较
-SELECT * FROM sensors WHERE reading = 0.1;
+-- 建库建表显式 utf8mb4（MySQL 的"utf8"实为 3 字节 utf8mb3）
+CREATE DATABASE CommInfo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
--- 正确：使用容差范围
-SELECT * FROM sensors WHERE ABS(reading - 0.1) < 1e-9;
+-- 两个长度函数的口径差
+SELECT LENGTH('洛天依'), CHAR_LENGTH('洛天依');
+-- utf8mb4 下：9 与 3（每个汉字 3 字节）
+
+-- VARCHAR 定义的是"字符数"上限
+ALTER TABLE vsinger ADD COLUMN nickname VARCHAR(20);   -- 最多 20 个字，中文英文一视同仁
 ```
 
-### 2.3 自增类型
+三连坑：
 
-```sql
--- SQL 标准自增
-CREATE TABLE users (
-    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    name VARCHAR(100)
-);
+1. **建库用 utf8 而不是 utf8mb4**：用户昵称里一个生僻字或 emoji 直接写入报错或被截断——事故修复要 `ALTER DATABASE ... CONVERT TO CHARACTER SET utf8mb4`，大表上这是停机操作；
+2. **长度校验用 LENGTH**：`WHERE LENGTH(name) <= 2` 想找"两字名"，实际找的是"6 字节以内"——中文场景校验口径一律 `CHAR_LENGTH`（见[内置函数](/sql/065-BuiltInFunctions)）；
+3. **VARCHAR(255) 迷信**：255 来自"1 字节长度前缀"的历史优化，现代存储引擎无所谓。长度按业务真实上限给（手机号 11、身份证 18、姓名 50），过长的 VARCHAR 在复合索引与内存排序里全是浪费。
 
--- 兼容写法（MySQL AUTO_INCREMENT, PostgreSQL SERIAL）
-CREATE TABLE orders (
-    id BIGINT AUTO_INCREMENT PRIMARY KEY  -- MySQL
-);
+## 决策三：CHAR vs VARCHAR
+
+| | CHAR(N) | VARCHAR(N) |
+| --- | --- | --- |
+| 存储 | 定长 N（不足补空格） | 实际长度 + 1-2 字节前缀 |
+| 适合 | 国家码 CHAR(2)、性别 CHAR(1)、哈希值 CHAR(32/64) | 姓名、地址、邮箱等一切变长 |
+| 尾随空格 | 取出时可能被裁（方言差异） | 原样保留 |
+
+判定：**99% 的场景是 VARCHAR**。CHAR 只在"长度恒定 + 频繁等值比较"时赚一点（无长度前缀、比较快）。商品管理系统的真实笔误案例：`Employees_sex char(2)`——用 CHAR 存性别没问题，但要注意插入 `'男'` 时 2 字节的定长存储对 utf8mb4 中文是"1 字符"，定义与心智模型容易错位，这类字段用 `CHAR(1)` + CHECK 或 ENUM 更诚实。
+
+## 决策四：整数与小整数
+
+```text
+TINYINT   1 字节   -128~127        状态、开关（0/1 用 TINYINT(1)）
+SMALLINT  2 字节   -3.2万~3.2万    年份、数量上限几百几千
+MEDIUMINT 3 字节   838万
+INT       4 字节   21亿            用户量、订单量
+BIGINT    8 字节   极大            雪花 ID、流水号
 ```
 
-## 3. 字符串类型
+选型即任务单 1 的答案：部门数量 SMALLINT 足够、销售数量 INT、单据号 BIGINT。两个注意：
 
-### 3.1 定长与变长字符串
+- **无符号**（MySQL `INT UNSIGNED`）能翻倍正数上限，但跨库迁移要留意 PG 没有 unsigned，统一用有符号 + 约束更可移植；
+- **手机号/身份证永远不是整数**：前导零会丢（0137...），位数会溢出（BIGINT 也存不下 18 位身份证的校验位 X），它们是**字符串** `CHAR(11)`/`CHAR(18)` + 正则 CHECK（商品管理系统给出了 `REGEXP '^[0-9]{17}[0-9X]$'` 的标准写法）。
 
-| 类型        | 最大长度 | 说明                    |
-| ----------- | -------- | ----------------------- |
-| CHAR(n)     | n 字符   | 定长，不足补空格        |
-| VARCHAR(n)  | n 字符   | 变长，按实际存储        |
-| TEXT / CLOB | 无限制   | 大文本，SQL 标准为 CLOB |
+## 决策五：日期时间四类型
 
-**CHAR vs VARCHAR 选择**：
+| 类型 | 格式 | 范围/特点 | 用途 |
+| --- | --- | --- | --- |
+| DATE | 2026-10-07 | 只有日期 | 生日、入职日 |
+| TIME | 14:30:00 | 只有时间 | 营业时段 |
+| DATETIME | 日期+时间 | 1000-9999 年，**无时区** | 本地业务时间 |
+| TIMESTAMP | 日期+时间 | 1970-2038（MySQL），**随会话时区转换** | 全球化记录的 created_at |
 
-- 长度恒定的数据（如国家代码 `CHAR(2)`、MD5 `CHAR(32)`）使用 `CHAR`
-- 长度变化的数据使用 `VARCHAR`，避免尾部空格浪费
+判定口诀：**只有"某天"用 DATE；要精确到秒且跨时区口径的用 TIMESTAMP（PG 用 timestamptz）；MySQL 的 TIMESTAMP 有 2038 上限与隐式时区转换，纯国内系统存 DATETIME + 应用层统一 UTC 是更简单的心智**。商品管理系统的 `Hiredate datetime default now()` 是标准写法；`ON UPDATE CURRENT_TIMESTAMP` 让 updated_at 自动刷新——但"自动更新"藏在表结构里，评审时容易漏看，团队约定优于魔法。
+
+## 决策六：别用字符串存结构化数据
 
 ```sql
-CREATE TABLE customers (
-    country_code CHAR(2),        -- 固定2位国家代码
-    name VARCHAR(100),           -- 变长姓名
-    bio TEXT                     -- 不限长度简介
-);
+-- 反模式：逗号拼接多值（违反 1NF，见关系设计篇）
+CREATE TABLE bad_emp (skills VARCHAR(200));   -- 'Java,Python,Go'
+
+-- 正确 A：关联表（要按技能筛选/统计）
+CREATE TABLE employee_skill (emp_id INT, skill VARCHAR(30),
+  PRIMARY KEY (emp_id, skill));
+
+-- 正确 B：JSON 类型（整体读写、不按值查询时）
+ALTER TABLE vsinger ADD COLUMN profile JSON;
 ```
 
-### 3.2 国家字符集类型
+JSON 适合"整存整取的半结构化附件"；一旦出现 `WHERE JSON_EXTRACT(...)` 的高频查询，说明它该是列或关联表（完整对比见 [SQL JSON](/sql/300-SqlJson)）。
 
-| 类型        | 说明                 |
-| ----------- | -------------------- |
-| NCHAR(n)    | 国家字符集定长字符串 |
-| NVARCHAR(n) | 国家字符集变长字符串 |
-| NCLOB       | 国家字符集大文本     |
+## 从任务单到 DDL：一张表的全流程演示
+
+拿任务单 1 的"员工表"走一遍四问：
 
 ```sql
--- 存储多语言文本
-CREATE TABLE i18n_messages (
-    msg_key VARCHAR(50),
-    content_zh NVARCHAR(500),   -- 中文
-    content_ja NVARCHAR(500)    -- 日文
-);
-```
-
-### 3.3 字符集与排序规则
-
-```sql
--- 指定字符集和排序规则
-CREATE TABLE articles (
-    title VARCHAR(200) CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci,
-    content TEXT CHARACTER SET utf8mb4
-);
-
--- 排序规则影响比较和排序
--- utf8mb4_general_ci: 不区分大小写，速度快
--- utf8mb4_unicode_ci: 不区分大小写，Unicode 正确排序
--- utf8mb4_bin: 区分大小写，二进制比较
-```
-
-## 4. 日期时间类型
-
-### 4.1 标准日期时间类型
-
-| 类型                     | 格式                      | 精度 | 范围                       |
-| ------------------------ | ------------------------- | ---- | -------------------------- |
-| DATE                     | YYYY-MM-DD                | 天   | 0001-01-01 ~ 9999-12-31    |
-| TIME                     | HH:MM:SS[.ffffff]         | 微秒 | 00:00:00 ~ 23:59:59.999999 |
-| TIMESTAMP                | YYYY-MM-DD HH:MM:SS[.fff] | 微秒 | 0001 ~ 9999 年             |
-| TIME WITH TIME ZONE      | 含时区偏移                | 微秒 | —                          |
-| TIMESTAMP WITH TIME ZONE | 含时区偏移                | 微秒 | —                          |
-
-```sql
-CREATE TABLE events (
-    event_date DATE,
-    event_time TIME(3),                    -- 精确到毫秒
-    created_at TIMESTAMP WITH TIME ZONE    -- 含时区
-);
-
--- 插入日期时间值
-INSERT INTO events VALUES (
-    DATE '2026-06-14',
-    TIME '14:30:00.123',
-    TIMESTAMP WITH TIME ZONE '2026-06-14 14:30:00+08:00'
+CREATE TABLE Employees_info (
+    Employees_id   CHAR(8)      PRIMARY KEY,              -- 编号：定长字符串
+    Employees_name VARCHAR(20)  NOT NULL,                 -- 姓名：变长
+    Employees_sex  CHAR(1)      NOT NULL DEFAULT '男'
+                   CHECK (Employees_sex IN ('男','女')),   -- 枚举：CHAR+CHECK
+    Identity_id    CHAR(18)     NOT NULL
+                   CHECK (Identity_id REGEXP '^[0-9]{17}[0-9X]$'),  -- 身份证：字符串+正则
+    Telephone      CHAR(11)     NULL,                     -- 手机号：字符串护前导零
+    Salary         DECIMAL(10,2) CHECK (Salary > 0),     -- 工资：DECIMAL
+    Post_id        CHAR(6)      NULL,
+    Hiredate       DATETIME     DEFAULT NOW(),            -- 入职：原生日期类型
+    FOREIGN KEY (Post_id) REFERENCES Post_info(Post_id)
 );
 ```
 
-### 4.2 INTERVAL 类型
+每个字段都是一个"为什么"：字符串护住前导零与校验位、DECIMAL 护住工资精度、CHECK 把非法性别与身份证拦在写入时、DATETIME 拒绝"用 VARCHAR 存日期"的偷懒。这张表跑通后，回头看任务单上剩下九张表，不过是同样四问的重复。
 
-`INTERVAL` 表示时间跨度，用于日期时间运算：
+## 常见困惑
+
+**"VARCHAR(50) 超长写入会怎样？"**——严格模式（MySQL 8.0 默认）报错截断拒绝；宽松模式静默截断+警告。生产环境确认 `sql_mode` 含 STRICT_TRANS_TABLES，宁可报错也别静默丢数据。
+
+**"TEXT 和 VARCHAR 什么区别？"**——TEXT 存在行外、不能设默认值、索引要前缀长度；能定长度的用 VARCHAR（上限 16383 字符在多数行格式内联存储），真的大文本（文章正文）才 TEXT。
+
+**"类型可以随便改吗？"**——不能。改类型见[表结构变更](/sql/110-DDL)的锁级别分级：改 VARCHAR 长度加宽通常快，收窄与跨族改（INT→VARCHAR）要重建，大表走在线变更工具。
+
+## 动手实践：给曲库表体检
+
+任务：
+
+1. 检查 vsinger/music 表的类型清单，找出三个"过大"或"字符串存数值"的嫌疑字段并给改型方案；
+2. 写一个实验证明 FLOAT 金额的累计误差（循环插入 0.1 共 1000 次，对比 DECIMAL）；
+3. 用 CHAR_LENGTH 给 nickname 做长度校验列，再用 LENGTH 跑一遍对比结果；
+4. 给 music 表加 release_date 字段：先判断 DATE 与 DATETIME 哪个对，写出 DDL 并说明理由。
+
+<details>
+<summary>参考实现（先自己写再展开）</summary>
 
 ```sql
--- 年-月间隔
-INTERVAL '3-2' YEAR TO MONTH     -- 3年2个月
+-- 1（示例判断：若某表用 INT 存电话/用 VARCHAR 存日期即为嫌疑）
+SELECT TABLE_NAME, COLUMN_NAME, DATA_TYPE, CHARACTER_MAXIMUM_LENGTH
+FROM INFORMATION_SCHEMA.COLUMNS
+WHERE TABLE_SCHEMA = DATABASE();
 
--- 日-时间隔
-INTERVAL '5 12:30:00' DAY TO SECOND  -- 5天12小时30分
-
--- 日期运算
-SELECT
-    DATE '2026-06-14' + INTERVAL '30' DAY AS thirty_days_later,
-    TIMESTAMP '2026-06-14 10:00:00' - INTERVAL '2' HOUR AS two_hours_ago;
-```
-
-### 4.3 时区处理最佳实践
-
-```sql
--- 推荐：存储 UTC 时间，查询时转换时区
-CREATE TABLE logs (
-    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+-- 2
+CREATE TYPE CHECK 对照：
+CREATE TABLE float_vs_dec (
+  f FLOAT NULL, d DECIMAL(10,2) NULL
 );
+INSERT INTO float_vs_dec SELECT 0.1, 0.1 FROM information_schema.columns LIMIT 1000;
+SELECT SUM(f), SUM(d) FROM float_vs_dec;
+-- SUM(f) ≈ 100.000014 左右；SUM(d) = 100.00 —— 误差肉眼可见
 
--- 查询时转换为本地时区
-SELECT created_at AT TIME ZONE 'Asia/Shanghai' AS local_time
-FROM logs;
+-- 3
+SELECT name, LENGTH(name) AS bytes, CHAR_LENGTH(name) AS chars FROM vsinger;
+-- 中文歌姬：bytes 是 chars 的 3 倍
+
+-- 4：发行日期只到天，DATE 足够；若要精确到发行时刻才 DATETIME
+ALTER TABLE music ADD COLUMN release_date DATE NULL;
 ```
 
-## 5. JSON 类型
+判读要点：任务 2 的误差量级随行数线性放大，千行 0.1 累计已经偏 1.4e-5，账务系统千万行就是肉眼可见的分账差异——这就是"金额禁用 FLOAT"的实验证据。
+</details>
 
-### 5.1 JSON 与 JSONB
+## 检验清单
 
-| 特性     | JSON             | JSONB             |
-| -------- | ---------------- | ----------------- |
-| 存储     | 文本原样存储     | 二进制解析后存储  |
-| 写入速度 | 快（无需解析）   | 慢（需解析转换）  |
-| 查询速度 | 慢（每次需解析） | 快（已解析）      |
-| 索引支持 | 有限             | 完整 GIN 索引支持 |
-| 空格保留 | 保留             | 不保留            |
-| 键顺序   | 保留             | 不保证            |
+- 能背出选型四问并为任意字段走一遍流程；
+- 能解释 FLOAT 存 0.1 出错的二进制原因，并默写 DECIMAL(p,s) 的含义；
+- 知道 MySQL "utf8" 是 utf8mb3、emoji 需要 utf8mb4，以及 LENGTH 与 CHAR_LENGTH 的口径；
+- 能为手机号/身份证/金额/年份各说出正确类型与理由；
+- 能对比 DATETIME 与 TIMESTAMP 的时区行为并做出选择；
+- 能识别"逗号拼接多值"反模式并给出两种正规替代。
 
-```sql
--- PostgreSQL JSONB
-CREATE TABLE api_logs (
-    id BIGSERIAL PRIMARY KEY,
-    payload JSONB,
-    created_at TIMESTAMP DEFAULT NOW()
-);
+## 下一步
 
--- 插入 JSON 数据
-INSERT INTO api_logs (payload) VALUES (
-    '{"user_id": 42, "action": "login", "meta": {"ip": "192.168.1.1"}}'
-);
+- [约束](/sql/100-Constraint)：类型选完，用约束把业务规则钉死；
+- [表结构变更](/sql/110-DDL)：类型选错之后的修正流程与锁代价；
+- [内置函数](/sql/065-BuiltInFunctions)：CHAR_LENGTH 等函数的正确打开方式。
 
--- JSON 查询操作符
-SELECT payload->>'user_id' AS user_id,          -- 文本提取
-       payload->'meta'->>'ip' AS ip,            -- 嵌套提取
-       jsonb_pretty(payload) AS formatted       -- 格式化输出
-FROM api_logs
-WHERE payload @> '{"action": "login"}'::jsonb;  -- 包含查询
-```
+## 参考与致谢
 
-### 5.2 JSON 路径查询（SQL:2016 标准）
-
-```sql
--- SQL/JSON 路径表达式
-SELECT *
-FROM api_logs
-WHERE payload ? '$.meta.ip ? (@ == "192.168.1.1")';
-
--- JSON_TABLE：将 JSON 转为关系表
-SELECT jt.user_id, jt.action
-FROM api_logs,
-     JSON_TABLE(payload, '$' COLUMNS (
-         user_id INTEGER PATH '$.user_id',
-         action  VARCHAR(50) PATH '$.action'
-     )) AS jt;
-```
-
-## 6. 空间数据类型
-
-### 6.1 OGC 简单要素模型
-
-SQL/MM 标准定义了空间数据类型层次：
-
-```mermaid
-flowchart TD
-    T0["GEOMETRY"]
-    T1["POINT"]
-    T2["CURVE"]
-    T3["LINESTRING"]
-    T4["CIRCULARSTRING"]
-    T5["SURFACE"]
-    T6["POLYGON"]
-    T7["CURVEPOLYGON"]
-    T8["GEOMETRYCOLLECTION"]
-    T9["MULTIPOINT"]
-    T10["MULTILINESTRING"]
-    T11["MULTIPOLYGON"]
-    T0 --> T1
-    T0 --> T2
-    T4 --> T5
-    T7 --> T8
-    T8 --> T9
-    T8 --> T10
-    T8 --> T11
-```
-
-### 6.2 空间类型使用
-
-```sql
--- PostgreSQL + PostGIS
-CREATE TABLE locations (
-    id SERIAL PRIMARY KEY,
-    name VARCHAR(100),
-    geom GEOMETRY(Point, 4326)    -- SRID 4326 = WGS84
-);
-
--- 插入空间数据
-INSERT INTO locations (name, geom) VALUES (
-    '天安门',
-    ST_SetSRID(ST_MakePoint(116.3975, 39.9087), 4326)
-);
-
--- 空间查询：3公里范围内的地点
-SELECT name,
-       ST_Distance(geom::geography,
-                   ST_SetSRID(ST_MakePoint(116.4, 39.9), 4326)::geography
-       ) AS distance_meters
-FROM locations
-WHERE ST_DWithin(
-    geom::geography,
-    ST_SetSRID(ST_MakePoint(116.4, 39.9), 4326)::geography,
-    3000  -- 3公里
-);
-```
-
-### 6.3 空间索引
-
-```sql
--- 创建 GIST 空间索引
-CREATE INDEX idx_locations_geom ON locations USING GIST (geom);
-
--- 空间操作符（使用索引）
-SELECT * FROM locations
-WHERE geom && ST_MakeEnvelope(116.3, 39.8, 116.5, 40.0, 4326);
-```
-
-## 7. 类型转换
-
-### 7.1 显式转换
-
-```sql
--- CAST 函数（SQL 标准）
-SELECT CAST('123' AS INTEGER);
-SELECT CAST(price AS VARCHAR(20));
-
--- 类型转换简写（PostgreSQL）
-SELECT '123'::INTEGER;
-SELECT created_at::DATE;
-
--- 格式化转换
-SELECT TO_CHAR(created_at, 'YYYY-MM-DD HH24:MI:SS') AS formatted;
-SELECT TO_NUMBER('1,234.56', '9G999D99');
-```
-
-### 7.2 隐式转换规则
-
-数据库在以下场景自动进行类型转换：
-
-1. **赋值转换**：插入值与列类型不匹配时
-2. **比较转换**：不同类型比较时，通常向"更宽"类型转换
-3. **运算转换**：如 `INTEGER + DECIMAL → DECIMAL`
-
-```sql
--- 隐式转换示例
-SELECT * FROM users WHERE id = '42';     -- '42' → 42
-SELECT '2026-06-14'::DATE + 1;           -- DATE + INTEGER → DATE
-```
-
-> **最佳实践**：避免依赖隐式转换，显式使用 `CAST` 提高代码可读性和可移植性。
-## 整数类型
-
-**单行写法：定义 TINYINT 列**
-`<列名> TINYINT`
-```sql
--- 定义 TINYINT 类型列（1 字节，-128 到 127）
-CREATE TABLE products (id INT, stock TINYINT);
-```
-
-**单行写法：定义 SMALLINT 列**
-`<列名> SMALLINT`
-```sql
--- 定义 SMALLINT 类型列（2 字节，-32768 到 32767）
-CREATE TABLE products (id INT, quantity SMALLINT);
-```
-
-**单行写法：定义 INT 列**
-`<列名> INT`
-```sql
--- 定义 INT 类型列（4 字节，-2147483648 到 2147483647）
-CREATE TABLE users (id INT, age INT);
-```
-
-**单行写法：定义 BIGINT 列**
-`<列名> BIGINT`
-```sql
--- 定义 BIGINT 类型列（8 字节，大范围整数）
-CREATE TABLE orders (id BIGINT, user_id BIGINT);
-```
-
-**单行写法：定义无符号整数**
-`<列名> INT UNSIGNED`
-```sql
--- 定义无符号 INT 列（MySQL，0 到 4294967295）
-CREATE TABLE products (id INT UNSIGNED, price INT UNSIGNED);
-```
-
----
-
-## 定点数与浮点数
-
-**单行写法：定义 DECIMAL 列**
-`<列名> DECIMAL(<精度>, <标度>)`
-```sql
--- 定义 DECIMAL 类型列（精确小数，推荐用于金额）
-CREATE TABLE products (id INT, price DECIMAL(10, 2));
-```
-
-**单行写法：定义 NUMERIC 列**
-`<列名> NUMERIC(<精度>, <标度>)`
-```sql
--- 定义 NUMERIC 类型列（等价于 DECIMAL）
-CREATE TABLE accounts (id INT, balance NUMERIC(15, 2));
-```
-
-**单行写法：定义 FLOAT 列**
-`<列名> FLOAT`
-```sql
--- 定义 FLOAT 类型列（单精度浮点数，4 字节）
-CREATE TABLE sensors (id INT, temperature FLOAT);
-```
-
-**单行写法：定义 DOUBLE 列**
-`<列名> DOUBLE`
-```sql
--- 定义 DOUBLE 类型列（双精度浮点数，8 字节）
-CREATE TABLE measurements (id INT, value DOUBLE);
-```
-
-**单行写法：定义 REAL 列**
-`<列名> REAL`
-```sql
--- 定义 REAL 类型列（单精度浮点数）
-CREATE TABLE sensors (id INT, temperature REAL);
-```
-
----
-
-## 字符串类型
-
-**单行写法：定义 CHAR 列**
-`<列名> CHAR(<长度>)`
-```sql
--- 定义 CHAR 类型列（固定长度字符串）
-CREATE TABLE users (id INT, gender CHAR(1));
-```
-
-**单行写法：定义 VARCHAR 列**
-`<列名> VARCHAR(<最大长度>)`
-```sql
--- 定义 VARCHAR 类型列（可变长度字符串）
-CREATE TABLE users (id INT, name VARCHAR(100));
-```
-
-**单行写法：定义 TEXT 列**
-`<列名> TEXT`
-```sql
--- 定义 TEXT 类型列（大文本数据）
-CREATE TABLE articles (id INT, content TEXT);
-```
-
-**单行写法：定义 PostgreSQL TEXT 列**
-`<列名> TEXT`
-```sql
--- PostgreSQL 中 TEXT 无长度限制
-CREATE TABLE articles (id INT, content TEXT);
-```
-
----
-
-## 日期时间类型
-
-**单行写法：定义 DATE 列**
-`<列名> DATE`
-```sql
--- 定义 DATE 类型列（仅日期，YYYY-MM-DD）
-CREATE TABLE users (id INT, birth_date DATE);
-```
-
-**单行写法：定义 TIME 列**
-`<列名> TIME`
-```sql
--- 定义 TIME 类型列（仅时间，HH:MM:SS）
-CREATE TABLE events (id INT, start_time TIME);
-```
-
-**单行写法：定义 DATETIME 列**
-`<列名> DATETIME`
-```sql
--- 定义 DATETIME 类型列（日期时间，MySQL）
-CREATE TABLE orders (id INT, created_at DATETIME);
-```
-
-**单行写法：定义 TIMESTAMP 列**
-`<列名> TIMESTAMP`
-```sql
--- 定义 TIMESTAMP 类型列（时间戳）
-CREATE TABLE logs (id INT, log_time TIMESTAMP);
-```
-
-**单行写法：定义带时区的 TIMESTAMP 列**
-`<列名> TIMESTAMP WITH TIME ZONE`
-```sql
--- 定义带时区的 TIMESTAMP 列（PostgreSQL）
-CREATE TABLE events (id INT, event_time TIMESTAMP WITH TIME ZONE);
-```
-
----
-
-## 布尔类型
-
-**单行写法：定义 BOOLEAN 列**
-`<列名> BOOLEAN`
-```sql
--- 定义 BOOLEAN 类型列（PostgreSQL）
-CREATE TABLE users (id INT, is_active BOOLEAN);
-```
-
-**单行写法：MySQL 用 TINYINT 模拟 BOOLEAN**
-`<列名> TINYINT(1)`
-```sql
--- MySQL 用 TINYINT(1) 模拟布尔类型
-CREATE TABLE users (id INT, is_active TINYINT(1));
-```
-
----
-
-## 二进制类型
-
-**单行写法：定义 BLOB 列**
-`<列名> BLOB`
-```sql
--- 定义 BLOB 类型列（二进制大对象）
-CREATE TABLE files (id INT, file_data BLOB);
-```
-
-**单行写法：定义 BYTEA 列**
-`<列名> BYTEA`
-```sql
--- 定义 BYTEA 类型列（PostgreSQL 二进制数据）
-CREATE TABLE files (id INT, file_data BYTEA);
-```
-
-**单行写法：定义 VARBINARY 列**
-`<列名> VARBINARY(<最大长度>)`
-```sql
--- 定义 VARBINARY 类型列（可变长度二进制）
-CREATE TABLE images (id INT, thumbnail VARBINARY(1024));
-```
-
----
-
-## JSON 类型
-
-**单行写法：定义 JSON 列**
-`<列名> JSON`
-```sql
--- 定义 JSON 类型列（MySQL 5.7+/PostgreSQL）
-CREATE TABLE users (id INT, preferences JSON);
-```
-
-**单行写法：定义 JSONB 列**
-`<列名> JSONB`
-```sql
--- 定义 JSONB 类型列（PostgreSQL，二进制 JSON，支持索引）
-CREATE TABLE users (id INT, preferences JSONB);
-```
-
----
-
-## 枚举类型
-
-**换行写法：PostgreSQL 创建枚举类型**
-`CREATE TYPE <类型名> AS ENUM (<值 1>, <值 2>, ...)`
-```sql
--- 创建订单状态枚举类型
-CREATE TYPE order_status AS ENUM ('pending', 'processing', 'shipped', 'delivered');
-```
-
-**单行写法：使用枚举类型**
-`<列名> <枚举类型名>`
-```sql
--- 使用枚举类型定义列
-CREATE TABLE orders (id INT, status order_status);
-```
-
-**单行写法：MySQL ENUM 类型**
-`<列名> ENUM(<值 1>, <值 2>, ...)`
-```sql
--- MySQL 直接在列定义中使用 ENUM
-CREATE TABLE orders (id INT, status ENUM('pending', 'processing', 'shipped', 'delivered'));
-```
-
----
-
-## 数组类型
-
-**单行写法：PostgreSQL 数组类型**
-`<列名> <类型>[]`
-```sql
--- 定义整数数组列
-CREATE TABLE teams (id INT, member_ids INT[]);
-```
-
-**单行写法：定义字符串数组列**
-`<列名> VARCHAR[]`
-```sql
--- 定义字符串数组列
-CREATE TABLE articles (id INT, tags VARCHAR[]);
-```
-
----
-
-## UUID 类型
-
-**单行写法：定义 UUID 列**
-`<列名> UUID`
-```sql
--- 定义 UUID 类型列（PostgreSQL）
-CREATE TABLE users (id UUID PRIMARY KEY, name VARCHAR(100));
-```
-
-**单行写法：定义默认 UUID 列**
-`<列名> UUID DEFAULT gen_random_uuid()`
-```sql
--- 定义默认生成 UUID 的列
-CREATE TABLE users (id UUID DEFAULT gen_random_uuid() PRIMARY KEY, name VARCHAR(100));
-```
-
----
-
-## 自增类型
-
-**单行写法：MySQL AUTO_INCREMENT**
-`<列名> INT AUTO_INCREMENT PRIMARY KEY`
-```sql
--- MySQL 自增主键
-CREATE TABLE users (id INT AUTO_INCREMENT PRIMARY KEY, name VARCHAR(100));
-```
-
-**单行写法：PostgreSQL SERIAL**
-`<列名> SERIAL PRIMARY KEY`
-```sql
--- PostgreSQL 自增主键
-CREATE TABLE users (id SERIAL PRIMARY KEY, name VARCHAR(100));
-```
-
-**单行写法：PostgreSQL BIGSERIAL**
-`<列名> BIGSERIAL PRIMARY KEY`
-```sql
--- PostgreSQL 大范围自增主键
-CREATE TABLE orders (id BIGSERIAL PRIMARY KEY, user_id BIGINT);
-```
-
-**单行写法：SQL Server IDENTITY**
-`<列名> INT IDENTITY(1, 1) PRIMARY KEY`
-```sql
--- SQL Server 自增主键
-CREATE TABLE users (id INT IDENTITY(1, 1) PRIMARY KEY, name VARCHAR(100));
-```
-
----
-
-## 货币类型
-
-**单行写法：定义 MONEY 列**
-`<列名> MONEY`
-```sql
--- 定义 MONEY 类型列（PostgreSQL）
-CREATE TABLE products (id INT, price MONEY);
-```
-
-**单行写法：推荐用 DECIMAL 存储金额**
-`<列名> DECIMAL(<精度>, 2)`
-```sql
--- 推荐使用 DECIMAL 存储金额
-CREATE TABLE products (id INT, price DECIMAL(10, 2));
-```
+- MySQL 8.0 官方文档 Chapter 11 Data Types（GPLv2 文档许可）：<https://dev.mysql.com/doc/refman/8.0/en/data-types.html>
+- PostgreSQL 官方文档 Chapter 8 Data Types（PostgreSQL Licence）：<https://www.postgresql.org/docs/current/datatype.html>
+- 类型选型决策与案例取自仓库扫描素材（商品管理系统任务单 1、vocaloid 笔记）并重写。

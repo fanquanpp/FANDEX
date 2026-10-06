@@ -1,5 +1,5 @@
 ---
-order: 760
+order: 790
 title: C++ 毕业项目：零依赖内存安全的数据缓冲库
 description: C++ 模块出口项目（Level 6）：手写一个 Buffer 类族，把移动语义、RAII、智能指针与模板基础组装成带测试的静态库，user stories 验收、提示从高到无。
 module: 'cpp'

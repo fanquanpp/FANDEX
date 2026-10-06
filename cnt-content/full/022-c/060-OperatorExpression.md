@@ -8,11 +8,11 @@ description: 以 i = i++ 的事故现场开场：整数除法向零截断与 % �
 author: fanquanpp
 updated: '2026-09-29'
 related:
-  - 'c/070-BitwiseBitField'
+  - 'c/070-BitwiseOperationAndMask'
   - 'c/430-StdioFileIO'
   - 'c/140-PointerDeep'
   - 'c/080-ControlFlow'
-  - 'c/490-StaticAnalysisDebug'
+  - 'c/485-StaticAnalysisAndSanitizers'
 prerequisites:
   - 'c/050-VariableConstant'
   - 'c/040-DataTypeDetailed'
@@ -23,7 +23,7 @@ prerequisites:
 - 已完成 [变量与常量](/c/050-VariableConstant)：会声明变量、给变量赋值，认识基本类型；
 - 已完成 [数据类型详解](/c/040-DataTypeDetailed)：见过各整数与浮点类型及其取值范围。本篇要回答那里按下不表的问题：两个类型不同的操作数相遇时，听谁的。
 
-> 分工说明：类型转换在 [数据类型详解](/c/040-DataTypeDetailed) 只做概览——那里给出「转换存在、可能丢精度」的一句话，并把读者引到本篇；完整的整型提升、寻常算术转换阶梯表与配套实验都安家在本篇第 2 节。位运算同理：本篇第 4 节只留一段概览，完整讲解在 [位运算与位域](/c/070-BitwiseBitField)。
+> 分工说明：类型转换在 [数据类型详解](/c/040-DataTypeDetailed) 只做概览——那里给出「转换存在、可能丢精度」的一句话，并把读者引到本篇；完整的整型提升、寻常算术转换阶梯表与配套实验都安家在本篇第 2 节。位运算同理：本篇第 4 节只留一段概览，完整讲解在 [位运算与位域](/c/070-BitwiseOperationAndMask)。
 
 ## 学习目标
 
@@ -245,7 +245,7 @@ int main(void) {
 | `<<` | 左移 | `a << 1` | 12（1100） |
 | `>>` | 右移 | `a >> 1` | 3（0011） |
 
-典型用途一句话：`&` 配掩码「取字段」、`|` 配标志「开开关」、`^` 做「翻转与校验」、移位做「倍乘与打包」。检查、设置、清除、翻转某一位的四个惯用宏，以及移位的符号位陷阱与位段，全部在 [位运算与位域](/c/070-BitwiseBitField) 展开——本篇只提醒一件事：`<<` 与 `>>` 的优先级（第 7 节第 5 档）夹在算术与关系之间，且对有符号负数右移结果由实现定义，位运算前先想清楚操作数该不该是无符号。
+典型用途一句话：`&` 配掩码「取字段」、`|` 配标志「开开关」、`^` 做「翻转与校验」、移位做「倍乘与打包」。检查、设置、清除、翻转某一位的四个惯用宏，以及移位的符号位陷阱与位段，全部在 [位运算与位域](/c/070-BitwiseOperationAndMask) 展开——本篇只提醒一件事：`<<` 与 `>>` 的优先级（第 7 节第 5 档）夹在算术与关系之间，且对有符号负数右移结果由实现定义，位运算前先想清楚操作数该不该是无符号。
 
 ## 5. 赋值、自增自减与求值顺序
 
@@ -458,7 +458,7 @@ ubsanexp.c:6:20: runtime error: signed integer overflow: 2147483647 + 1 cannot b
 ubsanexp.c:8:18: runtime error: shift exponent 40 is too large for 32-bit type 'int'
 ```
 
-未定义行为检测器（UBSan）在事故点当场打印。注意有符号溢出是 UB 而不是「绕回负数」——绕回只是常见实现的巧合；无符号运算才有标准保证的模 2 的 n 次方环绕。表达式类的 UB 远不止这两种，工具全家桶见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+未定义行为检测器（UBSan）在事故点当场打印。注意有符号溢出是 UB 而不是「绕回负数」——绕回只是常见实现的巧合；无符号运算才有标准保证的模 2 的 n 次方环绕。表达式类的 UB 远不止这两种，工具全家桶见 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。
 
 ### 8.3 -Wparentheses 提示位运算与比较混写
 
@@ -475,7 +475,7 @@ warning: suggest parentheses around comparison in operand of '&' [-Wparentheses]
 - 判空与边界惯用法：`p != NULL && p->len > 0`、`i >= 0 && i < n`，短路保证安全；
 - 计数与取模：环形缓冲下标 `i % capacity`、奇偶与分组 `n % 2`、时间换算 `s / 60, s % 60`；
 - 无符号与 size_t：数组下标、循环变量尽量与长度类型符号一致，避免实验二的绕回；
-- 位标志见 [位运算与位域](/c/070-BitwiseBitField)；三目选默认值、逗号推进双游标的 for 循环见本文第 6 节。
+- 位标志见 [位运算与位域](/c/070-BitwiseOperationAndMask)；三目选默认值、逗号推进双游标的 for 循环见本文第 6 节。
 
 ## 10. 小练习
 
@@ -503,8 +503,8 @@ for (size_t i = n - 1; i >= 0; i--) {   /* size_t 永远 >= 0 */
 ## 11. 与之前和之后的知识的关系
 
 - 往前：[变量与常量](/c/050-VariableConstant) 的变量与字面量是本篇所有表达式的操作数；[数据类型详解](/c/040-DataTypeDetailed) 的类型表在第 2 节完成「相遇听谁的」的闭环；
-- 旁支：位运算的完整展开在 [位运算与位域](/c/070-BitwiseBitField)；这些表达式最主要的消费场景是 if 与循环，见 [控制流](/c/080-ControlFlow)；`*` 与 `&` 在表达式里还是解引用与取地址，见 [指针深度解析](/c/140-PointerDeep)；
-- 往后：读文件时 `int ch = fgetc(fp)` 与 EOF 的比较用到第 2 节的整型提升，见 [文件 I/O](/c/430-StdioFileIO)；UBSan 与编译警告的系统用法见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+- 旁支：位运算的完整展开在 [位运算与位域](/c/070-BitwiseOperationAndMask)；这些表达式最主要的消费场景是 if 与循环，见 [控制流](/c/080-ControlFlow)；`*` 与 `&` 在表达式里还是解引用与取地址，见 [指针深度解析](/c/140-PointerDeep)；
+- 往后：读文件时 `int ch = fgetc(fp)` 与 EOF 的比较用到第 2 节的整型提升，见 [文件 I/O](/c/430-StdioFileIO)；UBSan 与编译警告的系统用法见 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。
 
 ## 12. 官方文档
 
@@ -528,4 +528,4 @@ for (size_t i = n - 1; i >= 0; i--) {   /* size_t 永远 >= 0 */
 
 ## 下一步
 
-进入 [位运算与位域](/c/070-BitwiseBitField)：第 4 节只给了六个位运算符的一张速写表，下一篇把它们展开成完整阶梯——掩码、四个位操作宏、移位的符号位陷阱与直接按位分配成员的位段。
+进入 [位运算与位域](/c/070-BitwiseOperationAndMask)：第 4 节只给了六个位运算符的一张速写表，下一篇把它们展开成完整阶梯——掩码、四个位操作宏、移位的符号位陷阱与直接按位分配成员的位段。

@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 130
 title: UI 界面：Control 与容器
 module: 'godot'
 category: 游戏开发
@@ -12,6 +12,12 @@ related:
 prerequisites:
   - 'godot/020-NodesScenesAndInstancing'
 ---
+
+## 知识点地图
+
+- **知识类别**：UI 与容器——Godot 界面体系的布局层，Control 树与 CanvasItem 世界的交汇处。
+- **解决什么问题**：血条、菜单、背包怎么排、怎么随窗口缩放重排、怎么换肤；以及"我设了坐标为什么不动"这类容器接管的困惑。
+- **什么时候用到**：一切界面。桌面与移动端多分辨率适配是它的进阶应用（见"多分辨率与触屏适配实战"一节）。
 
 一个游戏好不好上手，界面的贡献常常被低估：血条、背包、设置菜单、对话框，全都属于 UI（User Interface，用户界面）。Godot 的 UI 体系有一套与 2D/3D 世界平行的规则：一切控件（Control）都继承自 Control 基类，而容器（Container）负责自动摆放子控件。理解"容器接管布局"这条规则，是从像素级手动对齐的苦力活里解放出来的关键。
 
@@ -125,6 +131,80 @@ flowchart TD
 ```
 
 整棵树里没有一个坐标是手填的：MarginContainer 负责留边，HBox 负责横排，Center 负责居中，VBox 负责纵排。窗口缩放时整份 HUD 自动重排，这就是容器体系的回报。
+
+## 多分辨率与触屏适配实战
+
+容器管好了"控件之间"的布局，还有一层它管不到：**整个界面与屏幕之间**的关系——桌面窗口会被用户拖成任意比例，手机有刘海、圆角与旋转，触屏用户看不到"按空格"这种键盘文案。几何构成（speed-rouge）项目为此专门写了 adaptive.gd 自适应模块，三件套正好对应三类问题，是可以照抄的工程范本。
+
+### 第一件：fit_design 等比缩放居中
+
+设计稿按 1280x720 画，玩家屏幕却有 16:9、16:10、21:9。策略是"整体等比缩放 + 短边贴边 + 长边居中"：
+
+```gdscript
+# adaptive.gd（教学化节选，数值出处：scripts/ui/adaptive.gd 的 fit_design）
+const DESIGN_SIZE := Vector2(1280, 720)
+
+func fit_design(ui_root: Control) -> void:
+    var screen := Vector2(DisplayServer.window_get_size())
+    var s := minf(screen.x / DESIGN_SIZE.x, screen.y / DESIGN_SIZE.y)   # 取小边：保证内容完整
+    ui_root.scale = Vector2(s, s)
+    ui_root.position = (screen - DESIGN_SIZE * s) * 0.5                 # 差值除 2：居中
+```
+
+`minf` 取较小缩放比是关键决策：用大边会让内容超出屏幕被裁掉，用小边会有留白但完整。留白区交给背景层铺满。这与项目设置里的拉伸模式（Project Settings -> Display -> Window -> Stretch，Mode 选 canvas_items、Aspect 选 keep 或 expand）是两种正交方案：项目设置管"整个视口的缩放与坐标换算"，fit_design 这类手写方案用于把一组 UI 当作可整体缩放的内容层——两者选其一即可，同时用会缩放两次。
+
+### 第二件：safe_insets 安全区换算
+
+手机屏幕的刘海、打孔摄像头与圆角会遮住 UI 四角。DisplayServer 提供了安全区矩形（物理像素），换算成 UI 需要避让的内边距：
+
+```gdscript
+# 教学化节选：safe_insets——把安全区换算成 0..1 归一化矩形
+func safe_insets() -> Rect2:
+    if DisplayServer.get_name() == "headless":
+        return Rect2()                              # 无头/CI 环境无显示，直接返回零矩形
+    var safe := Rect2i(DisplayServer.get_display_safe_area())
+    var win := Vector2(DisplayServer.window_get_size())
+    return Rect2(safe.position / win, safe.size / win)   # 左上角与尺寸，都归一化到 0..1
+```
+
+用法：视口高 720 时，HUD 顶栏底部必须压在 `safe_insets().position.y * 720` 以下才躲得开刘海；返回按钮不能摆在超出 `safe_insets()` 矩形右边缘的位置，否则一头扎进圆角区。为什么在手机上特别重要：横屏时刘海在左右两侧，状态栏血条若是全屏宽，两端图标直接被切进刘海里。桌面端安全区通常等于全屏，这段代码在桌面自然退化为"整个屏幕都是安全区"——一套代码双端通用，判断成本只在首次调用。
+
+### 第三件：收敛补拍——迟到布局的治理演化史
+
+最隐蔽的一类适配 bug 是"布局迟到"：卡片挂上数据后文字换行、高度变化，需要一帧之后才知道最终尺寸；如果动画（Tween）已经在播，等你发现超窗时已经晚了。几何构成的 CHANGELOG 完整记录了这个问题的两代方案，堪称"常驻轮询 vs 收敛补拍"的活教材：
+
+- **旧方案（v0.67 之前）**：一个 0.05 秒的守卫 Timer 常驻运行，每秒 20 次轮询所有卡片的实际尺寸是否超出窗口、超出就收缩。缺点：为"偶尔迟到一次"的布局付出永久 20Hz 的轮询开销，而且轮询的时机与布局实际生效的时机无关——纯属碰运气。
+- **新方案（v0.67 起）**：register_card 把每张卡片与自己的补拍 Tween 绑定——卡片注册后在 0.5 秒内分 8 次（约每 0.0625 秒一次）"补拍"检查布局是否收敛（内容不再变化），收敛后 Tween 自然结束、检查停止；卡片被释放时它绑定的 Tween 一并销毁（"卡亡 Tween 即亡"），不留悬挂引用。
+
+```gdscript
+# 教学化节选：register_card——用绑定 Tween 做 0.5s 内 8 次收敛补拍
+func register_card(card: Control) -> void:
+    var tw := create_tween()
+    tw.bind_node(card)                              # 卡片释放，Tween 自动终止
+    for i in 8:
+        tw.tween_callback(_shrink_if_overflow.bind(card)).set_delay(0.0625)
+```
+
+`tween_callback` 每步检查一次"当前尺寸是否超窗"，超窗就按比例收缩；八次后无论收敛与否都停止——这不是永久的守护进程，而是围绕"布局在半秒内必然稳定"这个事实设计的有限次补拍。两版对比的结论可以直接搬进任何项目：**为不确定的时机做补偿，用"有限次、绑定生命周期"的补拍，不用常驻轮询**；这也和 090 篇 changed 信号"call_deferred 帧末合并"是同一条设计哲学——把代价付在变化发生的窗口里。
+
+### 触屏文案替换表
+
+最后一公里是文案。adaptive.gd 的 adapt_copy（14-28 行）维护了一张整串替换表：桌面操作说明在触屏模式下整句替换——"按空格跳跃"换成"点按屏幕跳跃"。实现不过十几行：
+
+```gdscript
+# 教学化节选：adapt_copy——双端操作词典
+const TOUCH_COPY := {
+    "按空格跳跃": "点按屏幕跳跃",
+    "按住 Shift 冲刺": "按住冲刺键冲刺",
+}
+
+func adapt_copy(text: String) -> String:
+    if DisplayServer.is_touchscreen_available():
+        return TOUCH_COPY.get(text, text)           # 表里没有的原样返回
+    return text
+```
+
+价值不在代码而在**把双端文案当数据维护**：所有涉及操作方式的字符串必须经过 adapt_copy 再上屏，替换表就是项目的"双端操作词典"——新文案要不要适配、旧文案改了哪端，一张表看尽。漏掉这道工序的症状是：测试机上一切正常，玩家拿着手机看到"请按 Esc 打开菜单"。
 
 ## 动手练习
 

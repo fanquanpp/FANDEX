@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 470
 title: 类型注解与 mypy：让错误在运行前现形
 module: 'python'
 category: 后端技术
@@ -297,6 +297,41 @@ def is_str_list(val: list[object]) -> TypeIs[list[str]]:
 ```
 
 写类型谓词函数时默认选 TypeIs，仅在「检查通过不能推出检查失败」的场景退回 TypeGuard。
+
+**Concatenate：描述「装饰器吃掉/补上参数」后的签名**。ParamSpec 描述「参数原样转发」，还有一种形状是「转发前先塞一个参数」（最典型：给每个被装饰函数补一个 logger 首参）——`Concatenate` 专管这个：
+
+```python
+from collections.abc import Callable
+from typing import Concatenate
+
+def with_logging[**P, R](fn: Callable[Concatenate[str, P], R]) -> Callable[P, R]:
+    def wrapper(*args: P.args, **kwargs: P.kwargs) -> R:
+        return fn("app.logger", *args, **kwargs)   # 第一个参数是装饰器注入的
+    return wrapper
+```
+
+逐段读：`Callable[Concatenate[str, P], R]` 的含义是「第一个参数必须是 str，其余参数形状是 P」；返回值 `Callable[P, R]` 表示装饰后的函数**不再需要**那个 str——它由 wrapper 内部注入。没有 Concatenate 时这层「吃掉首参」的变换没法标注，mypy 只能报不匹配或放过。3.12 起 `def with_logging[**P, R]` 的泛型语法把外层 TypeVar 声明一并收进签名（见前文 type 语句一节）。
+
+**override 装饰器：让「想重写却拼错了」变成检查错误**（3.12）。子类重写父类方法时，方法名打错字母不会报错——Python 只会安静地新增一个方法，父类接口悄悄漏实现。`typing.override` 把意图写给检查器：
+
+```python
+from typing import override
+
+class Animal:
+    def speak(self) -> str:
+        return "..."
+
+class Dog(Animal):
+    @override
+    def speak(self) -> str:          # 父类确有 speak，检查通过
+        return "汪"
+
+    @override
+    def ftech(self) -> str:          # mypy: Method "ftech" is marked as override,
+        return "捡球"                 # but no base method "fetch" —— 拼写错误当场暴露
+```
+
+与 Java 的 `@Override` 注解同一动机：**重写是契约，拼错了就该是错误而不是新方法**。启用方式：mypy 加 `--enable-error-code=explicit-override`（或配置文件对应项）。判断器：继承体系里所有「我有意重写」的方法都标 override——它不改变任何运行时行为，纯粹把「父类里到底有没有这个名字」变成机器可查。与 Protocol 的分工：Protocol 管「形状对不对」，override 管「重写关系对不对」。
 
 
 误区一：**把 Any 当万能解**。任何值都能赋给 `Any`，`Any` 也能赋给任何类型——等于关掉检查。json、数据库驱动返回 `Any` 是现实，正确姿势是**尽快收窄**：包一层返回 TypedDict 或 dataclass 的解析函数，让 `Any` 活不过三行。

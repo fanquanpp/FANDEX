@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 370
 title: AWS EC2 命令
 module: 'cloud-computing'
 category: 云与基础设施

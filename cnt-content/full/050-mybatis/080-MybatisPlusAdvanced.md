@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 100
 title: MyBatis-Plus 进阶：分页、乐观锁、逻辑删除、自动填充四件套
 description: 以「列表页分页、并发扣库存超卖、软删除、审计字段四大企业刚需」引入：MybatisPlusInterceptor 插件总线与官方添加顺序、PaginationInnerInterceptor 含自定义 XML 分页、@Version 乐观锁冲突与重试实验、@TableLogic 的唯一索引冲突三坑、MetaObjectHandler 审计填充，附 FastAutoGenerator 代码生成与四件套逐项验证实验。
 module: 'mybatis'

@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 130
 title: DNS 与 DHCP
 module: 'networking'
 category: 云与基础设施
@@ -8,12 +8,10 @@ description: DNS 解析体系与加密演进（DoT/DoH/DoQ）、DNSSEC 信任链
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'networking/190-NetworkDiagnosis'
   - 'networking/180-NetworkDesignPlanning'
   - 'networking/200-LoadBalanceTech'
   - 'networking/110-DigNslookup'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## 前置知识

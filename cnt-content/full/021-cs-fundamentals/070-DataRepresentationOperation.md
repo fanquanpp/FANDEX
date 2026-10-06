@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'cs-fundamentals/540-DiscreteMathematics'
-  - 'cs-fundamentals/100-ComputerPrinciple'
+  - 'cs-fundamentals/100-ComputerOrganizationRapidReview'
   - 'cs-fundamentals/110-InstructionPipeline'
   - 'cs-fundamentals/120-StorageSystem'
   - 'cs-fundamentals/060-NumberRepresentationEncoding'

@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 150
 title: HTTP 协议
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/130-CurlHTTPRequest'
   - 'networking/370-ProxyConfig'
   - 'networking/020-OSITCPIPModel'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## 从一次页面加载说起

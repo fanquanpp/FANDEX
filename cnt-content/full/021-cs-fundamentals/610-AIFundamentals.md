@@ -1,10 +1,10 @@
 ---
-order: 620
+order: 650
 title: 人工智能基础
 module: 'cs-fundamentals'
 category: 计算机科学
 difficulty: intermediate
-description: 人工智能基础：搜索算法、知识表示、机器学习、神经网络与深度学习
+description: 人工智能基础：搜索算法、知识表示、机器学习、神经网络与深度学习；文末附感知机训练与缩放定律观察实验
 author: fanquanpp
 updated: '2026-10-05'
 related:
@@ -16,6 +16,15 @@ prerequisites:
   - 'cs-fundamentals/010-ComputerOverview'
 ---
 
+
+## 知识点地图
+
+- **知识类别**：人工智能导论——从符号主义（搜索、知识表示）到
+  连接主义（机器学习、神经网络）的两大传统与它们的现代合流。
+- **解决什么问题**：让机器在解空间里做决策（搜索）、表达并推理世界
+  知识（表示与推理）、从数据中归纳规律（学习）。
+- **什么时候用到**：理解大语言模型的技术谱系、评估「这个场景该用
+  规则还是学习」、为后续深入学习 ML/NLP 打底。
 
 ## 1. 人工智能概述
 
@@ -278,3 +287,54 @@ $$\text{head}_i = \text{Attention}(QW_i^Q, KW_i^K, VW_i^V)$$
 $$L(N) \approx \left(\frac{N_c}{N}\right)^{\alpha}$$
 
 模型性能随参数量 $N$、数据量 $D$、计算量 $C$ 的增加而可预测地提升。
+
+## 动手实践
+
+**任务**：不借助任何机器学习库，手写一个单层感知机学习逻辑或（XOR 前后
+各做一次），用实验验证本文第 5 节「单层网络无法解决线性不可分问题」的论断。
+
+1. 实现 4 个样本的 XOR 真值表训练：感知机收敛（误判为 0）即成功；
+2. 对 OR 真值表重复同一训练，观察它能收敛；
+3. 对比两者的错误曲线，用「能否画出一条 separating line」解释差异；
+4. 进阶：在输入层加一个隐藏节点（手写 2-2-1 结构），再试 XOR。
+
+**提示**：感知机更新规则 `w += lr * (y - y_hat) * x`；XOR 永远不收敛
+是数学事实，设定最大迭代轮数（如 100）后输出「未收敛」即实验结论；
+加隐藏层后建议直接写两个固定的隐藏单元分别模拟 OR 与 NAND，
+只训练输出层，避免手写反向传播。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```python
+# perceptron_lab.py —— 单层感知机：OR 可收敛，XOR 不收敛
+def train(X, y, epochs=100, lr=0.5):
+    w = [0.0, 0.0]; b = 0.0
+    for ep in range(epochs):
+        errors = 0
+        for (x1, x2), t in zip(X, y):
+            y_hat = 1 if w[0]*x1 + w[1]*x2 + b > 0 else 0
+            if y_hat != t:                      # 感知机学习规则
+                w[0] += lr * (t - y_hat) * x1
+                w[1] += lr * (t - y_hat) * x2
+                b    += lr * (t - y_hat)
+                errors += 1
+        if errors == 0:
+            return True, ep                     # 收敛
+    return False, epochs
+
+OR  = [([0,0],0), ([0,1],1), ([1,0],1), ([1,1],1)]
+XOR = [([0,0],0), ([0,1],1), ([1,0],1), ([1,1],0)]
+print("OR :", train([s for s,_ in OR],  [t for _,t in OR]))
+print("XOR:", train([s for s,_ in XOR], [t for _,t in XOR]))
+# 预期：OR 在个位数轮收敛；XOR 输出未收敛 —— 证明单层线性不可分
+```
+
+**逐段讲解**：`(t - y_hat)` 取值 -1/0/1，正是误分类时把超平面朝正确
+方向挪的更新方向；OR 四点线性可分所以必然停机（感知机收敛定理），
+XOR 永远存在误判点。把训练换成本文第 6 节的深度学习叙述：加一个
+隐藏层（两个单元分别算 `x1 OR x2` 与 `x1 NAND x2`，输出层做 AND）
+后 XOR 可解——这就是 1969 年《Perceptrons》一书批评与 1986 年
+反向传播复兴的历史公案的数学内核。
+
+</details>

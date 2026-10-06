@@ -111,7 +111,7 @@
           "title": "类与装饰器",
           "desc": "类定义、访问修饰符、装饰器模式与元数据。",
           "difficulty": "intermediate",
-          "doc": "090-ClassAndDecorators"
+          "doc": "090-ClassMembersAndModifiers"
         },
         {
           "id": "ts-why",
@@ -204,10 +204,10 @@
       "nodes": [
         {
           "id": "ts-026",
-          "title": "高级类型与类型演算",
-          "desc": "映射类型、条件类型、模板字面量类型与类型体操。",
+          "title": "内置工具类型全景",
+          "desc": "对照官方 Utility Types 参考页的全量内置工具类型目录：属性修饰、选择排除、字典构造、联合过滤、函数萃取、Awaited/NoInfer 与字符串变换族的签名、等效手写与真实场景。",
           "difficulty": "advanced",
-          "doc": "520-AdvancedTypeCalculus"
+          "doc": "495-UtilityTypesCatalog"
         },
         {
           "id": "ts-027",
@@ -284,7 +284,7 @@
           "title": "模块解析策略",
           "desc": "TypeScript 模块解析策略的形式语义、Node.js 包解析算法、exports 字段、路径映射与生产级配置",
           "difficulty": "intermediate",
-          "doc": "330-ModuleResolutionModernToolchains"
+          "doc": "315-PackageExportsEsmInterop"
         },
         {
           "id": "ts-037",
@@ -392,7 +392,7 @@
           "title": "类型推断infer扩展",
           "desc": "TypeScript 中 infer 关键字的形式语义、推导规则与生产级应用——从函数返回值到模板字面量、从 Promise 解包到 AST 元编程",
           "difficulty": "advanced",
-          "doc": "450-InferTypeDeepDive"
+          "doc": "450-TypeCompositionPractice"
         },
         {
           "id": "ts-055",
@@ -406,7 +406,7 @@
           "title": "TypeScript 类型声明与模块解析",
           "desc": "TypeScript 声明文件（.d.ts）结构、模块解析策略（Node/NodeNext/Bundler）、ESM/CJS 互操作、路径映射与包导出的全面工程指南",
           "difficulty": "intermediate",
-          "doc": "310-TypeScriptTypeDeclarationModuleResolution"
+          "doc": "340-ModuleDeclarationGlobalAugmentation"
         },
         {
           "id": "ts-057",
@@ -490,7 +490,7 @@
           "title": "类型体操",
           "desc": "TypeScript类型体操详解：递归类型、斐波那契、深度只读等高级类型编程。",
           "difficulty": "advanced",
-          "doc": "540-TypeGymnastics"
+          "doc": "540-TypeGymnasticsBoundaries"
         },
         {
           "id": "ts-069",

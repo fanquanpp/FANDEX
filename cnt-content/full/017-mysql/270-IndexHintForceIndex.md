@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 290
 title: 索引提示与强制索引：什么时候该替优化器做决定
 module: 'mysql'
 category: 数据库
@@ -213,3 +213,20 @@ WHERE channel = 'app' AND created_at > NOW() - INTERVAL 7 DAY;
 ## 下一步
 
 提示是"人替优化器做决定"，[不可见索引](/mysql/280-InvisibleIndex)则是"让优化器假装索引不存在"——它是安全删除索引这件事的正确姿势。
+
+## 优化器开关：比提示更宽的控制面
+
+索引提示作用于**单条语句的索引选择**；`optimizer_switch` 是更宽一层——一批优化器行为特性（索引合并、MRR、ICP、BKA）的会话/全局开关：
+
+```sql
+-- 查看当前开关全貌（一长串 key=value）
+SHOW VARIABLES LIKE 'optimizer_switch';
+
+-- 常用四个开关（SESSION 级试验，确认后再定全局策略）
+SET SESSION optimizer_switch = 'mrr=on,mrr_cost_based=off';          -- 开 Multi-Range Read
+SET SESSION optimizer_switch = 'index_condition_pushdown=on';        -- 开 ICP（默认 on）
+SET SESSION optimizer_switch = 'batched_key_access=on';              -- 开 BKA（默认 off）
+SET SESSION optimizer_switch = 'index_merge_union_or_collapse=off';  -- 关索引合并变体（试验用）
+```
+
+与索引提示的分工：提示是「这条查询别用那个索引」（止血）；开关是「这类优化策略要不要参与决策」（行为面）——例如把 index_merge 变体关掉后，OR 跨列查询不再尝试合并两棵索引树而是直接全表扫，用于验证「索引合并是不是某条慢查询的根因」。试验纪律与提示相同：SESSION 级定位问题，找到根因后修索引或改写语句，把开关恢复默认——**开关是诊断工具不是生产配置**，长期靠开关压制的问题是没修完的索引问题。

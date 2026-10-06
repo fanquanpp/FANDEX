@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 180
 title: Git 远程仓库操作
 module: 'git'
 category: 工具链
@@ -200,6 +200,8 @@ prerequisites: []
 | `fatal: refusing to merge unrelated histories` | 本地仓库和远程仓库历史不相关 | 执行 `git pull --allow-unrelated-histories` 允许合并不相关历史 |
 | 推送超时                                       | 网络连接不稳定或文件过大     | 增加 `http.postBuffer` 值，或检查网络连接                      |
 | 权限错误                                       | 没有远程仓库的访问权限       | 检查 SSH 密钥或 HTTPS 凭证，确保有正确的权限                   |
+
+> SSH 密钥生成、credential helper、多账号认证等凭证与认证机制见 025-GitCredentialsAndAuth 篇；本篇聚焦 remote 管理与 push/pull/fetch 操作本身。
 
 <a id="7"></a>
 
@@ -530,52 +532,6 @@ git branch --set-upstream-to=origin/main main;
 ```bash
 # 删除 origin 上的 feature 分支
 git push origin --delete feature;
-```
-
----
-
-## SSH 密钥配置
-
-**基本写法：生成 ed25519 SSH 密钥**
-`ssh-keygen -t <算法> -C "<注释>"`
-```bash
-# 生成 ed25519 算法的 SSH 密钥
-ssh-keygen -t ed25519 -C "your_email@example.com";
-```
-
-**基本写法：生成 RSA SSH 密钥**
-`ssh-keygen -t <算法> -b <位数> -C "<注释>"`
-```bash
-# 生成 RSA 算法的 SSH 密钥
-ssh-keygen -t rsa -b 4096 -C "your_email@example.com";
-```
-
-**基本写法：查看 ed25519 SSH 公钥**
-`cat ~/.ssh/<密钥文件>.pub`
-```bash
-# 查看 ed25519 公钥
-cat ~/.ssh/id_ed25519.pub;
-```
-
-**基本写法：查看 RSA SSH 公钥**
-`cat ~/.ssh/<密钥文件>.pub`
-```bash
-# 查看 RSA 公钥
-cat ~/.ssh/id_rsa.pub;
-```
-
-**基本写法：测试 GitHub SSH 连接**
-`ssh -T git@<域名>`
-```bash
-# 测试 GitHub 连接
-ssh -T git@github.com;
-```
-
-**基本写法：测试 GitLab SSH 连接**
-`ssh -T git@<域名>`
-```bash
-# 测试 GitLab 连接
-ssh -T git@gitlab.com;
 ```
 
 ---

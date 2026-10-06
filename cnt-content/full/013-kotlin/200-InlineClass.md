@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 220
 title: 内联类
 module: 'kotlin'
 category: 后端技术

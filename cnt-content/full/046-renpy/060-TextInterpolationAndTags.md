@@ -1,21 +1,24 @@
 ---
-order: 60
-title: 文本：插值、标签与 NVL 模式
+order: 80
+title: 文本：插值、标签与 Monologue
 module: 'renpy'
 category: 游戏开发
 difficulty: beginner
-description: 在台词中插入变量值与格式化输出，用文本标签控制排版节奏，并启用多行同屏的 NVL 模式
+description: 在台词中插入变量值与格式化输出，用文本标签控制排版节奏，用 Monologue 组织长段文本
 author: fanquanpp
 updated: '2026-09-22'
 related:
   - 'renpy/020-FirstScriptSayAndCharacters'
   - 'renpy/030-ImagesSceneShowAndTransitions'
+  - 'renpy/065-NvlMode'
   - 'renpy/080-ScreensAndScreenLanguage'
 prerequisites:
   - 'renpy/020-FirstScriptSayAndCharacters'
 ---
 
-台词是视觉小说的主体。Ren'Py 的文本系统远不止"把字符串画上屏幕"：它可以在台词中插入变量的值、按数字格式化输出、用文本标签（text tag）控制粗体颜色与节奏，还提供了多行同屏的 NVL 模式。本篇把这套系统从转义规则讲到插值、标签，最后落到 Monologue 与 NVL 两种进阶文本组织方式。
+台词是视觉小说的主体。Ren'Py 的文本系统远不止"把字符串画上屏幕"：它可以在台词中插入变量的值、按数字格式化输出、用文本标签（text tag）控制粗体颜色与节奏，还提供了 Monologue 这类长段文本的组织方式。本篇把这套系统从转义规则讲到插值、标签，最后落到 Monologue 与 Character 的进阶能力。
+
+多行同屏的 NVL 呈现已拆分为独立一篇：[NVL 模式呈现](/renpy/065-NvlMode)。
 
 先记住一条主线：Ren'Py 处理一段文本的顺序是——先翻译，再插值，然后套用样式与文本标签，接着排版，最后绘制。本篇讲的插值与标签正是这条流水线的中间环节。
 
@@ -25,7 +28,6 @@ prerequisites:
 - 会用 [表达式] 做插值，会用 PEP 3101 风格的格式化与转换旗标；
 - 会用常用文本标签排版，重点掌握 {w}、{p}、{nw}、{fast}、{done} 等对话控制标签；
 - 会用 Monologue 模式把三引号长段拆成多条台词；
-- 会启用 NVL 模式，配置 NVL 菜单与窗口管理；
 - 掌握 Character 的进阶用法：image 参数、extend、动态角色名与窗口管理。
 
 ## 转义速查表
@@ -135,34 +137,7 @@ This is the second line of narration.
 
 等价于两条独立的旁白。拆分以空行为界；如果希望块与块之间不留空行也照样拆分，在文件顶部写 rpy monologue single；想完全禁用 Monologue，写 rpy monologue none。
 
-## NVL 模式
-
-到目前为止的对白都是 ADV 模式（ADV mode）：一次显示一行，窗口贴在屏幕底部。NVL 模式（NVL mode，Novel 模式）则是多行同屏、占满全屏的窗口，文字像小说一样一段段堆叠，直到你主动清屏。
-
-启用只需两步：给角色加 kind=nvl；在每页末尾用 nvl clear 清屏。官方示例完整照录：
-
-```renpy
-define s = Character('Sylvie', kind=nvl, color="#c8ffc8")
-define m = Character('Me', kind=nvl, color="#c8c8ff")
-define narrator = nvl_narrator
-
-label start:
-    "I'll ask her..."
-    m "Um... will you..."
-    m "Will you be my artist for a visual novel?"
-    nvl clear
-    "Silence."
-    "She is shocked, and then..."
-    s "Sure, but what is a \"visual novel?\""
-    nvl clear
-```
-
-- define narrator = nvl_narrator 让旁白也走 NVL；
-- 每组对白之后 nvl clear 结束一页，下一组从新页开始；
-- NVL 菜单：全局写 define menu = nvl_menu 可让所有选项菜单改走 NVL；也可以只对单个菜单生效，写法是 menu (nvl=True):；
-- 窗口管理：window show 与 window hide 控制窗口显示隐藏，NVL 专用的是 nvl show 与 nvl hide；
-- Monologue 与 NVL 完全兼容，长段独白 + 多行同屏正是绝配；
-- 小技巧：把 {clear} 标签单独写成一行，等价于 nvl clear。
+Monologue 与 NVL 模式完全兼容（长段独白 + 多行同屏正是绝配），NVL 的翻页、菜单与窗口管理见 [NVL 模式呈现](/renpy/065-NvlMode)。
 
 ## Character 进阶补充
 
@@ -222,13 +197,11 @@ window show / window hide 手动控制对白窗口；window auto True 开启自�
 - 文本处理顺序：翻译、插值、样式与标签、排版、绘制；{ 与 [ 是被征用的字符，用 `{{` 与 `[[` 转义，引号用反斜杠，百分号写 `%%` 或 `\%`。
 - 插值 [表达式] 支持任意 Python 表达式与 PEP 3101 风格格式化；查找顺序为 screen 局部变量、interpolate 命名空间、全局命名空间；转换旗标 !s/!r/!q/!t/!i/!u/!l/!c 可组合（如 !cl）且顺序固定，玩家输入务必加 !q。
 - 文本标签有成对与自闭合两种；{b}{i}{u}{s}{color}{size}{font}{cps}{k}{alpha}{image}{a} 负责排版，{w}{p}{nw}{fast}{done} 负责节奏；每行都用的效果应改用样式表达。
-- Monologue 把三引号字符串按空行拆成多条 say，rpy monologue single 与 rpy monologue none 调整拆分策略。
-- NVL 模式多行同屏：Character 加 kind=nvl、页末 nvl clear；define menu = nvl_menu 或 menu (nvl=True): 启用 NVL 菜单；nvl show/hide 管窗口；{clear} 标签等价 nvl clear；与 Monologue 兼容。
+- Monologue 把三引号字符串按空行拆成多条 say，rpy monologue single 与 rpy monologue none 调整拆分策略；与 NVL 模式兼容。
 - Character 进阶：image 参数配合 say 属性自动 show（-happy 移除、@ 临时），extend 续写上一句，dynamic=True 动态角色名，window auto 管理窗口显隐。
 
 ## 参考链接
 
 - [文本（Text）](https://www.renpy.org/doc/html/text.html)
 - [对白与角色（Dialogue and Characters）](https://www.renpy.org/doc/html/dialogue.html)
-- [NVL 模式（NVL Mode）](https://www.renpy.org/doc/html/nvl_mode.html)
 - [快速入门（Quick Start）](https://www.renpy.org/doc/html/quickstart.html)

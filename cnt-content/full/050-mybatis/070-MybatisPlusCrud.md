@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 90
 title: MyBatis-Plus 单表 CRUD：免掉六成体力活，不动 SQL 主权
 description: 以「每张表五套 XML 的单表体力税」引入：只做增强不做改变的定位、注解三件套与 IdType 选型表、BaseMapper 单表五连、LambdaQueryWrapper 的编译期列名检查与 condition 动态条件，附零 XML 跑通单表与动态条件 SQL 对照两个实验。
 module: 'mybatis'

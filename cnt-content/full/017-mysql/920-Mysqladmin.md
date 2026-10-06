@@ -1,5 +1,5 @@
 ---
-order: 900
+order: 950
 title: mysqladmin：一条命令的运维工具箱
 module: 'mysql'
 category: 数据库
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'mysql/850-MySQLConfigOps'
-  - 'mysql/860-PerformanceTuningSecurity'
+  - 'mysql/925-MySQLShellToolkit'
   - 'mysql/740-SQLInjectionBasicsDetection'
 prerequisites:
   - 'start/030-DevEnvironmentSetup'

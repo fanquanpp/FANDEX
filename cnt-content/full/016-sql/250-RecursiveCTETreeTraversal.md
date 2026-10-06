@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 270
 title: 递归 CTE 遍历树结构
 module: 'sql'
 category: 数据库
@@ -398,7 +398,57 @@ ORDER BY total_weight
 LIMIT 1;  -- 最短路径
 ```
 
-## 6. 小结
+## 6. 两个进阶案例：薪资链与 BOM 展开
+
+**案例一：从员工到 CEO 的薪资链**——自底向上遍历的典型（锚点是"指定的员工"而不是根节点）：
+
+```sql
+WITH RECURSIVE salary_chain AS (
+  SELECT id, name, manager_id, salary, 0 AS level
+  FROM employees
+  WHERE id = 42              -- 锚点：起始员工（不是 manager_id IS NULL）
+
+  UNION ALL
+
+  SELECT e.id, e.name, e.manager_id, e.salary, sc.level + 1
+  FROM employees e
+  JOIN salary_chain sc ON e.id = sc.manager_id   -- 方向反转：找"我的经理"
+)
+SELECT name, salary, level FROM salary_chain ORDER BY level;
+```
+
+与本篇组织架构案例唯一的区别是连接方向：`e.id = sc.manager_id` 沿 manager_id 向上爬，锚点从"根"换成"指定节点"。上下行遍历共用同一套骨架，改的只有这两处。
+
+**案例二：BOM 物料展开（数量沿路径累乘）**：
+
+```sql
+WITH RECURSIVE bom_explosion AS (
+  SELECT product_id, component_id, quantity,
+         CAST(component_id AS VARCHAR(1000)) AS path,
+         1 AS depth
+  FROM bill_of_materials
+  WHERE product_id = 100                -- 顶级产品
+
+  UNION ALL
+
+  SELECT b.product_id, b.component_id,
+         b.quantity * be.quantity AS quantity,   -- 关键：数量累乘
+         CAST(be.path || '>' || b.component_id AS VARCHAR(1000)),
+         be.depth + 1
+  FROM bill_of_materials b
+  JOIN bom_explosion be ON b.product_id = be.component_id
+  WHERE be.depth < 10                   -- 层数上限，防环兜底
+)
+SELECT component_id,
+       SUM(quantity) AS total_quantity,   -- 同一组件出现在多条装配路径，求和收拢
+       MAX(depth) AS max_depth
+FROM bom_explosion
+GROUP BY component_id;
+```
+
+两个要点：递归成员里 `b.quantity * be.quantity` 把父件的累计用量乘上子件单耗——"1 台整机要 2 块板，每块板要 3 颗螺丝，螺丝总量 6"就是这么算出来的；`SUM(quantity)` 收拢时同一个 component 出现在多条路径是正常的（多路径装配），别去重。`depth < 10` 是显式层数上限——BOM 数据里脏环不罕见，比裸奔安全。
+
+## 7. 小结
 
 - 初学者要点：递归 CTE = 锚点（起点行集）+ `UNION ALL` + 引用自身的递归成员；
   记住执行模型是"逐层迭代直到空集"，每层都能携带 level、path 等派生列。

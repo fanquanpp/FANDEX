@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 120
 title: 屏幕语言与界面
 module: 'renpy'
 category: 游戏开发
@@ -9,7 +9,8 @@ author: fanquanpp
 updated: '2026-09-22'
 related:
   - 'renpy/040-LabelsControlFlowAndMenus'
-  - 'renpy/110-GuiStylesAndCustomization'
+  - 'renpy/085-ScreenActionsAndInteraction'
+  - 'renpy/110-GuiCustomization'
 prerequisites:
   - 'renpy/040-LabelsControlFlowAndMenus'
 ---

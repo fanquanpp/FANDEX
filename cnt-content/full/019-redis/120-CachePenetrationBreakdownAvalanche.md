@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 150
 title: 缓存穿透击穿雪崩
 module: 'redis'
 category: 数据库
@@ -9,12 +9,21 @@ author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'redis/060-BitMapRedis'
+  - 'redis/125-CachePatternsAndDbConsistency'
   - 'redis/230-PipeTransactionAtomic'
   - 'redis/240-LuaScriptAtomicExecution'
   - 'redis/130-MemoryEvictionPolicy'
 prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---
+
+## 知识点地图
+
+- **知识类别**：缓存异常防护——穿透（查不存在的数据）、击穿（热点键过期）、雪崩（成片失效）三类问题的现象、解法与代价。
+- **解决什么问题**：缓存 MISS 后流量直达数据库，数据库抗压能力低两三个数量级，三类异常都会把它打垮。本文给每一类可落地的解法与取舍依据。
+- **什么时候用到**：缓存上线前的防御性设计；压测与大促前的自查清单（第 5 节）；故障复盘时对号入座。
+
+与《缓存读写模式与数据库一致性》（redis/125-CachePatternsAndDbConsistency）的分工：**本文管「缓存没接住」的异常防护，125 管「缓存与库没对齐」的读写模式与一致性**——两篇合起来才是缓存生产的完整防线。
 
 ## 1. 一次促销开场的事故回放
 
@@ -134,7 +143,17 @@ def get_item_v2(item_id: int):
 Redis 8 同样内置，允许删除但空间略高），或定期全量重建布隆过滤器。
 新增元素记得双写（入数据库的同时 BF.ADD），否则新数据会被误拦。
 
-### 2.4 顺带一提：缓存击穿防护里的「单机版布隆」
+### 2.4 三个场景的防护选型
+
+**场景一：恶意扫描 API 的随机 ID**（攻击者每请求换一个不存在的 ID）——空值缓存的内存与键数不可控（每个 key 只活 60 秒但攻击面无限），必须上布隆过滤器。这是 2.3 节布隆的正解场景：合法 ID 空间可枚举（商品 ID 上限已知），过滤器容量可预估。
+
+**场景二：ID 段本身可校验的内部接口**（订单号规则为日期+序列，非法格式一眼可辨）——连布隆都不用，一层格式/范围校验就是全部防线（2.4 节的「单机版布隆」原则）：过滤器是给「合法 ID 空间稀疏且不可枚举」的场景准备的，能便宜拦截就不要堆组件。
+
+**场景三：UGC 内容的可见性穿透**（内容被删除或审核下架后，缓存里还是旧值，攻击者专扫已删内容）——这是「穿透」的孪生问题：库与缓存都不该有这个值。解法是删除路径**主动失效**（删内容时同步 DEL 缓存键，见 125 篇的失效模式）加短 TTL 空值缓存兜底，而不是靠过滤器——过滤器拦「从未存在」，拦不了「曾经存在」。
+
+三场景的选择树：ID 格式可校验 → 参数校验；ID 从未存在且可枚举 → 布隆过滤器；值曾经存在后被删 → 删除主动失效 + 空值兜底。
+
+### 2.5 顺带一提：缓存击穿防护里的「单机版布隆」
 
 如果只是「判断 ID 段是否合法」（如 ID 必须为正且小于已知最大值），
 连布隆过滤器都不用——一行范围校验就能拦掉大多数攻击。过滤器是给
@@ -306,7 +325,69 @@ flowchart TD
 低于 80%（`INFO memory`）；TTL 分布无尖峰。命中率骤降往往是三问题
 的前兆，先看趋势再查原因。
 
-## 6. 练习
+## 6. 动手实践
+
+先只读任务与提示，自己写完再展开参考实现。
+
+**自检一：给穿透写完整的「空值缓存 + 过滤器」双层防线。** 要求：`get_item_v3` 先过布隆过滤器（拦截 100% 确定不存在的），未拦截的走空值缓存路径；注意两个边界——新增商品时双写过滤器；商品下架（DB 删除）时缓存怎么处理。
+
+提示：双写发生在「DB 写入成功之后」；下架场景回忆 2.4 节场景三——过滤器拦不了「曾经存在」，下架要走主动失效。
+
+<details>
+<summary>自检一参考实现</summary>
+
+```python
+def get_item_v3(item_id: int):
+    if not r.bf().exists("items:bf", str(item_id)):
+        return None                          # 一定不存在：零 DB 压力
+
+    key = f"item:{item_id}"
+    data = r.get(key)
+    if data is not None:
+        return None if data == NULL_SENTINEL else json.loads(data)
+
+    db_data = db.query_item(item_id)
+    if db_data:
+        r.setex(key, 3600, json.dumps(db_data))
+    else:
+        r.setex(key, 60, NULL_SENTINEL)      # 曾存在后被删：空值兜底
+    return db_data
+
+def create_item(payload):
+    item_id = db.insert_item(payload)        # 先落库
+    r.bf().add("items:bf", str(item_id))     # 后双写过滤器
+    return item_id
+
+def remove_item(item_id: int):
+    db.delete_item(item_id)
+    r.delete(f"item:{item_id}")              # 主动失效，靠过滤器是拦不住的
+```
+
+要点自查：空值 TTL 60 秒与数据 TTL 3600 秒的比例是有意为之（脏「不存在」的代价远小于脏「存在」）；`remove_item` 若漏掉 `r.delete`，用户最多看 1 小时已删内容——把它写成 DB 删除的同一个事务边界（或至少同一个代码路径）是流程保障。
+</details>
+
+**自检二：判断下面这段代码的穿透防线哪里坏了。**
+
+```python
+def buggy_get(item_id):
+    data = r.get(f"item:{item_id}")
+    if data:
+        return json.loads(data)
+    db_data = db.query_item(item_id)
+    if db_data:
+        r.setex(f"item:{item_id}", 3600, json.dumps(db_data))
+    return db_data
+```
+
+提示：它在库里查不到时返回了什么？缓存了吗？攻击者拿到什么信号？
+
+<details>
+<summary>自检二参考答案</summary>
+
+两个洞：一是查不到时**既不返回哨兵也不写空值缓存**，每次未命中都穿透到底层——这正是 2.1 节现象的原样复刻；二是返回 None 前没有任何过滤器拦截，攻击成本为零。修复路径：套用自检一的双层结构，或至少把 `r.setex(key, 60, NULL_SENTINEL)` 补上。这题的教训：穿透防护的最小单元是「未命中也要有动作」，返回 None 而什么都不缓存等于没有防线。
+</details>
+
+**练习**：
 
 1. 本地起 Redis 8，建一个误判率 1% 的布隆过滤器，插入 10 万元素后
    用 `BF.INFO` 对比设计值与实际值；再故意查 1000 个未插入元素，

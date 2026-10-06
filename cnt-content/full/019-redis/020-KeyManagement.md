@@ -8,7 +8,6 @@ description: Redis Key 全生命周期：EXPIRE 的 NX/XX/GT/LT 选项、惰性�
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'redis/110-CacheStrategyAdvancedFeature'
   - 'redis/130-MemoryEvictionPolicy'
   - 'redis/010-OverviewCoreDataStructure'
 prerequisites:

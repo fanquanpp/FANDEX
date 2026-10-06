@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 450
 title: git-gc 仓库垃圾回收
 module: 'git'
 category: 工具链

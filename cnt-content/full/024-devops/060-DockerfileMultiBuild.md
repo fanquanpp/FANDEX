@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: Dockerfile 多阶段构建
 module: 'devops'
 category: 云与基础设施

@@ -15,6 +15,14 @@ prerequisites:
   - 'typescript/080-BasicTypeSystem'
 ---
 
+## 知识点地图
+
+- **知识类别**：NestJS 入门——框架定位、三层结构（模块/控制器/服务）、依赖注入第一印象、CLI 起步与项目骨架。
+- **解决什么问题**：第一次接触 NestJS 时的「它是什么、为什么有这么多装饰器、从哪开始」；建立「控制器管请求、服务管业务、模块管组装」的心智模型。
+- **什么时候用到**：学 NestJS 的第一篇；评估「团队项目要不要上 NestJS」时的定位参考（第 3 节生态位）。
+
+学习路线预告：三层结构展开（nestjs/160）-> 管线（守卫 nestjs/200、中间件 nestjs/202、管道 nestjs/170）-> 认证（nestjs/205）与文档（nestjs/215）-> 数据与异步（nestjs/180、nestjs/230、nestjs/235）-> 微服务与实时（nestjs/240、nestjs/244）-> 上线自检（nestjs/242 健康检查）。
+
 ## 0. 五分钟创建第一个接口（先读这里）
 
 > 学习目标：跑起一个 NestJS 应用，并理解"模块-控制器-服务"三层结构。
@@ -130,20 +138,21 @@ export class AppController {
 
 ## 3. 生态位：NestJS 适合什么
 
-| 需求 | 官方/配套包 |
-| --- | --- |
-| 配置与环境变量 | @nestjs/config |
-| 数据库 ORM | @nestjs/typeorm、@nestjs/mongoose、Prisma/Drizzle 直连 |
-| 认证 | @nestjs/passport、@nestjs/jwt |
-| 接口文档 | @nestjs/swagger（OpenAPI） |
-| 队列任务 | @nestjs/bullmq |
-| 缓存 | @nestjs/cache-manager |
-| 微服务与通信 | @nestjs/microservices |
-| 健康检查 | @nestjs/terminus |
+| 需求 | 官方/配套包 | 本模块对应篇目 |
+| --- | --- | --- |
+| 配置与环境变量 | @nestjs/config | nestjs/220 |
+| 数据库 ORM | @nestjs/typeorm、@nestjs/mongoose、Prisma/Drizzle 直连 | nestjs/180 |
+| 认证授权 | @nestjs/passport、@nestjs/jwt | nestjs/205 |
+| 接口文档 | @nestjs/swagger（OpenAPI） | nestjs/215 |
+| 队列任务 | @nestjs/bullmq | nestjs/235 |
+| 缓存 | @nestjs/cache-manager | nestjs/230 |
+| 微服务与通信 | @nestjs/microservices | nestjs/240 |
+| 实时推送 | @nestjs/websockets + socket.io | nestjs/244 |
+| 健康检查 | @nestjs/terminus | nestjs/242 |
 
 **讲解：**
 
-1. NestJS 的定位是"后端应用的架构骨架 + 官方生态覆盖常见需求"：校验、配置、认证、文档、队列、微服务都有官方包，风格统一。
+1. NestJS 的定位是"后端应用的架构骨架 + 官方生态覆盖常见需求"：校验、配置、认证、文档、队列、微服务、实时通信都有官方包，风格统一——表的第三列给出每个生态位在本模块的展开篇目，按需跳读。
 2. 换来的是约束：类 + 装饰器的写法有一定仪式感。写几十行的小服务它是负资产，写几万行的团队项目它是正资产——工具没有高下，只有合身不合身。
 3. 企业级特性（模块隔离、依赖注入作用域、生命周期钩子、拦截器管线）会在本模块后续各篇逐一展开。
 

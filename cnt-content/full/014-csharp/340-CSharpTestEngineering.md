@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 380
 title: C# 测试与工程化
 module: 'csharp'
 category: 后端技术
@@ -8,7 +8,7 @@ description: xUnit/NUnit/Moq、集成测试、BenchmarkDotNet、Source Generator
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'csharp/150-CSharpAdvancedFeature'
+  - 'csharp/350-CSharpReflection'
   - 'csharp/250-CSharpDotNet'
   - 'csharp/370-CSharpGameDevUnity'
   - 'csharp/120-LINQDeep'
@@ -20,6 +20,12 @@ prerequisites: []
 - [C# .NET 平台与生态](/csharp/250-CSharpDotNet)：建议先完成前一篇的学习
 
 ## 学习目标
+
+## 知识点地图
+
+- **知识类别**：测试与工程化（xUnit/Moq 单元测试、集成测试、BenchmarkDotNet、分析器与 CI 门禁）。
+- **解决什么问题**：代码写完只算一半——怎么证明它对、怎么保证改坏立刻被知道、怎么证明性能没有退化。本篇给出 .NET 侧的完整工具链选型与门禁编排。
+- **什么时候用到**：为服务类/纯函数写第一个测试时；CI 里加测试与基准门禁时；写 Roslyn 分析器约束团队规范时。
 
 - 掌握「1. 历史动机与演进脉络」的核心机制、典型用法与常见陷阱
 - 掌握「2. 形式化定义」的核心机制、典型用法与常见陷阱

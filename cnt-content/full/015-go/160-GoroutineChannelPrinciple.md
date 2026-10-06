@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 180
 title: goroutine 与 channel 通信原理
 module: 'go'
 category: 后端技术

@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 190
 title: Concurrent 模式：让慢更新别拖住快交互
 module: 'react'
 category: 前端技术
@@ -237,7 +237,7 @@ function switchTab(next) {
 ## 9. 与之前和之后的知识的关系
 
 - 往前：120 篇给了机制（切片、车道、丢树重来），本篇是它的 API 消费面；070 篇的数据获取层是 Suspense 挂起的前提；
-- 往后：[React 性能优化](/react/180-ReactPerformance) 把 transition 放进完整优化工具箱；[React 服务端渲染](/react/260-ReactSSR) 讲流式 SSR 与选择性水合——Suspense 边界在服务端同样决定「哪块先到」；[Server Components](/react/140-ServerComponents) 是另一种「等待」的归宿。
+- 往后：[React 性能优化](/react/180-ReactPerformance) 把 transition 放进完整优化工具箱；[React 服务端渲染](/react/260-ReactSSR) 讲流式 SSR 与选择性水合——Suspense 边界在服务端同样决定「哪块先到」；[Server 和 Client 组件](/react/400-ServerClientComponents) 是另一种「等待」的归宿。
 
 ## 10. 官方文档
 
@@ -253,6 +253,27 @@ function switchTab(next) {
 - 能解释 transition 为什么能防 fallback 闪烁（挂起时保留旧内容）；
 - 能向同事解释 tearing 的一句话版本，并说出 useSyncExternalStore 三个参数各是什么；
 - 能说出 flushSync 的唯一适用场景与滥用代价。
+
+## 速查（承接自 Hooks 深入速查段）
+
+**useTransition 过渡更新**
+
+```tsx
+const [isPending, startTransition] = useTransition();
+
+const handleTab = (tab: string) => {
+  startTransition(() => {
+    setActiveTab(tab); // 标记为可打断的低优先级更新
+  });
+};
+```
+
+**useDeferredValue 延迟值**
+
+```tsx
+const deferredQuery = useDeferredValue(query);
+const filtered = useMemo(() => filter(deferredQuery), [deferredQuery]);
+```
 
 ## 本章总结
 

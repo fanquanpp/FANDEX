@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 200
 title: 列表推导式进阶：把三行循环压成一行
 module: 'python'
 category: 后端技术
@@ -11,7 +11,6 @@ related:
   - 'python/140-BuiltinDataStructure'
   - 'python/150-EnumerateZipBuiltinPairs'
   - 'python/165-PythonBytecodeInternals'
-  - 'python/170-ComprehensionGenerator'
   - 'python/130-ExceptionHandling'
 prerequisites:
   - 'python/140-BuiltinDataStructure'

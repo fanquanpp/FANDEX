@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 500
 title: Kotlin 多平台
 module: 'kotlin'
 category: 后端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'kotlin/120-KotlinCollectionCoroutine'
-  - 'kotlin/240-KotlinCoroutineAdvanced'
+  - 'kotlin/250-CoroutineDispatcherContext'
   - 'kotlin/550-KotlinDSLDomainSpecificLanguage'
   - 'kotlin/380-KotlinTestBestPractice'
 prerequisites: []
@@ -17,7 +17,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [Kotlin 协程进阶](/kotlin/240-KotlinCoroutineAdvanced)：建议先完成前一篇的学习
+- [协程调度器与上下文](/kotlin/250-CoroutineDispatcherContext)：建议先完成前一篇的学习
 
 ## 学习目标
 

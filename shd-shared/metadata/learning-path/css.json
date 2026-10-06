@@ -335,7 +335,7 @@
           "title": "排版与网格系统",
           "desc": "字号阶梯、间距体系与基准线",
           "difficulty": "intermediate",
-          "doc": "490-TypographyAndGridSystem"
+          "doc": "490-TypeScaleAndSpacingTokens"
         },
         {
           "id": "css-031",
@@ -475,7 +475,7 @@
           "title": "CSS 理论知识点",
           "desc": "层叠规则、包含块、格式化上下文与渲染原理。",
           "difficulty": "intermediate",
-          "doc": "640-CSSTheoryKnowledge"
+          "doc": "640-VisualFormattingModel"
         },
         {
           "id": "css-064",

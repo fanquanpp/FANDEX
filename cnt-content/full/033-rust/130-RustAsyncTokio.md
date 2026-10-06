@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 160
 title: "异步编程与 Tokio：让等待的时间干活"
 module: 'rust'
 category: 后端技术

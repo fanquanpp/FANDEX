@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 560
 title: 形式语言与自动机
 module: 'cs-fundamentals'
 category: 计算机科学

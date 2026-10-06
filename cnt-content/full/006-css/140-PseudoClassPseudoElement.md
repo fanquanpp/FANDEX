@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 150
 title: 伪类与伪元素
 module: 'css'
 category: 前端技术

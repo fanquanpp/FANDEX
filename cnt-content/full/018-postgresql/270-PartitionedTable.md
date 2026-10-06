@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 240
 title: 分区表
 module: 'postgresql'
 category: 数据库
@@ -82,6 +82,22 @@ ALTER TABLE orders ATTACH PARTITION orders_2026_q1
 
 -- 删除分区（数据也删除）
 DROP TABLE orders_2026_q1;
+
+-- 分区索引：在父表上建一次，自动传播到所有分区
+CREATE INDEX idx_orders_user ON orders (user_id);
+```
+
+手工按月建分区容易漏建——业务一旦写入"未来第 N 天"的日期就报错。`pg_partman` 扩展负责预建与滚动维护：
+
+```sql
+CREATE EXTENSION pg_partman;
+SELECT partman.create_parent(
+  p_parent_table := 'public.access_logs',
+  p_control      := 'created_at',
+  p_type         := 'range',
+  p_interval     := '1 month',
+  p_premake      := 6          -- 预先建好未来 6 个分区
+);
 ```
 
 ## 6. 分区裁剪

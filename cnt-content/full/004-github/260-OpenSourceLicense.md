@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 290
 title: 开源许可证选择
 module: 'github'
 category: 工具链

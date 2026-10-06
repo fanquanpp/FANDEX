@@ -148,7 +148,7 @@
           "title": "位运算与位域",
           "desc": "位操作与位域结构",
           "difficulty": "intermediate",
-          "doc": "070-BitwiseBitField"
+          "doc": "070-BitwiseOperationAndMask"
         },
         {
           "id": "c-304",
@@ -271,10 +271,10 @@
         },
         {
           "id": "c-321",
-          "title": "静态分析与调试",
-          "desc": "代码静态分析与调试技巧",
+          "title": "静态分析与 Sanitizers",
+          "desc": "编译警告、cppcheck/clang-tidy 与 ASan/UBSan/TSan 四件套",
           "difficulty": "intermediate",
-          "doc": "490-StaticAnalysisDebug"
+          "doc": "485-StaticAnalysisAndSanitizers"
         },
         {
           "id": "c-322",
@@ -302,14 +302,14 @@
           "title": "C23 与 C2y 新标准",
           "desc": "C23标准新特性、C2y草案、GCC常用选项、多文件编译、Makefile、C与汇编混编、标准库速查。",
           "difficulty": "advanced",
-          "doc": "520-C23C2y"
+          "doc": "520-C23CoreFeatures"
         },
         {
           "id": "c-326",
           "title": "内存管理",
           "desc": "C语言动态内存分配、内存布局、常见内存错误与调试技术详解。",
           "difficulty": "advanced",
-          "doc": "210-MemoryManagement"
+          "doc": "210-ProcessMemoryLayoutAndErrors"
         },
         {
           "id": "c-327",
@@ -398,7 +398,7 @@
           "title": "const 与 volatile 详解",
           "desc": "限定符的编译器与硬件视角",
           "difficulty": "intermediate",
-          "doc": "260-CVolatileAndConstDeepDive"
+          "doc": "260-ConstAndVolatileQualifiers"
         }
       ]
     }

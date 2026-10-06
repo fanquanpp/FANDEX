@@ -1,5 +1,5 @@
 ---
-order: 660
+order: 750
 title: SpringBoot 安全
 module: 'java'
 category: 后端技术
@@ -8,12 +8,10 @@ description: Spring Security与认证授权
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
   - 'java/830-SpringBootAdvanced'
   - 'java/850-SpringBootDataAccess'
   - 'java/770-JavaDesignPattern'
 prerequisites:
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
   - 'java/830-SpringBootAdvanced'
 ---
 

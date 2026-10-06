@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 100
 title: ATL：变换与动画
 module: 'renpy'
 category: 游戏开发
@@ -221,6 +221,32 @@ transform pulse_button:
 
 样条与圆周运动：插值语句支持 knot 控制点，让图像沿样条曲线运动（1 个控制点为二次贝塞尔曲线，2 个为三次贝塞尔曲线，3 个以上为 Catmull-Rom 样条）；ATL 还提供 clockwise 与 counterclockwise 圆周运动的写法。细节见官方 transforms 文档，本篇不展开。
 
+## 自定义转场：transition 与 transform 的联动
+
+030 篇用过内置转场（dissolve、fade），但转场本身也可以用 ATL 定义——define 一个 Transform 并用 moveinright 这类写法注册成自定义转场：
+
+```renpy
+define flash = IncompatibleMoveTransition(0.5)
+define slow_dissolve = Dissolve(2.0)
+
+define wipe_right = MoveTransition(0.8)
+
+transform slide_in:
+    xalign 1.0
+    alpha 0.0
+    linear 0.6 xalign 0.5 alpha 1.0
+
+define enter_slide = MoveTransition(0.6, enter=slide_in)
+```
+
+- 直接 define 一个引擎转场类实例（Dissolve、MoveTransition 等）就是自定义转场，名字此后可用在 with 语句里：with slow_dissolve；
+- MoveTransition 支持 enter 与 exit 参数：enter 接一个 transform，新出现的图像不再瞬间出现，而是播放这段 transform 入场——这就是"转场与 transform 的生命周期联动"：转场决定"何时切换"，transform 决定"切换期间个体怎么动"；
+- 同理 exit 接离场 transform，move 参数控制移动类转场。
+
+为什么值得单独讲：项目里所有转场集中 define 成命名转场（如 define chapter_fade = Fade(1.0, 0.5, 1.0)），剧本里只写 with chapter_fade——改全局演出节奏时只动一处，这与"样式集中定义"是同一工程思路。
+
+on 事件与转场的配合要点：show 加 with 触发的是 show 事件与转场的叠加；若同一 transform 里既有 on show 块又被用作 enter 转场，两段动画会同时跑，容易叠出过快的位移——同一个入场动效只留一处，要么写进 on show，要么挂进转场的 enter。
+
 ## transform 的替换规则
 
 最后是三个容易踩坑的规则：
@@ -284,10 +310,12 @@ transform breathing:
 - parallel 多块并行、全完才完、各改各的属性；choice 按权重（默认 1.0）随机选块；animation 必须是块第一条，改用 at 时间基，换属性不重置动画。
 - on 响应 show/replace/hide/replaced 与 hover/idle/selected_hover 等事件；另有 function、time、event、contains 等语句；样条 knot 与顺逆时针圆周运动见官方文档。
 - 替换规则：无 at 子句沿用旧 transform；ATL 相互替换属性继承；彻底重置用 hide 加 show 或 reset。
+- 自定义转场用 define 注册转场类实例（Dissolve、MoveTransition 等），MoveTransition 的 enter/exit 接 transform 实现"转场管切换、transform 管个体动效"的联动；入场动效只留一处，避免 on show 与 enter 叠加。
 
 ## 参考链接
 
 - [变换与 ATL（Transforms and ATL）](https://www.renpy.org/doc/html/transforms.html)
+- [转场（Transitions）](https://www.renpy.org/doc/html/transitions.html)
 - [图像显示（Displaying Images）](https://www.renpy.org/doc/html/displaying_images.html)
 - [屏幕语言（Screen Language）](https://www.renpy.org/doc/html/screens.html)
 - [快速入门（Quick Start）](https://www.renpy.org/doc/html/quickstart.html)

@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 290
 title: 装饰器详解
 module: 'typescript'
 category: 前端技术
@@ -8,10 +8,11 @@ description: TypeScript装饰器与元编程
 author: fanquanpp
 updated: '2026-09-28'
 related:
+  - 'typescript/090-ClassMembersAndModifiers'
   - 'typescript/470-MappedTypeAdvanced'
   - 'typescript/230-GenericConstraintDefault'
   - 'typescript/300-DeclarationFileWriting'
-  - 'typescript/330-ModuleResolutionModernToolchains'
+  - 'typescript/315-PackageExportsEsmInterop'
 prerequisites: []
 ---
 
@@ -134,6 +135,30 @@ interface ClassMethodDecoratorContext<
   readonly addInitializer(initializer: (this: Class) => void): void;
 }
 ```
+
+同样是「方法日志」，标准装饰器这样写（无需任何编译选项）：
+
+```typescript
+// 标准装饰器（TS 5.0+ 默认启用）：签名是 (value, context) 两个参数
+function logStandard<T extends (...args: any[]) => any>(
+  value: T,
+  context: ClassMethodDecoratorContext<unknown, T>,
+): T {
+  return function (this: unknown, ...args: any[]) {
+    console.log(`[${String(context.name)}] called with:`, args);
+    return value.apply(this, args);
+  } as T;
+}
+class Greeting {
+  @logStandard
+  hello(name: string) { return `Hello, ${name}`; }
+}
+console.log(new Greeting().hello('TS'));
+// 输出: [hello] called with: ['TS']
+//       Hello, TS
+```
+
+对照实验性签名的同名需求（三参数 `(target, key, descriptor)` + 包装 `descriptor.value`），见 4.6 节。
 
 ### 2.3 语义规则
 
@@ -779,6 +804,188 @@ class ExampleService {
   }
 }
 ```
+
+### 4.7 装饰器工厂、执行顺序与综合应用（归并自类篇）
+
+> 本节内容归并自 `typescript/090-ClassMembersAndModifiers` 的装饰器章节（原类与装饰器篇拆分后，装饰器域集中到本篇），均为**实验性装饰器**签名，需开启 `experimentalDecorators`。迁移到标准装饰器的思路见 2.2 节。
+
+#### 4.7.1 装饰器工厂
+
+装饰器工厂是「返回装饰器的函数」——需要给装饰器传配置时使用：
+
+```typescript
+// 装饰器工厂
+function repeat(times: number) {
+    return function(target: any, key: string, descriptor: PropertyDescriptor) {
+        const original = descriptor.value
+        descriptor.value = function(...args: any[]) {
+            for (let i = 0; i < times; i++) {
+                original.apply(this, args)
+            }
+        }
+    }
+}
+
+class User {
+    @repeat(3)
+    greet(): void {
+        console.log("Hello")
+    }
+}
+```
+
+#### 4.7.2 装饰器的执行顺序
+
+多个装饰器应用于同一个声明时，实验性装饰器的执行顺序：
+
+1. **参数装饰器**：从左到右执行
+2. **方法装饰器**：从右到左执行
+3. **属性装饰器**：从右到左执行
+4. **类装饰器**：从右到左执行
+
+```typescript
+function decorator1() {
+  console.log('Decorator 1 applied');
+  return function (target: any, key?: string, descriptor?: PropertyDescriptor) {
+    console.log('Decorator 1 executed');
+  };
+}
+function decorator2() {
+  console.log('Decorator 2 applied');
+  return function (target: any, key?: string, descriptor?: PropertyDescriptor) {
+    console.log('Decorator 2 executed');
+  };
+}
+@decorator1()
+@decorator2()
+class Example {
+  @decorator1()
+  @decorator2()
+  public property: string;
+  @decorator1()
+  @decorator2()
+  public method(@decorator1() @decorator2() param: string): void {}
+  constructor() {
+    this.property = 'test';
+  }
+}
+// 执行顺序：
+// Decorator 2 applied
+// Decorator 1 applied
+// Decorator 2 applied
+// Decorator 1 applied
+// Decorator 2 applied
+// Decorator 1 applied
+// Parameter decorator applied to method at index 0 (decorator2)
+// Parameter decorator applied to method at index 0 (decorator1)
+// Decorator 2 executed (method)
+// Decorator 1 executed (method)
+// Decorator 2 executed (property)
+// Decorator 1 executed (property)
+// Decorator 2 executed (class)
+// Decorator 1 executed (class)
+```
+
+规则与 2.3 节的「求值自顶向下、应用自底向上」一致：工厂调用（applied）发生在求值阶段，装饰函数体（executed）发生在应用阶段。
+
+#### 4.7.3 综合应用：日志 + 缓存 + 错误处理
+
+```typescript
+// 日志装饰器
+function log(target: any, key: string, descriptor: PropertyDescriptor) {
+  const originalMethod = descriptor.value;
+  descriptor.value = function (...args: any[]) {
+    console.log(`[${new Date().toISOString()}] ${key} called with:`, args);
+    const result = originalMethod.apply(this, args);
+    console.log(`[${new Date().toISOString()}] ${key} returned:`, result);
+    return result;
+  };
+  return descriptor;
+}
+// 缓存装饰器
+function cache() {
+  const cacheMap = new Map<string, any>();
+  return function (target: any, key: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+    descriptor.value = function (...args: any[]) {
+      const cacheKey = `${key}:${JSON.stringify(args)}`;
+      if (cacheMap.has(cacheKey)) {
+        console.log(`Cache hit for ${key}`);
+        return cacheMap.get(cacheKey);
+      }
+      console.log(`Cache miss for ${key}`);
+      const result = originalMethod.apply(this, args);
+      cacheMap.set(cacheKey, result);
+      return result;
+    };
+    return descriptor;
+  };
+}
+// 错误处理装饰器
+function handleError(defaultValue: any) {
+  return function (target: any, key: string, descriptor: PropertyDescriptor) {
+    const originalMethod = descriptor.value;
+    descriptor.value = function (...args: any[]) {
+      try {
+        return originalMethod.apply(this, args);
+      } catch (error) {
+        console.error(`Error in ${key}:`, error);
+        return defaultValue;
+      }
+    };
+    return descriptor;
+  };
+}
+class Calculator {
+  @log
+  @cache()
+  add(a: number, b: number): number {
+    console.log('Performing addition...');
+    return a + b;
+  }
+  @log
+  @cache()
+  multiply(a: number, b: number): number {
+    console.log('Performing multiplication...');
+    return a * b;
+  }
+  @log
+  @handleError(0)
+  divide(a: number, b: number): number {
+    if (b === 0) {
+      throw new Error('Division by zero');
+    }
+    return a / b;
+  }
+  @log
+  @handleError([])
+  getNumbers(n: number): number[] {
+    if (n < 0) {
+      throw new Error('n must be non-negative');
+    }
+    return Array.from({ length: n }, (_, i) => i);
+  }
+}
+// 使用示例
+const calculator = new Calculator();
+// 第一次调用（缓存 miss）
+console.log(calculator.add(5, 3)); // 输出: 8
+// 第二次调用（缓存 hit）
+console.log(calculator.add(5, 3)); // 输出: 8
+// 不同参数（缓存 miss）
+console.log(calculator.add(10, 20)); // 输出: 30
+// 乘法
+console.log(calculator.multiply(4, 6)); // 输出: 24
+console.log(calculator.multiply(4, 6)); // 缓存 hit
+// 错误处理 - 除以零
+console.log(calculator.divide(10, 0)); // 输出: 0（默认值）
+// 错误处理 - 负数
+console.log(calculator.getNumbers(-5)); // 输出: []（默认值）
+// 正常调用
+console.log(calculator.getNumbers(5)); // 输出: [0, 1, 2, 3, 4]
+```
+
+装饰器应用场景（日志、性能监控、权限控制、数据验证、依赖注入、缓存、错误处理）与最佳实践原则见 6 节与 7 节。
 
 ## 5. 对比分析
 
@@ -1426,3 +1633,201 @@ console.log(svc.fib(40));  // 第二次命中缓存
 | 运行时依赖 | 无（或 reflect-metadata） | Spring 容器 | AspectJ runtime |
 
 ---
+## 附录 G：实验性装饰器速查（归并自类篇）
+
+> 本附录归并自 `typescript/090-ClassMembersAndModifiers`（原类与装饰器篇拆分后装饰器域集中到本篇），均为**实验性装饰器**签名（`experimentalDecorators: true`）。标准装饰器（TS 5.0+ 默认）使用 `(value, context)` 两参数签名且不含参数装饰器，见 2.2 节与附录 A。
+
+**换行写法：类装饰器**
+`function <装饰器>(<构造函数>: { new (...args: any[]): any }) { <语句> }`
+`@<装饰器>`
+`class <类名> { <语句> }`
+
+```typescript
+// 类装饰器
+function logged<T extends { new (...args: any[]): any }>(constructor: T) {
+    return class extends constructor {
+        created_at = new Date()
+    }
+}
+
+@logged
+class User {
+    constructor(public name: string) {}
+}
+```
+
+---
+
+**换行写法：方法装饰器**
+`function <装饰器>(<目标>, <键>, <描述符>) { <语句> }`
+`class <类名> {`
+`    @<装饰器>`
+`    <方法>(<参数>) { <语句> }`
+`}`
+
+```typescript
+// 方法装饰器
+function log(target: any, key: string, descriptor: PropertyDescriptor) {
+    const original = descriptor.value
+    descriptor.value = function(...args: any[]) {
+        console.log(`调用 ${key}`)
+        return original.apply(this, args)
+    }
+}
+
+class User {
+    @log
+    greet(name: string): string {
+        return `Hello, ${name}`
+    }
+}
+```
+
+---
+
+**换行写法：属性装饰器**
+`function <装饰器>(<目标>, <键>) { <语句> }`
+`class <类名> {`
+`    @<装饰器>`
+`    <属性>: <类型>`
+`}`
+
+```typescript
+// 属性装饰器
+function required(target: any, key: string) {
+    console.log(`${key} 是必填的`)
+}
+
+class User {
+    @required
+    name: string = ""
+}
+```
+
+---
+
+**换行写法：参数装饰器**
+`function <装饰器>(<目标>, <键>, <参数索引>) { <语句> }`
+`class <类名> {`
+`    <方法>(@<装饰器> <参数>: <类型>) { <语句> }`
+`}`
+
+```typescript
+// 参数装饰器
+function log_param(target: any, key: string, index: number) {
+    console.log(`参数 ${index} of ${key}`)
+}
+
+class User {
+    greet(@log_param name: string): string {
+        return `Hello, ${name}`
+    }
+}
+```
+
+---
+
+**换行写法：装饰器工厂**
+`function <装饰器>(<参数>): <装饰器> {`
+`    return function(<目标>) { <语句> }`
+`}`
+
+```typescript
+// 装饰器工厂
+function repeat(times: number) {
+    return function(target: any, key: string, descriptor: PropertyDescriptor) {
+        const original = descriptor.value
+        descriptor.value = function(...args: any[]) {
+            for (let i = 0; i < times; i++) {
+                original.apply(this, args)
+            }
+        }
+    }
+}
+
+class User {
+    @repeat(3)
+    greet(): void {
+        console.log("Hello")
+    }
+}
+```
+
+---
+
+**换行写法：类装饰器实战（添加属性）**
+`function <装饰器><<T> extends { new (...args: any[]): any }>(<构造函数>: <T>) {`
+`    return class extends <T> { <新属性> }`
+`}`
+
+```typescript
+// 使用类装饰器添加属性
+function timestamp<T extends { new (...args: any[]): any }>(constructor: T) {
+    return class extends constructor {
+        timestamp = Date.now()
+    }
+}
+
+@timestamp
+class User {
+    constructor(public name: string) {}
+}
+```
+
+---
+
+**换行写法：方法装饰器实战（日志）**
+`function <装饰器>(<目标>, <键>, <描述符>) {`
+`    const <原方法> = <描述符>.value`
+`    <描述符>.value = function(...args) { <前置> return <原方法>.apply(this, args) }`
+`}`
+
+```typescript
+// 使用方法装饰器实现日志
+function log_execution(target: any, key: string, descriptor: PropertyDescriptor) {
+    const original = descriptor.value
+    descriptor.value = function(...args: any[]) {
+        console.log(`执行 ${key}，参数: ${args}`)
+        const result = original.apply(this, args)
+        console.log(`${key} 执行完成`)
+        return result
+    }
+}
+
+class Calculator {
+    @log_execution
+    add(a: number, b: number): number {
+        return a + b
+    }
+}
+```
+
+---
+
+**换行写法：属性装饰器实战（验证）**
+`function <装饰器>(<目标>, <键>) {`
+`    let <值>: <类型>`
+`    Object.defineProperty(<目标>, <键>, { get, set })`
+`}`
+
+```typescript
+// 使用属性装饰器实现验证
+function validate_age(target: any, key: string) {
+    let value: number
+
+    Object.defineProperty(target, key, {
+        get() { return value },
+        set(new_value: number) {
+            if (new_value < 0 || new_value > 150) {
+                throw new Error("Invalid age")
+            }
+            value = new_value
+        }
+    })
+}
+
+class User {
+    @validate_age
+    age: number = 0
+}
+```

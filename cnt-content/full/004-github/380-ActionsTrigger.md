@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 420
 title: 'Actions 触发器：on 字段决定你的流水线什么时候跑'
 module: 'github'
 category: 工具链

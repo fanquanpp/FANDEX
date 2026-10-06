@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 300
 title: 依赖安全选项：你的项目里 95% 的代码不是你写的
 module: 'github'
 category: 工具链

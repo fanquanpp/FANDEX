@@ -11,7 +11,7 @@ related:
   - 'cs-fundamentals/010-ComputerOverview'
   - 'cs-fundamentals/090-ComputerArchitecture'
   - 'cs-fundamentals/060-NumberRepresentationEncoding'
-  - 'cs-fundamentals/100-ComputerPrinciple'
+  - 'cs-fundamentals/100-ComputerOrganizationRapidReview'
 prerequisites:
   - 'cs-fundamentals/010-ComputerOverview'
 ---

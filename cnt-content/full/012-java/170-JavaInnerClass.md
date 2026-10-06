@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 200
 title: Java 内部类详解
 module: 'java'
 category: 后端技术

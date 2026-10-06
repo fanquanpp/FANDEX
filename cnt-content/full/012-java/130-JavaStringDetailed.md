@@ -1,18 +1,26 @@
 ---
-order: 120
+order: 160
 title: Java 字符串详解
 module: 'java'
 category: 后端技术
 difficulty: beginner
-description: String 不可变性、字符串常量池、== 与 equals、StringBuilder/StringBuffer、常用 API 与正则表达式基础，零基础保姆级讲解。
+description: String 不可变性、字符串常量池、== 与 equals、StringBuilder/StringBuffer、常用 API、字符集编码与乱码排查、StringJoiner 与 format，零基础保姆级讲解。
 author: fanquanpp
 updated: '2026-09-27'
 related:
   - 'java/050-DataTypeConversion'
   - 'java/100-MethodDetailed'
+  - 'java/135-JavaRegexEssentials'
+  - 'java/280-IOStreamFileOperation'
 prerequisites:
   - 'java/050-DataTypeConversion'
 ---
+
+## 知识点地图
+
+- **知识类别**：字符串（java.lang.String 及其工具类）——Java 官方 API 中使用频率最高的类，本篇含不可变模型、常量池、拼接三件套、编码转换与格式化。
+- **解决什么问题**：文本怎么存、怎么比、怎么拼、怎么在字节与字符之间转换（乱码的根源就在最后一件）。
+- **什么时候用到**：一切业务代码；其中第 8 节编码知识在读文件、网络传输、数据库中文存取时必用。
 
 ## 0. 学习目标（可验证）
 
@@ -20,6 +28,8 @@ prerequisites:
 - [ ] 能区分 `==` 与 `equals()`，并解释字符串常量池的作用
 - [ ] 能用 `StringBuilder` 完成大量字符串拼接，并说明为什么比 `+` 快
 - [ ] 能用正则表达式完成 `matches` / `replaceAll` 基础匹配
+- [ ] 能用 `getBytes(Charset)` 与 `new String(bytes, charset)` 解释并排查一次中文乱码
+- [ ] 能用 `StringJoiner` 与 `String.format` 完成结构化拼接与格式化输出
 
 ## 1. 一句话理解
 
@@ -171,6 +181,77 @@ System.out.println(m.group());  // "138-12345678"
 2. `matches` 要求**整个字符串**匹配，`find` 只要**包含**匹配片段即可。
 3. `replaceAll` 的第一参数是正则，`replace` 的第一参数是普通文本，两者不要混用。
 
+> 深入的正则主题（Pattern/Matcher 两步式、分组捕获、邮箱/身份证完整校验规则）已独立成篇：[Java 正则表达式入门](/java/135-JavaRegexEssentials)。
+
+## 8. 字符集编码与乱码排查
+
+### 8.1 心智模型：字符表与字节序列是两层东西
+
+`char`/`String` 是「字符」（逻辑概念），磁盘与网络里只有「字节」（物理概念）。**字符集（Charset）就是字符与字节之间的翻译规则**：UTF-8 里一个汉字通常 3 个字节，GBK 里 2 个字节，英文始终 1 个字节。写乱码 bug 的唯一原因是：**用 A 规则编码的字节，被用 B 规则解码**。
+
+```java
+import java.nio.charset.StandardCharsets;
+
+String s = "中文";
+byte[] utf8 = s.getBytes(StandardCharsets.UTF_8);  // E4 B8 AD E6 96 87（6 字节）
+byte[] gbk  = s.getBytes("GBK");                   // D6 D0 CE C4（4 字节）
+
+String ok   = new String(utf8, StandardCharsets.UTF_8);  // "中文"：对称还原
+String bad  = new String(utf8, "GBK");                   // "涓枃"：UTF-8 字节按 GBK 解读
+```
+
+**逐行讲解**：
+
+1. `getBytes()` 不带参数用**平台默认字符集**——Java 18 起（JEP 400）默认统一为 UTF-8；之前的版本在中文 Windows 上默认是 GBK。同一段代码跨机器结果不同，就是它的锅，所以本节所有示例都显式传 Charset。
+2. `new String(bytes, charset)` 是「按规则把字节翻译回字符」。编码与解码规则一致时无损；不一致时得到乱码字符串——且**乱码一旦生成就无法无损修复**（信息已经丢了），只能回到原始字节重新解码。
+3. `getBytes("GBK")` 里的字符串形式会抛受检异常 `UnsupportedEncodingException`，工程里更推荐 `StandardCharsets.UTF_8` 常量形式（不抛异常、拼错编译期就报）。
+
+### 8.2 三个真实场景
+
+- **场景一（文件读写，真实工程）**：Windows 记事本（旧版默认 ANSI/GBK）保存的 CSV，用 Java 程序按 UTF-8 读入，中文全变乱码。修复：读文件时显式 `new InputStreamReader(in, StandardCharsets.UTF_8)` 换成 `Charset.forName("GBK")`，或统一把文件转存为 UTF-8（I/O 流详见 280 篇第 4 节转换流）。
+- **场景二（HTTP 接口）**：前端发的 UTF-8 请求体，后端按容器默认编码解码出现 `ä¸­æ–‡` 形态乱码——典型的「UTF-8 字节按 Latin-1 解读」。修复：请求头声明 `Content-Type: application/json; charset=utf-8` 并在服务端显式指定。
+- **场景三（数据库中文变问号）**：写入后库里的中文变成 `???`——这是 JDBC 连接串缺 `characterEncoding=utf8` 或表字符集为 latin1，转换发生在驱动层，已经不可逆。
+
+### 8.3 乱码排查口诀
+
+1. 先找**乱码形态**：`涓枃` 类「汉字型乱码」多为 UTF-8 字节被按 GBK 读；`???` 或 `�` 多为编码时字符就映射不出去（GBK 装不下的字符、或 latin1 库表）。
+2. 再画**字节流经路径**：源（文件/网络/输入框）→ 解码 → 内存 String → 编码 → 目标（文件/网络/库表），逐跳确认两端的 charset 是否一致。
+3. 最后**全链路统一 UTF-8**（JVM 参数 `-Dfile.encoding=UTF-8`、连接串、文件读写显式传 Charset），一劳永逸。
+
+## 9. StringJoiner 与 String.format
+
+### 9.1 StringJoiner：带分隔符的结构化拼接
+
+`StringBuilder` 拼列表时要手工处理「最后一项后面多出的逗号」；`StringJoiner` 把这件事内置了：
+
+```java
+import java.util.StringJoiner;
+
+StringJoiner sj = new StringJoiner(", ", "[", "]");
+sj.add("Java").add("SQL").add("Git");
+System.out.println(sj);   // [Java, SQL, Git]
+
+// 快捷方式：String.join 与 Stream + Collectors.joining
+String.join("-", "a", "b", "c");                    // "a-b-c"
+list.stream().map(String::toUpperCase)
+    .collect(java.util.stream.Collectors.joining(" | "));
+```
+
+**拆解讲解**：
+
+1. 构造参数是「分隔符、前缀、后缀」；空 Joiner 会输出 `[]`（前后缀仍在），`setEmptyValue` 可改。
+2. 三个场景：拼 SQL 的 IN 条件（`'a', 'b', 'c'`）；导出 CSV 行；日志里拼参数列表。凡「N 项 N-1 个分隔符」的拼接都优先它，而不是 if 判断首项的土办法。
+
+### 9.2 String.format：格式化输出
+
+```java
+String line = String.format("[%s] %s 花费 %.2f 元", "2026-10-07", "奶茶", 12.5);
+// [2026-10-07] 奶茶 花费 12.50 元
+System.out.printf("%d 行, %5d 对齐, %-6s|左对齐%n", 3, 42, "abc");
+```
+
+**常用占位符**：`%s` 字符串、`%d` 整数、`%f` 浮点、`%.2f` 保留两位、`%n` 换行、`%5d`/`%-6s` 宽度与左右对齐。`%f` 默认 6 位小数，金额输出必须显式 `%.2f`——它与 BigDecimal 的 `setScale(2)` 是「显示层」与「存储层」的两件事，别混为一谈（金额计算见 055 篇）。
+
 ## 8. 字符串与基本类型互转
 
 ```java
@@ -182,7 +263,7 @@ String s2 = 42 + "";                 // 也可以，但可读性较差
 
 **拆解讲解**：`parseInt` 遇到非数字内容会抛 `NumberFormatException`，解析用户输入前应先用正则或 `try-catch` 校验（异常处理见 `017-ExceptionHandlingMechanism`）。
 
-## 9. 常见陷阱
+## 10. 常见陷阱
 
 | 陷阱 | 错误写法 | 正确做法 |
 | --- | --- | --- |
@@ -192,8 +273,10 @@ String s2 = 42 + "";                 // 也可以，但可读性较差
 | replace 与 replaceAll 混用 | 把正则当普通文本 | 按需求二选一 |
 | substring 越界 | `substring(3, 1)` | 记住"含头不含尾"，先算边界 |
 | 忘记 null 判断 | 直接调用 `s.length()` | 先判 `s != null` 或用 `Objects.toString` |
+| getBytes 不传字符集 | `s.getBytes()` 跨平台结果不同 | `s.getBytes(StandardCharsets.UTF_8)` |
+| 试图"修复"已乱码字符串 | 对乱码 String 再转码 | 乱码不可逆，回到原始字节用正确字符集重新解码 |
 
-## 10. 动手试试
+## 11. 动手试试
 
 **入门版（必做）**：
 
@@ -204,7 +287,8 @@ String s2 = 42 + "";                 // 也可以，但可读性较差
 
 1. 用正则校验手机号：`1[3-9]\\d{9}`。
 2. 把一个 CSV 文本 `"a,b,c"` 拆成数组，再拼接回 `"a-b-c"`。
+3. 乱码复现实验：把 `"中文"` 分别用 UTF-8 与 GBK 各取 `getBytes`，打印字节数组长度与十六进制；再把 UTF-8 的字节用 GBK 解码，观察得到的乱码形态，对照第 8.3 节口诀判断乱码类型。
 
-## 11. 一句话记住
+## 12. 一句话记住
 
-> String 不可变、比较用 `equals`、拼接用 `StringBuilder`、正则先记 `\\d` 与 `matches`。
+> String 不可变、比较用 `equals`、拼接用 `StringBuilder`（结构化用 StringJoiner）、正则先记 `\\d` 与 `matches`、编码解码必须成对指定同一字符集。

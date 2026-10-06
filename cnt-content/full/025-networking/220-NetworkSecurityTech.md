@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 260
 title: 网络安全技术
 module: 'networking'
 category: 云与基础设施
@@ -12,8 +12,7 @@ related:
   - 'networking/160-SwitchingAndRouting'
   - 'networking/170-WirelessNetwork'
   - 'networking/350-NetworkProgrammability'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 

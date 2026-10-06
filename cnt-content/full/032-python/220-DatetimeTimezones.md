@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 270
 title: 日期时间与时区：naive 与 aware 的分水岭
 description: 以「设备日志时间对不上」的真实事故切入，建立 naive 与 aware 两种时间对象的心智模型：datetime 四件套、时间戳、zoneinfo 时区库、UTC 存储纪律、ISO 解析与 strptime 的坑、DST 折叠时间与 fold，最后讲清测耗时为什么必须用单调时钟。
 module: 'python'

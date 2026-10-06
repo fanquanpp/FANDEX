@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 480
 title: 数据类与 Pydantic：字段声明之后，谁来校验
 module: 'python'
 category: 后端技术
@@ -161,6 +161,28 @@ print(d.model_dump_json())
 
 `from_attributes=True` 是连接数据库 ORM 的桥：`Device.model_validate(orm_obj)` 直接把 SQLAlchemy 查出来的行对象变成 API 响应模型（完整用法见 [SQLAlchemy](/python/830-PythonSQLAlchemy)）。自定义输出格式用 `@field_serializer`，敏感字段（密码、密钥）用 `SecretStr` 类型——`model_dump_json()` 时自动打码，要原文得显式 `get_secret_value()`。
 
+与前端团队联调时最常见的配置是**驼峰别名**——前端 JSON 用 `userId`，Python 字段按规范叫 `user_id`：
+
+```python
+from pydantic import BaseModel, ConfigDict
+from pydantic.alias_generators import to_camel
+
+class APIResponse(BaseModel):
+    model_config = ConfigDict(
+        alias_generator=to_camel,   # user_id -> userId 自动生成别名
+        populate_by_name=True,      # 两个字段名都接受（内部代码用 snake_case）
+        str_strip_whitespace=True,  # 字符串自动去首尾空白
+    )
+    user_id: int
+    user_name: str
+
+resp = APIResponse.model_validate_json('{"userId": 1, "userName": "mia"}')
+print(resp.user_name)               # mia
+print(resp.model_dump(by_alias=True))   # 序列化回驼峰：{'userId': 1, 'userName': 'mia'}
+```
+
+逐段解释：`alias_generator` 只改「外界看到的名字」，`populate_by_name=True` 让两种名字都能进——不加它就只能用别名输入，内部代码传参会报错。导出 JSON Schema 用 `Model.model_json_schema()`，可直接交给 OpenAPI/前端类型生成器。
+
 环境变量配置同样吃这套模型，`pip install pydantic-settings` 后继承 `BaseSettings` 即可（配置分层见 [配置管理](/python/900-ConfigManagement)）。
 
 ## 选型：什么时候用 dataclass，什么时候用 Pydantic
@@ -174,6 +196,31 @@ print(d.model_dump_json())
 | 典型位置 | 内部数据结构、值对象 | API/消息边界、配置 |
 
 一句话决策：**数据从不可信的外部进来，用 Pydantic；只在自己代码内部流动，用 dataclass**。中间地带两个旁支：`attrs` 功能与 dataclass 相近但配置更细（老代码库常见），`msgspec` 比 Pydantic 再快数倍且支持 MessagePack（极致吞吐场景）。Pydantic 靠 Rust 内核在 v2 把验证开销降了一个数量级，多数 Web 场景不再是瓶颈，但「每次属性赋值都重新校验」（`validate_assignment=True`）这类开关仍要慎开。
+
+`attrs` 的看家本领是**声明式校验器与转换器**——dataclass 没有对应物，Pydantic 有但形态不同：
+
+```python
+import attrs
+
+@attrs.define
+class User:
+    name: str = attrs.field(validator=attrs.validators.min_len(2))
+    email: str = attrs.field()
+
+    @email.validator
+    def _check_email(self, attribute, value):
+        if "@" not in value:
+            raise ValueError("邮箱格式不合法")
+
+@attrs.define
+class Config:
+    port: int = attrs.field(converter=int, default=8080)   # "8080" 也能进来
+    debug: bool = attrs.field(converter=lambda x: str(x).lower() == "true", default=False)
+
+print(Config(port="9000").port)    # 9000 —— converter 在赋值前自动转型
+```
+
+逐段解释：`validator` 在构造时执行，不合法直接抛 `ValueError`；`converter` 更进一步——它不是校验而是**转换**，任何输入先过一遍函数再落字段。对比三者的分工：dataclass 全不管（自己写 `__post_init__`），attrs 声明式管，Pydantic 全家桶管（含类型强制与 JSON Schema）。接手老代码库看到 `@attr.s` / `@attrs.define` 与 `attr.ib()`，按本段语义翻译即可。
 
 ## 读老代码必备：v1 到 v2 对照表
 

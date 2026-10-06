@@ -91,6 +91,30 @@ func (w *BufferedWriter) Write(p []byte) (int, error) {
 var w Writer = &BufferedWriter{} // 隐式实现
 ```
 
+一个接口最常见的价值是**一接口多实现**：调用方只依赖接口，任何
+满足方法集的类型都能传入（下例两个不相关的类型都实现了 Speaker）：
+
+```go
+type Dog struct{ Name string }
+
+func (d Dog) Speak() string {
+    return d.Name + " says: Woof!"
+}
+
+type Robot struct{ ID int }
+
+func (r Robot) Speak() string {
+    return fmt.Sprintf("Robot #%d says: Beep!", r.ID)
+}
+
+func makeItSpeak(s Speaker) {
+    fmt.Println(s.Speak())
+}
+
+makeItSpeak(Dog{Name: "Rex"}) // Rex says: Woof!
+makeItSpeak(Robot{ID: 42})    // Robot #42 says: Beep!
+```
+
 ### 2.3 方法集：值接收者与指针接收者的分界
 
 隐式实现最重要的细则藏在**方法集（method set）**里：类型 T 的方法集只包含值接收者方法；`*T` 的方法集包含值接收者与指针接收者全部方法。推论是——**指针接收者的方法只有指针类型能"带进"接口**：

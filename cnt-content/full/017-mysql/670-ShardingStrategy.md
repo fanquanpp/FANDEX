@@ -1,5 +1,5 @@
 ---
-order: 650
+order: 700
 title: 分库分表策略
 module: 'mysql'
 category: 数据库

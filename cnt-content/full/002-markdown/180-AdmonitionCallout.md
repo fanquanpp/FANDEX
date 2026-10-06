@@ -8,7 +8,6 @@ description: GitHub 警报块、Obsidian Callout、MkDocs 与 Docusaurus 提示�
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'markdown/070-BlockquoteNestedList'
   - 'markdown/110-GitHubFlavoredMarkdown'
   - 'markdown/230-HtmlEmbed'
 prerequisites:

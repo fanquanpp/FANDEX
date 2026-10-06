@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 130
 title: Kubernetes 架构
 module: 'cloud-computing'
 category: 云与基础设施

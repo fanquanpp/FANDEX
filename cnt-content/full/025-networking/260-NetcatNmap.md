@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 300
 title: nc 与 nmap
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/290-NetworkTroubleshootTools'
   - 'networking/150-SSHRemote'
   - 'networking/230-IptablesFirewall'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 ## nc 基本用法

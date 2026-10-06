@@ -1,5 +1,5 @@
 ---
-order: 30
+order: 40
 title: 动态 SQL：让 SQL 随条件生长，而不是被字符串拼接
 description: 以「商品列表 8 个筛选项任意组合，手拼 SQL 的三宗罪」引入：if、where、choose、set、foreach、sql 与 trim 逐个拆解，0 值被吞与空集合 IN () 两大经典坑，附 6 条件开合实验与打印 SQL 对照。
 module: 'mybatis'

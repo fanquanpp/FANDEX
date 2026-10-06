@@ -1,14 +1,14 @@
 ---
-order: 330
+order: 370
 title: Service Worker 与 PWA
 module: 'html5'
 category: 前端技术
 difficulty: advanced
-description: Service Worker 全生命周期（注册/安装/激活/fetch 拦截）、Cache Storage 缓存策略、Web App Manifest、推送通知与后台同步的 PWA 完整专项。
+description: Service Worker 全生命周期（注册/安装/激活/fetch 拦截）、Cache Storage 缓存策略、Web App Manifest 完整字段、推送通知与后台同步、安装体验与 PWA 最佳实践的完整专项。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
-  - 'html5/240-HTML5OfflineStorageWebAPI'
+  - 'html5/245-WebStorage'
   - 'html5/310-WebComponentsPWADevelopment'
   - 'html5/260-Geolocation'
 prerequisites:
@@ -20,6 +20,13 @@ prerequisites:
 建议先阅读以下内容再进入本文：
 
 - [HTML5 概述与核心特性](/html5/020-HTML5OverviewCoreFeature)
+
+## 知识点地图
+
+- **知识类别**：线程与实时 / Service Worker 与 PWA（渐进式 Web 应用完整专项）。
+- **解决什么问题**：网页天然「断网即死、关页即忘」。Service Worker 作为可编程网络代理带来离线缓存、推送通知、后台同步三种超能力；Manifest 与安装流程把网页升级为可安装到桌面的应用。本篇是这条线的完整专项。
+- **什么时候用到**：站点要求弱网/离线可用时；需要推送触达用户时；要把 Web 应用装进桌面/主屏时。
+- **与相邻篇章的分工**：[Web Components 与 PWA 开发](/html5/310-WebComponentsPWADevelopment) 保留 Web Components 主题，其 PWA 部分只给「跑通第一版」的最小骨架，深水区（完整生命周期、缓存策略、推送、安装体验、最佳实践）全部在本篇。
 
 ## 1. Service Worker 概述
 
@@ -80,6 +87,16 @@ self.addEventListener('fetch', (event) => {
 
 ## 4. PWA 基础
 
+PWA（Progressive Web App）是结合了 Web 与原生应用优点的应用程序，核心特性五条：
+
+- **可安装**：添加到主屏幕/桌面，独立窗口运行；
+- **离线工作**：Service Worker 缓存资源（本篇 §2-§3）；
+- **推送通知**：离线也能被触达（本篇 §5）；
+- **后台同步**：网络恢复时自动补发数据；
+- **响应式**：适配不同屏幕尺寸。
+
+它不是单一技术而是一组标准的组合：Manifest 负责身份与安装、Service Worker 负责离线与后台能力、HTTPS 负责安全前提。
+
 ```json
 {
   "name": "我的应用",
@@ -132,7 +149,17 @@ self.addEventListener('sync', (event) => {
 **注册 Service Worker**
 `navigator.serviceWorker.register(<scriptURL>, [options]).then(<回调>)`
 ```javascript
-// 基础注册
+// 基础注册（生产写法：等页面 load 完成后再注册，不与首屏资源抢带宽）
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('/sw.js', { scope: '/' })
+      .then((reg) => console.log('注册成功,作用域:', reg.scope))
+      .catch((err) => console.error('注册失败:', err));
+  });
+}
+
+// 最小写法（教学/演示用）
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker
     .register('/sw.js', { scope: '/' })
@@ -361,6 +388,8 @@ await caches.delete('my-cache-v1');
 | `orientation`     | 屏幕方向                          | `portrait-primary` / `landscape` |
 | `icons`           | 图标数组                          | `[{src, sizes, type, purpose}]` |
 
+进阶字段（应用商店化三件）：`display_override: ["window-controls-overlay", "standalone"]` 声明首选显示模式降级链；`screenshots`（富安装卡片展示截图，含 `form_factor: "wide"` 标注桌面/移动）；`file_handlers` 声明 PWA 可打开的文件类型（`accept: { "image/*": [".png", ".jpg"] }`）。
+
 **HTML 中引用 manifest**
 ```html
 <link rel="manifest" href="/manifest.json" />
@@ -387,12 +416,32 @@ window.matchMedia('(display-mode: standalone)').addEventListener('change', (e) =
 
 **Notification API**
 ```javascript
-// 请求通知权限
+// 请求通知权限（必须在用户手势中调用，如点击事件里）
 const permission = await Notification.requestPermission();
-// permission: 'granted' | 'denied' | 'default'
+// permission 三值：'granted' 已授权 / 'denied' 已拒绝（JS 无法再次弹出授权框）
+//                 / 'default' 未决定
 
-// 显示通知
+// 显示通知（页面侧；后台推送场景用 SW 侧的 registration.showNotification）
 new Notification('标题', {
+  body: '通知正文',
+  icon: '/icons/192.png',
+  badge: '/icons/badge.png',
+  tag: 'unique-id', // 相同 tag 会替换
+  actions: [        // 通知上的快捷按钮（移动端支持最好）
+    { action: 'open', title: '打开' },
+    { action: 'close', title: '关闭' },
+  ],
+  data: { url: '/page' },
+  vibrate: [100, 50, 100],
+  requireInteraction: true, // 用户必须手动关闭
+});
+
+// 页面侧点击处理
+notification.onclick = () => {
+  window.focus();
+  notification.close();
+};
+```
   body: '通知正文',
   icon: '/icons/192.png',
   badge: '/icons/badge.png',
@@ -527,6 +576,68 @@ window.addEventListener('appinstalled', () => {
 });
 ```
 
+**Window Controls Overlay（桌面端自定义标题栏）**
+```javascript
+// 检测支持
+const supported = 'windowControlsOverlay' in navigator;
+
+// 监听标题栏区域变化（display_override 含 window-controls-overlay 时生效）
+navigator.windowControlsOverlay.addEventListener('geometrychange', (e) => {
+  console.log('标题栏区域变化', e.titlebarAreaRect);
+});
+```
+
+## 7. PWA 最佳实践与项目形态
+
+承接自 Web Components 与 PWA 开发篇的最佳实践清单：
+
+1. **响应式设计**：确保在所有设备上都有良好的用户体验；
+2. **离线优先**：设计应用时先考虑离线场景，再叠加在线增强；
+3. **快速加载**：预缓存关键资源，弱网下秒开；
+4. **安全**：HTTPS 是 Service Worker 的硬前提；
+5. **可安装**：提供清晰的安装提示（beforeinstallprompt 引导，见上方速查）；
+6. **推送克制**：合理使用推送通知，避免过度打扰导致用户关闭权限；
+7. **后台同步**：用后台同步确保离线操作最终一致；
+8. **性能监控**：用 Lighthouse 的 PWA 审计持续检查。
+
+**PWA 项目最小结构**（Manifest + SW + 图标三件就够跑通第一版）：
+
+```mermaid
+flowchart TD
+    T0["pwa-project/"]
+    T1["icons/"]
+    T2["icon-192x192.png"]
+    T3["icon-512x512.png"]
+    T4["index.html"]
+    T5["manifest.json"]
+    T6["service-worker.js"]
+    T7["styles.css"]
+    T8["app.js"]
+    T0 --> T1
+    T3 --> T4
+    T3 --> T5
+    T3 --> T6
+    T3 --> T7
+    T3 --> T8
+```
+
+**工具与支持：**
+
+- **Workbox**：本篇 §6 已述，生产级 SW 工具库；
+- **Lighthouse**：Chrome DevTools 内置的 PWA 性能与质量审计；
+- **PWABuilder**：微软维护的 PWA 生成与打包工具（可产出商店包）；
+- 浏览器支持：Chrome/Edge 完整支持；Firefox 部分支持（推送受限）；Safari 部分支持（推送通知 iOS 16.4 起才有，且要求添加到主屏）。
+
+<!-- 恢复自 cnt-content/full/005-html5/240-HTML5OfflineStorageWebAPI.md（实施前 HEAD 62c90663 版本）；拆分时该小节未随迁，2026-10-07 内容保全复核恢复 -->
+
+## Service Workers 最佳实践
+
+- **缓存策略**：根据资源类型选择合适的缓存策略
+- **缓存版本**：合理管理缓存版本，避免缓存过期问题
+- **网络请求**：正确处理网络请求，避免无限循环
+- **调试**：使用 Chrome DevTools 进行 Service Worker 调试
+- **更新**：正确处理 Service Worker 的更新流程
+
 ## 动手试试
 
 ### 入门版（必做）
@@ -539,7 +650,8 @@ window.addEventListener('appinstalled', () => {
 
 1. 实现 Network First 的 API 缓存策略，断网时返回最后一次成功的数据；
 2. 用 `clients.matchAll` 在 SW 更新后通知页面弹“有新版本，点击刷新”；
-3. 配合 Web App Manifest 让页面可安装到桌面。
+3. 配合 Web App Manifest 让页面可安装到桌面，并用 `beforeinstallprompt` 自定义安装按钮（记下 outcome 是 accepted 还是 dismissed）；
+4. 在合适时机（设置页里的按钮而非首屏弹窗）请求通知权限，被拒后页面仍正常工作。
 
 ## 核心知识点
 
@@ -565,8 +677,9 @@ window.addEventListener('appinstalled', () => {
 
 ## 扩展学习
 
-- 基础铺垫：`html5/240-HTML5OfflineStorageWebAPI` 的 Cache Storage 与离线章节；
-- 组件对比：`html5/310-WebComponentsPWADevelopment` 中 PWA 三件套；
+- 基础铺垫：[Web Storage](/html5/245-WebStorage) 的存储方案决策指南（Cache Storage 速查在本篇）；
+- 页面侧 API：[Observer 家族与页面生命周期](/html5/284-ObserverAndPageLifecycleAPIs) 的 Page Visibility 与后台资源节流；
 - 推送完整流程：Web Push 协议与 VAPID 密钥管理；
 - 性能：`javascript/510-CoreWebVitalsAndPerformanceMetrics` 中缓存对加载指标的影响；
-- 工程化：Workbox 库封装注册、缓存与更新逻辑。
+- 工程化：Workbox 库封装注册、缓存与更新逻辑；
+- 组件化路线：[Web Components 与 PWA 开发](/html5/310-WebComponentsPWADevelopment) 讲自定义元素体系，与本篇的 PWA 专项互补。

@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 270
 title: 虚函数表与多态内存布局
 module: 'cpp'
 category: 计算机科学
@@ -10,7 +10,7 @@ updated: '2026-09-12'
 related:
   - 'cpp/100-MoveSemanticsDetailed'
   - 'cpp/110-PerfectForwardingReferenceCollapse'
-  - 'cpp/150-SmartPointerCircularReference'
+  - 'cpp/140-CppSmartPointer'
   - 'cpp/070-LambdaCaptureDetailed'
 prerequisites:
   - 'cpp/020-CppOverviewAndModernStandard'

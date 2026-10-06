@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 170
 title: Next.js 学习总结：核心知识体系回顾
 module: 'nextjs'
 category: 前端技术

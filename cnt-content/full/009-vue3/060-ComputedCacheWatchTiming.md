@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: computed 缓存与 watch 时机：依赖变了之后，到底谁先跑
 module: 'vue3'
 category: 前端技术
@@ -407,7 +407,7 @@ export function useAutoSave(data, save, delay = 1000) {
 ## 10. 与之前和之后的知识的关系
 
 - 往前：[响应式系统](/vue3/050-ReactiveSystem)讲的「依赖收集与触发」是本文的地基——computed 的脏标记与 watch 的入队，都是 trigger 阶段的两条不同后路；
-- 往后：本文的 API 选型与 cleanup 技巧，会在[自定义 Hook](/vue3/090-CustomHook)与[自定义 Composable 封装](/vue3/100-CustomComposableWrapper)里被大量使用；3.5 的 pause/resume 与 onWatcherCleanup 见[Vue 3.4 / 3.5 新特性](/vue3/360-Vue3NewFeatures3435)；watch 时机与组件更新队列的关系，在[编译优化](/vue3/280-Vue3CompileOptimization)里还会再深入一层。
+- 往后：本文的 API 选型与 cleanup 技巧，会在[自定义 Hook](/vue3/090-CustomHook)与[自定义组合式函数](/vue3/090-CustomHook)里被大量使用；3.5 的 pause/resume 与 onWatcherCleanup 见[Vue 3.4 / 3.5 新特性](/vue3/360-Vue3NewFeatures3435)；watch 时机与组件更新队列的关系，在[编译优化](/vue3/280-Vue3CompileOptimization)里还会再深入一层。
 
 ## 11. 官方文档
 

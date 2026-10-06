@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 140
 title: CSS3 选择器系统
 module: 'css'
 category: 前端技术

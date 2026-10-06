@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 200
 title: DP 经典模型进阶
 module: 'algorithm'
 category: 计算机科学

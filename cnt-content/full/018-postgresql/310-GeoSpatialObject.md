@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 280
 title: 地理空间对象：PostGIS 入门与空间查询
 module: 'postgresql'
 category: 数据库
@@ -10,16 +10,16 @@ updated: '2026-10-05'
 related:
   - 'postgresql/220-IndexType'
   - 'postgresql/300-FullTextSearch'
-  - 'postgresql/330-ExtensionModule'
+  - 'postgresql/340-ExtensionModuleDetailed'
   - 'postgresql/320-KNNVectorIndex'
 prerequisites:
   - 'postgresql/220-IndexType'
-  - 'postgresql/330-ExtensionModule'
+  - 'postgresql/340-ExtensionModuleDetailed'
 ---
 
 ## 前置知识
 
-- PostgreSQL 扩展机制（[扩展模块](/postgresql/330-ExtensionModule)）——PostGIS 是最著名的扩展之一；
+- PostgreSQL 扩展机制（[扩展模块详解](/postgresql/340-ExtensionModuleDetailed)）——PostGIS 是最著名的扩展之一；
 - GiST 索引的概念（[索引类型](/postgresql/220-IndexType)）——空间索引的载体。
 
 ## 问题引入：B 树为什么做不了"附近三公里"

@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 240
 title: 文件系统 inode
 module: 'cs-fundamentals'
 category: 计算机科学

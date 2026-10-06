@@ -1,5 +1,5 @@
 ---
-order: 40
+order: 50
 title: JSONB 与 JSON：一个存文本，一个存索引
 module: 'postgresql'
 category: 数据库
@@ -10,7 +10,7 @@ updated: '2026-09-28'
 related:
   - 'postgresql/120-JSONTABLE'
   - 'postgresql/080-AdvancedSQL'
-  - 'postgresql/530-AdvancedSQLExtension'
+  - 'postgresql/080-AdvancedSQL'
 prerequisites:
   - 'postgresql/010-OverviewInstallConfig'
 ---

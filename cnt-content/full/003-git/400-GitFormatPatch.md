@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 430
 title: git-format-patch 补丁协作
 module: 'git'
 category: 工具链

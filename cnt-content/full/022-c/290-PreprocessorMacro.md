@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 330
 title: 预处理器与宏：编译前的文本手术
 module: 'c'
 category: 计算机科学
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'c/300-InlineFunctionMacro'
   - 'c/310-MultiFileCompilation'
-  - 'c/520-C23C2y'
+  - 'c/520-C23CoreFeatures'
   - 'c/530-C23NewFeatures'
   - 'c/110-EnumTypedef'
   - 'c/410-CrossPlatformProgramming'
@@ -495,7 +495,7 @@ LOG("started");                 /* 尾部干净：...__LINE__) */
 LOG("value = %d", 42);          /* 逗号回来了：...__LINE__, 42) */
 ```
 
-新代码直接用 `__VA_OPT__` 并以 `-std=c23` 编译；维护老代码时在 GCC/Clang 上可用 `##__VA_ARGS__` 过渡。C23 的其余新特性清单与编译器支持矩阵见 [C23 上手](/c/520-C23C2y) 与 [C23 深水区](/c/530-C23NewFeatures)。修改实验五：给 `LOG` 加上级别参数，再包一层 `LOG_ERROR(fmt, ...)` 固定级别，验证两条路（`__VA_OPT__` 与 GNU 扩展）在零参数调用下都编译通过。
+新代码直接用 `__VA_OPT__` 并以 `-std=c23` 编译；维护老代码时在 GCC/Clang 上可用 `##__VA_ARGS__` 过渡。C23 的其余新特性清单与编译器支持矩阵见 [C23 上手](/c/520-C23CoreFeatures) 与 [C23 深水区](/c/530-C23NewFeatures)。修改实验五：给 `LOG` 加上级别参数，再包一层 `LOG_ERROR(fmt, ...)` 固定级别，验证两条路（`__VA_OPT__` 与 GNU 扩展）在零参数调用下都编译通过。
 
 ## 6. 条件编译：编译期的 if
 
@@ -742,7 +742,7 @@ a.h:1:10: error: #include nested depth 200 exceeds maximum of 200
 
 - **读世界级 C 项目绕不开**：Linux 内核、glibc、SQLite 的源码里 `#ifdef` 与宏俯拾皆是——内核用一套架构宏在数十种 CPU 上编译同一份代码，container_of 宏用 `offsetof` 从成员指针反推容器结构体指针（`((type *)((char *)(ptr) - offsetof(type, member)))`，机制地基是 [内存对齐](/c/220-MemoryAlignmentDeepDive) 的偏移量）；
 - **日志与断言系统**：`__FILE__`/`__LINE__`/`__func__` 拼出的日志宏（第 5 节）与 assert 骨架（第 6.2 节）是所有 C 项目调试设施的标配起点；格式化转发到 `vfprintf` 的进阶写法见 [可变参数函数](/c/100-VarargsFunction)；
-- **嵌入式位操作**：`BIT_SET(reg, n)` 一族寄存器位操作宏是裸机驱动的日常，公式推导见 [位运算与位域](/c/070-BitwiseBitField)；
+- **嵌入式位操作**：`BIT_SET(reg, n)` 一族寄存器位操作宏是裸机驱动的日常，公式推导见 [位运算与位域](/c/070-BitwiseOperationAndMask)；
 - **构建配置入口**：`-DLOG_LEVEL=2`、`-DNDEBUG` 这类编译命令行宏是 Makefile/CMake 与代码之间的标准接口，配套见 [构建系统](/c/470-BuildSystem)。
 
 ## 小练习
@@ -771,7 +771,7 @@ int x = B;      /* x 是几？ */
 
 - 往前：[运算符与表达式](/c/060-OperatorExpression) 的优先级与序列点规则是本文括号纪律与 `SQUARE(i++)` 判定的裁判；[函数](/c/090-FunctionDetailed) 的传值语义是「宏参数不求值」的反面教材；[变量与常量](/c/050-VariableConstant) 的四种常量之争在本文 3.1 节落定一半；
 - 旁支：[内联函数与宏](/c/300-InlineFunctionMacro) 回答「这个需求到底该用宏还是 inline」；[泛型选择](/c/280-GenericSelection) 接手类型分派；[多文件编译](/c/310-MultiFileCompilation) 把本文的头文件守卫扩展成完整的多文件工程；[内存对齐](/c/220-MemoryAlignmentDeepDive) 讲 `#pragma pack` 的对齐语义；[编译器扩展与属性](/c/540-AttributeCompilerExtension) 与本文的 pragma/宏互为表里；
-- 往后：[C23 上手](/c/520-C23C2y) 与 [C23 深水区](/c/530-C23NewFeatures) 收编 `__VA_OPT__`、`#embed`、`__has_include` 的新特性全景；[跨平台编程](/c/410-CrossPlatformProgramming) 把本文的平台探测发展成成套的跨平台抽象层。
+- 往后：[C23 上手](/c/520-C23CoreFeatures) 与 [C23 深水区](/c/530-C23NewFeatures) 收编 `__VA_OPT__`、`#embed`、`__has_include` 的新特性全景；[跨平台编程](/c/410-CrossPlatformProgramming) 把本文的平台探测发展成成套的跨平台抽象层。
 
 ## 官方文档
 

@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 420
 title: RabbitMQ 快速上手
 module: 'devops'
 category: 云与基础设施

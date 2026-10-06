@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 360
 title: 动态库与静态库：代码的打包与复用
 module: 'c'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 160
 title: 异步组件与 Suspense
 module: 'vue3'
 category: 前端技术
@@ -8,7 +8,7 @@ description: Vue 3异步组件defineAsyncComponent与Suspense配合使用。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'vue3/140-TeleportPortalApp'
+  - 'vue3/120-TeleportSuspense'
   - 'vue3/160-KeepAliveCacheLifecycle'
   - 'vue3/220-PiniaPersistencePlugin'
   - 'vue3/200-VueRouterNavigationGuard'

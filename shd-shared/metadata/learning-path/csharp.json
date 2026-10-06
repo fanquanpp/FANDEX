@@ -25,8 +25,8 @@
         },
         {
           "id": "csharp-004",
-          "title": "C# 高级特性",
-          "doc": "150-CSharpAdvancedFeature"
+          "title": "unsafe 与 dynamic 逃生舱",
+          "doc": "152-UnsafeCodeAndDynamicProgramming"
         },
         {
           "id": "csharp-005",

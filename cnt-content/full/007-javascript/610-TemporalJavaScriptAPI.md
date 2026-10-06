@@ -1,5 +1,5 @@
 ---
-order: 610
+order: 690
 title: Temporal 日期时间 API
 module: 'javascript'
 category: 前端技术
@@ -8,7 +8,7 @@ description: 开售时间在纽约用户眼里错了两小时：用 Temporal 的
 author: fanquanpp
 updated: '2026-09-29'
 related:
-  - 'javascript/600-JavaScriptLatestFeature'
+  - 'javascript/600-NewFeatureAdoptionStrategy'
   - 'javascript/650-IntlApi'
   - 'javascript/460-StorageForTheWeb'
 prerequisites:
@@ -145,4 +145,4 @@ const instantAgain = Temporal.Instant.fromEpochMilliseconds(d.getTime());
 
 - [Intl API](/javascript/650-IntlApi)：Temporal 的本地化格式化底层就是它，两者配合食用。
 - [Web 存储](/javascript/460-StorageForTheWeb)：Temporal 对象以 ISO 字符串形态入库。
-- [JavaScript 最新特性](/javascript/600-JavaScriptLatestFeature)：同期其他值得跟进的标准进展。
+- [JavaScript 最新特性](/javascript/600-NewFeatureAdoptionStrategy)：同期其他值得跟进的标准进展。

@@ -594,109 +594,9 @@ Vector3D v3 = (1.0, 2.0, 3.0);      // 隐式转换
 var (x, y) = ((double, double))v1;  // 显式转换
 ```
 
-### 示例 6：Record 类型与不可变设计
+### 示例 6：Record 类型与不可变设计（已迁出）
 
-```csharp
-using System.Collections.Immutable;
-
-// 位置 record：简洁定义不可变值对象
-public record Money(decimal Amount, string Currency)
-{
-    // 校验在静态构造点进行
-    public Money
-    {
-        if (Amount < 0) throw new ArgumentOutOfRangeException(nameof(Amount));
-        if (string.IsNullOrWhiteSpace(Currency))
-            throw new ArgumentException("货币代码不能为空", nameof(Currency));
-        Currency = Currency.ToUpperInvariant();
-    }
-
-    // 派生属性
-    public bool IsPositive => Amount > 0;
-    public bool IsZero => Amount == 0;
-
-    // 运算符重载
-    public static Money operator +(Money a, Money b)
-    {
-        if (a.Currency != b.Currency)
-            throw new InvalidOperationException("不能相加不同货币");
-        return a with { Amount = a.Amount + b.Amount };
-    }
-
-    public static Money operator -(Money a, Money b)
-    {
-        if (a.Currency != b.Currency)
-            throw new InvalidOperationException("不能相减不同货币");
-        return a with { Amount = a.Amount - b.Amount };
-    }
-}
-
-// record struct：值类型 record，避免堆分配
-public readonly record struct Point(double X, double Y)
-{
-    public double DistanceToOrigin => Math.Sqrt(X * X + Y * Y);
-    public double DistanceTo(Point other) =>
-        Math.Sqrt(Math.Pow(X - other.X, 2) + Math.Pow(Y - other.Y, 2));
-}
-
-// 复杂 record：领域实体
-public record Order(
-    Guid Id,
-    Customer Customer,
-    IReadOnlyList<OrderLine> Lines,
-    DateTime CreatedAt,
-    OrderStatus Status)
-{
-    public decimal TotalAmount => Lines.Sum(l => l.Subtotal);
-
-    // 业务方法：返回新实例（不可变更新）
-    public Order WithStatus(OrderStatus newStatus) => this with { Status = newStatus };
-
-    public Order AddLine(OrderLine line) => this with
-    {
-        Lines = Lines.Append(line).ToImmutableList()
-    };
-
-    public Order RemoveLine(Guid lineId) => this with
-    {
-        Lines = Lines.Where(l => l.Id != lineId).ToImmutableList()
-    };
-}
-
-public record Customer(string Name, string Email, Address ShippingAddress);
-public record OrderLine(Guid Id, string ProductName, int Quantity, decimal UnitPrice)
-{
-    public decimal Subtotal => Quantity * UnitPrice;
-}
-public record Address(string Country, string City, string Street, string ZipCode);
-
-public enum OrderStatus { Pending, Paid, Shipped, Delivered, Cancelled }
-
-// 使用
-var customer = new Customer("张三", "zhang@example.com",
-    new Address("中国", "北京", "长安街 1 号", "100000"));
-
-var order = new Order(
-    Guid.NewGuid(),
-    customer,
-    ImmutableList.Create<OrderLine>(),
-    DateTime.UtcNow,
-    OrderStatus.Pending);
-
-var line1 = new OrderLine(Guid.NewGuid(), "笔记本", 2, 5999m);
-var line2 = new OrderLine(Guid.NewGuid(), "鼠标", 1, 99m);
-
-order = order.AddLine(line1).AddLine(line2);
-Console.WriteLine($"订单总额: {order.TotalAmount:C}");
-
-order = order.WithStatus(OrderStatus.Paid);
-Console.WriteLine($"订单状态: {order.Status}");
-
-// 值相等性
-var p1 = new Point(1, 2);
-var p2 = new Point(1, 2);
-Console.WriteLine(p1 == p2);  // True
-```
+本示例已并入 [C# Record 类型](/csharp/170-CRecordType) 的「record 与 DDD Value Object」节：位置 record 的紧凑构造器校验、运算符重载与 Order 聚合根的不可变更新。record 的选择判据见下文对比分析。
 
 ### 示例 7：索引器与自定义集合
 
@@ -879,170 +779,9 @@ var top10Even = numbers
     .ToList();
 ```
 
-### 示例 9：SOLID 原则实践
+### 示例 9：SOLID 原则实践（已迁出）
 
-```csharp
-// ===== 单一职责原则（SRP）=====
-// 反例：一个类承担多种职责
-public class BadUserService
-{
-    public void CreateUser(string name, string email) { /* ... */ }
-    public void SendWelcomeEmail(string email) { /* SMTP 逻辑 */ }
-    public void LogToDatabase(string message) { /* 日志逻辑 */ }
-    public void ExportToCsv(User user) { /* 导出逻辑 */ }
-}
-
-// 正例：职责分离
-public interface IUserRepository { Task<User> CreateAsync(string name, string email); }
-public interface IEmailService { Task SendWelcomeAsync(string email); }
-public interface ILogger { void Log(string message); }
-public interface IUserExporter { string Export(User user); }
-
-public sealed class UserService
-{
-    private readonly IUserRepository _repo;
-    private readonly IEmailService _email;
-    private readonly ILogger _logger;
-
-    public UserService(IUserRepository repo, IEmailService email, ILogger logger)
-    {
-        _repo = repo; _email = email; _logger = logger;
-    }
-
-    public async Task<User> RegisterAsync(string name, string email)
-    {
-        _logger.Log($"注册用户: {name}");
-        var user = await _repo.CreateAsync(name, email);
-        await _email.SendWelcomeAsync(email);
-        return user;
-    }
-}
-
-// ===== 开闭原则（OCP）=====
-// 通过扩展（新类）而非修改（改老类）增加功能
-public interface IDiscountStrategy
-{
-    decimal Apply(decimal originalPrice);
-}
-
-public sealed class NoDiscount : IDiscountStrategy
-{
-    public decimal Apply(decimal originalPrice) => originalPrice;
-}
-
-public sealed class PercentageDiscount : IDiscountStrategy
-{
-    private readonly decimal _percentage;
-    public PercentageDiscount(decimal percentage) => _percentage = percentage;
-    public decimal Apply(decimal originalPrice) => originalPrice * (1 - _percentage);
-}
-
-public sealed class FixedAmountDiscount : IDiscountStrategy
-{
-    private readonly decimal _amount;
-    public FixedAmountDiscount(decimal amount) => _amount = amount;
-    public decimal Apply(decimal originalPrice) =>
-        Math.Max(0, originalPrice - _amount);
-}
-
-// 新增折扣策略无需修改现有代码
-public sealed class TieredDiscount : IDiscountStrategy
-{
-    public decimal Apply(decimal originalPrice) => originalPrice switch
-    {
-        < 100 => originalPrice,
-        < 500 => originalPrice * 0.95m,
-        < 1000 => originalPrice * 0.90m,
-        _ => originalPrice * 0.85m
-    };
-}
-
-// ===== 里氏替换原则（LSP）=====
-// 子类必须能替换基类而不破坏程序正确性
-public abstract class Bird
-{
-    public abstract string Describe();
-}
-
-public sealed class Sparrow : Bird
-{
-    public override string Describe() => "麻雀会飞";
-}
-
-public sealed class Penguin : Bird
-{
-    public override string Describe() => "企鹅不会飞，但会游泳";
-}
-
-// 反例：在基类 Bird 中定义 Fly() 会违反 LSP（企鹅不能飞）
-// 正解：将飞行能力抽象为独立接口
-
-public interface IFlyable { void Fly(); }
-public interface ISwimmable { void Swim(); }
-
-public sealed class Sparrow2 : Bird, IFlyable
-{
-    public override string Describe() => "麻雀";
-    public void Fly() => Console.WriteLine("飞翔");
-}
-
-public sealed class Penguin2 : Bird, ISwimmable
-{
-    public override string Describe() => "企鹅";
-    public void Swim() => Console.WriteLine("游泳");
-}
-
-// ===== 接口隔离原则（ISP）=====
-// 反例：胖接口
-public interface IWorker
-{
-    void Work();
-    void Eat();
-    void Sleep();
-}
-
-// 正例：细粒度接口
-public interface IWorkable { void Work(); }
-public interface IEatable { void Eat(); }
-public interface ISleepable { void Sleep(); }
-
-public sealed class HumanWorker : IWorkable, IEatable, ISleepable
-{
-    public void Work() => Console.WriteLine("工作");
-    public void Eat() => Console.WriteLine("吃饭");
-    public void Sleep() => Console.WriteLine("睡觉");
-}
-
-public sealed class RobotWorker : IWorkable
-{
-    public void Work() => Console.WriteLine("24 小时工作");
-    // 机器人不需要 Eat/Sleep，不强制实现
-}
-
-// ===== 依赖倒置原则（DIP）=====
-// 高层模块不依赖低层模块，二者都依赖抽象
-public sealed class OrderProcessor
-{
-    private readonly IPaymentGateway _payment;
-    private readonly INotificationService _notification;
-
-    // 依赖注入：依赖抽象而非具体实现
-    public OrderProcessor(IPaymentGateway payment, INotificationService notification)
-    {
-        _payment = payment;
-        _notification = notification;
-    }
-
-    public async Task ProcessAsync(Order order)
-    {
-        await _payment.ChargeAsync(order.TotalAmount);
-        await _notification.NotifyAsync(order.Customer.Email, "订单已支付");
-    }
-}
-
-public interface IPaymentGateway { Task ChargeAsync(decimal amount); }
-public interface INotificationService { Task NotifyAsync(string to, string message); }
-```
+SOLID 五原则的完整判例（SRP/OCP/LSP/ISP/DIP 反例与正解）、「继承 vs 组合」决策表与脆弱基类问题已扩为专篇 [SOLID 原则与设计模式](/csharp/042-SolidPrinciplesAndDesignPatterns)，含 flower-card 事件总线、分层依赖倒置与无状态状态机三个真实项目模式。本篇保留模式匹配与对象建模（下节）。
 
 ### 示例 10：模式匹配与对象建模
 
@@ -1168,21 +907,9 @@ Console.WriteLine($"简化: {simplified.Evaluate()}"); // 15
 4. **消息与事件**（如 `OrderCreated`）：`record`，支持 `with` 与解构
 5. **性能关键小型数据**（如 `Point`、`Color`）：`readonly record struct`
 
-### 继承 vs 组合
+### 继承 vs 组合（已迁出）
 
-| 维度 | 继承（IS-A） | 组合（HAS-A） |
-| :--- | :--- | :--- |
-| **耦合度** | 强耦合（编译期固定） | 弱耦合（运行时可替换） |
-| **灵活性** | 低（单继承限制） | 高（可组合多对象） |
-| **复用粒度** | 整个类（含状态与行为） | 单个职责对象 |
-| **运行时切换** | 不支持 | 支持（依赖注入） |
-| **测试隔离** | 难（基类副作用传导） | 易（mock 依赖） |
-| **典型模式** | 模板方法、策略基类 | 策略、装饰器、适配器 |
-
-**"组合优于继承"原则的边界**：
-
-- **适合继承**：家族层次清晰、共享大量状态与实现、子类是基类的真正特化（如 `Circle` 是 `Shape`）
-- **适合组合**：行为可插拔、运行时需切换、跨不相关类型共享能力（如日志能力、缓存能力）
+完整决策表见 [SOLID 原则与设计模式](/csharp/042-SolidPrinciplesAndDesignPatterns) §2。一句话判据：真正的 IS-A 特化（Circle 是 Shape）才用继承，可插拔能力用组合。
 
 ### 静态方法 vs 实例方法 vs 扩展方法
 
@@ -1197,50 +924,9 @@ Console.WriteLine($"简化: {simplified.Evaluate()}"); // 15
 
 ## 常见陷阱与反模式
 
-### 陷阱 1：滥用继承导致脆弱基类
+### 陷阱 1：滥用继承导致脆弱基类（已迁出）
 
-**问题描述**：基类实现细节被依赖，修改基类破坏子类。
-
-```csharp
-// 反例
-public class BaseList<T>
-{
-    public virtual void Add(T item) { /* 添加逻辑 */ }
-    public virtual void AddRange(IEnumerable<T> items)
-    {
-        foreach (var item in items) Add(item); // 依赖 Add 的实现
-    }
-}
-
-public class LoggingList<T> : BaseList<T>
-{
-    public override void Add(T item)
-    {
-        Console.WriteLine($"添加: {item}");
-        base.Add(item);
-    }
-
-    public override void AddRange(IEnumerable<T> items)
-    {
-        Console.WriteLine($"批量添加");
-        base.AddRange(items); // 会重复日志：每个 Add 都打日志
-    }
-}
-
-// 正解：使用组合 + 接口
-public sealed class LoggingList<T> : IList<T>
-{
-    private readonly IList<T> _inner;
-    public LoggingList(IList<T> inner) => _inner = inner;
-
-    public void Add(T item)
-    {
-        Console.WriteLine($"添加: {item}");
-        _inner.Add(item);
-    }
-    // 委托给内部实现，避免基类耦合
-}
-```
+完整代码与修复方案见 [SOLID 原则与设计模式](/csharp/042-SolidPrinciplesAndDesignPatterns) §2.2。要点：基类虚方法被基类自身调用（如 AddRange 内调 Add）是脆弱性的根源。
 
 ### 陷阱 2：违反里氏替换
 
@@ -1289,6 +975,8 @@ public sealed class Square2(int side) : Shape
 ```
 
 ### 陷阱 3：上帝对象（God Object）
+
+> 上帝对象正是 SRP 违约的极端形态，重构手法见 [SOLID 原则与设计模式](/csharp/042-SolidPrinciplesAndDesignPatterns)。
 
 ```csharp
 // 反例：单一类承担所有职责

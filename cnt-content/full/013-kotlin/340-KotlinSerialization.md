@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 370
 title: Kotlin 序列化
 module: 'kotlin'
 category: 后端技术

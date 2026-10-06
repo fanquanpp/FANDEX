@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 140
 title: Vite 8 与 Rolldown 新特性
 module: 'vite'
 category: 前端技术
@@ -15,6 +15,14 @@ prerequisites:
   - 'vite/080-BuildSplit'
 ---
 
+
+## 知识点地图
+
+- **知识类别**：Vite 8 版本演进与 Rolldown 统一引擎——版本时间线、Rust 打包器、插件生态影响与升级迁移。时效敏感类内容：以官方发布说明为准，本文按 2026 年现状撰写。
+- **解决什么问题**：双引擎时代「开发正常、上线报错」的架构顽疾；升级新版本时的行为变更风险（浏览器 target、CJS 互操作、manualChunks 移除）；老插件在新管线上的兼容性判断。
+- **什么时候用到**：评估是否升级 Vite 8；执行升级迁移（第 8 节的检查单与反例表）；判断第三方插件能不能带进 Vite 8 项目（第 8A 节自查表）。
+- **本篇主线**：先懂「为什么统一引擎」（2-3 节），再看生态与特性（6-7 节），最后按迁移指南落地（8 节）。版本演进类内容的学习方法与普通知识不同——**记结论的失效时间，而不是结论本身**：每条行为变更都标注「不迁移会发生什么」。
+- **本篇不讲**：代码分割的具体手法（见 [生产构建与拆包](/vite/080-BuildSplit)）；依赖预构建机制（见 [依赖预构建与 optimizeDeps](/vite/065-DepPrebundlingOptimizeDeps)）。
 
 ## 0. 一个类比：给跑车换发动机
 
@@ -189,8 +197,6 @@ Bundled Dev：一次性打包再服务（大型应用启动/刷新更快，HMR �
 | 网络请求数 | 减少到约 1/10 |
 | HMR | 保持即时 |
 
-实测中 Linear 团队冷启动渲染快 3 倍、整页刷新快约 40%。该模式目前在 Vite 8.1 中为实验性特性（侧重浏览器端与基础插件），大型单体应用可尝鲜，使用大量第三方插件的项目建议等待生态适配。
-
 实测中 Linear 团队冷启动渲染快 3 倍、整页刷新快约 40%。该模式目前在 Vite 8.1 中为实验性特性（侧重浏览器端与基础插件），通过 `--experimental-bundle` 参数或配置 `experimental.bundledDev: true` 开启；大型单体应用可尝鲜，使用大量第三方插件的项目建议等待生态适配。
 
 ### 6.2 其它值得关注的新特性
@@ -207,7 +213,7 @@ Bundled Dev：一次性打包再服务（大型应用启动/刷新更快，HMR �
   - 通过 `devtools` 配置项从 dev server 直接启用，可查看模块依赖图、转换结果、触发依赖预构建、分析产物 chunk
 
 4. 浏览器日志转发（forwardConsole）
-  - 浏览器 console 日志转发到终端（《Vite 开发服务器与 HMR》第 8 节）
+  - 浏览器 console 日志转发到终端（见 [HMR 原理与 import.meta.hot API](/vite/075-HmrMechanismAndHotApi) 第 5 节）
 
 5. Chunk Import Map（实验性）
   - 用导入映射提升 chunk 缓存效率，缓解"改一行代码哈希级联变化"问题
@@ -251,20 +257,27 @@ pnpm add -D vite@latest @vitejs/plugin-react@latest
 pnpm add -D vite@latest @vitejs/plugin-vue@latest
 ```
 
-2. 检查要点（官方迁移指南）：
-- Node.js 版本：需要 20.19+ 或 22.12+（与 Vite 7 一致，Vite 7 起即为纯 ESM 包）
+2. 检查要点（官方迁移指南）——每条都给出「不迁移会发生什么」的反例：
+
+- Node.js 版本：需要 20.19+ 或 22.12+（与 Vite 7 一致，Vite 7 起即为纯 ESM 包）。
+  **不升级会怎样**：npm 安装阶段即报引擎不兼容（ERESOLVE/EBADENGINE），CI 直接红，属于 fail-fast 型——最烦人但最安全的一类；
 - 配置文件 vite.config.ts 通常无需改动（rollupOptions 等保持兼容，
-     迁移到 rolldownOptions 更佳，旧写法暂时保留并给出弃用提示）
+     迁移到 rolldownOptions 更佳，旧写法暂时保留并给出弃用提示）。
+  **不迁移会怎样**：当下能跑，但处于弃用兼容期——大版本更迭后旧写法被移除，CI 在那个时间点集体崩，属于「债务后置」型；
 - 确认浏览器目标：默认目标名仍是 'baseline-widely-available'（Vite 7 引入），
      但对应下限从 Chrome 107 / Edge 107 / Firefox 104 / Safari 16.0
      提升到 Chrome 111 / Edge 111 / Firefox 114 / Safari 16.4
-     （对齐 2026-01-01 的 Baseline Widely Available 特性集）
+     （对齐 2026-01-01 的 Baseline Widely Available 特性集）。
+  **不确认会怎样**：构建照常成功、部署照常上线，但用旧浏览器的用户拿到含新语法的产物直接白屏——**无报错型事故，全表最危险**；用户群含旧设备/老 WebView（如嵌入式大屏、老安卓）的项目必须显式 `build.target`；
 - esbuild 相关：esbuild 降级为可选依赖；`esbuild` 配置项自动转换为 `oxc`，
-     `transformWithEsbuild` 弃用（改用 `transformWithOxc`）
+     `transformWithEsbuild` 弃用（改用 `transformWithOxc`）。
+  **不迁移会怎样**：调用点运行时告警（弃用提示）直至下个版本移除后直接抛错——CI 中的弃用警告清单就是这里的体检表；
 - CommonJS 互操作行为统一：dev 与 build 使用一致的 CJS 互操作规则，
-     极端兼容场景可用 `legacy.inconsistentCjsInterop: true` 回退旧行为
-- manualChunks：对象写法已移除、函数写法弃用，迁移到 Rolldown 的 `codeSplitting` 配置
-- 第三方插件升级到最新版
+     极端兼容场景可用 `legacy.inconsistentCjsInterop: true` 回退旧行为。
+  **不迁移会怎样**：依赖旧「dev/build 不一致」写法的代码，其中一侧（通常 dev）开始报 export 缺失——现象与 065 篇的 `does not provide an export named` 同源，先查这里再查 exclude；
+- manualChunks：对象写法已移除、函数写法弃用，迁移到 Rolldown 的 `codeSplitting` 配置。
+  **不迁移会怎样**：对象写法构建**直接报错**（fail-fast）；函数写法进入弃用期。这正是 080 篇动手实践强调「函数形式（推荐）」的时代注脚；
+- 第三方插件升级到最新版。**不升级会怎样**：多数照常能跑（兼容是设计目标），但拿不到 Hook Filters 的性能收益；少数深水钩子插件会行为异常或报错，靠第 8A 节的自查表逐个过。
 
 ```text
 3. 曾使用 rolldown-vite 过渡包的用户：
@@ -280,6 +293,64 @@ pnpm add -D vite@latest @vitejs/plugin-vue@latest
 - Environment API 稳定化：为 Node / Edge / Browser 多环境构建提供统一接口
 - Module Federation 支持：Rolldown 解锁的新能力方向
 ```
+
+## 8A. 插件兼容性自查表
+
+升级前把项目里每个第三方插件按此表过一遍（配合 registry.vite.dev 的兼容标注）：
+
+| 插件使用了什么 | 兼容判定 | 处置 |
+| --- | --- | --- |
+| 仅通用钩子（resolveId / load / transform / buildStart 等） | 天然兼容 | 直接升级，顺手更新到最新版拿 Hook Filters 收益 |
+| 声明了 hook filter（id/code/moduleType） | Rolldown 原生路径，最优 | 保持最新 |
+| 生成期深水钩子（generateBundle 内直接改写 bundle 结构、renderStart） | 大多兼容、边界需验证 | 升级后跑一次完整 build，diff 产物核对 |
+| 内部直接调用 esbuild API（transformWithEsbuild 等） | 已弃用 | 插件必须升级；长期不维护的替代之 |
+| 依赖 Rollup 特定输出版本字段 / 非标准 flags | 不保证 | 查插件仓库 issue；无适配计划则换插件或 fork |
+| 自研插件 | 自查 | 按 110 篇的测试流程回归 |
+
+判读口径一句话：**「改代码的插件」（transform 类）几乎都安全，「看产物的插件」（generateBundle 类）要跑构建验证，「摸 esbuild 的插件」必须换血**。
+
+## 动手实践：在分支上跑一次升级预演
+
+任务：把「升级 Vite 8」做成一次可控的预演，产出一份属于你项目的迁移检查单。
+
+1. 建分支：`git checkout -b chore/vite-8-migration`（预演的全部代价被分支隔离，随时可弃）；
+2. 升级核心与框架插件到 latest，记录安装期与启动期的每一条警告（Node 版本、EBADENGINE、弃用提示），对照第 8.1 节反例表逐条归类：fail-fast 型 / 债务后置型 / 无报错型；
+3. dev 全页面巡检：每个路由点一遍，观察 HMR 是否正常、控制台有无 CJS 互操作类报错；
+4. `pnpm build` 前后对比产物：体积差（Rolldown 更激进的死代码消除）、chunk 清单差（codeSplitting 行为）、构建耗时；
+5. 浏览器 target 验证：如果项目用户群含旧设备，用真实旧浏览器（或 Can I Use 核对 build.target 语法）验证产物可运行——这是第 8.1 节唯一「无报错型」风险点的实测闭环；
+6. 把以上每步的检查结果写成项目内的迁移检查单（Markdown），下次大版本升级直接复用。
+
+<details>
+<summary>检查单模板（先自己跑，再展开对照）</summary>
+
+```markdown
+# Vite 8 升级迁移检查单（项目：<项目名>）
+
+## 环境预检
+- [ ] Node >= 20.19 / 22.12（实测版本：<填>）
+- [ ] 锁文件已提交（升级 diff 可审）
+
+## 安装与启动
+- [ ] pnpm add -D vite@latest 及框架插件成功，无 ERESOLVE
+- [ ] 启动期警告清单归类：fail-fast <条数> / 债务后置 <条数> / 无报错 <条数>
+
+## dev 巡检
+- [ ] 全路由 HMR 正常
+- [ ] 控制台无 CJS 互操作报错（export 缺失类）
+
+## build 对比
+- [ ] 产物体积：前 <X> KB -> 后 <Y> KB
+- [ ] chunk 清单 diff 已核对，codeSplitting 迁移完成
+- [ ] 终端弃用警告清单为零（或已登记）
+
+## 兼容与目标
+- [ ] 插件逐个过 8A 自查表：<插件清单>
+- [ ] build.target 显式确认（用户群含旧浏览器：<是/否>）
+```
+
+预演的关键产出不是「升完了」，而是这张单子——它把一次性的迁移经验变成团队资产，且每次照单跑的时间成本从一天降到一小时。
+
+</details>
 
 ## 9. 常见错误与对策表
 

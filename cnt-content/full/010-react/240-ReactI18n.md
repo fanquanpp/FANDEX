@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 310
 title: React 国际化
 module: 'react'
 category: 前端技术

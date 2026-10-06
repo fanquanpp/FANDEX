@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 430
 title: GC 代机制
 module: 'csharp'
 category: 后端技术
@@ -1883,3 +1883,33 @@ public sealed class GcMonitor : IDisposable
 .NET GC 是一个经过 20 余年演进的成熟系统，从 1.0 的三代模型到 9 的 DATAS 与 POH，不断适应现代工作负载。理解 GC 代机制、标记清除、压缩策略、固定对象、Server/Workstation 模式的本质，是编写高性能 .NET 应用的基础。
 
 掌握 GC 不是为了"手动控制"——而是为了在合适的场景选择合适的工具：`ArrayPool<T>` 降低分配、`Span<T>` 零拷贝、POH 隔离固定、Background GC 降低停顿。GC 是协作的，开发者通过减少压力让 GC 更高效地工作。
+<!-- 恢复自 cnt-content/full/014-csharp/250-CSharpDotNet.md（实施前 HEAD 62c90663 版本）；拆分时该小节未随迁，2026-10-07 内容保全复核恢复 -->
+
+## GC 暂停时间复杂度
+
+
+**命题 4.1**：分代 GC 的平均暂停时间远小于全堆标记-压缩。
+
+**证明**：
+
+设堆总大小为 $H$，Gen0 大小为 $g_0 \ll H$。Gen0 GC 仅扫描 $g_0$：
+
+- **标记**：从根集合可达性分析，复杂度 $O(|\text{roots}| + g_0)$。
+- **压缩**：移动存活对象，复杂度 $O(g_0)$。
+
+总暂停 $T_0 = O(g_0)$，与 $H$ 无关。
+
+Gen2 GC（Full GC）扫描整个堆：
+
+$$
+T_2 = O(H)
+$$
+
+由于 Gen0 频率高（每秒数次），Gen2 频率低（每小时数次），平均暂停：
+
+$$
+\bar{T} = \frac{n_0 \cdot T_0 + n_2 \cdot T_2}{n_0 + n_2} \approx T_0 \text{ if } n_0 \gg n_2
+$$
+
+**推论**：短命对象（局部变量）保持在 Gen0，频繁分配不会引发 Full GC。
+

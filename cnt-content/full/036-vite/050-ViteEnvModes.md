@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'vite/030-ConfigFile'
-  - 'vite/070-DevServerHMR'
+  - 'vite/070-DevServerAndProxy'
 prerequisites:
   - 'vite/030-ConfigFile'
 ---
@@ -20,7 +20,7 @@ prerequisites:
 
 - [Vite 配置文件](/vite/030-ConfigFile)：本篇会在配置里用 `loadEnv` 读取环境变量。
 - [Vite 快速上手与项目结构](/vite/020-QuickStart)：.env 文件都放在项目根目录，与 index.html 平级。
-- [Vite 开发服务器与 HMR](/vite/070-DevServerHMR)：dev server 与 build 默认对应两个不同模式。
+- [Vite 开发服务器与 HMR](/vite/070-DevServerAndProxy)：dev server 与 build 默认对应两个不同模式。
 
 ## 学习目标
 

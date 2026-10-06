@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 430
 title: Vue3 学习总结：核心知识体系回顾
 module: 'vue3'
 category: 前端技术
@@ -31,7 +31,7 @@ prerequisites: []
 2. 能用组合式 API 把"演唱会倒计时""粉丝团加入"等业务逻辑封装成可复用的 Composable，并在多个页面间共享。
 3. 能在 props/emits、provide/inject、Pinia 之间为组件通信做出正确选型，并说出各自的层级边界。
 4. 能用 Vue Router 与 Pinia 搭出歌姬主页、演唱会列表等页面骨架，并配好导航守卫与状态持久化。
-5. 能对编译优化、KeepAlive 缓存、v-once 等性能手段建立索引，知道何时查阅 [性能优化](/vue3/340-PerformanceOptimization) 与 [服务端渲染](/vue3/350-Vue3SSR)。
+5. 能对编译优化、KeepAlive 缓存、v-once 等性能手段建立索引，知道何时查阅 [性能工具箱](/vue3/325-Vue3PerformanceToolkit) 与 [服务端渲染](/vue3/350-Vue3SSR)。
 
 ## 知识地图
 
@@ -129,7 +129,7 @@ function like() {
 
 ### 2. 组合式 API 与 Composable 逻辑复用
 
-组合式 API 的核心价值是"按功能组织代码"，把同一业务的响应式数据、计算属性与副作用放在一起，而不是被 data、methods、computed 拆散。判断一段逻辑是否值得抽离，可以用"换个页面还要不要重写"作标准：只要答案是要，就应抽成 `useXxx` 函数，让状态与行为一起打包复用。这也是 [自定义 Hook](/vue3/090-CustomHook) 与 [Composable 封装](/vue3/100-CustomComposableWrapper) 两篇的主线。
+组合式 API 的核心价值是"按功能组织代码"，把同一业务的响应式数据、计算属性与副作用放在一起，而不是被 data、methods、computed 拆散。判断一段逻辑是否值得抽离，可以用"换个页面还要不要重写"作标准：只要答案是要，就应抽成 `useXxx` 函数，让状态与行为一起打包复用。这也是 [自定义 Hook](/vue3/090-CustomHook) 与 [Composable 封装](/vue3/090-CustomHook) 两篇的主线。
 
 ```ts
 // composables/useFanClub.ts：粉丝团加入逻辑，任意歌姬主页可复用
@@ -427,10 +427,10 @@ const { members, themeColor } = storeToRefs(fanClubStore)
 ## 后续学习路径
 
 1. 复习 [组合式 API 优势与场景](/vue3/080-CompositionAPIAdvantageScene)，理解 Options API 与 Composition API 的迁移策略，明确什么规模的组件适合切换写法。
-2. 进阶 [Composable 封装](/vue3/100-CustomComposableWrapper)，学习带泛型参数与卸载清理的工程化写法，让粉丝团、倒计时等逻辑成为团队资产。
+2. 进阶 [Composable 封装](/vue3/090-CustomHook)，学习带泛型参数与卸载清理的工程化写法，让粉丝团、倒计时等逻辑成为团队资产。
 3. 深入 [computed 缓存与 watch 时机](/vue3/060-ComputedCacheWatchTiming)，弄清 `flush: 'post'` 等执行时序问题，排查"数据变了视图还没变"一类疑难。
 4. 攻克 [路由导航守卫](/vue3/200-VueRouterNavigationGuard)，为购票流程补上完整的鉴权链路，区分全局、路由级与组件内守卫的触发顺序。
-5. 学习 [高级组件特性](/vue3/240-Vue3AdvancedComponentFeature) 与 [组件库工程化](/vue3/400-ComponentLibraryEngineering)，具备产出通用组件库并维护版本的能力。
+5. 学习 [动态组件与函数式组件](/vue3/145-DynamicComponentPatterns) 与 [组件库工程化](/vue3/400-ComponentLibraryEngineering)，具备产出通用组件库并维护版本的能力。
 6. 挑战 [服务端渲染](/vue3/350-Vue3SSR)，理解同构架构、数据预取、流式渲染与 Nuxt 集成，认清单例污染等 SSR 专属陷阱。
 7. 跟进 [3.4 与 3.5 新特性](/vue3/360-Vue3NewFeatures3435)，保持对 `defineModel`、响应式解耦等演进的敏感度，并在升级前查阅 [生态版本地图](/vue3/380-VueEcosystemVersionMap)。
 8. 以 [项目实战博客](/vue3/410-Vue3ProjectExampleBlog) 收尾，把本清单中的每个知识点落进真实工程，再用 [测试策略](/vue3/300-Vue3TestStrategy) 为核心组件补齐测试。

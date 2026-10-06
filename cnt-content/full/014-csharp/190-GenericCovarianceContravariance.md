@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 220
 title: 泛型与协变逆变
 module: 'csharp'
 category: 后端技术

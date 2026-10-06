@@ -11,7 +11,7 @@ related:
   - 'kotlin/040-KotlinFunctionAndLambda'
   - 'kotlin/050-KotlinClassObject'
   - 'kotlin/120-KotlinCollectionCoroutine'
-  - 'kotlin/240-KotlinCoroutineAdvanced'
+  - 'kotlin/320-KotlinCoroutineChannel'
 prerequisites: []
 ---
 

@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 380
 title: 信号处理：异步事件的捕获与纪律
 module: 'c'
 category: 计算机科学
@@ -13,13 +13,13 @@ related:
   - 'c/420-CPosixSystemCall'
 prerequisites:
   - 'c/330-ProcessAndPipe'
-  - 'c/260-CVolatileAndConstDeepDive'
+  - 'c/260-ConstAndVolatileQualifiers'
 ---
 
 ## 前置知识
 
 - 已完成 [进程与管道](/c/330-ProcessAndPipe)：知道 fork/wait/pipe，见过 SIGPIPE 的退出码 141 和僵尸进程；本篇的 SIGCHLD 专题就是 330 僵尸问题的收尾；
-- 已完成 [volatile 与 const 深水区](/c/260-CVolatileAndConstDeepDive)：写过 `volatile sig_atomic_t` 标志程序。260 讲的是「为什么必须是这个类型」，本篇把它放进信号的完整体系里用。
+- 已完成 [volatile 与 const 深水区](/c/260-ConstAndVolatileQualifiers)：写过 `volatile sig_atomic_t` 标志程序。260 讲的是「为什么必须是这个类型」，本篇把它放进信号的完整体系里用。
 
 > 分工说明：260 篇从编译器优化角度讲了 volatile 的三大场景之一「信号处理器」，回答「为什么不能只用 int」；本篇讲信号本身——信号是什么、怎么安装处理器、处理器里哪些事绝对不能做。两篇共用一套示例词汇（标志、主循环、处理器），不重复论证。
 
@@ -330,7 +330,7 @@ int main(void) {
 
 ### 6.2 SIGSEGV：几乎什么都做不了
 
-解引用坏指针触发 SIGSEGV 时，进程的状态已经不可信：栈可能已损坏、堆可能不一致。处理器里能做的只有「记录然后死」：用 write 输出一行现场（配 SA_SIGINFO 可以拿到出错地址 info->si_addr），然后恢复默认处置并重新 raise 同一信号，让进程带着 core dump 按正常方式死掉。试图恢复运行、longjmp 回主流程都是把「确定崩溃」升级成「不确定的数据损坏」。崩溃时自动打印调用栈的 backtrace 技巧属于调试专题，见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+解引用坏指针触发 SIGSEGV 时，进程的状态已经不可信：栈可能已损坏、堆可能不一致。处理器里能做的只有「记录然后死」：用 write 输出一行现场（配 SA_SIGINFO 可以拿到出错地址 info->si_addr），然后恢复默认处置并重新 raise 同一信号，让进程带着 core dump 按正常方式死掉。试图恢复运行、longjmp 回主流程都是把「确定崩溃」升级成「不确定的数据损坏」。崩溃时自动打印调用栈的 backtrace 技巧属于调试专题，见 [动态调试与 GDB 实战](/c/495-DynamicDebuggingGDB)。
 
 ### 6.3 sigaltstack：栈烧穿时最后的容身之处
 
@@ -438,7 +438,7 @@ sigprocmask(SIG_UNBLOCK, &block, NULL); /* 解除屏蔽：处理器执行几次�
 
 ## 10. 与之前和之后的知识的关系
 
-- 往前：SIGPIPE 退出码 141 与僵尸进程都产自 [进程与管道](/c/330-ProcessAndPipe)，本篇分别用「忽略处置」与「SIGCHLD 处理器」收尾；volatile sig_atomic_t 的机制论证在 [volatile 与 const 深水区](/c/260-CVolatileAndConstDeepDive)；
+- 往前：SIGPIPE 退出码 141 与僵尸进程都产自 [进程与管道](/c/330-ProcessAndPipe)，本篇分别用「忽略处置」与「SIGCHLD 处理器」收尾；volatile sig_atomic_t 的机制论证在 [volatile 与 const 深水区](/c/260-ConstAndVolatileQualifiers)；
 - 旁支：栈溢出与备用栈的内存视角在 [函数调用栈帧](/c/250-FunctionCallStackFrame)；「无锁原子」是 C17 条款里的另一条生路，原子与内存序在 [原子与内存模型](/c/380-AtomicAndMemoryModel)；系统调用与文件描述符的底座在 [POSIX 系统调用](/c/420-CPosixSystemCall)；
 - 往后：进程间除了信号还有共享内存与信号量，见 [共享内存与信号量](/c/350-SharedMemorySemaphore)；同一地址空间里的并发与锁见 [线程与并发](/c/360-ThreadConcurrency)。
 

@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 240
 title: 进程管理命令速查手册
 module: 'shell'
 category: 工具链

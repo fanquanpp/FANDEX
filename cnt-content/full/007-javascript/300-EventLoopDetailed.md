@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 350
 title: 事件循环深水区：清空时机、Node 六阶段与调度选型
 module: 'javascript'
 category: 前端技术

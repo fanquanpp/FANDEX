@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 410
 title: 模板元编程
 module: 'cpp'
 category: 计算机科学
@@ -10,7 +10,7 @@ updated: '2026-09-27'
 related:
   - 'cpp/130-SmartPointerDeepDive'
   - 'cpp/090-RvalueReferenceMoveSemantics'
-  - 'cpp/170-CppCoreGuidelinesResourceManagement'
+  - 'cpp/170-RAIIResourceManagementInPractice'
   - 'cpp/060-LambdaExpression'
   - 'cpp/290-Cpp20Range'
   - 'cpp/660-Cpp20Module'
@@ -25,17 +25,22 @@ prerequisites:
 
 > 定位说明：本篇为进阶参考书（参考层），面向已完成本模块主线的读者；入门请先走学习路径前序阶段。定位标准见 docs/standards/reference-layer.md（仓库）。
 
+
+
 ## 前置知识
 
-- [Lambda 表达式](/cpp/060-LambdaExpression)：建议先完成前一篇的学习
+- [C++ 模板](/cpp/330-CppTemplate)：函数/类模板、特化与实例化的基本语法；
+- [类型萃取与 SFINAE](/cpp/350-TypeTraitsSFINAE)：enable_if 与 detect 惯用法——本篇在其之上谈元编程本身。
 
 ## 学习目标
 
-- 掌握「第 1 章 学习目标与导论」的核心机制、典型用法与常见陷阱
-- 掌握「第 2 章 历史动机与演进」的核心机制、典型用法与常见陷阱
-- 掌握「第 3 章 形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「第 4 章 理论推导与复杂度分析」的核心机制、典型用法与常见陷阱
-- 掌握「第 5 章 模板基础：参数化与实例化」的核心机制、典型用法与常见陷阱
+- 掌握模板元编程的历史动机与「编译期计算」的心智模型（第 1-2 章）；
+- 掌握元编程的形式化定义与复杂度分析（第 3-4 章）；
+- 掌握 CRTP、表达式模板、策略设计等代码生成模式（工程实践章）；
+- 能对比 C++ 与 Rust/Java/Haskell/Zig/D 的泛型与元编程能力（对比分析章）；
+- 熟悉 Eigen、Boost.Hana、fmt 等真实库的元编程手法（案例研究章）。
+
+> 拆分说明：本篇原第 5-10 章（模板基础、特化与偏特化、SFINAE 与 enable_if、void_t 与 constexpr if、Concepts、可变参数模板）为各专篇主题的复述，已删冗归位：见 [330 模板](/cpp/330-CppTemplate)、[350 类型萃取与 SFINAE](/cpp/350-TypeTraitsSFINAE)、[410 概念](/cpp/410-Cpp20Concept)、[370/380 可变参数模板](/cpp/370-VariadicTemplate)。本篇聚焦 TMP 本位：编译期计算、元编程函数式风格、代码生成模式与复杂度分析。
 
 ## 第 1 章 学习目标与导论
 
@@ -880,1005 +885,11 @@ static_assert(std::is_same_v<
     TypeIf<false, int, double>::type, double>);
 ```
 
-## 第 5 章 模板基础：参数化与实例化
-
-本章回顾模板的基础语法与实例化机制，奠定后续高级主题的基础。
-
-### 5.1 函数模板
-
-```cpp
-#include <iostream>
-#include <vector>
-
-// 基础函数模板
-template<typename T>
-T max_of(T a, T b) {
-    return a > b ? a : b;
-}
-
-// 模板参数推导
-void test_deduction() {
-    max_of(1, 2);          // T = int
-    max_of(1.0, 2.0);      // T = double
-    max_of<int>(1, 2);     // 显式指定
-    // max_of(1, 2.0);     // 错误：T 推导冲突
-    max_of<double>(1, 2.0);  // 显式指定解决冲突
-}
-
-// 多参数模板
-template<typename T, typename U>
-auto add(T a, U b) -> decltype(a + b) {
-    return a + b;
-}
-
-// 非类型参数
-template<int N, typename T>
-T scale(T x) {
-    return x * N;
-}
-
-// 模板模板参数
-template<template<typename> class Container, typename T>
-Container<T> make_container(T value) {
-    Container<T> c;
-    c.push_back(value);
-    return c;
-}
-
-void test_template_template() {
-    auto v = make_container<std::vector>(42);  // Container = vector, T = int
-    std::cout << v[0] << std::endl;  // 输出 42
-}
-```
-
-### 5.2 类模板
-
-```cpp
-#include <array>
-#include <cstddef>
-
-// 类模板
-template<typename T, size_t N>
-class StaticArray {
-    T data_[N]{};
-public:
-    T& operator[](size_t i) { return data_[i]; }
-    const T& operator[](size_t i) const { return data_[i]; }
-    constexpr size_t size() const { return N; }
-
-    // 成员函数模板
-    template<typename U>
-    void fill(const U& value) {
-        for (size_t i = 0; i < N; ++i) data_[i] = static_cast<T>(value);
-    }
-};
-
-// 别名模板
-template<typename T>
-using Array4 = StaticArray<T, 4>;
-
-// 变量模板
-template<typename T>
-constexpr size_t bits_per = sizeof(T) * 8;
-
-// 使用
-void test_class_template() {
-    StaticArray<int, 4> arr;
-    arr.fill(42);
-    Array4<double> darr;  // 别名
-    static_assert(bits_per<int> == 32 || bits_per<int> == 64);
-}
-```
-
-### 5.3 实例化机制
-
-```mermaid
-graph TD
-    A[模板定义] --> B{使用点}
-    B -->|隐式实例化| C[编译器自动推导参数]
-    B -->|显式实例化| D[用户提供参数]
-    C --> E[替换模板参数]
-    D --> E
-    E --> F{检查语法合法性}
-    F -->|合法| G[生成特化代码]
-    F -->|非法| H{是否在立即上下文?}
-    H -->|是 SFINAE| I[从重载集移除]
-    H -->|否| J[硬错误: 编译失败]
-    G --> K[加入待编译队列]
-    K --> L[代码生成与链接]
-    style G fill:#c8e6c9
-    style J fill:#ffcdd2
-    style I fill:#fff9c4
-```
-
-```cpp
-// 隐式实例化
-template<typename T>
-struct Point {
-    T x, y;
-    T dot(const Point& p) const { return x * p.x + y * p.y; }
-};
-
-void test_implicit() {
-    Point<int> p1{1, 2};  // 隐式实例化 Point<int>
-    p1.dot(Point<int>{3, 4});  // 隐式实例化 dot 成员
-    // 注意：未使用的成员函数不会被实例化
-}
-
-// 显式实例化定义
-template class Point<double>;  // 强制实例化所有成员
-
-// 显式实例化声明
-extern template class Point<float>;  // 阻止本翻译单元实例化
-
-int main() {
-    Point<float> pf;  // 使用 extern 实例化
-    return 0;
-}
-```
-
-### 5.4 两阶段名字查找
-
-C++ 模板的名字查找分两阶段：
-
-1. **第一阶段（定义时）**：查找不依赖模板参数的名字（non-dependent names）；
-2. **第二阶段（实例化时）**：查找依赖模板参数的名字（dependent names）。
-
-```cpp
-#include <iostream>
-
-void f(int) { std::cout << "global f(int)\n"; }
-
-template<typename T>
-void g(T x) {
-    f(1);           // non-dependent: 第一阶段查找，找到 ::f(int)
-    // h(x);        // dependent: 第二阶段查找，需通过 ADL
-    f(x);           // dependent: 第二阶段查找 + ADL
-}
-
-void f(double) { std::cout << "global f(double)\n"; }  // 在 g 定义后，不会被 g 看到
-
-namespace N {
-    struct X {};
-    void h(X) { std::cout << "N::h(X)\n"; }
-}
-
-void test_two_phase() {
-    N::X x;
-    g(x);  // h(x) 通过 ADL 找到 N::h
-}
-```
-
-### 5.5 依赖名称与 typename / template 关键字
-
-```cpp
-#include <vector>
-
-template<typename T>
-void dependent_example() {
-    // typename 必需：告诉编译器 T::value_type 是类型
-    typename T::value_type v{};
-
-    // template 必需：告诉编译器 T::begin() 是模板
-    T::template begin<int>();
-}
-
-// 经典陷阱：依赖类型用作基类
-template<typename T>
-struct Derived : T::Base {  // 此处 T::Base 被认为是类型，无需 typename
-    typename T::Type member;  // 此处需要 typename
-};
-
-// 依赖模板用作成员初始化
-template<typename T>
-struct Holder {
-    // T::template Factory<U>() 而非 T::Factory<U>()
-    template<typename U>
-    static auto make() -> decltype(T::template Factory<U>()) {
-        return T::template Factory<U>();
-    }
-};
-```
-
-## 第 6 章 模板特化与偏特化
-
-### 6.1 全特化
-
-```cpp
-#include <string>
-#include <iostream>
-
-// 主模板
-template<typename T>
-struct TypeName {
-    static std::string get() { return "unknown"; }
-};
-
-// 全特化：int
-template<>
-struct TypeName<int> {
-    static std::string get() { return "int"; }
-};
-
-// 全特化：double
-template<>
-struct TypeName<double> {
-    static std::string get() { return "double"; }
-};
-
-// 全特化：const char*
-template<>
-struct TypeName<const char*> {
-    static std::string get() { return "const char*"; }
-};
-
-void test_full_spec() {
-    std::cout << TypeName<int>::get() << "\n";          // "int"
-    std::cout << TypeName<double>::get() << "\n";       // "double"
-    std::cout << TypeName<char>::get() << "\n";         // "unknown"
-}
-```
-
-### 6.2 偏特化
-
-```cpp
-#include <type_traits>
-#include <string>
-
-// 偏特化：指针类型
-template<typename T>
-struct TypeName<T*> {
-    static std::string get() {
-        return TypeName<T>::get() + "*";
-    }
-};
-
-// 偏特化：引用类型
-template<typename T>
-struct TypeName<T&> {
-    static std::string get() {
-        return TypeName<T>::get() + "&";
-    }
-};
-
-// 偏特化：const 修饰
-template<typename T>
-struct TypeName<const T> {
-    static std::string get() {
-        return "const " + TypeName<T>::get();
-    }
-};
-
-// 偏特化：数组
-template<typename T, size_t N>
-struct TypeName<T[N]> {
-    static std::string get() {
-        return TypeName<T>::get() + "[" + std::to_string(N) + "]";
-    }
-};
-
-// 偏特化：函数指针
-template<typename R, typename... Args>
-struct TypeName<R(*)(Args...)> {
-    static std::string get() {
-        return TypeName<R>::get() + "(*)(...)";
-    }
-};
-
-void test_partial_spec() {
-    std::cout << TypeName<int*>::get() << "\n";           // "int*"
-    std::cout << TypeName<const double>::get() << "\n";   // "const double"
-    std::cout << TypeName<int[10]>::get() << "\n";        // "int[10]"
-}
-```
-
-### 6.3 函数模板重载 vs 偏特化
-
-C++ 不允许函数模板偏特化，必须用重载替代：
-
-```cpp
-#include <type_traits>
-#include <iostream>
-
-// 错误：函数模板不能偏特化
-// template<typename T>
-// void f(T*) { ... }  // 这是重载，不是偏特化
-
-// 正确：重载
-template<typename T>
-void describe(T x) {
-    std::cout << "generic: " << x << "\n";
-}
-
-// 重载：指针
-template<typename T>
-void describe(T* p) {
-    std::cout << "pointer: " << *p << "\n";
-}
-
-// 重载：引用（注意与 T 的歧义）
-template<typename T>
-void describe_wrapper(T& x) {
-    describe(x);  // 委托
-}
-
-void test_overload() {
-    int x = 42;
-    describe(42);    // generic
-    describe(&x);    // pointer
-}
-```
-
-### 6.4 SFINAE 与 enable_if 的早期形态
-
-```cpp
-#include <type_traits>
-#include <iostream>
-
-// enable_if 作为默认模板参数（最常见）
-template<typename T,
-         typename = std::enable_if_t<std::is_integral_v<T>>>
-T abs_safe(T x) {
-    return x < 0 ? -x : x;
-}
-
-// enable_if 作为返回类型
-template<typename T>
-std::enable_if_t<std::is_floating_point_v<T>, T>
-abs_safe(T x) {
-    return x < 0 ? -x : x;
-}
-
-// enable_if 作为函数参数（少见，但有用）
-template<typename T>
-void log_value(T x, std::enable_if_t<std::is_integral_v<T>, int> = 0) {
-    std::cout << "integral: " << x << "\n";
-}
-
-// 错误：仅 enable_if 默认参数差异不构成重载
-// template<typename T, typename = enable_if_t<...>> void f(T);
-// template<typename T, typename = enable_if_t<...>> void f(T);  // 重定义！
-
-// 正确：通过返回类型差异
-template<typename T>
-auto f(T) -> std::enable_if_t<std::is_integral_v<T>, int> { return 1; }
-
-template<typename T>
-auto f(T) -> std::enable_if_t<std::is_floating_point_v<T>, int> { return 2; }
-
-void test_enable_if() {
-    abs_safe(-5);     // 调用整数版本
-    abs_safe(-3.14);  // 调用浮点版本
-    f(42);            // 返回 1
-    f(3.14);          // 返回 2
-}
-```
-
-## 第 7 章 SFINAE 与 enable_if 深度解析
-
-### 7.1 SFINAE 决策树
-
-```mermaid
-graph TD
-    A[模板参数替换] --> B{替换是否合法?}
-    B -->|合法| C[候选加入重载集]
-    B -->|非法| D{发生在哪里?}
-    D -->|函数签名/返回类型/参数类型| E[立即上下文]
-    D -->|函数体/成员函数定义| F[非立即上下文]
-    E --> G[SFINAE: 静默剔除]
-    F --> H[硬错误: 编译失败]
-    G --> I{是否有其他候选?}
-    I -->|是| J[继续重载解析]
-    I -->|否| K[错误: 无匹配函数]
-    style C fill:#c8e6c9
-    style G fill:#fff9c4
-    style H fill:#ffcdd2
-    style K fill:#ffcdd2
-```
-
-### 7.2 SFINAE 的多种表达形式
-
-```cpp
-#include <type_traits>
-#include <iostream>
-#include <vector>
-
-// 形式 1：enable_if 作为默认模板参数
-template<typename T,
-         typename = std::enable_if_t<std::is_default_constructible_v<T>>>
-T make_default() { return T{}; }
-
-// 形式 2：enable_if 作为返回类型
-template<typename T>
-std::enable_if_t<std::is_copy_constructible_v<T>, T>
-clone(const T& x) { return T(x); }
-
-// 形式 3：enable_if 作为非类型模板参数
-template<typename T,
-         std::enable_if_t<std::is_move_constructible_v<T>, int> = 0>
-T move_clone(T& x) { return T(std::move(x)); }
-
-// 形式 4：decltype + comma（最常见的「检测表达式」SFINAE）
-template<typename T>
-auto size(const T& c) -> decltype(c.size(), size_t{}) {
-    return c.size();
-}
-
-template<typename T>
-auto size(const T& arr) -> decltype(sizeof(arr), size_t{}) {
-    return sizeof(arr) / sizeof(arr[0]);
-}
-
-// 形式 5：void_t 检测内嵌类型
-template<typename, typename = void>
-struct has_value_type : std::false_type {};
-
-template<typename T>
-struct has_value_type<T, std::void_t<typename T::value_type>>
-    : std::true_type {};
-
-// 形式 6：检测成员函数
-template<typename, typename = void>
-struct has_size : std::false_type {};
-
-template<typename T>
-struct has_size<T, std::void_t<decltype(std::declval<T>().size())>>
-    : std::true_type {};
-
-void test_sfinae_forms() {
-    static_assert(has_value_type<std::vector<int>>::value);
-    static_assert(!has_value_type<int>::value);
-    static_assert(has_size<std::vector<int>>::value);
-    static_assert(!has_size<int>::value);
-}
-```
-
-### 7.3 高阶 SFINAE：检测任意表达式
-
-```cpp
-#include <type_traits>
-#include <utility>
-
-// 检测类型 T 是否支持 a + b
-template<typename T, typename U, typename = void>
-struct is_addable : std::false_type {};
-
-template<typename T, typename U>
-struct is_addable<T, U, std::void_t<
-    decltype(std::declval<T>() + std::declval<U>())
->> : std::true_type {};
-
-// 检测类型 T 是否有 begin() 和 end()
-template<typename T, typename = void>
-struct is_iterable : std::false_type {};
-
-template<typename T>
-struct is_iterable<T, std::void_t<
-    decltype(std::declval<T>().begin()),
-    decltype(std::declval<T>().end())
->> : std::true_type {};
-
-// 检测类型 T 是否是std::vector特化
-template<typename T>
-struct is_vector : std::false_type {};
-
-template<typename T, typename Alloc>
-struct is_vector<std::vector<T, Alloc>> : std::true_type {};
-
-// 检测类型 T 是否有静态成员 value
-template<typename T, typename = void>
-struct has_static_value : std::false_type {};
-
-template<typename T>
-struct has_static_value<T, std::void_t<
-    decltype(T::value)
->> : std::true_type {};
-
-void test_detection() {
-    static_assert(is_addable<int, double>::value);
-    static_assert(!is_addable<std::string, int>::value);  // string + int 不合法
-    static_assert(is_iterable<std::vector<int>>::value);
-    static_assert(!is_iterable<int>::value);
-    static_assert(is_vector<std::vector<int>>::value);
-    static_assert(!is_vector<int>::value);
-}
-```
-
-### 7.4 SFINAE 友好的 traits 设计
-
-```cpp
-#include <type_traits>
-#include <iterator>
-
-// 标准库的 iterator_traits 是 SFINAE 友好设计的典范
-// C++20 之前的实现：
-template<typename Iter, typename = void>
-struct iterator_traits_saf {  // SFINAE 友好版
-    // 空：当 Iter 不是迭代器时，无内嵌类型
-};
-
-template<typename Iter>
-struct iterator_traits_saf<Iter, std::void_t<
-    typename Iter::iterator_category,
-    typename Iter::value_type,
-    typename Iter::difference_type,
-    typename Iter::pointer,
-    typename Iter::reference
->> {
-    using iterator_category = typename Iter::iterator_category;
-    using value_type = typename Iter::value_type;
-    using difference_type = typename Iter::difference_type;
-    using pointer = typename Iter::pointer;
-    using reference = typename Iter::reference;
-};
-
-// 使用：对非迭代器类型，iterator_traits_saf<T> 不会产生硬错误
-struct NotIter {};
-
-static_assert(std::is_same_v<
-    iterator_traits_saf<NotIter>::iterator_category,  // 错误：无该成员
-    void>);  // 但如果用 SFINAE 检测，会是 false 而非硬错误
-```
-
-## 第 8 章 C++17 void_t 与 constexpr if
-
-### 8.1 void_t 的原理与魔法
-
-`std::void_t<T>` 是一个极简的别名模板：它将任意类型映射到 `void`。其「魔法」不在于功能，而在于将类型表达式的合法性检查纳入 SFINAE 立即上下文。
-
-```cpp
-#include <type_traits>
-
-// void_t 的标准实现
-template<typename...>
-using void_t = void;
-
-// 经典用法：检测成员是否存在
-template<typename, typename = void>
-struct has_type_member : std::false_type {};
-
-template<typename T>
-struct has_type_member<T, void_t<typename T::type>>
-    : std::true_type {};
-
-// 检测多个成员
-template<typename T, typename = void>
-struct is_iterator_like : std::false_type {};
-
-template<typename T>
-struct is_iterator_like<T, void_t<
-    typename T::iterator_category,
-    typename T::value_type,
-    decltype(*std::declval<T>()),
-    decltype(++std::declval<T&>())
->> : std::true_type {};
-
-// void_t 链式检测
-template<typename, typename = void>
-struct detect : std::false_type {};
-
-template<typename T>
-struct detect<T, void_t<
-    decltype(std::declval<T>().first()),
-    decltype(std::declval<T>().second())
->> : std::true_type {};
-```
-
-### 8.2 constexpr if：编译期条件分支
-
-```cpp
-#include <type_traits>
-#include <string>
-#include <iostream>
-
-// constexpr if 替代 SFINAE 进行分支选择
-template<typename T>
-std::string stringify(const T& value) {
-    if constexpr (std::is_same_v<T, std::string>) {
-        return value;
-    } else if constexpr (std::is_arithmetic_v<T>) {
-        return std::to_string(value);
-    } else if constexpr (std::is_pointer_v<T>) {
-        return "pointer:" + stringify(*value);
-    } else {
-        return static_cast<std::string>(value);
-    }
-}
-
-// 未选中分支不会实例化
-template<typename T>
-void maybe_push(std::vector<T>& v, const T& value) {
-    if constexpr (std::is_default_constructible_v<T>) {
-        v.push_back(T{});
-    }
-    v.push_back(value);
-}
-
-// 递归模板终止
-template<typename... Args>
-void print_all(Args... args) {
-    if constexpr (sizeof...(args) > 0) {
-        std::cout << sizeof...(args) << " args\n";
-        // 折叠表达式处理参数包
-        ((std::cout << args << " "), ...);
-        std::cout << "\n";
-    } else {
-        std::cout << "no args\n";
-    }
-}
-
-void test_constexpr_if() {
-    std::cout << stringify(42) << "\n";
-    std::cout << stringify(3.14) << "\n";
-    std::cout << stringify(std::string("hello")) << "\n";
-    print_all(1, 2, 3);
-    print_all();
-}
-```
-
-### 8.3 constexpr if vs SFINAE 的工程权衡
-
-| 维度     | constexpr if             | SFINAE / enable_if     |
-| -------- | ------------------------ | ---------------------- |
-| 可读性   | 高，类似运行期 if        | 低，需理解替换规则     |
-| 灵活性   | 函数体内分支             | 函数签名级别选择       |
-| 重载     | 不适用于重载选择         | 适合，能从重载集剔除   |
-| 错误诊断 | 未选分支不实例化，无错误 | 失败候选静默剔除       |
-| 适用场景 | 函数体条件逻辑           | 函数签名级别约束与重载 |
-
-## 第 9 章 C++20 Concepts 深度解析
-
-### 9.1 Concepts 的四种 requires 形式
-
-```cpp
-#include <concepts>
-#include <vector>
-#include <string>
-
-// 形式 1：简单 requires 表达式
-template<typename T>
-concept HasPlus = requires(T a, T b) {
-    a + b;
-};
-
-// 形式 2：复合 requires（约束返回类型）
-template<typename T>
-concept Addable = requires(T a, T b) {
-    { a + b } -> std::convertible_to<T>;
-};
-
-// 形式 3：类型 requires
-template<typename T>
-concept HasValueType = requires {
-    typename T::value_type;
-};
-
-// 形式 4：嵌套 requires
-template<typename T>
-concept NumericContainer = requires {
-    typename T::value_type;
-    requires std::integral<typename T::value_type>;
-};
-
-// 组合：合取与析取
-template<typename T>
-concept Number = std::integral<T> || std::floating_point<T>;
-
-template<typename T>
-concept StrictNumber = Number<T> && !std::same_as<T, bool>;
-
-// 使用
-template<HasValueType T>
-typename T::value_type first_value(const T& c) {
-    return *c.begin();
-}
-
-template<NumericContainer C>
-auto sum_numeric(const C& c) {
-    typename C::value_type s{};
-    for (auto& x : c) s += x;
-    return s;
-}
-
-void test_concepts() {
-    std::vector<int> v{1, 2, 3};
-    std::cout << sum_numeric(v) << "\n";  // 6
-}
-```
-
-### 9.2 Concepts 的 subsumption 与重载排序
-
-```cpp
-#include <concepts>
-#include <iostream>
-
-// 概念层级：integral -> signed_integral -> integral_signed_long
-template<typename T>
-    requires std::integral<T>
-void classify(T) { std::cout << "integral\n"; }
-
-template<typename T>
-    requires std::signed_integral<T>
-void classify(T) { std::cout << "signed integral\n"; }
-
-// 注意：以下会与第一个构成歧义，因为 std::signed_integral 不一定 ⊢ std::integral
-// 实际上 std::signed_integral = std::integral && std::is_signed_v，所以 signed_integral ⊢ integral
-
-template<typename T>
-    requires std::integral<T> && (sizeof(T) >= 4)
-void classify(T) { std::cout << "large integral\n"; }
-
-void test_subsumption() {
-    classify(42);          // int: 候选 1, 2, 3，但 2 与 3 无包含关系 -> 歧义？
-    // 实际上 std::signed_integral<int> 与 (integral<int> && sizeof(int)>=4) 无包含关系
-    // 故上述 classify(42) 编译错误：ambiguous
-}
-```
-
-### 9.3 Concepts 与 auto
-
-```cpp
-#include <concepts>
-
-// 缩写函数模板
-void print(std::integral auto x) { /* ... */ }
-
-// 缩写函数模板（多参数）
-auto add(std::integral auto a, std::integral auto b) {
-    return a + b;
-}
-
-// 缩写函数模板与可变参数
-void print_all(std::convertible_to<std::string> auto... args) {
-    // 折叠表达式
-    // ((std::cout << args << " "), ...);
-}
-
-// Concepts 约束的类模板参数推导（CTAD）
-template<typename T>
-struct Wrapper {
-    T value;
-    Wrapper(T v) : value(v) {}
-};
-
-// C++20 起，CTAD 自动推导
-Wrapper w{42};  // Wrapper<int>
-
-// 用 Concepts 约束 CTAD
-template<typename T>
-    requires std::integral<T>
-Wrapper(T) -> Wrapper<T>;
-```
-
-### 9.4 Concepts 检查流程
-
-```mermaid
-graph TD
-    A[模板使用] --> B[推导模板参数]
-    B --> C{有 Concepts 约束?}
-    C -->|否| D[直接实例化]
-    C -->|是| E[计算约束的原子约束集]
-    E --> F{所有原子约束满足?}
-    F -->|是| G[加入重载集]
-    F -->|否| H[从重载集剔除]
-    G --> I{有多个候选?}
-    I -->|是| J[subsumption 排序]
-    I -->|否| K[选择唯一候选]
-    J --> L{有最受约束者?}
-    L -->|是| K
-    L -->|否| M[错误: 歧义]
-    K --> D
-    style K fill:#c8e6c9
-    style M fill:#ffcdd2
-```
-
-### 9.5 Concepts 标准库概览
-
-```cpp
-#include <concepts>
-#include <iterator>
-#include <ranges>
-
-// 核心语言概念
-static_assert(std::same_as<int, int>);
-static_assert(std::derived_from<std::true_type, std::integral_constant<int, 1>>);
-
-// 比较概念
-static_assert(std::equality_comparable<int>);
-static_assert(std::totally_ordered<double>);
-
-// 对象概念
-static_assert(std::default_initializable<int>);
-static_assert(std::movable<std::string>);
-static_assert(std::copyable<std::string>);
-static_assert(std::regular<int>);
-static_assert(std::semiregular<std::string>);
-
-// 可调用概念
-static_assert(std::invocable<decltype([](int){ return 0; }), int>);
-static_assert(std::predicate<decltype([](int x){ return x > 0; }), int>);
-
-// 迭代器概念
-static_assert(std::input_iterator<std::vector<int>::iterator>);
-static_assert(std::random_access_iterator<std::vector<int>::iterator>);
-static_assert(std::contiguous_iterator<std::vector<int>::iterator>);
-
-// 范围概念
-static_assert(std::ranges::range<std::vector<int>>);
-static_assert(std::ranges::random_access_range<std::vector<int>>);
-static_assert(std::ranges::sized_range<std::vector<int>>);
-```
-
-## 第 10 章 可变参数模板与折叠表达式
-
-### 10.1 参数包基础
-
-```cpp
-#include <tuple>
-#include <iostream>
-
-// 类模板参数包
-template<typename... Ts>
-struct Tuple {};
-
-// 函数模板参数包
-template<typename... Args>
-void print(Args... args) {
-    // sizeof... 获取包大小
-    std::cout << "size: " << sizeof...(args) << "\n";
-}
-
-// 模板参数包 + 类型参数
-template<typename T, typename... Rest>
-struct Head {
-    using type = T;
-};
-
-// 使用
-void test_packs() {
-    Tuple<int, double, char> t;
-    print(1, 2.0, "hello");  // size: 3
-    print();                  // size: 0
-    static_assert(std::is_same_v<Head<int, double, char>::type, int>);
-}
-```
-
-### 10.2 折叠表达式
-
-C++17 折叠表达式有四种形式：
-
-```cpp
-// 一元右折叠：(pack op ...)
-template<typename... Args>
-auto sum_r(Args... args) {
-    return (args + ...);  // arg1 + (arg2 + (arg3 + ...))
-}
-
-// 一元左折叠：(... op pack)
-template<typename... Args>
-auto sum_l(Args... args) {
-    return (... + args);  // ((arg1 + arg2) + arg3) + ...
-}
-
-// 二元右折叠：(pack op ... op init)
-template<typename... Args>
-auto sum_init_r(Args... args) {
-    return (args + ... + 0);  // arg1 + (arg2 + (... + 0))
-}
-
-// 二元左折叠：(init op ... op pack)
-template<typename... Args>
-auto sum_init_l(Args... args) {
-    return (0 + ... + args);  // ((0 + arg1) + arg2) + ...
-}
-
-// 折叠与不同运算符
-template<typename... Args>
-bool all_true(Args... args) {
-    return (... && args);  // 全部为真
-}
-
-template<typename... Args>
-bool any_true(Args... args) {
-    return (... || args);  // 任一为真
-}
-
-template<typename... Args>
-auto comma_all(Args... args) {
-    return (args , ...);  // 逗号折叠，返回最后一个
-}
-
-// 折叠与函数调用
-template<typename F, typename... Args>
-void for_each(F f, Args... args) {
-    ((void)f(args), ...);  // 对每个参数调用 f
-}
-
-void test_fold() {
-    std::cout << sum_r(1, 2, 3, 4) << "\n";   // 10
-    std::cout << sum_init_r() << "\n";          // 0（空包）
-    std::cout << all_true(true, true, false) << "\n";  // 0
-
-    for_each([](auto x) { std::cout << x << " "; }, 1, 2.0, "hello");
-    // 输出: 1 2 hello
-}
-```
-
-### 10.3 折叠表达式的形式语义
-
-折叠表达式等价于函数式编程中的 `foldr` / `foldl`：
-
-$$
-\begin{aligned}
-\text{UnaryRightFold}(e_1, \ldots, e_n, \oplus) &= e_1 \oplus (e_2 \oplus (\ldots \oplus e_n)) \\
-\text{UnaryLeftFold}(e_1, \ldots, e_n, \oplus) &= ((e_1 \oplus e_2) \oplus \ldots) \oplus e_n \\
-\text{BinaryRightFold}(e_1, \ldots, e_n, \oplus, I) &= e_1 \oplus (e_2 \oplus (\ldots \oplus (e_n \oplus I))) \\
-\text{BinaryLeftFold}(I, \oplus, e_1, \ldots, e_n) &= ((((I \oplus e_1) \oplus e_2) \oplus \ldots) \oplus e_n)
-\end{aligned}
-$$
-
-一元折叠要求参数包非空（除 `&&`、`||`、`,` 外），二元折叠可处理空包。
-
-### 10.4 可变参数模板与 std::tuple
-
-```cpp
-#include <tuple>
-#include <utility>
-#include <iostream>
-
-// 编译期遍历 tuple
-template<typename Tuple, typename F, size_t... Is>
-void for_each_impl(Tuple&& t, F&& f, std::index_sequence<Is...>) {
-    ((void)std::forward<F>(f)(std::get<Is>(std::forward<Tuple>(t))), ...);
-}
-
-template<typename... Args, typename F>
-void for_each_tuple(const std::tuple<Args...>& t, F&& f) {
-    for_each_impl(t, std::forward<F>(f),
-                  std::index_sequence_for<Args...>{});
-}
-
-// 编译期选择 tuple 元素
-template<size_t I, typename... Args>
-auto select(const std::tuple<Args...>& t) {
-    return std::get<I>(t);
-}
-
-// 类型级折叠：所有类型相同
-template<typename... Args>
-struct all_same;
-
-template<typename T>
-struct all_same<T> : std::true_type {};
-
-template<typename T, typename... Rest>
-struct all_same<T, T, Rest...> : all_same<T, Rest...> {};
-
-template<typename T, typename U, typename... Rest>
-struct all_same<T, U, Rest...> : std::false_type {};
-
-// C++17 折叠版本
-template<typename... Args>
-constexpr bool all_same_v = (std::is_same_v<Args, Args> && ...);  // 不对
-// 正确写法：需要第一个类型作为基准
-template<typename First, typename... Rest>
-constexpr bool all_same_v2 = (std::is_same_v<First, Rest> && ...);
-
-void test_variadic() {
-    auto t = std::make_tuple(1, 2.0, "hello");
-    for_each_tuple(t, [](auto x) { std::cout << x << " "; });
-    // 输出: 1 2 hello
-
-    static_assert(all_same<int, int, int>::value);
-    static_assert(!all_same<int, double, int>::value);
-}
-```
-
-## 第 11 章 对比分析
+## 第 5 章 对比分析
 
 本章将 C++ 模板元编程与 Rust、Java、Haskell、Zig、D 等语言的泛型机制对比，揭示设计哲学差异。
 
-### 11.1 vs Rust Generics
+### 5.1 vs Rust Generics
 
 | 维度       | C++ Templates              | Rust Generics                   |
 | ---------- | -------------------------- | ------------------------------- |
@@ -1905,7 +916,7 @@ trait Container {
 }
 ```
 
-### 11.2 vs Java Generics
+### 5.2 vs Java Generics
 
 | 维度     | C++ Templates   | Java Generics              |
 | -------- | --------------- | -------------------------- |
@@ -1928,7 +939,7 @@ public class Box<T extends Comparable<T>> {
 // 无法 new T()，无法 T[].class
 ```
 
-### 11.3 vs Haskell Type Classes
+### 5.3 vs Haskell Type Classes
 
 | 维度     | C++ Templates  | Haskell Type Classes           |
 | -------- | -------------- | ------------------------------ |
@@ -1956,7 +967,7 @@ instance Functor Maybe where
     fmap f (Just x) = Just (f x)
 ```
 
-### 11.4 vs Zig Comptime
+### 5.4 vs Zig Comptime
 
 | 维度     | C++ Templates | Zig Comptime       |
 | -------- | ------------- | ------------------ |
@@ -1986,7 +997,7 @@ fn Matrix(comptime T: type, comptime rows: usize, comptime cols: usize) type {
 }
 ```
 
-### 11.5 vs D Templates
+### 5.5 vs D Templates
 
 D 语言的模板系统深受 C++ 启发，但做了多项改进：
 
@@ -2015,7 +1026,7 @@ T sum(T)(T[] arr) if (isNumeric!T) {
 mixin("int x = 42;");
 ```
 
-### 11.6 综合对比表
+### 5.6 综合对比表
 
 ```mermaid
 graph LR
@@ -2037,11 +1048,11 @@ graph LR
     R --> U[生态小]
 ```
 
-## 第 12 章 工程实践
+## 第 6 章 工程实践
 
 本章阐述模板元编程在生产环境中的核心范式。
 
-### 12.1 CRTP（奇异递归模板模式）
+### 6.1 CRTP（奇异递归模板模式）
 
 CRTP 是 C++ 静态多态的基础范式，通过将派生类作为基类模板参数实现编译期分发。
 
@@ -2135,7 +1146,7 @@ void test_crtp() {
 }
 ```
 
-### 12.2 Expression Templates
+### 6.2 Expression Templates
 
 Expression Templates 由 Todd Veldhuizen 于 1995 年提出，是数值库（Eigen、Blaze、Armadillo）的核心技术。
 
@@ -2231,7 +1242,7 @@ void test_expr_templates() {
 }
 ```
 
-### 12.3 Policy-Based Design
+### 6.3 Policy-Based Design
 
 Policy-Based Design 由 Andrei Alexandrescu 在《Modern C++ Design》（2001）中系统化，将设计决策编码为模板参数。
 
@@ -2336,7 +1347,7 @@ void test_policy() {
 }
 ```
 
-### 12.4 Tag Dispatch
+### 6.4 Tag Dispatch
 
 ```cpp
 #include <iterator>
@@ -2394,7 +1405,7 @@ void test_tag_dispatch() {
 }
 ```
 
-### 12.5 Type Erasure
+### 6.5 Type Erasure
 
 Type Erasure 在编译期类型安全与运行期多态之间取得平衡。
 
@@ -2459,7 +1470,7 @@ void test_type_erasure() {
 }
 ```
 
-### 12.6 Bridge: Type Erasure + CRTP
+### 6.6 Bridge: Type Erasure + CRTP
 
 ```cpp
 #include <memory>
@@ -2514,9 +1525,9 @@ void test_bridge() {
 }
 ```
 
-## 第 13 章 案例研究
+## 第 7 章 案例研究
 
-### 13.1 Eigen 表达式模板剖析
+### 7.1 Eigen 表达式模板剖析
 
 Eigen 是 C++ 数值线性代数库的事实标准，其核心是表达式模板。关键设计：
 
@@ -2592,7 +1603,7 @@ Eigen 真实实现的额外复杂性：
 - **别名检测**：检测 `a = a * a` 等自赋值场景；
 - **混合精度**：支持 float/double/long double 与整数混合。
 
-### 13.2 Boost.MPL 与 Boost.Hana
+### 7.2 Boost.MPL 与 Boost.Hana
 
 Boost.MPL 是 C++98 时代的元编程库，基于类型列表与元函数；Boost.Hana 是 C++14 时代的现代化版本，结合编译期与运行期。
 
@@ -2675,7 +1686,7 @@ void test_mpl_hana() {
 }
 ```
 
-### 13.3 EASTL 的 Type Traits 选择
+### 7.3 EASTL 的 Type Traits 选择
 
 EASTL（EA Standard Template Library）是 Electronic Arts 的 STL 实现，针对游戏开发优化。其 type_traits 设计针对平台特性精细调整：
 
@@ -2720,7 +1731,7 @@ void test_eastl_traits() {
 }
 ```
 
-### 13.4 std::ranges 实现剖析
+### 7.4 std::ranges 实现剖析
 
 C++20 std::ranges 是 STL 的现代化重写，大量使用 Concepts 与 CRTP：
 
@@ -2767,7 +1778,7 @@ ranges 实现的关键技术：
 - **CTAD**：简化迭代器声明；
 - **Deducing this（C++23）**：用于 view 的值类别分发。
 
-### 13.5 fmt 库的 compile-time format string 检查
+### 7.5 fmt 库的 compile-time format string 检查
 
 fmt 库（C++20 std::format 的原型）通过模板元编程在编译期检查格式字符串：
 
@@ -2822,9 +1833,9 @@ void test_fmt_style() {
 
 fmt 的真实实现更为复杂，使用 `consteval` 与 user-defined literal，能在编译期完整验证格式字符串与参数类型匹配。
 
-## 第 14 章 常见陷阱
+## 第 8 章 常见陷阱
 
-### 14.1 最令人头疼的解析（Most Vexing Parse）
+### 8.1 最令人头疼的解析（Most Vexing Parse）
 
 ```cpp
 #include <iostream>
@@ -2852,7 +1863,7 @@ struct Factory { Factory(T) {} };
 Factory<int> f1{int{}};  // 变量
 ```
 
-### 14.2 依赖名称查找（ADL）
+### 8.2 依赖名称查找（ADL）
 
 ```cpp
 #include <iostream>
@@ -2902,7 +1913,7 @@ void test_hide() {
 }
 ```
 
-### 14.3 模板定义位置
+### 8.3 模板定义位置
 
 ```cpp
 // 错误：模板声明在头文件，定义在源文件
@@ -2924,7 +1935,7 @@ T f(T x) { return x; }
 // extern template int f<int>(int);  // 阻止重复实例化
 ```
 
-### 14.4 递归实例化爆炸
+### 8.4 递归实例化爆炸
 
 ```cpp
 // 陷阱：不受控的递归实例化
@@ -2951,7 +1962,7 @@ constexpr int good_factorial(int n) {
 // constexpr int x = Deep<10000>::v;  // 错误：递归过深
 ```
 
-### 14.5 C++20 Concepts 过度约束
+### 8.5 C++20 Concepts 过度约束
 
 ```cpp
 #include <concepts>
@@ -2978,7 +1989,7 @@ template<HasSpecific T>
 void better_process(T);
 ```
 
-### 14.6 SFINAE 误用
+### 8.6 SFINAE 误用
 
 ```cpp
 #include <type_traits>
@@ -3018,7 +2029,7 @@ struct bad_has_type<T, std::void_t<typename T::type>>
     : std::true_type {};
 ```
 
-### 14.7 模板代码膨胀
+### 8.7 模板代码膨胀
 
 ```cpp
 // 陷阱：每个实例化生成独立代码
@@ -3069,7 +2080,7 @@ extern template class TemplateHeavy<double>;
 
 **解析讲解**：C++20 Concepts 的 subsumption 规则：若 C1 的约束合取范式蕴含 C2，则 C1 比 C2 更受约束（more constrained），重载时优先选择 C1。这是 Concepts 实现部分排序与精细重载的形式化基础。
 
-### 15.3 代码修正题
+### 9.3 代码修正题
 
 **习题 7（ex-tmp-cf-01）**：以下代码试图用 SFINAE 检测类型 T 是否有 `value_type` 内嵌类型，但编译错误。请修正：
 
@@ -3172,7 +2183,7 @@ struct Base2 {
 
 **解析讲解**：CRTP 是「静态多态」核心范式，但存在「定义顺序悖论」：基类需要派生类完整定义，派生类又继承自基类。C++17 constexpr if 与 C++20 requires 可延迟成员函数实例化，部分缓解此问题。工程实践中常用「声明在前 + 实现在外」或「friend 注入」模式绕过。
 
-### 15.4 开放性问题
+### 9.4 开放性问题
 
 **习题 9（ex-tmp-oe-01）**：设计一个基于 C++20 Concepts 与 CRTP 的「表达式模板」线性代数库原型，要求：
 
@@ -3374,7 +2385,7 @@ Concepts 的错误诊断优势源于其约束的「原子化」。当 `save(Some
 
 此外，Concepts 的 subsumption 使重载层级清晰：`save<T>` 对 `JsonSerializable` 的重载比 `Serializable` 更受约束，编译器自动选择前者。SFINAE 实现此层级需手动编排 `enable_if` 优先级，易出错且诊断更差。Concepts 的 atomic constraint normalization 还允许编译器缓存约束检查结果，在大型代码库中编译速度通常更优。这是 Concepts 相对 SFINAE 的核心工程价值：将「类型约束」从隐式元编程技巧提升为显式、可诊断、可组合的语言级抽象。
 
-### 16.1 标准与技术报告
+### 10.1 标准与技术报告
 
 1. ISO/IEC. 2024. _Information technology — Programming languages — C++_. ISO/IEC 14882:2024, Seventh edition. International Organization for Standardization.
 
@@ -3384,7 +2395,7 @@ Concepts 的错误诊断优势源于其约束的「原子化」。当 `save(Some
 
 4. ISO/IEC WG21. 2021. _P0847R7: Deducing this_. ISO C++ Committee technical report.
 
-### 16.2 经典教材
+### 10.2 经典教材
 
 5. Stroustrup, B. 2013. _The C++ Programming Language_ (4th edition). Addison-Wesley Professional.
 
@@ -3398,7 +2409,7 @@ Concepts 的错误诊断优势源于其约束的「原子化」。当 `save(Some
 
 10. Sutter, H. and Alexandrescu, A. 2004. _C++ Coding Standards: 101 Rules, Guidelines, and Best Practices_ (1st edition). Addison-Wesley Professional.
 
-### 16.3 会议论文与期刊
+### 10.3 会议论文与期刊
 
 11. Stroustrup, B. 2018. _Concepts: The Future of Generic Programming (or, How to design good concepts and use them well)_. In CppCon 2018.
 
@@ -3408,11 +2419,11 @@ Concepts 的错误诊断优势源于其约束的「原子化」。当 `save(Some
 
 14. Veldhuizen, T. 2003. _C++ Templates are Turing Complete_. The C++ Source.
 
-## 第 17 章 延伸阅读
+## 第 11 章 延伸阅读
 
 本模块覆盖了 C++ 模板元编程的核心理论与实践，但 TMP 是一个庞大且持续演进的领域。以下方向供读者深入探索。
 
-### 17.1 相关模块
+### 11.1 相关模块
 
 | 模块                                       | 关联点                                                                       |
 | ------------------------------------------ | ---------------------------------------------------------------------------- |
@@ -3425,7 +2436,7 @@ Concepts 的错误诊断优势源于其约束的「原子化」。当 `save(Some
 | STL 容器与迭代器      | `std::iterator_traits` 是 traits 技术的经典案例                              |
 | 类型转换                     | `static_cast`、`dynamic_cast` 与 CRTP 静态多态的协同                         |
 
-### 17.2 进阶主题
+### 11.2 进阶主题
 
 1. **Constexpr 编译期计算**：C++14 起的 constexpr 函数、C++20 consteval、C++23 consteval if。constexpr 与 TMP 互补，前者用于值计算，后者用于类型计算。
 
@@ -3439,14 +2450,14 @@ Concepts 的错误诊断优势源于其约束的「原子化」。当 `save(Some
 
 6. **Circle 编译器**：Sean Baxter 的 Circle 编译器扩展，提供编译期元编程的语法糖，是 TMP 未来演进方向的参考。
 
-### 17.3 经典论文与提案
+### 11.3 经典论文与提案
 
 - Veldhuizen, T. 1995. _Expression Templates_ — 表达式模板的奠基论文。
 - Unruh, E. 1994. _Prime number computation_ — 首个 TMP 程序（编译期素数生成）。
 - Willcock, J. 2006. _Using the Boost MPL_ — Boost.MPL 库的设计与应用。
 - Abrahams, D. and Gurtovoy, A. 2004. _C++ Template Metaprogramming_ — Aleksey Gurtovoy 的 TMP 经典著作。
 
-### 17.4 开源库研读
+### 11.4 开源库研读
 
 - **Eigen**：表达式模板的工业级实现，研读 `Eigen/src/Core/MatrixBase.h` 与 `CwiseBinaryOp`。
 - **Boost.MPL**：早期 TMP 库的代表，提供了 TypeList、元函数组合等抽象。

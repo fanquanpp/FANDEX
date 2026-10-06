@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 300
 title: Collectors.groupingBy 详解
 module: 'java'
 category: 后端技术

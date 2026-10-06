@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 440
 title: GCP gcloud 配置
 module: 'cloud-computing'
 category: 云与基础设施

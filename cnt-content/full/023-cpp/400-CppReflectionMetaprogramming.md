@@ -1,65 +1,44 @@
 ---
-order: 380
+order: 420
 title: C++反射与元编程
 module: 'cpp'
 category: 计算机科学
 difficulty: advanced
-description: 编译期反射与代码生成
+description: 没有语言级反射的 C++ 如何模拟反射：RTTI、宏注册、模板技巧、外部代码生成四条路线的原理与取舍，并交代 C++26 静态反射的落地进度。
 author: fanquanpp
-updated: '2026-09-27'
+updated: '2026-10-06'
 related:
+  - 'cpp/405-Cpp26StaticReflection'
+  - 'cpp/390-TemplateMetaprogramming'
   - 'cpp/700-CppCodeStyle'
-  - 'cpp/590-CppWebAssembly'
   - 'cpp/570-CppMathLibrary'
   - 'cpp/140-CppSmartPointer'
 prerequisites:
-  - 'cpp/020-CppOverviewAndModernStandard'
+  - 'cpp/330-CppTemplate'
+  - 'cpp/390-TemplateMetaprogramming'
 ---
+
+## 知识点地图
+
+- **知识类别**：元编程 - 反射的模拟方案全景（RTTI / 宏注册 / 模板技巧 / 外部代码生成）。
+- **解决什么问题**：序列化框架想遍历 struct 成员、ORM 想对齐字段与列名、依赖注入容器想自动解析构造参数——这些在其他语言里靠内建反射解决的事，C++ 长期没有原生答案。本篇把社区三十年的模拟方案逐条拆开：每种方案的原理、能做什么、代价是什么。
+- **什么时候用到**：在编译器尚未完整支持 C++26 反射的当下，为序列化、调试打印、字段注册等需求选一条现实可行的模拟路线。
+
+分工声明：本篇与两篇邻居的边界——[模板元编程](/cpp/390-TemplateMetaprogramming) 讲编译期计算的通用技法（递归模板、trait 计算、类型列表），本篇只聚焦「拿到类型/成员结构信息」这条反射主线；C++26 P2996 静态反射的**语法级**讲解（`^^`、`[: :]`、`template for`）已独立成篇 [C++26 静态反射](/cpp/405-Cpp26StaticReflection)，本篇的 C++26 内容只保留路线图视角。
 
 ## 前置知识
 
-- [C++与 WebAssembly](/cpp/590-CppWebAssembly)：建议先完成前一篇的学习
+- [C++模板](/cpp/330-CppTemplate) 与 [模板元编程](/cpp/390-TemplateMetaprogramming)：SFINAE 与 `if constexpr` 是模拟方案的基本积木；
+- [智能指针](/cpp/140-CppSmartPointer)：理解 `typeid` 与多态生命周期时需要。
 
 ## 学习目标
 
-- 掌握「Concepts（C++20）」的核心机制、典型用法与常见陷阱
-- 掌握「概述」的核心机制、典型用法与常见陷阱
-- 掌握「历史动机与背景」的核心机制、典型用法与常见陷阱
-- 掌握「形式化定义」的核心机制、典型用法与常见陷阱
-- 掌握「理论推导」的核心机制、典型用法与常见陷阱
+- 说清 C++ 为什么没有运行期反射（零开销原则与元数据成本）；
+- 对 RTTI、宏注册、模板技巧、外部代码生成四条路线，各能举出一个真实框架并陈述其取舍；
+- 用「聚合体 + 结构化绑定」或 Boost.PFR 实现聚合体字段遍历，并知道它拿不到成员名字的原因；
+- 判断一个「反射需求」该走哪条模拟路线，还是等待 C++26 反射落地。
 
 > 阅读建议：反射与元编程为【进阶原理】，建议先掌握模板与类型特征。
-## Concepts（C++20）
-
-**基本写法：requires 表达式**
-`requires(<参数>) { <表达式>; }`
-```cpp
-// 编译期约束
-template <typename T>
-concept Iterable = requires(T t) {
-    t.begin();
-    t.end();
-    { t.size() } -> std::convertible_to<size_t>;
-};
-template <Iterable T>
-void printAll(const T& container) { /* ... */ }
-```
-
----
-
-**基本写法：requires 子句**
-`requires <概念>`
-```cpp
-// 函数模板约束
-template <typename T>
-requires std::integral<T>
-T gcd(T a, T b) {
-    while (b) { T t = b; b = a % b; a = t; }
-    return a;
-}
-```
-
----
 
 ## 概述
 
@@ -1417,67 +1396,15 @@ std::expected<std::string, std::error_code> get_field_name(int idx) {
 }
 ```
 
-## 与 C++26 反射提案的协同
+## 与 C++26 静态反射的衔接（路线图视角）
 
-### 反射式序列化（C++26）
+C++26 草案已并入 P2996 静态反射，`^^T` 反射算子、`[: :]` 拼接与 `template for` 展开语句将让本篇的多数模拟方案成为历史。三件最有代表性的事：
 
-```cpp
-// C++26 草案
-template <typename T>
-std::string to_json(const T& obj) {
-    std::string result = "{";
-    bool first = true;
+- **反射式序列化**：`template for (constexpr auto m : std::meta::nonstatic_data_members_of(^^T))` 配合 `obj.[:m:]` 成员拼接与 `identifier_of(m)` 成员名，替代本篇宏注册与 PFR 方案，成员名首次语言原生可得；
+- **反射式依赖注入**：`constructors_of` / `parameters_of` 查询构造函数签名，容器按参数类型递归解析，取代注册表；
+- **反射式代码生成**：编译期按成员生成访问器与比较运算符，替代外部生成器产物。
 
-    constexpr auto members = nonstatic_data_members_of(^^T);
-    template for (constexpr auto m : members) {
-        if (!first) result += ", ";
-        first = false;
-        result += "\"" + name_of(m) + "\": ";
-
-        // 反射式类型判断
-        if constexpr (type_of(m) == ^^std::string) {
-            result += "\"" + obj.[m] + "\"";
-        } else {
-            result += std::to_string(obj.[m]);
-        }
-    }
-
-    result += "}";
-    return result;
-}
-```
-
-### 反射式依赖注入（C++26）
-
-```cpp
-// C++26 草案：通过反射自动解析构造函数依赖
-template <typename T>
-std::shared_ptr<T> resolve(Container& c) {
-    constexpr auto ctors = constructors_of(^^T);
-    constexpr auto first_ctor = front_of(ctors);
-    constexpr auto params = parameters_of(first_ctor);
-
-    // 反射式调用构造函数
-    return std::make_shared<T>(resolve<type_of(params[0])>(c), ...);
-}
-```
-
-### 反射式代码生成（C++26）
-
-```cpp
-// C++26 草案：为任意类型生成 getter/setter
-template <typename T>
-struct Reflectable {
-    constexpr auto get_members() {
-        return nonstatic_data_members_of(^^T);
-    }
-
-    template for (constexpr auto m : get_members()) {
-        [[nodiscard]] auto& get_##m() { return [m]; }
-        void set_##m(const auto& v) { [m] = v; }
-    }
-};
-```
+完整的语法讲解、可运行的示例（枚举转字符串、JSON 序列化、CLI 绑定）与编译器落地现状（EDG / clang-p2996 / 主线进度），见专篇 [C++26 静态反射](/cpp/405-Cpp26StaticReflection)。本篇余下内容聚焦「当下还能用的模拟方案」，两者的关系是替代与被替代。
 
 ## 陷阱与限制
 

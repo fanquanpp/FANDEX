@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 220
 title: Memory 存储引擎：内存表的能力与陷阱
 module: 'mysql'
 category: 数据库

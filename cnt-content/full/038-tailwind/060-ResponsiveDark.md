@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 110
 title: Tailwind CSS 响应式与暗色模式
 module: 'tailwind'
 category: 前端技术
@@ -8,7 +8,7 @@ description: 'Tailwind CSS 响应式与暗色模式原理篇：从移动优先�
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'tailwind/040-LayoutFlexGrid'
+  - 'tailwind/041-FlexboxLayout'
   - 'tailwind/050-ThemeCustomization'
 prerequisites:
   - 'tailwind/030-UtilityCore'

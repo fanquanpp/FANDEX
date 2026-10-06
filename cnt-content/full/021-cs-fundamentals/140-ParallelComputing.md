@@ -4,7 +4,7 @@ title: 并行计算
 module: 'cs-fundamentals'
 category: 计算机科学
 difficulty: advanced
-description: 并行计算：Flynn分类、多处理器架构、并行算法、GPU计算与性能模型
+description: 并行计算：Flynn分类、多处理器架构、并行算法、GPU计算与性能模型；文末附 Amdahl 定律实测与数据并行实验
 author: fanquanpp
 updated: '2026-09-12'
 related:
@@ -16,6 +16,16 @@ prerequisites:
   - 'cs-fundamentals/010-ComputerOverview'
 ---
 
+
+## 知识点地图
+
+- **知识类别**：并行计算——把一个计算拆到多个处理单元上的理论与
+  性能模型（Flynn 分类、Amdahl/Gustafson、GPU 架构）。
+- **解决什么问题**：单核频率到顶之后，性能只能靠并行度换；但拆分
+  本身有代价（通信、同步、串行部分），需要模型预判收益上限。
+- **什么时候用到**：评估多线程/多进程改造值不值得、读 GPU 编程材料前
+  建立架构心智图、理解 015-go 并发模块与 140-ParallelComputing 的
+  分工（并发是结构、并行是执行）。
 
 ## 1. 并行计算概述
 
@@ -255,3 +265,62 @@ MPI_Finalize();
 | Pthreads | 共享     | 隐式             | 互斥锁/条件变量 | SMP      |
 | MPI      | 分布     | 显式（消息）     | 屏障/消息       | 集群     |
 | CUDA     | 分层     | 显式（拷贝）     | 同步函数        | GPU      |
+
+## 动手实践
+
+**任务**：在本机实测 Amdahl 定律——把一个可并行的数组求和拆成
+串行部分（10% 模拟）与并行部分（90%），测 1/2/4/8 线程的加速比，
+并与 Amdahl 公式预测值对比。
+
+1. 用 Python（`concurrent.futures`）或任何熟悉语言实现：串行段
+   （简单累加 10% 数据）+ 并行段（其余 90% 数据按块分线程求和再合并）；
+2. 每种线程数跑 5 次取中位数，计算实测加速比 `T(1)/T(n)`；
+3. 代入 Amdahl 公式 $S(n) = 1 / ((1-p) + p/n)$，p 取 0.9，算预测值；
+4. 把串行比例改成 30% 再测一轮，观察加速比上限骤降到约 3.3。
+
+**提示**：Python 受 GIL 限制，CPU 密集任务要用 `ProcessPoolExecutor`
+而不是 `ThreadPoolExecutor`（GIL 与线程模型的细节见 180-CoroutinesAndConcurrencyModels
+与 015-go 并发篇的对照阅读）；计时用 `time.perf_counter()`，别用 `time.time()`。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```python
+# amdahl_lab.py —— 实测加速比对照 Amdahl 预测
+import time, statistics
+from concurrent.futures import ProcessPoolExecutor
+
+def serial_sum(data):                    # 串行段：10% 数据
+    return sum(data[: len(data) // 10])
+
+def chunk_sum(chunk):                    # 并行段的工作单元
+    return sum(chunk)
+
+def run(data, workers):
+    t0 = time.perf_counter()
+    s = serial_sum(data)
+    cut = len(data) // 10
+    chunks = [data[cut + i * (len(data)-cut)//workers :
+                    cut + (i+1) * (len(data)-cut)//workers]
+              for i in range(workers)]
+    with ProcessPoolExecutor(workers) as ex:
+        s += sum(ex.map(chunk_sum, chunks))
+    return time.perf_counter() - t0, s
+
+data = list(range(20_000_000))
+base = statistics.median(run(data, 1)[0] for _ in range(5))
+for w in (1, 2, 4, 8):
+    t = statistics.median(run(data, w)[0] for _ in range(5))
+    predicted = 1 / (0.1 + 0.9 / w)      # Amdahl，p = 0.9
+    print(f"w={w} 实测加速比 {base/t:.2f}  预测 {predicted:.2f}")
+# 预期：w=8 时实测明显低于预测 4.7 —— 差值就是进程创建与数据搬运开销
+```
+
+**逐段讲解**：串行段固定读 10% 数据，是公式里的 `(1-p)` 项；`ex.map`
+把并行段切成 workers 块分发给进程池；实测曲线低于预测的部分不是公式
+错了，而是公式没建模的项——进程启动、结果合并、内存带宽饱和
+（第 3 节多处理器架构的共享总线就是瓶颈来源）。把串行比例改 30% 后
+你会看到 w=8 的加速比被 `(1-p)` 项钉死在 3 附近——
+**串行份额是并行的硬顶**，这就是 Amdahl 定律的全部意义。
+
+</details>

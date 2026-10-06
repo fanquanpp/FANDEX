@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 450
 title: 基于角色的权限管理
 module: 'postgresql'
 category: 数据库

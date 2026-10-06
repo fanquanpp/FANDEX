@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 430
 title: JavaScript 模块化
 module: 'javascript'
 category: 前端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'javascript/410-DOMOperationEvent'
-  - 'javascript/600-JavaScriptLatestFeature'
+  - 'javascript/600-NewFeatureAdoptionStrategy'
   - 'javascript/250-AsyncProgramming'
   - 'javascript/360-ClosureMemoryLeakOptimization'
 prerequisites: []

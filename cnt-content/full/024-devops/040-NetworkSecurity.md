@@ -1,5 +1,5 @@
 ---
-order: 40
+order: 50
 title: 网络与安全
 module: 'devops'
 category: 云与基础设施
@@ -10,7 +10,7 @@ updated: '2026-09-28'
 related:
   - 'devops/010-OverviewLinuxBasics'
   - 'devops/050-ContainerDocker'
-  - 'devops/080-Kubernetes'
+  - 'devops/090-KubernetesCoreDetailed'
 prerequisites: []
 ---
 

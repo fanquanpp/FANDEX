@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 630
 title: C 语言理论收束：抽象机、别名与未定义行为
 module: 'c'
 category: 计算机科学
@@ -10,20 +10,20 @@ updated: '2026-10-05'
 related:
   - 'c/270-VolatileKeyword'
   - 'c/310-MultiFileCompilation'
-  - 'c/520-C23C2y'
+  - 'c/520-C23CoreFeatures'
   - 'c/550-EmbeddedCProgramming'
   - 'c/040-DataTypeDetailed'
   - 'c/140-PointerDeep'
-  - 'c/490-StaticAnalysisDebug'
+  - 'c/485-StaticAnalysisAndSanitizers'
 prerequisites:
-  - 'c/210-MemoryManagement'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
   - 'c/250-FunctionCallStackFrame'
   - 'c/060-OperatorExpression'
 ---
 
 ## 前置知识
 
-- 已完成 [内存深水区](/c/210-MemoryManagement)：见过 use-after-free「有时才崩」的手感，知道那叫未定义行为；
+- 已完成 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)：见过 use-after-free「有时才崩」的手感，知道那叫未定义行为；
 - 已完成 [函数调用栈帧](/c/250-FunctionCallStackFrame)：知道同一份 C 代码在 System V 与 Windows 上汇编不同，调用约定属于 ABI；
 - 已完成 [运算符与表达式](/c/060-OperatorExpression)：知道 `i = i++` 是禁手，函数实参求值顺序不可依赖。
 
@@ -181,19 +181,19 @@ void scale(int *i, float *f, int n) {
 | 行为 | 归类 | 已在哪学过 |
 | --- | --- | --- |
 | 有符号整数溢出 | UB | [数据类型详解](/c/040-DataTypeDetailed) |
-| 解引用空指针 | UB | [内存深水区](/c/210-MemoryManagement) |
+| 解引用空指针 | UB | [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) |
 | `i = i++` 等无序修改同一对象 | UB | [运算符与表达式](/c/060-OperatorExpression) |
 | 数组越界读写 | UB | [数组详解](/c/120-ArrayDetailed) |
 | 读未初始化的自动变量（不确定值） | UB | [变量与常量](/c/050-VariableConstant) |
 | 修改字符串字面量 | UB | [变量与常量](/c/050-VariableConstant) |
 | 经不兼容类型指针访问对象 | UB | 本篇第 3 节 |
-| 移位计数超过位宽 | UB | [位运算与位域](/c/070-BitwiseBitField) |
+| 移位计数超过位宽 | UB | [位运算与位域](/c/070-BitwiseOperationAndMask) |
 | 函数实参的求值顺序 | unspecified | [运算符与表达式](/c/060-OperatorExpression) |
 | malloc 出的内存初始内容 | unspecified（不确定值） | [动态内存](/c/200-DynamicMemoryManagement) |
 | char 的符号性 | implementation-defined | [数据类型详解](/c/040-DataTypeDetailed) |
 | int 的宽度范围 | implementation-defined | [数据类型详解](/c/040-DataTypeDetailed) |
-| 字节序（大小端） | implementation-defined | [位运算与位域](/c/070-BitwiseBitField) |
-| 负数右移的结果 | implementation-defined | [位运算与位域](/c/070-BitwiseBitField) |
+| 字节序（大小端） | implementation-defined | [位运算与位域](/c/070-BitwiseOperationAndMask) |
+| 负数右移的结果 | implementation-defined | [位运算与位域](/c/070-BitwiseOperationAndMask) |
 
 一个工程推论：严格意义上的「处处可移植」只存在于玩具程序——任何非平凡 C 程序都会触及若干条实现定义与未指定项。工程说的「可移植」是「在目标平台集合上行为一致」，这正是 [跨平台编程](/c/410-CrossPlatformProgramming) 条件编译与定宽整型存在的理由。
 
@@ -212,7 +212,7 @@ UB 不是标准委员会偷懒，而是**性能与实现自由度的交易**：�
 
 ### 4.4 UB 防御三件套
 
-把本节收口成三道防线（工具全景在 [静态分析与调试](/c/490-StaticAnalysisDebug)）：
+把本节收口成三道防线（工具全景在 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)）：
 
 1. **警告常开**：`gcc -Wall -Wextra -O2`——注意 -O2 要开，UB 推理发生在优化路径上，不少警告只在优化时出现；
 2. **UBSan 常跑**：`gcc -fsanitize=undefined -g`，CI 里再加 `-fno-sanitize-recover=all` 让 UB 直接判失败。有符号溢出、越界移位、错类型对齐访问都能当场报行号；
@@ -275,7 +275,7 @@ ISO C 的权威性来自一份合同：标准定义抽象机语义与库，实�
 - **C99（1999）**：面向「写大程序」的一轮扩容：`<stdint.h>` 定宽整型、指定初始化器、行注释、`inline`、变长数组（VLA，后来 C11 降级为可选特性）。你在 [结构体与联合体](/c/130-StructAndUnion) 用过的 `.x = 1` 指定初始化就是 C99 特性；
 - **C11（2011）**：正视并发与安全：`<threads.h>`、`_Atomic` 与内存模型（[原子操作与内存模型](/c/380-AtomicAndMemoryModel) 的地基）、`_Generic`、边界检查接口 Annex K（可选且争议很大）；
 - **C17（2018）**：纯缺陷修订，没有新特性；
-- **C23（2024）**：关键字化与现代化：`bool`、`static_assert`、`alignof` 转正，`nullptr`、`constexpr`、`#embed` 进场。特性清单与上手由 [C23 上手](/c/520-C23C2y) 与 [C23 深水区](/c/530-C23NewFeatures) 承接，本篇不重复；
+- **C23（2024）**：关键字化与现代化：`bool`、`static_assert`、`alignof` 转正，`nullptr`、`constexpr`、`#embed` 进场。特性清单与上手由 [C23 上手](/c/520-C23CoreFeatures) 与 [C23 深水区](/c/530-C23NewFeatures) 承接，本篇不重复；
 - **C2y（草案中）**：下一站。现状与编译器支持度的查法在 C23 深水区篇有跟踪。
 
 ### 7.2 GNU 扩展的地位

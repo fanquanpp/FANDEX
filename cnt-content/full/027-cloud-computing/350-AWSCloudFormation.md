@@ -1,5 +1,5 @@
 ---
-order: 350
+order: 400
 title: AWS CloudFormation
 module: 'cloud-computing'
 category: 云与基础设施

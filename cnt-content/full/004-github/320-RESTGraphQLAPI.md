@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 350
 title: REST 与 GraphQL API
 module: 'github'
 category: 工具链

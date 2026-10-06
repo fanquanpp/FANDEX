@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 620
 title: Go 与依赖注入
 module: 'go'
 category: 后端技术

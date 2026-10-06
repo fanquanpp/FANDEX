@@ -48,7 +48,7 @@
         {
           "id": "devops-101",
           "title": "配置管理",
-          "doc": "230-ConfigManagement"
+          "doc": "235-SecretsAndConfigCenter"
         },
         {
           "id": "devops-102",
@@ -63,7 +63,7 @@
         {
           "id": "devops-104",
           "title": "GitOps与持续交付",
-          "doc": "180-GitOpsCD"
+          "doc": "185-FluxAndMultiEnvGitOps"
         },
         {
           "id": "devops-105",

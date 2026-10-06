@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 300
 title: Lua 脚本原子执行
 module: 'redis'
 category: 数据库

@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 240
 title: C#12 与 C#13 新特性
 module: 'csharp'
 category: 后端技术
@@ -2479,3 +2479,79 @@ C# 语言持续演进，每个版本都让代码更简洁、更安全、更高�
 - [Stephen Toub 的性能分析文章](https://steven-giesel.com/blog)
 
 通过持续学习与实践，你将能够熟练运用 C# 12/13 的新特性，编写出简洁、高效、安全的现代 C# 代码。
+
+## 速查补充：集合表达式（承接自原 150 篇速查段）
+
+## 集合表达式
+
+**基本写法：数组集合表达式**
+`<类型>[] <变量> = [<元素>, ...];`
+```csharp
+// 使用集合表达式初始化数组
+int[] array = [1, 2, 3];
+```
+
+---
+
+**基本写法：List 集合表达式**
+`List<<类型>> <变量> = [<元素>, ...];`
+```csharp
+// 使用集合表达式初始化列表
+List<string> list = ["a", "b", "c"];
+```
+
+---
+
+**基本写法：展开运算符合并**
+`<类型>[] <变量> = [..<集合1>, ..<集合2>, <元素>];`
+```csharp
+// 使用展开运算符合并多个集合
+int[] a = [1, 2, 3];
+int[] b = [4, 5, 6];
+int[] combined = [..a, ..b, 7, 8];
+```
+
+---
+
+## 速查补充：C# 13 新特性速记（承接自原 150 篇速查段）
+
+
+**基本写法：C# 13 lock 类型**
+`System.Threading.Lock`
+```csharp
+// C# 13 新增专用锁类型，性能优于传统 object 锁
+System.Threading.Lock myLock = new();
+// 使用 EnterScope 自动管理锁的进入与退出
+using (myLock.EnterScope())
+{
+    // 临界区代码
+    Console.WriteLine("已获取锁");
+}
+```
+
+**基本写法：C# 13 params 集合**
+`params <Collection> <参数>`
+```csharp
+// params 关键字支持 ReadOnlySpan、IEnumerable 等集合类型
+void Process(params ReadOnlySpan<int> nums)
+{
+    foreach (var n in nums) Console.WriteLine(n);
+}
+// 也支持自定义集合类型
+void Build(params List<string> items)
+{
+    items.ForEach(Console.WriteLine);
+}
+// 调用
+Process(1, 2, 3);
+Build(new List<string> { "a", "b" });
+```
+
+**基本写法：C# 13 escape 字符 \e**
+`string <变量> = "\e";`
+```csharp
+// 新增 \e 转义字符表示 ESC (Unicode U+001B)
+string escape = "\e";
+// 用于终端控制序列
+Console.WriteLine("\e[31m红色文本\e[0m");
+```

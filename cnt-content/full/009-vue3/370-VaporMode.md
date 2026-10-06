@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 380
 title: Vapor 模式与 Vue 3.6 展望
 module: 'vue3'
 category: 前端技术

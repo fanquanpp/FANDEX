@@ -1,10 +1,10 @@
 ---
-order: 600
+order: 620
 title: 数据库系统原理
 module: 'cs-fundamentals'
 category: 计算机科学
 difficulty: intermediate
-description: 数据库系统原理：关系模型、关系代数、函数依赖、范式理论与查询优化
+description: 数据库系统原理：关系模型、关系代数、函数依赖、范式理论与查询优化；索引与事务机制的展开深读见 595
 author: fanquanpp
 updated: '2026-10-05'
 related:
@@ -16,6 +16,20 @@ prerequisites:
   - 'cs-fundamentals/010-ComputerOverview'
 ---
 
+
+## 知识点地图
+
+- **知识类别**：数据库系统理论——关系模型、关系代数、范式与查询优化的
+  课程主线。
+- **解决什么问题**：如何用数学化的模型（集合与关系代数）描述数据，
+  如何设计无冗余的表结构（范式），以及查询语句如何被系统转化为
+  高效的执行计划。
+- **什么时候用到**：设计表结构评审范式与反范式、读懂执行计划的
+  理论基础、学习 016-sql/017-mysql 语法篇之前的系统观打底。
+
+本文第 6-7 节的索引复杂度表与事务管理是**速查级**展开；
+两大机制的完整深读（B+ 树页 IO 推演、WAL 崩溃恢复）见
+[595-DatabaseIndexAndTransaction](/cnt-content/full/021-cs-fundamentals/595-DatabaseIndexAndTransaction)。
 
 ## 1. 数据库系统概述
 
@@ -293,3 +307,65 @@ $$C_{IO} = \text{页面读写次数} \times t_{IO}$$
 - 超时检测
 - 等待图检测
 - 死锁预防（等待-死亡、伤害-等待）
+
+## 动手实践
+
+**任务**：把第 4 节范式理论变成一次真实的设计推演——给「订单系统」
+设计三套表结构（1NF 带冗余、3NF 规范化、反范式宽表），用同一组查询
+对比三者的数据量与更新代价。
+
+1. 需求：订单含客户姓名/所在城市、商品名/单价/数量；查询「某城市订单总额」；
+2. 第一套（1NF 边缘）：一张大表，客户姓名与城市随每行订单重复；
+3. 第二套（3NF）：orders / customers / order_items / products 四表；
+4. 第三套（反范式）：在 orders 上冗余 city 列；
+5. 用 Python 脚本生成 10 万行模拟数据，分别统计：存储行数 x 重复字段数、
+   「客户改名」要更新几行、「某城市订单总额」要 join 几次。
+
+**提示**：不用真建数据库，用字典列表模拟即可；关键观察点是
+「读优化的反范式」与「写优化的 3NF」在两个查询上的代价互换，
+这正是第 6 节查询优化的设计动机。
+
+<details>
+<summary>参考实现骨架（先自己写，再展开对照）</summary>
+
+```python
+# normalize_lab.py —— 三套结构的代价对比（模拟层，非真 SQL）
+import random
+
+CITIES = ["BJ", "SH", "SZ"]
+customers = {i: {"name": f"c{i}", "city": random.choice(CITIES)}
+             for i in range(1000)}
+
+# 3NF：订单行只存外键
+orders_3nf = [{"oid": n, "cust": random.randrange(1000),
+               "amount": random.randrange(100, 1000)}
+              for n in range(100_000)]
+# 1NF：城市随订单冗余
+orders_1nf = [{**o, "city": customers[o["cust"]]["city"]} for o in orders_3nf]
+
+def total_by_city_3nf(rows):                 # 两次查表 + 聚合
+    total = {}
+    for o in rows:
+        city = customers[o["cust"]]["city"]
+        total[city] = total.get(city, 0) + o["amount"]
+    return total
+
+def total_by_city_denorm(rows):              # 直接聚合，零 join
+    total = {}
+    for o in rows:
+        total[o["city"]] = total.get(o["city"], 0) + o["amount"]
+    return total
+
+# 更新代价：客户 42 改名 -> 3NF 改 1 行，1NF 需改其所有订单行
+rename_hits = [o for o in orders_1nf if o["cust"] == 42]
+print("3NF 改 1 行; 1NF 需改", len(rename_hits), "行")
+```
+
+**逐段讲解**：两套聚合函数的差别就是 join 代价的模拟——3NF 每行都要
+回 customers 查城市（字典查找模拟 join），反范式版直接读本行；
+`rename_hits` 的长度演示了更新异常：冗余列把「改 1 行」放大成
+「改 N 行」，这正是第 4 节函数依赖 `city -> 客户` 造成的传递冗余。
+把 10 万行改成 100 万行再跑，两个 total 函数的耗时差会拉开到肉眼可见
+——查询优化器要消掉的正是这部分代价。
+
+</details>

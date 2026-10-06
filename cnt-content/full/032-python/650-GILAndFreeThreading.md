@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 580
 title: "GIL 与自由线程：Python 并发的底层规则"
 module: 'python'
 category: 后端技术

@@ -4,21 +4,20 @@ title: 搜索算法
 module: 'algorithm'
 category: 计算机科学
 difficulty: intermediate
-description: 搜索（Search）算法的形式化定义、状态空间图模型、完备性与最优性证明、线性搜索 $O(n)$、二分搜索 $O(\log n)$、哈希查找 $O(1)$、BFS/DFS 图搜索 $O(V+E)$、双向 BFS、迭代深化 DFS（IDDFS）、A* 启发式搜索（Hart-Nilsson-Raphael 1968）、IDA* 内存受限搜索（Korf 1985）、Minimax + Alpha-Beta 剪枝博弈树搜索（Shannon 1950、Knuth-Moore 1975）的原理、实现与对比分析，涵盖 Shannon 1950 国际象棋程序、Dijkstra 1959 最短路径、Hart-Nilsson-Raphael 1968 A*、Korf 1985 IDA* 等历史脉络，附 Python/C++/Java 多语言实现与 CLRS 第 22 章。
+description: 搜索（Search）算法的通用篇：形式化定义、状态空间图模型、完备性与最优性证明，线性搜索 $O(n)$、二分搜索 $O(\log n)$、哈希查找 $O(1)$、BFS/DFS 图搜索 $O(V+E)$ 的原理、实现与对比分析，附 Python/C++/Java 多语言实现与 CLRS 第 22 章。有信息搜索与博弈搜索已拆分至 055 篇。
 author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/030-SortAlgorithm'
-  - 'algorithm/170-BinarySearchAlgorithms'
   - 'algorithm/070-HashTable'
   - 'algorithm/080-Tree'
   - 'algorithm/110-GraphAlgorithms'
+  - 'algorithm/055-InformedAndGameSearch'
   - 'algorithm/140-RecursionAndBacktracking'
   - 'algorithm/090-HeapAndPriorityQueue'
 prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
-  - 'algorithm/170-BinarySearchAlgorithms'
   - 'algorithm/140-RecursionAndBacktracking'
 ---
 
@@ -30,6 +29,20 @@ prerequisites:
 - [查找算法](/algorithm/170-BinarySearchAlgorithms)
 - [递归与回溯](/algorithm/140-RecursionAndBacktracking)
 
+## 知识点地图
+
+本篇属于「搜索算法」知识类别的**通用篇**，覆盖静态查找与无信息图搜索。
+
+解决什么问题：在一大堆数据里找一个元素（查找），或在一个巨大的状态
+空间里找一条从起点到终点的路径（图搜索）——分别该用什么算法、代价
+各是多少、什么时候会出错。
+
+什么时候用到：写查找逻辑前选型；刷题前建立 BFS/DFS 与二分的标准
+写法；面试前复习复杂度与陷阱。
+
+有信息搜索（双向 BFS、IDDFS、A*、IDA*）与博弈搜索（Minimax、
+Alpha-Beta）已拆分至 055-InformedAndGameSearch，本篇不再展开。
+
 ## 1. 概述与学习目标
 
 ### 1.1 什么是搜索算法
@@ -38,8 +51,8 @@ prerequisites:
 
 1. **静态查找**（Knuth TAOCP Vol.3 §6）：在固定数据集合中定位元素，包括线性查找 $O(n)$、二分查找 $O(\log n)$、哈希查找 $O(1)$；
 2. **无信息搜索**（Uninformed/Blind Search, Russell-Norvig §3.4）：无启发式信息，包括 BFS、DFS、UCS（Dijkstra）、IDDFS；
-3. **有信息搜索**（Informed/Heuristic Search, Russell-Norvig §3.5）：利用启发式函数 $h(n)$ 引导，包括贪婪最佳优先、A*、IDA*；
-4. **对抗搜索**（Adversarial Search, Russell-Norvig §5）：多智能体博弈，包括 Minimax、Alpha-Beta 剪枝、Monte Carlo Tree Search（MCTS）。
+3. **有信息搜索**（Informed/Heuristic Search, Russell-Norvig §3.5）：利用启发式函数 $h(n)$ 引导，包括贪婪最佳优先、A*、IDA*——本篇不展开，见 055 篇；
+4. **对抗搜索**（Adversarial Search, Russell-Norvig §5）：多智能体博弈，包括 Minimax、Alpha-Beta 剪枝、Monte Carlo Tree Search（MCTS）——本篇不展开，见 055 篇。
 
 ```mermaid
 flowchart TD
@@ -923,536 +936,11 @@ vector<int> dfs_recursive(const vector<vector<int>>& graph, int start) {
 4. **割点/桥**：网络关键节点识别、可靠性分析；
 5. **回溯算法**：N 皇后、数独、组合搜索的底层框架。
 
-## 9. 双向 BFS（Bidirectional BFS）
+> **拆分说明**：本篇原第 9-13 节（双向 BFS、IDDFS、A*、IDA*、Minimax 与 Alpha-Beta）已拆分为独立篇 **055-InformedAndGameSearch**（启发式搜索与博弈树），相关工程案例（Google Maps、Stockfish、Sokoban）与陷阱条目一并移入。本篇保留无信息搜索与静态查找主线。
 
-### 9.1 算法思想
+## 9. 经典应用案例
 
-**双向 BFS** 由 Ira Pohl 在 1971 年《Bi-directional Search》（Machine Intelligence 6:127-140）中提出。核心思想：从起点与终点同时执行 BFS，当两端的搜索前沿相遇时即可拼接出最短路径。
-
-复杂度对比：单向 BFS 为 $O(b^d)$，双向 BFS 为 $O(b^{d/2})$——分支因子 $b$ 与解深度 $d$ 较大时收益显著（如 $b=10, d=6$ 时，单向 $10^6$ 次扩展，双向仅 $2 \times 10^3$ 次）。
-
-### 9.2 Python 实现
-
-```python
-from collections import deque
-
-def bidirectional_bfs(graph: dict, start, end) -> list | None:
-    """双向 BFS：从起点和终点同时搜索，中间相遇"""
-    if start == end:
-        return [start]
-
-    # 前向搜索：从 start 出发
-    front_visited = {start: None}  # node -> parent
-    back_visited = {end: None}
-    front_queue = deque([start])
-    back_queue = deque([end])
-    meeting_point = None
-
-    while front_queue and back_queue:
-        # 扩展前向一层
-        for _ in range(len(front_queue)):
-            node = front_queue.popleft()
-            for neighbor in graph.get(node, []):
-                if neighbor not in front_visited:
-                    front_visited[neighbor] = node
-                    front_queue.append(neighbor)
-                    if neighbor in back_visited:
-                        meeting_point = neighbor
-                        break
-            if meeting_point:
-                break
-
-        if meeting_point:
-            break
-
-        # 扩展后向一层
-        for _ in range(len(back_queue)):
-            node = back_queue.popleft()
-            for neighbor in graph.get(node, []):
-                if neighbor not in back_visited:
-                    back_visited[neighbor] = node
-                    back_queue.append(neighbor)
-                    if neighbor in front_visited:
-                        meeting_point = neighbor
-                        break
-            if meeting_point:
-                break
-
-    if not meeting_point:
-        return None
-
-    # 拼接路径：start -> meeting_point -> end
-    # 前半段
-    path = []
-    cur = meeting_point
-    while cur is not None:
-        path.append(cur)
-        cur = front_visited[cur]
-    path.reverse()
-    # 后半段
-    cur = back_visited[meeting_point]
-    while cur is not None:
-        path.append(cur)
-        cur = back_visited[cur]
-    return path
-```
-
-### 9.3 应用：LeetCode 127 单词接龙
-
-```python
-def ladderLength(beginWord: str, endWord: str, wordList: list) -> int:
-    """单词接龙：双向 BFS"""
-    word_set = set(wordList)
-    if endWord not in word_set:
-        return 0
-
-    front = {beginWord}
-    back = {endWord}
-    visited = set()
-    steps = 1
-
-    while front and back:
-        # 总是扩展较小的一侧（优化）
-        if len(front) > len(back):
-            front, back = back, front
-
-        next_front = set()
-        for word in front:
-            for i in range(len(word)):
-                for c in 'abcdefghijklmnopqrstuvwxyz':
-                    if c == word[i]:
-                        continue
-                    new_word = word[:i] + c + word[i+1:]
-                    if new_word in back:
-                        return steps + 1
-                    if new_word in word_set and new_word not in visited:
-                        visited.add(new_word)
-                        next_front.add(new_word)
-        front = next_front
-        steps += 1
-    return 0
-```
-
-### 9.4 复杂度分析
-
-- **时间**：$O(b^{d/2})$，相比单向 $O(b^d)$ 减少指数级常数；
-- **空间**：$O(b^{d/2})$；
-- **完备性**：是；
-- **最优性**：无权图最优；
-- **限制**：需预先知道目标节点；目标不明确（如多个目标）时不适用。
-
-## 10. 迭代深化 DFS（IDDFS）
-
-### 10.1 算式思想
-
-**迭代深化 DFS**（Iterative Deepening DFS, IDDFS）结合 BFS 的完备性与 DFS 的空间效率。Korf 1985 在《Depth-first iterative-deepening: An optimal admissible tree search》中证明：IDDFS 在分支因子 $b > 1$ 时，重复扩展的代价仅多出常数倍（约 $\frac{b}{b-1}$ 倍）。
-
-工作流程：
-1. 设深度阈值 $L = 0$，执行受限 DFS（深度不超过 $L$）；
-2. 若找到解则返回；否则 $L \leftarrow L + 1$ 重复。
-
-### 10.2 Python 实现
-
-```python
-def iddfs(graph: dict, start, is_goal) -> int | None:
-    """迭代深化 DFS：返回目标所在深度"""
-    def _dls(node, depth, visited):
-        """Depth-Limited Search"""
-        if is_goal(node):
-            return depth
-        if depth == 0:
-            return None
-        visited.add(node)
-        for neighbor in graph.get(node, []):
-            if neighbor not in visited:
-                result = _dls(neighbor, depth - 1, visited)
-                if result is not None:
-                    return result
-        return None
-
-    for depth in range(0, 100):  # 上限防无限循环
-        visited = set()
-        result = _dls(start, depth, visited)
-        if result is not None:
-            return result
-    return None
-```
-
-### 10.3 复杂度分析
-
-IDDFS 在深度 $d$ 找到解时的总扩展次数：
-
-$$
-N_{\text{IDDFS}} = \sum_{i=0}^{d} b^i \cdot (d - i + 1) \approx \frac{b}{b-1} \cdot b^d = O(b^d)
-$$
-
-而 BFS 的扩展次数为 $b^d$。两者渐近相同，但 IDDFS 空间仅 $O(d)$（远低于 BFS 的 $O(b^d)$）。
-
-- **时间**：$O(b^d)$，与 BFS 同阶；
-- **空间**：$O(d)$，远优于 BFS；
-- **完备性**：是；
-- **最优性**：所有边权相等时最优；加权图需 IDA*。
-
-### 10.4 工程应用
-
-1. **国际象棋引擎**：Stockfish 使用 IDDFS 作为搜索框架（结合 Alpha-Beta 剪枝）；
-2. **游戏 AI**：井字棋、Connect Four 等深度有限博弈；
-3. **约束满足问题**：N 皇后、数独求解；
-4. **路径规划**：分支因子大、内存受限的场景。
-
-## 11. A* 启发式搜索
-
-### 11.1 算法思想
-
-**A\*** 由 Peter Hart、Nils Nilsson、Bertram Raphael 在 1968 年为 SRI International（斯坦福研究院）的 Shakey 机器人路径规划而设计，发表于《A Formal Basis for the Heuristic Determination of Minimum Cost Paths》（IEEE Trans. SSC-4(2):100-107, DOI:10.1109/TSSC.1968.300136）。A* 是 Dijkstra 算法与贪婪最佳优先搜索的结合，评估函数：
-
-$$
-f(n) = g(n) + h(n)
-$$
-
-- $g(n)$：从起点到 $n$ 的实际代价；
-- $h(n)$：从 $n$ 到目标的启发式估计；
-- $f(n)$：经过 $n$ 的估计总代价。
-
-A* 每次从开表中取出 $f$ 值最小的节点扩展，与 Dijkstra 的区别仅在于优先级函数从 $g$ 改为 $f = g + h$。当 $h \equiv 0$ 时 A* 退化为 Dijkstra；当 $h$ 严格等于实际最优代价 $h^*$ 时 A* 直接找到最短路径不扩展任何多余节点。
-
-### 11.2 启发式函数
-
-| 启发式 | 公式 | 适用场景 | 可采纳性 |
-| ---- | ---- | ---- | ---- |
-| 曼哈顿距离 | $h = |x_1 - x_2| + |y_1 - y_2|$ | 四连通网格 | 是（仅四方向移动） |
-| 欧氏距离 | $h = \sqrt{(x_1-x_2)^2 + (y_1-y_2)^2}$ | 任意方向移动 | 是 |
-| 切比雪夫距离 | $h = \max(|x_1-x_2|, |y_1-y_2|)$ | 八连通网格 | 是 |
-| 汉明距离 | $h = \sum_i [s_i \neq t_i]$ | 字符串匹配 | 视问题而定 |
-| 错位牌数 | $h = \sum_i [s_i \neq g_i]$ | 八数码 | 是（弱启发） |
-| 曼哈顿距离和 | $h = \sum_i |x_i - x_i^*| + |y_i - y_i^*|$ | 八数码/15 数码 | 是（强启发） |
-
-### 11.3 Python 实现（优先队列）
-
-```python
-import heapq
-
-def astar(grid: list[list[int]], start: tuple, end: tuple) -> int:
-    """A* 算法：在二维网格中求最短路径。0=可走, 1=障碍"""
-    rows, cols = len(grid), len(grid[0])
-
-    def manhattan(a, b):
-        return abs(a[0] - b[0]) + abs(a[1] - b[1])
-
-    # 优先队列：(f, g, pos)
-    open_set = [(manhattan(start, end), 0, start)]
-    g_score = {start: 0}
-    visited = set()
-
-    while open_set:
-        f, g, pos = heapq.heappop(open_set)
-        if pos == end:
-            return g
-        if pos in visited:
-            continue
-        visited.add(pos)
-
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nx, ny = pos[0] + dx, pos[1] + dy
-            if 0 <= nx < rows and 0 <= ny < cols and grid[nx][ny] == 0:
-                neighbor = (nx, ny)
-                new_g = g + 1
-                if neighbor not in g_score or new_g < g_score[neighbor]:
-                    g_score[neighbor] = new_g
-                    new_f = new_g + manhattan(neighbor, end)
-                    heapq.heappush(open_set, (new_f, new_g, neighbor))
-    return -1  # 不可达
-```
-
-### 11.4 最优性证明（可采纳性保证）
-
-**定理 11.1（A\* 最优性）**：若启发式 $h$ 可采纳（$h(n) \leq h^*(n)$），且图搜索使用闭表（已扩展节点不再重开），则 A* 找到的解为最优解。
-
-**证明**（反证法）：设 A* 终止时返回的解代价为 $C'$，但最优解代价为 $C^* < C'$。在 A* 终止前，最优路径上必存在某个节点 $n$ 在开表中（因为最优路径从起点扩展，每一步都不会错过）。由于 $h$ 可采纳：
-
-$$
-f(n) = g(n) + h(n) \leq g^*(n) + h^*(n) = C^*
-$$
-
-而 A* 选择 $f$ 最小的节点扩展，故终止时所选节点的 $f$ 值 $\leq C^* < C'$。但终止节点 $g$ 满足 $f(g) = g(g) + h(g) = g(g) = C'$（目标节点的 $h=0$），矛盾。因此 $C' = C^*$。$\blacksquare$
-
-### 11.5 一致性与闭表优化
-
-**一致性**（monotonicity）：$h(n) \leq c(n, n') + h(n')$。Hart-Nilsson-Raphael 1968 称此为 monotonicity。一致性保证：A* 在扩展节点 $n$ 时已找到 $g^*(n)$，故闭表中的节点无需重开。
-
-**定理 11.2**：一致性蕴含可采纳性。
-
-**证明**：对最优路径 $n \to n_1 \to n_2 \to \dots \to g$ 反复应用一致性：
-
-$$
-h(n) \leq c(n, n_1) + h(n_1) \leq c(n, n_1) + c(n_1, n_2) + h(n_2) \leq \dots \leq h^*(n)
-$$
-
-### 11.6 应用：八数码问题
-
-```python
-def eight_puzzle(start: tuple, goal: tuple) -> int:
-    """八数码问题：A* + 曼哈顿距离和"""
-    def h(state):
-        dist = 0
-        for i in range(9):
-            if state[i] == 0:
-                continue
-            target = goal.index(state[i])
-            dist += abs(i // 3 - target // 3) + abs(i % 3 - target % 3)
-        return dist
-
-    open_set = [(h(start), 0, start)]
-    g_score = {start: 0}
-    while open_set:
-        f, g, state = heapq.heappop(open_set)
-        if state == goal:
-            return g
-        zero = state.index(0)
-        zx, zy = zero // 3, zero % 3
-        for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
-            nx, ny = zx + dx, zy + dy
-            if 0 <= nx < 3 and 0 <= ny < 3:
-                new_zero = nx * 3 + ny
-                lst = list(state)
-                lst[zero], lst[new_zero] = lst[new_zero], lst[zero]
-                new_state = tuple(lst)
-                new_g = g + 1
-                if new_state not in g_score or new_g < g_score[new_state]:
-                    g_score[new_state] = new_g
-                    heapq.heappush(open_set, (new_g + h(new_state), new_g, new_state))
-    return -1
-```
-
-### 11.7 复杂度分析
-
-- **时间**：最坏 $O(b^d)$（启发式无效时退化为 BFS）；理想 $O(b^{\epsilon d})$（启发式误差 $\epsilon$ 较小）；
-- **空间**：$O(b^d)$，需存储所有已扩展节点（最大瓶颈）；
-- **完备性**：是（有限分支、可采纳启发式）；
-- **最优性**：是（可采纳启发式）。
-
-## 12. IDA* 内存受限搜索
-
-### 12.1 算法思想
-
-**IDA\***（Iterative Deepening A*）由 Richard Korf 1985 在《Depth-first iterative-deepening: An optimal admissible tree search》（Artificial Intelligence 27(1):97-109, DOI:10.1016/0004-3702(85)90084-0）中提出。结合 IDDFS 与 A*：用 $f(n) = g(n) + h(n)$ 作为深度阈值，每次循环用上一轮的最小超阈值作为新阈值。
-
-IDA* 的核心优势：**空间 $O(d)$**——仅需保存当前路径，无需开表。这使其能解决 A* 因内存爆炸无法求解的问题（如 15 数码、24 数码）。
-
-### 12.2 Python 实现
-
-```python
-def ida_star(start, goal, h, neighbors):
-    """IDA* 算法：内存受限启发式搜索"""
-    def search(path, g, threshold):
-        node = path[-1]
-        f = g + h(node, goal)
-        if f > threshold:
-            return f, None
-        if node == goal:
-            return f, list(path)
-        min_threshold = float('inf')
-        for neighbor, cost in neighbors(node):
-            if neighbor in path:  # 简单环检测
-                continue
-            path.append(neighbor)
-            t, result = search(path, g + cost, threshold)
-            if result is not None:
-                return t, result
-            if t < min_threshold:
-                min_threshold = t
-            path.pop()
-        return min_threshold, None
-
-    threshold = h(start, goal)
-    path = [start]
-    while True:
-        t, result = search(path, 0, threshold)
-        if result is not None:
-            return result
-        if t == float('inf'):
-            return None  # 不可达
-        threshold = t
-```
-
-### 12.3 完备性与最优性证明
-
-**定理 12.1（IDA\* 完备性）**：若解存在且有限分支，IDA* 必能找到。
-
-**证明**：阈值序列 $T_0 < T_1 < T_2 < \dots$ 严格递增（每轮取所有超阈值中的最小值），且 $T_i \to C^*$（最优代价）。当 $T_i \geq C^*$ 时，最优路径上所有节点的 $f \leq C^* \leq T_i$，故 DFS 必能到达目标。$\blacksquare$
-
-**定理 12.2（IDA\* 最优性）**：若 $h$ 可采纳，IDA* 找到的解为最优解。
-
-**证明**：IDA* 在阈值 $T_i < C^*$ 时不会终止（因为最优路径节点 $f \leq C^*$，但若 $T_i < C^*$ 则这些节点仍可能被扩展且找不到目标）；首次终止时 $T_k = C^*$，返回的解代价恰为 $C^*$。$\blacksquare$
-
-### 12.4 复杂度分析
-
-- **时间**：$O(b^d)$（与 A* 同阶），但常数较大（重复扩展）；
-- **空间**：$O(d)$，远优于 A* 的 $O(b^d)$；
-- **完备性**：是；
-- **最优性**：是（可采纳启发式）。
-
-### 12.5 应用：15 数码问题
-
-15 数码的状态空间约为 $16!/2 \approx 10^{13}$，A* 内存爆炸无法求解。Korf 1985 用 IDA* + Manhattan distance + Linear conflict 启发式在 SUN-3 工作站上平均 50 秒内求解随机 15 数码实例，奠定 IDA* 在内存受限搜索中的地位。现代优化（pattern database、PDB）可将求解时间降至毫秒级。
-
-## 13. Minimax 与 Alpha-Beta 剪枝
-
-### 13.1 算法思想
-
-**Minimax** 由 John von Neumann 1928 在《Zur Theorie der Gesellschaftsspiele》（Mathematische Annalen 100:295-320）中证明的极小极大定理奠基。Claude Shannon 1950 在《Programming a Computer for Playing Chess》（Philosophical Magazine 41:256-275, DOI:10.1080/14786445008521796）中首次将 Minimax 应用于国际象棋程序设计。
-
-在两人零和博弈中，玩家分两类：
-- **MAX**：希望效用最大化；
-- **MIN**：希望效用最小化（即希望 MAX 的效用最小）。
-
-博弈树中叶节点给出效用值，内部节点交替为 MAX/MIN 层。Minimax 递归计算：
-
-$$
-\text{Minimax}(n) = \begin{cases}
-\text{utility}(n) & n \text{ 为叶节点} \\
-\max_{c \in \text{children}(n)} \text{Minimax}(c) & n \text{ 为 MAX 节点} \\
-\min_{c \in \text{children}(n)} \text{Minimax}(c) & n \text{ 为 MIN 节点}
-\end{cases}
-$$
-
-### 13.2 Python 实现
-
-```python
-def minimax(state, is_max_turn, terminal_value, children, depth=10):
-    """Minimax 算法
-    - state: 当前状态
-    - is_max_turn: 当前是否为 MAX 玩家回合
-    - terminal_value(state): 终局估值（None 表示非终局）
-    - children(state): 返回所有合法后继状态
-    - depth: 最大搜索深度
-    """
-    val = terminal_value(state)
-    if val is not None:
-        return val
-    if depth == 0:
-        return heuristic_eval(state)
-
-    if is_max_turn:
-        best = -float('inf')
-        for child in children(state):
-            best = max(best, minimax(child, False, terminal_value, children, depth - 1))
-        return best
-    else:
-        best = float('inf')
-        for child in children(state):
-            best = min(best, minimax(child, True, terminal_value, children, depth - 1))
-        return best
-
-def heuristic_eval(state):
-    """启发式估值函数（需根据具体博弈定义）"""
-    return 0
-```
-
-### 13.3 Alpha-Beta 剪枝
-
-**Alpha-Beta 剪枝** 思想由 John McCarthy 1956 在 Dartmouth 会议提出，Knuth 与 Moore 1975 在《An analysis of alpha-beta pruning》（Artificial Intelligence 6(4):293-326, DOI:10.1016/0004-3702(75)90019-3）中给出严格分析。维护两个值：
-
-- $\alpha$：MAX 节点当前能保证的最佳下界（初始 $-\infty$）；
-- $\beta$：MIN 节点当前能保证的最佳上界（初始 $+\infty$）。
-
-**剪枝不变式**：当 $\alpha \geq \beta$ 时，当前节点不可能影响最终决策，剪枝。
-
-```python
-def alphabeta(state, depth, alpha, beta, is_max_turn, terminal_value, children):
-    """Alpha-Beta 剪枝"""
-    val = terminal_value(state)
-    if val is not None:
-        return val
-    if depth == 0:
-        return heuristic_eval(state)
-
-    if is_max_turn:
-        best = -float('inf')
-        for child in children(state):
-            best = max(best, alphabeta(child, depth - 1, alpha, beta, False, terminal_value, children))
-            alpha = max(alpha, best)
-            if alpha >= beta:
-                break  # beta 剪枝
-        return best
-    else:
-        best = float('inf')
-        for child in children(state):
-            best = min(best, alphabeta(child, depth - 1, alpha, beta, True, terminal_value, children))
-            beta = min(beta, best)
-            if beta <= alpha:
-                break  # alpha 剪枝
-        return best
-```
-
-### 13.4 复杂度分析（Knuth-Moore 1975）
-
-Knuth 与 Moore 1975 证明：
-- **最坏情况**（无剪枝）：$O(b^d)$，与 Minimax 相同；
-- **最优情况**（节点排序完美）：$O(b^{d/2})$，相当于搜索深度加倍；
-- **平均情况**：$O(b^{3d/4})$。
-
-**直观理解**：完美排序下，Alpha-Beta 剪掉一半的"无用"分支。这是为什么 Stockfish 等引擎投入大量工程优化节点排序（killer move、history heuristic、transposition table）。
-
-### 13.5 正确性证明
-
-**定理 13.1（Alpha-Beta 正确性）**：Alpha-Beta 剪枝返回的根节点值等于 Minimax 值。
-
-**证明**（不变式归纳）：归纳证明每个节点的返回值 $v$ 满足：
-- MAX 节点：$v \leq \beta$ 时 $v$ 为真实 Minimax 值；$v > \beta$ 时 $v$ 为真实 Minimax 值的下界；
-- MIN 节点：$v \geq \alpha$ 时 $v$ 为真实 Minimax 值；$v < \alpha$ 时 $v$ 为真实 Minimax 值的上界。
-
-根节点 $\alpha = -\infty, \beta = +\infty$，故返回值为真实 Minimax 值。$\blacksquare$
-
-### 13.6 Negamax 形式
-
-棋类引擎普遍使用 Negamax 形式（统一 MAX/MIN）：利用零和博弈性质 $\text{Minimax}(MIN) = -\text{Minimax}(MAX)$，将所有节点视为"当前玩家最大化"。
-
-```python
-def negamax(state, depth, alpha, beta, color, terminal_value, children):
-    """Negamax + Alpha-Beta：所有节点统一为当前玩家最大化"""
-    val = terminal_value(state)
-    if val is not None:
-        return color * val
-    if depth == 0:
-        return color * heuristic_eval(state)
-
-    best = -float('inf')
-    for child in children(state):
-        val = -negamax(child, depth - 1, -beta, -alpha, -color, terminal_value, children)
-        best = max(best, val)
-        alpha = max(alpha, best)
-        if alpha >= beta:
-            break
-    return best
-```
-
-### 13.7 应用：LeetCode 486 预测赢家
-
-```python
-def predict_the_winner(nums: list) -> bool:
-    """LeetCode 486：Minimax 判断玩家 1 是否必胜"""
-    def minimax(nums, l, r, turn):
-        if l == r:
-            return turn * nums[l]
-        pick_left = nums[l] + turn * minimax(nums, l + 1, r, -turn)
-        pick_right = nums[r] + turn * minimax(nums, l, r - 1, -turn)
-        return max(pick_left, pick_right) if turn == 1 else min(pick_left, pick_right)
-
-    score = minimax(nums, 0, len(nums) - 1, 1)
-    return score >= 0
-```
-
-### 13.8 工程应用
-
-1. **国际象棋引擎**：Stockfish、Crafty、Fritz 使用 Alpha-Beta + 启发式排序 + 置换表；
-2. **围棋**：AlphaGo（2016）用 MCTS + 神经网络（超越传统 Alpha-Beta）；
-3. **五子棋/黑白棋**：桌面博弈普遍采用 Alpha-Beta；
-4. **多人博弈**：MaxN 算法（多人 Minimax 推广）。
-
-## 14. 经典应用案例
-
-### 14.1 LeetCode 33 旋转排序数组查找
+### 9.1 LeetCode 33 旋转排序数组查找
 
 ```python
 def search(nums: list, target: int) -> int:
@@ -1476,7 +964,7 @@ def search(nums: list, target: int) -> int:
     return -1
 ```
 
-### 14.2 LeetCode 200 岛屿数量（DFS/BFS）
+### 9.2 LeetCode 200 岛屿数量（DFS/BFS）
 
 ```python
 def numIslands(grid: list[list[str]]) -> int:
@@ -1500,7 +988,7 @@ def numIslands(grid: list[list[str]]) -> int:
     return count
 ```
 
-### 14.3 LeetCode 207 课程表（拓扑排序）
+### 9.3 LeetCode 207 课程表（拓扑排序）
 
 ```python
 from collections import deque
@@ -1525,50 +1013,7 @@ def canFinish(numCourses: int, prerequisites: list) -> bool:
     return taken == numCourses
 ```
 
-### 14.4 LeetCode 773 滑动谜题（A* 求解）
-
-```python
-import heapq
-
-def slidingPuzzle(board: list[list[int]]) -> int:
-    """2x3 滑动谜题：A* + 曼哈顿距离"""
-    goal = (1, 2, 3, 4, 5, 0)
-    start = tuple(board[0] + board[1])
-    if start == goal:
-        return 0
-
-    def h(state):
-        dist = 0
-        for i in range(6):
-            if state[i] == 0:
-                continue
-            target = state[i] - 1
-            dist += abs(i // 3 - target // 3) + abs(i % 3 - target % 3)
-        return dist
-
-    # 邻居索引
-    neighbors = {0: [1, 3], 1: [0, 2, 4], 2: [1, 5],
-                 3: [0, 4], 4: [1, 3, 5], 5: [2, 4]}
-
-    open_set = [(h(start), 0, start)]
-    visited = {start}
-
-    while open_set:
-        f, g, state = heapq.heappop(open_set)
-        if state == goal:
-            return g
-        zero = state.index(0)
-        for npos in neighbors[zero]:
-            lst = list(state)
-            lst[zero], lst[npos] = lst[npos], lst[zero]
-            new_state = tuple(lst)
-            if new_state not in visited:
-                visited.add(new_state)
-                heapq.heappush(open_set, (g + 1 + h(new_state), g + 1, new_state))
-    return -1
-```
-
-### 14.5 LeetCode 1091 二进制矩阵最短路径（BFS）
+### 9.4 LeetCode 1091 二进制矩阵最短路径（BFS）
 
 ```python
 from collections import deque
@@ -1593,7 +1038,7 @@ def shortestPathBinaryMatrix(grid: list[list[int]]) -> int:
     return -1
 ```
 
-### 14.6 LeetCode 64 最小路径和（DAG 上的搜索 + DP）
+### 9.5 LeetCode 64 最小路径和（DAG 上的搜索 + DP）
 
 ```python
 def minPathSum(grid: list[list[int]]) -> int:
@@ -1610,52 +1055,23 @@ def minPathSum(grid: list[list[int]]) -> int:
     return dp[m-1][n-1]
 ```
 
-## 15. 工程实践
+## 10. 工程实践
 
-### 15.1 Google Maps 路径规划
-
-Google Maps 早期使用 Dijkstra + A* 进行路径规划，2010 年后引入 **Contraction Hierarchies**（Geisberger et al. 2008）与 **ALT 算法**（A* + Landmarks + Triangle inequality），将跨大陆路径查询从秒级降至毫秒级。
-
-关键优化：
-1. **Landmark 启发式**：选取若干"地标"节点 $L$，预计算所有节点到地标的距离。启发式 $h(u, v) = \max_{l \in L} |d(u, l) - d(v, l)|$ 满足三角不等式；
-2. **分层图**：将高速公路作为高层、城市道路作为低层，A* 优先扩展高层；
-3. **双向 A***：从起点和终点同时搜索，中间相遇。
-
-### 15.2 Stockfish 国际象棋引擎
-
-Stockfish 是开源国际象棋引擎的标杆，搜索框架基于：
-1. **Iterative Deepening**：从深度 1 开始逐步加深，便于时间控制；
-2. **Alpha-Beta + Negamax**：核心搜索算法；
-3. **节点排序优化**：
-   - **TT move**（置换表最佳着法）优先扩展；
-   - **Killer move**（同一层引发剪枝的着法）；
-   - **History heuristic**（历史启发式，按历史得分排序）；
-4. **Quiescence Search**（静默搜索）：在叶节点继续搜索吃子、将军等"非静默"着法，避免水平线效应；
-5. **Null Move Pruning**：跳过一步"空着"看对方能否取胜，若不能则当前局面优势明显可剪枝；
-6. **Late Move Reduction**：排序靠后的着法降低搜索深度。
-
-### 15.3 PostgreSQL B+ 树索引
+### 10.1 PostgreSQL B+ 树索引
 
 PostgreSQL 默认索引结构为 B+ 树（Bayer-McCreight 1972 的推广），查找过程本质是搜索算法：
 1. **根节点到叶节点**：每层二分查找定位子树，$O(\log_B n)$ I/O；
 2. **叶节点链表**：支持范围查询与反向扫描；
 3. **Page Cache**：缓冲池避免磁盘 I/O，热数据查找 $O(\log n)$ 内存操作。
 
-### 15.4 Redis 字典
+### 10.2 Redis 字典
 
 Redis 字典采用链地址法哈希表，查找 $O(1)$ 平均：
 1. **MurmurHash3**：高性能非加密哈希；
 2. **渐进式 rehash**：扩容时新旧两表并存，每次操作迁移一个桶，避免一次性 rehash 阻塞；
 3. **SipHash**（4.0+）：防止哈希碰撞攻击。
 
-### 15.5 Sokoban 求解器
-
-推箱子游戏是经典的状态空间搜索问题，工业级求解器（如 Sokoban Solver）结合：
-1. **IDA*** + 强启发式（deadlock detection、tunnel macros）；
-2. **状态压缩**：用位图表示箱子位置；
-3. **模式数据库**：预计算子问题最优解。
-
-### 15.6 工业级优化技巧
+### 10.3 工业级优化技巧
 
 1. **优先队列优化**：A* 用 Fibonacci 堆替代二叉堆，理论 $O(1)$ decrease-key；
 2. **状态压缩**：用整数编码状态（如 15 数码状态用 64 bit 整数）；
@@ -1666,9 +1082,9 @@ Redis 字典采用链地址法哈希表，查找 $O(1)$ 平均：
 7. **A* + IDA* 混合**：内存充足时用 A*，内存紧张时切换 IDA*；
 8. **并行 Alpha-Beta**：多线程并行搜索不同子树（Stockfish 11+ 默认 256 线程）。
 
-## 16. 常见陷阱
+## 11. 常见陷阱
 
-### 16.1 二分查找整数溢出
+### 11.1 二分查找整数溢出
 
 `mid = (lo + hi) / 2` 在 $lo + hi > 2^{31} - 1$ 时溢出。Bloch 2006 在 Google Research Blog 公开 Java 标准库的此 bug（追溯至 Bentley 1986 Programming Pearls）。正确写法：
 
@@ -1678,133 +1094,41 @@ mid = lo + (hi - lo) // 2   # Python 无溢出但保留习惯
 # Java: mid = (lo + hi) >>> 1;  // 无符号右移
 ```
 
-### 16.2 DFS 递归深度栈溢出
+### 11.2 DFS 递归深度栈溢出
 
 Python 默认递归深度 1000，处理大图需改用显式栈或 `sys.setrecursionlimit`。C++ 同样需注意栈大小。
 
-### 16.3 BFS 队列膨胀
+### 11.3 BFS 队列膨胀
 
 BFS 在分支因子大的图上内存爆炸。改用 IDDFS 或双向 BFS。
 
-### 16.4 A* 启发式不可采纳
-
-若 $h(n) > h^*(n)$，A* 可能返回次优解。例如八数码用"欧氏距离"虽不严格大于 $h^*$ 但效率低；用"曼哈顿距离和"保证可采纳且强启发。
-
-### 16.5 A* 闭表未重开
-
-若启发式不满足一致性（monotonicity），闭表中的节点可能需要重开。简单做法：始终检查 `new_g < g_score[neighbor]`。
-
-### 16.6 IDDFS 重复扩展
-
-IDDFS 在深度 $d$ 找到解时，前 $d$ 轮的扩展看似浪费。但 Korf 1985 证明：分支因子 $b > 1$ 时总开销仅 $O(b^d)$（与 BFS 同阶），重复扩展代价是常数倍。
-
-### 16.7 Alpha-Beta 节点排序不当
-
-无节点排序时 Alpha-Beta 退化为 Minimax，剪枝几乎无效。务必先排序：TT move > killer move > history heuristic > 其他。
-
-### 16.8 哈希查找未处理碰撞
+### 11.4 哈希查找未处理碰撞
 
 链地址法与开放寻址法各有取舍。Python `dict` 用开放寻址（伪随机探测），Java `HashMap` 用链地址法（链表 + 红黑树）。
 
-### 16.9 双向 BFS 中间相遇误判
-
-需在双向搜索都"扩展完一层"后检查相遇，否则可能错过最短路径。简单做法：在节点"弹出"时检查而非"入队"时检查。
-
-### 16.10 拓扑排序对非 DAG 应用
+### 11.5 拓扑排序对非 DAG 应用
 
 若图有环，DFS 后序逆序不构成拓扑序。需先做环检测（三色标记）。
 
-### 16.11 Tarjan 算法 parent 误判
+### 11.6 Tarjan 算法 parent 误判
 
 `elif v != parent` 防止树边被当作回边。但若图有重边，需用边编号而非节点编号判断。
 
-### 16.12 启发式过弱导致 A* 退化为 Dijkstra
-
-$h \equiv 0$ 时 A* = Dijkstra。需选择合适的启发式（如网格用曼哈顿距离，而非 0）。
+## 12. 自测习题
 
 ### 填空题知识点讲解
 
-**1.** Hart-Nilsson-Raphael 于 ____ 年在 IEEE Trans. SSC-4(2):100-107 发表 A* 算法，最初为 ____ 机器人路径规划而设计。
-
-**解析讲解**：1968；Shakey（SRI International）
-
-**2.** IDDFS 的空间复杂度为 ____，时间复杂度与 BFS 同阶为 ____。
-
-**解析讲解**：$O(d)$；$O(b^d)$
-
-**3.** 启发式一致性的形式化定义为 ____，它蕴含 ____。
-
-**解析讲解**：$h(n) \leq c(n, n') + h(n')$；可采纳性
-
-**4.** Tarjan 桥算法中，边 $(u, v)$ 是桥的充要条件是 ____。
+**1.** Tarjan 桥算法中，边 $(u, v)$ 是桥的充要条件是 ____。
 
 **解析讲解**：$\text{low}[v] > \text{disc}[u]$
 
-**5.** Bloch 2006 在 Google Research Blog 公开的二分查找整数溢出 bug 是 ____，正确写法应为 ____。
+**2.** Bloch 2006 在 Google Research Blog 公开的二分查找整数溢出 bug 是 ____，正确写法应为 ____。
 
 **解析讲解**：`mid = (low + high) / 2`；`mid = low + (high - low) / 2` 或 `mid = (low + high) >>> 1`
 
-### 17.3 代码修正题
+## 13. 参考资源
 
-**1.** 以下 A* 实现存在一个 bug，请找出并修正：
-
-```python
-def astar_buggy(graph, start, end, h):
-    open_set = [(h(start, end), 0, start)]
-    visited = set()
-    while open_set:
-        f, g, node = heapq.heappop(open_set)
-        if node == end:
-            return g
-        if node in visited:
-            continue
-        visited.add(node)
-        for neighbor, cost in graph[node]:
-            heapq.heappush(open_set, (g + cost + h(neighbor, end), g + cost, neighbor))
-    return -1
-```
-
-**问题**：未记录每个节点的最优 $g$ 值，可能将次优路径加入开表。虽不影响正确性（visited 已保证不重扩展），但效率低。
-
-**修正**：维护 `g_score` 字典，仅在 `new_g < g_score[neighbor]` 时入队。
-
-**2.** 以下双向 BFS 实现存在一个 bug，请找出并修正：
-
-```python
-def bidirectional_buggy(graph, start, end):
-    front, back = {start}, {end}
-    steps = 0
-    while front and back:
-        next_front = set()
-        for node in front:
-            for neighbor in graph[node]:
-                if neighbor in back:
-                    return steps + 1
-                next_front.add(neighbor)
-        front = next_front
-        steps += 1
-    return -1
-```
-
-**问题**：未做 visited 标记，可能无限循环。
-
-**修正**：增加 `visited` 集合，入队前检查。
-
-### 17.4 开放论述题
-
-**1.** 阐述 A* 算法最优性证明的核心思路，并说明为何可采纳性 $h(n) \leq h^*(n)$ 是关键约束。
-
-**解析讲解**：证明采用反证法。设 A* 返回次优解 $C' > C^*$。在 A* 终止前，最优路径上必存在某节点 $n$ 在开表中，由可采纳性 $f(n) = g(n) + h(n) \leq g^*(n) + h^*(n) = C^*$。但 A* 选 $f$ 最小的节点扩展，必先扩展 $n$ 而非返回 $C'$，矛盾。可采纳性保证 $f(n)$ 不高估真实代价，是 A* "贪心选最优"得以成立的关键。
-
-**2.** 比较 A*、IDA*、双向 BFS 在 15 数码问题上的适用性。
-
-**解析讲解**：15 数码状态空间约 $10^{13}$，分支因子约 2.13，平均解深度约 52.6。A* 因 $O(b^d)$ 内存爆炸不可用；IDA* 空间 $O(d) \approx 53$ 极优，Korf 1985 用 IDA* + Manhattan + Linear Conflict 在 SUN-3 求解平均 50 秒，现代 PDB 优化后毫秒级；双向 BFS 不适用，因为目标状态难以反向生成前驱（15 数码反向搜索同样巨大）。
-
-**3.** 论述 Alpha-Beta 剪枝在工程实践中的关键优化策略。
-
-**解析讲解**：(1) 节点排序：TT move > killer move > history heuristic，逼近 Knuth-Moore 最优排序 $O(b^{d/2})$；(2) Iterative Deepening：上一深度最佳着法作为下一深度 TT move；(3) Quiescence Search：避免水平线效应；(4) Null Move Pruning：跳过一步判断优势；(5) Transposition Table：Zobrist hashing 缓存；(6) Late Move Reduction：靠后着法降深度；(7) 并行搜索：Stockfish 11+ 多线程。
-
-### 18.1 经典教材
+### 13.1 经典教材
 
 1. **Cormen, T. H., Leiserson, C. E., Rivest, R. L., & Stein, C.** (2022). *Introduction to Algorithms* (4th ed.). MIT Press. ISBN 978-0262046305. Chapter 11 (Hash Tables), Chapter 22 (Elementary Graph Algorithms - BFS/DFS), Chapter 24 (Single-Source Shortest Paths - Dijkstra).
 2. **Russell, S., & Norvig, P.** (2020). *Artificial Intelligence: A Modern Approach* (4th ed.). Pearson. ISBN 978-0134610993. Chapter 3 (Solving Problems by Searching), Chapter 5 (Adversarial Search).
@@ -1812,7 +1136,7 @@ def bidirectional_buggy(graph, start, end):
 4. **Sedgewick, R., & Wayne, K.** (2011). *Algorithms* (4th ed.). Addison-Wesley. ISBN 978-0321573513. Section 3.1-3.4, 4.1-4.3.
 5. **Kleinberg, J., & Tardos, É.** (2006). *Algorithm Design*. Pearson. ISBN 978-0321295354. Chapter 3 (Graphs), Chapter 4 (Greedy), Chapter 6 (Dynamic Programming).
 
-### 18.2 历史性论文
+### 13.2 历史性论文
 
 6. **Shannon, C. E.** (1950). Programming a Computer for Playing Chess. *Philosophical Magazine*, 41(314), 256-275. DOI:10.1080/14786445008521796. 首次将 Minimax 应用于国际象棋。
 7. **Dijkstra, E. W.** (1959). A note on two problems in connexion with graphs. *Numerische Mathematik*, 1(1), 269-271. DOI:10.1007/BF01386390. 单源最短路径算法。
@@ -1825,7 +1149,7 @@ def bidirectional_buggy(graph, start, end):
 14. **Tarjan, R. E.** (1974). A note on finding the bridges of a graph. *Information Processing Letters*, 2(6), 160-161. 桥算法。
 15. **Korf, R. E.** (1985). Depth-first iterative-deepening: An optimal admissible tree search. *Artificial Intelligence*, 27(1), 97-109. DOI:10.1016/0004-3702(85)90084-0. IDA* 原论文。
 
-### 18.3 工业实现与进阶
+### 13.3 工业实现与进阶
 
 16. **Geisberger, V., Sanders, P., Schultes, D., & Delling, D.** (2008). Contraction Hierarchies: Faster and Simpler Hierarchical Routing in Road Networks. *WEA 2008*. Google Maps 路径规划基础。
 17. **Coulom, R.** (2006). Efficient Selectivity and Backup Operators in Monte-Carlo Tree Search. *CG 2006*. MCTS 奠基。
@@ -1838,13 +1162,15 @@ def bidirectional_buggy(graph, start, end):
 24. **CPython dictobject.c.** https://github.com/python/cpython/blob/main/Objects/dictobject.c. Python 字典实现。
 25. **Java HashMap.** https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/util/HashMap.java. Java 哈希表实现。
 
-### 19.1 理论深入
+## 14. 延伸学习
+
+### 14.1 理论深入
 
 - **Pearl, J.** (1984). *Heuristics: Intelligent Search Strategies for Computer Problem Solving*. Addison-Wesley. 启发式搜索的奠基性专著。
 - **Russell, S.** (1992). Efficient Memory-Bounded Search Methods. *ECAI 1992*. SMA*（简化内存受限 A*）。
 - **Edelkamp, S., & Schrödl, S.** (2012). *Heuristic Search: Theory and Applications*. Morgan Kaufmann. 启发式搜索全景。
 
-### 19.2 应用拓展
+### 14.2 应用拓展
 
 - **路径规划**：Contraction Hierarchies、Hub Labels、Transit Node Routing；
 - **博弈 AI**：AlphaGo、AlphaZero、MuZero（深度强化学习 + MCTS）；
@@ -1852,21 +1178,21 @@ def bidirectional_buggy(graph, start, end):
 - **数据库索引**：B+ 树、LSM 树、跳表索引；
 - **生物信息学**：BLAST 序列搜索、A* 在基因组比对中的应用。
 
-### 19.4 教学视频
+### 14.3 教学视频
 
 - **MIT 6.006 Introduction to Algorithms**：BFS、DFS、Dijkstra 章节；
 - **Berkeley CS188 Artificial Intelligence**：搜索算法章节（Russell 主讲）；
 - **Stanford CS221 AI Principles**：A*、博弈搜索；
 - **Reducible YouTube Channel**：BFS/DFS 可视化讲解。
 
-### 19.5 在线交互工具
+### 14.4 在线交互工具
 
 - **VisuAlgo**：BFS/DFS/Dijkstra/A* 实时可视化；
 - **Pathfinding.js**（GitHub）：多种路径算法对比；
 - **Chess Programming Wiki**：国际象棋引擎开发资源；
 - **LeetCode Play**：在线运行搜索算法代码。
 
-### 19.6 进阶主题
+### 14.5 进阶主题
 
 - **Monte Carlo Tree Search (MCTS)**：Coulom 2006，AlphaGo 的核心；
 - **Pattern Database (PDB)**：Korf 1997，状态空间压缩技术；
@@ -1875,9 +1201,9 @@ def bidirectional_buggy(graph, start, end):
 - **Real-Time Search**：LRTA*，实时游戏 AI；
 - **Anytime A***：随时可中断返回当前最优解。
 
-## 20. 总结
+## 15. 总结
 
-### 20.1 知识图谱
+### 15.1 知识图谱
 
 ```mermaid
 flowchart TD
@@ -1888,13 +1214,15 @@ flowchart TD
     S --> G["对抗搜索 博弈树<br/>Minimax O(b^d)/MCTS/Alpha-Beta O(b^(d/2))"]
 ```
 
-### 20.2 三大核心论证方法
+### 15.2 三大核心论证方法
 
 1. **图搜索论证**：以状态空间图模型为基础，证明算法遍历性质（如 BFS 完备性、DFS 连通性）；
 2. **势能分析**：用于分析带优先队列的算法（如 Dijkstra 的 dist 单调递减、A* 的 f 单调递增）；
 3. **对偶论证**：反证法证明最优性（如 A* 最优性、IDA* 最优性）。
 
-### 20.3 工业级选型决策树
+### 15.3 工业级选型决策树
+
+下图中「有信息搜索」与「博弈搜索」两分支的展开讲解见 055-InformedAndGameSearch。
 
 ```mermaid
 flowchart TD
@@ -1927,14 +1255,14 @@ flowchart TD
     T17 --> T19
 ```
 
-### 20.4 教学反思
+### 15.4 教学反思
 
 搜索算法的教学难点在于：
 1. **形式化与直觉的桥梁**：可采纳性、一致性等概念抽象，但通过八数码、网格路径等具体例子可建立直觉；
 2. **算法演进的历史脉络**：从 Shannon 1950 国际象棋到 AlphaGo 2016 围棋，从 Dijkstra 1959 到 Google Maps 当下的 Contraction Hierarchies，理解演进动机有助于掌握算法本质；
 3. **工程与理论的统一**：A* 的最优性证明与 Stockfish 的工程优化同样重要，前者保证正确性，后者提升性能。
 
-### 20.5 学习路径
+### 15.5 学习路径
 
 1. **入门**（1-2 周）：线性查找、二分查找、哈希查找；BFS、DFS 基础；
 2. **进阶**（2-3 周）：Dijkstra、A*、双向 BFS、IDDFS；LeetCode 33/127/200/207；

@@ -1,5 +1,5 @@
 ---
-order: 820
+order: 870
 title: MySQL 8.4 升级指南
 module: 'mysql'
 category: 数据库

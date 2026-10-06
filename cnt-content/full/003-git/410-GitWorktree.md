@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 440
 title: git-worktree 多工作树并行
 module: 'git'
 category: 工具链
@@ -10,7 +10,6 @@ updated: '2026-09-12'
 related:
   - 'git/100-GitBranchManagement'
   - 'git/120-GitStash'
-  - 'git/220-GitFlowGitHubFlowComparison'
 prerequisites:
   - 'git/110-HEADPointerBranchEssence'
 ---

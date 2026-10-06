@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 280
 title: 位域：把结构体压到比特级及其代价
 module: 'c'
 category: 计算机科学
@@ -10,19 +10,19 @@ updated: '2026-10-05'
 related:
   - 'c/220-MemoryAlignmentDeepDive'
   - 'c/230-AlignmentMemoryLayout'
-  - 'c/260-CVolatileAndConstDeepDive'
+  - 'c/260-ConstAndVolatileQualifiers'
   - 'c/270-VolatileKeyword'
-  - 'c/520-C23C2y'
+  - 'c/520-C23CoreFeatures'
   - 'c/540-AttributeCompilerExtension'
   - 'c/550-EmbeddedCProgramming'
 prerequisites:
-  - 'c/070-BitwiseBitField'
+  - 'c/070-BitwiseOperationAndMask'
   - 'c/130-StructAndUnion'
 ---
 
 ## 前置知识
 
-- 已完成 [位运算](/c/070-BitwiseBitField)：会掩码四件套（置位、清零、翻转、检测），知道移位的边界与实现定义；
+- 已完成 [位运算](/c/070-BitwiseOperationAndMask)：会掩码四件套（置位、清零、翻转、检测），知道移位的边界与实现定义；
 - 已完成 [结构体与联合体](/c/130-StructAndUnion)：会声明 struct、知道 union 成员共享同一段内存。
 
 > 分工说明：070 与 240 合讲「位」。070 讲**按位运算**——运算符、掩码、移位与位级技巧；本篇收拢**全部位域内容**——`struct` 里的 `: 宽度` 语法、存储分配的实现定义性、可移植性边界、volatile 位域与 MMIO 的争议。遇到「第 n 位怎么置位」这类公式问题，回 070 查；本篇回答的是「把成员压到比特级之后，标准不再替你保证什么」。
@@ -152,7 +152,7 @@ sizeof = 4
 | `_BitInt(N)`（C23 起） | 标准保证，位精确范围 | 如 `_BitInt(5) x : 4` 为 -8 到 7 |
 | `char` / `short` / `uint8_t` 等 | 编译器普遍接受的**扩展**（MSVC 文档明说这是对 ANSI C 的扩展） | 随编译器 |
 
-也就是说：写成 `unsigned char x : 4` 很通用，但它是编译器给你的，不是标准给你的——这条边界会在第 3 节的 `sizeof` 实验里显形。C23 新增的 `_BitInt(N)` 让「5 位有符号整数」这样精确的诉求有了标准类型，见 [C23 与 C2y](/c/520-C23C2y)。
+也就是说：写成 `unsigned char x : 4` 很通用，但它是编译器给你的，不是标准给你的——这条边界会在第 3 节的 `sizeof` 实验里显形。C23 新增的 `_BitInt(N)` 让「5 位有符号整数」这样精确的诉求有了标准类型，见 [C23 与 C2y](/c/520-C23CoreFeatures)。
 
 ### 2.3 无名位域与 ：0
 
@@ -422,7 +422,7 @@ typedef union {
 2. **布局实现定义**。寄存器手册是按位号写的，位域是按编译器的口味摆的——换编译器、换 ABI，整个映射可能错位一个方向（第 3 节实验二的 12 与 8 之差就是先例）；
 3. **保留位回写**。读-改-写会把保留位的现值原样写回，而不少外设要求保留位写 0（或写 1）。掩码写法可以精确控制写回的整字，位域写法对此无能为力。
 
-因此嵌入式界的主流做法是：**驱动层用寄存器级掩码**（`REG |= TE_MASK; REG &= ~UE_MASK;`，CMSIS 风格），位域仅在「同一编译器、同一平台、静态断言过布局」的前提下作为可读性视图使用。volatile 的完整语义（它给什么保证、不给什么保证）见 [volatile 与 const 深水区](/c/260-CVolatileAndConstDeepDive) 与 [volatile 关键字](/c/270-VolatileKeyword)；多线程共享标志要用 `_Atomic` 或锁而不是 volatile 位域，见 [原子与内存模型](/c/380-AtomicAndMemoryModel)；整机实战见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)。
+因此嵌入式界的主流做法是：**驱动层用寄存器级掩码**（`REG |= TE_MASK; REG &= ~UE_MASK;`，CMSIS 风格），位域仅在「同一编译器、同一平台、静态断言过布局」的前提下作为可读性视图使用。volatile 的完整语义（它给什么保证、不给什么保证）见 [volatile 与 const 深水区](/c/260-ConstAndVolatileQualifiers) 与 [volatile 关键字](/c/270-VolatileKeyword)；多线程共享标志要用 `_Atomic` 或锁而不是 volatile 位域，见 [原子与内存模型](/c/380-AtomicAndMemoryModel)；整机实战见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)。
 
 ## 7. 常见错误与调试实录
 
@@ -546,9 +546,9 @@ printf("%d\n", s.flag);
 
 ## 10. 与之前和之后的知识的关系
 
-- 往前：[位运算](/c/070-BitwiseBitField) 的掩码四件套是本篇每个实验的对照组，「第 n 位怎么操作」的公式都在那里；[结构体与联合体](/c/130-StructAndUnion) 的内存布局概念与 union 双视图是位域的地基；
-- 旁支：对齐与填充机制见 [内存对齐](/c/220-MemoryAlignmentDeepDive) 与 [内存布局](/c/230-AlignmentMemoryLayout)；volatile 给什么保证见 [volatile 与 const 深水区](/c/260-CVolatileAndConstDeepDive)、[volatile 关键字](/c/270-VolatileKeyword)；`packed` 等属性见 [属性与编译器扩展](/c/540-AttributeCompilerExtension)；
-- 往后：[C23 与 C2y](/c/520-C23C2y) 的 `_BitInt(N)` 给位域带来了位精确的基础类型；把本章规则用于真实芯片见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)。
+- 往前：[位运算](/c/070-BitwiseOperationAndMask) 的掩码四件套是本篇每个实验的对照组，「第 n 位怎么操作」的公式都在那里；[结构体与联合体](/c/130-StructAndUnion) 的内存布局概念与 union 双视图是位域的地基；
+- 旁支：对齐与填充机制见 [内存对齐](/c/220-MemoryAlignmentDeepDive) 与 [内存布局](/c/230-AlignmentMemoryLayout)；volatile 给什么保证见 [volatile 与 const 深水区](/c/260-ConstAndVolatileQualifiers)、[volatile 关键字](/c/270-VolatileKeyword)；`packed` 等属性见 [属性与编译器扩展](/c/540-AttributeCompilerExtension)；
+- 往后：[C23 与 C2y](/c/520-C23CoreFeatures) 的 `_BitInt(N)` 给位域带来了位精确的基础类型；把本章规则用于真实芯片见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)。
 
 ## 11. 官方文档
 

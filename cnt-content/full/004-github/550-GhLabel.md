@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 610
 title: gh label 命令速查手册
 module: 'github'
 category: 工具链

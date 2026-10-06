@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 120
 title: 认证、代理与安全
 module: 'nextjs'
 category: 前端技术
@@ -13,6 +13,12 @@ related:
 prerequisites:
   - 'nextjs/020-AppRouterRouting'
 ---
+
+## 知识点地图
+
+- 知识类别：Next.js 应用认证与入口安全——会话方案（Session+Cookie 与 JWT）、Cookie 读写、proxy.ts 请求拦截、安全响应头与 CSRF 分层。
+- 解决什么问题：登录态怎么存怎么验、哪些检查放 proxy 哪些放应用层、常见 Web 攻击面（CSRF、点击劫持）靠什么头防。
+- 什么时候用到：给应用加登录、保护路由与接口、上线前安全清单核查；与《国际化路由与本地化》共享 proxy 这一层（语言协商与鉴权粗筛都在入口做）。
 
 ## 0. 认证与入口防线（先读这里）
 

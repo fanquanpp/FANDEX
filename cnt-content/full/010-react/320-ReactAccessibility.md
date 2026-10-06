@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 390
 title: React 无障碍
 module: 'react'
 category: 前端技术
@@ -248,4 +248,20 @@ expect(results).toHaveNoViolations();
 <div role="dialog" aria-modal="true" aria-labelledby="t" />
 <img alt="" />                    {/* 纯装饰图 */}
 <el tabIndex={0} />               {/* 可聚焦；禁用正数 tabIndex */}
+```
+
+**useId 唯一标识（SSR 安全）**
+
+```tsx
+const id = useId();
+<label htmlFor={id}>Email</label>
+<input id={id} type="email" />
+```
+
+**useId 前缀派生多个 id**
+
+```tsx
+const id = useId();
+const emailId = `${id}-email`;
+const passwordId = `${id}-password`;
 ```

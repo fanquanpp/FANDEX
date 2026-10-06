@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 610
 title: 类型安全的事件系统
 module: 'typescript'
 category: 前端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'typescript/460-ConditionalMappedType'
-  - 'typescript/310-TypeScriptTypeDeclarationModuleResolution'
+  - 'typescript/315-PackageExportsEsmInterop'
   - 'typescript/570-TypeSafeAPIClient'
   - 'typescript/580-TypeSafeStateManagement'
   - 'typescript/530-TypeGymnasticsPracticalPatterns'
@@ -18,7 +18,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [TypeScript 类型声明与模块解析](/typescript/310-TypeScriptTypeDeclarationModuleResolution)：建议先完成前一篇的学习
+- [TypeScript 类型声明与模块解析](/typescript/315-PackageExportsEsmInterop)：建议先完成前一篇的学习
 
 ## 学习目标
 

@@ -1,312 +1,182 @@
 ---
-order: 190
-title: 自动化测试
+order: 200
+title: 流水线中的测试门禁
 module: 'devops'
 category: 云与基础设施
 difficulty: intermediate
-description: 自动化测试：单元测试、集成测试、E2E测试、性能测试与测试策略
+description: 单一主题：CI 流水线的测试门禁——分层策略取舍、失败快速反馈、测试数据与环境管理；测试技术本体归 028 软件测试模块
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'devops/340-PerformanceTuning'
-  - 'devops/350-HighAvailabilityArchitecture'
+  - 'devops/140-CICDPipeline'
+  - 'devops/145-ProgressiveDelivery'
   - 'devops/330-Troubleshooting'
-  - 'devops/070-ContainerSecurity'
 prerequisites:
-  - 'devops/010-OverviewLinuxBasics'
+  - 'devops/140-CICDPipeline'
 ---
 
+## 知识点地图
 
-## 1. 测试金字塔
+- **知识类别**：DevOps CI/CD / 测试在流水线中的**门禁职能**（本篇只讲这个交叉地带）。
+- **解决什么问题**：测试写了但流水线里跑 40 分钟没人等；失败的红叉天天见、人人无视；测试在本地绿、在流水线红。这些是"测试与流水线的接口"问题——**测试怎么写是 028 的事，测试怎么卡住坏代码是本篇的事**。
+- **什么时候用到**：搭/改 CI 流水线的测试阶段；测试套件变慢变 flaky 的治理；决定"哪些测试挡合并、哪些放行后跑"。
+- **分工声明**：单元/集成/E2E/性能测试的**技术本体**（怎么写断言、怎么搭框架）在 028-software-testing 模块；本篇默认你会写测试，只讨论它们在交付管道里的**编排、取舍与纪律**。
 
-```
-        /  E2E测试  \        少量，慢，脆弱
-       /  集成测试    \      适量
-      /   单元测试      \    大量，快，稳定
-```
+## 心智模型：门禁的三条设计公理
 
-| 层级     | 数量 | 速度 | 范围        | 成本 |
-| -------- | ---- | ---- | ----------- | ---- |
-| 单元测试 | 多   | 毫秒 | 单个函数/类 | 低   |
-| 集成测试 | 中   | 秒   | 模块间交互  | 中   |
-| E2E测试  | 少   | 分钟 | 完整流程    | 高   |
-
-## 2. 单元测试
-
-### 2.1 测试框架
-
-| 语言       | 框架    | 断言库  |
-| ---------- | ------- | ------- |
-| Java       | JUnit 5 | AssertJ |
-| Python     | pytest  | 内置    |
-| Go         | testing | testify |
-| JavaScript | Jest    | 内置    |
-| Rust       | 内置    | assert! |
-
-### 2.2 测试结构（AAA 模式）
-
-```python
-def test_user_creation():
-    # Arrange（准备）
-    user_data = {"name": "Alice", "email": "alice@example.com"}
-
-    # Act（执行）
-    user = create_user(user_data)
-
-    # Assert（断言）
-    assert user.name == "Alice"
-    assert user.email == "alice@example.com"
+```text
+1. 反馈速度 > 覆盖完整性（在"挡合并"这个位置上）
+   合并等待里每多 1 分钟，全团队每天按提交次数付费。
+2. 门禁的价值 = 抓住坏变更 x 被信任的程度
+   一个 30% 失败率的风控门禁，三个月后会被人一键跳过。
+3. 分层的目的不是"金字塔好看"，是让慢测试只跑在快测试筛过的候选上。
 ```
 
-### 2.3 Mock 与 Stub
+## 分层策略在流水线里的落位
 
-```python
-from unittest.mock import Mock, patch
+测试金字塔（单元多而快、E2E 少而慢）是 028 的内容；流水线视角只关心**每层挂在哪个阶段、失败意味着什么**：
 
-# Mock
-db = Mock()
-db.save.return_value = True
-assert db.save({"name": "Alice"}) == True
+| 层 | 流水线位置 | 时长预算 | 失败处置 |
+| --- | --- | --- | --- |
+| 静态检查（lint/类型） | 提交前钩子 + PR 第一步 | 秒级 | 阻断，无需讨论 |
+| 单元测试 | 每次 push，并行分片 | 1-3 分钟 | 阻断合并 |
+| 集成测试（依赖用容器起） | PR 合并前 | 5-10 分钟 | 阻断，但可标注 flaky 重跑一次 |
+| E2E 冒烟（核心路径 10 条内） | 合并后 / 部署前 | 5 分钟 | 阻断部署 |
+| 全量 E2E / 性能测试 | 定时（每夜）+ 发版前 | 30 分钟+ | 出报告，重大回归阻断发版 |
 
-# Patch
-@patch('module.external_api')
-def test_with_patch(mock_api):
-    mock_api.return_value = {"status": "ok"}
-    result = call_api()
-    assert result["status"] == "ok"
-```
+取舍判据一句话：**离代码越近的测试越有资格当门禁，离用户越近的测试越适合当验收**。把全量 E2E 塞进每次 push 的门禁是"流水线慢"的第一原因——它们属于发版阶段，不属于合并阶段。
 
-### 2.4 测试覆盖率
-
-| 覆盖率类型 | 说明               |
-| ---------- | ------------------ |
-| 行覆盖率   | 执行到的代码行比例 |
-| 分支覆盖率 | 执行到的分支比例   |
-| 函数覆盖率 | 调用到的函数比例   |
-| 路径覆盖率 | 执行到的路径比例   |
-
-```bash
-# 生成覆盖率报告
-pytest --cov=myapp --cov-report=html
-go test -coverprofile=coverage.out
-jest --coverage
-```
-
-## 3. 集成测试
-
-### 3.1 数据库集成测试
-
-```python
-import pytest
-from testcontainers.postgres import PostgresContainer
-
-@pytest.fixture
-def postgres():
-    with PostgresContainer("postgres:16") as pg:
-        yield pg.get_connection_url()
-
-def test_user_repository(postgres):
-    repo = UserRepository(postgres)
-    repo.create(User(name="Alice"))
-    users = repo.find_all()
-    assert len(users) == 1
-```
-
-### 3.2 API 集成测试
-
-```python
-from fastapi.testclient import TestClient
-
-def test_create_user():
-    client = TestClient(app)
-    response = client.post("/api/users", json={
-        "name": "Alice",
-        "email": "alice@example.com"
-    })
-    assert response.status_code == 201
-    assert response.json()["name"] == "Alice"
-```
-
-### 3.3 消息队列集成测试
-
-```python
-from testcontainers.rabbitmq import RabbitMqContainer
-
-@pytest.fixture
-def rabbitmq():
-    with RabbitMqContainer("rabbitmq:3-management") as rb:
-        yield rb
-
-def test_message_publish(rabbitmq):
-    publisher = MessagePublisher(rabbitmq)
-    consumer = MessageConsumer(rabbitmq)
-
-    publisher.publish("test_queue", {"event": "created"})
-    message = consumer.consume("test_queue", timeout=5)
-
-    assert message["event"] == "created"
-```
-
-## 4. E2E 测试
-
-### 4.1 Playwright
-
-```javascript
-test('user login flow', async ({ page }) => {
-  await page.goto('/login');
-
-  await page.fill('[data-testid="username"]', 'alice');
-  await page.fill('[data-testid="password"]', 'secret');
-  await page.click('[data-testid="login-btn"]');
-
-  await expect(page).toHaveURL('/dashboard');
-  await expect(page.locator('.welcome')).toContainText('Alice');
-});
-```
-
-### 4.2 Cypress
-
-```javascript
-describe('User Login', () => {
-  it('should login successfully', () => {
-    cy.visit('/login');
-    cy.get('[data-testid="username"]').type('alice');
-    cy.get('[data-testid="password"]').type('secret');
-    cy.get('[data-testid="login-btn"]').click();
-    cy.url().should('include', '/dashboard');
-    cy.get('.welcome').should('contain', 'Alice');
-  });
-});
-```
-
-### 4.3 E2E 测试最佳实践
-
-- 使用 data-testid 选择器
-- 避免依赖实现细节
-- 测试关键用户流程
-- 设置合理的超时
-- 并行执行加速
-- 视频和截图记录失败
-
-## 5. 契约测试
-
-### 5.1 Pact
-
-消费者驱动契约测试：
-
-```javascript
-// 消费者端
-const provider = new Pact({
-  consumer: 'UserService',
-  provider: 'UserAPI',
-});
-
-await provider.addInteraction({
-  state: 'user exists',
-  uponReceiving: 'a request for user',
-  withRequest: {
-    method: 'GET',
-    path: '/api/users/1',
-  },
-  willRespondWith: {
-    status: 200,
-    body: { id: 1, name: 'Alice' },
-  },
-});
-```
-
-```javascript
-// 提供者端验证
-const verifier = new Verifier({
-  providerBaseUrl: 'http://localhost:8080',
-  pactBrokerUrl: 'http://pact-broker:9292',
-  provider: 'UserAPI',
-});
-
-await verifier.verify();
-```
-
-## 6. 性能测试
-
-### 6.1 负载测试
-
-确定系统在预期负载下的表现：
-
-```javascript
-// k6 脚本
-import http from 'k6/http';
-
-export const options = {
-  stages: [
-    { duration: '2m', target: 100 }, // 上升到100用户
-    { duration: '5m', target: 100 }, // 维持100用户
-    { duration: '2m', target: 0 }, // 下降到0
-  ],
-  thresholds: {
-    http_req_duration: ['p(95)<500'],
-    http_req_failed: ['rate<0.01'],
-  },
-};
-
-export default function () {
-  http.get('http://target/api/users');
-}
-```
-
-### 6.2 压力测试
-
-确定系统的极限：
-
-```javascript
-export const options = {
-  stages: [
-    { duration: '5m', target: 500 },
-    { duration: '5m', target: 1000 },
-    { duration: '5m', target: 2000 },
-    { duration: '5m', target: 0 },
-  ],
-};
-```
-
-### 6.3 浸泡测试
-
-长时间运行检测内存泄漏等问题：
-
-```javascript
-export const options = {
-  stages: [
-    { duration: '1h', target: 50 },
-    { duration: '12h', target: 50 },
-    { duration: '1h', target: 0 },
-  ],
-};
-```
-
-## 7. CI 中的测试策略
-
-### 7.1 测试门禁
+## 快速反馈：让失败被看见、被第一时间看见
 
 ```yaml
-# GitHub Actions
-- name: Run tests
-  run: |
-    pytest --cov=myapp --cov-fail-under=80
-    pytest integration/ -m "not slow"
+# GitHub Actions 形态的三个反馈技巧（GitLab CI 同理）
+jobs:
+  test:
+    strategy:
+      fail-fast: true                 # 一片失败立即取消其他分片
+      matrix:
+        shard: [1, 2, 3, 4]           # 测试分片并行，把 8 分钟压到 2 分钟
+    steps:
+      - run: npm test -- --shard=${{ matrix.shard }}/4
+      - name: 只重跑受影响测试（增量）
+        run: npx jest --onlyChanged
 ```
 
-### 7.2 测试分层执行
+四个工程实践：
 
-| 阶段    | 测试类型 | 频率     | 触发 |
-| ------- | -------- | -------- | ---- |
-| PR      | 单元测试 | 每次提交 | 自动 |
-| PR      | 集成测试 | 每次提交 | 自动 |
-| Merge   | E2E 测试 | 合并时   | 自动 |
-| Nightly | 性能测试 | 每晚     | 定时 |
-| Release | 全量测试 | 发布时   | 手动 |
+1. **失败通知要带"谁引入的"**：PR 里 @作者 + 失败用例名，而不是群里扔一个红叉——快速反馈的本质是"坏变更的作者在两分钟内知道"，转发给围观群众不算反馈；
+2. **失败优先于成功**：队列调度让失败的任务先展示；CI 界面按"最早失败"排序，别让一个早期失败藏在 30 个成功任务后面；
+3. **测试分片**：按文件哈希均分到 N 个并行任务，是单机测试变慢后的第一刀（收益立竿见影且零风险）；
+4. **本地与 CI 同源**：`make test` 本地跑的和流水线跑的必须是同一条命令——"本地绿 CI 红"的环境差异问题在容器化依赖（testcontainers/docker-compose）后基本消失。
 
-### 7.3 测试报告
+## flaky 测试治理：门禁公信力的保卫战
 
-- 覆盖率趋势图
-- 测试通过率
-- 失败测试分类
-- 性能基线对比
+flaky（同样代码时好时坏）测试是门禁的头号敌人——**每放过一次"重跑就绿"，团队对整个门禁的信任就折损一分**。
+
+```text
+处置流程（对每条 flaky 测试，二选一，没有第三条路）：
+  1. 修：隔离时序/清理状态/换掉对真实时间的依赖（三天内）
+  2. 隔离：移出阻断门禁，进每日定时套件 + 建修复工单（带负责人与期限）
+
+禁止事项：
+  - "再跑一次" 当常规操作（重试隐藏问题而不是修复问题）
+  - 无主 flaky 测试留在门禁里（三天没人认领 → 自动隔离）
+```
+
+flaky 的三个高发根因与对策：**共享状态**（测试间同库同表相互污染 → 每个测试独立事务/独立 schema 回滚）、**真实时间与随机**（sleep 等待 → 显式轮询条件；随机种子固定）、**外部依赖抖动**（真实第三方 → 契约测试或 stub）。
+
+## 测试数据与环境管理
+
+流水线里的测试需要"每次都一样的起点"，这是 CI 特有的工程题：
+
+```yaml
+# 集成测试的依赖即代码（docker-compose 一份清单管所有测试依赖）
+# ci/docker-compose.test.yml
+services:
+  db:
+    image: postgres:17
+    tmpfs: /var/lib/postgresql/data     # 数据放内存卷：每次全新、速度快
+  redis:
+    image: redis:7
+```
+
+四条管理纪律：
+
+1. **数据即代码**：测试数据的构造脚本进仓库（factory/fixture），随被测代码一起演进——共享的"祖传测试库"必死；
+2. **环境隔离到任务级**：每个流水线任务用一次性容器/tmpfs 起依赖，跑完即弃——"测试环境被人改了配置"这类工单从此消失；
+3. **外部依赖分层替身**：内部服务用 staging 沙箱，第三方付费接口用契约 stub——全真环境慢且贵，全 stub 又测不出集成问题，按接口重要度分层；
+4. **种子数据最小化**：只造当前用例需要的行，共享大而全的 fixture 会随时间变成没人敢动的泥球。
+
+## 场景：三种团队的门禁设计
+
+**场景一：5 人创业团队**。门禁 = lint + 单元 + 一条 E2E 冒烟，全程 3 分钟。不发版不跑性能测试。取舍：覆盖换速度，活下来优先。
+
+**场景二：50 人、多服务**。每个服务自有门禁（单元+集成），合并后进 E2E 冒烟闸，每夜全量回归 + 性能基准（对比上一版，回归 10% 阻断发版）。测试环境用 PR 编号隔离命名空间。
+
+**场景三：金融合规**。门禁额外加：安全扫描（SAST/依赖扫描）阻断、审计要求的测试报告归档（每次发版的测试清单与结果可追溯）、四眼原则（测试结果与代码评审人不得同一人）。
+
+## 动手实践：给一个项目装上门禁
+
+任务：
+
+1. 选一个已有测试的小项目，测出当前全套测试的基线耗时；
+2. 加测试分片（2-4 片），对比总耗时；
+3. 故意提交一条会失败的测试，验证：门禁阻断、通知里能看到用例名与作者；
+4. 人为造一条 flaky 测试（断言里带随机数），按本篇流程走一遍"修或隔离"的决策；
+5. 用 docker-compose 把集成测试的数据库改成任务级一次性实例，跑三遍验证数据起点一致。
+
+<details>
+<summary>参考实现（先自己写再展开）</summary>
+
+```yaml
+# 3/4 的最小 GitHub Actions 工作流
+name: ci
+on: [push, pull_request]
+jobs:
+  unit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: npm ci && npm test -- --ci
+  e2e-smoke:
+    needs: unit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: |
+          docker compose -f ci/docker-compose.test.yml up -d --wait
+          npm run test:e2e -- --grep "@smoke"
+```
+
+```javascript
+// 4 的 flaky 示例与修复
+test('计算折扣', () => {
+  // flaky 写法：随机数导致 1/256 的概率失败
+  // expect(discount(Math.random() * 256 | 0)).toBeGreaterThan(0);
+  // 修复：固定输入，随机性交给专门的属性测试
+  expect(discount(100)).toBe(10);
+});
+```
+
+判读要点：任务 3 验证的是门禁的"牙齿"；任务 4 的决策记录（为什么修/为什么隔离、期限多久）比动作本身更重要——治理流程要能复盘。
+</details>
+
+## 检验清单
+
+- 能为六层测试各自指出流水线位置与失败处置，并说出"合并门禁"与"发版验收"的分界；
+- 能解释分片、增量、fail-fast 三个提速手段的收益与代价；
+- 能按"修或隔离"二选一处理 flaky 测试，并说出三个高发根因；
+- 能设计任务级一次性测试环境并说出四条数据管理纪律；
+- 能对照 028 模块划清本篇的边界。
+
+## 下一步
+
+- [CI/CD 流水线](/devops/140-CICDPipeline)：门禁所在的完整管道结构；
+- [渐进式交付](/devops/145-ProgressiveDelivery)：部署后的验证门禁（金丝雀指标）；
+- 028-software-testing 模块：测试技术本体。
+
+## 参考与致谢
+
+- Google Testing Blog - Flaky Tests 相关工程实践（公开博客，理念参考）：<https://testing.googleblog.com/>
+- Martin Fowler - Practical Test Pyramid（个人站点公开文章，理念参考并已用自己的话重写）：<https://martinfowler.com/articles/practical-test-pyramid.html>
+- GitHub Actions 官方文档（MIT 文档）：<https://docs.github.com/actions>

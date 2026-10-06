@@ -1,5 +1,5 @@
 ---
-order: 640
+order: 740
 title: Python 与 CLI
 module: 'python'
 category: 后端技术

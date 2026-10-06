@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 230
 title: 委托属性
 module: 'kotlin'
 category: 后端技术

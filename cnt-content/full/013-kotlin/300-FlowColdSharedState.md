@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 330
 title: Flow 冷流与 SharedFlow 和 StateFlow
 module: 'kotlin'
 category: 后端技术

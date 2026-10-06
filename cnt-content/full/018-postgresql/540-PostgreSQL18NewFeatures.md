@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 490
 title: PostgreSQL 18 新特性
 description: PostgreSQL 18（2025-09）核心特性详解：异步I/O、uuidv7、虚拟生成列、B-tree跳跃扫描、时态约束、OAuth认证与升级改进。
 module: 'postgresql'
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'postgresql/010-OverviewInstallConfig'
   - 'postgresql/150-GeneratedColumn'
-  - 'postgresql/240-IndexQueryOptimization'
+  - 'postgresql/250-QueryOptimization'
   - 'postgresql/450-IncrementalBackup'
 prerequisites:
   - 'postgresql/010-OverviewInstallConfig'

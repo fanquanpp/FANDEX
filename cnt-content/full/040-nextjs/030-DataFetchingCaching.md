@@ -1,5 +1,5 @@
 ---
-order: 30
+order: 70
 title: Next.js 数据获取与缓存
 module: 'nextjs'
 category: 前端技术
@@ -14,6 +14,13 @@ related:
 prerequisites:
   - 'nextjs/020-AppRouterRouting'
 ---
+
+## 知识点地图
+
+- 知识类别：App Router 的数据获取与缓存——服务器组件取数、15+ 的 fetch 缓存语义、四层缓存地图与按需失效。
+- 解决什么问题：数据从哪取、什么被缓存、页面为什么旧、怎么精准失效；建立"四层缓存各管一段"的全景判断力。
+- 什么时候用到：接入后端接口、排查"页面不更新/更新太慢"、决定内容页静态化还是动态化。
+- **新旧缓存模型边界**：本篇讲的是 15+ 传统模型的语义（fetch 的 cache/revalidate 选项，16 中继续可用）；《缓存体系与 Cache Components 深入》讲 `cacheComponents: true` 下的新模型（`'use cache'` 指令 + cacheLife/cacheTag，一切默认动态）。两套语义不要混着记——判断自己项目在哪个模型，先看配置里有没有 `cacheComponents`，第 7 节有迁移预告。
 
 ## 0. 一句话理解
 

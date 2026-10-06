@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 570
 title: C23 深水区：编译期特性与升级策略
 module: 'c'
 category: 计算机科学
@@ -8,19 +8,19 @@ description: 接着 C23 上手往深处走：#embed、typeof、constexpr、ckd_*
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'c/520-C23C2y'
+  - 'c/520-C23CoreFeatures'
   - 'c/290-PreprocessorMacro'
   - 'c/470-BuildSystem'
   - 'c/410-CrossPlatformProgramming'
   - 'c/550-EmbeddedCProgramming'
 prerequisites:
   - 'c/010-CZeroBasisStart'
-  - 'c/520-C23C2y'
+  - 'c/520-C23CoreFeatures'
 ---
 
 ## 前置知识
 
-- 已完成 [C23 上手](/c/520-C23C2y)：会用 `gcc -std=c23`，用过数字分隔符、nullptr、bool 关键字、auto 与 `[[attributes]]`，知道 `__STDC_VERSION__` 是标准身份证；
+- 已完成 [C23 上手](/c/520-C23CoreFeatures)：会用 `gcc -std=c23`，用过数字分隔符、nullptr、bool 关键字、auto 与 `[[attributes]]`，知道 `__STDC_VERSION__` 是标准身份证；
 - 了解预处理基础（[预处理器与宏](/c/290-PreprocessorMacro) 的 `#define`、条件编译）——本文的 #embed 与特性探测都建在其上，细节记不全也行，用到就当场解释。
 
 > 分工说明：520 与 530 合讲 C 新标准。520 是主教学，解决「日常写代码的新手感」；本篇是深水区，讲编译期的深水能力——#embed、typeof、constexpr、ckd_*——以及三个工程问题：支持矩阵怎么查、C2y 什么状态、旧代码库怎么升级。520 的五个特性本篇不再重复。
@@ -41,7 +41,7 @@ prerequisites:
 
 你在给一个像素小游戏做两件事：把 4KB 的调色板数据编进固件；给排行榜累加总分。第一件事的老办法是拿 `xxd -i` 把文件转成 C 数组头文件——改一次资源就得重新生成，两处版本还会悄悄不同步。第二件事更隐蔽：总分用 `int` 累加，某天测试报了个负分，你才发现有符号整数溢出在 C 里是**未定义行为**。
 
-两个问题的共同点：都希望「编译器在构建期多干一步」，而不是靠人盯流程。C23 恰好把这批能力收进了标准。前置的五个日常特性见 [C23 上手](/c/520-C23C2y)，本文只讲编译期深水能力与落地策略。
+两个问题的共同点：都希望「编译器在构建期多干一步」，而不是靠人盯流程。C23 恰好把这批能力收进了标准。前置的五个日常特性见 [C23 上手](/c/520-C23CoreFeatures)，本文只讲编译期深水能力与落地策略。
 
 ## 2. #embed：资源文件直接进可执行文件
 
@@ -347,7 +347,7 @@ assert(add_score(1000, 233, &out) == 1 && out == 1233);
 
 ## 14. 与之前和之后的知识的关系
 
-- 往前：[C23 上手](/c/520-C23C2y) 的五个特性与本文四个深水特性同属 C23，本篇默认你已会开标准、会读版本表；[预处理器与宏](/c/290-PreprocessorMacro) 解释了 SWAP 宏里的括号、反斜杠续行为什么必须这么写；
+- 往前：[C23 上手](/c/520-C23CoreFeatures) 的五个特性与本文四个深水特性同属 C23，本篇默认你已会开标准、会读版本表；[预处理器与宏](/c/290-PreprocessorMacro) 解释了 SWAP 宏里的括号、反斜杠续行为什么必须这么写；
 - 往后：编译器专属属性大家族在 [属性与编译器扩展](/c/540-AttributeCompilerExtension)；三步升级法落到 CI 的写法在 [构建系统](/c/470-BuildSystem)；`ckd_*` 的应用边界在 [安全函数与边界检查](/c/450-SafeFunctionBoundsCheck)；
 - 更远：#embed 的主场在嵌入式固件（[嵌入式 C 编程](/c/550-EmbeddedCProgramming)）；内存层面的安全实践见 [动态内存](/c/200-DynamicMemoryManagement)。
 

@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 320
 title: C++ tuple 与 pair
 module: 'cpp'
 category: 计算机科学
@@ -11,7 +11,6 @@ related:
   - 'cpp/320-StructuredBinding'
   - 'cpp/310-CppVariantOptionalAny'
   - 'cpp/270-CppSTLAlgorithms'
-  - 'cpp/280-CppSTLAlgorithmAndFunctionObject'
 prerequisites:
   - 'cpp/030-CppBasicSyntax'
 ---

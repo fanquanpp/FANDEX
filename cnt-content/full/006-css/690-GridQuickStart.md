@@ -1,5 +1,5 @@
 ---
-order: 690
+order: 740
 title: CSS Grid 快速上手：一张网格管住整页布局
 module: 'css'
 category: 前端技术

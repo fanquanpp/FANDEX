@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 190
 title: Actuator 与可观测：让「感觉不对劲」变成可读的数据
 description: 以「服务活着但不对劲：内存涨、接口慢、线程堆积」引入：健康指标追踪三支柱、端点暴露与安全收敛、health 聚合与 K8s 探针分组、Micrometer 门面与 Prometheus 抓取、Counter 与 Timer 业务指标，附 loggers 动态调级实验。
 module: 'spring-boot'

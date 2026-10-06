@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 260
 title: 对象模型
 module: 'git'
 category: 工具链

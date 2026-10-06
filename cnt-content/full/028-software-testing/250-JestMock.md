@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 350
 title: Jest Mock 模拟
 module: 'software-testing'
 category: 云与基础设施

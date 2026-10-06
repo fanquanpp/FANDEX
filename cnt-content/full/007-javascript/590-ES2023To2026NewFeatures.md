@@ -1,5 +1,5 @@
 ---
-order: 590
+order: 670
 title: ES2023 到 ES2026：每年都有人替你解决的小别扭
 module: 'javascript'
 category: 前端技术
@@ -8,7 +8,7 @@ description: 以「立刻会用」为标准逐年导览 ES2023 至 ES2026 新特
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'javascript/600-JavaScriptLatestFeature'
+  - 'javascript/600-NewFeatureAdoptionStrategy'
   - 'javascript/310-IteratorHelper'
   - 'javascript/610-TemporalJavaScriptAPI'
   - 'javascript/620-ExplicitResourceManagement'
@@ -65,7 +65,7 @@ console.log(original);               // [ 3, 1, 2 ]，原数组没被碰过
 
 命名规律：老方法前加 `to` 就是「返回新数组的版本」——`toSorted()` 对应 `sort()`，`toReversed()` 对应 `reverse()`，`toSpliced()` 对应 `splice()`，`with(索引, 新值)` 是「改完返回新数组」的通用款。榜单排序一行 `toSorted((a, b) => b.score - a.score)` 搞定；比较函数不给就按字符串排（第 6 节实验二亲眼看下场）。
 
-预告：异步世界想把「一页页拉回来的异步流」收成数组，此前只能手写 `for await` 加 `push`；`Array.fromAsync` 已定稿、正在铺开，把样板收成一行，但它的并发语义有讲究，见 [新特性深水区](/javascript/600-JavaScriptLatestFeature) 第 6 节。
+预告：异步世界想把「一页页拉回来的异步流」收成数组，此前只能手写 `for await` 加 `push`；`Array.fromAsync` 已定稿、正在铺开，把样板收成一行，但它的并发语义有讲究，见 [新特性深水区](/javascript/600-NewFeatureAdoptionStrategy) 第 6 节。
 
 ## 3. ES2024：分组与正则的集合运算
 
@@ -208,7 +208,7 @@ TypeError: scores.findLast is not a function
 ## 10. 与之前和之后的知识的关系
 
 - 往前：[ES6+ 新特性](/javascript/220-ES6NewFeatures) 的解构、展开、Map/Set 基础全部复用，[数组高阶方法](/javascript/090-ArrayHigherOrderMethod) 的 `filter`/`map` 心智直接平移到迭代器辅助方法；
-- 往后：[新特性深水区](/javascript/600-JavaScriptLatestFeature) 回答本文留下的问题——「特性进了规范，什么时候进我的项目」；迭代器细节在 [迭代器辅助方法](/javascript/310-IteratorHelper)，Temporal 与资源管理专题见 610、620。
+- 往后：[新特性深水区](/javascript/600-NewFeatureAdoptionStrategy) 回答本文留下的问题——「特性进了规范，什么时候进我的项目」；迭代器细节在 [迭代器辅助方法](/javascript/310-IteratorHelper)，Temporal 与资源管理专题见 610、620。
 
 ## 11. 官方文档
 
@@ -229,4 +229,4 @@ ES2023 让数组学会不搞破坏（`findLast` 与「to 系」非破坏方法�
 
 ## 下一步
 
-进入 [新特性深水区](/javascript/600-JavaScriptLatestFeature)：590 篇教你「有什么、怎么用」，600 篇教你「怎么安全地用进生产」——引擎节奏差、兼容表查法、转译与垫片的取舍，外加两个深机制。
+进入 [新特性深水区](/javascript/600-NewFeatureAdoptionStrategy)：590 篇教你「有什么、怎么用」，600 篇教你「怎么安全地用进生产」——引擎节奏差、兼容表查法、转译与垫片的取舍，外加两个深机制。

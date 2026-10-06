@@ -8,7 +8,6 @@ description: 云计算概念与演进、服务模型、部署模型、高可用�
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'cloud-computing/040-CloudNetworkStorage'
   - 'cloud-computing/060-ContainerOrchestration'
 prerequisites: []
 ---

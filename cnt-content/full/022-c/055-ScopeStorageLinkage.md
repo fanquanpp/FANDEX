@@ -9,8 +9,8 @@ author: fanquanpp
 updated: '2026-09-29'
 related:
   - 'c/310-MultiFileCompilation'
-  - 'c/210-MemoryManagement'
-  - 'c/260-CVolatileAndConstDeepDive'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
+  - 'c/260-ConstAndVolatileQualifiers'
   - 'c/360-ThreadConcurrency'
   - 'c/050-VariableConstant'
 prerequisites:
@@ -308,7 +308,7 @@ int main(void) {
 
 ### 5.5 动态存储期与线程存储期，各一句话
 
-动态存储期：malloc 分配的对象既不在栈也不在静态区，寿命由 free 决定，全套用法与事故现场见 [动态内存](/c/200-DynamicMemoryManagement) 与 [内存深水区](/c/210-MemoryManagement)。线程存储期见第 7 节。
+动态存储期：malloc 分配的对象既不在栈也不在静态区，寿命由 free 决定，全套用法与事故现场见 [动态内存](/c/200-DynamicMemoryManagement) 与 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)。线程存储期见第 7 节。
 
 ## 6. 链接性：跨文件谁看得见谁
 
@@ -446,7 +446,7 @@ main sees progress = 0
 
 ## 9. C23 的一句话补充与存储类总表
 
-C23 的 `constexpr` 让「有类型、有作用域、还能当数组大小的编译期常量」终于齐装满员，050 第 4 节已给对比表，细节在 [C23 与 C2y 新特性](/c/520-C23C2y)。存储类说明符全部语义收进一张表：
+C23 的 `constexpr` 让「有类型、有作用域、还能当数组大小的编译期常量」终于齐装满员，050 第 4 节已给对比表，细节在 [C23 与 C2y 新特性](/c/520-C23CoreFeatures)。存储类说明符全部语义收进一张表：
 
 | 说明符 | 用在 | 改变什么 |
 | --- | --- | --- |
@@ -461,8 +461,8 @@ C23 的 `constexpr` 让「有类型、有作用域、还能当数组大小的编
 
 - **模块化边界**：.c 文件里不打算对外的一切（辅助函数、内部状态）全部 static，接口进头文件——代码评审里「这个函数为什么不是 static」是高频问题，答案是「它对外无意义就该私有」，链接机制见 [多文件编译](/c/310-MultiFileCompilation)；
 - **性能敏感的跨线程状态**：线程本地计数、缓冲先想 _Thread_local 再想锁，能隔离就不共享，共享就必谈原子与内存序（[线程与并发](/c/360-ThreadConcurrency)、[原子操作与内存模型](/c/380-AtomicAndMemoryModel)）；
-- **变量住哪一段**：静态变量落 .data 或 .bss、自动变量落栈，先于程序行为决定内存画像——排查「全局数组让可执行文件变大」「大局部数组爆栈」时按图索骥，地图在 [内存深水区](/c/210-MemoryManagement)；
-- **const 的另一半**：本文的 static 管可见性，const 管「改不改得」，两者常叠加成 `static const` 文件级只读表，限定符语义见 [const 与 volatile 详解](/c/260-CVolatileAndConstDeepDive)。
+- **变量住哪一段**：静态变量落 .data 或 .bss、自动变量落栈，先于程序行为决定内存画像——排查「全局数组让可执行文件变大」「大局部数组爆栈」时按图索骥，地图在 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)；
+- **const 的另一半**：本文的 static 管可见性，const 管「改不改得」，两者常叠加成 `static const` 文件级只读表，限定符语义见 [const 与 volatile 详解](/c/260-ConstAndVolatileQualifiers)。
 
 ## 11. 小练习
 
@@ -504,7 +504,7 @@ int main(void) {
 
 - 往前：[变量与常量](/c/050-VariableConstant) 的「静态默认清零」「extern 是纯声明」在本文全部兑现成因；[数据类型详解](/c/040-DataTypeDetailed) 的类型知识与本文的存储期、链接性共同构成一个变量的完整档案；
 - 往后：[多文件编译](/c/310-MultiFileCompilation) 把本文的链接性变成工程现实（头文件、库、链接器报错全解）；[函数调用栈帧](/c/250-FunctionCallStackFrame) 拆开自动存储期的栈机制；[运算符与表达式](/c/060-OperatorExpression) 的求值反复使用第 4 节的 object 与左值词汇；
-- 更远：线程与数据竞争在 [线程与并发](/c/360-ThreadConcurrency)，原子与内存序在 [原子操作与内存模型](/c/380-AtomicAndMemoryModel)，C23 新关键字在 [C23 与 C2y 新特性](/c/520-C23C2y)。
+- 更远：线程与数据竞争在 [线程与并发](/c/360-ThreadConcurrency)，原子与内存序在 [原子操作与内存模型](/c/380-AtomicAndMemoryModel)，C23 新关键字在 [C23 与 C2y 新特性](/c/520-C23CoreFeatures)。
 
 ## 13. 官方文档
 

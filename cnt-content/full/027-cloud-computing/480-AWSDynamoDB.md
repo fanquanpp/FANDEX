@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 540
 title: AWS DynamoDB 命令
 module: 'cloud-computing'
 category: 云与基础设施

@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 120
 title: 事务与并发控制
 module: 'postgresql'
 category: 数据库
@@ -9,8 +9,8 @@ author: fanquanpp
 updated: '2026-09-29'
 related:
   - 'postgresql/010-OverviewInstallConfig'
-  - 'postgresql/240-IndexQueryOptimization'
-  - 'postgresql/530-AdvancedSQLExtension'
+  - 'postgresql/250-QueryOptimization'
+  - 'postgresql/080-AdvancedSQL'
 prerequisites: []
 ---
 

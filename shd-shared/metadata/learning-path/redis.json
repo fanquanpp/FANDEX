@@ -15,8 +15,18 @@
         },
         {
           "id": "redis-002",
-          "title": "集群与高可用",
-          "doc": "180-ClusterHA"
+          "title": "集群代理接入",
+          "doc": "185-ClusterProxyAccess"
+        },
+        {
+          "id": "redis-007",
+          "title": "Redis Flex 分层存储",
+          "doc": "186-RedisFlexTieredStorage"
+        },
+        {
+          "id": "redis-008",
+          "title": "Redis for AI 套件",
+          "doc": "187-RedisForAISuite"
         },
         {
           "id": "redis-003",

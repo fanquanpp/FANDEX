@@ -11,7 +11,7 @@ related:
   - 'vue3/020-Vue3QuickStartGuide'
   - 'vue3/030-Vue3TemplateSyntax'
   - 'vue3/120-TeleportSuspense'
-  - 'vue3/180-API'
+  - 'vue3/050-ReactiveSystem'
 prerequisites: []
 ---
 

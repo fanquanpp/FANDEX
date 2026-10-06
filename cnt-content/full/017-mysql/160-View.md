@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 190
 title: 视图：虚拟表与权限的守门人
 module: 'mysql'
 category: 数据库
@@ -54,6 +54,55 @@ FROM orders GROUP BY 月份;
 
 语法细节三条：`CREATE OR REPLACE` 是日常首选（视图可以随时重定义，底层数据毫发无伤）；列别名在 GROUP BY 场景很有用；视图定义里**避免 `SELECT *`**——底表加列后视图会"长出"新列，依赖它的程序可能被意外字段砸中。
 
+### 三种典型定义：过滤、关联、聚合
+
+```sql
+-- 一、过滤视图：单表 + WHERE，最轻量
+CREATE VIEW active_users AS
+SELECT id, username, email, status
+FROM users
+WHERE status = 1;
+
+-- 二、关联视图：把 JOIN 固化，报表口径统一
+CREATE VIEW order_details AS
+SELECT
+  o.id AS order_id,
+  o.order_no,
+  u.username,
+  u.email,
+  o.total_amount,
+  o.status,
+  o.created_at
+FROM orders o
+INNER JOIN users u ON o.user_id = u.id;
+
+-- 三、聚合视图：LEFT JOIN + GROUP BY，统计口径一次定型
+CREATE VIEW user_stats AS
+SELECT
+  u.id,
+  u.username,
+  COUNT(o.id) AS order_count,
+  IFNULL(SUM(o.total_amount), 0) AS total_spent,
+  MAX(o.created_at) AS last_order_time
+FROM users u
+LEFT JOIN orders o ON u.id = o.user_id
+GROUP BY u.id, u.username;
+```
+
+三种定义对应三种用途：过滤视图管"看哪些行"，关联视图管"字段从哪来"，聚合视图管"指标怎么算"。聚合视图特意用 `LEFT JOIN` + `IFNULL(..., 0)`——没有任何订单的用户也要出现在统计里，且消费额显示 0 而不是 NULL；换成 INNER JOIN 就把"零消费用户"从报表里悄悄丢掉了。聚合视图因为含 GROUP BY 自动**不可更新**（只能读），写入需求请回到底表。
+
+使用视图与查真表语法完全一致，还能让视图再参与 JOIN：
+
+```sql
+SELECT * FROM active_users WHERE username LIKE '张%';
+
+-- 视图当表用：user_stats 再和订单表连
+SELECT v.username, v.order_count, o.order_no
+FROM user_stats v
+LEFT JOIN orders o ON v.id = o.user_id
+WHERE o.created_at > '2024-01-01';
+```
+
 ## 可更新视图与 CHECK OPTION
 
 简单视图（单表、无聚合去重）可以直接 INSERT/UPDATE/DELETE，写入穿透到底表；配合 `WITH CHECK OPTION` 让"通过视图写入的行必须仍满足视图条件"：
@@ -98,6 +147,37 @@ DROP VIEW [IF EXISTS] v_active_orders;                   -- 删除（不影响�
 ```
 
 高频故障一个：**底表改结构后视图报错或行为漂移**——视图定义里显式列出的列被删除/改名时会直接报错（这是显式列名的红利）；`SELECT *` 视图则静默变化。所以视图定义审查是表结构变更流程的必查项。
+
+## 四条硬限制：建视图前先过一遍
+
+MySQL 视图有四条高频限制，逐条给出现象与变通：
+
+```sql
+-- 限制一：定义里不能含 FROM 子查询（MySQL 特有，PostgreSQL 无此限制）
+CREATE VIEW v_recent AS
+SELECT * FROM (SELECT * FROM users WHERE status = 1) AS t;
+-- ERROR 1349 (HY000): View's SELECT contains a subquery in the FROM clause
+-- 变通：把子查询拆成另一层视图，或把过滤逻辑交给查询方
+
+-- 限制二：视图不存数据，定义多复杂每次查询就重算多贵
+CREATE VIEW v_user_stats AS
+SELECT u.id, u.username, COUNT(o.id) AS order_count
+FROM users u LEFT JOIN orders o ON o.user_id = u.id
+GROUP BY u.id, u.username;
+SELECT * FROM v_user_stats;   -- 每次都是完整的两表 JOIN + 聚合
+
+-- 限制三：外层 ORDER BY 会覆盖视图内部的 ORDER BY，视图不保证输出顺序
+CREATE VIEW v_sorted AS
+SELECT * FROM users ORDER BY created_at;
+SELECT * FROM v_sorted;       -- 语义上无序，别依赖它
+
+-- 限制四：视图不能带参数。要"按条件变化的视图"只能查询时自己加 WHERE，
+-- 或改用存储过程（见 mysql/770-StoredProcedureAndFunction）
+```
+
+逐条说明"为什么"：限制一纯属 MySQL 的历史实现取舍，同一句 SQL 在 PostgreSQL 里合法——跨库迁移时要留意；限制二是"视图不存数据"心智模型的直接推论，想存结果请用汇总表（真实表 + 定时刷新）；限制三源于 SQL 标准的子查询排序语义（内层 ORDER BY 在外层无意义），把排序责任交给最终查询；限制四是因为视图只是一段固化的 SELECT，占位符参数属于存储过程的能力。
+
+另外，含 GROUP BY、DISTINCT、聚合的视图自动不可更新（只能读），MySQL 也不支持视图上的 INSTEAD OF 触发器（PostgreSQL 专属能力）。
 
 ## 适用场景与边界
 

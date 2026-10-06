@@ -1,10 +1,10 @@
 ---
-order: 140
+order: 170
 title: 进阶查询与多表操作
 module: 'mysql'
 category: 数据库
 difficulty: advanced
-description: 在充电桩多表数据上完成进阶查询：分组聚合与 GROUP_CONCAT、子查询、窗口函数排名与环比、CTE 与递归 CTE，全部基于 MySQL 8.4。
+description: 在充电桩多表数据上完成进阶查询：分组聚合与 GROUP_CONCAT、子查询、CTE 与递归 CTE 主线，窗口函数仅留最小样板并桥接 152 方言专篇，全部基于 MySQL 8.4。
 author: fanquanpp
 updated: '2026-09-29'
 related:
@@ -130,7 +130,7 @@ NOT IN 的子查询含 NULL 时整个查询返回空集，这是 MySQL 里最经
 
 ## 动手三：窗口函数（MySQL 8.0+）
 
-窗口函数在**不折叠行**的前提下做聚合：每一行都保留，旁边多一列计算结果。这是它与 GROUP BY 的本质区别。
+窗口函数在**不折叠行**的前提下做聚合：每一行都保留，旁边多一列计算结果。这是它与 GROUP BY 的本质区别。本篇只留最小样板与常用速记，**完整方言细节见专篇 [窗口函数：MySQL 8.0 方言与工程落地](/mysql/152-WindowFunctions)**（引入版本与能力边界、帧语法支持范围与 LAST_VALUE 陷阱、EXPLAIN 中的窗口表现、组内 Top-N 两种写法的性能对照、通用概念与 016-sql 两篇专篇的分工），通用框架见 [窗口函数](/sql/260-WindowFunction) 与 [窗口函数框架](/sql/270-WindowFunctionFramework)。
 
 ### 分组内排名：每站收入第一的桩
 
@@ -149,43 +149,22 @@ FROM (
 
 三个排名函数的差别必须分清：`ROW_NUMBER()` 强制不并列（1,2,3）；`RANK()` 并列同名次但跳号（1,1,3）；`DENSE_RANK()` 并列不跳号（1,1,2）。取"每组的第 N 名"用 ROW_NUMBER，取"并列名次"用后两者。
 
-### LAG/LEAD：和前一天比
+### LAG/LEAD 与常用函数速记
 
 ```sql
-SELECT d,
-       revenue,
-       LAG(revenue) OVER (ORDER BY d) AS prev_day,
-       revenue - LAG(revenue) OVER (ORDER BY d) AS day_diff
-FROM ( ...按天聚合收入... ) t;
-```
-
-LAG 取排序后的上一行，LEAD 取下一行，第二参数是偏移量，第三参数是无值时的默认（`LAG(revenue, 1, 0)`）。环比、留存、漏斗转化这类"跨行"计算全靠它们。
-
-### 累计与其他常用函数
-
-```sql
--- 累计收入（月度冲量看板）
+-- 环比：和前一天比
+LAG(revenue)     OVER (ORDER BY d) AS prev_day,
+revenue - LAG(revenue) OVER (ORDER BY d) AS day_diff,
+-- 累计与移动平均
 SUM(revenue) OVER (ORDER BY d) AS running_total,
-
--- 移动平均（7 日平滑）
 AVG(revenue) OVER (ORDER BY d ROWS BETWEEN 6 PRECEDING AND CURRENT ROW) AS ma7,
-
--- 分桶：把桩按收入切四份找头部
+-- 分桶与组内占比
 NTILE(4) OVER (ORDER BY revenue DESC) AS quartile,
-
--- 组内占比
 revenue / SUM(revenue) OVER (PARTITION BY station) AS share
+-- 命名窗口复用：WINDOW w AS (PARTITION BY ... ORDER BY ...) 后各函数 OVER w
 ```
 
-窗口定义重复时可命名复用：
-
-```sql
-SELECT charger_id, revenue,
-       ROW_NUMBER() OVER w AS rn,
-       SUM(revenue)  OVER w AS running
-FROM t
-WINDOW w AS (PARTITION BY station ORDER BY revenue DESC);
-```
+LAG 取排序后的上一行，LEAD 取下一行，第二参数是偏移量，第三参数是无值时的默认（`LAG(revenue, 1, 0)`）。环比、留存、漏斗转化这类"跨行"计算全靠它们；移动平均的 ROWS/RANGE 选型与 LAST_VALUE 默认帧陷阱（15.2 常见错因）见 152 篇的帧语法一节。
 
 ## 动手四：CTE 与递归 CTE
 
@@ -264,13 +243,14 @@ WHERE ROW_NUMBER() OVER (ORDER BY revenue DESC) = 1;
 ## 练习
 
 1. 查出每个城市收入最高的那根桩（城市、桩号、收入），只用一次查询。
-2. 生成 9 月日历并计算**7 日移动平均**收入，没数据的日子按 0 计。
-3. 把"高于本桩均价的订单"改写为窗口函数版本（AVG OVER PARTITION BY），对比两版执行计划里的扫描次数。
-4. 每根桩按订单金额标注四分位（NTILE），查出最贵四分位里的订单明细。
-5. 递归 CTE 生成 2026 全年日历时，验证 `cte_max_recursion_depth` 默认值是否够用；不够时有哪些正当的调法？
+2. 生成 9 月日历并计算**7 日移动平均**收入，没数据的日子按 0 计（ROWS/RANGE 的选型依据见 [窗口函数](/mysql/152-WindowFunctions) 的帧语法一节）。
+3. 每根桩按订单金额标注四分位（NTILE），查出最贵四分位里的订单明细（NTILE 的通用语义见 [窗口函数](/sql/260-WindowFunction)）。
+4. 递归 CTE 生成 2026 全年日历时，验证 `cte_max_recursion_depth` 默认值是否够用；不够时有哪些正当的调法？
+5. （延伸练习）把"高于本桩均价的订单"改写为窗口函数版本（AVG OVER PARTITION BY），并用 EXPLAIN ANALYZE 对比两版耗时——完整对照实验在 [窗口函数](/mysql/152-WindowFunctions) 的动手实践里。
 
 ## 下一步
 
+- 窗口函数的 MySQL 方言专篇：[窗口函数：MySQL 8.0 方言与工程落地](/mysql/152-WindowFunctions)——帧语法、EXPLAIN 表现与组内 Top-N 性能对照；
 - 这些查询为什么快或慢，进入 [JOIN 算法](/mysql/390-JOINAlgorithm)与 [EXPLAIN 详解](/mysql/320-EXPLAINDetailed)；
-- 016 模块的对应通用篇：[窗口函数](/sql/260-WindowFunction)、[CTE](/sql/230-CTE)、[递归 CTE](/sql/240-RecursiveCTE)；
+- 016 模块的对应通用篇：[窗口函数](/sql/260-WindowFunction)、[窗口函数框架](/sql/270-WindowFunctionFramework)、[CTE](/sql/230-CTE)、[递归 CTE](/sql/240-RecursiveCTE)；
 - 子查询的优化器改写细节见[子查询优化](/mysql/360-SubqueryOptimization)。

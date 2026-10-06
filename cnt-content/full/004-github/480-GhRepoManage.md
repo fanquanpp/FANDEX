@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 540
 title: GitHub CLI 仓库管理
 module: 'github'
 category: 工具链

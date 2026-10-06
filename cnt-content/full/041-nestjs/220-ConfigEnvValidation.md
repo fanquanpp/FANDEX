@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 260
 title: 配置与环境变量校验
 module: 'nestjs'
 category: 后端技术

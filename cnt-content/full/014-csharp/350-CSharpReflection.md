@@ -1,5 +1,5 @@
 ---
-order: 350
+order: 390
 title: C#与反射
 module: 'csharp'
 category: 后端技术
@@ -2300,3 +2300,160 @@ foreach (var item in span) { }
   <TargetFramework>net8.0</TargetFramework>
 </PropertyGroup>
 ```
+
+## 速查补充：反射（承接自原 150 篇速查段）
+
+## 反射
+
+**基本写法：获取 Type 对象**
+`Type <变量> = typeof(<类型>);`
+```csharp
+// 获取类型的 Type 对象
+Type type = typeof(Person);
+```
+
+---
+
+**基本写法：GetType 实例方法**
+`Type <变量> = <对象>.GetType();`
+```csharp
+// 获取对象运行时类型
+var person = new Person("张三", 25);
+Type type = person.GetType();
+```
+
+---
+
+**基本写法：获取所有属性**
+`PropertyInfo[] <变量> = <Type>.GetProperties();`
+```csharp
+// 获取类型的所有公共属性
+PropertyInfo[] properties = type.GetProperties();
+```
+
+---
+
+**基本写法：获取所有方法**
+`MethodInfo[] <变量> = <Type>.GetMethods();`
+```csharp
+// 获取类型的所有公共方法
+MethodInfo[] methods = type.GetMethods();
+```
+
+---
+
+**基本写法：动态创建实例**
+`object <变量> = Activator.CreateInstance<<类型>>();`
+```csharp
+// 动态创建类型实例
+object instance = Activator.CreateInstance<Person>();
+```
+
+---
+
+**基本写法：动态获取属性值**
+`object? <变量> = <属性>.GetValue(<对象>);`
+```csharp
+// 通过反射获取属性值
+var prop = type.GetProperty("Name");
+object? value = prop?.GetValue(person);
+```
+
+---
+
+**基本写法：动态设置属性值**
+`<属性>.SetValue(<对象>, <值>);`
+```csharp
+// 通过反射设置属性值
+var prop = type.GetProperty("Name");
+prop?.SetValue(person, "李四");
+```
+
+---
+
+**基本写法：动态调用方法**
+`object? <变量> = <方法>.Invoke(<对象>, <参数>);`
+```csharp
+// 通过反射调用方法
+var method = type.GetMethod("Greet");
+object? result = method?.Invoke(person, null);
+```
+
+---
+
+## 速查补充：表达式树（承接自原 150 篇速查段）
+
+## 表达式树
+
+**基本写法：Lambda 表达式树**
+`Expression<Func<<类型>, <返回类型>>> <变量> = <参数> => <表达式>;`
+```csharp
+// 创建表达式树
+Expression<Func<int, int>> expr = x => x * 2;
+```
+
+---
+
+**基本写法：编译并执行**
+`Func<<类型>, <返回类型>> <变量> = <表达式>.Compile();`
+```csharp
+// 编译表达式树为委托
+Func<int, int> func = expr.Compile();
+int result = func(21);
+```
+
+---
+
+**基本写法：参数表达式**
+`ParameterExpression <变量> = Expression.Parameter(typeof(<类型>), "<名称>");`
+```csharp
+// 创建参数表达式
+ParameterExpression param = Expression.Parameter(typeof(int), "x");
+```
+
+---
+
+**基本写法：常量表达式**
+`ConstantExpression <变量> = Expression.Constant(<值>);`
+```csharp
+// 创建常量表达式
+ConstantExpression constant = Expression.Constant(2);
+```
+
+---
+
+**基本写法：二元运算表达式**
+`BinaryExpression <变量> = Expression.Multiply(<左>, <右>);`
+```csharp
+// 创建乘法表达式
+BinaryExpression multiply = Expression.Multiply(param, constant);
+```
+
+---
+
+**基本写法：构建 Lambda**
+`Expression<Func<<类型>, <返回类型>>> <变量> = Expression.Lambda<<委托>>>(<主体>, <参数>);`
+```csharp
+// 组合表达式构建 Lambda
+Expression<Func<int, int>> expr =
+    Expression.Lambda<Func<int, int>>(multiply, param);
+```
+
+---
+<!-- 恢复自 cnt-content/full/014-csharp/150-CSharpAdvancedFeature.md（实施前 HEAD 62c90663 版本）；拆分时该小节未随迁，2026-10-07 内容保全复核恢复 -->
+
+## 反射调试
+
+
+```csharp
+// 启用反射日志（仅 .NET Framework）
+// AppDomain.CurrentDomain.AssemblyLoad += (s, e) =>
+//     Console.WriteLine($"Loaded: {e.LoadedAssembly.FullName}");
+
+// 列出已加载程序集
+foreach (var asm in AppDomain.CurrentDomain.GetAssemblies())
+{
+    Console.WriteLine(asm.FullName);
+}
+```
+

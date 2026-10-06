@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: 包装类缓存陷阱：两个 127 相等，两个 128 却不等
 module: 'java'
 category: 后端技术

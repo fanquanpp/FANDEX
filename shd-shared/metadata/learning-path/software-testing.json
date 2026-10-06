@@ -52,8 +52,8 @@
         },
         {
           "id": "software-testing-080",
-          "title": "功能与自动化测试",
-          "doc": "080-FunctionalAndAutomatedTest"
+          "title": "从手工到自动化",
+          "doc": "080-FromManualToAutomation"
         }
       ]
     },
@@ -84,8 +84,8 @@
         },
         {
           "id": "software-testing-130",
-          "title": "API 自动化测试详解",
-          "doc": "130-APIAutomationTestDetailed"
+          "title": "API 测试工具链与契约",
+          "doc": "130-APITestToolchainAndContract"
         }
       ]
     },
@@ -96,8 +96,8 @@
       "nodes": [
         {
           "id": "software-testing-140",
-          "title": "性能与接口测试",
-          "doc": "140-PerformanceInterfaceTest"
+          "title": "性能测试方法",
+          "doc": "140-PerformanceTestingMethod"
         },
         {
           "id": "software-testing-150",
@@ -111,8 +111,8 @@
         },
         {
           "id": "software-testing-170",
-          "title": "安全与移动测试",
-          "doc": "170-SecurityAndMobileTest"
+          "title": "安全测试",
+          "doc": "180-SecurityTesting"
         },
         {
           "id": "software-testing-180",
@@ -133,8 +133,8 @@
         },
         {
           "id": "software-testing-200",
-          "title": "TDD 与 BDD",
-          "doc": "200-TDDBDD"
+          "title": "测试驱动开发",
+          "doc": "200-TestDrivenDevelopment"
         },
         {
           "id": "software-testing-210",

@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 170
 title: 收官实战：一次下单请求穿过的十三道关口
 description: 以「010 到 130 篇的十三个零件如何组装成整车」引入：电商下单主链路的服务划分与全程时序、每服务技术点地图、容错设计总表（失败模式到防线）、可观测接线与三条业务告警、可执行的故障演练清单与验收清单，附 docker compose 全景拓扑。
 module: 'spring-cloud'
@@ -7,7 +7,6 @@ category: 后端技术
 difficulty: advanced
 prerequisites:
   - 'spring-cloud/090-DistributedTransactionSeata'
-  - 'spring-cloud/110-DistributedLockIdempotency'
 author: fanquanpp
 updated: '2026-10-04'
 related:
@@ -16,6 +15,13 @@ related:
   - 'spring-cloud/100-EventDrivenMessaging'
   - 'spring-cloud/060-ApiGateway'
 ---
+
+## 知识点地图
+
+- 知识类别：微服务收官实战——把模块前十三篇的零件组装成完整下单链路并完成故障演练与验收。
+- 解决什么问题：单独的零件都会用了，但"一条真实业务链路上各组件怎么分工、每个依赖挂了会怎样"只有组装过一次才算真正掌握。
+- 什么时候用到：学完 010-130 后的收官验收；以及为自家业务做"下单类核心链路"设计时拿来对照的完整样板。
+- 读法建议：第 2 节全景图先行，第 4 节技术点地图按需跳回对应篇章复习，第 7 节演练务必亲手做。
 
 ## 前置知识
 

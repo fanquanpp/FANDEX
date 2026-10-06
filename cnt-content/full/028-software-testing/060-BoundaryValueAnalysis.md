@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: 边界值分析
 module: 'software-testing'
 category: 云与基础设施

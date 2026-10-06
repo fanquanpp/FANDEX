@@ -1,5 +1,5 @@
 ---
-order: 690
+order: 740
 title: SSL/TLS 加密连接：证书到强制加密
 module: 'mysql'
 category: 数据库

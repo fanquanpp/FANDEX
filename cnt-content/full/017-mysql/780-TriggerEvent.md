@@ -1,5 +1,5 @@
 ---
-order: 760
+order: 810
 title: 触发器与事件
 module: 'mysql'
 category: 数据库
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'mysql/160-View'
 ---
+
+## 知识点地图
+
+- **知识类别**：MySQL 的「触发器」——与表绑定的行级自动逻辑：BEFORE 触发器做验证与自动填充、AFTER 触发器做审计日志与跨表同步、NEW/OLD 关键字读写行数据、标志变量做批量开关、触发器内的死锁规避。
+- **解决什么问题**：审计日志要在「任何写入路径」（多个应用、DBA 手工改数、批量脚本）下都不漏——触发器是唯一挂在表上而不是挂在代码上的哨兵；级联维护（删学生连带删成绩）在不能改应用代码或不建外键的库上需要一个数据库侧的执行点。
+- **什么时候用到**：审计与合规留痕、行级数据同步（订单联动库存/客户统计）、 BEFORE 兜底与 SIGNAL 校验。**分工边界**：定时任务（按时间而不是按行触发）归 [事件调度器](/mysql/790-EventScheduler) 专篇，本篇只留桥接；约束类的完整性（CHECK/外键）优先用 [约束与完整性](/mysql/075-ConstraintsIntegrityEnforcement)——触发器是「约束表达不了时的最后手段」而不是第一选择。
 
 ## 前置知识
 
@@ -167,8 +173,22 @@ BEGIN
     END IF;
 END //
 
+-- 条件默认值：时间戳盖戳 + 状态列缺省兜底
+CREATE TRIGGER before_user_insert
+BEFORE INSERT ON users
+FOR EACH ROW
+BEGIN
+  SET NEW.created_at = NOW();
+  SET NEW.updated_at = NOW();
+  IF NEW.status IS NULL THEN
+    SET NEW.status = 1;
+  END IF;
+END //
+
 DELIMITER ;
 ```
+
+`before_user_insert` 展示了 BEFORE 触发器最典型的两个职责叠加：无条件职责（盖时间戳）与条件职责（状态列没传就兜底为 1）。注意它是 `IF NEW.status IS NULL` 而不是 `= NULL`——NULL 与任何值比较都得 UNKNOWN，用 `=` 判断永远为假，这是触发器里最经典的逻辑错误。这段逻辑与列定义里的 `DEFAULT 1` 功能相近但层次不同：DEFAULT 是"INSERT 语句没列到这个字段"时生效，触发器的兜底连"显式插了 NULL"也拦得住。
 
 ## 3. AFTER 触发器
 
@@ -249,112 +269,83 @@ BEGIN
     WHERE id = NEW.customer_id;
 END //
 
+-- 状态变更专项日志：只记"状态真的变了"的行
+CREATE TRIGGER after_order_update
+AFTER UPDATE ON orders
+FOR EACH ROW
+BEGIN
+  IF OLD.status != NEW.status THEN
+    INSERT INTO order_status_log (order_id, old_status, new_status, changed_at)
+    VALUES (OLD.id, OLD.status, NEW.status, NOW());
+  END IF;
+END //
+
 DELIMITER ;
 ```
 
-## 4. 事件调度器
+`after_order_update` 的关键是 `IF OLD.status != NEW.status` 这道闸：UPDATE 语句可以一行不改任何值（比如只是盖时间戳的例行更新），没有这道闸日志表会被无效行灌爆。审计类触发器都要先问一句——**这个变化值得记吗**，把判断放进触发器而不是事后过滤。
 
-### 4.1 启用事件调度器
+### 3.3 级联维护：真实教学项目的两个触发器
 
-```sql
--- 检查事件调度器状态
-SHOW VARIABLES LIKE 'event_scheduler';
-
--- 启用事件调度器
-SET GLOBAL event_scheduler = ON;
-
--- 永久启用（my.cnf）
--- event_scheduler = ON
-```
-
-### 4.2 创建定时事件
+教学项目「学生-课程-成绩」库里有两个真实触发的级联触发器（e-core 项目 tri01/tri02），它们与外键级联（[ON DELETE CASCADE](/mysql/075-ConstraintsIntegrityEnforcement)）是**替代关系**——老库没有外键时，级联靠触发器实现：
 
 ```sql
+-- tri01：删学生时级联删掉他的全部成绩（替代外键 ON DELETE CASCADE）
 DELIMITER //
-
--- 每天凌晨清理过期会话
-CREATE EVENT IF NOT EXISTS cleanup_expired_sessions
-ON SCHEDULE EVERY 1 DAY
-STARTS CURRENT_DATE + INTERVAL 1 DAY + INTERVAL 2 HOUR
-DO
+CREATE TRIGGER tri01
+AFTER DELETE ON Student
+FOR EACH ROW
 BEGIN
-    DELETE FROM sessions WHERE expires_at < NOW();
-    INSERT INTO event_log (event_name, executed_at, rows_affected)
-    VALUES ('cleanup_expired_sessions', NOW(), ROW_COUNT());
+    DELETE FROM Mark WHERE StudentNo = OLD.StudentNo;
 END //
+DELIMITER ;
 
--- 每小时更新热门商品
-CREATE EVENT IF NOT EXISTS update_hot_products
-ON SCHEDULE EVERY 1 HOUR
-DO
+-- tri02：课程号变更时同步全部成绩单上的课程号
+-- （IF 闸：课程号没变就什么都不做，避免无效触发）
+DELIMITER //
+CREATE TRIGGER tri02
+AFTER UPDATE ON Course
+FOR EACH ROW
 BEGIN
-    TRUNCATE TABLE hot_products;
-    INSERT INTO hot_products (product_id, view_count, sales_count)
-    SELECT p.id, p.view_count, COALESCE(SUM(oi.quantity), 0)
-    FROM products p
-    LEFT JOIN order_items oi ON p.id = oi.product_id
-    WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-    GROUP BY p.id
-    ORDER BY p.view_count DESC, sales_count DESC
-    LIMIT 100;
+    IF OLD.CourseNo != NEW.CourseNo THEN
+        UPDATE Mark SET CourseNo = NEW.CourseNo WHERE CourseNo = OLD.CourseNo;
+    END IF;
 END //
-
--- 每月1号生成统计报表
-CREATE EVENT IF NOT EXISTS monthly_report
-ON SCHEDULE EVERY 1 MONTH
-STARTS '2026-07-01 00:00:00'
-DO
-BEGIN
-    INSERT INTO monthly_reports (report_month, total_orders, total_revenue, new_users)
-    SELECT
-        DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m'),
-        (SELECT COUNT(*) FROM orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-         AND order_date < CURDATE()),
-        (SELECT COALESCE(SUM(total_amount), 0) FROM orders
-         WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-         AND order_date < CURDATE()),
-        (SELECT COUNT(*) FROM users WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-         AND created_at < CURDATE());
-END //
-
--- 一次性事件：5分钟后执行
-CREATE EVENT IF NOT EXISTS one_time_task
-ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 5 MINUTE
-DO
-BEGIN
-    UPDATE system_config SET value = 'initialized' WHERE key = 'status';
-END //
-
 DELIMITER ;
 ```
 
-### 4.3 管理事件
+逐段讲这两个例子的共同骨架：触发时机选 **AFTER**（主表变更成功后才动从表——若 BEFORE 就把成绩删了、学生却删除失败，成绩就白删了）；IF 闸在 tri02 上是必需的（UPDATE 高频发生、课程号变更罕见），tri01 的 DELETE 事件本身罕见可省。与外键级联的取舍：外键是引擎内实现（快、有约束语义、能 RESTRICT），触发器是 SQL 层执行（慢一点、能写任意逻辑如「删学生前先把成绩归档到历史表」）——**纯级联用外键，级联时还要做额外动作才用触发器**。
+
+### 3.4 批量开关：标志变量跳过触发器
+
+MySQL 没有官方的「禁用触发器」开关（要删了重建），批量操作的通行替代是**会话级标志变量**：
 
 ```sql
--- 查看所有事件
-SHOW EVENTS;
+-- 触发器侧：标志变量没置位才干活
+DELIMITER //
+CREATE TRIGGER before_product_update
+BEFORE UPDATE ON products
+FOR EACH ROW
+BEGIN
+    IF @skip_trigger IS NULL OR @skip_trigger = 0 THEN
+        SET NEW.updated_at = NOW();
+    END IF;
+END //
+DELIMITER ;
 
--- 查看事件详情
-SHOW CREATE EVENT cleanup_expired_sessions;
-
--- 禁用事件
-ALTER EVENT cleanup_expired_sessions DISABLE;
-
--- 启用事件
-ALTER EVENT cleanup_expired_sessions ENABLE;
-
--- 修改事件调度
-ALTER EVENT cleanup_expired_sessions
-ON SCHEDULE EVERY 2 DAY;
-
--- 删除事件
-DROP EVENT IF EXISTS one_time_task;
-
--- 从information_schema查询
-SELECT event_name, status, interval_value, interval_field, last_executed
-FROM information_schema.events
-WHERE event_schema = 'mydb';
+-- 批量操作侧：临时置位、做完复位（同一会话内有效）
+SET @skip_trigger = 1;
+UPDATE products SET price = price * 1.1;    -- 这次批量调价不盖修改时间戳
+SET @skip_trigger = 0;
 ```
+
+机制解释：`@skip_trigger` 是会话级用户变量（作用域与求值规则见 [用户变量与动态 SQL](/mysql/125-UserVariablesAndDynamicSQL)），触发器体运行在**发起写入的会话**里所以读得到它——批量调价在置位会话里跳过盖戳，其他会话的零星更新不受影响。两个坑要标注：其一，**忘记复位**会让本会话后续所有写入都绕过触发器（SET 后立即配对写复位语句，最好放事务里）；其二，触发器的分支逻辑从此有两条执行路径，审计类触发器慎用开关——审计被跳过恰恰通常是合规事故。
+
+## 4. 事件调度器：归 790 专篇
+
+按时间而不是按行触发的调度逻辑（每夜清理、每小时汇总、一次性延迟任务）属于**事件调度器**主题，本篇不再展开第二份：启用开关（event_scheduler）、AT/EVERY 两种调度形态、ON COMPLETION 生命周期、跑没跑的排查方法、与 crontab/应用调度的选型对比，全部内容见专篇 [事件调度器](/mysql/790-EventScheduler)。
+
+一句话分界：**触发器挂在「某行变了」上，事件挂在「时间到了」上**——订单写入联动库存是触发器，每晚 2 点清过期会话是事件。
 
 ## 5. 常见问题与解决方案
 
@@ -410,22 +401,9 @@ BEGIN
 END //
 ```
 
-### 5.3 事件调度器未运行
+### 5.3 事件没跑的排查入口
 
-```sql
--- 检查状态
-SHOW VARIABLES LIKE 'event_scheduler';
-
--- 如果为OFF，需要启用
-SET GLOBAL event_scheduler = ON;
-
--- 确保MySQL配置文件中设置了
--- event_scheduler = ON
-
--- 检查事件执行历史
-SELECT * FROM information_schema.events
-WHERE status = 'DISABLED';
-```
+事件的启用开关、执行历史与排查方法已归 [事件调度器](/mysql/790-EventScheduler) 的「排查：事件到底跑没跑」一节，入口命令是 `SHOW VARIABLES LIKE 'event_scheduler'`。
 
 ## 6. 总结与最佳实践
 
@@ -444,427 +422,174 @@ WHERE status = 'DISABLED';
 3. **错误处理**：事件中包含异常处理
 4. **监控执行**：定期检查事件执行状态
 5. **幂等设计**：事件重复执行不应产生错误数据
-## 触发器基础
 
-**换行写法：创建插入后触发器**
-`CREATE TRIGGER <触发器名> AFTER INSERT ON <表名> FOR EACH ROW BEGIN <触发体> END`
+## 动手实践
+
+练习一（预测题）：下面这条 INSERT 的执行结果是什么？为什么？
+
 ```sql
--- 插入后记录审计日志
+CREATE TABLE t_users (
+  id INT PRIMARY KEY,
+  status INT
+);
+
 DELIMITER //
-CREATE TRIGGER after_user_insert
-AFTER INSERT ON users
+CREATE TRIGGER tg_check
+BEFORE INSERT ON t_users
 FOR EACH ROW
 BEGIN
-    INSERT INTO user_audit_log (user_id, action, action_time, details)
-    VALUES (NEW.id, 'INSERT', NOW(), CONCAT('Created user: ', NEW.username));
+  IF NEW.status = NULL THEN
+    SET NEW.status = 1;
+  END IF;
 END //
 DELIMITER ;
+
+INSERT INTO t_users (id) VALUES (1);
+SELECT id, status FROM t_users;
 ```
 
-**单行写法：删除触发器**
-`DROP TRIGGER [IF EXISTS] <触发器名>`
+提示：NULL 与任何值的比较结果是什么？
+
+<details>
+<summary>参考实现</summary>
+
+查询结果为 `(1, NULL)`——触发器「执行了」但兜底没生效：`NEW.status = NULL` 的比较结果是 **UNKNOWN**（NULL 与任何值比较都得 UNKNOWN，不是 TRUE 也不是 FALSE），IF 只在 TRUE 分支执行，SET 被跳过。正确写法是 `IF NEW.status IS NULL THEN`。这是触发器（也是所有 SQL 条件）里最经典的逻辑错误——正文 2.2 节的讲评段专门标过它，本练习用「INSERT 成功但字段还是 NULL」这个反直觉现场把它钉牢。
+</details>
+
+练习二（实战题）：给 vocaloid 库的 singers（歌姬）与 song_singers（歌姬-歌曲关联）写 tri_singer_delete：删除歌姬时先把它在 song_singers 的关联行**归档**到 singer_del_archive 表（存歌姬名与关联歌曲数、删除时间），再删关联行。验证：删一位歌姬后归档表有一行且计数正确。
+
+提示：AFTER DELETE 里 OLD 拿被删行；先 INSERT 归档再 DELETE 关联（顺序在触发器体内）；COUNT 用子查询。
+
+<details>
+<summary>参考实现</summary>
+
 ```sql
--- 删除触发器
-DROP TRIGGER IF EXISTS before_user_insert;
-```
+CREATE TABLE singer_del_archive (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  singer_name VARCHAR(50) NOT NULL,
+  song_links INT NOT NULL,
+  archived_at DATETIME NOT NULL
+);
 
----
-
-## NEW 与 OLD 关键字
-
-**换行写法：NEW 关键字访问新数据**
-`NEW.<列名>`
-```sql
--- 更新前比较新旧值并记录变更
 DELIMITER //
-CREATE TRIGGER before_user_update
-BEFORE UPDATE ON users
+CREATE TRIGGER tri_singer_delete
+AFTER DELETE ON singers
 FOR EACH ROW
 BEGIN
-    IF OLD.username != NEW.username THEN
-        INSERT INTO user_change_log (user_id, field_name, old_value, new_value, changed_at)
-        VALUES (OLD.id, 'username', OLD.username, NEW.username, NOW());
-    END IF;
+  INSERT INTO singer_del_archive (singer_name, song_links, archived_at)
+  SELECT OLD.name, COUNT(*), NOW()
+  FROM song_singers WHERE singer_id = OLD.singer_id;
+
+  DELETE FROM song_singers WHERE singer_id = OLD.singer_id;
 END //
 DELIMITER ;
+
+-- 验证
+DELETE FROM singers WHERE singer_id = 1;
+SELECT * FROM singer_del_archive;          -- 一行：歌姬名、关联数、时间
+SELECT COUNT(*) FROM song_singers WHERE singer_id = 1;   -- 0
 ```
 
-**换行写法：OLD 关键字访问旧数据**
-`OLD.<列名>`
+设计要点：先归档后删除的顺序在触发器体内用语句顺序表达；归档的 song_links 用 COUNT 子查询在删除**之前**数好（触发器体内语句按序执行，语句序就是逻辑序）；这正是正文 tri01「纯级联用外键，级联时还要做额外动作才用触发器」的应用场景——归档就是外键 CASCADE 给不了的那个额外动作。
+</details>
+
+练习三（实战题）：给 orders 表设计一个审计触发器组（INSERT/UPDATE/DELETE 三个），要求：UPDATE 只记「金额或状态真的变了」的行；DELETE 记录全行快照（JSON）。写完用一个「盖时间戳但业务字段没变」的 UPDATE 验证审计表没有新增行。
+
+提示：IF 闸比较 OLD 与 NEW 的业务列；全行快照 JSON_OBJECT 逐列列出（或用 8.0 的 ROW 格式 binlog 侧方案对照说明）。
+
+<details>
+<summary>参考实现</summary>
+
 ```sql
--- 删除后记录被删除的数据
+CREATE TABLE orders_audit (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  order_id INT NOT NULL,
+  action VARCHAR(10) NOT NULL,
+  snapshot JSON,
+  changed_at DATETIME NOT NULL
+);
+
 DELIMITER //
-CREATE TRIGGER after_user_delete
-AFTER DELETE ON users
-FOR EACH ROW
+CREATE TRIGGER au_orders_insert AFTER INSERT ON orders FOR EACH ROW
 BEGIN
-    INSERT INTO user_delete_log (user_id, username, deleted_at)
-    VALUES (OLD.id, OLD.username, NOW());
+  INSERT INTO orders_audit (order_id, action, snapshot, changed_at)
+  VALUES (NEW.id, 'INSERT', JSON_OBJECT('amount', NEW.amount, 'status', NEW.status), NOW());
 END //
-DELIMITER ;
-```
 
----
-
-## BEFORE 触发器
-
-**换行写法：BEFORE 触发器数据验证**
-`SIGNAL SQLSTATE '<状态码>' SET MESSAGE_TEXT = '<错误信息>'`
-```sql
--- 更新前验证薪资不能低于最低标准
-DELIMITER //
-CREATE TRIGGER before_salary_update
-BEFORE UPDATE ON employees
-FOR EACH ROW
+CREATE TRIGGER au_orders_update AFTER UPDATE ON orders FOR EACH ROW
 BEGIN
-    IF NEW.salary < 3000 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = '薪资不能低于最低标准3000元';
-    END IF;
-END //
-DELIMITER ;
-```
-
-**换行写法：BEFORE 触发器验证订单金额**
-`SIGNAL SQLSTATE '<状态码>' SET MESSAGE_TEXT = '<错误信息>'`
-```sql
--- 插入前验证订单金额必须大于 0
-DELIMITER //
-CREATE TRIGGER before_order_insert
-BEFORE INSERT ON orders
-FOR EACH ROW
-BEGIN
-    IF NEW.total_amount <= 0 THEN
-        SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = '订单金额必须大于0';
-    END IF;
-END //
-DELIMITER ;
-```
-
-**换行写法：BEFORE 触发器自动计算字段**
-`SET NEW.<列名> = <值>`
-```sql
--- 插入前自动计算商品总价
-DELIMITER //
-CREATE TRIGGER before_order_item_insert
-BEFORE INSERT ON order_items
-FOR EACH ROW
-BEGIN
-    SET NEW.line_total = NEW.quantity * NEW.unit_price;
-END //
-DELIMITER ;
-```
-
-**换行写法：BEFORE 触发器自动更新时间**
-`SET NEW.<列名> = NOW()`
-```sql
--- 更新前自动维护修改时间
-DELIMITER //
-CREATE TRIGGER before_product_update
-BEFORE UPDATE ON products
-FOR EACH ROW
-BEGIN
-    SET NEW.updated_at = NOW();
-END //
-DELIMITER ;
-```
-
-**换行写法：BEFORE 触发器自动生成编号**
-`SET NEW.<列名> = <生成表达式>`
-```sql
--- 插入前自动生成订单编号
-DELIMITER //
-CREATE TRIGGER before_order_insert2
-BEFORE INSERT ON orders
-FOR EACH ROW
-BEGIN
-    IF NEW.order_no IS NULL THEN
-        SET NEW.order_no = CONCAT('ORD', DATE_FORMAT(NOW(), '%Y%m%d'),
-            LPAD((SELECT COUNT(*) FROM orders WHERE order_date = CURDATE()) + 1, 4, '0'));
-    END IF;
-END //
-DELIMITER ;
-```
-
----
-
-## AFTER 触发器
-
-**换行写法：AFTER 插入审计**
-`INSERT INTO <日志表> VALUES (NEW.<列名>...)`
-```sql
--- 插入后记录产品审计日志
-DELIMITER //
-CREATE TRIGGER after_product_insert
-AFTER INSERT ON products
-FOR EACH ROW
-BEGIN
-    INSERT INTO audit_log (table_name, record_id, action, new_data, action_time)
-    VALUES ('products', NEW.id, 'INSERT',
-            JSON_OBJECT('name', NEW.name, 'price', NEW.price, 'stock', NEW.stock),
+  IF OLD.amount != NEW.amount OR OLD.status != NEW.status THEN
+    INSERT INTO orders_audit (order_id, action, snapshot, changed_at)
+    VALUES (NEW.id, 'UPDATE',
+            JSON_OBJECT('old_amount', OLD.amount, 'new_amount', NEW.amount,
+                        'old_status', OLD.status, 'new_status', NEW.status),
             NOW());
+  END IF;
 END //
-DELIMITER ;
-```
 
-**换行写法：AFTER 更新审计**
-`INSERT INTO <日志表> VALUES (OLD.<列名>..., NEW.<列名>...)`
-```sql
--- 更新后记录新旧数据审计日志
-DELIMITER //
-CREATE TRIGGER after_product_update
-AFTER UPDATE ON products
-FOR EACH ROW
+CREATE TRIGGER au_orders_delete AFTER DELETE ON orders FOR EACH ROW
 BEGIN
-    INSERT INTO audit_log (table_name, record_id, action, old_data, new_data, action_time)
-    VALUES ('products', NEW.id, 'UPDATE',
-            JSON_OBJECT('name', OLD.name, 'price', OLD.price, 'stock', OLD.stock),
-            JSON_OBJECT('name', NEW.name, 'price', NEW.price, 'stock', NEW.stock),
-            NOW());
+  INSERT INTO orders_audit (order_id, action, snapshot, changed_at)
+  VALUES (OLD.id, 'DELETE', JSON_OBJECT('amount', OLD.amount, 'status', OLD.status), NOW());
 END //
 DELIMITER ;
+
+-- 验证 IF 闸：只盖时间戳的更新不产生审计行
+UPDATE orders SET created_at = NOW() WHERE id = 1;   -- orders_audit 无新增
+UPDATE orders SET status = 5 WHERE id = 1;           -- 新增一行 UPDATE 审计
 ```
 
-**换行写法：AFTER 删除审计**
-`INSERT INTO <日志表> VALUES (OLD.<列名>...)`
-```sql
--- 删除后记录被删除数据审计日志
-DELIMITER //
-CREATE TRIGGER after_product_delete
-AFTER DELETE ON products
-FOR EACH ROW
-BEGIN
-    INSERT INTO audit_log (table_name, record_id, action, old_data, action_time)
-    VALUES ('products', OLD.id, 'DELETE',
-            JSON_OBJECT('name', OLD.name, 'price', OLD.price, 'stock', OLD.stock),
-            NOW());
-END //
-DELIMITER ;
-```
+要点：IF 闸覆盖**全部业务列**（本例两列，列多的表要逐列 OR——列数多时维护成本高，可评估触发器只盯关键列或改用 binlog 侧订阅）；DELETE 的快照必须取 OLD（NEW 在 DELETE 里不存在）。与外键/约束的分工复述：审计是「历史」不是「约束」，归触发器管是正位。
+</details>
 
-**换行写法：AFTER 触发器扣减库存**
-`UPDATE <关联表> SET <列名> = <列名> - NEW.<列名> WHERE <条件>`
-```sql
--- 订单项插入后扣减商品库存
-DELIMITER //
-CREATE TRIGGER after_order_item_insert
-AFTER INSERT ON order_items
-FOR EACH ROW
-BEGIN
-    UPDATE products
-    SET stock = stock - NEW.quantity
-    WHERE id = NEW.product_id;
-END //
-DELIMITER ;
-```
+练习四（找错题）：这个触发器想「插入订单后把订单号补成 ORD+自增id」，有两处问题，先找再修：
 
-**换行写法：AFTER 触发器恢复库存**
-`UPDATE <关联表> SET <列名> = <列名> + OLD.<列名> WHERE <条件>`
 ```sql
--- 订单项删除后恢复商品库存
-DELIMITER //
-CREATE TRIGGER after_order_item_delete
-AFTER DELETE ON order_items
-FOR EACH ROW
-BEGIN
-    UPDATE products
-    SET stock = stock + OLD.quantity
-    WHERE id = OLD.product_id;
-END //
-DELIMITER ;
-```
-
-**换行写法：AFTER 触发器更新统计**
-`UPDATE <统计表> SET <列名> = <列名> + NEW.<列名> WHERE <条件>`
-```sql
--- 订单插入后更新客户统计信息
-DELIMITER //
-CREATE TRIGGER after_order_insert
+CREATE TRIGGER bad_order_no
 AFTER INSERT ON orders
 FOR EACH ROW
 BEGIN
-    UPDATE customers
-    SET total_orders = total_orders + 1,
-        total_spent = total_spent + NEW.total_amount,
-        last_order_date = NEW.order_date
-    WHERE id = NEW.customer_id;
-END //
-DELIMITER ;
+  UPDATE orders SET order_no = CONCAT('ORD', NEW.id) WHERE id = NEW.id;
+END;
 ```
 
----
+提示：AFTER 里 UPDATE 同一张表会发生什么？正确时机是 BEFORE 还是 AFTER？
 
-## 事件调度器
+<details>
+<summary>参考实现</summary>
 
-**单行写法：查看调度器状态**
-`SHOW VARIABLES LIKE 'event_scheduler'`
 ```sql
--- 检查事件调度器状态
-SHOW VARIABLES LIKE 'event_scheduler';
-```
-
-**单行写法：启用调度器**
-`SET GLOBAL event_scheduler = ON`
-```sql
--- 启用事件调度器
-SET GLOBAL event_scheduler = ON;
-```
-
-**换行写法：创建每日定时事件**
-`CREATE EVENT [IF NOT EXISTS] <事件名> ON SCHEDULE EVERY 1 DAY [STARTS <时间>] DO BEGIN <事件体> END`
-```sql
--- 每天凌晨清理过期会话
-DELIMITER //
-CREATE EVENT IF NOT EXISTS cleanup_expired_sessions
-ON SCHEDULE EVERY 1 DAY
-STARTS CURRENT_DATE + INTERVAL 1 DAY + INTERVAL 2 HOUR
-DO
-BEGIN
-    DELETE FROM sessions WHERE expires_at < NOW();
-    INSERT INTO event_log (event_name, executed_at, rows_affected)
-    VALUES ('cleanup_expired_sessions', NOW(), ROW_COUNT());
-END //
-DELIMITER ;
-```
-
-**换行写法：创建每小时定时事件**
-`CREATE EVENT [IF NOT EXISTS] <事件名> ON SCHEDULE EVERY 1 HOUR DO BEGIN <事件体> END`
-```sql
--- 每小时更新热门商品
-DELIMITER //
-CREATE EVENT IF NOT EXISTS update_hot_products
-ON SCHEDULE EVERY 1 HOUR
-DO
-BEGIN
-    TRUNCATE TABLE hot_products;
-    INSERT INTO hot_products (product_id, view_count, sales_count)
-    SELECT p.id, p.view_count, COALESCE(SUM(oi.quantity), 0)
-    FROM products p
-    LEFT JOIN order_items oi ON p.id = oi.product_id
-    WHERE p.created_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
-    GROUP BY p.id
-    ORDER BY p.view_count DESC, sales_count DESC
-    LIMIT 100;
-END //
-DELIMITER ;
-```
-
-**换行写法：创建每月定时事件**
-`CREATE EVENT [IF NOT EXISTS] <事件名> ON SCHEDULE EVERY 1 MONTH STARTS '<时间>' DO BEGIN <事件体> END`
-```sql
--- 每月 1 号生成统计报表
-DELIMITER //
-CREATE EVENT IF NOT EXISTS monthly_report
-ON SCHEDULE EVERY 1 MONTH
-STARTS '2026-07-01 00:00:00'
-DO
-BEGIN
-    INSERT INTO monthly_reports (report_month, total_orders, total_revenue, new_users)
-    SELECT
-        DATE_FORMAT(DATE_SUB(CURDATE(), INTERVAL 1 MONTH), '%Y-%m'),
-        (SELECT COUNT(*) FROM orders WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-         AND order_date < CURDATE()),
-        (SELECT COALESCE(SUM(total_amount), 0) FROM orders
-         WHERE order_date >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-         AND order_date < CURDATE()),
-        (SELECT COUNT(*) FROM users WHERE created_at >= DATE_SUB(CURDATE(), INTERVAL 1 MONTH)
-         AND created_at < CURDATE());
-END //
-DELIMITER ;
-```
-
-**换行写法：创建一次性事件**
-`CREATE EVENT <事件名> ON SCHEDULE AT <时间> DO BEGIN <事件体> END`
-```sql
--- 5 分钟后执行一次性任务
-DELIMITER //
-CREATE EVENT IF NOT EXISTS one_time_task
-ON SCHEDULE AT CURRENT_TIMESTAMP + INTERVAL 5 MINUTE
-DO
-BEGIN
-    UPDATE system_config SET value = 'initialized' WHERE key = 'status';
-END //
-DELIMITER ;
-```
-
-**单行写法：查看所有事件**
-`SHOW EVENTS`
-```sql
--- 查看所有事件
-SHOW EVENTS;
-```
-
-**单行写法：查看事件详情**
-`SHOW CREATE EVENT <事件名>`
-```sql
--- 查看事件定义详情
-SHOW CREATE EVENT cleanup_expired_sessions;
-```
-
-**单行写法：禁用事件**
-`ALTER EVENT <事件名> DISABLE`
-```sql
--- 禁用指定事件
-ALTER EVENT cleanup_expired_sessions DISABLE;
-```
-
-**单行写法：启用事件**
-`ALTER EVENT <事件名> ENABLE`
-```sql
--- 启用指定事件
-ALTER EVENT cleanup_expired_sessions ENABLE;
-```
-
-**单行写法：修改事件调度周期**
-`ALTER EVENT <事件名> ON SCHEDULE EVERY <间隔>`
-```sql
--- 修改事件的调度周期
-ALTER EVENT cleanup_expired_sessions
-ON SCHEDULE EVERY 2 DAY;
-```
-
-**单行写法：删除事件**
-`DROP EVENT [IF EXISTS] <事件名>`
-```sql
--- 删除事件
-DROP EVENT IF EXISTS one_time_task;
-```
-
-**换行写法：查询事件信息**
-`SELECT <列名> FROM information_schema.events WHERE <条件>`
-```sql
--- 从 information_schema 查询事件信息
-SELECT event_name, status, interval_value, interval_field, last_executed
-FROM information_schema.events
-WHERE event_schema = 'mydb';
-```
-
----
-
-## 条件触发器
-
-**换行写法：使用标志变量控制触发器**
-`IF @<变量名> IS NULL OR @<变量名> = 0 THEN <逻辑> END IF`
-```sql
--- 批量操作时通过标志变量跳过触发器逻辑
-DELIMITER //
-CREATE TRIGGER conditional_trigger
-BEFORE UPDATE ON products
+CREATE TRIGGER good_order_no
+BEFORE INSERT ON orders
 FOR EACH ROW
 BEGIN
-    IF @skip_trigger IS NULL OR @skip_trigger = 0 THEN
-        SET NEW.updated_at = NOW();
-    END IF;
-END //
-DELIMITER ;
+  SET NEW.order_no = CONCAT('ORD', LAST_INSERT_ID() + 1);
+  -- 或应用层生成；自增 id 在 BEFORE 阶段通常已可读（8.0 行为），但更稳的做法见下
+END;
 ```
 
-**换行写法：批量操作时设置标志变量**
-`SET @<变量名> = <值>`
-```sql
--- 批量更新时设置标志变量跳过触发器
-SET @skip_trigger = 1;
-UPDATE products SET price = price * 1.1;
-SET @skip_trigger = 0;
-```
+两处问题：其一，AFTER 触发器里 **UPDATE 触发它的同一张表**——触发器栈重入（UPDATE 又触发本表触发器）在 MySQL 里直接报错 `Can't update table 'orders' in stored function/trigger because it is already used by statement`，即使不报错也是自锁死锁的高危形态；其二，时机选择：改的是**本行**的值就该在 BEFORE 里改 NEW（数据进表前定形），而不是进表后再 UPDATE 回去（两次写、破坏 AFTER 语义）。修法用 BEFORE + SET NEW；顺带提醒：BEFORE 阶段自增 id 的可见性随版本有差异，真正稳健的「含自增 id 的订单号」通常在应用层插入后取 last_insert_id 再补一次 UPDATE（同事务内）——触发器版适合「id 已由应用传入」的场景。正文 5.2 的死锁对照正是这对 bad/good 例子的原理。
+</details>
+
+练习五（实战题）：把「审计、校验、级联」三类需求各归位一次：给下面三个需求判断该用触发器、外键、CHECK 还是事件，并各写一行方案——(a) 删除分类时拦截（还有商品挂在分类下时不许删）；(b) salary 字段不许为负；(c) 每天凌晨把 90 天前的登录日志搬到归档库。
+
+提示：拦删除想 RESTRICT；范围校验想 CHECK（075 篇）；按时间调度想事件（790 篇）。
+
+<details>
+<summary>参考实现</summary>
+
+- (a) **外键**：`FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE RESTRICT`——引擎级拦截、零维护，触发器版（BEFORE DELETE 查子表 SIGNAL）慢且绕；
+- (b) **CHECK**：`ALTER TABLE employees ADD CONSTRAINT chk_salary CHECK (salary >= 0)`（8.0.16+ 真生效，见 075 篇）——行内规则不劳触发器；
+- (c) **事件**：`CREATE EVENT archive_login_daily ON SCHEDULE EVERY 1 DAY STARTS '2026-10-08 02:00:00' DO INSERT INTO archive_db.login_log SELECT ... WHERE login_at < NOW() - INTERVAL 90 DAY; DELETE ...`——按时间触发是事件的定义域（790 篇有完整形态与幂等设计）。
+
+三个需求恰好是「触发器不该做」的边界演示：能外键不触发器、能 CHECK 不触发器、按时间找事件——触发器留给「行级、跨表、应用代码够不着」的第三类空间（审计、联动、归档式级联）。
+</details>
+
+## 自我检查
+
+- 能说出触发器的六个时机组合（BEFORE/AFTER x INSERT/UPDATE/DELETE）与 NEW/OLD 在各事件下的可用性；
+- 能写出带 SIGNAL 校验的 BEFORE 触发器与带 IF 闸的 AFTER 审计触发器；
+- 能解释 `IF NEW.col = NULL` 为什么永远为假并改写成 IS NULL；
+- 能完成 tri01/tri02 式的级联实验并说出它与外键 ON DELETE CASCADE 的取舍（纯级联用外键、级联加动作才用触发器）；
+- 能用会话标志变量实现批量操作的触发器旁路，并说出忘记复位的后果；
+- 能按「触发器挂行变、事件挂时间到」的分界给新需求选对工具，并说出三类「不该用触发器」的需求各自的正解。

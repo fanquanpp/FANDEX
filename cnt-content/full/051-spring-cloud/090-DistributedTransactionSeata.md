@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 110
 title: Seata 与分布式事务：订单提交了库存没扣，数据怎么追平
 description: 以「订单服务本地事务提交成功，调库存服务扣减时网络抖动超时，订单有了库存没扣」引入：从 2PC 到柔性事务的方案谱系与决策表、Seata AT 三角色与 undo_log 两阶段原理、@GlobalTransactional 落地与回滚观察、全局锁热点边界与本地消息表对照实现，附双服务回滚实验。
 module: 'spring-cloud'
@@ -14,6 +14,13 @@ related:
   - 'mysql/540-DistributedTransaction'
   - 'spring-cloud/100-EventDrivenMessaging'
 ---
+
+## 知识点地图
+
+- 知识类别：分布式事务——方案谱系（2PC/TCC/Saga/AT/本地消息表）与 Seata AT 的原理、落地与边界。
+- 解决什么问题：跨服务、跨库的两次写无法用 @Transactional 绑定同生共死；先学会"选对方案"，再学"用对 Seata AT"。
+- 什么时候用到：一个业务动作要写两个及以上服务的数据时；以及评估"高并发场景该不该放弃 AT"时。
+- 本篇与《事件驱动消息》的本地消息表形成对照：前者补偿回滚，后者最终一致；收官篇 140 的下单链路用的是后者，理由复述见其第 3 节。
 
 ## 前置知识
 

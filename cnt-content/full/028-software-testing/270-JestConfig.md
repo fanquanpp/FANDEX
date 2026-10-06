@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 370
 title: Jest 配置与快照
 module: 'software-testing'
 category: 云与基础设施

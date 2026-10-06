@@ -8,12 +8,11 @@ description: Kubernetes 核心资源：Pod、Service、Deployment、Ingress、Co
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'devops/080-Kubernetes'
   - 'devops/060-DockerfileMultiBuild'
   - 'devops/110-HelmChartApplicationPackage'
   - 'devops/100-KubectlBasics'
 prerequisites:
-  - 'devops/080-Kubernetes'
+  - 'devops/090-KubernetesCoreDetailed'
 ---
 
 ## 0. 一句话理解
@@ -278,6 +277,114 @@ spec:
 1. HPA 基于 **Pod 实际用量/requests 的比率**：没配 requests 就无法计算，HPA 直接失效。
 2. 需要 Metrics Server（资源指标）或 Prometheus Adapter（自定义指标）。
 3. 缩容冷静期是防"流量抖动→副本震荡"的关键；扩容默认响应快、缩容慢，符合直觉。
+
+### 6.1 VPA：垂直扩缩容（加资源而不是加副本）
+
+HPA 的互补品：流量涨了加副本，但**单 Pod 本身内存不足**（OOMKilled）是垂直问题。VPA 观察 Pod 实际用量，给出（或自动改写）requests/limits 建议：
+
+```yaml
+apiVersion: autoscaling.k8s.io/v1
+kind: VerticalPodAutoscaler
+metadata:
+  name: web-vpa
+spec:
+  targetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: web-deployment
+  updatePolicy:
+    updateMode: Auto       # Off 只出建议 / Initial 只对新 Pod / Recreate / Auto
+  resourcePolicy:
+    containerPolicies:
+      - containerName: web
+        minAllowed: { cpu: 100m, memory: 128Mi }
+        maxAllowed: { cpu: '2',  memory: 2Gi }   # 封顶防止建议失控
+```
+
+四种 updateMode 的实用判别：**生产先用 Off 观察一周建议值**，手动落进 Deployment 再评估；Auto 会**重建 Pod** 来改 requests——与 HPA 同时开 Auto 会互相打架（HPA 按 requests 比例扩，VPA 改了 requests 分母），同组资源上二选一。
+
+### 6.2 NetworkPolicy：Pod 级防火墙
+
+K8s 默认**所有 Pod 互通**（平坦网络）。生产集群的零信任基线是"默认拒绝 + 白名单放行"：
+
+```yaml
+# 默认拒绝 production 命名空间所有入站
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: default-deny-ingress
+  namespace: production
+spec:
+  podSelector: {}          # 空选择器 = 该命名空间全部 Pod
+  policyTypes: [Ingress]
+---
+# 白名单：只允许 frontend Pod 访问 api 的 8080
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-frontend-to-api
+  namespace: production
+spec:
+  podSelector:
+    matchLabels: { app: api }
+  policyTypes: [Ingress]
+  ingress:
+    - from:
+        - podSelector:
+            matchLabels: { app: frontend }
+      ports:
+        - { protocol: TCP, port: 8080 }
+```
+
+两个必知的坑：
+
+1. **NetworkPolicy 需要 CNI 插件支持**（Calico、Cilium 等）——kubeadm 裸装或用不支持插件的发行版时，清单 apply 成功但**完全不生效**，"配了策略还互通"先查 `kubectl get pods -n kube-system | grep -E 'calico|cilium'`；
+2. `podSelector: {}` + 空 ingress 规则 = 拒绝；一旦给某 Pod 配了**任何** Ingress 规则，就进入"白名单模式"——未列出的来源全部拒绝。线上加默认拒绝前，先把存量调用关系梳理成白名单，否则一刀切断所有依赖。
+
+### 6.3 Operator 与 CRD：把运维知识编码成软件
+
+Operator = **CRD（自定义资源）** + **Controller（控制循环）**：为有状态/复杂应用定义专属资源，让控制器像内置控制器一样持续协调。原理上它就是 Deployment 控制器思路的推广——你声明"我要 3 节点的 MySQL 集群"，Operator 负责编排主从、备份、故障切换等运维细节：
+
+```yaml
+# CRD：给集群新增一种叫 WebApp 的资源类型
+apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  name: webapps.apps.example.com
+spec:
+  group: apps.example.com
+  versions:
+    - name: v1
+      served: true
+      storage: true
+      schema:
+        openAPIV3Schema:
+          type: object
+          properties:
+            spec:
+              type: object
+              properties:
+                replicas: { type: integer, minimum: 1, maximum: 100 }
+                image:    { type: string }
+  scope: Namespaced
+  names:
+    plural: webapps
+    singular: webapp
+    kind: WebApp
+    shortNames: [wa]
+```
+
+CRD 只是"登记新类型"（校验规则都写在 schema 里），真正干活的 Controller 要另装——这就是 Operator 镜像。常用现成 Operator 一览：
+
+| Operator | 功能 | 适用场景 |
+| --- | --- | --- |
+| Prometheus Operator | 管控监控栈 | 可观测性 |
+| Cert Manager | 证书签发与续期 | TLS 自动化 |
+| ArgoCD | GitOps 部署 | 持续交付 |
+| MySQL Operator | MySQL 集群管理 | 数据库运维 |
+| Kafka Operator (Strimzi) | Kafka 集群管理 | 消息队列运维 |
+
+使用准则：**先找现成 Operator，没有才考虑自研**（自研走 kubebuilder/operator-sdk，成本是持续维护一个控制器）。装了 Operator 的集群要把它当"一个持续运行的自动化运维工程师"管理——升级、RBAC、资源配额一个不少。
 
 ## 7. 陷阱与排查速查
 

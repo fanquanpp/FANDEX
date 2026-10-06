@@ -1,5 +1,5 @@
 ---
-order: 630
+order: 680
 title: Go 与 CGO
 module: 'go'
 category: 后端技术

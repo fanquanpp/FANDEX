@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 340
 title: 枚举救急锦囊：定义、构造函数与 switch
 module: 'java'
 category: 后端技术

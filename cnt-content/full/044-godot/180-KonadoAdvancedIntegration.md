@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 260
 title: Konado 进阶：变量存档与深度定制
 module: 'godot'
 category: 游戏开发

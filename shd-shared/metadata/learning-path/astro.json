@@ -54,8 +54,13 @@
       "nodes": [
         {
           "id": "astro-201",
-          "title": "Astro 样式与资源优化",
-          "doc": "070-StylingFontsAssets"
+          "title": "Astro 样式与主题",
+          "doc": "070-AstroStylesAndTheming"
+        },
+        {
+          "id": "astro-204",
+          "title": "Astro 字体与 Fonts API",
+          "doc": "072-AstroFontsApi"
         },
         {
           "id": "astro-202",

@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 250
 title: Ansible Playbook 配置管理
 module: 'devops'
 category: 云与基础设施
@@ -27,6 +27,8 @@ prerequisites:
 > Ansible 是"无 Agent 的批量配置管理"：通过 SSH（或 WinRM）连上机器，把 YAML
 > 写的 Playbook（步骤清单）推过去执行，而且执行是幂等的——跑一遍和跑十遍结果一样。
 > 它解决的是"Terraform 建好机器之后，机器里面的东西谁来装"。
+
+**分工声明（跨模块）**：027-cloud 模块的 [ConfigurationManagementAnsible](/cloud-computing/415-ConfigurationManagementAnsible) 从**云基础设施视角**讲 Ansible 的定位（与 Terraform 的建站/装机器分工、云主机动态 inventory），本篇是**工具深用**专篇（Inventory/Playbook/Role/Vault 与陷阱清单）——**选型与定位看 cloud，上手写 Playbook 看本篇**。应用级配置（配置中心）与密钥治理见[密钥管理与配置中心](/devops/235-SecretsAndConfigCenter)。
 
 ## 1. 架构：控制机 + 被管节点
 
@@ -164,14 +166,28 @@ ansible-playbook site.yml --vault-password-file ~/.vault-pass
 | 目标机 Python 版本 | 需 Python 3.x，老系统先用 `ansible.builtin.raw` 引导 |
 | 控制并发 | `forks` 默认 5，几百台机器要调大并按需 `strategy: free` |
 
-## 7. 动手试试
+## 7. 常用模块速查
+
+| 模块 | 用途 |
+| --- | --- |
+| apt / yum | 包管理 |
+| copy / template | 文件分发（template 走 Jinja2 渲染） |
+| service / systemd | 服务管理 |
+| user / group | 用户管理 |
+| file | 文件/目录管理（含权限、软链） |
+| command / shell | 执行命令（能用模块解决就别用） |
+| git | 代码拉取 |
+| docker_container | Docker 管理 |
+| k8s | Kubernetes 资源管理 |
+
+## 8. 动手试试
 
 1. 用 Docker 起两个装了 sshd 的 Ubuntu 容器当目标机，配免密登录，
    跑通 `ping` 与安装软件两个任务。
 2. 把第 3 节 playbook 跑两遍，观察第二遍全部 `ok` 而非 `changed`——这就是幂等。
 3. 修改 nginx 配置模板后先 `--check --diff` 预览差异，再真实执行。
 
-## 8. 小结
+## 9. 小结
 
 **初学者要点**
 

@@ -12,7 +12,7 @@ related:
   - 'devops/410-DatabaseOps'
   - 'devops/330-Troubleshooting'
 prerequisites:
-  - 'devops/080-Kubernetes'
+  - 'devops/090-KubernetesCoreDetailed'
 ---
 
 ## 场景：一次误删 Pod 丢掉了整个数据库

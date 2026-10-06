@@ -290,3 +290,65 @@ Program.cs(3,44): error CS0103: The name 'bestsore' does not exist
 ## 下一步
 
 进入 [C# 面向对象编程](/csharp/040-CSharpOOP)：顶级语句里隐式生成的类，下一篇由你亲手写——类、对象、属性与方法，把排行榜从脚本升级成真正的程序。
+
+## 速查补充：全局 using（承接自原 150 篇速查段）
+
+## 全局 using 与 Nullable
+
+**基本写法：全局 using**
+`global using <命名空间>;`
+```csharp
+// 全项目共享的命名空间引用
+global using System;
+```
+
+---
+
+**单行写法：全局 using 多命名空间**
+`global using <命名空间1>; global using <命名空间2>;`
+```csharp
+// 单行声明多个全局 using
+global using System; global using System.Linq;
+```
+
+---
+
+**换行写法：全局 using 多命名空间**
+`global using <命名空间1>; global using <命名空间2>;`
+```csharp
+// 换行声明多个全局 using
+global using System;
+global using System.Collections.Generic;
+global using System.Linq;
+global using System.Threading.Tasks;
+```
+
+---
+
+## 速查补充：顶级语句与文件范围命名空间（承接自原 150 篇速查段）
+
+## 顶级语句与文件范围命名空间
+
+**基本写法：顶级语句**
+`<语句>;`
+```csharp
+// 无需 Main 方法的程序入口
+var data = await FetchDataAsync();
+Console.WriteLine($"获取到 {data.Length} 条记录");
+```
+
+---
+
+**基本写法：文件范围命名空间**
+`namespace <命名空间>;`
+```csharp
+// 单文件命名空间声明
+namespace MyApp.Services;
+
+public class UserService
+{
+    // 整个文件都在该命名空间下
+}
+```
+
+---

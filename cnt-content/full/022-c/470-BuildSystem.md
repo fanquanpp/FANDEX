@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 510
 title: 构建系统：从 Makefile 到 CMake
 module: 'c'
 category: 计算机科学
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'c/320-DynamicStaticLibrary'
-  - 'c/490-StaticAnalysisDebug'
+  - 'c/485-StaticAnalysisAndSanitizers'
   - 'c/410-CrossPlatformProgramming'
 prerequisites:
   - 'c/310-MultiFileCompilation'
@@ -23,7 +23,7 @@ prerequisites:
 
 头文件守卫等细节记不全也能往下读，用到就带一句（详见 [预处理器与宏](/c/290-PreprocessorMacro)）。
 
-> 分工说明：310 讲手工多文件编译与链接机制，320 讲库本身；本篇回答「文件多到手敲命令不现实了怎么办」——构建的编排交给 Make 与 CMake。两篇旧命令在这里全部变成可维护的脚本，且只讲编排机制本身：交叉编译工具链、依赖下载等展开在 [跨平台编程](/c/410-CrossPlatformProgramming)，与静态分析工具的集成在 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+> 分工说明：310 讲手工多文件编译与链接机制，320 讲库本身；本篇回答「文件多到手敲命令不现实了怎么办」——构建的编排交给 Make 与 CMake。两篇旧命令在这里全部变成可维护的脚本，且只讲编排机制本身：交叉编译工具链、依赖下载等展开在 [跨平台编程](/c/410-CrossPlatformProgramming)，与静态分析工具的集成在 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。
 
 ## 学习目标
 
@@ -379,7 +379,7 @@ CMake Warning (dev) at CMakeLists.txt:1 (project):
 
 - 拿到任何开源 C 项目的第一件事是读它的 README 构建说明，通常是三种之一：有 Makefile 就 make；有 CMakeLists.txt 就 cmake -S . -B build 加 cmake --build build；有 configure 脚本走 ./configure && make。三种入口背后是同一套依赖图模型；
 - 反面极端也真实存在：SQLite 把全部源码合并成单个 sqlite3.c 发布，使用者一条 gcc 命令即可编译（310 篇提过它的合并发布）——不需要构建系统的项目，恰恰说明构建系统解决的是规模问题；
-- IDE 与工具的接入点：配置加一句 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)，build/ 下会生成 compile_commands.json——clang-tidy、clangd 等工具靠它读懂工程，与 [静态分析与调试](/c/490-StaticAnalysisDebug) 直接衔接；
+- IDE 与工具的接入点：配置加一句 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)，build/ 下会生成 compile_commands.json——clang-tidy、clangd 等工具靠它读懂工程，与 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers) 直接衔接；
 - 团队协作的最低配置：仓库里提交一份带 .PHONY 与 -MMD 的 Makefile（小项目），或一份 target-based 的 CMakeLists（中大型项目），新同事 clone 下来一条命令出二进制——构建系统的隐性价值是「任何人、任何时候、一键可复现」。
 
 ## 小练习
@@ -407,7 +407,7 @@ report:
 
 - 往前：[多文件编译](/c/310-MultiFileCompilation) 的「分开 -c 再链接」是增量构建的地基——make 编排的正是那一步拆出来的 .o；[动态库与静态库](/c/320-DynamicStaticLibrary) 的每条命令在本篇变成规则，链接顺序惨案由 CMake 的依赖图代管；
 - 旁支：头文件为什么产生依赖，根子在 #include 的文本插入机制（[预处理器与宏](/c/290-PreprocessorMacro)）；交叉编译的工具链文件与平台差异在 [跨平台编程](/c/410-CrossPlatformProgramming)；
-- 往后：构建是质量工程的第一环——compile_commands.json 接上 clang-tidy 与 clangd，构建选项里开 ASan/UBSan 的姿势在 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+- 往后：构建是质量工程的第一环——compile_commands.json 接上 clang-tidy 与 clangd，构建选项里开 ASan/UBSan 的姿势在 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。
 
 ## 官方文档
 
@@ -432,4 +432,4 @@ report:
 
 ## 下一步
 
-进入 [静态分析与调试](/c/490-StaticAnalysisDebug)：项目能一键构建了，下一步是让它被系统性检查——clang-tidy 静态扫描、gdb 断点单步、以及构建开关里开着的 ASan/UBSan 如何把偶现 bug 变成必现现场。
+进入 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)：项目能一键构建了，下一步是让它被系统性检查——clang-tidy 静态扫描、gdb 断点单步、以及构建开关里开着的 ASan/UBSan 如何把偶现 bug 变成必现现场。

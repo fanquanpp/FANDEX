@@ -1,5 +1,5 @@
 ---
-order: 620
+order: 660
 title: 类型安全的表单验证
 module: 'typescript'
 category: 前端技术

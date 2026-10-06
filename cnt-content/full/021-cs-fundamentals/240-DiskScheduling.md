@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 250
 title: 磁盘调度
 module: 'cs-fundamentals'
 category: 计算机科学

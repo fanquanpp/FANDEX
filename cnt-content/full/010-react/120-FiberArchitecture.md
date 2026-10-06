@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 180
 title: Fiber 架构：渲染为什么能随时停下
 module: 'react'
 category: 前端技术

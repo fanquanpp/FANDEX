@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 110
 title: 安全与用户管理
 module: 'mongodb'
 category: 数据库
@@ -12,6 +12,12 @@ related:
 prerequisites:
   - 'mongodb/010-MongoDBOverviewQuickStart'
 ---
+
+## 知识点地图
+
+- 知识类别：MongoDB 安全与用户管理——访问控制开启、SCRAM 认证与建号、内置角色与自定义角色、网络层（bindIp/TLS）、加密与审计、反模式自查。
+- 解决什么问题：数据库的"门"怎么锁——谁能连、连上能干什么、网络暴露面多大、出了事能不能查。
+- 什么时候用到：新库上线 checklist、给应用/报表/备份分别建号、安全自查与等保整改。
 
 ## 0. 把数据库的门锁好（先读这里）
 
@@ -225,6 +231,57 @@ db.currentOp(true) // 有没有来源可疑的连接
 ```
 
 **讲解：** 安全事故复盘里反复出现同一句话："我们以为内网是安全的"。公网暴露 + 无认证的组合能在几小时内丢掉整个数据库，而修复只需要本篇第二节十分钟。
+
+## 动手实践
+
+**任务一：从裸奔到上锁的全过程。** 起一个不带 --auth 的 mongod，验证无凭据可读写；然后按第 2 节走 localhost exception 建首位管理员，重启带 --auth，验证：无凭据连接被拒、管理员登录后可以建其他账号。提示：localhost exception 只在"还没有任何用户"时可用——首位管理员一旦建成，这个后门就关了。
+
+**任务二：最小权限的边界实测。** 按"应用只读写 business 库、报表只读、备份专用"建三个账号（readWrite/read/backup 角色），逐个验证：应用账号不能读 admin 库、报表账号不能写、备份账号不能写业务集合但能读 oplog。提示：验证"不能"与验证"能"同样重要——权限列表里少了限制不是安全，实测过越权失败才是。
+
+**任务三：反模式自查表。** 对一个（自己搭的）实例按第 8 节清单逐项检查：authentication 开了吗、bindIp 是不是 0.0.0.0、有没有默认弱口令账号、审计开了吗，把每项结论写成一行报告。提示：自查的价值在"形成例行动作"——把这份检查写成部署流水线的一个 stage，新环境自动过一遍。
+
+先自己操作，再对照参考流程：
+
+<details>
+<summary>任务二参考流程</summary>
+
+```javascript
+// 1. 管理员登录后建三个账号
+use admin
+db.createUser({
+  user: "app_rw",
+  pwd: passwordPrompt(),
+  roles: [{ role: "readWrite", db: "business" }],
+})
+db.createUser({
+  user: "report_r",
+  pwd: passwordPrompt(),
+  roles: [{ role: "read", db: "business" }],
+})
+db.createUser({
+  user: "backup_bot",
+  pwd: passwordPrompt(),
+  roles: ["backup"],   // backup 角色含读 oplog，配合《备份恢复》篇使用
+})
+
+// 2. 逐个验证权限边界（各用各自账号连接）
+// app_rw：
+use business
+db.orders.insertOne({ ok: 1 })          // 应成功
+db.getSiblingDB("admin").system.users.find()   // 应失败：Unauthorized
+
+// report_r：
+db.orders.find().limit(1)               // 应成功
+db.orders.insertOne({ no: 1 })          // 应失败：not authorized on business to execute command
+
+// backup_bot：
+use local
+db.oplog.rs.find().limit(1)             // 应成功（oplog 可读）
+db.getSiblingDB("business").orders.insertOne({ no: 1 })   // 应失败
+```
+
+要点：a) 三类账号对应三种真实职责，越权测试（每行"应失败"）是本任务的核心产出；b) backup 角色能读 oplog 但不能写业务库——把第 075 篇的备份账号需求在这里落地；c) passwordPrompt() 让密码走交互输入而非命令行明文，shell 历史里不留密码。
+</details>
 
 ## 小结与延伸
 

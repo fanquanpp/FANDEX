@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 560
 title: "类型体操实用模式：类型层也要别重复自己"
 module: 'typescript'
 category: 前端技术
@@ -8,7 +8,7 @@ description: "以「分页结构到处手写泛型」引入，讲五个消灭重
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'typescript/540-TypeGymnastics'
+  - 'typescript/540-TypeGymnasticsBoundaries'
   - 'typescript/430-ConditionalTypeDistribute'
   - 'typescript/210-KeyofTypeofIndexedAccessTypes'
   - 'typescript/480-MappedTypeKeyRemap'
@@ -25,7 +25,7 @@ prerequisites:
 
 没学过也没关系，用到时本文会给一句话解释并附链接。
 
-类型体操在这个模块拆成两篇接力：**本篇讲「用」——五个解决重复劳动的实用模式，每个不超过五行；[540 深水区](/typescript/540-TypeGymnastics) 讲「底」——递归终止条件、深度限制实测、infer 边界与什么时候该停手。** 两篇示例不重复，本篇避开递归与 infer 深水，先消掉手头的重复劳动。
+类型体操在这个模块拆成两篇接力：**本篇讲「用」——五个解决重复劳动的实用模式，每个不超过五行；[540 深水区](/typescript/540-TypeGymnasticsBoundaries) 讲「底」——递归终止条件、深度限制实测、infer 边界与什么时候该停手。** 两篇示例不重复，本篇避开递归与 infer 深水，先消掉手头的重复劳动。
 
 ## 学习目标
 
@@ -258,4 +258,4 @@ error TS2322: Type 'T' is not assignable to type 'string | number | symbol'.
 
 ## 下一步
 
-进入 [540 类型体操深水区](/typescript/540-TypeGymnastics)。分工再念一遍：本篇负责「用」，五个模式各自五行以内；540 负责「底」——递归终止条件、TS2589 实测、infer 双占位与什么时候该停手。
+进入 [540 类型体操深水区](/typescript/540-TypeGymnasticsBoundaries)。分工再念一遍：本篇负责「用」，五个模式各自五行以内；540 负责「底」——递归终止条件、TS2589 实测、infer 双占位与什么时候该停手。

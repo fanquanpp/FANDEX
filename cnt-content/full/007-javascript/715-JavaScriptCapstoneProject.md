@@ -1,5 +1,5 @@
 ---
-order: 720
+order: 800
 title: JavaScript 毕业项目：个人书签管理器
 description: JavaScript 模块出口项目：从需求清单出发做纯前端书签与阅读清单管理器——localStorage 持久化、URL 校验与 favicon、标签筛选、JSON 导入导出、键盘快捷键与 ES Modules 拆分。只给需求、验收断言与提示，不给答案代码。
 module: 'javascript'
@@ -10,7 +10,6 @@ updated: '2026-10-05'
 related:
   - 'javascript/380-JavaScriptModular'
   - 'javascript/400-ModuleBundlingAndTreeShaking'
-  - 'javascript/430-WebAPIBrowserInterface'
   - 'javascript/110-Regex'
   - 'javascript/480-ErrorBoundaryGlobalErrorCatch'
   - 'javascript/090-ArrayHigherOrderMethod'
@@ -121,7 +120,7 @@ JSON.parse(localStorage.getItem('你的键名')).length
 | URL 校验 | new URL() 抛异常、正则 | [正则](/javascript/110-Regex)、[Web 存储](/javascript/460-StorageForTheWeb) |
 | favicon | 按域名拼公开图标服务 URL、img 的 error 事件 | [DOM 与事件](/javascript/410-DOMOperationEvent) 第 7 节 |
 | 列表与筛选 | 事件委托、filter/map、dataset | [DOM 与事件](/javascript/410-DOMOperationEvent) 第 8 节、[数组高阶方法](/javascript/090-ArrayHigherOrderMethod) |
-| 导入导出 | Blob、URL.createObjectURL、FileReader、input 的 files | [Web API 与浏览器接口](/javascript/430-WebAPIBrowserInterface) |
+| 导入导出 | Blob、URL.createObjectURL、FileReader、input 的 files | [Web API 与浏览器接口](/javascript/430-HostEnvironmentAndWebApiOverview) |
 | 键盘快捷键 | keydown、e.key、preventDefault | [DOM 与事件](/javascript/410-DOMOperationEvent) 第 7 节 |
 | 模块拆分 | import/export、type="module" | [JavaScript 模块化](/javascript/380-JavaScriptModular) 第 4 节 |
 | 坏数据出路 | try/catch、全局错误兜底 | [错误边界与全局错误捕获](/javascript/480-ErrorBoundaryGlobalErrorCatch) |

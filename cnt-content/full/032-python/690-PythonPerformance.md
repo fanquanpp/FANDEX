@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 610
 title: 性能优化：先测量，再动手
 module: 'python'
 category: 后端技术
@@ -11,8 +11,7 @@ related:
   - 'python/630-MultiprocessingMultithreading'
   - 'python/650-GILAndFreeThreading'
   - 'python/700-CExtensionsAndFfi'
-prerequisites:
-  - 'python/170-ComprehensionGenerator'
+prerequisites: []
 ---
 
 ## 前置知识

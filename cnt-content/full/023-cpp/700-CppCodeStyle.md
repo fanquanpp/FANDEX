@@ -1,5 +1,5 @@
 ---
-order: 680
+order: 720
 title: C++代码规范
 module: 'cpp'
 category: 计算机科学

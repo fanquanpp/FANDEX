@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 400
 title: 脏读、不可重复读与幻读
 module: 'sql'
 category: 数据库

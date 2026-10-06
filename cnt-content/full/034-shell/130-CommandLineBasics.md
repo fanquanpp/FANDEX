@@ -15,6 +15,13 @@ prerequisites:
   - 'shell/150-ShellBasics'
 ---
 
+## 知识点地图
+
+- **知识类别**：命令行基础——目录导航、文件与目录操作（ls/mkdir/cp/mv/rm）、find 查找、通配符、帮助系统。
+- **解决什么问题**：第一次面对终端不知道从哪下手；文件操作的命令记不住、不敢用 rm；想批量处理文件但只会一个一个点。
+- **什么时候用到**：命令行学习的第一篇；任何文件操作的前置技能——后面的文本处理（shell/200）、脚本编写（shell/150）都建立在这篇的命令词汇上。
+
+与《跨平台命令行详解》（shell/140-CrossPlatformCommandLine）的分工：140 是跨平台的全景对照，本篇是单平台（bash/Linux）的操作正篇——命令细节以本篇为准，平台差异查 140。
 
 ## 1. 从"整理房间"说起
 
@@ -162,6 +169,15 @@ touch report_{01..05}.md # 生成 report_01.md ... report_05.md
 
 **通配符 ≠ 正则表达式**：通配符用于文件名匹配，`*` 表示"任意长度"；正则中 `*` 表示"前一项重复任意次"。若不需要展开，给模式加引号即可（`grep "*.c" file`）。
 
+正则与通配符最容易混淆的两个符号：
+
+| 你写的 | 通配符（文件名）里它是 | 正则（内容匹配）里它是 |
+| :--- | :--- | :--- |
+| `*` | 任意长度的任意字符（`*.log`） | 前一个字符重复 0 到多次（`ab*` 匹配 a、ab、abbb） |
+| `?` | 任意单个字符（`file?.log`） | 前一个字符重复 0 或 1 次（`colou?r`） |
+
+判断口诀：**命令拿到引号内模式去匹配文件名的（find -name、ls 展开），是通配符；去匹配文件内容的（grep/sed/awk），是正则**。同一个 `*.log` 写进 `find . -name "*.log"` 是通配符、写进 `grep --include="*.log" 关键词` 也是通配符（include 过滤的是文件名），但 `grep "log.*error"` 就是正则——看它过滤的是名字还是内容。正则语法与捕获组的系统讲解见《文本处理三剑客》（shell/200-TextProcessingTools）。
+
 ## 6. 帮助系统：man 与 --help
 
 ```bash
@@ -196,3 +212,65 @@ Ctrl + L                 # 清屏（等价于 clear）
 **陷阱三：通配符无匹配。** `ls *.log` 在没有 log 文件时会原样输出 `*.log` 并报错，可用 `nullglob` 选项或先检查。
 
 **陷阱四：`find -exec` 忘记 `\;`。** 缺少结束符会立即报语法错误。
+
+## 9. 动手实践
+
+先只读任务与提示，自己敲完再展开参考命令。
+
+**任务一：整理一个乱目录。** 新建 `mess/` 目录并乱放几类文件（`.txt`、`.md`、`.log` 各若干，含一个带空格的文件名），只用命令行把它们按扩展名分进 `txt/`、`md/`、`log/` 三个子目录——含空格的文件名必须完好无损。
+
+提示：批量移动用通配符；含空格文件名单独验证 `mv` 的引号行为（先不加引号看报错，再加引号修复）。
+
+<details>
+<summary>任务一参考命令</summary>
+
+```bash
+mkdir -p mess/{txt,md,log} && cd mess
+touch a.txt b.md c.log "my notes.txt"
+
+mv *.txt txt/          # 通配符展开，逐个移动
+mv *.md md/
+mv *.log log/
+mv "my notes.txt" txt/ # 不加引号会被拆成 mv my notes.txt 两个源一个目标，报错
+```
+
+自查：`ls txt/` 确认 4 个文件（含 my notes.txt）都在。这题验证两件事：通配符按「匹配到的文件列表」逐个交给 mv（所以不会把多个源挤成一个目标）；引号是含空格文件名的唯一防线。
+</details>
+
+**任务二：用 find 批量改名。** 在 `mess/` 里把所有 `.log` 文件改名为 `.log.bak`（不许手敲每个文件名），要求先预览将执行的改名清单、再真正执行。
+
+提示：`find -exec sh -c '...' _ {} \;` 可以对每个文件跑一小段逻辑；预览的惯用法是把 mv 换成 echo mv。
+
+<details>
+<summary>任务二参考命令</summary>
+
+```bash
+cd mess
+# 第一步：预览
+find . -name "*.log" -exec echo mv {} {}.bak \;
+# 第二步：执行
+find . -name "*.log" -exec mv {} {}.bak \;
+```
+
+自查：`{}.bak` 利用了 find 的占位符拼接（file.log 变 file.log.bak）；预览与执行只差一个 echo——这是 find 批量操作的标准安全姿势。另一种写法是 `for f in *.log; do mv "$f" "$f.bak"; done`，文件数少时更直观；find 的优势是天然递归子目录。
+</details>
+
+**任务三：通配符与正则辨析。** 判断下面四条命令里的模式分别按什么规则匹配、各匹配什么：
+
+```bash
+ls *.txt
+grep "a.*e" words.txt
+find . -name "file?.log"
+grep "file?.log" list.txt
+```
+
+提示：先分「匹配文件名还是文件内容」，再套本篇第 5 节的对照表。
+
+<details>
+<summary>任务三参考答案</summary>
+
+1. `ls *.txt`：通配符匹配文件名——所有 .txt 结尾的文件。
+2. `grep "a.*e"`：正则匹配内容——含「a 后面任意字符任意次再出现 e」的行（如 apple、arena），`.*` 在正则里才是「任意串」。
+3. `find -name "file?.log"`：通配符——file1.log、fileA.log 等恰好一个字符的变体。
+4. `grep "file?.log"`：正则——`?` 是「前一个字符 e 重复 0 或 1 次」，所以匹配 fil.log 或 file.log 字样的行（注意 . 在正则里是任意字符），跟「file 开头 .log 结尾的文件名」完全是两回事。辨析的意义：第 4 条几乎总是写错了的意图——想搜文件名文本要用 `grep -F "file?.log"`（固定字符串）或转义。
+</details>

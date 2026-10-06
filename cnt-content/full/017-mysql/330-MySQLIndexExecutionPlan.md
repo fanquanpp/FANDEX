@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 350
 title: 执行计划与索引联动：优化器为什么这么选
 module: 'mysql'
 category: 数据库

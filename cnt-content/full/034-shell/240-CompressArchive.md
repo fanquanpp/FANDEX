@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 250
 title: 压缩与归档：从"交付产物"和"清日志"两件事学起
 module: 'shell'
 category: 工具链

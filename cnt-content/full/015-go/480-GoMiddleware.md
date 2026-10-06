@@ -1,5 +1,5 @@
 ---
-order: 490
+order: 520
 title: Go 与中间件
 module: 'go'
 category: 后端技术

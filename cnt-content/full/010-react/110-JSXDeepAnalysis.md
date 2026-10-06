@@ -1,24 +1,33 @@
 ---
-order: 110
+order: 160
 title: JSX 深度解析
 module: 'react'
 category: 前端技术
 difficulty: intermediate
-description: JSX语法原理与编译过程
+description: JSX 语法原理与编译过程：标签即函数调用、属性命名差异、表达式插值边界与工具链选项。
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'react/090-TestEngineering'
+  - 'react/090-LintFormatAndProjectStructure'
   - 'react/100-NextJSFullStack'
+  - 'react/112-ConditionalRenderingAndPurity'
   - 'react/120-FiberArchitecture'
   - 'react/130-ConcurrentRendering'
 prerequisites:
   - 'react/010-OverviewEnvSetup'
 ---
 
+## 知识点地图
+
+- **知识类别**：描述 UI / 语言层（JSX 的语法规则与编译产物）。
+- **解决什么问题**：JSX 不是 HTML 也不是字符串，而是 `React.createElement`（新编译器下为 `jsx()` 调用）的语法糖。理解标签到函数调用的转换、属性命名差异（className/htmlFor）、表达式插值边界，才能解释「为什么属性名变了」「为什么大括号里能写什么不能写什么」。
+- **什么时候用到**：读懂编译报错与转换产物时；配置 JSX 工具链（tsconfig jsx 选项）时；面试讲清 JSX 本质时。
+
+分支的组织方式（三元/`&&`/提前 return）与渲染纯度约束已拆为专篇，见 [条件渲染与保持组件纯粹](/react/112-ConditionalRenderingAndPurity)；本篇专注语法与编译层，文末速查段保留条件表达式的速记形态。
+
 ## 概述
 
-JSX语法原理与编译过程。本文将从基础概念、快速上手、详细用法、常见场景、注意事项和进阶用法六个方面全面介绍JSX深度解析。
+JSX 语法原理与编译过程。本文将从基础概念、快速上手、详细用法、常见场景、注意事项和进阶用法六个方面全面介绍 JSX 深度解析。
 
 ## 基础概念
 

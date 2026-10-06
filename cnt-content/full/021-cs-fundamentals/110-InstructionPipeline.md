@@ -8,7 +8,7 @@ description: 指令流水线深度：超标量、超流水线、乱序执行、V
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'cs-fundamentals/100-ComputerPrinciple'
+  - 'cs-fundamentals/100-ComputerOrganizationRapidReview'
   - 'cs-fundamentals/070-DataRepresentationOperation'
   - 'cs-fundamentals/120-StorageSystem'
   - 'cs-fundamentals/130-BusAndInterface'

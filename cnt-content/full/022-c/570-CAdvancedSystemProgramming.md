@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 610
 title: 系统编程进阶：加载器、mmap 与守护进程
 module: 'c'
 category: 计算机科学
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'c/350-SharedMemorySemaphore'
   - 'c/250-FunctionCallStackFrame'
-  - 'c/490-StaticAnalysisDebug'
+  - 'c/485-StaticAnalysisAndSanitizers'
   - 'c/320-DynamicStaticLibrary'
 prerequisites:
   - 'c/330-ProcessAndPipe'
@@ -416,7 +416,7 @@ sleep 2
 grep -c "" /proc/$!/maps      # 几万行映射条目——泄漏实锤
 ```
 
-每个 4 KB 匿名映射占一行，十万轮后 maps 文件本身就有几万行，内核遍历与 TLB 都跟着遭殃。修复：用完 munmap，或复用同一块映射。注意 ASan 抓不到这类泄漏——它盯的是 malloc 的账本，不是 mmap 的账本；[静态分析与调试](/c/490-StaticAnalysisDebug) 的工具箱之外，这一类要靠 /proc/self/maps 自查。
+每个 4 KB 匿名映射占一行，十万轮后 maps 文件本身就有几万行，内核遍历与 TLB 都跟着遭殃。修复：用完 munmap，或复用同一块映射。注意 ASan 抓不到这类泄漏——它盯的是 malloc 的账本，不是 mmap 的账本；[静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers) 的工具箱之外，这一类要靠 /proc/self/maps 自查。
 
 ### 事故二：setuid 程序「不认」你的 LD_PRELOAD
 
@@ -458,7 +458,7 @@ double rate = count / elapsed;                   /* 速率变负，限速窗口�
 ## 与之前和之后的知识的关系
 
 - 往前：[进程与管道](/c/330-ProcessAndPipe) 的 fork/exec/wait 是第 4、5 节的底座；[动态库与静态库](/c/320-DynamicStaticLibrary) 的搜索顺序在第 2 节进入运行时现场；[信号处理](/c/340-SignalHandling) 的 SIGHUP 与异步安全清单在第 5、8 节两度复用；
-- 旁支：[共享内存与信号量](/c/350-SharedMemorySemaphore) 的 SysV IPC 与第 3 节互为对照；栈限额接 [函数调用栈帧](/c/250-FunctionCallStackFrame) 的递归深度除法；/proc/self/maps 的地址空间视角接 [内存深水区](/c/210-MemoryManagement) 的五段地图；
+- 旁支：[共享内存与信号量](/c/350-SharedMemorySemaphore) 的 SysV IPC 与第 3 节互为对照；栈限额接 [函数调用栈帧](/c/250-FunctionCallStackFrame) 的递归深度除法；/proc/self/maps 的地址空间视角接 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 的五段地图；
 - 往后：链表与二叉树那类数据结构由 [结构体与联合](/c/130-StructAndUnion)、[指针深度解析](/c/140-PointerDeep)、[函数指针与回调](/c/170-FunctionPointerCallback) 的积木拼装，本篇不再重复；[C 语言项目实战](/c/580-CProjectExampleStudentGradeSystem) 把本模块的系统件用最朴素的方式组装成完整项目。
 
 ## 官方文档

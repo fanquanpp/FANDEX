@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 480
 title: 技术债务管理
 module: 'software-testing'
 category: 云与基础设施

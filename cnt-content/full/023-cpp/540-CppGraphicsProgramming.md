@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 570
 title: "C++ 图形编程：亲手点亮第一个三角形"
 module: 'cpp'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 340
 title: revert 与 reset：回滚一台往前走，一台往后抹
 module: 'git'
 category: 工具链

@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 160
 title: SQL 综合实战：曲库数据库
 module: 'sql'
 category: 数据库
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'sql/030-SQLFirstSteps'
-  - 'sql/140-MultiTableQuery'
+  - 'sql/150-JoinQuery'
   - 'sql/450-SQLPracticeInterview'
   - 'sql/090-DataType'
 prerequisites:

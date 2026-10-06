@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 170
 title: 环境变量与配置文件
 module: 'shell'
 category: 工具链

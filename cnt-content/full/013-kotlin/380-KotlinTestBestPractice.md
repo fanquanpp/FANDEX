@@ -1,19 +1,27 @@
 ---
-order: 400
-title: Kotlin 测试与最佳实践
+order: 410
+title: Kotlin 测试框架集成
 module: 'kotlin'
 category: 后端技术
 difficulty: advanced
-description: 测试框架集成、协程测试、代码规范、性能优化与 Effective Kotlin 要点。
+description: JUnit 5、Kotest、MockK 与 Android 测试的集成与工程用法。
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
-  - 'kotlin/460-KotlinMultiplatform'
-  - 'kotlin/550-KotlinDSLDomainSpecificLanguage'
+  - 'kotlin/395-KotlinCoroutineTesting'
+  - 'kotlin/390-KotlinTest'
   - 'kotlin/130-NullSafetyDetailed'
   - 'kotlin/090-ExtensionFunction'
 prerequisites: []
 ---
+
+## 知识点地图
+
+- **知识类别**：Kotlin 测试框架集成——JUnit 5、Kotest、MockK 三大件与 Android 本地/插桩测试的配置与用法。本文只讲「用什么框架、怎么配、怎么写」。
+- **解决什么问题**：Kotlin 项目测试技术选型分散（JUnit 参数化、Kotest DSL 与属性测试、MockK 的 Kotlin 专属能力、Android 双测试源集），需要一篇统一入口。
+- **什么时候用到**：给新模块搭测试脚手架时选框架；写 Mock 打桩时查 MockK 语法；Android 工程区分 `src/test/` 与 `src/androidTest/` 时。
+
+协程与 Flow 的专门测法（runTest 虚拟时间、Turbine、MainDispatcherRule 详解）已拆分到[Kotlin 协程测试](/kotlin/395-KotlinCoroutineTesting)；代码规范与性能惯用法在[Kotlin 惯用法与代码规范](/kotlin/575-KotlinIdiomsAndConventions)；kotlin.test 标准断言库见[Kotlin 与测试](/kotlin/390-KotlinTest)。
 
 ## 前置知识
 
@@ -24,10 +32,7 @@ prerequisites: []
 - 掌握「1. JUnit 5 集成」的核心机制、典型用法与常见陷阱
 - 掌握「2. Kotest」的核心机制、典型用法与常见陷阱
 - 掌握「3. MockK」的核心机制、典型用法与常见陷阱
-- 掌握「4. 协程测试」的核心机制、典型用法与常见陷阱
-- 掌握「5. Android 测试」的核心机制、典型用法与常见陷阱
-
-
+- 掌握「4. Android 测试」的核心机制、典型用法与常见陷阱
 
 ## 1. JUnit 5 集成
 
@@ -47,6 +52,8 @@ tasks.test {
     useJUnitPlatform()
 }
 ```
+
+易错点：只加 JUnit 依赖不写 `useJUnitPlatform()`，Gradle 仍用 JUnit 4 runner，测试显示「0 tests run」却不报错——这是新手最常踩的静默失败。
 
 ### 1.2 基本测试
 
@@ -95,6 +102,12 @@ class CalculatorTest {
 }
 ```
 
+逐段解释与易错点：
+
+- `@BeforeEach` 每个测试方法前重建 `calculator`——JUnit 5 默认**每个测试新实例化测试类**，`lateinit` + `@BeforeEach` 是双保险写法；去掉 `@BeforeEach` 直接初始化字段也行，但 `lateinit` 语义让「忘了初始化」在运行时显式报错而不是 NPE。
+- `@Nested inner class`：Kotlin 侧**必须**写 `inner`，否则 JUnit 找不到非静态内部类的实例化路径，嵌套测试静默不执行。
+- 易错点：`assertThrows` 是「执行 + 捕获」，lambda 里写多行时异常可能抛在第二行而第一行的状态变更已发生——需要验证「抛异常前无副作用」时要拆开断言。
+
 ### 1.3 参数化测试
 
 ```kotlin
@@ -121,6 +134,8 @@ class ParameterizedTestExample {
     }
 }
 ```
+
+工程场景：校验服务处理手机号规则（`@ValueSource` 喂非法号段）、汇率换算表驱动（`@CsvSource` 直接抄产品给的换算表）。参数化测试失败时 JUnit 报告会标出具体第几组参数——比循环内 assert 的失败定位快得多。
 
 ## 2. Kotest
 
@@ -181,6 +196,8 @@ class CalculatorDescribeSpec : DescribeSpec({
 })
 ```
 
+风格选择：团队从 JS/RSpec 转来的用 DescribeSpec 降低阅读成本；纯 Kotlin 团队常用 FunSpec（结构清晰、IDE 折叠友好）。易错点：Kotest 的 `shouldBe` 是中缀函数，链上再写 `shouldBe` 时括号层级容易错——`a shouldBe b shouldBe c` 不是「都等于」而是 `(a shouldBe b) shouldBe c`，永远拆开写。
+
 ### 2.3 属性测试
 
 ```kotlin
@@ -203,6 +220,8 @@ class PropertyTest : StringSpec({
     }
 })
 ```
+
+属性测试断言的是「对任意输入成立的性质」而不是具体用例：Kotest 默认生成 1000 组随机数据（含边界值收缩 shrinking，失败后自动给最小反例）。工程场景：金额换算函数用 `checkAll(Arb.double())` 断言 `convert(convert(x)) ≈ x` 往返一致，随机生成器抓到了手写用例永远想不到的负数与 NaN 分支。
 
 ## 3. MockK
 
@@ -246,7 +265,7 @@ class UserServiceTest {
 ### 3.2 高级 Mock
 
 ```kotlin
-// Mock 协程函数
+// Mock 协程函数：coEvery/coVerify 对应挂起函数
 private val api = mockk<ApiService>()
 
 coEvery { api.fetchData() } returns listOf(Data("test"))
@@ -267,12 +286,17 @@ verifyOrder {
 every { repository.findByAge(any()) } returns emptyList()
 every { repository.findByName(match { it.startsWith("A") }) } returns listOf(User("1", "Alice"))
 
-// 链式调用
+// 链式调用：第一次返回 "token"，之后返回 "new-token"
 every { request.header("Auth") } returns "token" andThen "new-token"
 
 // 抛出异常
 every { repository.save(any()) } throws DatabaseException("Connection lost")
 ```
+
+易错点：
+
+- 挂起函数必须用 `coEvery`/`coVerify`——用 `every` 打桩挂起函数会在运行时报类型不匹配，报错信息晦涩，看到 `is not a suspend function` 反过查即可。
+- `mockkObject` 有全局状态，用完必须 `unmockkObject(Config)` 或类上 `@MockKAndroid`/`@ExtendWith(MockKExtension)` 自动清理，否则污染同进程后续测试。
 
 ### 3.3 松散 Mock 与严格 Mock
 
@@ -288,137 +312,19 @@ verify { repository wasNot called }
 verify(exactly = 0) { repository.delete(any()) }
 ```
 
-## 4. 协程测试
+权衡：`relaxed = true` 减少样板，但「忘了打桩」的调用静默返回默认值（空列表、0、null），掩盖真实调用路径错误。团队约定：被测主路径的依赖用严格 mock，**只读的边缘依赖**（日志、审计）才用 relaxed。
 
-### 4.1 基本协程测试
+## 4. Android 测试
 
-```kotlin
-import kotlinx.coroutines.test.*
-import org.junit.jupiter.api.Test
+### 4.1 本地单元测试
 
-class CoroutineTest {
-
-    @Test
-    fun `should fetch data asynchronously`() = runTest {
-        // runTest 替代 runBlocking，自动跳过 delay
-        val result = fetchData()
-        assertEquals("data", result)
-    }
-
-    @Test
-    fun `should handle timeout`() = runTest {
-        assertThrows<TimeoutCancellationException> {
-            withTimeout(100) {
-                delay(1000)
-            }
-        }
-    }
-}
-```
-
-### 4.2 虚拟时间控制
-
-```kotlin
-@Test
-fun `should advance time`() = runTest {
-    var result = ""
-    backgroundScope.launch {
-        delay(1000)
-        result = "done"
-    }
-
-    assertEquals("", result)
-    advanceTimeBy(1000)  // 推进虚拟时间
-    assertEquals("done", result)
-}
-
-@Test
-fun `should run pending tasks`() = runTest {
-    var executed = false
-    launch {
-        executed = true
-    }
-    assertFalse(executed)
-    runCurrent()  // 执行所有待处理的任务
-    assertTrue(executed)
-}
-```
-
-### 4.3 测试 ViewModel
-
-```kotlin
-class MyViewModelTest {
-    @Test
-    fun `should emit loading then success`() = runTest {
-        val repository = mockk<Repository>()
-        coEvery { repository.fetchData() } returns Data("test")
-
-        val viewModel = MyViewModel(repository)
-
-        // 收集 StateFlow 的值
-        val states = mutableListOf<UiState>()
-        val job = launch(StandardTestDispatcher()) {
-            viewModel.state.toList(states)
-        }
-
-        viewModel.loadData()
-
-        // 验证状态序列
-        assertEquals(UiState.Loading, states[0])
-        assertEquals(UiState.Success(Data("test")), states[1])
-
-        job.cancel()
-    }
-}
-```
-
-### 4.4 Turbine — Flow 测试
-
-```kotlin
-import app.cash.turbine.test
-
-class FlowTest {
-    @Test
-    fun `should emit values in order`() = runTest {
-        val flow = flow {
-            emit(1)
-            emit(2)
-            emit(3)
-        }
-
-        flow.test {
-            assertEquals(1, awaitItem())
-            assertEquals(2, awaitItem())
-            assertEquals(3, awaitItem())
-            awaitComplete()
-        }
-    }
-
-    @Test
-    fun `should handle errors`() = runTest {
-        val flow = flow<Int> {
-            emit(1)
-            throw RuntimeException("Error")
-        }
-
-        flow.test {
-            assertEquals(1, awaitItem())
-            val error = awaitError()
-            assertEquals("Error", error.message)
-        }
-    }
-}
-```
-
-## 5. Android 测试
-
-### 5.1 本地单元测试
+`src/test/` 跑在开发机 JVM 上，不涉及真机：
 
 ```kotlin
 // src/test/
 class ViewModelTest {
     @get:Rule
-    val mainDispatcherRule = MainDispatcherRule()
+    val mainDispatcherRule = MainDispatcherRule()  // 定义见协程测试篇
 
     @Test
     fun `should update ui state`() = runTest {
@@ -427,22 +333,13 @@ class ViewModelTest {
         assertEquals(UiState.Success(fakeData), viewModel.state.value)
     }
 }
-
-// MainDispatcherRule — 替换 Main 调度器
-class MainDispatcherRule : TestWatcher() {
-    val testDispatcher = StandardTestDispatcher()
-
-    override fun starting(description: Description) {
-        Dispatchers.setMain(testDispatcher)
-    }
-
-    override fun finished(description: Description) {
-        Dispatchers.resetMain()
-    }
-}
 ```
 
-### 5.2 插桩测试
+`MainDispatcherRule` 的定义、逐行解释与常见翻车点（`@get:Rule` 的 Kotlin 注解目标、`resetMain` 泄漏）统一收录在[Kotlin 协程测试](/kotlin/395-KotlinCoroutineTesting)第 4 节——Android 本地测试凡是碰到 `viewModelScope` 都绕不开它。
+
+### 4.2 插桩测试
+
+`src/androidTest/` 跑在真机/模拟器上，验证 Room、SharedPreferences 这类依赖 Android 框架真实实现的组件：
 
 ```kotlin
 // src/androidTest/
@@ -475,242 +372,62 @@ class DaoTest {
 }
 ```
 
-## 6. 代码规范
+逐段解释与易错点：
 
-### 6.1 命名规范
+- `inMemoryDatabaseBuilder`：用内存数据库替代磁盘 SQLite，每个测试的 `setup`/`teardown` 保证干净状态。**易错点：忘写 `teardown` 里的 `close()`**，插桩测试跑满一个类后会因连接泄漏报警。
+- `allowMainThreadQueries()`：仅为测试便利放开主线程查询，生产代码禁止——它掩盖了「DAO 挂起函数没写对」的问题，评审时见到要追问。
+- `@RunWith(AndroidJUnit4::class)` 提供应用上下文；缺了它 `ApplicationProvider` 会抛 IllegalStateException。
 
-| 元素      | 规范                    | 示例                                     |
-| --------- | ----------------------- | ---------------------------------------- |
-| 包名      | 全小写，点分隔          | `com.example.project`                    |
-| 类/接口   | PascalCase              | `UserService`, `Clickable`               |
-| 函数/变量 | camelCase               | `calculateTotal`, `userCount`            |
-| 常量      | SCREAMING_SNAKE_CASE    | `MAX_RETRY_COUNT`                        |
-| 类型参数  | 大写单字母或 PascalCase | `T`, `R`, `Key`, `Value`                 |
-| 测试方法  | 反引号描述              | `` `should return 404 when not found` `` |
+**工程场景**：迁移 Room schema（加列、加索引）后跑一轮 DAO 插桩回归，比手工装机点一遍快一个量级；配合 CI 的 Android 模拟器任务能在合入前拦截 schema 迁移错误。
 
-### 6.2 格式规范
+## 动手实践
 
-```kotlin
-// 链式调用换行
-val result = items
-    .filter { it.isActive }
-    .map { it.name }
-    .sorted()
-    .toList()
+**任务**：为一个 `ReceiptParser`（解析收据文本，返回 `data class Receipt(val merchant: String, val total: BigDecimal)`）搭建测试：
 
-// 长参数列表换行
-fun createRequest(
-    method: HttpMethod,
-    url: String,
-    headers: Map<String, String> = emptyMap(),
-    body: String? = null
-): Request
+1. 用 JUnit 5 参数化测试喂 3 组不同格式收据文本断言解析结果；
+2. 日期源 `Clock` 注入构造函数，用 MockK 固定为固定时刻（避免午夜跑测试翻车）；
+3. 补一个「金额无小数点」的非法输入用例，断言抛 `IllegalArgumentException`。
 
-// when 分支格式
-when (value) {
-    is Int -> processInt(value)
-    is String -> processString(value)
-    else -> handleUnknown(value)
-}
-```
+提示：`@CsvSource` 直接抄收据模板；MockK 打桩 `every { clock.instant() } returns Instant.parse(...)`。
 
-## 7. 性能优化
-
-### 7.1 避免不必要的对象创建
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
 
 ```kotlin
-// Bad — 每次调用创建新对象
-fun process(items: List<String>): List<String> {
-    val result = mutableListOf<String>()  // 每次创建
-    items.forEach { result.add(it.uppercase()) }
-    return result
-}
+class ReceiptParserTest(private val parser: ReceiptParser = ReceiptParser(fixedClock())) {
 
-// Good — 使用 map
-fun process(items: List<String>): List<String> = items.map { it.uppercase() }
-```
-
-### 7.2 使用 Sequence 处理大数据集
-
-```kotlin
-// Bad — 多次中间集合
-val result = (1..1_000_000)
-    .map { it * 2 }
-    .filter { it > 100 }
-    .take(10)
-    .toList()
-
-// Good — 惰性求值
-val result = (1..1_000_000).asSequence()
-    .map { it * 2 }
-    .filter { it > 100 }
-    .take(10)
-    .toList()
-```
-
-### 7.3 协程性能
-
-```kotlin
-// 限制并发数
-suspend fun fetchAll(urls: List<String>): List<String> = coroutineScope {
-    urls.map { url ->
-        async(Dispatchers.IO) { fetchUrl(url) }
-    }.awaitAll()
-}
-
-// 使用 Semaphore 限制并发
-suspend fun fetchWithConcurrencyLimit(
-    urls: List<String>,
-    maxConcurrency: Int = 10
-): List<String> = coroutineScope {
-    val semaphore = Semaphore(maxConcurrency)
-    urls.map { url ->
-        async(Dispatchers.IO) {
-            semaphore.withPermit { fetchUrl(url) }
-        }
-    }.awaitAll()
-}
-```
-
-### 7.4 原始类型数组
-
-```kotlin
-// Bad — 装箱开销
-val numbers: List<Int> = (1..1000).toList()
-
-// Good — 无装箱
-val numbers: IntArray = IntArray(1000) { it + 1 }
-```
-
-## 8. Effective Kotlin 要点
-
-### 8.1 限制可变性
-
-```kotlin
-// 优先使用 val
-val items = listOf(1, 2, 3)  // 不可变引用 + 不可变集合
-
-// 使用不可变集合接口
-fun process(items: List<String>) {  // 而非 MutableList
-    // ...
-}
-
-// 数据类使用 val
-data class User(val name: String, val age: Int)  // 而非 var
-```
-
-### 8.2 消除 !! 操作符
-
-```kotlin
-// Bad
-val name: String = user.name!!
-
-// Good — 使用 ?:
-val name: String = user.name ?: "Unknown"
-
-// Good — 使用 let
-user.name?.let { processName(it) }
-
-// Good — 使用 require/check
-fun process(user: User) {
-    requireNotNull(user.name) { "Name is required" }
-    // 此后 user.name 智能转换为非空
-}
-```
-
-### 8.3 使用表达式体
-
-```kotlin
-// Bad
-fun max(a: Int, b: Int): Int {
-    return if (a > b) a else b
-}
-
-// Good
-fun max(a: Int, b: Int): Int = if (a > b) a else b
-```
-
-### 8.4 避免在构造函数中做重操作
-
-```kotlin
-// Bad — 构造函数中做 IO
-class Service(config: Config) {
-    private val data = loadData(config.path)  // 阻塞操作
-}
-
-// Good — 延迟加载
-class Service(config: Config) {
-    private val data by lazy { loadData(config.path) }
-}
-```
-
-### 8.5 使用密封类代替枚举 + when
-
-```kotlin
-// 密封类 + when 实现穷举检查
-sealed class UiState {
-    object Loading : UiState()
-    data class Success(val data: String) : UiState()
-    data class Error(val message: String) : UiState()
-}
-
-fun render(state: UiState) = when (state) {
-    is UiState.Loading -> showLoading()
-    is UiState.Success -> showData(state.data)
-    is UiState.Error -> showError(state.message)
-    // 编译器确保覆盖所有分支
-}
-```
-
-### 8.6 使用扩展函数提升可读性
-
-```kotlin
-// Bad — 工具类
-class StringUtils {
-    companion object {
-        fun isEmail(str: String): Boolean = str.contains("@")
+    @ParameterizedTest
+    @CsvSource(
+        "STARBUCKS|TOTAL 45.50|STARBUCKS|45.50",
+        "FamilyMart|合计 12.00|FamilyMart|12.00",
+        "Acme|Amount due 199.99|Acme|199.99"
+    )
+    fun `parses merchant and total`(text: String, merchant: String, total: String) {
+        val receipt = parser.parse(text)
+        assertEquals(merchant, receipt.merchant)
+        assertEquals(0, receipt.total.compareTo(BigDecimal(total)))
     }
-}
-StringUtils.isEmail("test@example.com")
 
-// Good — 扩展函数
-fun String.isEmail(): Boolean = this.contains("@") && this.contains(".")
-"test@example.com".isEmail()
-```
-
-### 8.7 合理使用作用域函数
-
-```kotlin
-// apply — 配置对象
-val request = Request().apply {
-    method = HttpMethod.POST
-    url = "/api/users"
-    headers["Content-Type"] = "application/json"
-}
-
-// let — 空安全链式调用
-val domain = email?.substringAfter("@")?.let { it.lowercase() }
-
-// also — 附加操作（不影响链式调用）
-val user = createUser()
-    .also { logger.info("Created user: ${it.id}") }
-    .also { eventBus.publish(UserCreatedEvent(it.id)) }
-```
-
-### 8.8 避免在伴生对象中存储可变状态
-
-```kotlin
-// Bad — 全局可变状态
-class Config {
-    companion object {
-        var debugMode = false  // 全局可变，难以追踪
-    }
-}
-
-// Good — 依赖注入
-class Service(private val config: Config) {
-    fun process() {
-        if (config.debugMode) { /* ... */ }
+    @Test
+    fun `rejects receipt without decimal amount`() {
+        assertThrows<IllegalArgumentException> { parser.parse("NO AMOUNT") }
     }
 }
 ```
+
+`compareTo` 而非 `assertEquals` 比较 BigDecimal：`45.50` 与 `45.5` 的 equals 不相等但数值相等——金额断言的经典易错点。
+
+</details>
+
+## 相关阅读
+
+- 协程与 Flow 的测试：[Kotlin 协程测试](/kotlin/395-KotlinCoroutineTesting)
+- kotlin.test 标准库与 JUnit 注解速查：[Kotlin 与测试](/kotlin/390-KotlinTest)
+- Gradle 测试任务与依赖配置：[Kotlin Gradle 构建](/kotlin/410-KotlinGradle)
+- 基准测试（验证性能惯用法）：[Kotlin 基准测试](/kotlin/400-KotlinBenchmark)
+
+## 参考与致谢
+
+- JUnit 5 User Guide（EPL-2.0）：https://junit.org/junit5/docs/current/user-guide/
+- Kotest 官方文档（Apache-2.0）：https://kotest.io/
+- MockK 官方文档（Apache-2.0）：https://mockk.io/

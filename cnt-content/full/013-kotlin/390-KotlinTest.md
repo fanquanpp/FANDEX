@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 420
 title: Kotlin 与测试
 module: 'kotlin'
 category: 后端技术
@@ -19,6 +19,14 @@ prerequisites:
 ## 前置知识
 
 - [Kotlin 与 ktor-client](/kotlin/500-KotlinKtorClient)：建议先完成前一篇的学习
+
+## 知识点地图
+
+- **知识类别**：kotlin.test 标准测试库基础——Kotlin 官方多平台测试 API（`kotlin.test` 断言、JUnit 注解速查、参数化与 Gradle 运行）。
+- **解决什么问题**：只想用最小依赖（`kotlin("test")` 一行）写跨平台可移植测试时，不需要 JUnit 5/Kotest 全家桶。
+- **什么时候用到**：Kotlin Multiplatform 共享模块测试（JUnit 5 运行器在 JVM 外不可用，kotlin.test 断言处处可用）；快速给纯函数补断言。
+
+框架选型（JUnit 5 全量特性、Kotest、MockK）见[Kotlin 测试框架集成](/kotlin/380-KotlinTestBestPractice)；协程与 Flow 测试见[Kotlin 协程测试](/kotlin/395-KotlinCoroutineTesting)。
 
 ## 学习目标
 
@@ -606,41 +614,7 @@ companion object {
 
 ## 协程测试
 
-**基本写法：runTest 测试协程**
-`runTest { }`
-```kotlin
-// 协程测试运行器
-@Test fun test() = runTest {
-    val r = fetch()
-    assertEquals("ok", r)
-}
-```
-
----
-
-**基本写法：测试延迟跳过**
-`runTest { delay(1000) }`
-```kotlin
-// 虚拟时间跳过延迟
-runTest {
-    delay(1000) // 不实际等待
-    launch { }
-}
-```
-
----
-
-**基本写法：Turbine 测试 Flow**
-`<flow>.test { }`
-```kotlin
-// 使用 Turbine 测试 Flow
-nums().test {
-    assertEquals(1, awaitItem())
-    awaitComplete()
-}
-```
-
----
+`runTest` 虚拟时间、`TestDispatcher`、`MainDispatcherRule` 与 Turbine 测 Flow 已整体收录到专篇 [Kotlin 协程测试](/kotlin/395-KotlinCoroutineTesting)，此处不再重复速查表。
 
 ## MockK 模拟
 

@@ -1,5 +1,5 @@
 ---
-order: 630
+order: 710
 title: 不可变数据结构：从 Records & Tuples 到现代方案
 module: 'javascript'
 category: 前端技术

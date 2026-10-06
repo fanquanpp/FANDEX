@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 150
 title: 音频播放
 module: 'godot'
 category: 游戏开发

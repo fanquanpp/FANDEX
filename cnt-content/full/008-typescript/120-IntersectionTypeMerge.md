@@ -17,6 +17,12 @@ prerequisites:
   - 'typescript/110-LiteralUnionTypes'
 ---
 
+## 知识点地图
+
+- **知识类别**：交叉类型（intersection type）与类型合并——类型层的 AND 组合器，以及 interface 声明合并这条「时间维度」上的亲戚。
+- **解决什么问题**：不改动既有类型的前提下追加约束（埋点字段、审计字段）；把大接口拆成可复用的小接口再组合；让「同名属性类型冲突」在编译期暴露成 never 而不是运行时事故。
+- **什么时候用到**：给组件 Props 加扩展包（`Base & Partial<Override>`）；写泛型约束 `T extends WithId & WithAudit`；合并第三方库的类型面。与「或」语义的联合类型是同一层级的对偶概念——联合侧重「多选一的分支建模与收窄」（见[字面量联合类型](/typescript/110-LiteralUnionTypes)与[类型守卫](/typescript/150-TypeGuardCustomGuard)），交叉侧重「约束叠加」，两者对比见本文第 4.4 节。
+
 ## 0. 真实场景：组件 Props 要「额外支持」几个字段
 
 FANDEX 的文档卡片组件 `DocCard` 有自己的 Props；营销团队要求所有卡片都能额外传一个 `trackId` 做埋点；无障碍审计又要求支持任意 `aria-*` 属性。改 `DocCard` 的接口？每次需求都改核心类型，迟早失控。更好的表达是：**「原有 Props，再要求这些」**——交叉类型（intersection type）：
@@ -108,7 +114,86 @@ interface Window {
 
 **交叉不是继承**：`extends` 建立的是「is-a」关系、可被 `instanceof` 检测；交叉只是形状的交集，任何长得像的对象都能通过结构兼容赋值进来。
 
-## 4. 坑点与自检
+## 4. 交叉类型域深化
+
+### 4.1 交叉与联合互转：分配律的工程用法
+
+第 3 节的分配律 `A & (B | C) ≡ (A & B) | (A & C)` 不只是数学趣味，它是两类真实转换的依据：
+
+```typescript
+// 用途一：把「公共约束」从联合的每个分支里抽出来
+// 之前：每个事件分支都重复 tag: string
+type ClickEvent  = { tag: string; x: number };
+type KeyEvent    = { tag: string; key: string };
+type Events      = ClickEvent | KeyEvent;
+
+// 之后：公共部分提升为交叉前缀，新增分支自动带上约束
+type Base        = { tag: string };
+type ClickEvent2 = Base & { x: number };
+type KeyEvent2   = Base & { key: string };
+type Events2     = Base & ({ x: number } | { key: string });
+// Events2 与 Events 的成员集合等价（分配律保证），但写法不再重复 tag
+```
+
+```typescript
+// 用途二：从「交叉包」里取出联合分支（反向展开）
+type Theme = 'light' | 'dark';
+type Panel = Theme & { elevation: number };
+// 实际表示 ('light' & {elevation}) | ('dark' & {elevation})
+// 字面量联合与对象交叉时，TS 自动逐成员分配
+```
+
+判断标准：**重复出现在多个分支里的字段 → 提升为交叉前缀；交叉后发现某分支约束多余 → 用分配律逆向拆回去**。
+
+### 4.2 交叉收窄为 never：不只是「string & number」
+
+2.3 节的同名属性冲突是最常见的 never。函数类型的交叉会出现一个更隐蔽的形态——参数逆变相交：
+
+```typescript
+type Handler = ((e: ClickEvent) => void) & ((e: KeyEvent) => void);
+
+// 调用这样一个「双料 handler」时，参数必须是两者的交集：
+declare const h: Handler;
+// h(event);   // event 的期望类型是 ClickEvent & KeyEvent
+//            // 而 ClickEvent 和 KeyEvent 的共同字段只有 tag: string
+//            // 若 tag 类型也不同，参数类型直接变成 never，永远无法合法调用
+```
+
+这解释了标准库 `Array.prototype.sort` 的类型为什么写成函数交叉：调用方传入的比较函数需要同时满足「宽松比较」与「严格比较」两套参数要求。推断链条：交叉 → 参数取交集 → 无交集时 never → 编译期报错，把不兼容的抽象在定义处拦下。
+
+另一种收窄场景是布尔与字面量：`true & boolean` 得 `true`（字面量是 boolean 的子集），`'a' & ('a' | 'b')` 得 `'a'`——交叉在这里成了「收窄器」，和 `Extract<T, U>` 工具类型（见[工具类型原理](/typescript/490-UtilityTypePrinciple)）是同一件事的两种写法。
+
+### 4.3 交叉与映射类型组合
+
+交叉与映射类型（[映射类型进阶](/typescript/470-MappedTypeAdvanced)）组合出两个高频惯用法：
+
+```typescript
+// 惯用法一：交集属性提升——「保持 T 的所有键，值与 R 的同名字段交叉」
+type Intersect<T, R> = {
+  [K in keyof T]: T[K] & (K extends keyof R ? R[K] : unknown);
+};
+// unknown 与任何类型交叉都得原类型，所以「R 里没有的键」不受影响
+
+// 惯用法二：Prettify 拍平——把多层交叉展开成单个对象字面量
+type Prettify<T> = { [K in keyof T]: T[K] };
+type Messy = { a: string } & { b: number } & { c: boolean };
+type Flat   = Prettify<Messy>;   // { a: string; b: number; c: boolean }
+```
+
+Prettify 在两个场合是刚需：IDE 悬停时让长交叉链可读；写类型测试时让 `Equal` 断言不受展开形式干扰（用法见[类型测试与断言](/typescript/550-TypeTestingAndAssertions)第 3 节）。
+
+### 4.4 交叉与联合的选择视角（对比）
+
+| 维度 | 交叉 `A & B` | 联合 `A | B` |
+| --- | --- | --- |
+| 语义 | 同时满足（约束叠加） | 任选其一（分支建模） |
+| 值的数量 | 越交越少（极限 never） | 越联越多（极限 unknown） |
+| 典型场景 | Props 扩展、泛型约束、混入形状 | 事件分支、状态机、可辨别联合 |
+| 收窄手段 | 直接可用（子类型关系） | 判别字段 / instanceof / in（见守卫篇） |
+
+一句话决策：**描述「一个东西必须具备的多种能力」用交叉；描述「几种可能形态之一」用联合**。可辨别联合的完整建模与收窄机制不在本篇展开，见[字面量联合类型](/typescript/110-LiteralUnionTypes)与[类型守卫](/typescript/150-TypeGuardCustomGuard)第 3 节。
+
+## 5. 坑点与自检
 
 ### 坑 1：以为交叉能「合并时后者覆盖前者」
 
@@ -134,13 +219,13 @@ interface Window {
 - [ ] 能区分声明合并（interface）与交叉类型，知道各自用在哪
 - [ ] 能解释 `A & (B | C)` 的分配律
 
-## 5. 练习
+## 6. 练习
 
 1. 写 `WithTimestamp<T>`：给任意类型追加 `createdAt: Date` 与 `updatedAt: Date`，然后故意交叉一个 `{ updatedAt: string }` 观察结果。
 2. 用 `Omit` + 交叉写 `OverrideProps<Base, Over>`：Base 的字段被 Over 的同名字段覆盖，其余保留（Over 的键必须来自 Base，想想泛型约束怎么写）。
 3. 在 FANDEX 仓库找一个 React 组件（如 app-web/src 下任意组件），看它的 Props 是 interface、type 还是交叉组合，判断换成 `Base & Partial<Override>` 是否更合适。
 
-## 6. 下一步
+## 7. 下一步
 
 - [索引签名与动态属性](/typescript/140-IndexSignatureDynamicProperty)：aria-* 这类开放键怎么建模
 - [模块声明与全局类型增强](/typescript/340-ModuleDeclarationGlobalAugmentation)：声明合并的完整机制

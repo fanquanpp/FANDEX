@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 550
 title: C++序列化
 module: 'cpp'
 category: 计算机科学
@@ -11,7 +11,7 @@ related:
   - 'cpp/530-CppNetworkProgramming'
   - 'cpp/490-CppRegex'
   - 'cpp/580-CppPythonInteraction'
-  - 'cpp/740-Cpp23Cpp26NewFeatures'
+  - 'cpp/730-Cpp23NewFeatures'
 prerequisites: []
 ---
 

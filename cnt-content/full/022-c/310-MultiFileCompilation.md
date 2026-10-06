@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 350
 title: 多文件编译：翻译单元、头文件与链接器
 module: 'c'
 category: 计算机科学
@@ -647,7 +647,7 @@ int twice(int x) { return 2 * x; }
 ## 与之前和之后的知识的关系
 
 - 往前：[作用域、存储期与链接性](/c/055-ScopeStorageLinkage) 的三种链接性在本篇符号表上现出原形（大写对外、小写对内、U 等人接）；[函数：声明、传值与递归](/c/090-FunctionDetailed) 的声明与定义，在多文件里落实为「头文件 / .c」的分工；
-- 旁支：预处理与宏展开机制在 [预处理器与宏](/c/290-PreprocessorMacro)；头文件里写 inline 的正确姿势在 [内联函数与宏](/c/300-InlineFunctionMacro)；.text/.data/.bss 运行时的模样在 [内存深水区](/c/210-MemoryManagement)；
+- 旁支：预处理与宏展开机制在 [预处理器与宏](/c/290-PreprocessorMacro)；头文件里写 inline 的正确姿势在 [内联函数与宏](/c/300-InlineFunctionMacro)；.text/.data/.bss 运行时的模样在 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)；
 - 往后：链接器的下一个主角是库——静态库动态库的创建与使用在 [动态库与静态库](/c/320-DynamicStaticLibrary)；本篇手敲的每条命令在 [构建系统](/c/470-BuildSystem) 被自动化。
 
 ## 官方文档

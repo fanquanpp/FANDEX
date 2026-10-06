@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 360
 title: 网络流
 module: 'algorithm'
 category: 计算机科学
@@ -11,7 +11,6 @@ related:
   - 'algorithm/110-GraphAlgorithms'
   - 'algorithm/270-TopologicalSorting'
   - 'algorithm/160-DynamicProgramming'
-  - 'algorithm/280-AlgorithmTheory'
   - 'algorithm/190-SegmentTree'
   - 'algorithm/180-UnionFind'
 prerequisites:

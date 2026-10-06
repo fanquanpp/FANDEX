@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 80
 title: 可更新视图：把虚拟表当真表写
 module: 'postgresql'
 category: 数据库

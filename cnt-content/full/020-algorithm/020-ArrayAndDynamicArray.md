@@ -11,7 +11,6 @@ related:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/030-SortAlgorithm'
   - 'algorithm/060-LinkedList'
-  - 'algorithm/170-BinarySearchAlgorithms'
 prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
 ---

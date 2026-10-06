@@ -11,7 +11,7 @@ related:
   - 'vue3/250-PluginDevelopment'
   - 'vue3/060-ComputedCacheWatchTiming'
   - 'vue3/080-CompositionAPIAdvantageScene'
-  - 'vue3/100-CustomComposableWrapper'
+  - 'vue3/090-CustomHook'
 prerequisites: []
 ---
 

@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 100
 title: 专项：缺陷生命周期与缺陷报告写作
 module: 'software-testing'
 category: 云与基础设施

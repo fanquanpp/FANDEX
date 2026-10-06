@@ -1,5 +1,5 @@
 ---
-order: 30
+order: 40
 title: 测试层级
 module: 'software-testing'
 category: 云与基础设施
@@ -8,7 +8,7 @@ description: 软件测试层级：单元测试、集成测试、系统测试、�
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'software-testing/170-SecurityAndMobileTest'
+  - 'software-testing/180-SecurityTesting'
   - 'software-testing/020-TestConceptPrinciple'
   - 'software-testing/040-TestType'
   - 'software-testing/050-EquivalenceClassPartition'

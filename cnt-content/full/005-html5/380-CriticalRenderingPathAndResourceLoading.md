@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 450
 title: 关键渲染路径与资源加载
 module: 'html5'
 category: 前端技术

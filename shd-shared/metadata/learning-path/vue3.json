@@ -62,7 +62,7 @@
           "title": "组合式 API",
           "desc": "setup、ref 与组合函数",
           "difficulty": "intermediate",
-          "doc": "180-API"
+          "doc": "050-ReactiveSystem"
         },
         {
           "id": "vue-008",
@@ -111,7 +111,7 @@
           "title": "组合函数封装",
           "desc": "逻辑复用的模式与规范",
           "difficulty": "intermediate",
-          "doc": "100-CustomComposableWrapper"
+          "doc": "090-CustomHook"
         }
       ]
     },

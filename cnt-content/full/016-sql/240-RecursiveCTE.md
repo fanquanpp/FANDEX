@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 260
 title: 递归 CTE
 module: 'sql'
 category: 数据库

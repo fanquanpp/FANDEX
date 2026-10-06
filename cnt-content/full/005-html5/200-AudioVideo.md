@@ -94,11 +94,8 @@ WEBVTT
 
 ## 4. 自动播放策略
 
-| 条件       | 是否允许自动播放 |
-| ---------- | ---------------- |
-| 有声视频   |                  |
-| 静音视频   |                  |
-| 用户已交互 |                  |
+浏览器对自动播放有明确限制，完整策略表与代码示例见下文「自动播放策略」速查节。核心结论：有声视频默认被禁止，`muted` 静音视频与用户已交互后的 `play()` 调用被允许。
+
 ## audio 音频元素
 
 **音频基础**
@@ -356,6 +353,165 @@ video.play().then(() => {
 });
 ```
 
+## 自定义播放控制：按钮组与事件联动
+
+原生 `controls` 控件样式不可定制时，用媒体 API 自己搭控制条。视频与音频的 API 完全同构（`play`/`pause`/`muted`/`volume` 通用），下面以视频为例：
+
+```html
+<video id="myVideo" width="640" height="360" controls>
+  <source src="movie.mp4" type="video/mp4" />
+  您的浏览器不支持 HTML5 视频。
+</video>
+<div>
+  <button onclick="playVideo()">播放</button>
+  <button onclick="pauseVideo()">暂停</button>
+  <button onclick="muteVideo()">静音</button>
+  <button onclick="unmuteVideo()">取消静音</button>
+  <input type="range" id="volume" min="0" max="1" step="0.1" value="1" onchange="setVolume(this.value)" />
+  <span id="volumeValue">100%</span>
+</div>
+<script>
+  const video = document.getElementById('myVideo');
+  const volumeValue = document.getElementById('volumeValue');
+
+  function playVideo() { video.play(); }
+  function pauseVideo() { video.pause(); }
+  function muteVideo() { video.muted = true; }
+  function unmuteVideo() { video.muted = false; }
+  function setVolume(value) {
+    video.volume = value; // 音量取值 0 到 1，滑块 step 配合
+    volumeValue.textContent = Math.round(value * 100) + '%';
+  }
+
+  // 状态事件：让界面与媒体状态保持同步
+  video.addEventListener('play', () => console.log('视频开始播放'));
+  video.addEventListener('pause', () => console.log('视频暂停'));
+  video.addEventListener('ended', () => console.log('视频播放结束'));
+</script>
+```
+
+**逐段讲解：**
+
+- 音量滑块 `min="0" max="1" step="0.1"` 直接映射 `volume` 属性的取值范围，不需要换算；显示层再乘 100 变百分比；
+- `onclick` 内联绑定只是演示写法，正式项目统一用 `addEventListener`（便于解绑与多监听器）；
+- 播放状态以 `play`/`pause`/`ended` 事件为准，不要在点击时猜测状态——用户可能用键盘空格操作了原生控件。
+
+## 工程示例：完整自定义播放器页面
+
+把上述 API 组装成一个独立可运行的播放器页面（自定义播放/暂停、静音、音量与进度显示）：
+
+```html
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>视频播放器</title>
+  </head>
+  <body>
+    <video id="myVideo" width="640" height="360">
+      <source src="https://www.w3schools.com/html/mov_bbb.mp4" type="video/mp4" />
+      您的浏览器不支持 HTML5 视频。
+    </video>
+    <div>
+      <button id="playPause">播放</button>
+      <button id="mute">静音</button>
+      <input type="range" id="volume" min="0" max="1" step="0.1" value="1" />
+      <span id="time">0:00 / 0:00</span>
+    </div>
+    <script>
+      const video = document.getElementById('myVideo');
+      const playPauseBtn = document.getElementById('playPause');
+      const muteBtn = document.getElementById('mute');
+      const volumeSlider = document.getElementById('volume');
+      const timeDisplay = document.getElementById('time');
+
+      // 播放/暂停：按钮文案跟随状态切换
+      playPauseBtn.addEventListener('click', function () {
+        if (video.paused) {
+          video.play();
+          playPauseBtn.textContent = '暂停';
+        } else {
+          video.pause();
+          playPauseBtn.textContent = '播放';
+        }
+      });
+
+      // 静音切换
+      muteBtn.addEventListener('click', function () {
+        video.muted = !video.muted;
+        muteBtn.textContent = video.muted ? '取消静音' : '静音';
+      });
+
+      // 音量
+      volumeSlider.addEventListener('input', function () {
+        video.volume = this.value;
+      });
+
+      // 进度：timeupdate 在播放中高频触发，用它同步显示
+      video.addEventListener('timeupdate', function () {
+        timeDisplay.textContent =
+          formatTime(video.currentTime) + ' / ' + formatTime(video.duration);
+      });
+
+      // 秒数格式化为 m:ss
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        seconds = Math.floor(seconds % 60);
+        return minutes + ':' + String(seconds).padStart(2, '0');
+      }
+    </script>
+  </body>
+</html>
+```
+
+**代码结构解析：**
+
+1. HTML 结构：`<video>` 承载媒体（故意不加 `controls`，全部按钮自绘），按钮组与音量滑块构成自定义控制条；
+2. 控制逻辑：播放/暂停按钮按 `video.paused` 分支处理，静音直接取反布尔值；
+3. 事件驱动：`timeupdate` 高频触发同步进度文字；`duration` 在元数据加载前是 `NaN`，严谨实现要监听 `loadedmetadata` 后再显示总时长；
+4. 样式部分属于 CSS 课程，本例只需理解结构、事件与 API 的配合。
+
+## 音视频最佳实践
+
+- 提供多种格式（MP4、WebM、MP3、OGG），用多个 `<source>` 保证跨浏览器可播；
+- 使用高效编码（H.264 视频、AAC 音频）减小文件体积；
+- 按需设置 `preload`：列表页用 `metadata`，详情页才用 `auto`，避免无谓流量；
+- 为视频添加 `poster` 封面并预留宽高，防止加载时布局跳动；
+- 用 CSS `max-width: 100%` 让播放器在小屏自适应；
+- 添加 `<track>` 字幕与描述，满足可访问性与嘈杂环境观看；
+- 非关键媒体延迟加载：滚动到视口附近再设置 `src`（配合 IntersectionObserver）。
+
+## 进阶：Web Audio API 速览
+
+`<audio>` 之外的程序化音频体系：节点图架构，音源经过效果节点连到扬声器。
+
+```javascript
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+// 音源：振荡器
+const oscillator = audioCtx.createOscillator();
+oscillator.type = 'sine';            // sine/square/sawtooth/triangle
+oscillator.frequency.value = 440;    // 频率 Hz
+
+// 音量：增益节点
+const gainNode = audioCtx.createGain();
+gainNode.gain.value = 0.5;
+
+// 节点串联：音源 -> 增益 -> 扬声器
+oscillator.connect(gainNode);
+gainNode.connect(audioCtx.destination);
+
+oscillator.start();
+oscillator.stop(audioCtx.currentTime + 2); // 2 秒后停止
+```
+
+**讲解：**
+
+- `OscillatorNode` 生成基础波形，`GainNode` 控制音量，两者可自由组合出合成器；
+- `AudioContext` 必须由用户手势触发创建或恢复（浏览器禁止页面自动发声），常见做法是在首个点击事件里 `audioCtx.resume()`；
+- 典型应用：音频可视化（AnalyserNode 取频谱画到 Canvas，见 [235-Canvas2DDrawing](/html5/235-Canvas2DDrawing)）、游戏音效、提示音。
+
 ## 动手试试
 
 ### 入门版（必做）
@@ -394,7 +550,7 @@ video.play().then(() => {
 
 ## 扩展学习
 
-- 完整控制：`html5/230-HTML5MultimediaCanvasDrawing` 中自定义播放器与媒体 API；
+- Canvas 可视化：`html5/235-Canvas2DDrawing` 中用 rAF 绘制动态图形与音频可视化画布；
 - 音频进阶：Web Audio API 节点图与音频可视化；
 - 性能：`html5/380-CriticalRenderingPathAndResourceLoading` 媒体预加载策略；
 - 无障碍：`html5/180-Accessibility` 中媒体替代文本与字幕规范；

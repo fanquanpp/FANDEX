@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 330
 title: git-revert 安全撤销提交
 module: 'git'
 category: 工具链
@@ -8,7 +8,6 @@ description: git revert详解：安全撤销提交、生成反向提交与多人
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'git/330-GitPrincipleObjectModel'
   - 'git/200-TagManagement'
 prerequisites: []
 ---

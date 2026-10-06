@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 390
 title: git-bisect 二分定位缺陷提交
 module: 'git'
 category: 工具链
@@ -10,7 +10,6 @@ updated: '2026-09-12'
 related:
   - 'git/180-GitLogDetailed'
   - 'git/190-GitBlame'
-  - 'git/330-GitPrincipleObjectModel'
 prerequisites:
   - 'git/110-HEADPointerBranchEssence'
 ---

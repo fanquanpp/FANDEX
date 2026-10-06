@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 530
 title: GitHub CLI Issue 管理
 module: 'github'
 category: 工具链

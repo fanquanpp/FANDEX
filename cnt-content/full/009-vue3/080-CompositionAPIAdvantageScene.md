@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 90
 title: 组合式 API 优势场景：从「跳四个块」到「一个函数」
 module: 'vue3'
 category: 前端技术
@@ -10,7 +10,7 @@ updated: '2026-09-29'
 related:
   - 'vue3/050-ReactiveSystem'
   - 'vue3/060-ComputedCacheWatchTiming'
-  - 'vue3/100-CustomComposableWrapper'
+  - 'vue3/090-CustomHook'
   - 'vue3/210-PiniaStateManagementDetailed'
 prerequisites:
   - 'vue3/070-LifecycleHook'
@@ -233,7 +233,7 @@ const increment = () => state.count++;
 ## 10. 与之前和之后的知识的关系
 
 - 往前：050 篇的响应式系统是组合函数的原材料（ref/reactive 断链规则直接沿用）；070 篇的生命周期钩子在组合函数里完成注册与清理的配对；
-- 往后：[自定义组合函数封装](/vue3/100-CustomComposableWrapper) 讲封装规范与测试；[Pinia 状态管理详解](/vue3/210-PiniaStateManagementDetailed) 的 setup store 是组合函数的全局化；[Provide 与 Inject](/vue3/170-ProvideInject) 补齐跨层传递的另一半。
+- 往后：[自定义组合式函数](/vue3/090-CustomHook) 讲封装规范与测试；[Pinia 状态管理详解](/vue3/210-PiniaStateManagementDetailed) 的 setup store 是组合函数的全局化；[Provide 与 Inject](/vue3/170-ProvideInject) 补齐跨层传递的另一半。
 
 ## 11. 官方文档
 
@@ -256,4 +256,4 @@ const increment = () => state.count++;
 
 ## 下一步
 
-进入 [自定义组合函数封装](/vue3/100-CustomComposableWrapper)：本篇抽了第一个组合函数，下一篇讲怎么把它写得规范——参数约定、返回值设计、竞态与清理，以及怎么给组合函数写测试。
+进入 [自定义组合式函数](/vue3/090-CustomHook)：本篇抽了第一个组合函数，下一篇讲怎么把它写得规范——参数约定、返回值设计、竞态与清理，以及怎么给组合函数写测试。

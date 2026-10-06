@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 430
 title: Socket 网络编程：从 echo 服务器开始
 module: 'c'
 category: 计算机科学
@@ -393,7 +393,7 @@ nc 127.0.0.1 8080 < /dev/null    /* 来一个连接 */
 ls /proc/$(pidof fdleak)/fd | wc -l   /* 数字涨 1，再不来连接也不回落 */
 ```
 
-正常的 echo_server 每次连接关闭后 fd 数回落，泄漏版只涨不跌。纪律与 [内存深水区](/c/210-MemoryManagement) 的 free 后置 NULL 同源：**谁 accept 谁 close**，错误路径（perror 之后）尤其要复查每个 return 前资源都还了；accept 出的 conn 与 malloc 出的指针是同一类东西——拿了必须还。
+正常的 echo_server 每次连接关闭后 fd 数回落，泄漏版只涨不跌。纪律与 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 的 free 后置 NULL 同源：**谁 accept 谁 close**，错误路径（perror 之后）尤其要复查每个 return 前资源都还了；accept 出的 conn 与 malloc 出的指针是同一类东西——拿了必须还。
 
 ### 实录三：把 read 的返回值当消息边界用
 

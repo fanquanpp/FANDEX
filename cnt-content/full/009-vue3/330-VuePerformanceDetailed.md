@@ -10,8 +10,8 @@ updated: '2026-10-05'
 related:
   - 'vue3/220-PiniaPersistencePlugin'
   - 'vue3/200-VueRouterNavigationGuard'
-  - 'vue3/340-PerformanceOptimization'
-  - 'vue3/240-Vue3AdvancedComponentFeature'
+  - 'vue3/325-Vue3PerformanceToolkit'
+  - 'vue3/145-DynamicComponentPatterns'
 prerequisites:
   - 'vue3/050-ReactiveSystem'
 ---

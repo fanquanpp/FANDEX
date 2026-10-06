@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 440
 title: "多线程入门：把 3 秒的串行下载压缩到 1 秒"
 module: 'java'
 category: 后端技术

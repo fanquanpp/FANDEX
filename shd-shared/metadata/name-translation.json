@@ -996,7 +996,7 @@
     "volatile": "Volatile",
     "volatile关键字": "VolatileKeyword",
     "二级指针与指针数组": "DoublePointerPointerArray",
-    "位运算与位域": "BitwiseBitField",
+    "位运算与位域": "BitwiseOperationAndMask",
     "信号处理": "SignalHandling",
     "共享内存": "SharedMemory",
     "共享内存与信号量": "SharedMemorySemaphore",

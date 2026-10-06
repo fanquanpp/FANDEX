@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 90
 title: 生成列
 module: 'postgresql'
 category: 数据库

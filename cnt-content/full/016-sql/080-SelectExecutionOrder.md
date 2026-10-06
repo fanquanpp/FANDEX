@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 90
 title: SELECT 执行顺序
 module: 'sql'
 category: 数据库

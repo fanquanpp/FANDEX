@@ -1,5 +1,5 @@
 ---
-order: 120
+order: 200
 title: 翻译与多语言
 module: 'renpy'
 category: 游戏开发

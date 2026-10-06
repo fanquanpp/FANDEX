@@ -1,5 +1,5 @@
 ---
-order: 730
+order: 780
 title: SQL 注入攻击类型与实战
 module: 'mysql'
 category: 数据库
@@ -8,7 +8,7 @@ description: 联合注入、盲注、报错注入与绕过技巧。
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'mysql/900-MySQLApplicationController'
+  - 'mysql/900-AppLayerDbAccessPatterns'
   - 'mysql/740-SQLInjectionBasicsDetection'
   - 'mysql/760-SQLInjectionDefenseStrategy'
   - 'mysql/870-MySQLProjectExampleDatabaseDesign'

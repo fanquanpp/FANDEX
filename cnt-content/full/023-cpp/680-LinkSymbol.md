@@ -1,5 +1,5 @@
 ---
-order: 660
+order: 700
 title: C++ 链接与符号
 module: 'cpp'
 category: 计算机科学

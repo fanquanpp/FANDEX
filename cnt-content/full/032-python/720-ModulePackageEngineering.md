@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 650
 title: 模块、包与工程化
 module: 'python'
 category: 后端技术
@@ -8,8 +8,7 @@ description: 模块导入、包结构、虚拟环境与依赖管理。
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'python/710-PythonAdvancedLatestFeature'
-  - 'python/170-ComprehensionGenerator'
+  - 'python/715-PythonVersionNewFeatures'
   - 'python/510-DecoratorAdvanced'
   - 'python/180-GeneratorCoroutine'
 prerequisites:

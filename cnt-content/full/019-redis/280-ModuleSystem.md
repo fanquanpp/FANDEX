@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 350
 title: 模块系统
 module: 'redis'
 category: 数据库
@@ -9,12 +9,18 @@ author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'redis/310-RedisNewFeatures8'
-  - 'redis/140-PersistenceModule'
   - 'redis/100-VectorSet'
 prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---
 
+## 知识点地图
+
+- **知识类别**：Redis 模块系统——动态扩展机制本身（loadmodule/MODULE 命令、模块开发接口），以及官方模块生态（RedisJSON、RediSearch、RedisTimeSeries、RedisBloom 概率结构、T-Digest 分位数、RedisCell 限流）。
+- **解决什么问题**：在不改 Redis 内核的前提下获得 JSON 文档、全文检索、时序、概率去重、分位数统计等原生数据结构能力；第三方/自研模块的加载与开发路径。
+- **什么时候用到**：需要二级索引与全文搜索、时序指标存储、大集合去重（布隆）、P99 延迟统计（T-Digest）时；Redis 8+ 用户注意：前五类能力已内建内核，本文的模块视角主要服务 Redis 7.x 与第三方扩展。
+
+前置：了解基础数据类型与键空间（redis/010-OverviewCoreDataStructure）。
 
 ## 1. 模块系统概述
 
@@ -256,7 +262,7 @@ TS.MRANGE - + FILTER region=us-east metric=cpu
 
 ## 5. RedisBloom
 
-RedisBloom 提供概率数据结构：布隆过滤器、布谷鸟过滤器、计数-最小草图、Top-K。
+RedisBloom 提供概率数据结构：布隆过滤器、布谷鸟过滤器、计数-最小草图、Top-K，以及同属概率家族的分位数草图 T-Digest（见 5.5）。
 
 ### 5.1 布隆过滤器（Bloom Filter）
 
@@ -323,6 +329,46 @@ TOPK.LIST trending
 # 查询元素排名
 TOPK.QUERY trending redis
 ```
+
+### 5.5 T-Digest
+
+（本节内容承接自原《持久化与模块》5.5 节，全部保留并扩写。）
+
+T-Digest 解决的是「分位数」问题：对一条数据流给出 P95/P99 这类统计量，而不保存全部原始数据。与「把每次耗时都存进 ZSet 再 ZRANGE 取位」相比，内存占用从 O(N) 降到 O(压缩质心数，通常几百字节~几 KB)，适合 P99 这种长尾指标。
+
+```bash
+# T-Digest: 流式分位数估算
+# 安装: redis-server --loadmodule /path/to/tdigest.so
+
+# 创建
+TDIGEST.CREATE latency:api
+
+# 添加数据
+TDIGEST.ADD latency:api 12.5 18.3 15.7 22.1 19.8 14.2 25.6
+
+# 查询分位数
+TDIGEST.QUANTILE latency:api 0.5    # 中位数
+TDIGEST.QUANTILE latency:api 0.95   # P95
+TDIGEST.QUANTILE latency:api 0.99   # P99
+
+# 查询 CDF
+TDIGEST.CDF latency:api 20          # ≤20ms 的请求比例
+
+# 合并
+TDIGEST.MERGE latency:all 2 latency:api latency:db
+
+# 信息
+TDIGEST.INFO latency:api
+```
+
+使用要点：
+
+- **极端分位数精度高**：T-Digest 的设计特点是头部（0 与 1 附近）精度最高，恰好匹配 P99/P999 这类 SLA 指标；对中位数的精度反而不如对 P99 的。反过来，想精确统计「平均值以外的任意分位」且更看重中部精度，可以考虑 Quantile Sketch 系列的其他实现。
+- **只加不改**：草图只能 ADD，不能删除单个数据点。滑动窗口需求（「最近 1 小时的 P99」）要用**时间片草图**：按分钟创建 `latency:api:202610061432` 这类带时间戳的键分别 ADD，查询时 MERGE 最近 60 个时间片，再配 TTL 自动清理。
+- **MERGE 是并行统计的基石**：多实例各记各的草图，汇总时合并即可——分布统计的可合并性（mergeable）让它天然适合分布式监控。
+- **对比 HISTOGRAM 类方案**：固定桶直方图（如 Prometheus 的 bucket）桶边界预先定死，P99 只能在桶间插值；T-Digest 自适应桶宽，长尾精度远好于固定直方图。
+
+Redis 8+ 注意：T-Digest 能力（`TDIGEST.*` 命令）已内建于内核，无需 loadmodule；7.x 部署仍需加载模块，命令语法两版一致。
 
 ## 6. RedisCell
 

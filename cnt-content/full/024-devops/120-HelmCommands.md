@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 140
 title: Helm 包管理命令
 module: 'devops'
 category: 云与基础设施

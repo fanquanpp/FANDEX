@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 470
 title: infer 专题：在类型层占位与推导
 module: 'typescript'
 category: 前端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'typescript/430-ConditionalTypeDistribute'
-  - 'typescript/450-InferTypeDeepDive'
+  - 'typescript/450-TypeCompositionPractice'
   - 'typescript/490-UtilityTypePrinciple'
   - 'typescript/510-RecursiveTypeDeepOperation'
 prerequisites:
@@ -20,7 +20,7 @@ prerequisites:
 
 - 已完成 [430 条件类型与分发](/typescript/430-ConditionalTypeDistribute)：会写 `T extends U ? X : Y`，知道裸类型参数在联合上会分发、`[T]` 包裹能阻止分发。
 
-分工一句话：**430 讲条件类型怎么「问」怎么「分发」；本篇只讲 infer——在 extends 右侧占位，让编译器把对齐位置的类型填进来；组装成生产级工具是 [450 篇](/typescript/450-InferTypeDeepDive) 的任务。**
+分工一句话：**430 讲条件类型怎么「问」怎么「分发」；本篇只讲 infer——在 extends 右侧占位，让编译器把对齐位置的类型填进来；组装成生产级工具是 [450 篇](/typescript/450-TypeCompositionPractice) 的任务。**
 
 ## 学习目标
 
@@ -298,4 +298,4 @@ infer 让条件类型从「选答案」升级为「取内容」：extends 右侧
 
 ## 下一步
 
-进入 [450 组合实战](/typescript/450-InferTypeDeepDive)。预告分工：430 的分发、本篇的 infer 在那里被组装成三个真实工具，并划出「什么时候不该写复杂类型」的边界。
+进入 [450 组合实战](/typescript/450-TypeCompositionPractice)。预告分工：430 的分发、本篇的 infer 在那里被组装成三个真实工具，并划出「什么时候不该写复杂类型」的边界。

@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 460
 title: MVCC 原理：读写不互相阻塞是怎样实现的
 module: 'mysql'
 category: 数据库

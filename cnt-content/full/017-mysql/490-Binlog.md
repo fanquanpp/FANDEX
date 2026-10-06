@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 520
 title: 二进制日志 binlog：复制的血脉与恢复的底气
 module: 'mysql'
 category: 数据库

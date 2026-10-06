@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 210
 title: 字节码一窥：用 dis 把推导式拆开看
 module: 'python'
 category: 后端技术

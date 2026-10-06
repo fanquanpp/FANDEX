@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 290
 title: Stream API
 module: 'java'
 category: 后端技术
@@ -8,7 +8,6 @@ description: Java 8 Stream API流式操作、中间操作与终端操作、并�
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'java/610-JVMMemoryModel'
   - 'java/290-LambdaFunctionalProgramming'
   - 'java/860-SpringBootDeepDive'
   - 'java/700-NetworkProgrammingDeepDive'

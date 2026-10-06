@@ -136,8 +136,8 @@
         },
         {
           "id": "git-220",
-          "title": "Git Flow 与 GitHub Flow 对比",
-          "doc": "220-GitFlowGitHubFlowComparison"
+          "title": "Git Flow 与 GitHub Flow",
+          "doc": "210-GitFlowGitHubFlow"
         },
         {
           "id": "git-230",
@@ -198,13 +198,18 @@
         },
         {
           "id": "git-330",
-          "title": "Git 原理与对象模型",
-          "doc": "330-GitPrincipleObjectModel"
+          "title": "Git 引用与传输协议",
+          "doc": "332-GitRefsAndTransferProtocol"
         },
         {
           "id": "git-340",
-          "title": "Git 钩子与 Git LFS",
-          "doc": "340-GitHookGitLFS"
+          "title": "Git 钩子",
+          "doc": "340-GitHooks"
+        },
+        {
+          "id": "git-345",
+          "title": "Git LFS 大文件管理",
+          "doc": "345-GitLfs"
         },
         {
           "id": "git-350",

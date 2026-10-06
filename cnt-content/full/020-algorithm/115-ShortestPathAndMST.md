@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 140
 title: 最短路与最小生成树
 module: 'algorithm'
 category: 计算机科学

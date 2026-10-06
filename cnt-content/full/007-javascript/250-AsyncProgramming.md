@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 290
 title: 异步编程入门：网络请求等一秒，页面不能卡一秒
 module: 'javascript'
 category: 前端技术

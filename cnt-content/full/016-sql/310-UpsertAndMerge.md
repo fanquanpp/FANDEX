@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 330
 title: MERGE 与 UPSERT
 module: 'sql'
 category: 数据库

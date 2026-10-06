@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 440
 title: React 与 CI/CD
 module: 'react'
 category: 前端技术
@@ -81,6 +81,26 @@ CI 中的操作：机密写入仓库 Settings > Secrets，YAML 里以 `secrets.X
 
 单测（Vitest + Testing Library，见[React 测试](/react/220-ReactTest)）覆盖组件行为，E2E 覆盖"整站能跑通"的关键路径：
 
+```ts
+// playwright.config.ts — webServer 让 CI 与本地都不用「先手动起服务」
+import { defineConfig } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './e2e',
+  fullyParallel: true,
+  retries: process.env.CI ? 2 : 0, // 本地不重试立刻暴露问题；CI 重试抗环境抖动
+  use: {
+    baseURL: 'http://localhost:5173',
+    trace: 'on-first-retry', // 重试时自动生成轨迹文件
+  },
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:5173',
+    reuseExistingServer: !process.env.CI,
+  },
+});
+```
+
 ```yaml
   e2e:
     runs-on: ubuntu-latest
@@ -99,6 +119,27 @@ CI 中的操作：机密写入仓库 Settings > Secrets，YAML 里以 `secrets.X
 ```
 
 只跑关键路径（登录、下单、核心浏览），控制在 10 分钟内；失败必须上传 trace/截图，否则 E2E 失败将不可调试。
+
+### 4.1 质量门禁脚本：一条命令跑全所有检查
+
+流水线各步骤引用的命令先在 `package.json` 收敛，本地与 CI 跑的是同一条：
+
+```json
+// package.json
+{
+  "scripts": {
+    "lint": "eslint src --ext .ts,.tsx",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:e2e": "playwright test",
+    "build": "vite build",
+    "check-all": "npm run lint && npm run typecheck && npm run test && npm run build"
+  }
+}
+```
+
+`check-all` 是提交前的本地门禁：四个环节全绿再 push，把 CI 的反馈周期从分钟级压到本地秒级。`vitest run`（而非 `vitest`）保证命令会结束而不是进入 watch 模式——CI 里忘写 `run` 是流水线挂起的经典原因。
 
 ## 5. 预览部署与发布
 

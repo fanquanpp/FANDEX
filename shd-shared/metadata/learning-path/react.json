@@ -30,6 +30,13 @@
           "doc": "030-StateEvent"
         },
         {
+          "id": "react-026",
+          "title": "状态结构与摆放",
+          "desc": "状态提升、派生状态与 key 重置",
+          "difficulty": "beginner",
+          "doc": "035-StateStructureAndLifting"
+        },
+        {
           "id": "react-004",
           "title": "JSX 深度解析",
           "desc": "JSX 编译规则与表达式",
@@ -122,10 +129,10 @@
         },
         {
           "id": "react-015",
-          "title": "Server Components",
+          "title": "Server 与 Client 组件",
           "desc": "服务端组件模型与数据流",
           "difficulty": "advanced",
-          "doc": "140-ServerComponents"
+          "doc": "400-ServerClientComponents"
         },
         {
           "id": "react-016",
@@ -160,14 +167,14 @@
           "title": "路由与数据获取",
           "desc": "React Router 与数据请求方案",
           "difficulty": "intermediate",
-          "doc": "070-RouteDataFetch"
+          "doc": "070-ReactRouterRouting"
         },
         {
           "id": "react-020",
-          "title": "测试与工程化",
-          "desc": "组件测试、工具链与质量保障",
+          "title": "Lint 与项目结构",
+          "desc": "代码规范、格式化与项目结构约定",
           "difficulty": "intermediate",
-          "doc": "090-TestEngineering"
+          "doc": "090-LintFormatAndProjectStructure"
         },
         {
           "id": "react-021",

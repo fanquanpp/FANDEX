@@ -1,5 +1,5 @@
 ---
-order: 390
+order: 420
 title: sparse-checkout 稀疏检出
 module: 'git'
 category: 工具链

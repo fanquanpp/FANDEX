@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 590
 title: 逻辑备份
 module: 'mysql'
 category: 数据库
@@ -97,22 +97,16 @@ GTID 环境注意：向已含数据的实例导入时，常需要 `--set-gtid-pu
 mysqlsh root@localhost:3306
 
 // 整实例并行导出（多线程、默认 zstd 压缩，产出目录而非单文件）
-util.exportTable("mydb.employees", "/backup/employees.tsv")   // 单表，可 CSV/TSV
-util.dumpSchemas(["mydb", "report"], "/backup/schemas_dump")  // 库级
-util.dumpInstance("/backup/full_dump")                        // 实例级
+util.dumpInstance("/backup/full_dump", {threads: 8, consistent: true})
 
-// 常用参数
-util.dumpInstance("/backup/full_dump", {
-  threads: 8,                    // 并行线程数
-  consistent: true,              // 一致性快照（默认 true）
-  ddlOnly: false,
-  dataOnly: false
-})
-
-// 恢复（并行导入，速度远快于 source 单线程回放）
+// 恢复（并行导入；loadIndexes: false 是先导数据后建索引的提速技巧）
 util.loadDump("/backup/full_dump", {threads: 8})
-util.loadDump("/backup/full_dump", {loadIndexes: false})  // 先导数据后建索引的提速技巧
 ```
+
+**完整工具面与工程作业单**（dumpSchemas/exportTable/importTable 全家族、
+progressFile 断点续传、T 级迁移的四步作业单、导出校验脚本）见专篇
+[MySQL Shell 工具链](/mysql/925-MySQLShellToolkit)；AdminAPI 集群管理同篇，
+集群搭建场景见 [InnoDB Cluster](/mysql/630-InnoDBCluster)。
 
 工具选择建议（2026 视角）：
 

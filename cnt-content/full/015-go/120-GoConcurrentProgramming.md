@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 140
 title: Go 并发编程
 module: 'go'
 category: 后端技术
@@ -27,6 +27,15 @@ prerequisites: []
 - 掌握「4. sync 包」的核心机制、典型用法与常见陷阱
 - 掌握「5. Context 包」的核心机制、典型用法与常见陷阱
 
+
+## 知识点地图
+
+- **知识类别**：Go 并发编程主干——goroutine/channel/select/sync/
+  context/并发模式/竞态检测的全景第一课。
+- **解决什么问题**：把「同时处理很多事」从线程与锁的重量级模型换成
+  「轻量协程 + 通道通信」的结构化模型。
+- **什么时候用到**：任何 IO 并发（网关、爬虫、批处理）；深读各机制
+  原理时按小节跳转 130-200 的原理篇。
 
 ## 1. Goroutine
 
@@ -1111,3 +1120,120 @@ m.Range(func(key, value any) bool {
     return true;
 });
 ```
+
+## 动手实践
+
+**任务**：写一个「并发受限的网页标题抓取器」，把本篇 §1-§6 的核心件
+全部用上：goroutine 池、channel 扇出、select 超时、sync.WaitGroup、
+context 取消。
+
+1. 输入一列 URL（本地文件或内嵌切片），最多 4 个并发抓取
+   （semaphore channel，容量 4）；
+2. 每个请求带 2 秒超时（`http.Client{Timeout}` 或 select+time.After）；
+3. 结果 channel 收集 `{url, title, err}`，主循环消费并汇总；
+4. 加 context：用户 Ctrl+C（`signal.NotifyContext`，见 430-GoSignalHandling）
+   时取消全部在飞请求；
+5. 用 `go run -race` 验证无数据竞争。
+
+**提示**：并发受限的标准姿势是「带缓冲 channel 当信号量」——
+`sem := make(chan struct{}, 4)`，进 goroutine 前 `sem <- struct{}{}`，
+defer 里 `<-sem`；标题提取不必上正则全文解析，`strings.Index` 找
+`<title>` 标签足够本练习；结果 channel 的容量设为任务数可避免
+发送阻塞（不需要再开协程收尸）。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```go
+package main
+
+import (
+    "context"
+    "fmt"
+    "io"
+    "net/http"
+    "os/signal"
+    "strings"
+    "sync"
+    "syscall"
+    "time"
+)
+
+type result struct {
+    url   string
+    title string
+    err   error
+}
+
+func fetch(ctx context.Context, client *http.Client, url string) result {
+    req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+    if err != nil {
+        return result{url: url, err: err}
+    }
+    resp, err := client.Do(req)
+    if err != nil {
+        return result{url: url, err: err}
+    }
+    defer resp.Body.Close()
+    body, err := io.ReadAll(io.LimitReader(resp.Body, 1<<16)) // 限 64KB，防大页面
+    if err != nil {
+        return result{url: url, err: err}
+    }
+    if i := strings.Index(string(body), "<title>"); i >= 0 {
+        if j := strings.Index(string(body)[i:], "</title>"); j > 0 {
+            return result{url: url, title: string(body)[i+7 : i+j]}
+        }
+    }
+    return result{url: url, err: fmt.Errorf("no title")}
+}
+
+func main() {
+    ctx, stop := signal.NotifyContext(context.Background(), syscall.SIGINT, syscall.SIGTERM)
+    defer stop()
+
+    urls := []string{
+        "https://go.dev", "https://prometheus.io",
+        "https://gorm.io", "https://entgo.io",
+        "https://example.com", "https://httpbin.org/delay/5", // 这个会超时
+    }
+    client := &http.Client{Timeout: 2 * time.Second}
+    sem := make(chan struct{}, 4)          // 并发上限 = 缓冲容量
+    results := make(chan result, len(urls))
+    var wg sync.WaitGroup
+
+    for _, u := range urls {
+        wg.Add(1)
+        go func(u string) {
+            defer wg.Done()
+            sem <- struct{}{}              // 拿令牌，满了就等
+            defer func() { <-sem }()       // 还令牌
+            results <- fetch(ctx, client, u)
+        }(u)
+    }
+    wg.Wait()
+    close(results)
+
+    ok, fail := 0, 0
+    for r := range results {
+        if r.err != nil {
+            fail++
+            fmt.Printf("FAIL %s: %v\n", r.url, r.err)
+        } else {
+            ok++
+            fmt.Printf("OK   %s: %s\n", r.url, r.title)
+        }
+    }
+    fmt.Printf("done: %d ok, %d fail\n", ok, fail)
+}
+```
+
+**逐段讲解**：`http.NewRequestWithContext` 让取消信号一路传进传输层
+——Ctrl+C 后在飞的请求立刻中断（而不是等超时）；`sem` 的拿/还必须
+defer 配对（漏还是丢，拿多了还死锁）；`results` 容量等于任务数，
+worker 永远不会阻塞在发送上，主流程 `wg.Wait` 后 `close(results)`
+再 range——先关后读的顺序反了会 panic 或丢数据；`httpbin.org/delay/5`
+配 2 秒超时必触发 timeout 分支，用来验证超时路径不是摆设。
+race 检查：`urls` 各 goroutine 只读、`results` 是通信不共享内存，
+`ok/fail` 只在收尾单协程累加——三者共同保证 `-race` 干净。
+
+</details>

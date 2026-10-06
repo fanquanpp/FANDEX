@@ -11,7 +11,7 @@ related:
   - 'vue3/150-AsyncComponentSuspense'
   - 'vue3/220-PiniaPersistencePlugin'
   - 'vue3/330-VuePerformanceDetailed'
-  - 'vue3/340-PerformanceOptimization'
+  - 'vue3/325-Vue3PerformanceToolkit'
 prerequisites: []
 ---
 

@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 150
 title: Spring Cache 与 Redis：注解声明意图，缓存收进一处
 description: 以「首页热门文章每次请求都打库、QPS 一高库先倒」引入：声明式缓存抽象与 CacheManager 心智模型、JSON 序列化的 RedisCacheManager 配置、四注解分工与 SpEL key、穿透击穿雪崩的注解层防御及其边界，附二次请求不打库实验。
 module: 'spring-boot'
@@ -11,7 +11,6 @@ prerequisites:
 author: fanquanpp
 updated: '2026-10-04'
 related:
-  - 'redis/110-CacheStrategyAdvancedFeature'
   - 'redis/120-CachePenetrationBreakdownAvalanche'
 ---
 

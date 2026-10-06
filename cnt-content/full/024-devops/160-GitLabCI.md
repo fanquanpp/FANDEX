@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 190
 title: GitLab CI/CD
 module: 'devops'
 category: 云与基础设施

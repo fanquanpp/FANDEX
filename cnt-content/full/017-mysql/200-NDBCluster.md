@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 230
 title: NDB Cluster：把分布式做进存储引擎
 module: 'mysql'
 category: 数据库

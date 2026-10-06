@@ -10,7 +10,6 @@ updated: '2026-09-28'
 related:
   - 'java/020-JavaOverviewDevEnv'
   - 'java/030-QuickStart'
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
   - 'kotlin/010-WhatIsKotlin'
 prerequisites:
   - 'start/080-LearningRouteOverview'
@@ -118,7 +117,7 @@ Java 不是万金油，它的统治区非常清晰：
 
 学 Java 之前必须知道的一个事实：**企业里的 Java 项目，十有八九是 Spring 框架项目**。Spring 不是语言，是构建在 Java 之上的应用框架——数据库访问、网页接口、安全认证，这些企业系统的标配能力 Spring 都替你管了。招聘网站上的「Java 工程师」岗位，默认就是「Java + Spring」。
 
-本模块会在 [Spring 基础](/java/820-SpringBasicsIoCAOPBeanLifecycle) 正式进入 Spring。在那之前要做的是把 Java 语言本身学扎实——Spring 再强，写的每一行还是 Java。
+本模块会在 [Spring 基础](/java/820-SpringIoCContainerBeansAndDI) 正式进入 Spring。在那之前要做的是把 Java 语言本身学扎实——Spring 再强，写的每一行还是 Java。
 
 ## 6. 版本策略：只认 LTS
 
@@ -208,7 +207,7 @@ Hello.java:3: error: ';' expected
 
 - 往前：[程序设计基础](/cs-fundamentals/020-ProgrammingBasics) 里「编译型 / 解释型」的抽象概念，在本文落成了具体的字节码 + JVM 图景；
 - 往后：下一篇 [Java 概述与开发环境](/java/020-JavaOverviewDevEnv) 把流程图里的 javac 与 JVM 真正装进你的电脑；再下一篇 [快速上手](/java/030-QuickStart) 跑通第一个程序；然后进入 [程序结构与基本语法](/java/040-ProgramStructureBasicSyntax) 的语法主线；
-- 更远：[Spring 基础](/java/820-SpringBasicsIoCAOPBeanLifecycle) 是你学 Java 的最终去处之一；[Kotlin 是什么](/kotlin/010-WhatIsKotlin) 与 Java 同在 JVM 上，学完 Java 基础后交叉阅读收益极大。
+- 更远：[Spring 基础](/java/820-SpringIoCContainerBeansAndDI) 是你学 Java 的最终去处之一；[Kotlin 是什么](/kotlin/010-WhatIsKotlin) 与 Java 同在 JVM 上，学完 Java 基础后交叉阅读收益极大。
 
 ## 12. 官方文档
 

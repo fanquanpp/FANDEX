@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 120
 title: this 关键字：四条规则，一个例外
 module: 'javascript'
 category: 前端技术

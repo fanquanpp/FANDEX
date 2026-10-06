@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 160
 title: Spring AMQP 与 RabbitMQ：从同步脆弱链到可靠消息
 description: 以「下单同步串行调风控、积分、短信，一个下游慢或挂下单跟着死」引入：邮局类比与四种交换机、RabbitTemplate 与 @RabbitListener 落地、发送 confirm/存储持久化/消费 ack 的可靠性三问与死信队列，附 Docker 起服务与死信落队实验。
 module: 'spring-boot'

@@ -1,5 +1,5 @@
 ---
-order: 450
+order: 500
 title: 间隙锁与临键锁解决幻读
 module: 'mysql'
 category: 数据库

@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 570
 title: gh gist 代码片段命令速查手册
 module: 'github'
 category: 工具链

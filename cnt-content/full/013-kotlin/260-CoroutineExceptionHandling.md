@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 290
 title: 协程异常处理
 module: 'kotlin'
 category: 后端技术
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'kotlin/100-ExtensionFunctionCompilePrinciple'
   - 'kotlin/080-ScopeFunctionDifference'
-  - 'kotlin/470-KotlinMultiplatformInDepth'
+  - 'kotlin/470-KotlinJsAndNativeCompileTargets'
   - 'kotlin/250-CoroutineDispatcherContext'
   - 'kotlin/300-FlowColdSharedState'
 prerequisites:

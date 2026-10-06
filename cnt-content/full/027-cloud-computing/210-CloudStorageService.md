@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 240
 title: 云存储服务
 module: 'cloud-computing'
 category: 云与基础设施

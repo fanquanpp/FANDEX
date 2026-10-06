@@ -1,5 +1,5 @@
 ---
-order: 750
+order: 800
 title: 存储过程与函数
 module: 'mysql'
 category: 数据库
@@ -8,7 +8,7 @@ description: MySQL存储过程与自定义函数详解：创建、参数、变�
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'mysql/860-PerformanceTuningSecurity'
+  - 'mysql/335-ObservabilitySystemSchemas'
   - 'mysql/290-FunctionalIndex'
   - 'mysql/440-MVCCSnapshotCurrentRead'
   - 'mysql/400-IndexPrinciplePerformanceOptimization'
@@ -99,6 +99,57 @@ SET @num = 10;
 CALL DoubleValue(@num);
 SELECT @num;  -- 20
 ```
+
+### 1.4 三种参数形态的完整示例：查询型 / 统计型 / 更新型
+
+参数类型背下来了，落到业务里就是三种过程形态。下面三个过程各代表一种：
+
+```sql
+DELIMITER //
+
+-- 形态一：查询型（两个 IN，返回结果集）——按年龄段查用户
+CREATE PROCEDURE get_user_by_age(IN min_age INT, IN max_age INT)
+BEGIN
+  SELECT * FROM users
+  WHERE age BETWEEN min_age AND max_age
+  ORDER BY age;
+END //
+
+-- 形态二：统计型（两个 OUT，返回数值）——按状态分别计数
+CREATE PROCEDURE count_users_by_status(OUT active_count INT, OUT inactive_count INT)
+BEGIN
+  SELECT COUNT(*) INTO active_count FROM users WHERE status = 1;
+  SELECT COUNT(*) INTO inactive_count FROM users WHERE status = 0;
+END //
+
+-- 形态三：更新型（两个 IN，执行 DML）——改状态并盖时间戳
+CREATE PROCEDURE update_user_status(IN user_id INT, IN new_status INT)
+BEGIN
+  UPDATE users SET status = new_status, updated_at = NOW() WHERE id = user_id;
+END //
+
+DELIMITER ;
+```
+
+逐段讲解：
+
+1. **查询型**把"带条件查询"固化成一个名字，调用方不用再写 WHERE 细节；`min_age`、`max_age` 两个 IN 参数等价于查询的占位符——这正是"视图不能带参数"（见[视图](/mysql/160-View)四条硬限制）时替代视图的路径。
+2. **统计型**的 `SELECT ... INTO` 把查询结果塞进 OUT 参数；一次 COUNT 也可以，但两个状态要两条 SELECT——每条 SELECT INTO 必须恰好返回一行，这是语法硬约束，返回多行会直接报错。
+3. **更新型**过程内部做 DML；`updated_at = NOW()` 显式盖戳是因为并非每张表都配了 `ON UPDATE CURRENT_TIMESTAMP`。
+
+调用的三种姿势，重点看 OUT 参数怎么取回来：
+
+```sql
+CALL get_user_by_age(20, 30);                       -- 查询型：直接出结果集
+
+CALL count_users_by_status(@active, @inactive);     -- 统计型：先装进用户变量
+SELECT @active AS active_users, @inactive AS inactive_users;  -- 再统一读
+
+SET @user_id = 1;
+CALL update_user_status(@user_id, 0);               -- 更新型：@变量也能当 IN 实参
+```
+
+易错点：OUT 参数**必须**用 `@` 开头的用户变量接收，写成普通标识符是语法错误；`@active` 在 CALL 之前不需要声明，CALL 之后才被赋值，而且它的作用域是**整个会话**——换一个连接查 `@active` 是 NULL，排查"为什么变量是空的"先确认还在同一个连接里。
 
 ## 2. 变量与流程控制
 
@@ -503,15 +554,78 @@ END;
 -- 如果需要修改数据，使用存储过程
 ```
 
-## 7. 总结与最佳实践
+## 7. 动手实践：给订单库写一个"下单对账"过程
 
-### 7.1 选择指南
+**任务**：用第 1-5 节的全部零件写一个完整过程 `place_order(IN p_user_id INT, IN p_product_id INT, IN p_qty INT)`，要求：
+
+1. 校验 `p_qty > 0`，否则用 `SIGNAL SQLSTATE '45000'` 报错拒绝；
+2. 查商品价格（标量查询 + `SELECT ... INTO`）；
+3. 开事务：插入订单、扣库存（原子 UPDATE，库存不足则 `ROLLBACK` 并抛出提示）；
+4. 提交后用 OUT 参数带回订单号；
+5. 在调用侧用用户变量接住 OUT 参数并 `SELECT` 验证。
+
+提示：`DECLARE` 必须全部写在 BEGIN 的最前面（声明顺序：普通变量、游标、HANDLER）；库存扣减参考 [事务与锁机制](/mysql/460-TransactionLockMechanism) 的"原子 UPDATE"姿势；SIGNAL 的写法见 780 篇 BEFORE 触发器一节。
+
+<details>
+<summary>参考实现（先自己写完再展开）</summary>
+
+```sql
+DELIMITER //
+
+CREATE PROCEDURE place_order(
+    IN  p_user_id    INT,
+    IN  p_product_id INT,
+    IN  p_qty        INT,
+    OUT p_order_id   BIGINT
+)
+BEGIN
+    DECLARE v_price DECIMAL(10,2);
+    DECLARE v_msg   VARCHAR(100);
+
+    IF p_qty <= 0 THEN
+        SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = '购买数量必须大于 0';
+    END IF;
+
+    SELECT price INTO v_price FROM products WHERE id = p_product_id;
+
+    START TRANSACTION;
+
+        INSERT INTO orders (user_id, product_id, qty, amount)
+        VALUES (p_user_id, p_product_id, p_qty, v_price * p_qty);
+        SET p_order_id = LAST_INSERT_ID();
+
+        UPDATE products SET stock = stock - p_qty
+        WHERE id = p_product_id AND stock >= p_qty;
+
+        IF ROW_COUNT() = 0 THEN
+            ROLLBACK;
+            SET p_order_id = NULL;
+            SELECT '库存不足，下单失败' AS result;
+        ELSE
+            COMMIT;
+        END IF;
+END //
+
+DELIMITER ;
+
+-- 调用侧
+CALL place_order(1, 101, 2, @oid);
+SELECT @oid AS 新订单号;
+```
+
+自检标准：DECLARE 在 BEGIN 后集中声明且在 IF 之前；库存不足时订单插入也被 ROLLBACK（对两条语句同生共死）；`ROW_COUNT() = 0` 的判断写在 UPDATE 之后；OUT 参数在失败分支被置 NULL，调用方能据 `@oid IS NULL` 判断成败。
+
+</details>
+
+## 8. 总结与最佳实践
+
+### 8.1 选择指南
 
 - **简单计算**：用自定义函数，可在SQL中直接调用
 - **复杂业务逻辑**：用存储过程，支持事务和DML
 - **批量数据处理**：优先用集合操作，游标作为最后手段
 
-### 7.2 最佳实践
+### 8.2 最佳实践
 
 1. **命名规范**：存储过程用 `sp_` 前缀，函数用 `fn_` 前缀
 2. **参数校验**：在存储过程开头验证输入参数

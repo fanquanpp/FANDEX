@@ -1,5 +1,5 @@
 ---
-order: 680
+order: 730
 title: CSS 项目示例：响应式个人主页
 module: 'css'
 category: 前端技术

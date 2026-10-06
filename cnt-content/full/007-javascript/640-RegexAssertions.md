@@ -1,5 +1,5 @@
 ---
-order: 640
+order: 720
 title: 正则断言
 module: 'javascript'
 category: 前端技术

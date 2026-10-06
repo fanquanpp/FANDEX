@@ -1,5 +1,5 @@
 ---
-order: 350
+order: 410
 title: Java 记录类
 module: 'java'
 category: 后端技术

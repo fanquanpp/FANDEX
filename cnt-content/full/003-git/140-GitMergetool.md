@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 170
 title: git-mergetool 合并冲突工具
 module: 'git'
 category: 工具链

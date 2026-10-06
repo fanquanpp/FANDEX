@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 300
 title: 扩展模块详解
 module: 'postgresql'
 category: 数据库
@@ -47,6 +47,33 @@ SHOW extension_dir;
 -- extension_name.control
 -- extension_name--version.sql
 ```
+
+### 1.3 扩展的内部：目录表与预加载
+
+排障和审计时，三个目录查询比 `\dx` 更细：
+
+```sql
+-- 已安装扩展的详细信息（版本、所属 schema）
+SELECT extname, extversion, extnamespace::regnamespace
+FROM pg_extension;
+
+-- 某个扩展提供了哪些函数（以 pg_trgm 为例）
+SELECT proname, oidvectortypes(proargtypes)
+FROM pg_proc p JOIN pg_extension e ON p.proextnamespace = e.extnamespace
+WHERE e.extname = 'pg_trgm';
+
+-- 扩展对象与扩展的依赖关系
+SELECT * FROM pg_depend WHERE refobjid = 'pg_trgm'::regclass;
+```
+
+第二类扩展必须在配置里**预加载**才能工作（它们要在每个后端启动时挂钩子），典型是 pg_stat_statements 与 auto_explain：
+
+```ini
+# postgresql.conf
+shared_preload_libraries = 'pg_stat_statements, auto_explain'
+```
+
+易错点：`CREATE EXTENSION pg_stat_statements` 成功但视图里没有数据，九成是漏了 `shared_preload_libraries`（改后要重启）——"装了没数据"先查这个。
 
 ## 2. PostGIS
 
@@ -284,13 +311,29 @@ SELECT pg_stat_statements_reset(userid, dbid, queryid);
 
 | 扩展            | 用途                                 |
 | --------------- | ------------------------------------ |
+| `uuid-ossp`     | UUID 生成（PG 13+ 内置 `gen_random_uuid()`，新项目优先内置函数） |
 | `pg_trgm`       | 模糊搜索、相似度匹配                 |
-| `pgcrypto`      | 加密函数、UUID 生成                  |
+| `pgcrypto`      | 加密函数、哈希（详见[存储加密](/postgresql/510-DataEncryptionStorage)） |
 | `hstore`        | 键值对存储                           |
 | `ltree`         | 层级路径数据                         |
 | `btree_gin`     | GIN 索引支持 btree 类型              |
+| `btree_gist`    | GiST 索引支持 btree 类型（EXCLUDE 约束常客） |
 | `intarray`      | 整数数组操作                         |
 | `unaccent`      | 去除重音符号                         |
 | `fuzzystrmatch` | 字符串相似度（Soundex、Levenshtein） |
 | `pg_cron`       | 定时任务                             |
 | `pg_repack`     | 在线清理膨胀                         |
+
+两个高频扩展的最小示例：
+
+```sql
+-- pg_trgm：任意位置 LIKE 走索引 + 相似度排序
+CREATE EXTENSION IF NOT EXISTS pg_trgm;
+CREATE INDEX idx_users_name_trgm ON users USING GIN (name gin_trgm_ops);
+SELECT name, similarity(name, '张三') AS sim
+FROM users WHERE name % '张三' ORDER BY sim DESC;
+
+-- uuid-ossp：旧项目遗留的 UUID 函数族
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+SELECT uuid_generate_v4();   -- 新项目改用内置 gen_random_uuid()
+```

@@ -1,20 +1,30 @@
 ---
-order: 570
+order: 610
 title: 应急响应
 module: 'cybersecurity'
 category: 云与基础设施
 difficulty: advanced
-description: 应急响应：事件分类、取证分析、遏制策略、恢复流程与复盘
+description: 应急响应：事件分类、取证分析（内存 Volatility、磁盘时间线、流量 Wireshark/tcpdump）、Linux/Windows 日志分析、遏制策略、恢复流程与复盘
 author: fanquanpp
-updated: '2026-10-05'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/530-CloudSecurity'
-  - 'cybersecurity/040-SymmetricEncryption'
-  - 'cybersecurity/050-AsymmetricEncryption'
+  - 'cybersecurity/550-SOC'
+  - 'cybersecurity/570-MalwareAnalysis'
   - 'cybersecurity/060-HashAlgorithm'
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+## 知识点地图
+
+- **知识类别**：安全运营——安全事件（incident）发生后的标准化处置与电子取证。防御做得再好也要假设「总有一天会被打进来」，这一篇管「进来之后」。
+- **解决什么问题**：出事后的头一小时最贵：证据被覆盖（重启清内存）、处置不当（直接拔电破坏文件系统一致性）、范围误判（只杀进程不清持久化）都会让小事件变成大事故。本篇给出框架（PICERL 六阶段）、取证三件套（内存 Volatility、磁盘时间线、流量 pcap）、两大系统的日志分析入口，以及遏制/根除/复盘的操作清单。
+- **什么时候用到**：
+  - 告警确认入侵后：按第 1 节框架进入流程，第 2 节固定证据；
+  - 排查可疑主机：日志分析（第 2.5 节）与持久化排查命令直接执行；
+  - 事后举证与复盘：取证镜像与时间线是报告的证据层。
+- **学完能做什么**：按 PICERL 走完一次完整响应；用 Volatility 分析内存镜像找隐藏进程与后门；用 mactime 重建磁盘时间线；用 tcpdump/Wireshark 从流量里定位 C2 通信。
 
 ## 1. 应急响应框架
 
@@ -53,25 +63,57 @@ prerequisites:
 ```bash
 # 获取内存镜像
 winpmem -o memory.raw
+# Linux 侧可用 LiME 内核模块采集
+insmod lime.ko "path=/evidence/memory.lime format=lime"
 
 # Volatility 分析
-vol -f memory.raw windows.pslist
-vol -f memory.raw windows.netscan
-vol -f memory.raw windows.malfind
+vol -f memory.raw windows.info              # 系统信息（先确认镜像与内核匹配）
+vol -f memory.raw windows.pslist            # 进程列表
+vol -f memory.raw windows.pstree            # 进程树（看父子关系，伪造父进程现形）
+vol -f memory.raw windows.psscan            # 扫描隐藏进程（对比 pslist 找差异）
+vol -f memory.raw windows.netscan           # 网络连接（C2 外联地址）
+vol -f memory.raw windows.malfind           # 可注入内存区域（代码注入痕迹）
+
+# 提取可疑进程的内存映像做静态分析
+vol -f memory.raw windows.memmap --pid 1234 --dump
+
+# 注册表持久化项（Run 键是后门最爱）
+vol -f memory.raw windows.registry.printkey \
+  --key "Software\Microsoft\Windows\CurrentVersion\Run"
+
+# 文件定位与提取（按物理地址挖出已删除文件的残留）
+vol -f memory.raw windows.filescan | grep ".doc"
+vol -f memory.raw windows.dumpfiles --physaddr 0x3e4a5b60
 ```
+
+读报告的诀窍：`pslist` 与 `psscan` 的差异集是「从进程链表里摘掉的隐藏进程」；`malfind` 报告的 `PAGE_EXECUTE_READWRITE` 内存段几乎总值得追查——正常软件很少需要「可写可执行」内存。恶意样本的深入分析交接给 [恶意软件分析](/cybersecurity/570-MalwareAnalysis)。
 
 ### 2.3 磁盘取证
 
 ```bash
-# 创建磁盘镜像
-dd if=/dev/sda of=disk.img bs=4M
+# 创建磁盘镜像（conv=noerror,sync 保证坏道不中断、空洞补零）
+dd if=/dev/sda of=evidence.img bs=4M conv=noerror,sync
+md5sum evidence.img > image.md5        # 镜像完整性校验，链条起点
+# 专业工具：FTK Imager、Guymager（图形化、支持 E01 格式）
 
-# 挂载只读
-mount -o ro,loop disk.img /mnt/evidence
+# 挂载只读分析
+mount -o ro,loop evidence.img /mnt/evidence
 
-# 文件恢复
-foremost -i disk.img -o recovered/
+# 分区表与文件系统遍历（Sleuth Kit 套件）
+mmls evidence.img                      # 分区表
+fls -r -o 2048 evidence.img            # 递归列出文件系统（偏移按 mmls 结果）
+icat -o 2048 evidence.img 12345        # 按 inode 号提取文件
+
+# 恢复删除文件
+foremost -i evidence.img -o recovered/    # 按文件头特征恢复
+photorec evidence.img                     # 交互式恢复
+
+# 时间线分析：把「谁在什么时候动了什么」排成一条线
+fls -r -m / -o 2048 evidence.img > body.txt
+mactime -b body.txt > timeline.csv
 ```
+
+时间线（timeline.csv）是磁盘取证的产出核心：入侵时间点前后 15 分钟的文件创建/修改/删除，通常能直接圈出攻击者的动作序列（上传 webshell → 改 crontab → 清日志）。
 
 ### 2.4 网络取证
 
@@ -81,8 +123,76 @@ tcpdump -i eth0 -w evidence.pcap
 
 # 分析
 wireshark evidence.pcap
-tshark -r evidence.pcap -Y "http.request"
+tshark -r evidence.pcap -Y "http.request"        # 命令行版过滤器（tshark 适合批处理）
 ```
+
+Wireshark 常用过滤语法（图形界面与 tshark 的 `-Y` 通用）：
+
+```text
+ip.addr == 192.168.1.1           # IP 过滤
+tcp.port == 80                   # 端口过滤
+http.request.method == "POST"    # HTTP POST 请求
+dns.qry.name contains "evil"     # DNS 查询（DGA 域名、DNS 隧道线索）
+tcp.flags.syn == 1               # SYN 包
+frame.len > 1000                 # 大包过滤
+```
+
+分析技巧四步：统计 → 对话（IP 通信量排名，外联最多的主机先查）；统计 → 协议分级（异常协议占比）；跟随 → TCP 流（还原完整会话）；导出 → HTTP 对象（提取传输的文件样本）。命令行侧的 tcpdump 细读：
+
+```bash
+# 读取分析
+tcpdump -r capture.pcap -nn               # 读取 pcap，不做名称解析
+tcpdump -r capture.pcap -A                # ASCII 显示（看 HTTP 明文）
+tcpdump -r capture.pcap -X                # 十六进制+ASCII（看二进制协议）
+
+# 提取 HTTP 请求行与头
+tcpdump -r capture.pcap -A -s 0 | grep -i "GET\|POST\|Host\|Cookie"
+```
+
+流量取证要回答的问题固定三个：外联到哪（netscan/对话排名交叉验证）、传了什么（跟随流/导出对象）、什么时候开始（首见外联的时间戳对齐时间线）。IDS 规则的持续监测见 [IDS/IPS 命令](/cybersecurity/480-IDSIPSCommands)。
+
+### 2.5 日志分析（Linux 与 Windows）
+
+日志是取证里成本最低、覆盖最广的证据源。
+
+**Linux 日志分析：**
+
+```bash
+# 登录日志
+last -f /var/log/wtmp          # 成功登录
+lastb -f /var/log/btmp         # 失败登录
+grep "Failed password" /var/log/auth.log | awk '{print $11}' | \
+  sort | uniq -c | sort -rn | head  # 暴力破解统计（Top 攻击源）
+
+# 系统日志
+grep -i "error\|fail\|critical" /var/log/syslog
+journalctl --since "2024-01-01" --until "2024-01-02" -p err
+
+# Web 日志分析
+awk '{print $1}' access.log | sort | uniq -c | sort -rn | head -20  # IP 统计
+grep "POST /login" access.log | grep " 401 "   # 登录失败
+grep "SELECT\|UNION\|DROP" access.log          # SQL 注入尝试
+grep "<script>\|alert(" access.log              # XSS 尝试
+```
+
+**Windows 日志分析（PowerShell）：**
+
+```powershell
+# 安全日志 — 登录失败事件（ID 4625）
+Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4625} |
+  Select-Object TimeCreated, Message | Format-Table
+
+# 统计登录失败来源 IP（Top 10）
+Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4625} |
+  ForEach-Object { $_.Properties[5].Value } |
+  Group-Object | Sort-Object Count -Descending | Select-Object -First 10
+
+# 进程创建事件（ID 4688，需审计策略开启）
+Get-WinEvent -FilterHashtable @{LogName='Security'; ID=4688} |
+  Select-Object TimeCreated, Message | Format-List
+```
+
+三个必查项与易错点：**登录事件**（4625 暴力破解、4624 成功登录中的异常时段/异常源）、**进程创建**（4688 需要 auditpol 先开「审核进程创建」，很多机器默认没开——这正是 [安全基线](/cybersecurity/520-SecurityBaseline) 审计策略那几条命令的意义）、**Web 日志**（攻击特征 grep 只能抓已知模式，日志中心化与规则告警的体系建设见 [SOC 安全运营](/cybersecurity/550-SOC)）。
 
 ## 3. 遏制策略
 

@@ -11,11 +11,19 @@ related:
   - 'nestjs/150-NestJSOverview'
   - 'nestjs/160-ModuleControllerService'
   - 'nestjs/190-Testing'
+  - 'nestjs/202-MiddlewareCrossCutting'
+  - 'nestjs/205-AuthJwtAndPassport'
   - 'nestjs/250-NestjsLearningSummary'
 prerequisites:
   - 'nestjs/150-NestJSOverview'
   - 'nestjs/160-ModuleControllerService'
 ---
+
+## 知识点地图
+
+- **知识类别**：依赖注入（DI）与 Provider 体系——IoC 容器的配方（useClass/useValue/useFactory/useExisting）、注入令牌、作用域、循环依赖与生命周期钩子。
+- **解决什么问题**：「`Nest can't resolve dependencies`」从哪来；换实现、测试替身、按环境组装怎么表达；单例之外的两种作用域什么时候用。
+- **什么时候用到**：服务一多必然遇到；报 resolve 失败时的排查手册（第 7 节）；任何「同一抽象多实现」的选型场景（第 8 节）。
 
 ## 0. 为什么值得单独一篇（先读这里）
 
@@ -335,6 +343,22 @@ Test.createTestingModule({
 - 抽象类 `NotifierPort` 同时是类型与类型令牌（编译后 class 仍存在，这是第 160 篇"DTO 用 class 不用 interface"的同一原理）；
 - 测试里 `useValue` 的假货形态随意（哪怕 `as any`），容器只认令牌不看实现。
 
+### 8.1 来自认证场景的工厂注入：JwtModule.registerAsync
+
+官方包同样按这套配方设计。认证篇（nestjs/205）的 JWT 密钥来自环境配置——配置服务初始化后才能读到，这正是 `registerAsync` 工厂的用武之地：
+
+```typescript
+JwtModule.registerAsync({
+  inject: [ConfigService],                        // 工厂的依赖：声明单
+  useFactory: (config: ConfigService) => ({       // 配方：配置就绪后怎么造
+    secret: config.get("JWT_SECRET"),
+    signOptions: { expiresIn: "15m" }
+  })
+})
+```
+
+对照第 2 节的配方表：`inject` 是工厂的构造依赖、`useFactory` 是有过程的构造（等价配方 3 的工厂形态，只是「产品」换成了 JwtModule 的配置）。为什么不用静态 `register({ secret: "hard-coded" })`：密钥进代码等于进 Git 历史，且测试环境换密钥要改代码——工厂把「怎么拿到密钥」交给容器按环境决定。同类用例还有数据库连接（等 Prisma/TypeORM 客户端就绪再装配）与队列连接（nestjs/235 的 `BullModule.forRoot`），看到 `xxxModule.registerAsync` 就按工厂心智读。
+
 ## 9. 小结与延伸
 
 - 心智模型：容器是对象托儿所，providers 是配方表，构造器是声明单；`Nest can't resolve dependencies` = 配方表缺项或模块边界没打通。
@@ -342,4 +366,9 @@ Test.createTestingModule({
 - 令牌：类型令牌免 @Inject，字符串令牌必须导出常量；抽象用 abstract class 而非 interface，才能兼任令牌。
 - 作用域：默认单例；request scope 沿依赖链传染且有性能代价，请求级上下文优先 request 对象/CLS；transient 罕用。
 - 循环依赖：forwardRef 两侧都要写，但它只是绷带，抽公共服务才是治疗。
-- 延伸：参数装饰器与 request 级数据见[守卫与请求生命周期](/nestjs/200-GuardsAndLifecycle)；测试中的 DI 替身体系见[测试篇](/nestjs/190-Testing)；官方 Injection Scopes 与 Custom Providers 章节是本文的权威出处（https://docs.nestjs.com/fundamentals/injection-scopes 、https://docs.nestjs.com/fundamentals/custom-providers）。
+- 延伸：参数装饰器与 request 级数据见[守卫与请求生命周期](/nestjs/200-GuardsAndLifecycle)；类中间件是可注入 Provider 的另一个用例（[中间件与横切关注点](/nestjs/202-MiddlewareCrossCutting)）；测试中的 DI 替身体系见[测试篇](/nestjs/190-Testing)。
+
+## 参考与致谢
+
+- NestJS 官方文档 Custom Providers：<https://docs.nestjs.com/fundamentals/custom-providers>、Injection Scopes：<https://docs.nestjs.com/fundamentals/injection-scopes>、Lifecycle Events：<https://docs.nestjs.com/fundamentals/lifecycle-events>；
+- 本篇正文为教学重写；四种配方与作用域语义沿用官方文档的通行定义，第 8.1 节的 JwtModule 用例对接认证篇（nestjs/205）的场景。

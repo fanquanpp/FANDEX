@@ -37,8 +37,13 @@
         },
         {
           "id": "tailwind-103",
-          "title": "Tailwind CSS 布局系统",
-          "doc": "040-LayoutFlexGrid"
+          "title": "Tailwind CSS Flexbox 布局",
+          "doc": "041-FlexboxLayout"
+        },
+        {
+          "id": "tailwind-105",
+          "title": "Tailwind CSS Grid 布局",
+          "doc": "043-GridLayout"
         },
         {
           "id": "tailwind-104",

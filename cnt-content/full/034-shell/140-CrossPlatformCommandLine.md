@@ -4,13 +4,14 @@ title: 跨平台命令行详解
 module: 'shell'
 category: 工具链
 difficulty: beginner
-description: 跨平台命令行详解：Shell 与终端、文件系统、权限、进程、网络工具与脚本入门
+description: 跨平台命令行概览：Shell 与终端、文件系统、权限、进程、管道重定向与脚本入门的跨平台对照
 author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'shell/050-IDEEditorSelection'
   - 'shell/070-PluginEcosystem'
   - 'shell/130-CommandLineBasics'
+  - 'shell/145-NetworkDiagnosticsTools'
 prerequisites:
   - 'shell/010-DevEnvSetup'
 ---
@@ -259,50 +260,7 @@ systemctl disable nginx   # 取消自启
 journalctl -u nginx -f    # 实时查看 nginx 日志
 ```
 
-## 5. 网络工具
-
-### 5.1 连接测试
-
-```bash
-ping -c 4 google.com      # 测试连通性（-c 4 发 4 个包后停止）
-traceroute google.com     # 跟踪路由路径
-mtr google.com            # 持续跟踪路由（推荐）
-```
-
-### 5.2 DNS 查询
-
-```bash
-nslookup google.com       # DNS 查询
-dig google.com            # 详细 DNS 查询
-dig +short google.com     # 只显示 IP 地址
-host google.com           # 简洁 DNS 查询
-```
-
-### 5.3 端口与连接
-
-```bash
-# 查看端口占用
-ss -tlnp                  # 查看所有监听端口（netstat 的现代替代）
-lsof -i :8080             # 查看占用 8080 端口的进程
-
-# 网络请求
-curl -I https://example.com        # 只看响应头
-wget https://example.com/file.zip  # 下载文件
-nc -zv localhost 3306              # 测试端口连通性
-```
-
-`netstat -tlnp` 仍可用，但新系统逐渐以 `ss` 为主。排查"端口被占用"的标准组合：`lsof -i :端口` 找进程，`kill` 处理。
-
-### 5.4 防火墙（以 Ubuntu ufw 为例）
-
-```bash
-ufw status                # 查看状态
-ufw allow 80/tcp          # 允许 80 端口
-ufw deny 3306             # 拒绝 3306 端口
-ufw enable                # 启用防火墙
-```
-
-## 6. 管道与重定向
+## 5. 管道与重定向
 
 ### 6.1 重定向
 
@@ -330,7 +288,7 @@ history | awk '{print $2}' | sort | uniq -c | sort -rn | head  # 最常用命令
 
 三段式 `sort | uniq -c | sort -rn`（分组计数）与重定向的系统讲解见《文本处理三剑客》与《管道与重定向》。
 
-## 7. Shell 脚本入门
+## 6. Shell 脚本入门
 
 ### 7.1 基本结构
 
@@ -389,7 +347,7 @@ echo "=== Deploy complete ==="
 
 生产脚本请在开头使用完整的 `set -euo pipefail` 并配置清理逻辑，见《脚本调试与严格模式》。
 
-## 8. 常见陷阱
+## 7. 常见陷阱
 
 **陷阱一：平台命令混用。** 在 bash 里敲 `dir`、在 CMD 里敲 `ls`、在 bash 里用反斜杠路径 `cd C:\Projects`（bash 会把 `\P` 当转义）。用 3.4 节对照表对号入座。
 
@@ -401,7 +359,7 @@ echo "=== Deploy complete ==="
 
 **陷阱五：改了配置文件不生效。** `~/.bashrc` 修改后需要 `source ~/.bashrc` 或重开终端。
 
-## 9. 小结
+## 8. 小结
 
 **初学者要点**：
 
@@ -415,4 +373,5 @@ echo "=== Deploy complete ==="
 - 不同平台命令差异大（尤其 Windows），跨平台脚本要么明确目标平台，要么用 PowerShell/WSL 统一
 - `ps`/`kill`/`systemctl` 是进程三板斧，先 TERM 后 KILL
 - 管道组合是命令行的灵魂，后续《文本处理三剑客》《管道与重定向》会展开
+- 网络诊断命令（ping/dig/ss/lsof/curl/ufw 及跨平台对照）已独立成篇，见《网络诊断工具》（shell/145-NetworkDiagnosticsTools）
 - 本篇是"全景图"，每个主题的深入版本都在本模块后续文档中

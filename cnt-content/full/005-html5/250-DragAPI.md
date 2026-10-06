@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 280
 title: 拖拽 API
 module: 'html5'
 category: 前端技术
@@ -274,6 +274,6 @@ item.addEventListener('pointerdown', (e) => {
 
 ## 10. 下一步
 
-- 文件读进来了怎么用？File API 与 `URL.createObjectURL` 的细节在 `html5/140-ImagesAndResponsiveImages` 与 `html5/240-HTML5OfflineStorageWebAPI`；
+- 文件读进来了怎么用？File/Blob 与 `URL.createObjectURL` 的专篇在 [File/Blob 与对象 URL](/html5/248-FileBlobAndObjectURL)，响应式图像见 `html5/140-ImagesAndResponsiveImages`；
 - 想给拖入确认做原生弹层？看 `html5/430-HTML5DialogPopoverGuide`；
 - 拖拽只是"手势交互"的一种，Pointer Events 的完整能力（多点触控、压感、笔倾斜）是通往移动端的正门，建议系统补一遍。

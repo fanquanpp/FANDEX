@@ -1,5 +1,5 @@
 ---
-order: 350
+order: 360
 title: Channel 与 BroadcastChannel
 module: 'kotlin'
 category: 后端技术

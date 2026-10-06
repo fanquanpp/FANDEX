@@ -1,5 +1,5 @@
 ---
-order: 190
+order: 210
 title: catalog 依赖目录管理
 module: 'vite'
 category: 前端技术

@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 220
 title: 跳转表：用表驱动替换长 switch
 module: 'c'
 category: 计算机科学
@@ -393,7 +393,7 @@ static void dispatch_cmd(int id, int x) {
 ## 7. 实际项目中的使用场景
 
 - **命令分发**：Redis 这类服务用一张全局命令表 `{名字, 处理函数, 参数个数}` 支撑几百条命令，新命令只加表项；本文第 3 节的 shell.c 是它的迷你版；
-- **中断向量表**：嵌入式里函数指针数组被链接器放到固定地址，中断号就是下标；中断回调指针常加 volatile 修饰（中断与主程序并发改写），场景见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)，volatile 的语义在 [C volatile 与 const 深水区](/c/260-CVolatileAndConstDeepDive)；
+- **中断向量表**：嵌入式里函数指针数组被链接器放到固定地址，中断号就是下标；中断回调指针常加 volatile 修饰（中断与主程序并发改写），场景见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)，volatile 的语义在 [C volatile 与 const 深水区](/c/260-ConstAndVolatileQualifiers)；
 - **状态机**：协议解析、连接生命周期管理（第 5.3 节骨架），状态多、转移密的项目里几乎是标配写法；
 - **接口表**：Linux VFS 的 `file_operations`、Nginx 模块结构——「结构体装一排函数指针」是跳转表思想的静态版：不按下标跳，按字段名调。
 

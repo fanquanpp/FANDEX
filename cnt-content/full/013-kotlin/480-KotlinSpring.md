@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 520
 title: Kotlin 与 Spring
 module: 'kotlin'
 category: 后端技术
@@ -19,6 +19,12 @@ prerequisites:
 ## 前置知识
 
 - [Kotlin 与 Android](/kotlin/440-KotlinAndroid)：建议先完成前一篇的学习
+
+## 知识点地图
+
+- **知识类别**：Kotlin 与 Spring 框架的咬合点——编译器插件（all-open、no-arg）如何配合框架代理、Kotlin 专属 DSL（beans{}）、data class 配置属性与挂起函数 Web 层。
+- **解决什么问题**：直接把 Java Spring 写法翻译成 Kotlin 会在代理、JPA、配置绑定上「莫名」失败；本文讲清每个失败背后的语言机制与官方解法。
+- **什么时候用到**：新建 Kotlin Spring Boot 工程配置插件；写类型安全配置；决定 Controller 用 suspend 还是 Mono；排查「Bean 无法代理」「实体没有默认构造器」类报错。
 
 ## 学习目标
 
@@ -206,6 +212,25 @@ class AppConfig {
 }
 ```
 
+### beans{} DSL：注解之外的函数式 Bean 定义
+
+Spring 对 Kotlin 的独门支持之一：不用注解，用带接收者的 lambda 声明 Bean：
+
+```kotlin
+import org.springframework.context.support.beans
+
+fun beans() = beans {
+    bean<UserRepository>()
+    bean { UserService(ref()) }                 // ref() 按类型解析依赖
+    bean("legacyQueue") { QueueConfig(name = "orders-v1") }   // 命名 bean
+}
+```
+
+- 价值一：**同一个函数式配置可以注册多个 `ApplicationContext`**——`GenericApplicationContext` 与测试里的 `refresh()` 共用一份定义，集成测试不用加载整个 `@SpringBootApplication`，秒级启动。
+- 价值二：纯 Kotlin，无反射注解扫描；配合 `bean { ... }` 内的条件逻辑（`if (profile in env.activeProfiles) bean { ... }`）比 `@Conditional` 更直白。
+- 易错点：DSL 定义的 Bean 默认**懒加载**，且 `ref()` 在 lambda 执行时才解析；把 `ref()` 误写为直接构造（`bean { UserService(UserRepository()) }`）会绕过容器——这个实例不受代理、不参与生命周期，症状是「事务不生效」。
+- 选择建议：业务工程保持注解扫描（生态兼容、IDE 跳转友好）；函数式配置用于测试切片与库/SDK 的自动装配。
+
 ### 配置属性
 
 ```kotlin
@@ -236,6 +261,35 @@ app:
     max-upload-size: 52428800
 */
 ```
+
+### data class 版配置属性（推荐）
+
+Kotlin 写法的目标是把上面的可变 class 换成不可变 data class——配置在启动后不该再变：
+
+```kotlin
+import org.springframework.boot.context.properties.ConfigurationProperties
+import org.springframework.boot.context.properties.bind.ConstructorBinding
+
+data class AppProperties(
+    val name: String = "My App",
+    val version: String = "1.0.0",
+    val features: Features = Features()
+) {
+    data class Features(
+        val registrationEnabled: Boolean = true,
+        val maxUploadSize: Long = 10 * 1024 * 1024
+    )
+}
+
+// 注册：Boot 3.x 用 @EnableConfigurationProperties 或 @ConfigurationPropertiesScan
+@ConfigurationPropertiesScan
+@SpringBootApplication
+class Application
+```
+
+- 构造绑定的工作方式：Spring 通过**主构造器参数名**匹配配置键并实例化，data class 的不可变性与默认值天然契合。Kotlin 全家桶（`kotlin-spring` 插件随 Boot 脚手架默认启用）下不需要显式 `@ConstructorBinding`——它仅在多构造器需要消歧时标注。
+- 易错点：nested 属性 `features.registration-enabled` 的 kebab-case 自动映射到 camelCase 是**宽松绑定**的功劳；但 data class 若有**非默认值的必填参数**而配置缺了键，启动直接失败——这正是想要的 fail-fast，别为了启动成功塞默认值掩盖配置缺失。
+- 对比上面的 var 版本：var 版本靠 setter 绑定，任何代码都能改运行中的配置；data class 版本绑定一次、终身只读，且 `copy()` 生成的测试配置零样板。
 
 ### 异常处理
 
@@ -374,6 +428,33 @@ class UserEventListener {
 - **不要用 lateinit 注入可选依赖**：可选依赖用 `@Autowired(required = false)` 配合可空类型
 - **Jackson 与数据类**：使用 jackson-module-kotlin 支持数据类的反序列化
 - **避免在伴生对象中定义常量**：Kotlin 的 const val 在伴生对象中会被编译为静态字段，但普通 val 不会
+
+### all-open 插件为什么必需：代理机制与 final 的冲突
+
+`kotlin("plugin.spring")` 本质是 all-open 插件的一个预设。拆开讲：
+
+1. Kotlin 的类与成员**默认 final**（这也是 Effective Kotlin 推荐的设计：继承是显式授权）。
+2. Spring 的 `@Transactional`、`@Async`、`@Cacheable`、配置类 CGLIB 增强，实现方式都是**生成目标类的子类**并在覆写的方法里织入切面——final 类无法被继承，代理无从建立。
+3. `plugin.spring` 的行为：把标注了 `@Component`/`@Transactional`/`@Async`/`@Cacheable` 等指定注解的类自动 open（类与方法都打开）。自定义注解需要代理时，在 build 脚本里追加：
+
+```kotlin
+allOpen {
+    annotation("com.example.annotation.Proxied")   // 标了它的类自动 open
+}
+```
+
+易错点：忘记插件的症状非常隐蔽——不代理时**功能照常运行**，只是事务不回滚、缓存不命中、异步变同步；往往到故障复盘时才发现「@Transactional 根本没生效」。评审看到事务注解，顺手确认 build 脚本里有 `plugin.spring`。
+
+配套的 `plugin.jpa` 是 no-arg 插件预设：JPA 规范要求实体有无参构造器，而 Kotlin 构造器必填参数与它冲突；插件在字节码层生成零参构造器（并半初始化字段），实体类的 Kotlin 签名保持不变。
+
+### Spring 6 / WebFlux 挂起函数的语义细节
+
+前文协程 Controller 的补充说明：
+
+- **框架侧的协程桥**：Spring MVC 与 WebFlux 从 Spring 6 起原生识别 `suspend` 处理函数，内部把挂起函数桥接为响应式类型（MVC 侧经异步 Servlet、WebFlux 侧直接对接 Reactor）。业务代码不出现 `Mono`/`Flux` 也能获得非阻塞——但**应用要自己接好协程上下文**，异常统一走 `@ExceptionHandler`（协程异常会正常抛到框架层）。
+- **返回 `Flow<T>` 的语义**：`suspend fun getUsers(): Flow<User>` 是流式响应（SSE/流式 JSON）；想要普通 JSON 数组直接返回 `List<User>`。新人常见混淆：把列表接口写成 Flow 返回，客户端拿到的是分片流式响应。
+- **不能混搭的点**：同一个 Controller 方法不能既返回 `Mono<T>` 又用 suspend——选一种；响应式管道（`map`/`flatMap`）里调用挂起函数要用 `mono { }` / `flow { }` 桥接，直接在 lambda 里 `suspend` 调用编译不过。
+- **与阻塞驱动的边界**：挂起 Controller 搭配的是非阻塞驱动（R2DBC、WebClient）。挂起函数里调用 JDBC/RestTemplate 这类阻塞 API 会占住事件循环线程——要么迁 R2DBC，要么把阻塞调用包进 `withContext(Dispatchers.IO)`（此时实际是「协程外形的线程池模型」，非阻塞收益归零，但至少不卡事件循环）。
 
 ## 进阶用法
 

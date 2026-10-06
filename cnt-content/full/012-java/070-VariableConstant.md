@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 80
 title: 变量与常量：分数要变，用户名不能变
 module: 'java'
 category: 后端技术

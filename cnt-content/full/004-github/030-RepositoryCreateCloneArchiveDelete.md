@@ -217,6 +217,34 @@ gh repo delete OWNER/REPO --yes
 2. 别人进入该仓库后点击 **Use this template** 即可创建同结构新仓库。
 3. 模板仓库会忽略 fork 关系，新仓库是全新的独立项目。
 
+从模板生成也能走命令行与 API（自动化建仓的标准形态）：
+
+```bash
+# gh 一条命令：以 OWNER/REPO 为模板创建新仓库
+gh repo create my-new-project --template OWNER/template-repo --public --clone
+
+# REST API 里模板仓库的标志是 is_template 字段：
+gh api repos/OWNER/template-repo --jq '.is_template'    # true
+# 生成的子仓库会带 generated_from 记录，可追溯到模板
+gh api repos/OWNER/my-new-project --jq '.template_repository.full_name'
+```
+
+模板与 Fork 的分界再强调一次：**Fork 用于「贡献回去」（保留 fork 关系与 PR 通道），模板用于「复制起步」（生成无关联的独立仓库）**——项目骨架发放用模板，开源协作用 Fork（见 [Fork 工作流](/github/200-ForkWorkflow)）。
+
+**仓库转移（Transfer repository）**：把仓库在账号/组织之间「搬家」而不丢历史：
+
+1. 仓库 Settings → Danger Zone → **Transfer ownership**，输入目标账号/组织名确认；
+2. 转移保留的东西：提交历史、Issue/PR、Watchers、Stars、Forks 关系；
+3. 转移后旧地址 **自动重定向**：`git clone`/`git fetch` 旧 URL 依然可用，但建议 promptly 更新本地 remote（`git remote set-url origin <新地址>`），因为重定向在仓库被再次创建同名仓库后会失效。
+
+与镜像迁移（下文）的分工：**同平台搬家用转移**（一键、全保留）；**跨托管平台搬家（GitHub 之外的 GitLab/Bitbucket 进出）用镜像迁移或 GitHub Importer**。
+
+**GitHub Importer**：从其他托管平台或任意可访问的仓库 URL 导入到 GitHub，由平台代跑镜像过程：
+
+1. 新建仓库向导或访问 github.com/new/import；
+2. 填旧仓库的 clone URL 与凭据（私有仓库需要）；
+3. 导入完成后可重试/更新——适合批量搬家时的「先导一批验证再补全」。
+
 **仓库镜像（Mirror）迁移**：把整个仓库（含所有分支与标签）迁移到新位置：
 
 ```bash
@@ -227,6 +255,14 @@ cd REPO.git
 # 2. 推送到新位置
 git push --mirror https://github.com/NEW/REPO.git
 ```
+
+三种搬家方式的选型表：
+
+| 方式 | 适用 | 保留内容 | 特点 |
+| :--- | :--- | :--- | :--- |
+| Transfer | GitHub 内部账号/组织间 | 全部（含社交数据） | 一键、旧 URL 重定向 |
+| Importer | 其他平台迁入 GitHub | 提交与分支（按导入选项） | 平台代劳、可重试 |
+| 镜像推送 | 任意 Git 托管之间 | 全部 git 引用 | 纯 git 手段、不迁移 Issue/PR |
 
 **批量管理仓库**（适合组织场景）：
 

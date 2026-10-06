@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 60
 title: MongoDB 数据建模与企业落地
 module: 'mongodb'
 category: 数据库

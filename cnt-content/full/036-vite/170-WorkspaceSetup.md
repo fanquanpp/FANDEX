@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 190
 title: 工作空间配置
 module: 'vite'
 category: 前端技术

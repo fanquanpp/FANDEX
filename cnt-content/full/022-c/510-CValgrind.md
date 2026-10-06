@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 550
 title: C Valgrind 内存检测
 module: 'c'
 category: 计算机科学
@@ -8,10 +8,10 @@ description: 用 Valgrind 检测 C 程序内存问题：memcheck 实战走查、
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'c/210-MemoryManagement'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
   - 'c/200-DynamicMemoryManagement'
 prerequisites:
-  - 'c/210-MemoryManagement'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
 ---
 
 ## 学习目标
@@ -421,6 +421,6 @@ ASAN_OPTIONS=detect_leaks=1 ./app
 - `--track-origins=yes` 是排查"未初始化值"类报告的利器，代价是更慢，日常回归可不开。
 - memcheck 只能看到"运行到的路径"：配合高覆盖率测试运行，报告才有说服力；CI 里加 `--error-exitcode=1` 做门禁。
 - 长驻服务的内存问题用 massif 看增长趋势比看单次退出摘要更有效；多线程问题优先 helgrind，嫌慢再试 drd。
-- 工具链组合拳：日常开发 ASan（快），提交前 Valgrind（全），两者互补而非互替；原理层面的内存错误分类见 [内存管理](/c/210-MemoryManagement)。
+- 工具链组合拳：日常开发 ASan（快），提交前 Valgrind（全），两者互补而非互替；原理层面的内存错误分类见 [内存管理](/c/210-ProcessMemoryLayoutAndErrors)。
 
 

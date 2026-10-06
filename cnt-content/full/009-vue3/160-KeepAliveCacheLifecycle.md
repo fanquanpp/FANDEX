@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 170
 title: KeepAlive 缓存与生命周期
 module: 'vue3'
 category: 前端技术
@@ -8,8 +8,8 @@ description: Vue 3 KeepAlive 组件缓存机制完整解析：include/exclude/ma
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'vue3/100-CustomComposableWrapper'
-  - 'vue3/140-TeleportPortalApp'
+  - 'vue3/090-CustomHook'
+  - 'vue3/120-TeleportSuspense'
   - 'vue3/150-AsyncComponentSuspense'
   - 'vue3/220-PiniaPersistencePlugin'
 prerequisites: []
@@ -17,7 +17,7 @@ prerequisites: []
 
 ## 前置知识
 
-- [Teleport 传送门应用](/vue3/140-TeleportPortalApp)：建议先完成前一篇的学习
+- [Teleport 与 Suspense](/vue3/120-TeleportSuspense)：建议先完成前一篇的学习
 
 ## 学习目标
 

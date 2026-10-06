@@ -7,7 +7,6 @@ category: 后端技术
 difficulty: intermediate
 prerequisites:
   - 'spring-boot/020-FirstApplication'
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
 author: fanquanpp
 updated: '2026-10-04'
 related:
@@ -18,7 +17,7 @@ related:
 ## 前置知识
 
 - 已完成 [第一个应用](/spring-boot/020-FirstApplication)：能跑起工程，知道组件扫描的范围是主类所在包及子包；
-- 见过依赖注入的写法即可（[Spring 基础](/java/820-SpringBasicsIoCAOPBeanLifecycle) 读过最好，没读过也能跟，第 3 节现场补心智模型）。
+- 见过依赖注入的写法即可（[Spring 基础](/java/820-SpringIoCContainerBeansAndDI) 读过最好，没读过也能跟，第 3 节现场补心智模型）。
 
 ## 学习目标
 

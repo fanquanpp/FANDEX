@@ -1,5 +1,5 @@
 ---
-order: 740
+order: 770
 title: C++ 项目实战
 module: 'cpp'
 category: 计算机科学
@@ -8,7 +8,6 @@ description: 综合运用面向对象、模板与 STL 的实战项目。
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'cpp/620-CppExceptionAndPerformance'
   - 'cpp/630-CppDebugPerformanceAnalysis'
 prerequisites:
   - 'cpp/020-CppOverviewAndModernStandard'

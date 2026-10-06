@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 440
 title: 文件系统操作：从 open 到 inode
 module: 'c'
 category: 计算机科学
@@ -238,7 +238,7 @@ ssize_t write_n(int fd, const void *buf, size_t n) {
 
 ### 2.5 close：不关就是 fd 泄漏
 
-close(fd) 释放 fd；进程退出时内核会兜底回收所有 fd，所以小程序忘 close 常常没后果。但长跑服务器不行：fd 数量有上限（常见默认 1024，可查 `ulimit -n`），一个不断打开却不关闭的循环迟早把额度耗光，此后所有 open 报 EMFILE「打开文件过多」。这与 [内存深水区](/c/210-MemoryManagement) 讲的 malloc 泄漏是同一族问题：**要了不还，资源耗尽**——只是这次「资源」是 fd 而不是内存。每个错误分支也要 close，第 7 节的 atomic_write 会示范全套纪律。
+close(fd) 释放 fd；进程退出时内核会兜底回收所有 fd，所以小程序忘 close 常常没后果。但长跑服务器不行：fd 数量有上限（常见默认 1024，可查 `ulimit -n`），一个不断打开却不关闭的循环迟早把额度耗光，此后所有 open 报 EMFILE「打开文件过多」。这与 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 讲的 malloc 泄漏是同一族问题：**要了不还，资源耗尽**——只是这次「资源」是 fd 而不是内存。每个错误分支也要 close，第 7 节的 atomic_write 会示范全套纪律。
 
 修改实验：把第 1 节 cp_sys.c 的缓冲从 1 字节改成 `char buf[4096]; read(in, buf, sizeof buf)`，再 strace 数一次。read/write 的次数应该掉到 25 上下——和 stdio 版一样了。这个实验顺手回答了「缓冲区开多大」：大缓冲减少系统调用次数，4096 或 65536 是常见选择。
 
@@ -553,7 +553,7 @@ if (n <= 0) {
 
 ### 8.3 目录流未 closedir：递归越深，fd 越少
 
-tree.c 若把 closedir 那行删掉，每递归一层就漏一个目录 fd。目录树深几十层、目录数上千的仓库跑一次，`ulimit -n` 的 1024 额度就见了底，此后 opendir/open 全报 EMFILE「打开文件过多」，`strace -c ./tree .` 里 openat 与 close 的次数对不上账就是实锤。与 [内存深水区](/c/210-MemoryManagement) 的 malloc 泄漏同一药方：**每个成功路径与每个错误路径都要有收尾**，第 7 节 atomic_write 的全套 close/unlink 就是样板。
+tree.c 若把 closedir 那行删掉，每递归一层就漏一个目录 fd。目录树深几十层、目录数上千的仓库跑一次，`ulimit -n` 的 1024 额度就见了底，此后 opendir/open 全报 EMFILE「打开文件过多」，`strace -c ./tree .` 里 openat 与 close 的次数对不上账就是实锤。与 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 的 malloc 泄漏同一药方：**每个成功路径与每个错误路径都要有收尾**，第 7 节 atomic_write 的全套 close/unlink 就是样板。
 
 ### 8.4 EINTR：慢系统调用被信号打断
 
@@ -589,7 +589,7 @@ printf("%zd %zd %zd\n", n1, n2, n3);
 
 ## 11. 与之前和之后的知识的关系
 
-- 往前：[标准库文件 IO](/c/430-StdioFileIO) 的缓冲之谜在第 1 节揭晓——stdio 是系统调用之上的攒批发货层；[进程与管道](/c/330-ProcessAndPipe) 里 dup2 重定向的原理是「最小可用 fd」规则；[内存深水区](/c/210-MemoryManagement) 的泄漏家族添了新成员 fd 泄漏；
+- 往前：[标准库文件 IO](/c/430-StdioFileIO) 的缓冲之谜在第 1 节揭晓——stdio 是系统调用之上的攒批发货层；[进程与管道](/c/330-ProcessAndPipe) 里 dup2 重定向的原理是「最小可用 fd」规则；[内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 的泄漏家族添了新成员 fd 泄漏；
 - 旁支：[Socket 网络编程](/c/390-SocketNetworkProgramming) 的 socket fd 与本文的文件 fd 同族，recv/send 与 read/write 同受部分读写契约管辖；
 - 往后：[跨平台编程](/c/410-CrossPlatformProgramming) 收口本文所有 API 在 Windows 上的名字与语义差异；[POSIX 速查](/c/420-CPosixSystemCall) 是本文四件套与目录遍历的表格化手册，读完后当案头索引。
 

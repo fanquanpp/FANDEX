@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 560
 title: C++网络编程
 module: 'cpp'
 category: 计算机科学
@@ -10,7 +10,7 @@ updated: '2026-09-27'
 related:
   - 'cpp/540-CppGraphicsProgramming'
   - 'cpp/520-CppSerialization'
-  - 'cpp/740-Cpp23Cpp26NewFeatures'
+  - 'cpp/730-Cpp23NewFeatures'
   - 'cpp/580-CppPythonInteraction'
 prerequisites: []
 ---

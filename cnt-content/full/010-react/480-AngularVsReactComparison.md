@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 550
 title: Angular 精要与 React 对照
 module: 'react'
 category: 前端技术
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'react/170-StateManagementSolutionComparison'
   - 'react/050-ContextGlobalState'
-  - 'react/070-RouteDataFetch'
+  - 'react/070-ReactRouterRouting'
 prerequisites:
   - 'react/020-ComponentProps'
   - 'react/040-HooksDeep'
@@ -166,11 +166,11 @@ export class ListComponent {
 
 | 能力 | Angular 内置 | React 生态常见选择 |
 | --- | --- | --- |
-| 路由 | `@angular/router` | React Router / TanStack Router（`react/070-RouteDataFetch`） |
+| 路由 | `@angular/router` | React Router / TanStack Router（`react/070-ReactRouterRouting`） |
 | 表单 | Reactive Forms / Signal Forms | React Hook Form |
 | HTTP | `HttpClient` | fetch / TanStack Query |
 | 状态 | Signals + 服务 / RxJS | useState、Zustand、Redux 等（`react/170-StateManagementSolutionComparison`） |
-| 测试 | Karma / Vitest / Angular Testing Library | Vitest + Testing Library（`react/090-TestEngineering`） |
+| 测试 | Karma / Vitest / Angular Testing Library | Vitest + Testing Library（`react/090-LintFormatAndProjectStructure`） |
 | SSR | Angular Universal（内建） | Next.js（`react/100-NextJSFullStack`） |
 
 ## 8. 选型建议

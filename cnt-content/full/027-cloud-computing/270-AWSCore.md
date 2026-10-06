@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 310
 title: AWS 核心服务
 module: 'cloud-computing'
 category: 云与基础设施

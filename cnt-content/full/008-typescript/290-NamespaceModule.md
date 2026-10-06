@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 310
 title: 命名空间与模块
 module: 'typescript'
 category: '前端技术'
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-29'
 related:
   - 'typescript/320-ImportTypeVerbatimModuleSyntax'
-  - 'typescript/330-ModuleResolutionModernToolchains'
+  - 'typescript/315-PackageExportsEsmInterop'
   - 'typescript/340-ModuleDeclarationGlobalAugmentation'
   - 'typescript/300-DeclarationFileWriting'
 prerequisites:
@@ -155,7 +155,7 @@ import { formatDate } from './format.js'; // 正确：源码写 .js，编译后�
 import { formatDate } from './format.ts'; // 仅 allowImportingTsExtensions + noEmit 场景
 ```
 
-源码是 TS 却要写 `.js` 后缀，是 ESM 的「编译产物视角」，新人最困惑的一条。打包器（Vite/esbuild）会自动补全，所以 Web 项目感觉不到；Node 直跑项目必踩。模块解析策略（`bundler` / `node16` / `nodenext` 怎么选）见[模块解析策略](/typescript/330-ModuleResolutionModernToolchains)。
+源码是 TS 却要写 `.js` 后缀，是 ESM 的「编译产物视角」，新人最困惑的一条。打包器（Vite/esbuild）会自动补全，所以 Web 项目感觉不到；Node 直跑项目必踩。模块解析策略（`bundler` / `node16` / `nodenext` 怎么选）见[模块解析策略](/typescript/315-PackageExportsEsmInterop)。
 
 ## 6. 坑点与自检
 
@@ -196,6 +196,6 @@ import { formatDate } from './format.ts'; // 仅 allowImportingTsExtensions + no
 ## 8. 下一步
 
 - [import type 与 verbatimModuleSyntax](/typescript/320-ImportTypeVerbatimModuleSyntax)：类型导入的编译期/运行时边界
-- [模块解析策略](/typescript/330-ModuleResolutionModernToolchains)：import 路径是怎么找到文件的
+- [模块解析策略](/typescript/315-PackageExportsEsmInterop)：import 路径是怎么找到文件的
 - [声明文件编写](/typescript/300-DeclarationFileWriting)：.d.ts 的写法全解
 - [模块声明与全局类型增强](/typescript/340-ModuleDeclarationGlobalAugmentation)：declare module 与 declare global

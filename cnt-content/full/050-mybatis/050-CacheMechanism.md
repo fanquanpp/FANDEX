@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 70
 title: 一级与二级缓存：口袋、书架与失效的边界
 description: 以「本地连查两次只打一次库、上线后却每次都打库」的薛定谔体验引入：一级缓存的命中条件与 Spring 会话生命周期、二级缓存三件套与命中顺序、跨 namespace 关联失效的脏读推演，附两个数 SQL 实验与「为什么大厂禁用二级缓存」的工程结论。
 module: 'mybatis'
@@ -13,7 +13,6 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'mybatis/060-PluginInterceptor'
-  - 'redis/110-CacheStrategyAdvancedFeature'
 ---
 
 ## 前置知识

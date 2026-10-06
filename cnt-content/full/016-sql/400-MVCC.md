@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 420
 title: MVCC 多版本并发控制
 module: 'sql'
 category: 数据库

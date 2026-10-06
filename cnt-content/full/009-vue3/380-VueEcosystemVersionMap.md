@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 390
 title: Vue 3.5 生态版本对照
 module: 'vue3'
 category: 前端技术

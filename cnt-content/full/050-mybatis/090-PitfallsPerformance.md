@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 110
 title: 慢查询病历本：N+1、批量写、select * 与深分页四大事故现场
 description: 以「开发环境百条数据流畅、上线一周列表页 8 秒超时」引入：N+1 的两种来源与解法矩阵、foreach 巨型 SQL 与 ExecutorType.BATCH 的对决、select * 的三重隐税与列裁剪、深分页两招，附数 SQL 条数与批量写耗时对比两个实验，收束于先量再改的排查纪律。
 module: 'mybatis'
@@ -14,6 +14,12 @@ related:
   - 'mysql/340-SlowQueryLog'
   - 'mybatis/060-PluginInterceptor'
 ---
+
+## 知识点地图
+
+- 知识类别：MyBatis 性能病历——N+1、批量写错法、select * 隐税、深分页，以及排查工具链与两道健壮性保险丝。
+- 解决什么问题："上线后越来越慢"的四类高频病灶的诊断与治疗；建立"先量再改"的排查纪律。
+- 什么时候用到：接口性能告警、数据库 CPU 异常、大表上线前的自查；给团队做性能评审时当 checklist。
 
 ## 前置知识
 
@@ -253,6 +259,39 @@ mybatis-plus:
 ```
 
 超时的 SQL 被强制中断，防一条烂 SQL 长期占着连接拖垮连接池。语句级精确控制用 @Options(timeout = ...) 或映射器配置（以官方文档为准）。兜底不是替代治理——超时只是止血，病根回到第 7 节的工具链去查。
+
+## 动手实践
+
+**任务一：N+1 抓捕演练。** 搭一个 20 订单 x 每单 3 商品的数据集，先写"列表查订单 + 循环查商品"的朴素实现（故意制造 N+1），用 log-impl 数出 SQL 条数；再用 040 篇的"先圈父 id、再批量装填"改写，复数条数并对比总耗时。提示：耗时对比要在 1000 订单量级做才有区分度，20 条时两者都在毫秒级看不出差距。
+
+**任务二：批量写三连对比。** 同一批 1 万条插入，分别用 a) 循环单条 insert、b) foreach 巨型 SQL、c) ExecutorType.BATCH + rewriteBatchedStatements，记录三种的耗时与 SQL 日志条数。提示：a 最慢且日志 1 万条刷屏、b 在千列限制处可能直接报错（把批量大小调成 1000 试探）、c 的日志只有一次 prepare 但多批 execute——三种形态看一眼日志就能认出来。
+
+**任务三：select * 瘦身实测。** 把一个含大 TEXT 列的表的列表查询从 select * 改成列裁剪，对比传输字节量（驱动侧或抓包工具）与耗时。提示：TEXT 列造大一点（几百 KB/行）差距才明显；这个实验同时演示了"宽表列表页"这一最容易被忽视的流量税。
+
+先自己操作，再对照参考实现：
+
+<details>
+<summary>任务二参考实现（BATCH 正确姿势）</summary>
+
+```java
+// 1. 独立的 BATCH 会话（不能与普通 SqlSession 混用）
+try (SqlSession batchSession = sqlSessionFactory.openSession(ExecutorType.BATCH)) {
+    ProductMapper mapper = batchSession.getMapper(ProductMapper.class);
+    for (int i = 0; i < 10_000; i++) {
+        mapper.insert(new Product("p-" + i, i * 1.0));
+        if (i % 1000 == 999) {
+            batchSession.flushStatements();   // 每 1000 条刷一次，控制 JDBC 批包大小
+        }
+    }
+    batchSession.commit();
+}
+
+// 2. MySQL 侧必须开启重写，否则 BATCH 只是攒语句不合并网络往返
+// spring.datasource.url=jdbc:mysql://...&rewriteBatchedStatements=true
+```
+
+要点：a) flushStatements 的间隔（1000）是吞吐与内存的平衡点，太大会占内存、太小网络往返变多；b) `rewriteBatchedStatements` 是 MySQL 驱动参数，不开它 BATCH 的收益几乎归零——这是"配了 BATCH 还是慢"的头号原因；c) 三种写法的耗时量级参考（本机 H2/MySQL 会有差异）：循环单条分钟级、foreach 十秒级、BATCH+重写秒级——量级差而不是百分比差。
+</details>
 
 ## 自检
 

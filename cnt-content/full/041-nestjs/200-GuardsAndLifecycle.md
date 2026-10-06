@@ -10,9 +10,20 @@ updated: '2026-10-05'
 related:
   - 'nestjs/170-ValidationPipes'
   - 'nestjs/190-Testing'
+  - 'nestjs/202-MiddlewareCrossCutting'
+  - 'nestjs/205-AuthJwtAndPassport'
+  - 'nestjs/210-InterceptorsAndFilters'
 prerequisites:
   - 'nestjs/160-ModuleControllerService'
 ---
+
+## 知识点地图
+
+- **知识类别**：请求生命周期与守卫——七大管线组件的职责与顺序，CanActivate 守卫与声明式角色鉴权。
+- **解决什么问题**：请求从进来到出去穿过哪些层、每层能做什么不能做什么（顺序错了为什么不行）；「这个接口谁有权访问」怎么优雅地表达。
+- **什么时候用到**：理解任何请求级功能的落点（日志放哪、鉴权放哪、校验放哪）；写鉴权、限流前必读。
+
+**分工声明**：本篇讲管线全景与守卫（教学讲解）；第 1 层中间件的展开见《中间件与横切关注点》（nestjs/202-MiddlewareCrossCutting），拦截器与异常过滤器的展开及「多组件同时存在时的执行顺序实验」见《拦截器与异常过滤器》（nestjs/210-InterceptorsAndFilters）——本篇给全景地图，两篇各管一层的深入，顺序实验不在这里重复。
 
 ## 0. 请求生命周期（先读这里）
 
@@ -79,6 +90,8 @@ export class AuthGuard implements CanActivate {
 2. 守卫里抛异常与返回 `false` 都是拒绝，但抛 `UnauthorizedException`、`ForbiddenException` 能带明确的状态码与文案，前端好区分"没登录"和"没权限"。
 3. `request.user` 是守卫写给下游的"公共上下文"：管道、处理器、拦截器都能读到，第 4 节的参数装饰器会优雅地消费它。
 4. 守卫是 DI 容器的正式成员，可以注入 `ConfigService`、`JwtService` 等任意 Provider，这是守卫优于"控制器里手写 if 判断"的根本原因。
+
+上面手写的 `AuthGuard` 是教学形态——生产项目用 Passport 的 `AuthGuard('jwt')` 替代（策略负责「从令牌认出用户」，守卫只管「拦截」），完整落地见《认证与授权：Passport 与 JWT》（nestjs/205-AuthJwtAndPassport）的第 3 节：本篇给机制，205 给工业级实现，两篇的守卫代码可以逐行对照。
 
 ## 2. 声明式角色控制：@SetMetadata 与 Reflector
 
@@ -211,4 +224,5 @@ me(@CurrentUser() user: AuthUser, @CurrentUser("name") name: string) {
 - 请求生命周期七层：Middleware、Guard、Interceptor（前）、Pipe、Handler、Interceptor（后）、Exception Filter，各层只做一类事。
 - 守卫答"能不能进"：`CanActivate` + `ExecutionContext` 判断，`@SetMetadata`/`Reflector` 做声明式角色控制。
 - 全站性守卫用 `APP_GUARD` token 注册在 `AppModule`，支持 DI 且顺序可控。
-- 延伸：真实项目鉴权用 `@nestjs/passport` + `@nestjs/jwt`（Strategy 模式对接守卫）；限流用 `@nestjs/throttler`（同样基于守卫实现）。
+- 各层深入：第 1 层中间件见 nestjs/202，认证的工业级实现（Passport/JWT）见 nestjs/205，拦截器与异常过滤器及执行顺序实验见 nestjs/210。
+- 延伸：限流用 `@nestjs/throttler`（同样基于守卫实现）。

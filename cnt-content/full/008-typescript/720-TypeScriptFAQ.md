@@ -1,5 +1,5 @@
 ---
-order: 740
+order: 780
 title: TypeScript 高频疑问 FAQ 合集
 module: 'typescript'
 category: 前端技术
@@ -174,6 +174,8 @@ const id2 = <T extends unknown>(x: T): T => x;
 | TS2769 | 没有匹配的重载 | 参数组合不在重载签名内 |
 
 **详细说明**：报错信息里的"Type X is not assignable to type Y"就是兼容规则（见 `TypeCompatibility`）的应用；把两边的类型展开对比，绝大多数问题一眼可见。
+
+更完整的按错误码排查手册（触发场景、三层排查法、最小复现与修法）见[常见编译错误诊断速查](/typescript/725-TypeScriptErrorDiagnosis)，本表只是它的浓缩版。
 
 ## 12. 声明文件 .d.ts 和 .ts 怎么选
 

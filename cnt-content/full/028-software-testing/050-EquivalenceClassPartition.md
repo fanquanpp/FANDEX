@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 60
 title: 等价类划分
 module: 'software-testing'
 category: 云与基础设施

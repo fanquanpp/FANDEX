@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 100
 title: 自定义 Hook
 module: 'vue3'
 category: 前端技术
@@ -242,6 +242,82 @@ export function useIntersectionObserver(
 // const imageRef = ref<HTMLImageElement>()
 // const { isVisible } = useIntersectionObserver(imageRef)
 ```
+
+### 2.7 useForm - 表单状态与校验一体
+
+表单是 composable 最能体现价值的场景：状态、脏标记、校验、重置收进一个函数，组件只管渲染：
+
+```typescript
+// composables/useForm.ts
+import { reactive, ref, computed } from 'vue';
+
+type Validator<T> = (val: T[keyof T]) => string | null;
+
+export function useForm<T extends Record<string, any>>(
+  initial: T,
+  validators: Partial<Record<keyof T, Validator<T>>> = {}
+) {
+  const values = reactive({ ...initial }) as T;
+  const errors = ref<Partial<Record<keyof T, string>>>({});
+  const touched = ref<Partial<Record<keyof T, boolean>>>({});
+
+  function validate(): boolean {
+    const newErrors: Partial<Record<keyof T, string>> = {};
+    let valid = true;
+    (Object.keys(validators) as Array<keyof T>).forEach((key) => {
+      const error = validators[key]?.(values[key]);   // 校验器返回 null/undefined 即通过
+      if (error) { newErrors[key] = error; valid = false; }
+    });
+    errors.value = newErrors;
+    return valid;
+  }
+
+  function setField<K extends keyof T>(key: K, value: T[K]) {
+    values[key] = value;
+    touched.value[key] = true;       // 用户碰过的字段才显示错误——体验细节
+  }
+
+  function reset() {
+    Object.assign(values, initial);
+    errors.value = {};
+    touched.value = {};
+  }
+
+  const isValid = computed(() => Object.keys(errors.value).length === 0);
+
+  return { values, errors, touched, validate, setField, reset, isValid };
+}
+```
+
+设计要点：校验器是**调用方注入的纯函数**（`(val) => '错误文案' | null`），composable 本身不绑任何校验库——要接 yup/zod 换校验器即可；`touched` 区分"没碰过的字段"与"碰错过的字段"，是表单 UX 的分水岭。
+
+### 2.8 useElementSize - 用 ResizeObserver 追踪元素尺寸
+
+```typescript
+// composables/useElementSize.ts
+import { ref, onMounted, onUnmounted, useTemplateRef } from 'vue';
+
+export function useElementSize(name = 'sizeRef') {
+  const el = useTemplateRef<HTMLElement>(name);      // 3.5+ 按名字取模板引用
+  const width = ref(0);
+  const height = ref(0);
+  let observer: ResizeObserver | null = null;
+
+  onMounted(() => {
+    if (!el.value) return;
+    observer = new ResizeObserver(([entry]) => {
+      width.value = entry.contentRect.width;
+      height.value = entry.contentRect.height;
+    });
+    observer.observe(el.value);
+  });
+  onUnmounted(() => observer?.disconnect());         // 观察器必须断开，否则泄漏
+
+  return { el, width, height };
+}
+```
+
+模式要点：模板引用（[响应式系统](/vue3/050-ReactiveSystem)的模板引用一节）+ 浏览器观察器的组合，是"命令式 API 包装成 composable"的通用模板——拿引用、建观察、卸载断开，三步固定。
 
 ## 3. Hook 组合模式
 

@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 340
 title: 跳表与有序集合
 module: 'redis'
 category: 数据库
@@ -8,13 +8,19 @@ description: Redis 跳表（Skiplist）数据结构详解：层级结构、概�
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'redis/040-ListSetCommands'
   - 'redis/100-VectorSet'
   - 'redis/260-StringSDSStructure'
 prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---
 
+## 知识点地图
+
+- **知识类别**：跳表（Skiplist）数据结构与 ZSet（有序集合）的底层实现——层级索引、概率晋升、双结构协作、内部编码切换与高频命令族。
+- **解决什么问题**：让「按分数排序 + 范围查询 + 排名」三类需求都以 $O(\log n)$ 完成且范围查询退化良好；解释排行榜/延迟队列/时间线这些业务结构为什么在 Redis 上又快又省。
+- **什么时候用到**：排行榜（ZRANK/ZREVRANGE）、延时队列（score 存执行时间）、按分数检索（ZREVRANGEBYSCORE）；排查 ZSet 内存与延迟问题时需要理解编码切换。
+
+前置：了解 List/Set 的基本操作（redis/040-ListSetCommands）；哈希表查找的概念。
 
 ## 1. 跳表原理
 
@@ -140,11 +146,29 @@ typedef struct zset {
 否则 → skiplist + dict
 ```
 
+两个阈值对应两个可调参数，可在 redis.conf 修改：
+
+```ini
+zset-max-listpack-entries 128   # 元素个数上限
+zset-max-listpack-value 64      # 单个成员字节长度上限
+```
+
 ```sql
 -- 查看编码
 OBJECT ENCODING myzset
--- "ziplist" 或 "skiplist"
+-- "listpack"（7.0+ 小集合）或 "skiplist"
 ```
+
+**listpack 与 ziplist 的关系**：ziplist 的致命缺陷是「级联更新」——每个节点的 prevlen 字段记录前驱长度，插入可能引发连锁的长度字段重写；listpack 去掉了前驱长度字段（每个元素只记录自身长度），从结构上消灭级联更新。Redis 7.0 起 ZSet 小集合编码从 ziplist 换成 listpack（List/Hash 同批切换，见 redis/260-StringSDSStructure 对 SDS 紧凑布局的讨论）。
+
+**转换是单向的**（与 embstr→raw 同款规则）：
+
+```
+listpack --(超过任一阈值： entries>128 或 成员>64B)--> skiplist
+skiplist --(无论删除多少元素)--> 不会转回 listpack
+```
+
+运维含义：把 `zset-max-listpack-entries` 调大可以让更多小 ZSet 待在紧凑编码里省内存，但要在重启后用 `OBJECT ENCODING` 复核——已经转成 skiplist 的存量键不会受益，只有新建键按新阈值走。
 
 ### 3.3 为什么同时需要两个结构
 
@@ -264,3 +288,56 @@ ZINTERSTORE result 2 zset1 zset2 AGGREGATE MAX
 - `ZADD GT/LT` 只影响「是否更新分数」，成员不存在时仍然会新增——
   「只在更优时更新，且绝不新增」需要 GT/LT 再配合 XX 一起用。
 
+### 6.1 补充命令：多键弹出、无物化交集与范围落库（6.2+/7.0+）
+
+```bash
+# ZMPOP（7.0+）：从多个 ZSet 中取第一个非空键，弹出 MIN/MAX 端的成员
+ZMPOP 2 queue:job:high queue:job:low MIN COUNT 3
+# 1) "queue:job:low"            ← 实际弹出的是哪个键（按入参顺序找第一个非空）
+# 2) 1) 1) "job:88"             ← 成员与分数成对返回
+#       2) "1704067200"
+# 阻塞版 BZMPOP 0 2 queue:a queue:b MIN —— 消费者空转时挂起等待
+
+# ZINTERCARD（7.0+）：交集基数，不物化交集；LIMIT 提前截断（同 Set 的 SINTERCARD）
+ZINTERCARD 2 leaderboard:day1 leaderboard:day2 LIMIT 50
+
+# ZRANGESTORE（6.2+）：把范围查询结果存进新键，查询与落库一条命令
+ZRANGESTORE top:hot leaderboard 0 9 REV          # 按排名取前 10 存入
+ZRANGESTORE near:user1 geo:drivers (1000 1000 BYSCORE   # 按分数范围存入
+# 每小时把榜单 ZRANGESTORE 成快照键，前端读快照而不是实时算大榜
+```
+
+选型对照（谁在什么时候替代谁）：
+
+- 多个延迟队列要统一消费时，ZMPOP 替代「逐键 ZPOPMIN + 判空」的轮询循环，BZMPOP 还顺带解决了空队列空转；
+- 只关心「重合多少人」时 ZINTERCARD 替代 ZINTERSTORE（不落临时键、LIMIT 是断路器）；需要明细时才物化；
+- ZRANGESTORE 替代「ZRANGE 读到应用再写回」的两步搬运，榜单快照、分页缓存都在用它。
+
+
+## 7. 动手实践
+
+任务一：观察编码切换。用脚本向一个 ZSet 依次插入 200 个「成员名 10 字节」的元素，每 20 个查一次 `OBJECT ENCODING` 与 `MEMORY USAGE`，记录编码切换发生在第几个元素、内存曲线在哪里出现台阶。
+
+<details>
+<summary>任务一参考观察与提示</summary>
+
+预期：前 128 个元素是 listpack，第 129 个触发 entries 阈值切到 skiplist，`MEMORY USAGE` 在切换点出现一次上跳（双结构 + 指针开销）。对照实验：用 70 字节的成员名重复，64 字节阈值会更早触发切换。`CONFIG SET zset-max-listpack-entries 256` 后重新实验可验证阈值可调。
+</details>
+
+任务二：用 ZMPOP + BZMPOP 改造一个双队列消费器。建 `queue:urgent` 与 `queue:normal` 两个 ZSet（score 为时间戳），写消费循环优先弹 urgent、两个都空时 BZMPOP 阻塞等待，验证阻塞唤醒与优先级语义。
+
+<details>
+<summary>任务二参考骨架</summary>
+
+```python
+while True:
+    res = r.execute_command("BZMPOP", 5, 2, "queue:urgent", "queue:normal",
+                            "MIN", "COUNT", 1)
+    if res is None:
+        continue                      # 超时，回到循环头做健康检查
+    queue_name, items = res[0], res[1]
+    process(items[0][0])              # items: [(member, score), ...]
+```
+
+优先级由入参顺序保证：BZMPOP 按键顺序找第一个非空，urgent 永远先被检查。score 取「计划执行时间」时 MIN 弹出最早该执行的成员，即延时队列语义。
+</details>

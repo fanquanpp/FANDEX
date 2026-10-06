@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 390
 title: 订阅与发布：原生逻辑复制的完整落地
 module: 'postgresql'
 category: 数据库
@@ -11,7 +11,7 @@ related:
   - 'postgresql/420-LogicalDecodingOutputPlugin'
   - 'postgresql/440-LogicalPhysicalReplicationCompare'
   - 'postgresql/390-StreamingReplication'
-  - 'postgresql/470-ReplicationHA'
+  - 'postgresql/472-HAFailoverPatroni'
 prerequisites:
   - 'postgresql/420-LogicalDecodingOutputPlugin'
 ---
@@ -152,4 +152,4 @@ FROM pg_replication_slots;
 
 ## 下一步
 
-两种复制各自的边界已经清楚，系统性的维度对比见[逻辑与物理复制对比](/postgresql/440-LogicalPhysicalReplicationCompare)；做 HA 方案则继续[复制高可用](/postgresql/470-ReplicationHA)。
+两种复制各自的边界已经清楚，系统性的维度对比见[逻辑与物理复制对比](/postgresql/440-LogicalPhysicalReplicationCompare)；做 HA 方案则继续[高可用与自动故障转移](/postgresql/472-HAFailoverPatroni)。

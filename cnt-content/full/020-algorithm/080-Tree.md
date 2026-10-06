@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 100
 title: "树：留住顺序，代价是每步一次选择"
 module: 'algorithm'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 90
 title: Sentinel 容错与限流：别让一条慢 SQL 雪崩整条调用链
 description: 以「库存服务一条慢 SQL 把响应拖到 30 秒，订单服务的 Tomcat 线程整批卡死，故障沿调用链逆流蔓延」引入：超时/限流/熔断三板斧、Sentinel 资源与规则、blockHandler 与 fallback 分野、熔断三态机与流控阈值估算，附慢接口熔断恢复与 QPS 流控实验。
 module: 'spring-cloud'

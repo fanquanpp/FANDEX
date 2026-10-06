@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 340
 title: Jest 入门
 module: 'software-testing'
 category: 云与基础设施

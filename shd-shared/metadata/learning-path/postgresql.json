@@ -16,7 +16,7 @@
         {
           "id": "postgresql-002",
           "title": "高级SQL与扩展",
-          "doc": "530-AdvancedSQLExtension"
+          "doc": "080-AdvancedSQL"
         },
         {
           "id": "postgresql-003",
@@ -58,7 +58,7 @@
         {
           "id": "postgresql-103",
           "title": "扩展模块",
-          "doc": "330-ExtensionModule"
+          "doc": "340-ExtensionModuleDetailed"
         },
         {
           "id": "postgresql-104",

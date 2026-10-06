@@ -1,5 +1,5 @@
 ---
-order: 400
+order: 420
 title: 原子操作与内存模型：不加班的同步
 module: 'c'
 category: 计算机科学
@@ -9,9 +9,9 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'c/370-POSIXThread'
-  - 'c/260-CVolatileAndConstDeepDive'
+  - 'c/260-ConstAndVolatileQualifiers'
   - 'c/340-SignalHandling'
-  - 'c/520-C23C2y'
+  - 'c/520-C23CoreFeatures'
 prerequisites:
   - 'c/360-ThreadConcurrency'
   - 'c/270-VolatileKeyword'
@@ -22,7 +22,7 @@ prerequisites:
 - 已完成 [线程与并发](/c/360-ThreadConcurrency)：知道数据竞争（data race）与临界区的定义，见过两个线程写同一变量的混乱现场；
 - 已完成 [volatile 深水区](/c/270-VolatileKeyword)：记得「volatile 不提供原子性、不提供内存序」的结论，以及优化器的 as-if 规则——本篇要反复用到它。
 
-> 分工说明：并发这一片共四篇。[线程与并发](/c/360-ThreadConcurrency) 讲概念（竞态是什么、临界区为什么危险）；[POSIX 线程](/c/370-POSIXThread) 讲互斥锁这套「加班的同步」——排队、等待、唤醒；本篇讲「不加班的同步」：`_Atomic` 原子类型、原子操作族与内存序，让某些场景根本不需要排队。volatile 的职责边界在 [const 与 volatile](/c/260-CVolatileAndConstDeepDive) 与 270 两篇已划清，本篇负责给出正解。
+> 分工说明：并发这一片共四篇。[线程与并发](/c/360-ThreadConcurrency) 讲概念（竞态是什么、临界区为什么危险）；[POSIX 线程](/c/370-POSIXThread) 讲互斥锁这套「加班的同步」——排队、等待、唤醒；本篇讲「不加班的同步」：`_Atomic` 原子类型、原子操作族与内存序，让某些场景根本不需要排队。volatile 的职责边界在 [const 与 volatile](/c/260-ConstAndVolatileQualifiers) 与 270 两篇已划清，本篇负责给出正解。
 
 ## 学习目标
 
@@ -128,7 +128,7 @@ atomic_init(&x, 42);        /* 运行时初始化：不是原子操作，只能�
 
 - **ATOMIC_VAR_INIT 已弃用**：C11 曾要求 `atomic_int x = ATOMIC_VAR_INIT(0);`，C17 起弃用、C23 已移除——直接写 `atomic_int x = 0;` 即可，本篇所有示例都这么写；
 - **atomic_flag 的初始化**：C11/C17 要求 `atomic_flag f = ATOMIC_FLAG_INIT;`；C23 起静态存储的 atomic_flag 零初始化即为清除态，自动存储期可写 `atomic_flag f = {};`，宏不再必需（后文的 spin lock 保留旧写法以兼容 C17）；
-- **C23 之后仍在演进**：原子相关的标准化持续推进（如 ATOMIC_VAR_INIT 移除、atomic_flag 初始化放宽），版本全景见 [C23 与 C2y 新特性](/c/520-C23C2y)。
+- **C23 之后仍在演进**：原子相关的标准化持续推进（如 ATOMIC_VAR_INIT 移除、atomic_flag 初始化放宽），版本全景见 [C23 与 C2y 新特性](/c/520-C23CoreFeatures)。
 
 **哪些操作是原子的？** 三类：读（`atomic_load` 或直接 `int v = x;`）、写（`atomic_store` 或 `x = 10;`——对原子对象的 `=` 与读会被编译成对应的原子操作）、读-改-写（`fetch_*` 家族与比较交换，见第 3 节；对原子对象 `x++` 同样是原子的读-改-写）。注意与 270 篇的对照：普通 `int` 上这些保证一项都没有。
 
@@ -363,7 +363,7 @@ void stack_push(LockFreeStack *s, int value) {
 
 ### 实录一：用普通 int 当原子标志
 
-现象与第 1 节同源：标志用 `int` 而非 `atomic_int`，检查时似乎总能工作，偶现失灵。270 篇的 `-O2` 忙等死循环正是它的编译器变体（优化器把循环里的重复读合并成一次）；本篇第 1 节的丢失更新是它的硬件变体（读-改-写被交错）。两个变体指向同一结论：**无同步地跨线程读写普通变量是数据竞争，标准定义为未定义行为**，`volatile` 救不了它（它不提供原子性与内存序，见 [volatile 与 const](/c/260-CVolatileAndConstDeepDive)）。修复：`atomic_int`，或锁。ThreadSanitizer 对这类竞争能直接报出两个冲突访问的行号，用法与报告解读见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+现象与第 1 节同源：标志用 `int` 而非 `atomic_int`，检查时似乎总能工作，偶现失灵。270 篇的 `-O2` 忙等死循环正是它的编译器变体（优化器把循环里的重复读合并成一次）；本篇第 1 节的丢失更新是它的硬件变体（读-改-写被交错）。两个变体指向同一结论：**无同步地跨线程读写普通变量是数据竞争，标准定义为未定义行为**，`volatile` 救不了它（它不提供原子性与内存序，见 [volatile 与 const](/c/260-ConstAndVolatileQualifiers)）。修复：`atomic_int`，或锁。ThreadSanitizer 对这类竞争能直接报出两个冲突访问的行号，用法与报告解读见 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。
 
 ### 实录二：误以为原子结构体「整体原子、轻松无锁」
 
@@ -376,7 +376,7 @@ _Atomic struct Packet pkt;               /* 能编译，代价藏在运行时 */
 
 ### 实录三：内存序配错，偶现读到旧值
 
-4.3 的修改实验把两个序换成 relaxed 后「大概率还对」，这正是它阴险的地方：线上跑几周、换台 ARM 设备才偶现读到未初始化数据，肉眼看代码「逻辑没错」。此时不要靠加 printf 复现——加打印改动的时序本身就可能让问题消失。正确姿势是让工具说话：保持发布-订阅两侧 relaxed 不变，数据仍是普通变量，这个数据竞争 ThreadSanitizer 能稳定报告（冲突的两次访问、各自所在线程与行号），把「偶现旧值」钉死为「缺 acquire/release」；再加压手段是多核高负载、弱内存序设备上重跑。工具链细节见 [静态分析与调试](/c/490-StaticAnalysisDebug)。修法即 4.3 正身：标志用 release 写、acquire 读。
+4.3 的修改实验把两个序换成 relaxed 后「大概率还对」，这正是它阴险的地方：线上跑几周、换台 ARM 设备才偶现读到未初始化数据，肉眼看代码「逻辑没错」。此时不要靠加 printf 复现——加打印改动的时序本身就可能让问题消失。正确姿势是让工具说话：保持发布-订阅两侧 relaxed 不变，数据仍是普通变量，这个数据竞争 ThreadSanitizer 能稳定报告（冲突的两次访问、各自所在线程与行号），把「偶现旧值」钉死为「缺 acquire/release」；再加压手段是多核高负载、弱内存序设备上重跑。工具链细节见 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。修法即 4.3 正身：标志用 release 写、acquire 读。
 
 ## 7. 实际项目中的使用场景
 
@@ -423,7 +423,7 @@ void shared_release(SharedObject *obj) {
 ## 9. 与之前和之后的知识的关系
 
 - 往前：[volatile 深水区](/c/270-VolatileKeyword) 的职责对照表在本篇补上了 `_Atomic` 一列的细节，丢失更新实验与 270 的忙等实验互为编译器/CPU 两个侧面；[线程与并发](/c/360-ThreadConcurrency) 的竞态与临界区概念在这里获得第一个不需要锁的解法；
-- 旁支：互斥锁的完整用法与锁的代价在 [POSIX 线程](/c/370-POSIXThread)；信号处理器里改标志为什么用 sig_atomic_t 而不是 `_Atomic`，见 [信号处理](/c/340-SignalHandling)（线程与信号是两套世界）；数据竞争报告怎么读在 [静态分析与调试](/c/490-StaticAnalysisDebug)；
+- 旁支：互斥锁的完整用法与锁的代价在 [POSIX 线程](/c/370-POSIXThread)；信号处理器里改标志为什么用 sig_atomic_t 而不是 `_Atomic`，见 [信号处理](/c/340-SignalHandling)（线程与信号是两套世界）；数据竞争报告怎么读在 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)；
 - 往后：[Socket 网络编程](/c/390-SocketNetworkProgramming) 把并发从单进程内的共享内存搬到跨机器的字节流，多线程服务器正是本篇与 370 的合练场。
 
 ## 10. 官方文档

@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 250
 title: 负载均衡算法
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/200-LoadBalanceTech'
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/250-KeepalivedDualHotStandby'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 前置知识：负载均衡的整体架构（L4/L7 区分见 [负载均衡技术](networking/200-LoadBalanceTech)）。

@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 140
 title: 集成与 MDX
 module: 'astro'
 category: 前端技术

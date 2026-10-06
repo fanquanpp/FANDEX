@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 60
 title: 响应式系统
 module: 'vue3'
 category: 前端技术
@@ -10,7 +10,7 @@ updated: '2026-09-28'
 related:
   - 'vue3/060-ComputedCacheWatchTiming'
   - 'vue3/080-CompositionAPIAdvantageScene'
-  - 'vue3/100-CustomComposableWrapper'
+  - 'vue3/090-CustomHook'
   - 'vue3/370-VaporMode'
 prerequisites:
   - 'vue3/020-Vue3QuickStartGuide'
@@ -81,6 +81,51 @@ state.map.set('a', 1); // Map 方法同样被拦截
 ```
 
 2026 年的现状补充：3.5 重构了响应式 internals（大数组深度操作提速、内存下降），API 完全不变；即将到来的 3.6 Vapor 模式也**不改变这套响应式 API**——变的只是编译产物如何更新 DOM。你现在学的心智模型在两个模式里通用。
+
+### 1.1 演进的细节：defineProperty 到底输在哪
+
+上面"对比 Vue 2"一句话的完整账目（承接自原理论篇）。`Object.defineProperty(obj, key, {...})` 劫持的是**单个已存在属性**的读写，六条局限由此而来：
+
+| 局限 | 说明 | Vue 2 的补丁 |
+| --- | --- | --- |
+| 无法检测属性添加 | 新增属性不是响应式的 | `Vue.set()` |
+| 无法检测属性删除 | 删除不触发更新 | `Vue.delete()` |
+| 无法检测数组索引与 length | `arr[0] = x` 静默失效 | 重写 push/pop/splice 等 7 个方法 |
+| 深层监听需递归 | 初始化时递归遍历所有属性 | 无补丁，初始化即全量开销 |
+| 每属性一个 Dep | 属性级依赖收集 | 无补丁，内存开销大 |
+| 不支持 Map/Set | API 层面无法劫持 | 无补丁（提供不了） |
+
+Proxy 在**对象层面**拦截，全部原生解决，还带来懒递归——嵌套对象只有被访问到才代理，初始化只处理第一层：
+
+```ts
+// Vue 3 reactive 的核心骨架（简化版，原理学习用）
+function reactive(target) {
+  const proxy = new Proxy(target, {
+    get(target, key, receiver) {
+      track(target, key);                                  // 依赖收集
+      const result = Reflect.get(target, key, receiver);
+      return typeof result === 'object' && result !== null
+        ? reactive(result)                                 // 懒递归：访问到才代理
+        : result;
+    },
+    set(target, key, value, receiver) {
+      const old = target[key];
+      const ok = Reflect.set(target, key, value, receiver);
+      if (old !== value) trigger(target, key);             // 触发更新
+      return ok;
+    },
+    deleteProperty(target, key) {
+      const had = key in target;
+      const ok = Reflect.deleteProperty(target, key);
+      if (had && ok) trigger(target, key);
+      return ok;
+    },
+  });
+  return proxy;
+}
+```
+
+Proxy 的代价也要知道：**不能代理原始类型**（所以有 `ref`——它用带 getter/setter 访问器的类包住值，`.value` 的读写就是拦截点）；**不是透明代理**（`proxy !== target`，需要 `toRaw` 回原始对象）；依赖 IE 的环境无 Proxy 可用（Vue 3 放弃 IE11 的直接原因）。
 
 ## 二、ref 还是 reactive：一个决策表
 
@@ -190,9 +235,79 @@ export function usePolling(fetcher: () => Promise<void>, interval = 5000) {
 }
 ```
 
-配套的两个小工具：`getCurrentScope()` 判断「我现在在某个 scope 里吗」（避免在组件 setup 之外裸调 watch）；`onScopeDispose(fn)` 注册清理回调，写在组合式函数里等效于组件里的 `onUnmounted`，但组件内外都能用。设计[自定义组合式函数](/vue3/100-CustomComposableWrapper)时这是标配。
+配套的两个小工具：`getCurrentScope()` 判断「我现在在某个 scope 里吗」（避免在组件 setup 之外裸调 watch）；`onScopeDispose(fn)` 注册清理回调，写在组合式函数里等效于组件里的 `onUnmounted`，但组件内外都能用。设计[自定义组合式函数](/vue3/090-CustomHook)时这是标配。
 
-## 五、坑点与自检
+## 五、响应式工具箱：toRefs/toRef/unref 与解构的关系
+
+上一节坑一提到的解构救兵 `toRefs`，值得单独讲透——这一族工具函数是"ref 与 reactive 两个世界之间的桥"：
+
+```ts
+import { reactive, toRefs, toRef, unref, isRef, toRaw } from 'vue'
+
+const state = reactive({ count: 0, name: 'Tom' })
+
+// toRefs：整个对象 → { count: Ref, name: Ref }
+// 每个属性都是与源同步的 ref——解构不再丢响应性
+const { count, name } = toRefs(state)
+count.value++                      // state.count 同步变为 1
+
+// toRef：只为单个属性建 ref（懒求值——属性不存在也行，之后访问会建立链接）
+const countRef = toRef(state, 'count')
+countRef.value++                   // 同样同步回 state.count
+
+// unref：如果是 ref 返回 .value，否则原样返回——"可能是个 ref"参数的标配
+function useTitle(maybeRef: string | Ref<string>) {
+  console.log(unref(maybeRef))     // 两种入参都正确处理
+}
+
+// isRef / isReactive / isProxy：类型守卫；toRaw：拿代理背后的原始对象
+isRef(count)                       // true
+toRaw(state) === state             // false（state 是 Proxy，toRaw 返回原始对象）
+```
+
+三者的使用判据：
+
+- **组合式函数返回 reactive 对象时**，调用方要解构 → 返回 `toRefs(state)`（这是官方 API 设计约定，VueUse 全系遵守）；
+- **props/参数"可能是 ref"** → `unref()` 统一处理，不写 `isRef ? v.value : v` 的三行；
+- **想绕过代理**（第三方类实例、大表格的原始数据比对）→ `toRaw` / `markRaw`（见上文 3.1）。
+
+易错点：`toRef(state, 'nope')` 对**不存在**的属性也能建 ref——首次写 `.value` 时才把属性"接到"源对象上；而直接 `toRefs` 一个动态增删属性的对象时，新建的属性不在快照里，需要重新调用 `toRefs`。
+
+## 六、模板引用与 defineExpose：从 ref 到 DOM 与子组件
+
+响应式的 `ref` 还有第三个身份：**模板引用**（获取 DOM 元素或子组件实例）。
+
+```vue
+<script setup lang="ts">
+import { useTemplateRef, onMounted } from 'vue'
+import MyForm from './MyForm.vue'
+
+// 3.5+ 推荐：按 ref 字符串名取，类型自动推断
+const inputEl = useTemplateRef<HTMLInputElement>('inputRef')
+const formRef = useTemplateRef<InstanceType<typeof MyForm>>('formRef')
+
+onMounted(() => {
+  inputEl.value?.focus()          // DOM 引用时机：挂载后才有值
+  formRef.value?.validate()       // 子组件的公开方法
+})
+</script>
+
+<template>
+  <input ref="inputRef" />
+  <MyForm ref="formRef" />
+</template>
+```
+
+四个要点：
+
+1. **引用时机**：`ref` 在渲染后才填充——访问要放 `onMounted`（或 watch + flush: 'post'），setup 同步阶段永远是 null。这是"DOM 引用为空"问题的唯一答案；
+2. **3.5 前的写法**：`const inputRef = ref(null)` + 模板 `ref="inputRef"` 靠同名关联——变量名与字符串必须一字不差，重构改名时静默断裂；`useTemplateRef('inputRef')` 把"名字"显式化，是 3.5 引入它的原因；
+3. **函数式 ref**：`:ref="(el) => (inputEl = el)"`——需要"引用变化时做点事"（如 v-for 列表的动态元素收集）时用，`el` 为 null 表示卸载；
+4. **子组件默认是黑盒**：`<script setup>` 组件的内部状态对外封闭，子组件用 `defineExpose({ validate, reset })` 显式开门，父组件经 `formRef.value?.validate()` 调用。**expose 是受控 API 而不是逃生舱**：把整只内部状态 expose 出去等于放弃封装，暴露方法（命令式动作）优于暴露数据。
+
+与 [KeepAlive](/vue3/160-KeepAliveCacheLifecycle) 的组合注意：被缓存的组件在 deactivated 时 DOM 仍存在，模板引用不会清空；配合 `v-if` 的组件则随卸载清空——写"引用是否有效"的判断时要区分这两种生命周期。
+
+## 七、坑点与自检
 
 ### 坑一：解构 reactive 丢响应性
 
@@ -235,4 +350,4 @@ state = { count: 1 }; // 变量现在指向普通对象，视图还绑着旧代�
 
 - [Computed 缓存与 watch 时机](/vue3/060-ComputedCacheWatchTiming)：响应式之上最常用的两个派生 API 的细节
 - [Composition API 的优势与场景](/vue3/080-CompositionAPIAdvantageScene)：为什么这套 API 配合响应式能重构逻辑组织
-- [自定义 Composable 封装](/vue3/100-CustomComposableWrapper)：effectScope 与 onScopeDispose 的工程化用法
+- [自定义组合式函数](/vue3/090-CustomHook)：effectScope 与 onScopeDispose 的工程化用法

@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 490
 title: 中间代码
 module: 'cs-fundamentals'
 category: 计算机科学

@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 630
 title: Kotlin 学习总结：核心知识体系回顾
 module: 'kotlin'
 category: 后端技术
@@ -402,7 +402,7 @@ val shared = repository.songFlow()
 
 如果自检中发现薄弱环节，建议按以下顺序回到模块文档回炉，再向进阶主题推进：
 
-1. **夯实协程体系**：[Kotlin 协程进阶](/kotlin/240-KotlinCoroutineAdvanced)、[协程调度器与上下文](/kotlin/250-CoroutineDispatcherContext) 与 [协程异常处理](/kotlin/260-CoroutineExceptionHandling)，建立完整的并发心智模型。
+1. **夯实协程体系**：[协程取消与超时](/kotlin/235-KotlinCoroutineCancellationTimeout)、[协程调度器与上下文](/kotlin/250-CoroutineDispatcherContext) 与 [协程异常处理](/kotlin/260-CoroutineExceptionHandling)，建立完整的并发心智模型。
 2. **深入 Flow**：[Flow 与响应式流](/kotlin/290-FlowReactiveStream) 与 [Flow 进阶](/kotlin/310-FlowAdvanced)，掌握背压、共享状态与热流转换。
 3. **打通服务端全链路**：[Kotlin 与 Ktor](/kotlin/490-KotlinKtor) 搭配 [Kotlin 与 Spring](/kotlin/480-KotlinSpring)，再以 [Kotlin Exposed](/kotlin/520-KotlinExposed) 落地数据层。
 4. **扩展到多平台**：[Kotlin Multiplatform](/kotlin/460-KotlinMultiplatform) 与 [Kotlin Compose](/kotlin/450-KotlinCompose)，把同一套业务逻辑复用到多端。

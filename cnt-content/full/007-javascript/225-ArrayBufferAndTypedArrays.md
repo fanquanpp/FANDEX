@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 260
 title: ArrayBuffer 与类型化数组
 module: 'javascript'
 category: 前端技术

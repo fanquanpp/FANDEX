@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 80
 title: 插件与拦截器：一处织入，全局生效
 description: 以「200 个 Mapper 要统一加慢 SQL 日志、分页与执行监控」引入：四大对象的动态代理洋葱模型、@Signature 三元组、手写慢 SQL 计时插件、分页插件先 count 再改写 LIMIT 的两段式原理，附 PageHelper ThreadLocal 污染事故复盘与多插件顺序实验。
 module: 'mybatis'
@@ -14,6 +14,12 @@ related:
   - 'mybatis/080-MybatisPlusAdvanced'
   - 'mysql/340-SlowQueryLog'
 ---
+
+## 知识点地图
+
+- 知识类别：MyBatis 插件机制——四大拦截对象、责任链 + 动态代理原理、慢 SQL 计时器与分页插件两段式、PageHelper 的 ThreadLocal 污染。
+- 解决什么问题：横切能力（计时、分页、审计、数据权限）不改业务代码地挂进 SQL 执行链；以及"用错插件"的典型事故如何从原理上理解。
+- 什么时候用到：写或接入第一个插件、配分页插件、排查"分页参数串了"的灵异事故。
 
 ## 前置知识
 

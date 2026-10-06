@@ -488,8 +488,8 @@
         },
         {
           "id": "mysql-860",
-          "title": "性能调优与安全",
-          "doc": "860-PerformanceTuningSecurity"
+          "title": "系统库与可观测",
+          "doc": "335-ObservabilitySystemSchemas"
         },
         {
           "id": "mysql-870",
@@ -509,7 +509,7 @@
         {
           "id": "mysql-900",
           "title": "MySQL 应用控制器设计与实践",
-          "doc": "900-MySQLApplicationController"
+          "doc": "900-AppLayerDbAccessPatterns"
         },
         {
           "id": "mysql-920",

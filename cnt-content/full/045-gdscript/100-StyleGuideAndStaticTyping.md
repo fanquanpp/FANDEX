@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 110
 title: 风格指南与静态类型实践
 module: 'gdscript'
 category: 游戏开发

@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 640
 title: Java 与数据库连接
 module: 'java'
 category: 后端技术
@@ -12,7 +12,6 @@ related:
   - 'java/470-JavaModuleSystem'
   - 'java/790-JavaNewFeaturesEcosystem'
   - 'java/110-ArrayDetailed'
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
 prerequisites:
   - 'java/020-JavaOverviewDevEnv'
   - 'java/180-ExceptionHandlingMechanism'

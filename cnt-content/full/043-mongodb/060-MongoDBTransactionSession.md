@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: 事务与会话
 module: 'mongodb'
 category: 数据库
@@ -12,6 +12,12 @@ related:
 prerequisites:
   - 'mongodb/020-MongoDBCRUDOperations'
 ---
+
+## 知识点地图
+
+- 知识类别：MongoDB 事务与会话——单文档原子性的边界、Client Session、多文档 ACID 事务、writeConcern/readConcern、错误重试。
+- 解决什么问题："扣 A 加 B"式跨文档一致操作；以及区分"能用建模消掉的事务"与"必须上事务的场景"。
+- 什么时候用到：转账类双写、下单链路的原子校验、任何"多个集合必须同进同退"的写路径。
 
 ## 0. 为什么 NoSQL 也需要事务（先读这里）
 
@@ -273,6 +279,60 @@ mongod --dbpath ~/mongo-rs0 --replSet rs0 --port 27017 --bind_ip 127.0.0.1
 // 另开终端初始化，members 出现 PRIMARY 即可
 rs.initiate({ _id: "rs0", members: [ { _id: 0, host: "127.0.0.1:27017" } ] })
 ```
+
+## 动手实践
+
+**任务一：亲手看回滚。** 开一个事务，插入两条文档后故意抛错触发 abortTransaction，验证两条都不存在；再改成 commitTransaction 验证两条都在。提示：abort 后在事务外再查一次——"事务外的世界没变过"就是原子性的直观形态。
+
+**任务二：写一个带重试的事务函数。** 把第 4 节的错误分类落成一个通用包装函数：TransientTransactionError 全事务重试（上限 3 次），UnknownTransactionCommitResult 只重试 commit，其他错误直接抛出。用两个并发客户端同时转账同一账户制造写冲突，验证重试路径真的被走到。提示：写冲突的报错形态是 WriteConflict（属于瞬态错误）；重试要有退避（比如 50ms 递增），裸循环重试会把冲突变成风暴。
+
+**任务三：事务边界反证。** 把第 1 节转账的"扣 A 加 B"改写成单文档建模（账户对在同一个文档里，用 $inc 一次完成），对比两种实现的代码量、错误处理量与性能。提示：这个实验的结论不是"事务不好"，而是"能建模消掉的事务就该消掉"——第 1 节的判断标准在两条实现对比里自然浮出。
+
+先自己操作，再对照参考实现：
+
+<details>
+<summary>任务二参考实现</summary>
+
+```javascript
+// 通用事务包装：区分两类可重试错误
+async function withTransaction(session, fn, { retries = 3 } = {}) {
+  for (let attempt = 1; ; attempt++) {
+    try {
+      session.startTransaction({
+        readConcern: { level: "snapshot" },
+        writeConcern: { w: "majority" },
+      })
+      const result = await fn(session)
+      await session.commitTransaction()
+      return result
+    } catch (err) {
+      const label = err.errorLabels ?? []
+      if (label.includes("TransientTransactionError") && attempt <= retries) {
+        await new Promise((r) => setTimeout(r, 50 * attempt))   // 退避后整个事务重跑
+        continue
+      }
+      if (label.includes("UnknownTransactionCommitResult") && attempt <= retries) {
+        await session.commitTransaction()   // 提交结果未知：只重试 commit
+        return null
+      }
+      await session.abortTransaction()
+      throw err
+    }
+  }
+}
+
+// 用法：转账
+await client.startSession().then((s) =>
+  withTransaction(s, async (ts) => {
+    const accounts = ts.client.db("bank").collection("accounts")
+    await accounts.updateOne({ _id: "A" }, { $inc: { balance: -100 } }, { session: ts })
+    await accounts.updateOne({ _id: "B" }, { $inc: { balance: 100 } }, { session: ts })
+  }),
+)
+```
+
+要点：a) errorLabels 是驱动给出的错误分类官方通道，比按错误码字符串判断可靠；b) TransientTransactionError 重试整个事务、UnknownTransactionCommitResult 只重试 commit——两者混淆会造成重复扣款级别的 bug；c) 事务内所有操作必须传同一个 session（{ session: ts }），漏传的操作不在事务里——这是事务代码第一高频错误。
+</details>
 
 ## 小结与延伸
 

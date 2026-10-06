@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 410
 title: Azure CLI 配置
 module: 'cloud-computing'
 category: 云与基础设施

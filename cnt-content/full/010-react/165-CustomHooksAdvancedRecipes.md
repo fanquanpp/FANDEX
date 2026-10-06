@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 220
 title: 自定义 Hook 进阶配方：交互订阅、外部 Store 与 Hook 测试
 module: 'react'
 category: 前端技术

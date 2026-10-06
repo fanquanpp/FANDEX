@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 80
 title: 容器安全
 module: 'devops'
 category: 云与基础设施
@@ -10,8 +10,7 @@ updated: '2026-09-12'
 related:
   - 'devops/170-AutomationTest'
   - 'devops/330-Troubleshooting'
-  - 'devops/180-GitOpsCD'
-  - 'devops/300-MonitorAndAlert'
+  - 'devops/240-MonitorAndObservability'
 prerequisites:
   - 'devops/010-OverviewLinuxBasics'
 ---

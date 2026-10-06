@@ -10,7 +10,7 @@ updated: '2026-09-12'
 related:
   - 'markdown/010-SyntaxGuide'
   - 'markdown/330-PRCollaboration'
-  - 'markdown/310-AdvancedSyntaxDocumentAutomation'
+  - 'markdown/310-DocsSiteAndAutomation'
 prerequisites:
   - 'markdown/010-SyntaxGuide'
 ---

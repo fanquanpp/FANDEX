@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 340
 title: C++ 结构化绑定语法速查手册
 module: 'cpp'
 category: 计算机科学

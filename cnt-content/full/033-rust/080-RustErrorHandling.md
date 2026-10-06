@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 100
 title: Rust 错误处理
 module: 'rust'
 category: 后端技术
@@ -8,15 +8,15 @@ description: panic 与 Result、? 运算符、unwrap/expect、自定义错误与
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'rust/070-RustStructEnumMatch'
+  - 'rust/070-RustStructAndImpl'
   - 'rust/100-RustGenericTrait'
 prerequisites:
-  - 'rust/070-RustStructEnumMatch'
+  - 'rust/070-RustStructAndImpl'
 ---
 
 ## 前置知识
 
-- [结构体、枚举与模式匹配](/rust/070-RustStructEnumMatch)：`Option` 与 `match` 的用法——`Result` 就是另一个枚举。
+- [结构体与方法](/rust/070-RustStructAndImpl)：`Option` 与 `match` 的用法——`Result` 就是另一个枚举。
 
 ## 学习目标
 

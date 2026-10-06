@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 330
 title: 网络故障排查工具
 module: 'networking'
 category: 云与基础设施
@@ -8,15 +8,20 @@ description: 网络排障方法论：分层定位与二分思路、ping/tracerou
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'networking/190-NetworkDiagnosis'
   - 'networking/080-PingTraceroute'
   - 'networking/090-SSNetstat'
   - 'networking/270-Tcpdump'
 prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+  - 'networking/020-OSITCPIPModel'
 ---
 
-前置知识：TCP/IP 分层模型（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)）；各工具的
+## 知识点地图
+
+- **知识类别**：网络故障排查方法论与工具组合——本模块排障知识的唯一主篇（原方法论篇与工具篇已归并于此）。
+- **解决什么问题**：面对「打不开」「连不上」「时好时坏」三类模糊现象，用固定框架快速收敛到具体层、具体设备、具体原因，避免东试一下西试一下。
+- **什么时候用到**：值班接故障；应用连不上数据库时的快速定位；性能问题（慢）与连通问题（断）的分界判断；写团队排障 runbook。
+
+前置知识：TCP/IP 分层模型（见 [OSI 与 TCP/IP 模型](networking/020-OSITCPIPModel)）；各工具的
 完整参数见 023~031 与 036 号工具专篇，本文讲「怎么组合它们定位问题」。
 
 学习目标：
@@ -51,9 +56,108 @@ prerequisites:
 | 应用层   | 协议交互异常         | `curl -v`、应用日志            | [Curl](networking/130-CurlHTTPRequest) |
 | 全链路   | 交互/时延/重传异常   | `tcpdump`、Wireshark           | [Tcpdump](networking/270-Tcpdump)、[Wireshark](networking/280-WiresharkCLI) |
 
-## 3. 核心命令：排障时各看什么
+## 3. 分层排障检查单
 
-### 3.1 ping：可达性与初步质量
+工具箱告诉你「每层用什么」，本节是自底向上的检查单——从物理层往上逐层排除，改编自网络故障诊断的标准分层目录。分段定位思想贯穿始终：`客户端 → 接入交换机 → 汇聚 → 核心 → 防火墙 → 服务器`，故障必卡在链上某一段；「与正常配置对比」是最快的方法——有正常同事机器/备用链路时先 diff 配置。
+
+### 3.1 物理层
+
+| 问题       | 现象       | 排查         |
+| ---------- | ---------- | ------------ |
+| 网线断     | 接口 down  | 换线测试     |
+| 光纤衰减   | 丢包       | 光功率计     |
+| 接口协商   | 速度不匹配 | 查看接口状态 |
+| 双工不匹配 | 性能差     | 强制双工模式 |
+
+```bash
+# 交换机侧查看接口状态（Cisco 风格语法）
+show interface GigabitEthernet0/1
+show interface status
+
+# 三种典型状态读法
+GigabitEthernet0/1 is up, line protocol is up      # 正常
+GigabitEthernet0/1 is down, line protocol is down   # 物理故障（线/光模块/对端断电）
+GigabitEthernet0/1 is up, line protocol is down     # 数据链路问题（封装/协商不一致）
+```
+
+第二行 up 而第三行 down 是最容易误判的状态：网线是好的（物理 up），但二层协议没起来——先查两端的封装与协商配置，而不是继续换线。
+
+### 3.2 数据链路层
+
+```bash
+# MAC 地址表：这个 MAC 从哪个口学到的
+show mac address-table
+show mac address-table dynamic address xxxx.xxxx.xxxx
+```
+
+| VLAN 问题    | 原因         | 解决             |
+| ------------ | ------------ | ---------------- |
+| 跨 VLAN 不通 | 缺少路由     | 检查 SVI/路由    |
+| 同 VLAN 不通 | Trunk 问题   | 检查允许的 VLAN  |
+| 端口不通     | VLAN 配置错误 | 检查 access/trunk |
+
+STP 相关（环路/根桥异常）：`show spanning-tree` 看根桥位置与端口角色——根桥被抢占改优先级、端口被异常阻塞查拓扑、真环路查 STP 是否在新交换机上被禁用。交换网络排查的「万能第一问」：两端端口的 VLAN 与 trunk 放行列表一致吗？
+
+### 3.3 网络层
+
+```bash
+# 路由表：去往目标走哪条路
+show ip route
+show ip route ospf        # 只看 OSPF 学到的
+traceroute 10.0.0.1       # 断在第几跳
+
+# ARP 表：IP 与 MAC 的映射
+show ip arp
+show ip arp 10.0.0.1      # 同一 IP 出现多个 MAC → IP 冲突
+
+# ACL 命中计数（ denies 计数增长 = 有流量被它拦）
+show access-lists OUTSIDE_IN
+```
+
+三类经典网络层故障的判别：路由缺失（`show ip route` 查无此网段，查路由协议/静态路由）、路由环路（traceroute 出现 TTL 循环抖动，查路由汇总）、非对称路由（去回路径不同，状态防火墙会拦回程，查双向路径）。
+
+### 3.4 传输层
+
+```bash
+# 本机连接状态
+ss -tnp
+# 交换机/防火墙侧
+show tcp brief
+
+# NAT 转换表与统计
+show ip nat translations
+show ip nat statistics
+```
+
+判读对应关系：SYN 发出无响应 -> 防火墙/ACL 丢弃（连接拒绝）；连接被立即 RST -> 服务未启动；大量 TIME_WAIT -> 短连接风暴（治理见 025-TCPUDPProtocolMechanics）；NAT 转换失败查匹配的 ACL 与出接口；端口耗尽（`show ip nat statistics` 里分配率接近 100%）扩 NAT 地址池。
+
+### 3.5 经典故障速查
+
+三个跨层的经典模式，现象直接指向病因：
+
+```text
+MTU 问题
+  现象：小包通，大包不通
+  原因：路径上 MTU 不一致，且 ICMP 被过滤（黑洞）
+  排查：ping -s 1472 -M do <target>（1472+28 字节头=1500）
+  解决：调整接口 MTU 或放行 ICMP 不可达（PMTU 依赖它）
+
+路由环路
+  现象：traceroute 显示 TTL 递减后在同几跳间打转超时
+  原因：路由汇总/重分发导致环路
+  排查：show ip route 检查指向；在环上各点看同一目的的下一跳
+  解决：修正汇总或添加黑洞路由（null0）吸掉错误网段
+
+间歇性丢包
+  现象：偶尔超时，大部分正常
+  原因：链路质量差/接口错误/双工协商
+  排查：show interface 看 CRC/输入错误计数是否持续增长；mtr 跑 10 分钟
+  解决：更换线缆/光模块/固定协商速率
+```
+
+## 4. 核心命令：排障时各看什么
+
+### 4.1 ping：可达性与初步质量
 
 ```bash
 ping -c 5 192.168.1.1
@@ -67,7 +171,7 @@ ping -c 5 192.168.1.1
 值 64：TTL=64 说明同网段直连，TTL=63 说明经过一跳）。注意 ping 通只证明 ICMP 可达——「能
 ping 通但端口连不上」是最常见的误判（见陷阱 1）。
 
-### 3.2 traceroute / mtr：路径与逐跳定位
+### 4.2 traceroute / mtr：路径与逐跳定位
 
 ```bash
 traceroute -n 8.8.8.8        # -n 不做反解，速度快
@@ -81,7 +185,7 @@ traceroute -n 8.8.8.8        # -n 不做反解，速度快
 丢包发生在哪一跳最有用：单跳丢包而后跳恢复是限速/不回 ICMP，后跳持续丢包才是真瓶颈。
 `* * *` 一跳不响应很常见（设备禁了 ICMP TTL 超时应答），只要后续跳正常即无害。
 
-### 3.3 ss：本机连接与端口状态
+### 4.3 ss：本机连接与端口状态
 
 ```bash
 ss -tlnp | grep :8080
@@ -94,7 +198,7 @@ ss -tn state time-wait | wc -l                          # TIME_WAIT 数量
 排障三问：服务监听了吗（LISTEN 存在与否）？连接堆在哪（SYN-RECV 多=握手积压，CLOSE-WAIT 多=
 对端关了我没关，TIME_WAIT 巨量=短连接风暴）？接收/发送队列是否卡住（`ss -tnm` 看 skmem）。
 
-### 3.4 tcpdump：终极裁判
+### 4.4 tcpdump：终极裁判
 
 ```bash
 # 抓 80 端口与某客户端的 TCP 交互，写文件供 Wireshark 分析
@@ -110,7 +214,7 @@ sudo tcpdump -i eth0 -nn 'tcp[tcpflags] & (tcp-syn|tcp-ack) != 0'
 BPF 过滤表达式的完整语法与更多范式见 [Tcpdump 抓包分析](networking/270-Tcpdump)；拿到 .pcap
 后的图形化分析见 [Wireshark CLI](networking/280-WiresharkCLI)。
 
-## 4. 完整案例：「网页打不开」的收缩式排查
+## 5. 完整案例：「网页打不开」的收缩式排查
 
 现象：用户反馈 `https://app.example.com` 打不开。按固定流程走，每步记录结论：
 
@@ -143,7 +247,7 @@ sudo tcpdump -i any -nn port 443 and host <客户端IP>
 这套流程的价值在于**每一步都有明确的分支出口**：任何一步「符合预期」就向下一层走，不符则进
 入对应分支，全程不超过十个命令就能把「打不开」收敛到具体层、具体设备。
 
-## 5. 抓包分析的三层信息
+## 6. 抓包分析的三层信息
 
 拿到 pcap 后按固定顺序读，避免在几十万包里迷路：
 
@@ -154,7 +258,7 @@ sudo tcpdump -i any -nn port 443 and host <客户端IP>
 3. **重传与乱序**：`tcp.analysis.flags` 过滤器直接列出 TCP 重传、乱序、零窗口——大量重传说明
    链路质量或接收端过载，零窗口说明对端应用处理不动。
 
-## 6. 陷阱与经验
+## 7. 陷阱与经验
 
 1. **「ping 通 = 网络没问题」是错觉**：ICMP 与 TCP 端口常被区别对待，ping 通而端口不通排查
    方向是安全组/防火墙/服务监听，而不是继续 ping；
@@ -168,7 +272,7 @@ sudo tcpdump -i any -nn port 443 and host <客户端IP>
    收窄 + `-c` 限量 + `-w` 落盘是标准姿势；
 6. **时间是排障证据链的主线**：多机排查时先对时（NTP），否则各设备日志与抓包无法按时间对齐。
 
-## 7. 小结
+## 8. 小结
 
 **初学者要点**
 
@@ -182,3 +286,50 @@ sudo tcpdump -i any -nn port 443 and host <客户端IP>
 - 「ping 通但端口不通」与「traceroute 星号」是两大经典误判，别用单一工具下结论；
 - NAT、代理、LB 环境里同一连接在不同观测点长得不一样，多点同时抓包对时间轴是唯一可靠手段；
 - 把本文流程固化成团队的故障排查 runbook，配合 mtr 报告与 pcap 归档，问题复盘才有据可查。
+
+## 动手实践
+
+**练习 1（收缩演练）**：在本机用容器或第二台机器搭「客户端 -> 服务端」最小环境，人为制造三档故障各排查一次：网络级（iptables DROP 全部 443）、端口级（服务只听 127.0.0.1）、DNS 级（hosts 指错地址）。每次必须从 `curl -v` 开始按第 5 节流程走到定位。
+
+**提示**：三档故障在 curl 上的第一现象各不相同（超时/refused/证书域名不匹配），这是分支判断的入口。
+
+**练习 2（检查单走查）**：按 3.1-3.4 检查单对你自己的电脑做一次「全身体检」：物理（网卡 link）、链路（网关 MAC）、网络（路由表默认路由）、传输（监听端口清单），每层记录一条命令与输出结论。
+
+**提示**：Linux 上对应 `ip link`、`ip neigh`、`ip route`、`ss -tlnp`；交换机语法版用模拟器（035 篇）练。
+
+**练习 3（MTU 案例复现）**：用 `ping -M do -s 1472 <网关>` 与 `-s 1500` 各测一次，观察大包被拒的现象；再用 `ip link` 查本机 MTU，把结论写成一段「小包通大包不通」的排查记录。
+
+<details>
+<summary>参考实现（先自己动手，再看这里）</summary>
+
+```bash
+# 练习 1（本机模拟，需 root）
+# 档一：网络级阻断
+sudo iptables -A OUTPUT -p tcp --dport 443 -j DROP
+curl -v --max-time 5 https://example.com        # 现象：超时
+sudo iptables -D OUTPUT -p tcp --dport 443 -j DROP
+
+# 档二：端口级（起一个只听回环的 http 服务）
+python3 -m http.server 8080 --bind 127.0.0.1 &
+curl -v --max-time 5 http://<本机局域网IP>:8080   # 现象：连接被拒/超时
+ss -tlnp | grep 8080                              # 只见 127.0.0.1:8080 → 定位
+
+# 档三：DNS 级
+echo "127.0.0.1 example.com" >> /etc/hosts
+curl -v https://example.com                     # 现象：证书域名不匹配
+dig example.com +short                           # 返回 127.0.0.1 → 解析被劫改
+# 练习完记得清掉 hosts 行
+
+# 练习 2
+ip link show eth0            # 物理层：state UP、mtu 大小
+ip neigh show                # 链路层：网关的 MAC（REACHABLE）
+ip route show                # 网络层：default via <网关>
+ss -tlnp                     # 传输层：本机在监听什么
+
+# 练习 3
+ping -c 3 -M do -s 1472 192.168.1.1    # =接口 MTU 时应通
+ping -c 3 -M do -s 1500 192.168.1.1    # 超出 MTU：message too long
+ip link show eth0 | grep mtu
+```
+
+</details>

@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 280
 title: 动态规划状态压缩
 module: 'algorithm'
 category: 计算机科学
@@ -10,7 +10,6 @@ updated: '2026-09-28'
 related:
   - 'algorithm/160-DynamicProgramming'
   - 'algorithm/010-AlgorithmAnalysisBasics'
-  - 'algorithm/280-AlgorithmTheory'
   - 'algorithm/140-RecursionAndBacktracking'
   - 'algorithm/220-BloomFilter'
   - 'algorithm/230-KmpStringMatching'
@@ -20,6 +19,12 @@ prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/160-DynamicProgramming'
 ---
+
+## 知识点地图
+
+- **知识类别**：位运算与状态压缩 DP——用整数的二进制位表示集合状态，把「枚举子集」写进循环。位运算本体是工具，状压 DP 是主战场。
+- **解决什么问题**：n <= 20 规模的集合组合问题（TSP、任务分配、棋盘覆盖）——多项式 DP 装不下指数状态，位掩码让指数状态可枚举。
+- **什么时候用到**：小规模 NP 难问题的精确解；权限/特征开关的集合运算（工程位运算）；竞赛状压题。
 
 ## 前置知识
 
@@ -1773,3 +1778,86 @@ graph LR
 - [LeetCode 动态规划题单](https://leetcode.cn/problem-list/dynamic-programming/)：按 DP 标签组织的题目列表，可按难度筛选练习（中文界面，免费）。
 
 > 外部资源免责声明：以上链接为第三方资源，仅作学习索引；其内容的准确性、合法性与可用性由相应运营方负责，仓库维护者不对使用者使用该等资源所产生的各类问题承担责任。
+
+
+## 动手实践
+
+**练习 1（位运算热身）**：不查表写出：判断 n 是否 2 的幂、取最低位 1（lowbit）、枚举集合 S 的全部子集。用 4 位小集合验证每个操作。
+
+**提示**：2 的幂 `n & (n-1) == 0`；子集枚举 `sub = (sub-1) & S` 循环到空。
+
+**练习 2（TSP 状压）**：对 8 城市距离矩阵实现 dp[mask][i] 的 TSP（从 0 出发遍历全部回到 0），输出最优环游长度；与暴力全排列（8! = 40320）对拍验证。
+
+**提示**：转移枚举「mask 中去掉 i 的上一个城市 j」；复杂度 O(2^n * n^2)。
+
+**练习 3（国王放置）**：实现 n=6 棋盘「互不攻击国王」的行状压 DP（相邻行国王不能相邻），输出方案数。
+
+**提示**：先枚举每行的合法状态（无横向相邻位），再枚举相邻行的相容状态对。
+
+<details>
+<summary>参考实现（先自己动手，再看这里）</summary>
+
+```python
+# 练习 1
+def is_pow2(n): return n > 0 and n & (n - 1) == 0
+def lowbit(n): return n & (-n)
+def subsets(S):
+    sub = S
+    while True:
+        yield sub
+        if sub == 0: break
+        sub = (sub - 1) & S
+
+assert is_pow2(64) and not is_pow2(96)
+assert lowbit(12) == 4
+assert [s for s in subsets(0b101)] == [0b101, 0b100, 0b001, 0]
+
+# 练习 2
+def tsp(dist):
+    n = len(dist)
+    FULL = (1 << n) - 1
+    INF = float('inf')
+    dp = [[INF] * n for _ in range(1 << n)]
+    dp[1][0] = 0
+    for mask in range(1 << n):
+        for last in range(n):
+            if dp[mask][last] == INF or not mask & (1 << last):
+                continue
+            for nxt in range(n):
+                if mask & (1 << nxt): continue
+                nm = mask | (1 << nxt)
+                c = dp[mask][last] + dist[last][nxt]
+                if c < dp[nm][nxt]: dp[nm][nxt] = c
+    return min(dp[FULL][i] + dist[i][0] for i in range(1, n))
+
+import itertools, random
+random.seed(1)
+pts = [(random.random(), random.random()) for _ in range(8)]
+d = [[int(((a[0]-b[0])**2 + (a[1]-b[1])**2) ** 0.5 * 100) for b in pts] for a in pts]
+brute = min(
+    sum(d[p[i]][p[(i+1) % 8]] for i in range(8))
+    for p in itertools.permutations(range(8)) if p[0] == 0)
+assert tsp(d) == brute
+
+# 练习 3
+def kings(n):
+    ok = [m for m in range(1 << n) if not m & (m << 1)]
+    compat = set()
+    for a in ok:
+        for b in ok:
+            if not (a & b or a & (b << 1) or a & (b >> 1)):
+                compat.add((a, b))
+    dp = {0: 1}
+    for _ in range(n):
+        nd = {row: 0 for row in ok}
+        for a, cnt in dp.items():
+            for b in ok:
+                if (a, b) in compat:
+                    nd[b] += cnt
+        dp = nd
+    return sum(dp.values())
+
+print(kings(6))
+```
+
+</details>

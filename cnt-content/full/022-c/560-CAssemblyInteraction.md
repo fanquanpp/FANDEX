@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 600
 title: C 与汇编交互：从反汇编到内联汇编
 module: 'c'
 category: 计算机科学
@@ -440,7 +440,7 @@ bad_get:
 
 - 驱动、内核与固件：访问平台专用指令、写上下文切换；550 的裸机世界与操作系统内核都在这条线上；
 - 性能敏感库：加密、压缩与 SIMD 内核常用「汇编入口 + C/intrinsics 主体」的混合结构，用 nm 与 objdump 验收入口符号正是本篇的手艺；
-- 调试与逆向：读懂 objdump 输出本身是日常——崩溃现场定位见 [静态分析与调试](/c/490-StaticAnalysisDebug)，平台间二进制差异见 [跨平台编程](/c/410-CrossPlatformProgramming)。
+- 调试与逆向：读懂 objdump 输出本身是日常——崩溃现场定位见 [动态调试与 GDB 实战](/c/495-DynamicDebuggingGDB)，平台间二进制差异见 [跨平台编程](/c/410-CrossPlatformProgramming)。
 
 ## 小练习
 

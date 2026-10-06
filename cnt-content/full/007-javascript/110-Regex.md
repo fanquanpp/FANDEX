@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 130
 title: 正则表达式：从"读不懂的天书"到"顺手的小工具"
 module: 'javascript'
 category: 前端技术

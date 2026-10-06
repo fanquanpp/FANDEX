@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 160
 title: 多表联查详解
 module: 'mysql'
 category: 数据库
@@ -65,6 +65,31 @@ INSERT INTO charge_sessions VALUES
 注意一个关键事实：**14 号桩（offline）从来没有产生过订单，3 号站虹桥只有一根桩且有订单，但假如没有订单的桩挂在没有订单的站呢**——外连接要解决的就是"不匹配的行去哪了"。
 
 ## 动手：四种连接逐一试
+
+先给四种连接立一张"结果集地图"，每个小圆是一对能匹配上的行：
+
+```mermaid
+flowchart LR
+    subgraph A["表A（桩）"]
+        A1["1"]
+        A2["2"]
+        A3["3"]
+        A4["4"]
+    end
+    subgraph B["表B（订单）"]
+        B1["A"]
+        B2["B"]
+        B3["C"]
+    end
+    A1 --- B1
+    A2 --- B2
+    A3 --- B3
+```
+
+- 内连接（INNER JOIN）：只留 1、2、3（两边都有的）
+- 左连接（LEFT JOIN）：1、2、3、4（A 全部 + B 匹配的）
+- 右连接（RIGHT JOIN）：1、2、3、A、B、C（B 全部 + A 匹配的）
+- 全连接（FULL JOIN）：两边全部（MySQL 要用 UNION 模拟，见下）
 
 ### INNER JOIN：只留两边都匹配的行
 

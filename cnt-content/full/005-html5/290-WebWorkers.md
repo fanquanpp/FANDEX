@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 350
 title: Web Workers
 module: 'html5'
 category: 前端技术
@@ -236,3 +236,13 @@ worker.postMessage({ canvas: offscreen }, [offscreen]);
 - Worker 家族最重要的成员 Service Worker 与离线应用：`html5/300-ServiceWorkerPWA`；
 - 后台线程与网络的组合拳（Worker 内 `fetch` + WebSocket 推送）：`html5/320-WebSocket`；
 - 想量化"卡顿"与优化效果，系统学 DevTools Performance 面板与 INP 指标，见 `javascript/500-DebugPerformanceOptimization`。
+<!-- 恢复自 cnt-content/full/005-html5/240-HTML5OfflineStorageWebAPI.md（实施前 HEAD 62c90663 版本）；拆分时该小节未随迁，2026-10-07 内容保全复核恢复 -->
+
+## Web Workers 最佳实践
+
+
+- **适用场景**：只在需要处理大量计算时使用 Web Workers，避免过度使用
+- **通信开销**：注意 Worker 与主线程之间的通信开销，避免频繁通信
+- **资源管理**：在不需要时及时终止 Worker，避免资源浪费
+- **错误处理**：妥善处理 Worker 中的错误
+

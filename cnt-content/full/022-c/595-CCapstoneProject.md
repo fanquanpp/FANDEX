@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 640
 title: C 毕业项目：零依赖动态数组与哈希表库
 description: C 模块出口项目（Level 7）：纯 C99 手写自动扩容 vector 与开放寻址字符串键哈希表，接口头 + 实现 + 自写断言测试 + Makefile + ASan/Valgrind 双零报告 + README，user stories 验收、提示从高到无。
 module: 'c'
@@ -9,19 +9,19 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'c/200-DynamicMemoryManagement'
-  - 'c/210-MemoryManagement'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
   - 'c/130-StructAndUnion'
   - 'c/220-MemoryAlignmentDeepDive'
   - 'c/310-MultiFileCompilation'
   - 'c/510-CValgrind'
 prerequisites:
   - 'c/200-DynamicMemoryManagement'
-  - 'c/210-MemoryManagement'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
 ---
 
 ## 前置知识
 
-- 已完成 [动态内存](/c/200-DynamicMemoryManagement) 与 [内存深水区](/c/210-MemoryManagement)：malloc/calloc/realloc/free 四件套信手拈来，「分配即判 NULL、free 后置 NULL、临时指针接 realloc」三条纪律已经长在手上；
+- 已完成 [动态内存](/c/200-DynamicMemoryManagement) 与 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)：malloc/calloc/realloc/free 四件套信手拈来，「分配即判 NULL、free 后置 NULL、临时指针接 realloc」三条纪律已经长在手上；
 - 已完成 [结构体与联合体](/c/130-StructAndUnion) 与 [指针深度解析](/c/140-PointerDeep)：会用结构体打包「长度 + 数据」，会传递和改写二级指针；
 - 会用 [多文件编译](/c/310-MultiFileCompilation) 的三文件工程组织代码，命令行里能直接跑 gcc。
 
@@ -80,9 +80,9 @@ All heap blocks were freed -- no leaks are possible
 
 ## 里程碑（每步做完都该看到什么）
 
-1. **vec 能跑**（C1-C5）：`./build/test_vec` 打印全部断言通过，此刻项目里还没有哈希表的影子。该读：[动态内存](/c/200-DynamicMemoryManagement)、[内存深水区](/c/210-MemoryManagement)、[结构体与联合体](/c/130-StructAndUnion)、[多文件编译](/c/310-MultiFileCompilation)；
+1. **vec 能跑**（C1-C5）：`./build/test_vec` 打印全部断言通过，此刻项目里还没有哈希表的影子。该读：[动态内存](/c/200-DynamicMemoryManagement)、[内存深水区](/c/210-ProcessMemoryLayoutAndErrors)、[结构体与联合体](/c/130-StructAndUnion)、[多文件编译](/c/310-MultiFileCompilation)；
 2. **map 能跑**（C6-C8）：`./build/test_map` 全绿，含冲突压力与墓碑组合测试。该读：[内存对齐](/c/220-MemoryAlignmentDeepDive) 与 [布局深水区](/c/230-AlignmentMemoryLayout)——桶数组和条目结构怎么排才不浪费内存，这两篇有现成答案；
-3. **卫生达标**（C9）：`make asan` 与 Valgrind 双零报告。第一次跑大概率报出一串泄漏，正是 200/210 篇练过的破案流程。该读：[C Valgrind 内存检测](/c/510-CValgrind)、[静态分析与调试](/c/490-StaticAnalysisDebug)；
+3. **卫生达标**（C9）：`make asan` 与 Valgrind 双零报告。第一次跑大概率报出一串泄漏，正是 200/210 篇练过的破案流程。该读：[C Valgrind 内存检测](/c/510-CValgrind)、[静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)；
 4. **交付**（C10）：别人 clone 你的仓库，看 README 就能用上你的库。该读：[构建系统](/c/470-BuildSystem)、[动态库与静态库](/c/320-DynamicStaticLibrary)。
 
 ## 提示区
@@ -92,7 +92,7 @@ All heap blocks were freed -- no leaks are possible
 | 卡住的地方 | 回去读 |
 | --- | --- |
 | realloc 怎么扩容、返回值怎么接 | [动态内存](/c/200-DynamicMemoryManagement) |
-| 扩容后旧指针为什么不能用、事故报告怎么读 | [内存深水区](/c/210-MemoryManagement) |
+| 扩容后旧指针为什么不能用、事故报告怎么读 | [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) |
 | struct 怎么表达「长度 + 数据」 | [结构体与联合体](/c/130-StructAndUnion) |
 | 结构体成员怎么排更省内存 | [内存对齐](/c/220-MemoryAlignmentDeepDive)、[布局深水区](/c/230-AlignmentMemoryLayout) |
 | 头文件守卫与 extern 声明 | [多文件编译](/c/310-MultiFileCompilation) |

@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 200
 title: 覆盖索引与部分索引
 module: 'postgresql'
 category: 数据库
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'postgresql/220-IndexType'
-  - 'postgresql/240-IndexQueryOptimization'
+  - 'postgresql/250-QueryOptimization'
   - 'postgresql/250-QueryOptimization'
   - 'postgresql/180-TransactionIDWraparoundPrevention'
 prerequisites:
@@ -299,7 +299,7 @@ ORDER BY updated_at DESC LIMIT 20;
 
 ## 下一步
 
-- [索引查询优化](/postgresql/240-IndexQueryOptimization)：从查询侧盘点"索引为什么没用上"；
+- [查询优化](/postgresql/250-QueryOptimization)：从查询侧盘点"索引为什么没用上"；
 - [查询优化](/postgresql/250-QueryOptimization)：统计信息、代价模型与完整的优化闭环；
 - [生成列](/postgresql/150-GeneratedColumn)：与表达式索引竞争的"物化派生值"方案；
 - [VACUUM 与 autovacuum](/postgresql/212-VACUUMAutovacuum)：可见性映射背后的日常维护机制。

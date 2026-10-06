@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 380
 title: 优化器追踪：看透执行计划选择的全过程
 module: 'mysql'
 category: 数据库

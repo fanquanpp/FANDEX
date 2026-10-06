@@ -1,5 +1,5 @@
 ---
-order: 70
+order: 90
 title: git diff 与暂存区：提交前先看清自己改了什么
 module: 'git'
 category: 工具链

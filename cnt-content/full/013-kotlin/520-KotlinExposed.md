@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 560
 title: Kotlin 与 Exposed
 module: 'kotlin'
 category: 后端技术

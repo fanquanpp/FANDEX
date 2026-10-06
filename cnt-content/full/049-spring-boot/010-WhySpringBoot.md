@@ -5,8 +5,7 @@ description: 以「从零手写一个带数据库的 HTTP 服务」引入：八�
 module: 'spring-boot'
 category: 后端技术
 difficulty: beginner
-prerequisites:
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
+prerequisites: []
 author: fanquanpp
 updated: '2026-10-04'
 related:
@@ -17,7 +16,7 @@ related:
 
 ## 前置知识
 
-- 已了解 [Spring 基础：IoC、AOP 与 Bean 生命周期](/java/820-SpringBasicsIoCAOPBeanLifecycle) 的大意：知道「IoC 容器」「依赖注入」两个词即可，没读过也能跟，第 4 节会现场补上心智模型；
+- 已了解 [Spring 基础：IoC、AOP 与 Bean 生命周期](/java/820-SpringIoCContainerBeansAndDI) 的大意：知道「IoC 容器」「依赖注入」两个词即可，没读过也能跟，第 4 节会现场补上心智模型；
 - 用 Maven 跑过任意 Java 项目，见过 pom.xml（缺这块先看 [Java 构建工具](/java/740-JavaBuildTool)）。
 
 ## 学习目标
@@ -174,7 +173,7 @@ public void createOrder(Order order) {
 }
 ```
 
-一行注解背后是动态代理，Spring 在容器里悄悄包了一层。原理在 [Spring 基础](/java/820-SpringBasicsIoCAOPBeanLifecycle) 有铺垫，本模块 [AOP](/spring-boot/110-AspectOrientedProgramming) 一篇拆开讲。
+一行注解背后是动态代理，Spring 在容器里悄悄包了一层。原理在 [Spring 基础](/java/820-SpringIoCContainerBeansAndDI) 有铺垫，本模块 [AOP](/spring-boot/110-AspectOrientedProgramming) 一篇拆开讲。
 
 ### 4.3 生态整合：同一套容器模型
 

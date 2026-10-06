@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 590
 title: Kotlin DSL 与领域特定语言
 module: 'kotlin'
 category: 后端技术
@@ -8,7 +8,7 @@ description: DSL 设计模式、带接收者的 Lambda、类型安全构建器�
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'kotlin/240-KotlinCoroutineAdvanced'
+  - 'kotlin/250-CoroutineDispatcherContext'
   - 'kotlin/460-KotlinMultiplatform'
   - 'kotlin/380-KotlinTestBestPractice'
   - 'kotlin/130-NullSafetyDetailed'

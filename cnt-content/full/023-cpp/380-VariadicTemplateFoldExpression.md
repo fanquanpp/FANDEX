@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 400
 title: 折叠表达式：把参数包递归压缩成一行
 module: 'cpp'
 category: 计算机科学

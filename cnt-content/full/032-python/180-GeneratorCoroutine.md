@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 240
 title: 生成器深水区：send、yield from 与惰性流水线
 module: 'python'
 category: 后端技术
@@ -8,12 +8,10 @@ description: 以「不爆内存地分析几 GB 日志」为任务，讲生成器
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'python/170-ComprehensionGenerator'
   - 'python/660-CoroutineAsyncio'
   - 'python/670-AsyncProgrammingDetailed'
   - 'python/520-ContextManager'
-prerequisites:
-  - 'python/170-ComprehensionGenerator'
+prerequisites: []
 ---
 
 ## 前置知识

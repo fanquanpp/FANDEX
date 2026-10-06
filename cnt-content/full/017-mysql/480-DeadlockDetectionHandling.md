@@ -1,5 +1,5 @@
 ---
-order: 460
+order: 510
 title: 死锁检测与处理
 module: 'mysql'
 category: 数据库

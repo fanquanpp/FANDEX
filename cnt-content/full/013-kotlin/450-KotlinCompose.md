@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 490
 title: Kotlin 与 Compose
 module: 'kotlin'
 category: 后端技术
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'kotlin/440-KotlinAndroid'
   - 'kotlin/460-KotlinMultiplatform'
-  - 'kotlin/470-KotlinMultiplatformInDepth'
+  - 'kotlin/470-KotlinJsAndNativeCompileTargets'
   - 'kotlin/410-KotlinGradle'
   - 'kotlin/230-CoroutineBasics'
 prerequisites:

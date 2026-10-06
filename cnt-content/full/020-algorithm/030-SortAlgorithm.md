@@ -13,7 +13,6 @@ related:
   - 'algorithm/020-ArrayAndDynamicArray'
   - 'algorithm/120-DivideAndConquer'
   - 'algorithm/090-HeapAndPriorityQueue'
-  - 'algorithm/170-BinarySearchAlgorithms'
 prerequisites:
   - 'algorithm/010-AlgorithmAnalysisBasics'
   - 'algorithm/020-ArrayAndDynamicArray'

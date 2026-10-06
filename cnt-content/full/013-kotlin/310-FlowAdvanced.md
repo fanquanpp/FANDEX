@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 340
 title: Flow 进阶：操作符组合、冷热流转换与背压实战
 module: 'kotlin'
 category: 后端技术
@@ -15,6 +15,12 @@ prerequisites:
   - 'kotlin/230-CoroutineBasics'
   - 'kotlin/290-FlowReactiveStream'
 ---
+
+## 知识点地图
+
+- **知识类别**：Flow 的操作符体系与执行语义——背压三件套（buffer/conflate/collectLatest）、多流组合（combine/zip/展平）、错误处理与流式生命周期。
+- **解决什么问题**：生产快于消费时丢不丢值、丢哪些值；多条流怎么组合；上游失败怎么兜底——这些语义选择直接决定数据正确性。
+- **什么时候用到**：任何收集 Flow 的场景；设计搜索防抖、状态合并、多源聚合；给流管线加重试与降级。
 
 ## 概述
 
@@ -221,10 +227,13 @@ fun main() = runBlocking {
     // flattenMerge：把"流的流"并发展平收集
     val nested: Flow<Flow<Int>> = flowOf(flowOf(1, 2), flowOf(3, 4))
     nested.flattenMerge().collect { print("$it ") }  // 1 2 3 4（并发时顺序不定）
+
+    // flattenConcat：顺序展平——前一个内部流收完才开始下一个
+    nested.flattenConcat().collect { print("$it ") }  // 1 2 3 4（严格顺序）
 }
 ```
 
-`combine` 的关键语义：**它不是配对，而是"最新值快照"的组合**——收集开始时某个流还没发值，组合就暂不发生。
+`combine` 的关键语义：**它不是配对，而是"最新值快照"的组合**——收集开始时某个流还没发值，组合就暂不发生。`flattenConcat` 与 `flattenMerge` 的取舍同源：顺序性要求高（如按优先级消费任务流）用 `Concat`，吞吐优先（并发抓取多个源）用 `Merge`。
 
 ### 启动收集：launchIn 与作用域绑定
 

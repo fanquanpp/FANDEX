@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 550
 title: 设计文档规范
 module: 'software-testing'
 category: 云与基础设施

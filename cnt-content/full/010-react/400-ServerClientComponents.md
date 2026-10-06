@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 470
 title: Server Components 与 Client-Components
 module: 'react'
 category: 前端技术
@@ -14,6 +14,14 @@ related:
 prerequisites:
   - 'react/010-OverviewEnvSetup'
 ---
+
+## 知识点地图
+
+- **知识类别**：服务端 / 组件模型（RSC 边界划分与协议原理）。
+- **解决什么问题**：React 19 起 Server Components 是默认渲染形态。「哪些组件的 JS 要发到浏览器、哪些不出服务端」决定了应用的体积与数据流形态；本篇给出边界的形式化规则、RSC Payload 协议、序列化约束与生产级组合模式。
+- **什么时候用到**：划分组件边界犹豫不决时；遇到「Functions cannot be passed directly to Client Components」等边界报错时；设计数据获取与缓存策略时。
+
+本文承接自 [Next.js 全栈开发](/react/100-NextJSFullStack) 拆出的 Server Components 一节，与其数据获取/缓存示例归并。
 
 ## 前置知识
 
@@ -271,6 +279,8 @@ RSC 的 hydration 是"选择性 hydration"：
 
 这降低了 hydration 成本，特别是对于包含大量纯展示组件的页面。
 
+换句话说，两种「水合」在做不同的事：SSR 的水合是「把事件与状态接到服务端生成的 HTML 上」，客户端要重新执行每个组件函数来对齐 DOM；RSC 的水合只对 Client Component 子树发生——Server Component 在 Payload 里已经是渲染结果，客户端只做拼接，不存在「重新执行再对齐」的过程。商品列表页的纯展示部分因此在水合阶段是零成本。
+
 ### 3.5 Server Actions 的调用机制
 
 Server Actions 是 RSC 的延伸，让客户端可以"调用"服务端函数：
@@ -330,6 +340,36 @@ RSC 的缓存模型分为四层：
 $$
 \text{Fetch}(url) = \text{Memo} \rightarrow \text{DataCache} \rightarrow \text{Origin}
 $$
+
+落到代码层，四种策略各自对应一行 fetch 选项：
+
+```tsx
+// 静态数据 — 构建时获取，永久缓存
+const staticData = await fetch('https://api.example.com/config', {
+  cache: 'force-cache',
+});
+
+// 动态数据 — 每次请求都获取
+const dynamicData = await fetch('https://api.example.com/news', {
+  cache: 'no-store',
+});
+
+// 定时重新验证 — 每 60 秒重新获取
+const revalidatedData = await fetch('https://api.example.com/posts', {
+  next: { revalidate: 60 },
+});
+
+// 按需重新验证 — 通过 tag
+const taggedData = await fetch('https://api.example.com/posts', {
+  next: { tags: ['posts'] },
+});
+
+// 在 Server Action 中触发对应 tag 的失效
+import { revalidateTag } from 'next/cache';
+revalidateTag('posts');
+```
+
+选型口诀：配置类数据 `force-cache`，实时行情 `no-store`，列表页 `revalidate`，写操作联动刷新 `tags` + `revalidateTag`。四个选项都在服务端数据层生效，与客户端的 Router Cache（`router.refresh()` 触发的那层）相互独立——「为什么改了数据页面没变」十有八九是失效的层级选错了。
 
 ---
 
@@ -964,6 +1004,29 @@ export default async function DashboardPage() {
 | **动态内容** | 支持 | 支持 | 不支持 | 支持 |
 | **交互延迟** | 低 | 高（hydration） | 高（hydration） | 低 |
 | **开发体验** | 简单 | 复杂 | 简单 | 中等 |
+
+四列表格之外，最常被问到的其实是 SSR 与 RSC 的分工。一个可靠的心智模型是：**SSR 解决的是「HTML 什么时候生成」，RSC 解决的是「哪些组件的 JS 根本不需要发到浏览器」**。两者可以叠加使用，但解决的是不同层面的问题。
+
+| 维度 | SSR（React 18 起） | RSC（React 19 稳定） |
+| :--- | :--- | :--- |
+| 解决的问题 | 首屏 HTML 的生成与水合前体验 | 减少客户端 JS 体积、直连数据源 |
+| 组件是否在客户端执行 | 全部组件都要发送 JS 并水合 | Server Component 的 JS 不发送、不水合 |
+| 输出 | HTML 字符串/流 | HTML + RSC Payload（组件树的序列化描述） |
+| 交互能力 | 组件水合后可用 | Server Component 无交互，交互交给 Client Component |
+
+一个直观的对比：一个纯展示的商品列表页，SSR 下服务端渲染 HTML 后仍要向浏览器发送整套组件 JS 并水合；RSC 下这些组件的 JS 根本不出服务端，浏览器只下载真正交互的那几 KB。
+
+落到写代码的层面，这两类组件的能力差异如下表——它与 5.3 的决策表配套使用：决策表回答「放哪边」，本表回答「放过去之后还能做什么」。
+
+| 特性 | Server Component（默认） | Client Component |
+| :--- | :--- | :--- |
+| 运行环境 | 仅服务端（构建时 + 请求时） | 服务端预渲染 + 客户端水合 |
+| 能否 `async` 直接 `await` | 可以 | 不可以（需要 Effect/use()） |
+| Hooks | 不能用 `useState`/`useEffect` 等 | 全部可用 |
+| 事件处理 / 交互 | 不支持 | 支持 |
+| 访问后端资源 | 直接（数据库、文件系统、密钥） | 需经 API / Server Action |
+| 客户端 Bundle 体积 | 零（不发 JS） | 计入 Bundle |
+| 文件约定 | 默认；部分框架支持 `.server.tsx` | 文件顶部声明 `'use client'` |
 
 ### 5.2 RSC 与其他框架对比
 

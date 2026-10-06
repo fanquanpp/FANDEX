@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 300
 title: 交互式 rebase
 module: 'git'
 category: 工具链
@@ -8,7 +8,6 @@ description: Git交互式rebase详解：reword、squash、fixup、drop等操作�
 author: fanquanpp
 updated: '2026-09-29'
 related:
-  - 'git/220-GitFlowGitHubFlowComparison'
   - 'git/320-GitRevertResetComparison'
   - 'git/230-CodeReviewBestPractice'
 prerequisites: []

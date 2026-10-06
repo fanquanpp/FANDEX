@@ -1,5 +1,5 @@
 ---
-order: 240
+order: 280
 title: C++ STL 容器与迭代器
 module: 'cpp'
 category: 计算机科学
@@ -10,8 +10,8 @@ updated: '2026-09-12'
 related:
   - 'cpp/480-CppFormatOutput'
   - 'cpp/750-CppModernStandardEvolution'
-  - 'cpp/440-ConcurrentProgramming'
-  - 'cpp/170-CppCoreGuidelinesResourceManagement'
+  - 'cpp/440-CoordinationAndAsyncPrimitives'
+  - 'cpp/170-RAIIResourceManagementInPractice'
 prerequisites:
   - 'cpp/020-CppOverviewAndModernStandard'
 ---

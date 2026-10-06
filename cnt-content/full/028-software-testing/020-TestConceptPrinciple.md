@@ -8,8 +8,8 @@ description: 软件测试基础：测试定义、目的、原则、V模型与测
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'software-testing/140-PerformanceInterfaceTest'
-  - 'software-testing/170-SecurityAndMobileTest'
+  - 'software-testing/140-PerformanceTestingMethod'
+  - 'software-testing/180-SecurityTesting'
   - 'software-testing/030-TestLevels'
   - 'software-testing/040-TestType'
 prerequisites:

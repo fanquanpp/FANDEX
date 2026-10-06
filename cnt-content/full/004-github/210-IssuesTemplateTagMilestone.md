@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 230
 title: Issues 模板、标签与里程碑
 module: 'github'
 category: 工具链

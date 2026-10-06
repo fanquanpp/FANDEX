@@ -1,10 +1,10 @@
 ---
-order: 40
+order: 50
 title: Hooks 深入
 module: 'react'
 category: 前端技术
 difficulty: intermediate
-description: useEffect、useRef、useMemo、useCallback、useContext、自定义 Hook、Hooks 规则与常见陷阱。
+description: useMemo、useCallback、useContext、useState、自定义 Hook、Hooks 规则与常见陷阱；useEffect 与 useRef 已拆为专篇。
 author: fanquanpp
 updated: '2026-09-12'
 related:
@@ -12,6 +12,9 @@ related:
   - 'react/030-StateEvent'
   - 'react/050-ContextGlobalState'
   - 'react/060-React19NewFeatures'
+  - 'react/042-UseReducerAndStateLogic'
+  - 'react/044-EffectsLifecycleBestPractice'
+  - 'react/046-RefsAndImperativeHandle'
 prerequisites: []
 ---
 
@@ -21,240 +24,27 @@ prerequisites: []
 
 ## 学习目标
 
-- 掌握「1. useEffect」的核心机制、典型用法与常见陷阱
-- 掌握「2. useRef」的核心机制、典型用法与常见陷阱
-- 掌握「3. useMemo」的核心机制、典型用法与常见陷阱
-- 掌握「4. useCallback」的核心机制、典型用法与常见陷阱
-- 掌握「5. useContext」的核心机制、典型用法与常见陷阱
+- 掌握「1. useMemo」的核心机制、典型用法与常见陷阱
+- 掌握「2. useCallback」的核心机制、典型用法与常见陷阱
+- 掌握「3. useContext」的核心机制、典型用法与常见陷阱
+- 掌握「4. 自定义 Hook」的核心机制、典型用法与常见陷阱
 
 
-## 1. useEffect
+## 入口：拆分出去的三篇
 
-`useEffect` 用于处理副作用：数据获取、DOM 操作、订阅、定时器等。
+副作用（Effect）与引用（Ref）是两条独立的逃生舱，各自成篇：
 
-### 1.1 基本用法与生命周期
+- **useEffect / useLayoutEffect**：依赖数组语义、清理函数时序、useEffectEvent 与官方「你可能不需要 Effect」反模式判例，见 [Effect 生命周期与「你可能不需要 Effect」](/react/044-EffectsLifecycleBestPractice)；
+- **useRef / useImperativeHandle**：ref 与 state 的选择、ref 回调、ref 即 prop（React 19），见 [Refs 与命令式逃生舱](/react/046-RefsAndImperativeHandle)；
+- **useReducer 与状态逻辑抽取**：reducer 三件套、action 语义化与 reducer + Context 组合，见 [useReducer 与状态逻辑抽取](/react/042-UseReducerAndStateLogic)。
 
-```tsx
-import { useEffect, useState } from 'react';
+本篇保留与「渲染期计算」和「逻辑复用」直接相关的 Hook：useMemo、useCallback、useContext、自定义 Hook 与 Hooks 规则。
 
-function DataFetcher({ url }: { url: string }) {
-  const [data, setData] = useState(null);
-
-  // 每次渲染后执行
-  useEffect(() => {
-    fetch(url)
-      .then((res) => res.json())
-      .then(setData);
-  }); //  无依赖数组，每次渲染都执行
-
-  return <div>{JSON.stringify(data)}</div>;
-}
-```
-
-### 1.2 依赖数组
-
-```tsx
-// 空依赖 — 仅挂载时执行（相当于 componentDidMount）
-useEffect(() => {
-  console.log('组件挂载');
-}, []);
-
-// 有依赖 — 依赖变化时执行
-useEffect(() => {
-  console.log('userId 变化：', userId);
-}, [userId]);
-
-// 无依赖 — 每次渲染后执行
-useEffect(() => {
-  console.log('每次渲染后执行');
-});
-```
-
-### 1.3 清理函数
-
-```tsx
-function ChatRoom({ roomId }: { roomId: string }) {
-  useEffect(() => {
-    const connection = createConnection(roomId);
-    connection.connect();
-
-    // 清理函数：组件卸载或依赖变化前执行
-    return () => {
-      connection.disconnect();
-    };
-  }, [roomId]);
-
-  return <div>聊天室：{roomId}</div>;
-}
-```
-
-### 1.4 常见副作用模式
-
-```tsx
-function UserProfile({ userId }: { userId: string }) {
-  const [user, setUser] = useState<User | null>(null);
-
-  // 数据获取
-  useEffect(() => {
-    let cancelled = false;
-
-    async function fetchUser() {
-      const response = await fetch(`/api/users/${userId}`);
-      const data = await response.json();
-      if (!cancelled) {
-        setUser(data);
-      }
-    }
-
-    fetchUser();
-
-    return () => {
-      cancelled = true; // 防止竞态条件
-    };
-  }, [userId]);
-
-  // 事件监听
-  useEffect(() => {
-    const handleResize = () => {
-      console.log('窗口大小变化');
-    };
-
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // 定时器
-  useEffect(() => {
-    const timer = setInterval(() => {
-      console.log('定时执行');
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
-
-  return <div>{user?.name}</div>;
-}
-```
-
-### 1.5 useEffect 的执行时机
-
-React 18+ 中 `useEffect` 在**渲染提交到屏幕之后**异步执行。如果需要同步执行副作用（如测量 DOM 布局），使用 `useLayoutEffect`：
-
-```tsx
-import { useLayoutEffect, useRef } from 'react';
-
-function Tooltip() {
-  const ref = useRef<HTMLDivElement>(null);
-
-  useLayoutEffect(() => {
-    // 在浏览器绘制前同步执行，避免闪烁
-    const { height } = ref.current!.getBoundingClientRect();
-    ref.current!.style.top = `${-height}px`;
-  }, []);
-
-  return <div ref={ref}>提示内容</div>;
-}
-```
-
-## 2. useRef
-
-`useRef` 返回一个可变的 ref 对象，其 `.current` 属性可以持有任何值，且**变更不会触发重渲染**。
-
-### 2.1 访问 DOM 元素
-
-```tsx
-function TextInputWithFocus() {
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const focusInput = () => {
-    inputRef.current?.focus();
-  };
-
-  return (
-    <div>
-      <input ref={inputRef} type="text" />
-      <button onClick={focusInput}>聚焦输入框</button>
-    </div>
-  );
-}
-```
-
-### 2.2 保存可变值
-
-```tsx
-function Timer() {
-  const [count, setCount] = useState(0);
-  const timerRef = useRef<ReturnType<typeof setInterval>>();
-
-  useEffect(() => {
-    timerRef.current = setInterval(() => {
-      setCount((c) => c + 1);
-    }, 1000);
-
-    return () => clearInterval(timerRef.current);
-  }, []);
-
-  const pause = () => clearInterval(timerRef.current);
-
-  return (
-    <div>
-      <p>{count}</p>
-      <button onClick={pause}>暂停</button>
-    </div>
-  );
-}
-```
-
-### 2.3 保存前一次渲染的值
-
-```tsx
-function usePrevious<T>(value: T): T | undefined {
-  const ref = useRef<T>();
-
-  useEffect(() => {
-    ref.current = value;
-  }, [value]);
-
-  return ref.current;
-}
-
-// 使用
-function Counter() {
-  const [count, setCount] = useState(0);
-  const prevCount = usePrevious(count);
-
-  return (
-    <div>
-      <p>
-        当前：{count}，上一次：{prevCount}
-      </p>
-      <button onClick={() => setCount((c) => c + 1)}>+1</button>
-    </div>
-  );
-}
-```
-
-### 2.4 React 19 中的 ref 改进
-
-React 19 中 `ref` 可以作为 prop 直接传递，不再需要 `forwardRef`：
-
-```tsx
-// React 18 — 需要 forwardRef
-const Input = forwardRef<HTMLInputElement, InputProps>((props, ref) => (
-  <input ref={ref} {...props} />
-));
-
-// React 19 — ref 作为普通 prop
-function Input({ ref, ...props }: InputProps & { ref?: React.Ref<HTMLInputElement> }) {
-  return <input ref={ref} {...props} />;
-}
-```
-
-## 3. useMemo
+## 1. useMemo
 
 `useMemo` 缓存计算结果，仅在依赖变化时重新计算。
 
-### 3.1 基本用法
+### 1.1 基本用法
 
 ```tsx
 import { useMemo } from 'react';
@@ -276,7 +66,7 @@ function ExpensiveList({ items, filter }: { items: Item[]; filter: string }) {
 }
 ```
 
-### 3.2 何时使用 useMemo
+### 1.2 何时使用 useMemo
 
 ```tsx
 //  场景一：昂贵计算
@@ -297,11 +87,11 @@ const sum = a + b; // 直接计算即可
 const name = 'hello'; // 原始值天然引用稳定
 ```
 
-## 4. useCallback
+## 2. useCallback
 
 `useCallback` 缓存函数引用，仅在依赖变化时创建新函数。
 
-### 4.1 基本用法
+### 2.1 基本用法
 
 ```tsx
 import { useCallback } from 'react';
@@ -338,7 +128,7 @@ const ProductCard = React.memo(({ product, onSelect, isSelected }: ProductCardPr
 });
 ```
 
-### 4.2 useCallback vs useMemo
+### 2.2 useCallback vs useMemo
 
 ```tsx
 // useCallback — 缓存函数
@@ -357,7 +147,7 @@ const handleClick = useMemo(
 
 > **提示**：在 React 19 中，编译器（React Compiler）可以自动优化这些场景，减少手动使用 `useMemo`/`useCallback` 的需求。
 
-## 5. useContext
+## 3. useContext
 
 `useContext` 用于消费 Context 值，详见 Context与全局状态。
 
@@ -372,17 +162,17 @@ function ThemedButton() {
 }
 ```
 
-## 6. 自定义 Hook
+## 4. 自定义 Hook
 
 自定义 Hook 是以 `use` 开头的函数，用于提取和复用组件逻辑。
 
-### 6.1 命名与规范
+### 4.1 命名与规范
 
 - 函数名必须以 `use` 开头（如 `useAuth`、`useFetch`）
 - 内部可以调用其他 Hook
 - 遵循 Hooks 规则
 
-### 6.2 常用自定义 Hook 示例
+### 4.2 常用自定义 Hook 示例
 
 ```tsx
 // useFetch — 数据获取
@@ -491,9 +281,9 @@ function useToggle(initial = false): [boolean, () => void] {
 }
 ```
 
-## 7. Hooks 规则
+## 5. Hooks 规则
 
-### 7.1 两条核心规则
+### 5.1 两条核心规则
 
 1. **只在顶层调用 Hook** — 不要在循环、条件或嵌套函数中调用
 2. **只在 React 函数中调用 Hook** — 函数组件或自定义 Hook 中
@@ -518,7 +308,7 @@ function GoodComponent({ isLoggedIn }: { isLoggedIn: boolean }) {
 }
 ```
 
-### 7.2 ESLint 规则
+### 5.2 ESLint 规则
 
 安装 `eslint-plugin-react-hooks` 自动检查：
 
@@ -536,9 +326,9 @@ npm install -D eslint-plugin-react-hooks
 }
 ```
 
-## 8. 常见陷阱
+## 6. 常见陷阱
 
-### 8.1 闭包陷阱（Stale Closure）
+### 6.1 闭包陷阱（Stale Closure）
 
 ```tsx
 //  错误：定时器中的 count 是闭包捕获的旧值
@@ -571,7 +361,7 @@ function Counter() {
 }
 ```
 
-### 8.2 无限循环
+### 6.2 无限循环
 
 ```tsx
 //  错误：每次渲染都创建新对象，导致 useEffect 无限触发
@@ -586,7 +376,7 @@ useEffect(() => {
 }, [options]);
 ```
 
-### 8.3 依赖遗漏
+### 6.3 依赖遗漏
 
 ```tsx
 //  错误：缺少依赖
@@ -600,7 +390,7 @@ useEffect(() => {
 }, [userId]);
 ```
 
-### 8.4 对象依赖比较
+### 6.4 对象依赖比较
 
 ```tsx
 //  对象引用每次都不同
@@ -634,49 +424,6 @@ setCount(prev => prev + 1);
 `const [<state>, <setState>] = useState<<T>>(<initialValue>);`
 ```tsx
 const [user, setUser] = useState<User | null>(null);
-```
-
----
-
-## useEffect 副作用钩子
-
-**useEffect 基础**
-`useEffect(() => { [<cleanup>] }, [<deps>]);`
-```tsx
-useEffect(() => {
-  const id = setInterval(tick, 1000);
-  return () => clearInterval(id);
-}, []);
-```
-
-**useEffect 依赖数组**
-```tsx
-useEffect(() => {
-  fetchUser(id);
-}, [id]);
-
-useEffect(() => {
-  syncToLocalStorage(data);
-}, [data]);
-```
-
----
-
-## useRef 引用钩子
-
-**useRef 可变引用**
-`const <ref> = useRef<<T>>(<initialValue>);`
-```tsx
-const countRef = useRef(0);
-countRef.current++;
-```
-
-**useRef DOM 引用**
-`const <ref> = useRef<<Element>>(null);`
-```tsx
-const inputRef = useRef<HTMLInputElement>(null);
-useEffect(() => inputRef.current?.focus(), []);
-<input ref={inputRef} />;
 ```
 
 ---
@@ -715,105 +462,8 @@ const user = useContext(UserContext) as User;
 
 ---
 
-## useReducer 复杂状态
-
-**useReducer**
-`const [<state>, <dispatch>] = useReducer(<reducer>, <initialState>, [<init>]);`
-```tsx
-type State = { count: number };
-type Action = { type: 'inc' } | { type: 'dec' };
-
-const reducer = (state: State, action: Action) => {
-  switch (action.type) {
-    case 'inc': return { count: state.count + 1 };
-    case 'dec': return { count: state.count - 1 };
-  }
-};
-
-const [state, dispatch] = useReducer(reducer, { count: 0 });
-dispatch({ type: 'inc' });
-```
-
-**useReducer 惰性初始化**
-`useReducer(<reducer>, <initialArgs>, <init>);`
-```tsx
-const [state, dispatch] = useReducer(reducer, { count: 0 }, (init) => ({
-  count: init.count * 2,
-}));
-```
-
 ---
 
-## useImperativeHandle 暴露方法
+## 拆分说明
 
-**useImperativeHandle**
-`useImperativeHandle(<ref>, () => <handle>, [<deps>]);`
-```tsx
-const FancyInput = forwardRef<HTMLInputElement, Props>((props, ref) => {
-  const inputRef = useRef<HTMLInputElement>(null);
-  useImperativeHandle(ref, () => ({
-    focus: () => inputRef.current?.focus(),
-    clear: () => { if (inputRef.current) inputRef.current.value = ''; },
-  }), []);
-  return <input ref={inputRef} />;
-});
-```
-
----
-
-## useLayoutEffect 同步布局
-
-**useLayoutEffect**
-`useLayoutEffect(() => { [<cleanup>] }, [<deps>]);`
-```tsx
-useLayoutEffect(() => {
-  const rect = el.getBoundingClientRect();
-  setOffset(rect.top);
-}, [el]);
-```
-
----
-
-## useTransition 过渡更新
-
-**useTransition**
-`const [<isPending>, <startTransition>] = useTransition();`
-```tsx
-const [isPending, startTransition] = useTransition();
-
-const handleTab = (tab: string) => {
-  startTransition(() => {
-    setActiveTab(tab);
-  });
-};
-```
-
----
-
-## useDeferredValue 延迟值
-
-**useDeferredValue**
-`const <deferredValue> = useDeferredValue(<value>);`
-```tsx
-const deferredQuery = useDeferredValue(query);
-const filtered = useMemo(() => filter(deferredQuery), [deferredQuery]);
-```
-
----
-
-## useId 唯一标识
-
-**useId**
-`const <id> = useId();`
-```tsx
-const id = useId();
-<label htmlFor={id}>Email</label>
-<input id={id} type="email" />
-```
-
-**useId 前缀**
-```tsx
-const id = useId();
-const emailId = `${id}-email`;
-const passwordId = `${id}-password`;
-```
+本文原为 Hooks 大全。useEffect 系（含 useLayoutEffect 速查）、useRef 系（含 useImperativeHandle 速查）与 useReducer 速查已分别扩为三篇专文（042/044/046）；useTransition、useDeferredValue、useId 三节速查已落位到并发篇与无障碍篇。本篇保留 useMemo、useCallback、useContext、useState 速查与自定义 Hook、规则、陷阱主题。

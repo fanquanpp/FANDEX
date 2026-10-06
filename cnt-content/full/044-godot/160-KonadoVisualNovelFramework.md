@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 240
 title: Konado 视觉小说框架入门
 module: 'godot'
 category: 游戏开发

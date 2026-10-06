@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 460
 title: 代码重构
 module: 'software-testing'
 category: 云与基础设施

@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-09-29'
 related:
   - 'postgresql/270-PartitionedTable'
-  - 'postgresql/530-AdvancedSQLExtension'
   - 'sql/260-WindowFunction'
 prerequisites:
   - 'postgresql/010-OverviewInstallConfig'
@@ -164,6 +163,84 @@ ORDER BY day;
 ```
 
 generate_series 能生成数字、时间戳序列，是时间填充、抽样、桶对齐类需求的瑞士军刀；配合 LATERAL 还能"每行展开成 N 行"。
+
+## 动手六：窗口排名、连续登录与分组集（进阶案例集）
+
+以下案例沿用播客库之外更常见的员工/销售表，都是从实战里反复出现的形状。
+
+**案例一：每组前 N 名**——"每个部门薪资前三名"，窗口排名 + 子查询过滤：
+
+```sql
+SELECT * FROM (
+  SELECT dept, name, salary,
+    ROW_NUMBER() OVER (PARTITION BY dept ORDER BY salary DESC) AS rn
+  FROM employees
+) t WHERE rn <= 3;
+```
+
+为什么不在 WHERE 里直接写窗口函数：执行顺序上 WHERE 先于 SELECT，窗口值此时还没算出来（原理见[SELECT 执行顺序](/sql/080-SelectExecutionOrder)）。把排名当列算完再在外层过滤，是这类题的固定姿势。`ROW_NUMBER` 与 `RANK`/`DENSE_RANK` 的取别：并列时想"跳号"用 RANK、想"并列同号不跳"用 DENSE_RANK，业务上"前三名"多数该用 DENSE_RANK。
+
+**案例二：连续登录天数**——间隙与岛屿（gaps and islands）经典题，两步解法：
+
+```sql
+-- 第一步: 日期减去行号得到"分组键" grp。
+-- 同一段连续日期的 grp 恒定（日期每天 +1，行号也 +1，相减不变）。
+-- 注意: 必须先 DISTINCT 去重（同一天多次登录只算一天）。
+SELECT user_id, COUNT(*) AS consecutive_days
+FROM (
+  SELECT user_id, login_date,
+    login_date - (ROW_NUMBER() OVER (PARTITION BY user_id ORDER BY login_date))::int AS grp
+  FROM (SELECT DISTINCT user_id, login_date::date FROM user_logins) t1
+) t2
+GROUP BY user_id, grp
+HAVING COUNT(*) >= 7;
+```
+
+关键技巧只有一个：**把"连续"翻译成"分组键相等"**。日期与行号同步递增，连续段的差值恒定；中断一次，差值跳变，新段开始。
+
+**案例三：递归 CTE 做 BOM 物料展开**——多层装配，数量要沿路径连乘：
+
+```sql
+WITH RECURSIVE bom AS (
+  SELECT parent_id, child_id, quantity, 1 AS depth
+  FROM bill_of_materials
+  WHERE parent_id = 'PRODUCT-A'
+
+  UNION ALL
+
+  SELECT b.parent_id, m.child_id, b.quantity * m.quantity, b.depth + 1
+  FROM bom b
+  JOIN bill_of_materials m ON b.child_id = m.parent_id
+)
+SELECT child_id, SUM(quantity) AS total_qty, MAX(depth) AS max_depth
+FROM bom
+GROUP BY child_id;
+```
+
+递归部分把父件的累计用量乘上子件单耗——同一个 child 出现在多条路径时被算作多行，最后 SUM 收拢，`MAX(depth)` 顺带给出它在 BOM 里的最深层级。
+
+**案例四：分组集报表**——一张查询出"明细小计 + 区域小计 + 总计"：
+
+```sql
+-- ROLLUP: 层级汇总（region,product → region → 总计）
+SELECT region, product, SUM(sales) AS total
+FROM sales_data
+GROUP BY ROLLUP (region, product);
+
+-- GROUPING SETS: 自定义要哪些组合
+SELECT region, product, SUM(sales) AS total
+FROM sales_data
+GROUP BY GROUPING SETS ((region, product), (region), (product), ());
+
+-- GROUPING(): 区分"这行是数据还是小计"（NULL 行是汇总行）
+SELECT region, product,
+  GROUPING(region) AS is_region_total,
+  SUM(sales) AS total
+FROM sales_data
+GROUP BY ROLLUP (region, product);
+```
+
+`GROUPING(列)` 返回 1 表示该列在当前分组里被"卷起"了——报表前端正靠它渲染"小计/合计"样式，避免拿 `region IS NULL` 误判（数据里本来就可能有空值）。完整体系见[GROUP BY 与分组集](/sql/070-GROUPBYGroupingSet)。
 
 ## 坑点与自检
 

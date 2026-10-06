@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 220
 title: 相等契约救急锦囊： equals 与 hashCode
 module: 'java'
 category: 后端技术

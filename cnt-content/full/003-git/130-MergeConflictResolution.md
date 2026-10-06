@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 160
 title: 合并冲突解决：从「CONFLICT 提示别慌」到五分钟解完
 module: 'git'
 category: 工具链

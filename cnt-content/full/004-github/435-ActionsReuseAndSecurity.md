@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 480
 title: Actions 复用与供应链安全：可复用工作流、组合动作与权限最小化
 module: 'github'
 category: 工具链

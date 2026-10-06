@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 610
 title: C++与 Python 交互
 module: 'cpp'
 category: 计算机科学
@@ -11,7 +11,7 @@ related:
   - 'cpp/520-CppSerialization'
   - 'cpp/530-CppNetworkProgramming'
   - 'cpp/710-CppRustComparison'
-  - 'cpp/740-Cpp23Cpp26NewFeatures'
+  - 'cpp/730-Cpp23NewFeatures'
 prerequisites: []
 ---
 

@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 490
 title: ThreadLocal 内存泄漏
 module: 'java'
 category: 后端技术
@@ -12,11 +12,9 @@ related:
   - 'java/520-CompletableFutureAsync'
   - 'java/430-ReflectionDynamicProxy'
   - 'java/440-AnnotationProcessor'
-  - 'java/610-JVMMemoryModel'
 prerequisites:
   - 'java/020-JavaOverviewDevEnv'
   - 'java/510-ConcurrencyDetailed'
-  - 'java/610-JVMMemoryModel'
 ---
 
 ## 前置知识

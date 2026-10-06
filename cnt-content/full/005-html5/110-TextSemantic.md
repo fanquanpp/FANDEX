@@ -8,7 +8,7 @@ description: h1-h6、p、strong、em、mark、time、address
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'html5/240-HTML5OfflineStorageWebAPI'
+  - 'html5/245-WebStorage'
   - 'html5/060-MetadataCharacterEncoding'
   - 'html5/120-List'
   - 'html5/130-LinksAndAnchors'
@@ -334,4 +334,4 @@ E=mc<sup>2</sup>
 - 列表语义：`html5/120-List` 掌握 `ul`/`ol`/`dl` 的选择；
 - 链接语义：`html5/130-LinksAndAnchors` 中链接文案与无障碍；
 - 无障碍：`html5/180-Accessibility` 中读屏如何消费文本语义；
-- 排版细节：`css/490-TypographyAndGridSystem` 控制文本的视觉呈现。
+- 排版细节：`css/490-TypeScaleAndSpacingTokens` 控制文本的视觉呈现。

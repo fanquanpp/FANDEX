@@ -1,5 +1,5 @@
 ---
-order: 30
+order: 40
 title: Git 三级配置与仓库初始化：登记手续与仓库出生证明
 module: 'git'
 category: 工具链

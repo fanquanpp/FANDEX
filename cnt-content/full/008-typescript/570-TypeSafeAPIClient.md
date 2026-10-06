@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 620
 title: 类型安全的 API 客户端
 module: 'typescript'
 category: 前端技术
@@ -8,7 +8,7 @@ description: 构建端到端类型安全的HTTP客户端
 author: fanquanpp
 updated: '2026-09-28'
 related:
-  - 'typescript/310-TypeScriptTypeDeclarationModuleResolution'
+  - 'typescript/315-PackageExportsEsmInterop'
   - 'typescript/560-TypeSafeEventSystem'
   - 'typescript/580-TypeSafeStateManagement'
   - 'typescript/600-TypeSafeFormValidation'

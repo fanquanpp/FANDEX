@@ -1,1121 +1,260 @@
 ---
 order: 110
-title: 组件系统
+title: 组件基础与通信
 module: 'vue3'
 category: 前端技术
 difficulty: intermediate
-description: Vue3组件系统与通信机制
+description: 单一主题：SFC、defineProps（含 3.5 响应式解构）、defineEmits、attrs 透传、defineOptions 与组件通信总览——组件如何定义、如何对话
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
+  - 'vue3/115-SlotInDepth'
+  - 'vue3/045-FormBindingVModel'
+  - 'vue3/145-DynamicComponentPatterns'
+  - 'vue3/170-ProvideInject'
+prerequisites:
   - 'vue3/050-ReactiveSystem'
-  - 'vue3/090-CustomHook'
-  - 'vue3/230-TypeScriptIntegration'
-  - 'vue3/210-PiniaStateManagementDetailed'
-prerequisites: []
 ---
 
-## 前置知识
+## 知识点地图
 
-- [自定义 Hook](/vue3/090-CustomHook)：建议先完成前一篇的学习
+- **知识类别**：Vue 3 / 组件基础（官方文档 Components In-Depth 的地基部分）。
+- **解决什么问题**：组件是 Vue 应用的积木——**怎么定义一块积木（SFC）、它对外暴露什么接口（props/emits/attrs）、积木之间怎么对话（通信）**。接口定义不清是组件库与业务组件一切混乱的源头。
+- **什么时候用到**：写第一个业务组件；封装可复用组件；评审组件 API 设计。
+- **边界声明**：本篇由旧版"组件系统"收窄重写。插槽迁至[插槽与内容分发](/vue3/115-SlotInDepth)；生命周期归[生命周期钩子](/vue3/070-LifecycleHook)；动态/递归/函数式组件见[动态组件与函数式组件](/vue3/145-DynamicComponentPatterns)；组件 v-model 见[表单绑定与组件 v-model](/vue3/045-FormBindingVModel)。
 
-## 学习目标
+## 心智模型：组件是一份"接口契约"
 
-- 掌握「1. 组件系统概述 | Component System Overview」的核心机制、典型用法与常见陷阱
-- 掌握「2. 单文件组件 | Single-File Components」的核心机制、典型用法与常见陷阱
-- 掌握「3. 组件的 props」的核心机制、典型用法与常见陷阱
-- 掌握「4. 组件的事件」的核心机制、典型用法与常见陷阱
-- 掌握「5. 组件的插槽」的核心机制、典型用法与常见陷阱
-
-
-## 1. 组件系统概述 | Component System Overview
-
-组件是 Vue3 应用的基本构建块，它允许我们将 UI 拆分为独立、可复用的部分。Vue3 的组件系统提供了一种清晰的方式来组织和管理应用的 UI 结构，使代码更加模块化、可维护。
-
-### 1.1 组件的特点
-
-- **封装性**：组件将模板、逻辑和样式封装在一起
-- **可复用性**：组件可以在多个地方重复使用
-- **组合性**：组件可以嵌套组合，形成复杂的 UI 结构
-- **可维护性**：组件化使代码更加清晰、易于维护
-
-### 1.2 组件的类型
-
-- **全局组件**：在整个应用中可用
-- **局部组件**：只在特定组件中可用
-- **单文件组件**：使用 `.vue` 文件格式，包含模板、脚本和样式
-
-## 2. 单文件组件 | Single-File Components
-
-单文件组件（SFC）是 Vue3 推荐的组件编写方式，它使用 `.vue` 文件格式，包含三个部分：
-
-- `<template>`：组件的模板
-- `<script>`：组件的逻辑
-- `<style>`：组件的样式
-
-### 2.1 基本结构
-
-```vue
-<template>
-  <div class="component">
-    <h2>{{ title }}</h2>
-    <p>{{ message }}</p>
-    <button @click="handleClick">Click me</button>
-  </div>
-</template>
-<script setup>
-import { ref } from 'vue';
-const title = ref('Hello');
-const message = ref('Welcome to Vue3');
-const handleClick = () => {
-  message.value = 'You clicked the button!';
-};
-</script>
-<style scoped>
-.component {
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-h2 {
-  color: #42b983;
-}
-button {
-  padding: 5px 10px;
-  background-color: #42b983;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-</style>
+```text
+父组件 ──props（数据下行）──► 子组件
+父组件 ◄──events（事件上行）── 子组件
+父组件 ──slots（内容定制）──► 子组件        → 详见插槽篇
+子组件 ──expose（受控暴露）──► 父组件的 ref  → 详见响应式系统篇
+祖先 ──provide/inject（跨层注入）──► 后代    → 详见 Provide/Inject 篇
 ```
 
-### 2.2 script setup 语法
+契约纪律一句话：**数据只往下、事件只往上**；违反单向流的双向耦合（子在子改 props）是组件腐化的起点。
 
-Vue3.2+ 提供了 `script setup` 语法糖，使组件的编写更加简洁：
-
-- 不需要导出组件
-- 直接在模板中使用定义的变量和函数
-- 自动注册导入的组件
-
-## 3. 组件的 props
-
-Props 是组件的输入数据，允许父组件向子组件传递数据。
-
-### 3.1 基本用法
+## 单文件组件（SFC）与 script setup
 
 ```vue
-<!-- ChildComponent.vue -->
+<!-- UserCard.vue：结构/逻辑/样式三段式 -->
+<script setup lang="ts">
+import { computed } from 'vue'
+
+// 声明式接口：props 进、事件出
+const props = defineProps<{ name: string; level: number }>()
+const emit = defineEmits<{ follow: [name: string] }>()
+
+const title = computed(() => `Lv.${props.level} ${props.name}`)
+</script>
+
 <template>
-  <div class="child">
+  <div class="user-card">
     <h3>{{ title }}</h3>
-    <p>{{ message }}</p>
+    <button @click="emit('follow', props.name)">关注</button>
   </div>
 </template>
-<script setup>
-defineProps({
- title: String,
- message: {
- type: String,
- default: 'Default message'
- }
-}
-</script>
-<!-- ParentComponent.vue -->
-<template>
-  <div class="parent">
-    <ChildComponent title="Hello from parent" message="This is a prop" />
-  </div>
-</template>
-<script setup>
-import ChildComponent from './ChildComponent.vue';
-</script>
-```
 
-### 3.2 Props 验证
-
-```vue
-<script setup>
-defineProps({
- // 基本类型
- title: String,
- count: Number,
- isActive: Boolean,
- items: Array,
- user: Object,
- callback: Function,
- // 带默认值
- message: {
- type: String,
- default: 'Default message'
- },
- // 必需的
- requiredProp: {
- type: String,
- required:
- },
- // 自定义验证
- customProp: {
- validator: (value) => {
- return ['option1', 'option2'].includes(value)
- }
- }
-}
-</script>
-```
-
-## 4. 组件的事件
-
-事件允许子组件向父组件传递消息。
-
-### 4.1 基本用法
-
-```vue
-<!-- ChildComponent.vue -->
-<template>
-  <div class="child">
-    <button @click="handleClick">Click me</button>
-  </div>
-</template>
-<script setup>
-const emit = defineEmits(['click', 'custom-event']);
-const handleClick = () => {
-  emit('click', 'Button clicked');
-  emit('custom-event', { data: 'Custom event data' });
-};
-</script>
-<!-- ParentComponent.vue -->
-<template>
-  <div class="parent">
-    <ChildComponent @click="handleChildClick" @custom-event="handleCustomEvent" />
-  </div>
-</template>
-<script setup>
-import ChildComponent from './ChildComponent.vue';
-const handleChildClick = (message) => {
-  console.log('Child clicked:', message);
-};
-const handleCustomEvent = (data) => {
-  console.log('Custom event:', data);
-};
-</script>
-```
-
-### 4.2 事件验证
-
-```vue
-<script setup>
-const emit = defineEmits({
- // 基本事件
- click: null,
- // 带参数验证的事件
- 'update:count': (value) => {
- return typeof value === 'number'
- }
-}
-</script>
-```
-
-## 5. 组件的插槽
-
-插槽允许父组件向子组件的特定位置插入内容。
-
-### 5.1 基本插槽
-
-```vue
-<!-- ChildComponent.vue -->
-<template>
-  <div class="child">
-    <h3>Child Component</h3>
-    <slot></slot>
-  </div>
-</template>
-<!-- ParentComponent.vue -->
-<template>
-  <div class="parent">
-    <ChildComponent>
-      <p>This content is inserted into the slot</p>
-    </ChildComponent>
-  </div>
-</template>
-```
-
-### 5.2 具名插槽
-
-```vue
-<!-- ChildComponent.vue -->
-<template>
-  <div class="child">
-    <header>
-      <slot name="header"></slot>
-    </header>
-    <main>
-      <slot></slot>
-    </main>
-    <footer>
-      <slot name="footer"></slot>
-    </footer>
-  </div>
-</template>
-<!-- ParentComponent.vue -->
-<template>
-  <div class="parent">
-    <ChildComponent>
-      <template #header>
-        <h2>Page Header</h2>
-      </template>
-      <p>Main content goes here</p>
-      <template #footer>
-        <p>Page Footer</p>
-      </template>
-    </ChildComponent>
-  </div>
-</template>
-```
-
-### 5.3 作用域插槽
-
-```vue
-<!-- ChildComponent.vue -->
-<template>
-  <div class="child">
-    <ul>
-      <li v-for="item in items" :key="item.id">
-        <slot :item="item">{{ item.name }}</slot>
-      </li>
-    </ul>
-  </div>
-</template>
-<script setup>
-import { ref } from 'vue'
-const items = ref([
- { id: 1, name: 'Item 1' },
- { id: 2, name: 'Item 2' },
- { id: 3, name: 'Item 3' }
-]
-</script>
-<!-- ParentComponent.vue -->
-<template>
-  <div class="parent">
-    <ChildComponent>
-      <template #default="{ item }">
-        <strong>{{ item.id }}: {{ item.name }}</strong>
-      </template>
-    </ChildComponent>
-  </div>
-</template>
-```
-
-## 6. 组件的生命周期
-
-组件的生命周期包括创建、挂载、更新、卸载等阶段，我们可以在这些阶段执行相应的逻辑。
-
-### 6.1 生命周期钩子
-
-| 钩子函数            | 描述               |
-| :------------------ | :----------------- |
-| `onMounted`         | 组件挂载后         |
-| `onUpdated`         | 组件更新后         |
-| `onUnmounted`       | 组件卸载后         |
-| `onBeforeMount`     | 组件挂载前         |
-| `onBeforeUpdate`    | 组件更新前         |
-| `onBeforeUnmount`   | 组件卸载前         |
-| `onErrorCaptured`   | 捕获子组件错误     |
-| `onRenderTracked`   | 响应式依赖被追踪时 |
-| `onRenderTriggered` | 响应式依赖被触发时 |
-
-### 6.2 使用生命周期钩子
-
-```vue
-<template>
-  <div class="component">
-    <h2>{{ title }}</h2>
-    <p>{{ message }}</p>
-  </div>
-</template>
-<script setup>
-import { ref, onMounted, onUpdated, onUnmounted } from 'vue';
-const title = ref('Hello');
-const message = ref('Welcome to Vue3');
-onMounted(() => {
-  console.log('Component mounted');
-  // 执行初始化逻辑
-});
-onUpdated(() => {
-  console.log('Component updated');
-  // 执行更新后逻辑
-});
-onUnmounted(() => {
-  console.log('Component unmounted');
-  // 执行清理逻辑
-});
-</script>
-```
-
-## 7. 组件的通信
-
-### 7.1 父子组件通信
-
-- **Props**：父组件向子组件传递数据
-- **Events**：子组件向父组件传递消息
-- **Refs**：父组件访问子组件的实例或 DOM 元素
-
-### 7.2 跨组件通信
-
-- **Provide/Inject**：祖先组件向后代组件传递数据
-- **Pinia/Vuex**：状态管理库
-- **Event Bus**：事件总线
-
-### 7.3 Provide/Inject 示例
-
-```vue
-<!-- GrandparentComponent.vue -->
-<script setup>
-import { provide, ref } from 'vue';
-import ParentComponent from './ParentComponent.vue';
-const theme = ref('light');
-const changeTheme = () => {
-  theme.value = theme.value === 'light' ? 'dark' : 'light';
-};
-provide('theme', theme);
-provide('changeTheme', changeTheme);
-</script>
-<!-- ChildComponent.vue -->
-<script setup>
-import { inject } from 'vue';
-const theme = inject('theme', 'light');
-const changeTheme = inject('changeTheme');
-</script>
-<template>
-  <div :class="theme">
-    <p>Current theme: {{ theme }}</p>
-    <button @click="changeTheme">Change theme</button>
-  </div>
-</template>
 <style scoped>
-.light {
-  background-color: white;
-  color: black;
-}
-.dark {
-  background-color: black;
-  color: white;
-}
+.user-card { border: 1px solid #ddd; }
 </style>
 ```
 
-## 8. 组件的高级特性
+`<script setup>` 是编译器语法糖：顶层变量自动暴露给模板、组件自动注册、性能更好（静态提升直接作用于它）。需要 `name`（递归/DevTools）或关闭 attrs 透传等"组件选项"时用 `defineOptions` 宏：
 
-### 8.1 动态组件
-
-```vue
-<template>
-  <div class="dynamic-component">
-    <button @click="currentComponent = 'ComponentA'">Component A</button>
-    <button @click="currentComponent = 'ComponentB'">Component B</button>
-    <component :is="currentComponent"></component>
-  </div>
-</template>
-<script setup>
-import { ref } from 'vue';
-import ComponentA from './ComponentA.vue';
-import ComponentB from './ComponentB.vue';
-const currentComponent = ref('ComponentA');
-</script>
+```ts
+defineOptions({
+  name: 'UserCard',        // DevTools 显示名 / 递归组件引用名
+  inheritAttrs: false,     // 关闭 attrs 自动透传（见下文透传节）
+})
 ```
 
-### 8.2 异步组件
+## props：defineProps 与验证
 
-```vue
-<template>
-  <div class="async-component">
-    <Suspense>
-      <template #default>
-        <AsyncComponent />
-      </template>
-      <template #fallback>
-        <p>Loading...</p>
-      </template>
-    </Suspense>
-  </div>
-</template>
-<script setup>
-import { defineAsyncComponent } from 'vue'
-const AsyncComponent = defineAsyncComponent({
- loader: () => import('./AsyncComponent.vue'),
- loadingComponent: () => '<p>Loading...</p>',
- errorComponent: () => '<p>Error</p>',
- delay: 200,
- timeout: 3000
-}
-</script>
-```
-
-### 8.3 递归组件
-
-```vue
-<template>
-  <div class="tree-node">
-    <div class="node-content" @click="toggle">
-      {{ node.name }}
-    </div>
-    <div v-if="isOpen && node.children" class="node-children">
-      <TreeNode v-for="child in node.children" :key="child.id" :node="child" />
-    </div>
-  </div>
-</template>
-<script setup>
-import { ref } from 'vue'
+```ts
+// 运行时声明：类型即校验器，可带默认值与必填
 const props = defineProps({
- node: Object
-}
-const isOpen = ref(false)
-const toggle = () => {
- isOpen.value = !isOpen.value
-}
-</script>
-<style scoped>
-.tree-node {
-  margin-left: 20px;
-}
-.node-content {
-  cursor: pointer;
-  padding: 5px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  margin: 5px 0;
-}
-.node-content:hover {
-  background-color: #f0f0f0;
-}
-.node-children {
-  margin-top: 5px;
-}
-</style>
+  name: { type: String, required: true },
+  level: { type: Number, default: 1 },
+  tags: { type: Array as PropType<string[]>, default: () => [] },  // 对象默认值必须工厂函数
+})
+
+// 泛型声明（推荐）：纯类型，编译器生成等价运行时代码
+const props = defineProps<{ name: string; level?: number }>()
 ```
 
-## 9. 组件的最佳实践
+**Vue 3.5+ 的响应式 props 解构**——解构后的变量仍是响应式的（编译器转译成 props.x 访问），默认值直接写在解构默认值里：
 
-### 9.1 组件设计原则
-
-- **单一职责**：每个组件只负责一个功能
-- **可复用性**：设计通用的、可复用的组件
-- **可维护性**：代码清晰、易于理解和维护
-- **性能优化**：避免不必要的渲染和计算
-
-### 9.2 组件命名规范
-
-- **组件名**：使用 PascalCase（大驼峰）命名
-- **文件名**：使用 PascalCase 命名，与组件名一致
-- **props 名**：使用 camelCase（小驼峰）命名
-- **事件名**：使用 kebab-case（短横线分隔）命名
-
-### 9.3 组件样式规范
-
-- **使用 scoped**：避免样式冲突
-- **使用 CSS 变量**：便于主题切换
-- **使用 BEM 命名**：提高样式的可维护性
-- **避免使用深度选择器**：保持组件的封装性
-
-### 9.4 性能优化
-
-- **使用 v-memo**：缓存计算结果
-- **使用 v-once**：只渲染一次
-- **使用 keep-alive**：缓存组件状态
-- **使用 shallowRef 和 shallowReactive**：减少响应式开销
-- **避免在模板中使用复杂表达式**：使用计算属性
-
-## 10. 示例 | Examples
-
-### 10.1 基础组件示例
-
-```vue
-<!-- Button.vue -->
-<template>
-  <button
-    :class="['btn', `btn-${variant}`, { 'btn-disabled': disabled }]"
-    :disabled="disabled"
-    @click="$emit('click')"
-  >
-    <slot></slot>
-  </button>
-</template>
-<script setup>
-defineProps({
- variant: {
- type: String,
- default: 'primary',
- validator: (value) => {
- return ['primary', 'secondary', 'success', 'danger'].includes(value)
- }
- },
- disabled: {
- type: Boolean,
- default: false
- }
-}
-defineEmits(['click'])
-</script>
-<style scoped>
-.btn {
-  padding: 8px 16px;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  font-size: 14px;
-}
-.btn-primary {
-  background-color: #42b983;
-  color: white;
-}
-.btn-secondary {
-  background-color: #999;
-  color: white;
-}
-.btn-success {
-  background-color: #28a745;
-  color: white;
-}
-.btn-danger {
-  background-color: #dc3545;
-  color: white;
-}
-.btn-disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
-}
-</style>
+```ts
+const { name, level = 1, tags = [] } = defineProps<{
+  name: string
+  level?: number
+  tags?: string[]
+}>()
+// 模板与脚本里直接用 name/level——值变化时依赖它的 computed/watch 正常触发
 ```
 
-### 10.2 复杂组件示例
+两条 props 纪律：**单向数据流**（子组件不写 props——需要"改"就 emit 或用本地副本 computed 的 get/set 包一层）；**对象与数组默认值必须是工厂函数**（`default: () => []`），共享引用会让所有组件实例共用同一数组。
 
-```vue
-<!-- TodoList.vue -->
-<template>
-  <div class="todo-list">
-    <h2>Todo List</h2>
-    <div class="todo-input">
-      <input v-model="newTodo" @keyup.enter="addTodo" placeholder="Add a new todo" />
-      <button @click="addTodo">Add</button>
-    </div>
-    <ul class="todo-items">
-      <li v-for="todo in todos" :key="todo.id" class="todo-item">
-        <input type="checkbox" v-model="todo.completed" @change="updateTodo(todo)" />
-        <span :class="{ completed: todo.completed }">{{ todo.text }}</span>
-        <button @click="deleteTodo(todo.id)">Delete</button>
-      </li>
-    </ul>
-    <div class="todo-stats">
-      <p>Total: {{ todos.length }}</p>
-      <p>Completed: {{ completedCount }}</p>
-      <p>Remaining: {{ remainingCount }}</p>
-    </div>
-  </div>
-</template>
-<script setup>
-import { ref, computed } from 'vue'
-const todos = ref([
- { id: 1, text: 'Learn Vue3', completed: false },
- { id: 2, text: 'Build a project', completed: false },
- { id: 3, text: 'Deploy to production', completed: false }
-]
-const newTodo = ref('')
-const completedCount = computed(() => {
- return todos.value.filter(todo => todo.completed).length
-}
-const remainingCount = computed(() => {
- return todos.value.filter(todo => !todo.completed).length
-}
-const addTodo = () => {
- if (newTodo.value.trim()) {
- todos.value.push({
- id: Date.now(),
- text: newTodo.value.trim(),
- completed: false
- })
- newTodo.value = ''
- }
-}
-const updateTodo = (todo) => {
- // 可以在这里添加更新逻辑，比如发送到服务器
- console.log('Updated todo:', todo)
-}
-const deleteTodo = (id) => {
- todos.value = todos.value.filter(todo => todo.id !== id)
-}
-</script>
-<style scoped>
-.todo-list {
-  max-width: 400px;
-  margin: 0 auto;
-  padding: 20px;
-  border: 1px solid #ddd;
-  border-radius: 8px;
-}
-.todo-input {
-  display: flex;
-  margin-bottom: 20px;
-}
-.todo-input input {
-  flex: 1;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px 0 0 4px;
-}
-.todo-input button {
-  padding: 8px 16px;
-  background-color: #42b983;
-  color: white;
-  border: none;
-  border-radius: 0 4px 4px 0;
-  cursor: pointer;
-}
-.todo-items {
-  list-style-type: none;
-  padding: 0;
-  margin-bottom: 20px;
-}
-.todo-item {
-  display: flex;
-  align-items: center;
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-}
-.todo-item input {
-  margin-right: 10px;
-}
-.todo-item span {
-  flex: 1;
-}
-.todo-item .completed {
-  text-decoration: line-through;
-  color: #999;
-}
-.todo-item button {
-  padding: 4px 8px;
-  background-color: #dc3545;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-}
-.todo-stats {
-  display: flex;
-  justify-content: space-between;
-  font-size: 14px;
-  color: #666;
-}
-</style>
+## emits：defineEmits 与事件验证
+
+```ts
+// 泛型写法：事件名与载荷类型一体化
+const emit = defineEmits<{
+  follow: [name: string]
+  change: [value: string, old: string]
+}>()
+
+emit('follow', props.name)
+emit('change', newVal, oldVal)   // 多参数载荷用元组声明
 ```
 
-## 11. 小结 | Summary
+事件验证的价值在**可读与可查**：未声明的 emit 在运行时警告（开发期），类型系统在使用方 `@follow` 处给出回调参数提示。命名用 kebab-case 触发（`@follow-me`）或 camelCase（`@followMe`）皆可，模板里统一风格即可。
 
-Vue3 的组件系统是其核心特性之一，它提供了一种清晰、模块化的方式来组织和管理应用的 UI 结构。通过本章节的学习，你已经了解了 Vue3 组件系统的基本概念和使用方法，包括单文件组件、props、事件、插槽、生命周期、组件通信和高级特性。
-组件系统的核心优势在于它允许我们将 UI 拆分为独立、可复用的部分，使代码更加模块化、可维护。在实际开发中，要遵循组件设计原则，使用合适的命名规范和样式规范，注意性能优化，以构建高质量的 Vue3 应用。
-## 单文件组件(SFC)
+## attrs 透传：看不见的第三条通道
 
-**script setup 语法糖**
+父组件传了**子组件没声明为 props** 的属性（class、id、data-*、事件）会进入 `$attrs`，默认自动落到子组件**根元素**上：
+
 ```vue
-<script setup>
-import { ref } from 'vue';
-const count = ref(0);
-function increment() {
-  count.value++;
-}
-</script>
+<!-- 父组件 -->
+<MyInput class="large" id="name-input" data-test="username" @focus="onFocus" />
+```
 
+```vue
+<!-- MyInput.vue（单根组件）：class/id/data-test/@focus 全部自动落在 <input> 上 -->
 <template>
-  <button @click="increment">{{ count }}</button>
+  <input />
 </template>
 ```
 
-**普通 script + setup 函数**
-```vue
-<script>
-import { defineComponent, ref } from 'vue';
-export default defineComponent({
-  setup() {
-    const count = ref(0);
-    return { count };
-  }
-});
-</script>
-```
+三个必须掌握的开关：
 
-**TypeScript + script setup**
 ```vue
 <script setup lang="ts">
-import { ref } from 'vue';
-const count = ref<number>(0);
-</script>
-```
+// 1. 关闭自动透传：多根组件（会警告"无法确定落点"）或要手动控制落点时
+defineOptions({ inheritAttrs: false })
 
----
-
-## 组件注册
-
-**局部注册**
-```vue
-<script setup>
-import MyButton from './MyButton.vue';
-import { UserCard } from './components';
+// 2. 手动指定落点（绑定到内层 input 而不是根 div）
+const attrs = useAttrs()
 </script>
 
 <template>
-  <MyButton />
-  <UserCard />
-</template>
-```
-
-**全局注册**
-```typescript
-import { createApp } from 'vue';
-import MyButton from './MyButton.vue';
-
-const app = createApp({});
-app.component('MyButton', MyButton);
-app.component('AsyncComp', () => import('./AsyncComp.vue'));
-```
-
----
-
-## defineComponent 类型辅助
-
-**defineComponent 类型推断**
-`defineComponent(<componentOptions>);`
-```typescript
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-  name: 'MyComp',
-  props: {
-    title: String,
-    count: { type: Number, default: 0 }
-  },
-  emits: ['change'],
-  setup(props, { emit }) {
-    return {};
-  }
-});
-```
-
-**defineComponent + 泛型**
-```typescript
-import { defineComponent, PropType } from 'vue';
-
-export default defineComponent({
-  props: {
-    list: { type: Array as PropType<string[]>, required: true },
-    config: Object as PropType<{ apiBase: string }>
-  }
-});
-```
-
----
-
-## Props 声明
-
-**defineProps 运行时声明**
-```typescript
-const props = defineProps({
-  title: String,
-  count: { type: Number, default: 0 },
-  list: { type: Array, required: true },
-  callback: { type: Function, default: () => {} },
-  user: { type: Object, default: () => ({ name: '' }) }
-});
-```
-
-**defineProps 泛型声明**
-```typescript
-interface Props {
-  title: string;
-  count?: number;
-  list: string[];
-  user?: { name: string };
-}
-const props = defineProps<Props>();
-```
-
-**defineProps 带默认值(泛型)**
-```typescript
-const props = withDefaults(defineProps<{
-  title?: string;
-  count?: number;
-}>(), {
-  title: 'default',
-  count: 0
-});
-```
-
-**响应式 props 解构(Vue 3.5+)**
-```typescript
-const { title = 'default', count = 0 } = defineProps<{
-  title?: string;
-  count?: number;
-}>();
-```
-
-**PropType 复杂类型**
-```typescript
-import { defineProps, PropType } from 'vue';
-
-const props = defineProps({
-  list: Array as PropType<{ id: number; name: string }[]>,
-  callback: Function as PropType<(value: string) => void>
-});
-```
-
----
-
-## Emits 声明
-
-**defineEmits 数组形式**
-```typescript
-const emit = defineEmits(['change', 'submit', 'delete']);
-emit('change', newValue);
-emit('submit', { id: 1 });
-```
-
-**defineEmits 对象形式(校验)**
-```typescript
-const emit = defineEmits({
-  change: (val: string) => typeof val === 'string',
-  submit: (payload: { id: number }) => !!payload.id
-});
-```
-
-**defineEmits 泛型形式**
-```typescript
-const emit = defineEmits<{
-  (e: 'change', value: string): void;
-  (e: 'submit', payload: { id: number; data?: any }): void;
-  (e: 'delete', id: number): void;
-}>();
-```
-
----
-
-## 组件选项
-
-**defineOptions 定义组件选项**
-```typescript
-defineOptions({
-  name: 'UserCard',
-  inheritAttrs: false,
-  components: { MyButton },
-  directives: { focus: { mounted: (el) => el.focus() } }
-});
-```
-
-**defineSlots 声明插槽类型**
-```typescript
-const slots = defineSlots<{
-  default(props: { item: any }): any;
-  header?(props: { title: string }): any;
-  footer?(): any;
-}>();
-```
-
----
-
-## 插槽
-
-**默认插槽**
-```vue
-<!-- 父组件 -->
-<Card>
-  <p>这是默认插槽内容</p>
-</Card>
-
-<!-- 子组件 Card.vue -->
-<template>
-  <div class="card">
-    <slot />
+  <div class="field">
+    <label>用户名</label>
+    <input v-bind="attrs" />   <!-- class/id/事件一次性转发到真正该接收的元素 -->
   </div>
 </template>
 ```
 
-**具名插槽**
-```vue
-<!-- 父组件 -->
-<Card>
-  <template #header>
-    <h1>标题</h1>
-  </template>
-  <template #footer>
-    <p>页脚</p>
-  </template>
-</Card>
-
-<!-- 子组件 -->
-<template>
-  <slot name="header" />
-  <slot />
-  <slot name="footer" />
-</template>
+```ts
+// 3. useAttrs 是非响应式的快照读取——响应式追踪用计算属性或 watchEffect
+import { useAttrs, watchEffect } from 'vue'
+const attrs = useAttrs()
+watchEffect(() => console.log('class 变了:', attrs.class))   // 变化可被追踪
 ```
 
-**作用域插槽**
+组件库封装 input/select 时这是核心技巧：**业务方写的 placeholder/disabled 应该落在真正的 input 上，而不是组件的根 div 上**——透传就是让"用了像没用封装"的机制。
+
+## 组件通信总览：按距离选通道
+
+| 距离 | 通道 | 一句话 |
+| --- | --- | --- |
+| 父 → 子 | props | 数据下行，声明即契约 |
+| 子 → 父 | emits | 事件上行，声明载荷类型 |
+| 父 ↔ 子 | v-model / defineModel | 特殊的双向语法糖（见[表单绑定](/vue3/045-FormBindingVModel)） |
+| 父 → 子 | 模板引用 + defineExpose | 命令式调用子组件方法（见[响应式系统](/vue3/050-ReactiveSystem)） |
+| 祖先 → 后代 | provide / inject | 跨层注入，跳过中间层（见[Provide 与 Inject](/vue3/170-ProvideInject)） |
+| 任意 | Pinia | 全局状态（见 [Pinia](/vue3/210-PiniaStateManagementDetailed)） |
+
+选型红线：**两层以内用 props/emits，三层以上想 inject 或状态提升，跨页面共享上 Pinia**。props 钻透（prop drilling）超过三层还硬传，是"该上 provide/Pinia"的信号而不是"该多写几个中转 props"的信号。
+
+## 组件设计原则（评审清单）
+
+1. **单一职责**：一个组件只回答一个问题；超过 300 行/混合"取数 + 布局 + 交互"就拆；
+2. **props 面窄**：必填项越少越好，能从上下文推导的不进 props；
+3. **命名即文档**：多词组件名（`UserCard` 不是 `Card`）、事件用动词（`save`/`change`/`remove`）；
+4. **可复用与可维护的平衡**：为"第二处使用"抽象，不为"可能的未来"抽象；
+5. **性能默认正确**：列表 key、合理拆分让更新范围最小（手段见[性能实践](/vue3/320-Vue3PerformancePractice)）。
+
+## 动手实践：做一个规范的表单控件组件
+
+任务：
+
+1. 写 `AppSelect.vue`：props 收 options/value，emits 发 change，attrs 透传到原生 select（placeholder、id、事件落在真元素上）；
+2. 加 v-for 渲染 option 与选中态回显，父组件用 `v-model` 接（提示：defineModel）；
+3. 用 `defineOptions({ inheritAttrs: false })` + `v-bind="$attrs"` 实现"传 class 到根容器、传 placeholder 到 select"的分流；
+4. 故意在子组件里写 `props.value = x`，观察控制台警告，理解单向数据流的防线；
+5. （3.5 实验）用响应式 props 解构写默认值，父组件不传该 prop 时验证默认值生效且响应式成立。
+
+<details>
+<summary>参考实现（先自己写再展开）</summary>
+
 ```vue
-<!-- 子组件 -->
-<template>
-  <ul>
-    <li v-for="item in items" :key="item.id">
-      <slot :item="item" :index="item.id" />
-    </li>
-  </ul>
-</template>
+<!-- AppSelect.vue -->
+<script setup lang="ts">
+interface Option { label: string; value: string }
 
-<!-- 父组件 -->
-<List :items="items">
-  <template #default="{ item, index }">
-    {{ index }}: {{ item.name }}
-  </template>
-</List>
+defineOptions({ name: 'AppSelect', inheritAttrs: false })
 
-<!-- 简写 -->
-<List :items="items">
-  <template="{ item }">
-    {{ item.name }}
-  </template>
-</List>
-```
+const props = defineProps<{ options: Option[] }>()
+const model = defineModel<string>({ required: true })
 
-**useSlots 访问插槽**
-```typescript
-import { useSlots, computed } from 'vue';
-const slots = useSlots();
-const hasHeader = computed(() => !!slots.header);
-```
-
----
-
-## 组件 v-model
-
-**单 v-model**
-```vue
-<!-- 父组件 -->
-<MyInput v-model="text" />
-
-<!-- 子组件 MyInput.vue -->
-<script setup>
-const model = defineModel<string>();
+const attrs = useAttrs()
 </script>
-<template>
-  <input :value="model" @input="model = $event.target.value" />
-</template>
-```
 
-**多个 v-model**
-```vue
+<template>
+  <div class="app-select" :class="$attrs.class">
+    <select v-model="model" v-bind="{ ...attrs, class: undefined }">
+      <option v-for="o in props.options" :key="o.value" :value="o.value">
+        {{ o.label }}
+      </option>
+    </select>
+  </div>
+</template>
+
 <!-- 父组件 -->
-<UserForm v-model:firstName="first" v-model:lastName="last" />
-
-<!-- 子组件 -->
-<script setup>
-const firstName = defineModel<string>('firstName');
-const lastName = defineModel<string>('lastName');
-</script>
+<AppSelect
+  v-model="city"
+  class="wide"
+  :options="[{ label: '杭州', value: 'hz' }]"
+  placeholder="选择城市"
+  @focus="onFocus"
+/>
 ```
 
-**v-model 修饰符**
-```typescript
-const [model, modifiers] = defineModel({
-  set(value) {
-    if (modifiers.capitalize) {
-      return value.charAt(0).toUpperCase() + value.slice(1);
-    }
-    return value;
-  }
-});
-```
+判读要点：`class` 要留在根容器上、其余 attrs 落在 select 上，所以绑定 `{ ...attrs, class: undefined }` 把 class 从转发列表里剔除（根容器用 `$attrs.class` 单独接）——这是透传分流的完整形态。
+</details>
 
----
+## 检验清单
 
-## 异步组件
+- 能说出组件通信的五条通道与各自的距离定位，并给"三层以上 props 钻透"开出正确的处方；
+- 能写出运行时与泛型两种 defineProps，并解释对象默认值为何必须工厂函数；
+- 会用 3.5+ 响应式 props 解构写默认值，并知道它是编译器转译而非普通解构；
+- 能用 inheritAttrs/useAttrs 实现透传分流（class 到根、其余到真元素）；
+- 能背出五条组件设计原则并应用于评审。
 
-**defineAsyncComponent 异步组件**
-`const <comp> = defineAsyncComponent(<loader>);`
-```typescript
-import { defineAsyncComponent } from 'vue';
+<!-- 恢复自 cnt-content/full/009-vue3/240-Vue3AdvancedComponentFeature.md（实施前 HEAD 62c90663 版本）；拆分时该小节未随迁，2026-10-07 内容保全复核恢复 -->
 
-const AsyncComp = defineAsyncComponent(() => import('./AsyncComp.vue'));
+## 高级组件使用建议
 
-const AsyncCompWithOpts = defineAsyncComponent({
-  loader: () => import('./AsyncComp.vue'),
-  loadingComponent: LoadingComp,
-  errorComponent: ErrorComp,
-  delay: 200,
-  timeout: 3000,
-  suspensible: true,
-  onError(err, retry, fail, attempts) {
-    if (attempts <= 3) retry();
-    else fail();
-  }
-});
-```
 
----
+- **动态组件**：用于根据条件渲染不同的组件
+- **异步组件**：用于按需加载大型组件，提高初始加载性能
+- **递归组件**：用于树形结构等递归场景
+- **函数式组件**：用于无状态、纯展示的组件
+- **插槽**：用于组件内容的定制化
+- **provide/inject**：用于组件间的依赖注入
+- **错误边界**：用于捕获和处理组件错误
 
-## 透传 Attributes
 
-**默认透传**
-```vue
-<!-- 父组件 -->
-<MyInput class="large" id="name-input" data-test="input" />
+## 下一步
 
-<!-- 子组件 MyInput.vue(单根) -->
-<template>
-  <input />  <!-- class/id/data-* 自动透传到此 -->
-</template>
-```
+- [插槽与内容分发](/vue3/115-SlotInDepth)：内容层面的定制通道；
+- [Provide 与 Inject](/vue3/170-ProvideInject)：跨层注入的完整规则与类型安全；
+- [动态组件、递归组件与函数式组件](/vue3/145-DynamicComponentPatterns)：组件形态的进阶模式。
 
-**禁用透传**
-```typescript
-defineOptions({
-  inheritAttrs: false
-});
-```
+## 参考与致谢
 
-**$attrs 显式绑定**
-```vue
-<template>
-  <input v-bind="$attrs" />
-</template>
-```
-
-**useAttrs**
-```typescript
-import { useAttrs } from 'vue';
-const attrs = useAttrs();
-console.log(attrs.class, attrs.id);
-```
-
----
-
-## 暴露组件实例
-
-**defineExpose 暴露**
-```vue
-<script setup>
-import { ref } from 'vue';
-const count = ref(0);
-const reset = () => { count.value = 0; };
-
-defineExpose({ count, reset });
-</script>
-```
-
-**父组件通过 ref 访问**
-```vue
-<template>
-  <ChildComp ref="childRef" />
-  <button @click="childRef?.reset()">重置</button>
-</template>
-<script setup>
-import { useTemplateRef } from 'vue';
-const childRef = useTemplateRef('childRef');
-</script>
-```
+- Vue 官方文档 Components In-Depth：Props / Events / Fallthrough Attributes（CC BY-NC-SA 4.0，要点对照并重写组织）：<https://vuejs.org/guide/components/props.html>
+- 本篇由旧版"组件系统"收窄重写，透传/defineExpose 素材承接自旧篇第二系列，行为已对照 Vue 3.5 官方文档核校。

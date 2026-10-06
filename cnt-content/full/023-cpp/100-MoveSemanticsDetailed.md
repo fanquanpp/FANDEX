@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 130
 title: 移动语义深水区：noexcept、moved-from 与容器的真实行为
 module: 'cpp'
 category: 计算机科学

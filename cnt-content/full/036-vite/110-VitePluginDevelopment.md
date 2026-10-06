@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 130
 title: Vite 插件开发：钩子体系与虚拟模块
 module: 'vite'
 category: 前端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'vite/100-PluginSystem'
-  - 'vite/070-DevServerHMR'
+  - 'vite/070-DevServerAndProxy'
   - 'vite/120-Vite8Rolldown'
 prerequisites:
   - 'vite/100-PluginSystem'
@@ -20,7 +20,7 @@ prerequisites:
 
 - [Vite 插件系统](/vite/100-PluginSystem)：已了解插件对象结构、钩子分类与 `enforce` / `apply` 顺序控制，本文在其基础上做端到端实战。
 - [Vite 配置文件](/vite/030-ConfigFile)：会在 `vite.config.ts` 中注册插件并读取配置。
-- [Vite 开发服务器与 HMR](/vite/070-DevServerHMR)：理解模块图与热更新边界，本文的 `handleHotUpdate` 会直接操作它们。
+- [Vite 开发服务器与 HMR](/vite/070-DevServerAndProxy)：理解模块图与热更新边界，本文的 `handleHotUpdate` 会直接操作它们。
 
 ## 学习目标
 

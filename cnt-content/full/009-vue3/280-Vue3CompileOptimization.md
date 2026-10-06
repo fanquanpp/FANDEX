@@ -1,5 +1,5 @@
 ---
-order: 280
+order: 270
 title: Vue3 编译优化：diff 之前，编译器已经替你剪过枝
 module: 'vue3'
 category: 前端技术

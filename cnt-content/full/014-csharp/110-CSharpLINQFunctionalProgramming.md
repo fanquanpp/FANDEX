@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 140
 title: C# LINQ 与函数式编程
 module: 'csharp'
 category: 后端技术
@@ -10,7 +10,7 @@ updated: '2026-09-12'
 related:
   - 'csharp/070-CGenericCollection'
   - 'csharp/080-CAsyncProgramming'
-  - 'csharp/150-CSharpAdvancedFeature'
+  - 'csharp/230-SpanMemory'
   - 'csharp/250-CSharpDotNet'
 prerequisites: []
 ---

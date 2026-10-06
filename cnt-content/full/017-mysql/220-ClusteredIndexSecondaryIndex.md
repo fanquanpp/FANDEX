@@ -1,5 +1,5 @@
 ---
-order: 200
+order: 240
 title: 聚簇索引与二级索引：InnoDB 里表就是一棵 B+ 树
 module: 'mysql'
 category: 数据库

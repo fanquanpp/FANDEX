@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 530
 title: JVM 类加载机制
 module: 'java'
 category: 后端技术
@@ -12,7 +12,6 @@ related:
   - 'java/500-ThreadPoolExecutorPractice'
   - 'java/600-JVMGC'
   - 'java/420-JavaReflection'
-  - 'java/610-JVMMemoryModel'
   - 'java/470-JavaModuleSystem'
 prerequisites:
   - 'java/020-JavaOverviewDevEnv'

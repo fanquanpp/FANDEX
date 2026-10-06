@@ -1,5 +1,5 @@
 ---
-order: 800
+order: 890
 title: Java 与 Kubernetes
 module: 'java'
 category: 后端技术

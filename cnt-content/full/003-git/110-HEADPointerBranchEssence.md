@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 140
 title: HEAD 指针与分支本质
 module: 'git'
 category: 工具链

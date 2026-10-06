@@ -10,7 +10,7 @@ updated: '2026-09-29'
 related:
   - 'typescript/100-InterfaceTypeAlias'
   - 'typescript/220-FunctionGeneric'
-  - 'typescript/090-ClassAndDecorators'
+  - 'typescript/090-ClassMembersAndModifiers'
   - 'typescript/120-IntersectionTypeMerge'
   - 'typescript/440-ConditionalTypeInfer'
   - 'typescript/480-MappedTypeKeyRemap'

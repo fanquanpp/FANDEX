@@ -1,5 +1,5 @@
 ---
-order: 730
+order: 770
 title: TypeScript 理论知识点
 module: 'typescript'
 category: 前端技术
@@ -1146,6 +1146,30 @@ type Setters<T> = {
 };
 ```
 
+### 10.8 承接示例：元组 Reverse 与相等性/包含检查（自杂糅篇 520）
+
+> 已归并的 520-AdvancedTypeCalculus 有一章「类型编程」：其 Concat/Length/If 分别与本篇 10.7 模板字面量、10.1 的 `ToNum`（同为 `T['length']`）、10.3 条件分支重复，均已去重。保留三个增量示例。
+
+```typescript
+// 元组反转：递归把头插到尾（与 510 篇的字符串 Reverse 互为镜像）
+type Reverse<T extends unknown[]> = T extends [infer F, ...infer R] ? [...Reverse<R>, F] : [];
+type R = Reverse<[1, 2, 3, 4, 5]>; // [5, 4, 3, 2, 1]
+
+// 弱相等检查：双向可赋值（注意与 550 篇的强相等 Equal 的差别）
+type IsEqual<T, U> = [T] extends [U] ? ([U] extends [T] ? true : false) : false;
+type E1 = IsEqual<string, string>; // true
+type E2 = IsEqual<string, number>; // false
+
+// 递归包含检查：元组里有没有某个成员
+type Includes<T extends unknown[], U> = T extends [infer F, ...infer R]
+  ? (IsEqual<F, U> extends true ? true : Includes<R, U>)
+  : false;
+type I1 = Includes<[1, 2, 3, 4, 5], 3>; // true
+type I2 = Includes<[1, 2, 3, 4, 5], 6>; // false
+```
+
+两个坑要登记：其一，`IsEqual` 的双向 extends 对 `any`、可选属性、联合分布等场景会误判，类型测试场景必须用 550 篇的严格版 `Equal`；其二，520 原文还给出过一个自定义 `Uppercase<T>` 递归实现——它**遮蔽了内置工具类型同名导出并造成循环引用**，属缺陷示例，正确姿势是换名（如 `MyUpper`）或直接用内置 `Uppercase`，此处不再收录其代码。
+
 ## 11. 声明合并理论
 
 ### 11.1 声明合并的语义
@@ -1933,6 +1957,16 @@ import { UserService } from './user-service';
 ```
 
 namespace 仅用于声明合并场景。
+
+### 17.x 承接：类型设计五原则（自杂糅篇 520）
+
+作为本章的收束，补一份杂糅篇沉淀下来的类型设计原则清单（各条在本章对应小节都有展开）：
+
+- **类型安全优先**：避免 `any`，必要时用 `unknown` + 收窄；
+- **可读性**：类型是写给人看的，悬停卡片读不懂的类型宁可拆名字；
+- **可维护性**：复用类型定义，避免同一形状散落多处；
+- **性能考虑**：复杂递归类型会拉长编译时间（见第 10.6 节的局限）；
+- **渐进式**：从简单类型开始，按需增加泛型与条件复杂度。
 
 ## 18. 案例研究
 

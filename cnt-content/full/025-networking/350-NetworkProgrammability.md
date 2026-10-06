@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 390
 title: 网络可编程与自动化
 module: 'networking'
 category: 云与基础设施
@@ -11,8 +11,7 @@ related:
   - 'networking/340-SDN'
   - 'networking/360-NetworkAutomation'
   - 'networking/330-NetworkNamespaceVirtualBridge'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 前置知识：SDN 的架构思想（见 [SDN](networking/340-SDN)）与 CI/CD 基本概念

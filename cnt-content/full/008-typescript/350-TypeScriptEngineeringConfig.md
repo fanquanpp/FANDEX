@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 370
 title: TypeScript 工程化配置
 module: 'typescript'
 category: 前端技术
@@ -22,6 +22,11 @@ prerequisites: []
 
 # TypeScript 工程化配置：从单文件到 Monorepo 的完整路径
 
+## 知识点地图
+
+- **知识类别**：TypeScript 工程化配置——tsconfig.json 的选项体系、项目引用与 monorepo 编排。
+- **解决什么问题**：同样的代码在不同 tsconfig 下可能是两个类型世界；配置决定严格程度、模块解析、增量构建与声明产出，是所有类型感知工具（tsc、编辑器、typescript-eslint）的共同地基。
+- **什么时候用到**：新项目初始化、库与应用互调、monorepo 拆包、构建变慢要优化时。入门速成看第 3 节，深水区从第 4 节开始。
 ## 前置知识
 
 - [TypeScript 概述与环境配置](/typescript/030-TypeScriptOverviewEnvSetup)：tsconfig 的角色与环境基础
@@ -162,9 +167,157 @@ $$
 \text{shouldRebuild}(f) \iff \exists g \in \text{deps}(f): \text{shouldRebuild}(g)
 $$
 
-## 3. 理论推导与原理解析
+## 3. tsconfig 核心配置速成（承接概述篇）
 
-### 3.1 `strict` 系列的组成与不变量
+> 本节整体承接自 030 概述篇：零基础第一遍读 TypeScript 时只需要这一节的"最小可用配置"；第 4 节往后的形式化定义与工程化细节，等你写过两周真实项目再回来读也不迟。`strict` 家族的逐项展开见 [TypeScript 严格模式](/typescript/360-TsconfigStrictMode)。
+
+> `tsconfig.json` 是 TypeScript 项目的配置文件，用于指定编译选项和项目设置。
+
+### 3.1 基本配置示例
+
+```json
+ {
+  "compilerOptions": {
+  "target": "ES2022",
+  "module": "esnext",
+  "moduleResolution": "bundler",
+  "lib": ["ES2020", "DOM"],
+  "strict": true,
+  "esModuleInterop": true,
+  "skipLibCheck": true,
+  "forceConsistentCasingInFileNames": true,
+  "outDir": "./dist",
+  "rootDir": "./src",
+  "sourceMap": true,
+  "declaration": true,
+  "declarationMap": true,
+  "removeComments": false,
+  "noEmitOnError": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+ }
+```
+
+**讲解：**
+
+1. `target` 决定编译成哪个版本的 JavaScript（ES2022 已是很现代的目标）；`module` 决定模块语法（esnext 适合浏览器/打包器）。
+2. `strict: true` 打开全部严格检查，是 TypeScript 类型安全的核心开关，新项目必须开启。
+3. `outDir` 与 `rootDir` 控制"从 src 进、到 dist 出"的目录结构。
+4. `include` 声明参与编译的文件范围，`exclude` 排除 `node_modules` 与产物目录。
+5. `declaration` 在库开发时生成 `.d.ts` 类型声明文件，应用项目一般不需要。
+
+### 3.2 核心配置选项
+
+| 选项                                 | 描述                      | 默认值                         | 推荐值                                |
+| :----------------------------------- | :------------------------ | :----------------------------- | :------------------------------------ |
+| **target**                           | 编译后的 JavaScript 版本  | ES3                            | ES2020 或更高                         |
+| **module**                           | 模块化规范                | commonjs                       | commonjs (Node.js) 或 esnext (浏览器) |
+| **moduleResolution**                 | 模块解析策略              | node                           | node                                  |
+| **lib**                              | 包含的库文件              | 取决于 target                  | ["ES2020", "DOM"]                     |
+| **strict**                           | 开启所有严格类型检查      | false                          |                                       |
+| **esModuleInterop**                  | 启用 ES 模块互操作性      | false                          |                                       |
+| **skipLibCheck**                     | 跳过库文件的类型检查      | false                          |                                       |
+| **forceConsistentCasingInFileNames** | 强制文件名大小写一致      | false                          |                                       |
+| **outDir**                           | 编译输出目录              | 与源文件同目录                 | "./dist"                              |
+| **rootDir**                          | 源码根目录                | 包含所有输入文件的最长公共路径 | "./src"                               |
+| **sourceMap**                        | 生成 source map 文件      | false                          | (开发环境)                            |
+| **declaration**                      | 生成 .d.ts 类型声明文件   | false                          | (库开发)                              |
+| **declarationMap**                   | 为声明文件生成 source map | false                          | (库开发)                              |
+| **removeComments**                   | 移除注释                  | false                          | false (保留注释)                      |
+| **noEmitOnError**                    | 有错误时不生成输出        | false                          |                                       |
+
+### 3.3 严格模式选项
+
+| 选项                             | 描述                             | 启用条件          |
+| :------------------------------- | :------------------------------- | :---------------- |
+| **strictNullChecks**             | 严格的 null 和 undefined 检查    | strict:           |
+| **strictFunctionTypes**          | 严格的函数类型检查               | strict:           |
+| **strictBindCallApply**          | 严格的 bind, call, apply 检查    | strict:           |
+| **strictPropertyInitialization** | 严格的属性初始化检查             | strict:           |
+| **noImplicitAny**                | 禁止隐式 any 类型                | strict:           |
+| **noImplicitThis**               | 禁止隐式 this                    | strict:           |
+| **useUnknownInCatchVariables**   | 在 catch 变量中使用 unknown 类型 | strict: (TS 4.0+) |
+
+### 3.4 高级配置选项
+
+| 选项                       | 描述                       | 用途                           |
+| :------------------------- | :------------------------- | :----------------------------- |
+| **baseUrl**                | 模块解析的基础目录         | 简化模块导入路径               |
+| **paths**                  | 模块路径映射               | 自定义模块解析路径             |
+| **allowJs**                | 允许编译 JavaScript 文件   | 混合 TypeScript 和 JavaScript  |
+| **checkJs**                | 检查 JavaScript 文件的类型 | 对 JavaScript 文件进行类型检查 |
+| **jsx**                    | JSX 处理模式               | React 或其他 JSX 框架          |
+| **experimentalDecorators** | 启用装饰器                 | 使用装饰器特性                 |
+| **emitDecoratorMetadata**  | 生成装饰器元数据           | 配合装饰器使用                 |
+| **resolveJsonModule**      | 允许导入 JSON 文件         | 直接导入 JSON 数据             |
+| **isolatedModules**        | 每个文件作为独立模块编译   | 与 Babel 等工具配合            |
+
+### 3.5 配置示例
+
+#### 3.5.1 浏览器项目配置
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "lib": ["ES2020", "DOM", "DOM.Iterable"],
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "sourceMap": true,
+    "jsx": "react-jsx"
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}
+```
+
+**讲解：**
+
+1. 浏览器项目与基础配置的差异集中在三处：`moduleResolution: "bundler"`、`lib` 增加 `DOM` 与 `DOM.Iterable`、`jsx: "react-jsx"`。
+2. `lib` 是"环境说明书"：声明代码里可用的全局对象，DOM 类型来自浏览器环境。
+3. `jsx: "react-jsx"` 使用 React 17+ 的自动 JSX 转换，不需要手动 `import React`。
+
+#### 3.5.2 Node.js 项目配置
+
+```json
+ {
+  "compilerOptions": {
+  "target": "ES2022",
+  "module": "nodenext",
+  "moduleResolution": "nodenext",
+  "lib": ["ES2020"],
+  "strict": true,
+  "esModuleInterop": true,
+  "skipLibCheck": true,
+  "forceConsistentCasingInFileNames": true,
+  "outDir": "./dist",
+  "rootDir": "./src",
+  "sourceMap": true,
+  "declaration": true
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+ }
+```
+
+**讲解：**
+
+1. Node.js 项目把 `module` 与 `moduleResolution` 都设为 `nodenext`，与 Node 的 ESM/CJS 规则对齐。
+2. `lib` 不包含 DOM，因为 Node 环境没有浏览器对象；需要安装 `@types/node` 提供 `process`、`fs` 等类型。
+3. `sourceMap: true` 生成源码映射，运行报错时能定位回 `.ts` 原始行号。
+
+---
+
+## 4. 理论推导与原理解析
+
+### 4.1 `strict` 系列的组成与不变量
 
 `strict: true` 等价于：
 
@@ -191,7 +344,7 @@ $$
 
 但反之不成立——可单独开启某项。
 
-### 3.2 模块解析算法
+### 4.2 模块解析算法
 
 `moduleResolution` 决定 import 路径如何解析为文件路径。算法形式化：
 
@@ -225,7 +378,7 @@ $$
 
 特点：宽松，允许 import 后缀省略，不强制 ESM/CJS 边界。
 
-### 3.3 项目引用的传递闭包
+### 4.3 项目引用的传递闭包
 
 考虑三个项目 A → B → C（A 引用 B，B 引用 C）：
 
@@ -245,7 +398,7 @@ $$
 \text{refs}^* = \text{refs} \cup \text{refs} \circ \text{refs} \cup \dots
 $$
 
-### 3.4 `isolatedDeclarations` 的形式约束
+### 4.4 `isolatedDeclarations` 的形式约束
 
 TS 5.5 引入的 `isolatedDeclarations` 要求每个 `.ts` 文件可独立生成 `.d.ts`，无需查看其他文件。形式化：
 
@@ -271,9 +424,9 @@ $$
 \frac{\text{isolatedDeclarations} = \text{true} \quad \neg(\text{explicitReturn}(f))}{\text{Error: return type must be explicitly specified}}
 $$
 
-## 4. 代码示例
+## 5. 代码示例
 
-### 4.1 单包应用配置
+### 5.1 单包应用配置
 
 **tsconfig.json** — Vite + React 应用：
 
@@ -311,7 +464,7 @@ $$
 }
 ```
 
-### 4.2 库开发配置（多构建目标）
+### 5.2 库开发配置（多构建目标）
 
 **tsconfig.json** — 基础配置：
 
@@ -389,7 +542,7 @@ $$
 }
 ```
 
-### 4.3 Monorepo 项目引用配置
+### 5.3 Monorepo 项目引用配置
 
 **目录结构**：
 
@@ -553,7 +706,7 @@ flowchart TD
 }
 ```
 
-### 4.4 tsconfig 与 ESLint 协同
+### 5.4 tsconfig 与 ESLint 协同
 
 **.eslintrc.cjs** — 配置 tsconfig 路径：
 
@@ -593,7 +746,7 @@ module.exports = {
 };
 ```
 
-### 4.5 环境变量类型安全的配置
+### 5.5 环境变量类型安全的配置
 
 **src/env.ts** — 类型安全的环境变量：
 
@@ -655,7 +808,7 @@ const config = {
 export { config };
 ```
 
-### 4.6 CI/CD 流水线优化
+### 5.6 CI/CD 流水线优化
 
 **.github/workflows/ci.yml** — TypeScript 项目 CI 配置：
 
@@ -708,9 +861,9 @@ jobs:
         run: pnpm run test
 ```
 
-## 5. 对比分析
+## 6. 对比分析
 
-### 5.1 与 Flow Type 配置对比
+### 6.1 与 Flow Type 配置对比
 
 | 维度 | TypeScript tsconfig | Flow .flowconfig |
 | --- | --- | --- |
@@ -721,7 +874,7 @@ jobs:
 | 生态 | tsc + 多工具链 | flow-bin + babel |
 | 主流度 | 主导 | 衰退 |
 
-### 5.2 与 Python pyproject.toml 对比
+### 6.2 与 Python pyproject.toml 对比
 
 ```toml
 # pyproject.toml
@@ -739,7 +892,7 @@ warn_return_any = true
 | 构建集成 | 原生 | 通过 setuptools/poetry |
 | 多版本支持 | target 选项 | python_version |
 
-### 5.3 与 Rust Cargo.toml 对比
+### 6.3 与 Rust Cargo.toml 对比
 
 ```toml
 # Cargo.toml
@@ -759,7 +912,7 @@ serde = { version = "1.0", features = ["derive"] }
 | 项目引用 | references | workspace |
 | 速度 | 中 | 快（Rust 编译器优化） |
 
-### 5.4 与 Java Maven pom.xml 对比
+### 6.4 与 Java Maven pom.xml 对比
 
 | 维度 | TypeScript tsconfig | Java Maven pom.xml |
 | --- | --- | --- |
@@ -769,7 +922,7 @@ serde = { version = "1.0", features = ["derive"] }
 | 插件 | 工具独立 | maven 插件体系 |
 | 速度 | 中 | 慢（JVM 启动） |
 
-### 5.5 与 Go go.mod 对比
+### 6.5 与 Go go.mod 对比
 
 | 维度 | TypeScript tsconfig | Go go.mod |
 | --- | --- | --- |
@@ -779,9 +932,9 @@ serde = { version = "1.0", features = ["derive"] }
 | 增量编译 | 需配置 | 原生 |
 | 速度 | 中 | 极快 |
 
-## 6. 常见陷阱与最佳实践
+## 7. 常见陷阱与最佳实践
 
-### 6.1 陷阱：`skipLibCheck` 隐藏第三方类型错误
+### 7.1 陷阱：`skipLibCheck` 隐藏第三方类型错误
 
 ```json
 {
@@ -793,7 +946,7 @@ serde = { version = "1.0", features = ["derive"] }
 
 **最佳实践**：仅在大型仓库构建速度瓶颈时谨慎开启；定期 `skipLibCheck: false` 全量检查。
 
-### 6.2 陷阱：`module` 与 `moduleResolution` 不匹配
+### 7.2 陷阱：`module` 与 `moduleResolution` 不匹配
 
 ```json
 // 错误：CommonJS 与 Bundler 不匹配
@@ -815,7 +968,7 @@ serde = { version = "1.0", features = ["derive"] }
 | `ESNext` | `Bundler` 或 `NodeNext` |
 | `Preserve`（TS 5.4+） | `Bundler` |
 
-### 6.3 陷阱：`paths` 配置后运行时不生效
+### 7.3 陷阱：`paths` 配置后运行时不生效
 
 ```json
 {
@@ -847,7 +1000,7 @@ json
 }
 ```
 
-### 6.4 陷阱：`composite` 要求 `declaration`
+### 7.4 陷阱：`composite` 要求 `declaration`
 
 ```json
 // 错误
@@ -859,7 +1012,7 @@ json
 }
 ```
 
-### 6.5 陷阱：`isolatedModules` 与 `const enum`
+### 7.5 陷阱：`isolatedModules` 与 `const enum`
 
 ```json
 {
@@ -871,7 +1024,7 @@ json
 
 `isolatedModules` 下 `const enum` 行为不一致（esbuild 不内联）。**最佳实践**：用 `as const` 对象替代 `const enum`。
 
-### 6.6 陷阱：`strict: false` 但单独开启 `strictNullChecks`
+### 7.6 陷阱：`strict: false` 但单独开启 `strictNullChecks`
 
 ```json
 {
@@ -885,7 +1038,7 @@ json
 
 **最佳实践**：迁移期可分阶段开启，但生产环境必须 `strict: true`。
 
-### 6.7 陷阱：`include` 与 `exclude` 的优先级
+### 7.7 陷阱：`include` 与 `exclude` 的优先级
 
 `exclude` 仅在 `include` 范围内生效：
 
@@ -901,7 +1054,7 @@ json
 }
 ```
 
-### 6.8 陷阱：`extends` 不合并数组
+### 7.8 陷阱：`extends` 不合并数组
 
 ```json
 // base.json
@@ -923,7 +1076,7 @@ json
 
 **最佳实践**：在子配置中显式列出所有需要的 lib。
 
-### 6.9 陷阱：`verbatimModuleSyntax` 与隐式 type import
+### 7.9 陷阱：`verbatimModuleSyntax` 与隐式 type import
 
 ```json
 {
@@ -944,9 +1097,9 @@ import type { ReactNode } from 'react';
 import { useState } from 'react';
 ```
 
-## 7. 工程实践
+## 8. 工程实践
 
-### 7.1 tsc 命令详解
+### 8.1 tsc 命令详解
 
 ```bash
 # 初始化 tsconfig
@@ -977,7 +1130,7 @@ tsc --traceResolution
 tsc --build --dry
 ```
 
-### 7.2 构建性能优化
+### 8.2 构建性能优化
 
 **1. 增量编译 + 项目引用**
 
@@ -1023,7 +1176,7 @@ tsc --build --dry
 }
 ```
 
-### 7.3 调试类型推断
+### 8.3 调试类型推断
 
 ```bash
 # 显示推断详情
@@ -1036,7 +1189,7 @@ tsc --noEmit --extendedDiagnostics
 tsc --noEmit --isolatedModules src/single-file.ts
 ```
 
-### 7.4 tsconfig 与 IDE 集成
+### 8.4 tsconfig 与 IDE 集成
 
 **VS Code 设置**（`.vscode/settings.json`）：
 
@@ -1052,7 +1205,7 @@ tsc --noEmit --isolatedModules src/single-file.ts
 }
 ```
 
-### 7.5 多 tsconfig 共存
+### 8.5 多 tsconfig 共存
 
 大型仓库常有多个 tsconfig：
 
@@ -1079,9 +1232,9 @@ tsconfig.cjs.json          # CJS 产物
 }
 ```
 
-## 8. 案例研究
+## 9. 案例研究
 
-### 8.1 VS Code 的 TypeScript 配置
+### 9.1 VS Code 的 TypeScript 配置
 
 VS Code 主仓库（microsoft/vscode）使用复杂的多 tsconfig 结构：
 
@@ -1110,7 +1263,7 @@ flowchart TD
 - `composite: true` + `incremental: true`
 - CI 中 `tsc --build` 完成全量构建
 
-### 8.2 Microsoft Teams 的 Monorepo
+### 9.2 Microsoft Teams 的 Monorepo
 
 Teams 客户端采用 rush + TypeScript：
 
@@ -1139,7 +1292,7 @@ flowchart TD
 - CI 使用分布式构建（rush build --to）
 - `skipLibCheck: true` 加速构建
 
-### 8.3 Airbnb 的 Backstage 配置
+### 9.3 Airbnb 的 Backstage 配置
 
 Airbnb 内部的 Backstage 平台使用 TypeScript 项目引用：
 
@@ -1160,7 +1313,7 @@ Airbnb 内部的 Backstage 平台使用 TypeScript 项目引用：
 
 **收益**：构建时间从 12 分钟降至 4 分钟（增量 + 缓存）。
 
-### 8.4 Vite 项目的 tsconfig
+### 9.4 Vite 项目的 tsconfig
 
 Vite 官方模板（`npm create vite@latest`）的 TS 配置：
 
@@ -1187,7 +1340,7 @@ Vite 官方模板（`npm create vite@latest`）的 TS 配置：
 }
 ```
 
-### 8.5 Next.js 的 TS 配置
+### 9.5 Next.js 的 TS 配置
 
 ```json
 {
@@ -1215,6 +1368,48 @@ Vite 官方模板（`npm create vite@latest`）的 TS 配置：
 }
 ```
 
+## 动手实践
+
+任务（先动手，写完再展开参考实现；下面的填空题与编程题区块是配套讲解）:
+
+1. 用 `tsc --init` 生成一份默认 tsconfig，只改三处让它变成"可交付的应用配置"：开全严格、指定输出目录、指定参与编译的文件范围。写出你改了哪三项以及为什么。
+2. 给一个双包仓库（`packages/shared` 与 `apps/web`）写出 tsconfig 层级：base 配置 + 两个包各一份，`apps/web` 通过项目引用依赖 `shared`。提示：composite 是引用的前提。
+3. 故意制造第 7.2 节的 `module` 与 `moduleResolution` 不匹配（如 `module: esnext` + `moduleResolution: node10` 并 import 一个带 exports 的包），读报错并修复。
+
+<details>
+<summary>参考实现（先完成上面的任务再展开对照）</summary>
+
+```jsonc
+// 任务 1：tsc --init 后的关键三改
+{
+  "compilerOptions": {
+    "strict": true,        // 全严格：TS 类型安全的核心开关
+    "outDir": "./dist",    // 产物归拢：构建脚本与 .gitignore 都好写
+    "include": ["src"]     // 编译范围：node_modules 与脚本目录不进类型世界
+  }
+}
+
+// 任务 2：层级（关键片段）
+// tsconfig.base.json：target/lib/strict/skipLibCheck 等公共项
+// packages/shared/tsconfig.json：extends base + "composite": true + declaration
+// apps/web/tsconfig.json：extends base +
+```
+
+```jsonc
+// apps/web/tsconfig.json 的引用部分
+{
+  "compilerOptions": { "composite": true },
+  "references": [{ "path": "../packages/shared" }],
+  "include": ["src"]
+}
+// 构建用 tsc -b apps/web：按 DAG 拓扑序先建 shared 再建 web
+
+// 任务 3：module esnext + moduleResolution node10 时，import "pkg/sub"
+// 会报 Cannot find module ...：node10 解析不懂 package.json 的 exports 字段。
+// 修法：moduleResolution 换 bundler/nodenext（与模块策略配套，见第 7.2 节）。
+```
+
+</details>
 ### 填空题知识点讲解
 
 **题目 4**：项目引用中，构建顺序由 `references` 字段构成的 DAG 的 ______ 决定。

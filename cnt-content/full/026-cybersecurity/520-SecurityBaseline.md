@@ -1,20 +1,32 @@
 ---
-order: 520
+order: 560
 title: 安全基线
 module: 'cybersecurity'
 category: 云与基础设施
 difficulty: intermediate
-description: 安全基线：CIS Benchmark 结构与用法、等保 2.0 分级要求、Linux/数据库/中间件加固清单与自动化合规工具。
+description: 安全基线：CIS Benchmark 结构与用法、等保 2.0 分级要求、Linux/Windows/数据库/中间件加固清单、Linux 与 Windows 一键加固脚本与自动化合规工具。
 author: fanquanpp
-updated: '2026-09-12'
+updated: '2026-10-07'
 related:
   - 'cybersecurity/320-ZeroTrustArchitecture'
   - 'cybersecurity/300-IdentityAccessManagement'
   - 'cybersecurity/410-VulnerabilityScanTools'
+  - 'cybersecurity/470-FirewallConfig'
   - 'cybersecurity/540-ComplianceAudit'
 prerequisites:
   - 'cybersecurity/010-SecurityBasicsDefense'
 ---
+
+## 知识点地图
+
+- **知识类别**：主机加固与合规——把「安全配置」从个人经验升级为可核查、可自动化的基线（Baseline）体系。
+- **解决什么问题**：「服务器要加固」谁都会说，难的是回答三问：按什么标准改（CIS/等保给条目）、改没改全（扫描工具给结论）、下次扩容会不会回退（自动化闭环保一致性）。本篇给出从标准到脚本到持续验证的完整链路。
+- **什么时候用到**：
+  - 新机器上线：跑一遍加固清单或一键脚本再接入业务；
+  - 等保/CIS 合规测评前：对照条目自查 + OpenSCAP 扫描出证据；
+  - 事故复盘：「这台机器为什么会被打进来的」往往能追到某条基线项缺失；
+  - 混合环境：Windows 与 Linux 各有清单与脚本（第 4、5 节）。
+- **学完能做什么**：读懂 CIS Benchmark 条目结构；用 OpenSCAP/Ansible 建自动化闭环；用本篇的两个一键脚本（Linux bash / Windows PowerShell）完成初始化加固。
 
 ## 1. 什么是安全基线
 
@@ -133,7 +145,190 @@ K8s      ：kube-bench 对标 CIS Benchmark、禁匿名 API 访问、开启 Pod 
 Redis 是攻击者最爱：未授权 Redis 曾是挖矿与勒索的Top入口，加固三件套
 （口令、绑定、禁危险命令）缺一不可。
 
-## 5. 自动化合规
+### 4.4 Windows 加固清单（PowerShell 命令）
+
+Windows 域环境与 Linux 的加固对象一一对应：账户策略、防火墙、危险服务、审计策略、
+协议版本、终端防护。以下命令需要管理员 PowerShell，可直接在测试机验证：
+
+```powershell
+# 账户策略：密码 90 天轮换、至少 12 位、记住 5 个历史口令；锁定阈值与解锁定时
+net accounts /maxpwage:90 /minpwage:1 /minpwlen:12 /uniquepw:5
+net accounts /lockoutthreshold:5 /lockoutduration:30 /lockoutwindow:30
+
+# 防火墙：三个配置文件（Domain/Public/Private）全部启用
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
+
+# 禁用危险服务：Telnet 与远程注册表是历史上最常见的横向移动入口
+Set-Service -Name "Telnet" -StartupType Disabled -Status Stopped
+Set-Service -Name "RemoteRegistry" -StartupType Disabled -Status Stopped
+
+# 审计策略：登录、对象访问、权限使用三类事件的成功与失败都要记
+auditpol /set /subcategory:"Logon" /success:enable /failure:enable
+auditpol /set /subcategory:"Object Access" /success:enable /failure:enable
+auditpol /set /subcategory:"Privilege Use" /success:enable /failure:enable
+
+# 禁用 SMBv1（WannaCry/NotPetya 的传播通道，必关）
+Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+
+# Windows Defender：确认实时防护开启并更新特征库
+Set-MpPreference -DisableRealtimeMonitoring $false
+Set-MpPreference -MAPSReporting 2
+Update-MpSignature
+```
+
+讲解与易错点：
+
+- **`net accounts` 是本地策略**，域环境由组策略（GPO）统一下发——改了本机过一阵被 GPO 冲回是「改了没生效」的头号原因，先确认机器是否在域内；
+- **审计事件量**：`Object Access` 全开会产生海量日志，先开 `Logon`（成功+失败）这类高价值低噪音项，对象访问按共享目录粒度开；
+- **SMBv1 与 LLMNR**：一个管文件共享协议版本（勒索软件通道），一个管名称解析投毒（Responder 抓哈希的靶子，见 [社会工程学与钓鱼防护](/cybersecurity/365-SocialEngineering)），两者都是现代 Windows 的必关项。
+
+## 5. 一键加固脚本
+
+清单的价值在批量执行。下面两个脚本把第 4 节的要点串成可重复的初始化动作，
+**仅用于授权环境**，执行前务必先在测试机过一遍——加固脚本的每一条都可能影响业务
+（比如 SSH 改端口要先放行新端口再断旧连接）。
+
+### 5.1 Linux 一键加固脚本
+
+```bash
+#!/bin/bash
+# Linux 安全加固脚本
+# 仅用于授权环境
+
+echo "[1/8] 配置账户策略..."
+# 密码复杂度
+apt install -y libpam-pwquality
+cat > /etc/security/pwquality.conf << 'EOF'
+minlen = 12
+minclass = 3
+dcredit = -1
+ucredit = -1
+lcredit = -1
+ocredit = -1
+EOF
+
+# 密码过期
+chage -M 90 -m 7 -W 14 root
+
+echo "[2/8] 配置 SSH 安全..."
+cp /etc/ssh/sshd_config /etc/ssh/sshd_config.bak
+cat > /etc/ssh/sshd_config.d/hardening.conf << 'EOF'
+Port 2222
+PermitRootLogin no
+PasswordAuthentication no
+PubkeyAuthentication yes
+MaxAuthTries 3
+LoginGraceTime 30
+ClientAliveInterval 300
+ClientAliveCountMax 2
+AllowUsers admin
+EOF
+
+echo "[3/8] 配置防火墙..."
+ufw default deny incoming
+ufw default allow outgoing
+ufw allow 2222/tcp
+ufw allow 80/tcp
+ufw allow 443/tcp
+ufw --force enable
+
+echo "[4/8] 禁用危险服务..."
+systemctl disable --now telnet.socket 2>/dev/null
+systemctl disable --now rsh.socket 2>/dev/null
+systemctl disable --now avahi-daemon 2>/dev/null
+systemctl disable --now cups 2>/dev/null
+
+echo "[5/8] 配置内核安全参数..."
+cat >> /etc/sysctl.conf << 'EOF'
+net.ipv4.tcp_syncookies = 1
+net.ipv4.conf.all.rp_filter = 1
+net.ipv4.conf.all.accept_redirects = 0
+net.ipv4.icmp_echo_ignore_broadcasts = 1
+kernel.exec-shield = 1
+fs.suid_dumpable = 0
+EOF
+sysctl -p
+
+echo "[6/8] 配置审计..."
+apt install -y auditd
+cat > /etc/audit/rules.d/hardening.rules << 'EOF'
+-w /etc/passwd -p wa -k identity
+-w /etc/shadow -p wa -k identity
+-w /etc/ssh/sshd_config -p wa -k sshd
+-a always,exit -F arch=b64 -S chmod,chown -F auid>=1000 -k perm_mod
+-a always,exit -F arch=b64 -S execve -F auid>=1000 -k exec
+EOF
+augenrules --load
+
+echo "[7/8] 配置日志..."
+sed -i 's/^#SystemMaxUse=/SystemMaxUse=500M/' /etc/systemd/journald.conf
+systemctl restart systemd-journald
+
+echo "[8/8] 文件权限加固..."
+chmod 700 /root
+chmod 600 /etc/shadow
+chmod 644 /etc/passwd
+
+echo "安全加固完成！请检查并重启系统。"
+```
+
+使用要领：改 SSH 端口的顺序是「先 `ufw allow 2222/tcp` 再重启 sshd」——脚本里防火墙
+在第 3 步、SSH 在第 2 步写成文件但未重启，天然避开了锁死；`AllowUsers admin` 假定
+admin 账号与密钥已就绪，直接跑会把没有 admin 的机器锁在门外。审计规则（auditd）的
+逐条语法与验证见 [Auditd 命令](/cybersecurity/510-AuditdCommands)。
+
+### 5.2 Windows 一键加固脚本
+
+```powershell
+# Windows 安全加固脚本
+# 需要管理员权限运行
+
+Write-Host "[1/6] 配置账户策略..."
+net accounts /maxpwage:90 /minpwage:1 /minpwlen:12 /uniquepw:5
+net accounts /lockoutthreshold:5 /lockoutduration:30 /lockoutwindow:30
+
+Write-Host "[2/6] 配置防火墙..."
+Set-NetFirewallProfile -Profile Domain,Public,Private -Enabled True
+# 禁用规则
+Disable-NetFirewallRule -DisplayGroup "远程卷管理"
+Disable-NetFirewallRule -DisplayGroup "远程事件日志管理"
+
+Write-Host "[3/6] 禁用危险服务..."
+@("Telnet","RemoteRegistry","SNMP","WinRM") | ForEach-Object {
+    Set-Service -Name $_ -StartupType Disabled -ErrorAction SilentlyContinue
+    Stop-Service -Name $_ -Force -ErrorAction SilentlyContinue
+}
+
+Write-Host "[4/6] 配置审计策略..."
+auditpol /set /subcategory:"Logon" /success:enable /failure:enable
+auditpol /set /subcategory:"Object Access" /success:enable /failure:enable
+auditpol /set /subcategory:"Privilege Use" /success:enable /failure:enable
+auditpol /set /subcategory:"Account Management" /success:enable /failure:enable
+
+Write-Host "[5/6] 安全配置..."
+# 禁用 SMBv1
+Set-SmbServerConfiguration -EnableSMB1Protocol $false -Force
+# 禁用 LLMNR
+New-ItemProperty -Path "HKLM:\Software\Policies\Microsoft\Windows NT\DNSClient" `
+  -Name "EnableMulticast" -Value 0 -PropertyType DWord -Force
+# 禁用 AutoRun
+New-ItemProperty -Path "HKLM:\Software\Microsoft\Windows\CurrentVersion\Policies\Explorer" `
+  -Name "NoDriveTypeAutoRun" -Value 255 -PropertyType DWord -Force
+
+Write-Host "[6/6] Windows Defender..."
+Set-MpPreference -DisableRealtimeMonitoring $false
+Set-MpPreference -MAPSReporting 2
+Set-MpPreference -SubmitSamplesConsent 3
+Update-MpSignature
+
+Write-Host "安全加固完成！"
+```
+
+注意第 3 步把 **WinRM 也停了**——如果你依赖 PowerShell 远程管理，把它从数组里摘出来，
+否则脚本跑完远程管理通道就断了。两个脚本共同的纪律：先快照/备份再执行（脚本里 SSH
+配置就先做了 `.bak`），跑完用第 6 节的扫描工具出一份达标率报告，把「做了」变成「可证明做了」。
+
+## 6. 自动化合规
 
 基线的价值在于持续验证。三层工具链：
 
@@ -161,7 +356,7 @@ flowchart LR
     F --> B
 ```
 
-## 6. 常见陷阱
+## 7. 常见陷阱
 
 | 陷阱                             | 事实                                                   |
 | :------------------------------- | :----------------------------------------------------- |

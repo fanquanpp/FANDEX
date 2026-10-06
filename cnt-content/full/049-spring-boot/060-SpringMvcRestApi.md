@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: Spring MVC 与 REST API：请求从网线到方法参数之间发生了什么
 description: 以「前端丢来一个 POST JSON，你的方法凭什么收到反序列化好的对象」引入：DispatcherServlet 总调度、参数解析器与消息转换器、注解全景决策表、RESTful 状态码纪律、Filter 与拦截器分层、CORS 两种配法，附 curl 五连实验与 400/404 观察。
 module: 'spring-boot'

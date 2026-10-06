@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 70
 title: API 网关：把八个服务的横切逻辑收编成一扇门
 description: 以「八个微服务各写一遍鉴权、限流、审计，改一次规则发八版，前端还得记八个域名」引入：门卫心智模型、WebFlux 响应式基座纪律、Route/Predicate/Filter 三概念主线、lb:// 与 StripPrefix 路由落地、GlobalFilter 网关层 JWT 校验，附 curl 路由实验与 404 排错。
 module: 'spring-cloud'
@@ -14,6 +14,13 @@ related:
   - 'spring-cloud/070-ResilienceSentinel'
   - 'spring-boot/120-SpringSecurityJwt'
 ---
+
+## 知识点地图
+
+- 知识类别：API 网关——Route/Predicate/Filter 三概念、WebFlux 基座约束与全局过滤器实战。
+- 解决什么问题：横切逻辑（鉴权、限流、CORS、审计）在每个服务里各写一遍的维护税；对外多域名与跨域的前端税。
+- 什么时候用到：服务数量多到"改一个鉴权字段要发八个版本"时；统一入口、灰度分流（见 065 篇）与安全收口时。
+- 灰度发布的流量染色与标签路由是本篇过滤器体系的直接延伸，读完本篇可衔接《灰度发布与全链路流量染色》。
 
 ## 前置知识
 

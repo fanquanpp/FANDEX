@@ -81,7 +81,7 @@ function canPublish(course: Course): boolean {
 **进阶原理（有项目经验后再读）**
 
 - 类型论与理论：[TypeScript 理论知识点](/typescript/710-TypeScriptTheory)、[satisfies 的形式语义](/typescript/185-SatisfiesTypeTheory)、[协变与逆变](/typescript/260-CovarianceContravariance)、[this 类型与多态](/typescript/240-ThisTypePolymorphism)；
-- 类型体操：[实用模式](/typescript/530-TypeGymnasticsPracticalPatterns)、[深水区](/typescript/540-TypeGymnastics)、[条件类型三部曲](/typescript/430-ConditionalTypeDistribute)、[模板字面量类型](/typescript/500-TemplateLiteralType)；
+- 类型体操：[实用模式](/typescript/530-TypeGymnasticsPracticalPatterns)、[深水区](/typescript/540-TypeGymnasticsBoundaries)、[条件类型三部曲](/typescript/430-ConditionalTypeDistribute)、[模板字面量类型](/typescript/500-TemplateLiteralType)；
 - 编译器与性能：[编译与性能优化](/typescript/380-TypeScriptCompilePerformanceOptimization)、[TS 6.0 与 7.0](/typescript/680-TypeScript6And7CompilerEvolution)。
 
 ## 1. 为什么环境配置排在最前面

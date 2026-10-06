@@ -99,13 +99,23 @@
         },
         {
           "id": "svg-204",
-          "title": "SVG 响应式与性能",
-          "doc": "160-SVGResponsivePerformance"
+          "title": "SVG 性能优化",
+          "doc": "160-SVGPerformanceOptimization"
+        },
+        {
+          "id": "svg-207",
+          "title": "响应式 SVG",
+          "doc": "165-SVGResponsiveTechniques"
         },
         {
           "id": "svg-205",
-          "title": "SVG 图标与可访问性",
-          "doc": "170-SVGIconAccessibility"
+          "title": "SVG 图标系统工程",
+          "doc": "170-SVGIconSystemEngineering"
+        },
+        {
+          "id": "svg-208",
+          "title": "SVG 可访问性",
+          "doc": "175-SVGAccessibilityPrinciples"
         },
         {
           "id": "svg-206",

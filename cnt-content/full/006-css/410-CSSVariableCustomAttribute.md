@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 440
 title: CSS 变量与自定义属性
 module: 'css'
 category: 前端技术

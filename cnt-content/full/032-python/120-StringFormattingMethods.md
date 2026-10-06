@@ -105,4 +105,4 @@ hp = 86.5
 
 - 报表要按列对齐输出到文件，见 [文件 IO 与上下文管理器](/python/300-FileIOContextManager)；
 - 文字不是「排好看」而是「拆出结构」时，进入 [正则表达式](/python/210-Regex)；
-- f-string 在 3.12 里彻底放开限制（嵌套引号、多行、注释）的细节，见 [Python 新特性速览](/python/710-PythonAdvancedLatestFeature)。
+- f-string 在 3.12 里彻底放开限制（嵌套引号、多行、注释）的细节，见 [版本新特性时间线](/python/715-PythonVersionNewFeatures)。

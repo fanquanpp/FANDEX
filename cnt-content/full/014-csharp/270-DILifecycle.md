@@ -1,5 +1,5 @@
 ---
-order: 270
+order: 310
 title: 依赖注入生命周期
 module: 'csharp'
 category: 后端技术

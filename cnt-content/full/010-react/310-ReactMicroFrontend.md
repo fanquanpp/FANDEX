@@ -1,5 +1,5 @@
 ---
-order: 330
+order: 380
 title: React 与微前端
 module: 'react'
 category: 前端技术

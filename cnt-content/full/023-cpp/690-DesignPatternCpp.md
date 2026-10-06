@@ -1,5 +1,5 @@
 ---
-order: 670
+order: 710
 title: 设计模式与 C++
 module: 'cpp'
 category: 计算机科学

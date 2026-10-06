@@ -1,5 +1,5 @@
 ---
-order: 530
+order: 590
 title: Pulumi IaC 命令
 module: 'cloud-computing'
 category: 云与基础设施

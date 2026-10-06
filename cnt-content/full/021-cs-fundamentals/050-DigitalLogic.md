@@ -11,7 +11,7 @@ related:
   - 'cs-fundamentals/150-OperatingSystem'
   - 'cs-fundamentals/270-ComputerNetwork'
   - 'cs-fundamentals/540-DiscreteMathematics'
-  - 'cs-fundamentals/100-ComputerPrinciple'
+  - 'cs-fundamentals/100-ComputerOrganizationRapidReview'
 prerequisites:
   - 'cs-fundamentals/010-ComputerOverview'
 ---

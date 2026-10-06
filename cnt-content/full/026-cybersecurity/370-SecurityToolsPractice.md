@@ -1,5 +1,5 @@
 ---
-order: 370
+order: 400
 title: 安全工具与实战
 module: 'cybersecurity'
 category: 云与基础设施
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-13'
 related:
   - 'cybersecurity/150-WebSecurityPenetrationTesting'
-  - 'cybersecurity/580-BinarySecurityAndIncidentResponse'
+  - 'cybersecurity/580-IoTOTSecurity'
   - 'cybersecurity/190-XSSAttack'
   - 'cybersecurity/020-SecurityModelFramework'
 prerequisites: []

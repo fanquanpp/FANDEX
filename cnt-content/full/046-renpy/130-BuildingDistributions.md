@@ -1,5 +1,5 @@
 ---
-order: 130
+order: 220
 title: 打包发布与全平台分发
 module: 'renpy'
 category: 游戏开发

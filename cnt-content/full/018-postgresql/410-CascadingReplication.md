@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 370
 title: 级联复制
 module: 'postgresql'
 category: 数据库

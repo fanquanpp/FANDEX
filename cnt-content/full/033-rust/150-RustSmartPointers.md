@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 180
 title: 智能指针
 module: 'rust'
 category: 后端技术

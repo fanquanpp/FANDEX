@@ -31,6 +31,11 @@
           "doc": "030-ImagesSceneShowAndTransitions"
         },
         {
+          "id": "renpy-013",
+          "title": "显示件与图层体系",
+          "doc": "035-DisplayablesAndLayers"
+        },
+        {
           "id": "renpy-003",
           "title": "标签、控制流与选项菜单",
           "doc": "040-LabelsControlFlowAndMenus"
@@ -38,12 +43,22 @@
         {
           "id": "renpy-004",
           "title": "变量、Python 语句与存储",
-          "doc": "050-VariablesPythonAndStores"
+          "doc": "050-VariablesDefineAndDefault"
+        },
+        {
+          "id": "renpy-014",
+          "title": "剧本中的 Python 语句与 store",
+          "doc": "055-PythonBlocksAndStores"
         },
         {
           "id": "renpy-005",
           "title": "文本：插值、标签与 NVL 模式",
           "doc": "060-TextInterpolationAndTags"
+        },
+        {
+          "id": "renpy-015",
+          "title": "NVL 模式呈现",
+          "doc": "065-NvlMode"
         }
       ]
     },
@@ -61,6 +76,11 @@
           "id": "renpy-007",
           "title": "屏幕语言与界面",
           "doc": "080-ScreensAndScreenLanguage"
+        },
+        {
+          "id": "renpy-016",
+          "title": "屏幕动作与交互",
+          "doc": "085-ScreenActionsAndInteraction"
         },
         {
           "id": "renpy-008",
@@ -82,12 +102,22 @@
         {
           "id": "renpy-010",
           "title": "GUI 定制与样式系统",
-          "doc": "110-GuiStylesAndCustomization"
+          "doc": "110-GuiCustomization"
+        },
+        {
+          "id": "renpy-017",
+          "title": "样式系统与样式属性",
+          "doc": "115-StyleSystemAndStyleProperties"
         },
         {
           "id": "renpy-011",
           "title": "翻译与多语言",
           "doc": "120-TranslationLocalization"
+        },
+        {
+          "id": "renpy-018",
+          "title": "开发者工具与调试",
+          "doc": "125-DeveloperToolsAndDebugging"
         },
         {
           "id": "renpy-012",

@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 310
 title: git-cherry-pick 选择性移植提交
 module: 'git'
 category: 工具链

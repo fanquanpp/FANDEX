@@ -1,5 +1,5 @@
 ---
-order: 560
+order: 610
 title: Go 与 Redis：从给慢接口加缓存开始
 module: 'go'
 category: 后端技术

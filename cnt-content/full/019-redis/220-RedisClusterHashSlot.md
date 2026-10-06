@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 280
 title: Redis Cluster 哈希槽
 module: 'redis'
 category: 数据库
@@ -16,6 +16,13 @@ prerequisites:
   - 'redis/010-OverviewCoreDataStructure'
 ---
 
+## 知识点地图
+
+- **知识类别**：Redis Cluster 的数据分布机制——哈希槽（hash slot）的计算、分配、迁移与请求路由，以及 `redis-cli --cluster` 运维工具与 CLUSTER 命令族的节点管理面。
+- **解决什么问题**：让数据在多主节点间均匀分布且可在线伸缩；让客户端知道「这个键去哪个节点问」；让扩缩容、故障处理有清晰的命令路径。
+- **什么时候用到**：搭建集群、扩容加节点、缩容下线节点、迁移热点槽、排查 MOVED/ASK/CROSSSLOT 报错、处理故障节点。
+
+前置：了解主从复制（redis/190-DisklessReplication）与哨兵（redis/210-SentinelElection）的大致角色，本篇聚焦 Cluster 无中心架构。
 
 ## 1. 哈希槽原理
 
@@ -83,6 +90,8 @@ redis-cli --cluster create \
   --cluster-replicas 1
 ```
 
+`--cluster-replicas 1` 表示每个主库配 1 个从库。工具自动完成建群、分槽、主从配对三件事，是唯一推荐的手工入口；想理解它背后发生了什么，看下面「手动路径」。
+
 默认均匀分配：
 
 ```
@@ -90,6 +99,32 @@ Node1: slot 0-5460     (5461个槽)
 Node2: slot 5461-10922 (5462个槽)
 Node3: slot 10923-16383 (5461个槽)
 ```
+
+**手动路径**（理解原理用，生产用上面的工具）：
+
+```bash
+# 每个节点的 redis.conf
+port 7000
+cluster-enabled yes
+cluster-config-file nodes-7000.conf
+cluster-node-timeout 15000
+cluster-announce-ip 192.168.1.1      # NAT/容器环境必配：节点向集群广播的外部可达地址
+cluster-announce-port 7000
+cluster-announce-bus-port 17000      # 集群总线端口 = 数据端口 + 10000
+
+# 互相认识：任意节点执行，Gossip 会传播到全体
+CLUSTER MEET 192.168.1.2 7000
+
+# 给本节点分配槽（旧式做法用 bash 循环批量加）
+CLUSTER ADDSLOTS 0 1 2 3 4 5
+# for i in {0..5460}; do redis-cli -p 7000 CLUSTER ADDSLOTS $i; done
+# 对应的摘除命令是 CLUSTER DELSLOTS
+
+# 配主从：从节点连上后执行
+CLUSTER REPLICATE <主节点id>
+```
+
+`cluster-announce-*` 的必要性：容器/K8s 里节点看到的自身 IP 往往是内部地址，不显式宣告外部可达地址会导致 Gossip 里传播的地址连不通，集群组不起来——这是 Docker 部署集群的第一坑。`cluster-config-file` 是节点自治文件（保存槽映射、节点 ID、epoch），由 Redis 自己维护，不要手改。
 
 ### 2.2 查看槽分配
 
@@ -105,6 +140,24 @@ CLUSTER NODES
 
 CLUSTER SLOTS
 # 返回槽范围与节点映射
+```
+
+`CLUSTER NODES` 每行的完整格式是 `id ip:port@bus flags master ping pong epoch link slots`，逐段说明：
+
+- `id`：40 字符节点 ID（`CLUSTER MYID` 查自己的）；
+- `@bus` 后缀的总线端口即 `+10000` 规则的体现；
+- `flags`：`master`/`slave`/`myself`/`fail`/`pfail`/`handshake`/`noaddr`——排障时先扫这列，`fail` 表示确认故障，`handshake` 表示还在握手中的新节点；
+- `master` 列：从节点显示其主节点 ID，主节点显示 `-`；
+- `ping/pong/epoch`：心跳毫秒时间戳与配置纪元（故障检测与槽归属以 epoch 大者为准，见第 6 节）；
+- `slots`：形如 `0-5460` 的槽区间，迁移中的槽会带 `[slot->node]`/`[slot-<-node]` 标记。
+
+需要程序化解析时优先用 `CLUSTER SLOTS`（结构化数组）或 Redis 7 的 `CLUSTER SHARDS`，`CLUSTER NODES` 的空格分隔格式主要给人看。
+
+两个查询单键的辅助命令：
+
+```redis
+CLUSTER KEYSLOT mykey        # 键落在哪个槽（CRC16 % 16384）
+CLUSTER COUNTKEYSINSLOT 5500 # 该槽当前有多少键（迁移前评估数据量用）
 ```
 
 ## 3. 请求路由
@@ -216,6 +269,20 @@ redis-cli --cluster reshard node1:6379 \
   --cluster-yes
 ```
 
+不带参数则是**交互式向导**，四步依次输入：
+
+```bash
+redis-cli --cluster reshard 192.168.1.1:7000
+# How many slots do you want to move? 1000          ← 迁移多少槽位
+# What is the receiving node ID? <目标节点id>        ← 槽迁给谁
+# Source node #1: all                               ← 从谁迁（all=所有主节点均摊，或输入 id 列表）
+# Do you want to proceed? yes
+```
+
+交互式适合人值守的一次性调整；`--cluster-yes` 全参数版适合进发布脚本。两个版本走的都是第 4.1 节的 IMPORTING/MIGRATING/MIGRATE/SETSLOT 四步，工具只是替你循环执行。
+
+迁移中断（网络断、进程被杀）会留下悬在 MIGRATING/IMPORTING 状态的槽，此时 `--cluster check` 会报出该槽的归属异常，用 `--cluster fix` 自动清理归位（见 5.4）。
+
 ### 4.3 迁移期间的数据访问
 
 ```
@@ -266,6 +333,22 @@ redis-cli --cluster rebalance node1:6379 \
   --cluster-threshold 1
 ```
 
+`--cluster-threshold 1` 表示节点槽位数偏离平均超过 1 个槽才动手——阈值调小会频繁触发无效迁移，调大会留着不均；默认场景 1 即可。
+
+### 5.4 健康检查与修复
+
+```bash
+# 全量体检：槽覆盖、主从配对、迁移残留、配置一致性
+redis-cli --cluster check 192.168.1.1:7000
+
+# 修复异常：清理迁移中断的半开槽、补齐缺失的槽归属
+redis-cli --cluster fix 192.168.1.1:7000
+```
+
+`check` 是集群排障的第一命令，输出会明确列出「slot X not covered」这类问题；`fix` 处理的是最常见的一类：reshard 被中断后槽悬在 MIGRATING/IMPORTING，或个别槽没有任何主节点负责。修不了的复杂场景（如多节点数据冲突）它会把问题列出来让你手工决策，不会静默丢数据。
+
+扩缩容操作的前后各跑一次 `check`，是把「集群看起来对」变成「集群被验证对」的最低成本手段。
+
 ## 6. 故障检测与恢复
 
 ### 6.1 故障检测
@@ -307,6 +390,41 @@ CLUSTER INFO
 reshard、或迁移中断导致槽悬在 MIGRATING/IMPORTING），修复到位后状态
 自动回到 ok。配置 `cluster-require-full-coverage no` 可让「部分槽无主」
 时其余槽继续服务（默认 yes，整个集群拒绝查询）。
+
+### 6.4 手动故障转移与故障节点处理
+
+自动选举之外，Cluster 支持运维发起的**手动故障转移**（在从节点上执行）：
+
+```redis
+-- 从库执行，请求升主（需主库同意，正常运维切换用）
+CLUSTER FAILOVER
+
+-- FORCE：不等主库确认，直接升主（主库不可达时）
+CLUSTER FAILOVER FORCE
+
+-- TAKEOVER：跳过集群协商，强制升主（危险，可能脑裂）
+CLUSTER FAILOVER TAKEOVER
+
+-- 正常模式的流程：从库停止复制 -> 通知主库 -> 主库停止处理 -> 从库升主
+```
+
+三档语义的选法：计划内主从切换（如主节点换机）用默认模式——它会等主库把写流量排空再切，**零数据丢失**；主库假死但还在集群视野内用 FORCE；主库彻底失联且选举卡住时才用 TAKEOVER，它绕过大多数投票，会造成分区两边的脑裂窗口，事后要立即修复旧主。与 Sentinel 的故障转移（redis/210-SentinelElection）对比：Cluster 的手动转移把决策权交给运维，自动转移交给故障检测 + 从节点选举，两条路径共存。
+
+把一个确认故障的节点从集群视野中清除：
+
+```redis
+-- 从集群中移除故障节点（需对所有存活主节点执行）
+CLUSTER FORGET <故障nodeid>
+-- 注意 FORGET 有 60 秒保护窗：之后节点会经 Gossip 重新认识对方，
+-- 所以要先 CLUSTER RESET 该节点、或确保它已下线，再对全体节点 FORGET
+
+-- 重置当前节点集群状态
+CLUSTER RESET [HARD|SOFT]
+-- SOFT：保留数据，重置集群信息（降级为普通单机仍带着数据）
+-- HARD：清空数据 + 重置集群（彻底重新加入用）
+```
+
+典型流程是「缩容三步」的组合：`reshard` 迁走槽 → `CLUSTER RESET HARD`（在待移除节点上）→ 对其余节点 `CLUSTER FORGET`。用 `--cluster del-node` 时工具自动完成了这三步，手写这组命令多用于 del-node 失败后的手工补救。
 
 ## 7. 多键操作的槽约束（高频踩坑）
 

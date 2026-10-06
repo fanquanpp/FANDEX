@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'postgresql/170-TransactionConcurrencyControl'
-  - 'postgresql/240-IndexQueryOptimization'
+  - 'postgresql/250-QueryOptimization'
 prerequisites: []
 ---
 

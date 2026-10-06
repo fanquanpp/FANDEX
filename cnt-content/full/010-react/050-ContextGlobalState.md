@@ -1,5 +1,5 @@
 ---
-order: 50
+order: 90
 title: Context 与全局状态
 module: 'react'
 category: 前端技术
@@ -11,7 +11,7 @@ related:
   - 'react/030-StateEvent'
   - 'react/040-HooksDeep'
   - 'react/060-React19NewFeatures'
-  - 'react/070-RouteDataFetch'
+  - 'react/070-ReactRouterRouting'
 prerequisites: []
 ---
 

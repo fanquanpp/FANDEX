@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 120
 title: 方法详解：把结算逻辑写成一个可复用的积木
 module: 'java'
 category: 后端技术

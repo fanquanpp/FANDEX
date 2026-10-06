@@ -1,5 +1,5 @@
 ---
-order: 540
+order: 590
 title: Go 与 GraphQL：前端要什么字段，由前端说了算
 module: 'go'
 category: 后端技术

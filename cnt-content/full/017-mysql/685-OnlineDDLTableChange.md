@@ -1,5 +1,5 @@
 ---
-order: 670
+order: 720
 title: 大表变更：Online DDL 与影子表工具
 module: 'mysql'
 category: 数据库
@@ -251,3 +251,24 @@ WHERE TABLE_NAME = 'big_t' ORDER BY ORDINAL_POSITION;
 ## 下一步
 
 变更能力是"把表改对"，容量能力是"把表拆开"：回看[分库分表策略](/mysql/670-ShardingStrategy) 与[分库分表中间件](/mysql/680-ShardingMiddleware) 时会发现，很多分表动机（单表变更太慢、写入放大）正是本文讨论的问题在容量维度的延伸。运维全景见 [MySQL 配置与运维](/mysql/850-MySQLConfigOps)。
+
+### DDL 进度监控：执行中的 ALTER 到底跑到哪了
+
+长 ALTER 最焦虑的是「它还活着吗」——用 P_S 的阶段事件表看进度：
+
+```sql
+-- 1. 先开启 DDL 阶段采集（默认部分关闭）
+UPDATE performance_schema.setup_instruments
+SET ENABLED = 'YES' WHERE NAME LIKE 'stage/innodb/%';
+
+-- 2. 另一会话执行长 DDL
+ALTER TABLE large_table ADD COLUMN new_col INT, ALGORITHM=INPLACE, LOCK=NONE;
+
+-- 3. 执行期间随时查进度（每行给出行数化的完成度）
+SELECT STAGE, WORK_COMPLETED, WORK_ESTIMATED,
+       ROUND(WORK_COMPLETED / WORK_ESTIMATED * 100, 1) AS pct
+FROM performance_schema.events_stages_current
+WHERE EVENT_NAME LIKE 'stage/innodb/%';
+```
+
+逐段讲用法：`events_stages_current` 是当前活跃的阶段事件，`WORK_COMPLETED/WORK_ESTIMATED` 给出量化进度（按表大小折算的行数）——「还有多久」第一次有了数字答案；采集开关要**先开**（默认部分 stage instrument 关着，临时开不重启）。监控循环的完整套路：每 30 秒采样一次进度 + `SHOW PROCESSLIST` 确认连接存活 + 主从延迟监控（DDL 回放复制到从库的时间可能比主库执行本身更久）。

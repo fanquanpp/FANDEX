@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 130
 title: GDScript 设计模式
 module: 'gdscript'
 category: 游戏开发
@@ -10,7 +10,6 @@ updated: '2026-09-22'
 related:
   - 'gdscript/070-ClassesOOPAndMemory'
   - 'gdscript/090-SignalsAwaitCoroutines'
-  - 'godot/050-ResourcesAndAutoload'
 prerequisites:
   - 'gdscript/070-ClassesOOPAndMemory'
   - 'gdscript/090-SignalsAwaitCoroutines'
@@ -19,6 +18,13 @@ prerequisites:
 设计模式（design patterns）是前人总结的代码组织套路，GoF 的 23 种模式按创建型、结构型、行为型分类，配合 SOLID 等设计原则一起流传。但套路不能照搬：GDScript 有自己的惯用法——信号、Callable、Autoload、枚举加 match——很多经典模式在 GDScript 里不需要"搭架子"，语言本身已经给了现成的对应物。
 
 本篇先速览设计原则，再把几个最常用的模式逐一映射到 GDScript 写法上，最后讨论最重要的问题：什么时候不该用模式。类与对象的基础（继承、静态成员、抽象类）见 070 篇，信号与 await 见 090 篇。
+
+## 知识点地图
+
+- 知识类别：GDScript 语境下的设计模式——单例、观察者、状态、命令、工厂、迭代器、对象池的 GDScript 惯用实现。
+- 解决什么问题：经典模式的"搭架子"写法在 GDScript 里多数是过度工程；本篇给出"语言原生设施就是模式"的映射与判断。
+- 什么时候用到：全局状态与工具类组织、跨对象事件通知、实体状态机、撤销/重做、高频实体复用。
+- **static 工具类与弱引用缓存素材的落点声明**：全静态 utility 类形态（class_name + 全静态函数 + static var 幂等缓存）是"工厂/单例之外的第三种全局组织方式"，展开见本篇单例节末尾的补充；缓存对象的泄漏防线与 lambda 捕获判活统一归第 75 篇《对象生命周期与内存管理》——本篇引用不重复。
 
 ## 学习目标
 
@@ -67,6 +73,8 @@ static var 属于类而不属于实例，全项目访问到的都是同一份 _i
 - Autoload：是场景树里的真实节点，能收发信号、有完整的生命周期回调，适合游戏全局服务（存档、音频、任务系统）。
 
 选择标准很简单：需要进场景树、需要信号与生命周期，用 Autoload；只是共享数据与函数，static var 更轻。Autoload 的注册步骤与使用细节见 godot 模块 050 篇。
+
+**第三种形态：全静态工具类（既不是单例也不是 Autoload）。** 当类只需要"一组纯函数 + 可缓存的推导结果"时，连实例都可以省掉——class_name + 全静态函数，static var 只存值类型缓存。真实工程 speed-rouge 的 tile_atlas.gd 是标准形态：47 变体图集的"邻域掩码到代表瓦片"映射，首次调用推导、static var 缓存 `PackedInt32Array`（值类型，不持对象引用），之后幂等返回。这类类的纪律：**静态缓存存值不存对象**；若必须缓存 Node/Resource，用 weakref 防线（terrain_kit.gd 的弱引用列缓存是标准实现）——完整机制见第 75 篇第 4 节。工具类与单例的分工：单例承载"有状态的唯一实例"，工具类承载"无状态的函数集合"，两者混用（静态可变业务状态 + 实例方法并存）是腐化的开始。
 
 ## 观察者模式：信号就是官方答案
 
@@ -216,6 +224,49 @@ func release_bullet(bullet: Node) -> void:
 - 先让代码工作，再考虑抽象；重复出现第三次以上再提取；
 - 模式是为可读性与可维护性服务的，不是简历上的装饰；
 - 觉得"这里应该用设计模式"之前，先问"现在的代码哪里难读了"。答案说不出来，就说明还不需要模式。
+
+## 动手实践
+
+**任务一：单例三形态横评。** 把同一个"全局音量配置"分别用三种形态实现：static var 类、Autoload 节点、第 5 节工厂的静态字段。给每形态加一个"音量变化要通知 UI"的需求，观察哪一种形态接信号最自然。提示：Autoload 是场景树节点、天生能发信号——这个实验的意义是让"选择标准"从背诵变成体验。
+
+**任务二：状态机改造。** 把一个用 bool 标志堆叠的角色控制（is_jumping、is_running、is_attacking 互相打架）改写成 110.3 节的 enum + match 状态机，数一数非法状态组合（如跳跃中攻击）被消灭了几个。提示：bool 组合的状态空间是 2^n，enum 状态空间是 n——非法组合数量的锐减就是这次重构的收益证明。
+
+**任务三：静态工具类纪律练习。** 写一个 `AtlasMath` 全静态工具类：静态函数推导某数据（如 8 位邻域掩码的正则代表），static var 缓存结果；再试着把一个 Node 引用存进 static var，对照第 75 篇第 4 节说明为什么必须换成 weakref。提示：两类缓存的分界线是"缓存的东西是值还是对象"——这条判断写进你的代码评审清单。
+
+先自己操作，再对照参考实现：
+
+<details>
+<summary>任务三参考实现</summary>
+
+```gdscript
+class_name AtlasMath
+## 全静态工具类：无状态函数 + 值类型幂等缓存（tile_atlas.gd 形态）
+
+static var _mask_variants: PackedInt32Array = []   # 缓存值：不持对象引用
+
+static func variants() -> PackedInt32Array:
+    if _mask_variants.is_empty():
+        _mask_variants = _derive()     # 首次推导，之后幂等返回
+    return _mask_variants
+
+static func _derive() -> PackedInt32Array:
+    # 示例推导：8 位邻域掩码的正则代表集
+    var seen := {}
+    var out := PackedInt32Array()
+    for m in range(256):
+        var c := canonical(m)
+        if not seen.has(c):
+            seen[c] = true
+            out.append(c)
+    return out
+
+static func canonical(mask: int) -> int:
+    # ...按角位依赖边位的规则坍缩等价类（实现细节略）
+    return mask
+```
+
+要点：a) 工具类三件套——class_name 全局可访问、全 static 函数、static var 只存值类型；b) 缓存对象引用时改用 `{ id: weakref(obj) }` 形态并在查询时 get_ref() 判活（terrain_kit 形态，第 75 篇第 4 节有完整实现）；c) "值直存、对象弱存"这条线划清，静态缓存就不再是泄漏高发区。
+</details>
 
 ## 小结
 

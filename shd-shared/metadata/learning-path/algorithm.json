@@ -118,8 +118,8 @@
       "nodes": [
         {
           "id": "algorithm-170",
-          "title": "查找算法",
-          "doc": "170-BinarySearchAlgorithms"
+          "title": "二分查找家族与变体",
+          "doc": "172-BinarySearchVariants"
         }
       ]
     },
@@ -216,8 +216,23 @@
       "nodes": [
         {
           "id": "algorithm-280",
-          "title": "算法理论知识点",
-          "doc": "280-AlgorithmTheory"
+          "title": "计算复杂性理论",
+          "doc": "280-ComplexityTheory"
+        },
+        {
+          "id": "algorithm-282",
+          "title": "摊还分析与在线算法",
+          "doc": "282-AmortizedAndOnlineAnalysis"
+        },
+        {
+          "id": "algorithm-275",
+          "title": "数论与模运算算法",
+          "doc": "275-NumberTheoryAlgorithms"
+        },
+        {
+          "id": "algorithm-284",
+          "title": "随机化算法",
+          "doc": "284-RandomizedAlgorithms"
         },
         {
           "id": "algorithm-290",

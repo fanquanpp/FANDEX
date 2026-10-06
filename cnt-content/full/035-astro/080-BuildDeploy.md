@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 110
 title: Astro 构建与部署
 module: 'astro'
 category: 前端技术
@@ -14,6 +14,13 @@ prerequisites:
   - 'astro/020-QuickStartProject'
 ---
 
+## 知识点地图
+
+- **知识类别**：Astro 构建与部署——`astro build` 产物、适配器与运行模式、SSR/静态取舍、路由缓存与 CI/CD，对应 Astro 官方文档「Deploy your site」系列。
+- **解决什么问题**：源代码到「全球可访问网站」之间的全部工程环节：构建产物长什么样、跑在什么运行时上、静态与按需渲染怎么选、部署流水线怎么搭。
+- **什么时候用到**：第一次部署 Astro 站点；给内容站接 CI 门禁；排查「本地好好的、部署就白屏」；SSR 站点的缓存策略落地。
+- **本篇主线**：「书籍出版」六站旅程；核心决策只有两个——运行模式（第 3-4 站）与缓存策略（第 5 站），其余都是流程。错误选型的代价见第 4 节末的对照表。
+- **本篇不讲**：Sessions 与 Server Islands 的运行时细节（见 [063 篇](/astro/063-AstroServerIslands)、[131 篇](/astro/131-AstroSessionsApi)，本篇只讲它们对适配器的要求）；环境变量的完整规则（见 135 篇）。
 
 ## 0. 开篇：一本书从手稿到书店的旅程
 
@@ -186,6 +193,19 @@ export default defineConfig({
 })
 ```
 
+### 4.1 错误选型的后果对照表
+
+选型错误不报错，只产生「长期账单」。把四种典型错配的后果写清楚，决策时对照：
+
+| 错误选型 | 短期现象 | 长期账单 |
+| --- | --- | --- |
+| 纯内容站强行上 SSR | 多花适配器与服务器配置功夫 | 每个访客都触发渲染，服务器成本随流量线性上涨；CDN 缓存命中率近乎为零——静态站本可以零成本扛住 |
+| 个性化站点用了纯静态 | 登录态、用户数据无处安放 | 被迫在客户端堆 API 请求与状态管理，每个访客下载一段 JS 只为拉自己的昵称（这类局部个性化正确解是 [Server Islands](/astro/063-AstroServerIslands) 或按需渲染） |
+| server 模式但忘配缓存 | 页面能用 | 高读低写的文档页每次请求都全量渲染，流量上涨后源站先崩——`routeRules` 是免费的性能（第 5 站） |
+| 静态站误装了不需要的适配器 | 构建产物多出运行时文件 | 部署目标要求「纯静态文件」时直接部署失败；团队还被误导以为需要服务器 |
+
+判读方法：先问「内容对谁一样」（全一样 -> 静态；按人不同 -> 按需渲染或岛屿），再问「变的频率」（几乎不变 -> 预渲染 + 缓存），两个答案组合出运行模式，而不是从「想用的特性」出发倒推。
+
 ## 5. 沿途的快速通道：路由缓存
 
 "最快的构建是不发生的构建"——对按需渲染站点来说，最快的渲染是**不渲染**：命中缓存直接返回。Astro 7 中路由缓存（Route Caching）已稳定，通过顶层的 `cache` 与 `routeRules` 声明式配置：
@@ -293,6 +313,48 @@ jobs:
 
 流水线的价值在于**门禁**：安装、构建、类型检查任一环节失败，部署自动阻断，把错误挡在上线之前。FANDEX 的 CI 还包含链接检查与构建统计，保证 2000+ 篇文档构建稳定、无死链。
 
+### 6.5 真实案例：FANDEX 的 GitHub Pages 流水线
+
+本仓库（FANDEX）的 `.github/workflows/deploy.yml` 就是一条值得逐段读的生产流水线——内容站 + GitHub Pages 形态的完整样本：
+
+```yaml
+# 关键步骤节选（完整文件见 .github/workflows/deploy.yml）
+on:
+  push:
+    branches: [main]
+    paths: ['app-web/**', 'cnt-content/**', 'pnpm-lock.yaml', '...']  # 触发路径过滤
+  pull_request:
+    branches: [main]                                                    # PR 也跑构建验证
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}        # 旧构建自动取消
+jobs:
+  build:
+    steps:
+      - run: pnpm install --frozen-lockfile      # 锁文件精确安装
+      - run: pnpm -C app-web audit --prod --audit-level high   # 依赖安全门禁
+      - run: pnpm --filter @fandex/web sync      # 内容元数据补全（管线第 1 步）
+      - run: node scripts/content-audit.mjs      # 内容审计门禁（HIGH 级问题阻断）
+      - run: pnpm typecheck && pnpm --filter @fandex/web lint
+      - run: pnpm build:web                      # Astro 生产构建
+      - run: pnpm --filter @fandex/web qa        # 构建后 QA 检查
+      - uses: actions/upload-pages-artifact@v5
+        with: { path: app-web/dist }
+  deploy:
+    needs: build
+    if: github.event_name == 'push'              # 只有 push 到 main 才真正部署
+    uses: actions/deploy-pages@v5
+```
+
+六个值得抄走的设计：
+
+1. **paths 过滤触发**：内容站的大部分提交只动文档或只动前端，过滤路径避免无关提交空烧构建分钟数；
+2. **PR 构建但不部署**：`build` job 对 PR 也执行（改坏了主分支构建立刻红），`deploy` job 用 `if: github.event_name == 'push'` 卡住——「验证免费、发布要过合并关」；
+3. **concurrency 取消旧构建**：连续推送时只构建最新提交，PR 场景取消旧任务省资源；
+4. **审计前置**：依赖安全审计与内容审计都放在 build 之前——最便宜的失败位置是最早的失败位置；
+5. **sync 在 build 前**：内容管线（frontmatter 补全、模块注册）是构建的输入前置步骤，顺序错乱是内容站流水线最常见的翻车点；
+6. **构建产物走 artifact**：`upload-pages-artifact` 把 dist 作为产物在 job 间传递，部署 job 只认产物不重跑构建——两个 job 职责分离。
+
 ## 7. 第 6 站，挂牌营业：域名、HTTPS 与收尾检查
 
 ### 7.1 域名与 HTTPS
@@ -312,6 +374,26 @@ jobs:
 第四，构建产物无意外大 JS 包、无 404 资源（按第 2 站质检流程过一遍）；
 
 第五，上线后手动走一遍核心路径：首页、一篇内容页、一个交互岛屿、一个 404 页。
+
+## 动手实践
+
+任务：给一个静态 Astro 站点跑通「本地构建 -> 产物质检 -> 流水线」全链路。
+
+1. 本地跑 `npm run build`，按第 2 站流程清点 `dist/`：页面数与 `src/pages` 对账、`_astro/` 里资源的哈希命名、有无意外大文件；
+2. 制造「错误选型」体验：给纯静态站临时 `npx astro add node` 并切 `output: 'server'`，构建对比产物形态（出现服务器入口文件），再切回 static 观察产物恢复——用产物差异理解两种模式的物理区别；
+3. 把 6.4 节的 GitHub Actions 示意流水线搬进自己的项目（GitHub 托管时），把 `run:` 换成你的构建命令，观察首次运行；故意提交一个 frontmatter 错误，验证门禁红，修复后绿灯；
+4. 对照 6.5 节读本仓库的 `deploy.yml` 全文，找出文中六个设计点在你流水线里的对应物（或缺席项）。
+
+<details>
+<summary>参考现象（先自己试，再展开对照）</summary>
+
+第 2 题：server 模式的 dist 里出现 `entry.mjs`（Node 适配器）之类的服务器入口与 host manifest，页面 HTML 不再全量预生成；切回 static 后产物恢复为纯 HTML 目录。物理形态的差异是两种模式所有行为差异的根源。
+
+第 3 题：门禁红的位置在内容审计或构建步骤（取决于错误类型），PR 页面给出失败原因——「错误挡在合并前」的体感。注意流水线的价值密度取决于门禁的严格程度：全部 `continue-on-error` 的流水线只是个构建计时器。
+
+第 4 题提示：paths 过滤、PR 构建不部署、concurrency、审计前置、sync 前置、artifact 传递——逐项对照后，缺席项就是你自己流水线的下一个改进点。
+
+</details>
 
 ## 8. 常见错误与对策
 

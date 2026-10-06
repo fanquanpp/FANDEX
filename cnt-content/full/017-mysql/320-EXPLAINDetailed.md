@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 340
 title: EXPLAIN 逐列读懂：执行计划是查询的体检报告
 module: 'mysql'
 category: 数据库

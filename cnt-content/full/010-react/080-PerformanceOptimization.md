@@ -1,5 +1,5 @@
 ---
-order: 80
+order: 130
 title: 性能优化：先测量，再动刀
 module: 'react'
 category: 前端技术
@@ -8,17 +8,17 @@ description: 从 FANDEX 收藏夹页「敲字全页卡、首屏包大、滚动�
 author: fanquanpp
 updated: '2026-09-29'
 related:
-  - 'react/070-RouteDataFetch'
+  - 'react/070-ReactRouterRouting'
   - 'react/130-ConcurrentRendering'
   - 'react/180-ReactPerformance'
   - 'react/390-ReactCompilerAutoMemoization'
 prerequisites:
-  - 'react/070-RouteDataFetch'
+  - 'react/070-ReactRouterRouting'
 ---
 
 ## 前置知识
 
-- [路由与数据获取](/react/070-RouteDataFetch)：有带数据列表的页面可改；
+- [路由与数据获取](/react/070-ReactRouterRouting)：有带数据列表的页面可改；
 - [状态与事件](/react/030-StateEvent)：熟悉 useState 与组件重渲染的触发条件。
 
 ## 学习目标

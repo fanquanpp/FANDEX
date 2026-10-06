@@ -1,5 +1,5 @@
 ---
-order: 600
+order: 640
 title: 类型安全的环境变量
 module: 'typescript'
 category: 前端技术

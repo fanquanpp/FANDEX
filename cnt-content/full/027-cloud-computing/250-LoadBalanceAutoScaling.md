@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 290
 title: 负载均衡与自动伸缩
 module: 'cloud-computing'
 category: 云与基础设施

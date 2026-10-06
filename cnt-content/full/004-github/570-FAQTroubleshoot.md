@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 630
 title: 常见问题排查
 module: 'github'
 category: 工具链

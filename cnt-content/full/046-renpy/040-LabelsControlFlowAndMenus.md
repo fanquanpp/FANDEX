@@ -1,5 +1,5 @@
 ---
-order: 40
+order: 50
 title: 标签、控制流与选项菜单
 module: 'renpy'
 category: 游戏开发
@@ -7,7 +7,9 @@ difficulty: beginner
 description: 用 label jump call return 组织剧本骨架，用 menu 提供选项分支并用 if 与 flag 变量驱动多结局
 author: fanquanpp
 updated: '2026-09-28'
-related: ['renpy/020-FirstScriptSayAndCharacters', 'renpy/030-ImagesSceneShowAndTransitions', 'renpy/050-VariablesPythonAndStores']
+related:
+  - 'renpy/020-FirstScriptSayAndCharacters'
+  - 'renpy/030-ImagesSceneShowAndTransitions'
 prerequisites: ['renpy/020-FirstScriptSayAndCharacters']
 ---
 

@@ -1,5 +1,5 @@
 ---
-order: 460
+order: 520
 title: 网络请求 API
 module: 'javascript'
 category: 前端技术
@@ -222,27 +222,7 @@ $$
 
 一旦进入 aborted 状态,所有观察者(通过 signal.addEventListener('abort', ...))被异步通知,且所有依赖该 signal 的异步操作(包括 fetch)以 AbortError reject。
 
-### 2.6 背压(Backpressure)的形式化
-
-定义流的生产者-消费者模型:
-
-- 生产者速率 $P(t)$:每秒产生的字节数
-- 消费者速率 $C(t)$:每秒处理的字节数
-- 缓冲区大小 $B$
-- 当前缓冲区水位 $W(t)$
-
-当 $W(t) > B_{\text{high}}$ 时,触发背压,生产者暂停:
-
-$$
-P(t+1) = \begin{cases}
-0 & \text{if } W(t) > B_{\text{high}} \\
-P_{\max} & \text{if } W(t) < B_{\text{low}}
-\end{cases}
-$$
-
-Web Streams 通过 ReadableStream 的 pull 机制实现背压:消费者调用 reader.read() 才会拉取下一块,自然限制生产速率。
-
----
+> 本篇 v2 起做了两处拆分：第 2.6 节与第 8~10 节（Web Streams 概述、ReadableStream、Writable/Transform、背压形式化）连同附录 D 已拆出为 [Web Streams 数据流](/javascript/455-WebStreamsDataFlow)；第 11~12 节（Service Worker 概述、Cache API）与附录 E 已并入 [Service Worker 与 PWA](/javascript/680-ServiceWorkerPWA) 对应章节（重复部分去重，登记见批次记录）。本篇保留 fetch/Request/Response/Headers、CORS、重试熔断的网络请求主线。
 
 ## 3. Fetch API 基础
 
@@ -781,738 +761,13 @@ async function streamDownload(url, signal) {
 
 ---
 
-## 8. Web Streams API 概述
+## 8. CORS 跨域与认证
 
-### 8.1 三种流类型
-
-| 流类型           | 含义                       | 典型场景                       |
-| ---------------- | -------------------------- | ------------------------------ |
-| ReadableStream   | 可读流,数据源             | Fetch 响应体、文件读取、传感器 |
-| WritableStream   | 可写流,数据汇             | 文件写入、网络发送、日志       |
-| TransformStream | 转换流,既可读又可写       | 压缩、解压、加密、解码         |
-
-### 8.2 流的优势
-
-1. **内存高效**:数据分块处理,无需全部载入内存
-2. **背压**:消费者控制生产速率,避免内存爆炸
-3. **管道**:类似 Unix 管道,可串联多个转换
-4. **可取消**:随时中止,释放资源
-5. **异步友好**:基于 Promise,与 async/await 协同
-
-### 8.3 流与数组的对比
-
-```javascript
-// 数组:一次性加载,内存压力大
-const allData = await response.json(); // 全部解析到内存
-
-// 流:分块处理,内存稳定
-const reader = response.body.getReader();
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-  processChunk(value); // 每次处理一小块
-}
-```
-
-### 8.4 流与异步迭代
-
-```javascript
-// ReadableStream 实现了 async iterable
-const response = await fetch('/api/data');
-
-for await (const chunk of response.body) {
-  console.log(`收到 ${chunk.length} 字节`);
-}
-```
-
----
-
-## 9. ReadableStream 深入
-
-### 9.1 读取 Fetch 响应流
-
-```javascript
-const response = await fetch('/api/large-file');
-const reader = response.body.getReader();
-const decoder = new TextDecoder();
-
-while (true) {
-  const { done, value } = await reader.read();
-  if (done) break;
-  const text = decoder.decode(value, { stream: true });
-  console.log(text);
-}
-
-// 释放锁,允许其他 reader 读取
-reader.releaseLock();
-```
-
-### 9.2 自定义 ReadableStream
-
-```javascript
-// 创建一个生成自然数的 ReadableStream
-function naturals() {
-  let i = 1;
-  return new ReadableStream({
-    start(controller) {
-      // 启动时执行,通常用于初始化
-    },
-    pull(controller) {
-      // 消费者请求数据时调用
-      if (i > 100) {
-        controller.close();
-        return;
-      }
-      controller.enqueue(i++);
-    },
-    cancel(reason) {
-      // 消费者取消时执行清理
-      console.log('流被取消:', reason);
-    },
-  });
-}
-
-const stream = naturals();
-const reader = stream.getReader();
-
-console.log(await reader.read()); // { done: false, value: 1 }
-console.log(await reader.read()); // { done: false, value: 2 }
-```
-
-### 9.3 背压与 pull 模式
-
-```javascript
-// pull 只在消费者调用 read() 后被调用,天然实现背压
-const stream = new ReadableStream({
-  pull(controller) {
-    console.log('pull called');
-    controller.enqueue(Math.random());
-  },
-});
-
-const reader = stream.getReader();
-// 第一次 read 触发 pull
-await reader.read(); // 控制台:pull called
-// 第二次 read 再次触发 pull
-await reader.read(); // 控制台:pull called
-// 没有 read,pull 不会被调用,生产者不会堆积数据
-```
-
-### 9.4 队列策略(QueuingStrategy)
-
-```javascript
-// 高水位(highWaterMark):队列中允许的最大数据量
-const stream = new ReadableStream(
-  {
-    pull(controller) {
-      // 当队列低于高水位时,pull 被调用
-      controller.enqueue(new Uint8Array(1024));
-    },
-  },
-  new CountQueuingStrategy({ highWaterMark: 10 }) // 最多缓存 10 个块
-);
-
-// ByteLengthQueuingStrategy:按字节计数
-const byteStream = new ReadableStream(
-  {
-    pull(controller) {
-      controller.enqueue(new Uint8Array(1024));
-    },
-  },
-  new ByteLengthQueuingStrategy({ highWaterMark: 1024 * 1024 }) // 最多 1MB
-);
-```
-
-### 9.5 下载进度
-
-```javascript
-async function downloadWithProgress(url, onProgress) {
-  const response = await fetch(url);
-  const contentLength = parseInt(
-    response.headers.get('Content-Length') || '0',
-    10
-  );
-  const reader = response.body.getReader();
-
-  let received = 0;
-  const chunks = [];
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-
-    chunks.push(value);
-    received += value.length;
-    onProgress(received, contentLength);
-  }
-
-  return new Blob(chunks);
-}
-
-// 使用
-const blob = await downloadWithProgress('/api/large-file', (received, total) => {
-  const percent = total ? (received / total * 100).toFixed(2) : '?';
-  console.log(`下载进度: ${received}/${total} (${percent}%)`);
-});
-```
-
-### 9.6 Tee 流(分叉)
-
-```javascript
-const response = await fetch('/api/data');
-const [stream1, stream2] = response.body.tee();
-
-// 两个流可独立消费,内容相同
-const reader1 = stream1.getReader();
-const reader2 = stream2.getReader();
-
-// stream1 用于实时显示
-(async () => {
-  for await (const chunk of stream1) {
-    displayChunk(chunk);
-  }
-})();
-
-// stream2 用于缓存
-(async () => {
-  const cache = [];
-  for await (const chunk of stream2) {
-    cache.push(chunk);
-  }
-  saveToCache(cache);
-})();
-```
-
-### 9.7 管道与 pipeTo
-
-```javascript
-// 将 ReadableStream 通过管道传给 WritableStream
-const response = await fetch('/api/data');
-await response.body.pipeTo(new WritableStream({
-  write(chunk) {
-    console.log('写入:', chunk);
-  },
-}));
-
-// pipeThrough 通过 TransformStream
-const response = await fetch('/api/data');
-const decodedStream = response.body
-  .pipeThrough(new TextDecoderStream())
-  .pipeThrough(new TransformStream({
-    transform(chunk, controller) {
-      // 处理文本块
-      controller.enqueue(chunk.toUpperCase());
-    },
-  }));
-
-for await (const chunk of decodedStream) {
-  console.log(chunk);
-}
-```
-
-### 9.8 错误处理
-
-```javascript
-const stream = new ReadableStream({
-  pull(controller) {
-    try {
-      const data = fetchData();
-      controller.enqueue(data);
-    } catch (err) {
-      controller.error(err); // 报告错误给消费者
-    }
-  },
-});
-
-const reader = stream.getReader();
-try {
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    console.log(value);
-  }
-} catch (err) {
-  console.error('流错误:', err);
-}
-```
-
----
-
-## 10. WritableStream 与 TransformStream
-
-### 10.1 WritableStream 基础
-
-```javascript
-const writable = new WritableStream({
-  start(controller) {
-    // 初始化底层资源
-  },
-  write(chunk, controller) {
-    // 写入一块数据
-    console.log('写入:', chunk);
-    // 返回 Promise 表示写入完成(实现背压)
-    return new Promise((resolve) => setTimeout(resolve, 10));
-  },
-  close(controller) {
-    // 关闭底层资源
-    console.log('流已关闭');
-  },
-  abort(reason) {
-    // 异常终止
-    console.log('流被中止:', reason);
-  },
-});
-
-const writer = writable.getWriter();
-await writer.write('hello');
-await writer.write('world');
-await writer.close();
-```
-
-### 10.2 WritableStream 默认 writer
-
-```javascript
-const writable = new WritableStream({
-  write(chunk) {
-    console.log(chunk);
-  },
-});
-
-// getWriter 锁定流,只能有一个 writer
-const writer = writable.getWriter();
-writer.write('a');
-writer.write('b');
-await writer.close();
-
-// 释放后可再次获取
-const writer2 = writable.getWriter();
-```
-
-### 10.3 TransformStream
-
-```javascript
-// 创建一个将字符串转大写的 TransformStream
-const upperCaseStream = new TransformStream({
-  transform(chunk, controller) {
-    controller.enqueue(chunk.toUpperCase());
-  },
-});
-
-// 使用
-const response = await fetch('/api/text');
-const transformed = response.body
-  .pipeThrough(new TextDecoderStream())
-  .pipeThrough(upperCaseStream);
-
-for await (const chunk of transformed) {
-  console.log(chunk);
-}
-```
-
-### 10.4 实战:JSON 流式解析
-
-```javascript
-// 服务器返回 newline-delimited JSON(NDJSON)
-// 每行一个 JSON 对象
-class NDJSONParser extends TransformStream {
-  constructor() {
-    let buffer = '';
-    super({
-      transform(chunk, controller) {
-        buffer += chunk;
-        const lines = buffer.split('\n');
-        buffer = lines.pop(); // 最后一段可能不完整,保留
-        for (const line of lines) {
-          if (line.trim()) {
-            try {
-              controller.enqueue(JSON.parse(line));
-            } catch (e) {
-              controller.error(e);
-            }
-          }
-        }
-      },
-      flush(controller) {
-        if (buffer.trim()) {
-          try {
-            controller.enqueue(JSON.parse(buffer));
-          } catch (e) {
-            controller.error(e);
-          }
-        }
-      },
-    });
-  }
-}
-
-// 使用
-const response = await fetch('/api/stream');
-const jsonStream = response.body
-  .pipeThrough(new TextDecoderStream())
-  .pipeThrough(new NDJSONParser());
-
-for await (const obj of jsonStream) {
-  console.log('收到对象:', obj);
-}
-```
-
-### 10.5 TextEncoderStream / TextDecoderStream
-
-```javascript
-// 字符串 → 字节
-const encoderStream = new TextEncoderStream();
-
-// 字节 → 字符串
-const decoderStream = new TextDecoderStream();
-
-// 链式处理
-const response = await fetch('/api/text');
-const textStream = response.body.pipeThrough(new TextDecoderStream());
-```
-
-### 10.6 CompressionStream / DecompressionStream
-
-```javascript
-// gzip 压缩(Chrome 80+)
-const compressed = originalStream.pipeThrough(new CompressionStream('gzip'));
-
-// gzip 解压
-const decompressed = compressedStream.pipeThrough(new DecompressionStream('gzip'));
-```
-
----
-
-## 11. Service Worker 概述
-
-### 11.1 Service Worker 是什么
-
-Service Worker 是浏览器在后台运行的脚本,充当网页与网络之间的可编程代理。它具有以下特征:
-
-- **独立线程**:不阻塞主线程,无 DOM 访问权限
-- **事件驱动**:通过 install/activate/fetch/push/sync 等事件驱动
-- **可拦截请求**:可拦截页面的所有网络请求,返回自定义响应
-- **离线优先**:可缓存资源,实现离线访问
-- **HTTPS 要求**:出于安全考虑,仅 HTTPS(或 localhost)下可用
-
-### 11.2 生命周期
-
-```mermaid
-flowchart TD
-    T0["installing → installed → activating → activated → redundant"]
-    T1["(被新版本替换时)"]
-    T0 --> T1
-```
-
-```javascript
-// sw.js
-self.addEventListener('install', (event) => {
-  console.log('Service Worker 安装中');
-  event.waitUntil(
-    caches.open('v1').then((cache) => cache.addAll([
-      '/',
-      '/index.html',
-      '/styles.css',
-      '/app.js',
-    ]))
-  );
-});
-
-self.addEventListener('activate', (event) => {
-  console.log('Service Worker 已激活');
-  // 清理旧缓存
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((key) => key !== 'v1')
-            .map((key) => caches.delete(key))
-      );
-    })
-  );
-});
-
-self.addEventListener('fetch', (event) => {
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      return cached || fetch(event.request);
-    })
-  );
-});
-```
-
-### 11.3 注册 Service Worker
-
-```javascript
-// 在主页面注册
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', async () => {
-    try {
-      const reg = await navigator.serviceWorker.register('/sw.js');
-      console.log('注册成功,作用域:', reg.scope);
-    } catch (err) {
-      console.error('注册失败:', err);
-    }
-  });
-}
-```
-
-### 11.4 与主线程通信
-
-```javascript
-// 主线程 → Service Worker
-navigator.serviceWorker.controller.postMessage({
-  type: 'CACHE_URL',
-  url: '/api/data',
-});
-
-// Service Worker 接收
-self.addEventListener('message', (event) => {
-  if (event.data.type === 'CACHE_URL') {
-    caches.open('v1').then((cache) => cache.add(event.data.url));
-  }
-});
-
-// Service Worker → 主线程(通过 Client)
-self.addEventListener('message', (event) => {
-  event.source.postMessage({ type: 'REPLY', data: 'ok' });
-});
-
-// 主线程接收
-navigator.serviceWorker.addEventListener('message', (event) => {
-  console.log('收到 SW 消息:', event.data);
-});
-```
-
----
-
-## 12. Cache API
-
-### 12.1 Cache 存储
-
-```javascript
-// 打开一个缓存
-const cache = await caches.open('my-cache');
-
-// 添加(Request 或 URL)
-await cache.add('/api/data');
-await cache.addAll(['/api/users', '/api/posts']);
-
-// 手动 put
-const response = await fetch('/api/data');
-await cache.put('/api/data', response.clone());
-
-// 读取
-const cached = await cache.match('/api/data');
-if (cached) {
-  const data = await cached.json();
-}
-
-// 删除
-await cache.delete('/api/data');
-
-// 查询所有键
-const keys = await cache.keys();
-```
-
-### 12.2 缓存策略详解
-
-#### 12.2.1 Cache First(缓存优先)
-
-适用场景:静态资源(CSS、JS、图片、字体)
-
-```javascript
-async function cacheFirst(request) {
-  const cached = await caches.match(request);
-  if (cached) {
-    return cached;
-  }
-  try {
-    const response = await fetch(request);
-    if (response.ok) {
-      const cache = await caches.open('static-v1');
-      cache.put(request, response.clone());
-    }
-    return response;
-  } catch (err) {
-    return caches.match('/offline.html');
-  }
-}
-
-self.addEventListener('fetch', (event) => {
-  if (event.request.destination === 'style' ||
-      event.request.destination === 'script' ||
-      event.request.destination === 'font') {
-    event.respondWith(cacheFirst(event.request));
-  }
-});
-```
-
-#### 12.2.2 Network First(网络优先)
-
-适用场景:API 响应、动态内容
-
-```javascript
-async function networkFirst(request) {
-  try {
-    const response = await fetch(request);
-    const cache = await caches.open('api-v1');
-    cache.put(request, response.clone());
-    return response;
-  } catch (err) {
-    const cached = await caches.match(request);
-    if (cached) {
-      return cached;
-    }
-    throw err;
-  }
-}
-```
-
-#### 12.2.3 Stale-While-Revalidate(过期时重新验证)
-
-适用场景:非关键资源,优先速度
-
-```javascript
-async function staleWhileRevalidate(request) {
-  const cache = await caches.open('runtime-v1');
-  const cached = await cache.match(request);
-
-  const fetchPromise = fetch(request).then((response) => {
-    if (response.ok) {
-      cache.put(request, response.clone());
-    }
-    return response;
-  }).catch(() => cached);
-
-  return cached || fetchPromise;
-}
-```
-
-#### 12.2.4 Network Only / Cache Only
-
-```javascript
-// Network Only:强制网络
-async function networkOnly(request) {
-  return fetch(request);
-}
-
-// Cache Only:仅缓存(离线场景)
-async function cacheOnly(request) {
-  const cached = await caches.match(request);
-  return cached || Response.error();
-}
-```
-
-### 12.3 路由策略
-
-```javascript
-// 按请求类型路由
-self.addEventListener('fetch', (event) => {
-  const { request } = event;
-  const url = new URL(request.url);
-
-  // 1. 仅 GET 请求缓存
-  if (request.method !== 'GET') {
-    return;
-  }
-
-  // 2. 静态资源 → Cache First
-  if (request.destination === 'style' ||
-      request.destination === 'script' ||
-      request.destination === 'font' ||
-      request.destination === 'image') {
-    event.respondWith(cacheFirst(request));
-    return;
-  }
-
-  // 3. API 请求 → Network First
-  if (url.pathname.startsWith('/api/')) {
-    event.respondWith(networkFirst(request));
-    return;
-  }
-
-  // 4. 导航请求 → Network First,离线时返回缓存 HTML
-  if (request.mode === 'navigate') {
-    event.respondWith(networkFirst(request).catch(() => caches.match('/offline.html')));
-    return;
-  }
-
-  // 5. 其他 → Stale-While-Revalidate
-  event.respondWith(staleWhileRevalidate(request));
-});
-```
-
-### 12.4 缓存版本管理
-
-```javascript
-const CACHE_VERSION = 'v3';
-const STATIC_CACHE = `static-${CACHE_VERSION}`;
-const API_CACHE = `api-${CACHE_VERSION}`;
-const RUNTIME_CACHE = `runtime-${CACHE_VERSION}`;
-
-self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    (async () => {
-      const keys = await caches.keys();
-      await Promise.all(
-        keys
-          .filter((key) => !key.endsWith(CACHE_VERSION))
-          .map((key) => caches.delete(key))
-      );
-      await self.clients.claim();
-    })()
-  );
-});
-```
-
-### 12.5 Workbox 简化
-
-```javascript
-// 使用 Google Workbox 简化 Service Worker
-import { registerRoute } from 'workbox-routing';
-import { CacheFirst, NetworkFirst, StaleWhileRevalidate } from 'workbox-strategies';
-import { ExpirationPlugin } from 'workbox-expiration';
-import { CacheableResponsePlugin } from 'workbox-cacheable-response';
-
-// 静态资源
-registerRoute(
-  ({ request }) => ['style', 'script', 'font'].includes(request.destination),
-  new CacheFirst({
-    cacheName: 'static-v1',
-    plugins: [
-      new CacheableResponsePlugin({ statuses: [0, 200] }),
-      new ExpirationPlugin({ maxEntries: 60, maxAgeSeconds: 30 * 24 * 60 * 60 }),
-    ],
-  })
-);
-
-// API
-registerRoute(
-  ({ url }) => url.pathname.startsWith('/api/'),
-  new NetworkFirst({
-    cacheName: 'api-v1',
-    networkTimeoutSeconds: 3,
-  })
-);
-
-// 图片
-registerRoute(
-  ({ request }) => request.destination === 'image',
-  new StaleWhileRevalidate({
-    cacheName: 'images-v1',
-    plugins: [new ExpirationPlugin({ maxEntries: 50 })],
-  })
-);
-```
-
----
-
-## 13. CORS 跨域与认证
-
-### 13.1 同源策略
+### 8.1 同源策略
 
 浏览器的同源策略要求:协议、域名、端口三者完全相同,才为同源。跨域请求需要服务端配合 CORS。
 
-### 13.2 简单请求 vs 预检请求
+### 8.2 简单请求 vs 预检请求
 
 #### 简单请求
 
@@ -1553,7 +808,7 @@ fetch('https://api.example.com/data', {
 // Access-Control-Max-Age: 86400
 ```
 
-### 13.3 credentials(凭证)
+### 8.3 credentials(凭证)
 
 ```javascript
 // omit:不发送 cookie
@@ -1575,7 +830,7 @@ Access-Control-Allow-Credentials: true
 
 注意:`Access-Control-Allow-Origin: *` 与 `credentials: include` 不兼容,必须指定具体来源。
 
-### 13.4 Authorization 头
+### 8.4 Authorization 头
 
 ```javascript
 // Token 认证
@@ -1598,7 +853,7 @@ function authFetch(url, options = {}) {
 }
 ```
 
-### 13.5 Cookie 与 CSRF
+### 8.5 Cookie 与 CSRF
 
 ```javascript
 // 服务端设置 cookie
@@ -1617,16 +872,16 @@ const response = await fetch('/api/data', {
 
 ---
 
-## 14. HTTP/2 与 Server Push
+## 9. HTTP/2 与 Server Push
 
-### 14.1 HTTP/2 特性
+### 9.1 HTTP/2 特性
 
 - **多路复用**:单一 TCP 连接上并行多个请求
 - **头部压缩**:HPACK 算法,减少重复头部
 - **二进制分帧**:更高效的传输
 - **Server Push**:服务器主动推送资源
 
-### 14.2 Server Push 与 Service Worker
+### 9.2 Server Push 与 Service Worker
 
 ```javascript
 // 服务端推送(已在主流浏览器废弃,但 Service Worker 仍可用)
@@ -1649,7 +904,7 @@ self.addEventListener('notificationclick', (event) => {
 });
 ```
 
-### 14.3 Priority Hints
+### 9.3 Priority Hints
 
 ```javascript
 // 通过 priority 选项声明优先级(2024+)
@@ -1663,9 +918,9 @@ fetch('/api/non-critical', { priority: 'low' });
 
 ---
 
-## 15. GraphQL 客户端
+## 10. GraphQL 客户端
 
-### 15.1 GraphQL 简介
+### 10.1 GraphQL 简介
 
 GraphQL 是 Facebook 于 2015 年开源的查询语言,客户端精确指定所需字段,避免 REST 的过度/不足获取。
 
@@ -1687,7 +942,7 @@ query {
 }
 ```
 
-### 15.2 原生 Fetch 调用 GraphQL
+### 10.2 原生 Fetch 调用 GraphQL
 
 ```javascript
 async function graphqlFetch(query, variables = {}) {
@@ -1714,7 +969,7 @@ const data = await graphqlFetch(`
 `, { id: 1 });
 ```
 
-### 15.3 Apollo Client
+### 10.3 Apollo Client
 
 ```javascript
 import { ApolloClient, InMemoryCache, gql } from '@apollo/client';
@@ -1764,7 +1019,7 @@ observable.subscribe({
 });
 ```
 
-### 15.4 urql
+### 10.4 urql
 
 ```javascript
 import { createClient, gql } from 'urql';
@@ -1778,7 +1033,7 @@ const result = await client.query(gql`
 `).toPromise();
 ```
 
-### 15.5 GraphQL 与 REST 对比
+### 10.5 GraphQL 与 REST 对比
 
 | 维度        | REST                       | GraphQL                      |
 | ----------- | -------------------------- | ---------------------------- |
@@ -1795,9 +1050,9 @@ const result = await client.query(gql`
 
 ---
 
-## 16. 请求重试与熔断
+## 11. 请求重试与熔断
 
-### 16.1 指数退避重试
+### 11.1 指数退避重试
 
 ```javascript
 async function fetchRetry(url, options = {}, retries = 3) {
@@ -1830,7 +1085,7 @@ async function fetchRetry(url, options = {}, retries = 3) {
 }
 ```
 
-### 16.2 熔断器模式
+### 11.2 熔断器模式
 
 ```javascript
 class CircuitBreaker {
@@ -1882,7 +1137,7 @@ async function callApi() {
 }
 ```
 
-### 16.3 限流器(Rate Limiter)
+### 11.3 限流器(Rate Limiter)
 
 ```javascript
 class RateLimiter {
@@ -1915,7 +1170,7 @@ async function rateLimitedFetch(url) {
 }
 ```
 
-### 16.4 并发控制
+### 11.4 并发控制
 
 ```javascript
 async function parallelLimit(tasks, limit) {
@@ -1947,9 +1202,9 @@ const results = await parallelLimit(
 
 ---
 
-## 17. 生产级 HTTP 客户端
+## 12. 生产级 HTTP 客户端
 
-### 17.1 完整封装
+### 12.1 完整封装
 
 ```javascript
 class HttpClient {
@@ -2066,7 +1321,7 @@ const response = await client.get('/users');
 const users = await response.json();
 ```
 
-### 17.2 拦截器模式
+### 12.2 拦截器模式
 
 ```javascript
 class InterceptorManager {
@@ -2134,7 +1389,7 @@ client.responseInterceptors.use(async (response) => {
 });
 ```
 
-### 17.3 请求去重
+### 12.3 请求去重
 
 ```javascript
 class DedupHttpClient {
@@ -2165,9 +1420,9 @@ class DedupHttpClient {
 
 ---
 
-## 18. 常见陷阱与最佳实践
+## 13. 常见陷阱与最佳实践
 
-### 18.1 常见陷阱
+### 13.1 常见陷阱
 
 #### 18.1.1 未检查 response.ok
 
@@ -2275,7 +1530,7 @@ if (request.method === 'GET') {
 }
 ```
 
-### 18.2 最佳实践
+### 13.2 最佳实践
 
 1. **始终检查 response.ok**:HTTP 错误状态码不会 reject
 2. **使用 AbortSignal.timeout**:避免手动管理 timer
@@ -2290,9 +1545,9 @@ if (request.method === 'GET') {
 
 ---
 
-## 19. 性能优化
+## 14. 性能优化
 
-### 19.1 减少请求数量
+### 14.1 减少请求数量
 
 ```javascript
 // 1. 批量请求
@@ -2312,7 +1567,7 @@ const data = await graphqlFetch(`
 <link rel="preload" href="/api/critical" as="fetch" crossorigin />
 ```
 
-### 19.2 减少响应体积
+### 14.2 减少响应体积
 
 ```javascript
 // 1. Gzip/Brotli 压缩(服务端)
@@ -2333,7 +1588,7 @@ if (response.status === 304) {
 }
 ```
 
-### 19.3 缓存利用
+### 14.3 缓存利用
 
 ```javascript
 // 1. HTTP 缓存
@@ -2353,7 +1608,7 @@ async function cachedFetch(url) {
 }
 ```
 
-### 19.4 预连接与 DNS 预解析
+### 14.4 预连接与 DNS 预解析
 
 ```html
 <!-- DNS 预解析 -->
@@ -2363,7 +1618,7 @@ async function cachedFetch(url) {
 <link rel="preconnect" href="//api.example.com" crossorigin>
 ```
 
-### 19.5 keepalive 保持连接
+### 14.5 keepalive 保持连接
 
 ```javascript
 // 页面卸载时仍发送请求(analytics)
@@ -2379,7 +1634,7 @@ window.addEventListener('unload', () => {
 navigator.sendBeacon('/api/analytics', JSON.stringify({ event: 'page_view' }));
 ```
 
-### 19.6 流式渲染
+### 14.6 流式渲染
 
 ```javascript
 // 服务端流式返回 HTML
@@ -2398,9 +1653,9 @@ while (true) {
 
 ---
 
-## 20. 测试与 Mock
+## 15. 测试与 Mock
 
-### 20.1 Mock Service Worker(MSW)
+### 15.1 Mock Service Worker(MSW)
 
 ```javascript
 import { setupServer } from 'msw/node';
@@ -2430,7 +1685,7 @@ test('fetch users', async () => {
 });
 ```
 
-### 20.2 Fetch Mock
+### 15.2 Fetch Mock
 
 ```javascript
 import { jest } from '@jest/globals';
@@ -2450,7 +1705,7 @@ test('fetch', async () => {
 });
 ```
 
-### 20.3 集成测试中的真实请求
+### 15.3 集成测试中的真实请求
 
 ```javascript
 // 使用真实 HTTP 服务器
@@ -2475,9 +1730,9 @@ test('fetch', async () => {
 
 ---
 
-## 21. 安全考虑
+## 16. 安全考虑
 
-### 21.1 XSS 与 CSRF
+### 16.1 XSS 与 CSRF
 
 ```javascript
 // 1. XSS 防护:转义用户输入
@@ -2497,20 +1752,20 @@ fetch('/api/data', {
 });
 ```
 
-### 21.2 HTTPS 与 HSTS
+### 16.2 HTTPS 与 HSTS
 
 ```http
 # 服务端响应头
 Strict-Transport-Security: max-age=31536000; includeSubDomains; preload
 ```
 
-### 21.3 Content Security Policy
+### 16.3 Content Security Policy
 
 ```http
 Content-Security-Policy: default-src 'self'; connect-src 'self' https://api.example.com
 ```
 
-### 21.4 敏感数据处理
+### 16.4 敏感数据处理
 
 ```javascript
 // 1. Token 存储在内存,不存 localStorage
@@ -2536,7 +1791,7 @@ function logRequest(url) {
 }
 ```
 
-### 21.5 防止 SSRF
+### 16.5 防止 SSRF
 
 ```javascript
 // 服务端验证用户提供的 URL
@@ -2552,9 +1807,9 @@ function isAllowedUrl(url) {
 
 ---
 
-## 22. 与其他网络栈对比
+## 17. 与其他网络栈对比
 
-### 22.1 Fetch vs XMLHttpRequest
+### 17.1 Fetch vs XMLHttpRequest
 
 | 特性          | Fetch                | XMLHttpRequest     |
 | ------------- | -------------------- | ------------------ |
@@ -2567,7 +1822,7 @@ function isAllowedUrl(url) {
 | 上传进度      | 不支持(需手动构造) | upload.onprogress  |
 | 兼容性        | 现代浏览器           | IE10+              |
 
-### 22.2 Fetch vs axios
+### 17.2 Fetch vs axios
 
 | 特性            | Fetch           | axios              |
 | --------------- | --------------- | ------------------ |
@@ -2582,7 +1837,7 @@ function isAllowedUrl(url) {
 | Node.js 支持    | Node 18+ 原生    | 一直支持           |
 | 体积            | 0                | 13KB               |
 
-### 22.3 Fetch vs Node.js http 模块
+### 17.3 Fetch vs Node.js http 模块
 
 ```javascript
 // Node.js 内置 http 模块
@@ -2598,7 +1853,7 @@ const response = await fetch('http://example.com');
 const data = await response.text();
 ```
 
-### 22.4 与其他语言对比
+### 17.4 与其他语言对比
 
 | 语言       | 原生 HTTP 客户端                          | 第三方主流                |
 | ---------- | ----------------------------------------- | ------------------------- |
@@ -2611,9 +1866,9 @@ const data = await response.text();
 
 ---
 
-## 23. 案例研究:实时聊天应用
+## 18. 案例研究:实时聊天应用
 
-### 23.1 需求
+### 18.1 需求
 
 - 用户登录后建立 WebSocket 连接
 - 接收消息流式显示
@@ -2621,7 +1876,7 @@ const data = await response.text();
 - 离线时缓存未发送消息,上线后重发
 - Service Worker 缓存历史消息
 
-### 23.2 实现
+### 18.2 实现
 
 ```javascript
 // chat-client.js
@@ -2725,7 +1980,7 @@ class ChatClient {
 }
 ```
 
-### 23.3 Service Worker 离线支持
+### 18.3 Service Worker 离线支持
 
 ```javascript
 // sw.js
@@ -2787,7 +2042,7 @@ async function sendPendingMessages() {
 }
 ```
 
-### 23.4 性能与可观测性
+### 18.4 性能与可观测性
 
 ```javascript
 // 上报性能指标
@@ -3015,44 +2270,6 @@ fetch(url, {
   priority: 'high' | 'low' | 'auto',
 });
 ```
-
----
-
-## 附录 D:Stream 类型关系图
-
-```mermaid
-flowchart LR
-    R[ReadableStream<br/>生产者] -->|pipeThrough| T[TransformStream<br/>转换器]
-    T -->|pipeTo| W[WritableStream<br/>消费者]
-    R -->|tee 分叉| R1[ReadableStream 分叉 1]
-    T --> R2[ReadableStream<br/>TransformStream 的可读端]
-```
-
----
-
-## 附录 E:Service Worker 事件生命周期
-
-```mermaid
-stateDiagram-v2
-    [*] --> 注册
-    注册 --> Installing: 注册
-    Installing --> Installed
-    Installed --> Activating
-    Activating --> Activated
-    Activated --> 运行中
-    运行中 --> 被新版本替换: fetch / push / sync / message
-    被新版本替换 --> Redundant
-```
-
-主要事件:
-- `install`:首次安装或新版本下载后触发
-- `activate`:新版本接管时触发,适合清理旧缓存
-- `fetch`:页面发起网络请求时触发
-- `push`:收到 Push 通知时触发
-- `sync`:后台同步(网络恢复时)
-- `periodicsync`:周期性后台同步
-- `message`:与主线程通信
-- `notificationclick`:用户点击通知
 
 ---
 

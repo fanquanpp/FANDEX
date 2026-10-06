@@ -12,7 +12,7 @@ related:
   - 'c/060-OperatorExpression'
   - 'c/120-ArrayDetailed'
   - 'c/220-MemoryAlignmentDeepDive'
-  - 'c/520-C23C2y'
+  - 'c/520-C23CoreFeatures'
   - 'c/530-C23NewFeatures'
 prerequisites:
   - 'c/020-CLanguageOverview'
@@ -24,7 +24,7 @@ prerequisites:
 - 已完成 [程序结构与基本语法](/c/030-ProgramStructureBasicSyntax)：会写、编译、运行一个 printf 程序；
 - [C 语言概览](/c/020-CLanguageOverview) 里见过 int、char 这些名字，本文负责把它们一次讲透。
 
-> 分工说明：本篇是类型系统的主线教学。类型转换的完整阶梯在 [运算符与表达式](/c/060-OperatorExpression) 安家；结构体成员怎么排布、对齐怎么算在 [内存对齐](/c/220-MemoryAlignmentDeepDive)；C23 的新类型在 [C23 与 C2y](/c/520-C23C2y) 与 [C23 新特性](/c/530-C23NewFeatures)。本篇只给主线与「什么时候用哪个」。
+> 分工说明：本篇是类型系统的主线教学。类型转换的完整阶梯在 [运算符与表达式](/c/060-OperatorExpression) 安家；结构体成员怎么排布、对齐怎么算在 [内存对齐](/c/220-MemoryAlignmentDeepDive)；C23 的新类型在 [C23 与 C2y](/c/520-C23CoreFeatures) 与 [C23 新特性](/c/530-C23NewFeatures)。本篇只给主线与「什么时候用哪个」。
 
 ## 学习目标
 
@@ -351,7 +351,7 @@ float 与 double 怎么选：**默认 double**——现代 CPU 上两者速度�
 bool ok = 0.1 + 0.2 > 0.3 - 1e-9;   /* true */
 ```
 
-所以老代码里的 `#include <stdbool.h>` 依然常见、依然合法。C23 的完整变化清单见 [C23 与 C2y](/c/520-C23C2y)。
+所以老代码里的 `#include <stdbool.h>` 依然常见、依然合法。C23 的完整变化清单见 [C23 与 C2y](/c/520-C23CoreFeatures)。
 
 ## 8. 修饰符组合与字面量后缀速览
 
@@ -391,7 +391,7 @@ signed、unsigned、short、long 四个修饰符与基本类型组合出整型�
 
 - 平台相关的一般计算用 int；一切「大小与下标」用 size_t——这是 C 标准库自己的风格；
 - 文件格式、网络协议、持久化数据用 int32_t/int64_t：宽度即承诺。真实项目同样如此，SQLite 与 Redis 都在头文件里定义了自己的 u32、i64 别名，本质是给 stdint.h 类型换一口项目方言；
-- 嵌入式与驱动（寄存器值、字节流）：uint8_t/uint32_t 配合位运算，见 [位运算与位域](/c/070-BitwiseBitField) 与 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)；
+- 嵌入式与驱动（寄存器值、字节流）：uint8_t/uint32_t 配合位运算，见 [位运算与位域](/c/070-BitwiseOperationAndMask) 与 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)；
 - 图形与音频的海量样本用 float，科学计算默认 double（第 6 节）；
 - 超大数组不要开在栈上（局部变量动辄几 MB 会栈溢出），去堆上 malloc，见 [动态内存](/c/200-DynamicMemoryManagement)。
 

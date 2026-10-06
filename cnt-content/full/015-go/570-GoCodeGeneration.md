@@ -1,5 +1,5 @@
 ---
-order: 580
+order: 630
 title: Go 与代码生成
 module: 'go'
 category: 后端技术

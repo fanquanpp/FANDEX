@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 180
 title: 分支模型与分支保护规则
 module: 'github'
 category: 工具链

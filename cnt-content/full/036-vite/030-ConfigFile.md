@@ -9,12 +9,20 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'vite/020-QuickStart'
-  - 'vite/070-DevServerHMR'
+  - 'vite/070-DevServerAndProxy'
   - 'vite/080-BuildSplit'
 prerequisites:
   - 'vite/020-QuickStart'
 ---
 
+
+## 知识点地图
+
+- **知识类别**：Vite 配置文件（`vite.config.ts`）——配置的结构、加载机制与最高频的配置项，对应 vite.dev 的「Config」章节。
+- **解决什么问题**：零配置能跑但跑不顺心——端口冲突、路径地狱、跨域失败、多环境混乱都要在配置文件里解决；同时配置本身有两套同步机制（Vite 的 alias 与 tsconfig 的 paths）和两种形态（对象与函数），形态选错会埋雷。
+- **什么时候用到**：项目初始化时定基线；接框架插件；配路径别名；接后端接口配代理；多环境（staging/prod）切换的入口层。
+- **本篇主线**：每节用「不配 vs 配 vs 配好」三档对比建立「默认可用、按需调整、两套机制同步」的心智；重点深挖两个真实痛点——alias 双源对齐（第 5 节）与条件配置（第 3 节函数形态）。环境变量与模式只留概览（第 7 节），深水区在专篇。
+- **本篇不讲**：环境变量与模式的完整规则（见 [Vite 环境变量与模式](/vite/050-ViteEnvModes)）；server/proxy 逐项细节（见 [开发服务器与代理](/vite/070-DevServerAndProxy)）。
 
 ## 1. 从汽车仪表盘与方向盘说起
 
@@ -45,7 +53,7 @@ Vite 的几乎所有行为（端口、别名、插件、构建选项）都可以
 vite --config my-config.ts
 ```
 
-讲解：配置文件的查找规则是"从进程当前工作目录向上查找"，通常放在项目根目录。修改配置文件后 Vite 会自动重启 dev server，无需手动操作（少数插件注册类变更除外，见第 8 节错误表）。
+讲解：配置文件的查找规则是"从进程当前工作目录向上查找"，通常放在项目根目录。修改配置文件后 Vite 会自动重启 dev server，无需手动操作（少数插件注册类变更除外，见第 9 节错误表）。
 
 ## 3. 第一组对比：不配 vs 配 vs 配好（defineConfig）
 
@@ -193,6 +201,27 @@ export default defineConfig({
 
 讲解：`resolve.alias` 的值使用**文件系统绝对路径**（相对路径不会按预期工作）。别名生效后，`import Header from '@/components/Header'` 等价于相对路径引入。`tsconfig.json` 的 `paths` 与 Vite 的 `alias` 是两套独立机制，修改任一处都要记得同步另一处——这是初学者最常见的报错来源之一。
 
+**对象写法的前缀误伤陷阱**：上面的对象形式 `{ '@': src }` 是**前缀替换**语义，`import Button from '@ant-design/icons'` 中的 `@ant-design` 也会被命中替换，导致包解析失败。两种修复：
+
+```ts
+export default defineConfig({
+  resolve: {
+    alias: [
+      // 数组写法：用正则锚定「@/ 后紧跟内容」的精确形态
+      { find: /^@\/(.*)/, replacement: path.resolve(__dirname, 'src') + '/$1' },
+      // 或者继续用对象，但把项目别名换成不易撞包名的前缀
+      // { '@~': path.resolve(__dirname, 'src') },
+    ],
+  },
+})
+```
+
+双源对齐的完整检查清单（团队项目按此自查）：
+
+1. `vite.config` 的 alias 与 `tsconfig.json` 的 paths 逐条对得上（含正则形态）；
+2. Vite 8 项目优先 `resolve.tsconfigPaths: true` 单一事实源，从根上消灭「两处不同步」；
+3. 测试环境（Vitest/Jest）的 moduleNameMapper 是**第三套**解析机制，别名配置要三处同查——只对齐前两处，「跑测试才报找不到模块」的现场就来了。
+
 ## 6. server：开发服务器的"行车电脑"
 
 ### 不配
@@ -237,90 +266,43 @@ export default defineConfig({
 
 讲解：代理是开发期跨域的官方解法——浏览器同源策略会拦截 `http://localhost:3000` 页面直连 `http://localhost:8080` 的接口，而通过 Vite 代理，浏览器只请求同源的 `/api/xxx`，由 Vite 在服务端转发，绕开同源限制。Vite 8 还新增 `server.forwardConsole`：把浏览器控制台日志转发到终端（对使用 AI 编程助手时自动开启，方便在终端看到客户端报错）。注意：代理只在开发环境生效，生产环境需由 nginx 等反向代理配置。
 
-## 7. 环境变量与模式：多套配置一键切换
+## 7. 环境变量与模式：概览与指路
 
-### 不配
+多套环境（开发/测试/生产）的配置切换靠 `.env` 系列文件与 `--mode` 参数。与 050 专篇重叠的完整规则不再展开，本节只立三条必须刻进肌肉记忆的心智，细节见 [Vite 环境变量与模式](/vite/050-ViteEnvModes)：
 
-```ts
-// 不配环境变量：所有环境共用一份配置，无法区分开发/测试/生产
-```
+1. **前缀即安全边界**：只有 `VITE_` 前缀的变量会暴露给客户端产物，其余仅在配置文件（Node 侧）可见——密钥、Token 绝不能放进 `VITE_` 变量，否则原样出现在最终产物里；
+2. **编译期静态替换**：`import.meta.env.VITE_X` 在构建时被替换为字面值，必须完整字面量访问（`import.meta.env[key]` 动态取值无法被替换，拿到 undefined）；
+3. **配置文件读环境用 `loadEnv`**：`defineConfig(({ mode }) => { const env = loadEnv(mode, process.cwd(), '') })`——配置运行在 Node 侧，`import.meta.env` 那时还不存在。
 
-### 配（.env 系列文件）
+`vite-env.d.ts` 的 `ImportMetaEnv` 类型声明、`.env.[mode]` 优先级、自定义模式与 CI 的配合，全部见专篇。
 
-在项目根目录创建 `.env` 系列文件，Vite 启动时自动加载：
+## 8. 动手实践
 
-```bash
-# .env                # 所有环境都生效
-VITE_APP_TITLE=FANDEX
-VITE_API_BASE=/api
+任务：给一个新项目搭出「符合团队规范」的配置基线，并亲手验证三个易错点。
 
-# .env.development    # 仅 dev 生效（mode 为 development）
-VITE_DEBUG=true
+1. **双源对齐验证**：按第 5 节配好 alias（只用对象形式 `{ '@': src }`），然后在代码里 `import { add } from '@utils/math'`（tsconfig paths 配了 `@utils/*`）与 `import dayjs from 'dayjs'`——观察哪个能跑、哪个报错，再用数组正则形态修复；
+2. **条件配置体感**：把第 3 节的函数形态配置落地，`pnpm dev` 与 `pnpm build` 各跑一次，在终端打印 `command` 与 `mode`，确认同一份配置在两个命令下走了不同分支；
+3. **安全边界实测**：往 `.env` 写 `SECRET_TOKEN=abc123` 与 `VITE_API_BASE=/api`，执行 `pnpm build` 后在 `dist/` 里全文搜索两个值，记录哪个出现在产物里。
 
-# .env.production     # 仅 build 生效（mode 为 production）
-VITE_APP_TITLE=FANDEX-Prod
-```
+<details>
+<summary>参考要点（先自己试，再展开对照）</summary>
 
-### 配好（代码中使用 + 类型声明 + 配置读取）
+第 1 题现象：`@utils/math` 在 dev 页面报「Failed to resolve import」——对象形式的 `@` 别名把 `@utils` 当成了 `@` 前缀替换（替换后路径指向 `src` 下不存在的位置）；dayjs 正常，因为它不以 `@` 开头。这就是前缀误伤的现场：**你的别名 `@` 越短，撞上 `@scope/xxx` 官方包名的概率越高**。修复用数组正则 `/^@\/(.*)/` 只命中「@ 斜杠开头」的项目内路径。
 
-```ts
-// 任意源码文件
-const apiBase = import.meta.env.VITE_API_BASE   // 自定义变量
-const isProd = import.meta.env.PROD             // 内置：是否生产环境
-const isDev = import.meta.env.DEV               // 内置：是否开发环境
-const mode = import.meta.env.MODE               // 内置：当前模式名
-```
-
-讲解：只有以 `VITE_` 前缀开头的变量会暴露给客户端代码，其余变量只在配置文件中可见。这是刻意设计的安全边界——**密钥、Token 等敏感信息绝不能放进 VITE_ 变量**，否则会原样出现在最终产物中。`import.meta.env` 由 Vite 在编译时**静态替换**为实际值，因此必须使用完整字面量写法（不能写成 `import.meta.env[key]` 动态取值，那样无法被替换）。
-
-为自定义变量补充类型提示（新建 `src/vite-env.d.ts`）：
+第 2 题打印方式：
 
 ```ts
-/// <reference types="vite/client" />
-
-interface ImportMetaEnv {
-  readonly VITE_APP_TITLE: string
-  readonly VITE_API_BASE: string
-}
-
-interface ImportMeta {
-  readonly env: ImportMetaEnv
-}
-```
-
-若**配置文件本身**（如代理目标、CDN 地址）也需要读取环境变量，用 `loadEnv` 手动加载：
-
-```ts
-// vite.config.ts
-import { defineConfig, loadEnv } from 'vite'
-
-export default defineConfig(({ mode }) => {
-  // 从项目根目录加载 .env 系列文件（含 .env.[mode] 覆盖基础文件）
-  const env = loadEnv(mode, process.cwd(), '')
-  return {
-    server: {
-      proxy: {
-        // 代理目标从环境变量读取，实现"一套配置、多环境切换"
-        '/api': {
-          target: env.VITE_API_BASE,
-          changeOrigin: true,
-        },
-      },
-    },
-  }
+export default defineConfig(({ command, mode }) => {
+  console.log('[vite-config]', { command, mode })
+  // ...
 })
 ```
 
-自定义模式构建"测试环境"产物：
+dev 时 command 是 `serve`、mode 是 `development`；build 时是 `build` + `production`。第三步安全实测的结论：`abc123` 出现在 `dist/assets/*.js` 里吗——不出现在才对（无前缀不暴露），`/api` 出现（VITE_ 前缀已注入）。亲手搜过一次，「密钥不能加 VITE_ 前缀」就从背诵变成了直觉。
 
-```bash
-# 构建时使用 .env.staging（需提前创建该文件）
-vite build --mode staging
-```
+</details>
 
-讲解：`--mode staging` 会加载 `.env.staging` 与 `.env`（基础文件始终加载），同时 `import.meta.env.MODE` 变为 `'staging'`。多环境部署（dev / staging / prod）通常用这种方式管理。
-
-## 8. 常见错误与对策表
+## 9. 常见错误与对策表
 
 | 序号 | 报错/现象 | 原因 | 解决办法 |
 | --- | --- | --- | --- |
@@ -332,6 +314,6 @@ vite build --mode staging
 | 6 | 生产环境接口请求仍报跨域 | `server.proxy` 只在开发环境生效 | 生产环境在 nginx/网关配置反向代理 |
 | 7 | 自定义变量在代码中无类型提示 | 未在 `vite-env.d.ts` 声明 | 按第 7 节方式补充 `ImportMetaEnv` 接口 |
 
-## 9. 一句话记忆
+## 10. 一句话记忆
 
 **vite.config.ts 是 Vite 的方向盘：`defineConfig` 拿类型提示，`plugins` 装能力，`resolve` 管寻路，`server` 管开发，`build` 管产物，`VITE_` 前缀管环境——所有配置都遵循"默认可用、按需调整、两套机制同步"**。

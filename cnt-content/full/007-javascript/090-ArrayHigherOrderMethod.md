@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 110
 title: 数组高阶方法：排行榜不需要三段循环
 module: 'javascript'
 category: 前端技术
@@ -224,6 +224,42 @@ some 问「有没有一个满足」，every 问「是不是全都满足」。两
 ### 4.5 forEach 一句话
 
 只想逐个打印、不收集结果时，070 的 for-of 和数组自带的 forEach 都行。本篇其余方法都「有产出」，forEach 唯独没有——它的定位和坑留给 [高阶函数](/javascript/150-HigherOrderFunction)，今天记住 for-of 就够。
+
+
+### 4.7 贯穿例：一个 fruits 数组跑遍六个方法（承接自扫描素材）
+
+课堂演示页里有个经典做法：**一个数组从头用到尾**，六种需求在同一份数据上各取所需，方法之间的差别因此一览无余。把玩家名单换成水果清单，同样的六件事再来一遍：
+
+```javascript
+const fruits = ["苹果", "香蕉", "橙子", "苹果", "葡萄", "香蕉"];
+
+// sort：按默认字典序排
+console.log([...fruits].sort());           // ["橙子", "苹果", "葡萄", "香蕉", "香蕉", "苹果"]...
+// 注：默认排序按 UTF-16 码元，中文结果依实现，演示排序"有规则"即可
+
+// indexOf + includes：查存在与位置
+console.log(fruits.indexOf("苹果"));       // 0（第一次出现）
+console.log(fruits.includes("榴莲"));      // false
+
+// push / pop：尾部进出
+const basket = [...fruits];
+basket.push("芒果");                       // 尾部加
+const last = basket.pop();                 // 尾部取（"芒果"又出来了）
+
+// splice：任意位置增删
+const trimmed = [...fruits];
+trimmed.splice(1, 2);                      // 从下标 1 删 2 个（香蕉、橙子）
+
+// slice：不改动地截取
+console.log(fruits.slice(0, 3));           // ["苹果", "香蕉", "橙子"]
+
+// map：每个元素变形（与高阶方法的衔接）
+console.log(fruits.map((f) => "新鲜的" + f));
+```
+
+为什么值得单独练：六个方法散在 4.1~4.6 的名单例子里，换成 fruits 再跑一遍，能检验你记住的是**方法的能力**还是**那份数据**。自测标准：不看上文，能对 fruits 说出六种需求各该用哪个方法。
+
+**配套的练习版式**：「左源码右演示」双栏页（左栏高亮代码、右栏实时运行结果）是这个素材的另一份遗产——自己练时可以开两个编辑器分屏：左边写代码，右边开一个最小 HTML + `<pre id="out"></pre>` 输出区，用 `out.textContent = JSON.stringify(result)` 替代 console.log，保存即看结果。这套自制沙盒比控制台多一个好处：结果可以留着对比。
 
 ## 5. 链式调用与它的可读性边界
 

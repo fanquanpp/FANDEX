@@ -1,5 +1,5 @@
 ---
-order: 570
+order: 620
 title: Sass
 module: 'css'
 category: 前端技术
@@ -27,6 +27,8 @@ prerequisites:
 - 说清 Sass 变量与 CSS 自定义属性的语义差异，以及哪些 Sass 能力已经被原生 CSS 替代。
 
 Sass 是历史最久、生态最大的 CSS 预处理器：Bootstrap、大量组件库与设计系统都构建在其上。它提供变量、嵌套、混合、继承、运算与控制流，最终编译为普通 CSS。类比：如果说 CSS 是“配置语言”，Sass 就是给配置加上了“变量、函数与模块”的编程能力，让重复样式可以收敛成定义。
+
+预处理器家族的定位一览：**Sass/SCSS 功能最丰富**（本篇主线）、**Less 简洁易用**、**Stylus 语法最灵活**——三者的变量/嵌套/混合概念互通，学透一家即可平移（Less 与 Stylus 见 [580-LessStylus](/css/580-LessStylus)）。
 
 两种语法：
 

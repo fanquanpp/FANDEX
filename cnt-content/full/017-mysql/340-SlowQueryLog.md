@@ -1,5 +1,5 @@
 ---
-order: 320
+order: 370
 title: 慢查询日志：性能优化的起点
 module: 'mysql'
 category: 数据库
@@ -11,7 +11,7 @@ related:
   - 'mysql/320-EXPLAINDetailed'
   - 'mysql/300-IndexStatsHistogram'
   - 'mysql/350-OptimizerTrace'
-  - 'mysql/860-PerformanceTuningSecurity'
+  - 'mysql/335-ObservabilitySystemSchemas'
 prerequisites:
   - 'mysql/320-EXPLAINDetailed'
 ---
@@ -157,3 +157,45 @@ SELECT * FROM users WHERE LOWER(email) LIKE 'zhang%';   -- 前缀匹配可走索
 ## 下一步
 
 EXPLAIN 看不懂 Extra 里的提示词时，还有终极武器能看到优化器的完整思考过程：[Optimizer Trace](/mysql/350-OptimizerTrace)。
+
+### 配置的两个补充参数
+
+```sql
+-- 至少扫描多少行才记录（过滤掉小表误报）
+SET GLOBAL min_examined_row_limit = 100;
+
+-- 日志写表还是写文件（写表方便 SQL 分析，写文件方便工具采集）
+SET GLOBAL log_output = 'TABLE';     -- 后 SELECT * FROM mysql.slow_log
+SET GLOBAL log_output = 'FILE';      -- 后走 slow_query_log_file
+```
+
+`min_examined_row_limit` 解决「小表全扫天然快却刷屏」的问题——扫描行数不到 100 的不记；`log_output=TABLE` 的取舍：SQL 直接分析方便，但表写日志在高并发下比文件慢且占数据目录空间——常态用 FILE，专项排查期临时切 TABLE。
+
+### 三个典型慢查询的优化案例
+
+```sql
+-- 案例 1：全表扫描 -> 加索引（最常见的结构性慢因）
+-- 慢：EXPLAIN 显示 type=ALL, rows=1000000
+SELECT * FROM orders WHERE customer_id = 1001;
+CREATE INDEX idx_customer ON orders(customer_id);
+-- 优化后：type=ref, rows=50
+
+-- 案例 2：索引列套函数 -> 改写查询或函数索引
+-- 慢：YEAR() 让索引失效，type=ALL
+SELECT * FROM users WHERE YEAR(created_at) = 2024;
+-- 改写为范围条件（索引可用）：
+SELECT * FROM users
+WHERE created_at >= '2024-01-01' AND created_at < '2025-01-01';
+-- 或 8.0.13+ 直接建函数索引：
+CREATE INDEX idx_year ON users ((YEAR(created_at)));
+
+-- 案例 3：OR 两侧不同列 -> UNION 改写
+-- 慢：OR 让优化器只能全表扫
+SELECT * FROM orders WHERE customer_id = 1001 OR status = 'urgent';
+-- 改写为两条各走各的索引：
+SELECT * FROM orders WHERE customer_id = 1001
+UNION
+SELECT * FROM orders WHERE status = 'urgent' AND customer_id != 1001;
+```
+
+三个案例分别对应三类根因：无索引可用（建索引）、索引被表达式废掉（改写或函数索引，原理见 [索引失效场景](/mysql/310-IndexFailureScene) 与 [函数索引](/mysql/290-FunctionalIndex)）、优化器无法为 OR 组合索引（改写为 UNION 让每条各自命中）。分析闭环的完整流程（日志找嫌疑、EXPLAIN 定位、改造、三件套复测）见 [系统库与可观测](/mysql/335-ObservabilitySystemSchemas) 的例子二。

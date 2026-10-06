@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 180
 title: 字符串算法
 module: 'algorithm'
 category: 计算机科学

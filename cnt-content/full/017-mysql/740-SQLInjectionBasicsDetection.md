@@ -1,5 +1,5 @@
 ---
-order: 720
+order: 770
 title: SQL 注入基础与检测
 module: 'mysql'
 category: 数据库
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'mysql/890-MySQLQuickLookup'
-  - 'mysql/900-MySQLApplicationController'
+  - 'mysql/900-AppLayerDbAccessPatterns'
   - 'mysql/750-SQLInjectionAttackTypePractice'
   - 'mysql/760-SQLInjectionDefenseStrategy'
 prerequisites:

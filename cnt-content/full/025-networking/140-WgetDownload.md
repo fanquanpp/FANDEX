@@ -1,5 +1,5 @@
 ---
-order: 150
+order: 170
 title: wget 文件下载
 module: 'networking'
 category: 云与基础设施

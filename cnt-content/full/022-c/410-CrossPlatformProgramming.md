@@ -1,5 +1,5 @@
 ---
-order: 430
+order: 450
 title: 跨平台编程：Windows 与 POSIX 的沟壑与搭桥
 module: 'c'
 category: 计算机科学
@@ -394,7 +394,7 @@ uint32_t load_be32(const uint8_t *p) {
 
 ## 7. 构建与工具链
 
-一句话地图：Windows 原生编译器是 cl（MSVC，通常经 Visual Studio 或 Build Tools 驱动）；MinGW 把 GCC 带上 Windows；CMake 是两边通吃的构建描述层——一份 CMakeLists.txt，Linux 上生成 Makefile、Windows 上生成 Visual Studio 工程，构建系统的展开见 [构建系统](/c/470-BuildSystem)。配套两句纪律：可移植不是「我心想可移植」，CI 里每个目标平台都编译一遍才算数；静态检查器（cppcheck 的多平台参数、clang-tidy 的 portability 检查组）能在本机就揪出 long 宽度、类型截断一类问题，工具对比见 [静态分析与调试](/c/490-StaticAnalysisDebug)。
+一句话地图：Windows 原生编译器是 cl（MSVC，通常经 Visual Studio 或 Build Tools 驱动）；MinGW 把 GCC 带上 Windows；CMake 是两边通吃的构建描述层——一份 CMakeLists.txt，Linux 上生成 Makefile、Windows 上生成 Visual Studio 工程，构建系统的展开见 [构建系统](/c/470-BuildSystem)。配套两句纪律：可移植不是「我心想可移植」，CI 里每个目标平台都编译一遍才算数；静态检查器（cppcheck 的多平台参数、clang-tidy 的 portability 检查组）能在本机就揪出 long 宽度、类型截断一类问题，工具对比见 [静态分析与 Sanitizers](/c/485-StaticAnalysisAndSanitizers)。
 
 ## 8. 常见错误与调试实录
 

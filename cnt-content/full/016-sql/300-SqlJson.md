@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 320
 title: SQL 中的 JSON
 module: 'sql'
 category: 数据库

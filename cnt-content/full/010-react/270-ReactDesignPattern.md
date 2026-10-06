@@ -1,5 +1,5 @@
 ---
-order: 290
+order: 340
 title: React 设计模式
 module: 'react'
 category: 前端技术

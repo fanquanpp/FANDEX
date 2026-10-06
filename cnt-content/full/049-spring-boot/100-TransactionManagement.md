@@ -1,5 +1,5 @@
 ---
-order: 100
+order: 120
 title: 事务管理：@Transactional 的代理本质与七个失效现场
 description: 以「扣库存成功、建订单抛异常却没回滚」的钱货两失事故引入：AOP 代理与事务边界的心智模型、传播机制七种细讲三种、隔离级别与 MVCC 的关系、受检异常默认提交的反直觉实验、七个失效场景逐个最小复现，附 TransactionTemplate 的适用场合。
 module: 'spring-boot'

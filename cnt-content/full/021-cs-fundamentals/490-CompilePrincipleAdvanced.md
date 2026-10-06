@@ -1,5 +1,5 @@
 ---
-order: 500
+order: 520
 title: 编译原理进阶
 module: 'cs-fundamentals'
 category: 计算机科学

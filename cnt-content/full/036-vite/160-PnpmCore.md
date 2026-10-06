@@ -1,5 +1,5 @@
 ---
-order: 160
+order: 180
 title: pnpm 核心特性
 module: 'vite'
 category: 前端技术

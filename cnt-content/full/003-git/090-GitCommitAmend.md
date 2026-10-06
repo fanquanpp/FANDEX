@@ -1,5 +1,5 @@
 ---
-order: 90
+order: 110
 title: git commit --amend：提交后一分钟的后悔药
 module: 'git'
 category: 工具链

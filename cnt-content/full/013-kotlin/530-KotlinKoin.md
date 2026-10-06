@@ -1,5 +1,5 @@
 ---
-order: 550
+order: 570
 title: Kotlin 与 Koin
 module: 'kotlin'
 category: 后端技术

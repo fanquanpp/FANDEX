@@ -1,5 +1,5 @@
 ---
-order: 230
+order: 300
 title: 自动化测试框架对比
 module: 'software-testing'
 category: 云与基础设施

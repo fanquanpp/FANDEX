@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-12'
 related:
   - 'sql/040-DataQueryBasics'
-  - 'sql/140-MultiTableQuery'
+  - 'sql/150-JoinQuery'
 prerequisites: []
 ---
 

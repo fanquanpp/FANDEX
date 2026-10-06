@@ -1,5 +1,5 @@
 ---
-order: 470
+order: 550
 title: 弱引用
 module: 'python'
 category: 后端技术
@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'python/510-DecoratorAdvanced'
   - 'python/570-Descriptor'
-  - 'python/600-MetaclassSingleton'
+  - 'python/600-SingletonPattern'
   - 'python/520-ContextManager'
 prerequisites: []
 ---

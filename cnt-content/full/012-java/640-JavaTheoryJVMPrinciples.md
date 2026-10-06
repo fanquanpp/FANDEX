@@ -1,5 +1,5 @@
 ---
-order: 520
+order: 590
 title: Java 理论篇：JVM 原理、类加载机制与内存管理
 module: 'java'
 category: 后端技术
@@ -9,7 +9,6 @@ author: fanquanpp
 updated: '2026-10-05'
 related:
   - 'java/690-JavaNetworkProgramming'
-  - 'java/820-SpringBasicsIoCAOPBeanLifecycle'
   - 'java/720-JavaDatabaseConnection'
 prerequisites:
   - 'java/020-JavaOverviewDevEnv'

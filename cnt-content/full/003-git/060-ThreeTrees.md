@@ -1,5 +1,5 @@
 ---
-order: 60
+order: 80
 title: 三棵树
 module: 'git'
 category: 工具链
@@ -15,6 +15,12 @@ related:
 prerequisites:
   - 'git/050-GitBasicOperation'
 ---
+
+## 知识点地图
+
+- **知识类别**：Git 三棵树模型——工作区、暂存区、仓库三层结构的分工与状态流转。它是整个 Git 模块的「地形图」：add/commit/diff/restore/reset 的行为全部能落在三棵树上解释。
+- **解决什么问题**：「我明明 add 了怎么 diff 还有输出」「提交里怎么少了个文件」「想把改动撤回去但怕撤错」——这些日常困惑的根因都是分不清改动停在哪棵树里。
+- **什么时候用到**：每次提交前的体检（status + diff）；拆分提交（add -p）；撤销误操作（restore 家族）；排查「提交内容与预期不符」。
 
 ## 前置知识与学习目标
 
@@ -189,3 +195,49 @@ git commit --amend --no-edit    # 提交完发现漏文件（未推送时）
 - 暂存区是完整快照（`.git/index` 二进制文件），`ls-files -s` 可直接解剖，冲突时 stage 号为 1/2/3。
 - `commit -a` 只覆盖已跟踪文件；`--amend` 只应在未推送提交上使用。
 - 现代命令分工：`restore`（工作区/暂存区修复）已接管 `checkout --` 与 `reset <path>` 的日常场景，reset 保留给「移动分支指针」的本职（见 [git reset](git/300-GitReset)）。
+
+## 动手实践
+
+**练习 1（三棵树定位）**：在一个测试仓库制造「同一文件处于三种状态」的局面：文件 A 已 add 但又改（MM）、文件 B 只改未 add（ M）、文件 C 全新未跟踪（??）。只靠 `git status -s` 与三个 diff 命令，分别说出每个文件的改动分布在哪几棵树。
+
+**提示**：`git diff`、`git diff --staged`、`git diff HEAD` 各回答一个方向的问题；双列状态码的第一列看暂存区与 HEAD 的关系。
+
+**练习 2（拆分提交）**：往一个文件里写两类改动（一行功能、一行日志输出），用 `git add -p` 只暂存功能行提交，再用 `git diff` 确认日志行还留在工作区。
+
+**提示**：交互提示里 `y` 收块、`n` 跳过；块太大先用 `s` 拆细。
+
+**练习 3（救援演练）**：依次执行「误 add 了日志文件」「误改了配置文件」，分别用 `restore --staged` 与 `restore` 撤销，提交前用 `git diff --staged` 复核最终暂存区干净。
+
+<details>
+<summary>参考实现（先自己动手，再看这里）</summary>
+
+```bash
+# 练习 1
+git init trees-lab && cd trees-lab
+echo base > a.txt && echo base > b.txt
+git add . && git commit -m "init"
+echo feature >> a.txt && git add a.txt && echo tweak >> a.txt   # A: MM
+echo bugfix >> b.txt                                            # B:  M
+echo new > c.txt                                                # C: ??
+git status -s                # MM a.txt /  M b.txt / ?? c.txt
+git diff                     # B 的未暂存改动 + A 的第二轮 tweak
+git diff --staged            # A 的第一轮 feature
+git diff HEAD                # A、B 两文件的全部改动（C 不在，untracked 不进 diff）
+
+# 练习 2
+echo "feat: add filter" > work.txt
+echo "console.log('debug')" >> work.txt
+git add -p work.txt          # s 拆块后 y 只收功能行
+git diff --staged            # 只见功能行
+git diff                     # 日志行仍在外
+
+# 练习 3
+touch debug.log && git add debug.log
+git restore --staged debug.log && git status -s   # debug.log 回到 ??
+echo "bad" > config.ini
+git restore config.ini                            # 工作区误改被丢弃
+git diff --staged                                 # 确认暂存区干净后再提交
+```
+
+</details>
+

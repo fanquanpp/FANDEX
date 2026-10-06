@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 250
 title: ES6+ 现代语法速通：读懂今天的 JS 代码
 module: 'javascript'
 category: 前端技术
@@ -9,7 +9,7 @@ author: fanquanpp
 updated: '2026-09-28'
 related:
   - 'javascript/590-ES2023To2026NewFeatures'
-  - 'javascript/600-JavaScriptLatestFeature'
+  - 'javascript/600-NewFeatureAdoptionStrategy'
   - 'javascript/200-DeepShallowCopy'
   - 'javascript/330-ProxyAndReflect'
 prerequisites:

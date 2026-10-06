@@ -1,5 +1,5 @@
 ---
-order: 110
+order: 120
 title: Kubernetes 核心资源
 module: 'cloud-computing'
 category: 云与基础设施

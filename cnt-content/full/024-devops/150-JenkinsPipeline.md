@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 180
 title: Jenkins Pipeline
 module: 'devops'
 category: 云与基础设施

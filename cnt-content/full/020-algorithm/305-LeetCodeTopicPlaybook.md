@@ -1,5 +1,5 @@
 ---
-order: 340
+order: 380
 title: LeetCode 分类题型手册：十大高频题型的识别信号、解题模板与代表题
 module: 'algorithm'
 category: 计算机科学
@@ -13,7 +13,6 @@ related:
   - 'algorithm/060-LinkedList'
   - 'algorithm/040-StackAndQueue'
   - 'algorithm/080-Tree'
-  - 'algorithm/170-BinarySearchAlgorithms'
   - 'algorithm/140-RecursionAndBacktracking'
   - 'algorithm/160-DynamicProgramming'
   - 'algorithm/110-GraphAlgorithms'

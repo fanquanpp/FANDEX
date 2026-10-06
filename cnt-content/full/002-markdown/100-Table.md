@@ -12,7 +12,6 @@ related:
   - 'markdown/080-EscapeCharacter'
   - 'markdown/230-HtmlEmbed'
   - 'markdown/250-DefinitionList'
-  - 'markdown/070-BlockquoteNestedList'
 prerequisites:
   - 'markdown/030-ParagraphLineBreak'
 ---

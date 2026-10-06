@@ -1,5 +1,5 @@
 ---
-order: 420
+order: 460
 title: Actions 环境部署：生产密钥为什么要单独锁一个门
 module: 'github'
 category: 工具链

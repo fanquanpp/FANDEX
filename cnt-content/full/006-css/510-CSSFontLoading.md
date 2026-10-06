@@ -1,5 +1,5 @@
 ---
-order: 510
+order: 560
 title: 字体加载
 module: 'css'
 category: 前端技术
@@ -8,11 +8,20 @@ description: "@font-face、font-display 与字体加载策略，兼顾品牌字�
 author: fanquanpp
 updated: '2026-09-12'
 related:
-  - 'css/490-TypographyAndGridSystem'
+  - 'css/490-TypeScaleAndSpacingTokens'
   - 'css/540-CSSPerformanceOptimizationDetailed'
 prerequisites:
   - 'css/020-CSS3OverviewBasicSyntax'
 ---
+
+## 知识点地图
+
+- **知识类别**：字体加载（@font-face 机制、font-display 策略、
+  预加载与子集化）。
+- **解决什么问题**：品牌字体（动辄数 MB）与首屏性能的冲突——
+  什么时候闪、闪多久、闪成什么样。
+- **什么时候用到**：任何自定义字体的站点；FANDEX 文档站的中文字体
+  子集化（仓库 CHANGELOG 记录的 17.77MB -> 0.63MB 案例）是真实参照。
 
 ## 0. 直觉：网页字体是“下载来的”
 
@@ -100,8 +109,53 @@ body {
 
 ## 5. 扩展学习
 
-- 排版体系：`css/490-TypographyAndGridSystem`；
+- 排版体系：`css/490-TypeScaleAndSpacingTokens`；
 - 性能：`css/540-CSSPerformanceOptimizationDetailed`、`html5/380-CriticalRenderingPathAndResourceLoading`；
 - 字体格式：woff2/woff/ttf 的兼容矩阵；
 - 字体转换工具：Font Squirrel Webfont Generator（生成多格式并子集化）、Google Fonts CSS2 API 的子集参数；
 - 资源预加载：`html5/020-HTML5OverviewCoreFeature` 的 preload 章节。
+
+## 动手实践
+
+**任务**：给一个标题页配三档字体加载策略，用 DevTools 的 Network
+面板与节流对比三者首屏表现。
+
+1. 基线：`font-display: block`（阻塞 3 秒，闪白屏）；
+2. 主流：`font-display: swap` + `<link rel="preload" as="font">`
+   （先见系统字、字体到了再换）；
+3. 进阶：`size-adjust` 与 `ascent-override` 对齐系统字与品牌字的
+   度量（消除换字时的布局跳动）。
+
+**提示**：`size-adjust` 是百分比（品牌字相对系统字的字号缩放），
+`ascent-override` 用 `normal` 的百分数微调；对比时开 DevTools
+Performance 的 Layout Shift 轨道，CLS 值是量化判据。
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+```css
+@font-face {
+  font-family: "Brand";
+  src: url("brand-subset.woff2") format("woff2");
+  font-display: swap;                 /* 策略 2：先见字再换字 */
+  size-adjust: 105%;                  /* 品牌字偏小则放大对齐 */
+  ascent-override: 90%;               /* 微调上伸部对齐基线 */
+}
+h1 {
+  font-family: Brand, system-ui, sans-serif;
+}
+```
+
+```html
+<link rel="preload" href="/fonts/brand-subset.woff2"
+      as="font" type="font/woff2" crossorigin>
+```
+
+**逐行讲解**：`swap` 的语义是「后备字先渲染、品牌字就绪后交换」，
+FOIT（闪白）变成 FOUT（闪换字）；`crossorigin` 必须写——即使同源，
+字体预加载的 fetch 模式是 anonymous，漏写会导致双重下载；
+`size-adjust: 105%` 的调法：先不写它看 swap 瞬间的跳变方向，字变小
+就调大百分比重试，配合 Layout Shift 轨道归零为准。子集化工具链
+（unicode-range 分包或 pyftsubset）见扩展学习。
+
+</details>

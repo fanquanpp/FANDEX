@@ -10,7 +10,7 @@ updated: '2026-10-05'
 related:
   - 'vite/030-ConfigFile'
   - 'vite/040-StaticAssets'
-  - 'vite/070-DevServerHMR'
+  - 'vite/070-DevServerAndProxy'
 prerequisites:
   - 'javascript/060-ControlFlow'
 ---

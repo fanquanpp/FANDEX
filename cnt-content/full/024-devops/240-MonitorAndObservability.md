@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 270
 title: 监控与可观测性
 module: 'devops'
 category: 云与基础设施
@@ -12,7 +12,7 @@ related:
   - 'devops/260-GrafanaDashboards'
   - 'devops/270-LogManagement'
   - 'devops/290-OpenTelemetry'
-  - 'devops/300-MonitorAndAlert'
+  - 'devops/240-MonitorAndObservability'
 prerequisites: []
 ---
 
@@ -258,6 +258,43 @@ slos:
 ```
 
 理念与值班实践见《云原生 SRE》，这里记住决策逻辑就够。
+
+### 6.1 燃尽率：预算还剩多久烧完
+
+错误预算是余额，燃尽率是"消费速度"。30 天窗口的消耗率直接用 PromQL 表达：
+
+```promql
+# 30 天窗口的错误预算消耗率（1 = 全部烧完）
+1 - (
+  sum(rate(http_requests_total{status!~"5.."}[30d]))
+  /
+  sum(rate(http_requests_total[30d]))
+)
+```
+
+用它配两条告警就构成完整的 SLO 告警层：**快燃尽**（比如 1 小时窗口烧掉 2% 以上）打电话，**慢燃尽**（3 天窗口烧掉 5% 以上）发消息——快慢双窗口是 Google SRE 推荐的标准组合，只盯单一窗口要么太吵要么太迟。
+
+### 6.2 选指标的两种框架：USE 与 RED
+
+不知道该监控什么时，两套速查框架按对象选用：
+
+**USE 法**——面向**资源**（CPU、磁盘、连接池这类"被消耗的东西"），每个资源问三件事：
+
+| 字母 | 含义 | 以磁盘为例 |
+| --- | --- | --- |
+| U（Utilization） | 利用率 | 磁盘忙碌时间占比 |
+| S（Saturation） | 饱和度（排队等待） | IO 队列长度 |
+| E（Errors） | 错误 | IO 错误计数 |
+
+**RED 法**——面向**服务**（一个 HTTP 接口、一个 RPC 方法），每条服务三件套：
+
+| 字母 | 含义 | 以订单接口为例 |
+| --- | --- | --- |
+| R（Rate） | 请求速率 | 每秒订单请求数 |
+| E（Errors） | 错误率 | 5xx 占比 |
+| D（Duration） | 延迟分布 | P99 耗时 |
+
+判别口诀：**资源问 USE、服务问 RED**。两者拼起来就是从底到顶的监控层次栈：基础设施与系统资源（USE）→ 应用服务（RED）→ 业务指标（订单量、转化率，业务自定义）——告警自下而上只该在"影响上层"时升级，用户感知层（RED/业务）才是 SLO 的素材库。
 
 ## 7. 坑点与自检
 

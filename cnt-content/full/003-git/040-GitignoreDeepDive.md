@@ -1,5 +1,5 @@
 ---
-order: 40
+order: 50
 title: 忽略规则：.gitignore 与「仓库的垃圾桶」
 module: 'git'
 category: 工具链
@@ -12,7 +12,6 @@ related:
   - 'git/050-GitBasicOperation'
   - 'git/070-GitDiffStagingOperation'
   - 'git/150-GitRemoteRepoOperation'
-  - 'git/340-GitHookGitLFS'
 prerequisites:
   - 'git/030-GitEnvConfigInit'
 ---

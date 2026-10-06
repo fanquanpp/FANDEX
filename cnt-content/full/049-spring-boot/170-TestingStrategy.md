@@ -1,5 +1,5 @@
 ---
-order: 170
+order: 200
 title: 测试策略：把置信与时间花在刀刃上
 description: 以「全员 @SpringBootTest、一轮 8 分钟没人愿意跑」引入：测试金字塔在 Spring Boot 的三层定价、Mockito 单元测试、@WebMvcTest 与 @DataJpaTest 切片三件套、Testcontainers 真库集成、回滚测试的局限与 TestConfiguration 覆盖，附同一逻辑三层实测对比。
 module: 'spring-boot'

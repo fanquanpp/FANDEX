@@ -1,10 +1,10 @@
 ---
-order: 420
+order: 440
 title: 分布式系统
 module: 'cs-fundamentals'
 category: 计算机科学
 difficulty: advanced
-description: 分布式系统：CAP定理、一致性模型、共识算法、分布式事务与容错机制
+description: 分布式系统：CAP定理、一致性模型、共识算法、分布式事务与容错机制；文末附 Raft 选举可视化与仲裁读写实验
 author: fanquanpp
 updated: '2026-10-05'
 related:
@@ -16,6 +16,17 @@ prerequisites:
   - 'cs-fundamentals/010-ComputerOverview'
 ---
 
+
+## 知识点地图
+
+- **知识类别**：分布式系统理论——多节点协作时的权衡科学（CAP、一致性、
+  共识、容错）。
+- **解决什么问题**：单机有上限且会宕机，把状态复制到多台机器后，
+  网络分区、时钟偏差、部分失效让「看起来简单」的操作（如选一个主节点、
+  两次读同一个值）变成难题。
+- **什么时候用到**：设计多副本存储与缓存集群、理解 Redis Cluster 与
+  Kafka 的分区复制行为、做技术选型时判断「强一致还是可用」、
+  面试必考的 CAP/ Raft 问答。
 
 ## 1. 分布式系统基础
 
@@ -285,3 +296,65 @@ $$\phi = -\log_{10}(1 - F(t))$$
 $$\begin{cases} W + R > N \\ W > N/2 \end{cases}$$
 
 其中 $N$ 为副本总数，$W$ 为写仲裁，$R$ 为读仲裁。
+
+## 动手实践
+
+**任务**：用 Python 多进程模拟一个 3 节点 Raft 集群的「脑裂与仲裁」，
+亲手验证两个论断——少数派分区内无法选出主、W+R>N 保证读到新值。
+
+1. 用 3 个进程代表 3 个节点，进程间用管道或本地 UDP 互发消息；
+2. 实现最简选举：节点随机超时后自荐（RequestVote），收到过半（2/3）选票者成为 leader，每 100ms 广播心跳；
+3. 用防火墙规则或直接在消息层丢包模拟「分区」：切断节点 3 与其他节点的通信；
+4. 观察节点 1、2 选出新 leader，节点 3 自荐永远得不到 2 票；
+5. 实现 W=2/R=2 的仲裁读写：向 leader 写入后，故意从旧 leader（分区期间残留）读取，验证读不到未复制的值。
+
+**提示**：不要真实现 Raft 日志复制，只保留「过半票数」这一个核心不变量；
+随机超时建议在 150-300ms 之间抖动，固定超时会导致三个节点同时自荐活锁；
+消息丢包直接在发送函数里按目标节点过滤即可，不必动防火墙。
+
+<details>
+<summary>参考实现骨架（先自己写，再展开对照）</summary>
+
+```python
+# raft_mock.py —— 每个节点一个进程，UDP 通信，只验证过半选举
+import socket, random, threading, time
+
+N, PEERS = 3, [("127.0.0.1", 9100 + i) for i in range(3)]
+PARTITION = {2}                        # 节点 2 被隔离（收不到也发不出）
+
+def node(me):
+    addr = PEERS[me]
+    s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+    s.bind(addr)
+    state, votes, term = "follower", set(), 0
+    while True:
+        try:
+            msg, _ = s.recvfrom(256)
+            tag, t = msg.decode().split(":")
+            if tag == "VOTE":
+                votes.add(t)
+                if len(votes) >= N // 2 + 1 and state != "leader":
+                    state = "leader"   # 过半 -> 当选
+                    print(f"node{me} LEADER term{t}")
+        except socket.timeout:
+            pass
+        if state == "follower" and random.random() < 0.02:
+            term += 1                  # 简化：概率性触发自荐
+            state = "candidate"; votes = {str(me)}
+            for i, p in enumerate(PEERS):
+                if i not in PARTITION and i != me:
+                    s.sendto(f"VOTE:{term}".encode(), p)
+        time.sleep(0.05)
+
+for i in range(N):
+    threading.Thread(target=node, args=(i,), daemon=True).start()
+time.sleep(5)
+```
+
+**逐段讲解**：`N // 2 + 1` 就是仲裁数——本文第 6 节 Quorum 公式
+`W > N/2` 的整数形式；`PARTITION` 集合在发送与接收两端同时过滤，
+模拟网络分区是「双向不可达」；活锁规避靠 `random.random()` 的抖动，
+真实 Raft 用随机化选举超时是同一个目的。本骨架没有实现日志复制与
+任期比较，请把它当作「验证过半不变量」的最小实验，而不是 Raft 教程。
+
+</details>

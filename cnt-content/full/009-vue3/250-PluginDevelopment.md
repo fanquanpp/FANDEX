@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 240
 title: 插件开发
 module: 'vue3'
 category: 前端技术

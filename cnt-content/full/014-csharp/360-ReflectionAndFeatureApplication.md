@@ -1,5 +1,5 @@
 ---
-order: 360
+order: 400
 title: 反射与特性应用
 module: 'csharp'
 category: 后端技术
@@ -2203,3 +2203,62 @@ var asm = Assembly.LoadFrom("MyLibrary.dll");
 // 获取程序集中所有类型
 Type[] types = asm.GetTypes();
 ```
+
+## 速查补充：特性 Attribute（承接自原 150 篇速查段）
+
+## 特性 (Attribute)
+
+**基本写法：定义特性**
+`[AttributeUsage(AttributeTargets.<目标>)] public class <名称> : Attribute { ... }`
+```csharp
+// 定义自定义特性
+[AttributeUsage(AttributeTargets.Class | AttributeTargets.Method)]
+public class DescriptionAttribute : Attribute
+{
+    public string Text { get; }
+    public DescriptionAttribute(string text) => Text = text;
+}
+```
+
+---
+
+**基本写法：应用特性**
+`[<特性名>(<参数>)]`
+```csharp
+// 在类上应用特性
+[Description("用户服务")]
+public class UserService { }
+```
+
+---
+
+**基本写法：方法应用特性**
+`[<特性名>(<参数>)] public void <方法>() { ... }`
+```csharp
+// 在方法上应用特性
+[Description("获取用户信息")]
+public void GetUser() { }
+```
+
+---
+
+**基本写法：获取特性**
+`var <变量> = Attribute.GetCustomAttribute(<成员>, typeof(<特性>));`
+```csharp
+// 通过反射获取特性
+var attr = Attribute.GetCustomAttribute(
+    typeof(UserService),
+    typeof(DescriptionAttribute));
+```
+
+---
+
+**基本写法：特性带命名参数**
+`[<特性名>(<位置参数>, <命名参数> = <值>)]`
+```csharp
+// 特性使用命名参数
+[Description("用户服务", Priority = 1)]
+public class UserService { }
+```
+
+---

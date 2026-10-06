@@ -4,12 +4,13 @@ title: HTML5 表格与复杂结构
 module: 'html5'
 category: 前端技术
 difficulty: beginner
-description: 表格、定义列表、全局属性大表与 details/dialog/popover 等复杂结构，含语义化标签浅读。
+description: 表格语义结构、合并单元格、表格使用原则与全局属性大表、details/dialog/popover 速览。
 author: fanquanpp
-updated: '2026-09-29'
+updated: '2026-10-06'
 related:
   - 'html5/090-HTML5CoreGlobalAttributes'
   - 'html5/100-HTML5BasicContentTags'
+  - 'html5/120-List'
   - 'html5/170-SemanticTag'
 prerequisites:
   - 'html5/100-HTML5BasicContentTags'
@@ -25,28 +26,7 @@ prerequisites:
 
 表格是 HTML 里最容易被误用的标签：很多人用 `<div>` 拼"假表格"，结果既难读又难维护；反过来，也有人用 `<table>` 拼页面布局，同样是错的。正确的做法是用语义化的表格标签表达"数据表"，让浏览器和读屏软件都知道"这是数据"。页面布局交给 CSS 的 Flex/Grid，不是表格的职责。
 
-## 1. 定义列表：术语 + 描述的"键值对"
-
-定义列表使用 `<dl>` 标签定义，术语使用 `<dt>` 标签定义，描述使用 `<dd>` 标签定义。
-**示例**：
-
-```html
-<h3>术语解释</h3>
-<dl>
-<dt>HTML</dt>
-<dd>超文本标记语言，用于创建网页结构</dd>
-<dt>CSS</dt>
-<dd>层叠样式表，用于美化网页</dd>
-<dt>JavaScript</dt>
-<dd>脚本语言，用于实现网页交互</dd>
-</dl>
-```
-
-**讲解：**
-
-- `<dl>` 是定义列表容器，`<dt>` 表示术语，`<dd>` 表示术语的说明；
-- 一个 `<dt>` 可以对应多个 `<dd>`，用于表达"一对多"的释义关系；
-- 定义列表适合术语表、键值对数据，不要用它做纯视觉排版。
+> 提示：如果数据是"术语 + 描述"或"属性名 + 属性值"的键值对（术语表、FAQ、商品规格），用 `<dl>` 描述列表比表格更合适——三类列表的完整讲解见 [120-List](/html5/120-List)。表格的主场是多列多行的二维数据。
 
 ## 2. 表格标签（table）
 
@@ -387,7 +367,7 @@ HTML5 引入了一系列语义化标签，用于更清晰地描述网页结构�
 
 ## 7. 进阶知识点
 
-> 本节是速览；`dialog` 与 `popover` 的完整指南（`showModal`/`returnValue`/`::backdrop`/使用时机对比/可访问性）见专项 `430-HTML5DialogPopoverGuide`。
+> 本节是速览；`dialog` 与 `popover` 的完整指南（`showModal`/`returnValue`/`::backdrop`/使用时机对比/可访问性）见专项 `430-HTML5DialogPopoverGuide`，`details`/`summary` 折叠与手风琴的完整指南见 `435-DetailsAndInteractiveElements`。
 
 ### 7.1 可折叠内容：details 与 summary
 
@@ -457,8 +437,8 @@ HTML5 引入了一系列语义化标签，用于更清晰地描述网页结构�
 ### 入门版
 
 1. 用 `<table>` 做一个"本周课程表"：`<caption>` 写标题，`<thead>` 放星期，`<tbody>` 放课程；
-2. 用 `<dl>` 列出 3 个今天学会的标签及其含义；
-3. 用 `<details>` + `<summary>` 做一个"展开看更多"区域。
+2. 用 `<dl>` 列出 3 个今天学会的标签及其含义（dl 完整讲解见 [120-List](/html5/120-List)）；
+3. 用 `<details>` + `<summary>` 做一个"展开看更多"区域（完整交互指南见 [435-DetailsAndInteractiveElements](/html5/435-DetailsAndInteractiveElements)）。
 
 ### 进阶版
 
@@ -470,7 +450,7 @@ HTML5 引入了一系列语义化标签，用于更清晰地描述网页结构�
 
 - 数据表用 `table` + `caption`/`thead`/`tbody`/`tfoot` + `th`/`td`，表头加 `scope`；
 - `colspan` 横着占列，`rowspan` 竖着占行，合并后要少写被盖住的格子；
-- `dl`/`dt`/`dd` 表达"术语 + 描述"的键值对；
+- 键值对数据（术语、规格）用 `dl`/`dt`/`dd`，完整列表全景见 [120-List](/html5/120-List)；
 - 全局属性：`id` 唯一、`class` 复用、`style` 仅临时、`data-*` 存数据；
 - `details`/`dialog`/`popover` 是三个免 JavaScript 的交互组件；
 - 语义化标签（`header`/`nav`/`main`/`article`/`section`/`aside`/`footer`）浅读，完整版在 008。

@@ -1,5 +1,5 @@
 ---
-order: 410
+order: 430
 title: JSDoc 类型驱动开发：不写 .ts 也有完整类型
 module: 'typescript'
 category: 前端技术

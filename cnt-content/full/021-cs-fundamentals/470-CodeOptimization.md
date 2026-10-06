@@ -1,5 +1,5 @@
 ---
-order: 480
+order: 500
 title: 代码优化
 module: 'cs-fundamentals'
 category: 计算机科学

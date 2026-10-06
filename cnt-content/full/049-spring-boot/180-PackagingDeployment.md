@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 210
 title: 打包与部署：把「我机器上是好的」变成镜像与参数
 description: 以「开发机好好的、生产就翻车」引入：fat jar 嵌套结构与类加载器、Dockerfile 基线与分层镜像、容器内 JVM 内存上限、优雅停机的 SIGTERM 时序、外置配置纪律，附 systemd 与 K8s 两份部署清单与停机时序观测实验。
 module: 'spring-boot'

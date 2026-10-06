@@ -20,8 +20,8 @@
         },
         {
           "id": "kotlin-003",
-          "title": "Kotlin 协程进阶",
-          "doc": "240-KotlinCoroutineAdvanced"
+          "title": "Kotlin 协程取消与超时",
+          "doc": "235-KotlinCoroutineCancellationTimeout"
         },
         {
           "id": "kotlin-004",

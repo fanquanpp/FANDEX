@@ -1,5 +1,5 @@
 ---
-order: 250
+order: 260
 title: 布隆过滤器
 module: 'algorithm'
 category: 计算机科学

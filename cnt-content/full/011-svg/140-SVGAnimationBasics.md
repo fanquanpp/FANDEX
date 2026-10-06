@@ -1,5 +1,5 @@
 ---
-order: 140
+order: 170
 title: SVG 动画基础
 module: 'svg'
 category: 前端技术
@@ -21,6 +21,14 @@ prerequisites:
 - [SVG path 详解](/svg/050-SVGPathDetailed)：路径动画需要看懂 `d` 语法
 
 > 学习目标：能在 SMIL / CSS / JS（rAF、WAAPI）三条动画路线里做技术选型；掌握 SMIL 三件套 animate / animateTransform / animateMotion 的关键属性；理解 CSS 动画 SVG 时的 transform-box 坑；知道哪些属性可以被 CSS 平滑过渡。
+
+## 知识点地图
+
+- **知识类别**：SVG 动画的三条实现路线（SMIL 声明式、CSS、JS/WAAPI），对应 MDN「SVG animations」与 CSS animations 主题。
+- **解决什么问题**：图标要转圈、图表要画线、引导浮层要沿路径飞行——同一个「动起来」的需求有三套技术栈，能力、宿主环境（独立文件 vs 内联页面）、可维护性各不相同；选错路线的经典事故是「动画放进 img 就不动了」。
+- **什么时候用到**：加载指示器（独立 SVG 文件）；数据可视化入场动画（画线、数字滚动）；营销页的引导动效与路径动画；任何需要动效的 SVG 图形。
+- **本篇主线**：先问「动画住在哪里」——独立 .svg 文件只有 SMIL 可用（CSS/JS 被静态安全模式隔离），内联页面三选一按交互复杂度递进：纯循环选 CSS、声明式交互链选 SMIL、数据驱动/复杂编排选 JS。第 10 节性能铁律与第 12 节坑点自检是三路线通用的护身符。
+- **本篇不讲**：WebGL/canvas 动画、Lottie/GSAP 等第三方动效库、CSS `offset-path` 沿路径运动（HTML 元素侧的对应物）。
 
 ## 1. 你现在要解决什么问题
 
@@ -367,10 +375,17 @@ function animate() {
 | CSS 的 d 属性（path）| 仅 Chromium | 不支持 | 不支持 | 仅 Chromium |
 
 SMIL 的历史一句话讲清：Chrome 曾在 2015 年前后宣布废弃，因社区反馈
-（尤其是「独立 SVG 文件内无替代品」这一条）撤回并稳定支持至今；规范
-层面其定义已移入独立的 SVG Animations 规范，SVG 2 不强制实现。结论：
-**当「现状可用、前景存疑」对待**——新写的独立 SVG 文件可以继续用
-SMIL，内联场景优先 CSS/WAAPI。
+（尤其是「独立 SVG 文件内无替代品」这一条）于 2016 年撤回并稳定支持
+至今，此后再无厂商给出移除时间表；规范层面其定义已移入独立的
+SVG Animations 规范，SVG 2 不强制实现，MDN 的 SMIL 相关页面也因此
+长期挂着「不再推荐（deprecated）」横幅——注意这是「规范停滞」的
+标注而不是「浏览器将移除」的预告，截至 2026 年四大引擎照常渲染。
+
+落到选型口径（与第 3 节呼应）：**SMIL 按「现状全支持、演进已冻结」
+对待**——独立 SVG 文件里的自循环动画（img 引用场景）继续放心用
+SMIL，它仍是这个上下文里唯一的免 JS 方案；内联页面元素优先 CSS 或
+WAAPI，享受更好的调试工具（Animations 面板）与未来演进；新项目不要
+把 SMIL 用在「可迁移」的场景自找迁移成本。
 
 ## 12. 坑点与自检
 
@@ -393,14 +408,100 @@ SMIL，内联场景优先 CSS/WAAPI。
 
 1. 把第 2 节的加载圈改造成 SMIL 版本放进独立 `.svg` 文件（用
    `animateTransform type="rotate"`，旋转中心写 `50 50`），双击文件
-   验证独立打开也能转。
+   验证独立打开也能转。提示：SMIL 不认 CSS transform-origin，旋转
+   中心直接写进 `from`/`to` 的「角度 cx cy」三元组。
 2. 用 `pathLength="100"` + `stroke-dashoffset` 给你自己的名字笔画
    （一条 path）做 2 秒画线动画，分别用 SMIL 和 CSS 各实现一次。
+   提示：两版的「从 100 到 0」数值相同，差别只在驱动方式——SMIL 是
+   `<animate attributeName="stroke-dashoffset">`，CSS 是 @keyframes。
 3. 给第 6 节的路径动画加上 `rotate="auto"` 和一个小三角 polygon，
    观察朝向变化；再把 `dur` 拉长一倍，配合 `keyPoints="0;0.6;1"`
-   `keyTimes="0;0.3;1"` 做出「先慢后快再慢」的节奏。
+   `keyTimes="0;0.3;1"` 做出「先慢后快再慢」的节奏。提示：
+   keyPoints 是「路径进度百分比」，keyTimes 是「时间进度百分比」，
+   两者都从 0 开始到 1 结束且个数相同。
 4. 写一个 `prefers-reduced-motion: reduce` 查询，让上面所有动画在
-   开启该设置时停止。
+   开启该设置时停止。提示：CSS 侧 `animation: none`；SMIL 无对应
+   媒体查询，要么换 CSS 路线，要么接受它不可关（或用 JS 检测后
+   `pauseAnimations()`）。
+
+先自己写完再展开参考实现对照：
+
+<details>
+<summary>参考实现（先自己写，再展开对照）</summary>
+
+第 1 题（加载圈 SMIL 版，可存为 spinner.svg 双击验证）：
+
+```svg
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
+  <circle cx="50" cy="50" r="40" fill="none" stroke="#e9ecef"
+          stroke-width="8" />
+  <path d="M 50 10 A 40 40 0 0 1 90 50" fill="none" stroke="#4f5bd5"
+        stroke-width="8" stroke-linecap="round">
+    <animateTransform attributeName="transform" type="rotate"
+                      from="0 50 50" to="360 50 50" dur="1s"
+                      repeatCount="indefinite" />
+  </path>
+</svg>
+```
+
+旋转中心 `50 50` 写在 from/to 里——CSS 版用 transform-origin 的
+思路在这里无效，这是两套坐标心智最直接的对比。
+
+第 2 题（画线动画，SMIL 版）：
+
+```svg
+<path d="..." pathLength="100" fill="none" stroke="#333"
+      stroke-width="3" stroke-dasharray="100" stroke-dashoffset="100">
+  <animate attributeName="stroke-dashoffset" from="100" to="0"
+           dur="2s" fill="freeze" />
+</path>
+```
+
+CSS 版（内联场景）：同一 path 去掉 animate 子元素，加：
+
+```css
+.signature {
+  stroke-dasharray: 100;
+  stroke-dashoffset: 100;
+  animation: draw 2s ease-out forwards;
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+```
+
+`fill="freeze"` 与 `forwards` 是同一个语义在两种语法里的名字。
+
+第 3 题：
+
+```svg
+<path id="track" d="M 20 80 Q 100 0 180 80" fill="none" stroke="#ddd" />
+<polygon points="-8,-5 8,0 -8,5" fill="#d63031">
+  <animateMotion dur="4s" repeatCount="indefinite" rotate="auto"
+                 keyPoints="0;0.6;1" keyTimes="0;0.3;1"
+                 calcMode="linear">
+    <mpath href="#track" />
+  </animateMotion>
+</polygon>
+```
+
+三角形顶点画在 +x 方向，`rotate="auto"` 让 +x 轴对齐切线，朝向才
+正确；keyPoints 前 30% 时间走 60% 路程（快），后 70% 时间走 40%
+（慢）。别忘了 calcMode="linear"——默认 paced 会忽略 keyPoints。
+
+第 4 题（CSS 侧）：
+
+```css
+@media (prefers-reduced-motion: reduce) {
+  .spinner, .signature {
+    animation: none;
+    stroke-dashoffset: 0;
+  }
+}
+```
+
+关掉动画的同时把 dashoffset 归零，名字才不会停留在「没画出来」的
+状态——可访问性不是一刀切「消失」，而是「给出静止的完整形态」。
+
+</details>
 
 ## 14. 下一步
 

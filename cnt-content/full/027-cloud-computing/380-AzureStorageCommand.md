@@ -1,5 +1,5 @@
 ---
-order: 380
+order: 430
 title: Azure 存储命令
 module: 'cloud-computing'
 category: 云与基础设施

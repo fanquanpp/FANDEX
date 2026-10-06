@@ -1,5 +1,5 @@
 ---
-order: 700
+order: 810
 title: Python 与 FastAPI
 module: 'python'
 category: 后端技术
@@ -15,6 +15,12 @@ related:
 prerequisites: []
 ---
 
+
+## 知识点地图
+
+- **知识类别**：FastAPI 的核心机制——路径操作、Pydantic 模型驱动的验证与序列化、依赖注入、中间件与生命周期、路由拆分。它是「类型注解驱动 Web 开发」范式的主力实现。
+- **解决什么问题**：写 API 时验证、序列化、文档三件事反复写——FastAPI 用 Pydantic 模型声明请求/响应形状，一套注解同时产出运行时校验、JSON Schema 与交互式文档（/docs）；依赖注入把「数据库会话、当前用户」这类横切资源从每个函数的手工获取里解放出来。
+- **什么时候用到**：构建 REST API 与内部服务；为 [异步编程](/python/670-AsyncProgrammingDetailed) 的协程提供真实流量出口；数据模型层与 [数据类与 Pydantic](/python/550-DataClassPydantic) 共用同一套 Pydantic 知识；鉴权的安全基础见 [OAuth2](/python/870-PythonOAuth2)。测试 FastAPI 应用（TestClient + 依赖覆盖）见 [Python 测试](/python/750-PythonTest) 与 [unittest 与 mock](/python/755-UnittestAndMockStdlib)。
 
 ## 什么是 FastAPI
 
@@ -470,3 +476,220 @@ from routers.users import router as users_router
 app = FastAPI()
 app.include_router(users_router)
 ```
+
+## 动手实践
+
+练习一（预测题）：客户端 `POST /items` 提交 JSON `{"name": "扳手", "price": "12.5", "tags": null}`，路由签名如下。响应状态码与内容是什么？
+
+```python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+class ItemIn(BaseModel):
+    name: str
+    price: float
+    tags: list[str] = []
+
+@app.post("/items", status_code=201)
+async def create(item: ItemIn) -> ItemIn:
+    return item
+```
+
+提示：Pydantic 会不会做类型强制转换？`tags: null` 与默认值的关系？
+
+<details>
+<summary>参考实现</summary>
+
+返回 `201` 与 `{"name": "扳手", "price": 12.5, "tags": []}`。解析过程：`price` 收到字符串 `"12.5"`，Pydantic v2 在**严格模式关闭（默认）**下做类型强制转换转成 float 12.5——这是它区别于 dataclass「注解不校验」的核心能力；`tags` 收到 `null`，Optional 语义上 `None` 不等于「未提供」，但 v2 里 `list[str] = []` 对显式 null 会报验证错误吗？——实际行为：默认 lax 模式下 `None` 不能转成 list，会返回 `422` 与字段级错误 `tags: Input should be a valid list`。修正方式是把注解写成 `list[str] | None = []`（或 `Field(default_factory=list)` 并要求前端不传 null）。这道题的两个考点：v2 的强制转换边界（字符串数字可转、null 不可转 list）与 422 是 FastAPI 验证失败的统一出口（不是 400）。
+</details>
+
+练习二（实战题）：写一个「待办事项」API：内存字典当存储，路由 `GET /todos`、`POST /todos`、`DELETE /todos/{id}`；POST 用 Pydantic 模型校验（title 必填、1-50 字符），删除不存在的 id 返回 404（HTTPException）。写完用 TestClient 写三个测试（见 [Python 测试](/python/750-PythonTest)）。
+
+提示：404 用 `raise HTTPException(status_code=404, detail=...)`；TestClient 从 `fastapi.testclient` 导入。
+
+<details>
+<summary>参考实现</summary>
+
+```python
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel, Field
+
+app = FastAPI()
+DB: dict[int, dict] = {}
+_seq = 0
+
+class TodoIn(BaseModel):
+    title: str = Field(min_length=1, max_length=50)
+
+def _new_id() -> int:
+    global _seq
+    _seq += 1
+    return _seq
+
+@app.post("/todos", status_code=201)
+async def create(todo: TodoIn):
+    tid = _new_id()
+    DB[tid] = {"id": tid, **todo.model_dump()}
+    return DB[tid]
+
+@app.get("/todos")
+async def list_all():
+    return list(DB.values())
+
+@app.delete("/todos/{tid}", status_code=204)
+async def remove(tid: int):
+    if tid not in DB:
+        raise HTTPException(status_code=404, detail="todo 不存在")
+    del DB[tid]
+
+# tests
+from fastapi.testclient import TestClient
+
+def test_todo_crud():
+    client = TestClient(app)
+    resp = client.post("/todos", json={"title": "买牛奶"})
+    assert resp.status_code == 201
+    tid = resp.json()["id"]
+    assert len(client.get("/todos").json()) == 1
+    assert client.delete(f"/todos/{tid}").status_code == 204
+    assert client.delete(f"/todos/{tid}").status_code == 404
+
+def test_title_length_validated():
+    client = TestClient(app)
+    assert client.post("/todos", json={"title": ""}).status_code == 422
+```
+
+要点：`Field(min_length, max_length)` 是模型层的边界约束，非法输入在进入函数体之前就被 422 拦下——控制器里不再写防御性 if；404 用 HTTPException 表达「资源不存在」这一 HTTP 语义；TestClient 让三个用例毫秒级跑完（不启真实端口）。
+</details>
+
+练习三（实战题）：写一个依赖 `get_db_session()`（yield 一个假会话对象，请求结束后打印 "session closed"），并在两个路由中使用它；再用 `app.dependency_overrides` 在测试里替换成无副作用版本。
+
+提示：yield 依赖的清理段在请求结束时执行（见 [上下文管理器](/python/520-ContextManager) 的同一机制）；override 写法 `app.dependency_overrides[get_db_session] = fake_session`。
+
+<details>
+<summary>参考实现</summary>
+
+```python
+from fastapi import FastAPI, Depends
+
+app = FastAPI()
+
+class FakeSession:
+    def query(self, sql: str) -> list:
+        return [{"id": 1}]
+
+def get_db_session():
+    session = FakeSession()
+    try:
+        yield session                    # yield 之前是进入，之后是清理
+    finally:
+        print("session closed")
+
+@app.get("/users")
+async def users(db=Depends(get_db_session)):
+    return db.query("SELECT * FROM users")
+
+# 测试：替换依赖，无输出无副作用
+def fake_session_override():
+    class Quiet:
+        def query(self, sql): return []
+    yield Quiet()
+
+def test_users():
+    app.dependency_overrides[get_db_session] = fake_session_override
+    client = TestClient(app)
+    assert client.get("/users").json() == [{"id": 1}]
+    app.dependency_overrides.clear()     # 用完清掉，别污染其他测试
+```
+
+要点：yield 依赖等价于「每请求一个 with 上下文」——进入时构造、请求结束（含异常）走 finally；`dependency_overrides` 是 FastAPI 对测试替身的官方入口，替代在深层函数里 patch（patch 的取舍见 [unittest 与 mock](/python/755-UnittestAndMockStdlib)）——依赖注入良好的服务，测试几乎不需要 mock 库。
+</details>
+
+练习四（找错题）：这个中间件想给所有响应加耗时头，但每次请求都返回 500，先找再修：
+
+```python
+import time
+from fastapi import FastAPI, Request
+
+app = FastAPI()
+
+@app.middleware("http")
+async def timing(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    response.body += f"took={time.perf_counter() - start}".encode()
+    return response
+```
+
+提示：改 body 之前，Content-Length 头还是旧的吗？能不能只加 header 不动 body？
+
+<details>
+<summary>参考实现</summary>
+
+```python
+@app.middleware("http")
+async def timing(request: Request, call_next):
+    start = time.perf_counter()
+    response = await call_next(request)
+    response.headers["X-Process-Time"] = f"{time.perf_counter() - start:.6f}"
+    return response
+```
+
+两处问题：其一，`response.body += ...` 把响应体改长但 `Content-Length` 头没变——客户端按旧长度截断或按新长度等待，协议层直接错乱（ASGI 层对 body 的修改要在生成前做，普通 http 中间件里 body 已定型）；其二，耗时信息本质是**元数据**，放响应头（`X-Process-Time`）才是 HTTP 的正位——头部是可变的、body 定型，问题随之消失。若确需改 body，用 `response = JSONResponse(content=...)` 重新构造响应，或改用纯 ASGI 中间件在流层面拦截。
+</details>
+
+练习五（实战题）：把「路由拆分」做一遍：创建 `routers/orders.py`（含 APIRouter、两个路由），主应用 `include_router(prefix="/api/v1", tags=["orders"])`；再给整个 orders 路由加一个路由级依赖（校验请求头 `X-Client` 存在）。用 TestClient 验证缺头时 403。
+
+提示：`APIRouter(dependencies=[Depends(check_client)])` 是路由级依赖的挂法；依赖抛 HTTPException 即可中断请求。
+
+<details>
+<summary>参考实现</summary>
+
+```python
+# routers/orders.py
+from fastapi import APIRouter, Depends, Header, HTTPException
+
+def check_client(x_client: str = Header(default="")):
+    if x_client != "web":
+        raise HTTPException(status_code=403, detail="非法客户端")
+
+router = APIRouter(prefix="/orders", dependencies=[Depends(check_client)])
+
+@router.get("")
+async def list_orders():
+    return [{"id": 1, "total": 9900}]
+
+@router.get("/{oid}")
+async def get_order(oid: int):
+    return {"id": oid, "total": 9900}
+
+# main.py
+from fastapi import FastAPI
+from routers.orders import router as orders_router
+
+app = FastAPI()
+app.include_router(orders_router, prefix="/api/v1", tags=["orders"])
+
+# test
+from fastapi.testclient import TestClient
+
+def test_client_header_required():
+    client = TestClient(app)
+    assert client.get("/api/v1/orders").status_code == 403
+    assert client.get("/api/v1/orders", headers={"X-Client": "web"}).status_code == 200
+    assert client.get("/api/v1/orders/1", headers={"X-Client": "web"}).status_code == 200
+```
+
+要点：路由级 `dependencies=[...]` 对整个 router 生效——鉴权这类横切约束写一次，新增路由自动被覆盖，漏保护的「人因风险」随之消失；`prefix` 在 include 时拼接，最终路径 `/api/v1/orders/...`；`tags` 让 /docs 里分组展示。缺头请求返回 403 而不是 422：Header 参数带 `default=""` 时验证层放过、业务依赖里主动拒绝——「认证失败是权限问题，不是参数问题」。
+</details>
+
+## 自我检查
+
+- 能解释 Pydantic 模型如何同时驱动验证、序列化与 /docs 三件事；
+- 能说出验证失败返回 422 而字段强制转换（"12.5" 到 12.5）在默认 lax 模式下的边界；
+- 能写一个 yield 依赖并用 `dependency_overrides` 在测试中替换它；
+- 能解释为什么中间件里不能直接改 response.body，正确做法是加响应头；
+- 能用 APIRouter 拆分路由并挂路由级依赖（鉴权收口）；
+- 能说出 FastAPI 的异步路由与 [异步编程进阶](/python/670-AsyncProgrammingDetailed) 中事件循环的关系。

@@ -1,5 +1,5 @@
 ---
-order: 210
+order: 240
 title: Object 静态方法：天天要摸的扳手一次配齐
 module: 'javascript'
 category: 前端技术

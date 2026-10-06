@@ -1,5 +1,5 @@
 ---
-order: 180
+order: 220
 title: 压力测试与稳定性测试
 module: 'software-testing'
 category: 云与基础设施
@@ -8,11 +8,11 @@ description: 负载/压力/稳定性/尖峰测试的目标区分、性能指标�
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'software-testing/140-PerformanceInterfaceTest'
+  - 'software-testing/140-PerformanceTestingMethod'
   - 'software-testing/150-JMeter'
   - 'software-testing/210-AutomationTestFrameworkComparison'
 prerequisites:
-  - 'software-testing/140-PerformanceInterfaceTest'
+  - 'software-testing/140-PerformanceTestingMethod'
 ---
 
 ## 1. 四类测试，四个问题
@@ -29,7 +29,7 @@ prerequisites:
 一句话区分：负载测「能不能扛住预期」，压力测「天花板在哪」，稳定性测
 「扛得久不久」，尖峰测「冷不防来一波行不行」。
 
-前置知识：性能指标（RT/TPS/QPS）的基本含义、「性能与接口测试」一文。
+前置知识：性能指标（RT/TPS/QPS）的基本含义、「性能测试方法」一文。
 
 ## 2. 指标语义：最容易踩坑的部分
 

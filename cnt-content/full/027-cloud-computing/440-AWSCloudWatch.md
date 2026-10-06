@@ -1,5 +1,5 @@
 ---
-order: 440
+order: 500
 title: AWS CloudWatch 监控日志命令
 module: 'cloud-computing'
 category: 云与基础设施
@@ -275,6 +275,30 @@ aws cloudwatch put-metric-alarm \
 ```
 
 ---
+
+**基本写法：按自动伸缩组维度与缺数策略建告警**
+`put-metric-alarm --dimensions Name=AutoScalingGroupName,... --datapoints-to-alarm <N> --treat-missing-data <breaching|notBreaching|ignore>`
+```bash
+# ASG 维度（监控整个伸缩组而非单实例）+ 自定义指标
+#datapoints-to-alarm：M 个评估周期里 N 个越限才告警（3 个里 2 个）
+#treat-missing-data breaching：没有数据点视为越限（自定义指标断传时立刻告警）
+aws cloudwatch put-metric-alarm \
+  --alarm-name "high-error-rate" \
+  --metric-name ErrorRate \
+  --namespace MyApp \
+  --statistic Average \
+  --period 60 \
+  --threshold 5 \
+  --comparison-operator GreaterThanThreshold \
+  --evaluation-periods 3 \
+  --datapoints-to-alarm 2 \
+  --treat-missing-data breaching \
+  --alarm-actions arn:aws:sns:us-east-1:123456789012:ops-alerts
+```
+
+---
+
+**基本写法：列出所有告警**
 
 **基本写法：列出所有告警**
 `aws cloudwatch describe-alarms [--state-value <状态>]`

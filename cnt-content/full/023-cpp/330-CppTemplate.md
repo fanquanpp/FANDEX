@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 350
 title: C++ 模板
 module: 'cpp'
 category: 计算机科学
@@ -11,7 +11,6 @@ related:
   - 'cpp/410-Cpp20Concept'
   - 'cpp/730-Cpp23NewFeatures'
   - 'cpp/460-MemoryOrderLockFree'
-  - 'cpp/620-CppExceptionAndPerformance'
 prerequisites:
   - 'cpp/020-CppOverviewAndModernStandard'
 ---

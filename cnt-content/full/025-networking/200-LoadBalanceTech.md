@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 240
 title: 负载均衡技术
 module: 'networking'
 category: 云与基础设施
@@ -12,8 +12,7 @@ related:
   - 'networking/210-LoadBalanceAlgorithm'
   - 'networking/240-HighAvailabilityLVS'
   - 'networking/250-KeepalivedDualHotStandby'
-prerequisites:
-  - 'networking/010-NetworkBasicsAndProtocol'
+prerequisites: []
 ---
 
 前置知识：TCP 连接、HTTP 报文结构（见 [网络基础与协议](networking/010-NetworkBasicsAndProtocol)、

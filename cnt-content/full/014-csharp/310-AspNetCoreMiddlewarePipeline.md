@@ -1,5 +1,5 @@
 ---
-order: 310
+order: 350
 title: ASP.NET Core 中间件管道
 module: 'csharp'
 category: 后端技术

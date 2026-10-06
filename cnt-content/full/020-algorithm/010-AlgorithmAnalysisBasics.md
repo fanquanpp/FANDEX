@@ -11,7 +11,6 @@ related:
   - 'algorithm/020-ArrayAndDynamicArray'
   - 'algorithm/030-SortAlgorithm'
   - 'algorithm/140-RecursionAndBacktracking'
-  - 'algorithm/170-BinarySearchAlgorithms'
 prerequisites:
   - 'python/050-ProgramStructureBasicSyntax'
   - 'python/060-ControlFlow'

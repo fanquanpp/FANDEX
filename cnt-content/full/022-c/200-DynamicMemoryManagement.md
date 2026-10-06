@@ -1,5 +1,5 @@
 ---
-order: 220
+order: 240
 title: 动态内存：大小运行时才确定的数组
 module: 'c'
 category: 计算机科学
@@ -8,7 +8,7 @@ description: 用「玩家人数运行时才知道」的积分榜场景掌握 mal
 author: fanquanpp
 updated: '2026-10-05'
 related:
-  - 'c/210-MemoryManagement'
+  - 'c/210-ProcessMemoryLayoutAndErrors'
   - 'c/140-PointerDeep'
   - 'c/120-ArrayDetailed'
   - 'c/130-StructAndUnion'
@@ -25,7 +25,7 @@ prerequisites:
 
 零基础起步见 [C 语言零基础起步](/c/010-CZeroBasisStart)。指针细节记不全也能往下读，用到就当场解释。
 
-> 分工说明：200 与 210 合讲 C 的动态内存。本篇是主教学，建立操作层面的手感：malloc/calloc/realloc/free 四件套怎么用、返回值为什么不许不查、泄漏怎么自己抓出来；[内存深水区](/c/210-MemoryManagement) 负责拆机制：进程的五段内存布局、use-after-free 与 double free 的 ASan 报告解读、realloc 的搬移语义。两篇示例不重复，本篇是 210 的地基。
+> 分工说明：200 与 210 合讲 C 的动态内存。本篇是主教学，建立操作层面的手感：malloc/calloc/realloc/free 四件套怎么用、返回值为什么不许不查、泄漏怎么自己抓出来；[内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 负责拆机制：进程的五段内存布局、use-after-free 与 double free 的 ASan 报告解读、realloc 的搬移语义。两篇示例不重复，本篇是 210 的地基。
 
 ## 学习目标
 
@@ -165,7 +165,7 @@ int main(void) {
 3: 82
 ```
 
-注意安全写法：**永远用临时指针接 realloc 的返回值，成功才覆盖原指针**。为什么不能写 `scores = realloc(scores, ...)`？这个经典大坑在 [内存深水区](/c/210-MemoryManagement) 分析，本篇先把正确姿势练成习惯。
+注意安全写法：**永远用临时指针接 realloc 的返回值，成功才覆盖原指针**。为什么不能写 `scores = realloc(scores, ...)`？这个经典大坑在 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 分析，本篇先把正确姿势练成习惯。
 
 ## 5. 修改实验：malloc 的新房其实没人打扫
 
@@ -257,7 +257,7 @@ free 后置 NULL 同样是纪律而不是洁癖，它防住两类事故：
 - 游戏服务器房间玩家列表、聊天室在线名单：人数运行时才知道，来人扩容、走人缩容，正是 realloc 的主场；
 - 读文件进内存：文件多大只有运行时知道，量出大小再 malloc 刚好的一块；
 - 嵌入式固件（如 FoloToy-calendar 的 ESP32 项目）：堆只有几十 KB，每个 malloc 前先想清楚谁在何时 free，见 [嵌入式 C 编程](/c/550-EmbeddedCProgramming)；
-- 反过来，小而固定的数据就用栈上数组：不 malloc、不用 free。什么时候栈、什么时候堆，[内存深水区](/c/210-MemoryManagement) 给出完整对照。
+- 反过来，小而固定的数据就用栈上数组：不 malloc、不用 free。什么时候栈、什么时候堆，[内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 给出完整对照。
 
 ## 9. 小练习
 
@@ -271,7 +271,7 @@ free(p);          /* 这一行会发生什么？ */
 printf("ok\n");
 ```
 
-参考答案（先写再看）：打印 `ok`。`free(NULL)` 是标准规定的空操作。如果把 `p = NULL;` 删掉，最后一行就成了对同一块内存的第二次释放——事故现场的逐行解读见 [内存深水区](/c/210-MemoryManagement)。
+参考答案（先写再看）：打印 `ok`。`free(NULL)` 是标准规定的空操作。如果把 `p = NULL;` 删掉，最后一行就成了对同一块内存的第二次释放——事故现场的逐行解读见 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)。
 
 修改题（15 分钟）：把 grow.c 改一次「缩容」：用 realloc 把榜单从 4 个元素调回 2 个，只打印前 2 个元素。验收：输出 90 和 75 两行；注意缩容后绝不能再访问下标 2、3——那是越界。
 
@@ -302,7 +302,7 @@ int main(void) {
 ## 10. 与之前和之后的知识的关系
 
 - 往前：[指针深度解析](/c/140-PointerDeep) 的解引用与取地址在堆上天天用；[数组详解](/c/120-ArrayDetailed) 的「大小编译期写死」从本文起被正式打破；
-- 往后：[内存深水区](/c/210-MemoryManagement) 回答本文按下不表的问题——内存住在进程哪个区域、free 之后那块内存怎么了、realloc 为什么可能整体搬家；
+- 往后：[内存深水区](/c/210-ProcessMemoryLayoutAndErrors) 回答本文按下不表的问题——内存住在进程哪个区域、free 之后那块内存怎么了、realloc 为什么可能整体搬家；
 - 更远：结构体数组同样用 malloc 分配（[结构体与联合体](/c/130-StructAndUnion)），`malloc(n * sizeof *arr)` 写法不变；「谁分配谁释放」的所有权约定在 [多文件编译](/c/310-MultiFileCompilation) 后成为日常。
 
 ## 11. 官方文档
@@ -323,4 +323,4 @@ int main(void) {
 
 ## 下一步
 
-进入 [内存深水区](/c/210-MemoryManagement)：带着「我的变量到底住在内存的哪里」这个问题，把进程的五段布局和堆事故现场一次看穿。
+进入 [内存深水区](/c/210-ProcessMemoryLayoutAndErrors)：带着「我的变量到底住在内存的哪里」这个问题，把进程的五段布局和堆事故现场一次看穿。

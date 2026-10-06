@@ -1,5 +1,5 @@
 ---
-order: 260
+order: 300
 title: C#与依赖注入
 module: 'csharp'
 category: 后端技术
@@ -2115,3 +2115,22 @@ var host = Host.CreateDefaultBuilder(args)
 | `InvalidOperationException: A circular dependency was detected` | 循环依赖 | 重构设计，打破循环 |
 | `InvalidOperationException: Cannot consume scoped service from singleton` | Captive Dependency | 改用 IServiceScopeFactory |
 | `InvalidOperationException: No service for type` | 类型不匹配 | 检查注册的接口与实现 |
+
+<!-- 恢复自 cnt-content/full/014-csharp/250-CSharpDotNet.md（实施前 HEAD 62c90663 版本）；拆分时该小节未随迁，2026-10-07 内容保全复核恢复 -->
+
+## DI 容器解析复杂度
+
+**命题 4.2**：构造函数注入的解析复杂度为 $O(V + E)$，其中 $V$ 为服务数，$E$ 为依赖边数。
+
+**证明**：
+
+DI 容器维护依赖图 $G = (V, E)$，每个服务 $v \in V$ 依赖其构造函数参数对应的服务。
+
+解析服务 $s$：
+
+1. 拓扑排序：$O(V + E)$。
+2. 按拓扑顺序创建实例：$O(V)$。
+
+总复杂度 $O(V + E)$。
+
+若存在循环依赖，拓扑排序检测出环，抛 `InvalidOperationException`。

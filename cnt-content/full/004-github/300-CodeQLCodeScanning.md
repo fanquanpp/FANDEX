@@ -1,5 +1,5 @@
 ---
-order: 300
+order: 330
 title: CodeQL 代码扫描：让机器看懂「数据从哪流到哪」
 module: 'github'
 category: 工具链

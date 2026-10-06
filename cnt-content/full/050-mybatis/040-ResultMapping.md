@@ -1,5 +1,5 @@
 ---
-order: 40
+order: 50
 title: 结果映射与关联查询：一行拆成两个对象，多行合成一个对象
 description: 以「驼峰开关救得了字段名，救不了订单与下单用户的结构变换」引入：resultMap 的 id 去重原理、association 与 collection 的嵌套结果与嵌套查询对照、延迟加载与 session 生命周期，附 N+1 数 SQL 实验与分页 join 明细错乱的独家拆解。
 module: 'mybatis'
@@ -16,6 +16,12 @@ related:
   - 'mybatis/060-PluginInterceptor'
   - 'mybatis/090-PitfallsPerformance'
 ---
+
+## 知识点地图
+
+- 知识类别：结果映射——resultMap 的 id/result 布局、association 一对一、collection 一对多、延迟加载、N+1 与分页陷阱。
+- 解决什么问题：查询结果怎么变成对象（尤其对象套对象的关联结构）；以及关联映射的三个代价（N+1、内存、分页错乱）什么时候值得付。
+- 什么时候用到：字段名对不上的表、一对一/一对多关联查询、排查"10 条数据发 11 条 SQL"。
 
 ## 前置知识
 
@@ -247,6 +253,55 @@ JOIN order_items i ON i.order_id = o.id;
 | 巨量从属列表 | 从属侧独立分页 | 订单列表本来就是独立页面，别塞进用户详情 |
 
 association 与 collection 不是「用得越花越专业」的装饰——它们是为详情页的对象图服务的工具。列表页硬上关联映射，是本篇两个事故（N+1、分页错乱）的共同起点。
+
+## 动手实践
+
+**任务一：id 标签的合并实验。** 用第 5 节的一对多嵌套结果查询，先正常跑（collection 合并正确），再把 resultMap 里的 `<id>` 标签改成 `<result>` 复跑，观察订单条目是否翻倍或错乱。提示：id 参与的"同一父对象"判定被去掉后，MyBatis 退化为按整行判等——这个实验就是第 5 节合并原理的反证。
+
+**任务二：亲手数 N+1。** 写一个 20 条订单的列表查询，每条嵌套查询取买家，开 log-impl 数 SQL 条数；然后用 join + 嵌套结果改写，再数一次。提示：21 条对 1 条的对比摆出来，比任何说教都有说服力；顺带记录两种写法的总耗时，数据量大时差距更夸张。
+
+**任务三：分页 x 一对多的复现与修复。** 按第 8 节复现"一页 10 条只剩 3 个订单"（join 一对多 + LIMIT），然后实现修复：先分页查父表（子查询圈定 id 列表），再按 id in 查关联装填。提示：修复后数一下 SQL 条数（应为 2 条）并验证每页恰好 10 个订单——两个标准同时满足才算修好。
+
+先自己操作，再对照参考实现：
+
+<details>
+<summary>任务三参考实现（先分页后装填）</summary>
+
+```xml
+<!-- 第一步：只分页查父表（不 join，行数 = 订单数） -->
+<select id="selectOrderPage" resultType="Order">
+  SELECT id, order_no, amount
+  FROM orders
+  WHERE status = #{status}
+  ORDER BY created_at DESC
+  LIMIT #{size} OFFSET #{offset}
+</select>
+
+<!-- 第二步：按 id 列表一次性查关联 -->
+<select id="selectItemsByOrderIds" resultType="OrderItem">
+  SELECT oi.*, oi.order_id AS orderId
+  FROM order_items oi
+  WHERE oi.order_id IN
+  <foreach collection="orderIds" item="id" open="(" separator="," close=")">
+    #{id}
+  </foreach>
+</select>
+```
+
+```java
+// 装填（服务层两步）
+List<Order> orders = orderMapper.selectOrderPage(status, size, offset);
+if (!orders.isEmpty()) {
+    List<Long> ids = orders.stream().map(Order::getId).toList();
+    Map<Long, List<OrderItem>> byOrder = orderMapper
+        .selectItemsByOrderIds(ids).stream()
+        .collect(Collectors.groupingBy(OrderItem::getOrderId));
+    orders.forEach(o -> o.setItems(byOrder.getOrDefault(o.getId(), List.of())));
+}
+```
+
+要点：a) 两步各司其职——第一步 LIMIT 语义精确（一页 10 个订单），第二步 IN 一次取全关联；b) 空列表短路（isEmpty 判断）防止 IN () 语法错误；c) 该模式的通用形态就是"先圈父 id、再批量装填"，090 篇的 N+1 修复同样是它。
+</details>
 
 ## 官方文档
 
