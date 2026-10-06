@@ -72,8 +72,8 @@ flowchart LR
         CB[flag 副本 = 0]
     end
     MM[(主内存 flag = ?)]
-    CA -.何时写回?.-. MM
-    MM -.何时重读?.-. CB
+    CA -. 何时写回? .- MM
+    MM -. 何时重读? .- CB
 ```
 
 ## 3. 三大特性
